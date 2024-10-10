@@ -1,6 +1,10 @@
+from typing import Literal, get_args
 import pandas as pd
 from IPython.display import display
 import pytest
+
+
+from scop_constants import SCOP_LINEAGES, FOLDSEEK_SCOP_FIXED
 
 
 def get_intersecting_scop_fixed(
@@ -116,6 +120,126 @@ def extract_scop_lineages(scop_lineage_series: pd.Series) -> pd.DataFrame:
     lineages_extracted = scop_lineage_series.str.extractall(pattern)
     lineages_extracted = lineages_extracted.droplevel(-1)
     return lineages_extracted
+
+
+def make_multisearch_csv(
+    outdir,
+    moltype,
+    ksize,
+    query="astral-scopedom-seqres-gd-sel-gs-bib-40-2.08.part_001.fa",
+    against="astral-scopedom-seqres-gd-sel-gs-bib-40-2.08.part_001.fa",
+):
+    basename = f"{query}--in--{against}.{moltype}.{ksize}.multisearch.csv"
+    csv = f"{outdir}/sourmash/multisearch/{basename}"
+    return csv
+
+
+def make_output_pq(analysis_outdir: str, ksize: int, filtered: bool):
+    pq = f"{analysis_outdir}/00_cleaned_multisearch_results/scope40.multisearch.protein.k{ksize}"
+    if filtered:
+        pq += ".filtered.pq"
+    else:
+        pq += ".pq"
+
+    return pq
+
+
+def write_parquet(
+    df: pd.DataFrame,
+    analysis_outdir: str,
+    ksize: int,
+    filtered: bool = False,
+    verbose: bool = False,
+):
+    pq = make_output_pq(analysis_outdir, ksize, filtered)
+    if verbose:
+        print(f"\nWriting {len(df)} rows and {len(df.columns)} columns to {pq} ...")
+    df.to_parquet(pq)
+    if verbose:
+        print(f"\tDone.")
+
+
+def add_categories(df: pd.DataFrame, query: str, match: str):
+    """Set query and match SCOP lineages as categorical, so we always
+    have all options for computing classification scores
+
+    Args:
+        df (_type_): _description_
+        query (_type_): column in df
+        match (_type_): column in df
+    """
+
+    # Get all possible categories using the query, which is all possible
+    categories = sorted(list(set(df[query])))
+    df[query] = pd.Categorical(df[query], categories=categories, ordered=True)
+    df[match] = pd.Categorical(df[match], categories=categories, ordered=True)
+
+
+def process_multisearch_scop_results(
+    pipeline_outdir, moltype, ksize, analysis_outdir, verbose=False
+):
+    if verbose:
+        print(f"\n\n--- ksize: {ksize} --")
+    csv = make_multisearch_csv(pipeline_outdir, moltype, ksize)
+    if verbose:
+        print(f"\nReading {csv} ...")
+    multisearch = pd.read_csv(csv)
+    if verbose:
+        print("\tDone")
+
+    query_metadata = extract_scop_info_from_name(
+        multisearch.query_name, FOLDSEEK_SCOP_FIXED, "query", verbose=False
+    )
+
+    match_metadata = extract_scop_info_from_name(
+        multisearch.match_name, FOLDSEEK_SCOP_FIXED, "match", verbose=False
+    )
+
+    multisearch_metadata = multisearch.join(query_metadata, on="query_name").join(
+        match_metadata, on="match_name"
+    )
+
+    for lineage_col in get_args(SCOP_LINEAGES):
+        query = f"query_{lineage_col}"
+        match = f"match_{lineage_col}"
+        same = f"same_{lineage_col}"
+
+        multisearch_metadata[same] = (
+            multisearch_metadata[query] == multisearch_metadata[match]
+        )
+
+        # --- Set query and match SCOP lineages as categorical, so we     --- #
+        # --- always have all options for computing classification scores --- #
+        # Get all possible categories using the query, which is all possible
+        categories = sorted(list(set(multisearch_metadata[query])))
+        multisearch_metadata[query] = pd.Categorical(
+            multisearch_metadata[query], categories=categories, ordered=True
+        )
+        multisearch_metadata[match] = pd.Categorical(
+            multisearch_metadata[match], categories=categories, ordered=True
+        )
+
+    write_parquet(
+        multisearch_metadata,
+        analysis_outdir,
+        ksize,
+        filtered=False,
+        verbose=verbose,
+    )
+
+    # Remove self matches and likely spurious matches
+    multisearch_metadata_filtered = multisearch_metadata.query(
+        "query_md5 != match_md5 and intersect_hashes > 1"
+    )
+
+    write_parquet(
+        multisearch_metadata_filtered,
+        analysis_outdir,
+        ksize,
+        filtered=True,
+        verbose=verbose,
+    )
+    return multisearch_metadata_filtered
 
 
 @pytest.fixture
