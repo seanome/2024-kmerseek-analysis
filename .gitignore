@@ -1,3 +1,7 @@
+# Output test data
+2024-kmerseek-analysis/notebooks/test-data/process_scop_sourmash_multisearch/00_cleaned_multisearch_results/scope40.multisearch.protein.k10.filtered.pq
+2024-kmerseek-analysis/notebooks/test-data/process_scop_sourmash_multisearch/00_cleaned_multisearch_results/scope40.multisearch.protein.k10.pq
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
