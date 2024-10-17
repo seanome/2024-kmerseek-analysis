@@ -1,4 +1,6 @@
+import os
 from typing import Literal, get_args
+
 import pandas as pd
 from IPython.display import display
 import pytest
@@ -27,7 +29,7 @@ class MultisearchParser:
     def _read_multisearch_csv(self) -> pd.DataFrame:
         if self.verbose:
             print(f"\n\n--- moltype: {self.moltype}, ksize: {self.ksize} --")
-        csv = self._make_multisearch_csv(self.pipeline_outdir, self.moltype, self.ksize)
+        csv = self._make_multisearch_csv()
         if self.verbose:
             print(f"\nReading {csv} ...")
         multisearch = pd.read_csv(csv)
@@ -44,13 +46,13 @@ class MultisearchParser:
         Returns:
             pd.DataFrame: _description_
         """
-        query_metadata = extract_scop_info_from_name(
+        query_metadata = ScopMetadataExtractor(
             multisearch.query_name, FOLDSEEK_SCOP_FIXED, "query", verbose=False
-        )
+        ).extract_scop_info_from_name()
 
-        match_metadata = extract_scop_info_from_name(
+        match_metadata = ScopMetadataExtractor(
             multisearch.match_name, FOLDSEEK_SCOP_FIXED, "match", verbose=False
-        )
+        ).extract_scop_info_from_name()
 
         multisearch_metadata = multisearch.join(query_metadata, on="query_name").join(
             match_metadata, on="match_name"
@@ -83,9 +85,9 @@ class MultisearchParser:
 
         multisearch = self._read_multisearch_csv()
         multisearch_metadata = self._add_query_match_scop_metadata(multisearch)
-        self._add_if_query_match_lineages_are_same()
+        self._add_if_query_match_lineages_are_same(multisearch_metadata)
 
-        self.write_parquet(
+        self._write_parquet(
             multisearch_metadata,
             filtered=False,
         )
@@ -95,10 +97,14 @@ class MultisearchParser:
             "query_md5 != match_md5 and intersect_hashes > 1"
         )
 
-        self.write_parquet(
+        self._write_parquet(
             multisearch_metadata_filtered,
             filtered=True,
         )
+
+        self.multisearch = multisearch_metadata
+        self.multisearch_filtered = multisearch_metadata_filtered
+
         return multisearch_metadata_filtered
 
     def _make_multisearch_csv(
@@ -125,10 +131,20 @@ class MultisearchParser:
         df: pd.DataFrame,
         filtered: bool = False,
     ):
-        pq = self.make_output_pq(filtered)
+        pq = self._make_output_pq(filtered)
         if self.verbose:
             print(f"\nWriting {len(df)} rows and {len(df.columns)} columns to {pq} ...")
-        df.to_parquet(pq)
+
+        if pq.startswith("s3://"):
+            # Writing Parquet files with arrow can be troublesome, need to use s3fs explicitly
+            import s3fs
+
+            fs = s3fs.S3FileSystem()
+            with fs.open(pq, mode="wb") as f:
+                df.to_parquet(f)
+        else:
+            df.to_parquet(pq)
+
         if self.verbose:
             print(f"\tDone.")
 
@@ -298,27 +314,46 @@ class ScopMetadataExtractor:
         df[match] = pd.Categorical(df[match], categories=categories, ordered=True)
 
 
-@pytest.fixture
-def test_name_series():
-    return pd.read_csv("scop_utils_test_name_series.csv").squeeze()
+# --- Tests! --- #
 
 
 @pytest.fixture
-def test_scop_fixed():
+def testdata_folder():
+
+    this_folder = os.path.join(os.path.dirname(__file__))
+    data_folder = os.path.join(
+        this_folder, "test-data", "process_scop_sourmash_multisearch"
+    )
+    return data_folder
+
+
+@pytest.fixture
+def input_name_series(testdata_folder):
+    csv = os.path.join(testdata_folder, "scop_input_name_series.csv")
+    return pd.read_csv(csv).squeeze()
+
+
+@pytest.fixture
+def input_scop_fixed(testdata_folder):
+    csv = os.path.join(testdata_folder, "scop_input_scop_fixed.csv")
+
     return pd.read_csv(
-        "scop_utils_test_scop_fixed.csv", header=None, index_col=0
+        csv,
+        header=None,
+        index_col=0,
     ).squeeze()
 
 
 @pytest.fixture
-def true_scop_metadata():
-    return pd.read_csv("scop_utils_true_scop_metadata.csv", index_col=0)
+def true_scop_metadata(testdata_folder):
+    csv = os.path.join(testdata_folder, "scop_output_scop_metadata.csv")
+    return pd.read_csv(csv, index_col=0)
 
 
 def test_extract_scop_info_from_name(
-    test_name_series, test_scop_fixed, true_scop_metadata
+    input_name_series, input_scop_fixed, true_scop_metadata
 ):
-    sme = ScopMetadataExtractor(test_name_series, test_scop_fixed, "query")
+    sme = ScopMetadataExtractor(input_name_series, input_scop_fixed, "query")
     test_scop_metadata = sme.extract_scop_info_from_name()
 
     # lineage_cols = ["query_family", "query_superfamily", "query_fold", "query_class"]
@@ -347,3 +382,83 @@ def test_extract_scop_info_from_name(
 
     # Test for overall equality
     pd.testing.assert_frame_equal(test_scop_metadata, true_scop_metadata)
+
+
+@pytest.fixture
+def true_multisearch_processed_filtered(testdata_folder):
+    pq = os.path.join(
+        testdata_folder, "multisearch_output_multisearch_results_processed_filtered.pq"
+    )
+    df = pd.read_parquet(pq)
+    print(df["query_class"].cat.categories)
+    return df
+
+
+def test_parse_scop_multisearch_results(
+    true_multisearch_processed_filtered, testdata_folder
+):
+    # This parser reads:
+    # 2024-kmerseek-analysis/notebooks/test-data/process_scop_sourmash_multisearch/multisearch_output_multisearch_results_processed_filtered.pq
+    parser = MultisearchParser(
+        pipeline_outdir=testdata_folder,
+        moltype="protein",
+        ksize=10,
+        analysis_outdir=testdata_folder,
+    )
+    test_multisearch_processed_filtered = parser.process_multisearch_scop_results()
+
+    assert os.path.exists(
+        os.path.join(
+            testdata_folder,
+            "00_cleaned_multisearch_results",
+            "scope40.multisearch.protein.k10.pq",
+        )
+    )
+    assert os.path.exists(
+        os.path.join(
+            testdata_folder,
+            "00_cleaned_multisearch_results",
+            "scope40.multisearch.protein.k10.filtered.pq",
+        )
+    )
+
+    # Change the index to be a range to match the known output data
+    test_multisearch_processed_filtered.index = range(
+        len(test_multisearch_processed_filtered)
+    )
+
+    # Test that output SCOP lineage counts are correct
+    assert test_multisearch_processed_filtered[
+        "query_family"
+    ].value_counts().head().to_dict() == {
+        "a.104.1.0": 38,
+        "a.128.1.0": 17,
+        "a.211.1.1": 13,
+        "a.211.1.2": 5,
+        "a.39.1.5": 4,
+    }
+    assert test_multisearch_processed_filtered[
+        "query_superfamily"
+    ].value_counts().head().to_dict() == {
+        "a.104.1": 42,
+        "a.128.1": 22,
+        "a.211.1": 22,
+        "a.102.1": 6,
+        "a.39.1": 6,
+    }
+
+    assert test_multisearch_processed_filtered[
+        "query_fold"
+    ].value_counts().head().to_dict() == {
+        "a.104": 42,
+        "a.128": 22,
+        "a.211": 22,
+        "a.102": 8,
+        "a.39": 6,
+    }
+
+    # Test for overall equality
+    pd.testing.assert_frame_equal(
+        test_multisearch_processed_filtered,
+        true_multisearch_processed_filtered,
+    )
