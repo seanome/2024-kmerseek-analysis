@@ -5,6 +5,7 @@ import pytest
 
 
 from scop_constants import SCOP_LINEAGES, FOLDSEEK_SCOP_FIXED
+from sourmash_constants import MOLTYPES
 
 
 def get_intersecting_scop_fixed(
@@ -134,8 +135,8 @@ def make_multisearch_csv(
     return csv
 
 
-def make_output_pq(analysis_outdir: str, ksize: int, filtered: bool):
-    pq = f"{analysis_outdir}/00_cleaned_multisearch_results/scope40.multisearch.protein.k{ksize}"
+def make_output_pq(analysis_outdir: str, ksize: int, moltype: MOLTYPES, filtered: bool):
+    pq = f"{analysis_outdir}/00_cleaned_multisearch_results/scope40.multisearch.{moltype}.k{ksize}"
     if filtered:
         pq += ".filtered.pq"
     else:
@@ -148,10 +149,11 @@ def write_parquet(
     df: pd.DataFrame,
     analysis_outdir: str,
     ksize: int,
+    moltype: MOLTYPES,
     filtered: bool = False,
     verbose: bool = False,
 ):
-    pq = make_output_pq(analysis_outdir, ksize, filtered)
+    pq = make_output_pq(analysis_outdir, ksize, moltype, filtered)
     if verbose:
         print(f"\nWriting {len(df)} rows and {len(df.columns)} columns to {pq} ...")
     df.to_parquet(pq)
@@ -208,21 +210,13 @@ def process_multisearch_scop_results(
             multisearch_metadata[query] == multisearch_metadata[match]
         )
 
-        # --- Set query and match SCOP lineages as categorical, so we     --- #
-        # --- always have all options for computing classification scores --- #
-        # Get all possible categories using the query, which is all possible
-        categories = sorted(list(set(multisearch_metadata[query])))
-        multisearch_metadata[query] = pd.Categorical(
-            multisearch_metadata[query], categories=categories, ordered=True
-        )
-        multisearch_metadata[match] = pd.Categorical(
-            multisearch_metadata[match], categories=categories, ordered=True
-        )
+        add_categories(multisearch_metadata, query, match)
 
     write_parquet(
         multisearch_metadata,
         analysis_outdir,
         ksize,
+        moltype,
         filtered=False,
         verbose=verbose,
     )
@@ -236,6 +230,7 @@ def process_multisearch_scop_results(
         multisearch_metadata_filtered,
         analysis_outdir,
         ksize,
+        moltype,
         filtered=True,
         verbose=verbose,
     )
