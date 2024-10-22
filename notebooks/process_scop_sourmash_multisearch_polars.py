@@ -1,8 +1,10 @@
 import os
 from typing import Literal, get_args, Union
+import tempfile
 
 import polars as pl
 from IPython.display import display
+import s3fs
 import pytest
 
 
@@ -40,7 +42,13 @@ class MultisearchParser:
         csv = self._make_multisearch_csv()
         if self.verbose:
             print(f"\nReading {csv} ...")
-        multisearch = pl.scan_csv(csv)
+
+        if csv.startswith("s3://"):
+            # Get a "failed to allocate" error when try to scan big csvs from S3
+            # This is a workaround
+            fs = s3fs.S3FileSystem()
+            with fs.open(csv, mode="rb") as f:
+                multisearch = pl.scan_csv(f)
         if self.verbose:
             print("\tDone")
         return multisearch
