@@ -2,12 +2,13 @@ import os
 from typing import Literal, get_args, Union
 import tempfile
 
+import boto3
 import polars as pl
 from IPython.display import display
 import s3fs
 import pytest
 
-
+from s3_io import download_object_from_s3
 from scop_constants import SCOP_LINEAGES, FOLDSEEK_SCOP_FIXED
 from sourmash_constants import MOLTYPES
 
@@ -35,6 +36,21 @@ class MultisearchParser:
         self.analysis_outdir = analysis_outdir
         self.check_same_cols = check_same_cols
         self.verbose = verbose
+        self.tempfile = False
+
+    def _download_from_s3(self, s3_path):
+        # Get a "failed to allocate" error when try to scan big csvs from S3
+        # This is a workaround
+        fp = tempfile.NamedTemporaryFile(
+            delete_on_close=True, prefix="/home/ec2-user/tmp/"
+        )
+        session = boto3.Session()
+        bucket_key = s3_path.split("s3://")[-1]
+        bucket, key = bucket_key.split("/", 1)
+        download_object_from_s3(
+            session, bucket=bucket, key=key, filename=self._csv_fp.name
+        )
+        return fp
 
     def _read_multisearch_csv(self) -> pl.DataFrame:
         if self.verbose:
@@ -44,11 +60,12 @@ class MultisearchParser:
             print(f"\nReading {csv} ...")
 
         if csv.startswith("s3://"):
-            # Get a "failed to allocate" error when try to scan big csvs from S3
-            # This is a workaround
-            fs = s3fs.S3FileSystem()
-            with fs.open(csv, mode="rb") as f:
-                multisearch = pl.scan_csv(f)
+            self.tempfile = True
+            self._csv_fp = self._download_from_s3(csv)
+            multisearch = pl.scan_csv(self._csv_fp.name)
+            # # Maybe sink to parquet from here to speed up future computations?
+            # pq = csv.replace(".csv", ".pq")
+            # sink_parquet(multisearch, pq, verbose=True)
         if self.verbose:
             print("\tDone")
         return multisearch
@@ -142,6 +159,8 @@ class MultisearchParser:
 
         self.multisearch = multisearch_metadata
         self.multisearch_filtered = multisearch_metadata_filtered
+        if self.tempfile:
+            self._csv_fp.close()
 
         return multisearch_metadata_filtered
 

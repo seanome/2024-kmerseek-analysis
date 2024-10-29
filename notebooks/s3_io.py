@@ -2,6 +2,7 @@
 # Cribbed from: https://alexwlchan.net/2021/s3-progress-bars/
 
 import os
+import tempfile
 
 import boto3
 import tqdm
@@ -76,29 +77,51 @@ def upload_file_to_s3(session, *, bucket, key, filename):
         )
 
 
-if __name__ == "__main__":
-    # Customise the session if you want to use, e.g., a particular role ARN
-    # See https://ben11kehoe.medium.com/boto3-sessions-and-why-you-should-use-them-9b094eb5ca8e
+# if __name__ == "__main__":
+#     # Customise the session if you want to use, e.g., a particular role ARN
+#     # See https://ben11kehoe.medium.com/boto3-sessions-and-why-you-should-use-them-9b094eb5ca8e
+#     session = boto3.Session()
+
+#     download_object_from_s3(
+#         session,
+#         bucket="example-bucket",
+#         key="cat.jpg",
+#         filename="cat_v1.jpg",
+#         version_id="lzhtwp8Tgq7lRRy_7.Qz9eIB5b68le_h",
+#     )
+
+#     download_object_from_s3(
+#         session, bucket="example-bucket", key="cat.jpg", filename="cat_latest.jpg"
+#     )
+
+#     with open("greeting.txt", "wb") as outfile:
+#         outfile.write(b"Hello world! Guten tag! Bonjour!")
+
+#     upload_file_to_s3(
+#         session,
+#         bucket="example-bucket",
+#         key="greeting.txt",
+#         filename="greeting.txt",
+#     )
+
+
+def get_bucket_key(s3_path):
+    bucket_key = s3_path.split("s3://")[-1]
+    bucket, key = bucket_key.split("/", 1)
+    return bucket, key
+
+
+def simple_upload_s3_path(local_path, s3_path):
     session = boto3.Session()
+    bucket, key = get_bucket_key(s3_path)
+    upload_file_to_s3(session, bucket=bucket, key=key, filename=local_path)
 
-    download_object_from_s3(
-        session,
-        bucket="example-bucket",
-        key="cat.jpg",
-        filename="cat_v1.jpg",
-        version_id="lzhtwp8Tgq7lRRy_7.Qz9eIB5b68le_h",
-    )
 
-    download_object_from_s3(
-        session, bucket="example-bucket", key="cat.jpg", filename="cat_latest.jpg"
-    )
-
-    with open("greeting.txt", "wb") as outfile:
-        outfile.write(b"Hello world! Guten tag! Bonjour!")
-
-    upload_file_to_s3(
-        session,
-        bucket="example-bucket",
-        key="greeting.txt",
-        filename="greeting.txt",
-    )
+def temp_download_s3_path(s3_path: str) -> tempfile.NamedTemporaryFile:
+    # Get a "failed to allocate" error when try to scan big csvs from S3
+    # This is a workaround
+    fp = tempfile.NamedTemporaryFile(prefix="/home/ec2-user/tmp/")
+    session = boto3.Session()
+    bucket, key = get_bucket_key(s3_path)
+    download_object_from_s3(session, bucket=bucket, key=key, filename=fp.name)
+    return fp

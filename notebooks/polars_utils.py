@@ -4,6 +4,7 @@ import polars as pl
 import s3fs
 
 # import boto3
+from s3_io import temp_download_s3_path, simple_upload_s3_path
 
 
 def add_log10_col(df: pl.DataFrame, col: str):
@@ -46,10 +47,19 @@ def sink_parquet(df: pl.LazyFrame, pq: str, verbose=False):
         # Need to write to a local file and then push the file to S3 with s3fs
         with tempfile.NamedTemporaryFile() as f:
             df.sink_parquet(f.name)
-
-            fs = s3fs.S3FileSystem()
-            fs.put(f.name, pq)
+            simple_upload_s3_path(f.name, pq)
     else:
         df.sink_parquet(pq)
 
     print("\tDone.")
+
+
+def scan_csv_sink_parquet(csv, parquet=None, verbose=False):
+    """Scan a CSV and sink into a parquet file with Polars. Memory-efficient"""
+    if parquet == None:
+        parquet = csv.replace(".csv", ".pq")
+
+    temp_fp = temp_download_s3_path(csv)
+    df = pl.scan_csv(temp_fp.name)
+    sink_parquet(df, parquet, verbose=verbose)
+    return parquet
