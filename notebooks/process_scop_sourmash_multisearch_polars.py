@@ -86,35 +86,6 @@ class MultisearchParser:
         df = add_log10_col(df, "jaccard")
         return df
 
-    def process_multisearch_scop_results(self):
-        multisearch = self._read_multisearch_csv()
-        multisearch_metadata = self._add_query_match_scop_metadata(multisearch)
-        multisearch_metadata = self._add_if_query_match_cols_are_same(
-            multisearch_metadata
-        )
-        multisearch_metadata = self._add_columns(multisearch_metadata)
-
-        self._sink_parquet(
-            multisearch_metadata,
-            filtered=False,
-        )
-
-        # Remove self matches and likely spurious matches
-        multisearch_metadata_filtered = multisearch_metadata.filter(
-            (pl.col("query_md5") != pl.col("match_md5"))
-            & (pl.col("intersect_hashes") > 1)
-        )
-
-        self._sink_parquet(
-            multisearch_metadata_filtered,
-            filtered=True,
-        )
-
-        self.multisearch = multisearch_metadata
-        self.multisearch_filtered = multisearch_metadata_filtered
-
-        return multisearch_metadata_filtered
-
     def _make_multisearch_csv(
         self,
         query="astral-scopedom-seqres-gd-sel-gs-bib-40-2.08.part_001.fa",
@@ -144,6 +115,35 @@ class MultisearchParser:
         sink_parquet(df, pq, verbose=self.verbose)
         # df.sink_parquet(pq)
         return pq
+
+    def process_multisearch_scop_results(self):
+        multisearch = self._read_multisearch_csv()
+        multisearch_metadata = self._add_query_match_scop_metadata(multisearch)
+        multisearch_metadata = self._add_if_query_match_cols_are_same(
+            multisearch_metadata
+        )
+        multisearch_metadata = self._add_columns(multisearch_metadata)
+
+        self._sink_parquet(
+            multisearch_metadata,
+            filtered=False,
+        )
+
+        # Remove self matches and likely spurious matches
+        multisearch_metadata_filtered = multisearch_metadata.filter(
+            (pl.col("query_md5") != pl.col("match_md5"))
+            & (pl.col("intersect_hashes") > 1)
+        )
+
+        self._sink_parquet(
+            multisearch_metadata_filtered,
+            filtered=True,
+        )
+
+        self.multisearch = multisearch_metadata
+        self.multisearch_filtered = multisearch_metadata_filtered
+
+        return multisearch_metadata_filtered
 
 
 # --- Tests! --- #
