@@ -170,40 +170,49 @@ class MultisearchParser:
         notify_done()
         return pq
 
+    def _filter_multisearch(self, multisearch):
+        notify("Removing self-matches and matches with only one hash")
+        # Remove self matches and likely spurious matches
+        filtered = multisearch.filter(
+            (pl.col("query_md5") != pl.col("match_md5"))
+            & (pl.col("intersect_hashes") > 1)
+        )
+        notify_done()
+        return filtered
+
     def process_multisearch_scop_results(self):
         multisearch = self._read_multisearch()
+        multisearch = self._filter_multisearch(multisearch)
         multisearch_metadata = self._add_query_match_scop_metadata(multisearch)
         multisearch_metadata = self._add_if_query_match_cols_are_same(
             multisearch_metadata
         )
         multisearch_metadata = self._add_columns(multisearch_metadata)
 
-        self._save_parquet(
-            multisearch_metadata,
-            filtered=False,
-        )
+        # self._save_parquet(
+        #     multisearch_metadata,
+        #     filtered=False,
+        # )
 
-        notify("Removing self-matches and matches with only one hash")
-        # Remove self matches and likely spurious matches
-        multisearch_metadata_filtered = multisearch_metadata.filter(
-            (pl.col("query_md5") != pl.col("match_md5"))
-            & (pl.col("intersect_hashes") > 1)
-        )
-        notify_done()
+        multisearch_metadata.show_graph(optimized=False)
+        multisearch_metadata.explain(optimized=False)
 
-        self._save_parquet(
-            multisearch_metadata_filtered,
-            filtered=True,
-        )
+        multisearch_metadata.show_graph(optimized=True)
+        multisearch_metadata.explain(optimized=True)
+        return multisearch_metadata
+        # self._save_parquet(
+        #     multisearch_metadata,
+        #     filtered=True,
+        # )
 
-        self.multisearch = multisearch_metadata
-        self.multisearch_filtered = multisearch_metadata_filtered
-        if self.tempfile:
-            notify("Closing temporary file")
-            self._input_fp.close()
-            notify_done()
+        # self.multisearch = multisearch_metadata
+        # # self.multisearch_filtered = multisearch_metadata_filtered
+        # if self.tempfile:
+        #     notify("Closing temporary file")
+        #     self._input_fp.close()
+        #     notify_done()
 
-        return multisearch_metadata_filtered
+        # return multisearch_metadata
 
 
 # --- Tests! --- #
