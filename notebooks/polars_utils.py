@@ -13,6 +13,30 @@ polars_frames = pl.DataFrame | pl.LazyFrame
 csv_pq = Literal["csv", "pq"]
 
 
+def iter_slices(df: pl.LazyFrame, batch_size: int):
+    """Itereate over row slices of a LazyFrame"""
+
+    # From https://github.com/pola-rs/polars/issues/10683#issuecomment-2167802219
+    def get_batch(df, offset, batch_size):
+        batch = df.slice(offset, batch_size)
+        batch = batch.collect(streaming=True)
+        return batch
+
+    batch = get_batch(df, 0, batch_size)
+    # Yield once even if we got passed an empty LazyFrame
+    yield batch
+    offset = len(batch)
+    if offset:
+        while True:
+            batch = get_batch(df, offset, batch_size)
+            len_ = len(batch)
+            if len_:
+                offset += len_
+                yield batch
+            else:
+                break
+
+
 def add_log10_col(df: pl.DataFrame, col: str):
     notify(f"Creating log10 version of {col}")
     df = df.with_columns(pl.col(col).log10().alias(f"{col}_log10"))
@@ -74,7 +98,7 @@ def load_filename(
         return read_filename(filename, filetype, **kwargs)
 
 
-def sink_parquet(df: pl.LazyFrame, pq: str, verbose=False):
+def sink_parquet(df: pl.LazyFrame, pq: str, verbose=False, **kwargs):
     if verbose:
         try:
             print(
@@ -87,27 +111,27 @@ def sink_parquet(df: pl.LazyFrame, pq: str, verbose=False):
         # LazyFrame sink_parquet can't stream to cloud currently (polars version 1.9.0)
         # Need to write to a local file and then push the file to S3 with s3fs
         with tempfile.NamedTemporaryFile() as f:
-            df.sink_parquet(f.name)
+            df.sink_parquet(f.name, **kwargs)
             simple_upload_s3_path(f.name, pq)
     else:
-        df.sink_parquet(pq)
+        df.sink_parquet(pq, **kwargs)
 
     print("\tDone.")
 
 
-def write_parquet(df: pl.DataFrame, pq: str, verbose=False):
+def write_parquet(df: pl.DataFrame, pq: str, verbose=False, **kwargs):
     if verbose:
         print(f"\nWriting {df.height} rows and {df.width} columns to {pq} ...")
-    _to_filename(df.write_parquet, pq)
+    _to_filename(df.write_parquet, pq, **kwargs)
     if verbose:
         print("\tDone.")
 
 
-def save_parquet(df: polars_frames, pq: str, lazy, verbose=False):
+def save_parquet(df: polars_frames, pq: str, lazy, verbose=False, **kwargs):
     if lazy:
-        return sink_parquet(df, pq, verbose)
+        return sink_parquet(df, pq, verbose, **kwargs)
     else:
-        return write_parquet(df, pq, verbose)
+        return write_parquet(df, pq, verbose, **kwargs)
 
 
 def scan_csv_sink_parquet(csv, parquet=None, verbose=False):
