@@ -10,11 +10,11 @@ import s3fs
 import pytest
 from tqdm import tqdm
 
-from notifications import notify, logger
+from notifications import notify, logger, notify_done
 from s3_io import download_object_from_s3
 from scop_constants import SCOP_LINEAGES, FOLDSEEK_SCOP_FIXED
 from sourmash_constants import MOLTYPES
-from polars_utils import iter_slices, csv_pq, load_filename
+from polars_utils import iter_slices, csv_pq, load_filename, save_parquet
 
 
 class MultisearchParser:
@@ -105,10 +105,7 @@ class MultisearchParser:
             filename = temp_fp.name
 
         # Create a LazyFrame for streaming
-        if self.input_filetype == "csv":
-            lf = pl.scan_csv(filename, schema=self.schema)
-        else:  # parquet
-            lf = pl.scan_parquet(filename, schema=self.schema)
+        lf = load_filename(filename, self.input_filetype, lazy=True, schema=self.schema)
 
         # Process in chunks and save to temporary parquet files
         temp_files = []
@@ -133,6 +130,27 @@ class MultisearchParser:
             temp_fp.close()
 
         return combined
+
+    def _make_output_pq(self, filtered: bool):
+        basename = f"scope40.multisearch.{self.moltype}.k{self.ksize}"
+        pq = f"{self.analysis_outdir}/00_cleaned_multisearch_results/{basename}"
+        if filtered:
+            pq += ".filtered.pq"
+        else:
+            pq += ".pq"
+
+        return pq
+
+    def _save_parquet(
+        self,
+        df: pl.LazyFrame,
+        filtered: bool = False,
+    ):
+        pq = self._make_output_pq(filtered)
+        notify(f"Saving multisearch file, filtered: {filtered}")
+        save_parquet(df, pq, self.lazy, verbose=self.verbose, row_group_size=10)
+        notify_done()
+        return pq
 
     def process_multisearch_scop_results(self):
         logger.debug(f"\n--- moltype: {self.moltype}, ksize: {self.ksize} --")
