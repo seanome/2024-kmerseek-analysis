@@ -1,17 +1,15 @@
 import logging
 import os
-from typing import Literal, get_args, Union
+from typing import get_args
 import tempfile
 
 import boto3
 import polars as pl
-from IPython.display import display
-import s3fs
 import pytest
 
-from notifications import notify, notify_done
+from notifications import notify, notify_done, logger
 from s3_io import download_object_from_s3
-from scop_constants import SCOP_LINEAGES, FOLDSEEK_SCOP_FIXED
+from scop_constants import SCOP_LINEAGES
 from sourmash_constants import MOLTYPES
 
 from polars_utils import save_parquet, add_log10_col, csv_pq, load_filename
@@ -62,13 +60,10 @@ class MultisearchParser:
         self.lazy = lazy
 
         if self.verbose:
-            logger = logging.getLogger()
             logger.setLevel(logging.DEBUG)
 
-            handler = logging.StreamHandler()
-            logger.addHandler(handler)
         else:
-            logging.basicConfig(level=None)
+            logger.setLevel(None)
 
     def _download_from_s3(self, s3_path):
         # Get a "failed to allocate" error when try to scan big csvs from S3
@@ -97,7 +92,9 @@ class MultisearchParser:
         else:
             self._input_fp = self._multisearch_filename
 
-        multisearch = load_filename(self._input_fp, self.input_filetype, self.lazy)
+        multisearch = load_filename(
+            self._input_fp, self.input_filetype, self.lazy, low_memory=True
+        )
 
         notify_done()
         return multisearch
@@ -119,7 +116,7 @@ class MultisearchParser:
             match = f"match_{col}"
             same = f"same_{col}"
 
-            notify("\nJoining multisearch with query and match metadata ...")
+            notify(f"\nAdding {same} column ...")
 
             multisearch_metadata = multisearch_metadata.with_columns(
                 (pl.col(query) == pl.col(match)).alias(same)
@@ -166,7 +163,7 @@ class MultisearchParser:
     ):
         pq = self._make_output_pq(filtered)
         notify(f"Saving multisearch file, filtered: {filtered}")
-        save_parquet(df, pq, self.lazy, verbose=self.verbose)
+        save_parquet(df, pq, self.lazy, verbose=self.verbose, row_group_size=10)
         notify_done()
         return pq
 
@@ -194,16 +191,16 @@ class MultisearchParser:
         #     filtered=False,
         # )
 
-        multisearch_metadata.show_graph(optimized=False)
-        multisearch_metadata.explain(optimized=False)
+        # multisearch_metadata.show_graph(optimized=False)
+        # multisearch_metadata.explain(optimized=False)
 
-        multisearch_metadata.show_graph(optimized=True)
-        multisearch_metadata.explain(optimized=True)
-        return multisearch_metadata
-        # self._save_parquet(
-        #     multisearch_metadata,
-        #     filtered=True,
-        # )
+        # multisearch_metadata.show_graph(optimized=True)
+        # multisearch_metadata.explain(optimized=True)
+        # return multisearch_metadata
+        self._save_parquet(
+            multisearch_metadata,
+            filtered=True,
+        )
 
         # self.multisearch = multisearch_metadata
         # # self.multisearch_filtered = multisearch_metadata_filtered
