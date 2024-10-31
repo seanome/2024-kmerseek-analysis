@@ -8,12 +8,13 @@ import polars as pl
 from IPython.display import display
 import s3fs
 import pytest
+from tqdm import tqdm
 
-from notifications import notify, notify_done
+from notifications import notify, logger
 from s3_io import download_object_from_s3
 from scop_constants import SCOP_LINEAGES, FOLDSEEK_SCOP_FIXED
 from sourmash_constants import MOLTYPES
-from polars_utils import save_parquet, add_log10_col, csv_pq, load_filename
+from polars_utils import iter_slices, csv_pq, load_filename
 
 
 class MultisearchParser:
@@ -49,7 +50,7 @@ class MultisearchParser:
     def _setup_logging(self):
         if self.verbose:
             logger = logging.getLogger()
-            logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.INFO)
             handler = logging.StreamHandler()
             logger.addHandler(handler)
         else:
@@ -58,13 +59,13 @@ class MultisearchParser:
     def _process_chunk(self, chunk: pl.LazyFrame) -> pl.LazyFrame:
         """Process a single chunk of data with all transformations"""
         # Filter first to reduce data size early
-        notify("Removing self-matches and spurious single-hash matches")
+        logger.debug("Removing self-matches and spurious single-hash matches")
         chunk = chunk.filter(
             (pl.col("query_md5") != pl.col("match_md5"))
             & (pl.col("intersect_hashes") > 1)
         )
 
-        notify("Joining chunk with metadata")
+        logger.debug("Joining chunk with metadata")
         # Join with metadata
         chunk = chunk.join(
             self.query_metadata, left_on="query_name", right_on="query_name"
@@ -78,7 +79,7 @@ class MultisearchParser:
             )
 
         # Add additional columns
-        notify("Adding ksize, moltype and log10 versions of score value columns")
+        logger.debug("Adding ksize, moltype and log10 versions of score value columns")
         chunk = chunk.with_columns(
             [
                 pl.lit(self.ksize).alias("ksize"),
@@ -98,23 +99,21 @@ class MultisearchParser:
     def _stream_process_file(self, filename: str) -> pl.LazyFrame:
         """Process the file in chunks to reduce memory usage"""
         if filename.startswith("s3://"):
-            notify(f"Downloading {os.path.basename(filename)} locally ...")
+            logger.info(f"Downloading {os.path.basename(filename)} locally ...")
             self.tempfile = True
             temp_fp = self._download_from_s3(filename)
             filename = temp_fp.name
 
         # Create a LazyFrame for streaming
         if self.input_filetype == "csv":
-            reader = pl.scan_csv(filename, schema=self.schema)
+            lf = pl.scan_csv(filename, schema=self.schema)
         else:  # parquet
-            reader = pl.scan_parquet(filename, schema=self.schema)
+            lf = pl.scan_parquet(filename, schema=self.schema)
 
         # Process in chunks and save to temporary parquet files
         temp_files = []
-        for i, chunk in enumerate(
-            reader.collect(streaming=True, chunk_size=self.chunk_size)
-        ):
-            notify(f"Processing chunk {i+1}")
+        for i, chunk in enumerate(tqdm(iter_slices(lf, self.chunk_size))):
+            logger.info(f"Processing chunk {i+1}")
             processed_chunk = self._process_chunk(pl.LazyFrame(chunk))
 
             # Save chunk to temporary parquet file
@@ -136,11 +135,11 @@ class MultisearchParser:
         return combined
 
     def process_multisearch_scop_results(self):
-        notify(f"\n--- moltype: {self.moltype}, ksize: {self.ksize} --")
+        logger.debug(f"\n--- moltype: {self.moltype}, ksize: {self.ksize} --")
 
         # Get input filename
         input_file = self._make_multisearch_input_file()
-        notify(f"Processing {input_file} ...")
+        logger.debug(f"Processing {input_file} ...")
 
         # Process file in streaming fashion
         result = self._stream_process_file(input_file)
