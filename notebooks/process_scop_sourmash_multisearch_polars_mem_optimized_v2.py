@@ -38,6 +38,7 @@ class MultisearchParser:
         self.check_same_cols = check_same_cols
         self.verbose = verbose
         self.chunk_size = chunk_size
+
         self.tempfile = False
 
         # Expected columns in input parquet
@@ -68,35 +69,35 @@ class MultisearchParser:
         else:
             logging.basicConfig(level=None)
 
-    def _validate_columns(self, df: pl.LazyFrame, stage: str) -> None:
-        """Validate that required columns are present"""
-        cols = df.columns
-        notify(f"Columns at {stage}: {cols}")
-        return df
+    # def _validate_columns(self, df: pl.LazyFrame, stage: str) -> None:
+    #     """Validate that required columns are present"""
+    #     cols = df.columns
+    #     notify(f"Columns at {stage}: {cols}")
+    #     return df
 
     def _process_chunk(self, chunk: pl.LazyFrame) -> pl.LazyFrame:
         """Process a single chunk of data with all transformations"""
-        chunk = self._validate_columns(chunk, "start of chunk processing")
+        # chunk = self._validate_columns(chunk, "start of chunk processing")
 
         notify("Filtering self-matches and low hash matches")
         chunk = chunk.filter(
             (pl.col("query_md5") != pl.col("match_md5"))
             & (pl.col("intersect_hashes") > 1)
         )
-        chunk = self._validate_columns(chunk, "after filtering")
+        # chunk = self._validate_columns(chunk, "after filtering")
 
         notify("Joining with metadata")
         # First join with query metadata
         chunk = chunk.join(
             self.query_metadata, left_on="query_name", right_on="query_name", how="left"
-        )
-        chunk = self._validate_columns(chunk, "after query metadata join")
-
-        # Then join with match metadata
-        chunk = chunk.join(
+        ).join(
             self.match_metadata, left_on="match_name", right_on="match_name", how="left"
         )
-        chunk = self._validate_columns(chunk, "after match metadata join")
+        # chunk = self._validate_columns(chunk, "after query metadata join")
+
+        # Then join with match metadata
+        # chunk = chunk
+        # chunk = self._validate_columns(chunk, "after match metadata join")
 
         notify("Adding same columns checks")
         for col in self.check_same_cols:
@@ -121,11 +122,10 @@ class MultisearchParser:
             "jaccard",
         ]
         for metric in metrics:
-            if metric in chunk.columns:
-                additional_cols.append(pl.col(metric).log10().alias(f"log10_{metric}"))
+            additional_cols.append(pl.col(metric).log10().alias(f"log10_{metric}"))
 
         chunk = chunk.with_columns(additional_cols)
-        chunk = self._validate_columns(chunk, "final")
+        # chunk = self._validate_columns(chunk, "final")
 
         return chunk
 
@@ -146,20 +146,22 @@ class MultisearchParser:
 
         # Create reader with explicit schema
         reader = pl.scan_parquet(filename, schema=schema)
-        notify(f"Available columns in file: {reader.columns}")
+        # notify(f"Available columns in file: {reader.columns}")
 
         # Process in chunks
         temp_files = []
         try:
-            for i, chunk in enumerate(
-                reader.collect(streaming=True, chunk_size=self.chunk_size)
-            ):
+            for i, chunk in iter_slices(reader):
                 notify(f"Processing chunk {i+1}")
-                processed_chunk = self._process_chunk(chunk)
+                processed_chunk = self._process_chunk(pl.DataFrame(chunk))
 
                 # Save chunk to temporary parquet file
                 temp_file = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
-                processed_chunk.collect().write_parquet(temp_file.name)
+                processed_chunk.collect(
+                    no_optimizations=True, predicate_pushdown=False
+                ).write_parquet(
+                    temp_file.name,
+                )
                 temp_files.append(temp_file.name)
                 temp_file.close()
 
