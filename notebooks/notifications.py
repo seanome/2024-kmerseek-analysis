@@ -3,21 +3,20 @@ import logging
 
 # logger = logging.getLogger(__name__)
 
-logging.basicConfig(
-    format="{asctime} - {levelname} - {message}",
+formatter = logging.Formatter(
+    fmt="{asctime} - {levelname} - {message}",
     style="{",
     datefmt="%Y-%m-%d %H:%M",
 )
-
-logger = logging.getLogger()
 # Write to stderr
+logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
-logger.addHandler(handler)
+handler.setFormatter(formatter)
 
 
 def notify(msg):
-    logger.debug(msg)
+    logger.info(msg)
 
 
 def notify_done():
-    logger.debug("Done.")
+    logger.info("Done.")

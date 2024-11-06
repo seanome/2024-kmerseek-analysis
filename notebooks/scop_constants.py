@@ -1,8 +1,14 @@
-from typing import Literal
+from typing import Literal, get_args
 
 import pandas as pd
 
 SCOP_LINEAGES = Literal["family", "superfamily", "fold", "class"]
+
+lineage_cols = get_args(SCOP_LINEAGES)
+query_scop_cols = [f"query_{x}" for x in lineage_cols]
+match_scop_cols = [f"match_{x}" for x in lineage_cols]
+same_scop_cols = [f"same_{x}" for x in lineage_cols]
+n_scop_cols = [f"n_{x}" for x in lineage_cols]
 
 
 FOLDSEEK_SCOP_FIXED = pd.read_csv(

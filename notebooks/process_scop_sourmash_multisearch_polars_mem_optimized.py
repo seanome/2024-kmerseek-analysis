@@ -108,7 +108,7 @@ class MultisearchParser:
         lf = load_filename(filename, self.input_filetype, lazy=True, schema=self.schema)
 
         # Process in chunks and save to temporary parquet files
-        temp_files = []
+        self.temp_files = []
         for i, chunk in enumerate(tqdm(iter_slices(lf, self.chunk_size))):
             logger.info(f"Processing chunk {i+1}")
             processed_chunk = self._process_chunk(pl.LazyFrame(chunk))
@@ -116,20 +116,18 @@ class MultisearchParser:
             # Save chunk to temporary parquet file
             temp_file = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
             processed_chunk.collect().write_parquet(temp_file.name)
-            temp_files.append(temp_file.name)
+            self.temp_files.append(temp_file.name)
             temp_file.close()
 
         # Combine all temporary files into a single LazyFrame
-        combined = pl.scan_parquet(temp_files, low_memory=True)
-
-        # Clean up temporary files
-        for temp_file in temp_files:
-            os.unlink(temp_file)
-
-        if self.tempfile:
-            temp_fp.close()
+        combined = pl.scan_parquet(self.temp_files, low_memory=True)
 
         return combined
+
+    def _clean_up_temp_files(self):
+        # Clean up temporary files
+        for temp_file in self.temp_files:
+            os.unlink(temp_file)
 
     def _make_output_pq(self, filtered: bool):
         basename = f"scope40.multisearch.{self.moltype}.k{self.ksize}"
@@ -148,7 +146,7 @@ class MultisearchParser:
     ):
         pq = self._make_output_pq(filtered)
         notify(f"Saving multisearch file, filtered: {filtered}")
-        save_parquet(df, pq, self.lazy, verbose=self.verbose, row_group_size=10)
+        save_parquet(df, pq, lazy=True, verbose=self.verbose)
         notify_done()
         return pq
 
@@ -165,12 +163,7 @@ class MultisearchParser:
             result,
             filtered=True,
         )
-        # # Show optimization info if needed
-        # result.show_graph(optimized=False)
-        # result.explain(optimized=False)
-        # result.show_graph(optimized=True)
-        # result.explain(optimized=True)
-
+        self._clean_up_temp_files()
         return result
 
     # Other helper methods remain the same
