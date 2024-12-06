@@ -21,8 +21,14 @@ class FastaHeaderHighlighter(RegexHighlighter):
 
 custom_theme = Theme(
     {
-        "overlap": "bold white on blue",
-        "fasta.id": "bold magenta",
+        # Blue for original sequences
+        "overlap_original": "bold white on blue",
+        "seq_original": "blue",
+        # Red for encoded sequences and overlap
+        "overlap_encoded": "bold white on red",
+        "seq_encoded": "red",
+        # Green and white for fasta
+        "fasta.id": "bold green",
         "fasta.description": "white",
     }
 )
@@ -212,15 +218,25 @@ class SigSeq:
 
     def _get_display_sequence(self, encoded=False) -> str:
         """Creates the display sequence with overlap highlighting"""
-        start = self.overlap.index
-        end = start + self.overlap.length
+        start, end = self._get_match_position()
 
         seq = self.seq_encoded if encoded else self.seq
+        seq_style = "seq_encoded" if encoded else "seq_original"
+        overlap_style = "overlap_encoded" if encoded else "overlap_original"
         return (
-            f"{self.pad}{seq[:start]}"
-            f"[overlap]{seq[start:end]}[/overlap]"
-            f"{seq[end:]}"
+            f"[{seq_style}]{self.pad}{seq[:start]}[/{seq_style}]"
+            f"[{overlap_style}]{seq[start:end]}[/{overlap_style}]"
+            f"[{seq_style}]{seq[end:]}[/{seq_style}]"
         )
+
+    def _get_match_position(self):
+        start = self.overlap.index
+        end = start + self.overlap.length
+        return start, end
+
+    def _get_display_match_position(self):
+        start, end = self._get_match_position()
+        return f"[black]Match from {start+1}-{end+1}[/black]"
 
     def display_alignment(self, other):
         """Displays the alignment between two sequences"""
@@ -239,10 +255,13 @@ class SigSeq:
         match_string = match_pad + "|" * self.overlap.length
 
         console = Console(theme=custom_theme, highlighter=FastaHeaderHighlighter())
+        console.print("---")
         console.print(self.sig.name)
+        console.print(self._get_display_match_position())
         console.print(self._get_display_sequence())
         console.print(self._get_display_sequence(encoded=True))
         console.print(match_string)
         console.print(other._get_display_sequence(encoded=True))
         console.print(other._get_display_sequence())
+        console.print(other._get_display_match_position())
         console.print(other.sig.name)

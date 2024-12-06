@@ -90,7 +90,7 @@ class MultisearchSensitivityCalculator:
     def read_multisearch(self):
         notify(f"Reading {self.in_pq} ...")
         self.multisearch = pl.scan_parquet(
-            self.in_pq, schema=self.MULTISEARCH_SCHEMA, parallel="row_groups"
+            self.in_pq, schema=self.MULTISEARCH_SCHEMA, low_memory=True
         )
         notify_done()
 
@@ -154,7 +154,11 @@ class MultisearchSensitivityCalculator:
             tidy = self.tidify_sensitivity(df)
             tidy = tidy.with_columns(pl.lit(sourmash_col).alias("sourmash_score"))
             # Save chunk to temporary parquet file
-            temp_file = NamedTemporaryFile(suffix=".parquet", delete=False)
+            temp_file = NamedTemporaryFile(
+                suffix=f".{sourmash_col}.parquet",
+                delete=False,
+                prefix="/tmp/sensitivity",
+            )
             notify(
                 f"Writing '{sourmash_col}' sensitivity dataframe to {temp_file.name} ..."
             )
@@ -171,7 +175,10 @@ class MultisearchSensitivityCalculator:
         sensitivity = sensitivity.with_columns(pl.lit(self.ksize).alias("ksize"))
 
         notify(f"Writing {self.out_pq} ... ")
-        sensitivity.sink_parquet(self.out_pq, row_group_size=1000)
+        sensitivity.sink_parquet(
+            self.out_pq,
+            row_group_size=1000,
+        )
         notify_done()
 
         # Clean up temporary files
@@ -183,6 +190,7 @@ class MultisearchSensitivityCalculator:
 
 def sensitivity_until_first_false_positive(same_scop_cols, n_scop_cols):
     return [
+        # Subtract 1 to ignore self-matches
         (pl.col(same_col).cast(pl.Float64).arg_min() / (pl.col(n_col) - 1))
         .first()
         .fill_null(0)
