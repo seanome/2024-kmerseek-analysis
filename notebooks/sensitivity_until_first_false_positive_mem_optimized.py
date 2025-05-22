@@ -8,6 +8,17 @@ from scop_constants import same_scop_cols, n_scop_cols
 from notifications import notify, notify_done
 from sourmash_constants import sourmash_score_cols
 
+sourmash_score_cols_to_descending = {
+    "containment": True,
+    "tf_idf_score": True,
+    "containment_adjusted_log10": False,
+    "log10_prob_overlap_adjusted": False,
+    "log10_max_containment": False,
+    "log10_jaccard": False,
+    "log10_tf_idf_score": False,
+    "intersect_hashes": True,
+}
+
 
 class MultisearchSensitivityCalculator:
     TIDY_SCHEMA = pl.Schema(
@@ -41,6 +52,14 @@ class MultisearchSensitivityCalculator:
         "same_superfamily": pl.Boolean,
         "same_fold": pl.Boolean,
         "same_class": pl.Boolean,
+        "containment": pl.Float64,
+        "tf_idf_score": pl.Float64,
+        "containment_adjusted_log10": pl.Float64,
+        "log10_prob_overlap_adjusted": pl.Float64,
+        "log10_max_containment": pl.Float64,
+        "log10_jaccard": pl.Float64,
+        "log10_tf_idf_score": pl.Float64,
+        "intersect_hashes": pl.Float64,
     }
 
     def __init__(
@@ -92,8 +111,9 @@ class MultisearchSensitivityCalculator:
         )
 
     def process_chunk(self, chunk, sourmash_col):
+        descending = sourmash_score_cols_to_descending[sourmash_col]
         df = (
-            chunk.sort(sourmash_col, descending=True)
+            chunk.sort(sourmash_col, descending=descending)
             .group_by("query_scop_id")
             .agg(sensitivity_until_first_false_positive(same_scop_cols, n_scop_cols))
         ).fill_nan(0)
@@ -120,13 +140,17 @@ class MultisearchSensitivityCalculator:
 
             # Process data in chunks
             for chunk_idx in tqdm(range(chunks)):
-                chunk = pl.scan_parquet(
-                    self.in_pq,
-                    schema=self.MULTISEARCH_SCHEMA,
-                    row_count_name="row_count",
-                    row_count_offset=chunk_idx * self.chunk_size,
-                    row_count_length=self.chunk_size,
-                ).collect()
+                chunk = (
+                    pl.scan_parquet(
+                        self.in_pq,
+                        schema=self.MULTISEARCH_SCHEMA,
+                        row_index_name="row_count",
+                        row_index_offset=chunk_idx * self.chunk_size,
+                        n_rows=self.chunk_size,
+                    )
+                    .select(self.MULTISEARCH_SCHEMA.keys())
+                    .collect()
+                )
 
                 if len(chunk) == 0:
                     continue
@@ -139,7 +163,7 @@ class MultisearchSensitivityCalculator:
                     delete=False,
                     prefix="/tmp/sensitivity",
                 )
-                result.collect().write_parquet(temp_file.name)
+                result.write_parquet(temp_file.name)
                 temp_chunk_files.append(temp_file.name)
                 temp_file.close()
 
