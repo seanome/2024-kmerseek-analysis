@@ -1,0 +1,23 @@
+name: 2025-kmerseek-analysis
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - tqdm
+  - polars
+  - numpy
+  - ipykernel
+  - jupyterlab
+  - seaborn
+  - pyarrow
+  - scikit-learn
+  - rich
+  - upsetplot
+  - bioservices
+  - pandas
+  - mygene
+  - requests
+  - r-msigdbr
+  - goatools
+  - jinja2

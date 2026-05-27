@@ -1,0 +1,28 @@
+{
+  "name": "kmerseek-analysis",
+  "dockerFile": "../Dockerfile",
+  "forwardPorts": [8888],
+
+  // Mount workspace so edits persist on your local machine
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/conda/envs/2025-kmerseek-analysis/bin/python",
+        "jupyter.kernelSpecFindPreferredKernel": true
+      }
+    }
+  },
+
+  // Start JupyterLab in background so it's available via localhost:8888
+  "postStartCommand": "conda run -n 2025-kmerseek-analysis jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --notebook-dir=/workspace &"
+}
