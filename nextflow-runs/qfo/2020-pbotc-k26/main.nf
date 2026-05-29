@@ -17,7 +17,7 @@ params.outdir    = "${launchDir}/results"
 // One index per (fasta, ksize) combination.
 // ---------------------------------------------------------------------------
 process INDEX_PROTEOME {
-    container 'kmerseek:0.3.0'
+    container 'kmerseek:0.3.1'
     tag "${fasta.simpleName}_k${ksize}"
 
     input:
@@ -44,7 +44,7 @@ process INDEX_PROTEOME {
 // Containment is asymmetric, so A→B and B→A can differ.
 // ---------------------------------------------------------------------------
 process KMERSEEK_SEARCH {
-    container 'kmerseek:0.3.0'
+    container 'kmerseek:0.3.1'
     tag "${query_id}_vs_${target_id}_k${ksize}"
 
     // storeDir keeps CSVs in a named location instead of the ephemeral work dir.
