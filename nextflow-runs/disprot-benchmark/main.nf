@@ -309,14 +309,22 @@ process foldseekSearch {
     """
     mkdir -p foldseek_tmp
 
-    /Users/olga/anaconda3/envs/foldseek-10.941cd33/bin/foldseek easy-search \\
-        ${query_structs} \\
-        ${target_structs} \\
-        human_vs_${species}.foldseek.tsv \\
-        foldseek_tmp \\
-        --format-output "query,target,bits,evalue" \\
-        --threads ${task.cpus} \\
-        -e ${params.evalue_report}
+    n_query=\$(find ${query_structs} -name '*.cif' | wc -l)
+    n_target=\$(find ${target_structs} -name '*.cif' | wc -l)
+
+    if [ "\$n_query" -eq 0 ] || [ "\$n_target" -eq 0 ]; then
+        echo "WARNING: no CIF files in query (\$n_query) or target (\$n_target) — writing empty results" >&2
+        touch human_vs_${species}.foldseek.tsv
+    else
+        /Users/olga/anaconda3/envs/foldseek-10.941cd33/bin/foldseek easy-search \\
+            ${query_structs} \\
+            ${target_structs} \\
+            human_vs_${species}.foldseek.tsv \\
+            foldseek_tmp \\
+            --format-output "query,target,bits,evalue" \\
+            --threads ${task.cpus} \\
+            -e ${params.evalue_report}
+    fi
 
     gzip -c human_vs_${species}.foldseek.tsv > human_vs_${species}.foldseek.tsv.gz
     """
