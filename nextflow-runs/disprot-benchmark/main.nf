@@ -30,16 +30,24 @@ def home = System.getProperty('user.home')
 
 params.qfo_dir          = "${home}/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143"
 params.pfam_pairs_dir   = "${projectDir}/../../results/pfam_benchmark/pairs"
-params.outdir           = "${home}/data/disprot-benchmark/results"
+params.outdir           = "${home}/data/disprot-benchmark/${params.database}/results"
 params.alphafold_cache  = "${home}/data/alphafold_structures"
 
-// DisProt data — null triggers download from API in first process
+// Which IDR database to use: "disprot" | "mobidb"
+params.database         = "disprot"
+
+// DisProt: null triggers download from API; provide a path to skip download
 params.disprot_json     = null
 
+// MobiDB: null triggers download from API; provide a path to skip download
+// Use --mobidb_source curated (default) or consensus
+params.mobidb_json      = null
+params.mobidb_source    = "curated"
+
 // Kmerseek settings
-params.kmerseek_k_values = [20, 24, 27]
+params.kmerseek_k_values = [26]
 params.kmerseek_scaled   = 1
-params.kmerseek_encoding = "hp"      // hp | dayhoff | protein
+params.kmerseek_encoding = "hp-thomas-dill"
 
 // Foldseek
 params.skip_foldseek     = false
@@ -84,6 +92,28 @@ process downloadDisprot {
     def local_arg = use_local ? "--local ${disprot_json_path}" : ""
     """
     ${projectDir}/bin/parse_disprot.py ${local_arg} disprot_human.tsv
+    """
+}
+
+// ---------------------------------------------------------------------------
+// PROCESS 1b — Download MobiDB JSON and parse human proteins (alternative to DisProt)
+// ---------------------------------------------------------------------------
+
+process downloadMobidb {
+    label 'python'
+    publishDir "${params.outdir}/mobidb", mode: 'copy'
+
+    input:
+    val mobidb_json_path   // null → download; path string → use file
+
+    output:
+    path "mobidb_human.tsv"
+
+    script:
+    def use_local = (mobidb_json_path != null && mobidb_json_path != "null")
+    def local_arg  = use_local ? "--local ${mobidb_json_path}" : ""
+    """
+    ${projectDir}/bin/parse_mobidb.py ${local_arg} --source ${params.mobidb_source} mobidb_human.tsv
     """
 }
 
@@ -167,7 +197,7 @@ process predictDisorder {
 
 process kmerseekIndex {
     tag "${species} k=${k}"
-    container 'kmerseek:0.2.1'
+    container 'kmerseek:0.3.1'
     label 'medium_cpu'
 
     input:
@@ -183,59 +213,49 @@ process kmerseekIndex {
         --output   ${species}_k${k}.db \\
         --ksize    ${k} \\
         --scaled   ${params.kmerseek_scaled} \\
-        --encoding ${params.kmerseek_encoding} \\
-        --threads  ${task.cpus}
+        --encoding ${params.kmerseek_encoding}
     """
 }
 
 process kmerseekSearch {
     tag "human_vs_${species} k=${k}"
-    container 'kmerseek:0.2.1'
+    container 'kmerseek:0.3.1'
     label 'medium_cpu'
-    publishDir "${params.outdir}/kmerseek_k${k}", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
     tuple val(species), val(k), path(target_db), path(query_fasta)
 
     output:
-    tuple val(species), val("kmerseek_k${k}"), path("human_vs_${species}.kmerseek_k${k}.tsv.gz")
+    tuple val(species), val(k), path("human_vs_${species}.kmerseek_k${k}.raw.csv.gz")
 
     script:
-    // kmerseek CSV columns (header row):
-    //   query_name, query_md5, target_name, target_md5, containment,
-    //   n_intersecting_hashes, ..., max_containment, ..., poisson_pvalue, ...
-    // We use max_containment as the similarity score (higher = more similar).
-    // Output: 4-col TSV (query_name, target_name, max_containment, poisson_pvalue)
     """
     kmerseek search \\
         --query    ${query_fasta} \\
         --target   ${target_db} \\
-        --output   raw_results.csv \\
-        --ksize    ${k} \\
-        --scaled   ${params.kmerseek_scaled} \\
         --encoding ${params.kmerseek_encoding} \\
-        --threads  ${task.cpus}
+        | gzip > human_vs_${species}.kmerseek_k${k}.raw.csv.gz
+    """
+}
 
-    # Reformat: pick best max_containment per (query, target) pair,
-    # emit 4-col TSV: query_name <TAB> target_name <TAB> max_containment <TAB> poisson_pvalue
-    python3 - <<'PYEOF'
-import csv, sys, gzip
-from collections import defaultdict
+// Runs outside Docker (no python3 in kmerseek container): deduplicate by
+// best max_containment per (query, target) and emit 4-col TSV.gz.
+process formatKmerseekResults {
+    tag "human_vs_${species} k=${k}"
+    label 'python'
+    publishDir "${params.outdir}/kmerseek_k${k}", mode: 'copy', pattern: '*.tsv.gz'
 
-best = {}   # (query, target) -> (max_containment, poisson_pvalue)
-with open('raw_results.csv') as fh:
-    reader = csv.DictReader(fh)
-    for row in reader:
-        key = (row['query_name'], row['target_name'])
-        mc  = float(row.get('max_containment', 0) or 0)
-        pv  = float(row.get('poisson_pvalue', 1) or 1)
-        if key not in best or mc > best[key][0]:
-            best[key] = (mc, pv)
+    input:
+    tuple val(species), val(k), path(raw_csv_gz)
 
-with gzip.open('human_vs_${species}.kmerseek_k${k}.tsv.gz', 'wt') as out:
-    for (q, t), (mc, pv) in best.items():
-        out.write(f"{q}\\t{t}\\t{mc}\\t{pv}\\n")
-PYEOF
+    output:
+    tuple val(species), val("kmerseek_k${k}"), path("human_vs_${species}.kmerseek_k${k}.tsv.gz")
+
+    script:
+    """
+    ${projectDir}/bin/format_kmerseek_results.py \\
+        ${raw_csv_gz} \\
+        human_vs_${species}.kmerseek_k${k}.tsv.gz
     """
 }
 
@@ -273,7 +293,6 @@ process downloadAlphaFoldStructures {
 
 process foldseekSearch {
     tag "human_vs_${species}"
-    container 'quay.io/biocontainers/foldseek:9.427df8a--pl5321h6a68c12_3'
     label 'medium_cpu'
     publishDir "${params.outdir}/foldseek", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -290,7 +309,7 @@ process foldseekSearch {
     """
     mkdir -p foldseek_tmp
 
-    foldseek easy-search \\
+    /Users/olga/anaconda3/envs/foldseek-10.941cd33/bin/foldseek easy-search \\
         ${query_structs} \\
         ${target_structs} \\
         human_vs_${species}.foldseek.tsv \\
@@ -430,9 +449,13 @@ workflow {
     )
 
     // -----------------------------------------------------------------------
-    // Steps 1-3: Build DisProt benchmark dataset
+    // Steps 1-3: Build IDR benchmark dataset (DisProt or MobiDB)
     // -----------------------------------------------------------------------
-    disprot_raw = downloadDisprot(params.disprot_json ?: "null")
+    if (params.database == "mobidb") {
+        disprot_raw = downloadMobidb(params.mobidb_json ?: "null")
+    } else {
+        disprot_raw = downloadDisprot(params.disprot_json ?: "null")
+    }
 
     disprot_mapping = mapDisprotToPfam(
         disprot_raw,
@@ -468,7 +491,10 @@ workflow {
     // -----------------------------------------------------------------------
     // Step 5: Kmerseek (species × k combinations)
     // -----------------------------------------------------------------------
-    k_ch = Channel.fromList(params.kmerseek_k_values)
+    def k_list = (params.kmerseek_k_values instanceof List)
+        ? params.kmerseek_k_values
+        : params.kmerseek_k_values.toString().tokenize(',').collect { it.trim().toInteger() }
+    k_ch = Channel.fromList(k_list)
 
     // Build one index per species × k
     kmerseek_index_input = species_ch.combine(k_ch)
@@ -480,7 +506,8 @@ workflow {
     kmerseek_search_input = kmerseek_index_ch
         .combine(query_fasta)
         .map { species, k, db, qf -> tuple(species, k, db, qf) }
-    kmerseek_results = kmerseekSearch(kmerseek_search_input)
+    kmerseek_raw_ch = kmerseekSearch(kmerseek_search_input)
+    kmerseek_results = formatKmerseekResults(kmerseek_raw_ch)
 
     // -----------------------------------------------------------------------
     // Step 6: Foldseek (optional)
@@ -522,7 +549,7 @@ workflow {
 
     // Join each (species, tool, tsv) with its ground truth parquet
     eval_input = all_results
-        .join(disprot_gt_ch, by: 0)
+        .combine(disprot_gt_ch, by: 0)
         .combine(disorder_scores)
         .map { species, tool, tsv, gt, disorder ->
             tuple(species, tool, tsv, gt, disorder)

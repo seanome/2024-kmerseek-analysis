@@ -14,7 +14,9 @@ Proteins with no AlphaFold model are listed in missing_structures.txt.
 
 import argparse
 import concurrent.futures
+import socket
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -22,6 +24,19 @@ from pathlib import Path
 
 
 AF_URL = "https://alphafold.ebi.ac.uk/files/AF-{acc}-F1-model_v4.cif"
+
+# Circuit-breaker: set when DNS is confirmed dead so workers abort immediately.
+_dns_dead = threading.Event()
+
+
+def check_connectivity(host: str = "alphafold.ebi.ac.uk", timeout: int = 10) -> bool:
+    """Return True if DNS resolves and TCP port 443 is reachable."""
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.getaddrinfo(host, 443)
+        return True
+    except OSError:
+        return False
 
 
 def read_accessions(fasta_path: str) -> list[str]:
@@ -52,16 +67,28 @@ def download_one(acc: str, outdir: Path, cache: Path) -> tuple[str, bool]:
     dest = outdir / filename
 
     for attempt in range(3):
+        if _dns_dead.is_set():
+            return acc, False   # circuit-breaker: network is gone, abort immediately
+
         try:
             with urllib.request.urlopen(url, timeout=30) as resp:
                 data = resp.read()
             dest.write_bytes(data)
-            # Also save to cache
             cache_file.write_bytes(data)
             return acc, True
         except urllib.error.HTTPError as e:
             if e.code == 404:
-                return acc, False   # No AlphaFold model for this protein
+                return acc, False   # no AlphaFold model for this protein
+            time.sleep(2 ** attempt)
+        except OSError as e:
+            # DNS resolution failure (errno 8 / EAI_NONAME) — network is dead.
+            # Signal all other workers to stop retrying immediately.
+            if "nodename nor servname" in str(e) or "Name or service not known" in str(e) or isinstance(e, socket.gaierror):
+                print(f"ERROR: DNS resolution failed ({e}). Aborting all downloads.",
+                      file=sys.stderr)
+                _dns_dead.set()
+                return acc, False
+            print(f"WARNING: {acc} attempt {attempt+1} failed: {e}", file=sys.stderr)
             time.sleep(2 ** attempt)
         except Exception as e:
             print(f"WARNING: {acc} attempt {attempt+1} failed: {e}", file=sys.stderr)
@@ -85,6 +112,17 @@ def main():
 
     accs = read_accessions(args.fasta)
     print(f"Downloading AlphaFold structures for {len(accs)} proteins", file=sys.stderr)
+
+    # Fast-fail if network is unreachable — avoids burning hours retrying.
+    if not check_connectivity():
+        print("ERROR: Cannot reach alphafold.ebi.ac.uk (DNS/network failure). "
+              "Writing all proteins to missing_structures.txt and exiting.",
+              file=sys.stderr)
+        missing_file = outdir / "missing_structures.txt"
+        with open(missing_file, "w") as fh:
+            for acc in accs:
+                fh.write(acc + "\n")
+        sys.exit(1)
 
     missing = []
     n_ok = 0

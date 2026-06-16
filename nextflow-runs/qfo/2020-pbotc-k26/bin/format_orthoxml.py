@@ -5,36 +5,32 @@ format_orthoxml.py
 Converts kmerseek pairwise search CSVs (QfO all-vs-all) into OrthoXML v0.3.
 
 Filtering:
-  1. Poisson p-value < --pvalue (computed from intersect_hashes + containment
-     when poisson_pvalue column is absent).
-  2. Jaccard >= --min-jaccard (default 0.01).
+  Bonferroni-corrected Poisson p-value < --pvalue, where n_tests = rows in
+  that CSV file.  No Jaccard floor.
 
 Ortholog-group formation:
-  Reciprocal Best Hit (RBH) per species pair.  For each CSV (species A vs B):
-    - best_hit_of[a] = argmax_{b} jaccard for each query protein a
-    - best_query_for[b] = argmax_{a} jaccard for each target protein b
-    - RBH pairs: (a, b) where best_hit_of[a]==b AND best_query_for[b]==a
-  RBH pairs across all species pairs are then joined via union-find to form
+  Reciprocal Best Hit (RBH) per species pair (best = highest Jaccard).
+  RBH pairs across all species pairs are joined via union-find into
   multi-species ortholog groups.
 
-CSV filenames must follow the pattern produced by the Nextflow pipeline:
-    {PROTEOME1}_{TAXID1}_vs_{PROTEOME2}_{TAXID2}.csv[.gz]
+CSV filenames must follow the pattern:
+    {PROTEOME1}_{TAXID1}_vs_{PROTEOME2}_{TAXID2}[.kN].csv[.gz]
 
 Usage
 -----
     format_orthoxml.py --results /path/to/csvs/ --output out.orthoxml \\
-                       --pvalue 0.05 --min-jaccard 0.01 \\
-                       --ksize 24 --moltype hp --scaled 1
+                       --pvalue 0.05 --ksize 26 --moltype hp_pbotc_1st_ed \\
+                       --scaled 1 [--workers N]
 """
 
 import argparse
-import csv
-import gzip
-import math
 import os
 import sys
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from xml.etree.ElementTree import Element, SubElement, ElementTree, indent
+
+import polars as pl
 
 
 # ---------------------------------------------------------------------------
@@ -150,159 +146,106 @@ class UnionFind:
 
 
 # ---------------------------------------------------------------------------
-# Poisson p-value (computed from containment columns when poisson_pvalue absent)
+# Helpers
 # ---------------------------------------------------------------------------
-_MAX_HASH = 2 ** 64
 PVAL_COLUMNS = ("poisson_pvalue", "prob_overlap", "prob_overlap_adjusted")
 
 
-def compute_poisson_pvalue(intersect_hashes: float, containment: float,
-                           containment_target: float, scaled: int = 1) -> float:
-    """P(X >= intersect_hashes | Poisson(lambda)) where lambda = n_q * n_t * scaled / 2^64."""
-    n = int(round(intersect_hashes))
-    if n <= 0 or containment <= 0 or containment_target <= 0:
-        return 1.0
-    query_hashes  = intersect_hashes / containment
-    target_hashes = intersect_hashes / containment_target
-    lam = query_hashes * target_hashes * scaled / _MAX_HASH
-    if lam <= 0:
-        return 0.0
-
-    def log_poisson_cdf(k: int, lam: float) -> float:
-        log_terms = [-lam]
-        log_term  = -lam
-        for i in range(1, k + 1):
-            log_term += math.log(lam) - math.log(i)
-            log_terms.append(log_term)
-        max_lt  = max(log_terms)
-        log_sum = max_lt + math.log(sum(math.exp(lt - max_lt) for lt in log_terms))
-        return log_sum
-
-    try:
-        return max(0.0, 1.0 - math.exp(log_poisson_cdf(n - 1, lam)))
-    except Exception:
-        return 1.0
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-def parse_accession(seq_name: str) -> str:
-    """Extract UniProtKB accession from sp|ACC|ENTRY or plain accession."""
-    name  = seq_name.strip().split()[0]
-    parts = name.split("|")
-    return parts[1] if len(parts) >= 2 else name
+def _acc_expr(col: str) -> pl.Expr:
+    """Vectorized: 'sp|ACC|ENTRY description' → 'ACC', or plain accession."""
+    first_tok = pl.col(col).str.split_exact(" ", 1).struct.field("field_0")
+    return (
+        pl.when(first_tok.str.contains("|", literal=True))
+        .then(first_tok.str.split_exact("|", 2).struct.field("field_1"))
+        .otherwise(first_tok)
+    )
 
 
 def parse_filename(csv_path: str):
     """Return (query_proteome, query_taxid, target_proteome, target_taxid)."""
-    stem = os.path.splitext(os.path.basename(csv_path))[0]
-    stem = os.path.splitext(stem)[0]
-    left, right = stem.split("_vs_")
-    qproteome, qtaxid = left.rsplit("_", 1)
-    tproteome, ttaxid = right.rsplit("_", 1)
-    return qproteome, int(qtaxid), tproteome, int(ttaxid)
-
-
-def find_pval_column(header: list[str]) -> str | None:
-    for col in PVAL_COLUMNS:
-        if col in header:
-            return col
-    return None
-
-
-def find_name_column(header: list[str], role: str) -> str | None:
-    candidates = ["match_name", "target_name"] if role == "target" else ["query_name"]
-    for col in candidates:
-        if col in header:
-            return col
-    return None
-
-
-# ---------------------------------------------------------------------------
-# Per-file RBH extraction
-# ---------------------------------------------------------------------------
-def extract_rbh_pairs(csv_path: str, qtaxid: int, ttaxid: int,
-                      qproteome: str, tproteome: str,
-                      pvalue: float, min_jaccard: float,
-                      scaled: int) -> list[tuple[str, str]]:
-    """Return list of (query_acc, target_acc) reciprocal best-hit pairs.
-
-    Best hit is defined by highest Jaccard score among hits passing both
-    the p-value and min-jaccard filters.
-    """
-    opener = gzip.open if csv_path.endswith(".gz") else open
-
-    # best_of_query[qacc]  = (best_jaccard, tacc)
-    # best_of_target[tacc] = (best_jaccard, qacc)
-    best_of_query:  dict[str, tuple[float, str]] = {}
-    best_of_target: dict[str, tuple[float, str]] = {}
-
-    with opener(csv_path, "rt", newline="") as fh:
-        reader = csv.DictReader(fh)
-        if reader.fieldnames is None:
-            return []
-
-        pval_col  = find_pval_column(reader.fieldnames)
-        qname_col = find_name_column(reader.fieldnames, "query")
-        tname_col = (find_name_column(reader.fieldnames, "target")
-                     or find_name_column(reader.fieldnames, "match"))
-        compute_pval = pval_col is None
-
-        if compute_pval:
-            need = ("intersect_hashes", "containment", "containment_target_in_query")
-            if not all(c in reader.fieldnames for c in need):
-                print(f"WARNING: {csv_path} missing p-value and containment columns; "
-                      f"skipping.", file=sys.stderr)
-                return []
-
-        if qname_col is None or tname_col is None:
-            print(f"WARNING: {csv_path} missing query/match name columns; "
-                  f"skipping.", file=sys.stderr)
-            return []
-
-        for row in reader:
+    stem = os.path.basename(csv_path)
+    while "." in stem:
+        stem, _ = os.path.splitext(stem)
+        if "_vs_" in stem:
             try:
-                jaccard = float(row["jaccard"])
-                if jaccard < min_jaccard:
-                    continue
-
-                if compute_pval:
-                    pval = compute_poisson_pvalue(
-                        float(row["intersect_hashes"]),
-                        float(row["containment"]),
-                        float(row["containment_target_in_query"]),
-                        scaled=scaled,
-                    )
-                else:
-                    pval = float(row[pval_col])
-
-                if pval >= pvalue:
-                    continue
-
-            except (ValueError, KeyError):
+                left, right = stem.split("_vs_")
+                qproteome, qtaxid = left.rsplit("_", 1)
+                tproteome, ttaxid = right.rsplit("_", 1)
+                return qproteome, int(qtaxid), tproteome, int(ttaxid)
+            except (ValueError, TypeError):
                 continue
+    raise ValueError(f"Cannot parse species pair from: {os.path.basename(csv_path)}")
 
-            qacc = parse_accession(row[qname_col])
-            tacc = parse_accession(row[tname_col])
-            if qacc == tacc:
-                continue
 
-            prev_q = best_of_query.get(qacc)
-            if prev_q is None or jaccard > prev_q[0]:
-                best_of_query[qacc] = (jaccard, tacc)
+# ---------------------------------------------------------------------------
+# Per-file worker (runs in a subprocess)
+# ---------------------------------------------------------------------------
+def _process_file(task: tuple) -> list[tuple]:
+    """
+    Read one CSV, apply per-file Bonferroni filter on poisson_pvalue, compute
+    RBH pairs using vectorised Polars operations.
 
-            prev_t = best_of_target.get(tacc)
-            if prev_t is None or jaccard > prev_t[0]:
-                best_of_target[tacc] = (jaccard, qacc)
+    Returns list of (qtaxid, qproteome, ttaxid, tproteome, qacc, tacc).
+    """
+    csv_path, qtaxid, qproteome, ttaxid, tproteome, pvalue = task
 
-    rbh = []
-    for qacc, (_, best_tacc) in best_of_query.items():
-        best_back = best_of_target.get(best_tacc)
-        if best_back is not None and best_back[1] == qacc:
-            rbh.append((qacc, best_tacc))
+    try:
+        df = pl.read_csv(csv_path, infer_schema_length=200)
+    except Exception as e:
+        print(f"WARNING: cannot read {csv_path}: {e}", file=sys.stderr)
+        return []
 
-    return rbh
+    if len(df) == 0:
+        return []
+
+    n_tests = len(df)
+    pvc = next((c for c in PVAL_COLUMNS if c in df.columns), None)
+    qcol = "query_name" if "query_name" in df.columns else None
+    tcol = next((c for c in ("target_name", "match_name") if c in df.columns), None)
+
+    if pvc is None or qcol is None or tcol is None:
+        print(f"WARNING: {csv_path} missing required columns; skipping.", file=sys.stderr)
+        return []
+
+    # Ensure numeric types (schema inference may read as Utf8 in edge cases)
+    for col in ("jaccard", pvc):
+        if df[col].dtype == pl.Utf8:
+            df = df.with_columns(pl.col(col).cast(pl.Float64))
+
+    # Parse accessions, apply Bonferroni filter, drop unneeded columns
+    df = (df
+          .with_columns([
+              _acc_expr(qcol).alias("qacc"),
+              _acc_expr(tcol).alias("tacc"),
+          ])
+          .filter(
+              (pl.col(pvc) * n_tests < pvalue) &
+              (pl.col("qacc") != pl.col("tacc"))
+          )
+          .select(["qacc", "tacc", "jaccard"]))
+
+    if len(df) == 0:
+        return []
+
+    # Best hit per query protein = target with highest Jaccard
+    best_q = (df.group_by("qacc")
+               .agg(pl.col("tacc").sort_by("jaccard", descending=True).first()
+                    .alias("best_tacc")))
+
+    # Best query per target protein = query with highest Jaccard
+    best_t = (df.group_by("tacc")
+               .agg(pl.col("qacc").sort_by("jaccard", descending=True).first()
+                    .alias("best_qacc")))
+
+    # RBH = mutual best hits
+    rbh = (best_q
+           .join(best_t, left_on="best_tacc", right_on="tacc", how="inner")
+           .filter(pl.col("best_qacc") == pl.col("qacc"))
+           .select(["qacc", "best_tacc"])
+           .rows())
+
+    return [(qtaxid, qproteome, ttaxid, tproteome, qacc, tacc)
+            for qacc, tacc in rbh]
 
 
 # ---------------------------------------------------------------------------
@@ -310,53 +253,62 @@ def extract_rbh_pairs(csv_path: str, qtaxid: int, ttaxid: int,
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--results",     required=True)
-    parser.add_argument("--output",      required=True)
-    parser.add_argument("--pvalue",      type=float, default=0.05)
-    parser.add_argument("--min-jaccard", type=float, default=0.01,
-                        dest="min_jaccard")
-    parser.add_argument("--ksize",       type=int,   default=24)
-    parser.add_argument("--moltype",     default="hp")
-    parser.add_argument("--scaled",      type=int,   default=1)
+    parser.add_argument("--results",  required=True)
+    parser.add_argument("--output",   required=True)
+    parser.add_argument("--pvalue",   type=float, default=0.05)
+    parser.add_argument("--ksize",    type=int,   default=24)
+    parser.add_argument("--moltype",  default="hp")
+    parser.add_argument("--scaled",   type=int,   default=1)
+    parser.add_argument("--workers",  type=int,   default=min(8, os.cpu_count() or 4))
     args = parser.parse_args()
 
-    csv_files = []
-    for dirpath, _, filenames in os.walk(args.results):
-        for f in filenames:
-            if f.endswith(".csv.gz") or (f.endswith(".csv") and not f.endswith(".csv.gz")):
-                csv_files.append(os.path.join(dirpath, f))
+    csv_files = [
+        os.path.join(dp, f)
+        for dp, _, fns in os.walk(args.results)
+        for f in fns
+        if f.endswith(".csv.gz") or (f.endswith(".csv") and not f.endswith(".csv.gz"))
+    ]
 
     if not csv_files:
         print("WARNING: no CSV files found in results directory; writing empty OrthoXML.",
               file=sys.stderr)
 
+    tasks = []
+    for p in sorted(csv_files):
+        try:
+            qprot, qtax, tprot, ttax = parse_filename(p)
+            tasks.append((p, qtax, qprot, ttax, tprot, args.pvalue))
+        except Exception as e:
+            print(f"WARNING: skipping {p}: {e}", file=sys.stderr)
+
+    print(f"Processing {len(tasks)} CSV files with {args.workers} workers ...",
+          file=sys.stderr)
+
     gene_info: dict[str, tuple[int, str]] = {}
     uf = UnionFind()
-    n_rbh   = 0
-    n_files = 0
+    n_rbh = 0
+    n_done = 0
 
-    for csv_path in sorted(csv_files):
-        try:
-            qproteome, qtaxid, tproteome, ttaxid = parse_filename(csv_path)
-        except Exception as e:
-            print(f"WARNING: skipping {csv_path}: {e}", file=sys.stderr)
-            continue
+    with ProcessPoolExecutor(max_workers=args.workers) as pool:
+        futures = {pool.submit(_process_file, t): t for t in tasks}
+        for fut in as_completed(futures):
+            n_done += 1
+            if n_done % 500 == 0:
+                print(f"  {n_done}/{len(tasks)} files done, {n_rbh} RBH pairs so far ...",
+                      file=sys.stderr)
+            try:
+                pairs = fut.result()
+            except Exception as e:
+                print(f"WARNING: worker error: {e}", file=sys.stderr)
+                continue
+            for qtaxid, qproteome, ttaxid, tproteome, qacc, tacc in pairs:
+                gene_info.setdefault(qacc, (qtaxid, qproteome))
+                gene_info.setdefault(tacc, (ttaxid, tproteome))
+                uf.union(qacc, tacc)
+                n_rbh += 1
 
-        n_files += 1
-        pairs = extract_rbh_pairs(
-            csv_path, qtaxid, ttaxid, qproteome, tproteome,
-            pvalue=args.pvalue, min_jaccard=args.min_jaccard, scaled=args.scaled,
-        )
-
-        for qacc, tacc in pairs:
-            gene_info.setdefault(qacc, (qtaxid, qproteome))
-            gene_info.setdefault(tacc, (ttaxid, tproteome))
-            uf.union(qacc, tacc)
-            n_rbh += 1
-
-    print(f"Read {n_files} CSV files, found {n_rbh} RBH pairs "
-          f"(p<{args.pvalue}, jaccard>={args.min_jaccard}) "
-          f"spanning {len(gene_info)} proteins.",
+    print(f"Read {len(tasks)} CSV files, found {n_rbh} RBH pairs "
+          f"(Bonferroni p<{args.pvalue}) spanning {len(gene_info)} proteins.",
           file=sys.stderr)
 
     components: dict[str, list[str]] = defaultdict(list)
@@ -375,19 +327,17 @@ def main():
     # Build OrthoXML
     # -----------------------------------------------------------------------
     genes_in_groups: set[str] = {a for grp in ortholog_groups for a in grp}
-    gene_id: dict[str, int]   = {
+    gene_id: dict[str, int] = {
         acc: i + 1 for i, acc in enumerate(sorted(genes_in_groups))
     }
-    active_taxids: set[int] = {gene_info[a][0] for a in genes_in_groups}
 
-    XMLNS = "http://orthoXML.org/2011/"
-    root  = Element("orthoXML")
-    root.set("xmlns",         XMLNS)
+    root = Element("orthoXML")
+    root.set("xmlns",         "http://orthoXML.org/2011/")
     root.set("version",       "0.3")
     root.set("origin",        "kmerseek")
     root.set("originVersion",
              f"k{args.ksize}_{args.moltype}_scaled{args.scaled}"
-             f"_p{args.pvalue}_j{args.min_jaccard}_rbh")
+             f"_bonferroni_p{args.pvalue}_rbh")
 
     proteome_genes: dict[tuple[int, str], list[str]] = defaultdict(list)
     for acc in sorted(genes_in_groups):
@@ -397,8 +347,8 @@ def main():
     for (taxid, proteome_id) in sorted(proteome_genes):
         species_name, _ = QFO_SPECIES.get(taxid, (f"taxid_{taxid}", proteome_id))
         sp_el = SubElement(root, "species")
-        sp_el.set("name",       species_name)
-        sp_el.set("NCBITaxId",  str(taxid))
+        sp_el.set("name",      species_name)
+        sp_el.set("NCBITaxId", str(taxid))
         db_el = SubElement(sp_el, "database")
         db_el.set("name",    proteome_id)
         db_el.set("version", "QfO-2020")

@@ -101,8 +101,8 @@ def main():
             print(f"WARNING: missing {gt_file}", file=sys.stderr)
             continue
         gt = pl.read_parquet(gt_file, columns=["human_accession", "species_accession", "label"])
-        # Only positive pairs (label == 1 means shared Pfam domain)
-        positives = gt.filter(pl.col("label") == 1)
+        # Only positive pairs (label is Boolean True = shared Pfam domain)
+        positives = gt.filter(pl.col("label").cast(pl.Boolean))
         for row in positives.iter_rows(named=True):
             acc = row["human_accession"]
             if acc not in species_accessions:

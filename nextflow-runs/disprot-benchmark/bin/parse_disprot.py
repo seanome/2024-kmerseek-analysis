@@ -55,14 +55,21 @@ def fetch_disprot_json(url: str) -> dict:
 
 def parse_entry(entry: dict) -> dict | None:
     """Return parsed record for a human DisProt entry, or None to skip."""
-    # Taxon check — field varies by release version
-    taxon = str(entry.get("ncbi_taxon_id", entry.get("taxonomy", {}).get("taxon_id", "")))
+    # ncbi_taxon_id is a direct integer field in the current API
+    taxon = str(entry.get("ncbi_taxon_id", ""))
     if taxon != HUMAN_TAXON:
         return None
 
     disprot_id  = entry.get("disprot_id", "")
     uniprot_acc = entry.get("acc", entry.get("uniprot_acc", ""))
-    gene_name   = entry.get("gene_name", entry.get("gene", ""))
+
+    # gene name lives in genes[0].name.value in the current API
+    genes = entry.get("genes", [])
+    if genes and isinstance(genes[0], dict):
+        gene_name = genes[0].get("name", {}).get("value", "")
+    else:
+        gene_name = entry.get("gene_name", entry.get("gene", ""))
+
     protein_len = int(entry.get("length", 0))
 
     # Collect disordered regions — field name differs across release formats

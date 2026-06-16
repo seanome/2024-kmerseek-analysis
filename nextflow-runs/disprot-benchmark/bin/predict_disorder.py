@@ -86,18 +86,18 @@ def main():
 
             if has_metapredict:
                 try:
-                    scores = meta.predict_disorder_domains(seq).disorder
+                    scores = list(meta.predict_disorder_domains(seq).disorder)
                 except Exception as e:
                     print(f"WARNING: metapredict failed for {acc}: {e}", file=sys.stderr)
                     scores = [0.5] * len(seq)
             else:
                 scores = [0.5] * len(seq)
 
-            if not scores:
+            if len(scores) == 0:
                 scores = [0.5]
 
-            mean_d    = sum(scores) / len(scores)
-            frac_d    = sum(1 for s in scores if s > 0.5) / len(scores)
+            mean_d = sum(scores) / len(scores)
+            frac_d = sum(1 for s in scores if s > 0.5) / len(scores)
 
             # Max mean disorder in any 30-residue sliding window
             w = 30

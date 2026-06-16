@@ -123,7 +123,10 @@ def main():
             pl.lit(0.0).alias("human_max_region_disorder"),
         ])
 
-        n_pos = int((disp_gt["label"] == 1).sum()) if "label" in disp_gt.columns else 0
+        if "label" in disp_gt.columns:
+            n_pos = int(disp_gt["label"].cast(pl.Boolean).sum())
+        else:
+            n_pos = 0
         n_neg = len(disp_gt) - n_pos
         species_stats.append((species, len(disp_gt), n_pos, n_neg))
 
