@@ -9,7 +9,7 @@ params.outdir         = "${System.getProperty('user.home')}/data/qfo-pfam-benchm
 params.encoding       = 'hp_thomas_dill'
 params.encoding_slug  = 'hp_thomas_dill'   // as written in output paths by kmerseek
 params.ksize          = 26
-params.scaled         = 5
+params.scaled         = 1
 params.pvalues        = [0.05, 1e-5]       // raw uncorrected thresholds; Bonferroni applied in notebook
 
 // ---------------------------------------------------------------------------
