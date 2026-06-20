@@ -80,7 +80,7 @@ def main(metrics_dir: str, out_metrics: str, out_pr_curves: str, figures_dir: st
     metrics.write_parquet(out_metrics)
 
     if pr_curve_files:
-        pr_curves = pl.concat([pl.read_parquet(f) for f in pr_curve_files])
+        pr_curves = pl.concat([pl.read_parquet(f) for f in pr_curve_files], how="diagonal_relaxed")
         pr_curves = pr_curves.with_columns(
             pl.col("species").replace(MYA).cast(pl.Int32).alias("mya")
         )
