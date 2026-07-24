@@ -2,7 +2,12 @@
 """Evaluate kmerseek ortholog detection accuracy for one k-size.
 
 Usage:
-    evaluate_orthologs.py <ksize> <results_zst> <ortholog_pairs>
+    evaluate_orthologs.py <ksize> <results_zst> <ortholog_pairs> [n_total] [encoding] [source_max_pvalue]
+
+n_total/source_max_pvalue: results_zst is expected to already be filtered at the
+source (kmerseek search --min-shared-kmers/--max-pvalue), so n_total (all query x
+target comparisons, for the MHT denominator) must be supplied rather than counted
+from the file, and source_max_pvalue documents which threshold was used.
 
 Memory strategy to handle very large result files (k=18 = 23 GB compressed):
   - sink_csv for full eval TSV: streaming write, near-zero RAM
@@ -375,6 +380,9 @@ def main() -> None:
     global ENCODING
     if len(sys.argv) > 5:
         ENCODING = sys.argv[5]
+    # argv[6] is the --max-pvalue kmerseek search itself was run with (native filter,
+    # not a bash post-hoc prefilter) — only used to print an accurate note in the summary.
+    source_max_pvalue = float(sys.argv[6]) if len(sys.argv) > 6 else 0.001
 
     # ── Handle empty search results (k-mer space saturation) ──────────────────
     # Two cases: 0-byte file, or non-zero zst that decompresses to an empty CSV
@@ -465,16 +473,16 @@ def main() -> None:
     summary_json = {
         'ksize': ksize, 'encoding': ENCODING,
         'total_hits': n_total, 'n_ortholog': n_orth, 'n_non_ortholog': n_non,
-        'prefiltered_pvalue': prefiltered,
+        'prefiltered_pvalue': prefiltered, 'source_max_pvalue': source_max_pvalue,
         'mht': mht_summary, 'metric_stats': metric_stats,
     }
 
     with open(f'ortholog_evaluation.{ENCODING}.k{ksize}.summary.txt', 'w') as f:
         f.write(f'K-size: {ksize}\nEncoding: {ENCODING}\n')
         if prefiltered:
-            f.write('Note: results pre-filtered to poisson_pvalue < 0.001 to avoid OOM.\n'
-                    '      n_total is from full file; n_ortholog/recall are among p<0.001 hits.\n'
-                    '      BH cutoff safe: with n~364M, BH threshold <<1e-3 for any realistic M.\n')
+            f.write(f'Note: results filtered by kmerseek search itself (--max-pvalue {source_max_pvalue}).\n'
+                    f'      n_total is total query x target comparisons; n_ortholog/recall are among p<{source_max_pvalue} hits.\n'
+                    f'      BH-safe as long as source_max_pvalue <= the alpha used below (0.05).\n')
         f.write(f'\nTotal tests: {n_total:,}  |  Sig. orthologs: {n_orth:,}  |  Other pairs: {n_non:,}\n\n')
 
         f.write('=== MHT Rejections (alpha=0.05) ===\n')

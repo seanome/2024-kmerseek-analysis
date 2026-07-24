@@ -1,26 +1,43 @@
 #!/usr/bin/env nextflow
 
 /*
- * Nextflow pipeline to evaluate kmerseek ortholog detection using human-mouse orthologs
+ * Nextflow pipeline to evaluate kmerseek 0.4.0 ortholog detection: all HP alphabet
+ * encodings x k=15-19 against mouse GENCODE proteins.
  *
- * Runs all HP alphabet encodings × k=20-30 against mouse GENCODE proteins.
- * (k=15-19 HP is covered by the sibling kmerseek 0.4.0 pipeline instead — see
- * ../human-mouse-gencode-orthologs-hp-v040/.)
+ * Sibling of ../human-mouse-gencode-orthologs/kmerseek_human_mouse_orthologs.nf, kept
+ * fully separate (own outdir, own workDir, own storeDir indices) so it can never
+ * invalidate that pipeline's Nextflow resume cache. Two differences from that pipeline:
+ *
+ *   1. Uses the local kmerseek 0.4.0 binary (params.kmerseek_bin) directly instead of
+ *      the kmerseek:0.3.1 Docker container.
+ *   2. kmerseek 0.4.0's `search` natively drops matches below --min-shared-kmers /
+ *      above --max-pvalue, so results are pre-filtered at the source. There is no bash
+ *      awk prefilter step here (unlike the sibling pipeline) — n_total (the MHT
+ *      denominator) is instead recovered from the query/target counts each process
+ *      already logs to stderr.
  *
  * Usage:
- *   nextflow run kmerseek_human_mouse_orthologs.nf
+ *   nextflow run kmerseek_human_mouse_orthologs_hp_v040.nf
  */
 
-// FASTA files for human and mouse protein sequences
 params.human_fasta = "${System.getProperty('user.home')}/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"
 params.mouse_fasta = "${System.getProperty('user.home')}/data/gencode/mouse/m38/gencode.vM38.pc_translations.canonical.fa"
-params.outdir = "${System.getProperty('user.home')}/data/gencode/results-human-mouse-orthologs"
+params.outdir = "${System.getProperty('user.home')}/data/gencode/results-human-mouse-orthologs-hp-v040"
 
-// Ortholog mapping URL
 params.ortholog_url = "https://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt"
 
-// Minimum containment threshold — 0.0 keeps all hits (large CSVs; polars handles them)
+// Minimum containment threshold — 0.0 keeps all hits; the real filtering now happens
+// natively in kmerseek search via min_shared_kmers/max_pvalue below.
 params.threshold = 0.0
+
+// kmerseek 0.4.0 native search filters (see olgabot/min-shared-kmers-filter branch of
+// the kmerseek repo). Defaults match the kmerseek CLI's own defaults.
+params.min_shared_kmers = 2
+params.max_pvalue = 0.05
+
+// Absolute path to the locally-built kmerseek 0.4.0 release binary — no Docker container
+// for this pipeline (that container is still pinned to kmerseek:0.3.1).
+params.kmerseek_bin = "/Users/olga/code/kmerseek-min-shared-kmers-filter/target/release/kmerseek"
 
 process downloadOrthologMapping {
     publishDir params.outdir, mode: 'copy'
@@ -62,14 +79,10 @@ process parseOrthologMapping {
             symbol = row['Symbol']
 
             if organism == 'human':
-                # Human gene symbols are uppercase in GENCODE
                 ortholog_groups[db_class_key]['human'].add(symbol.upper())
             elif organism == 'mouse, laboratory':
-                # Mouse gene symbols are capitalized (first letter uppercase) in GENCODE
-                # But the JAX file already has proper capitalization
                 ortholog_groups[db_class_key]['mouse'].add(symbol)
 
-    # Create pairs: for each human gene, list all mouse orthologs
     human_to_mouse = defaultdict(set)
     mouse_to_human = defaultdict(set)
 
@@ -79,21 +92,18 @@ process parseOrthologMapping {
                 human_to_mouse[human_gene].add(mouse_gene)
                 mouse_to_human[mouse_gene].add(human_gene)
 
-    # Write pairs file (human_gene, mouse_gene)
     with open('ortholog_pairs.tsv', 'w') as f:
         f.write('human_gene\\tmouse_gene\\n')
         for human_gene, mouse_genes in sorted(human_to_mouse.items()):
             for mouse_gene in sorted(mouse_genes):
                 f.write(f'{human_gene}\\t{mouse_gene}\\n')
 
-    # Write stats
     with open('ortholog_stats.txt', 'w') as f:
         f.write(f'Number of ortholog groups: {len(ortholog_groups)}\\n')
         f.write(f'Number of human genes with mouse orthologs: {len(human_to_mouse)}\\n')
         f.write(f'Number of mouse genes with human orthologs: {len(mouse_to_human)}\\n')
         f.write(f'Total human-mouse pairs: {sum(len(v) for v in human_to_mouse.values())}\\n')
 
-        # Check for one-to-many and many-to-many relationships
         one_to_one = sum(1 for v in human_to_mouse.values() if len(v) == 1)
         one_to_many = sum(1 for v in human_to_mouse.values() if len(v) > 1)
         f.write(f'Human genes with exactly one mouse ortholog: {one_to_one}\\n')
@@ -103,8 +113,6 @@ process parseOrthologMapping {
 
 process indexDatabase {
     tag "${species}_${encoding}_k${ksize}"
-    container 'kmerseek:0.3.1'
-    containerOptions '--entrypoint ""'
     storeDir "${params.outdir}/indices"
     publishDir params.outdir, mode: 'copy', pattern: '*.index.log'
 
@@ -112,25 +120,23 @@ process indexDatabase {
     tuple val(species), path(fasta), val(encoding), val(ksize)
 
     output:
-    tuple val(species), val(encoding), val(ksize), path("${fasta}.${encoding.replace('-', '_')}.k${ksize}.scaled1.kmerseek.rocksdb", type: 'dir')
-    path "${fasta}.${encoding.replace('-', '_')}.k${ksize}.scaled1.kmerseek.index.log"
+    tuple val(species), val(encoding), val(ksize),
+        path("${fasta}.${encoding.replace('-', '_')}.k${ksize}.scaled1.kmerseek.rocksdb", type: 'dir'),
+        path("${fasta}.${encoding.replace('-', '_')}.k${ksize}.scaled1.kmerseek.index.log")
 
     script:
     // kmerseek normalises the encoding to underscores when auto-naming the database
     // (e.g. hp-thomas-dill -> hp_thomas_dill). BOTH declared outputs (rocksdb dir AND
-    // log) must use that normalised name, otherwise storeDir's "all outputs present"
-    // check never passes: the dir alone existing isn't enough, and every run re-executes
-    // the task, rebuilds an identical rocksdb dir, then crashes trying to `mv` it onto
-    // the already-populated storeDir target ("Directory not empty").
+    // log) must use that normalised name — see the sibling pipeline for why.
     def enc_fname = encoding.replace('-', '_')
     def log_file = "${fasta}.${enc_fname}.k${ksize}.scaled1.kmerseek.index.log"
     def db_dir   = "${fasta}.${enc_fname}.k${ksize}.scaled1.kmerseek.rocksdb"
     """
-    echo "=== Indexing: ${species} ${encoding} k=${ksize} ===" | tee ${log_file}
+    echo "=== Indexing (kmerseek 0.4.0 local): ${species} ${encoding} k=${ksize} ===" | tee ${log_file}
     echo "Start time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
     echo "" | tee -a ${log_file}
 
-    kmerseek index \\
+    ${params.kmerseek_bin} index \\
         --encoding ${encoding} \\
         --ksize ${ksize} \\
         --scaled 1 \\
@@ -147,31 +153,34 @@ process indexDatabase {
 
 process searchHumanVsMouse {
     tag "${encoding}_k${ksize}"
-    container 'kmerseek:0.3.1'
-    containerOptions '--entrypoint ""'
     storeDir params.outdir
     publishDir params.outdir, mode: 'copy', pattern: '*.search.log'
 
     input:
-    tuple val(encoding), val(ksize), path(human_fasta), path(mouse_index)
+    tuple val(encoding), val(ksize), path(human_fasta), path(mouse_index), path(index_log)
 
     output:
-    tuple val(encoding), val(ksize), path("human_vs_mouse.${encoding}.k${ksize}.results.csv.zst")
-    path "human_vs_mouse.${encoding}.k${ksize}.search.log"
+    tuple val(encoding), val(ksize),
+        path("human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"),
+        path("human_vs_mouse.${encoding}.k${ksize}.search.log"),
+        path(index_log)
 
     script:
     def output_zst = "human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"
     def log_file   = "human_vs_mouse.${encoding}.k${ksize}.search.log"
     """
-    echo "=== Searching: human vs mouse ${encoding} k=${ksize} ===" | tee ${log_file}
+    echo "=== Searching (kmerseek 0.4.0 local): human vs mouse ${encoding} k=${ksize} ===" | tee ${log_file}
     echo "Start time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
     echo "" | tee -a ${log_file}
 
-    kmerseek search \\
+    ${params.kmerseek_bin} search \\
         --encoding ${encoding} \\
         --ksize ${ksize} \\
         --query ${human_fasta} \\
         --target ${mouse_index} \\
+        --threshold ${params.threshold} \\
+        --min-shared-kmers ${params.min_shared_kmers} \\
+        --max-pvalue ${params.max_pvalue} \\
         2>> ${log_file} \\
         | zstd -T2 -o ${output_zst} \\
         || true
@@ -190,7 +199,7 @@ process evaluateOrthologs {
     publishDir params.outdir, mode: 'copy'
 
     input:
-    tuple val(encoding), val(ksize), path(results_zst), path(ortholog_pairs)
+    tuple val(encoding), val(ksize), path(results_zst), path(search_log), path(index_log), path(ortholog_pairs)
 
     output:
     tuple val(encoding), val(ksize), path("ortholog_evaluation.${encoding}.k${ksize}.tsv.zst")
@@ -201,32 +210,17 @@ process evaluateOrthologs {
 
     script:
     """
-    # Pre-filter: detect column indices from CSV header, then keep rows where
-    # n_intersecting_hashes > expected_shared_kmers * 1000 (enrichment > 1000).
-    # This safely captures all rows with Poisson p < ~0.001 regardless of n_total,
-    # while shrinking the file ~1000x. n_total (full row count) is tracked for MHT.
-    if [ ! -s ${results_zst} ]; then
-        ln -sf ${results_zst} filtered_results.csv.zst
-        n_total=0
-    else
-        zstdcat ${results_zst} | awk -F',' '
-            NR==1 {
-                for (i=1; i<=NF; i++) {
-                    if (\$i == "n_intersecting_hashes") k_col = i
-                    if (\$i == "expected_shared_kmers")  lam_col = i
-                }
-                print; next
-            }
-            { n++ }
-            (k_col && lam_col && \$k_col+0 >= 2 && (\$lam_col+0 == 0 || \$k_col+0 / \$lam_col+0 >= 100)) { print }
-            END { print n+0 > "n_total.txt" }
-        ' | zstd -T2 -q -f -o filtered_results.csv.zst
-        n_total=\$(cat n_total.txt 2>/dev/null || echo 0)
-    fi
-    # Guard against an empty/missing n_total (e.g. a header-only results file with 0 data rows):
-    # an unquoted empty \${n_total} would drop the argument and shift ${encoding} into its place.
+    # results_zst is already filtered at the source (kmerseek 0.4.0 --min-shared-kmers/
+    # --max-pvalue), so n_total (all query x target comparisons, the MHT denominator)
+    # can't be counted from the file — recover it from what each process already logged:
+    #   search_log: "Total queries: N"        (human sequences streamed)
+    #   index_log:  "Building inverted index for N signatures" (mouse targets indexed)
+    query_count=\$(grep -oE 'Total queries: [0-9]+' ${search_log} | tail -1 | grep -oE '[0-9]+' || echo 0)
+    target_count=\$(grep -oE 'Building inverted index for [0-9]+ signatures' ${index_log} | tail -1 | grep -oE '[0-9]+' || echo 0)
+    n_total=\$((query_count * target_count))
     n_total=\${n_total:-0}
-    evaluate_orthologs.py ${ksize} filtered_results.csv.zst ${ortholog_pairs} "\${n_total}" "${encoding}"
+
+    evaluate_orthologs.py ${ksize} ${results_zst} ${ortholog_pairs} "\${n_total}" "${encoding}" "${params.max_pvalue}"
     """
 }
 
@@ -268,7 +262,6 @@ process aggregateResults {
 
     MHT_METHODS = ['bonferroni', 'bh', 'by', 'two_stage_bh']
 
-    # Build TSV header
     headers = ['encoding', 'ksize', 'total_hits', 'n_ortholog', 'n_non_ortholog']
     for method in MHT_METHODS:
         headers += [f'{method}_rejected', f'{method}_precision', f'{method}_recall']
@@ -323,19 +316,10 @@ process multiQC {
 }
 
 workflow {
-    // Download and parse ortholog mapping
     ortholog_file = downloadOrthologMapping()
     (ortholog_pairs, ortholog_stats) = parseOrthologMapping(ortholog_file)
 
-    // Encoding × ksize ranges — alphabet size determines useful ksize:
-    //   hp variants  k=20-30  (2-letter; 'hp' storeDir results reused)
-    //                (k=15-19 now covered by the sibling kmerseek 0.4.0 pipeline in
-    //                 ../human-mouse-gencode-orthologs-hp-v040/, so dropped here)
-    //   dayhoff      k=10-20  (6-letter)
-    //   protein      k=5-15   (20-letter)
-    hp_ksizes      = Channel.of(20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)
-    dayhoff_ksizes = Channel.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-    protein_ksizes = Channel.of(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
+    hp_ksizes = Channel.of(15, 16, 17, 18, 19)
 
     hp_enc_ksize = Channel.of(
         'hp-lehninger',
@@ -346,50 +330,35 @@ workflow {
         'hp-pbotc-1st-ed'
     ).combine(hp_ksizes)
 
-    dayhoff_enc_ksize = Channel.of('dayhoff').combine(dayhoff_ksizes)
-    protein_enc_ksize = Channel.of('protein').combine(protein_ksizes)
-
-    all_enc_ksize = hp_enc_ksize.mix(dayhoff_enc_ksize).mix(protein_enc_ksize)
-
-    // FASTA files are already uncompressed - use directly
     human_decompressed = channel.of(tuple('human', file(params.human_fasta)))
     mouse_decompressed = channel.of(tuple('mouse', file(params.mouse_fasta)))
 
-    // Index mouse database for each (encoding, ksize)
     mouse_index_params = mouse_decompressed
-        .combine(all_enc_ksize)
+        .combine(hp_enc_ksize)
         .map { species, fasta, encoding, ksize -> tuple(species, fasta, encoding, ksize) }
 
     indexed = indexDatabase(mouse_index_params)
-    index_only = indexed[0]
-    // (species, encoding, ksize, index_path)
+    // (species, encoding, ksize, index_dir, index_log)
 
-    // Get mouse indexes by (encoding, ksize)
-    mouse_indexes = index_only.map { species, encoding, ksize, index -> tuple(encoding, ksize, index) }
+    mouse_indexes = indexed.map { species, encoding, ksize, index, index_log -> tuple(encoding, ksize, index, index_log) }
 
-    // Combine human FASTA with mouse indexes by (encoding, ksize)
     human_fasta_enc_ksize = human_decompressed
-        .combine(all_enc_ksize)
+        .combine(hp_enc_ksize)
         .map { species, fasta, encoding, ksize -> tuple(encoding, ksize, fasta) }
 
     search_inputs = human_fasta_enc_ksize.join(mouse_indexes, by: [0, 1])
-    // (encoding, ksize, human_fasta, mouse_index)
+    // (encoding, ksize, human_fasta, mouse_index, index_log)
 
-    // Search human against mouse
     search_outputs = searchHumanVsMouse(search_inputs)
-    search_results = search_outputs[0]
-    // (encoding, ksize, results_csv)
+    // (encoding, ksize, results_csv, search_log, index_log)
 
-    // Evaluate ortholog detection
-    eval_inputs = search_results.combine(ortholog_pairs)
-    // (encoding, ksize, results_csv, ortholog_pairs)
+    eval_inputs = search_outputs.combine(ortholog_pairs)
+    // (encoding, ksize, results_csv, search_log, index_log, ortholog_pairs)
     eval_outputs = evaluateOrthologs(eval_inputs)
 
-    // Collect all summary files for aggregation
     summaries = eval_outputs[1].collect()
     agg_out = aggregateResults(summaries)
 
-    // MultiQC: single-document summary of the whole encoding x ksize sweep
     multiQC(agg_out[1])
 
     eval_outputs[0].subscribe { encoding, ksize, eval_file ->
