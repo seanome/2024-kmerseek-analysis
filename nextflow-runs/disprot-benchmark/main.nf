@@ -441,6 +441,37 @@ process generateReport {
     """
 }
 
+// ---------------------------------------------------------------------------
+// PROCESS 11 — MultiQC summary
+// ---------------------------------------------------------------------------
+
+process multiQC {
+    label 'python'
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    path metrics_parquet
+
+    output:
+    path "multiqc_report.html"
+    path "multiqc_data/"
+
+    script:
+    """
+    ${projectDir}/bin/make_multiqc_input.py \\
+        ${metrics_parquet} \\
+        mqc_input/
+
+    /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/multiqc \\
+        mqc_input/ \\
+        --config mqc_input/multiqc_config.yaml \\
+        --outdir . \\
+        --filename multiqc_report.html \\
+        --force \\
+        --no-megaqc-upload
+    """
+}
+
 // ===========================================================================
 // WORKFLOW
 // ===========================================================================
@@ -575,6 +606,11 @@ workflow {
     // Step 10: Generate report
     // -----------------------------------------------------------------------
     generateReport(agg_out[0], agg_out[2])
+
+    // -----------------------------------------------------------------------
+    // Step 11: MultiQC
+    // -----------------------------------------------------------------------
+    multiQC(agg_out[0])
 
     // Summary log
     all_results.subscribe { species, tool, _tsv ->

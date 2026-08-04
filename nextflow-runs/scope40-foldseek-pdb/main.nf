@@ -3,7 +3,7 @@
 /*
  * scope40-foldseek-pdb/main.nf
  *
- * Run FoldSeek and MMseqs2 on all SCOPe40 2.08 domain structures and evaluate
+ * Run FoldSeek on all SCOPe40 2.08 domain structures and evaluate
  * against the SCOPe hierarchy.
  *
  * Requires the SCOPe pdbstyle tarball to be downloaded and extracted first:
@@ -16,12 +16,10 @@
  *   2. collectPdbstyleStructures — copy all .ent files from pdbstyle dir → structures/
  *   3. foldseekSearch           — foldseek easy-search all-vs-all
  *   4. evaluateFoldseek         — sensitivity-to-first-FP → foldseek_pdb.rocx
- *   5. mmseqs2Search            — MMseqs2 easy-search all-vs-all (full FASTA)
- *   6. evaluateMMseqs2          — sensitivity-to-first-FP → mmseqs2_scope40.rocx
  *
  * Usage:
  *   /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow run main.nf
- *   /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow run main.nf --resume
+ *   /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow run main.nf -resume
  */
 
 nextflow.enable.dsl=2
@@ -32,7 +30,6 @@ params.scope_fasta    = "${home}/data/scope/astral-scopedom-seqres-gd-sel-gs-bib
 params.outdir         = "${home}/data/scope/results-foldseek-pdb"
 params.pdbstyle_dir   = "${home}/data/scope/pdbstyle-2.08"
 params.foldseek       = "${home}/anaconda3/envs/foldseek-10.941cd33/bin/foldseek"
-params.mmseqs         = "${home}/anaconda3/envs/orthofinder/bin/mmseqs"
 params.evalue_report  = 10.0
 
 
@@ -165,66 +162,6 @@ process evaluateFoldseek {
 }
 
 
-// ---------------------------------------------------------------------------
-// PROCESS 5 — MMseqs2 easy-search all-vs-all on full SCOPe40 FASTA
-// ---------------------------------------------------------------------------
-
-process mmseqs2Search {
-    publishDir "${params.outdir}/mmseqs2", mode: 'copy', pattern: '*.tsv.gz'
-
-    input:
-    path fasta
-
-    output:
-    path "mmseqs2_scope40.tsv.gz"
-
-    script:
-    """
-    mkdir -p mmseqs2_tmp
-
-    ${params.mmseqs} easy-search \\
-        ${fasta} \\
-        ${fasta} \\
-        mmseqs2_scope40.tsv \\
-        mmseqs2_tmp \\
-        --format-output "query,target,bits,evalue" \\
-        --threads ${task.cpus} \\
-        -e ${params.evalue_report} \\
-        -s 7.5
-
-    gzip -c mmseqs2_scope40.tsv > mmseqs2_scope40.tsv.gz
-    rm -f mmseqs2_scope40.tsv
-    rm -rf mmseqs2_tmp
-    """
-}
-
-
-// ---------------------------------------------------------------------------
-// PROCESS 6 — Evaluate MMseqs2 hits → .rocx file
-// ---------------------------------------------------------------------------
-
-process evaluateMMseqs2 {
-    publishDir params.outdir, mode: 'copy'
-
-    input:
-    path mmseqs2_hits
-    path scope_domains
-
-    output:
-    path "mmseqs2_scope40.rocx"
-    path "mmseqs2_scope40_auc.txt"
-
-    script:
-    """
-    ${projectDir}/bin/evaluate_foldseek_scope.py \\
-        --hits    ${mmseqs2_hits} \\
-        --domains ${scope_domains} \\
-        --label   mmseqs2_scope40 \\
-        --outdir  .
-    """
-}
-
-
 // ===========================================================================
 // WORKFLOW
 // ===========================================================================
@@ -239,7 +176,4 @@ workflow {
     fs_hits_ch = foldseekSearch(structs_ch)
     evaluateFoldseek(fs_hits_ch, parsed.domains)
 
-    // MMseqs2 branch (sequence-based, full SCOPe40 FASTA)
-    mm_hits_ch = mmseqs2Search(fasta_ch)
-    evaluateMMseqs2(mm_hits_ch, parsed.domains)
 }
