@@ -1201,19 +1201,20 @@ def rocx_restrict(rocx_df: pl.DataFrame, ref_queries: set) -> pl.DataFrame:
     n = len(missing_ids)
     # Use explicit pl.Series with the dtype taken from `present` to avoid
     # Int64/Int32 mismatches (Python int literals default to Int64 in Polars).
+    # Built generically from `present`'s own columns/schema so this stays in
+    # sync with _ROCX_SCHEMA (e.g. CLASS/CLASSCNT) regardless of which columns
+    # eval_tsv_to_rocx happens to emit.
     s = present.schema
+    zero_col_defaults = {
+        'NAME': None, 'SCOP': '', 'FP': 1,
+        'CLASS': 0.0, 'FAM': 0.0, 'SFAM': 0.0, 'FOLD': 0.0,
+        'CLASSCNT': 0, 'FAMCNT': 0, 'SFAMCNT': 0, 'FOLDCNT': 0,
+    }
     zero_rows = pl.DataFrame([
-        pl.Series('NAME',    missing_ids,  dtype=s['NAME']),
-        pl.Series('SCOP',    [''] * n,     dtype=s['SCOP']),
-        pl.Series('FAM',     [0.0] * n,    dtype=s['FAM']),
-        pl.Series('SFAM',    [0.0] * n,    dtype=s['SFAM']),
-        pl.Series('FOLD',    [0.0] * n,    dtype=s['FOLD']),
-        pl.Series('FP',      [1] * n,      dtype=s['FP']),
-        pl.Series('FAMCNT',  [0] * n,      dtype=s['FAMCNT']),
-        pl.Series('SFAMCNT', [0] * n,      dtype=s['SFAMCNT']),
-        pl.Series('FOLDCNT', [0] * n,      dtype=s['FOLDCNT']),
+        pl.Series(col, missing_ids if col == 'NAME' else [zero_col_defaults[col]] * n, dtype=dtype)
+        for col, dtype in s.items()
     ])
-    return pl.concat([present, zero_rows])
+    return pl.concat([present, zero_rows.select(present.columns)])
 
 
 def sensitivity_stats(

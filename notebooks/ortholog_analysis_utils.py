@@ -27,6 +27,7 @@ from pathlib import Path
 
 import numpy as np
 import polars as pl
+import pyarrow.parquet as pq
 import requests
 
 # ---------------------------------------------------------------------------
@@ -34,6 +35,12 @@ import requests
 # ---------------------------------------------------------------------------
 
 DATA_DIR = Path("/Users/olga/data/gencode/results-human-mouse-orthologs")
+
+# The kmerseek 0.4.0 HP-only pipeline (nextflow-runs/human-mouse-gencode-orthologs-hp-v040)
+# keeps a fully separate outdir so it can never invalidate the main pipeline's resume cache.
+# Its k=18-19 HP results live only here, so `genome_wide_results_file` falls back to these
+# dirs before giving up.
+EXTRA_DATA_DIRS = [Path("/Users/olga/data/gencode/results-human-mouse-orthologs-hp-v040")]
 OF_DIR = Path("/Users/olga/data/gencode/data-for-orthofinder/OrthoFinder/Results_Mar03")
 
 KSIZE = 24
@@ -50,7 +57,7 @@ OF_ORTHOLOGS_TSV = (
 KMERSEEK_USECOLS = [
     "query_name", "target_name",
     "jaccard", "containment", "n_intersecting_hashes", "expected_shared_kmers",
-    "poisson_pvalue", "enrichment", "query_tfidf",
+    "poisson_pvalue", "enrichment", "query_tfidf", "mean_matched_kmer_freq",
     "human_gene", "mouse_gene", "is_ortholog",
 ]
 
@@ -155,14 +162,36 @@ def load_kmerseek_data(
         N_HUMAN         – unique human proteins
         N_MOUSE         – unique mouse proteins
         BONF_THRESHOLD  – raw-p threshold for conservative Bonferroni p < alpha
+
+    Note: older runs (e.g. the original hp k=24 evaluation) don't ship a
+    ``poisson_pvalue`` column directly — only ``n_intersecting_hashes`` and
+    ``expected_shared_kmers``, from which it's computed here via
+    ``poisson.sf(k - 1, lambda)``. Newer (v0.4.0+) runs ship ``poisson_pvalue``
+    precomputed, which is read as-is (NOT the same quantity as ``prob_overlap``,
+    also present in some files — the two are unrelated scores).
     """
+    available = set(pl.scan_csv(str(kmerseek_tsv), separator="\t").collect_schema().names())
+    has_poisson_col = "poisson_pvalue" in available
+    read_cols = [c for c in usecols if c in available]
+    if not has_poisson_col:
+        for extra in ("n_intersecting_hashes", "expected_shared_kmers"):
+            if extra not in read_cols:
+                read_cols.append(extra)
+
     df = pl.read_csv(
         str(kmerseek_tsv),
         separator="\t",
-        columns=usecols,
+        columns=read_cols,
         ignore_errors=True,
         null_values=["", "NA", "NaN"],
     )
+
+    if not has_poisson_col:
+        from scipy.stats import poisson as _poisson
+        k_arr = df["n_intersecting_hashes"].to_numpy()
+        lam_arr = df["expected_shared_kmers"].cast(pl.Float64).fill_null(0.0).to_numpy()
+        poisson_pvalue = _poisson.sf(k_arr - 1, np.maximum(lam_arr, 1e-300))
+        df = df.with_columns(pl.Series("poisson_pvalue", poisson_pvalue))
 
     N_HUMAN = df["query_name"].n_unique()
     N_MOUSE = df["target_name"].n_unique()
@@ -219,6 +248,489 @@ def load_orthofinder_predictions(
             for m in mice:
                 of_pairs.add((parse_gene_from_id(h).upper(), parse_gene_from_id(m).upper()))
     return of_pairs
+
+
+# ---------------------------------------------------------------------------
+# Gene family membership (HGNC gene groups) — real, non-hand-picked family
+# definitions, as opposed to a hardcoded gene-symbol dict (cf. notebook 201's
+# MHC_CLASSES, which predates this and is kept as-is for the MHC recap).
+# ---------------------------------------------------------------------------
+
+HGNC_FILE = DATA_DIR / "hgnc_complete_set.txt"
+
+
+def load_hgnc_gene_groups(hgnc_file: Path = HGNC_FILE) -> pl.DataFrame:
+    """Load HGNC's complete gene set, keeping columns needed for family lookups.
+
+    Returns a DataFrame with columns: symbol, locus_group, locus_type, gene_group,
+    gene_group_id, ensembl_gene_id. `gene_group` / `gene_group_id` are pipe-delimited
+    for genes in multiple groups.
+    """
+    return pl.read_csv(
+        str(hgnc_file),
+        separator="\t",
+        columns=["symbol", "locus_group", "locus_type", "gene_group", "gene_group_id", "ensembl_gene_id"],
+        infer_schema_length=50000,
+        null_values=["", "NA"],
+    )
+
+
+def genes_in_group(hgnc_df: pl.DataFrame, pattern: str) -> pl.DataFrame:
+    """Filter `hgnc_df` to genes whose `gene_group` matches `pattern` (case-insensitive substring/regex).
+
+    E.g. `genes_in_group(hgnc, "Olfactory receptor")` or `genes_in_group(hgnc, "Cytochrome P450 family 2")`.
+    """
+    return hgnc_df.filter(
+        pl.col("gene_group").is_not_null() & pl.col("gene_group").str.contains(f"(?i){pattern}")
+    )
+
+
+# ---------------------------------------------------------------------------
+# RBH (reciprocal-best-hit) scoring — the fair way to compare kmerseek to
+# OrthoFinder's own 1:1 orthogroup clustering (see notebook 200, lesson 1: a
+# raw p-value significance threshold badly undercounts kmerseek).
+# ---------------------------------------------------------------------------
+
+# A kmerseek run that indexed an empty database still writes a well-formed but rowless
+# results file: a 13-byte empty zstd frame, or a header-only parquet. Those are the
+# dash/underscore empty-index bug's fallout. They must not shadow a real result for the
+# same combo in another dir, so treat them as absent rather than as data.
+_EMPTY_CSV_ZST_MAX_BYTES = 1024
+
+
+def _is_empty_results_file(f: Path) -> bool:
+    """Cheap enough to call per lookup: reads the parquet footer only, never the data.
+
+    (`pl.scan_parquet(...).select(pl.len()).collect()` would also avoid the row groups but
+    spins up a query engine each time, and this runs once per combo per sweep.) Not cached,
+    so a conversion finishing mid-session is picked up immediately.
+    """
+    if f.suffix == ".parquet":
+        try:
+            return pq.ParquetFile(str(f)).metadata.num_rows == 0
+        except Exception:
+            return True  # unreadable/truncated parquet is not usable data either
+    return f.stat().st_size <= _EMPTY_CSV_ZST_MAX_BYTES
+
+
+def genome_wide_results_file(encoding: str, ksize: int, data_dir: Path = DATA_DIR) -> Path:
+    """Locate a `human_vs_mouse.{encoding}.k{ksize}.results.*` file.
+
+    Prefers `.parquet` (produced by `scripts/convert_results_to_parquet.py` — same rows,
+    minus the two unused md5 columns) over the original `.csv.{zst,gz}`, so callers get the
+    smaller/faster format automatically once a combo has been converted.
+
+    Searches `data_dir` first, then `EXTRA_DATA_DIRS`. The kmerseek 0.4.0 HP-only pipeline
+    writes k=18-19 to its own outdir (see EXTRA_DATA_DIRS), so combos absent from the main
+    results dir are picked up there instead of being reported MISSING.
+    """
+    search_dirs = [data_dir] + [d for d in EXTRA_DATA_DIRS if d != data_dir]
+    for d in search_dirs:
+        base = d / f"human_vs_mouse.{encoding}.k{ksize}.results"
+        for suffix in (".parquet", ".csv.zst", ".csv.gz"):
+            f = Path(f"{base}{suffix}")
+            if f.exists() and not _is_empty_results_file(f):
+                return f
+    searched = ", ".join(str(d) for d in search_dirs)
+    raise FileNotFoundError(
+        f"No human_vs_mouse.{encoding}.k{ksize}.results.{{parquet,csv.zst,csv.gz}} "
+        f"in any of: {searched}"
+    )
+
+
+def scan_genome_wide_results(
+    encoding: str, ksize: int, data_dir: Path = DATA_DIR, columns: list[str] | None = None,
+) -> pl.LazyFrame:
+    """`genome_wide_results_file` + format-aware lazy scan (parquet vs csv), optionally
+    projected to `columns` right away (cheap for parquet's columnar layout)."""
+    f = genome_wide_results_file(encoding, ksize, data_dir)
+    lf = pl.scan_parquet(str(f)) if f.suffix == ".parquet" else pl.scan_csv(str(f), ignore_errors=True)
+    return lf.select(columns) if columns is not None else lf
+
+
+def scan_available_columns(
+    encoding: str, ksize: int, data_dir: Path, wanted_columns: list[str], quiet: bool = False,
+) -> pl.LazyFrame:
+    """`scan_genome_wide_results`, restricted to whichever of *wanted_columns* this specific
+    combo's file actually has, instead of erroring on the first missing one.
+
+    Needed because the pipeline's output schema isn't identical across every genome-wide file:
+    a handful of hp-lehninger re-runs (k24, k26-30) shipped `prob_overlap` instead of
+    `poisson_pvalue` -- an older/newer kmerseek version than every other file in this project --
+    while everything else has `poisson_pvalue`. Pair with `ensure_poisson_pvalue` below to
+    recompute it from `n_intersecting_hashes`/`expected_shared_kmers` when it's missing, the same
+    way `load_kmerseek_data` already does for pre-poisson_pvalue TSVs.
+    """
+    lf = scan_genome_wide_results(encoding, ksize, data_dir)
+    available = set(lf.collect_schema().names())
+    cols = [c for c in wanted_columns if c in available]
+    missing = [c for c in wanted_columns if c not in available]
+    if missing and not quiet:
+        print(f"  note: {encoding} k={ksize} genome-wide file is missing columns {missing} -- proceeding without them")
+    return lf.select(cols)
+
+
+def ensure_poisson_pvalue(df: pl.DataFrame) -> pl.DataFrame:
+    """If `poisson_pvalue` wasn't in the source file (see `scan_available_columns`), compute it
+    from `n_intersecting_hashes` and `expected_shared_kmers` -- the same math `load_kmerseek_data`
+    already applies for older TSVs that predate the precomputed column. No-op if the column is
+    already present."""
+    if "poisson_pvalue" in df.columns:
+        return df
+    from scipy.stats import poisson as _poisson
+    k_arr = df["n_intersecting_hashes"].fill_null(0).to_numpy()
+    lam_arr = df["expected_shared_kmers"].cast(pl.Float64).fill_null(0.0).to_numpy()
+    p = _poisson.sf(k_arr - 1, np.maximum(lam_arr, 1e-300))
+    return df.with_columns(pl.Series("poisson_pvalue", p))
+
+
+def load_all_alphabet_ksize_combos(data_dir: Path = DATA_DIR) -> pl.DataFrame:
+    """Every (encoding, ksize) combo notebook 200 confirmed has real genome-wide results for --
+    the union of its base protein/dayhoff/hp sweep (`200_alphabet_ksize_matched_scope_comparison.csv`,
+    the CSV notebook 200's own `SWEEP_CSV` cell currently writes -- NOT the older, now-stale
+    `200_alphabet_ksize_rbh_sweep.csv` name notebook 206 still references, which predates 200's
+    hp k=21 result and is missing that one combo) and its 6-variant HP sweep
+    (`200_hp_variants_full_sweep.csv`: hp-lehninger, hp-lehninger-plus-c, hp-kyte-doolittle,
+    hp-pbotc-1st-ed, hp-thomas-dill, hp-thomas-dill-no-c). Single source of truth for "all
+    alphabets and ksizes" so downstream notebooks (201, 203, 206, ...) can't drift from what 200
+    actually validated -- add a new alphabet/ksize there first, then it shows up here automatically.
+
+    Returns one row per combo with columns:
+    - `dash_encoding`: the --encoding argument scan_genome_wide_results/kmerseek expect
+    - `display_encoding`: the underscore label used in this project's figures/labels
+    - `ksize`
+    """
+    base = pl.read_csv(data_dir / "200_alphabet_ksize_matched_scope_comparison.csv").select(
+        pl.col("encoding").alias("dash_encoding"),
+        pl.col("encoding").alias("display_encoding"),
+        "ksize",
+    )
+    variants = pl.read_csv(data_dir / "200_hp_variants_full_sweep.csv").select(
+        "dash_encoding",
+        pl.col("encoding").alias("display_encoding"),
+        "ksize",
+    )
+    return (
+        pl.concat([base, variants], how="vertical_relaxed")
+        .unique(["dash_encoding", "ksize"])
+        .sort(["display_encoding", "ksize"])
+    )
+
+
+def alphabet_combo_colors(
+    combos: list[tuple[str, int]], display_names: dict[str, str],
+) -> tuple[dict[str, str], dict[str, tuple]]:
+    """Per-alphabet color families for combo x k-size figures: hue = alphabet (cycled from a
+    fixed colormap palette, sorted by display name so assignment is stable run-to-run), shade =
+    k-size rank within that alphabet. Shared by 201/203/206 so they can't each hand-roll a
+    different color scheme for the same ~100-combo "all alphabets and ksizes" sweep.
+
+    Returns (alphabet_cmaps, combo_colors):
+    - `alphabet_cmaps`: dash_encoding -> matplotlib colormap name
+    - `combo_colors`: "{display_encoding}_k{ksize}" -> RGBA color
+    """
+    import matplotlib.pyplot as plt
+
+    palette = ["cividis", "viridis", "plasma_r", "magma", "winter", "copper", "spring", "summer", "Purples"]
+    alphabets_sorted = sorted({e for e, _ in combos}, key=lambda e: display_names[e])
+    alphabet_cmaps = {enc: palette[i % len(palette)] for i, enc in enumerate(alphabets_sorted)}
+    combo_colors = {}
+    for enc in {e for e, _ in combos}:
+        enc_ks = sorted(k for e, k in combos if e == enc)
+        cmap = plt.get_cmap(alphabet_cmaps[enc])
+        for i, k in enumerate(enc_ks):
+            frac = 0.25 + 0.65 * (i / max(len(enc_ks) - 1, 1))
+            combo_colors[f"{display_names.get(enc, enc)}_k{k}"] = cmap(frac)
+    return alphabet_cmaps, combo_colors
+
+
+PAIR_CACHE_DIR = DATA_DIR / "pair_cache"
+
+
+def load_pair_table(encoding: str, ksize: int, data_dir: Path = DATA_DIR) -> pl.DataFrame:
+    """Per-gene-pair max-containment table for one alphabet/ksize combo, aggregated from the
+    raw genome-wide `human_vs_mouse.{encoding}.k{ksize}.results.*` file -- the single expensive
+    step (multi-GB-to-100+GB raw scan) that every downstream per-combo analysis in this project
+    needs (notebook 200's F1/AUC sweep, 201/203/206's per-combo comparisons, 202's per-gene pLDDT
+    correctness table). Cached to `{data_dir}/pair_cache/{encoding}_k{ksize}.parquet` on first call
+    so notebooks 200/201/202/203/206 stop each re-scanning the same raw file independently --
+    everything past this point (RBH calling, F1, per-gene tables) is cheap in-memory work on a
+    table with one row per observed (human_gene, mouse_gene) candidate, not per matched region.
+
+    Columns: human_gene, mouse_gene, containment (max over that gene pair's matched regions).
+    """
+    cache_path = PAIR_CACHE_DIR / f"{encoding}_k{ksize}.parquet"
+    if cache_path.exists():
+        return pl.read_parquet(cache_path)
+
+    lf = (
+        scan_genome_wide_results(encoding, ksize, data_dir, columns=["query_name", "target_name", "containment"])
+        .with_columns([
+            pl.col("query_name").str.split("|").list.get(6).str.to_uppercase().alias("human_gene"),
+            pl.col("target_name").str.split("|").list.get(6).str.to_uppercase().alias("mouse_gene"),
+        ])
+        .group_by(["human_gene", "mouse_gene"])
+        .agg(pl.col("containment").max().alias("containment"))
+    )
+    # streaming: low-k HP-variant files can be 100+ GB uncompressed (e.g. hp-thomas-dill
+    # k25/26) -- a plain .collect() tries to materialize the whole thing at once and can
+    # exhaust available RAM/crash the kernel; streaming processes it in batches instead.
+    pair = lf.collect(engine="streaming")
+
+    PAIR_CACHE_DIR.mkdir(exist_ok=True)
+    pair.write_parquet(cache_path)
+    return pair
+
+
+def rbh_pairs_and_scope(
+    encoding: str, ksize: int, data_dir: Path = DATA_DIR,
+) -> tuple[set[tuple[str, str]], set[str]]:
+    """Aggregate to per-gene-pair max containment (via the shared `load_pair_table` cache) and
+    call reciprocal-best-hit (RBH) pairs: each human gene's top mouse hit must agree with that
+    mouse gene's top human hit.
+
+    Returns (rbh_set, human_genes_in_scope) — scope is every human gene the file covers, for
+    re-scoring OrthoFinder against the same matched gene universe (notebook 200, lesson 2).
+    """
+    pair = load_pair_table(encoding, ksize, data_dir)
+    scope = set(pair["human_gene"].unique().to_list())
+
+    # secondary sort key makes tie-breaking (equal max containment) deterministic
+    best_h2m = (pair.sort(["containment", "mouse_gene"], descending=[True, False])
+                .group_by("human_gene").agg(pl.col("mouse_gene").first().alias("best_mouse")))
+    best_m2h = (pair.sort(["containment", "human_gene"], descending=[True, False])
+                .group_by("mouse_gene").agg(pl.col("human_gene").first().alias("best_human")))
+    rbh = (best_h2m.join(best_m2h, left_on=["human_gene", "best_mouse"], right_on=["best_human", "mouse_gene"])
+           .select(["human_gene", "best_mouse"]).rename({"best_mouse": "mouse_gene"}))
+    rbh_set = set(zip(rbh["human_gene"].to_list(), rbh["mouse_gene"].to_list()))
+    return rbh_set, scope
+
+
+def per_gene_rbh_table(
+    encoding: str, ksize: int, truth_lists: pl.DataFrame, data_dir: Path = DATA_DIR,
+) -> pl.DataFrame:
+    """Per-human-gene RBH call + MGI correctness (notebook 202's `per_gene_rbh`, generalized to
+    read from the shared `load_pair_table` cache instead of re-scanning the raw file).
+
+    `truth_lists` must have columns `human_gene`, `true_mouse_genes` (list[str]) -- e.g.
+    `mgi_pairs.group_by("human_gene").agg(pl.col("mouse_gene").alias("true_mouse_genes"))`.
+
+    Returns one row per human gene in scope: human_gene, mouse_gene (RBH pick), containment,
+    is_rbh, has_mgi_truth, is_correct.
+    """
+    pair = load_pair_table(encoding, ksize, data_dir)
+
+    best_h2m = (pair.sort(["containment", "mouse_gene"], descending=[True, False])
+                .group_by("human_gene")
+                .agg([pl.col("mouse_gene").first().alias("rbh_mouse_gene"),
+                      pl.col("containment").first().alias("containment")]))
+    best_m2h = (pair.sort(["containment", "human_gene"], descending=[True, False])
+                .group_by("mouse_gene").agg(pl.col("human_gene").first().alias("best_human")))
+
+    recip = (best_h2m.select(["human_gene", "rbh_mouse_gene"])
+              .join(best_m2h, left_on="rbh_mouse_gene", right_on="mouse_gene", how="left")
+              .with_columns((pl.col("best_human") == pl.col("human_gene")).fill_null(False).alias("is_rbh")))
+
+    final = (
+        best_h2m
+        .join(recip.select(["human_gene", "is_rbh"]), on="human_gene", how="left")
+        .join(truth_lists, on="human_gene", how="left")
+        .with_columns([
+            pl.col("true_mouse_genes").is_not_null().alias("has_mgi_truth"),
+            pl.struct(["rbh_mouse_gene", "true_mouse_genes"]).map_elements(
+                lambda s: s["true_mouse_genes"] is not None and s["rbh_mouse_gene"] in s["true_mouse_genes"],
+                return_dtype=pl.Boolean,
+            ).alias("_in_truth_set"),
+        ])
+        .with_columns((pl.col("is_rbh") & pl.col("_in_truth_set")).alias("is_correct"))
+        .select(["human_gene", "rbh_mouse_gene", "containment", "is_rbh", "has_mgi_truth", "is_correct"])
+        .rename({"rbh_mouse_gene": "mouse_gene"})
+        .with_columns([pl.lit(encoding).alias("encoding"), pl.lit(ksize).alias("ksize")])
+    )
+    return final
+
+
+def prf1(called: set, truth: set) -> tuple[float, float, float, int, int, int]:
+    """Precision, recall, F1, TP, FP, FN for a called-pair set vs. a ground-truth pair set."""
+    tp, fp, fn = len(called & truth), len(called - truth), len(truth - called)
+    p = tp / (tp + fp) if (tp + fp) else 0.0
+    r = tp / (tp + fn) if (tp + fn) else 0.0
+    f1 = 2 * p * r / (p + r) if (p + r) else 0.0
+    return p, r, f1, tp, fp, fn
+
+
+def load_family_kmerseek_scores(
+    encoding: str,
+    ksize: int,
+    human_genes: set[str] | None = None,
+    mouse_genes: set[str] | None = None,
+    mgi_ortholog_set: set[tuple[str, str]] | None = None,
+    data_dir: Path = DATA_DIR,
+    n_total: int | None = None,
+) -> pl.DataFrame:
+    """Load one alphabet/ksize genome-wide results file, restricted to rows touching a gene
+    family, with composite scores (`add_composite_scores`) and an MGI-truth `label` column.
+
+    At least one of `human_genes` / `mouse_genes` must be given (rows are kept if the human
+    gene is in `human_genes` OR the mouse gene is in `mouse_genes` — usually only one side is
+    a real family and the other is left as every partner it was compared against).
+
+    `n_total` (Bonferroni/BH denominator) defaults to `N_PROTEINS['human'] * N_PROTEINS['mouse']`
+    — the full proteome search space — rather than this file's own row-derived unique-gene count,
+    so the correction stays consistent and comparable across alphabets/k without an extra
+    full-file scan per family lookup. This is a deliberate simplification, stated here rather
+    than silently: it's the conventional "full search space" Bonferroni denominator, not a
+    per-alphabet realized-hit count.
+    """
+    if human_genes is None and mouse_genes is None:
+        raise ValueError("must supply human_genes and/or mouse_genes")
+    if n_total is None:
+        n_total = N_PROTEINS["human"] * N_PROTEINS["mouse"]
+
+    # Older genome-wide runs (e.g. plain "hp") don't ship `poisson_pvalue` — only
+    # `n_intersecting_hashes`/`expected_shared_kmers`, from which it's derived (same
+    # fallback as `load_kmerseek_data`). NOT the same quantity as `prob_overlap`, also
+    # present in some of these older files — the two are unrelated scores.
+    f = genome_wide_results_file(encoding, ksize, data_dir)
+    schema_names = set(
+        pl.scan_parquet(str(f)).collect_schema().names() if f.suffix == ".parquet"
+        else pl.scan_csv(str(f), n_rows=1).collect_schema().names()
+    )
+    has_poisson_col = "poisson_pvalue" in schema_names
+    base_cols = ["human_gene", "mouse_gene", "enrichment", "containment", "mean_matched_kmer_freq", "query_tfidf"]
+    extra_cols = ["poisson_pvalue"] if has_poisson_col else ["n_intersecting_hashes", "expected_shared_kmers"]
+    raw_cols = ["query_name", "target_name"] + base_cols[2:] + extra_cols
+
+    lf = (
+        scan_genome_wide_results(encoding, ksize, data_dir, columns=raw_cols)
+        .with_columns([
+            pl.col("query_name").str.split("|").list.get(6).str.to_uppercase().alias("human_gene"),
+            pl.col("target_name").str.split("|").list.get(6).str.to_uppercase().alias("mouse_gene"),
+        ])
+    )
+    cond = pl.lit(False)
+    if human_genes is not None:
+        cond = cond | pl.col("human_gene").is_in(list(human_genes))
+    if mouse_genes is not None:
+        cond = cond | pl.col("mouse_gene").is_in(list(mouse_genes))
+    df = lf.filter(cond).select(base_cols + extra_cols).collect(engine="streaming")
+    if df.height == 0:
+        return df
+
+    if not has_poisson_col:
+        from scipy.stats import poisson as _poisson
+        k_arr = df["n_intersecting_hashes"].to_numpy()
+        lam_arr = df["expected_shared_kmers"].cast(pl.Float64).fill_null(0.0).to_numpy()
+        df = df.with_columns(pl.Series("poisson_pvalue", _poisson.sf(k_arr - 1, np.maximum(lam_arr, 1e-300))))
+
+    poisson_p = df["poisson_pvalue"].fill_null(1.0).to_numpy()
+    df = df.with_columns([
+        pl.Series("poisson_p_bonf_conservative", np.clip(poisson_p * n_total, 0, 1)),
+        pl.Series("poisson_p_bh_conservative", bh_conservative(poisson_p, n_total)),
+    ])
+    df = add_composite_scores(df)
+
+    if mgi_ortholog_set is not None:
+        label = [
+            int((h, m) in mgi_ortholog_set)
+            for h, m in zip(df["human_gene"].to_list(), df["mouse_gene"].to_list())
+        ]
+        df = df.with_columns(pl.Series("label", label, dtype=pl.Int8))
+    return df
+
+
+def load_families_kmerseek_scores(
+    encoding: str,
+    ksize: int,
+    family_gene_sets: dict[str, set[str]],
+    mgi_ortholog_set: set[tuple[str, str]] | None = None,
+    data_dir: Path = DATA_DIR,
+    n_total: int | None = None,
+) -> dict[str, pl.DataFrame]:
+    """Batched version of `load_family_kmerseek_scores` for MULTIPLE human-gene families against
+    the same (encoding, ksize) file, in a single raw-file scan.
+
+    Motivation: scoring N families one at a time (N calls to `load_family_kmerseek_scores`) rescans
+    the same multi-GB genome-wide file once per family that happens to share a combo -- for
+    notebook 206's 5-family x ~9-combo deep dive that's 45 raw scans when only ~9 are actually
+    needed. This scans each (encoding, ksize) file exactly ONCE, filtered to the union of every
+    family's genes, computes composite scores once on the combined result, then splits it back
+    out per family in memory (cheap) -- the raw scan is the expensive part this avoids repeating.
+
+    Human-genes-only (unlike `load_family_kmerseek_scores`, which also accepts `mouse_genes`) --
+    every current caller only queries by human gene family membership.
+
+    Returns {family_name: DataFrame}, same columns/labeling as `load_family_kmerseek_scores`.
+    A family with zero matching rows gets an empty (but column-complete after collect) DataFrame,
+    not omitted, so callers can distinguish "family present but empty" from a missing combo.
+    """
+    if n_total is None:
+        n_total = N_PROTEINS["human"] * N_PROTEINS["mouse"]
+    all_genes = set().union(*family_gene_sets.values()) if family_gene_sets else set()
+
+    f = genome_wide_results_file(encoding, ksize, data_dir)
+    schema_names = set(
+        pl.scan_parquet(str(f)).collect_schema().names() if f.suffix == ".parquet"
+        else pl.scan_csv(str(f), n_rows=1).collect_schema().names()
+    )
+    has_poisson_col = "poisson_pvalue" in schema_names
+    base_cols = ["human_gene", "mouse_gene", "enrichment", "containment", "mean_matched_kmer_freq", "query_tfidf"]
+    extra_cols = ["poisson_pvalue"] if has_poisson_col else ["n_intersecting_hashes", "expected_shared_kmers"]
+    raw_cols = ["query_name", "target_name"] + base_cols[2:] + extra_cols
+
+    lf = (
+        scan_genome_wide_results(encoding, ksize, data_dir, columns=raw_cols)
+        .with_columns([
+            pl.col("query_name").str.split("|").list.get(6).str.to_uppercase().alias("human_gene"),
+            pl.col("target_name").str.split("|").list.get(6).str.to_uppercase().alias("mouse_gene"),
+        ])
+    )
+    df = (
+        lf.filter(pl.col("human_gene").is_in(list(all_genes)))
+        .select(base_cols + extra_cols)
+        .collect(engine="streaming")
+    )
+
+    if df.height > 0:
+        if not has_poisson_col:
+            from scipy.stats import poisson as _poisson
+            k_arr = df["n_intersecting_hashes"].to_numpy()
+            lam_arr = df["expected_shared_kmers"].cast(pl.Float64).fill_null(0.0).to_numpy()
+            df = df.with_columns(pl.Series("poisson_pvalue", _poisson.sf(k_arr - 1, np.maximum(lam_arr, 1e-300))))
+
+        poisson_p = df["poisson_pvalue"].fill_null(1.0).to_numpy()
+        df = df.with_columns([
+            pl.Series("poisson_p_bonf_conservative", np.clip(poisson_p * n_total, 0, 1)),
+            pl.Series("poisson_p_bh_conservative", bh_conservative(poisson_p, n_total)),
+        ])
+        df = add_composite_scores(df)
+        if mgi_ortholog_set is not None:
+            label = [
+                int((h, m) in mgi_ortholog_set)
+                for h, m in zip(df["human_gene"].to_list(), df["mouse_gene"].to_list())
+            ]
+            df = df.with_columns(pl.Series("label", label, dtype=pl.Int8))
+
+    return {
+        fam_name: (df.filter(pl.col("human_gene").is_in(list(genes))) if df.height > 0 else df)
+        for fam_name, genes in family_gene_sets.items()
+    }
+
+
+def length_floor_mask(
+    seq_lengths: np.ndarray, ksize: int, scaled: int = 1, min_expected_kmers: float = 10.0,
+) -> np.ndarray:
+    """Flag sequences too short, at a given k/scaled, to produce a meaningful sketch.
+
+    A sequence of length L has (L - k + 1) k-mers; at FracMinHash `scaled`, the expected
+    sketch size is (L - k + 1) / scaled. Below `min_expected_kmers` the sketch is dominated
+    by sampling noise (see notebook 085's hash-floor analysis). Returns a boolean array,
+    True = sequence clears the floor (keep).
+    """
+    seq_lengths = np.asarray(seq_lengths, dtype=float)
+    n_kmers = np.maximum(seq_lengths - ksize + 1, 0)
+    expected_sketch = n_kmers / scaled
+    return expected_sketch >= min_expected_kmers
 
 
 # ---------------------------------------------------------------------------
@@ -487,6 +999,56 @@ def add_disorder_fraction(df_pl: pl.DataFrame, mobi_cache: dict) -> pl.DataFrame
 
 
 # ---------------------------------------------------------------------------
+# Ensembl BioMart percent-identity (human-mouse divergence covariate; see
+# notebook 206 — dN/dS was discontinued genome-wide by Ensembl at Release 100,
+# but percent identity is still live on BioMart and is the mechanistically
+# correct covariate for a substitution-tolerance argument anyway).
+# ---------------------------------------------------------------------------
+
+_BIOMART_URL = "https://www.ensembl.org/biomart/martservice"
+
+
+def fetch_biomart_perc_id(ensg_ids: list[str], batch_size: int = 300) -> dict[str, float]:
+    """Batch-query BioMart `mmusculus_homolog_perc_id[_r1]` for human ENSG IDs.
+
+    Returns dict ENSG -> symmetric percent identity (mean of the two BioMart-reported
+    directions). IDs with no mouse homolog or a failed batch are simply absent.
+    """
+    out: dict[str, float] = {}
+    for i in range(0, len(ensg_ids), batch_size):
+        batch = ensg_ids[i : i + batch_size]
+        query = (
+            '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE Query>'
+            '<Query virtualSchemaName="default" formatter="TSV" header="0" uniqueRows="1" '
+            'count="" datasetConfigVersion="0.6">'
+            '<Dataset name="hsapiens_gene_ensembl" interface="default">'
+            f'<Filter name="ensembl_gene_id" value="{",".join(batch)}"/>'
+            '<Attribute name="ensembl_gene_id"/>'
+            '<Attribute name="mmusculus_homolog_perc_id"/>'
+            '<Attribute name="mmusculus_homolog_perc_id_r1"/>'
+            "</Dataset></Query>"
+        )
+        try:
+            resp = requests.get(_BIOMART_URL, params={"query": query}, timeout=60)
+            resp.raise_for_status()
+            for line in resp.text.strip().splitlines():
+                parts = line.split("\t")
+                if len(parts) != 3:
+                    continue
+                ensg, pid, pid_r1 = parts
+                try:
+                    vals = [float(v) for v in (pid, pid_r1) if v not in ("", "NA")]
+                except ValueError:
+                    continue
+                if vals:
+                    out[ensg] = float(np.mean(vals))
+        except Exception as exc:
+            print(f"  WARN BioMart batch {i // batch_size + 1}: {exc}")
+        time.sleep(0.2)
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Summary statistics helpers
 # ---------------------------------------------------------------------------
 
@@ -587,7 +1149,8 @@ def add_composite_scores(df: pl.DataFrame) -> pl.DataFrame:
     Required input columns
     ----------------------
     enrichment, containment, mean_matched_kmer_freq, query_tfidf,
-    poisson_pvalue, bonf_pvalue, bh_pvalue
+    poisson_pvalue, poisson_p_bonf_conservative, poisson_p_bh_conservative
+    (the latter two are produced by :func:`load_kmerseek_data`).
     """
     eps = 1e-9
     return df.with_columns([
@@ -599,13 +1162,13 @@ def add_composite_scores(df: pl.DataFrame) -> pl.DataFrame:
         (pl.col('query_tfidf') * pl.col('containment')).alias('score_tfidf_cont'),
         (-pl.col('poisson_pvalue').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
         ).alias('score_neglogp'),
-        (-pl.col('bonf_pvalue').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
+        (-pl.col('poisson_p_bonf_conservative').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
         ).alias('score_bonf_neglogp'),
-        (-pl.col('bonf_pvalue').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
+        (-pl.col('poisson_p_bonf_conservative').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
          * pl.col('containment')).alias('score_bonf_neglogp_cont'),
-        (-pl.col('bh_pvalue').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
+        (-pl.col('poisson_p_bh_conservative').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
         ).alias('score_bh_neglogq'),
-        (-pl.col('bh_pvalue').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
+        (-pl.col('poisson_p_bh_conservative').clip(lower_bound=1e-300).log(base=10).fill_nan(0.0)
          * pl.col('containment')).alias('score_bh_neglogq_cont'),
     ])
 
@@ -641,6 +1204,72 @@ def compute_aucs(df: pl.DataFrame, score_cols: list[str] | None = None) -> dict:
         except Exception:
             pass
     return out
+
+
+def leaderboard_df(aucs: dict) -> pl.DataFrame:
+    """Turn a :func:`compute_aucs` dict into a DataFrame ranked by AUPRC (descending)."""
+    rows = [{"metric": k, "label": SCORE_LABELS.get(k, k), **v} for k, v in aucs.items()]
+    lb = pl.DataFrame(rows).sort("pr_auc", descending=True)
+    return lb.with_columns(pl.Series("rank", range(1, lb.height + 1)))
+
+
+def plot_metric_leaderboard(aucs: dict, ax, title: str = "") -> pl.DataFrame:
+    """Horizontal AUPRC bar chart for all metrics in *aucs*, winner in navy, the
+    old score_enr_cont_freq incumbent in red (see notebook 120). Returns the
+    underlying :func:`leaderboard_df` (rank 1 = best) for printing alongside.
+    """
+    lb = leaderboard_df(aucs)
+    labels = lb["label"].to_list()
+    values = lb["pr_auc"].to_list()
+    metrics = lb["metric"].to_list()
+    colors = [
+        "#e31a1c" if m == "score_enr_cont_freq" else ("#084594" if i == 0 else "#9ecae1")
+        for i, m in enumerate(metrics)
+    ]
+    ax.barh(labels[::-1], values[::-1], color=colors[::-1])
+    ax.set_xlabel("AUPRC")
+    ax.set_xlim(0, 1)
+    ax.set_title(title)
+    return lb
+
+
+def bootstrap_auc_ci(
+    y_true: np.ndarray,
+    y_score: np.ndarray,
+    n_boot: int = 1000,
+    ci: float = 0.95,
+    random_state: int = 0,
+    metric: str = "roc_auc",
+) -> dict:
+    """Bootstrap-resample (y_true, y_score) pairs to get a CI on ROC-AUC or PR-AUC.
+
+    Needed because family-level n can be as low as ~15-40 pairs (see notebook 206),
+    where a point-estimate AUC (as in `compute_aucs`) overstates precision. Resamples
+    pairs with replacement `n_boot` times; degenerate resamples (all-one-class) are
+    skipped and don't count toward `n_boot`.
+
+    Returns dict: {"point": float, "lo": float, "hi": float, "n_boot_used": int}.
+    """
+    from sklearn.metrics import roc_auc_score, average_precision_score
+
+    scorer = roc_auc_score if metric == "roc_auc" else average_precision_score
+    y_true = np.asarray(y_true)
+    y_score = np.asarray(y_score)
+    n = len(y_true)
+    point = scorer(y_true, y_score)
+
+    rng = np.random.default_rng(random_state)
+    boot_vals = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, size=n)
+        yt, ys = y_true[idx], y_score[idx]
+        if yt.sum() == 0 or yt.sum() == n:
+            continue
+        boot_vals.append(scorer(yt, ys))
+
+    alpha = (1 - ci) / 2
+    lo, hi = (np.quantile(boot_vals, [alpha, 1 - alpha]) if boot_vals else (float("nan"), float("nan")))
+    return {"point": float(point), "lo": float(lo), "hi": float(hi), "n_boot_used": len(boot_vals)}
 
 
 def print_threshold_comparison(df: pl.DataFrame, alpha: float = ALPHA) -> None:
