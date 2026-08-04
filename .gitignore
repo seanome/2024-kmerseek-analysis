@@ -164,6 +164,9 @@ cython_debug/
 .LSOverride
 
 # Nextflow
+# NOTE: `results/` here is pipeline output only. Curated analysis tables that
+# belong in version control live in `tables/` — they used to sit in `results/`,
+# where this rule silently shadowed them.
 .nextflow/
 .nextflow.log*
 work/
