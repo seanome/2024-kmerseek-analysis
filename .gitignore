@@ -168,6 +168,7 @@ cython_debug/
 .nextflow.log*
 work/
 results/
+results-test/
 *.report.html
 *.timeline.html
 *.trace.txt
