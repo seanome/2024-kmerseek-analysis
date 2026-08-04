@@ -1,0 +1,21 @@
+# nextflow-runs/human-mouse-dnds-omega/docker/Dockerfile.omega
+#
+# Fetches human/mouse CDS from the Ensembl REST API, aligns proteins with MAFFT,
+# back-translates to a codon alignment, and runs PAML codeml (pairwise mode) to
+# get per-gene dN, dS, omega. One image covers both pipeline stages so there's
+# a single container to build/version.
+FROM continuumio/miniconda3:24.9.2-0
+
+RUN conda install -y -c bioconda -c conda-forge \
+        mafft=7.526 \
+        paml=4.10.10 \
+        biopython=1.84 \
+        polars=1.9.0 \
+        requests=2.32.3 \
+    && conda clean -afy
+
+# Nextflow execs `/bin/bash .command.run` inside the container — a custom
+# ENTRYPOINT breaks that (see memory `feedback_docker_entrypoint`). The `local`
+# profile also passes `--entrypoint ""` at the docker-run level as a second
+# layer of defense; this line makes the image safe even if that flag is dropped.
+ENTRYPOINT []
