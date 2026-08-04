@@ -2,7 +2,7 @@
 """
 format_orthoxml.py
 ------------------
-Converts kmerseek pairwise search CSVs (QfO all-vs-all) into OrthoXML v0.3.
+Converts kmerseek pairwise search Parquet files (QfO all-vs-all) into OrthoXML v0.3.
 
 Filtering:
   1. Poisson p-value < --pvalue (computed from intersect_hashes + containment
@@ -10,31 +10,31 @@ Filtering:
   2. Jaccard >= --min-jaccard (default 0.01).
 
 Ortholog-group formation:
-  Reciprocal Best Hit (RBH) per species pair.  For each CSV (species A vs B):
+  Reciprocal Best Hit (RBH) per species pair.  For each file (species A vs B):
     - best_hit_of[a] = argmax_{b} jaccard for each query protein a
     - best_query_for[b] = argmax_{a} jaccard for each target protein b
     - RBH pairs: (a, b) where best_hit_of[a]==b AND best_query_for[b]==a
   RBH pairs across all species pairs are then joined via union-find to form
   multi-species ortholog groups.
 
-CSV filenames must follow the pattern produced by the Nextflow pipeline:
-    {PROTEOME1}_{TAXID1}_vs_{PROTEOME2}_{TAXID2}.csv[.gz]
+Parquet filenames must follow the pattern produced by the Nextflow pipeline:
+    {PROTEOME1}_{TAXID1}_vs_{PROTEOME2}_{TAXID2}.k{KSIZE}.parquet
 
 Usage
 -----
-    format_orthoxml.py --results /path/to/csvs/ --output out.orthoxml \\
+    format_orthoxml.py --results /path/to/parquets/ --output out.orthoxml \\
                        --pvalue 0.05 --min-jaccard 0.01 \\
                        --ksize 24 --moltype hp --scaled 1
 """
 
 import argparse
-import csv
-import gzip
 import math
 import os
 import sys
 from collections import defaultdict
 from xml.etree.ElementTree import Element, SubElement, ElementTree, indent
+
+import polars as pl
 
 
 # ---------------------------------------------------------------------------
@@ -194,10 +194,10 @@ def parse_accession(seq_name: str) -> str:
     return parts[1] if len(parts) >= 2 else name
 
 
-def parse_filename(csv_path: str):
+def parse_filename(parquet_path: str):
     """Return (query_proteome, query_taxid, target_proteome, target_taxid)."""
-    stem = os.path.splitext(os.path.basename(csv_path))[0]
-    stem = os.path.splitext(stem)[0]
+    stem = os.path.splitext(os.path.basename(parquet_path))[0]  # drop .parquet
+    stem = os.path.splitext(stem)[0]                            # drop .k{ksize}
     left, right = stem.split("_vs_")
     qproteome, qtaxid = left.rsplit("_", 1)
     tproteome, ttaxid = right.rsplit("_", 1)
@@ -222,7 +222,7 @@ def find_name_column(header: list[str], role: str) -> str | None:
 # ---------------------------------------------------------------------------
 # Per-file RBH extraction
 # ---------------------------------------------------------------------------
-def extract_rbh_pairs(csv_path: str, qtaxid: int, ttaxid: int,
+def extract_rbh_pairs(parquet_path: str, qtaxid: int, ttaxid: int,
                       qproteome: str, tproteome: str,
                       pvalue: float, min_jaccard: float,
                       scaled: int) -> list[tuple[str, str]]:
@@ -231,70 +231,76 @@ def extract_rbh_pairs(csv_path: str, qtaxid: int, ttaxid: int,
     Best hit is defined by highest Jaccard score among hits passing both
     the p-value and min-jaccard filters.
     """
-    opener = gzip.open if csv_path.endswith(".gz") else open
-
     # best_of_query[qacc]  = (best_jaccard, tacc)
     # best_of_target[tacc] = (best_jaccard, qacc)
     best_of_query:  dict[str, tuple[float, str]] = {}
     best_of_target: dict[str, tuple[float, str]] = {}
 
-    with opener(csv_path, "rt", newline="") as fh:
-        reader = csv.DictReader(fh)
-        if reader.fieldnames is None:
-            return []
+    if os.path.getsize(parquet_path) == 0:
+        return []
 
-        pval_col  = find_pval_column(reader.fieldnames)
-        qname_col = find_name_column(reader.fieldnames, "query")
-        tname_col = (find_name_column(reader.fieldnames, "target")
-                     or find_name_column(reader.fieldnames, "match"))
-        compute_pval = pval_col is None
+    try:
+        df = pl.read_parquet(parquet_path)
+    except Exception as e:
+        print(f"WARNING: cannot read {parquet_path}: {e}", file=sys.stderr)
+        return []
 
-        if compute_pval:
-            need = ("intersect_hashes", "containment", "containment_target_in_query")
-            if not all(c in reader.fieldnames for c in need):
-                print(f"WARNING: {csv_path} missing p-value and containment columns; "
-                      f"skipping.", file=sys.stderr)
-                return []
+    if df.is_empty():
+        return []
 
-        if qname_col is None or tname_col is None:
-            print(f"WARNING: {csv_path} missing query/match name columns; "
+    fieldnames = df.columns
+    pval_col  = find_pval_column(fieldnames)
+    qname_col = find_name_column(fieldnames, "query")
+    tname_col = (find_name_column(fieldnames, "target")
+                 or find_name_column(fieldnames, "match"))
+    compute_pval = pval_col is None
+
+    if compute_pval:
+        need = ("intersect_hashes", "containment", "containment_target_in_query")
+        if not all(c in fieldnames for c in need):
+            print(f"WARNING: {parquet_path} missing p-value and containment columns; "
                   f"skipping.", file=sys.stderr)
             return []
 
-        for row in reader:
-            try:
-                jaccard = float(row["jaccard"])
-                if jaccard < min_jaccard:
-                    continue
+    if qname_col is None or tname_col is None:
+        print(f"WARNING: {parquet_path} missing query/match name columns; "
+              f"skipping.", file=sys.stderr)
+        return []
 
-                if compute_pval:
-                    pval = compute_poisson_pvalue(
-                        float(row["intersect_hashes"]),
-                        float(row["containment"]),
-                        float(row["containment_target_in_query"]),
-                        scaled=scaled,
-                    )
-                else:
-                    pval = float(row[pval_col])
-
-                if pval >= pvalue:
-                    continue
-
-            except (ValueError, KeyError):
+    for row in df.iter_rows(named=True):
+        try:
+            jaccard = float(row["jaccard"])
+            if jaccard < min_jaccard:
                 continue
 
-            qacc = parse_accession(row[qname_col])
-            tacc = parse_accession(row[tname_col])
-            if qacc == tacc:
+            if compute_pval:
+                pval = compute_poisson_pvalue(
+                    float(row["intersect_hashes"]),
+                    float(row["containment"]),
+                    float(row["containment_target_in_query"]),
+                    scaled=scaled,
+                )
+            else:
+                pval = float(row[pval_col])
+
+            if pval >= pvalue:
                 continue
 
-            prev_q = best_of_query.get(qacc)
-            if prev_q is None or jaccard > prev_q[0]:
-                best_of_query[qacc] = (jaccard, tacc)
+        except (ValueError, KeyError, TypeError):
+            continue
 
-            prev_t = best_of_target.get(tacc)
-            if prev_t is None or jaccard > prev_t[0]:
-                best_of_target[tacc] = (jaccard, qacc)
+        qacc = parse_accession(row[qname_col])
+        tacc = parse_accession(row[tname_col])
+        if qacc == tacc:
+            continue
+
+        prev_q = best_of_query.get(qacc)
+        if prev_q is None or jaccard > prev_q[0]:
+            best_of_query[qacc] = (jaccard, tacc)
+
+        prev_t = best_of_target.get(tacc)
+        if prev_t is None or jaccard > prev_t[0]:
+            best_of_target[tacc] = (jaccard, qacc)
 
     rbh = []
     for qacc, (_, best_tacc) in best_of_query.items():
@@ -320,14 +326,14 @@ def main():
     parser.add_argument("--scaled",      type=int,   default=1)
     args = parser.parse_args()
 
-    csv_files = []
+    parquet_files = []
     for dirpath, _, filenames in os.walk(args.results):
         for f in filenames:
-            if f.endswith(".csv.gz") or (f.endswith(".csv") and not f.endswith(".csv.gz")):
-                csv_files.append(os.path.join(dirpath, f))
+            if f.endswith(".parquet"):
+                parquet_files.append(os.path.join(dirpath, f))
 
-    if not csv_files:
-        print("WARNING: no CSV files found in results directory; writing empty OrthoXML.",
+    if not parquet_files:
+        print("WARNING: no Parquet files found in results directory; writing empty OrthoXML.",
               file=sys.stderr)
 
     gene_info: dict[str, tuple[int, str]] = {}
@@ -335,16 +341,16 @@ def main():
     n_rbh   = 0
     n_files = 0
 
-    for csv_path in sorted(csv_files):
+    for parquet_path in sorted(parquet_files):
         try:
-            qproteome, qtaxid, tproteome, ttaxid = parse_filename(csv_path)
+            qproteome, qtaxid, tproteome, ttaxid = parse_filename(parquet_path)
         except Exception as e:
-            print(f"WARNING: skipping {csv_path}: {e}", file=sys.stderr)
+            print(f"WARNING: skipping {parquet_path}: {e}", file=sys.stderr)
             continue
 
         n_files += 1
         pairs = extract_rbh_pairs(
-            csv_path, qtaxid, ttaxid, qproteome, tproteome,
+            parquet_path, qtaxid, ttaxid, qproteome, tproteome,
             pvalue=args.pvalue, min_jaccard=args.min_jaccard, scaled=args.scaled,
         )
 
@@ -354,7 +360,7 @@ def main():
             uf.union(qacc, tacc)
             n_rbh += 1
 
-    print(f"Read {n_files} CSV files, found {n_rbh} RBH pairs "
+    print(f"Read {n_files} Parquet files, found {n_rbh} RBH pairs "
           f"(p<{args.pvalue}, jaccard>={args.min_jaccard}) "
           f"spanning {len(gene_info)} proteins.",
           file=sys.stderr)

@@ -40,7 +40,14 @@ process KMERSEEK_SEARCH {
     container 'kmerseek:0.3.1'
     tag "${query_id}_vs_${target_id}"
 
-    storeDir "${params.outdir}/search_results"
+    // No storeDir here -- the raw csv.gz is intentionally NOT persisted. It only
+    // lives in this task's own work dir, gets consumed by CONVERT_TO_PARQUET below,
+    // and only the resulting parquet is stored. NOTE: this pipeline previously ran
+    // partway (358 pairs) with storeDir on this process, so search_results/ already
+    // has some *.csv.gz sitting there from before -- those are now orphaned (not
+    // referenced by this DAG) and can be deleted once the equivalent *.parquet
+    // exists; -resume still works for the already-completed pairs via the normal
+    // work/ hash cache, independent of storeDir.
     publishDir "${params.outdir}/search_logs", mode: 'copy', pattern: '*.stderr.log'
 
     input:
@@ -64,6 +71,45 @@ process KMERSEEK_SEARCH {
     """
 }
 
+// No container: needs the host conda env's polars. kmerseek:0.3.1 is a minimal
+// binary-only image with no Python, so this has to run outside it. storeDir keeps
+// parquets in a named location instead of the ephemeral work dir -- on rerun, if
+// the parquet already exists in search_results/, this process is skipped. This
+// prevents the work/ directory from accumulating hundreds of GB of search results.
+process CONVERT_TO_PARQUET {
+    tag "${csv_gz.simpleName}"
+    storeDir "${params.outdir}/search_results"
+
+    input:
+    path(csv_gz)
+
+    output:
+    path("${csv_gz.name.replaceAll(/\.csv\.gz$/, '')}.parquet")
+
+    script:
+    def out_stem = csv_gz.name.replaceAll(/\.csv\.gz$/, '')
+    """
+    /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 << 'PYEOF'
+import os
+import polars as pl
+
+csv_path = "${csv_gz}"
+out_path = "${out_stem}.parquet"
+
+if os.path.getsize(csv_path) == 0:
+    open(out_path, "wb").close()
+else:
+    try:
+        pl.scan_csv(csv_path, ignore_errors=True).sink_parquet(
+            out_path, compression="zstd", compression_level=9
+        )
+    except Exception as e:
+        print(f"WARNING: {csv_path} has no readable rows ({e}); writing empty parquet.")
+        open(out_path, "wb").close()
+PYEOF
+    """
+}
+
 // ---------------------------------------------------------------------------
 process FORMAT_ORTHOXML {
     container 'kmerseek-analysis:latest'
@@ -77,8 +123,12 @@ process FORMAT_ORTHOXML {
     path "kmerseek_${params.encoding_slug}_k${params.ksize}_pval${pvalue}_qfo2020.orthoxml"
 
     script:
+    // kmerseek-analysis:latest's shebang python (host conda path baked into
+    // format_orthoxml.py) doesn't exist inside the container -- invoke it via the
+    // container's own PATH python3 (which has polars) instead of relying on the
+    // shebang.
     """
-    format_orthoxml.py \\
+    python3 "\$(command -v format_orthoxml.py)" \\
         --pvalue  ${pvalue}               \\
         --ksize   ${params.ksize}         \\
         --moltype ${params.encoding_slug} \\
@@ -106,12 +156,14 @@ workflow {
 
     (results_ch, _stderr_ch) = KMERSEEK_SEARCH(pairs_ch)
 
+    parquet_ch = CONVERT_TO_PARQUET(results_ch)
+
     pvalues_ch = Channel.fromList(params.pvalues)
 
-    format_inputs = results_ch
+    format_inputs = parquet_ch
         .collect()
         .combine(pvalues_ch)
-        .map { csvs, pvalue -> tuple(pvalue, csvs) }
+        .map { parquets, pvalue -> tuple(pvalue, parquets) }
 
     FORMAT_ORTHOXML(format_inputs)
 }

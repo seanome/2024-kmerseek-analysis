@@ -2,23 +2,23 @@
 """
 format_orthoxml.py
 ------------------
-Converts kmerseek pairwise search CSVs (QfO all-vs-all) into OrthoXML v0.3.
+Converts kmerseek pairwise search Parquet files (QfO all-vs-all) into OrthoXML v0.3.
 
 Filtering:
   Bonferroni-corrected Poisson p-value < --pvalue, where n_tests = rows in
-  that CSV file.  No Jaccard floor.
+  that file.  No Jaccard floor.
 
 Ortholog-group formation:
   Reciprocal Best Hit (RBH) per species pair (best = highest Jaccard).
   RBH pairs across all species pairs are joined via union-find into
   multi-species ortholog groups.
 
-CSV filenames must follow the pattern:
-    {PROTEOME1}_{TAXID1}_vs_{PROTEOME2}_{TAXID2}[.kN].csv[.gz]
+Parquet filenames must follow the pattern:
+    {PROTEOME1}_{TAXID1}_vs_{PROTEOME2}_{TAXID2}[.kN].parquet
 
 Usage
 -----
-    format_orthoxml.py --results /path/to/csvs/ --output out.orthoxml \\
+    format_orthoxml.py --results /path/to/parquets/ --output out.orthoxml \\
                        --pvalue 0.05 --ksize 26 --moltype hp_pbotc_1st_ed \\
                        --scaled 1 [--workers N]
 """
@@ -161,9 +161,9 @@ def _acc_expr(col: str) -> pl.Expr:
     )
 
 
-def parse_filename(csv_path: str):
+def parse_filename(parquet_path: str):
     """Return (query_proteome, query_taxid, target_proteome, target_taxid)."""
-    stem = os.path.basename(csv_path)
+    stem = os.path.basename(parquet_path)
     while "." in stem:
         stem, _ = os.path.splitext(stem)
         if "_vs_" in stem:
@@ -174,7 +174,7 @@ def parse_filename(csv_path: str):
                 return qproteome, int(qtaxid), tproteome, int(ttaxid)
             except (ValueError, TypeError):
                 continue
-    raise ValueError(f"Cannot parse species pair from: {os.path.basename(csv_path)}")
+    raise ValueError(f"Cannot parse species pair from: {os.path.basename(parquet_path)}")
 
 
 # ---------------------------------------------------------------------------
@@ -182,17 +182,20 @@ def parse_filename(csv_path: str):
 # ---------------------------------------------------------------------------
 def _process_file(task: tuple) -> list[tuple]:
     """
-    Read one CSV, apply per-file Bonferroni filter on poisson_pvalue, compute
-    RBH pairs using vectorised Polars operations.
+    Read one Parquet file, apply per-file Bonferroni filter on poisson_pvalue,
+    compute RBH pairs using vectorised Polars operations.
 
     Returns list of (qtaxid, qproteome, ttaxid, tproteome, qacc, tacc).
     """
-    csv_path, qtaxid, qproteome, ttaxid, tproteome, pvalue = task
+    parquet_path, qtaxid, qproteome, ttaxid, tproteome, pvalue = task
+
+    if os.path.getsize(parquet_path) == 0:
+        return []
 
     try:
-        df = pl.read_csv(csv_path, infer_schema_length=200)
+        df = pl.read_parquet(parquet_path)
     except Exception as e:
-        print(f"WARNING: cannot read {csv_path}: {e}", file=sys.stderr)
+        print(f"WARNING: cannot read {parquet_path}: {e}", file=sys.stderr)
         return []
 
     if len(df) == 0:
@@ -204,7 +207,7 @@ def _process_file(task: tuple) -> list[tuple]:
     tcol = next((c for c in ("target_name", "match_name") if c in df.columns), None)
 
     if pvc is None or qcol is None or tcol is None:
-        print(f"WARNING: {csv_path} missing required columns; skipping.", file=sys.stderr)
+        print(f"WARNING: {parquet_path} missing required columns; skipping.", file=sys.stderr)
         return []
 
     # Ensure numeric types (schema inference may read as Utf8 in edge cases)
@@ -262,26 +265,26 @@ def main():
     parser.add_argument("--workers",  type=int,   default=min(8, os.cpu_count() or 4))
     args = parser.parse_args()
 
-    csv_files = [
+    parquet_files = [
         os.path.join(dp, f)
         for dp, _, fns in os.walk(args.results)
         for f in fns
-        if f.endswith(".csv.gz") or (f.endswith(".csv") and not f.endswith(".csv.gz"))
+        if f.endswith(".parquet")
     ]
 
-    if not csv_files:
-        print("WARNING: no CSV files found in results directory; writing empty OrthoXML.",
+    if not parquet_files:
+        print("WARNING: no Parquet files found in results directory; writing empty OrthoXML.",
               file=sys.stderr)
 
     tasks = []
-    for p in sorted(csv_files):
+    for p in sorted(parquet_files):
         try:
             qprot, qtax, tprot, ttax = parse_filename(p)
             tasks.append((p, qtax, qprot, ttax, tprot, args.pvalue))
         except Exception as e:
             print(f"WARNING: skipping {p}: {e}", file=sys.stderr)
 
-    print(f"Processing {len(tasks)} CSV files with {args.workers} workers ...",
+    print(f"Processing {len(tasks)} Parquet files with {args.workers} workers ...",
           file=sys.stderr)
 
     gene_info: dict[str, tuple[int, str]] = {}
@@ -307,7 +310,7 @@ def main():
                 uf.union(qacc, tacc)
                 n_rbh += 1
 
-    print(f"Read {len(tasks)} CSV files, found {n_rbh} RBH pairs "
+    print(f"Read {len(tasks)} Parquet files, found {n_rbh} RBH pairs "
           f"(Bonferroni p<{args.pvalue}) spanning {len(gene_info)} proteins.",
           file=sys.stderr)
 

@@ -71,10 +71,16 @@ def harmonic_number(n: int) -> float:
     return math.log(n) + 0.5772156649015329 + 1.0 / (2 * n)
 
 
+def scan_results(results_path: str) -> pl.LazyFrame:
+    """Format-aware lazy scan — searchHumanVsMouse may hand us either the original
+    .results.csv.zst or a .results.parquet (post-convert_results_to_parquet.py)."""
+    return pl.scan_parquet(results_path) if results_path.endswith('.parquet') else pl.scan_csv(results_path)
+
+
 def build_lazy_base(results_zst: str, ortho: pl.DataFrame) -> pl.LazyFrame:
     """Lazy query: parse gene names from FASTA headers, join ortholog labels."""
     return (
-        pl.scan_csv(results_zst)
+        scan_results(results_zst)
         .with_columns([
             pl.col('query_name').str.split('|').list.get(6).alias('human_gene'),
             pl.col('target_name').str.split('|').list.get(6).alias('mouse_gene'),
@@ -431,7 +437,7 @@ def main() -> None:
         # would try to materialize the full file (OOM). Sink without join instead;
         # is_ortholog is absent but all search metrics are present.
         (
-            pl.scan_csv(results_zst)
+            scan_results(results_zst)
             .with_columns([
                 pl.col('query_name').str.split('|').list.get(6).str.to_uppercase().alias('human_gene'),
                 pl.col('target_name').str.split('|').list.get(6).alias('mouse_gene'),

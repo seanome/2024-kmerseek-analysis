@@ -2,7 +2,7 @@
 
 /*
  * Nextflow pipeline to evaluate kmerseek 0.4.0 ortholog detection: all HP alphabet
- * encodings x k=15-19 against mouse GENCODE proteins.
+ * encodings x k=18-19 against mouse GENCODE proteins.
  *
  * Sibling of ../human-mouse-gencode-orthologs/kmerseek_human_mouse_orthologs.nf, kept
  * fully separate (own outdir, own workDir, own storeDir indices) so it can never
@@ -30,14 +30,14 @@ params.ortholog_url = "https://www.informatics.jax.org/downloads/reports/HOM_Mou
 // natively in kmerseek search via min_shared_kmers/max_pvalue below.
 params.threshold = 0.0
 
-// kmerseek 0.4.0 native search filters (see olgabot/min-shared-kmers-filter branch of
+// kmerseek 0.4.0 native search filters (see olgabot/bump-version-0.4.0 branch of
 // the kmerseek repo). Defaults match the kmerseek CLI's own defaults.
 params.min_shared_kmers = 2
 params.max_pvalue = 0.05
 
 // Absolute path to the locally-built kmerseek 0.4.0 release binary — no Docker container
 // for this pipeline (that container is still pinned to kmerseek:0.3.1).
-params.kmerseek_bin = "/Users/olga/code/kmerseek-min-shared-kmers-filter/target/release/kmerseek"
+params.kmerseek_bin = "/Users/olga/code/kmerseek/target/release/kmerseek"
 
 process downloadOrthologMapping {
     publishDir params.outdir, mode: 'copy'
@@ -139,7 +139,6 @@ process indexDatabase {
     ${params.kmerseek_bin} index \\
         --encoding ${encoding} \\
         --ksize ${ksize} \\
-        --scaled 1 \\
         --input ${fasta} \\
         2>&1 | tee -a ${log_file} || true
 
@@ -161,13 +160,14 @@ process searchHumanVsMouse {
 
     output:
     tuple val(encoding), val(ksize),
-        path("human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"),
+        path("human_vs_mouse.${encoding}.k${ksize}.results.parquet"),
         path("human_vs_mouse.${encoding}.k${ksize}.search.log"),
         path(index_log)
 
     script:
-    def output_zst = "human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"
-    def log_file   = "human_vs_mouse.${encoding}.k${ksize}.search.log"
+    def output_zst     = "human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"
+    def output_parquet = "human_vs_mouse.${encoding}.k${ksize}.results.parquet"
+    def log_file       = "human_vs_mouse.${encoding}.k${ksize}.search.log"
     """
     echo "=== Searching (kmerseek 0.4.0 local): human vs mouse ${encoding} k=${ksize} ===" | tee ${log_file}
     echo "Start time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
@@ -190,7 +190,28 @@ process searchHumanVsMouse {
 
     echo "" | tee -a ${log_file}
     echo "End time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
-    echo "Compressed size: \$(du -sh ${output_zst} | cut -f1)" | tee -a ${log_file}
+    echo "Compressed size (pre-parquet): \$(du -sh ${output_zst} | cut -f1)" | tee -a ${log_file}
+
+    # Convert straight to parquet (dropping the two unused md5 columns) and delete the raw
+    # CSV in the SAME task -- storeDir persists whatever this task declares as output forever,
+    # so keeping both formats around is exactly the ~530GB blow-up that made this necessary
+    # (see scripts/convert_results_to_parquet.py for the one-off backfill of pre-existing runs).
+    if [ -s ${output_zst} ]; then
+        /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 << 'PYEOF'
+import polars as pl
+DROP_COLUMNS = ["query_md5", "target_md5"]
+lf = pl.scan_csv("${output_zst}", ignore_errors=True)
+cols = [c for c in lf.collect_schema().names() if c not in DROP_COLUMNS]
+lf.select(cols).sink_parquet("${output_parquet}", compression="zstd", compression_level=9)
+PYEOF
+        rm ${output_zst}
+    else
+        # 0-byte input (search produced nothing) -- keep the empty-file signal
+        # evaluate_orthologs.py checks via os.path.getsize == 0, just under the .parquet name.
+        touch ${output_parquet}
+    fi
+
+    echo "Compressed size (parquet): \$(du -sh ${output_parquet} | cut -f1)" | tee -a ${log_file}
     """
 }
 
@@ -319,16 +340,29 @@ workflow {
     ortholog_file = downloadOrthologMapping()
     (ortholog_pairs, ortholog_stats) = parseOrthologMapping(ortholog_file)
 
-    hp_ksizes = Channel.of(15, 16, 17, 18, 19)
-
+    // Re-run of the 17 TRUNCATED combos, not a fresh sweep.
+    //
+    // Their existing results in ../results-human-mouse-orthologs (and, for kyte-doolittle k18,
+    // in this pipeline's own outdir) contain only the first ~1000 human query sequences: each
+    // file's gene set is exactly FASTA gene indices 0..999, a contiguous prefix, even though the
+    // search logs show all 19732 queries were read. The writes were cut off during the disk-full
+    // period (the volume hit 260 MB free). Row counts still look healthy — 26M to 160M rows — so
+    // the truncation is invisible without counting DISTINCT query genes: ~999 vs the ~19,696 a
+    // complete run produces. They surfaced as "0 MHC hits" in notebook 201.
+    //
+    // Listed explicitly rather than as an encoding x ksize cross-product, because the affected
+    // (encoding, ksize) pairs are irregular — re-running the full grid would redo ~60 combos
+    // that are already complete.
     hp_enc_ksize = Channel.of(
-        'hp-lehninger',
-        'hp-thomas-dill',
-        'hp-kyte-doolittle',
-        'hp-thomas-dill-no-c',
-        'hp-lehninger-plus-c',
-        'hp-pbotc-1st-ed'
-    ).combine(hp_ksizes)
+        ['hp-kyte-doolittle',   18], ['hp-kyte-doolittle',   22], ['hp-kyte-doolittle',   23],
+        ['hp-kyte-doolittle',   24], ['hp-kyte-doolittle',   25], ['hp-kyte-doolittle',   26],
+        ['hp-kyte-doolittle',   27],
+        ['hp-pbotc-1st-ed',     18],
+        ['hp-thomas-dill',      19], ['hp-thomas-dill',      20], ['hp-thomas-dill',      21],
+        ['hp-thomas-dill',      22],
+        ['hp-thomas-dill-no-c', 21], ['hp-thomas-dill-no-c', 22], ['hp-thomas-dill-no-c', 23],
+        ['hp-thomas-dill-no-c', 24], ['hp-thomas-dill-no-c', 25]
+    ).map { enc, k -> tuple(enc, k) }
 
     human_decompressed = channel.of(tuple('human', file(params.human_fasta)))
     mouse_decompressed = channel.of(tuple('mouse', file(params.mouse_fasta)))

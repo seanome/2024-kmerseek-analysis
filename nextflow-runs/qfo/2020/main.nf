@@ -48,10 +48,9 @@ process KMERSEEK_SEARCH {
     container 'kmerseek:0.2.0'
     tag "${query_id}_vs_${target_id}_k${ksize}"
 
-    // storeDir keeps CSVs in a named location instead of the ephemeral work dir.
-    // On rerun, if the CSV already exists in search_results/, this process is skipped.
-    // This prevents the work/ directory from accumulating hundreds of GB of search CSVs.
-    storeDir "${params.outdir}/search_results"
+    // No storeDir here -- the raw csv.gz is intentionally NOT persisted. It only
+    // lives in this task's own work dir, gets consumed by CONVERT_TO_PARQUET below,
+    // and only the resulting parquet is stored.
     publishDir "${params.outdir}/search_logs", mode: 'copy', pattern: '*.stderr.log'
 
     input:
@@ -75,6 +74,45 @@ process KMERSEEK_SEARCH {
     """
 }
 
+// No container: needs the host conda env's polars. kmerseek:0.2.0 is a minimal
+// binary-only image with no Python, so this has to run outside it. storeDir keeps
+// parquets in a named location instead of the ephemeral work dir -- on rerun, if
+// the parquet already exists in search_results/, this process is skipped. This
+// prevents the work/ directory from accumulating hundreds of GB of search results.
+process CONVERT_TO_PARQUET {
+    tag "${csv_gz.simpleName}"
+    storeDir "${params.outdir}/search_results"
+
+    input:
+    tuple val(ksize), path(csv_gz)
+
+    output:
+    tuple val(ksize), path("${csv_gz.name.replaceAll(/\.csv\.gz$/, '')}.parquet")
+
+    script:
+    def out_stem = csv_gz.name.replaceAll(/\.csv\.gz$/, '')
+    """
+    /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 << 'PYEOF'
+import os
+import polars as pl
+
+csv_path = "${csv_gz}"
+out_path = "${out_stem}.parquet"
+
+if os.path.getsize(csv_path) == 0:
+    open(out_path, "wb").close()
+else:
+    try:
+        pl.scan_csv(csv_path, ignore_errors=True).sink_parquet(
+            out_path, compression="zstd", compression_level=9
+        )
+    except Exception as e:
+        print(f"WARNING: {csv_path} has no readable rows ({e}); writing empty parquet.")
+        open(out_path, "wb").close()
+PYEOF
+    """
+}
+
 // ---------------------------------------------------------------------------
 // FORMAT all pairwise results as OrthoXML for one (ksize, pvalue) combination.
 // ---------------------------------------------------------------------------
@@ -90,8 +128,12 @@ process FORMAT_ORTHOXML {
     path "kmerseek_k${ksize}_${params.moltype}_pval${pvalue}_qfo2020.orthoxml"
 
     script:
+    // kmerseek-analysis:latest's shebang python (host conda path baked into
+    // format_orthoxml.py) doesn't exist inside the container -- invoke it via the
+    // container's own PATH python3 (which has polars) instead of relying on the
+    // shebang.
     """
-    format_orthoxml.py \\
+    python3 "\$(command -v format_orthoxml.py)" \\
         --pvalue  ${pvalue}          \\
         --ksize   ${ksize}           \\
         --moltype ${params.moltype}  \\
@@ -125,8 +167,10 @@ workflow {
 
     (results_ch, _stderr_ch) = KMERSEEK_SEARCH(pairs_ch)
 
+    parquet_ch = CONVERT_TO_PARQUET(results_ch)
+
     // Collect results per ksize, then fan out across pvalues for OrthoXML formatting
-    results_by_ksize = results_ch.groupTuple(by: 0)   // (ksize, [csv_files...])
+    results_by_ksize = parquet_ch.groupTuple(by: 0)   // (ksize, [parquet_files...])
 
     pvalues_ch = Channel.fromList(params.pvalues)
 

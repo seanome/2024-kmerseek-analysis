@@ -163,25 +163,80 @@ process searchHumanVsMouse {
     def output_zst = "human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"
     def log_file   = "human_vs_mouse.${encoding}.k${ksize}.search.log"
     """
+    set -o pipefail
+
     echo "=== Searching: human vs mouse ${encoding} k=${ksize} ===" | tee ${log_file}
     echo "Start time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
     echo "" | tee -a ${log_file}
 
+    # NOTE: no `|| true` and no fallback `touch` here anymore -- both used to swallow a
+    # crashed/OOM-killed `kmerseek search` (e.g. SIGKILL, no stderr) and let the task exit 0
+    # with a truncated or empty results file, which storeDir then cached as a permanent
+    # "success". Some HP encodings (hp-kyte-doolittle, hp-thomas-dill, hp-thomas-dill-no-c) at
+    # low ksize produce dense hub k-mers that exceed real available memory (Docker Desktop's
+    # VM, not the `memory` directive below, is the actual ceiling) and get killed. Now that
+    # failure propagates (`pipefail` + Nextflow's default `set -e`) so the task is marked
+    # FAILED and produces no cached output -- see withName: searchHumanVsMouse's
+    # errorStrategy 'ignore' in nextflow.config, which lets the rest of the sweep continue.
     kmerseek search \\
         --encoding ${encoding} \\
         --ksize ${ksize} \\
         --query ${human_fasta} \\
         --target ${mouse_index} \\
         2>> ${log_file} \\
-        | zstd -T2 -o ${output_zst} \\
-        || true
-
-    # Ensure output exists even if no matches
-    touch ${output_zst}
+        | zstd -T2 -o ${output_zst}
 
     echo "" | tee -a ${log_file}
     echo "End time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
     echo "Compressed size: \$(du -sh ${output_zst} | cut -f1)" | tee -a ${log_file}
+    """
+}
+
+// Converts each raw human_vs_mouse.*.results.csv.zst to parquet (dropping the two unused
+// md5 columns) and deletes the raw file from searchHumanVsMouse's storeDir -- kept as its own
+// (non-containerized) process because kmerseek:0.3.1's container has no python/polars, so this
+// can't be folded into searchHumanVsMouse's script the way the hp-v040 sibling pipeline does it.
+//
+// Tradeoff, stated explicitly: because searchHumanVsMouse's storeDir output no longer exists
+// on disk after this runs, a future `-resume` that needs a NEW (not-yet-searched) combo is
+// unaffected, but re-touching an ALREADY-converted combo would force kmerseek search to redo
+// that (expensive) work rather than finding a cached hit -- same tradeoff as manually running
+// `nextflow clean`, just automatic. Acceptable here since this pipeline is being superseded by
+// the hp-v040 sibling for new sweeps (see that .nf's header comment); this one's raw csv.zst
+// files were the ~228GB that prompted this change in the first place.
+process convertResultsToParquet {
+    tag "${encoding}_k${ksize}"
+    storeDir params.outdir
+
+    input:
+    tuple val(encoding), val(ksize), path(results_csv_zst)
+
+    output:
+    tuple val(encoding), val(ksize), path("human_vs_mouse.${encoding}.k${ksize}.results.parquet")
+
+    script:
+    def parquet = "human_vs_mouse.${encoding}.k${ksize}.results.parquet"
+    """
+    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    import polars as pl
+    from pathlib import Path
+
+    src = Path("${results_csv_zst}")
+    dst = Path("${parquet}")
+
+    if src.stat().st_size == 0:
+        dst.touch()  # keep the empty-file signal evaluate_orthologs.py checks for
+    else:
+        DROP_COLUMNS = ["query_md5", "target_md5"]
+        lf = pl.scan_csv(str(src), ignore_errors=True)
+        cols = [c for c in lf.collect_schema().names() if c not in DROP_COLUMNS]
+        lf.select(cols).sink_parquet(str(dst), compression="zstd", compression_level=9)
+
+    # ${results_csv_zst} here is nextflow's symlink into THIS task's work dir -- the real file
+    # searchHumanVsMouse's storeDir wrote lives directly in params.outdir under the same name.
+    real_src = Path("${params.outdir}") / "human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"
+    if real_src.exists():
+        real_src.unlink()
     """
 }
 
@@ -306,7 +361,7 @@ process multiQC {
 
     output:
     path "multiqc_report.html"
-    path "multiqc_data/"
+    path "multiqc_report_data/"
 
     script:
     """
@@ -378,11 +433,16 @@ workflow {
     // Search human against mouse
     search_outputs = searchHumanVsMouse(search_inputs)
     search_results = search_outputs[0]
-    // (encoding, ksize, results_csv)
+    // (encoding, ksize, results_csv_zst)
+
+    // Convert to parquet immediately and drop the raw csv.zst (see process comment) --
+    // everything downstream reads the parquet.
+    parquet_results = convertResultsToParquet(search_results)
+    // (encoding, ksize, results_parquet)
 
     // Evaluate ortholog detection
-    eval_inputs = search_results.combine(ortholog_pairs)
-    // (encoding, ksize, results_csv, ortholog_pairs)
+    eval_inputs = parquet_results.combine(ortholog_pairs)
+    // (encoding, ksize, results_parquet, ortholog_pairs)
     eval_outputs = evaluateOrthologs(eval_inputs)
 
     // Collect all summary files for aggregation
