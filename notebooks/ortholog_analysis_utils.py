@@ -514,29 +514,36 @@ PAIR_CACHE_DIR = DATA_DIR / "pair_cache"
 
 
 def load_pair_table(encoding: str, ksize: int, data_dir: Path = DATA_DIR) -> pl.DataFrame:
-    """Per-gene-pair max-containment table for one alphabet/ksize combo, aggregated from the
+    """Per-gene-pair max-jaccard table for one alphabet/ksize combo, aggregated from the
     raw genome-wide `human_vs_mouse.{encoding}.k{ksize}.results.*` file -- the single expensive
     step (multi-GB-to-100+GB raw scan) that every downstream per-combo analysis in this project
     needs (notebook 200's F1/AUC sweep, 201/203/206's per-combo comparisons, 202's per-gene pLDDT
-    correctness table). Cached to `{data_dir}/pair_cache/{encoding}_k{ksize}.parquet` on first call
-    so notebooks 200/201/202/203/206 stop each re-scanning the same raw file independently --
-    everything past this point (RBH calling, F1, per-gene tables) is cheap in-memory work on a
-    table with one row per observed (human_gene, mouse_gene) candidate, not per matched region.
+    correctness table). Cached to `{data_dir}/pair_cache/{encoding}_k{ksize}_jaccard.parquet` on
+    first call so notebooks 200/201/202/203/206 stop each re-scanning the same raw file
+    independently -- everything past this point (RBH calling, F1, per-gene tables) is cheap
+    in-memory work on a table with one row per observed (human_gene, mouse_gene) candidate, not
+    per matched region.
 
-    Columns: human_gene, mouse_gene, containment (max over that gene pair's matched regions).
+    Metric is jaccard, not containment: the notebook 200 section 2b full 97-combo sweep found
+    jaccard wins the ranking-metric comparison for 65/97 combos, almost entirely HP alphabets
+    (65/78) -- and HP is this project's priority alphabet family. The cache filename is
+    metric-qualified so it doesn't collide with (and silently misread) any pre-existing
+    containment-based `{encoding}_k{ksize}.parquet` cache from before this switch.
+
+    Columns: human_gene, mouse_gene, jaccard (max over that gene pair's matched regions).
     """
-    cache_path = PAIR_CACHE_DIR / f"{encoding}_k{ksize}.parquet"
+    cache_path = PAIR_CACHE_DIR / f"{encoding}_k{ksize}_jaccard.parquet"
     if cache_path.exists():
         return pl.read_parquet(cache_path)
 
     lf = (
-        scan_genome_wide_results(encoding, ksize, data_dir, columns=["query_name", "target_name", "containment"])
+        scan_genome_wide_results(encoding, ksize, data_dir, columns=["query_name", "target_name", "jaccard"])
         .with_columns([
             pl.col("query_name").str.split("|").list.get(6).str.to_uppercase().alias("human_gene"),
             pl.col("target_name").str.split("|").list.get(6).str.to_uppercase().alias("mouse_gene"),
         ])
         .group_by(["human_gene", "mouse_gene"])
-        .agg(pl.col("containment").max().alias("containment"))
+        .agg(pl.col("jaccard").max().alias("jaccard"))
     )
     # streaming: low-k HP-variant files can be 100+ GB uncompressed (e.g. hp-thomas-dill
     # k25/26) -- a plain .collect() tries to materialize the whole thing at once and can
@@ -551,7 +558,7 @@ def load_pair_table(encoding: str, ksize: int, data_dir: Path = DATA_DIR) -> pl.
 def rbh_pairs_and_scope(
     encoding: str, ksize: int, data_dir: Path = DATA_DIR,
 ) -> tuple[set[tuple[str, str]], set[str]]:
-    """Aggregate to per-gene-pair max containment (via the shared `load_pair_table` cache) and
+    """Aggregate to per-gene-pair max jaccard (via the shared `load_pair_table` cache) and
     call reciprocal-best-hit (RBH) pairs: each human gene's top mouse hit must agree with that
     mouse gene's top human hit.
 
@@ -561,10 +568,10 @@ def rbh_pairs_and_scope(
     pair = load_pair_table(encoding, ksize, data_dir)
     scope = set(pair["human_gene"].unique().to_list())
 
-    # secondary sort key makes tie-breaking (equal max containment) deterministic
-    best_h2m = (pair.sort(["containment", "mouse_gene"], descending=[True, False])
+    # secondary sort key makes tie-breaking (equal max jaccard) deterministic
+    best_h2m = (pair.sort(["jaccard", "mouse_gene"], descending=[True, False])
                 .group_by("human_gene").agg(pl.col("mouse_gene").first().alias("best_mouse")))
-    best_m2h = (pair.sort(["containment", "human_gene"], descending=[True, False])
+    best_m2h = (pair.sort(["jaccard", "human_gene"], descending=[True, False])
                 .group_by("mouse_gene").agg(pl.col("human_gene").first().alias("best_human")))
     rbh = (best_h2m.join(best_m2h, left_on=["human_gene", "best_mouse"], right_on=["best_human", "mouse_gene"])
            .select(["human_gene", "best_mouse"]).rename({"best_mouse": "mouse_gene"}))
@@ -581,16 +588,16 @@ def per_gene_rbh_table(
     `truth_lists` must have columns `human_gene`, `true_mouse_genes` (list[str]) -- e.g.
     `mgi_pairs.group_by("human_gene").agg(pl.col("mouse_gene").alias("true_mouse_genes"))`.
 
-    Returns one row per human gene in scope: human_gene, mouse_gene (RBH pick), containment,
+    Returns one row per human gene in scope: human_gene, mouse_gene (RBH pick), jaccard,
     is_rbh, has_mgi_truth, is_correct.
     """
     pair = load_pair_table(encoding, ksize, data_dir)
 
-    best_h2m = (pair.sort(["containment", "mouse_gene"], descending=[True, False])
+    best_h2m = (pair.sort(["jaccard", "mouse_gene"], descending=[True, False])
                 .group_by("human_gene")
                 .agg([pl.col("mouse_gene").first().alias("rbh_mouse_gene"),
-                      pl.col("containment").first().alias("containment")]))
-    best_m2h = (pair.sort(["containment", "human_gene"], descending=[True, False])
+                      pl.col("jaccard").first().alias("jaccard")]))
+    best_m2h = (pair.sort(["jaccard", "human_gene"], descending=[True, False])
                 .group_by("mouse_gene").agg(pl.col("human_gene").first().alias("best_human")))
 
     recip = (best_h2m.select(["human_gene", "rbh_mouse_gene"])
@@ -609,7 +616,7 @@ def per_gene_rbh_table(
             ).alias("_in_truth_set"),
         ])
         .with_columns((pl.col("is_rbh") & pl.col("_in_truth_set")).alias("is_correct"))
-        .select(["human_gene", "rbh_mouse_gene", "containment", "is_rbh", "has_mgi_truth", "is_correct"])
+        .select(["human_gene", "rbh_mouse_gene", "jaccard", "is_rbh", "has_mgi_truth", "is_correct"])
         .rename({"rbh_mouse_gene": "mouse_gene"})
         .with_columns([pl.lit(encoding).alias("encoding"), pl.lit(ksize).alias("ksize")])
     )
