@@ -12,6 +12,9 @@ Covers:
 - KS_COLS, N_PROTEINS: benchmark column lists and species protein counts
 - SCORE_COLS, SCORE_LABELS, add_composite_scores: scoring for all benchmarks
 - compute_aucs: ROC-AUC and PR-AUC over all score columns
+- AA_FREQUENCIES, ALPHABET_AA_GROUPS, entropy_per_symbol, bits_per_kmer: real (not naive
+  log2(n_symbols)) information content per alphabet, for comparing protein/dayhoff/HP on a
+  common bits-of-sequence-information axis instead of raw, alphabet-incomparable k-size
 - UniProt ID mapping (Ensembl Protein → UniProtKB)
 - UniProt annotation fetching and parsing
 - MobiDB intrinsic-disorder fetching
@@ -22,6 +25,7 @@ Covers:
 from __future__ import annotations
 
 import json
+import math
 import time
 from pathlib import Path
 
@@ -42,6 +46,68 @@ DATA_DIR = Path("/Users/olga/data/gencode/results-human-mouse-orthologs")
 # dirs before giving up.
 EXTRA_DATA_DIRS = [Path("/Users/olga/data/gencode/results-human-mouse-orthologs-hp-v040")]
 OF_DIR = Path("/Users/olga/data/gencode/data-for-orthofinder/OrthoFinder/Results_Mar03")
+
+# ---------------------------------------------------------------------------
+# Alphabet information content (bits per encoded symbol / per k-mer)
+# ---------------------------------------------------------------------------
+# Real amino-acid background frequencies -- NOT a textbook or uniform assumption -- computed by
+# counting every residue in the actual human+mouse proteomes this project searches against
+# (gencode.v49.pc_translations.fa: 245,535 sequences + gencode.vM38.pc_translations.fa: 66,668
+# sequences; 145,111,545 standard-amino-acid residues after excluding X/U/stop-codon-fragment
+# characters, which together account for <0.04% of residues). Computed 2026-08-05.
+AA_FREQUENCIES: dict[str, float] = {
+    'L': 0.099040, 'S': 0.082679, 'E': 0.072152, 'A': 0.070069, 'G': 0.064989,
+    'P': 0.061661, 'V': 0.060746, 'K': 0.058080, 'R': 0.056316, 'T': 0.053380,
+    'D': 0.048762, 'Q': 0.048394, 'I': 0.043419, 'F': 0.036325, 'N': 0.035909,
+    'Y': 0.026507, 'H': 0.025944, 'M': 0.022029, 'C': 0.021521, 'W': 0.011940,
+}
+
+# Amino-acid -> symbol groupings for every alphabet kmerseek's pipeline supports, transcribed
+# directly from kmerseek's own encoding tables (kmerseek/src/rust/hp_alphabets.rs for the 6
+# named hp_* variants; REFERENCE_sourmash/src/core/src/encodings.rs for protein/dayhoff/hp) --
+# not re-derived, so entropy computed on these reflects the real per-symbol information content
+# of what kmerseek actually searches with, not a guess at the grouping.
+ALPHABET_AA_GROUPS: dict[str, dict[str, str]] = {
+    "protein": {aa: aa for aa in AA_FREQUENCIES},
+    "dayhoff": {
+        "a": "C", "b": "AGPST", "c": "DENQ", "d": "HKR", "e": "ILMV", "f": "FWY",
+    },
+    "hp": {"h": "AFGILMPVWY", "p": "CDEHKNQRST"},                  # Lehninger; alias of hp_lehninger
+    "hp_lehninger": {"h": "AFGILMPVWY", "p": "CDEHKNQRST"},
+    "hp_lehninger_plus_c": {"h": "ACFGILMPVWY", "p": "DEHKNQRST"},
+    "hp_kyte_doolittle": {"h": "ACFILMV", "p": "DEGHKNPQRSTWY"},
+    "hp_pbotc_1st_ed": {"h": "ACFILMPVWY", "p": "DEGHKNQRST"},
+    "hp_thomas_dill": {"h": "ACFILMVWY", "p": "DEGHKNPQRST"},
+    "hp_thomas_dill_no_c": {"h": "AFILMVWY", "p": "CDEGHKNPQRST"},
+}
+
+
+def entropy_per_symbol(encoding: str) -> float:
+    """Shannon entropy (bits) of one encoded symbol under *encoding*, from the REAL amino-acid
+    background frequency (:data:`AA_FREQUENCIES`) grouped the way kmerseek actually groups it
+    (:data:`ALPHABET_AA_GROUPS`) -- not `log2(n_symbols)`, which assumes every symbol is equally
+    likely and overstates every alphabet coarser than `protein` (e.g. every 2-letter HP alphabet
+    has naive entropy exactly 1.0 bit, but real entropy ranges 0.94-1.00 bits depending on how
+    balanced that specific H/P split happens to fall against real amino-acid usage).
+    """
+    groups = ALPHABET_AA_GROUPS[encoding]
+    ent = 0.0
+    for aas in groups.values():
+        p = sum(AA_FREQUENCIES[aa] for aa in aas)
+        if p > 0:
+            ent -= p * math.log2(p)
+    return ent
+
+
+def bits_per_kmer(encoding: str, ksize: int) -> float:
+    """Bits of sequence information in one k-mer under *encoding* (`ksize * entropy_per_symbol`,
+    the standard iid-positions approximation). The fair x-axis for comparing alphabets of
+    different symbol-cardinality: e.g. HP k=30 (30 x ~0.97 bit =~29 bits) and protein k=7
+    (7 x ~4.18 bit =~29 bits) carry roughly the same raw information despite a 4x difference in
+    raw k, which is invisible if you only plot against k-size.
+    """
+    return ksize * entropy_per_symbol(encoding)
+
 
 KSIZE = 24
 ALPHA = 0.05
@@ -597,7 +663,7 @@ def load_family_kmerseek_scores(
         else pl.scan_csv(str(f), n_rows=1).collect_schema().names()
     )
     has_poisson_col = "poisson_pvalue" in schema_names
-    base_cols = ["human_gene", "mouse_gene", "enrichment", "containment", "mean_matched_kmer_freq", "query_tfidf"]
+    base_cols = ["human_gene", "mouse_gene", "enrichment", "containment", "jaccard", "mean_matched_kmer_freq", "query_tfidf"]
     extra_cols = ["poisson_pvalue"] if has_poisson_col else ["n_intersecting_hashes", "expected_shared_kmers"]
     raw_cols = ["query_name", "target_name"] + base_cols[2:] + extra_cols
 
@@ -674,7 +740,7 @@ def load_families_kmerseek_scores(
         else pl.scan_csv(str(f), n_rows=1).collect_schema().names()
     )
     has_poisson_col = "poisson_pvalue" in schema_names
-    base_cols = ["human_gene", "mouse_gene", "enrichment", "containment", "mean_matched_kmer_freq", "query_tfidf"]
+    base_cols = ["human_gene", "mouse_gene", "enrichment", "containment", "jaccard", "mean_matched_kmer_freq", "query_tfidf"]
     extra_cols = ["poisson_pvalue"] if has_poisson_col else ["n_intersecting_hashes", "expected_shared_kmers"]
     raw_cols = ["query_name", "target_name"] + base_cols[2:] + extra_cols
 
@@ -718,7 +784,7 @@ def load_families_kmerseek_scores(
 
 
 def length_floor_mask(
-    seq_lengths: np.ndarray, ksize: int, scaled: int = 1, min_expected_kmers: float = 10.0,
+    seq_lengths: np.ndarray, ksize: int, scaled: int = 1, min_expected_kmers: float = 2.0,
 ) -> np.ndarray:
     """Flag sequences too short, at a given k/scaled, to produce a meaningful sketch.
 
