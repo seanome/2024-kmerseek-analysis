@@ -1,6 +1,6 @@
 """
 ortholog_analysis_utils.py
-Shared utilities for human–mouse ortholog analysis notebooks (118–126).
+Shared utilities for human–mouse ortholog analysis notebooks (118–126, 200–215).
 
 Covers:
 - JSON cache I/O
@@ -318,7 +318,7 @@ def load_orthofinder_predictions(
 
 # ---------------------------------------------------------------------------
 # Gene family membership (HGNC gene groups) — real, non-hand-picked family
-# definitions, as opposed to a hardcoded gene-symbol dict (cf. notebook 201's
+# definitions, as opposed to a hardcoded gene-symbol dict (cf. the MHC block's (210-215)
 # MHC_CLASSES, which predates this and is kept as-is for the MHC recap).
 # ---------------------------------------------------------------------------
 
@@ -458,7 +458,7 @@ def load_all_alphabet_ksize_combos(data_dir: Path = DATA_DIR) -> pl.DataFrame:
     hp k=21 result and is missing that one combo) and its 6-variant HP sweep
     (`200_hp_variants_full_sweep.csv`: hp-lehninger, hp-lehninger-plus-c, hp-kyte-doolittle,
     hp-pbotc-1st-ed, hp-thomas-dill, hp-thomas-dill-no-c). Single source of truth for "all
-    alphabets and ksizes" so downstream notebooks (201, 203, 206, ...) can't drift from what 200
+    alphabets and ksizes" so downstream notebooks (203, 206, 211, ...) can't drift from what 200
     actually validated -- add a new alphabet/ksize there first, then it shows up here automatically.
 
     Returns one row per combo with columns:
@@ -488,7 +488,7 @@ def alphabet_combo_colors(
 ) -> tuple[dict[str, str], dict[str, tuple]]:
     """Per-alphabet color families for combo x k-size figures: hue = alphabet (cycled from a
     fixed colormap palette, sorted by display name so assignment is stable run-to-run), shade =
-    k-size rank within that alphabet. Shared by 201/203/206 so they can't each hand-roll a
+    k-size rank within that alphabet. Shared by 203/206/211 so they can't each hand-roll a
     different color scheme for the same ~100-combo "all alphabets and ksizes" sweep.
 
     Returns (alphabet_cmaps, combo_colors):
@@ -517,9 +517,9 @@ def load_pair_table(encoding: str, ksize: int, data_dir: Path = DATA_DIR) -> pl.
     """Per-gene-pair max-jaccard table for one alphabet/ksize combo, aggregated from the
     raw genome-wide `human_vs_mouse.{encoding}.k{ksize}.results.*` file -- the single expensive
     step (multi-GB-to-100+GB raw scan) that every downstream per-combo analysis in this project
-    needs (notebook 200's F1/AUC sweep, 201/203/206's per-combo comparisons, 202's per-gene pLDDT
+    needs (notebook 200's F1/AUC sweep, 203/206/211's per-combo comparisons, 202's per-gene pLDDT
     correctness table). Cached to `{data_dir}/pair_cache/{encoding}_k{ksize}_jaccard.parquet` on
-    first call so notebooks 200/201/202/203/206 stop each re-scanning the same raw file
+    first call so notebooks 200/202/203/206/210 stop each re-scanning the same raw file
     independently -- everything past this point (RBH calling, F1, per-gene tables) is cheap
     in-memory work on a table with one row per observed (human_gene, mouse_gene) candidate, not
     per matched region.
@@ -807,11 +807,11 @@ def length_floor_mask(
 
 
 # ---------------------------------------------------------------------------
-# Gene coordinates (GENCODE GTF) — notebook 208's synteny work.
+# Gene coordinates (GENCODE GTF) — notebook 215's synteny work.
 #
 # Human uses the `chr_patch_hapl_scaff` flavor (not `basic.annotation`, which GENCODE ships
 # primary-assembly-only) specifically so the 8 GRCh38 MHC alt haplotypes are present and the
-# ALT-contig filter this notebook needs (see 208 spec §7) has something real to remove instead
+# ALT-contig filter this notebook needs (see 215's ALT-contig trap check) has something real to remove instead
 # of trivially reporting zero. GENCODE names alt/patch/scaffold sequences by their GenBank
 # accession (e.g. `GL000251.2`), not UCSC's `chr6_GL000251v2_alt` — HUMAN_MHC_ALT_CONTIGS below
 # is the accession form, confirmed present with real gene annotations (184-341 genes each).
@@ -862,7 +862,7 @@ def region_by_anchor_genes(gene_table: pl.DataFrame, anchor_names: tuple[str, st
     """Define a region as "anchor gene 1 through anchor gene 2 inclusive" -- the gene-model
     extents of two named boundary genes -- rather than a hardcoded bp interval.
 
-    Motivation (notebook 208): a literature-cited region boundary (e.g. Shiina/Kulski's classical
+    Motivation (notebook 215): a literature-cited region boundary (e.g. Shiina/Kulski's classical
     HLA span) is only as stable as whichever single transcript its source used to define GABBR1's
     start; GENCODE's own `gene` feature start is the 5'-most extent of *any* annotated transcript
     and drifts as isoforms get added (confirmed here: GABBR1 differs from the literature value by
@@ -879,16 +879,16 @@ def load_gene_coordinates(
     mouse_chroms: set[str] = frozenset({"chr17"}),
     human_gtf: Path = HUMAN_GTF_CHR_PATCH_HAPL_SCAFF,
     mouse_gtf: Path = MOUSE_GTF_BASIC,
-    cache_path: Path = DATA_DIR / "208_gene_coordinates.parquet",
+    cache_path: Path = DATA_DIR / "215_gene_coordinates.parquet",
     force: bool = False,
 ) -> pl.DataFrame:
     """Gene -> (assembly, chrom, start, end, strand, gene_type, is_primary_assembly) table for
-    notebook 208, restricted by default to human chr6 (+ its 8 MHC alt contigs) and mouse chr17
-    -- the 208 spec's "start with just the MHC window, then add on" scoping decision. Widen
+    notebook 215, restricted by default to human chr6 (+ its 8 MHC alt contigs) and mouse chr17
+    -- the synteny notebook's "start with just the MHC window, then add on" scoping decision. Widen
     `human_chroms`/`mouse_chroms` (and pass `force=True` to bypass the cache) if a later section
     needs anchors outside that window.
 
-    Cached to `cache_path` (default `208_gene_coordinates.parquet`) since re-parsing the 93MB
+    Cached to `cache_path` (default `215_gene_coordinates.parquet`) since re-parsing the 93MB
     chr_patch_hapl_scaff GTF on every notebook run is wasted work once the window is fixed.
     """
     if cache_path.exists() and not force:
@@ -906,6 +906,339 @@ def load_gene_coordinates(
     cache_path.parent.mkdir(exist_ok=True, parents=True)
     combined.write_parquet(cache_path)
     return combined
+
+
+# ---------------------------------------------------------------------------
+# MHC benchmark: gene taxonomy and domain architecture
+#
+# Shared by the 210-215 MHC block. Previously redefined inline in the pre-split notebook 201; kept here so a
+# correction to a domain boundary or a class assignment lands in every notebook at once instead
+# of drifting between them.
+#
+# Domain boundaries are real UniProt feature-table values in PROTEIN numbering (signal peptide
+# included), not mature-chain numbering:
+#   class I heavy (HLA-A, P04439): signal 1-24 | ARD a1 25-114 + a2 115-206 | Ig-C1 a3 207-298 | TM/cyto 299-365
+#   class II alpha (HLA-DRA, P01903): signal 1-25 | ARD a1 26-109 | Ig a2 110-203 | TM 204-254
+#   class II beta  (HLA-DRB1, P01911): signal 1-29 | ARD b1 30-124 | Ig b2 125-227 | TM 228-266
+#   light chain    (B2M, P61769): signal 1-20 | no ARD | Ig 25-113
+# ---------------------------------------------------------------------------
+
+#: Structural taxonomy of the 25-gene human MHC query set. Hand-curated rather than pulled from an
+#: HGNC group: HGNC's own "Histocompatibility complex" group is a single flat bucket, not split by
+#: class, so it cannot substitute for this.
+MHC_CLASSES: dict[str, str] = {
+    "HLA-A": "I classical", "HLA-B": "I classical", "HLA-C": "I classical",
+    "HLA-E": "I non-classical", "HLA-F": "I non-classical", "HLA-G": "I non-classical",
+    "MICA": "I related (MIC)", "MICB": "I related (MIC)",
+    "HLA-DRA": "II alpha", "HLA-DQA1": "II alpha", "HLA-DQA2": "II alpha",
+    "HLA-DPA1": "II alpha", "HLA-DMA": "II alpha", "HLA-DOA": "II alpha",
+    "HLA-DRB1": "II beta", "HLA-DRB5": "II beta", "HLA-DQB1": "II beta", "HLA-DQB2": "II beta",
+    "HLA-DPB1": "II beta", "HLA-DMB": "II beta", "HLA-DOB": "II beta",
+    "B2M": "light chain", "TAP1": "processing (ctrl)", "TAP2": "processing (ctrl)",
+    "TAPBP": "processing (ctrl)",
+}
+
+MHC_CLASS_ORDER: list[str] = [
+    "I classical", "I non-classical", "I related (MIC)", "II alpha", "II beta",
+    "light chain", "processing (ctrl)",
+]
+
+MHC_CLASS_COLORS: dict[str, str] = {
+    "I classical": "#D65F5F", "I non-classical": "#E1917F", "I related (MIC)": "#C4AD66",
+    "II alpha": "#4878CF", "II beta": "#77BEDB", "light chain": "#6ACC65",
+    "processing (ctrl)": "#999999",
+}
+
+#: The six class I heavy chains -- the genes every class I AUC in this project rests on.
+MHC_CLASS_I_GENES: list[str] = ["HLA-A", "HLA-B", "HLA-C", "HLA-E", "HLA-F", "HLA-G"]
+
+#: HLA-A (P04439) domain architecture for the localisation figures: (name, start, end, color).
+DOMAINS_CLASS_I: list[tuple[str, int, int, str]] = [
+    ("signal", 1, 24, "#cccccc"), ("α1 (ARD)", 25, 114, "#D65F5F"),
+    ("α2 (ARD)", 115, 206, "#E1917F"), ("α3 (Ig-C1)", 207, 298, "#4878CF"),
+    ("TM/cyto", 299, 365, "#dddddd"),
+]
+ARD_I: tuple[int, int] = (25, 206)
+IG_I: tuple[int, int] = (207, 298)
+TM_I: tuple[int, int] = (299, 365)
+LEN_HLA_A: int = 365
+
+#: HLA class I peptide-contact residues, Saper/Bjorkman groove set, converted from mature to
+#: protein numbering (+24 for HLA-A's 24-residue signal peptide).
+CONTACT_MATURE: list[int] = [
+    5, 7, 9, 24, 45, 59, 62, 63, 66, 67, 69, 70, 73, 74, 76, 77, 80, 81, 84, 95, 97, 99, 114, 116,
+    123, 143, 146, 147, 152, 156, 159, 163, 167, 171,
+]
+CONTACT_PROT: list[int] = [r + 24 for r in CONTACT_MATURE]
+
+#: Per-gene-class (ARD ranges, Ig range) in protein numbering, for within-molecule density.
+MHC_ARCH: dict[str, tuple[list[tuple[int, int]], tuple[int, int]]] = {
+    "I": ([(25, 114), (115, 206)], (207, 298)),
+    "II alpha": ([(26, 109)], (110, 203)),
+    "II beta": ([(30, 124)], (125, 227)),
+}
+
+#: Real UniProt boundaries for the two mouse classical class I genes that receive most class-I
+#: matched regions. H2-D1's boundaries are numerically identical to HLA-A's; H2-K1's are offset
+#: by -3 (a 3-aa-shorter signal peptide). Both verified against the UniProt REST API, not scaled
+#: or guessed from HLA-A.
+MOUSE_DOMAINS_I: dict[str, dict] = {
+    "H2-D1": {"acc": "P01899", "ARD": [(25, 114), (115, 206)], "Ig": (207, 298)},
+    "H2-K1": {"acc": "P01901", "ARD": [(22, 111), (112, 203)], "Ig": (204, 295)},
+}
+
+
+def mhc_gene_arch(mhc_class: str) -> tuple[list[tuple[int, int]], tuple[int, int]] | None:
+    """(ARD ranges, Ig range) for an :data:`MHC_CLASSES` value, or None if the class has no ARD.
+
+    "I related (MIC)" reuses the class I architecture: MICA/MICB share the a1/a2/a3 fold even
+    though they do not bind peptide. "light chain" (B2M) and "processing (ctrl)" return None --
+    B2M is a free-standing Ig domain with no ARD of its own, so it is excluded from any ARD-vs-Ig
+    ratio by construction rather than by oversight.
+    """
+    if mhc_class in ("I classical", "I non-classical", "I related (MIC)"):
+        return MHC_ARCH["I"]
+    return MHC_ARCH.get(mhc_class)
+
+
+# ---------------------------------------------------------------------------
+# One-to-many ortholog label policies
+#
+# A gene with N > 1 MGI-listed mouse partners has no single "the ortholog", so "is this pair a
+# true ortholog?" has no answer until a rule is named. Three rules are defensible and they give
+# materially different AUCs, so the rule has to be stated rather than inherited from whatever a
+# join happened to do:
+#
+#   any_member           y=1 for every MGI-listed partner. Standard and assumption-light, but the
+#                        positive set grows with the expansion (|P| = 14 for HLA-A vs 1 for a
+#                        class II gene), so class I and class II AUCs are not comparable.
+#   best_scoring_member  y=1 only for the highest-scoring MGI partner. Gives |P| = 1, but the
+#                        label is chosen using the score being evaluated -- circular, and it
+#                        inflates AUC by construction. Reported as a bound, never as the headline.
+#   synteny_nearest      y=1 only for the partner closest to the position synteny predicts. Gives
+#                        |P| = 1 from evidence (genomic position) that is independent of the
+#                        protein sequence, so it is the only rule under which a one-to-many class
+#                        I number is comparable to a 1:1 class II number.
+# ---------------------------------------------------------------------------
+
+LABEL_POLICIES: tuple[str, str, str] = ("any_member", "best_scoring_member", "synteny_nearest")
+
+LABEL_POLICY_LABELS: dict[str, str] = {
+    "any_member": "any MGI member",
+    "best_scoring_member": "best-scoring member (circular)",
+    "synteny_nearest": "syntenically nearest",
+}
+
+#: Column name each policy writes into a pair table.
+LABEL_POLICY_COLS: dict[str, str] = {p: f"label_{p}" for p in LABEL_POLICIES}
+
+
+def syntenic_nearest_partner(
+    mgi_pairs: pl.DataFrame,
+    human_coords: pl.DataFrame,
+    mouse_coords: pl.DataFrame,
+    *,
+    anchor_pairs: pl.DataFrame | None = None,
+    human_gene_col: str = "human_upper",
+    mouse_gene_col: str = "mouse_upper",
+) -> pl.DataFrame:
+    """For each human gene, pick the ONE MGI mouse partner sitting closest to the genomic position
+    local synteny predicts -- the label rule that gives a one-to-many gene a size-1 positive set.
+
+    The prediction comes from *flanking 1:1 anchors*, not from a whole-region average: human genes
+    with exactly one MGI partner on the region's modal mouse chromosome are sorted by human
+    coordinate, and a query gene's expected mouse position is linearly interpolated between the
+    nearest anchor on each side. Interpolating (rather than assuming a fixed offset) handles the
+    mouse MHC's inverted orientation for free -- ascending human coordinate runs
+    GABBR1->KIFC1 while ascending mouse runs Kifc1->Gabbr1, so the fitted local slope is simply
+    negative and no axis flip has to be hardcoded anywhere.
+
+    `anchor_pairs` supplies the gene set the anchor ladder is built from, and should normally be
+    the WHOLE surrounding syntenic region rather than just the genes being labelled. Defaulting it
+    to `mgi_pairs` is only safe when `mgi_pairs` is itself region-wide: a query set of two dozen
+    genes contains too few 1:1 anchors to interpolate between, so every gene falls outside the
+    anchor range, every prediction degrades to `extrapolated`, and whole classes collapse onto a
+    single nearest partner. Observed directly while building notebook 210 -- all six class I genes
+    were assigned H2-D1 until the ladder was widened to the full MHC region.
+
+    A gene is never an anchor for itself, so a 1:1 gene's own label is still predicted from its
+    neighbours rather than trivially from its own position.
+
+    Returns one row per human gene: n_partners, syntenic_partner, expected_mouse_start,
+    distance_bp (partner to prediction), and `basis` -- one of `interpolated` (anchors on both
+    sides), `extrapolated` (anchors on one side only, local slope from the two nearest),
+    `single_anchor` (one anchor total, offset unknown, position copied), `no_anchor`, or
+    `off_modal_chrom` (the chosen partner is not on the modal chromosome, so the distance is not
+    physically meaningful). `basis` is returned rather than logged so a caller can drop or
+    down-weight the weak cases instead of silently trusting all of them equally.
+    """
+    h_lookup = human_coords.select([
+        pl.col("gene_name").str.to_uppercase().alias(human_gene_col),
+        pl.col("start").alias("human_start"),
+    ]).unique(subset=[human_gene_col])
+    m_lookup = mouse_coords.select([
+        pl.col("gene_name").str.to_uppercase().alias(mouse_gene_col),
+        pl.col("chrom").alias("mouse_chrom"),
+        pl.col("start").alias("mouse_start"),
+    ]).unique(subset=[mouse_gene_col])
+
+    def _with_coords(df: pl.DataFrame) -> pl.DataFrame:
+        return (df.select([human_gene_col, mouse_gene_col]).unique()
+                .join(h_lookup, on=human_gene_col, how="inner")
+                .join(m_lookup, on=mouse_gene_col, how="inner"))
+
+    pairs = _with_coords(mgi_pairs)
+    anchor_src = _with_coords(anchor_pairs) if anchor_pairs is not None else pairs
+    if pairs.is_empty() or anchor_src.is_empty():
+        return pl.DataFrame(schema={
+            human_gene_col: pl.String, "n_partners": pl.UInt32, "syntenic_partner": pl.String,
+            "expected_mouse_start": pl.Float64, "distance_bp": pl.Float64, "basis": pl.String,
+        })
+
+    # Anchors are indexed BY MOUSE CHROMOSOME, not pooled under one global "modal" chromosome.
+    # A contiguous human region does not have to map to a single mouse chromosome: the human xMHC
+    # splits across mouse chr17 (the MHC proper) and mouse chr13 (the Btn/Rfp block carried away
+    # during the region's evolution), at 251 vs 255 anchor pairs. A single global mode picks chr13
+    # by a four-pair margin and then treats every chr17 MHC partner as off-target -- which silently
+    # discards the synteny signal for exactly the genes this function exists to label. The target
+    # chromosome is therefore chosen per gene, from that gene's own partners.
+    n_by_anchor = anchor_src.group_by(human_gene_col).len().rename({"len": "n_anchor_partners"})
+    one_to_one = anchor_src.join(n_by_anchor, on=human_gene_col).filter(
+        pl.col("n_anchor_partners") == 1)
+    anchors_by_chrom: dict[str, tuple[list[str], np.ndarray, np.ndarray]] = {}
+    for chrom, grp in one_to_one.group_by("mouse_chrom"):
+        chrom = chrom[0] if isinstance(chrom, tuple) else chrom
+        grp = grp.sort("human_start")
+        anchors_by_chrom[chrom] = (
+            grp[human_gene_col].to_list(),
+            grp["human_start"].to_numpy().astype(float),
+            grp["mouse_start"].to_numpy().astype(float),
+        )
+
+    def _predict(gene: str, h: float, chrom: str) -> tuple[float | None, str]:
+        if chrom not in anchors_by_chrom:
+            return None, "no_anchor"
+        a_human, a_h, a_m = anchors_by_chrom[chrom]
+        keep = np.array([g != gene for g in a_human])
+        hs, ms = a_h[keep], a_m[keep]
+        if len(hs) == 0:
+            return None, "no_anchor"
+        if len(hs) == 1:
+            return float(ms[0]), "single_anchor"
+        i = int(np.searchsorted(hs, h))
+        if 0 < i < len(hs):                      # flanked on both sides
+            lo, hi = i - 1, i
+            basis = "interpolated"
+        elif i == 0:                             # left of every anchor
+            lo, hi = 0, 1
+            basis = "extrapolated"
+        else:                                    # right of every anchor
+            lo, hi = len(hs) - 2, len(hs) - 1
+            basis = "extrapolated"
+        span = hs[hi] - hs[lo]
+        if span == 0:
+            return float(ms[lo]), basis
+        slope = (ms[hi] - ms[lo]) / span
+        return float(ms[lo] + (h - hs[lo]) * slope), basis
+
+    rows = []
+    for gene, grp in pairs.group_by(human_gene_col):
+        gene = gene[0] if isinstance(gene, tuple) else gene
+        h = float(grp["human_start"][0])
+        # Target chromosome = where this gene's own partners actually are. Ties are broken toward
+        # the chromosome carrying more anchors, i.e. the better-supported syntenic block.
+        counts = grp.group_by("mouse_chrom").len()
+        best_n = counts["len"].max()
+        tied = counts.filter(pl.col("len") == best_n)["mouse_chrom"].to_list()
+        target_chrom = max(tied, key=lambda c: len(anchors_by_chrom.get(c, ([], [], []))[0]))
+
+        expected, basis = _predict(gene, h, target_chrom)
+        pool = grp.filter(pl.col("mouse_chrom") == target_chrom)
+        if expected is None:
+            # No anchors on this chromosome at all: fall back to the first partner by name so the
+            # choice is at least deterministic and reproducible, and say so via `basis`.
+            rows.append({
+                human_gene_col: gene, "n_partners": grp.height, "mouse_chrom": target_chrom,
+                "syntenic_partner": pool.sort(mouse_gene_col)[mouse_gene_col][0],
+                "expected_mouse_start": None, "distance_bp": None, "basis": basis,
+            })
+            continue
+        d = np.abs(pool["mouse_start"].to_numpy().astype(float) - expected)
+        j = int(np.argmin(d))
+        rows.append({
+            human_gene_col: gene, "n_partners": grp.height, "mouse_chrom": target_chrom,
+            "syntenic_partner": pool[mouse_gene_col][j],
+            "expected_mouse_start": expected, "distance_bp": float(d[j]), "basis": basis,
+        })
+    return pl.DataFrame(rows).sort(human_gene_col)
+
+
+def add_label_policies(
+    pair_df: pl.DataFrame,
+    partners_by_human: dict[str, set[str]],
+    synteny_partner: dict[str, str],
+    *,
+    score_col: str = "containment",
+    group_cols: tuple[str, ...] = ("combo",),
+    human_col: str = "human_gene",
+    mouse_col: str = "mouse_gene",
+) -> pl.DataFrame:
+    """Add `label_any_member`, `label_best_scoring_member`, `label_synteny_nearest` to a candidate
+    pair table -- the three rules in :data:`LABEL_POLICIES`, computed side by side so a notebook
+    can report all three instead of inheriting whichever one its join implied.
+
+    `best_scoring_member` is resolved *within* `group_cols` (default: per alphabet/k-size combo),
+    because the highest-scoring partner is a property of the scoring run, not of the gene.
+    """
+    out = pair_df.with_columns([
+        pl.struct([human_col, mouse_col]).map_elements(
+            lambda s: s[mouse_col] in partners_by_human.get(s[human_col], ()),
+            return_dtype=pl.Boolean,
+        ).alias("label_any_member"),
+        pl.struct([human_col, mouse_col]).map_elements(
+            lambda s: synteny_partner.get(s[human_col]) == s[mouse_col],
+            return_dtype=pl.Boolean,
+        ).alias("label_synteny_nearest"),
+    ])
+    # Best-scoring MGI member, per (group_cols..., human gene): rank only among true members so a
+    # gene whose partners were all missed contributes no positive rather than promoting a decoy.
+    keys = list(group_cols) + [human_col]
+    best = (
+        out.filter(pl.col("label_any_member"))
+        .sort(score_col, descending=True, nulls_last=True)
+        .group_by(keys, maintain_order=True)
+        .agg(pl.col(mouse_col).first().alias("_best_member"))
+    )
+    return (
+        out.join(best, on=keys, how="left")
+        .with_columns((pl.col(mouse_col) == pl.col("_best_member")).fill_null(False)
+                      .alias("label_best_scoring_member"))
+        .drop("_best_member")
+    )
+
+
+def prevalence_table(
+    pair_df: pl.DataFrame,
+    *,
+    group_cols: tuple[str, ...] = ("combo", "mhc_class"),
+    label_cols: tuple[str, ...] | None = None,
+) -> pl.DataFrame:
+    """Positive-class size and prevalence per group, for every label policy present.
+
+    AUPRC's no-skill baseline IS the prevalence, so an AUPRC reported without it is unreadable:
+    a stratum whose positive class is 15x larger than another's starts from a 15x higher floor.
+    Always plot/print this alongside any AUPRC comparison across strata or across k.
+    """
+    label_cols = label_cols or tuple(
+        c for c in LABEL_POLICY_COLS.values() if c in pair_df.columns
+    )
+    aggs = [pl.len().alias("n_candidates")]
+    for c in label_cols:
+        aggs += [
+            pl.col(c).sum().alias(f"n_pos_{c.removeprefix('label_')}"),
+            pl.col(c).mean().alias(f"prevalence_{c.removeprefix('label_')}"),
+        ]
+    return pair_df.group_by(list(group_cols)).agg(aggs).sort(list(group_cols))
 
 
 # ---------------------------------------------------------------------------
@@ -1183,21 +1516,35 @@ def add_disorder_fraction(df_pl: pl.DataFrame, mobi_cache: dict) -> pl.DataFrame
 _BIOMART_URL = "https://www.ensembl.org/biomart/martservice"
 
 
-def fetch_biomart_perc_id(
-    ensg_ids: list[str], batch_size: int = 100, timeout: int = 180, retries: int = 2,
-) -> dict[str, float]:
-    """Batch-query BioMart `mmusculus_homolog_perc_id[_r1]` for human ENSG IDs.
+#: Rules for collapsing a one-to-many gene's per-homolog percent identities to one number.
+#: `max` is an extreme order statistic -- E[max of N] rises with N, so a gene with 14 mouse
+#: partners is biased upward relative to a 1:1 gene by the very expansion that makes it hard.
+#: `median` is not biased that way and is the default for exactly that reason.
+PERC_ID_POLICIES: tuple[str, ...] = ("median", "max", "mean", "one_to_one_only")
 
-    Returns dict ENSG -> symmetric percent identity (mean of the two BioMart-reported
-    directions). IDs with no mouse homolog or a failed batch are simply absent.
+
+def fetch_biomart_perc_id_pairs(
+    ensg_ids: list[str], batch_size: int = 100, timeout: int = 180, retries: int = 2,
+) -> pl.DataFrame:
+    """Batch-query BioMart for per-HOMOLOG-PAIR human-mouse percent identity.
+
+    Returns one row per (human ENSG, mouse homolog): `ensg`, `mouse_symbol`, `perc_id_h2m`,
+    `perc_id_m2h`, `perc_id` (symmetric mean of the two directions, which differ slightly because
+    of alignment-length asymmetry). Genes with no mouse homolog, and failed batches, are absent.
+
+    This is the pair-level primitive; use :func:`collapse_perc_id` to reduce it to one value per
+    gene under a NAMED policy. Keeping the pair level is the whole point: BioMart returns one row
+    per homolog, so a gene with 14 mouse partners produces 14 rows, and any per-gene number is an
+    order statistic over those rows whose identity has to be chosen deliberately.
 
     `batch_size` default lowered from the original 300 to 100, and `timeout` raised from 60s to
-    180s (notebook 208 hit repeated read timeouts on a 300-gene batch -- a single-gene smoke test
-    against this same endpoint took 27s on its own, so 300 genes at 60s was underprovisioned, not
-    a transient fluke). `retries` gives each batch a second attempt before it's given up on and
-    reported as a WARN, since a single stalled request shouldn't sacrifice an otherwise-fine batch.
+    180s (notebook 215 hit repeated read timeouts on a 300-gene batch -- a single-gene
+    smoke test against this same endpoint took 27s on its own, so 300 genes at 60s was
+    underprovisioned, not a transient fluke). `retries` gives each batch a second attempt before
+    it's given up on and reported as a WARN, since a single stalled request shouldn't sacrifice an
+    otherwise-fine batch.
     """
-    out: dict[str, float] = {}
+    rows: list[dict] = []
     for i in range(0, len(ensg_ids), batch_size):
         batch = ensg_ids[i : i + batch_size]
         query = (
@@ -1207,6 +1554,7 @@ def fetch_biomart_perc_id(
             '<Dataset name="hsapiens_gene_ensembl" interface="default">'
             f'<Filter name="ensembl_gene_id" value="{",".join(batch)}"/>'
             '<Attribute name="ensembl_gene_id"/>'
+            '<Attribute name="mmusculus_homolog_associated_gene_name"/>'
             '<Attribute name="mmusculus_homolog_perc_id"/>'
             '<Attribute name="mmusculus_homolog_perc_id_r1"/>'
             "</Dataset></Query>"
@@ -1215,17 +1563,36 @@ def fetch_biomart_perc_id(
             try:
                 resp = requests.get(_BIOMART_URL, params={"query": query}, timeout=timeout)
                 resp.raise_for_status()
-                for line in resp.text.strip().splitlines():
+                text = resp.text.strip()
+                # BioMart serves its outage and error pages as HTML with HTTP 200, so
+                # raise_for_status() does NOT catch them. Left undetected, the TSV parser below
+                # simply matches no lines, the batch looks like "this gene has no mouse homolog",
+                # and the empty result gets cached as if it were real -- silently turning an
+                # outage into a permanent data gap. Detected explicitly and raised so the retry
+                # path runs and a failure is reported rather than absorbed.
+                head = text[:200].lstrip().lower()
+                if head.startswith(("<html", "<!doctype", "<?xml")) or "service unavailable" in head:
+                    raise RuntimeError(
+                        f"BioMart returned an HTML error page, not TSV (HTTP {resp.status_code}): "
+                        f"{text[:120]!r}")
+                for line in text.splitlines():
                     parts = line.split("\t")
-                    if len(parts) != 3:
+                    if len(parts) != 4:
                         continue
-                    ensg, pid, pid_r1 = parts
+                    ensg, mouse_symbol, pid, pid_r1 = parts
                     try:
                         vals = [float(v) for v in (pid, pid_r1) if v not in ("", "NA")]
                     except ValueError:
                         continue
-                    if vals:
-                        out[ensg] = float(np.mean(vals))
+                    if not vals:
+                        continue
+                    rows.append({
+                        "ensg": ensg,
+                        "mouse_symbol": mouse_symbol.upper() or None,
+                        "perc_id_h2m": float(pid) if pid not in ("", "NA") else None,
+                        "perc_id_m2h": float(pid_r1) if pid_r1 not in ("", "NA") else None,
+                        "perc_id": float(np.mean(vals)),
+                    })
                 break
             except Exception as exc:
                 if attempt < retries:
@@ -1233,7 +1600,59 @@ def fetch_biomart_perc_id(
                     continue
                 print(f"  WARN BioMart batch {i // batch_size + 1} (after {retries + 1} attempts): {exc}")
         time.sleep(0.2)
-    return out
+    schema = {"ensg": pl.String, "mouse_symbol": pl.String, "perc_id_h2m": pl.Float64,
+              "perc_id_m2h": pl.Float64, "perc_id": pl.Float64}
+    return pl.DataFrame(rows, schema=schema) if rows else pl.DataFrame(schema=schema)
+
+
+def collapse_perc_id(
+    pair_df: pl.DataFrame, policy: str = "median", *, key: str = "ensg",
+) -> pl.DataFrame:
+    """Collapse the pair-level table from :func:`fetch_biomart_perc_id_pairs` to one percent
+    identity per gene under an explicit `policy` from :data:`PERC_ID_POLICIES`.
+
+    Returns `key`, `perc_id`, `n_homologs`, `perc_id_policy` -- the policy travels with the data
+    so a downstream ledger cannot end up mixing estimators across rows without it being visible.
+
+    `one_to_one_only` nulls out any gene with more than one homolog rather than picking among
+    them: the strictest option, and the one that makes a cross-stratum comparison unambiguous at
+    the cost of dropping exactly the expanded families that motivated the question.
+    """
+    if policy not in PERC_ID_POLICIES:
+        raise ValueError(f"policy must be one of {PERC_ID_POLICIES}, got {policy!r}")
+    agg = {
+        "median": pl.col("perc_id").median(),
+        "max": pl.col("perc_id").max(),
+        "mean": pl.col("perc_id").mean(),
+        "one_to_one_only": pl.when(pl.len() == 1).then(pl.col("perc_id").first()).otherwise(None),
+    }[policy]
+    return (
+        pair_df.group_by(key)
+        .agg([agg.alias("perc_id"), pl.len().alias("n_homologs")])
+        .with_columns(pl.lit(policy).alias("perc_id_policy"))
+        .sort(key)
+    )
+
+
+def fetch_biomart_perc_id(
+    ensg_ids: list[str], batch_size: int = 100, timeout: int = 180, retries: int = 2,
+    policy: str = "median",
+) -> dict[str, float]:
+    """ENSG -> percent identity, collapsed under a NAMED `policy` (default `median`).
+
+    .. warning::
+       Before 2026-08-08 this function had no policy at all. It looped over BioMart's response
+       lines assigning ``out[ensg] = ...`` and BioMart returns **one line per homolog**, so for a
+       one-to-many gene the retained value was whichever homolog happened to come last in the
+       response -- an arbitrary order statistic, neither max nor median, and not stable across
+       calls. Any cached value produced by that version should be refetched, not reused; caches
+       written by it use the old filenames and are deliberately not read back by the new code.
+    """
+    pairs = fetch_biomart_perc_id_pairs(ensg_ids, batch_size, timeout, retries)
+    if pairs.is_empty():
+        return {}
+    collapsed = collapse_perc_id(pairs, policy).drop_nulls("perc_id")
+    return dict(zip(collapsed["ensg"].to_list(), collapsed["perc_id"].to_list()))
 
 
 # ---------------------------------------------------------------------------
