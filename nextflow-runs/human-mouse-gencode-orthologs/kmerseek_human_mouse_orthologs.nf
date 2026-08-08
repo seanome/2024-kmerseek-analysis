@@ -22,6 +22,12 @@ params.ortholog_url = "https://www.informatics.jax.org/downloads/reports/HOM_Mou
 // Minimum containment threshold — 0.0 keeps all hits (large CSVs; polars handles them)
 params.threshold = 0.0
 
+// kmerseek main's search-time filters (added after 0.3.1) reject low-probability matches
+// before they're ever written to disk, instead of writing everything and filtering in the
+// analysis notebooks afterward. Defaults match kmerseek's own CLI defaults.
+params.min_shared_kmers = 2
+params.max_pvalue = 0.05
+
 process downloadOrthologMapping {
     publishDir params.outdir, mode: 'copy'
 
@@ -103,6 +109,12 @@ process parseOrthologMapping {
 
 process indexDatabase {
     tag "${species}_${encoding}_k${ksize}"
+    // Deliberately NOT kmerseek:main -- indexing doesn't need main's search-time filters, and
+    // main also removed `--scaled` from `kmerseek index` entirely (crashes below), plus
+    // swapping this container tag changes every combo's task hash, so -resume would try to
+    // rebuild EVERY already-built index (not just the missing ones) and collide trying to
+    // `mv` onto a non-empty already-populated storeDir target. Keeping this on 0.3.1 leaves
+    // existing indices alone; only searchHumanVsMouse needs the new binary.
     container 'kmerseek:0.3.1'
     containerOptions '--entrypoint ""'
     storeDir "${params.outdir}/indices"
@@ -147,7 +159,7 @@ process indexDatabase {
 
 process searchHumanVsMouse {
     tag "${encoding}_k${ksize}"
-    container 'kmerseek:0.3.1'
+    container 'kmerseek:main'
     containerOptions '--entrypoint ""'
     storeDir params.outdir
     publishDir params.outdir, mode: 'copy', pattern: '*.search.log'
@@ -183,6 +195,8 @@ process searchHumanVsMouse {
         --ksize ${ksize} \\
         --query ${human_fasta} \\
         --target ${mouse_index} \\
+        --min-shared-kmers ${params.min_shared_kmers} \\
+        --max-pvalue ${params.max_pvalue} \\
         2>> ${log_file} \\
         | zstd -T2 -o ${output_zst}
 
@@ -194,7 +208,7 @@ process searchHumanVsMouse {
 
 // Converts each raw human_vs_mouse.*.results.csv.zst to parquet (dropping the two unused
 // md5 columns) and deletes the raw file from searchHumanVsMouse's storeDir -- kept as its own
-// (non-containerized) process because kmerseek:0.3.1's container has no python/polars, so this
+// (non-containerized) process because kmerseek:main's container has no python/polars, so this
 // can't be folded into searchHumanVsMouse's script the way the hp-v040 sibling pipeline does it.
 //
 // Tradeoff, stated explicitly: because searchHumanVsMouse's storeDir output no longer exists
