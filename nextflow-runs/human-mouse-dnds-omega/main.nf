@@ -26,8 +26,9 @@
  * membership, which notebook 206 already has loaded.
  *
  * Two stages:
- *   1. fetchAllCds   — single serial process, Ensembl REST API (lookup + sequence
- *                       endpoints), rate-limited from one place, resumable.
+ *   1. fetchAllCds   — single process, Ensembl REST API batch endpoints (POST
+ *                       lookup/id, POST sequence/id) — ~60 requests total for
+ *                       ~1300 pairs instead of ~5300 per-id GETs, resumable.
  *   2. computeOmega   — one task per gene pair: MAFFT protein alignment -> codon
  *                       back-translation -> PAML codeml pairwise ML.
  *
@@ -69,7 +70,7 @@ process fetchAllCds {
     script:
     def limit_flag = params.fetch_limit ? "--limit ${params.fetch_limit}" : ''
     """
-    fetch_cds.py --gene_pairs ${gene_pairs} --outdir cds_cache --sleep 0.15 ${limit_flag}
+    fetch_cds.py --gene_pairs ${gene_pairs} --outdir cds_cache --sleep 1.0 ${limit_flag}
     """
 }
 

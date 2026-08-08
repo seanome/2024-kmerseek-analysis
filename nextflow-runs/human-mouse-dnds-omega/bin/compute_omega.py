@@ -51,7 +51,13 @@ def translate_cds(cds: str, gene_label: str) -> str:
 
 
 def run(cmd, **kw):
-    r = subprocess.run(cmd, capture_output=True, text=True, **kw)
+    # capture_output can't be combined with an explicit stdout= (e.g. the mafft
+    # call redirects stdout to a file) -- capture only stderr in that case.
+    if "stdout" in kw:
+        kw.setdefault("stderr", subprocess.PIPE)
+        r = subprocess.run(cmd, text=True, **kw)
+    else:
+        r = subprocess.run(cmd, capture_output=True, text=True, **kw)
     if r.returncode != 0:
         raise RuntimeError(f"command failed: {' '.join(cmd)}\nstdout={r.stdout}\nstderr={r.stderr}")
     return r
