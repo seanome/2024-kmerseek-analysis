@@ -807,6 +807,108 @@ def length_floor_mask(
 
 
 # ---------------------------------------------------------------------------
+# Gene coordinates (GENCODE GTF) — notebook 208's synteny work.
+#
+# Human uses the `chr_patch_hapl_scaff` flavor (not `basic.annotation`, which GENCODE ships
+# primary-assembly-only) specifically so the 8 GRCh38 MHC alt haplotypes are present and the
+# ALT-contig filter this notebook needs (see 208 spec §7) has something real to remove instead
+# of trivially reporting zero. GENCODE names alt/patch/scaffold sequences by their GenBank
+# accession (e.g. `GL000251.2`), not UCSC's `chr6_GL000251v2_alt` — HUMAN_MHC_ALT_CONTIGS below
+# is the accession form, confirmed present with real gene annotations (184-341 genes each).
+# Mouse GRCm39 carries no alt MHC haplotype, so `basic.annotation` (primary assembly only) is
+# sufficient there.
+# ---------------------------------------------------------------------------
+
+GENCODE_DIR = Path("/Users/olga/data/gencode")
+HUMAN_GTF_CHR_PATCH_HAPL_SCAFF = GENCODE_DIR / "human/v49/gencode.v49.chr_patch_hapl_scaff.annotation.gtf.gz"
+MOUSE_GTF_BASIC = GENCODE_DIR / "mouse/m38/gencode.vM38.basic.annotation.gtf.gz"
+
+HUMAN_PRIMARY_CHROMS: set[str] = {f"chr{i}" for i in range(1, 23)} | {"chrX", "chrY", "chrM"}
+MOUSE_PRIMARY_CHROMS: set[str] = {f"chr{i}" for i in range(1, 20)} | {"chrX", "chrY", "chrM"}
+
+# GRCh38's 8 MHC alt haplotypes (GENCODE/GenBank accession naming; see module note above).
+HUMAN_MHC_ALT_CONTIGS: set[str] = {
+    "GL000250.2", "GL000251.2", "GL000252.2", "GL000253.2",
+    "GL000254.2", "GL000255.2", "GL000256.2", "GL000257.2",
+}
+
+
+def parse_gencode_gtf_genes(gtf_path: Path, chroms: set[str] | None = None) -> pl.DataFrame:
+    """Parse `gene`-feature rows out of a GENCODE GTF (gzip-transparent via polars' native reader).
+
+    `chroms`, if given, restricts the scan to those seqnames before the attribute-column regex
+    extraction (the expensive part) runs -- e.g. {"chr17"} for a single-chromosome notebook
+    instead of the whole ~50-60k-gene genome. Returns chrom, start, end, strand, gene_id
+    (versionless), gene_type, gene_name -- one row per gene model (a gene present on both a
+    primary chromosome and an alt/patch contig gets one row each, by design: that duplication is
+    exactly what the ALT-contig filter downstream needs to see and remove).
+    """
+    lf = pl.scan_csv(
+        str(gtf_path), separator="\t", has_header=False, comment_prefix="#", quote_char=None,
+        new_columns=["chrom", "source", "feature", "start", "end", "score", "strand", "frame", "attr"],
+    ).filter(pl.col("feature") == "gene")
+    if chroms is not None:
+        lf = lf.filter(pl.col("chrom").is_in(list(chroms)))
+    lf = lf.select([
+        "chrom", "start", "end", "strand",
+        pl.col("attr").str.extract(r'gene_id "([^"]+)"', 1).str.split(".").list.get(0).alias("gene_id"),
+        pl.col("attr").str.extract(r'gene_type "([^"]+)"', 1).alias("gene_type"),
+        pl.col("attr").str.extract(r'gene_name "([^"]+)"', 1).alias("gene_name"),
+    ])
+    return lf.collect()
+
+
+def region_by_anchor_genes(gene_table: pl.DataFrame, anchor_names: tuple[str, str]) -> tuple[int, int]:
+    """Define a region as "anchor gene 1 through anchor gene 2 inclusive" -- the gene-model
+    extents of two named boundary genes -- rather than a hardcoded bp interval.
+
+    Motivation (notebook 208): a literature-cited region boundary (e.g. Shiina/Kulski's classical
+    HLA span) is only as stable as whichever single transcript its source used to define GABBR1's
+    start; GENCODE's own `gene` feature start is the 5'-most extent of *any* annotated transcript
+    and drifts as isoforms get added (confirmed here: GABBR1 differs from the literature value by
+    ~46kb, entirely attributable to alternative-promoter isoforms, not an assembly-build shift --
+    KIFC1 in the same pair matches within 215bp). Re-deriving the boundary from this project's own
+    anchor gene models, every time, is robust to that drift in a way a pasted-in bp pair is not.
+    """
+    rows = gene_table.filter(pl.col("gene_name").is_in(list(anchor_names)))
+    return int(rows["start"].min()), int(rows["end"].max())
+
+
+def load_gene_coordinates(
+    human_chroms: set[str] = {"chr6"} | HUMAN_MHC_ALT_CONTIGS,
+    mouse_chroms: set[str] = frozenset({"chr17"}),
+    human_gtf: Path = HUMAN_GTF_CHR_PATCH_HAPL_SCAFF,
+    mouse_gtf: Path = MOUSE_GTF_BASIC,
+    cache_path: Path = DATA_DIR / "208_gene_coordinates.parquet",
+    force: bool = False,
+) -> pl.DataFrame:
+    """Gene -> (assembly, chrom, start, end, strand, gene_type, is_primary_assembly) table for
+    notebook 208, restricted by default to human chr6 (+ its 8 MHC alt contigs) and mouse chr17
+    -- the 208 spec's "start with just the MHC window, then add on" scoping decision. Widen
+    `human_chroms`/`mouse_chroms` (and pass `force=True` to bypass the cache) if a later section
+    needs anchors outside that window.
+
+    Cached to `cache_path` (default `208_gene_coordinates.parquet`) since re-parsing the 93MB
+    chr_patch_hapl_scaff GTF on every notebook run is wasted work once the window is fixed.
+    """
+    if cache_path.exists() and not force:
+        return pl.read_parquet(cache_path)
+
+    human = parse_gencode_gtf_genes(human_gtf, human_chroms).with_columns([
+        pl.lit("human").alias("assembly"),
+        pl.col("chrom").is_in(HUMAN_PRIMARY_CHROMS).alias("is_primary_assembly"),
+    ])
+    mouse = parse_gencode_gtf_genes(mouse_gtf, mouse_chroms).with_columns([
+        pl.lit("mouse").alias("assembly"),
+        pl.col("chrom").is_in(MOUSE_PRIMARY_CHROMS).alias("is_primary_assembly"),
+    ])
+    combined = pl.concat([human, mouse], how="vertical_relaxed")
+    cache_path.parent.mkdir(exist_ok=True, parents=True)
+    combined.write_parquet(cache_path)
+    return combined
+
+
+# ---------------------------------------------------------------------------
 # GENCODE name → Ensembl IDs
 # ---------------------------------------------------------------------------
 
@@ -1081,11 +1183,19 @@ def add_disorder_fraction(df_pl: pl.DataFrame, mobi_cache: dict) -> pl.DataFrame
 _BIOMART_URL = "https://www.ensembl.org/biomart/martservice"
 
 
-def fetch_biomart_perc_id(ensg_ids: list[str], batch_size: int = 300) -> dict[str, float]:
+def fetch_biomart_perc_id(
+    ensg_ids: list[str], batch_size: int = 100, timeout: int = 180, retries: int = 2,
+) -> dict[str, float]:
     """Batch-query BioMart `mmusculus_homolog_perc_id[_r1]` for human ENSG IDs.
 
     Returns dict ENSG -> symmetric percent identity (mean of the two BioMart-reported
     directions). IDs with no mouse homolog or a failed batch are simply absent.
+
+    `batch_size` default lowered from the original 300 to 100, and `timeout` raised from 60s to
+    180s (notebook 208 hit repeated read timeouts on a 300-gene batch -- a single-gene smoke test
+    against this same endpoint took 27s on its own, so 300 genes at 60s was underprovisioned, not
+    a transient fluke). `retries` gives each batch a second attempt before it's given up on and
+    reported as a WARN, since a single stalled request shouldn't sacrifice an otherwise-fine batch.
     """
     out: dict[str, float] = {}
     for i in range(0, len(ensg_ids), batch_size):
@@ -1101,22 +1211,27 @@ def fetch_biomart_perc_id(ensg_ids: list[str], batch_size: int = 300) -> dict[st
             '<Attribute name="mmusculus_homolog_perc_id_r1"/>'
             "</Dataset></Query>"
         )
-        try:
-            resp = requests.get(_BIOMART_URL, params={"query": query}, timeout=60)
-            resp.raise_for_status()
-            for line in resp.text.strip().splitlines():
-                parts = line.split("\t")
-                if len(parts) != 3:
+        for attempt in range(retries + 1):
+            try:
+                resp = requests.get(_BIOMART_URL, params={"query": query}, timeout=timeout)
+                resp.raise_for_status()
+                for line in resp.text.strip().splitlines():
+                    parts = line.split("\t")
+                    if len(parts) != 3:
+                        continue
+                    ensg, pid, pid_r1 = parts
+                    try:
+                        vals = [float(v) for v in (pid, pid_r1) if v not in ("", "NA")]
+                    except ValueError:
+                        continue
+                    if vals:
+                        out[ensg] = float(np.mean(vals))
+                break
+            except Exception as exc:
+                if attempt < retries:
+                    time.sleep(3)
                     continue
-                ensg, pid, pid_r1 = parts
-                try:
-                    vals = [float(v) for v in (pid, pid_r1) if v not in ("", "NA")]
-                except ValueError:
-                    continue
-                if vals:
-                    out[ensg] = float(np.mean(vals))
-        except Exception as exc:
-            print(f"  WARN BioMart batch {i // batch_size + 1}: {exc}")
+                print(f"  WARN BioMart batch {i // batch_size + 1} (after {retries + 1} attempts): {exc}")
         time.sleep(0.2)
     return out
 
