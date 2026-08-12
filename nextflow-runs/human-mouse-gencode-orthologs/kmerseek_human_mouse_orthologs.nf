@@ -3,9 +3,14 @@
 /*
  * Nextflow pipeline to evaluate kmerseek ortholog detection using human-mouse orthologs
  *
- * Runs all HP alphabet encodings × k=20-30 against mouse GENCODE proteins.
- * (k=15-19 HP is covered by the sibling kmerseek 0.4.0 pipeline instead — see
- * ../human-mouse-gencode-orthologs-hp-v040/.)
+ * Runs all HP alphabet encodings × k=18-30 against mouse GENCODE proteins.
+ * (2026-08-11: floor lowered from 20 to 18 -- this absorbs the sibling
+ * ../human-mouse-gencode-orthologs-hp-v040/ pipeline's job for k18-19, which was only ever a
+ * partial, hand-listed repair of specific truncated combos, not a real k15-19 sweep; that
+ * pipeline had also never actually been run, only `-preview`. k15-17 deliberately NOT included
+ * yet -- extrapolating from the k20-23 size trend (66G/35G/32G/19G per ksize across all 6
+ * variants), full k15-19 coverage could need on the order of 1-1.7TB, well past the ~144GB free
+ * at the time of this change. k18-19 alone is a more modest, examined step down.
  *
  * Usage:
  *   nextflow run kmerseek_human_mouse_orthologs.nf
@@ -18,6 +23,11 @@ params.outdir = "${System.getProperty('user.home')}/data/gencode/results-human-m
 
 // Ortholog mapping URL
 params.ortholog_url = "https://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt"
+
+// OrthoFinder's own human-vs-mouse orthologue calls -- the sequence-similarity baseline
+// computeRbhF1 re-scores per combo (notebook 200 §1's "lesson 3": OrthoFinder must be scored on
+// the same gene universe as the kmerseek combo it's compared to, not its own full workload).
+params.of_tsv = "${System.getProperty('user.home')}/data/gencode/data-for-orthofinder/OrthoFinder/Results_Mar03/Orthologues/Orthologues_gencode.v49.pc_translations/gencode.v49.pc_translations__v__gencode.vM38.pc_translations.tsv"
 
 // Minimum containment threshold — 0.0 keeps all hits (large CSVs; polars handles them)
 params.threshold = 0.0
@@ -118,42 +128,54 @@ process indexDatabase {
     container 'kmerseek:0.3.1'
     containerOptions '--entrypoint ""'
     storeDir "${params.outdir}/indices"
-    publishDir params.outdir, mode: 'copy', pattern: '*.index.log'
 
     input:
     tuple val(species), path(fasta), val(encoding), val(ksize)
 
     output:
     tuple val(species), val(encoding), val(ksize), path("${fasta}.${encoding.replace('-', '_')}.k${ksize}.scaled1.kmerseek.rocksdb", type: 'dir')
-    path "${fasta}.${encoding.replace('-', '_')}.k${ksize}.scaled1.kmerseek.index.log"
 
     script:
     // kmerseek normalises the encoding to underscores when auto-naming the database
-    // (e.g. hp-thomas-dill -> hp_thomas_dill). BOTH declared outputs (rocksdb dir AND
-    // log) must use that normalised name, otherwise storeDir's "all outputs present"
-    // check never passes: the dir alone existing isn't enough, and every run re-executes
-    // the task, rebuilds an identical rocksdb dir, then crashes trying to `mv` it onto
-    // the already-populated storeDir target ("Directory not empty").
+    // (e.g. hp-thomas-dill -> hp_thomas_dill); the declared output must use that
+    // normalised name.
+    //
+    // Deliberately ONE declared output (just the dir), not dir+log as separate outputs.
+    // storeDir only skips re-running a task when ALL its declared outputs already exist
+    // at the target; with two outputs, one going missing/stale while the other survives
+    // (dash/underscore mismatch in 2026-07, a log that predated storeDir tracking it in
+    // 2026-08) silently forces a rebuild, which then crashes trying to `mv` the rebuilt
+    // dir onto the already-populated target ("Directory not empty"). With a single dir
+    // output, storeDir's presence check is binary and this class of collision can't
+    // happen: either the dir's there and the task is skipped outright (no mv, no rebuild),
+    // or it's not and a normal mv into an empty target succeeds. The log is nested INSIDE
+    // the dir (as kmerseek_index.log) instead of a sibling path so it travels with the
+    // one output that matters, rather than being a second thing that can go missing on
+    // its own.
     def enc_fname = encoding.replace('-', '_')
-    def log_file = "${fasta}.${enc_fname}.k${ksize}.scaled1.kmerseek.index.log"
     def db_dir   = "${fasta}.${enc_fname}.k${ksize}.scaled1.kmerseek.rocksdb"
     """
-    echo "=== Indexing: ${species} ${encoding} k=${ksize} ===" | tee ${log_file}
-    echo "Start time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
-    echo "" | tee -a ${log_file}
+    LOG_TMP=\$(mktemp)
+    echo "=== Indexing: ${species} ${encoding} k=${ksize} ===" | tee \$LOG_TMP
+    echo "Start time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a \$LOG_TMP
+    echo "" | tee -a \$LOG_TMP
 
     kmerseek index \\
         --encoding ${encoding} \\
         --ksize ${ksize} \\
         --scaled 1 \\
         --input ${fasta} \\
-        2>&1 | tee -a ${log_file} || true
+        2>&1 | tee -a \$LOG_TMP || true
 
     # Ensure output directory exists even if k-mer space is saturated
     mkdir -p ${db_dir}
 
-    echo "" | tee -a ${log_file}
-    echo "End time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
+    echo "" | tee -a \$LOG_TMP
+    echo "End time: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a \$LOG_TMP
+
+    # Filename can't collide with anything RocksDB itself writes (*.sst, CURRENT,
+    # IDENTITY, LOCK, LOG, LOG.old.*, MANIFEST-*, OPTIONS-*).
+    cp \$LOG_TMP ${db_dir}/kmerseek_index.log
     """
 }
 
@@ -190,8 +212,17 @@ process searchHumanVsMouse {
     # failure propagates (`pipefail` + Nextflow's default `set -e`) so the task is marked
     # FAILED and produces no cached output -- see withName: searchHumanVsMouse's
     # errorStrategy 'ignore' in nextflow.config, which lets the rest of the sweep continue.
+    #
+    # No `--encoding` here (2026-08-10 fix): kmerseek 0.4.0's search added a strict check that
+    # the flag must literally match the database's stored encoding, and errors otherwise --
+    # "Encoding mismatch: database has encoding=hp, but you specified --encoding=HpLehninger."
+    # hp-lehninger is byte-identical to plain hp (verified in notebook 200) and kmerseek's own
+    # indexer normalizes it to "hp" internally at index time, so every hp-lehninger search
+    # failed under the new check even though nothing was actually wrong. Dropping the flag lets
+    # kmerseek auto-detect encoding from the database the same way it already does for
+    # ksize/scaled -- exactly what the error message itself suggests, and can never mismatch by
+    # construction since the index was built from this same channel's encoding value.
     kmerseek search \\
-        --encoding ${encoding} \\
         --ksize ${ksize} \\
         --query ${human_fasta} \\
         --target ${mouse_index} \\
@@ -231,26 +262,37 @@ process convertResultsToParquet {
     script:
     def parquet = "human_vs_mouse.${encoding}.k${ksize}.results.parquet"
     """
-    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
-    import polars as pl
-    from pathlib import Path
+    # `pl.scan_csv().sink_parquet()` looks lazy but does NOT stream a .csv.zst source -- it
+    # inflates the whole file into RAM before parsing (measured up to 97x expansion on one
+    # combo). On 2026-08-10 two concurrent instances of this (hp-kyte-doolittle k20 + k21)
+    # hit 79GB + 66GB RSS at once, leaving 129MB free out of 128GB physical RAM -- Jetsam
+    # started killing processes, the machine rebooted, and a second attempt right after
+    # panicked outright (watchdog timeout: no checkins from watchdogd in 91s, i.e. the OS
+    # was so overloaded even its own watchdog daemon starved for CPU). An out-of-band
+    # one-combo patch on an earlier crash (hp-thomas-dill-no-c k22, exit 137) left every
+    # other combo still exposed to this, which is what let this happen twice more.
+    # convert_results_to_parquet_streaming.py instead pipes zstdcat into pyarrow's
+    # incremental CSV reader -- measured flat ~3.75GB RSS regardless of file size, verified
+    # on the largest combo in this pipeline at 610M rows / 56GB peak RSS for a case with
+    # actual composite-score materialization (60x lighter here, this process keeps every
+    # column). See scripts/polars_no_stream_compressed_csv memory note for the original
+    # incident this script was written for.
+    /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 \\
+        /Users/olga/code/2024-kmerseek-analysis/scripts/convert_results_to_parquet_streaming.py \\
+        --results-dir . \\
+        --zstd-level 9
 
-    src = Path("${results_csv_zst}")
-    dst = Path("${parquet}")
-
-    if src.stat().st_size == 0:
-        dst.touch()  # keep the empty-file signal evaluate_orthologs.py checks for
-    else:
-        DROP_COLUMNS = ["query_md5", "target_md5"]
-        lf = pl.scan_csv(str(src), ignore_errors=True)
-        cols = [c for c in lf.collect_schema().names() if c not in DROP_COLUMNS]
-        lf.select(cols).sink_parquet(str(dst), compression="zstd", compression_level=9)
+    # The streaming script skips (rather than touches) sources <=1KB -- kmerseek's
+    # well-formed empty-index stub -- so recreate this process's original contract: an
+    # empty ${parquet} is the signal evaluate_orthologs.py checks for "no data".
+    if [ ! -f "${parquet}" ]; then
+        touch "${parquet}"
+    fi
 
     # ${results_csv_zst} here is nextflow's symlink into THIS task's work dir -- the real file
     # searchHumanVsMouse's storeDir wrote lives directly in params.outdir under the same name.
-    real_src = Path("${params.outdir}") / "human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"
-    if real_src.exists():
-        real_src.unlink()
+    real_src="${params.outdir}/human_vs_mouse.${encoding}.k${ksize}.results.csv.zst"
+    rm -f "\$real_src"
     """
 }
 
@@ -270,32 +312,43 @@ process evaluateOrthologs {
 
     script:
     """
-    # Pre-filter: detect column indices from CSV header, then keep rows where
-    # n_intersecting_hashes > expected_shared_kmers * 1000 (enrichment > 1000).
-    # This safely captures all rows with Poisson p < ~0.001 regardless of n_total,
-    # while shrinking the file ~1000x. n_total (full row count) is tracked for MHT.
+    # Pre-filter: keep rows where n_intersecting_hashes > expected_shared_kmers * 100
+    # (enrichment >= 100). This safely captures all rows with Poisson p < ~0.001
+    # regardless of n_total, while shrinking the file ~1000x. n_total (full row count)
+    # is tracked for MHT. ${results_zst} is a Parquet file (from convertResultsToParquet,
+    # NOT the raw .csv.zst -- that gets deleted upstream), so this must go through polars
+    # scan_parquet/sink_parquet, not zstdcat+awk: zstdcat on non-zstd input silently
+    # passes it through byte-for-byte instead of erroring, which let a stale CSV-shaped
+    # pre-filter run against raw Parquet bytes for months without ever failing loudly --
+    # it just quietly filtered out 100% of real rows.
     if [ ! -s ${results_zst} ]; then
-        ln -sf ${results_zst} filtered_results.csv.zst
+        ln -sf ${results_zst} filtered_results.parquet
         n_total=0
     else
-        zstdcat ${results_zst} | awk -F',' '
-            NR==1 {
-                for (i=1; i<=NF; i++) {
-                    if (\$i == "n_intersecting_hashes") k_col = i
-                    if (\$i == "expected_shared_kmers")  lam_col = i
-                }
-                print; next
-            }
-            { n++ }
-            (k_col && lam_col && \$k_col+0 >= 2 && (\$lam_col+0 == 0 || \$k_col+0 / \$lam_col+0 >= 100)) { print }
-            END { print n+0 > "n_total.txt" }
-        ' | zstd -T2 -q -f -o filtered_results.csv.zst
+        /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 << 'PYEOF'
+import polars as pl
+from pathlib import Path
+
+lf = pl.scan_parquet("${results_zst}")
+n_total = lf.select(pl.len()).collect().item()
+
+filtered = lf.filter(
+    (pl.col("n_intersecting_hashes") >= 2)
+    & (
+        (pl.col("expected_shared_kmers") == 0)
+        | (pl.col("n_intersecting_hashes") / pl.col("expected_shared_kmers") >= 100)
+    )
+)
+filtered.sink_parquet("filtered_results.parquet", compression="zstd")
+
+Path("n_total.txt").write_text(str(n_total))
+PYEOF
         n_total=\$(cat n_total.txt 2>/dev/null || echo 0)
     fi
     # Guard against an empty/missing n_total (e.g. a header-only results file with 0 data rows):
     # an unquoted empty \${n_total} would drop the argument and shift ${encoding} into its place.
     n_total=\${n_total:-0}
-    evaluate_orthologs.py ${ksize} filtered_results.csv.zst ${ortholog_pairs} "\${n_total}" "${encoding}"
+    evaluate_orthologs.py ${ksize} filtered_results.parquet ${ortholog_pairs} "\${n_total}" "${encoding}"
     """
 }
 
@@ -391,18 +444,160 @@ process multiQC {
     """
 }
 
+// ---------------------------------------------------------------------------
+// Notebook 200 section 2b's composite-metric AUC/AUPRC sweep, moved out of the notebook. It used
+// to be a for-loop over every combo inside the notebook itself, checkpointed by rewriting a CSV
+// after each combo -- resumable only in the sense that a restarted notebook could skip
+// already-done combos, with no parallelism and no protection against losing an in-progress combo
+// (2026-08-05: hp_lehninger/hp_lehninger_plus_c k18, 364M/429M rows, thrashed this machine's
+// 128GB RAM for 5+ days near-zero-progress before an OOM-kill with nothing saved, since the
+// checkpoint only flushed BETWEEN combos). One task per combo here instead: real parallelism
+// across combos, and storeDir gives free per-combo resumability without a notebook needing to
+// track a "done" set itself. Reads whatever genome-wide result files already exist on disk (this
+// run's own outputs, the sibling hp-v040 pipeline's, or an earlier run's), the same way
+// ou.load_all_alphabet_ksize_combos and ou.scan_available_columns already do for every notebook
+// that calls them -- but see listMetricLeaderboardCombos's barrier-input comment below: it must
+// not run until this run's OWN search/convert chain has actually finished, or it snapshots the
+// filesystem before this run has produced anything.
+// ---------------------------------------------------------------------------
+
+process listMetricLeaderboardCombos {
+    // Derives the combo list from whatever genome-wide result files actually exist under
+    // params.outdir (+ the hp-v040 sibling pipeline's outdir) -- NOT from any notebook-written
+    // CSV. Pipeline steps must never depend on notebook output; only the reverse. An earlier
+    // version of this process read notebook 200's own summary CSVs, which meant that notebook
+    // had to be run first -- see bin/list_metric_leaderboard_combos.py's docstring.
+    input:
+    val ready
+    // ^ unused in the script -- this process has no REAL data dependency on the search/convert
+    // chain (it rescans the filesystem), so without something forcing an edge in the DAG,
+    // Nextflow schedules it immediately at t=0 (observed 2026-08-10: it completed 1 second into
+    // a 16-hour run). That means it snapshots the filesystem from BEFORE this run's own
+    // searchHumanVsMouse/convertResultsToParquet tasks had produced anything -- a same-run combo
+    // (e.g. a previously-broken encoding just fixed in this .nf) would need a SECOND `-resume`
+    // to actually show up in the leaderboard, even though everything else is storeDir-cached and
+    // that second resume is nearly instant. `parquet_results.collect()` below is passed purely
+    // as a barrier value to force this to wait for that chain to finish first.
+
+    output:
+    path 'combos.csv'
+
+    script:
+    """
+    list_metric_leaderboard_combos.py --data-dir ${params.outdir} --output combos.csv
+    """
+}
+
+process computeMetricLeaderboard {
+    tag "${dash_encoding}_k${ksize}"
+    storeDir "${params.outdir}/200_metric_leaderboard"
+
+    input:
+    tuple val(dash_encoding), val(display_encoding), val(ksize)
+
+    output:
+    path "200_metric_leaderboard.${dash_encoding}.k${ksize}.csv"
+
+    script:
+    """
+    compute_metric_leaderboard_combo.py \\
+        --dash-encoding ${dash_encoding} \\
+        --display-encoding ${display_encoding} \\
+        --ksize ${ksize} \\
+        --data-dir ${params.outdir} \\
+        --output 200_metric_leaderboard.${dash_encoding}.k${ksize}.csv
+    """
+}
+
+// ---------------------------------------------------------------------------
+// Notebook 200 §1's RBH-F1-vs-MGI / OrthoFinder-matched-scope sweep, moved out of the notebook
+// the same way §2b was above. Also replaces notebook 206 §1's hand-rolled duplicate of this
+// exact sweep for the 6 dash-named HP variants (only 2/6 ever finished there -- "run this cell
+// yourself and watch it", never actually completed) -- one canonical, all-combo, per-combo-task
+// table instead of two separate partial in-notebook sweeps.
+// ---------------------------------------------------------------------------
+
+process computeRbhF1 {
+    tag "${dash_encoding}_k${ksize}"
+    storeDir "${params.outdir}/200_rbh_f1"
+
+    input:
+    tuple val(dash_encoding), val(display_encoding), val(ksize)
+
+    output:
+    path "200_rbh_f1.${dash_encoding}.k${ksize}.csv"
+
+    script:
+    """
+    compute_rbh_f1_combo.py \\
+        --dash-encoding ${dash_encoding} \\
+        --display-encoding ${display_encoding} \\
+        --ksize ${ksize} \\
+        --data-dir ${params.outdir} \\
+        --of-tsv ${params.of_tsv} \\
+        --output 200_rbh_f1.${dash_encoding}.k${ksize}.csv
+    """
+}
+
+process aggregateRbhF1 {
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    path rbh_f1_csvs
+
+    output:
+    path '200_rbh_f1_all_combos.csv'
+
+    script:
+    """
+    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    import polars as pl
+    from pathlib import Path
+
+    frames = [pl.read_csv(f) for f in sorted(Path('.').glob('200_rbh_f1.*.csv'))]
+    non_empty = [f for f in frames if f.height > 0]
+    combined = pl.concat(non_empty, how='diagonal_relaxed') if non_empty else pl.DataFrame()
+    combined.write_csv('200_rbh_f1_all_combos.csv')
+    print(f'{len(non_empty)}/{len(frames)} combo files had rows; {combined.height} total rows')
+    """
+}
+
+process aggregateMetricLeaderboard {
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    path leaderboard_csvs
+
+    output:
+    path '200_metric_leaderboard_all_combos.csv'
+
+    script:
+    """
+    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    import polars as pl
+    from pathlib import Path
+
+    frames = [pl.read_csv(f) for f in sorted(Path('.').glob('200_metric_leaderboard.*.csv'))]
+    non_empty = [f for f in frames if f.height > 0]
+    combined = pl.concat(non_empty, how='diagonal_relaxed') if non_empty else pl.DataFrame()
+    combined.write_csv('200_metric_leaderboard_all_combos.csv')
+    print(f'{len(non_empty)}/{len(frames)} combo files had rows; {combined.height} total rows')
+    """
+}
+
 workflow {
     // Download and parse ortholog mapping
     ortholog_file = downloadOrthologMapping()
     (ortholog_pairs, ortholog_stats) = parseOrthologMapping(ortholog_file)
 
     // Encoding × ksize ranges — alphabet size determines useful ksize:
-    //   hp variants  k=20-30  (2-letter; 'hp' storeDir results reused)
-    //                (k=15-19 now covered by the sibling kmerseek 0.4.0 pipeline in
-    //                 ../human-mouse-gencode-orthologs-hp-v040/, so dropped here)
+    //   hp variants  k=18-30  (2-letter; 'hp' storeDir results reused). Floor lowered from 20
+    //                to 18 on 2026-08-11 -- see file header comment. k15-17 still excluded:
+    //                projected ~1-1.7TB for full k15-19 coverage vs. limited free disk at the
+    //                time; revisit once there's more headroom.
     //   dayhoff      k=10-20  (6-letter)
     //   protein      k=5-15   (20-letter)
-    hp_ksizes      = Channel.of(20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)
+    hp_ksizes      = Channel.of(18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)
     dayhoff_ksizes = Channel.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
     protein_ksizes = Channel.of(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
 
@@ -469,4 +664,17 @@ workflow {
     eval_outputs[0].subscribe { encoding, ksize, eval_file ->
         println("Completed evaluation: ${encoding} k=${ksize} -> ${eval_file}")
     }
+
+    // Notebook 200 §2b's sweep. parquet_results.collect() is a barrier, not a real input --
+    // see listMetricLeaderboardCombos's comment: without it, this runs at t=0 and misses
+    // everything the search/convert chain above produces during THIS invocation.
+    combo_tuples = listMetricLeaderboardCombos(parquet_results.collect())
+        .splitCsv(header: true)
+        .map { row -> tuple(row.dash_encoding, row.display_encoding, row.ksize as Integer) }
+    leaderboard_csvs = computeMetricLeaderboard(combo_tuples)
+    aggregateMetricLeaderboard(leaderboard_csvs.collect())
+
+    // Notebook 200 §1's sweep -- same combo list, independent per-combo tasks.
+    rbh_f1_csvs = computeRbhF1(combo_tuples)
+    aggregateRbhF1(rbh_f1_csvs.collect())
 }
