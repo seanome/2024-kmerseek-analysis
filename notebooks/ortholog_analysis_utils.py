@@ -113,7 +113,14 @@ KSIZE = 24
 ALPHA = 0.05
 
 KMERSEEK_TSV = DATA_DIR / f"ortholog_evaluation.hp.k{KSIZE}.tsv.gz"
-MGI_FILE = DATA_DIR / "HOM_MouseHumanSequence.rpt.gz"
+# Uncompressed, not the old HOM_MouseHumanSequence.rpt.gz: that .gz was a one-time March
+# snapshot that never gets refreshed, while this .rpt is what the pipeline's own
+# downloadOrthologMapping actually re-fetches from MGI's live URL on a real (non-cached)
+# execution. Found 2026-08-11: the two snapshots differ by ~0.5% of pairs (133 added, 133
+# dropped of 24,584) -- small, but every notebook using this default was silently scoring
+# against 5-month-stale ground truth relative to what notebook 200 §1 already used (it read
+# the fresh .rpt directly, bypassing this default).
+MGI_FILE = DATA_DIR / "HOM_MouseHumanSequence.rpt"
 OF_ORTHOLOGS_TSV = (
     OF_DIR
     / "Orthologues/Orthologues_gencode.v49.pc_translations"
@@ -553,6 +560,65 @@ def load_pair_table(encoding: str, ksize: int, data_dir: Path = DATA_DIR) -> pl.
     PAIR_CACHE_DIR.mkdir(exist_ok=True)
     pair.write_parquet(cache_path)
     return pair
+
+
+def load_intersecting_hashes(encoding: str, ksize: int, data_dir: Path = DATA_DIR) -> pl.DataFrame:
+    """Per-gene-pair max `n_intersecting_hashes` (the raw k-mer overlap count) -- companion to
+    `load_pair_table`'s jaccard cache, needed only where the RAW count is the thing being
+    displayed (notebook 200 section 7's swarm plots) rather than the normalized ranking score
+    RBH/AUC use everywhere else.
+
+    Cached the same way as `load_pair_table`, to
+    `{data_dir}/pair_cache/{encoding}_k{ksize}_hashes.parquet`.
+    """
+    cache_path = PAIR_CACHE_DIR / f"{encoding}_k{ksize}_hashes.parquet"
+    if cache_path.exists():
+        return pl.read_parquet(cache_path)
+
+    lf = (
+        scan_genome_wide_results(encoding, ksize, data_dir, columns=["query_name", "target_name", "n_intersecting_hashes"])
+        .with_columns([
+            pl.col("query_name").str.split("|").list.get(6).str.to_uppercase().alias("human_gene"),
+            pl.col("target_name").str.split("|").list.get(6).str.to_uppercase().alias("mouse_gene"),
+        ])
+        .group_by(["human_gene", "mouse_gene"])
+        .agg(pl.col("n_intersecting_hashes").max().alias("n_intersecting_hashes"))
+    )
+    pair = lf.collect(engine="streaming")
+
+    PAIR_CACHE_DIR.mkdir(exist_ok=True)
+    pair.write_parquet(cache_path)
+    return pair
+
+
+def roc_curve_for_combo(
+    encoding: str, ksize: int, mgi_pairs_df: pl.DataFrame, data_dir: Path = DATA_DIR,
+) -> tuple[np.ndarray, np.ndarray, float] | None:
+    """fpr, tpr, roc_auc for one alphabet/ksize combo, ranking every candidate (human_gene,
+    mouse_gene) pair (not just each gene's RBH-selected best hit) by raw jaccard against MGI
+    truth restricted to this combo's gene scope. Same candidate universe/labeling as
+    `rbh_vs_matched_orthofinder`'s scalar `roc_auc` in notebook 200 section 2 -- this returns the
+    curve itself, for the per-alphabet multi-k ROC overlays in section 7.
+
+    Returns None if the combo has no file, is empty, or has no positives/negatives to score.
+    """
+    from sklearn.metrics import roc_curve, roc_auc_score
+    try:
+        pair = load_pair_table(encoding, ksize, data_dir)
+    except (FileNotFoundError, pl.exceptions.NoDataError, pl.exceptions.ComputeError):
+        return None
+    human_genes_in_scope = set(pair["human_gene"].unique().to_list())
+    mgi_scope = mgi_pairs_df.filter(pl.col("human_gene").is_in(list(human_genes_in_scope)))
+    mgi_scope_labels = mgi_scope.select(["human_gene", "mouse_gene"]).unique().with_columns(pl.lit(1).alias("label"))
+    pair_labeled = pair.join(mgi_scope_labels, on=["human_gene", "mouse_gene"], how="left").with_columns(
+        pl.col("label").fill_null(0)
+    )
+    y = pair_labeled["label"].to_numpy()
+    if y.sum() == 0 or (1 - y).sum() == 0:
+        return None
+    scores = pair_labeled["jaccard"].to_numpy()
+    fpr, tpr, _ = roc_curve(y, scores)
+    return fpr, tpr, roc_auc_score(y, scores)
 
 
 def rbh_pairs_and_scope(
