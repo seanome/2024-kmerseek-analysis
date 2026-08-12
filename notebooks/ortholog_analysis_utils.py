@@ -358,6 +358,76 @@ def genes_in_group(hgnc_df: pl.DataFrame, pattern: str) -> pl.DataFrame:
     )
 
 
+#: Tandem-repeat C2H2 zinc-finger arrays inflate k-mer sharing through repeat content rather than
+#: homology (notebook 206 section 6 "Traps"). Notebook 206's hand-picked 5-family list never
+#: included them for that reason; the same exclusion applies to any all-HGNC-groups sweep so this
+#: known confound doesn't silently reappear at scale.
+HGNC_EXCLUDE_FAMILY_PATTERN = "Zinc finger"
+
+
+def load_hgnc_family_gene_sets(
+    hgnc_df: pl.DataFrame | None = None,
+    min_family_size: int = 15,
+    exclude_pattern: str | None = HGNC_EXCLUDE_FAMILY_PATTERN,
+    protein_coding_only: bool = True,
+) -> dict[str, set[str]]:
+    """Every real HGNC `gene_group` as its own family -> member-gene-symbol set, generalizing
+    notebook 206 section 4's hand-picked 5-family list (Olfactory receptors, CYP2/CYP3, antiviral
+    restriction factors, sperm/testis) to every one of HGNC's ~2,000 curated families at once. A
+    gene in multiple groups (pipe-delimited `gene_group`) belongs to every one of them.
+
+    `min_family_size` is a cheap upfront trim on family gene COUNT, not on scored-pair count --
+    callers doing an AUC sweep still need their own downstream n-floor on the actually-scored
+    pairs (206's own floor is 15 scored pairs; see `bootstrap_auc_ci`'s docstring). Default 15
+    matches that floor as a sensible ceiling: a family that can never reach 15 scored pairs isn't
+    worth carrying through every combo's raw-file scan.
+    """
+    if hgnc_df is None:
+        hgnc_df = load_hgnc_gene_groups()
+    df = hgnc_df.filter(pl.col("gene_group").is_not_null())
+    if protein_coding_only:
+        df = df.filter(pl.col("locus_type") == "gene with protein product")
+    if exclude_pattern:
+        df = df.filter(~pl.col("gene_group").str.contains(f"(?i){exclude_pattern}"))
+    exploded = df.with_columns(pl.col("gene_group").str.split("|").alias("groups")).explode("groups")
+
+    families: dict[str, set[str]] = {}
+    for fam, sym in zip(exploded["groups"].to_list(), exploded["symbol"].to_list()):
+        families.setdefault(fam, set()).add(sym.upper())
+    return {fam: genes for fam, genes in families.items() if len(genes) >= min_family_size}
+
+
+def hgnc_symbol_to_families(family_gene_sets: dict[str, set[str]]) -> dict[str, set[str]]:
+    """Inverse of `load_hgnc_family_gene_sets`: gene symbol -> every family it's a member of."""
+    out: dict[str, set[str]] = {}
+    for fam, genes in family_gene_sets.items():
+        for g in genes:
+            out.setdefault(g, set()).add(fam)
+    return out
+
+
+def same_hgnc_family(
+    human_gene: str, mouse_gene: str, symbol_to_families: dict[str, set[str]],
+) -> bool | None:
+    """True/False if `human_gene` and `mouse_gene` share >=1 HGNC gene family; None if either gene
+    is entirely absent from the family map (can't be checked -- same "scoreable" convention as
+    `same_orthogroup` in notebook 217).
+
+    HGNC only curates human genes -- there is no separate mouse family table. This looks the mouse
+    gene's own uppercased symbol up directly in the human symbol->family map, relying on MGI's
+    nomenclature convention of giving a mouse gene the same base symbol as its human counterpart
+    (case aside) even when that mouse gene is a paralog rather than the literal ortholog -- e.g.
+    mouse Trim21 unambiguously reads as a member of human TRIM21's family. That cross-species
+    symbol reuse is the same convention MGI's own nomenclature is built on, not a coincidence this
+    function is exploiting.
+    """
+    h_fams = symbol_to_families.get(human_gene.upper())
+    m_fams = symbol_to_families.get(mouse_gene.upper())
+    if h_fams is None or m_fams is None:
+        return None
+    return bool(h_fams & m_fams)
+
+
 # ---------------------------------------------------------------------------
 # RBH (reciprocal-best-hit) scoring — the fair way to compare kmerseek to
 # OrthoFinder's own 1:1 orthogroup clustering (see notebook 200, lesson 1: a
