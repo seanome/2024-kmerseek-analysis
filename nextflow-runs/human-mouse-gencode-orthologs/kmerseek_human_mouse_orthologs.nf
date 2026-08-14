@@ -585,6 +585,63 @@ process aggregateMetricLeaderboard {
     """
 }
 
+// ---------------------------------------------------------------------------
+// Notebook 206 section 4's family-anchor AUC sweep, moved out of the notebook the same way
+// notebook 200 §1/§2b were above. Also generalizes it from 5 hand-picked HGNC families
+// (Olfactory receptors, CYP2/CYP3, antiviral restriction factors, sperm/testis) to every HGNC
+// gene_group with >=15 protein-coding genes (~279 families) -- see
+// compute_family_auc_combo.py's docstring. Restricted to the SAME 9-combo scope the notebook
+// already used (protein/dayhoff best-k, 6 HP variants @ k=30, hp-pbotc-1st-ed's extra k=19
+// point) rather than the full alphabet x ksize sweep -- that reduced scope was already a
+// deliberate tractability call in the notebook, unaffected by the family-count generalization
+// since compute_family_auc_combo.py still scans each raw file exactly once regardless of how
+// many families it's scored against.
+// ---------------------------------------------------------------------------
+
+process computeFamilyAuc {
+    tag "${dash_encoding}_k${ksize}"
+    storeDir "${params.outdir}/206_family_auc"
+
+    input:
+    tuple val(dash_encoding), val(display_encoding), val(ksize)
+
+    output:
+    path "206_family_auc.${dash_encoding}.k${ksize}.csv"
+
+    script:
+    """
+    compute_family_auc_combo.py \\
+        --dash-encoding ${dash_encoding} \\
+        --display-encoding ${display_encoding} \\
+        --ksize ${ksize} \\
+        --data-dir ${params.outdir} \\
+        --output 206_family_auc.${dash_encoding}.k${ksize}.csv
+    """
+}
+
+process aggregateFamilyAuc {
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    path family_auc_csvs
+
+    output:
+    path '206_family_auc_all_combos.csv'
+
+    script:
+    """
+    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    import polars as pl
+    from pathlib import Path
+
+    frames = [pl.read_csv(f) for f in sorted(Path('.').glob('206_family_auc.*.csv'))]
+    non_empty = [f for f in frames if f.height > 0]
+    combined = pl.concat(non_empty, how='diagonal_relaxed') if non_empty else pl.DataFrame()
+    combined.write_csv('206_family_auc_all_combos.csv')
+    print(f'{len(non_empty)}/{len(frames)} combo files had rows; {combined.height} total rows')
+    """
+}
+
 workflow {
     // Download and parse ortholog mapping
     ortholog_file = downloadOrthologMapping()
@@ -677,4 +734,23 @@ workflow {
     // Notebook 200 §1's sweep -- same combo list, independent per-combo tasks.
     rbh_f1_csvs = computeRbhF1(combo_tuples)
     aggregateRbhF1(rbh_f1_csvs.collect())
+
+    // Notebook 206 §4's family-anchor AUC sweep -- fixed 9-combo list (protein/dayhoff best-k,
+    // 6 HP variants @ k=30, hp-pbotc-1st-ed's extra k=19 point), NOT the full combo_tuples
+    // sweep above -- see computeFamilyAuc's comment for why that reduced scope carries over
+    // unchanged from the notebook.
+    family_combo_tuples = Channel.of(
+        tuple('protein', 'protein', 15),
+        tuple('dayhoff', 'dayhoff', 20),
+        tuple('hp', 'hp', 30),
+        tuple('hp-lehninger', 'hp_lehninger', 30),
+        tuple('hp-thomas-dill', 'hp_thomas_dill', 30),
+        tuple('hp-kyte-doolittle', 'hp_kyte_doolittle', 30),
+        tuple('hp-thomas-dill-no-c', 'hp_thomas_dill_no_c', 30),
+        tuple('hp-lehninger-plus-c', 'hp_lehninger_plus_c', 30),
+        tuple('hp-pbotc-1st-ed', 'hp_pbotc_1st_ed', 30),
+        tuple('hp-pbotc-1st-ed', 'hp_pbotc_1st_ed', 19),
+    )
+    family_auc_csvs = computeFamilyAuc(family_combo_tuples)
+    aggregateFamilyAuc(family_auc_csvs.collect())
 }
