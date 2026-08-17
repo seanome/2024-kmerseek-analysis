@@ -58,13 +58,21 @@ process indexAndSpectrum {
     def spectrum  = "sprot.${label}.k${ksize}.spectrum.csv.gz"
     def log_file  = "sprot.${label}.k${ksize}.index.log"
     """
+    set -euo pipefail
+
+    # 2>&1 | tee (not `2> \$log_file`) so a failure's message lands in Nextflow's
+    # own .command.err too -- a plain stderr redirect hid it there, and a failed
+    # task never publishes \$log_file (publishDir only copies declared outputs
+    # on success), so there was no way to see what went wrong without grepping
+    # the work dir by hash. `pipefail` keeps kmerseek's exit code (not tee's)
+    # as the pipeline's exit code.
     kmerseek index \\
         --input ${fasta} \\
         --encoding ${cli_flag} \\
         --ksize ${ksize} \\
         --output ${db_name} \\
         --kmer-stats-out ${spectrum} \\
-        2> ${log_file}
+        2>&1 | tee ${log_file}
 
     # The rocksdb index itself isn't needed downstream -- only the spectrum
     # CSV is. Drop it so per-task work dirs don't accumulate ~100 indices.
