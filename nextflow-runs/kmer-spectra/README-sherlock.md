@@ -5,11 +5,11 @@ requires an interactive Duo push, and the `sherlock` SSH alias signs in via the 
 agent, whose socket (`~/.1password/agent.sock`) isn't reachable from this sandboxed session.
 
 A `Makefile` in this directory wraps every command below. `build-image`/`push-image`/
-`sync-pipeline`/`sync-data`/`pull-k2`/`pull-k3` run on your Mac; `run-k2`/`run-k3`/`run-all`/
-`attach-k2`/`attach-k3`/`status` run on Sherlock (`ssh sherlock`, `cd $SCRATCH/kmer-spectra`,
-`make <target>`). `run-k2` and `run-k3` each launch in their own detached tmux session from their
-own `run-kN/` subdirectory, so both ksizes run at the same time without their `work/`,
-trace, timeline, or report files colliding.
+`sync-pipeline`/`sync-data`/`pull-k2`/`pull-k3` run on your Mac; `run-k2`/`run-k3`/`status`
+run on Sherlock (`ssh sherlock`, `cd $SCRATCH/kmer-spectra`, `make <target>`). `run-k2` and
+`run-k3` each launch nextflow in the foreground from their own `run-kN/` subdirectory, so
+their `work/`, trace, timeline, and report files don't collide -- run them in two separate
+tmux panes to get both ksizes running at the same time.
 
 Account: group `ayeletv`, using the `hns` school-condo partition (`groups` / `sh_part` on
 Sherlock). `hns` had ~7.4k jobs queued vs. ~95k on the public `normal` partition at last check --
@@ -97,22 +97,23 @@ are only ~100-150 MB each): data files aren't code, so git isn't the right tool 
 ## 4. Launch the pipeline
 
 Nextflow's own head process is lightweight (mostly polling SLURM), but it needs to survive an
-SSH disconnect and the docs ask that anything nontrivial not run bare on a login node. `make
-run-k2` / `make run-k3` each launch inside their own detached tmux session (`kmer-spectra-k2` /
-`kmer-spectra-k3`), from their own `run-kN/` subdirectory so the two runs' `work/`, trace,
-timeline, and report files don't collide -- both can run at the same time:
+SSH disconnect and the docs ask that anything nontrivial not run bare on a login node -- run it
+inside `tmux`, not bare on the login node. `make run-k2` and `make run-k3` each block in the
+foreground and launch from their own `run-kN/` subdirectory, so the two runs' `work/`, trace,
+timeline, and report files don't collide. Run them in two separate tmux panes to get both ksizes
+running at the same time:
 
 ```bash
 ssh sherlock
-cd "$SCRATCH/kmer-spectra"
-make run-k2       # launches k2 in tmux session kmer-spectra-k2
-make run-k3       # launches k3 in tmux session kmer-spectra-k3, in parallel with k2
-# or: make run-all
+tmux new -s kmer-spectra
+# split the window (ctrl-b %), then in each pane:
+cd "$SCRATCH/kmer-spectra" && make run-k2
+cd "$SCRATCH/kmer-spectra" && make run-k3
 
-make status        # tmux sessions + squeue
-make attach-k2      # reattach to watch k2 live (detach again: ctrl-b d)
-make attach-k3
+# detach: ctrl-b d ; reattach later with: tmux attach -t kmer-spectra
 ```
+
+From a third pane or another session, `make status` shows the SLURM queue.
 
 Each `(alphabet, ksize)` combo becomes its own `sbatch` job on `hns` (`--account=ayeletv`), up to
 20 concurrent per run (`maxForks = 20` in the profile -- raise or lower depending on how `hns` is
