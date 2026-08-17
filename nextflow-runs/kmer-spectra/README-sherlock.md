@@ -90,6 +90,14 @@ ln -s "$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra" "$SCRATCH/kmer
 directory as untracked, gitignored content alongside the tracked pipeline files, the same as on
 your Mac -- `git pull` never touches them.
 
+`$SCRATCH/kmer-spectra` is only for your own `cd` convenience. The Makefile's `run-k2`/`run-k3`
+targets never reference it -- they pass `--fasta`/`--outdir` as paths relative to `run-kN/`
+instead, because Apptainer's `autoMounts` binds paths based on the pipeline's real (non-symlinked)
+directory tree, and a path reached through the `$SCRATCH/kmer-spectra` symlink is a second,
+unrelated absolute path outside that tree that never gets bound -- the input stages in fine on
+the host but the symlink is dangling inside the container, producing a "FASTA file not found"
+error that's confusing because the file plainly does exist when you check.
+
 After the one-time setup, syncing code and data is:
 
 ```bash

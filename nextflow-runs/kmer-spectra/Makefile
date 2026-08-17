@@ -67,6 +67,15 @@ pull-all: pull-k2 pull-k3
 ## workDir/trace/timeline/report files colliding. Both block in the
 ## foreground -- run run-k2 and run-k3 in separate tmux panes to get both
 ## ksizes running concurrently.
+##
+## --fasta/--outdir are relative to run-kN/ (../data, ../results-ushuffle-kN),
+## NOT $SCRATCH/kmer-spectra/... -- workDir/launchDir already live under the
+## real (non-symlinked) checkout path, and Apptainer's autoMounts binds paths
+## based on that real tree. A fasta file reached through the $SCRATCH/kmer-spectra
+## symlink is a second, unrelated absolute path that never gets bound, so the
+## staged input symlink was dangling inside the container ("FASTA file not
+## found" even though the file exists on the host). Relative paths never cross
+## the symlink boundary, so this can't happen.
 
 # Shared per-ksize launch recipe. Implemented as a define + $(call ...) rather
 # than a `run-%:` pattern rule -- macOS ships GNU Make 3.81 (2006), which does
@@ -78,8 +87,8 @@ define launch_ksize
 	cd run-$(1) && \
 	  ml load nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) $(NF_ARGS) \
-	    --fasta $$SCRATCH/kmer-spectra/data/uniprot_sprot.ushuffle_$(1).fasta.gz \
-	    --outdir $$SCRATCH/kmer-spectra/results-ushuffle-$(1) \
+	    --fasta ../data/uniprot_sprot.ushuffle_$(1).fasta.gz \
+	    --outdir ../results-ushuffle-$(1) \
 	    --hp_only true 2>&1 | tee nextflow.log
 endef
 
