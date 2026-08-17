@@ -39,10 +39,19 @@ make push-image
 
 If Apptainer already cached a bad (arm64) image under `$SCRATCH/apptainer-cache/` from an earlier
 run, delete it after pushing the fixed image so the next task re-pulls instead of reusing the
-stale `.img`:
+stale `.img` -- a task failing with `the image's architecture (arm64) could not run on the host's
+(amd64)` even though `docker inspect docker.io/olgabot/kmerseek:<tag>` on your Mac shows
+`amd64 linux` means this, not a bad push:
 
 ```bash
 rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-17-kmer-spectra.img"
+```
+
+Then resume the run rather than starting over -- completed tasks are cached by Nextflow's own
+`work/` dir, independent of the Apptainer image cache:
+
+```bash
+make run-k2 NF_ARGS=-resume   # or run-k3
 ```
 
 `nextflow.config`'s `sherlock` profile already points at

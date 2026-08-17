@@ -77,7 +77,7 @@ define launch_ksize
 	mkdir -p run-$(1)
 	cd run-$(1) && \
 	  ml load nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) \
+	  nextflow run ../main.nf -profile $(PROFILE) $(NF_ARGS) \
 	    --fasta $$SCRATCH/kmer-spectra/data/uniprot_sprot.ushuffle_$(1).fasta.gz \
 	    --outdir $$SCRATCH/kmer-spectra/results-ushuffle-$(1) \
 	    --hp_only true 2>&1 | tee nextflow.log
