@@ -4,6 +4,13 @@ Everything below needs to run from your own terminal, not through Claude Code: S
 requires an interactive Duo push, and the `sherlock` SSH alias signs in via the 1Password SSH
 agent, whose socket (`~/.1password/agent.sock`) isn't reachable from this sandboxed session.
 
+A `Makefile` in this directory wraps every command below. `build-image`/`push-image`/
+`sync-pipeline`/`sync-data`/`pull-k2`/`pull-k3` run on your Mac; `run-k2`/`run-k3`/`run-all`/
+`attach-k2`/`attach-k3`/`status` run on Sherlock (`ssh sherlock`, `cd $SCRATCH/kmer-spectra`,
+`make <target>`). `run-k2` and `run-k3` each launch in their own detached tmux session from their
+own `run-kN/` subdirectory, so both ksizes run at the same time without their `work/`,
+trace, timeline, or report files colliding.
+
 Account: group `ayeletv`, using the `hns` school-condo partition (`groups` / `sh_part` on
 Sherlock). `hns` had ~7.4k jobs queued vs. ~95k on the public `normal` partition at last check --
 worth re-running `sh_part` before a big submission to confirm that's still true.
@@ -13,17 +20,29 @@ worth re-running `sh_part` before a big submission to confirm that's still true.
 The pipeline's Dockerfile does a real `cargo build --release` from source -- avoid running this
 while another local job is using CPU.
 
+Sherlock's compute nodes are amd64. A plain `docker build` on Apple Silicon produces an arm64
+image, which Apptainer refuses to run (`the image's architecture (arm64) could not run on the
+host's (amd64)`) -- pass `--platform linux/amd64` explicitly. `make push-image` (below) does
+this for you.
+
 ```bash
 cd nextflow-runs/kmer-spectra
-docker build -t kmerseek-spectra:latest \
-  --build-arg GIT_SHA=b2dfde27f368a4e99a73b429d0c772ce932fd9e3 \
-  -f Dockerfile \
-  /Users/olga/code/kmerseek-kmer-frequency-histogram
+make push-image
+# equivalent to:
+#   docker build --platform linux/amd64 -t kmerseek-spectra:latest \
+#     --build-arg GIT_SHA=b2dfde27f368a4e99a73b429d0c772ce932fd9e3 \
+#     -f Dockerfile \
+#     /Users/olga/code/kmerseek-kmer-frequency-histogram
+#   docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-17-kmer-spectra
+#   docker push docker.io/olgabot/kmerseek:2026-08-17-kmer-spectra
+```
 
-# Sherlock's Apptainer pulls from a registry (no local Docker/Apptainer bridge on macOS).
-# Push to Docker Hub, which Sherlock can reach anonymously:
-docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-17-kmer-spectra
-docker push docker.io/olgabot/kmerseek:2026-08-17-kmer-spectra
+If Apptainer already cached a bad (arm64) image under `$SCRATCH/apptainer-cache/` from an earlier
+run, delete it after pushing the fixed image so the next task re-pulls instead of reusing the
+stale `.img`:
+
+```bash
+rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-17-kmer-spectra.img"
 ```
 
 `nextflow.config`'s `sherlock` profile already points at
@@ -44,51 +63,65 @@ quota and isn't meant for pipeline output.
 
 ## 3. Transfer the pipeline directory and input fasta
 
-```bash
-rsync -avz --progress \
-  /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/kmer-spectra-analysis/nextflow-runs/kmer-spectra/ \
-  sherlock:'$SCRATCH/kmer-spectra/'
+Pipeline code goes over git, not rsync -- `$SCRATCH/kmer-spectra` on Sherlock is a symlink into
+a sparse checkout of this repo, not a plain rsync target. **One-time setup**, from a Sherlock
+login node:
 
-rsync -avz --progress -e ssh --checksum \
-  /Users/olga/data/uniprot/uniprot_sprot.ushuffle_k2.fasta.gz \
-  /Users/olga/data/uniprot/uniprot_sprot.ushuffle_k3.fasta.gz \
-  sherlock:'$SCRATCH/kmer-spectra/data/'
+```bash
+cd "$SCRATCH"
+git clone --no-checkout --filter=blob:none https://github.com/seanome/2024-kmerseek-analysis.git kmer-spectra-analysis
+cd kmer-spectra-analysis
+git sparse-checkout init --cone
+git sparse-checkout set nextflow-runs/kmer-spectra
+git checkout olgabot/kmer-spectra-analysis
+ln -s "$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra" "$SCRATCH/kmer-spectra"
 ```
 
-(`--checksum` because these files change identity but not necessarily size/mtime; the flag is
-cheap here since the files are only ~100-150 MB each.)
+`data/`, `run-k2/`, `run-k3/`, and `results-ushuffle-*/` live inside that sparse-checked-out
+directory as untracked, gitignored content alongside the tracked pipeline files, the same as on
+your Mac -- `git pull` never touches them.
+
+After the one-time setup, syncing code and data is:
+
+```bash
+cd nextflow-runs/kmer-spectra   # on your Mac
+make sync-pipeline sync-data
+```
+
+`sync-pipeline` pushes your local commits and fast-forwards the Sherlock checkout with `git
+pull --ff-only` -- it fails loudly instead of silently overwriting if the two have diverged,
+so commit your changes on the Mac first. `sync-data` still uses rsync (with `--checksum`,
+since these files change identity but not necessarily size/mtime -- cheap here since the files
+are only ~100-150 MB each): data files aren't code, so git isn't the right tool for them.
 
 ## 4. Launch the pipeline
 
 Nextflow's own head process is lightweight (mostly polling SLURM), but it needs to survive an
-SSH disconnect and the docs ask that anything nontrivial not run bare on a login node. Use
-`tmux`/`screen`, or launch inside an `sh_dev` session:
+SSH disconnect and the docs ask that anything nontrivial not run bare on a login node. `make
+run-k2` / `make run-k3` each launch inside their own detached tmux session (`kmer-spectra-k2` /
+`kmer-spectra-k3`), from their own `run-kN/` subdirectory so the two runs' `work/`, trace,
+timeline, and report files don't collide -- both can run at the same time:
 
 ```bash
 ssh sherlock
-tmux new -s kmer-spectra
 cd "$SCRATCH/kmer-spectra"
-ml load nextflow   # or use whatever module/venv provides nextflow on Sherlock -- check `ml avail nextflow`
-nextflow run main.nf -profile sherlock \
-  --fasta "$SCRATCH/kmer-spectra/data/uniprot_sprot.ushuffle_k2.fasta.gz" \
-  --outdir "$SCRATCH/kmer-spectra/results-ushuffle-k2" \
-  --hp_only true
+make run-k2       # launches k2 in tmux session kmer-spectra-k2
+make run-k3       # launches k3 in tmux session kmer-spectra-k3, in parallel with k2
+# or: make run-all
 
-# detach: ctrl-b d ; reattach later with: tmux attach -t kmer-spectra
+make status        # tmux sessions + squeue
+make attach-k2      # reattach to watch k2 live (detach again: ctrl-b d)
+make attach-k3
 ```
 
-Repeat for the k3 fasta with a separate `--outdir`. Each `(alphabet, ksize)` combo becomes its
-own `sbatch` job on `hns` (`--account=ayeletv`), up to 20 concurrent (`maxForks = 20` in the
-profile -- raise or lower depending on how `hns` is looking that day).
+Each `(alphabet, ksize)` combo becomes its own `sbatch` job on `hns` (`--account=ayeletv`), up to
+20 concurrent per run (`maxForks = 20` in the profile -- raise or lower depending on how `hns` is
+looking that day). With both k2 and k3 running, that's up to 40 concurrent jobs against the
+`ayeletv` account.
 
 ## 5. Pull results back
 
 ```bash
-rsync -avz --progress \
-  sherlock:'$SCRATCH/kmer-spectra/results-ushuffle-k2/' \
-  /Users/olga/data/kmerseek-kmer-spectra-ushuffle-k2/
-
-rsync -avz --progress \
-  sherlock:'$SCRATCH/kmer-spectra/results-ushuffle-k3/' \
-  /Users/olga/data/kmerseek-kmer-spectra-ushuffle-k3/
+cd nextflow-runs/kmer-spectra   # on your Mac
+make pull-k2 pull-k3            # or: make pull-all
 ```

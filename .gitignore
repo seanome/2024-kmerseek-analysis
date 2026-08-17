@@ -163,6 +163,12 @@ cython_debug/
 .nextflow.log*
 nextflow-runs/**/work/
 
+# kmer-spectra: generated data/results, gitignored so the Sherlock sparse checkout stays clean
+nextflow-runs/kmer-spectra/data/
+nextflow-runs/kmer-spectra/run-k2/
+nextflow-runs/kmer-spectra/run-k3/
+nextflow-runs/kmer-spectra/results-ushuffle-*/
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
