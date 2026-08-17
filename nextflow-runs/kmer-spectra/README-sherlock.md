@@ -22,12 +22,12 @@ docker build -t kmerseek-spectra:latest \
 
 # Sherlock's Apptainer pulls from a registry (no local Docker/Apptainer bridge on macOS).
 # Push to Docker Hub, which Sherlock can reach anonymously:
-docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-17-spectra
-docker push docker.io/olgabot/kmerseek:2026-08-17-spectra
+docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-17-kmer-spectra
+docker push docker.io/olgabot/kmerseek:2026-08-17-kmer-spectra
 ```
 
 `nextflow.config`'s `sherlock` profile already points at
-`docker://olgabot/kmerseek:2026-08-17-spectra` -- no edit needed once the push above completes.
+`docker://olgabot/kmerseek:2026-08-17-kmer-spectra` -- no edit needed once the push above completes.
 
 ## 2. Confirm Sherlock filesystem paths
 
