@@ -147,6 +147,44 @@ trees are the bulk of the output -- pull those selectively.
 Everything is computed in the pipeline. `all_domain_metrics.csv` is the whole table;
 nothing here needs recomputing in a notebook.
 
+### CAFA-style
+
+| column | meaning |
+|---|---|
+| `fmax` | CAFA's headline metric: max protein-centric F over thresholds |
+| `wfmax` | same, weighted by family information content |
+| `smin` | min sqrt(remaining uncertainty^2 + misinformation^2), in bits. **Lower is better** |
+| `smin_ru` / `smin_mi` | the two error terms at that threshold: information missed, information invented |
+
+`fmax` is *macro-averaged over proteins* -- precision over proteins that predicted
+something, recall over every protein with a true domain. `best_f1` below is
+micro-averaged over calls. They are different numbers on purpose; a few domain-dense
+proteins can move `best_f1` but not `fmax`.
+
+**`wfmax` and `smin` are weakened relative to real CAFA, and the difference matters.**
+CAFA weights GO terms by *information accretion*, defined against the ontology DAG as a
+term's information content conditioned on its parents. Pfam is flat -- clans are a shallow
+grouping, not a subsumption hierarchy -- so there are no parents to condition on and
+information accretion degenerates to plain information content, `IC = -log2 P(family)`.
+That is still a real weighting (a rare family counts for more than a ubiquitous one) but
+it is not the CAFA quantity. Do not describe these as information-accretion weighted.
+
+### Domain boundary
+
+| column | meaning |
+|---|---|
+| `ndo` | normalized domain overlap: correctly labelled residues / true domain residues |
+| `residue_precision` / `_recall` / `_f1` | the same overlap from both directions |
+| `dbd_median` / `dbd_mean` | boundary distance in residues, over correct calls only |
+| `precision_iou80` / `recall_iou80` | the strict "correctly parsed" criterion used by structure parsers |
+| `domain_count_accuracy` / `domain_count_mcc` | single- vs multi-domain call, over proteins with a prediction |
+
+`ndo` is the residue-level normalized overlap CASP's NDO score is built from, not CASP's
+full scoring matrix. `dbd` is reported over correct calls only -- the distance from a
+wrong domain to a right one is not a boundary measurement.
+
+### Threshold-based and threshold-free
+
 | column | meaning |
 |---|---|
 | `precision` | of the calls reported, the fraction correctly placed |
@@ -160,9 +198,56 @@ nothing here needs recomputing in a notebook.
 | `best_f1_threshold` | the score achieving it, plus `_precision` and `_recall_reachable` |
 | `median_iou_tp` | how precisely a correct call is placed |
 
+### Splits: the leaderboard is the held-out half
+
+Every metric row carries `split` (`all` / `selection` / `heldout`). None of these tools
+learns from the data, so there is no model to overfit -- but **picking the best of 113
+alphabet x ksize combos on the same instances you report is model selection**, and
+scoring the winner on the data that chose it is optimistically biased. Tune on
+`selection`; report `heldout`. `make run` prints the leaderboard over `heldout` already.
+
+The split is grouped by **Pfam family**, not by protein, and that choice is deliberate.
+Splitting on proteins lets the same family sit on both sides, so a ksize tuned on PF00001
+gets tested on PF00001 again and the held-out score measures memorised families rather
+than generalisation. Grouping by family means the held-out half is families the sweep
+never saw. It is hash-based on `(seed, pfam_id)`, so it reproduces without a state file.
+Defaults: 4470 selection families / 4439 heldout.
+
+One arm is exempt from this and should never be read as a competitor: **hmmscan against
+Pfam-A is near-circular**. The ground truth *is* Pfam annotation, largely produced by
+hmmscan against Pfam-A, so it is being scored against its own output. It marks the
+ceiling of direct annotation, nothing more.
+
+### Strata: results cut by biology
+
+Every row also carries `stratum_axis` and `stratum`, cutting on the same axes the
+200-series notebooks use:
+
+| axis | source | coverage of ~19.4k query proteins |
+|---|---|---|
+| `hgnc` | HGNC gene group | 19,226 (4,222 groups; only groups with >= 30 proteins are cut) |
+| `plddt` | mean pLDDT, bins 0-50/50-70/70-90/90-100 | rises to ~full once `make fetch-structures` completes |
+| `disorder` | fraction of residues with pLDDT < 50 | same as pLDDT |
+| `omega` | dN/dS from the human-mouse-dnds-omega pipeline | **1,289 only** |
+
+pLDDT and its disorder proxy are parsed from the AlphaFold `.cif` files the Foldseek arm
+already stages, so they cost no extra download.
+
+**dN/dS covers ~7% of query proteins.** Any omega-stratified result describes that subset,
+not the proteome. Treat it as a probe, not a genome-wide claim.
+
+**The upstream `dS` column is corrupt and this pipeline does not read it.**
+`human-mouse-dnds-omega/bin/compute_omega.py` parses codeml output with `r"dS\s*=\s*(...)"`,
+and `re.search` matches that inside `dN/dS=` first, so the published `dS` column is a copy
+of `omega` in all 1335 rows. `dN` and `omega` themselves are correct (omega's median of
+0.143 matches published human-mouse dN/dS). `dS` is reconstructed here as `dN/omega`, which
+is exact, and surfaces as `dS_recovered`. Fix the parser upstream and drop the workaround.
+
 `all_domain_curves.parquet` holds the full PR and ROC operating points per
-(tool, variant, species) -- `score_threshold`, `precision`, `recall_reachable`, `f1`,
-`tpr`, `fpr` -- thinned to at most 2000 points for plotting. Every scalar above is
+(tool, variant, species, split) -- `score_threshold`, `precision`, `recall_reachable`,
+`f1`, `tpr`, `fpr` -- thinned to at most 2000 points for plotting. Curves are emitted for
+the ungrouped cut only; one per stratum across a 1017-combo sweep would dwarf the metrics
+they support. Every scalar above is
 computed on the *full* curve before thinning, so the two always agree.
 
 ### Three things that will mislead you if skipped

@@ -44,6 +44,26 @@ params.structures    = "${home}/data/alphafold_structures"
 // Pfam-A.hmm for the hmmscan annotation ceiling. Skipped when absent.
 params.pfam_hmm      = "${home}/data/pfam/Pfam-A.hmm"
 
+// --- query-protein covariates ---------------------------------------------
+// Results are cut by HGNC gene group, dN/dS, pLDDT and disorder, the same axes the
+// 200-series notebooks stratify on. Each is optional; a missing file drops that axis
+// and leaves the rest working.
+params.hgnc_file  = "${home}/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt"
+params.omega_file = "${projectDir}/../human-mouse-dnds-omega/results/omega_results.tsv"
+params.mobidb_cache = null   // optional curated disorder; pLDDT<50 proxy is always computed
+
+// Held-out evaluation. Nothing here learns from the data, so there is no model to
+// overfit -- but picking the best of 113 alphabet x ksize combos on the same instances
+// you report IS selection, and reporting the winner on the data that chose it is
+// optimistically biased. Grouped by Pfam family so a family cannot appear on both sides.
+params.split_by         = "family"
+params.holdout_fraction = 0.5
+params.split_seed       = 20260818
+
+// Strict "correctly parsed" criterion used by structure-based domain parsers, reported
+// alongside the looser params.min_overlap.
+params.strict_iou = 0.8
+
 // HHblits background database (UniRef30). Without it hhblits runs single-sequence
 // profiles and lands near phmmer -- see README-sherlock.md for the download.
 params.hhblits_db    = null
@@ -151,7 +171,40 @@ process buildDomainTruth {
         --annotations ${annotations_dir} \\
         --truth-out   human_domain_truth.parquet \\
         --map-outdir  . \\
-        --summary-out truth_summary.json
+        --summary-out truth_summary.json \\
+        --split-by         ${params.split_by} \\
+        --holdout-fraction ${params.holdout_fraction} \\
+        --split-seed       ${params.split_seed}
+    """
+}
+
+process buildQueryCovariates {
+    /*
+     * Per-query-protein biology: HGNC gene group, dN/dS, mean pLDDT, disorder fraction.
+     * pLDDT and its disorder proxy are parsed from the same AlphaFold .cif files the
+     * Foldseek arm already stages, so this costs no extra download.
+     */
+    label 'python'
+    publishDir "${params.outdir}/truth", mode: 'copy'
+
+    input:
+    tuple path(truth), path(hgnc), path(omega), path(structures)
+
+    output:
+    path "human_query_covariates.parquet", emit: covariates
+    path "covariates_summary.json",        emit: summary
+
+    script:
+    def hgnc_arg   = hgnc.name   == 'NO_HGNC'   ? "" : "--hgnc ${hgnc}"
+    def omega_arg  = omega.name  == 'NO_OMEGA'  ? "" : "--omega ${omega}"
+    def struct_arg = structures.name == 'NO_STRUCTURES' ? "" : "--structures ${structures}"
+    def mobidb_arg = params.mobidb_cache ? "--mobidb ${params.mobidb_cache}" : ""
+    """
+    build_query_covariates.py \\
+        --truth       ${truth} \\
+        ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} \\
+        --out         human_query_covariates.parquet \\
+        --summary-out covariates_summary.json
     """
 }
 
@@ -518,7 +571,8 @@ process scoreDomainCalls {
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
-    tuple val(species), val(tool), val(variant), path(regions), path(truth), path(domain_map)
+    tuple val(species), val(tool), val(variant), path(regions), path(truth), path(domain_map),
+          path(covariates)
 
     output:
     path "${tool}.${variant}.${species}.calls.parquet",   emit: calls
@@ -534,7 +588,9 @@ process scoreDomainCalls {
         --species      ${species} \\
         --truth        ${truth} \\
         --domain-map   ${domain_map} \\
+        --covariates   ${covariates} \\
         --min-overlap  ${params.min_overlap} \\
+        --strict-iou   ${params.strict_iou} \\
         --calls-out    ${tool}.${variant}.${species}.calls.parquet \\
         --metrics-out  ${tool}.${variant}.${species}.metrics.parquet \\
         --curve-out    ${tool}.${variant}.${species}.curve.parquet
@@ -549,7 +605,7 @@ process scoreHmmscanCeiling {
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
-    tuple val(tool), path(regions), path(truth)
+    tuple val(tool), path(regions), path(truth), path(covariates)
 
     output:
     path "hmmscan.direct.all.calls.parquet",   emit: calls
@@ -565,7 +621,9 @@ process scoreHmmscanCeiling {
         --species      all \\
         --truth        ${truth} \\
         --direct-annotation \\
+        --covariates   ${covariates} \\
         --min-overlap  ${params.min_overlap} \\
+        --strict-iou   ${params.strict_iou} \\
         --calls-out    hmmscan.direct.all.calls.parquet \\
         --metrics-out  hmmscan.direct.all.metrics.parquet \\
         --curve-out    hmmscan.direct.all.curve.parquet
@@ -609,8 +667,24 @@ workflow {
         }
     )
 
-    // ---- ground truth ----
+    // ---- ground truth + query covariates ----
     truth_out = buildDomainTruth(annotations)
+
+    // Optional inputs are passed as sentinel files rather than nulls: Nextflow cannot
+    // stage a null path, and a sentinel keeps the process signature fixed whether or not
+    // the file exists.
+    def optional_or = { pathStr, sentinel ->
+        pathStr && file(pathStr).exists() ? file(pathStr) : file("${projectDir}/assets/${sentinel}")
+    }
+    cov_in = truth_out.truth.map { t ->
+        tuple(t,
+              optional_or(params.hgnc_file,  'NO_HGNC'),
+              optional_or(params.omega_file, 'NO_OMEGA'),
+              file("${params.structures}/human").exists()
+                  ? file("${params.structures}/human")
+                  : file("${projectDir}/assets/NO_STRUCTURES"))
+    }
+    covariates = buildQueryCovariates(cov_in).covariates
 
     // (species, domain_map_parquet) — flatten the emitted maps and key them by species
     map_ch = truth_out.maps
@@ -678,8 +752,9 @@ workflow {
         .map { species, tool, variant, regions -> tuple(species, tool, variant, regions) }
         .combine(map_ch, by: 0)
         .combine(truth_out.truth)
-        .map { species, tool, variant, regions, domain_map, truth ->
-            tuple(species, tool, variant, regions, truth, domain_map)
+        .combine(covariates)
+        .map { species, tool, variant, regions, domain_map, truth, cov ->
+            tuple(species, tool, variant, regions, truth, domain_map, cov)
         }
 
     scored = scoreDomainCalls(score_in)
@@ -692,7 +767,9 @@ workflow {
         // hmmpress writes Pfam-A.hmm.{h3m,h3i,h3f,h3p} alongside the .hmm; hmmscan needs them.
         def pfam_aux = file("${params.pfam_hmm}.h3*")
         hmmscan_out = hmmscanAnnotate(Channel.of(tuple(human_fasta, pfam_hmm, pfam_aux)))
-        ceiling     = scoreHmmscanCeiling(hmmscan_out.combine(truth_out.truth))
+        ceiling     = scoreHmmscanCeiling(
+            hmmscan_out.combine(truth_out.truth).combine(covariates)
+        )
         ceiling_metrics = ceiling.metrics
         ceiling_curves  = ceiling.curve
     }

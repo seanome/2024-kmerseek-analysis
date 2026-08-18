@@ -27,9 +27,28 @@ families over target-side boundary noise, which is not what is being measured.
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import polars as pl
+
+# bin/ is on PATH under Nextflow but not on PYTHONPATH, so make the sibling module
+# importable regardless of the working directory the task runs in.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import cafa_metrics as cm  # noqa: E402
+
+
+# Covariate axes the results get cut by. Continuous ones are binned; HGNC gene group is
+# already categorical. Bin edges are fixed rather than data-derived so a stratum means
+# the same thing across every tool, species and combo in the sweep.
+STRATA = {
+    "plddt": ("mean_plddt", [0, 50, 70, 90, 100]),
+    "disorder": ("disorder_fraction_plddt", [0.0, 0.1, 0.3, 0.6, 1.01]),
+    "omega": ("omega", [0.0, 0.1, 0.25, 0.5, 10.0]),
+}
+# Cutting on every one of ~4200 HGNC groups would produce mostly single-protein strata
+# where no metric is stable. Only groups with at least this many query proteins are cut.
+MIN_STRATUM_PROTEINS = 30
 
 
 def extract_accession(col: pl.Expr) -> pl.Expr:
@@ -370,6 +389,80 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     return metrics
 
 
+def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None) -> pl.DataFrame:
+    """Add one column per covariate axis, holding that protein's stratum label."""
+    if covariates is None:
+        return truth.with_columns(pl.lit("all").alias("stratum_hgnc"))
+
+    cov = covariates
+    exprs = []
+    for axis, (col, edges) in STRATA.items():
+        name = f"stratum_{axis}"
+        if col not in cov.columns:
+            exprs.append(pl.lit(None, dtype=pl.String).alias(name))
+            continue
+        expr = pl.when(pl.col(col).is_null()).then(pl.lit(None, dtype=pl.String))
+        for lo, hi in zip(edges[:-1], edges[1:]):
+            expr = expr.when((pl.col(col) >= lo) & (pl.col(col) < hi)).then(
+                pl.lit(f"{lo}-{hi}")
+            )
+        exprs.append(expr.otherwise(None).alias(name))
+
+    hgnc = "hgnc_gene_group"
+    exprs.append(
+        pl.col(hgnc).alias("stratum_hgnc") if hgnc in cov.columns
+        else pl.lit(None, dtype=pl.String).alias("stratum_hgnc")
+    )
+    cov = cov.with_columns(exprs)
+
+    keep = ["accession"] + [c for c in cov.columns if c.startswith("stratum_")]
+    return truth.join(cov.select(keep), on="accession", how="left")
+
+
+def strata_of(truth: pl.DataFrame) -> list[tuple[str, str]]:
+    """Enumerate (axis, value) cuts worth reporting, always including the ungrouped one."""
+    out = [("all", "all")]
+    for col in (c for c in truth.columns if c.startswith("stratum_")):
+        axis = col.removeprefix("stratum_")
+        counts = (
+            truth.filter(pl.col(col).is_not_null())
+            .group_by(col)
+            .agg(pl.col("accession").n_unique().alias("n"))
+            .filter(pl.col("n") >= MIN_STRATUM_PROTEINS)
+            .sort("n", descending=True)
+        )
+        out.extend((axis, v) for v in counts[col].to_list())
+    return out
+
+
+def subset(truth: pl.DataFrame, calls: pl.DataFrame, split: str,
+           axis: str, value: str) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """Restrict both the answer key and the calls to one split x stratum cell.
+
+    Truth and calls must be cut the same way or the metrics are incoherent: keeping a
+    call whose protein is outside the stratum would count against a denominator that
+    never included it.
+    """
+    t = truth
+    if split != "all":
+        t = t.filter(pl.col("split") == split)
+    if axis != "all":
+        t = t.filter(pl.col(f"stratum_{axis}") == value)
+
+    if t.height == 0:
+        return t, calls.head(0)
+
+    proteins = t.select("accession").unique().rename({"accession": "query_acc"})
+    c = calls.join(proteins, on="query_acc", how="inner")
+    if split != "all":
+        # Splits are grouped by Pfam family, so a call is in the split iff its claimed
+        # family is. Filtering calls by protein alone would leak selection-half families
+        # into the held-out numbers.
+        fams = t.select("pfam_id").unique()
+        c = c.join(fams, on="pfam_id", how="inner")
+    return t, c
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--regions", required=True, type=Path)
@@ -378,12 +471,14 @@ def main():
     p.add_argument("--species", required=True)
     p.add_argument("--truth", required=True, type=Path)
     p.add_argument("--domain-map", type=Path)
+    p.add_argument("--covariates", type=Path,
+                   help="per-protein HGNC group / omega / pLDDT / disorder table")
     p.add_argument("--direct-annotation", action="store_true")
     p.add_argument("--min-overlap", type=float, default=0.5)
+    p.add_argument("--strict-iou", type=float, default=0.8)
     p.add_argument("--calls-out", required=True, type=Path)
     p.add_argument("--metrics-out", required=True, type=Path)
-    p.add_argument("--curve-out", type=Path,
-                   help="per-threshold PR and ROC operating points, for plotting")
+    p.add_argument("--curve-out", type=Path)
     p.add_argument("--max-curve-points", type=int, default=2000)
     args = p.parse_args()
 
@@ -392,17 +487,17 @@ def main():
 
     truth_lf = pl.scan_parquet(args.truth)
     truth = truth_lf.collect()
+    covariates = pl.read_parquet(args.covariates) if args.covariates else None
+    truth = attach_strata(truth, covariates)
 
     regions = load_regions(args.regions, args.direct_annotation)
 
     if args.direct_annotation:
-        # hmmscan names the family itself; every human family is reachable.
-        reachable = truth
+        target_families = None
         calls_lf = regions
     else:
         map_lf = pl.scan_parquet(args.domain_map)
         target_families = map_lf.select("pfam_id").unique().collect()
-        reachable = truth.join(target_families, on="pfam_id", how="inner")
         calls_lf = (
             transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
         )
@@ -420,22 +515,63 @@ def main():
 
     scored.write_parquet(args.calls_out, compression="zstd")
 
-    # Full curve first: every scalar metric is derived from it, so it must not be thinned
-    # before roc_auc/auprc/best_f1 are computed off it.
-    points = operating_points(scored, reachable.height)
+    # IC is estimated once on the whole answer key, not per stratum. A family's rarity is
+    # a property of the proteome; re-estimating it inside each cut would make the same
+    # family worth different amounts in different strata and break comparability.
+    ic = cm.information_content(truth)
 
-    metrics = compute_metrics(scored, points, truth, reachable, args.min_overlap)
-    metrics.update({"tool": args.tool, "variant": args.variant, "species": args.species})
-    pl.DataFrame([metrics]).write_parquet(args.metrics_out, compression="zstd")
+    ident = {"tool": args.tool, "variant": args.variant, "species": args.species}
+    rows, curves = [], []
 
+    for split in ("all", "selection", "heldout"):
+        if split != "all" and "split" not in truth.columns:
+            continue
+        for axis, value in strata_of(truth):
+            t_sub, c_sub = subset(truth, scored, split, axis, value)
+            if t_sub.height == 0:
+                continue
+
+            reachable = (
+                t_sub if target_families is None
+                else t_sub.join(target_families, on="pfam_id", how="inner")
+            )
+            points = operating_points(c_sub, reachable.height)
+            m = compute_metrics(c_sub, points, t_sub, reachable, args.min_overlap)
+
+            pc = cm.protein_centric_curve(c_sub, t_sub, ic)
+            m.update(cm.cafa_scalars(pc))
+            m.update(cm.boundary_metrics(c_sub, t_sub, args.strict_iou))
+            m.update(cm.domain_count_metrics(c_sub, t_sub))
+            m.update(ident)
+            m.update({"split": split, "stratum_axis": axis, "stratum": value})
+            rows.append(m)
+
+            # Curves only for the ungrouped cut. One per split x stratum x combo would
+            # dwarf the metrics they support across a 1017-combo sweep.
+            if axis == "all" and args.curve_out is not None:
+                curves.append(
+                    downsample(points, args.max_curve_points).with_columns(
+                        pl.lit(split).alias("split"),
+                        **{k: pl.lit(v) for k, v in ident.items()},
+                    )
+                )
+
+    pl.DataFrame(rows, infer_schema_length=None).write_parquet(
+        args.metrics_out, compression="zstd"
+    )
     if args.curve_out is not None:
-        downsample(points, args.max_curve_points).with_columns(
-            pl.lit(args.tool).alias("tool"),
-            pl.lit(args.variant).alias("variant"),
-            pl.lit(args.species).alias("species"),
-        ).write_parquet(args.curve_out, compression="zstd")
+        (pl.concat(curves, how="diagonal_relaxed") if curves
+         else pl.DataFrame(schema={"split": pl.String})).write_parquet(
+            args.curve_out, compression="zstd"
+        )
 
-    print(json.dumps(metrics, indent=2))
+    headline = next(
+        (r for r in rows if r["split"] == "all" and r["stratum_axis"] == "all"), {}
+    )
+    print(json.dumps(
+        {k: v for k, v in headline.items() if not k.startswith("stratum")}, indent=2
+    ))
+    print(f"\nemitted {len(rows)} metric rows across splits x strata")
 
 
 if __name__ == "__main__":

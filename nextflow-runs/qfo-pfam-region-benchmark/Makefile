@@ -65,11 +65,16 @@ sync-pipeline:
 	ssh $(SHERLOCK_HOST) 'cd $(REMOTE_DIR) && git pull --ff-only'
 
 # Data may move by rsync. Annotations are small; proteomes are ~1 GB; structures ~60 GB.
+HGNC_FILE  := /Users/olga/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt
+OMEGA_FILE := $(ANALYSIS_ROOT)/nextflow-runs/human-mouse-dnds-omega/results/omega_results.tsv
+
 sync-data:
 	rsync -avz --progress -e ssh $(ANNOTATIONS)/ \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/annotations/'
 	rsync -avz --progress -e ssh $(QFO_DIR)/ \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/qfo/'
+	rsync -avz --progress -e ssh $(HGNC_FILE) $(OMEGA_FILE) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/covariates/'
 
 sync-structures:
 	rsync -av --progress --copy-links -e ssh $(STRUCT_DIR)/ \
@@ -103,6 +108,8 @@ define launch
 	    --qfo_dir     ../data/qfo \
 	    --annotations ../data/annotations \
 	    --structures  ../data/structures \
+	    --hgnc_file   ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file  ../data/covariates/omega_results.tsv \
 	    --outdir      ../results \
 	    2>&1 | tee -a nextflow.$(1).log"
 	@echo "launched tmux session '$(1)' -- attach with: tmux attach -t $(1)"

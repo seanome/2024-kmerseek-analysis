@@ -10,10 +10,15 @@ from pathlib import Path
 
 import polars as pl
 
-LEAD = ["tool", "variant", "species"]
+LEAD = ["tool", "variant", "species", "split", "stratum_axis", "stratum"]
 
 # Threshold-free and therefore comparable across tools with different default cutoffs.
-HEADLINE = ["roc_auc", "auprc", "best_f1", "recall_reachable", "precision", "median_iou_tp"]
+HEADLINE = ["fmax", "auprc", "roc_auc", "smin", "ndo", "recall_reachable", "precision"]
+
+# The leaderboard cut. `heldout` because the sweep picks its best combo on `selection`,
+# and scoring the winner on the data that chose it is optimistically biased; `all`
+# stratum because the per-axis cuts answer a different question.
+LEADERBOARD_SPLIT = "heldout"
 
 
 def concat(dirpath: Path, what: str) -> pl.DataFrame:
@@ -21,7 +26,10 @@ def concat(dirpath: Path, what: str) -> pl.DataFrame:
     if not files:
         raise SystemExit(f"no {what} parquet files under {dirpath}")
     df = pl.concat([pl.read_parquet(f) for f in files], how="diagonal_relaxed")
-    return df.select(LEAD + [c for c in df.columns if c not in LEAD])
+    # Curves carry no stratum columns by design (they are emitted only for the ungrouped
+    # cut), so order by whichever lead columns this table actually has.
+    lead = [c for c in LEAD if c in df.columns]
+    return df.select(lead + [c for c in df.columns if c not in lead])
 
 
 def main():
@@ -29,7 +37,7 @@ def main():
     parquet_out, csv_out, curves_out = (Path(a) for a in sys.argv[3:6])
 
     metrics = concat(metrics_dir, "metrics").sort(
-        ["auprc", "best_f1"], descending=True, nulls_last=True
+        ["fmax", "auprc"], descending=True, nulls_last=True
     )
     metrics.write_parquet(parquet_out, compression="zstd")
     metrics.write_csv(csv_out)
@@ -40,14 +48,32 @@ def main():
     print(f"{metrics.height} metric rows, {curves.height} curve points")
     print()
 
-    # Best combo per tool. kmerseek has 113 variants and every other tool has one, so a
-    # flat sort would bury the baselines under the sweep.
+    board = metrics.filter(
+        (pl.col("split") == LEADERBOARD_SPLIT) & (pl.col("stratum_axis") == "all")
+    )
+    if board.height == 0:
+        # No holdout column at all (e.g. an older truth table) -- fall back rather than
+        # print an empty leaderboard, and say which cut is being shown.
+        board = metrics.filter(pl.col("stratum_axis") == "all")
+        print("NOTE: no heldout rows found; leaderboard below is over all instances")
+    else:
+        print(f"Leaderboard: split={LEADERBOARD_SPLIT}, ungrouped, averaged over species")
+
+    # Average over species first, then rank. Summing would let the species with the most
+    # annotated proteins decide the winner. kmerseek has 113 variants against every other
+    # tool's one, so pick each tool's best variant rather than letting the sweep bury the
+    # baselines.
+    per_variant = (
+        board.group_by("tool", "variant")
+        .agg([pl.col(c).mean() for c in HEADLINE] + [pl.col("species").n_unique().alias("n_species")])
+        .sort("fmax", descending=True, nulls_last=True)
+    )
     best = (
-        metrics.sort("auprc", descending=True, nulls_last=True)
-        .group_by("tool")
-        .agg([pl.col("variant").first().alias("best_variant")]
+        per_variant.group_by("tool")
+        .agg([pl.col("variant").first().alias("best_variant"),
+              pl.col("n_species").first()]
              + [pl.col(c).first() for c in HEADLINE])
-        .sort("auprc", descending=True, nulls_last=True)
+        .sort("fmax", descending=True, nulls_last=True)
     )
     with pl.Config(tbl_cols=-1, tbl_rows=-1, fmt_str_lengths=40):
         print(best)
