@@ -105,7 +105,7 @@ process indexAndSpectrum {
     def spectrum  = "sprot.${label}.k${ksize}.spectrum.csv.gz"
     def log_file  = "sprot.${label}.k${ksize}.index.log"
     """
-    set -euo pipefail
+    set -uo pipefail
 
     # 2>&1 | tee (not `2> \$log_file`) so a failure's message lands in Nextflow's
     # own .command.err too -- a plain stderr redirect hid it there, and a failed
@@ -113,6 +113,19 @@ process indexAndSpectrum {
     # on success), so there was no way to see what went wrong without grepping
     # the work dir by hash. `pipefail` keeps kmerseek's exit code (not tee's)
     # as the pipeline's exit code.
+    #
+    # No `set -e` here (deliberately, unlike most scripts in this repo): kmerseek
+    # can crash *after* the spectrum CSV is already fully written. Its own
+    # SearchCache ("search_cache" RocksDB value, index.rs save_inverted_index) is
+    # built and written *after* the CSV, and this pipeline never uses it -- the
+    # rocksdb dir gets rm -rf'd below regardless. At high ksize with a small
+    # alphabet (HP-family) and a large proteome, that single serialized blob can
+    # exceed RocksDB's ~4 GiB single-value ceiling and fail with "Invalid
+    # argument: value is too large" (seen on hp k=30, Swiss-Prot-scale input --
+    # kmerseek already chunks signature storage for this exact reason, CHUNK_SIZE
+    # = 100 in save_state_with_kmer_stats, but save_inverted_index's SearchCache
+    # write doesn't get the same treatment). So: check for the completed CSV
+    # ourselves instead of trusting kmerseek's exit code.
     kmerseek index \\
         --input ${fasta} \\
         --encoding ${cli_flag} \\
@@ -120,6 +133,16 @@ process indexAndSpectrum {
         --output ${db_name} \\
         --kmer-stats-out ${spectrum} \\
         2>&1 | tee ${log_file}
+    kmerseek_exit=\$?
+
+    if [ \$kmerseek_exit -ne 0 ]; then
+        if [ -s ${spectrum} ] && grep -q 'Wrote k-mer frequency spectrum' ${log_file}; then
+            echo "[wrapper] kmerseek exited \$kmerseek_exit after the spectrum CSV was already written -- treating as success" | tee -a ${log_file}
+        else
+            echo "[wrapper] kmerseek exited \$kmerseek_exit and the spectrum CSV was not confirmed written -- real failure" | tee -a ${log_file}
+            exit \$kmerseek_exit
+        fi
+    fi
 
     # The rocksdb index itself isn't needed downstream -- only the spectrum
     # CSV is. Drop it so per-task work dirs don't accumulate ~100 indices.
