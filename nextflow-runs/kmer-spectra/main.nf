@@ -40,11 +40,38 @@ def ENCODINGS = params.hp_only
     ? ALL_ENCODINGS.findAll { cli_flag, label, kmin, kmax -> label.startsWith('hp') }
     : ALL_ENCODINGS
 
+// HP-family alphabets collapse 20 amino acids onto 2 symbols, so at low ksize a
+// handful of k-mers absorb a huge share of the proteome (see notebook 24's
+// degeneracy-ratio figures). kmerseek's --kmer-stats-out apparently scales with
+// the single most-degenerate k-mer's occurrence count, not the number of unique
+// k-mers, so RAM blows up exactly where the k-mer space is smallest -- the
+// opposite of the usual "more distinct k-mers -> more RAM" intuition. Observed
+// OOM (both SIGKILL and SIGBUS) on hp_kyte_doolittle k17 at 16 GB and 32 GB.
+// Size generously for the whole known-risk zone up front rather than retrying
+// into it in small steps that each cost a SLURM re-queue on hns.
+//
+// `sinfo -p hns -o "%N %m %c"` puts every hns node at 191000 MB (~186.5 GiB).
+// Cap requests at 176 GB -- comfortably under that on every node, with margin
+// for the OS -- so a retry can never ask for more than any node will ever
+// have, which would leave the job stuck in the queue forever instead of
+// failing loudly.
+def isDegenerateHp = { label -> label.startsWith('hp') && label != 'hp_shuffled_control' }
+def NODE_MEM_CAP = 176.GB
+
+def taskMemory = { label, ksize, attempt ->
+    def base = (isDegenerateHp(label) && ksize <= 20) ? 96.GB : 16.GB
+    def requested = base * attempt
+    requested <= NODE_MEM_CAP ? requested : NODE_MEM_CAP
+}
 
 process indexAndSpectrum {
     tag "${label}_k${ksize}"
     publishDir params.outdir, mode: 'copy', pattern: '*.spectrum.csv.gz'
     publishDir params.outdir, mode: 'copy', pattern: '*.index.log'
+
+    memory { taskMemory(label, ksize, task.attempt) }
+    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    maxRetries 1
 
     input:
     tuple path(fasta), val(cli_flag), val(label), val(ksize)
