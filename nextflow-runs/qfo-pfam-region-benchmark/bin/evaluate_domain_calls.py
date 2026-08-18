@@ -63,7 +63,19 @@ def extract_accession(col: pl.Expr) -> pl.Expr:
 
 def load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
     """Normalize any tool's output to one schema. Returns None for an empty result, which
-    is a real outcome (a combo that found nothing), not an error."""
+    is a real outcome (a combo that found nothing), not an error.
+
+    An empty gzip or zstd stream is NOT a zero-byte file -- both carry a frame header --
+    so the size check alone cannot catch a tool that legitimately found nothing. polars
+    raises NoDataError on those, which is caught here rather than at each call site.
+    """
+    try:
+        return _load_regions(path, direct)
+    except pl.exceptions.NoDataError:
+        return None
+
+
+def _load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
     if path.stat().st_size == 0:
         return None
 

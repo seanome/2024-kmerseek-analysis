@@ -81,6 +81,71 @@ The run is still valid; it just is not measuring what HHblits is known for. UniR
 wget https://wwwuser.gwdg.de/~compbiol/uniclust/current_release/UniRef30_2023_02_hhsuite.tar.gz
 ```
 
+## Mini smoke test — do this first
+
+Before spending queue time on 1017 searches, run the same code path on a few hundred
+proteins.
+
+```bash
+make mini-testset
+make sync-mini
+```
+
+Then on Sherlock:
+
+```bash
+make run-mini
+```
+
+It takes minutes, uses two species and two kmerseek combos, and exercises every stage:
+truth building, the family-grouped split, covariates, search, transfer, scoring, the CAFA
+metrics and aggregation. `-profile sherlock,mini` layers on top of the real profile and
+overrides only what scale requires, so nothing about the code path differs from `make run`.
+
+**The targets are not a random subset.** They are chosen *because* they share Pfam
+families with the queries — 42 shared families for yeast, 19 for ecoli at the defaults —
+so real true positives exist. An equal number of decoy targets share no family with any
+query, so precision can fall below 1.0. A random subset of two proteomes would share
+almost nothing, every metric would read 0.0, and a broken scoring path would look
+identical to a working one.
+
+Queries lean toward multi-domain proteins (~60/40), because a single-domain-only set
+leaves `domain_count_mcc` undefined and never tests whether a tool splits a protein
+correctly.
+
+Structures are symlinked from whatever the flat AlphaFold cache already holds, so **the
+mini test needs none of the 36 GB download** — enough to exercise the Foldseek and
+Folddisco arms without waiting on `make fetch-structures`.
+
+Tune with `MINI_SPECIES` and `MINI_COMBOS`, or `--n-queries` / `--n-targets` on
+`make mini-testset`.
+
+### What the mini set does and does not prove
+
+Verified locally end to end: 4 searches, 48 metric rows, 47 columns. Yeast at
+`hp-pbotc-1st-ed` k19 recovers 21.7% of reachable domains against 2.6% for `protein` k10,
+and ecoli sits near zero -- 2000 MYA is beyond what a 200-protein set recovers. So the set
+discriminates, which is the point.
+
+**It does not give the held-out split signal.** 241 query families split in half leaves
+~120 held out, of which only ~21 are shared with yeast, and no true positive lands there.
+The split code path runs and emits its rows, but `heldout` reads 0.0 throughout. That is
+the set being small, not the split being broken -- do not read a mini-run leaderboard as a
+result. Raise `--n-queries` / `--n-targets` if you want the held-out half to carry signal.
+
+### Running the mini set on your Mac
+
+```bash
+make build-image-local
+make run-mini-local
+```
+
+`build-image-local` is a separate target for a real reason: the pushed image is
+`linux/amd64` for Sherlock, and it cannot run the python steps on Apple Silicon. polars
+requires AVX2, Rosetta/QEMU emulation does not provide it, and the processes die with
+SIGSEGV (exit 139) rather than a readable error. Sherlock nodes are real amd64, so only
+the amd64 image is pushed.
+
 ## Running
 
 ```bash

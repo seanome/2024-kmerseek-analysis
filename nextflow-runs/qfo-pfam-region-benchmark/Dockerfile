@@ -42,8 +42,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Debian trixie marks its python as externally managed. This image has no system python
 # tooling to protect, so installing straight into it is simpler than carrying a venv and
 # keeping every process script aware of its path.
+# numpy is required, not incidental: bin/cafa_metrics.py builds the Fmax/Smin threshold
+# grid with it. polars does not guarantee pulling it in.
 RUN pip3 install --no-cache-dir --break-system-packages \
-        'polars>=1.0' 'pyarrow>=15'
+        'polars>=1.0' 'pyarrow>=15' 'numpy>=1.26'
 
 COPY --from=builder /build/target/release/kmerseek /usr/local/bin/kmerseek
 COPY --from=builder /build/GIT_SHA /etc/kmerseek_git_sha

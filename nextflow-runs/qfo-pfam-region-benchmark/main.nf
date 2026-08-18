@@ -76,6 +76,13 @@ params.hhblits_db    = null
 // [cli_flag, label, kmin, kmax]
 params.hp_kmin = 18
 
+// Scope a run down without editing the matrix, for smoke tests on a mini set.
+//   --species          comma-separated labels, e.g. "yeast,ecoli"
+//   --kmerseek_combos  comma-separated encoding:ksize, e.g. "protein:10,hp-pbotc-1st-ed:19"
+// Both default to null, meaning the full sweep.
+params.species         = null
+params.kmerseek_combos = null
+
 def ALL_ENCODINGS = [
     ['protein',              'protein',             5,  15],
     ['dayhoff',              'dayhoff',             10, 20],
@@ -125,7 +132,7 @@ params.run_hmmscan    = file(params.pfam_hmm).exists()
 // ---------------------------------------------------------------------------
 // Species: human is query-only; the other 9 are targets.
 // ---------------------------------------------------------------------------
-def SPECIES = [
+def ALL_SPECIES = [
     [label: "mouse",       taxon: "10090",  proteome: "UP000000589", subdir: "Eukaryota", mya: 100],
     [label: "chicken",     taxon: "9031",   proteome: "UP000000539", subdir: "Eukaryota", mya: 300],
     [label: "zebrafish",   taxon: "7955",   proteome: "UP000000437", subdir: "Eukaryota", mya: 430],
@@ -137,13 +144,30 @@ def SPECIES = [
     [label: "ecoli",       taxon: "83333",  proteome: "UP000000625", subdir: "Bacteria",  mya: 2000],
 ]
 
+def SPECIES = params.species
+    ? ALL_SPECIES.findAll { it.label in params.species.tokenize(',')*.trim() }
+    : ALL_SPECIES
+
+if (SPECIES.isEmpty()) {
+    error "No species matched --species '${params.species}'. Known: ${ALL_SPECIES*.label.join(', ')}"
+}
+
 // HP-family alphabets at low ksize need far more RAM than everything else: a handful of
 // k-mers absorb a large share of the proteome, and the inverted index scales with the
 // most-degenerate k-mer's occurrence count. Size for the known-risk zone up front rather
 // than retrying into it -- each retry costs a full SLURM requeue.
 def isDegenerateHp = { label -> label.startsWith('hp') }
+
+// Sized for full QfO proteomes. A mini/smoke run indexes a few hundred sequences and
+// needs nothing like this, so both figures are params -- the `mini` profile lowers them
+// rather than forcing a 128 GB request for a 300-protein test set.
+params.kmerseek_memory         = '32 GB'
+params.kmerseek_memory_hp_lowk = '128 GB'
+
 def kmerseekMemory = { label, ksize, attempt ->
-    def base = (isDegenerateHp(label) && ksize <= 20) ? 128.GB : 32.GB
+    def base = (isDegenerateHp(label) && ksize <= 20)
+        ? MemoryUnit.of(params.kmerseek_memory_hp_lowk)
+        : MemoryUnit.of(params.kmerseek_memory)
     base * attempt
 }
 
@@ -293,13 +317,21 @@ process kmerseekIndexAndSearch {
 
     # Straight to parquet, dropping columns no downstream step reads. Both formats kept
     # around for 1017 result files is exactly the disk blow-up this design avoids.
-    if [ -s ${out_zst} ]; then
+    # Test the DECOMPRESSED stream, not the file size. zstd emits a 13-byte frame header
+    # for empty input, so [ -s file ] is true for a search that found nothing and polars
+    # then dies with NoDataError. A combo finding zero matches is a real result -- at
+    # protein k=10 across 2000 MYA it is the expected one -- and must not fail the run.
+    if [ -n "\$(zstd -dc ${out_zst} | head -c 1)" ]; then
         python3 - << 'PYEOF'
 import polars as pl
 DROP = ["query_md5", "target_md5", "region_subseq", "target_subseq", "moltype_seq"]
-lf = pl.scan_csv("${out_zst}", ignore_errors=True)
-cols = [c for c in lf.collect_schema().names() if c not in DROP]
-lf.select(cols).sink_parquet("${out_pq}", compression="zstd", compression_level=9)
+try:
+    lf = pl.scan_csv("${out_zst}", ignore_errors=True)
+    cols = [c for c in lf.collect_schema().names() if c not in DROP]
+    lf.select(cols).sink_parquet("${out_pq}", compression="zstd", compression_level=9)
+except pl.exceptions.NoDataError:
+    # Header-only or otherwise contentless; same meaning as the empty branch below.
+    open("${out_pq}", "wb").close()
 PYEOF
     else
         touch ${out_pq}
@@ -796,9 +828,21 @@ workflow {
     // ---- kmerseek: alphabet x ksize x species ----
     kmerseek_regions = Channel.empty()
     if (!params.skip_kmerseek) {
-        def combos = ALL_ENCODINGS.collectMany { cli_flag, label, kmin, kmax ->
-            (kmin..kmax).collect { k -> tuple(cli_flag, label, k) }
-        }
+        // An explicit combo list overrides the matrix entirely. The label is derived from
+        // the CLI flag the same way ALL_ENCODINGS does it, so output filenames and the
+        // per-combo memory sizing keep working unchanged.
+        def combos = params.kmerseek_combos
+            ? params.kmerseek_combos.tokenize(',').collect { spec ->
+                  def (enc, k) = spec.trim().split(':')
+                  def known = ALL_ENCODINGS.find { it[0] == enc }
+                  if (!known) {
+                      error "Unknown encoding '${enc}' in --kmerseek_combos. Known: ${ALL_ENCODINGS*.get(0).join(', ')}"
+                  }
+                  tuple(enc, known[1], k.toInteger())
+              }
+            : ALL_ENCODINGS.collectMany { cli_flag, label, kmin, kmax ->
+                  (kmin..kmax).collect { k -> tuple(cli_flag, label, k) }
+              }
         log.info "kmerseek matrix: ${combos.size()} alphabet x ksize combos x ${SPECIES.size()} species = ${combos.size() * SPECIES.size()} searches"
 
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
