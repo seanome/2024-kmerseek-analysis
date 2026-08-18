@@ -1,0 +1,689 @@
+#!/usr/bin/env nextflow
+nextflow.enable.dsl=2
+
+/*
+ * qfo-pfam-region-benchmark
+ *
+ * Domain finding, not orthology.
+ *
+ * Every tool here searches human query proteins against a QfO target proteome and
+ * reports aligned regions. Each reported region is turned into a *domain call* by
+ * transferring the Pfam domains annotated on the overlapped target interval onto the
+ * query interval. The call is then scored against the query protein's own Pfam domain
+ * instances: right family, right place. A tool that recovers the correct protein but
+ * puts the region in the wrong place scores no better than a miss.
+ *
+ * This is deliberately not the pair-level ROC used by ../pfam-benchmark-tools and
+ * ../qfo-pfam-benchmark. Those ask "is this human protein homologous to that species
+ * protein". This asks "which stretch of this human protein is a PF00001, and did the
+ * tool find it".
+ *
+ * Tools compared:
+ *   kmerseek       region-scoped Poisson scoring, full alphabet x ksize matrix
+ *   hmmer3-phmmer  single-sequence HMM search
+ *   hmmer3-jackhmmer   3 iterations (params.jackhmmer_iterations)
+ *   mmseqs2-seqseq / mmseqs2-iterative
+ *   hhblits        profile-profile
+ *   foldseek       structure-structure (AlphaFold models)
+ *   hmmscan        query vs Pfam-A directly -- not a competitor, the reference ceiling
+ *                  for what direct annotation achieves without any target proteome
+ *
+ * Runs on Stanford Sherlock (SLURM + Apptainer). See README-sherlock.md and Makefile.
+ */
+
+// ---------------------------------------------------------------------------
+// Parameters
+// ---------------------------------------------------------------------------
+def home = System.getProperty('user.home')
+
+params.qfo_dir       = "${home}/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143"
+params.annotations   = "${projectDir}/../../results/pfam_benchmark/annotations"
+params.outdir        = "${home}/data/qfo-pfam-region-benchmark/results"
+params.structures    = "${home}/data/alphafold_structures"
+
+// Pfam-A.hmm for the hmmscan annotation ceiling. Skipped when absent.
+params.pfam_hmm      = "${home}/data/pfam/Pfam-A.hmm"
+
+// HHblits background database (UniRef30). Without it hhblits runs single-sequence
+// profiles and lands near phmmer -- see README-sherlock.md for the download.
+params.hhblits_db    = null
+
+// --- kmerseek alphabet x ksize matrix -------------------------------------
+// Same alphabet set as the kmer-spectra pipeline. HP floor is 18, not 15: a 2-letter
+// alphabet at k=15 has 32768 possible k-mers against ~20k x 20k proteins, and the
+// measured output volume at k=18 was already 838 MB compressed for the *smallest*
+// species. k=15-17 is a separate, deliberate experiment, not part of this sweep.
+// [cli_flag, label, kmin, kmax]
+params.hp_kmin = 18
+
+def ALL_ENCODINGS = [
+    ['protein',              'protein',             5,  15],
+    ['dayhoff',              'dayhoff',             10, 20],
+    ['hp',                   'hp',                  params.hp_kmin, 30],
+    ['hp-kyte-doolittle',    'hp_kyte_doolittle',   params.hp_kmin, 30],
+    ['hp-lehninger',         'hp_lehninger',        params.hp_kmin, 30],
+    ['hp-lehninger-plus-c',  'hp_lehninger_plus_c', params.hp_kmin, 30],
+    ['hp-thomas-dill',       'hp_thomas_dill',      params.hp_kmin, 30],
+    ['hp-thomas-dill-no-c',  'hp_thomas_dill_no_c', params.hp_kmin, 30],
+    ['hp-pbotc-1st-ed',      'hp_pbotc_1st_ed',     params.hp_kmin, 30],
+]
+
+// kmerseek search filters. min_region_score is the region-scoped cutoff: -log10 of the
+// region's Poisson tail, so 1.3 ~ p=0.05 and 3.16 ~ p=0.0007. It is OR'd with
+// max_query_pvalue, so a strong sub-protein domain hit survives a weak whole-query
+// p-value -- which is the entire point of region scoring for domain finding.
+params.threshold        = 0.0
+params.min_shared_kmers = 2
+params.max_query_pvalue = 0.05
+params.min_region_score = 1.3
+
+// --- baseline tool settings ------------------------------------------------
+params.mmseqs2_sensitivity = 7
+params.mmseqs2_iterations  = 3
+params.jackhmmer_iterations = 3
+params.evalue_report       = 10.0
+
+// --- domain-call scoring ---------------------------------------------------
+// A transferred call counts as hitting a true domain instance when the two intervals
+// reciprocally overlap by at least this fraction. 0.5 is the usual domain-boundary
+// convention; the eval also emits the full IoU distribution so this can be re-cut
+// downstream without re-running the sweep.
+params.min_overlap = 0.5
+
+// Toggles
+params.skip_kmerseek  = false
+params.skip_baselines = false
+params.skip_foldseek  = false
+params.run_hmmscan    = file(params.pfam_hmm).exists()
+
+// ---------------------------------------------------------------------------
+// Species: human is query-only; the other 9 are targets.
+// ---------------------------------------------------------------------------
+def SPECIES = [
+    [label: "mouse",       taxon: "10090",  proteome: "UP000000589", subdir: "Eukaryota", mya: 100],
+    [label: "chicken",     taxon: "9031",   proteome: "UP000000539", subdir: "Eukaryota", mya: 300],
+    [label: "zebrafish",   taxon: "7955",   proteome: "UP000000437", subdir: "Eukaryota", mya: 430],
+    [label: "ciona",       taxon: "7719",   proteome: "UP000008144", subdir: "Eukaryota", mya: 550],
+    [label: "fly",         taxon: "7227",   proteome: "UP000000803", subdir: "Eukaryota", mya: 600],
+    [label: "worm",        taxon: "6239",   proteome: "UP000001940", subdir: "Eukaryota", mya: 650],
+    [label: "yeast",       taxon: "559292", proteome: "UP000002311", subdir: "Eukaryota", mya: 900],
+    [label: "arabidopsis", taxon: "3702",   proteome: "UP000006548", subdir: "Eukaryota", mya: 1500],
+    [label: "ecoli",       taxon: "83333",  proteome: "UP000000625", subdir: "Bacteria",  mya: 2000],
+]
+
+// HP-family alphabets at low ksize need far more RAM than everything else: a handful of
+// k-mers absorb a large share of the proteome, and the inverted index scales with the
+// most-degenerate k-mer's occurrence count. Size for the known-risk zone up front rather
+// than retrying into it -- each retry costs a full SLURM requeue.
+def isDegenerateHp = { label -> label.startsWith('hp') }
+def kmerseekMemory = { label, ksize, attempt ->
+    def base = (isDegenerateHp(label) && ksize <= 20) ? 128.GB : 32.GB
+    base * attempt
+}
+
+// ===========================================================================
+// GROUND TRUTH — query-side Pfam domain instances
+// ===========================================================================
+
+process buildDomainTruth {
+    /*
+     * Two products, both derived from results/pfam_benchmark/annotations:
+     *   human_domain_truth.parquet  — the answer key: every Pfam domain instance on a
+     *                                 human protein, with its interval.
+     *   <species>_domain_map.parquet — the transfer table: every Pfam domain instance on
+     *                                 a target protein, used to label an aligned region.
+     * Nothing here depends on any tool, so it runs once and is reused by every arm.
+     */
+    label 'python'
+    publishDir "${params.outdir}/truth", mode: 'copy'
+
+    input:
+    path annotations_dir
+
+    output:
+    path "human_domain_truth.parquet", emit: truth
+    path "*_domain_map.parquet",       emit: maps
+    path "truth_summary.json",         emit: summary
+
+    script:
+    """
+    build_domain_truth.py \\
+        --annotations ${annotations_dir} \\
+        --truth-out   human_domain_truth.parquet \\
+        --map-outdir  . \\
+        --summary-out truth_summary.json
+    """
+}
+
+// ===========================================================================
+// KMERSEEK — fused index + search, region-level output
+// ===========================================================================
+
+process kmerseekIndexAndSearch {
+    /*
+     * Index and search in one task so the RocksDB index never becomes a declared
+     * output: it is built in the task work dir, used once, and deleted before the task
+     * exits. Steady-state disk is bounded by (maxForks x one index), not by the whole
+     * 113-combo matrix. An earlier all-vs-all run died with "No space left on device"
+     * doing this the other way.
+     *
+     * Tradeoff: -resume after a crash re-indexes an incomplete combo instead of reusing
+     * a saved index. Accepted -- the index is cheap relative to the search.
+     */
+    tag "${species}_${label}_k${ksize}"
+    storeDir "${params.outdir}/kmerseek"
+
+    memory { kmerseekMemory(label, ksize, task.attempt) }
+    // Retry the OOM signals (128..143), stop the run on anything else. Deliberately not
+    // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
+    // downstream as "this alphabet found nothing", which is indistinguishable from a real
+    // negative. That has already happened once on this project -- 17 combos silently
+    // searched ~1000 of 19,696 queries and looked like genuine misses. Failing loudly and
+    // resuming costs queue time; a silent partial costs a wrong conclusion.
+    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    maxRetries 2
+
+    input:
+    tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize), path(human_fasta)
+
+    output:
+    tuple val(species), val("kmerseek"), val("${label}_k${ksize}"),
+          path("human_vs_${species}.${label}.k${ksize}.regions.parquet"), emit: regions
+    path "human_vs_${species}.${label}.k${ksize}.log",                    emit: log
+
+    script:
+    def index_dir = "${species}.${label}.k${ksize}.kmerseek.rocksdb"
+    def out_zst   = "human_vs_${species}.${label}.k${ksize}.regions.csv.zst"
+    def out_pq    = "human_vs_${species}.${label}.k${ksize}.regions.parquet"
+    def log_file  = "human_vs_${species}.${label}.k${ksize}.log"
+    """
+    set -euo pipefail
+
+    echo "=== Index: ${species} ${cli_flag} k=${ksize} ===" | tee ${log_file}
+    echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
+
+    kmerseek index \\
+        --encoding ${cli_flag} \\
+        --ksize    ${ksize} \\
+        --input    ${species_fasta} \\
+        --output   ${index_dir} \\
+        2>&1 | tee -a ${log_file}
+
+    echo "=== Search: human vs ${species} ===" | tee -a ${log_file}
+
+    # --min-region-score is OR'd with --max-query-pvalue inside kmerseek, so this keeps
+    # sub-protein domain hits whose whole-query p-value is unimpressive. Do not "tighten"
+    # this by also lowering --max-query-pvalue expecting fewer rows; the OR means the
+    # looser of the two governs.
+    kmerseek search \\
+        --encoding ${cli_flag} \\
+        --ksize    ${ksize} \\
+        --query    ${human_fasta} \\
+        --target   ${index_dir} \\
+        --threshold         ${params.threshold} \\
+        --min-shared-kmers  ${params.min_shared_kmers} \\
+        --max-query-pvalue  ${params.max_query_pvalue} \\
+        --min-region-score  ${params.min_region_score} \\
+        2>> ${log_file} \\
+        | zstd -T2 -o ${out_zst} \\
+        || true
+
+    touch ${out_zst}
+    echo "End: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
+    echo "regions csv.zst: \$(du -sh ${out_zst} | cut -f1)" | tee -a ${log_file}
+
+    # Straight to parquet, dropping columns no downstream step reads. Both formats kept
+    # around for 1017 result files is exactly the disk blow-up this design avoids.
+    if [ -s ${out_zst} ]; then
+        python3 - << 'PYEOF'
+import polars as pl
+DROP = ["query_md5", "target_md5", "region_subseq", "target_subseq", "moltype_seq"]
+lf = pl.scan_csv("${out_zst}", ignore_errors=True)
+cols = [c for c in lf.collect_schema().names() if c not in DROP]
+lf.select(cols).sink_parquet("${out_pq}", compression="zstd", compression_level=9)
+PYEOF
+    else
+        touch ${out_pq}
+    fi
+    rm -f ${out_zst}
+    rm -rf ${index_dir}
+
+    echo "regions parquet: \$(du -sh ${out_pq} | cut -f1)" | tee -a ${log_file}
+    """
+}
+
+// ===========================================================================
+// BASELINES — every one emits the same normalized 8-column TSV:
+//   query, target, qstart, qend, tstart, tend, score, evalue
+// Query/target intervals are both required: the target interval selects which Pfam
+// domain gets transferred, the query interval is what gets scored.
+// ===========================================================================
+
+process phmmerSearch {
+    tag "human_vs_${species}"
+    container 'quay.io/biocontainers/hmmer:3.4--hb6cb901_4'
+    label 'high_cpu'
+    publishDir "${params.outdir}/regions/hmmer3_phmmer", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple val(species), path(species_fasta), path(human_fasta)
+
+    output:
+    tuple val(species), val("hmmer3_phmmer"), val("default"),
+          path("human_vs_${species}.hmmer3_phmmer.tsv.gz")
+
+    script:
+    // domtblout: \$4 query, \$1 target, \$16/\$17 hmm (= query profile) coords,
+    // \$20/\$21 env (= target sequence) coords, \$14 domain bitscore, \$13 i-Evalue.
+    """
+    set -euo pipefail
+    phmmer \\
+        --domtblout /dev/stdout \\
+        --noali \\
+        -E ${params.evalue_report} \\
+        --cpu ${task.cpus} \\
+        ${human_fasta} ${species_fasta} \\
+    | grep -v '^#' \\
+    | awk 'NF >= 22 {print \$4 "\\t" \$1 "\\t" \$16 "\\t" \$17 "\\t" \$20 "\\t" \$21 "\\t" \$14 "\\t" \$13}' \\
+    | gzip -c > human_vs_${species}.hmmer3_phmmer.tsv.gz
+    """
+}
+
+process jackhmmerSearch {
+    tag "human_vs_${species}"
+    container 'quay.io/biocontainers/hmmer:3.4--hb6cb901_4'
+    label 'high_cpu'
+    publishDir "${params.outdir}/regions/hmmer3_jackhmmer", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple val(species), path(species_fasta), path(human_fasta)
+
+    output:
+    tuple val(species), val("hmmer3_jackhmmer"), val("n${params.jackhmmer_iterations}"),
+          path("human_vs_${species}.hmmer3_jackhmmer.tsv.gz")
+
+    script:
+    // jackhmmer iterates the query profile against the target proteome. --domtblout holds
+    // the FINAL iteration only, which is what should be scored -- the intermediate
+    // iterations are the search getting there, not its answer.
+    """
+    set -euo pipefail
+    jackhmmer \\
+        -N ${params.jackhmmer_iterations} \\
+        --domtblout /dev/stdout \\
+        --noali \\
+        -E ${params.evalue_report} \\
+        --cpu ${task.cpus} \\
+        ${human_fasta} ${species_fasta} \\
+    | grep -v '^#' \\
+    | awk 'NF >= 22 {print \$4 "\\t" \$1 "\\t" \$16 "\\t" \$17 "\\t" \$20 "\\t" \$21 "\\t" \$14 "\\t" \$13}' \\
+    | gzip -c > human_vs_${species}.hmmer3_jackhmmer.tsv.gz
+    """
+}
+
+process mmseqs2Search {
+    tag "human_vs_${species} [${variant}]"
+    container 'quay.io/biocontainers/mmseqs2:18.8cc5c--hd6d6fdc_0'
+    label 'high_cpu'
+    publishDir "${params.outdir}/regions/${variant}", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple val(species), val(variant), val(num_iter), path(species_fasta), path(human_fasta)
+
+    output:
+    tuple val(species), val(variant), val("s${params.mmseqs2_sensitivity}"),
+          path("human_vs_${species}.${variant}.tsv.gz")
+
+    script:
+    def iter_flag = num_iter > 1 ? "--num-iterations ${num_iter}" : ""
+    """
+    set -euo pipefail
+    mkdir -p mmseqs_tmp
+    mmseqs easy-search \\
+        ${human_fasta} ${species_fasta} \\
+        out.tsv mmseqs_tmp \\
+        --threads ${task.cpus} \\
+        -s ${params.mmseqs2_sensitivity} \\
+        ${iter_flag} \\
+        --max-seqs 1000 \\
+        -e ${params.evalue_report} \\
+        --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
+    gzip -c out.tsv > human_vs_${species}.${variant}.tsv.gz
+    """
+}
+
+process hhblitsSearch {
+    /*
+     * Profile-profile. Without params.hhblits_db this builds single-sequence profiles and
+     * performs close to phmmer -- the run is still valid, it just is not measuring what
+     * HHblits is famous for. README-sherlock.md has the UniRef30 download.
+     */
+    tag "human_vs_${species}"
+    container 'quay.io/biocontainers/hhsuite:3.3.0--h503566f_15'
+    label 'high_cpu'
+    publishDir "${params.outdir}/regions/hhblits", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple val(species), path(species_hhdb), path(human_hhdb)
+
+    output:
+    tuple val(species), val("hhblits"), val(params.hhblits_db ? "uniref30" : "single_seq"),
+          path("human_vs_${species}.hhblits.tsv.gz")
+
+    script:
+    // -blasttab: 1 qseqid 2 sseqid 3 pident 4 length 5 mismatch 6 gapopen
+    //            7 qstart 8 qend 9 sstart 10 send 11 evalue 12 bitscore
+    """
+    set -euo pipefail
+    ffindex_apply \\
+        ${human_hhdb}/a3m.ffdata ${human_hhdb}/a3m.ffindex \\
+        -d results.ffdata -i results.ffindex \\
+        -- hhsearch -i stdin -d ${species_hhdb}/hhm -blasttab /dev/stdout -cpu 1 -v 0
+
+    ffindex_apply results.ffdata results.ffindex -- cat \\
+    | awk 'NF >= 12 {print \$1 "\\t" \$2 "\\t" \$7 "\\t" \$8 "\\t" \$9 "\\t" \$10 "\\t" \$12 "\\t" \$11}' \\
+    | gzip -c > human_vs_${species}.hhblits.tsv.gz
+    """
+}
+
+process foldseekSearch {
+    tag "human_vs_${species}"
+    container 'quay.io/biocontainers/foldseek:9.427df8a--pl5321h6a68c12_3'
+    label 'high_cpu'
+    publishDir "${params.outdir}/regions/foldseek", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple val(species), path(species_structs), path(human_structs)
+
+    output:
+    tuple val(species), val("foldseek"), val("3di_aa"),
+          path("human_vs_${species}.foldseek.tsv.gz")
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p foldseek_tmp
+    foldseek easy-search \\
+        ${human_structs}/ ${species_structs}/ \\
+        out.tsv foldseek_tmp \\
+        --threads ${task.cpus} \\
+        -e ${params.evalue_report} \\
+        --max-seqs 1000 \\
+        --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
+
+    # Foldseek names rows by structure filename (AF-<acc>-F1-model_v6.cif). Reduce to the
+    # bare UniProt accession so it joins the Pfam annotation tables like every other tool.
+    awk -F'\\t' 'BEGIN{OFS="\\t"} {
+        for (i = 1; i <= 2; i++) {
+            if (\$i ~ /^AF-/) { split(\$i, p, "-"); \$i = p[2] }
+        }
+        print
+    }' out.tsv | gzip -c > human_vs_${species}.foldseek.tsv.gz
+    """
+}
+
+process hmmscanAnnotate {
+    /*
+     * The reference ceiling, not a competitor: human proteins straight against Pfam-A.
+     * No target proteome and no domain transfer, so its coordinates are already
+     * query-side domain calls. Everything else is trying to reach this without the
+     * Pfam library in hand.
+     */
+    tag "hmmscan_human"
+    container 'quay.io/biocontainers/hmmer:3.4--hb6cb901_4'
+    label 'high_cpu'
+    publishDir "${params.outdir}/regions/hmmscan", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple path(human_fasta), path(pfam_hmm), path(pfam_hmm_aux)
+
+    output:
+    tuple val("hmmscan"), path("human.hmmscan.tsv.gz")
+
+    script:
+    // \$4 query protein, \$2 Pfam accession, \$20/\$21 env coords on the query,
+    // \$14 domain bitscore, \$13 i-Evalue.
+    """
+    set -euo pipefail
+    hmmscan \\
+        --domtblout /dev/stdout \\
+        --noali \\
+        -E ${params.evalue_report} --domE ${params.evalue_report} \\
+        --cpu ${task.cpus} \\
+        ${pfam_hmm} ${human_fasta} \\
+    | grep -v '^#' \\
+    | awk 'NF >= 22 {print \$4 "\\t" \$2 "\\t" \$20 "\\t" \$21 "\\t" \$14 "\\t" \$13}' \\
+    | gzip -c > human.hmmscan.tsv.gz
+    """
+}
+
+// ---------------------------------------------------------------------------
+// HHblits profile databases
+// ---------------------------------------------------------------------------
+
+process hhblitsBuildDB {
+    tag "${label}"
+    container 'quay.io/biocontainers/hhsuite:3.3.0--h503566f_15'
+    label 'high_cpu'
+
+    input:
+    tuple val(label), path(fasta)
+
+    output:
+    tuple val(label), path("${label}_hhdb")
+
+    script:
+    def n_iter = params.hhblits_db ? "2" : "0"
+    """
+    set -euo pipefail
+    mkdir -p ${label}_hhdb
+    ffindex_from_fasta -s ${label}_hhdb/seq.ffdata ${label}_hhdb/seq.ffindex ${fasta}
+
+    if [ -n "${params.hhblits_db ?: ''}" ]; then
+        ffindex_apply ${label}_hhdb/seq.ffdata ${label}_hhdb/seq.ffindex \\
+            -d ${label}_hhdb/a3m.ffdata -i ${label}_hhdb/a3m.ffindex \\
+            -- hhblits -i stdin -d ${params.hhblits_db} -oa3m stdout -n ${n_iter} -cpu 1 -v 0
+    else
+        ffindex_apply ${label}_hhdb/seq.ffdata ${label}_hhdb/seq.ffindex \\
+            -d ${label}_hhdb/a3m.ffdata -i ${label}_hhdb/a3m.ffindex \\
+            -- awk '/^>/{print} !/^>/{print toupper(\$0)}'
+    fi
+
+    # Target databases also need hhm + cs219; the query database only needs a3m.
+    if [ "${label}" != "human" ]; then
+        ffindex_apply ${label}_hhdb/a3m.ffdata ${label}_hhdb/a3m.ffindex \\
+            -d ${label}_hhdb/hhm.ffdata -i ${label}_hhdb/hhm.ffindex \\
+            -- hhmake -i stdin -o stdout -v 0
+        cstranslate -f -x 0.3 -c 4 -I a3m -i ${label}_hhdb/a3m -o ${label}_hhdb/cs219
+        sort -k3 -n ${label}_hhdb/cs219.ffindex | cut -f1 > ${label}_hhdb/db.sort
+    fi
+    """
+}
+
+// ===========================================================================
+// EVALUATION — transfer target domains onto query regions, score against truth
+// ===========================================================================
+
+process scoreDomainCalls {
+    /*
+     * One task per (tool, variant, species). Reads the tool's regions, transfers Pfam
+     * labels through the target interval, scores the resulting query-side calls against
+     * human_domain_truth.parquet. Emits per-call detail (for downstream re-cutting) and
+     * a metrics row.
+     */
+    tag "${tool}/${variant} vs ${species}"
+    label 'python'
+    publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
+    publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
+
+    input:
+    tuple val(species), val(tool), val(variant), path(regions), path(truth), path(domain_map)
+
+    output:
+    path "${tool}.${variant}.${species}.calls.parquet",   emit: calls
+    path "${tool}.${variant}.${species}.metrics.parquet", emit: metrics
+
+    script:
+    """
+    evaluate_domain_calls.py \\
+        --regions      ${regions} \\
+        --tool         ${tool} \\
+        --variant      ${variant} \\
+        --species      ${species} \\
+        --truth        ${truth} \\
+        --domain-map   ${domain_map} \\
+        --min-overlap  ${params.min_overlap} \\
+        --calls-out    ${tool}.${variant}.${species}.calls.parquet \\
+        --metrics-out  ${tool}.${variant}.${species}.metrics.parquet
+    """
+}
+
+process scoreHmmscanCeiling {
+    tag "hmmscan ceiling"
+    label 'python'
+    publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
+    publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
+
+    input:
+    tuple val(tool), path(regions), path(truth)
+
+    output:
+    path "hmmscan.direct.all.calls.parquet",   emit: calls
+    path "hmmscan.direct.all.metrics.parquet", emit: metrics
+
+    script:
+    """
+    evaluate_domain_calls.py \\
+        --regions      ${regions} \\
+        --tool         hmmscan \\
+        --variant      direct \\
+        --species      all \\
+        --truth        ${truth} \\
+        --direct-annotation \\
+        --min-overlap  ${params.min_overlap} \\
+        --calls-out    hmmscan.direct.all.calls.parquet \\
+        --metrics-out  hmmscan.direct.all.metrics.parquet
+    """
+}
+
+process aggregateMetrics {
+    label 'python'
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    path 'metrics/*'
+
+    output:
+    path "all_domain_metrics.parquet"
+    path "all_domain_metrics.csv"
+
+    script:
+    """
+    aggregate_domain_metrics.py metrics all_domain_metrics.parquet all_domain_metrics.csv
+    """
+}
+
+// ===========================================================================
+// WORKFLOW
+// ===========================================================================
+
+workflow {
+
+    def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
+    def annotations = file(params.annotations)
+
+    // (label, fasta) for the 9 target species
+    species_ch = Channel.fromList(
+        SPECIES.collect { s ->
+            tuple(s.label, file("${params.qfo_dir}/${s.subdir}/${s.proteome}_${s.taxon}.fasta"))
+        }
+    )
+
+    // ---- ground truth ----
+    truth_out = buildDomainTruth(annotations)
+
+    // (species, domain_map_parquet) — flatten the emitted maps and key them by species
+    map_ch = truth_out.maps
+        .flatten()
+        .map { m -> tuple(m.name.replaceAll(/_domain_map\.parquet$/, ''), m) }
+
+    // ---- kmerseek: alphabet x ksize x species ----
+    kmerseek_regions = Channel.empty()
+    if (!params.skip_kmerseek) {
+        def combos = ALL_ENCODINGS.collectMany { cli_flag, label, kmin, kmax ->
+            (kmin..kmax).collect { k -> tuple(cli_flag, label, k) }
+        }
+        log.info "kmerseek matrix: ${combos.size()} alphabet x ksize combos x ${SPECIES.size()} species = ${combos.size() * SPECIES.size()} searches"
+
+        kmerseek_in = species_ch.combine(Channel.fromList(combos))
+            .map { species, fasta, cli_flag, label, ksize ->
+                tuple(species, fasta, cli_flag, label, ksize, human_fasta)
+            }
+        kmerseek_regions = kmerseekIndexAndSearch(kmerseek_in).regions
+    }
+
+    // ---- baselines ----
+    baseline_regions = Channel.empty()
+    if (!params.skip_baselines) {
+        pair_ch = species_ch.map { species, fasta -> tuple(species, fasta, human_fasta) }
+
+        phmmer_out    = phmmerSearch(pair_ch)
+        jackhmmer_out = jackhmmerSearch(pair_ch)
+
+        mmseqs_in = species_ch.flatMap { species, fasta ->
+            [
+                tuple(species, "mmseqs2_seqseq",    1,                          fasta, human_fasta),
+                tuple(species, "mmseqs2_iterative", params.mmseqs2_iterations,  fasta, human_fasta),
+            ]
+        }
+        mmseqs_out = mmseqs2Search(mmseqs_in)
+
+        // HHblits: build the human query profile DB once, every species target DB once.
+        all_for_hhdb = species_ch.mix(Channel.of(tuple("human", human_fasta)))
+        hhdb_ch      = hhblitsBuildDB(all_for_hhdb)
+        human_hhdb   = hhdb_ch.filter { label, _db -> label == "human" }.map { _label, db -> db }
+        species_hhdb = hhdb_ch.filter { label, _db -> label != "human" }
+
+        hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
+
+        baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
+
+        // ---- foldseek ----
+        if (!params.skip_foldseek) {
+            def human_structs = file("${params.structures}/human")
+            struct_ch = Channel.fromList(
+                SPECIES.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
+            ).map { label, dir -> tuple(label, dir, human_structs) }
+
+            foldseek_out     = foldseekSearch(struct_ch)
+            baseline_regions = baseline_regions.mix(foldseek_out)
+        }
+    }
+
+    // ---- score every arm ----
+    all_regions = kmerseek_regions.mix(baseline_regions)
+
+    // join on species to attach that species' domain-transfer map, plus the shared truth
+    score_in = all_regions
+        .map { species, tool, variant, regions -> tuple(species, tool, variant, regions) }
+        .combine(map_ch, by: 0)
+        .combine(truth_out.truth.first())
+        .map { species, tool, variant, regions, domain_map, truth ->
+            tuple(species, tool, variant, regions, truth, domain_map)
+        }
+
+    scored = scoreDomainCalls(score_in)
+
+    // ---- hmmscan annotation ceiling ----
+    ceiling_metrics = Channel.empty()
+    if (params.run_hmmscan) {
+        def pfam_hmm = file(params.pfam_hmm)
+        // hmmpress writes Pfam-A.hmm.{h3m,h3i,h3f,h3p} alongside the .hmm; hmmscan needs them.
+        def pfam_aux = file("${params.pfam_hmm}.h3*")
+        hmmscan_out = hmmscanAnnotate(Channel.of(tuple(human_fasta, pfam_hmm, pfam_aux)))
+        ceiling     = scoreHmmscanCeiling(hmmscan_out.combine(truth_out.truth.first()))
+        ceiling_metrics = ceiling.metrics
+    }
+
+    aggregateMetrics(scored.metrics.mix(ceiling_metrics).collect())
+}
