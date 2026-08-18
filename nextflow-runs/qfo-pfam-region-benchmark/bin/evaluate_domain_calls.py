@@ -98,9 +98,16 @@ def load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
             pl.col("score").cast(pl.Float64),
         )
 
-    cols = ["query", "target", "qstart", "qend", "tstart", "tend", "score", "evalue"]
-    lf = pl.scan_csv(path, separator="\t", has_header=False, new_columns=cols)
-    return lf.select(
+    # 8 columns for the aligners; motif tools (Folddisco) append a 9th holding how many
+    # residues actually matched, so the envelope's density survives into the metrics.
+    # Widths are read off the file rather than declared, so one loader serves both.
+    cols = ["query", "target", "qstart", "qend", "tstart", "tend", "score", "evalue",
+            "n_matched_residues"]
+    probe = pl.scan_csv(path, separator="\t", has_header=False)
+    width = len(probe.collect_schema().names())
+    lf = pl.scan_csv(path, separator="\t", has_header=False,
+                     new_columns=cols[:width])
+    selection = [
         extract_accession(pl.col("query")).alias("query_acc"),
         extract_accession(pl.col("target")).alias("target_acc"),
         pl.col("qstart").cast(pl.Int64),
@@ -108,7 +115,10 @@ def load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
         pl.col("tstart").cast(pl.Int64),
         pl.col("tend").cast(pl.Int64),
         pl.col("score").cast(pl.Float64),
-    )
+    ]
+    if width >= 9:
+        selection.append(pl.col("n_matched_residues").cast(pl.Int64))
+    return lf.select(selection)
 
 
 def overlap_expr(a_start: str, a_end: str, b_start: str, b_end: str) -> pl.Expr:
@@ -139,8 +149,23 @@ def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overla
     )
 
 
-def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float) -> pl.DataFrame:
-    """Match each call to the best true instance of the same family on the same protein."""
+def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
+                semantics: str = "alignment") -> pl.DataFrame:
+    """Match each call to the best true instance of the same family on the same protein.
+
+    `semantics` picks what counts as correctly placed:
+
+      alignment  IoU >= min_overlap. The call must coincide with the true domain. This is
+                 the right test for a tool that reports an alignment, where a predicted
+                 interval claims every residue inside it.
+      motif      coverage of the true domain >= min_overlap. The right test for Folddisco,
+                 whose interval is the envelope of a discontinuous residue set rather than
+                 a claim on the residues between them. Judging that envelope by IoU would
+                 score the envelope reduction, not the prediction.
+
+    IoU is recorded either way, so the two are always inspectable side by side -- but
+    is_tp, and therefore precision and recall, follow the tool's own semantics.
+    """
     matched = (
         calls.join(
             truth.select(
@@ -172,6 +197,18 @@ def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float) ->
             .fill_null(0.0)
             .alias("iou")
         )
+        .with_columns(
+            # Fraction of the true domain the call covers. Same null guard as above:
+            # max/min_horizontal skip nulls, so an absent truth row must be branched on
+            # explicitly rather than divided through.
+            pl.when(pl.col("true_start").is_null() | pl.col("true_end").is_null())
+            .then(pl.lit(0.0))
+            .otherwise(
+                pl.col("ov") / (pl.col("true_end") - pl.col("true_start"))
+            )
+            .fill_null(0.0)
+            .alias("cover")
+        )
     )
 
     # One row per call: its best-matching true instance. A call whose family is absent from
@@ -187,10 +224,15 @@ def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float) ->
             # call, so keep its strongest evidence rather than an arbitrary row.
             pl.col("score").max(),
             pl.col("iou").max(),
+            pl.col("cover").max(),
             pl.col("true_start").sort_by("iou", descending=True).first(),
             pl.col("true_end").sort_by("iou", descending=True).first(),
         )
-        .with_columns((pl.col("iou") >= min_overlap).alias("is_tp"))
+        .with_columns(
+            (pl.col("cover") if semantics == "motif" else pl.col("iou"))
+            .ge(min_overlap)
+            .alias("is_tp")
+        )
     )
     return best.collect(engine="streaming")
 
@@ -476,6 +518,9 @@ def main():
     p.add_argument("--direct-annotation", action="store_true")
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--strict-iou", type=float, default=0.8)
+    p.add_argument("--interval-semantics", choices=["alignment", "motif"],
+                   default="alignment",
+                   help="motif for tools reporting discontinuous residue sets (Folddisco)")
     p.add_argument("--calls-out", required=True, type=Path)
     p.add_argument("--metrics-out", required=True, type=Path)
     p.add_argument("--curve-out", type=Path)
@@ -507,11 +552,12 @@ def main():
             schema={
                 "query_acc": pl.String, "pfam_id": pl.String, "qstart": pl.Int64,
                 "qend": pl.Int64, "score": pl.Float64, "iou": pl.Float64,
-                "true_start": pl.Int64, "true_end": pl.Int64, "is_tp": pl.Boolean,
+                "cover": pl.Float64, "true_start": pl.Int64, "true_end": pl.Int64,
+                "is_tp": pl.Boolean,
             }
         )
     else:
-        scored = score_calls(calls_lf, truth_lf, args.min_overlap)
+        scored = score_calls(calls_lf, truth_lf, args.min_overlap, args.interval_semantics)
 
     scored.write_parquet(args.calls_out, compression="zstd")
 
@@ -520,7 +566,10 @@ def main():
     # family worth different amounts in different strata and break comparability.
     ic = cm.information_content(truth)
 
-    ident = {"tool": args.tool, "variant": args.variant, "species": args.species}
+    ident = {"tool": args.tool, "variant": args.variant, "species": args.species,
+             # Stamped on every row so an alignment tool and a motif tool are never
+             # silently compared on boundary metrics that mean different things.
+             "interval_semantics": args.interval_semantics}
     rows, curves = [], []
 
     for split in ("all", "selection", "heldout"):

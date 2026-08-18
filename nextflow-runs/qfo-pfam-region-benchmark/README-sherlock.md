@@ -16,6 +16,7 @@ positive, which is the whole reason this scores regions rather than protein pair
 | baseline | MMseqs2 | seq-seq, iterative (3) |
 | baseline | HHblits | profile-profile |
 | baseline | Foldseek | AlphaFold models |
+| baseline | Folddisco | discontinuous structural motifs, AlphaFold models |
 | ceiling | HMMER3 hmmscan vs Pfam-A | 1 |
 
 hmmscan is not a competitor. It is handed the Pfam library the others are trying to
@@ -174,6 +175,7 @@ it is not the CAFA quantity. Do not describe these as information-accretion weig
 | column | meaning |
 |---|---|
 | `ndo` | normalized domain overlap: correctly labelled residues / true domain residues |
+| `interval_semantics` | `alignment` or `motif` -- boundary metrics only compare within one |
 | `residue_precision` / `_recall` / `_f1` | the same overlap from both directions |
 | `dbd_median` / `dbd_mean` | boundary distance in residues, over correct calls only |
 | `precision_iou80` / `recall_iou80` | the strict "correctly parsed" criterion used by structure parsers |
@@ -197,6 +199,33 @@ wrong domain to a right one is not a boundary measurement.
 | `best_f1` | the best F1 at any score threshold |
 | `best_f1_threshold` | the score achieving it, plus `_precision` and `_recall_reachable` |
 | `median_iou_tp` | how precisely a correct call is placed |
+
+### Folddisco is scored differently, on purpose
+
+Folddisco is not an aligner. Its hits are *discontinuous* residue sets -- `A56,A99,A195` --
+not intervals. Every other arm reports a span, so the residue set is reduced to its
+envelope (first matched residue to last), and the number of residues genuinely matched is
+carried alongside it.
+
+That reduction only overstates: a 3-residue motif spanning 56..195 yields a 139-residue
+envelope while touching 3 residues. **Scoring that envelope by interval IoU would measure
+the reduction, not the prediction**, so this arm runs with `--interval-semantics motif`:
+a call is correct when its envelope *covers* the true domain, rather than when it
+coincides with it. Every row carries `interval_semantics` so the two are never silently
+compared, and both `iou` and `cover` are recorded on every call either way.
+
+What this means when reading results:
+
+- `fmax`, `precision`, `recall_reachable`, `auprc`, `smin` stay comparable across all
+  arms -- they ask which family was found on which protein.
+- `ndo`, `dbd_*`, `residue_*` and `precision_iou80` are **not** comparable between
+  Folddisco and the aligners. Those measure boundary precision, and Folddisco is not
+  making a boundary claim.
+
+Folddisco queries one structure per invocation, so the ~19.4k human queries are spread
+across `params.folddisco_chunks` (default 20) SLURM tasks per species. Its target index is
+kept under `storeDir` and reused by every chunk. It ranks by `idf` (motif rarity, higher
+is better) with `rmsd` in the E-value slot; it emits no E-value of its own.
 
 ### Splits: the leaderboard is the held-out half
 

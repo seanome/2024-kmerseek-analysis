@@ -114,6 +114,12 @@ params.min_overlap = 0.5
 params.skip_kmerseek  = false
 params.skip_baselines = false
 params.skip_foldseek  = false
+params.skip_folddisco = false
+
+// Folddisco queries one structure per invocation, so ~19.4k human queries per species are
+// spread over this many SLURM tasks rather than serialised into one.
+params.folddisco_chunks = 20
+params.folddisco_top    = 1000
 params.run_hmmscan    = file(params.pfam_hmm).exists()
 
 // ---------------------------------------------------------------------------
@@ -475,6 +481,97 @@ process foldseekSearch {
     """
 }
 
+process folddiscoIndex {
+    /*
+     * Folddisco indexes discontinuous geometric motifs rather than sequences or 3Di
+     * strings, so it needs its own index per target proteome. storeDir keeps it: unlike
+     * the kmerseek indices this one is reused by every query chunk, so rebuilding it per
+     * task would be pure waste.
+     */
+    tag "${species}"
+    container 'ghcr.io/steineggerlab/folddisco:master'
+    label 'high_cpu'
+    storeDir "${params.outdir}/folddisco_index"
+
+    input:
+    tuple val(species), path(structures)
+
+    output:
+    tuple val(species), path("${species}_folddisco")
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p ${species}_folddisco
+    folddisco index \\
+        -p ${structures}/ \\
+        -i ${species}_folddisco/index \\
+        -t ${task.cpus}
+    """
+}
+
+process folddiscoQuery {
+    /*
+     * One chunk of human query structures against one species index.
+     *
+     * A failed or empty single query must not take the chunk down with it: Folddisco
+     * returns nothing for structures with no matched motif, which is a real result, and
+     * AlphaFold coverage is incomplete so some queries have no structure at all.
+     */
+    tag "human_vs_${species} chunk ${chunk}"
+    container 'ghcr.io/steineggerlab/folddisco:master'
+    label 'high_cpu'
+
+    input:
+    tuple val(species), path(index), path(human_structures), val(chunk)
+
+    output:
+    tuple val(species), path("human_vs_${species}.folddisco.chunk${chunk}.tsv")
+
+    script:
+    """
+    set -euo pipefail
+    find -L ${human_structures}/ -name 'AF-*.cif' | sort \\
+      | awk 'NR % ${params.folddisco_chunks} == ${chunk}' > chunk.list
+
+    : > regions.tsv
+    while read -r f; do
+        acc=\$(basename "\$f" | cut -d- -f2)
+        folddisco query \\
+            -i ${index}/index \\
+            -p "\$f" \\
+            -t ${task.cpus} \\
+            --top ${params.folddisco_top} \\
+            > hits.tsv 2>/dev/null || true
+        [ -s hits.tsv ] || continue
+        folddisco_to_regions.py \\
+            --hits hits.tsv \\
+            --query-accession "\$acc" \\
+            --out regions.tsv >/dev/null
+    done < chunk.list
+
+    mv regions.tsv human_vs_${species}.folddisco.chunk${chunk}.tsv
+    """
+}
+
+process folddiscoMerge {
+    tag "${species}"
+    label 'python'
+    publishDir "${params.outdir}/regions/folddisco", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple val(species), path(chunks)
+
+    output:
+    tuple val(species), val("folddisco"), val("motif"),
+          path("human_vs_${species}.folddisco.tsv.gz")
+
+    script:
+    """
+    cat ${chunks} | gzip -c > human_vs_${species}.folddisco.tsv.gz
+    """
+}
+
 process hmmscanAnnotate {
     /*
      * The reference ceiling, not a competitor: human proteins straight against Pfam-A.
@@ -580,10 +677,15 @@ process scoreDomainCalls {
     path "${tool}.${variant}.${species}.curve.parquet",   emit: curve
 
     script:
+    // Folddisco reports the envelope of a discontinuous residue set, not an alignment.
+    // Scoring that by interval IoU would measure the envelope reduction rather than the
+    // prediction, so this arm is scored on coverage instead. See evaluate_domain_calls.py.
+    def semantics = tool == 'folddisco' ? 'motif' : 'alignment'
     """
     evaluate_domain_calls.py \\
         --regions      ${regions} \\
         --tool         ${tool} \\
+        --interval-semantics ${semantics} \\
         --variant      ${variant} \\
         --species      ${species} \\
         --truth        ${truth} \\
@@ -741,6 +843,21 @@ workflow {
 
             foldseek_out     = foldseekSearch(struct_ch)
             baseline_regions = baseline_regions.mix(foldseek_out)
+
+            // ---- folddisco ----
+            if (!params.skip_folddisco) {
+                fd_index = folddiscoIndex(
+                    Channel.fromList(
+                        SPECIES.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
+                    )
+                )
+                fd_chunks = Channel.of(0..(params.folddisco_chunks - 1)).flatten()
+                fd_out = folddiscoQuery(
+                    fd_index.combine(Channel.of(human_structs)).combine(fd_chunks)
+                )
+                folddisco_regions = folddiscoMerge(fd_out.groupTuple(by: 0))
+                baseline_regions  = baseline_regions.mix(folddisco_regions)
+            }
         }
     }
 
