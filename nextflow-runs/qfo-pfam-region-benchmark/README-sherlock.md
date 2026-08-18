@@ -142,13 +142,47 @@ results/
 `make pull-results` brings back metrics and truth only. The `calls/` and `kmerseek/`
 trees are the bulk of the output -- pull those selectively.
 
-## Reading the metrics
+## Metrics
 
-`recall` and `recall_reachable` differ, and the gap matters. A human Pfam family absent
-from a target proteome's annotations cannot be transferred by any search, so raw recall
-understates every tool by a species-specific amount. Ecoli has 971 of human's 8909
-families; mouse has 8805. **Compare tools on `recall_reachable`; compare species on
-neither without saying which denominator you used.**
+Everything is computed in the pipeline. `all_domain_metrics.csv` is the whole table;
+nothing here needs recomputing in a notebook.
 
-`median_iou_tp` is where region scoring earns or loses its keep: it says how precisely a
-correct call is placed, not just whether the family was right.
+| column | meaning |
+|---|---|
+| `precision` | of the calls reported, the fraction correctly placed |
+| `recall` | of all human domain instances, the fraction recovered |
+| `recall_reachable` | of the instances that *could* be transferred, the fraction recovered |
+| `f1` | harmonic mean of `precision` and `recall` |
+| `f1_reachable` | harmonic mean of `precision` and `recall_reachable` |
+| `roc_auc` | P(a correctly placed call outranks an incorrectly placed one) |
+| `auprc` | average precision over score-ranked calls, recall against reachable |
+| `best_f1` | the best F1 at any score threshold |
+| `best_f1_threshold` | the score achieving it, plus `_precision` and `_recall_reachable` |
+| `median_iou_tp` | how precisely a correct call is placed |
+
+`all_domain_curves.parquet` holds the full PR and ROC operating points per
+(tool, variant, species) -- `score_threshold`, `precision`, `recall_reachable`, `f1`,
+`tpr`, `fpr` -- thinned to at most 2000 points for plotting. Every scalar above is
+computed on the *full* curve before thinning, so the two always agree.
+
+### Three things that will mislead you if skipped
+
+**Compare on `recall_reachable`, not `recall`.** A human Pfam family absent from a target
+proteome cannot be transferred by any search, so raw recall understates every tool by a
+species-specific amount. Ecoli has 971 of human's 8909 families; mouse has 8805. Raw
+`recall` is kept only so the size of that gap stays visible.
+
+**`roc_auc` is conditioned on the calls a tool made.** Its negatives are the false
+positives the tool itself reported; a domain never called at all is not in the universe,
+because an unranked prediction cannot be ranked. A tool can score a high `roc_auc` by
+reporting a handful of confident calls and missing everything else. Read it next to
+`recall_reachable`, never alone. `auprc` does not have this problem -- its recall
+denominator is the full reachable set.
+
+**Prefer `best_f1` over `f1` when comparing tools.** `f1` sits at whatever cutoff each
+tool happens to default to, which differs between HMMER, MMseqs2 and kmerseek and is not
+a property of the method. `best_f1` and the threshold-free `roc_auc`/`auprc` are the
+comparable numbers.
+
+`roc_auc` is null, not 0.0, when a tool produced only correct calls or only incorrect
+ones -- there is no ranking question to answer, and 0.0 would rank it below a coin flip.

@@ -176,76 +176,198 @@ def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float) ->
     return best.collect(engine="streaming")
 
 
-def compute_metrics(calls: pl.DataFrame, truth: pl.DataFrame, reachable: pl.DataFrame,
-                    min_overlap: float) -> dict:
+def rank_roc_auc(calls: pl.DataFrame) -> float | None:
+    """Call-level ROC-AUC: P(a correctly placed call outranks an incorrectly placed one).
+
+    Computed by the Mann-Whitney rank identity rather than by integrating the curve, so
+    tied scores are handled exactly. Ties matter here: HP alphabets at low ksize produce
+    large blocks of identical region scores, and trapezoid integration over a coarse
+    curve would quietly round them in the tool's favour.
+
+    Returns None, not 0.0, when one class is absent. A tool whose every call is correct
+    has no ROC-AUC to report, and writing 0.0 there would rank it below a coin flip.
+    """
+    n = calls.height
+    if n == 0:
+        return None
+    n_pos = int(calls["is_tp"].sum())
+    n_neg = n - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return None
+
+    ranked = calls.with_columns(
+        pl.col("score").fill_null(float("-inf")).rank(method="average").alias("rank")
+    )
+    sum_pos_ranks = float(ranked.filter("is_tp")["rank"].sum())
+    return (sum_pos_ranks - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
+
+
+def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
+    """Every score threshold's full operating point, in one descending-score pass.
+
+    Each row is "keep all calls scoring at least this much". Cumulative counts are taken
+    at the last row of each distinct score so a threshold never splits a block of ties.
+
+    Two different denominators sit side by side on purpose:
+      precision, tpr, fpr    call-level -- of what was reported, how much was right
+      recall_reachable       instance-level -- of the domains that could be found, how
+                             many were, counting each true instance once no matter how
+                             many regions hit it
+    """
+    if calls.height == 0:
+        return pl.DataFrame(
+            schema={
+                "score_threshold": pl.Float64, "n_calls": pl.Int64, "tp_calls": pl.Int64,
+                "fp_calls": pl.Int64, "instances_found": pl.Int64, "precision": pl.Float64,
+                "recall_reachable": pl.Float64, "f1": pl.Float64, "tpr": pl.Float64,
+                "fpr": pl.Float64,
+            }
+        )
+
+    ranked = (
+        calls.sort("score", descending=True, nulls_last=True)
+        .with_columns(
+            pl.when("is_tp")
+            .then(pl.struct("query_acc", "pfam_id", "true_start", "true_end"))
+            .otherwise(None)
+            .alias("tp_key")
+        )
+        .with_columns(
+            (pl.col("tp_key").is_not_null() & pl.col("tp_key").is_first_distinct())
+            .alias("novel_tp")
+        )
+        .with_columns(
+            pl.col("is_tp").cum_sum().alias("tp_calls"),
+            (~pl.col("is_tp")).cum_sum().alias("fp_calls"),
+            pl.col("novel_tp").cum_sum().alias("instances_found"),
+        )
+    )
+
+    total_tp = int(ranked["is_tp"].sum())
+    total_fp = ranked.height - total_tp
+
+    pts = (
+        ranked.group_by("score", maintain_order=True)
+        .agg(
+            pl.col("tp_calls").last(),
+            pl.col("fp_calls").last(),
+            pl.col("instances_found").last(),
+        )
+        .rename({"score": "score_threshold"})
+        .with_columns((pl.col("tp_calls") + pl.col("fp_calls")).alias("n_calls"))
+    )
+
+    return pts.with_columns(
+        (pl.col("tp_calls") / pl.col("n_calls")).alias("precision"),
+        (pl.col("instances_found") / n_reachable if n_reachable else pl.lit(0.0)).alias(
+            "recall_reachable"
+        ),
+        (pl.col("tp_calls") / total_tp if total_tp else pl.lit(0.0)).alias("tpr"),
+        (pl.col("fp_calls") / total_fp if total_fp else pl.lit(0.0)).alias("fpr"),
+    ).with_columns(
+        pl.when(pl.col("precision") + pl.col("recall_reachable") > 0)
+        .then(
+            2
+            * pl.col("precision")
+            * pl.col("recall_reachable")
+            / (pl.col("precision") + pl.col("recall_reachable"))
+        )
+        .otherwise(0.0)
+        .alias("f1")
+    )
+
+
+def average_precision(points: pl.DataFrame) -> float:
+    """Average precision: sum of precision weighted by the recall gained at each step.
+
+    The step-wise sum, not a trapezoid, which is the standard AP definition and does not
+    interpolate credit across a gap the tool never actually covered.
+    """
+    if points.height == 0:
+        return 0.0
+    recall = points["recall_reachable"]
+    delta = recall - recall.shift(1, fill_value=0.0)
+    return float((points["precision"] * delta).sum())
+
+
+def downsample(points: pl.DataFrame, max_points: int) -> pl.DataFrame:
+    """Thin the curve for storage, always keeping both ends.
+
+    A 1017-combo sweep writing one row per distinct score would dwarf the metrics it
+    supports. Every scalar metric is computed on the FULL curve before this runs, so
+    thinning changes the plot's resolution and nothing else.
+    """
+    n = points.height
+    if n <= max_points:
+        return points
+    idx = [round(i * (n - 1) / (max_points - 1)) for i in range(max_points)]
+    return points[sorted(set(idx))]
+
+
+def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFrame,
+                    reachable: pl.DataFrame, min_overlap: float) -> dict:
     n_calls = calls.height
     n_tp_calls = int(calls["is_tp"].sum()) if n_calls else 0
 
-    # Recall counts distinct true instances found, not calls: several regions hitting one
-    # domain is one recovery, not many.
+    # Counts distinct true instances found, not calls: several regions hitting one domain
+    # is one recovery, not many.
     found = (
-        calls.filter("is_tp")
-        .select("query_acc", "pfam_id", "true_start", "true_end")
-        .unique()
-        .height
+        calls.filter("is_tp").select("query_acc", "pfam_id", "true_start", "true_end")
+        .unique().height
         if n_calls
         else 0
     )
     n_truth = truth.height
     n_reachable = reachable.height
 
+    precision = n_tp_calls / n_calls if n_calls else 0.0
+    recall = found / n_truth if n_truth else 0.0
+    recall_reachable = found / n_reachable if n_reachable else 0.0
+
+    def f1(p, r):
+        return 2 * p * r / (p + r) if (p + r) else 0.0
+
     metrics = {
         "n_calls": n_calls,
         "n_tp_calls": n_tp_calls,
         "n_fp_calls": n_calls - n_tp_calls,
-        "precision": n_tp_calls / n_calls if n_calls else 0.0,
         "n_truth_instances": n_truth,
         "n_reachable_instances": n_reachable,
         "n_instances_found": found,
-        "recall": found / n_truth if n_truth else 0.0,
-        # Recall against what was actually transferable. A human family absent from this
-        # target proteome's annotations cannot be recovered by any search, so the raw
-        # recall above understates every tool by the same species-specific amount.
-        "recall_reachable": found / n_reachable if n_reachable else 0.0,
-        "median_iou_tp": float(calls.filter("is_tp")["iou"].median()) if n_tp_calls else 0.0,
+        # --- operating point the tool actually reported at ---
+        "precision": precision,
+        "recall": recall,
+        # Recall against what was transferable at all. A human family absent from this
+        # target proteome cannot be recovered by any search, so raw recall above
+        # understates every tool by the same species-specific amount. Compare tools on
+        # this one.
+        "recall_reachable": recall_reachable,
+        "f1": f1(precision, recall),
+        "f1_reachable": f1(precision, recall_reachable),
+        # --- threshold-free ---
+        "roc_auc": rank_roc_auc(calls),
+        "auprc": average_precision(points),
         "min_overlap": min_overlap,
+        "median_iou_tp": float(calls.filter("is_tp")["iou"].median()) if n_tp_calls else 0.0,
     }
-    denom = metrics["precision"] + metrics["recall_reachable"]
-    metrics["f1_reachable"] = (
-        2 * metrics["precision"] * metrics["recall_reachable"] / denom if denom else 0.0
-    )
-    metrics["auprc"] = average_precision(calls, n_reachable)
+
+    # --- best achievable operating point, and where it sits ---
+    # The reported point above depends on each tool's own default cutoff, which differs
+    # between tools and is not a property of the method. This is the comparable one.
+    if points.height:
+        best = points.sort("f1", descending=True).head(1).to_dicts()[0]
+        metrics.update({
+            "best_f1": best["f1"],
+            "best_f1_threshold": best["score_threshold"],
+            "best_f1_precision": best["precision"],
+            "best_f1_recall_reachable": best["recall_reachable"],
+        })
+    else:
+        metrics.update({
+            "best_f1": 0.0, "best_f1_threshold": None,
+            "best_f1_precision": 0.0, "best_f1_recall_reachable": 0.0,
+        })
     return metrics
-
-
-def average_precision(calls: pl.DataFrame, n_positives: int) -> float:
-    """Area under the precision-recall curve over score-ranked calls.
-
-    Recall is against reachable instances, so a tool that never reports a domain cannot
-    reach precision 1.0 by reporting one lucky call.
-    """
-    if calls.height == 0 or n_positives == 0:
-        return 0.0
-    ranked = calls.sort("score", descending=True, nulls_last=True)
-    # Credit a true instance once, at its highest-scoring correct call.
-    #
-    # Build the key first and mask non-TP rows to null, then take is_first_distinct over
-    # the key. Doing it the other way -- is_first_distinct inside a when(is_tp) -- computes
-    # distinctness across every row including false positives, so an FP sharing a key with
-    # a later TP would consume the "first" flag and the real recovery would go uncredited.
-    ranked = ranked.with_columns(
-        pl.when("is_tp")
-        .then(pl.struct("query_acc", "pfam_id", "true_start", "true_end"))
-        .otherwise(None)
-        .alias("tp_key")
-    ).with_columns(
-        (pl.col("tp_key").is_not_null() & pl.col("tp_key").is_first_distinct()).alias("novel_tp")
-    )
-    tp_cum = ranked["novel_tp"].cum_sum()
-    rank = pl.arange(1, ranked.height + 1, eager=True)
-    precision = tp_cum / rank
-    delta_recall = ranked["novel_tp"].cast(pl.Float64) / n_positives
-    return float((precision * delta_recall).sum())
 
 
 def main():
@@ -260,6 +382,9 @@ def main():
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--calls-out", required=True, type=Path)
     p.add_argument("--metrics-out", required=True, type=Path)
+    p.add_argument("--curve-out", type=Path,
+                   help="per-threshold PR and ROC operating points, for plotting")
+    p.add_argument("--max-curve-points", type=int, default=2000)
     args = p.parse_args()
 
     if not args.direct_annotation and args.domain_map is None:
@@ -295,9 +420,21 @@ def main():
 
     scored.write_parquet(args.calls_out, compression="zstd")
 
-    metrics = compute_metrics(scored, truth, reachable, args.min_overlap)
+    # Full curve first: every scalar metric is derived from it, so it must not be thinned
+    # before roc_auc/auprc/best_f1 are computed off it.
+    points = operating_points(scored, reachable.height)
+
+    metrics = compute_metrics(scored, points, truth, reachable, args.min_overlap)
     metrics.update({"tool": args.tool, "variant": args.variant, "species": args.species})
     pl.DataFrame([metrics]).write_parquet(args.metrics_out, compression="zstd")
+
+    if args.curve_out is not None:
+        downsample(points, args.max_curve_points).with_columns(
+            pl.lit(args.tool).alias("tool"),
+            pl.lit(args.variant).alias("variant"),
+            pl.lit(args.species).alias("species"),
+        ).write_parquet(args.curve_out, compression="zstd")
+
     print(json.dumps(metrics, indent=2))
 
 

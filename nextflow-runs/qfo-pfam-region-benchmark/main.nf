@@ -515,6 +515,7 @@ process scoreDomainCalls {
     label 'python'
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
+    publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
     tuple val(species), val(tool), val(variant), path(regions), path(truth), path(domain_map)
@@ -522,6 +523,7 @@ process scoreDomainCalls {
     output:
     path "${tool}.${variant}.${species}.calls.parquet",   emit: calls
     path "${tool}.${variant}.${species}.metrics.parquet", emit: metrics
+    path "${tool}.${variant}.${species}.curve.parquet",   emit: curve
 
     script:
     """
@@ -534,7 +536,8 @@ process scoreDomainCalls {
         --domain-map   ${domain_map} \\
         --min-overlap  ${params.min_overlap} \\
         --calls-out    ${tool}.${variant}.${species}.calls.parquet \\
-        --metrics-out  ${tool}.${variant}.${species}.metrics.parquet
+        --metrics-out  ${tool}.${variant}.${species}.metrics.parquet \\
+        --curve-out    ${tool}.${variant}.${species}.curve.parquet
     """
 }
 
@@ -543,6 +546,7 @@ process scoreHmmscanCeiling {
     label 'python'
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
+    publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
     tuple val(tool), path(regions), path(truth)
@@ -550,6 +554,7 @@ process scoreHmmscanCeiling {
     output:
     path "hmmscan.direct.all.calls.parquet",   emit: calls
     path "hmmscan.direct.all.metrics.parquet", emit: metrics
+    path "hmmscan.direct.all.curve.parquet",   emit: curve
 
     script:
     """
@@ -562,7 +567,8 @@ process scoreHmmscanCeiling {
         --direct-annotation \\
         --min-overlap  ${params.min_overlap} \\
         --calls-out    hmmscan.direct.all.calls.parquet \\
-        --metrics-out  hmmscan.direct.all.metrics.parquet
+        --metrics-out  hmmscan.direct.all.metrics.parquet \\
+        --curve-out    hmmscan.direct.all.curve.parquet
     """
 }
 
@@ -572,14 +578,18 @@ process aggregateMetrics {
 
     input:
     path 'metrics/*'
+    path 'curves/*'
 
     output:
     path "all_domain_metrics.parquet"
     path "all_domain_metrics.csv"
+    path "all_domain_curves.parquet"
 
     script:
     """
-    aggregate_domain_metrics.py metrics all_domain_metrics.parquet all_domain_metrics.csv
+    aggregate_domain_metrics.py \\
+        metrics curves \\
+        all_domain_metrics.parquet all_domain_metrics.csv all_domain_curves.parquet
     """
 }
 
@@ -667,7 +677,7 @@ workflow {
     score_in = all_regions
         .map { species, tool, variant, regions -> tuple(species, tool, variant, regions) }
         .combine(map_ch, by: 0)
-        .combine(truth_out.truth.first())
+        .combine(truth_out.truth)
         .map { species, tool, variant, regions, domain_map, truth ->
             tuple(species, tool, variant, regions, truth, domain_map)
         }
@@ -676,14 +686,19 @@ workflow {
 
     // ---- hmmscan annotation ceiling ----
     ceiling_metrics = Channel.empty()
+    ceiling_curves  = Channel.empty()
     if (params.run_hmmscan) {
         def pfam_hmm = file(params.pfam_hmm)
         // hmmpress writes Pfam-A.hmm.{h3m,h3i,h3f,h3p} alongside the .hmm; hmmscan needs them.
         def pfam_aux = file("${params.pfam_hmm}.h3*")
         hmmscan_out = hmmscanAnnotate(Channel.of(tuple(human_fasta, pfam_hmm, pfam_aux)))
-        ceiling     = scoreHmmscanCeiling(hmmscan_out.combine(truth_out.truth.first()))
+        ceiling     = scoreHmmscanCeiling(hmmscan_out.combine(truth_out.truth))
         ceiling_metrics = ceiling.metrics
+        ceiling_curves  = ceiling.curve
     }
 
-    aggregateMetrics(scored.metrics.mix(ceiling_metrics).collect())
+    aggregateMetrics(
+        scored.metrics.mix(ceiling_metrics).collect(),
+        scored.curve.mix(ceiling_curves).collect(),
+    )
 }

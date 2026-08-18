@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Concatenate every per-(tool, variant, species) metrics row into one table.
+"""Concatenate every per-(tool, variant, species) metrics row and PR/ROC curve.
 
-Emits parquet for downstream notebooks and CSV for reading at the terminal without
-starting python.
+Emits parquet for notebooks and CSV for reading at the terminal, plus a leaderboard so
+the sweep's headline is visible without opening anything.
 """
 
 import sys
@@ -11,30 +11,46 @@ from pathlib import Path
 import polars as pl
 
 LEAD = ["tool", "variant", "species"]
-SORT = ["auprc", "f1_reachable"]
+
+# Threshold-free and therefore comparable across tools with different default cutoffs.
+HEADLINE = ["roc_auc", "auprc", "best_f1", "recall_reachable", "precision", "median_iou_tp"]
+
+
+def concat(dirpath: Path, what: str) -> pl.DataFrame:
+    files = sorted(dirpath.glob("*.parquet"))
+    if not files:
+        raise SystemExit(f"no {what} parquet files under {dirpath}")
+    df = pl.concat([pl.read_parquet(f) for f in files], how="diagonal_relaxed")
+    return df.select(LEAD + [c for c in df.columns if c not in LEAD])
 
 
 def main():
-    metrics_dir, parquet_out, csv_out = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
+    metrics_dir, curves_dir = Path(sys.argv[1]), Path(sys.argv[2])
+    parquet_out, csv_out, curves_out = (Path(a) for a in sys.argv[3:6])
 
-    files = sorted(metrics_dir.glob("*.parquet"))
-    if not files:
-        raise SystemExit(f"no metrics parquet files under {metrics_dir}")
+    metrics = concat(metrics_dir, "metrics").sort(
+        ["auprc", "best_f1"], descending=True, nulls_last=True
+    )
+    metrics.write_parquet(parquet_out, compression="zstd")
+    metrics.write_csv(csv_out)
 
-    df = pl.concat([pl.read_parquet(f) for f in files], how="diagonal_relaxed")
-    df = df.select(LEAD + [c for c in df.columns if c not in LEAD])
-    df = df.sort(SORT, descending=True, nulls_last=True)
+    curves = concat(curves_dir, "curve")
+    curves.write_parquet(curves_out, compression="zstd")
 
-    df.write_parquet(parquet_out, compression="zstd")
-    df.write_csv(csv_out)
+    print(f"{metrics.height} metric rows, {curves.height} curve points")
+    print()
 
-    print(f"{df.height} rows from {len(files)} files")
-    # Best combo per tool -- the sweep's headline, without opening a notebook.
-    best = df.group_by("tool").agg(
-        pl.col("variant").first(),
-        pl.col("auprc").max().alias("best_auprc"),
-    ).sort("best_auprc", descending=True)
-    print(best)
+    # Best combo per tool. kmerseek has 113 variants and every other tool has one, so a
+    # flat sort would bury the baselines under the sweep.
+    best = (
+        metrics.sort("auprc", descending=True, nulls_last=True)
+        .group_by("tool")
+        .agg([pl.col("variant").first().alias("best_variant")]
+             + [pl.col(c).first() for c in HEADLINE])
+        .sort("auprc", descending=True, nulls_last=True)
+    )
+    with pl.Config(tbl_cols=-1, tbl_rows=-1, fmt_str_lengths=40):
+        print(best)
 
 
 if __name__ == "__main__":
