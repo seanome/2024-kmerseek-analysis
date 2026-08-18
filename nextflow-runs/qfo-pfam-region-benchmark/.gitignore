@@ -1,0 +1,10 @@
+# Nextflow run state and per-run reports: regenerated on every launch, and the
+# trace/timeline/report names carry the run date so they pile up fast.
+.nextflow/
+.nextflow.log*
+work/
+run/
+results/
+*.report.html
+*.timeline.html
+*.trace.txt
