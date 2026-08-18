@@ -158,6 +158,24 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Nextflow
+# NOTE: `results/` here is pipeline output only. Curated analysis tables that
+# belong in version control live in `tables/` — they used to sit in `results/`,
+# where this rule silently shadowed them.
+.nextflow/
+.nextflow.log*
+work/
+results/
+results-test/
+*.report.html
+*.timeline.html
+*.trace.txt
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

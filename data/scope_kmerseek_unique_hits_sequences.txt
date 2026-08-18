@@ -1,0 +1,2136 @@
+Loading scope40.hp.k27.results.csv.gz ...
+  11,519 total hits
+  603 hits from 233 unique-KmerSeek queries after pval<0.001 filter
+
+====================================================================================================
+  SCOPe CLASS A — All alpha proteins  (33 unique queries)
+====================================================================================================
+  QUERY:  d1sj8a2  SCOP=a.216.1.1  Talin 1
+  TARGET: d1f0xa2  SCOP=d.145.1.1  D-lactate dehydrogenase
+  pval=5.52e-08  jaccard=0.0090  containment=0.0303  region_len=29
+
+    Q[  87] KAVEGCVSASQAATEDGQLLRGVGAAATA
+    T[ 230] TPARYNADPDRLFESSGCAGKLAVFAVRL
+    HP      phhphphphpphhppphphhphhhhhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1tbfa_  SCOP=a.211.1.2  cGMP-specific 3',5'-cyclic phosphodiesterase pde5a1-Ibmx
+  TARGET: d1y2ka_  SCOP=a.211.1.2  Catalytic domain of cyclic nucleotide phosphodiesterase pde4d
+  pval=0.00e+00  jaccard=0.0152  containment=0.0300  region_len=35
+
+    Q[ 119] HDLDHPGVSNQFLINTNSELALMYNDESVLEHHHF
+    T[ 114] HDVDHPGVSNQFLINTNSELALMYNDSSVLENHHL
+    HP      pphpphhhppphhhppppphhhhhpppphhpppph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1u89a1  SCOP=a.216.1.1  Talin 1
+  TARGET: d1sj8a2  SCOP=a.216.1.1  Talin 1
+  pval=2.82e-05  jaccard=0.0097  containment=0.0183  region_len=28
+
+    Q[   0] QAATEDGQLLRGVGAAATAVTQALNELL
+    T[  97] QAATEDGQLLRGVGAAATAVTQALNELL
+    HP      phhppphphhphhhhhhphhpphhpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1y2ka_  SCOP=a.211.1.2  Catalytic domain of cyclic nucleotide phosphodiesterase pde4d
+  TARGET: d1tbfa_  SCOP=a.211.1.2  cGMP-specific 3',5'-cyclic phosphodiesterase pde5a1-Ibmx
+  pval=0.00e+00  jaccard=0.0152  containment=0.0300  region_len=35
+
+    Q[ 114] HDVDHPGVSNQFLINTNSELALMYNDSSVLENHHL
+    T[ 119] HDLDHPGVSNQFLINTNSELALMYNDESVLEHHHF
+    HP      pphpphhhppphhhppppphhhhhpppphhpppph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1ybza1  SCOP=a.130.1.1  mono-domain chorismate mutase
+  TARGET: d2d8da1  SCOP=a.130.1.1  Chorismate mutase domain of P-protein
+  pval=7.12e-09  jaccard=0.0303  containment=0.0625  region_len=29
+
+    Q[   0] TTLKLLRKEIDKIDNQIISLLKKRLEIAQ
+    T[   0] ERIQALRKEVDRVNREILRLLSERGRLVQ
+    HP      pphphhppphpphppphhphhppphphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1z1la1  SCOP=a.211.1.0  automated matches
+  TARGET: d2ousa1  SCOP=a.211.1.0  automated matches
+  pval=3.67e-11  jaccard=0.0083  containment=0.0160  region_len=31
+
+    Q[ 163] HGCNIFDHFSRKDYQRMLDLMRDIILATDLA
+    T[ 157] EGHNIFSTLSSSEYEQVLEIIRKAIIATDLA
+    HP      phpphhpphpppphpphhphhpphhhhpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2d8da1  SCOP=a.130.1.1  Chorismate mutase domain of P-protein
+  TARGET: d1ybza1  SCOP=a.130.1.1  mono-domain chorismate mutase
+  pval=8.86e-09  jaccard=0.0303  containment=0.0556  region_len=29
+
+    Q[   0] ERIQALRKEVDRVNREILRLLSERGRLVQ
+    T[   0] TTLKLLRKEIDKIDNQIISLLKKRLEIAQ
+    HP      pphphhppphpphppphhphhppphphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2hi4a_  SCOP=a.104.1.0  automated matches
+  TARGET: d2fdva_  SCOP=a.104.1.0  automated matches
+  pval=2.21e-10  jaccard=0.0056  containment=0.0110  region_len=31
+
+    Q[ 308] KIQKELDTVIGRERRPRLSDRPQLPYLEAFI
+    T[ 296] KVHEEIDRVIGKNRQPKFEDRAKMPYMEAVI
+    HP      phppphpphhhpppphphppphphhhhphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2kq5a_  SCOP=a.298.1.1  PthA
+  TARGET: d3v6ta_  SCOP=a.298.1.1  dHax3
+  pval=0.00e+00  jaccard=0.1323  containment=1.0000  region_len=27
+
+    Q[  22] LPVLCQAHGLTPEQVVAIASHDGGKQA
+    T[ 389] LPVLCQAHGLTPEQVVAIASHDGGKQA
+    HP      hhhhpphphhphpphhhhhppphhpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2ousa1  SCOP=a.211.1.0  automated matches
+  TARGET: d1z1la1  SCOP=a.211.1.0  automated matches
+  pval=2.85e-11  jaccard=0.0083  containment=0.0168  region_len=31
+
+    Q[ 157] EGHNIFSTLSSSEYEQVLEIIRKAIIATDLA
+    T[ 163] HGCNIFDHFSRKDYQRMLDLMRDIILATDLA
+    HP      phpphhpphpppphpphhphhpphhhhpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2z3ta_  SCOP=a.104.1.0  automated matches
+  TARGET: d3r9ba_  SCOP=a.104.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0134  containment=0.0260  region_len=36
+
+    Q[ 290] MRYDPPVQAVTRWAYEDIRLGDHDIPRGSRVVALLG
+    T[ 282] MRYDPPVQLVSRYAGDDLTIGTHTVPKGDTMLLLLA
+    HP      hphphhhphhpphhhpphphhppphhphpphhhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3a40x_  SCOP=a.123.1.1  automated matches
+  TARGET: d3fc6b_  SCOP=a.123.1.1  automated matches
+  pval=5.92e-07  jaccard=0.0068  containment=0.0131  region_len=29
+
+    Q[  84] DLTSEDQIVLLKSSAIEVIMLRSNESFTM
+    T[  75] QLSREDQIALLKTSAIEVMLLETSRRYNP
+    HP      phppppphhhhppphhphhhhppppphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3loma1  SCOP=a.128.1.0  automated matches
+  TARGET: d3lsna1  SCOP=a.128.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0266  containment=0.0507  region_len=40
+
+    Q[  81] YSLIHDDLPAMDNDDLRRGKPSCHKAFDEATAILVGDGMQ
+    T[  75] YSLVHDDLPAMDDDDLRRGQPTTHKAFDEACAILAGDGLQ
+    HP      hphhppphhhhpppphpphphpppphhpphphhhhhphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3lsna1  SCOP=a.128.1.0  automated matches
+  TARGET: d3loma1  SCOP=a.128.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0266  containment=0.0530  region_len=40
+
+    Q[  75] YSLVHDDLPAMDDDDLRRGQPTTHKAFDEACAILAGDGLQ
+    T[  81] YSLIHDDLPAMDNDDLRRGKPSCHKAFDEATAILVGDGMQ
+    HP      hphhppphhhhpppphpphphpppphhpphphhhhhphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3n0fa2  SCOP=a.128.1.0  automated matches
+  TARGET: d4fjqa2  SCOP=a.128.1.0  automated matches
+  pval=3.04e-11  jaccard=0.0083  containment=0.0164  region_len=31
+
+    Q[  74] FVTIIDDIYDVYGTLDELELFTDAVERWDVN
+    T[  75] LVTLIDDIYDAYGTYEELKIFTEAIERWSIT
+    HP      hhphhpphhphhhphpphphhpphhpphphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3npka1  SCOP=a.128.1.0  automated matches
+  TARGET: d4wk5a1  SCOP=a.128.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0164  containment=0.0315  region_len=34
+
+    Q[  56] NQALDVALALEFIHTYSLIHDDLPAMDNADFRRG
+    T[  53] ERLVDVAVAVELFHTASLVHDDLPPIDNADFRRG
+    HP      pphhphhhhhphhpphphhppphhhhpphphpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3r9ba_  SCOP=a.104.1.0  automated matches
+  TARGET: d2z3ta_  SCOP=a.104.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0134  containment=0.0267  region_len=36
+
+    Q[ 282] MRYDPPVQLVSRYAGDDLTIGTHTVPKGDTMLLLLA
+    T[ 290] MRYDPPVQAVTRWAYEDIRLGDHDIPRGSRVVALLG
+    HP      hphphhhphhpphhhpphphhppphhphpphhhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3v6ta_  SCOP=a.298.1.1  dHax3
+  TARGET: d2kq5a_  SCOP=a.298.1.1  PthA
+  pval=0.00e+00  jaccard=0.1323  containment=0.1323  region_len=51
+
+    Q[ 299] QQVVAIASNGGGKQALETVQRLLPVLCQAHGLTPQQVVAIASHDGGKQALE
+    T[   0] EQVVAIASNIGGKQALETVQRLLPVLCQAHGLTPEQVVAIASHDGGKQALE
+    HP      pphhhhhpphhhpphhpphpphhhhhpphphhphpphhhhhppphhpphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4hoja2  SCOP=a.45.1.0  automated matches
+  TARGET: d4ivfb2  SCOP=a.45.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0419  containment=0.0825  region_len=34
+
+    Q[  56] SFSKSKYILGEDFSMIDVALAPLLWRLDHYDVKL
+    T[  67] KANDSKYLVGDRYTVADFALLGWAYRLSRLEIDI
+    HP      phpppphhhhpphphhphhhhhhhhphpphphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4ivfb2  SCOP=a.45.1.0  automated matches
+  TARGET: d4hoja2  SCOP=a.45.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0419  containment=0.0784  region_len=34
+
+    Q[  67] KANDSKYLVGDRYTVADFALLGWAYRLSRLEIDI
+    T[  56] SFSKSKYILGEDFSMIDVALAPLLWRLDHYDVKL
+    HP      phpppphhhhpphphhphhhhhhhhphpphphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4pxha_  SCOP=a.104.1.0  automated matches
+  TARGET: d4yzra_  SCOP=a.104.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0159  containment=0.0307  region_len=38
+
+    Q[ 330] AFDLNRSPNKHITFGYGPHFCLGAYLGRAEVHALLDAL
+    T[ 327] ILNINRSPNRHISFGFGIHFCLGAPLARLEGHIAFKAL
+    HP      hhphppphppphphhhhhphphhhhhhphphphhhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4r21a_  SCOP=a.104.1.0  automated matches
+  TARGET: d6a15a1  SCOP=a.104.1.0  automated matches
+  pval=1.47e-10  jaccard=0.0060  containment=0.0120  region_len=31
+
+    Q[ 375] SSFLPFGAGPRVCVGESLARIELFLFVSRPL
+    T[ 380] NNYMPFGGGPRLCAGSELAKLEMAVFIHHLV
+    HP      pphhhhhhhhphphhpphhphphhhhhpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4rm4a_  SCOP=a.104.1.0  automated matches
+  TARGET: d5xw2a_  SCOP=a.104.1.0  automated matches
+  pval=8.88e-16  jaccard=0.0098  containment=0.0201  region_len=33
+
+    Q[ 314] PNPHIAFGHGIHFCLGAPLARLEANIALTSLIS
+    T[ 332] PNPHLGFGRGIHFCLGGPLARMEGRVALDHLLD
+    HP      hphphhhhphhphphhhhhhphphphhhpphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4wk5a1  SCOP=a.128.1.0  automated matches
+  TARGET: d3npka1  SCOP=a.128.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0164  containment=0.0331  region_len=34
+
+    Q[  53] ERLVDVAVAVELFHTASLVHDDLPPIDNADFRRG
+    T[  56] NQALDVALALEFIHTYSLIHDDLPAMDNADFRRG
+    HP      pphhphhhhhphhpphphhppphhhhpphphpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4yt3a_  SCOP=a.104.1.0  automated matches
+  TARGET: d5hdia_  SCOP=a.104.1.0  automated matches
+  pval=9.71e-11  jaccard=0.0067  containment=0.0131  region_len=31
+
+    Q[ 341] HLTFGNGPHFCLGAPLARLEAKIALTAFLKK
+    T[ 339] HISFGKGAHFCVGAALARLEARIVLRLLLDR
+    HP      phphhphhphphhhhhhphphphhhphhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4yzra_  SCOP=a.104.1.0  automated matches
+  TARGET: d4pxha_  SCOP=a.104.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0159  containment=0.0320  region_len=38
+
+    Q[ 327] ILNINRSPNRHISFGFGIHFCLGAPLARLEGHIAFKAL
+    T[ 330] AFDLNRSPNKHITFGYGPHFCLGAYLGRAEVHALLDAL
+    HP      hhphppphppphphhhhhphphhhhhhphphphhhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5hdia_  SCOP=a.104.1.0  automated matches
+  TARGET: d4yt3a_  SCOP=a.104.1.0  automated matches
+  pval=9.35e-11  jaccard=0.0067  containment=0.0134  region_len=31
+
+    Q[ 339] HISFGKGAHFCVGAALARLEARIVLRLLLDR
+    T[ 341] HLTFGNGPHFCLGAPLARLEAKIALTAFLKK
+    HP      phphhphhphphhhhhhphphphhhphhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5hiwa1  SCOP=a.104.1.0  automated matches
+  TARGET: d4yzra_  SCOP=a.104.1.0  automated matches
+  pval=3.39e-13  jaccard=0.0082  containment=0.0164  region_len=32
+
+    Q[ 328] LNFGGGLHYCVGAPLARMEARVGVSLLLERFP
+    T[ 338] ISFGFGIHFCLGAPLARLEGHIAFKALLKRFP
+    HP      hphhhhhphphhhhhhphphphhhphhhpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5xw2a_  SCOP=a.104.1.0  automated matches
+  TARGET: d4rm4a_  SCOP=a.104.1.0  automated matches
+  pval=1.44e-15  jaccard=0.0098  containment=0.0188  region_len=33
+
+    Q[ 332] PNPHLGFGRGIHFCLGGPLARMEGRVALDHLLD
+    T[ 314] PNPHIAFGHGIHFCLGAPLARLEANIALTSLIS
+    HP      hphphhhhphhphphhhhhhphphphhhpphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6a15a1  SCOP=a.104.1.0  automated matches
+  TARGET: d4r21a_  SCOP=a.104.1.0  automated matches
+  pval=1.42e-10  jaccard=0.0060  containment=0.0120  region_len=31
+
+    Q[ 380] NNYMPFGGGPRLCAGSELAKLEMAVFIHHLV
+    T[ 375] SSFLPFGAGPRVCVGESLARIELFLFVSRPL
+    HP      pphhhhhhhhphphhpphhphphhhhhpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6kfwa1  SCOP=a.104.1.0  automated matches
+  TARGET: d5xw2a_  SCOP=a.104.1.0  automated matches
+  pval=4.40e-13  jaccard=0.0081  containment=0.0159  region_len=32
+
+    Q[ 337] FGHGPHFCIGAPLGRLQGEIAFSTLLRRLPRF
+    T[ 338] FGRGIHFCLGGPLARMEGRVALDHLLDRFPEL
+    HP      hhphhphphhhhhhphphphhhpphhpphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6ldla_  SCOP=a.104.1.0  automated matches
+  TARGET: d7anta_  SCOP=a.104.1.0  automated matches
+  pval=4.61e-13  jaccard=0.0079  containment=0.0153  region_len=32
+
+    Q[ 343] NASEHLNFGYGAHQCLGRNLGRMEMQIMIEEL
+    T[ 334] KPRHHLSFGFGIHRCVGNRLAELQLRIVWEEL
+    HP      phppphphhhhhppphhpphhphphphhhpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d7anta_  SCOP=a.104.1.0  automated matches
+  TARGET: d6ldla_  SCOP=a.104.1.0  automated matches
+  pval=4.21e-13  jaccard=0.0079  containment=0.0160  region_len=32
+
+    Q[ 334] KPRHHLSFGFGIHRCVGNRLAELQLRIVWEEL
+    T[ 343] NASEHLNFGYGAHQCLGRNLGRMEMQIMIEEL
+    HP      phppphphhhhhppphhpphhphphphhhpph
+
+  --------------------------------------------------------------------------------------------------
+
+====================================================================================================
+  SCOPe CLASS B — All beta proteins  (21 unique queries)
+====================================================================================================
+  QUERY:  d1agja_  SCOP=b.47.1.1  Epidermolytic (exfoliative) toxin A
+  TARGET: d6pyma_  SCOP=b.47.1.1  automated matches
+  pval=0.00e+00  jaccard=0.0384  containment=0.0694  region_len=41
+
+    Q[  55] SATGVLIGKNTVLTNRHIAKFANGDPSKVSFRPSINTDDNG
+    T[  34] SGSGVVVGENEILTNKHVVNGAKGNPRNISVHPSAKNENDY
+    HP      phphhhhhppphhpppphhphhphphpphphphphppppph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1l1ja_  SCOP=b.47.1.1  Protease Do (DegP, HtrA), catalytic domain
+  TARGET: d2z9ia2  SCOP=b.47.1.1  Protease PepD
+  pval=0.00e+00  jaccard=0.0206  containment=0.0396  region_len=34
+
+    Q[ 170] LIQTDAAINPGNSGGPLLNIHGEVIGINTAIVNP
+    T[ 151] AIQTDAAINPGNSGGALVNMNAQLVGVNSAIATL
+    HP      hhppphhhphhpphhhhhphphphhhhpphhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1qora1  SCOP=b.35.1.2  Quinone oxidoreductase
+  TARGET: d4dxha1  SCOP=b.35.1.2  Alcohol dehydrogenase
+  pval=9.99e-08  jaccard=0.0103  containment=0.0246  region_len=29
+
+    Q[  58] GLGTEAAGIVSKVGSGVKHIKAGDRVVYA
+    T[  63] IAGHEAAGIVESIGEGVTTVRPGDKVIPL
+    HP      hhhpphhhhhpphhphhpphphhpphhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1rtga_  SCOP=b.66.1.1  Gelatinase A (MMP-2), C-terminal domain
+  TARGET: d2ivda1  SCOP=c.3.1.2  Protoporphyrinogen oxidase
+  pval=9.58e-10  jaccard=0.0081  containment=0.0226  region_len=30
+
+    Q[  87] ASTLERGYPKPLTSLGLPPDVQRVDAAFNW
+    T[ 143] GHRATQVLLDAVQTGIYAGDVEQLSVAATF
+    HP      hpphpphhhphhpphhhhhphpphphhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1su3a2  SCOP=b.66.1.1  Collagenase (MMP1), C-terminal domain
+  TARGET: d1rtga_  SCOP=b.66.1.1  Gelatinase A (MMP-2), C-terminal domain
+  pval=7.36e-10  jaccard=0.0117  containment=0.0237  region_len=30
+
+    Q[ 117] KTYFFVANKYWRYDEYKRSMDPGYPKMIAH
+    T[ 121] KTYIFAGDKFWRYNEVKKKMDPGFPKLIAD
+    HP      pphhhhhpphhphpphppphphhhhphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1x5na1  SCOP=b.36.1.1  Harmonin
+  TARGET: d3ntla1  SCOP=c.60.1.2  automated matches
+  pval=1.36e-05  jaccard=0.0046  containment=0.0267  region_len=28
+
+    Q[  14] SLVGSRGLGCSISSGPIQKPGIFISHVK
+    T[  62] EWLAQQGMVKTGECPAADSVYAYANSLQ
+    HP      phhhpphhhpphpphhhpphhhhhpphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2aiqa_  SCOP=b.47.1.2  automated matches
+  TARGET: d4i8ha_  SCOP=b.47.1.2  Trypsin(ogen)
+  pval=0.00e+00  jaccard=0.0203  containment=0.0390  region_len=34
+
+    Q[ 160] LCAGILEGGKDTCKGDSGGPLICNGQFQGILSVG
+    T[ 160] FCAGYLEGGKDSCQGDSGGPVVCSGKLQGIVSWG
+    HP      hphhhhphhppppphpphhhhhpphphphhhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2egoa1  SCOP=b.36.1.0  automated matches
+  TARGET: d3sfja_  SCOP=b.36.1.0  automated matches
+  pval=1.71e-08  jaccard=0.0211  containment=0.0441  region_len=29
+
+    Q[  46] PAQLAGLTPGDTIASVNGLNVEGIRHREI
+    T[  55] PAEIAGLQIGDKIMQVNGWDMTMVTHDQA
+    HP      hhphhhhphhpphhphphhphphhpppph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2opga1  SCOP=b.36.1.1  Multiple PDZ domain protein
+  TARGET: d1x5na1  SCOP=b.36.1.1  Harmonin
+  pval=1.03e-05  jaccard=0.0144  containment=0.0303  region_len=28
+
+    Q[  48] AGDQILEVNGIDLRKATHDEAINVLRQT
+    T[  53] IGDQIVEVNGVDFSNLDHKEAVNVLKSS
+    HP      hhpphhphphhphpphpppphhphhppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2r4ha1  SCOP=b.36.1.0  automated matches
+  TARGET: d6x1ra1  SCOP=b.36.1.0  automated matches
+  pval=1.24e-11  jaccard=0.0323  containment=0.0678  region_len=30
+
+    Q[  46] IGDEILEINGETTKNMKHSRAIELIKNGGR
+    T[  50] VGDRVLSVQGESCEKITHERAVEMLRNPAS
+    HP      hhpphhphphppppphpppphhphhpphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2rjla_  SCOP=b.22.1.0  automated matches
+  TARGET: d5l19a_  SCOP=b.22.1.0  automated matches
+  pval=5.58e-13  jaccard=0.0198  containment=0.0373  region_len=31
+
+    Q[ 121] YLGAMFSLQEGDKLMVNVSDISLVDYTKEDK
+    T[ 112] YLGAVFNLTSADHLYVNVSELSLVNFEESQT
+    HP      hhhhhhphpphpphhhphpphphhphppppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2z9ia2  SCOP=b.47.1.1  Protease PepD
+  TARGET: d1l1ja_  SCOP=b.47.1.1  Protease Do (DegP, HtrA), catalytic domain
+  pval=0.00e+00  jaccard=0.0206  containment=0.0410  region_len=34
+
+    Q[ 151] AIQTDAAINPGNSGGALVNMNAQLVGVNSAIATL
+    T[ 170] LIQTDAAINPGNSGGPLLNIHGEVIGINTAIVNP
+    HP      hhppphhhphhpphhhhhphphphhhhpphhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3j9ca1  SCOP=b.179.1.1  PA14
+  TARGET: d3tewa2  SCOP=b.179.1.1  PA14
+  pval=0.00e+00  jaccard=0.1405  containment=1.0000  region_len=52
+
+    Q[   0] TVPDRDNDGIPDSLEVEGYTVDVKNKRTFLSPWISNIHEKKGLTKYKSSPEK
+    T[ 159] TVPDRDNDGIPDSLEVEGYTVDVKNKRTFLSPWISNIHEKKGLTKYKSSPEK
+    HP      phhppppphhhpphphphhphphppppphhphhhpphpppphhpphppphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3sfja_  SCOP=b.36.1.0  automated matches
+  TARGET: d2egoa1  SCOP=b.36.1.0  automated matches
+  pval=2.45e-08  jaccard=0.0211  containment=0.0390  region_len=29
+
+    Q[  55] PAEIAGLQIGDKIMQVNGWDMTMVTHDQA
+    T[  46] PAQLAGLTPGDTIASVNGLNVEGIRHREI
+    HP      hhphhhhphhpphhphphhphphhpppph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3tewa2  SCOP=b.179.1.1  PA14
+  TARGET: d3j9ca1  SCOP=b.179.1.1  PA14
+  pval=0.00e+00  jaccard=0.1405  containment=0.1405  region_len=52
+
+    Q[ 159] TVPDRDNDGIPDSLEVEGYTVDVKNKRTFLSPWISNIHEKKGLTKYKSSPEK
+    T[   0] TVPDRDNDGIPDSLEVEGYTVDVKNKRTFLSPWISNIHEKKGLTKYKSSPEK
+    HP      phhppppphhhpphphphhphphppppphhphhhpphpppphhpphppphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4dxha1  SCOP=b.35.1.2  Alcohol dehydrogenase
+  TARGET: d1k8ka2  SCOP=c.55.1.1  Actin-related protein 3, Arp3
+  pval=8.23e-10  jaccard=0.0100  containment=0.0231  region_len=30
+
+    Q[  94] PQCGKCRVCKHPEGNFCLKNDLSMPRGTMQ
+    T[ 171] GRRLQRDLKRTVDARLKLSEELSGGRLKPK
+    HP      hpphppphppphphphphppphphhphphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4i8ha_  SCOP=b.47.1.2  Trypsin(ogen)
+  TARGET: d2aiqa_  SCOP=b.47.1.2  automated matches
+  pval=0.00e+00  jaccard=0.0203  containment=0.0406  region_len=34
+
+    Q[ 160] FCAGYLEGGKDSCQGDSGGPVVCSGKLQGIVSWG
+    T[ 160] LCAGILEGGKDTCKGDSGGPLICNGQFQGILSVG
+    HP      hphhhhphhppppphpphhhhhpphphphhhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5l19a_  SCOP=b.22.1.0  automated matches
+  TARGET: d2rjla_  SCOP=b.22.1.0  automated matches
+  pval=4.48e-13  jaccard=0.0198  containment=0.0403  region_len=31
+
+    Q[ 112] YLGAVFNLTSADHLYVNVSELSLVNFEESQT
+    T[ 121] YLGAMFSLQEGDKLMVNVSDISLVDYTKEDK
+    HP      hhhhhhphpphpphhhphpphphhphppppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5m3na1  SCOP=b.47.1.1  automated matches
+  TARGET: d2z9ia2  SCOP=b.47.1.1  Protease PepD
+  pval=5.00e-15  jaccard=0.0164  containment=0.0341  region_len=32
+
+    Q[ 150] VEYIQTDAAIDFGNSGGPLVNLDGEVIGVNTM
+    T[ 149] LDAIQTDAAINPGNSGGALVNMNAQLVGVNSA
+    HP      hphhppphhhphhpphhhhhphphphhhhpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6pyma_  SCOP=b.47.1.1  automated matches
+  TARGET: d1agja_  SCOP=b.47.1.1  Epidermolytic (exfoliative) toxin A
+  pval=0.00e+00  jaccard=0.0384  containment=0.0789  region_len=41
+
+    Q[  34] SGSGVVVGENEILTNKHVVNGAKGNPRNISVHPSAKNENDY
+    T[  55] SATGVLIGKNTVLTNRHIAKFANGDPSKVSFRPSINTDDNG
+    HP      phphhhhhppphhpppphhphhphphpphphphphppppph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6x1ra1  SCOP=b.36.1.0  automated matches
+  TARGET: d2r4ha1  SCOP=b.36.1.0  automated matches
+  pval=2.24e-11  jaccard=0.0323  containment=0.0580  region_len=30
+
+    Q[  50] VGDRVLSVQGESCEKITHERAVEMLRNPAS
+    T[  46] IGDEILEINGETTKNMKHSRAIELIKNGGR
+    HP      hhpphhphphppppphpppphhphhpphhp
+
+  --------------------------------------------------------------------------------------------------
+
+====================================================================================================
+  SCOPe CLASS C — Alpha and beta proteins (a/b) — alternating α/β, e.g. TIM barrel, Rossmann fold  (110 unique queries)
+====================================================================================================
+  QUERY:  d1aa6a2  SCOP=c.81.1.1  Formate dehydrogenase H
+  TARGET: d2jioa2  SCOP=c.81.1.1  automated matches
+  pval=3.40e-12  jaccard=0.0054  containment=0.0112  region_len=32
+
+    Q[  60] RLKTPMIRRQRGGKLEPVSWDEALNYVAERLS
+    T[  58] RVTQPLVRRHKGGKLEPVSWDEALDLMASRFR
+    HP      phpphhhpppphhphphhphpphhphhhpphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1aoea_  SCOP=c.71.1.1  Dihydrofolate reductases, eukaryotic type
+  TARGET: d2bl9a_  SCOP=c.71.1.1  automated matches
+  pval=0.00e+00  jaccard=0.0272  containment=0.0602  region_len=36
+
+    Q[  48] RNAVIMGRKTWESIPQKFRPLPDRLNIILSRSYENE
+    T[ 106] QNVVVMGRSSWESIPKQYKPLPNRINVVLSKTLTKE
+    HP      pphhhhhppphpphhpphphhhpphphhhppphppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1bd3a_  SCOP=c.61.1.1  Uracil PRTase, Upp
+  TARGET: d1xtta1  SCOP=c.61.1.1  Uracil PRTase, Upp
+  pval=3.86e-07  jaccard=0.0078  containment=0.0152  region_len=29
+
+    Q[ 193] MVTAAVDICLNSRYYIVPGIGDFGDRYFG
+    T[ 186] LFTVAIDPELNNKGYILPGLGDAGDRAFG
+    HP      hhphhhphphppphhhhhhhhphhpphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1c7ja_  SCOP=c.69.1.1  Thermophilic para-nitrobenzyl esterase (PNB esterase)
+  TARGET: d1ea5a_  SCOP=c.69.1.1  Acetylcholinesterase
+  pval=0.00e+00  jaccard=0.0084  containment=0.0174  region_len=34
+
+    Q[ 162] AALKWVRENISAFGGDPDNVTVFGESAGGMSIAA
+    T[ 171] MALQWVHDNIQFFGGDPKTVTIFGESAGGASVGM
+    HP      hhhphhppphphhhhphpphphhhpphhhhphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1ea5a_  SCOP=c.69.1.1  Acetylcholinesterase
+  TARGET: d1c7ja_  SCOP=c.69.1.1  Thermophilic para-nitrobenzyl esterase (PNB esterase)
+  pval=1.11e-16  jaccard=0.0084  containment=0.0158  region_len=34
+
+    Q[ 171] MALQWVHDNIQFFGGDPKTVTIFGESAGGASVGM
+    T[ 162] AALKWVRENISAFGGDPDNVTVFGESAGGMSIAA
+    HP      hhhphhppphphhhhphpphphhhpphhhhphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1enoa_  SCOP=c.2.1.2  Enoyl-ACP reductase
+  TARGET: d1fjha_  SCOP=c.2.1.2  3-alpha-hydroxysteroid dehydrogenase
+  pval=1.84e-11  jaccard=0.0101  containment=0.0185  region_len=31
+
+    Q[ 250] KTLTADEVGNAAAFLVSPLASAITGATIYVD
+    T[ 214] RRAEPSEMASVIAFLMSPAASYVHGAQIVID
+    HP      pphphpphhphhhhhhphhhphhphhphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1fjha_  SCOP=c.2.1.2  3-alpha-hydroxysteroid dehydrogenase
+  TARGET: d1enoa_  SCOP=c.2.1.2  Enoyl-ACP reductase
+  pval=8.92e-12  jaccard=0.0101  containment=0.0216  region_len=31
+
+    Q[ 214] RRAEPSEMASVIAFLMSPAASYVHGAQIVID
+    T[ 250] KTLTADEVGNAAAFLVSPLASAITGATIYVD
+    HP      pphphpphhphhhhhhphhhphhphhphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1h2ba2  SCOP=c.2.1.1  Alcohol dehydrogenase
+  TARGET: d1jvba2  SCOP=c.2.1.1  Alcohol dehydrogenase
+  pval=0.00e+00  jaccard=0.0284  containment=0.0548  region_len=34
+
+    Q[  34] YVAIVGVGGLGHIAVQLLKVMTPATVIALDVKEE
+    T[  30] LLVVGAGGGLGTMAVQIAKAVSGATIIGVDVREE
+    HP      hhhhhhhhhhhphhhphhphhphhphhhhphppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1h6da1  SCOP=c.2.1.3  Glucose-fructose oxidoreductase, N-terminal domain
+  TARGET: d2q4ea1  SCOP=c.2.1.3  Probable oxidoreductase At4g09670
+  pval=9.77e-15  jaccard=0.0172  containment=0.0306  region_len=32
+
+    Q[  90] NFDKIAKDPKIDAVYIILPNSLHAEFAIRAFK
+    T[  56] SYESLLEDPEIDALYVPLPTSLHVEWAIKAAE
+    HP      phpphhpphphphhhhhhhpphphphhhphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1ji0a_  SCOP=c.37.1.12  Branched chain aminoacid ABC transporter
+  TARGET: d2ixea_  SCOP=c.37.1.12  automated matches
+  pval=4.85e-07  jaccard=0.0069  containment=0.0140  region_len=29
+
+    Q[ 138] TLSGGEQQMLAIGRALMSRPKLLMMDEPS
+    T[ 150] QLSGGQRQAVALARALIRKPRLLILDNAT
+    HP      phphhppphhhhhphhhpphphhhhpphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1jvba2  SCOP=c.2.1.1  Alcohol dehydrogenase
+  TARGET: d1h2ba2  SCOP=c.2.1.1  Alcohol dehydrogenase
+  pval=0.00e+00  jaccard=0.0284  containment=0.0556  region_len=34
+
+    Q[  30] LLVVGAGGGLGTMAVQIAKAVSGATIIGVDVREE
+    T[  34] YVAIVGVGGLGHIAVQLLKVMTPATVIALDVKEE
+    HP      hhhhhhhhhhhphhhphhphhphhphhhhphppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1knxa2  SCOP=c.91.1.2  HPr kinase HprK C-terminal domain
+  TARGET: d1ko7a2  SCOP=c.91.1.2  HPr kinase HprK C-terminal domain
+  pval=0.00e+00  jaccard=0.0280  containment=0.0530  region_len=34
+
+    Q[   4] QIHGVLLEVFGVGVLLTGRSGIGKSECALDLINK
+    T[   4] SLHGVLVDVYGVGVLITGDSGIGKSETALELIKR
+    HP      phphhhhphhhhhhhhphpphhhpppphhphhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1ko7a2  SCOP=c.91.1.2  HPr kinase HprK C-terminal domain
+  TARGET: d1knxa2  SCOP=c.91.1.2  HPr kinase HprK C-terminal domain
+  pval=0.00e+00  jaccard=0.0280  containment=0.0559  region_len=34
+
+    Q[   4] SLHGVLVDVYGVGVLITGDSGIGKSETALELIKR
+    T[   4] QIHGVLLEVFGVGVLLTGRSGIGKSECALDLINK
+    HP      phphhhhphhhhhhhhphpphhhpppphhphhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1ngvb_  SCOP=c.111.1.2  automated matches
+  TARGET: d1y8xb1  SCOP=c.111.1.2  UBA3
+  pval=0.00e+00  jaccard=0.1634  containment=0.1634  region_len=92
+
+    Q[ 337] LPQNIQFSPSAKLQEVLDYLTNSASLQMKSPAITATLEGKNRTLYLQSVTSIEERTRPNLSKTLKELGLVDGQELAVADV
+    T[   0] LPQNIQFSPSAKLQEVLDYLTNSASLQMKSPAITATLEGKNRTLYMQSVTSIEERTRPNLSKTLKELGLVDGQELAVADV
+    HP      hhpphphphphphpphhphhppphphphpphhhphphphpppphhhpphpphppppphphppphpphhhhphpphhhhph
+
+    Q[ 417] TTPQTVLFKLHF
+    T[  80] TTPQTVLFKLHF
+    HP      pphpphhhphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1nzya_  SCOP=c.14.1.3  4-Chlorobenzoyl-CoA dehalogenase
+  TARGET: d2gtra_  SCOP=c.14.1.3  automated matches
+  pval=7.49e-07  jaccard=0.0064  containment=0.0123  region_len=29
+
+    Q[  87] WWHQMIHKIIRVKRPVLAAINGVAAGGGL
+    T[  86] AIRNFVNTFIQFKKPIIVAVNGPAIGLGA
+    HP      hhpphhpphhphpphhhhhhphhhhhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1qzfa1  SCOP=c.71.1.1  Bifunctional enzyme dihydrofolate reductase-thymidylate synthase, DFR domain
+  TARGET: d1aoea_  SCOP=c.71.1.1  Dihydrofolate reductases, eukaryotic type
+  pval=5.40e-05  jaccard=0.0063  containment=0.0132  region_len=28
+
+    Q[  15] GIGINGQLPWSISEDLKFFSKITNNKCD
+    T[  17] GIGYKGKMPWRLRKEIRYFKDVTTRTTK
+    HP      hhhhphphhhphppphphhpphpppppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1t35a_  SCOP=c.129.1.1  Hypothetical protein YvdD
+  TARGET: d2q4oa_  SCOP=c.129.1.1  Hypothetical protein At2g37210/T2N18.3
+  pval=0.00e+00  jaccard=0.0368  containment=0.0719  region_len=37
+
+    Q[ 103] MPGGFGTYEELFEVLCWAQIGIHQKPIGLYNVNGYFE
+    T[ 108] LPGGYGTLEELLEVITWAQLGIHDKPVGLLNVDGYYN
+    HP      hhhhhhphpphhphhphhphhhppphhhhhphphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1teda2  SCOP=c.95.1.2  Polyketide synthase PKS18, C-terminal domain
+  TARGET: d1u0ma2  SCOP=c.95.1.2  Putative polyketide synthase SCO1206, C-terminal domain
+  pval=0.00e+00  jaccard=0.0474  containment=0.0909  region_len=37
+
+    Q[  39] FSGVAPVVTEMLWDNGLQISDIDLWAIHPGGPKIIEQ
+    T[  41] MEPLAPALKELAGEHGWDASDLDFYIVHAGGPRILDD
+    HP      hphhhhhhpphhhpphhphpphphhhhphhhhphhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1u0ma2  SCOP=c.95.1.2  Putative polyketide synthase SCO1206, C-terminal domain
+  TARGET: d1teda2  SCOP=c.95.1.2  Polyketide synthase PKS18, C-terminal domain
+  pval=0.00e+00  jaccard=0.0474  containment=0.0902  region_len=37
+
+    Q[  41] MEPLAPALKELAGEHGWDASDLDFYIVHAGGPRILDD
+    T[  39] FSGVAPVVTEMLWDNGLQISDIDLWAIHPGGPKIIEQ
+    HP      hphhhhhhpphhhpphhphpphphhhhphhhhphhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1uk8a_  SCOP=c.69.1.10  Meta-cleavage product hydrolase CumD
+  TARGET: d2pu6a_  SCOP=c.69.1.10  2-hydroxy-6-oxo-6-phenylhexa-2,4-dienoate hydrolase (BPHD)
+  pval=0.00e+00  jaccard=0.0183  containment=0.0367  region_len=35
+
+    Q[ 140] WGYTPSIENMRNLLDIFAYDRSLVTDELARLRYEA
+    T[ 155] LYAEPSYETLKQMLQVFLYDQSLITEELLQGRWEA
+    HP      hhhphphpphpphhphhhhppphhppphhphphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1uufa2  SCOP=c.2.1.1  Hypothetical protein YahK
+  TARGET: d1rjwa2  SCOP=c.2.1.1  Alcohol dehydrogenase
+  pval=4.55e-05  jaccard=0.0071  containment=0.0141  region_len=28
+
+    Q[  33] VGVVGIGGLGHMGIKLAHAMGAHVVAFT
+    T[  30] VAIYGIGGLGHVAVQYAKAMGLNVVAVD
+    HP      hhhhhhhhhhphhhphhphhhhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1vmia1  SCOP=c.77.1.5  Ethanolamine utilization protein EutD
+  TARGET: d4e4ra1  SCOP=c.77.1.5  automated matches
+  pval=0.00e+00  jaccard=0.0221  containment=0.0433  region_len=39
+
+    Q[ 260] LQGKANVMVFPSLEAGNIGYKIAQRLGGYRAVGPLIQGL
+    T[ 260] LQGDANVFVFPSLEAGNIGYKIAQRLGGYDAVGPVLQGL
+    HP      hphphphhhhhphphhphhhphhpphhhhphhhhhhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1xtta1  SCOP=c.61.1.1  Uracil PRTase, Upp
+  TARGET: d1bd3a_  SCOP=c.61.1.1  Uracil PRTase, Upp
+  pval=3.47e-07  jaccard=0.0078  containment=0.0159  region_len=29
+
+    Q[ 186] LFTVAIDPELNNKGYILPGLGDAGDRAFG
+    T[ 193] MVTAAVDICLNSRYYIVPGIGDFGDRYFG
+    HP      hhphhhphphppphhhhhhhhphhpphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1y63a_  SCOP=c.37.1.1  Probable kinase LmjF30.1890
+  TARGET: d3iija1  SCOP=c.37.1.1  automated matches
+  pval=1.67e-07  jaccard=0.0103  containment=0.0203  region_len=29
+
+    Q[  87] SELFPERWFHMVVVLHTSTEVLFERLTKR
+    T[  80] CDFFPERWFHIVFVLRTDTNVLYERLETR
+    HP      pphhhpphhphhhhhppppphhhpphppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1y8xb1  SCOP=c.111.1.2  UBA3
+  TARGET: d1ngvb_  SCOP=c.111.1.2  automated matches
+  pval=0.00e+00  jaccard=0.1634  containment=1.0000  region_len=92
+
+    Q[   0] LPQNIQFSPSAKLQEVLDYLTNSASLQMKSPAITATLEGKNRTLYMQSVTSIEERTRPNLSKTLKELGLVDGQELAVADV
+    T[ 337] LPQNIQFSPSAKLQEVLDYLTNSASLQMKSPAITATLEGKNRTLYLQSVTSIEERTRPNLSKTLKELGLVDGQELAVADV
+    HP      hhpphphphphphpphhphhppphphphpphhhphphphpppphhhpphpphppppphphppphpphhhhphpphhhhph
+
+    Q[  80] TTPQTVLFKLHF
+    T[ 417] TTPQTVLFKLHF
+    HP      pphpphhhphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1yoea1  SCOP=c.70.1.0  automated matches
+  TARGET: d1q8fa_  SCOP=c.70.1.1  Pyrimidine nucleoside hydrolase YeiK
+  pval=2.22e-16  jaccard=0.0125  containment=0.0246  region_len=32
+
+    Q[ 161] AEFNIYVDPEAAEIVFQSGIPVVMAGLDVTHK
+    T[ 160] AEFNIFADPEAARVVFTSGVPLVMMGLDLTNQ
+    HP      hphphhhphphhphhhpphhhhhhhhhphppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2acva_  SCOP=c.87.1.10  Triterpene UDP-glucosyl transferase UGT71G1
+  TARGET: d2c1xa1  SCOP=c.87.1.10  UDP glucose:flavonoid 3-o-glucosyltransferase
+  pval=0.00e+00  jaccard=0.0142  containment=0.0276  region_len=38
+
+    Q[ 335] GWAPQVEVLAHKAIGGFVSHCGWNSILESMWFGVPILT
+    T[ 324] PWAPQAEVLAHEAVGAFVTHCGWNSLWESVAGGVPLIC
+    HP      hhhhphphhhpphhhhhhppphhpphhpphhhhhhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2bl9a_  SCOP=c.71.1.1  automated matches
+  TARGET: d1aoea_  SCOP=c.71.1.1  Dihydrofolate reductases, eukaryotic type
+  pval=0.00e+00  jaccard=0.0272  containment=0.0474  region_len=36
+
+    Q[ 106] QNVVVMGRSSWESIPKQYKPLPNRINVVLSKTLTKE
+    T[  48] RNAVIMGRKTWESIPQKFRPLPDRLNIILSRSYENE
+    HP      pphhhhhppphpphhpphphhhpphphhhppphppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2c1xa1  SCOP=c.87.1.10  UDP glucose:flavonoid 3-o-glucosyltransferase
+  TARGET: d2acva_  SCOP=c.87.1.10  Triterpene UDP-glucosyl transferase UGT71G1
+  pval=0.00e+00  jaccard=0.0142  containment=0.0283  region_len=38
+
+    Q[ 324] PWAPQAEVLAHEAVGAFVTHCGWNSLWESVAGGVPLIC
+    T[ 335] GWAPQVEVLAHKAIGGFVSHCGWNSILESMWFGVPILT
+    HP      hhhhphphhhpphhhhhhppphhpphhpphhhhhhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2ef5a_  SCOP=c.42.1.0  automated matches
+  TARGET: d5zeea_  SCOP=c.42.1.0  automated matches
+  pval=4.21e-09  jaccard=0.0076  containment=0.0152  region_len=30
+
+    Q[ 110] RVGVVWVDAHADFNTPETSPSGNVHGMPLA
+    T[ 116] RVGVVWFDAHPDMNTPENSPSGNIHGMPLA
+    HP      phhhhhhphphphpphppphphphphhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2ew8a1  SCOP=c.2.1.2  (s)-1-phenylethanol dehydrogenase
+  TARGET: d3zv4a_  SCOP=c.2.1.2  automated matches
+  pval=7.88e-12  jaccard=0.0108  containment=0.0226  region_len=31
+
+    Q[   5] KLAVITGGANGIGRAIAERFAVEGADIAIAD
+    T[   5] EVALITGGASGLGRALVDRFVAEGARVAVLD
+    HP      phhhhphhhphhhphhhpphhhphhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2gtra_  SCOP=c.14.1.3  automated matches
+  TARGET: d4lk5a_  SCOP=c.14.1.0  automated matches
+  pval=1.11e-16  jaccard=0.0156  containment=0.0302  region_len=33
+
+    Q[  99] KPIIVAVNGPAIGLGASILPLCDVVWANEKAWF
+    T[  99] HPVVAVVQGPAAGVGVSIALACDVVLASENAFF
+    HP      phhhhhhphhhhhhhhphhhhpphhhhppphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2ixea_  SCOP=c.37.1.12  automated matches
+  TARGET: d5mbub_  SCOP=c.92.2.4  automated matches
+  pval=5.92e-07  jaccard=0.0062  containment=0.0133  region_len=29
+
+    Q[  14] QDVSFAYPNHPNVQVLQGLTFTLYPGKVT
+    T[  66] NKPSVGGVQQVDFEAINALKPDLIIISGR
+    HP      pphphhhhpphphphhphhphphhhhphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2jioa2  SCOP=c.81.1.1  automated matches
+  TARGET: d1aa6a2  SCOP=c.81.1.1  Formate dehydrogenase H
+  pval=4.51e-12  jaccard=0.0054  containment=0.0105  region_len=32
+
+    Q[  58] RVTQPLVRRHKGGKLEPVSWDEALDLMASRFR
+    T[  60] RLKTPMIRRQRGGKLEPVSWDEALNYVAERLS
+    HP      phpphhhpppphhphphhphpphhphhhpphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2pl3a1  SCOP=c.37.1.0  automated matches
+  TARGET: d3bera_  SCOP=c.37.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0204  containment=0.0388  region_len=34
+
+    Q[  53] IGLALQGKDVLGAAKTGSGKTLAFLVPVLEALYR
+    T[  44] IPLALQGRDIIGLAETGSGKTGAFALPILNALLE
+    HP      hhhhhphpphhhhhpphphpphhhhhhhhphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2pu6a_  SCOP=c.69.1.10  2-hydroxy-6-oxo-6-phenylhexa-2,4-dienoate hydrolase (BPHD)
+  TARGET: d1uk8a_  SCOP=c.69.1.10  Meta-cleavage product hydrolase CumD
+  pval=0.00e+00  jaccard=0.0183  containment=0.0350  region_len=35
+
+    Q[ 155] LYAEPSYETLKQMLQVFLYDQSLITEELLQGRWEA
+    T[ 140] WGYTPSIENMRNLLDIFAYDRSLVTDELARLRYEA
+    HP      hhhphphpphpphhphhhhppphhppphhphphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2q4ea1  SCOP=c.2.1.3  Probable oxidoreductase At4g09670
+  TARGET: d1h6da1  SCOP=c.2.1.3  Glucose-fructose oxidoreductase, N-terminal domain
+  pval=2.66e-15  jaccard=0.0172  containment=0.0377  region_len=32
+
+    Q[  56] SYESLLEDPEIDALYVPLPTSLHVEWAIKAAE
+    T[  90] NFDKIAKDPKIDAVYIILPNSLHAEFAIRAFK
+    HP      phpphhpphphphhhhhhhpphphphhhphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2q4oa_  SCOP=c.129.1.1  Hypothetical protein At2g37210/T2N18.3
+  TARGET: d1t35a_  SCOP=c.129.1.1  Hypothetical protein YvdD
+  pval=0.00e+00  jaccard=0.0368  containment=0.0701  region_len=37
+
+    Q[ 108] LPGGYGTLEELLEVITWAQLGIHDKPVGLLNVDGYYN
+    T[ 103] MPGGFGTYEELFEVLCWAQIGIHQKPIGLYNVNGYFE
+    HP      hhhhhhphpphhphhphhphhhppphhhhhphphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2qyha_  SCOP=c.108.1.0  automated matches
+  TARGET: d4dw8a_  SCOP=c.108.1.0  automated matches
+  pval=2.07e-14  jaccard=0.0129  containment=0.0261  region_len=32
+
+    Q[ 186] IRMMIEKLGIDKKDVYAFGDGLNDIEMLSFVG
+    T[ 198] LSVLLENIGMTREEVIAIGDGYNDLSMIKFAG
+    HP      hphhhpphhhpppphhhhhphhpphphhphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2x3ea2  SCOP=c.95.1.0  automated matches
+  TARGET: d4efia1  SCOP=c.95.1.0  automated matches
+  pval=3.55e-05  jaccard=0.0071  containment=0.0159  region_len=28
+
+    Q[  99] AEVGNTVAASIPLALAHGLRQGILRDGG
+    T[ 118] INLGCSGYPQALWLGMNLIQTGAAKRVL
+    HP      hphhpphhhphhhhhhphhpphhhpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2x9va_  SCOP=c.2.1.0  automated matches
+  TARGET: d4e3za_  SCOP=c.2.1.0  automated matches
+  pval=7.14e-07  jaccard=0.0065  containment=0.0124  region_len=29
+
+    Q[ 232] AEQIADAVIFLVSGSAQYITGSIIKVDGG
+    T[ 219] PEEVADAILYLLSPSASYVTGSILNVSGG
+    HP      hpphhphhhhhhphphphhphphhphphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2yjtd_  SCOP=c.37.1.0  automated matches
+  TARGET: d2z0ma2  SCOP=c.37.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0405  containment=0.0694  region_len=36
+
+    Q[  98] VSHVFNFDMPRSGDTYLHRIGRTARAGRKGTAISLV
+    T[  92] VEKVINFDAPQDLRTYIHRIGRTGRMGRKGEAITFI
+    HP      hpphhphphhpphpphhpphhpphphhpphphhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2z0ma1  SCOP=c.37.1.0  automated matches
+  TARGET: d3mwja_  SCOP=c.37.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0358  containment=0.0723  region_len=34
+
+    Q[ 105] ADIVVATPGRLLDLWSKGVIDLSSFEIVIIDEAD
+    T[ 120] ADAVVATPGRALDYLRQGVLDLSRVEVAVLDEAD
+    HP      hphhhhphhphhphhpphhhphpphphhhhpphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2z0ma2  SCOP=c.37.1.0  automated matches
+  TARGET: d2yjtd_  SCOP=c.37.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0405  containment=0.0885  region_len=36
+
+    Q[  92] VEKVINFDAPQDLRTYIHRIGRTGRMGRKGEAITFI
+    T[  98] VSHVFNFDMPRSGDTYLHRIGRTARAGRKGTAISLV
+    HP      hpphhphphhpphpphhpphhpphphhpphphhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2z1na_  SCOP=c.2.1.0  automated matches
+  TARGET: d3d3wa_  SCOP=c.2.1.2  automated matches
+  pval=3.35e-09  jaccard=0.0089  containment=0.0171  region_len=30
+
+    Q[ 213] LKSMASRIPMGRVGKPEELASVVAFLASEK
+    T[ 196] AKTMLNRIPLGKFAEVEHVVNAILFLLSDR
+    HP      hpphhpphhhhphhphpphhphhhhhhppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3ai3a_  SCOP=c.2.1.0  automated matches
+  TARGET: d4yxfa_  SCOP=c.2.1.0  automated matches
+  pval=6.97e-07  jaccard=0.0067  containment=0.0127  region_len=29
+
+    Q[  67] TPEGVDAVVESVRSSFGGADILVNNAGTG
+    T[  56] DYSALTAFVQQVEKRFGGLDGLVNNAATG
+    HP      phphhphhhpphppphhhhphhhpphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3bbla1  SCOP=c.93.1.0  automated matches
+  TARGET: d3snra_  SCOP=c.93.1.0  automated matches
+  pval=3.35e-09  jaccard=0.0069  containment=0.0160  region_len=30
+
+    Q[ 182] ERRPTAIMTLNDTMAIGAMAAARERGLTIG
+    T[   1] TNEITVGISVTTTGPAAALGIPERNALEFV
+    HP      ppphphhhphppphhhhhhhhhppphhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3bera_  SCOP=c.37.1.0  automated matches
+  TARGET: d2pl3a1  SCOP=c.37.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0204  containment=0.0412  region_len=34
+
+    Q[  44] IPLALQGRDIIGLAETGSGKTGAFALPILNALLE
+    T[  53] IGLALQGKDVLGAAKTGSGKTLAFLVPVLEALYR
+    HP      hhhhhphpphhhhhpphphpphhhhhhhhphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3fdua1  SCOP=c.14.1.0  automated matches
+  TARGET: d3rrva_  SCOP=c.14.1.0  automated matches
+  pval=6.64e-12  jaccard=0.0113  containment=0.0227  region_len=31
+
+    Q[ 158] ELLFTAKKFNAETALQAGLVNEIVEDAYATA
+    T[ 161] EYALTGTRISAQRAVELGLANHVADDPVAEA
+    HP      phhhphpphphpphhphhhhpphhpphhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3i4fa_  SCOP=c.2.1.0  automated matches
+  TARGET: d4qeca_  SCOP=c.2.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0421  containment=0.0804  region_len=44
+
+    Q[  46] YKDVEERLQFVQADVTKKEDLHKIVEEAMSHFGKIDFLINNAGP
+    T[  45] FSSYEENISFYQLDVTDEEQVNEIINKIVKKFGRLDVLVNNAGI
+    HP      hpphppphphhphphppppphpphhpphhpphhphphhhpphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3icca1  SCOP=c.2.1.0  automated matches
+  TARGET: d6pzna1  SCOP=c.2.1.0  automated matches
+  pval=2.23e-09  jaccard=0.0091  containment=0.0177  region_len=30
+
+    Q[   6] ALVTGASRGIGRAIAKRLANDGALVAIHYG
+    T[   7] ALVTGASRGIGRAIAERLAQDGFYVIVNYA
+    HP      hhhphhpphhhphhhpphhpphhhhhhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3iija1  SCOP=c.37.1.1  automated matches
+  TARGET: d1y63a_  SCOP=c.37.1.1  Probable kinase LmjF30.1890
+  pval=1.64e-07  jaccard=0.0103  containment=0.0205  region_len=29
+
+    Q[  80] CDFFPERWFHIVFVLRTDTNVLYERLETR
+    T[  87] SELFPERWFHMVVVLHTSTEVLFERLTKR
+    HP      pphhhpphhphhhhhppppphhhpphppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3k2wa1  SCOP=c.82.1.0  automated matches
+  TARGET: d5izda1  SCOP=c.82.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0233  containment=0.0460  region_len=40
+
+    Q[ 143] GVVVGITAWNFPLALAGRKIGPALITGNTMVLKPTQETPL
+    T[ 139] GIVVALTPWNFPAGMVARKLAPALLTGNTVVLKPSSDTPG
+    HP      hhhhhhphhphhhhhhhpphhhhhhphpphhhphpppphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3k4ha1  SCOP=c.93.1.0  automated matches
+  TARGET: d4rk6a_  SCOP=c.93.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0163  containment=0.0317  region_len=34
+
+    Q[  98] KDEITYVDNDNYTAAREVAEYLISLGHKQIAFIG
+    T[  89] SEQISAVTSNEFEMMNSIVDYLIDMGHKNIALVG
+    HP      ppphphhpppphphhpphhphhhphhppphhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3mwja_  SCOP=c.37.1.0  automated matches
+  TARGET: d2z0ma1  SCOP=c.37.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0358  containment=0.0663  region_len=30
+
+    Q[  31] LPLALEGKDLIGQARTGTGKTLAFALPIAE
+    T[  24] IPLMLQGKNVVVRAKTGSGKTAAYAIPILE
+    HP      hhhhhphpphhhphpphphpphhhhhhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3n0xa_  SCOP=c.93.1.0  automated matches
+  TARGET: d3l6ua_  SCOP=c.93.1.0  automated matches
+  pval=1.22e-08  jaccard=0.0068  containment=0.0116  region_len=30
+
+    Q[  11] GPLEAYAKQTETGLMMGLEYATKGTMTLDG
+    T[ 185] IPFDAVYCHNDDIAMGVLEALKKAKISGKI
+    HP      hhhphhhppppphhhhhhphhpphphphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3ov2a2  SCOP=c.95.1.0  automated matches
+  TARGET: d5w8qa2  SCOP=c.95.1.0  automated matches
+  pval=4.65e-13  jaccard=0.0195  containment=0.0391  region_len=31
+
+    Q[ 120] EGRSTTGDGLQWGVLLGFGPGLSIETVVLRS
+    T[ 123] EGKTTTGEGLEWGVVIGIGPGLTVETAVLRS
+    HP      phpppphphhphhhhhhhhhhhphpphhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3r0qa_  SCOP=c.66.1.0  automated matches
+  TARGET: d6dvra_  SCOP=c.66.1.6  automated matches
+  pval=0.00e+00  jaccard=0.0193  containment=0.0370  region_len=38
+
+    Q[  92] GSVEDISLPEKVDVIISEWMGYFLLRESMFDSVISARD
+    T[  92] GKVEEVSLPEQVDIIISEPMGYMLFNERMLESYLHAKK
+    HP      hphpphphhpphphhhpphhhhhhhppphhpphhphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3rrva_  SCOP=c.14.1.0  automated matches
+  TARGET: d3fdua1  SCOP=c.14.1.0  automated matches
+  pval=7.24e-12  jaccard=0.0113  containment=0.0220  region_len=31
+
+    Q[ 161] EYALTGTRISAQRAVELGLANHVADDPVAEA
+    T[ 158] ELLFTAKKFNAETALQAGLVNEIVEDAYATA
+    HP      phhhphpphphpphhphhhhpphhpphhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3smqa_  SCOP=c.66.1.6  Protein arginine N-methyltransferase 3, PRMT3
+  TARGET: d6dvra_  SCOP=c.66.1.6  automated matches
+  pval=6.87e-14  jaccard=0.0103  containment=0.0215  region_len=32
+
+    Q[  28] FKDKVVLDVGCGTGILSMFAAKAGAKKVLGVD
+    T[  35] FKDKIVLDVGCGSGILSFFAAQAGARKIYAVE
+    HP      hppphhhphhphphhhphhhhphhhpphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3snra_  SCOP=c.93.1.0  automated matches
+  TARGET: d3bbla1  SCOP=c.93.1.0  automated matches
+  pval=1.05e-08  jaccard=0.0069  containment=0.0120  region_len=30
+
+    Q[   1] TNEITVGISVTTTGPAAALGIPERNALEFV
+    T[ 182] ERRPTAIMTLNDTMAIGAMAAARERGLTIG
+    HP      ppphphhhphppphhhhhhhhhppphhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3sx2a_  SCOP=c.2.1.0  automated matches
+  TARGET: d5jlaa_  SCOP=c.2.1.0  automated matches
+  pval=1.09e-11  jaccard=0.0106  containment=0.0205  region_len=31
+
+    Q[ 237] PEDVANAVAWLVSDQARYITGVTLPVDAGFL
+    T[ 214] ANEIAEAVVFLASERASAITGVNLPVDAGYL
+    HP      hpphhphhhhhhppphphhphhphhhphhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3t8ja_  SCOP=c.70.1.0  automated matches
+  TARGET: d1yoea1  SCOP=c.70.1.0  automated matches
+  pval=2.22e-16  jaccard=0.0125  containment=0.0246  region_len=33
+
+    Q[ 144] WVMGGAVFGIGNITPVAEFNIWVDPDAAKIVFN
+    T[ 145] IVIMGGAMGLGNWTPAAEFNIYVDPEAAEIVFQ
+    HP      hhhhhhhhhhhphphhhphphhhphphhphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3tuic1  SCOP=c.37.1.12  automated matches
+  TARGET: d6z4wa_  SCOP=c.37.1.0  automated matches
+  pval=5.33e-07  jaccard=0.0072  containment=0.0140  region_len=29
+
+    Q[ 134] DSYPSNLSGGQKQRVAIARALASNPKVLL
+    T[ 133] RSFPNELSGGEQQRIAIARAIVNNPKVLI
+    HP      pphhpphphhpppphhhhphhhpphphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3umca1  SCOP=c.108.1.0  automated matches
+  TARGET: d3e58a_  SCOP=c.108.1.0  automated matches
+  pval=4.52e-07  jaccard=0.0078  containment=0.0146  region_len=29
+
+    Q[ 198] LEYGPGQSQDLAAEQDWDLIASDLLDLHR
+    T[   8] MDGVLFDTEKYYYDRRASFLGQKGISIDH
+    HP      hphhhhpppphhhppphphhhpphhphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3uora_  SCOP=c.94.1.0  automated matches
+  TARGET: d5ysea1  SCOP=c.94.1.0  automated matches
+  pval=9.59e-11  jaccard=0.0069  containment=0.0135  region_len=31
+
+    Q[ 107] YGVPWYVDTRLLFYRKDLLREAGYSQMPKTW
+    T[ 105] YGVPWYAETRVLFYRTDLLKKVGYNEAPKTW
+    HP      hhhhhhhppphhhhppphhpphhhpphhpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3uxya_  SCOP=c.2.1.0  automated matches
+  TARGET: d6xnba_  SCOP=c.2.1.0  automated matches
+  pval=2.00e-09  jaccard=0.0092  containment=0.0186  region_len=30
+
+    Q[ 201] PLGRIAEPEDIADVVLFLASDAARYLCGSL
+    T[ 211] ALGRLGEPEEVASLVAFLASDAASFITGSY
+    HP      hhhphhphpphhphhhhhhpphhphhphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3zv4a_  SCOP=c.2.1.2  automated matches
+  TARGET: d2ew8a1  SCOP=c.2.1.2  (s)-1-phenylethanol dehydrogenase
+  pval=1.27e-11  jaccard=0.0108  containment=0.0201  region_len=31
+
+    Q[   5] EVALITGGASGLGRALVDRFVAEGARVAVLD
+    T[   5] KLAVITGGANGIGRAIAERFAVEGADIAIAD
+    HP      phhhhphhhphhhphhhpphhhphhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4a5sa2  SCOP=c.69.1.0  automated matches
+  TARGET: d6tj2a_  SCOP=c.69.1.0  automated matches
+  pval=6.23e-07  jaccard=0.0067  containment=0.0129  region_len=29
+
+    Q[   6] DFIILNETKFWYQMILPPHFDKSKKYPLL
+    T[ 184] SYLYLTEDTAIPQGPYGFHPTQSSHLGVF
+    HP      phhhhpppphhhphhhhhphppppphhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4c08a_  SCOP=c.66.1.0  automated matches
+  TARGET: d6dvra_  SCOP=c.66.1.6  automated matches
+  pval=0.00e+00  jaccard=0.0166  containment=0.0331  region_len=36
+
+    Q[  94] VETVELPERVDAIVSEWMGYGLLHESMLSSVLHART
+    T[  94] VEEVSLPEQVDIIISEPMGYMLFNERMLESYLHAKK
+    HP      hpphphhpphphhhpphhhhhhhppphhpphhphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4cr2i2  SCOP=c.37.1.20  Proteasome regulatory particle base subunit Rpt2, C-terminal domain
+  TARGET: d6g2va_  SCOP=c.37.1.0  automated matches
+  pval=1.11e-11  jaccard=0.0104  containment=0.0203  region_len=31
+
+    Q[  52] KGVILYGAPGTGKTLLAKAVANQTSATFLRI
+    T[  44] KGVLFYGPPGCGKTLLAKAIANECQANFISI
+    HP      phhhhhhhhhphpphhhphhhpppphphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4dqxa1  SCOP=c.2.1.0  automated matches
+  TARGET: d3bwha_  SCOP=d.165.1.1  automated matches
+  pval=1.11e-16  jaccard=0.0159  containment=0.0307  region_len=33
+
+    Q[ 220] IAEAMLFLASDRSRFATGSILTVDGGSSIGNHL
+    T[ 144] AASALLVLIQTTSEAARFRYIELQIANNVGTKF
+    HP      hhphhhhhhppppphhphphhphphhpphhpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4e4ra1  SCOP=c.77.1.5  automated matches
+  TARGET: d1vmia1  SCOP=c.77.1.5  Ethanolamine utilization protein EutD
+  pval=0.00e+00  jaccard=0.0221  containment=0.0432  region_len=39
+
+    Q[ 260] LQGDANVFVFPSLEAGNIGYKIAQRLGGYDAVGPVLQGL
+    T[ 260] LQGKANVMVFPSLEAGNIGYKIAQRLGGYRAVGPLIQGL
+    HP      hphphphhhhhphphhphhhphhpphhhhphhhhhhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4e4ya1  SCOP=c.2.1.0  automated matches
+  TARGET: d4dqxa1  SCOP=c.2.1.0  automated matches
+  pval=1.83e-09  jaccard=0.0091  containment=0.0186  region_len=30
+
+    Q[ 199] EFPLNRIAQPQEIAELVIFLLSDKSKFMTG
+    T[ 208] RAVMDRMGTAEEIAEAMLFLASDRSRFATG
+    HP      phhhpphhphpphhphhhhhhppppphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4efia1  SCOP=c.95.1.0  automated matches
+  TARGET: d3fega_  SCOP=d.144.1.8  automated matches
+  pval=2.14e-07  jaccard=0.0063  containment=0.0190  region_len=29
+
+    Q[ 121] GCSGYPQALWLGMNLIQTGAAKRVLLAVG
+    T[  56] PREVLLRLYGAILQGVDSLVLESVMFAIL
+    HP      hpphhhphhhhhhphhpphhhpphhhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4i9ba_  SCOP=c.82.1.0  automated matches
+  TARGET: d6pnua1  SCOP=c.82.1.0  automated matches
+  pval=2.82e-10  jaccard=0.0055  containment=0.0106  region_len=31
+
+    Q[ 366] KGYYVQPTIITDVNTSMEIWKEEVFGPVLCV
+    T[ 354] NGYFYEPTVLTNVDSSMKIYKDEIFGPVISI
+    HP      phhhhphphhpphppphphhppphhhhhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4jfca_  SCOP=c.14.1.0  automated matches
+  TARGET: d4lk5a_  SCOP=c.14.1.0  automated matches
+  pval=7.58e-07  jaccard=0.0066  containment=0.0130  region_len=29
+
+    Q[  94] YPKPVIAAVEGAAAGAGFSLALACDFVVA
+    T[  97] LPHPVVAVVQGPAAGVGVSIALACDVVLA
+    HP      hhphhhhhhphhhhhhhhphhhhpphhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4lk5a_  SCOP=c.14.1.0  automated matches
+  TARGET: d3ri6a_  SCOP=c.67.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0134  containment=0.0357  region_len=34
+
+    Q[  72] VSDGGGVPPDEIILEINRLVRAIAALPHPVVAVV
+    T[ 209] GTSVGGVLIDHGLFEWKSLPSLAPYYAKAGPMAF
+    HP      hpphhhhhhpphhhphpphhphhhhhhphhhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4nbua_  SCOP=c.2.1.0  automated matches
+  TARGET: d4qeca_  SCOP=c.2.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0306  containment=0.0602  region_len=29
+
+    Q[ 212] DIANAYLFLASHESDYVNGHVLHVDGGIM
+    T[ 217] DVAKGIYFLANEDNNFITGHVLSIDGGYL
+    HP      phhphhhhhhppppphhphphhphphhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4ntla_  SCOP=c.94.1.0  automated matches
+  TARGET: d4qhqa_  SCOP=c.94.1.0  automated matches
+  pval=2.04e-09  jaccard=0.0094  containment=0.0185  region_len=30
+
+    Q[ 133] NGTVADVVENPKNITFESIDLLNLAKAYDE
+    T[ 135] NATVLDIAENPKKLKISELDAAQLPRVLSD
+    HP      phphhphhpphpphphpphphhphhphhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4qeca_  SCOP=c.2.1.0  automated matches
+  TARGET: d4nbua_  SCOP=c.2.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0306  containment=0.0586  region_len=36
+
+    Q[  54] FYQLDVTDEEQVNEIINKIVKKFGRLDVLVNNAGIS
+    T[  53] FIRVDVSDRESVHRLVENVAERFGKIDILINNAGIT
+    HP      hhphphppppphpphhpphhpphhphphhhpphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4qfea1  SCOP=c.14.1.0  automated matches
+  TARGET: d5e0nx_  SCOP=c.14.1.0  automated matches
+  pval=1.55e-09  jaccard=0.0098  containment=0.0198  region_len=30
+
+    Q[  89] DLSKPVIAAISGYAVAGGLELALWCDLRVV
+    T[  99] RLHQPVIAAVNGAAIGGGLCLALACDVRIA
+    HP      phpphhhhhhphhhhhhhhphhhhpphphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4qhqa_  SCOP=c.94.1.0  automated matches
+  TARGET: d4ntla_  SCOP=c.94.1.0  automated matches
+  pval=1.80e-09  jaccard=0.0094  containment=0.0186  region_len=30
+
+    Q[ 135] NATVLDIAENPKKLKISELDAAQLPRVLSD
+    T[ 133] NGTVADVVENPKNITFESIDLLNLAKAYDE
+    HP      phphhphhpphpphphpphphhphhphhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4rk6a_  SCOP=c.93.1.0  automated matches
+  TARGET: d3k4ha1  SCOP=c.93.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0163  containment=0.0323  region_len=34
+
+    Q[  89] SEQISAVTSNEFEMMNSIVDYLIDMGHKNIALVG
+    T[  98] KDEITYVDNDNYTAAREVAEYLISLGHKQIAFIG
+    HP      ppphphhpppphphhpphhphhhphhppphhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4ryaa_  SCOP=c.94.1.0  automated matches
+  TARGET: d3uora_  SCOP=c.94.1.0  automated matches
+  pval=2.11e-08  jaccard=0.0053  containment=0.0102  region_len=30
+
+    Q[ 103] VDGKLYAAPFYAESSMVMYRKDLFEKAGLK
+    T[ 102] VDGTLYGVPWYVDTRLLFYRKDLLREAGYS
+    HP      hphphhhhhhhhppphhhhppphhpphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4yxfa_  SCOP=c.2.1.0  automated matches
+  TARGET: d3ai3a_  SCOP=c.2.1.0  automated matches
+  pval=4.78e-07  jaccard=0.0067  containment=0.0142  region_len=29
+
+    Q[  56] DYSALTAFVQQVEKRFGGLDGLVNNAATG
+    T[  67] TPEGVDAVVESVRSSFGGADILVNNAGTG
+    HP      phphhphhhpphppphhhhphhhpphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5c1ta1  SCOP=c.37.1.0  automated matches
+  TARGET: d5ep2a1  SCOP=c.37.1.0  automated matches
+  pval=1.17e-07  jaccard=0.0086  containment=0.0231  region_len=29
+
+    Q[  60] NPYDGYDAILVMYDITELKSFTDLKTMWL
+    T[ 178] DIIEIAHALLGLMSLEEGKSFSRFSEPVL
+    HP      phhphhphhhhhhphpphpphpphpphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5c9ga1  SCOP=c.14.1.0  automated matches
+  TARGET: d6wyia_  SCOP=c.14.1.0  automated matches
+  pval=6.47e-07  jaccard=0.0064  containment=0.0129  region_len=29
+
+    Q[ 228] QSLFLNGFANEDFKEGYRAFLDKRPAKFT
+    T[ 231] TQIGIKVFLSDDAKEGPRAFAEKRAPNFQ
+    HP      pphhhphhhppphpphhphhhppphhphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5e0nx_  SCOP=c.14.1.0  automated matches
+  TARGET: d4qfea1  SCOP=c.14.1.0  automated matches
+  pval=1.83e-09  jaccard=0.0098  containment=0.0190  region_len=30
+
+    Q[  99] RLHQPVIAAVNGAAIGGGLCLALACDVRIA
+    T[  89] DLSKPVIAAISGYAVAGGLELALWCDLRVV
+    HP      phpphhhhhhphhhhhhhhphhhhpphphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5ep2a1  SCOP=c.37.1.0  automated matches
+  TARGET: d2wq7a2  SCOP=a.99.1.0  automated matches
+  pval=2.19e-09  jaccard=0.0082  containment=0.0181  region_len=30
+
+    Q[ 201] FSEPVLRLFESYSWPGNVRELQNVIRNIVV
+    T[ 151] ARHAVACFLTRGDLWISWEEGQRVFEQLLL
+    HP      hpphhhphhpphphhhphpphpphhpphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5gvra_  SCOP=c.37.1.0  automated matches
+  TARGET: d2i4ia3  SCOP=c.37.1.0  automated matches
+  pval=4.85e-07  jaccard=0.0072  containment=0.0144  region_len=29
+
+    Q[ 166] LDICRYLALDEADRMIDMGFEGDIRTIFS
+    T[ 170] LDFCKYLVLDEADRMLDMGFEPQIRRIVE
+    HP      hphpphhhhpphpphhphhhphphpphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5gwta_  SCOP=c.2.1.0  automated matches
+  TARGET: d3oida1  SCOP=c.2.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0162  containment=0.0323  region_len=33
+
+    Q[ 208] PQDIVSCIEYLISDQARFITGSNFVIDGGQTAG
+    T[ 214] IKDMVDTVEFLVSSKADMIRGQTIIVDGGRSLL
+    HP      hpphhpphphhhppphphhphpphhhphhpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5hc0a_  SCOP=c.69.1.0  automated matches
+  TARGET: d5mifa_  SCOP=c.69.1.0  automated matches
+  pval=4.14e-11  jaccard=0.0084  containment=0.0159  region_len=31
+
+    Q[ 160] GVKWVASHADELGIDASRIIIAGESGGGNLT
+    T[ 132] AVQWLLEHGEKLGVDPTNMGFGGDSAGGELS
+    HP      hhphhhpphpphhhphpphhhhhpphhhphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5izda1  SCOP=c.82.1.0  automated matches
+  TARGET: d3k2wa1  SCOP=c.82.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0233  containment=0.0450  region_len=40
+
+    Q[ 139] GIVVALTPWNFPAGMVARKLAPALLTGNTVVLKPSSDTPG
+    T[ 143] GVVVGITAWNFPLALAGRKIGPALITGNTMVLKPTQETPL
+    HP      hhhhhhphhphhhhhhhpphhhhhhphpphhhphpppphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5jc8a_  SCOP=c.2.1.0  automated matches
+  TARGET: d1mwfa1  SCOP=c.1.5.1  Inosine monophosphate dehydrogenase (IMPDH)
+  pval=7.23e-07  jaccard=0.0052  containment=0.0126  region_len=29
+
+    Q[ 171] GRVVAVEYAAKNVRVNSVVPGLLHTPMVD
+    T[  48] LKIPLVSAIMQSVSGEKMAIALAREGGIS
+    HP      hphhhhphhhpphphpphhhhhhpphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5jlaa_  SCOP=c.2.1.0  automated matches
+  TARGET: d3sx2a_  SCOP=c.2.1.0  automated matches
+  pval=9.67e-12  jaccard=0.0106  containment=0.0215  region_len=31
+
+    Q[ 214] ANEIAEAVVFLASERASAITGVNLPVDAGYL
+    T[ 237] PEDVANAVAWLVSDQARYITGVTLPVDAGFL
+    HP      hpphhphhhhhhppphphhphhphhhphhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5mifa_  SCOP=c.69.1.0  automated matches
+  TARGET: d5hc0a_  SCOP=c.69.1.0  automated matches
+  pval=2.30e-11  jaccard=0.0084  containment=0.0174  region_len=31
+
+    Q[ 132] AVQWLLEHGEKLGVDPTNMGFGGDSAGGELS
+    T[ 160] GVKWVASHADELGIDASRIIIAGESGGGNLT
+    HP      hhphhhpphpphhhphpphhhhhpphhhphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5nt7b_  SCOP=c.37.1.0  automated matches
+  TARGET: d2yjtd_  SCOP=c.37.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0259  containment=0.0526  region_len=33
+
+    Q[  92] NIKHVINYDMPSKIDDYVHRIGRTGRVGNNGRA
+    T[  97] DVSHVFNFDMPRSGDTYLHRIGRTARAGRKGTA
+    HP      phpphhphphhpphpphhpphhpphphhpphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5w8qa2  SCOP=c.95.1.0  automated matches
+  TARGET: d3ov2a2  SCOP=c.95.1.0  automated matches
+  pval=5.38e-13  jaccard=0.0195  containment=0.0376  region_len=31
+
+    Q[ 123] EGKTTTGEGLEWGVVIGIGPGLTVETAVLRS
+    T[ 120] EGRSTTGDGLQWGVLLGFGPGLSIETVVLRS
+    HP      phpppphphhphhhhhhhhhhhphpphhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5ysea1  SCOP=c.94.1.0  automated matches
+  TARGET: d3uora_  SCOP=c.94.1.0  automated matches
+  pval=7.01e-11  jaccard=0.0069  containment=0.0141  region_len=31
+
+    Q[ 105] YGVPWYAETRVLFYRTDLLKKVGYNEAPKTW
+    T[ 107] YGVPWYVDTRLLFYRKDLLREAGYSQMPKTW
+    HP      hhhhhhhppphhhhppphhpphhhpphhpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5zeea_  SCOP=c.42.1.0  automated matches
+  TARGET: d2ef5a_  SCOP=c.42.1.0  automated matches
+  pval=4.66e-09  jaccard=0.0076  containment=0.0149  region_len=30
+
+    Q[ 116] RVGVVWFDAHPDMNTPENSPSGNIHGMPLA
+    T[ 110] RVGVVWVDAHADFNTPETSPSGNVHGMPLA
+    HP      phhhhhhphphphpphppphphphphhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6dvra_  SCOP=c.66.1.6  automated matches
+  TARGET: d4c08a_  SCOP=c.66.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0166  containment=0.0322  region_len=36
+
+    Q[  94] VEEVSLPEQVDIIISEPMGYMLFNERMLESYLHAKK
+    T[  94] VETVELPERVDAIVSEWMGYGLLHESMLSSVLHART
+    HP      hpphphhpphphhhpphhhhhhhppphhpphhphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6ifta_  SCOP=c.66.1.0  automated matches
+  TARGET: d3grua_  SCOP=c.66.1.0  automated matches
+  pval=1.71e-11  jaccard=0.0100  containment=0.0188  region_len=31
+
+    Q[  27] QNFLIDTNILNRIVDHAEVTEKTGVIEIGPG
+    T[   0] QCFLIDKNFVNKAVESANLTKDDVVLEIGLG
+    HP      pphhhppphhpphhpphphpppphhhphhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6jh7a_  SCOP=c.2.1.0  automated matches
+  TARGET: d5jlaa_  SCOP=c.2.1.0  automated matches
+  pval=7.31e-07  jaccard=0.0064  containment=0.0127  region_len=29
+
+    Q[ 232] EEFANLVVFLASECASYITGITIPLDGGL
+    T[ 215] NEIAEAVVFLASERASAITGVNLPVDAGY
+    HP      pphhphhhhhhppphphhphhphhhphhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6tj2a_  SCOP=c.69.1.0  automated matches
+  TARGET: d4a5sa2  SCOP=c.69.1.0  automated matches
+  pval=5.26e-07  jaccard=0.0067  containment=0.0138  region_len=29
+
+    Q[ 184] SYLYLTEDTAIPQGPYGFHPTQSSHLGVF
+    T[   6] DFIILNETKFWYQMILPPHFDKSKKYPLL
+    HP      phhhhpppphhhphhhhhphppppphhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6uh2a1  SCOP=c.2.1.0  automated matches
+  TARGET: d5g4ka_  SCOP=c.2.1.0  automated matches
+  pval=2.59e-09  jaccard=0.0087  containment=0.0176  region_len=30
+
+    Q[ 212] KTPLGRMGNPSDLVGGVFFLTSSLSEYVTG
+    T[ 222] REPIGRLAEPEDFVGYALFLSSDASNYITG
+    HP      pphhhphhphpphhhhhhhhppphpphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6xexa1  SCOP=c.2.1.0  automated matches
+  TARGET: d1geea_  SCOP=c.2.1.2  Glucose dehydrogenase
+  pval=0.00e+00  jaccard=0.0200  containment=0.0402  region_len=35
+
+    Q[ 207] AAEPEEVAAVMAFLASDDASFINGANIPVDGGATA
+    T[ 217] IGEPEEIAAVAAWLASSEASYVTGITLFADGGMTL
+    HP      hhphpphhhhhhhhhppphphhphhphhhphhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6xnba_  SCOP=c.2.1.0  automated matches
+  TARGET: d1fjha_  SCOP=c.2.1.2  3-alpha-hydroxysteroid dehydrogenase
+  pval=2.64e-09  jaccard=0.0088  containment=0.0178  region_len=30
+
+    Q[ 153] YSAYVTAKHALLGLTQNAALEYAGKNVRVV
+    T[ 173] GEAGVRLNTIAPGATETPLLQAGLQDPRYG
+    HP      hphhhphpphhhhhppphhhphhhpphphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d7do7a1  SCOP=c.2.1.0  automated matches
+  TARGET: d6xexa1  SCOP=c.2.1.0  automated matches
+  pval=6.31e-07  jaccard=0.0067  containment=0.0131  region_len=29
+
+    Q[ 205] RERMTSRVPLGRLGEPDDLAGPIVFLASD
+    T[ 195] RDKFNERIALGRAAEPEEVAAVMAFLASD
+    HP      ppphppphhhhphhphpphhhhhhhhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d7n7za1  SCOP=c.95.1.0  automated matches
+  TARGET: d6pcda1  SCOP=c.95.1.0  automated matches
+  pval=3.04e-14  jaccard=0.0123  containment=0.0246  region_len=32
+
+    Q[   9] MARTPIGRYLGGLASVRANDLAIIAANAAIER
+    T[   8] AIRTPIGRFGGALASVRADDLAAVPLKALIER
+    HP      hhpphhhphhhhhhphphpphhhhhhphhhpp
+
+  --------------------------------------------------------------------------------------------------
+
+====================================================================================================
+  SCOPe CLASS D — Alpha and beta proteins (a+b) — segregated α and β regions  (51 unique queries)
+====================================================================================================
+  QUERY:  d1b63a2  SCOP=d.122.1.2  DNA mismatch repair protein MutL
+  TARGET: d1h7sa2  SCOP=d.122.1.2  DNA mismatch repair protein PMS2
+  pval=0.00e+00  jaccard=0.0516  containment=0.0947  region_len=44
+
+    Q[  24] SVVKELVENSLDAGATRIDIDIERGGAKLIRIRDNGCGIKKDEL
+    T[   8] TAVKELVENSLDAGATNIDLKLKDYGVDLIEVSDNGCGVEEENF
+    HP      phhpphhppphphhhpphphphpphhhphhphppphphhpppph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1dd5a_  SCOP=d.67.3.1  Ribosome recycling factor, RRF
+  TARGET: d1wqga_  SCOP=d.67.3.1  automated matches
+  pval=0.00e+00  jaccard=0.0464  containment=0.0886  region_len=40
+
+    Q[  18] IEDELRKMRTGKPSPAILEEIKVDYYGVPTPVNQLATISI
+    T[  18] ARDDLSTIRTGRANPGMFSRITIDYYGAATPITQLASINV
+    HP      hppphpphpphphphhhhpphphphhhhhphhpphhphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1h7sa2  SCOP=d.122.1.2  DNA mismatch repair protein PMS2
+  TARGET: d1b63a2  SCOP=d.122.1.2  DNA mismatch repair protein MutL
+  pval=0.00e+00  jaccard=0.0516  containment=0.1017  region_len=44
+
+    Q[   8] TAVKELVENSLDAGATNIDLKLKDYGVDLIEVSDNGCGVEEENF
+    T[  24] SVVKELVENSLDAGATRIDIDIERGGAKLIRIRDNGCGIKKDEL
+    HP      phhpphhppphphhhpphphphpphhhphhphppphphhpppph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1i7ka_  SCOP=d.20.1.1  Ubiquitin conjugating enzyme, UBC
+  TARGET: d1z2ua1  SCOP=d.20.1.1  Ubiquitin conjugating enzyme, UBC
+  pval=0.00e+00  jaccard=0.0478  containment=0.0917  region_len=37
+
+    Q[  73] YHPNVDTQGNISLDILKEKWSALYDVRTILLSIQSLL
+    T[  73] YHPNINSNGSICLDILRSQWSPALTISKVLLSICSLL
+    HP      hphphppphphphphhppphphhhphpphhhphpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1sjya_  SCOP=d.113.1.1  Hypothetical protein DR1025
+  TARGET: d1jkna1  SCOP=d.113.1.1  Diadenosine tetraphosphate hydrolase (Ap4A hydrolase)
+  pval=2.77e-10  jaccard=0.0153  containment=0.0303  region_len=30
+
+    Q[  42] LWHIPSGAVEDGENPQDAAVREACEETGLR
+    T[  33] AWQMPQGGIDEGEDPRNAAIRELREETGVT
+    HP      hhphhphhhpphpphpphhhpphpppphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1um0a_  SCOP=d.258.1.1  Chorismate synthase, AroC
+  TARGET: d7rcaa1  SCOP=d.258.1.1  automated matches
+  pval=0.00e+00  jaccard=0.0238  containment=0.0472  region_len=42
+
+    Q[  98] LFRPSHADFTYFHKYGIRDFRGGGRSSARESAIRVAAGAFAK
+    T[  98] YPRPSHADWTYMQKYGVKSASGGGRSSARETIGRVAAGAIAE
+    HP      hhphpphphphhpphhhpphphhhppphppphhphhhhhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1wqga_  SCOP=d.67.3.1  automated matches
+  TARGET: d1dd5a_  SCOP=d.67.3.1  Ribosome recycling factor, RRF
+  pval=0.00e+00  jaccard=0.0464  containment=0.0886  region_len=40
+
+    Q[  18] ARDDLSTIRTGRANPGMFSRITIDYYGAATPITQLASINV
+    T[  18] IEDELRKMRTGKPSPAILEEIKVDYYGVPTPVNQLATISI
+    HP      hppphpphpphphphhhhpphphphhhhhphhpphhphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1yf2a2  SCOP=d.287.1.2  Bipartite methylase S protein MJ0130
+  TARGET: d1yf2a1  SCOP=d.287.1.2  Bipartite methylase S protein MJ0130
+  pval=7.08e-05  jaccard=0.0054  containment=0.0112  region_len=28
+
+    Q[ 145] SMLENFKIPLPPLEEQKQIAKILSSVDK
+    T[ 155] QIVKSFKIPLPPLEEQKQIAKILTKIDE
+    HP      phhpphphhhhhhppppphhphhpphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1z2ua1  SCOP=d.20.1.1  Ubiquitin conjugating enzyme, UBC
+  TARGET: d1i7ka_  SCOP=d.20.1.1  Ubiquitin conjugating enzyme, UBC
+  pval=0.00e+00  jaccard=0.0478  containment=0.0909  region_len=37
+
+    Q[  73] YHPNINSNGSICLDILRSQWSPALTISKVLLSICSLL
+    T[  73] YHPNVDTQGNISLDILKEKWSALYDVRTILLSIQSLL
+    HP      hphphppphphphphhppphphhhphpphhhphpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1zfja4  SCOP=d.37.1.1  Type II inosine monophosphate dehydrogenase CBS domains
+  TARGET: d2ef7a1  SCOP=d.37.1.1  Uncharacterized protein ST2348
+  pval=2.26e-05  jaccard=0.0101  containment=0.0200  region_len=28
+
+    Q[  89] RIEKLPLVDNSGRLSGLITIKDIEKVIE
+    T[  96] NIRHLPVVDDKGNLKGIISIRDITRAID
+    HP      phpphhhhppphphphhhphpphpphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d1zy4a1  SCOP=d.144.1.0  automated matches
+  TARGET: d4b6la_  SCOP=d.144.1.0  automated matches
+  pval=7.16e-14  jaccard=0.0115  containment=0.0219  region_len=32
+
+    Q[ 118] LFRQILEALSYIHSQGIIHRDLKPMNIFIDES
+    T[ 113] YLRQILSGLKYLHQRGILHRDLKLGNFFITEN
+    HP      hhpphhphhphhppphhhppphphhphhhppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2ab4a2  SCOP=d.265.1.2  Pseudouridine synthase II TruB
+  TARGET: d1s71a1  SCOP=d.265.1.2  Pseudouridine synthase II TruB
+  pval=4.40e-07  jaccard=0.0074  containment=0.0149  region_len=29
+
+    Q[  28] TRKVGHGGTLDPFACGVLIIGVNQGTRIL
+    T[  29] TRRVGHAGTLDPMATGVLVIGIERATKIL
+    HP      ppphhphhphphhhphhhhhhhpphpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2ac3a1  SCOP=d.144.1.0  automated matches
+  TARGET: d4b6la_  SCOP=d.144.1.0  automated matches
+  pval=4.86e-09  jaccard=0.0076  containment=0.0147  region_len=30
+
+    Q[ 107] ELEASVVVQDVASALDFLHNKGIAHRDLKP
+    T[ 107] EPEVRYYLRQILSGLKYLHQRGILHRDLKL
+    HP      phphphhhpphhphhphhppphhhppphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2bdwa_  SCOP=d.144.1.0  automated matches
+  TARGET: d2buja1  SCOP=d.144.1.0  automated matches
+  pval=1.18e-06  jaccard=0.0055  containment=0.0106  region_len=29
+
+    Q[ 123] NGIVHRNLKPENLLLASKAKGAAVKLADF
+    T[ 129] KGYAHRDLKPTNILLGDEGQPVLMDLGSM
+    HP      phhhppphphpphhhhpphphhhhphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2ef7a1  SCOP=d.37.1.1  Uncharacterized protein ST2348
+  TARGET: d1zfja4  SCOP=d.37.1.1  Type II inosine monophosphate dehydrogenase CBS domains
+  pval=2.44e-05  jaccard=0.0101  containment=0.0198  region_len=28
+
+    Q[  96] NIRHLPVVDDKGNLKGIISIRDITRAID
+    T[  89] RIEKLPLVDNSGRLSGLITIKDIEKVIE
+    HP      phpphhhhppphphphhhphpphpphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2ekna_  SCOP=d.58.21.0  automated matches
+  TARGET: d3jqka_  SCOP=d.58.21.0  automated matches
+  pval=0.00e+00  jaccard=0.0391  containment=0.0756  region_len=35
+
+    Q[  46] AQIAGILAVKRTPELIPLCHPIPITGVDITFDFGE
+    T[  46] AQLAGILAAKKTADLIPLCHPLPLTGVEVRVELLK
+    HP      hphhhhhhhppphphhhhpphhhhphhphphphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2i8da1  SCOP=d.198.4.1  Uncharacterized protein LSEI2283
+  TARGET: d2kl4a1  SCOP=d.198.4.1  automated matches
+  pval=2.04e-05  jaccard=0.0110  containment=0.0211  region_len=28
+
+    Q[  27] AQFPQLKLEFKWNQPMFTDHGTFIMGFN
+    T[  28] ATFPNLEPQMKWNTPMFSNQGTFIIGFS
+    HP      hphhphphphphpphhhppphphhhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2kl4a1  SCOP=d.198.4.1  automated matches
+  TARGET: d5ng0a_  SCOP=d.144.1.0  automated matches
+  pval=3.96e-08  jaccard=0.0085  containment=0.0337  region_len=29
+
+    Q[  84] ATKGLFRIPWNDPVHYELLKQMIEFNIQD
+    T[   0] ICSALPTIPYHKLADLRYLSRGASGTVSS
+    HP      hpphhhphhhpphhphphhpphhphphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2qq4a_  SCOP=d.224.1.0  automated matches
+  TARGET: d6a6fa1  SCOP=d.224.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0429  containment=0.0804  region_len=35
+
+    Q[  35] NPSCGDQVEVMVLLEGDTIADIRFQGQGCAISTAS
+    T[  30] NLSCGDEVTLYFLFDGDKIVDVKFEGHGCAISQAS
+    HP      phpphpphphhhhhphpphhphphphphphhpphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2weia1  SCOP=d.144.1.0  automated matches
+  TARGET: d3fxwa_  SCOP=d.144.1.7  automated matches
+  pval=0.00e+00  jaccard=0.0329  containment=0.0700  region_len=43
+
+    Q[ 100] FSEHDAARIIKQVFSGITYMHKHNIVHRDLKPENILLESKEKD
+    T[ 105] FTEREAAEIMRDIGTAIQFLHSHNIAHRDVKPENLLYTSKEKD
+    HP      hpppphhphhpphhphhphhpppphhppphphpphhhpppppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2wtkc1  SCOP=d.144.1.0  automated matches
+  TARGET: d4b6la_  SCOP=d.144.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0186  containment=0.0378  region_len=35
+
+    Q[ 105] QAHGYFCQLIDGLEYLHSQGIVHKDIKPGNLLLTT
+    T[ 109] EVRYYLRQILSGLKYLHQRGILHRDLKLGNFFITE
+    HP      phphhhpphhphhphhppphhhppphphhphhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3a6sa_  SCOP=d.113.1.1  Nucleoside triphosphate pyrophosphorylase (MutT)
+  TARGET: d1nqza_  SCOP=d.113.1.1  Coenzyme A pyrophosphatase
+  pval=2.39e-05  jaccard=0.0076  containment=0.0194  region_len=28
+
+    Q[  34] FPGGKIEMGETPEQAVVRELQEEVGITP
+    T[  64] FPGGSLDAGETPTQAALREAQEEVALDP
+    HP      hhhhphphhpphpphhhpphppphhhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3a7ia_  SCOP=d.144.1.0  automated matches
+  TARGET: d4b6la_  SCOP=d.144.1.0  automated matches
+  pval=3.91e-09  jaccard=0.0078  containment=0.0153  region_len=30
+
+    Q[ 128] IHRDIKAANVLLSEHGEVKLADFGVAGQLT
+    T[ 130] LHRDLKLGNFFITENMELKVGDFGLAARLE
+    HP      hppphphhphhhppphphphhphhhhhphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3coka1  SCOP=d.144.1.0  automated matches
+  TARGET: d4itja_  SCOP=d.144.1.0  automated matches
+  pval=3.00e-09  jaccard=0.0081  containment=0.0167  region_len=30
+
+    Q[ 128] HGILHRDLTLSNLLLTRNMNIKIADFGLAT
+    T[ 124] KGVIHKDLKPENILVDNDFHIKIADLGLAS
+    HP      phhhppphphpphhhppphphphhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3fe3a_  SCOP=d.144.1.0  automated matches
+  TARGET: d2weia1  SCOP=d.144.1.0  automated matches
+  pval=3.33e-16  jaccard=0.0133  containment=0.0241  region_len=33
+
+    Q[  60] LNHPNIVKLFEVIETEKTLYLIMEYASGGEVFD
+    T[  60] LDHPNIMKLFEILEDSSSFYIVGELYTGGELFD
+    HP      hpphphhphhphhppppphhhhhphhphhphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3jqka_  SCOP=d.58.21.0  automated matches
+  TARGET: d2ekna_  SCOP=d.58.21.0  automated matches
+  pval=0.00e+00  jaccard=0.0391  containment=0.0750  region_len=35
+
+    Q[  46] AQLAGILAAKKTADLIPLCHPLPLTGVEVRVELLK
+    T[  46] AQIAGILAVKRTPELIPLCHPIPITGVDITFDFGE
+    HP      hphhhhhhhppphphhhhpphhhhphhphphphhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3p7ma2  SCOP=d.162.1.0  automated matches
+  TARGET: d7naya2  SCOP=d.162.1.0  automated matches
+  pval=4.94e-05  jaccard=0.0069  containment=0.0136  region_len=28
+
+    Q[   1] VLDSARFRTFLADELNVSVQQVQAYVMG
+    T[   1] MLETYRFRRILADKYQVDPKNINGYVLG
+    HP      hhpphphpphhhpphphphpphphhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3qsda_  SCOP=d.3.1.0  automated matches
+  TARGET: d5fpwb_  SCOP=d.3.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0180  containment=0.0396  region_len=35
+
+    Q[  50] QNVELSAVDLLSCCESCGLGCEGGILGPAWDYWVK
+    T[ 111] QQLRISAAHLLSCCKQCGGGCKGGFPGFAWRYYVE
+    HP      pphphphhphhpppppphhhpphhhhhhhhphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3qvna2  SCOP=d.44.1.0  automated matches
+  TARGET: d6s0da2  SCOP=d.44.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0549  containment=0.1000  region_len=35
+
+    Q[  73] LVPIIAIDAWEHAYYLQYQNVKLDYFKAIWNVINW
+    T[  62] MVPLFGIDVWEHAYYLQYKNVRPDYVHAIWKIANW
+    HP      hhhhhhhphhpphhhhphpphphphhphhhphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3w2wa3  SCOP=d.58.53.7  CRISPR-Cas type III-B interference complex protein Cmr2
+  TARGET: d4uw2a3  SCOP=d.58.53.7  CRISPR-Cas type III-A interference complex protein Csm1
+  pval=4.42e-10  jaccard=0.0139  containment=0.0274  region_len=30
+
+    Q[  71] EGLLIYAGGDDVLAILPVDKALEVAYKIRK
+    T[  81] DIVVVYAGGDDFFIVGAWDQIFELAFRVRR
+    HP      phhhhhhhhpphhhhhhhpphhphhhphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4b6la_  SCOP=d.144.1.0  automated matches
+  TARGET: d2wtkc1  SCOP=d.144.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0186  containment=0.0353  region_len=35
+
+    Q[ 109] EVRYYLRQILSGLKYLHQRGILHRDLKLGNFFITE
+    T[ 105] QAHGYFCQLIDGLEYLHSQGIVHKDIKPGNLLLTT
+    HP      phphhhpphhphhphhppphhhppphphhphhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4b9da1  SCOP=d.144.1.0  automated matches
+  TARGET: d6ctha1  SCOP=d.144.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0169  containment=0.0338  region_len=35
+
+    Q[ 128] DRKILHRDIKSQNIFLTKDGTVQLGDFGIARVLNS
+    T[ 131] DHCVLHRDIKTSNIMLDSSFNAKLGDFGLARLVDH
+    HP      ppphhppphpppphhhppphphphhphhhhphhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4c2va_  SCOP=d.144.1.0  automated matches
+  TARGET: d5yu3a_  SCOP=c.2.1.0  automated matches
+  pval=8.42e-07  jaccard=0.0054  containment=0.0122  region_len=29
+
+    Q[ 239] YHPPQRLPLKGVMEHPWVKANSRRVLPPV
+    T[ 116] LTALRTGAASAVASRLLARPDSHTLGLIG
+    HP      hphhpphhhphhhpphhhphpppphhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4eqma_  SCOP=d.144.1.0  automated matches
+  TARGET: d6v6aa_  SCOP=d.144.1.0  automated matches
+  pval=1.11e-16  jaccard=0.0123  containment=0.0273  region_len=33
+
+    Q[ 123] AHDMRIVHRDIKPQNILIDSNKTLKIFDFGIAK
+    T[ 123] MHSGELLHRDMKPSNVLLNSECQVKVADFGLAR
+    HP      hpphphhppphphpphhhppppphphhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4i93a_  SCOP=d.144.1.0  automated matches
+  TARGET: d6juua_  SCOP=d.144.1.0  automated matches
+  pval=5.23e-14  jaccard=0.0115  containment=0.0228  region_len=32
+
+    Q[ 239] SDDGTELIRLASRCLQYEPRERPNPKSLVSAM
+    T[ 221] SSCPRSFAELLHQCWEADAKKRPSFKQIISIL
+    HP      ppphpphhphhppphphphppphphpphhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4itja_  SCOP=d.144.1.0  automated matches
+  TARGET: d3coka1  SCOP=d.144.1.0  automated matches
+  pval=4.09e-09  jaccard=0.0081  containment=0.0153  region_len=30
+
+    Q[ 124] KGVIHKDLKPENILVDNDFHIKIADLGLAS
+    T[ 128] HGILHRDLTLSNLLLTRNMNIKIADFGLAT
+    HP      phhhppphphpphhhppphphphhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4o2za1  SCOP=d.144.1.0  automated matches
+  TARGET: d7aqba_  SCOP=d.144.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0132  containment=0.0240  region_len=34
+
+    Q[ 130] ESHMQYFVYQILRGLKYLHSANVAHRDLKPANLV
+    T[ 113] EEHARLFMYQLLRGLKYIHSANVLHRDLKPANLF
+    HP      ppphphhhhphhphhphhpphphhppphphhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4uw2a3  SCOP=d.58.53.7  CRISPR-Cas type III-A interference complex protein Csm1
+  TARGET: d3w2wa3  SCOP=d.58.53.7  CRISPR-Cas type III-B interference complex protein Cmr2
+  pval=4.19e-10  jaccard=0.0139  containment=0.0274  region_len=30
+
+    Q[  81] DIVVVYAGGDDFFIVGAWDQIFELAFRVRR
+    T[  71] EGLLIYAGGDDVLAILPVDKALEVAYKIRK
+    HP      phhhhhhhhpphhhhhhhpphhphhhphpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4wnoa_  SCOP=d.144.1.0  automated matches
+  TARGET: d5loha_  SCOP=d.144.1.0  automated matches
+  pval=1.18e-11  jaccard=0.0100  containment=0.0202  region_len=31
+
+    Q[ 110] FLQQIAGAMRLLHSKGIIHRDLKPQNILLSN
+    T[ 106] YISEVALALDYLHRHGIIHRDLKPDNMLISN
+    HP      hhpphhhhhphhppphhhppphphpphhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5fpwb_  SCOP=d.3.1.0  automated matches
+  TARGET: d3qsda_  SCOP=d.3.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0180  containment=0.0319  region_len=35
+
+    Q[ 111] QQLRISAAHLLSCCKQCGGGCKGGFPGFAWRYYVE
+    T[  50] QNVELSAVDLLSCCESCGLGCEGGILGPAWDYWVK
+    HP      pphphphhphhpppppphhhpphhhhhhhhphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5loha_  SCOP=d.144.1.0  automated matches
+  TARGET: d6yz4a_  SCOP=d.144.1.0  automated matches
+  pval=1.93e-11  jaccard=0.0094  containment=0.0194  region_len=31
+
+    Q[ 118] HRHGIIHRDLKPDNMLISNEGHIKLTDFGLS
+    T[ 134] EKHGVIHRDVKPSNILLDERGQIKLCDFGIS
+    HP      ppphhhppphphpphhhppphphphpphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6a6fa1  SCOP=d.224.1.0  automated matches
+  TARGET: d2qq4a_  SCOP=d.224.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0429  containment=0.0841  region_len=35
+
+    Q[  30] NLSCGDEVTLYFLFDGDKIVDVKFEGHGCAISQAS
+    T[  35] NPSCGDQVEVMVLLEGDTIADIRFQGQGCAISTAS
+    HP      phpphpphphhhhhphpphhphphphphphhpphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6ctha1  SCOP=d.144.1.0  automated matches
+  TARGET: d4b9da1  SCOP=d.144.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0169  containment=0.0328  region_len=35
+
+    Q[ 131] DHCVLHRDIKTSNIMLDSSFNAKLGDFGLARLVDH
+    T[ 128] DRKILHRDIKSQNIFLTKDGTVQLGDFGIARVLNS
+    HP      ppphhppphpppphhhppphphphhphhhhphhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6juua_  SCOP=d.144.1.0  automated matches
+  TARGET: d4i93a_  SCOP=d.144.1.0  automated matches
+  pval=5.34e-14  jaccard=0.0115  containment=0.0226  region_len=32
+
+    Q[ 221] SSCPRSFAELLHQCWEADAKKRPSFKQIISIL
+    T[ 239] SDDGTELIRLASRCLQYEPRERPNPKSLVSAM
+    HP      ppphpphhphhppphphphppphphpphhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6m0ua_  SCOP=d.144.1.0  automated matches
+  TARGET: d5ng0a_  SCOP=d.144.1.0  automated matches
+  pval=5.07e-09  jaccard=0.0074  containment=0.0146  region_len=30
+
+    Q[ 136] PVIHRDIKSSNILLDHSMCAKVADFGFSKY
+    T[ 135] PLLHHDLKTQNILLDNEFHVKIADFGLSKW
+    HP      hhhppphpppphhhppphphphhphhhpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6s0da2  SCOP=d.44.1.0  automated matches
+  TARGET: d3qvna2  SCOP=d.44.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0549  containment=0.1084  region_len=35
+
+    Q[  62] MVPLFGIDVWEHAYYLQYKNVRPDYVHAIWKIANW
+    T[  73] LVPIIAIDAWEHAYYLQYQNVKLDYFKAIWNVINW
+    HP      hhhhhhhphhpphhhhphpphphphhphhhphhph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6v6aa_  SCOP=d.144.1.0  automated matches
+  TARGET: d4eqma_  SCOP=d.144.1.0  automated matches
+  pval=6.66e-16  jaccard=0.0123  containment=0.0219  region_len=33
+
+    Q[ 123] MHSGELLHRDMKPSNVLLNSECQVKVADFGLAR
+    T[ 123] AHDMRIVHRDIKPQNILIDSNKTLKIFDFGIAK
+    HP      hpphphhppphphpphhhppppphphhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6wfna_  SCOP=d.108.1.0  automated matches
+  TARGET: d6th0a_  SCOP=d.108.1.0  automated matches
+  pval=3.50e-05  jaccard=0.0073  containment=0.0160  region_len=28
+
+    Q[  22] IFPVSYNDKFYKDVLEVGELAKLAYFND
+    T[  21] IFPIRYESEFFQNVVNGGDIVSWAAVDR
+    HP      hhhhphppphhpphhphhphhphhhhpp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d7aqba_  SCOP=d.144.1.0  automated matches
+  TARGET: d4o2za1  SCOP=d.144.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0132  containment=0.0284  region_len=34
+
+    Q[ 113] EEHARLFMYQLLRGLKYIHSANVLHRDLKPANLF
+    T[ 130] ESHMQYFVYQILRGLKYLHSANVAHRDLKPANLV
+    HP      ppphphhhhphhphhphhpphphhppphphhphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d7naya2  SCOP=d.162.1.0  automated matches
+  TARGET: d3p7ma2  SCOP=d.162.1.0  automated matches
+  pval=5.00e-05  jaccard=0.0069  containment=0.0140  region_len=28
+
+    Q[   1] MLETYRFRRILADKYQVDPKNINGYVLG
+    T[   1] VLDSARFRTFLADELNVSVQQVQAYVMG
+    HP      hhpphphpphhhpphphphpphphhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d7rcaa1  SCOP=d.258.1.1  automated matches
+  TARGET: d1um0a_  SCOP=d.258.1.1  Chorismate synthase, AroC
+  pval=0.00e+00  jaccard=0.0238  containment=0.0457  region_len=42
+
+    Q[  98] YPRPSHADWTYMQKYGVKSASGGGRSSARETIGRVAAGAIAE
+    T[  98] LFRPSHADFTYFHKYGIRDFRGGGRSSARESAIRVAAGAFAK
+    HP      hhphpphphphhpphhhpphphhhppphppphhphhhhhhhp
+
+  --------------------------------------------------------------------------------------------------
+
+====================================================================================================
+  SCOPe CLASS E — Multi-domain proteins (alpha and beta)  (8 unique queries)
+====================================================================================================
+  QUERY:  d1lj5a_  SCOP=e.1.1.1  Plasminogen activator inhibitor-1
+  TARGET: d2arqa_  SCOP=e.1.1.1  automated matches
+  pval=0.00e+00  jaccard=0.0129  containment=0.0255  region_len=35
+
+    Q[ 272] LVLPKFSLETEVDLRKPLENLGMTDMFRQFQADFT
+    T[ 271] VYIPQFKLEEHYELRSILRSMGMEDAFNKGRANFS
+    HP      hhhhphphppphphpphhpphhhpphhpphphphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2arqa_  SCOP=e.1.1.1  automated matches
+  TARGET: d1lj5a_  SCOP=e.1.1.1  Plasminogen activator inhibitor-1
+  pval=0.00e+00  jaccard=0.0129  containment=0.0254  region_len=35
+
+    Q[ 271] VYIPQFKLEEHYELRSILRSMGMEDAFNKGRANFS
+    T[ 272] LVLPKFSLETEVDLRKPLENLGMTDMFRQFQADFT
+    HP      hhhhphphppphphpphhpphhhpphhpphphphp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d2xq1a_  SCOP=e.5.1.1  automated matches
+  TARGET: d1m7sa_  SCOP=e.5.1.1  Catalase I
+  pval=2.65e-10  jaccard=0.0054  containment=0.0106  region_len=31
+
+    Q[  34] GPLLLQDFKLIDTLSHFDRERIPERVVHAKG
+    T[  24] GPVLLQDVQLLQKLQRFDRERIPERVVHARG
+    HP      hhhhhpphphhpphpphpppphhpphhphph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3ipla1  SCOP=e.23.1.0  automated matches
+  TARGET: d5x8fa_  SCOP=e.23.1.0  automated matches
+  pval=4.88e-15  jaccard=0.0078  containment=0.0156  region_len=33
+
+    Q[ 381] IDHEGYVMIYDRRKDLIISGGENIYPYQIETVA
+    T[ 369] LDNEGFLYVLDRRSDLIISGGENIYPAEVESVL
+    HP      hppphhhhhhppppphhhphhpphhhhphpphh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3o83a_  SCOP=e.23.1.0  automated matches
+  TARGET: d5wm2a1  SCOP=e.23.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0110  containment=0.0244  region_len=36
+
+    Q[ 193] LSGGSTGTPKLIPRTHNDYDYSVRASAEICGLNSNT
+    T[ 189] LSGGTTGKPKLIPRTHDDYTYNVRASAEVCGFDSDT
+    HP      hphhpphphphhhppppphphphphphphphhpppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4l1fa1  SCOP=e.6.1.0  automated matches
+  TARGET: d3ii9a1  SCOP=e.6.1.0  automated matches
+  pval=4.32e-12  jaccard=0.0122  containment=0.0248  region_len=31
+
+    Q[  51] GICFPEEYGGMGLDVLSYILAVEELSKVDDG
+    T[  62] GPTIPEQYGGPGLDYVSYGLIAREVERVDSG
+    HP      hhphhpphhhhhhphhphhhhhpphpphpph
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d5wm2a1  SCOP=e.23.1.0  automated matches
+  TARGET: d3o83a_  SCOP=e.23.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0110  containment=0.0197  region_len=36
+
+    Q[ 189] LSGGTTGKPKLIPRTHDDYTYNVRASAEVCGFDSDT
+    T[ 193] LSGGSTGTPKLIPRTHNDYDYSVRASAEICGLNSNT
+    HP      hphhpphphphhhppppphphphphphphphhpppp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d6cj7a_  SCOP=e.1.1.0  automated matches
+  TARGET: d2oaya1  SCOP=e.1.1.0  automated matches
+  pval=1.26e-08  jaccard=0.0058  containment=0.0116  region_len=30
+
+    Q[ 337] LYFRANKPFLAILWDNRSSIPLFMARIMDP
+    T[ 342] LVFEVQQPFLFMLWDQQHKFPVFMGRVYDP
+    HP      hhhphpphhhhhhhppppphhhhhhphhph
+
+  --------------------------------------------------------------------------------------------------
+
+====================================================================================================
+  SCOPe CLASS F — Membrane and cell surface proteins  (9 unique queries)
+====================================================================================================
+  QUERY:  d1pfoa1  SCOP=f.69.1.1  Perfringolysin N-terminal domain
+  TARGET: d6jmpa_  SCOP=f.69.1.1  Pneumolysin N-terminal domain
+  pval=1.90e-13  jaccard=0.0078  containment=0.0179  region_len=32
+
+    Q[ 234] PPLMVSNVAYGRTIYVKLETTSSSKDVQAAFK
+    T[ 232] PLVYISSVAYGRQVYLKLETTSKSDEVEAAFE
+    HP      hhhhhpphhhhpphhhphpppppppphphhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3cn5a_  SCOP=f.19.1.0  automated matches
+  TARGET: d3d9sa1  SCOP=f.19.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0190  containment=0.0379  region_len=34
+
+    Q[  61] AGISGGHINPAVTFGLFLARKVELLRALVYMIAQ
+    T[  59] GPVSGGHINPAITLALLVGNQISLLRAFFYVAAQ
+    HP      hhhphhphphhhphhhhhhpphphhphhhhhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3d9sa1  SCOP=f.19.1.0  automated matches
+  TARGET: d3cn5a_  SCOP=f.19.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0190  containment=0.0367  region_len=34
+
+    Q[  59] GPVSGGHINPAITLALLVGNQISLLRAFFYVAAQ
+    T[  61] AGISGGHINPAVTFGLFLARKVELLRALVYMIAQ
+    HP      hhhphhphphhhphhhhhhpphphhphhhhhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3rkoc_  SCOP=f.72.1.1  automated matches
+  TARGET: d3rkol_  SCOP=f.72.1.1  NADH-quinone oxidoreductase subunit L, NuoL/Nqo12
+  pval=0.00e+00  jaccard=0.0076  containment=0.0167  region_len=34
+
+    Q[ 297] IFYGAWMAFAQTDIKRLIAYTSVSHMGFVLIAIY
+    T[ 290] LLLAGFAALVQTDIKRVLAYSTMSQIGYMFLALG
+    HP      hhhhhhhhhhppphpphhhhpphpphhhhhhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d3rkol_  SCOP=f.72.1.1  NADH-quinone oxidoreductase subunit L, NuoL/Nqo12
+  TARGET: d3rkoc_  SCOP=f.72.1.1  automated matches
+  pval=1.11e-16  jaccard=0.0076  containment=0.0137  region_len=34
+
+    Q[ 290] LLLAGFAALVQTDIKRVLAYSTMSQIGYMFLALG
+    T[ 297] IFYGAWMAFAQTDIKRLIAYTSVSHMGFVLIAIY
+    HP      hhhhhhhhhhppphpphhhhpphpphhhhhhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4hyja_  SCOP=f.13.1.0  automated matches
+  TARGET: d4jq6a_  SCOP=f.13.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0276  containment=0.0516  region_len=37
+
+    Q[  23] TLYFLVERNSLAPEYRSTATVAALVTFVAAIHYYFMK
+    T[  17] TVFFFVERSDVPVKWKTSLTVAGLVTGVAFWHYLYMR
+    HP      phhhhhpppphhhphppphphhhhhphhhhhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d4jq6a_  SCOP=f.13.1.0  automated matches
+  TARGET: d4hyja_  SCOP=f.13.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0276  containment=0.0558  region_len=37
+
+    Q[  17] TVFFFVERSDVPVKWKTSLTVAGLVTGVAFWHYLYMR
+    T[  23] TLYFLVERNSLAPEYRSTATVAALVTFVAAIHYYFMK
+    HP      phhhhhpppphhhphppphphhhhhphhhhhphhhhp
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d7dkzl_  SCOP=f.31.1.0  automated matches
+  TARGET: d7lx0l_  SCOP=f.31.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0275  containment=0.0560  region_len=33
+
+    Q[  25] WYLSNLPGYRTAVNPLLRGIEVGLAHGFLLVGP
+    T[  27] AFINNLPAYRKGLTPFMRGLEIGMAHGYFLVGP
+    HP      hhhpphhhhpphhphhhphhphhhhphhhhhhh
+
+  --------------------------------------------------------------------------------------------------
+  QUERY:  d7lx0l_  SCOP=f.31.1.0  automated matches
+  TARGET: d7dkzl_  SCOP=f.31.1.0  automated matches
+  pval=0.00e+00  jaccard=0.0275  containment=0.0511  region_len=33
+
+    Q[  27] AFINNLPAYRKGLTPFMRGLEIGMAHGYFLVGP
+    T[  25] WYLSNLPGYRTAVNPLLRGIEVGLAHGFLLVGP
+    HP      hhhpphhhhpphhphhhphhphhhhphhhhhhh
+
+  --------------------------------------------------------------------------------------------------
+
+====================================================================================================
+  SCOPe CLASS G — Small proteins  (1 unique queries)
+====================================================================================================
+  QUERY:  d3h3ba2  SCOP=g.3.9.0  automated matches
+  TARGET: d5my6a2  SCOP=g.3.9.0  automated matches
+  pval=1.32e-04  jaccard=0.0076  containment=1.0000  region_len=27
+
+    Q[   0] RSRACHPCSPMCKGSRCWGESSEDCQS
+    T[   0] RSRACHPCSPMCKGSRCWGESSEDCQS
+    HP      ppphpphpphhpphppphhpppppppp
+
+  --------------------------------------------------------------------------------------------------

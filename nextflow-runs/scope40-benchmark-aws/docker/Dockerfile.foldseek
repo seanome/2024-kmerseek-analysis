@@ -1,0 +1,9 @@
+# Nextflow's docker executor always overrides ENTRYPOINT to run .command.sh,
+# and its trace collector shells out to `ps` inside the container before that
+# script even starts — this base image ships neither a plain `foldseek`
+# command on PATH nor procps. Layer procps on top; main.nf calls the real
+# binary path (/usr/local/bin/entrypoint) directly.
+FROM ghcr.io/steineggerlab/foldseek:latest
+USER root
+RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends procps \
+    && rm -rf /var/lib/apt/lists/*
