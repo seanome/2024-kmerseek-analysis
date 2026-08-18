@@ -100,6 +100,14 @@ pull-all: pull-k2 pull-k3
 ## foreground -- run run-k2 and run-k3 in separate tmux panes to get both
 ## ksizes running concurrently.
 ##
+## No `| tee` on the nextflow command -- piping its stdout turns it into a
+## non-tty, so Nextflow can't detect a terminal and falls back to plain
+## sequential logging (a whole new status block per update) instead of
+## repainting the live dashboard in place. Nextflow already writes its own
+## .nextflow.log in each run-*/ dir regardless (that's what's actually been
+## used to debug every OOM/arch/path issue this session, not a tee'd copy),
+## so there's nothing lost by letting stdout go straight to the terminal.
+##
 ## --fasta/--outdir are relative to run-kN/ (../data, ../results-ushuffle-kN),
 ## NOT $SCRATCH/kmer-spectra/... -- workDir/launchDir already live under the
 ## real (non-symlinked) checkout path, and Apptainer's autoMounts binds paths
@@ -121,7 +129,7 @@ define launch_ksize
 	  nextflow run ../main.nf -profile $(PROFILE) $(NF_ARGS) \
 	    --fasta ../data/uniprot_sprot.ushuffle_$(1).fasta.gz \
 	    --outdir ../results-ushuffle-$(1) \
-	    --hp_only true 2>&1 | tee nextflow.log
+	    --hp_only true
 endef
 
 run-k2:
@@ -174,7 +182,7 @@ define launch_uniref
 	    --fasta ../data/$(1).fasta.gz \
 	    --outdir ../results-$(1) \
 	    --hp_kmin $(HP_KMIN_UNIREF) \
-	    --mem_scale $(MEM_SCALE) 2>&1 | tee nextflow.log
+	    --mem_scale $(MEM_SCALE)
 endef
 
 run-uniref50:
