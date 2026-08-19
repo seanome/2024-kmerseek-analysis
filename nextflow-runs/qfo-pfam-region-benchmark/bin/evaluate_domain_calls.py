@@ -480,11 +480,13 @@ def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
 
     hgnc = "hgnc_gene_group"
     if hgnc in cov.columns:
-        # Zinc-finger groups are dropped from the HGNC axis, not merely flagged. Tandem C2H2
-        # arrays inflate k-mer sharing through repeat content rather than homology (notebook
-        # 206 section 6), and they are the largest group in the query set -- leaving them in
-        # would let the one family the axis cannot trust dominate it. They remain in the
-        # covariate table under hgnc_group_excluded for anyone who wants to look.
+        # Zinc fingers are kept in the HGNC axis by default. Notebook 206 excludes C2H2
+        # families because tandem arrays inflate PROTEIN-level k-mer sharing through repeat
+        # content, which is a real confound when the scored object is a protein pair. Here
+        # the scored object is a domain instance: a twelve-finger protein contains twelve
+        # domains and the right answer is twelve correctly-bounded regions. The exclusion
+        # belonged to a different unit of analysis. --exclude-zinc-finger-from-hgnc restores
+        # it for anyone comparing against the orthology-era numbers.
         excluded = (
             pl.col("hgnc_group_excluded")
             if ("hgnc_group_excluded" in cov.columns and not keep_zinc_finger)
@@ -585,9 +587,15 @@ def main():
     p.add_argument("--direct-annotation", action="store_true")
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--strict-iou", type=float, default=0.8)
-    p.add_argument("--keep-zinc-finger-in-hgnc", action="store_true",
-                   help="stop excluding zinc-finger groups from the per-group HGNC sweep; "
-                        "they are always cut on the geneset axis regardless")
+    # Zinc fingers are INCLUDED by default. The exclusion was inherited from an
+    # orthology benchmark, where the scored object is a protein pair and a tandem array
+    # inflates protein-level k-mer sharing through repeat content. This benchmark scores
+    # DOMAINS: a twelve-finger protein simply contains twelve domains, and the correct
+    # answer is twelve correctly-bounded regions. The confound does not transfer, so the
+    # exclusion should not either.
+    p.add_argument("--exclude-zinc-finger-from-hgnc", action="store_true",
+                   help="restore the orthology-era exclusion of zinc-finger groups from "
+                        "the per-group HGNC sweep (off by default; see the note above)")
     p.add_argument("--interval-semantics", choices=["alignment", "motif"],
                    default="alignment",
                    help="motif for tools reporting discontinuous residue sets (Folddisco)")
@@ -603,7 +611,8 @@ def main():
     truth_lf = pl.scan_parquet(args.truth)
     truth = truth_lf.collect()
     covariates = pl.read_parquet(args.covariates) if args.covariates else None
-    truth = attach_strata(truth, covariates, args.keep_zinc_finger_in_hgnc)
+    truth = attach_strata(truth, covariates,
+                          keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
 
     regions = load_regions(args.regions, args.direct_annotation)
 
