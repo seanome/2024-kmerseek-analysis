@@ -662,6 +662,7 @@ def main():
             m.update(cm.cafa_scalars(pc))
             m.update(cm.boundary_metrics(c_sub, t_sub, args.strict_iou))
             m.update(cm.domain_count_metrics(c_sub, t_sub))
+            m.update(cm.sensitivity_to_first_fp(c_sub, t_sub))
             m.update(ident)
             m.update({"split": split, "stratum_axis": axis, "stratum": value})
             rows.append(m)

@@ -228,6 +228,8 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
     out = {
         "ndo": 0.0, "residue_precision": 0.0, "residue_recall": 0.0, "residue_f1": 0.0,
         "dbd_median": None, "dbd_mean": None,
+        "nterm_offset_median": None, "nterm_offset_mean": None, "nterm_offset_iqr": None,
+        "cterm_offset_median": None, "cterm_offset_mean": None, "cterm_offset_iqr": None,
         f"precision_iou{int(strict_iou * 100)}": 0.0,
         f"recall_iou{int(strict_iou * 100)}": 0.0,
         "n_tp_strict": 0,
@@ -268,14 +270,25 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
         p, r = out["residue_precision"], out["residue_recall"]
         out["residue_f1"] = 2 * p * r / (p + r) if (p + r) else 0.0
 
-        dbd = best.with_columns(
-            (
-                (pl.col("qstart") - pl.col("true_start")).abs()
-                + (pl.col("qend") - pl.col("true_end")).abs()
-            ).truediv(2).alias("dbd")
-        )["dbd"]
-        out["dbd_median"] = float(dbd.median())
-        out["dbd_mean"] = float(dbd.mean())
+        # N- and C-terminal offsets are kept SEPARATE, and signed. Boundary methods
+        # usually fail asymmetrically -- a k-mer method loses the first k-1 residues at the
+        # N terminus for a structural reason, not a random one -- and averaging the two
+        # ends into one number destroys exactly the interpretable part. Sign convention:
+        # positive means the call starts/ends LATER than the true domain, so a k-mer method
+        # that trims the front shows n_offset > 0.
+        bnd = best.with_columns(
+            (pl.col("qstart") - pl.col("true_start")).alias("n_offset"),
+            (pl.col("qend") - pl.col("true_end")).alias("c_offset"),
+        ).with_columns(
+            ((pl.col("n_offset").abs() + pl.col("c_offset").abs()) / 2).alias("dbd")
+        )
+        out["dbd_median"] = float(bnd["dbd"].median())
+        out["dbd_mean"] = float(bnd["dbd"].mean())
+        for end in ("n", "c"):
+            col = bnd[f"{end}_offset"]
+            out[f"{end}term_offset_median"] = float(col.median())
+            out[f"{end}term_offset_mean"] = float(col.mean())
+            out[f"{end}term_offset_iqr"] = float(col.quantile(0.75) - col.quantile(0.25))
 
     strict = calls.filter(pl.col("iou") >= strict_iou)
     n_strict_inst = (
@@ -324,4 +337,55 @@ def domain_count_metrics(calls: pl.DataFrame, truth: pl.DataFrame) -> dict:
     # Undefined, not zero, when a whole row or column of the confusion matrix is empty:
     # MCC has no value there and 0.0 would read as "no better than chance".
     out["domain_count_mcc"] = ((tp * tn - fp * fn) / denom) if denom > 0 else None
+    return out
+
+
+def sensitivity_to_first_fp(calls: pl.DataFrame, truth: pl.DataFrame) -> dict:
+    """Fraction of a query's true domains recovered before its first false positive.
+
+    The metric Foldseek and Folddisco report on SCOPe, carried over so this pipeline's
+    numbers are in the same units as the NBT literature rather than needing a conversion
+    the reader has to trust. Same definition as
+    notebooks/sensitivity_until_first_false_positive.py: rank a query's calls by score,
+    walk down until the first incorrect one, and count what was recovered above it.
+
+    Averaged over query proteins that produced at least one call. A protein a tool stayed
+    silent on has no ranking to evaluate and is excluded rather than scored 0 -- scoring it
+    would conflate "ranked badly" with "said nothing", which are different failures.
+    """
+    out = {"sens_first_fp_mean": None, "sens_first_fp_median": None,
+           "n_proteins_ranked": 0}
+    if calls.height == 0 or truth.height == 0:
+        return out
+
+    n_true = truth.group_by("accession").agg(pl.len().alias("n_true")).rename(
+        {"accession": "query_acc"}
+    )
+    ranked = calls.sort("score", descending=True, nulls_last=True)
+
+    per = (
+        ranked.group_by("query_acc", maintain_order=True)
+        .agg(pl.col("is_tp").alias("hits"))
+        .join(n_true, on="query_acc", how="inner")
+    )
+    if per.height == 0:
+        return out
+
+    vals = []
+    for hits, nt in zip(per["hits"].to_list(), per["n_true"].to_list()):
+        if not nt:
+            continue
+        tp_before = 0
+        for h in hits:
+            if not h:
+                break
+            tp_before += 1
+        vals.append(min(tp_before / nt, 1.0))
+    if not vals:
+        return out
+
+    arr = np.array(vals, dtype=float)
+    out["sens_first_fp_mean"] = float(arr.mean())
+    out["sens_first_fp_median"] = float(np.median(arr))
+    out["n_proteins_ranked"] = len(vals)
     return out
