@@ -50,6 +50,17 @@ STRATA = {
 # where no metric is stable. Only groups with at least this many query proteins are cut.
 MIN_STRATUM_PROTEINS = 30
 
+# Boolean covariate columns that each become their own stratum, so the 200-series' curated
+# gene sets are cut out of the box rather than reconstructed in a notebook.
+GENE_SET_FLAGS = {
+    "mhc_class_i_heavy": "is_mhc_class_i_heavy",
+    "antiviral_restriction_factor": "is_antiviral_restriction_factor",
+    "igsf_decoy": "is_igsf_decoy",
+    "fast_evolving_family": "is_fast_evolving_family",
+    "olfactory_receptor": "is_olfactory_receptor",
+    "cytochrome_p450_2_3": "is_cytochrome_p450_2_3",
+}
+
 
 def extract_accession(col: pl.Expr) -> pl.Expr:
     """UniProt FASTA names are sp|P12345|NAME_SPECIES; annotations key on the accession.
@@ -463,10 +474,41 @@ def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None) -> pl.Da
         exprs.append(expr.otherwise(None).alias(name))
 
     hgnc = "hgnc_gene_group"
+    if hgnc in cov.columns:
+        # Zinc-finger groups are dropped from the HGNC axis, not merely flagged. Tandem C2H2
+        # arrays inflate k-mer sharing through repeat content rather than homology (notebook
+        # 206 section 6), and they are the largest group in the query set -- leaving them in
+        # would let the one family the axis cannot trust dominate it. They remain in the
+        # covariate table under hgnc_group_excluded for anyone who wants to look.
+        excluded = (
+            pl.col("hgnc_group_excluded") if "hgnc_group_excluded" in cov.columns
+            else pl.lit(False)
+        )
+        exprs.append(
+            pl.when(excluded).then(None).otherwise(pl.col(hgnc)).alias("stratum_hgnc")
+        )
+    else:
+        exprs.append(pl.lit(None, dtype=pl.String).alias("stratum_hgnc"))
+
+    # MHC class is categorical and small; every class is worth cutting on its own because
+    # notebook 211 found class I and class II answer the k-size question in opposite
+    # directions, so a single pooled "MHC" number hides the result.
     exprs.append(
-        pl.col(hgnc).alias("stratum_hgnc") if hgnc in cov.columns
-        else pl.lit(None, dtype=pl.String).alias("stratum_hgnc")
+        pl.col("mhc_class").alias("stratum_mhc") if "mhc_class" in cov.columns
+        else pl.lit(None, dtype=pl.String).alias("stratum_mhc")
     )
+
+    # Each curated set becomes one stratum value on a shared axis; non-members are null so
+    # they do not form a meaningless "everything else" cell.
+    present = [(name, col) for name, col in GENE_SET_FLAGS.items() if col in cov.columns]
+    if present:
+        expr = pl.when(pl.lit(False)).then(pl.lit(None, dtype=pl.String))
+        for name, col in present:
+            expr = expr.when(pl.col(col)).then(pl.lit(name))
+        exprs.append(expr.otherwise(None).alias("stratum_geneset"))
+    else:
+        exprs.append(pl.lit(None, dtype=pl.String).alias("stratum_geneset"))
+
     cov = cov.with_columns(exprs)
 
     keep = ["accession"] + [c for c in cov.columns if c.startswith("stratum_")]
@@ -478,11 +520,15 @@ def strata_of(truth: pl.DataFrame) -> list[tuple[str, str]]:
     out = [("all", "all")]
     for col in (c for c in truth.columns if c.startswith("stratum_")):
         axis = col.removeprefix("stratum_")
+        # The curated sets are deliberately small -- 6 class I heavy chains, 6 IgSF decoys --
+        # and are the whole point of cutting on them, so the noise floor that protects the
+        # ~4200 HGNC groups must not delete them. Their n is reported per row either way.
+        floor = 1 if axis in ("mhc", "geneset") else MIN_STRATUM_PROTEINS
         counts = (
             truth.filter(pl.col(col).is_not_null())
             .group_by(col)
             .agg(pl.col("accession").n_unique().alias("n"))
-            .filter(pl.col("n") >= MIN_STRATUM_PROTEINS)
+            .filter(pl.col("n") >= floor)
             .sort("n", descending=True)
         )
         out.extend((axis, v) for v in counts[col].to_list())
@@ -523,6 +569,9 @@ def main():
     p.add_argument("--tool", required=True)
     p.add_argument("--variant", required=True)
     p.add_argument("--species", required=True)
+    p.add_argument("--species-mya", type=float, default=None,
+                   help="divergence from human in millions of years; the x-axis for "
+                        "per-species plots")
     p.add_argument("--truth", required=True, type=Path)
     p.add_argument("--domain-map", type=Path)
     p.add_argument("--covariates", type=Path,
@@ -579,6 +628,7 @@ def main():
     ic = cm.information_content(truth)
 
     ident = {"tool": args.tool, "variant": args.variant, "species": args.species,
+             "species_mya": args.species_mya,
              # Stamped on every row so an alignment tool and a motif tool are never
              # silently compared on boundary metrics that mean different things.
              "interval_semantics": args.interval_semantics}

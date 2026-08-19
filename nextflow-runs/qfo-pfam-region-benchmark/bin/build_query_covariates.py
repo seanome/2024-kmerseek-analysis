@@ -20,9 +20,13 @@ so any dN/dS-stratified result is a statement about that subset only.
 import argparse
 import gzip
 import json
+import sys
 from pathlib import Path
 
 import polars as pl
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import gene_sets as gs  # noqa: E402
 
 # CA-atom B-factor holds pLDDT in AlphaFold models. Field 14 of the ATOM record, field 3
 # is the atom name -- same parse as notebook 202's, kept identical so the two agree.
@@ -185,6 +189,51 @@ def main():
         summary["plddt"] = {"n_covered": int(plddt.height)}
     else:
         summary["plddt"] = "skipped: no structure dir"
+
+    # ---- curated gene sets from the 200-series ----
+    if "hgnc_symbol" in cov.columns:
+        cov = cov.with_columns(
+            pl.col("hgnc_symbol").replace_strict(gs.MHC_CLASSES, default=None).alias("mhc_class"),
+            pl.col("hgnc_symbol").is_in(gs.MHC_CLASS_I_GENES).alias("is_mhc_class_i_heavy"),
+            pl.col("hgnc_symbol").is_in(gs.ANTIVIRAL_RESTRICTION_FACTORS)
+              .alias("is_antiviral_restriction_factor"),
+            pl.col("hgnc_symbol").is_in(gs.IGSF_DECOYS).alias("is_igsf_decoy"),
+        )
+
+        # Fast-evolving anchors, matched on HGNC group the way notebook 206 does.
+        if "hgnc_gene_group" in cov.columns:
+            for label, pattern in gs.FAST_EVOLVING_GROUP_PATTERNS.items():
+                cov = cov.with_columns(
+                    (
+                        pl.col("hgnc_gene_group").is_not_null()
+                        & pl.col("hgnc_gene_group").str.contains(f"(?i){pattern}")
+                    ).alias(f"is_{label}")
+                )
+            cov = cov.with_columns(
+                pl.any_horizontal(
+                    [pl.col(f"is_{l}") for l in gs.FAST_EVOLVING_GROUP_PATTERNS]
+                ).alias("is_fast_evolving_family"),
+                # Repeat-driven, not homology-driven: notebook 206 excludes these, and they
+                # are the largest HGNC group in the query set, so a groups sweep that keeps
+                # them is dominated by the one family it should not trust.
+                (
+                    pl.col("hgnc_gene_group").is_not_null()
+                    & pl.col("hgnc_gene_group").str.contains(
+                        f"(?i){gs.HGNC_EXCLUDE_FAMILY_PATTERN}"
+                    )
+                ).alias("hgnc_group_excluded"),
+            )
+
+        summary["gene_sets"] = {
+            "mhc": int(cov["mhc_class"].is_not_null().sum()),
+            "mhc_class_i_heavy": int(cov["is_mhc_class_i_heavy"].sum()),
+            "antiviral_restriction_factor": int(cov["is_antiviral_restriction_factor"].sum()),
+            "igsf_decoy": int(cov["is_igsf_decoy"].sum()),
+            "fast_evolving_family": int(cov.get_column("is_fast_evolving_family").sum())
+                if "is_fast_evolving_family" in cov.columns else 0,
+            "hgnc_group_excluded_zinc_finger": int(cov.get_column("hgnc_group_excluded").sum())
+                if "hgnc_group_excluded" in cov.columns else 0,
+        }
 
     if args.mobidb and args.mobidb.exists():
         mobi = pl.read_parquet(args.mobidb)

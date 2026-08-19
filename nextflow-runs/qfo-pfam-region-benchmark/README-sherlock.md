@@ -326,10 +326,37 @@ Every row also carries `stratum_axis` and `stratum`, cutting on the same axes th
 
 | axis | source | coverage of ~19.4k query proteins |
 |---|---|---|
-| `hgnc` | HGNC gene group | 19,226 (4,222 groups; only groups with >= 30 proteins are cut) |
+| `hgnc` | HGNC gene group | 19,226 (4,222 groups; >= 30 proteins each, zinc fingers excluded) |
+| `mhc` | `ou.MHC_CLASSES`, 7 classes | 25 genes |
+| `geneset` | curated sets below | 6-463 each |
 | `plddt` | mean pLDDT, bins 0-50/50-70/70-90/90-100 | rises to ~full once `make fetch-structures` completes |
 | `disorder` | fraction of residues with pLDDT < 50 | same as pLDDT |
 | `omega` | dN/dS from the human-mouse-dnds-omega pipeline | **1,289 only** |
+
+`geneset` carries the 200-series' curated sets: `mhc_class_i_heavy` (6),
+`antiviral_restriction_factor` (21), `igsf_decoy` (6), `fast_evolving_family` (462),
+`olfactory_receptor`, `cytochrome_p450_2_3`. The MIN_STRATUM_PROTEINS floor of 30 does not
+apply to `mhc` or `geneset` -- those sets are small on purpose and are the point of cutting
+on them. Every row reports its own n.
+
+Two things carried over from the notebooks that are easy to lose:
+
+**Zinc-finger groups are dropped from the `hgnc` axis, not just flagged.** Tandem C2H2
+arrays inflate k-mer sharing through repeat content rather than homology (notebook 206
+section 6), and they are the single largest HGNC group in the query set -- 1,153 proteins,
+5.9%. Left in, the one family the axis cannot trust would dominate it. They stay in the
+covariate table under `hgnc_group_excluded` if you want to look at them deliberately.
+
+**Class I and class II are separate strata, never pooled.** Notebook 211 found they answer
+the k-size question in opposite directions, so a single "MHC" number hides the result.
+
+Gene sets live in `bin/gene_sets.py`, copied from `notebooks/ortholog_analysis_utils.py`
+because the container has no notebook tree. `bin/check_gene_sets.py` diffs the two wherever
+both are importable, so the copy cannot drift silently -- run it if you change either.
+
+`species_mya` is on every metric row. The 200-series used human-mouse percent identity as
+its divergence axis because it had one target species; here the species IS that axis, so
+plot against `species_mya` directly (mouse 100 ... ecoli 2000).
 
 pLDDT and its disorder proxy are parsed from the AlphaFold `.cif` files the Foldseek arm
 already stages, so they cost no extra download.

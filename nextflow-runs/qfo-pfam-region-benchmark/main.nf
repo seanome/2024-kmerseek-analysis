@@ -700,8 +700,8 @@ process scoreDomainCalls {
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
-    tuple val(species), val(tool), val(variant), path(regions), path(truth), path(domain_map),
-          path(covariates)
+    tuple val(species), val(tool), val(variant), val(mya), path(regions), path(truth),
+          path(domain_map), path(covariates)
 
     output:
     path "${tool}.${variant}.${species}.calls.parquet",   emit: calls
@@ -720,6 +720,7 @@ process scoreDomainCalls {
         --interval-semantics ${semantics} \\
         --variant      ${variant} \\
         --species      ${species} \\
+        --species-mya  ${mya} \\
         --truth        ${truth} \\
         --domain-map   ${domain_map} \\
         --covariates   ${covariates} \\
@@ -909,13 +910,20 @@ workflow {
     all_regions = kmerseek_regions.mix(baseline_regions)
 
     // join on species to attach that species' domain-transfer map, plus the shared truth
+    // Divergence axis for this benchmark. The 200-series used human-mouse percent identity
+    // because it had one target species; here the species IS the divergence axis, so its
+    // age travels with every metric row and notebooks can plot against it directly.
+    def MYA = SPECIES.collectEntries { [(it.label): it.mya] }
+
     score_in = all_regions
-        .map { species, tool, variant, regions -> tuple(species, tool, variant, regions) }
+        .map { species, tool, variant, regions ->
+            tuple(species, tool, variant, MYA[species] ?: 0, regions)
+        }
         .combine(map_ch, by: 0)
         .combine(truth_out.truth)
         .combine(covariates)
-        .map { species, tool, variant, regions, domain_map, truth, cov ->
-            tuple(species, tool, variant, regions, truth, domain_map, cov)
+        .map { species, tool, variant, mya, regions, domain_map, truth, cov ->
+            tuple(species, tool, variant, mya, regions, truth, domain_map, cov)
         }
 
     scored = scoreDomainCalls(score_in)
