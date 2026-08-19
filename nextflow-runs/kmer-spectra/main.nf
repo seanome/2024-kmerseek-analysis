@@ -1,60 +1,84 @@
 #!/usr/bin/env nextflow
 
 /*
- * Nextflow pipeline: k-mer frequency spectra across alphabets and k-sizes
+ * Nextflow pipeline: k-mer frequency spectra across datasets, alphabets, and k-sizes
  *
- * Reproduces ~/data/kmerseek-kmer-spectra/ by running `kmerseek index
- * --kmer-stats-out` over Swiss-Prot for every (alphabet, ksize) combo.
+ * One invocation sweeps kmerseek's --kmer-stats-out over every selected dataset
+ * (Swiss-Prot order-2/order-3 shuffled nulls, UniRef50/90/100) x alphabet x ksize
+ * combo -- instead of a separate `nextflow run` per dataset. Nextflow's own
+ * maxForks (see the sherlock/standard profiles) caps concurrency across ALL
+ * selected datasets at once, so this is also safer than running several
+ * uncoordinated invocations that don't know about each other's resource use.
  *
  * kmerseek branch: olgabot/kmer-frequency-histogram
  * Docker image: kmerseek-spectra:latest (build with the Dockerfile in this directory)
  *
  * Usage:
- *   nextflow run main.nf
- *   nextflow run main.nf --fasta /path/to/uniprot_sprot.fasta.gz --outdir /path/to/results
- *   nextflow run main.nf --fasta /path/to/shuffled.fasta.gz --outdir /path/to/results --hp_only true
+ *   nextflow run main.nf -profile sherlock                       # datasets: k2,k3 (default)
+ *   nextflow run main.nf -profile sherlock --datasets k2,k3,uniref50
+ *   nextflow run main.nf -profile standard --datasets k2
  */
 
-params.fasta   = "${System.getProperty('user.home')}/data/uniprot/uniprot_sprot.fasta.gz"
-params.outdir  = "${launchDir}/results"
-// When true, restrict the sweep to the 7 HP-family alphabets (skip protein/dayhoff).
-// Meant for null-comparison fastas (e.g. ushuffle order-2/order-3 controls) where only
-// the HP-family degeneracy question is being re-tested, not the full alphabet/ksize sweep.
-params.hp_only = false
-// HP-family kmin. Default 15 (Swiss-Prot). UniRef50/90/100 are ~100-700x bigger
-// than Swiss-Prot by compressed fasta size, so raise this (e.g. 18) to skip the
-// worst combinatorial-degeneracy zone rather than trying to memory-size for it.
-params.hp_kmin = 15
+params.outdir_root = "${launchDir}"
+// Comma-separated subset of ALL_DATASETS' names to actually run. Default is the
+// two with a validated memory profile (k2, k3). uniref50/90/100 are opt-in until
+// their peak_rss has been checked in the trace file -- add them explicitly once
+// ready, e.g. --datasets k2,k3,uniref50. See README-sherlock.md.
+params.datasets = 'k2,k3'
+// HP-family kmin for the UniRef datasets specifically (k2/k3 always use 15,
+// Swiss-Prot's floor). UniRef50/90/100 are ~100-700x bigger than Swiss-Prot by
+// compressed fasta size, so this is raised by default to skip the worst
+// combinatorial-degeneracy zone rather than trying to memory-size for it.
+params.hp_kmin_uniref = 18
 // Multiplier on indexAndSpectrum's base memory tiers (see taskMemory below), for
-// input fastas much bigger than Swiss-Prot. This is a starting estimate, not a
-// measurement -- kmerseek hasn't been profiled at UniRef scale yet. Check the
-// trace file's peak_rss after the first real run and correct this up or down.
-params.mem_scale = 1
-// Wall-clock limit per task. Swiss-Prot combos finish well under the 4h default;
-// UniRef-scale inputs will need more -- same "starting estimate" caveat as above.
+// the UniRef datasets. Starting estimate, not a measurement -- kmerseek hasn't
+// been profiled at UniRef scale yet. Check the trace file's peak_rss after the
+// first real run and correct this up or down before enabling uniref90/100.
+params.mem_scale_uniref = 1
+// Wall-clock limit per task. Swiss-Prot-scale combos finish well under the 4h
+// default; UniRef-scale inputs will need more -- same "starting estimate" caveat.
 params.task_time = '4h'
 
-// params.hp_kmin arrives as a String when set via --hp_kmin on the CLI, and a
-// Groovy range needs comparable endpoints -- cast before using it as a range bound.
-def hpKmin = params.hp_kmin as Integer
+// name, fasta (relative to launchDir), hp_only, hp_kmin, mem_scale.
+// fasta/hp_kmin/mem_scale are resolved lazily (params.* read here, at parse time,
+// so CLI overrides of hp_kmin_uniref/mem_scale_uniref apply to every UniRef entry).
+def ALL_DATASETS = [
+    [name: 'k2',        fasta: 'data/uniprot_sprot.ushuffle_k2.fasta.gz', hp_only: true,  hp_kmin: 15,                        mem_scale: 1],
+    [name: 'k3',        fasta: 'data/uniprot_sprot.ushuffle_k3.fasta.gz', hp_only: true,  hp_kmin: 15,                        mem_scale: 1],
+    [name: 'uniref50',  fasta: 'data/uniref50.fasta.gz',                  hp_only: false, hp_kmin: params.hp_kmin_uniref as Integer, mem_scale: params.mem_scale_uniref],
+    [name: 'uniref90',  fasta: 'data/uniref90.fasta.gz',                  hp_only: false, hp_kmin: params.hp_kmin_uniref as Integer, mem_scale: params.mem_scale_uniref],
+    [name: 'uniref100', fasta: 'data/uniref100.fasta.gz',                 hp_only: false, hp_kmin: params.hp_kmin_uniref as Integer, mem_scale: params.mem_scale_uniref],
+]
+
+def selectedNames = (params.datasets as String).split(',')*.trim() as Set
+def DATASETS = ALL_DATASETS.findAll { it.name in selectedNames }
+if (DATASETS.isEmpty()) {
+    error "params.datasets (${params.datasets}) matched none of: ${ALL_DATASETS*.name.join(', ')}"
+}
+def unmatched = selectedNames - DATASETS*.name
+if (unmatched) {
+    error "params.datasets named unknown dataset(s) ${unmatched.join(', ')} -- valid names: ${ALL_DATASETS*.name.join(', ')}"
+}
 
 // [cli_flag, label, kmin, kmax] per alphabet. cli_flag uses clap's kebab-case;
 // label uses snake_case, matching the moltype kmerseek writes into the CSV.
-def ALL_ENCODINGS = [
-    ['protein',              'protein',             5,  15],
-    ['dayhoff',               'dayhoff',             10, 20],
-    ['hp',                    'hp',                  hpKmin, 30],
-    ['hp-kyte-doolittle',     'hp_kyte_doolittle',   hpKmin, 30],
-    ['hp-lehninger-plus-c',   'hp_lehninger_plus_c', hpKmin, 30],
-    ['hp-thomas-dill',        'hp_thomas_dill',       hpKmin, 30],
-    ['hp-thomas-dill-no-c',   'hp_thomas_dill_no_c', hpKmin, 30],
-    ['hp-pbotc-1st-ed',       'hp_pbotc_1st_ed',     hpKmin, 30],
-    ['hp-shuffled-control',   'hp_shuffled_control', hpKmin, 30],
-]
-
-def ENCODINGS = params.hp_only
-    ? ALL_ENCODINGS.findAll { cli_flag, label, kmin, kmax -> label.startsWith('hp') }
-    : ALL_ENCODINGS
+// hpOnly restricts to the 7 HP-family alphabets (skip protein/dayhoff) -- used
+// for null-comparison datasets (ushuffle order-2/order-3 controls) where only
+// the HP-family degeneracy question is being re-tested, not the full sweep.
+def encodingsFor(hpOnly, hpKmin) {
+    def all = [
+        ['protein',              'protein',             5,  15],
+        ['dayhoff',               'dayhoff',             10, 20],
+        ['hp',                    'hp',                  hpKmin, 30],
+        ['hp-kyte-doolittle',     'hp_kyte_doolittle',   hpKmin, 30],
+        ['hp-lehninger-plus-c',   'hp_lehninger_plus_c', hpKmin, 30],
+        ['hp-thomas-dill',        'hp_thomas_dill',       hpKmin, 30],
+        ['hp-thomas-dill-no-c',   'hp_thomas_dill_no_c', hpKmin, 30],
+        ['hp-pbotc-1st-ed',       'hp_pbotc_1st_ed',     hpKmin, 30],
+        ['hp-shuffled-control',   'hp_shuffled_control', hpKmin, 30],
+    ]
+    hpOnly ? all.findAll { cli_flag, label, kmin, kmax -> label.startsWith('hp') } : all
+}
 
 // HP-family alphabets collapse 20 amino acids onto 2 symbols, so a handful of
 // k-mers absorb a huge share of the proteome (see notebook 24's degeneracy-ratio
@@ -74,36 +98,36 @@ def ENCODINGS = params.hp_only
 def isHpFamily = { label -> label.startsWith('hp') }
 def NODE_MEM_CAP = 176.GB
 
-def taskMemory = { label, ksize, attempt ->
+def taskMemory = { label, memScale, attempt ->
     def base = isHpFamily(label) ? 96.GB : 16.GB
-    // params.mem_scale arrives as a String when set via --mem_scale on the CLI
+    // memScale arrives as a String when the underlying param was set via the CLI
     // (Nextflow doesn't coerce CLI params), and MemoryUnit * String isn't defined.
-    def scale = (params.mem_scale as Number)
+    def scale = (memScale as Number)
     def requested = base * scale * attempt
     requested <= NODE_MEM_CAP ? requested : NODE_MEM_CAP
 }
 
 process indexAndSpectrum {
-    tag "${label}_k${ksize}"
-    publishDir params.outdir, mode: 'copy', pattern: '*.spectrum.csv.gz'
-    publishDir params.outdir, mode: 'copy', pattern: '*.index.log'
+    tag "${dataset}_${label}_k${ksize}"
+    publishDir { "${params.outdir_root}/results-${dataset}" }, mode: 'copy', pattern: '*.spectrum.csv.gz'
+    publishDir { "${params.outdir_root}/results-${dataset}" }, mode: 'copy', pattern: '*.index.log'
 
-    memory { taskMemory(label, ksize, task.attempt) }
+    memory { taskMemory(label, mem_scale, task.attempt) }
     time   { params.task_time }
     errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
     maxRetries 1
 
     input:
-    tuple path(fasta), val(cli_flag), val(label), val(ksize)
+    tuple path(fasta), val(cli_flag), val(label), val(ksize), val(dataset), val(mem_scale)
 
     output:
-    path "sprot.${label}.k${ksize}.spectrum.csv.gz"
-    path "sprot.${label}.k${ksize}.index.log"
+    path "${dataset}.${label}.k${ksize}.spectrum.csv.gz"
+    path "${dataset}.${label}.k${ksize}.index.log"
 
     script:
-    def db_name   = "sprot.${label}.k${ksize}.kmerseek.rocksdb"
-    def spectrum  = "sprot.${label}.k${ksize}.spectrum.csv.gz"
-    def log_file  = "sprot.${label}.k${ksize}.index.log"
+    def db_name   = "${dataset}.${label}.k${ksize}.kmerseek.rocksdb"
+    def spectrum  = "${dataset}.${label}.k${ksize}.spectrum.csv.gz"
+    def log_file  = "${dataset}.${label}.k${ksize}.index.log"
     """
     set -uo pipefail
 
@@ -152,14 +176,14 @@ process indexAndSpectrum {
 
 
 workflow {
-    fasta_ch = channel.fromPath(params.fasta)
+    println "Datasets: ${DATASETS*.name.join(', ')}"
 
-    combos = channel.of(*ENCODINGS)
-        .flatMap { cli_flag, label, kmin, kmax ->
-            (kmin..kmax).collect { k -> tuple(cli_flag, label, k) }
+    inputs = channel.of(*DATASETS).flatMap { ds ->
+        def fastaFile = file(ds.fasta, checkIfExists: true)
+        encodingsFor(ds.hp_only, ds.hp_kmin).collectMany { cli_flag, label, kmin, kmax ->
+            (kmin..kmax).collect { k -> tuple(fastaFile, cli_flag, label, k, ds.name, ds.mem_scale) }
         }
-
-    inputs = fasta_ch.combine(combos)
+    }
 
     indexAndSpectrum(inputs)
 }

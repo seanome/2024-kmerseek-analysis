@@ -7,11 +7,15 @@ agent, whose socket (`~/.1password/agent.sock`) isn't reachable from this sandbo
 A `Makefile` in this directory wraps every command below. `build-image`/`push-image`/
 `sync-pipeline`/`sync-data`/`pull-k2`/`pull-k3`/`pull-uniref50`/`pull-uniref90`/
 `pull-uniref100` run on your Mac; `download-uniref50`/`download-uniref90`/
-`download-uniref100`/`run-k2`/`run-k3`/`run-uniref50`/`run-uniref90`/`run-uniref100`/`status`
-run on Sherlock (`ssh sherlock`, `cd $SCRATCH/kmer-spectra`, `make <target>`). Each `run-*`
-target launches nextflow in the foreground from its own subdirectory, so their `work/`, trace,
-timeline, and report files don't collide -- run whichever you're doing concurrently in
-separate tmux panes.
+`download-uniref100`/`run`/`status` run on Sherlock (`ssh sherlock`, `cd $SCRATCH/kmer-spectra`,
+`make <target>`).
+
+**One `make run` sweeps every selected dataset in a single nextflow invocation** -- pass
+`DATASETS=k2,k3,uniref50` (comma-separated, matching `main.nf`'s dataset names: `k2`, `k3`,
+`uniref50`, `uniref90`, `uniref100`) to choose which; default is `k2,k3`, the two with a
+validated memory profile. There's one shared `work/`/trace/timeline/report for the whole run
+now, not one per dataset -- no more juggling separate tmux panes just to keep runs from
+colliding.
 
 Account: group `ayeletv`, using the `hns` school-condo partition (`groups` / `sh_part` on
 Sherlock). `hns` had ~7.4k jobs queued vs. ~95k on the public `normal` partition at last check --
@@ -53,7 +57,7 @@ Then resume the run rather than starting over -- completed tasks are cached by N
 `work/` dir, independent of the Apptainer image cache:
 
 ```bash
-make run-k2 NF_ARGS=-resume   # or run-k3
+make run NF_ARGS=-resume
 ```
 
 `nextflow.config`'s `sherlock` profile already points at
@@ -88,17 +92,17 @@ git checkout olgabot/kmer-spectra-analysis
 ln -s "$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra" "$SCRATCH/kmer-spectra"
 ```
 
-`data/`, `run-k2/`, `run-k3/`, and `results-ushuffle-*/` live inside that sparse-checked-out
-directory as untracked, gitignored content alongside the tracked pipeline files, the same as on
-your Mac -- `git pull` never touches them.
+`data/` and `results-<dataset>/` live inside that sparse-checked-out directory as untracked,
+gitignored content alongside the tracked pipeline files, the same as on your Mac -- `git pull`
+never touches them.
 
-`$SCRATCH/kmer-spectra` is only for your own `cd` convenience. The Makefile's `run-k2`/`run-k3`
-targets never reference it -- they pass `--fasta`/`--outdir` as paths relative to `run-kN/`
-instead, because Apptainer's `autoMounts` binds paths based on the pipeline's real (non-symlinked)
-directory tree, and a path reached through the `$SCRATCH/kmer-spectra` symlink is a second,
-unrelated absolute path outside that tree that never gets bound -- the input stages in fine on
-the host but the symlink is dangling inside the container, producing a "FASTA file not found"
-error that's confusing because the file plainly does exist when you check.
+`$SCRATCH/kmer-spectra` is only for your own `cd` convenience. `main.nf`'s `--fasta` paths are
+relative to this directory itself (its launchDir), not that symlink, because Apptainer's
+`autoMounts` binds paths based on the pipeline's real (non-symlinked) directory tree, and a path
+reached through the `$SCRATCH/kmer-spectra` symlink is a second, unrelated absolute path outside
+that tree that never gets bound -- the input stages in fine on the host but the symlink is
+dangling inside the container, producing a "FASTA file not found" error that's confusing because
+the file plainly does exist when you check.
 
 After the one-time setup, syncing code and data is:
 
@@ -117,27 +121,26 @@ are only ~100-150 MB each): data files aren't code, so git isn't the right tool 
 
 Nextflow's own head process is lightweight (mostly polling SLURM), but it needs to survive an
 SSH disconnect and the docs ask that anything nontrivial not run bare on a login node -- run it
-inside `tmux`, not bare on the login node. `make run-k2` and `make run-k3` each block in the
-foreground and launch from their own `run-kN/` subdirectory, so the two runs' `work/`, trace,
-timeline, and report files don't collide. Run them in two separate tmux panes to get both ksizes
-running at the same time:
+inside `tmux`. One `make run` sweeps every dataset in `DATASETS` (default `k2,k3`) in a single
+nextflow invocation and blocks in the foreground:
 
 ```bash
 ssh sherlock
 tmux new -s kmer-spectra
-# split the window (ctrl-b %), then in each pane:
-cd "$SCRATCH/kmer-spectra" && make run-k2
-cd "$SCRATCH/kmer-spectra" && make run-k3
+cd "$SCRATCH/kmer-spectra"
+make run                        # DATASETS=k2,k3 by default
+# or: DATASETS=k2,k3,uniref50 make run
 
 # detach: ctrl-b d ; reattach later with: tmux attach -t kmer-spectra
 ```
 
-From a third pane or another session, `make status` shows the SLURM queue.
+From another pane or session, `make status` shows the SLURM queue.
 
-Each `(alphabet, ksize)` combo becomes its own `sbatch` job on `hns` (`--account=ayeletv`), up to
-20 concurrent per run (`maxForks = 20` in the profile -- raise or lower depending on how `hns` is
-looking that day). With both k2 and k3 running, that's up to 40 concurrent jobs against the
-`ayeletv` account.
+Each `(dataset, alphabet, ksize)` combo becomes its own `sbatch` job on `hns` (`--account=ayeletv`),
+up to 20 concurrent across *all* selected datasets together (`maxForks = 20` in the profile --
+raise or lower depending on how `hns` is looking that day). That's a real improvement over
+running datasets as separate invocations: Nextflow's scheduler now knows about all of them at
+once instead of each assuming it owns the whole `maxForks` budget by itself.
 
 ## 5. Pull results back
 
@@ -176,26 +179,27 @@ make download-uniref90     # ~40-70 min
 make download-uniref100    # ~80-140 min
 ```
 
-Then run the full 9-alphabet sweep, same as Swiss-Prot, but with the HP-family ksize floor
-raised from 15 to 18 (`HP_KMIN_UNIREF`, default 18) -- these are real biological sequences,
-not a null control, so it's the full sweep, not `--hp_only`:
+Then add it to a `make run` -- these are real biological sequences, not a null control, so the
+full 9-alphabet sweep runs (unlike k2/k3's `--hp_only`), with the HP-family ksize floor raised
+from 15 to 18 by default (`main.nf`'s `hp_kmin_uniref` param):
 
 ```bash
-make run-uniref50 NF_ARGS=-resume    # in its own tmux pane
+DATASETS=k2,k3,uniref50 make run NF_ARGS=-resume
+# or by itself: DATASETS=uniref50 make run NF_ARGS=-resume
 ```
 
-**Run uniref50 first, by itself, before touching 90 or 100.** `MEM_SCALE` (default 1) leaves
-indexAndSpectrum at Swiss-Prot's own memory tiers (96 GB for HP-family, 16 GB for
-protein/dayhoff, capped at 176 GB) -- deliberately *not* pre-scaled by the ~94x/344x/676x size
-ratios above, because that ratio is a fasta-byte-size proxy, not a measurement of kmerseek's
-actual peak RAM at this scale, and guessing memory numbers without evidence is exactly what
-cost real SLURM re-queue cycles getting Swiss-Prot's HP-family combos right (see main.nf's
-`taskMemory` comment for that history). Once uniref50 finishes or fails, check
-`kmer_spectra.*.trace.txt`'s `peak_rss` column and set a real `MEM_SCALE` for 90/100 from that,
-e.g.:
+**Run uniref50 first, by itself, before adding 90 or 100.** `hp_kmin_uniref`'s companion,
+`mem_scale_uniref` (default 1), leaves `indexAndSpectrum` at Swiss-Prot's own memory tiers
+(96 GB for HP-family, 16 GB for protein/dayhoff, capped at 176 GB) -- deliberately *not*
+pre-scaled by the ~94x/344x/676x size ratios above, because that ratio is a fasta-byte-size
+proxy, not a measurement of kmerseek's actual peak RAM at this scale, and guessing memory
+numbers without evidence is exactly what cost real SLURM re-queue cycles getting Swiss-Prot's
+HP-family combos right (see `main.nf`'s `taskMemory` comment for that history). Once uniref50
+finishes or fails, check `kmer_spectra.*.trace.txt`'s `peak_rss` column and set a real
+`mem_scale_uniref` for 90/100 from that, e.g.:
 
 ```bash
-MEM_SCALE=4 make run-uniref90 NF_ARGS=-resume
+DATASETS=uniref90 make run NF_ARGS="-resume --mem_scale_uniref 4"
 ```
 
 **Shuffled (ushuffle order-2/order-3) null controls for UniRef50/90/100 don't exist yet.** The

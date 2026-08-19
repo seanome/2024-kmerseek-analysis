@@ -1,7 +1,7 @@
 # k-mer spectra pipeline: build/push/sync targets run on your Mac.
-# run-*/status targets run ON Sherlock (ssh sherlock; cd $SCRATCH/kmer-spectra).
-# Run run-k2 and run-k3 in separate tmux panes -- they block in the foreground.
-# See README-sherlock.md for the full narrative walkthrough.
+# run/status targets run ON Sherlock (ssh sherlock; cd $SCRATCH/kmer-spectra).
+# One `make run` sweeps every dataset named in DATASETS (default: k2,k3) in a
+# single nextflow invocation. See README-sherlock.md for the full walkthrough.
 
 SHELL := /bin/bash
 
@@ -21,23 +21,25 @@ DOCKER_PLATFORM := linux/amd64
 
 # --- Sherlock-side config (only used by targets that run there) ---
 PROFILE := sherlock
+# Which datasets `make run` sweeps -- matches main.nf's own default (k2, k3;
+# the two with a validated memory profile). Override per-invocation to add
+# more once they're ready, e.g. `DATASETS=k2,k3,uniref50 make run`.
+DATASETS ?= k2,k3
 
 # UniRef50/90/100: real (non-shuffled) sequences, full 9-alphabet sweep, HP-family
-# floor raised from Swiss-Prot's k15 -- see README-sherlock.md for why. Content-
-# Length in bytes (`curl -sIL <url>`), checked 2026-08-18 against
-# ftp.uniprot.org/pub/databases/uniprot/uniref/<name>/<name>.fasta.gz -- confirm
-# again before a big download if it's been a while, UniProt updates these on
-# a regular release schedule.
+# floor raised from Swiss-Prot's k15 by default (main.nf's hp_kmin_uniref) -- see
+# README-sherlock.md for why. Content-Length in bytes (`curl -sIL <url>`), checked
+# 2026-08-18 against ftp.uniprot.org/pub/databases/uniprot/uniref/<name>/<name>.fasta.gz
+# -- confirm again before a big download if it's been a while, UniProt updates
+# these on a regular release schedule.
 UNIREF_BASE_URL  := https://ftp.uniprot.org/pub/databases/uniprot/uniref
-HP_KMIN_UNIREF   ?= 18
-MEM_SCALE        ?= 1
 UNIREF50_BYTES   := 8770260598
 UNIREF90_BYTES   := 32059052376
 UNIREF100_BYTES  := 63101622504
 
 .PHONY: build-image push-image sync-pipeline sync-data \
         download-uniref50 download-uniref90 download-uniref100 \
-        run-k2 run-k3 run-uniref50 run-uniref90 run-uniref100 status \
+        run status \
         pull-k2 pull-k3 pull-uniref50 pull-uniref90 pull-uniref100 pull-all
 
 ## ---- run these from your Mac ----
@@ -64,12 +66,12 @@ sync-data:
 
 pull-k2:
 	rsync -avz --progress \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-ushuffle-k2/' \
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-k2/' \
 	  $(LOCAL_RESULTS_ROOT)/kmerseek-kmer-spectra-ushuffle-k2/
 
 pull-k3:
 	rsync -avz --progress \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-ushuffle-k3/' \
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-k3/' \
 	  $(LOCAL_RESULTS_ROOT)/kmerseek-kmer-spectra-ushuffle-k3/
 
 pull-uniref50:
@@ -94,51 +96,32 @@ pull-all: pull-k2 pull-k3
 
 ## ---- run these ON Sherlock (ssh sherlock; cd $SCRATCH/kmer-spectra) ----
 ##
-## Each ksize launches nextflow from its own run-kN/ subdirectory (as its
-## Nextflow launchDir), so k2 and k3 can run at the same time without their
-## workDir/trace/timeline/report files colliding. Both block in the
-## foreground -- run run-k2 and run-k3 in separate tmux panes to get both
-## ksizes running concurrently.
+## ONE nextflow run sweeps every dataset in DATASETS (default k2,k3) -- a single
+## shared workDir/trace/timeline/report, not one per dataset, and Nextflow's own
+## maxForks caps concurrency across all selected datasets together instead of
+## several uncoordinated invocations each assuming they own the whole node.
 ##
 ## No `| tee` on the nextflow command -- piping its stdout turns it into a
 ## non-tty, so Nextflow can't detect a terminal and falls back to plain
 ## sequential logging (a whole new status block per update) instead of
 ## repainting the live dashboard in place. Nextflow already writes its own
-## .nextflow.log in each run-*/ dir regardless (that's what's actually been
-## used to debug every OOM/arch/path issue this session, not a tee'd copy),
-## so there's nothing lost by letting stdout go straight to the terminal.
+## .nextflow.log regardless (that's what's actually been used to debug every
+## OOM/arch/path issue this session, not a tee'd copy), so there's nothing lost
+## by letting stdout go straight to the terminal.
 ##
-## --fasta/--outdir are relative to run-kN/ (../data, ../results-ushuffle-kN),
-## NOT $SCRATCH/kmer-spectra/... -- workDir/launchDir already live under the
-## real (non-symlinked) checkout path, and Apptainer's autoMounts binds paths
-## based on that real tree. A fasta file reached through the $SCRATCH/kmer-spectra
-## symlink is a second, unrelated absolute path that never gets bound, so the
-## staged input symlink was dangling inside the container ("FASTA file not
-## found" even though the file exists on the host). Relative paths never cross
-## the symlink boundary, so this can't happen.
+## main.nf's --fasta paths are relative to this directory (its launchDir), NOT
+## $SCRATCH/kmer-spectra/... -- workDir/launchDir already live under the real
+## (non-symlinked) checkout path, and Apptainer's autoMounts binds paths based
+## on that real tree. A fasta file reached through the $SCRATCH/kmer-spectra
+## symlink is a second, unrelated absolute path that never gets bound, so a
+## staged input symlink would be dangling inside the container ("FASTA file not
+## found" even though the file plainly exists on the host).
 
-# Shared per-ksize launch recipe. Implemented as a define + $(call ...) rather
-# than a `run-%:` pattern rule -- macOS ships GNU Make 3.81 (2006), which does
-# not apply pattern rules to .PHONY targets, so `make run-k2` would silently
-# no-op ("Nothing to be done"). Explicit targets below are also more portable
-# to whatever `make` version happens to be on Sherlock.
-define launch_ksize
-	mkdir -p run-$(1)
-	cd run-$(1) && \
-	  module load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) $(NF_ARGS) \
-	    --fasta ../data/uniprot_sprot.ushuffle_$(1).fasta.gz \
-	    --outdir ../results-ushuffle-$(1) \
-	    --hp_only true
-endef
+run:
+	module load biology nextflow && \
+	  nextflow run main.nf -profile $(PROFILE) $(NF_ARGS) --datasets $(DATASETS)
 
-run-k2:
-	$(call launch_ksize,k2)
-
-run-k3:
-	$(call launch_ksize,k3)
-
-## ---- UniRef50/90/100: download + run, both ON Sherlock ----
+## ---- UniRef50/90/100 downloads: ON Sherlock ----
 ##
 ## UniRef50/90/100 are ~94x/344x/676x Swiss-Prot's compressed fasta size (verified
 ## via `curl -sIL`, not a guess) -- direct download here avoids moving 8-63 GB
@@ -164,35 +147,6 @@ download-uniref90:
 
 download-uniref100:
 	$(call download_uniref,uniref100,$(UNIREF100_BYTES))
-
-## Full 9-alphabet sweep (not --hp_only, unlike run-k2/run-k3 -- these are real
-## sequences, not null controls), with the HP-family floor raised via
-## --hp_kmin. MEM_SCALE defaults to 1 (Swiss-Prot's own tiers, unscaled) --
-## deliberately NOT pre-scaled by UniRef's size ratio, since that ratio is a
-## fasta-byte-size proxy, not a measurement of kmerseek's actual peak RAM at
-## this scale, and guessing memory numbers without evidence is exactly what
-## cost real SLURM re-queue cycles on Swiss-Prot. Run uniref50 first, check its
-## trace file's peak_rss, and only then decide whether uniref90/100 need
-## `MEM_SCALE=N make run-uniref90` -- see README-sherlock.md.
-define launch_uniref
-	mkdir -p run-$(1)
-	cd run-$(1) && \
-	  module load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) $(NF_ARGS) \
-	    --fasta ../data/$(1).fasta.gz \
-	    --outdir ../results-$(1) \
-	    --hp_kmin $(HP_KMIN_UNIREF) \
-	    --mem_scale $(MEM_SCALE)
-endef
-
-run-uniref50:
-	$(call launch_uniref,uniref50)
-
-run-uniref90:
-	$(call launch_uniref,uniref90)
-
-run-uniref100:
-	$(call launch_uniref,uniref100)
 
 status:
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
