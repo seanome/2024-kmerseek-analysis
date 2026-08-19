@@ -10,7 +10,7 @@ from pathlib import Path
 
 import polars as pl
 
-LEAD = ["tool", "variant", "species", "split", "stratum_axis", "stratum"]
+LEAD = ["truth_set", "tool", "variant", "species", "split", "stratum_axis", "stratum"]
 
 # Threshold-free and therefore comparable across tools with different default cutoffs.
 HEADLINE = ["fmax", "auprc", "roc_auc", "smin", "ndo", "recall_reachable", "precision"]
@@ -51,6 +51,13 @@ def main():
     board = metrics.filter(
         (pl.col("split") == LEADERBOARD_SPLIT) & (pl.col("stratum_axis") == "all")
     )
+    # Never pool truth sets into one leaderboard: Pfam is circular with the profile
+    # baselines and Swiss-Prot is not, so a mean across them has no interpretation.
+    if "truth_set" in board.columns and board.height:
+        for ts in board["truth_set"].unique().sort().to_list():
+            print(f"\n--- truth set: {ts} ---")
+            _print_board(board.filter(pl.col("truth_set") == ts))
+        return
     if board.height == 0:
         # No holdout column at all (e.g. an older truth table) -- fall back rather than
         # print an empty leaderboard, and say which cut is being shown.
@@ -59,6 +66,10 @@ def main():
     else:
         print(f"Leaderboard: split={LEADERBOARD_SPLIT}, ungrouped, averaged over species")
 
+    _print_board(board)
+
+
+def _print_board(board: pl.DataFrame):
     # Average over species first, then rank. Summing would let the species with the most
     # annotated proteins decide the winner. kmerseek has 113 variants against every other
     # tool's one, so pick each tool's best variant rather than letting the sweep bury the

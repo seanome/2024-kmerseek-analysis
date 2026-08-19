@@ -62,6 +62,14 @@ params.hgnc_file  = "${home}/data/gencode/results-human-mouse-orthologs/hgnc_com
 params.omega_file = "${projectDir}/../human-mouse-dnds-omega/results/omega_results.tsv"
 params.mobidb_cache = null   // optional curated disorder; pLDDT<50 proxy is always computed
 
+// Second, function-anchored truth set. Pfam-A domains are DEFINED by profile HMMs and
+// phmmer/jackhmmer/hhblits are profile methods, so Pfam truth is circular with those
+// baselines -- and worse, a region Pfam never annotated is labelled absent, so every
+// correct cryptic-domain rescue scores as a false positive. Swiss-Prot FT features are
+// literature-curated and defined by function, circular with neither the profile baselines
+// nor the structure baselines. Set to null to run the Pfam arm alone.
+params.swissprot_dat = "${home}/data/uniprot/uniprot_sprot.dat.gz"
+
 // Held-out evaluation. Nothing here learns from the data, so there is no model to
 // overfit -- but picking the best of 113 alphabet x ksize combos on the same instances
 // you report IS selection, and reporting the winner on the data that chose it is
@@ -215,6 +223,34 @@ process buildDomainTruth {
         --split-by         ${params.split_by} \\
         --holdout-fraction ${params.holdout_fraction} \\
         --split-seed       ${params.split_seed}
+    """
+}
+
+process buildSwissprotTruth {
+    /*
+     * Same output schema as buildDomainTruth, so the entire scoring path runs against it
+     * unchanged. The pfam_id column carries a Swiss-Prot feature type (ACT_SITE,
+     * TRANSMEM, ...) rather than a Pfam accession; the name is kept for compatibility.
+     */
+    label 'python'
+    publishDir "${params.outdir}/truth_swissprot", mode: 'copy'
+
+    input:
+    tuple path(sprot_dat), path(annotations_dir)
+
+    output:
+    path "human_swissprot_truth.parquet", emit: truth
+    path "*_domain_map.parquet",          emit: maps
+    path "swissprot_summary.json",        emit: summary
+
+    script:
+    """
+    build_swissprot_truth.py \\
+        --sprot-dat   ${sprot_dat} \\
+        --annotations ${annotations_dir} \\
+        --truth-out   human_swissprot_truth.parquet \\
+        --map-outdir  . \\
+        --summary-out swissprot_summary.json
     """
 }
 
@@ -709,20 +745,20 @@ process scoreDomainCalls {
      * human_domain_truth.parquet. Emits per-call detail (for downstream re-cutting) and
      * a metrics row.
      */
-    tag "${tool}/${variant} vs ${species}"
+    tag "${truth_set}: ${tool}/${variant} vs ${species}"
     label 'python'
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
-    tuple val(species), val(tool), val(variant), val(mya), path(regions), path(truth),
-          path(domain_map), path(covariates)
+    tuple val(truth_set), val(species), val(tool), val(variant), val(mya), path(regions),
+          path(truth), path(domain_map), path(covariates)
 
     output:
-    path "${tool}.${variant}.${species}.calls.parquet",   emit: calls
-    path "${tool}.${variant}.${species}.metrics.parquet", emit: metrics
-    path "${tool}.${variant}.${species}.curve.parquet",   emit: curve
+    path "${truth_set}.${tool}.${variant}.${species}.calls.parquet",   emit: calls
+    path "${truth_set}.${tool}.${variant}.${species}.metrics.parquet", emit: metrics
+    path "${truth_set}.${tool}.${variant}.${species}.curve.parquet",   emit: curve
 
     script:
     // Folddisco reports the envelope of a discontinuous residue set, not an alignment.
@@ -742,9 +778,10 @@ process scoreDomainCalls {
         --covariates   ${covariates} \\
         --min-overlap  ${params.min_overlap} \\
         --strict-iou   ${params.strict_iou} \\
-        --calls-out    ${tool}.${variant}.${species}.calls.parquet \\
-        --metrics-out  ${tool}.${variant}.${species}.metrics.parquet \\
-        --curve-out    ${tool}.${variant}.${species}.curve.parquet
+        --truth-set    ${truth_set} \\
+        --calls-out    ${truth_set}.${tool}.${variant}.${species}.calls.parquet \\
+        --metrics-out  ${truth_set}.${tool}.${variant}.${species}.metrics.parquet \\
+        --curve-out    ${truth_set}.${tool}.${variant}.${species}.curve.parquet
     """
 }
 
@@ -837,10 +874,29 @@ workflow {
     }
     covariates = buildQueryCovariates(cov_in).covariates
 
-    // (species, domain_map_parquet) — flatten the emitted maps and key them by species
-    map_ch = truth_out.maps
-        .flatten()
-        .map { m -> tuple(m.name.replaceAll(/_domain_map\.parquet$/, ''), m) }
+    // One entry per truth set: (label, truth_parquet, species->map channel). Scoring runs
+    // once per set, so every metric row says which truth it was measured against.
+    def map_of = { maps -> maps.flatten()
+        .map { m -> tuple(m.name.replaceAll(/_domain_map\.parquet$/, ''), m) } }
+
+    truth_sets = Channel.of(tuple("pfam", 1))
+        .combine(truth_out.truth)
+        .map { label, _i, t -> tuple(label, t) }
+    map_ch = map_of(truth_out.maps).map { sp, m -> tuple("pfam", sp, m) }
+
+    if (params.swissprot_dat && file(params.swissprot_dat).exists()) {
+        sprot = buildSwissprotTruth(
+            Channel.of(tuple(file(params.swissprot_dat), annotations))
+        )
+        truth_sets = truth_sets.mix(
+            Channel.of(tuple("swissprot", 1)).combine(sprot.truth)
+                .map { label, _i, t -> tuple(label, t) }
+        )
+        map_ch = map_ch.mix(map_of(sprot.maps).map { sp, m -> tuple("swissprot", sp, m) })
+    } else {
+        log.warn "swissprot_dat not found (${params.swissprot_dat}) -- running the Pfam " +
+                 "truth arm only. Pfam is circular with the profile baselines; see README."
+    }
 
     // ---- kmerseek: alphabet x ksize x species ----
     kmerseek_regions = Channel.empty()
@@ -938,15 +994,20 @@ workflow {
     // age travels with every metric row and notebooks can plot against it directly.
     def MYA = SPECIES.collectEntries { [(it.label): it.mya] }
 
+    // Cross every result with every truth set, joining on (truth_set, species) so a run
+    // never scores Pfam regions against a Swiss-Prot map or vice versa.
     score_in = all_regions
         .map { species, tool, variant, regions ->
             tuple(species, tool, variant, MYA[species] ?: 0, regions)
         }
-        .combine(map_ch, by: 0)
-        .combine(truth_out.truth)
+        .combine(map_ch.map { ts, sp, m -> tuple(sp, ts, m) }, by: 0)
+        .map { species, tool, variant, mya, regions, ts, domain_map ->
+            tuple(ts, species, tool, variant, mya, regions, domain_map)
+        }
+        .combine(truth_sets, by: 0)
         .combine(covariates)
-        .map { species, tool, variant, mya, regions, domain_map, truth, cov ->
-            tuple(species, tool, variant, mya, regions, truth, domain_map, cov)
+        .map { ts, species, tool, variant, mya, regions, domain_map, truth, cov ->
+            tuple(ts, species, tool, variant, mya, regions, truth, domain_map, cov)
         }
 
     scored = scoreDomainCalls(score_in)
@@ -959,6 +1020,8 @@ workflow {
         // hmmpress writes Pfam-A.hmm.{h3m,h3i,h3f,h3p} alongside the .hmm; hmmscan needs them.
         def pfam_aux = file("${params.pfam_hmm}.h3*")
         hmmscan_out = hmmscanAnnotate(Channel.of(tuple(human_fasta, pfam_hmm, pfam_aux)))
+        // The ceiling is scored against Pfam only: hmmscan IS the Pfam annotation
+        // procedure, so a Swiss-Prot row for it would compare two unrelated label spaces.
         ceiling     = scoreHmmscanCeiling(
             hmmscan_out.combine(truth_out.truth).combine(covariates)
         )

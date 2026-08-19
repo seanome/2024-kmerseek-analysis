@@ -177,6 +177,7 @@ sync-pipeline:
 
 # Data may move by rsync. Annotations are small; proteomes are ~1 GB; structures ~60 GB.
 HGNC_FILE  := /Users/olga/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt
+SPROT_DAT  := /Users/olga/data/uniprot/uniprot_sprot.dat.gz
 OMEGA_FILE := $(ANALYSIS_ROOT)/nextflow-runs/human-mouse-dnds-omega/results/omega_results.tsv
 
 sync-data:
@@ -186,6 +187,8 @@ sync-data:
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/qfo/'
 	rsync -avz --progress -e ssh $(HGNC_FILE) $(OMEGA_FILE) \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/covariates/'
+	rsync -avz --progress -e ssh $(SPROT_DAT) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/'
 
 sync-structures:
 	rsync -av --progress --copy-links -e ssh $(STRUCT_DIR)/ \
@@ -224,6 +227,7 @@ define launch
 	    --structures  ../data/structures \
 	    --hgnc_file   ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file  ../data/covariates/omega_results.tsv \
+	    --swissprot_dat ../data/uniprot_sprot.dat.gz \
 	    --outdir      ../results \
 	    2>&1 | tee -a nextflow.$(1).log
 endef
@@ -266,6 +270,7 @@ run-mini: mini-testset-sherlock
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
 	    $(NF_ARGS) 2>&1 | tee -a nextflow.mini.log
 
 status:

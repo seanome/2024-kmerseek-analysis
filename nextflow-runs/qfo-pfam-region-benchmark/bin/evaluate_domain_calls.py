@@ -238,30 +238,90 @@ def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
         )
     )
 
-    # One row per call: its best-matching true instance. A call whose family is absent from
-    # the protein has iou 0 and stays a false positive.
-    #
-    # sort_by inside the aggregation, not a sort before group_by: polars does not promise
-    # that a group_by preserves the input order within a group, so picking .first() off a
-    # pre-sorted frame can silently return a non-best match.
-    best = (
+    # One row per call, carrying its best candidate. Assignment happens after this.
+    per_call = (
         matched.group_by(["query_acc", "pfam_id", "qstart", "qend"])
         .agg(
-            # A call can appear once per target that transferred it; they are the same
-            # call, so keep its strongest evidence rather than an arbitrary row.
             pl.col("score").max(),
             pl.col("iou").max(),
             pl.col("cover").max(),
             pl.col("true_start").sort_by("iou", descending=True).first(),
             pl.col("true_end").sort_by("iou", descending=True).first(),
         )
-        .with_columns(
-            (pl.col("cover") if semantics == "motif" else pl.col("iou"))
-            .ge(min_overlap)
-            .alias("is_tp")
-        )
     )
-    return best.collect(engine="streaming")
+    candidates = matched.select(
+        "query_acc", "pfam_id", "qstart", "qend", "score", "iou", "cover",
+        "true_start", "true_end",
+    ).filter(pl.col("true_start").is_not_null())
+
+    calls_df = per_call.collect(engine="streaming")
+    cand_df = candidates.collect(engine="streaming")
+    return assign_instances(calls_df, cand_df, min_overlap, semantics)
+
+
+def assign_instances(calls: pl.DataFrame, candidates: pl.DataFrame,
+                     min_overlap: float, semantics: str) -> pl.DataFrame:
+    """One-to-one matching between predicted regions and annotated instances.
+
+    Without this a protein carrying a tandem array is scored incoherently. Twelve
+    predictions landing on the SAME zinc finger would each count as a true positive, and a
+    single prediction swallowing all twelve fingers would also count as one -- so "merged
+    everything into one region" and "found all twelve correctly" become indistinguishable,
+    and "emitted twelve redundant copies" scores as a perfect result. Those are three
+    different behaviours and the metric has to separate them.
+
+    Greedy in score order, the COCO convention: walk predictions from best-scoring down,
+    match each to the best still-unclaimed annotation it overlaps enough, and mark both
+    used. Score order rather than IoU order matters for the PR curve -- a prediction's
+    TP/FP status must not depend on predictions ranked below it, or the curve is not
+    monotone in the threshold.
+
+    Unmatched predictions are false positives; unmatched annotations are simply not
+    recovered, and show up through the recall denominator rather than as rows here.
+    """
+    key = "cover" if semantics == "motif" else "iou"
+    if candidates.height == 0:
+        return calls.with_columns(pl.lit(False).alias("is_tp"))
+
+    elig = candidates.filter(pl.col(key) >= min_overlap).sort(
+        ["score", key], descending=[True, True], nulls_last=True
+    )
+
+    used_truth: set[tuple] = set()
+    used_call: set[tuple] = set()
+    matched_calls: dict[tuple, tuple] = {}
+
+    for qa, pf, qs, qe, _sc, _iou, _cov, ts, te in elig.select(
+        "query_acc", "pfam_id", "qstart", "qend", "score", "iou", "cover",
+        "true_start", "true_end",
+    ).iter_rows():
+        ck = (qa, pf, qs, qe)
+        tk = (qa, pf, ts, te)
+        if ck in used_call or tk in used_truth:
+            continue
+        used_call.add(ck)
+        used_truth.add(tk)
+        matched_calls[ck] = (ts, te)
+
+    if not matched_calls:
+        return calls.with_columns(pl.lit(False).alias("is_tp"))
+
+    assigned = pl.DataFrame(
+        [(k[0], k[1], k[2], k[3], v[0], v[1]) for k, v in matched_calls.items()],
+        schema=["query_acc", "pfam_id", "qstart", "qend", "a_start", "a_end"],
+        orient="row",
+    )
+    out = calls.join(assigned, on=["query_acc", "pfam_id", "qstart", "qend"], how="left")
+    return out.with_columns(
+        pl.col("a_start").is_not_null().alias("is_tp"),
+        # Report the ASSIGNED instance, not the nearest one. A call that overlapped a
+        # domain another prediction already claimed is a false positive, and leaving its
+        # near-miss coordinates in place would make the calls table read as if it matched.
+        pl.when(pl.col("a_start").is_not_null()).then(pl.col("a_start"))
+          .otherwise(None).alias("true_start"),
+        pl.when(pl.col("a_end").is_not_null()).then(pl.col("a_end"))
+          .otherwise(None).alias("true_end"),
+    ).drop("a_start", "a_end")
 
 
 def rank_roc_auc(calls: pl.DataFrame) -> float | None:
@@ -577,6 +637,8 @@ def main():
     p.add_argument("--tool", required=True)
     p.add_argument("--variant", required=True)
     p.add_argument("--species", required=True)
+    p.add_argument("--truth-set", default="pfam",
+                   help="which truth set this row was measured against")
     p.add_argument("--species-mya", type=float, default=None,
                    help="divergence from human in millions of years; the x-axis for "
                         "per-species plots")
@@ -645,7 +707,8 @@ def main():
     # family worth different amounts in different strata and break comparability.
     ic = cm.information_content(truth)
 
-    ident = {"tool": args.tool, "variant": args.variant, "species": args.species,
+    ident = {"truth_set": args.truth_set,
+             "tool": args.tool, "variant": args.variant, "species": args.species,
              "species_mya": args.species_mya,
              # Stamped on every row so an alignment tool and a motif tool are never
              # silently compared on boundary metrics that mean different things.
