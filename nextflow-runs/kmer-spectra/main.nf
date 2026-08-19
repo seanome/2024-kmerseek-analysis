@@ -10,7 +10,7 @@
  * selected datasets at once, so this is also safer than running several
  * uncoordinated invocations that don't know about each other's resource use.
  *
- * kmerseek branch: olgabot/kmer-frequency-histogram
+ * kmerseek branch: olgabot/kmer-stats-review-fixes (requires --stats-only support)
  * Docker image: kmerseek-spectra:latest (build with the Dockerfile in this directory)
  *
  * Usage:
@@ -131,6 +131,20 @@ process indexAndSpectrum {
     """
     set -uo pipefail
 
+    # --stats-only (kmerseek branch olgabot/kmer-stats-review-fixes): compute the
+    # frequency spectrum straight from the in-memory signatures and skip persisting
+    # a searchable index entirely -- no chunked signature storage, no SearchCache.
+    # This pipeline never uses the persisted index (rm -rf'd below regardless), and
+    # building it unconditionally is what broke real runs at proteome scale, in two
+    # independent ways: the SearchCache is one RocksDB value holding the whole
+    # inverted index, which can exceed RocksDB's ~4 GiB single-value limit at high
+    # ksize + a small alphabet + a large proteome ("Invalid argument: value is too
+    # large", seen on hp k=30); and chunked signature storage writes thousands of
+    # small files (500K+ signatures / 100 per chunk), which hit transient
+    # filesystem I/O errors under concurrent load on Sherlock's shared \$SCRATCH
+    # ("IO error: ... Input/output error", seen on hp_kyte_doolittle k30). Both are
+    # sidestepped entirely with --stats-only rather than working around either one.
+    #
     # 2>&1 | tee (not `2> \$log_file`) so a failure's message lands in Nextflow's
     # own .command.err too -- a plain stderr redirect hid it there, and a failed
     # task never publishes \$log_file (publishDir only copies declared outputs
@@ -138,24 +152,19 @@ process indexAndSpectrum {
     # the work dir by hash. `pipefail` keeps kmerseek's exit code (not tee's)
     # as the pipeline's exit code.
     #
-    # No `set -e` here (deliberately, unlike most scripts in this repo): kmerseek
-    # can crash *after* the spectrum CSV is already fully written. Its own
-    # SearchCache ("search_cache" RocksDB value, index.rs save_inverted_index) is
-    # built and written *after* the CSV, and this pipeline never uses it -- the
-    # rocksdb dir gets rm -rf'd below regardless. At high ksize with a small
-    # alphabet (HP-family) and a large proteome, that single serialized blob can
-    # exceed RocksDB's ~4 GiB single-value ceiling and fail with "Invalid
-    # argument: value is too large" (seen on hp k=30, Swiss-Prot-scale input --
-    # kmerseek already chunks signature storage for this exact reason, CHUNK_SIZE
-    # = 100 in save_state_with_kmer_stats, but save_inverted_index's SearchCache
-    # write doesn't get the same treatment). So: check for the completed CSV
-    # ourselves instead of trusting kmerseek's exit code.
+    # No `set -e` here: kept as defense in depth from before --stats-only existed
+    # (when kmerseek could crash in the SearchCache/chunk-write steps *after* the
+    # spectrum CSV was already fully written) -- with --stats-only there's nothing
+    # left to run after the CSV write, so this realistically can't trigger anymore,
+    # but checking for the completed CSV ourselves instead of blindly trusting
+    # kmerseek's exit code costs nothing and catches any future surprise the same way.
     kmerseek index \\
         --input ${fasta} \\
         --encoding ${cli_flag} \\
         --ksize ${ksize} \\
         --output ${db_name} \\
         --kmer-stats-out ${spectrum} \\
+        --stats-only \\
         2>&1 | tee ${log_file}
     kmerseek_exit=\$?
 
@@ -168,8 +177,8 @@ process indexAndSpectrum {
         fi
     fi
 
-    # The rocksdb index itself isn't needed downstream -- only the spectrum
-    # CSV is. Drop it so per-task work dirs don't accumulate ~100 indices.
+    # --stats-only leaves this dir tiny (a handful of near-empty RocksDB files,
+    # not a full index), but drop it anyway so per-task work dirs stay clean.
     rm -rf ${db_name}
     """
 }

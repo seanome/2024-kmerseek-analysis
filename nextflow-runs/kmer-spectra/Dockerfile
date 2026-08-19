@@ -1,15 +1,24 @@
-# Build kmerseek-spectra:latest from the olgabot/kmer-frequency-histogram branch.
+# Build kmerseek-spectra:latest from the olgabot/kmer-stats-review-fixes branch
+# (olgabot/kmer-frequency-histogram was merged into this branch's history via PR #36).
 #
 # Build context must be the kmerseek repo root:
 #   docker build -t kmerseek-spectra:latest \
-#     --build-arg GIT_SHA=b2dfde27f368a4e99a73b429d0c772ce932fd9e3 \
+#     --build-arg GIT_SHA=f006f821829e7354579267cc5336b341427105b3 \
 #     -f nextflow-runs/kmer-spectra/Dockerfile \
 #     /path/to/kmerseek
+#
+# GIT_SHA is a traceability label only (embedded via `echo "${GIT_SHA}" >
+# /build/GIT_SHA` below) -- it does NOT check out that commit. The actual code
+# built is whatever's in the build context directory at build time, so keep
+# this value in sync with that directory's real HEAD (`git rev-parse HEAD`) by
+# hand; it silently goes stale otherwise, which is exactly what happened to the
+# previous default (pinned to a commit several fixes behind what was actually
+# being built and deployed).
 
 # ── builder ──────────────────────────────────────────────────────────────────
 FROM rust:slim AS builder
 
-ARG GIT_SHA=b2dfde27f368a4e99a73b429d0c772ce932fd9e3
+ARG GIT_SHA=f006f821829e7354579267cc5336b341427105b3
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     clang \

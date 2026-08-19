@@ -36,12 +36,17 @@ cd nextflow-runs/kmer-spectra
 make push-image
 # equivalent to:
 #   docker build --platform linux/amd64 -t kmerseek-spectra:latest \
-#     --build-arg GIT_SHA=b2dfde27f368a4e99a73b429d0c772ce932fd9e3 \
+#     --build-arg GIT_SHA=f006f821829e7354579267cc5336b341427105b3 \
 #     -f Dockerfile \
 #     /Users/olga/code/kmerseek-kmer-frequency-histogram
-#   docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-17-kmer-spectra
-#   docker push docker.io/olgabot/kmerseek:2026-08-17-kmer-spectra
+#   docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-19-kmer-spectra
+#   docker push docker.io/olgabot/kmerseek:2026-08-19-kmer-spectra
 ```
+
+(`/Users/olga/code/kmerseek-kmer-frequency-histogram` is just this Mac's local directory name for
+the kmerseek checkout -- it's actually on branch `olgabot/kmer-stats-review-fixes` now, which
+superseded `olgabot/kmer-frequency-histogram` via PR #36. The `--stats-only` flag this pipeline
+now passes to `kmerseek index` requires that branch.)
 
 If Apptainer already cached a bad (arm64) image under `$SCRATCH/apptainer-cache/` from an earlier
 run, delete it after pushing the fixed image so the next task re-pulls instead of reusing the
@@ -50,7 +55,7 @@ stale `.img` -- a task failing with `the image's architecture (arm64) could not 
 `amd64 linux` means this, not a bad push:
 
 ```bash
-rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-17-kmer-spectra.img"
+rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-19-kmer-spectra.img"
 ```
 
 Then resume the run rather than starting over -- completed tasks are cached by Nextflow's own
@@ -61,7 +66,15 @@ make run NF_ARGS=-resume
 ```
 
 `nextflow.config`'s `sherlock` profile already points at
-`docker://olgabot/kmerseek:2026-08-17-kmer-spectra` -- no edit needed once the push above completes.
+`docker://olgabot/kmerseek:2026-08-19-kmer-spectra` -- no edit needed once the push above completes.
+
+**If you're mid-run on the previous image**: the 2026-08-19 image adds `--stats-only` to every
+`kmerseek index` call (see `main.nf`'s script block) -- this fixes both the SearchCache
+`"Invalid argument: value is too large"` crash (hp k=30) and the chunked-signature-storage
+`"IO error: ... Input/output error"` crash (hp_kyte_doolittle k=30) by never persisting a
+searchable index at all, since this pipeline only ever wanted the spectrum CSV. Old image, no
+`--stats-only`: tasks past the failure ksize keep failing. New image: `-resume` picks up cleanly,
+no need to restart from scratch.
 
 ## 2. Confirm Sherlock filesystem paths
 
