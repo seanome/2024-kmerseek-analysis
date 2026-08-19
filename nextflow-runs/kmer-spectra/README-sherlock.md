@@ -190,6 +190,8 @@ cd "$SCRATCH/kmer-spectra"
 make download-uniref50     # ~10-20 min depending on hns's network path
 make download-uniref90     # ~40-70 min
 make download-uniref100    # ~80-140 min
+# or all three back to back (sequential, not concurrent -- ~2-4h total):
+make download-uniref
 ```
 
 Then add it to a `make run` -- these are real biological sequences, not a null control, so the

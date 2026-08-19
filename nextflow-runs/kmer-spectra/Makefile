@@ -38,8 +38,8 @@ UNIREF90_BYTES   := 32059052376
 UNIREF100_BYTES  := 63101622504
 
 .PHONY: build-image push-image sync-pipeline sync-data \
-        download-uniref50 download-uniref90 download-uniref100 \
-        run status \
+        download-uniref50 download-uniref90 download-uniref100 download-uniref \
+        run resume status \
         pull-k2 pull-k3 pull-uniref50 pull-uniref90 pull-uniref100 pull-all
 
 ## ---- run these from your Mac ----
@@ -121,6 +121,14 @@ run:
 	module load biology nextflow && \
 	  nextflow run main.nf -profile $(PROFILE) $(NF_ARGS) --datasets $(DATASETS)
 
+# Same as `run`, with -resume baked in -- shorthand for the common case of
+# picking a run back up (new/failed datasets added, a fixed image pushed,
+# etc.) without retyping NF_ARGS=-resume every time. Extra NF_ARGS still
+# pass through, e.g. `NF_ARGS=-stub-run make resume`.
+resume:
+	module load biology nextflow && \
+	  nextflow run main.nf -profile $(PROFILE) -resume $(NF_ARGS) --datasets $(DATASETS)
+
 ## ---- UniRef50/90/100 downloads: ON Sherlock ----
 ##
 ## UniRef50/90/100 are ~94x/344x/676x Swiss-Prot's compressed fasta size (verified
@@ -147,6 +155,12 @@ download-uniref90:
 
 download-uniref100:
 	$(call download_uniref,uniref100,$(UNIREF100_BYTES))
+
+# All three, sequentially (Make's default without -j) -- deliberately not
+# concurrent, so three multi-GB downloads don't fight over the same network
+# path at once. ~2-4h total (uniref50 ~10-20min, uniref90 ~40-70min, uniref100
+# ~80-140min) -- run inside tmux, same as `make run`.
+download-uniref: download-uniref50 download-uniref90 download-uniref100
 
 status:
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
