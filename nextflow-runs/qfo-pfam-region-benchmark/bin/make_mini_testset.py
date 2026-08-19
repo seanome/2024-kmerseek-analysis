@@ -65,10 +65,14 @@ def pick_queries(human: pl.DataFrame, n: int) -> list[str]:
     undefined (one class empty) and would never test whether a tool splits a protein
     correctly.
     """
+    # accession is the final sort key, and it is load-bearing: without it the many ties on
+    # (n_domains, n_fam) are broken by group_by's arbitrary row order, so two runs over the
+    # same annotations pick different queries. A smoke test whose contents drift between
+    # the Mac and the cluster cannot be compared against itself.
     per_protein = (
         human.group_by("accession")
         .agg(pl.len().alias("n_domains"), pl.col("pfam_id").n_unique().alias("n_fam"))
-        .sort(["n_domains", "n_fam"], descending=True)
+        .sort(["n_domains", "n_fam", "accession"], descending=[True, True, False])
     )
     multi = per_protein.filter(pl.col("n_domains") > 1)["accession"].to_list()
     single = per_protein.filter(pl.col("n_domains") == 1)["accession"].to_list()
@@ -183,11 +187,13 @@ def main():
         ann = pl.read_parquet(ann_out / f"{sp}_pfam_domains.parquet")
         per_species_acc[sp] = set(ann["accession"].unique().to_list())
 
+    # rglob, not iterdir: the local cache is one flat directory, but on a cluster the
+    # same structures already sit under the per-species tree that sync-structures
+    # populated. Recursing lets one flag serve both without a second code path.
     cache_index = {}
     if args.structure_cache.exists():
-        for f in args.structure_cache.iterdir():
-            if f.name.startswith("AF-"):
-                cache_index.setdefault(f.name.split("-")[1], f)
+        for f in args.structure_cache.rglob("AF-*.cif*"):
+            cache_index.setdefault(f.name.split("-")[1], f.resolve())
 
     for label, accs in per_species_acc.items():
         d = struct_out / label

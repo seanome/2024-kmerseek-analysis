@@ -37,7 +37,7 @@ DOCKER_PLATFORM := linux/amd64
 PROFILE := sherlock
 
 .PHONY: build-image build-image-local push-image structure-lists fetch-structures \
-        mini-testset sync-mini run-mini pull-mini \
+        mini-testset mini-testset-sherlock run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status attach clean-cache
 
@@ -103,9 +103,13 @@ run-mini-local:
 	    --omega_file      $(OMEGA_FILE) \
 	    $(NF_ARGS) 2>&1 | tee nextflow.mini.log
 
-sync-mini: mini-testset
-	rsync -avz --progress --copy-links -e ssh $(MINI_DIR)/ \
-	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/mini/'
+# NOT rsynced to Sherlock. The mini set is DERIVED -- subset FASTAs and subset annotation
+# parquets cut from inputs `make sync-data` already put there -- so shipping it would
+# duplicate state that can simply be regenerated. The generator itself is code and travels
+# by git like everything else. Run `make mini-testset-sherlock` on the cluster instead.
+#
+# Structures are the one exception and are handled by `make sync-structures`: they are
+# real input data, not derived, and nothing on Sherlock can synthesise them.
 
 pull-mini:
 	rsync -avz --progress \
@@ -179,8 +183,21 @@ run-kmerseek:
 run-baselines:
 	$(call launch,qfo-baselines,--skip_kmerseek true)
 
+# Build the mini set ON Sherlock from the inputs sync-data already staged. Runs inside the
+# same container the pipeline uses, so it needs no cluster python environment of its own.
+mini-testset-sherlock:
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations     ../data/annotations \
+	    --qfo-dir         ../data/qfo \
+	    --outdir          ../data/mini \
+	    --species         $(MINI_SPECIES) \
+	    --structure-cache ../data/structures
+
 # Same code path as the real run, scoped down. Do this before `make run`.
-run-mini:
+run-mini: mini-testset-sherlock
 	mkdir -p run-mini
 	cd run-mini && tmux new-session -d -s qfo-mini " \
 	  ml load nextflow && \

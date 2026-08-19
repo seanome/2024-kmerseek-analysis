@@ -86,16 +86,20 @@ wget https://wwwuser.gwdg.de/~compbiol/uniclust/current_release/UniRef30_2023_02
 Before spending queue time on 1017 searches, run the same code path on a few hundred
 proteins.
 
-```bash
-make mini-testset
-make sync-mini
-```
-
-Then on Sherlock:
+On Sherlock (after `make sync-data`, which stages the inputs it is cut from):
 
 ```bash
 make run-mini
 ```
+
+`run-mini` regenerates the set there first. The mini data is **not** rsynced: it is derived
+from annotations and proteomes Sherlock already has, so shipping it would duplicate state
+that can just be rebuilt. The generator is code and travels by git. Selection is
+deterministic — same annotations in, same 200 queries out, on either machine — so a mini
+run on your Mac and one on the cluster are comparable.
+
+Structures are the exception, handled by `make sync-structures`: they are real input data,
+not derived, and nothing on the cluster can synthesise them.
 
 It takes minutes, uses two species and two kmerseek combos, and exercises every stage:
 truth building, the family-grouped split, covariates, search, transfer, scoring, the CAFA
