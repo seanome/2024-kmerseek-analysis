@@ -49,6 +49,11 @@ params.task_time = '4h'
 // ever have, which would otherwise leave the job stuck in the queue forever.
 params.queue = 'hns'
 params.node_mem_cap_gb = 176
+// bigmem enforces its own hard minimum memory request (currently 256 GB, per
+// Sherlock's own sbatch error) -- sbatch rejects the submission outright below
+// it. 0 (default) applies no floor, correct for hns which has none. See
+// NODE_MEM_MIN below for why this bit protein/dayhoff specifically.
+params.node_mem_min_gb = 0
 
 // name, fasta (relative to launchDir), hp_only, hp_kmin, mem_scale.
 // fasta/hp_kmin/mem_scale are resolved lazily (params.* read here, at parse time,
@@ -106,8 +111,19 @@ def encodingsFor(hpOnly, hpKmin) {
 // with margin for the OS). If you've switched params.queue to 'bigmem' (up to
 // 4096 GB/node), raise node_mem_cap_gb to match, or this cap silently keeps
 // capping retries at hns-sized memory on a queue that could give you far more.
+//
+// node_mem_min_gb is the opposite problem: bigmem enforces its own hard FLOOR
+// (sbatch rejects the submission outright below it, currently 256 GB per
+// Sherlock's own error message) -- unlike node_mem_cap_gb this isn't a self-
+// imposed safety margin, it's someone else's minimum, and it bit protein/dayhoff
+// tasks specifically: mem_scale_uniref scales both HP-family (96 GB base) and
+// protein/dayhoff (16 GB base) uniformly, so mem_scale_uniref=8 asks bigmem for
+// only 128 GB (16*8) on protein/dayhoff combos -- under the floor, submission
+// fails before the job even queues. Set to 0 (default) on hns, which has no
+// such minimum.
 def isHpFamily = { label -> label.startsWith('hp') }
 def NODE_MEM_CAP = (params.node_mem_cap_gb as Integer).GB
+def NODE_MEM_MIN = (params.node_mem_min_gb as Integer).GB
 
 def taskMemory = { label, memScale, attempt ->
     def base = isHpFamily(label) ? 96.GB : 16.GB
@@ -115,7 +131,8 @@ def taskMemory = { label, memScale, attempt ->
     // (Nextflow doesn't coerce CLI params), and MemoryUnit * String isn't defined.
     def scale = (memScale as Number)
     def requested = base * scale * attempt
-    requested <= NODE_MEM_CAP ? requested : NODE_MEM_CAP
+    def floored = requested < NODE_MEM_MIN ? NODE_MEM_MIN : requested
+    floored <= NODE_MEM_CAP ? floored : NODE_MEM_CAP
 }
 
 process indexAndSpectrum {
