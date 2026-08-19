@@ -59,6 +59,10 @@ GENE_SET_FLAGS = {
     "fast_evolving_family": "is_fast_evolving_family",
     "olfactory_receptor": "is_olfactory_receptor",
     "cytochrome_p450_2_3": "is_cytochrome_p450_2_3",
+    # Kept as measurable strata even though they are excluded from the HGNC sweep: how
+    # repeat-driven families behave is a result, and deleting them forfeits it.
+    "zinc_finger_c2h2": "is_zinc_finger_c2h2",
+    "zinc_finger_other": "is_zinc_finger_other",
 }
 
 
@@ -454,7 +458,8 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     return metrics
 
 
-def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None) -> pl.DataFrame:
+def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
+                  keep_zinc_finger: bool = False) -> pl.DataFrame:
     """Add one column per covariate axis, holding that protein's stratum label."""
     if covariates is None:
         return truth.with_columns(pl.lit("all").alias("stratum_hgnc"))
@@ -481,7 +486,8 @@ def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None) -> pl.Da
         # would let the one family the axis cannot trust dominate it. They remain in the
         # covariate table under hgnc_group_excluded for anyone who wants to look.
         excluded = (
-            pl.col("hgnc_group_excluded") if "hgnc_group_excluded" in cov.columns
+            pl.col("hgnc_group_excluded")
+            if ("hgnc_group_excluded" in cov.columns and not keep_zinc_finger)
             else pl.lit(False)
         )
         exprs.append(
@@ -579,6 +585,9 @@ def main():
     p.add_argument("--direct-annotation", action="store_true")
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--strict-iou", type=float, default=0.8)
+    p.add_argument("--keep-zinc-finger-in-hgnc", action="store_true",
+                   help="stop excluding zinc-finger groups from the per-group HGNC sweep; "
+                        "they are always cut on the geneset axis regardless")
     p.add_argument("--interval-semantics", choices=["alignment", "motif"],
                    default="alignment",
                    help="motif for tools reporting discontinuous residue sets (Folddisco)")
@@ -594,7 +603,7 @@ def main():
     truth_lf = pl.scan_parquet(args.truth)
     truth = truth_lf.collect()
     covariates = pl.read_parquet(args.covariates) if args.covariates else None
-    truth = attach_strata(truth, covariates)
+    truth = attach_strata(truth, covariates, args.keep_zinc_finger_in_hgnc)
 
     regions = load_regions(args.regions, args.direct_annotation)
 

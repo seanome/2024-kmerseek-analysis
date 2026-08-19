@@ -209,6 +209,14 @@ def main():
                         & pl.col("hgnc_gene_group").str.contains(f"(?i){pattern}")
                     ).alias(f"is_{label}")
                 )
+            # c2h2 first, so the narrower label wins for genes matching both patterns.
+            for label, pattern in gs.ZINC_FINGER_GROUP_PATTERNS.items():
+                cov = cov.with_columns(
+                    (
+                        pl.col("hgnc_gene_group").is_not_null()
+                        & pl.col("hgnc_gene_group").str.contains(f"(?i){pattern}")
+                    ).alias(f"is_{label}")
+                )
             cov = cov.with_columns(
                 pl.any_horizontal(
                     [pl.col(f"is_{l}") for l in gs.FAST_EVOLVING_GROUP_PATTERNS]
@@ -231,8 +239,11 @@ def main():
             "igsf_decoy": int(cov["is_igsf_decoy"].sum()),
             "fast_evolving_family": int(cov.get_column("is_fast_evolving_family").sum())
                 if "is_fast_evolving_family" in cov.columns else 0,
-            "hgnc_group_excluded_zinc_finger": int(cov.get_column("hgnc_group_excluded").sum())
-                if "hgnc_group_excluded" in cov.columns else 0,
+            # Excluded from the HGNC sweep, still cut as its own geneset stratum.
+            "zinc_finger_c2h2": int(cov.get_column("is_zinc_finger_c2h2").sum())
+                if "is_zinc_finger_c2h2" in cov.columns else 0,
+            "zinc_finger_any": int(cov.get_column("is_zinc_finger_other").sum())
+                if "is_zinc_finger_other" in cov.columns else 0,
         }
 
     if args.mobidb and args.mobidb.exists():

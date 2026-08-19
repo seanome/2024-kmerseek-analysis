@@ -69,6 +69,16 @@ FAST_EVOLVING_GROUP_PATTERNS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 HGNC_EXCLUDE_FAMILY_PATTERN: str = "Zinc finger"
 
+#: Zinc fingers are excluded from the per-group HGNC sweep but NOT from the benchmark. They
+#: are cut as their own stratum on the geneset axis, which is the useful middle: the family
+#: stays visible and measurable, without leading a sweep whose premise it violates. If HP
+#: k-mers behave differently on repeat-driven families, that is a result worth having, and
+#: it is only obtainable by keeping them labelled rather than deleted.
+ZINC_FINGER_GROUP_PATTERNS: dict[str, str] = {
+    "zinc_finger_c2h2": "Zinc fingers C2H2-type",
+    "zinc_finger_other": "Zinc finger",
+}
+
 #: Below this many query proteins a per-group metric is too noisy to read. Matches notebook
 #: 206's own floor of 15 scored pairs.
 MIN_FAMILY_SIZE: int = 15
