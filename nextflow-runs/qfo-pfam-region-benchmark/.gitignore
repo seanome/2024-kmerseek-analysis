@@ -8,3 +8,8 @@ results/
 *.report.html
 *.timeline.html
 *.trace.txt
+
+# Data staged onto the cluster by the sync-* targets, and the mini set regenerated there.
+# These live inside the pipeline directory because every remote path is relative to it.
+data/
+run-mini/

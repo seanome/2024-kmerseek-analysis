@@ -14,7 +14,16 @@ IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
 KMERSEEK_SRC   := /Users/olga/code/kmerseek-region-scoring
 
 SHERLOCK_HOST  ?= sherlock
-REMOTE_DIR     := $$SCRATCH/qfo-pfam-region-benchmark
+REPO_URL       ?= https://github.com/seanome/2024-kmerseek-analysis.git
+BRANCH         ?= olgabot/qfo-pfam-region-benchmark
+
+# $SCRATCH, never $HOME -- the home quota is small and the work dir is not.
+REMOTE_REPO    := $$SCRATCH/2024-kmerseek-analysis
+# The pipeline directory inside that checkout. Every remote target runs from here: it is
+# both inside the git tree (so `git pull` works) and the directory holding main.nf (so the
+# run targets' `../main.nf` from run/ resolves). Those two roles are why this is the
+# subdirectory and not the repo root.
+REMOTE_DIR     := $(REMOTE_REPO)/nextflow-runs/qfo-pfam-region-benchmark
 
 ANALYSIS_ROOT  := /Users/olga/code/2024-kmerseek-analysis
 ANNOTATIONS    := $(ANALYSIS_ROOT)/results/pfam_benchmark/annotations
@@ -36,7 +45,7 @@ DOCKER_PLATFORM := linux/amd64
 
 PROFILE := sherlock
 
-.PHONY: build-image build-image-local push-image structure-lists fetch-structures \
+.PHONY: bootstrap-sherlock build-image build-image-local push-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status attach clean-cache
@@ -117,6 +126,22 @@ pull-mini:
 
 # Code moves by git, never rsync: rsync duplicates state outside git history and defeats
 # the point of running this from a worktree.
+# One-time setup: clone the repo onto $SCRATCH and create the data directories the sync
+# targets write into. Safe to re-run; it does not touch an existing checkout's state.
+bootstrap-sherlock:
+	ssh $(SHERLOCK_HOST) '\
+	  set -e; \
+	  if [ ! -d $(REMOTE_REPO)/.git ]; then \
+	    git clone --branch $(BRANCH) $(REPO_URL) $(REMOTE_REPO); \
+	  else \
+	    cd $(REMOTE_REPO) && git fetch origin $(BRANCH) && git checkout $(BRANCH) && git pull --ff-only; \
+	  fi; \
+	  mkdir -p $(REMOTE_DIR)/data/annotations \
+	           $(REMOTE_DIR)/data/qfo \
+	           $(REMOTE_DIR)/data/covariates \
+	           $(REMOTE_DIR)/data/structures; \
+	  echo "ready: $(REMOTE_DIR)"'
+
 sync-pipeline:
 	git push origin $$(git branch --show-current)
 	ssh $(SHERLOCK_HOST) 'cd $(REMOTE_DIR) && git pull --ff-only'
@@ -190,11 +215,11 @@ mini-testset-sherlock:
 	  --bind $$PWD:$$PWD --pwd $$PWD \
 	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
 	  python3 bin/make_mini_testset.py \
-	    --annotations     ../data/annotations \
-	    --qfo-dir         ../data/qfo \
-	    --outdir          ../data/mini \
+	    --annotations     data/annotations \
+	    --qfo-dir         data/qfo \
+	    --outdir          data/mini \
 	    --species         $(MINI_SPECIES) \
-	    --structure-cache ../data/structures
+	    --structure-cache data/structures
 
 # Same code path as the real run, scoped down. Do this before `make run`.
 run-mini: mini-testset-sherlock
