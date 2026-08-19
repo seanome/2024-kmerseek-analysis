@@ -38,6 +38,17 @@ params.mem_scale_uniref = 1
 // Wall-clock limit per task. Swiss-Prot-scale combos finish well under the 4h
 // default; UniRef-scale inputs will need more -- same "starting estimate" caveat.
 params.task_time = '4h'
+// SLURM partition (sherlock profile only). Default 'hns' -- the school-condo
+// partition, ~186 GB/node. Switch to 'bigmem' (up to 4096 GB/node) for datasets
+// whose in-memory proteome doesn't fit in hns at all: uniref50 hp k=26 was
+// SIGKILL'd at 130K/~65M sequences processed, on an alphabet that already
+// needed the 96 GB tier just for Swiss-Prot's 573K sequences -- 176 GB (hns's
+// practical ceiling, see NODE_MEM_CAP below) was reached on retry and still
+// wasn't enough. Raise node_mem_cap_gb to match whichever queue you pick --
+// it exists specifically so a retry can't ask a node for more than it will
+// ever have, which would otherwise leave the job stuck in the queue forever.
+params.queue = 'hns'
+params.node_mem_cap_gb = 176
 
 // name, fasta (relative to launchDir), hp_only, hp_kmin, mem_scale.
 // fasta/hp_kmin/mem_scale are resolved lazily (params.* read here, at parse time,
@@ -90,13 +101,13 @@ def encodingsFor(hpOnly, hpKmin) {
 // gets the high tier across its whole ksize range instead of trying to find
 // another cutoff and getting it wrong again.
 //
-// `sinfo -p hns -o "%N %m %c"` puts every hns node at 191000 MB (~186.5 GiB).
-// Cap requests at 176 GB -- comfortably under that on every node, with margin
-// for the OS -- so a retry can never ask for more than any node will ever
-// have, which would leave the job stuck in the queue forever instead of
-// failing loudly.
+// `sinfo -p hns -o "%N %m %c"` puts every hns node at 191000 MB (~186.5 GiB) --
+// hence the 176 GB default for params.node_mem_cap_gb (comfortably under that,
+// with margin for the OS). If you've switched params.queue to 'bigmem' (up to
+// 4096 GB/node), raise node_mem_cap_gb to match, or this cap silently keeps
+// capping retries at hns-sized memory on a queue that could give you far more.
 def isHpFamily = { label -> label.startsWith('hp') }
-def NODE_MEM_CAP = 176.GB
+def NODE_MEM_CAP = (params.node_mem_cap_gb as Integer).GB
 
 def taskMemory = { label, memScale, attempt ->
     def base = isHpFamily(label) ? 96.GB : 16.GB
@@ -112,6 +123,7 @@ process indexAndSpectrum {
     publishDir { "${params.outdir_root}/results-${dataset}" }, mode: 'copy', pattern: '*.spectrum.csv.gz'
     publishDir { "${params.outdir_root}/results-${dataset}" }, mode: 'copy', pattern: '*.index.log'
 
+    queue  { params.queue }
     memory { taskMemory(label, mem_scale, task.attempt) }
     time   { params.task_time }
     errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
