@@ -81,6 +81,25 @@ The run is still valid; it just is not measuring what HHblits is known for. UniR
 wget https://wwwuser.gwdg.de/~compbiol/uniclust/current_release/UniRef30_2023_02_hhsuite.tar.gz
 ```
 
+## Which targets run where
+
+Half of these targets push data from the Mac to the cluster and half run on the cluster.
+Each one now refuses to run on the wrong side and prints the command to use instead, so a
+mistake costs a sentence rather than a confusing rsync failure.
+
+| run on your Mac | run on Sherlock |
+|---|---|
+| `bootstrap-sherlock`, `push-image`, `build-image-local` | `mini-testset-sherlock` |
+| `structure-lists`, `fetch-structures` | `run-mini` |
+| `mini-testset`, `mhc-testset` | `run`, `run-kmerseek`, `run-baselines` |
+| `sync-pipeline`, `sync-data`, `sync-structures` | `status` |
+| `pull-results`, `pull-mini` | |
+| `run-mini-local`, `run-mhc-local` | |
+
+The rule is simple: anything that *moves* data, or talks to Docker Hub, runs on the Mac.
+Anything that submits SLURM jobs runs on Sherlock. Detection is on `$SCRATCH`, which
+Sherlock sets and your Mac does not.
+
 ## Mini smoke test — do this first
 
 Before spending queue time on 1017 searches, run the same code path on a few hundred

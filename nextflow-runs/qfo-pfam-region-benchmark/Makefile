@@ -52,9 +52,49 @@ PROFILE := sherlock
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache
 
+
+# --- which machine am I on? -------------------------------------------------
+# Half these targets push data from the Mac to the cluster and half run on the
+# cluster itself. Running one on the wrong side produces a confusing failure --
+# `make sync-data` on Sherlock tries to resolve the host `sherlock` from Sherlock
+# and dies in rsync -- so each target says where it belongs and refuses politely.
+# $SCRATCH is set on Sherlock and unset on the Mac, which is the cheapest reliable
+# discriminator that needs no network.
+ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
+
+MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/qfo-pfam-region-benchmark/nextflow-runs/qfo-pfam-region-benchmark
+
+define require_mac
+	@if [ "$(ON_CLUSTER)" = "yes" ]; then \
+	  echo ""; \
+	  echo "  '$@' runs on your MAC, not on the cluster."; \
+	  echo "  It moves data from the Mac to $(SHERLOCK_HOST), so it cannot work from here."; \
+	  echo ""; \
+	  echo "  On your Mac:"; \
+	  echo "    cd $(MAC_PIPELINE_DIR)"; \
+	  echo "    make $@"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+endef
+
+define require_cluster
+	@if [ "$(ON_CLUSTER)" != "yes" ]; then \
+	  echo ""; \
+	  echo "  '$@' runs ON SHERLOCK, not on your Mac (no \$$SCRATCH here)."; \
+	  echo ""; \
+	  echo "  ssh $(SHERLOCK_HOST)"; \
+	  echo "    cd \$$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark"; \
+	  echo "    make $@"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+endef
+
 ## ---- Mac side -----------------------------------------------------------
 
 build-image:
+	$(call require_mac)
 	docker build --platform $(DOCKER_PLATFORM) -t $(IMAGE_LOCAL) \
 	  --build-arg GIT_SHA=$(KMERSEEK_SHA) \
 	  -f Dockerfile \
@@ -65,17 +105,20 @@ build-image:
 # python steps die with SIGSEGV. Sherlock nodes are real amd64, so only build-image is
 # pushed.
 build-image-local:
+	$(call require_mac)
 	docker build -t kmerseek-region:local \
 	  --build-arg GIT_SHA=$(KMERSEEK_SHA) \
 	  -f Dockerfile \
 	  $(KMERSEEK_SRC)
 
 push-image: build-image
+	$(call require_mac)
 	docker tag $(IMAGE_LOCAL) $(IMAGE_REMOTE)
 	docker push $(IMAGE_REMOTE)
 
 # One accession list per species: the proteins the Foldseek arm needs structures for.
 structure-lists:
+	$(call require_mac)
 	$(PYTHON) bin/write_structure_lists.py \
 	  --annotations $(ANNOTATIONS) \
 	  --outdir      $(ACC_DIR)
@@ -83,6 +126,7 @@ structure-lists:
 # ~73k structures / ~36 GB missing from the flat cache as of 2026-08-18. Resumable --
 # re-run it after an interruption rather than starting over.
 fetch-structures: structure-lists
+	$(call require_mac)
 	bin/fetch_alphafold_structures.sh $(STRUCT_DIR) $(ACC_DIR)
 
 ## ---- mini smoke test ----
@@ -93,6 +137,7 @@ fetch-structures: structure-lists
 ## exactly like a working one.
 
 mini-testset:
+	$(call require_mac)
 	$(PYTHON) bin/make_mini_testset.py \
 	  --annotations $(ANNOTATIONS) \
 	  --qfo-dir     $(QFO_DIR) \
@@ -103,6 +148,7 @@ mini-testset:
 # test, NOT a population statistic -- n=25 across 7 classes must never carry a headline
 # number. Deliberately not size-matched to the default set for that reason.
 mhc-testset:
+	$(call require_mac)
 	$(PYTHON) bin/make_mini_testset.py \
 	  --annotations $(ANNOTATIONS) \
 	  --qfo-dir     $(QFO_DIR) \
@@ -113,6 +159,7 @@ mhc-testset:
 	  --n-targets   400
 
 run-mhc-local: 
+	$(call require_mac)
 	mkdir -p run-mhc && cd run-mhc && \
 	  nextflow run ../main.nf -profile standard,mini -resume \
 	    --kmerseek_image  kmerseek-region:local \
@@ -128,6 +175,7 @@ run-mhc-local:
 
 # Run it here first (needs build-image-local), before spending Sherlock queue time.
 run-mini-local: 
+	$(call require_mac)
 	mkdir -p run-mini && cd run-mini && \
 	  nextflow run ../main.nf -profile standard,mini -resume \
 	    --kmerseek_image  kmerseek-region:local \
@@ -150,6 +198,7 @@ run-mini-local:
 # real input data, not derived, and nothing on Sherlock can synthesise them.
 
 pull-mini:
+	$(call require_mac)
 	rsync -avz --progress \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/mini/results/' $(LOCAL_RESULTS)-mini/
 
@@ -158,6 +207,7 @@ pull-mini:
 # One-time setup: clone the repo onto $SCRATCH and create the data directories the sync
 # targets write into. Safe to re-run; it does not touch an existing checkout's state.
 bootstrap-sherlock:
+	$(call require_mac)
 	ssh $(SHERLOCK_HOST) '\
 	  set -e; \
 	  if [ ! -d $(REMOTE_REPO)/.git ]; then \
@@ -172,6 +222,7 @@ bootstrap-sherlock:
 	  echo "ready: $(REMOTE_DIR)"'
 
 sync-pipeline:
+	$(call require_mac)
 	git push origin $$(git branch --show-current)
 	ssh $(SHERLOCK_HOST) 'cd $(REMOTE_DIR) && git pull --ff-only'
 
@@ -181,6 +232,7 @@ SPROT_DAT  := /Users/olga/data/uniprot/uniprot_sprot.dat.gz
 OMEGA_FILE := $(ANALYSIS_ROOT)/nextflow-runs/human-mouse-dnds-omega/results/omega_results.tsv
 
 sync-data:
+	$(call require_mac)
 	rsync -avz --progress -e ssh $(ANNOTATIONS)/ \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/annotations/'
 	rsync -avz --progress -e ssh $(QFO_DIR)/ \
@@ -191,11 +243,13 @@ sync-data:
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/'
 
 sync-structures:
+	$(call require_mac)
 	rsync -av --progress --copy-links -e ssh $(STRUCT_DIR)/ \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/structures/' \
 	  --exclude '_archives'
 
 pull-results:
+	$(call require_mac)
 	rsync -avz --progress \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/metrics/' $(LOCAL_RESULTS)/metrics/
 	rsync -avz --progress \
@@ -233,19 +287,23 @@ define launch
 endef
 
 run:
+	$(call require_cluster)
 	$(call launch,qfo-region,)
 
 # Split arms so the 1017-job kmerseek sweep and the 9-species baselines can be queued
 # and debugged independently.
 run-kmerseek:
+	$(call require_cluster)
 	$(call launch,qfo-kmerseek,--skip_baselines true)
 
 run-baselines:
+	$(call require_cluster)
 	$(call launch,qfo-baselines,--skip_kmerseek true)
 
 # Build the mini set ON Sherlock from the inputs sync-data already staged. Runs inside the
 # same container the pipeline uses, so it needs no cluster python environment of its own.
 mini-testset-sherlock:
+	$(call require_cluster)
 	apptainer exec \
 	  --bind $$PWD:$$PWD --pwd $$PWD \
 	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
@@ -258,6 +316,7 @@ mini-testset-sherlock:
 
 # Same code path as the real run, scoped down. Do this before `make run`.
 run-mini: mini-testset-sherlock
+	$(call require_cluster)
 	mkdir -p run-mini
 	cd run-mini && \
 	  ml load nextflow && \
@@ -274,6 +333,7 @@ run-mini: mini-testset-sherlock
 	    $(NF_ARGS) 2>&1 | tee -a nextflow.mini.log
 
 status:
+	$(call require_cluster)
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
 
 clean-cache:
