@@ -29,10 +29,16 @@ DATASETS ?= k2,k3
 # UniRef50/90/100: real (non-shuffled) sequences, full 9-alphabet sweep, HP-family
 # floor raised from Swiss-Prot's k15 by default (main.nf's hp_kmin_uniref) -- see
 # README-sherlock.md for why. Content-Length in bytes (`curl -sIL <url>`), checked
-# 2026-08-18 against ftp.uniprot.org/pub/databases/uniprot/uniref/<name>/<name>.fasta.gz
+# 2026-08-19 against ftp.ebi.ac.uk/pub/databases/uniprot/uniref/<name>/<name>.fasta.gz
 # -- confirm again before a big download if it's been a while, UniProt updates
 # these on a regular release schedule.
-UNIREF_BASE_URL  := https://ftp.uniprot.org/pub/databases/uniprot/uniref
+#
+# Was ftp.uniprot.org until 2026-08-19, when it started 404ing on every path
+# including its own root (not just these files -- a real outage, not a moved
+# file). ftp.ebi.ac.uk mirrors byte-identical content (same Content-Length,
+# checked for all three here) and is EBI infrastructure this project already
+# relies on elsewhere for large downloads.
+UNIREF_BASE_URL  := https://ftp.ebi.ac.uk/pub/databases/uniprot/uniref
 UNIREF50_BYTES   := 8770260598
 UNIREF90_BYTES   := 32059052376
 UNIREF100_BYTES  := 63101622504
@@ -138,9 +144,24 @@ resume:
 ## timeout catches it, so this resumes (-C -) and aborts within ~60s of a stall
 ## (--speed-limit/--speed-time) instead, re-invoking in a loop until the file
 ## reaches the known Content-Length.
+##
+## -C - resumes from whatever's already on disk, which backfires if that partial
+## file is actually a small error response (e.g. a 404 page cached during a
+## source outage) rather than real partial data: the server has nothing to
+## resume from at that byte offset, and curl/the server can end up producing
+## confusing "FTP error" / "doesn't seem to support byte ranges" failures on
+## every retry forever instead of just trying again from scratch. A multi-GB
+## gzip will always be well past 1 MiB within the first successful response
+## chunk, so anything smaller sitting on disk is assumed to be a stale error
+## response and removed before the next attempt.
 define download_uniref
 	mkdir -p data
 	until [ "$$(stat -c%s data/$(1).fasta.gz 2>/dev/null || echo 0)" -ge "$(2)" ]; do \
+	  size=$$(stat -c%s data/$(1).fasta.gz 2>/dev/null || echo 0); \
+	  if [ "$$size" -gt 0 ] && [ "$$size" -lt 1048576 ]; then \
+	    echo "data/$(1).fasta.gz is only $$size bytes -- likely a cached error response, not real data. Removing before retry."; \
+	    rm -f data/$(1).fasta.gz; \
+	  fi; \
 	  curl -C - --speed-limit 1024 --speed-time 60 --retry 3 \
 	    -o data/$(1).fasta.gz \
 	    $(UNIREF_BASE_URL)/$(1)/$(1).fasta.gz; \
