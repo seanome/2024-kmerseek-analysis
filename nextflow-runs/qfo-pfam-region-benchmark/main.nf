@@ -2,6 +2,16 @@
 nextflow.enable.dsl=2
 
 /*
+ * Containers are pinned by DIGEST, not tag. The foldseek pin previously used a bioconda
+ * tag that was retagged upstream, and the run died on Sherlock with "manifest unknown"
+ * -- the standard symptom. Digests are immutable, so a reviewer re-running this in six
+ * months gets the same image. Human-readable versions, for Methods:
+ *   foldseek 9.427df8a   hmmer 3.4   mmseqs2 18.8cc5c   hhsuite 3.3.0
+ * Resolve a new digest with:
+ *   curl -s 'https://quay.io/api/v1/repository/biocontainers/<tool>/tag/?specificTag=<tag>'
+ */
+
+/*
  * qfo-pfam-region-benchmark
  *
  * Domain finding, not orthology.
@@ -269,10 +279,16 @@ process kmerseekIndexAndSearch {
     input:
     tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize), path(human_fasta)
 
+    // ONE path output, deliberately. storeDir supports only val/path outputs -- a tuple
+    // output silently disabled it ("storeDir can only be used with `val` and `path`
+    // outputs"), so nothing was being persisted and -resume would have recomputed all 1017
+    // searches. A sibling pipeline in this repo also hit a recurring storeDir "Directory
+    // not empty" failure from a two-output design, fixed the same way: collapse to one.
+    //
+    // The (species, tool, variant) metadata is not lost, it is recovered in the workflow
+    // from the filename, which already encodes all three.
     output:
-    tuple val(species), val("kmerseek"), val("${label}_k${ksize}"),
-          path("human_vs_${species}.${label}.k${ksize}.regions.parquet"), emit: regions
-    path "human_vs_${species}.${label}.k${ksize}.log",                    emit: log
+    path "human_vs_${species}.${label}.k${ksize}.regions.parquet"
 
     script:
     def index_dir = "${species}.${label}.k${ksize}.kmerseek.rocksdb"
@@ -352,7 +368,7 @@ PYEOF
 
 process phmmerSearch {
     tag "human_vs_${species}"
-    container 'quay.io/biocontainers/hmmer:3.4--hb6cb901_4'
+    container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_phmmer", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -382,7 +398,7 @@ process phmmerSearch {
 
 process jackhmmerSearch {
     tag "human_vs_${species}"
-    container 'quay.io/biocontainers/hmmer:3.4--hb6cb901_4'
+    container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_jackhmmer", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -414,7 +430,7 @@ process jackhmmerSearch {
 
 process mmseqs2Search {
     tag "human_vs_${species} [${variant}]"
-    container 'quay.io/biocontainers/mmseqs2:18.8cc5c--hd6d6fdc_0'
+    container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/${variant}", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -450,7 +466,7 @@ process hhblitsSearch {
      * HHblits is famous for. README-sherlock.md has the UniRef30 download.
      */
     tag "human_vs_${species}"
-    container 'quay.io/biocontainers/hhsuite:3.3.0--h503566f_15'
+    container 'quay.io/biocontainers/hhsuite@sha256:4bf9bb5229de18f522a94f4443c19fdcbb0f0cb0e6ea92f5390aa170bcb0a24f'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hhblits", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -479,7 +495,7 @@ process hhblitsSearch {
 
 process foldseekSearch {
     tag "human_vs_${species}"
-    container 'quay.io/biocontainers/foldseek:9.427df8a--pl5321h6a68c12_3'
+    container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/foldseek", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -612,7 +628,7 @@ process hmmscanAnnotate {
      * Pfam library in hand.
      */
     tag "hmmscan_human"
-    container 'quay.io/biocontainers/hmmer:3.4--hb6cb901_4'
+    container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmscan", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -645,7 +661,7 @@ process hmmscanAnnotate {
 
 process hhblitsBuildDB {
     tag "${label}"
-    container 'quay.io/biocontainers/hhsuite:3.3.0--h503566f_15'
+    container 'quay.io/biocontainers/hhsuite@sha256:4bf9bb5229de18f522a94f4443c19fdcbb0f0cb0e6ea92f5390aa170bcb0a24f'
     label 'high_cpu'
 
     input:
@@ -850,7 +866,14 @@ workflow {
             .map { species, fasta, cli_flag, label, ksize ->
                 tuple(species, fasta, cli_flag, label, ksize, human_fasta)
             }
-        kmerseek_regions = kmerseekIndexAndSearch(kmerseek_in).regions
+        // Rebuild (species, tool, variant) from the filename. The process emits a bare
+        // path so storeDir works; the name carries everything the tuple used to.
+        kmerseek_regions = kmerseekIndexAndSearch(kmerseek_in)
+            .map { pq ->
+                def m = (pq.name =~ /^human_vs_(.+?)\.(.+)\.k(\d+)\.regions\.parquet$/)
+                if (!m) error "cannot parse kmerseek result filename: ${pq.name}"
+                tuple(m[0][1], "kmerseek", "${m[0][2]}_k${m[0][3]}", pq)
+            }
     }
 
     // ---- baselines ----
