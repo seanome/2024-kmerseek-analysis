@@ -48,7 +48,7 @@ PROFILE := sherlock
 .PHONY: bootstrap-sherlock build-image build-image-local push-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
-        run run-kmerseek run-baselines status attach clean-cache
+        run run-kmerseek run-baselines status clean-cache
 
 ## ---- Mac side -----------------------------------------------------------
 
@@ -180,11 +180,14 @@ pull-results:
 ## unrelated absolute path that never gets bound, and the staged input ends up dangling
 ## inside the container. Relative paths never cross the symlink boundary.
 ##
-## Each target runs in its own detached tmux session so the run survives a dropped ssh.
+## Every run target blocks in the FOREGROUND and streams live output. They do not start
+## tmux themselves -- you run them inside your own tmux session and watch. Never wrap these
+## in `tmux new-session`: a target that detaches into its own session hides the output you
+## are trying to watch, and nesting tmux inside tmux makes the keybindings a fight.
 
 define launch
 	mkdir -p run
-	cd run && tmux new-session -d -s $(1) " \
+	cd run && \
 	  ml load nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(NF_ARGS) \
 	    --qfo_dir     ../data/qfo \
@@ -193,8 +196,7 @@ define launch
 	    --hgnc_file   ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file  ../data/covariates/omega_results.tsv \
 	    --outdir      ../results \
-	    2>&1 | tee -a nextflow.$(1).log"
-	@echo "launched tmux session '$(1)' -- attach with: tmux attach -t $(1)"
+	    2>&1 | tee -a nextflow.$(1).log
 endef
 
 run:
@@ -224,7 +226,7 @@ mini-testset-sherlock:
 # Same code path as the real run, scoped down. Do this before `make run`.
 run-mini: mini-testset-sherlock
 	mkdir -p run-mini
-	cd run-mini && tmux new-session -d -s qfo-mini " \
+	cd run-mini && \
 	  ml load nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE),mini -resume \
 	    --qfo_dir         ../data/mini/qfo \
@@ -235,14 +237,10 @@ run-mini: mini-testset-sherlock
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
-	    $(NF_ARGS) 2>&1 | tee -a nextflow.mini.log"
-	@echo "launched tmux session 'qfo-mini' -- attach with: tmux attach -t qfo-mini"
+	    $(NF_ARGS) 2>&1 | tee -a nextflow.mini.log
 
 status:
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
-
-attach:
-	tmux ls
 
 clean-cache:
 	rm -rf $$SCRATCH/apptainer-cache

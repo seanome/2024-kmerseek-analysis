@@ -160,8 +160,11 @@ make run-kmerseek     # the 1017-search sweep alone
 make run-baselines    # the 9-species baselines alone
 ```
 
-Each launches a detached tmux session, so a dropped ssh does not kill the run.
-`make status` shows the SLURM queue; `tmux attach -t qfo-region` shows live output.
+Every run target blocks in the foreground and streams live output, so start your own tmux
+session first and run them inside it. They deliberately do not start tmux themselves.
+`make status` shows the SLURM queue from another pane.
+
+Run `run-kmerseek` and `run-baselines` in separate panes to get both arms going at once.
 
 Jobs go to the `hns` school-condo partition billed to `--account=ayeletv`. Check
 `sh_part` before a big submission -- hns is usually far shorter than the public `normal`
