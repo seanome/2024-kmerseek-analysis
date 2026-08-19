@@ -22,10 +22,13 @@ and Folddisco arms.
 
 import argparse
 import json
-import shutil
+import sys
 from pathlib import Path
 
 import polars as pl
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import gene_sets as gs  # noqa: E402
 
 
 def read_fasta(path: Path) -> dict[str, str]:
@@ -94,6 +97,10 @@ def main():
                    help="per species, split evenly between family-sharing and decoy")
     p.add_argument("--structure-cache", type=Path,
                    default=Path.home() / "data/alphafold_structures")
+    p.add_argument("--gene-set", choices=["default", "mhc"], default="default",
+                   help="mhc restricts queries to the MHC region genes of notebooks 210-216")
+    p.add_argument("--hgnc", type=Path,
+                   help="HGNC table, required by --gene-set mhc to map symbols to accessions")
     args = p.parse_args()
 
     # QfO proteome files, keyed by the labels main.nf uses.
@@ -120,12 +127,45 @@ def main():
     human = pl.read_parquet(args.annotations / "human_pfam_domains.parquet").filter(
         pl.col("has_position")
     )
-    query_acc = set(pick_queries(human, args.n_queries))
+
+    if args.gene_set == "mhc":
+        # The 25 genes notebooks 210-216 score, mapped symbol -> accession through HGNC's
+        # own uniprot_ids column. Deliberately NOT size-matched to the default set: this is
+        # a vignette for the MHC figures and a pipeline smoke test, and an n=25 stratum
+        # must not be made to look like a population statistic by padding it.
+        if not args.hgnc or not args.hgnc.exists():
+            raise SystemExit("--gene-set mhc requires --hgnc")
+        hgnc = pl.read_csv(args.hgnc, separator="\t", infer_schema_length=0,
+                           quote_char=None, null_values=[""])
+        hgnc = (
+            hgnc.select("symbol", "uniprot_ids")
+            .filter(pl.col("uniprot_ids").is_not_null())
+            .with_columns(pl.col("uniprot_ids").str.split("|").alias("accession"))
+            .explode("accession")
+            .with_columns(pl.col("accession").str.strip_chars())
+        )
+        wanted = set(gs.MHC_CLASSES)
+        mhc_acc = set(
+            hgnc.filter(pl.col("symbol").is_in(wanted))["accession"].to_list()
+        )
+        query_acc = mhc_acc & set(human["accession"].to_list())
+        missing = sorted(
+            wanted - set(hgnc.filter(pl.col("accession").is_in(query_acc))["symbol"].to_list())
+        )
+        if missing:
+            # Reported, not silently dropped: a gene absent from the Pfam annotation subset
+            # cannot contribute a true positive, and which ones are missing changes what an
+            # MHC claim covers.
+            print(f"NOTE: {len(missing)} MHC genes absent from the Pfam annotation set: "
+                  f"{', '.join(missing)}")
+    else:
+        query_acc = set(pick_queries(human, args.n_queries))
     query_families = set(
         human.filter(pl.col("accession").is_in(query_acc))["pfam_id"].unique().to_list()
     )
 
     summary = {
+        "gene_set": args.gene_set,
         "n_queries": len(query_acc),
         "n_query_families": len(query_families),
         "species": {},

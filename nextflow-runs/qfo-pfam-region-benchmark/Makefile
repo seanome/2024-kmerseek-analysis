@@ -32,6 +32,7 @@ STRUCT_DIR     := /Users/olga/data/alphafold_proteomes
 ACC_DIR        := /Users/olga/data/alphafold_proteomes/_accessions
 LOCAL_RESULTS  := /Users/olga/data/qfo-pfam-region-benchmark
 MINI_DIR       := /Users/olga/data/qfo-pfam-region-benchmark-mini
+MHC_DIR        := /Users/olga/data/qfo-pfam-region-benchmark-mhc
 
 # Two species and two combos: enough to exercise every stage in minutes.
 MINI_SPECIES ?= yeast,ecoli
@@ -46,7 +47,8 @@ DOCKER_PLATFORM := linux/amd64
 PROFILE := sherlock
 
 .PHONY: bootstrap-sherlock build-image build-image-local push-image structure-lists fetch-structures \
-        mini-testset mini-testset-sherlock run-mini run-mini-local pull-mini \
+        mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
+        run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache
 
@@ -96,6 +98,33 @@ mini-testset:
 	  --qfo-dir     $(QFO_DIR) \
 	  --outdir      $(MINI_DIR) \
 	  --species     $(MINI_SPECIES)
+
+# MHC-only set: the 25 genes of notebooks 210-216 against mouse. A vignette and a smoke
+# test, NOT a population statistic -- n=25 across 7 classes must never carry a headline
+# number. Deliberately not size-matched to the default set for that reason.
+mhc-testset:
+	$(PYTHON) bin/make_mini_testset.py \
+	  --annotations $(ANNOTATIONS) \
+	  --qfo-dir     $(QFO_DIR) \
+	  --outdir      $(MHC_DIR) \
+	  --species     mouse \
+	  --gene-set    mhc \
+	  --hgnc        $(HGNC_FILE) \
+	  --n-targets   400
+
+run-mhc-local: 
+	mkdir -p run-mhc && cd run-mhc && \
+	  nextflow run ../main.nf -profile standard,mini -resume \
+	    --kmerseek_image  kmerseek-region:local \
+	    --qfo_dir         $(MHC_DIR)/qfo \
+	    --annotations     $(MHC_DIR)/annotations \
+	    --structures      $(MHC_DIR)/structures \
+	    --outdir          $(MHC_DIR)/results \
+	    --species         mouse \
+	    --kmerseek_combos $(MINI_COMBOS) \
+	    --hgnc_file       $(HGNC_FILE) \
+	    --omega_file      $(OMEGA_FILE) \
+	    $(NF_ARGS) 2>&1 | tee nextflow.mhc.log
 
 # Run it here first (needs build-image-local), before spending Sherlock queue time.
 run-mini-local: 
