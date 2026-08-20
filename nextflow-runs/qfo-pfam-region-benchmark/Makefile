@@ -409,6 +409,12 @@ fetch-structures-login:
 ## in `tmux new-session`: a target that detaches into its own session hides the output you
 ## are trying to watch, and nesting tmux inside tmux makes the keybindings a fight.
 
+# All run targets already pass -resume. Do NOT write `make run -resume`: make consumes
+# the flag itself and dies with "invalid option -- 'u'" before nextflow is reached.
+#
+# To pass extra flags through to nextflow, use NF_ARGS:
+#   make run NF_ARGS="-with-dag dag.html"
+#   make run NF_ARGS="--skip_folddisco true"
 define launch
 	mkdir -p run
 	cd run && \
