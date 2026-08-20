@@ -894,9 +894,14 @@ process folddiscoIndex {
     set -euo pipefail
     # folddisco decides its input mode by is_dir() on the path it is given
     # (src/cli/workflows/build_index.rs:110). A path that is NOT a directory -- missing, or
-    # a symlink that dangles inside the container -- silently falls through to the Foldcomp
-    # branch and panics with "Failed to read Foldcomp DB lookup". That error names Foldcomp
-    # and says nothing about the real problem, so the state is reported here first.
+    # a symlink that dangles inside the container -- falls through to the Foldcomp branch
+    # and panics with "Failed to read Foldcomp DB lookup", which names the wrong cause.
+    # These checks report the real state first.
+    #
+    # Note what this canNOT diagnose: if .command.out is EMPTY, none of this ran, and the
+    # problem is upstream of the script entirely -- the container's ENTRYPOINT stopping
+    # Nextflow from invoking bash. That is what the original failures were, and the absence
+    # of these messages was the evidence, misread at the time as the guard not firing.
     echo "=== staged input as seen inside the container ==="
     ls -ld ${structures} || echo "  ${structures} does not exist"
     if [ -L ${structures} ]; then
@@ -917,8 +922,7 @@ process folddiscoIndex {
     echo "  structures visible: \$n"
     if [ "\$n" -eq 0 ]; then
         echo "${structures} is a directory but holds no AF-*.cif files." >&2
-        echo "Run 'make fetch-structures'. Chicken and ciona have no AFDB proteome" >&2
-        echo "archive and are fetched per accession, so they finish later than the rest." >&2
+        echo "Run 'make fetch-structures'." >&2
         exit 1
     fi
 
