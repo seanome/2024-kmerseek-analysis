@@ -156,7 +156,29 @@ The split code path runs and emits its rows, but `heldout` reads 0.0 throughout.
 the set being small, not the split being broken -- do not read a mini-run leaderboard as a
 result. Raise `--n-queries` / `--n-targets` if you want the held-out half to carry signal.
 
-### Running the mini set on your Mac
+### Containers: prefetch before the first run
+
+```bash
+make prefetch-images
+```
+
+Nextflow launches all its image pulls concurrently, and **Apptainer's OCI blob cache is
+not concurrency-safe**. Simultaneous pulls into one cacheDir race and leave a half-written
+blob, which surfaces as `FATAL: ... unexpected end of JSON input` -- an error that says
+nothing about the real cause. That is what killed `hhblitsBuildDB` on the first cluster
+run while `foldseek`, pulling at the same instant, happened to win.
+
+`prefetch-images` pulls each container once, serially, into the cache under the exact
+filename Nextflow looks for, so the pipeline finds them and never pulls concurrently. The
+run targets depend on it, so you get this for free; it is a no-op once the cache is warm.
+
+If a pull has already failed, the partial blob is sticky and the next attempt reuses it:
+
+```bash
+make clean-image-cache
+```
+
+## Running the mini set on your Mac
 
 ```bash
 make build-image-local
@@ -168,6 +190,28 @@ make run-mini-local
 requires AVX2, Rosetta/QEMU emulation does not provide it, and the processes die with
 SIGSEGV (exit 139) rather than a readable error. Sherlock nodes are real amd64, so only
 the amd64 image is pushed.
+
+## Containers: prefetch before the first run
+
+```bash
+make prefetch-images
+```
+
+Nextflow launches all its image pulls concurrently, and **Apptainer's OCI blob cache is
+not concurrency-safe**. Simultaneous pulls into one cacheDir race and leave a half-written
+blob, which surfaces as `FATAL: ... unexpected end of JSON input` -- an error that says
+nothing about the real cause. That is what killed `hhblitsBuildDB` on the first cluster
+run while `foldseek`, pulling at the same instant, happened to win.
+
+`prefetch-images` pulls each container once, serially, into the cache under the exact
+filename Nextflow looks for, so the pipeline finds them and never pulls concurrently. The
+run targets depend on it, so you get this for free; it is a no-op once the cache is warm.
+
+If a pull has already failed, the partial blob is sticky and the next attempt reuses it:
+
+```bash
+make clean-image-cache
+```
 
 ## Running
 

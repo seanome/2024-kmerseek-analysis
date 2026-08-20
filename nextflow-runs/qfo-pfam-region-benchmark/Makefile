@@ -46,11 +46,17 @@ DOCKER_PLATFORM := linux/amd64
 
 PROFILE := sherlock
 
+# Every container the pipeline can pull, read straight out of main.nf plus the kmerseek
+# image, so this list cannot drift from what the processes actually declare.
+ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" main.nf | sort -u) \
+                  docker.io/olgabot/kmerseek:$(IMAGE_TAG)
+
 .PHONY: bootstrap-sherlock build-image build-image-local push-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
-        run run-kmerseek run-baselines status clean-cache
+        run run-kmerseek run-baselines status clean-cache \
+        prefetch-images clean-image-cache
 
 
 # --- which machine am I on? -------------------------------------------------
@@ -257,6 +263,42 @@ pull-results:
 	rsync -avz --progress \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/truth/' $(LOCAL_RESULTS)/truth/
 
+
+# Pull every container ONCE, serially, into the Apptainer cache before any pipeline run.
+#
+# Nextflow launches all its pulls concurrently, and Apptainer's OCI blob cache is not
+# concurrency-safe: simultaneous pulls into one cacheDir race and leave a half-written
+# blob, which surfaces as the useless "unexpected end of JSON input". That is what killed
+# hhblitsBuildDB while foldseek, pulling at the same moment, happened to win.
+#
+# Serial pulls also give each image the full timeout rather than five sharing it, and make
+# a genuine registry failure legible instead of hiding behind a race.
+#
+# Nextflow finds a pre-pulled image by an exact filename: the container ref with '/' and
+# the digest ':' turned into '-', plus .img. Names are computed to match.
+prefetch-images:
+	$(call require_cluster)
+	@mkdir -p $${SCRATCH}/apptainer-cache
+	@set -e; \
+	for ref in $(ALL_CONTAINERS); do \
+	  name=$$(echo "$$ref" | sed -e 's|^docker://||' -e 's|/|-|g' -e 's|:|-|g'); \
+	  out="$${SCRATCH}/apptainer-cache/$${name}.img"; \
+	  if [ -s "$$out" ]; then echo "have  $$name"; continue; fi; \
+	  echo "pull  $$name"; \
+	  rm -f "$$out" "$$out".pulling.* 2>/dev/null || true; \
+	  apptainer pull --name "$$out" "docker://$$ref" || \
+	    { echo "FAILED: $$ref"; rm -f "$$out"; exit 1; }; \
+	done; \
+	echo "all containers cached in $${SCRATCH}/apptainer-cache"
+
+# Remove half-written blobs left by a racing or interrupted pull. Run this if a pull fails
+# with "unexpected end of JSON input" -- the partial entry is sticky and the next attempt
+# reuses it.
+clean-image-cache:
+	$(call require_cluster)
+	rm -rf $${SCRATCH}/apptainer-cache/*.pulling.* $${HOME}/.apptainer/cache/blob
+	@echo "cleared partial pulls; re-run 'make prefetch-images'"
+
 ## ---- Sherlock side ------------------------------------------------------
 ##
 ## Launch from run/ so Nextflow's workDir, trace, timeline and report all land in one
@@ -286,17 +328,17 @@ define launch
 	    2>&1 | tee -a nextflow.$(1).log
 endef
 
-run:
+run: prefetch-images
 	$(call require_cluster)
 	$(call launch,qfo-region,)
 
 # Split arms so the 1017-job kmerseek sweep and the 9-species baselines can be queued
 # and debugged independently.
-run-kmerseek:
+run-kmerseek: prefetch-images
 	$(call require_cluster)
 	$(call launch,qfo-kmerseek,--skip_baselines true)
 
-run-baselines:
+run-baselines: prefetch-images
 	$(call require_cluster)
 	$(call launch,qfo-baselines,--skip_kmerseek true)
 
@@ -315,7 +357,7 @@ mini-testset-sherlock:
 	    --structure-cache data/structures
 
 # Same code path as the real run, scoped down. Do this before `make run`.
-run-mini: mini-testset-sherlock
+run-mini: prefetch-images mini-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-mini
 	cd run-mini && \
