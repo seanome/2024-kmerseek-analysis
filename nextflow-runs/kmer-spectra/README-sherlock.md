@@ -36,11 +36,11 @@ cd nextflow-runs/kmer-spectra
 make push-image
 # equivalent to:
 #   docker build --platform linux/amd64 -t kmerseek-spectra:latest \
-#     --build-arg GIT_SHA=34002cbd473db82371887645e9d41e9a90f85942 \
+#     --build-arg GIT_SHA=cb2336b47840260b0f9903e7ef7a9d416708c016 \
 #     -f Dockerfile \
 #     /Users/olga/code/kmerseek-kmer-frequency-histogram
-#   docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-20-kmer-spectra
-#   docker push docker.io/olgabot/kmerseek:2026-08-20-kmer-spectra
+#   docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-20b-kmer-spectra
+#   docker push docker.io/olgabot/kmerseek:2026-08-20b-kmer-spectra
 ```
 
 (`/Users/olga/code/kmerseek-kmer-frequency-histogram` is just this Mac's local directory name for
@@ -55,7 +55,7 @@ stale `.img` -- a task failing with `the image's architecture (arm64) could not 
 `amd64 linux` means this, not a bad push:
 
 ```bash
-rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-20-kmer-spectra.img"
+rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-20b-kmer-spectra.img"
 ```
 
 Then resume the run rather than starting over -- completed tasks are cached by Nextflow's own
@@ -66,7 +66,7 @@ make run NF_ARGS=-resume
 ```
 
 `nextflow.config`'s `sherlock` profile already points at
-`docker://olgabot/kmerseek:2026-08-20-kmer-spectra` -- no edit needed once the push above completes.
+`docker://olgabot/kmerseek:2026-08-20b-kmer-spectra` -- no edit needed once the push above completes.
 
 **If you're mid-run on an older image**: the 2026-08-19 image adds `--stats-only` to every
 `kmerseek index` call (see `main.nf`'s script block) -- this fixes both the SearchCache
@@ -78,6 +78,13 @@ image additionally drops `save_kmer_stats_only`'s `inverted_index`/`target_list`
 reduction on a 2000-sequence sample; likely more at UniRef50 scale, where `inverted_index`'s
 average entry length grows with degeneracy (`mean_seqs_per_kmer`). Either old image: tasks past
 the failure point keep failing. New image: `-resume` picks up cleanly, no need to restart.
+
+(The 2026-08-20b image restores real "most/least common k-mer" example text in the per-task log
+-- a side effect of the 2026-08-20 optimization above was silently replacing that diagnostic
+text with `<sequence unavailable, hash X>` placeholders. Fixed via a bounded scan of ~20 target
+hashes instead of the removed full-proteome inverted index, so it does not reopen the memory
+cost. Does not change the CSV output or memory behavior otherwise -- not required reading if you
+only care about the memory story below.)
 
 **Be honest with yourself about what this optimization does and doesn't fix.** It removes real
 overhead, but it does not touch `self.signatures` -- the in-memory store of every protein's

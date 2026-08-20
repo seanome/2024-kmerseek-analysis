@@ -6,8 +6,8 @@
 SHELL := /bin/bash
 
 # --- Mac-side config ---
-GIT_SHA        ?= 34002cbd473db82371887645e9d41e9a90f85942
-IMAGE_TAG      ?= 2026-08-20-kmer-spectra
+GIT_SHA        ?= cb2336b47840260b0f9903e7ef7a9d416708c016
+IMAGE_TAG      ?= 2026-08-20b-kmer-spectra
 IMAGE_LOCAL    := kmerseek-spectra:latest
 IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
 KMERSEEK_SRC   := /Users/olga/code/kmerseek-kmer-frequency-histogram
