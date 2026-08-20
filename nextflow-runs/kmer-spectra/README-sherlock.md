@@ -226,7 +226,7 @@ Swiss-Prot's 573K sequences. Switch to Sherlock's `bigmem` partition (up to 4096
 hns's ~186 GB) and raise the memory cap to match:
 
 ```bash
-DATASETS=uniref50 make run NF_ARGS="-resume --queue bigmem --node_mem_cap_gb 3800 --node_mem_min_gb 256 --mem_scale_uniref 8"
+DATASETS=uniref50 make run NF_ARGS="-resume --queue bigmem --max_forks 8 --node_mem_cap_gb 3800 --node_mem_min_gb 256 --mem_scale_uniref 8"
 ```
 
 **`bigmem` also enforces its own hard minimum (currently 256 GB) -- sbatch rejects the
@@ -236,6 +236,12 @@ tier the same as HP-family's 96 GB one, so `mem_scale_uniref=8` alone asks bigme
 128 GB (16*8) on protein/dayhoff combos -- under the floor. `node_mem_min_gb` raises anything
 below it up to the floor without touching combos already above it (HP-family at scale=8 is
 already 768 GB, well clear of 256 GB).
+
+**`bigmem` also has a much tighter per-user concurrent-job limit than hns**
+(`QOSMaxSubmitJobPerUserLimit` -- the exact number isn't in any error message, but `squeue --me`
+after a rejection showed 10 bigmem jobs had gotten through before an 11th-or-later submission
+was refused, so the real limit is at/near 10). `--max_forks 8` stays under that with margin;
+`hns` doesn't need this override (defaults to 20).
 
 Tune `mem_scale_uniref`/`node_mem_cap_gb` down once you've seen a real `peak_rss` in the trace
 file -- 8x/3800GB here is headroom to get a first successful run, not a measurement.

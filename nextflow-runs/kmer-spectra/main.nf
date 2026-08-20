@@ -54,6 +54,14 @@ params.node_mem_cap_gb = 176
 // it. 0 (default) applies no floor, correct for hns which has none. See
 // NODE_MEM_MIN below for why this bit protein/dayhoff specifically.
 params.node_mem_min_gb = 0
+// Max concurrent SLURM jobs. 20 works on hns; bigmem enforces its own
+// per-user QOSMaxSubmitJobPerUserLimit that's tighter and undocumented in any
+// error message's actual number -- `squeue --me` after a QOS rejection showed
+// 10 bigmem jobs had gotten through (all completing) before an 11th-or-later
+// submission was refused, so the real limit is at/near 10. Lower this for
+// bigmem (e.g. --max_forks 8, with margin below the observed 10) rather than
+// guess exactly at the boundary.
+params.max_forks = 20
 
 // name, fasta (relative to launchDir), hp_only, hp_kmin, mem_scale.
 // fasta/hp_kmin/mem_scale are resolved lazily (params.* read here, at parse time,
@@ -140,9 +148,10 @@ process indexAndSpectrum {
     publishDir { "${params.outdir_root}/results-${dataset}" }, mode: 'copy', pattern: '*.spectrum.csv.gz'
     publishDir { "${params.outdir_root}/results-${dataset}" }, mode: 'copy', pattern: '*.index.log'
 
-    queue  { params.queue }
-    memory { taskMemory(label, mem_scale, task.attempt) }
-    time   { params.task_time }
+    queue    { params.queue }
+    maxForks params.max_forks as Integer
+    memory   { taskMemory(label, mem_scale, task.attempt) }
+    time     { params.task_time }
     errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
     maxRetries 1
 
