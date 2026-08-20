@@ -343,6 +343,15 @@ make run-kmerseek     # the 1017-search sweep alone
 make run-baselines    # the 9-species baselines alone
 ```
 
+**Every run target already passes `-resume`**, so `make run` picks up where the last one
+stopped. Do not write `make run -resume`: make consumes the flag itself and exits with
+`invalid option -- 'u'` before nextflow is ever reached. Extra nextflow flags go through
+`NF_ARGS`:
+
+```bash
+make run NF_ARGS="--skip_folddisco true --skip_reseek true"
+```
+
 Every run target blocks in the foreground and streams live output, so start your own tmux
 session first and run them inside it. They deliberately do not start tmux themselves.
 `make status` shows the SLURM queue from another pane.
