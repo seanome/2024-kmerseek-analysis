@@ -39,6 +39,8 @@ visible before anything is submitted:
 | baseline | HHblits | profile-profile |
 | baseline | Foldseek | AlphaFold models |
 | baseline | Folddisco | discontinuous structural motifs, AlphaFold models |
+| baseline | Reseek | structure search over a ~8.6e10-state alphabet |
+| baseline | ProstT5 + Foldseek | 3Di predicted from sequence, **no structures** |
 | ceiling | HMMER3 hmmscan vs Pfam-A | 1 |
 
 hmmscan is not a competitor. It is handed the Pfam library the others are trying to
@@ -452,6 +454,31 @@ wrong domain to a right one is not a boundary measurement.
 | `best_f1` | the best F1 at any score threshold |
 | `best_f1_threshold` | the score achieving it, plus `_precision` and `_recall_reachable` |
 | `median_iou_tp` | how precisely a correct call is placed |
+
+### Reseek and ProstT5: the two that position the paper
+
+**Reseek** (Edgar 2024, Bioinformatics btae687) searches structures over a mega-alphabet of
+~8.6e10 states. It scales alphabet size *up* where kmerseek scales it down to two letters,
+and both working is itself the result worth reporting: it says alphabet size is not the
+binding constraint. Foldseek's ">20 letters gives only incremental gains" finding is
+disputed, so this is a live disagreement rather than settled ground -- worth stating as
+such rather than picking a side. Run at `-sensitive`, not `-fast`: the claim under test is
+remote-homolog detection, and benchmarking an incumbent at its weaker setting is the tell
+reviewers look for. Reseek reports a p-value and no E-value, so the p-value takes the
+E-value slot (same direction, lower is better).
+
+**ProstT5** predicts 3Di directly from amino acid sequence, so run through Foldseek's
+`--prostt5-model` it needs **no structures on either side**. That makes it the closest
+published thing to what kmerseek claims -- structural signal without structure prediction --
+and therefore the baseline the paper most has to differentiate from. Two differentiators
+the pipeline should make visible rather than assert: it still depends on Foldseek, and it
+still needs a target database. It is also the only structure-flavoured arm that runs where
+AlphaFold coverage is too thin for Foldseek or Reseek, which is exactly the regime the
+invertebrate claim lives in -- so it belongs *outside* the structure guard, and it is.
+
+A database built this way carries predicted 3Di only, with no Ca coordinates, so TMalign
+alignment types and TM-score/LDDT outputs are unavailable for that arm. The columns this
+pipeline uses are all sequence-space and unaffected.
 
 ### Folddisco is scored differently, on purpose
 

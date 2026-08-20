@@ -148,6 +148,21 @@ params.skip_baselines = false
 params.skip_foldseek  = false
 params.skip_folddisco = false
 
+// Reseek (Edgar 2024, Bioinformatics btae687). Structure search over a ~8.6e10-state
+// "mega-alphabet" -- it scales alphabet size UP where kmerseek scales it DOWN to two
+// letters. Both working is itself the interesting result: it says alphabet size is not the
+// binding constraint. Foldseek's ">20 letters gives only incremental gains" finding is
+// disputed, so this is a live disagreement rather than settled ground.
+params.skip_reseek = false
+
+// ProstT5 via Foldseek: predicts 3Di directly from amino acid sequence, so it needs NO
+// structures on either side. That makes it the closest published thing to what kmerseek
+// claims -- structural signal without structure prediction -- and therefore the baseline
+// the paper most has to differentiate from. It still depends on Foldseek and on a target
+// database, which is the differentiation the review points at.
+params.skip_prostt5   = false
+params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip the fetch
+
 // Per-domain-pair percent identity, the twilight-zone axis. Skipping it removes the
 // stratification the central claim is stated on, so only skip for a quick smoke test.
 params.skip_identity  = false
@@ -711,6 +726,131 @@ process foldseekSearch {
     """
 }
 
+process reseekConvert {
+    /*
+     * Build a Reseek .bcb database from a directory of structures. Structure-based, so it
+     * sits under the same staged-structures guard as Foldseek and Folddisco.
+     */
+    tag "${species}"
+    container 'quay.io/biocontainers/reseek@sha256:24f7c37150dd2c2f2f322b1387a08d2d1a4a279f46f98f1051f1745417675752'
+    label 'high_cpu'
+    storeDir "${params.outdir}/reseek_db"
+
+    input:
+    tuple val(species), path(structures)
+
+    output:
+    tuple val(species), path("${species}.bcb")
+
+    script:
+    """
+    set -euo pipefail
+    reseek -convert ${structures}/ -bcb ${species}.bcb
+    """
+}
+
+process reseekSearch {
+    tag "human_vs_${species}"
+    container 'quay.io/biocontainers/reseek@sha256:24f7c37150dd2c2f2f322b1387a08d2d1a4a279f46f98f1051f1745417675752'
+    label 'high_cpu'
+    publishDir "${params.outdir}/regions/reseek", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple val(species), path(db), path(human_structures)
+
+    output:
+    tuple val(species), val("reseek"), val("sensitive"),
+          path("human_vs_${species}.reseek.tsv.gz")
+
+    script:
+    // Bound as locals rather than interpolated inline. `${db}` followed by more flags
+    // tripped the Groovy lexer at exactly that column; naming them keeps the script block
+    // plain text.
+    def q_dir   = human_structures.toString()
+    def db_file = db.toString()
+    def cols    = "query+target+qlo+qhi+tlo+thi+pctid+pvalue"
+    """
+    set -euo pipefail
+    # -sensitive rather than -fast: the claim under test is remote-homolog detection, and
+    # benchmarking an incumbent at its faster, weaker setting is the tell reviewers look for.
+    # Columns match this pipeline's normalized order; pvalue takes the E-value slot (lower
+    # is better, same direction) since Reseek does not report an E-value.
+    reseek -search ${q_dir} -db ${db_file} -sensitive -columns ${cols} -output raw.tsv
+
+    # Accession normalisation lives in bin/normalize_reseek.awk -- see the note there.
+    awk -f ${projectDir}/bin/normalize_reseek.awk raw.tsv \\
+      | gzip -c > human_vs_${species}.reseek.tsv.gz
+    """
+}
+
+process prostt5Weights {
+    /*
+     * ProstT5 model weights, fetched once. Needs outbound internet, same constraint as the
+     * structure download, so it is checked rather than left to stall.
+     */
+    container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
+    label 'high_cpu'
+    storeDir "${params.outdir}/prostt5"
+
+    output:
+    path "weights"
+
+    script:
+    """
+    set -euo pipefail
+    if ! curl --fail --silent --head --max-time 30 https://foldseek.steineggerlab.workers.dev >/dev/null 2>&1; then
+        echo "no outbound internet from this node -- cannot fetch ProstT5 weights." >&2
+        echo "Download them elsewhere and pass --prostt5_weights <dir>." >&2
+        exit 1
+    fi
+    mkdir -p tmp
+    foldseek databases ProstT5 weights tmp
+    """
+}
+
+process prostt5Search {
+    /*
+     * Foldseek over 3Di predicted from SEQUENCE on both sides -- no structures anywhere.
+     * That is what makes this the differentiating baseline: it runs on every species,
+     * including those where AlphaFold coverage is too thin for Foldseek or Reseek.
+     */
+    tag "human_vs_${species}"
+    container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
+    label 'high_cpu'
+    publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*.tsv.gz'
+
+    input:
+    tuple val(species), path(species_fasta), path(human_fasta), path(weights)
+
+    output:
+    tuple val(species), val("prostt5"), val("3di_from_seq"),
+          path("human_vs_${species}.prostt5.tsv.gz")
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p tmp
+    # A database built this way carries predicted 3Di only, with no Ca coordinates, so
+    # TMalign-based alignment types and TM-score/LDDT outputs are unavailable here. The
+    # columns below are all sequence-space and unaffected.
+    foldseek easy-search \\
+        ${human_fasta} ${species_fasta} \\
+        out.tsv tmp \\
+        --prostt5-model ${weights} \\
+        --threads ${task.cpus} \\
+        -e ${params.evalue_report} \\
+        --max-seqs 1000 \\
+        --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
+
+    awk -F'\t' 'BEGIN{OFS="\t"} {
+        for (i = 1; i <= 2; i++) {
+            n = split(\$i, p, "|"); if (n >= 2) \$i = p[2]
+        }
+        print
+    }' out.tsv | gzip -c > human_vs_${species}.prostt5.tsv.gz
+    """
+}
+
 process folddiscoIndex {
     /*
      * Folddisco indexes discontinuous geometric motifs rather than sequences or 3Di
@@ -1173,6 +1313,20 @@ workflow {
 
         baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
 
+        // ---- ProstT5: 3Di predicted from sequence, no structures on either side ----
+        // Deliberately OUTSIDE the structure guard below. This is the arm that can run
+        // where AlphaFold coverage is too thin for Foldseek or Reseek, which is exactly
+        // the regime the invertebrate claim lives in.
+        if (!params.skip_prostt5) {
+            weights = params.prostt5_weights
+                ? Channel.value(file(params.prostt5_weights))
+                : prostt5Weights()
+            prostt5_out = prostt5Search(
+                species_ch.map { sp, fa -> tuple(sp, fa, human_fasta) }.combine(weights)
+            )
+            baseline_regions = baseline_regions.mix(prostt5_out)
+        }
+
         // ---- foldseek ----
         // Foldseek and Folddisco need actual structure files. An empty or missing
         // directory makes both fail deep inside a container with no usable message --
@@ -1212,6 +1366,19 @@ workflow {
 
             foldseek_out     = foldseekSearch(struct_ch)
             baseline_regions = baseline_regions.mix(foldseek_out)
+
+            // ---- Reseek: same structures, opposite alphabet direction ----
+            if (!params.skip_reseek) {
+                reseek_db  = reseekConvert(
+                    Channel.fromList(
+                        struct_species.collect { sp -> tuple(sp.label, file("${params.structures}/${sp.label}")) }
+                    )
+                )
+                reseek_out = reseekSearch(
+                    reseek_db.combine(Channel.of(human_structs))
+                )
+                baseline_regions = baseline_regions.mix(reseek_out)
+            }
 
             // ---- folddisco ----
             if (!params.skip_folddisco) {
