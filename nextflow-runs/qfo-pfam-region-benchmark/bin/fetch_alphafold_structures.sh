@@ -153,6 +153,12 @@ fetch_proteome_tar() {
         tar -xf "$tar_path" -C "$dest"
     find "$dest" -name '*.cif.gz' -print0 | xargs -0 -P "$PARALLEL" -n 64 gunzip -f
 
+    # AFDB proteome tars ship BOTH .cif.gz and .pdb.gz for every entry. Only the mmCIF is
+    # wanted: leaving the PDB copies behind doubles disk on a ~60 GB download and, worse,
+    # gives Foldseek and Folddisco two files per protein to index, so every structure is
+    # counted twice. Measured on the real yeast archive: 6055 .cif alongside 6055 .pdb.gz.
+    find "$dest" -name 'AF-*' ! -name '*.cif' ! -name '*.cif.gz' -delete
+
     # Drop every non-F1 fragment explicitly rather than trusting tar to have filtered.
     # GNU tar honours --wildcards; macOS bsdtar does not and silently falls through to the
     # unfiltered extract above, leaving F2+ behind. Those matter: accession_from_tid()
