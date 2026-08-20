@@ -228,6 +228,29 @@ exits 1 printing nothing, and Nextflow then reports only its own unrelated "Comm
 required by nextflow to collect task metrics cannot be found" warning. The cause is
 checked in the workflow, where it can be named.
 
+## Compute nodes have no internet — two things must be fetched on a login node
+
+Established 2026-08-20: Sherlock's batch partition cannot reach out. Anything that
+downloads therefore runs on a login node, and the pipeline's preflight checks fail in
+about 30 seconds with the cause rather than stalling.
+
+**ProstT5 weights** (~1-2 GB, once):
+
+```bash
+make prostt5-weights
+```
+
+The run targets pass `--prostt5_weights ../data/prostt5/weights`. If it is missing the
+pipeline stops immediately and points here rather than attempting a download that cannot
+succeed. `--skip_prostt5 true` leaves the arm out.
+
+**Structures** are the other one; see the fetch section above. `make fetch-structures`
+submits SLURM jobs and will hit the same wall, so use the login-node form:
+
+```bash
+make fetch-structures-login SPECIES_ONE=human
+```
+
 ## Containers: prefetch before the first run
 
 ```bash
@@ -310,6 +333,29 @@ The skip is a guard rather than a convenience: `folddisco index` on an empty dir
 exits 1 printing nothing, and Nextflow then reports only its own unrelated "Command 'ps'
 required by nextflow to collect task metrics cannot be found" warning. The cause is
 checked in the workflow, where it can be named.
+
+## Compute nodes have no internet — two things must be fetched on a login node
+
+Established 2026-08-20: Sherlock's batch partition cannot reach out. Anything that
+downloads therefore runs on a login node, and the pipeline's preflight checks fail in
+about 30 seconds with the cause rather than stalling.
+
+**ProstT5 weights** (~1-2 GB, once):
+
+```bash
+make prostt5-weights
+```
+
+The run targets pass `--prostt5_weights ../data/prostt5/weights`. If it is missing the
+pipeline stops immediately and points here rather than attempting a download that cannot
+succeed. `--skip_prostt5 true` leaves the arm out.
+
+**Structures** are the other one; see the fetch section above. `make fetch-structures`
+submits SLURM jobs and will hit the same wall, so use the login-node form:
+
+```bash
+make fetch-structures-login SPECIES_ONE=human
+```
 
 ## Containers: prefetch before the first run
 

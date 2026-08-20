@@ -71,7 +71,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache \
-        prefetch-images clean-image-cache fetch-structures-sherlock \
+        prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         fetch-structures-login
 
 
@@ -395,6 +395,25 @@ fetch-structures-login:
 	PARALLEL=2 FLAT_CACHE=data/structures bin/fetch_alphafold_structures.sh \
 	  data/structures data/structures/_accessions $(SPECIES_ONE)
 
+
+# ProstT5 weights, on the login node. Sherlock's COMPUTE nodes have no outbound internet --
+# confirmed by the pipeline's own preflight, which failed in 30 seconds rather than
+# stalling -- so this cannot run as a SLURM job. Login nodes can reach out.
+#
+# ~1-2 GB, once. The run targets pass --prostt5_weights at this path, and the pipeline
+# errors with a pointer here if it is missing rather than trying to download.
+FOLDSEEK_IMG := $(shell sed -n "s|.*container '\(quay.io/biocontainers/foldseek@[^']*\)'.*|\1|p" main.nf | head -1)
+
+prostt5-weights:
+	$(call require_cluster)
+	@mkdir -p data/prostt5
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://$(FOLDSEEK_IMG) \
+	  foldseek databases ProstT5 data/prostt5/weights data/prostt5/tmp
+	@rm -rf data/prostt5/tmp
+	@echo "weights at data/prostt5/weights"
+
 ## ---- Sherlock side ------------------------------------------------------
 ##
 ## Launch from run/ so Nextflow's workDir, trace, timeline and report all land in one
@@ -426,6 +445,7 @@ define launch
 	    --hgnc_file   ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file  ../data/covariates/omega_results.tsv \
 	    --swissprot_dat ../data/uniprot_sprot.dat.gz \
+	    --prostt5_weights ../data/prostt5/weights \
 	    --outdir      ../results \
 	    2>&1 | tee -a nextflow.$(1).log
 endef
@@ -474,6 +494,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --prostt5_weights ../data/prostt5/weights \
 	    $(NF_ARGS) 2>&1 | tee -a nextflow.mini.log
 
 status:

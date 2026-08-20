@@ -391,8 +391,10 @@ process fetchStructures {
     """
     set -euo pipefail
 
-    # Compute nodes on many clusters have no route to the internet. Check before starting
-    # a multi-GB download so the failure names the cause instead of appearing as a stall.
+    # Sherlock compute nodes have NO outbound internet -- established 2026-08-20 when the
+    # ProstT5 weights job hit this same check. So this process cannot work there and the
+    # login-node fallback is the real path; the check stays so the failure is instant and
+    # named rather than a stall.
     if ! curl --fail --silent --head --max-time 30 "${params.afdb_base}/" >/dev/null 2>&1; then
         echo "no outbound internet from this compute node -- cannot reach ${params.afdb_base}" >&2
         echo "Run the fetch on a login node instead:" >&2
@@ -1367,9 +1369,21 @@ workflow {
         // where AlphaFold coverage is too thin for Foldseek or Reseek, which is exactly
         // the regime the invertebrate claim lives in.
         if (!params.skip_prostt5) {
-            weights = params.prostt5_weights
-                ? Channel.value(file(params.prostt5_weights))
-                : prostt5Weights()
+            // Sherlock compute nodes have no outbound internet, so the download process
+            // cannot work there -- its preflight fails in 30 seconds by design. When a
+            // weights path is given it must actually exist; falling back to the download
+            // would just re-fail with a message about the wrong thing.
+            def w = params.prostt5_weights ? file(params.prostt5_weights) : null
+            if (params.prostt5_weights && !w.exists()) {
+                error """
+                |--prostt5_weights points at ${params.prostt5_weights}, which does not exist.
+                |Compute nodes here have no outbound internet, so the pipeline cannot fetch it.
+                |Download it once on a login node:
+                |    make prostt5-weights
+                |or pass --skip_prostt5 true to leave that arm out.
+                """.stripMargin()
+            }
+            weights = w ? Channel.value(w) : prostt5Weights()
             prostt5_out = prostt5Search(
                 species_ch.map { sp, fa -> tuple(sp, fa, human_fasta) }.combine(weights)
             )
