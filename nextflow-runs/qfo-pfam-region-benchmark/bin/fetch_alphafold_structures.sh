@@ -31,6 +31,11 @@ shift 2
 
 FLAT_CACHE="${FLAT_CACHE:-$HOME/data/alphafold_structures}"
 AFDB_BASE="https://ftp.ebi.ac.uk/pub/databases/alphafold/latest"
+# Proteome archives come over rsync, which resumes a partial transfer natively. These are
+# ~1-25 GB each and a restart-from-zero on a dropped connection is the difference between
+# an interrupted download and a lost afternoon. The HTTPS base above is still used for the
+# directory listing and for per-accession fetches, which rsync does not serve.
+AFDB_RSYNC="rsync://ftp.ebi.ac.uk/pub/databases/alphafold/latest"
 AFDB_FILES="https://alphafold.ebi.ac.uk/files"
 PARALLEL="${PARALLEL:-8}"
 
@@ -138,8 +143,8 @@ fetch_proteome_tar() {
 
     mkdir -p "$STRUCT_DIR/_archives"
     if [[ ! -f "$tar_path.done" ]]; then
-        echo "  downloading ${archive}"
-        curl "${CURL_COMMON[@]}" -o "$tar_path" "$AFDB_BASE/${archive}"
+        echo "  downloading ${archive} (rsync, resumable)"
+        rsync -P "$AFDB_RSYNC/${archive}" "$tar_path"
         touch "$tar_path.done"
     else
         echo "  archive already downloaded"

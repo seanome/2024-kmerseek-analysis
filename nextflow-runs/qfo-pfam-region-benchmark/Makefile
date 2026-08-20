@@ -72,7 +72,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
-        pfamn-truth mcsa-truth \
+        pfamn-download pfamn-truth mcsa-truth \
         fetch-structures-login
 
 
@@ -425,36 +425,34 @@ prostt5-weights:
 # Running curl on the host also keeps its retry and speed-floor behaviour, which matters
 # over 17.4 GB -- and the parser refuses a truncated stream rather than writing a partial
 # truth set, since a missing Pfam-N label reads as "Pfam-N had nothing here".
-PFAMN_URL := https://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam35.0/Pfam-N.gz
-# M-CSA catalytic residues, from the API (UniProt-numbered). Small: ~1000 entries, of
-# which 314 accessions intersect this benchmark. Needs internet, so login node.
-mcsa-truth:
+PFAMN_RSYNC := rsync://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam35.0/Pfam-N.gz
+PFAMN_GZ   := data/pfamn/Pfam-N.gz
+
+# rsync, not curl. EBI serves this over rsync, which resumes a partial transfer natively --
+# the first attempt piped curl straight into the parser and died 27.8M lines in, and a pipe
+# cannot resume at all. Re-running this costs the remainder, not the whole 17.4 GB.
+pfamn-download:
 	$(call require_cluster)
-	@mkdir -p data/mcsa
+	@mkdir -p data/pfamn
+	rsync -P $(PFAMN_RSYNC) $(PFAMN_GZ)
+	@echo "downloaded: $$(du -h $(PFAMN_GZ) | cut -f1)"
+
+# Parse the downloaded file. Separate from the download so a parse failure does not cost
+# the transfer, and re-running is free once the file is on disk.
+pfamn-truth: pfamn-download
+	$(call require_cluster)
 	apptainer exec \
 	  --bind $$PWD:$$PWD --pwd $$PWD \
 	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
-	  python3 bin/build_mcsa_truth.py \
+	  python3 bin/build_pfamn_truth.py \
+	    --source      $(PFAMN_GZ) \
 	    --annotations data/annotations \
-	    --truth-out   data/mcsa/human_mcsa_truth.parquet \
-	    --map-outdir  data/mcsa \
-	    --summary-out data/mcsa/mcsa_summary.json
+	    --truth-out   data/pfamn/human_pfamn_truth.parquet \
+	    --map-outdir  data/pfamn \
+	    --summary-out data/pfamn/pfamn_summary.json
+	@echo "Pfam-N truth built. $(PFAMN_GZ) can be deleted if disk is tight:"
+	@echo "  rm $(PFAMN_GZ)"
 
-pfamn-truth:
-	$(call require_cluster)
-	@mkdir -p data/pfamn
-	curl --fail --silent --show-error --location \
-	     --speed-limit 10240 --speed-time 120 --retry 5 --retry-delay 15 \
-	     $(PFAMN_URL) \
-	  | apptainer exec \
-	      --bind $$PWD:$$PWD --pwd $$PWD \
-	      docker://olgabot/kmerseek:$(IMAGE_TAG) \
-	      python3 bin/build_pfamn_truth.py \
-	        --source      - \
-	        --annotations data/annotations \
-	        --truth-out   data/pfamn/human_pfamn_truth.parquet \
-	        --map-outdir  data/pfamn \
-	        --summary-out data/pfamn/pfamn_summary.json
 
 ## ---- Sherlock side ------------------------------------------------------
 ##
