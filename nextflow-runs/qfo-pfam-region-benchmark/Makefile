@@ -16,6 +16,13 @@ FOLDDISCO_REMOTE := docker.io/olgabot/folddisco:$(FOLDDISCO_TAG)
 KMERSEEK_SRC   := /Users/olga/code/kmerseek-region-scoring
 
 SHERLOCK_HOST  ?= sherlock
+
+# Multiplex ssh connections. Every rsync and ssh here otherwise opens its own connection
+# and triggers its own two-factor prompt; with ControlMaster the first one authenticates
+# and the rest ride the same socket for ControlPersist. This applies to all targets, not
+# just sync-data -- pull-results and sync-pipeline were equally annoying.
+SSH_MUX  := ssh -o ControlMaster=auto -o ControlPath=$$HOME/.ssh/cm-%r@%h:%p -o ControlPersist=30m
+RSYNC    := rsync -avz --progress -e "$(SSH_MUX)"
 REPO_URL       ?= https://github.com/seanome/2024-kmerseek-analysis.git
 BRANCH         ?= olgabot/qfo-pfam-region-benchmark
 
@@ -158,6 +165,11 @@ fetch-structures-mac: structure-lists
 	$(call require_mac)
 	bin/fetch_alphafold_structures.sh $(STRUCT_DIR) $(ACC_DIR)
 
+# Everything the cluster needs, in one go. With connection multiplexing these share a
+# single authenticated ssh, so this is one two-factor prompt rather than one per target.
+sync-all: sync-pipeline sync-data
+	@echo "pipeline and data synced. Structures download on the cluster: make fetch-structures"
+
 ## ---- mini smoke test ----
 ##
 ## Builds a few-hundred-protein set whose targets were chosen BECAUSE they share Pfam
@@ -228,7 +240,7 @@ run-mini-local:
 
 pull-mini:
 	$(call require_mac)
-	rsync -avz --progress \
+	$(RSYNC) \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/mini/results/' $(LOCAL_RESULTS)-mini/
 
 # Code moves by git, never rsync: rsync duplicates state outside git history and defeats
@@ -237,7 +249,7 @@ pull-mini:
 # targets write into. Safe to re-run; it does not touch an existing checkout's state.
 bootstrap-sherlock:
 	$(call require_mac)
-	ssh $(SHERLOCK_HOST) '\
+	$(SSH_MUX) $(SHERLOCK_HOST) '\
 	  set -e; \
 	  if [ ! -d $(REMOTE_REPO)/.git ]; then \
 	    git clone --branch $(BRANCH) $(REPO_URL) $(REMOTE_REPO); \
@@ -253,37 +265,51 @@ bootstrap-sherlock:
 sync-pipeline:
 	$(call require_mac)
 	git push origin $$(git branch --show-current)
-	ssh $(SHERLOCK_HOST) 'cd $(REMOTE_DIR) && git pull --ff-only'
+	$(SSH_MUX) $(SHERLOCK_HOST) 'cd $(REMOTE_DIR) && git pull --ff-only'
 
 # Data may move by rsync. Annotations are small; proteomes are ~1 GB; structures ~60 GB.
 HGNC_FILE  := /Users/olga/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt
 SPROT_DAT  := /Users/olga/data/uniprot/uniprot_sprot.dat.gz
 OMEGA_FILE := $(ANALYSIS_ROOT)/nextflow-runs/human-mouse-dnds-omega/results/omega_results.tsv
 
+# ONE rsync, so it authenticates once.
+#
+# The four inputs live under different local roots and land in different remote
+# subdirectories, which rsync cannot express in a single invocation. So a staging tree of
+# symlinks is built first, mirroring the remote layout exactly, and that one tree is sent
+# with --copy-links so the real bytes go across rather than the links.
+#
+# Staging costs nothing: symlinks are created, not data, and rsync still transfers only
+# what changed. SSH multiplexing above means the ssh in sync-pipeline reuses this
+# connection too, so a full sync is one authentication rather than five.
+SYNC_STAGE := .sync-staging
+
 sync-data:
 	$(call require_mac)
-	rsync -avz --progress -e ssh $(ANNOTATIONS)/ \
-	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/annotations/'
-	rsync -avz --progress -e ssh $(QFO_DIR)/ \
-	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/qfo/'
-	rsync -avz --progress -e ssh $(HGNC_FILE) $(OMEGA_FILE) \
-	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/covariates/'
-	rsync -avz --progress -e ssh $(SPROT_DAT) \
+	@rm -rf $(SYNC_STAGE)
+	@mkdir -p $(SYNC_STAGE)/covariates
+	@ln -s $(ANNOTATIONS) $(SYNC_STAGE)/annotations
+	@ln -s $(QFO_DIR)     $(SYNC_STAGE)/qfo
+	@ln -s $(HGNC_FILE)   $(SYNC_STAGE)/covariates/
+	@ln -s $(OMEGA_FILE)  $(SYNC_STAGE)/covariates/
+	@ln -s $(SPROT_DAT)   $(SYNC_STAGE)/
+	$(RSYNC) --copy-links $(SYNC_STAGE)/ \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/'
+	@rm -rf $(SYNC_STAGE)
 
 sync-structures:
 	$(call require_mac)
-	rsync -av --progress --copy-links -e ssh $(STRUCT_DIR)/ \
+	$(RSYNC) --copy-links $(STRUCT_DIR)/ \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/structures/' \
 	  --exclude '_archives'
 
 pull-results:
 	$(call require_mac)
-	rsync -avz --progress \
+	$(RSYNC) \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/metrics/' $(LOCAL_RESULTS)/metrics/
-	rsync -avz --progress \
+	$(RSYNC) \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/all_domain_metrics.parquet' $(LOCAL_RESULTS)/
-	rsync -avz --progress \
+	$(RSYNC) \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/truth/' $(LOCAL_RESULTS)/truth/
 
 

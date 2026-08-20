@@ -13,3 +13,6 @@ results/
 # These live inside the pipeline directory because every remote path is relative to it.
 data/
 run-mini/
+
+# Symlink tree built and torn down by `make sync-data`.
+.sync-staging/
