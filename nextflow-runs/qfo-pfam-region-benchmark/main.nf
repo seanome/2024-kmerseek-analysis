@@ -595,6 +595,13 @@ process folddiscoIndex {
     script:
     """
     set -euo pipefail
+    n=\$(find -L ${structures}/ -name 'AF-*.cif*' | wc -l)
+    if [ "\$n" -eq 0 ]; then
+        echo "no AF-*.cif files under ${structures}/ -- folddisco cannot index an empty" >&2
+        echo "directory and exits 1 without a message. Run 'make sync-structures'." >&2
+        exit 1
+    fi
+    echo "indexing \$n structures for ${species}"
     mkdir -p ${species}_folddisco
     folddisco index \\
         -p ${structures}/ \\
@@ -976,10 +983,40 @@ workflow {
         baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
 
         // ---- foldseek ----
-        if (!params.skip_foldseek) {
+        // Foldseek and Folddisco need actual structure files. An empty or missing
+        // directory makes both fail deep inside a container with no usable message --
+        // folddisco index exits 1 printing nothing at all -- so the emptiness is checked
+        // here, where it can name the cause and the fix. `make sync-data` deliberately
+        // does NOT ship structures (they are ~36 GB); `make sync-structures` does.
+        def has_structs = { label ->
+            def d = file("${params.structures}/${label}")
+            d.exists() && d.list().any { it ==~ /(?i)^AF-.*\.cif(\.gz)?$/ }
+        }
+        def struct_species = SPECIES.findAll { has_structs(it.label) }
+        def missing_structs = SPECIES*.label - struct_species*.label
+        def human_ok = has_structs('human')
+
+        if (!params.skip_foldseek && (!human_ok || struct_species.isEmpty())) {
+            log.warn """
+            |Skipping the Foldseek and Folddisco arms: no AlphaFold structures found under
+            |  ${params.structures}
+            |  human structures present: ${human_ok}
+            |  targets with structures : ${struct_species*.label ?: 'none'}
+            |Both arms need query AND target structures. Populate them with
+            |  make fetch-structures   (on the Mac, ~36 GB)
+            |  make sync-structures    (Mac -> cluster)
+            |or pass --skip_foldseek true to silence this. Every sequence-based arm runs
+            |regardless; only the two structure arms are affected.
+            """.stripMargin()
+        }
+
+        if (!params.skip_foldseek && human_ok && !struct_species.isEmpty()) {
+            if (missing_structs) {
+                log.warn "Structure arms skip ${missing_structs.join(', ')}: no .cif files staged for them"
+            }
             def human_structs = file("${params.structures}/human")
             struct_ch = Channel.fromList(
-                SPECIES.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
+                struct_species.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
             ).map { label, dir -> tuple(label, dir, human_structs) }
 
             foldseek_out     = foldseekSearch(struct_ch)
@@ -989,7 +1026,7 @@ workflow {
             if (!params.skip_folddisco) {
                 fd_index = folddiscoIndex(
                     Channel.fromList(
-                        SPECIES.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
+                        struct_species.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
                     )
                 )
                 fd_chunks = Channel.of(0..(params.folddisco_chunks - 1)).flatten()

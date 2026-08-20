@@ -178,7 +178,27 @@ The split code path runs and emits its rows, but `heldout` reads 0.0 throughout.
 the set being small, not the split being broken -- do not read a mini-run leaderboard as a
 result. Raise `--n-queries` / `--n-targets` if you want the held-out half to carry signal.
 
-### Containers: prefetch before the first run
+### Structures are a separate sync, and the structure arms need them
+
+`make sync-data` ships annotations, proteomes, HGNC/omega and Swiss-Prot. It does **not**
+ship AlphaFold structures -- those are ~36 GB and have their own target:
+
+```bash
+make fetch-structures    # on the Mac, downloads what the cache is missing
+make sync-structures     # Mac -> cluster
+```
+
+Without them the Foldseek and Folddisco arms are skipped, with a warning naming both
+commands. Every sequence-based arm -- kmerseek, phmmer, jackhmmer, MMseqs2, HHblits,
+hmmscan -- runs regardless, so a structure-free run is a perfectly valid run of everything
+else. That is the recommended way to get first results while the download proceeds.
+
+The skip is a guard rather than a convenience: `folddisco index` on an empty directory
+exits 1 printing nothing, and Nextflow then reports only its own unrelated "Command 'ps'
+required by nextflow to collect task metrics cannot be found" warning. The cause is
+checked in the workflow, where it can be named.
+
+## Containers: prefetch before the first run
 
 ```bash
 make prefetch-images
@@ -212,6 +232,26 @@ make run-mini-local
 requires AVX2, Rosetta/QEMU emulation does not provide it, and the processes die with
 SIGSEGV (exit 139) rather than a readable error. Sherlock nodes are real amd64, so only
 the amd64 image is pushed.
+
+## Structures are a separate sync, and the structure arms need them
+
+`make sync-data` ships annotations, proteomes, HGNC/omega and Swiss-Prot. It does **not**
+ship AlphaFold structures -- those are ~36 GB and have their own target:
+
+```bash
+make fetch-structures    # on the Mac, downloads what the cache is missing
+make sync-structures     # Mac -> cluster
+```
+
+Without them the Foldseek and Folddisco arms are skipped, with a warning naming both
+commands. Every sequence-based arm -- kmerseek, phmmer, jackhmmer, MMseqs2, HHblits,
+hmmscan -- runs regardless, so a structure-free run is a perfectly valid run of everything
+else. That is the recommended way to get first results while the download proceeds.
+
+The skip is a guard rather than a convenience: `folddisco index` on an empty directory
+exits 1 printing nothing, and Nextflow then reports only its own unrelated "Command 'ps'
+required by nextflow to collect task metrics cannot be found" warning. The cause is
+checked in the workflow, where it can be named.
 
 ## Containers: prefetch before the first run
 
