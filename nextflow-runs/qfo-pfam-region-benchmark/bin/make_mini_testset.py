@@ -90,8 +90,17 @@ def main():
     p.add_argument("--annotations", required=True, type=Path)
     p.add_argument("--qfo-dir", required=True, type=Path)
     p.add_argument("--outdir", required=True, type=Path)
-    p.add_argument("--species", default="yeast,ecoli",
-                   help="target species; default is the two smallest proteomes")
+    # Three spellings for one thing. Nextflow params use underscores
+    # (--target_species), argparse conventionally uses dashes (--target-species), and
+    # --species is what this script shipped with. Accepting all three means a Makefile
+    # recipe cannot pass the wrong one, which is exactly what broke mini-testset-sherlock
+    # when the Nextflow param was renamed and the rename leaked onto this python call.
+    #
+    # As everywhere else in this pipeline: human is the query, these are the TARGETS.
+    p.add_argument("--target-species", "--target_species", "--species",
+                   dest="species", default="yeast,ecoli",
+                   help="TARGET proteomes to search human against; "
+                        "default is the two smallest")
     p.add_argument("--n-queries", type=int, default=200)
     p.add_argument("--n-targets", type=int, default=300,
                    help="per species, split evenly between family-sharing and decoy")
