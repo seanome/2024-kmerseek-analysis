@@ -101,6 +101,16 @@ resolve_model_version() {
     exit 1
 }
 
+# Default target list, restored: an earlier edit replaced the block these lived in and
+# deleted them, so TARGETS was never assigned and the script died at its main loop with
+# "TARGETS[@]: unbound variable" under set -u. bash -n does not catch that.
+ALL_SPECIES=(human mouse chicken zebrafish ciona fly worm yeast arabidopsis ecoli)
+if [[ $# -gt 0 ]]; then
+    TARGETS=("$@")
+else
+    TARGETS=("${ALL_SPECIES[@]}")
+fi
+
 link_cached() {
     # Link what the flat cache already has, so only genuinely missing structures are fetched.
     local species="$1" dest="$2" acc_file="$3"
@@ -122,12 +132,14 @@ link_cached() {
 
 fetch_proteome_tar() {
     local species="$1" dest="$2" archive="$3"
-    local tar_path="$STRUCT_DIR/_archives/${archive}.tar"
+    # $archive is the full filename resolved from the listing, .tar included. Appending
+    # another .tar here produced _v6.tar.tar and a 404.
+    local tar_path="$STRUCT_DIR/_archives/${archive}"
 
     mkdir -p "$STRUCT_DIR/_archives"
     if [[ ! -f "$tar_path.done" ]]; then
-        echo "  downloading ${archive}.tar"
-        curl "${CURL_COMMON[@]}" -o "$tar_path" "$AFDB_BASE/${archive}.tar"
+        echo "  downloading ${archive}"
+        curl "${CURL_COMMON[@]}" -o "$tar_path" "$AFDB_BASE/${archive}"
         touch "$tar_path.done"
     else
         echo "  archive already downloaded"
@@ -140,6 +152,15 @@ fetch_proteome_tar() {
     tar -xf "$tar_path" -C "$dest" --wildcards '*-F1-model_v*.cif.gz' 2>/dev/null || \
         tar -xf "$tar_path" -C "$dest"
     find "$dest" -name '*.cif.gz' -print0 | xargs -0 -P "$PARALLEL" -n 64 gunzip -f
+
+    # Drop every non-F1 fragment explicitly rather than trusting tar to have filtered.
+    # GNU tar honours --wildcards; macOS bsdtar does not and silently falls through to the
+    # unfiltered extract above, leaving F2+ behind. Those matter: accession_from_tid()
+    # parses AF-<acc>-F2-... back to the same accession, so a fragment would be indexed as
+    # a second copy of the protein. Fragment coordinates are also relative to the fragment,
+    # not the full sequence, so their residue ranges would be wrong against Pfam anyway.
+    find "$dest" -name 'AF-*.cif' ! -name 'AF-*-F1*' -delete
+
     # Normalise to the AF-<acc>-F1.cif name the cache links also use.
     for f in "$dest"/AF-*-F1-model_v*.cif; do
         [[ -e "$f" ]] || continue
