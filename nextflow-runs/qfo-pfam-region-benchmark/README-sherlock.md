@@ -183,10 +183,24 @@ result. Raise `--n-queries` / `--n-targets` if you want the held-out half to car
 `make sync-data` ships annotations, proteomes, HGNC/omega and Swiss-Prot. It does **not**
 ship AlphaFold structures -- those are ~36 GB and have their own target:
 
-On Sherlock, inside your own tmux (it blocks in the foreground and takes a while):
+On Sherlock, inside your own tmux:
 
 ```bash
 make fetch-structures
+```
+
+This submits one SLURM job per species rather than downloading on the login node. The
+login-node version was SIGKILLed mid-transfer (exit 137): Sherlock enforces limits there
+and a sustained multi-GB download trips them. Per-species jobs also mean a kill costs one
+proteome rather than the whole set, and the script is resumable so a retry continues from
+where it stopped.
+
+**If your compute nodes have no outbound internet**, the jobs fail immediately with a
+message saying so rather than stalling. Fall back to the login node, one species at a time
+and with low parallelism to stay under its limits:
+
+```bash
+make fetch-structures-login SPECIES_ONE=human
 ```
 
 Download them where they will be used. Pulling ~60 GB to a laptop and pushing it back over
@@ -252,10 +266,24 @@ the amd64 image is pushed.
 `make sync-data` ships annotations, proteomes, HGNC/omega and Swiss-Prot. It does **not**
 ship AlphaFold structures -- those are ~36 GB and have their own target:
 
-On Sherlock, inside your own tmux (it blocks in the foreground and takes a while):
+On Sherlock, inside your own tmux:
 
 ```bash
 make fetch-structures
+```
+
+This submits one SLURM job per species rather than downloading on the login node. The
+login-node version was SIGKILLed mid-transfer (exit 137): Sherlock enforces limits there
+and a sustained multi-GB download trips them. Per-species jobs also mean a kill costs one
+proteome rather than the whole set, and the script is resumable so a retry continues from
+where it stopped.
+
+**If your compute nodes have no outbound internet**, the jobs fail immediately with a
+message saying so rather than stalling. Fall back to the login node, one species at a time
+and with low parallelism to stay under its limits:
+
+```bash
+make fetch-structures-login SPECIES_ONE=human
 ```
 
 Download them where they will be used. Pulling ~60 GB to a laptop and pushing it back over

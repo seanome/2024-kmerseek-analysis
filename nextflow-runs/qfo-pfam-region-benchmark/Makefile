@@ -34,6 +34,9 @@ LOCAL_RESULTS  := /Users/olga/data/qfo-pfam-region-benchmark
 MINI_DIR       := /Users/olga/data/qfo-pfam-region-benchmark-mini
 MHC_DIR        := /Users/olga/data/qfo-pfam-region-benchmark-mhc
 
+# One species at a time for the login-node fallback, e.g. make fetch-structures-login SPECIES_ONE=human
+SPECIES_ONE    ?= human
+
 # Two species and two combos: enough to exercise every stage in minutes.
 # TARGET proteomes. Human is the query and is never listed here.
 MINI_TARGETS ?= yeast,ecoli
@@ -58,7 +61,8 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache \
-        prefetch-images clean-image-cache fetch-structures-sherlock
+        prefetch-images clean-image-cache fetch-structures-sherlock \
+        fetch-structures-login
 
 
 # --- which machine am I on? -------------------------------------------------
@@ -320,6 +324,9 @@ clean-image-cache:
 fetch-structures: fetch-structures-sherlock
 
 # Download structures where they will be used.
+# Download as SLURM jobs, one per species. The login-node version was SIGKILLed mid-
+# transfer (exit 137) -- Sherlock enforces limits there and a multi-GB sustained download
+# trips them. Blocks in the foreground so progress is visible; run inside your own tmux.
 fetch-structures-sherlock:
 	$(call require_cluster)
 	@mkdir -p data/structures/_accessions
@@ -329,8 +336,22 @@ fetch-structures-sherlock:
 	  python3 bin/write_structure_lists.py \
 	    --annotations data/annotations \
 	    --outdir      data/structures/_accessions
-	FLAT_CACHE=data/structures bin/fetch_alphafold_structures.sh \
-	  data/structures data/structures/_accessions
+	ml load nextflow && \
+	  nextflow run main.nf -profile $(PROFILE) -resume \
+	    --fetch_structures true \
+	    --structures  $$PWD/data/structures \
+	    --annotations $$PWD/data/annotations \
+	    --qfo_dir     $$PWD/data/qfo \
+	    $(NF_ARGS) 2>&1 | tee -a nextflow.fetch.log
+
+# Fallback for a cluster whose compute nodes have no outbound internet: run the download
+# on the login node one species at a time, with low parallelism to stay under its limits.
+# Slower and killable, but it needs no route from the batch partition.
+fetch-structures-login:
+	$(call require_cluster)
+	@mkdir -p data/structures/_accessions
+	PARALLEL=2 FLAT_CACHE=data/structures bin/fetch_alphafold_structures.sh \
+	  data/structures data/structures/_accessions $(SPECIES_ONE)
 
 ## ---- Sherlock side ------------------------------------------------------
 ##

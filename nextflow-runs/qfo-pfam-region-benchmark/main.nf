@@ -152,6 +152,11 @@ params.skip_folddisco = false
 // stratification the central claim is stated on, so only skip for a quick smoke test.
 params.skip_identity  = false
 
+// Structure download. `--fetch_structures true` runs it as SLURM jobs, one per species,
+// instead of on the login node where a multi-GB transfer gets killed.
+params.fetch_structures = false
+params.afdb_base = "https://ftp.ebi.ac.uk/pub/databases/alphafold/latest"
+
 // Folddisco queries one structure per invocation, so ~19.4k human queries per species are
 // spread over this many SLURM tasks rather than serialised into one.
 params.folddisco_chunks = 20
@@ -322,6 +327,59 @@ process parseIdentity {
     script:
     """
     parse_domain_identity.py --hits ${tsv} --out ${species}.domain_identity.parquet
+    """
+}
+
+process fetchStructures {
+    /*
+     * Download one species' AlphaFold structures as a SLURM job.
+     *
+     * This ran on the login node and was SIGKILLed mid-download (exit 137): Sherlock
+     * enforces limits there and a multi-GB sustained transfer trips them. One task per
+     * species also means a kill costs one proteome rather than the whole set, and the
+     * script is resumable so a retry continues instead of restarting.
+     *
+     * No container. The script needs curl, tar and gzip, which the cluster has natively
+     * and the pipeline image does not carry -- adding curl to that image would mean a
+     * rebuild and push for a step that needs nothing from it.
+     *
+     * Writes straight into params.structures and emits only a small manifest. Declaring a
+     * 20k-file directory as an output would make Nextflow stage every file, and a
+     * directory output under storeDir is the shape that produced recurring "Directory not
+     * empty" failures in a sibling pipeline here.
+     */
+    tag "${species}"
+    cpus 2
+    memory '8 GB'
+    time '24h'
+    // A transfer that dies partway is normal on a shared filesystem; resume rather than
+    // fail the run, since the script picks up where it stopped.
+    errorStrategy 'retry'
+    maxRetries 2
+
+    input:
+    tuple val(species), path(acc_dir)
+
+    output:
+    tuple val(species), path("${species}.fetch.log")
+
+    script:
+    """
+    set -euo pipefail
+
+    # Compute nodes on many clusters have no route to the internet. Check before starting
+    # a multi-GB download so the failure names the cause instead of appearing as a stall.
+    if ! curl --fail --silent --head --max-time 30 "${params.afdb_base}/" >/dev/null 2>&1; then
+        echo "no outbound internet from this compute node -- cannot reach ${params.afdb_base}" >&2
+        echo "Run the fetch on a login node instead:" >&2
+        echo "  PARALLEL=2 bin/fetch_alphafold_structures.sh data/structures data/structures/_accessions ${species}" >&2
+        exit 1
+    fi
+
+    mkdir -p ${params.structures}
+    PARALLEL=${task.cpus} FLAT_CACHE=${params.structures} \\
+      ${projectDir}/bin/fetch_alphafold_structures.sh \\
+        ${params.structures} ${acc_dir} ${species} 2>&1 | tee ${species}.fetch.log
     """
 }
 
@@ -944,6 +1002,23 @@ workflow {
 
     def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
     def annotations = file(params.annotations)
+
+    // Structure download as SLURM jobs. A standalone entry: it does the download and
+    // nothing else, because the download must finish before the structure arms can run
+    // and there is no point holding a whole pipeline open while ~60 GB transfers.
+    if (params.fetch_structures) {
+        def acc_dir = file("${params.structures}/_accessions")
+        if (!acc_dir.exists()) {
+            error "no accession lists at ${acc_dir} -- run `make structure-lists` first"
+        }
+        fetch_in = Channel.fromList(
+            (SPECIES*.label + ['human']).collect { tuple(it, acc_dir) }
+        )
+        fetchStructures(fetch_in).subscribe { sp, log_file ->
+            log.info "structures fetched: ${sp}"
+        }
+        return
+    }
 
     // (label, fasta) for the 9 target species
     species_ch = Channel.fromList(
