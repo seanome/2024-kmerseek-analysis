@@ -109,6 +109,17 @@ params.hhblits_db    = null
 // [cli_flag, label, kmin, kmax]
 params.hp_kmin = 18
 
+// 3-letter HPC alphabet. Shorter k for the same information content -- see ALL_ENCODINGS.
+params.hpc_kmin = 12
+params.hpc_kmax = 24
+
+// Low-complexity k-mer removal, swept as a TOGGLE rather than fixed: every alphabet x
+// ksize combo runs both with and without it, doubling the search count. Whether dropping
+// homopolymer-ish k-mers helps or hurts is alphabet-dependent -- a 2-letter alphabet
+// generates far more low-complexity k-mers than a 20-letter one -- so it is a variable to
+// measure, not a setting to pick.
+params.low_complexity_toggle = [false, true]
+
 // Scope a run down without editing the matrix, for smoke tests on a mini set.
 //   --target_species   comma-separated TARGET labels, e.g. "yeast,ecoli"
 //   --kmerseek_combos  comma-separated encoding:ksize, e.g. "protein:10,hp-pbotc-1st-ed:19"
@@ -123,16 +134,30 @@ params.target_species  = null
 params.species         = null
 params.kmerseek_combos = null
 
+// [cli_flag, label, kmin, kmax] per alphabet. cli_flag is clap's kebab-case; label is the
+// snake_case moltype kmerseek writes into the CSV.
+//
+// Names follow kmerseek v0.4.0. NOTE the rename: hp-lehninger-plus-c became
+// hp-lehninger-c-nonpolar, so results produced before that are not directly comparable by
+// label and older result files will not match this list.
+//
+// hp-lehninger-hpc is the 3-letter alphabet (h/p/c), and its k range is SHORTER on purpose.
+// Three letters carry ~1.585 bits per position against ~1 for two, so matching the HP
+// sweep's information content means k_hpc ~ k_hp / 1.585: k18-30 in HP corresponds to
+// roughly k11-19 here. The range is widened to 12-24 to bracket that rather than assume
+// the conversion is exact, since real residue frequencies are not uniform and the true
+// entropy per symbol is below the maximum.
 def ALL_ENCODINGS = [
-    ['protein',              'protein',             5,  15],
-    ['dayhoff',              'dayhoff',             10, 20],
-    ['hp',                   'hp',                  params.hp_kmin, 30],
-    ['hp-kyte-doolittle',    'hp_kyte_doolittle',   params.hp_kmin, 30],
-    ['hp-lehninger',         'hp_lehninger',        params.hp_kmin, 30],
-    ['hp-lehninger-plus-c',  'hp_lehninger_plus_c', params.hp_kmin, 30],
-    ['hp-thomas-dill',       'hp_thomas_dill',      params.hp_kmin, 30],
-    ['hp-thomas-dill-no-c',  'hp_thomas_dill_no_c', params.hp_kmin, 30],
-    ['hp-pbotc-1st-ed',      'hp_pbotc_1st_ed',     params.hp_kmin, 30],
+    ['protein',                 'protein',                 5,  15],
+    ['dayhoff',                 'dayhoff',                 10, 20],
+    ['hp',                      'hp',                      params.hp_kmin, 30],
+    ['hp-kyte-doolittle',       'hp_kyte_doolittle',       params.hp_kmin, 30],
+    ['hp-lehninger',            'hp_lehninger',            params.hp_kmin, 30],
+    ['hp-lehninger-c-nonpolar', 'hp_lehninger_c_nonpolar', params.hp_kmin, 30],
+    ['hp-thomas-dill',          'hp_thomas_dill',          params.hp_kmin, 30],
+    ['hp-thomas-dill-no-c',     'hp_thomas_dill_no_c',     params.hp_kmin, 30],
+    ['hp-pbotc-1st-ed',         'hp_pbotc_1st_ed',         params.hp_kmin, 30],
+    ['hp-lehninger-hpc',        'hp_lehninger_hpc',        params.hpc_kmin, params.hpc_kmax],
 ]
 
 // kmerseek search filters. min_region_score is the region-scoped cutoff: -log10 of the
@@ -486,7 +511,7 @@ process kmerseekIndexAndSearch {
      * Tradeoff: -resume after a crash re-indexes an incomplete combo instead of reusing
      * a saved index. Accepted -- the index is cheap relative to the search.
      */
-    tag "${species}_${label}_k${ksize}"
+    tag "${species}_${label}_k${ksize}_lc${lowcomp}"
     storeDir "${params.outdir}/kmerseek"
 
     memory { kmerseekMemory(label, ksize, task.attempt) }
@@ -500,7 +525,8 @@ process kmerseekIndexAndSearch {
     maxRetries 2
 
     input:
-    tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize), path(human_fasta)
+    tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize),
+          val(lowcomp), path(human_fasta)
 
     // ONE path output, deliberately. storeDir supports only val/path outputs -- a tuple
     // output silently disabled it ("storeDir can only be used with `val` and `path`
@@ -511,24 +537,37 @@ process kmerseekIndexAndSearch {
     // The (species, tool, variant) metadata is not lost, it is recovered in the workflow
     // from the filename, which already encodes all three.
     output:
-    path "human_vs_${species}.${label}.k${ksize}.regions.parquet"
+    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
+    path "spectrum.${species}.${label}.k${ksize}.lc${lowcomp}.csv.gz",           emit: spectrum
 
     script:
-    def index_dir = "${species}.${label}.k${ksize}.kmerseek.rocksdb"
-    def out_zst   = "human_vs_${species}.${label}.k${ksize}.regions.csv.zst"
-    def out_pq    = "human_vs_${species}.${label}.k${ksize}.regions.parquet"
-    def log_file  = "human_vs_${species}.${label}.k${ksize}.log"
+    def slug      = "${label}.k${ksize}.lc${lowcomp}"
+    def index_dir = "${species}.${slug}.kmerseek.rocksdb"
+    def out_zst   = "human_vs_${species}.${slug}.regions.csv.zst"
+    def out_pq    = "human_vs_${species}.${slug}.regions.parquet"
+    def log_file  = "human_vs_${species}.${slug}.log"
+    def spectrum  = "spectrum.${species}.${slug}.csv.gz"
+    // --remove-low-complexity takes an optional BOOL. Passed explicitly on both arms so the
+    // search side matches the index side; kmerseek warns when they disagree, because
+    // containment is not comparable across a mismatch.
+    def lc_flag   = "--remove-low-complexity ${lowcomp}"
     """
     set -euo pipefail
 
     echo "=== Index: ${species} ${cli_flag} k=${ksize} ===" | tee ${log_file}
     echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
 
+    # --kmer-stats-out writes the k-mer frequency spectrum for this proteome under this
+    # alphabet/ksize/low-complexity setting. Kept as a first-class output: the spectra are
+    # what show WHY an alphabet behaves as it does, and the with/without low-complexity
+    # pair is only interpretable if both spectra exist.
     kmerseek index \\
         --encoding ${cli_flag} \\
         --ksize    ${ksize} \\
         --input    ${species_fasta} \\
         --output   ${index_dir} \\
+        ${lc_flag} \\
+        --kmer-stats-out ${spectrum} \\
         2>&1 | tee -a ${log_file}
 
     echo "=== Search: human vs ${species} ===" | tee -a ${log_file}
@@ -542,6 +581,7 @@ process kmerseekIndexAndSearch {
         --ksize    ${ksize} \\
         --query    ${human_fasta} \\
         --target   ${index_dir} \\
+        ${lc_flag} \\
         --threshold         ${params.threshold} \\
         --min-shared-kmers  ${params.min_shared_kmers} \\
         --max-query-pvalue  ${params.max_query_pvalue} \\
@@ -575,6 +615,7 @@ PYEOF
     else
         touch ${out_pq}
     fi
+    touch ${spectrum}
     rm -f ${out_zst}
     rm -rf ${index_dir}
 
@@ -1357,28 +1398,46 @@ workflow {
             : ALL_ENCODINGS.collectMany { cli_flag, label, kmin, kmax ->
                   (kmin..kmax).collect { k -> tuple(cli_flag, label, k) }
               }
+
+        // Cross every alphabet x ksize with the low-complexity toggle. This is what
+        // doubles the sweep, and it is the point: whether dropping low-complexity k-mers
+        // helps is alphabet-dependent, so it has to be measured rather than chosen.
+        combos = combos.collectMany { cli_flag, label, k ->
+            params.low_complexity_toggle.collect { lc -> tuple(cli_flag, label, k, lc) }
+        }
         // Spell out the query/target asymmetry at startup. "2 species" reading as
         // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
         // this line exists to prevent.
         log.info """
         |  query   : human (UP000005640_9606) -- always, and never listed as a target
         |  targets : ${SPECIES*.label.join(', ')}
-        |  searches: ${combos.size()} alphabet x ksize combos x ${SPECIES.size()} targets = ${combos.size() * SPECIES.size()}
+        |  combos  : ${combos.size()} (alphabet x ksize x low-complexity on/off)
+        |  searches: ${combos.size()} x ${SPECIES.size()} targets = ${combos.size() * SPECIES.size()}
         |            each named human_vs_<target>, e.g. human_vs_${SPECIES[0].label}
+        |  spectra : one k-mer frequency spectrum per combo, published for plotting
         """.stripMargin()
 
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
-            .map { species, fasta, cli_flag, label, ksize ->
-                tuple(species, fasta, cli_flag, label, ksize, human_fasta)
+            .map { species, fasta, cli_flag, label, ksize, lowcomp ->
+                tuple(species, fasta, cli_flag, label, ksize, lowcomp, human_fasta)
             }
         // Rebuild (species, tool, variant) from the filename. The process emits a bare
         // path so storeDir works; the name carries everything the tuple used to.
-        kmerseek_regions = kmerseekIndexAndSearch(kmerseek_in)
+        ks_out = kmerseekIndexAndSearch(kmerseek_in)
+        // Rebuild (species, tool, variant) from the filename; the process emits bare paths
+        // so storeDir works. The variant now carries the low-complexity setting, so the two
+        // arms of the toggle are separate rows everywhere downstream rather than pooled.
+        kmerseek_regions = ks_out.regions
             .map { pq ->
-                def m = (pq.name =~ /^human_vs_(.+?)\.(.+)\.k(\d+)\.regions\.parquet$/)
+                def m = (pq.name =~ /^human_vs_(.+?)\.(.+)\.k(\d+)\.lc(true|false)\.regions\.parquet$/)
                 if (!m) error "cannot parse kmerseek result filename: ${pq.name}"
-                tuple(m[0][1], "kmerseek", "${m[0][2]}_k${m[0][3]}", pq)
+                def lc = m[0][4] == 'true' ? 'lcTrue' : 'lcFalse'
+                tuple(m[0][1], "kmerseek", "${m[0][2]}_k${m[0][3]}_${lc}", pq)
             }
+        // Spectra are published for plotting and are not scored.
+        ks_out.spectrum.collectFile(
+            storeDir: "${params.outdir}/spectra", keepHeader: false
+        )
     }
 
     // ---- baselines ----

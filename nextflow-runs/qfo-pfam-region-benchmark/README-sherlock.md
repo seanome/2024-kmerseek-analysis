@@ -28,6 +28,29 @@ visible before anything is submitted:
             each named human_vs_<target>, e.g. human_vs_yeast
 ```
 
+## kmerseek version requirement — read before building the image
+
+This pipeline needs a kmerseek build that has **all three** of:
+
+| feature | needed for |
+|---|---|
+| region scoring (`region_start`/`region_end`/`region_poisson_score`) | every metric here; the CSV has no usable columns without it |
+| `hp-lehninger-hpc` + `hp-lehninger-c-nonpolar` | the 3-letter alphabet and the renamed 2-letter one |
+| `--remove-low-complexity` | the toggle that doubles the sweep |
+
+**As of 2026-08-20 no single branch has all three.** `olgabot/bump-version-0.4.0` (PR #34)
+has the alphabets and the flag but NOT region scoring; `worktree-region-scoring` has region
+scoring and the flag but not the alphabets. Verified by running the current image:
+`hp-lehninger-hpc` and `hp-lehninger-c-nonpolar` are rejected as invalid values, and
+`--remove-low-complexity` is absent from `index --help`.
+
+So region scoring has to land in the release before this sweep can run as configured. Until
+it does, either restrict the matrix to alphabets the image knows, or build from a branch
+that merges the two.
+
+**`hp-lehninger-plus-c` was renamed to `hp-lehninger-c-nonpolar`.** Results produced under
+the old name are not matched by the new label, so earlier result files will not join.
+
 ## What runs
 
 | arm | tool | variants |
