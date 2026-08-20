@@ -41,6 +41,12 @@ import cafa_metrics as cm  # noqa: E402
 # Covariate axes the results get cut by. Continuous ones are binned; HGNC gene group is
 # already categorical. Bin edges are fixed rather than data-derived so a stratum means
 # the same thing across every tool, species and combo in the sweep.
+# Percent-identity bins. 30-40% is the twilight zone where profile methods lose the
+# signal and where claim 1 says HP patterning still holds; <20% is the midnight zone
+# below it. Bins are fixed rather than quantile-derived so a stratum means the same thing
+# in every species, which is the whole point of comparing across a divergence panel.
+IDENTITY_BINS = [0.0, 20.0, 30.0, 40.0, 60.0, 100.01]
+
 STRATA = {
     "plddt": ("mean_plddt", [0, 50, 70, 90, 100]),
     "disorder": ("disorder_fraction_plddt", [0.0, 0.1, 0.3, 0.6, 1.01]),
@@ -459,12 +465,27 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
 
     # Counts distinct true instances found, not calls: several regions hitting one domain
     # is one recovery, not many.
-    found = (
-        calls.filter("is_tp").select("query_acc", "pfam_id", "true_start", "true_end")
-        .unique().height
-        if n_calls
-        else 0
-    )
+    #
+    # Intersected against the truth subset, which is load-bearing for any INSTANCE-level
+    # stratum. Strata are applied to calls by protein, but identity bins are a property of
+    # the individual domain: one protein can hold a 90%-identity domain and a 25%-identity
+    # one. Counting every TP call from that protein against the 25% bin's denominator
+    # produced recall above 1.0 (observed: 2.77). Restricting the numerator to instances
+    # actually in this cell makes numerator and denominator describe the same set.
+    if n_calls:
+        key = ["query_acc", "pfam_id", "true_start", "true_end"]
+        truth_keys = truth.select(
+            pl.col("accession").alias("query_acc"), "pfam_id",
+            pl.col("domain_start").alias("true_start"),
+            pl.col("domain_end").alias("true_end"),
+        ).unique()
+        found = (
+            calls.filter("is_tp").select(key).unique()
+            .join(truth_keys, on=key, how="inner")
+            .height
+        )
+    else:
+        found = 0
     n_truth = truth.height
     n_reachable = reachable.height
 
@@ -516,6 +537,28 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
             "best_f1_precision": 0.0, "best_f1_recall_reachable": 0.0,
         })
     return metrics
+
+
+def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.DataFrame:
+    """Bin each domain instance by identity to its closest same-family target domain.
+
+    Instances with no same-family match in the target get a distinct `no_homolog` label
+    rather than being dropped or lumped into the lowest bin. They are unreachable by any
+    transfer-based method, so mixing them into "<20%" would make every tool look worse in
+    exactly the bin the hypothesis cares most about.
+    """
+    if identity is None or identity.height == 0:
+        return truth.with_columns(pl.lit(None, dtype=pl.String).alias("stratum_identity"))
+
+    key = ["accession", "pfam_id", "domain_start", "domain_end"]
+    joined = truth.join(identity.select(key + ["best_pident"]), on=key, how="left")
+
+    expr = pl.when(pl.col("best_pident").is_null()).then(pl.lit("no_homolog"))
+    for lo, hi in zip(IDENTITY_BINS[:-1], IDENTITY_BINS[1:]):
+        expr = expr.when(
+            (pl.col("best_pident") >= lo) & (pl.col("best_pident") < hi)
+        ).then(pl.lit(f"{int(lo)}-{int(hi)}%"))
+    return joined.with_columns(expr.otherwise(None).alias("stratum_identity"))
 
 
 def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
@@ -591,7 +634,7 @@ def strata_of(truth: pl.DataFrame) -> list[tuple[str, str]]:
         # The curated sets are deliberately small -- 6 class I heavy chains, 6 IgSF decoys --
         # and are the whole point of cutting on them, so the noise floor that protects the
         # ~4200 HGNC groups must not delete them. Their n is reported per row either way.
-        floor = 1 if axis in ("mhc", "geneset") else MIN_STRATUM_PROTEINS
+        floor = 1 if axis in ("mhc", "geneset", "identity") else MIN_STRATUM_PROTEINS
         counts = (
             truth.filter(pl.col(col).is_not_null())
             .group_by(col)
@@ -644,6 +687,9 @@ def main():
                         "per-species plots")
     p.add_argument("--truth", required=True, type=Path)
     p.add_argument("--domain-map", type=Path)
+    p.add_argument("--identity", type=Path,
+                   help="per-domain-pair percent identity for this species; the "
+                        "twilight-zone stratification axis")
     p.add_argument("--covariates", type=Path,
                    help="per-protein HGNC group / omega / pLDDT / disorder table")
     p.add_argument("--direct-annotation", action="store_true")
@@ -673,8 +719,15 @@ def main():
     truth_lf = pl.scan_parquet(args.truth)
     truth = truth_lf.collect()
     covariates = pl.read_parquet(args.covariates) if args.covariates else None
+    identity = None
+    if args.identity and args.identity.exists() and args.identity.stat().st_size > 0:
+        try:
+            identity = pl.read_parquet(args.identity)
+        except Exception:
+            identity = None   # sentinel file when --skip_identity is set
     truth = attach_strata(truth, covariates,
                           keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
+    truth = attach_identity(truth, identity)
 
     regions = load_regions(args.regions, args.direct_annotation)
 

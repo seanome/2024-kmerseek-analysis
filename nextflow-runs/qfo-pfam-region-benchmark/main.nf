@@ -148,6 +148,10 @@ params.skip_baselines = false
 params.skip_foldseek  = false
 params.skip_folddisco = false
 
+// Per-domain-pair percent identity, the twilight-zone axis. Skipping it removes the
+// stratification the central claim is stated on, so only skip for a quick smoke test.
+params.skip_identity  = false
+
 // Folddisco queries one structure per invocation, so ~19.4k human queries per species are
 // spread over this many SLURM tasks rather than serialised into one.
 params.folddisco_chunks = 20
@@ -260,6 +264,81 @@ process buildSwissprotTruth {
         --truth-out   human_swissprot_truth.parquet \\
         --map-outdir  . \\
         --summary-out swissprot_summary.json
+    """
+}
+
+process domainIdentity {
+    /*
+     * Percent identity between each human domain instance and the closest same-family
+     * domain in the target proteome. This is the twilight-zone axis, and the claim under
+     * test lives on it: HP patterning is supposed to survive BELOW the ~30-40% identity
+     * where profile methods lose the signal.
+     *
+     * Deliberately measured with MMseqs2 rather than by any tool being scored, and over
+     * the TRUTH pairs rather than over anyone's predictions, so identity is a property of
+     * the benchmark rather than of the method. Using a tool's own alignment would let each
+     * method define the difficulty of its own test.
+     *
+     * Emits raw TSV only. Parsing lives in parseIdentity because this container has
+     * MMseqs2 and no python -- running polars here exited 127, command not found.
+     */
+    tag "${species}"
+    container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
+    label 'high_cpu'
+
+    input:
+    tuple val(species), path(human_domains_fa), path(target_domains_fa)
+
+    output:
+    tuple val(species), path("${species}.identity.tsv")
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p tmp
+    # Permissive on purpose: the job is to MEASURE identity for remote pairs, not to decide
+    # whether they are homologous -- the shared Pfam family already decided that. A strict
+    # search would silently drop the twilight-zone pairs this axis exists for.
+    mmseqs easy-search \\
+        ${human_domains_fa} ${target_domains_fa} \\
+        ${species}.identity.tsv tmp \\
+        --threads ${task.cpus} \\
+        -s 7.5 -e 10000 --max-seqs 300 \\
+        --format-output "query,target,pident,alnlen,evalue"
+    """
+}
+
+process parseIdentity {
+    tag "${species}"
+    label 'python'
+    publishDir "${params.outdir}/identity", mode: 'copy', pattern: '*.parquet'
+
+    input:
+    tuple val(species), path(tsv)
+
+    output:
+    tuple val(species), path("${species}.domain_identity.parquet")
+
+    script:
+    """
+    parse_domain_identity.py --hits ${tsv} --out ${species}.domain_identity.parquet
+    """
+}
+
+process extractDomainSequences {
+    tag "${label}"
+    label 'python'
+
+    input:
+    tuple val(label), path(truth), path(fasta)
+
+    output:
+    tuple val(label), path("${label}.domains.fasta")
+
+    script:
+    """
+    extract_domain_sequences.py \\
+        --truth ${truth} --fasta ${fasta} --out ${label}.domains.fasta
     """
 }
 
@@ -769,7 +848,7 @@ process scoreDomainCalls {
 
     input:
     tuple val(truth_set), val(species), val(tool), val(variant), val(mya), path(regions),
-          path(truth), path(domain_map), path(covariates)
+          path(truth), path(domain_map), path(covariates), path(identity)
 
     output:
     path "${truth_set}.${tool}.${variant}.${species}.calls.parquet",   emit: calls
@@ -792,6 +871,7 @@ process scoreDomainCalls {
         --truth        ${truth} \\
         --domain-map   ${domain_map} \\
         --covariates   ${covariates} \\
+        --identity     ${identity} \\
         --min-overlap  ${params.min_overlap} \\
         --strict-iou   ${params.strict_iou} \\
         --truth-set    ${truth_set} \\
@@ -826,6 +906,7 @@ process scoreHmmscanCeiling {
         --truth        ${truth} \\
         --direct-annotation \\
         --covariates   ${covariates} \\
+        --identity     ${identity} \\
         --min-overlap  ${params.min_overlap} \\
         --strict-iou   ${params.strict_iou} \\
         --calls-out    hmmscan.direct.all.calls.parquet \\
@@ -913,6 +994,41 @@ workflow {
         log.warn "swissprot_dat not found (${params.swissprot_dat}) -- running the Pfam " +
                  "truth arm only. Pfam is circular with the profile baselines; see README."
     }
+
+    // ---- twilight-zone axis: per-domain-pair percent identity ----
+    // Off by default only if explicitly skipped; it is the axis claim 1 is stated on.
+    identity_ch = Channel.empty()
+    if (!params.skip_identity) {
+        // One invocation, mixed inputs. A DSL2 process cannot be called twice in the same
+        // workflow, so query and target extraction share a call and are split afterwards
+        // on the label.
+        dom_in = truth_out.truth
+            .map { t -> tuple("human", t, human_fasta) }
+            .mix(
+                // Restrict to the species this run actually targets. map_ch carries a map
+                // for every species in the annotations directory, a superset of SPECIES
+                // whenever --target_species narrows the run -- looking one of those up
+                // returned null and died on `.subdir`.
+                map_ch.filter { ts, sp, _m -> ts == "pfam" && SPECIES*.label.contains(sp) }
+                      .map { _ts, sp, m ->
+                          def info = SPECIES.find { it.label == sp }
+                          tuple(sp, m,
+                                file("${params.qfo_dir}/${info.subdir}/${info.proteome}_${info.taxon}.fasta"))
+                      }
+            )
+        dom_fa     = extractDomainSequences(dom_in)
+        human_dom  = dom_fa.filter { label, _fa -> label == "human" }.map { _l, fa -> fa }
+        target_dom = dom_fa.filter { label, _fa -> label != "human" }
+
+        identity_ch = parseIdentity(
+            domainIdentity(
+                target_dom.combine(human_dom)
+                          .map { sp, tfa, hfa -> tuple(sp, hfa, tfa) }
+            )
+        )
+    }
+
+
 
     // ---- kmerseek: alphabet x ksize x species ----
     kmerseek_regions = Channel.empty()
@@ -1061,7 +1177,18 @@ workflow {
         .combine(truth_sets, by: 0)
         .combine(covariates)
         .map { ts, species, tool, variant, mya, regions, domain_map, truth, cov ->
-            tuple(ts, species, tool, variant, mya, regions, truth, domain_map, cov)
+            tuple(species, ts, tool, variant, mya, regions, truth, domain_map, cov)
+        }
+        // Identity is per (species, domain instance), so it joins on species. An empty
+        // sentinel keeps the process signature fixed when --skip_identity is set.
+        .combine(
+            params.skip_identity
+                ? Channel.fromList(SPECIES.collect { tuple(it.label, file("${projectDir}/assets/NO_IDENTITY")) })
+                : identity_ch,
+            by: 0
+        )
+        .map { species, ts, tool, variant, mya, regions, truth, domain_map, cov, ident ->
+            tuple(ts, species, tool, variant, mya, regions, truth, domain_map, cov, ident)
         }
 
     scored = scoreDomainCalls(score_in)
