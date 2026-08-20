@@ -163,6 +163,13 @@ params.skip_reseek = false
 params.skip_prostt5   = false
 params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip the fetch
 
+// folddisco, rebuilt with the ENTRYPOINT cleared. The upstream image sets
+// ENTRYPOINT ["/usr/local/bin/folddisco"], which under Apptainer becomes the SIF runscript
+// and stops Nextflow from running `/bin/bash .command.run` -- the task exits 1 with an
+// entirely empty .command.out. Docker bypasses the entrypoint the way Nextflow invokes it,
+// so this reproduces only on the cluster. See Dockerfile.folddisco.
+params.folddisco_image = 'docker.io/olgabot/folddisco:2026-08-20-noentrypoint'
+
 // Per-domain-pair percent identity, the twilight-zone axis. Skipping it removes the
 // stratification the central claim is stated on, so only skip for a quick smoke test.
 params.skip_identity  = false
@@ -859,7 +866,7 @@ process folddiscoIndex {
      * task would be pure waste.
      */
     tag "${species}"
-    container 'ghcr.io/steineggerlab/folddisco:master'
+    container params.folddisco_image
     label 'high_cpu'
     storeDir "${params.outdir}/folddisco_index"
 
@@ -921,7 +928,7 @@ process folddiscoQuery {
      * AlphaFold coverage is incomplete so some queries have no structure at all.
      */
     tag "human_vs_${species} chunk ${chunk}"
-    container 'ghcr.io/steineggerlab/folddisco:master'
+    container params.folddisco_image
     label 'high_cpu'
 
     input:

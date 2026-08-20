@@ -11,6 +11,8 @@ KMERSEEK_SHA   ?= 0302511391c5f8eef499179430764d3d0881e529
 IMAGE_TAG      ?= 2026-08-18-region-scoring
 IMAGE_LOCAL    := kmerseek-region:latest
 IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
+FOLDDISCO_TAG    ?= 2026-08-20-noentrypoint
+FOLDDISCO_REMOTE := docker.io/olgabot/folddisco:$(FOLDDISCO_TAG)
 KMERSEEK_SRC   := /Users/olga/code/kmerseek-region-scoring
 
 SHERLOCK_HOST  ?= sherlock
@@ -53,9 +55,10 @@ PROFILE := sherlock
 # Every container the pipeline can pull, read straight out of main.nf plus the kmerseek
 # image, so this list cannot drift from what the processes actually declare.
 ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" main.nf | sort -u) \
-                  docker.io/olgabot/kmerseek:$(IMAGE_TAG)
+                  docker.io/olgabot/kmerseek:$(IMAGE_TAG) $(FOLDDISCO_REMOTE)
 
-.PHONY: bootstrap-sherlock build-image build-image-local push-image structure-lists fetch-structures \
+.PHONY: bootstrap-sherlock build-image build-image-local push-image \
+        build-folddisco-image push-folddisco-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
@@ -122,6 +125,19 @@ build-image-local:
 	  --build-arg GIT_SHA=$(KMERSEEK_SHA) \
 	  -f Dockerfile \
 	  $(KMERSEEK_SRC)
+
+# folddisco with ENTRYPOINT cleared. The upstream image's entrypoint becomes the SIF
+# runscript under Apptainer and stops Nextflow running /bin/bash, so the task exits 1 with
+# no output whatsoever. Docker does not reproduce it.
+build-folddisco-image:
+	$(call require_mac)
+	docker build --platform $(DOCKER_PLATFORM) -t folddisco-noentry:latest \
+	  -f Dockerfile.folddisco .
+
+push-folddisco-image: build-folddisco-image
+	$(call require_mac)
+	docker tag folddisco-noentry:latest $(FOLDDISCO_REMOTE)
+	docker push $(FOLDDISCO_REMOTE)
 
 push-image: build-image
 	$(call require_mac)
