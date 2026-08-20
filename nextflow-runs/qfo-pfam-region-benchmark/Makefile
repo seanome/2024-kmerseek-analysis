@@ -419,6 +419,13 @@ prostt5-weights:
 # Pfam-N truth: the "Pfam-A HMMs missed these" labels, streamed from EBI and filtered to
 # our accessions. ~17.4 GB crosses the wire and nothing is stored; expect 30-60 min.
 # Login node, because compute nodes here have no outbound internet.
+#
+# curl runs on the HOST and the container only parses stdin. The pipeline image has python
+# and polars but no curl, and adding it there for one step is not worth a rebuild and push.
+# Running curl on the host also keeps its retry and speed-floor behaviour, which matters
+# over 17.4 GB -- and the parser refuses a truncated stream rather than writing a partial
+# truth set, since a missing Pfam-N label reads as "Pfam-N had nothing here".
+PFAMN_URL := https://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam35.0/Pfam-N.gz
 # M-CSA catalytic residues, from the API (UniProt-numbered). Small: ~1000 entries, of
 # which 314 accessions intersect this benchmark. Needs internet, so login node.
 mcsa-truth:
@@ -436,14 +443,18 @@ mcsa-truth:
 pfamn-truth:
 	$(call require_cluster)
 	@mkdir -p data/pfamn
-	apptainer exec \
-	  --bind $$PWD:$$PWD --pwd $$PWD \
-	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
-	  python3 bin/build_pfamn_truth.py \
-	    --annotations data/annotations \
-	    --truth-out   data/pfamn/human_pfamn_truth.parquet \
-	    --map-outdir  data/pfamn \
-	    --summary-out data/pfamn/pfamn_summary.json
+	curl --fail --silent --show-error --location \
+	     --speed-limit 10240 --speed-time 120 --retry 5 --retry-delay 15 \
+	     $(PFAMN_URL) \
+	  | apptainer exec \
+	      --bind $$PWD:$$PWD --pwd $$PWD \
+	      docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	      python3 bin/build_pfamn_truth.py \
+	        --source      - \
+	        --annotations data/annotations \
+	        --truth-out   data/pfamn/human_pfamn_truth.parquet \
+	        --map-outdir  data/pfamn \
+	        --summary-out data/pfamn/pfamn_summary.json
 
 ## ---- Sherlock side ------------------------------------------------------
 ##

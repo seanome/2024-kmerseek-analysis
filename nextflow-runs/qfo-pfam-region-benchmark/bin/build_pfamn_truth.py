@@ -30,6 +30,7 @@ import argparse
 import gzip
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -44,10 +45,28 @@ PFAMN_URL = ("https://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam35.0/Pfam-N.
 
 
 def stream(source: str):
-    """Yield decoded lines from a local .gz or a URL, without storing the file."""
+    """Yield decoded lines from stdin, a local .gz, or a URL -- never storing the file.
+
+    `-` reads a gzip stream from stdin, and that is the mode the Makefile uses. The
+    pipeline container has python and polars but NO curl, so the download runs on the host
+    and only the parsing happens inside:
+
+        curl ... | apptainer exec IMG python3 build_pfamn_truth.py --source -
+
+    That also keeps curl's retry and speed-floor behaviour, which matters for a 17.4 GB
+    transfer, without adding curl to an image that needs it for nothing else.
+    """
+    if source == "-":
+        with gzip.open(sys.stdin.buffer, "rt", errors="replace") as fh:
+            yield from fh
+        return
+
     if source.startswith(("http://", "https://")):
-        # curl | gunzip rather than urllib so a stall is caught by the same speed floor
-        # used everywhere else here, and memory stays flat regardless of file size.
+        if shutil.which("curl") is None:
+            raise SystemExit(
+                "curl not found. Either run where curl exists, or pipe the stream in:\n"
+                f"  curl -fsSL {source} | ... build_pfamn_truth.py --source -"
+            )
         proc = subprocess.Popen(
             ["curl", "--fail", "--silent", "--show-error", "--location",
              "--speed-limit", "10240", "--speed-time", "120",
@@ -59,21 +78,26 @@ def stream(source: str):
         proc.wait()
         if proc.returncode not in (0, None):
             raise SystemExit(f"curl failed with {proc.returncode} on {source}")
-    else:
-        with gzip.open(source, "rt", errors="replace") as fh:
-            yield from fh
+        return
+
+    with gzip.open(source, "rt", errors="replace") as fh:
+        yield from fh
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--source", default=PFAMN_URL,
-                   help="Pfam-N.gz URL or local path; streamed either way")
+                   help="'-' for a gzip stream on stdin (what the Makefile uses), or a "
+                        "URL or local path; streamed in every case")
     p.add_argument("--annotations", required=True, type=Path,
                    help="Pfam annotation dir, used only for which accessions to keep")
     p.add_argument("--truth-out", required=True, type=Path)
     p.add_argument("--map-outdir", required=True, type=Path)
     p.add_argument("--summary-out", required=True, type=Path)
     p.add_argument("--progress-every", type=int, default=20_000_000)
+    p.add_argument("--allow-truncated", action="store_true",
+                   help="accept a stream that ended early; produces an INCOMPLETE truth "
+                        "set, for testing only")
     args = p.parse_args()
 
     species_acc = {}
@@ -87,24 +111,42 @@ def main():
     rows = []
     family = None
     n_lines = 0
-    for line in stream(args.source):
-        n_lines += 1
-        if n_lines % args.progress_every == 0:
-            print(f"  {n_lines:,} lines, {len(rows):,} kept", file=sys.stderr, flush=True)
-        if line.startswith("#=GF"):
-            m = GF_AC.match(line)
-            if m:
-                family = m.group(1).split(".")[0]
-            continue
-        if line.startswith("#") or line.startswith("//") or not line.strip():
-            continue
-        m = SEQ_LINE.match(line)
-        if not m or family is None:
-            continue
-        acc = m.group(1)
-        if acc not in wanted:
-            continue
-        rows.append((acc, family, int(m.group(2)), int(m.group(3))))
+    truncated = False
+    # A truncated stream must NOT quietly yield a partial truth set. Missing Pfam-N labels
+    # are indistinguishable from "Pfam-N had nothing here", so calls that should have been
+    # adjudicated stay gray and the method is understated -- the exact failure this truth
+    # set exists to prevent. Fail unless truncation is explicitly accepted.
+    try:
+        for line in stream(args.source):
+            n_lines += 1
+            if n_lines % args.progress_every == 0:
+                print(f"  {n_lines:,} lines, {len(rows):,} kept", file=sys.stderr, flush=True)
+            if line.startswith("#=GF"):
+                m = GF_AC.match(line)
+                if m:
+                    family = m.group(1).split(".")[0]
+                continue
+            if line.startswith("#") or line.startswith("//") or not line.strip():
+                continue
+            m = SEQ_LINE.match(line)
+            if not m or family is None:
+                continue
+            acc = m.group(1)
+            if acc not in wanted:
+                continue
+            rows.append((acc, family, int(m.group(2)), int(m.group(3))))
+    except EOFError:
+        truncated = True
+
+    if truncated and not args.allow_truncated:
+        raise SystemExit(
+            f"stream ended before the gzip end-of-stream marker after {n_lines:,} lines "
+            f"({len(rows):,} regions kept).\n"
+            "The transfer was cut short, so this truth set would be incomplete -- and a "
+            "missing Pfam-N label is indistinguishable from Pfam-N having nothing there, "
+            "which silently understates every tool.\n"
+            "Re-run it; pass --allow-truncated only for a deliberate partial test."
+        )
 
     df = pl.DataFrame(
         rows, schema=["accession", "pfam_id", "domain_start", "domain_end"], orient="row"
@@ -119,6 +161,7 @@ def main():
         "source": args.source,
         "note": "Pfam-N is published for Pfam35.0 only; releases 36 and 37 do not carry it",
         "lines_scanned": n_lines,
+        "truncated": truncated,
         "human": {"n_regions": human.height, "n_proteins": human["accession"].n_unique(),
                   "n_families": human["pfam_id"].n_unique()},
     }
