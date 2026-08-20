@@ -95,9 +95,16 @@ params.hhblits_db    = null
 params.hp_kmin = 18
 
 // Scope a run down without editing the matrix, for smoke tests on a mini set.
-//   --species          comma-separated labels, e.g. "yeast,ecoli"
+//   --target_species   comma-separated TARGET labels, e.g. "yeast,ecoli"
 //   --kmerseek_combos  comma-separated encoding:ksize, e.g. "protein:10,hp-pbotc-1st-ed:19"
 // Both default to null, meaning the full sweep.
+//
+// HUMAN IS ALWAYS THE QUERY and never appears in this list. Every search is human
+// against one target proteome, so --target_species yeast,ecoli means two searches:
+// human_vs_yeast and human_vs_ecoli. The old --species spelling still works; it was
+// renamed because it read as "which species are in the run" when it means "which
+// proteomes is human searched against".
+params.target_species  = null
 params.species         = null
 params.kmerseek_combos = null
 
@@ -162,12 +169,14 @@ def ALL_SPECIES = [
     [label: "ecoli",       taxon: "83333",  proteome: "UP000000625", subdir: "Bacteria",  mya: 2000],
 ]
 
-def SPECIES = params.species
-    ? ALL_SPECIES.findAll { it.label in params.species.tokenize(',')*.trim() }
+def requested = params.target_species ?: params.species
+def SPECIES = requested
+    ? ALL_SPECIES.findAll { it.label in requested.tokenize(',')*.trim() }
     : ALL_SPECIES
 
 if (SPECIES.isEmpty()) {
-    error "No species matched --species '${params.species}'. Known: ${ALL_SPECIES*.label.join(', ')}"
+    error "No target species matched '${requested}'. Known targets: " +
+          "${ALL_SPECIES*.label.join(', ')} (human is the query and is not a target)"
 }
 
 // HP-family alphabets at low ksize need far more RAM than everything else: a handful of
@@ -916,7 +925,15 @@ workflow {
             : ALL_ENCODINGS.collectMany { cli_flag, label, kmin, kmax ->
                   (kmin..kmax).collect { k -> tuple(cli_flag, label, k) }
               }
-        log.info "kmerseek matrix: ${combos.size()} alphabet x ksize combos x ${SPECIES.size()} species = ${combos.size() * SPECIES.size()} searches"
+        // Spell out the query/target asymmetry at startup. "2 species" reading as
+        // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
+        // this line exists to prevent.
+        log.info """
+        |  query   : human (UP000005640_9606) -- always, and never listed as a target
+        |  targets : ${SPECIES*.label.join(', ')}
+        |  searches: ${combos.size()} alphabet x ksize combos x ${SPECIES.size()} targets = ${combos.size() * SPECIES.size()}
+        |            each named human_vs_<target>, e.g. human_vs_${SPECIES[0].label}
+        """.stripMargin()
 
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
             .map { species, fasta, cli_flag, label, ksize ->

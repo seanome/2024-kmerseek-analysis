@@ -35,7 +35,8 @@ MINI_DIR       := /Users/olga/data/qfo-pfam-region-benchmark-mini
 MHC_DIR        := /Users/olga/data/qfo-pfam-region-benchmark-mhc
 
 # Two species and two combos: enough to exercise every stage in minutes.
-MINI_SPECIES ?= yeast,ecoli
+# TARGET proteomes. Human is the query and is never listed here.
+MINI_TARGETS ?= yeast,ecoli
 MINI_COMBOS  ?= protein:10,hp-pbotc-1st-ed:19
 
 PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
@@ -148,7 +149,7 @@ mini-testset:
 	  --annotations $(ANNOTATIONS) \
 	  --qfo-dir     $(QFO_DIR) \
 	  --outdir      $(MINI_DIR) \
-	  --species     $(MINI_SPECIES)
+	  --target_species $(MINI_TARGETS)
 
 # MHC-only set: the 25 genes of notebooks 210-216 against mouse. A vignette and a smoke
 # test, NOT a population statistic -- n=25 across 7 classes must never carry a headline
@@ -159,7 +160,7 @@ mhc-testset:
 	  --annotations $(ANNOTATIONS) \
 	  --qfo-dir     $(QFO_DIR) \
 	  --outdir      $(MHC_DIR) \
-	  --species     mouse \
+	  --target_species mouse \
 	  --gene-set    mhc \
 	  --hgnc        $(HGNC_FILE) \
 	  --n-targets   400
@@ -173,7 +174,7 @@ run-mhc-local:
 	    --annotations     $(MHC_DIR)/annotations \
 	    --structures      $(MHC_DIR)/structures \
 	    --outdir          $(MHC_DIR)/results \
-	    --species         mouse \
+	    --target_species  mouse \
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       $(HGNC_FILE) \
 	    --omega_file      $(OMEGA_FILE) \
@@ -189,7 +190,7 @@ run-mini-local:
 	    --annotations     $(MINI_DIR)/annotations \
 	    --structures      $(MINI_DIR)/structures \
 	    --outdir          $(MINI_DIR)/results \
-	    --species         $(MINI_SPECIES) \
+	    --target_species  $(MINI_TARGETS) \
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       $(HGNC_FILE) \
 	    --omega_file      $(OMEGA_FILE) \
@@ -353,7 +354,7 @@ mini-testset-sherlock:
 	    --annotations     data/annotations \
 	    --qfo-dir         data/qfo \
 	    --outdir          data/mini \
-	    --species         $(MINI_SPECIES) \
+	    --target_species  $(MINI_TARGETS) \
 	    --structure-cache data/structures
 
 # Same code path as the real run, scoped down. Do this before `make run`.
@@ -367,7 +368,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	    --annotations     ../data/mini/annotations \
 	    --structures      ../data/mini/structures \
 	    --outdir          ../data/mini/results \
-	    --species         $(MINI_SPECIES) \
+	    --target_species  $(MINI_TARGETS) \
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \

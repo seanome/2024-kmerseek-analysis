@@ -6,6 +6,28 @@ the families annotated on the overlapped target interval; the call is scored aga
 human protein's real domain instances. Right family in the wrong place is a false
 positive, which is the whole reason this scores regions rather than protein pairs.
 
+## How the comparisons are structured
+
+**Human is always the query. It is never a target and never appears in the species list.**
+
+Every search takes the whole human proteome as queries and searches it against one target
+proteome, producing a result named `human_vs_<target>`. So `--target_species yeast,ecoli`
+is two targets and therefore two searches -- `human_vs_yeast` and `human_vs_ecoli` -- not
+a yeast-versus-ecoli comparison. The nine targets span 100 MYA (mouse) to 2000 MYA
+(ecoli), which is what makes divergence an axis rather than a caveat.
+
+The parameter used to be `--species`, which read as "which species are in this run" when
+it means "which proteomes is human searched against". `--species` still works as an alias.
+The run banner now prints the query, the targets, and the search count so the asymmetry is
+visible before anything is submitted:
+
+```
+  query   : human (UP000005640_9606) -- always, and never listed as a target
+  targets : yeast, ecoli
+  searches: 2 alphabet x ksize combos x 2 targets = 4
+            each named human_vs_<target>, e.g. human_vs_yeast
+```
+
 ## What runs
 
 | arm | tool | variants |
