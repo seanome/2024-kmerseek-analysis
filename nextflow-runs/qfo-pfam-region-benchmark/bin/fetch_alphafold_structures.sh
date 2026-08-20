@@ -38,34 +38,68 @@ PARALLEL="${PARALLEL:-8}"
 CURL_COMMON=(--fail --silent --show-error --location --continue-at -
              --speed-limit 10240 --speed-time 120 --retry 10 --retry-delay 15)
 
-# species -> AFDB proteome archive basename; empty means no archive, fetch per accession.
+# Archive names and the model version are RESOLVED FROM THE SERVER, never hardcoded.
 #
-# A case statement, not an associative array. `declare -A` needs bash 4, and macOS still
-# ships bash 3.2 as /bin/bash -- this script died there on its first line of real work
-# ("human: unbound variable") without ever reaching a download. Clusters have bash 4+, but
-# a script that only runs on some machines is a trap, so this form works on both.
-proteome_archive() {
+# They were hardcoded to v4 and every download 404'd: AFDB is on v6, and the evidence was
+# already on disk in the local cache's AF-*-model_v6.cif filenames. A hardcoded version is
+# a guess with an expiry date -- v7 would break it again -- so both are looked up once per
+# run and the script fails loudly if the lookup itself fails.
+#
+# species -> UniProt proteome id. Only the id is stable; the filename around it is not.
+proteome_id() {
     case "$1" in
-        human)       echo "UP000005640_9606_HUMAN_v4" ;;
-        mouse)       echo "UP000000589_10090_MOUSE_v4" ;;
-        zebrafish)   echo "UP000000437_7955_DANRE_v4" ;;
-        fly)         echo "UP000000803_7227_DROME_v4" ;;
-        worm)        echo "UP000001940_6239_CAEEL_v4" ;;
-        yeast)       echo "UP000002311_559292_YEAST_v4" ;;
-        ecoli)       echo "UP000000625_83333_ECOLI_v4" ;;
-        arabidopsis) echo "UP000006548_3702_ARATH_v4" ;;
-        # Not in AFDB's model-organism proteome set; fetched per accession.
+        human)       echo "UP000005640" ;;
+        mouse)       echo "UP000000589" ;;
+        zebrafish)   echo "UP000000437" ;;
+        fly)         echo "UP000000803" ;;
+        worm)        echo "UP000001940" ;;
+        yeast)       echo "UP000002311" ;;
+        ecoli)       echo "UP000000625" ;;
+        arabidopsis) echo "UP000006548" ;;
+        # Confirmed absent from AFDB's proteome archives; fetched per accession.
         chicken|ciona) echo "" ;;
         *)           echo "" ;;
     esac
 }
 
-ALL_SPECIES=(human mouse chicken zebrafish ciona fly worm yeast arabidopsis ecoli)
-if [[ $# -gt 0 ]]; then
-    TARGETS=("$@")
-else
-    TARGETS=("${ALL_SPECIES[@]}")
-fi
+LISTING=""
+fetch_listing() {
+    [[ -n "$LISTING" ]] && return 0
+    LISTING="$(mktemp)"
+    curl --fail --silent --show-error --location --max-time 120 "$AFDB_BASE/" \
+      | tr '"' '\n' | grep -E '^UP[0-9]+_.*\.tar$' | sort -u > "$LISTING" || {
+        echo "!! could not list $AFDB_BASE/ -- cannot resolve archive names" >&2
+        exit 1
+    }
+    [[ -s "$LISTING" ]] || { echo "!! empty archive listing from $AFDB_BASE/" >&2; exit 1; }
+}
+
+proteome_archive() {
+    local up; up="$(proteome_id "$1")"
+    if [[ -z "$up" ]]; then echo ""; return 0; fi
+    fetch_listing
+    # Newest first, so a directory carrying several versions resolves to the current one.
+    grep "^${up}_" "$LISTING" | sort -Vr | head -1
+}
+
+# Model version for per-accession fetches, probed once against a real accession rather
+# than assumed. Ordered newest first.
+MODEL_VERSION=""
+resolve_model_version() {
+    local probe="$1"
+    [[ -n "$MODEL_VERSION" ]] && return 0
+    local v
+    for v in v6 v5 v4; do
+        if curl --fail --silent --head --max-time 30 \
+             "$AFDB_FILES/AF-${probe}-F1-model_${v}.cif" >/dev/null 2>&1; then
+            MODEL_VERSION="$v"
+            echo "  per-accession model version: $MODEL_VERSION"
+            return 0
+        fi
+    done
+    echo "!! no model version among v6/v5/v4 resolved for probe accession $probe" >&2
+    exit 1
+}
 
 link_cached() {
     # Link what the flat cache already has, so only genuinely missing structures are fetched.
@@ -99,11 +133,11 @@ fetch_proteome_tar() {
         echo "  archive already downloaded"
     fi
 
-    # AFDB tars hold AF-<acc>-F<n>-model_v4.cif.gz. Keep fragment F1 only: the benchmark
+    # AFDB tars hold AF-<acc>-F<n>-model_v<N>.cif.gz. Keep fragment F1 only: the benchmark
     # scores whole-protein domain intervals, and multi-fragment entries are split models
     # of very long proteins whose fragment coordinates do not map onto the full sequence.
     echo "  extracting"
-    tar -xf "$tar_path" -C "$dest" --wildcards '*-F1-model_v4.cif.gz' 2>/dev/null || \
+    tar -xf "$tar_path" -C "$dest" --wildcards '*-F1-model_v*.cif.gz' 2>/dev/null || \
         tar -xf "$tar_path" -C "$dest"
     find "$dest" -name '*.cif.gz' -print0 | xargs -0 -P "$PARALLEL" -n 64 gunzip -f
     # Normalise to the AF-<acc>-F1.cif name the cache links also use.
@@ -129,12 +163,13 @@ fetch_per_accession() {
     # A 404 here is expected and not fatal: AlphaFold has no model for every UniProt
     # accession. Those proteins are simply absent from the Foldseek arm, which is the
     # coverage gap the benchmark reports rather than hides.
-    export AFDB_FILES dest
+    resolve_model_version "$(head -1 "$todo")"
+    export AFDB_FILES dest MODEL_VERSION
     xargs -a "$todo" -P "$PARALLEL" -I{} bash -c '
         out="$dest/AF-{}-F1.cif"
         curl --fail --silent --location --speed-limit 10240 --speed-time 60 \
              --retry 5 --retry-delay 10 \
-             -o "$out.part" "$AFDB_FILES/AF-{}-F1-model_v4.cif" \
+             -o "$out.part" "$AFDB_FILES/AF-{}-F1-model_${MODEL_VERSION}.cif" \
           && mv "$out.part" "$out" \
           || rm -f "$out.part"
     '
