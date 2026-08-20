@@ -54,10 +54,11 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 
 .PHONY: bootstrap-sherlock build-image build-image-local push-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
+        fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache \
-        prefetch-images clean-image-cache
+        prefetch-images clean-image-cache fetch-structures-sherlock
 
 
 # --- which machine am I on? -------------------------------------------------
@@ -130,9 +131,10 @@ structure-lists:
 	  --annotations $(ANNOTATIONS) \
 	  --outdir      $(ACC_DIR)
 
-# ~73k structures / ~36 GB missing from the flat cache as of 2026-08-18. Resumable --
-# re-run it after an interruption rather than starting over.
-fetch-structures: structure-lists
+# Mac-side fetch. Prefer `make fetch-structures`, which downloads on the cluster:
+# pulling ~60 GB to a laptop and pushing it back over ssh is strictly worse than
+# downloading it where it will be used. Kept for wanting the structures locally too.
+fetch-structures-mac: structure-lists
 	$(call require_mac)
 	bin/fetch_alphafold_structures.sh $(STRUCT_DIR) $(ACC_DIR)
 
@@ -299,6 +301,36 @@ clean-image-cache:
 	$(call require_cluster)
 	rm -rf $${SCRATCH}/apptainer-cache/*.pulling.* $${HOME}/.apptainer/cache/blob
 	@echo "cleared partial pulls; re-run 'make prefetch-images'"
+
+
+# Download structures ON the cluster. Sherlock's connection is far faster than pulling
+# ~60 GB to a laptop and pushing it back over ssh, so this is the preferred route and
+# `make sync-structures` becomes unnecessary.
+#
+# The Mac's flat AlphaFold cache buys almost nothing here: 8 of the 10 species come from
+# whole-proteome tarballs that are downloaded in full regardless, and only chicken and
+# ciona (~8.4k structures) are fetched per accession. So starting cold on the cluster costs
+# little more than starting from the cache on the Mac.
+#
+# Blocks in the foreground and streams progress -- run it inside your own tmux, it takes a
+# while. Resumable: re-run after an interruption rather than starting over.
+#
+# Must run where there is outbound internet. On Sherlock that is a login node, which is why
+# this is not submitted through SLURM; it is I/O, not compute.
+fetch-structures: fetch-structures-sherlock
+
+# Download structures where they will be used.
+fetch-structures-sherlock:
+	$(call require_cluster)
+	@mkdir -p data/structures/_accessions
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/write_structure_lists.py \
+	    --annotations data/annotations \
+	    --outdir      data/structures/_accessions
+	FLAT_CACHE=data/structures bin/fetch_alphafold_structures.sh \
+	  data/structures data/structures/_accessions
 
 ## ---- Sherlock side ------------------------------------------------------
 ##

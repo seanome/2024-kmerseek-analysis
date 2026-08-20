@@ -183,10 +183,24 @@ result. Raise `--n-queries` / `--n-targets` if you want the held-out half to car
 `make sync-data` ships annotations, proteomes, HGNC/omega and Swiss-Prot. It does **not**
 ship AlphaFold structures -- those are ~36 GB and have their own target:
 
+On Sherlock, inside your own tmux (it blocks in the foreground and takes a while):
+
 ```bash
-make fetch-structures    # on the Mac, downloads what the cache is missing
-make sync-structures     # Mac -> cluster
+make fetch-structures
 ```
+
+Download them where they will be used. Pulling ~60 GB to a laptop and pushing it back over
+ssh is strictly worse, and the cluster's connection is much faster. It is resumable, so
+re-run after an interruption rather than starting over; it needs outbound internet, which
+on Sherlock means a login node, so it is not submitted through SLURM -- it is I/O, not
+compute.
+
+The Mac's flat AlphaFold cache saves almost nothing here anyway: 8 of the 10 species come
+from whole-proteome tarballs that download in full regardless, and only chicken and ciona
+(~8.4k structures) are fetched per accession.
+
+`make fetch-structures-mac` still exists if you want them locally as well, and
+`make sync-structures` pushes an existing local set up.
 
 Without them the Foldseek and Folddisco arms are skipped, with a warning naming both
 commands. Every sequence-based arm -- kmerseek, phmmer, jackhmmer, MMseqs2, HHblits,
@@ -238,10 +252,24 @@ the amd64 image is pushed.
 `make sync-data` ships annotations, proteomes, HGNC/omega and Swiss-Prot. It does **not**
 ship AlphaFold structures -- those are ~36 GB and have their own target:
 
+On Sherlock, inside your own tmux (it blocks in the foreground and takes a while):
+
 ```bash
-make fetch-structures    # on the Mac, downloads what the cache is missing
-make sync-structures     # Mac -> cluster
+make fetch-structures
 ```
+
+Download them where they will be used. Pulling ~60 GB to a laptop and pushing it back over
+ssh is strictly worse, and the cluster's connection is much faster. It is resumable, so
+re-run after an interruption rather than starting over; it needs outbound internet, which
+on Sherlock means a login node, so it is not submitted through SLURM -- it is I/O, not
+compute.
+
+The Mac's flat AlphaFold cache saves almost nothing here anyway: 8 of the 10 species come
+from whole-proteome tarballs that download in full regardless, and only chicken and ciona
+(~8.4k structures) are fetched per accession.
+
+`make fetch-structures-mac` still exists if you want them locally as well, and
+`make sync-structures` pushes an existing local set up.
 
 Without them the Foldseek and Folddisco arms are skipped, with a warning naming both
 commands. Every sequence-based arm -- kmerseek, phmmer, jackhmmer, MMseqs2, HHblits,

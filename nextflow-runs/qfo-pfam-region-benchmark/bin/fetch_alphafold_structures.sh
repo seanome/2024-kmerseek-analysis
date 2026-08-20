@@ -38,23 +38,34 @@ PARALLEL="${PARALLEL:-8}"
 CURL_COMMON=(--fail --silent --show-error --location --continue-at -
              --speed-limit 10240 --speed-time 120 --retry 10 --retry-delay 15)
 
-# species -> AFDB proteome archive basename. Empty means no archive; fetch per accession.
-declare -A PROTEOME=(
-    [human]="UP000005640_9606_HUMAN_v4"
-    [mouse]="UP000000589_10090_MOUSE_v4"
-    [zebrafish]="UP000000437_7955_DANRE_v4"
-    [fly]="UP000000803_7227_DROME_v4"
-    [worm]="UP000001940_6239_CAEEL_v4"
-    [yeast]="UP000002311_559292_YEAST_v4"
-    [ecoli]="UP000000625_83333_ECOLI_v4"
-    [arabidopsis]="UP000006548_3702_ARATH_v4"
-    [chicken]=""
-    [ciona]=""
-)
+# species -> AFDB proteome archive basename; empty means no archive, fetch per accession.
+#
+# A case statement, not an associative array. `declare -A` needs bash 4, and macOS still
+# ships bash 3.2 as /bin/bash -- this script died there on its first line of real work
+# ("human: unbound variable") without ever reaching a download. Clusters have bash 4+, but
+# a script that only runs on some machines is a trap, so this form works on both.
+proteome_archive() {
+    case "$1" in
+        human)       echo "UP000005640_9606_HUMAN_v4" ;;
+        mouse)       echo "UP000000589_10090_MOUSE_v4" ;;
+        zebrafish)   echo "UP000000437_7955_DANRE_v4" ;;
+        fly)         echo "UP000000803_7227_DROME_v4" ;;
+        worm)        echo "UP000001940_6239_CAEEL_v4" ;;
+        yeast)       echo "UP000002311_559292_YEAST_v4" ;;
+        ecoli)       echo "UP000000625_83333_ECOLI_v4" ;;
+        arabidopsis) echo "UP000006548_3702_ARATH_v4" ;;
+        # Not in AFDB's model-organism proteome set; fetched per accession.
+        chicken|ciona) echo "" ;;
+        *)           echo "" ;;
+    esac
+}
 
 ALL_SPECIES=(human mouse chicken zebrafish ciona fly worm yeast arabidopsis ecoli)
-TARGETS=("${@:-${ALL_SPECIES[@]}}")
-[[ $# -gt 0 ]] && TARGETS=("$@")
+if [[ $# -gt 0 ]]; then
+    TARGETS=("$@")
+else
+    TARGETS=("${ALL_SPECIES[@]}")
+fi
 
 link_cached() {
     # Link what the flat cache already has, so only genuinely missing structures are fetched.
@@ -140,7 +151,7 @@ for species in "${TARGETS[@]}"; do
 
     link_cached "$species" "$dest" "$acc_file"
 
-    archive="${PROTEOME[$species]:-}"
+    archive="$(proteome_archive "$species")"
     if [[ -n "$archive" ]]; then
         fetch_proteome_tar "$species" "$dest" "$archive"
     else
