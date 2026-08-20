@@ -875,12 +875,33 @@ process folddiscoIndex {
     n=\$(find -L ${structures}/ -name 'AF-*.cif*' | wc -l)
     if [ "\$n" -eq 0 ]; then
         echo "no AF-*.cif files under ${structures}/ -- folddisco cannot index an empty" >&2
-        echo "directory and exits 1 without a message. Run 'make sync-structures'." >&2
+        echo "directory and exits 1 without a message. Run 'make fetch-structures'." >&2
         exit 1
     fi
     echo "indexing \$n structures for ${species}"
+    ls -1 ${structures}/ | head -3
+
+    # Isolate format from scale before the real index. folddisco exits 1 printing nothing
+    # on failure, and its documentation does not say whether -p accepts mmCIF -- the
+    # repository's own example data is .pdb. A single-file trial separates "cannot read
+    # this format at all" from "something about this directory", which the silent exit
+    # otherwise makes indistinguishable.
+    mkdir -p probe_dir probe_idx
+    cp "\$(find -L ${structures}/ -name 'AF-*.cif*' | head -1)" probe_dir/ 2>/dev/null || true
+    if ! folddisco index -v -p probe_dir -i probe_idx/index -t 1 2>probe.err; then
+        echo "folddisco could not index a SINGLE ${species} structure -- this is a format" >&2
+        echo "problem, not a scale one. Its stderr follows; empty means it said nothing:" >&2
+        cat probe.err >&2
+        echo "AlphaFold files here are mmCIF (.cif). If folddisco requires PDB, convert" >&2
+        echo "first or set --skip_folddisco true." >&2
+        exit 1
+    fi
+    rm -rf probe_dir probe_idx probe.err
+
     mkdir -p ${species}_folddisco
-    folddisco index \\
+    # -v so a failure says something. Without it folddisco exits 1 silently and the only
+    # thing in the log is Nextflow's unrelated "Command 'ps' ... cannot be found" warning.
+    folddisco index -v \\
         -p ${structures}/ \\
         -i ${species}_folddisco/index \\
         -t ${task.cpus}
