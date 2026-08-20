@@ -36,11 +36,11 @@ cd nextflow-runs/kmer-spectra
 make push-image
 # equivalent to:
 #   docker build --platform linux/amd64 -t kmerseek-spectra:latest \
-#     --build-arg GIT_SHA=f006f821829e7354579267cc5336b341427105b3 \
+#     --build-arg GIT_SHA=34002cbd473db82371887645e9d41e9a90f85942 \
 #     -f Dockerfile \
 #     /Users/olga/code/kmerseek-kmer-frequency-histogram
-#   docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-19-kmer-spectra
-#   docker push docker.io/olgabot/kmerseek:2026-08-19-kmer-spectra
+#   docker tag kmerseek-spectra:latest docker.io/olgabot/kmerseek:2026-08-20-kmer-spectra
+#   docker push docker.io/olgabot/kmerseek:2026-08-20-kmer-spectra
 ```
 
 (`/Users/olga/code/kmerseek-kmer-frequency-histogram` is just this Mac's local directory name for
@@ -55,7 +55,7 @@ stale `.img` -- a task failing with `the image's architecture (arm64) could not 
 `amd64 linux` means this, not a bad push:
 
 ```bash
-rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-19-kmer-spectra.img"
+rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-20-kmer-spectra.img"
 ```
 
 Then resume the run rather than starting over -- completed tasks are cached by Nextflow's own
@@ -66,15 +66,34 @@ make run NF_ARGS=-resume
 ```
 
 `nextflow.config`'s `sherlock` profile already points at
-`docker://olgabot/kmerseek:2026-08-19-kmer-spectra` -- no edit needed once the push above completes.
+`docker://olgabot/kmerseek:2026-08-20-kmer-spectra` -- no edit needed once the push above completes.
 
-**If you're mid-run on the previous image**: the 2026-08-19 image adds `--stats-only` to every
+**If you're mid-run on an older image**: the 2026-08-19 image adds `--stats-only` to every
 `kmerseek index` call (see `main.nf`'s script block) -- this fixes both the SearchCache
 `"Invalid argument: value is too large"` crash (hp k=30) and the chunked-signature-storage
 `"IO error: ... Input/output error"` crash (hp_kyte_doolittle k=30) by never persisting a
-searchable index at all, since this pipeline only ever wanted the spectrum CSV. Old image, no
-`--stats-only`: tasks past the failure ksize keep failing. New image: `-resume` picks up cleanly,
-no need to restart from scratch.
+searchable index at all, since this pipeline only ever wanted the spectrum CSV. The 2026-08-20
+image additionally drops `save_kmer_stats_only`'s `inverted_index`/`target_list` structures
+(existed only for a console diagnostic printout, not the CSV) -- measured ~17% peak memory
+reduction on a 2000-sequence sample; likely more at UniRef50 scale, where `inverted_index`'s
+average entry length grows with degeneracy (`mean_seqs_per_kmer`). Either old image: tasks past
+the failure point keep failing. New image: `-resume` picks up cleanly, no need to restart.
+
+**Be honest with yourself about what this optimization does and doesn't fix.** It removes real
+overhead, but it does not touch `self.signatures` -- the in-memory store of every protein's
+sequence and MinHash, built during `process_fasta` before any stats computation runs at all, and
+very likely the actual dominant cost at UniRef50 scale (~65M sequences, scaled=1 means no k-mer
+subsampling, so signature size scales with raw sequence content, not alphabet). The uniref50
+`hp` k=26 run that motivated this: `Killed` at 130K/~65M sequences processed -- signatures for
+the ~64.9M sequences after that point hadn't even been built yet, so this specific failure can't
+be about `inverted_index` at all; it read as memory pressure from `self.signatures` alone, still
+climbing. **Don't relaunch the full 113-combo uniref50 sweep on `bigmem` again blind.** Run one
+targeted diagnostic combo directly (bypass Nextflow, one `kmerseek index --stats-only` under
+`sbatch`/`srun` with a generous `bigmem` allocation) and check its actual peak RSS via `seff`/
+`sstat` first. If that one combo needs far more than any single bigmem node offers (up to
+4096 GB), the fix is architectural (streaming/incremental stats instead of loading the whole
+proteome into memory at once) -- worth knowing before spending more bigmem QOS quota finding
+that out the slow way across all 113 combos again.
 
 ## 2. Confirm Sherlock filesystem paths
 

@@ -3,7 +3,7 @@
 #
 # Build context must be the kmerseek repo root:
 #   docker build -t kmerseek-spectra:latest \
-#     --build-arg GIT_SHA=f006f821829e7354579267cc5336b341427105b3 \
+#     --build-arg GIT_SHA=34002cbd473db82371887645e9d41e9a90f85942 \
 #     -f nextflow-runs/kmer-spectra/Dockerfile \
 #     /path/to/kmerseek
 #
@@ -18,7 +18,7 @@
 # ── builder ──────────────────────────────────────────────────────────────────
 FROM rust:slim AS builder
 
-ARG GIT_SHA=f006f821829e7354579267cc5336b341427105b3
+ARG GIT_SHA=34002cbd473db82371887645e9d41e9a90f85942
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     clang \
