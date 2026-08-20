@@ -154,6 +154,8 @@ params.skip_folddisco = false
 // binding constraint. Foldseek's ">20 letters gives only incremental gains" finding is
 // disputed, so this is a live disagreement rather than settled ground.
 params.skip_reseek = false
+// -fast, -sensitive or -verysensitive; one is required. Strongest by default.
+params.reseek_mode = "verysensitive"
 
 // ProstT5 via Foldseek: predicts 3Di directly from amino acid sequence, so it needs NO
 // structures on either side. That makes it the closest published thing to what kmerseek
@@ -747,12 +749,18 @@ process reseekConvert {
     tuple val(species), path(structures)
 
     output:
-    tuple val(species), path("${species}.bcb")
+    tuple val(species), path("${species}.bca")
 
     script:
     """
     set -euo pipefail
-    reseek -convert ${structures}/ -bcb ${species}.bcb
+    # -bca, not -bcb: .bca is the binary C-alpha format Reseek recommends for databases.
+    # -threads, not -t. Both taken from `reseek` with no arguments in the pinned image,
+    # after -bcb failed with "Unknown option bcb" -- the flags used before came from a
+    # README summary rather than from the binary.
+    # STRUCTS accepts a directory and .cif/.mmcif, both confirmed in that same usage text.
+    reseek -convert ${structures} -bca ${species}.bca \\
+        -threads ${task.cpus} -log ${species}.convert.log
     """
 }
 
@@ -775,14 +783,19 @@ process reseekSearch {
     // plain text.
     def q_dir   = human_structures.toString()
     def db_file = db.toString()
-    def cols    = "query+target+qlo+qhi+tlo+thi+pctid+pvalue"
+    // aq, not pctid, in the score slot: it is Reseek's own homology measure (alignment
+    // quality 0-1, >0.5 suggests homology) and leads its default output. pctid is percent
+    // identity, which ranks similar sequences rather than probable homologs.
+    // Reseek DOES report an E-value -- an earlier note here claimed it did not.
+    def cols    = "query+target+qlo+qhi+tlo+thi+aq+evalue"
+    def mode    = params.reseek_mode
     """
     set -euo pipefail
-    # -sensitive rather than -fast: the claim under test is remote-homolog detection, and
-    # benchmarking an incumbent at its faster, weaker setting is the tell reviewers look for.
-    # Columns match this pipeline's normalized order; pvalue takes the E-value slot (lower
-    # is better, same direction) since Reseek does not report an E-value.
-    reseek -search ${q_dir} -db ${db_file} -sensitive -columns ${cols} -output raw.tsv
+    # One of -fast/-sensitive/-verysensitive is REQUIRED. Default is -verysensitive: the
+    # claim under test is remote-homolog detection, and benchmarking an incumbent below its
+    # strongest documented setting is the tell reviewers look for.
+    reseek -search ${q_dir} -db ${db_file} -${mode} -columns ${cols} \\
+        -threads ${task.cpus} -log search.log -output raw.tsv
 
     # Accession normalisation lives in bin/normalize_reseek.awk -- see the note there.
     awk -f ${projectDir}/bin/normalize_reseek.awk raw.tsv \\
