@@ -123,17 +123,18 @@ pull-all: pull-k2 pull-k3
 ## staged input symlink would be dangling inside the container ("FASTA file not
 ## found" even though the file plainly exists on the host).
 
+# -resume is always on: with no prior run in this dir it's a no-op (nothing to
+# resume), and with one, re-running `make run` after a failure/new dataset/fixed
+# image should never mean retyping NF_ARGS=-resume or accidentally forgetting
+# it and re-running everything from scratch. Extra NF_ARGS still pass through,
+# e.g. `NF_ARGS=-stub-run make run`.
 run:
 	module load biology nextflow && \
-	  nextflow run main.nf -profile $(PROFILE) $(NF_ARGS) --datasets $(DATASETS)
-
-# Same as `run`, with -resume baked in -- shorthand for the common case of
-# picking a run back up (new/failed datasets added, a fixed image pushed,
-# etc.) without retyping NF_ARGS=-resume every time. Extra NF_ARGS still
-# pass through, e.g. `NF_ARGS=-stub-run make resume`.
-resume:
-	module load biology nextflow && \
 	  nextflow run main.nf -profile $(PROFILE) -resume $(NF_ARGS) --datasets $(DATASETS)
+
+# Alias -- `run` has always resumed since 2026-08-20; kept in case anything
+# still calls `make resume` directly.
+resume: run
 
 ## ---- UniRef50/90/100 downloads: ON Sherlock ----
 ##

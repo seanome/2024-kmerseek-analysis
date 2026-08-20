@@ -15,7 +15,9 @@ A `Makefile` in this directory wraps every command below. `build-image`/`push-im
 `uniref50`, `uniref90`, `uniref100`) to choose which; default is `k2,k3`, the two with a
 validated memory profile. There's one shared `work/`/trace/timeline/report for the whole run
 now, not one per dataset -- no more juggling separate tmux panes just to keep runs from
-colliding.
+colliding. **`make run` always passes `-resume`** -- harmless on a fresh dir (nothing to
+resume), and means picking a run back up after a failure/fixed image/new dataset is always
+just `make run` again, never `NF_ARGS=-resume` retyped or forgotten.
 
 Account: group `ayeletv`, using the `hns` school-condo partition (`groups` / `sh_part` on
 Sherlock). `hns` had ~7.4k jobs queued vs. ~95k on the public `normal` partition at last check --
@@ -58,11 +60,12 @@ stale `.img` -- a task failing with `the image's architecture (arm64) could not 
 rm "$SCRATCH/apptainer-cache/olgabot-kmerseek-2026-08-20b-kmer-spectra.img"
 ```
 
-Then resume the run rather than starting over -- completed tasks are cached by Nextflow's own
-`work/` dir, independent of the Apptainer image cache:
+Then pick the run back up rather than starting over -- completed tasks are cached by Nextflow's
+own `work/` dir, independent of the Apptainer image cache. `make run` always resumes (see
+below), so this is just:
 
 ```bash
-make run NF_ARGS=-resume
+make run
 ```
 
 `nextflow.config`'s `sherlock` profile already points at
@@ -225,8 +228,8 @@ full 9-alphabet sweep runs (unlike k2/k3's `--hp_only`), with the HP-family ksiz
 from 15 to 18 by default (`main.nf`'s `hp_kmin_uniref` param):
 
 ```bash
-DATASETS=k2,k3,uniref50 make run NF_ARGS=-resume
-# or by itself: DATASETS=uniref50 make run NF_ARGS=-resume
+DATASETS=k2,k3,uniref50 make run
+# or by itself: DATASETS=uniref50 make run
 ```
 
 **Run uniref50 first, by itself, before adding 90 or 100.** `hp_kmin_uniref`'s companion,
@@ -240,7 +243,7 @@ finishes or fails, check `kmer_spectra.*.trace.txt`'s `peak_rss` column and set 
 `mem_scale_uniref` for 90/100 from that, e.g.:
 
 ```bash
-DATASETS=uniref90 make run NF_ARGS="-resume --mem_scale_uniref 4"
+DATASETS=uniref90 make run NF_ARGS="--mem_scale_uniref 4"
 ```
 
 **If a combo dies even after retrying at 176 GB (hns's practical per-node ceiling), it doesn't
@@ -252,7 +255,7 @@ Swiss-Prot's 573K sequences. Switch to Sherlock's `bigmem` partition (up to 4096
 hns's ~186 GB) and raise the memory cap to match:
 
 ```bash
-DATASETS=uniref50 make run NF_ARGS="-resume --queue bigmem --max_forks 8 --node_mem_cap_gb 3800 --node_mem_min_gb 256 --mem_scale_uniref 8"
+DATASETS=uniref50 make run NF_ARGS="--queue bigmem --max_forks 8 --node_mem_cap_gb 3800 --node_mem_min_gb 256 --mem_scale_uniref 8"
 ```
 
 **`bigmem` also enforces its own hard minimum (currently 256 GB) -- sbatch rejects the
