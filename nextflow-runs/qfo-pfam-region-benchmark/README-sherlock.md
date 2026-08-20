@@ -562,6 +562,42 @@ across `params.folddisco_chunks` (default 20) SLURM tasks per species. Its targe
 kept under `storeDir` and reused by every chunk. It ranks by `idf` (motif rarity, higher
 is better) with `rmsd` in the E-value slot; it emits no E-value of its own.
 
+### The gray zone: Pfam silence is not a negative
+
+Pfam-A annotates a fraction of residues and is silent everywhere else. Counting a call in
+silent territory as a false positive asserts that the annotation looked there and found
+nothing, which it did not -- and that is exactly backwards for the claim under test, since
+a cryptic domain Pfam never annotated is the thing the method is supposed to find. Scored
+that way the benchmark punishes the hypothesis instead of testing it.
+
+So calls are split three ways, following the convention Foldseek and Folddisco use on
+SCOPe:
+
+| class | meaning | counted |
+|---|---|---|
+| true positive | right family, right place | yes |
+| confident FP | lands mostly INSIDE annotated territory, wrong family | yes |
+| gray | lands mostly OUTSIDE any annotation -- unknown | **excluded from the denominator** |
+
+`--gray-min-annotated-fraction` (default 0.5) is the share of a call that must sit in
+annotated territory to be judged confidently wrong. It is measured against the call, not
+the annotation, so a long call is not excused by clipping one domain's edge.
+
+**`coverage` travels with every metric** and is the fraction of calls that were scoreable
+at all. A precision of 0.9 on 12% of calls is a different claim from the same number on
+90%, and the column is there so that distinction cannot be lost.
+
+**`precision_strict` is reported alongside `precision`**, counting gray as false positives.
+The gap between the two IS the effect of this convention, so it can never be mistaken for
+a free improvement. On the mini set: hp-pbotc k19 against Pfam moves 0.162 -> 0.204 with
+20% of calls gray, while protein k10 has no gray calls at all and does not move. The
+convention helps a method precisely to the degree it predicts where Pfam is silent, which
+is the thing worth measuring.
+
+Exclusion stops the benchmark bleeding credit. It does not create any: converting gray
+calls into scoreable true positives needs a label set that says "Pfam-A missed these",
+which is Pfam-N and is not implemented yet.
+
 ### Splits: the leaderboard is the held-out half
 
 Every metric row carries `split` (`all` / `selection` / `heldout`). None of these tools

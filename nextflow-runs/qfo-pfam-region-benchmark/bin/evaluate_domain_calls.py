@@ -368,7 +368,7 @@ def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
                              many were, counting each true instance once no matter how
                              many regions hit it
     """
-    if calls.height == 0:
+    if calls.height == 0 or "is_gray" not in calls.columns:
         return pl.DataFrame(
             schema={
                 "score_threshold": pl.Float64, "n_calls": pl.Int64, "tp_calls": pl.Int64,
@@ -392,7 +392,9 @@ def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
         )
         .with_columns(
             pl.col("is_tp").cum_sum().alias("tp_calls"),
-            (~pl.col("is_tp")).cum_sum().alias("fp_calls"),
+            # Gray calls are excluded here too, so the curve and the scalar precision
+            # describe the same thing rather than diverging at every threshold.
+            (~pl.col("is_tp") & ~pl.col("is_gray")).cum_sum().alias("fp_calls"),
             pl.col("novel_tp").cum_sum().alias("instances_found"),
         )
     )
@@ -458,6 +460,72 @@ def downsample(points: pl.DataFrame, max_points: int) -> pl.DataFrame:
     return points[sorted(set(idx))]
 
 
+def classify_scoreable(calls: pl.DataFrame, truth: pl.DataFrame,
+                       min_annotated_fraction: float) -> pl.DataFrame:
+    """Split non-TP calls into confident false positives and unscoreable gray-zone calls.
+
+    The Foldseek/Folddisco SCOPe convention, adapted to regions: confident positive is a
+    TP, confidently-different is an FP, and UNKNOWN is excluded from the denominator with
+    coverage reported alongside.
+
+    Why this benchmark needs it. Pfam-A annotates a fraction of residues; everywhere else
+    it is silent, not negative. Counting a call in silent territory as a false positive
+    asserts that Pfam looked there and found nothing, which it did not. That is precisely
+    backwards for the claim under test -- a cryptic domain Pfam never annotated is the
+    thing the method is supposed to find, and scoring it as an error makes the benchmark
+    punish the hypothesis rather than test it.
+
+    The split, for a call that is not a TP:
+      confident FP   its residues lie mostly inside annotated territory on that protein.
+                     The annotation looked there and named a different family.
+      gray           its residues lie mostly outside any annotation. Unknown, excluded.
+
+    `min_annotated_fraction` is the share of the CALL that must sit inside annotated
+    territory to be judged confidently wrong. Measured against the call rather than the
+    annotation so a long call is not excused by clipping one domain's edge.
+    """
+    if calls.height == 0:
+        return calls.with_columns(pl.lit(False).alias("is_gray"))
+
+    ann = truth.select(
+        pl.col("accession").alias("query_acc"),
+        pl.col("domain_start").alias("a_start"),
+        pl.col("domain_end").alias("a_end"),
+    ).unique()
+
+    # Residues of each call that fall inside ANY annotation on that protein, family
+    # ignored -- the question here is only whether the annotation had an opinion.
+    ov = (
+        calls.filter(~pl.col("is_tp"))
+        .select("query_acc", "pfam_id", "qstart", "qend")
+        .join(ann, on="query_acc", how="left")
+        .with_columns(
+            (
+                pl.min_horizontal("qend", "a_end") - pl.max_horizontal("qstart", "a_start")
+            ).clip(lower_bound=0).alias("ov")
+        )
+        .group_by("query_acc", "pfam_id", "qstart", "qend")
+        # Summed, so a call spanning two adjacent domains counts both. Overlapping
+        # annotations could double-count, which can only make a call look MORE covered and
+        # therefore more likely to be judged a confident FP -- the conservative direction.
+        .agg(pl.col("ov").sum().alias("annotated_residues"))
+        .with_columns(
+            (
+                pl.col("annotated_residues")
+                / (pl.col("qend") - pl.col("qstart")).clip(lower_bound=1)
+            ).alias("annotated_fraction")
+        )
+    )
+
+    out = calls.join(ov, on=["query_acc", "pfam_id", "qstart", "qend"], how="left")
+    return out.with_columns(
+        (
+            ~pl.col("is_tp")
+            & (pl.col("annotated_fraction").fill_null(0.0) < min_annotated_fraction)
+        ).alias("is_gray")
+    )
+
+
 def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFrame,
                     reachable: pl.DataFrame, min_overlap: float) -> dict:
     n_calls = calls.height
@@ -489,7 +557,15 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     n_truth = truth.height
     n_reachable = reachable.height
 
-    precision = n_tp_calls / n_calls if n_calls else 0.0
+    # Gray-zone accounting. Calls in territory the annotation never covered are excluded
+    # from the precision denominator rather than counted against the tool.
+    n_gray = int(calls["is_gray"].sum()) if ("is_gray" in calls.columns and n_calls) else 0
+    n_scoreable = n_calls - n_gray
+
+    precision = n_tp_calls / n_scoreable if n_scoreable else 0.0
+    # The same number under the old convention, kept visible so the gray-zone choice can
+    # never be mistaken for a free improvement -- the gap between these two IS the effect.
+    precision_strict = n_tp_calls / n_calls if n_calls else 0.0
     recall = found / n_truth if n_truth else 0.0
     recall_reachable = found / n_reachable if n_reachable else 0.0
 
@@ -499,12 +575,17 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     metrics = {
         "n_calls": n_calls,
         "n_tp_calls": n_tp_calls,
-        "n_fp_calls": n_calls - n_tp_calls,
+        "n_fp_calls": n_scoreable - n_tp_calls,
+        "n_gray_calls": n_gray,
+        # Fraction of calls that could be judged at all. A great precision on 12% of calls
+        # is a different claim from the same precision on 90%, so this travels with it.
+        "coverage": n_scoreable / n_calls if n_calls else 0.0,
         "n_truth_instances": n_truth,
         "n_reachable_instances": n_reachable,
         "n_instances_found": found,
         # --- operating point the tool actually reported at ---
         "precision": precision,
+        "precision_strict": precision_strict,
         "recall": recall,
         # Recall against what was transferable at all. A human family absent from this
         # target proteome cannot be recovered by any search, so raw recall above
@@ -695,6 +776,9 @@ def main():
     p.add_argument("--direct-annotation", action="store_true")
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--strict-iou", type=float, default=0.8)
+    p.add_argument("--gray-min-annotated-fraction", type=float, default=0.5,
+                   help="share of a call that must lie in annotated territory before it "
+                        "counts as a confident false positive rather than gray zone")
     # Zinc fingers are INCLUDED by default. The exclusion was inherited from an
     # orthology benchmark, where the scored object is a protein pair and a tandem array
     # inflates protein-level k-mer sharing through repeat content. This benchmark scores
@@ -753,6 +837,7 @@ def main():
     else:
         scored = score_calls(calls_lf, truth_lf, args.min_overlap, args.interval_semantics)
 
+    scored = classify_scoreable(scored, truth, args.gray_min_annotated_fraction)
     scored.write_parquet(args.calls_out, compression="zstd")
 
     # IC is estimated once on the whole answer key, not per stratum. A family's rarity is
