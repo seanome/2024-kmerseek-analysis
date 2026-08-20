@@ -70,6 +70,21 @@ params.mobidb_cache = null   // optional curated disorder; pLDDT<50 proxy is alw
 // nor the structure baselines. Set to null to run the Pfam arm alone.
 params.swissprot_dat = "${home}/data/uniprot/uniprot_sprot.dat.gz"
 
+// Pfam-N: the explicit "Pfam-A HMMs missed these" label set, and the only truth set here
+// that is not circular with the profile baselines -- it exists precisely where those HMMs
+// failed. The gray-zone convention stops the benchmark charging for calls in Pfam-silent
+// territory; this is what turns a slice of them back into scoreable true positives.
+//
+// Built ahead of the run rather than inside it: the source is ~17.4 GB streamed from EBI
+// and compute nodes here have no outbound internet. `make pfamn-truth` writes this dir.
+params.pfamn_dir = null
+
+// M-CSA catalytic residues: function defined by mechanism, curated from the literature,
+// circular with neither the profile HMMs nor any fold classification. Coverage is small
+// (95 human proteins, 0.5% of the query set), so it is a VIGNETTE like the MHC block --
+// do not let it carry a headline number. Built by `make mcsa-truth`.
+params.mcsa_dir = null
+
 // Held-out evaluation. Nothing here learns from the data, so there is no model to
 // overfit -- but picking the best of 113 alphabet x ksize combos on the same instances
 // you report IS selection, and reporting the winner on the data that chose it is
@@ -1247,6 +1262,31 @@ workflow {
         .map { label, _i, t -> tuple(label, t) }
     map_ch = map_of(truth_out.maps).map { sp, m -> tuple("pfam", sp, m) }
 
+    // Pre-built truth sets, added when their directory is present. Each contributes a
+    // human_*_truth.parquet plus per-species *_domain_map.parquet, the same shape as the
+    // Pfam arm, so scoring runs against them unchanged.
+    def add_prebuilt = { label, dir ->
+        if (!dir) return
+        def d = file(dir)
+        if (!d.exists()) {
+            log.warn "--${label}_dir points at ${dir}, which does not exist -- skipping " +
+                     "that truth arm. Build it with `make ${label}-truth`."
+            return
+        }
+        def t = file("${dir}/human_${label}_truth.parquet")
+        if (!t.exists()) {
+            log.warn "no human_${label}_truth.parquet under ${dir} -- skipping"
+            return
+        }
+        truth_sets = truth_sets.mix(Channel.of(tuple(label, t)))
+        map_ch = map_ch.mix(
+            Channel.fromList(
+                d.listFiles().findAll { it.name.endsWith('_domain_map.parquet') }
+                 .collect { tuple(label, it.name.replaceAll(/_domain_map\.parquet$/, ''), it) }
+            )
+        )
+    }
+
     if (params.swissprot_dat && file(params.swissprot_dat).exists()) {
         sprot = buildSwissprotTruth(
             Channel.of(tuple(file(params.swissprot_dat), annotations))
@@ -1257,9 +1297,12 @@ workflow {
         )
         map_ch = map_ch.mix(map_of(sprot.maps).map { sp, m -> tuple("swissprot", sp, m) })
     } else {
-        log.warn "swissprot_dat not found (${params.swissprot_dat}) -- running the Pfam " +
-                 "truth arm only. Pfam is circular with the profile baselines; see README."
+        log.warn "swissprot_dat not found (${params.swissprot_dat}) -- running without the " +
+                 "Swiss-Prot truth arm. Pfam is circular with the profile baselines; see README."
     }
+
+    add_prebuilt("pfamn", params.pfamn_dir)
+    add_prebuilt("mcsa", params.mcsa_dir)
 
     // ---- twilight-zone axis: per-domain-pair percent identity ----
     // Off by default only if explicitly skipped; it is the axis claim 1 is stated on.

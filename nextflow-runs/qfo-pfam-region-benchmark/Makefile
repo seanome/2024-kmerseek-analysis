@@ -72,6 +72,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
+        pfamn-truth mcsa-truth \
         fetch-structures-login
 
 
@@ -414,6 +415,36 @@ prostt5-weights:
 	@rm -rf data/prostt5/tmp
 	@echo "weights at data/prostt5/weights"
 
+
+# Pfam-N truth: the "Pfam-A HMMs missed these" labels, streamed from EBI and filtered to
+# our accessions. ~17.4 GB crosses the wire and nothing is stored; expect 30-60 min.
+# Login node, because compute nodes here have no outbound internet.
+# M-CSA catalytic residues, from the API (UniProt-numbered). Small: ~1000 entries, of
+# which 314 accessions intersect this benchmark. Needs internet, so login node.
+mcsa-truth:
+	$(call require_cluster)
+	@mkdir -p data/mcsa
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/build_mcsa_truth.py \
+	    --annotations data/annotations \
+	    --truth-out   data/mcsa/human_mcsa_truth.parquet \
+	    --map-outdir  data/mcsa \
+	    --summary-out data/mcsa/mcsa_summary.json
+
+pfamn-truth:
+	$(call require_cluster)
+	@mkdir -p data/pfamn
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/build_pfamn_truth.py \
+	    --annotations data/annotations \
+	    --truth-out   data/pfamn/human_pfamn_truth.parquet \
+	    --map-outdir  data/pfamn \
+	    --summary-out data/pfamn/pfamn_summary.json
+
 ## ---- Sherlock side ------------------------------------------------------
 ##
 ## Launch from run/ so Nextflow's workDir, trace, timeline and report all land in one
@@ -445,6 +476,7 @@ define launch
 	    --hgnc_file   ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file  ../data/covariates/omega_results.tsv \
 	    --swissprot_dat ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir      ../data/pfamn          \
 	    --prostt5_weights ../data/prostt5/weights \
 	    --outdir      ../results \
 	    2>&1 | tee -a nextflow.$(1).log
@@ -494,6 +526,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir        ../data/pfamn          \
 	    --prostt5_weights ../data/prostt5/weights \
 	    $(NF_ARGS) 2>&1 | tee -a nextflow.mini.log
 

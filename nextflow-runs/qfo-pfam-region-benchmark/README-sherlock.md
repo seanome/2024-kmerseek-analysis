@@ -562,6 +562,39 @@ across `params.folddisco_chunks` (default 20) SLURM tasks per species. Its targe
 kept under `storeDir` and reused by every chunk. It ranks by `idf` (motif rarity, higher
 is better) with `rmsd` in the E-value slot; it emits no E-value of its own.
 
+### Truth sets, and what each is circular with
+
+| truth set | built by | circular with | scale |
+|---|---|---|---|
+| `pfam` | always | **the profile baselines** — Pfam-A domains ARE profile HMMs | 50,185 human instances |
+| `swissprot` | `--swissprot_dat` | nothing; literature-curated features | 142,857 human features |
+| `pfamn` | `make pfamn-truth` | nothing — it exists where the HMMs FAILED | streamed from Pfam35.0 |
+| `mcsa` | `make mcsa-truth` | nothing; function defined by mechanism | **106 human proteins** |
+
+Every metric row carries `truth_set` and they are never pooled in the leaderboard: a mean
+across a circular and a non-circular truth set has no interpretation.
+
+**Pfam-N is the one that creates credit.** The gray-zone convention below stops the
+benchmark charging for calls where Pfam-A is silent, but exclusion only removes them from
+the denominator. Pfam-N is the explicit "Pfam-A HMMs missed these" label set, so a region
+found in that silence can be adjudicated instead of merely ignored. It is published for
+Pfam35.0 only — releases 36 and 37 do not carry it, verified 2026-08-20 — so it is a frozen
+2022 resource and its accessions should be read against Pfam35. The source is ~17.4 GB of
+Stockholm alignments, streamed and filtered rather than stored.
+
+**M-CSA is a vignette, not a statistic.** 1003 curated entries intersect this benchmark at
+106 human proteins, 0.5% of the query set. Read it the way the MHC block is read; do not
+let it carry a headline claim. Catalytic residues are single positions, widened to a small
+window and flagged `is_point`, so boundary IoU against them is meaningless and recall is
+the question — does the tool put a region on the catalytic machinery. Numbering comes from
+the API's `residue_sequences`, which is UniProt-numbered; the `curated_data.csv` flat file
+is PDB-numbered with a separate chain column and is silently wrong if used directly.
+
+The higher-value use of M-CSA is not this truth set: Folddisco published an M-CSA benchmark
+during review (713 queries, sensitivity-to-first-FP) with per-query results deposited, so
+running that query set would make kmerseek directly comparable to a published NBT table.
+That is a separate exercise from the QfO sweep and is not implemented here.
+
 ### The gray zone: Pfam silence is not a negative
 
 Pfam-A annotates a fraction of residues and is silent everywhere else. Counting a call in
