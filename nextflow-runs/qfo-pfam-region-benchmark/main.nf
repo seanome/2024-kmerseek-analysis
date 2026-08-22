@@ -109,9 +109,6 @@ params.hhblits_db    = null
 // [cli_flag, label, kmin, kmax]
 params.hp_kmin = 18
 
-// 3-letter HPC alphabet. Shorter k for the same information content -- see ALL_ENCODINGS.
-params.hpc_kmin = 12
-params.hpc_kmax = 24
 
 // Low-complexity k-mer removal, swept as a TOGGLE rather than fixed: every alphabet x
 // ksize combo runs both with and without it, doubling the search count. Whether dropping
@@ -134,30 +131,40 @@ params.target_species  = null
 params.species         = null
 params.kmerseek_combos = null
 
-// [cli_flag, label, kmin, kmax] per alphabet. cli_flag is clap's kebab-case; label is the
-// snake_case moltype kmerseek writes into the CSV.
+// [cli_flag, label, kmin, kmax]. In kmerseek v0.4.0 the CLI name and the moltype written
+// into the CSV are the same string, so one column serves both.
 //
-// Names follow kmerseek v0.4.0. NOTE the rename: hp-lehninger-plus-c became
-// hp-lehninger-c-nonpolar, so results produced before that are not directly comparable by
-// label and older result files will not match this list.
+// EVERY ALPHABET WAS RENAMED to state its class count (PR #43): protein -> protein20,
+// dayhoff -> dayhoff6, hp_lehninger -> hp_lehninger2, hp_lehninger_plus_c ->
+// hp_lehninger_c_nonpolar2, hp_shuffled_control -> hp_random_control2. Results produced
+// under the old names will not join these labels.
 //
-// hp-lehninger-hpc is the 3-letter alphabet (h/p/c), and its k range is SHORTER on purpose.
-// Three letters carry ~1.585 bits per position against ~1 for two, so matching the HP
-// sweep's information content means k_hpc ~ k_hp / 1.585: k18-30 in HP corresponds to
-// roughly k11-19 here. The range is widened to 12-24 to bracket that rather than assume
-// the conversion is exact, since real residue frequencies are not uniform and the true
-// entropy per symbol is below the maximum.
+// K RANGES ARE BIT-MATCHED, not shared. An alphabet with n classes carries log2(n) bits
+// per position, so a fixed k means wildly different information content across a 2-letter
+// and an 18-letter alphabet -- comparing them at the same k compares nothing. Each range
+// targets the same 18-30 bits the HP sweep spans: k = 18/log2(n) to 30/log2(n). That is
+// why protein20 sits at k4-7 and the 2-letter alphabets at k18-30; both cover ~18-30 bits.
+//
+// The 2-letter floor stays at params.hp_kmin (18) rather than the computed value, because
+// measured output volume below that is prohibitive -- see the note on hp_kmin.
 def ALL_ENCODINGS = [
-    ['protein',                 'protein',                 5,  15],
-    ['dayhoff',                 'dayhoff',                 10, 20],
-    ['hp',                      'hp',                      params.hp_kmin, 30],
-    ['hp-kyte-doolittle',       'hp_kyte_doolittle',       params.hp_kmin, 30],
-    ['hp-lehninger',            'hp_lehninger',            params.hp_kmin, 30],
-    ['hp-lehninger-c-nonpolar', 'hp_lehninger_c_nonpolar', params.hp_kmin, 30],
-    ['hp-thomas-dill',          'hp_thomas_dill',          params.hp_kmin, 30],
-    ['hp-thomas-dill-no-c',     'hp_thomas_dill_no_c',     params.hp_kmin, 30],
-    ['hp-pbotc-1st-ed',         'hp_pbotc_1st_ed',         params.hp_kmin, 30],
-    ['hp-lehninger-hpc',        'hp_lehninger_hpc',        params.hpc_kmin, params.hpc_kmax],
+    ['protein20', 'protein20', 4, 7],   // 20 classes, ~4.32 bits/symbol
+    ['dayhoff6', 'dayhoff6', 7, 12],   // 6 classes, ~2.58 bits/symbol
+    ['hp_lehninger2', 'hp_lehninger2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
+    ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
+    ['hp_thomas_dill2', 'hp_thomas_dill2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
+    ['hp_thomas_dill_no_c2', 'hp_thomas_dill_no_c2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
+    ['hp_lehninger_c_nonpolar2', 'hp_lehninger_c_nonpolar2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
+    ['hp_pbotc_1st_ed2', 'hp_pbotc_1st_ed2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
+    ['hp_lehninger_hpc3', 'hp_lehninger_hpc3', 11, 19],   // 3 classes, ~1.58 bits/symbol
+    ['gbmr4', 'gbmr4', 9, 15],   // 4 classes, ~2.00 bits/symbol
+    ['wwmj5', 'wwmj5', 8, 13],   // 5 classes, ~2.32 bits/symbol
+    ['gbmr7', 'gbmr7', 6, 11],   // 7 classes, ~2.81 bits/symbol
+    ['sdm12', 'sdm12', 5, 8],   // 12 classes, ~3.58 bits/symbol
+    ['mmseqs12', 'mmseqs12', 5, 8],   // 12 classes, ~3.58 bits/symbol
+    ['wass14', 'wass14', 5, 8],   // 14 classes, ~3.81 bits/symbol
+    ['hsdm17', 'hsdm17', 4, 7],   // 17 classes, ~4.09 bits/symbol
+    ['uniprot18', 'uniprot18', 4, 7],   // 18 classes, ~4.17 bits/symbol
 ]
 
 // kmerseek search filters. min_region_score is the region-scoped cutoff: -log10 of the
@@ -256,7 +263,10 @@ if (SPECIES.isEmpty()) {
 // k-mers absorb a large share of the proteome, and the inverted index scales with the
 // most-degenerate k-mer's occurrence count. Size for the known-risk zone up front rather
 // than retrying into it -- each retry costs a full SLURM requeue.
-def isDegenerateHp = { label -> label.startsWith('hp') }
+// Class count is now in the name, so the memory rule reads it rather than guessing from a
+// prefix: the fewer classes, the more a handful of k-mers absorb the proteome, and the
+// more RAM the inverted index needs. hp_*2 and hp_*3 are the degenerate ones.
+def isDegenerateHp = { label -> label ==~ /.*[23]$/ }
 
 // Sized for full QfO proteomes. A mini/smoke run indexes a few hundred sequences and
 // needs nothing like this, so both figures are params -- the `mini` profile lowers them

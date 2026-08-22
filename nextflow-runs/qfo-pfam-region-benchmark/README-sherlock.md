@@ -28,28 +28,65 @@ visible before anything is submitted:
             each named human_vs_<target>, e.g. human_vs_yeast
 ```
 
-## kmerseek version requirement — read before building the image
+## kmerseek version: build from PR #43
 
-This pipeline needs a kmerseek build that has **all three** of:
+This pipeline needs region scoring, the reduced alphabets, and `--remove-low-complexity`.
+Checked 2026-08-20:
 
-| feature | needed for |
-|---|---|
-| region scoring (`region_start`/`region_end`/`region_poisson_score`) | every metric here; the CSV has no usable columns without it |
-| `hp-lehninger-hpc` + `hp-lehninger-c-nonpolar` | the 3-letter alphabet and the renamed 2-letter one |
-| `--remove-low-complexity` | the toggle that doubles the sweep |
+| branch | region scoring | 18 alphabets | `--remove-low-complexity` |
+|---|:---:|:---:|:---:|
+| `origin/main` | yes | no | yes |
+| `olgabot/bump-version-0.4.0` (PR #34) | **no** | no | yes |
+| `worktree-reduced-alphabets` (PR #43) | **yes** | **yes** | **yes** |
 
-**As of 2026-08-20 no single branch has all three.** `olgabot/bump-version-0.4.0` (PR #34)
-has the alphabets and the flag but NOT region scoring; `worktree-region-scoring` has region
-scoring and the flag but not the alphabets. Verified by running the current image:
-`hp-lehninger-hpc` and `hp-lehninger-c-nonpolar` are rejected as invalid values, and
-`--remove-low-complexity` is absent from `index --help`.
+Build the image from **PR #43**. Region scoring reached `main` after PR #34 branched, so
+#34's head still lacks it -- rebasing it on main before cutting v0.4.0 is what makes the
+release usable here.
 
-So region scoring has to land in the release before this sweep can run as configured. Until
-it does, either restrict the matrix to alphabets the image knows, or build from a branch
-that merges the two.
+### Every alphabet was renamed
 
-**`hp-lehninger-plus-c` was renamed to `hp-lehninger-c-nonpolar`.** Results produced under
-the old name are not matched by the new label, so earlier result files will not join.
+PR #43 renames each moltype to state how many classes it collapses the 20 residues into:
+
+    protein -> protein20            dayhoff -> dayhoff6
+    hp_lehninger -> hp_lehninger2   hp_lehninger_plus_c -> hp_lehninger_c_nonpolar2
+    hp_shuffled_control -> hp_random_control2
+
+Older result files will not join these labels. The CLI name and the moltype in the CSV are
+the same string, so there is one name to track rather than two.
+
+### K ranges are bit-matched, not shared
+
+An alphabet with n classes carries log2(n) bits per position, so the same k means very
+different information content across a 2-letter and an 18-letter alphabet -- comparing them
+at a fixed k compares nothing. Each range targets the same 18-30 bits the HP sweep spans,
+`k = 18/log2(n)` to `30/log2(n)`:
+
+| alphabet | classes | k range |
+|---|:---:|---|
+| `hp_*2` (six of them) | 2 | 18-30 |
+| `hp_lehninger_hpc3` | 3 | 11-19 |
+| `gbmr4` | 4 | 9-15 |
+| `wwmj5` | 5 | 8-13 |
+| `gbmr7` | 7 | 6-11 |
+| `dayhoff6` | 6 | 7-12 |
+| `sdm12`, `mmseqs12` | 12 | 5-8 |
+| `wass14` | 14 | 5-8 |
+| `hsdm17`, `uniprot18` | 17-18 | 4-7 |
+| `protein20` | 20 | 4-7 |
+
+The 2-letter floor stays at 18 rather than the computed value because measured output
+volume below that is prohibitive.
+
+### Scale
+
+**272 combos x 9 targets = 2448 searches**, up from 1017. Two multipliers: the eight new
+reduced alphabets, and `--remove-low-complexity` swept as a toggle rather than fixed --
+whether dropping low-complexity k-mers helps is alphabet-dependent, so it is measured, and
+the setting is carried in the variant label so the two arms never pool.
+
+One k-mer spectrum is written per combo to `results/spectra` for plotting. The
+with/without low-complexity pair is only interpretable if both spectra exist, which is why
+they are a first-class output rather than a debug artefact.
 
 ## What runs
 
