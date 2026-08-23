@@ -54,32 +54,54 @@ PR #43 renames each moltype to state how many classes it collapses the 20 residu
 Older result files will not join these labels. The CLI name and the moltype in the CSV are
 the same string, so there is one name to track rather than two.
 
-### K ranges are bit-matched, not shared
+### K ranges are bit-matched to HP, using REAL entropy
 
-An alphabet with n classes carries log2(n) bits per position, so the same k means very
-different information content across a 2-letter and an 18-letter alphabet -- comparing them
-at a fixed k compares nothing. Each range targets the same 18-30 bits the HP sweep spans,
-`k = 18/log2(n)` to `30/log2(n)`:
+An alphabet with n classes carries log2(n) bits per position only if every class is equally
+likely. They are not: `log2(n)` overstates every coarse alphabet. The ranges below use the
+actual amino-acid background frequencies grouped exactly as kmerseek groups them
+(`notebooks/ortholog_analysis_utils.entropy_per_symbol`).
 
-| alphabet | classes | k range |
-|---|:---:|---|
-| `hp_*2` (six of them) | 2 | 18-30 |
-| `hp_lehninger_hpc3` | 3 | 11-19 |
-| `gbmr4` | 4 | 9-15 |
-| `wwmj5` | 5 | 8-13 |
-| `gbmr7` | 7 | 6-11 |
-| `dayhoff6` | 6 | 7-12 |
-| `sdm12`, `mmseqs12` | 12 | 5-8 |
-| `wass14` | 14 | 5-8 |
-| `hsdm17`, `uniprot18` | 17-18 | 4-7 |
-| `protein20` | 20 | 4-7 |
+The production HP alphabet carries **0.994 bits/symbol**, so its k18-30 spans 17.9-29.8
+bits. Every other range is `k = 17.9/bits` to `29.8/bits` -- the same information content,
+which is the only basis on which a 2-letter and an 18-letter alphabet can be compared at
+all.
 
-The 2-letter floor stays at 18 rather than the computed value because measured output
-volume below that is prohibitive.
+| alphabet | classes | bits/symbol | k range |
+|---|:---:|:---:|---|
+| `hp_kyte_doolittle2` | 2 | 0.937 | 19-32 |
+| `hp_thomas_dill_no_c2` | 2 | 0.951 | 19-31 |
+| `hp_thomas_dill2` | 2 | 0.966 | 19-31 |
+| `hp_pbotc_1st_ed2` | 2 | 0.994 | 18-30 |
+| `hp_lehninger_c_nonpolar2` | 2 | 0.999 | 18-30 |
+| `hp_lehninger2` | 2 | 1.000 | 18-30 |
+| `hp_lehninger_hpc3` | 3 | **1.128** | 16-26 |
+| `gbmr4` | 4 | 1.522 | 12-20 |
+| `gbmr7` | 7 | 1.976 | 9-15 |
+| `wwmj5` | 5 | 2.197 | 8-14 |
+| `dayhoff6` | 6 | 2.278 | 8-13 |
+| `sdm12` | 12 | 3.127 | 6-10 |
+| `mmseqs12` | 12 | 3.293 | 5-9 |
+| `wass14` | 14 | 3.626 | 5-8 |
+| `hsdm17` | 17 | 3.742 | 5-8 |
+| `uniprot18` | 18 | 3.951 | 5-8 |
+| `protein20` | 20 | 4.176 | 4-7 |
+
+Two entries are worth reading before the sweep runs, because both contradict class count:
+
+**The 3-letter alphabet is barely 3 letters.** `hp_lehninger_hpc3` carries 1.128
+bits/symbol against HP's 0.994 -- cysteine is ~1.4% of residues, so giving it its own class
+adds ~0.13 bits. Sized by log2(3)=1.585 it would have run at k11-19; sized by measured
+entropy it belongs at k16-26, right next to the 2-letter alphabets. If it beats HP, that is
+not "more classes helped" -- the information content is nearly identical, so the difference
+would be WHERE the information sits, which is a sharper result.
+
+**`gbmr7` carries less information than `wwmj5`** (1.976 vs 2.197) despite having two more
+classes, because its classes are unbalanced. Class count is not information content, and
+this sweep is designed so the two can be told apart.
 
 ### Scale
 
-**272 combos x 9 targets = 2448 searches**, up from 1017. Two multipliers: the eight new
+**290 combos x 9 targets = 2610 searches**, up from 1017. Two multipliers: the eight new
 reduced alphabets, and `--remove-low-complexity` swept as a toggle rather than fixed --
 whether dropping low-complexity k-mers helps is alphabet-dependent, so it is measured, and
 the setting is carried in the variant label so the two arms never pool.

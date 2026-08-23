@@ -107,8 +107,6 @@ params.hhblits_db    = null
 // measured output volume at k=18 was already 838 MB compressed for the *smallest*
 // species. k=15-17 is a separate, deliberate experiment, not part of this sweep.
 // [cli_flag, label, kmin, kmax]
-params.hp_kmin = 18
-
 
 // Low-complexity k-mer removal, swept as a TOGGLE rather than fixed: every alphabet x
 // ksize combo runs both with and without it, doubling the search count. Whether dropping
@@ -139,32 +137,36 @@ params.kmerseek_combos = null
 // hp_lehninger_c_nonpolar2, hp_shuffled_control -> hp_random_control2. Results produced
 // under the old names will not join these labels.
 //
-// K RANGES ARE BIT-MATCHED, not shared. An alphabet with n classes carries log2(n) bits
-// per position, so a fixed k means wildly different information content across a 2-letter
-// and an 18-letter alphabet -- comparing them at the same k compares nothing. Each range
-// targets the same 18-30 bits the HP sweep spans: k = 18/log2(n) to 30/log2(n). That is
-// why protein20 sits at k4-7 and the 2-letter alphabets at k18-30; both cover ~18-30 bits.
+// K RANGES ARE BIT-MATCHED to the HP sweep, using REAL entropy rather than log2(classes).
+// log2(n) assumes every class is equally likely and overstates every coarse alphabet: the
+// entropies below come from actual amino-acid background frequencies grouped exactly as
+// kmerseek groups them (notebooks/ortholog_analysis_utils.entropy_per_symbol). The
+// production HP alphabet carries 0.994 bits/symbol, so its k18-30 spans 17.9-29.8 bits,
+// and every other range is k = 17.9/bits to 29.8/bits -- the same information content.
 //
-// The 2-letter floor stays at params.hp_kmin (18) rather than the computed value, because
-// measured output volume below that is prohibitive -- see the note on hp_kmin.
+// The difference is not cosmetic. hp_lehninger_hpc3 has THREE classes but only 1.128
+// bits/symbol, barely above HP's 0.994, because cysteine is ~1.4% of residues and a class
+// that rare adds almost no entropy. Sized by log2(3)=1.585 it would have run at k11-19;
+// sized by real entropy it belongs at k16-26. gbmr7 likewise carries LESS information than
+// wwmj5 (1.976 vs 2.197) despite having more classes, because its classes are unbalanced.
 def ALL_ENCODINGS = [
-    ['protein20', 'protein20', 4, 7],   // 20 classes, ~4.32 bits/symbol
-    ['dayhoff6', 'dayhoff6', 7, 12],   // 6 classes, ~2.58 bits/symbol
-    ['hp_lehninger2', 'hp_lehninger2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
-    ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
-    ['hp_thomas_dill2', 'hp_thomas_dill2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
-    ['hp_thomas_dill_no_c2', 'hp_thomas_dill_no_c2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
-    ['hp_lehninger_c_nonpolar2', 'hp_lehninger_c_nonpolar2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
-    ['hp_pbotc_1st_ed2', 'hp_pbotc_1st_ed2', params.hp_kmin, 30],   // 2 classes, ~1.00 bits/symbol
-    ['hp_lehninger_hpc3', 'hp_lehninger_hpc3', 11, 19],   // 3 classes, ~1.58 bits/symbol
-    ['gbmr4', 'gbmr4', 9, 15],   // 4 classes, ~2.00 bits/symbol
-    ['wwmj5', 'wwmj5', 8, 13],   // 5 classes, ~2.32 bits/symbol
-    ['gbmr7', 'gbmr7', 6, 11],   // 7 classes, ~2.81 bits/symbol
-    ['sdm12', 'sdm12', 5, 8],   // 12 classes, ~3.58 bits/symbol
-    ['mmseqs12', 'mmseqs12', 5, 8],   // 12 classes, ~3.58 bits/symbol
-    ['wass14', 'wass14', 5, 8],   // 14 classes, ~3.81 bits/symbol
-    ['hsdm17', 'hsdm17', 4, 7],   // 17 classes, ~4.09 bits/symbol
-    ['uniprot18', 'uniprot18', 4, 7],   // 18 classes, ~4.17 bits/symbol
+    ['protein20', 'protein20', 4, 7],                         // 20 cls, 4.176 bits/sym
+    ['dayhoff6', 'dayhoff6', 8, 13],                          //  6 cls, 2.278 bits/sym
+    ['hp_lehninger2', 'hp_lehninger2', 18, 30],               //  2 cls, 1.000 bits/sym
+    ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', 19, 32],     //  2 cls, 0.937 bits/sym
+    ['hp_thomas_dill2', 'hp_thomas_dill2', 19, 31],           //  2 cls, 0.966 bits/sym
+    ['hp_thomas_dill_no_c2', 'hp_thomas_dill_no_c2', 19, 31], //  2 cls, 0.951 bits/sym
+    ['hp_lehninger_c_nonpolar2', 'hp_lehninger_c_nonpolar2', 18, 30],//  2 cls, 0.999 bits/sym
+    ['hp_pbotc_1st_ed2', 'hp_pbotc_1st_ed2', 18, 30],         //  2 cls, 0.994 bits/sym
+    ['hp_lehninger_hpc3', 'hp_lehninger_hpc3', 16, 26],       //  3 cls, 1.128 bits/sym
+    ['gbmr4', 'gbmr4', 12, 20],                               //  4 cls, 1.522 bits/sym
+    ['wwmj5', 'wwmj5', 8, 14],                                //  5 cls, 2.197 bits/sym
+    ['gbmr7', 'gbmr7', 9, 15],                                //  7 cls, 1.976 bits/sym
+    ['sdm12', 'sdm12', 6, 10],                                // 12 cls, 3.127 bits/sym
+    ['mmseqs12', 'mmseqs12', 5, 9],                           // 12 cls, 3.293 bits/sym
+    ['wass14', 'wass14', 5, 8],                               // 14 cls, 3.626 bits/sym
+    ['hsdm17', 'hsdm17', 5, 8],                               // 17 cls, 3.742 bits/sym
+    ['uniprot18', 'uniprot18', 5, 8],                         // 18 cls, 3.951 bits/sym
 ]
 
 // kmerseek search filters. min_region_score is the region-scoped cutoff: -log10 of the
