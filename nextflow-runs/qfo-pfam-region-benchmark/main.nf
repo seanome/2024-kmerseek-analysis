@@ -936,9 +936,11 @@ process prostt5Search {
     cpus   { Math.max(1, (params.prostt5_cpus as int).intdiv(task.attempt)) }
     memory { MemoryUnit.of(params.prostt5_memory) * task.attempt }
     time   { params.prostt5_time }
-    // Halve the threads and double the RAM on each retry. Both directions matter: a SLURM
-    // OOM here is as often "too many sequences in flight" as "one sequence too big".
-    errorStrategy { task.attempt <= 3 ? 'retry' : 'finish' }
+    // Retry the OOM signals only, same rule as kmerseekIndexAndSearch. Each retry halves
+    // the threads and doubles the RAM, which is the right response to a kill signal and
+    // useless against a script error: retrying a deterministic exit 1 three times just
+    // burns three SLURM slots to reach the same failure.
+    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
     maxRetries 3
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*.tsv.gz'
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*_skipped.tsv'
