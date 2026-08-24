@@ -557,10 +557,10 @@ process kmerseekIndexAndSearch {
     def out_pq    = "human_vs_${species}.${slug}.regions.parquet"
     def log_file  = "human_vs_${species}.${slug}.log"
     def spectrum  = "spectrum.${species}.${slug}.csv.gz"
-    // --remove-low-complexity takes an optional BOOL. Passed explicitly on both arms so the
-    // search side matches the index side; kmerseek warns when they disagree, because
-    // containment is not comparable across a mismatch.
-    def lc_flag   = "--remove-low-complexity ${lowcomp}"
+    // The new CLI treats --remove-low-complexity as a presence-only index flag. Search
+    // inherits the index setting when the option is omitted, so false emits nothing and
+    // true emits the flag without a value.
+    def lc_flag   = lowcomp ? "--remove-low-complexity" : ""
     """
     set -euo pipefail
 
