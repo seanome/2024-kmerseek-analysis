@@ -234,6 +234,10 @@ params.prostt5_max_len = 6000
 // `process { cpus = ... }` in a profile does not override a body directive while a
 // `withLabel:`/`withName:` selector does.
 params.prostt5_cpus   = 4
+// Do NOT scale this down for a smoke test. ProstT5 is the same 3B-parameter model
+// whatever the input size, so the floor here is the model plus one sequence's
+// activations, not the number of sequences. A 16 GB `mini` override OOM-killed a
+// 194-sequence run just as dead as the uncapped full one.
 params.prostt5_memory = '64 GB'
 params.prostt5_time   = '48h'
 
@@ -986,6 +990,11 @@ process prostt5Search {
     # A database built this way carries predicted 3Di only, with no Ca coordinates, so
     # TMalign-based alignment types and TM-score/LDDT outputs are unavailable here. The
     # columns below are all sequence-space and unaffected.
+    # easy-search is a shell wrapper. When the kernel or SLURM SIGKILLs its createdb child
+    # the wrapper catches it, prints "Error: query createdb died" and exits 1, so Nextflow
+    # sees a plain script error and the signal-based retry rule never fires. Translate it
+    # back: an OOM has to look like an OOM or the retry ladder below is decorative.
+    set +e
     foldseek easy-search \\
         query.fasta target.fasta \\
         out.tsv tmp \\
@@ -993,7 +1002,18 @@ process prostt5Search {
         --threads ${task.cpus} \\
         -e ${params.evalue_report} \\
         --max-seqs 1000 \\
-        --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
+        --format-output "query,target,qstart,qend,tstart,tend,bits,evalue" \\
+        2> easysearch.err
+    rc=\$?
+    set -e
+    cat easysearch.err >&2
+    if [ "\$rc" -ne 0 ]; then
+        if grep -qEi 'killed|cannot allocate|bad_alloc|out of memory' easysearch.err; then
+            echo "prostt5: easy-search was OOM-killed; re-raising as 137 to trigger retry" >&2
+            exit 137
+        fi
+        exit "\$rc"
+    fi
 
     awk -F'\t' 'BEGIN{OFS="\t"} {
         for (i = 1; i <= 2; i++) {
