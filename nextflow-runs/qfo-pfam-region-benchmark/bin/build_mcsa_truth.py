@@ -15,7 +15,7 @@ Two limits, both real, both stated here so the numbers are not over-read:
   Catalytic residues are points, not domains. Each is one residue, so a boundary IoU
   against it is meaningless. They are widened to a small window and flagged is_point, and
   the useful question is recall -- does the tool put a region on the catalytic machinery --
-  not how precisely it drew an edge.
+  not how well it drew an edge.
 
 Numbering comes from the API's `residue_sequences`, which is UNIPROT-numbered. The
 curated_data.csv flat file gives PDB numbering with a separate chain column, which needs
@@ -85,7 +85,7 @@ def main():
                 end = int(resid) + args.window
                 # Labelled by M-CSA entry, so "same family" means the same catalytic
                 # mechanism -- the transfer question becomes "does this target carry the
-                # same machinery", which is what M-CSA actually asserts.
+                # same machinery", which is what M-CSA asserts.
                 rows.append((acc, mcsa, start, end, int(resid)))
 
     df = pl.DataFrame(

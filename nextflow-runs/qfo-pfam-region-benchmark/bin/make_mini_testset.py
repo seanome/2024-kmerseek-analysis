@@ -93,7 +93,7 @@ def main():
     # Three spellings for one thing. Nextflow params use underscores
     # (--target_species), argparse conventionally uses dashes (--target-species), and
     # --species is what this script shipped with. Accepting all three means a Makefile
-    # recipe cannot pass the wrong one, which is exactly what broke mini-testset-sherlock
+    # recipe cannot pass the wrong one, which is what broke mini-testset-sherlock
     # when the Nextflow param was renamed and the rename leaked onto this python call.
     #
     # As everywhere else in this pipeline: human is the query, these are the TARGETS.
@@ -162,7 +162,7 @@ def main():
             wanted - set(hgnc.filter(pl.col("accession").is_in(query_acc))["symbol"].to_list())
         )
         if missing:
-            # Reported, not silently dropped: a gene absent from the Pfam annotation subset
+            # Reported dropped: a gene absent from the Pfam annotation subset
             # cannot contribute a true positive, and which ones are missing changes what an
             # MHC claim covers.
             print(f"NOTE: {len(missing)} MHC genes absent from the Pfam annotation set: "

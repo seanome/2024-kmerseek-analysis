@@ -8,7 +8,7 @@ depend on the analysis repo's layout. `bin/check_gene_sets.py` diffs these again
 whenever it is run somewhere both are importable, so the copy cannot drift silently.
 
 Provenance for each set is recorded next to it, because "which genes count as immune" is
-exactly the kind of judgement that becomes uncheckable once it is three files deep.
+the kind of judgement that becomes uncheckable once it is three files deep.
 """
 
 # ---------------------------------------------------------------------------

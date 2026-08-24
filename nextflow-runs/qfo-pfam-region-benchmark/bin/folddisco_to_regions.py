@@ -2,16 +2,16 @@
 """Convert Folddisco motif hits into this pipeline's normalized region rows.
 
 Folddisco is not an aligner. Its query is a set of motifs drawn from the query structure,
-and a hit is a *discontinuous* set of residues -- "A56,A99,A195" -- not a contiguous
+and a hit is a *discontinuous* set of residues. "A56,A99,A195". not a contiguous
 alignment. Every other arm here reports an interval, so the residue set is reduced to its
 envelope (first matched residue to last).
 
 That reduction is lossy in one direction only, and it matters: a 3-residue motif spanning
-positions 56..195 produces a 139-residue envelope while actually touching 3 residues. The
+positions 56..195 produces a 139-residue envelope while touching 3 residues. The
 envelope therefore *overstates* Folddisco's footprint. Two consequences, both handled
 rather than hidden:
 
-  - The count of genuinely matched residues is carried through as a 9th column, so the
+  - The count of matched residues is carried through as a 9th column, so the
     envelope's density is visible downstream instead of being assumed.
   - Scoring a motif envelope by interval IoU, the way an alignment is scored, would
     penalise Folddisco for the reduction rather than for its predictions. The evaluator

@@ -27,7 +27,7 @@ def concat(dirpath: Path, what: str) -> pl.DataFrame:
         raise SystemExit(f"no {what} parquet files under {dirpath}")
     df = pl.concat([pl.read_parquet(f) for f in files], how="diagonal_relaxed")
     # Curves carry no stratum columns by design (they are emitted only for the ungrouped
-    # cut), so order by whichever lead columns this table actually has.
+    # cut), so order by whichever lead columns this table has.
     lead = [c for c in LEAD if c in df.columns]
     return df.select(lead + [c for c in df.columns if c not in lead])
 

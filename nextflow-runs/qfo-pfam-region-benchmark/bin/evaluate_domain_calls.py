@@ -10,7 +10,7 @@ Pipeline for a search-based tool:
   2. Transfer. Look up the target protein's Pfam domains. A region claims a family when it
      covers at least --min-overlap of that domain on the *target* side. The region's query
      interval, carrying that family label, is now a domain call.
-  3. Score. A call is a true positive when the query protein really does have that family
+  3. Score. A call is a true positive when the query protein has that family
      AND the call's interval reciprocally overlaps (IoU) a real instance of it by at least
      --min-overlap. Right family in the wrong place is a false positive, not a hit -- that
      distinction is the whole reason for scoring regions instead of protein pairs.
@@ -132,7 +132,7 @@ def _load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
         )
 
     # 8 columns for the aligners; motif tools (Folddisco) append a 9th holding how many
-    # residues actually matched, so the envelope's density survives into the metrics.
+    # residues matched, so the envelope's density survives into the metrics.
     # Widths are read off the file rather than declared, so one loader serves both.
     cols = ["query", "target", "qstart", "qend", "tstart", "tend", "score", "evalue",
             "n_matched_residues"]
@@ -282,7 +282,7 @@ def assign_instances(calls: pl.DataFrame, candidates: pl.DataFrame,
     TP/FP status must not depend on predictions ranked below it, or the curve is not
     monotone in the threshold.
 
-    Unmatched predictions are false positives; unmatched annotations are simply not
+    Unmatched predictions are false positives; unmatched annotations are not
     recovered, and show up through the recall denominator rather than as rows here.
     """
     key = "cover" if semantics == "motif" else "iou"
@@ -334,7 +334,7 @@ def rank_roc_auc(calls: pl.DataFrame) -> float | None:
     """Call-level ROC-AUC: P(a correctly placed call outranks an incorrectly placed one).
 
     Computed by the Mann-Whitney rank identity rather than by integrating the curve, so
-    tied scores are handled exactly. Ties matter here: HP alphabets at low ksize produce
+    tied scores are handled without approximation. Ties matter here: HP alphabets at low ksize produce
     large blocks of identical region scores, and trapezoid integration over a coarse
     curve would quietly round them in the tool's favour.
 
@@ -437,7 +437,7 @@ def average_precision(points: pl.DataFrame) -> float:
     """Average precision: sum of precision weighted by the recall gained at each step.
 
     The step-wise sum, not a trapezoid, which is the standard AP definition and does not
-    interpolate credit across a gap the tool never actually covered.
+    interpolate credit across a gap the tool never covered.
     """
     if points.height == 0:
         return 0.0
@@ -470,7 +470,7 @@ def classify_scoreable(calls: pl.DataFrame, truth: pl.DataFrame,
 
     Why this benchmark needs it. Pfam-A annotates a fraction of residues; everywhere else
     it is silent, not negative. Counting a call in silent territory as a false positive
-    asserts that Pfam looked there and found nothing, which it did not. That is precisely
+    asserts that Pfam looked there and found nothing, which it did not. That is
     backwards for the claim under test -- a cryptic domain Pfam never annotated is the
     thing the method is supposed to find, and scoring it as an error makes the benchmark
     punish the hypothesis rather than test it.
@@ -539,7 +539,7 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     # the individual domain: one protein can hold a 90%-identity domain and a 25%-identity
     # one. Counting every TP call from that protein against the 25% bin's denominator
     # produced recall above 1.0 (observed: 2.77). Restricting the numerator to instances
-    # actually in this cell makes numerator and denominator describe the same set.
+    # in this cell makes numerator and denominator describe the same set.
     if n_calls:
         key = ["query_acc", "pfam_id", "true_start", "true_end"]
         truth_keys = truth.select(
@@ -583,7 +583,7 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
         "n_truth_instances": n_truth,
         "n_reachable_instances": n_reachable,
         "n_instances_found": found,
-        # --- operating point the tool actually reported at ---
+        # --- operating point the tool reported at ---
         "precision": precision,
         "precision_strict": precision_strict,
         "recall": recall,
@@ -626,7 +626,7 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
     Instances with no same-family match in the target get a distinct `no_homolog` label
     rather than being dropped or lumped into the lowest bin. They are unreachable by any
     transfer-based method, so mixing them into "<20%" would make every tool look worse in
-    exactly the bin the hypothesis cares most about.
+    the bin the hypothesis cares most about.
     """
     if identity is None or identity.height == 0:
         return truth.with_columns(pl.lit(None, dtype=pl.String).alias("stratum_identity"))
@@ -782,7 +782,7 @@ def main():
     # Zinc fingers are INCLUDED by default. The exclusion was inherited from an
     # orthology benchmark, where the scored object is a protein pair and a tandem array
     # inflates protein-level k-mer sharing through repeat content. This benchmark scores
-    # DOMAINS: a twelve-finger protein simply contains twelve domains, and the correct
+    # DOMAINS: a twelve-finger protein contains twelve domains, and the correct
     # answer is twelve correctly-bounded regions. The confound does not transfer, so the
     # exclusion should not either.
     p.add_argument("--exclude-zinc-finger-from-hgnc", action="store_true",

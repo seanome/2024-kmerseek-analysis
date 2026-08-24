@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """CAFA-style and domain-boundary metrics, adapted honestly to Pfam domain finding.
 
-What carries over from CAFA cleanly, and what does not:
+What carries over from CAFA, and what does not:
 
   Fmax        Carries over. CAFA's Fmax is *protein-centric*: precision is averaged over
               proteins that made at least one prediction, recall over all proteins with a
@@ -114,7 +114,7 @@ def protein_centric_curve(calls: pl.DataFrame, truth: pl.DataFrame, ic: pl.DataF
     scores = calls["score"].fill_null(float("-inf")).to_numpy().astype(float)
     # Quantile grid, not a linear one: region scores and bitscores are both heavily
     # right-skewed, so evenly spaced cutoffs would spend most of the grid on a tail
-    # where nothing changes and skip the range where the curve actually turns.
+    # where nothing changes and skip the range where the curve turns.
     qs = np.linspace(0, 1, n_thresholds)
     t_asc = np.unique(np.quantile(scores, qs))
     n_bins = len(t_asc)
@@ -273,7 +273,7 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
         # N- and C-terminal offsets are kept SEPARATE, and signed. Boundary methods
         # usually fail asymmetrically -- a k-mer method loses the first k-1 residues at the
         # N terminus for a structural reason, not a random one -- and averaging the two
-        # ends into one number destroys exactly the interpretable part. Sign convention:
+        # ends into one number destroys the interpretable part. Sign convention:
         # positive means the call starts/ends LATER than the true domain, so a k-mer method
         # that trims the front shows n_offset > 0.
         bnd = best.with_columns(
@@ -304,7 +304,7 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
 def domain_count_metrics(calls: pl.DataFrame, truth: pl.DataFrame) -> dict:
     """Single- vs multi-domain call, scored by MCC.
 
-    Scored only over proteins the tool actually made a call on. Counting silent proteins
+    Scored only over proteins the tool made a call on. Counting silent proteins
     as "predicted single-domain" would reward a tool for saying nothing, since most
     proteins are single-domain.
     """

@@ -47,7 +47,7 @@ CURL_COMMON=(--fail --silent --show-error --location --continue-at -
 #
 # They were hardcoded to v4 and every download 404'd: AFDB is on v6, and the evidence was
 # already on disk in the local cache's AF-*-model_v6.cif filenames. A hardcoded version is
-# a guess with an expiry date -- v7 would break it again -- so both are looked up once per
+# a guess with an expiry date. v7 would break it again. so both are looked up once per
 # run and the script fails loudly if the lookup itself fails.
 #
 # species -> UniProt proteome id. Only the id is stable; the filename around it is not.
@@ -117,7 +117,7 @@ else
 fi
 
 link_cached() {
-    # Link what the flat cache already has, so only genuinely missing structures are fetched.
+    # Link what the flat cache already has, so only missing structures are fetched.
     local species="$1" dest="$2" acc_file="$3"
     local linked=0
     while read -r acc; do
@@ -193,7 +193,7 @@ fetch_per_accession() {
     [[ "$n" -eq 0 ]] && { rm -f "$todo"; return; }
 
     # A 404 here is expected and not fatal: AlphaFold has no model for every UniProt
-    # accession. Those proteins are simply absent from the Foldseek arm, which is the
+    # accession. Those proteins are absent from the Foldseek arm, which is the
     # coverage gap the benchmark reports rather than hides.
     resolve_model_version "$(head -1 "$todo")"
     export AFDB_FILES dest MODEL_VERSION

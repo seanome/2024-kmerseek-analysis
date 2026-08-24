@@ -5,7 +5,7 @@ The hypothesis under test is that HP patterning survives *after sequence identit
 diverges*, so percent identity is the axis the whole claim lives on. It has to be measured
 per domain pair: species divergence in MYA is a species-level average, and within a single
 human-mouse comparison individual domain pairs run from ~20% to ~99% identity, which is
-precisely the range the claim is about. Stratifying on MYA smears it away.
+the range the claim is about. Stratifying on MYA smears it away.
 
 Identity is computed between DOMAIN REGIONS, not whole proteins. Two proteins sharing one
 conserved domain in otherwise unrelated sequence would show low whole-protein identity

@@ -8,11 +8,11 @@ positive, which is the whole reason this scores regions rather than protein pair
 
 ## How the comparisons are structured
 
-**Human is always the query. It is never a target and never appears in the species list.**
+Human is always the query. It is never a target and never appears in the species list.
 
 Every search takes the whole human proteome as queries and searches it against one target
 proteome, producing a result named `human_vs_<target>`. So `--target_species yeast,ecoli`
-is two targets and therefore two searches -- `human_vs_yeast` and `human_vs_ecoli` -- not
+is two targets and therefore two searches. `human_vs_yeast` and `human_vs_ecoli`. not
 a yeast-versus-ecoli comparison. The nine targets span 100 MYA (mouse) to 2000 MYA
 (ecoli), which is what makes divergence an axis rather than a caveat.
 
@@ -54,57 +54,64 @@ PR #43 renames each moltype to state how many classes it collapses the 20 residu
 Older result files will not join these labels. The CLI name and the moltype in the CSV are
 the same string, so there is one name to track rather than two.
 
-### K ranges are bit-matched to HP, using REAL entropy
+### K ranges: bit-matched floor, shared ceiling
 
 An alphabet with n classes carries log2(n) bits per position only if every class is equally
-likely. They are not: `log2(n)` overstates every coarse alphabet. The ranges below use the
-actual amino-acid background frequencies grouped exactly as kmerseek groups them
+likely. They are not, so log2(n) overstates every coarse alphabet. The bits/symbol below
+come from amino-acid background frequencies grouped as kmerseek groups them
 (`notebooks/ortholog_analysis_utils.entropy_per_symbol`).
 
-The production HP alphabet carries **0.994 bits/symbol**, so its k18-30 spans 17.9-29.8
-bits. Every other range is `k = 17.9/bits` to `29.8/bits` -- the same information content,
-which is the only basis on which a 2-letter and an 18-letter alphabet can be compared at
-all.
+HP carries 0.994 bits/symbol, so its k18 floor is 17.9 bits. Every `kmin` is
+`round(17.9 / bits)`. Running a coarse alphabet below that floor produces prohibitive
+output volume.
+
+`kmax` is 30 for every alphabet. Bit-matched ranges alone do not overlap, so no two
+alphabets could be compared at the same k. With a shared ceiling, ten or more alphabets
+share every k from 12 to 30, and all 17 share k19-30.
+
+Extending upward is cheap and extending downward is not. A long k-mer in a high-entropy
+alphabet carries many bits, matches little and writes almost nothing. A short k-mer in a
+2-letter alphabet matches everything. protein20 at k30 is 125 bits and will match nothing,
+costing index time and no output.
 
 | alphabet | classes | bits/symbol | k range |
 |---|:---:|:---:|---|
-| `hp_kyte_doolittle2` | 2 | 0.937 | 19-32 |
-| `hp_thomas_dill_no_c2` | 2 | 0.951 | 19-31 |
-| `hp_thomas_dill2` | 2 | 0.966 | 19-31 |
+| `hp_kyte_doolittle2` | 2 | 0.937 | 19-30 |
+| `hp_thomas_dill_no_c2` | 2 | 0.951 | 19-30 |
+| `hp_thomas_dill2` | 2 | 0.966 | 19-30 |
 | `hp_pbotc_1st_ed2` | 2 | 0.994 | 18-30 |
 | `hp_lehninger_c_nonpolar2` | 2 | 0.999 | 18-30 |
 | `hp_lehninger2` | 2 | 1.000 | 18-30 |
-| `hp_lehninger_hpc3` | 3 | **1.128** | 16-26 |
-| `gbmr4` | 4 | 1.522 | 12-20 |
-| `gbmr7` | 7 | 1.976 | 9-15 |
-| `wwmj5` | 5 | 2.197 | 8-14 |
-| `dayhoff6` | 6 | 2.278 | 8-13 |
-| `sdm12` | 12 | 3.127 | 6-10 |
-| `mmseqs12` | 12 | 3.293 | 5-9 |
-| `wass14` | 14 | 3.626 | 5-8 |
-| `hsdm17` | 17 | 3.742 | 5-8 |
-| `uniprot18` | 18 | 3.951 | 5-8 |
-| `protein20` | 20 | 4.176 | 4-7 |
+| `hp_lehninger_hpc3` | 3 | 1.128 | 16-30 |
+| `gbmr4` | 4 | 1.522 | 12-30 |
+| `gbmr7` | 7 | 1.976 | 9-30 |
+| `wwmj5` | 5 | 2.197 | 8-30 |
+| `dayhoff6` | 6 | 2.278 | 8-30 |
+| `sdm12` | 12 | 3.127 | 6-30 |
+| `mmseqs12` | 12 | 3.293 | 5-30 |
+| `wass14` | 14 | 3.626 | 5-30 |
+| `hsdm17` | 17 | 3.742 | 5-30 |
+| `uniprot18` | 18 | 3.951 | 5-30 |
+| `protein20` | 20 | 4.176 | 4-30 |
 
-Two entries are worth reading before the sweep runs, because both contradict class count:
+Two entries contradict class count, which is why entropy is measured rather than assumed.
 
-**The 3-letter alphabet is barely 3 letters.** `hp_lehninger_hpc3` carries 1.128
-bits/symbol against HP's 0.994 -- cysteine is ~1.4% of residues, so giving it its own class
-adds ~0.13 bits. Sized by log2(3)=1.585 it would have run at k11-19; sized by measured
-entropy it belongs at k16-26, right next to the 2-letter alphabets. If it beats HP, that is
-not "more classes helped" -- the information content is nearly identical, so the difference
-would be WHERE the information sits, which is a sharper result.
+`hp_lehninger_hpc3` has three classes but 1.128 bits/symbol against HP's 0.994. Cysteine is
+~1.4% of residues, so a class that rare adds about 0.13 bits. Sized by log2(3)=1.585 it
+would have run at k11-19; sized by measured entropy its floor is k16. At nearly identical
+information content, a difference between it and HP is about where the information sits,
+not how much there is.
 
-**`gbmr7` carries less information than `wwmj5`** (1.976 vs 2.197) despite having two more
-classes, because its classes are unbalanced. Class count is not information content, and
-this sweep is designed so the two can be told apart.
+`gbmr7` carries less information than `wwmj5`, 1.976 against 2.197, despite two more
+classes, because its classes are unbalanced.
 
 ### Scale
 
-**290 combos x 9 targets = 2610 searches**, up from 1017. Two multipliers: the eight new
-reduced alphabets, and `--remove-low-complexity` swept as a toggle rather than fixed --
-whether dropping low-complexity k-mers helps is alphabet-dependent, so it is measured, and
-the setting is carried in the variant label so the two arms never pool.
+666 combos x 9 targets = 5994 searches, up from 1017. Three multipliers: the eight new
+reduced alphabets, the shared k=30 ceiling that makes fixed-k comparison possible, and
+`--remove-low-complexity` swept as a toggle rather than fixed.
+Whether dropping low-complexity k-mers helps depends on the alphabet, so it is measured.
+The setting is carried in the variant label, so the two arms never pool.
 
 One k-mer spectrum is written per combo to `results/spectra` for plotting. The
 with/without low-complexity pair is only interpretable if both spectra exist, which is why
@@ -130,7 +137,7 @@ reconstruct, so it marks what direct annotation achieves and everything else is 
 against it.
 
 The kmerseek matrix is protein k5-15, dayhoff k10-20, and seven HP-family alphabets
-k18-30: **113 combos x 9 species = 1017 searches**.
+k18-30: 113 combos x 9 species = 1017 searches.
 
 The HP floor is 18, not the 15 used by the kmer-spectra sweep. A 2-letter alphabet at
 k=15 has 32768 possible k-mers against ~20k x 20k proteins, and measured output at k=18
@@ -153,7 +160,7 @@ Baseline tools come from pinned biocontainers and are pulled by Apptainer direct
 ### 2. AlphaFold structures
 
 As of 2026-08-18 the flat cache at `~/data/alphafold_structures` holds 54,339 of the
-126,734 annotated proteins. **72,828 structures / ~36 GB are missing.**
+126,734 annotated proteins. 72,828 structures / ~36 GB are missing.
 
 ```bash
 make fetch-structures
@@ -231,7 +238,7 @@ truth building, the family-grouped split, covariates, search, transfer, scoring,
 metrics and aggregation. `-profile sherlock,mini` layers on top of the real profile and
 overrides only what scale requires, so nothing about the code path differs from `make run`.
 
-**The targets are not a random subset.** They are chosen *because* they share Pfam
+The targets are not a random subset. They are chosen *because* they share Pfam
 families with the queries — 42 shared families for yeast, 19 for ecoli at the defaults —
 so real true positives exist. An equal number of decoy targets share no family with any
 query, so precision can fall below 1.0. A random subset of two proteomes would share
@@ -254,9 +261,9 @@ Tune with `MINI_SPECIES` and `MINI_COMBOS`, or `--n-queries` / `--n-targets` on
 Verified locally end to end: 4 searches, 48 metric rows, 47 columns. Yeast at
 `hp-pbotc-1st-ed` k19 recovers 21.7% of reachable domains against 2.6% for `protein` k10,
 and ecoli sits near zero -- 2000 MYA is beyond what a 200-protein set recovers. So the set
-discriminates, which is the point.
+discriminates.
 
-**It does not give the held-out split signal.** 241 query families split in half leaves
+It does not give the held-out split signal. 241 query families split in half leaves
 ~120 held out, of which only ~21 are shared with yeast, and no true positive lands there.
 The split code path runs and emits its rows, but `heldout` reads 0.0 throughout. That is
 the set being small, not the split being broken -- do not read a mini-run leaderboard as a
@@ -279,7 +286,7 @@ and a sustained multi-GB download trips them. Per-species jobs also mean a kill 
 proteome rather than the whole set, and the script is resumable so a retry continues from
 where it stopped.
 
-**If your compute nodes have no outbound internet**, the jobs fail immediately with a
+If your compute nodes have no outbound internet, the jobs fail immediately with a
 message saying so rather than stalling. Fall back to the login node, one species at a time
 and with low parallelism to stay under its limits:
 
@@ -316,7 +323,7 @@ Established 2026-08-20: Sherlock's batch partition cannot reach out. Anything th
 downloads therefore runs on a login node, and the pipeline's preflight checks fail in
 about 30 seconds with the cause rather than stalling.
 
-**ProstT5 weights** (~1-2 GB, once):
+ProstT5 weights (~1-2 GB, once):
 
 ```bash
 make prostt5-weights
@@ -385,7 +392,7 @@ and a sustained multi-GB download trips them. Per-species jobs also mean a kill 
 proteome rather than the whole set, and the script is resumable so a retry continues from
 where it stopped.
 
-**If your compute nodes have no outbound internet**, the jobs fail immediately with a
+If your compute nodes have no outbound internet, the jobs fail immediately with a
 message saying so rather than stalling. Fall back to the login node, one species at a time
 and with low parallelism to stay under its limits:
 
@@ -422,7 +429,7 @@ Established 2026-08-20: Sherlock's batch partition cannot reach out. Anything th
 downloads therefore runs on a login node, and the pipeline's preflight checks fail in
 about 30 seconds with the cause rather than stalling.
 
-**ProstT5 weights** (~1-2 GB, once):
+ProstT5 weights (~1-2 GB, once):
 
 ```bash
 make prostt5-weights
@@ -471,7 +478,7 @@ make run-kmerseek     # the 1017-search sweep alone
 make run-baselines    # the 9-species baselines alone
 ```
 
-**Every run target already passes `-resume`**, so `make run` picks up where the last one
+Every run target already passes `-resume`, so `make run` picks up where the last one
 stopped. Do not write `make run -resume`: make consumes the flag itself and exits with
 `invalid option -- 'u'` before nextflow is ever reached. Extra nextflow flags go through
 `NF_ARGS`:
@@ -497,7 +504,7 @@ kmerseek sweep is 1017 jobs and will sit in the queue much longer.
 
 HP-family alphabets at k<=20 get 128 GB, everything else 32 GB, doubling on retry. This
 is set in `main.nf`, not `nextflow.config`, because it needs the task's own alphabet and
-ksize. **Do not add a `memory` directive for `kmerseekIndexAndSearch` to the config** --
+ksize. Do not add a `memory` directive for `kmerseekIndexAndSearch` to the config --
 config directives always beat script-declared ones in Nextflow, so a config-level
 "default" silently overrides the per-combo sizing and the HP jobs OOM.
 
@@ -554,7 +561,7 @@ something, recall over every protein with a true domain. `best_f1` below is
 micro-averaged over calls. They are different numbers on purpose; a few domain-dense
 proteins can move `best_f1` but not `fmax`.
 
-**`wfmax` and `smin` are weakened relative to real CAFA, and the difference matters.**
+`wfmax` and `smin` are weakened relative to real CAFA, and the difference matters.
 CAFA weights GO terms by *information accretion*, defined against the ontology DAG as a
 term's information content conditioned on its parents. Pfam is flat -- clans are a shallow
 grouping, not a subsumption hierarchy -- so there are no parents to condition on and
@@ -590,7 +597,7 @@ wrong domain to a right one is not a boundary measurement.
 | `auprc` | average precision over score-ranked calls, recall against reachable |
 | `best_f1` | the best F1 at any score threshold |
 | `best_f1_threshold` | the score achieving it, plus `_precision` and `_recall_reachable` |
-| `median_iou_tp` | how precisely a correct call is placed |
+| `median_iou_tp` | how a correct call is placed |
 
 ### Reseek and ProstT5: the two that position the paper
 
@@ -605,12 +612,12 @@ reviewers look for. Reseek reports a p-value and no E-value, so the p-value take
 E-value slot (same direction, lower is better).
 
 **ProstT5** predicts 3Di directly from amino acid sequence, so run through Foldseek's
-`--prostt5-model` it needs **no structures on either side**. That makes it the closest
-published thing to what kmerseek claims -- structural signal without structure prediction --
-and therefore the baseline the paper most has to differentiate from. Two differentiators
+`--prostt5-model` it needs no structures on either side. That makes it the closest
+published thing to what kmerseek claims: structural signal without structure prediction.
+That makes it the baseline the paper most has to differentiate from. Two differentiators
 the pipeline should make visible rather than assert: it still depends on Foldseek, and it
 still needs a target database. It is also the only structure-flavoured arm that runs where
-AlphaFold coverage is too thin for Foldseek or Reseek, which is exactly the regime the
+AlphaFold coverage is too thin for Foldseek or Reseek, which is the regime the
 invertebrate claim lives in -- so it belongs *outside* the structure guard, and it is.
 
 A database built this way carries predicted 3Di only, with no Ca coordinates, so TMalign
@@ -619,9 +626,9 @@ pipeline uses are all sequence-space and unaffected.
 
 ### Folddisco is scored differently, on purpose
 
-Folddisco is not an aligner. Its hits are *discontinuous* residue sets -- `A56,A99,A195` --
-not intervals. Every other arm reports a span, so the residue set is reduced to its
-envelope (first matched residue to last), and the number of residues genuinely matched is
+Folddisco is not an aligner. Its hits are discontinuous residue sets such as
+`A56,A99,A195`, not intervals. Every other arm reports a span, so the residue set is reduced to its
+envelope (first matched residue to last), and the number of residues matched is
 carried alongside it.
 
 That reduction only overstates: a 3-residue motif spanning 56..195 yields a 139-residue
@@ -656,7 +663,7 @@ is better) with `rmsd` in the E-value slot; it emits no E-value of its own.
 Every metric row carries `truth_set` and they are never pooled in the leaderboard: a mean
 across a circular and a non-circular truth set has no interpretation.
 
-**Pfam-N is the one that creates credit.** The gray-zone convention below stops the
+Pfam-N is the one that creates credit. The gray-zone convention below stops the
 benchmark charging for calls where Pfam-A is silent, but exclusion only removes them from
 the denominator. Pfam-N is the explicit "Pfam-A HMMs missed these" label set, so a region
 found in that silence can be adjudicated instead of merely ignored. It is published for
@@ -664,8 +671,8 @@ Pfam35.0 only — releases 36 and 37 do not carry it, verified 2026-08-20 — so
 2022 resource and its accessions should be read against Pfam35. The source is ~17.4 GB of
 Stockholm alignments, streamed and filtered rather than stored.
 
-**M-CSA is a vignette, not a statistic.** 1003 curated entries intersect this benchmark at
-106 human proteins, 0.5% of the query set. Read it the way the MHC block is read; do not
+M-CSA is a vignette, not a statistic. 1003 curated entries intersect this benchmark at
+106 human proteins, 0.5% of the query set. Read it as the MHC block is read. do not
 let it carry a headline claim. Catalytic residues are single positions, widened to a small
 window and flagged `is_point`, so boundary IoU against them is meaningless and recall is
 the question — does the tool put a region on the catalytic machinery. Numbering comes from
@@ -681,7 +688,7 @@ That is a separate exercise from the QfO sweep and is not implemented here.
 
 Pfam-A annotates a fraction of residues and is silent everywhere else. Counting a call in
 silent territory as a false positive asserts that the annotation looked there and found
-nothing, which it did not -- and that is exactly backwards for the claim under test, since
+nothing, which it did not -- and that is backwards for the claim under test, since
 a cryptic domain Pfam never annotated is the thing the method is supposed to find. Scored
 that way the benchmark punishes the hypothesis instead of testing it.
 
@@ -692,24 +699,23 @@ SCOPe:
 |---|---|---|
 | true positive | right family, right place | yes |
 | confident FP | lands mostly INSIDE annotated territory, wrong family | yes |
-| gray | lands mostly OUTSIDE any annotation -- unknown | **excluded from the denominator** |
+| gray | lands mostly OUTSIDE any annotation -- unknown | excluded from the denominator |
 
 `--gray-min-annotated-fraction` (default 0.5) is the share of a call that must sit in
 annotated territory to be judged confidently wrong. It is measured against the call, not
 the annotation, so a long call is not excused by clipping one domain's edge.
 
-**`coverage` travels with every metric** and is the fraction of calls that were scoreable
+`coverage` travels with every metric and is the fraction of calls that were scoreable
 at all. A precision of 0.9 on 12% of calls is a different claim from the same number on
 90%, and the column is there so that distinction cannot be lost.
 
-**`precision_strict` is reported alongside `precision`**, counting gray as false positives.
-The gap between the two IS the effect of this convention, so it can never be mistaken for
-a free improvement. On the mini set: hp-pbotc k19 against Pfam moves 0.162 -> 0.204 with
+`precision_strict` is reported alongside `precision`, counting gray as false positives.
+The gap between the two is the effect of this convention. On the mini set: hp-pbotc k19 against Pfam moves 0.162 -> 0.204 with
 20% of calls gray, while protein k10 has no gray calls at all and does not move. The
-convention helps a method precisely to the degree it predicts where Pfam is silent, which
+convention helps a method to the degree it predicts where Pfam is silent, which
 is the thing worth measuring.
 
-Exclusion stops the benchmark bleeding credit. It does not create any: converting gray
+Exclusion removes those calls from the denominator. It does not add any true positives: converting gray
 calls into scoreable true positives needs a label set that says "Pfam-A missed these",
 which is Pfam-N and is not implemented yet.
 
@@ -755,13 +761,13 @@ on them. Every row reports its own n.
 
 Two things carried over from the notebooks that are easy to lose:
 
-**Zinc-finger groups are dropped from the `hgnc` axis, not just flagged.** Tandem C2H2
+Zinc-finger groups are dropped from the `hgnc` axis, not just flagged. Tandem C2H2
 arrays inflate k-mer sharing through repeat content rather than homology (notebook 206
 section 6), and they are the single largest HGNC group in the query set -- 1,153 proteins,
 5.9%. Left in, the one family the axis cannot trust would dominate it. They stay in the
 covariate table under `hgnc_group_excluded` if you want to look at them deliberately.
 
-**Class I and class II are separate strata, never pooled.** Notebook 211 found they answer
+Class I and class II are separate strata, never pooled. Notebook 211 found they answer
 the k-size question in opposite directions, so a single "MHC" number hides the result.
 
 Gene sets live in `bin/gene_sets.py`, copied from `notebooks/ortholog_analysis_utils.py`
@@ -775,10 +781,10 @@ plot against `species_mya` directly (mouse 100 ... ecoli 2000).
 pLDDT and its disorder proxy are parsed from the AlphaFold `.cif` files the Foldseek arm
 already stages, so they cost no extra download.
 
-**dN/dS covers ~7% of query proteins.** Any omega-stratified result describes that subset,
+dN/dS covers ~7% of query proteins. Any omega-stratified result describes that subset,
 not the proteome. Treat it as a probe, not a genome-wide claim.
 
-**The upstream `dS` column is corrupt and this pipeline does not read it.**
+The upstream `dS` column is corrupt and this pipeline does not read it.
 `human-mouse-dnds-omega/bin/compute_omega.py` parses codeml output with `r"dS\s*=\s*(...)"`,
 and `re.search` matches that inside `dN/dS=` first, so the published `dS` column is a copy
 of `omega` in all 1335 rows. `dN` and `omega` themselves are correct (omega's median of
@@ -794,19 +800,19 @@ computed on the *full* curve before thinning, so the two always agree.
 
 ### Three things that will mislead you if skipped
 
-**Compare on `recall_reachable`, not `recall`.** A human Pfam family absent from a target
+Compare on `recall_reachable`, not `recall`. A human Pfam family absent from a target
 proteome cannot be transferred by any search, so raw recall understates every tool by a
 species-specific amount. Ecoli has 971 of human's 8909 families; mouse has 8805. Raw
 `recall` is kept only so the size of that gap stays visible.
 
-**`roc_auc` is conditioned on the calls a tool made.** Its negatives are the false
+`roc_auc` is conditioned on the calls a tool made. Its negatives are the false
 positives the tool itself reported; a domain never called at all is not in the universe,
 because an unranked prediction cannot be ranked. A tool can score a high `roc_auc` by
 reporting a handful of confident calls and missing everything else. Read it next to
 `recall_reachable`, never alone. `auprc` does not have this problem -- its recall
 denominator is the full reachable set.
 
-**Prefer `best_f1` over `f1` when comparing tools.** `f1` sits at whatever cutoff each
+Prefer `best_f1` over `f1` when comparing tools. `f1` sits at whatever cutoff each
 tool happens to default to, which differs between HMMER, MMseqs2 and kmerseek and is not
 a property of the method. `best_f1` and the threshold-free `roc_auc`/`auprc` are the
 comparable numbers.

@@ -71,7 +71,7 @@ params.mobidb_cache = null   // optional curated disorder; pLDDT<50 proxy is alw
 params.swissprot_dat = "${home}/data/uniprot/uniprot_sprot.dat.gz"
 
 // Pfam-N: the explicit "Pfam-A HMMs missed these" label set, and the only truth set here
-// that is not circular with the profile baselines -- it exists precisely where those HMMs
+// that is not circular with the profile baselines -- it exists where those HMMs
 // failed. The gray-zone convention stops the benchmark charging for calls in Pfam-silent
 // territory; this is what turns a slice of them back into scoreable true positives.
 //
@@ -106,67 +106,72 @@ params.hhblits_db    = null
 // alphabet at k=15 has 32768 possible k-mers against ~20k x 20k proteins, and the
 // measured output volume at k=18 was already 838 MB compressed for the *smallest*
 // species. k=15-17 is a separate, deliberate experiment, not part of this sweep.
-// [cli_flag, label, kmin, kmax]
-
-// Low-complexity k-mer removal, swept as a TOGGLE rather than fixed: every alphabet x
-// ksize combo runs both with and without it, doubling the search count. Whether dropping
-// homopolymer-ish k-mers helps or hurts is alphabet-dependent -- a 2-letter alphabet
-// generates far more low-complexity k-mers than a 20-letter one -- so it is a variable to
-// measure, not a setting to pick.
-params.low_complexity_toggle = [false, true]
-
 // Scope a run down without editing the matrix, for smoke tests on a mini set.
 //   --target_species   comma-separated TARGET labels, e.g. "yeast,ecoli"
-//   --kmerseek_combos  comma-separated encoding:ksize, e.g. "protein:10,hp-pbotc-1st-ed:19"
+//   --kmerseek_combos  comma-separated encoding:ksize, e.g. "protein20:10,gbmr4:14"
 // Both default to null, meaning the full sweep.
 //
-// HUMAN IS ALWAYS THE QUERY and never appears in this list. Every search is human
+// Human is always the query and never appears in the species list. Every search is human
 // against one target proteome, so --target_species yeast,ecoli means two searches:
-// human_vs_yeast and human_vs_ecoli. The old --species spelling still works; it was
-// renamed because it read as "which species are in the run" when it means "which
-// proteomes is human searched against".
+// human_vs_yeast and human_vs_ecoli. The old --species spelling still works.
 params.target_species  = null
 params.species         = null
 params.kmerseek_combos = null
 
+// Low-complexity k-mer removal, swept as a toggle rather than fixed: every alphabet and
+// ksize runs both with and without it, doubling the search count. Whether dropping
+// homopolymer-like k-mers helps depends on the alphabet, since a 2-letter alphabet
+// generates far more low-complexity k-mers than a 20-letter one.
+params.low_complexity_toggle = [false, true]
+
 // [cli_flag, label, kmin, kmax]. In kmerseek v0.4.0 the CLI name and the moltype written
 // into the CSV are the same string, so one column serves both.
 //
-// EVERY ALPHABET WAS RENAMED to state its class count (PR #43): protein -> protein20,
-// dayhoff -> dayhoff6, hp_lehninger -> hp_lehninger2, hp_lehninger_plus_c ->
-// hp_lehninger_c_nonpolar2, hp_shuffled_control -> hp_random_control2. Results produced
+// Every alphabet was renamed in PR #43 to state its class count: protein is protein20,
+// dayhoff is dayhoff6, hp_lehninger is hp_lehninger2, hp_lehninger_plus_c is
+// hp_lehninger_c_nonpolar2, hp_shuffled_control is hp_random_control2. Results produced
 // under the old names will not join these labels.
 //
-// K RANGES ARE BIT-MATCHED to the HP sweep, using REAL entropy rather than log2(classes).
-// log2(n) assumes every class is equally likely and overstates every coarse alphabet: the
-// entropies below come from actual amino-acid background frequencies grouped exactly as
-// kmerseek groups them (notebooks/ortholog_analysis_utils.entropy_per_symbol). The
-// production HP alphabet carries 0.994 bits/symbol, so its k18-30 spans 17.9-29.8 bits,
-// and every other range is k = 17.9/bits to 29.8/bits -- the same information content.
+// The lower bound is bit-matched; the upper bound is shared.
 //
-// The difference is not cosmetic. hp_lehninger_hpc3 has THREE classes but only 1.128
-// bits/symbol, barely above HP's 0.994, because cysteine is ~1.4% of residues and a class
-// that rare adds almost no entropy. Sized by log2(3)=1.585 it would have run at k11-19;
-// sized by real entropy it belongs at k16-26. gbmr7 likewise carries LESS information than
-// wwmj5 (1.976 vs 2.197) despite having more classes, because its classes are unbalanced.
+// kmin comes from real entropy, not log2(classes). log2(n) assumes every class is equally
+// likely, which overstates every coarse alphabet. The bits/symbol below use amino-acid
+// background frequencies grouped as kmerseek groups them
+// (notebooks/ortholog_analysis_utils.entropy_per_symbol). HP carries 0.994 bits/symbol, so
+// its k18 floor is 17.9 bits, and every kmin is round(17.9 / bits). A coarse alphabet run
+// below that floor produces prohibitive output volume.
+//
+// kmax is 30 for all of them, which is what makes fixed-k comparison possible. Ten or more
+// alphabets share every k from 12 to 30, and all 17 share k19-30. Bit-matched ranges alone
+// do not overlap, so no two alphabets could be compared at the same k.
+//
+// Extending upward is cheap and extending downward is not. A long k-mer in a high-entropy
+// alphabet carries many bits, matches little, and writes almost nothing; a short k-mer in a
+// 2-letter alphabet matches everything. protein20 at k30 is 125 bits and will match nothing,
+// which costs index time and no output.
+//
+// Two entries contradict class count, which is why entropy is measured rather than assumed:
+// hp_lehninger_hpc3 has three classes but 1.128 bits/symbol against HP's 0.994, because
+// cysteine is ~1.4% of residues. gbmr7 carries less information than wwmj5 (1.976 against
+// 2.197) despite two more classes, because its classes are unbalanced.
 def ALL_ENCODINGS = [
-    ['protein20', 'protein20', 4, 7],                         // 20 cls, 4.176 bits/sym
-    ['dayhoff6', 'dayhoff6', 8, 13],                          //  6 cls, 2.278 bits/sym
-    ['hp_lehninger2', 'hp_lehninger2', 18, 30],               //  2 cls, 1.000 bits/sym
-    ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', 19, 32],     //  2 cls, 0.937 bits/sym
-    ['hp_thomas_dill2', 'hp_thomas_dill2', 19, 31],           //  2 cls, 0.966 bits/sym
-    ['hp_thomas_dill_no_c2', 'hp_thomas_dill_no_c2', 19, 31], //  2 cls, 0.951 bits/sym
-    ['hp_lehninger_c_nonpolar2', 'hp_lehninger_c_nonpolar2', 18, 30],//  2 cls, 0.999 bits/sym
-    ['hp_pbotc_1st_ed2', 'hp_pbotc_1st_ed2', 18, 30],         //  2 cls, 0.994 bits/sym
-    ['hp_lehninger_hpc3', 'hp_lehninger_hpc3', 16, 26],       //  3 cls, 1.128 bits/sym
-    ['gbmr4', 'gbmr4', 12, 20],                               //  4 cls, 1.522 bits/sym
-    ['wwmj5', 'wwmj5', 8, 14],                                //  5 cls, 2.197 bits/sym
-    ['gbmr7', 'gbmr7', 9, 15],                                //  7 cls, 1.976 bits/sym
-    ['sdm12', 'sdm12', 6, 10],                                // 12 cls, 3.127 bits/sym
-    ['mmseqs12', 'mmseqs12', 5, 9],                           // 12 cls, 3.293 bits/sym
-    ['wass14', 'wass14', 5, 8],                               // 14 cls, 3.626 bits/sym
-    ['hsdm17', 'hsdm17', 5, 8],                               // 17 cls, 3.742 bits/sym
-    ['uniprot18', 'uniprot18', 5, 8],                         // 18 cls, 3.951 bits/sym
+    ['protein20', 'protein20', 4, 30],                        // 4.176 bits/sym
+    ['dayhoff6', 'dayhoff6', 8, 30],                          // 2.278 bits/sym
+    ['hp_lehninger2', 'hp_lehninger2', 18, 30],               // 1.000 bits/sym
+    ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', 19, 30],     // 0.937 bits/sym
+    ['hp_thomas_dill2', 'hp_thomas_dill2', 19, 30],           // 0.966 bits/sym
+    ['hp_thomas_dill_no_c2', 'hp_thomas_dill_no_c2', 19, 30], // 0.951 bits/sym
+    ['hp_lehninger_c_nonpolar2', 'hp_lehninger_c_nonpolar2', 18, 30],// 0.999 bits/sym
+    ['hp_pbotc_1st_ed2', 'hp_pbotc_1st_ed2', 18, 30],         // 0.994 bits/sym
+    ['hp_lehninger_hpc3', 'hp_lehninger_hpc3', 16, 30],       // 1.128 bits/sym
+    ['gbmr4', 'gbmr4', 12, 30],                               // 1.522 bits/sym
+    ['wwmj5', 'wwmj5', 8, 30],                                // 2.197 bits/sym
+    ['gbmr7', 'gbmr7', 9, 30],                                // 1.976 bits/sym
+    ['sdm12', 'sdm12', 6, 30],                                // 3.127 bits/sym
+    ['mmseqs12', 'mmseqs12', 5, 30],                          // 3.293 bits/sym
+    ['wass14', 'wass14', 5, 30],                              // 3.626 bits/sym
+    ['hsdm17', 'hsdm17', 5, 30],                              // 3.742 bits/sym
+    ['uniprot18', 'uniprot18', 5, 30],                        // 3.951 bits/sym
 ]
 
 // kmerseek search filters. min_region_score is the region-scoped cutoff: -log10 of the
@@ -208,7 +213,7 @@ params.reseek_mode = "verysensitive"
 
 // ProstT5 via Foldseek: predicts 3Di directly from amino acid sequence, so it needs NO
 // structures on either side. That makes it the closest published thing to what kmerseek
-// claims -- structural signal without structure prediction -- and therefore the baseline
+// claims. structural signal without structure prediction. and therefore the baseline
 // the paper most has to differentiate from. It still depends on Foldseek and on a target
 // database, which is the differentiation the review points at.
 params.skip_prostt5   = false
@@ -607,7 +612,7 @@ process kmerseekIndexAndSearch {
     echo "regions csv.zst: \$(du -sh ${out_zst} | cut -f1)" | tee -a ${log_file}
 
     # Straight to parquet, dropping columns no downstream step reads. Both formats kept
-    # around for 1017 result files is exactly the disk blow-up this design avoids.
+    # around for 1017 result files is the disk blow-up this design avoids.
     # Test the DECOMPRESSED stream, not the file size. zstd emits a 13-byte frame header
     # for empty input, so [ -s file ] is true for a search that found nothing and polars
     # then dies with NoDataError. A combo finding zero matches is a real result -- at
@@ -849,7 +854,7 @@ process reseekSearch {
 
     script:
     // Bound as locals rather than interpolated inline. `${db}` followed by more flags
-    // tripped the Groovy lexer at exactly that column; naming them keeps the script block
+    // tripped the Groovy lexer at that column; naming them keeps the script block
     // plain text.
     def q_dir   = human_structures.toString()
     def db_file = db.toString()
@@ -1367,7 +1372,7 @@ workflow {
         dom_in = truth_out.truth
             .map { t -> tuple("human", t, human_fasta) }
             .mix(
-                // Restrict to the species this run actually targets. map_ch carries a map
+                // Restrict to the species this run targets. map_ch carries a map
                 // for every species in the annotations directory, a superset of SPECIES
                 // whenever --target_species narrows the run -- looking one of those up
                 // returned null and died on `.subdir`.
@@ -1480,12 +1485,11 @@ workflow {
 
         // ---- ProstT5: 3Di predicted from sequence, no structures on either side ----
         // Deliberately OUTSIDE the structure guard below. This is the arm that can run
-        // where AlphaFold coverage is too thin for Foldseek or Reseek, which is exactly
-        // the regime the invertebrate claim lives in.
+        // where AlphaFold coverage is too thin for Foldseek or Reseek, which is         // the regime the invertebrate claim lives in.
         if (!params.skip_prostt5) {
             // Sherlock compute nodes have no outbound internet, so the download process
             // cannot work there -- its preflight fails in 30 seconds by design. When a
-            // weights path is given it must actually exist; falling back to the download
+            // weights path is given it must exist; falling back to the download
             // would just re-fail with a message about the wrong thing.
             def w = params.prostt5_weights ? file(params.prostt5_weights) : null
             if (params.prostt5_weights && !w.exists()) {

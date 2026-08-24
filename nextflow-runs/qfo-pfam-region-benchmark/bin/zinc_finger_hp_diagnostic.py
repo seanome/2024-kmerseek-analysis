@@ -132,7 +132,7 @@ def main():
     if args.out:
         args.out.write_text(json.dumps(results, indent=2))
 
-    # The decision the checklist asks for, stated rather than left to interpretation.
+    # The decision the checklist asks for, stated.
     print()
     best = max(results.items(), key=lambda kv: kv[1]["specificity"])
     prod = results.get("hp_pbotc_1st_ed")

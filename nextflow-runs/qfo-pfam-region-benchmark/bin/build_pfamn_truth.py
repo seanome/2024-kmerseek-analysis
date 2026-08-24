@@ -3,19 +3,19 @@
 
 Why this one matters most for the hypothesis. The gray-zone convention stops the benchmark
 counting a call in Pfam-silent territory as an error, but exclusion creates no credit --
-those calls simply leave the denominator. Pfam-N converts a slice of that gray zone back
+those calls leave the denominator. Pfam-N converts a slice of that gray zone back
 into scoreable TRUE positives: it is a deep-learning extension of Pfam that annotates
 sequences and regions the profile HMMs did not reach, so a region kmerseek finds where
 Pfam-A is silent can be checked against a label rather than left unadjudicated.
 
 That also makes it the one truth set here that is NOT circular with the profile baselines.
 phmmer/jackhmmer/hhblits are profile methods and Pfam-A is built from profile HMMs; Pfam-N
-exists precisely where those HMMs failed.
+exists where those HMMs failed.
 
 Two facts that shape this script:
 
   Size.    Pfam-N.gz is ~17.4 GB of Stockholm alignments. It is streamed and filtered on
-           the fly rather than downloaded -- only regions on accessions we actually query
+           the fly rather than downloaded. Only regions on accessions this benchmark queries
            are kept, which is a few tens of thousands of rows out of millions.
   Vintage. It is published for Pfam35.0 only; releases 36 and 37 do not carry it (verified
            2026-08-20, both 404). So it is a frozen 2022 resource, and its Pfam accessions
