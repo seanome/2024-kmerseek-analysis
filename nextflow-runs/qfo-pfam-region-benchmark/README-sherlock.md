@@ -531,6 +531,84 @@ results/
 `make pull-results` brings back metrics and truth only. The `calls/` and `kmerseek/`
 trees are the bulk of the output -- pull those selectively.
 
+## The MultiQC report
+
+One self-contained HTML for the whole run: accuracy, the alphabet x ksize sweep, and the
+trace's time, CPU and memory. It is built at the end of a normal `make run`, and can be
+rebuilt from published results at any time without re-running a single search:
+
+```
+make multiqc                                          # newest trace under run/
+make multiqc TRACE=run/qfo_pfam_region.2026-08-24.trace.txt
+make pull-report                                      # on the Mac, fetch it back
+```
+
+Published as:
+
+```
+results/
+  qfo_pfam_region_multiqc.html         the report
+  qfo_pfam_region_multiqc_plots/       every figure as png, svg and pdf
+  qfo_pfam_region_multiqc_data/        the numbers behind each plot, as tsv
+  multiqc/multiqc_in/                  the *_mqc.json section files it was built from
+```
+
+The svg exports are the ones that go into a paper. Nothing needs re-plotting in a
+notebook to get a publication figure out of a run.
+
+### Rebuilding it is a separate launch, and that is not incidental
+
+Nextflow **truncates its trace file as a run starts**, and overwrites the execution report
+and timeline with it. A report run launched in `run/` would therefore destroy the numbers
+it exists to read.
+
+Two params keep those roles apart:
+
+| param | role |
+|---|---|
+| `--trace_file` | where THIS run writes its trace. Leave it alone. |
+| `--report_trace` | the earlier run's trace the report READS. Passing it switches this run's own trace observer off. |
+
+`-entry report` refuses to run without `--report_trace`, because there is no way to read a
+trace that the same run is writing. `make multiqc` fills it in and launches from
+`run-report/`. Pass `--report_trace none` to build the accuracy sections alone.
+
+### What is in it
+
+The frontier figure and the PR/ROC sections are cut against **one** truth set, defaulting
+to Swiss-Prot when it exists -- Pfam is circular with the profile baselines, and a number
+averaged across the two has no interpretation. Override with
+`--multiqc_primary_truth pfam`. Leaderboards are emitted per truth set regardless.
+
+| section | what it answers |
+|---|---|
+| The frontier | sensitivity in the &lt;40% identity zone against measured throughput, with the best and fastest incumbent drawn in |
+| What each tool needs | 3D structures? alignment-free? accuracy and CPU-hours beside them |
+| Leaderboards | best variant per tool, one board per truth set |
+| Truth sets and circularity | provenance, what each set is circular with, instances scored |
+| CAFA-style / Threshold / Boundary | the full metric tables, defined in the Metrics section below |
+| Twilight zone | Fmax by percent-identity bin |
+| Divergence | Fmax and reachable recall against divergence time |
+| Recall ceiling per species | how many human families the target proteome even has |
+| Alphabet x ksize | Fmax heatmap per low-complexity arm, plus a per-alphabet bar view of the toggle |
+| Gray-zone accounting | true / false / unscoreable calls per tool |
+| Run totals and resources | CPU-hours, task run times, peak RSS against requested, efficiency, I/O, task outcomes |
+
+Accuracy sections use the **held-out** half of the Pfam families: the sweep picks its best
+alphabet and ksize on the other half, and reporting the winner on the data that chose it
+is optimistically biased.
+
+Sections are written by `bin/build_multiqc_inputs.py` as one `*_mqc.json` each. Report
+title, section order and plot limits are the only hand-edited part, in
+`assets/multiqc_config.yaml`. To add a section, write another function that calls
+`write_section()` and add its id to that file's `report_section_order`.
+
+Throughput is measured from the trace: query proteins divided by each search task's wall
+time, median over target species. Indexing is inside the measurement for every arm,
+because each task builds what it needs and searches once -- a tool that would amortise an
+index over many searches is undersold, which is the honest reading of a benchmark that
+searches each target proteome once.
+
 ## Metrics
 
 Everything is computed in the pipeline. `all_domain_metrics.csv` is the whole table;

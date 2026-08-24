@@ -123,13 +123,41 @@ def ungrouped(df: pl.DataFrame) -> pl.DataFrame:
     return df.filter(pl.col("stratum_axis") == "all")
 
 
-def best_variants(df: pl.DataFrame) -> pl.DataFrame:
-    """One row per tool: its best variant, with every headline metric averaged.
+# How many of the sweep's alphabet x ksize x low-complexity combos to carry into the
+# comparison plots. One would hide the shape of the sweep -- whether the winner is a lone
+# spike or the top of a plateau of near-identical combos is the interesting part, and it
+# changes what the result means. Every baseline still contributes its single variant, so
+# the sweep cannot bury them.
+TOP_KMERSEEK = 5
+
+
+def label_of(tool: str, variant: str) -> str:
+    """Row key for the comparison tables. Only kmerseek has more than one variant here."""
+    return f"kmerseek {variant}" if tool == "kmerseek" else tool
+
+
+def short_label(tool: str, variant: str) -> str:
+    """Label drawn next to a point on the frontier, where five combos share the space.
+
+    The full row key is kept as the point's name, so hovering and the exported data still
+    carry it; this is only what is printed on the plot. Dropping the "kmerseek " prefix and
+    spelling the low-complexity arm as a sign saves about fifteen characters per label,
+    which is the difference between readable and overlapping.
+    """
+    if tool != "kmerseek":
+        return tool
+    return (variant.replace("_k", " k", 1)
+                   .replace("_lcTrue", " lc+")
+                   .replace("_lcFalse", " lc-"))
+
+
+def best_variants(df: pl.DataFrame, top_kmerseek: int = TOP_KMERSEEK) -> pl.DataFrame:
+    """Each tool's best variant, plus kmerseek's top `top_kmerseek`, ranked by Fmax.
 
     Averaged over species before ranking, never summed -- summing would let the species
-    with the most annotated proteins pick the winner. kmerseek brings 113 alphabet x ksize
-    combos against every baseline's one, so each tool is reduced to its own best variant
-    rather than letting the sweep bury the baselines in a shared ranking.
+    with the most annotated proteins pick the winner.
+
+    Columns: tool, variant, label, n_species, and every headline metric.
     """
     cols = [c for c in HEADLINE if c in df.columns]
     if not cols or df.height == 0:
@@ -140,10 +168,17 @@ def best_variants(df: pl.DataFrame) -> pl.DataFrame:
              + [pl.col("species").n_unique().alias("n_species")])
         .sort("fmax", descending=True, nulls_last=True)
     )
+    kept = pl.concat([
+        group.head(top_kmerseek if tool == "kmerseek" else 1)
+        for (tool,), group in per_variant.group_by("tool", maintain_order=True)
+    ]) if per_variant.height else per_variant
     return (
-        per_variant.group_by("tool")
-        .agg([pl.col("variant").first().alias("best_variant"),
-              pl.col("n_species").first()] + [pl.col(c).first() for c in cols])
+        kept.with_columns(
+            pl.struct("tool", "variant")
+              .map_elements(lambda r: label_of(r["tool"], r["variant"]),
+                            return_dtype=pl.String)
+              .alias("label")
+        )
         .sort("fmax", descending=True, nulls_last=True)
     )
 
@@ -151,7 +186,7 @@ def best_variants(df: pl.DataFrame) -> pl.DataFrame:
 def fmt_metric_headers(cols: list[str]) -> dict:
     """Column formatting for the leaderboard tables, keyed by metric name."""
     spec = {
-        "best_variant": dict(title="Best variant", description="Highest mean Fmax over species"),
+        "variant": dict(title="Variant", description="Ranked by mean Fmax over species"),
         "fmax":         dict(title="Fmax", description="CAFA protein-centric Fmax", min=0, max=1,
                              scale="RdYlGn", format="{:,.3f}"),
         "auprc":        dict(title="AUPRC", description="Area under precision / reachable-recall",
@@ -182,19 +217,21 @@ def fmt_metric_headers(cols: list[str]) -> dict:
 # sections: accuracy
 # ---------------------------------------------------------------------------
 
-def section_leaderboards(out: Path, metrics: pl.DataFrame) -> None:
+def section_leaderboards(out: Path, metrics: pl.DataFrame,
+                         top_kmerseek: int = TOP_KMERSEEK) -> None:
     cut, split = pick_split(ungrouped(metrics))
     for ts in sorted(cut["truth_set"].unique().to_list()):
-        board = best_variants(cut.filter(pl.col("truth_set") == ts))
+        board = best_variants(cut.filter(pl.col("truth_set") == ts), top_kmerseek)
         if board.height == 0:
             continue
-        cols = ["best_variant", "n_species"] + [c for c in HEADLINE if c in board.columns]
-        data = {row["tool"]: {c: row[c] for c in cols} for row in board.to_dicts()}
+        cols = ["variant", "n_species"] + [c for c in HEADLINE if c in board.columns]
+        data = {row["label"]: {c: row[c] for c in cols} for row in board.to_dicts()}
         write_section(out, f"qfo_leaderboard_{ts}", {
             "id": f"qfo_leaderboard_{ts}",
             "section_name": f"Leaderboard — {ts} truth",
             "description": (
-                f"Best variant per tool, averaged over target species, on the "
+                f"Each tool's best variant and the sweep's top {top_kmerseek} combos, "
+            f"averaged over target species, on the "
                 f"<code>{split}</code> split with no stratification. "
                 + ("Pfam-A domains are defined by profile HMMs, so this truth set is "
                    "circular with phmmer, jackhmmer, hhblits and hmmscan and flatters "
@@ -218,7 +255,8 @@ def section_leaderboards(out: Path, metrics: pl.DataFrame) -> None:
 
 
 def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
-                     n_queries: int, primary_truth: str) -> None:
+                     n_queries: int, primary_truth: str,
+                     top_kmerseek: int = TOP_KMERSEEK) -> None:
     """Sensitivity against speed, with the incumbent frontier drawn in.
 
     y is Fmax restricted to domain instances whose closest same-family target domain is
@@ -253,12 +291,18 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                   "claim is stated on; re-run without that flag to get it.")
         ycol = ungrouped(cut).group_by("tool", "variant").agg(pl.col("fmax").mean().alias("y"))
 
-    best = (ycol.sort("y", descending=True, nulls_last=True)
-                .group_by("tool").agg(pl.col("variant").first(), pl.col("y").first()))
+    # One point per baseline, TOP_KMERSEEK points for the sweep. A single kmerseek point
+    # would hide whether the winner is a lone spike or the top of a plateau, which is the
+    # part of the figure a reader should be able to check.
+    ranked = ycol.sort("y", descending=True, nulls_last=True)
+    best = pl.concat([
+        group.head(top_kmerseek if tool == "kmerseek" else 1)
+        for (tool,), group in ranked.group_by("tool", maintain_order=True)
+    ]) if ranked.height else ranked
 
-    thr = throughput_per_tool(trace, n_queries)
-    joined = best.join(thr, on="tool", how="inner").filter(
-        pl.col("y").is_not_null() & (pl.col("queries_per_s") > 0)
+    joined = attach_throughput(best, trace, n_queries).filter(
+        pl.col("y").is_not_null() & pl.col("queries_per_s").is_not_null()
+        & (pl.col("queries_per_s") > 0)
     )
     dropped = sorted(set(best["tool"]) - set(joined["tool"]))
     if joined.height == 0:
@@ -290,10 +334,11 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     points = {}
     for r in rows:
         cls = tool_class(r["tool"])
-        label = r["tool"] if r["tool"] != "kmerseek" else f"kmerseek {r['variant']}"
+        label = label_of(r["tool"], r["variant"])
         points[label] = {
             "x": r["queries_per_s"], "y": r["y"],
-            "color": CLASSES[cls][1], "group": CLASSES[cls][0], "annotation": label,
+            "color": CLASSES[cls][1], "group": CLASSES[cls][0],
+            "annotation": short_label(r["tool"], r["variant"]),
             "marker_size": 14 if cls == "kmerseek" else 9,
         }
 
@@ -336,7 +381,9 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
             "proteins divided by each search task's wall time at the CPU count it was "
             "given, taken as the median over target species. Dashed lines mark the best "
             "and fastest incumbent, so the upper-right quadrant is the part of the space "
-            "no existing tool reaches.</p>"
+            "no existing tool reaches. The sweep contributes its "
+            f"top {top_kmerseek} alphabet x ksize x low-complexity combos rather than one "
+            "point, so a lone spike is distinguishable from a plateau.</p>"
             "<p>Speed here includes indexing, because every arm is timed the same way: "
             "one task, one target proteome, start to finish. A tool that amortises an "
             "index across many searches looks worse here than in steady-state use.</p>"
@@ -348,20 +395,20 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
 
     # The capability table that travels with the figure: sensitivity means little without
     # what a tool needs before it can produce it.
-    board = best_variants(ungrouped(cut))
+    board = attach_throughput(best_variants(ungrouped(cut), top_kmerseek),
+                              trace, n_queries)
+    gray_of = {(r["tool"], r["variant"]): r["y"] for r in best.to_dicts()}
     cap = {}
     for row in board.to_dicts():
         t = row["tool"]
-        thr_row = thr.filter(pl.col("tool") == t)
-        cap[t] = {
+        cap[row["label"]] = {
             "cls": CLASSES[tool_class(t)][0],
             "needs_3d": NEEDS_3D.get(t, "No"),
             "alignment_free": ALIGNMENT_FREE.get(t, "No"),
             "fmax": row.get("fmax"),
-            "gray_fmax": (best.filter(pl.col("tool") == t)["y"].first()
-                          if best.filter(pl.col("tool") == t).height else None),
-            "queries_per_s": (thr_row["queries_per_s"].first() if thr_row.height else None),
-            "cpu_hours": (thr_row["cpu_hours"].first() if thr_row.height else None),
+            "gray_fmax": gray_of.get((t, row["variant"])),
+            "queries_per_s": row.get("queries_per_s"),
+            "cpu_hours": row.get("cpu_hours"),
         }
     write_section(out, "qfo_capability", {
         "id": "qfo_capability",
@@ -379,10 +426,30 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                               format="{:,.3f}"),
             "queries_per_s": dict(title="Queries/s", scale="Blues", format="{:,.1f}"),
             "cpu_hours": dict(title="CPU-hours", scale="Reds", format="{:,.2f}",
-                              description="Summed over every search task in this arm"),
+                              description="Summed over this combo's search tasks, or over "
+                                          "the whole arm where the trace cannot separate "
+                                          "variants"),
         },
         "data": cap,
     })
+
+
+def _search_tasks(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
+    """Search tasks with a usable run time, annotated with their query rate."""
+    if trace.height == 0:
+        return trace.head(0)
+    searches = trace.filter(
+        pl.col("is_search") & pl.col("realtime_s").is_not_null() & (pl.col("realtime_s") > 0)
+    )
+    if searches.height == 0:
+        return searches
+    return searches.with_columns(
+        (n_queries / pl.col("realtime_s")).alias("qps"),
+        pl.struct("process", "tag")
+          .map_elements(lambda r: mt.variant_from_tag(r["process"], r["tag"]),
+                        return_dtype=pl.String)
+          .alias("trace_variant"),
+    )
 
 
 def throughput_per_tool(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
@@ -393,23 +460,16 @@ def throughput_per_tool(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
     """
     empty = pl.DataFrame(schema={"tool": pl.String, "queries_per_s": pl.Float64,
                                  "cpu_hours": pl.Float64})
-    if trace.height == 0:
+    per_task = _search_tasks(trace, n_queries)
+    if per_task.height == 0:
         return empty
-    searches = trace.filter(
-        pl.col("is_search") & pl.col("realtime_s").is_not_null() & (pl.col("realtime_s") > 0)
-    )
-    if searches.height == 0:
-        return empty
-    per_task = searches.with_columns(
-        (n_queries / pl.col("realtime_s")).alias("qps")
-    )
     rate = per_task.group_by("tool").agg(
         pl.col("qps").median().alias("queries_per_s"),
         pl.col("cpu_hours").sum().alias("cpu_hours"),
     )
-    # mmseqs2 runs two variants under one process name, so the trace cannot separate
-    # them; the metrics table can. Emit both metric-table spellings from the one rate
-    # rather than dropping mmseqs2 out of the join entirely.
+    # mmseqs2 runs two variants under one process name, so the trace's process column
+    # cannot separate them; the metrics table spells them apart. Emit both spellings from
+    # the one rate rather than dropping mmseqs2 out of the join entirely.
     mm = rate.filter(pl.col("tool") == "mmseqs2")
     if mm.height:
         rate = pl.concat([
@@ -418,6 +478,58 @@ def throughput_per_tool(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
             mm.with_columns(pl.lit("mmseqs2_iterative").alias("tool")),
         ])
     return rate
+
+
+def throughput_per_variant(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
+    """Rate and cost per (tool, variant), for tools whose trace tags carry the variant.
+
+    kmerseek tags read `<species>_<alphabet>_k<k>_lc<bool>`, so each of the sweep's combos
+    has its own timings and must not be plotted at a shared per-arm rate -- k=18 on a
+    2-letter alphabet and k=29 on the same alphabet are different jobs entirely. Every
+    other arm has one variant per process and falls back to the tool-level figure.
+    """
+    empty = pl.DataFrame(schema={"tool": pl.String, "variant": pl.String,
+                                 "queries_per_s": pl.Float64, "cpu_hours": pl.Float64})
+    per_task = _search_tasks(trace, n_queries)
+    if per_task.height == 0:
+        return empty
+    return (
+        per_task.filter(pl.col("trace_variant") != "default")
+        .group_by("tool", "trace_variant")
+        .agg(pl.col("qps").median().alias("queries_per_s"),
+             pl.col("cpu_hours").sum().alias("cpu_hours"))
+        .rename({"trace_variant": "variant"})
+    )
+
+
+def attach_throughput(sel: pl.DataFrame, trace: pl.DataFrame,
+                      n_queries: int) -> pl.DataFrame:
+    """Add queries_per_s and cpu_hours to a (tool, variant) selection.
+
+    Per variant where the trace can tell them apart, per arm otherwise. Rows with neither
+    are returned with nulls; the caller decides whether to drop them.
+    """
+    by_variant = throughput_per_variant(trace, n_queries)
+    by_tool = throughput_per_tool(trace, n_queries)
+    out = sel
+    if by_variant.height:
+        out = out.join(by_variant, on=["tool", "variant"], how="left")
+    else:
+        out = out.with_columns(pl.lit(None, dtype=pl.Float64).alias("queries_per_s"),
+                               pl.lit(None, dtype=pl.Float64).alias("cpu_hours"))
+    if by_tool.height:
+        out = out.join(by_tool.rename({"queries_per_s": "_qps_tool",
+                                       "cpu_hours": "_cpu_tool"}),
+                       on="tool", how="left")
+    else:
+        out = out.with_columns(pl.lit(None, dtype=pl.Float64).alias("_qps_tool"),
+                               pl.lit(None, dtype=pl.Float64).alias("_cpu_tool"))
+    # coalesce, not min/max_horizontal: those skip nulls in a way that would silently
+    # substitute the arm total wherever a variant genuinely measured zero.
+    return out.with_columns(
+        pl.coalesce("queries_per_s", "_qps_tool").alias("queries_per_s"),
+        pl.coalesce("cpu_hours", "_cpu_tool").alias("cpu_hours"),
+    ).drop("_qps_tool", "_cpu_tool")
 
 
 def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
@@ -430,7 +542,8 @@ def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
         return
     mcut, _ = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
     board = best_variants(mcut)
-    keep = {r["tool"]: r["best_variant"] for r in board.head(max_lines).to_dicts()}
+    keep = [(r["tool"], r["variant"], r["label"])
+            for r in board.head(max_lines).to_dicts()]
 
     for kind, xcol, ycol, xlab, ylab, title in (
         ("pr", "recall_reachable", "precision", "recall (reachable instances)",
@@ -440,7 +553,7 @@ def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
         if xcol not in cut.columns or ycol not in cut.columns:
             continue
         data = {}
-        for tool, variant in keep.items():
+        for tool, variant, label in keep:
             sub = cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
             if sub.height == 0:
                 continue
@@ -453,7 +566,7 @@ def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
             )
             series = {str(r["bin"] / 100): r["y"] for r in binned.to_dicts()}
             if series:
-                data[tool if tool != "kmerseek" else f"kmerseek {variant}"] = series
+                data[label] = series
         if not data:
             continue
         write_section(out, f"qfo_{kind}_curve", {
@@ -479,19 +592,17 @@ def section_identity(out: Path, metrics: pl.DataFrame, primary_truth: str,
     if ident.height == 0:
         return
     board = best_variants(ungrouped(cut)).head(max_tools)
-    keep = {r["tool"]: r["best_variant"] for r in board.to_dicts()}
+    keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
     order = [b for b in ["0-20%", "20-30%", "30-40%", "40-60%", "60-100%", "no_homolog"]
              if b in ident["stratum"].unique().to_list()]
     data = {}
-    for tool, variant in keep.items():
+    for tool, variant, label in keep:
         sub = ident.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
         if sub.height == 0:
             continue
         by_bin = sub.group_by("stratum").agg(pl.col("fmax").mean()).to_dicts()
         lookup = {r["stratum"]: r["fmax"] for r in by_bin}
-        data[tool if tool != "kmerseek" else f"kmerseek {variant}"] = {
-            b: lookup.get(b) for b in order
-        }
+        data[label] = {b: lookup.get(b) for b in order}
     if not data:
         return
     write_section(out, "qfo_identity", {
@@ -519,18 +630,18 @@ def section_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
     if cut.height == 0 or "species_mya" not in cut.columns:
         return
     board = best_variants(cut).head(max_tools)
-    keep = {r["tool"]: r["best_variant"] for r in board.to_dicts()}
+    keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
     data, recall = {}, {}
-    for tool, variant in keep.items():
+    for tool, variant, label in keep:
         sub = (cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
                   .group_by("species_mya")
                   .agg(pl.col("fmax").mean(),
                        pl.col("recall").mean(),
                        pl.col("recall_reachable").mean())
                   .sort("species_mya"))
-        name = tool if tool != "kmerseek" else f"kmerseek {variant}"
-        data[name] = {str(r["species_mya"]): r["fmax"] for r in sub.to_dicts()}
-        recall[name] = {str(r["species_mya"]): r["recall_reachable"] for r in sub.to_dicts()}
+        data[label] = {str(r["species_mya"]): r["fmax"] for r in sub.to_dicts()}
+        recall[label] = {str(r["species_mya"]): r["recall_reachable"]
+                         for r in sub.to_dicts()}
     write_section(out, "qfo_divergence", {
         "id": "qfo_divergence",
         "section_name": "Divergence",
@@ -673,7 +784,7 @@ def section_boundary(out: Path, metrics: pl.DataFrame, primary_truth: str,
     if cut.height == 0:
         return
     board = best_variants(cut).head(max_tools)
-    keep = {r["tool"]: r["best_variant"] for r in board.to_dicts()}
+    keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
     cols = ["ndo", "residue_precision", "residue_recall", "residue_f1", "median_iou_tp",
             "precision_iou80", "recall_iou80", "n_tp_strict",
             "dbd_median", "dbd_mean",
@@ -684,15 +795,14 @@ def section_boundary(out: Path, metrics: pl.DataFrame, primary_truth: str,
     if not cols:
         return
     data = {}
-    for tool, variant in keep.items():
+    for tool, variant, label in keep:
         sub = cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
         if sub.height == 0:
             continue
         agg = sub.select([pl.col(c).mean() for c in cols]).to_dicts()[0]
-        name = tool if tool != "kmerseek" else f"kmerseek {variant}"
         agg["semantics"] = (sub["interval_semantics"].first()
                             if "interval_semantics" in sub.columns else "alignment")
-        data[name] = agg
+        data[label] = agg
     write_section(out, "qfo_boundary", {
         "id": "qfo_boundary",
         "section_name": "Boundary accuracy",
@@ -761,17 +871,16 @@ def section_boundary(out: Path, metrics: pl.DataFrame, primary_truth: str,
 
 
 def _per_tool_table(cut: pl.DataFrame, cols: list[str], max_tools: int) -> dict:
-    """Mean of each column over species, one row per tool at its best variant."""
+    """Mean of each column over species, one row per selected (tool, variant)."""
     board = best_variants(cut).head(max_tools)
     cols = [c for c in cols if c in cut.columns]
     data = {}
     for row in board.to_dicts():
-        tool, variant = row["tool"], row["best_variant"]
-        sub = cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+        sub = cut.filter((pl.col("tool") == row["tool"])
+                         & (pl.col("variant") == row["variant"]))
         if sub.height == 0 or not cols:
             continue
-        name = tool if tool != "kmerseek" else f"kmerseek {variant}"
-        data[name] = sub.select([pl.col(c).mean() for c in cols]).to_dicts()[0]
+        data[row["label"]] = sub.select([pl.col(c).mean() for c in cols]).to_dicts()[0]
     return data
 
 
@@ -1039,15 +1148,15 @@ def section_grayzone(out: Path, metrics: pl.DataFrame, primary_truth: str,
     if cut.height == 0 or not need.issubset(set(cut.columns)):
         return
     board = best_variants(cut).head(max_tools)
-    keep = {r["tool"]: r["best_variant"] for r in board.to_dicts()}
+    keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
     data = {}
-    for tool, variant in keep.items():
+    for tool, variant, label in keep:
         sub = cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
         if sub.height == 0:
             continue
-        agg = sub.select([pl.col(c).sum() for c in ("n_tp_calls", "n_fp_calls",
-                                                    "n_gray_calls")]).to_dicts()[0]
-        data[tool if tool != "kmerseek" else f"kmerseek {variant}"] = agg
+        data[label] = sub.select(
+            [pl.col(c).sum() for c in ("n_tp_calls", "n_fp_calls", "n_gray_calls")]
+        ).to_dicts()[0]
     write_section(out, "qfo_grayzone", {
         "id": "qfo_grayzone",
         "section_name": "Gray-zone accounting",
@@ -1075,15 +1184,16 @@ def section_truthsets(out: Path, metrics: pl.DataFrame, max_tools: int) -> None:
     sets = sorted(cut["truth_set"].unique().to_list())
     if len(sets) < 2:
         return
-    ranked = best_variants(cut).head(max_tools)["tool"].to_list()
+    ranked = best_variants(cut).head(max_tools)
     data = {}
-    for tool in ranked:
-        sub = cut.filter(pl.col("tool") == tool)
-        row = {}
+    for row in ranked.to_dicts():
+        sub = cut.filter((pl.col("tool") == row["tool"])
+                         & (pl.col("variant") == row["variant"]))
+        cell = {}
         for ts in sets:
-            s = sub.filter(pl.col("truth_set") == ts)
-            row[ts] = s["fmax"].max() if s.height else None
-        data[tool] = row
+            hit = sub.filter(pl.col("truth_set") == ts)
+            cell[ts] = hit["fmax"].max() if hit.height else None
+        data[row["label"]] = cell
     write_section(out, "qfo_truthsets", {
         "id": "qfo_truthsets",
         "section_name": "Truth sets side by side",
@@ -1444,18 +1554,16 @@ def section_general_stats(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     board = best_variants(cut)
     if board.height == 0:
         return
-    thr = throughput_per_tool(trace, n_queries)
+    board = attach_throughput(board, trace, n_queries)
     data = {}
     for row in board.to_dicts():
-        t = row["tool"]
-        tr = thr.filter(pl.col("tool") == t)
-        data[t] = {
+        data[row["label"]] = {
             "fmax": row.get("fmax"),
             "auprc": row.get("auprc"),
             "recall_reachable": row.get("recall_reachable"),
             "precision": row.get("precision"),
-            "queries_per_s": tr["queries_per_s"].first() if tr.height else None,
-            "cpu_hours": tr["cpu_hours"].first() if tr.height else None,
+            "queries_per_s": row.get("queries_per_s"),
+            "cpu_hours": row.get("cpu_hours"),
         }
     write_section(out, "qfo_general_stats", {
         "id": "qfo_general_stats",
@@ -1493,6 +1601,12 @@ def load_curves(path: Path | None) -> pl.DataFrame:
 
 
 def main():
+    # Sections that do not take the setting as an argument read the module default, so it
+    # is rebound once from the CLI rather than threaded through a dozen signatures. The
+    # declaration has to precede every mention of the name in this function, argparse's
+    # default included.
+    global TOP_KMERSEEK
+
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--metrics", required=True, type=Path)
     p.add_argument("--curves", type=Path)
@@ -1506,11 +1620,17 @@ def main():
                    help="Truth set the frontier and curve sections use. Defaults to "
                         "swissprot when present, since Pfam is circular with the profile "
                         "baselines, else the first set found.")
-    p.add_argument("--max-tools", type=int, default=14,
-                   help="Tools per grouped plot, ranked by Fmax")
+    p.add_argument("--max-tools", type=int, default=20,
+                   help="Rows per grouped plot, ranked by Fmax")
+    p.add_argument("--top-kmerseek", type=int, default=TOP_KMERSEEK,
+                   help="Alphabet x ksize x low-complexity combos to carry into the "
+                        "comparison plots. Every baseline contributes one variant; only "
+                        "the sweep contributes several.")
     p.add_argument("--max-lines", type=int, default=12,
                    help="Curves per PR/ROC plot")
     args = p.parse_args()
+
+    TOP_KMERSEEK = args.top_kmerseek
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     metrics = pl.read_parquet(args.metrics)
@@ -1521,8 +1641,9 @@ def main():
     primary = args.primary_truth or ("swissprot" if "swissprot" in sets
                                      else (sets[0] if sets else "pfam"))
 
-    section_frontier(args.outdir, metrics, trace, args.n_queries, primary)
-    section_leaderboards(args.outdir, metrics)
+    section_frontier(args.outdir, metrics, trace, args.n_queries, primary,
+                     args.top_kmerseek)
+    section_leaderboards(args.outdir, metrics, args.top_kmerseek)
     section_cafa(args.outdir, metrics, primary, args.max_tools)
     section_threshold_metrics(args.outdir, metrics, primary, args.max_tools)
     section_truth_provenance(args.outdir, metrics)

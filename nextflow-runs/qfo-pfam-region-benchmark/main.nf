@@ -6,7 +6,12 @@ nextflow.enable.dsl=2
  * tag that was retagged upstream, and the run died on Sherlock with "manifest unknown"
  * -- the standard symptom. Digests are immutable, so a reviewer re-running this in six
  * months gets the same image. Human-readable versions, for Methods:
- *   foldseek 9.427df8a   hmmer 3.4   mmseqs2 18.8cc5c   hhsuite 3.3.0
+ *   foldseek 10.941cd33  hmmer 3.4   mmseqs2 18.8cc5c   hhsuite 3.3.0
+ *
+ * foldseek moved 9 -> 10 for one reason: 9.427df8a has no --gpu flag at all, so the
+ * ProstT5 arm could only ever run on CPU. Both foldseek arms move together rather than
+ * pinning two versions, so foldseekSearch results from before this change are not
+ * comparable to results after it -- rerun that arm rather than mixing them.
  * Resolve a new digest with:
  *   curl -s 'https://quay.io/api/v1/repository/biocontainers/<tool>/tag/?specificTag=<tag>'
  */
@@ -199,11 +204,15 @@ params.min_overlap = 0.5
 params.skip_multiqc = false
 params.multiqc_primary_truth = null
 params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
-// Tools per grouped plot and curves per PR/ROC plot, ranked by Fmax. The sweep is 113
+// Rows per grouped plot and curves per PR/ROC plot, ranked by Fmax. The sweep is 113
 // alphabet x ksize combos x 2 low-complexity arms; plotting all of them against ten
-// baselines would bury the baselines.
-params.multiqc_max_tools = 14
-params.multiqc_max_lines = 12
+// baselines would bury the baselines, so each baseline contributes its one variant and
+// the sweep contributes its best few. Several rather than one on purpose: whether the
+// winning combo is a lone spike or the top of a plateau of near-identical combos changes
+// what the result means, and one point cannot show it.
+params.multiqc_max_tools    = 20
+params.multiqc_max_lines    = 12
+params.multiqc_top_kmerseek = 5
 
 // Toggles
 params.skip_kmerseek  = false
@@ -243,6 +252,19 @@ params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip t
 // drops 11 proteins carrying 664 of 50_185 domain instances (1.3%); 8000 drops 4 proteins
 // and 347 instances (0.7%). Raise it if the trace shows peak_rss with headroom to spare.
 params.prostt5_max_len = 6000
+
+// ProstT5 on a GPU is one to two orders of magnitude faster than on CPU, and the 3Di
+// prediction in prostt5Db is the only place in this pipeline that a GPU helps at all.
+// Requires foldseek >= 10 (9.427df8a has no --gpu flag), a CUDA runtime visible in the
+// container (--nv) and a GPU allocation from the scheduler; the sherlock profile sets
+// the latter two. Set false to fall back to CPU without touching anything else.
+params.prostt5_gpu = true
+
+// GPU for the SEARCH stages (foldseek search, mmseqs search) is a separate question
+// from ProstT5. Both binaries advertise --gpu, but GPU prefilter wants a padded
+// database layout that this pipeline does not build, so it is off until a smoke run
+// shows it working. Flip it on the command line to test: --gpu_search true.
+params.gpu_search = false
 
 // Deliberately NOT the `high_cpu` label. Threads are the multiplier on ProstT5's peak
 // memory, so this arm buys RAM rather than cores; `high_cpu`'s 16 threads on 64 GB is
@@ -437,7 +459,7 @@ process domainIdentity {
     label 'high_cpu'
 
     input:
-    tuple val(species), path(human_domains_fa), path(target_domains_fa)
+    tuple val(species), path(query_db), path(target_db)
 
     output:
     tuple val(species), path("${species}.identity.tsv")
@@ -449,11 +471,14 @@ process domainIdentity {
     # Permissive on purpose: the job is to MEASURE identity for remote pairs, not to decide
     # whether they are homologous -- the shared Pfam family already decided that. A strict
     # search would silently drop the twilight-zone pairs this axis exists for.
-    mmseqs easy-search \\
-        ${human_domains_fa} ${target_domains_fa} \\
-        ${species}.identity.tsv tmp \\
+    mmseqs search \\
+        ${query_db}/db ${target_db}/db result tmp \\
         --threads ${task.cpus} \\
-        -s 7.5 -e 10000 --max-seqs 300 \\
+        -s 7.5 -e 10000 --max-seqs 300
+
+    mmseqs convertalis \\
+        ${query_db}/db ${target_db}/db result ${species}.identity.tsv \\
+        --threads ${task.cpus} \\
         --format-output "query,target,pident,alnlen,evalue"
     """
 }
@@ -777,6 +802,66 @@ process jackhmmerSearch {
     """
 }
 
+process mmseqsDb {
+    /*
+     * One MMseqs2 database per FASTA, cached. easy-search rebuilt the human query database
+     * in every task: 18 times for mmseqs2Search (2 variants x 9 species) and 9 more for
+     * domainIdentity. Each pass is cheap -- createdb on a FASTA is seconds, not the minutes
+     * ProstT5 costs -- but the two search variants can share one database for free.
+     *
+     * Generic on label so the proteome FASTAs and the domain FASTAs both use it; labels
+     * must therefore be distinct across callers (human vs human_domains).
+     */
+    tag "${label}"
+    container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
+    label 'high_cpu'
+    storeDir "${params.outdir}/mmseqs_db"
+
+    input:
+    tuple val(label), path(fasta)
+
+    output:
+    path "${label}_mmdb"
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p ${label}_mmdb
+    mmseqs createdb ${fasta} ${label}_mmdb/db
+    """
+}
+
+process mmseqsDomainDb {
+    /*
+     * One MMseqs2 database per FASTA, cached. easy-search rebuilt the human query database
+     * in every task: 18 times for mmseqs2Search (2 variants x 9 species) and 9 more for
+     * domainIdentity. Each pass is cheap -- createdb on a FASTA is seconds, not the minutes
+     * ProstT5 costs -- but the two search variants can share one database for free.
+     *
+     * A near-copy of mmseqsDb rather than a second call to it: DSL2 allows a process to be
+     * invoked once per workflow, and aliasing needs it to live in an included module. Kept
+     * separate so the domain DBs get their own storeDir too -- different FASTAs, and they
+     * should not share a cache namespace with the proteome databases.
+     */
+    tag "${label}"
+    container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
+    label 'high_cpu'
+    storeDir "${params.outdir}/mmseqs_domain_db"
+
+    input:
+    tuple val(label), path(fasta)
+
+    output:
+    path "${label}_mmdb"
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p ${label}_mmdb
+    mmseqs createdb ${fasta} ${label}_mmdb/db
+    """
+}
+
 process mmseqs2Search {
     tag "human_vs_${species} [${variant}]"
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
@@ -784,7 +869,7 @@ process mmseqs2Search {
     publishDir "${params.outdir}/regions/${variant}", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
-    tuple val(species), val(variant), val(num_iter), path(species_fasta), path(human_fasta)
+    tuple val(species), val(variant), val(num_iter), path(target_db), path(query_db)
 
     output:
     tuple val(species), val(variant), val("s${params.mmseqs2_sensitivity}"),
@@ -795,14 +880,17 @@ process mmseqs2Search {
     """
     set -euo pipefail
     mkdir -p mmseqs_tmp
-    mmseqs easy-search \\
-        ${human_fasta} ${species_fasta} \\
-        out.tsv mmseqs_tmp \\
+    mmseqs search \\
+        ${query_db}/db ${target_db}/db result mmseqs_tmp \\
         --threads ${task.cpus} \\
         -s ${params.mmseqs2_sensitivity} \\
         ${iter_flag} \\
         --max-seqs 1000 \\
-        -e ${params.evalue_report} \\
+        -e ${params.evalue_report}
+
+    mmseqs convertalis \\
+        ${query_db}/db ${target_db}/db result out.tsv \\
+        --threads ${task.cpus} \\
         --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
     gzip -c out.tsv > human_vs_${species}.${variant}.tsv.gz
     """
@@ -842,14 +930,44 @@ process hhblitsSearch {
     """
 }
 
+process foldseekDb {
+    /*
+     * One Foldseek structure database per proteome, cached. easy-search rebuilt the human
+     * query database inside every task, so the 20_589 human mmCIF files were parsed and
+     * 3Di-encoded 9 times instead of once. Cheaper per pass than ProstT5 -- this is file
+     * parsing, not inference -- but it is 8 wasted passes over ~20k structures.
+     */
+    tag "${label}"
+    container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
+    label 'high_cpu'
+    storeDir "${params.outdir}/foldseek_db"
+
+    input:
+    tuple val(label), path(structures)
+
+    // Single directory output, label recovered from its name -- see prostt5Db.
+    output:
+    path "${label}_fsdb"
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p ${label}_fsdb
+    foldseek createdb ${structures}/ ${label}_fsdb/db --threads ${task.cpus}
+    """
+}
+
 process foldseekSearch {
+    /*
+     * Structure-structure search over two prebuilt databases. No createdb here.
+     */
     tag "human_vs_${species}"
-    container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
+    container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/foldseek", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
-    tuple val(species), path(species_structs), path(human_structs)
+    tuple val(species), path(target_db), path(query_db)
 
     output:
     tuple val(species), val("foldseek"), val("3di_aa"),
@@ -859,19 +977,24 @@ process foldseekSearch {
     """
     set -euo pipefail
     mkdir -p foldseek_tmp
-    foldseek easy-search \\
-        ${human_structs}/ ${species_structs}/ \\
-        out.tsv foldseek_tmp \\
+    foldseek search \\
+        ${query_db}/db ${target_db}/db result foldseek_tmp \\
         --threads ${task.cpus} \\
         -e ${params.evalue_report} \\
-        --max-seqs 1000 \\
+        --max-seqs 1000
+
+    foldseek convertalis \\
+        ${query_db}/db ${target_db}/db result out.tsv \\
+        --threads ${task.cpus} \\
         --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
 
     # Foldseek names rows by structure filename (AF-<acc>-F1-model_v6.cif). Reduce to the
-    # bare UniProt accession so it joins the Pfam annotation tables like every other tool.
-    awk -F'\\t' 'BEGIN{OFS="\\t"} {
+    # bare accession so every arm's output keys the same way.
+    awk -F'\t' 'BEGIN{OFS="\t"} {
         for (i = 1; i <= 2; i++) {
-            if (\$i ~ /^AF-/) { split(\$i, p, "-"); \$i = p[2] }
+            if (match(\$i, /AF-[A-Z0-9]+-F[0-9]+/)) {
+                split(substr(\$i, RSTART + 3), p, "-"); \$i = p[1]
+            }
         }
         print
     }' out.tsv | gzip -c > human_vs_${species}.foldseek.tsv.gz
@@ -914,7 +1037,7 @@ process reseekSearch {
     publishDir "${params.outdir}/regions/reseek", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
-    tuple val(species), path(db), path(human_structures)
+    tuple val(species), path(db), path(human_bca)
 
     output:
     tuple val(species), val("reseek"), val("sensitive"),
@@ -924,7 +1047,10 @@ process reseekSearch {
     // Bound as locals rather than interpolated inline. `${db}` followed by more flags
     // tripped the Groovy lexer at that column; naming them keeps the script block
     // plain text.
-    def q_dir   = human_structures.toString()
+    // Query is now a cached .bca like the target, not a structure directory: reseek's
+    // own help lists .bca as the recommended DB format and -search takes the same
+    // STRUCTS argument for either side, so human is converted once instead of per task.
+    def q_dir   = human_bca.toString()
     def db_file = db.toString()
     // aq, not pctid, in the score slot: it is Reseek's own homology measure (alignment
     // quality 0-1, >0.5 suggests homology) and leads its default output. pctid is percent
@@ -951,7 +1077,7 @@ process prostt5Weights {
      * ProstT5 model weights, fetched once. Needs outbound internet, same constraint as the
      * structure download, so it is checked rather than left to stall.
      */
-    container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
+    container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
     label 'high_cpu'
     storeDir "${params.outdir}/prostt5"
 
@@ -983,7 +1109,7 @@ process prostt5Db {
      * species, each built once. This is the same pattern applied to the expensive arm.
      */
     tag "${label}"
-    container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
+    container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
     cpus   { Math.max(1, (params.prostt5_cpus as int).intdiv(task.attempt)) }
     memory { MemoryUnit.of(params.prostt5_memory) * task.attempt }
     time   { params.prostt5_time }
@@ -1030,6 +1156,7 @@ process prostt5Db {
     set +e
     foldseek createdb filtered.fasta ${label}_prostt5/db \\
         --prostt5-model ${weights} \\
+        ${params.prostt5_gpu ? '--gpu 1' : ''} \\
         --threads ${task.cpus} \\
         2> createdb.err
     rc=\$?
@@ -1054,7 +1181,7 @@ process prostt5Search {
      * Both databases arrive prebuilt from prostt5Db, so no ProstT5 inference happens here.
      */
     tag "human_vs_${species}"
-    container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
+    container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*.tsv.gz'
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*_skipped.tsv'
@@ -1446,13 +1573,14 @@ process buildMultiqcInputs {
     n_queries=\$(grep -c '^>' ${human_fasta} || true)
 
     build_multiqc_inputs.py \\
-        --metrics    ${metrics} \\
-        --curves     ${curves} \\
-        --trace      ${trace} \\
-        --n-queries  \${n_queries} \\
-        --max-tools  ${params.multiqc_max_tools} \\
-        --max-lines  ${params.multiqc_max_lines} \\
-        --outdir     multiqc_in ${primary}
+        --metrics      ${metrics} \\
+        --curves       ${curves} \\
+        --trace        ${trace} \\
+        --n-queries    \${n_queries} \\
+        --max-tools    ${params.multiqc_max_tools} \\
+        --max-lines    ${params.multiqc_max_lines} \\
+        --top-kmerseek ${params.multiqc_top_kmerseek} \\
+        --outdir       multiqc_in ${primary}
     """
 }
 
@@ -1557,6 +1685,12 @@ workflow {
         .map { label, _i, t -> tuple(label, t) }
     map_ch = map_of(truth_out.maps).map { sp, m -> tuple("pfam", sp, m) }
 
+    // Every DB-once arm below follows hhblitsBuildDB: one channel carrying human plus
+    // every target, built once each under storeDir, then combined for the pairwise search.
+    // storeDir forbids a tuple output, so each process emits a bare directory and the label
+    // comes back off its name.
+    def label_dbs = { ch, suffix -> ch.map { d -> tuple(d.name - suffix, d) } }
+
     // Pre-built truth sets, added when their directory is present. Each contributes a
     // human_*_truth.parquet plus per-species *_domain_map.parquet, the same shape as the
     // Pfam arm, so scoring runs against them unchanged.
@@ -1624,11 +1758,14 @@ workflow {
         human_dom  = dom_fa.filter { label, _fa -> label == "human" }.map { _l, fa -> fa }
         target_dom = dom_fa.filter { label, _fa -> label != "human" }
 
+        dom_dbs   = label_dbs(mmseqsDomainDb(dom_fa.map { l, fa -> tuple("${l}_domains", fa) }),
+                              '_domains_mmdb')
+        human_ddb = dom_dbs.filter { l, _d -> l == 'human' }.map { _l, d -> d }
+        target_ddb = dom_dbs.filter { l, _d -> l != 'human' }
+
         identity_ch = parseIdentity(
-            domainIdentity(
-                target_dom.combine(human_dom)
-                          .map { sp, tfa, hfa -> tuple(sp, hfa, tfa) }
-            )
+            domainIdentity(target_ddb.combine(human_ddb)
+                                     .map { sp, tdb, qdb -> tuple(sp, qdb, tdb) })
         )
     }
 
@@ -1702,10 +1839,17 @@ workflow {
         phmmer_out    = phmmerSearch(pair_ch)
         jackhmmer_out = jackhmmerSearch(pair_ch)
 
-        mmseqs_in = species_ch.flatMap { species, fasta ->
+        // Both variants share one pair of databases, so createdb runs once per proteome
+        // rather than once per (variant, species).
+        mm_dbs    = label_dbs(mmseqsDb(species_ch.mix(Channel.of(tuple("human", human_fasta)))),
+                              '_mmdb')
+        mm_human  = mm_dbs.filter { l, _d -> l == 'human' }.map { _l, d -> d }
+        mm_target = mm_dbs.filter { l, _d -> l != 'human' }
+
+        mmseqs_in = mm_target.combine(mm_human).flatMap { species, tdb, qdb ->
             [
-                tuple(species, "mmseqs2_seqseq",    1,                          fasta, human_fasta),
-                tuple(species, "mmseqs2_iterative", params.mmseqs2_iterations,  fasta, human_fasta),
+                tuple(species, "mmseqs2_seqseq",    1,                         tdb, qdb),
+                tuple(species, "mmseqs2_iterative", params.mmseqs2_iterations, tdb, qdb),
             ]
         }
         mmseqs_out = mmseqs2Search(mmseqs_in)
@@ -1790,23 +1934,27 @@ workflow {
                 log.warn "Structure arms skip ${missing_structs.join(', ')}: no .cif files staged for them"
             }
             def human_structs = file("${params.structures}/human")
+            // Human plus every species with structures, each converted once per tool.
             struct_ch = Channel.fromList(
                 struct_species.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
-            ).map { label, dir -> tuple(label, dir, human_structs) }
+            ).mix(Channel.of(tuple("human", human_structs)))
 
-            foldseek_out     = foldseekSearch(struct_ch)
+            fs_dbs    = label_dbs(foldseekDb(struct_ch), '_fsdb')
+            fs_human  = fs_dbs.filter { l, _d -> l == 'human' }.map { _l, d -> d }
+            fs_target = fs_dbs.filter { l, _d -> l != 'human' }
+
+            foldseek_out     = foldseekSearch(fs_target.combine(fs_human))
             baseline_regions = baseline_regions.mix(foldseek_out)
 
             // ---- Reseek: same structures, opposite alphabet direction ----
             if (!params.skip_reseek) {
-                reseek_db  = reseekConvert(
-                    Channel.fromList(
-                        struct_species.collect { sp -> tuple(sp.label, file("${params.structures}/${sp.label}")) }
-                    )
-                )
-                reseek_out = reseekSearch(
-                    reseek_db.combine(Channel.of(human_structs))
-                )
+                // Human goes through the same cached conversion as the targets; it used to
+                // re-parse the whole human structure directory on every search.
+                rs_db     = reseekConvert(struct_ch)
+                rs_human  = rs_db.filter { l, _b -> l == 'human' }.map { _l, b -> b }
+                rs_target = rs_db.filter { l, _b -> l != 'human' }
+
+                reseek_out = reseekSearch(rs_target.combine(rs_human))
                 baseline_regions = baseline_regions.mix(reseek_out)
             }
 
