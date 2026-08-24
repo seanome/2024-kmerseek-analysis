@@ -49,7 +49,7 @@ SPECIES_ONE    ?= human
 # Two species and two combos: enough to exercise every stage in minutes.
 # TARGET proteomes. Human is the query and is never listed here.
 MINI_TARGETS ?= yeast,ecoli
-MINI_COMBOS  ?= protein:10,hp-pbotc-1st-ed:19
+MINI_COMBOS  ?= protein20:10,hp-pbotc-1st-ed2:19
 
 PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 
