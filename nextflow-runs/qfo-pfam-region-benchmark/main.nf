@@ -660,6 +660,8 @@ process phmmerSearch {
     set -euo pipefail
     phmmer \\
         --domtblout /dev/stdout \\
+        --tblout /dev/null \\
+        -o /dev/stderr \\
         --noali \\
         -E ${params.evalue_report} \\
         --cpu ${task.cpus} \\
@@ -692,6 +694,8 @@ process jackhmmerSearch {
     jackhmmer \\
         -N ${params.jackhmmer_iterations} \\
         --domtblout /dev/stdout \\
+        --tblout /dev/null \\
+        -o /dev/stderr \\
         --noali \\
         -E ${params.evalue_report} \\
         --cpu ${task.cpus} \\
