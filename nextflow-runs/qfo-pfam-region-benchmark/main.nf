@@ -212,6 +212,31 @@ params.reseek_mode = "verysensitive"
 params.skip_prostt5   = false
 params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip the fetch
 
+// ProstT5 is a 3B-parameter T5 encoder and Foldseek runs it over each sequence whole, so
+// peak memory scales with the SQUARE of sequence length (self-attention) times the number
+// of threads holding a sequence at once. Titin (Q8WZ42) is 34_350 aa and sits in every
+// human proteome file here; its attention matrix alone is far past any node's RAM, so it
+// OOM-killed `createdb` before the search arm ever started. Sequences longer than this are
+// dropped from BOTH sides of this arm -- target proteomes have their own giants -- and
+// written to the published .prostt5_skipped.tsv.
+//
+// The cap is a real limit of ProstT5, not of the benchmark: no other arm here has it, and
+// the eval's reachable-domain denominator is tool-independent, so these instances count
+// against ProstT5's recall. That is the honest accounting. What must not happen is the
+// gap going unrecorded, hence the skipped list. On the full human proteome a cap of 6000
+// drops 11 proteins carrying 664 of 50_185 domain instances (1.3%); 8000 drops 4 proteins
+// and 347 instances (0.7%). Raise it if the trace shows peak_rss with headroom to spare.
+params.prostt5_max_len = 6000
+
+// Deliberately NOT the `high_cpu` label. Threads are the multiplier on ProstT5's peak
+// memory, so this arm buys RAM rather than cores; `high_cpu`'s 16 threads on 64 GB is
+// exactly the shape that died. Set in the process body from params, because a bare
+// `process { cpus = ... }` in a profile does not override a body directive while a
+// `withLabel:`/`withName:` selector does.
+params.prostt5_cpus   = 4
+params.prostt5_memory = '64 GB'
+params.prostt5_time   = '48h'
+
 // folddisco, rebuilt with the ENTRYPOINT cleared. The upstream image sets
 // ENTRYPOINT ["/usr/local/bin/folddisco"], which under Apptainer becomes the SIF runscript
 // and stops Nextflow from running `/bin/bash .command.run` -- the task exits 1 with an
@@ -908,25 +933,59 @@ process prostt5Search {
      */
     tag "human_vs_${species}"
     container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
-    label 'high_cpu'
+    cpus   { Math.max(1, (params.prostt5_cpus as int).intdiv(task.attempt)) }
+    memory { MemoryUnit.of(params.prostt5_memory) * task.attempt }
+    time   { params.prostt5_time }
+    // Halve the threads and double the RAM on each retry. Both directions matter: a SLURM
+    // OOM here is as often "too many sequences in flight" as "one sequence too big".
+    errorStrategy { task.attempt <= 3 ? 'retry' : 'finish' }
+    maxRetries 3
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*.tsv.gz'
+    publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*_skipped.tsv'
 
     input:
     tuple val(species), path(species_fasta), path(human_fasta), path(weights)
 
     output:
     tuple val(species), val("prostt5"), val("3di_from_seq"),
-          path("human_vs_${species}.prostt5.tsv.gz")
+          path("human_vs_${species}.prostt5.tsv.gz"),      emit: regions
+    path "human_vs_${species}.prostt5_skipped.tsv",        emit: skipped
 
     script:
     """
     set -euo pipefail
     mkdir -p tmp
+
+    # Length filter, applied to query and target alike -- see params.prostt5_max_len.
+    # Every dropped sequence lands in the skipped table with its length and which side it
+    # came from, so the coverage gap is a published file rather than an inference from
+    # missing rows.
+    printf 'accession\\tside\\tlength\\n' > human_vs_${species}.prostt5_skipped.tsv
+    filter_fasta() {
+        awk -v maxlen=${params.prostt5_max_len} -v side="\$2" -v skipped="\$3" '
+            function flush(   parts, acc) {
+                if (hdr == "") return
+                if (length(seq) <= maxlen) { print hdr; print seq; return }
+                split(substr(hdr, 2), parts, "|")
+                acc = (parts[2] != "") ? parts[2] : parts[1]
+                print acc "\t" side "\t" length(seq) >> skipped
+            }
+            /^>/ { flush(); hdr = \$0; seq = ""; next }
+            { seq = seq \$0 }
+            END { flush() }
+        ' "\$1"
+    }
+    filter_fasta ${human_fasta}   query  human_vs_${species}.prostt5_skipped.tsv > query.fasta
+    filter_fasta ${species_fasta} target human_vs_${species}.prostt5_skipped.tsv > target.fasta
+
+    n_skipped=\$(( \$(wc -l < human_vs_${species}.prostt5_skipped.tsv) - 1 ))
+    echo "prostt5: dropped \${n_skipped} sequences longer than ${params.prostt5_max_len} aa" >&2
+
     # A database built this way carries predicted 3Di only, with no Ca coordinates, so
     # TMalign-based alignment types and TM-score/LDDT outputs are unavailable here. The
     # columns below are all sequence-space and unaffected.
     foldseek easy-search \\
-        ${human_fasta} ${species_fasta} \\
+        query.fasta target.fasta \\
         out.tsv tmp \\
         --prostt5-model ${weights} \\
         --threads ${task.cpus} \\
@@ -1502,7 +1561,7 @@ workflow {
             prostt5_out = prostt5Search(
                 species_ch.map { sp, fa -> tuple(sp, fa, human_fasta) }.combine(weights)
             )
-            baseline_regions = baseline_regions.mix(prostt5_out)
+            baseline_regions = baseline_regions.mix(prostt5_out.regions)
         }
 
         // ---- foldseek ----
