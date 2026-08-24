@@ -189,6 +189,22 @@ params.evalue_report       = 10.0
 // downstream without re-running the sweep.
 params.min_overlap = 0.5
 
+// --- MultiQC report --------------------------------------------------------
+// One HTML for the whole run: accuracy, the alphabet x ksize sweep, and the trace's
+// time/CPU/memory, in the sections built by bin/build_multiqc_inputs.py.
+//
+// The frontier and the curve sections need ONE truth set, since a number averaged across
+// Pfam and Swiss-Prot has no interpretation. Default is whichever of them is present,
+// preferring Swiss-Prot because Pfam is circular with the profile baselines.
+params.skip_multiqc = false
+params.multiqc_primary_truth = null
+params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
+// Tools per grouped plot and curves per PR/ROC plot, ranked by Fmax. The sweep is 113
+// alphabet x ksize combos x 2 low-complexity arms; plotting all of them against ten
+// baselines would bury the baselines.
+params.multiqc_max_tools = 14
+params.multiqc_max_lines = 12
+
 // Toggles
 params.skip_kmerseek  = false
 params.skip_baselines = false
@@ -312,6 +328,28 @@ def kmerseekMemory = { label, ksize, attempt ->
         ? MemoryUnit.of(params.kmerseek_memory_hp_lowk)
         : MemoryUnit.of(params.kmerseek_memory)
     base * attempt
+}
+
+// The trace file the MultiQC resource sections read. Resolved through a closure, never
+// at parse time: `trace.file` is created by Nextflow's observer as the run starts, so a
+// `file()` evaluated while the workflow is still being built can miss it. Calling this
+// from inside a channel operator defers it until the upstream process has finished, by
+// which point the file exists and holds every completed task.
+//
+// --report_trace wins: that is a `-entry report` run naming an earlier run's trace, and
+// passing it also switches this run's own trace off so the file cannot be truncated out
+// from under the read. Otherwise this run's own trace, then the newest one in the launch
+// directory, then a sentinel -- a missing trace drops the resource sections and leaves the
+// accuracy ones working, rather than failing a whole run over a report.
+def resolveTrace = { ->
+    for (candidate in [params.report_trace, params.trace_file]) {
+        if (!candidate) continue
+        def f = file(candidate)
+        if (f.exists()) return f
+    }
+    def found = file("${launchDir}").listFiles()?.findAll { it.name.endsWith('.trace.txt') }
+    if (found) return found.max { it.lastModified() }
+    return file("${projectDir}/assets/NO_TRACE")
 }
 
 // ===========================================================================
@@ -933,28 +971,96 @@ process prostt5Weights {
     """
 }
 
+process prostt5Db {
+    /*
+     * ProstT5 3Di prediction for ONE proteome, cached. This exists because easy-search
+     * rebuilds its query database inside every task: with human as the query against 9
+     * targets, the whole human proteome was re-encoded 9 times -- 90_236_496 of the arm's
+     * 173_017_199 residues, 52% of its compute, spent recomputing an identical answer.
+     * ProstT5 is a neural net, so that waste is inference time, not file parsing.
+     *
+     * hhblitsBuildDB already had this shape: one channel carrying human plus every
+     * species, each built once. This is the same pattern applied to the expensive arm.
+     */
+    tag "${label}"
+    container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
+    cpus   { Math.max(1, (params.prostt5_cpus as int).intdiv(task.attempt)) }
+    memory { MemoryUnit.of(params.prostt5_memory) * task.attempt }
+    time   { params.prostt5_time }
+    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    maxRetries 3
+    storeDir "${params.outdir}/prostt5_db"
+
+    input:
+    tuple val(label), path(fasta), path(weights)
+
+    // ONE directory output, and the skipped list lives INSIDE it. A directory under
+    // storeDir alongside a second output is the shape that produced recurring "Directory
+    // not empty" failures elsewhere in this repo; nesting keeps it to a single output.
+    // The label is recovered in the workflow from the directory name.
+    output:
+    path "${label}_prostt5"
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p ${label}_prostt5 tmp
+
+    # Length filter -- see params.prostt5_max_len. Applied here rather than at search time
+    # so query and target proteomes are filtered by one rule in one place.
+    printf 'accession\\tlength\\n' > ${label}_prostt5/skipped.tsv
+    awk -v maxlen=${params.prostt5_max_len} -v skipped=${label}_prostt5/skipped.tsv '
+        function flush(   parts, acc) {
+            if (hdr == "") return
+            if (length(seq) <= maxlen) { print hdr; print seq; return }
+            split(substr(hdr, 2), parts, "|")
+            acc = (parts[2] != "") ? parts[2] : parts[1]
+            print acc "\t" length(seq) >> skipped
+        }
+        /^>/ { flush(); hdr = \$0; seq = ""; next }
+        { seq = seq \$0 }
+        END { flush() }
+    ' ${fasta} > filtered.fasta
+
+    n_skipped=\$(( \$(wc -l < ${label}_prostt5/skipped.tsv) - 1 ))
+    echo "prostt5 ${label}: dropped \${n_skipped} sequences longer than ${params.prostt5_max_len} aa" >&2
+
+    # createdb is where ProstT5 runs. See the note in prostt5Search on why a nonzero exit
+    # has to be inspected rather than trusted.
+    set +e
+    foldseek createdb filtered.fasta ${label}_prostt5/db \\
+        --prostt5-model ${weights} \\
+        --threads ${task.cpus} \\
+        2> createdb.err
+    rc=\$?
+    set -e
+    cat createdb.err >&2
+    if [ "\$rc" -ne 0 ]; then
+        if grep -qEi 'killed|cannot allocate|bad_alloc|out of memory' createdb.err; then
+            echo "prostt5 ${label}: createdb was OOM-killed; re-raising as 137 to trigger retry" >&2
+            exit 137
+        fi
+        exit "\$rc"
+    fi
+    """
+}
+
 process prostt5Search {
     /*
      * Foldseek over 3Di predicted from SEQUENCE on both sides -- no structures anywhere.
      * That is what makes this the differentiating baseline: it runs on every species,
      * including those where AlphaFold coverage is too thin for Foldseek or Reseek.
+     *
+     * Both databases arrive prebuilt from prostt5Db, so no ProstT5 inference happens here.
      */
     tag "human_vs_${species}"
     container 'quay.io/biocontainers/foldseek@sha256:c46d6fb854099780597e3adfa48e93c991f4b4d542391c144b9cae4de1ed22f9'
-    cpus   { Math.max(1, (params.prostt5_cpus as int).intdiv(task.attempt)) }
-    memory { MemoryUnit.of(params.prostt5_memory) * task.attempt }
-    time   { params.prostt5_time }
-    // Retry the OOM signals only, same rule as kmerseekIndexAndSearch. Each retry halves
-    // the threads and doubles the RAM, which is the right response to a kill signal and
-    // useless against a script error: retrying a deterministic exit 1 three times just
-    // burns three SLURM slots to reach the same failure.
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
-    maxRetries 3
+    label 'high_cpu'
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*.tsv.gz'
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*_skipped.tsv'
 
     input:
-    tuple val(species), path(species_fasta), path(human_fasta), path(weights)
+    tuple val(species), path(target_db), path(query_db)
 
     output:
     tuple val(species), val("prostt5"), val("3di_from_seq"),
@@ -966,58 +1072,29 @@ process prostt5Search {
     set -euo pipefail
     mkdir -p tmp
 
-    # Length filter, applied to query and target alike -- see params.prostt5_max_len.
-    # Every dropped sequence lands in the skipped table with its length and which side it
-    # came from, so the coverage gap is a published file rather than an inference from
-    # missing rows.
+    # The coverage gap is published from here rather than from prostt5Db, so one file per
+    # comparison names both sides. These instances still count against ProstT5 in the
+    # eval's tool-independent reachable denominator -- that is the honest accounting, and
+    # this file is what keeps it from reading as unexplained missing recall.
     printf 'accession\\tside\\tlength\\n' > human_vs_${species}.prostt5_skipped.tsv
-    filter_fasta() {
-        awk -v maxlen=${params.prostt5_max_len} -v side="\$2" -v skipped="\$3" '
-            function flush(   parts, acc) {
-                if (hdr == "") return
-                if (length(seq) <= maxlen) { print hdr; print seq; return }
-                split(substr(hdr, 2), parts, "|")
-                acc = (parts[2] != "") ? parts[2] : parts[1]
-                print acc "\t" side "\t" length(seq) >> skipped
-            }
-            /^>/ { flush(); hdr = \$0; seq = ""; next }
-            { seq = seq \$0 }
-            END { flush() }
-        ' "\$1"
-    }
-    filter_fasta ${human_fasta}   query  human_vs_${species}.prostt5_skipped.tsv > query.fasta
-    filter_fasta ${species_fasta} target human_vs_${species}.prostt5_skipped.tsv > target.fasta
-
-    n_skipped=\$(( \$(wc -l < human_vs_${species}.prostt5_skipped.tsv) - 1 ))
-    echo "prostt5: dropped \${n_skipped} sequences longer than ${params.prostt5_max_len} aa" >&2
+    awk -v side=query  'NR>1 {print \$1"\t"side"\t"\$2}' ${query_db}/skipped.tsv \\
+        >> human_vs_${species}.prostt5_skipped.tsv
+    awk -v side=target 'NR>1 {print \$1"\t"side"\t"\$2}' ${target_db}/skipped.tsv \\
+        >> human_vs_${species}.prostt5_skipped.tsv
 
     # A database built this way carries predicted 3Di only, with no Ca coordinates, so
     # TMalign-based alignment types and TM-score/LDDT outputs are unavailable here. The
     # columns below are all sequence-space and unaffected.
-    # easy-search is a shell wrapper. When the kernel or SLURM SIGKILLs its createdb child
-    # the wrapper catches it, prints "Error: query createdb died" and exits 1, so Nextflow
-    # sees a plain script error and the signal-based retry rule never fires. Translate it
-    # back: an OOM has to look like an OOM or the retry ladder below is decorative.
-    set +e
-    foldseek easy-search \\
-        query.fasta target.fasta \\
-        out.tsv tmp \\
-        --prostt5-model ${weights} \\
+    foldseek search \\
+        ${query_db}/db ${target_db}/db result tmp \\
         --threads ${task.cpus} \\
         -e ${params.evalue_report} \\
-        --max-seqs 1000 \\
-        --format-output "query,target,qstart,qend,tstart,tend,bits,evalue" \\
-        2> easysearch.err
-    rc=\$?
-    set -e
-    cat easysearch.err >&2
-    if [ "\$rc" -ne 0 ]; then
-        if grep -qEi 'killed|cannot allocate|bad_alloc|out of memory' easysearch.err; then
-            echo "prostt5: easy-search was OOM-killed; re-raising as 137 to trigger retry" >&2
-            exit 137
-        fi
-        exit "\$rc"
-    fi
+        --max-seqs 1000
+
+    foldseek convertalis \\
+        ${query_db}/db ${target_db}/db result out.tsv \\
+        --threads ${task.cpus} \\
+        --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
 
     awk -F'\t' 'BEGIN{OFS="\t"} {
         for (i = 1; i <= 2; i++) {
@@ -1328,9 +1405,9 @@ process aggregateMetrics {
     path 'curves/*'
 
     output:
-    path "all_domain_metrics.parquet"
-    path "all_domain_metrics.csv"
-    path "all_domain_curves.parquet"
+    path "all_domain_metrics.parquet", emit: metrics
+    path "all_domain_metrics.csv",     emit: csv
+    path "all_domain_curves.parquet",  emit: curves
 
     script:
     """
@@ -1339,6 +1416,84 @@ process aggregateMetrics {
         all_domain_metrics.parquet all_domain_metrics.csv all_domain_curves.parquet
     """
 }
+
+process buildMultiqcInputs {
+    /*
+     * Metrics, curves and the Nextflow trace in; one *_mqc.json per report section out.
+     *
+     * The trace is read live rather than reconstructed: Nextflow appends a row as each
+     * task completes, so by the time this runs every search and scoring task is already
+     * recorded. The only rows missing are this task's own and the report task after it,
+     * which is why the run-totals section says it counts tasks, not elapsed clock time.
+     */
+    tag "multiqc inputs"
+    label 'python'
+    publishDir "${params.outdir}/multiqc", mode: 'copy'
+
+    input:
+    tuple path(metrics), path(curves), path(trace), path(human_fasta)
+
+    output:
+    path "multiqc_in", emit: sections
+
+    script:
+    def primary = params.multiqc_primary_truth
+        ? "--primary-truth ${params.multiqc_primary_truth}" : ""
+    // `|| true` because grep exits 1 on no match, which set -e would turn into a task
+    // failure reported as a missing output rather than as an empty FASTA.
+    """
+    set -euo pipefail
+    n_queries=\$(grep -c '^>' ${human_fasta} || true)
+
+    build_multiqc_inputs.py \\
+        --metrics    ${metrics} \\
+        --curves     ${curves} \\
+        --trace      ${trace} \\
+        --n-queries  \${n_queries} \\
+        --max-tools  ${params.multiqc_max_tools} \\
+        --max-lines  ${params.multiqc_max_lines} \\
+        --outdir     multiqc_in ${primary}
+    """
+}
+
+
+process multiqcReport {
+    /*
+     * Pinned by digest like every other third-party image. `make prefetch-images` builds
+     * its pull list by grepping these container lines out of this file, so declaring the
+     * image here rather than in nextflow.config is what gets it cached on the cluster.
+     * multiqc 1.35, for Methods.
+     */
+    tag "multiqc"
+    container 'quay.io/biocontainers/multiqc@sha256:b65e3fe879df27b92334dda0fd987a6e21bdee09a2848551d4f287099a93b7ac'
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    tuple path(sections), path(mqc_config)
+
+    output:
+    path "qfo_pfam_region_multiqc.html",       emit: report
+    path "qfo_pfam_region_multiqc_data",       emit: data
+    path "qfo_pfam_region_multiqc_plots",      emit: plots
+
+    script:
+    // Compute nodes here have no outbound internet, so the update check has nothing to
+    // reach and only costs a timeout. MPLCONFIGDIR keeps matplotlib's cache inside the
+    // task dir; under Apptainer $HOME can be read-only and the plot export needs it.
+    """
+    set -euo pipefail
+    export MPLCONFIGDIR=\$PWD/.mplconfig
+
+    multiqc ${sections} \\
+        --config ${mqc_config} \\
+        --filename qfo_pfam_region_multiqc.html \\
+        --outdir . \\
+        --no-version-check \\
+        --no-ansi \\
+        --force
+    """
+}
+
 
 // ===========================================================================
 // WORKFLOW
@@ -1584,9 +1739,21 @@ workflow {
                 """.stripMargin()
             }
             weights = w ? Channel.value(w) : prostt5Weights()
-            prostt5_out = prostt5Search(
-                species_ch.map { sp, fa -> tuple(sp, fa, human_fasta) }.combine(weights)
+
+            // Human plus every target, each encoded exactly once. storeDir means a rerun
+            // or a second species list reuses them rather than re-running the model.
+            p5_dbs = prostt5Db(
+                Channel.of(tuple("human", human_fasta))
+                    .mix(species_ch)
+                    .combine(weights)
             )
+            // storeDir forbids a tuple output, so the label comes back off the directory
+            // name -- same trick kmerseekIndexAndSearch uses for its filenames.
+            p5_labeled  = p5_dbs.map { d -> tuple(d.name - '_prostt5', d) }
+            p5_human    = p5_labeled.filter { l, _d -> l == 'human' }.map { _l, d -> d }
+            p5_targets  = p5_labeled.filter { l, _d -> l != 'human' }
+
+            prostt5_out = prostt5Search(p5_targets.combine(p5_human))
             baseline_regions = baseline_regions.mix(prostt5_out.regions)
         }
 
@@ -1715,8 +1882,93 @@ workflow {
         ceiling_curves  = ceiling.curve
     }
 
-    aggregateMetrics(
+    agg = aggregateMetrics(
         scored.metrics.mix(ceiling_metrics).collect(),
         scored.curve.mix(ceiling_curves).collect(),
+    )
+
+    if (!params.skip_multiqc) {
+        multiqcFromMetrics(agg.metrics, agg.curves, human_fasta)
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// One HTML report. Shared by the main workflow and the `report` entry, so a rebuild from
+// published results goes through exactly the code path the pipeline itself used.
+// ---------------------------------------------------------------------------
+workflow multiqcFromMetrics {
+    take:
+    metrics
+    curves
+    human_fasta
+
+    main:
+    mqc_in = metrics
+        .combine(curves)
+        // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
+        .map { m, c -> tuple(m, c, resolveTrace(), file(human_fasta)) }
+
+    sections = buildMultiqcInputs(mqc_in).sections
+    multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
+}
+
+
+// ---------------------------------------------------------------------------
+// `nextflow run main.nf -entry report` — rebuild the report from an outdir that already
+// holds aggregated metrics, without re-running a single search.
+//
+// This is the normal way to get the report after a long sweep: the trace is only complete
+// once the run has ended, and rerunning the whole pipeline to pick it up would be absurd.
+// Point --trace_file at the run whose resource numbers you want.
+// ---------------------------------------------------------------------------
+workflow report {
+    def outdir  = file(params.outdir)
+    def metrics = file("${outdir}/all_domain_metrics.parquet")
+    def curves  = file("${outdir}/all_domain_curves.parquet")
+
+    if (!metrics.exists()) {
+        error """
+        |No aggregated metrics at ${metrics}.
+        |The report is built from what aggregateMetrics published, so the pipeline has to
+        |have run first. Point --outdir at the run you want reported on.
+        """.stripMargin()
+    }
+    if (!curves.exists()) {
+        log.warn "No ${curves} -- the PR and ROC sections will be skipped."
+    }
+
+    // Without --report_trace this run writes its own trace, and anything found in the
+    // launch directory is that empty file rather than the run being reported on. Passing
+    // the flag is what turns this run's trace observer off, so it is required rather than
+    // inferred -- there is no way to read a trace the observer is also writing.
+    //
+    // An error, not a warning: a warning would be read after the resource sections had
+    // already come out blank.
+    if (!params.report_trace) {
+        error """
+        |No --report_trace given.
+        |
+        |The report's time, CPU and memory sections come from the trace of the run being
+        |reported on, and Nextflow truncates any trace file it is itself writing. Naming
+        |the earlier run's trace with --report_trace is what switches this run's trace
+        |observer off, so it has to be explicit:
+        |
+        |    nextflow run main.nf -entry report -profile <profile> \\
+        |        --outdir <outdir> --report_trace run/qfo_pfam_region.<date>.trace.txt
+        |
+        |or just `make multiqc`, which fills it in from the newest trace under run/.
+        |To build the accuracy sections alone, pass --report_trace none.
+        """.stripMargin()
+    }
+    def trace = resolveTrace()
+
+    def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
+    log.info "building the report from ${outdir}, trace ${trace}"
+
+    multiqcFromMetrics(
+        Channel.of(metrics),
+        Channel.of(curves.exists() ? curves : file("${projectDir}/assets/NO_CURVES")),
+        human_fasta,
     )
 }

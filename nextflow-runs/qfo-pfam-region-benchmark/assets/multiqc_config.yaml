@@ -75,6 +75,7 @@ report_section_order:
   qfo_reachability: { order: 160 }
   qfo_alphabet_lcFalse: { order: 170 }
   qfo_alphabet_lcTrue: { order: 180 }
+  qfo_lowcomplexity_bars: { order: 185 }
   qfo_lowcomplexity: { order: 190 }
   qfo_grayzone: { order: 200 }
   qfo_run_summary: { order: 210 }

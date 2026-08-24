@@ -4,6 +4,7 @@
 .nextflow.log*
 work/
 run/
+run-report/
 results/
 *.report.html
 *.timeline.html

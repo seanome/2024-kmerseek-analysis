@@ -53,11 +53,25 @@ MINI_COMBOS  ?= protein20:10,hp_pbotc_1st_ed2:19
 
 PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 
+# Mac-side Nextflow. Pinned to the conda env rather than relying on PATH; on Sherlock the
+# run targets use `ml load nextflow` instead.
+NEXTFLOW ?= /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow
+
 # Sherlock compute nodes are amd64; an Apple Silicon build defaults to arm64, which
 # Apptainer refuses to run.
 DOCKER_PLATFORM := linux/amd64
 
 PROFILE := sherlock
+
+# --- MultiQC report --------------------------------------------------------
+# Which run's resource numbers the report describes. Defaults to the newest trace the main
+# run left behind; override for a specific one:
+#   make multiqc TRACE=run/qfo_pfam_region.2026-08-24.trace.txt
+TRACE          ?= $(shell ls -t run/*.trace.txt 2>/dev/null | head -1)
+MULTIQC_OUTDIR ?= ../results
+# Local equivalents, pointed at the MHC smoke run by default.
+TRACE_LOCAL          ?= $(shell ls -t run-mhc/*.trace.txt 2>/dev/null | head -1)
+MULTIQC_OUTDIR_LOCAL ?= $(MHC_DIR)/results
 
 # Every container the pipeline can pull, read straight out of main.nf plus the kmerseek
 # image, so this list cannot drift from what the processes actually declare.
@@ -73,7 +87,8 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         run run-kmerseek run-baselines status clean-cache \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
-        fetch-structures-login
+        fetch-structures-login \
+        multiqc multiqc-local pull-report
 
 help:
 	@echo "Mac:"
@@ -84,6 +99,8 @@ help:
 	@echo "  sync-pipeline         Push the current branch and update Sherlock"
 	@echo "  sync-data             Copy benchmark inputs to Sherlock"
 	@echo "  sync-structures       Copy AlphaFold structures to Sherlock"
+	@echo "  multiqc-local         Build the MultiQC report from a local run"
+	@echo "  pull-report           Fetch the MultiQC report back from Sherlock"
 	@echo ""
 	@echo "Sherlock:"
 	@printf '%s\n' '  prefetch-images       Pull all pinned images into $$SCRATCH cache'
@@ -92,6 +109,7 @@ help:
 	@echo "  run-kmerseek         Run only the Kmerseek sweep"
 	@echo "  run-baselines        Run only the baseline tools"
 	@echo "  run                  Run the complete benchmark"
+	@echo "  multiqc              Rebuild the MultiQC report from published results"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
 	@echo ""
@@ -262,6 +280,38 @@ run-mini-local:
 #
 # Structures are the one exception and are handled by `make sync-structures`: they are
 # real input data, not derived, and nothing on Sherlock can synthesise them.
+
+# Same entry point as `make multiqc`, against a local run. Override both for a run other
+# than the MHC smoke test:
+#   make multiqc-local TRACE_LOCAL=run-mini/qfo_pfam_region.<date>.trace.txt \
+#                      MULTIQC_OUTDIR_LOCAL=/Users/olga/data/qfo-pfam-region-benchmark-mini/results
+multiqc-local:
+	$(call require_mac)
+	@if [ -z "$(TRACE_LOCAL)" ]; then \
+	  echo "No trace file under run-mhc/. Pass one explicitly:"; \
+	  echo "  make multiqc-local TRACE_LOCAL=run-mhc/qfo_pfam_region.<date>.trace.txt"; \
+	  exit 1; \
+	fi
+	@echo "reporting on trace: $(TRACE_LOCAL)"
+	mkdir -p run-report
+	cd run-report && \
+	  $(NEXTFLOW) run ../main.nf -entry report -profile standard \
+	    --kmerseek_image kmerseek-region:local \
+	    --outdir     $(MULTIQC_OUTDIR_LOCAL) \
+	    --report_trace $(abspath $(TRACE_LOCAL)) \
+	    --qfo_dir    $(QFO_DIR) \
+	    $(NF_ARGS) 2>&1 | tee -a nextflow.multiqc.log
+
+# The report is one self-contained HTML plus its exported figures. The figures come down
+# too: the svg is what goes into a paper, and re-exporting it locally would need the whole
+# results tree rather than the 25 MB this pulls.
+pull-report:
+	$(call require_mac)
+	$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/qfo_pfam_region_multiqc.html' $(LOCAL_RESULTS)/
+	$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/qfo_pfam_region_multiqc_plots/' \
+	  $(LOCAL_RESULTS)/qfo_pfam_region_multiqc_plots/
 
 pull-mini:
 	$(call require_mac)
@@ -562,6 +612,31 @@ run-mini: prefetch-images mini-testset-sherlock
 	    --pfamn_dir        ../data/pfamn          \
 	    --prostt5_weights ../data/prostt5/weights \
 	    $(NF_ARGS) 2>&1 | tee -a nextflow.mini.log
+
+# Rebuild the one HTML report from results already published, without re-running a single
+# search. This is the normal way to get it after a long sweep: the trace is only complete
+# once the run has ended.
+#
+# Launched from its own directory on purpose. Nextflow truncates its trace file and
+# overwrites its execution report and timeline as a run starts, so a report run launched in
+# run/ would destroy the very numbers it is reading. main.nf refuses outright in that case
+# rather than quietly emitting empty resource sections.
+multiqc: prefetch-images
+	$(call require_cluster)
+	@if [ -z "$(TRACE)" ]; then \
+	  echo "No trace file under run/. Pass one explicitly:"; \
+	  echo "  make multiqc TRACE=run/qfo_pfam_region.<date>.trace.txt"; \
+	  exit 1; \
+	fi
+	@echo "reporting on trace: $(TRACE)"
+	mkdir -p run-report
+	cd run-report && \
+	  ml load nextflow && \
+	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
+	    --outdir     $(MULTIQC_OUTDIR) \
+	    --report_trace $(abspath $(TRACE)) \
+	    --qfo_dir    ../data/qfo \
+	    $(NF_ARGS) 2>&1 | tee -a nextflow.multiqc.log
 
 status:
 	$(call require_cluster)

@@ -262,6 +262,21 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     )
     dropped = sorted(set(best["tool"]) - set(joined["tool"]))
     if joined.height == 0:
+        # The headline figure is missing, so say why rather than leaving a hole where a
+        # reader has to work out that the report is not just quiet about speed.
+        write_section(out, "qfo_frontier", {
+            "id": "qfo_frontier",
+            "section_name": "The frontier",
+            "description": "Sensitivity against speed, when both are available.",
+            "plot_type": "html",
+            "data": (
+                "<p>Not built: no tool has both an accuracy number and a measured "
+                "throughput in this run. Throughput comes from the Nextflow trace, so this "
+                "figure needs the trace of the run that produced these metrics — pass it "
+                "with <code>--report_trace</code>, or use <code>make multiqc</code>, which "
+                "fills it in from the newest trace under <code>run/</code>.</p>"
+            ),
+        })
         return
 
     rows = joined.sort("queries_per_s").to_dicts()
@@ -580,6 +595,51 @@ def section_alphabet_matrix(out: Path, metrics: pl.DataFrame, primary_truth: str
             "xcats": [str(k) for k in ks],
             "ycats": alphas,
             "data": rows,
+        })
+
+    # The toggle read directly: for one alphabet, every ksize with its filtered and
+    # unfiltered bars side by side. A heatmap pair makes the reader hold one grid in their
+    # head while looking at the other; adjacent bars do not.
+    #
+    # One dataset per alphabet behind a switcher rather than one section each: 17 alphabets
+    # x 12 ksizes x 2 arms is 400-odd bars, unreadable in a single plot and 17 sections of
+    # navigation otherwise.
+    ordered = (parsed.group_by("alphabet").agg(pl.col("fmax").max())
+                     .sort("fmax", descending=True)["alphabet"].to_list())
+    datasets, labels = [], []
+    for alpha in ordered:
+        sub = parsed.filter(pl.col("alphabet") == alpha)
+        grid = sub.group_by("ksize", "lowcomp").agg(pl.col("fmax").mean())
+        lookup = {(r["ksize"], r["lowcomp"]): r["fmax"] for r in grid.to_dicts()}
+        ks = sorted(sub["ksize"].unique().to_list())
+        rows = {}
+        for k in ks:
+            rows[f"k={k}"] = {"lcFalse": lookup.get((k, "False")),
+                              "lcTrue": lookup.get((k, "True"))}
+        if rows:
+            datasets.append(rows)
+            labels.append({"name": alpha, "ylab": "Fmax"})
+    if datasets:
+        cats = {"lcFalse": {"name": "low-complexity k-mers kept", "color": "#7f7f7f"},
+                "lcTrue": {"name": "low-complexity k-mers removed", "color": "#0f9d76"}}
+        write_section(out, "qfo_lowcomplexity_bars", {
+            "id": "qfo_lowcomplexity_bars",
+            "section_name": "Low-complexity toggle by alphabet and k",
+            "description": (
+                f"Mean Fmax over target species for every k-mer size, with the "
+                f"low-complexity filter off and on ({primary_truth} truth, "
+                f"<code>{split}</code> split). Use the buttons to switch alphabet. "
+                "Whether dropping homopolymer-like k-mers helps is alphabet-dependent — a "
+                "2-letter alphabet generates far more of them than a 20-letter one — which "
+                "is why the toggle is swept rather than fixed, and why the two bars belong "
+                "next to each other rather than in two separate grids."),
+            "plot_type": "bargraph",
+            "pconfig": {"id": "qfo_lowcomplexity_bars_plot",
+                        "title": "Fmax by k, low-complexity filter off vs on",
+                        "ylab": "Fmax", "cpswitch": False, "stacking": "group",
+                        "height": 500, "data_labels": labels},
+            "categories": [cats for _ in datasets],
+            "data": datasets,
         })
 
     # Does dropping low-complexity k-mers help? It depends on the alphabet, which is why
@@ -1419,6 +1479,19 @@ def section_general_stats(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
 
 # ---------------------------------------------------------------------------
 
+def load_curves(path: Path | None) -> pl.DataFrame:
+    """Curves are optional. The pipeline passes an assets/NO_CURVES sentinel when a run has
+    none, so a file that exists but is not a parquet is a supported input, not an error --
+    the PR and ROC sections drop out and everything else still builds."""
+    if path is None or not path.exists():
+        return pl.DataFrame()
+    try:
+        return pl.read_parquet(path)
+    except Exception as exc:
+        print(f"no usable curves at {path} ({exc}); skipping the PR and ROC sections")
+        return pl.DataFrame()
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--metrics", required=True, type=Path)
@@ -1441,8 +1514,7 @@ def main():
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     metrics = pl.read_parquet(args.metrics)
-    curves = (pl.read_parquet(args.curves)
-              if args.curves and args.curves.exists() else pl.DataFrame())
+    curves = load_curves(args.curves)
     trace = mt.load_trace(args.trace) if args.trace else mt.load_trace(None)
 
     sets = metrics["truth_set"].unique().to_list() if "truth_set" in metrics.columns else []
