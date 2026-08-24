@@ -233,7 +233,11 @@ params.prostt5_max_len = 6000
 // exactly the shape that died. Set in the process body from params, because a bare
 // `process { cpus = ... }` in a profile does not override a body directive while a
 // `withLabel:`/`withName:` selector does.
-params.prostt5_cpus   = 4
+// 8, not 16. ProstT5 inference scales with threads, but so does peak memory: at the
+// 6000 aa cap a worst case of 8 concurrent long sequences is ~37 GB of activations plus
+// the model, which fits 64 GB. 16 threads is the shape that OOM-killed the first run.
+// Raising this further means lowering prostt5_max_len or raising prostt5_memory too.
+params.prostt5_cpus   = 8
 // Do NOT scale this down for a smoke test. ProstT5 is the same 3B-parameter model
 // whatever the input size, so the floor here is the model plus one sequence's
 // activations, not the number of sequences. A 16 GB `mini` override OOM-killed a

@@ -1,0 +1,90 @@
+# MultiQC settings for the QfO Pfam region benchmark report.
+#
+# The sections themselves are written by bin/build_multiqc_inputs.py as *_mqc.json --
+# machine-generated, one file per plot. This file holds only what a person edits: the
+# title, the order sections appear in, and the report-wide plot settings.
+#
+# Section ids here must match the ids that script writes. An id listed but not produced
+# is skipped with a debug message, so listing every truth set (pfam, swissprot, pfamn,
+# mcsa) is safe even when a run builds only some of them.
+
+title: "QfO Pfam region benchmark"
+subtitle: "Domain finding across nine target proteomes: which stretch of a human protein is a PF00001, and did the tool find it"
+intro_text: >
+  Every tool here searches human query proteins against a Quest-for-Orthologs target
+  proteome and reports aligned regions. Each region becomes a domain call by transferring
+  the Pfam families annotated on the overlapped target interval onto the query interval,
+  then scoring that call against the human protein's own domain instances. Right family in
+  the wrong place counts as a false positive. This is not pair-level orthology: a tool
+  that finds the correct protein but misplaces the region scores no better than a miss.
+
+report_comment: >
+  Numbers are read off <code>all_domain_metrics.parquet</code> and the Nextflow trace from
+  the same run. Accuracy sections use the held-out half of the Pfam families, because the
+  sweep picks its best alphabet and k-mer size on the other half and reporting the winner
+  on the data that chose it is optimistically biased.
+
+# Not a sequencing run: nothing here is a FASTQ and the sections are plots, not per-sample
+# QC. Turning these off removes UI that would only mislead.
+show_analysis_paths: false
+show_analysis_time: true
+skip_generalstats: false
+
+# Written to multiqc_plots/ as png, svg and pdf. The svg is the one that goes in a figure.
+export_plots: true
+
+# The sweep is 113 alphabet x ksize combos x 2 low-complexity arms; a leaderboard is
+# already reduced to one row per tool, but leave headroom for a run that widens.
+max_table_rows: 2000
+
+# Plotly rather than a flat image, however many series a plot ends up with. These are
+# meant to be explored -- hovering a point to find which alphabet and k it is, is the
+# entire reason the sweep is plotted rather than tabulated.
+plots_force_interactive: true
+plots_flat_numseries: 100000
+
+# Render every plot on load instead of leaving a "Show plot" button behind the resource
+# scatters, which carry one point per task and trip the default limit of 100 immediately.
+plots_defer_loading_numseries: 100000
+# The deprecated spelling of the same limit. The banner warning readers they may need to
+# press "Show plot" is still driven by this one, so both have to be raised.
+num_datasets_plot_limit: 100000
+
+table_columns_visible:
+  qfo_general_stats: true
+
+# Sections inside a module are sorted by ascending order value, so the frontier gets the
+# smallest number. (Whole modules sort the other way round -- this report is one module,
+# so only this direction matters here.) An id listed but not produced is skipped.
+report_section_order:
+  qfo_frontier: { order: 10 }
+  qfo_capability: { order: 20 }
+  qfo_leaderboard_swissprot: { order: 30 }
+  qfo_leaderboard_pfamn: { order: 40 }
+  qfo_leaderboard_mcsa: { order: 50 }
+  qfo_leaderboard_pfam: { order: 60 }
+  qfo_truth_provenance: { order: 70 }
+  qfo_truthsets: { order: 80 }
+  qfo_cafa: { order: 90 }
+  qfo_threshold: { order: 100 }
+  qfo_boundary: { order: 110 }
+  qfo_pr_curve: { order: 120 }
+  qfo_roc_curve: { order: 130 }
+  qfo_identity: { order: 140 }
+  qfo_divergence: { order: 150 }
+  qfo_reachability: { order: 160 }
+  qfo_alphabet_lcFalse: { order: 170 }
+  qfo_alphabet_lcTrue: { order: 180 }
+  qfo_lowcomplexity: { order: 190 }
+  qfo_grayzone: { order: 200 }
+  qfo_run_summary: { order: 210 }
+  qfo_res_cpu: { order: 220 }
+  qfo_res_walltime: { order: 230 }
+  qfo_res_throughput: { order: 240 }
+  qfo_res_memory: { order: 250 }
+  qfo_res_kmerseek_memory: { order: 260 }
+  qfo_res_efficiency: { order: 270 }
+  qfo_res_io: { order: 280 }
+  qfo_res_status: { order: 290 }
+  qfo_resources_missing: { order: 300 }
+  qfo_citations: { order: 310 }
