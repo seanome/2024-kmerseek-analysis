@@ -54,7 +54,7 @@ PR #43 renames each moltype to state how many classes it collapses the 20 residu
 Older result files will not join these labels. The CLI name and the moltype in the CSV are
 the same string, so there is one name to track rather than two.
 
-### K ranges: ten ksizes per alphabet, bit-matched floor
+### K ranges: bit-matched floor, 12 ksizes for HP and 10 for the rest
 
 An alphabet with n classes carries log2(n) bits per position only if every class is equally
 likely. They are not, so log2(n) overstates every coarse alphabet. The bits/symbol below
@@ -62,7 +62,9 @@ come from amino-acid background frequencies grouped as kmerseek groups them
 (`notebooks/ortholog_analysis_utils.entropy_per_symbol`).
 
 HP carries 0.994 bits/symbol, so its k18 floor is 17.9 bits. Every `kmin` is
-`round(17.9 / bits)`, and each alphabet gets ten consecutive ksizes from there.
+`round(17.9 / bits)`. The HP family gets twelve consecutive ksizes from there and every
+other alphabet gets ten, since HP is what the paper is testing and its k optimum is the
+least constrained.
 
 | alphabet | classes | bits/symbol | k range |
 |---|:---:|:---:|---|
@@ -76,17 +78,17 @@ HP carries 0.994 bits/symbol, so its k18 floor is 17.9 bits. Every `kmin` is
 | `wwmj5` | 5 | 2.197 | 8-17 |
 | `gbmr7` | 7 | 1.976 | 9-18 |
 | `gbmr4` | 4 | 1.522 | 12-21 |
-| `hp_lehninger_hpc3` | 3 | 1.128 | 16-25 |
-| `hp_lehninger2` | 2 | 1.000 | 18-27 |
-| `hp_lehninger_c_nonpolar2` | 2 | 0.999 | 18-27 |
-| `hp_pbotc_1st_ed2` | 2 | 0.994 | 18-27 |
-| `hp_thomas_dill2` | 2 | 0.966 | 19-28 |
-| `hp_thomas_dill_no_c2` | 2 | 0.951 | 19-28 |
-| `hp_kyte_doolittle2` | 2 | 0.937 | 19-28 |
+| `hp_lehninger_hpc3` | 3 | 1.128 | 16-27 |
+| `hp_lehninger2` | 2 | 1.000 | 18-29 |
+| `hp_lehninger_c_nonpolar2` | 2 | 0.999 | 18-29 |
+| `hp_pbotc_1st_ed2` | 2 | 0.994 | 18-29 |
+| `hp_thomas_dill2` | 2 | 0.966 | 19-30 |
+| `hp_thomas_dill_no_c2` | 2 | 0.951 | 19-30 |
+| `hp_kyte_doolittle2` | 2 | 0.937 | 19-30 |
 
 Alphabets of similar coarseness overlap, so they can be compared at fixed k within a class.
 protein20 and the HP alphabets do not overlap and are not compared at fixed k; at matched
-information content their k ranges are 4-13 and 18-28.
+information content their k ranges are 4-13 and 18-30.
 
 Two entries contradict class count, which is why entropy is measured rather than assumed.
 `hp_lehninger_hpc3` has three classes but 1.128 bits/symbol against HP's 0.994, because
@@ -95,7 +97,7 @@ cysteine is ~1.4% of residues. `gbmr7` carries less information than `wwmj5`, 1.
 
 ### Scale
 
-340 combos x 9 targets = 3060 searches, up from 1017. Two multipliers: the eight new
+368 combos x 9 targets = 3312 searches, up from 1017. Two multipliers: the eight new
 reduced alphabets, and `--remove-low-complexity` swept as a toggle rather than fixed.
 Whether dropping low-complexity k-mers helps depends on the alphabet, so it is measured.
 The setting is carried in the variant label, so the two arms never pool.
