@@ -572,7 +572,7 @@ process kmerseekIndexAndSearch {
     # what show WHY an alphabet behaves as it does, and the with/without low-complexity
     # pair is only interpretable if both spectra exist.
     kmerseek index \\
-        --encoding ${cli_flag} \\
+        --alphabet ${cli_flag} \\
         --ksize    ${ksize} \\
         --input    ${species_fasta} \\
         --output   ${index_dir} \\
@@ -587,7 +587,7 @@ process kmerseekIndexAndSearch {
     # this by also lowering --max-query-pvalue expecting fewer rows; the OR means the
     # looser of the two governs.
     kmerseek search \\
-        --encoding ${cli_flag} \\
+        --alphabet ${cli_flag} \\
         --ksize    ${ksize} \\
         --query    ${human_fasta} \\
         --target   ${index_dir} \\
