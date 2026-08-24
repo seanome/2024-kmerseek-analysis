@@ -7,13 +7,13 @@
 SHELL := /bin/bash
 
 # --- Mac-side config -------------------------------------------------------
-KMERSEEK_SHA   ?= 0302511391c5f8eef499179430764d3d0881e529
-IMAGE_TAG      ?= 2026-08-18-region-scoring
+KMERSEEK_SHA   ?= 3fdfd51a1f3c68925e12eac76d19d5d021c29837
+IMAGE_TAG      ?= 2026-08-24-reduced-alphabets
 IMAGE_LOCAL    := kmerseek-region:latest
 IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
 FOLDDISCO_TAG    ?= 2026-08-20-noentrypoint
 FOLDDISCO_REMOTE := docker.io/olgabot/folddisco:$(FOLDDISCO_TAG)
-KMERSEEK_SRC   := /Users/olga/code/kmerseek-region-scoring
+KMERSEEK_SRC   := /Users/olga/code/kmerseek/.claude/worktrees/reduced-alphabets
 
 SHERLOCK_HOST  ?= sherlock
 
@@ -72,8 +72,32 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
-        pfamn-download pfamn-truth mcsa-truth \
+        pfamn-download pfamn-truth mcsa-truth help \
         fetch-structures-login
+
+help:
+	@echo "Mac:"
+	@echo "  build-image           Build the amd64 Kmerseek image for Sherlock"
+	@echo "  build-image-local     Build the native Kmerseek image for local Docker"
+	@echo "  push-image            Push the Kmerseek image to Docker Hub"
+	@echo "  push-folddisco-image  Push the FoldDisco image to Docker Hub"
+	@echo "  sync-pipeline         Push the current branch and update Sherlock"
+	@echo "  sync-data             Copy benchmark inputs to Sherlock"
+	@echo "  sync-structures       Copy AlphaFold structures to Sherlock"
+	@echo ""
+	@echo "Sherlock:"
+	@printf '%s\n' '  prefetch-images       Pull all pinned images into $$SCRATCH cache'
+	@echo "  mini-testset-sherlock Build the mini data set"
+	@echo "  run-mini             Run the mini smoke test"
+	@echo "  run-kmerseek         Run only the Kmerseek sweep"
+	@echo "  run-baselines        Run only the baseline tools"
+	@echo "  run                  Run the complete benchmark"
+	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
+	@echo "  status               Show this user's SLURM jobs"
+	@echo ""
+	@echo "Cleanup:"
+	@echo "  clean-image-cache    Remove partial Apptainer pulls"
+	@echo "  clean-cache          Remove all cached Apptainer images"
 
 
 # --- which machine am I on? -------------------------------------------------
