@@ -63,6 +63,16 @@ DOCKER_PLATFORM := linux/amd64
 
 PROFILE := sherlock
 
+# SLURM coordinates for the few things this Makefile submits itself. Nextflow gets its own
+# from the sherlock profile in nextflow.config; these are only for prefetch-images.
+SLURM_ACCOUNT   ?= ayeletv
+SLURM_PARTITION ?= hns
+# mksquashfs sizes its cache off the node's total RAM, not the cgroup it is confined to, so
+# on a login node it happily over-allocates and dies with "Out of memory (cache_alloc)".
+# Converting inside a job with a real allocation is the fix.
+PREFETCH_MEM    ?= 48G
+PREFETCH_TIME   ?= 2:00:00
+
 # --- MultiQC report --------------------------------------------------------
 # Which run's resource numbers the report describes. Defaults to the newest trace the main
 # run left behind; override for a specific one:
@@ -402,15 +412,19 @@ pull-results:
 # the digest ':' turned into '-', plus .img. Names are computed to match.
 prefetch-images:
 	$(call require_cluster)
-	@mkdir -p $${SCRATCH}/apptainer-cache
+	@mkdir -p $${SCRATCH}/apptainer-cache $${SCRATCH}/apptainer-tmp
 	@set -e; \
+	export APPTAINER_CACHEDIR=$${SCRATCH}/apptainer-cache; \
+	export APPTAINER_TMPDIR=$${SCRATCH}/apptainer-tmp; \
 	for ref in $(ALL_CONTAINERS); do \
 	  name=$$(echo "$$ref" | sed -e 's|^docker://||' -e 's|/|-|g' -e 's|:|-|g'); \
 	  out="$${SCRATCH}/apptainer-cache/$${name}.img"; \
 	  if [ -s "$$out" ]; then echo "have  $$name"; continue; fi; \
 	  echo "pull  $$name"; \
 	  rm -f "$$out" "$$out".pulling.* 2>/dev/null || true; \
-	  apptainer pull --name "$$out" "docker://$$ref" || \
+	  srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	       --mem=$(PREFETCH_MEM) --time=$(PREFETCH_TIME) --cpus-per-task=4 \
+	       apptainer pull --name "$$out" "docker://$$ref" || \
 	    { echo "FAILED: $$ref"; rm -f "$$out"; exit 1; }; \
 	done; \
 	echo "all containers cached in $${SCRATCH}/apptainer-cache"
