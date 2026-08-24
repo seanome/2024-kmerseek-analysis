@@ -616,6 +616,17 @@ process kmerseekIndexAndSearch {
      *
      * Tradeoff: -resume after a crash re-indexes an incomplete combo instead of reusing
      * a saved index. Accepted -- the index is cheap relative to the search.
+     *
+     * DO NOT "optimise" this by indexing human once and searching the species against it,
+     * the way prostt5Db/foldseekDb/mmseqsDb now cache their databases. It looks like the
+     * same win -- 368 index builds instead of 3312 -- but those arms cache a database that
+     * is used in the SAME direction every time, and this one cannot be. kmerseek computes
+     * regions on the QUERY side. Making human the target moves the scored interval onto the
+     * species protein, and human survives only as transfer coordinates: the side that picks
+     * WHICH Pfam domain to transfer, not the side that gets scored. The benchmark's unit is
+     * the human domain interval, so that swap answers "what does the mouse region look
+     * like" instead of "did the tool find titin's Ig domain". Rejected deliberately on
+     * 2026-08-24, not overlooked.
      */
     tag "${species}_${label}_k${ksize}_lc${lowcomp}"
     storeDir "${params.outdir}/kmerseek"
