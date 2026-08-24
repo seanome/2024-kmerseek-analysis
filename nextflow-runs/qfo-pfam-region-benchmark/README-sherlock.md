@@ -54,7 +54,7 @@ PR #43 renames each moltype to state how many classes it collapses the 20 residu
 Older result files will not join these labels. The CLI name and the moltype in the CSV are
 the same string, so there is one name to track rather than two.
 
-### K ranges: bit-matched floor, shared ceiling
+### K ranges: ten ksizes per alphabet, bit-matched floor
 
 An alphabet with n classes carries log2(n) bits per position only if every class is equally
 likely. They are not, so log2(n) overstates every coarse alphabet. The bits/symbol below
@@ -62,54 +62,41 @@ come from amino-acid background frequencies grouped as kmerseek groups them
 (`notebooks/ortholog_analysis_utils.entropy_per_symbol`).
 
 HP carries 0.994 bits/symbol, so its k18 floor is 17.9 bits. Every `kmin` is
-`round(17.9 / bits)`. Running a coarse alphabet below that floor produces prohibitive
-output volume.
-
-`kmax` is 30 for every alphabet. Bit-matched ranges alone do not overlap, so no two
-alphabets could be compared at the same k. With a shared ceiling, ten or more alphabets
-share every k from 12 to 30, and all 17 share k19-30.
-
-Extending upward is cheap and extending downward is not. A long k-mer in a high-entropy
-alphabet carries many bits, matches little and writes almost nothing. A short k-mer in a
-2-letter alphabet matches everything. protein20 at k30 is 125 bits and will match nothing,
-costing index time and no output.
+`round(17.9 / bits)`, and each alphabet gets ten consecutive ksizes from there.
 
 | alphabet | classes | bits/symbol | k range |
 |---|:---:|:---:|---|
-| `hp_kyte_doolittle2` | 2 | 0.937 | 19-30 |
-| `hp_thomas_dill_no_c2` | 2 | 0.951 | 19-30 |
-| `hp_thomas_dill2` | 2 | 0.966 | 19-30 |
-| `hp_pbotc_1st_ed2` | 2 | 0.994 | 18-30 |
-| `hp_lehninger_c_nonpolar2` | 2 | 0.999 | 18-30 |
-| `hp_lehninger2` | 2 | 1.000 | 18-30 |
-| `hp_lehninger_hpc3` | 3 | 1.128 | 16-30 |
-| `gbmr4` | 4 | 1.522 | 12-30 |
-| `gbmr7` | 7 | 1.976 | 9-30 |
-| `wwmj5` | 5 | 2.197 | 8-30 |
-| `dayhoff6` | 6 | 2.278 | 8-30 |
-| `sdm12` | 12 | 3.127 | 6-30 |
-| `mmseqs12` | 12 | 3.293 | 5-30 |
-| `wass14` | 14 | 3.626 | 5-30 |
-| `hsdm17` | 17 | 3.742 | 5-30 |
-| `uniprot18` | 18 | 3.951 | 5-30 |
-| `protein20` | 20 | 4.176 | 4-30 |
+| `protein20` | 20 | 4.176 | 4-13 |
+| `uniprot18` | 18 | 3.951 | 5-14 |
+| `hsdm17` | 17 | 3.742 | 5-14 |
+| `wass14` | 14 | 3.626 | 5-14 |
+| `mmseqs12` | 12 | 3.293 | 5-14 |
+| `sdm12` | 12 | 3.127 | 6-15 |
+| `dayhoff6` | 6 | 2.278 | 8-17 |
+| `wwmj5` | 5 | 2.197 | 8-17 |
+| `gbmr7` | 7 | 1.976 | 9-18 |
+| `gbmr4` | 4 | 1.522 | 12-21 |
+| `hp_lehninger_hpc3` | 3 | 1.128 | 16-25 |
+| `hp_lehninger2` | 2 | 1.000 | 18-27 |
+| `hp_lehninger_c_nonpolar2` | 2 | 0.999 | 18-27 |
+| `hp_pbotc_1st_ed2` | 2 | 0.994 | 18-27 |
+| `hp_thomas_dill2` | 2 | 0.966 | 19-28 |
+| `hp_thomas_dill_no_c2` | 2 | 0.951 | 19-28 |
+| `hp_kyte_doolittle2` | 2 | 0.937 | 19-28 |
+
+Alphabets of similar coarseness overlap, so they can be compared at fixed k within a class.
+protein20 and the HP alphabets do not overlap and are not compared at fixed k; at matched
+information content their k ranges are 4-13 and 18-28.
 
 Two entries contradict class count, which is why entropy is measured rather than assumed.
-
-`hp_lehninger_hpc3` has three classes but 1.128 bits/symbol against HP's 0.994. Cysteine is
-~1.4% of residues, so a class that rare adds about 0.13 bits. Sized by log2(3)=1.585 it
-would have run at k11-19; sized by measured entropy its floor is k16. At nearly identical
-information content, a difference between it and HP is about where the information sits,
-not how much there is.
-
-`gbmr7` carries less information than `wwmj5`, 1.976 against 2.197, despite two more
-classes, because its classes are unbalanced.
+`hp_lehninger_hpc3` has three classes but 1.128 bits/symbol against HP's 0.994, because
+cysteine is ~1.4% of residues. `gbmr7` carries less information than `wwmj5`, 1.976 against
+2.197, despite two more classes, because its classes are unbalanced.
 
 ### Scale
 
-666 combos x 9 targets = 5994 searches, up from 1017. Three multipliers: the eight new
-reduced alphabets, the shared k=30 ceiling that makes fixed-k comparison possible, and
-`--remove-low-complexity` swept as a toggle rather than fixed.
+340 combos x 9 targets = 3060 searches, up from 1017. Two multipliers: the eight new
+reduced alphabets, and `--remove-low-complexity` swept as a toggle rather than fixed.
 Whether dropping low-complexity k-mers helps depends on the alphabet, so it is measured.
 The setting is carried in the variant label, so the two arms never pool.
 

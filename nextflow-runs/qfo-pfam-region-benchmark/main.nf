@@ -132,46 +132,37 @@ params.low_complexity_toggle = [false, true]
 // hp_lehninger_c_nonpolar2, hp_shuffled_control is hp_random_control2. Results produced
 // under the old names will not join these labels.
 //
-// The lower bound is bit-matched; the upper bound is shared.
+// Ten ksizes per alphabet, starting from a bit-matched floor.
 //
-// kmin comes from real entropy, not log2(classes). log2(n) assumes every class is equally
-// likely, which overstates every coarse alphabet. The bits/symbol below use amino-acid
-// background frequencies grouped as kmerseek groups them
+// The floor uses real entropy, not log2(classes). log2(n) assumes every class is equally
+// likely, which overstates every coarse alphabet. The bits/symbol below come from
+// amino-acid background frequencies grouped as kmerseek groups them
 // (notebooks/ortholog_analysis_utils.entropy_per_symbol). HP carries 0.994 bits/symbol, so
-// its k18 floor is 17.9 bits, and every kmin is round(17.9 / bits). A coarse alphabet run
-// below that floor produces prohibitive output volume.
+// its k18 floor is 17.9 bits, and every kmin is round(17.9 / bits). Below that floor a
+// coarse alphabet produces prohibitive output volume.
 //
-// kmax is 30 for all of them, which is what makes fixed-k comparison possible. Ten or more
-// alphabets share every k from 12 to 30, and all 17 share k19-30. Bit-matched ranges alone
-// do not overlap, so no two alphabets could be compared at the same k.
-//
-// Extending upward is cheap and extending downward is not. A long k-mer in a high-entropy
-// alphabet carries many bits, matches little, and writes almost nothing; a short k-mer in a
-// 2-letter alphabet matches everything. protein20 at k30 is 125 bits and will match nothing,
-// which costs index time and no output.
-//
-// Two entries contradict class count, which is why entropy is measured rather than assumed:
-// hp_lehninger_hpc3 has three classes but 1.128 bits/symbol against HP's 0.994, because
-// cysteine is ~1.4% of residues. gbmr7 carries less information than wwmj5 (1.976 against
-// 2.197) despite two more classes, because its classes are unbalanced.
+// Two entries contradict class count, which is why entropy is measured rather than
+// assumed. hp_lehninger_hpc3 has three classes but 1.128 bits/symbol against HP's 0.994,
+// because cysteine is ~1.4% of residues. gbmr7 carries less information than wwmj5, 1.976
+// against 2.197, despite two more classes, because its classes are unbalanced.
 def ALL_ENCODINGS = [
-    ['protein20', 'protein20', 4, 30],                        // 4.176 bits/sym
-    ['dayhoff6', 'dayhoff6', 8, 30],                          // 2.278 bits/sym
-    ['hp_lehninger2', 'hp_lehninger2', 18, 30],               // 1.000 bits/sym
-    ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', 19, 30],     // 0.937 bits/sym
-    ['hp_thomas_dill2', 'hp_thomas_dill2', 19, 30],           // 0.966 bits/sym
-    ['hp_thomas_dill_no_c2', 'hp_thomas_dill_no_c2', 19, 30], // 0.951 bits/sym
-    ['hp_lehninger_c_nonpolar2', 'hp_lehninger_c_nonpolar2', 18, 30],// 0.999 bits/sym
-    ['hp_pbotc_1st_ed2', 'hp_pbotc_1st_ed2', 18, 30],         // 0.994 bits/sym
-    ['hp_lehninger_hpc3', 'hp_lehninger_hpc3', 16, 30],       // 1.128 bits/sym
-    ['gbmr4', 'gbmr4', 12, 30],                               // 1.522 bits/sym
-    ['wwmj5', 'wwmj5', 8, 30],                                // 2.197 bits/sym
-    ['gbmr7', 'gbmr7', 9, 30],                                // 1.976 bits/sym
-    ['sdm12', 'sdm12', 6, 30],                                // 3.127 bits/sym
-    ['mmseqs12', 'mmseqs12', 5, 30],                          // 3.293 bits/sym
-    ['wass14', 'wass14', 5, 30],                              // 3.626 bits/sym
-    ['hsdm17', 'hsdm17', 5, 30],                              // 3.742 bits/sym
-    ['uniprot18', 'uniprot18', 5, 30],                        // 3.951 bits/sym
+    ['protein20', 'protein20', 4, 13],                      // 4.176 bits/sym
+    ['uniprot18', 'uniprot18', 5, 14],                      // 3.951 bits/sym
+    ['hsdm17', 'hsdm17', 5, 14],                            // 3.742 bits/sym
+    ['wass14', 'wass14', 5, 14],                            // 3.626 bits/sym
+    ['mmseqs12', 'mmseqs12', 5, 14],                        // 3.293 bits/sym
+    ['sdm12', 'sdm12', 6, 15],                              // 3.127 bits/sym
+    ['dayhoff6', 'dayhoff6', 8, 17],                        // 2.278 bits/sym
+    ['wwmj5', 'wwmj5', 8, 17],                              // 2.197 bits/sym
+    ['gbmr7', 'gbmr7', 9, 18],                              // 1.976 bits/sym
+    ['gbmr4', 'gbmr4', 12, 21],                             // 1.522 bits/sym
+    ['hp_lehninger_hpc3', 'hp_lehninger_hpc3', 16, 25],     // 1.128 bits/sym
+    ['hp_lehninger2', 'hp_lehninger2', 18, 27],             // 1.000 bits/sym
+    ['hp_lehninger_c_nonpolar2', 'hp_lehninger_c_nonpolar2', 18, 27],// 0.999 bits/sym
+    ['hp_pbotc_1st_ed2', 'hp_pbotc_1st_ed2', 18, 27],       // 0.994 bits/sym
+    ['hp_thomas_dill2', 'hp_thomas_dill2', 19, 28],         // 0.966 bits/sym
+    ['hp_thomas_dill_no_c2', 'hp_thomas_dill_no_c2', 19, 28],// 0.951 bits/sym
+    ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', 19, 28],   // 0.937 bits/sym
 ]
 
 // kmerseek search filters. min_region_score is the region-scoped cutoff: -log10 of the
