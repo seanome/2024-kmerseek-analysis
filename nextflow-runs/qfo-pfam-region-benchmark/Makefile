@@ -265,7 +265,7 @@ run-mhc-local:
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       $(HGNC_FILE) \
 	    --omega_file      $(OMEGA_FILE) \
-	    $(NF_ARGS) 2>&1 | tee nextflow.mhc.log
+	    $(NF_ARGS)
 
 # Run it here first (needs build-image-local), before spending Sherlock queue time.
 run-mini-local: 
@@ -281,7 +281,7 @@ run-mini-local:
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       $(HGNC_FILE) \
 	    --omega_file      $(OMEGA_FILE) \
-	    $(NF_ARGS) 2>&1 | tee nextflow.mini.log
+	    $(NF_ARGS)
 
 # NOT rsynced to Sherlock. The mini set is DERIVED -- subset FASTAs and subset annotation
 # parquets cut from inputs `make sync-data` already put there -- so shipping it would
@@ -310,7 +310,7 @@ multiqc-local:
 	    --outdir     $(MULTIQC_OUTDIR_LOCAL) \
 	    --report_trace $(abspath $(TRACE_LOCAL)) \
 	    --qfo_dir    $(QFO_DIR) \
-	    $(NF_ARGS) 2>&1 | tee -a nextflow.multiqc.log
+	    $(NF_ARGS)
 
 # The report is one self-contained HTML plus its exported figures. The figures come down
 # too: the svg is what goes into a paper, and re-exporting it locally would need the whole
@@ -473,7 +473,7 @@ fetch-structures-sherlock:
 	    --structures  $$PWD/data/structures \
 	    --annotations $$PWD/data/annotations \
 	    --qfo_dir     $$PWD/data/qfo \
-	    $(NF_ARGS) 2>&1 | tee -a nextflow.fetch.log
+	    $(NF_ARGS)
 
 # Fallback for a cluster whose compute nodes have no outbound internet: run the download
 # on the login node one species at a time, with low parallelism to stay under its limits.
@@ -575,11 +575,16 @@ pfamn-truth: pfamn-download
 # To pass extra flags through to nextflow, use NF_ARGS:
 #   make run NF_ARGS="-with-dag dag.html"
 #   make run NF_ARGS="--skip_folddisco true"
+# NO `| tee` on any nextflow invocation. Nextflow's live display repaints the task table in
+# place; a pipe turns that into thousands of reprinted tables scrolling past. The pretty log
+# is the point -- it is how you watch a 13_000-job run. Nothing is lost by dropping the pipe:
+# Nextflow already writes a full .nextflow.log in the launch dir. And do not "fix" a mangled
+# display with -ansi-log false either -- that removes the display instead of the cause.
 define launch
 	mkdir -p run
 	cd run && \
 	  ml load nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume -ansi-log false $(2) $(NF_ARGS) \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(NF_ARGS) \
 	    --qfo_dir     ../data/qfo \
 	    --annotations ../data/annotations \
 	    --structures  ../data/structures \
@@ -588,8 +593,7 @@ define launch
 	    --swissprot_dat ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir      ../data/pfamn          \
 	    --prostt5_weights ../data/prostt5/weights \
-	    --outdir      ../results \
-	    2>&1 | tee -a nextflow.$(1).log
+	    --outdir      ../results
 endef
 
 run: prefetch-images
@@ -626,7 +630,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	mkdir -p run-mini
 	cd run-mini && \
 	  ml load nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE),mini -resume -ansi-log false \
+	  nextflow run ../main.nf -profile $(PROFILE),mini -resume \
 	    --qfo_dir         ../data/mini/qfo \
 	    --annotations     ../data/mini/annotations \
 	    --structures      ../data/mini/structures \
@@ -638,7 +642,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir        ../data/pfamn          \
 	    --prostt5_weights ../data/prostt5/weights \
-	    $(NF_ARGS) 2>&1 | tee -a nextflow.mini.log
+	    $(NF_ARGS)
 
 # Rebuild the one HTML report from results already published, without re-running a single
 # search. This is the normal way to get it after a long sweep: the trace is only complete
@@ -663,7 +667,7 @@ multiqc: prefetch-images
 	    --outdir     $(MULTIQC_OUTDIR) \
 	    --report_trace $(abspath $(TRACE)) \
 	    --qfo_dir    ../data/qfo \
-	    $(NF_ARGS) 2>&1 | tee -a nextflow.multiqc.log
+	    $(NF_ARGS)
 
 status:
 	$(call require_cluster)
