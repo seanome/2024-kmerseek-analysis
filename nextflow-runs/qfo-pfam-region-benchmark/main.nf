@@ -1528,10 +1528,16 @@ process scoreDomainCalls {
     // Scoring that by interval IoU would measure the envelope reduction rather than the
     // prediction, so this arm is scored on coverage instead. See evaluate_domain_calls.py.
     def semantics = tool == 'folddisco' ? 'motif' : 'alignment'
+    // Only the arms that read AlphaFold structure files. Those are the ones whose targets
+    // arrive as overlapping 1400-residue fragments, so the same alignment appears once per
+    // fragment. Every other arm reads whole sequences and has nothing to collapse -- and
+    // deduping them would erase the redundancy penalty assign_instances applies on purpose.
+    def dedup = tool in ['foldseek', 'reseek', 'folddisco'] ? '--dedup-fragments' : ''
     """
     evaluate_domain_calls.py \\
         --regions      ${regions} \\
         --tool         ${tool} \\
+        ${dedup} \\
         --interval-semantics ${semantics} \\
         --variant      ${variant} \\
         --species      ${species} \\

@@ -154,6 +154,65 @@ def _load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
     return lf.select(selection)
 
 
+def dedup_fragment_regions(regions: pl.LazyFrame, iou_min: float) -> pl.LazyFrame:
+    """Collapse regions duplicated by AlphaFold's overlapping structure fragments.
+
+    A protein over 2700 aa is modelled only as 1400-residue fragments on a 200-residue
+    stride, so most of each fragment also sits in its neighbour. The same alignment is
+    therefore found once per fragment, and after the fragment offset is applied those hits
+    land on the same target accession at the same coordinates. One real alignment, several
+    rows.
+
+    That is an artifact of how the structures are prepared, NOT tool behaviour, which is why
+    this is deliberately narrow. It keys on (query_acc, target_acc) and requires BOTH the
+    query and target intervals to overlap, so a tool reporting several genuinely different
+    alignments between the same pair keeps all of them, and a repeat protein's tandem
+    domains -- adjacent but not coincident -- are untouched.
+
+    It is emphatically NOT a general "drop near-duplicate calls" pass. assign_instances
+    penalises a tool that emits redundant copies of one call, on purpose: one becomes a true
+    positive and the rest false positives, so "found all twelve fingers" and "emitted twelve
+    copies of one" score differently. Removing duplicates for every tool would delete that
+    distinction. Only the arms reading fragmented AlphaFold files pass --dedup-fragments.
+
+    Ties are broken by score, then by original row order, so the result does not depend on
+    join ordering.
+    """
+    c = regions.with_row_index("_rid")
+    left = c.select("_rid", "query_acc", "target_acc", "qstart", "qend",
+                    "tstart", "tend", "score")
+    right = left.select(
+        pl.col("_rid").alias("_rid_b"), "query_acc", "target_acc",
+        pl.col("qstart").alias("qstart_b"), pl.col("qend").alias("qend_b"),
+        pl.col("tstart").alias("tstart_b"), pl.col("tend").alias("tend_b"),
+        pl.col("score").alias("score_b"),
+    )
+
+    def iou(a0, a1, b0, b1):
+        inter = (pl.min_horizontal(pl.col(a1), pl.col(b1))
+                 - pl.max_horizontal(pl.col(a0), pl.col(b0))).clip(lower_bound=0)
+        union = (pl.max_horizontal(pl.col(a1), pl.col(b1))
+                 - pl.min_horizontal(pl.col(a0), pl.col(b0)))
+        return pl.when(union > 0).then(inter / union).otherwise(0.0)
+
+    beaten = (
+        left.join(right, on=["query_acc", "target_acc"], how="inner")
+        .filter(pl.col("_rid") != pl.col("_rid_b"))
+        .filter(
+            (iou("qstart", "qend", "qstart_b", "qend_b") >= iou_min)
+            & (iou("tstart", "tend", "tstart_b", "tend_b") >= iou_min)
+            & (
+                (pl.col("score_b") > pl.col("score"))
+                | ((pl.col("score_b") == pl.col("score"))
+                   & (pl.col("_rid_b") < pl.col("_rid")))
+            )
+        )
+        .select("_rid")
+        .unique()
+    )
+    return c.join(beaten, on="_rid", how="anti").drop("_rid")
+
+
 def overlap_expr(a_start: str, a_end: str, b_start: str, b_end: str) -> pl.Expr:
     lo = pl.max_horizontal(pl.col(a_start), pl.col(b_start))
     hi = pl.min_horizontal(pl.col(a_end), pl.col(b_end))
@@ -774,6 +833,13 @@ def main():
     p.add_argument("--covariates", type=Path,
                    help="per-protein HGNC group / omega / pLDDT / disorder table")
     p.add_argument("--direct-annotation", action="store_true")
+    p.add_argument("--dedup-fragments", action="store_true",
+                   help="collapse regions duplicated by AlphaFold's overlapping structure "
+                        "fragments. Only for arms that read AlphaFold files -- see "
+                        "dedup_fragment_regions() for why this is not applied globally.")
+    p.add_argument("--fragment-iou", type=float, default=0.9,
+                   help="how coincident two regions on the same (query, target) pair must "
+                        "be, on BOTH sides, to count as the same alignment seen twice")
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--strict-iou", type=float, default=0.8)
     p.add_argument("--gray-min-annotated-fraction", type=float, default=0.5,
@@ -814,6 +880,18 @@ def main():
     truth = attach_identity(truth, identity)
 
     regions = load_regions(args.regions, args.direct_annotation)
+
+    # Before transfer, not after: a fragment duplicate is one alignment reported twice, so
+    # it has to go while the target coordinates that identify it as a duplicate are still
+    # in the table. transfer_domains drops them.
+    if regions is not None and args.dedup_fragments and not args.direct_annotation:
+        before = regions.select(pl.len()).collect().item()
+        regions = dedup_fragment_regions(regions, args.fragment_iou).cache()
+        after = regions.select(pl.len()).collect().item()
+        if before != after:
+            print(f"fragment dedup: {before - after} of {before} regions were the same "
+                  f"alignment seen in overlapping AlphaFold fragments "
+                  f"({100 * (before - after) / before:.1f}%)", file=sys.stderr)
 
     if args.direct_annotation:
         target_families = None
