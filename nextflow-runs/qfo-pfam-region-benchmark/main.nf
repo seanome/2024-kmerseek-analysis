@@ -251,6 +251,15 @@ params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip t
 // gap going unrecorded, hence the skipped list. On the full human proteome a cap of 6000
 // drops 11 proteins carrying 664 of 50_185 domain instances (1.3%); 8000 drops 4 proteins
 // and 347 instances (0.7%). Raise it if the trace shows peak_rss with headroom to spare.
+// Where the cached, target-side databases live. Defaults to outdir, but a run whose QUERY
+// set differs while its TARGETS are identical -- the chr6 midi run against full proteomes --
+// wants its own results directory and the SAME databases. Those databases are built only
+// from the target proteome, so they are genuinely shared: pointing db_cache at the full
+// run's outdir means the midi run builds each ProstT5 / foldseek / mmseqs / reseek /
+// folddisco database once and the full run reuses it, instead of paying for ProstT5
+// inference over nine proteomes twice.
+params.db_cache = null
+
 params.prostt5_max_len = 6000
 
 // ProstT5 on a GPU is one to two orders of magnitude faster than on CPU, and the 3Di
@@ -337,6 +346,8 @@ if (SPECIES.isEmpty()) {
 // Class count is now in the name, so the memory rule reads it rather than guessing from a
 // prefix: the fewer classes, the more a handful of k-mers absorb the proteome, and the
 // more RAM the inverted index needs. hp_*2 and hp_*3 are the degenerate ones.
+def DB_CACHE = params.db_cache ?: params.outdir
+
 def isDegenerateHp = { label -> label ==~ /.*[23]$/ }
 
 // Sized for full QfO proteomes. A mini/smoke run indexes a few hundred sequences and
@@ -847,7 +858,7 @@ process mmseqsDb {
     tag "${label}"
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     label 'high_cpu'
-    storeDir "${params.outdir}/mmseqs_db"
+    storeDir "${DB_CACHE}/mmseqs_db"
 
     input:
     tuple val(label), path(fasta)
@@ -972,7 +983,7 @@ process foldseekDb {
     tag "${label}"
     container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
     label 'high_cpu'
-    storeDir "${params.outdir}/foldseek_db"
+    storeDir "${DB_CACHE}/foldseek_db"
 
     input:
     tuple val(label), path(structures)
@@ -1041,7 +1052,7 @@ process reseekConvert {
     tag "${species}"
     container 'quay.io/biocontainers/reseek@sha256:24f7c37150dd2c2f2f322b1387a08d2d1a4a279f46f98f1051f1745417675752'
     label 'high_cpu'
-    storeDir "${params.outdir}/reseek_db"
+    storeDir "${DB_CACHE}/reseek_db"
 
     input:
     tuple val(species), path(structures)
@@ -1147,7 +1158,7 @@ process prostt5Db {
     time   { params.prostt5_time }
     errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
     maxRetries 3
-    storeDir "${params.outdir}/prostt5_db"
+    storeDir "${DB_CACHE}/prostt5_db"
 
     input:
     tuple val(label), path(fasta), path(weights)
@@ -1274,7 +1285,7 @@ process folddiscoIndex {
     tag "${species}"
     container params.folddisco_image
     label 'high_cpu'
-    storeDir "${params.outdir}/folddisco_index"
+    storeDir "${DB_CACHE}/folddisco_index"
 
     input:
     tuple val(species), path(structures)

@@ -51,6 +51,11 @@ SPECIES_ONE    ?= human
 MINI_TARGETS ?= yeast,ecoli
 MINI_COMBOS  ?= protein20:10,hp_pbotc_1st_ed2:19
 
+# Midi: every human chr6 gene as the query, FULL proteomes as targets. Real scale on the
+# target side, ~5% of the query load -- 964 proteins carrying 2358 of the 50185 human Pfam
+# domain instances. chr6 because it carries the MHC, so this subsumes the MHC vignette.
+MIDI_TARGETS ?= mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
+
 PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 
 # Mac-side Nextflow. Pinned to the conda env rather than relying on PATH; on Sherlock the
@@ -91,6 +96,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 .PHONY: bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
+        midi-testset-sherlock run-midi \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
@@ -116,6 +122,7 @@ help:
 	@printf '%s\n' '  prefetch-images       Pull all pinned images into $$SCRATCH cache'
 	@echo "  mini-testset-sherlock Build the mini data set"
 	@echo "  run-mini             Run the mini smoke test"
+	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-kmerseek         Run only the Kmerseek sweep"
 	@echo "  run-baselines        Run only the baseline tools"
 	@echo "  run                  Run the complete benchmark"
@@ -623,6 +630,45 @@ mini-testset-sherlock:
 	    --outdir          data/mini \
 	    --target_species  $(MINI_TARGETS) \
 	    --structure-cache data/structures
+
+# ---- midi: chr6 queries, full targets ----
+midi-testset-sherlock:
+	$(call require_cluster)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations     data/annotations \
+	    --qfo-dir         data/qfo \
+	    --outdir          data/midi \
+	    --gene-set        chr6 \
+	    --full-targets \
+	    --hgnc            data/covariates/hgnc_complete_set.txt \
+	    --target_species  $(MIDI_TARGETS) \
+	    --structure-cache data/structures
+
+# Full sherlock profile, NOT mini: the targets are real proteomes and need real resources.
+# --db_cache points at the full run's outdir so the target-side databases this builds are
+# the ones `make run` will reuse. Results stay in data/midi/results -- same target files,
+# different query set, so the calls and metrics must not land on top of the full run's.
+run-midi: prefetch-images midi-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi
+	cd run-midi && \
+	  ml load nextflow && \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --qfo_dir         ../data/midi/qfo \
+	    --annotations     ../data/midi/annotations \
+	    --structures      ../data/midi/structures \
+	    --outdir          ../data/midi/results \
+	    --db_cache        ../results \
+	    --target_species  $(MIDI_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(NF_ARGS)
 
 # Same code path as the real run, scoped down. Do this before `make run`.
 run-mini: prefetch-images mini-testset-sherlock
