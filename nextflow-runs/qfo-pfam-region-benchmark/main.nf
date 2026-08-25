@@ -153,7 +153,10 @@ params.low_complexity_toggle = [false, true]
 // because cysteine is ~1.4% of residues. gbmr7 carries less information than wwmj5, 1.976
 // against 2.197, despite two more classes, because its classes are unbalanced.
 def ALL_ENCODINGS = [
-    ['protein20', 'protein20', 4, 13],                      // 4.176 bits/sym, 10 ksizes
+    // k=4 dropped: 20^4 = 160_000 keys against ~11.3M proteome k-mers means the entire
+    // keyspace is occupied ~70 times over, so every query 4-mer matches a large share of
+    // the proteome. It OOM-killed its task and the result would be noise either way.
+    ['protein20', 'protein20', 5, 13],                      // 4.176 bits/sym, 9 ksizes
     ['uniprot18', 'uniprot18', 5, 14],                      // 3.951 bits/sym, 10 ksizes
     ['hsdm17', 'hsdm17', 5, 14],                            // 3.742 bits/sym, 10 ksizes
     ['wass14', 'wass14', 5, 14],                            // 3.626 bits/sym, 10 ksizes
@@ -343,12 +346,34 @@ if (SPECIES.isEmpty()) {
 // k-mers absorb a large share of the proteome, and the inverted index scales with the
 // most-degenerate k-mer's occurrence count. Size for the known-risk zone up front rather
 // than retrying into it -- each retry costs a full SLURM requeue.
-// Class count is now in the name, so the memory rule reads it rather than guessing from a
-// prefix: the fewer classes, the more a handful of k-mers absorb the proteome, and the
-// more RAM the inverted index needs. hp_*2 and hp_*3 are the degenerate ones.
+// What blows up memory is a SATURATED k-mer keyspace, not a particular alphabet family.
+// When classes^ksize is small relative to the number of k-mers in the proteome, every key
+// is occupied many times over, each query k-mer matches a large share of the targets, and
+// both the inverted index and the region output explode.
+//
+// The old rule keyed on the alphabet NAME (hp_*2/hp_*3 at ksize<=20). It flagged 40 combos
+// and missed protein20 k=4: 20^4 = 160_000 keys against ~11.3M proteome k-mers, the whole
+// keyspace occupied ~70 times over. That combo OOM-killed a task -- and the model predicts
+// 70.6 k-mers per key where the task's own index log reported mean 70.50. The rule below
+// flags 47 of the 184 alphabet x ksize combos, including every low-ksize case in the
+// non-HP alphabets that a name-based rule cannot see.
 def DB_CACHE = params.db_cache ?: params.outdir
 
-def isDegenerateHp = { label -> label ==~ /.*[23]$/ }
+// Class count is the trailing number in every encoding name: protein20, gbmr4,
+// hp_lehninger_hpc3, hp_thomas_dill_no_c2.
+def alphabetClasses = { label ->
+    def m = label =~ /(\d+)$/
+    m ? (m[0][1] as int) : 20
+}
+
+// Roughly the k-mer count of one full proteome; mouse reports 11_284_322 at protein20 k=4.
+// A combo whose keyspace is at or below this has every key occupied on average, which is
+// the regime that needs the large allocation.
+params.kmerseek_saturation_kmers = 11_300_000
+
+def isSaturated = { label, ksize ->
+    ksize * Math.log10(alphabetClasses(label)) <= Math.log10(params.kmerseek_saturation_kmers as double)
+}
 
 // Sized for full QfO proteomes. A mini/smoke run indexes a few hundred sequences and
 // needs nothing like this, so both figures are params -- the `mini` profile lowers them
@@ -378,7 +403,7 @@ def scoreMemory = { regions, attempt ->
 }
 
 def kmerseekMemory = { label, ksize, attempt ->
-    def base = (isDegenerateHp(label) && ksize <= 20)
+    def base = isSaturated(label, ksize)
         ? MemoryUnit.of(params.kmerseek_memory_hp_lowk)
         : MemoryUnit.of(params.kmerseek_memory)
     base * attempt
@@ -725,6 +750,7 @@ process kmerseekIndexAndSearch {
     # sub-protein domain hits whose whole-query p-value is unimpressive. Do not "tighten"
     # this by also lowering --max-query-pvalue expecting fewer rows; the OR means the
     # looser of the two governs.
+    set +e
     kmerseek search \\
         --alphabet ${cli_flag} \\
         --ksize    ${ksize} \\
@@ -736,8 +762,22 @@ process kmerseekIndexAndSearch {
         --max-query-pvalue  ${params.max_query_pvalue} \\
         --min-region-score  ${params.min_region_score} \\
         2>> ${log_file} \\
-        | zstd -T2 -o ${out_zst} \\
-        || true
+        | zstd -T2 -o ${out_zst}
+    rc=(\${PIPESTATUS[@]})
+    set -e
+
+    # kmerseek's own nonzero exit stays tolerated: a combo that finds nothing is a real
+    # result. zstd's does NOT. It used to share this `|| true`, so "cannot write block:
+    # Cannot allocate memory" left a truncated .zst that polars read as far as it could
+    # before dying on "incomplete frame" -- a memory failure surfacing as a parquet error
+    # two steps later. Re-raise it as a signal so the retry ladder doubles the allocation.
+    if [ "\${rc[1]}" -ne 0 ]; then
+        echo "zstd exited \${rc[1]}: the region stream is truncated, not a short result" >&2
+        exit 137
+    fi
+    if [ "\${rc[0]}" -ne 0 ]; then
+        echo "note: kmerseek search exited \${rc[0]}; treating as a no-hit result" >&2
+    fi
 
     touch ${out_zst}
     echo "End: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
