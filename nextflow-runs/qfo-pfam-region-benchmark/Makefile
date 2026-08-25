@@ -43,8 +43,12 @@ LOCAL_RESULTS  := /Users/olga/data/qfo-pfam-region-benchmark
 MINI_DIR       := /Users/olga/data/qfo-pfam-region-benchmark-mini
 MHC_DIR        := /Users/olga/data/qfo-pfam-region-benchmark-mhc
 
-# One species at a time for the login-node fallback, e.g. make fetch-structures-login SPECIES_ONE=human
-SPECIES_ONE    ?= human
+# Empty means all ten proteomes. Name one to fetch just that, e.g.
+#   make fetch-structures SPECIES_ONE=mouse
+SPECIES_ONE    ?=
+
+# Parallel transfers on the login node. Modest on purpose: shared node, public EBI endpoint.
+FETCH_PARALLEL ?= 4
 
 # Two species and two combos: enough to exercise every stage in minutes.
 # TARGET proteomes. Human is the query and is never listed here.
@@ -96,7 +100,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 .PHONY: bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
-        midi-testset-sherlock run-midi \
+        midi-testset-sherlock run-midi fetch-structures-login \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
@@ -123,6 +127,7 @@ help:
 	@echo "  mini-testset-sherlock Build the mini data set"
 	@echo "  run-mini             Run the mini smoke test"
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
+	@echo "  fetch-structures     Download AlphaFold structures ON the login node (~36 GB)"
 	@echo "  run-kmerseek         Run only the Kmerseek sweep"
 	@echo "  run-baselines        Run only the baseline tools"
 	@echo "  run                  Run the complete benchmark"
@@ -459,7 +464,16 @@ clean-image-cache:
 #
 # Must run where there is outbound internet. On Sherlock that is a login node, which is why
 # this is not submitted through SLURM; it is I/O, not compute.
-fetch-structures: fetch-structures-sherlock
+# Default to the LOGIN node. fetch-structures-sherlock routes the download through
+# Nextflow, which puts it on a compute node -- and Sherlock compute nodes have no outbound
+# internet, so it fails its own preflight every time. The login node has the fast link, so
+# there is no reason to drag ~36 GB across an rsync from the Mac either: EBI -> Sherlock
+# directly beats EBI -> Mac -> Sherlock on both hops.
+#
+# This blocks in the foreground so you can watch it. The transfers are resumable: proteome
+# archives come over rsync, per-accession fetches use --continue-at with a speed floor, and
+# re-running skips whatever is already on disk. Safe to Ctrl-C and re-run.
+fetch-structures: fetch-structures-login
 
 # Download structures where they will be used.
 # Download as SLURM jobs, one per species. The login-node version was SIGKILLed mid-
@@ -485,10 +499,21 @@ fetch-structures-sherlock:
 # Fallback for a cluster whose compute nodes have no outbound internet: run the download
 # on the login node one species at a time, with low parallelism to stay under its limits.
 # Slower and killable, but it needs no route from the batch partition.
+# All ten proteomes unless SPECIES_ONE names one. The accession lists have to exist first:
+# chicken and ciona are not in AFDB's proteome set and are fetched accession by accession,
+# so without the lists those two silently produce nothing. That step was missing here while
+# fetch-structures-sherlock had it, which is why this target looked like it worked and then
+# left two species empty.
 fetch-structures-login:
 	$(call require_cluster)
 	@mkdir -p data/structures/_accessions
-	PARALLEL=2 FLAT_CACHE=data/structures bin/fetch_alphafold_structures.sh \
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/write_structure_lists.py \
+	    --annotations data/annotations \
+	    --outdir      data/structures/_accessions
+	PARALLEL=$(FETCH_PARALLEL) FLAT_CACHE=data/structures bin/fetch_alphafold_structures.sh \
 	  data/structures data/structures/_accessions $(SPECIES_ONE)
 
 
