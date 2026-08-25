@@ -22,6 +22,7 @@ and Folddisco arms.
 
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -222,9 +223,13 @@ def main():
 
     # ---- target side ----
     def link(src: Path, dst: Path) -> None:
-        """Symlink src to dst, replacing any existing link so a rebuild is idempotent."""
-        if dst.is_symlink() or dst.exists():
+        """Symlink src to dst, replacing whatever is there so a rebuild is idempotent."""
+        if dst.is_symlink() or dst.is_file():
             dst.unlink()
+        elif dst.is_dir():
+            # unlink() raises on a real directory, so a second build over a first one died
+            # here rather than replacing it.
+            shutil.rmtree(dst)
         dst.symlink_to(src.resolve())
 
     for sp in species:
@@ -295,13 +300,30 @@ def main():
     # than rebuilt link by link: there are ~20k files per proteome and the pipeline wants
     # all of them. Only the human side is curated down to the query accessions.
     if args.full_targets:
+        # A real directory of per-file symlinks, NOT one symlink to the species directory.
+        # Two reasons. Nextflow's file(...).list() does not follow a directory symlink, so
+        # the pipeline's own has_structs check reports an empty directory (fixed there too,
+        # but not worth depending on). And this is exactly how the full run's
+        # data/structures/<sp> is built by fetch_alphafold_structures.sh, so the structure
+        # arms stage identical input in both runs instead of two different shapes.
         for sp in species:
             src = args.structure_cache / sp
-            if src.is_dir():
-                link(src, struct_out / sp)
-            else:
+            if not src.is_dir():
                 print(f"NOTE: no structure directory at {src} -- the structure arms will "
-                      f"skip {sp}. Stage it with `make sync-structures`.")
+                      f"skip {sp}. Fetch it with `make fetch-structures SPECIES_ONE={sp}`.")
+                continue
+            d = struct_out / sp
+            d.mkdir(parents=True, exist_ok=True)
+            n = 0
+            for f in src.iterdir():
+                if not f.name.startswith("AF-"):
+                    continue
+                dst = d / f.name
+                if not dst.exists() and not dst.is_symlink():
+                    dst.symlink_to(f.resolve())
+                n += 1
+            summary.setdefault("structures", {})[sp] = {"n_linked": n, "full_target": True}
+            print(f"NOTE: {sp}: linked {n} structures from {src}")
         per_species_acc = {"human": query_acc}
     else:
         per_species_acc = {"human": query_acc}

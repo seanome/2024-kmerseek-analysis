@@ -1976,9 +1976,16 @@ workflow {
         // folddisco index exits 1 printing nothing at all -- so the emptiness is checked
         // here, where it can name the cause and the fix. `make sync-data` deliberately
         // does NOT ship structures (they are ~36 GB); `make sync-structures` does.
+        // toRealPath() is load-bearing. Nextflow's file(...).list() does NOT follow a
+        // symlink to a directory -- it returns the LINK'S OWN NAME, so a perfectly good
+        // structures/mouse -> /somewhere/mouse listed as ["mouse"], matched nothing, and
+        // this reported "no structures" for a directory full of them. Verified directly:
+        // list() gives [mouse], toRealPath().list() gives the AF-*.cif files.
         def has_structs = { label ->
             def d = file("${params.structures}/${label}")
-            d.exists() && d.list().any { it ==~ /(?i)^AF-.*\.cif(\.gz)?$/ }
+            if (!d.exists()) return false
+            def real = file(d.toRealPath().toString())
+            real.list().any { it ==~ /(?i)^AF-.*\.cif(\.gz)?$/ }
         }
         def struct_species = SPECIES.findAll { has_structs(it.label) }
         def missing_structs = SPECIES*.label - struct_species*.label
