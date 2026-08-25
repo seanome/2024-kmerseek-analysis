@@ -87,23 +87,35 @@ proteome_archive() {
     grep "^${up}_" "$LISTING" | sort -Vr | head -1
 }
 
-# Model version for per-accession fetches, probed once against a real accession rather
-# than assumed. Ordered newest first.
+# Model version for per-accession fetches, probed against real accessions rather than
+# assumed. Ordered newest first.
+#
+# Probes SEVERAL accessions, not one. AlphaFold has no model for every UniProt accession --
+# the fetch loop below says so itself and treats a 404 there as expected -- but this probe
+# used only the first accession in the list and exited 1 when it missed. One absent chicken
+# entry (A0A165EAY6) therefore killed a ten-species download in which chicken itself was
+# fully available: 12 of 12 other chicken accessions resolve to v6.
+PROBE_LIMIT="${PROBE_LIMIT:-12}"
 MODEL_VERSION=""
 resolve_model_version() {
-    local probe="$1"
+    local todo="$1"
     [[ -n "$MODEL_VERSION" ]] && return 0
-    local v
-    for v in v6 v5 v4; do
-        if curl --fail --silent --head --max-time 30 \
-             "$AFDB_FILES/AF-${probe}-F1-model_${v}.cif" >/dev/null 2>&1; then
-            MODEL_VERSION="$v"
-            echo "  per-accession model version: $MODEL_VERSION"
-            return 0
-        fi
-    done
-    echo "!! no model version among v6/v5/v4 resolved for probe accession $probe" >&2
-    exit 1
+    local v acc tried=0
+    while read -r acc; do
+        [[ -z "$acc" ]] && continue
+        tried=$((tried + 1))
+        for v in v6 v5 v4; do
+            if curl --fail --silent --head --max-time 30 \
+                 "$AFDB_FILES/AF-${acc}-F1-model_${v}.cif" >/dev/null 2>&1; then
+                MODEL_VERSION="$v"
+                echo "  per-accession model version: $MODEL_VERSION (resolved on $acc after $tried probe(s))"
+                return 0
+            fi
+        done
+        [[ "$tried" -ge "$PROBE_LIMIT" ]] && break
+    done < "$todo"
+    echo "!! no model version among v6/v5/v4 resolved after $tried probe accessions" >&2
+    return 1
 }
 
 # Default target list, restored: an earlier edit replaced the block these lived in and
@@ -195,7 +207,15 @@ fetch_per_accession() {
     # A 404 here is expected and not fatal: AlphaFold has no model for every UniProt
     # accession. Those proteins are absent from the Foldseek arm, which is the
     # coverage gap the benchmark reports rather than hides.
-    resolve_model_version "$(head -1 "$todo")"
+    # A species AFDB does not cover at all must not abort the other nine: the structure
+    # arms already report per-species coverage, and a missing species is a coverage gap to
+    # report, not a reason to lose an in-progress multi-species download.
+    if ! resolve_model_version "$todo"; then
+        echo "!! skipping per-accession fetch for $species -- AlphaFold resolved no model" >&2
+        echo "   for any of its first $PROBE_LIMIT accessions. Other species continue." >&2
+        rm -f "$todo"
+        return 0
+    fi
     export AFDB_FILES dest MODEL_VERSION
     xargs -a "$todo" -P "$PARALLEL" -I{} bash -c '
         out="$dest/AF-{}-F1.cif"
