@@ -162,11 +162,19 @@ fetch_proteome_tar() {
         echo "  archive already downloaded"
     fi
 
-    # AFDB tars hold AF-<acc>-F<n>-model_v<N>.cif.gz. Keep fragment F1 only: the benchmark
-    # scores whole-protein domain intervals, and multi-fragment entries are split models
-    # of very long proteins whose fragment coordinates do not map onto the full sequence.
+    # AFDB tars hold AF-<acc>-F<n>-model_v<N>.cif.gz. KEEP EVERY FRAGMENT. Proteins over
+    # 2700 aa are modelled only as overlapping 1400-residue fragments with a 200-residue
+    # stride, so an F1-only extract silently drops every structure for the longest proteins
+    # in the proteome -- 3400 fragment files in the human archive alone, and with them all
+    # 3469 human Pfam domain instances (6.9%) that sit on proteins over 2700 aa.
+    #
+    # Fragment residue numbering is fragment-local: AF-A0A087WUL8-F2 numbers its residues
+    # 1..1400 while its SIFTS xref shows UniProt 201..1600. Every downstream normalizer
+    # therefore adds (n-1)*200 to a hit on F<n> before the interval means anything against
+    # a full-sequence Pfam annotation -- see af_offset() in bin/normalize_reseek.awk,
+    # foldseekSearch in main.nf, and accession_and_offset() in bin/folddisco_to_regions.py.
     echo "  extracting"
-    tar -xf "$tar_path" -C "$dest" --wildcards '*-F1-model_v*.cif.gz' 2>/dev/null || \
+    tar -xf "$tar_path" -C "$dest" --wildcards '*-model_v*.cif.gz' 2>/dev/null || \
         tar -xf "$tar_path" -C "$dest"
     find "$dest" -name '*.cif.gz' -print0 | xargs -0 -P "$PARALLEL" -n 64 gunzip -f
 
@@ -176,16 +184,9 @@ fetch_proteome_tar() {
     # counted twice. Measured on the real yeast archive: 6055 .cif alongside 6055 .pdb.gz.
     find "$dest" -name 'AF-*' ! -name '*.cif' ! -name '*.cif.gz' -delete
 
-    # Drop every non-F1 fragment explicitly rather than trusting tar to have filtered.
-    # GNU tar honours --wildcards; macOS bsdtar does not and silently falls through to the
-    # unfiltered extract above, leaving F2+ behind. Those matter: accession_from_tid()
-    # parses AF-<acc>-F2-... back to the same accession, so a fragment would be indexed as
-    # a second copy of the protein. Fragment coordinates are also relative to the fragment,
-    # not the full sequence, so their residue ranges would be wrong against Pfam anyway.
-    find "$dest" -name 'AF-*.cif' ! -name 'AF-*-F1*' -delete
-
-    # Normalise to the AF-<acc>-F1.cif name the cache links also use.
-    for f in "$dest"/AF-*-F1-model_v*.cif; do
+    # Normalise to AF-<acc>-F<n>.cif, keeping the fragment number: it is the only thing
+    # that tells a downstream normalizer which offset to apply.
+    for f in "$dest"/AF-*-F[0-9]*-model_v*.cif; do
         [[ -e "$f" ]] || continue
         mv -f "$f" "$dest/$(basename "$f" | sed -E 's/-model_v[0-9]+//')"
     done

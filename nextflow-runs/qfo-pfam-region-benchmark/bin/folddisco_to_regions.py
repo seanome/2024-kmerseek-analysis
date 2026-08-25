@@ -47,15 +47,25 @@ def residue_span(field: str) -> tuple[int, int, int] | None:
     return min(positions), max(positions), len(positions)
 
 
-def accession_from_tid(tid: str) -> str:
-    """Folddisco names targets by structure path; reduce to the UniProt accession."""
+# AlphaFold models proteins over 2700 aa as overlapping 1400-residue fragments on a
+# 200-residue stride, numbering each fragment's residues from 1. A hit on F<n> therefore
+# sits (n-1)*200 before its true position in the full sequence Pfam annotates. Verified
+# directly on AF-A0A087WUL8-F2: auth_seq_id 1..1400, SIFTS xref UniProt 201..1600.
+AF_FRAGMENT_STRIDE = 200
+_AF_FRAGMENT = re.compile(r"-F(\d+)")
+
+
+def accession_and_offset(tid: str) -> tuple[str, int]:
+    """Folddisco names targets by structure path; reduce to accession plus fragment offset."""
     name = Path(tid.strip()).name
     if name.startswith("AF-"):
-        return name.split("-")[1]
+        m = _AF_FRAGMENT.search(name)
+        offset = (int(m.group(1)) - 1) * AF_FRAGMENT_STRIDE if m else 0
+        return name.split("-")[1], offset
     for suffix in (".pdb", ".cif", ".mmcif", ".gz", ".ent"):
         if name.endswith(suffix):
             name = name[: -len(suffix)]
-    return name
+    return name, 0
 
 
 def main():
@@ -91,9 +101,12 @@ def main():
 
             # n_matched comes from the query side: it is how many of the query's residues
             # were placed, which is what node_count reports.
+            # Only the TARGET side comes from a structure file here; the query span is
+            # already in the query protein's own numbering.
+            t_acc, t_off = accession_and_offset(tid)
             out.write(
-                f"{args.query_accession}\t{accession_from_tid(tid)}\t"
-                f"{q_span[0]}\t{q_span[1]}\t{t_span[0]}\t{t_span[1]}\t"
+                f"{args.query_accession}\t{t_acc}\t"
+                f"{q_span[0]}\t{q_span[1]}\t{t_span[0] + t_off}\t{t_span[1] + t_off}\t"
                 f"{score}\t{rmsd_val}\t{q_span[2]}\n"
             )
             written += 1

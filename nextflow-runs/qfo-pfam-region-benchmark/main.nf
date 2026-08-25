@@ -1031,12 +1031,23 @@ process foldseekSearch {
         --threads ${task.cpus} \\
         --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
 
-    # Foldseek names rows by structure filename (AF-<acc>-F1-model_v6.cif). Reduce to the
-    # bare accession so every arm's output keys the same way.
+    # Foldseek names rows by structure filename (AF-<acc>-F<n>.cif). Reduce to the bare
+    # accession so every arm keys the same way, and shift the interval by the fragment
+    # offset first. AlphaFold models proteins over 2700 aa as overlapping 1400-residue
+    # fragments on a 200-residue stride, each numbered from 1, so a hit on F<n> sits
+    # (n-1)*200 before its true position. Verified on AF-A0A087WUL8-F2: auth_seq_id
+    # 1..1400, SIFTS xref UniProt 201..1600.
     awk -F'\t' 'BEGIN{OFS="\t"} {
         for (i = 1; i <= 2; i++) {
+            # One match() only. An earlier version called a helper that ran its own
+            # match(), which reset RSTART before this substr() used it and emptied the
+            # accession column outright.
             if (match(\$i, /AF-[A-Z0-9]+-F[0-9]+/)) {
-                split(substr(\$i, RSTART + 3), p, "-"); \$i = p[1]
+                tok = substr(\$i, RSTART, RLENGTH)     # AF-<acc>-F<n>
+                split(tok, p, "-")                     # p[2]=accession, p[3]=F<n>
+                off = (substr(p[3], 2) + 0 - 1) * 200
+                if (off) { \$(2 * i + 1) += off; \$(2 * i + 2) += off }
+                \$i = p[2]
             }
         }
         print
