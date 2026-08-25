@@ -579,7 +579,7 @@ define launch
 	mkdir -p run
 	cd run && \
 	  ml load nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(NF_ARGS) \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume -ansi-log false $(2) $(NF_ARGS) \
 	    --qfo_dir     ../data/qfo \
 	    --annotations ../data/annotations \
 	    --structures  ../data/structures \
@@ -626,7 +626,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	mkdir -p run-mini
 	cd run-mini && \
 	  ml load nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE),mini -resume \
+	  nextflow run ../main.nf -profile $(PROFILE),mini -resume -ansi-log false \
 	    --qfo_dir         ../data/mini/qfo \
 	    --annotations     ../data/mini/annotations \
 	    --structures      ../data/mini/structures \

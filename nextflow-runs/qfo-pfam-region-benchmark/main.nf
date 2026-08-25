@@ -345,6 +345,27 @@ def isDegenerateHp = { label -> label ==~ /.*[23]$/ }
 params.kmerseek_memory         = '32 GB'
 params.kmerseek_memory_hp_lowk = '128 GB'
 
+// scoreDomainCalls is ~10_179 tasks on a full run, and a flat 96 GB for all of them is a
+// 5.8 TB standing ask at maxForks 60 -- it queues rather than runs. Size from the actual
+// input instead: the region file IS the thing that gets loaded, joined against the domain
+// map and expanded, so its compressed size predicts the peak far better than the combo
+// name does. HP at low ksize produces the big files and still gets the big allocation;
+// the median combo stops asking for 96 GB it never touches.
+//
+// The multiplier is compressed-bytes to peak RAM, and it is deliberately generous: the
+// join in transfer_domains multiplies rows before it filters them. Retries double it, so
+// an underestimate costs one requeue rather than a dead task.
+params.score_memory_base   = '8 GB'
+params.score_memory_per_mb = 120     // MB of RAM per compressed MB of regions
+params.score_memory_max    = '96 GB' // the old flat value, now a ceiling rather than a floor
+
+def scoreMemory = { regions, attempt ->
+    long mb    = Math.max(1L, (regions.size() as long).intdiv(1024L * 1024L))
+    long estMb = MemoryUnit.of(params.score_memory_base).toMega() + mb * (params.score_memory_per_mb as long)
+    long capMb = MemoryUnit.of(params.score_memory_max).toMega()
+    MemoryUnit.of("${Math.min(estMb, capMb)} MB") * attempt
+}
+
 def kmerseekMemory = { label, ksize, attempt ->
     def base = (isDegenerateHp(label) && ksize <= 20)
         ? MemoryUnit.of(params.kmerseek_memory_hp_lowk)
@@ -1460,7 +1481,13 @@ process scoreDomainCalls {
      * a metrics row.
      */
     tag "${truth_set}: ${tool}/${variant} vs ${species}"
-    label 'python'
+    // Its own label, NOT 'python'. Config directives beat script-declared ones, so while
+    // this carried the python label that label's flat memory silently overrode the sizing
+    // below. The scoring label sets the container and nothing else.
+    label 'python_scoring'
+    memory { scoreMemory(regions, task.attempt) }
+    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    maxRetries 3
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
@@ -1568,6 +1595,16 @@ process buildMultiqcInputs {
     label 'python'
     publishDir "${params.outdir}/multiqc", mode: 'copy'
 
+    // The report is the last thing a run does, after every search and every scoring task
+    // has already succeeded. Failing the whole run over a plot would throw away a finished
+    // sweep, so inside the pipeline this arm is allowed to fail and the run still ends
+    // green -- the metrics parquets are published either way.
+    //
+    // In a `-entry report` run the report IS the work, so there it must fail loudly.
+    // params.report_trace is set only by that entry, which makes it the discriminator.
+    errorStrategy { params.report_trace ? 'terminate' : 'ignore' }
+
+
     input:
     tuple path(metrics), path(curves), path(trace), path(human_fasta)
 
@@ -1606,6 +1643,16 @@ process multiqcReport {
     tag "multiqc"
     container 'quay.io/biocontainers/multiqc@sha256:b65e3fe879df27b92334dda0fd987a6e21bdee09a2848551d4f287099a93b7ac'
     publishDir params.outdir, mode: 'copy'
+
+    // The report is the last thing a run does, after every search and every scoring task
+    // has already succeeded. Failing the whole run over a plot would throw away a finished
+    // sweep, so inside the pipeline this arm is allowed to fail and the run still ends
+    // green -- the metrics parquets are published either way.
+    //
+    // In a `-entry report` run the report IS the work, so there it must fail loudly.
+    // params.report_trace is set only by that entry, which makes it the discriminator.
+    errorStrategy { params.report_trace ? 'terminate' : 'ignore' }
+
 
     input:
     tuple path(sections), path(mqc_config)
