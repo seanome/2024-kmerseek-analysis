@@ -493,15 +493,28 @@ fetch-structures-login:
 # errors with a pointer here if it is missing rather than trying to download.
 FOLDSEEK_IMG := $(shell sed -n "s|.*container '\(quay.io/biocontainers/foldseek@[^']*\)'.*|\1|p" main.nf | head -1)
 
+# The weights are tied to the foldseek release that downloaded them: after the 9 -> 10 bump
+# createdb refuses them with "Found ProstT5 model weights for previous Foldseek release".
+# FOLDSEEK_IMG is read out of main.nf, so this target always downloads for whatever version
+# the pipeline currently pins -- but `foldseek databases` will not write over an existing
+# directory, so an old one has to be moved aside first. Moved, not deleted: they are a few
+# GB over a slow link, and if the new download fails you still have something that works.
 prostt5-weights:
 	$(call require_cluster)
 	@mkdir -p data/prostt5
+	@if [ -d data/prostt5/weights ]; then \
+	  stamp=$$(date +%Y%m%d-%H%M%S); \
+	  echo "moving existing weights to data/prostt5/weights.old-$$stamp"; \
+	  /bin/mv -f data/prostt5/weights data/prostt5/weights.old-$$stamp; \
+	fi
+	@rm -rf data/prostt5/tmp
 	apptainer exec \
 	  --bind $$PWD:$$PWD --pwd $$PWD \
 	  docker://$(FOLDSEEK_IMG) \
 	  foldseek databases ProstT5 data/prostt5/weights data/prostt5/tmp
 	@rm -rf data/prostt5/tmp
-	@echo "weights at data/prostt5/weights"
+	@echo "weights at data/prostt5/weights (foldseek $(FOLDSEEK_IMG))"
+	@echo "if that worked, the data/prostt5/weights.old-* directories can be removed"
 
 
 # Pfam-N truth: the "Pfam-A HMMs missed these" labels, streamed from EBI and filtered to
