@@ -101,17 +101,20 @@ def _apply(df: pl.DataFrame, col: str, fn, name: str) -> pl.DataFrame:
     )
 
 
+TRACE_SCHEMA = {
+    "process": pl.String, "tag": pl.String, "status": pl.String,
+    "exit": pl.String, "attempt": pl.Int64, "cpus": pl.Int64,
+    "realtime_s": pl.Float64, "duration_s": pl.Float64,
+    "peak_rss_b": pl.Float64, "requested_mem_b": pl.Float64,
+    "pct_cpu": pl.Float64, "read_b": pl.Float64, "write_b": pl.Float64,
+    "tool": pl.String, "is_search": pl.Boolean, "cpu_hours": pl.Float64,
+    "mem_used_frac": pl.Float64,
+}
+
+
 def load_trace(path: Path) -> pl.DataFrame:
     """Read one trace file. Returns an empty frame with the right schema if unusable."""
-    empty = pl.DataFrame(
-        schema={"process": pl.String, "tag": pl.String, "status": pl.String,
-                "exit": pl.String, "attempt": pl.Int64, "cpus": pl.Int64,
-                "realtime_s": pl.Float64, "duration_s": pl.Float64,
-                "peak_rss_b": pl.Float64, "requested_mem_b": pl.Float64,
-                "pct_cpu": pl.Float64, "read_b": pl.Float64, "write_b": pl.Float64,
-                "tool": pl.String, "is_search": pl.Boolean, "cpu_hours": pl.Float64,
-                "mem_used_frac": pl.Float64}
-    )
+    empty = pl.DataFrame(schema=TRACE_SCHEMA)
     if path is None or not Path(path).exists():
         return empty
     df = pl.read_csv(path, separator="\t", infer_schema_length=0, truncate_ragged_lines=True)
@@ -144,6 +147,101 @@ def load_trace(path: Path) -> pl.DataFrame:
         # is the shape that gets OOM-killed on the next combo.
         (pl.col("peak_rss_b") / pl.col("requested_mem_b")).alias("mem_used_frac"),
     )
+
+
+# Status for a row that came from a stored timing record rather than from the trace. Kept
+# distinct from COMPLETED and CACHED because it means something different: the task did not
+# run in THIS pipeline invocation and Nextflow never scheduled it at all.
+STORED = "STORED"
+
+# Fields a timing record carries. Written by kmerseekIndex and kmerseekSearch as one JSON
+# object per line; see the timings output in main.nf.
+_TIMING_FIELDS = {"process": pl.String, "tag": pl.String, "cpus": pl.Int64,
+                  "realtime_s": pl.Float64, "command_s": pl.Float64,
+                  "n_queries_all": pl.Int64}
+
+
+def load_timing_sidecars(path: Path | str | None) -> pl.DataFrame:
+    """Read kmerseek's own timing records into rows shaped like trace rows.
+
+    The kmerseek arm is on storeDir rather than publishDir, and a store hit executes no
+    task, so Nextflow writes no trace row for it however honestly it reports cached ones.
+    With the target indexes now cached across runs that is the normal case, not the
+    exception, which is why this arm has to time itself and keep the record next to the
+    result. `path` is a directory of `*.timings.jsonl` files, a single such file, or None.
+
+    Only wall time and core count are recoverable this way. Peak RSS, %cpu and I/O come
+    from the kernel accounting Nextflow reads for a task it supervised, and there is no
+    task here to supervise, so those stay null and the memory sections keep showing this
+    arm only from runs where it genuinely executed.
+    """
+    empty = pl.DataFrame(schema=TRACE_SCHEMA)
+    if path is None:
+        return empty
+    p = Path(path)
+    if p.is_dir():
+        files = sorted(p.glob("*.timings.jsonl"))
+    elif p.exists():
+        files = [p]
+    else:
+        files = []
+    if not files:
+        return empty
+
+    lines = []
+    for f in files:
+        try:
+            lines.extend(ln for ln in f.read_text().splitlines() if ln.strip())
+        except OSError as exc:
+            print(f"skipping unreadable timing record {f} ({exc})")
+    if not lines:
+        return empty
+    try:
+        df = pl.read_ndjson("\n".join(lines).encode(), schema=_TIMING_FIELDS)
+    except Exception as exc:
+        # A half-written record from a task the scheduler killed mid-printf is the
+        # expected failure here. Losing the whole arm's timings to one bad line would be
+        # worse than losing them all, so say so and carry on with the trace alone.
+        print(f"unparsable kmerseek timing records ({exc}); using the trace alone")
+        return empty
+
+    return df.with_columns(
+        pl.lit(STORED).alias("status"),
+        pl.lit(None, dtype=pl.String).alias("exit"),
+        pl.lit(1, dtype=pl.Int64).alias("attempt"),
+        pl.col("realtime_s").alias("duration_s"),
+        pl.lit(None, dtype=pl.Float64).alias("peak_rss_b"),
+        pl.lit(None, dtype=pl.Float64).alias("requested_mem_b"),
+        pl.lit(None, dtype=pl.Float64).alias("pct_cpu"),
+        pl.lit(None, dtype=pl.Float64).alias("read_b"),
+        pl.lit(None, dtype=pl.Float64).alias("write_b"),
+        pl.col("process").replace_strict(PROCESS_TO_TOOL, default="overhead").alias("tool"),
+        pl.col("process").is_in(list(SEARCH_PROCESSES)).alias("is_search"),
+        (pl.col("realtime_s") * pl.col("cpus") / 3600).alias("cpu_hours"),
+        pl.lit(None, dtype=pl.Float64).alias("mem_used_frac"),
+    )
+
+
+def merge_timings(trace: pl.DataFrame, sidecars: pl.DataFrame) -> pl.DataFrame:
+    """Trace rows win; sidecar rows fill in the tasks the trace never saw.
+
+    A run where kmerseek actually executed produces both a trace row and a fresh timing
+    record for the same task. The trace row is the richer of the two -- it carries peak
+    RSS and %cpu, which a task cannot measure about itself -- so it is the one kept, and
+    the sidecar contributes only where there is no trace row to contradict. Deduplicated
+    on (process, tag), which is unique per task here: one search per species x combo.
+    """
+    if sidecars.height == 0:
+        return trace
+    if trace.height == 0:
+        return sidecars
+    seen = trace.select("process", "tag").unique()
+    fresh = sidecars.join(seen, on=["process", "tag"], how="anti")
+    if fresh.height == 0:
+        return trace
+    # diagonal_relaxed: the trace frame keeps every raw Nextflow column alongside the
+    # parsed ones, and the sidecar frame has none of them.
+    return pl.concat([trace, fresh], how="diagonal_relaxed")
 
 
 def variant_from_tag(process: str, tag: str | None) -> str:

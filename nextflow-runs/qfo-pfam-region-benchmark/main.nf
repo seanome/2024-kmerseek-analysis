@@ -359,6 +359,30 @@ if (SPECIES.isEmpty()) {
 // non-HP alphabets that a name-based rule cannot see.
 def DB_CACHE = params.db_cache ?: params.outdir
 
+// Shell helpers both kmerseek processes paste into their scripts to time themselves.
+//
+// The kmerseek arm is the only one on storeDir rather than publishDir, and a storeDir hit
+// executes no task, so Nextflow writes no trace row for it. Every resource figure in the
+// MultiQC report is joined off that trace, which is why kmerseek's throughput and
+// CPU-hours came out blank while foldseek and prostt5 were populated. Splitting
+// kmerseekIndexAndSearch into kmerseekIndex + kmerseekSearch made it structural: the 3294
+// target indexes now live in a shared DB_CACHE, so the hit is the normal case. Timing
+// inside the task and storing the record next to the result is what survives that.
+//
+// Single-quoted so Groovy leaves the shell's own $ alone.
+def KMERSEEK_TIMER_SH = '''# GNU date's %N is nanoseconds. BSD date (macOS, when this runs without a container)
+    # prints a literal N instead, so fall back to whole seconds rather than emit a number
+    # that is silently wrong by six orders of magnitude.
+    _now_ms() {
+        local t
+        t=$(date +%s%N)
+        case "$t" in
+            *N) echo $(( $(date +%s) * 1000 )) ;;
+            *)  echo $(( t / 1000000 )) ;;
+        esac
+    }
+    _elapsed_s() { awk -v a="$1" -v b="$(_now_ms)" 'BEGIN{ printf "%.3f", (b - a) / 1000 }'; }'''
+
 // Class count is the trailing number in every encoding name: protein20, gbmr4,
 // hp_lehninger_hpc3, hp_thomas_dill_no_c2.
 def alphabetClasses = { label ->
@@ -709,9 +733,17 @@ process kmerseekIndex {
      * budget multiple TB on $SCRATCH and check `df` before launching the full run.
      * `make clean-indexes` drops the cache once the last run over these targets is done.
      *
-     * ONE output, and it is the directory. The spectrum and the log live INSIDE it. A
-     * sibling file next to a directory output under storeDir is the exact shape that
-     * produced this repo's recurring "Directory not empty" failure, twice.
+     * ONE output, and it is the directory. The spectrum, the log and the timing record
+     * live INSIDE it. A sibling file next to a directory output under storeDir is the
+     * exact shape that produced this repo's recurring "Directory not empty" failure,
+     * twice.
+     *
+     * The timing record is written by the task itself rather than left to the Nextflow
+     * trace. A storeDir hit executes NO task, so Nextflow writes no trace row for it, and
+     * with 3294 indexes cached in DB_CACHE the hit is the normal case from now on -- the
+     * arm would be permanently unmeasured. Nesting the record inside the directory means
+     * the measurement is cached alongside the thing it describes. kmerseekSearch carries
+     * it back out; see the timings output there.
      *
      * DO NOT "optimise" this further by indexing human once and searching the species
      * against it. It looks like the same win -- 366 index builds instead of 3294 -- but
@@ -745,8 +777,12 @@ process kmerseekIndex {
     // inherits the index setting when the option is omitted, so false emits nothing and
     // true emits the flag without a value.
     def lc_flag   = lowcomp ? "--remove-low-complexity" : ""
+    def timing    = "timing.jsonl"
     """
     set -euo pipefail
+    ${KMERSEEK_TIMER_SH}
+
+    _task_t0=\$(_now_ms)
 
     echo "=== Index: ${species} ${cli_flag} k=${ksize} lc=${lowcomp} ===" | tee index.log
     echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a index.log
@@ -755,6 +791,7 @@ process kmerseekIndex {
     # alphabet/ksize/low-complexity setting. Kept as a first-class output: the spectra are
     # what show WHY an alphabet behaves as it does, and the with/without low-complexity
     # pair is only interpretable if both spectra exist.
+    _cmd_t0=\$(_now_ms)
     kmerseek index \\
         --alphabet ${cli_flag} \\
         --ksize    ${ksize} \\
@@ -763,14 +800,21 @@ process kmerseekIndex {
         ${lc_flag} \\
         --kmer-stats-out ${spectrum} \\
         2>&1 | tee -a index.log
+    _cmd_s=\$(_elapsed_s \$_cmd_t0)
 
     echo "End: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a index.log
     echo "index size: \$(du -sh ${index_dir} | cut -f1)" | tee -a index.log
 
+    # command_s is the `kmerseek index` invocation alone; realtime_s is the whole task, so
+    # it is the figure comparable to a Nextflow trace row for any other process.
+    printf '{"process":"kmerseekIndex","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":null}\\n' \\
+        "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
+        "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" > ${timing}
+
     # Nested inside the index directory, not emitted alongside it -- see the storeDir note
     # above. kmerseek reads only the RocksDB files it wrote, so these are inert here.
     touch ${spectrum}
-    mv ${spectrum} index.log ${index_dir}/
+    mv ${spectrum} index.log ${timing} ${index_dir}/
     """
 }
 
@@ -784,6 +828,19 @@ process kmerseekSearch {
      * measured from the staged index: the index arrives as a directory symlink, and
      * .size() on a directory returns the dirent size, not the tree. Sizing memory off
      * that silently gave every search the floor allocation.
+     *
+     * The timings output is how this arm gets a throughput number at all. A storeDir hit
+     * runs no task and so leaves no Nextflow trace row, which is why kmerseek was blank in
+     * the report's speed sections while every publishDir baseline was populated. Writing
+     * the measurement into the store means it is served back on the hit, exactly like the
+     * regions parquet it describes, and `-entry report` reads the same files.
+     *
+     * `optional: true` on that output is load-bearing, not defensive. storeDir decides
+     * "already done" by checking the declared outputs exist in the store, so a mandatory
+     * third output would miss on every one of the 3294 entries written before this
+     * existed and re-run the entire sweep to recover a timing number. Optional lets those
+     * entries keep hitting; they simply have no record, which the report reports as a gap
+     * rather than as a zero.
      */
     tag "${species}_${label}_k${ksize}_lc${lowcomp}"
     storeDir "${params.outdir}/kmerseek"
@@ -805,6 +862,8 @@ process kmerseekSearch {
     output:
     path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
     path "spectrum.${species}.${label}.k${ksize}.lc${lowcomp}.csv.gz",           emit: spectrum
+    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.timings.jsonl",
+         optional: true, emit: timing
 
     script:
     def slug      = "${label}.k${ksize}.lc${lowcomp}"
@@ -812,9 +871,13 @@ process kmerseekSearch {
     def out_pq    = "human_vs_${species}.${slug}.regions.parquet"
     def log_file  = "human_vs_${species}.${slug}.log"
     def spectrum  = "spectrum.${species}.${slug}.csv.gz"
+    def timings   = "human_vs_${species}.${slug}.timings.jsonl"
     def lc_flag   = lowcomp ? "--remove-low-complexity" : ""
     """
     set -euo pipefail
+    ${KMERSEEK_TIMER_SH}
+
+    _task_t0=\$(_now_ms)
 
     echo "=== Search: human vs ${species} (${cli_flag} k=${ksize} lc=${lowcomp}) ===" | tee ${log_file}
     echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
@@ -824,11 +887,24 @@ process kmerseekSearch {
     # already computed and stored.
     cp ${index_dir}/${spectrum} ${spectrum} 2>/dev/null || touch ${spectrum}
 
+    # The index's own timing record, carried out of the store the same way. An index built
+    # before this record existed simply has none, so the report shows the search cost with
+    # no index cost beside it rather than failing.
+    cp ${index_dir}/timing.jsonl ${timings} 2>/dev/null || : > ${timings}
+
+    # n_queries_all: every sequence in the FASTA handed to kmerseek, NOT n_queries_ref,
+    # the FoldSeek-intersected subset. Recorded for provenance only -- the report divides
+    # by its own query count so kmerseek and the baselines are over the same denominator,
+    # and this is what catches the case where they are not.
+    n_queries=\$(grep -c '^>' ${human_fasta} || true)
+    n_queries=\${n_queries:-0}
+
     # --min-region-score is OR'd with --max-query-pvalue inside kmerseek, so this keeps
     # sub-protein domain hits whose whole-query p-value is unimpressive. Do not "tighten"
     # this by also lowering --max-query-pvalue expecting fewer rows; the OR means the
     # looser of the two governs.
     set +e
+    _cmd_t0=\$(_now_ms)
     kmerseek search \\
         --alphabet ${cli_flag} \\
         --ksize    ${ksize} \\
@@ -842,6 +918,7 @@ process kmerseekSearch {
         2>> ${log_file} \\
         | zstd -T2 -o ${out_zst}
     rc=(\${PIPESTATUS[@]})
+    _cmd_s=\$(_elapsed_s \$_cmd_t0)
     set -e
 
     # kmerseek's own nonzero exit stays tolerated: a combo that finds nothing is a real
@@ -885,6 +962,16 @@ PYEOF
     rm -f ${out_zst}
 
     echo "regions parquet: \$(du -sh ${out_pq} | cut -f1)" | tee -a ${log_file}
+
+    # realtime_s covers the whole task, csv-to-parquet included, because that is what a
+    # Nextflow trace row covers for every baseline -- foldseekSearch's realtime includes
+    # its own output normalisation too. Matching the definition is the point: the report
+    # divides this by the query count to get queries/s and puts it on the same axis as
+    # foldseek's 17.1 and prostt5's 14.4. command_s is the `kmerseek search` invocation
+    # alone, kept for attributing the difference rather than for the headline number.
+    printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s}\\n' \\
+        "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
+        "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" >> ${timings}
     """
 }
 
@@ -1689,6 +1776,30 @@ process scoreDomainCalls {
 }
 
 process scoreHmmscanCeiling {
+    /*
+     * The annotation ceiling: human queries against Pfam-A directly, no target proteome.
+     *
+     * Deliberately NOT stratified by identity, and that is why there is no --identity here
+     * while scoreDomainCalls has one. That axis is percent identity between a human domain
+     * instance and its closest same-family domain IN A GIVEN TARGET PROTEOME, so the
+     * identity table is per species and scoreDomainCalls joins it on species. This row is
+     * scored once with --species all because hmmscan reads no target proteome at all, so
+     * there is no species whose table applies and no principled way to pick one of the
+     * nine. Attaching an arbitrary species' identity would stratify the ceiling by, say,
+     * human-to-mouse divergence while labelling the row `all`.
+     *
+     * The consequence is that the ceiling has no rows on the identity axis, so it is
+     * absent from the gray-zone sections rather than plotted at a made-up stratum. Passing
+     * the NO_IDENTITY sentinel instead would produce the same numbers, but it would say
+     * "this run skipped identity", which is a different and untrue statement.
+     *
+     * evaluate_domain_calls.py already treats --identity as optional: it defaults to None
+     * and attach_identity() fills stratum_identity with nulls, the same path the sentinel
+     * takes. Until 2026-08-26 the script body interpolated ${identity}, which the input
+     * block never declared -- latent because Groovy only resolves it when the process
+     * actually executes, and this arm was reached for the first time once the ProstT5 arm
+     * was skipped on local runs.
+     */
     tag "hmmscan ceiling"
     label 'python'
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
@@ -1713,7 +1824,6 @@ process scoreHmmscanCeiling {
         --truth        ${truth} \\
         --direct-annotation \\
         --covariates   ${covariates} \\
-        --identity     ${identity} \\
         --min-overlap  ${params.min_overlap} \\
         --strict-iou   ${params.strict_iou} \\
         --calls-out    hmmscan.direct.all.calls.parquet \\
@@ -1751,6 +1861,12 @@ process buildMultiqcInputs {
      * task completes, so by the time this runs every search and scoring task is already
      * recorded. The only rows missing are this task's own and the report task after it,
      * which is why the run-totals section says it counts tasks, not elapsed clock time.
+     *
+     * The trace cannot see the kmerseek arm, though. It is the only arm on storeDir, and a
+     * store hit runs no task and writes no row, so those timings arrive separately as the
+     * records kmerseekSearch wrote into its own store. Staged as inputs rather than read
+     * from params.outdir directly: under Apptainer only staged paths are bound into the
+     * container, so a script reaching into the results directory would find nothing there.
      */
     tag "multiqc inputs"
     label 'python'
@@ -1768,6 +1884,7 @@ process buildMultiqcInputs {
 
     input:
     tuple path(metrics), path(curves), path(trace), path(human_fasta)
+    path kmerseek_timings, stageAs: 'kmerseek_timings/*'
 
     output:
     path "multiqc_in", emit: sections
@@ -1777,6 +1894,16 @@ process buildMultiqcInputs {
         ? "--primary-truth ${params.multiqc_primary_truth}" : ""
     // `|| true` because grep exits 1 on no match, which set -e would turn into a task
     // failure reported as a missing output rather than as an empty FASTA.
+    //
+    // This count is n_queries_all -- every sequence in the human FASTA -- and it is the
+    // denominator for every arm's queries/s, kmerseek included. It is NOT n_queries_ref,
+    // the FoldSeek-intersected subset the accuracy sections use, and the two must never
+    // be swapped: dividing one arm by one and another by the other would put tools on
+    // silently different axes in the same scatter.
+    //
+    // The timings directory does not exist when the sweep produced no records (a run with
+    // --skip_kmerseek, or one whose store predates the timings output), which the script
+    // treats as "no kmerseek rows" rather than as an error.
     """
     set -euo pipefail
     n_queries=\$(grep -c '^>' ${human_fasta} || true)
@@ -1785,6 +1912,7 @@ process buildMultiqcInputs {
         --metrics      ${metrics} \\
         --curves       ${curves} \\
         --trace        ${trace} \\
+        --kmerseek-timings kmerseek_timings \\
         --n-queries    \${n_queries} \\
         --max-tools    ${params.multiqc_max_tools} \\
         --max-lines    ${params.multiqc_max_lines} \\
@@ -2016,6 +2144,9 @@ workflow {
 
     // ---- kmerseek: alphabet x ksize x species ----
     kmerseek_regions = Channel.empty()
+    // Per-task timings for the report. Separate from the trace because this arm is on
+    // storeDir: a store hit runs no task and Nextflow records nothing for it.
+    kmerseek_timings = Channel.empty()
     if (!params.skip_kmerseek) {
         // An explicit combo list overrides the matrix entirely. The label is derived from
         // the CLI flag the same way ALL_ENCODINGS does it, so output filenames and the
@@ -2084,6 +2215,7 @@ workflow {
         // Rebuild (species, tool, variant) from the filename. The process emits a bare
         // path so storeDir works; the name carries everything the tuple used to.
         ks_out = kmerseekSearch(search_in)
+        kmerseek_timings = ks_out.timing
         // Rebuild (species, tool, variant) from the filename; the process emits bare paths
         // so storeDir works. The variant now carries the low-complexity setting, so the two
         // arms of the toggle are separate rows everywhere downstream rather than pooled.
@@ -2316,7 +2448,11 @@ workflow {
     )
 
     if (!params.skip_multiqc) {
-        multiqcFromMetrics(agg.metrics, agg.curves, human_fasta)
+        // ifEmpty([]) rather than a bare collect(): collect() on an empty channel emits
+        // nothing at all, which would leave buildMultiqcInputs with an input channel that
+        // never fires and drop the whole report on any run without kmerseek timings.
+        multiqcFromMetrics(agg.metrics, agg.curves, human_fasta,
+                           kmerseek_timings.collect().ifEmpty([]))
     }
 }
 
@@ -2330,6 +2466,7 @@ workflow multiqcFromMetrics {
     metrics
     curves
     human_fasta
+    kmerseek_timings
 
     main:
     mqc_in = metrics
@@ -2337,7 +2474,7 @@ workflow multiqcFromMetrics {
         // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
         .map { m, c -> tuple(m, c, resolveTrace(), file(human_fasta)) }
 
-    sections = buildMultiqcInputs(mqc_in).sections
+    sections = buildMultiqcInputs(mqc_in, kmerseek_timings).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
 }
 
@@ -2392,11 +2529,21 @@ workflow report {
     def trace = resolveTrace()
 
     def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
-    log.info "building the report from ${outdir}, trace ${trace}"
+
+    // kmerseek's timings come off disk here, not off a channel, because no kmerseek
+    // process runs in this entry. They sit in the search storeDir next to the regions
+    // parquet they describe, which is the whole reason they survive a run that executed
+    // nothing: `-entry report` reads exactly the files a store hit would have served.
+    def ks_timings = file("${outdir}/kmerseek").exists()
+        ? file("${outdir}/kmerseek/*.timings.jsonl")
+        : []
+    log.info "building the report from ${outdir}, trace ${trace}, " +
+             "${ks_timings.size()} kmerseek timing records"
 
     multiqcFromMetrics(
         Channel.of(metrics),
         Channel.of(curves.exists() ? curves : file("${projectDir}/assets/NO_CURVES")),
         human_fasta,
+        Channel.of(ks_timings),
     )
 }

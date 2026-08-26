@@ -63,6 +63,21 @@ ALIGNMENT_FREE = {
     "mmseqs2_seqseq": "No (seq aln)", "mmseqs2_iterative": "No (seq aln)",
     "hhblits": "No (profile aln)", "hmmscan": "No (profile aln)",
 }
+# Colour marks the method class, and every tool in a class shares it on purpose -- the
+# class identity is the argument the report makes. The cost is that a static export cannot
+# tell foldseek from reseek, both pink. Marker shape splits them: one shape per tool, fixed
+# here so a tool keeps the same shape wherever it is plotted. Plotly symbol names.
+TOOL_SYMBOL = {
+    "kmerseek": "circle",
+    "foldseek": "diamond", "reseek": "square", "folddisco": "triangle-up",
+    "prostt5": "diamond",
+    "hmmer3_phmmer": "circle", "hmmer3_jackhmmer": "square",
+    "mmseqs2": "triangle-up",
+    "mmseqs2_seqseq": "triangle-up", "mmseqs2_iterative": "triangle-down",
+    "hhblits": "x",
+    "hmmscan": "star",
+}
+
 # Identity bins below the twilight-zone boundary. The central claim is stated here.
 GRAY_ZONE = ["0-20%", "20-30%", "30-40%"]
 
@@ -81,6 +96,40 @@ IDENTITY_COLORS = {
 # ---------------------------------------------------------------------------
 # small helpers
 # ---------------------------------------------------------------------------
+
+# --- how MultiQC 1.35 labels a scatter point, which is not obvious from the outside ----
+#
+# Two mechanisms, and the resource scatters were accidentally disabling both.
+#
+# `annotation` is the text drawn beside the marker. MultiQC also has an automatic pass
+# that labels the ~10 biggest outliers, but it runs only `if n_annotated < 10`, where
+# n_annotated counts points that already have an "annotation" KEY -- present but empty
+# counts. Every resource scatter here set `"annotation": ""` on every point, which both
+# suppressed the automatic pass and drew nothing, so those plots rendered as bare dots.
+# The fix is to omit the key entirely when there is nothing to draw.
+#
+# The legend is built from `(color, marker_size, marker_line_width, group)`: one entry per
+# unique combination, labelled "{group}: {the names in it, joined}" and cropped at 60
+# characters. So `group` is what a reader sees the colour standing for, and `name` has to
+# identify the individual point on its own, because it is also the hover label and the
+# text the automatic annotation pass draws.
+#
+# That legend is off by default and cannot be turned on from inside the scatter module.
+# MultiQC builds the base layout with `showlegend = True if flat else False`, and
+# scatter.create_figure()'s `layout.showlegend = True` mutates the layout object AFTER
+# `go.Figure(layout=layout)` has already copied it, so it never reaches the figure. Setting
+# it in the pconfig is what actually works, and every scatter here does.
+ANNOTATE_EVERY_POINT_BELOW = 20
+
+
+def scatter_point(x, y, *, name, group, color, annotation=None, **extra):
+    """One scatter point, labelled so a reader can tell which tool and variant it is."""
+    point = {"x": x, "y": y, "name": name, "group": group, "color": color}
+    if annotation:
+        point["annotation"] = annotation
+    point.update(extra)
+    return point
+
 
 def clean(value):
     """JSON has no NaN or Infinity. Plotly reads null as a gap, which is what these are."""
@@ -318,7 +367,10 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                 "throughput in this run. Throughput comes from the Nextflow trace, so this "
                 "figure needs the trace of the run that produced these metrics — pass it "
                 "with <code>--report_trace</code>, or use <code>make multiqc</code>, which "
-                "fills it in from the newest trace under <code>run/</code>.</p>"
+                "fills it in from the newest trace under <code>run/</code>. kmerseek is "
+                "the exception: it is the one arm on <code>storeDir</code>, so a store hit "
+                "runs no task and leaves no trace row, and its timings come from the "
+                "<code>*.timings.jsonl</code> records beside its results instead.</p>"
             ),
         })
         return
@@ -335,12 +387,15 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     for r in rows:
         cls = tool_class(r["tool"])
         label = label_of(r["tool"], r["variant"])
-        points[label] = {
-            "x": r["queries_per_s"], "y": r["y"],
-            "color": CLASSES[cls][1], "group": CLASSES[cls][0],
-            "annotation": short_label(r["tool"], r["variant"]),
-            "marker_size": 14 if cls == "kmerseek" else 9,
-        }
+        # group is the method class here rather than the tool, because the class IS the
+        # argument this figure makes and the legend is where the colours get named. The
+        # per-point label is carried by `annotation`, which is drawn on the plot.
+        points[label] = scatter_point(
+            r["queries_per_s"], r["y"],
+            name=label, group=CLASSES[cls][0], color=CLASSES[cls][1],
+            annotation=short_label(r["tool"], r["variant"]),
+            marker_size=14 if cls == "kmerseek" else 9,
+        )
 
     xs = [r["queries_per_s"] for r in rows]
     ys = [r["y"] for r in rows]
@@ -357,6 +412,8 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
         # carries one in "<40% identity" -- which turned every Fmax tick into "0.6%".
         # Setting the suffix explicitly is the documented way to stop that inference.
         "ysuffix": "", "tt_decimals": 3,
+        # See ANNOTATE_EVERY_POINT_BELOW: without this the legend never renders.
+        "showlegend": True,
     }
     lines = []
     if y_best is not None:
@@ -371,7 +428,7 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     note = ""
     if dropped:
         note = ("<p>No throughput row for " + ", ".join(f"<code>{d}</code>" for d in dropped)
-                + " — that arm either did not run or produced no trace record, so it is "
+                + " — that arm either did not run or produced no timing record, so it is "
                   "absent from the plot rather than plotted at zero.</p>")
     write_section(out, "qfo_frontier", {
         "id": "qfo_frontier",
@@ -383,10 +440,16 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
             "and fastest incumbent, so the upper-right quadrant is the part of the space "
             "no existing tool reaches. The sweep contributes its "
             f"top {top_kmerseek} alphabet x ksize x low-complexity combos rather than one "
-            "point, so a lone spike is distinguishable from a plateau.</p>"
-            "<p>Speed here includes indexing, because every arm is timed the same way: "
-            "one task, one target proteome, start to finish. A tool that amortises an "
-            "index across many searches looks worse here than in steady-state use.</p>"
+            "point, so a lone spike is distinguishable from a plateau. Every point is "
+            "labelled with its tool and, for the sweep, its alphabet, k and "
+            "low-complexity arm; colour marks the method class, which the legend "
+            "names.</p>"
+            "<p>Speed here is the SEARCH only, for every arm. Each tool that needs a "
+            "database builds it in its own process — <code>foldseekDb</code>, "
+            "<code>prostt5Db</code>, <code>mmseqsDb</code>, <code>kmerseekIndex</code> — "
+            "and only the search process is timed, so a tool is not charged for an index "
+            "it would build once and reuse. Index cost is reported separately under "
+            "CPU time by process.</p>"
             + note),
         "plot_type": "scatter",
         "pconfig": pconfig,
@@ -426,9 +489,11 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                               format="{:,.3f}"),
             "queries_per_s": dict(title="Queries/s", scale="Blues", format="{:,.1f}"),
             "cpu_hours": dict(title="CPU-hours", scale="Reds", format="{:,.2f}",
-                              description="Summed over this combo's search tasks, or over "
-                                          "the whole arm where the trace cannot separate "
-                                          "variants"),
+                              description="Summed over this combo's SEARCH tasks, or "
+                                          "over the whole arm where the trace cannot "
+                                          "separate variants. Database construction is "
+                                          "excluded for every arm, kmerseekIndex "
+                                          "included; it is under CPU time by process"),
         },
         "data": cap,
     })
@@ -1252,7 +1317,15 @@ def section_reachability(out: Path, metrics: pl.DataFrame, primary_truth: str) -
 # sections: resources
 # ---------------------------------------------------------------------------
 
-def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
+def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
+                      source: str = "this run") -> None:
+    """Resource plots. `source` names the run these numbers describe.
+
+    Naming it matters because the same code renders a nine-proteome Sherlock sweep and a
+    two-species smoke test, and the absolute memory and time figures differ by orders of
+    magnitude between them. A reader who cannot tell which one they are looking at will
+    size a SLURM request off a 200-protein run.
+    """
     if trace.height == 0:
         write_section(out, "qfo_resources_missing", {
             "id": "qfo_resources_missing",
@@ -1275,6 +1348,7 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
             "tasks": trace.height,
             "completed": int((trace["status"] == "COMPLETED").sum()),
             "cached": int((trace["status"] == "CACHED").sum()),
+            "stored": int((trace["status"] == mt.STORED).sum()),
             "failed": int((trace["status"] == "FAILED").sum()),
             "retried": int((trace["attempt"] > 1).sum()) if "attempt" in trace.columns else 0,
             "cpu_hours": total_cpu_h,
@@ -1288,11 +1362,14 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
         "id": "qfo_run_summary",
         "section_name": "Run totals",
         "description": (
-            "Every task in the trace, including cached ones — a cached task keeps the "
+            f"Every task in {source}, including cached ones — a cached task keeps the "
             "resource figures from the execution that filled the cache, so a "
             "<code>-resume</code> run still reports honest totals for work it did not "
-            "repeat. Wall hours is the sum of per-task run times, not elapsed clock time; "
-            "the two differ by however much ran in parallel."),
+            "repeat. <strong>Stored</strong> counts kmerseek tasks served from "
+            "<code>storeDir</code>: Nextflow never scheduled them, so they appear in no "
+            "trace, and their times come from the timing record each task wrote beside "
+            "its own result. Wall hours is the sum of per-task run times, not elapsed "
+            "clock time; the two differ by however much ran in parallel."),
         "plot_type": "table",
         "pconfig": {"id": "qfo_run_summary_table", "title": "Run totals",
                     "col1_header": "", "sort_rows": False, "scale": False},
@@ -1300,6 +1377,8 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
             "tasks": dict(title="Tasks", format="{:,.0f}", scale=False),
             "completed": dict(title="Completed", format="{:,.0f}", scale=False),
             "cached": dict(title="Cached", format="{:,.0f}", scale=False),
+            "stored": dict(title="Stored", format="{:,.0f}", scale=False,
+                           description="Served from storeDir; timed by the task itself"),
             "failed": dict(title="Failed", format="{:,.0f}", scale=False),
             "retried": dict(title="Retried", format="{:,.0f}", scale=False),
             "cpu_hours": dict(title="CPU-hours", format="{:,.1f}", scale="Reds"),
@@ -1320,9 +1399,13 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
     write_section(out, "qfo_res_cpu", {
         "id": "qfo_res_cpu",
         "section_name": "CPU time by process",
-        "description": ("CPU-hours is run time times allotted cores, so a task that "
-                        "requested 16 cores and used one still bills 16. The gap between "
-                        "the two bars is exactly that waste."),
+        "description": (f"Every process in {source}. CPU-hours is run time times allotted "
+                        "cores, so a task that requested 16 cores and used one still bills "
+                        "16. The gap between the two bars is exactly that waste. "
+                        "<code>kmerseekIndex</code> and <code>kmerseekSearch</code> are "
+                        "separate bars on purpose: the index is built once per target "
+                        "proteome and reused across runs, so charging it to the search "
+                        "would misprice both."),
         "plot_type": "bargraph",
         "pconfig": {"id": "qfo_res_cpu_plot", "title": "CPU-hours and task-hours by process",
                     "ylab": "hours", "cpswitch": False, "stacking": "group", "height": 450},
@@ -1353,50 +1436,85 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
 
     # --- memory: what was asked for against what was used ---
     mem = done.filter(pl.col("peak_rss_b").is_not_null()
-                      & pl.col("requested_mem_b").is_not_null())
+                      & pl.col("requested_mem_b").is_not_null()
+                      & (pl.col("requested_mem_b") > 0) & (pl.col("peak_rss_b") > 0))
     if mem.height:
+        # y is the FRACTION of the request that was touched, not the absolute peak, and
+        # the change is deliberate. Plotting peak GB against requested GB needs a y=x
+        # reference, and MultiQC's scatter has no line primitive, so the previous version
+        # drew that reference as an 81-point `extra_series`. Those points are appended to
+        # the real ones: they were counted in the plot's own "198 points" subtitle, took a
+        # legend entry, and visually outnumbered the 117 tasks the plot exists to show. A
+        # ratio puts the reference on a horizontal line at 1.0, which `y_lines` draws as a
+        # layout shape rather than as data, so the count is honest and the tasks are what
+        # the reader sees.
+        #
+        # What that reveals is over-allocation, and it is real rather than a plotting
+        # artefact: the 2026-08-20 Sherlock trace has ecoli_hp_k20 reserving 128 GB and
+        # peaking at 1.02 GB. Log y keeps a task at 0.01 and one at 0.9 on the same plot.
+        annotate_all = mem.height <= ANNOTATE_EVERY_POINT_BELOW
         points = {}
         for i, r in enumerate(mem.to_dicts()):
-            label = f"{r['process']} [{r['tag']}]" if r["tag"] and r["tag"] != "-" else r["process"]
-            points[f"{label} #{i}"] = {
-                "x": r["requested_mem_b"] / 1024**3,
-                "y": r["peak_rss_b"] / 1024**3,
-                "color": tool_color(r["tool"]),
-                "group": r["process"],
-                "name": label,
-                "annotation": "",
-            }
-        lo = float(mem["requested_mem_b"].min()) / 1024**3
-        hi = float(mem["requested_mem_b"].max()) / 1024**3
-        diagonal = [{"x": lo + (hi - lo) * i / 80, "y": lo + (hi - lo) * i / 80,
-                     "color": "#cccccc", "marker_size": 3, "name": "peak = requested",
-                     "group": "peak = requested", "annotation": ""}
-                    for i in range(81)]
+            tag = r["tag"] if r["tag"] and r["tag"] != "-" else None
+            label = f"{r['process']} [{tag}]" if tag else r["process"]
+            peak_gb = r["peak_rss_b"] / 1024**3
+            req_gb = r["requested_mem_b"] / 1024**3
+            points[f"{label} #{i}"] = scatter_point(
+                # mem_used_frac rather than a second division here, so this plot and the
+                # efficiency bars can never disagree about what "used" means.
+                req_gb, r["mem_used_frac"],
+                # Both absolute figures live in the point name, so the hover still answers
+                # "how many GB" even though the axis is now a ratio.
+                name=f"{label} — {peak_gb:.2f} of {req_gb:.0f} GB",
+                group=r["process"], color=tool_color(r["tool"]),
+                annotation=label if annotate_all else None,
+            )
+        # The 1.0 guide is a layout shape, and Plotly's autorange ignores shapes, so on a
+        # run where nothing came close to its request the line would sit off the top of
+        # the plot and the reader would lose the reference the axis is measured against.
+        # Derived from the data rather than fixed at 1.05, because MultiQC's scatter DROPS
+        # points above ymax instead of clipping the axis -- a hard-coded ceiling would
+        # silently delete exactly the over-request tasks this plot exists to catch.
+        y_top = max(1.05, float(mem["mem_used_frac"].max() or 0) * 1.1)
         write_section(out, "qfo_res_memory", {
             "id": "qfo_res_memory",
             "section_name": "Memory: requested against used",
             "description": (
-                "Peak RSS against the memory the task asked SLURM for, one point per task. "
-                "Points far below the diagonal are queue time paid for nothing; points at "
-                "or above it are the shape that gets OOM-killed on the next combo. The "
-                "HP-family alphabets at low k are sized separately in the pipeline "
-                "(<code>params.kmerseek_memory_hp_lowk</code>) for exactly this reason, and "
-                "this plot is how that rule gets checked against reality."),
+                f"One point per task in {source}: the fraction of its memory request the "
+                "task actually touched, against the size of that request. The dashed line "
+                "at 1.0 is peak = requested. Points far below it are queue time paid for "
+                "nothing — on <code>hns</code> a 16-core, 64 GB ask waits 14.6 min median "
+                "against 3.0 min for a 2-4 core one — and points at or above it are the "
+                "shape that gets OOM-killed on the next combo. The HP-family alphabets at "
+                "low k are sized separately in the pipeline "
+                "(<code>params.kmerseek_memory_hp_lowk</code>) for exactly this reason, "
+                "and this plot is how that rule gets checked against reality: hover or "
+                "read the point labels for the process and its alphabet, k and species. "
+                "A smoke run over a few hundred sequences will sit near the bottom on "
+                "every arm; only a full-proteome run says anything about the sizing "
+                "rule.</p><p>kmerseek tasks appear here only when they genuinely "
+                "executed. A <code>storeDir</code> hit has no peak RSS to report, because "
+                "peak RSS is kernel accounting for a task Nextflow supervised and there "
+                "was no task."),
             "plot_type": "scatter",
             "pconfig": {"id": "qfo_res_memory_plot",
-                        "title": "Peak RSS vs requested memory",
-                        "xlab": "requested (GB)", "ylab": "peak RSS (GB)", "height": 520,
-                        "marker_size": 7,
-                        # Wrapped in a list on purpose: MultiQC 1.35 mis-handles the bare
-                        # list-of-points form of extra_series and appends the list itself
-                        # as a single point, which fails pydantic validation. The
-                        # list-of-lists form takes the branch that works.
-                        "extra_series": [diagonal]},
+                        "title": "Memory used as a fraction of the request",
+                        "xlab": "requested (GB)",
+                        "ylab": "peak RSS / requested",
+                        "xlog": True, "ylog": True, "height": 520, "marker_size": 7,
+                        "showlegend": True, "ymax": y_top,
+                        "y_lines": [{"value": 1.0, "color": "#999999", "dash": "dash",
+                                     "width": 2, "label": "peak = requested"}]},
             "data": points,
         })
 
     # --- kmerseek memory against ksize: the sizing rule, measured ---
-    ks = done.filter(pl.col("process").is_in(sorted(mt.KMERSEEK_PROCESSES)))
+    # peak_rss_b must be present, not merely coerced to zero. Stored tasks carry a wall
+    # time but no memory figure -- there was no supervised process to read it from -- and
+    # `or 0` would draw every cached combo along the x axis as if it had used no memory at
+    # all, which a reader would take as evidence the sizing rule is over-provisioning.
+    ks = done.filter(pl.col("process").is_in(sorted(mt.KMERSEEK_PROCESSES))
+                     & pl.col("peak_rss_b").is_not_null())
     if ks.height:
         ks = ks.with_columns(
             pl.col("tag").str.extract(r"_k(\d+)_lc", 1).cast(pl.Int64).alias("ksize"),
@@ -1405,31 +1523,35 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
         if ks.height:
             alphas = sorted(set(ks["alphabet"].drop_nulls().to_list()))
             color_of = dict(zip(alphas, cycle(SERIES_COLORS)))
+            annotate_all = ks.height <= ANNOTATE_EVERY_POINT_BELOW
             points = {}
             for i, r in enumerate(ks.to_dicts()):
                 alpha = r["alphabet"] or "unknown"
-                points[f"{r['tag']} #{i}"] = {
-                    "x": r["ksize"],
-                    "y": (r["peak_rss_b"] or 0) / 1024**3,
-                    "color": color_of.get(alpha, "#888888"),
-                    "group": alpha,
-                    "name": r["tag"],
-                    "annotation": "",
-                }
+                points[f"{r['tag']} #{i}"] = scatter_point(
+                    r["ksize"], r["peak_rss_b"] / 1024**3,
+                    # The tag is `<species>_<alphabet>_k<k>_lc<bool>`, which is the whole
+                    # identity of the task; the alphabet leads the legend because it is
+                    # what the colour encodes.
+                    name=r["tag"], group=alpha, color=color_of.get(alpha, "#888888"),
+                    annotation=r["tag"] if annotate_all else None,
+                )
             write_section(out, "qfo_res_kmerseek_memory", {
                 "id": "qfo_res_kmerseek_memory",
                 "section_name": "kmerseek memory against k",
                 "description": (
-                    "Peak RSS of each index-and-search task against its k-mer size, grouped "
-                    "by alphabet. The inverted index scales with the most degenerate k-mer's "
-                    "occurrence count, so a 2-letter alphabet at low k is the expensive "
-                    "corner. Anything flat here means the per-combo memory rule is "
-                    "over-provisioning."),
+                    f"Peak RSS of each kmerseek task in {source} against its k-mer size, "
+                    "coloured by alphabet; each point is named for the species, alphabet, "
+                    "k and low-complexity arm it measures. The inverted index scales with "
+                    "the most degenerate k-mer's occurrence count, so a 2-letter alphabet "
+                    "at low k is the expensive corner. Anything flat here means the "
+                    "per-combo memory rule is over-provisioning. Only tasks that actually "
+                    "executed appear: a <code>storeDir</code> hit has a timing record but "
+                    "no peak RSS, since nothing supervised it."),
                 "plot_type": "scatter",
                 "pconfig": {"id": "qfo_res_kmerseek_memory_plot",
                             "title": "kmerseek peak RSS by k and alphabet",
                             "xlab": "k", "ylab": "peak RSS (GB)", "height": 500,
-                            "marker_size": 7},
+                            "marker_size": 7, "showlegend": True},
                 "data": points,
             })
 
@@ -1515,31 +1637,50 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
     # --- throughput per search task ---
     searches = done.filter(pl.col("is_search") & (pl.col("realtime_s") > 0))
     if searches.height:
+        annotate_all = searches.height <= ANNOTATE_EVERY_POINT_BELOW
         points = {}
         for i, r in enumerate(searches.to_dicts()):
-            points[f"{r['process']} {r['tag']} #{i}"] = {
-                "x": n_queries / r["realtime_s"],
-                "y": (r["cpu_hours"] or 0),
-                "color": tool_color(r["tool"]),
-                "group": CLASSES[tool_class(r["tool"])][0],
-                "name": f"{r['tool']} {r['tag']}",
-                "annotation": "",
-            }
+            # Grouped by tool, not by method class: with one point per search task there
+            # can be a dozen arms on the plot, and a legend of five class names cannot be
+            # clicked to isolate foldseek from reseek. Colour still carries the class, and
+            # the description says so.
+            variant = mt.variant_from_tag(r["process"], r["tag"])
+            label = label_of(r["tool"], variant)
+            species = mt.species_from_tag(r["tag"]) or "?"
+            points[f"{r['process']} {r['tag']} #{i}"] = scatter_point(
+                n_queries / r["realtime_s"], r["cpu_hours"] or 0,
+                name=f"{label} vs {species}", group=r["tool"],
+                color=tool_color(r["tool"]),
+                # Shape separates tools that share a class colour; the legend is grouped
+                # by tool, so each entry's swatch is that tool's own shape.
+                marker_symbol=TOOL_SYMBOL.get(r["tool"], "circle"),
+                annotation=f"{short_label(r['tool'], variant)} {species}"
+                           if annotate_all else None,
+            )
         write_section(out, "qfo_res_throughput", {
             "id": "qfo_res_throughput",
             "section_name": "Throughput per search",
             "description": (
-                f"One point per search task: query proteins per second of wall time "
-                f"against the CPU-hours that task billed, at {n_queries:,} human queries. "
-                "Indexing is inside the measurement for every arm, because each task "
-                "builds what it needs and searches once. A tool that would amortise an "
-                "index over many searches is undersold here, and that is the honest "
-                "reading of a benchmark that searches each target proteome once."),
+                f"One point per search task in {source}: query proteins per second of "
+                f"wall time against the CPU-hours that task billed, at {n_queries:,} "
+                "human queries — that is n_queries_all, every sequence in the query "
+                "FASTA, not the FoldSeek-intersected subset the accuracy sections use. "
+                "Every arm is divided by the same count.</p><p>Database construction is "
+                "NOT inside this measurement for any arm: each tool that needs one builds "
+                "it in a separate process (<code>foldseekDb</code>, "
+                "<code>kmerseekIndex</code>, and so on) and only the search process is "
+                "timed here. Index cost is under CPU time by process.</p><p>Each legend "
+                "entry is a tool; colour marks its method class — green kmerseek, "
+                "pink needs 3D structure, blue needs a language model, grey sequence "
+                "alignment, gold the annotation ceiling. kmerseek points come from the "
+                "timing records its tasks wrote for themselves, because that arm is on "
+                "<code>storeDir</code> and a store hit produces no trace row."),
             "plot_type": "scatter",
             "pconfig": {"id": "qfo_res_throughput_plot",
                         "title": "Search throughput against cost",
                         "xlab": "query proteins / s", "ylab": "CPU-hours",
-                        "xlog": True, "ylog": True, "height": 520, "marker_size": 8},
+                        "xlog": True, "ylog": True, "height": 520, "marker_size": 8,
+                        "showlegend": True},
             "data": points,
         })
 
@@ -1613,6 +1754,11 @@ def main():
     p.add_argument("--trace", type=Path,
                    help="Nextflow trace file. Missing or unparsable is not an error; the "
                         "resource sections say so instead.")
+    p.add_argument("--kmerseek-timings", type=Path,
+                   help="Directory of *.timings.jsonl written by the kmerseek processes. "
+                        "That arm is on storeDir, so a store hit leaves no trace row and "
+                        "these records are the only measurement of it. Missing is not an "
+                        "error.")
     p.add_argument("--n-queries", type=int, required=True,
                    help="Human query proteins searched, for throughput")
     p.add_argument("--outdir", required=True, type=Path)
@@ -1636,6 +1782,10 @@ def main():
     metrics = pl.read_parquet(args.metrics)
     curves = load_curves(args.curves)
     trace = mt.load_trace(args.trace) if args.trace else mt.load_trace(None)
+    trace = mt.merge_timings(trace, mt.load_timing_sidecars(args.kmerseek_timings))
+    # After the merge, not before: a run where kmerseek genuinely executed has both a
+    # trace row and a fresh record for the same task, and only the trace row is kept.
+    n_stored = int((trace["status"] == mt.STORED).sum()) if trace.height else 0
 
     sets = metrics["truth_set"].unique().to_list() if "truth_set" in metrics.columns else []
     primary = args.primary_truth or ("swissprot" if "swissprot" in sets
@@ -1655,14 +1805,22 @@ def main():
     section_boundary(args.outdir, metrics, primary, args.max_tools)
     section_grayzone(args.outdir, metrics, primary, args.max_tools)
     section_reachability(args.outdir, metrics, primary)
-    section_resources(args.outdir, trace, args.n_queries)
+    # The resource sections say which run they describe. A `-entry report` rebuild points
+    # at some earlier run's trace, so "this run" is not always true and a reader sizing a
+    # SLURM request needs to know whether they are looking at the mini smoke set or the
+    # nine-proteome sweep.
+    source = f"<code>{args.trace.name}</code>" if args.trace else "this run"
+    if n_stored:
+        source += f" plus {n_stored:,} stored kmerseek timing records"
+    section_resources(args.outdir, trace, args.n_queries, source)
     section_general_stats(args.outdir, metrics, trace, args.n_queries, primary)
     section_citations(args.outdir)
 
     written = sorted(f.name for f in args.outdir.glob("*_mqc.json"))
     print(f"primary truth set: {primary}")
     print(f"{metrics.height} metric rows, {curves.height} curve points, "
-          f"{trace.height} trace records")
+          f"{trace.height} resource records "
+          f"({n_stored} of them stored kmerseek timings)")
     print(f"wrote {len(written)} sections to {args.outdir}:")
     for name in written:
         print(f"  {name}")
