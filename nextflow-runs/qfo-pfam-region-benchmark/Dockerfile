@@ -44,8 +44,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # keeping every process script aware of its path.
 # numpy is required, not incidental: bin/cafa_metrics.py builds the Fmax/Smin threshold
 # grid with it. polars does not guarantee pulling it in.
+# Pinned exactly, not floored. `polars>=1.0` meant the image's polars floated with
+# whatever was newest at build time, so the same IMAGE_TAG rebuilt later was a different
+# image -- the same class of problem as IMAGE_TAG drifting from the config literal, one
+# layer down.
+#
+# It was already biting: polars 1.43 warns that str.split's `empty_as_null` default flips
+# in 2.0, while polars 1.34 on the analysis Mac does not even accept that argument and
+# already splits the 2.0 way. So the seven .str.split() calls in bin/ -- on HGNC
+# uniprot_ids, on sp|ACC|NAME accessions, and on versioned Pfam ids -- had different
+# empty-field semantics in the container than outside it, silently.
+#
+# These are the versions the 2026-08-24 image actually contains, read out of the running
+# image rather than chosen, so pinning them changes nothing about what runs today and
+# makes a rebuild reproduce it instead of drifting.
 RUN pip3 install --no-cache-dir --break-system-packages \
-        'polars>=1.0' 'pyarrow>=15' 'numpy>=1.26'
+        'polars==1.43.2' 'pyarrow==25.0.1' 'numpy==2.5.2'
 
 COPY --from=builder /build/target/release/kmerseek /usr/local/bin/kmerseek
 COPY --from=builder /build/GIT_SHA /etc/kmerseek_git_sha
