@@ -1430,7 +1430,28 @@ process reseekConvert {
     # after -bcb failed with "Unknown option bcb" -- the flags used before came from a
     # README summary rather than from the binary.
     # STRUCTS accepts a directory and .cif/.mmcif, both confirmed in that same usage text.
-    reseek -convert ${structures} -bca ${species}.bca \\
+    # A .files list, not the directory. Nextflow stages `path(structures)` as a SYMLINK,
+    # and reseek's directory walk does not descend into one: `reseek -convert mouse` on a
+    # staged 21_452-structure proteome reported "0 chains" and then SEGFAULTED on the empty
+    # input. foldseekDb survives the same staging only because it writes `${structures}/`
+    # with a trailing slash, which forces the symlink to resolve.
+    #
+    # `NAME.files` is a documented STRUCTS form -- "Text file with one STRUCT per line" --
+    # so this sidesteps directory walking entirely. find -L follows the staged symlink and
+    # the per-file ones underneath it, which was verified inside this exact container.
+    find -L ${structures}/ \\( -name '*.cif' -o -name '*.mmcif' -o -name '*.pdb' \\) \\
+        | sort > ${species}.files
+
+    # Reseek segfaults on zero structures rather than reporting an error, so an empty list
+    # has to be caught here or the failure arrives as exit 139 with nothing to read.
+    n_structs=\$(wc -l < ${species}.files)
+    echo "reseek ${species}: \${n_structs} structures listed" >&2
+    if [ "\$n_structs" -eq 0 ]; then
+        echo "no .cif/.mmcif/.pdb found under ${structures}/ -- reseek would segfault on this" >&2
+        exit 1
+    fi
+
+    reseek -convert ${species}.files -bca ${species}.bca \\
         -threads ${task.cpus} -log ${species}.convert.log
 
     # Mu is Reseek's 36-letter structural alphabet: -convert2mu encodes each structure's
@@ -1445,16 +1466,16 @@ process reseekConvert {
     # Built here rather than at search time because it depends only on the target proteome,
     # so it caches under storeDir beside the .bca and is paid for once per species.
     #
-    # From the .bca when that works, since re-reading the structure directory is the
-    # expensive half of conversion; .bca is listed as a valid STRUCTS form in the same
-    # usage text. Falling back to the directory rather than trusting that: this process
-    # already carries a scar from flags taken off a README instead of the binary.
+    # From the .bca when that works, since re-reading every structure is the expensive half
+    # of conversion; .bca is listed as a valid STRUCTS form in the same usage text. Falling
+    # back to the .files list rather than trusting that: this process already carries a scar
+    # from flags taken off a README instead of out of the binary.
     if ! reseek -convert2mu ${species}.bca -fasta ${species}.mu.fasta \\
             -threads ${task.cpus} -log ${species}.mu.log 2> mu.err; then
         cat mu.err >&2
-        echo "convert2mu from .bca failed; retrying from the structure directory" >&2
+        echo "convert2mu from .bca failed; retrying from the .files list" >&2
         rm -f ${species}.mu.fasta
-        reseek -convert2mu ${structures} -fasta ${species}.mu.fasta \\
+        reseek -convert2mu ${species}.files -fasta ${species}.mu.fasta \\
             -threads ${task.cpus} -log ${species}.mu.log
     fi
     """
