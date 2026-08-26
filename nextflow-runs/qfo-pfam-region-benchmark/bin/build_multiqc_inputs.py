@@ -1396,7 +1396,7 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int) -> None:
         })
 
     # --- kmerseek memory against ksize: the sizing rule, measured ---
-    ks = done.filter(pl.col("process") == "kmerseekIndexAndSearch")
+    ks = done.filter(pl.col("process").is_in(sorted(mt.KMERSEEK_PROCESSES)))
     if ks.height:
         ks = ks.with_columns(
             pl.col("tag").str.extract(r"_k(\d+)_lc", 1).cast(pl.Int64).alias("ksize"),

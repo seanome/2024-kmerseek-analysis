@@ -29,7 +29,14 @@ _TIME_TOKEN = re.compile(r"(\d+(?:\.\d+)?)\s*(ms|[smhd])")
 # resource number can be joined to the accuracy number for the same tool. Processes that
 # serve every arm (truth building, scoring, aggregation) are grouped as overhead rather
 # than charged to any one tool.
+# kmerseek was one fused index+search process until 2026-08-25, when it was split so the
+# target indexes could be cached across the midi and full runs. Both spellings stay
+# recognised: traces from before the split are still read back by `make multiqc`.
+KMERSEEK_PROCESSES = {"kmerseekIndex", "kmerseekSearch", "kmerseekIndexAndSearch"}
+
 PROCESS_TO_TOOL = {
+    "kmerseekIndex": "kmerseek",
+    "kmerseekSearch": "kmerseek",
     "kmerseekIndexAndSearch": "kmerseek",
     "phmmerSearch": "hmmer3_phmmer",
     "jackhmmerSearch": "hmmer3_jackhmmer",
@@ -50,7 +57,7 @@ PROCESS_TO_TOOL = {
 # Processes that actually run a search. Throughput is only meaningful for these: a task
 # that builds a database or scores a parquet is not answering queries.
 SEARCH_PROCESSES = {
-    "kmerseekIndexAndSearch", "phmmerSearch", "jackhmmerSearch", "mmseqs2Search",
+    "kmerseekSearch", "kmerseekIndexAndSearch", "phmmerSearch", "jackhmmerSearch", "mmseqs2Search",
     "hhblitsSearch", "foldseekSearch", "reseekSearch", "prostt5Search",
     "folddiscoQuery", "hmmscanAnnotate",
 }
@@ -142,13 +149,13 @@ def load_trace(path: Path) -> pl.DataFrame:
 def variant_from_tag(process: str, tag: str | None) -> str:
     """Recover a variant label from a process tag, matching the metrics table's spelling.
 
-    kmerseekIndexAndSearch tags read `<species>_<alphabet>_k<k>_lc<bool>`; the metrics
+    kmerseek tags read `<species>_<alphabet>_k<k>_lc<bool>`; the metrics
     table spells the same combo `<alphabet>_k<k>_lc(True|False)`. mmseqs2 carries its
     variant in brackets. Everything else has one variant, called default.
     """
     if not tag or tag == "-":
         return "default"
-    if process == "kmerseekIndexAndSearch":
+    if process in KMERSEEK_PROCESSES:
         m = re.match(r"^(?P<sp>[^_]+)_(?P<rest>.+_k\d+_lc(?:true|false))$", tag)
         if m:
             rest = m.group("rest")
