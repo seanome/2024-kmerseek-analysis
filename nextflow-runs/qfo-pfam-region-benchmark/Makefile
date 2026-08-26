@@ -154,7 +154,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
-        run run-kmerseek run-baselines status clean-cache clean-indexes index-disk \
+        run run-kmerseek run-baselines status running kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
@@ -195,6 +195,8 @@ help:
 	@echo "  multiqc-status       Show what that report would be built from"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
+	@echo "  running              Show which combo each running job is working on"
+	@echo "  kill-jobs            Cancel every job on the account (confirms first)"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  clean-image-cache    Remove partial Apptainer pulls"
@@ -1000,6 +1002,40 @@ multiqc: multiqc-preflight prefetch-images
 status:
 	$(call require_cluster)
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+
+## What each running job actually IS. `status` tells you jobs exist; this tells you which
+## combo each one is working on. The SLURM job name truncates to `nf-kmers` for every
+## kmerseek task regardless of alphabet, so the tag is read off the RocksDB path in the
+## task's own .command.sh instead, falling back to the human_vs_<species> name for the
+## baseline arms and to the work directory hash for anything else.
+##
+## Also worth reading the TIME column carefully: squeue formats it [DD-[HH:]]MM:SS, so
+## `4:03` is four minutes, not four hours. A genuinely stuck job looks like `1-02:19:10`.
+running:
+	$(call require_cluster)
+	@printf "%-10s %-12s %s\n" JOBID TIME TASK
+	@for j in $$(squeue -u $$USER -h --account=$${SLURM_ACCOUNT:-ayeletv} -o %i); do \
+	   w=$$(scontrol show job $$j 2>/dev/null | tr ' ' '\n' | grep -m1 WorkDir | cut -d= -f2); \
+	   t=$$(grep -m1 -oE '[a-z]+\.[a-z0-9_]+\.k[0-9]+\.lc(true|false)' "$$w/.command.sh" 2>/dev/null); \
+	   if [ -z "$$t" ]; then t=$$(grep -m1 -oE 'human_vs_[a-z]+' "$$w/.command.sh" 2>/dev/null); fi; \
+	   if [ -z "$$t" ]; then t=$$(basename "$$w" 2>/dev/null); fi; \
+	   printf "%-10s %-12s %s\n" "$$j" "$$(squeue -j $$j -h -o %M 2>/dev/null)" "$$t"; \
+	 done; true
+
+## Cancel every job on this account, then show what is left.
+##
+## This is part of restarting, not housekeeping. Nextflow does not reliably stop its jobs
+## when it dies: a failed run prints "Finishing pending tasks before exit" and keeps
+## unstaging for minutes, and an interrupted one leaves orphans that no later -resume will
+## ever collect. Those orphans are exactly what produces storeDir "Directory not empty"
+## collisions against the next run, because two writers reach the same store entry. Wait
+## for this to come back empty before relaunching.
+kill-jobs:
+	$(call require_cluster)
+	@squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+	@read -p "cancel ALL of the above? [y/N] " a; [ "$$a" = y ] || exit 1
+	scancel -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+	@sleep 2; squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
 
 # Guarded like every other cluster target. Without it, $SCRATCH is empty on the Mac and
 # this expands to `rm -rf /apptainer-cache` -- harmless only because that path happens not
