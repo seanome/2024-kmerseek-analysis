@@ -155,6 +155,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
         run run-kmerseek run-baselines status clean-cache clean-indexes index-disk \
+        gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
         fetch-structures-login \
@@ -187,6 +188,8 @@ help:
 	@echo "  fetch-structures     Download AlphaFold structures ON the login node (~36 GB)"
 	@echo "  run-kmerseek         Run only the Kmerseek sweep"
 	@echo "  run-baselines        Run only the baseline tools"
+	@echo "  gpu-benchmark        Time foldseek+mmseqs search on CPU and GPU, one session"
+	@echo "  gpu-benchmark-report Re-read a gpu-benchmark trace into queries/s"
 	@echo "  run                  Run the complete benchmark"
 	@echo "  multiqc              Rebuild the MultiQC report from published results"
 	@echo "  multiqc-status       Show what that report would be built from"
@@ -806,6 +809,77 @@ run-kmerseek: prefetch-images
 run-baselines: prefetch-images
 	$(call require_cluster)
 	$(call launch,qfo-baselines,--skip_kmerseek true)
+
+# ---- GPU vs CPU for the baseline search arms ------------------------------
+#
+# The paper says kmerseek finds remote homology fast without structure. A reviewer will
+# ask whether the structure and profile baselines were given a GPU before that comparison
+# was drawn. This target is the measurement that answers it.
+#
+# One invocation, both modes. --gpu_benchmark true runs the CPU and GPU arms of
+# foldseekSearch and mmseqs2Search against the SAME databases in the SAME scheduler
+# session, so the per-task comparison needs no cross-run correction, and it drops every
+# other arm: phmmer, jackhmmer, hhblits, reseek and folddisco have no GPU path in the
+# pinned binaries, so running them again would cost hours and measure nothing. It also
+# implies --skip_kmerseek.
+#
+# Its own launch directory. Nextflow truncates its trace as a run starts, so launching
+# this from run/ would destroy the trace `make multiqc` reads.
+#
+# Runs on the midi query set by default: 964 chr6 proteins against full target proteomes.
+# That is real target-side scale, which is what the prefilter cost is driven by, at ~5% of
+# the query load. Point it at the full query set with QUERY_DIR=../data/qfo once the shape
+# of the answer is known.
+GPU_BENCH_DIR     ?= run-gpu-bench
+GPU_BENCH_QFO     ?= ../data/midi/qfo
+GPU_BENCH_ANNOT   ?= ../data/midi/annotations
+GPU_BENCH_STRUCTS ?= ../data/midi/structures
+GPU_BENCH_OUTDIR  ?= ../data/gpu-bench/results
+# Target databases are shared with the full run: they depend on the target proteome alone.
+GPU_BENCH_DBCACHE ?= ../results
+GPU_BENCH_TARGETS ?= $(MIDI_TARGETS)
+GPU_BENCH_TRACE   ?= $(shell ls -t $(GPU_BENCH_DIR)/*.trace.txt 2>/dev/null | head -1)
+
+gpu-benchmark: prefetch-images midi-testset-sherlock
+	$(call require_cluster)
+	mkdir -p $(GPU_BENCH_DIR)
+	cd $(GPU_BENCH_DIR) && \
+	  ml load nextflow && \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --gpu_benchmark   true \
+	    --qfo_dir         $(GPU_BENCH_QFO) \
+	    --annotations     $(GPU_BENCH_ANNOT) \
+	    --structures      $(GPU_BENCH_STRUCTS) \
+	    --outdir          $(GPU_BENCH_OUTDIR) \
+	    --db_cache        $(GPU_BENCH_DBCACHE) \
+	    --target_species  $(GPU_BENCH_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    $(NF_ARGS)
+	@$(MAKE) --no-print-directory gpu-benchmark-report
+
+# Read the trace back into queries/s per tool per mode. Separate from the run so it can be
+# re-run against an older trace without re-searching anything:
+#   make gpu-benchmark-report GPU_BENCH_TRACE=run-gpu-bench/qfo_pfam_region.<date>.trace.txt
+gpu-benchmark-report:
+	@if [ -z "$(GPU_BENCH_TRACE)" ]; then \
+	  echo "No trace under $(GPU_BENCH_DIR). Run 'make gpu-benchmark' first, or pass one:"; \
+	  echo "  make gpu-benchmark-report GPU_BENCH_TRACE=<path>"; \
+	  exit 1; \
+	fi
+	@echo "reporting on trace: $(GPU_BENCH_TRACE)"
+	mkdir -p $(GPU_BENCH_OUTDIR)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/gpu_search_benchmark.py \
+	    --trace         $(GPU_BENCH_TRACE) \
+	    --queries-fasta $(GPU_BENCH_QFO)/Eukaryota/UP000005640_9606.fasta \
+	    --tasks-out     $(GPU_BENCH_OUTDIR)/gpu_benchmark_tasks.parquet \
+	    --summary-out   $(GPU_BENCH_OUTDIR)/gpu_benchmark_summary.parquet \
+	    --mqc-out       $(GPU_BENCH_OUTDIR)/qfo_gpu_search_mqc.json
 
 # Build the mini set ON Sherlock from the inputs sync-data already staged. Runs inside the
 # same container the pipeline uses, so it needs no cluster python environment of its own.

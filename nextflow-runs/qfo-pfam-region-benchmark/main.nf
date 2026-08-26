@@ -265,18 +265,44 @@ params.db_cache = null
 
 params.prostt5_max_len = 6000
 
-// ProstT5 on a GPU is one to two orders of magnitude faster than on CPU, and the 3Di
-// prediction in prostt5Db is the only place in this pipeline that a GPU helps at all.
-// Requires foldseek >= 10 (9.427df8a has no --gpu flag), a CUDA runtime visible in the
+// ProstT5 on a GPU is one to two orders of magnitude faster than on CPU. Requires
+// foldseek >= 10 (9.427df8a has no --gpu flag), a CUDA runtime visible in the
 // container (--nv) and a GPU allocation from the scheduler; the sherlock profile sets
 // the latter two. Set false to fall back to CPU without touching anything else.
 params.prostt5_gpu = true
 
-// GPU for the SEARCH stages (foldseek search, mmseqs search) is a separate question
-// from ProstT5. Both binaries advertise --gpu, but GPU prefilter wants a padded
-// database layout that this pipeline does not build, so it is off until a smoke run
-// shows it working. Flip it on the command line to test: --gpu_search true.
+// GPU for the SEARCH stages is a separate question from ProstT5, and it exists so the
+// paper can say every baseline was run at its best available setting. A reviewer reading
+// "kmerseek is fast without structure" will ask whether the structure and profile
+// baselines were given a GPU; without this flag the honest answer was no.
+//
+// Both pinned binaries do support it. foldseek 10.941cd33 and mmseqs2 18.8cc5c each carry
+// `--gpu INT` on `search` and an undocumented-in-top-level-help `makepaddedseqdb`
+// subcommand. The GPU prefilter refuses any target database that is not in the padded
+// layout -- verified against both pinned images, which answer
+//   Database <db> is not a valid GPU database / Please call: makepaddedseqdb <db> <db>_pad
+// and exit before touching CUDA. mmseqsPaddedDb and foldseekPaddedDb build that layout;
+// they run only when a GPU arm is actually requested, so a CPU run pays nothing.
+//
+// Only the TARGET side is padded. The query database is read unpadded in both tools,
+// confirmed the same way. foldseek's own makepaddedseqdb handles the _ss (3Di) and _ca
+// (coordinate) sub-databases as well as the amino-acid one, so one call covers a
+// structure database.
+//
+// What this does NOT do is run the same algorithm faster. `--gpu 1` REPLACES the k-mer
+// prefilter with an exhaustive ungapped-alignment prefilter in both tools: mmseqs drops
+// from `prefilter -s 7` to `ungappedprefilter --prefilter-mode 1`, foldseek from
+// `prefilter -s 9.5` to `ungappedprefilter`. So -s has no effect in GPU mode and the hit
+// lists differ from the CPU arm's. That is why the GPU arms carry their own `variant`
+// label and their own published region files rather than overwriting the CPU ones: they
+// are a second measurement, not a cheaper copy of the first.
 params.gpu_search = false
+
+// Run both modes side by side in ONE invocation, restricted to the two arms that have a
+// GPU path. Same databases, same query set, same scheduler session, one trace -- which is
+// what makes the per-task comparison a comparison rather than two runs on two days.
+// bin/gpu_search_benchmark.py turns the resulting trace into queries/s per tool per mode.
+params.gpu_benchmark = false
 
 // Deliberately NOT the `high_cpu` label. Threads are the multiplier on ProstT5's peak
 // memory, so this arm buys RAM rather than cores; `high_cpu`'s 16 threads on 64 GB is
@@ -1108,37 +1134,84 @@ process mmseqsDomainDb {
     """
 }
 
+process mmseqsPaddedDb {
+    /*
+     * The GPU-layout copy of a target database. Separate from mmseqsDb rather than an
+     * option on it, because the plain database is the INPUT to the padding pass and both
+     * copies have to survive: the CPU arm reads the plain one and a rerun would otherwise
+     * have to go back to the FASTA. Measured on the yeast proteome the padded copy is
+     * 4_100_850 bytes against the plain 4_106_532, so the cost is one extra copy of the
+     * database, not a multiple of it.
+     *
+     * Only target proteomes are padded. The query side is read unpadded by the GPU
+     * prefilter, so the human entry never reaches this process and the HUMAN_LABEL digest
+     * convention needs nothing here -- but the label passes through untouched, so a
+     * digest-keyed label would land in its own cache entry if that ever changed.
+     */
+    tag "${label}"
+    container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
+    label 'high_cpu'
+    storeDir "${DB_CACHE}/mmseqs_db_gpu"
+
+    input:
+    tuple val(label), path(plain_db)
+
+    output:
+    path "${label}_mmdb_gpu"
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p ${label}_mmdb_gpu
+    mmseqs makepaddedseqdb ${plain_db}/db ${label}_mmdb_gpu/db --threads ${task.cpus}
+    """
+}
+
 process mmseqs2Search {
-    tag "human_vs_${species} [${variant}]"
+    tag "human_vs_${species} [${variant}${gpu ? ' gpu' : ''}]"
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/${variant}", mode: 'copy', pattern: '*.tsv.gz'
 
+    // mode_variant and out_name are computed in the workflow, not here. An `output:` val()
+    // holding an expression is evaluated when the process is DECLARED, before any input is
+    // bound, so a ternary on `gpu` in that position fails with "No such variable: gpu".
+    // path() patterns interpolate per task and would be fine, but keeping both strings on
+    // one side of the boundary means the CPU spelling is provably unchanged.
     input:
-    tuple val(species), val(variant), val(num_iter), path(target_db), path(query_db)
+    tuple val(species), val(variant), val(num_iter), val(gpu), val(mode_variant),
+          val(out_name), path(target_db), path(query_db)
 
+    // The mode rides in the `variant` slot, never in the `tool` slot: scoreDomainCalls
+    // switches --dedup-fragments and the interval semantics on the tool name, so renaming
+    // the tool would silently change how the arm is scored.
     output:
-    tuple val(species), val(variant), val("s${params.mmseqs2_sensitivity}"),
-          path("human_vs_${species}.${variant}.tsv.gz")
+    tuple val(species), val(variant), val(mode_variant), path(out_name)
 
     script:
     def iter_flag = num_iter > 1 ? "--num-iterations ${num_iter}" : ""
+    // -s is dropped in GPU mode rather than passed and ignored, so the command line in
+    // .command.sh is a truthful record of what ran.
+    def mode_flag = gpu ? "--gpu 1" : "-s ${params.mmseqs2_sensitivity}"
     """
     set -euo pipefail
     mkdir -p mmseqs_tmp
     mmseqs search \\
         ${query_db}/db ${target_db}/db result mmseqs_tmp \\
         --threads ${task.cpus} \\
-        -s ${params.mmseqs2_sensitivity} \\
+        ${mode_flag} \\
         ${iter_flag} \\
         --max-seqs 1000 \\
         -e ${params.evalue_report}
 
+    # convertalis reads the SAME target database the search used. makepaddedseqdb renumbers
+    # the database keys, so resolving a GPU result against the plain database would emit
+    # the wrong accessions rather than fail.
     mmseqs convertalis \\
         ${query_db}/db ${target_db}/db result out.tsv \\
         --threads ${task.cpus} \\
         --format-output "query,target,qstart,qend,tstart,tend,bits,evalue"
-    gzip -c out.tsv > human_vs_${species}.${variant}.tsv.gz
+    gzip -c out.tsv > ${out_name}
     """
 }
 
@@ -1203,32 +1276,87 @@ process foldseekDb {
     """
 }
 
+process foldseekPaddedDb {
+    /*
+     * The GPU-layout copy of a target structure database. foldseek's own makepaddedseqdb
+     * is not a thin wrapper around the mmseqs one: it pads the _ss (3Di) sub-database,
+     * then renumbers the amino-acid, _ca and _h sub-databases to match, so all four stay
+     * consistent. Verified against the pinned image -- one call on a foldseek createdb
+     * output produces db_gpu, db_gpu_ss, db_gpu_ca and db_gpu_h.
+     *
+     * Also verified: a CPU search against the padded database returns results byte-identical
+     * to the same search against the plain one, accessions included, so padding on its own
+     * changes nothing about the answer. The GPU flag is what changes the prefilter.
+     *
+     * The copy at the end is load-bearing, not tidiness. Only the _ss sub-database is
+     * actually rewritten; foldseek renames the amino-acid, _ca and _h keys with
+     * `renamedbkeys --subdb-mode 1`, which writes ABSOLUTE SYMLINKS back into the plain
+     * database instead of copying it. Under storeDir that leaves the padded directory
+     * pointing at ${DB_CACHE}/foldseek_db, a path Nextflow never declares as an input to
+     * foldseekSearch, so Apptainer would not bind it and the links would dangle inside the
+     * container -- the same shape as the structures-directory symlink bug documented in
+     * the workflow. `cp -RL` dereferences them so the directory stands on its own. The
+     * price is one extra copy of each target proteome's coordinate data, which is the
+     * bulk of a foldseek database; the mmseqs padded database needs none of this because
+     * makepaddedseqdb writes it as real files throughout.
+     */
+    tag "${label}"
+    container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
+    label 'high_cpu'
+    storeDir "${DB_CACHE}/foldseek_db_gpu"
+
+    input:
+    tuple val(label), path(plain_db)
+
+    output:
+    path "${label}_fsdb_gpu"
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p padded_tmp ${label}_fsdb_gpu
+    foldseek makepaddedseqdb ${plain_db}/db padded_tmp/db --threads ${task.cpus}
+    cp -RL padded_tmp/. ${label}_fsdb_gpu/
+    """
+}
+
 process foldseekSearch {
     /*
      * Structure-structure search over two prebuilt databases. No createdb here.
      */
-    tag "human_vs_${species}"
+    tag "human_vs_${species}${gpu ? ' [gpu]' : ''}"
     container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/foldseek", mode: 'copy', pattern: '*.tsv.gz'
 
+    // mode_variant and out_name come from the workflow -- see the note in mmseqs2Search on
+    // why an output val() cannot hold a ternary over an input.
     input:
-    tuple val(species), path(target_db), path(query_db)
+    tuple val(species), val(gpu), val(mode_variant), val(out_name),
+          path(target_db), path(query_db)
 
+    // Tool stays "foldseek" so scoreDomainCalls keeps applying --dedup-fragments; the mode
+    // rides in the variant slot. Unlike mmseqs the alphabet is unchanged between modes, so
+    // the existing label keeps its meaning and only gains a suffix. The prefilter still
+    // changes -- CPU runs `prefilter -s 9.5`, GPU runs `ungappedprefilter` -- which is the
+    // reason the two arms are scored separately rather than treated as one result.
     output:
-    tuple val(species), val("foldseek"), val("3di_aa"),
-          path("human_vs_${species}.foldseek.tsv.gz")
+    tuple val(species), val("foldseek"), val(mode_variant), path(out_name)
 
     script:
+    def gpu_flag = gpu ? "--gpu 1" : ""
     """
     set -euo pipefail
     mkdir -p foldseek_tmp
     foldseek search \\
         ${query_db}/db ${target_db}/db result foldseek_tmp \\
         --threads ${task.cpus} \\
+        ${gpu_flag} \\
         -e ${params.evalue_report} \\
         --max-seqs 1000
 
+    # Same database on both sides of search and convertalis -- makepaddedseqdb renumbers
+    # keys, so a padded search resolved against the plain database yields wrong accessions.
     foldseek convertalis \\
         ${query_db}/db ${target_db}/db result out.tsv \\
         --threads ${task.cpus} \\
@@ -1254,7 +1382,7 @@ process foldseekSearch {
             }
         }
         print
-    }' out.tsv | gzip -c > human_vs_${species}.foldseek.tsv.gz
+    }' out.tsv | gzip -c > ${out_name}
     """
 }
 
@@ -2147,7 +2275,9 @@ workflow {
     // Per-task timings for the report. Separate from the trace because this arm is on
     // storeDir: a store hit runs no task and Nextflow records nothing for it.
     kmerseek_timings = Channel.empty()
-    if (!params.skip_kmerseek) {
+    // --gpu_benchmark implies --skip_kmerseek. It measures the baselines' GPU path, and
+    // forgetting the flag would queue the 3294-job sweep behind a timing run.
+    if (!params.skip_kmerseek && !params.gpu_benchmark) {
         // An explicit combo list overrides the matrix entirely. The label is derived from
         // the CLI flag the same way ALL_ENCODINGS does it, so output filenames and the
         // per-combo memory sizing keep working unchanged.
@@ -2235,10 +2365,21 @@ workflow {
     // ---- baselines ----
     baseline_regions = Channel.empty()
     if (!params.skip_baselines) {
+        // Which search modes each GPU-capable arm runs. A normal run does one of them;
+        // --gpu_benchmark true does both, in one session against one set of databases, so
+        // the per-task numbers are comparable without a cross-run correction.
+        def search_modes = params.gpu_benchmark ? [false, true] : [params.gpu_search as boolean]
+
+        // --gpu_benchmark narrows the baseline block to the two arms that HAVE a GPU path.
+        // Running phmmer, jackhmmer, hhblits, reseek and folddisco again would add hours and
+        // measure nothing: none of them accepts a GPU flag, checked against the pinned
+        // binaries. See the note on params.gpu_benchmark.
+        def bench_only = params.gpu_benchmark
+
         pair_ch = species_ch.map { species, fasta -> tuple(species, fasta, human_fasta) }
 
-        phmmer_out    = phmmerSearch(pair_ch)
-        jackhmmer_out = jackhmmerSearch(pair_ch)
+        phmmer_out    = bench_only ? Channel.empty() : phmmerSearch(pair_ch)
+        jackhmmer_out = bench_only ? Channel.empty() : jackhmmerSearch(pair_ch)
 
         // Both variants share one pair of databases, so createdb runs once per proteome
         // rather than once per (variant, species).
@@ -2247,10 +2388,40 @@ workflow {
         mm_human  = mm_dbs.filter { l, _d -> l == HUMAN_LABEL }.map { _l, d -> d }
         mm_target = mm_dbs.filter { l, _d -> l != HUMAN_LABEL }
 
-        mmseqs_in = mm_target.combine(mm_human).flatMap { species, tdb, qdb ->
+        // The padded copy is built only when a GPU mode is actually requested, and only for
+        // targets: the GPU prefilter reads the query database unpadded. mm_target already
+        // excludes the human entry, so nothing here has to know about HUMAN_LABEL.
+        mm_gpu_target = search_modes.contains(true)
+            ? label_dbs(mmseqsPaddedDb(mm_target), '_mmdb_gpu')
+            : Channel.empty()
+
+        // (species, tdb, qdb, gpu) for every mode, then crossed with the two mmseqs variants.
+        mm_pairs = mm_target.combine(mm_human).map { sp, tdb, qdb -> tuple(sp, tdb, qdb, false) }
+        if (search_modes.contains(true)) {
+            mm_pairs = mm_pairs.mix(
+                mm_gpu_target.combine(mm_human).map { sp, tdb, qdb -> tuple(sp, tdb, qdb, true) }
+            )
+        }
+        // Not redundant: the CPU branch above is always constructed, so this is what drops
+        // it again for a GPU-only run (--gpu_search true without --gpu_benchmark).
+        mm_pairs = mm_pairs.filter { _sp, _t, _q, gpu -> search_modes.contains(gpu) }
+
+        // The CPU spelling of both the variant label and the output filename is EXACTLY
+        // what it was before the GPU arm existed, so a resume, a published region file and
+        // an existing metrics row all still match. Only the GPU arm gets new names.
+        //
+        // The GPU variant is not called s<n>: --gpu 1 replaces the k-mer prefilter with the
+        // ungapped one and -s stops having any effect, so a label saying s7 would name a
+        // setting that did not apply. It names the prefilter that actually ran.
+        def mm_variant = { gpu -> gpu ? "gpu_ungapped" : "s${params.mmseqs2_sensitivity}" }
+        def mm_name    = { sp, v, gpu -> "human_vs_${sp}.${v}${gpu ? '.gpu' : ''}.tsv.gz" }
+
+        mmseqs_in = mm_pairs.flatMap { species, tdb, qdb, gpu ->
             [
-                tuple(species, "mmseqs2_seqseq",    1,                         tdb, qdb),
-                tuple(species, "mmseqs2_iterative", params.mmseqs2_iterations, tdb, qdb),
+                tuple(species, "mmseqs2_seqseq", 1, gpu,
+                      mm_variant(gpu), mm_name(species, "mmseqs2_seqseq", gpu), tdb, qdb),
+                tuple(species, "mmseqs2_iterative", params.mmseqs2_iterations, gpu,
+                      mm_variant(gpu), mm_name(species, "mmseqs2_iterative", gpu), tdb, qdb),
             ]
         }
         mmseqs_out = mmseqs2Search(mmseqs_in)
@@ -2259,20 +2430,23 @@ workflow {
         // is_query travels as an explicit flag rather than being inferred from the label.
         // The script used to test `label != "human"` to decide whether to build hhm+cs219,
         // which silently stops meaning anything once the human label carries a digest.
-        all_for_hhdb = species_ch.map { l, f -> tuple(l, f, false) }
-            .mix(Channel.of(tuple(HUMAN_LABEL, human_fasta, true)))
-        hhdb_ch      = label_dbs(hhblitsBuildDB(all_for_hhdb), '_hhdb')
-        human_hhdb   = hhdb_ch.filter { label, _db -> label == HUMAN_LABEL }.map { _label, db -> db }
-        species_hhdb = hhdb_ch.filter { label, _db -> label != HUMAN_LABEL }
+        hhblits_out = Channel.empty()
+        if (!bench_only) {
+            all_for_hhdb = species_ch.map { l, f -> tuple(l, f, false) }
+                .mix(Channel.of(tuple(HUMAN_LABEL, human_fasta, true)))
+            hhdb_ch      = label_dbs(hhblitsBuildDB(all_for_hhdb), '_hhdb')
+            human_hhdb   = hhdb_ch.filter { label, _db -> label == HUMAN_LABEL }.map { _label, db -> db }
+            species_hhdb = hhdb_ch.filter { label, _db -> label != HUMAN_LABEL }
 
-        hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
+            hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
+        }
 
         baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
 
         // ---- ProstT5: 3Di predicted from sequence, no structures on either side ----
         // Deliberately OUTSIDE the structure guard below. This is the arm that can run
         // where AlphaFold coverage is too thin for Foldseek or Reseek, which is         // the regime the invertebrate claim lives in.
-        if (!params.skip_prostt5) {
+        if (!params.skip_prostt5 && !bench_only) {
             // Sherlock compute nodes have no outbound internet, so the download process
             // cannot work there -- its preflight fails in 30 seconds by design. When a
             // weights path is given it must exist; falling back to the download
@@ -2355,11 +2529,37 @@ workflow {
             fs_human  = fs_dbs.filter { l, _d -> l == HUMAN_LABEL }.map { _l, d -> d }
             fs_target = fs_dbs.filter { l, _d -> l != HUMAN_LABEL }
 
-            foldseek_out     = foldseekSearch(fs_target.combine(fs_human))
+            // Targets only, and only when a GPU mode is requested -- see mmseqsPaddedDb.
+            fs_gpu_target = search_modes.contains(true)
+                ? label_dbs(foldseekPaddedDb(fs_target), '_fsdb_gpu')
+                : Channel.empty()
+
+            // CPU spelling unchanged, as for mmseqs above.
+            def fs_variant = { gpu -> gpu ? "3di_aa_gpu" : "3di_aa" }
+            def fs_name    = { sp, gpu -> "human_vs_${sp}.foldseek${gpu ? '.gpu' : ''}.tsv.gz" }
+
+            fs_in = fs_target.combine(fs_human).map { sp, tdb, qdb ->
+                tuple(sp, false, fs_variant(false), fs_name(sp, false), tdb, qdb)
+            }
+            if (search_modes.contains(true)) {
+                fs_in = fs_in.mix(
+                    fs_gpu_target.combine(fs_human).map { sp, tdb, qdb ->
+                        tuple(sp, true, fs_variant(true), fs_name(sp, true), tdb, qdb)
+                    }
+                )
+            }
+            // Drops the always-constructed CPU branch for a GPU-only run -- see mmseqs above.
+            fs_in = fs_in.filter { _sp, gpu, _v, _n, _t, _q -> search_modes.contains(gpu) }
+
+            foldseek_out     = foldseekSearch(fs_in)
             baseline_regions = baseline_regions.mix(foldseek_out)
 
             // ---- Reseek: same structures, opposite alphabet direction ----
-            if (!params.skip_reseek) {
+            // No GPU path exists. The pinned reseek image links no CUDA library, its usage
+            // text names no device flag and the binary contains no CUDA symbols, so there is
+            // nothing to enable and --gpu_benchmark leaves it out rather than timing a
+            // CPU-only tool twice.
+            if (!params.skip_reseek && !bench_only) {
                 // Human goes through the same cached conversion as the targets; it used to
                 // re-parse the whole human structure directory on every search.
                 rs_db     = reseekConvert(struct_ch)
@@ -2371,7 +2571,10 @@ workflow {
             }
 
             // ---- folddisco ----
-            if (!params.skip_folddisco) {
+            // Also CPU-only: no GPU flag on `folddisco query`, no CUDA symbols in the
+            // binary, no CUDA library linked. Left out of --gpu_benchmark for the same
+            // reason as reseek.
+            if (!params.skip_folddisco && !bench_only) {
                 fd_index = folddiscoIndex(
                     Channel.fromList(
                         struct_species.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
@@ -2428,7 +2631,10 @@ workflow {
     // ---- hmmscan annotation ceiling ----
     ceiling_metrics = Channel.empty()
     ceiling_curves  = Channel.empty()
-    if (params.run_hmmscan) {
+    // The annotation ceiling is a property of Pfam-A, not of any search arm, so a GPU/CPU
+    // timing run has no use for it and would pay for a whole-proteome hmmscan to learn
+    // nothing new.
+    if (params.run_hmmscan && !params.gpu_benchmark) {
         def pfam_hmm = file(params.pfam_hmm)
         // hmmpress writes Pfam-A.hmm.{h3m,h3i,h3f,h3p} alongside the .hmm; hmmscan needs them.
         def pfam_aux = file("${params.pfam_hmm}.h3*")
