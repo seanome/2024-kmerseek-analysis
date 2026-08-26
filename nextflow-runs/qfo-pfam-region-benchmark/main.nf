@@ -1444,8 +1444,12 @@ process reseekSearch {
     input:
     tuple val(species), path(db), path(human_bca)
 
+    // Variant is the mode actually run, not a hardcoded string. This said "sensitive"
+    // while params.reseek_mode was "verysensitive", so every reseek row in every metrics
+    // table named a setting the search had not used -- and switching modes would not have
+    // changed the label, so the two arms would have silently collided in the results.
     output:
-    tuple val(species), val("reseek"), val("sensitive"),
+    tuple val(species), val("reseek"), val(params.reseek_mode),
           path("human_vs_${species}.reseek.tsv.gz")
 
     script:
