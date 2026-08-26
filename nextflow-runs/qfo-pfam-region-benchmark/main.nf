@@ -1420,7 +1420,7 @@ process reseekConvert {
     tuple val(species), path(structures)
 
     output:
-    tuple val(species), path("${species}.bca")
+    tuple val(species), path("${species}.bca"), path("${species}.mu.fasta")
 
     script:
     """
@@ -1432,6 +1432,31 @@ process reseekConvert {
     # STRUCTS accepts a directory and .cif/.mmcif, both confirmed in that same usage text.
     reseek -convert ${structures} -bca ${species}.bca \\
         -threads ${task.cpus} -log ${species}.convert.log
+
+    # Mu is Reseek's 36-letter structural alphabet: -convert2mu encodes each structure's
+    # local backbone geometry as a sequence, and -search uses that as a PREFILTER, matching
+    # Mu strings to shortlist candidates before doing 3D alignment on the survivors. The
+    # binary's own usage says "Accelerates search with -db_mu option".
+    #
+    # Without it every query is structurally aligned against every target. That is what a
+    # 964-query midi search against zebrafish was doing when it reached 1.37 GB of hits in
+    # 100 minutes and had not finished after 26 hours.
+    #
+    # Built here rather than at search time because it depends only on the target proteome,
+    # so it caches under storeDir beside the .bca and is paid for once per species.
+    #
+    # From the .bca when that works, since re-reading the structure directory is the
+    # expensive half of conversion; .bca is listed as a valid STRUCTS form in the same
+    # usage text. Falling back to the directory rather than trusting that: this process
+    # already carries a scar from flags taken off a README instead of the binary.
+    if ! reseek -convert2mu ${species}.bca -fasta ${species}.mu.fasta \\
+            -threads ${task.cpus} -log ${species}.mu.log 2> mu.err; then
+        cat mu.err >&2
+        echo "convert2mu from .bca failed; retrying from the structure directory" >&2
+        rm -f ${species}.mu.fasta
+        reseek -convert2mu ${structures} -fasta ${species}.mu.fasta \\
+            -threads ${task.cpus} -log ${species}.mu.log
+    fi
     """
 }
 
@@ -1442,7 +1467,7 @@ process reseekSearch {
     publishDir "${params.outdir}/regions/reseek", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
-    tuple val(species), path(db), path(human_bca)
+    tuple val(species), path(db), path(db_mu), path(human_bca)
 
     // Variant is the mode actually run, not a hardcoded string. This said "sensitive"
     // while params.reseek_mode was "verysensitive", so every reseek row in every metrics
@@ -1461,6 +1486,7 @@ process reseekSearch {
     // STRUCTS argument for either side, so human is converted once instead of per task.
     def q_dir   = human_bca.toString()
     def db_file = db.toString()
+    def mu_file = db_mu.toString()
     // aq, not pctid, in the score slot: it is Reseek's own homology measure (alignment
     // quality 0-1, >0.5 suggests homology) and leads its default output. pctid is percent
     // identity, which ranks similar sequences rather than probable homologs.
@@ -1472,7 +1498,21 @@ process reseekSearch {
     # One of -fast/-sensitive/-verysensitive is REQUIRED. Default is -verysensitive: the
     # claim under test is remote-homolog detection, and benchmarking an incumbent below its
     # strongest documented setting is the tell reviewers look for.
-    reseek -search ${q_dir} -db ${db_file} -${mode} -columns ${cols} \\
+    # -dbmu is the prefilter. Spelled as the binary's own usage synopsis spells it,
+    # "reseek -search STRUCTS -db STRUCTS [-dbmu db_mu.fasta]", not as the prose two lines
+    # below it spells it ("-db_mu option"); the synopsis is what the binary prints for its
+    # own arguments. If this ever fails with "Unknown option dbmu", the prose was right.
+    #
+    # -evalue is pinned rather than inherited. The usage says "Max E-value (default 10
+    # unless -verysensitive)", so -verysensitive silently relaxes the cutoff, and that
+    # governs output volume as much as it governs sensitivity: one midi species reached
+    # 1.37 GB of hits in 100 minutes under the relaxed default. Every other arm in this
+    # benchmark reports at params.evalue_report, so reseek reporting at something else
+    # would have been comparing arms at different thresholds -- and the reseek arm's output
+    # is read back by scoreDomainCalls through polars, which does not stream compressed
+    # CSV, so an unbounded arm costs scoring memory too.
+    reseek -search ${q_dir} -db ${db_file} -dbmu ${mu_file} -${mode} \\
+        -evalue ${params.evalue_report} -columns ${cols} \\
         -threads ${task.cpus} -log search.log -output raw.tsv
 
     # Accession normalisation lives in bin/normalize_reseek.awk -- see the note there.
@@ -2596,9 +2636,12 @@ workflow {
             if (!params.skip_reseek && !bench_only) {
                 // Human goes through the same cached conversion as the targets; it used to
                 // re-parse the whole human structure directory on every search.
+                // Only the TARGET side needs a Mu fasta: -dbmu prefilters the database,
+                // and the query is read straight from its .bca. Human's mu is built anyway
+                // (one process, one output shape) and simply dropped here.
                 rs_db     = reseekConvert(struct_ch)
-                rs_human  = rs_db.filter { l, _b -> l == HUMAN_LABEL }.map { _l, b -> b }
-                rs_target = rs_db.filter { l, _b -> l != HUMAN_LABEL }
+                rs_human  = rs_db.filter { l, _b, _m -> l == HUMAN_LABEL }.map { _l, b, _m -> b }
+                rs_target = rs_db.filter { l, _b, _m -> l != HUMAN_LABEL }
 
                 reseek_out = reseekSearch(rs_target.combine(rs_human))
                 baseline_regions = baseline_regions.mix(reseek_out)
