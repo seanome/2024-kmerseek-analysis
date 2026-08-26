@@ -902,11 +902,144 @@ def subset(truth: pl.DataFrame, calls: pl.DataFrame, split: str,
     return t, c
 
 
+def score_one(args, truth, truth_lf, job):
+    """Score one tool's regions against the already-loaded truth for one species.
+
+    truth and truth_lf are passed in rather than read here because they are shared across
+    every tool for a given (truth_set, species): a batched task scores ~376 of them, and
+    re-reading the answer key that many times was most of the wall clock.
+    """
+    # Folddisco reports the envelope of a discontinuous residue set, not an alignment.
+    # Scoring that by interval IoU would measure the envelope reduction rather than the
+    # prediction, so this arm is scored on coverage instead.
+    semantics = "motif" if job["tool"] == "folddisco" else "alignment"
+    # Only the arms that read AlphaFold structure files. Those are the ones whose targets
+    # arrive as overlapping 1400-residue fragments, so the same alignment appears once per
+    # fragment. Every other arm reads whole sequences and has nothing to collapse -- and
+    # deduping them would erase the redundancy penalty assign_instances applies on purpose.
+    dedup_fragments = job["tool"] in ("foldseek", "reseek", "folddisco")
+
+    regions = load_regions(
+        job["regions"], args.direct_annotation,
+        rank_by=args.kmerseek_rank_by,
+        max_bonferroni_p=(args.kmerseek_max_bonferroni_p
+                          if args.kmerseek_max_bonferroni_p > 0 else None),
+    )
+
+    # Before transfer, not after: a fragment duplicate is one alignment reported twice, so
+    # it has to go while the target coordinates that identify it as a duplicate are still
+    # in the table. transfer_domains drops them.
+    if regions is not None and dedup_fragments and not args.direct_annotation:
+        before = regions.select(pl.len()).collect().item()
+        regions = dedup_fragment_regions(regions, args.fragment_iou).cache()
+        after = regions.select(pl.len()).collect().item()
+        if before != after:
+            print(f"fragment dedup: {before - after} of {before} regions were the same "
+                  f"alignment seen in overlapping AlphaFold fragments "
+                  f"({100 * (before - after) / before:.1f}%)", file=sys.stderr)
+
+    if args.direct_annotation:
+        target_families = None
+        calls_lf = regions
+    else:
+        map_lf = pl.scan_parquet(args.domain_map)
+        target_families = map_lf.select("pfam_id").unique().collect()
+        calls_lf = (
+            transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
+        )
+
+    if calls_lf is None:
+        scored = pl.DataFrame(
+            schema={
+                "query_acc": pl.String, "pfam_id": pl.String, "qstart": pl.Int64,
+                "qend": pl.Int64, "score": pl.Float64, "iou": pl.Float64,
+                "cover": pl.Float64, "true_start": pl.Int64, "true_end": pl.Int64,
+                "is_tp": pl.Boolean,
+            }
+        )
+    else:
+        scored = score_calls(calls_lf, truth_lf, args.min_overlap, semantics)
+
+    scored = classify_scoreable(scored, truth, args.gray_min_annotated_fraction)
+    scored.write_parquet(job["calls_out"], compression="zstd")
+
+    # IC is estimated once on the whole answer key, not per stratum. A family's rarity is
+    # a property of the proteome; re-estimating it inside each cut would make the same
+    # family worth different amounts in different strata and break comparability.
+    ic = cm.information_content(truth)
+
+    ident = {"truth_set": args.truth_set,
+             "tool": job["tool"], "variant": job["variant"], "species": args.species,
+             "species_mya": args.species_mya,
+             # Stamped on every row so an alignment tool and a motif tool are never
+             # silently compared on boundary metrics that mean different things.
+             "interval_semantics": semantics}
+    rows, curves = [], []
+
+    for split in ("all", "selection", "heldout"):
+        if split != "all" and "split" not in truth.columns:
+            continue
+        for axis, value in strata_of(truth):
+            t_sub, c_sub = subset(truth, scored, split, axis, value)
+            if t_sub.height == 0:
+                continue
+
+            reachable = (
+                t_sub if target_families is None
+                else t_sub.join(target_families, on="pfam_id", how="inner")
+            )
+            points = operating_points(c_sub, reachable.height)
+            m = compute_metrics(c_sub, points, t_sub, reachable, args.min_overlap)
+
+            pc = cm.protein_centric_curve(c_sub, t_sub, ic)
+            m.update(cm.cafa_scalars(pc))
+            m.update(cm.boundary_metrics(c_sub, t_sub, args.strict_iou))
+            m.update(cm.domain_count_metrics(c_sub, t_sub))
+            m.update(cm.sensitivity_to_first_fp(c_sub, t_sub))
+            m.update(ident)
+            m.update({"split": split, "stratum_axis": axis, "stratum": value})
+            rows.append(m)
+
+            # Curves only for the ungrouped cut. One per split x stratum x combo would
+            # dwarf the metrics they support across a 1017-combo sweep.
+            if axis == "all" and job["curve_out"] is not None:
+                curves.append(
+                    downsample(points, args.max_curve_points).with_columns(
+                        pl.lit(split).alias("split"),
+                        **{k: pl.lit(v) for k, v in ident.items()},
+                    )
+                )
+
+    pl.DataFrame(rows, infer_schema_length=None).write_parquet(
+        job["metrics_out"], compression="zstd"
+    )
+    if job["curve_out"] is not None:
+        (pl.concat(curves, how="diagonal_relaxed") if curves
+         else pl.DataFrame(schema={"split": pl.String})).write_parquet(
+            job["curve_out"], compression="zstd"
+        )
+
+    headline = next(
+        (r for r in rows if r["split"] == "all" and r["stratum_axis"] == "all"), {}
+    )
+    print(json.dumps(
+        {k: v for k, v in headline.items() if not k.startswith("stratum")}, indent=2
+    ))
+    print(f"\nemitted {len(rows)} metric rows across splits x strata")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--regions", required=True, type=Path)
-    p.add_argument("--tool", required=True)
-    p.add_argument("--variant", required=True)
+    # Optional because --manifest supplies them per row instead. Exactly one of the two
+    # forms must be given, checked after parsing.
+    p.add_argument("--regions", type=Path)
+    p.add_argument("--tool")
+    p.add_argument("--variant")
+    p.add_argument("--manifest", type=Path,
+                   help="TSV of tool<TAB>variant<TAB>regions_path, one row per arm, all "
+                        "sharing this species and truth set. Scores every row in one "
+                        "process so the answer key is read once rather than once per arm, "
+                        "and so a full sweep is 27 SLURM jobs instead of ~10_100.")
     p.add_argument("--species", required=True)
     p.add_argument("--truth-set", default="pfam",
                    help="which truth set this row was measured against")
@@ -960,14 +1093,21 @@ def main():
     p.add_argument("--interval-semantics", choices=["alignment", "motif"],
                    default="alignment",
                    help="motif for tools reporting discontinuous residue sets (Folddisco)")
-    p.add_argument("--calls-out", required=True, type=Path)
-    p.add_argument("--metrics-out", required=True, type=Path)
+    # Not required under --manifest: output names are derived per row from truth_set,
+    # tool, variant and species, because one process writes a trio per arm.
+    p.add_argument("--calls-out", type=Path)
+    p.add_argument("--metrics-out", type=Path)
     p.add_argument("--curve-out", type=Path)
     p.add_argument("--max-curve-points", type=int, default=2000)
     args = p.parse_args()
 
     if not args.direct_annotation and args.domain_map is None:
         raise SystemExit("--domain-map is required unless --direct-annotation is set")
+    if bool(args.manifest) == bool(args.regions):
+        raise SystemExit("pass exactly one of --manifest or --regions")
+    if args.regions and not (args.tool and args.variant
+                             and args.calls_out and args.metrics_out):
+        raise SystemExit("--regions requires --tool, --variant, --calls-out and --metrics-out")
 
     truth_lf = pl.scan_parquet(args.truth)
     truth = truth_lf.collect()
@@ -982,113 +1122,28 @@ def main():
                           keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
     truth = attach_identity(truth, identity)
 
-    regions = load_regions(
-        args.regions, args.direct_annotation,
-        rank_by=args.kmerseek_rank_by,
-        max_bonferroni_p=(args.kmerseek_max_bonferroni_p
-                          if args.kmerseek_max_bonferroni_p > 0 else None),
-    )
-
-    # Before transfer, not after: a fragment duplicate is one alignment reported twice, so
-    # it has to go while the target coordinates that identify it as a duplicate are still
-    # in the table. transfer_domains drops them.
-    if regions is not None and args.dedup_fragments and not args.direct_annotation:
-        before = regions.select(pl.len()).collect().item()
-        regions = dedup_fragment_regions(regions, args.fragment_iou).cache()
-        after = regions.select(pl.len()).collect().item()
-        if before != after:
-            print(f"fragment dedup: {before - after} of {before} regions were the same "
-                  f"alignment seen in overlapping AlphaFold fragments "
-                  f"({100 * (before - after) / before:.1f}%)", file=sys.stderr)
-
-    if args.direct_annotation:
-        target_families = None
-        calls_lf = regions
-    else:
-        map_lf = pl.scan_parquet(args.domain_map)
-        target_families = map_lf.select("pfam_id").unique().collect()
-        calls_lf = (
-            transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
-        )
-
-    if calls_lf is None:
-        scored = pl.DataFrame(
-            schema={
-                "query_acc": pl.String, "pfam_id": pl.String, "qstart": pl.Int64,
-                "qend": pl.Int64, "score": pl.Float64, "iou": pl.Float64,
-                "cover": pl.Float64, "true_start": pl.Int64, "true_end": pl.Int64,
-                "is_tp": pl.Boolean,
-            }
-        )
-    else:
-        scored = score_calls(calls_lf, truth_lf, args.min_overlap, args.interval_semantics)
-
-    scored = classify_scoreable(scored, truth, args.gray_min_annotated_fraction)
-    scored.write_parquet(args.calls_out, compression="zstd")
-
-    # IC is estimated once on the whole answer key, not per stratum. A family's rarity is
-    # a property of the proteome; re-estimating it inside each cut would make the same
-    # family worth different amounts in different strata and break comparability.
-    ic = cm.information_content(truth)
-
-    ident = {"truth_set": args.truth_set,
-             "tool": args.tool, "variant": args.variant, "species": args.species,
-             "species_mya": args.species_mya,
-             # Stamped on every row so an alignment tool and a motif tool are never
-             # silently compared on boundary metrics that mean different things.
-             "interval_semantics": args.interval_semantics}
-    rows, curves = [], []
-
-    for split in ("all", "selection", "heldout"):
-        if split != "all" and "split" not in truth.columns:
-            continue
-        for axis, value in strata_of(truth):
-            t_sub, c_sub = subset(truth, scored, split, axis, value)
-            if t_sub.height == 0:
+    # One job per (tool, variant) when batched, or the single --regions when not. Batching
+    # exists because SLURM rate-limits submission: one task per (truth_set, species, tool,
+    # variant) is ~10_100 sbatch calls for a full sweep, against 27 when grouped by species.
+    if args.manifest:
+        jobs = []
+        for line in Path(args.manifest).read_text().splitlines():
+            if not line.strip():
                 continue
+            tool, variant, regions = line.split("\t")
+            stem = f"{args.truth_set}.{tool}.{variant}.{args.species}"
+            jobs.append({"tool": tool, "variant": variant, "regions": Path(regions),
+                         "calls_out": Path(f"{stem}.calls.parquet"),
+                         "metrics_out": Path(f"{stem}.metrics.parquet"),
+                         "curve_out": Path(f"{stem}.curve.parquet")})
+    else:
+        jobs = [{"tool": args.tool, "variant": args.variant, "regions": args.regions,
+                 "calls_out": args.calls_out, "metrics_out": args.metrics_out,
+                 "curve_out": args.curve_out}]
 
-            reachable = (
-                t_sub if target_families is None
-                else t_sub.join(target_families, on="pfam_id", how="inner")
-            )
-            points = operating_points(c_sub, reachable.height)
-            m = compute_metrics(c_sub, points, t_sub, reachable, args.min_overlap)
-
-            pc = cm.protein_centric_curve(c_sub, t_sub, ic)
-            m.update(cm.cafa_scalars(pc))
-            m.update(cm.boundary_metrics(c_sub, t_sub, args.strict_iou))
-            m.update(cm.domain_count_metrics(c_sub, t_sub))
-            m.update(cm.sensitivity_to_first_fp(c_sub, t_sub))
-            m.update(ident)
-            m.update({"split": split, "stratum_axis": axis, "stratum": value})
-            rows.append(m)
-
-            # Curves only for the ungrouped cut. One per split x stratum x combo would
-            # dwarf the metrics they support across a 1017-combo sweep.
-            if axis == "all" and args.curve_out is not None:
-                curves.append(
-                    downsample(points, args.max_curve_points).with_columns(
-                        pl.lit(split).alias("split"),
-                        **{k: pl.lit(v) for k, v in ident.items()},
-                    )
-                )
-
-    pl.DataFrame(rows, infer_schema_length=None).write_parquet(
-        args.metrics_out, compression="zstd"
-    )
-    if args.curve_out is not None:
-        (pl.concat(curves, how="diagonal_relaxed") if curves
-         else pl.DataFrame(schema={"split": pl.String})).write_parquet(
-            args.curve_out, compression="zstd"
-        )
-
-    headline = next(
-        (r for r in rows if r["split"] == "all" and r["stratum_axis"] == "all"), {}
-    )
-    print(json.dumps(
-        {k: v for k, v in headline.items() if not k.startswith("stratum")}, indent=2
-    ))
-    print(f"\nemitted {len(rows)} metric rows across splits x strata")
+    for i, job in enumerate(jobs, 1):
+        print(f"[{i}/{len(jobs)}] {job['tool']}/{job['variant']}", file=sys.stderr)
+        score_one(args, truth, truth_lf, job)
 
 
 if __name__ == "__main__":

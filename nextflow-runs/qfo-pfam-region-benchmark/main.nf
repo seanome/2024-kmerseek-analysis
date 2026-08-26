@@ -472,6 +472,26 @@ params.kmerseek_memory_floor = '8 GB'
 // 1.14x of its 32 GB. There is no room to scale that branch down -- doing so by proteome
 // size was measured to put fly_dayhoff_k10 and k11 into OOM. Scale it only with new peak
 // data in hand, and raise the base first if you do.
+// Wall clock for a batched scoring task, from the TOTAL bytes it will read. One task now
+// scores every arm for a species sequentially, so time is additive where memory is not.
+//
+// The rate is deliberately pessimistic. scoreDomainCalls timings measured so far are all
+// yeast on protein/dayhoff, reading 7.9-8.3 MB with no spread, so they cannot calibrate
+// anything -- a regression on them gives r2 = 0.00. Until a batched run produces real
+// numbers, this is a bound rather than a fit, and the floor matters more than the slope.
+params.score_time_base_min    = 30
+params.score_time_per_mb_sec  = 6
+params.score_time_max_hours   = 24
+
+def scoreTime = { regions, attempt ->
+    def files = regions instanceof List ? regions : [regions]
+    long mb   = Math.max(1L, files.sum { (it.size() as long) }.intdiv(1024L * 1024L))
+    long mins = (params.score_time_base_min as long)
+                + (mb * (params.score_time_per_mb_sec as long)).intdiv(60L)
+    long cap  = (params.score_time_max_hours as long) * 60L
+    Duration.of("${Math.min(mins, cap) * attempt} min")
+}
+
 def kmerseekMemory = { label, ksize, targetBytes, attempt ->
     if (!isSaturated(label, ksize)) {
         return MemoryUnit.of(params.kmerseek_memory) * attempt
@@ -1850,12 +1870,19 @@ process scoreDomainCalls {
      * human_domain_truth.parquet. Emits per-call detail (for downstream re-cutting) and
      * a metrics row.
      */
-    tag "${truth_set}: ${tool}/${variant} vs ${species}"
+    // One task covers every arm for this species now, so the tag names the group rather
+    // than a tool. arms is the count because a full sweep is ~376 of them per species.
+    tag "${truth_set}: ${species} (${tools.size()} arms)"
     // Its own label, NOT 'python'. Config directives beat script-declared ones, so while
     // this carried the python label that label's flat memory silently overrode the sizing
     // below. The scoring label sets the container and nothing else.
     label 'python_scoring'
-    memory { scoreMemory(regions, task.attempt) }
+    // Memory from the LARGEST arm, time from the SUM. The python loop is sequential, so
+    // peak RSS is set by the biggest single regions file while wall clock is additive.
+    // Sizing memory on the sum would reserve ~376x what any moment needs.
+    memory { scoreMemory(regions instanceof List ? regions.max { it.size() } : regions,
+                         task.attempt) }
+    time   { scoreTime(regions, task.attempt) }
     errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
     maxRetries 3
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
@@ -1863,31 +1890,37 @@ process scoreDomainCalls {
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
-    tuple val(truth_set), val(species), val(tool), val(variant), val(mya), path(regions),
-          path(truth), path(domain_map), path(covariates), path(identity)
+    tuple val(truth_set), val(species), val(tools), val(variants), val(mya),
+          path(regions, arity: '1..*'), path(truth), path(domain_map),
+          path(covariates), path(identity)
 
+    // Globs, because one task now writes a trio per arm. arity '1..*' for the same reason
+    // it is on kmerseekIndex's chunk output: a glob emits a bare Path on a single match and
+    // a List on several, and a species with one arm would otherwise break the collect.
     output:
-    path "${truth_set}.${tool}.${variant}.${species}.calls.parquet",   emit: calls
-    path "${truth_set}.${tool}.${variant}.${species}.metrics.parquet", emit: metrics
-    path "${truth_set}.${tool}.${variant}.${species}.curve.parquet",   emit: curve
+    path "*.calls.parquet",   arity: '1..*', emit: calls
+    path "*.metrics.parquet", arity: '1..*', emit: metrics
+    path "*.curve.parquet",   arity: '1..*', emit: curve
 
     script:
-    // Folddisco reports the envelope of a discontinuous residue set, not an alignment.
-    // Scoring that by interval IoU would measure the envelope reduction rather than the
-    // prediction, so this arm is scored on coverage instead. See evaluate_domain_calls.py.
-    def semantics = tool == 'folddisco' ? 'motif' : 'alignment'
-    // Only the arms that read AlphaFold structure files. Those are the ones whose targets
-    // arrive as overlapping 1400-residue fragments, so the same alignment appears once per
-    // fragment. Every other arm reads whole sequences and has nothing to collapse -- and
-    // deduping them would erase the redundancy penalty assign_instances applies on purpose.
-    def dedup = tool in ['foldseek', 'reseek', 'folddisco'] ? '--dedup-fragments' : ''
+    // The manifest is built from the STAGED paths, not from the channel's originals. If two
+    // arms ever shipped a file of the same name Nextflow would rename one on staging, and a
+    // manifest written from the original names would then point at the wrong file.
+    //
+    // interval-semantics and dedup-fragments used to be decided here per tool. They now live
+    // in evaluate_domain_calls.score_one, because a manifest row carries only the tool name
+    // and the policy has to be derived from it in exactly one place.
+    def manifest_rows = [tools, variants, regions].transpose()
+        .collect { t, v, r -> "${t}\t${v}\t${r}" }.join("\n")
     """
+    cat > manifest.tsv << 'MANIFEST_EOF'
+${manifest_rows}
+MANIFEST_EOF
+
+    echo "scoring \$(wc -l < manifest.tsv) arms for ${truth_set}/${species}"
+
     evaluate_domain_calls.py \\
-        --regions      ${regions} \\
-        --tool         ${tool} \\
-        ${dedup} \\
-        --interval-semantics ${semantics} \\
-        --variant      ${variant} \\
+        --manifest     manifest.tsv \\
         --species      ${species} \\
         --species-mya  ${mya} \\
         --truth        ${truth} \\
@@ -1896,10 +1929,7 @@ process scoreDomainCalls {
         --identity     ${identity} \\
         --min-overlap  ${params.min_overlap} \\
         --strict-iou   ${params.strict_iou} \\
-        --truth-set    ${truth_set} \\
-        --calls-out    ${truth_set}.${tool}.${variant}.${species}.calls.parquet \\
-        --metrics-out  ${truth_set}.${tool}.${variant}.${species}.metrics.parquet \\
-        --curve-out    ${truth_set}.${tool}.${variant}.${species}.curve.parquet
+        --truth-set    ${truth_set}
     """
 }
 
@@ -2626,7 +2656,24 @@ workflow {
             tuple(ts, species, tool, variant, mya, regions, truth, domain_map, cov, ident)
         }
 
-    scored = scoreDomainCalls(score_in)
+    // One task per (truth_set, species) rather than per (truth_set, species, tool, variant).
+    // The per-arm shape was ~10_100 SLURM jobs for a full sweep, each a few seconds of work
+    // behind minutes of scheduler latency, and Sherlock rate-limits submission per hour --
+    // a run died with "Reached jobs per hour limit" partway through. Grouped, it is 27.
+    //
+    // truth, domain_map, covariates and identity are identical within a group, so .first()
+    // on each is exact rather than an approximation; only tools, variants and regions vary.
+    score_grouped = score_in
+        .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident ->
+            tuple(tuple(ts, sp), tool, variant, mya, regions, truth, dm, cov, ident)
+        }
+        .groupTuple(by: 0)
+        .map { key, tools, variants, myas, regions, truths, dms, covs, idents ->
+            tuple(key[0], key[1], tools, variants, myas.first(), regions,
+                  truths.first(), dms.first(), covs.first(), idents.first())
+        }
+
+    scored = scoreDomainCalls(score_grouped)
 
     // ---- hmmscan annotation ceiling ----
     ceiling_metrics = Channel.empty()
