@@ -195,7 +195,7 @@ help:
 	@echo "  multiqc-status       Show what that report would be built from"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
-	@echo "  running              Show which combo each running job is working on"
+	@echo "  running              Show the process and tag behind each running job"
 	@echo "  kill-jobs            Cancel every job on the account (confirms first)"
 	@echo ""
 	@echo "Cleanup:"
@@ -1003,23 +1003,30 @@ status:
 	$(call require_cluster)
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
 
-## What each running job actually IS. `status` tells you jobs exist; this tells you which
-## combo each one is working on. The SLURM job name truncates to `nf-kmers` for every
-## kmerseek task regardless of alphabet, so the tag is read off the RocksDB path in the
-## task's own .command.sh instead, falling back to the human_vs_<species> name for the
-## baseline arms and to the work directory hash for anything else.
+## What each running job actually IS: process AND tag, in separate columns.
 ##
-## Also worth reading the TIME column carefully: squeue formats it [DD-[HH:]]MM:SS, so
-## `4:03` is four minutes, not four hours. A genuinely stuck job looks like `1-02:19:10`.
+## Read from `### name:` on line 3 of the task's own .command.run, which Nextflow writes
+## and which carries both. Nothing here is inferred. The first version of this target
+## guessed the tag out of .command.sh with regexes, which gave `human_vs_ecoli` for six
+## different tools and a bare work-directory hash for every process whose script matched
+## neither pattern -- reseekConvert, scoreDomainCalls and the truth builders among them.
+##
+## The SLURM job name cannot be used for this: it truncates to `nf-kmers` for every
+## kmerseek task whatever its alphabet, which is the whole reason `status` is not enough.
+##
+## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes and
+## `1-02:19:10` is a day. That distinction has already cost a wrong call about whether a
+## job was stuck. PENDING jobs show 0:00.
 running:
 	$(call require_cluster)
-	@printf "%-10s %-12s %s\n" JOBID TIME TASK
-	@for j in $$(squeue -u $$USER -h --account=$${SLURM_ACCOUNT:-ayeletv} -o %i); do \
+	@printf "%-10s %-4s %-10s %-24s %s\n" JOBID ST TIME PROCESS TAG
+	@squeue -u $$USER -h --account=$${SLURM_ACCOUNT:-ayeletv} -o "%i %t %M" | while read j st tm; do \
 	   w=$$(scontrol show job $$j 2>/dev/null | tr ' ' '\n' | grep -m1 WorkDir | cut -d= -f2); \
-	   t=$$(grep -m1 -oE '[a-z]+\.[a-z0-9_]+\.k[0-9]+\.lc(true|false)' "$$w/.command.sh" 2>/dev/null); \
-	   if [ -z "$$t" ]; then t=$$(grep -m1 -oE 'human_vs_[a-z]+' "$$w/.command.sh" 2>/dev/null); fi; \
-	   if [ -z "$$t" ]; then t=$$(basename "$$w" 2>/dev/null); fi; \
-	   printf "%-10s %-12s %s\n" "$$j" "$$(squeue -j $$j -h -o %M 2>/dev/null)" "$$t"; \
+	   n=$$(sed -n "s/^### name: '\(.*\)'.*/\1/p" "$$w/.command.run" 2>/dev/null | head -1); \
+	   if [ -z "$$n" ]; then n="(no .command.run under $$(basename "$$w" 2>/dev/null))"; fi; \
+	   pr=$$(printf '%s' "$$n" | sed 's/ (.*//'); \
+	   tg=$$(printf '%s' "$$n" | sed -n 's/.*(\(.*\))$$/\1/p'); \
+	   printf "%-10s %-4s %-10s %-24s %s\n" "$$j" "$$st" "$$tm" "$$pr" "$$tg"; \
 	 done; true
 
 ## Cancel every job on this account, then show what is left.
