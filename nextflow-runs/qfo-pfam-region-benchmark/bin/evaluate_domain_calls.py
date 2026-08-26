@@ -82,7 +82,7 @@ def extract_accession(col: pl.Expr) -> pl.Expr:
     )
 
 
-def load_regions(path: Path, direct: bool, rank_by: str = "jaccard",
+def load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
                  max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
     """Normalize any tool's output to one schema. Returns None for an empty result, which
     is a real outcome (a combo that found nothing), not an error.
@@ -100,7 +100,7 @@ def load_regions(path: Path, direct: bool, rank_by: str = "jaccard",
         return None
 
 
-def _load_regions(path: Path, direct: bool, rank_by: str = "jaccard",
+def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
                   max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
     if path.stat().st_size == 0:
         return None
@@ -109,7 +109,7 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "jaccard",
         # kmerseek. region_start/region_end are query-side; target_start/target_end are
         # target-side.
         #
-        # Ranking is by `jaccard`, not by region_poisson_score. kmerseek's own source is
+        # Ranking is by `region_enrichment`, not by region_poisson_score. kmerseek's source is
         # explicit that the Poisson score is "a heuristic score for ranking candidate
         # regions against each other, not as a calibrated probability", for two reasons the
         # -log10 transform does not fix: n_shared is arithmetic on the region's own length,
@@ -117,11 +117,17 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "jaccard",
         # run (close to circular), and the k-mers counted overlap by ksize-1 residues, so
         # they are not the independent trials the Poisson model assumes.
         #
-        # The tradeoff is real and worth stating: jaccard is a whole query-target statistic,
-        # so every region from one protein pair carries the same value. Ranking is therefore
-        # protein-level for kmerseek while it stays region-level for the aligners. The PR
-        # curve groups by score, so the ties are handled without ordering bias, but kmerseek
-        # can no longer discriminate between two regions of the same pair.
+        # Enrichment keeps that same numerator but divides by region_expected_shared_kmers
+        # instead of pushing it through a Poisson tail, so it drops the independence
+        # assumption while keeping the informative part: how many more k-mers matched than
+        # the target DB's composition predicts. It is region-scoped, which matters because
+        # the unit of this benchmark is the domain interval.
+        #
+        # jaccard is available and is deliberately NOT the default. It is a whole
+        # query-target statistic, so every region of a protein pair carries the same value
+        # and kmerseek would rank proteins while the aligners rank regions. The PR curve
+        # groups by score so those ties carry no ordering bias, but the discrimination is
+        # genuinely gone.
         lf = pl.scan_parquet(path)
         names = lf.collect_schema().names()
         if not names:
@@ -915,11 +921,13 @@ def main():
     p.add_argument("--covariates", type=Path,
                    help="per-protein HGNC group / omega / pLDDT / disorder table")
     p.add_argument("--direct-annotation", action="store_true")
-    p.add_argument("--kmerseek-rank-by", default="jaccard",
+    p.add_argument("--kmerseek-rank-by", default="region_enrichment",
                    choices=["jaccard", "region_enrichment", "region_n_shared_kmers",
                             "region_poisson_score"],
                    help="Which kmerseek column ranks calls, bigger is better for all four. "
-                        "jaccard is whole-protein so it cannot separate regions of one "
+                        "region_enrichment (default) is region-scoped and normalised by "
+                        "the target DB's expected shared k-mers. jaccard is whole-protein "
+                        "so it cannot separate regions of one "
                         "pair; region_n_shared_kmers is region_length-ksize+1, so it ranks "
                         "by region length alone; region_poisson_score reproduces the "
                         "pre-2026-08-26 behaviour. The Bonferroni filter is independent of "
