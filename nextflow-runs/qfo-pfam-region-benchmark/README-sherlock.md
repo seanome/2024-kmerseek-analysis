@@ -491,16 +491,50 @@ kmerseek sweep is 1017 jobs and will sit in the queue much longer.
 
 ## Memory sizing
 
-HP-family alphabets at k<=20 get 128 GB, everything else 32 GB, doubling on retry. This
-is set in `main.nf`, not `nextflow.config`, because it needs the task's own alphabet and
-ksize. Do not add a `memory` directive for `kmerseekIndexAndSearch` to the config --
-config directives always beat script-declared ones in Nextflow, so a config-level
-"default" silently overrides the per-combo sizing and the HP jobs OOM.
+A saturated k-mer keyspace gets 128 GB and everything else 32 GB, scaled by the target
+proteome's FASTA size against the largest one (zebrafish, 16.7 MB) and floored at 8 GB,
+doubling on retry. This is set in `main.nf`, not `nextflow.config`, because it needs the
+task's own alphabet, ksize and target. Do not add a `memory` directive for
+`kmerseekIndex` or `kmerseekSearch` to the config -- config directives always beat
+script-declared ones in Nextflow, so a config-level "default" silently overrides the
+per-combo sizing and the HP jobs OOM.
+
+The proteome-size term applies to the 128 GB (saturated) branch only, and was added on
+2026-08-25. Without it every ecoli and yeast task asked for the full 128 GB and peaked at
+1.0-4.1 GB, and the resulting standing reservation is what SLURM answered by queueing the
+sweep rather than running it.
+
+The 32 GB branch stays flat on purpose. `isSaturated` is a hard threshold, so the
+hungriest tasks in the sweep are the ones just outside it -- `fly_dayhoff_k10` is
+unsaturated and peaked at 28.1 GB against its 32 GB. Scaling that branch by proteome size
+was measured to push it and `fly_dayhoff_k11` into OOM.
 
 The reason low ksize needs *more* memory, not less, is that a handful of k-mers absorb a
 large share of the proteome, and the inverted index scales with the most-degenerate
 k-mer's occurrence count -- the opposite of the usual "more distinct k-mers, more RAM"
 intuition.
+
+## What the midi and full runs share
+
+Both pass the same `--db_cache ../results`, deliberately: midi and the full run differ ONLY
+in the human query set (964 chr6 proteins against 19_696), so everything keyed on the
+TARGET proteome is identical for both and is cached there -- `kmerseek_index/` (3294 target
+indexes), `hhblits_db/` (9 target DBs at ~36 min each), `foldseek_db/`, `mmseqs_db/`,
+`prostt5_db/`, `reseek_db/`, `folddisco_index/` and `prostt5_weights/`.
+
+The HUMAN entry in each of those is NOT shareable, and used to be. Every arm wrote a
+`human_*` entry keyed on the bare label, so whichever run built it first won and the other
+silently searched with the wrong query set -- kmerseek reading the correct FASTA while
+every database-backed baseline read the other run's. The human label now carries an md5 of
+the query FASTA (`human-74bf5689_mmdb`), so each query set gets its own entry while the
+target databases stay fully shared. Pre-digest `human_*` entries are orphaned; `make
+index-disk` lists them.
+
+**Do not run `make run` and `make run-midi` at the same time.** They share one `storeDir`,
+and Nextflow checks whether a store entry exists when it SCHEDULES a task, not when it
+writes one. Two runs both see it absent, both build it, and the slower one's `mv` dies with
+`Directory not empty`, taking the whole run down. That is the `foldseekDb (ecoli)` failure
+on 2026-08-26.
 
 ## Disk
 

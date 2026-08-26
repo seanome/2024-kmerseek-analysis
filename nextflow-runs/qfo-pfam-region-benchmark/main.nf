@@ -402,11 +402,35 @@ def scoreMemory = { regions, attempt ->
     MemoryUnit.of("${Math.min(estMb, capMb)} MB") * attempt
 }
 
-def kmerseekMemory = { label, ksize, attempt ->
-    def base = isSaturated(label, ksize)
-        ? MemoryUnit.of(params.kmerseek_memory_hp_lowk)
-        : MemoryUnit.of(params.kmerseek_memory)
-    base * attempt
+// Target proteome size, in MB of FASTA, that kmerseek_memory_hp_lowk is sized for.
+// Zebrafish is the largest QfO proteome at 16.7 MB. Ecoli is 1.8 MB.
+params.kmerseek_reference_proteome_mb = 17
+// Nothing drops below this however small the proteome: RocksDB write buffers and the
+// zstd output stream cost the same regardless of how little goes through them.
+params.kmerseek_memory_floor = '8 GB'
+
+// The SATURATED allocation, and only that one, scales with the target proteome. The index
+// holds one posting list per proteome k-mer, so a 1.8 MB proteome cannot build the index a
+// 16.7 MB one does, and sizing on saturation alone asked 128 GB for every ecoli and yeast
+// task in the sweep against measured peaks of 1.0-4.1 GB. ecoli_hp_k20 reserved 128 GB and
+// touched 1.02 GB. Scaling those cuts the sweep's standing reservation by 26% with no task
+// dropping below the headroom it already had.
+//
+// The UNSATURATED 32 GB branch stays flat, and that is not an oversight. isSaturated is a
+// hard threshold, so the hungriest tasks in the whole sweep are the ones sitting just
+// OUTSIDE it: fly_dayhoff_k10 is unsaturated by the rule and peaked at 28.1 GB, which is
+// 1.14x of its 32 GB. There is no room to scale that branch down -- doing so by proteome
+// size was measured to put fly_dayhoff_k10 and k11 into OOM. Scale it only with new peak
+// data in hand, and raise the base first if you do.
+def kmerseekMemory = { label, ksize, targetBytes, attempt ->
+    if (!isSaturated(label, ksize)) {
+        return MemoryUnit.of(params.kmerseek_memory) * attempt
+    }
+    long   mb   = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
+    double frac = Math.min(1.0d, mb / (params.kmerseek_reference_proteome_mb as double))
+    long sized  = Math.max(MemoryUnit.of(params.kmerseek_memory_floor).toMega(),
+                           (long) (MemoryUnit.of(params.kmerseek_memory_hp_lowk).toMega() * frac))
+    MemoryUnit.of("${sized} MB") * attempt
 }
 
 // The trace file the MultiQC resource sections read. Resolved through a closure, never
@@ -660,66 +684,62 @@ process buildQueryCovariates {
 }
 
 // ===========================================================================
-// KMERSEEK — fused index + search, region-level output
+// KMERSEEK — index per (species, alphabet, ksize, low-complexity), then search
 // ===========================================================================
 
-process kmerseekIndexAndSearch {
+process kmerseekIndex {
     /*
-     * Index and search in one task so the RocksDB index never becomes a declared
-     * output: it is built in the task work dir, used once, and deleted before the task
-     * exits. Steady-state disk is bounded by (maxForks x one index), not by the whole
-     * 113-combo matrix. An earlier all-vs-all run died with "No space left on device"
-     * doing this the other way.
+     * Build the RocksDB index for one target proteome under one alphabet/ksize/
+     * low-complexity setting, and KEEP it under storeDir.
      *
-     * Tradeoff: -resume after a crash re-indexes an incomplete combo instead of reusing
-     * a saved index. Accepted -- the index is cheap relative to the search.
+     * This was fused with the search until 2026-08-25, specifically so the index never
+     * became a declared output: it was built in the work dir, used once, and deleted
+     * before the task exited, which bounded steady-state disk at (maxForks x one index)
+     * rather than the whole matrix. An earlier all-vs-all run had died with "No space
+     * left on device" doing it the other way, and that failure mode has not gone away --
+     * see the disk note below.
      *
-     * DO NOT "optimise" this by indexing human once and searching the species against it,
-     * the way prostt5Db/foldseekDb/mmseqsDb now cache their databases. It looks like the
-     * same win -- 368 index builds instead of 3312 -- but those arms cache a database that
-     * is used in the SAME direction every time, and this one cannot be. kmerseek computes
-     * regions on the QUERY side. Making human the target moves the scored interval onto the
-     * species protein, and human survives only as transfer coordinates: the side that picks
-     * WHICH Pfam domain to transfer, not the side that gets scored. The benchmark's unit is
-     * the human domain interval, so that swap answers "what does the mouse region look
-     * like" instead of "did the tool find titin's Ig domain". Rejected deliberately on
-     * 2026-08-24, not overlooked.
+     * What changed is that there are now two runs over the same targets. The index
+     * depends only on the TARGET proteome, so run-midi (964 chr6 queries) and the full
+     * run (19_696 queries) build byte-identical indexes for all 3294 combos. Fused, the
+     * full run rebuilds every one of them. Split, with storeDir on DB_CACHE rather than
+     * outdir, the full run inherits the whole set and pays only for search.
+     *
+     * DISK: ~3294 indexes. Measured write volume was a 2.1 GB median per fused task, so
+     * budget multiple TB on $SCRATCH and check `df` before launching the full run.
+     * `make clean-indexes` drops the cache once the last run over these targets is done.
+     *
+     * ONE output, and it is the directory. The spectrum and the log live INSIDE it. A
+     * sibling file next to a directory output under storeDir is the exact shape that
+     * produced this repo's recurring "Directory not empty" failure, twice.
+     *
+     * DO NOT "optimise" this further by indexing human once and searching the species
+     * against it. It looks like the same win -- 366 index builds instead of 3294 -- but
+     * those arms cache a database used in the SAME direction every time, and this one
+     * cannot be. kmerseek computes regions on the QUERY side. Making human the target
+     * moves the scored interval onto the species protein, and human survives only as
+     * transfer coordinates: the side that picks WHICH Pfam domain to transfer, not the
+     * side that gets scored. The benchmark's unit is the human domain interval, so that
+     * swap answers "what does the mouse region look like" instead of "did the tool find
+     * titin's Ig domain". Rejected deliberately on 2026-08-24, not overlooked.
      */
     tag "${species}_${label}_k${ksize}_lc${lowcomp}"
-    storeDir "${params.outdir}/kmerseek"
+    storeDir "${DB_CACHE}/kmerseek_index"
 
-    memory { kmerseekMemory(label, ksize, task.attempt) }
-    // Retry the OOM signals (128..143), stop the run on anything else. Deliberately not
-    // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
-    // downstream as "this alphabet found nothing", which is indistinguishable from a real
-    // negative. That has already happened once on this project -- 17 combos silently
-    // searched ~1000 of 19,696 queries and looked like genuine misses. Failing loudly and
-    // resuming costs queue time; a silent partial costs a wrong conclusion.
+    memory { kmerseekMemory(label, ksize, species_fasta.size(), task.attempt) }
     errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
     maxRetries 2
 
     input:
     tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize),
-          val(lowcomp), path(human_fasta)
+          val(lowcomp)
 
-    // ONE path output, deliberately. storeDir supports only val/path outputs -- a tuple
-    // output silently disabled it ("storeDir can only be used with `val` and `path`
-    // outputs"), so nothing was being persisted and -resume would have recomputed all 1017
-    // searches. A sibling pipeline in this repo also hit a recurring storeDir "Directory
-    // not empty" failure from a two-output design, fixed the same way: collapse to one.
-    //
-    // The (species, tool, variant) metadata is not lost, it is recovered in the workflow
-    // from the filename, which already encodes all three.
     output:
-    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
-    path "spectrum.${species}.${label}.k${ksize}.lc${lowcomp}.csv.gz",           emit: spectrum
+    path "${species}.${label}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb"
 
     script:
     def slug      = "${label}.k${ksize}.lc${lowcomp}"
     def index_dir = "${species}.${slug}.kmerseek.rocksdb"
-    def out_zst   = "human_vs_${species}.${slug}.regions.csv.zst"
-    def out_pq    = "human_vs_${species}.${slug}.regions.parquet"
-    def log_file  = "human_vs_${species}.${slug}.log"
     def spectrum  = "spectrum.${species}.${slug}.csv.gz"
     // The new CLI treats --remove-low-complexity as a presence-only index flag. Search
     // inherits the index setting when the option is omitted, so false emits nothing and
@@ -728,8 +748,8 @@ process kmerseekIndexAndSearch {
     """
     set -euo pipefail
 
-    echo "=== Index: ${species} ${cli_flag} k=${ksize} ===" | tee ${log_file}
-    echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
+    echo "=== Index: ${species} ${cli_flag} k=${ksize} lc=${lowcomp} ===" | tee index.log
+    echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a index.log
 
     # --kmer-stats-out writes the k-mer frequency spectrum for this proteome under this
     # alphabet/ksize/low-complexity setting. Kept as a first-class output: the spectra are
@@ -742,9 +762,67 @@ process kmerseekIndexAndSearch {
         --output   ${index_dir} \\
         ${lc_flag} \\
         --kmer-stats-out ${spectrum} \\
-        2>&1 | tee -a ${log_file}
+        2>&1 | tee -a index.log
 
-    echo "=== Search: human vs ${species} ===" | tee -a ${log_file}
+    echo "End: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a index.log
+    echo "index size: \$(du -sh ${index_dir} | cut -f1)" | tee -a index.log
+
+    # Nested inside the index directory, not emitted alongside it -- see the storeDir note
+    # above. kmerseek reads only the RocksDB files it wrote, so these are inert here.
+    touch ${spectrum}
+    mv ${spectrum} index.log ${index_dir}/
+    """
+}
+
+process kmerseekSearch {
+    /*
+     * Search human against one stored target index. Emits the region table the benchmark
+     * scores, plus the spectrum carried out of the index directory so downstream plotting
+     * does not have to reach inside a storeDir path.
+     *
+     * target_bytes is the TARGET proteome's FASTA size, passed as a value rather than
+     * measured from the staged index: the index arrives as a directory symlink, and
+     * .size() on a directory returns the dirent size, not the tree. Sizing memory off
+     * that silently gave every search the floor allocation.
+     */
+    tag "${species}_${label}_k${ksize}_lc${lowcomp}"
+    storeDir "${params.outdir}/kmerseek"
+
+    memory { kmerseekMemory(label, ksize, target_bytes, task.attempt) }
+    // Retry the OOM signals (128..143), stop the run on anything else. Deliberately not
+    // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
+    // downstream as "this alphabet found nothing", which is indistinguishable from a real
+    // negative. That has already happened once on this project -- 17 combos silently
+    // searched ~1000 of 19,696 queries and looked like genuine misses. Failing loudly and
+    // resuming costs queue time; a silent partial costs a wrong conclusion.
+    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    maxRetries 2
+
+    input:
+    tuple val(species), val(cli_flag), val(label), val(ksize), val(lowcomp),
+          val(target_bytes), path(index_dir), path(human_fasta)
+
+    output:
+    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
+    path "spectrum.${species}.${label}.k${ksize}.lc${lowcomp}.csv.gz",           emit: spectrum
+
+    script:
+    def slug      = "${label}.k${ksize}.lc${lowcomp}"
+    def out_zst   = "human_vs_${species}.${slug}.regions.csv.zst"
+    def out_pq    = "human_vs_${species}.${slug}.regions.parquet"
+    def log_file  = "human_vs_${species}.${slug}.log"
+    def spectrum  = "spectrum.${species}.${slug}.csv.gz"
+    def lc_flag   = lowcomp ? "--remove-low-complexity" : ""
+    """
+    set -euo pipefail
+
+    echo "=== Search: human vs ${species} (${cli_flag} k=${ksize} lc=${lowcomp}) ===" | tee ${log_file}
+    echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
+
+    # Carried out of the index directory rather than rebuilt: the spectrum is a property of
+    # the target proteome under this alphabet/ksize, which is exactly what kmerseekIndex
+    # already computed and stored.
+    cp ${index_dir}/${spectrum} ${spectrum} 2>/dev/null || touch ${spectrum}
 
     # --min-region-score is OR'd with --max-query-pvalue inside kmerseek, so this keeps
     # sub-protein domain hits whose whole-query p-value is unimpressive. Do not "tighten"
@@ -784,7 +862,7 @@ process kmerseekIndexAndSearch {
     echo "regions csv.zst: \$(du -sh ${out_zst} | cut -f1)" | tee -a ${log_file}
 
     # Straight to parquet, dropping columns no downstream step reads. Both formats kept
-    # around for 1017 result files is the disk blow-up this design avoids.
+    # around for 3294 result files is the disk blow-up this design avoids.
     # Test the DECOMPRESSED stream, not the file size. zstd emits a 13-byte frame header
     # for empty input, so [ -s file ] is true for a search that found nothing and polars
     # then dies with NoDataError. A combo finding zero matches is a real result -- at
@@ -804,9 +882,7 @@ PYEOF
     else
         touch ${out_pq}
     fi
-    touch ${spectrum}
     rm -f ${out_zst}
-    rm -rf ${index_dir}
 
     echo "regions parquet: \$(du -sh ${out_pq} | cut -f1)" | tee -a ${log_file}
     """
@@ -1173,7 +1249,14 @@ process prostt5Weights {
      */
     container 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
     label 'high_cpu'
-    storeDir "${params.outdir}/prostt5"
+    // The model weights depend on nothing this pipeline varies -- not the query set, not
+    // the targets -- so they belong in the shared cache rather than being re-downloaded
+    // into each run's own outdir.
+    // Leaf name kept as `prostt5`, not `prostt5_weights`: this used to store under
+    // ${params.outdir}/prostt5, and DB_CACHE defaults to params.outdir, so keeping the leaf
+    // means an existing weights download is still found instead of being orphaned and
+    // re-fetched. Sharing comes from DB_CACHE, not from renaming the directory.
+    storeDir "${DB_CACHE}/prostt5"
 
     output:
     path "weights"
@@ -1496,12 +1579,20 @@ process hhblitsBuildDB {
     tag "${label}"
     container 'quay.io/biocontainers/hhsuite@sha256:4bf9bb5229de18f522a94f4443c19fdcbb0f0cb0e6ea92f5390aa170bcb0a24f'
     label 'high_cpu'
+    // The nine target databases are identical between the midi and full runs and cost
+    // ~36 min each to build, so they belong in the shared cache alongside every other
+    // per-target database. The human entry is keyed by query-set digest (HUMAN_LABEL),
+    // which is what makes sharing this directory safe -- see the note in the workflow.
+    storeDir "${DB_CACHE}/hhblits_db"
 
     input:
-    tuple val(label), path(fasta)
+    tuple val(label), path(fasta), val(is_query)
 
+    // Bare path, not a tuple: storeDir supports only val/path outputs and silently does
+    // nothing for a tuple. The label comes back off the directory name via label_dbs,
+    // the same way every other cached database in this pipeline recovers it.
     output:
-    tuple val(label), path("${label}_hhdb")
+    path "${label}_hhdb"
 
     script:
     def n_iter = params.hhblits_db ? "2" : "0"
@@ -1520,8 +1611,10 @@ process hhblitsBuildDB {
             -- awk '/^>/{print} !/^>/{print toupper(\$0)}'
     fi
 
-    # Target databases also need hhm + cs219; the query database only needs a3m.
-    if [ "${label}" != "human" ]; then
+    # Target databases also need hhm + cs219; the query database only needs a3m. Driven by
+    # the is_query flag, not by matching the label against "human" -- the human label now
+    # carries a query-set digest, so a string test against it silently stopped firing.
+    if [ "${is_query}" != "true" ]; then
         ffindex_apply ${label}_hhdb/a3m.ffdata ${label}_hhdb/a3m.ffindex \\
             -d ${label}_hhdb/hhm.ffdata -i ${label}_hhdb/hhm.ffindex \\
             -- hhmake -i stdin -o stdout -v 0
@@ -1758,6 +1851,30 @@ workflow {
     def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
     def annotations = file(params.annotations)
 
+    // Every DB_CACHE entry is named after its label, and the midi and full runs share one
+    // cache on purpose: the TARGET databases are identical between them, which is the
+    // entire point of --db_cache. The HUMAN entry is not identical. midi queries 964 chr6
+    // proteins and the full run queries 19_696, and both were writing `human_mmdb`,
+    // `human_fsdb`, `human_prostt5` and `human.bca` to the same paths in ../results.
+    // Whichever ran first won and the other silently reused it, so kmerseek read the
+    // correct query FASTA while every database-backed baseline read the other run's --
+    // a difference that lands entirely on the baselines' side of the comparison.
+    //
+    // Keying the human label by a digest of the query FASTA keeps every target database
+    // fully shared while giving each query set its own entry. Derived from the file rather
+    // than from a --midi/--full flag, because a flag can be passed wrong and this cannot.
+    //
+    // Written without an explicit byte[] buffer: Nextflow's strict parser rejects array
+    // type declarations, and a parse error there stops it analysing the rest of the file,
+    // so the mistake hides every other lint finding behind it.
+    def digestOf = { f ->
+        java.security.MessageDigest.getInstance('MD5')
+            .digest(f.bytes)
+            .encodeHex().toString().take(8)
+    }
+    def HUMAN_LABEL = "human-${digestOf(human_fasta)}"
+    log.info "  query set: ${human_fasta.name} -> cache label ${HUMAN_LABEL}"
+
     // Structure download as SLURM jobs. A standalone entry: it does the download and
     // nothing else, because the download must finish before the structure arms can run
     // and there is no point holding a whole pipeline open while ~60 GB transfers.
@@ -1936,11 +2053,37 @@ workflow {
 
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
             .map { species, fasta, cli_flag, label, ksize, lowcomp ->
-                tuple(species, fasta, cli_flag, label, ksize, lowcomp, human_fasta)
+                tuple(species, fasta, cli_flag, label, ksize, lowcomp)
             }
+        idx_out = kmerseekIndex(kmerseek_in)
+
+        // Rejoin the index to the combo that produced it. kmerseekIndex emits a bare
+        // directory so storeDir works, which drops the tuple -- the same trade the region
+        // parquet already makes below -- so the key is rebuilt from the directory name and
+        // joined back against the input channel. That recovers cli_flag and the target
+        // FASTA size, neither of which survives in the name, without reparsing either out
+        // of a filename that was never meant to carry them.
+        def comboKey = { sp, lab, k, lc -> "${sp}|${lab}|${k}|${lc}" }
+
+        combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp ->
+            tuple(comboKey(species, label, ksize, lowcomp),
+                  species, cli_flag, label, ksize, lowcomp, fasta.size())
+        }
+
+        search_in = idx_out
+            .map { d ->
+                def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lc(true|false)\.kmerseek\.rocksdb$/)
+                if (!m) error "cannot parse kmerseek index directory name: ${d.name}"
+                tuple(comboKey(m[0][1], m[0][2], m[0][3], m[0][4]), d)
+            }
+            .join(combo_meta)
+            .map { _key, d, species, cli_flag, label, ksize, lowcomp, target_bytes ->
+                tuple(species, cli_flag, label, ksize, lowcomp, target_bytes, d, human_fasta)
+            }
+
         // Rebuild (species, tool, variant) from the filename. The process emits a bare
         // path so storeDir works; the name carries everything the tuple used to.
-        ks_out = kmerseekIndexAndSearch(kmerseek_in)
+        ks_out = kmerseekSearch(search_in)
         // Rebuild (species, tool, variant) from the filename; the process emits bare paths
         // so storeDir works. The variant now carries the low-complexity setting, so the two
         // arms of the toggle are separate rows everywhere downstream rather than pooled.
@@ -1967,10 +2110,10 @@ workflow {
 
         // Both variants share one pair of databases, so createdb runs once per proteome
         // rather than once per (variant, species).
-        mm_dbs    = label_dbs(mmseqsDb(species_ch.mix(Channel.of(tuple("human", human_fasta)))),
+        mm_dbs    = label_dbs(mmseqsDb(species_ch.mix(Channel.of(tuple(HUMAN_LABEL, human_fasta)))),
                               '_mmdb')
-        mm_human  = mm_dbs.filter { l, _d -> l == 'human' }.map { _l, d -> d }
-        mm_target = mm_dbs.filter { l, _d -> l != 'human' }
+        mm_human  = mm_dbs.filter { l, _d -> l == HUMAN_LABEL }.map { _l, d -> d }
+        mm_target = mm_dbs.filter { l, _d -> l != HUMAN_LABEL }
 
         mmseqs_in = mm_target.combine(mm_human).flatMap { species, tdb, qdb ->
             [
@@ -1981,10 +2124,14 @@ workflow {
         mmseqs_out = mmseqs2Search(mmseqs_in)
 
         // HHblits: build the human query profile DB once, every species target DB once.
-        all_for_hhdb = species_ch.mix(Channel.of(tuple("human", human_fasta)))
-        hhdb_ch      = hhblitsBuildDB(all_for_hhdb)
-        human_hhdb   = hhdb_ch.filter { label, _db -> label == "human" }.map { _label, db -> db }
-        species_hhdb = hhdb_ch.filter { label, _db -> label != "human" }
+        // is_query travels as an explicit flag rather than being inferred from the label.
+        // The script used to test `label != "human"` to decide whether to build hhm+cs219,
+        // which silently stops meaning anything once the human label carries a digest.
+        all_for_hhdb = species_ch.map { l, f -> tuple(l, f, false) }
+            .mix(Channel.of(tuple(HUMAN_LABEL, human_fasta, true)))
+        hhdb_ch      = label_dbs(hhblitsBuildDB(all_for_hhdb), '_hhdb')
+        human_hhdb   = hhdb_ch.filter { label, _db -> label == HUMAN_LABEL }.map { _label, db -> db }
+        species_hhdb = hhdb_ch.filter { label, _db -> label != HUMAN_LABEL }
 
         hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
 
@@ -2013,15 +2160,15 @@ workflow {
             // Human plus every target, each encoded exactly once. storeDir means a rerun
             // or a second species list reuses them rather than re-running the model.
             p5_dbs = prostt5Db(
-                Channel.of(tuple("human", human_fasta))
+                Channel.of(tuple(HUMAN_LABEL, human_fasta))
                     .mix(species_ch)
                     .combine(weights)
             )
             // storeDir forbids a tuple output, so the label comes back off the directory
             // name -- same trick kmerseekIndexAndSearch uses for its filenames.
             p5_labeled  = p5_dbs.map { d -> tuple(d.name - '_prostt5', d) }
-            p5_human    = p5_labeled.filter { l, _d -> l == 'human' }.map { _l, d -> d }
-            p5_targets  = p5_labeled.filter { l, _d -> l != 'human' }
+            p5_human    = p5_labeled.filter { l, _d -> l == HUMAN_LABEL }.map { _l, d -> d }
+            p5_targets  = p5_labeled.filter { l, _d -> l != HUMAN_LABEL }
 
             prostt5_out = prostt5Search(p5_targets.combine(p5_human))
             baseline_regions = baseline_regions.mix(prostt5_out.regions)
@@ -2070,11 +2217,11 @@ workflow {
             // Human plus every species with structures, each converted once per tool.
             struct_ch = Channel.fromList(
                 struct_species.collect { s -> tuple(s.label, file("${params.structures}/${s.label}")) }
-            ).mix(Channel.of(tuple("human", human_structs)))
+            ).mix(Channel.of(tuple(HUMAN_LABEL, human_structs)))
 
             fs_dbs    = label_dbs(foldseekDb(struct_ch), '_fsdb')
-            fs_human  = fs_dbs.filter { l, _d -> l == 'human' }.map { _l, d -> d }
-            fs_target = fs_dbs.filter { l, _d -> l != 'human' }
+            fs_human  = fs_dbs.filter { l, _d -> l == HUMAN_LABEL }.map { _l, d -> d }
+            fs_target = fs_dbs.filter { l, _d -> l != HUMAN_LABEL }
 
             foldseek_out     = foldseekSearch(fs_target.combine(fs_human))
             baseline_regions = baseline_regions.mix(foldseek_out)
@@ -2084,8 +2231,8 @@ workflow {
                 // Human goes through the same cached conversion as the targets; it used to
                 // re-parse the whole human structure directory on every search.
                 rs_db     = reseekConvert(struct_ch)
-                rs_human  = rs_db.filter { l, _b -> l == 'human' }.map { _l, b -> b }
-                rs_target = rs_db.filter { l, _b -> l != 'human' }
+                rs_human  = rs_db.filter { l, _b -> l == HUMAN_LABEL }.map { _l, b -> b }
+                rs_target = rs_db.filter { l, _b -> l != HUMAN_LABEL }
 
                 reseek_out = reseekSearch(rs_target.combine(rs_human))
                 baseline_regions = baseline_regions.mix(reseek_out)

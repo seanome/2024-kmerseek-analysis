@@ -7,7 +7,11 @@
 SHELL := /bin/bash
 
 # --- Mac-side config -------------------------------------------------------
-KMERSEEK_SHA   ?= 3fdfd51a1f3c68925e12eac76d19d5d021c29837
+# Resolved from the source worktree at build time, not pinned by hand. It is written into
+# the image as provenance (/etc/kmerseek_git_sha) while the build itself COPYs that
+# worktree, so a hand-pinned value silently labels the image with a commit it does not
+# contain. Override on the command line to build a specific commit.
+KMERSEEK_SHA   ?= $(shell git -C $(KMERSEEK_SRC) rev-parse HEAD 2>/dev/null)
 IMAGE_TAG      ?= 2026-08-24-reduced-alphabets
 IMAGE_LOCAL    := kmerseek-region:latest
 IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
@@ -70,6 +74,10 @@ NEXTFLOW ?= /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow
 # Apptainer refuses to run.
 DOCKER_PLATFORM := linux/amd64
 
+# Where kmerseekIndex stores its target indexes: DB_CACHE in main.nf, which the run
+# targets set to ../results so run-midi and the full run share one set.
+REMOTE_INDEX_DIR ?= results/kmerseek_index
+
 PROFILE := sherlock
 
 # SLURM coordinates for the few things this Makefile submits itself. Nextflow gets its own
@@ -104,11 +112,11 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-structures pull-results \
-        run run-kmerseek run-baselines status clean-cache \
+        run run-kmerseek run-baselines status clean-cache clean-indexes index-disk \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
         fetch-structures-login \
-        multiqc multiqc-local pull-report
+        multiqc multiqc-local pull-report pull-report-mini pull-report-midi
 
 help:
 	@echo "Mac:"
@@ -327,13 +335,28 @@ multiqc-local:
 # The report is one self-contained HTML plus its exported figures. The figures come down
 # too: the svg is what goes into a paper, and re-exporting it locally would need the whole
 # results tree rather than the 25 MB this pulls.
+## Which run's outdir to pull from, relative to REMOTE_DIR. Every run target writes its
+## MultiQC report to its own --outdir, so the full run's `results` is only one of them:
+##   run       -> results              run-midi  -> data/midi/results
+##   run-mini  -> data/mini/results
+## Use the pull-report-mini / pull-report-midi shorthands rather than passing both vars.
+REMOTE_RESULTS ?= results
+
 pull-report:
 	$(call require_mac)
+	mkdir -p $(LOCAL_RESULTS)
 	$(RSYNC) \
-	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/qfo_pfam_region_multiqc.html' $(LOCAL_RESULTS)/
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/qfo_pfam_region_multiqc.html' $(LOCAL_RESULTS)/
 	$(RSYNC) \
-	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/qfo_pfam_region_multiqc_plots/' \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/qfo_pfam_region_multiqc_plots/' \
 	  $(LOCAL_RESULTS)/qfo_pfam_region_multiqc_plots/
+	@echo; echo "open $(LOCAL_RESULTS)/qfo_pfam_region_multiqc.html"
+
+pull-report-mini:
+	@$(MAKE) pull-report REMOTE_RESULTS=data/mini/results LOCAL_RESULTS=$(MINI_DIR)/results
+
+pull-report-midi:
+	@$(MAKE) pull-report REMOTE_RESULTS=data/midi/results LOCAL_RESULTS=$(LOCAL_RESULTS)/midi
 
 pull-mini:
 	$(call require_mac)
@@ -746,3 +769,27 @@ status:
 
 clean-cache:
 	rm -rf $$SCRATCH/apptainer-cache
+
+## Drop the cached kmerseek target indexes. They exist so run-midi and the full run share
+## one set of index builds -- roughly 3294 RocksDB directories at a 2.1 GB median write,
+## which is multiple TB on $SCRATCH. Run this only when the LAST run over these target
+## proteomes has finished; anything still to come re-indexes from scratch.
+clean-indexes:
+	$(call require_cluster)
+	@du -sh $(REMOTE_INDEX_DIR) 2>/dev/null || echo "no index cache at $(REMOTE_INDEX_DIR)"
+	@read -p "delete the kmerseek index cache above? [y/N] " a; [ "$$a" = y ] || exit 1
+	/bin/rm -rf $(REMOTE_INDEX_DIR)
+
+## How much disk the shared cache is holding, and how much is left. Check this before
+## launching the full sweep. Everything under results/ is shared between run-midi and run:
+## the target databases are identical for both, and the human entries are kept apart by a
+## query-set digest in their names (human-<md5>_mmdb and friends).
+index-disk:
+	$(call require_cluster)
+	@for d in kmerseek_index hhblits_db foldseek_db mmseqs_db prostt5_db reseek_db \
+	          folddisco_index prostt5_weights; do \
+	    printf '%-18s ' "$$d"; (du -sh results/$$d 2>/dev/null | cut -f1) || echo "-"; \
+	  done
+	@echo "--- orphaned pre-digest human entries (safe to delete) ---"
+	@find results -maxdepth 2 \( -name 'human_*' -o -name 'human.bca' \) 2>/dev/null || true
+	@echo "--- quota ---"; lfs quota -h -u $$USER $$SCRATCH 2>/dev/null || df -h $$SCRATCH
