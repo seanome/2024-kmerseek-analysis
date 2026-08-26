@@ -15,6 +15,20 @@ KMERSEEK_SHA   ?= $(shell git -C $(KMERSEEK_SRC) rev-parse HEAD 2>/dev/null)
 IMAGE_TAG      ?= 2026-08-24-reduced-alphabets
 IMAGE_LOCAL    := kmerseek-region:latest
 IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
+
+# IMAGE_TAG is the single source of truth for which kmerseek image runs, and every Sherlock
+# run target passes --kmerseek_image $(IMAGE_REMOTE) so that stays true.
+#
+# nextflow.config declares its own literal for params.kmerseek_image. That is the right
+# default for a bare `nextflow run` with no Makefile involved, but as a value the run
+# targets INHERITED it was a silent trap: IMAGE_TAG also builds ALL_CONTAINERS, so bumping
+# the tag here made `make prefetch-images` pull and cache the new image, print a cheerful
+# "have <new tag>", and then hand the run the old one from the config. Two strings that
+# have to be edited together, where disagreeing produces results rather than an error, is
+# the shape that gets blamed on the pipeline for a week. So the Makefile always overrides.
+#
+# The local run targets already did this with kmerseek-region:local. This is the same move
+# for the cluster.
 FOLDDISCO_TAG    ?= 2026-08-20-noentrypoint
 FOLDDISCO_REMOTE := docker.io/olgabot/folddisco:$(FOLDDISCO_TAG)
 KMERSEEK_SRC   := /Users/olga/code/kmerseek/.claude/worktrees/reduced-alphabets
@@ -64,6 +78,25 @@ MINI_COMBOS  ?= protein20:10,hp_pbotc_1st_ed2:19
 # domain instances. chr6 because it carries the MHC, so this subsumes the MHC vignette.
 MIDI_TARGETS ?= mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
 
+# Arms the local smoke tests leave out. The big stuff belongs on Sherlock.
+#
+# ProstT5 is the whole of it right now. prostt5Weights downloads the model over the
+# network, and it has FAILED in every local run there has ever been -- exit 1 in half a
+# second in both run-mhc/qfo_pfam_region.2026-08-24.trace.txt and the 2026-08-26 one, which
+# then aborts everything queued behind it. The Sherlock targets never hit that process
+# because they pass --prostt5_weights ../data/prostt5/weights, downloaded once by
+# `make prostt5-weights` on a login node; the local targets have no such path.
+#
+# Even with weights on hand this would be the wrong place for it. prostt5Db runs a
+# 3B-parameter T5 encoder over every proteome, on a GPU on Sherlock and on nothing at all
+# here, and params.prostt5_memory is 64 GB with a comment in main.nf saying explicitly not
+# to scale it down for a smoke test -- the model sets that floor, not the data set. The
+# local runs exist to check pipeline wiring in minutes.
+#
+# Set to empty to run the arm anyway (expect a multi-GB download and a very long CPU pass):
+#   make run-mhc-local LOCAL_SKIP_ARMS=
+LOCAL_SKIP_ARMS ?= --skip_prostt5 true
+
 PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 
 # Mac-side Nextflow. Pinned to the conda env rather than relying on PATH; on Sherlock the
@@ -100,6 +133,15 @@ MULTIQC_OUTDIR ?= ../results
 TRACE_LOCAL          ?= $(shell ls -t run-mhc/*.trace.txt 2>/dev/null | head -1)
 MULTIQC_OUTDIR_LOCAL ?= $(MHC_DIR)/results
 
+# Both multiqc targets launch nextflow from run-report/, so a relative --outdir is relative
+# to THAT directory and not to this Makefile. The preflight check below has to look in the
+# same place nextflow will, so relative values get resolved through run-report/ and
+# absolute ones are left alone.
+outdir_abs = $(if $(filter /%,$(1)),$(1),$(abspath run-report/$(1)))
+
+MULTIQC_OUTDIR_ABS       := $(call outdir_abs,$(MULTIQC_OUTDIR))
+MULTIQC_OUTDIR_LOCAL_ABS := $(call outdir_abs,$(MULTIQC_OUTDIR_LOCAL))
+
 # Every container the pipeline can pull, read straight out of main.nf plus the kmerseek
 # image, so this list cannot drift from what the processes actually declare.
 ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" main.nf | sort -u) \
@@ -116,7 +158,8 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
         fetch-structures-login \
-        multiqc multiqc-local pull-report pull-report-mini pull-report-midi
+        multiqc multiqc-local multiqc-preflight multiqc-status \
+        pull-report pull-report-mini pull-report-midi
 
 help:
 	@echo "Mac:"
@@ -127,8 +170,14 @@ help:
 	@echo "  sync-pipeline         Push the current branch and update Sherlock"
 	@echo "  sync-data             Copy benchmark inputs to Sherlock"
 	@echo "  sync-structures       Copy AlphaFold structures to Sherlock"
+	@echo "  run-mhc-local         Smoke test: 25 MHC genes vs mouse, ProstT5 arm off"
+	@echo "  run-mini-local        Smoke test: mini set, ProstT5 arm off"
+	@echo "  multiqc-status        Show what the report would be built from"
 	@echo "  multiqc-local         Build the MultiQC report from a local run"
 	@echo "  pull-report           Fetch the MultiQC report back from Sherlock"
+	@echo ""
+	@echo "  The local runs are wiring smoke tests. Anything that needs a model download,"
+	@echo "  a GPU or real proteomes belongs on Sherlock -- see LOCAL_SKIP_ARMS."
 	@echo ""
 	@echo "Sherlock:"
 	@printf '%s\n' '  prefetch-images       Pull all pinned images into $$SCRATCH cache'
@@ -140,6 +189,7 @@ help:
 	@echo "  run-baselines        Run only the baseline tools"
 	@echo "  run                  Run the complete benchmark"
 	@echo "  multiqc              Rebuild the MultiQC report from published results"
+	@echo "  multiqc-status       Show what that report would be built from"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
 	@echo ""
@@ -159,15 +209,22 @@ ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
 MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/qfo-pfam-region-benchmark/nextflow-runs/qfo-pfam-region-benchmark
 
+# The name these two guards quote back at you. Normally the target being built, which is
+# also the target you typed. A helper target that only ever runs as somebody else's
+# prerequisite -- multiqc-preflight -- sets this to the name you actually typed, since
+# being told to ssh over and run an internal target is not advice anyone can follow.
+GUARD_NAME =
+guard_name = $(if $(GUARD_NAME),$(GUARD_NAME),$@)
+
 define require_mac
 	@if [ "$(ON_CLUSTER)" = "yes" ]; then \
 	  echo ""; \
-	  echo "  '$@' runs on your MAC, not on the cluster."; \
+	  echo "  '$(guard_name)' runs on your MAC, not on the cluster."; \
 	  echo "  It moves data from the Mac to $(SHERLOCK_HOST), so it cannot work from here."; \
 	  echo ""; \
 	  echo "  On your Mac:"; \
 	  echo "    cd $(MAC_PIPELINE_DIR)"; \
-	  echo "    make $@"; \
+	  echo "    make $(guard_name)"; \
 	  echo ""; \
 	  exit 1; \
 	fi
@@ -176,15 +233,81 @@ endef
 define require_cluster
 	@if [ "$(ON_CLUSTER)" != "yes" ]; then \
 	  echo ""; \
-	  echo "  '$@' runs ON SHERLOCK, not on your Mac (no \$$SCRATCH here)."; \
+	  echo "  '$(guard_name)' runs ON SHERLOCK, not on your Mac (no \$$SCRATCH here)."; \
 	  echo ""; \
 	  echo "  ssh $(SHERLOCK_HOST)"; \
 	  echo "    cd \$$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark"; \
-	  echo "    make $@"; \
+	  echo "    make $(guard_name)"; \
 	  echo ""; \
 	  exit 1; \
 	fi
 endef
+
+# The report reads all_domain_metrics.parquet out of an outdir; it does not compute it.
+# main.nf's `report` entry does say so, but only after nextflow has started, resolved a
+# profile, pulled an image and reached the workflow body -- and only about the parquet
+# path, which does not tell you which run was supposed to have written it. `make
+# multiqc-local` hit this because the MHC smoke run had never finished: prostt5Weights
+# failed, everything behind it aborted, aggregateMetrics never ran. So the same condition is
+# checked here first, in a form that names the run and the command that produces the file.
+#
+#   $(1) outdir to look in, already absolute
+#   $(2) run directory that outdir belongs to
+#   $(3) make target that fills it
+#   $(4) variable to override to point somewhere else
+#   $(5) the target the user typed, spelled out rather than taken from $@, because this
+#        also runs from a preflight prerequisite whose own name would mean nothing to them
+define require_metrics
+	@if [ ! -f "$(1)/all_domain_metrics.parquet" ]; then \
+	  echo ""; \
+	  echo "  '$(5)' has nothing to report on yet."; \
+	  echo ""; \
+	  echo "    run directory:  $(2)"; \
+	  echo "    outdir:         $(1)"; \
+	  echo "    looked for:     $(1)/all_domain_metrics.parquet"; \
+	  echo ""; \
+	  echo "  aggregateMetrics publishes that file at the END of a run, so a run that"; \
+	  echo "  failed partway leaves the outdir looking like this. Produce it with:"; \
+	  echo ""; \
+	  echo "    make $(3)"; \
+	  echo ""; \
+	  echo "  or report on a different run's outdir:"; \
+	  echo ""; \
+	  echo "    make $(5) $(4)=<outdir>"; \
+	  echo ""; \
+	  echo "  'make multiqc-status' shows this without launching anything."; \
+	  echo ""; \
+	  exit 1; \
+	fi
+endef
+
+# What the two multiqc targets would use, without starting nextflow. Reports on whichever
+# side you are on, since the trace and outdir defaults differ between them.
+define report_status
+	@echo ""
+	@echo "  make $(3)"
+	@echo "    trace:   $(if $(1),$(1),NONE FOUND -- pass $(5)=<trace file>)"
+	@echo "    outdir:  $(2)"
+	@if [ -f "$(2)/all_domain_metrics.parquet" ]; then \
+	  echo "    metrics: OK      $(2)/all_domain_metrics.parquet"; \
+	else \
+	  echo "    metrics: MISSING $(2)/all_domain_metrics.parquet"; \
+	  echo "             run 'make $(4)' first"; \
+	fi
+	@if [ -f "$(2)/all_domain_curves.parquet" ]; then \
+	  echo "    curves:  OK      $(2)/all_domain_curves.parquet"; \
+	else \
+	  echo "    curves:  missing -- PR and ROC sections will be skipped"; \
+	fi
+	@echo ""
+endef
+
+multiqc-status:
+ifeq ($(ON_CLUSTER),yes)
+	$(call report_status,$(TRACE),$(MULTIQC_OUTDIR_ABS),multiqc,run,TRACE)
+else
+	$(call report_status,$(TRACE_LOCAL),$(MULTIQC_OUTDIR_LOCAL_ABS),multiqc-local,run-mhc-local,TRACE_LOCAL)
+endif
 
 ## ---- Mac side -----------------------------------------------------------
 
@@ -234,8 +357,21 @@ structure-lists:
 # Mac-side fetch. Prefer `make fetch-structures`, which downloads on the cluster:
 # pulling ~60 GB to a laptop and pushing it back over ssh is strictly worse than
 # downloading it where it will be used. Kept for wanting the structures locally too.
+#
+# It asks first. This is the one Mac target that commits the laptop to tens of GB over the
+# wire, and the name sits one tab-completion away from `fetch-structures`, which is the
+# cluster one you almost always want. Same read -p shape as clean-indexes. Skip the prompt
+# with `make fetch-structures-mac CONFIRM=yes` when you mean it.
 fetch-structures-mac: structure-lists
 	$(call require_mac)
+	@if [ "$(CONFIRM)" != "yes" ]; then \
+	  echo ""; \
+	  echo "  This downloads ~60 GB of AlphaFold structures to $(STRUCT_DIR) on THIS Mac."; \
+	  echo "  For a Sherlock run you want 'make fetch-structures' instead, which downloads"; \
+	  echo "  them on the login node where they will actually be used."; \
+	  echo ""; \
+	  read -p "  download to this Mac anyway? [y/N] " a; [ "$$a" = y ] || exit 1; \
+	fi
 	bin/fetch_alphafold_structures.sh $(STRUCT_DIR) $(ACC_DIR)
 
 # Everything the cluster needs, in one go. With connection multiplexing these share a
@@ -272,10 +408,12 @@ mhc-testset:
 	  --hgnc        $(HGNC_FILE) \
 	  --n-targets   400
 
-run-mhc-local: 
+# $(NEXTFLOW), not a bare `nextflow`: the same conda pin every other Mac-side target uses,
+# so this does not depend on which env happens to be active in the shell.
+run-mhc-local:
 	$(call require_mac)
 	mkdir -p run-mhc && cd run-mhc && \
-	  nextflow run ../main.nf -profile standard,mini -resume \
+	  $(NEXTFLOW) run ../main.nf -profile standard,mini -resume \
 	    --kmerseek_image  kmerseek-region:local \
 	    --qfo_dir         $(MHC_DIR)/qfo \
 	    --annotations     $(MHC_DIR)/annotations \
@@ -285,13 +423,14 @@ run-mhc-local:
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       $(HGNC_FILE) \
 	    --omega_file      $(OMEGA_FILE) \
+	    $(LOCAL_SKIP_ARMS) \
 	    $(NF_ARGS)
 
 # Run it here first (needs build-image-local), before spending Sherlock queue time.
-run-mini-local: 
+run-mini-local:
 	$(call require_mac)
 	mkdir -p run-mini && cd run-mini && \
-	  nextflow run ../main.nf -profile standard,mini -resume \
+	  $(NEXTFLOW) run ../main.nf -profile standard,mini -resume \
 	    --kmerseek_image  kmerseek-region:local \
 	    --qfo_dir         $(MINI_DIR)/qfo \
 	    --annotations     $(MINI_DIR)/annotations \
@@ -301,6 +440,7 @@ run-mini-local:
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       $(HGNC_FILE) \
 	    --omega_file      $(OMEGA_FILE) \
+	    $(LOCAL_SKIP_ARMS) \
 	    $(NF_ARGS)
 
 # NOT rsynced to Sherlock. The mini set is DERIVED -- subset FASTAs and subset annotation
@@ -322,6 +462,7 @@ multiqc-local:
 	  echo "  make multiqc-local TRACE_LOCAL=run-mhc/qfo_pfam_region.<date>.trace.txt"; \
 	  exit 1; \
 	fi
+	$(call require_metrics,$(MULTIQC_OUTDIR_LOCAL_ABS),run-mhc,run-mhc-local,MULTIQC_OUTDIR_LOCAL,multiqc-local)
 	@echo "reporting on trace: $(TRACE_LOCAL)"
 	mkdir -p run-report
 	cd run-report && \
@@ -640,6 +781,7 @@ define launch
 	cd run && \
 	  ml load nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(NF_ARGS) \
+	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --qfo_dir     ../data/qfo \
 	    --annotations ../data/annotations \
 	    --structures  ../data/structures \
@@ -705,6 +847,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	cd run-midi && \
 	  ml load nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --qfo_dir         ../data/midi/qfo \
 	    --annotations     ../data/midi/annotations \
 	    --structures      ../data/midi/structures \
@@ -725,6 +868,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	cd run-mini && \
 	  ml load nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE),mini -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --qfo_dir         ../data/mini/qfo \
 	    --annotations     ../data/mini/annotations \
 	    --structures      ../data/mini/structures \
@@ -746,18 +890,34 @@ run-mini: prefetch-images mini-testset-sherlock
 # overwrites its execution report and timeline as a run starts, so a report run launched in
 # run/ would destroy the very numbers it is reading. main.nf refuses outright in that case
 # rather than quietly emitting empty resource sections.
-multiqc: prefetch-images
+#
+# multiqc-preflight comes FIRST in the prerequisite list, ahead of prefetch-images. Make
+# builds prerequisites left to right, so the "nothing to report on" check happens before
+# any srun image pull rather than after several minutes of them. Same check the local
+# target does inline; it needs a target of its own here only to get ahead of that pull.
+multiqc-preflight: GUARD_NAME := multiqc
+multiqc-preflight:
 	$(call require_cluster)
 	@if [ -z "$(TRACE)" ]; then \
 	  echo "No trace file under run/. Pass one explicitly:"; \
 	  echo "  make multiqc TRACE=run/qfo_pfam_region.<date>.trace.txt"; \
 	  exit 1; \
 	fi
+	$(call require_metrics,$(MULTIQC_OUTDIR_ABS),run,run,MULTIQC_OUTDIR,multiqc)
+
+#
+# This one needs --kmerseek_image too, which is not obvious: multiqcReport pins its own
+# multiqc container, but buildMultiqcInputs carries `label 'python'`, and the sherlock
+# profile binds that label to params.kmerseek_image. The section-building step is the part
+# that reads the parquets.
+multiqc: multiqc-preflight prefetch-images
+	$(call require_cluster)
 	@echo "reporting on trace: $(TRACE)"
 	mkdir -p run-report
 	cd run-report && \
 	  ml load nextflow && \
 	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
+	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --outdir     $(MULTIQC_OUTDIR) \
 	    --report_trace $(abspath $(TRACE)) \
 	    --qfo_dir    ../data/qfo \
@@ -767,7 +927,11 @@ status:
 	$(call require_cluster)
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
 
+# Guarded like every other cluster target. Without it, $SCRATCH is empty on the Mac and
+# this expands to `rm -rf /apptainer-cache` -- harmless only because that path happens not
+# to exist.
 clean-cache:
+	$(call require_cluster)
 	rm -rf $$SCRATCH/apptainer-cache
 
 ## Drop the cached kmerseek target indexes. They exist so run-midi and the full run share

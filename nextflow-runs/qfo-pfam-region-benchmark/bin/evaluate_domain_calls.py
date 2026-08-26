@@ -82,32 +82,114 @@ def extract_accession(col: pl.Expr) -> pl.Expr:
     )
 
 
-def load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
+def load_regions(path: Path, direct: bool, rank_by: str = "jaccard",
+                 max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
     """Normalize any tool's output to one schema. Returns None for an empty result, which
     is a real outcome (a combo that found nothing), not an error.
 
     An empty gzip or zstd stream is NOT a zero-byte file -- both carry a frame header --
     so the size check alone cannot catch a tool that legitimately found nothing. polars
     raises NoDataError on those, which is caught here rather than at each call site.
+
+    rank_by and max_bonferroni_p apply to kmerseek only; every other tool ranks on the
+    score column its own output already carries.
     """
     try:
-        return _load_regions(path, direct)
+        return _load_regions(path, direct, rank_by, max_bonferroni_p)
     except pl.exceptions.NoDataError:
         return None
 
 
-def _load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
+def _load_regions(path: Path, direct: bool, rank_by: str = "jaccard",
+                  max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
     if path.stat().st_size == 0:
         return None
 
     if path.suffix == ".parquet":
         # kmerseek. region_start/region_end are query-side; target_start/target_end are
-        # target-side. region_poisson_score is -log10 of the region's Poisson tail, so
-        # bigger is better and it sorts the same direction as a bitscore.
+        # target-side.
+        #
+        # Ranking is by `jaccard`, not by region_poisson_score. kmerseek's own source is
+        # explicit that the Poisson score is "a heuristic score for ranking candidate
+        # regions against each other, not as a calibrated probability", for two reasons the
+        # -log10 transform does not fix: n_shared is arithmetic on the region's own length,
+        # which is the quantity find_matched_regions chose by keeping the longest gapless
+        # run (close to circular), and the k-mers counted overlap by ksize-1 residues, so
+        # they are not the independent trials the Poisson model assumes.
+        #
+        # The tradeoff is real and worth stating: jaccard is a whole query-target statistic,
+        # so every region from one protein pair carries the same value. Ranking is therefore
+        # protein-level for kmerseek while it stays region-level for the aligners. The PR
+        # curve groups by score, so the ties are handled without ordering bias, but kmerseek
+        # can no longer discriminate between two regions of the same pair.
         lf = pl.scan_parquet(path)
         names = lf.collect_schema().names()
         if not names:
             return None
+
+        # What each ranking column actually is, read off kmerseek's own source rather than
+        # inferred from the name, because two of them are less independent than they look:
+        #
+        #   jaccard                 intersection/union over the WHOLE query-target pair.
+        #                           Every region of a pair carries the same value, so this
+        #                           ranks proteins, not regions.
+        #   region_enrichment       fold_enrichment(n_shared, lambda) = n_shared /
+        #                           region_expected_shared_kmers. Region-scoped, and the
+        #                           denominator carries target-DB composition, so a long
+        #                           region in a k-mer-rich neighbourhood is discounted.
+        #   region_n_shared_kmers   NOT an independent count. search.rs computes it as
+        #                           `region.length - ksize + 1`, pure arithmetic on the
+        #                           region's own length, so ranking by it is ranking by
+        #                           region length and nothing else.
+        #   region_poisson_score    -log10 of the Poisson tail on that same n_shared.
+        #
+        # region_enrichment and region_poisson_score share a numerator with
+        # region_n_shared_kmers and differ only in how they normalise it, so they are not
+        # four independent hypotheses; they are one count under three normalisations plus
+        # one whole-protein statistic.
+        if rank_by not in names:
+            raise SystemExit(
+                f"{path} has no `{rank_by}` column, so --kmerseek-rank-by {rank_by} cannot "
+                f"be applied. Columns present: {sorted(names)}. A file written by an older "
+                f"kmerseek may predate the field; re-run the search arm or pick another."
+            )
+        score_col = rank_by
+
+        # Bonferroni correction, using the recipe kmerseek's own source prescribes: convert
+        # the region tail back to a probability and multiply by how many positions the
+        # region could have started at (region_search_space) and how many targets were
+        # searched (db_n_targets). run_n_queries is deliberately NOT included -- kmerseek
+        # reports these counts separately so that no statistic changes depending on batch
+        # composition, and a per-query call should not get harder to make because someone
+        # searched more queries alongside it.
+        #
+        # region_tail_probability is preferred over inverting region_poisson_score: it is
+        # the same number without a round trip through -log10, and kmerseek documents it as
+        # being reported precisely so downstream tools do not have to invert.
+        needed = {"region_search_space", "db_n_targets"}
+        can_correct = needed.issubset(names) and (
+            "region_tail_probability" in names or "region_poisson_score" in names
+        )
+        if max_bonferroni_p is not None and not can_correct:
+            missing = sorted((needed | {"region_tail_probability"}) - set(names))
+            raise SystemExit(
+                f"{path} is missing {missing}, so the Bonferroni filter cannot be applied. "
+                f"Pass --kmerseek-max-bonferroni-p 0 to disable it, or re-run the search "
+                f"arm with a kmerseek that reports the search-space counts."
+            )
+
+        if max_bonferroni_p is not None:
+            raw_p = (pl.col("region_tail_probability").cast(pl.Float64)
+                     if "region_tail_probability" in names
+                     else (10.0 ** -pl.col("region_poisson_score").cast(pl.Float64)))
+            n_tests = (pl.col("region_search_space").cast(pl.Float64)
+                       * pl.col("db_n_targets").cast(pl.Float64))
+            # Bonferroni caps at 1: a corrected probability above 1 is still just "not
+            # significant", and letting it exceed 1 would be meaningless.
+            lf = lf.filter(
+                pl.min_horizontal(raw_p * n_tests, pl.lit(1.0)) < max_bonferroni_p
+            )
+
         return lf.select(
             extract_accession(pl.col("query_name")).alias("query_acc"),
             extract_accession(pl.col("target_name")).alias("target_acc"),
@@ -115,7 +197,7 @@ def _load_regions(path: Path, direct: bool) -> pl.LazyFrame | None:
             pl.col("region_end").cast(pl.Int64).alias("qend"),
             pl.col("target_start").cast(pl.Int64).alias("tstart"),
             pl.col("target_end").cast(pl.Int64).alias("tend"),
-            pl.col("region_poisson_score").cast(pl.Float64).alias("score"),
+            pl.col(score_col).cast(pl.Float64).alias("score"),
         )
 
     if direct:
@@ -833,6 +915,19 @@ def main():
     p.add_argument("--covariates", type=Path,
                    help="per-protein HGNC group / omega / pLDDT / disorder table")
     p.add_argument("--direct-annotation", action="store_true")
+    p.add_argument("--kmerseek-rank-by", default="jaccard",
+                   choices=["jaccard", "region_enrichment", "region_n_shared_kmers",
+                            "region_poisson_score"],
+                   help="Which kmerseek column ranks calls, bigger is better for all four. "
+                        "jaccard is whole-protein so it cannot separate regions of one "
+                        "pair; region_n_shared_kmers is region_length-ksize+1, so it ranks "
+                        "by region length alone; region_poisson_score reproduces the "
+                        "pre-2026-08-26 behaviour. The Bonferroni filter is independent of "
+                        "this choice and always uses the region Poisson tail.")
+    p.add_argument("--kmerseek-max-bonferroni-p", type=float, default=0.05,
+                   help="Drop kmerseek regions whose Bonferroni-corrected Poisson tail "
+                        "(raw p x region_search_space x db_n_targets) is at or above this. "
+                        "0 disables the filter. Applies to kmerseek only.")
     p.add_argument("--dedup-fragments", action="store_true",
                    help="collapse regions duplicated by AlphaFold's overlapping structure "
                         "fragments. Only for arms that read AlphaFold files -- see "
@@ -879,7 +974,12 @@ def main():
                           keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
     truth = attach_identity(truth, identity)
 
-    regions = load_regions(args.regions, args.direct_annotation)
+    regions = load_regions(
+        args.regions, args.direct_annotation,
+        rank_by=args.kmerseek_rank_by,
+        max_bonferroni_p=(args.kmerseek_max_bonferroni_p
+                          if args.kmerseek_max_bonferroni_p > 0 else None),
+    )
 
     # Before transfer, not after: a fragment duplicate is one alignment reported twice, so
     # it has to go while the target coordinates that identify it as a duplicate are still
