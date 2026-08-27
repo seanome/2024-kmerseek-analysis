@@ -21,6 +21,54 @@ HEADLINE = ["fmax", "auprc", "roc_auc", "smin", "ndo", "recall_reachable", "prec
 LEADERBOARD_SPLIT = "heldout"
 
 
+def check_for_dead_arms(metrics: pl.DataFrame) -> str | None:
+    """Name any tool that scored zero calls in every row, when others scored plenty.
+
+    The per-species checks in hhblitsSearch and folddiscoMerge are the first line and the
+    better one, because they fire while the task log that explains the emptiness still
+    exists. This is the backstop for an arm added later without one.
+
+    The test is deliberately the weakest statement that is still impossible biologically:
+    not "few calls", not "zero for this species", but zero for every species and every
+    truth set at once, while some other tool in the same run made calls. A distant pair or
+    a strict alphabet legitimately returns nothing; a tool that returns nothing for
+    anything, anywhere, is not measuring what it claims to measure. hhblits and folddisco
+    were in exactly that state for the whole life of this pipeline, and it read as a bar of
+    length zero rather than as an error.
+    """
+    if "n_calls" not in metrics.columns or metrics.height == 0:
+        return None
+    per_tool = metrics.group_by("tool").agg(
+        pl.col("n_calls").fill_null(0).sum().alias("total_calls"),
+        pl.len().alias("n_rows"),
+        pl.col("species").n_unique().alias("n_species"),
+    )
+    dead = per_tool.filter(pl.col("total_calls") == 0).sort("tool")
+    alive = per_tool.filter(pl.col("total_calls") > 0)
+    if dead.height == 0 or alive.height == 0:
+        return None
+    lines = [
+        "",
+        "=" * 72,
+        "DEAD ARM: every scored call is zero, across every species and truth set.",
+        "=" * 72,
+    ]
+    for row in dead.iter_rows(named=True):
+        lines.append(
+            f"  {row['tool']}: 0 calls over {row['n_rows']} metric rows, "
+            f"{row['n_species']} species"
+        )
+    lines += [
+        "",
+        "  These arms produced search output and scored nothing from it, which is a",
+        "  broken arm rather than a result. Start at the published regions file:",
+        "  a 20-byte .tsv.gz is a gzip header with no payload, meaning the search step",
+        "  emitted nothing and exited 0 anyway.",
+        "=" * 72,
+    ]
+    return "\n".join(lines)
+
+
 def concat(dirpath: Path, what: str) -> pl.DataFrame:
     files = sorted(dirpath.glob("*.parquet"))
     if not files:
@@ -48,6 +96,8 @@ def main():
     print(f"{metrics.height} metric rows, {curves.height} curve points")
     print()
 
+    dead = check_for_dead_arms(metrics)
+
     board = metrics.filter(
         (pl.col("split") == LEADERBOARD_SPLIT) & (pl.col("stratum_axis") == "all")
     )
@@ -57,6 +107,10 @@ def main():
         for ts in board["truth_set"].unique().sort().to_list():
             print(f"\n--- truth set: {ts} ---")
             _print_board(board.filter(pl.col("truth_set") == ts))
+        # Raised after the parquet and CSV are on disk, so the run fails loudly without
+        # taking the tables needed to debug it down with it.
+        if dead:
+            raise SystemExit(dead)
         return
     if board.height == 0:
         # No holdout column at all (e.g. an older truth table) -- fall back rather than
@@ -67,6 +121,9 @@ def main():
         print(f"Leaderboard: split={LEADERBOARD_SPLIT}, ungrouped, averaged over species")
 
     _print_board(board)
+
+    if dead:
+        raise SystemExit(dead)
 
 
 def _print_board(board: pl.DataFrame):

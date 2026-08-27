@@ -1475,18 +1475,69 @@ process hhblitsSearch {
           path("human_vs_${species}.hhblits.tsv.gz")
 
     script:
-    // -blasttab: 1 qseqid 2 sseqid 3 pident 4 length 5 mismatch 6 gapopen
-    //            7 qstart 8 qend 9 sstart 10 send 11 evalue 12 bitscore
+    // -blasttab is HitList::PrintM8File in hhhitlist.cpp, one sprintf of 12 tab-separated
+    // fields:
+    //   1 query 2 target 3 matched/targetLen 4 targetLen 5 mismatch 6 gapopen
+    //   7 qstart 8 qend 9 tstart 10 tend 11 evalue 12 score
+    // Fields 3 and 4 are NOT BLAST's pident and alignment length, whatever the option's
+    // "compatible to -outfmt 6" help text says: 3 is a fraction of the TARGET length and 4
+    // is that length. Only 7-12 mean what the BLAST column of the same index means, and
+    // those are the only ones read below.
+    //
+    // The database is addressed by a base name, not by a file: HHDatabase::buildDatabaseName
+    // appends _a3m / _hhm / _cs219 plus the ffindex extensions, and hhsearch opens cs219
+    // unconditionally (HHsearch::prepareDatabases passes initCs219 = true). Anything else
+    // makes hhsearch exit 1 inside its constructor, before it searches. See the check below
+    // for why that was invisible.
+    def db_cache = params.db_cache ?: params.outdir
     """
     set -euo pipefail
+
+    db=${species_hhdb}/db
+
+    # ffindex_apply reports EXIT_SUCCESS whatever its children did -- it waits on each one
+    # and uses the status only to fill a log column that the non-MPI build cannot even be
+    # asked for (ffindex_apply_mpi.c, -l is behind HAVE_MPI). So a hhsearch that dies on
+    # every entry leaves an empty results.ffdata and a green task. Check the inputs it
+    # needs up front instead of trusting the exit code afterwards.
+    for f in "\$db"_cs219.ffdata "\$db"_cs219.ffindex "\$db"_hhm.ffdata "\$db"_hhm.ffindex \\
+             ${human_hhdb}/db_a3m.ffdata ${human_hhdb}/db_a3m.ffindex; do
+        if [ ! -f "\$f" ]; then
+            echo "hhblits database file missing: \$f" >&2
+            echo "This is the pre-fix layout, where the ffindex files were named" >&2
+            echo "a3m/hhm/cs219 rather than db_a3m/db_hhm/db_cs219. storeDir hands back" >&2
+            echo "whatever is already cached, so rebuilding needs the old copy gone:" >&2
+            echo "  rm -rf ${db_cache}/hhblits_db" >&2
+            exit 1
+        fi
+    done
+
     ffindex_apply \\
-        ${human_hhdb}/a3m.ffdata ${human_hhdb}/a3m.ffindex \\
+        ${human_hhdb}/db_a3m.ffdata ${human_hhdb}/db_a3m.ffindex \\
         -d results.ffdata -i results.ffindex \\
-        -- hhsearch -i stdin -d ${species_hhdb}/hhm -blasttab /dev/stdout -cpu 1 -v 0
+        -- hhsearch -i stdin -d "\$db" -blasttab /dev/stdout -cpu 1 -v 0
 
     ffindex_apply results.ffdata results.ffindex -- cat \\
     | awk 'NF >= 12 {print \$1 "\\t" \$2 "\\t" \$7 "\\t" \$8 "\\t" \$9 "\\t" \$10 "\\t" \$12 "\\t" \$11}' \\
-    | gzip -c > human_vs_${species}.hhblits.tsv.gz
+    > hits.tsv
+
+    # Same reason as above: no stage in the command pipeline below can report a failure,
+    # so the row count is the only evidence that hhsearch ran at all. Every human profile
+    # matching nothing in a whole proteome is not a distant-homology result, it is a broken
+    # arm, and finding out here keeps the log that says why. A pair that genuinely finds
+    # little still finds something; "exactly zero" is the shape of a failure.
+    n=\$(wc -l < hits.tsv)
+    echo "hhsearch rows for human_vs_${species}: \$n"
+    if [ "\$n" -eq 0 ]; then
+        echo "hhsearch emitted no hits at all for human_vs_${species}." >&2
+        echo "ffindex_apply cannot report a child failure, so run one entry by hand:" >&2
+        echo "  ffindex_get ${human_hhdb}/db_a3m.ffdata ${human_hhdb}/db_a3m.ffindex \\\\" >&2
+        echo "    \\\$(head -1 ${human_hhdb}/db_a3m.ffindex | cut -f1) \\\\" >&2
+        echo "    | hhsearch -i stdin -d \$db -blasttab /dev/stdout -cpu 1" >&2
+        exit 1
+    fi
+
+    gzip -c hits.tsv > human_vs_${species}.hhblits.tsv.gz
     """
 }
 
@@ -2019,21 +2070,96 @@ process folddiscoQuery {
     find -L ${human_structures}/ -name 'AF-*.cif' | sort \\
       | awk 'NR % ${params.folddisco_chunks} == ${chunk}' > chunk.list
 
+    # The query-side interval has to be reconstructed from the query string, because
+    # folddisco has no other channel for it. Its per-match row carries the TARGET residues
+    # it placed plus a `query_residues` column that is just the -q string echoed back
+    # verbatim (build_match_result_columns closes over it; every row is identical). Match i
+    # of the target list corresponds to residue i of the query list, so the two zip.
+    #
+    # Omitting -q searches the whole structure, which is what this arm wants, but it also
+    # makes query_residues the EMPTY STRING -- query_pdb.rs keeps the original argument
+    # when no residues were parsed rather than expanding it to the residues it used. The
+    # column is then blank on every row and folddisco_to_regions.py has no query side to
+    # report, so it dropped every hit and each chunk came out zero bytes. Naming the
+    # residues explicitly asks for the same search and gets them echoed back.
+    cat > residues.awk <<'AWK'
+\$1 == "loop_" { inloop = 1; nf = 0; delete idx; next }
+inloop && substr(\$1, 1, 11) == "_atom_site." { idx[substr(\$1, 12)] = ++nf; next }
+inloop && substr(\$1, 1, 1) == "_" { inloop = 0; next }
+inloop && nf > 0 && \$1 == "ATOM" {
+    if (!("label_atom_id" in idx)) next
+    if (\$(idx["label_atom_id"]) != "CA") next
+    ch = ("auth_asym_id" in idx) ? \$(idx["auth_asym_id"]) : \$(idx["label_asym_id"])
+    rn = ("auth_seq_id" in idx) ? \$(idx["auth_seq_id"]) : \$(idx["label_seq_id"])
+    # parse_query_string wants a single-letter chain and a plain integer, and panics on
+    # anything else. Skip rather than hand it something it will die on.
+    if (ch !~ /^[A-Za-z]\$/) next
+    if (rn !~ /^[0-9]+\$/) next
+    printf "%s%s%s", sep, ch, rn; sep = ","
+}
+END { if (sep != "") print "" }
+AWK
+
     : > regions.tsv
+    : > folddisco.err
+    n_queried=0
+    n_no_residues=0
+    n_failed=0
+    n_no_hits=0
     while read -r f; do
         acc=\$(basename "\$f" | cut -d- -f2)
-        folddisco query \\
+        q=\$(awk -f residues.awk "\$f")
+        if [ -z "\$q" ]; then
+            n_no_residues=\$((n_no_residues + 1))
+            echo "no CA residues parsed from \$f" >&2
+            continue
+        fi
+        n_queried=\$((n_queried + 1))
+
+        # A single bad structure still must not take the chunk down -- AlphaFold coverage is
+        # incomplete and some models have no matchable motif. But the stderr is no longer
+        # discarded: with 2>/dev/null a folddisco that failed on all 1030 structures in a
+        # chunk looked exactly like one that legitimately matched nothing, so there was
+        # nothing left to read that could tell the two apart.
+        if folddisco query \\
             -i ${index}/index \\
             -p "\$f" \\
+            -q "\$q" \\
             -t ${task.cpus} \\
             --top ${params.folddisco_top} \\
-            > hits.tsv 2>/dev/null || true
-        [ -s hits.tsv ] || continue
+            > hits.tsv 2>> folddisco.err; then
+            :
+        else
+            n_failed=\$((n_failed + 1))
+            echo "folddisco query exited nonzero on \$f" >> folddisco.err
+            continue
+        fi
+
+        if [ ! -s hits.tsv ]; then
+            n_no_hits=\$((n_no_hits + 1))
+            continue
+        fi
         folddisco_to_regions.py \\
             --hits hits.tsv \\
             --query-accession "\$acc" \\
             --out regions.tsv >/dev/null
     done < chunk.list
+
+    echo "chunk ${chunk}: queried \$n_queried, no residues \$n_no_residues, failed \$n_failed, no hits \$n_no_hits"
+    echo "rows written: \$(wc -l < regions.tsv)"
+    if [ -s folddisco.err ]; then
+        echo "--- folddisco stderr (first 40 lines) ---" >&2
+        head -40 folddisco.err >&2
+    fi
+
+    # Per chunk, zero rows is still a legitimate answer: a chunk can be a handful of
+    # structures in a mini run, and a distant pair can genuinely match nothing. The
+    # "nothing anywhere" check belongs one level up, in folddiscoMerge, where the whole
+    # species is in view. What is NOT legitimate here is every query failing.
+    if [ "\$n_queried" -gt 0 ] && [ "\$n_failed" -eq "\$n_queried" ]; then
+        echo "folddisco query failed on all \$n_queried structures in chunk ${chunk}." >&2
+        exit 1
+    fi
 
     mv regions.tsv human_vs_${species}.folddisco.chunk${chunk}.tsv
     """
@@ -2053,7 +2179,26 @@ process folddiscoMerge {
 
     script:
     """
-    cat ${chunks} | gzip -c > human_vs_${species}.folddisco.tsv.gz
+    set -euo pipefail
+    cat ${chunks} > regions.tsv
+
+    # This is the first point where a whole proteome is in view, so it is where "returned
+    # nothing for anything" can be told apart from "returned nothing for this pair". A
+    # single query matching no motif is ordinary; every human structure matching nothing in
+    # an entire proteome is not a distant-homology result, it is a broken arm. The previous
+    # version gzipped 20 empty chunks into a valid 20-byte file and exited 0, and the
+    # emptiness only showed up weeks later as a bar of length zero in the report, by which
+    # time the task logs that would have explained it were gone.
+    n=\$(wc -l < regions.tsv)
+    echo "folddisco rows for human_vs_${species}: \$n"
+    if [ "\$n" -eq 0 ]; then
+        echo "folddisco produced no regions at all for human_vs_${species}." >&2
+        echo "Check a folddiscoQuery task's .command.err for this species: it now keeps" >&2
+        echo "folddisco's stderr and prints per-chunk counts of failed and empty queries." >&2
+        exit 1
+    fi
+
+    gzip -c regions.tsv > human_vs_${species}.folddisco.tsv.gz
     """
 }
 
@@ -2120,15 +2265,25 @@ process hhblitsBuildDB {
     """
     set -euo pipefail
     mkdir -p ${label}_hhdb
+
+    # hhsuite addresses a database by a BASE NAME and derives every file from it by
+    # appending _a3m / _hhm / _cs219 plus the ffindex extensions
+    # (HHDatabase::buildDatabaseName). The base here is <label>_hhdb/db, so each file has
+    # to carry the db_ prefix. They used to be named a3m.ffdata / hhm.ffdata / cs219.ffdata,
+    # which is a directory hhsearch cannot address by any base at all: it went looking for
+    # hhm_cs219.ffdata and exited 1 before searching anything.
+    #
+    # seq.ff* stays plain because it is this script's own scratch and is never handed to
+    # hhsuite as a database.
     ffindex_from_fasta -s ${label}_hhdb/seq.ffdata ${label}_hhdb/seq.ffindex ${fasta}
 
     if [ -n "${params.hhblits_db ?: ''}" ]; then
         ffindex_apply ${label}_hhdb/seq.ffdata ${label}_hhdb/seq.ffindex \\
-            -d ${label}_hhdb/a3m.ffdata -i ${label}_hhdb/a3m.ffindex \\
+            -d ${label}_hhdb/db_a3m.ffdata -i ${label}_hhdb/db_a3m.ffindex \\
             -- hhblits -i stdin -d ${params.hhblits_db} -oa3m stdout -n ${n_iter} -cpu 1 -v 0
     else
         ffindex_apply ${label}_hhdb/seq.ffdata ${label}_hhdb/seq.ffindex \\
-            -d ${label}_hhdb/a3m.ffdata -i ${label}_hhdb/a3m.ffindex \\
+            -d ${label}_hhdb/db_a3m.ffdata -i ${label}_hhdb/db_a3m.ffindex \\
             -- awk '/^>/{print} !/^>/{print toupper(\$0)}'
     fi
 
@@ -2136,12 +2291,30 @@ process hhblitsBuildDB {
     # the is_query flag, not by matching the label against "human" -- the human label now
     # carries a query-set digest, so a string test against it silently stopped firing.
     if [ "${is_query}" != "true" ]; then
-        ffindex_apply ${label}_hhdb/a3m.ffdata ${label}_hhdb/a3m.ffindex \\
-            -d ${label}_hhdb/hhm.ffdata -i ${label}_hhdb/hhm.ffindex \\
+        ffindex_apply ${label}_hhdb/db_a3m.ffdata ${label}_hhdb/db_a3m.ffindex \\
+            -d ${label}_hhdb/db_hhm.ffdata -i ${label}_hhdb/db_hhm.ffindex \\
             -- hhmake -i stdin -o stdout -v 0
-        cstranslate -f -x 0.3 -c 4 -I a3m -i ${label}_hhdb/a3m -o ${label}_hhdb/cs219
-        sort -k3 -n ${label}_hhdb/cs219.ffindex | cut -f1 > ${label}_hhdb/db.sort
+        cstranslate -f -x 0.3 -c 4 -I a3m -i ${label}_hhdb/db_a3m -o ${label}_hhdb/db_cs219
+        sort -k3 -n ${label}_hhdb/db_cs219.ffindex | cut -f1 > ${label}_hhdb/db.sort
     fi
+
+    # storeDir caches whatever this task leaves behind, so a database built from failed
+    # ffindex_apply children would be handed to every future run without ever being
+    # rebuilt. ffindex_apply exits 0 regardless of its children (see hhblitsSearch), so
+    # the file sizes are the only check available. Fail here rather than cache a shell.
+    expected="${label}_hhdb/db_a3m.ffdata ${label}_hhdb/db_a3m.ffindex"
+    if [ "${is_query}" != "true" ]; then
+        expected="\$expected ${label}_hhdb/db_hhm.ffdata ${label}_hhdb/db_hhm.ffindex"
+        expected="\$expected ${label}_hhdb/db_cs219.ffdata ${label}_hhdb/db_cs219.ffindex"
+    fi
+    for f in \$expected; do
+        if [ ! -s "\$f" ]; then
+            echo "\$f is missing or empty after building ${label}_hhdb." >&2
+            echo "ffindex_apply reports success even when every child failed, so an empty" >&2
+            echo "file here means hhblits/hhmake/cstranslate died on every entry." >&2
+            exit 1
+        fi
+    done
     """
 }
 

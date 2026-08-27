@@ -21,10 +21,24 @@ rather than hidden:
 Folddisco emits no E-value. `idf` (inverse document frequency; rarer motif, higher score)
 goes in the score column, matching every other arm's bigger-is-better convention, and
 `rmsd` goes in the E-value slot, which is likewise lower-is-better.
+
+The two residue columns are one motif read from two structures, so entry i of
+`matching_residues` (target side) answers entry i of `query_residues` (query side) and
+they are the same length. Only the pairs where both sides are present count: the query
+list is the whole motif that was asked for, so its full envelope would be the same
+interval on every hit, and for the whole-structure queries this pipeline runs that
+interval is the whole protein.
+
+This depends on `folddisco query` being given -q. Folddisco has no other channel for
+query-side positions -- `query_residues` is the -q argument echoed back, identical on
+every row -- and query_pdb.rs echoes the ORIGINAL argument, so omitting -q searches the
+whole structure but leaves that column blank. Every hit then converts to nothing, which is
+how this arm scored zero calls across nine species while its tasks reported success.
 """
 
 import argparse
 import re
+import sys
 from pathlib import Path
 
 # Residue labels carry a chain prefix: "A56" and occasionally "A-12" for negative
@@ -32,19 +46,19 @@ from pathlib import Path
 RESIDUE_RE = re.compile(r"(-?\d+)\s*$")
 
 
-def residue_span(field: str) -> tuple[int, int, int] | None:
-    """(start, end, n_matched) for a comma-separated residue list."""
-    positions = []
+def residue_positions(field: str) -> list[int | None]:
+    """Positions of a comma-separated folddisco residue list, None where it wrote `_`.
+
+    Position is load-bearing, so unmatched nodes keep their slot rather than being dropped:
+    the target list and the query list are the same motif read from two structures, and
+    entry i of one corresponds to entry i of the other.
+    """
+    out: list[int | None] = []
     for token in field.split(","):
         token = token.strip()
-        if not token:
-            continue
-        m = RESIDUE_RE.search(token)
-        if m:
-            positions.append(int(m.group(1)))
-    if not positions:
-        return None
-    return min(positions), max(positions), len(positions)
+        m = RESIDUE_RE.search(token) if token else None
+        out.append(int(m.group(1)) if m else None)
+    return out
 
 
 # AlphaFold models proteins over 2700 aa as overlapping 1400-residue fragments on a
@@ -77,41 +91,91 @@ def main():
     p.add_argument("--out", required=True, type=Path, help="append normalized rows here")
     args = p.parse_args()
 
+    n_lines = 0
     written = 0
+    reasons: dict[str, int] = {}
+
+    def drop(reason: str):
+        reasons[reason] = reasons.get(reason, 0) + 1
+
     with open(args.hits) as fh, open(args.out, "a") as out:
         for line in fh:
             line = line.rstrip("\n")
             if not line or line.startswith("#"):
                 continue
+            n_lines += 1
             parts = line.split("\t")
             if len(parts) < 6:
+                drop(f"fewer than 6 columns (saw {len(parts)})")
                 continue
             tid, node_count, idf, rmsd, matching, query_res = parts[:6]
 
-            t_span = residue_span(matching)
-            q_span = residue_span(query_res)
-            if t_span is None or q_span is None:
+            if not query_res.strip():
+                drop("query_residues column is empty")
+                continue
+
+            t_pos = residue_positions(matching)
+            q_pos = residue_positions(query_res)
+            if len(t_pos) != len(q_pos):
+                drop(f"matching_residues has {len(t_pos)} entries, "
+                     f"query_residues has {len(q_pos)}")
+                continue
+
+            # Only the nodes that were actually placed. The query list is the whole motif
+            # asked for, so taking its full envelope would report the same interval for
+            # every hit -- for a whole-structure query, the whole protein. Zipping keeps
+            # the envelope to the part of the query the target answered.
+            matched = [(q, t) for q, t in zip(q_pos, t_pos)
+                       if q is not None and t is not None]
+            if not matched:
+                drop("no residue matched on both sides")
                 continue
 
             try:
                 score = float(idf)
                 rmsd_val = float(rmsd)
             except ValueError:
+                drop("idf or rmsd is not a number")
                 continue
 
-            # n_matched comes from the query side: it is how many of the query's residues
-            # were placed, which is what node_count reports.
-            # Only the TARGET side comes from a structure file here; the query span is
-            # already in the query protein's own numbering.
+            q_hit = [q for q, _ in matched]
+            t_hit = [t for _, t in matched]
+            # n_matched is the count of placed nodes, which is what folddisco's node_count
+            # reports; it is recomputed here rather than read off column 2 so the number
+            # and the interval can never disagree.
             t_acc, t_off = accession_and_offset(tid)
             out.write(
                 f"{args.query_accession}\t{t_acc}\t"
-                f"{q_span[0]}\t{q_span[1]}\t{t_span[0] + t_off}\t{t_span[1] + t_off}\t"
-                f"{score}\t{rmsd_val}\t{q_span[2]}\n"
+                f"{min(q_hit)}\t{max(q_hit)}\t"
+                f"{min(t_hit) + t_off}\t{max(t_hit) + t_off}\t"
+                f"{score}\t{rmsd_val}\t{len(matched)}\n"
             )
             written += 1
 
     print(f"{args.query_accession}: {written} rows")
+
+    # A hit file with rows in it that converts to nothing is a parse failure, not a
+    # no-hit result: folddisco was not run at all when the file is empty, because the
+    # caller skips this script then. Saying so here is the difference between finding this
+    # in the task log and finding it in a report weeks later as a bar of length zero.
+    # Omitting -q used to land exactly here, silently, on every row of every chunk.
+    if n_lines and not written:
+        detail = "; ".join(f"{v} x {k}" for k, v in sorted(reasons.items()))
+        hint = (
+            " An empty query_residues column means `folddisco query` ran without -q, "
+            "which leaves no query-side coordinates to report."
+            if "query_residues column is empty" in reasons
+            else " The two residue lists are one motif read from two structures, so they "
+                 "are the same length by construction; a mismatch means the column order "
+                 "has moved and --format-output should pin it."
+        )
+        raise SystemExit(
+            f"{args.hits}: {n_lines} folddisco hit rows converted to 0 regions "
+            f"({detail}).{hint}"
+        )
+    if reasons:
+        detail = "; ".join(f"{v} x {k}" for k, v in sorted(reasons.items()))
+        print(f"{args.query_accession}: dropped {detail}", file=sys.stderr)
 
 
 if __name__ == "__main__":
