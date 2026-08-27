@@ -23,6 +23,7 @@ Two conventions run through every section:
 import argparse
 import json
 import math
+import re
 from itertools import cycle
 from pathlib import Path
 
@@ -1338,17 +1339,38 @@ def section_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
     })
 
 
+def parse_kmerseek_variants(df: pl.DataFrame) -> pl.DataFrame:
+    """Split kmerseek's variant string into alphabet, ksize and low-complexity arm.
+
+    One parser for every section that needs it. The pattern is the variant NAME the
+    pipeline writes, so a second copy would keep matching an old naming scheme in one
+    section while the other had moved on -- and the failure mode is an empty plot, not an
+    error. Rows whose variant does not parse (every non-kmerseek tool) are dropped.
+    """
+    return df.with_columns(
+        pl.col("variant").str.extract(r"^(.*)_k\d+_lc(?:True|False)$", 1).alias("alphabet"),
+        pl.col("variant").str.extract(r"_k(\d+)_lc", 1).cast(pl.Int64).alias("ksize"),
+        pl.col("variant").str.extract(r"_lc(True|False)$", 1).alias("lowcomp"),
+    ).filter(pl.col("alphabet").is_not_null())
+
+
+def alphabet_classes(alphabet: str) -> int:
+    """Class count off the end of the alphabet name -- protein20 -> 20, hp_lehninger2 -> 2.
+
+    Every alphabet was renamed in kmerseek PR #43 to state its class count, so the name is
+    the authority. Anything unparsable sorts last rather than raising.
+    """
+    m = re.search(r"(\d+)$", alphabet)
+    return int(m.group(1)) if m else 10_000
+
+
 def section_alphabet_matrix(out: Path, metrics: pl.DataFrame, primary_truth: str) -> None:
     """The sweep itself: Fmax over alphabet x ksize, one heatmap per low-complexity arm."""
     cut, split = pick_split(ungrouped(metrics.filter(
         (pl.col("truth_set") == primary_truth) & (pl.col("tool") == "kmerseek"))))
     if cut.height == 0:
         return
-    parsed = cut.with_columns(
-        pl.col("variant").str.extract(r"^(.*)_k\d+_lc(?:True|False)$", 1).alias("alphabet"),
-        pl.col("variant").str.extract(r"_k(\d+)_lc", 1).cast(pl.Int64).alias("ksize"),
-        pl.col("variant").str.extract(r"_lc(True|False)$", 1).alias("lowcomp"),
-    ).filter(pl.col("alphabet").is_not_null())
+    parsed = parse_kmerseek_variants(cut)
     if parsed.height == 0:
         return
 
@@ -1450,6 +1472,261 @@ def section_alphabet_matrix(out: Path, metrics: pl.DataFrame, primary_truth: str
             "categories": {"delta": {"name": "delta Fmax", "color": "#0f9d76"}},
             "data": {r["alphabet"]: {"delta": r["delta"]} for r in delta.to_dicts()},
         })
+
+
+# ---------------------------------------------------------------------------
+# Reduced-alphabet information ceiling
+# ---------------------------------------------------------------------------
+#
+# The thesis these three panels exist to measure, rather than assert: HP-alphabet
+# performance is a function of the TARGET FEATURE's length and type, not of the alphabet
+# alone.
+#
+# Rannon & Burstein (bioRxiv 2026.02.08.701987v2, doi 10.64898/2026.02.08.701987) trained
+# protein language models on reduced alphabets and found their 2-letter model worst on
+# signal peptides (ROC-AUC 0.75, PR-AUC 0.47) while nearly lossless on solubility (relative
+# F1 ~0.97) and strong on enzyme detection (~0.90). Signal peptides are ~20 residues;
+# solubility and enzyme class are whole-protein properties. Their BPE tokens are short and
+# our HP k floor is 18, so if that is one gradient rather than three unrelated task
+# results, their negative result is the low-k arm of this sweep measured independently by
+# another lab. These panels put both gradients in domain units so the comparison is a
+# measurement instead of an analogy.
+#
+# No expected ordering is encoded anywhere below. The numbers are emitted and fall where
+# they fall.
+CEILING_PARENT = {
+    "parent_id": "qfo_ceiling",
+    "parent_name": "Reduced-alphabet information ceiling",
+    "parent_description": (
+        "Whether a coarse alphabet works is a question about the feature being found, not "
+        "about the alphabet on its own. A 2-letter alphabet at k=19 spans 19 residues, so a "
+        "21-residue TRANSMEM helix admits three k-mers and a 400-residue kinase domain "
+        "admits 380. These panels cut the sweep on feature length and on feature type to "
+        "see whether that is where the reduced alphabets lose."
+    ),
+}
+
+def _ratio_bin(col: pl.Expr) -> pl.Expr:
+    """Snap a feature_length/ksize ratio to a log2 grid, returning the bin's centre ratio.
+
+    Log2, not linear. The ratio spans roughly 0.03 (a one-residue point feature against
+    k=30) to 60 (titin's longest domain against k=18), and a linear grid would put every
+    short feature -- the whole left-hand end the claim is about -- into one column.
+    """
+    return (2.0 ** col.log(2).round(0)).round(4)
+
+
+def section_ceiling_length(out: Path, metrics: pl.DataFrame, primary_truth: str) -> None:
+    """best_f1 against feature_length / ksize, one line per HP alphabet.
+
+    The RATIO, not the raw length. Raw length would show every alphabet declining together
+    toward short features, which is true and uninformative -- every method finds short
+    things less reliably. The claim under test is specifically that a coarse alphabet needs
+    a long window, so the quantity is how many k-mers the feature can hold, and that is
+    feature_length / ksize. A ratio of 1 is a feature exactly one k-mer long.
+
+    Coverage rides along as a switchable second dataset rather than as a footnote. A
+    best_f1 computed over 12% of the calls in a cell is a different claim from the same
+    number over 90%, and the short-feature cells are exactly where coverage drops.
+    """
+    cut, split = pick_split(metrics.filter(
+        (pl.col("truth_set") == primary_truth)
+        & (pl.col("stratum_axis") == "feature_length_bin")
+        & (pl.col("tool") == "kmerseek")
+    ))
+    if cut.height == 0 or "median_feature_length" not in cut.columns:
+        return
+    parsed = parse_kmerseek_variants(cut).filter(
+        pl.col("alphabet").str.starts_with("hp_")
+        & pl.col("median_feature_length").is_not_null()
+        & (pl.col("median_feature_length") > 0)
+    )
+    if parsed.height == 0:
+        return
+
+    parsed = parsed.with_columns(
+        _ratio_bin(pl.col("median_feature_length") / pl.col("ksize")).alias("ratio")
+    )
+    alphas = sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes)
+
+    datasets, labels = [], []
+    for metric, ylab in (("best_f1", "best F1"), ("coverage", "coverage")):
+        if metric not in parsed.columns:
+            continue
+        data = {}
+        for alpha in alphas:
+            sub = parsed.filter(pl.col("alphabet") == alpha)
+            # Averaged over ksize, low-complexity arm and target species within a ratio
+            # bin, because the ratio is the axis: two combos landing on the same ratio by
+            # different routes are two measurements of the same quantity.
+            by_ratio = (sub.group_by("ratio").agg(pl.col(metric).mean())
+                           .sort("ratio").to_dicts())
+            series = {str(r["ratio"]): r[metric] for r in by_ratio if r[metric] is not None}
+            if series:
+                data[alpha] = series
+        if data:
+            datasets.append(data)
+            labels.append({"name": ylab, "ylab": ylab})
+    if not datasets:
+        return
+
+    n_cells = parsed.height
+    cov = parsed["coverage"].median() if "coverage" in parsed.columns else None
+    cov_note = f", median coverage {cov:.2f}" if cov is not None else ""
+    write_section(out, "qfo_ceiling_length", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_length",
+        "section_name": "Feature length against k",
+        "description": (
+            f"Best achievable F1 by how many k-mers the annotated feature can hold: the "
+            f"median feature length in the cell divided by the variant's k, one line per "
+            f"HP alphabet. {primary_truth} truth, <code>{split}</code> split, "
+            f"{n_cells} scored cells{cov_note}. "
+            "x is on a log2 grid and 1.0 is a feature exactly one k-mer long. Use the "
+            "buttons to switch between best F1 and the coverage each number was computed "
+            "over. Truth sets are never pooled: this panel is one truth set only, and the "
+            "feature-type panel below is Swiss-Prot only because Pfam carries no type "
+            "variation to cut on."),
+        "plot_type": "linegraph",
+        "pconfig": {"id": "qfo_ceiling_length_plot",
+                    "title": "best F1 by feature length / k",
+                    "xlab": "feature length / k (log2 grid)", "ylab": "best F1",
+                    "xlog": True, "ymin": 0, "ymax": 1, "height": 500,
+                    "data_labels": labels},
+        "data": datasets if len(datasets) > 1 else datasets[0],
+    })
+
+
+def section_ceiling_feature_type(out: Path, metrics: pl.DataFrame) -> None:
+    """Alphabet x Swiss-Prot feature type, and the coverage the same grid was scored over.
+
+    Swiss-Prot only, and not because it is the default primary truth set: `pfam_id` holds
+    the FT type there, while for Pfam and Pfam-N it holds a family accession with no type
+    variation to cut on and for M-CSA an entry id. evaluate_domain_calls leaves the axis
+    null on those sets, so there is nothing to plot even when one of them is primary.
+
+    Rows are ordered by class count, coarsest at the top, so any narrowing of the gap
+    between long structural features and short functional ones as the alphabet grows reads
+    down the figure.
+    """
+    sp = metrics.filter(
+        (pl.col("truth_set") == "swissprot")
+        & (pl.col("stratum_axis") == "feature_type")
+        & (pl.col("tool") == "kmerseek")
+    )
+    if sp.height == 0:
+        return
+    cut, split = pick_split(sp)
+    parsed = parse_kmerseek_variants(cut)
+    if parsed.height == 0:
+        return
+
+    # Types ordered by median feature length, shortest first, so the x axis is itself the
+    # length gradient rather than an alphabetical list. Ties and missing lengths sort last.
+    if "median_feature_length" in parsed.columns:
+        lengths = (parsed.group_by("stratum")
+                         .agg(pl.col("median_feature_length").median().alias("len"))
+                         .sort("len", nulls_last=True))
+        types = lengths["stratum"].to_list()
+    else:
+        types = sorted(parsed["stratum"].unique().to_list())
+    alphas = sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes)
+
+    # Both metrics are on 0..1, so the two heatmaps share a colour scale and can be read
+    # against each other rather than each against its own range.
+    for metric, title in (("best_f1", "best F1"), ("coverage", "coverage")):
+        if metric not in parsed.columns:
+            continue
+        grid = parsed.group_by("alphabet", "stratum").agg(pl.col(metric).mean())
+        lookup = {(r["alphabet"], r["stratum"]): r[metric] for r in grid.to_dicts()}
+        rows = [[lookup.get((a, t)) for t in types] for a in alphas]
+        if not any(v is not None for row in rows for v in row):
+            continue
+        suffix = "" if metric == "best_f1" else "_coverage"
+        n_by_type = (parsed.group_by("stratum")
+                           .agg(pl.col("n_truth_instances").max().alias("n"))
+                           .to_dicts()) if "n_truth_instances" in parsed.columns else []
+        counts = ", ".join(f"{r['stratum']} n={r['n']}" for r in
+                           sorted(n_by_type, key=lambda r: -(r["n"] or 0)))
+        write_section(out, f"qfo_ceiling_feature_type{suffix}", {
+            **CEILING_PARENT,
+            "id": f"qfo_ceiling_feature_type{suffix}",
+            "section_name": f"Feature type — {title}",
+            "description": (
+                f"{title} per alphabet and Swiss-Prot feature type "
+                f"(<code>{split}</code> split). Rows run coarsest alphabet at the top to "
+                f"finest at the bottom; columns run shortest median feature on the left to "
+                f"longest on the right. The MIN_STRATUM_PROTEINS floor is waived on this "
+                f"axis -- ACT_SITE and DNA_BIND are small in every proteome, and dropping "
+                f"them would delete the short-feature end of the gradient. Instances per "
+                f"type: {counts}. The coverage panel is the same grid, so no cell's number "
+                f"is read without knowing what share of its calls could be judged."
+                if metric == "best_f1" else
+                f"Share of calls that could be judged at all, on the same grid as the "
+                f"best-F1 heatmap above. A high F1 over a low coverage is a different "
+                f"claim from the same F1 over a high one."),
+            "plot_type": "heatmap",
+            "pconfig": {"id": f"qfo_ceiling_feature_type{suffix}_plot",
+                        "title": f"{title} by alphabet and Swiss-Prot feature type",
+                        "xlab": "feature type", "ylab": "alphabet",
+                        "min": 0, "max": 1, "square": False, "height": 520},
+            "xcats": types,
+            "ycats": alphas,
+            "data": rows,
+        })
+
+
+def section_ceiling_bpe(out: Path, bpe: dict | None) -> None:
+    """ProtBERTa_2's learned token boundaries against Pfam domain boundaries.
+
+    Written from bin/hp_bpe_boundary_diagnostic.py's JSON, which is a standalone
+    measurement rather than anything this pipeline searched -- which is why the panel is
+    absent rather than empty when the diagnostic has not been run.
+    """
+    if not bpe or not bpe.get("alphabets"):
+        return
+    rows = bpe["alphabets"]
+    order = sorted(rows, key=lambda k: rows[k].get("enrichment") or 0.0, reverse=True)
+    data = {}
+    for name in order:
+        r = rows[name]
+        if r.get("enrichment") is None:
+            continue
+        label = name + (" (= ProtBERTa_2)" if r.get("identical_to_protberta_2")
+                                              and name != "protberta_2" else "")
+        data[label] = {"enrichment": r["enrichment"]}
+    if not data:
+        return
+    ctrl = rows.get("hp_random_control2", {}).get("enrichment")
+    control_note = (
+        f" The random 10/10 control sits at {ctrl:.2f}x: a bar that is not clearly above "
+        "it is measuring the autocorrelation of any two-letter string, not hydrophobicity."
+        if ctrl else "")
+    write_section(out, "qfo_ceiling_bpe", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_bpe",
+        "section_name": "BPE token boundaries vs domain boundaries",
+        "description": (
+            f"How often a ProtBERTa_2 BPE token boundary falls exactly on a Pfam domain "
+            f"boundary, divided by the same rate on length- and composition-matched "
+            f"shuffled sequences. 1.0 is the null. Measured on "
+            f"{bpe.get('n_proteins', '?')} human proteins carrying "
+            f"{bpe.get('n_domain_instances', '?')} domain instances, with the tokenizer "
+            f"released at doi <code>{bpe.get('tokenizer_doi', '')}</code> applied to each "
+            f"alphabet's own h/p encoding.{control_note} "
+            "This is segmentation agreement, not end-to-end performance: a tokenizer whose "
+            "boundaries never coincide with domain boundaries can still support a model "
+            "that finds domains, and one whose boundaries agree perfectly can still be "
+            "beaten by a k-mer method."),
+        "plot_type": "bargraph",
+        "pconfig": {"id": "qfo_ceiling_bpe_plot",
+                    "title": "Domain-boundary enrichment at BPE token boundaries",
+                    "ylab": "observed / shuffled-null hit rate", "cpswitch": False,
+                    "height": 420},
+        "categories": {"enrichment": {"name": "enrichment over shuffled null",
+                                      "color": "#4c72b0"}},
+        "data": data,
+    })
 
 
 def section_boundary(out: Path, metrics: pl.DataFrame, primary_truth: str,
@@ -2426,6 +2703,22 @@ def section_general_stats(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
 
 # ---------------------------------------------------------------------------
 
+def load_bpe_boundary(path: Path | None) -> dict | None:
+    """Read the BPE boundary diagnostic's JSON, or None.
+
+    Unreadable is treated the same as absent, on purpose. This panel is a side measurement
+    that no search produced; taking the whole report down over a malformed sidecar would
+    cost a finished sweep its figures.
+    """
+    if path is None or not path.exists() or path.stat().st_size == 0:
+        return None
+    try:
+        return json.loads(path.read_text())
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        print(f"could not read {path}: {exc}; skipping the BPE panel")
+        return None
+
+
 def load_curves(path: Path | None) -> pl.DataFrame:
     """Curves are optional. The pipeline passes an assets/NO_CURVES sentinel when a run has
     none, so a file that exists but is not a parquet is a supported input, not an error --
@@ -2482,6 +2775,11 @@ def main():
                         "region. The comparison section always shows both regardless.")
     p.add_argument("--max-lines", type=int, default=12,
                    help="Curves per PR/ROC plot")
+    p.add_argument("--bpe-boundary", type=Path,
+                   help="JSON from bin/hp_bpe_boundary_diagnostic.py. That diagnostic is "
+                        "run by hand against a downloaded tokenizer, not by a search arm, "
+                        "so a missing file is normal and drops the panel rather than "
+                        "failing the report.")
     args = p.parse_args()
 
     TOP_KMERSEEK = args.top_kmerseek
@@ -2527,6 +2825,9 @@ def main():
     section_divergence(args.outdir, metrics, primary, args.max_tools)
     section_truthsets(args.outdir, metrics, args.max_tools)
     section_alphabet_matrix(args.outdir, metrics, primary)
+    section_ceiling_length(args.outdir, metrics, primary)
+    section_ceiling_feature_type(args.outdir, metrics)
+    section_ceiling_bpe(args.outdir, load_bpe_boundary(args.bpe_boundary))
     section_boundary(args.outdir, metrics, primary, args.max_tools)
     section_grayzone(args.outdir, metrics, primary, args.max_tools)
     section_reachability(args.outdir, metrics, primary)

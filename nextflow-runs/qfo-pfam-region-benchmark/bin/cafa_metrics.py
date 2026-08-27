@@ -213,7 +213,7 @@ def cafa_scalars(curve: pl.DataFrame) -> dict:
 
 
 def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
-                     strict_iou: float = 0.8) -> dict:
+                     strict_iou: float = 0.8, exclude_points: bool = True) -> dict:
     """Residue-level overlap and boundary accuracy.
 
     NDO here is the residue-level normalized domain overlap: correctly-labelled residues
@@ -224,6 +224,15 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
     reported as a median over correctly identified domains. Only correct calls have a
     meaningful boundary error -- the distance from a wrong domain to a right one is not a
     boundary measurement.
+
+    `exclude_points` drops truth intervals flagged is_point, and the calls that matched
+    them, from every number below. A point feature is a single annotated residue -- a
+    catalytic site, a metal ligand -- that build_swissprot_truth widens by one and
+    build_mcsa_truth widens by a window purely so an interval exists at all. There is no
+    boundary to be right or wrong about at that length, so NDO, DBD and the terminal
+    offsets would be measuring the widening rather than the prediction. Both sides are cut,
+    truth and calls, so numerator and denominator keep describing the same set. Truth sets
+    with no is_point column -- Pfam, Pfam-N -- are untouched.
     """
     out = {
         "ndo": 0.0, "residue_precision": 0.0, "residue_recall": 0.0, "residue_f1": 0.0,
@@ -233,7 +242,25 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
         f"precision_iou{int(strict_iou * 100)}": 0.0,
         f"recall_iou{int(strict_iou * 100)}": 0.0,
         "n_tp_strict": 0,
+        # Always present, so a cell that excluded nothing and a cell that excluded
+        # everything are told apart in the table rather than by a missing column.
+        "n_point_instances_excluded": 0,
     }
+    if exclude_points and "is_point" in truth.columns:
+        points = truth.filter("is_point").select(
+            pl.col("accession").alias("query_acc"), "pfam_id",
+            pl.col("domain_start").alias("true_start"),
+            pl.col("domain_end").alias("true_end"),
+        ).unique()
+        truth = truth.filter(~pl.col("is_point"))
+        # Anti-join, not a semi-join on the kept instances: a call that matched nothing has
+        # null true_start/true_end, polars does not match null join keys, and a semi-join
+        # would therefore delete every false positive and hand back a perfect precision.
+        calls = calls.join(
+            points, on=["query_acc", "pfam_id", "true_start", "true_end"], how="anti"
+        )
+        out["n_point_instances_excluded"] = points.height
+
     if calls.height == 0 or truth.height == 0:
         return out
 

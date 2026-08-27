@@ -342,6 +342,23 @@ params.multiqc_top_kmerseek = 5
 // runs have ended and executes no scoring task of its own.
 params.report_outdirs = null
 
+// --- reduced-alphabet information ceiling ---------------------------------
+// The BPE boundary diagnostic: do the token boundaries ProtBERTa_2 learned on a 2-letter
+// alphabet land on Pfam domain boundaries? See bin/hp_bpe_boundary_diagnostic.py.
+//
+// Off unless a tokenizer is named, because the tokenizer is a Zenodo download
+// (doi 10.5281/zenodo.18256943) and compute nodes here have no outbound internet. Fetch it
+// on a login node with `make bpe-tokenizer`, which writes data/protberta/, then pass
+//   --bpe_tokenizer ../data/protberta/ProtBERTa_tokenizers.tar.gz
+// ~30 s of CPU on one core at the default --bpe_max_proteins; wall time is dominated
+// by the first read of the query FASTA. It is a go/no-go diagnostic, not a sweep.
+params.bpe_tokenizer        = null
+params.bpe_max_proteins     = 2000
+params.bpe_null_replicates  = 3
+// Residues of slack between a token boundary and a domain boundary. 0 is exact
+// coincidence, which is the only version of the question that has a clean null.
+params.bpe_tolerance        = 0
+
 // Toggles
 params.skip_kmerseek  = false
 params.skip_baselines = false
@@ -2561,6 +2578,44 @@ process scoreHmmscanCeiling {
     """
 }
 
+process hpBpeBoundary {
+    /*
+     * Segmentation agreement between ProtBERTa_2's learned HP tokens and Pfam domain
+     * boundaries, per HP alphabet, against a length- and composition-matched shuffled null.
+     *
+     * No new container: the script is stdlib plus polars, both already in the image the
+     * `python` label binds. The tokenizer arrives as a staged path rather than being
+     * downloaded here, because compute nodes have no outbound internet -- the same reason
+     * prostt5Weights is fetched on a login node by `make prostt5-weights`.
+     *
+     * Published, not stored. It costs ~30 s of CPU and its output is one small JSON, so
+     * a storeDir would buy nothing and would add a cache entry to keep coherent with the
+     * tokenizer it was computed from.
+     */
+    tag "hp-bpe boundary"
+    label 'python'
+    publishDir "${params.outdir}/diagnostics", mode: 'copy'
+
+    input:
+    tuple path(tokenizer), path(fasta), path(annotations)
+
+    output:
+    path "hp_bpe_boundary.json"
+
+    script:
+    """
+    hp_bpe_boundary_diagnostic.py \\
+        --fasta        ${fasta} \\
+        --annotations  ${annotations} \\
+        --tokenizer    ${tokenizer} \\
+        --max-proteins ${params.bpe_max_proteins} \\
+        --n-null       ${params.bpe_null_replicates} \\
+        --tolerance    ${params.bpe_tolerance} \\
+        --out          hp_bpe_boundary.json
+    """
+}
+
+
 process aggregateMetrics {
     label 'python'
     publishDir params.outdir, mode: 'copy'
@@ -2612,7 +2667,7 @@ process buildMultiqcInputs {
 
 
     input:
-    tuple path(metrics), path(curves), path(trace), path(human_fasta)
+    tuple path(metrics), path(curves), path(trace), path(human_fasta), path(bpe)
     path kmerseek_timings, stageAs: 'kmerseek_timings/*'
 
     output:
@@ -2621,6 +2676,9 @@ process buildMultiqcInputs {
     script:
     def primary = params.multiqc_primary_truth
         ? "--primary-truth ${params.multiqc_primary_truth}" : ""
+    // The BPE panel is a side measurement no search produced, so its absence is normal.
+    // The sentinel keeps this process's input signature fixed either way.
+    def bpe_arg = bpe.name == 'NO_BPE' ? "" : "--bpe-boundary ${bpe}"
     // `|| true` because grep exits 1 on no match, which set -e would turn into a task
     // failure reported as a missing output rather than as an empty FASTA.
     //
@@ -2646,7 +2704,7 @@ process buildMultiqcInputs {
         --max-tools    ${params.multiqc_max_tools} \\
         --max-lines    ${params.multiqc_max_lines} \\
         --top-kmerseek ${params.multiqc_top_kmerseek} \\
-        --outdir       multiqc_in ${primary}
+        --outdir       multiqc_in ${primary} ${bpe_arg}
     """
 }
 
@@ -3443,12 +3501,20 @@ workflow {
         scored.curve.mix(ceiling_curves).collect(),
     )
 
+    // The boundary diagnostic, when a tokenizer was named. It reads only the query FASTA
+    // and the Pfam annotations, so it does not wait on a single search -- but its output
+    // has to reach the report, which is why it is a channel rather than a hand-run script
+    // whose JSON someone remembers to copy into the outdir.
+    bpe_ch = params.bpe_tokenizer
+        ? hpBpeBoundary(Channel.of(tuple(file(params.bpe_tokenizer), human_fasta, annotations)))
+        : Channel.value(file("${projectDir}/assets/NO_BPE"))
+
     if (!params.skip_multiqc) {
         // ifEmpty([]) rather than a bare collect(): collect() on an empty channel emits
         // nothing at all, which would leave buildMultiqcInputs with an input channel that
         // never fires and drop the whole report on any run without kmerseek timings.
         multiqcFromMetrics(agg.metrics, agg.curves, human_fasta,
-                           kmerseek_timings.collect().ifEmpty([]))
+                           kmerseek_timings.collect().ifEmpty([]), bpe_ch)
     }
 }
 
@@ -3463,12 +3529,14 @@ workflow multiqcFromMetrics {
     curves
     human_fasta
     kmerseek_timings
+    bpe_boundary
 
     main:
     mqc_in = metrics
         .combine(curves)
+        .combine(bpe_boundary)
         // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
-        .map { m, c -> tuple(m, c, resolveTrace(), file(human_fasta)) }
+        .map { m, c, b -> tuple(m, c, resolveTrace(), file(human_fasta), b) }
 
     sections = buildMultiqcInputs(mqc_in, kmerseek_timings).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
@@ -3626,10 +3694,16 @@ workflow report {
         curves_ch  = Channel.of(curves.exists() ? curves : file("${projectDir}/assets/NO_CURVES"))
     }
 
+    // Read off disk, exactly like the kmerseek timings above and for the same reason: the
+    // diagnostic is run once by hand and published, so a report rebuild picks up whatever
+    // the last run left there without re-running anything.
+    def bpe = file("${outdir}/diagnostics/hp_bpe_boundary.json")
+
     multiqcFromMetrics(
         metrics_ch,
         curves_ch,
         human_fasta,
         Channel.of(ks_timings),
+        Channel.of(bpe.exists() ? bpe : file("${projectDir}/assets/NO_BPE")),
     )
 }
