@@ -3101,10 +3101,31 @@ workflow {
     // The annotation ceiling is a property of Pfam-A, not of any search arm, so a GPU/CPU
     // timing run has no use for it and would pay for a whole-proteome hmmscan to learn
     // nothing new.
+    // Say when the arm is off and why. run_hmmscan defaults to file(pfam_hmm).exists(), so
+    // on a machine where Pfam-A.hmm was never staged it silently evaluates to false and the
+    // ceiling just never appears -- which is exactly what happened on the cluster for every
+    // run of this pipeline, unnoticed, because nothing ever said so. A default computed
+    // from a filesystem check has to announce itself when it turns something off.
+    if (!params.run_hmmscan && !params.gpu_benchmark) {
+        log.warn "hmmscan annotation ceiling DISABLED: no HMM at ${params.pfam_hmm}. " +
+                 "That ceiling is what makes the Pfam numbers interpretable -- Pfam truth " +
+                 "IS hmmscan output, so it measures the most any tool could score and " +
+                 "quantifies the circularity. Stage it with `make sync-pfam`, or pass " +
+                 "--pfam_hmm, or --run_hmmscan false to silence this."
+    }
     if (params.run_hmmscan && !params.gpu_benchmark) {
         def pfam_hmm = file(params.pfam_hmm)
         // hmmpress writes Pfam-A.hmm.{h3m,h3i,h3f,h3p} alongside the .hmm; hmmscan needs them.
         def pfam_aux = file("${params.pfam_hmm}.h3*")
+        // Checked rather than assumed: the .hmm existing is what switches this arm on, but
+        // hmmscan reads the PRESSED files. With the .hmm alone the arm turns on and then
+        // dies inside the container, hours later, on a database it cannot read.
+        if (pfam_aux.isEmpty()) {
+            error "found ${params.pfam_hmm} but none of its .h3m/.h3i/.h3f/.h3p press " +
+                  "files. hmmscan reads those, not the .hmm text. Run `hmmpress " +
+                  "${params.pfam_hmm}` where the file lives, then re-sync, or pass " +
+                  "--run_hmmscan false."
+        }
         hmmscan_out = hmmscanAnnotate(Channel.of(tuple(human_fasta, pfam_hmm, pfam_aux)))
         // The ceiling is scored against Pfam only: hmmscan IS the Pfam annotation
         // procedure, so a Swiss-Prot row for it would compare two unrelated label spaces.

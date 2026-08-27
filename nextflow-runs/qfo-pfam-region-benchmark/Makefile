@@ -75,6 +75,9 @@ REMOTE_DIR     := $(REMOTE_REPO)/nextflow-runs/qfo-pfam-region-benchmark
 
 ANALYSIS_ROOT  := /Users/olga/code/2024-kmerseek-analysis
 ANNOTATIONS    := $(ANALYSIS_ROOT)/results/pfam_benchmark/annotations
+# Pfam-A HMMs for the hmmscan annotation ceiling. main.nf defaults to ~/data/pfam/Pfam-A.hmm
+# on whichever machine it runs, so the cluster needs its own copy -- see sync-pfam.
+PFAM_HMM       ?= /Users/olga/data/pfam/Pfam-A.hmm
 QFO_DIR        := /Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
 STRUCT_DIR     := /Users/olga/data/alphafold_proteomes
 ACC_DIR        := /Users/olga/data/alphafold_proteomes/_accessions
@@ -193,7 +196,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         midi-testset-sherlock run-midi fetch-structures-login \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
-        sync-pipeline sync-data sync-structures pull-results \
+        sync-pipeline sync-data sync-pfam sync-structures pull-results \
         run run-kmerseek run-baselines status running kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
@@ -641,6 +644,25 @@ OMEGA_FILE := $(ANALYSIS_ROOT)/nextflow-runs/human-mouse-dnds-omega/results/omeg
 # what changed. SSH multiplexing above means the ssh in sync-pipeline reuses this
 # connection too, so a full sync is one authentication rather than five.
 SYNC_STAGE := .sync-staging
+
+## Pfam-A HMMs for the annotation ceiling. Not part of sync-data because it is 4.5 GB and
+## only one arm needs it, but without it that arm silently does not run: params.run_hmmscan
+## defaults to file(pfam_hmm).exists(), which was false on the cluster for every run of this
+## pipeline and said nothing.
+##
+## All five files, not just the .hmm. hmmscan reads the pressed .h3m/.h3i/.h3f/.h3p; the
+## .hmm alone switches the arm on and then fails inside the container on a database it
+## cannot read. main.nf now checks for them up front rather than letting that happen.
+sync-pfam:
+	$(call require_mac)
+	@test -f $(PFAM_HMM) || { echo "no $(PFAM_HMM) on this Mac"; exit 1; }
+	@ls $(PFAM_HMM).h3m $(PFAM_HMM).h3i $(PFAM_HMM).h3f $(PFAM_HMM).h3p >/dev/null 2>&1 \
+	  || { echo "$(PFAM_HMM) is not pressed. Run: hmmpress $(PFAM_HMM)"; exit 1; }
+	@du -ch $(PFAM_HMM) $(PFAM_HMM).h3* | tail -1
+	$(SSH_MUX) $(SHERLOCK_HOST) 'mkdir -p $$SCRATCH/data/pfam'
+	$(RSYNC) $(PFAM_HMM) $(PFAM_HMM).h3m $(PFAM_HMM).h3i $(PFAM_HMM).h3f $(PFAM_HMM).h3p \
+	  $(SHERLOCK_HOST):'$$SCRATCH/data/pfam/'
+	@echo; echo "Now pass --pfam_hmm \$$SCRATCH/data/pfam/Pfam-A.hmm, or set PFAM_HMM_REMOTE."
 
 sync-data:
 	$(call require_mac)
