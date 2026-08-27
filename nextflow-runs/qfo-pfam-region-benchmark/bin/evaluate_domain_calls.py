@@ -36,6 +36,11 @@ import polars as pl
 # importable regardless of the working directory the task runs in.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cafa_metrics as cm  # noqa: E402
+# The Swiss-Prot FT vocabulary, imported rather than re-listed. A second copy of those
+# twelve-odd type names is a thing that drifts, and the failure would be silent: an FT type
+# added to the truth builder but missing here would make the feature_type axis null for the
+# whole run rather than raise.
+import build_swissprot_truth as sprot  # noqa: E402
 
 
 # Covariate axes the results get cut by. Continuous ones are binned; HGNC gene group is
@@ -46,6 +51,20 @@ import cafa_metrics as cm  # noqa: E402
 # below it. Bins are fixed rather than quantile-derived so a stratum means the same thing
 # in every species, which is the whole point of comparing across a divergence panel.
 IDENTITY_BINS = [0.0, 20.0, 30.0, 40.0, 60.0, 100.01]
+
+# Feature-length bins, in residues, half-open [lo, hi) on `domain_end - domain_start` --
+# the same length convention boundary_metrics already sums over, so the two agree.
+#
+# The unit is the ANNOTATION's own length, not the protein's. A 21-residue TRANSMEM helix
+# and a 400-residue kinase domain in the same protein are different measurement problems
+# for a k-mer method: at k=19 the helix contains three k-mers and the kinase 380, so an
+# alphabet that needs a long window to carry information cannot address the short feature
+# at all. Averaging the two hides the only gradient the reduced-alphabet question turns on.
+#
+# build_swissprot_truth widens point features by one residue so an interval exists at all,
+# which puts every point feature in the leading `1` bin on its own. That bin is excluded
+# from the boundary metrics -- see cafa_metrics.boundary_metrics(exclude_points=).
+FEATURE_LENGTH_BINS = [1, 2, 16, 31, 61, 121, 251]
 
 STRATA = {
     "plddt": ("mean_plddt", [0, 50, 70, 90, 100]),
@@ -58,6 +77,20 @@ STRATA = {
 # Cutting on every one of ~4200 HGNC groups would produce mostly single-protein strata
 # where no metric is stable. Only groups with at least this many query proteins are cut.
 MIN_STRATUM_PROTEINS = 30
+
+# Axes whose stratum vocabulary is fixed and biologically defined rather than data-derived,
+# so the noise floor above must not delete a cut for being rare. The floor exists to stop
+# ~4200 HGNC groups from producing mostly single-protein strata; it has nothing to protect
+# against here. `mhc` is 7 curated classes, `geneset` 6 curated sets, `identity` 6 fixed
+# bins, `feature_length_bin` 7 fixed bins, and `feature_type` the ~12-name Swiss-Prot FT
+# vocabulary -- where rarity is a property of the feature type itself, not a sampling
+# accident. ACT_SITE and DNA_BIND are small in every proteome that will ever be measured,
+# and dropping them would delete the short-feature end of the very gradient being tested.
+# Every row reports its own n_stratum_proteins and n_truth_instances either way.
+UNFLOORED_AXES = ("mhc", "geneset", "identity", "feature_length_bin", "feature_type")
+
+# The vocabulary attach_feature_type recognises, from the truth builder itself.
+FEATURE_TYPES = sprot.RANGE_FEATURES | sprot.POINT_FEATURES
 
 # Boolean covariate columns that each become their own stratum, so the 200-series' curated
 # gene sets are cut out of the box rather than reconstructed in a notebook.
@@ -618,6 +651,13 @@ def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
         )
         .rename({"score": "score_threshold"})
         .with_columns((pl.col("tp_calls") + pl.col("fp_calls")).alias("n_calls"))
+        # A threshold that retains zero SCOREABLE calls is not an operating point. It
+        # happens when the top-scoring block is entirely gray: tp_calls and fp_calls are
+        # both 0, so precision came out 0/0 = NaN -- and polars sorts NaN as the largest
+        # float, so `sort("f1", descending=True).head(1)` handed that row back as best_f1.
+        # The row carries no information either way (no TP means recall is 0 there), so it
+        # is dropped rather than papered over with a convention.
+        .filter(pl.col("n_calls") > 0)
     )
 
     return pts.with_columns(
@@ -741,26 +781,17 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     # Counts distinct true instances found, not calls: several regions hitting one domain
     # is one recovery, not many.
     #
-    # Intersected against the truth subset, which is load-bearing for any INSTANCE-level
-    # stratum. Strata are applied to calls by protein, but identity bins are a property of
-    # the individual domain: one protein can hold a 90%-identity domain and a 25%-identity
-    # one. Counting every TP call from that protein against the 25% bin's denominator
-    # produced recall above 1.0 (observed: 2.77). Restricting the numerator to instances
-    # in this cell makes numerator and denominator describe the same set.
-    if n_calls:
-        key = ["query_acc", "pfam_id", "true_start", "true_end"]
-        truth_keys = truth.select(
-            pl.col("accession").alias("query_acc"), "pfam_id",
-            pl.col("domain_start").alias("true_start"),
-            pl.col("domain_end").alias("true_end"),
-        ).unique()
-        found = (
-            calls.filter("is_tp").select(key).unique()
-            .join(truth_keys, on=key, how="inner")
-            .height
-        )
-    else:
-        found = 0
+    # No intersection against the truth subset here any more. It used to live in this
+    # function alone, which left operating_points -- and therefore the curve, auprc and
+    # best_f1 -- reading the unrestricted count. restrict_tp_to_cut now clears is_tp on any
+    # call whose instance is outside the cut before either consumer sees the table, so both
+    # read the same numerator. See its docstring for why recall could otherwise exceed 1.0.
+    found = (
+        calls.filter("is_tp").select(
+            "query_acc", "pfam_id", "true_start", "true_end"
+        ).unique().height
+        if n_calls else 0
+    )
     n_truth = truth.height
     n_reachable = reachable.height
 
@@ -850,6 +881,47 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
             (pl.col("best_pident") >= lo) & (pl.col("best_pident") < hi)
         ).then(pl.lit(f"{int(lo)}-{int(hi)}%"))
     return joined.with_columns(expr.otherwise(None).alias("stratum_identity"))
+
+
+def attach_feature_length(truth: pl.DataFrame) -> pl.DataFrame:
+    """Bin each truth interval by its own residue length, and keep the raw length.
+
+    `feature_length` rides along beside the bin because the quantity the reduced-alphabet
+    question is stated on is feature_length / ksize, not the bin label. A bin midpoint would
+    be a made-up number; the median of the instances actually in a cell is measured, and
+    score_one puts it on every metric row.
+    """
+    length = pl.col("domain_end") - pl.col("domain_start")
+    edges = FEATURE_LENGTH_BINS
+    expr = pl.when(length >= edges[-1]).then(pl.lit(f"{edges[-1]}+"))
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        expr = expr.when((length >= lo) & (length < hi)).then(
+            pl.lit(str(lo) if hi - lo == 1 else f"{lo}-{hi - 1}")
+        )
+    return truth.with_columns(
+        length.alias("feature_length"),
+        expr.otherwise(None).alias("stratum_feature_length_bin"),
+    )
+
+
+def attach_feature_type(truth: pl.DataFrame) -> pl.DataFrame:
+    """One stratum per Swiss-Prot feature type; null for every other truth set.
+
+    build_swissprot_truth puts the FT type (TRANSMEM, ACT_SITE, ...) in `pfam_id`, keeping
+    the column name for schema compatibility. For the Pfam and Pfam-N truth sets that same
+    column holds a Pfam accession, which carries no type variation at all -- every row is
+    the same kind of object -- and for M-CSA it holds an entry id. Cutting on it there would
+    reproduce the hgnc axis at ~19k strata of one.
+
+    Detected from the values rather than from the --truth-set name, so a truth set that
+    gains FT types later works without a second place to edit. Null, not "", so a
+    downstream group_by drops the axis instead of inventing a stratum named after nothing.
+    """
+    none = pl.lit(None, dtype=pl.String).alias("stratum_feature_type")
+    ids = set(truth["pfam_id"].unique().to_list())
+    if not ids or not ids <= FEATURE_TYPES:
+        return truth.with_columns(none)
+    return truth.with_columns(pl.col("pfam_id").alias("stratum_feature_type"))
 
 
 def attach_target_disorder(truth: pl.DataFrame,
@@ -963,10 +1035,7 @@ def strata_of(truth: pl.DataFrame) -> list[tuple[str, str]]:
     out = [("all", "all")]
     for col in (c for c in truth.columns if c.startswith("stratum_")):
         axis = col.removeprefix("stratum_")
-        # The curated sets are deliberately small -- 6 class I heavy chains, 6 IgSF decoys --
-        # and are the whole point of cutting on them, so the noise floor that protects the
-        # ~4200 HGNC groups must not delete them. Their n is reported per row either way.
-        floor = 1 if axis in ("mhc", "geneset", "identity") else MIN_STRATUM_PROTEINS
+        floor = 1 if axis in UNFLOORED_AXES else MIN_STRATUM_PROTEINS
         counts = (
             truth.filter(pl.col(col).is_not_null())
             .group_by(col)
@@ -978,8 +1047,36 @@ def strata_of(truth: pl.DataFrame) -> list[tuple[str, str]]:
     return out
 
 
-def subset(truth: pl.DataFrame, calls: pl.DataFrame, split: str,
-           axis: str, value: str) -> tuple[pl.DataFrame, pl.DataFrame]:
+def instance_level_axes(truth: pl.DataFrame) -> frozenset[str]:
+    """Which stratum axes can put two instances of ONE protein in different cuts.
+
+    Only those axes need restrict_tp_to_cut, and skipping the rest is not a weakening --
+    it is exact. subset() cuts calls by protein. If every row of a protein carries the same
+    value on an axis, then "the truth rows of these proteins" and "the truth rows of these
+    proteins in this stratum" are the same set, so no true positive can be orphaned and the
+    restriction is a no-op by construction.
+
+    n_unique counts null as its own value, which is what makes the test right rather than
+    nearly right: a protein carrying one DOMAIN and one unlabelled row scores 2 and is
+    correctly treated as instance-level, because subset() drops the unlabelled row from the
+    truth while keeping the protein's calls.
+
+    Worth the arithmetic. The restriction is a join, subset() runs once per
+    split x stratum x arm, and the hgnc axis alone is ~4200 strata -- so paying for it on
+    every axis would put a third join into the innermost loop of the whole sweep to fix
+    something only three axes can suffer from.
+    """
+    out = set()
+    for col in (c for c in truth.columns if c.startswith("stratum_")):
+        spread = truth.group_by("accession").agg(pl.col(col).n_unique().alias("n"))
+        if spread.height and int(spread["n"].max()) > 1:
+            out.add(col.removeprefix("stratum_"))
+    return frozenset(out)
+
+
+def subset(truth: pl.DataFrame, calls: pl.DataFrame, split: str, axis: str, value: str,
+           instance_axes: frozenset[str] = frozenset(),
+           ) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Restrict both the answer key and the calls to one split x stratum cell.
 
     Truth and calls must be cut the same way or the metrics are incoherent: keeping a
@@ -1003,10 +1100,61 @@ def subset(truth: pl.DataFrame, calls: pl.DataFrame, split: str,
         # into the held-out numbers.
         fams = t.select("pfam_id").unique()
         c = c.join(fams, on="pfam_id", how="inner")
-    return t, c
+    # Splits cannot orphan a true positive on their own: they cut truth AND calls by
+    # family, so a call matching an instance of an in-split family on an in-cut protein
+    # matches a row that survived both filters.
+    return t, (restrict_tp_to_cut(t, c) if axis in instance_axes else c)
 
 
-def score_one(args, truth, truth_lf, job):
+def restrict_tp_to_cut(truth: pl.DataFrame, calls: pl.DataFrame) -> pl.DataFrame:
+    """Re-judge each call against the truth instances that are actually inside this cut.
+
+    Strata are applied to calls by PROTEIN, but three axes are properties of the individual
+    annotation -- identity bin, feature length bin, feature type -- and one protein can
+    carry instances in several of them at once. A 90%-identity domain and a 25%-identity one
+    sit in the same protein; so do a 21-residue TRANSMEM and a 400-residue DOMAIN. A call
+    that correctly hit an instance OUTSIDE the cut was still counted as a true positive
+    inside it, against a denominator that never contained that instance.
+
+    compute_metrics used to intersect its own numerator for exactly this reason -- recall
+    above 1.0, observed at 2.77 -- but operating_points did not, so the curve, auprc and
+    best_f1 kept the inflated count. best_f1 is the headline number for the feature-length
+    axis, so the restriction has to happen once, here, where every consumer reads it.
+
+    An orphaned TP becomes GRAY -- unscoreable in this cut -- rather than a false positive.
+    It is not a wrong answer; it is a right answer about something this cut does not measure,
+    and charging it to precision would be the same error pointing the other way. `coverage`
+    reports the share, exactly as it does for every other gray call.
+
+    Called only for the axes instance_level_axes() identifies. On a protein-level axis it
+    would be a no-op -- every instance of an in-cut protein is in the cut, so every TP key
+    survives the join -- and proving that lets the innermost loop skip a join it does not
+    need on the ~4200-stratum hgnc axis.
+    """
+    if calls.height == 0 or "is_tp" not in calls.columns:
+        return calls
+    key = ["query_acc", "pfam_id", "true_start", "true_end"]
+    in_cut = (
+        truth.select(
+            pl.col("accession").alias("query_acc"), "pfam_id",
+            pl.col("domain_start").alias("true_start"),
+            pl.col("domain_end").alias("true_end"),
+        )
+        .unique()
+        .with_columns(pl.lit(True).alias("in_cut"))
+    )
+    # A non-TP call carries null true_start/true_end. polars does not match null keys in a
+    # join, so those rows come back with in_cut null -- which is why `orphan` is gated on
+    # is_tp rather than on in_cut alone.
+    out = calls.join(in_cut, on=key, how="left")
+    orphan = pl.col("is_tp") & pl.col("in_cut").is_null()
+    exprs = [(pl.col("is_tp") & ~orphan).alias("is_tp")]
+    if "is_gray" in calls.columns:
+        exprs.append((pl.col("is_gray") | orphan).alias("is_gray"))
+    return out.with_columns(exprs).drop("in_cut")
+
+
+def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
     """Score one tool's regions against the already-loaded truth for one species.
 
     truth and truth_lf are passed in rather than read here because they are shared across
@@ -1098,7 +1246,7 @@ def score_one(args, truth, truth_lf, job):
         if split != "all" and "split" not in truth.columns:
             continue
         for axis, value in strata_of(truth):
-            t_sub, c_sub = subset(truth, scored, split, axis, value)
+            t_sub, c_sub = subset(truth, scored, split, axis, value, instance_axes)
             if t_sub.height == 0:
                 continue
 
@@ -1115,7 +1263,20 @@ def score_one(args, truth, truth_lf, job):
             m.update(cm.domain_count_metrics(c_sub, t_sub))
             m.update(cm.sensitivity_to_first_fp(c_sub, t_sub))
             m.update(ident)
-            m.update({"split": split, "stratum_axis": axis, "stratum": value})
+            m.update({
+                "split": split, "stratum_axis": axis, "stratum": value,
+                # The floor is waived for five axes (UNFLOORED_AXES), so the n that would
+                # otherwise have been enforced has to be readable per row instead. Proteins
+                # AND instances, because the floor counts proteins while every rate on the
+                # row is per instance.
+                "n_stratum_proteins": t_sub["accession"].n_unique(),
+                # Measured, not a bin midpoint. The reduced-alphabet claim is stated on
+                # feature_length / ksize, and this is the numerator for this cell.
+                "median_feature_length": (
+                    float(t_sub["feature_length"].median())
+                    if "feature_length" in t_sub.columns and t_sub.height else None
+                ),
+            })
             rows.append(m)
 
             # Curves only for the ungrouped cut. One per split x stratum x combo would
@@ -1259,6 +1420,8 @@ def main():
     truth = attach_strata(truth, covariates,
                           keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
     truth = attach_identity(truth, identity)
+    truth = attach_feature_length(truth)
+    truth = attach_feature_type(truth)
 
     target_disorder = None
     if (args.target_disorder and args.target_disorder.exists()
@@ -1268,6 +1431,12 @@ def main():
         except Exception:
             target_disorder = None   # sentinel file when the arm is skipped
     truth = attach_target_disorder(truth, target_disorder)
+
+    # Once, not once per arm: the truth table is shared across every job in this task, so
+    # which axes are instance-level is a property of the answer key and not of the tool.
+    instance_axes = instance_level_axes(truth)
+    print(f"instance-level strata (TP restricted per cut): "
+          f"{', '.join(sorted(instance_axes)) or 'none'}", file=sys.stderr)
 
     # One job per (tool, variant) when batched, or the single --regions when not. Batching
     # exists because SLURM rate-limits submission: one task per (truth_set, species, tool,
@@ -1310,7 +1479,7 @@ def main():
     for i, job in enumerate(jobs, 1):
         tag = f"{job['tool']}/{job['variant']}" + (" [dedup]" if job["dedup"] else "")
         print(f"[{i}/{len(jobs)}] {tag}", file=sys.stderr)
-        score_one(args, truth, truth_lf, job)
+        score_one(args, truth, truth_lf, job, instance_axes)
 
 
 if __name__ == "__main__":

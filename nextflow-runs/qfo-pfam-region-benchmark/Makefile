@@ -217,6 +217,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
+        bpe-tokenizer hp-bpe-diagnostic \
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status \
         build-image-rannon-burstein push-image-rannon-burstein \
@@ -240,6 +241,8 @@ help:
 	@echo "  run-mini-local        Smoke test: mini set, ProstT5 arm off"
 	@echo "  multiqc-status        Show what the report would be built from"
 	@echo "  multiqc-local         Build the MultiQC report from a local run"
+	@echo "  bpe-tokenizer         Fetch the ProtBERTa BPE tokenizers from Zenodo (186 KB)"
+	@echo "  hp-bpe-diagnostic     Do ProtBERTa_2 token boundaries land on Pfam domains?"
 	@echo "  pull-report           Fetch the MultiQC report back from Sherlock"
 	@echo ""
 	@echo "  The local runs are wiring smoke tests. Anything that needs a model download,"
@@ -536,6 +539,7 @@ run-mhc-local:
 	    --annotations     $(MHC_DIR)/annotations \
 	    --structures      $(MHC_DIR)/structures \
 	    --outdir          $(MHC_DIR)/results \
+	    $(BPE_NF_ARG) \
 	    --target_species  mouse \
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       $(HGNC_FILE) \
@@ -553,6 +557,7 @@ run-mini-local:
 	    --annotations     $(MINI_DIR)/annotations \
 	    --structures      $(MINI_DIR)/structures \
 	    --outdir          $(MINI_DIR)/results \
+	    $(BPE_NF_ARG) \
 	    --target_species  $(MINI_TARGETS) \
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       $(HGNC_FILE) \
@@ -871,6 +876,55 @@ prostt5-weights:
 	@echo "if that worked, the data/prostt5/weights.old-* directories can be removed"
 
 
+## ---- reduced-alphabet information ceiling ----
+##
+## The BPE boundary diagnostic needs the tokenizers Rannon & Burstein released with
+## ProtBERTa. Zenodo record id, not the DOI string: the DOI resolves through a redirect
+## that the compute nodes cannot follow, and the record id is what the files endpoint keys
+## on. 186 KB, so this is a login-node download and not a job.
+##
+## The checksum is the one Zenodo reports for the record; the target refuses a mismatch
+## rather than handing a truncated archive to the diagnostic, which would silently produce
+## a shorter merge table and therefore longer tokens.
+BPE_ZENODO_RECORD := 18256943
+BPE_TARBALL       := data/protberta/ProtBERTa_tokenizers.tar.gz
+BPE_SHA256        := d594310f524c69f6dbf9d445d049d09cd0370af443a40abf600692bad2c542f6
+BPE_OUT           ?= data/protberta/hp_bpe_boundary.json
+
+# Appended to every launch target, but only once the tarball is actually on disk. Named
+# rather than left to NF_ARGS so that `make bpe-tokenizer` is the whole opt-in: a flag that
+# has to be retyped on every run target is a flag that gets left off the run that matters.
+# Evaluated at launch time via $(wildcard), so downloading the tokenizer between two runs
+# turns the arm on without editing anything.
+#
+# ../data because the run targets launch nextflow from run/, and data/ is gitignored and
+# lives beside main.nf.
+BPE_NF_ARG = $(if $(wildcard $(BPE_TARBALL)),--bpe_tokenizer ../$(BPE_TARBALL),)
+
+# Runs on the Mac or on a login node -- deliberately not guarded by require_cluster, since
+# the diagnostic is meant to be run before any cluster time is committed.
+bpe-tokenizer:
+	@mkdir -p $(dir $(BPE_TARBALL))
+	@if [ -s "$(BPE_TARBALL)" ]; then echo "have $(BPE_TARBALL)"; else \
+	  curl -fL --retry 3 --retry-delay 5 \
+	    "https://zenodo.org/records/$(BPE_ZENODO_RECORD)/files/ProtBERTa_tokenizers.tar.gz?download=1" \
+	    -o "$(BPE_TARBALL)"; \
+	fi
+	@echo "$(BPE_SHA256)  $(BPE_TARBALL)" | shasum -a 256 -c - || \
+	  { echo "checksum mismatch; delete $(BPE_TARBALL) and re-run"; exit 1; }
+
+# The go/no-go measurement, before any compute is committed. ~30 s on one core at the
+# default --max-proteins; the figure needs matplotlib, which the Mac env has and the
+# pipeline container does not.
+hp-bpe-diagnostic: bpe-tokenizer
+	$(call require_mac)
+	$(PYTHON) bin/hp_bpe_boundary_diagnostic.py \
+	  --fasta       $(QFO_DIR)/Eukaryota/UP000005640_9606.fasta \
+	  --annotations $(ANNOTATIONS) \
+	  --tokenizer   $(BPE_TARBALL) \
+	  --out         $(BPE_OUT) \
+	  --figure      $(BPE_OUT:.json=.png)
+
 # Pfam-N truth: the "Pfam-A HMMs missed these" labels, streamed from EBI and filtered to
 # our accessions. ~17.4 GB crosses the wire and nothing is stored; expect 30-60 min.
 # Login node, because compute nodes here have no outbound internet.
@@ -938,7 +992,7 @@ define launch
 	mkdir -p run
 	cd run && \
 	  ml load nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(NF_ARGS) \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
 	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --qfo_dir     ../data/qfo \
 	    --annotations ../data/annotations \
@@ -1099,6 +1153,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	    --annotations     ../data/midi/annotations \
 	    --structures      ../data/midi/structures \
 	    --outdir          $(MIDI_OUTDIR) \
+	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
 	    --target_species  $(MIDI_TARGETS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
@@ -1211,6 +1266,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	    --annotations     ../data/mini/annotations \
 	    --structures      ../data/mini/structures \
 	    --outdir          ../data/mini/results \
+    $(BPE_NF_ARG) \
 	    --target_species  $(MINI_TARGETS) \
 	    --kmerseek_combos $(MINI_COMBOS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \

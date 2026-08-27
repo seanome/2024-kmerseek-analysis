@@ -625,6 +625,7 @@ averaged across the two has no interpretation. Override with
 | Divergence | Fmax and reachable recall against divergence time |
 | Recall ceiling per species | how many human families the target proteome even has |
 | Alphabet x ksize | Fmax heatmap per low-complexity arm, plus a per-alphabet bar view of the toggle |
+| Reduced-alphabet information ceiling | best F1 against feature length / k per HP alphabet; alphabet x Swiss-Prot feature type, with its coverage twin; BPE token boundaries against domain boundaries |
 | Gray-zone accounting | true / false / unscoreable calls per tool |
 | Run totals and resources | CPU-hours, task run times, peak RSS against requested, efficiency, I/O, task outcomes |
 
@@ -636,6 +637,76 @@ Sections are written by `bin/build_multiqc_inputs.py` as one `*_mqc.json` each. 
 title, section order and plot limits are the only hand-edited part, in
 `assets/multiqc_config.yaml`. To add a section, write another function that calls
 `write_section()` and add its id to that file's `report_section_order`.
+
+#### Reduced-alphabet information ceiling
+
+Three panels under one parent, all rebuildable by `make multiqc` from published results
+with no search re-run.
+
+1. **Feature length against k.** `best_f1` against `median_feature_length / ksize` on a
+   log2 grid, one line per HP alphabet, with coverage as a switchable second dataset so no
+   number is read without knowing what share of its calls could be judged. 1.0 on the x
+   axis is a feature exactly one k-mer long.
+2. **Feature type.** Alphabet x Swiss-Prot FT type, coarsest alphabet at the top and
+   shortest median feature on the left, plus an identical grid showing coverage. Swiss-Prot
+   only: the other truth sets carry no feature types, so the axis is null there.
+3. **BPE token boundaries.** How often a ProtBERTa_2 token boundary lands exactly on a Pfam
+   domain boundary, over the same rate on length- and composition-matched shuffled
+   sequences. Written by `bin/hp_bpe_boundary_diagnostic.py`, which is run by hand -- see
+   below -- so the panel is absent, not empty, when it has not been.
+
+Why these exist: Rannon & Burstein (bioRxiv 2026.02.08.701987v2, doi
+10.64898/2026.02.08.701987) trained pLMs on reduced alphabets and found their 2-letter
+model worst on signal peptides (ROC-AUC 0.75, PR-AUC 0.47), nearly lossless on solubility
+(relative F1 ~0.97) and strong on enzyme detection (~0.90). Signal peptides are ~20
+residues; solubility and enzyme class are whole-protein properties. If that is one
+feature-length gradient rather than three unrelated task results, their negative result is
+the low-k arm of this sweep measured independently by another lab. These panels put both
+gradients in domain units so that comparison is a measurement rather than an analogy. No
+expected ordering is encoded anywhere in the code.
+
+#### The BPE boundary diagnostic
+
+```
+make bpe-tokenizer        # 186 KB from Zenodo doi 10.5281/zenodo.18256943, checksum-verified
+make hp-bpe-diagnostic    # ~30 s of CPU; writes data/protberta/hp_bpe_boundary.{json,png}
+```
+
+Once the tarball is on disk, every Sherlock run target passes `--bpe_tokenizer`
+automatically (`BPE_NF_ARG` in the Makefile), so `make bpe-tokenizer` is the whole opt-in
+and there is no flag to remember on the run that matters.
+
+The BPE application is hand-written -- the merge table is a plain `vocab.json` /
+`merges.txt` pair, and pulling in `tokenizers` would mean a new container for a script that
+otherwise needs nothing. `--self-test` checks it against a textbook reference
+implementation on 509 sequences including homopolymer runs, which is where a heap-ordered
+merge and a left-to-right sweep can disagree:
+
+```
+python3 bin/hp_bpe_boundary_diagnostic.py --tokenizer data/protberta/ProtBERTa_tokenizers.tar.gz --self-test
+```
+
+Runs on the Mac or a login node, never on a compute node -- the tokenizer is a download and
+compute nodes have no outbound internet. To fold the result into a pipeline run instead,
+pass `--bpe_tokenizer ../data/protberta/ProtBERTa_tokenizers.tar.gz`; the `hpBpeBoundary`
+process publishes the same JSON to `<outdir>/diagnostics/` and the `report` entry picks it
+up from there on any later rebuild.
+
+Their split, read out of `burstein-lab/BioTokenizers`
+`data_processing/get_encoded_dataset.py` (`HYDROPHILIC_PHOBIC`), is
+`S T N K E Q H D R` hydrophilic (plus the ambiguity codes `Z` and `B`) against
+`A G I L M V P F W C Y` hydrophobic (plus `J`). Over the 20 canonical residues that is not
+merely close to `hp_lehninger_c_nonpolar2` -- it is **identical** to it, C and G both
+hydrophobic. The only difference is the ambiguity codes, which they map and none of our
+alphabets define. The diagnostic prints the per-residue disagreement against every one of
+our alphabets at run time rather than trusting this paragraph.
+
+What it measures is segmentation agreement, not end-to-end performance. A tokenizer whose
+boundaries never coincide with domain boundaries can still support a model that finds
+domains, and one whose boundaries agree perfectly can still be beaten by a k-mer method.
+`hp_random_control2` -- a random 10/10 split with the same class balance -- is in the
+figure for that reason: a bar not clearly above it is measuring the autocorrelation of any
+two-letter string rather than hydrophobicity.
 
 Throughput is measured from the trace: query proteins divided by each search task's wall
 time, median over target species. Indexing is inside the measurement for every arm,
@@ -684,6 +755,18 @@ it is not the CAFA quantity. Do not describe these as information-accretion weig
 `ndo` is the residue-level normalized overlap CASP's NDO score is built from, not CASP's
 full scoring matrix. `dbd` is reported over correct calls only -- the distance from a
 wrong domain to a right one is not a boundary measurement.
+
+Point features are excluded from every column in this table, and `n_point_instances_excluded`
+records how many. A Swiss-Prot `ACT_SITE` or `BINDING` residue is a single position that
+`build_swissprot_truth.py` widens by one, and an M-CSA catalytic residue is widened by a
+window, purely so an interval exists to score at all. There is no boundary to be right or
+wrong about at that length, so including them measured the widening rather than the
+prediction. Both sides are cut -- the truth rows and the calls that matched them -- so
+numerator and denominator keep describing the same set. The Pfam and Pfam-N truth sets have
+no `is_point` column and are untouched. This changed the Swiss-Prot and M-CSA boundary
+numbers when it landed; every M-CSA row is point features, so that arm now reports no
+boundary metrics at all, which is what `build_mcsa_truth.py`'s own docstring already said
+should happen.
 
 ### Threshold-based and threshold-free
 
@@ -853,12 +936,52 @@ Every row also carries `stratum_axis` and `stratum`, cutting on the same axes th
 | `plddt` | mean pLDDT, bins 0-50/50-70/70-90/90-100 | rises to ~full once `make fetch-structures` completes |
 | `disorder` | fraction of residues with pLDDT < 50 | same as pLDDT |
 | `omega` | dN/dS from the human-mouse-dnds-omega pipeline | **1,289 only** |
+| `feature_length_bin` | the truth interval's own residue length | every instance, every truth set |
+| `feature_type` | Swiss-Prot FT type | Swiss-Prot truth only; **null** elsewhere |
 
 `geneset` carries the 200-series' curated sets: `mhc_class_i_heavy` (6),
 `antiviral_restriction_factor` (21), `igsf_decoy` (6), `fast_evolving_family` (462),
 `olfactory_receptor`, `cytochrome_p450_2_3`. The MIN_STRATUM_PROTEINS floor of 30 does not
-apply to `mhc` or `geneset` -- those sets are small on purpose and are the point of cutting
-on them. Every row reports its own n.
+apply to `mhc`, `geneset`, `identity`, `feature_length_bin` or `feature_type` -- those
+vocabularies are fixed and biologically defined rather than data-derived, and the floor
+exists to stop ~4,200 HGNC groups from producing single-protein strata, which is not a
+problem any of them has. `ACT_SITE` and `DNA_BIND` are small in every proteome that will
+ever be measured; dropping them would delete the short-feature end of the gradient
+`feature_length_bin` exists to measure. Every row reports its own `n_stratum_proteins` and
+`n_truth_instances`.
+
+#### `feature_length_bin` and `feature_type`
+
+`feature_length_bin` bins each truth interval by its own residue length --
+`1` (point features), `2-15`, `16-30`, `31-60`, `61-120`, `121-250`, `251+` -- on
+`domain_end - domain_start`, the same length convention the boundary metrics sum over. The
+unit is the annotation, not the protein: a 21-residue TRANSMEM helix and a 400-residue
+kinase domain in the same protein are different measurement problems for a k-mer method,
+and at k=19 the first admits three k-mers while the second admits 380.
+
+The quantity to read is `best_f1` against **`median_feature_length / ksize`**, not against
+raw length. Every method finds short features less reliably; the claim specific to a coarse
+alphabet is that it needs a long window, so the axis is how many k-mers the feature can
+hold. `median_feature_length` is on every metric row and is measured over the instances in
+that cell, never a bin midpoint.
+
+`feature_type` is one stratum per Swiss-Prot FT type -- `ACT_SITE`, `BINDING`, `DNA_BIND`,
+`MOTIF`, `REGION`, `TRANSMEM`, `DOMAIN`, `REPEAT`, `ZN_FING`, `COILED`, `SITE`,
+`INTRAMEM`. The Swiss-Prot truth set puts the FT type in the `pfam_id` column, keeping the
+name for schema compatibility. For Pfam and Pfam-N that column holds a family accession
+with no type variation to cut on, and for M-CSA an entry id, so the axis is **null** on
+those sets rather than empty-stringed -- null drops the axis, an empty string would invent
+a stratum named after nothing. The vocabulary is imported from `build_swissprot_truth.py`
+rather than re-listed, so the two cannot drift.
+
+Both axes are **instance-level**, which is load-bearing. Strata are applied to calls by
+protein, but one protein can carry a 90%-identity domain and a 25%-identity one, or a
+TRANSMEM and a DOMAIN. `restrict_tp_to_cut()` in `evaluate_domain_calls.py` clears `is_tp`
+on any call whose matched instance is outside the cut before either `compute_metrics` or
+`operating_points` sees the table, and marks it gray rather than a false positive -- it is a
+right answer about something the cut does not measure. Without that, `recall_reachable`
+exceeds 1.0 (2.11 observed on the MHC smoke set) and `best_f1` is computed from an inflated
+recall. `coverage` reports the share, as it does for every other gray call.
 
 Two things carried over from the notebooks that are easy to lose:
 
