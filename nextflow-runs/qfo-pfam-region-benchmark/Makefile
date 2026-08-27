@@ -29,6 +29,25 @@ IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
 #
 # The local run targets already did this with kmerseek-region:local. This is the same move
 # for the cluster.
+#
+# A SECOND kmerseek image, for the two alphabets the running sweep's binary does not have.
+# polarity4 and funcgroups8 landed in kmerseek dd630a8 (2026-08-25); IMAGE_TAG above was
+# built from 3fdfd51a (2026-08-24), which predates it.
+#
+# The obvious move -- bump IMAGE_TAG and rebuild -- is the one to avoid. The container is
+# part of every kmerseek task's hash, so a new tag re-pulls the image on every node and
+# rehashes the whole matrix, and a sweep sitting on 2507 cached indexes and 1700 cached
+# searches would resume by re-running all of it. A second tag leaves that cache alone: only
+# `run-rannon-burstein` passes it, and only that run's tasks hash against it.
+#
+# Both images are built from the same KMERSEEK_SRC worktree, so this tag is only meaningful
+# once that worktree is at a commit containing dd630a8. `make build-image-rannon-burstein`
+# checks that rather than trusting it.
+RB_IMAGE_TAG    ?= 2026-08-27-rannon-burstein
+RB_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(RB_IMAGE_TAG)
+# The kmerseek commit that added polarity4 and funcgroups8.
+RB_REQUIRED_SHA ?= dd630a8
+
 METAPREDICT_TAG    ?= 2026-08-27
 METAPREDICT_REMOTE := docker.io/olgabot/metapredict:$(METAPREDICT_TAG)
 FOLDDISCO_TAG    ?= 2026-08-20-noentrypoint
@@ -144,11 +163,28 @@ outdir_abs = $(if $(filter /%,$(1)),$(1),$(abspath run-report/$(1)))
 MULTIQC_OUTDIR_ABS       := $(call outdir_abs,$(MULTIQC_OUTDIR))
 MULTIQC_OUTDIR_LOCAL_ABS := $(call outdir_abs,$(MULTIQC_OUTDIR_LOCAL))
 
+# The same resolution for any other launch directory. outdir_abs hard-codes run-report/,
+# which is right for the two multiqc targets and wrong for everything else: every run
+# target's paths are written against ITS launch directory, and make's own cwd is the
+# pipeline directory one level up. `--report_outdirs ../data/midi/results` passed through
+# $(abspath) without this correction resolves one directory too high and silently names a
+# path that does not exist.
+#   $(1) launch directory the path was written against
+#   $(2) the path
+rel_to_launch = $(if $(filter /%,$(2)),$(2),$(abspath $(1)/$(2)))
+
 # Every container the pipeline can pull, read straight out of main.nf plus the kmerseek
 # image, so this list cannot drift from what the processes actually declare.
 ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" main.nf | sort -u) \
                   docker.io/olgabot/kmerseek:$(IMAGE_TAG) $(FOLDDISCO_REMOTE) \
                   $(METAPREDICT_REMOTE)
+
+# What `prefetch-images` actually pulls. Indirection so a run target that needs an image
+# outside the standard set can add it with a target-specific override, which make also
+# applies to the target's prerequisites -- see run-rannon-burstein. RB_IMAGE_REMOTE is
+# deliberately NOT in ALL_CONTAINERS: that would make every `make run` pull and squashfs a
+# second multi-GB image for arms it never executes.
+PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
 
 .PHONY: bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image \
@@ -164,6 +200,8 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
         pfamn-download pfamn-truth mcsa-truth help \
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status \
+        build-image-rannon-burstein push-image-rannon-burstein \
+        run-rannon-burstein multiqc-rannon-burstein \
         pull-report pull-report-mini pull-report-midi
 
 help:
@@ -171,6 +209,10 @@ help:
 	@echo "  build-image           Build the amd64 Kmerseek image for Sherlock"
 	@echo "  build-image-local     Build the native Kmerseek image for local Docker"
 	@echo "  push-image            Push the Kmerseek image to Docker Hub"
+	@echo "  push-image-rannon-burstein"
+	@echo "                        Push a SECOND Kmerseek image carrying polarity4 and"
+	@echo "                        funcgroups8, under its own tag so the running sweep's"
+	@echo "                        cache is untouched"
 	@echo "  push-folddisco-image  Push the FoldDisco image to Docker Hub"
 	@echo "  sync-pipeline         Push the current branch and update Sherlock"
 	@echo "  sync-data             Copy benchmark inputs to Sherlock"
@@ -195,7 +237,11 @@ help:
 	@echo "  gpu-benchmark        Time foldseek+mmseqs search on CPU and GPU, one session"
 	@echo "  gpu-benchmark-report Re-read a gpu-benchmark trace into queries/s"
 	@echo "  run                  Run the complete benchmark"
+	@echo "  run-rannon-burstein  polarity4 + funcgroups8 only, midi set, kmerseek only"
 	@echo "  multiqc              Rebuild the MultiQC report from published results"
+	@echo "  multiqc-rannon-burstein"
+	@echo "                       One report over run-midi AND run-rannon-burstein, so the"
+	@echo "                       two new alphabets appear next to every other tool"
 	@echo "  multiqc-status       Show what that report would be built from"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
@@ -326,6 +372,38 @@ build-image:
 	  --build-arg GIT_SHA=$(KMERSEEK_SHA) \
 	  -f Dockerfile \
 	  $(KMERSEEK_SRC)
+
+# The image carrying polarity4 and funcgroups8. Same Dockerfile and same source worktree as
+# build-image; the only difference is the tag it gets pushed under, which is the whole point
+# -- see the RB_IMAGE_TAG note at the top.
+#
+# The ancestry check is here rather than left to the run. KMERSEEK_SRC is a live worktree,
+# so nothing stops it sitting on a commit older than dd630a8, and an image built from one
+# would push, prefetch and launch perfectly happily before failing on the first task with
+# "unexpected argument '--polarity4'" -- after the queue wait. `git merge-base
+# --is-ancestor` answers the question in a second here instead.
+build-image-rannon-burstein:
+	$(call require_mac)
+	@if ! git -C $(KMERSEEK_SRC) merge-base --is-ancestor $(RB_REQUIRED_SHA) HEAD; then \
+	  echo ""; \
+	  echo "  $(KMERSEEK_SRC) is at $(KMERSEEK_SHA),"; \
+	  echo "  which does not contain $(RB_REQUIRED_SHA) -- the commit that added polarity4"; \
+	  echo "  and funcgroups8. An image built from it would not have the alphabets."; \
+	  echo ""; \
+	  echo "    git -C $(KMERSEEK_SRC) log --oneline -5"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+	@echo "building $(RB_IMAGE_REMOTE) from kmerseek $(KMERSEEK_SHA)"
+	docker build --platform $(DOCKER_PLATFORM) -t kmerseek-region:rannon-burstein \
+	  --build-arg GIT_SHA=$(KMERSEEK_SHA) \
+	  -f Dockerfile \
+	  $(KMERSEEK_SRC)
+
+push-image-rannon-burstein: build-image-rannon-burstein
+	$(call require_mac)
+	docker tag kmerseek-region:rannon-burstein $(RB_IMAGE_REMOTE)
+	docker push $(RB_IMAGE_REMOTE)
 
 # Native-arch build, for running the mini set on this Mac. The amd64 image above cannot
 # execute here: polars requires AVX2, Apple Silicon emulation does not provide it, and the
@@ -611,7 +689,7 @@ prefetch-images:
 	@set -e; \
 	export APPTAINER_CACHEDIR=$${SCRATCH}/apptainer-cache; \
 	export APPTAINER_TMPDIR=$${SCRATCH}/apptainer-tmp; \
-	for ref in $(ALL_CONTAINERS); do \
+	for ref in $(PREFETCH_CONTAINERS); do \
 	  name=$$(echo "$$ref" | sed -e 's|^docker://||' -e 's|/|-|g' -e 's|:|-|g'); \
 	  out="$${SCRATCH}/apptainer-cache/$${name}.img"; \
 	  if [ -s "$$out" ]; then echo "have  $$name"; continue; fi; \
@@ -931,6 +1009,12 @@ midi-testset-sherlock:
 # --db_cache points at the full run's outdir so the target-side databases this builds are
 # the ones `make run` will reuse. Results stay in data/midi/results -- same target files,
 # different query set, so the calls and metrics must not land on top of the full run's.
+#
+# A variable rather than a literal because multiqc-rannon-burstein has to name the same
+# directory to read this run's scored arms back. Written relative to run-midi/, like every
+# other path on this target; $(call rel_to_launch,run-midi,...) is what makes it absolute.
+MIDI_OUTDIR ?= ../data/midi/results
+
 run-midi: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-midi
@@ -941,7 +1025,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	    --qfo_dir         ../data/midi/qfo \
 	    --annotations     ../data/midi/annotations \
 	    --structures      ../data/midi/structures \
-	    --outdir          ../data/midi/results \
+	    --outdir          $(MIDI_OUTDIR) \
 	    --db_cache        ../results \
 	    --target_species  $(MIDI_TARGETS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
@@ -949,6 +1033,69 @@ run-midi: prefetch-images midi-testset-sherlock
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir       ../data/pfamn \
 	    --prostt5_weights ../data/prostt5/weights \
+	    $(NF_ARGS)
+
+# ---- polarity4 and funcgroups8 (Rannon & Burstein 2026) --------------------
+#
+# The two alphabets kmerseek gained in dd630a8, on the same midi query set as run-midi so
+# their numbers are comparable to everything that run has already scored. Four things keep
+# this off the main sweep's toes, and all four matter:
+#
+#   --kmerseek_image $(RB_IMAGE_REMOTE)   the only image with the alphabets. Kept out of
+#       IMAGE_TAG so the running sweep's 2507 indexes and 1700 searches do not rehash.
+#   RB_OUTDIR, its own results directory   scoreDomainCalls publishes per-arm parquets and
+#       aggregateMetrics publishes all_domain_metrics.parquet. Sharing run-midi's outdir
+#       would have this run's aggregate, which covers two alphabets and no baselines,
+#       replace the one describing the whole sweep. The combined view comes from
+#       `multiqc-rannon-burstein` below, which reads both directories.
+#   RB_RUN_DIR, its own launch directory   Nextflow truncates its trace as a run starts, so
+#       launching from run-midi/ would destroy the trace `make multiqc` reads. Same reason
+#       gpu-benchmark has run-gpu-bench/.
+#   --skip_baselines true   the baselines are a property of the query set and the target
+#       proteomes, not of the alphabet. run-midi has already scored them; re-running
+#       phmmer, jackhmmer, mmseqs2, foldseek, reseek, folddisco and ProstT5 over nine
+#       proteomes would cost days and produce the same numbers.
+#
+# --run_hmmscan false for the same reason, and for one more. The Pfam annotation ceiling is
+# a property of Pfam-A, so this run would spend hours on a whole-proteome hmmscan to
+# reproduce run-midi's number exactly. It also defaults to ON whenever the Pfam HMM file is
+# present, which it is on Sherlock, so it has to be turned off explicitly. And
+# scoreHmmscanCeiling writes a FIXED filename, hmmscan.direct.all.metrics.parquet, into
+# <outdir>/metrics -- two runs producing it means the same arm in both directories, which
+# the combined report refuses rather than counting twice.
+#
+# --db_cache stays on ../results. The kmerseek index store is keyed by
+# <species>.<label>.k<ksize>.lc<lowcomp>, and polarity4/funcgroups8 are new labels, so
+# these runs add entries beside the existing ones rather than colliding with them.
+#
+# 2 alphabets x 10 ksizes x 2 low-complexity settings x 9 targets = 360 searches, plus the
+# same number of index builds. The ksize ranges are in main.nf's EXTRA_ENCODINGS, derived
+# from measured bits/symbol; --kmerseek_encodings names the alphabets and picks them up.
+RB_RUN_DIR ?= run-rannon-burstein
+RB_OUTDIR  ?= ../data/midi/results-rannon-burstein
+RB_ENCODINGS ?= polarity4,funcgroups8
+
+run-rannon-burstein: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-rannon-burstein: prefetch-images midi-testset-sherlock
+	$(call require_cluster)
+	mkdir -p $(RB_RUN_DIR)
+	cd $(RB_RUN_DIR) && \
+	  ml load nextflow && \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image      $(RB_IMAGE_REMOTE) \
+	    --kmerseek_encodings  $(RB_ENCODINGS) \
+	    --skip_baselines      true \
+	    --run_hmmscan         false \
+	    --qfo_dir             ../data/midi/qfo \
+	    --annotations         ../data/midi/annotations \
+	    --structures          ../data/midi/structures \
+	    --outdir              $(RB_OUTDIR) \
+	    --db_cache            ../results \
+	    --target_species      $(MIDI_TARGETS) \
+	    --hgnc_file           ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file          ../data/covariates/omega_results.tsv \
+	    --swissprot_dat       ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir           ../data/pfamn \
 	    $(NF_ARGS)
 
 # Same code path as the real run, scoped down. Do this before `make run`.
@@ -1011,6 +1158,62 @@ multiqc: multiqc-preflight prefetch-images
 	    --outdir     $(MULTIQC_OUTDIR) \
 	    --report_trace $(abspath $(TRACE)) \
 	    --qfo_dir    ../data/qfo \
+	    $(NF_ARGS)
+
+# ---- one report over run-midi AND run-rannon-burstein ---------------------
+#
+# The point of running the new alphabets at all is seeing them next to the baselines and
+# the seventeen alphabets run-midi already scored, and neither run's
+# all_domain_metrics.parquet has both. --report_outdirs re-aggregates the per-arm parquets
+# of both -- see the note on that param in main.nf for why the alternatives do not work --
+# and publishes the combined aggregate plus the HTML into RB_COMBINED_OUTDIR, which is a
+# THIRD directory so neither source run's own aggregate is touched.
+#
+# The trace is the one thing that cannot simply be unioned by Nextflow, because the report
+# reads a single file. Concatenating them here is safe: both runs write the field list from
+# nextflow.config's `trace` block, so the headers are identical and only the second file's
+# needs dropping. Without this the resource sections would describe one of the two runs
+# while the accuracy sections described both, which is the kind of mismatch nobody notices
+# in an HTML report.
+#
+# The concatenated file lands in RB_RUN_DIR rather than run/ or run-midi/: those are launch
+# directories with live trace observers, and a report run pointed at a file inside one is
+# how the trace-truncation bug happened in the first place.
+RB_COMBINED_OUTDIR ?= ../data/midi/results-combined
+RB_TRACE           ?= $(shell ls -t $(RB_RUN_DIR)/*.trace.txt 2>/dev/null | head -1)
+MIDI_TRACE         ?= $(shell ls -t run-midi/*.trace.txt 2>/dev/null | head -1)
+RB_COMBINED_TRACE  := $(RB_RUN_DIR)/combined.trace.txt
+
+multiqc-rannon-burstein: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+multiqc-rannon-burstein: prefetch-images
+	$(call require_cluster)
+	@for t in "$(MIDI_TRACE)" "$(RB_TRACE)"; do \
+	  if [ -z "$$t" ] || [ ! -f "$$t" ]; then \
+	    echo ""; \
+	    echo "  Missing a trace file."; \
+	    echo "    run-midi:            $(if $(MIDI_TRACE),$(MIDI_TRACE),NONE under run-midi/)"; \
+	    echo "    run-rannon-burstein: $(if $(RB_TRACE),$(RB_TRACE),NONE under $(RB_RUN_DIR)/)"; \
+	    echo ""; \
+	    echo "  Both runs have to have finished. Name them explicitly if the newest file"; \
+	    echo "  under either launch directory is not the one you want:"; \
+	    echo ""; \
+	    echo "    make multiqc-rannon-burstein MIDI_TRACE=<path> RB_TRACE=<path>"; \
+	    echo ""; \
+	    exit 1; \
+	  fi; \
+	done
+	@echo "combining traces: $(MIDI_TRACE) + $(RB_TRACE)"
+	@cp -f $(MIDI_TRACE) $(RB_COMBINED_TRACE)
+	@tail -n +2 $(RB_TRACE) >> $(RB_COMBINED_TRACE)
+	mkdir -p run-report-rannon-burstein
+	cd run-report-rannon-burstein && \
+	  ml load nextflow && \
+	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
+	    --kmerseek_image  $(RB_IMAGE_REMOTE) \
+	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)),$(call rel_to_launch,$(RB_RUN_DIR),$(RB_OUTDIR)) \
+	    --outdir          $(RB_COMBINED_OUTDIR) \
+	    --report_trace    $(abspath $(RB_COMBINED_TRACE)) \
+	    --qfo_dir         ../data/midi/qfo \
 	    $(NF_ARGS)
 
 status:

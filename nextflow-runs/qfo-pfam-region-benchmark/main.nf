@@ -116,16 +116,29 @@ params.hhblits_db    = null
 // measured output volume at k=18 was already 838 MB compressed for the *smallest*
 // species. k=15-17 is a separate, deliberate experiment, not part of this sweep.
 // Scope a run down without editing the matrix, for smoke tests on a mini set.
-//   --target_species   comma-separated TARGET labels, e.g. "yeast,ecoli"
-//   --kmerseek_combos  comma-separated encoding:ksize, e.g. "protein20:10,gbmr4:14"
-// Both default to null, meaning the full sweep.
+//   --target_species     comma-separated TARGET labels, e.g. "yeast,ecoli"
+//   --kmerseek_encodings comma-separated alphabet names, e.g. "gbmr4,wwmj5"
+//   --kmerseek_combos    comma-separated encoding:ksize, e.g. "protein20:10,gbmr4:14"
+// All three default to null, meaning the full sweep.
+//
+// --kmerseek_encodings and --kmerseek_combos differ in what they keep. Naming encodings
+// keeps each one's entropy-derived kmin..kmax from the matrix below, so a run scoped to a
+// couple of alphabets still sweeps them over the same ksize range the full sweep would
+// have used. Naming combos replaces the matrix outright, ksizes included, and is for
+// picking out individual cells. Combos wins if both are given.
+//
+// The reason to have the encoding-level flag at all: an alphabet's ksize range is derived
+// from its measured bits/symbol, and that derivation belongs in one place. A Makefile
+// target that spelled out twenty encoding:ksize pairs would be a second copy of the
+// entropy table, and a copy that nothing checks against the original.
 //
 // Human is always the query and never appears in the species list. Every search is human
 // against one target proteome, so --target_species yeast,ecoli means two searches:
 // human_vs_yeast and human_vs_ecoli. The old --species spelling still works.
-params.target_species  = null
-params.species         = null
-params.kmerseek_combos = null
+params.target_species     = null
+params.species            = null
+params.kmerseek_encodings = null
+params.kmerseek_combos    = null
 
 // Low-complexity k-mer removal, swept as a toggle rather than fixed: every alphabet and
 // ksize runs both with and without it, doubling the search count. Whether dropping
@@ -179,6 +192,47 @@ def ALL_ENCODINGS = [
     ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', 19, 30],   // 0.937 bits/sym, 12 ksizes
 ]
 
+// Alphabets that exist in kmerseek but are deliberately NOT in the default sweep.
+//
+// polarity4 and funcgroups8 arrived in kmerseek dd630a8 (2026-08-25), from Rannon &
+// Burstein (2026), which credits funcgroups8 to Jain, Jain & Jain (2014) and polarity4 to
+// Ball, Hill & Scott (2014). The sweep that is running was built from 3fdfd51a
+// (2026-08-24) and its binary does not have them, so they need a newer image.
+//
+// They are here rather than in ALL_ENCODINGS because ALL_ENCODINGS is what a bare
+// `nextflow run` expands, and the in-flight sweep resumes against it. Adding two rows
+// there would silently widen that sweep's matrix by 40 combos the moment anyone
+// `-resume`d it, and every one of those tasks would run under the OLD image and die on an
+// unrecognised --polarity4 flag. Splitting the list means the default matrix is byte-for-
+// byte what it was, so no cached index or search rehashes, and the new alphabets are
+// reachable only by asking for them: --kmerseek_encodings polarity4,funcgroups8.
+//
+// Both ksize ranges come from the same measurement as every row above -- amino-acid
+// background frequencies grouped as kmerseek groups them, kmin = round(17.9 / bits) --
+// and both are cases where class count would have given the wrong answer:
+//
+//   polarity4   GAVLIFWMP / STCYNQ / DE / HKR         1.787 bits/sym, not log2(4) = 2.0
+//   funcgroups8 GVALI / ST / CM / FY / WHP / NQ / DE / KR
+//                                                     2.727 bits/sym, not log2(8) = 3.0
+//
+// polarity4 carries 1.787 against gbmr4's 1.522 at the same four classes, because it puts
+// its split on charge with G and P folded into the hydrophobic class, where gbmr4 keeps G
+// and P each alone and so spends two of its four classes on 12.7% of residues. That 0.265
+// bits/symbol is the difference between k=10 and k=12 at the floor.
+//
+// funcgroups8 lands ABOVE dayhoff6 (2.278) and gbmr7 (1.976), which is what eight
+// reasonably balanced classes buys, and its 6.56 rounds up to 7 rather than down to 6:
+// k=6 would be 16.4 bits, under the 17.9-bit floor, which is the regime that OOM-killed
+// protein20 at k=4.
+def EXTRA_ENCODINGS = [
+    ['polarity4', 'polarity4', 10, 19],                     // 1.787 bits/sym, 10 ksizes
+    ['funcgroups8', 'funcgroups8', 7, 16],                  // 2.727 bits/sym, 10 ksizes
+]
+
+// What --kmerseek_encodings and --kmerseek_combos are allowed to name. The default matrix
+// stays ALL_ENCODINGS; this is only the lookup table.
+def KNOWN_ENCODINGS = ALL_ENCODINGS + EXTRA_ENCODINGS
+
 // The LABEL, not the CLI flag, is what goes into the kmerseekIndex storeDir entry name.
 // Two rows sharing a label would therefore name one store entry from two different
 // encodings: both tasks build, and the second one's unstage dies with
@@ -188,10 +242,16 @@ def ALL_ENCODINGS = [
 // again -- not before the move, and not on a retry -- so nothing downstream catches this.
 // Checked here rather than trusted, since the two columns are identical today and the
 // coupling between them is invisible at the point where a new alphabet gets added.
-def dupEncodingLabels = ALL_ENCODINGS*.get(1).countBy { it }.findAll { _l, n -> n > 1 }*.key
+//
+// Over the UNION, not ALL_ENCODINGS alone. An out-of-sweep alphabet reusing an in-sweep
+// label is the worse version of this bug: both lists index into the same shared
+// kmerseek_index store, so the collision would only surface once someone ran the two
+// alphabets against the same species, which could be weeks apart.
+def dupEncodingLabels = KNOWN_ENCODINGS*.get(1).countBy { it }.findAll { _l, n -> n > 1 }*.key
 if (dupEncodingLabels) {
-    error "ALL_ENCODINGS has repeated labels: ${dupEncodingLabels.join(', ')}. " +
-          "Labels name the kmerseek index store entries and have to be unique."
+    error "Repeated encoding labels: ${dupEncodingLabels.join(', ')}. " +
+          "Labels name the kmerseek index store entries and have to be unique across " +
+          "ALL_ENCODINGS and EXTRA_ENCODINGS together."
 }
 
 // kmerseek search filters. min_region_score is the region-scoped cutoff: -log10 of the
@@ -235,6 +295,38 @@ params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
 params.multiqc_max_tools    = 20
 params.multiqc_max_lines    = 12
 params.multiqc_top_kmerseek = 5
+
+// One report covering SEVERAL runs' outdirs. Comma-separated, `-entry report` only.
+//
+// A run cannot always produce every arm it wants compared. Two alphabets that only exist
+// in a newer kmerseek image have to run separately from the sweep whose cache must not be
+// disturbed, and once they have, the honest picture is those two next to the baselines and
+// the seventeen alphabets the earlier run already scored. Neither run's
+// all_domain_metrics.parquet has both.
+//
+// What makes this cheap is that the per-arm parquets survive: scoreDomainCalls publishes
+// one <tool>.<variant>.<species>.metrics.parquet per arm into <outdir>/metrics and the
+// matching curve into <outdir>/curves, and aggregateMetrics is nothing but a concatenation
+// of those. So the combined report re-runs aggregateMetrics over the union of the
+// directories and is a couple of minutes of work with no search re-executed.
+//
+// The rejected alternatives, since both look simpler from a distance:
+//
+//   Publish the second run into the first run's outdir. The metrics directory would
+//   indeed accumulate, but both runs also write all_domain_metrics.parquet there, and the
+//   second one's aggregateMetrics only ever sees its OWN channel -- so finishing the
+//   two-alphabet run would replace the full sweep's aggregate with a two-alphabet file.
+//   Everything reading that path afterwards, `make multiqc` included, would quietly report
+//   on two alphabets and no baselines.
+//
+//   Make aggregateMetrics glob a directory instead of taking a channel. Inside the main
+//   workflow that severs the dependency between scoring and aggregation: a glob is
+//   evaluated when the task is created, so it would aggregate whatever happened to be on
+//   disk at that moment rather than waiting for the scoring tasks to finish.
+//
+// Reading directories is safe HERE, and only here, because `-entry report` runs after both
+// runs have ended and executes no scoring task of its own.
+params.report_outdirs = null
 
 // Toggles
 params.skip_kmerseek  = false
@@ -2540,19 +2632,41 @@ workflow {
     // --gpu_benchmark implies --skip_kmerseek. It measures the baselines' GPU path, and
     // forgetting the flag would queue the 3294-job sweep behind a timing run.
     if (!params.skip_kmerseek && !params.gpu_benchmark) {
-        // An explicit combo list overrides the matrix entirely. The label is derived from
-        // the CLI flag the same way ALL_ENCODINGS does it, so output filenames and the
-        // per-combo memory sizing keep working unchanged.
+        // Which alphabets this run sweeps. Default is the matrix; --kmerseek_encodings
+        // picks rows out of it BY NAME and keeps each row's kmin..kmax, so an alphabet
+        // scoped in this way is swept over exactly the ksizes the full sweep would have
+        // given it. The lookup is against KNOWN_ENCODINGS, which is how the out-of-sweep
+        // alphabets in EXTRA_ENCODINGS become reachable without being in the default.
+        //
+        // Named encodings are de-duplicated at the combo level a few lines down, which
+        // catches `--kmerseek_encodings gbmr4,gbmr4` along with every other way of asking
+        // for one store entry twice.
+        def selected_encodings = params.kmerseek_encodings
+            ? params.kmerseek_encodings.tokenize(',').collect { name ->
+                  def enc = name.trim()
+                  def known = KNOWN_ENCODINGS.find { it[0] == enc }
+                  if (!known) {
+                      error "Unknown encoding '${enc}' in --kmerseek_encodings. " +
+                            "Known: ${KNOWN_ENCODINGS*.get(0).join(', ')}"
+                  }
+                  known
+              }
+            : ALL_ENCODINGS
+
+        // An explicit combo list overrides the matrix entirely, --kmerseek_encodings
+        // included: it names ksizes itself, so there is nothing left of the row to keep.
+        // The label is derived from the CLI flag the same way ALL_ENCODINGS does it, so
+        // output filenames and the per-combo memory sizing keep working unchanged.
         def combos = params.kmerseek_combos
             ? params.kmerseek_combos.tokenize(',').collect { spec ->
                   def (enc, k) = spec.trim().split(':')
-                  def known = ALL_ENCODINGS.find { it[0] == enc }
+                  def known = KNOWN_ENCODINGS.find { it[0] == enc }
                   if (!known) {
-                      error "Unknown encoding '${enc}' in --kmerseek_combos. Known: ${ALL_ENCODINGS*.get(0).join(', ')}"
+                      error "Unknown encoding '${enc}' in --kmerseek_combos. Known: ${KNOWN_ENCODINGS*.get(0).join(', ')}"
                   }
                   tuple(enc, known[1], k.toInteger())
               }
-            : ALL_ENCODINGS.collectMany { cli_flag, label, kmin, kmax ->
+            : selected_encodings.collectMany { cli_flag, label, kmin, kmax ->
                   (kmin..kmax).collect { k -> tuple(cli_flag, label, k) }
               }
 
@@ -2586,7 +2700,8 @@ workflow {
         if (dupCombos) {
             error "Duplicate kmerseek combos: ${dupCombos.join(', ')}. Each names one " +
                   "index store entry per species, so a repeat puts two tasks on one entry " +
-                  "and the second fails at unstage. Check --kmerseek_combos for repeats."
+                  "and the second fails at unstage. Check --kmerseek_combos and " +
+                  "--kmerseek_encodings for repeats."
         }
         // Spell out the query/target asymmetry at startup. "2 species" reading as
         // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
@@ -2594,6 +2709,7 @@ workflow {
         log.info """
         |  query   : human (UP000005640_9606) -- always, and never listed as a target
         |  targets : ${SPECIES*.label.join(', ')}
+        |  alphabet: ${combos.collect { it[1] }.unique().join(', ')}
         |  combos  : ${combos.size()} (alphabet x ksize x low-complexity on/off)
         |  searches: ${combos.size()} x ${SPECIES.size()} targets = ${combos.size() * SPECIES.size()}
         |            each named human_vs_<target>, e.g. human_vs_${SPECIES[0].label}
@@ -3043,20 +3159,31 @@ workflow multiqcFromMetrics {
 // This is the normal way to get the report after a long sweep: the trace is only complete
 // once the run has ended, and rerunning the whole pipeline to pick it up would be absurd.
 // Point --trace_file at the run whose resource numbers you want.
+//
+// With --report_outdirs it instead re-aggregates the per-arm parquets of several runs into
+// one report -- see the note on that param for why the alternatives do not work.
 // ---------------------------------------------------------------------------
 workflow report {
     def outdir  = file(params.outdir)
     def metrics = file("${outdir}/all_domain_metrics.parquet")
     def curves  = file("${outdir}/all_domain_curves.parquet")
 
-    if (!metrics.exists()) {
+    def source_dirs = params.report_outdirs
+        ? params.report_outdirs.tokenize(',').collect { file(it.trim()) }
+        : null
+
+    if (!source_dirs && !metrics.exists()) {
         error """
         |No aggregated metrics at ${metrics}.
         |The report is built from what aggregateMetrics published, so the pipeline has to
         |have run first. Point --outdir at the run you want reported on.
+        |
+        |To combine several runs that each scored a different set of arms, name their
+        |output directories instead:
+        |    --report_outdirs <outdir A>,<outdir B> --outdir <where the combined one goes>
         """.stripMargin()
     }
-    if (!curves.exists()) {
+    if (!source_dirs && !curves.exists()) {
         log.warn "No ${curves} -- the PR and ROC sections will be skipped."
     }
 
@@ -3091,15 +3218,94 @@ workflow report {
     // process runs in this entry. They sit in the search storeDir next to the regions
     // parquet they describe, which is the whole reason they survive a run that executed
     // nothing: `-entry report` reads exactly the files a store hit would have served.
-    def ks_timings = file("${outdir}/kmerseek").exists()
-        ? file("${outdir}/kmerseek/*.timings.jsonl")
-        : []
-    log.info "building the report from ${outdir}, trace ${trace}, " +
-             "${ks_timings.size()} kmerseek timing records"
+    //
+    // Per SOURCE outdir, not per run: kmerseekSearch's storeDir is "${params.outdir}/kmerseek",
+    // so two runs with different outdirs each hold only their own arm's records.
+    def timing_dirs = source_dirs ?: [outdir]
+    def ks_timings = timing_dirs.collectMany { d ->
+        file("${d}/kmerseek").exists() ? file("${d}/kmerseek/*.timings.jsonl") : []
+    }
+
+    def metrics_ch
+    def curves_ch
+
+    if (source_dirs) {
+        // --outdir is where the COMBINED aggregate is published, so it cannot also be one
+        // of the sources: aggregateMetrics writes all_domain_metrics.parquet into it, and
+        // that would replace a source run's own aggregate with the union. The union is a
+        // superset, which is exactly what makes it hard to notice -- the file still looks
+        // right, and only the arm counts say it now describes a different run.
+        def outdir_abs = outdir.toAbsolutePath().normalize().toString()
+        def clashing = source_dirs.findAll {
+            it.toAbsolutePath().normalize().toString() == outdir_abs
+        }
+        if (clashing) {
+            error """
+            |--outdir ${outdir} is also listed in --report_outdirs.
+            |The combined aggregate is published into --outdir, so pointing it at a source
+            |run would overwrite that run's own all_domain_metrics.parquet with the union.
+            |Give the combined report a directory of its own.
+            """.stripMargin()
+        }
+
+        def missing = source_dirs.findAll { !it.exists() }
+        if (missing) {
+            error "--report_outdirs names directories that do not exist: ${missing.join(', ')}"
+        }
+
+        // The per-arm parquets, not the aggregates. scoreDomainCalls publishes one of each
+        // per (tool, variant, species); concatenating them is all aggregateMetrics does.
+        def metric_files = source_dirs.collectMany { file("${it}/metrics/*.metrics.parquet") }
+        def curve_files  = source_dirs.collectMany { file("${it}/curves/*.curve.parquet") }
+
+        if (!metric_files) {
+            error """
+            |No per-arm metrics under any of --report_outdirs.
+            |Looked for <outdir>/metrics/*.metrics.parquet in:
+            |  ${source_dirs.join('\n  ')}
+            |Those are published by scoreDomainCalls during a run, so a run that never got
+            |as far as scoring leaves the directory empty.
+            """.stripMargin()
+        }
+
+        // Two sources holding the same arm would be staged into one directory, where
+        // Nextflow renames the second to avoid the collision and the concatenation
+        // silently counts that arm twice. Erroring rather than de-duplicating, for the
+        // same reason the combo check upstream errors: a repeated arm is usually the
+        // symptom of naming the wrong pair of directories, and quietly dropping one would
+        // hide that while also making the choice of which copy wins invisible.
+        def dupArms = metric_files*.name.countBy { it }.findAll { _n, c -> c > 1 }*.key
+        if (dupArms) {
+            error """
+            |The same arm appears in more than one of --report_outdirs:
+            |  ${dupArms.take(10).join('\n  ')}${dupArms.size() > 10 ? "\n  ... and ${dupArms.size() - 10} more" : ''}
+            |Combining them would count those arms twice. The runs being combined are meant
+            |to cover DIFFERENT arms -- a kmerseek-only run against a run that did the
+            |baselines, say -- so an overlap means one of the directories is not the one
+            |you meant.
+            """.stripMargin()
+        }
+
+        log.info "combining ${metric_files.size()} scored arms and ${curve_files.size()} " +
+                 "curves from ${source_dirs.size()} outdirs into ${outdir}, trace ${trace}, " +
+                 "${ks_timings.size()} kmerseek timing records"
+
+        // Channel.value, not Channel.of: one task staging every file, which is what
+        // `path 'metrics/*'` expects and what the main workflow's .collect() produces.
+        def agg = aggregateMetrics(Channel.value(metric_files), Channel.value(curve_files))
+        metrics_ch = agg.metrics
+        curves_ch  = agg.curves
+    }
+    else {
+        log.info "building the report from ${outdir}, trace ${trace}, " +
+                 "${ks_timings.size()} kmerseek timing records"
+        metrics_ch = Channel.of(metrics)
+        curves_ch  = Channel.of(curves.exists() ? curves : file("${projectDir}/assets/NO_CURVES"))
+    }
 
     multiqcFromMetrics(
-        Channel.of(metrics),
-        Channel.of(curves.exists() ? curves : file("${projectDir}/assets/NO_CURVES")),
+        metrics_ch,
+        curves_ch,
         human_fasta,
         Channel.of(ks_timings),
     )
