@@ -78,8 +78,10 @@ report_section_order:
   qfo_lowcomplexity_bars: { order: 185 }
   qfo_lowcomplexity: { order: 190 }
   qfo_ceiling_length: { order: 192 }
+  qfo_ceiling_length_by_k: { order: 193 }
   qfo_ceiling_feature_type: { order: 194 }
-  qfo_ceiling_feature_type_coverage: { order: 196 }
+  qfo_ceiling_feature_type_coverage: { order: 195 }
+  qfo_ceiling_feature_type_point: { order: 196 }
   qfo_ceiling_bpe: { order: 198 }
   qfo_grayzone: { order: 200 }
   qfo_run_summary: { order: 210 }
