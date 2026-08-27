@@ -780,7 +780,7 @@ process extractDomainSequences {
     """
 }
 
-process queryDisorder {
+process proteomeDisorder {
     /*
      * Per-protein disorder predicted from SEQUENCE, as a second opinion on the pLDDT
      * proxy rather than a replacement for it.
@@ -792,28 +792,41 @@ process queryDisorder {
      * an MSA-depth effect hitting several arms at once. metapredict needs no structure and
      * no alignment, so it shares neither confound.
      *
-     * Query-side only. Disorder is a covariate of the thing being scored, and the scored
-     * object is the human domain instance.
+     * Run over EVERY proteome, not just the human query. An earlier version did query-side
+     * only, on the reasoning that disorder is a covariate of the scored object and the
+     * scored object is the human domain instance. That reasoning is too narrow: a
+     * structure-based tool needs a confident structure on BOTH sides of an alignment, so a
+     * disordered TARGET defeats foldseek and reseek exactly as thoroughly as a disordered
+     * query. "Does a structure-free method still find these when the target is the
+     * unmodellable one" is the sharper form of this benchmark's claim, and it cannot be
+     * asked from query-side numbers.
+     *
+     * Cached per proteome under DB_CACHE, because a target's disorder depends only on that
+     * target: the midi and full runs share every target entry, and only the human one
+     * differs, which is why the human label carries the query-set digest.
      */
-    tag "metapredict"
+    tag "${label}"
     label 'python'
-    publishDir "${params.outdir}/truth", mode: 'copy'
+    storeDir "${DB_CACHE}/disorder"
 
     input:
-    path human_fasta
+    tuple val(label), path(fasta)
 
     output:
-    path "human_disorder_metapredict.parquet", emit: disorder
-    path "disorder_metapredict_summary.json",  emit: summary
+    path "${label}.disorder_metapredict.parquet"
 
     script:
     def thr = params.metapredict_threshold ? "--threshold ${params.metapredict_threshold}" : ""
     """
     predict_disorder_metapredict.py \\
-        --fasta       ${human_fasta} \\
+        --fasta       ${fasta} \\
         ${thr} \\
-        --out         human_disorder_metapredict.parquet \\
-        --summary-out disorder_metapredict_summary.json
+        --out         ${label}.disorder_metapredict.parquet \\
+        --summary-out ${label}.disorder_summary.json
+
+    # Nested inside nothing: this is a single FILE output, so storeDir has no directory to
+    # collide with -- see the note on kmerseekIndex for why that distinction matters.
+    cat ${label}.disorder_summary.json
     """
 }
 
@@ -2374,9 +2387,18 @@ workflow {
     // Optional like every other covariate source: when skipped, the sentinel keeps
     // buildQueryCovariates' signature fixed and the disorder_seq stratum is simply absent
     // from the metrics, which the report already handles by not drawing that section.
+    // Every proteome: the human query keyed by its query-set digest, and each target by
+    // its own label so the entry is shared between the midi and full runs.
+    disorder_all = params.skip_metapredict
+        ? Channel.empty()
+        : proteomeDisorder(
+              Channel.of(tuple(HUMAN_LABEL, human_fasta)).mix(species_ch)
+          )
+    // Covariates take the human one; the target entries are published for the target-side
+    // axis and for anyone plotting proteome disorder directly.
     disorder_ch = params.skip_metapredict
         ? Channel.value(file("${projectDir}/assets/NO_DISORDER"))
-        : queryDisorder(Channel.value(human_fasta)).disorder
+        : disorder_all.filter { it.name.startsWith("${HUMAN_LABEL}.") }
 
     cov_in = truth_out.truth.combine(disorder_ch).map { t, dis ->
         tuple(t,
@@ -2486,6 +2508,23 @@ workflow {
 
 
     // ---- kmerseek: alphabet x ksize x species ----
+    // How many (tool, variant) arms each species will produce. scoreDomainCalls groups by
+    // (truth_set, species), and groupTuple cannot emit a group until it knows the group is
+    // complete -- without a size it waits for the WHOLE channel to close, which means no
+    // scoring starts until the last kmerseek search finishes.
+    //
+    // The count is accumulated at the same lines that build the arms, not re-derived from
+    // the skip flags afterwards. A second expression restating "phmmer plus jackhmmer plus
+    // two mmseqs variants unless bench_only" is a thing that drifts from the code it
+    // describes, and the failure is silent in both directions: too high and the group never
+    // emits, too low and it emits early and scores a species on a subset of its arms.
+    //
+    // It is per species, not one number, because the structure arms only run for species
+    // that have structures. groupKey carries a size per key, which is what makes that
+    // expressible at all.
+    def arms_per_species = [:].withDefault { 0 }
+    def countArm = { List labels, int n -> labels.each { arms_per_species[it] += n } }
+
     kmerseek_regions = Channel.empty()
     // Per-task timings for the report. Separate from the trace because this arm is on
     // storeDir: a store hit runs no task and Nextflow records nothing for it.
@@ -2553,6 +2592,7 @@ workflow {
         |  spectra : one k-mer frequency spectrum per combo, published for plotting
         """.stripMargin()
 
+        countArm(SPECIES*.label, combos.size())
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
             .map { species, fasta, cli_flag, label, ksize, lowcomp ->
                 tuple(species, fasta, cli_flag, label, ksize, lowcomp)
@@ -2621,6 +2661,7 @@ workflow {
 
         phmmer_out    = bench_only ? Channel.empty() : phmmerSearch(pair_ch)
         jackhmmer_out = bench_only ? Channel.empty() : jackhmmerSearch(pair_ch)
+        countArm(SPECIES*.label, bench_only ? 0 : 2)
 
         // Both variants share one pair of databases, so createdb runs once per proteome
         // rather than once per (variant, species).
@@ -2666,6 +2707,7 @@ workflow {
             ]
         }
         mmseqs_out = mmseqs2Search(mmseqs_in)
+        countArm(SPECIES*.label, 2 * search_modes.size())   // seqseq + iterative, per mode
 
         // HHblits: build the human query profile DB once, every species target DB once.
         // is_query travels as an explicit flag rather than being inferred from the label.
@@ -2680,6 +2722,7 @@ workflow {
             species_hhdb = hhdb_ch.filter { label, _db -> label != HUMAN_LABEL }
 
             hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
+            countArm(SPECIES*.label, 1)
         }
 
         baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
@@ -2719,6 +2762,7 @@ workflow {
 
             prostt5_out = prostt5Search(p5_targets.combine(p5_human))
             baseline_regions = baseline_regions.mix(prostt5_out.regions)
+            countArm(SPECIES*.label, 1)
         }
 
         // ---- foldseek ----
@@ -2794,6 +2838,7 @@ workflow {
 
             foldseek_out     = foldseekSearch(fs_in)
             baseline_regions = baseline_regions.mix(foldseek_out)
+            countArm(struct_species*.label, search_modes.size())
 
             // ---- Reseek: same structures, opposite alphabet direction ----
             // No GPU path exists. The pinned reseek image links no CUDA library, its usage
@@ -2812,6 +2857,7 @@ workflow {
 
                 reseek_out = reseekSearch(rs_target.combine(rs_human))
                 baseline_regions = baseline_regions.mix(reseek_out)
+                countArm(struct_species*.label, 1)
             }
 
             // ---- folddisco ----
@@ -2830,6 +2876,7 @@ workflow {
                 )
                 folddisco_regions = folddiscoMerge(fd_out.groupTuple(by: 0))
                 baseline_regions  = baseline_regions.mix(folddisco_regions)
+                countArm(struct_species*.label, 1)
             }
         }
     }
@@ -2879,13 +2926,26 @@ workflow {
     // on each is exact rather than an approximation; only tools, variants and regions vary.
     score_grouped = score_in
         .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident ->
-            tuple(tuple(ts, sp), tool, variant, mya, regions, truth, dm, cov, ident)
+            // groupKey carries the expected size WITH the key, so each (truth_set, species)
+            // group is released the moment its own arms are all in rather than when the
+            // whole channel closes. Without it, no scoring could start until the last
+            // kmerseek search of the last species finished.
+            tuple(groupKey(tuple(ts, sp), arms_per_species[sp]),
+                  tool, variant, mya, regions, truth, dm, cov, ident)
         }
-        .groupTuple(by: 0)
+        // remainder: true is the safety net for the count being WRONG. If arms_per_species
+        // over-counts, the group never reaches its size and would hang forever; with
+        // remainder it is released at channel close instead, which is exactly the
+        // behaviour this change replaces. An under-count still emits early, which is why
+        // the count is accumulated beside the arms rather than restated.
+        .groupTuple(by: 0, remainder: true)
         .map { key, tools, variants, myas, regions, truths, dms, covs, idents ->
             tuple(key[0], key[1], tools, variants, myas.first(), regions,
                   truths.first(), dms.first(), covs.first(), idents.first())
         }
+
+    log.info "  scoring : one task per (truth set, species); arms per species = " +
+             "${arms_per_species.collect { k, v -> "${k}:${v}" }.join(', ')}"
 
     scored = scoreDomainCalls(score_grouped)
 
