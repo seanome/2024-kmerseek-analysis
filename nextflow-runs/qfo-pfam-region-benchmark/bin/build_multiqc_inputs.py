@@ -687,6 +687,96 @@ def section_identity(out: Path, metrics: pl.DataFrame, primary_truth: str,
     })
 
 
+# The three covariate axes evaluate_domain_calls stratifies on that nothing rendered until
+# now. Every metrics row already carries them -- build_query_covariates computes disorder
+# from AlphaFold pLDDT and omega from the dN/dS pipeline, and STRATA bins all three -- so
+# this was scored data being thrown away at report time.
+#
+# Disorder is the one to read first for this benchmark's claim. Every structure-based
+# baseline needs a confident structure to work from, so their accuracy should fall as the
+# disordered fraction rises. A sequence-only method has no such dependency, and whether
+# that shows up as a flatter curve is exactly the kind of thing a reviewer asks for
+# evidence of rather than assertion. It cuts both ways: notebook 202 found the HP-family
+# alphabets have a real low-pLDDT dip where protein and dayhoff are flat, so this plot is
+# equally capable of showing kmerseek looking worse.
+COVARIATE_AXES = {
+    "disorder": (
+        "Disorder",
+        "Fmax by the fraction of the query's residues with pLDDT below 50, AlphaFold's "
+        "standard disorder proxy. Structure-based tools need a confident structure, so "
+        "their accuracy is expected to fall to the right; a sequence-only method has no "
+        "such dependency. MobiDB's curated annotation is used instead when --mobidb_cache "
+        "is set.",
+    ),
+    "plddt": (
+        "Model confidence",
+        "Fmax by the query structure's mean pLDDT. Distinct from the disorder axis: a "
+        "protein can be confidently modelled overall while carrying a disordered tail, and "
+        "the two axes separate those cases.",
+    ),
+    "omega": (
+        "Selective pressure",
+        "Fmax by dN/dS for the query gene. Low omega is purifying selection and high omega "
+        "is relaxed or positive selection. Rows only exist for species where dS is not "
+        "saturated, which is mouse and chicken -- past roughly 300 MYA the synonymous "
+        "sites are at the Jukes-Cantor ceiling and omega stops meaning anything.",
+    ),
+}
+
+
+def _bin_order(values: list[str]) -> list[str]:
+    """Sort bin labels by their lower edge.
+
+    Derived from the labels themselves rather than from a copy of STRATA's edges, because
+    a second copy of those numbers is a thing that drifts. attach_strata writes them as
+    f"{lo}-{hi}", so the lower edge is parseable; anything unparseable sorts last rather
+    than raising, since a missing bin should not take the whole report down.
+    """
+    def lo(label: str) -> float:
+        try:
+            return float(label.split("-")[0])
+        except (ValueError, IndexError):
+            return float("inf")
+    return sorted(values, key=lo)
+
+
+def section_covariates(out: Path, metrics: pl.DataFrame, primary_truth: str,
+                       max_tools: int) -> None:
+    """Fmax against disorder, model confidence and selective pressure."""
+    cut, split = pick_split(metrics.filter(pl.col("truth_set") == primary_truth))
+    board = best_variants(ungrouped(cut)).head(max_tools)
+    keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
+
+    for axis, (title, blurb) in COVARIATE_AXES.items():
+        sub_axis = cut.filter(pl.col("stratum_axis") == axis)
+        if sub_axis.height == 0:
+            continue
+        order = _bin_order(sub_axis["stratum"].drop_nulls().unique().to_list())
+        if not order:
+            continue
+        data = {}
+        for tool, variant, label in keep:
+            sub = sub_axis.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+            if sub.height == 0:
+                continue
+            by_bin = sub.group_by("stratum").agg(pl.col("fmax").mean()).to_dicts()
+            lookup = {r["stratum"]: r["fmax"] for r in by_bin}
+            data[label] = {b: lookup.get(b) for b in order}
+        if not data:
+            continue
+        write_section(out, f"qfo_{axis}", {
+            "id": f"qfo_{axis}",
+            "section_name": title,
+            "description": f"{blurb} ({primary_truth} truth, <code>{split}</code> split.)",
+            "plot_type": "bargraph",
+            "pconfig": {"id": f"qfo_{axis}_plot", "title": f"Fmax by {axis}",
+                        "ylab": "Fmax", "cpswitch": False, "stacking": "group",
+                        "height": 500, "showlegend": True},
+            "categories": {b: {"name": b} for b in order},
+            "data": data,
+        })
+
+
 def section_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
                        max_tools: int) -> None:
     """Fmax against divergence time. The species IS the divergence axis here."""
@@ -1799,6 +1889,7 @@ def main():
     section_truth_provenance(args.outdir, metrics)
     section_curves(args.outdir, curves, metrics, primary, args.max_lines)
     section_identity(args.outdir, metrics, primary, args.max_tools)
+    section_covariates(args.outdir, metrics, primary, args.max_tools)
     section_divergence(args.outdir, metrics, primary, args.max_tools)
     section_truthsets(args.outdir, metrics, args.max_tools)
     section_alphabet_matrix(args.outdir, metrics, primary)
