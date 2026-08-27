@@ -346,9 +346,8 @@ params.prostt5_time   = '48h'
 // entirely empty .command.out. Docker bypasses the entrypoint the way Nextflow invokes it,
 // so this reproduces only on the cluster. See Dockerfile.folddisco.
 params.folddisco_image = 'docker.io/olgabot/folddisco:2026-08-20-noentrypoint'
-// Its own image: metapredict needs a compiler to build and drags in torch. See
-// Dockerfile.metapredict for why that does not belong in the shared kmerseek image.
-params.metapredict_image = 'docker.io/olgabot/metapredict:2026-08-27'
+// metapredict_image is declared in nextflow.config, not here: a withName: selector there
+// references it, and config is parsed before this file. See the note beside it.
 
 // Per-domain-pair percent identity, the twilight-zone axis. Skipping it removes the
 // stratification the central claim is stated on, so only skip for a quick smoke test.
@@ -810,7 +809,9 @@ process proteomeDisorder {
      */
     tag "${label}"
     label 'python'
-    container params.metapredict_image
+    // Container comes from `withName: proteomeDisorder` in nextflow.config, not from here.
+    // A directive in the process body loses to any config selector, and `label 'python'`
+    // already binds container = kmerseek_image via withLabel.
     storeDir "${DB_CACHE}/disorder"
 
     input:

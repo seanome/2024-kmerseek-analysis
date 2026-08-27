@@ -147,7 +147,8 @@ MULTIQC_OUTDIR_LOCAL_ABS := $(call outdir_abs,$(MULTIQC_OUTDIR_LOCAL))
 # Every container the pipeline can pull, read straight out of main.nf plus the kmerseek
 # image, so this list cannot drift from what the processes actually declare.
 ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" main.nf | sort -u) \
-                  docker.io/olgabot/kmerseek:$(IMAGE_TAG) $(FOLDDISCO_REMOTE)
+                  docker.io/olgabot/kmerseek:$(IMAGE_TAG) $(FOLDDISCO_REMOTE) \
+                  $(METAPREDICT_REMOTE)
 
 .PHONY: bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image \
