@@ -121,6 +121,44 @@ IDENTITY_COLORS = {
 # it in the pconfig is what actually works, and every scatter here does.
 ANNOTATE_EVERY_POINT_BELOW = 20
 
+# Durations a reader already has a feel for, in seconds. The device is borrowed from
+# metapredict's Figure 1B (Emenecker, Griffith & Holehouse 2021), which puts dashed lines
+# at named durations across a log axis so a reader can place a tool in the minutes band or
+# the days band without doing arithmetic on the axis. metapredict plots time itself, with
+# fast at the bottom; this report keeps throughput on y so that up and to the right stays
+# better, which is the direction every reader arrives with. Only the labelled lines cross
+# over. "1 month" is 30 days, the one entry here that needs a convention.
+DURATION_BANDS = [(60.0, "1 minute"), (3600.0, "1 hour"), (86400.0, "1 day"),
+                  (604800.0, "1 week"), (2_592_000.0, "1 month")]
+
+
+def throughput_reference_lines(rates: list[float],
+                               n_queries: int) -> tuple[list[dict], float, float]:
+    """Duration reference lines for a log throughput axis, and the range they sit in.
+
+    A rate of R queries per second finishes the run's N queries in N/R seconds, so the
+    band for a duration goes at N/duration on the rate axis. The line positions therefore
+    depend on N: a midi run and a full run put "in 1 hour" at different heights. That is
+    correct rather than a bug, and the section says so, because a reader comparing two
+    reports would otherwise read a moved line as a moved tool.
+
+    The range is computed here rather than left to Plotly for two reasons already paid for
+    in this file. y_lines are layout shapes and autorange ignores shapes, so nothing widens
+    the axis to fit a band. And the scatter DROPS points outside ymin/ymax instead of
+    clipping the axis, so the range is derived from the data and only ever widened past it.
+    Bands outside that padded range are left out: a "1 week" line three decades under every
+    point is clutter, not a reference.
+    """
+    lo, hi = min(rates), max(rates)
+    ymin, ymax = lo / 3, hi * 3
+    lines = []
+    for seconds, name in DURATION_BANDS:
+        value = n_queries / seconds
+        if ymin < value < ymax:
+            lines.append({"value": value, "color": "#aaaaaa", "dash": "dash", "width": 1,
+                          "label": f"whole query set in {name}"})
+    return lines, ymin, ymax
+
 
 def scatter_point(x, y, *, name, group, color, annotation=None, **extra):
     """One scatter point, labelled so a reader can tell which tool and variant it is."""
@@ -306,12 +344,21 @@ def section_leaderboards(out: Path, metrics: pl.DataFrame,
 def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                      n_queries: int, primary_truth: str,
                      top_kmerseek: int = TOP_KMERSEEK) -> None:
-    """Sensitivity against speed, with the incumbent frontier drawn in.
+    """Accuracy against speed, with metapredict Figure 1B's named duration lines.
 
-    y is Fmax restricted to domain instances whose closest same-family target domain is
-    under 40% identical -- the regime the hypothesis is about, not the easy one. x is
+    x is Fmax restricted to domain instances whose closest same-family target domain is
+    under 40% identical -- the regime the hypothesis is about, not the easy one. y is
     measured throughput from the trace, not a published figure: query proteins divided by
     the search task's own wall time, median over target species.
+
+    The layout is the argument. A rate on a log axis is unreadable at a glance -- nobody
+    knows what 0.4 queries per second means without dividing -- and the claim being made
+    is exactly a glance-level one: as accurate as the tools that need a structure or a
+    language model, while finishing the query set in the minutes band rather than the days
+    band. Dashed lines at N/duration do that division once, on the plot, so the bands are
+    named where the reader looks. Throughput stays on y rather than time, so up and to the
+    right is still better; only the labelled lines come from the metapredict figure.
+    kmerseek is drawn larger and at full opacity so the eye finds it before the legend.
 
     A tool missing from either axis is missing from the plot. That is mostly the structure
     arms when no structures were staged, and it is stated in the section rather than left
@@ -323,34 +370,35 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
         (pl.col("stratum_axis") == "identity") & pl.col("stratum").is_in(GRAY_ZONE)
     )
     if gray.height:
-        y_label = "Fmax, &lt;40% identity"
-        y_note = ("Fmax over domain instances under 40% identity to their closest "
+        x_label = "Fmax, &lt;40% identity (0-1)"
+        x_note = ("Fmax over domain instances under 40% identity to their closest "
                   "same-family target domain.")
         # Weight by instances so a bin holding 40 domains does not count as much as one
         # holding 4000.
-        ycol = (
+        acc = (
             gray.group_by("tool", "variant")
             .agg(((pl.col("fmax") * pl.col("n_truth_instances")).sum()
-                  / pl.col("n_truth_instances").sum().clip(lower_bound=1)).alias("y"))
+                  / pl.col("n_truth_instances").sum().clip(lower_bound=1)).alias("acc"))
         )
     else:
-        y_label = "Fmax (all instances)"
-        y_note = ("No identity stratification in this run (<code>--skip_identity</code>), "
+        x_label = "Fmax, all instances (0-1)"
+        x_note = ("No identity stratification in this run (<code>--skip_identity</code>), "
                   "so this is Fmax over all instances. The gray-zone cut is the one the "
                   "claim is stated on; re-run without that flag to get it.")
-        ycol = ungrouped(cut).group_by("tool", "variant").agg(pl.col("fmax").mean().alias("y"))
+        acc = ungrouped(cut).group_by("tool", "variant").agg(
+            pl.col("fmax").mean().alias("acc"))
 
     # One point per baseline, TOP_KMERSEEK points for the sweep. A single kmerseek point
     # would hide whether the winner is a lone spike or the top of a plateau, which is the
     # part of the figure a reader should be able to check.
-    ranked = ycol.sort("y", descending=True, nulls_last=True)
+    ranked = acc.sort("acc", descending=True, nulls_last=True)
     best = pl.concat([
         group.head(top_kmerseek if tool == "kmerseek" else 1)
         for (tool,), group in ranked.group_by("tool", maintain_order=True)
     ]) if ranked.height else ranked
 
     joined = attach_throughput(best, trace, n_queries).filter(
-        pl.col("y").is_not_null() & pl.col("queries_per_s").is_not_null()
+        pl.col("acc").is_not_null() & pl.col("queries_per_s").is_not_null()
         & (pl.col("queries_per_s") > 0)
     )
     dropped = sorted(set(best["tool"]) - set(joined["tool"]))
@@ -360,11 +408,11 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
         write_section(out, "qfo_frontier", {
             "id": "qfo_frontier",
             "section_name": "The frontier",
-            "description": "Sensitivity against speed, when both are available.",
+            "description": "Accuracy against speed, when both are available.",
             "plot_type": "html",
             "data": (
-                "<p>Not built: no tool has both an accuracy number and a measured "
-                "throughput in this run. Throughput comes from the Nextflow trace, so this "
+                "<p>Not built: no tool has both an accuracy number and a measured search "
+                "time in this run. Speed comes from the Nextflow trace, so this "
                 "figure needs the trace of the run that produced these metrics — pass it "
                 "with <code>--report_trace</code>, or use <code>make multiqc</code>, which "
                 "fills it in from the newest trace under <code>run/</code>. kmerseek is "
@@ -376,80 +424,135 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
         return
 
     rows = joined.sort("queries_per_s").to_dicts()
-    # The frontier the incumbents actually reach. Everything above and to the right of
-    # this corner is territory no existing tool occupies, which is the claim the figure is
-    # making -- so it is computed from the data rather than drawn by hand.
+    # The accuracy the incumbents actually reach. A tool to the right of this line beats
+    # everything that exists, which is the claim the figure is making, so it is computed
+    # from the data rather than drawn by hand. The matching "fastest incumbent" horizontal
+    # is gone: the horizontal dashed lines are now the duration bands, and a second dashed
+    # horizontal among them would be read as another duration rather than as a tool.
     incumbents = [r for r in rows if r["tool"] != "kmerseek"]
-    y_best = max((r["y"] for r in incumbents), default=None)
-    x_best = max((r["queries_per_s"] for r in incumbents), default=None)
+    x_best = max((r["acc"] for r in incumbents), default=None)
 
     points = {}
     for r in rows:
         cls = tool_class(r["tool"])
         label = label_of(r["tool"], r["variant"])
+        is_ours = cls == "kmerseek"
         # group is the method class here rather than the tool, because the class IS the
         # argument this figure makes and the legend is where the colours get named. The
         # per-point label is carried by `annotation`, which is drawn on the plot.
+        #
+        # Size, outline and opacity are what mark the tool being argued for. Colour cannot
+        # do it: colour is spoken for by the method class everywhere else in this report,
+        # and a green that means "kmerseek" on one plot and "this work" on another is worse
+        # than no highlight. Of the three, only size and line width are part of the legend
+        # key, and every kmerseek point shares both, so the legend stays at one entry per
+        # class.
+        # `name` stays the bare row key. It is tempting to append the rate and the implied
+        # duration here, but a point that carries an `annotation` never shows its name on
+        # hover -- MultiQC draws `annotation or name` as the hover text -- so the only
+        # place a longer name would appear is the legend, which is built by joining the
+        # names in each class and cropping at 60 characters. One point's hover text would
+        # eat the whole entry and hide the other tools in its class.
         points[label] = scatter_point(
-            r["queries_per_s"], r["y"],
-            name=label, group=CLASSES[cls][0], color=CLASSES[cls][1],
+            r["acc"], r["queries_per_s"],
+            name=label,
+            group=CLASSES[cls][0], color=CLASSES[cls][1],
             annotation=short_label(r["tool"], r["variant"]),
-            marker_size=14 if cls == "kmerseek" else 9,
+            marker_size=16 if is_ours else 9,
+            marker_line_width=2 if is_ours else 1,
+            opacity=1.0 if is_ours else 0.65,
+            # Three tools share the pink of "needs 3D structure", and a static PNG export
+            # has no hover to tell them apart. Shape does it.
+            marker_symbol=TOOL_SYMBOL.get(r["tool"], "circle"),
         )
 
-    xs = [r["queries_per_s"] for r in rows]
-    ys = [r["y"] for r in rows]
+    xs = [r["acc"] for r in rows]
+    ys = [r["queries_per_s"] for r in rows]
+    lines, ymin, ymax = throughput_reference_lines(ys, n_queries)
     pconfig = {
         "id": "qfo_frontier_plot",
-        "title": f"Sensitivity x speed ({primary_truth} truth, {split} split)",
-        "xlab": "throughput (query proteins / s, log scale)",
-        "ylab": y_label, "xlog": True, "height": 560, "marker_line_width": 1,
-        # Point labels are drawn beside the marker, so a point at the axis limit loses
-        # half its label. A decade of padding either side is enough on a log axis.
-        "xmin": min(xs) / 3, "xmax": max(xs) * 3,
-        "ymin": 0, "ymax": min(1.0, max(ys) * 1.25),
-        # MultiQC copies a "%" out of the axis label into the tick suffix, and this label
-        # carries one in "<40% identity" -- which turned every Fmax tick into "0.6%".
-        # Setting the suffix explicitly is the documented way to stop that inference.
-        "ysuffix": "", "tt_decimals": 3,
+        "title": f"Accuracy against speed ({primary_truth} truth, {split} split)",
+        "xlab": x_label,
+        "ylab": "throughput (query proteins / s, log scale)",
+        "ylog": True, "height": 580,
+        # Point labels are drawn beside the marker, so a point at the axis limit loses half
+        # its label. Fmax is bounded at 0 and 1, so the padding is clamped there rather
+        # than left to run past the end of the scale.
+        "xmin": max(0.0, min(xs) - 0.08), "xmax": min(1.0, max(xs) + 0.08),
+        "ymin": ymin, "ymax": ymax,
+        # MultiQC copies a "%" out of an axis label into that axis's tick suffix, and the
+        # x label carries one in "<40% identity" -- which used to turn every Fmax tick into
+        # "0.6%" back when Fmax was the y axis. Setting the suffix explicitly stops the
+        # inference; the axes swapped, so the explicit empty suffix had to swap with them.
+        "xsuffix": "", "ysuffix": "",
+        # tt_decimals sets the hover format for y ONLY. The axes now carry different kinds
+        # of number, so they are formatted separately: three decimals for Fmax, one for a
+        # rate that spans decades.
+        "x_decimals": 3, "y_decimals": 1,
         # See ANNOTATE_EVERY_POINT_BELOW: without this the legend never renders.
         "showlegend": True,
     }
-    lines = []
-    if y_best is not None:
-        lines.append({"value": y_best, "color": "#999999", "dash": "dash", "width": 2,
-                      "label": "best incumbent sensitivity"})
     if lines:
         pconfig["y_lines"] = lines
     if x_best is not None:
-        pconfig["x_lines"] = [{"value": x_best, "color": "#999999", "dash": "dash",
-                               "width": 2, "label": "fastest incumbent"}]
+        pconfig["x_lines"] = [{"value": x_best, "color": "#666666", "dash": "dash",
+                               "width": 2, "label": "best incumbent Fmax"}]
 
     note = ""
     if dropped:
-        note = ("<p>No throughput row for " + ", ".join(f"<code>{d}</code>" for d in dropped)
+        note = ("<p>No timing row for " + ", ".join(f"<code>{d}</code>" for d in dropped)
                 + " — that arm either did not run or produced no timing record, so it is "
                   "absent from the plot rather than plotted at zero.</p>")
+    # A trace from before the 2026-08-25 index/search split has kmerseek's index build
+    # inside its search time, so the "search only" claim below would be false for it. Say
+    # which it is rather than printing the claim unconditionally.
+    fused = mt.fused_index_tools(trace)
+    if fused:
+        index_note = (
+            "<p>This trace predates the index/search split, so for "
+            + ", ".join(f"<code>{t}</code>" for t in fused)
+            + " the time behind the rate INCLUDES building the target index; every other "
+              "arm is search only. Those points are not comparable to the rest, and "
+              "re-running against a post-split trace is what fixes it.</p>")
+    else:
+        index_note = (
+            "<p>The time behind the rate is the SEARCH only, for every arm, and it is one "
+            "search of the whole query set against one target proteome — not the whole "
+            "sweep, and not "
+            "the whole nine-proteome run. Each tool that needs a database builds it in its "
+            "own process (<code>foldseekDb</code>, <code>prostt5Db</code>, "
+            "<code>mmseqsDb</code>, <code>kmerseekIndex</code>) and only the search "
+            "process is timed, so no tool is charged for an index it builds once and "
+            "reuses across every query. Index cost is reported separately under CPU time "
+            "by process.</p>")
     write_section(out, "qfo_frontier", {
         "id": "qfo_frontier",
         "section_name": "The frontier",
         "description": (
-            f"<p>{y_note} Throughput is measured on this run: {n_queries:,} human query "
-            "proteins divided by each search task's wall time at the CPU count it was "
-            "given, taken as the median over target species. Dashed lines mark the best "
-            "and fastest incumbent, so the upper-right quadrant is the part of the space "
-            "no existing tool reaches. The sweep contributes its "
-            f"top {top_kmerseek} alphabet x ksize x low-complexity combos rather than one "
-            "point, so a lone spike is distinguishable from a plateau. Every point is "
-            "labelled with its tool and, for the sweep, its alphabet, k and "
-            "low-complexity arm; colour marks the method class, which the legend "
-            "names.</p>"
-            "<p>Speed here is the SEARCH only, for every arm. Each tool that needs a "
-            "database builds it in its own process — <code>foldseekDb</code>, "
-            "<code>prostt5Db</code>, <code>mmseqsDb</code>, <code>kmerseekIndex</code> — "
-            "and only the search process is timed, so a tool is not charged for an index "
-            "it would build once and reuse. Index cost is reported separately under "
-            "CPU time by process.</p>"
+            f"<p>{x_note} Speed is measured on this run: {n_queries:,} human query "
+            "proteins divided by a single search task's wall time at the CPU count it was "
+            "given, taken as the median over target species. Higher and further right is "
+            "better. The dashed horizontal lines are durations rather than data — a tool "
+            "on the \"in 1 hour\" line takes an hour to search this query set against one "
+            "target proteome — so a reader can place an arm in the minutes band or the "
+            "days band without dividing anything by a rate. The vertical line is the best "
+            "Fmax any existing tool reaches, so the upper-right quadrant is the part of "
+            "the space nothing occupies today.</p>"
+            f"<p>The {n_queries:,} queries setting those line positions is n_queries_all, "
+            "every sequence in the query FASTA, not the FoldSeek-intersected subset the "
+            "accuracy sections use, and every arm's rate is divided by that same count. "
+            "It also means the lines move between runs: a midi run and a full run put "
+            "\"in 1 hour\" at different heights, because an hour buys a different number "
+            "of queries. Compare a tool to the lines inside one report, never a line "
+            "position across two.</p>"
+            f"<p>The sweep contributes its top {top_kmerseek} alphabet x ksize x "
+            "low-complexity combos rather than one point, so a lone spike is "
+            "distinguishable from a plateau, and its points are drawn larger and at full "
+            "opacity. Every point is labelled with its tool and, for the sweep, its "
+            "alphabet, k and low-complexity arm. Colour marks the method class, which the "
+            "legend names; marker shape marks the individual tool, since three tools share "
+            "the colour of \"needs 3D structure\".</p>"
+            + index_note
             + note),
         "plot_type": "scatter",
         "pconfig": pconfig,
@@ -460,16 +563,20 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     # what a tool needs before it can produce it.
     board = attach_throughput(best_variants(ungrouped(cut), top_kmerseek),
                               trace, n_queries)
-    gray_of = {(r["tool"], r["variant"]): r["y"] for r in best.to_dicts()}
+    gray_of = {(r["tool"], r["variant"]): r["acc"] for r in best.to_dicts()}
     cap = {}
     for row in board.to_dicts():
         t = row["tool"]
+        search_s = row.get("search_s")
         cap[row["label"]] = {
             "cls": CLASSES[tool_class(t)][0],
             "needs_3d": NEEDS_3D.get(t, "No"),
             "alignment_free": ALIGNMENT_FREE.get(t, "No"),
             "fmax": row.get("fmax"),
             "gray_fmax": gray_of.get((t, row["variant"])),
+            # The figure's own y value, in minutes, so a reader can read off the exact
+            # number a point sits at instead of estimating it off a log axis.
+            "search_min": (search_s / 60) if search_s is not None else None,
             "queries_per_s": row.get("queries_per_s"),
             "cpu_hours": row.get("cpu_hours"),
         }
@@ -487,6 +594,12 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
             "fmax": dict(title="Fmax (all)", min=0, max=1, scale="RdYlGn", format="{:,.3f}"),
             "gray_fmax": dict(title="Fmax (<40% id)", min=0, max=1, scale="RdYlGn",
                               format="{:,.3f}"),
+            "search_min": dict(title="Minutes / proteome", scale="RdYlGn-rev",
+                               format="{:,.1f}",
+                               description="Wall clock of one search of the whole query "
+                                           "set against one target proteome, median over "
+                                           "target species. This is the frontier plot's "
+                                           "y axis; lower is better"),
             "queries_per_s": dict(title="Queries/s", scale="Blues", format="{:,.1f}"),
             "cpu_hours": dict(title="CPU-hours", scale="Reds", format="{:,.2f}",
                               description="Summed over this combo's SEARCH tasks, or "
@@ -518,18 +631,23 @@ def _search_tasks(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
 
 
 def throughput_per_tool(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
-    """Median query proteins per second per tool, plus that arm's total CPU-hours.
+    """Median query rate and median search wall clock per tool, plus that arm's CPU-hours.
 
     Median over target species rather than mean: one species dominating the sweep's wall
     time should not move a rate that is meant to describe the method.
+
+    `search_s` is the same measurement as `queries_per_s` read the other way round, and it
+    is aggregated here rather than derived from the rate afterwards so the two can never
+    disagree about which tasks went into the median.
     """
     empty = pl.DataFrame(schema={"tool": pl.String, "queries_per_s": pl.Float64,
-                                 "cpu_hours": pl.Float64})
+                                 "search_s": pl.Float64, "cpu_hours": pl.Float64})
     per_task = _search_tasks(trace, n_queries)
     if per_task.height == 0:
         return empty
     rate = per_task.group_by("tool").agg(
         pl.col("qps").median().alias("queries_per_s"),
+        pl.col("realtime_s").median().alias("search_s"),
         pl.col("cpu_hours").sum().alias("cpu_hours"),
     )
     # mmseqs2 runs two variants under one process name, so the trace's process column
@@ -554,7 +672,8 @@ def throughput_per_variant(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
     other arm has one variant per process and falls back to the tool-level figure.
     """
     empty = pl.DataFrame(schema={"tool": pl.String, "variant": pl.String,
-                                 "queries_per_s": pl.Float64, "cpu_hours": pl.Float64})
+                                 "queries_per_s": pl.Float64, "search_s": pl.Float64,
+                                 "cpu_hours": pl.Float64})
     per_task = _search_tasks(trace, n_queries)
     if per_task.height == 0:
         return empty
@@ -562,6 +681,7 @@ def throughput_per_variant(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
         per_task.filter(pl.col("trace_variant") != "default")
         .group_by("tool", "trace_variant")
         .agg(pl.col("qps").median().alias("queries_per_s"),
+             pl.col("realtime_s").median().alias("search_s"),
              pl.col("cpu_hours").sum().alias("cpu_hours"))
         .rename({"trace_variant": "variant"})
     )
@@ -569,7 +689,7 @@ def throughput_per_variant(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
 
 def attach_throughput(sel: pl.DataFrame, trace: pl.DataFrame,
                       n_queries: int) -> pl.DataFrame:
-    """Add queries_per_s and cpu_hours to a (tool, variant) selection.
+    """Add queries_per_s, search_s and cpu_hours to a (tool, variant) selection.
 
     Per variant where the trace can tell them apart, per arm otherwise. Rows with neither
     are returned with nulls; the caller decides whether to drop them.
@@ -581,20 +701,24 @@ def attach_throughput(sel: pl.DataFrame, trace: pl.DataFrame,
         out = out.join(by_variant, on=["tool", "variant"], how="left")
     else:
         out = out.with_columns(pl.lit(None, dtype=pl.Float64).alias("queries_per_s"),
+                               pl.lit(None, dtype=pl.Float64).alias("search_s"),
                                pl.lit(None, dtype=pl.Float64).alias("cpu_hours"))
     if by_tool.height:
         out = out.join(by_tool.rename({"queries_per_s": "_qps_tool",
+                                       "search_s": "_search_tool",
                                        "cpu_hours": "_cpu_tool"}),
                        on="tool", how="left")
     else:
         out = out.with_columns(pl.lit(None, dtype=pl.Float64).alias("_qps_tool"),
+                               pl.lit(None, dtype=pl.Float64).alias("_search_tool"),
                                pl.lit(None, dtype=pl.Float64).alias("_cpu_tool"))
     # coalesce, not min/max_horizontal: those skip nulls in a way that would silently
     # substitute the arm total wherever a variant genuinely measured zero.
     return out.with_columns(
         pl.coalesce("queries_per_s", "_qps_tool").alias("queries_per_s"),
+        pl.coalesce("search_s", "_search_tool").alias("search_s"),
         pl.coalesce("cpu_hours", "_cpu_tool").alias("cpu_hours"),
-    ).drop("_qps_tool", "_cpu_tool")
+    ).drop("_qps_tool", "_search_tool", "_cpu_tool")
 
 
 def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
@@ -1613,7 +1737,10 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
             "section_name": "Task run times",
             "description": ("Minutes per task. The spread within a process is what decides "
                             "the SLURM <code>time</code> request: sizing for the median "
-                            "means the tail gets killed and requeued."),
+                            "means the tail gets killed and requeued. For the search "
+                            "processes this is also the spread behind the frontier plot, "
+                            "which takes one median per arm out of these boxes and turns "
+                            "it into a rate."),
             "plot_type": "box",
             "pconfig": {"id": "qfo_res_walltime_plot", "title": "Run time per task",
                         "xlab": "minutes", "height": 500},
@@ -1820,55 +1947,18 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
         "data": {r["process"]: {c: r[c] for c in cats} for r in status.to_dicts()},
     })
 
-    # --- throughput per search task ---
-    searches = done.filter(pl.col("is_search") & (pl.col("realtime_s") > 0))
-    if searches.height:
-        annotate_all = searches.height <= ANNOTATE_EVERY_POINT_BELOW
-        points = {}
-        for i, r in enumerate(searches.to_dicts()):
-            # Grouped by tool, not by method class: with one point per search task there
-            # can be a dozen arms on the plot, and a legend of five class names cannot be
-            # clicked to isolate foldseek from reseek. Colour still carries the class, and
-            # the description says so.
-            variant = mt.variant_from_tag(r["process"], r["tag"])
-            label = label_of(r["tool"], variant)
-            species = mt.species_from_tag(r["tag"]) or "?"
-            points[f"{r['process']} {r['tag']} #{i}"] = scatter_point(
-                n_queries / r["realtime_s"], r["cpu_hours"] or 0,
-                name=f"{label} vs {species}", group=r["tool"],
-                color=tool_color(r["tool"]),
-                # Shape separates tools that share a class colour; the legend is grouped
-                # by tool, so each entry's swatch is that tool's own shape.
-                marker_symbol=TOOL_SYMBOL.get(r["tool"], "circle"),
-                annotation=f"{short_label(r['tool'], variant)} {species}"
-                           if annotate_all else None,
-            )
-        write_section(out, "qfo_res_throughput", {
-            "id": "qfo_res_throughput",
-            "section_name": "Throughput per search",
-            "description": (
-                f"One point per search task in {source}: query proteins per second of "
-                f"wall time against the CPU-hours that task billed, at {n_queries:,} "
-                "human queries — that is n_queries_all, every sequence in the query "
-                "FASTA, not the FoldSeek-intersected subset the accuracy sections use. "
-                "Every arm is divided by the same count.</p><p>Database construction is "
-                "NOT inside this measurement for any arm: each tool that needs one builds "
-                "it in a separate process (<code>foldseekDb</code>, "
-                "<code>kmerseekIndex</code>, and so on) and only the search process is "
-                "timed here. Index cost is under CPU time by process.</p><p>Each legend "
-                "entry is a tool; colour marks its method class — green kmerseek, "
-                "pink needs 3D structure, blue needs a language model, grey sequence "
-                "alignment, gold the annotation ceiling. kmerseek points come from the "
-                "timing records its tasks wrote for themselves, because that arm is on "
-                "<code>storeDir</code> and a store hit produces no trace row."),
-            "plot_type": "scatter",
-            "pconfig": {"id": "qfo_res_throughput_plot",
-                        "title": "Search throughput against cost",
-                        "xlab": "query proteins / s", "ylab": "CPU-hours",
-                        "xlog": True, "ylog": True, "height": 520, "marker_size": 8,
-                        "showlegend": True},
-            "data": points,
-        })
+    # There was a "Throughput per search" scatter here, one point per search task, plotting
+    # queries per second against that task's CPU-hours. Removed 2026-08-27, when the
+    # frontier plot gained the named duration lines and became the one place the report
+    # argues speed. Two reasons, and the weaker one first: its axes were the same
+    # measurement twice, since queries/s is 1/wall-time scaled by a constant and CPU-hours
+    # is wall-time times cores, so what the plot showed was mostly how many cores each arm
+    # was given. The real reason is that the same trade-off was then drawn twice, on the
+    # same y quantity, several sections apart, and a reader who has to reconcile two
+    # pictures of one trade-off takes away less than one who reads a single figure. What
+    # it uniquely carried is still here: per-task spread is the "Task run times" box plot
+    # above, billed cost is the CPU-hours bar in "CPU time by process", and the accuracy
+    # side of the trade is on the frontier.
 
 
 # ---------------------------------------------------------------------------

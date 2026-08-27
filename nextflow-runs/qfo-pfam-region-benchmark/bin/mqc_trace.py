@@ -62,6 +62,24 @@ SEARCH_PROCESSES = {
     "folddiscoQuery", "hmmscanAnnotate",
 }
 
+# Search processes whose wall time also covers building the target database. Only the
+# pre-split kmerseek process is one: since 2026-08-25 the index is built by kmerseekIndex,
+# so kmerseekSearch's time is search alone and every arm on the timing plots is charged
+# the same way. A plot that says "search only, index excluded" has to check that against
+# the trace it was handed rather than assert it, because `make multiqc` still reads back
+# traces written before the split and those really do include the index.
+FUSED_SEARCH_PROCESSES = {"kmerseekIndexAndSearch"}
+
+
+def fused_index_tools(trace: pl.DataFrame) -> list[str]:
+    """Tools whose search rows in THIS trace also paid for building the target index."""
+    if trace.height == 0 or "process" not in trace.columns:
+        return []
+    fused = trace.filter(pl.col("process").is_in(sorted(FUSED_SEARCH_PROCESSES)))
+    if fused.height == 0 or "tool" not in fused.columns:
+        return []
+    return sorted(set(fused["tool"].drop_nulls().to_list()))
+
 
 def parse_duration(text: str | None) -> float | None:
     """'2h 13m 7s' -> 7987.0 seconds. Returns None for '-' and empty fields."""
