@@ -59,8 +59,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # image rather than chosen, so pinning them changes nothing about what runs today and
 # makes a rebuild reproduce it instead of drifting.
 RUN pip3 install --no-cache-dir --break-system-packages \
-        'polars==1.43.2' 'pyarrow==25.0.1' 'numpy==2.5.2' \
-        'metapredict==3.0.1'
+        'polars==1.43.2' 'pyarrow==25.0.1' 'numpy==2.5.2'
 
 COPY --from=builder /build/target/release/kmerseek /usr/local/bin/kmerseek
 COPY --from=builder /build/GIT_SHA /etc/kmerseek_git_sha

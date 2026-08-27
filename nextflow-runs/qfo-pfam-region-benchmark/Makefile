@@ -29,6 +29,8 @@ IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
 #
 # The local run targets already did this with kmerseek-region:local. This is the same move
 # for the cluster.
+METAPREDICT_TAG    ?= 2026-08-27
+METAPREDICT_REMOTE := docker.io/olgabot/metapredict:$(METAPREDICT_TAG)
 FOLDDISCO_TAG    ?= 2026-08-20-noentrypoint
 FOLDDISCO_REMOTE := docker.io/olgabot/folddisco:$(FOLDDISCO_TAG)
 KMERSEEK_SRC   := /Users/olga/code/kmerseek/.claude/worktrees/reduced-alphabets
@@ -148,7 +150,8 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
                   docker.io/olgabot/kmerseek:$(IMAGE_TAG) $(FOLDDISCO_REMOTE)
 
 .PHONY: bootstrap-sherlock build-image build-image-local push-image \
-        build-folddisco-image push-folddisco-image structure-lists fetch-structures \
+        build-folddisco-image push-folddisco-image \
+        build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
         fetch-structures-mac \
@@ -337,6 +340,16 @@ build-image-local:
 # folddisco with ENTRYPOINT cleared. The upstream image's entrypoint becomes the SIF
 # runscript under Apptainer and stops Nextflow running /bin/bash, so the task exits 1 with
 # no output whatsoever. Docker does not reproduce it.
+build-metapredict-image:
+	$(call require_mac)
+	docker build --platform $(DOCKER_PLATFORM) -t metapredict:latest \
+	  -f Dockerfile.metapredict .
+
+push-metapredict-image: build-metapredict-image
+	$(call require_mac)
+	docker tag metapredict:latest $(METAPREDICT_REMOTE)
+	docker push $(METAPREDICT_REMOTE)
+
 build-folddisco-image:
 	$(call require_mac)
 	docker build --platform $(DOCKER_PLATFORM) -t folddisco-noentry:latest \
