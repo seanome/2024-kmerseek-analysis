@@ -782,7 +782,10 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
         return truth.with_columns(pl.lit(None, dtype=pl.String).alias("stratum_identity"))
 
     key = ["accession", "pfam_id", "domain_start", "domain_end"]
-    joined = truth.join(identity.select(key + ["best_pident"]), on=key, how="left")
+    # best_target rides along so a covariate of the winning target can be attached to this
+    # human instance downstream. It is only present in tables written after 2026-08-27.
+    cols = key + ["best_pident"] + (["best_target"] if "best_target" in identity.columns else [])
+    joined = truth.join(identity.select(cols), on=key, how="left")
 
     expr = pl.when(pl.col("best_pident").is_null()).then(pl.lit("no_homolog"))
     for lo, hi in zip(IDENTITY_BINS[:-1], IDENTITY_BINS[1:]):
@@ -790,6 +793,47 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
             (pl.col("best_pident") >= lo) & (pl.col("best_pident") < hi)
         ).then(pl.lit(f"{int(lo)}-{int(hi)}%"))
     return joined.with_columns(expr.otherwise(None).alias("stratum_identity"))
+
+
+def attach_target_disorder(truth: pl.DataFrame,
+                           target_disorder: pl.DataFrame | None) -> pl.DataFrame:
+    """Bin each human instance by the disorder of the TARGET it could best transfer from.
+
+    The query-side disorder axis asks whether a tool copes with a disordered human region.
+    This asks the other half, and for a structure-based method it is the half that bites:
+    foldseek and reseek align a structure to a structure, so a target with no confident
+    structure defeats them however well-ordered the human query is. A sequence-only method
+    has no such dependency on either side.
+
+    "The target it could best transfer from" is the same instance-level definition the
+    identity axis uses -- the closest same-family domain in that proteome -- so the two
+    axes describe the same target and can be read together. That is why this needs
+    best_target from parse_domain_identity rather than a per-proteome average, which would
+    only tell you the species.
+
+    Bins match the query-side disorder edges so the two are directly comparable.
+    """
+    none = pl.lit(None, dtype=pl.String)
+    if (target_disorder is None or target_disorder.height == 0
+            or "best_target" not in truth.columns):
+        return truth.with_columns(none.alias("stratum_disorder_target"))
+
+    col = "disorder_fraction_metapredict"
+    if col not in target_disorder.columns:
+        return truth.with_columns(none.alias("stratum_disorder_target"))
+
+    joined = truth.join(
+        target_disorder.select(pl.col("accession").alias("best_target"),
+                               pl.col(col).alias("target_disorder")),
+        on="best_target", how="left",
+    )
+    edges = STRATA["disorder"][1]
+    expr = pl.when(pl.col("target_disorder").is_null()).then(none)
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        expr = expr.when(
+            (pl.col("target_disorder") >= lo) & (pl.col("target_disorder") < hi)
+        ).then(pl.lit(f"{lo}-{hi}"))
+    return joined.with_columns(expr.otherwise(None).alias("stratum_disorder_target"))
 
 
 def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
@@ -1051,6 +1095,10 @@ def main():
                         "per-species plots")
     p.add_argument("--truth", required=True, type=Path)
     p.add_argument("--domain-map", type=Path)
+    p.add_argument("--target-disorder", type=Path,
+                   help="optional metapredict parquet for THIS species' proteome; bins each "
+                        "human instance by the disorder of the target it could best "
+                        "transfer from. Requires an --identity table carrying best_target.")
     p.add_argument("--identity", type=Path,
                    help="per-domain-pair percent identity for this species; the "
                         "twilight-zone stratification axis")
@@ -1124,6 +1172,15 @@ def main():
     truth = attach_strata(truth, covariates,
                           keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
     truth = attach_identity(truth, identity)
+
+    target_disorder = None
+    if (args.target_disorder and args.target_disorder.exists()
+            and args.target_disorder.stat().st_size > 0):
+        try:
+            target_disorder = pl.read_parquet(args.target_disorder)
+        except Exception:
+            target_disorder = None   # sentinel file when the arm is skipped
+    truth = attach_target_disorder(truth, target_disorder)
 
     # One job per (tool, variant) when batched, or the single --regions when not. Batching
     # exists because SLURM rate-limits submission: one task per (truth_set, species, tool,

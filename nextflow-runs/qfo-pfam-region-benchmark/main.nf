@@ -2081,7 +2081,7 @@ process scoreDomainCalls {
     input:
     tuple val(truth_set), val(species), val(tools), val(variants), val(mya),
           path(regions, arity: '1..*'), path(truth), path(domain_map),
-          path(covariates), path(identity)
+          path(covariates), path(identity), path(target_disorder)
 
     // Globs, because one task now writes a trio per arm. arity '1..*' for the same reason
     // it is on kmerseekIndex's chunk output: a glob emits a bare Path on a single match and
@@ -2099,6 +2099,8 @@ process scoreDomainCalls {
     // interval-semantics and dedup-fragments used to be decided here per tool. They now live
     // in evaluate_domain_calls.score_one, because a manifest row carries only the tool name
     // and the policy has to be derived from it in exactly one place.
+    def tdis_arg = target_disorder.name == 'NO_DISORDER' ? ""
+                   : "--target-disorder ${target_disorder}"
     def manifest_rows = [tools, variants, regions].transpose()
         .collect { t, v, r -> "${t}\t${v}\t${r}" }.join("\n")
     """
@@ -2116,6 +2118,7 @@ MANIFEST_EOF
         --domain-map   ${domain_map} \\
         --covariates   ${covariates} \\
         --identity     ${identity} \\
+        ${tdis_arg} \\
         --min-overlap  ${params.min_overlap} \\
         --strict-iou   ${params.strict_iou} \\
         --truth-set    ${truth_set}
@@ -2924,14 +2927,36 @@ workflow {
     //
     // truth, domain_map, covariates and identity are identical within a group, so .first()
     // on each is exact rather than an approximation; only tools, variants and regions vary.
-    score_grouped = score_in
+    // Each species' own proteome disorder, keyed by the filename proteomeDisorder writes.
+    // Falls back to the sentinel per species rather than globally, so a species whose
+    // prediction is missing loses only its own target-side axis.
+    tdis_by_species = params.skip_metapredict
+        ? Channel.empty()
+        : disorder_all.map { f -> tuple(f.name.replaceAll(/\.disorder_metapredict\.parquet$/, ''), f) }
+
+    score_in = score_in
         .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident ->
+            tuple(sp, ts, tool, variant, mya, regions, truth, dm, cov, ident)
+        }
+        .combine(
+            params.skip_metapredict
+                ? Channel.fromList(SPECIES.collect {
+                      tuple(it.label, file("${projectDir}/assets/NO_DISORDER")) })
+                : tdis_by_species,
+            by: 0
+        )
+        .map { sp, ts, tool, variant, mya, regions, truth, dm, cov, ident, tdis ->
+            tuple(ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis)
+        }
+
+    score_grouped = score_in
+        .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis ->
             // groupKey carries the expected size WITH the key, so each (truth_set, species)
             // group is released the moment its own arms are all in rather than when the
             // whole channel closes. Without it, no scoring could start until the last
             // kmerseek search of the last species finished.
             tuple(groupKey(tuple(ts, sp), arms_per_species[sp]),
-                  tool, variant, mya, regions, truth, dm, cov, ident)
+                  tool, variant, mya, regions, truth, dm, cov, ident, tdis)
         }
         // remainder: true is the safety net for the count being WRONG. If arms_per_species
         // over-counts, the group never reaches its size and would hang forever; with
@@ -2939,9 +2964,9 @@ workflow {
         // behaviour this change replaces. An under-count still emits early, which is why
         // the count is accumulated beside the arms rather than restated.
         .groupTuple(by: 0, remainder: true)
-        .map { key, tools, variants, myas, regions, truths, dms, covs, idents ->
+        .map { key, tools, variants, myas, regions, truths, dms, covs, idents, tdiss ->
             tuple(key[0], key[1], tools, variants, myas.first(), regions,
-                  truths.first(), dms.first(), covs.first(), idents.first())
+                  truths.first(), dms.first(), covs.first(), idents.first(), tdiss.first())
         }
 
     log.info "  scoring : one task per (truth set, species); arms per species = " +

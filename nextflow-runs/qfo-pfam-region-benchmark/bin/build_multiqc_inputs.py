@@ -717,6 +717,15 @@ COVARIATE_AXES = {
         "baselines. metapredict needs no structure and no alignment, so it shares neither "
         "confound. The two axes disagreeing is itself a finding.",
     ),
+    "disorder_target": (
+        "Disorder (target side)",
+        "Fmax by the disorder of the TARGET each human instance could best transfer from -- "
+        "the same closest same-family domain the identity axis uses, so the two describe "
+        "the same target. This is the half that bites a structure-based method: foldseek "
+        "and reseek align a structure to a structure, so a target with no confident "
+        "structure defeats them however well-ordered the human query is. A sequence-only "
+        "method has no such dependency on either side, and this is where that should show.",
+    ),
     "plddt": (
         "Model confidence",
         "Fmax by the query structure's mean pLDDT. Distinct from the disorder axis: a "
