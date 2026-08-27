@@ -777,6 +777,84 @@ def section_covariates(out: Path, metrics: pl.DataFrame, primary_truth: str,
         })
 
 
+# Families ranked by the gap between kmerseek and the best baseline, not by size. "The
+# twenty biggest families" answers a question nobody asked; "where does this method win and
+# where does it lose" is the one a reader has.
+#
+# This is NOT a confound check, which is the usual reason to look at family identity.
+# Notebook 206 excluded C2H2 zinc fingers because tandem arrays inflate PROTEIN-level
+# k-mer sharing through repeat content, which is real when the scored object is a protein
+# pair. Here it is a domain instance -- a twelve-finger protein contains twelve domains and
+# the right answer is twelve correctly-bounded regions -- so that exclusion belonged to a
+# different unit of analysis and attach_strata keeps them in. This section answers the
+# other question: which families each method is actually good and bad at.
+def section_hgnc(out: Path, metrics: pl.DataFrame, primary_truth: str,
+                 min_instances: int, top_n: int) -> None:
+    """Where kmerseek beats the best baseline by family, and where it loses."""
+    cut, split = pick_split(metrics.filter(pl.col("truth_set") == primary_truth))
+    fam = cut.filter(pl.col("stratum_axis") == "hgnc")
+    if fam.height == 0:
+        return
+
+    # Small families rank on noise: one instance found or missed swings Fmax a long way,
+    # and the tail of HGNC groups is mostly singletons. Filtered on the ANSWER KEY's size
+    # rather than on how many any tool found, so the threshold cannot depend on the tools
+    # being compared.
+    if "n_truth_instances" in fam.columns:
+        sizes = (fam.group_by("stratum")
+                    .agg(pl.col("n_truth_instances").max().alias("n_inst"))
+                    .filter(pl.col("n_inst") >= min_instances))
+        fam = fam.join(sizes, on="stratum", how="inner")
+    else:
+        fam = fam.with_columns(pl.lit(None, dtype=pl.Int64).alias("n_inst"))
+
+    is_ks = pl.col("tool") == "kmerseek"
+    ks = fam.filter(is_ks).group_by("stratum").agg(pl.col("fmax").max().alias("ks_fmax"))
+    bl = (fam.filter(~is_ks).sort("fmax", descending=True, nulls_last=True)
+             .group_by("stratum")
+             .agg(pl.col("fmax").first().alias("bl_fmax"),
+                  pl.col("label").first().alias("bl_label")))
+    joined = (ks.join(bl, on="stratum", how="inner")
+                .join(fam.group_by("stratum").agg(pl.col("n_inst").max()),
+                      on="stratum", how="left")
+                .with_columns((pl.col("ks_fmax") - pl.col("bl_fmax")).alias("gap"))
+                .sort("gap", descending=True, nulls_last=True))
+    if joined.height == 0:
+        return
+
+    # Both ends, not one. A section that showed only the wins would be marketing.
+    head = joined.head(top_n)
+    tail = joined.tail(top_n).filter(~pl.col("stratum").is_in(head["stratum"].to_list()))
+    rows = {}
+    for r in head.to_dicts() + tail.sort("gap").to_dicts():
+        rows[r["stratum"]] = {"instances": r["n_inst"], "kmerseek": r["ks_fmax"],
+                              "baseline": r["bl_fmax"], "best_baseline": r["bl_label"],
+                              "gap": r["gap"]}
+    write_section(out, "qfo_hgnc", {
+        "id": "qfo_hgnc",
+        "section_name": "Families won and lost",
+        "description": (
+            f"Best kmerseek variant against the best non-kmerseek tool, per HGNC gene group "
+            f"({primary_truth} truth, <code>{split}</code> split). Positive gap is kmerseek "
+            f"ahead. The {top_n} largest gaps in each direction, among families with at "
+            f"least {min_instances} instances in the answer key -- below that, one instance "
+            "found or missed is enough to rank a family on noise. C2H2 zinc fingers are "
+            "included: the repeat-content confound that excludes them elsewhere is about "
+            "protein-level k-mer sharing, and the scored object here is the domain instance."),
+        "plot_type": "table",
+        "pconfig": {"id": "qfo_hgnc_table", "title": "kmerseek minus best baseline, by family",
+                    "col1_header": "HGNC gene group", "sort_rows": False, "scale": False},
+        "headers": {
+            "instances": dict(title="Instances", format="{:,.0f}", scale="Blues"),
+            "kmerseek": dict(title="kmerseek Fmax", format="{:.3f}", scale="Greens", min=0, max=1),
+            "baseline": dict(title="Best baseline Fmax", format="{:.3f}", scale="Purples", min=0, max=1),
+            "best_baseline": dict(title="Which baseline", scale=False),
+            "gap": dict(title="Gap", format="{:+.3f}", scale="RdYlGn"),
+        },
+        "data": rows,
+    })
+
+
 def section_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
                        max_tools: int) -> None:
     """Fmax against divergence time. The species IS the divergence axis here."""
@@ -1856,6 +1934,11 @@ def main():
                    help="Truth set the frontier and curve sections use. Defaults to "
                         "swissprot when present, since Pfam is circular with the profile "
                         "baselines, else the first set found.")
+    p.add_argument("--hgnc-min-instances", type=int, default=20,
+                   help="Skip HGNC families with fewer instances in the answer key than "
+                        "this; below it Fmax ranks on noise")
+    p.add_argument("--hgnc-top-n", type=int, default=15,
+                   help="Families shown at each end of the kmerseek-minus-baseline gap")
     p.add_argument("--max-tools", type=int, default=20,
                    help="Rows per grouped plot, ranked by Fmax")
     p.add_argument("--top-kmerseek", type=int, default=TOP_KMERSEEK,
@@ -1890,6 +1973,8 @@ def main():
     section_curves(args.outdir, curves, metrics, primary, args.max_lines)
     section_identity(args.outdir, metrics, primary, args.max_tools)
     section_covariates(args.outdir, metrics, primary, args.max_tools)
+    section_hgnc(args.outdir, metrics, primary,
+                 args.hgnc_min_instances, args.hgnc_top_n)
     section_divergence(args.outdir, metrics, primary, args.max_tools)
     section_truthsets(args.outdir, metrics, args.max_tools)
     section_alphabet_matrix(args.outdir, metrics, primary)
