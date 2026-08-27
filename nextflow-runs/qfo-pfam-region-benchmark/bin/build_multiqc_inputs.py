@@ -204,6 +204,26 @@ def pick_split(df: pl.DataFrame) -> tuple[pl.DataFrame, str]:
     return df.filter(pl.col("split") == "all"), "all"
 
 
+def split_per_truth_set(df: pl.DataFrame) -> tuple[pl.DataFrame, dict[str, str]]:
+    """Each truth set's own best split, kept together, with what was picked for each.
+
+    Truth sets do not all have the same splits. Only Pfam is swept over alphabet x ksize
+    and so only Pfam has a selection/heldout partition; Swiss-Prot and Pfam-N are scored
+    whole. Running pick_split over the pooled frame therefore found Pfam's heldout rows,
+    kept them, and dropped every other truth set from the section entirely, which took the
+    two non-circular truth sets out of the leaderboard and made the circularity plot
+    disappear because it was left with one set to compare.
+    """
+    picked = {}
+    frames = []
+    for ts in sorted(df["truth_set"].unique().to_list()):
+        sub, split = pick_split(df.filter(pl.col("truth_set") == ts))
+        if sub.height:
+            frames.append(sub)
+            picked[ts] = split
+    return (pl.concat(frames) if frames else df.head(0)), picked
+
+
 def ungrouped(df: pl.DataFrame) -> pl.DataFrame:
     if "stratum_axis" not in df.columns:
         return df
@@ -238,27 +258,117 @@ def short_label(tool: str, variant: str) -> str:
                    .replace("_lcFalse", " lc-"))
 
 
-def best_variants(df: pl.DataFrame, top_kmerseek: int = TOP_KMERSEEK) -> pl.DataFrame:
-    """Each tool's best variant, plus kmerseek's top `top_kmerseek`, ranked by Fmax.
+# The second headline metric, and the one the remote-homology baselines this benchmark
+# cites actually report. Fmax is threshold-optimised but precision-dominated: phmmer on
+# mouse Swiss-Prot finds 1_745 true calls against 94_992 false ones, so Fmax is pinned near
+# 0.1 for every tool and small precision differences decide the ranking. Sensitivity to the
+# first false positive is threshold-free and per-query, so it measures ranking quality
+# instead. The two disagree hard enough here to reorder the board, which is why the
+# leaderboard selects on both and shows both rather than picking one silently.
+RANKING_METRICS = ["fmax", "sens_first_fp_mean"]
+
+# Below this a call-level ROC AUC is worse than a coin flip. Counted per species rather
+# than judged off the mean, because the mean hides how many species it happened in.
+CHANCE = 0.5
+
+
+def _guard_single_truth_set(df: pl.DataFrame, across_truth_sets: bool) -> None:
+    """The "never pool truth sets" convention, enforced instead of only documented.
+
+    Pfam is circular with the profile baselines and Swiss-Prot is not, so a mean over the
+    two has no interpretation. The report's Truth sets section asserts that no number is
+    ever averaged across them; this is the check that makes the assertion true. Any section
+    that hands mixed rows to the aggregator fails loudly at build time rather than emitting
+    a plausible-looking number nobody can trace.
+
+    Opt out only where crossing sets is the point and nothing displayed is a cross-set
+    mean, which is the side-by-side circularity plot and nothing else.
+    """
+    if across_truth_sets or "truth_set" not in df.columns:
+        return
+    found = df["truth_set"].unique().to_list()
+    if len(found) > 1:
+        raise ValueError(
+            f"best_variants got {len(found)} truth sets ({', '.join(sorted(found))}) in "
+            "one frame. Averaging across truth sets has no interpretation: Pfam is "
+            "circular with the profile baselines and Swiss-Prot is not. Filter to one "
+            "truth set, or pass across_truth_sets=True if only the row selection crosses "
+            "sets and no displayed number does."
+        )
+
+
+def best_variants(df: pl.DataFrame, top_kmerseek: int = TOP_KMERSEEK, *,
+                  across_truth_sets: bool = False) -> pl.DataFrame:
+    """Each tool's best variant, plus kmerseek's top `top_kmerseek` under each ranking
+    metric, ranked by Fmax.
 
     Averaged over species before ranking, never summed -- summing would let the species
-    with the most annotated proteins pick the winner.
+    with the most annotated proteins pick the winner. The mean is not enough on its own,
+    so `fmax_sd`, `fmax_min` and `fmax_max` come back beside it: Fmax varies several-fold
+    across the nine target proteomes and the size of that variation differs between tools,
+    which is a result rather than noise to be averaged away.
 
-    Columns: tool, variant, label, n_species, and every headline metric.
+    Selection is the union of the top combos under every metric in RANKING_METRICS, so a
+    variant that ranks first on one and nowhere on the other still appears. Ranking on Fmax
+    alone made the sensitivity column unreadable: the row it belonged to was not in the
+    table. Every baseline still contributes exactly one variant because none of them has
+    more than one, so the union only ever widens the kmerseek block.
+
+    `rank_fmax` and `rank_sens_first_fp_mean` are ranks over every variant scored, not over the
+    rows kept, so they say where a row sits in the whole sweep rather than in the table.
+
+    Columns: tool, variant, label, n_species, the Fmax spread, both ranks, the sub-chance
+    ROC count, and every headline metric.
     """
     cols = [c for c in HEADLINE if c in df.columns]
     if not cols or df.height == 0:
         return df.head(0)
+    _guard_single_truth_set(df, across_truth_sets)
+
+    extra = [pl.col("species").n_unique().alias("n_species"),
+             pl.col("fmax").std().alias("fmax_sd"),
+             pl.col("fmax").min().alias("fmax_min"),
+             pl.col("fmax").max().alias("fmax_max")]
+    # A sensitivity averaged over 144 ranked proteins is not the same measurement as one
+    # averaged over 542, so the denominator travels with the metric. Mean rather than sum:
+    # it is a per-species count and the other columns are per-species means too.
+    if "n_proteins_ranked" in df.columns:
+        extra.append(pl.col("n_proteins_ranked").mean().alias("n_proteins_ranked"))
+        # The mean hides the worst case, and the worst case is severe: wwmj5 k17 ranks 677
+        # human proteins against mouse and 1 against Ciona, and that single protein scored
+        # 0.333 where the nine-species average is 0.116. Species are weighted equally here
+        # on purpose, so the guard is to show the denominator rather than to reweight.
+        extra.append(pl.col("n_proteins_ranked").min().alias("n_proteins_ranked_min"))
+    if "sens_first_fp_median" in df.columns:
+        extra.append(pl.col("sens_first_fp_median").mean().alias("sens_first_fp_median"))
+    if "roc_auc" in df.columns:
+        extra.append((pl.col("roc_auc") < CHANCE).sum().alias("roc_auc_sub_chance"))
+
     per_variant = (
         df.group_by("tool", "variant")
-        .agg([pl.col(c).mean() for c in cols]
-             + [pl.col("species").n_unique().alias("n_species")])
+        .agg([pl.col(c).mean() for c in cols] + extra)
         .sort("fmax", descending=True, nulls_last=True)
     )
+    if per_variant.height == 0:
+        return per_variant
+
+    ranked_by = [m for m in RANKING_METRICS if m in per_variant.columns]
+    per_variant = per_variant.with_columns(
+        [pl.col(m).rank(method="min", descending=True).cast(pl.Int64).alias(f"rank_{m}")
+         for m in ranked_by]
+        # Constant, so any caller can quote the denominator the ranks are out of without
+        # regrouping the frame. A rank of 1 among a handful of baselines and a rank of 1
+        # across the whole sweep are different claims.
+        + [pl.lit(per_variant.height, dtype=pl.Int64).alias("n_variants_ranked")]
+    )
+
     kept = pl.concat([
-        group.head(top_kmerseek if tool == "kmerseek" else 1)
+        group.sort(metric, descending=True, nulls_last=True)
+             .head(top_kmerseek if tool == "kmerseek" else 1)
+        for metric in ranked_by
         for (tool,), group in per_variant.group_by("tool", maintain_order=True)
-    ]) if per_variant.height else per_variant
+    ]).unique(subset=["tool", "variant"], keep="first", maintain_order=True)
+
     return (
         kept.with_columns(
             pl.struct("tool", "variant")
@@ -274,11 +384,46 @@ def fmt_metric_headers(cols: list[str]) -> dict:
     """Column formatting for the leaderboard tables, keyed by metric name."""
     spec = {
         "variant": dict(title="Variant", description="Ranked by mean Fmax over species"),
-        "fmax":         dict(title="Fmax", description="CAFA protein-centric Fmax", min=0, max=1,
-                             scale="RdYlGn", format="{:,.3f}"),
+        "fmax":         dict(title="Fmax (mean)",
+                             description="CAFA protein-centric Fmax, mean over target "
+                                         "species. Read it with the SD and range beside "
+                                         "it, never on its own",
+                             min=0, max=1, scale="RdYlGn", format="{:,.3f}"),
+        # The spread columns are the point of the block, so none of them is hidden. A
+        # several-fold difference in SD between tools is a result about consistency across
+        # divergence, and it is invisible in the mean.
+        "fmax_sd":      dict(title="Fmax SD", scale="Reds", format="{:,.3f}",
+                             description="Standard deviation over target species; high "
+                                         "means the mean describes no single species well"),
+        "fmax_min":     dict(title="Fmax min", min=0, max=1, scale="Blues",
+                             format="{:,.3f}",
+                             description="Worst target species"),
+        "fmax_max":     dict(title="Fmax max", min=0, max=1, scale="Blues",
+                             format="{:,.3f}",
+                             description="Best target species"),
+        "rank_fmax":    dict(title="Rank (Fmax)", format="{:,.0f}", scale="Greys-rev",
+                             description="Rank among every variant scored, not among the "
+                                         "rows shown"),
+        "rank_sens_first_fp_mean": dict(title="Rank (sens.)", format="{:,.0f}",
+                                        scale="Greys-rev",
+                                        description="Rank among every variant scored by "
+                                                    "sensitivity to first false positive. "
+                                                    "A large gap from the Fmax rank means "
+                                                    "the two metrics disagree on this row"),
         "auprc":        dict(title="AUPRC", description="Area under precision / reachable-recall",
                              min=0, max=1, scale="Blues", format="{:,.3f}"),
-        "roc_auc":      dict(title="ROC AUC", min=0, max=1, scale="Purples", format="{:,.3f}"),
+        "roc_auc":      dict(title="ROC AUC", min=0, max=1, scale="Purples", format="{:,.3f}",
+                             description="Call-level, pooled across query proteins. Read "
+                                         "the sub-chance count beside it before using this "
+                                         "column"),
+        # A mean ROC AUC just under 0.5 reads as "slightly weak" on a 0-1 ramp when it
+        # actually means correct calls rank below incorrect ones. The count says in how
+        # many species that happened, which separates a real ordering failure from one tiny
+        # proteome dragging an unweighted mean down.
+        "roc_auc_sub_chance": dict(title="ROC < 0.5", format="{:,.0f}", scale="Reds",
+                                   description="Target species where a correct call was "
+                                               "LESS likely to outrank an incorrect one "
+                                               "than a coin flip"),
         "recall_reachable": dict(title="Recall (reachable)", min=0, max=1, scale="Greens",
                                  format="{:,.3f}",
                                  description="Of the domains transferable from this target "
@@ -294,7 +439,29 @@ def fmt_metric_headers(cols: list[str]) -> dict:
         "sens_first_fp_mean": dict(title="Sens. to 1st FP", min=0, max=1, scale="YlGn",
                                    format="{:,.3f}",
                                    description="Domains recovered above a query's first "
-                                               "false positive"),
+                                               "false positive, averaged over query "
+                                               "proteins. Threshold-free, so it measures "
+                                               "ranking rather than cutoff choice"),
+        "sens_first_fp_median": dict(title="Sens. (median)", min=0, max=1, scale="YlGn",
+                                     format="{:,.3f}",
+                                     description="Median over query proteins. Far below "
+                                                 "the mean means a few queries carry the "
+                                                 "score"),
+        # Without this the sensitivity column is unreadable: it is averaged only over
+        # queries a tool produced a ranking for, so a tool that answers on a sixth of the
+        # proteins is scored on an easier sixth.
+        "n_proteins_ranked": dict(title="Proteins ranked", format="{:,.0f}", scale="Blues",
+                                  description="Query proteins the sensitivity is averaged "
+                                              "over, per species. A high sensitivity over "
+                                              "few proteins is not comparable to the same "
+                                              "number over many"),
+        "n_proteins_ranked_min": dict(title="Ranked (min)", format="{:,.0f}", scale="Blues",
+                                      hidden=True,
+                                      description="Worst target species. Species are "
+                                                  "weighted equally, so a species with a "
+                                                  "handful of ranked proteins moves the "
+                                                  "sensitivity as much as one with "
+                                                  "hundreds"),
         "n_species":    dict(title="Species", format="{:,.0f}", scale=False),
     }
     return {c: spec[c] for c in cols if c in spec}
@@ -304,22 +471,107 @@ def fmt_metric_headers(cols: list[str]) -> dict:
 # sections: accuracy
 # ---------------------------------------------------------------------------
 
+# Column order for the leaderboard. Fmax and its spread first, because that block is one
+# claim and splitting it lets the mean be read alone. The sensitivity block second with its
+# denominator attached, then ROC with its sub-chance count, then the rest of the headline
+# metrics in HEADLINE order.
+LEADERBOARD_COLS = (
+    ["variant", "n_species",
+     "fmax", "fmax_sd", "fmax_min", "fmax_max", "rank_fmax",
+     "sens_first_fp_mean", "sens_first_fp_median", "n_proteins_ranked",
+     "n_proteins_ranked_min", "rank_sens_first_fp_mean",
+     "roc_auc", "roc_auc_sub_chance"]
+    + [c for c in HEADLINE if c not in {"fmax", "sens_first_fp_mean", "roc_auc"}]
+)
+
+
+def widest_spread(board: pl.DataFrame) -> str:
+    """The board's own worst case for reading a mean as one number, named and quoted.
+
+    Measured off the run rather than written into the prose. An earlier draft hard-coded
+    the Swiss-Prot figures, which then appeared verbatim on the Pfam board where they were
+    simply wrong.
+    """
+    if board.height == 0 or "fmax_min" not in board.columns:
+        return ""
+    row = (board.drop_nulls(["fmax_min", "fmax_max"])
+                .sort(pl.col("fmax_max") - pl.col("fmax_min"), descending=True))
+    if row.height == 0:
+        return ""
+    r = row.row(0, named=True)
+    return (f" The widest here is {r['label']}, which averages {r['fmax']:.3f} but runs "
+            f"from {r['fmax_min']:.3f} on its worst target proteome to {r['fmax_max']:.3f} "
+            f"on its best.")
+
+
+def call_imbalance(cut: pl.DataFrame) -> str:
+    """False calls per true call, pooled over this truth set, for the precision argument.
+
+    Fmax being precision-dominated is a claim about this run's class balance, so it is
+    measured here instead of asserted. Pooled over tools and species: the point is the
+    order of magnitude a reader is up against, not any one tool's ratio.
+    """
+    need = {"n_tp_calls", "n_fp_calls"}
+    if not need.issubset(set(cut.columns)):
+        return ""
+    tp = cut["n_tp_calls"].sum() or 0
+    fp = cut["n_fp_calls"].sum() or 0
+    if tp <= 0 or fp <= 0:
+        return ""
+    return (f" Across every tool and target species on this truth set there are "
+            f"{fp / tp:,.0f} false calls for every true one, which is why.")
+
+
 def section_leaderboards(out: Path, metrics: pl.DataFrame,
                          top_kmerseek: int = TOP_KMERSEEK) -> None:
-    cut, split = pick_split(ungrouped(metrics))
-    for ts in sorted(cut["truth_set"].unique().to_list()):
-        board = best_variants(cut.filter(pl.col("truth_set") == ts), top_kmerseek)
+    # Per truth set, not once for the whole frame: see split_per_truth_set. A single global
+    # pick_split kept Pfam's heldout rows and dropped every other truth set, leaving the
+    # report with one leaderboard and it was the circular one.
+    base, picked = split_per_truth_set(ungrouped(metrics))
+    for ts in sorted(picked):
+        cut, split = base.filter(pl.col("truth_set") == ts), picked[ts]
+        board = best_variants(cut, top_kmerseek)
         if board.height == 0:
             continue
-        cols = ["variant", "n_species"] + [c for c in HEADLINE if c in board.columns]
+        cols = [c for c in LEADERBOARD_COLS if c in board.columns]
         data = {row["label"]: {c: row[c] for c in cols} for row in board.to_dicts()}
+        n_ranked = board["n_variants_ranked"][0] if "n_variants_ranked" in board.columns else 0
         write_section(out, f"qfo_leaderboard_{ts}", {
             "id": f"qfo_leaderboard_{ts}",
             "section_name": f"Leaderboard — {ts} truth",
             "description": (
-                f"Each tool's best variant and the sweep's top {top_kmerseek} combos, "
-            f"averaged over target species, on the "
-                f"<code>{split}</code> split with no stratification. "
+                f"Each tool's best variant and the sweep's top {top_kmerseek} combos under "
+                f"each of the two ranking metrics, on the <code>{split}</code> split with "
+                f"no stratification. Ranks are out of the {n_ranked:,} variants scored "
+                "against this truth set.<br>"
+                "<b>Fmax is a mean over target species and the species disagree.</b> The "
+                "SD, min and max columns are there so the mean is never read as a single "
+                "number, and the SD itself separates tools that hold up across divergence "
+                "from tools that do not."
+                + widest_spread(board) +
+                " The Divergence section plots the same per-species values against time "
+                "since the common ancestor, which is what explains the spread.<br>"
+                "<b>Two headline metrics, and they disagree.</b> Fmax is precision-"
+                "dominated here, so it mostly ranks tools on how little they say."
+                + call_imbalance(cut) +
+                " Sensitivity to the first false positive is threshold-free and "
+                "per-query, and is what the "
+                "structure-search baselines this benchmark compares against report. Rows "
+                "are ordered by Fmax; the two rank columns say where each row sits under "
+                "each metric, and a row with rank 1 under one and rank 200 under the other "
+                "is the disagreement rather than a mistake. Read the sensitivity column "
+                "with <code>Proteins ranked</code> beside it: it is averaged only over "
+                "queries the tool produced a ranking for, so a tool that answers on a "
+                "sixth of the proteins is being scored on an easier sixth. The hidden "
+                "<code>Ranked (min)</code> column is the worst target species, and it can "
+                "fall to single digits.<br>"
+                "<b>ROC AUC is call-level and pooled across queries</b>, whose scores are "
+                "not on a common scale, so it can and does fall below chance while Fmax "
+                "rises. The <code>ROC &lt; 0.5</code> column counts the target species "
+                "where that happened, which is the number to read; the mean can be pulled "
+                "under 0.5 by one proteome with a handful of calls. Where that count is "
+                "high the ordering claim does not hold and the ROC value should not be "
+                "quoted.<br>"
                 + ("Pfam-A domains are defined by profile HMMs, so this truth set is "
                    "circular with phmmer, jackhmmer, hhblits and hmmscan and flatters "
                    "them. Compare against the Swiss-Prot and Pfam-N boards before "
@@ -997,44 +1249,80 @@ def section_hgnc(out: Path, metrics: pl.DataFrame, primary_truth: str,
     })
 
 
+def _panel_ymax(panel: dict) -> float:
+    """Top of a divergence panel's axis, from the panel's own values.
+
+    A fixed ymax of 1 was squashing Fmax into the bottom fifth of the plot, which is where
+    the per-species spread lives. The panels are on different scales -- Fmax tops out near
+    0.2 while reachable recall reaches 0.6 -- so each gets its own limit rather than one
+    shared limit sized by whichever panel happens to be largest. Padded 15%, and never
+    below a small floor so an all-zero panel still draws an axis.
+    """
+    values = [v for series in panel.values() for v in series.values() if v is not None]
+    return max(max(values, default=0.0) * 1.15, 0.05)
+
+
 def section_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
                        max_tools: int) -> None:
-    """Fmax against divergence time. The species IS the divergence axis here."""
+    """Both headline metrics against divergence time. The species IS the divergence axis.
+
+    This is the per-species view the leaderboard's means are taken over: nine points per
+    line, one per target proteome. The leaderboard carries the spread as SD and range;
+    this carries its shape, ordered on the axis that explains it. Sensitivity to the first
+    false positive gets a panel here too, because it disagrees with Fmax on which variants
+    are best and a reader comparing them needs both against the same axis.
+    """
     cut, split = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
     cut = cut.filter(pl.col("species") != "all")
     if cut.height == 0 or "species_mya" not in cut.columns:
         return
     board = best_variants(cut).head(max_tools)
     keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
-    data, recall = {}, {}
+    has_sens = "sens_first_fp_mean" in cut.columns
+    data, recall, sens = {}, {}, {}
     for tool, variant, label in keep:
+        aggs = [pl.col("fmax").mean(), pl.col("recall").mean(),
+                pl.col("recall_reachable").mean()]
+        if has_sens:
+            aggs.append(pl.col("sens_first_fp_mean").mean())
         sub = (cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
-                  .group_by("species_mya")
-                  .agg(pl.col("fmax").mean(),
-                       pl.col("recall").mean(),
-                       pl.col("recall_reachable").mean())
-                  .sort("species_mya"))
+                  .group_by("species_mya").agg(aggs).sort("species_mya"))
         data[label] = {str(r["species_mya"]): r["fmax"] for r in sub.to_dicts()}
         recall[label] = {str(r["species_mya"]): r["recall_reachable"]
                          for r in sub.to_dicts()}
+        if has_sens:
+            sens[label] = {str(r["species_mya"]): r["sens_first_fp_mean"]
+                           for r in sub.to_dicts()}
+    panels = [("Fmax", "Fmax", data), ("Recall (reachable)", "recall_reachable", recall)]
+    if has_sens:
+        panels.append(("Sens. to 1st FP", "sens_first_fp_mean", sens))
     write_section(out, "qfo_divergence", {
         "id": "qfo_divergence",
         "section_name": "Divergence",
         "description": (
-            f"Fmax and reachable recall against divergence time from human, in millions "
-            f"of years ({primary_truth} truth, <code>{split}</code> split). Raw recall is "
-            "deliberately absent: a human family that does not exist in the target "
-            "proteome cannot be transferred by any search, and E. coli holds 971 of "
+            f"Both headline metrics and reachable recall against divergence time from "
+            f"human, in millions of years ({primary_truth} truth, <code>{split}</code> "
+            "split). Each line is nine points, one per target proteome, and these are the "
+            "values the leaderboard's means are taken over. How tightly a line holds its "
+            "level across the axis is the consistency result: a tool that keeps its score "
+            "from mouse out to E. coli is making a claim about remote homology, and one "
+            "that falls away is reporting close matches. The leaderboard's Fmax SD column "
+            "is that same spread as a single number.<br>"
+            "The <b>Sens. to 1st FP</b> panel is threshold-free and ranks variants "
+            "differently from Fmax, so the lines are not in the same order between panels. "
+            "That is the disagreement between the two metrics, not an error.<br>"
+            "Raw recall is deliberately absent: a human family that does not exist in the "
+            "target proteome cannot be transferred by any search, and E. coli holds 971 of "
             "human's 8,909 families against mouse's 8,805. Comparing tools on raw recall "
             "would mostly compare proteomes."),
         "plot_type": "linegraph",
         "pconfig": {"id": "qfo_divergence_plot", "title": "Accuracy vs divergence time",
                     "xlab": "divergence from human (Mya)", "ylab": "score",
-                    "ymin": 0, "ymax": 1, "height": 500,
-                    "data_labels": [{"name": "Fmax", "ylab": "Fmax"},
-                                    {"name": "Recall (reachable)",
-                                     "ylab": "recall_reachable"}]},
-        "data": [data, recall],
+                    "ymin": 0, "height": 500,
+                    "data_labels": [{"name": name, "ylab": ylab,
+                                     "ymax": _panel_ymax(panel)}
+                                    for name, ylab, panel in panels]},
+        "data": [panel for _, _, panel in panels],
     })
 
 
@@ -1555,11 +1843,15 @@ def section_grayzone(out: Path, metrics: pl.DataFrame, primary_truth: str,
 
 def section_truthsets(out: Path, metrics: pl.DataFrame, max_tools: int) -> None:
     """The circularity check, in one plot."""
-    cut, split = pick_split(ungrouped(metrics))
-    sets = sorted(cut["truth_set"].unique().to_list())
+    cut, picked = split_per_truth_set(ungrouped(metrics))
+    sets = sorted(picked)
     if len(sets) < 2:
         return
-    ranked = best_variants(cut).head(max_tools)
+    split = ", ".join(f"{ts}: {s}" for ts, s in sorted(picked.items()))
+    # The one place the truth-set guard is opted out of, and only for row selection: which
+    # tools are worth a bar is decided across all three sets, but every number drawn is a
+    # single set's own Fmax. Nothing here is a cross-set mean.
+    ranked = best_variants(cut, across_truth_sets=True).head(max_tools)
     data = {}
     for row in ranked.to_dicts():
         sub = cut.filter((pl.col("tool") == row["tool"])
@@ -1573,7 +1865,9 @@ def section_truthsets(out: Path, metrics: pl.DataFrame, max_tools: int) -> None:
         "id": "qfo_truthsets",
         "section_name": "Truth sets side by side",
         "description": (
-            f"Best Fmax per tool against each truth set (<code>{split}</code> split). "
+            f"Best Fmax per tool against each truth set, each on its own split "
+            f"(<code>{split}</code>). Only Pfam is swept, so only Pfam has a heldout half; "
+            "the others are scored whole. "
             "Profile methods should score highest against Pfam, which is defined by the "
             "same HMMs they run — the gap between a tool's Pfam bar and its Swiss-Prot or "
             "Pfam-N bar is the size of that circularity, and a method that keeps its score "
