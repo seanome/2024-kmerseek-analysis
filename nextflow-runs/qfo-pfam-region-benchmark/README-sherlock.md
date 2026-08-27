@@ -640,17 +640,31 @@ title, section order and plot limits are the only hand-edited part, in
 
 #### Reduced-alphabet information ceiling
 
-Three panels under one parent, all rebuildable by `make multiqc` from published results
-with no search re-run.
+One parent, rebuildable by `make multiqc` from published results with no search re-run.
 
 1. **Feature length against k.** `best_f1` against `median_feature_length / ksize` on a
    log2 grid, one line per HP alphabet, with coverage as a switchable second dataset so no
    number is read without knowing what share of its calls could be judged. 1.0 on the x
-   axis is a feature exactly one k-mer long.
-2. **Feature type.** Alphabet x Swiss-Prot FT type, coarsest alphabet at the top and
-   shortest median feature on the left, plus an identical grid showing coverage. Swiss-Prot
-   only: the other truth sets carry no feature types, so the axis is null there.
-3. **BPE token boundaries.** How often a ProtBERTa_2 token boundary lands exactly on a Pfam
+   axis is a feature exactly one k-mer long. The point-feature bin is **not** on this
+   curve -- see Point features above.
+2. **Feature length against k, per k.** The same axis split by k instead of averaged over
+   it, one dataset per alphabet. This is the panel that decides what panel 1 means, and it
+   is the reason panel 1 alone is not enough:
+
+   - if the per-k curves **collapse** onto each other, `feature_length / k` is the
+     sufficient statistic and k trades against feature length one for one -- there is no k
+     floor to read here, only a statement about how many k-mers a feature must hold;
+   - if they **separate**, there is an absolute-k effect on top of the ratio, and the k at
+     which the curves stop improving is a k floor measured on annotated domains rather than
+     derived from keyspace arithmetic.
+
+   Averaging over k inside a ratio bin is exactly the operation that hides the difference,
+   so panel 1 cannot distinguish those two readings and this one can.
+3. **Feature type**, in two figures that never share a colour scale: the placement-scored
+   types (with a coverage twin) and the containment-scored point types. Rows run coarsest
+   alphabet at the top, columns shortest median feature on the left. Swiss-Prot only: the
+   other truth sets carry no feature types, so the axis is null there.
+4. **BPE token boundaries.** How often a ProtBERTa_2 token boundary lands exactly on a Pfam
    domain boundary, over the same rate on length- and composition-matched shuffled
    sequences. Written by `bin/hp_bpe_boundary_diagnostic.py`, which is run by hand -- see
    below -- so the panel is absent, not empty, when it has not been.
@@ -756,8 +770,58 @@ it is not the CAFA quantity. Do not describe these as information-accretion weig
 full scoring matrix. `dbd` is reported over correct calls only -- the distance from a
 wrong domain to a right one is not a boundary measurement.
 
-Point features are excluded from every column in this table, and `n_point_instances_excluded`
-records how many. A Swiss-Prot `ACT_SITE` or `BINDING` residue is a single position that
+### Point features
+
+Two separate decisions, both about the same thing: a point feature asserts a residue and
+this benchmark scores intervals.
+
+#### They are scored by containment, not IoU
+
+A Swiss-Prot `ACT_SITE`, `BINDING` or `SITE` asserts a **residue**, not an interval;
+`build_swissprot_truth.py` widens it by one and `build_mcsa_truth.py` widens a catalytic
+residue by `--window` purely so an interval exists to score. Judging those by interval IoU
+is not a strict standard, it is an **unsatisfiable** one:
+
+> IoU against a 1-residue interval is `1 / call_length`. At `--min-overlap 0.5` a true
+> positive needs a call of at most 2 residues. Measured on the mini run: 97,706 calls
+> across 32 arms, shortest 3 residues, **none** ≤ 2 — so the best IoU any tool could reach
+> on a point feature was 0.333 against a 0.5 cutoff.
+
+Every point stratum therefore scored exactly 0 on **every** metric, `fmax` included —
+`protein_centric_curve` gates on `is_tp` too, so it is interval-aware here rather than
+family-level and does not rescue those rows. That is not a hard benchmark, it is an
+unanswerable one, and it manufactures exactly the short-feature deficit the
+reduced-alphabet question exists to test.
+
+`--point-semantics cover` (the default) scores a point instance by containment instead:
+did the call cover the annotated residue. `--point-semantics iou` restores the old
+behaviour. `point_semantics` is stamped on every metric row beside `interval_semantics`,
+and `point_fraction` records what share of each cell is point features — at 1.0, every
+number on that row is a containment result and must not share an axis with a placement
+result.
+
+The cost, stated rather than hidden: containment favours long calls, since a 400-residue
+region covering a catalytic residue counts the same as a tight one. Two things bound it.
+`assign_instances` is one-to-one, so a call claims at most one instance; and precision
+still counts every call, so a tool that carpets the protein pays for it.
+
+Range instances are offered every call **before** point instances are offered any.
+Containment maxes out at 1.0, so without that ordering a point feature outbid every
+interval and a call correctly delineating a `DOMAIN` was consumed by an incidental
+`ACT_SITE` inside it. Measured over the 24 range-only cells on the MHC set: **0** changed
+on `n_instances_found`, `recall_reachable`, `n_tp_calls` or `fmax`. `precision` and
+`coverage` do move (10 and 20 cells, ~0.0004 in precision) because a call whose true match
+is a point feature outside a range cut is no longer charged there as a false positive — it
+becomes gray. That is the intended consequence, not leakage.
+
+This changes published Swiss-Prot and M-CSA numbers, including the ungrouped `all` row.
+M-CSA is affected hardest: every instance is a widened catalytic residue, so at
+`--window 5` the truth interval is 10 residues against a median call of 169, and that arm
+was reporting near-zero throughout.
+
+#### They are excluded from every boundary metric
+
+`n_point_instances_excluded` records how many. A Swiss-Prot `ACT_SITE` or `BINDING` residue is a single position that
 `build_swissprot_truth.py` widens by one, and an M-CSA catalytic residue is widened by a
 window, purely so an interval exists to score at all. There is no boundary to be right or
 wrong about at that length, so including them measured the widening rather than the

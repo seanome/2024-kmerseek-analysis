@@ -423,7 +423,8 @@ def dedup_transferred_calls(calls: pl.LazyFrame, iou_min: float) -> pl.LazyFrame
 
 
 def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
-                semantics: str = "alignment") -> pl.DataFrame:
+                semantics: str = "alignment",
+                point_semantics: str = "cover") -> pl.DataFrame:
     """Match each call to the best true instance of the same family on the same protein.
 
     `semantics` picks what counts as correctly placed:
@@ -438,7 +439,36 @@ def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
 
     IoU is recorded either way, so the two are always inspectable side by side -- but
     is_tp, and therefore precision and recall, follow the tool's own semantics.
+
+    `point_semantics` does the same thing on the TRUTH side, per instance. A point feature
+    asserts a RESIDUE, not an interval: a Swiss-Prot ACT_SITE is one position that
+    build_swissprot_truth widens by one, and an M-CSA catalytic residue is widened by
+    --window. Scoring those by IoU is a category error, and not a conservative one -- it is
+    arithmetically unsatisfiable. IoU against a 1-residue interval is 1/call_length, so at
+    min_overlap 0.5 a true positive would need a call of at most 2 residues. Measured on the
+    mini run: 97_706 calls across 32 arms, shortest 3 residues, none <= 2, so the best IoU
+    any tool could reach on a point feature was 0.333 against a 0.5 cutoff. Every point
+    stratum therefore scored exactly 0 on every metric -- n_instances_found 0, best_f1 0,
+    and fmax 0 as well, since protein_centric_curve gates on is_tp too.
+
+    That is not a hard benchmark, it is an unanswerable one, and it manufactures exactly
+    the short-feature deficit the reduced-alphabet question is trying to test. "cover"
+    scores a point instance by containment instead -- did the call cover the annotated
+    residue -- which is the only form of the question that has an answer. Pass "iou" to
+    restore the old behaviour and reproduce pre-2026-08-27 numbers.
+
+    The cost is stated rather than hidden: containment favours long calls, since a
+    400-residue region covering a catalytic residue counts the same as a tight one. Two
+    things bound it. assign_instances is one-to-one, so one call claims at most one
+    instance; and precision still counts every call, so a tool that carpets the protein
+    pays for it. The boundary metrics exclude point features entirely
+    (cafa_metrics.boundary_metrics), so none of this reaches DBD or NDO.
     """
+    # Pfam and Pfam-N carry no is_point column; their instances are all intervals, so the
+    # literal False keeps one code path instead of two.
+    has_point = "is_point" in truth.collect_schema().names()
+    point_col = (pl.col("is_point") if has_point
+                 else pl.lit(False)).fill_null(False).alias("truth_is_point")
     matched = (
         calls.join(
             truth.select(
@@ -446,6 +476,7 @@ def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
                 "pfam_id",
                 pl.col("domain_start").alias("true_start"),
                 pl.col("domain_end").alias("true_end"),
+                point_col,
             ),
             on=["query_acc", "pfam_id"],
             how="left",
@@ -493,20 +524,22 @@ def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
             pl.col("cover").max(),
             pl.col("true_start").sort_by("iou", descending=True).first(),
             pl.col("true_end").sort_by("iou", descending=True).first(),
+            pl.col("truth_is_point").sort_by("iou", descending=True).first(),
         )
     )
     candidates = matched.select(
         "query_acc", "pfam_id", "qstart", "qend", "score", "iou", "cover",
-        "true_start", "true_end",
+        "true_start", "true_end", "truth_is_point",
     ).filter(pl.col("true_start").is_not_null())
 
     calls_df = per_call.collect(engine="streaming")
     cand_df = candidates.collect(engine="streaming")
-    return assign_instances(calls_df, cand_df, min_overlap, semantics)
+    return assign_instances(calls_df, cand_df, min_overlap, semantics, point_semantics)
 
 
 def assign_instances(calls: pl.DataFrame, candidates: pl.DataFrame,
-                     min_overlap: float, semantics: str) -> pl.DataFrame:
+                     min_overlap: float, semantics: str,
+                     point_semantics: str = "cover") -> pl.DataFrame:
     """One-to-one matching between predicted regions and annotated instances.
 
     Without this a protein carrying a tandem array is scored incoherently. Twelve
@@ -529,8 +562,36 @@ def assign_instances(calls: pl.DataFrame, candidates: pl.DataFrame,
     if candidates.height == 0:
         return calls.with_columns(pl.lit(False).alias("is_tp"))
 
-    elig = candidates.filter(pl.col(key) >= min_overlap).sort(
-        ["score", key], descending=[True, True], nulls_last=True
+    # Per ROW, not per tool: the criterion follows the tool's semantics for an interval
+    # annotation and the truth's for a point one. See score_calls for why IoU against a
+    # 1-residue interval is unsatisfiable rather than merely strict.
+    use_point_cover = point_semantics == "cover" and "truth_is_point" in candidates.columns
+    is_point = (pl.col("truth_is_point").fill_null(False) if use_point_cover
+                else pl.lit(False))
+    elig_key = (
+        pl.when(is_point).then(pl.col("cover")).otherwise(pl.col(key)).alias("elig")
+    )
+
+    # Range instances are offered every call BEFORE point instances are offered any.
+    # Containment maxes out at 1.0 for a point instance, so on a plain (score, elig) sort a
+    # point feature outbid every interval and a call that correctly delineated a DOMAIN was
+    # consumed by an incidental ACT_SITE inside it. Ordering is_point last leaves the
+    # (call, range-instance) assignment exactly as it was -- the range candidates keep
+    # their relative order and every call that could claim one still does -- so point
+    # instances take only the calls nothing else claimed.
+    #
+    # Measured on the MHC set, cover vs iou, over the 24 range-only cells: 0 changed on
+    # n_instances_found, recall_reachable, n_tp_calls or fmax. What does move is precision
+    # and coverage, on 10 and 20 cells, and that is the intended consequence rather than
+    # leakage: a call whose true match is a point feature OUTSIDE a range cut is no longer
+    # charged to that cut as a false positive, it becomes gray there. The shift is ~0.0004
+    # in precision and it is in the direction of not blaming a tool for being right about
+    # something the cut does not measure.
+    elig = (
+        candidates.with_columns(elig_key, is_point.alias("_is_point"))
+        .filter(pl.col("elig") >= min_overlap)
+        .sort(["score", "_is_point", "elig"],
+              descending=[True, False, True], nulls_last=True)
     )
 
     used_truth: set[tuple] = set()
@@ -1221,7 +1282,8 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
             }
         )
     else:
-        scored = score_calls(calls_lf, truth_lf, args.min_overlap, semantics)
+        scored = score_calls(calls_lf, truth_lf, args.min_overlap, semantics,
+                             args.point_semantics)
 
     scored = classify_scoreable(scored, truth, args.gray_min_annotated_fraction)
     scored.write_parquet(job["calls_out"], compression="zstd")
@@ -1239,7 +1301,10 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
              "interval_semantics": semantics,
              # Both settings are meant to be run and reported side by side; without this
              # stamp the two sets of rows are indistinguishable once pooled.
-             "dedup_transfers": bool(job["dedup"])}
+             "dedup_transfers": bool(job["dedup"]),
+             # Same reason, for the truth side. A cell scored by containment and one scored
+             # by IoU are not the same measurement, and the row has to say which it is.
+             "point_semantics": args.point_semantics}
     rows, curves = [], []
 
     for split in ("all", "selection", "heldout"):
@@ -1272,6 +1337,13 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
                 "n_stratum_proteins": t_sub["accession"].n_unique(),
                 # Measured, not a bin midpoint. The reduced-alphabet claim is stated on
                 # feature_length / ksize, and this is the numerator for this cell.
+                # What share of this cell is point features. 1.0 means every number on the
+                # row is a containment result, not a placement result -- which is a
+                # different question, and the report must not put the two on one axis.
+                "point_fraction": (
+                    float(t_sub["is_point"].fill_null(False).mean())
+                    if "is_point" in t_sub.columns and t_sub.height else 0.0
+                ),
                 "median_feature_length": (
                     float(t_sub["feature_length"].median())
                     if "feature_length" in t_sub.columns and t_sub.height else None
@@ -1375,6 +1447,14 @@ def main():
                    help="how much two calls of the same family on the same query protein "
                         "must overlap each other to count as one annotation "
                         "(default: --min-overlap, i.e. they would claim the same instance)")
+    p.add_argument("--point-semantics", choices=["cover", "iou"], default="cover",
+                   help="how a POINT truth instance is scored. cover (default) asks "
+                        "whether the call contains the annotated residue; iou restores "
+                        "the pre-2026-08-27 behaviour, under which no point feature could "
+                        "ever be a true positive -- IoU against a 1-residue interval is "
+                        "1/call_length, so the criterion was unsatisfiable rather than "
+                        "strict. Only affects truth sets carrying is_point: Swiss-Prot and "
+                        "M-CSA.")
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--strict-iou", type=float, default=0.8)
     p.add_argument("--gray-min-annotated-fraction", type=float, default=0.5,

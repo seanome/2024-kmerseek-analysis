@@ -1506,6 +1506,23 @@ CEILING_PARENT = {
     ),
 }
 
+# A cell is "containment-scored" once point features are the majority of its instances.
+# evaluate_domain_calls scores a point instance by whether the call covers the annotated
+# residue, because IoU against a 1-residue interval is arithmetically unsatisfiable -- so
+# those numbers answer a different question from the interval cells and must never share an
+# axis or a colour scale with them. On the mini run ACT_SITE comes out ABOVE DOMAIN, which
+# is a criterion difference and not a result, and putting the two in one heatmap row is how
+# that becomes a claim nobody meant to make.
+POINT_MAJORITY = 0.5
+
+
+def is_containment_scored(df: pl.DataFrame) -> pl.Expr:
+    """point_fraction past the majority mark, false when the column predates this."""
+    if "point_fraction" not in df.columns:
+        return pl.lit(False)
+    return pl.col("point_fraction").fill_null(0.0) > POINT_MAJORITY
+
+
 def _ratio_bin(col: pl.Expr) -> pl.Expr:
     """Snap a feature_length/ksize ratio to a log2 grid, returning the bin's centre ratio.
 
@@ -1536,10 +1553,15 @@ def section_ceiling_length(out: Path, metrics: pl.DataFrame, primary_truth: str)
     ))
     if cut.height == 0 or "median_feature_length" not in cut.columns:
         return
+    # The point-feature bin is dropped from the ratio curve, not plotted at ratio ~0.05.
+    # It is scored by containment while every other bin is scored by placement, so it is
+    # not the left-hand end of this curve -- it is a different measurement that happens to
+    # sit at a small feature length. The feature-type panels report it on its own scale.
     parsed = parse_kmerseek_variants(cut).filter(
         pl.col("alphabet").str.starts_with("hp_")
         & pl.col("median_feature_length").is_not_null()
         & (pl.col("median_feature_length") > 0)
+        & ~is_containment_scored(cut)
     )
     if parsed.height == 0:
         return
@@ -1586,10 +1608,96 @@ def section_ceiling_length(out: Path, metrics: pl.DataFrame, primary_truth: str)
             "buttons to switch between best F1 and the coverage each number was computed "
             "over. Truth sets are never pooled: this panel is one truth set only, and the "
             "feature-type panel below is Swiss-Prot only because Pfam carries no type "
-            "variation to cut on."),
+            "variation to cut on. The point-feature bin is <b>not</b> the left-hand end of "
+            "this curve and is not drawn on it: point instances are scored by containment "
+            "rather than placement, so they answer a different question and belong on their "
+            "own scale."),
         "plot_type": "linegraph",
         "pconfig": {"id": "qfo_ceiling_length_plot",
                     "title": "best F1 by feature length / k",
+                    "xlab": "feature length / k (log2 grid)", "ylab": "best F1",
+                    "xlog": True, "ymin": 0, "ymax": 1, "height": 500,
+                    "data_labels": labels},
+        "data": datasets if len(datasets) > 1 else datasets[0],
+    })
+
+
+def section_ceiling_length_by_k(out: Path, metrics: pl.DataFrame,
+                               primary_truth: str) -> None:
+    """The same axis, one line per ksize instead of averaged over them.
+
+    This is the panel that decides what the averaged one means, and it has to exist beside
+    it rather than instead of it.
+
+    If the curves for every k COLLAPSE onto each other against feature_length / ksize, then
+    the ratio is the sufficient statistic: k trades against feature length one for one, and
+    there is no k-floor to read here -- only a statement about how many k-mers a feature has
+    to hold. If they SEPARATE, there is an absolute-k effect on top of the ratio, and the k
+    at which the curves stop improving is a k-floor measured on annotated domains rather
+    than derived from keyspace arithmetic. Those are different claims and the averaged
+    panel cannot tell them apart, because averaging over k inside a ratio bin is precisely
+    the operation that hides the separation.
+
+    One dataset per alphabet behind a switcher, for the same reason the low-complexity
+    section uses one: 7 HP alphabets x 12 ksizes is 84 lines in a single plot.
+    """
+    cut, split = pick_split(metrics.filter(
+        (pl.col("truth_set") == primary_truth)
+        & (pl.col("stratum_axis") == "feature_length_bin")
+        & (pl.col("tool") == "kmerseek")
+    ))
+    if cut.height == 0 or "median_feature_length" not in cut.columns:
+        return
+    parsed = parse_kmerseek_variants(cut).filter(
+        pl.col("alphabet").str.starts_with("hp_")
+        & pl.col("median_feature_length").is_not_null()
+        & (pl.col("median_feature_length") > 0)
+        # Same exclusion as the averaged panel, for the same reason.
+        & ~is_containment_scored(cut)
+    )
+    if parsed.height == 0:
+        return
+    parsed = parsed.with_columns(
+        _ratio_bin(pl.col("median_feature_length") / pl.col("ksize")).alias("ratio")
+    )
+
+    datasets, labels = [], []
+    for alpha in sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes):
+        sub = parsed.filter(pl.col("alphabet") == alpha)
+        data = {}
+        for k in sorted(sub["ksize"].unique().to_list()):
+            by_ratio = (sub.filter(pl.col("ksize") == k)
+                           .group_by("ratio").agg(pl.col("best_f1").mean())
+                           .sort("ratio").to_dicts())
+            series = {str(r["ratio"]): r["best_f1"] for r in by_ratio
+                      if r["best_f1"] is not None}
+            # A single point cannot show a plateau or a collapse, and a legend entry for it
+            # costs more than it carries.
+            if len(series) > 1:
+                data[f"k={k}"] = series
+        if data:
+            datasets.append(data)
+            labels.append({"name": alpha, "ylab": "best F1"})
+    if not datasets:
+        return
+
+    write_section(out, "qfo_ceiling_length_by_k", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_length_by_k",
+        "section_name": "Feature length against k, per k",
+        "description": (
+            f"The panel above, split by k instead of averaged over it "
+            f"({primary_truth} truth, <code>{split}</code> split; buttons switch alphabet). "
+            "Read it for one thing: do the lines lie on top of each other or not? If they "
+            "collapse, feature_length / k is the whole story and k trades against feature "
+            "length one for one. If they separate, there is an absolute-k effect on top of "
+            "the ratio, and the k at which the curves stop improving is a k floor measured "
+            "on annotated domains rather than derived from keyspace arithmetic. The "
+            "averaged panel cannot distinguish those, because averaging over k inside a "
+            "ratio bin is exactly what hides the separation."),
+        "plot_type": "linegraph",
+        "pconfig": {"id": "qfo_ceiling_length_by_k_plot",
+                    "title": "best F1 by feature length / k, per k",
                     "xlab": "feature length / k (log2 grid)", "ylab": "best F1",
                     "xlog": True, "ymin": 0, "ymax": 1, "height": 500,
                     "data_labels": labels},
@@ -1632,42 +1740,94 @@ def section_ceiling_feature_type(out: Path, metrics: pl.DataFrame) -> None:
         types = sorted(parsed["stratum"].unique().to_list())
     alphas = sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes)
 
-    # Both metrics are on 0..1, so the two heatmaps share a colour scale and can be read
-    # against each other rather than each against its own range.
-    for metric, title in (("best_f1", "best F1"), ("coverage", "coverage")):
-        if metric not in parsed.columns:
+    # Split the columns by scoring criterion before anything is drawn. ACT_SITE and BINDING
+    # are scored by containment and DOMAIN by placement; on the mini run that puts ACT_SITE
+    # above DOMAIN, which is a criterion difference and not a result. Sliding an eye across
+    # one colour scale from one to the other is exactly the misreading this benchmark's
+    # "truth sets are never pooled" rule exists to prevent, so the two go in separate
+    # figures rather than in one with a footnote.
+    point_types = set(
+        parsed.filter(is_containment_scored(parsed))["stratum"].unique().to_list()
+    )
+    groups = [
+        ("", "placement (IoU)", [t for t in types if t not in point_types]),
+        ("_point", "containment", [t for t in types if t in point_types]),
+    ]
+
+    for group_suffix, criterion, group_types in groups:
+        if not group_types:
             continue
-        grid = parsed.group_by("alphabet", "stratum").agg(pl.col(metric).mean())
+        # Coverage only for the placement grid: the containment grid is small, and a second
+        # figure per criterion is more navigation than the point rows can repay.
+        metrics_here = ((("best_f1", "best F1"), ("coverage", "coverage"))
+                        if group_suffix == "" else (("best_f1", "best F1"),))
+        _feature_type_heatmaps(out, parsed, alphas, group_types, group_suffix,
+                               criterion, metrics_here, split)
+
+
+def _feature_type_heatmaps(out, parsed, alphas, types, group_suffix, criterion,
+                           metrics_here, split) -> None:
+    """One heatmap per metric, for a single scoring criterion's columns.
+
+    `criterion` is not decoration. Placement columns and containment columns are separate
+    figures precisely so that nothing invites reading across them, and the only thing left
+    to stop a reader assuming otherwise is the figure saying which one it is.
+    """
+    sub = parsed.filter(pl.col("stratum").is_in(types))
+    n_by_type = (
+        sub.group_by("stratum").agg(pl.col("n_truth_instances").max().alias("n")).to_dicts()
+        if "n_truth_instances" in sub.columns else []
+    )
+    counts = ", ".join(f"{r['stratum']} n={r['n']}"
+                       for r in sorted(n_by_type, key=lambda r: -(r["n"] or 0)))
+    scored_by = (
+        "Scored by <b>containment</b>: a point feature asserts a residue, and the question "
+        "is whether the call covered it. IoU against a 1-residue interval is 1/call_length "
+        "and therefore unsatisfiable at any sane cutoff, which is why these columns are a "
+        "separate figure rather than the left-hand end of the placement grid. <b>Do not "
+        "compare these numbers with the placement heatmap</b> -- containment is the easier "
+        "criterion, and a higher number here is not a better result there."
+        if group_suffix else
+        "Scored by <b>placement</b>: the call has to coincide with the annotated interval, "
+        "not merely overlap it. Point features are in their own figure below, on the "
+        "containment criterion."
+    )
+
+    # Both metrics are on 0..1, so within one criterion the two heatmaps share a colour
+    # scale and can be read against each other rather than each against its own range.
+    for metric, title in metrics_here:
+        if metric not in sub.columns:
+            continue
+        grid = sub.group_by("alphabet", "stratum").agg(pl.col(metric).mean())
         lookup = {(r["alphabet"], r["stratum"]): r[metric] for r in grid.to_dicts()}
         rows = [[lookup.get((a, t)) for t in types] for a in alphas]
         if not any(v is not None for row in rows for v in row):
             continue
-        suffix = "" if metric == "best_f1" else "_coverage"
-        n_by_type = (parsed.group_by("stratum")
-                           .agg(pl.col("n_truth_instances").max().alias("n"))
-                           .to_dicts()) if "n_truth_instances" in parsed.columns else []
-        counts = ", ".join(f"{r['stratum']} n={r['n']}" for r in
-                           sorted(n_by_type, key=lambda r: -(r["n"] or 0)))
+        suffix = group_suffix + ("" if metric == "best_f1" else "_coverage")
+        if metric == "best_f1":
+            body = (
+                f"{title} per alphabet and Swiss-Prot feature type, "
+                f"<code>{split}</code> split. {scored_by} Rows run coarsest alphabet at the "
+                f"top to finest at the bottom; columns run shortest median feature on the "
+                f"left to longest on the right. The MIN_STRATUM_PROTEINS floor is waived on "
+                f"this axis -- ACT_SITE and DNA_BIND are small in every proteome, and "
+                f"dropping them would delete the short-feature end of the gradient. "
+                f"Instances per type: {counts}."
+            )
+        else:
+            body = (
+                "Share of calls that could be judged at all, on the same grid as the "
+                "best-F1 heatmap above. A high F1 over a low coverage is a different claim "
+                "from the same F1 over a high one."
+            )
         write_section(out, f"qfo_ceiling_feature_type{suffix}", {
             **CEILING_PARENT,
             "id": f"qfo_ceiling_feature_type{suffix}",
-            "section_name": f"Feature type — {title}",
-            "description": (
-                f"{title} per alphabet and Swiss-Prot feature type "
-                f"(<code>{split}</code> split). Rows run coarsest alphabet at the top to "
-                f"finest at the bottom; columns run shortest median feature on the left to "
-                f"longest on the right. The MIN_STRATUM_PROTEINS floor is waived on this "
-                f"axis -- ACT_SITE and DNA_BIND are small in every proteome, and dropping "
-                f"them would delete the short-feature end of the gradient. Instances per "
-                f"type: {counts}. The coverage panel is the same grid, so no cell's number "
-                f"is read without knowing what share of its calls could be judged."
-                if metric == "best_f1" else
-                f"Share of calls that could be judged at all, on the same grid as the "
-                f"best-F1 heatmap above. A high F1 over a low coverage is a different "
-                f"claim from the same F1 over a high one."),
+            "section_name": f"Feature type ({criterion}) — {title}",
+            "description": body,
             "plot_type": "heatmap",
             "pconfig": {"id": f"qfo_ceiling_feature_type{suffix}_plot",
-                        "title": f"{title} by alphabet and Swiss-Prot feature type",
+                        "title": f"{title} by alphabet and feature type ({criterion})",
                         "xlab": "feature type", "ylab": "alphabet",
                         "min": 0, "max": 1, "square": False, "height": 520},
             "xcats": types,
@@ -2826,6 +2986,7 @@ def main():
     section_truthsets(args.outdir, metrics, args.max_tools)
     section_alphabet_matrix(args.outdir, metrics, primary)
     section_ceiling_length(args.outdir, metrics, primary)
+    section_ceiling_length_by_k(args.outdir, metrics, primary)
     section_ceiling_feature_type(args.outdir, metrics)
     section_ceiling_bpe(args.outdir, load_bpe_boundary(args.bpe_boundary))
     section_boundary(args.outdir, metrics, primary, args.max_tools)

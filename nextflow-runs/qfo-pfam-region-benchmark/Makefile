@@ -217,7 +217,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
-        bpe-tokenizer hp-bpe-diagnostic \
+        bpe-tokenizer hp-bpe-diagnostic sherlock-clone \
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status \
         build-image-rannon-burstein push-image-rannon-burstein \
@@ -630,6 +630,60 @@ pull-mini:
 # the point of running this from a worktree.
 # One-time setup: clone the repo onto $SCRATCH and create the data directories the sync
 # targets write into. Safe to re-run; it does not touch an existing checkout's state.
+## A SECOND checkout on Sherlock, so a branch can run without touching the one that
+## already has work in flight. Switching branches in the primary checkout would move
+## main.nf under a running sweep, and Nextflow re-reads it on resume.
+##
+## The inputs are HARD-LINKED, not symlinked and not copied. This is not a micro-
+## optimisation: `ln -s data` would make every relative path the run targets pass
+## (`--qfo_dir ../data/qfo`) resolve through the link to an absolute path under the OTHER
+## checkout, which Apptainer's autoMounts never binds -- the staged input then dangles
+## inside the container. That failure is already documented above the Sherlock run targets.
+## Hard links give a real directory tree at a real path under this clone, share the inode
+## so ~36 GB of structures is not duplicated, and cost nothing.
+##
+## Only the INPUT subdirectories are linked. data/mini, data/midi and data/gpu hold run
+## OUTPUTS, and sharing an inode with another run's published results is how two runs
+## silently overwrite each other.
+SHERLOCK_CLONE ?= $$SCRATCH/2024-kmerseek-$(notdir $(BRANCH))
+SHERLOCK_CLONE_DIR := $(SHERLOCK_CLONE)/nextflow-runs/qfo-pfam-region-benchmark
+SHERLOCK_SHARED_INPUTS := annotations qfo covariates structures prostt5 pfamn protberta
+
+sherlock-clone:
+	$(call require_mac)
+	git push origin $$(git branch --show-current)
+	$(SSH_MUX) $(SHERLOCK_HOST) '\
+	  set -e; \
+	  if [ ! -d $(SHERLOCK_CLONE)/.git ]; then \
+	    git clone --branch $(BRANCH) $(REPO_URL) $(SHERLOCK_CLONE); \
+	  else \
+	    cd $(SHERLOCK_CLONE) && git fetch origin $(BRANCH) \
+	      && git checkout $(BRANCH) && git pull --ff-only; \
+	  fi; \
+	  mkdir -p $(SHERLOCK_CLONE_DIR)/data; \
+	  for d in $(SHERLOCK_SHARED_INPUTS); do \
+	    src=$(REMOTE_DIR)/data/$$d; dst=$(SHERLOCK_CLONE_DIR)/data/$$d; \
+	    [ -e "$$src" ] || continue; \
+	    [ -e "$$dst" ] && { echo "have  $$d"; continue; }; \
+	    cp -al "$$src" "$$dst" 2>/dev/null && echo "link  $$d" \
+	      || { echo "copy  $$d (hard link failed: different filesystem?)"; \
+	           cp -a "$$src" "$$dst"; }; \
+	  done; \
+	  for f in $(REMOTE_DIR)/data/uniprot_sprot.dat.gz; do \
+	    [ -e "$$f" ] && ln -f "$$f" $(SHERLOCK_CLONE_DIR)/data/ 2>/dev/null || true; \
+	  done; \
+	  echo "ready: $(SHERLOCK_CLONE_DIR)"'
+	@echo
+	@echo "inputs hard-linked from $(REMOTE_DIR)/data -- no structures were copied."
+	@echo
+	@echo "Target databases are not duplicated either. Point db_cache at the primary"
+	@echo "checkout so every foldseek / mmseqs / reseek / kmerseek index is built once:"
+	@echo
+	@echo "  ssh $(SHERLOCK_HOST)"
+	@echo "  cd $(SHERLOCK_CLONE_DIR)"
+	@echo "  make bpe-tokenizer"
+	@echo '  make run-mini NF_ARGS="--db_cache $(REMOTE_DIR)/results"'
+
 bootstrap-sherlock:
 	$(call require_mac)
 	$(SSH_MUX) $(SHERLOCK_HOST) '\
