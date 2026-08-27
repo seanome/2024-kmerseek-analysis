@@ -66,6 +66,10 @@ params.pfam_hmm      = "${home}/data/pfam/Pfam-A.hmm"
 params.hgnc_file  = "${home}/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt"
 params.omega_file = "${projectDir}/../human-mouse-dnds-omega/results/omega_results.tsv"
 params.mobidb_cache = null   // optional curated disorder; pLDDT<50 proxy is always computed
+// Sequence-based disorder, on by default: it costs one short CPU task over the query FASTA
+// and gives an axis that does not share pLDDT's MSA-depth confound.
+params.skip_metapredict = false
+params.metapredict_threshold = null   // null means metapredict's own default
 
 // Second, function-anchored truth set. Pfam-A domains are DEFINED by profile HMMs and
 // phmmer/jackhmmer/hhblits are profile methods, so Pfam truth is circular with those
@@ -776,6 +780,43 @@ process extractDomainSequences {
     """
 }
 
+process queryDisorder {
+    /*
+     * Per-protein disorder predicted from SEQUENCE, as a second opinion on the pLDDT
+     * proxy rather than a replacement for it.
+     *
+     * pLDDT below 50 is a confidence measurement that correlates with disorder, not a
+     * disorder measurement. It also drops when AlphaFold merely modelled a protein badly,
+     * which usually means a shallow MSA -- and a shallow MSA independently hurts jackhmmer
+     * and hhblits. So "accuracy falls with disorder" read off pLDDT alone could partly be
+     * an MSA-depth effect hitting several arms at once. metapredict needs no structure and
+     * no alignment, so it shares neither confound.
+     *
+     * Query-side only. Disorder is a covariate of the thing being scored, and the scored
+     * object is the human domain instance.
+     */
+    tag "metapredict"
+    label 'python'
+    publishDir "${params.outdir}/truth", mode: 'copy'
+
+    input:
+    path human_fasta
+
+    output:
+    path "human_disorder_metapredict.parquet", emit: disorder
+    path "disorder_metapredict_summary.json",  emit: summary
+
+    script:
+    def thr = params.metapredict_threshold ? "--threshold ${params.metapredict_threshold}" : ""
+    """
+    predict_disorder_metapredict.py \\
+        --fasta       ${human_fasta} \\
+        ${thr} \\
+        --out         human_disorder_metapredict.parquet \\
+        --summary-out disorder_metapredict_summary.json
+    """
+}
+
 process buildQueryCovariates {
     /*
      * Per-query-protein biology: HGNC gene group, dN/dS, mean pLDDT, disorder fraction.
@@ -786,7 +827,7 @@ process buildQueryCovariates {
     publishDir "${params.outdir}/truth", mode: 'copy'
 
     input:
-    tuple path(truth), path(hgnc), path(omega), path(structures)
+    tuple path(truth), path(hgnc), path(omega), path(structures), path(disorder)
 
     output:
     path "human_query_covariates.parquet", emit: covariates
@@ -797,10 +838,11 @@ process buildQueryCovariates {
     def omega_arg  = omega.name  == 'NO_OMEGA'  ? "" : "--omega ${omega}"
     def struct_arg = structures.name == 'NO_STRUCTURES' ? "" : "--structures ${structures}"
     def mobidb_arg = params.mobidb_cache ? "--mobidb ${params.mobidb_cache}" : ""
+    def mpred_arg  = disorder.name == 'NO_DISORDER' ? "" : "--metapredict ${disorder}"
     """
     build_query_covariates.py \\
         --truth       ${truth} \\
-        ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} \\
+        ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} ${mpred_arg} \\
         --out         human_query_covariates.parquet \\
         --summary-out covariates_summary.json
     """
@@ -2328,13 +2370,22 @@ workflow {
     def optional_or = { pathStr, sentinel ->
         pathStr && file(pathStr).exists() ? file(pathStr) : file("${projectDir}/assets/${sentinel}")
     }
-    cov_in = truth_out.truth.map { t ->
+    // Sequence-based disorder, computed from the query FASTA before covariates are built.
+    // Optional like every other covariate source: when skipped, the sentinel keeps
+    // buildQueryCovariates' signature fixed and the disorder_seq stratum is simply absent
+    // from the metrics, which the report already handles by not drawing that section.
+    disorder_ch = params.skip_metapredict
+        ? Channel.value(file("${projectDir}/assets/NO_DISORDER"))
+        : queryDisorder(Channel.value(human_fasta)).disorder
+
+    cov_in = truth_out.truth.combine(disorder_ch).map { t, dis ->
         tuple(t,
               optional_or(params.hgnc_file,  'NO_HGNC'),
               optional_or(params.omega_file, 'NO_OMEGA'),
               file("${params.structures}/human").exists()
                   ? file("${params.structures}/human")
-                  : file("${projectDir}/assets/NO_STRUCTURES"))
+                  : file("${projectDir}/assets/NO_STRUCTURES"),
+              dis)
     }
     covariates = buildQueryCovariates(cov_in).covariates
 

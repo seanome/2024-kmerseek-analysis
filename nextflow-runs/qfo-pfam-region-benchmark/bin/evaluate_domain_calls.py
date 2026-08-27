@@ -50,6 +50,9 @@ IDENTITY_BINS = [0.0, 20.0, 30.0, 40.0, 60.0, 100.01]
 STRATA = {
     "plddt": ("mean_plddt", [0, 50, 70, 90, 100]),
     "disorder": ("disorder_fraction_plddt", [0.0, 0.1, 0.3, 0.6, 1.01]),
+    # Same bins as the pLDDT proxy on purpose, so the two axes are read side by side and a
+    # disagreement between them is visible rather than buried in different binning.
+    "disorder_seq": ("disorder_fraction_metapredict", [0.0, 0.1, 0.3, 0.6, 1.01]),
     "omega": ("omega", [0.0, 0.1, 0.25, 0.5, 10.0]),
 }
 # Cutting on every one of ~4200 HGNC groups would produce mostly single-protein strata

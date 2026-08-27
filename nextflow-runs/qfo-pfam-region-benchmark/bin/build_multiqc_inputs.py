@@ -708,6 +708,15 @@ COVARIATE_AXES = {
         "such dependency. MobiDB's curated annotation is used instead when --mobidb_cache "
         "is set.",
     ),
+    "disorder_seq": (
+        "Disorder (sequence-based)",
+        "Fmax by the fraction of residues metapredict calls disordered from sequence "
+        "alone. Read against the pLDDT disorder axis rather than instead of it: pLDDT "
+        "below 50 also drops when AlphaFold merely modelled a protein badly, which usually "
+        "means a shallow MSA -- and a shallow MSA independently hurts the profile "
+        "baselines. metapredict needs no structure and no alignment, so it shares neither "
+        "confound. The two axes disagreeing is itself a finding.",
+    ),
     "plddt": (
         "Model confidence",
         "Fmax by the query structure's mean pLDDT. Distinct from the disorder axis: a "

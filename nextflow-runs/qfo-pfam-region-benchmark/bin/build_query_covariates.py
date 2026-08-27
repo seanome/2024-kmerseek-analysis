@@ -145,6 +145,11 @@ def main():
     p.add_argument("--omega", type=Path)
     p.add_argument("--structures", type=Path, help="per-species AlphaFold dir (human/)")
     p.add_argument("--mobidb", type=Path, help="optional cached MobiDB disorder parquet")
+    # Sequence-based, so it shares neither of pLDDT's confounds: it needs no structure and
+    # no alignment. See bin/predict_disorder_metapredict.py for why that matters.
+    p.add_argument("--metapredict", type=Path,
+                   help="optional metapredict disorder parquet from "
+                        "predict_disorder_metapredict.py")
     p.add_argument("--out", required=True, type=Path)
     p.add_argument("--summary-out", required=True, type=Path)
     args = p.parse_args()
@@ -245,6 +250,15 @@ def main():
             "zinc_finger_any": int(cov.get_column("is_zinc_finger_other").sum())
                 if "is_zinc_finger_other" in cov.columns else 0,
         }
+
+    if args.metapredict and args.metapredict.exists():
+        mpred = pl.read_parquet(args.metapredict)
+        cov = cov.join(mpred, on="accession", how="left")
+        summary["metapredict"] = {
+            "n_covered": int(cov["disorder_fraction_metapredict"].is_not_null().sum())
+        }
+    else:
+        summary["metapredict"] = "skipped: no prediction supplied"
 
     if args.mobidb and args.mobidb.exists():
         mobi = pl.read_parquet(args.mobidb)
