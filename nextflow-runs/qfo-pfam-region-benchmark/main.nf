@@ -175,6 +175,21 @@ def ALL_ENCODINGS = [
     ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', 19, 30],   // 0.937 bits/sym, 12 ksizes
 ]
 
+// The LABEL, not the CLI flag, is what goes into the kmerseekIndex storeDir entry name.
+// Two rows sharing a label would therefore name one store entry from two different
+// encodings: both tasks build, and the second one's unstage dies with
+//   mv: cannot move '<entry>' to '<store>/./<entry>': Directory not empty
+// because a directory cannot be moved onto a non-empty directory of the same name.
+// Nextflow decides "already in the store" once, when it CREATES the task, and never looks
+// again -- not before the move, and not on a retry -- so nothing downstream catches this.
+// Checked here rather than trusted, since the two columns are identical today and the
+// coupling between them is invisible at the point where a new alphabet gets added.
+def dupEncodingLabels = ALL_ENCODINGS*.get(1).countBy { it }.findAll { _l, n -> n > 1 }*.key
+if (dupEncodingLabels) {
+    error "ALL_ENCODINGS has repeated labels: ${dupEncodingLabels.join(', ')}. " +
+          "Labels name the kmerseek index store entries and have to be unique."
+}
+
 // kmerseek search filters. min_region_score is the region-scoped cutoff: -log10 of the
 // region's Poisson tail, so 1.3 ~ p=0.05 and 3.16 ~ p=0.0007. It is OR'd with
 // max_query_pvalue, so a strong sub-protein domain hit survives a weak whole-query
@@ -384,6 +399,44 @@ if (SPECIES.isEmpty()) {
 // flags 47 of the 184 alphabet x ksize combos, including every low-ksize case in the
 // non-HP alphabets that a name-based rule cannot see.
 def DB_CACHE = params.db_cache ?: params.outdir
+
+// Three runs have now died on the same unstage failure, on three different directory
+// outputs under storeDir (foldseekDb, prostt5Db, kmerseekIndex), and each time it had to
+// be diagnosed from scratch because the only thing Nextflow prints is a bare `mv` error.
+// The message below is the diagnosis, attached to the failure that produces it.
+//
+// What it cannot do is prevent the failure. The move runs host-side in .command.run,
+// outside the container, after the task's own script has already succeeded, so no guard in
+// a `script:` block sits in front of it. See the note on kmerseekIndex's errorStrategy for
+// why retrying it does not work either.
+workflow.onError {
+    if (workflow.errorReport?.contains('Directory not empty')) {
+        log.error """
+        |
+        |Two writers built the same storeDir entry. Nextflow reads the store when it CREATES
+        |a task and never re-checks -- not at dispatch, not on a retry -- so both tasks did
+        |the full build, and the loser's `mv` failed because a directory will not move onto
+        |a non-empty directory of the same name. Only DIRECTORY outputs can fail this way;
+        |file outputs overwrite silently.
+        |
+        |The winner's entry in the store is COMPLETE. The move is a same-filesystem rename,
+        |so it either happened whole or not at all, and the run that reported this error is
+        |the one that lost. Nothing needs repairing.
+        |
+        |Where the second writer comes from, in order of likelihood:
+        |  1. Tasks left over from a previous run. Killing the Nextflow driver does not
+        |     cancel jobs it already submitted. Check with `squeue -u \$USER` and wait for
+        |     it to drain -- the terminal returning is not the same as the queue emptying.
+        |  2. Another pipeline running now against the same --db_cache (${DB_CACHE}).
+        |  3. Two tasks inside THIS run naming one entry. The combo guard in the kmerseek
+        |     block rejects the way that used to happen; if it fires anyway, that is a new
+        |     path and worth tracking down rather than working around.
+        |
+        |To continue: confirm the queue is empty, then re-run with -resume. The entry now
+        |exists, so the task becomes a store hit and costs nothing.
+        """.stripMargin()
+    }
+}
 
 // Shell helpers both kmerseek processes paste into their scripts to time themselves.
 //
@@ -805,6 +858,22 @@ process kmerseekIndex {
     storeDir "${DB_CACHE}/kmerseek_index"
 
     memory { kmerseekMemory(label, ksize, species_fasta.size(), task.attempt) }
+    // Retries the OOM signals only. Do NOT widen this to exit 1 to catch the
+    // "Directory not empty" unstage failure -- that was measured on 2026-08-27 and it does
+    // not work. Nextflow reads the store when it CREATES a task and caches that decision
+    // on the task itself, so a retry does not re-check: attempts 2 and 3 re-ran the whole
+    // index build and died on the identical mv. Retrying exit 1 here would turn one wasted
+    // index build into three and still fail the run, while also retrying the genuine
+    // errors that exit 1 otherwise means.
+    //
+    // `stageOutMode 'copy'` was measured the same day and is worse than the disease. It
+    // does apply to storeDir, and it does make the run go green, because it swaps the
+    // rename for `cp -fRL`, which MERGES into the existing directory instead of failing.
+    // Two independent index builds are not guaranteed byte-identical, so the merged entry
+    // is neither one: in the test, CURRENT came from the second build and the SST files
+    // from both. A RocksDB whose manifest and data files come from different builds is
+    // corrupt, and the run reports success. Worse still, the merge writes into an entry a
+    // concurrent kmerseekSearch may be reading. A loud failure is the better outcome.
     errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
     maxRetries 2
 
@@ -2394,6 +2463,32 @@ workflow {
         // helps is alphabet-dependent, so it has to be measured rather than chosen.
         combos = combos.collectMany { cli_flag, label, k ->
             params.low_complexity_toggle.collect { lc -> tuple(cli_flag, label, k, lc) }
+        }
+
+        // Every combo becomes one kmerseekIndex store entry per species, named
+        // <species>.<label>.k<ksize>.lc<lowcomp>.kmerseek.rocksdb. Species are unique by
+        // construction -- SPECIES is a findAll over ALL_SPECIES, so `--target_species
+        // chicken,chicken` still yields one chicken -- but the combo list is not: it comes
+        // straight off `--kmerseek_combos` via tokenize(), which happily accepts
+        // `wwmj5:16,wwmj5:16`. That builds two tasks pointing at ONE store entry, and the
+        // loser dies at unstage with "Directory not empty".
+        //
+        // This needs no second pipeline and no concurrency to happen. A single run with a
+        // repeated combo reproduces it exactly, even under maxForks 1 with the two tasks
+        // running seconds apart, because Nextflow checks the store when it creates a task
+        // and never re-checks: not when it dispatches it, and not on a retry.
+        //
+        // Erroring rather than quietly de-duplicating, for the same reason errorStrategy
+        // here is 'finish' rather than 'ignore'. A silent dedup would also swallow the
+        // case where a repeated combo is the SYMPTOM of a wrong list, and the run would
+        // then report on fewer combos than were asked for without saying so.
+        def dupCombos = combos
+            .countBy { _cli, label, k, lc -> "${label}.k${k}.lc${lc}" }
+            .findAll { _key, n -> n > 1 }*.key
+        if (dupCombos) {
+            error "Duplicate kmerseek combos: ${dupCombos.join(', ')}. Each names one " +
+                  "index store entry per species, so a repeat puts two tasks on one entry " +
+                  "and the second fails at unstage. Check --kmerseek_combos for repeats."
         }
         // Spell out the query/target asymmetry at startup. "2 species" reading as
         // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
