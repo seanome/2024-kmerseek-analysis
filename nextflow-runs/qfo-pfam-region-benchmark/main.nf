@@ -2139,7 +2139,7 @@ process folddiscoQuery {
           val(chunk)
 
     output:
-    tuple val(species), path("human_vs_${species}.folddisco.chunk${chunk}.tsv")
+    tuple val(species), path("human_vs_${species}.folddisco.chunk${chunk}.hits.tsv")
 
     script:
     """
@@ -2177,7 +2177,7 @@ inloop && nf > 0 && \$1 == "ATOM" {
 END { if (sep != "") print "" }
 AWK
 
-    : > regions.tsv
+    : > chunk_hits.tsv
     : > folddisco.err
     n_queried=0
     n_no_residues=0
@@ -2216,14 +2216,22 @@ AWK
             n_no_hits=\$((n_no_hits + 1))
             continue
         fi
-        folddisco_to_regions.py \\
-            --hits hits.tsv \\
-            --query-accession "\$acc" \\
-            --out regions.tsv >/dev/null
+        # Accumulate, do NOT convert. This is the folddisco image and it has no python,
+        # so calling folddisco_to_regions.py here exits 127 and set -e takes the chunk
+        # down. That was invisible until the index paths were fixed: every query failed
+        # and `continue`d before ever reaching the converter, so the missing interpreter
+        # only surfaced once folddisco started returning hits.
+        #
+        # The accession is prefixed as column 1 because folddisco does not echo the query
+        # name, and once rows from many queries share a file nothing else says which query
+        # a row came from. Comments and blanks are dropped here rather than downstream, so
+        # the prefix cannot turn a '#' line into data.
+        awk -v acc="\$acc" 'NF && \$0 !~ /^#/ { print acc "\t" \$0 }' hits.tsv \\
+            >> chunk_hits.tsv
     done < chunk.list
 
     echo "chunk ${chunk}: queried \$n_queried, no residues \$n_no_residues, failed \$n_failed, no hits \$n_no_hits"
-    echo "rows written: \$(wc -l < regions.tsv)"
+    echo "folddisco hit rows accumulated: \$(wc -l < chunk_hits.tsv)"
     if [ -s folddisco.err ]; then
         echo "--- folddisco stderr (first 40 lines) ---" >&2
         head -40 folddisco.err >&2
@@ -2238,7 +2246,7 @@ AWK
         exit 1
     fi
 
-    mv regions.tsv human_vs_${species}.folddisco.chunk${chunk}.tsv
+    mv chunk_hits.tsv human_vs_${species}.folddisco.chunk${chunk}.hits.tsv
     """
 }
 
@@ -2257,7 +2265,18 @@ process folddiscoMerge {
     script:
     """
     set -euo pipefail
-    cat ${chunks} > regions.tsv
+    # The conversion runs HERE, not in folddiscoQuery: this process carries
+    # `label 'python'` and so has an interpreter, and the folddisco image does not. One
+    # call over the whole species also replaces what would otherwise be one python startup
+    # per query structure, which is up to ~1030 per chunk.
+    cat ${chunks} > all_hits.tsv
+    : > regions.tsv
+    if [ -s all_hits.tsv ]; then
+        folddisco_to_regions.py \\
+            --hits all_hits.tsv \\
+            --accession-column \\
+            --out regions.tsv
+    fi
 
     # This is the first point where a whole proteome is in view, so it is where "returned
     # nothing for anything" can be told apart from "returned nothing for this pair". A
@@ -2270,8 +2289,11 @@ process folddiscoMerge {
     echo "folddisco rows for human_vs_${species}: \$n"
     if [ "\$n" -eq 0 ]; then
         echo "folddisco produced no regions at all for human_vs_${species}." >&2
-        echo "Check a folddiscoQuery task's .command.err for this species: it now keeps" >&2
-        echo "folddisco's stderr and prints per-chunk counts of failed and empty queries." >&2
+        echo "Check a folddiscoQuery task's .command.err for this species: it keeps" >&2
+        echo "folddisco's stderr, per-chunk counts of failed and empty queries, and how" >&2
+        echo "many hit rows it accumulated. Zero accumulated rows is a search problem;" >&2
+        echo "rows accumulated but none converted is a parse problem, and" >&2
+        echo "folddisco_to_regions.py fails loudly with the reason in that case." >&2
         exit 1
     fi
 

@@ -86,10 +86,19 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--hits", required=True, type=Path,
                    help="folddisco query stdout: tid node_count idf rmsd matching_residues query_residues")
-    p.add_argument("--query-accession", required=True,
+    p.add_argument("--query-accession",
                    help="folddisco does not echo the query name; it is one structure per run")
+    p.add_argument("--accession-column", action="store_true",
+                   help="--hits is many queries concatenated, each row prefixed with its "
+                        "query accession in column 1 and folddisco's own six columns after. "
+                        "This is how the pipeline runs it: folddisco's container has no "
+                        "python, so the query task only accumulates rows and the conversion "
+                        "happens once, downstream, in a container that does.")
     p.add_argument("--out", required=True, type=Path, help="append normalized rows here")
     args = p.parse_args()
+
+    if bool(args.query_accession) == bool(args.accession_column):
+        raise SystemExit("pass exactly one of --query-accession or --accession-column")
 
     n_lines = 0
     written = 0
@@ -105,9 +114,16 @@ def main():
                 continue
             n_lines += 1
             parts = line.split("\t")
-            if len(parts) < 6:
-                drop(f"fewer than 6 columns (saw {len(parts)})")
-                continue
+            if args.accession_column:
+                if len(parts) < 7:
+                    drop(f"fewer than 7 columns (saw {len(parts)})")
+                    continue
+                query_accession, parts = parts[0], parts[1:]
+            else:
+                query_accession = args.query_accession
+                if len(parts) < 6:
+                    drop(f"fewer than 6 columns (saw {len(parts)})")
+                    continue
             tid, node_count, idf, rmsd, matching, query_res = parts[:6]
 
             if not query_res.strip():
@@ -145,14 +161,15 @@ def main():
             # and the interval can never disagree.
             t_acc, t_off = accession_and_offset(tid)
             out.write(
-                f"{args.query_accession}\t{t_acc}\t"
+                f"{query_accession}\t{t_acc}\t"
                 f"{min(q_hit)}\t{max(q_hit)}\t"
                 f"{min(t_hit) + t_off}\t{max(t_hit) + t_off}\t"
                 f"{score}\t{rmsd_val}\t{len(matched)}\n"
             )
             written += 1
 
-    print(f"{args.query_accession}: {written} rows")
+    label = args.query_accession or f"{args.hits.name} (many queries)"
+    print(f"{label}: {written} rows from {n_lines} folddisco hits")
 
     # A hit file with rows in it that converts to nothing is a parse failure, not a
     # no-hit result: folddisco was not run at all when the file is empty, because the
@@ -175,7 +192,7 @@ def main():
         )
     if reasons:
         detail = "; ".join(f"{v} x {k}" for k, v in sorted(reasons.items()))
-        print(f"{args.query_accession}: dropped {detail}", file=sys.stderr)
+        print(f"{label}: dropped {detail}", file=sys.stderr)
 
 
 if __name__ == "__main__":
