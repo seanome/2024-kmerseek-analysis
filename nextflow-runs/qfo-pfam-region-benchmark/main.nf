@@ -634,11 +634,20 @@ params.score_time_base_min    = 30
 params.score_time_per_mb_sec  = 6
 params.score_time_max_hours   = 24
 
+// Each arm is scored once per dedup-transfer mode inside the same task (see
+// dedup_transferred_calls in evaluate_domain_calls.py). Reading the regions and the truth
+// table is shared, transferring and scoring is not, so the wall clock scales with the
+// number of modes. Kept as a list so the count and the flag passed to the script cannot
+// disagree -- the previous shape of this bug was a walltime cut using a measurement that
+// did not include the work being timed.
+params.dedup_transfer_modes = ['off', 'on']
+
 def scoreTime = { regions, attempt ->
     def files = regions instanceof List ? regions : [regions]
     long mb   = Math.max(1L, files.sum { (it.size() as long) }.intdiv(1024L * 1024L))
+    int  nmod = Math.max(1, (params.dedup_transfer_modes as List).size())
     long mins = (params.score_time_base_min as long)
-                + (mb * (params.score_time_per_mb_sec as long)).intdiv(60L)
+                + (mb * (params.score_time_per_mb_sec as long) * nmod).intdiv(60L)
     long cap  = (params.score_time_max_hours as long) * 60L
     Duration.of("${Math.min(mins, cap) * attempt} min")
 }
@@ -2391,6 +2400,7 @@ MANIFEST_EOF
         ${tdis_arg} \\
         --min-overlap  ${params.min_overlap} \\
         --strict-iou   ${params.strict_iou} \\
+        --dedup-transfer-modes ${(params.dedup_transfer_modes as List).join(',')} \\
         --truth-set    ${truth_set}
     """
 }

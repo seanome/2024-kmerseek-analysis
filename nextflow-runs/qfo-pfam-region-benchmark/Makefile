@@ -78,6 +78,22 @@ ANNOTATIONS    := $(ANALYSIS_ROOT)/results/pfam_benchmark/annotations
 # Pfam-A HMMs for the hmmscan annotation ceiling. main.nf defaults to ~/data/pfam/Pfam-A.hmm
 # on whichever machine it runs, so the cluster needs its own copy -- see sync-pfam.
 PFAM_HMM       ?= /Users/olga/data/pfam/Pfam-A.hmm
+
+# Where sync-pfam puts it on the cluster, and therefore what the run targets pass. These
+# two have to agree: main.nf sets params.run_hmmscan from file(pfam_hmm).exists(), so a
+# path nothing wrote to turns the annotation ceiling off silently. That is what made a
+# successful `make sync-pfam` still produce runs with no hmmscan arm -- the data was there
+# and nothing pointed at it.
+#
+# $$SCRATCH, not $(SCRATCH): the run targets execute ON Sherlock, so this has to reach that
+# shell as a literal $SCRATCH for it to expand. Unquoted for the same reason -- the single
+# quotes sync-pfam wraps its rsync destination in are what keep ssh from expanding it on
+# the Mac, and there is no ssh hop here.
+PFAM_HMM_REMOTE ?= $$SCRATCH/data/pfam/Pfam-A.hmm
+# Same shape as LOCAL_SKIP_ARMS: the whole flag or nothing, so `PFAM_HMM_REMOTE=` runs
+# without --pfam_hmm rather than passing an empty path.
+PFAM_HMM_ARG     = $(if $(PFAM_HMM_REMOTE),--pfam_hmm $(PFAM_HMM_REMOTE))
+
 QFO_DIR        := /Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
 STRUCT_DIR     := /Users/olga/data/alphafold_proteomes
 ACC_DIR        := /Users/olga/data/alphafold_proteomes/_accessions
@@ -654,6 +670,11 @@ SYNC_STAGE := .sync-staging
 ## All five files, not just the .hmm. hmmscan reads the pressed .h3m/.h3i/.h3f/.h3p; the
 ## .hmm alone switches the arm on and then fails inside the container on a database it
 ## cannot read. main.nf now checks for them up front rather than letting that happen.
+##
+## Running this is the whole of it. The destination below and PFAM_HMM_REMOTE above are the
+## same path, and every run target passes --pfam_hmm $(PFAM_HMM_REMOTE), so the next run
+## picks the arm up with no flag. A sync that still needed a flag afterwards was a sync
+## that looked done and was not.
 sync-pfam:
 	$(call require_mac)
 	@test -f $(PFAM_HMM) || { echo "no $(PFAM_HMM) on this Mac"; exit 1; }
@@ -663,7 +684,10 @@ sync-pfam:
 	$(SSH_MUX) $(SHERLOCK_HOST) 'mkdir -p $$SCRATCH/data/pfam'
 	$(RSYNC) $(PFAM_HMM) $(PFAM_HMM).h3m $(PFAM_HMM).h3i $(PFAM_HMM).h3f $(PFAM_HMM).h3p \
 	  $(SHERLOCK_HOST):'$$SCRATCH/data/pfam/'
-	@echo; echo "Now pass --pfam_hmm \$$SCRATCH/data/pfam/Pfam-A.hmm, or set PFAM_HMM_REMOTE."
+	@echo
+	@echo 'hmmscan annotation ceiling is now ENABLED for the run targets.'
+	@echo 'They already pass --pfam_hmm $(PFAM_HMM_REMOTE) -- no extra flag needed.'
+	@echo 'Point them elsewhere with PFAM_HMM_REMOTE=<path>, or PFAM_HMM_REMOTE= to run without it.'
 
 sync-data:
 	$(call require_mac)
@@ -910,6 +934,7 @@ define launch
 	    --swissprot_dat ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir      ../data/pfamn          \
 	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
 	    --outdir      ../results
 endef
 
@@ -1056,6 +1081,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir       ../data/pfamn \
 	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
 	    $(NF_ARGS)
 
 # ---- polarity4 and funcgroups8 (Rannon & Burstein 2026) --------------------
@@ -1145,6 +1171,7 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	    --omega_file          ../data/covariates/omega_results.tsv \
 	    --swissprot_dat       ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir           ../data/pfamn \
+	    $(PFAM_HMM_ARG) \
 	    $(NF_ARGS)
 
 # Same code path as the real run, scoped down. Do this before `make run`.
@@ -1166,6 +1193,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir        ../data/pfamn          \
 	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
 	    $(NF_ARGS)
 
 # Rebuild the one HTML report from results already published, without re-running a single

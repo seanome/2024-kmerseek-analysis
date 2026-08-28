@@ -332,6 +332,63 @@ def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overla
     )
 
 
+def dedup_transferred_calls(calls: pl.LazyFrame, iou_min: float) -> pl.LazyFrame:
+    """Collapse calls that are the same prediction arrived at via different targets.
+
+    Homology transfer turns one query region into one call per target domain it covers. A
+    human kinase hitting 300 mouse kinases yields 300 calls of PF00069 over nearly the same
+    residues. assign_instances() then makes one a true positive and the other 299 false
+    positives, so per-protein precision collapses to 1/300 for exactly the proteins whose
+    families are best conserved. That is a property of the target proteome's redundancy, not
+    of whether the tool found the domain, and it is why precision falls monotonically with
+    target proteome size (ecoli 0.138 -> mouse 0.018 for phmmer).
+
+    This pass keys on (query_acc, pfam_id) and requires the QUERY intervals to overlap at
+    iou_min, so a protein's tandem domains -- same family, adjacent but not coincident, IoU
+    near zero -- are each kept. It says "these calls claim the same region of the same
+    protein for the same family", which is one annotation.
+
+    Deliberately NOT the default. Penalising redundant output is a real position: a tool that
+    reports one clean call and a tool that reports 300 copies are different tools to a user
+    reading the output. Both numbers are worth reporting, which is why this is a flag and
+    every metrics row is stamped with dedup_transfers. Compare the pair to separate detection
+    from redundancy. See dedup_fragment_regions() for the narrower artifact-removal pass.
+
+    Suppression is pairwise, not iterative NMS: a call is dropped if any overlapping call
+    scores higher, even if that call is itself dropped. Ties break by score then original row
+    order, so the result does not depend on join ordering.
+    """
+    c = calls.with_row_index("_rid")
+    left = c.select("_rid", "query_acc", "pfam_id", "qstart", "qend", "score")
+    right = left.select(
+        pl.col("_rid").alias("_rid_b"), "query_acc", "pfam_id",
+        pl.col("qstart").alias("qstart_b"), pl.col("qend").alias("qend_b"),
+        pl.col("score").alias("score_b"),
+    )
+
+    inter = (pl.min_horizontal("qend", "qend_b")
+             - pl.max_horizontal("qstart", "qstart_b")).clip(lower_bound=0)
+    union = (pl.max_horizontal("qend", "qend_b")
+             - pl.min_horizontal("qstart", "qstart_b"))
+    iou = pl.when(union > 0).then(inter / union).otherwise(0.0)
+
+    beaten = (
+        left.join(right, on=["query_acc", "pfam_id"], how="inner")
+        .filter(pl.col("_rid") != pl.col("_rid_b"))
+        .filter(
+            (iou >= iou_min)
+            & (
+                (pl.col("score_b") > pl.col("score"))
+                | ((pl.col("score_b") == pl.col("score"))
+                   & (pl.col("_rid_b") < pl.col("_rid")))
+            )
+        )
+        .select("_rid")
+        .unique()
+    )
+    return c.join(beaten, on="_rid", how="anti").drop("_rid")
+
+
 def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
                 semantics: str = "alignment") -> pl.DataFrame:
     """Match each call to the best true instance of the same family on the same protein.
@@ -994,6 +1051,17 @@ def score_one(args, truth, truth_lf, job):
         calls_lf = (
             transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
         )
+        if calls_lf is not None and job["dedup"]:
+            iou_min = (args.transfer_dedup_iou if args.transfer_dedup_iou is not None
+                       else args.min_overlap)
+            before = calls_lf.select(pl.len()).collect().item()
+            calls_lf = dedup_transferred_calls(calls_lf, iou_min).cache()
+            after = calls_lf.select(pl.len()).collect().item()
+            if before:
+                print(f"[{job['tool']}/{job['variant']}] dedup-transfers: "
+                      f"{before} -> {after} calls "
+                      f"({100 * (before - after) / before:.1f}% were redundant transfers "
+                      f"of the same region)", file=sys.stderr)
 
     if calls_lf is None:
         scored = pl.DataFrame(
@@ -1020,7 +1088,10 @@ def score_one(args, truth, truth_lf, job):
              "species_mya": args.species_mya,
              # Stamped on every row so an alignment tool and a motif tool are never
              # silently compared on boundary metrics that mean different things.
-             "interval_semantics": semantics}
+             "interval_semantics": semantics,
+             # Both settings are meant to be run and reported side by side; without this
+             # stamp the two sets of rows are indistinguishable once pooled.
+             "dedup_transfers": bool(job["dedup"])}
     rows, curves = [], []
 
     for split in ("all", "selection", "heldout"):
@@ -1127,6 +1198,22 @@ def main():
     p.add_argument("--fragment-iou", type=float, default=0.9,
                    help="how coincident two regions on the same (query, target) pair must "
                         "be, on BOTH sides, to count as the same alignment seen twice")
+    p.add_argument("--dedup-transfers", action="store_true",
+                   help="collapse calls that are the same prediction reached through "
+                        "different targets: one call per (query, family, region) instead of "
+                        "one per target domain hit. Separates detection from the redundancy "
+                        "of the target proteome -- run both settings and report the pair. "
+                        "See dedup_transferred_calls().")
+    p.add_argument("--dedup-transfer-modes", default="off,on",
+                   help="which dedup settings to score each manifest arm under, as a comma "
+                        "list of 'off' and 'on'. Both by default: the un-deduplicated number "
+                        "measures redundant output, the deduplicated one measures detection, "
+                        "and the paper wants the pair. Ignored on the single --regions path, "
+                        "which takes --dedup-transfers instead.")
+    p.add_argument("--transfer-dedup-iou", type=float, default=None,
+                   help="how much two calls of the same family on the same query protein "
+                        "must overlap each other to count as one annotation "
+                        "(default: --min-overlap, i.e. they would claim the same instance)")
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--strict-iou", type=float, default=0.8)
     p.add_argument("--gray-min-annotated-fraction", type=float, default=0.5,
@@ -1185,24 +1272,44 @@ def main():
     # One job per (tool, variant) when batched, or the single --regions when not. Batching
     # exists because SLURM rate-limits submission: one task per (truth_set, species, tool,
     # variant) is ~10_100 sbatch calls for a full sweep, against 27 when grouped by species.
+    # Each manifest row is scored once per dedup mode. The two live in the same task because
+    # the expensive setup -- reading and IC-weighting the truth table -- is shared, and
+    # because the pair is only meaningful compared to itself: same truth, same calls, one
+    # difference. The un-deduplicated stem is left exactly as it was so already-published
+    # paths and the globs that read them keep working; only the new mode gets a suffix.
+    modes = [m.strip() for m in args.dedup_transfer_modes.split(",") if m.strip()]
+    bad = [m for m in modes if m not in ("off", "on")]
+    if bad:
+        raise SystemExit(f"--dedup-transfer-modes takes 'off' and/or 'on', got {bad}")
+    if not modes:
+        raise SystemExit("--dedup-transfer-modes needs at least one mode")
+
     if args.manifest:
         jobs = []
         for line in Path(args.manifest).read_text().splitlines():
             if not line.strip():
                 continue
             tool, variant, regions = line.split("\t")
-            stem = f"{args.truth_set}.{tool}.{variant}.{args.species}"
-            jobs.append({"tool": tool, "variant": variant, "regions": Path(regions),
-                         "calls_out": Path(f"{stem}.calls.parquet"),
-                         "metrics_out": Path(f"{stem}.metrics.parquet"),
-                         "curve_out": Path(f"{stem}.curve.parquet")})
+            for mode in modes:
+                stem = f"{args.truth_set}.{tool}.{variant}.{args.species}"
+                if mode == "on":
+                    stem += ".dedup"
+                jobs.append({"tool": tool, "variant": variant, "regions": Path(regions),
+                             "dedup": mode == "on",
+                             "calls_out": Path(f"{stem}.calls.parquet"),
+                             "metrics_out": Path(f"{stem}.metrics.parquet"),
+                             "curve_out": Path(f"{stem}.curve.parquet")})
     else:
+        # The single-arm path keeps taking the plain boolean: output names are given
+        # explicitly there, so there is nowhere to put a second mode's files.
         jobs = [{"tool": args.tool, "variant": args.variant, "regions": args.regions,
+                 "dedup": bool(args.dedup_transfers),
                  "calls_out": args.calls_out, "metrics_out": args.metrics_out,
                  "curve_out": args.curve_out}]
 
     for i, job in enumerate(jobs, 1):
-        print(f"[{i}/{len(jobs)}] {job['tool']}/{job['variant']}", file=sys.stderr)
+        tag = f"{job['tool']}/{job['variant']}" + (" [dedup]" if job["dedup"] else "")
+        print(f"[{i}/{len(jobs)}] {tag}", file=sys.stderr)
         score_one(args, truth, truth_lf, job)
 
 

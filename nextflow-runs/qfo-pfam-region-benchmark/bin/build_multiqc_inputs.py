@@ -284,6 +284,18 @@ def _guard_single_truth_set(df: pl.DataFrame, across_truth_sets: bool) -> None:
     Opt out only where crossing sets is the point and nothing displayed is a cross-set
     mean, which is the side-by-side circularity plot and nothing else.
     """
+    # The same failure shape as truth sets, on a different axis: every arm is scored twice,
+    # once with redundant transfers collapsed and once not, so a frame carrying both has two
+    # rows per arm and every mean over it is halfway between two different measurements.
+    # Not opt-out-able -- the comparison section filters to one mode before it aggregates.
+    if "dedup_transfers" in df.columns and df.height:
+        modes = df["dedup_transfers"].unique().to_list()
+        if len(modes) > 1:
+            raise ValueError(
+                "best_variants got both dedup_transfers settings in one frame. Those are "
+                "two measurements of the same arm -- redundant transfers collapsed or not "
+                "-- and a mean over the pair is not either of them. Filter to one."
+            )
     if across_truth_sets or "truth_set" not in df.columns:
         return
     found = df["truth_set"].unique().to_list()
@@ -1881,6 +1893,122 @@ def section_truthsets(out: Path, metrics: pl.DataFrame, max_tools: int) -> None:
     })
 
 
+def section_dedup_transfers(out: Path, metrics_all: pl.DataFrame, primary_truth: str,
+                            max_tools: int) -> None:
+    """Detection against redundancy: the same arm scored with and without collapsing
+    calls that are one prediction reached through many targets.
+
+    Homology transfer emits one call per target domain covered, so a human kinase hitting
+    300 mouse kinases produces 300 calls of the same family over the same residues. The
+    matcher makes one a true positive and the rest false positives. That is real behaviour
+    worth charging a tool for, but it is also a property of how redundant the target
+    proteome is rather than of whether the domain was found -- which is why precision falls
+    as target proteomes get larger even while recall rises. Both numbers are reported
+    because neither one alone answers the question.
+    """
+    if "dedup_transfers" not in metrics_all.columns:
+        return
+    base = ungrouped(metrics_all.filter(pl.col("truth_set") == primary_truth))
+    if base.height == 0 or base["dedup_transfers"].n_unique() < 2:
+        return
+
+    per_mode = {}
+    for mode in (False, True):
+        cut, split = pick_split(base.filter(pl.col("dedup_transfers") == mode))
+        if cut.height == 0:
+            return
+        agg = (cut.group_by("tool", "variant")
+                  .agg(pl.col("fmax").mean().alias("fmax"),
+                       pl.col("precision").mean().alias("precision"),
+                       pl.col("recall_reachable").mean().alias("recall"),
+                       pl.col("n_calls").mean().alias("n_calls")))
+        per_mode[mode] = agg
+        last_split = split
+
+    # The arm is held fixed at whichever variant wins WITHOUT dedup, so the two bars are
+    # the same tool configuration measured twice. Letting each mode pick its own best
+    # variant would fold a variant change into what is meant to be a one-difference
+    # comparison.
+    best = (per_mode[False].sort("fmax", descending=True, nulls_last=True)
+            .group_by("tool", maintain_order=True).first())
+    joined = (best.select("tool", "variant", "fmax", "precision", "n_calls")
+              .join(per_mode[True].select(
+                  "tool", "variant",
+                  pl.col("fmax").alias("fmax_dedup"),
+                  pl.col("precision").alias("precision_dedup"),
+                  pl.col("n_calls").alias("n_calls_dedup")),
+                  on=["tool", "variant"], how="inner")
+              .with_columns(
+                  (pl.col("fmax_dedup") - pl.col("fmax")).alias("fmax_delta"),
+                  pl.when(pl.col("n_calls") > 0)
+                    .then(1 - pl.col("n_calls_dedup") / pl.col("n_calls"))
+                    .otherwise(None).alias("redundant_fraction"))
+              .sort("fmax_dedup", descending=True, nulls_last=True)
+              .head(max_tools))
+    if joined.height == 0:
+        return
+
+    label = lambda r: r["tool"] if r["variant"] in (None, "", "-") else f"{r['tool']} ({r['variant']})"
+    rows = joined.to_dicts()
+
+    write_section(out, "qfo_dedup_bar", {
+        "id": "qfo_dedup_bar",
+        "section_name": "Detection vs redundant transfer",
+        "description": (
+            f"{primary_truth} truth, <code>{last_split}</code> split, averaged over target "
+            "species. Each tool is shown at the variant that wins <i>without</i> dedup, so "
+            "both bars are the same configuration scored twice. <b>as reported</b> charges "
+            "every redundant copy of a call as a false positive; <b>one call per region</b> "
+            "collapses calls of the same family that overlap each other on the same query "
+            "protein, keeping the best-scoring one. Tandem repeats survive the collapse — "
+            "adjacent domains of one family barely overlap, so they are separate calls "
+            "either way. The gap is how much of a tool's score is redundancy in the target "
+            "proteome rather than detection."),
+        "plot_type": "bargraph",
+        "pconfig": {"id": "qfo_dedup_bar_plot",
+                    "title": f"Fmax with and without collapsing redundant transfers "
+                             f"({primary_truth})",
+                    "ylab": "Fmax", "height": 450, "stacking": "group"},
+        "categories": {"fmax": {"name": "as reported", "color": "#b0b0b0"},
+                       "fmax_dedup": {"name": "one call per region", "color": "#0f9d76"}},
+        "data": {label(r): {"fmax": r["fmax"], "fmax_dedup": r["fmax_dedup"]} for r in rows},
+    })
+
+    write_section(out, "qfo_dedup_table", {
+        "id": "qfo_dedup_table",
+        "section_name": "Redundant transfer, per tool",
+        "description": (
+            "The numbers behind the plot above. <b>redundant calls</b> is the fraction of "
+            "reported calls that were another call of the same family over the same "
+            "residues of the same query protein; it rises with how many homologues the "
+            "target proteome contains, which is why it is largest for the profile methods "
+            "on vertebrate targets. A large Fmax gap means the tool found the domain and "
+            "was charged for saying so repeatedly."),
+        "plot_type": "table",
+        "pconfig": {"id": "qfo_dedup_table_plot",
+                    "title": f"Detection vs redundancy ({primary_truth})",
+                    "col1_header": "Tool", "sort_rows": False, "scale": False},
+        "headers": {
+            "fmax": dict(title="Fmax", min=0, max=1, scale="Blues", format="{:,.3f}",
+                         description="As reported, redundant copies charged as errors"),
+            "fmax_dedup": dict(title="Fmax (deduped)", min=0, max=1, scale="Greens",
+                               format="{:,.3f}", description="One call per query region"),
+            "fmax_delta": dict(title="Gap", scale="RdYlGn", format="{:,.3f}",
+                               description="How much of the score was redundancy"),
+            "redundant_fraction": dict(title="Redundant calls", min=0, max=1,
+                                       scale="Reds", format="{:,.1%}"),
+            "precision": dict(title="Precision", min=0, max=1, scale="Oranges",
+                              format="{:,.3f}", hidden=True),
+            "precision_dedup": dict(title="Prec. (deduped)", min=0, max=1, scale="Oranges",
+                                    format="{:,.3f}"),
+            "n_calls": dict(title="Calls", format="{:,.0f}", hidden=True),
+        },
+        "data": {label(r): {k: r[k] for k in
+                            ("fmax", "fmax_dedup", "fmax_delta", "redundant_fraction",
+                             "precision", "precision_dedup", "n_calls")} for r in rows},
+    })
+
+
 def section_reachability(out: Path, metrics: pl.DataFrame, primary_truth: str) -> None:
     """The per-species ceiling: what could have been transferred at all."""
     cut, _ = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
@@ -2347,6 +2475,11 @@ def main():
                    help="Alphabet x ksize x low-complexity combos to carry into the "
                         "comparison plots. Every baseline contributes one variant; only "
                         "the sweep contributes several.")
+    p.add_argument("--dedup-mode", choices=["off", "on"], default="off",
+                   help="which dedup-transfer scoring the report's sections use. 'off' is "
+                        "the tool's output as reported, redundant copies of a call charged "
+                        "as errors; 'on' collapses calls of one family over one query "
+                        "region. The comparison section always shows both regardless.")
     p.add_argument("--max-lines", type=int, default=12,
                    help="Curves per PR/ROC plot")
     args = p.parse_args()
@@ -2355,6 +2488,20 @@ def main():
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     metrics = pl.read_parquet(args.metrics)
+    # Every arm is scored under both dedup-transfer settings. The whole frame is kept for
+    # the one section that compares them; every other section sees a single mode, because
+    # a frame with both has two rows per arm and any mean over it is halfway between two
+    # different measurements. Default 'off' so every existing number in this report keeps
+    # meaning exactly what it did before the second mode existed.
+    metrics_all = metrics
+    if "dedup_transfers" in metrics.columns:
+        want = args.dedup_mode == "on"
+        picked = metrics.filter(pl.col("dedup_transfers") == want)
+        if picked.height == 0 and metrics.height:
+            raise SystemExit(
+                f"--dedup-mode {args.dedup_mode} selected no rows; the metrics carry "
+                f"{sorted(set(metrics['dedup_transfers'].to_list()))}")
+        metrics = picked
     curves = load_curves(args.curves)
     trace = mt.load_trace(args.trace) if args.trace else mt.load_trace(None)
     trace = mt.merge_timings(trace, mt.load_timing_sidecars(args.kmerseek_timings))
@@ -2383,6 +2530,7 @@ def main():
     section_boundary(args.outdir, metrics, primary, args.max_tools)
     section_grayzone(args.outdir, metrics, primary, args.max_tools)
     section_reachability(args.outdir, metrics, primary)
+    section_dedup_transfers(args.outdir, metrics_all, primary, args.max_tools)
     # The resource sections say which run they describe. A `-entry report` rebuild points
     # at some earlier run's trace, so "this run" is not always true and a reader sizing a
     # SLURM request needs to know whether they are looking at the mini smoke set or the

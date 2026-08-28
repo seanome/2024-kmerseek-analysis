@@ -105,8 +105,9 @@ def main():
     # baselines and Swiss-Prot is not, so a mean across them has no interpretation.
     if "truth_set" in board.columns and board.height:
         for ts in board["truth_set"].unique().sort().to_list():
-            print(f"\n--- truth set: {ts} ---")
-            _print_board(board.filter(pl.col("truth_set") == ts))
+            for cut, note in _by_dedup_mode(board.filter(pl.col("truth_set") == ts)):
+                print(f"\n--- truth set: {ts}{note} ---")
+                _print_board(cut)
         # Raised after the parquet and CSV are on disk, so the run fails loudly without
         # taking the tables needed to debug it down with it.
         if dead:
@@ -120,10 +121,31 @@ def main():
     else:
         print(f"Leaderboard: split={LEADERBOARD_SPLIT}, ungrouped, averaged over species")
 
-    _print_board(board)
+    for cut, note in _by_dedup_mode(board):
+        if note:
+            print(f"\n---{note} ---")
+        _print_board(cut)
 
     if dead:
         raise SystemExit(dead)
+
+
+def _by_dedup_mode(board: pl.DataFrame):
+    """Split a board into one frame per dedup-transfer setting, never pooling them.
+
+    Every arm is scored twice: once charging each redundant copy of a call as a false
+    positive, once collapsing calls of one family over one query region. Those are two
+    measurements of the same arm, so the mean over both is neither, and _print_board's
+    group_by(tool, variant) would silently produce exactly that mean.
+    """
+    if "dedup_transfers" not in board.columns or board.height == 0:
+        return [(board, "")]
+    modes = sorted(board["dedup_transfers"].unique().to_list())
+    if len(modes) < 2:
+        return [(board, "")]
+    return [(board.filter(pl.col("dedup_transfers") == m),
+             ", one call per region" if m else ", calls as reported")
+            for m in modes]
 
 
 def _print_board(board: pl.DataFrame):
