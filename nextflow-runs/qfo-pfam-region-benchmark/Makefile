@@ -1355,6 +1355,21 @@ clean-indexes:
 	@read -p "delete the kmerseek index cache above? [y/N] " a; [ "$$a" = y ] || exit 1
 	/bin/rm -rf $(REMOTE_INDEX_DIR)
 
+REMOTE_FOLDDISCO_DIR ?= results/folddisco_index
+
+## Drop the cached folddisco indexes. Needed once, after the fix that makes folddiscoIndex
+## record ABSOLUTE structure paths: `folddisco query` reopens the target CIF files that the
+## index points at, and every index built before that fix points at a relative path that
+## resolves to nothing outside the task that built it. storeDir skips a rebuild whenever the
+## output directory already exists and does NOT notice that the script changed, so the stale
+## indexes are picked up and every query panics on "Failed to read CIF file" exactly as
+## before. Deleting them is what makes the fix take effect.
+clean-folddisco-index:
+	$(call require_cluster)
+	@du -sh $(REMOTE_FOLDDISCO_DIR) 2>/dev/null || echo "no folddisco index at $(REMOTE_FOLDDISCO_DIR)"
+	@read -p "delete the folddisco indexes above? they rebuild on the next run [y/N] " a; [ "$$a" = y ] || exit 1
+	/bin/rm -rf $(REMOTE_FOLDDISCO_DIR)
+
 ## How much disk the shared cache is holding, and how much is left. Check this before
 ## launching the full sweep. Everything under results/ is shared between run-midi and run:
 ## the target databases are identical for both, and the human entries are kept apart by a

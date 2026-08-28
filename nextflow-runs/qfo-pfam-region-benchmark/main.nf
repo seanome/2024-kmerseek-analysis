@@ -2045,11 +2045,32 @@ process folddiscoIndex {
         exit 1
     fi
 
+    # An ABSOLUTE path, deliberately, not the staged ${structures} symlink. The index
+    # records where it read each structure from and REOPENS those files at query time --
+    # `folddisco query` reads the matched target CIFs, it does not answer from the index
+    # alone. Given a staged relative path it records "${species}/AF-x.cif", which resolves
+    # to nothing in the query task's work directory, and every query then panics with
+    # "Failed to read CIF file". That was invisible for the whole life of this pipeline:
+    # folddiscoQuery discarded folddisco's stderr, so a chunk where all 1030 structures
+    # crashed looked exactly like one that legitimately matched nothing, and folddisco
+    # scored a flat zero that read as a result.
+    #
+    # ${params.structures} is written by fetchStructures and outlives every work directory,
+    # so the recorded path is still valid whenever the stored index is reused. The staged
+    # input above is kept because it is what makes Nextflow bind this path into the
+    # container -- the checks read the symlink, folddisco reads the real path.
+    STRUCT_ABS='${params.structures}/${species}'
+    if [ ! -d "\$STRUCT_ABS" ]; then
+        echo "\$STRUCT_ABS is not readable inside the container." >&2
+        echo "The index would record paths that no query task can reopen." >&2
+        exit 1
+    fi
+
     mkdir -p ${species}_folddisco
     # -v so a failure says something. Without it folddisco exits 1 silently and the only
     # thing in the log is Nextflow's unrelated "Command 'ps' ... cannot be found" warning.
     folddisco index -v \\
-        -p ${structures} \\
+        -p "\$STRUCT_ABS" \\
         -i ${species}_folddisco/index \\
         -t ${task.cpus}
     """
@@ -2067,8 +2088,13 @@ process folddiscoQuery {
     container params.folddisco_image
     label 'high_cpu'
 
+    // target_structures is never named in the script. It is staged so that Nextflow binds
+    // ${params.structures}/${species} into the container, which is where the index recorded
+    // its structures and where `folddisco query` reopens them from. Drop this input and
+    // every query panics on "Failed to read CIF file" again.
     input:
-    tuple val(species), path(index), path(human_structures), val(chunk)
+    tuple val(species), path(index), path(target_structures), path(human_structures),
+          val(chunk)
 
     output:
     tuple val(species), path("human_vs_${species}.folddisco.chunk${chunk}.tsv")
@@ -3178,8 +3204,16 @@ workflow {
                     )
                 )
                 fd_chunks = Channel.of(0..(params.folddisco_chunks - 1)).flatten()
+                // The structures ride along to the query. It never names them, but staging
+                // them is what binds ${params.structures}/<species> into the container, and
+                // that is where the index recorded its structures and where `folddisco
+                // query` reopens them. Re-derived from the emitted label rather than joined
+                // against a second channel, so there is only one expression in the file
+                // that says where a species' structures live.
                 fd_out = folddiscoQuery(
-                    fd_index.combine(Channel.of(human_structs)).combine(fd_chunks)
+                    fd_index.map { sp, idx -> tuple(sp, idx, file("${params.structures}/${sp}")) }
+                            .combine(Channel.of(human_structs))
+                            .combine(fd_chunks)
                 )
                 folddisco_regions = folddiscoMerge(fd_out.groupTuple(by: 0))
                 baseline_regions  = baseline_regions.mix(folddisco_regions)
