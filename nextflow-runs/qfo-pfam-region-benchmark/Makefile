@@ -1063,6 +1063,15 @@ midi-testset-sherlock:
 # other path on this target; $(call rel_to_launch,run-midi,...) is what makes it absolute.
 MIDI_OUTDIR ?= ../data/midi/results
 
+# polarity4 and funcgroups8 run inside this same command, on the RB image, WITHOUT that
+# image touching anything else. --kmerseek_image stays IMAGE_REMOTE, so every python-labelled
+# process -- truth building, covariates, scoring, aggregation, all of which take their
+# container from that same param -- keeps its cache. --kmerseek_extra_image is consulted only
+# by the kmerseek index and search tasks whose alphabet is one of the two, which is a
+# per-task container rather than a per-run one.
+#
+# Both images are prefetched because a run now genuinely uses both.
+run-midi: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-midi
@@ -1070,6 +1079,8 @@ run-midi: prefetch-images midi-testset-sherlock
 	  ml load nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
 	    --qfo_dir         ../data/midi/qfo \
 	    --annotations     ../data/midi/annotations \
 	    --structures      ../data/midi/structures \

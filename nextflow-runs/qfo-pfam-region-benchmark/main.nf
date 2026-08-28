@@ -138,6 +138,20 @@ params.hhblits_db    = null
 params.target_species     = null
 params.species            = null
 params.kmerseek_encodings = null
+// Sweep EXTRA_ENCODINGS as well as the default matrix. Off by default for the reason the
+// EXTRA_ENCODINGS comment gives at length: a bare `nextflow run` must keep expanding to
+// exactly ALL_ENCODINGS, or an in-flight sweep silently widens by 40 combos on its next
+// -resume and every one of them dies under an older image. Turning this on is a statement
+// that the image being passed HAS the alphabets, which is why run-midi sets it in the same
+// breath as --kmerseek_image.
+params.kmerseek_extra_encodings = false
+// The image the EXTRA_ENCODINGS alphabets run under, when they differ from the rest of the
+// sweep. Per TASK, not per run: it reaches only the kmerseek index and search tasks whose
+// alphabet is one of those two, so params.kmerseek_image -- which is also the container for
+// every python-labelled process, truth building and scoring included -- keeps its value and
+// its cache. Unset means one image for everything, which is what a run whose kmerseek build
+// already has the alphabets wants.
+params.kmerseek_extra_image = null
 params.kmerseek_combos    = null
 
 // Low-complexity k-mer removal, swept as a toggle rather than fixed: every alphabet and
@@ -1016,6 +1030,12 @@ process kmerseekIndex {
      * titin's Ig domain". Rejected deliberately on 2026-08-24, not overlooked.
      */
     tag "${species}_${label}_k${ksize}_lc${lowcomp}"
+    // Dynamic, and reading the task's own input rather than a param. An alphabet that
+    // needs a newer kmerseek build gets one without moving every other process onto it.
+    // nextflow.config deliberately sets no container for these two: a config selector
+    // beats a process directive, so a `container = params.kmerseek_image` there would
+    // silently put every task back on one image and this line would never be consulted.
+    container { image }
     storeDir "${DB_CACHE}/kmerseek_index"
 
     memory { kmerseekMemory(label, ksize, species_fasta.size(), task.attempt) }
@@ -1040,7 +1060,7 @@ process kmerseekIndex {
 
     input:
     tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize),
-          val(lowcomp)
+          val(lowcomp), val(image)
 
     output:
     path "${species}.${label}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb"
@@ -1119,6 +1139,12 @@ process kmerseekSearch {
      * rather than as a zero.
      */
     tag "${species}_${label}_k${ksize}_lc${lowcomp}"
+    // Dynamic, and reading the task's own input rather than a param. An alphabet that
+    // needs a newer kmerseek build gets one without moving every other process onto it.
+    // nextflow.config deliberately sets no container for these two: a config selector
+    // beats a process directive, so a `container = params.kmerseek_image` there would
+    // silently put every task back on one image and this line would never be consulted.
+    container { image }
     storeDir "${params.outdir}/kmerseek"
 
     memory { kmerseekMemory(label, ksize, target_bytes, task.attempt) }
@@ -1133,7 +1159,7 @@ process kmerseekSearch {
 
     input:
     tuple val(species), val(cli_flag), val(label), val(ksize), val(lowcomp),
-          val(target_bytes), path(index_dir), path(human_fasta)
+          val(target_bytes), path(index_dir), path(human_fasta), val(image)
 
     output:
     path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
@@ -2055,13 +2081,29 @@ process folddiscoIndex {
     # crashed looked exactly like one that legitimately matched nothing, and folddisco
     # scored a flat zero that read as a result.
     #
-    # ${params.structures} is written by fetchStructures and outlives every work directory,
-    # so the recorded path is still valid whenever the stored index is reused. The staged
-    # input above is kept because it is what makes Nextflow bind this path into the
-    # container -- the checks read the symlink, folddisco reads the real path.
-    STRUCT_ABS='${params.structures}/${species}'
-    if [ ! -d "\$STRUCT_ABS" ]; then
-        echo "\$STRUCT_ABS is not readable inside the container." >&2
+    # The absolute path is RESOLVED FROM THE STAGED SYMLINK, not rebuilt from
+    # params.structures. params.structures is routinely given relative to the launch
+    # directory (the midi run passes --structures ../data/midi/structures), so a path
+    # built from it resolves to nothing inside the container; and the directory it names
+    # can itself be a symlink to somewhere else (midi/structures -> data/structures), so
+    # the reconstructed string is wrong twice over. The staged symlink is what Nextflow
+    # bound into the container, so whatever it resolves to is reachable at that absolute
+    # path here -- the find -L count above is the proof. That target is the directory
+    # fetchStructures wrote, which outlives every work directory, so the paths recorded in
+    # the index stay valid whenever the stored index is reused. The staged input is also
+    # what makes Nextflow bind the directory in at all -- the checks read the symlink,
+    # folddisco reads the real path.
+    # `|| true` so a readlink that fails does not trip `set -e` before the guard below
+    # can say what went wrong.
+    STRUCT_ABS=\$(readlink -f ${structures} || true)
+    if [ -z "\$STRUCT_ABS" ]; then
+        echo "Could not resolve ${structures} to an absolute path." >&2
+        echo "The index would record paths that no query task can reopen." >&2
+        exit 1
+    fi
+    echo "  structures absolute path: \$STRUCT_ABS"
+    if [ ! -d "\$STRUCT_ABS" ] || [ ! -r "\$STRUCT_ABS" ]; then
+        echo "\$STRUCT_ABS is not a readable directory inside the container." >&2
         echo "The index would record paths that no query task can reopen." >&2
         exit 1
     fi
@@ -2860,7 +2902,8 @@ workflow {
                   }
                   known
               }
-            : ALL_ENCODINGS
+            : (params.kmerseek_extra_encodings ? ALL_ENCODINGS + EXTRA_ENCODINGS
+                                               : ALL_ENCODINGS)
 
         // An explicit combo list overrides the matrix entirely, --kmerseek_encodings
         // included: it names ksizes itself, so there is nothing left of the row to keep.
@@ -2926,9 +2969,19 @@ workflow {
         """.stripMargin()
 
         countArm(SPECIES*.label, combos.size())
+        // Which image each combo runs under. Keyed on the alphabet's canonical name, the
+        // same field KNOWN_ENCODINGS is looked up by, so an alphabet cannot be in
+        // EXTRA_ENCODINGS and still be handed the older image. Falls back to the one image
+        // when --kmerseek_extra_image is unset, which is every run whose kmerseek build
+        // already has the alphabets.
+        def EXTRA_NAMES = EXTRA_ENCODINGS*.get(0) as Set
+        def imageFor = { cli_flag ->
+            (cli_flag in EXTRA_NAMES && params.kmerseek_extra_image)
+                ? params.kmerseek_extra_image : params.kmerseek_image
+        }
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
             .map { species, fasta, cli_flag, label, ksize, lowcomp ->
-                tuple(species, fasta, cli_flag, label, ksize, lowcomp)
+                tuple(species, fasta, cli_flag, label, ksize, lowcomp, imageFor(cli_flag))
             }
         idx_out = kmerseekIndex(kmerseek_in)
 
@@ -2940,9 +2993,9 @@ workflow {
         // of a filename that was never meant to carry them.
         def comboKey = { sp, lab, k, lc -> "${sp}|${lab}|${k}|${lc}" }
 
-        combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp ->
+        combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp, image ->
             tuple(comboKey(species, label, ksize, lowcomp),
-                  species, cli_flag, label, ksize, lowcomp, fasta.size())
+                  species, cli_flag, label, ksize, lowcomp, fasta.size(), image)
         }
 
         search_in = idx_out
@@ -2952,8 +3005,9 @@ workflow {
                 tuple(comboKey(m[0][1], m[0][2], m[0][3], m[0][4]), d)
             }
             .join(combo_meta)
-            .map { _key, d, species, cli_flag, label, ksize, lowcomp, target_bytes ->
-                tuple(species, cli_flag, label, ksize, lowcomp, target_bytes, d, human_fasta)
+            .map { _key, d, species, cli_flag, label, ksize, lowcomp, target_bytes, image ->
+                tuple(species, cli_flag, label, ksize, lowcomp, target_bytes, d, human_fasta,
+                      image)
             }
 
         // Rebuild (species, tool, variant) from the filename. The process emits a bare
