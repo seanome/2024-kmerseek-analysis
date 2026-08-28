@@ -2324,8 +2324,17 @@ process hmmscanAnnotate {
     // \$14 domain bitscore, \$13 i-Evalue.
     """
     set -euo pipefail
+    # -o /dev/null is load-bearing, not tidiness. --domtblout /dev/stdout puts the table
+    # on stdout, and without -o hmmscan's human-readable report goes to the SAME stream.
+    # --noali drops the alignment blocks but not the per-sequence and per-domain tables,
+    # whose rows reach 22 fields and so pass the NF filter below. Their columns then get
+    # read as domtbl columns: an E-value like 8.4e+03 landing in \$20 is what crashed the
+    # ceiling arm on its first real run. The crash was the lucky case -- a report row whose
+    # \$20 and \$21 happen to look like coordinates enters the ceiling as a fabricated domain
+    # call, and this arm is the reference every other tool is scored against.
     hmmscan \\
         --domtblout /dev/stdout \\
+        -o /dev/null \\
         --noali \\
         -E ${params.evalue_report} --domE ${params.evalue_report} \\
         --cpu ${task.cpus} \\
