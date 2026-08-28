@@ -32,8 +32,11 @@ import polars as pl
 import mqc_trace as mt
 
 # Threshold-free, so a tool that ships a lenient default cutoff is not rewarded for it.
-HEADLINE = ["fmax", "auprc", "roc_auc", "recall_reachable", "precision", "coverage",
-            "smin", "ndo", "sens_first_fp_mean"]
+# fmax and family_fmax are the same CAFA machinery read at two levels -- interval placement
+# and (protein, family) set membership -- and both are headline because either alone is
+# ambiguous about which half of the task a tool failed.
+HEADLINE = ["fmax", "family_fmax", "auprc", "roc_auc", "recall_reachable", "precision",
+            "coverage", "smin", "ndo", "sens_first_fp_mean"]
 
 # The four method classes the paper's framing turns on: what a tool needs before it can
 # answer at all. Colors are reused by every plot so a class keeps one identity.
@@ -398,10 +401,16 @@ def fmt_metric_headers(cols: list[str]) -> dict:
     spec = {
         "variant": dict(title="Variant", description="Ranked by mean Fmax over species"),
         "fmax":         dict(title="Fmax (mean)",
-                             description="CAFA protein-centric Fmax, mean over target "
-                                         "species. Read it with the SD and range beside "
-                                         "it, never on its own",
+                             description="CAFA protein-centric Fmax, interval-aware: the "
+                                         "call must also land on the annotated interval. "
+                                         "Mean over target species -- read it with the SD "
+                                         "and range beside it, never on its own",
                              min=0, max=1, scale="RdYlGn", format="{:,.3f}"),
+        "family_fmax":  dict(title="Family Fmax", min=0, max=1, scale="RdPu",
+                             format="{:,.3f}",
+                             description="Same curve on the SET of families called per "
+                                         "protein, placement ignored. Fmax minus this is "
+                                         "what boundary placement costs"),
         # The spread columns are the point of the block, so none of them is hidden. A
         # several-fold difference in SD between tools is a result about consistency across
         # divergence, and it is invisible in the mean.
@@ -1836,6 +1845,127 @@ def _feature_type_heatmaps(out, parsed, alphas, types, group_suffix, criterion,
         })
 
 
+def section_ceiling_recognition(out: Path, metrics: pl.DataFrame,
+                                primary_truth: str) -> None:
+    """Recognition against delineation per alphabet: family Fmax, Fmax, and the gap.
+
+    `fmax` gates on interval placement, so it scores "never recognised this family" and
+    "recognised it, drew the boundary wrong" identically at zero. `family_fmax` ignores
+    placement entirely. The difference between them is therefore what boundary placement
+    costs a given alphabet, and it is the quantity this parent exists to measure: an
+    alphabet that recognises families as well as protein20 but cannot delineate them has a
+    large gap, while one that has genuinely lost the family signal has a small gap and a
+    low family Fmax. Those are different failures and one number cannot tell them apart.
+
+    Every alphabet is drawn, not just the HP ones. protein20 is the reference the gap is
+    read against; dropping it would leave the HP numbers with nothing to be large or small
+    compared to.
+    """
+    cut, split = pick_split(ungrouped(metrics.filter(
+        (pl.col("truth_set") == primary_truth) & (pl.col("tool") == "kmerseek"))))
+    if cut.height == 0 or "family_fmax" not in cut.columns:
+        return
+    parsed = parse_kmerseek_variants(cut).with_columns(
+        (pl.col("family_fmax") - pl.col("fmax")).alias("family_gap")
+    )
+    if parsed.height == 0:
+        return
+    alphas = sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes)
+
+    # Averaged over ksize, low-complexity arm and target species. Each alphabet's row in
+    # the heatmap below keeps the ksize axis, so the averaging here is not the only view.
+    per_alpha = parsed.group_by("alphabet").agg(
+        pl.col("fmax").mean(), pl.col("family_fmax").mean(), pl.col("family_gap").mean(),
+        pl.col("coverage").mean() if "coverage" in parsed.columns else pl.lit(None).alias("coverage"),
+        pl.col("n_family_truth").median().alias("n_family_truth"),
+        pl.col("n_family_calls").median().alias("n_family_calls"),
+        pl.len().alias("n_cells"),
+    )
+    lookup = {r["alphabet"]: r for r in per_alpha.to_dicts()}
+
+    levels = {name: lookup[name] for name in alphas if name in lookup}
+    if not levels:
+        return
+    datasets = [
+        {a: {"fmax": r["fmax"], "family_fmax": r["family_fmax"]} for a, r in levels.items()},
+        {a: {"family_gap": r["family_gap"]} for a, r in levels.items()},
+        {a: {"coverage": r["coverage"]} for a, r in levels.items()},
+    ]
+    categories = [
+        {"fmax": {"name": "Fmax (family named AND placed)", "color": "#0f9d76"},
+         "family_fmax": {"name": "family Fmax (named only)", "color": "#c9528f"}},
+        {"family_gap": {"name": "family Fmax - Fmax", "color": "#c99a00"}},
+        {"coverage": {"name": "share of calls that could be judged", "color": "#7f7f7f"}},
+    ]
+    labels = [{"name": "Fmax vs family Fmax", "ylab": "Fmax"},
+              {"name": "gap", "ylab": "family Fmax - Fmax"},
+              {"name": "coverage", "ylab": "coverage"}]
+
+    n_cells = parsed.height
+    med_truth = int(parsed["n_family_truth"].median())
+    med_calls = int(parsed["n_family_calls"].median())
+    write_section(out, "qfo_ceiling_recognition", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_recognition",
+        "section_name": "Recognition against delineation",
+        "description": (
+            f"For each alphabet, the interval-aware <b>Fmax</b> beside the "
+            f"<b>family Fmax</b> that ignores where the call landed, averaged over ksize, "
+            f"low-complexity arm and target species ({primary_truth} truth, "
+            f"<code>{split}</code> split, {n_cells} scored cells; median "
+            f"{med_truth} distinct (protein, family) pairs in the answer key per cell and "
+            f"{med_calls} predicted). Fmax scores a tool that names the right family in the "
+            "wrong place at zero, identically to one that never recognised the family; "
+            "family Fmax scores only the naming. The distance between the two bars is "
+            "therefore what boundary placement costs that alphabet, and the second dataset "
+            "plots it directly. A coarse alphabet that has lost the family signal shows a "
+            "low family Fmax; one that recognises families but cannot delineate them shows "
+            "a high family Fmax and a wide gap. The third dataset is the share of calls "
+            "that could be judged at all, on the same bars, because neither Fmax means the "
+            "same thing over 12% of calls as over 90%. Truth sets are never pooled: this is "
+            "one truth set only."),
+        "plot_type": "bargraph",
+        "pconfig": {"id": "qfo_ceiling_recognition_plot",
+                    "title": "Fmax and family Fmax by alphabet",
+                    "ylab": "Fmax", "cpswitch": False, "stacking": "group",
+                    "height": 500, "data_labels": labels},
+        "categories": categories,
+        "data": datasets,
+    })
+
+    # The same gap with the ksize axis kept. Averaging over k is what hides whether a wide
+    # gap is a property of the alphabet or of the window length it was run at.
+    grid = parsed.group_by("alphabet", "ksize").agg(pl.col("family_gap").mean()).sort("ksize")
+    ks = sorted(grid["ksize"].unique().to_list())
+    cells = {(r["alphabet"], r["ksize"]): r["family_gap"] for r in grid.to_dicts()}
+    rows = [[cells.get((a, k)) for k in ks] for a in alphas]
+    if not any(v is not None for row in rows for v in row):
+        return
+    span = max(abs(v) for row in rows for v in row if v is not None)
+    write_section(out, "qfo_ceiling_recognition_k", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_recognition_k",
+        "section_name": "Recognition against delineation, by k",
+        "description": (
+            f"family Fmax minus Fmax for every alphabet and k-mer size ({primary_truth} "
+            f"truth, <code>{split}</code> split, averaged over the low-complexity arm and "
+            f"target species). Larger means more of what the alphabet recognised was thrown "
+            "away by landing in the wrong place. Blank cells are combos outside that "
+            "alphabet's k range. The scale is symmetric around zero because the gap is not "
+            "guaranteed positive: the family reading also swaps the recall denominator from "
+            "domain instances to families, so a cut dominated by a tandem array of one "
+            "family can lose more from that swap than it gains from ignoring placement."),
+        "plot_type": "heatmap",
+        "pconfig": {"id": "qfo_ceiling_recognition_k_plot",
+                    "title": "family Fmax - Fmax by alphabet and ksize",
+                    "xlab": "k", "ylab": "alphabet",
+                    "min": -span, "max": span, "square": False, "height": 500},
+        "xcats": [str(k) for k in ks],
+        "ycats": alphas,
+        "data": rows,
+    })
+
+
 def section_ceiling_bpe(out: Path, bpe: dict | None) -> None:
     """ProtBERTa_2's learned token boundaries against Pfam domain boundaries.
 
@@ -2006,8 +2136,12 @@ def section_cafa(out: Path, metrics: pl.DataFrame, primary_truth: str,
     recall, which is the asymmetry CAFA introduced on purpose.
     """
     cut, split = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
-    cols = ["fmax", "fmax_threshold", "fmax_precision", "fmax_recall", "wfmax",
+    cols = ["fmax", "family_fmax", "family_gap", "fmax_threshold", "fmax_precision",
+            "fmax_recall", "family_fmax_precision", "family_fmax_recall", "wfmax",
+            "family_wfmax", "n_family_truth", "n_family_calls", "n_family_found",
             "smin", "smin_threshold", "smin_ru", "smin_mi"]
+    if {"family_fmax", "fmax"}.issubset(cut.columns):
+        cut = cut.with_columns((pl.col("family_fmax") - pl.col("fmax")).alias("family_gap"))
     data = _per_tool_table(cut, cols, max_tools)
     if not data:
         return
@@ -2018,6 +2152,17 @@ def section_cafa(out: Path, metrics: pl.DataFrame, primary_truth: str,
             f"{primary_truth} truth, <code>{split}</code> split, averaged over target "
             "species. <b>Fmax</b> is the maximum F-score over score thresholds; the "
             "precision and recall columns are the operating point where it is reached. "
+            "<b>Family Fmax</b> is the same curve read on the SET of Pfam families called "
+            "per query protein against the set truly present, with interval placement "
+            "ignored — the CAFA-classic reading. Fmax scores a tool that names the right "
+            "family in the wrong place at zero, exactly as it scores a tool that never "
+            "recognised the family; the pair separates those. <b>Gap</b> is "
+            "family Fmax minus Fmax, so it is what boundary placement costs. It is almost "
+            "always positive but is not guaranteed to be: the family reading also swaps the "
+            "recall denominator from instances to families, and on a protein carrying a "
+            "tandem array of one family that swap can cost more than ignoring placement "
+            "gains. The three family counts are the denominators — distinct "
+            "(protein, family) pairs in the answer key, predicted, and correct.<br>"
             "<b>wFmax</b> weights each family by its information content, "
             "IC = -log<sub>2</sub> P(family), so recovering a rare family counts for more "
             "than recovering a common one. <b>Smin</b> is the minimum of "
@@ -2032,15 +2177,37 @@ def section_cafa(out: Path, metrics: pl.DataFrame, primary_truth: str,
         "pconfig": {"id": "qfo_cafa_table", "title": f"CAFA-style metrics ({primary_truth})",
                     "col1_header": "Tool", "sort_rows": False, "scale": False},
         "headers": {
-            "fmax": dict(title="Fmax", min=0, max=1, scale="RdYlGn", format="{:,.3f}"),
+            "fmax": dict(title="Fmax", min=0, max=1, scale="RdYlGn", format="{:,.3f}",
+                         description="Interval-aware: the call must land on the "
+                                     "annotated interval"),
+            "family_fmax": dict(title="Family Fmax", min=0, max=1, scale="RdPu",
+                                format="{:,.3f}",
+                                description="Set of families called per protein, "
+                                            "placement ignored"),
+            "family_gap": dict(title="Gap", scale="PuOr", format="{:,.3f}",
+                               description="Family Fmax minus Fmax: what placement costs"),
             "fmax_threshold": dict(title="@ threshold", scale=False, format="{:,.2f}",
                                    description="Score cutoff where Fmax is reached"),
             "fmax_precision": dict(title="Prec. @ Fmax", min=0, max=1, scale="Oranges",
                                    format="{:,.3f}"),
             "fmax_recall": dict(title="Rec. @ Fmax", min=0, max=1, scale="Greens",
                                 format="{:,.3f}"),
+            "family_fmax_precision": dict(title="Fam. prec.", min=0, max=1, scale="Oranges",
+                                          format="{:,.3f}", hidden=True),
+            "family_fmax_recall": dict(title="Fam. rec.", min=0, max=1, scale="Greens",
+                                       format="{:,.3f}", hidden=True),
+            "n_family_truth": dict(title="Families (truth)", format="{:,.0f}", scale=False,
+                                   description="Distinct (protein, family) pairs in the "
+                                               "answer key for this cell"),
+            "n_family_calls": dict(title="Families (called)", format="{:,.0f}", scale=False,
+                                   description="Distinct (protein, family) pairs predicted, "
+                                               "after collapsing redundant copies"),
+            "n_family_found": dict(title="Families (correct)", format="{:,.0f}",
+                                   scale="Greens"),
             "wfmax": dict(title="wFmax", min=0, max=1, scale="PuBuGn", format="{:,.3f}",
                           description="Fmax weighted by family information content"),
+            "family_wfmax": dict(title="Family wFmax", min=0, max=1, scale="PuBuGn",
+                                 format="{:,.3f}", hidden=True),
             "smin": dict(title="Smin (bits)", scale="RdYlGn-rev", format="{:,.2f}",
                          description="Lower is better"),
             "smin_threshold": dict(title="@ threshold", scale=False, format="{:,.2f}",
@@ -2988,6 +3155,7 @@ def main():
     section_ceiling_length(args.outdir, metrics, primary)
     section_ceiling_length_by_k(args.outdir, metrics, primary)
     section_ceiling_feature_type(args.outdir, metrics)
+    section_ceiling_recognition(args.outdir, metrics, primary)
     section_ceiling_bpe(args.outdir, load_bpe_boundary(args.bpe_boundary))
     section_boundary(args.outdir, metrics, primary, args.max_tools)
     section_grayzone(args.outdir, metrics, primary, args.max_tools)

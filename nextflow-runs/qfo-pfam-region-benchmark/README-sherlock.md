@@ -618,14 +618,14 @@ averaged across the two has no interpretation. Override with
 |---|---|
 | The frontier | sensitivity in the &lt;40% identity zone against measured throughput, with the best and fastest incumbent drawn in |
 | What each tool needs | 3D structures? alignment-free? accuracy and CPU-hours beside them |
-| Leaderboards | best variant per tool, one board per truth set |
+| Leaderboards | best variant per tool, one board per truth set, with interval Fmax and family Fmax side by side |
 | Truth sets and circularity | provenance, what each set is circular with, instances scored |
 | CAFA-style / Threshold / Boundary | the full metric tables, defined in the Metrics section below |
 | Twilight zone | Fmax by percent-identity bin |
 | Divergence | Fmax and reachable recall against divergence time |
 | Recall ceiling per species | how many human families the target proteome even has |
 | Alphabet x ksize | Fmax heatmap per low-complexity arm, plus a per-alphabet bar view of the toggle |
-| Reduced-alphabet information ceiling | best F1 against feature length / k per HP alphabet; alphabet x Swiss-Prot feature type, with its coverage twin; BPE token boundaries against domain boundaries |
+| Reduced-alphabet information ceiling | best F1 against feature length / k per HP alphabet; alphabet x Swiss-Prot feature type, with its coverage twin; family Fmax against interval Fmax and the gap between them; BPE token boundaries against domain boundaries |
 | Gray-zone accounting | true / false / unscoreable calls per tool |
 | Run totals and resources | CPU-hours, task run times, peak RSS against requested, efficiency, I/O, task outcomes |
 
@@ -664,7 +664,17 @@ One parent, rebuildable by `make multiqc` from published results with no search 
    types (with a coverage twin) and the containment-scored point types. Rows run coarsest
    alphabet at the top, columns shortest median feature on the left. Swiss-Prot only: the
    other truth sets carry no feature types, so the axis is null there.
-4. **BPE token boundaries.** How often a ProtBERTa_2 token boundary lands exactly on a Pfam
+4. **Recognition against delineation.** Interval `fmax` and `family_fmax` side by side per
+   alphabet, the gap between them on its own, and coverage on the same bars — then the same
+   gap as an alphabet x ksize heatmap so averaging over k cannot hide whether a wide gap
+   belongs to the alphabet or to the window length it was run at. The gap is what boundary
+   placement costs: a coarse alphabet with a high `family_fmax` and a wide gap recognises
+   families it cannot delineate, one with a low `family_fmax` has lost the family signal
+   itself, and `fmax` alone reads both as the same failure. Every alphabet is drawn,
+   `protein20` included, because the gap needs a reference to be large or small against.
+   The heatmap scale is symmetric around zero — see the family-Fmax notes under Metrics for
+   why the gap is not guaranteed positive.
+5. **BPE token boundaries.** How often a ProtBERTa_2 token boundary lands exactly on a Pfam
    domain boundary, over the same rate on length- and composition-matched shuffled
    sequences. Written by `bin/hp_bpe_boundary_diagnostic.py`, which is run by hand -- see
    below -- so the panel is absent, not empty, when it has not been.
@@ -737,15 +747,54 @@ nothing here needs recomputing in a notebook.
 
 | column | meaning |
 |---|---|
-| `fmax` | CAFA's headline metric: max protein-centric F over thresholds |
+| `fmax` | CAFA's headline metric: max protein-centric F over thresholds, **interval-aware** |
 | `wfmax` | same, weighted by family information content |
 | `smin` | min sqrt(remaining uncertainty^2 + misinformation^2), in bits. **Lower is better** |
 | `smin_ru` / `smin_mi` | the two error terms at that threshold: information missed, information invented |
+| `family_fmax` | the same curve on the **set of families** called per protein, placement ignored |
+| `family_fmax_precision` / `_recall` | the operating point family Fmax is reached at |
+| `family_wfmax`, `family_smin`, `family_smin_ru` / `_mi`, `family_fmax_threshold` | the family-level twin of every scalar above |
+| `n_family_truth` / `n_family_calls` / `n_family_found` | distinct (protein, family) pairs in the answer key, predicted, and correct |
 
 `fmax` is *macro-averaged over proteins* -- precision over proteins that predicted
 something, recall over every protein with a true domain. `best_f1` below is
 micro-averaged over calls. They are different numbers on purpose; a few domain-dense
 proteins can move `best_f1` but not `fmax`.
+
+#### Family Fmax, beside interval Fmax and never instead of it
+
+`fmax` gates on `is_tp`, which interval matching sets. A tool that names the right Pfam
+family on the right protein but draws the boundary in the wrong place scores **zero**,
+identically to a tool that never recognised the family at all. Those are two different
+failures and one number cannot separate them.
+
+`family_fmax` is the CAFA-classic reading of the same machinery: per query protein, the
+SET of Pfam families called against the set truly present, interval placement ignored
+entirely. `cafa_metrics.protein_centric_curve` takes a `level=` parameter for this rather
+than carrying a second copy of the threshold sweep. Read the pair:
+
+| | high `family_fmax` | low `family_fmax` |
+|---|---|---|
+| **wide gap** | recognises the family, cannot delineate it | — |
+| **narrow gap** | recognises and delineates | has lost the family signal |
+
+Two properties of the family level worth knowing before reading a gap:
+
+- It is **exactly invariant to redundant calls**. Rows are collapsed to one per
+  `(query_acc, pfam_id)` keeping the best score, so a family transferred fifty times onto
+  one protein is one family prediction. Verified on the mini run by doubling every call
+  with a worse-scoring displaced copy: `family_fmax` moved by 0.00e+00 on all seven arms
+  tested while `fmax` fell (hmmscan 0.803 → 0.536, foldseek/yeast 0.057 → 0.048). This is
+  a separate mechanism from the fragment dedup, which is about one alignment reported once
+  per overlapping AlphaFold fragment.
+- `family_fmax >= fmax` is **usual but not guaranteed**, and nothing clamps it. Ignoring
+  placement can only help precision, but the family reading also swaps the recall
+  denominator from instances to families, and a per-protein macro-average is not invariant
+  under that swap. One protein with three instances of family A, all found, and one
+  instance of family B, missed: interval recall 3/4, family recall 1/2. Measured on the
+  mini run at **4 rows out of 2762**, three of them cells where one protein carries a
+  tandem array (an IGSF decoy at 51 instances per family, `fmax` 0.831 against
+  `family_fmax` 0.727) and one a 0.0012 threshold-grid difference.
 
 `wfmax` and `smin` are weakened relative to real CAFA, and the difference matters.
 CAFA weights GO terms by *information accretion*, defined against the ontology DAG as a
@@ -788,9 +837,11 @@ is not a strict standard, it is an **unsatisfiable** one:
 > on a point feature was 0.333 against a 0.5 cutoff.
 
 Every point stratum therefore scored exactly 0 on **every** metric, `fmax` included —
-`protein_centric_curve` gates on `is_tp` too, so it is interval-aware here rather than
-family-level and does not rescue those rows. That is not a hard benchmark, it is an
-unanswerable one, and it manufactures exactly the short-feature deficit the
+`protein_centric_curve` at its default `level="interval"` gates on `is_tp` too, so it did
+not rescue those rows. (`family_fmax` does not rescue them either, and is not a substitute
+for the fix below: it ignores placement, but a point instance whose family is never
+transferred at all is still a miss at either level.) That is not a hard benchmark, it is
+an unanswerable one, and it manufactures exactly the short-feature deficit the
 reduced-alphabet question exists to test.
 
 `--point-semantics cover` (the default) scores a point instance by containment instead:

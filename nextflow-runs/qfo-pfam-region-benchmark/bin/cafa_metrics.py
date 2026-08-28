@@ -10,6 +10,14 @@ What carries over from CAFA, and what does not:
               reports -- a handful of domain-dense proteins cannot dominate it. Both are
               kept because they answer different questions.
 
+              Reported at two levels, on the same row. `fmax` is interval-aware: a call
+              counts only where it also lands on the annotated interval. `family_fmax` is
+              the CAFA-classic reading -- the SET of families called on a protein against
+              the set truly present, placement ignored. A tool that names the right family
+              and draws the boundary wrong scores zero on the first and full marks on the
+              second, so the pair separates recognition from delineation, which one number
+              cannot.
+
   Smin/wFmax  Carry over only in weakened form, and the docs should say so. CAFA weights
               GO terms by *information accretion*, which is defined against the ontology
               DAG: a term's IA is its information content conditioned on its parents.
@@ -70,14 +78,104 @@ def _suffix_counts(protein_idx, bin_idx, weights, n_proteins, n_bins):
     return np.cumsum(hist[:, ::-1], axis=1)[:, ::-1]
 
 
-def protein_centric_curve(calls: pl.DataFrame, truth: pl.DataFrame, ic: pl.DataFrame,
-                          n_thresholds: int = DEFAULT_N_THRESHOLDS) -> pl.DataFrame:
-    """Fmax / wFmax / Smin operating points, protein-centric and interval-aware.
+def family_view(calls: pl.DataFrame, truth: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """Recast calls and truth as SETS of (protein, family), dropping interval placement.
 
-    A prediction counts only when it is placed correctly (is_tp, i.e. IoU past the
-    caller's cutoff), so this measures domain *finding*, not family naming. Recall is
-    over distinct true instances: several regions hitting one domain is one recovery.
+    The unit becomes the family called on a protein, so a family predicted ten times on one
+    protein is one prediction and a family annotated three times on one protein is one
+    annotation. Deduping to the best score per (query_acc, pfam_id) is what makes the
+    metric independent of how many redundant copies of a call a tool emitted -- which is
+    the point. The interval-aware curve deliberately penalises that redundancy
+    (assign_instances turns the copies into false positives); this one deliberately does
+    not, because it is measuring recognition rather than delineation.
+
+    `is_tp` is recomputed from scratch rather than carried over. A call that named the
+    right family in the wrong place has is_tp False at the interval level and is a correct
+    family call here -- that difference is the whole quantity this view exists to expose.
+    Membership is tested against the truth it is handed, so a stratum's cut is respected
+    without any extra restriction step.
     """
+    truth_fam = truth.select("accession", "pfam_id").unique()
+    present = truth_fam.select(
+        pl.col("accession").alias("query_acc"), "pfam_id"
+    ).with_columns(pl.lit(True).alias("_present"))
+    calls_fam = (
+        calls.group_by("query_acc", "pfam_id")
+        .agg(pl.col("score").max())
+        .join(present, on=["query_acc", "pfam_id"], how="left")
+        .with_columns(pl.col("_present").fill_null(False).alias("is_tp"))
+        .drop("_present")
+    )
+    return calls_fam, truth_fam
+
+
+def family_level_counts(calls: pl.DataFrame, truth: pl.DataFrame) -> dict:
+    """Denominators the family-level Fmax is computed over, so no cell reports a rate alone.
+
+    n_family_calls is after the dedup, which is why it can be far below n_calls: a tool
+    emitting fifty regions that all transfer PF00069 onto one protein has made one family
+    prediction.
+    """
+    calls_fam, truth_fam = family_view(calls, truth)
+    return {
+        "n_family_truth": truth_fam.height,
+        "n_family_calls": calls_fam.height,
+        "n_family_found": (
+            int(calls_fam["is_tp"].sum()) if calls_fam.height else 0
+        ),
+    }
+
+
+def protein_centric_curve(calls: pl.DataFrame, truth: pl.DataFrame, ic: pl.DataFrame,
+                          n_thresholds: int = DEFAULT_N_THRESHOLDS,
+                          level: str = "interval") -> pl.DataFrame:
+    """Fmax / wFmax / Smin operating points, protein-centric.
+
+    `level` picks what a prediction and an annotation ARE, and nothing else changes:
+
+      interval  the default. A prediction counts only when it is placed correctly (is_tp,
+                i.e. IoU past the caller's cutoff), so this measures domain *finding*.
+                Recall is over distinct true instances: several regions hitting one domain
+                is one recovery.
+      family    CAFA-classic. The prediction is the SET of families called on a protein
+                against the set truly present, placement ignored entirely. Reported
+                alongside rather than instead of the interval reading: the pair separates
+                "did not recognise the family" from "recognised it but drew the boundary
+                wrong", which the interval number alone scores identically at zero.
+
+    The two share this whole function on purpose. A second near-copy of the threshold
+    sweep is a thing that drifts, and the drift would be silent -- both numbers would keep
+    coming out plausible.
+
+    family_fmax >= fmax is USUALLY true and is NOT an identity. Ignoring placement can only
+    help precision, but the family reading also swaps the recall denominator from instances
+    to families, and a per-protein macro-average is not invariant under that swap. One
+    protein with three instances of family A, all found, and one instance of family B,
+    missed: interval recall is 3/4, family recall is 1/2. Verified on the mini run at
+    3 rows out of 2762, every one of them a cell where a protein carries many instances of
+    one family (an IGSF decoy at 51 instances per family is the worst, fmax 0.831 against
+    family_fmax 0.727). Real, not a bug, so nothing clamps it -- but a reader taking the
+    gap as a recognition-minus-delineation reading needs to know it can go the other way
+    where tandem arrays dominate a cut.
+
+    The family grid is derived from the DEDUPED scores rather than from the incoming call
+    scores. That makes family_fmax exactly invariant to how many redundant copies of a call
+    a tool emitted, which is the property the whole level exists for: a family's best score
+    does not move when a worse-scoring copy of it is added, so neither does the grid, so
+    neither does any number here. Sharing the interval grid instead would give the two
+    readings identical thresholds -- worth ~0.001 on one mini cell out of 912 -- at the cost
+    of that invariance, which is the more meaningful of the two.
+    """
+    if level not in ("interval", "family"):
+        raise ValueError(f"level must be 'interval' or 'family', not {level!r}")
+    if level == "family":
+        calls, truth = family_view(calls, truth)
+    # What makes two correct calls the SAME recovery. At the interval level a true instance
+    # is identified by its coordinates; at the family level the family on the protein is
+    # the whole identity, and there are no coordinates left to group on.
+    det_keys = (["query_acc", "pfam_id"] if level == "family"
+                else ["query_acc", "pfam_id", "true_start", "true_end"])
+
     proteins = truth["accession"].unique().sort()
     if proteins.len() == 0:
         return pl.DataFrame()
@@ -126,7 +224,6 @@ def protein_centric_curve(calls: pl.DataFrame, truth: pl.DataFrame, ic: pl.DataF
 
     call_p = np.array([pidx.get(a, -1) for a in calls["query_acc"].to_list()])
     call_ic = np.array([ic_map.get(f, 0.0) for f in calls["pfam_id"].to_list()])
-    is_tp = calls["is_tp"].to_numpy()
 
     keep = valid & (call_p >= 0)
     kb = (k - 1)[keep]
@@ -139,7 +236,7 @@ def protein_centric_curve(calls: pl.DataFrame, truth: pl.DataFrame, ic: pl.DataF
     # counts instances rather than rewarding many regions hitting the same domain.
     det = (
         calls.filter("is_tp")
-        .group_by("query_acc", "pfam_id", "true_start", "true_end")
+        .group_by(det_keys)
         .agg(pl.col("score").max())
     )
     if det.height:
@@ -190,15 +287,23 @@ def protein_centric_curve(calls: pl.DataFrame, truth: pl.DataFrame, ic: pl.DataF
     })
 
 
-def cafa_scalars(curve: pl.DataFrame) -> dict:
+def cafa_scalars(curve: pl.DataFrame, prefix: str = "") -> dict:
+    """Pick the operating points off a curve. `prefix` namespaces the keys.
+
+    The interval and family readings are emitted on the SAME metrics row, so the second one
+    is asked for as cafa_scalars(family_curve, prefix="family_") and every column it
+    produces -- threshold, precision, recall, weighted and semantic-distance terms
+    included -- lands beside its interval twin instead of in a parallel table.
+    """
     if curve.height == 0:
-        return {"fmax": 0.0, "fmax_threshold": None, "fmax_precision": 0.0,
-                "fmax_recall": 0.0, "wfmax": 0.0, "smin": None, "smin_threshold": None,
-                "smin_ru": None, "smin_mi": None}
+        out = {"fmax": 0.0, "fmax_threshold": None, "fmax_precision": 0.0,
+               "fmax_recall": 0.0, "wfmax": 0.0, "smin": None, "smin_threshold": None,
+               "smin_ru": None, "smin_mi": None}
+        return {f"{prefix}{k}": v for k, v in out.items()}
     best_f = curve.sort("f", descending=True).head(1).to_dicts()[0]
     best_wf = curve.sort("wf", descending=True).head(1).to_dicts()[0]
     best_s = curve.sort("s", descending=False).head(1).to_dicts()[0]
-    return {
+    out = {
         "fmax": best_f["f"],
         "fmax_threshold": best_f["threshold"],
         "fmax_precision": best_f["pr"],
@@ -210,6 +315,7 @@ def cafa_scalars(curve: pl.DataFrame) -> dict:
         "smin_ru": best_s["ru"],
         "smin_mi": best_s["mi"],
     }
+    return {f"{prefix}{k}": v for k, v in out.items()}
 
 
 def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
