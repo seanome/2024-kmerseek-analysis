@@ -197,7 +197,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
-        run run-kmerseek run-baselines status running kill-jobs clean-cache clean-indexes index-disk \
+        run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
@@ -248,6 +248,7 @@ help:
 	@echo "  multiqc-status       Show what that report would be built from"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
+	@echo "  rannon-burstein-all  Search polarity4/funcgroups8, then build the combined report"
 	@echo "  running              Show the process and tag behind each running job"
 	@echo "  kill-jobs            Cancel every job on the account (confirms first)"
 	@echo ""
@@ -1096,6 +1097,32 @@ run-midi: prefetch-images midi-testset-sherlock
 RB_RUN_DIR ?= run-rannon-burstein
 RB_OUTDIR  ?= ../data/midi/results-rannon-burstein
 RB_ENCODINGS ?= polarity4,funcgroups8
+
+## One command: search the two Rannon & Burstein alphabets, then build the combined report.
+##
+## Sequential on purpose, not parallel. multiqc-rannon-burstein re-aggregates the per-arm
+## parquets from BOTH outdirs, so it has to see this run's scoring finished; and make -j
+## on these two would race the second against the first's still-writing metrics directory.
+##
+## The two halves stay separately runnable. This wrapper fails at the first, so a search
+## that dies partway does not go on to build a report over half its arms -- and after
+## fixing whatever failed, `make run-rannon-burstein` resumes from storeDir and
+## `make multiqc-rannon-burstein` finishes the job without repeating the search.
+##
+## run-midi must already have completed. Its metrics are the other half of the combined
+## report -- every baseline and all 17 existing alphabets -- and this run deliberately does
+## not recompute them.
+rannon-burstein-all:
+	$(call require_cluster)
+	@test -f $(MIDI_OUTDIR)/all_domain_metrics.parquet \
+	  || { echo; echo "  run-midi has not produced $(MIDI_OUTDIR)/all_domain_metrics.parquet."; \
+	       echo "  The combined report needs it for the baselines and the other 17 alphabets."; \
+	       echo "  Run 'make run-midi' first, or pass MIDI_OUTDIR=<other outdir>."; echo; exit 1; }
+	$(MAKE) run-rannon-burstein
+	$(MAKE) multiqc-rannon-burstein
+	@echo
+	@echo "  Combined report written under $(RB_COMBINED_OUTDIR)."
+	@echo "  Pull it with:  make pull-report REMOTE_RESULTS=$(RB_COMBINED_OUTDIR)"
 
 run-rannon-burstein: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-rannon-burstein: prefetch-images midi-testset-sherlock
