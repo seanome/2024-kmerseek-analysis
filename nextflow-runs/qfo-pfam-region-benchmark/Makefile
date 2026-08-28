@@ -640,10 +640,24 @@ bootstrap-sherlock:
 	           $(REMOTE_DIR)/data/structures; \
 	  echo "ready: $(REMOTE_DIR)"'
 
+## Push from the Mac, then pull on Sherlock over ssh. Costs a two-factor prompt for the
+## ssh hop; if you are already logged in to Sherlock, push here and run `make
+## pull-pipeline` there instead, which does the same pull without the hop.
 sync-pipeline:
 	$(call require_mac)
 	git push origin $$(git branch --show-current)
 	$(SSH_MUX) $(SHERLOCK_HOST) 'cd $(REMOTE_DIR) && git pull --ff-only'
+
+## The Sherlock half of sync-pipeline, run ON SHERLOCK. Same `git pull --ff-only`, minus
+## the ssh from the Mac that makes you re-do two-factor for a command you are already
+## sitting in front of. Assumes the Mac side has pushed; --ff-only so a diverged checkout
+## stops rather than opening a merge in a shell you did not ask to be in.
+pull-pipeline:
+	$(call require_cluster)
+	@echo "branch: $$(git -C $(REMOTE_REPO) rev-parse --abbrev-ref HEAD)"
+	git -C $(REMOTE_REPO) pull --ff-only
+	@echo
+	@git -C $(REMOTE_REPO) log --oneline -6
 
 # Data may move by rsync. Annotations are small; proteomes are ~1 GB; structures ~60 GB.
 HGNC_FILE  := /Users/olga/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt
