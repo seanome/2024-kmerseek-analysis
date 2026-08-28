@@ -82,7 +82,9 @@ report_section_order:
   qfo_ceiling_feature_type: { order: 194 }
   qfo_ceiling_feature_type_coverage: { order: 195 }
   qfo_ceiling_feature_type_point: { order: 196 }
-  qfo_ceiling_bpe: { order: 198 }
+  qfo_ceiling_recognition: { order: 197 }
+  qfo_ceiling_recognition_k: { order: 198 }
+  qfo_ceiling_bpe: { order: 199 }
   qfo_grayzone: { order: 200 }
   qfo_run_summary: { order: 210 }
   qfo_res_cpu: { order: 220 }

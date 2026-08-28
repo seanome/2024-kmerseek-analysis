@@ -13,7 +13,12 @@ import polars as pl
 LEAD = ["truth_set", "tool", "variant", "species", "split", "stratum_axis", "stratum"]
 
 # Threshold-free and therefore comparable across tools with different default cutoffs.
-HEADLINE = ["fmax", "auprc", "roc_auc", "smin", "ndo", "recall_reachable", "precision"]
+# family_fmax sits next to fmax rather than replacing it: fmax gates on interval placement,
+# family_fmax on (protein, family) set membership, and the difference between the two is
+# what separates a tool that never recognised a family from one that recognised it and drew
+# the boundary wrong.
+HEADLINE = ["fmax", "family_fmax", "auprc", "roc_auc", "smin", "ndo", "recall_reachable",
+            "precision"]
 
 # The leaderboard cut. `heldout` because the sweep picks its best combo on `selection`,
 # and scoring the winner on the data that chose it is optimistically biased; `all`
@@ -153,16 +158,19 @@ def _print_board(board: pl.DataFrame):
     # annotated proteins decide the winner. kmerseek has 113 variants against every other
     # tool's one, so pick each tool's best variant rather than letting the sweep bury the
     # baselines.
+    # Only the headline columns this table actually has, so a metrics parquet written before
+    # a metric existed still prints a board instead of raising on the missing column.
+    cols = [c for c in HEADLINE if c in board.columns]
     per_variant = (
         board.group_by("tool", "variant")
-        .agg([pl.col(c).mean() for c in HEADLINE] + [pl.col("species").n_unique().alias("n_species")])
+        .agg([pl.col(c).mean() for c in cols] + [pl.col("species").n_unique().alias("n_species")])
         .sort("fmax", descending=True, nulls_last=True)
     )
     best = (
         per_variant.group_by("tool")
         .agg([pl.col("variant").first().alias("best_variant"),
               pl.col("n_species").first()]
-             + [pl.col(c).first() for c in HEADLINE])
+             + [pl.col(c).first() for c in cols])
         .sort("fmax", descending=True, nulls_last=True)
     )
     with pl.Config(tbl_cols=-1, tbl_rows=-1, fmt_str_lengths=40):

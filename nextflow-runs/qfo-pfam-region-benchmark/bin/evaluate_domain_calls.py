@@ -1324,6 +1324,14 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
 
             pc = cm.protein_centric_curve(c_sub, t_sub, ic)
             m.update(cm.cafa_scalars(pc))
+            # The same machinery on (protein, family) set membership. Emitted beside the
+            # interval reading rather than instead of it: fmax alone scores "never
+            # recognised this family" and "recognised it, misplaced the boundary"
+            # identically at zero, and the reduced-alphabet question is about which of the
+            # two an HP alphabet suffers.
+            pc_fam = cm.protein_centric_curve(c_sub, t_sub, ic, level="family")
+            m.update(cm.cafa_scalars(pc_fam, prefix="family_"))
+            m.update(cm.family_level_counts(c_sub, t_sub))
             m.update(cm.boundary_metrics(c_sub, t_sub, args.strict_iou))
             m.update(cm.domain_count_metrics(c_sub, t_sub))
             m.update(cm.sensitivity_to_first_fp(c_sub, t_sub))
