@@ -18,23 +18,16 @@
 #     020-explore-protein-benchmark-polars
 #     023-compute-sklearn-benchmarks-plot-protein-benchmark
 #
-#   Cells with real syntax errors, which cannot run as they stand. These are left alone
-#   deliberately: repairing them is editing analysis code, not reformatting it, and the
-#   right fix is a judgement call for whoever wrote the cell.
-#     022-plot-subsampled-sourmash-scores-per-moltype-ksize  cell 12 is the single
-#       truncated line `sns.catplot(` -- unbalanced parenthesis, unexpected EOF.
-#     062-hp-k24-threshold-optimization  cell 17 line 38 has a literal newline inside a
-#       string where `\n` was meant, so the literal is unterminated.
-#
-# Fix those two cells and drop them from this list; the four above stay until black grows
-# a way to skip a cell it cannot tokenize.
+# Two more notebooks used to be listed here for real syntax errors rather than tokenizer
+# limits. Both are repaired in this branch and are formatted like everything else:
+# 022's cell 12 was the single truncated line `sns.catplot(`, and 062's cell 17 had literal
+# newlines inside three string literals where `\n` was meant. Nothing else belongs on this
+# list unless black genuinely cannot read it.
 extend-exclude = '''
 /notebooks/(
     004-rewrite-multisearch-parser-to-polars
   | 007-mem-opt-process-protein-benchmarks-polars
   | 020-explore-protein-benchmark-polars
-  | 022-plot-subsampled-sourmash-scores-per-moltype-ksize
   | 023-compute-sklearn-benchmarks-plot-protein-benchmark
-  | 062-hp-k24-threshold-optimization
 )\.ipynb$
 '''
