@@ -587,11 +587,25 @@ def assign_instances(calls: pl.DataFrame, candidates: pl.DataFrame,
     # charged to that cut as a false positive, it becomes gray there. The shift is ~0.0004
     # in precision and it is in the direction of not blaming a tool for being right about
     # something the cut does not measure.
+    # The trailing keys are a DETERMINISM fix, not cosmetics. This is a greedy one-to-one
+    # walk, so which call claims an instance depends on row order -- and (score, is_point,
+    # elig) is not a unique key. Ties are not rare: rank_roc_auc's own docstring notes that
+    # HP alphabets at low ksize produce large blocks of identical region scores. polars does
+    # not promise a stable sort, so tied rows came back in different orders between runs and
+    # the same inputs scored differently: five identical runs of one arm gave
+    # n_instances_found 169, 169, 169, 169, 168.
+    #
+    # Adding the call's identity and its matched instance makes the key unique, so the walk
+    # is reproducible. Same class of bug as the one tests/test_dedup_passes.py guards for
+    # the pairwise suppression passes.
+    order = ["score", "_is_point", "elig",
+             "query_acc", "pfam_id", "qstart", "qend", "true_start", "true_end"]
     elig = (
         candidates.with_columns(elig_key, is_point.alias("_is_point"))
         .filter(pl.col("elig") >= min_overlap)
-        .sort(["score", "_is_point", "elig"],
-              descending=[True, False, True], nulls_last=True)
+        .sort(order,
+              descending=[True, False, True] + [False] * 6,
+              nulls_last=True)
     )
 
     used_truth: set[tuple] = set()

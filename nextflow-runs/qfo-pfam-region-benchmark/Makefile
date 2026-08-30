@@ -217,7 +217,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
-        bpe-tokenizer hp-bpe-diagnostic sherlock-clone \
+        bpe-tokenizer hp-bpe-diagnostic sherlock-clone test \
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status \
         build-image-rannon-burstein push-image-rannon-burstein \
@@ -241,6 +241,7 @@ help:
 	@echo "  run-mini-local        Smoke test: mini set, ProstT5 arm off"
 	@echo "  multiqc-status        Show what the report would be built from"
 	@echo "  multiqc-local         Build the MultiQC report from a local run"
+	@echo "  test                  Run the pipeline tests on the committed fixture (~15 s)"
 	@echo "  bpe-tokenizer         Fetch the ProtBERTa BPE tokenizers from Zenodo (186 KB)"
 	@echo "  hp-bpe-diagnostic     Do ProtBERTa_2 token boundaries land on Pfam domains?"
 	@echo "  pull-report           Fetch the MultiQC report back from Sherlock"
@@ -957,6 +958,11 @@ BPE_NF_ARG = $(if $(wildcard $(BPE_TARBALL)),--bpe_tokenizer ../$(BPE_TARBALL),)
 
 # Runs on the Mac or on a login node -- deliberately not guarded by require_cluster, since
 # the diagnostic is meant to be run before any cluster time is committed.
+## Everything downstream of search, on the committed 60-protein fixture. No containers, no
+## QfO download, no cluster: ~15 s. This is what CI runs.
+test:
+	$(PYTHON) -m pytest tests/ -v
+
 bpe-tokenizer:
 	@mkdir -p $(dir $(BPE_TARBALL))
 	@if [ -s "$(BPE_TARBALL)" ]; then echo "have $(BPE_TARBALL)"; else \

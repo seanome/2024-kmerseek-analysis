@@ -738,6 +738,36 @@ because each task builds what it needs and searches once -- a tool that would am
 index over many searches is undersold, which is the honest reading of a benchmark that
 searches each target proteome once.
 
+## Tests
+
+`make test` runs everything downstream of search against a committed 60-protein fixture, in
+about 15 seconds, with no containers, no QfO download and no cluster. CI runs the same thing
+on every push touching this directory (`.github/workflows/qfo-pfam-region-benchmark.yml`).
+
+Search itself is not tested and cannot be on a hosted runner -- the baselines need multi-GB
+profile databases and the structure arms need AlphaFold models. Every arm's output is a
+region table, though, so the scoring path is driven with a **synthetic one whose right
+answer is known in advance**: for each truth instance, a region placed exactly on it whose
+target side covers a same-family domain. A correct scorer must return `recall_reachable`
+of exactly 1.0. That catches more than replaying a real tool would, because a real tool's
+numbers only tell you they moved, not which direction is right.
+
+The fixture lives in `tests/fixtures` (60 human proteins, 778 instances over 28 families,
+120 yeast targets, 180 real Swiss-Prot entries covering all 12 parsed FT types).
+Regenerate it with `tests/make_fixture.py` when the shape of the inputs changes.
+
+Each guard corresponds to a bug that actually happened, and each was checked by
+reintroducing the bug and confirming the test fails:
+
+| test | the bug it guards |
+|---|---|
+| `no_rate_metric_exceeds_one_on_any_stratum` | instance-level strata counted TPs from outside the cut; `recall_reachable` reached 2.11 |
+| `no_metric_is_nan_when_the_top_block_is_all_gray` | an all-gray threshold block gave precision 0/0, and polars sorts NaN largest, so it won `best_f1` |
+| `point_features_are_scoreable_by_containment_not_iou` | IoU against a 1-residue interval is unsatisfiable, so every point stratum scored 0 by construction |
+| `scoring_is_deterministic_under_score_ties` | the greedy one-to-one match sorted on a non-unique key; five identical runs gave 169, 169, 169, 169, 168 |
+| `perfect_tools_only_errors_are_nested_transfers` | asserts the *reason* precision is below 1.0 (nested Pfam domains), not a threshold that would pass for the wrong reason |
+
+
 ## Metrics
 
 Everything is computed in the pipeline. `all_domain_metrics.csv` is the whole table;
