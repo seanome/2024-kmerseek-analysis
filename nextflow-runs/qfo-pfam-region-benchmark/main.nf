@@ -626,12 +626,19 @@ params.kmerseek_memory_hp_lowk = '128 GB'
 params.score_memory_base   = '8 GB'
 params.score_memory_per_mb = 120     // MB of RAM per compressed MB of regions
 params.score_memory_max    = '96 GB' // the old flat value, now a ceiling rather than a floor
+// The ceiling AFTER the retry multiplier, which matters now that every failure retries and
+// not just a signal. Retries double the ask, so a task starting at the 96 GB cap would be
+// asking for 384 GB on its last attempt -- more than any node on `hns` has, and SLURM
+// rejects a job it cannot ever place instead of queueing it. Raise this only against
+// `sinfo -p hns -o '%n %m'`.
+params.score_memory_retry_max = '128 GB'
 
 def scoreMemory = { regions, attempt ->
-    long mb    = Math.max(1L, (regions.size() as long).intdiv(1024L * 1024L))
-    long estMb = MemoryUnit.of(params.score_memory_base).toMega() + mb * (params.score_memory_per_mb as long)
-    long capMb = MemoryUnit.of(params.score_memory_max).toMega()
-    MemoryUnit.of("${Math.min(estMb, capMb)} MB") * attempt
+    long mb     = Math.max(1L, (regions.size() as long).intdiv(1024L * 1024L))
+    long estMb  = MemoryUnit.of(params.score_memory_base).toMega() + mb * (params.score_memory_per_mb as long)
+    long capMb  = MemoryUnit.of(params.score_memory_max).toMega()
+    long ceilMb = MemoryUnit.of(params.score_memory_retry_max).toMega()
+    MemoryUnit.of("${Math.min(Math.min(estMb, capMb) * attempt, ceilMb)} MB")
 }
 
 // Target proteome size, in MB of FASTA, that kmerseek_memory_hp_lowk is sized for.
@@ -2467,7 +2474,15 @@ process scoreDomainCalls {
     memory { scoreMemory(regions instanceof List ? regions.max { it.size() } : regions,
                          task.attempt) }
     time   { scoreTime(regions, task.attempt) }
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    // Retry on ANY failure, not on the signal range. An OOM kill inside the container was
+    // observed arriving as exit status 1 -- the log said `Killed`, the wrapper reported 1 --
+    // so the 128..143 test never fired, the strategy fell through to `finish`, and one dead
+    // arm cancelled the run with no metrics written for the other 829. A batched task is
+    // too expensive to lose to a mis-reported exit code, and the memory doubles on each
+    // attempt (up to score_memory_retry_max), so a retry is a different run rather than the
+    // same one again. A deterministic script error costs three cheap re-runs, because the
+    // script parses its manifest and truth table before it scores anything.
+    errorStrategy { task.attempt <= 3 ? 'retry' : 'finish' }
     maxRetries 3
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
