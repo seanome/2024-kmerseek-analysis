@@ -633,6 +633,27 @@ params.score_memory_max    = '96 GB' // the old flat value, now a ceiling rather
 // `sinfo -p hns -o '%n %m'`.
 params.score_memory_retry_max = '128 GB'
 
+// How finely scoreDomainCalls batches its arms. One task per (truth_set, species) put all
+// ~415 arms of every tool in one job, which has two costs. Memory is sized from the
+// LARGEST file in the group, so every arm ran inside a reservation only the greediest one
+// needed; and a failure on arm 12 destroyed the work of the other 818.
+//
+// Arms are scored sequentially, so a smaller group does not lower any single arm's peak.
+// What it lowers is the reservation the other arms sit inside, and how much work one
+// failure costs.
+//
+//   species    one task per (truth_set, species). The old behaviour, ~27 tasks.
+//   tool       one per (truth_set, species, tool). Isolates the baselines, which are the
+//              memory-hungry arms, but still leaves ~406 kmerseek arms in one group.
+//   alphabet   as `tool`, with kmerseek split again by alphabet: ~28 groups per species,
+//              ~750 tasks for a full sweep. Region file sizes within one alphabet are
+//              similar, so this is the setting where the memory estimate is actually tight.
+//
+// Finer is affordable only because the searches are done and cached. The per-arm shape was
+// ~10_100 jobs and hit Sherlock's submission rate limit, which is what grouping was for;
+// coarsen this if a run ever has to rebuild the searches too.
+params.score_group_by = 'alphabet'
+
 def scoreMemory = { regions, attempt ->
     long mb     = Math.max(1L, (regions.size() as long).intdiv(1024L * 1024L))
     long estMb  = MemoryUnit.of(params.score_memory_base).toMega() + mb * (params.score_memory_per_mb as long)
@@ -688,6 +709,21 @@ def scoreTime = { regions, attempt ->
                 + (mb * (params.score_time_per_mb_sec as long) * nmod).intdiv(60L)
     long cap  = (params.score_time_max_hours as long) * 60L
     Duration.of("${Math.min(mins, cap) * attempt} min")
+}
+
+// One place decides which scoring group an arm belongs to, and it is used both to COUNT
+// the arms in a group and to key the group itself. Two expressions would drift, and the
+// failure is quiet: a count that never matches its key leaves the group waiting for arms
+// that will never arrive, released only when the whole channel closes.
+def kmerseekGroup = { String alphabet -> "kmerseek:${alphabet}" }
+
+// Returns null when a kmerseek variant carries no readable alphabet, so the caller can
+// name the offending string rather than silently grouping it somewhere arbitrary.
+def scoreGroup = { String tool, String variant ->
+    if (params.score_group_by == 'species') return 'all'
+    if (tool != 'kmerseek' || params.score_group_by == 'tool') return tool
+    def m = (variant =~ /^(.+)_k\d+_lc(?:True|False)$/)
+    m ? kmerseekGroup(m[0][1]) : null
 }
 
 def kmerseekMemory = { label, ksize, targetBytes, attempt ->
@@ -2456,14 +2492,14 @@ process hhblitsBuildDB {
 
 process scoreDomainCalls {
     /*
-     * One task per (tool, variant, species). Reads the tool's regions, transfers Pfam
-     * labels through the target interval, scores the resulting query-side calls against
-     * human_domain_truth.parquet. Emits per-call detail (for downstream re-cutting) and
-     * a metrics row.
+     * One task per (truth_set, species, scoring group). Reads each arm's regions, transfers
+     * Pfam labels through the target interval, scores the resulting query-side calls
+     * against human_domain_truth.parquet. Emits per-call detail (for downstream
+     * re-cutting) and a metrics row per arm.
      */
-    // One task covers every arm for this species now, so the tag names the group rather
-    // than a tool. arms is the count because a full sweep is ~376 of them per species.
-    tag "${truth_set}: ${species} (${tools.size()} arms)"
+    // The tag names the group -- a tool, or `kmerseek:<alphabet>` -- and how many arms it
+    // holds, which is what tells the two dozen tasks of one species apart in the log.
+    tag "${truth_set}: ${species} / ${group} (${tools.size()} arms)"
     // Its own label, NOT 'python'. Config directives beat script-declared ones, so while
     // this carried the python label that label's flat memory silently overrode the sizing
     // below. The scoring label sets the container and nothing else.
@@ -2489,7 +2525,7 @@ process scoreDomainCalls {
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
-    tuple val(truth_set), val(species), val(tools), val(variants), val(mya),
+    tuple val(truth_set), val(species), val(group), val(tools), val(variants), val(mya),
           path(regions, arity: '1..*'), path(truth), path(domain_map),
           path(covariates), path(identity), path(target_disorder)
 
@@ -2977,8 +3013,18 @@ workflow {
     // It is per species, not one number, because the structure arms only run for species
     // that have structures. groupKey carries a size per key, which is what makes that
     // expressible at all.
-    def arms_per_species = [:].withDefault { 0 }
-    def countArm = { List labels, int n -> labels.each { arms_per_species[it] += n } }
+    // Keyed by [species, scoring group] now, not by species: the group is what groupKey
+    // has to size. A key that was never counted reads 0 through withDefault, which means
+    // "released when the channel closes" via remainder: true below -- the same safety net
+    // an over-count already had.
+    def arms_per_group = [:].withDefault { 0 }
+    def countArm = { List labels, String group, int n ->
+        // A zero count is a group that does not exist -- an arm switched off by
+        // --gpu_benchmark, say -- so it must not be entered. withDefault would otherwise
+        // create the key and the startup line would report tasks that never run.
+        if (n <= 0) return
+        labels.each { arms_per_group[[it, group]] += n }
+    }
 
     kmerseek_regions = Channel.empty()
     // Per-task timings for the report. Separate from the trace because this arm is on
@@ -3072,7 +3118,17 @@ workflow {
         |  spectra : one k-mer frequency spectrum per combo, published for plotting
         """.stripMargin()
 
-        countArm(SPECIES*.label, combos.size())
+        // Counted per alphabet rather than in one lump, because that is the grain the
+        // groups are keyed at. groupBy runs on the combo's own label -- the same field the
+        // result filename carries and scoreGroup reads back out of it -- so the count and
+        // the key cannot name different things.
+        if (params.score_group_by == 'alphabet') {
+            combos.groupBy { it[1] }.each { alphabet, cs ->
+                countArm(SPECIES*.label, kmerseekGroup(alphabet), cs.size())
+            }
+        } else {
+            countArm(SPECIES*.label, scoreGroup("kmerseek", null), combos.size())
+        }
         // Which image each combo runs under. Keyed on the alphabet's canonical name, the
         // same field KNOWN_ENCODINGS is looked up by, so an alphabet cannot be in
         // EXTRA_ENCODINGS and still be handed the older image. Falls back to the one image
@@ -3152,7 +3208,8 @@ workflow {
 
         phmmer_out    = bench_only ? Channel.empty() : phmmerSearch(pair_ch)
         jackhmmer_out = bench_only ? Channel.empty() : jackhmmerSearch(pair_ch)
-        countArm(SPECIES*.label, bench_only ? 0 : 2)
+        countArm(SPECIES*.label, "hmmer3_phmmer",    bench_only ? 0 : 1)
+        countArm(SPECIES*.label, "hmmer3_jackhmmer", bench_only ? 0 : 1)
 
         // Both variants share one pair of databases, so createdb runs once per proteome
         // rather than once per (variant, species).
@@ -3198,7 +3255,9 @@ workflow {
             ]
         }
         mmseqs_out = mmseqs2Search(mmseqs_in)
-        countArm(SPECIES*.label, 2 * search_modes.size())   // seqseq + iterative, per mode
+        // seqseq and iterative are separate tools downstream, so they are separate groups.
+        countArm(SPECIES*.label, "mmseqs2_seqseq",    search_modes.size())
+        countArm(SPECIES*.label, "mmseqs2_iterative", search_modes.size())
 
         // HHblits: build the human query profile DB once, every species target DB once.
         // is_query travels as an explicit flag rather than being inferred from the label.
@@ -3213,7 +3272,7 @@ workflow {
             species_hhdb = hhdb_ch.filter { label, _db -> label != HUMAN_LABEL }
 
             hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
-            countArm(SPECIES*.label, 1)
+            countArm(SPECIES*.label, "hhblits", 1)
         }
 
         baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
@@ -3253,7 +3312,7 @@ workflow {
 
             prostt5_out = prostt5Search(p5_targets.combine(p5_human))
             baseline_regions = baseline_regions.mix(prostt5_out.regions)
-            countArm(SPECIES*.label, 1)
+            countArm(SPECIES*.label, "prostt5", 1)
         }
 
         // ---- foldseek ----
@@ -3329,7 +3388,7 @@ workflow {
 
             foldseek_out     = foldseekSearch(fs_in)
             baseline_regions = baseline_regions.mix(foldseek_out)
-            countArm(struct_species*.label, search_modes.size())
+            countArm(struct_species*.label, "foldseek", search_modes.size())
 
             // ---- Reseek: same structures, opposite alphabet direction ----
             // No GPU path exists. The pinned reseek image links no CUDA library, its usage
@@ -3348,7 +3407,7 @@ workflow {
 
                 reseek_out = reseekSearch(rs_target.combine(rs_human))
                 baseline_regions = baseline_regions.mix(reseek_out)
-                countArm(struct_species*.label, 1)
+                countArm(struct_species*.label, "reseek", 1)
             }
 
             // ---- folddisco ----
@@ -3375,7 +3434,7 @@ workflow {
                 )
                 folddisco_regions = folddiscoMerge(fd_out.groupTuple(by: 0))
                 baseline_regions  = baseline_regions.mix(folddisco_regions)
-                countArm(struct_species*.label, 1)
+                countArm(struct_species*.label, "folddisco", 1)
             }
         }
     }
@@ -3416,10 +3475,15 @@ workflow {
             tuple(ts, species, tool, variant, mya, regions, truth, domain_map, cov, ident)
         }
 
-    // One task per (truth_set, species) rather than per (truth_set, species, tool, variant).
+    // One task per (truth_set, species, scoring group) -- see params.score_group_by for
+    // what a group is and why it is no longer the whole species.
+    //
     // The per-arm shape was ~10_100 SLURM jobs for a full sweep, each a few seconds of work
     // behind minutes of scheduler latency, and Sherlock rate-limits submission per hour --
-    // a run died with "Reached jobs per hour limit" partway through. Grouped, it is 27.
+    // a run died with "Reached jobs per hour limit" partway through. Grouping by species
+    // alone took that to 27 and went too far the other way: ecoli put 415 arms of every
+    // tool in one job, sized for the largest file among them, and an OOM on arm 12 threw
+    // away the other 818. The default now splits by tool, and kmerseek again by alphabet.
     //
     // truth, domain_map, covariates and identity are identical within a group, so .first()
     // on each is exact rather than an approximation; only tools, variants and regions vary.
@@ -3445,28 +3509,47 @@ workflow {
             tuple(ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis)
         }
 
+    if (!(params.score_group_by in ['species', 'tool', 'alphabet'])) {
+        error "--score_group_by takes species, tool or alphabet; got " +
+              "'${params.score_group_by}'."
+    }
+
     score_grouped = score_in
         .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis ->
-            // groupKey carries the expected size WITH the key, so each (truth_set, species)
-            // group is released the moment its own arms are all in rather than when the
-            // whole channel closes. Without it, no scoring could start until the last
-            // kmerseek search of the last species finished.
-            tuple(groupKey(tuple(ts, sp), arms_per_species[sp]),
+            // groupKey carries the expected size WITH the key, so each group is released
+            // the moment its own arms are all in rather than when the whole channel
+            // closes. Without it, no scoring could start until the last kmerseek search of
+            // the last species finished.
+            def grp = scoreGroup(tool, variant)
+            if (grp == null) {
+                error "cannot read an alphabet out of the kmerseek variant `${variant}`, " +
+                      "so it cannot be assigned a scoring group. Expected " +
+                      "<alphabet>_k<ksize>_lc<True|False>. Run with " +
+                      "--score_group_by tool to group kmerseek as one instead."
+            }
+            tuple(groupKey(tuple(ts, sp, grp), arms_per_group[[sp, grp]]),
                   tool, variant, mya, regions, truth, dm, cov, ident, tdis)
         }
-        // remainder: true is the safety net for the count being WRONG. If arms_per_species
+        // remainder: true is the safety net for the count being WRONG. If arms_per_group
         // over-counts, the group never reaches its size and would hang forever; with
         // remainder it is released at channel close instead, which is exactly the
         // behaviour this change replaces. An under-count still emits early, which is why
         // the count is accumulated beside the arms rather than restated.
         .groupTuple(by: 0, remainder: true)
         .map { key, tools, variants, myas, regions, truths, dms, covs, idents, tdiss ->
-            tuple(key[0], key[1], tools, variants, myas.first(), regions,
+            tuple(key[0], key[1], key[2], tools, variants, myas.first(), regions,
                   truths.first(), dms.first(), covs.first(), idents.first(), tdiss.first())
         }
 
-    log.info "  scoring : one task per (truth set, species); arms per species = " +
-             "${arms_per_species.collect { k, v -> "${k}:${v}" }.join(', ')}"
+    // Read back off the same map the groups are keyed by, so the line cannot describe a
+    // grouping the run is not using.
+    def groups_per_species = arms_per_group.keySet().countBy { it[0] }
+    def arms_per_species   = [:].withDefault { 0 }
+    arms_per_group.each { k, v -> arms_per_species[k[0]] += v }
+    log.info "  scoring : grouped by ${params.score_group_by} -- " +
+             arms_per_species.sort().collect { sp, n ->
+                 "${sp}: ${n} arms in ${groups_per_species[sp]} tasks"
+             }.join(', ')
 
     scored = scoreDomainCalls(score_grouped)
 
