@@ -313,6 +313,21 @@ def _guard_single_truth_set(df: pl.DataFrame, across_truth_sets: bool) -> None:
         )
 
 
+def label_column() -> pl.Expr:
+    """label_of() as an expression, so any frame can carry the row key.
+
+    Factored out rather than written twice. section_hgnc read a `label` column that only
+    best_variants ever created, so a metrics table reaching that section by any other route
+    died with ColumnNotFoundError instead of drawing the plot. That is the shape a
+    covariate-free run produces: attach_strata labels every protein "all" when no
+    covariates are given, which populates the hgnc axis without a leaderboard ever running.
+    """
+    return (pl.struct("tool", "variant")
+              .map_elements(lambda r: label_of(r["tool"], r["variant"]),
+                            return_dtype=pl.String)
+              .alias("label"))
+
+
 def best_variants(df: pl.DataFrame, top_kmerseek: int = TOP_KMERSEEK, *,
                   across_truth_sets: bool = False) -> pl.DataFrame:
     """Each tool's best variant, plus kmerseek's top `top_kmerseek` under each ranking
@@ -386,13 +401,8 @@ def best_variants(df: pl.DataFrame, top_kmerseek: int = TOP_KMERSEEK, *,
     ]).unique(subset=["tool", "variant"], keep="first", maintain_order=True)
 
     return (
-        kept.with_columns(
-            pl.struct("tool", "variant")
-              .map_elements(lambda r: label_of(r["tool"], r["variant"]),
-                            return_dtype=pl.String)
-              .alias("label")
-        )
-        .sort("fmax", descending=True, nulls_last=True)
+        kept.with_columns(label_column())
+            .sort("fmax", descending=True, nulls_last=True)
     )
 
 
@@ -1211,6 +1221,9 @@ def section_hgnc(out: Path, metrics: pl.DataFrame, primary_truth: str,
     fam = cut.filter(pl.col("stratum_axis") == "hgnc")
     if fam.height == 0:
         return
+    # The row key this section ranks on. Added here rather than assumed: `cut` is the raw
+    # metrics table, and only the leaderboard path passes through best_variants.
+    fam = fam.with_columns(label_column())
 
     # Small families rank on noise: one instance found or missed swings Fmax a long way,
     # and the tail of HGNC groups is mostly singletons. Filtered on the ANSWER KEY's size

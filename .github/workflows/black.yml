@@ -7,8 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # `with:` sits at the same level as `uses:`. It was indented under it, which is not
+      # valid workflow YAML -- GitHub rejected the file, so this job had never once run.
       - uses: psf/black@stable
-          with:
-            options: "--check --verbose"
-            src: "./notebooks"
-            jupyter: true
+        with:
+          options: "--check --verbose"
+          src: "./notebooks"
+          jupyter: true
