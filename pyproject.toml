@@ -1,0 +1,40 @@
+# Black configuration. There is no package here -- this file exists so the notebook
+# formatter behaves identically for `black ./notebooks` locally and in CI, rather than
+# depending on flags someone remembers to pass.
+
+[tool.black]
+# Six notebooks black cannot parse, and therefore cannot format. Excluded rather than
+# left to fail the run, because `--check` treats "cannot format" as an error and one
+# unparseable cell would keep the whole lint red no matter how clean everything else is.
+#
+# Two categories, and only one of them is black's problem:
+#
+#   Shell-escape cells. A `!` line whose argument contains a token like
+#   `2024-10-08__protein_k5-20` does not tokenize as Python, and black's notebook support
+#   gives up on the cell with "invalid decimal literal". The code is fine; the formatter
+#   cannot read it.
+#     004-rewrite-multisearch-parser-to-polars
+#     007-mem-opt-process-protein-benchmarks-polars
+#     020-explore-protein-benchmark-polars
+#     023-compute-sklearn-benchmarks-plot-protein-benchmark
+#
+#   Cells with real syntax errors, which cannot run as they stand. These are left alone
+#   deliberately: repairing them is editing analysis code, not reformatting it, and the
+#   right fix is a judgement call for whoever wrote the cell.
+#     022-plot-subsampled-sourmash-scores-per-moltype-ksize  cell 12 is the single
+#       truncated line `sns.catplot(` -- unbalanced parenthesis, unexpected EOF.
+#     062-hp-k24-threshold-optimization  cell 17 line 38 has a literal newline inside a
+#       string where `\n` was meant, so the literal is unterminated.
+#
+# Fix those two cells and drop them from this list; the four above stay until black grows
+# a way to skip a cell it cannot tokenize.
+extend-exclude = '''
+/notebooks/(
+    004-rewrite-multisearch-parser-to-polars
+  | 007-mem-opt-process-protein-benchmarks-polars
+  | 020-explore-protein-benchmark-polars
+  | 022-plot-subsampled-sourmash-scores-per-moltype-ksize
+  | 023-compute-sklearn-benchmarks-plot-protein-benchmark
+  | 062-hp-k24-threshold-optimization
+)\.ipynb$
+'''
