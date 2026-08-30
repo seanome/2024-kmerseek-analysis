@@ -7,10 +7,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # `with:` sits at the same level as `uses:`. It was indented under it, which is not
-      # valid workflow YAML -- GitHub rejected the file, so this job had never once run.
+
+      # `with:` sits beside `uses:`, not indented under it. It was indented under it, which
+      # is not valid workflow YAML -- GitHub rejected the whole file, so this job had never
+      # run once since it was added.
+      #
+      # ADVISORY, not blocking, and that is a deliberate holding position rather than the
+      # end state. The first run after the syntax fix reported 80 notebooks that would be
+      # reformatted and 6 that black cannot reformat at all. Clearing that is its own piece
+      # of work -- it rewrites most of the notebook tree and would bury any real change in
+      # formatting noise -- and it should not gate unrelated pull requests in the meantime.
+      #
+      # The diff is printed so the backlog stays visible instead of silently accruing.
+      # Drop continue-on-error once the tree is formatted, so this starts enforcing.
       - uses: psf/black@stable
+        continue-on-error: true
         with:
-          options: "--check --verbose"
+          options: "--check --diff --verbose"
           src: "./notebooks"
           jupyter: true

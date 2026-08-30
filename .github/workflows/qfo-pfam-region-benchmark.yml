@@ -64,15 +64,32 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # Pinned, not "latest". The Mac and Sherlock both run 25.10.4 out of the
+      # nf-core-v2 conda env, and CI floating ahead of that tests a Nextflow nobody
+      # uses -- the same drift the Dockerfile pins polars against. It is not
+      # hypothetical: the unpinned job installed 26.4.6 and `nextflow config` exited 1
+      # under it while every profile resolves cleanly on 25.10.4. Bump this when the
+      # conda env is bumped, and expect to fix whatever 26.x dislikes at that point.
       - uses: nf-core/setup-nextflow@v2
+        with:
+          version: "25.10.4"
 
       # Catches a syntax error or a broken profile without pulling a single container. The
       # profiles are checked separately because a layered profile that fails to resolve is
       # silent otherwise: Nextflow applies them in the order they are DECLARED in the config
       # file, not the order given on the command line.
+      # Output is captured and printed ON FAILURE rather than discarded. Sending it to
+      # /dev/null is how the first version of this step failed with exit 1 and no message
+      # at all: Nextflow writes some of its errors to stdout, so the reason went in the bin
+      # along with the config dump.
       - name: nextflow config resolves
         run: |
-          nextflow config . -profile standard >/dev/null
-          nextflow config . -profile standard,mini >/dev/null
-          nextflow config . -profile sherlock >/dev/null
-          nextflow config . -profile sherlock,mini >/dev/null
+          for p in standard "standard,mini" sherlock "sherlock,mini"; do
+            echo "== -profile $p =="
+            if ! nextflow config . -profile "$p" > cfg.out 2> cfg.err; then
+              echo "FAILED to resolve -profile $p"
+              cat cfg.err cfg.out
+              exit 1
+            fi
+          done
+          echo "all four profiles resolve"
