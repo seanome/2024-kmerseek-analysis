@@ -1361,6 +1361,122 @@ def section_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
     })
 
 
+def section_tool_by_species(out: Path, metrics: pl.DataFrame) -> None:
+    """Every tool's score against every target proteome, on every headline metric.
+
+    The Divergence section answers the same question for three metrics and for whichever
+    variants topped the leaderboard, which on a full sweep is mostly kmerseek combos and
+    leaves the baselines under-represented. This is one line per TOOL -- its own best
+    variant -- across all ten metrics behind a switcher, so "does phmmer hold up further
+    out than foldseek does" is readable directly.
+
+    The x axis is divergence time rather than species name because that is the axis the
+    question is really about: a tool that keeps its level from mouse out to E. coli is
+    making a claim about remote homology, and one that falls away is reporting close
+    matches. The table beneath carries the same numbers for the headline metric, since a
+    line plot is read for shape and a table for values.
+    """
+    base = ungrouped(metrics)
+    if base.height == 0 or "species_mya" not in base.columns:
+        return
+
+    for ts in sorted(base["truth_set"].unique().to_list()):
+        cut, split = pick_split(base.filter(pl.col("truth_set") == ts))
+        cut = cut.filter(pl.col("species") != "all")
+        if cut.height == 0:
+            continue
+        # top_kmerseek=1, which is what gives one row per tool. best_variants takes each
+        # non-kmerseek tool's best variant and kmerseek's top N separately, so 0 drops
+        # kmerseek from the section entirely rather than reducing it to its best -- and a
+        # larger N puts five sweep combos in beside the baselines this section exists to
+        # compare them against. The leaderboard and the alphabet matrix are where the rest
+        # of the sweep belongs.
+        board = best_variants(cut, 1)
+        if board.height == 0:
+            continue
+        keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
+        cols = [c for c in HEADLINE if c in cut.columns]
+
+        panels = []
+        for metric in cols:
+            series = {}
+            for tool, variant, label in keep:
+                sub = (cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+                          .group_by("species_mya").agg(pl.col(metric).mean())
+                          .sort("species_mya"))
+                points = {str(r["species_mya"]): r[metric] for r in sub.to_dicts()
+                          if r[metric] is not None}
+                if points:
+                    series[label] = points
+            if series:
+                spec = fmt_metric_headers([metric]).get(metric, {})
+                panels.append((spec.get("title", metric), metric, series))
+        if not panels:
+            continue
+
+        write_section(out, f"qfo_tool_by_species_{ts}", {
+            "id": f"qfo_tool_by_species_{ts}",
+            "section_name": f"Tool vs divergence — {ts} truth",
+            "description": (
+                f"Each tool's best variant against every target proteome, on the "
+                f"<code>{split}</code> split ({ts} truth). One line per tool, one point per "
+                "species, switchable across all ten headline metrics.<br>"
+                "<b>The shape is the result, not the height.</b> A line that holds its "
+                "level from mouse out to E. coli is a claim about remote homology; one that "
+                "falls away with divergence is reporting close matches. Two tools with the "
+                "same mean can have opposite shapes, and the leaderboard's Fmax SD column "
+                "is that difference collapsed to one number.<br>"
+                "<b>Smin is the panel where lower is better</b>, so its lines run the other "
+                "way; every other metric here is higher-is-better.<br>"
+                "Raw recall is deliberately absent for the reason the Divergence section "
+                "gives: a human family with no instance in the target proteome cannot be "
+                "transferred by any search, so comparing tools on it would mostly compare "
+                "proteomes. Reachable recall is the corrected form."),
+            "plot_type": "linegraph",
+            "pconfig": {"id": f"qfo_tool_by_species_{ts}_plot",
+                        "title": f"Tool accuracy vs divergence ({ts})",
+                        "xlab": "divergence from human (Mya)", "ylab": "score",
+                        "ymin": 0, "height": 500,
+                        "data_labels": [{"name": name, "ylab": name,
+                                         "ymax": _panel_ymax(panel)}
+                                        for name, _, panel in panels]},
+            "data": [panel for _, _, panel in panels],
+        })
+
+        # The same values as a table, for the metric the report leads on. A line plot is
+        # read for shape; the number a sentence quotes has to be legible somewhere.
+        headline = panels[0][1]
+        by_species = {}
+        for tool, variant, label in keep:
+            sub = (cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+                      .group_by("species", "species_mya").agg(pl.col(headline).mean()))
+            for r in sub.to_dicts():
+                row = by_species.setdefault(r["species"], {"Mya": r["species_mya"]})
+                row[label] = r[headline]
+        if not by_species:
+            continue
+        ordered = dict(sorted(by_species.items(), key=lambda kv: kv[1]["Mya"]))
+        headers = {"Mya": {"title": "Mya", "description": "Divergence from human",
+                           "format": "{:,.0f}"}}
+        headers.update({label: {"title": label, "format": "{:,.3f}", "scale": "RdYlGn"}
+                        for _, _, label in keep})
+        write_section(out, f"qfo_tool_by_species_table_{ts}", {
+            "id": f"qfo_tool_by_species_table_{ts}",
+            "section_name": f"Tool vs species, {panels[0][0]} — {ts} truth",
+            "description": (
+                f"The <b>{panels[0][0]}</b> panel above as numbers: each tool's best "
+                f"variant, one row per target proteome, ordered by divergence from human "
+                f"({split} split). Read down a column for how one tool holds up, and across "
+                "a row for which tool won that proteome."),
+            "plot_type": "table",
+            "pconfig": {"id": f"qfo_tool_by_species_table_{ts}_table",
+                        "title": f"{panels[0][0]} by species and tool ({ts})",
+                        "col1_header": "Species", "sort_rows": False},
+            "headers": headers,
+            "data": ordered,
+        })
+
+
 def parse_kmerseek_variants(df: pl.DataFrame) -> pl.DataFrame:
     """Split kmerseek's variant string into alphabet, ksize and low-complexity arm.
 
@@ -3298,6 +3414,7 @@ def main():
                  args.hgnc_min_instances, args.hgnc_top_n)
     section_divergence(args.outdir, metrics, primary, args.max_tools)
     section_truthsets(args.outdir, metrics, args.max_tools)
+    section_tool_by_species(args.outdir, metrics)
     section_species_winners(args.outdir, metrics)
     section_alphabet_matrix(args.outdir, metrics, primary)
     section_ceiling_length(args.outdir, metrics, primary)

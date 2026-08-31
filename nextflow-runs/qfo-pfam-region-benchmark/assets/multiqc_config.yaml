@@ -73,6 +73,14 @@ report_section_order:
   qfo_identity: { order: 140 }
   qfo_divergence: { order: 150 }
   qfo_reachability: { order: 160 }
+  qfo_tool_by_species_swissprot: { order: 151 }
+  qfo_tool_by_species_table_swissprot: { order: 152 }
+  qfo_tool_by_species_pfamn: { order: 153 }
+  qfo_tool_by_species_table_pfamn: { order: 154 }
+  qfo_tool_by_species_mcsa: { order: 155 }
+  qfo_tool_by_species_table_mcsa: { order: 156 }
+  qfo_tool_by_species_pfam: { order: 157 }
+  qfo_tool_by_species_table_pfam: { order: 158 }
   qfo_species_winners_swissprot: { order: 162 }
   qfo_species_winners_pfamn: { order: 164 }
   qfo_species_winners_mcsa: { order: 166 }
