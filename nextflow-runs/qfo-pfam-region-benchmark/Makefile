@@ -140,7 +140,9 @@ LOCAL_SKIP_ARMS ?= --skip_prostt5 true
 PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 
 # Mac-side Nextflow. Pinned to the conda env rather than relying on PATH; on Sherlock the
-# run targets use `ml load nextflow` instead.
+# run targets use `ml load biology nextflow` instead. Both words are needed: nextflow
+# lives under the `biology` hierarchy, so `ml load nextflow` resolves only in a shell
+# that already has biology loaded -- it worked interactively and failed from make.
 NEXTFLOW ?= /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow
 
 # Sherlock compute nodes are amd64; an Apple Silicon build defaults to arm64, which
@@ -871,7 +873,7 @@ fetch-structures-sherlock:
 	  python3 bin/write_structure_lists.py \
 	    --annotations data/annotations \
 	    --outdir      data/structures/_accessions
-	ml load nextflow && \
+	ml load biology nextflow && \
 	  nextflow run main.nf -profile $(PROFILE) -resume \
 	    --fetch_structures true \
 	    --structures  $$PWD/data/structures \
@@ -1053,7 +1055,7 @@ pfamn-truth: pfamn-download
 define launch
 	mkdir -p run
 	cd run && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
 	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --qfo_dir     ../data/qfo \
@@ -1116,7 +1118,7 @@ gpu-benchmark: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
 	mkdir -p $(GPU_BENCH_DIR)
 	cd $(GPU_BENCH_DIR) && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --gpu_benchmark   true \
 	    --qfo_dir         $(GPU_BENCH_QFO) \
@@ -1206,7 +1208,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-midi
 	cd run-midi && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
@@ -1297,7 +1299,7 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
 	mkdir -p $(RB_RUN_DIR)
 	cd $(RB_RUN_DIR) && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image      $(RB_IMAGE_REMOTE) \
 	    --kmerseek_encodings  $(RB_ENCODINGS) \
@@ -1321,7 +1323,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-mini
 	cd run-mini && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE),mini -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --qfo_dir         ../data/mini/qfo \
@@ -1372,7 +1374,7 @@ multiqc: multiqc-preflight prefetch-images
 	@echo "reporting on trace: $(TRACE)"
 	mkdir -p run-report
 	cd run-report && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
 	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --outdir     $(MULTIQC_OUTDIR) \
@@ -1460,7 +1462,7 @@ multiqc-partial: prefetch-images
 	 echo "reporting on $$n per-arm metric files -- a snapshot; the run keeps adding to them"
 	mkdir -p run-report-partial
 	cd run-report-partial && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)) \
@@ -1495,7 +1497,7 @@ multiqc-rannon-burstein: prefetch-images
 	@tail -n +2 $(RB_TRACE) >> $(RB_COMBINED_TRACE)
 	mkdir -p run-report-rannon-burstein
 	cd run-report-rannon-burstein && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
 	    --kmerseek_image  $(RB_IMAGE_REMOTE) \
 	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)),$(call rel_to_launch,$(RB_RUN_DIR),$(RB_OUTDIR)) \
