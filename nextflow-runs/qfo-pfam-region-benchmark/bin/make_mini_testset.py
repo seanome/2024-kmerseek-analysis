@@ -22,6 +22,7 @@ and Folddisco arms.
 
 import argparse
 import json
+import io
 import shutil
 import sys
 from pathlib import Path
@@ -52,13 +53,41 @@ def accession_of(header: str) -> str:
     return parts[1] if len(parts) >= 2 else header.lstrip(">").split()[0]
 
 
+def write_if_changed(out: Path, data: bytes) -> bool:
+    """Write only when the bytes differ. Returns whether anything was written.
+
+    This step is a prerequisite of `make run-midi`, so it runs before EVERY run and used to
+    rewrite its outputs each time. Nextflow's default cache hashes an input file by path,
+    size and last-modified TIME, not by content, so rewriting a file with byte-identical
+    content is enough to invalidate every task that reads it.
+
+    That is what made phmmerSearch, jackhmmerSearch and hmmscanAnnotate re-run on every
+    resume while the rest of the pipeline cached. The processes that survived did so for a
+    reason unrelated to being correct: every database builder is on storeDir, which checks
+    only that its output path exists, and the searches downstream take those stable database
+    directories rather than the FASTA. Only the arms reading a regenerated file directly
+    paid for it -- the two hmmer searches, and hmmscan.
+    """
+    if out.exists() and out.stat().st_size == len(data) and out.read_bytes() == data:
+        return False
+    out.write_bytes(data)
+    return True
+
+
+def write_parquet_if_changed(df, out: Path) -> bool:
+    buf = io.BytesIO()
+    df.write_parquet(buf)
+    return write_if_changed(out, buf.getvalue())
+
+
 def write_fasta(records: dict[str, str], keep: set[str], out: Path) -> int:
     n = 0
-    with open(out, "w") as f:
-        for header, seq in records.items():
-            if accession_of(header) in keep:
-                f.write(f"{header}\n{seq}")
-                n += 1
+    chunks = []
+    for header, seq in records.items():
+        if accession_of(header) in keep:
+            chunks.append(f"{header}\n{seq}")
+            n += 1
+    write_if_changed(out, "".join(chunks).encode())
     return n
 
 
@@ -217,13 +246,18 @@ def main():
     summary["human_fasta_records"] = n_written
 
     human_sub = human.filter(pl.col("accession").is_in(query_acc))
-    human_sub.write_parquet(ann_out / "human_pfam_domains.parquet")
+    write_parquet_if_changed(human_sub, ann_out / "human_pfam_domains.parquet")
 
     keep_structs = set(query_acc)
 
     # ---- target side ----
     def link(src: Path, dst: Path) -> None:
         """Symlink src to dst, replacing whatever is there so a rebuild is idempotent."""
+        # A link already pointing where it should is left alone. Nextflow follows a symlink
+        # to hash what it points at, so recreating one is harmless to the cache -- but this
+        # is the same rule write_if_changed follows, and it costs one stat.
+        if dst.is_symlink() and dst.resolve() == src.resolve():
+            return
         if dst.is_symlink() or dst.is_file():
             dst.unlink()
         elif dst.is_dir():
@@ -277,9 +311,8 @@ def main():
         sub, name = proteomes[sp]
         fa = read_fasta(args.qfo_dir / sub / f"{name}.fasta")
         n_fa = write_fasta(fa, keep, qfo_out / sub / f"{name}.fasta")
-        ann.filter(pl.col("accession").is_in(keep)).write_parquet(
-            ann_out / f"{sp}_pfam_domains.parquet"
-        )
+        write_parquet_if_changed(ann.filter(pl.col("accession").is_in(keep)),
+                                 ann_out / f"{sp}_pfam_domains.parquet")
         keep_structs |= keep
 
         summary["species"][sp] = {
