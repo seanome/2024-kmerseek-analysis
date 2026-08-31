@@ -219,7 +219,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         pfamn-download pfamn-truth mcsa-truth help \
         bpe-tokenizer hp-bpe-diagnostic sherlock-clone test \
         fetch-structures-login \
-        multiqc multiqc-local multiqc-preflight multiqc-status \
+        multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
         build-image-rannon-burstein push-image-rannon-burstein \
         run-rannon-burstein multiqc-rannon-burstein \
         pull-report pull-report-mini pull-report-midi
@@ -262,6 +262,7 @@ help:
 	@echo "  run                  Run the complete benchmark"
 	@echo "  run-rannon-burstein  polarity4 + funcgroups8 only, midi set, kmerseek only"
 	@echo "  multiqc              Rebuild the MultiQC report from published results"
+	@echo "  multiqc-partial      Report on the arms scored SO FAR, while a run is going"
 	@echo "  multiqc-rannon-burstein"
 	@echo "                       One report over run-midi AND run-rannon-burstein, so the"
 	@echo "                       two new alphabets appear next to every other tool"
@@ -1402,6 +1403,63 @@ RB_COMBINED_OUTDIR ?= ../data/midi/results-combined
 RB_TRACE           ?= $(shell ls -t $(RB_RUN_DIR)/*.trace.txt 2>/dev/null | head -1)
 MIDI_TRACE         ?= $(shell ls -t run-midi/*.trace.txt 2>/dev/null | head -1)
 RB_COMBINED_TRACE  := $(RB_RUN_DIR)/combined.trace.txt
+
+## An intermediate report, built from the arms scored SO FAR. Meant to be run WHILE
+## `make run-midi` is still going, so a slow arm -- hhblits on the large targets is hours --
+## does not hold up looking at everything else.
+##
+## It reads <MIDI_OUTDIR>/metrics/*.metrics.parquet, which scoreDomainCalls publishes one
+## file at a time as each group finishes. all_domain_metrics.parquet is NOT what it reads:
+## aggregateMetrics writes that once, at the very end, which is the thing being waited on.
+##
+## Three separations, each load-bearing, because two nextflow processes must not share a
+## folder:
+##
+##   its own LAUNCH directory, run-report-partial, so .nextflow/, work/ and the log belong
+##   to it and not to the run in run-midi;
+##
+##   its own OUTDIR, because -entry report refuses an --outdir that is also one of its
+##   sources -- publishing this partial aggregate over the live run's would replace that
+##   run's all_domain_metrics.parquet with a subset, and a subset of the right shape is
+##   exactly what nobody notices;
+##
+##   --report_trace none, because Nextflow truncates any trace file it is itself writing
+##   and the live run owns its trace. Accuracy sections only; the time, CPU and memory
+##   sections come back when the run has finished and `make multiqc` reads its trace.
+##
+## Re-runnable as often as you like. Each run is a fresh snapshot of whatever has been
+## published by then.
+MIDI_PARTIAL_OUTDIR ?= ../data/midi/results-partial
+
+multiqc-partial: PREFETCH_CONTAINERS := $(IMAGE_REMOTE) $(ALL_CONTAINERS)
+multiqc-partial: prefetch-images
+	$(call require_cluster)
+	@n=$$(ls $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics/*.metrics.parquet 2>/dev/null | wc -l); \
+	 if [ "$$n" -eq 0 ]; then \
+	   echo ""; \
+	   echo "  Nothing scored yet under $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics."; \
+	   echo ""; \
+	   echo "  scoreDomainCalls publishes one metrics file per arm as it finishes, so this"; \
+	   echo "  fills up during a run. Wait for the first of them, or report on another run:"; \
+	   echo ""; \
+	   echo "    make multiqc-partial MIDI_OUTDIR=<outdir>"; \
+	   echo ""; \
+	   exit 1; \
+	 fi; \
+	 echo "reporting on $$n per-arm metric files -- a snapshot; the run keeps adding to them"
+	mkdir -p run-report-partial
+	cd run-report-partial && \
+	  ml load nextflow && \
+	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)) \
+	    --outdir          $(MIDI_PARTIAL_OUTDIR) \
+	    --report_trace    none \
+	    --qfo_dir         ../data/midi/qfo \
+	    $(NF_ARGS)
+	@echo
+	@echo "  Partial report under $(MIDI_PARTIAL_OUTDIR). Pull it to the Mac with:"
+	@echo "    make pull-report REMOTE_RESULTS=$(MIDI_PARTIAL_OUTDIR:../%=%) LOCAL_RESULTS=$(LOCAL_RESULTS)/midi-partial"
 
 multiqc-rannon-burstein: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 multiqc-rannon-burstein: prefetch-images
