@@ -73,6 +73,10 @@ report_section_order:
   qfo_identity: { order: 140 }
   qfo_divergence: { order: 150 }
   qfo_reachability: { order: 160 }
+  qfo_species_winners_swissprot: { order: 162 }
+  qfo_species_winners_pfamn: { order: 164 }
+  qfo_species_winners_mcsa: { order: 166 }
+  qfo_species_winners_pfam: { order: 168 }
   qfo_alphabet_lcFalse: { order: 170 }
   qfo_alphabet_lcTrue: { order: 180 }
   qfo_lowcomplexity_bars: { order: 185 }

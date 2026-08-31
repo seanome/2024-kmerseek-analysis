@@ -1386,6 +1386,140 @@ def alphabet_classes(alphabet: str) -> int:
     return int(m.group(1)) if m else 10_000
 
 
+# Metrics where a SMALLER number is the better one. Everything else in HEADLINE is
+# higher-is-better. Getting this wrong would silently crown the worst combo, so it is a
+# named set rather than a sign buried in a sort call.
+LOWER_IS_BETTER = {"smin"}
+
+
+def pick_selection_split(df: pl.DataFrame) -> tuple[pl.DataFrame, str]:
+    """The SELECTION half if the run produced one, otherwise whatever pick_split finds.
+
+    Every other section reads the heldout half, because that is the honest one to report.
+    This table is the exception, and deliberately: it exists to CHOOSE an alphabet, and
+    choosing on the heldout half is the thing the split exists to prevent. Reporting the
+    winner's score on the data that picked it is optimistically biased -- see
+    build_domain_truth.assign_split, which sets the split up for exactly this reason.
+
+    Only Pfam is partitioned. Swiss-Prot and Pfam-N are scored whole, so they fall back to
+    `all`, and the section says which it used per truth set rather than implying one.
+    """
+    if "split" in df.columns:
+        sel = df.filter(pl.col("split") == "selection")
+        if sel.height:
+            return sel, "selection"
+    return pick_split(df)
+
+
+def _combo_label(row: dict) -> str:
+    lc = "lcT" if row["lowcomp"] == "True" else "lcF"
+    return f"{row['alphabet']} k{row['ksize']} {lc}"
+
+
+def section_species_winners(out: Path, metrics: pl.DataFrame, top_n: int = 3) -> None:
+    """Which kmerseek combo wins each metric, PER SPECIES rather than averaged over them.
+
+    The leaderboard ranks on a mean over the nine target proteomes and the alphabet matrix
+    heatmaps a mean too, so neither can answer "which alphabet and ksize was best against
+    zebrafish". The means are the right summary for a headline and the wrong one for
+    choosing: the leaderboard's own SD column exists because the species disagree.
+
+    Top three per cell, not one. With ~400 combos swept, a strict argmax hands back a
+    winner that beats the runner-up in the fourth decimal, and a table of those reads as a
+    result. Three rows with their values makes a meaningless win look like one.
+    """
+    base = ungrouped(metrics.filter(pl.col("tool") == "kmerseek"))
+    if base.height == 0 or "species" not in base.columns:
+        return
+    parsed = parse_kmerseek_variants(base)
+    if parsed.height == 0:
+        return
+
+    for ts in sorted(parsed["truth_set"].unique().to_list()):
+        cut, split = pick_selection_split(parsed.filter(pl.col("truth_set") == ts))
+        # `all` is the hmmscan ceiling's species, which reads no target proteome.
+        cut = cut.filter(pl.col("species") != "all")
+        if cut.height == 0:
+            continue
+
+        cols = [c for c in HEADLINE if c in cut.columns]
+        if not cols:
+            continue
+
+        # Ordered by divergence from human where the run recorded it, so the table reads
+        # along the same axis as the Divergence section rather than alphabetically.
+        if "species_mya" in cut.columns:
+            order = (cut.group_by("species").agg(pl.col("species_mya").min())
+                        .sort("species_mya")["species"].to_list())
+        else:
+            order = sorted(cut["species"].unique().to_list())
+
+        data, n_combos = {}, cut.select(pl.col("variant").n_unique()).item()
+        for sp in order:
+            sub_sp = cut.filter(pl.col("species") == sp)
+            ranked = {
+                c: (sub_sp.drop_nulls(c)
+                          .sort(c, descending=(c not in LOWER_IS_BETTER))
+                          .head(top_n)
+                          .to_dicts())
+                for c in cols
+            }
+            for rank in range(top_n):
+                row = {}
+                for c in cols:
+                    hits = ranked[c]
+                    if rank < len(hits):
+                        r = hits[rank]
+                        row[c] = f"{_combo_label(r)}  ({r[c]:,.3f})"
+                    else:
+                        row[c] = ""
+                data[f"{sp} · {rank + 1}"] = row
+
+        if not data:
+            continue
+
+        write_section(out, f"qfo_species_winners_{ts}", {
+            "id": f"qfo_species_winners_{ts}",
+            "section_name": f"Best combo per species — {ts} truth",
+            "description": (
+                f"For each target proteome, the three kmerseek alphabet x ksize x "
+                f"low-complexity combos that scored best on each metric, out of the "
+                f"{n_combos:,} scored against this truth set on the <code>{split}</code> "
+                "split. The value is in brackets; <code>lcT</code> and <code>lcF</code> are "
+                "the low-complexity filter on and off.<br>"
+                "<b>Read the three rows together, not the first one alone.</b> Across ~400 "
+                "combos a strict winner routinely beats the runner-up in the third or "
+                "fourth decimal, which is not a difference between alphabets. Where the "
+                "three values are close the honest reading is that the metric does not "
+                "separate them; where the first is clear of the others it is a real "
+                "ordering.<br>"
+                "<b>Smin is the one column where smaller is better</b> — it is a semantic "
+                "distance, so its top row is the minimum while every other column's is a "
+                "maximum.<br>"
+                "This is the <code>selection</code> half wherever the truth set has one, "
+                "and that is the point of the section: it is for choosing a combo, and "
+                "choosing on the heldout half is what the split exists to prevent. Report "
+                "the chosen combo's number from the leaderboard, which reads heldout. "
+                "Swiss-Prot and Pfam-N are scored whole, so those tables say "
+                "<code>all</code> above and carry no such separation.<br>"
+                "Columns disagreeing with each other is the result, not a fault: Fmax is "
+                "precision-dominated, reachable recall is not, and a combo can top one "
+                "while sitting mid-table on the other."),
+            "plot_type": "table",
+            "pconfig": {"id": f"qfo_species_winners_{ts}_table",
+                        "title": f"Best kmerseek combo per species ({ts})",
+                        "col1_header": "Species · rank",
+                        "sort_rows": False, "scale": False},
+            # Titles and descriptions off the shared spec so a column means the same thing
+            # here as in the leaderboard, but WITHOUT its min/max/scale/format: these cells
+            # hold "<combo> (value)" strings, and a numeric formatter applied to a string
+            # renders as blank rather than as an error.
+            "headers": {c: {k: v for k, v in h.items() if k in ("title", "description")}
+                        for c, h in fmt_metric_headers(cols).items()},
+            "data": data,
+        })
+
+
 def section_alphabet_matrix(out: Path, metrics: pl.DataFrame, primary_truth: str) -> None:
     """The sweep itself: Fmax over alphabet x ksize, one heatmap per low-complexity arm."""
     cut, split = pick_split(ungrouped(metrics.filter(
@@ -3164,6 +3298,7 @@ def main():
                  args.hgnc_min_instances, args.hgnc_top_n)
     section_divergence(args.outdir, metrics, primary, args.max_tools)
     section_truthsets(args.outdir, metrics, args.max_tools)
+    section_species_winners(args.outdir, metrics)
     section_alphabet_matrix(args.outdir, metrics, primary)
     section_ceiling_length(args.outdir, metrics, primary)
     section_ceiling_length_by_k(args.outdir, metrics, primary)
