@@ -1468,6 +1468,7 @@ multiqc-partial: prefetch-images
 	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)) \
 	    --outdir          $(MIDI_PARTIAL_OUTDIR) \
 	    --report_trace    none \
+	    --allow_dead_arms true \
 	    --qfo_dir         ../data/midi/qfo \
 	    $(NF_ARGS)
 	@echo

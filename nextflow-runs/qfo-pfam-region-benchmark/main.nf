@@ -342,6 +342,16 @@ params.multiqc_top_kmerseek = 5
 // runs have ended and executes no scoring task of its own.
 params.report_outdirs = null
 
+// An arm that scored zero calls everywhere stops the report by default: it is a broken arm
+// rather than a result, and hhblits and folddisco sat in that state unnoticed for the whole
+// life of this pipeline. See aggregate_domain_metrics.check_for_dead_arms.
+//
+// The partial report turns it off, and only the partial report. A snapshot of a run still
+// going legitimately contains an arm whose search has not finished, and refusing to draw
+// the other arms because of it defeats the point of looking early. The banner still prints
+// either way, so nothing is quietly built over a zero.
+params.allow_dead_arms = false
+
 // --- reduced-alphabet information ceiling ---------------------------------
 // The BPE boundary diagnostic: do the token boundaries ProtBERTa_2 learned on a 2-letter
 // alphabet land on Pfam domain boundaries? See bin/hp_bpe_boundary_diagnostic.py.
@@ -2702,7 +2712,7 @@ process aggregateMetrics {
 
     script:
     """
-    aggregate_domain_metrics.py \\
+    aggregate_domain_metrics.py ${params.allow_dead_arms ? '--allow-dead-arms' : ''} \\
         metrics curves \\
         all_domain_metrics.parquet all_domain_metrics.csv all_domain_curves.parquet
     """

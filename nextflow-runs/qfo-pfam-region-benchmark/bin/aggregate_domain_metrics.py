@@ -85,9 +85,42 @@ def concat(dirpath: Path, what: str) -> pl.DataFrame:
     return df.select(lead + [c for c in df.columns if c not in lead])
 
 
+def report_dead(dead: str | None, allow: bool) -> None:
+    """Raise on a dead arm, or say it is being reported anyway.
+
+    A dead arm is a broken run and stops a report by default -- see check_for_dead_arms.
+    `allow` exists for the partial report (`make multiqc-partial`), which is a snapshot of a
+    run still in progress: an arm can be dead there simply because its search has not
+    finished, and refusing to draw the other arms because of it defeats the point of
+    looking early. The banner is printed either way, so the report is never quietly built
+    over a zero.
+    """
+    if not dead:
+        return
+    if not allow:
+        raise SystemExit(dead)
+    print(dead, file=sys.stderr)
+    print("  Reported anyway (--allow-dead-arms). In a snapshot of a run still going, an\n"
+          "  arm reads as dead until its search finishes. In a FINISHED run it is a bug.",
+          file=sys.stderr)
+
+
 def main():
-    metrics_dir, curves_dir = Path(sys.argv[1]), Path(sys.argv[2])
-    parquet_out, csv_out, curves_out = (Path(a) for a in sys.argv[3:6])
+    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+    unknown = [f for f in flags if f != "--allow-dead-arms"]
+    if unknown:
+        raise SystemExit(f"unknown flag(s): {' '.join(unknown)}. "
+                         f"Only --allow-dead-arms is accepted.")
+    allow_dead = "--allow-dead-arms" in flags
+
+    positional = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if len(positional) != 5:
+        raise SystemExit(
+            "usage: aggregate_domain_metrics.py [--allow-dead-arms] METRICS_DIR CURVES_DIR "
+            "METRICS_PARQUET METRICS_CSV CURVES_PARQUET"
+        )
+    metrics_dir, curves_dir = Path(positional[0]), Path(positional[1])
+    parquet_out, csv_out, curves_out = (Path(a) for a in positional[2:5])
 
     metrics = concat(metrics_dir, "metrics").sort(
         ["fmax", "auprc"], descending=True, nulls_last=True
@@ -115,8 +148,7 @@ def main():
                 _print_board(cut)
         # Raised after the parquet and CSV are on disk, so the run fails loudly without
         # taking the tables needed to debug it down with it.
-        if dead:
-            raise SystemExit(dead)
+        report_dead(dead, allow_dead)
         return
     if board.height == 0:
         # No holdout column at all (e.g. an older truth table) -- fall back rather than
@@ -131,8 +163,7 @@ def main():
             print(f"\n---{note} ---")
         _print_board(cut)
 
-    if dead:
-        raise SystemExit(dead)
+    report_dead(dead, allow_dead)
 
 
 def _by_dedup_mode(board: pl.DataFrame):
