@@ -1439,10 +1439,21 @@ multiqc-partial: prefetch-images
 	   echo ""; \
 	   echo "  Nothing scored yet under $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics."; \
 	   echo ""; \
-	   echo "  scoreDomainCalls publishes one metrics file per arm as it finishes, so this"; \
-	   echo "  fills up during a run. Wait for the first of them, or report on another run:"; \
+	   echo "  scoreDomainCalls publishes one metrics file per arm as it finishes, so that"; \
+	   echo "  directory fills up during a run rather than at the end of one."; \
 	   echo ""; \
-	   echo "    make multiqc-partial MIDI_OUTDIR=<outdir>"; \
+	   echo "  MIDI_OUTDIR is read relative to the run-midi LAUNCH directory, not to where"; \
+	   echo "  you are standing, because that is where run-midi passes it from. So"; \
+	   echo "  'MIDI_OUTDIR=results/' means run-midi/results, which is nothing. Leave it"; \
+	   echo "  unset to report on 'make run-midi':"; \
+	   echo ""; \
+	   echo "    make multiqc-partial"; \
+	   echo "        -> $(call rel_to_launch,run-midi,../data/midi/results)/metrics"; \
+	   echo ""; \
+	   echo "  or give an ABSOLUTE path to report on a different run (the full run's outdir"; \
+	   echo "  is $(abspath ../results), and rel_to_launch passes absolute paths through):"; \
+	   echo ""; \
+	   echo "    make multiqc-partial MIDI_OUTDIR=$(abspath ../results)"; \
 	   echo ""; \
 	   exit 1; \
 	 fi; \
