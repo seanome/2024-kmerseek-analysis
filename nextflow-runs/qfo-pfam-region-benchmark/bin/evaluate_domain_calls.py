@@ -331,22 +331,58 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
     # Widths are read off the file rather than declared, so one loader serves both.
     cols = ["query", "target", "qstart", "qend", "tstart", "tend", "score", "evalue",
             "n_matched_residues"]
-    probe = pl.scan_csv(path, separator="\t", has_header=False)
+    probe = pl.scan_csv(path, separator="\t", has_header=False, infer_schema_length=0)
     width = len(probe.collect_schema().names())
+    # Every column read as text, and cast here instead. polars infers a column's dtype from
+    # the first rows and then fails the WHOLE file on the first row that disagrees: one bad
+    # line 105 KB into a 1.2 GB hhblits table killed a task 829 arms in, with a message
+    # naming a byte offset and no tool. Whether a row is usable is a question about the
+    # tool's output, and it belongs here where the answer can name the arm.
     lf = pl.scan_csv(path, separator="\t", has_header=False,
-                     new_columns=cols[:width])
+                     new_columns=cols[:width], infer_schema_length=0)
     selection = [
         extract_accession(pl.col("query")).alias("query_acc"),
         extract_accession(pl.col("target")).alias("target_acc"),
-        pl.col("qstart").cast(pl.Int64),
-        pl.col("qend").cast(pl.Int64),
-        pl.col("tstart").cast(pl.Int64),
-        pl.col("tend").cast(pl.Int64),
-        pl.col("score").cast(pl.Float64),
+        pl.col("qstart").cast(pl.Int64, strict=False),
+        pl.col("qend").cast(pl.Int64, strict=False),
+        pl.col("tstart").cast(pl.Int64, strict=False),
+        pl.col("tend").cast(pl.Int64, strict=False),
+        pl.col("score").cast(pl.Float64, strict=False),
     ]
     if width >= 9:
-        selection.append(pl.col("n_matched_residues").cast(pl.Int64))
-    return lf.select(selection)
+        selection.append(pl.col("n_matched_residues").cast(pl.Int64, strict=False))
+    lf = lf.select(selection)
+
+    # A row whose coordinates did not parse carries a number from the wrong column, so it
+    # is not a hit that can be placed anywhere -- see the shifted-field note on the awk in
+    # hhblitsSearch. Dropping it is the only thing to do with it, but dropping it QUIETLY
+    # is not: the count belongs in the log next to the arm it came from.
+    #
+    # Not an error, deliberately. A batched task scores hundreds of arms, and one tool's
+    # malformed rows must not cost the rest of them their metrics. Every row failing is a
+    # different thing -- the file's whole layout is wrong rather than some of its rows --
+    # and that does raise, for the same reason hhblitsSearch treats zero hits as a failure.
+    bad = pl.any_horizontal(
+        pl.col("query_acc").is_null(), pl.col("target_acc").is_null(),
+        pl.col("qstart").is_null(), pl.col("qend").is_null(),
+        pl.col("tstart").is_null(), pl.col("tend").is_null(),
+        pl.col("score").is_null(),
+    )
+    counts = lf.select(pl.len().alias("total"),
+                       bad.sum().alias("bad")).collect().row(0, named=True)
+    if counts["bad"]:
+        if counts["bad"] == counts["total"]:
+            raise SystemExit(
+                f"every one of {counts['total']} rows in {path.name} has an unparseable "
+                f"coordinate or score, so the file's column layout is wrong rather than "
+                f"some of its rows. Check the writer for this arm before scoring it."
+            )
+        print(f"WARNING {path.name}: dropped {counts['bad']} of {counts['total']} rows "
+              f"({100 * counts['bad'] / counts['total']:.2f}%) whose coordinates or score "
+              f"did not parse as numbers. These carry a value from the wrong column.",
+              file=sys.stderr)
+        lf = lf.filter(~bad)
+    return lf
 
 
 # Peak memory of a pairwise suppression pass is set by the JOINED frame, whose height is
