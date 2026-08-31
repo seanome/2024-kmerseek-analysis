@@ -362,11 +362,22 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
     # malformed rows must not cost the rest of them their metrics. Every row failing is a
     # different thing -- the file's whole layout is wrong rather than some of its rows --
     # and that does raise, for the same reason hhblitsSearch treats zero hits as a failure.
+    #
+    # A reversed interval is the same corruption wearing a number that parses. The observed
+    # hhblits row shifted by four fields and put a FRACTION in qstart, which is obvious; a
+    # shift of one or two puts targetLen or mismatch there instead, and those are integers.
+    # end < start is the check that catches those, and no aligner here reports a hit
+    # backwards -- every one of them counts residues up. Left in, such a row scores as a
+    # false positive rather than as the broken row it is: overlap clips to zero and the IoU
+    # guard reads the negative union as no overlap, so the tool is quietly penalised for its
+    # writer.
     bad = pl.any_horizontal(
         pl.col("query_acc").is_null(), pl.col("target_acc").is_null(),
         pl.col("qstart").is_null(), pl.col("qend").is_null(),
         pl.col("tstart").is_null(), pl.col("tend").is_null(),
         pl.col("score").is_null(),
+        pl.col("qend") < pl.col("qstart"),
+        pl.col("tend") < pl.col("tstart"),
     )
     counts = lf.select(pl.len().alias("total"),
                        bad.sum().alias("bad")).collect().row(0, named=True)
@@ -379,8 +390,8 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
             )
         print(f"WARNING {path.name}: dropped {counts['bad']} of {counts['total']} rows "
               f"({100 * counts['bad'] / counts['total']:.2f}%) whose coordinates or score "
-              f"did not parse as numbers. These carry a value from the wrong column.",
-              file=sys.stderr)
+              f"did not parse, or whose interval ran backwards. These carry a value from "
+              f"the wrong column.", file=sys.stderr)
         lf = lf.filter(~bad)
     return lf
 

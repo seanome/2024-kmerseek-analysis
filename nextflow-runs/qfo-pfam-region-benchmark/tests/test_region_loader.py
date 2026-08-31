@@ -86,3 +86,22 @@ def test_the_shifted_row_is_caught_past_the_schema_inference_window(tmp_path, ca
     df = load_regions(write(tmp_path, rows + [SHIFTED]), direct=False).collect()
     assert df.height == 150
     assert "dropped 1 of 151 rows" in capsys.readouterr().err
+
+
+def test_a_backwards_interval_is_dropped_too(tmp_path, capsys):
+    """The shift that lands an integer in qstart.
+
+    The observed hhblits row shifted by four fields, so qstart held a fraction and failed to
+    parse. A shift of one or two puts targetLen or mismatch there, which are integers and
+    parse fine. end < start catches those; no aligner here reports a hit backwards.
+    """
+    backwards = "sp|P4|G_HUMAN\tsp|T4|H_CIOIN\t559\t120\t5\t115\t70.1\t1e-10"
+    df = load_regions(write(tmp_path, GOOD + [backwards]), direct=False).collect()
+    assert sorted(df["query_acc"]) == ["P1", "P2"]
+    assert "dropped 1 of 3 rows" in capsys.readouterr().err
+
+
+def test_a_backwards_target_interval_is_dropped_too(tmp_path):
+    backwards = "sp|P5|I_HUMAN\tsp|T5|J_CIOIN\t10\t120\t468\t1\t70.1\t1e-10"
+    df = load_regions(write(tmp_path, GOOD + [backwards]), direct=False).collect()
+    assert df.height == 2

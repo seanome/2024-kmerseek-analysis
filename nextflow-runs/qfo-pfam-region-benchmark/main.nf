@@ -1579,6 +1579,21 @@ process hhblitsSearch {
     // is that length. Only 7-12 mean what the BLAST column of the same index means, and
     // those are the only ones read below.
     //
+    // Reading by position is why the awk below has a known defect, left in deliberately.
+    // A record whose TARGET name carries whitespace shifts every later field left, and the
+    // row still comes out eight tab-separated columns wide and still looks like a hit.
+    // Measured on ciona: exactly one row in the whole table, query MED23_HUMAN, target name
+    // spread over five tokens beginning `1391093197`, so $7 held matched/targetLen (0.172)
+    // instead of qstart (107). Those rows are dropped and counted by name in
+    // evaluate_domain_calls.load_regions, which reports them per arm.
+    //
+    // Not fixed here because fixing it changes this script, which invalidates the storeDir
+    // and re-runs nine 16-core searches to recover one row. The fix when this arm is
+    // rebuilt for some other reason: fields 3-12 are always the LAST TEN whitespace tokens
+    // however many the names take, so read them as $(NF-5) $(NF-4) $(NF-3) $(NF-2) $NF
+    // $(NF-1), and take the target as the first $2..$(NF-10) token containing a `|`. The
+    // per-arm drop count in the scoring log says whether it is ever worth doing.
+    //
     // The database is addressed by a base name, not by a file: HHDatabase::buildDatabaseName
     // appends _a3m / _hhm / _cs219 plus the ffindex extensions, and hhsearch opens cs219
     // unconditionally (HHsearch::prepareDatabases passes initCs219 = true). Anything else
