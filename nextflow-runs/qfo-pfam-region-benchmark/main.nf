@@ -1560,6 +1560,11 @@ process hhblitsSearch {
     tag "human_vs_${species}"
     container 'quay.io/biocontainers/hhsuite@sha256:4bf9bb5229de18f522a94f4443c19fdcbb0f0cb0e6ea92f5390aa170bcb0a24f'
     label 'high_cpu'
+    // A walltime kill arrives as SIGTERM, exit 143. Without this the default strategy is
+    // `terminate`, so the four large targets running past the wall would take the whole run
+    // down with them rather than being requeued with the longer limit the retry carries.
+    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'terminate' }
+    maxRetries 1
     publishDir "${params.outdir}/regions/hhblits", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
@@ -1625,7 +1630,7 @@ process hhblitsSearch {
     ffindex_apply \\
         ${human_hhdb}/db_a3m.ffdata ${human_hhdb}/db_a3m.ffindex \\
         -d results.ffdata -i results.ffindex \\
-        -- hhsearch -i stdin -d "\$db" -blasttab /dev/stdout -cpu 1 -v 0
+        -- hhsearch -i stdin -d "\$db" -blasttab /dev/stdout -cpu ${task.cpus} -v 0
 
     ffindex_apply results.ffdata results.ffindex -- cat \\
     | awk 'NF >= 12 {print \$1 "\\t" \$2 "\\t" \$7 "\\t" \$8 "\\t" \$9 "\\t" \$10 "\\t" \$12 "\\t" \$11}' \\
