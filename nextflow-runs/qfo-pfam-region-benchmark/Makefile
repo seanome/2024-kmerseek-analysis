@@ -1436,7 +1436,13 @@ MIDI_PARTIAL_OUTDIR ?= ../data/midi/results-partial
 multiqc-partial: PREFETCH_CONTAINERS := $(IMAGE_REMOTE) $(ALL_CONTAINERS)
 multiqc-partial: prefetch-images
 	$(call require_cluster)
-	@n=$$(ls $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics/*.metrics.parquet 2>/dev/null | wc -l); \
+	@# find, not `ls <dir>/*.metrics.parquet`. A full sweep publishes over 13_000 of them
+	@# and the shell expands the glob onto the command line, which at ~184 bytes a path is
+	@# 2.4 MB against a 2 MB ARG_MAX. execve then fails with E2BIG, `2>/dev/null` swallows
+	@# "Argument list too long", and the count comes back 0 -- a directory with 13_033 files
+	@# in it reported as empty, which is exactly how this target claimed there was nothing
+	@# to report on.
+	@n=$$(find $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics -name '*.metrics.parquet' 2>/dev/null | wc -l); \
 	 if [ "$$n" -eq 0 ]; then \
 	   echo ""; \
 	   echo "  Nothing scored yet under $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics."; \
