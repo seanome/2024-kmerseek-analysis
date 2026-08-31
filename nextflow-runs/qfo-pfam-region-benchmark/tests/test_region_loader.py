@@ -58,7 +58,10 @@ def test_a_wholly_shifted_table_raises_instead_of_scoring_nothing(tmp_path):
         load_regions(write(tmp_path, [SHIFTED] * 3), direct=False)
 
 
-def test_gzip_input_gives_the_same_rows_as_plain(tmp_path):
+def test_gzip_input_gives_the_same_rows_as_plain(tmp_path, monkeypatch):
+    # chdir because inflate_for_scan writes its plain copy into the working directory --
+    # under Nextflow that is the task's own work dir, and here it would be the repo.
+    monkeypatch.chdir(tmp_path)
     plain = load_regions(write(tmp_path, GOOD, name="plain.tsv"), direct=False).collect()
     gzipped = load_regions(write(tmp_path, GOOD, name="gz.tsv", gz=True),
                            direct=False).collect()
