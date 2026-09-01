@@ -19,24 +19,23 @@ import re
 import numpy as np
 from scipy.integrate import trapezoid
 
-
 # ---------------------------------------------------------------------------
 # SCOPe domain constants
 # ---------------------------------------------------------------------------
 
 #: Human-readable descriptions for SCOPe top-level classes.
 SCOPE_CLASS_DESCRIPTIONS = {
-    'a': 'All alpha proteins',
-    'b': 'All beta proteins',
-    'c': 'Alpha and beta proteins (a/b) — alternating α/β, e.g. TIM barrel, Rossmann fold',
-    'd': 'Alpha and beta proteins (a+b) — segregated α and β regions',
-    'e': 'Multi-domain proteins (alpha and beta)',
-    'f': 'Membrane and cell surface proteins',
-    'g': 'Small proteins',
-    'h': 'Coiled coil proteins',
-    'i': 'Low resolution protein structures',
-    'j': 'Peptides',
-    'k': 'Designed proteins',
+    "a": "All alpha proteins",
+    "b": "All beta proteins",
+    "c": "Alpha and beta proteins (a/b) — alternating α/β, e.g. TIM barrel, Rossmann fold",
+    "d": "Alpha and beta proteins (a+b) — segregated α and β regions",
+    "e": "Multi-domain proteins (alpha and beta)",
+    "f": "Membrane and cell surface proteins",
+    "g": "Small proteins",
+    "h": "Coiled coil proteins",
+    "i": "Low resolution protein structures",
+    "j": "Peptides",
+    "k": "Designed proteins",
 }
 
 #: Canonical SCOP level ordering used in all plots.
@@ -44,10 +43,10 @@ SCOPE_CLASS_DESCRIPTIONS = {
 #: rocx_col — column name in .rocx baseline files (FAM/SFAM/FOLD only; CLASS absent).
 #: eval_col — boolean column name in scope_eval DataFrames.
 SCOP_LEVELS: List[Tuple[str, str, str]] = [
-    ('FAM',   'same_family',       'Family'),
-    ('SFAM',  'same_superfamily',  'Superfamily'),
-    ('FOLD',  'same_fold',         'Fold'),
-    ('CLASS', 'same_class',        'Class'),
+    ("FAM", "same_family", "Family"),
+    ("SFAM", "same_superfamily", "Superfamily"),
+    ("FOLD", "same_fold", "Fold"),
+    ("CLASS", "same_class", "Class"),
 ]
 
 #: Score columns present in scope_eval files.
@@ -56,30 +55,30 @@ SCOP_LEVELS: List[Tuple[str, str, str]] = [
 #: ascending=False means higher value = better (similarity scores).
 SCOPE_SCORE_COLS: List[Tuple[str, bool, str]] = [
     # --- Similarity metrics (higher = better) ---
-    ('containment',            False, 'Containment'),
-    ('max_containment',        False, 'Max Containment'),
-    ('jaccard',                False, 'Jaccard'),
-    ('query_tfidf',            False, 'TF-IDF'),
-    ('enrichment',             False, 'Enrichment'),
-    ('mean_matched_kmer_freq', False, 'Mean k-mer Freq'),
+    ("containment", False, "Containment"),
+    ("max_containment", False, "Max Containment"),
+    ("jaccard", False, "Jaccard"),
+    ("query_tfidf", False, "TF-IDF"),
+    ("enrichment", False, "Enrichment"),
+    ("mean_matched_kmer_freq", False, "Mean k-mer Freq"),
     # --- P-value metrics (lower = better) ---
-    ('poisson_pvalue',         True,  'Poisson p-value (raw)'),
-    ('bonferroni',             True,  'Bonferroni (n=reported, WRONG)'),
-    ('bonferroni_correct',     True,  'Bonferroni (n=all pairs, correct)'),
-    ('bh',                     True,  'BH (FDR)'),
-    ('by',                     True,  'BY'),
+    ("poisson_pvalue", True, "Poisson p-value (raw)"),
+    ("bonferroni", True, "Bonferroni (n=reported, WRONG)"),
+    ("bonferroni_correct", True, "Bonferroni (n=all pairs, correct)"),
+    ("bh", True, "BH (FDR)"),
+    ("by", True, "BY"),
     # --- Composite scores added by add_composite_scores_scope() ---
-    ('neg_log10_bh',           False, '−log10(BH q)'),
-    ('neg_log10_bh_x_cont',    False, '−log10(BH q) × Containment'),
-    ('enr_x_cont',             False, 'Enrichment × Containment'),
-    ('tfidf_x_cont',           False, 'TF-IDF × Containment'),
+    ("neg_log10_bh", False, "−log10(BH q)"),
+    ("neg_log10_bh_x_cont", False, "−log10(BH q) × Containment"),
+    ("enr_x_cont", False, "Enrichment × Containment"),
+    ("tfidf_x_cont", False, "TF-IDF × Containment"),
 ]
 
 #: Default benchmark data directory.
-BENCH_DIR = Path('/Users/olga/data/scope/results-scope-pvalue-benchmark')
+BENCH_DIR = Path("/Users/olga/data/scope/results-scope-pvalue-benchmark")
 
 #: Default TEA/FoldSeek baseline directory.
-TEA_DIR = Path('/Users/olga/code/2024-kmerseek-analysis/data/tea_scope40_rocx_files')
+TEA_DIR = Path("/Users/olga/code/2024-kmerseek-analysis/data/tea_scope40_rocx_files")
 
 #: Total number of proteins in SCOPe40 v2.08 (40% identity cutoff).
 #: Used to compute correct Bonferroni multiplier = N_SCOPE40 * (N_SCOPE40 - 1).
@@ -92,21 +91,34 @@ N_SCOPE40_PAIRS: int = N_SCOPE40_PROTEINS * (N_SCOPE40_PROTEINS - 1)  # 230,326,
 
 #: Minimal columns needed for any ROCX conversion (reduces memory ~10×).
 EVAL_USECOLS: List[str] = [
-    'query_domain', 'target_domain', 'q_scop_id',
-    'same_class', 'same_family', 'same_superfamily', 'same_fold',
-    'containment', 'max_containment', 'jaccard',
-    'query_tfidf', 'enrichment', 'mean_matched_kmer_freq',
-    'poisson_pvalue', 'bonferroni', 'bh', 'by',
+    "query_domain",
+    "target_domain",
+    "q_scop_id",
+    "same_class",
+    "same_family",
+    "same_superfamily",
+    "same_fold",
+    "containment",
+    "max_containment",
+    "jaccard",
+    "query_tfidf",
+    "enrichment",
+    "mean_matched_kmer_freq",
+    "poisson_pvalue",
+    "bonferroni",
+    "bh",
+    "by",
 ]
 
 
 # File I/O utilities
 # ==================
 
+
 def read_csv_with_size_limit(
     file_path: Union[str, Path],
     max_rows: int = 15_000_000,
-    size_threshold_gb: float = 8.0
+    size_threshold_gb: float = 8.0,
 ) -> pl.DataFrame:
     """
     Read a CSV file with automatic row limiting for large files.
@@ -129,7 +141,9 @@ def read_csv_with_size_limit(
     file_size_gb = file_path.stat().st_size / (1024**3)
 
     if file_size_gb > size_threshold_gb:
-        print(f"Loading {file_path.name} ({file_size_gb:.2f} GB) - reading first {max_rows:,} rows...")
+        print(
+            f"Loading {file_path.name} ({file_size_gb:.2f} GB) - reading first {max_rows:,} rows..."
+        )
         return pl.read_csv(file_path, n_rows=max_rows)
     else:
         print(f"Loading {file_path.name} ({file_size_gb:.2f} GB) - reading all rows...")
@@ -141,7 +155,7 @@ def load_kmerseek_results(
     pattern: str = "*.csv",
     add_ksize_from_filename: bool = True,
     max_rows: int = 15_000_000,
-    size_threshold_gb: float = 8.0
+    size_threshold_gb: float = 8.0,
 ) -> pl.DataFrame:
     """
     Load and concatenate multiple KmerSeek result files.
@@ -168,7 +182,9 @@ def load_kmerseek_results(
     files = sorted(results_dir.glob(pattern))
 
     if not files:
-        raise ValueError(f"No files found matching pattern '{pattern}' in {results_dir}")
+        raise ValueError(
+            f"No files found matching pattern '{pattern}' in {results_dir}"
+        )
 
     print(f"Found {len(files)} files matching '{pattern}'")
 
@@ -180,7 +196,7 @@ def load_kmerseek_results(
         if add_ksize_from_filename:
             ksize = extract_ksize_from_filename(file_path.stem)
             if ksize is not None:
-                df = df.with_columns(pl.lit(ksize).alias('ksize'))
+                df = df.with_columns(pl.lit(ksize).alias("ksize"))
 
         dfs.append(df)
         print(f"  Loaded {df.shape[0]:,} rows from {file_path.name}")
@@ -206,12 +222,13 @@ def extract_ksize_from_filename(filename: str) -> Optional[int]:
     int or None
         Extracted ksize or None if not found
     """
-    match = re.search(r'\.k(\d+)', filename)
+    match = re.search(r"\.k(\d+)", filename)
     return int(match.group(1)) if match else None
 
 
 # SCOPe hierarchical level extraction
 # =====================================
+
 
 def extract_scope_levels(name: str) -> Optional[dict]:
     """
@@ -243,22 +260,24 @@ def extract_scope_levels(name: str) -> Optional[dict]:
 
     # Parse lineage using regex
     # Pattern: (?P<class>[a-z])\.(?P<fold_num>\d+)\.(?P<superfam_num>\d+)\.(?P<fam_num>\d+)
-    pattern = r'(?P<class>[a-z])\.(?P<fold_num>\d+)\.(?P<superfam_num>\d+)\.(?P<fam_num>\d+)'
+    pattern = (
+        r"(?P<class>[a-z])\.(?P<fold_num>\d+)\.(?P<superfam_num>\d+)\.(?P<fam_num>\d+)"
+    )
     match = re.match(pattern, lineage)
 
     if not match:
         return None
 
-    cls = match.group('class')
-    fold_num = match.group('fold_num')
-    superfam_num = match.group('superfam_num')
-    fam_num = match.group('fam_num')
+    cls = match.group("class")
+    fold_num = match.group("fold_num")
+    superfam_num = match.group("superfam_num")
+    fam_num = match.group("fam_num")
 
     return {
-        'class': cls,
-        'fold': f"{cls}.{fold_num}",
-        'superfamily': f"{cls}.{fold_num}.{superfam_num}",
-        'family': f"{cls}.{fold_num}.{superfam_num}.{fam_num}"
+        "class": cls,
+        "fold": f"{cls}.{fold_num}",
+        "superfamily": f"{cls}.{fold_num}.{superfam_num}",
+        "family": f"{cls}.{fold_num}.{superfam_num}.{fam_num}",
     }
 
 
@@ -279,33 +298,40 @@ def add_scope_hierarchical_levels(df: pl.DataFrame) -> pl.DataFrame:
     pl.DataFrame
         Dataframe with added hierarchical level and match columns
     """
+
     # Define function for extraction
     def extract_scope_dict(name_series: pl.Series) -> pl.Series:
         return name_series.map_elements(extract_scope_levels, return_dtype=pl.Struct)
 
     # Extract query levels
-    query_levels = extract_scope_dict(df['query_name']).alias('query_levels')
-    target_levels = extract_scope_dict(df['target_name']).alias('target_levels')
+    query_levels = extract_scope_dict(df["query_name"]).alias("query_levels")
+    target_levels = extract_scope_dict(df["target_name"]).alias("target_levels")
 
     # Add all level columns
-    df = df.with_columns([
-        query_levels.struct.field('family').alias('query_family'),
-        query_levels.struct.field('superfamily').alias('query_superfamily'),
-        query_levels.struct.field('fold').alias('query_fold'),
-        query_levels.struct.field('class').alias('query_class'),
-        target_levels.struct.field('family').alias('target_family'),
-        target_levels.struct.field('superfamily').alias('target_superfamily'),
-        target_levels.struct.field('fold').alias('target_fold'),
-        target_levels.struct.field('class').alias('target_class'),
-    ])
+    df = df.with_columns(
+        [
+            query_levels.struct.field("family").alias("query_family"),
+            query_levels.struct.field("superfamily").alias("query_superfamily"),
+            query_levels.struct.field("fold").alias("query_fold"),
+            query_levels.struct.field("class").alias("query_class"),
+            target_levels.struct.field("family").alias("target_family"),
+            target_levels.struct.field("superfamily").alias("target_superfamily"),
+            target_levels.struct.field("fold").alias("target_fold"),
+            target_levels.struct.field("class").alias("target_class"),
+        ]
+    )
 
     # Add match indicators (True Positive vs False Positive)
-    df = df.with_columns([
-        (pl.col('query_family') == pl.col('target_family')).alias('family_match'),
-        (pl.col('query_superfamily') == pl.col('target_superfamily')).alias('superfamily_match'),
-        (pl.col('query_fold') == pl.col('target_fold')).alias('fold_match'),
-        (pl.col('query_class') == pl.col('target_class')).alias('class_match'),
-    ])
+    df = df.with_columns(
+        [
+            (pl.col("query_family") == pl.col("target_family")).alias("family_match"),
+            (pl.col("query_superfamily") == pl.col("target_superfamily")).alias(
+                "superfamily_match"
+            ),
+            (pl.col("query_fold") == pl.col("target_fold")).alias("fold_match"),
+            (pl.col("query_class") == pl.col("target_class")).alias("class_match"),
+        ]
+    )
 
     return df
 
@@ -313,11 +339,12 @@ def add_scope_hierarchical_levels(df: pl.DataFrame) -> pl.DataFrame:
 # Sensitivity calculation
 # =======================
 
+
 def calculate_sensitivity_to_first_fp(
     df: pl.DataFrame,
     metric_col: str,
     level_match_col: str,
-    group_by_cols: Optional[List[str]] = None
+    group_by_cols: Optional[List[str]] = None,
 ) -> pl.DataFrame:
     """
     Calculate sensitivity until first false positive for each query.
@@ -348,11 +375,11 @@ def calculate_sensitivity_to_first_fp(
         group_by_cols = []
 
     # Remove self-hits if query_md5 and target_md5 columns exist
-    if 'query_md5' in df.columns and 'target_md5' in df.columns:
-        df = df.filter(pl.col('query_md5') != pl.col('target_md5'))
+    if "query_md5" in df.columns and "target_md5" in df.columns:
+        df = df.filter(pl.col("query_md5") != pl.col("target_md5"))
 
     # Define group columns
-    group_cols = ['query_name'] + group_by_cols
+    group_cols = ["query_name"] + group_by_cols
 
     # Get unique queries
     queries_df = df.select(group_cols).unique()
@@ -364,8 +391,8 @@ def calculate_sensitivity_to_first_fp(
         # Build filter conditions
         if len(group_cols) == 1:
             query_name = group_key[0]
-            filter_cond = pl.col('query_name') == query_name
-            group_dict = {'query_name': query_name}
+            filter_cond = pl.col("query_name") == query_name
+            group_dict = {"query_name": query_name}
         else:
             # Multiple grouping columns
             filter_cond = pl.lit(True)
@@ -405,9 +432,9 @@ def calculate_sensitivity_to_first_fp(
         # Store result
         result = {
             **group_dict,
-            'sensitivity_to_first_fp': sensitivity,
-            'tps_to_first_fp': first_fp if first_fp is not None else n_positives,
-            'total_tps': n_positives
+            "sensitivity_to_first_fp": sensitivity,
+            "tps_to_first_fp": first_fp if first_fp is not None else n_positives,
+            "total_tps": n_positives,
         }
         results.append(result)
 
@@ -417,10 +444,9 @@ def calculate_sensitivity_to_first_fp(
 # Data saving utilities
 # =====================
 
+
 def save_processed_data(
-    df: pl.DataFrame,
-    output_path: Union[str, Path],
-    compression: str = 'snappy'
+    df: pl.DataFrame, output_path: Union[str, Path], compression: str = "snappy"
 ) -> None:
     """
     Save processed dataframe as Parquet for efficient reuse.
@@ -445,6 +471,7 @@ def save_processed_data(
 # TEA benchmark comparison utilities
 # ===================================
 
+
 def parse_scop_simple(df: pl.DataFrame) -> pl.DataFrame:
     """
     Parse SCOP lineages for query and target from protein names.
@@ -466,29 +493,31 @@ def parse_scop_simple(df: pl.DataFrame) -> pl.DataFrame:
         - query_family, target_family: Family level (same as lineage)
         - same_family: Boolean indicating if query and target are in same family
     """
-    df = df.with_columns([
-        pl.col("query_name").str.split(" ").list.get(1).alias("query_lineage"),
-        pl.col("target_name").str.split(" ").list.get(1).alias("target_lineage"),
-    ])
+    df = df.with_columns(
+        [
+            pl.col("query_name").str.split(" ").list.get(1).alias("query_lineage"),
+            pl.col("target_name").str.split(" ").list.get(1).alias("target_lineage"),
+        ]
+    )
 
     # Extract family (full lineage)
-    df = df.with_columns([
-        pl.col("query_lineage").alias("query_family"),
-        pl.col("target_lineage").alias("target_family"),
-    ])
+    df = df.with_columns(
+        [
+            pl.col("query_lineage").alias("query_family"),
+            pl.col("target_lineage").alias("target_family"),
+        ]
+    )
 
     # Check if same family
-    df = df.with_columns([
-        (pl.col("query_family") == pl.col("target_family")).alias("same_family")
-    ])
+    df = df.with_columns(
+        [(pl.col("query_family") == pl.col("target_family")).alias("same_family")]
+    )
 
     return df
 
 
 def compute_sensitivity_curve(
-    df: pl.DataFrame,
-    score_col: str,
-    scop_level: str = "family"
+    df: pl.DataFrame, score_col: str, scop_level: str = "family"
 ) -> Tuple[np.ndarray, list]:
     """
     Compute sensitivity curve for homology detection.
@@ -524,35 +553,59 @@ def compute_sensitivity_curve(
     Higher curves indicate better performance.
     """
     # Parse SCOP lineages
-    df = df.with_columns([
-        pl.col("query_name").str.split(" ").list.get(1).alias("query_lineage"),
-        pl.col("target_name").str.split(" ").list.get(1).alias("target_lineage"),
-    ])
+    df = df.with_columns(
+        [
+            pl.col("query_name").str.split(" ").list.get(1).alias("query_lineage"),
+            pl.col("target_name").str.split(" ").list.get(1).alias("target_lineage"),
+        ]
+    )
 
     # Extract SCOP level
     if scop_level == "family":
-        df = df.with_columns([
-            pl.col("query_lineage").alias("query_scop"),
-            pl.col("target_lineage").alias("target_scop"),
-        ])
+        df = df.with_columns(
+            [
+                pl.col("query_lineage").alias("query_scop"),
+                pl.col("target_lineage").alias("target_scop"),
+            ]
+        )
     elif scop_level == "superfamily":
         parts_q = pl.col("query_lineage").str.split(".")
         parts_t = pl.col("target_lineage").str.split(".")
-        df = df.with_columns([
-            (parts_q.list.get(0) + pl.lit(".") + parts_q.list.get(1) + pl.lit(".") + parts_q.list.get(2)).alias("query_scop"),
-            (parts_t.list.get(0) + pl.lit(".") + parts_t.list.get(1) + pl.lit(".") + parts_t.list.get(2)).alias("target_scop"),
-        ])
+        df = df.with_columns(
+            [
+                (
+                    parts_q.list.get(0)
+                    + pl.lit(".")
+                    + parts_q.list.get(1)
+                    + pl.lit(".")
+                    + parts_q.list.get(2)
+                ).alias("query_scop"),
+                (
+                    parts_t.list.get(0)
+                    + pl.lit(".")
+                    + parts_t.list.get(1)
+                    + pl.lit(".")
+                    + parts_t.list.get(2)
+                ).alias("target_scop"),
+            ]
+        )
     elif scop_level == "fold":
         parts_q = pl.col("query_lineage").str.split(".")
         parts_t = pl.col("target_lineage").str.split(".")
-        df = df.with_columns([
-            (parts_q.list.get(0) + pl.lit(".") + parts_q.list.get(1)).alias("query_scop"),
-            (parts_t.list.get(0) + pl.lit(".") + parts_t.list.get(1)).alias("target_scop"),
-        ])
+        df = df.with_columns(
+            [
+                (parts_q.list.get(0) + pl.lit(".") + parts_q.list.get(1)).alias(
+                    "query_scop"
+                ),
+                (parts_t.list.get(0) + pl.lit(".") + parts_t.list.get(1)).alias(
+                    "target_scop"
+                ),
+            ]
+        )
 
-    df = df.with_columns([
-        (pl.col("query_scop") == pl.col("target_scop")).alias("same_scop")
-    ])
+    df = df.with_columns(
+        [(pl.col("query_scop") == pl.col("target_scop")).alias("same_scop")]
+    )
 
     # Remove self-hits
     df = df.filter(pl.col("query_md5") != pl.col("target_md5"))
@@ -600,9 +653,7 @@ def compute_sensitivity_curve(
 
 
 def compute_query_coverage(
-    df: pl.DataFrame,
-    score_col: str,
-    scop_level: str = "family"
+    df: pl.DataFrame, score_col: str, scop_level: str = "family"
 ) -> Tuple[list, list]:
     """
     Compute query coverage metrics for homology detection.
@@ -627,28 +678,46 @@ def compute_query_coverage(
         - coverages: Approximate coverage fraction for each query
     """
     # Parse SCOP
-    df = df.with_columns([
-        pl.col("query_name").str.split(" ").list.get(1).alias("query_lineage"),
-        pl.col("target_name").str.split(" ").list.get(1).alias("target_lineage"),
-    ])
+    df = df.with_columns(
+        [
+            pl.col("query_name").str.split(" ").list.get(1).alias("query_lineage"),
+            pl.col("target_name").str.split(" ").list.get(1).alias("target_lineage"),
+        ]
+    )
 
     # Extract SCOP level
     if scop_level == "family":
-        df = df.with_columns([
-            pl.col("query_lineage").alias("query_scop"),
-            pl.col("target_lineage").alias("target_scop"),
-        ])
+        df = df.with_columns(
+            [
+                pl.col("query_lineage").alias("query_scop"),
+                pl.col("target_lineage").alias("target_scop"),
+            ]
+        )
     elif scop_level == "superfamily":
         parts_q = pl.col("query_lineage").str.split(".")
         parts_t = pl.col("target_lineage").str.split(".")
-        df = df.with_columns([
-            (parts_q.list.get(0) + pl.lit(".") + parts_q.list.get(1) + pl.lit(".") + parts_q.list.get(2)).alias("query_scop"),
-            (parts_t.list.get(0) + pl.lit(".") + parts_t.list.get(1) + pl.lit(".") + parts_t.list.get(2)).alias("target_scop"),
-        ])
+        df = df.with_columns(
+            [
+                (
+                    parts_q.list.get(0)
+                    + pl.lit(".")
+                    + parts_q.list.get(1)
+                    + pl.lit(".")
+                    + parts_q.list.get(2)
+                ).alias("query_scop"),
+                (
+                    parts_t.list.get(0)
+                    + pl.lit(".")
+                    + parts_t.list.get(1)
+                    + pl.lit(".")
+                    + parts_t.list.get(2)
+                ).alias("target_scop"),
+            ]
+        )
 
-    df = df.with_columns([
-        (pl.col("query_scop") == pl.col("target_scop")).alias("same_scop")
-    ])
+    df = df.with_columns(
+        [(pl.col("query_scop") == pl.col("target_scop")).alias("same_scop")]
+    )
 
     # Remove self-hits
     df = df.filter(pl.col("query_md5") != pl.col("target_md5"))
@@ -728,9 +797,7 @@ def load_rocx_file(filepath: Union[str, Path]) -> pl.DataFrame:
 
 
 def kmerseek_to_rocx(
-    df: pl.DataFrame,
-    score_col: str = "jaccard",
-    overlap_threshold: float = 0.0
+    df: pl.DataFrame, score_col: str = "jaccard", overlap_threshold: float = 0.0
 ) -> pl.DataFrame:
     """
     Convert KmerSeek results to TEA .rocx format for benchmarking.
@@ -763,24 +830,44 @@ def kmerseek_to_rocx(
         df = df.filter(pl.col("overlap_probability") > overlap_threshold)
 
     # Parse SCOP lineages
-    df = df.with_columns([
-        pl.col("query_name").str.split(" ").list.get(0).alias("query_scop_id"),
-        pl.col("query_name").str.split(" ").list.get(1).alias("query_lineage"),
-        pl.col("target_name").str.split(" ").list.get(1).alias("target_lineage"),
-    ])
+    df = df.with_columns(
+        [
+            pl.col("query_name").str.split(" ").list.get(0).alias("query_scop_id"),
+            pl.col("query_name").str.split(" ").list.get(1).alias("query_lineage"),
+            pl.col("target_name").str.split(" ").list.get(1).alias("target_lineage"),
+        ]
+    )
 
     # Extract SCOP levels
     parts_q = pl.col("query_lineage").str.split(".")
     parts_t = pl.col("target_lineage").str.split(".")
 
-    df = df.with_columns([
-        pl.col("query_lineage").alias("query_family"),
-        pl.col("target_lineage").alias("target_family"),
-        (parts_q.list.get(0) + pl.lit(".") + parts_q.list.get(1) + pl.lit(".") + parts_q.list.get(2)).alias("query_superfamily"),
-        (parts_t.list.get(0) + pl.lit(".") + parts_t.list.get(1) + pl.lit(".") + parts_t.list.get(2)).alias("target_superfamily"),
-        (parts_q.list.get(0) + pl.lit(".") + parts_q.list.get(1)).alias("query_fold"),
-        (parts_t.list.get(0) + pl.lit(".") + parts_t.list.get(1)).alias("target_fold"),
-    ])
+    df = df.with_columns(
+        [
+            pl.col("query_lineage").alias("query_family"),
+            pl.col("target_lineage").alias("target_family"),
+            (
+                parts_q.list.get(0)
+                + pl.lit(".")
+                + parts_q.list.get(1)
+                + pl.lit(".")
+                + parts_q.list.get(2)
+            ).alias("query_superfamily"),
+            (
+                parts_t.list.get(0)
+                + pl.lit(".")
+                + parts_t.list.get(1)
+                + pl.lit(".")
+                + parts_t.list.get(2)
+            ).alias("target_superfamily"),
+            (parts_q.list.get(0) + pl.lit(".") + parts_q.list.get(1)).alias(
+                "query_fold"
+            ),
+            (parts_t.list.get(0) + pl.lit(".") + parts_t.list.get(1)).alias(
+                "target_fold"
+            ),
+        ]
+    )
 
     # Remove self-hits
     df = df.filter(pl.col("query_md5") != pl.col("target_md5"))
@@ -789,7 +876,9 @@ def kmerseek_to_rocx(
 
     results = []
     for query in queries:
-        qdf = df.filter(pl.col("query_scop_id") == query).sort(score_col, descending=True)
+        qdf = df.filter(pl.col("query_scop_id") == query).sort(
+            score_col, descending=True
+        )
 
         if len(qdf) == 0:
             continue
@@ -800,7 +889,7 @@ def kmerseek_to_rocx(
         for level_name, q_col, t_col in [
             ("FAM", "query_family", "target_family"),
             ("SFAM", "query_superfamily", "target_superfamily"),
-            ("FOLD", "query_fold", "target_fold")
+            ("FOLD", "query_fold", "target_fold"),
         ]:
             same_vals = (qdf[q_col] == qdf[t_col]).to_list()
             n_same = sum(same_vals)
@@ -830,8 +919,7 @@ def kmerseek_to_rocx(
 
 
 def plot_sensitivity_from_rocx(
-    rocx_data: pl.DataFrame,
-    level_col: str = 'SFAM'
+    rocx_data: pl.DataFrame, level_col: str = "SFAM"
 ) -> Tuple[np.ndarray, list]:
     """
     Extract sensitivity curve data from .rocx format DataFrame.
@@ -855,9 +943,7 @@ def plot_sensitivity_from_rocx(
 
 
 def compute_sensitivity_at_threshold(
-    rocx_df: pl.DataFrame,
-    threshold_df: pl.DataFrame,
-    scop_level: str = 'SFAM'
+    rocx_df: pl.DataFrame, threshold_df: pl.DataFrame, scop_level: str = "SFAM"
 ) -> Tuple[float, int]:
     """
     Compute sensitivity AUC for queries in a specific SCOPE threshold dataset.
@@ -881,10 +967,10 @@ def compute_sensitivity_at_threshold(
         - n_queries: Number of queries in this threshold
     """
     # Get set of query IDs in this threshold dataset
-    threshold_sids = set(threshold_df['sid'].to_list())
+    threshold_sids = set(threshold_df["sid"].to_list())
 
     # Filter rocx to only queries in this threshold
-    filtered_rocx = rocx_df.filter(pl.col('NAME').is_in(threshold_sids))
+    filtered_rocx = rocx_df.filter(pl.col("NAME").is_in(threshold_sids))
 
     if len(filtered_rocx) == 0:
         return 0.0, 0
@@ -905,6 +991,7 @@ def compute_sensitivity_at_threshold(
 # ---------------------------------------------------------------------------
 # Eval file loading and ROCX conversion (deduplicated from notebook 065)
 # ---------------------------------------------------------------------------
+
 
 def load_eval(
     k: int,
@@ -934,22 +1021,22 @@ def load_eval(
     """
     bench_dir = Path(bench_dir)
     for suffix in [
-        f'scope_eval.hp.k{k}.parquet',
-        f'scope_eval.hp.k{k}.tsv.gz',
-        f'scope_eval.hp.k{k}.tsv',
+        f"scope_eval.hp.k{k}.parquet",
+        f"scope_eval.hp.k{k}.tsv.gz",
+        f"scope_eval.hp.k{k}.tsv",
     ]:
         path = bench_dir / suffix
         if not path.exists():
             continue
-        if suffix.endswith('.parquet'):
+        if suffix.endswith(".parquet"):
             return pl.read_parquet(path, columns=columns)
         else:
-            print(f'  (parquet not found, reading {suffix} for k={k})')
-            df = pl.read_csv(path, separator='\t')
+            print(f"  (parquet not found, reading {suffix} for k={k})")
+            df = pl.read_csv(path, separator="\t")
             if columns is not None:
                 df = df.select([c for c in columns if c in df.columns])
             return df
-    raise FileNotFoundError(f'No scope_eval file found for k={k} in {bench_dir}')
+    raise FileNotFoundError(f"No scope_eval file found for k={k} in {bench_dir}")
 
 
 def add_composite_scores_scope(df: pl.DataFrame) -> pl.DataFrame:
@@ -972,22 +1059,26 @@ def add_composite_scores_scope(df: pl.DataFrame) -> pl.DataFrame:
     pl.DataFrame
         Input DataFrame with composite columns appended.
     """
-    bh_clipped = pl.col('bh').clip(lower_bound=1e-300, upper_bound=1.0)
-    neg_log10_bh = (-bh_clipped.log(base=10)).alias('neg_log10_bh')
+    bh_clipped = pl.col("bh").clip(lower_bound=1e-300, upper_bound=1.0)
+    neg_log10_bh = (-bh_clipped.log(base=10)).alias("neg_log10_bh")
 
-    return df.with_columns([
-        neg_log10_bh,
-        ((-bh_clipped.log(base=10)) * pl.col('containment')).alias('neg_log10_bh_x_cont'),
-        (pl.col('enrichment') * pl.col('containment')).alias('enr_x_cont'),
-        (pl.col('query_tfidf') * pl.col('containment')).alias('tfidf_x_cont'),
-    ])
+    return df.with_columns(
+        [
+            neg_log10_bh,
+            ((-bh_clipped.log(base=10)) * pl.col("containment")).alias(
+                "neg_log10_bh_x_cont"
+            ),
+            (pl.col("enrichment") * pl.col("containment")).alias("enr_x_cont"),
+            (pl.col("query_tfidf") * pl.col("containment")).alias("tfidf_x_cont"),
+        ]
+    )
 
 
 def recompute_bonferroni(
     df: pl.DataFrame,
     n_total: int = N_SCOPE40_PAIRS,
-    pvalue_col: str = 'poisson_pvalue',
-    out_col: str = 'bonferroni_correct',
+    pvalue_col: str = "poisson_pvalue",
+    out_col: str = "bonferroni_correct",
 ) -> pl.DataFrame:
     """
     Add a correctly-computed Bonferroni column using all possible pairs.
@@ -1021,7 +1112,7 @@ def recompute_bonferroni(
 
 def eval_tsv_to_rocx(
     df: pl.DataFrame,
-    score_col: str = 'bh',
+    score_col: str = "bh",
     ascending: bool = True,
     exclude_gray_zone: bool = True,
 ) -> pl.DataFrame:
@@ -1069,19 +1160,26 @@ def eval_tsv_to_rocx(
         NAME, SCOP, FAM, SFAM, FOLD, FP, FAMCNT, SFAMCNT, FOLDCNT.
     """
     _ROCX_SCHEMA = {
-        'NAME': pl.Utf8, 'SCOP': pl.Utf8,
-        'CLASS': pl.Float64, 'FAM': pl.Float64, 'SFAM': pl.Float64, 'FOLD': pl.Float64,
-        'FP': pl.Int32,
-        'CLASSCNT': pl.Int32, 'FAMCNT': pl.Int32, 'SFAMCNT': pl.Int32, 'FOLDCNT': pl.Int32,
+        "NAME": pl.Utf8,
+        "SCOP": pl.Utf8,
+        "CLASS": pl.Float64,
+        "FAM": pl.Float64,
+        "SFAM": pl.Float64,
+        "FOLD": pl.Float64,
+        "FP": pl.Int32,
+        "CLASSCNT": pl.Int32,
+        "FAMCNT": pl.Int32,
+        "SFAMCNT": pl.Int32,
+        "FOLDCNT": pl.Int32,
     }
 
-    df = df.filter(pl.col('query_domain') != pl.col('target_domain'))
+    df = df.filter(pl.col("query_domain") != pl.col("target_domain"))
     if len(df) == 0:
         return pl.DataFrame(schema=_ROCX_SCHEMA)
 
     # Sort globally; group_by with maintain_order preserves per-group sort order.
     df_sorted = df.sort(
-        ['query_domain', score_col],
+        ["query_domain", score_col],
         descending=[False, not ascending],
         nulls_last=True,
     )
@@ -1105,68 +1203,99 @@ def eval_tsv_to_rocx(
     #   TP at SFAM: same_sfam     (fp boundary = NOT same_sfam)
     #   TP at FOLD: same_fold     (fp boundary = NOT same_fold)
 
-    _has_class = 'same_class' in df.columns
+    _has_class = "same_class" in df.columns
 
     if exclude_gray_zone:
         # Exclusive-range TP columns; FP boundary = NOT same_fold for all levels.
         # Sensitivity = count(exclusive TPs before first cross-fold FP) / count(exclusive TPs)
-        df_sorted = df_sorted.with_columns([
-            (pl.col('same_superfamily') & ~pl.col('same_family')).alias('_tp_sfam'),
-            (pl.col('same_fold')        & ~pl.col('same_superfamily')).alias('_tp_fold'),
-        ])
-        _tp_col = {'fam': 'same_family', 'sfam': '_tp_sfam', 'fold': '_tp_fold'}
-        _fp_col = {'fam': 'same_fold',   'sfam': 'same_fold', 'fold': 'same_fold'}
+        df_sorted = df_sorted.with_columns(
+            [
+                (pl.col("same_superfamily") & ~pl.col("same_family")).alias("_tp_sfam"),
+                (pl.col("same_fold") & ~pl.col("same_superfamily")).alias("_tp_fold"),
+            ]
+        )
+        _tp_col = {"fam": "same_family", "sfam": "_tp_sfam", "fold": "_tp_fold"}
+        _fp_col = {"fam": "same_fold", "sfam": "same_fold", "fold": "same_fold"}
     else:
-        _tp_col = {'fam': 'same_family', 'sfam': 'same_superfamily', 'fold': 'same_fold'}
-        _fp_col = {'fam': 'same_family', 'sfam': 'same_superfamily', 'fold': 'same_fold'}
+        _tp_col = {
+            "fam": "same_family",
+            "sfam": "same_superfamily",
+            "fold": "same_fold",
+        }
+        _fp_col = {
+            "fam": "same_family",
+            "sfam": "same_superfamily",
+            "fold": "same_fold",
+        }
 
     def _sens_expr(tp_col: str, fp_col: str, abbr: str):
-        n      = pl.col(tp_col).sum().cast(pl.Int32).alias(f'n_{abbr}')
-        fp_any = pl.col(fp_col).not_().any().alias(f'hasfp_{abbr}')
+        n = pl.col(tp_col).sum().cast(pl.Int32).alias(f"n_{abbr}")
+        fp_any = pl.col(fp_col).not_().any().alias(f"hasfp_{abbr}")
         # Count TPs that appear strictly before the first FP.
         # (~fp_col).cum_sum() == 0 is True for every hit that precedes any FP.
         before_fp = pl.col(fp_col).not_().cum_sum() == 0
         tp_bfp = (
-            (pl.col(tp_col) & before_fp).sum().cast(pl.Int32).alias(f'tp_bfp_{abbr}')
+            (pl.col(tp_col) & before_fp).sum().cast(pl.Int32).alias(f"tp_bfp_{abbr}")
         )
         return [n, fp_any, tp_bfp]
 
     agg_exprs = (
-        [pl.col('q_scop_id').first().alias('SCOP'),
-         pl.col('same_family').first().alias('_first_is_tp')]
-        + (_sens_expr('same_class', 'same_class', 'cls') if _has_class else [])
-        + _sens_expr(_tp_col['fam'],  _fp_col['fam'],  'fam')
-        + _sens_expr(_tp_col['sfam'], _fp_col['sfam'], 'sfam')
-        + _sens_expr(_tp_col['fold'], _fp_col['fold'], 'fold')
+        [
+            pl.col("q_scop_id").first().alias("SCOP"),
+            pl.col("same_family").first().alias("_first_is_tp"),
+        ]
+        + (_sens_expr("same_class", "same_class", "cls") if _has_class else [])
+        + _sens_expr(_tp_col["fam"], _fp_col["fam"], "fam")
+        + _sens_expr(_tp_col["sfam"], _fp_col["sfam"], "sfam")
+        + _sens_expr(_tp_col["fold"], _fp_col["fold"], "fold")
     )
 
-    stats = df_sorted.group_by('query_domain', maintain_order=True).agg(agg_exprs)
+    stats = df_sorted.group_by("query_domain", maintain_order=True).agg(agg_exprs)
 
     def _build_sens(abbr: str) -> pl.Expr:
-        n      = pl.col(f'n_{abbr}')
-        has    = pl.col(f'hasfp_{abbr}')
-        tp_bfp = pl.col(f'tp_bfp_{abbr}').cast(pl.Float64)
+        n = pl.col(f"n_{abbr}")
+        has = pl.col(f"hasfp_{abbr}")
+        tp_bfp = pl.col(f"tp_bfp_{abbr}").cast(pl.Float64)
         return (
-            pl.when(n == 0).then(pl.lit(0.0))
-              .when(~has).then(pl.lit(1.0))
-              .when(tp_bfp == 0).then(pl.lit(0.0))
-              .otherwise((tp_bfp / n.cast(pl.Float64)).clip(0.0, 1.0))
+            pl.when(n == 0)
+            .then(pl.lit(0.0))
+            .when(~has)
+            .then(pl.lit(1.0))
+            .when(tp_bfp == 0)
+            .then(pl.lit(0.0))
+            .otherwise((tp_bfp / n.cast(pl.Float64)).clip(0.0, 1.0))
         )
 
     result = (
         stats
         # Only keep queries that have at least one TP at the family level
-        .filter(pl.col('n_fam') > 0)
-        .with_columns([
-            (_build_sens('cls').alias('CLASS') if _has_class else pl.lit(0.0).alias('CLASS')),
-            _build_sens('fam').alias('FAM'),
-            _build_sens('sfam').alias('SFAM'),
-            _build_sens('fold').alias('FOLD'),
-            pl.when(pl.col('_first_is_tp')).then(0).otherwise(1).alias('FP'),
-            (pl.col('n_cls').cast(pl.Int32).alias('CLASSCNT') if _has_class else pl.lit(0).cast(pl.Int32).alias('CLASSCNT')),
-        ])
-        .rename({'query_domain': 'NAME', 'n_fam': 'FAMCNT',
-                 'n_sfam': 'SFAMCNT', 'n_fold': 'FOLDCNT'})
+        .filter(pl.col("n_fam") > 0)
+        .with_columns(
+            [
+                (
+                    _build_sens("cls").alias("CLASS")
+                    if _has_class
+                    else pl.lit(0.0).alias("CLASS")
+                ),
+                _build_sens("fam").alias("FAM"),
+                _build_sens("sfam").alias("SFAM"),
+                _build_sens("fold").alias("FOLD"),
+                pl.when(pl.col("_first_is_tp")).then(0).otherwise(1).alias("FP"),
+                (
+                    pl.col("n_cls").cast(pl.Int32).alias("CLASSCNT")
+                    if _has_class
+                    else pl.lit(0).cast(pl.Int32).alias("CLASSCNT")
+                ),
+            ]
+        )
+        .rename(
+            {
+                "query_domain": "NAME",
+                "n_fam": "FAMCNT",
+                "n_sfam": "SFAMCNT",
+                "n_fold": "FOLDCNT",
+            }
+        )
         .select(list(_ROCX_SCHEMA.keys()))
     )
 
@@ -1193,8 +1322,8 @@ def rocx_restrict(rocx_df: pl.DataFrame, ref_queries: set) -> pl.DataFrame:
     pl.DataFrame
         ROCX DataFrame covering exactly ``ref_queries``.
     """
-    present = rocx_df.filter(pl.col('NAME').is_in(ref_queries))
-    missing_ids = sorted(ref_queries - set(present['NAME'].to_list()))
+    present = rocx_df.filter(pl.col("NAME").is_in(ref_queries))
+    missing_ids = sorted(ref_queries - set(present["NAME"].to_list()))
     if not missing_ids:
         return present
 
@@ -1206,20 +1335,34 @@ def rocx_restrict(rocx_df: pl.DataFrame, ref_queries: set) -> pl.DataFrame:
     # eval_tsv_to_rocx happens to emit.
     s = present.schema
     zero_col_defaults = {
-        'NAME': None, 'SCOP': '', 'FP': 1,
-        'CLASS': 0.0, 'FAM': 0.0, 'SFAM': 0.0, 'FOLD': 0.0,
-        'CLASSCNT': 0, 'FAMCNT': 0, 'SFAMCNT': 0, 'FOLDCNT': 0,
+        "NAME": None,
+        "SCOP": "",
+        "FP": 1,
+        "CLASS": 0.0,
+        "FAM": 0.0,
+        "SFAM": 0.0,
+        "FOLD": 0.0,
+        "CLASSCNT": 0,
+        "FAMCNT": 0,
+        "SFAMCNT": 0,
+        "FOLDCNT": 0,
     }
-    zero_rows = pl.DataFrame([
-        pl.Series(col, missing_ids if col == 'NAME' else [zero_col_defaults[col]] * n, dtype=dtype)
-        for col, dtype in s.items()
-    ])
+    zero_rows = pl.DataFrame(
+        [
+            pl.Series(
+                col,
+                missing_ids if col == "NAME" else [zero_col_defaults[col]] * n,
+                dtype=dtype,
+            )
+            for col, dtype in s.items()
+        ]
+    )
     return pl.concat([present, zero_rows.select(present.columns)])
 
 
 def sensitivity_stats(
     rocx_df: pl.DataFrame,
-    level_col: str = 'SFAM',
+    level_col: str = "SFAM",
 ) -> Tuple[np.ndarray, list, float]:
     """
     Compute sensitivity curve and AUC from a ROCX DataFrame.
@@ -1241,12 +1384,11 @@ def sensitivity_stats(
     return frac, sens, auc
 
 
-
 def precision_recall_from_eval(
     eval_df: pl.DataFrame,
     score_col: str,
     ascending: bool,
-    level_col: str = 'same_superfamily',
+    level_col: str = "same_superfamily",
     n_points: int = 100,
     exclude_gray_zone: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray, float]:
@@ -1283,56 +1425,60 @@ def precision_recall_from_eval(
     -------
     recall_grid, mean_precision, map_score
     """
-    df = eval_df.filter(pl.col('query_domain') != pl.col('target_domain'))
+    df = eval_df.filter(pl.col("query_domain") != pl.col("target_domain"))
 
-    if exclude_gray_zone and level_col in ('same_family', 'same_superfamily', 'same_fold'):
+    if exclude_gray_zone and level_col in (
+        "same_family",
+        "same_superfamily",
+        "same_fold",
+    ):
         # Build exclusive TP column and filter to TP | FP (drop gray zone).
         #   FAM:  TP = same_family,                keep = same_fam | ~same_fold
         #   SFAM: TP = same_sfam & ~same_fam,      keep = (same_sfam & ~same_fam) | ~same_fold
         #   FOLD: TP = same_fold & ~same_sfam,      keep = ~same_sfam  (equivalent)
-        if level_col == 'same_family':
-            tp_expr   = pl.col('same_family').cast(pl.Boolean)
-            keep_expr = pl.col('same_family').cast(pl.Boolean) | ~pl.col('same_fold').cast(pl.Boolean)
-        elif level_col == 'same_superfamily':
-            tp_expr   = pl.col('same_superfamily').cast(pl.Boolean) & ~pl.col('same_family').cast(pl.Boolean)
-            keep_expr = tp_expr | ~pl.col('same_fold').cast(pl.Boolean)
+        if level_col == "same_family":
+            tp_expr = pl.col("same_family").cast(pl.Boolean)
+            keep_expr = pl.col("same_family").cast(pl.Boolean) | ~pl.col(
+                "same_fold"
+            ).cast(pl.Boolean)
+        elif level_col == "same_superfamily":
+            tp_expr = pl.col("same_superfamily").cast(pl.Boolean) & ~pl.col(
+                "same_family"
+            ).cast(pl.Boolean)
+            keep_expr = tp_expr | ~pl.col("same_fold").cast(pl.Boolean)
         else:  # same_fold
-            tp_expr   = pl.col('same_fold').cast(pl.Boolean) & ~pl.col('same_superfamily').cast(pl.Boolean)
-            keep_expr = ~pl.col('same_superfamily').cast(pl.Boolean)
+            tp_expr = pl.col("same_fold").cast(pl.Boolean) & ~pl.col(
+                "same_superfamily"
+            ).cast(pl.Boolean)
+            keep_expr = ~pl.col("same_superfamily").cast(pl.Boolean)
 
-        df = (
-            df
-            .with_columns(tp_expr.alias('_tp'))
-            .filter(keep_expr)
-        )
-        hits_col = '_tp'
+        df = df.with_columns(tp_expr.alias("_tp")).filter(keep_expr)
+        hits_col = "_tp"
     else:
         hits_col = level_col
 
     df_sorted = df.sort(
-        ['query_domain', score_col],
+        ["query_domain", score_col],
         descending=[False, not ascending],
         nulls_last=True,
     )
 
-    grouped = (
-        df_sorted
-        .group_by('query_domain', maintain_order=True)
-        .agg(pl.col(hits_col).cast(pl.Boolean).alias('hits'))
+    grouped = df_sorted.group_by("query_domain", maintain_order=True).agg(
+        pl.col(hits_col).cast(pl.Boolean).alias("hits")
     )
 
     recall_grid = np.linspace(0, 1, n_points)
     per_query_prec: list[np.ndarray] = []
 
     for row in grouped.iter_rows(named=True):
-        hits = np.asarray(row['hits'], dtype=np.float64)
+        hits = np.asarray(row["hits"], dtype=np.float64)
         total_tp = hits.sum()
         if total_tp == 0:
             continue
-        ranks   = np.arange(1, len(hits) + 1, dtype=np.float64)
-        cum_tp  = np.cumsum(hits)
-        prec    = cum_tp / ranks
-        rec     = cum_tp / total_tp
+        ranks = np.arange(1, len(hits) + 1, dtype=np.float64)
+        cum_tp = np.cumsum(hits)
+        prec = cum_tp / ranks
+        rec = cum_tp / total_tp
         prec_interp = np.interp(recall_grid, rec, prec, left=prec[0], right=0.0)
         per_query_prec.append(prec_interp)
 
@@ -1341,13 +1487,14 @@ def precision_recall_from_eval(
 
     mean_prec = np.mean(per_query_prec, axis=0)
     from scipy.integrate import trapezoid as _trapz
+
     map_score = float(_trapz(mean_prec, recall_grid))
     return recall_grid, mean_prec, map_score
 
 
 def pr_operating_point_from_rocx(
     rocx_df: pl.DataFrame,
-    level_col: str = 'SFAM',
+    level_col: str = "SFAM",
 ) -> Tuple[float, float]:
     """
     Compute a single mean (recall, precision) operating point from a .rocx DataFrame.
@@ -1370,7 +1517,7 @@ def pr_operating_point_from_rocx(
     -------
     (mean_recall, mean_precision)
     """
-    cnt_col = f'{level_col}CNT'
+    cnt_col = f"{level_col}CNT"
     rows = rocx_df.filter(pl.col(cnt_col) > 1).select([level_col, cnt_col]).iter_rows()
     recalls, precisions = [], []
     for sensitivity, cnt in rows:
@@ -1399,8 +1546,8 @@ def load_baselines(
         foldseek_rocx, tea_rocx
     """
     tea_dir = Path(tea_dir)
-    foldseek = load_rocx_file(tea_dir / 'foldseek.rocx')
-    tea_all  = pl.read_csv(tea_dir / 'tea_all.rocx', separator=',')
+    foldseek = load_rocx_file(tea_dir / "foldseek.rocx")
+    tea_all = pl.read_csv(tea_dir / "tea_all.rocx", separator=",")
     return foldseek, tea_all
 
 
@@ -1408,7 +1555,7 @@ def compute_all_metric_aucs(
     eval_df: pl.DataFrame,
     ref_queries: set,
     score_cols: Optional[List[Tuple[str, bool, str]]] = None,
-    level_col: str = 'SFAM',
+    level_col: str = "SFAM",
 ) -> List[dict]:
     """
     Compute sensitivity AUC for every scoring metric in ``score_cols``.
@@ -1436,12 +1583,17 @@ def compute_all_metric_aucs(
         score_cols = SCOPE_SCORE_COLS
 
     # Add bonferroni_correct if requested and not already present
-    if 'bonferroni_correct' not in eval_df.columns:
-        if any(col == 'bonferroni_correct' for col, _, _ in score_cols):
+    if "bonferroni_correct" not in eval_df.columns:
+        if any(col == "bonferroni_correct" for col, _, _ in score_cols):
             eval_df = recompute_bonferroni(eval_df)
 
     # Add composite columns if not present
-    composite_cols = {'neg_log10_bh', 'neg_log10_bh_x_cont', 'enr_x_cont', 'tfidf_x_cont'}
+    composite_cols = {
+        "neg_log10_bh",
+        "neg_log10_bh_x_cont",
+        "enr_x_cont",
+        "tfidf_x_cont",
+    }
     if composite_cols & set(score_cols[c][0] for c in range(len(score_cols))):
         eval_df = add_composite_scores_scope(eval_df)
 
@@ -1452,12 +1604,14 @@ def compute_all_metric_aucs(
         rocx = eval_tsv_to_rocx(eval_df, score_col=col, ascending=ascending)
         rocx_r = rocx_restrict(rocx, ref_queries)
         _, _, auc = sensitivity_stats(rocx_r, level_col)
-        results.append({
-            'score_col': col,
-            'label':     label,
-            'auc':       round(auc, 5),
-            'n_queries': len(rocx_r),
-        })
+        results.append(
+            {
+                "score_col": col,
+                "label": label,
+                "auc": round(auc, 5),
+                "n_queries": len(rocx_r),
+            }
+        )
     return results
 
 
@@ -1467,13 +1621,35 @@ def compute_all_metric_aucs(
 
 #: BLOSUM62 positive-score residue pairs (conservative substitutions).
 _BLOSUM62_POS: frozenset = frozenset(
-    {frozenset(p) for p in [
-        ('A','S'),('A','T'),('A','G'),('D','E'),('D','N'),('E','Q'),('E','K'),
-        ('N','S'),('N','T'),('Q','K'),('R','K'),('I','L'),('I','V'),('I','M'),
-        ('L','V'),('L','M'),('F','Y'),('F','W'),('Y','W'),('H','N'),('H','Q'),
-        ('S','T'),('V','M'),
-    ]}
-    | {frozenset((aa, aa)) for aa in 'ACDEFGHIKLMNPQRSTVWY'}
+    {
+        frozenset(p)
+        for p in [
+            ("A", "S"),
+            ("A", "T"),
+            ("A", "G"),
+            ("D", "E"),
+            ("D", "N"),
+            ("E", "Q"),
+            ("E", "K"),
+            ("N", "S"),
+            ("N", "T"),
+            ("Q", "K"),
+            ("R", "K"),
+            ("I", "L"),
+            ("I", "V"),
+            ("I", "M"),
+            ("L", "V"),
+            ("L", "M"),
+            ("F", "Y"),
+            ("F", "W"),
+            ("Y", "W"),
+            ("H", "N"),
+            ("H", "Q"),
+            ("S", "T"),
+            ("V", "M"),
+        ]
+    }
+    | {frozenset((aa, aa)) for aa in "ACDEFGHIKLMNPQRSTVWY"}
 )
 
 
@@ -1482,9 +1658,10 @@ def pct_id_sim(q_seq: str, t_seq: str) -> tuple:
     n = min(len(q_seq), len(t_seq))
     if n == 0:
         return 0.0, 0.0
-    n_id  = sum(q == t for q, t in zip(q_seq, t_seq))
-    n_sim = sum(frozenset((q.upper(), t.upper())) in _BLOSUM62_POS
-                for q, t in zip(q_seq, t_seq))
+    n_id = sum(q == t for q, t in zip(q_seq, t_seq))
+    n_sim = sum(
+        frozenset((q.upper(), t.upper())) in _BLOSUM62_POS for q, t in zip(q_seq, t_seq)
+    )
     return 100.0 * n_id / n, 100.0 * n_sim / n
 
 
@@ -1494,7 +1671,7 @@ def print_kmer_alignments_by_class(
     dom_map: dict,
     scop_map: dict,
     overlap_disorder: Optional[dict] = None,
-    sort_by: str = 'poisson_pvalue',
+    sort_by: str = "poisson_pvalue",
     best_hit_only: bool = True,
     width: int = 80,
     class_descriptions: Optional[dict] = None,
@@ -1529,97 +1706,107 @@ def print_kmer_alignments_by_class(
     if class_descriptions is None:
         class_descriptions = SCOPE_CLASS_DESCRIPTIONS
 
-    hits = eval_df.filter(pl.col('query_domain').is_in(query_names))
-    if 'query_subseq' in hits.columns:
-        hits = hits.filter(pl.col('query_subseq').is_not_null())
+    hits = eval_df.filter(pl.col("query_domain").is_in(query_names))
+    if "query_subseq" in hits.columns:
+        hits = hits.filter(pl.col("query_subseq").is_not_null())
 
     if best_hit_only:
-        hits = (hits.sort(sort_by, descending=(sort_by == 'jaccard'))
-                    .group_by('query_domain')
-                    .agg([pl.first(c) for c in hits.columns if c != 'query_domain']))
+        hits = (
+            hits.sort(sort_by, descending=(sort_by == "jaccard"))
+            .group_by("query_domain")
+            .agg([pl.first(c) for c in hits.columns if c != "query_domain"])
+        )
 
     # Attach SCOPe class
-    scop_col = 'q_scop_id' if 'q_scop_id' in hits.columns else None
+    scop_col = "q_scop_id" if "q_scop_id" in hits.columns else None
     rows = hits.with_columns(
-        pl.col('query_domain')
-          .map_elements(
-              lambda d: (scop_map.get(d, '') if scop_col is None
-                         else None),
-              return_dtype=pl.Utf8)
-          .alias('_qscop_fallback')
+        pl.col("query_domain")
+        .map_elements(
+            lambda d: (scop_map.get(d, "") if scop_col is None else None),
+            return_dtype=pl.Utf8,
+        )
+        .alias("_qscop_fallback")
     )
     if scop_col:
         rows = rows.with_columns(
-            pl.when(pl.col(scop_col).is_not_null() & (pl.col(scop_col) != ''))
-              .then(pl.col(scop_col))
-              .otherwise(pl.col('_qscop_fallback'))
-              .alias('query_scop')
+            pl.when(pl.col(scop_col).is_not_null() & (pl.col(scop_col) != ""))
+            .then(pl.col(scop_col))
+            .otherwise(pl.col("_qscop_fallback"))
+            .alias("query_scop")
         )
     else:
-        rows = rows.with_columns(pl.col('_qscop_fallback').alias('query_scop'))
-    rows = rows.drop('_qscop_fallback')
+        rows = rows.with_columns(pl.col("_qscop_fallback").alias("query_scop"))
+    rows = rows.drop("_qscop_fallback")
     rows = rows.with_columns(
-        pl.col('query_scop').str.slice(0, 1).alias('scop_class')
-    ).sort(['scop_class', 'query_domain'])
+        pl.col("query_scop").str.slice(0, 1).alias("scop_class")
+    ).sort(["scop_class", "query_domain"])
 
-    for cls in sorted(rows['scop_class'].unique().to_list()):
-        cls_desc  = class_descriptions.get(cls, cls)
-        cls_rows  = rows.filter(pl.col('scop_class') == cls)
+    for cls in sorted(rows["scop_class"].unique().to_list()):
+        cls_desc = class_descriptions.get(cls, cls)
+        cls_rows = rows.filter(pl.col("scop_class") == cls)
         print()
-        print('=' * 100)
-        print(f'  SCOPe CLASS {cls.upper()} — {cls_desc}  ({cls_rows.height} queries)')
-        print('=' * 100)
+        print("=" * 100)
+        print(f"  SCOPe CLASS {cls.upper()} — {cls_desc}  ({cls_rows.height} queries)")
+        print("=" * 100)
 
         for row in cls_rows.iter_rows(named=True):
-            qid    = row['query_domain']
-            tid    = row['target_domain']
-            q_scop = row.get('query_scop', scop_map.get(qid, '?'))
-            t_scop = scop_map.get(tid, '?')
-            q_prot = dom_map.get(qid, '?')
-            t_prot = dom_map.get(tid, '?')
+            qid = row["query_domain"]
+            tid = row["target_domain"]
+            q_scop = row.get("query_scop", scop_map.get(qid, "?"))
+            t_scop = scop_map.get(tid, "?")
+            q_prot = dom_map.get(qid, "?")
+            t_prot = dom_map.get(tid, "?")
 
-            print(f'  QUERY:  {qid}  SCOP={q_scop}  {q_prot}')
-            print(f'  TARGET: {tid}  SCOP={t_scop}  {t_prot}')
+            print(f"  QUERY:  {qid}  SCOP={q_scop}  {q_prot}")
+            print(f"  TARGET: {tid}  SCOP={t_scop}  {t_prot}")
 
-            q_seq = row.get('query_subseq')  or ''
-            t_seq = row.get('target_subseq') or ''
-            hp    = row.get('moltype_seq')   or ''
+            q_seq = row.get("query_subseq") or ""
+            t_seq = row.get("target_subseq") or ""
+            hp = row.get("moltype_seq") or ""
             pid, psim = pct_id_sim(q_seq, t_seq)
 
             ov_val = overlap_disorder.get(qid) if overlap_disorder else None
             if ov_val is None:
-                ov_str = ''
+                ov_str = ""
             elif np.isscalar(ov_val):
-                ov_str = f'  disorder={ov_val:.2f}'
+                ov_str = f"  disorder={ov_val:.2f}"
             elif len(ov_val) > 0:
-                ov_str = f'  disorder={np.mean(ov_val):.2f} (max={np.max(ov_val):.2f})'
+                ov_str = f"  disorder={np.mean(ov_val):.2f} (max={np.max(ov_val):.2f})"
             else:
-                ov_str = ''
+                ov_str = ""
 
-            pval = row.get('poisson_pvalue', float('nan'))
-            jac  = row.get('jaccard',        float('nan'))
-            cont = row.get('containment',    float('nan'))
-            rlen = row.get('region_length',  len(q_seq))
-            print(f'  pval={pval:.2e}  jaccard={jac:.4f}  containment={cont:.4f}'
-                  f'  region_len={rlen}  %id={pid:.1f}%  %sim={psim:.1f}%{ov_str}')
+            pval = row.get("poisson_pvalue", float("nan"))
+            jac = row.get("jaccard", float("nan"))
+            cont = row.get("containment", float("nan"))
+            rlen = row.get("region_length", len(q_seq))
+            print(
+                f"  pval={pval:.2e}  jaccard={jac:.4f}  containment={cont:.4f}"
+                f"  region_len={rlen}  %id={pid:.1f}%  %sim={psim:.1f}%{ov_str}"
+            )
             print()
 
-            q_start = row.get('query_start',  0)
-            t_start = row.get('target_start', 0)
+            q_start = row.get("query_start", 0)
+            t_start = row.get("target_start", 0)
             for start in range(0, max(len(q_seq), len(t_seq), len(hp)), width):
-                chunk_q = q_seq[start:start + width]
-                chunk_t = t_seq[start:start + width]
-                match   = ''.join(
-                    '|' if a == b
-                    else ':' if frozenset((a.upper(), b.upper())) in _BLOSUM62_POS
-                    else '.'
+                chunk_q = q_seq[start : start + width]
+                chunk_t = t_seq[start : start + width]
+                match = "".join(
+                    (
+                        "|"
+                        if a == b
+                        else (
+                            ":"
+                            if frozenset((a.upper(), b.upper())) in _BLOSUM62_POS
+                            else "."
+                        )
+                    )
                     for a, b in zip(chunk_q, chunk_t)
                 )
-                spacer = ' ' * len(f'    Q[{q_start + start:>4}] ')
-                print(f'    Q[{q_start + start:>4}] {chunk_q}')
-                print(f'{spacer}{match}')
-                print(f'    T[{t_start + start:>4}] {chunk_t}')
-                print(f'    HP      {hp[start:start + width]}')
+                spacer = " " * len(f"    Q[{q_start + start:>4}] ")
+                print(f"    Q[{q_start + start:>4}] {chunk_q}")
+                print(f"{spacer}{match}")
+                print(f"    T[{t_start + start:>4}] {chunk_t}")
+                print(f"    HP      {hp[start:start + width]}")
                 print()
 
-            print('  ' + '-' * 98)
+            print("  " + "-" * 98)
