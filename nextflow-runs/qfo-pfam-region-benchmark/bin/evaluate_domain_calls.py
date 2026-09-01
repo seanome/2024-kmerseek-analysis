@@ -1396,12 +1396,97 @@ def restrict_tp_to_cut(truth: pl.DataFrame, calls: pl.DataFrame) -> pl.DataFrame
     return out.with_columns(exprs).drop("in_cut")
 
 
-def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
+def target_map_coverage(map_lf: pl.LazyFrame, target_families: pl.DataFrame,
+                        map_path, job: dict) -> dict:
+    """How much target-side annotation this arm actually had to transfer from.
+
+    Every sequence-search arm scores by transferring a family label off the target
+    interval it aligned to, so the size of the transfer table is a hard ceiling on what
+    any of them can produce -- and it is a property of the TARGET ANNOTATION, not of the
+    tool or of evolutionary distance. Nothing in the metrics row recorded it, so a target
+    species with almost no annotation looked exactly like a species no tool could reach.
+
+    That is not hypothetical. On the Swiss-Prot truth set, Ciona intestinalis has 28
+    reviewed entries in UniProtKB/Swiss-Prot against 2_309 - 20_417 for every other target
+    species in the benchmark, so its transfer table is ~1/100th the size and every arm's
+    call count collapsed by 30-130x at 550 Mya. It read as an evolutionary cliff.
+
+    The existing reachability bar cannot catch it: on that truth set `pfam_id` holds a
+    Swiss-Prot FEATURE TYPE from a 15-value vocabulary (DOMAIN, TRANSMEM, ACT_SITE, ...),
+    so 28 proteins still cover almost every type and reachability reads 6_991 / 7_000.
+    These three counts are vocabulary-independent and do catch it.
+    """
+    stats = map_lf.select(
+        pl.len().alias("n"),
+        pl.col("accession").n_unique().alias("n_prot"),
+    ).collect().to_dicts()[0]
+    if stats["n"] == 0:
+        raise SystemExit(
+            f"empty domain map: {map_path} has no rows, so {job['tool']}/"
+            f"{job['variant']} can transfer nothing and would publish a valid-looking "
+            "all-zero result. Rebuild the target annotation before scoring."
+        )
+    return {
+        "n_target_map_instances": int(stats["n"]),
+        "n_target_map_proteins": int(stats["n_prot"]),
+        "n_target_families": int(target_families.height),
+    }
+
+
+def read_shared_inputs(args):
+    """Read the two frames every arm shares, ONCE, and hand back in-memory lazy views.
+
+    Both used to stay as `pl.scan_parquet` handles held across the whole task. A scan is
+    re-executed on every collect, so with A arms and M dedup modes a batched task re-read
+    the answer key and the target domain map A x M times over -- 24 arms x 2 modes = 48
+    passes over the same two files, from inside one task that had already staged them.
+
+    Measured on the 2026-08-31 midi trace, scoreDomainCalls was the largest disk reader in
+    the pipeline: 906.1 GB of read_bytes across 756 tasks, more than folddiscoQuery's
+    409.5 GB and more than every search process put together. Two facts identify the
+    cause. Read volume fits `0.073 GB x arms + 0.114 GB` (r = 0.50), so 820 of the 906 GB
+    scale with the ARM COUNT rather than with the number of tasks. And rchar over the same
+    756 tasks is only 19.5 GB -- the process asked the kernel for 19.5 GB and the block
+    device delivered 906. A 46x gap between the two is not ordinary reading: polars mmaps a
+    parquet scan, and re-collecting a mapped file whose pages the task's own working set
+    keeps evicting re-faults those pages in from disk, where they count in read_bytes and
+    never in rchar.
+
+    Collecting once turns 48 mapped passes into one read, so the amplification cannot
+    happen: what is in memory cannot be evicted and re-faulted from a file.
+
+    Why this rather than the alternatives that were weighed:
+
+      node-local scratch  moves the same 906 GB from the shared filesystem to local NVMe.
+                          Cheaper per byte, but it treats the symptom and still pays a copy
+                          in on every task.
+      collect()/broadcast the files are already staged once per task by Nextflow, by
+                          symlink. Sharing them harder cannot help, because the re-reads
+                          happen INSIDE a task that has one copy already.
+      coarser batching    strictly worse. Reads scale with arms per task, so putting more
+                          arms in a task multiplies the same per-arm re-read.
+
+    The cost is holding both frames resident. That is what scoreMemory in main.nf already
+    sizes for, and the observed peak over the 756 tasks was 30.6 GB against requests of
+    8-99 GB.
+    """
+    truth_lf = pl.scan_parquet(args.truth).collect().lazy()
+    domain_map_lf = (pl.scan_parquet(args.domain_map).collect().lazy()
+                     if args.domain_map else None)
+    return truth_lf, domain_map_lf
+
+
+def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
+              domain_map_lf=None):
     """Score one tool's regions against the already-loaded truth for one species.
 
     truth and truth_lf are passed in rather than read here because they are shared across
     every tool for a given (truth_set, species): a batched task scores ~376 of them, and
     re-reading the answer key that many times was most of the wall clock.
+
+    domain_map_lf is passed in for the same reason and is measured, not assumed. See
+    read_shared_inputs: scanning it here made the domain map the single largest disk
+    reader in the whole pipeline.
     """
     # Folddisco reports the envelope of a discontinuous residue set, not an alignment.
     # Scoring that by interval IoU would measure the envelope reduction rather than the
@@ -1439,10 +1524,18 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
 
     if args.direct_annotation:
         target_families = None
+        target_coverage = {"n_target_map_instances": None,
+                           "n_target_map_proteins": None,
+                           "n_target_families": None}
         calls_lf = regions
     else:
-        map_lf = pl.scan_parquet(args.domain_map)
+        # Never pl.scan_parquet here. Every scan inside this function is paid once per
+        # (arm x dedup mode), and a batched task holds up to 24 arms.
+        map_lf = (domain_map_lf if domain_map_lf is not None
+                  else pl.scan_parquet(args.domain_map))
         target_families = map_lf.select("pfam_id").unique().collect()
+        target_coverage = target_map_coverage(map_lf, target_families,
+                                              args.domain_map, job)
         calls_lf = (
             transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
         )
@@ -1499,6 +1592,11 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
              # Same reason, for the truth side. A cell scored by containment and one scored
              # by IoU are not the same measurement, and the row has to say which it is.
              "point_semantics": args.point_semantics}
+    # Target-side annotation coverage, on every row. See target_map_coverage: without it a
+    # species with almost no target annotation is indistinguishable from a species no tool
+    # could reach, and the reachability bar cannot tell the two apart on a truth set whose
+    # label vocabulary is small.
+    ident.update(target_coverage)
     rows, curves = [], []
 
     for split in ("all", "selection", "heldout"):
@@ -1537,6 +1635,14 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
                 # AND instances, because the floor counts proteins while every rate on the
                 # row is per instance.
                 "n_stratum_proteins": t_sub["accession"].n_unique(),
+                # How many distinct labels the reachability join has to work with. A
+                # reachability ceiling only means something when `pfam_id` is a FAMILY: on
+                # the Swiss-Prot truth set it is one of ~15 feature types, every proteome
+                # has nearly all of them, and reachable / truth is then ~1.0 for every
+                # species by construction -- recall_reachable is plain recall wearing a
+                # reachability label. This column is what lets a reader tell which of the
+                # two a row is.
+                "n_truth_families": t_sub["pfam_id"].n_unique(),
                 # Measured, not a bin midpoint. The reduced-alphabet claim is stated on
                 # feature_length / ksize, and this is the numerator for this cell.
                 # What share of this cell is point features. 1.0 means every number on the
@@ -1696,7 +1802,7 @@ def main():
                              and args.calls_out and args.metrics_out):
         raise SystemExit("--regions requires --tool, --variant, --calls-out and --metrics-out")
 
-    truth_lf = pl.scan_parquet(args.truth)
+    truth_lf, domain_map_lf = read_shared_inputs(args)
     truth = truth_lf.collect()
     covariates = pl.read_parquet(args.covariates) if args.covariates else None
     identity = None
@@ -1767,7 +1873,8 @@ def main():
     for i, job in enumerate(jobs, 1):
         tag = f"{job['tool']}/{job['variant']}" + (" [dedup]" if job["dedup"] else "")
         print(f"[{i}/{len(jobs)}] {tag}", file=sys.stderr)
-        score_one(args, truth, truth_lf, job, instance_axes)
+        score_one(args, truth, truth_lf, job, instance_axes,
+                  domain_map_lf=domain_map_lf)
         # Jobs for one arm are adjacent (one per dedup mode), so an arm's inflated copy is
         # dead as soon as the next job reads a different file.
         if i == len(jobs) or jobs[i]["regions"] != job["regions"]:

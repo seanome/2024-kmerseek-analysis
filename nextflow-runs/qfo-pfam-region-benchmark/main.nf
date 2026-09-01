@@ -352,6 +352,19 @@ params.report_outdirs = null
 // either way, so nothing is quietly built over a zero.
 params.allow_dead_arms = false
 
+// A TARGET species whose annotation table has collapsed against its peers stops the report
+// too, for the same reason and by the same route. Nothing fails when this happens: every
+// task runs, exits 0, and publishes a valid file holding a near-zero result, and the report
+// draws it as an evolutionary cliff. Ciona intestinalis has 28 UniProtKB/Swiss-Prot entries
+// against 2_309-20_417 for every other target species in this benchmark, so on the
+// Swiss-Prot truth set every one of the ten tools lost 30-130x of its calls at 550 Mya.
+// See aggregate_domain_metrics.check_thin_target_annotation.
+//
+// --allow_dead_arms also waives this, because the partial report needs both waived for the
+// same reason. Set this one on its own to publish a report over a species you have already
+// decided is annotation-limited rather than distant.
+params.allow_thin_targets = false
+
 // --- reduced-alphabet information ceiling ---------------------------------
 // The BPE boundary diagnostic: do the token boundaries ProtBERTa_2 learned on a 2-letter
 // alphabet land on Pfam domain boundaries? See bin/hp_bpe_boundary_diagnostic.py.
@@ -608,20 +621,25 @@ def alphabetClasses = { label ->
     m ? (m[0][1] as int) : 20
 }
 
-// Roughly the k-mer count of one full proteome; mouse reports 11_284_322 at protein20 k=4.
-// A combo whose keyspace is at or below this has every key occupied on average, which is
-// the regime that needs the large allocation.
-params.kmerseek_saturation_kmers = 11_300_000
-
-def isSaturated = { label, ksize ->
-    ksize * Math.log10(alphabetClasses(label)) <= Math.log10(params.kmerseek_saturation_kmers as double)
+// How big the k-mer keyspace is, in bits: ksize x log2(alphabet cardinality). This is the
+// one number that predicts kmerseek's memory, and it is what replaced the old
+// `isSaturated` HARD THRESHOLD against a proteome k-mer count. That threshold sorted every
+// combo into a saturated branch (scaled) and an unsaturated one (flat 32 GB), and its own
+// comment already recorded the failure mode: the hungriest tasks in the sweep were the
+// ones sitting just OUTSIDE it. The trace bears that out -- see kmerseekSearchMemory.
+def keyspaceBits = { label, ksize ->
+    ksize * (Math.log(alphabetClasses(label)) / Math.log(2.0d))
 }
 
-// Sized for full QfO proteomes. A mini/smoke run indexes a few hundred sequences and
-// needs nothing like this, so both figures are params -- the `mini` profile lowers them
-// rather than forcing a 128 GB request for a 300-protein test set.
-params.kmerseek_memory         = '32 GB'
-params.kmerseek_memory_hp_lowk = '128 GB'
+// Ceiling on a kmerseek search request, before the retry multiplier. Sized for full QfO
+// proteomes; a mini/smoke run indexes a few hundred sequences and needs nothing like it,
+// so the `mini` profile lowers this and kmerseek_memory_floor together rather than forcing
+// a 128 GB request for a 300-protein test set.
+//
+// 128 GB, not the 32 GB the old flat branch used. The measured worst cases are censored AT
+// 32 and 64 GB (see the note on kmerseekSearchMemory below), so 32 was not a ceiling that
+// anything fit under -- it was the wall those tasks were hitting.
+params.kmerseek_memory_max = '128 GB'
 
 // scoreDomainCalls is ~10_179 tasks on a full run, and a flat 96 GB for all of them is a
 // 5.8 TB standing ask at maxForks 60 -- it queues rather than runs. Size from the actual
@@ -672,26 +690,105 @@ def scoreMemory = { regions, attempt ->
     MemoryUnit.of("${Math.min(Math.min(estMb, capMb) * attempt, ceilMb)} MB")
 }
 
-// Target proteome size, in MB of FASTA, that kmerseek_memory_hp_lowk is sized for.
+// Target proteome size, in MB of FASTA, that the search allocation is sized for.
 // Zebrafish is the largest QfO proteome at 16.7 MB. Ecoli is 1.8 MB.
 params.kmerseek_reference_proteome_mb = 17
-// Nothing drops below this however small the proteome: RocksDB write buffers and the
-// zstd output stream cost the same regardless of how little goes through them.
-params.kmerseek_memory_floor = '8 GB'
+// Nothing drops below this however small the proteome or however large the keyspace.
+// RocksDB write buffers and the zstd output stream cost the same regardless of how little
+// goes through them, and protein20 at k=11-13 still peaked at 7.00 GB.
+params.kmerseek_memory_floor = '10 GB'
 
-// The SATURATED allocation, and only that one, scales with the target proteome. The index
-// holds one posting list per proteome k-mer, so a 1.8 MB proteome cannot build the index a
-// 16.7 MB one does, and sizing on saturation alone asked 128 GB for every ecoli and yeast
-// task in the sweep against measured peaks of 1.0-4.1 GB. ecoli_hp_k20 reserved 128 GB and
-// touched 1.02 GB. Scaling those cuts the sweep's standing reservation by 26% with no task
-// dropping below the headroom it already had.
+// ===========================================================================
+// kmerseek memory as a function of ksize and alphabet cardinality
+// ===========================================================================
 //
-// The UNSATURATED 32 GB branch stays flat, and that is not an oversight. isSaturated is a
-// hard threshold, so the hungriest tasks in the whole sweep are the ones sitting just
-// OUTSIDE it: fly_dayhoff_k10 is unsaturated by the rule and peaked at 28.1 GB, which is
-// 1.14x of its 32 GB. There is no room to scale that branch down -- doing so by proteome
-// size was measured to put fly_dayhoff_k10 and k11 into OOM. Scale it only with new peak
-// data in hand, and raise the base first if you do.
+// Basis: 4_299 COMPLETED kmerseek tasks with a peak_rss, from the 2026-08-25, -26 and -27
+// Sherlock traces. 15 alphabets from 2 to 20 classes, ksize 5-30, nine target proteomes.
+//
+// The single predictor is KEYSPACE BITS, ksize x log2(classes). Memory halves for every
+// 6.8 bits of keyspace: an envelope fitted to the per-bits maximum, gbmr7 excluded, is
+//
+//     peak GB  =  292 * exp(-0.1017 * bits)          (r on the bucket maxima, monotone)
+//
+// which is 47 GB at 18 bits falling to 1.2 GB at 54. In k terms that is one halving per
+// ~7 residues on a 2-letter alphabet and per ~1.6 residues on protein20. Measured maxima
+// against the envelope: 63.9 GB at 18 bits (mmseqs12 k=5), 62.1 at 19 (hp_kyte_doolittle2
+// k=19), 32.0 at 24 (gbmr4 k=12), 11.3 at 32, 3.0 at 44, 2.4 at 54.
+//
+// Why bits and not the old saturation threshold. `isSaturated` compared classes^ksize
+// against a proteome k-mer count and branched hard. Everything on the flat 32 GB side got
+// the same ask whether it needed 2 GB or more than 32, and the trace shows 59 tasks whose
+// peak_rss came within 5% of their request -- every gbmr7 k=9-14 task and every gbmr4
+// k=12-13 task, pinned at exactly 32.00 or 64.00 GB. A peak that equals the request to two
+// decimals across nine different species is a cgroup ceiling, not a coincidence: those
+// tasks were clipped, so their true peaks are unknown and are lower bounds.
+//
+// gbmr7 does not follow the rule and is carried as a named exception rather than smoothed
+// away. Its peaks are censored at every ksize from 9 to 14 and they do NOT scale with the
+// target proteome -- ecoli, a 1.8 MB proteome, also hit 31.8 GB. Nothing in the keyspace
+// model explains that, so it gets a measured floor and a note instead of a fitted number.
+// Re-measure it with a request it cannot reach before trying to model it.
+params.kmerseek_memory_bits_base = 300    // GB at zero bits, before headroom
+params.kmerseek_memory_bits_decay = 0.1017 // per bit; 6.8 bits per halving
+// 2x on top of the envelope. At this headroom NO task in the 4_299-task basis is
+// under-sized; at 1.6x, 15 are. The 5th-percentile ask/peak ratio is 2.1.
+params.kmerseek_memory_headroom = 2.0
+// Share of the search allocation that does NOT scale with the target proteome. The query
+// side is human either way, so a small target does not make the task small: yeast at 3 MB
+// still peaked at 25.7 GB on gbmr4 k=12. Scaling linearly to zero under-sized it.
+params.kmerseek_memory_size_floor_frac = 0.55
+// Alphabets the bits model provably does not fit, with the measured floor each needs.
+// Format: 'label:GB', comma-separated, so it can be overridden from the CLI.
+params.kmerseek_memory_unmodelled = 'gbmr7:64'
+
+// kmerseekIndex is sized SEPARATELY from kmerseekSearch and that is the largest single
+// saving here. Across 1_500 completed index tasks the peak was 7.00 GB and it tracks the
+// target proteome and nothing else -- 0.91 GB at 1.8 MB (ecoli) rising to 7.00 GB at
+// 16.7 MB (zebrafish), with no ksize or alphabet signal at all. The two processes shared
+// one closure, so every index task was asking a search-sized 32-128 GB. Mean request over
+// those 1_500 tasks was 42.6 GB against a 7.00 GB worst case.
+params.kmerseek_index_memory_max = '16 GB'
+
+def kmerseekUnmodelledFloorMb = { label ->
+    def entry = (params.kmerseek_memory_unmodelled as String).tokenize(',')
+        .collect { it.trim() }.find { it && it.tokenize(':')[0] == label }
+    entry ? (entry.tokenize(':')[1] as double) * 1024L as long : 0L
+}
+
+// Index memory: linear in the target proteome, capped, with the shared floor.
+// 2 GB + 0.45 GB per MB of FASTA gives >= 2.2x headroom on every one of the 1_500
+// measured tasks and >= 2.33x at the 5th percentile.
+def kmerseekIndexMemory = { targetBytes, attempt ->
+    long mb     = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
+    long estMb  = (long) ((2.0d + 0.45d * mb) * 1024L)
+    long floorMb = MemoryUnit.of(params.kmerseek_memory_floor).toMega()
+    long capMb  = MemoryUnit.of(params.kmerseek_index_memory_max).toMega()
+    MemoryUnit.of("${Math.max(floorMb, Math.min(capMb, estMb))} MB") * attempt
+}
+
+// Search memory: the keyspace-bits envelope, scaled by target proteome size down to
+// kmerseek_memory_size_floor_frac, raised to any measured floor the model does not fit,
+// and clamped between kmerseek_memory_floor and kmerseek_memory (the ceiling).
+//
+// Effect on the 4_299-task basis: 0 tasks under-sized, total kmerseek reservation down
+// 37% (183_482 -> 115_779 GB-tasks), index down 72% and search down 15%.
+def kmerseekSearchMemory = { label, ksize, targetBytes, attempt ->
+    long mb      = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
+    double frac  = params.kmerseek_memory_size_floor_frac as double
+    double sizeF = frac + (1.0d - frac) *
+                   Math.min(1.0d, mb / (params.kmerseek_reference_proteome_mb as double))
+    double gb    = (params.kmerseek_memory_headroom as double)
+                   * (params.kmerseek_memory_bits_base as double)
+                   * Math.exp(-(params.kmerseek_memory_bits_decay as double)
+                              * keyspaceBits(label, ksize))
+                   * sizeF
+    long estMb   = (long) (gb * 1024L)
+    long floorMb = Math.max(MemoryUnit.of(params.kmerseek_memory_floor).toMega(),
+                            kmerseekUnmodelledFloorMb(label))
+    long capMb   = MemoryUnit.of(params.kmerseek_memory).toMega()
+    MemoryUnit.of("${Math.max(floorMb, Math.min(capMb, estMb))} MB") * attempt
+}
+
 // Wall clock for a batched scoring task, from the TOTAL bytes it will read. One task now
 // scores every arm for a species sequentially, so time is additive where memory is not.
 //
@@ -2718,6 +2815,7 @@ process aggregateMetrics {
     script:
     """
     aggregate_domain_metrics.py ${params.allow_dead_arms ? '--allow-dead-arms' : ''} \\
+        ${params.allow_thin_targets ? '--allow-thin-targets' : ''} \\
         metrics curves \\
         all_domain_metrics.parquet all_domain_metrics.csv all_domain_curves.parquet
     """
