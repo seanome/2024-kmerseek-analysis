@@ -5381,10 +5381,14 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
     peak = done["peak_rss_b"].max()
     # Work this run actually PERFORMED, as opposed to the cold-equivalent totals beside it.
     # Every other figure in this table counts cached and stored tasks at the cost of the
-    # execution that filled the cache, which is the right number for "what does this
-    # pipeline cost" and the wrong one for "what did this run do". On the 2026-08-31 midi
-    # run the two differ by 5.6x: 6_499 tasks and 1_609 CPU-hours cold against 550 tasks
-    # actually executed. Without this column a reader cannot tell which they are quoting.
+    # execution that filled them, which is the right number for "what does this pipeline
+    # cost" and the wrong one for "what did this run do".
+    #
+    # Measured on the 2026-08-31 midi run, the two differ by 5.6x in CPU-hours and 11x in
+    # task-hours: 6_499 tasks / 1_609 CPU-h / 329 task-h cold, against 550 tasks /
+    # 289 CPU-h / 29 task-h executed. 92% of the tasks in that report were cache or store
+    # hits. Without this column a reader cannot tell which of the two they are quoting,
+    # and both numbers have been quoted for the same run.
     executed = done.filter(pl.col("status") == "COMPLETED")
     summary = {
         "run": {
@@ -5564,10 +5568,10 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
                     "3.0 min for a 2-4 core one.",
                     "<b>Points at or above it</b> are the shape that gets OOM-killed on "
                     "the next combo.",
-                    "<b>HP-family alphabets at low k</b> are sized separately in the "
-                    "pipeline (<code>params.kmerseek_memory_hp_lowk</code>) for exactly "
-                    "this reason, and this plot is how that rule gets checked against "
-                    "reality.",
+                    "<b>Memory is sized from keyspace bits</b> (ksize x log2 of the "
+                    "alphabet's class count) in <code>kmerseekSearchMemory</code>: the "
+                    "measured envelope halves every 6.8 bits. This plot is how that rule "
+                    "gets checked against reality.",
                     "<b>Point labels</b> carry the process and its alphabet, k and "
                     "species; hover or read them.",
                     "<b>A smoke run</b> over a few hundred sequences will sit near the "

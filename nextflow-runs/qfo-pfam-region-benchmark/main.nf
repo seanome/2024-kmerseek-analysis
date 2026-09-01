@@ -796,8 +796,9 @@ def kmerseekUnmodelledFloorMb = { label, ksize ->
 def kmerseekIndexMemory = { targetBytes, attempt ->
     long mb     = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
     long estMb  = (long) ((2.0d + 0.9d * mb) * 1024L)
-    long floorMb = MemoryUnit.of(params.kmerseek_memory_floor).toMega()
-    long capMb  = MemoryUnit.of(params.kmerseek_index_memory_max).toMega()
+    long capMb  = Math.min(MemoryUnit.of(params.kmerseek_index_memory_max).toMega(),
+                           MemoryUnit.of(params.kmerseek_memory_max).toMega())
+    long floorMb = Math.min(capMb, MemoryUnit.of(params.kmerseek_memory_floor).toMega())
     MemoryUnit.of("${Math.max(floorMb, Math.min(capMb, estMb))} MB") * attempt
 }
 
@@ -871,16 +872,12 @@ def scoreGroup = { String tool, String variant ->
     m ? kmerseekGroup(m[0][1]) : null
 }
 
-def kmerseekMemory = { label, ksize, targetBytes, attempt ->
-    if (!isSaturated(label, ksize)) {
-        return MemoryUnit.of(params.kmerseek_memory) * attempt
-    }
-    long   mb   = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
-    double frac = Math.min(1.0d, mb / (params.kmerseek_reference_proteome_mb as double))
-    long sized  = Math.max(MemoryUnit.of(params.kmerseek_memory_floor).toMega(),
-                           (long) (MemoryUnit.of(params.kmerseek_memory_hp_lowk).toMega() * frac))
-    MemoryUnit.of("${sized} MB") * attempt
-}
+// kmerseekMemory used to live here: one closure for both kmerseek processes, branching on
+// isSaturated(). It has been replaced by kmerseekIndexMemory and kmerseekSearchMemory
+// above, which size the two separately and grade on keyspace bits instead of a hard
+// threshold. Do not reintroduce it -- it reads params.kmerseek_memory and
+// params.kmerseek_memory_hp_lowk, and neither exists any more, so it does not fail at
+// parse time but throws on MemoryUnit.of(null) once a task is actually created.
 
 // The trace file the MultiQC resource sections read. Resolved through a closure, never
 // at parse time: `trace.file` is created by Nextflow's observer as the run starts, so a
@@ -1248,7 +1245,10 @@ process kmerseekIndex {
     container { image }
     storeDir "${DB_CACHE}/kmerseek_index"
 
-    memory { kmerseekMemory(label, ksize, species_fasta.size(), task.attempt) }
+    // Index sizing only. Building the index does not care which alphabet or ksize it is
+    // -- 1_500 measured tasks peaked at 7.00 GB and tracked the proteome alone -- so this
+    // must NOT use kmerseekSearchMemory, which would put a search-sized ask on every one.
+    memory { kmerseekIndexMemory(species_fasta.size(), task.attempt) }
     // Retries the OOM signals only. Do NOT widen this to exit 1 to catch the
     // "Directory not empty" unstage failure -- that was measured on 2026-08-27 and it does
     // not work. Nextflow reads the store when it CREATES a task and caches that decision
@@ -1357,7 +1357,7 @@ process kmerseekSearch {
     container { image }
     storeDir "${params.outdir}/kmerseek"
 
-    memory { kmerseekMemory(label, ksize, target_bytes, task.attempt) }
+    memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
     // Retry the OOM signals (128..143), stop the run on anything else. Deliberately not
     // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
     // downstream as "this alphabet found nothing", which is indistinguishable from a real
