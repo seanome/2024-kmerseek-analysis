@@ -376,11 +376,25 @@ def main():
     # through write_if_changed for the same reason everything else here is: rewriting a
     # byte-identical file changes its mtime, and Nextflow's default cache hashes inputs by
     # path/size/mtime, so a no-op rewrite re-runs every task that reads it.
-    qs_rows = "".join(
-        f"{acc}\t{query_buckets[acc]}\n" for acc in sorted(query_buckets)
-    )
-    write_if_changed(ann_out / "query_sets.tsv",
-                     ("accession\tquery_set\n" + qs_rows).encode())
+    #
+    # Written only when there is more than one bucket, and that condition is load-bearing.
+    # buildQueryCovariates takes this file as an input and scoreDomainCalls takes the
+    # covariates, so introducing it into a single-bucket set would change the covariates
+    # parquet and invalidate every scoring task in a run that is already finished -- ~7_470
+    # of them on the chr6 midi run, around 480 CPU-hours, to add a column whose every value
+    # would be the same string. Derived from the resolved buckets rather than from
+    # args.gene_set for the same reason HUMAN_LABEL is derived from the FASTA: a flag can be
+    # passed wrong and a count cannot.
+    qs_path = ann_out / "query_sets.tsv"
+    if len(set(query_buckets.values())) > 1:
+        qs_rows = "".join(
+            f"{acc}\t{query_buckets[acc]}\n" for acc in sorted(query_buckets)
+        )
+        write_if_changed(qs_path, ("accession\tquery_set\n" + qs_rows).encode())
+    elif qs_path.exists():
+        # A set that used to be multi-bucket and no longer is. Leaving the old file behind
+        # would label this run from the previous one's membership.
+        qs_path.unlink()
 
     keep_structs = set(query_acc)
 
