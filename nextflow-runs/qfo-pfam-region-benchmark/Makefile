@@ -620,6 +620,15 @@ pull-report:
 	$(RSYNC) \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/qfo_pfam_region_multiqc_plots/' \
 	  $(LOCAL_RESULTS)/qfo_pfam_region_multiqc_plots/
+	@# The k-mer spectra, so `make multiqc` can rebuild the spectra section locally. They
+	@# are small (one gzipped CSV per combo) and they are the only place the per-combo
+	@# k-mer occurrence distribution survives -- nothing else in the results tree carries
+	@# it, so a local rebuild without them silently drops the section.
+	@# `|| true`: a run that skipped kmerseek has no spectra directory, and that must not
+	@# fail a pull whose html and figures already came down.
+	-$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/spectra/' \
+	  $(LOCAL_RESULTS)/spectra/ || true
 	@echo; echo "open $(LOCAL_RESULTS)/qfo_pfam_region_multiqc.html"
 
 pull-report-mini:

@@ -723,23 +723,50 @@ params.kmerseek_memory_floor = '10 GB'
 // decimals across nine different species is a cgroup ceiling, not a coincidence: those
 // tasks were clipped, so their true peaks are unknown and are lower bounds.
 //
-// gbmr7 does not follow the rule and is carried as a named exception rather than smoothed
-// away. Its peaks are censored at every ksize from 9 to 14 and they do NOT scale with the
-// target proteome -- ecoli, a 1.8 MB proteome, also hit 31.8 GB. Nothing in the keyspace
-// model explains that, so it gets a measured floor and a note instead of a fitted number.
-// Re-measure it with a request it cannot reach before trying to model it.
+// gbmr4 and gbmr7 do not follow the rule and are carried as named exceptions rather than
+// smoothed away. Their peaks are censored -- gbmr7 at every ksize from 9 to 14, gbmr4 at
+// k=12-13 -- and gbmr7's do NOT scale with the target proteome: ecoli, a 1.8 MB proteome,
+// also hit 31.8 GB. Nothing in the keyspace model explains that.
+//
+// Their floors are set ABOVE the clip they were measured at, not at it. A censored peak is
+// a lower bound, so sizing to it is sizing to a number the task was already exceeding:
+// gbmr7 clipped at 64.00 GB gets 96, gbmr4 clipped at 32.00 GB gets 48. Both are provisional
+// and both should be re-measured with a request they cannot reach -- until then these are
+// the only two entries in the sweep whose true peak is unknown.
 params.kmerseek_memory_bits_base = 300    // GB at zero bits, before headroom
 params.kmerseek_memory_bits_decay = 0.1017 // per bit; 6.8 bits per halving
-// 2x on top of the envelope. At this headroom NO task in the 4_299-task basis is
-// under-sized; at 1.6x, 15 are. The 5th-percentile ask/peak ratio is 2.1.
-params.kmerseek_memory_headroom = 2.0
+// Multiplier on top of the envelope. 2.3, chosen against the measured minimum rather than
+// the median: at 2.0 no task in the 4_299-task basis is under-sized, but the five hottest
+// corners (fly/mouse dayhoff6 k=8, zebrafish/fly hp_kyte_doolittle2 k=19, zebrafish gbmr4
+// k=14) clear their own peak by only 1.13-1.40x, and those peaks are maxima over nine
+// species rather than a bound. 2.3 takes the worst case to 1.30x. At 1.6x, 15 tasks are
+// under-sized outright.
+//
+// This is the knob that trades footprint against requeues, and it is the reason the search
+// saving here is modest (~5%) while the index saving is large. Lower it only with a run
+// that shows the hot corners sitting well under their ask.
+params.kmerseek_memory_headroom = 2.3
 // Share of the search allocation that does NOT scale with the target proteome. The query
 // side is human either way, so a small target does not make the task small: yeast at 3 MB
 // still peaked at 25.7 GB on gbmr4 k=12. Scaling linearly to zero under-sized it.
 params.kmerseek_memory_size_floor_frac = 0.55
-// Alphabets the bits model provably does not fit, with the measured floor each needs.
-// Format: 'label:GB', comma-separated, so it can be overridden from the CLI.
-params.kmerseek_memory_unmodelled = 'gbmr7:64'
+// Alphabets the bits model provably does not fit, as a staircase of measured floors.
+// Format 'label:GB:maxKsize', comma-separated, several entries per label allowed; the
+// TIGHTEST bracket wins, that is the entry with the smallest maxKsize still >= this ksize.
+// Overridable from the CLI.
+//
+// The ksize bound is load-bearing. gbmr4 was clipped at k=12-13 and peaked at 5.3 GB by
+// k=21; a single floor applied at every ksize would hand 48 GB to combos measured at a
+// tenth of it and give back most of the saving. Each bracket covers the regime it was
+// measured in and nothing else.
+//
+// Each figure is 1.5x the worst peak measured inside its bracket:
+//   gbmr7 k<=14  96  (peaks 31.9-64.0, mostly censored -- lower bounds)
+//   gbmr7 k<=16  44  (peaks 19.5-29.4, uncensored)
+//   gbmr7 k<=18  22  (peaks 11.3-14.5, uncensored)
+//   gbmr4 k<=13  48  (peaks 32.00 at both k, censored at 6 and 4 of 9 species)
+// gbmr4 needs no bracket above k=13: the envelope already clears its k=14 peak of 27.2 GB.
+params.kmerseek_memory_unmodelled = 'gbmr7:96:14,gbmr7:44:16,gbmr7:22:18,gbmr4:48:13'
 
 // kmerseekIndex is sized SEPARATELY from kmerseekSearch and that is the largest single
 // saving here. Across 1_500 completed index tasks the peak was 7.00 GB and it tracks the
@@ -749,18 +776,26 @@ params.kmerseek_memory_unmodelled = 'gbmr7:64'
 // those 1_500 tasks was 42.6 GB against a 7.00 GB worst case.
 params.kmerseek_index_memory_max = '16 GB'
 
-def kmerseekUnmodelledFloorMb = { label ->
-    def entry = (params.kmerseek_memory_unmodelled as String).tokenize(',')
-        .collect { it.trim() }.find { it && it.tokenize(':')[0] == label }
-    entry ? (entry.tokenize(':')[1] as double) * 1024L as long : 0L
+def kmerseekUnmodelledFloorMb = { label, ksize ->
+    def brackets = (params.kmerseek_memory_unmodelled as String).tokenize(',')
+        .collect { it.trim() }.findAll { it }
+        .collect { it.tokenize(':') }
+        .findAll { it[0] == label }
+        .findAll { it.size() < 3 || (ksize as int) <= (it[2] as int) }
+    if (!brackets) return 0L
+    // Tightest bracket wins: the smallest maxKsize that still covers this ksize. An entry
+    // with no maxKsize applies at every ksize and sorts last.
+    def best = brackets.min { it.size() > 2 ? (it[2] as int) : Integer.MAX_VALUE }
+    (long) ((best[1] as double) * 1024L)
 }
 
 // Index memory: linear in the target proteome, capped, with the shared floor.
-// 2 GB + 0.45 GB per MB of FASTA gives >= 2.2x headroom on every one of the 1_500
-// measured tasks and >= 2.33x at the 5th percentile.
+// 2 GB + 0.9 GB per MB of FASTA gives >= 2.2x headroom on every one of the 1_500 measured
+// tasks. The slope is what the measurements say: 0.91 GB at 1.8 MB (ecoli) rising to
+// 7.00 GB at 16.7 MB (zebrafish) is ~0.41 GB/MB, so this is a little over 2x that.
 def kmerseekIndexMemory = { targetBytes, attempt ->
     long mb     = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
-    long estMb  = (long) ((2.0d + 0.45d * mb) * 1024L)
+    long estMb  = (long) ((2.0d + 0.9d * mb) * 1024L)
     long floorMb = MemoryUnit.of(params.kmerseek_memory_floor).toMega()
     long capMb  = MemoryUnit.of(params.kmerseek_index_memory_max).toMega()
     MemoryUnit.of("${Math.max(floorMb, Math.min(capMb, estMb))} MB") * attempt
@@ -783,9 +818,12 @@ def kmerseekSearchMemory = { label, ksize, targetBytes, attempt ->
                               * keyspaceBits(label, ksize))
                    * sizeF
     long estMb   = (long) (gb * 1024L)
-    long floorMb = Math.max(MemoryUnit.of(params.kmerseek_memory_floor).toMega(),
-                            kmerseekUnmodelledFloorMb(label))
-    long capMb   = MemoryUnit.of(params.kmerseek_memory).toMega()
+    long capMb   = MemoryUnit.of(params.kmerseek_memory_max).toMega()
+    // The unmodelled floor is clamped by the ceiling too, so a mini run that lowers the
+    // ceiling to 8 GB does not get a 96 GB gbmr7 request on a 300-protein test set.
+    long floorMb = Math.min(capMb,
+                            Math.max(MemoryUnit.of(params.kmerseek_memory_floor).toMega(),
+                                     kmerseekUnmodelledFloorMb(label, ksize)))
     MemoryUnit.of("${Math.max(floorMb, Math.min(capMb, estMb))} MB") * attempt
 }
 
@@ -2853,6 +2891,11 @@ process buildMultiqcInputs {
     input:
     tuple path(metrics), path(curves), path(trace), path(human_fasta), path(bpe)
     path kmerseek_timings, stageAs: 'kmerseek_timings/*'
+    // stageAs with a bare `*`, so every file keeps its own name. That is not cosmetic:
+    // spectrum.<species>.<alphabet>.k<ksize>.lc<true|false>.csv.gz carries the species and
+    // the low-complexity arm ONLY in the filename -- the CSV body holds moltype, ksize,
+    // occurrences and n_kmers and nothing else -- so a rename loses two of the four axes.
+    path kmerseek_spectra, stageAs: 'spectra/*'
 
     output:
     path "multiqc_in", emit: sections
@@ -2874,7 +2917,9 @@ process buildMultiqcInputs {
     //
     // The timings directory does not exist when the sweep produced no records (a run with
     // --skip_kmerseek, or one whose store predates the timings output), which the script
-    // treats as "no kmerseek rows" rather than as an error.
+    // treats as "no kmerseek rows" rather than as an error. The spectra directory is the
+    // same: load_spectra returns empty and the section is skipped, so --spectra always
+    // being passed does not make the spectra a required input.
     """
     set -euo pipefail
     n_queries=\$(grep -c '^>' ${human_fasta} || true)
@@ -2884,6 +2929,7 @@ process buildMultiqcInputs {
         --curves       ${curves} \\
         --trace        ${trace} \\
         --kmerseek-timings kmerseek_timings \\
+        --spectra      spectra \\
         --n-queries    \${n_queries} \\
         --max-tools    ${params.multiqc_max_tools} \\
         --max-lines    ${params.multiqc_max_lines} \\
@@ -3169,6 +3215,9 @@ workflow {
     // Per-task timings for the report. Separate from the trace because this arm is on
     // storeDir: a store hit runs no task and Nextflow records nothing for it.
     kmerseek_timings = Channel.empty()
+    // One k-mer frequency spectrum per combo, for the report's spectra section. Same
+    // storeDir reasoning as the timings above, and empty on a run that skips kmerseek.
+    kmerseek_spectra = Channel.empty()
     // --gpu_benchmark implies --skip_kmerseek. It measures the baselines' GPU path, and
     // forgetting the flag would queue the 3294-job sweep behind a timing run.
     if (!params.skip_kmerseek && !params.gpu_benchmark) {
@@ -3323,8 +3372,13 @@ workflow {
                 def lc = m[0][4] == 'true' ? 'lcTrue' : 'lcFalse'
                 tuple(m[0][1], "kmerseek", "${m[0][2]}_k${m[0][3]}_${lc}", pq)
             }
-        // Spectra are published for plotting and are not scored.
-        ks_out.spectrum.collectFile(
+        // Spectra are published for plotting and are not scored. The collectFile channel
+        // is kept rather than discarded: it carries the same files with their names
+        // intact, and the filename is the ONLY place the species and the low-complexity
+        // arm are recorded -- the CSV body has just moltype, ksize, occurrences, n_kmers.
+        // So these must reach the report un-renamed, which is why they are staged rather
+        // than read out of params.outdir.
+        kmerseek_spectra = ks_out.spectrum.collectFile(
             storeDir: "${params.outdir}/spectra", keepHeader: false
         )
     }
@@ -3751,7 +3805,8 @@ workflow {
         // nothing at all, which would leave buildMultiqcInputs with an input channel that
         // never fires and drop the whole report on any run without kmerseek timings.
         multiqcFromMetrics(agg.metrics, agg.curves, human_fasta,
-                           kmerseek_timings.collect().ifEmpty([]), bpe_ch)
+                           kmerseek_timings.collect().ifEmpty([]), bpe_ch,
+                           kmerseek_spectra.collect().ifEmpty([]))
     }
 }
 
@@ -3767,6 +3822,7 @@ workflow multiqcFromMetrics {
     human_fasta
     kmerseek_timings
     bpe_boundary
+    kmerseek_spectra
 
     main:
     mqc_in = metrics
@@ -3775,7 +3831,7 @@ workflow multiqcFromMetrics {
         // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
         .map { m, c, b -> tuple(m, c, resolveTrace(), file(human_fasta), b) }
 
-    sections = buildMultiqcInputs(mqc_in, kmerseek_timings).sections
+    sections = buildMultiqcInputs(mqc_in, kmerseek_timings, kmerseek_spectra).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
 }
 
@@ -3854,6 +3910,15 @@ workflow report {
         file("${d}/kmerseek").exists() ? file("${d}/kmerseek/*.timings.jsonl") : []
     }
 
+    // The spectra come off disk here for the same reason the timings do: no kmerseek
+    // process runs in this entry, and kmerseekIndex published them to <outdir>/spectra
+    // during the sweep. Read per SOURCE outdir, so a report combining two runs gets both
+    // sets. Absent is normal -- a run that skipped kmerseek, or one whose store predates
+    // the spectrum output -- and the section is simply not drawn.
+    def ks_spectra = timing_dirs.collectMany { d ->
+        file("${d}/spectra").exists() ? file("${d}/spectra/*.csv.gz") : []
+    }
+
     def metrics_ch
     def curves_ch
 
@@ -3916,7 +3981,8 @@ workflow report {
 
         log.info "combining ${metric_files.size()} scored arms and ${curve_files.size()} " +
                  "curves from ${source_dirs.size()} outdirs into ${outdir}, trace ${trace}, " +
-                 "${ks_timings.size()} kmerseek timing records"
+                 "${ks_timings.size()} kmerseek timing records, " +
+                 "${ks_spectra.size()} spectra"
 
         // Channel.value, not Channel.of: one task staging every file, which is what
         // `path 'metrics/*'` expects and what the main workflow's .collect() produces.
@@ -3926,7 +3992,8 @@ workflow report {
     }
     else {
         log.info "building the report from ${outdir}, trace ${trace}, " +
-                 "${ks_timings.size()} kmerseek timing records"
+                 "${ks_timings.size()} kmerseek timing records, " +
+                 "${ks_spectra.size()} spectra"
         metrics_ch = Channel.of(metrics)
         curves_ch  = Channel.of(curves.exists() ? curves : file("${projectDir}/assets/NO_CURVES"))
     }
@@ -3942,5 +4009,6 @@ workflow report {
         human_fasta,
         Channel.of(ks_timings),
         Channel.of(bpe.exists() ? bpe : file("${projectDir}/assets/NO_BPE")),
+        Channel.of(ks_spectra),
     )
 }

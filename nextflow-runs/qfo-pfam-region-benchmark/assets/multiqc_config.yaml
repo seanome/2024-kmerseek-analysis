@@ -138,19 +138,22 @@ report_section_order:
   qfo_encoding_divergence_table_mcsa: { order: 175 }
   qfo_encoding_divergence_pfam: { order: 176 }
   qfo_encoding_divergence_table_pfam: { order: 177 }
-  # Divergence retention against alphabet size: the same two axes as the block above,
-  # turned round to ask what each alphabet keeps rather than which one won. Plot then
-  # table, one integer each, per truth set.
-  qfo_retention_swissprot: { order: 1701 }
-  qfo_retention_table_swissprot: { order: 1702 }
-  qfo_retention_pfamn: { order: 1703 }
-  qfo_retention_table_pfamn: { order: 1704 }
-  qfo_retention_mcsa: { order: 1705 }
-  qfo_retention_table_mcsa: { order: 1706 }
-  qfo_retention_pfam: { order: 1707 }
-  qfo_retention_table_pfam: { order: 1708 }
   qfo_alphabet_lcFalse: { order: 179 }
   qfo_alphabet_lcTrue: { order: 180 }
+  # Divergence retention against alphabet size: the alphabet axis the two heatmaps above
+  # sweep, asked the other way round -- what each alphabet KEEPS out to the most diverged
+  # proteome rather than which one won. It sits with the alphabet block rather than beside
+  # qfo_divergence at 150, because no run of eight free integers survives up there. Each
+  # plot takes the integer immediately before its own table: sharing a number renders the
+  # TABLE first, which is the failure the note at 170 records.
+  qfo_retention_swissprot: { order: 181 }
+  qfo_retention_table_swissprot: { order: 182 }
+  qfo_retention_pfamn: { order: 183 }
+  qfo_retention_table_pfamn: { order: 184 }
+  qfo_retention_mcsa: { order: 185 }
+  qfo_retention_table_mcsa: { order: 186 }
+  qfo_retention_pfam: { order: 187 }
+  qfo_retention_table_pfam: { order: 188 }
   # qfo_lowcomplexity_bars is gone, not renumbered: the toggle's effect at each alphabet's
   # own best k is under 0.001 Fmax everywhere in the sweep, so the 19-panel switcher and the
   # per-alphabet delta bars both collapsed into the single alphabet x k grid at 190.

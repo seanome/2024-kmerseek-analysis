@@ -826,8 +826,24 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     # from the data rather than drawn by hand. The matching "fastest incumbent" horizontal
     # is gone: the horizontal dashed lines are now the duration bands, and a second dashed
     # horizontal among them would be read as another duration rather than as a tool.
+    #
+    # Motif arms are excluded from it. The line calibrates a bar every other arm has to
+    # clear, and section_boundary already says in as many words that a tool reporting the
+    # envelope of a discontinuous residue set measures a different thing and must not be
+    # ranked against the alignment arms. Setting the bar with a tool this report rejects
+    # elsewhere is the same ranking by the back door: on the midi run folddisco reaches
+    # 0.30 where every other arm sits between 0.11 and 0.18, so one motif tool moved the
+    # whole target. It is drawn as its own line, named, rather than dropped.
+    semantics = {}
+    if "interval_semantics" in cut.columns:
+        semantics = {r["tool"]: r["interval_semantics"] for r in
+                     cut.select("tool", "interval_semantics").unique().to_dicts()}
     incumbents = [r for r in rows if r["tool"] != "kmerseek"]
-    x_best = max((r["acc"] for r in incumbents), default=None)
+    aligned = [r for r in incumbents if semantics.get(r["tool"], "alignment") != "motif"]
+    motif = [r for r in incumbents if semantics.get(r["tool"], "alignment") == "motif"]
+    best_row = max(aligned, key=lambda r: r["acc"], default=None)
+    x_best = best_row["acc"] if best_row else None
+    motif_row = max(motif, key=lambda r: r["acc"], default=None)
 
     points = {}
     for r in rows:
@@ -891,9 +907,16 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     }
     if lines:
         pconfig["y_lines"] = lines
+    x_lines = []
     if x_best is not None:
-        pconfig["x_lines"] = [{"value": x_best, "color": "#666666", "dash": "dash",
-                               "width": 2, "label": "best incumbent Fmax"}]
+        x_lines.append({"value": x_best, "color": "#666666", "dash": "dash", "width": 2,
+                        "label": f"best incumbent Fmax ({best_row['tool']})"})
+    if motif_row is not None:
+        x_lines.append({"value": motif_row["acc"], "color": "#bbbbbb", "dash": "dot",
+                        "width": 2,
+                        "label": f"{motif_row['tool']} (motif semantics)"})
+    if x_lines:
+        pconfig["x_lines"] = x_lines
 
     note = ""
     if dropped:
@@ -936,8 +959,17 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                 "the \"in 1 hour\" line takes an hour to search this query set against one "
                 "target proteome, so a reader can place an arm in the minutes band or the "
                 "days band without dividing anything by a rate.",
-                "<b>Vertical line</b> is the best Fmax any existing tool reaches, so the "
+                "<b>Dashed vertical line</b> is the best Fmax any existing tool reaches "
+                "under the same interval semantics as everything else here, so the "
                 "upper-right quadrant is the part of the space nothing occupies today.",
+                "<b>Dotted vertical line</b>, where a run has a motif arm, is that arm. "
+                "reports the envelope of a discontinuous residue set rather than an "
+                "alignment, so its Fmax is not the same measurement and does not set the "
+                "bar the other arms are asked to clear. It is drawn rather than dropped "
+                "because it is a real number about a real tool; it is separated because "
+                "the boundary section already says these rows must not be ranked against "
+                "the alignment rows, and calibrating the frontier on one would have been "
+                "that ranking by the back door.",
                 f"The {n_queries:,} queries setting those line positions is "
                 "n_queries_all, every sequence in the query FASTA, not the "
                 "FoldSeek-intersected subset the accuracy sections use, and every arm's "
@@ -3036,12 +3068,24 @@ def section_lowcomplexity_delta(out: Path, parsed: pl.DataFrame, primary_truth: 
     cells = {(r["alphabet"], r["ksize"]): r["delta"] for r in wide.to_dicts()}
     ks = sorted({k for _, k in cells})
     # Best-k first, so the rows a reader would ever run are at the top of the grid.
-    best_k = {}
-    for r in parsed.group_by("alphabet", "lowcomp").agg(
-            pl.col("fmax").max().alias("best")).to_dicts():
-        best_k.setdefault(r["alphabet"], {})[r["lowcomp"]] = r["best"]
-    at_best = {a: (v.get("True") or 0.0) - (v.get("False") or 0.0)
-               for a, v in best_k.items()}
+    # "At the k you would choose" has to mean a PAIRED comparison at one k, not the change
+    # in an alphabet's best achievable Fmax. The two differ, and the difference is the
+    # trap: an alphabet whose filtered arm peaks at a different k from its unfiltered arm
+    # gets credited with a jump that is a k choice rather than a filter effect. gbmr7 is
+    # that case. So the k is fixed to where the UNFILTERED arm is best -- the k anyone
+    # sweeping without the filter would land on -- and the number reported is what turning
+    # the filter on does there.
+    best_k, at_best = {}, {}
+    for r in wide.to_dicts():
+        off = r.get("False")
+        if off is None or r["delta"] is None:
+            continue
+        prev = best_k.get(r["alphabet"])
+        if prev is None or off > prev:
+            best_k[r["alphabet"]] = off
+            at_best[r["alphabet"]] = r["delta"]
+    if not at_best:
+        return
     alphas = sorted(at_best, key=lambda a: -abs(at_best[a]))
     rows = [[cells.get((a, k)) for k in ks] for a in alphas]
     if not any(v is not None for row in rows for v in row):
@@ -3061,15 +3105,22 @@ def section_lowcomplexity_delta(out: Path, parsed: pl.DataFrame, primary_truth: 
             f"every alphabet and k in the sweep ({primary_truth} truth, "
             f"<code>{split}</code> split, averaged over target species).</p>"
             + bullets(
-                "<b>The result is negative and that is the finding.</b> Taking each "
-                "alphabet's best achievable Fmax with the filter on against its best with "
-                f"the filter off, the largest effect in the run is "
-                f"<code>{worst}</code> at {at_best[worst]:+.4f}. " + hp_note + " At the k "
-                "you would choose, the toggle does nothing for any alphabet in the sweep.",
-                "<b>The bright cells are all at low k</b>, below where their alphabet "
-                "operates. Removing homopolymer-like k-mers rescues a combo whose "
-                "unfiltered Fmax is near zero to another number that is still near zero, "
-                "and the rescue does not reach the k that alphabet is actually run at.",
+                "<b>The result is negative and that is the finding.</b> Fixing each "
+                "alphabet at the k where its UNFILTERED arm scores best -- the k anyone "
+                "sweeping would land on -- and turning the filter on there, the largest "
+                f"effect anywhere in the run is <code>{worst}</code> at "
+                f"{at_best[worst]:+.4f}. " + hp_note + " That is two orders of magnitude "
+                "below the differences between alphabets the rest of this report rests "
+                "on. "
+                "At the k you would choose, the toggle does nothing.",
+                f"<b>The strong cells are at other k</b>, and <code>{span:.3f}</code> is "
+                "the largest single cell in this grid. Where removing homopolymer-like "
+                "k-mers does move Fmax, it moves a combo whose unfiltered score is near "
+                "zero to another number that is still near zero, and it does not reach "
+                "the k that alphabet is actually run at. Comparing an alphabet's best "
+                "filtered combo with its best unfiltered one credits the filter with that "
+                "k change, "
+                "which is why the number above is a paired comparison at one k instead.",
                 "<b>Rows are ordered by the size of the best-k effect</b>, largest first, "
                 "so the top row is the strongest case the toggle has anywhere.",
                 "<b>Positive</b> means removal helped. The scale is diverging and "
@@ -4802,9 +4853,15 @@ def section_grayzone(out: Path, metrics: pl.DataFrame, primary_truth: str,
         ((lab, sum(v or 0 for v in row.values()), row.get("n_tp_calls") or 0)
          for lab, row in data.items()),
         key=lambda r: -r[1])
+    # Thin spaces rather than commas inside the numbers only. Replacing every comma in the
+    # assembled string also ate the one separating the two figures, which read as one
+    # eleven-digit number.
+    def grouped(n: int) -> str:
+        return f"{n:,}".replace(",", "&thinsp;")
+
     n_note = "; ".join(
-        f"<code>{lab}</code> {tot:,} calls, {tp:,} TP ({100 * tp / tot:.1f}%)".replace(
-            ",", "&thinsp;")
+        f"<code>{lab}</code> {grouped(tot)} calls, {grouped(tp)} TP "
+        f"({100 * tp / tot:.1f}%)"
         for lab, tot, tp in totals if tot)
     write_section(out, "qfo_grayzone", {
         "id": "qfo_grayzone",
@@ -4872,24 +4929,30 @@ def circularity_bullet(data: dict, tools: dict) -> str:
             continue
         spans.setdefault(CLASSES[tool_class(tools[label])][0], []).append(a / b)
     spans = {c: (min(v), max(v)) for c, v in spans.items()}
-    if len(spans) < 2:
-        return ("<b>Pfam and Swiss-Prot cannot be compared in this run</b>: fewer than two "
-                "method classes have a bar on both, so there is no ratio to read.")
+    aligned = CLASSES["alignment"][0]
+    if len(spans) < 2 or aligned not in spans:
+        return ("<b>Pfam and Swiss-Prot cannot be compared in this run</b>: the "
+                f"<i>{aligned}</i> class and at least one other both need a bar on each "
+                "set before there is a ratio to read.")
     listed = "; ".join(f"{c} {lo:.2f}-{hi:.2f}" for c, (lo, hi) in sorted(spans.items()))
-    common_lo = max(lo for lo, _ in spans.values())
-    common_hi = min(hi for _, hi in spans.values())
-    if common_lo <= common_hi:
-        return (f"<b>The Pfam-to-Swiss-Prot ratio does not separate the method classes in "
-                f"this run</b> — {listed}, and every class is consistent with the same "
-                "ratio. A drop that every class shares measures how much harder Swiss-Prot "
-                "is, not how much Pfam flatters the methods that defined it, so this "
-                "figure does not detect circularity. The Pfam bars have to be argued about "
-                "on what they are.")
-    worst = max(spans.items(), key=lambda kv: kv[1][0])[0]
-    return (f"<b>The Pfam-to-Swiss-Prot ratio does separate the method classes here</b> — "
-            f"{listed}. <i>{worst}</i> falls furthest, which is the shape circularity in "
-            "the answer key would take: the class that defined Pfam gains most from being "
-            "scored against it.")
+    # The directional test, because the hypothesis is directional. Circularity in the
+    # answer key means the class that WROTE the answer key loses more by leaving it than
+    # anyone else does. A symmetric "do the ranges overlap" test answers a different and
+    # weaker question, and a class with a single tool in it is a point rather than a range,
+    # which such a test reads as separation on its own.
+    ours_lo = min(spans[aligned])
+    others_hi = max(hi for c, (_, hi) in spans.items() if c != aligned)
+    if ours_lo <= others_hi:
+        return (f"<b>The Pfam-to-Swiss-Prot ratio does not single out the methods Pfam "
+                f"was built from</b> — {listed}. The <i>{aligned}</i> class does not drop "
+                "further than every other class, so the drop is measuring how much harder "
+                "Swiss-Prot is rather than how much Pfam flatters the methods that "
+                "defined it. This figure therefore does not detect circularity, and the "
+                "Pfam bars have to be argued about on what they are.")
+    return (f"<b>The Pfam-to-Swiss-Prot ratio does single out the methods Pfam was built "
+            f"from</b> — {listed}. Every <i>{aligned}</i> method drops further than every "
+            "method outside that class, which is the shape circularity in the answer key "
+            "would take: the class that defined Pfam gains most from being scored on it.")
 
 
 def pfam_lead_bullet(data: dict, tools: dict) -> str:
@@ -4962,7 +5025,9 @@ def section_canonical(out: Path, metrics: pl.DataFrame) -> None:
     if CANONICAL is None:
         return
     tool, variant = CANONICAL
-    label = label_of(tool, variant)
+    # The bare row key, without the mark label_of appends -- this sentence names the mark
+    # separately, and printing both reads as the arm being called "... ★ ★".
+    label = f"kmerseek {variant}" if tool == "kmerseek" else tool
     rows = metrics.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
     if rows.height == 0:
         body = (f"<p><b>Pinned arm not found.</b> <code>--canonical-variant</code> asked "
@@ -5040,10 +5105,10 @@ def section_truthsets(out: Path, metrics: pl.DataFrame, max_tools: int) -> None:
                 pfam_lead_bullet(data, tools),
                 circularity_bullet(data, tools),
                 pfamn_bullet(data, tools),
-                "<b>What this figure cannot do is measure circularity.</b> That would "
-                "need a class-specific drop from Pfam, and the ratios above are the test "
-                "of whether there is one. Read them before reading the bar heights as "
-                "evidence about the answer key.",
+                "<b>What this figure cannot do on its own is measure circularity.</b> "
+                "That needs a drop specific to the class that wrote the answer key, and "
+                "the per-class ratios above are the test of whether there is one. Read "
+                "them before reading the bar heights as evidence about Pfam.",
                 "<b>Nothing here is averaged across truth sets.</b> Each bar is one set's "
                 "own Fmax on its own split, and the ratios compare two of them rather "
                 "than pooling them.")),
@@ -5314,6 +5379,13 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
     # --- run summary ---
     total_cpu_h = float(done["cpu_hours"].sum() or 0)
     peak = done["peak_rss_b"].max()
+    # Work this run actually PERFORMED, as opposed to the cold-equivalent totals beside it.
+    # Every other figure in this table counts cached and stored tasks at the cost of the
+    # execution that filled the cache, which is the right number for "what does this
+    # pipeline cost" and the wrong one for "what did this run do". On the 2026-08-31 midi
+    # run the two differ by 5.6x: 6_499 tasks and 1_609 CPU-hours cold against 550 tasks
+    # actually executed. Without this column a reader cannot tell which they are quoting.
+    executed = done.filter(pl.col("status") == "COMPLETED")
     summary = {
         "run": {
             "tasks": trace.height,
@@ -5323,7 +5395,9 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
             "failed": int((trace["status"] == "FAILED").sum()),
             "retried": int((trace["attempt"] > 1).sum()) if "attempt" in trace.columns else 0,
             "cpu_hours": total_cpu_h,
+            "cpu_hours_executed": float(executed["cpu_hours"].sum() or 0),
             "wall_hours": float((done["realtime_s"].sum() or 0) / 3600),
+            "wall_hours_executed": float((executed["realtime_s"].sum() or 0) / 3600),
             "peak_rss_gb": float(peak / 1024**3) if peak else None,
             "read_gb": float((done["read_b"].sum() or 0) / 1024**3),
             "write_gb": float((done["write_b"].sum() or 0) / 1024**3),
@@ -5333,16 +5407,28 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
         "id": "qfo_run_summary",
         "section_name": "Run totals",
         "description": (
-            f"<p>Every task in {source}, including cached ones.</p>"
+            f"<p>Every task in {source}. <b>Two different totals are shown and they "
+            f"answer different questions</b> &mdash; quote the one you mean.</p>"
             + bullets(
+                "<b>CPU-hours</b> and <b>Task-hours</b> are the COLD-RUN cost: what this "
+                "pipeline would take from an empty cache and an empty store. Cached and "
+                "stored tasks are counted at the cost of the execution that filled them.",
+                "<b>CPU-h executed</b> and <b>Task-h executed</b> are what THIS run "
+                "performed: completed tasks only, cache and store hits excluded. This is "
+                "the number to quote for how long a resumed run took.",
                 "<b>Cached tasks</b> keep the resource figures from the execution that "
                 "filled the cache, so a <code>-resume</code> run still reports honest "
-                "totals for work it did not repeat.",
+                "cold-run totals for work it did not repeat.",
                 "<b>Stored</b> counts kmerseek tasks served from <code>storeDir</code>. "
                 "Nextflow never scheduled them, so they appear in no trace, and their "
                 "times come from the timing record each task wrote beside its own result.",
-                "<b>Wall hours</b> is the sum of per-task run times, not elapsed clock "
-                "time. The two differ by however much ran in parallel.")),
+                "<b>Tasks</b> is the count for the DAG this run actually built. It is not "
+                "comparable across runs whose process structure differs: batching the "
+                "scoring arms and splitting kmerseek index from search between them "
+                "changed this figure by more than caching ever does.",
+                "<b>Task-hours</b> is the sum of per-task run times, not elapsed clock "
+                "time. The two differ by however much ran in parallel, and neither "
+                "includes queue wait.")),
         "plot_type": "table",
         "pconfig": {"id": "qfo_run_summary_table", "title": "Run totals",
                     "col1_header": "", "sort_rows": False, "scale": False},
@@ -5354,8 +5440,17 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
                            description="Served from storeDir; timed by the task itself"),
             "failed": dict(title="Failed", format="{:,.0f}", scale=False),
             "retried": dict(title="Retried", format="{:,.0f}", scale=False),
-            "cpu_hours": dict(title="CPU-hours", format="{:,.1f}", scale="Reds"),
-            "wall_hours": dict(title="Task-hours", format="{:,.1f}", scale="Blues"),
+            "cpu_hours": dict(title="CPU-hours", format="{:,.1f}", scale="Reds",
+                              description="Cold-run cost: cached and stored tasks "
+                                          "included at the cost that filled them"),
+            "cpu_hours_executed": dict(
+                title="CPU-h executed", format="{:,.1f}", scale="Reds",
+                description="Work THIS run performed: completed tasks only"),
+            "wall_hours": dict(title="Task-hours", format="{:,.1f}", scale="Blues",
+                               description="Cold-run cost, summed per task, no queue wait"),
+            "wall_hours_executed": dict(
+                title="Task-h executed", format="{:,.1f}", scale="Blues",
+                description="Work THIS run performed: completed tasks only"),
             "peak_rss_gb": dict(title="Peak RSS (GB)", format="{:,.1f}", scale="Purples"),
             "read_gb": dict(title="Read (GB)", format="{:,.1f}", scale="Greens"),
             "write_gb": dict(title="Written (GB)", format="{:,.1f}", scale="Greens"),
