@@ -1030,7 +1030,8 @@ process buildQueryCovariates {
     publishDir "${params.outdir}/truth", mode: 'copy'
 
     input:
-    tuple path(truth), path(hgnc), path(omega), path(structures), path(disorder)
+    tuple path(truth), path(hgnc), path(omega), path(structures), path(disorder),
+          path(query_sets)
 
     output:
     path "human_query_covariates.parquet", emit: covariates
@@ -1042,10 +1043,14 @@ process buildQueryCovariates {
     def struct_arg = structures.name == 'NO_STRUCTURES' ? "" : "--structures ${structures}"
     def mobidb_arg = params.mobidb_cache ? "--mobidb ${params.mobidb_cache}" : ""
     def mpred_arg  = disorder.name == 'NO_DISORDER' ? "" : "--metapredict ${disorder}"
+    // Which bucket of the query set each protein came from. Present whenever
+    // make_mini_testset.py wrote it next to the annotations; absent for a run built before
+    // it existed, and for the full-proteome run where every query is the same bucket.
+    def qsets_arg  = query_sets.name == 'NO_QUERY_SETS' ? "" : "--query-sets ${query_sets}"
     """
     build_query_covariates.py \\
         --truth       ${truth} \\
-        ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} ${mpred_arg} \\
+        ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} ${mpred_arg} ${qsets_arg} \\
         --out         human_query_covariates.parquet \\
         --summary-out covariates_summary.json
     """
@@ -2921,6 +2926,11 @@ workflow {
         ? Channel.value(file("${projectDir}/assets/NO_DISORDER"))
         : disorder_all.filter { it.name.startsWith("${HUMAN_LABEL}.") }
 
+    // Written by make_mini_testset.py next to the annotations it subsets, so it is found
+    // from params.annotations rather than needing its own param. Absent for the
+    // full-proteome run, where there is only one bucket and the label carries no
+    // information.
+    def query_sets_file = optional_or("${params.annotations}/query_sets.tsv", 'NO_QUERY_SETS')
     cov_in = truth_out.truth.combine(disorder_ch).map { t, dis ->
         tuple(t,
               optional_or(params.hgnc_file,  'NO_HGNC'),
@@ -2928,7 +2938,8 @@ workflow {
               file("${params.structures}/human").exists()
                   ? file("${params.structures}/human")
                   : file("${projectDir}/assets/NO_STRUCTURES"),
-              dis)
+              dis,
+              query_sets_file)
     }
     covariates = buildQueryCovariates(cov_in).covariates
 

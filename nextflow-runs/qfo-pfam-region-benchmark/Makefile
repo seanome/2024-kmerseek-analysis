@@ -212,6 +212,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
+        midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
@@ -256,6 +257,8 @@ help:
 	@echo "  mini-testset-sherlock Build the mini data set"
 	@echo "  run-mini             Run the mini smoke test"
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
+	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
+	@echo "                       Additive to run-midi, its own outdir, target DBs shared"
 	@echo "  fetch-structures     Download AlphaFold structures ON the login node (~36 GB)"
 	@echo "  run-kmerseek         Run only the Kmerseek sweep"
 	@echo "  run-baselines        Run only the baseline tools"
@@ -624,6 +627,9 @@ pull-report-mini:
 
 pull-report-midi:
 	@$(MAKE) pull-report REMOTE_RESULTS=data/midi/results LOCAL_RESULTS=$(LOCAL_RESULTS)/midi
+
+pull-report-midi-plus:
+	@$(MAKE) pull-report REMOTE_RESULTS=data/midi-plus/results LOCAL_RESULTS=$(LOCAL_RESULTS)/midi-plus
 
 pull-mini:
 	$(call require_mac)
@@ -1217,6 +1223,77 @@ run-midi: prefetch-images midi-testset-sherlock
 	    --annotations     ../data/midi/annotations \
 	    --structures      ../data/midi/structures \
 	    --outdir          $(MIDI_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(MIDI_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus: chr6 PLUS the MHC's off-chromosome partners ----------------
+#
+# The chr6 midi set is defined by cytogenetic location, so it misses the parts of the
+# antigen-presentation system that are not on chromosome 6: B2M (chr15, the class I light
+# chain), CD1A-E and MR1 (chr1, the lipid and metabolite presenters), and the KIR and LILR
+# clusters (chr19, the receptors that read class I). 34 proteins, all of them already in
+# both the QfO human proteome and the Pfam answer key.
+#
+# ADDITIVE, never a replacement. `--gene-set chr6_plus` unions the new buckets onto the
+# chr6 set and raises a hard error if a single chr6 query is lost, because notebook 221
+# measures every "the MHC behaves differently" claim against the 736 non-MHC chr6 genes.
+# make_mini_testset.py also writes annotations/query_sets.tsv, which buildQueryCovariates
+# turns into a `query_set` column, so the original 964 stay reconstructible exactly.
+midi-plus-testset-sherlock:
+	$(call require_cluster)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations     data/annotations \
+	    --qfo-dir         data/qfo \
+	    --outdir          data/midi-plus \
+	    --gene-set        chr6_plus \
+	    --full-targets \
+	    --hgnc            data/covariates/hgnc_complete_set.txt \
+	    --target_species  $(MIDI_TARGETS) \
+	    --structure-cache data/structures
+
+# Its OWN outdir, and that is the whole correctness argument for this target rather than a
+# tidiness preference. kmerseekSearch is on storeDir under ${params.outdir}/kmerseek, and
+# its entry name -- human_vs_<species>.<alphabet>.k<k>.lc<lc>.regions.parquet -- carries NO
+# query-set digest. Pointing this run at data/midi/results would therefore hit 3665 stored
+# results computed from the 964-query FASTA and return them for a 998-query run: the 34 new
+# proteins would silently contribute nothing and read as genuine negatives. That is the
+# exact failure the kmerseekSearch errorStrategy comment already records happening once on
+# this project. The same applies to ${params.outdir}/mmseqs_domain_db and .../spectra.
+#
+# --db_cache still points at ../results, which is where the TARGET-side databases live.
+# Those are safe to share: their storeDir entries are keyed on species alone
+# (mouse_mmdb, ecoli.dayhoff6.k10.lcfalse.kmerseek.rocksdb, ...), so they carry no query
+# dependence at all. The human-side entries in the same cache are keyed by an MD5 of the
+# query FASTA (HUMAN_LABEL, e.g. human-a45f7aae_mmdb), so the new query set gets its own
+# entry beside the old one instead of colliding with it. Verified against the deployed
+# cache, not assumed.
+MIDI_PLUS_OUTDIR ?= ../data/midi-plus/results
+
+run-midi-plus: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi-plus
+	cd run-midi-plus && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(MIDI_PLUS_OUTDIR) \
 	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
 	    --target_species  $(MIDI_TARGETS) \
