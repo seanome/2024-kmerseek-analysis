@@ -367,6 +367,58 @@ def short_label(tool: str, variant: str) -> str:
 # leaderboard selects on both and shows both rather than picking one silently.
 RANKING_METRICS = ["fmax", "sens_first_fp_mean"]
 
+# --- aggregation vs total -------------------------------------------------------------
+#
+# Every row of all_domain_metrics.parquet is one (tool, variant, TARGET SPECIES, truth set,
+# split, stratum). So every number in a leaderboard has been collapsed over the species
+# axis, and there are two ways to do that which mean different things:
+#
+#   AGGREGATION  a per-species rate -- Fmax, precision, ROC AUC -- has no meaningful sum.
+#                Nine proteomes give nine values and the summary is mean / median / min /
+#                max / SD over them. Suffix `__mean`, `__median`, `__min`, `__max`, `__sd`.
+#
+#   TOTAL        a per-species count -- calls made, instances found -- does sum, and the
+#                sum is a property of the ARM's whole run. Suffix `__total`.
+#
+# The distinction is not pedantry. `n_truth_instances__total` is roughly nine times the
+# size of the human answer key, because the same human instance is scored once per target
+# proteome; reading it as "the number of domains in the benchmark" is wrong by 9x. The
+# suffix is there so that misreading has to survive a column name that contradicts it.
+#
+# Species are weighted equally in every aggregation. That is deliberate and it is the
+# reason the spread columns exist: mouse carries 17_228 reviewed Swiss-Prot entries and
+# Ciona 28, so a size-weighted mean would be a mean over mouse.
+SPECIES_AGGREGATIONS = ["mean", "median", "min", "max", "sd"]
+
+# Per-species counts. These sum to an arm-level total; they are also aggregated, because
+# "median calls per proteome" answers a different question from "calls in total".
+COUNT_COLS = [
+    "n_calls", "n_tp_calls", "n_fp_calls", "n_gray_calls", "n_tp_strict",
+    "n_truth_instances", "n_reachable_instances", "n_instances_found",
+    "n_proteins_scored", "n_proteins_ranked",
+]
+
+
+def species_aggregations(cols: list[str], available: set[str]) -> list[pl.Expr]:
+    """mean / median / min / max / SD across target species, for each column present.
+
+    SD is null on a single species rather than 0. polars returns null for std() over one
+    element, which is the honest answer -- a run against one proteome has no spread to
+    report, and a 0 would read as perfect consistency.
+    """
+    how = {"mean": lambda c: c.mean(), "median": lambda c: c.median(),
+           "min": lambda c: c.min(), "max": lambda c: c.max(), "sd": lambda c: c.std()}
+    return [how[a](pl.col(c)).alias(f"{c}__{a}")
+            for c in cols if c in available for a in SPECIES_AGGREGATIONS]
+
+
+def species_totals(available: set[str]) -> list[pl.Expr]:
+    """Sums over target species, named so they cannot be mistaken for per-species values."""
+    return [pl.col(c).sum().alias(f"{c}__total")
+            for c in COUNT_COLS if c in available]
+
+
+
 # Below this a call-level ROC AUC is worse than a coin flip. Counted per species rather
 # than judged off the mean, because the mean hides how many species it happened in.
 CHANCE = 0.5
@@ -452,14 +504,27 @@ def best_variants(df: pl.DataFrame, top_kmerseek: int = TOP_KMERSEEK, *,
         return df.head(0)
     _guard_single_truth_set(df, across_truth_sets)
 
-    extra = [pl.col("species").n_unique().alias("n_species"),
-             pl.col("fmax").std().alias("fmax_sd"),
-             pl.col("fmax").min().alias("fmax_min"),
-             pl.col("fmax").max().alias("fmax_max")]
+    have = set(df.columns)
+    # Every headline metric now carries the same five-number summary across species that
+    # only Fmax used to, plus a total for anything that is a count. See the block above
+    # SPECIES_AGGREGATIONS for why the two are named differently.
+    extra = ([pl.col("species").n_unique().alias("n_species")]
+             + species_aggregations(cols + [c for c in COUNT_COLS if c in have], have)
+             + species_totals(have)
+             # Legacy names for the three Fmax spread columns. Same values as
+             # fmax__sd/min/max; kept because LEADERBOARD_COLS, widest_spread and the
+             # section prose all name them, and renaming those in the same change that
+             # introduces the suffix would make both harder to review.
+             + [pl.col("fmax").std().alias("fmax_sd"),
+                pl.col("fmax").min().alias("fmax_min"),
+                pl.col("fmax").max().alias("fmax_max")])
     # A sensitivity averaged over 144 ranked proteins is not the same measurement as one
     # averaged over 542, so the denominator travels with the metric. Mean rather than sum:
     # it is a per-species count and the other columns are per-species means too.
     if "n_proteins_ranked" in df.columns:
+        # Bare name stays the MEAN over species, which is what every existing caller and
+        # every section description means by it. n_proteins_ranked__total is the sum, and
+        # the two differ by a factor of nine -- which is the whole reason for the suffix.
         extra.append(pl.col("n_proteins_ranked").mean().alias("n_proteins_ranked"))
         # The mean hides the worst case, and the worst case is severe: wwmj5 k17 ranks 677
         # human proteins against mouse and 1 against Ciona, and that single protein scored
@@ -512,6 +577,72 @@ def best_variants(df: pl.DataFrame, top_kmerseek: int = TOP_KMERSEEK, *,
         kept.with_columns(label_column())
             .sort("fmax", descending=True, nulls_last=True)
     )
+
+
+AGG_TITLE = {"mean": "mean", "median": "median", "min": "min", "max": "max", "sd": "SD"}
+
+# Which way is better, per aggregation, so a colour ramp does not say the opposite of the
+# metric. `min` on a higher-is-better metric is still higher-is-better (a high worst case
+# is good); SD has no direction and gets a neutral single-hue ramp.
+AGG_SCALE = {"mean": None, "median": None, "min": "Blues", "max": "Blues", "sd": "Reds"}
+
+
+# Human titles for the per-species counts. The metric specs cover the rates; these are
+# raw column names that would otherwise reach a reader as "n_tp_calls (total)".
+COUNT_TITLES = {
+    "n_calls": "Calls", "n_tp_calls": "True calls", "n_fp_calls": "False calls",
+    "n_gray_calls": "Gray calls", "n_tp_strict": "True calls (strict)",
+    "n_truth_instances": "Answer-key instances",
+    "n_reachable_instances": "Reachable instances",
+    "n_instances_found": "Instances found",
+    "n_proteins_scored": "Proteins scored", "n_proteins_ranked": "Proteins ranked",
+}
+
+
+def derived_header(col: str, base_spec: dict) -> dict | None:
+    """Header for a `metric__agg` or `count__total` column, built off the base metric's.
+
+    Generated rather than written out: ten headline metrics times five aggregations plus
+    the totals is more columns than anyone will hand-maintain correctly, and a stale
+    hand-written header that says "mean" over a max column is worse than none.
+    """
+    if "__" not in col:
+        return None
+    base, kind = col.rsplit("__", 1)
+    spec = dict(base_spec.get(base, {}))
+    # The base title may already carry an aggregation -- "Fmax (mean)" -- and appending to
+    # it produced "Fmax (mean) (median)". Strip one trailing parenthetical so the suffix
+    # this function adds is the only one.
+    title = spec.get("title") or COUNT_TITLES.get(base, base)
+    # Only an AGGREGATION parenthetical is stripped, not any parenthetical: "Fmax (mean)"
+    # must lose its "(mean)" before gaining "(median)", but a title whose parenthetical
+    # carries meaning keeps it.
+    title = re.sub(r"\s*\((mean|median|min|max|SD)\)\s*$", "", title)
+    if kind == "total":
+        return dict(title=f"{title} (total)", format="{:,.0f}", scale="Greys",
+                    hidden=True,
+                    description=f"{title} summed over every target species. A TOTAL for "
+                                "this arm's whole run, not a per-species value -- an "
+                                "instance counted here once per proteome is one human "
+                                "instance scored nine times, so this is not the size of "
+                                "the answer key")
+    if kind not in AGG_TITLE:
+        return None
+    spec.pop("description", None)
+    spec["title"] = f"{title} ({AGG_TITLE[kind]})"
+    # SD is a spread, not a score, so it leaves the metric's own 0-1 bounds and ramp behind.
+    if kind == "sd":
+        spec.pop("min", None), spec.pop("max", None)
+    if AGG_SCALE[kind]:
+        spec["scale"] = AGG_SCALE[kind]
+    spec["hidden"] = True
+    what = ("Standard deviation over target species; high means the mean describes no "
+            "single species well" if kind == "sd" else
+            f"{AGG_TITLE[kind].capitalize()} over target species")
+    spec["description"] = (f"{what}. An AGGREGATION across species, never a sum -- "
+                           "species are weighted equally, so this is not tilted toward "
+                           "the best-annotated proteome")
+    return spec
 
 
 def fmt_metric_headers(cols: list[str]) -> dict:
@@ -602,9 +733,19 @@ def fmt_metric_headers(cols: list[str]) -> dict:
                                                   "handful of ranked proteins moves the "
                                                   "sensitivity as much as one with "
                                                   "hundreds"),
-        "n_species":    dict(title="Species", format="{:,.0f}", scale=False),
+        "n_species":    dict(title="Species", format="{:,.0f}", scale=False,
+                             description="Target proteomes every aggregation on this row "
+                                         "was taken over"),
     }
-    return {c: spec[c] for c in cols if c in spec}
+    out = {}
+    for c in cols:
+        if c in spec:
+            out[c] = spec[c]
+            continue
+        derived = derived_header(c, spec)
+        if derived is not None:
+            out[c] = derived
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -622,6 +763,13 @@ LEADERBOARD_COLS = (
      "n_proteins_ranked_min", "rank_sens_first_fp_mean",
      "roc_auc", "roc_auc_sub_chance"]
     + [c for c in HEADLINE if c not in {"fmax", "sens_first_fp_mean", "roc_auc"}]
+    # Every headline metric's five-number summary across species, then the run totals.
+    # All hidden by default via derived_header -- fifty extra columns on by default would
+    # make the table unreadable, and the point is that they are THERE when a number looks
+    # surprising, one click away in MultiQC's column chooser rather than absent.
+    + [f"{m}__{a}" for m in HEADLINE for a in SPECIES_AGGREGATIONS]
+    + [f"{c}__{a}" for c in COUNT_COLS for a in SPECIES_AGGREGATIONS]
+    + [f"{c}__total" for c in COUNT_COLS]
 )
 
 
@@ -689,6 +837,24 @@ def section_leaderboards(out: Path, metrics: pl.DataFrame,
                     "<b>Fmax</b> is a mean over target species, and the species disagree. "
                     "The SD, min and max columns are there so the mean is never read as a "
                     "single number.",
+                    "<b>Every headline metric carries the same five-number summary.</b> "
+                    "Turn on <code>metric (median)</code>, <code>(min)</code>, "
+                    "<code>(max)</code> or <code>(SD)</code> in the column chooser; they "
+                    "are hidden rather than absent, because fifty columns on by default "
+                    "is unreadable and a surprising mean should be one click from its "
+                    "spread.",
+                    "<b>An aggregation is not a total.</b> A column reading "
+                    "<code>(mean)</code>, <code>(median)</code>, <code>(min)</code>, "
+                    "<code>(max)</code> or <code>(SD)</code> collapses the target species "
+                    "with each weighted equally. A column reading <code>(total)</code> is "
+                    "summed over them and belongs to this arm's whole run — "
+                    "<code>Instances (total)</code> is about nine times the size of the "
+                    "human answer key, because one human instance is scored once per "
+                    "target proteome.",
+                    "<b>Rates have no total</b> and counts have both, which is why only "
+                    "the count columns offer one. Species are weighted equally throughout: "
+                    "mouse carries 17_228 reviewed Swiss-Prot entries and Ciona 28, so a "
+                    "size-weighted mean would be a mean over mouse.",
                     "<b>Fmax SD</b> separates tools that hold up across divergence from "
                     "tools that do not. "
                     + widest_spread(board),
