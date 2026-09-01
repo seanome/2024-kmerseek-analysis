@@ -5244,16 +5244,39 @@ def section_dedup_transfers(out: Path, metrics_all: pl.DataFrame, primary_truth:
     })
 
 
-# Below this many distinct labels in the answer key, `pfam_id` is a category vocabulary
-# rather than a family vocabulary: every proteome carries nearly all of it, the reachability
-# join matches everything, and the bar stops being a ceiling. Kept in step with
-# MIN_REACHABILITY_VOCAB in aggregate_domain_metrics.py.
+# Reported as context, and used as the fallback trigger only when the instance counts the
+# real test needs are not on the table. Kept in step with MIN_REACHABILITY_VOCAB in
+# aggregate_domain_metrics.py.
 MIN_REACHABILITY_VOCAB = 50
+
+# The real test: the bar is not a ceiling when it excludes essentially nothing. In step
+# with VACUOUS_REACHABILITY_RATIO in aggregate_domain_metrics.py, and see it for why a
+# small vocabulary on its own no longer implies a vacuous join.
+VACUOUS_REACHABILITY_RATIO = 0.99
 
 # Ratio to the median at which a target species has so little annotation that its recall is
 # capped by curation coverage rather than by divergence. In step with THIN_TARGET_RATIO in
 # aggregate_domain_metrics.py.
 THIN_TARGET_RATIO = 0.05
+
+
+def _join_is_vacuous(per: pl.DataFrame) -> bool:
+    """Did the reachability join actually exclude anything, on this run?
+
+    True when it excluded essentially nothing for every species. When the instance counts
+    are not on the table there is nothing to measure, so the small-vocabulary heuristic is
+    left to decide on its own and this returns True.
+    """
+    need = {"n_truth_instances", "n_reachable_instances"}
+    if not need.issubset(set(per.columns)):
+        return True
+    sub = per.filter(pl.col("n_truth_instances") > 0)
+    if sub.height == 0:
+        return True
+    ratio = sub.select(
+        (pl.col("n_reachable_instances") / pl.col("n_truth_instances")).alias("r")
+    )["r"]
+    return float(ratio.min()) >= VACUOUS_REACHABILITY_RATIO
 
 
 def reachability_caveat(per: pl.DataFrame, primary_truth: str) -> str:
@@ -5276,7 +5299,7 @@ def reachability_caveat(per: pl.DataFrame, primary_truth: str) -> str:
     notes = []
     if "n_truth_families" in per.columns:
         vocab = int(per["n_truth_families"].max() or 0)
-        if vocab < MIN_REACHABILITY_VOCAB:
+        if vocab < MIN_REACHABILITY_VOCAB and _join_is_vacuous(per):
             notes.append(
                 f"<p><b>This bar is not a ceiling on the <code>{primary_truth}</code> "
                 f"truth set.</b> Its <code>pfam_id</code> column holds one of {vocab} "
@@ -5330,13 +5353,17 @@ def section_reachability(out: Path, metrics: pl.DataFrame, primary_truth: str) -
         "id": "qfo_reachability",
         "section_name": "Recall ceiling per species",
         "description": (
-            "<p>Human domain instances whose family exists somewhere in the target "
-            "proteome against those whose family does not.</p>"
+            "<p>Human domain instances the target proteome could have supplied against "
+            "those it could not.</p>"
             + bullets(
-                "<b>Reachable</b> is instances whose family exists somewhere in the target "
-                "proteome; <b>unreachable</b> is those whose family does not.",
-                "No search of any kind can transfer a family the target does not have, so "
-                "every recall_reachable in this report divides by the reachable bar only.",
+                "<b>Reachable</b> is instances some annotated target protein could have "
+                "supplied the label for. On the Pfam truth sets that means the family "
+                "exists somewhere in the target; on the Swiss-Prot truth set, where the "
+                "label is one of twelve feature types, it means a target protein carries "
+                "that feature type <i>and</i> shares a Pfam family with the human query.",
+                "No search of any kind can transfer a label the target does not have, so "
+                "every recall_reachable in this report divides by the reachable bar only, "
+                "and counts only instances inside it.",
                 "<b>Species</b> are ordered by divergence time.")
             + reachability_caveat(per, primary_truth)),
         "plot_type": "bargraph",

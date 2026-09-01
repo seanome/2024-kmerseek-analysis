@@ -47,6 +47,21 @@ import cafa_metrics as cm  # noqa: E402
 # whole run rather than raise.
 import build_swissprot_truth as sprot  # noqa: E402
 
+# One domain instance, in its two spellings. The truth tables call it
+# (accession, pfam_id, domain_start, domain_end); a call table carries the same instance as
+# (query_acc, pfam_id, true_start, true_end). Every place that has to decide whether a call
+# and a truth row are the same instance -- the TP key, the stratum cut, the reachability
+# cut -- was writing one of these two lists out by hand, which is how they drift apart.
+TRUTH_INSTANCE_KEY = ["accession", "pfam_id", "domain_start", "domain_end"]
+CALL_INSTANCE_KEY = ["query_acc", "pfam_id", "true_start", "true_end"]
+
+
+def instance_keys(truth: pl.DataFrame) -> pl.DataFrame:
+    """Truth rows as distinct instance keys, renamed into the call table's spelling."""
+    return truth.select(
+        [pl.col(t).alias(c) for t, c in zip(TRUTH_INSTANCE_KEY, CALL_INSTANCE_KEY)]
+    ).unique()
+
 
 # Covariate axes the results get cut by. Continuous ones are binned; HGNC gene group is
 # already categorical. Bin edges are fixed rather than data-derived so a stratum means
@@ -838,7 +853,8 @@ def rank_roc_auc(calls: pl.DataFrame) -> float | None:
     return (sum_pos_ranks - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
 
 
-def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
+def operating_points(calls: pl.DataFrame, n_reachable: int,
+                     reachable: pl.DataFrame | None = None) -> pl.DataFrame:
     """Every score threshold's full operating point, in one descending-score pass.
 
     Each row is "keep all calls scoring at least this much". Cumulative counts are taken
@@ -849,6 +865,14 @@ def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
       recall_reachable       instance-level -- of the domains that could be found, how
                              many were, counting each true instance once no matter how
                              many regions hit it
+
+    `reachable` restricts the second numerator to the same instances its denominator
+    counts. Without it a tool that recovers an instance the reachability rule calls
+    unreachable drives recall_reachable above 1, and auprc integrates the curve, so the
+    headline number goes with it. It touches instances_found and nothing else: tp_calls,
+    fp_calls, precision, tpr and fpr keep reading every call, so passing it can only move
+    the reachable family of metrics. Pass None to count every found instance, which is
+    what the family join wants -- see reachable_instances().
     """
     if calls.height == 0 or "is_gray" not in calls.columns:
         return pl.DataFrame(
@@ -860,11 +884,21 @@ def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
             }
         )
 
+    # Joined before the sort, so the descending-score order the cumulative counts depend on
+    # is established after the join rather than assumed to survive it.
+    if reachable is None:
+        marked = calls.with_columns(pl.lit(True).alias("is_reachable"))
+    else:
+        marked = calls.join(
+            instance_keys(reachable).with_columns(pl.lit(True).alias("is_reachable")),
+            on=CALL_INSTANCE_KEY, how="left",
+        ).with_columns(pl.col("is_reachable").fill_null(False))
+
     ranked = (
-        calls.sort("score", descending=True, nulls_last=True)
+        marked.sort("score", descending=True, nulls_last=True)
         .with_columns(
-            pl.when("is_tp")
-            .then(pl.struct("query_acc", "pfam_id", "true_start", "true_end"))
+            pl.when(pl.col("is_tp") & pl.col("is_reachable"))
+            .then(pl.struct(*CALL_INSTANCE_KEY))
             .otherwise(None)
             .alias("tp_key")
         )
@@ -1028,14 +1062,24 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     # best_f1 -- reading the unrestricted count. restrict_tp_to_cut now clears is_tp on any
     # call whose instance is outside the cut before either consumer sees the table, so both
     # read the same numerator. See its docstring for why recall could otherwise exceed 1.0.
-    found = (
-        calls.filter("is_tp").select(
-            "query_acc", "pfam_id", "true_start", "true_end"
-        ).unique().height
-        if n_calls else 0
+    found_keys = (
+        calls.filter("is_tp").select(*CALL_INSTANCE_KEY).unique()
+        if n_calls else None
     )
+    found = found_keys.height if found_keys is not None else 0
     n_truth = truth.height
     n_reachable = reachable.height
+
+    # The reachable numerator, counted over the same instances the reachable denominator
+    # counts. Equal heights mean `reachable` is all of `truth` -- it is always a subset --
+    # so the join is skipped, which is the whole of the pfam and pfamn path and most of the
+    # ~4200-stratum inner loop.
+    if found_keys is None or reachable.height == n_truth:
+        found_reachable = found
+    else:
+        found_reachable = found_keys.join(
+            instance_keys(reachable), on=CALL_INSTANCE_KEY, how="semi"
+        ).height
 
     # Gray-zone accounting. Calls in territory the annotation never covered are excluded
     # from the precision denominator rather than counted against the tool.
@@ -1047,7 +1091,7 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     # never be mistaken for a free improvement -- the gap between these two IS the effect.
     precision_strict = n_tp_calls / n_calls if n_calls else 0.0
     recall = found / n_truth if n_truth else 0.0
-    recall_reachable = found / n_reachable if n_reachable else 0.0
+    recall_reachable = found_reachable / n_reachable if n_reachable else 0.0
 
     def f1(p, r):
         return 2 * p * r / (p + r) if (p + r) else 0.0
@@ -1063,6 +1107,10 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
         "n_truth_instances": n_truth,
         "n_reachable_instances": n_reachable,
         "n_instances_found": found,
+        # The numerator recall_reachable actually used. It differs from n_instances_found
+        # only where a tool recovered an instance the reachability rule ruled out, so the
+        # gap between the two is the direct read on how strict that rule is.
+        "n_instances_found_reachable": found_reachable,
         # --- operating point the tool reported at ---
         "precision": precision,
         "precision_strict": precision_strict,
@@ -1375,16 +1423,8 @@ def restrict_tp_to_cut(truth: pl.DataFrame, calls: pl.DataFrame) -> pl.DataFrame
     """
     if calls.height == 0 or "is_tp" not in calls.columns:
         return calls
-    key = ["query_acc", "pfam_id", "true_start", "true_end"]
-    in_cut = (
-        truth.select(
-            pl.col("accession").alias("query_acc"), "pfam_id",
-            pl.col("domain_start").alias("true_start"),
-            pl.col("domain_end").alias("true_end"),
-        )
-        .unique()
-        .with_columns(pl.lit(True).alias("in_cut"))
-    )
+    key = CALL_INSTANCE_KEY
+    in_cut = instance_keys(truth).with_columns(pl.lit(True).alias("in_cut"))
     # A non-TP call carries null true_start/true_end. polars does not match null keys in a
     # join, so those rows come back with in_cut null -- which is why `orphan` is gated on
     # is_tp rather than on in_cut alone.
@@ -1394,6 +1434,32 @@ def restrict_tp_to_cut(truth: pl.DataFrame, calls: pl.DataFrame) -> pl.DataFrame
     if "is_gray" in calls.columns:
         exprs.append((pl.col("is_gray") | orphan).alias("is_gray"))
     return out.with_columns(exprs).drop("in_cut")
+
+
+def reachable_instances(truth: pl.DataFrame, target_families: pl.DataFrame | None,
+                        target_anchor: pl.DataFrame | None) -> pl.DataFrame:
+    """The truth instances this target proteome could have supplied, by whichever key works.
+
+    Three cases, and which one applies is decided by the data rather than by the truth-set
+    name, so an arm that gains or loses the anchor column cannot end up on the wrong branch
+    while still looking configured correctly:
+
+      no target map        --direct-annotation arms transfer nothing off a target, so
+                           nothing is out of reach and the denominator is the full truth.
+      pfam_id is a family  the Pfam and Pfam-N truth sets. "The target has family F" is a
+                           real statement that varies by species, so the plain family join
+                           is right and is left exactly as it was.
+      anchor column present  the Swiss-Prot truth set, where pfam_id is one of twelve
+                           feature types and the family half lives in `anchor_pfam`.
+
+    The third branch is the fix. On the second branch the two are the same join, because
+    there the answer key IS the transfer key.
+    """
+    if target_families is None:
+        return truth
+    if target_anchor is not None and sprot.ANCHOR_COL in truth.columns:
+        return sprot.reachable_truth(truth, pairs=target_anchor)
+    return truth.join(target_families, on="pfam_id", how="inner")
 
 
 def target_map_coverage(map_lf: pl.LazyFrame, target_families: pl.DataFrame,
@@ -1411,10 +1477,14 @@ def target_map_coverage(map_lf: pl.LazyFrame, target_families: pl.DataFrame,
     species in the benchmark, so its transfer table is ~1/100th the size and every arm's
     call count collapsed by 30-130x at 550 Mya. It read as an evolutionary cliff.
 
-    The existing reachability bar cannot catch it: on that truth set `pfam_id` holds a
-    Swiss-Prot FEATURE TYPE from a 15-value vocabulary (DOMAIN, TRANSMEM, ACT_SITE, ...),
-    so 28 proteins still cover almost every type and reachability reads 6_991 / 7_000.
-    These three counts are vocabulary-independent and do catch it.
+    The reachability bar used not to catch it: on that truth set `pfam_id` holds a
+    Swiss-Prot FEATURE TYPE from a twelve-value vocabulary (DOMAIN, TRANSMEM, ACT_SITE,
+    ...), so 23 proteins still covered almost every type and reachability read one flat
+    constant for eight of nine targets. reachable_instances() now keys that truth set on
+    (feature type, Pfam family of the annotated protein) instead, which does vary. These
+    three counts are vocabulary-independent and catch it too; they stay because they
+    separate the two reasons a species can score low -- shallow curation, which is what
+    ciona has, and phylogenetic distance, which is what E. coli has.
     """
     stats = map_lf.select(
         pl.len().alias("n"),
@@ -1524,6 +1594,7 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
 
     if args.direct_annotation:
         target_families = None
+        target_anchor = None
         target_coverage = {"n_target_map_instances": None,
                            "n_target_map_proteins": None,
                            "n_target_families": None}
@@ -1534,6 +1605,12 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
         map_lf = (domain_map_lf if domain_map_lf is not None
                   else pl.scan_parquet(args.domain_map))
         target_families = map_lf.select("pfam_id").unique().collect()
+        # Exploded once here rather than once per stratum. Present only on the Swiss-Prot
+        # maps; its absence is what puts the pfam and pfamn arms on the family join.
+        target_anchor = (
+            sprot.anchor_pairs(map_lf.select("pfam_id", sprot.ANCHOR_COL).collect())
+            if sprot.ANCHOR_COL in map_lf.collect_schema().names() else None
+        )
         target_coverage = target_map_coverage(map_lf, target_families,
                                               args.domain_map, job)
         calls_lf = (
@@ -1607,11 +1684,15 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
             if t_sub.height == 0:
                 continue
 
-            reachable = (
-                t_sub if target_families is None
-                else t_sub.join(target_families, on="pfam_id", how="inner")
+            reachable = reachable_instances(t_sub, target_families, target_anchor)
+            # Only passed on when it can actually bite. Equal heights mean every truth
+            # instance in this cut is reachable, which is the pfam and pfamn path and every
+            # --direct-annotation arm, and there the join would be a no-op that still costs
+            # a pass over the calls in each of ~4200 strata.
+            points = operating_points(
+                c_sub, reachable.height,
+                reachable=None if reachable.height == t_sub.height else reachable,
             )
-            points = operating_points(c_sub, reachable.height)
             m = compute_metrics(c_sub, points, t_sub, reachable, args.min_overlap)
 
             pc = cm.protein_centric_curve(c_sub, t_sub, ic)
@@ -1635,13 +1716,11 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
                 # AND instances, because the floor counts proteins while every rate on the
                 # row is per instance.
                 "n_stratum_proteins": t_sub["accession"].n_unique(),
-                # How many distinct labels the reachability join has to work with. A
-                # reachability ceiling only means something when `pfam_id` is a FAMILY: on
-                # the Swiss-Prot truth set it is one of ~15 feature types, every proteome
-                # has nearly all of them, and reachable / truth is then ~1.0 for every
-                # species by construction -- recall_reachable is plain recall wearing a
-                # reachability label. This column is what lets a reader tell which of the
-                # two a row is.
+                # How many distinct labels the truth cut has to work with. Twelve on the
+                # Swiss-Prot truth set, thousands on the Pfam ones, and the gap is why the
+                # two need different reachability keys -- see reachable_instances(). Kept
+                # on the row so a reader can tell which key produced n_reachable_instances
+                # without going back to the code.
                 "n_truth_families": t_sub["pfam_id"].n_unique(),
                 # Measured, not a bin midpoint. The reduced-alphabet claim is stated on
                 # feature_length / ksize, and this is the numerator for this cell.
