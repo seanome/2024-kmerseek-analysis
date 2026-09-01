@@ -369,3 +369,158 @@ def target_locus_table(species: str) -> pl.DataFrame:
     return (acc.join(genes.unique(subset="_key"), on="_key", how="inner")
                .select("target_acc", "gene_symbol", "chrom", "start", "end", "midpoint",
                        "strand", "biotype"))
+
+
+# ---------------------------------------------------------------------------
+# Notebook 223/224 additions: per-call geometry and the reachability denominator.
+#
+# The three collapsed tables above answer "how much did this arm recover". They cannot
+# answer "where exactly did the call land", because `mhc_domain_level_all_arms` reports
+# `qstart` as a MIN and `qend` as a MAX over every call an arm made on that (gene, family)
+# -- a union of intervals, not one call. Anything about boundary geometry has to be read
+# off the raw call rows.
+#
+# One property of the raw table drives all of this: `true_start`/`true_end` are stamped
+# ONLY on calls the pipeline assigned to a truth instance, and assignment already requires
+# clearing the IoU cut (see `assign_instances` in evaluate_domain_calls.py). Filtering the
+# raw table on `true_start.is_not_null()` therefore selects the calls that passed, which is
+# exactly the wrong sample for asking why the others failed. Every function below joins the
+# human truth table on itself instead.
+# ---------------------------------------------------------------------------
+PFAM_NAMES_TSV = MIDI_DIR / "pfam_a_names.tsv"
+
+
+def load_pfam_names() -> pl.DataFrame:
+    """Pfam accession -> (short name, description), parsed from the local Pfam-A HMM library.
+
+    Built once by pulling the ACC/NAME/DESC triples out of `Pfam-A.hmm`; the accession is
+    stripped of its version suffix so it joins against the run's `pfam_id`. To regenerate::
+
+        grep -E "^(NAME|ACC|DESC) " ~/data/pfam/Pfam-A.hmm \
+          | awk '{k=$1; $1=""; sub(/^ +/,""); if(k=="NAME") n=$0; else if(k=="ACC") a=$0;
+                  else {split(a,p,"."); print p[1]"\t"n"\t"$0}}' \
+          > ~/data/qfo-pfam-region-midi/pfam_a_names.tsv
+    """
+    return pl.read_csv(PFAM_NAMES_TSV, separator="\t", has_header=False,
+                       new_columns=["pfam_id", "pfam_name", "pfam_desc"],
+                       infer_schema_length=0)
+
+
+def pfam_label(pfam_ids: list[str]) -> dict[str, str]:
+    """`{"PF00129": "PF00129 MHC_I"}` for axis ticks, falling back to the bare accession."""
+    names = dict(load_pfam_names().select("pfam_id", "pfam_name").iter_rows())
+    return {p: f"{p} {names[p]}" if p in names else p for p in pfam_ids}
+
+
+def focus_calls() -> pl.LazyFrame:
+    """Lazy handle on the 89M raw call rows. Always filter before collecting."""
+    return pl.scan_parquet(CHR6_CALLS_FOCUS)
+
+
+def focus_arms() -> pl.DataFrame:
+    """The (tool, variant) pairs the raw call table carries."""
+    return focus_calls().select("tool", "variant").unique().collect().sort("tool", "variant")
+
+
+def core_truth() -> pl.DataFrame:
+    """The true (gene, Pfam family) pairs on the curated MHC molecules, with role labels."""
+    core = load_chr6_gene_map().filter(pl.col("mhc_class").is_not_null())
+    truth = load_human_truth()
+    return (truth.join(core.select(accession="accession", hgnc_symbol="hgnc_symbol",
+                                   mhc_class="mhc_class"), on="accession", how="inner")
+                 .rename({"accession": "query_acc"})
+                 .with_columns(role=domain_role(pl.col("pfam_id"))))
+
+
+def window_truth() -> pl.DataFrame:
+    """Every true domain on a gene inside the extended MHC window."""
+    win = load_mhc_window().select(accession="accession", hgnc_symbol="hgnc_symbol")
+    return (load_human_truth().join(win, on="accession", how="inner")
+                              .rename({"accession": "query_acc"}))
+
+
+def domain_grid(truth: pl.DataFrame, species: list[str],
+                arms: pl.DataFrame | None = None) -> pl.DataFrame:
+    """Zero-filled (true domain x arm x species) grid with the best IoU and cover reached.
+
+    The raw call table has no row at all for a (gene, family, arm) an arm never called on,
+    so a plain group-by silently drops those cells and shrinks the recall denominator to
+    the domains the arm already found. The cross join puts every cell back and fills the
+    misses as 0, which is what "not recovered" means.
+    """
+    arms = focus_arms() if arms is None else arms
+    accs = truth["query_acc"].unique().to_list()
+    grid = (truth.join(arms, how="cross")
+                 .join(pl.DataFrame({"species": species}), how="cross"))
+    best = (focus_calls()
+            .filter(pl.col("query_acc").is_in(accs) & pl.col("species").is_in(species))
+            .group_by("species", "tool", "variant", "query_acc", "pfam_id")
+            .agg(best_iou=pl.col("iou").max(),
+                 best_cover=pl.col("cover").max(),
+                 n_calls=pl.len())
+            .collect())
+    return (grid.join(best, on=["species", "tool", "variant", "query_acc", "pfam_id"],
+                      how="left")
+                .with_columns(best_iou=pl.col("best_iou").fill_null(0.0),
+                              best_cover=pl.col("best_cover").fill_null(0.0),
+                              n_calls=pl.col("n_calls").fill_null(0),
+                              arm=pl.col("tool") + "." + pl.col("variant")))
+
+
+def call_offsets(species: str, accessions: list[str] | None = None) -> pl.DataFrame:
+    """Per-call boundary error against the true domain the call overlaps.
+
+    One row per raw call that (a) carries a Pfam family the query protein genuinely has and
+    (b) overlaps that domain by at least one residue. `d_start` is `qstart - true_start` and
+    `d_end` is `qend - true_end`, both in residues, so a call wider than the domain on both
+    sides is negative then positive.
+
+    A query can carry several instances of one family; the call is scored against the
+    instance it overlaps most, not the first one the join happens to emit.
+    """
+    truth = load_human_truth().select(query_acc="accession", pfam_id="pfam_id",
+                                      t_start="domain_start", t_end="domain_end",
+                                      prot_len="protein_length")
+    calls = focus_calls().filter(pl.col("species") == species)
+    if accessions is not None:
+        calls = calls.filter(pl.col("query_acc").is_in(accessions))
+    joined = (calls.select("query_acc", "pfam_id", "qstart", "qend", "score", "iou",
+                           "cover", "is_gray", "tool", "variant")
+                   .join(truth.lazy(), on=["query_acc", "pfam_id"], how="inner")
+                   .with_columns(overlap=(pl.min_horizontal("qend", "t_end")
+                                          - pl.max_horizontal("qstart", "t_start"))
+                                 .clip(lower_bound=0))
+                   .filter(pl.col("overlap") > 0)
+                   .sort("overlap", descending=True)
+                   .group_by("tool", "variant", "query_acc", "pfam_id", "qstart", "qend")
+                   .agg(pl.all().first()))
+    return (joined.collect()
+                  .with_columns(d_start=pl.col("qstart") - pl.col("t_start"),
+                                d_end=pl.col("qend") - pl.col("t_end"),
+                                arm=pl.col("tool") + "." + pl.col("variant")))
+
+
+def arm_ksize(variant: pl.Expr) -> pl.Expr:
+    """kmerseek variant string -> its k, null for a variant with no `_k<N>_` field."""
+    return variant.str.extract(r"_k(\d+)_", 1).cast(pl.Int64)
+
+
+def target_family_counts(pfam_ids: list[str],
+                         species: list[str] | None = None) -> pl.DataFrame:
+    """How many proteins in each target proteome carry each family.
+
+    Zero means the family is not annotated in that proteome, so no tool can score a true
+    positive against it there no matter how well it searches. This is the denominator the
+    cross-species figures need.
+    """
+    species = SPECIES_ORDER if species is None else species
+    rows = []
+    for sp in species:
+        dm = load_target_domain_map(sp)
+        cnt = dict(dm.filter(pl.col("pfam_id").is_in(pfam_ids))
+                     .group_by("pfam_id")
+                     .agg(pl.col("accession").n_unique().alias("n"))
+                     .iter_rows())
+        rows += [{"species": sp, "pfam_id": p, "n_target_proteins": cnt.get(p, 0)}
+                 for p in pfam_ids]
+    return pl.DataFrame(rows)
