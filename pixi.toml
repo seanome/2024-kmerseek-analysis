@@ -1,0 +1,23 @@
+[project]
+name = "kmerseek-analysis"
+description = "Analysis and benchmarking pipelines for kmerseek protein homology detection"
+channels = ["conda-forge", "bioconda"]
+platforms = ["osx-arm64", "linux-64"]
+
+# ── BLAST ──────────────────────────────────────────────────────────────────────
+[feature.blast.dependencies]
+blast = ">=2.16"
+
+# ── MMseqs2 ────────────────────────────────────────────────────────────────────
+[feature.mmseqs2.dependencies]
+mmseqs2 = ">=15"
+
+# ── FoldSeek ───────────────────────────────────────────────────────────────────
+[feature.foldseek.dependencies]
+foldseek = ">=10"
+
+# ── Named environments ─────────────────────────────────────────────────────────
+[environments]
+blast    = { features = ["blast"],    solve-group = "tools" }
+mmseqs2  = { features = ["mmseqs2"],  solve-group = "tools" }
+foldseek = { features = ["foldseek"], solve-group = "tools" }

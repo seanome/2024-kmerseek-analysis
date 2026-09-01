@@ -1,0 +1,1317 @@
+#!/usr/bin/env python3
+"""Turn aligned regions into Pfam domain calls and score them against the answer key.
+
+The question is domain finding, not orthology: for a human query protein, which stretch of
+it is a given Pfam family, and did the tool put the region in the right place?
+
+Pipeline for a search-based tool:
+
+  1. Read the tool's regions: (query, target, qstart, qend, tstart, tend, score).
+  2. Transfer. Look up the target protein's Pfam domains. A region claims a family when it
+     covers at least --min-overlap of that domain on the *target* side. The region's query
+     interval, carrying that family label, is now a domain call.
+  3. Score. A call is a true positive when the query protein has that family
+     AND the call's interval reciprocally overlaps (IoU) a real instance of it by at least
+     --min-overlap. Right family in the wrong place is a false positive, not a hit -- that
+     distinction is the whole reason for scoring regions instead of protein pairs.
+
+With --direct-annotation (hmmscan against Pfam-A) step 2 is skipped: the tool already names
+the family, so its intervals are query-side calls as they stand.
+
+Two overlap criteria, deliberately different:
+  transfer (target side)  overlap / domain_length -- did the region land on that domain
+  scoring  (query side)   IoU = overlap / union   -- is the call in the right place
+Transfer is the looser of the two on purpose. Being strict there would throw away correct
+families over target-side boundary noise, which is not what is being measured.
+"""
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+import polars as pl
+
+# bin/ is on PATH under Nextflow but not on PYTHONPATH, so make the sibling module
+# importable regardless of the working directory the task runs in.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import cafa_metrics as cm  # noqa: E402
+
+
+# Covariate axes the results get cut by. Continuous ones are binned; HGNC gene group is
+# already categorical. Bin edges are fixed rather than data-derived so a stratum means
+# the same thing across every tool, species and combo in the sweep.
+# Percent-identity bins. 30-40% is the twilight zone where profile methods lose the
+# signal and where claim 1 says HP patterning still holds; <20% is the midnight zone
+# below it. Bins are fixed rather than quantile-derived so a stratum means the same thing
+# in every species, which is the whole point of comparing across a divergence panel.
+IDENTITY_BINS = [0.0, 20.0, 30.0, 40.0, 60.0, 100.01]
+
+STRATA = {
+    "plddt": ("mean_plddt", [0, 50, 70, 90, 100]),
+    "disorder": ("disorder_fraction_plddt", [0.0, 0.1, 0.3, 0.6, 1.01]),
+    # Same bins as the pLDDT proxy on purpose, so the two axes are read side by side and a
+    # disagreement between them is visible rather than buried in different binning.
+    "disorder_seq": ("disorder_fraction_metapredict", [0.0, 0.1, 0.3, 0.6, 1.01]),
+    "omega": ("omega", [0.0, 0.1, 0.25, 0.5, 10.0]),
+}
+# Cutting on every one of ~4200 HGNC groups would produce mostly single-protein strata
+# where no metric is stable. Only groups with at least this many query proteins are cut.
+MIN_STRATUM_PROTEINS = 30
+
+# Boolean covariate columns that each become their own stratum, so the 200-series' curated
+# gene sets are cut out of the box rather than reconstructed in a notebook.
+GENE_SET_FLAGS = {
+    "mhc_class_i_heavy": "is_mhc_class_i_heavy",
+    "antiviral_restriction_factor": "is_antiviral_restriction_factor",
+    "igsf_decoy": "is_igsf_decoy",
+    "fast_evolving_family": "is_fast_evolving_family",
+    "olfactory_receptor": "is_olfactory_receptor",
+    "cytochrome_p450_2_3": "is_cytochrome_p450_2_3",
+    # Kept as measurable strata even though they are excluded from the HGNC sweep: how
+    # repeat-driven families behave is a result, and deleting them forfeits it.
+    "zinc_finger_c2h2": "is_zinc_finger_c2h2",
+    "zinc_finger_other": "is_zinc_finger_other",
+}
+
+
+def extract_accession(col: pl.Expr) -> pl.Expr:
+    """UniProt FASTA names are sp|P12345|NAME_SPECIES; annotations key on the accession.
+    Names already bare (Foldseek, after its filename cleanup) pass through untouched."""
+    return (
+        pl.when(col.str.contains(r"\|"))
+        .then(col.str.split("|").list.get(1, null_on_oob=True))
+        .otherwise(col)
+    )
+
+
+def load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
+                 max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
+    """Normalize any tool's output to one schema. Returns None for an empty result, which
+    is a real outcome (a combo that found nothing), not an error.
+
+    An empty gzip or zstd stream is NOT a zero-byte file -- both carry a frame header --
+    so the size check alone cannot catch a tool that legitimately found nothing. polars
+    raises NoDataError on those, which is caught here rather than at each call site.
+
+    rank_by and max_bonferroni_p apply to kmerseek only; every other tool ranks on the
+    score column its own output already carries.
+    """
+    try:
+        return _load_regions(path, direct, rank_by, max_bonferroni_p)
+    except pl.exceptions.NoDataError:
+        return None
+
+
+def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
+                  max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
+    if path.stat().st_size == 0:
+        return None
+
+    if path.suffix == ".parquet":
+        # kmerseek. region_start/region_end are query-side; target_start/target_end are
+        # target-side.
+        #
+        # Ranking is by `region_enrichment`, not by region_poisson_score. kmerseek's source is
+        # explicit that the Poisson score is "a heuristic score for ranking candidate
+        # regions against each other, not as a calibrated probability", for two reasons the
+        # -log10 transform does not fix: n_shared is arithmetic on the region's own length,
+        # which is the quantity find_matched_regions chose by keeping the longest gapless
+        # run (close to circular), and the k-mers counted overlap by ksize-1 residues, so
+        # they are not the independent trials the Poisson model assumes.
+        #
+        # Enrichment keeps that same numerator but divides by region_expected_shared_kmers
+        # instead of pushing it through a Poisson tail, so it drops the independence
+        # assumption while keeping the informative part: how many more k-mers matched than
+        # the target DB's composition predicts. It is region-scoped, which matters because
+        # the unit of this benchmark is the domain interval.
+        #
+        # jaccard is available and is deliberately NOT the default. It is a whole
+        # query-target statistic, so every region of a protein pair carries the same value
+        # and kmerseek would rank proteins while the aligners rank regions. The PR curve
+        # groups by score so those ties carry no ordering bias, but the discrimination is
+        # genuinely gone.
+        lf = pl.scan_parquet(path)
+        names = lf.collect_schema().names()
+        if not names:
+            return None
+
+        # What each ranking column actually is, read off kmerseek's own source rather than
+        # inferred from the name, because two of them are less independent than they look:
+        #
+        #   jaccard                 intersection/union over the WHOLE query-target pair.
+        #                           Every region of a pair carries the same value, so this
+        #                           ranks proteins, not regions.
+        #   region_enrichment       fold_enrichment(n_shared, lambda) = n_shared /
+        #                           region_expected_shared_kmers. Region-scoped, and the
+        #                           denominator carries target-DB composition, so a long
+        #                           region in a k-mer-rich neighbourhood is discounted.
+        #   region_n_shared_kmers   NOT an independent count. search.rs computes it as
+        #                           `region.length - ksize + 1`, pure arithmetic on the
+        #                           region's own length, so ranking by it is ranking by
+        #                           region length and nothing else.
+        #   region_poisson_score    -log10 of the Poisson tail on that same n_shared.
+        #
+        # region_enrichment and region_poisson_score share a numerator with
+        # region_n_shared_kmers and differ only in how they normalise it, so they are not
+        # four independent hypotheses; they are one count under three normalisations plus
+        # one whole-protein statistic.
+        if rank_by not in names:
+            raise SystemExit(
+                f"{path} has no `{rank_by}` column, so --kmerseek-rank-by {rank_by} cannot "
+                f"be applied. Columns present: {sorted(names)}. A file written by an older "
+                f"kmerseek may predate the field; re-run the search arm or pick another."
+            )
+        score_col = rank_by
+
+        # Bonferroni correction, using the recipe kmerseek's own source prescribes: convert
+        # the region tail back to a probability and multiply by how many positions the
+        # region could have started at (region_search_space) and how many targets were
+        # searched (db_n_targets). run_n_queries is deliberately NOT included -- kmerseek
+        # reports these counts separately so that no statistic changes depending on batch
+        # composition, and a per-query call should not get harder to make because someone
+        # searched more queries alongside it.
+        #
+        # region_tail_probability is preferred over inverting region_poisson_score: it is
+        # the same number without a round trip through -log10, and kmerseek documents it as
+        # being reported precisely so downstream tools do not have to invert.
+        needed = {"region_search_space", "db_n_targets"}
+        can_correct = needed.issubset(names) and (
+            "region_tail_probability" in names or "region_poisson_score" in names
+        )
+        if max_bonferroni_p is not None and not can_correct:
+            missing = sorted((needed | {"region_tail_probability"}) - set(names))
+            raise SystemExit(
+                f"{path} is missing {missing}, so the Bonferroni filter cannot be applied. "
+                f"Pass --kmerseek-max-bonferroni-p 0 to disable it, or re-run the search "
+                f"arm with a kmerseek that reports the search-space counts."
+            )
+
+        if max_bonferroni_p is not None:
+            raw_p = (pl.col("region_tail_probability").cast(pl.Float64)
+                     if "region_tail_probability" in names
+                     else (10.0 ** -pl.col("region_poisson_score").cast(pl.Float64)))
+            n_tests = (pl.col("region_search_space").cast(pl.Float64)
+                       * pl.col("db_n_targets").cast(pl.Float64))
+            # Bonferroni caps at 1: a corrected probability above 1 is still just "not
+            # significant", and letting it exceed 1 would be meaningless.
+            lf = lf.filter(
+                pl.min_horizontal(raw_p * n_tests, pl.lit(1.0)) < max_bonferroni_p
+            )
+
+        return lf.select(
+            extract_accession(pl.col("query_name")).alias("query_acc"),
+            extract_accession(pl.col("target_name")).alias("target_acc"),
+            pl.col("region_start").cast(pl.Int64).alias("qstart"),
+            pl.col("region_end").cast(pl.Int64).alias("qend"),
+            pl.col("target_start").cast(pl.Int64).alias("tstart"),
+            pl.col("target_end").cast(pl.Int64).alias("tend"),
+            pl.col(score_col).cast(pl.Float64).alias("score"),
+        )
+
+    if direct:
+        cols = ["query", "pfam_id", "qstart", "qend", "score", "evalue"]
+        lf = pl.scan_csv(path, separator="\t", has_header=False, new_columns=cols)
+        return lf.select(
+            extract_accession(pl.col("query")).alias("query_acc"),
+            # hmmscan reports versioned Pfam accessions (PF00001.24); the tables key on
+            # the unversioned id.
+            pl.col("pfam_id").str.split(".").list.get(0).alias("pfam_id"),
+            pl.col("qstart").cast(pl.Int64),
+            pl.col("qend").cast(pl.Int64),
+            pl.col("score").cast(pl.Float64),
+        )
+
+    # 8 columns for the aligners; motif tools (Folddisco) append a 9th holding how many
+    # residues matched, so the envelope's density survives into the metrics.
+    # Widths are read off the file rather than declared, so one loader serves both.
+    cols = ["query", "target", "qstart", "qend", "tstart", "tend", "score", "evalue",
+            "n_matched_residues"]
+    probe = pl.scan_csv(path, separator="\t", has_header=False)
+    width = len(probe.collect_schema().names())
+    lf = pl.scan_csv(path, separator="\t", has_header=False,
+                     new_columns=cols[:width])
+    selection = [
+        extract_accession(pl.col("query")).alias("query_acc"),
+        extract_accession(pl.col("target")).alias("target_acc"),
+        pl.col("qstart").cast(pl.Int64),
+        pl.col("qend").cast(pl.Int64),
+        pl.col("tstart").cast(pl.Int64),
+        pl.col("tend").cast(pl.Int64),
+        pl.col("score").cast(pl.Float64),
+    ]
+    if width >= 9:
+        selection.append(pl.col("n_matched_residues").cast(pl.Int64))
+    return lf.select(selection)
+
+
+def dedup_fragment_regions(regions: pl.LazyFrame, iou_min: float) -> pl.LazyFrame:
+    """Collapse regions duplicated by AlphaFold's overlapping structure fragments.
+
+    A protein over 2700 aa is modelled only as 1400-residue fragments on a 200-residue
+    stride, so most of each fragment also sits in its neighbour. The same alignment is
+    therefore found once per fragment, and after the fragment offset is applied those hits
+    land on the same target accession at the same coordinates. One real alignment, several
+    rows.
+
+    That is an artifact of how the structures are prepared, NOT tool behaviour, which is why
+    this is deliberately narrow. It keys on (query_acc, target_acc) and requires BOTH the
+    query and target intervals to overlap, so a tool reporting several genuinely different
+    alignments between the same pair keeps all of them, and a repeat protein's tandem
+    domains -- adjacent but not coincident -- are untouched.
+
+    It is emphatically NOT a general "drop near-duplicate calls" pass. assign_instances
+    penalises a tool that emits redundant copies of one call, on purpose: one becomes a true
+    positive and the rest false positives, so "found all twelve fingers" and "emitted twelve
+    copies of one" score differently. Removing duplicates for every tool would delete that
+    distinction. Only the arms reading fragmented AlphaFold files pass --dedup-fragments.
+
+    Ties are broken by score, then by original row order, so the result does not depend on
+    join ordering.
+    """
+    c = regions.with_row_index("_rid")
+    left = c.select("_rid", "query_acc", "target_acc", "qstart", "qend",
+                    "tstart", "tend", "score")
+    right = left.select(
+        pl.col("_rid").alias("_rid_b"), "query_acc", "target_acc",
+        pl.col("qstart").alias("qstart_b"), pl.col("qend").alias("qend_b"),
+        pl.col("tstart").alias("tstart_b"), pl.col("tend").alias("tend_b"),
+        pl.col("score").alias("score_b"),
+    )
+
+    def iou(a0, a1, b0, b1):
+        inter = (pl.min_horizontal(pl.col(a1), pl.col(b1))
+                 - pl.max_horizontal(pl.col(a0), pl.col(b0))).clip(lower_bound=0)
+        union = (pl.max_horizontal(pl.col(a1), pl.col(b1))
+                 - pl.min_horizontal(pl.col(a0), pl.col(b0)))
+        return pl.when(union > 0).then(inter / union).otherwise(0.0)
+
+    beaten = (
+        left.join(right, on=["query_acc", "target_acc"], how="inner")
+        .filter(pl.col("_rid") != pl.col("_rid_b"))
+        .filter(
+            (iou("qstart", "qend", "qstart_b", "qend_b") >= iou_min)
+            & (iou("tstart", "tend", "tstart_b", "tend_b") >= iou_min)
+            & (
+                (pl.col("score_b") > pl.col("score"))
+                | ((pl.col("score_b") == pl.col("score"))
+                   & (pl.col("_rid_b") < pl.col("_rid")))
+            )
+        )
+        .select("_rid")
+        .unique()
+    )
+    return c.join(beaten, on="_rid", how="anti").drop("_rid")
+
+
+def overlap_expr(a_start: str, a_end: str, b_start: str, b_end: str) -> pl.Expr:
+    lo = pl.max_horizontal(pl.col(a_start), pl.col(b_start))
+    hi = pl.min_horizontal(pl.col(a_end), pl.col(b_end))
+    return (hi - lo).clip(lower_bound=0)
+
+
+def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overlap: float) -> pl.LazyFrame:
+    """Label each region with every target-side Pfam domain it covers."""
+    joined = regions.join(
+        domain_map.select(
+            pl.col("accession").alias("target_acc"),
+            "pfam_id",
+            pl.col("domain_start").alias("t_dom_start"),
+            pl.col("domain_end").alias("t_dom_end"),
+        ),
+        on="target_acc",
+        how="inner",
+    )
+    return (
+        joined.with_columns(
+            overlap_expr("tstart", "tend", "t_dom_start", "t_dom_end").alias("t_overlap"),
+            (pl.col("t_dom_end") - pl.col("t_dom_start")).alias("t_dom_len"),
+        )
+        .filter(pl.col("t_overlap") >= min_overlap * pl.col("t_dom_len"))
+        .select("query_acc", "pfam_id", "qstart", "qend", "score")
+    )
+
+
+def dedup_transferred_calls(calls: pl.LazyFrame, iou_min: float) -> pl.LazyFrame:
+    """Collapse calls that are the same prediction arrived at via different targets.
+
+    Homology transfer turns one query region into one call per target domain it covers. A
+    human kinase hitting 300 mouse kinases yields 300 calls of PF00069 over nearly the same
+    residues. assign_instances() then makes one a true positive and the other 299 false
+    positives, so per-protein precision collapses to 1/300 for exactly the proteins whose
+    families are best conserved. That is a property of the target proteome's redundancy, not
+    of whether the tool found the domain, and it is why precision falls monotonically with
+    target proteome size (ecoli 0.138 -> mouse 0.018 for phmmer).
+
+    This pass keys on (query_acc, pfam_id) and requires the QUERY intervals to overlap at
+    iou_min, so a protein's tandem domains -- same family, adjacent but not coincident, IoU
+    near zero -- are each kept. It says "these calls claim the same region of the same
+    protein for the same family", which is one annotation.
+
+    Deliberately NOT the default. Penalising redundant output is a real position: a tool that
+    reports one clean call and a tool that reports 300 copies are different tools to a user
+    reading the output. Both numbers are worth reporting, which is why this is a flag and
+    every metrics row is stamped with dedup_transfers. Compare the pair to separate detection
+    from redundancy. See dedup_fragment_regions() for the narrower artifact-removal pass.
+
+    Suppression is pairwise, not iterative NMS: a call is dropped if any overlapping call
+    scores higher, even if that call is itself dropped. Ties break by score then original row
+    order, so the result does not depend on join ordering.
+    """
+    c = calls.with_row_index("_rid")
+    left = c.select("_rid", "query_acc", "pfam_id", "qstart", "qend", "score")
+    right = left.select(
+        pl.col("_rid").alias("_rid_b"), "query_acc", "pfam_id",
+        pl.col("qstart").alias("qstart_b"), pl.col("qend").alias("qend_b"),
+        pl.col("score").alias("score_b"),
+    )
+
+    inter = (pl.min_horizontal("qend", "qend_b")
+             - pl.max_horizontal("qstart", "qstart_b")).clip(lower_bound=0)
+    union = (pl.max_horizontal("qend", "qend_b")
+             - pl.min_horizontal("qstart", "qstart_b"))
+    iou = pl.when(union > 0).then(inter / union).otherwise(0.0)
+
+    beaten = (
+        left.join(right, on=["query_acc", "pfam_id"], how="inner")
+        .filter(pl.col("_rid") != pl.col("_rid_b"))
+        .filter(
+            (iou >= iou_min)
+            & (
+                (pl.col("score_b") > pl.col("score"))
+                | ((pl.col("score_b") == pl.col("score"))
+                   & (pl.col("_rid_b") < pl.col("_rid")))
+            )
+        )
+        .select("_rid")
+        .unique()
+    )
+    return c.join(beaten, on="_rid", how="anti").drop("_rid")
+
+
+def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
+                semantics: str = "alignment") -> pl.DataFrame:
+    """Match each call to the best true instance of the same family on the same protein.
+
+    `semantics` picks what counts as correctly placed:
+
+      alignment  IoU >= min_overlap. The call must coincide with the true domain. This is
+                 the right test for a tool that reports an alignment, where a predicted
+                 interval claims every residue inside it.
+      motif      coverage of the true domain >= min_overlap. The right test for Folddisco,
+                 whose interval is the envelope of a discontinuous residue set rather than
+                 a claim on the residues between them. Judging that envelope by IoU would
+                 score the envelope reduction, not the prediction.
+
+    IoU is recorded either way, so the two are always inspectable side by side -- but
+    is_tp, and therefore precision and recall, follow the tool's own semantics.
+    """
+    matched = (
+        calls.join(
+            truth.select(
+                pl.col("accession").alias("query_acc"),
+                "pfam_id",
+                pl.col("domain_start").alias("true_start"),
+                pl.col("domain_end").alias("true_end"),
+            ),
+            on=["query_acc", "pfam_id"],
+            how="left",
+        )
+        .with_columns(overlap_expr("qstart", "qend", "true_start", "true_end").alias("ov"))
+        .with_columns(
+            # The null guard is load-bearing. A left join leaves true_start/true_end null
+            # when the query protein has no instance of the transferred family -- the
+            # definitive false positive. polars' max_horizontal/min_horizontal SKIP nulls
+            # rather than propagating them, so without this branch the union collapses to
+            # the call's own span, IoU comes out 1.0, and every call for a family the
+            # protein does not have scores as a true positive. That inverts the metric.
+            pl.when(pl.col("true_start").is_null() | pl.col("true_end").is_null())
+            .then(pl.lit(0.0))
+            .otherwise(
+                pl.col("ov")
+                / (
+                    pl.max_horizontal("qend", "true_end")
+                    - pl.min_horizontal("qstart", "true_start")
+                )
+            )
+            .fill_null(0.0)
+            .alias("iou")
+        )
+        .with_columns(
+            # Fraction of the true domain the call covers. Same null guard as above:
+            # max/min_horizontal skip nulls, so an absent truth row must be branched on
+            # explicitly rather than divided through.
+            pl.when(pl.col("true_start").is_null() | pl.col("true_end").is_null())
+            .then(pl.lit(0.0))
+            .otherwise(
+                pl.col("ov") / (pl.col("true_end") - pl.col("true_start"))
+            )
+            .fill_null(0.0)
+            .alias("cover")
+        )
+    )
+
+    # One row per call, carrying its best candidate. Assignment happens after this.
+    per_call = (
+        matched.group_by(["query_acc", "pfam_id", "qstart", "qend"])
+        .agg(
+            pl.col("score").max(),
+            pl.col("iou").max(),
+            pl.col("cover").max(),
+            pl.col("true_start").sort_by("iou", descending=True).first(),
+            pl.col("true_end").sort_by("iou", descending=True).first(),
+        )
+    )
+    candidates = matched.select(
+        "query_acc", "pfam_id", "qstart", "qend", "score", "iou", "cover",
+        "true_start", "true_end",
+    ).filter(pl.col("true_start").is_not_null())
+
+    calls_df = per_call.collect(engine="streaming")
+    cand_df = candidates.collect(engine="streaming")
+    return assign_instances(calls_df, cand_df, min_overlap, semantics)
+
+
+def assign_instances(calls: pl.DataFrame, candidates: pl.DataFrame,
+                     min_overlap: float, semantics: str) -> pl.DataFrame:
+    """One-to-one matching between predicted regions and annotated instances.
+
+    Without this a protein carrying a tandem array is scored incoherently. Twelve
+    predictions landing on the SAME zinc finger would each count as a true positive, and a
+    single prediction swallowing all twelve fingers would also count as one -- so "merged
+    everything into one region" and "found all twelve correctly" become indistinguishable,
+    and "emitted twelve redundant copies" scores as a perfect result. Those are three
+    different behaviours and the metric has to separate them.
+
+    Greedy in score order, the COCO convention: walk predictions from best-scoring down,
+    match each to the best still-unclaimed annotation it overlaps enough, and mark both
+    used. Score order rather than IoU order matters for the PR curve -- a prediction's
+    TP/FP status must not depend on predictions ranked below it, or the curve is not
+    monotone in the threshold.
+
+    Unmatched predictions are false positives; unmatched annotations are not
+    recovered, and show up through the recall denominator rather than as rows here.
+    """
+    key = "cover" if semantics == "motif" else "iou"
+    if candidates.height == 0:
+        return calls.with_columns(pl.lit(False).alias("is_tp"))
+
+    elig = candidates.filter(pl.col(key) >= min_overlap).sort(
+        ["score", key], descending=[True, True], nulls_last=True
+    )
+
+    used_truth: set[tuple] = set()
+    used_call: set[tuple] = set()
+    matched_calls: dict[tuple, tuple] = {}
+
+    for qa, pf, qs, qe, _sc, _iou, _cov, ts, te in elig.select(
+        "query_acc", "pfam_id", "qstart", "qend", "score", "iou", "cover",
+        "true_start", "true_end",
+    ).iter_rows():
+        ck = (qa, pf, qs, qe)
+        tk = (qa, pf, ts, te)
+        if ck in used_call or tk in used_truth:
+            continue
+        used_call.add(ck)
+        used_truth.add(tk)
+        matched_calls[ck] = (ts, te)
+
+    if not matched_calls:
+        return calls.with_columns(pl.lit(False).alias("is_tp"))
+
+    assigned = pl.DataFrame(
+        [(k[0], k[1], k[2], k[3], v[0], v[1]) for k, v in matched_calls.items()],
+        schema=["query_acc", "pfam_id", "qstart", "qend", "a_start", "a_end"],
+        orient="row",
+    )
+    out = calls.join(assigned, on=["query_acc", "pfam_id", "qstart", "qend"], how="left")
+    return out.with_columns(
+        pl.col("a_start").is_not_null().alias("is_tp"),
+        # Report the ASSIGNED instance, not the nearest one. A call that overlapped a
+        # domain another prediction already claimed is a false positive, and leaving its
+        # near-miss coordinates in place would make the calls table read as if it matched.
+        pl.when(pl.col("a_start").is_not_null()).then(pl.col("a_start"))
+          .otherwise(None).alias("true_start"),
+        pl.when(pl.col("a_end").is_not_null()).then(pl.col("a_end"))
+          .otherwise(None).alias("true_end"),
+    ).drop("a_start", "a_end")
+
+
+def rank_roc_auc(calls: pl.DataFrame) -> float | None:
+    """Call-level ROC-AUC: P(a correctly placed call outranks an incorrectly placed one).
+
+    Computed by the Mann-Whitney rank identity rather than by integrating the curve, so
+    tied scores are handled without approximation. Ties matter here: HP alphabets at low ksize produce
+    large blocks of identical region scores, and trapezoid integration over a coarse
+    curve would quietly round them in the tool's favour.
+
+    Returns None, not 0.0, when one class is absent. A tool whose every call is correct
+    has no ROC-AUC to report, and writing 0.0 there would rank it below a coin flip.
+    """
+    n = calls.height
+    if n == 0:
+        return None
+    n_pos = int(calls["is_tp"].sum())
+    n_neg = n - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return None
+
+    ranked = calls.with_columns(
+        pl.col("score").fill_null(float("-inf")).rank(method="average").alias("rank")
+    )
+    sum_pos_ranks = float(ranked.filter("is_tp")["rank"].sum())
+    return (sum_pos_ranks - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
+
+
+def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
+    """Every score threshold's full operating point, in one descending-score pass.
+
+    Each row is "keep all calls scoring at least this much". Cumulative counts are taken
+    at the last row of each distinct score so a threshold never splits a block of ties.
+
+    Two different denominators sit side by side on purpose:
+      precision, tpr, fpr    call-level -- of what was reported, how much was right
+      recall_reachable       instance-level -- of the domains that could be found, how
+                             many were, counting each true instance once no matter how
+                             many regions hit it
+    """
+    if calls.height == 0 or "is_gray" not in calls.columns:
+        return pl.DataFrame(
+            schema={
+                "score_threshold": pl.Float64, "n_calls": pl.Int64, "tp_calls": pl.Int64,
+                "fp_calls": pl.Int64, "instances_found": pl.Int64, "precision": pl.Float64,
+                "recall_reachable": pl.Float64, "f1": pl.Float64, "tpr": pl.Float64,
+                "fpr": pl.Float64,
+            }
+        )
+
+    ranked = (
+        calls.sort("score", descending=True, nulls_last=True)
+        .with_columns(
+            pl.when("is_tp")
+            .then(pl.struct("query_acc", "pfam_id", "true_start", "true_end"))
+            .otherwise(None)
+            .alias("tp_key")
+        )
+        .with_columns(
+            (pl.col("tp_key").is_not_null() & pl.col("tp_key").is_first_distinct())
+            .alias("novel_tp")
+        )
+        .with_columns(
+            pl.col("is_tp").cum_sum().alias("tp_calls"),
+            # Gray calls are excluded here too, so the curve and the scalar precision
+            # describe the same thing rather than diverging at every threshold.
+            (~pl.col("is_tp") & ~pl.col("is_gray")).cum_sum().alias("fp_calls"),
+            pl.col("novel_tp").cum_sum().alias("instances_found"),
+        )
+    )
+
+    total_tp = int(ranked["is_tp"].sum())
+    total_fp = ranked.height - total_tp
+
+    pts = (
+        ranked.group_by("score", maintain_order=True)
+        .agg(
+            pl.col("tp_calls").last(),
+            pl.col("fp_calls").last(),
+            pl.col("instances_found").last(),
+        )
+        .rename({"score": "score_threshold"})
+        .with_columns((pl.col("tp_calls") + pl.col("fp_calls")).alias("n_calls"))
+    )
+
+    return pts.with_columns(
+        (pl.col("tp_calls") / pl.col("n_calls")).alias("precision"),
+        (pl.col("instances_found") / n_reachable if n_reachable else pl.lit(0.0)).alias(
+            "recall_reachable"
+        ),
+        (pl.col("tp_calls") / total_tp if total_tp else pl.lit(0.0)).alias("tpr"),
+        (pl.col("fp_calls") / total_fp if total_fp else pl.lit(0.0)).alias("fpr"),
+    ).with_columns(
+        pl.when(pl.col("precision") + pl.col("recall_reachable") > 0)
+        .then(
+            2
+            * pl.col("precision")
+            * pl.col("recall_reachable")
+            / (pl.col("precision") + pl.col("recall_reachable"))
+        )
+        .otherwise(0.0)
+        .alias("f1")
+    )
+
+
+def average_precision(points: pl.DataFrame) -> float:
+    """Average precision: sum of precision weighted by the recall gained at each step.
+
+    The step-wise sum, not a trapezoid, which is the standard AP definition and does not
+    interpolate credit across a gap the tool never covered.
+    """
+    if points.height == 0:
+        return 0.0
+    recall = points["recall_reachable"]
+    delta = recall - recall.shift(1, fill_value=0.0)
+    return float((points["precision"] * delta).sum())
+
+
+def downsample(points: pl.DataFrame, max_points: int) -> pl.DataFrame:
+    """Thin the curve for storage, always keeping both ends.
+
+    A 1017-combo sweep writing one row per distinct score would dwarf the metrics it
+    supports. Every scalar metric is computed on the FULL curve before this runs, so
+    thinning changes the plot's resolution and nothing else.
+    """
+    n = points.height
+    if n <= max_points:
+        return points
+    idx = [round(i * (n - 1) / (max_points - 1)) for i in range(max_points)]
+    return points[sorted(set(idx))]
+
+
+def classify_scoreable(calls: pl.DataFrame, truth: pl.DataFrame,
+                       min_annotated_fraction: float) -> pl.DataFrame:
+    """Split non-TP calls into confident false positives and unscoreable gray-zone calls.
+
+    The Foldseek/Folddisco SCOPe convention, adapted to regions: confident positive is a
+    TP, confidently-different is an FP, and UNKNOWN is excluded from the denominator with
+    coverage reported alongside.
+
+    Why this benchmark needs it. Pfam-A annotates a fraction of residues; everywhere else
+    it is silent, not negative. Counting a call in silent territory as a false positive
+    asserts that Pfam looked there and found nothing, which it did not. That is
+    backwards for the claim under test -- a cryptic domain Pfam never annotated is the
+    thing the method is supposed to find, and scoring it as an error makes the benchmark
+    punish the hypothesis rather than test it.
+
+    The split, for a call that is not a TP:
+      confident FP   its residues lie mostly inside annotated territory on that protein.
+                     The annotation looked there and named a different family.
+      gray           its residues lie mostly outside any annotation. Unknown, excluded.
+
+    `min_annotated_fraction` is the share of the CALL that must sit inside annotated
+    territory to be judged confidently wrong. Measured against the call rather than the
+    annotation so a long call is not excused by clipping one domain's edge.
+    """
+    if calls.height == 0:
+        return calls.with_columns(pl.lit(False).alias("is_gray"))
+
+    ann = truth.select(
+        pl.col("accession").alias("query_acc"),
+        pl.col("domain_start").alias("a_start"),
+        pl.col("domain_end").alias("a_end"),
+    ).unique()
+
+    # Residues of each call that fall inside ANY annotation on that protein, family
+    # ignored -- the question here is only whether the annotation had an opinion.
+    ov = (
+        calls.filter(~pl.col("is_tp"))
+        .select("query_acc", "pfam_id", "qstart", "qend")
+        .join(ann, on="query_acc", how="left")
+        .with_columns(
+            (
+                pl.min_horizontal("qend", "a_end") - pl.max_horizontal("qstart", "a_start")
+            ).clip(lower_bound=0).alias("ov")
+        )
+        .group_by("query_acc", "pfam_id", "qstart", "qend")
+        # Summed, so a call spanning two adjacent domains counts both. Overlapping
+        # annotations could double-count, which can only make a call look MORE covered and
+        # therefore more likely to be judged a confident FP -- the conservative direction.
+        .agg(pl.col("ov").sum().alias("annotated_residues"))
+        .with_columns(
+            (
+                pl.col("annotated_residues")
+                / (pl.col("qend") - pl.col("qstart")).clip(lower_bound=1)
+            ).alias("annotated_fraction")
+        )
+    )
+
+    out = calls.join(ov, on=["query_acc", "pfam_id", "qstart", "qend"], how="left")
+    return out.with_columns(
+        (
+            ~pl.col("is_tp")
+            & (pl.col("annotated_fraction").fill_null(0.0) < min_annotated_fraction)
+        ).alias("is_gray")
+    )
+
+
+def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFrame,
+                    reachable: pl.DataFrame, min_overlap: float) -> dict:
+    n_calls = calls.height
+    n_tp_calls = int(calls["is_tp"].sum()) if n_calls else 0
+
+    # Counts distinct true instances found, not calls: several regions hitting one domain
+    # is one recovery, not many.
+    #
+    # Intersected against the truth subset, which is load-bearing for any INSTANCE-level
+    # stratum. Strata are applied to calls by protein, but identity bins are a property of
+    # the individual domain: one protein can hold a 90%-identity domain and a 25%-identity
+    # one. Counting every TP call from that protein against the 25% bin's denominator
+    # produced recall above 1.0 (observed: 2.77). Restricting the numerator to instances
+    # in this cell makes numerator and denominator describe the same set.
+    if n_calls:
+        key = ["query_acc", "pfam_id", "true_start", "true_end"]
+        truth_keys = truth.select(
+            pl.col("accession").alias("query_acc"), "pfam_id",
+            pl.col("domain_start").alias("true_start"),
+            pl.col("domain_end").alias("true_end"),
+        ).unique()
+        found = (
+            calls.filter("is_tp").select(key).unique()
+            .join(truth_keys, on=key, how="inner")
+            .height
+        )
+    else:
+        found = 0
+    n_truth = truth.height
+    n_reachable = reachable.height
+
+    # Gray-zone accounting. Calls in territory the annotation never covered are excluded
+    # from the precision denominator rather than counted against the tool.
+    n_gray = int(calls["is_gray"].sum()) if ("is_gray" in calls.columns and n_calls) else 0
+    n_scoreable = n_calls - n_gray
+
+    precision = n_tp_calls / n_scoreable if n_scoreable else 0.0
+    # The same number under the old convention, kept visible so the gray-zone choice can
+    # never be mistaken for a free improvement -- the gap between these two IS the effect.
+    precision_strict = n_tp_calls / n_calls if n_calls else 0.0
+    recall = found / n_truth if n_truth else 0.0
+    recall_reachable = found / n_reachable if n_reachable else 0.0
+
+    def f1(p, r):
+        return 2 * p * r / (p + r) if (p + r) else 0.0
+
+    metrics = {
+        "n_calls": n_calls,
+        "n_tp_calls": n_tp_calls,
+        "n_fp_calls": n_scoreable - n_tp_calls,
+        "n_gray_calls": n_gray,
+        # Fraction of calls that could be judged at all. A great precision on 12% of calls
+        # is a different claim from the same precision on 90%, so this travels with it.
+        "coverage": n_scoreable / n_calls if n_calls else 0.0,
+        "n_truth_instances": n_truth,
+        "n_reachable_instances": n_reachable,
+        "n_instances_found": found,
+        # --- operating point the tool reported at ---
+        "precision": precision,
+        "precision_strict": precision_strict,
+        "recall": recall,
+        # Recall against what was transferable at all. A human family absent from this
+        # target proteome cannot be recovered by any search, so raw recall above
+        # understates every tool by the same species-specific amount. Compare tools on
+        # this one.
+        "recall_reachable": recall_reachable,
+        "f1": f1(precision, recall),
+        "f1_reachable": f1(precision, recall_reachable),
+        # --- threshold-free ---
+        "roc_auc": rank_roc_auc(calls),
+        "auprc": average_precision(points),
+        "min_overlap": min_overlap,
+        "median_iou_tp": float(calls.filter("is_tp")["iou"].median()) if n_tp_calls else 0.0,
+    }
+
+    # --- best achievable operating point, and where it sits ---
+    # The reported point above depends on each tool's own default cutoff, which differs
+    # between tools and is not a property of the method. This is the comparable one.
+    if points.height:
+        best = points.sort("f1", descending=True).head(1).to_dicts()[0]
+        metrics.update({
+            "best_f1": best["f1"],
+            "best_f1_threshold": best["score_threshold"],
+            "best_f1_precision": best["precision"],
+            "best_f1_recall_reachable": best["recall_reachable"],
+        })
+    else:
+        metrics.update({
+            "best_f1": 0.0, "best_f1_threshold": None,
+            "best_f1_precision": 0.0, "best_f1_recall_reachable": 0.0,
+        })
+    return metrics
+
+
+def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.DataFrame:
+    """Bin each domain instance by identity to its closest same-family target domain.
+
+    Instances with no same-family match in the target get a distinct `no_homolog` label
+    rather than being dropped or lumped into the lowest bin. They are unreachable by any
+    transfer-based method, so mixing them into "<20%" would make every tool look worse in
+    the bin the hypothesis cares most about.
+    """
+    if identity is None or identity.height == 0:
+        return truth.with_columns(pl.lit(None, dtype=pl.String).alias("stratum_identity"))
+
+    key = ["accession", "pfam_id", "domain_start", "domain_end"]
+    # best_target rides along so a covariate of the winning target can be attached to this
+    # human instance downstream. It is only present in tables written after 2026-08-27.
+    cols = key + ["best_pident"] + (["best_target"] if "best_target" in identity.columns else [])
+    joined = truth.join(identity.select(cols), on=key, how="left")
+
+    expr = pl.when(pl.col("best_pident").is_null()).then(pl.lit("no_homolog"))
+    for lo, hi in zip(IDENTITY_BINS[:-1], IDENTITY_BINS[1:]):
+        expr = expr.when(
+            (pl.col("best_pident") >= lo) & (pl.col("best_pident") < hi)
+        ).then(pl.lit(f"{int(lo)}-{int(hi)}%"))
+    return joined.with_columns(expr.otherwise(None).alias("stratum_identity"))
+
+
+def attach_target_disorder(truth: pl.DataFrame,
+                           target_disorder: pl.DataFrame | None) -> pl.DataFrame:
+    """Bin each human instance by the disorder of the TARGET it could best transfer from.
+
+    The query-side disorder axis asks whether a tool copes with a disordered human region.
+    This asks the other half, and for a structure-based method it is the half that bites:
+    foldseek and reseek align a structure to a structure, so a target with no confident
+    structure defeats them however well-ordered the human query is. A sequence-only method
+    has no such dependency on either side.
+
+    "The target it could best transfer from" is the same instance-level definition the
+    identity axis uses -- the closest same-family domain in that proteome -- so the two
+    axes describe the same target and can be read together. That is why this needs
+    best_target from parse_domain_identity rather than a per-proteome average, which would
+    only tell you the species.
+
+    Bins match the query-side disorder edges so the two are directly comparable.
+    """
+    none = pl.lit(None, dtype=pl.String)
+    if (target_disorder is None or target_disorder.height == 0
+            or "best_target" not in truth.columns):
+        return truth.with_columns(none.alias("stratum_disorder_target"))
+
+    col = "disorder_fraction_metapredict"
+    if col not in target_disorder.columns:
+        return truth.with_columns(none.alias("stratum_disorder_target"))
+
+    joined = truth.join(
+        target_disorder.select(pl.col("accession").alias("best_target"),
+                               pl.col(col).alias("target_disorder")),
+        on="best_target", how="left",
+    )
+    edges = STRATA["disorder"][1]
+    expr = pl.when(pl.col("target_disorder").is_null()).then(none)
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        expr = expr.when(
+            (pl.col("target_disorder") >= lo) & (pl.col("target_disorder") < hi)
+        ).then(pl.lit(f"{lo}-{hi}"))
+    return joined.with_columns(expr.otherwise(None).alias("stratum_disorder_target"))
+
+
+def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
+                  keep_zinc_finger: bool = False) -> pl.DataFrame:
+    """Add one column per covariate axis, holding that protein's stratum label."""
+    if covariates is None:
+        return truth.with_columns(pl.lit("all").alias("stratum_hgnc"))
+
+    cov = covariates
+    exprs = []
+    for axis, (col, edges) in STRATA.items():
+        name = f"stratum_{axis}"
+        if col not in cov.columns:
+            exprs.append(pl.lit(None, dtype=pl.String).alias(name))
+            continue
+        expr = pl.when(pl.col(col).is_null()).then(pl.lit(None, dtype=pl.String))
+        for lo, hi in zip(edges[:-1], edges[1:]):
+            expr = expr.when((pl.col(col) >= lo) & (pl.col(col) < hi)).then(
+                pl.lit(f"{lo}-{hi}")
+            )
+        exprs.append(expr.otherwise(None).alias(name))
+
+    hgnc = "hgnc_gene_group"
+    if hgnc in cov.columns:
+        # Zinc fingers are kept in the HGNC axis by default. Notebook 206 excludes C2H2
+        # families because tandem arrays inflate PROTEIN-level k-mer sharing through repeat
+        # content, which is a real confound when the scored object is a protein pair. Here
+        # the scored object is a domain instance: a twelve-finger protein contains twelve
+        # domains and the right answer is twelve correctly-bounded regions. The exclusion
+        # belonged to a different unit of analysis. --exclude-zinc-finger-from-hgnc restores
+        # it for anyone comparing against the orthology-era numbers.
+        excluded = (
+            pl.col("hgnc_group_excluded")
+            if ("hgnc_group_excluded" in cov.columns and not keep_zinc_finger)
+            else pl.lit(False)
+        )
+        exprs.append(
+            pl.when(excluded).then(None).otherwise(pl.col(hgnc)).alias("stratum_hgnc")
+        )
+    else:
+        exprs.append(pl.lit(None, dtype=pl.String).alias("stratum_hgnc"))
+
+    # MHC class is categorical and small; every class is worth cutting on its own because
+    # notebook 211 found class I and class II answer the k-size question in opposite
+    # directions, so a single pooled "MHC" number hides the result.
+    exprs.append(
+        pl.col("mhc_class").alias("stratum_mhc") if "mhc_class" in cov.columns
+        else pl.lit(None, dtype=pl.String).alias("stratum_mhc")
+    )
+
+    # Each curated set becomes one stratum value on a shared axis; non-members are null so
+    # they do not form a meaningless "everything else" cell.
+    present = [(name, col) for name, col in GENE_SET_FLAGS.items() if col in cov.columns]
+    if present:
+        expr = pl.when(pl.lit(False)).then(pl.lit(None, dtype=pl.String))
+        for name, col in present:
+            expr = expr.when(pl.col(col)).then(pl.lit(name))
+        exprs.append(expr.otherwise(None).alias("stratum_geneset"))
+    else:
+        exprs.append(pl.lit(None, dtype=pl.String).alias("stratum_geneset"))
+
+    cov = cov.with_columns(exprs)
+
+    keep = ["accession"] + [c for c in cov.columns if c.startswith("stratum_")]
+    return truth.join(cov.select(keep), on="accession", how="left")
+
+
+def strata_of(truth: pl.DataFrame) -> list[tuple[str, str]]:
+    """Enumerate (axis, value) cuts worth reporting, always including the ungrouped one."""
+    out = [("all", "all")]
+    for col in (c for c in truth.columns if c.startswith("stratum_")):
+        axis = col.removeprefix("stratum_")
+        # The curated sets are deliberately small -- 6 class I heavy chains, 6 IgSF decoys --
+        # and are the whole point of cutting on them, so the noise floor that protects the
+        # ~4200 HGNC groups must not delete them. Their n is reported per row either way.
+        floor = 1 if axis in ("mhc", "geneset", "identity") else MIN_STRATUM_PROTEINS
+        counts = (
+            truth.filter(pl.col(col).is_not_null())
+            .group_by(col)
+            .agg(pl.col("accession").n_unique().alias("n"))
+            .filter(pl.col("n") >= floor)
+            .sort("n", descending=True)
+        )
+        out.extend((axis, v) for v in counts[col].to_list())
+    return out
+
+
+def subset(truth: pl.DataFrame, calls: pl.DataFrame, split: str,
+           axis: str, value: str) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """Restrict both the answer key and the calls to one split x stratum cell.
+
+    Truth and calls must be cut the same way or the metrics are incoherent: keeping a
+    call whose protein is outside the stratum would count against a denominator that
+    never included it.
+    """
+    t = truth
+    if split != "all":
+        t = t.filter(pl.col("split") == split)
+    if axis != "all":
+        t = t.filter(pl.col(f"stratum_{axis}") == value)
+
+    if t.height == 0:
+        return t, calls.head(0)
+
+    proteins = t.select("accession").unique().rename({"accession": "query_acc"})
+    c = calls.join(proteins, on="query_acc", how="inner")
+    if split != "all":
+        # Splits are grouped by Pfam family, so a call is in the split iff its claimed
+        # family is. Filtering calls by protein alone would leak selection-half families
+        # into the held-out numbers.
+        fams = t.select("pfam_id").unique()
+        c = c.join(fams, on="pfam_id", how="inner")
+    return t, c
+
+
+def score_one(args, truth, truth_lf, job):
+    """Score one tool's regions against the already-loaded truth for one species.
+
+    truth and truth_lf are passed in rather than read here because they are shared across
+    every tool for a given (truth_set, species): a batched task scores ~376 of them, and
+    re-reading the answer key that many times was most of the wall clock.
+    """
+    # Folddisco reports the envelope of a discontinuous residue set, not an alignment.
+    # Scoring that by interval IoU would measure the envelope reduction rather than the
+    # prediction, so this arm is scored on coverage instead.
+    semantics = "motif" if job["tool"] == "folddisco" else "alignment"
+    # Only the arms that read AlphaFold structure files. Those are the ones whose targets
+    # arrive as overlapping 1400-residue fragments, so the same alignment appears once per
+    # fragment. Every other arm reads whole sequences and has nothing to collapse -- and
+    # deduping them would erase the redundancy penalty assign_instances applies on purpose.
+    dedup_fragments = job["tool"] in ("foldseek", "reseek", "folddisco")
+
+    regions = load_regions(
+        job["regions"], args.direct_annotation,
+        rank_by=args.kmerseek_rank_by,
+        max_bonferroni_p=(args.kmerseek_max_bonferroni_p
+                          if args.kmerseek_max_bonferroni_p > 0 else None),
+    )
+
+    # Before transfer, not after: a fragment duplicate is one alignment reported twice, so
+    # it has to go while the target coordinates that identify it as a duplicate are still
+    # in the table. transfer_domains drops them.
+    if regions is not None and dedup_fragments and not args.direct_annotation:
+        before = regions.select(pl.len()).collect().item()
+        regions = dedup_fragment_regions(regions, args.fragment_iou).cache()
+        after = regions.select(pl.len()).collect().item()
+        if before != after:
+            print(f"fragment dedup: {before - after} of {before} regions were the same "
+                  f"alignment seen in overlapping AlphaFold fragments "
+                  f"({100 * (before - after) / before:.1f}%)", file=sys.stderr)
+
+    if args.direct_annotation:
+        target_families = None
+        calls_lf = regions
+    else:
+        map_lf = pl.scan_parquet(args.domain_map)
+        target_families = map_lf.select("pfam_id").unique().collect()
+        calls_lf = (
+            transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
+        )
+        if calls_lf is not None and job["dedup"]:
+            iou_min = (args.transfer_dedup_iou if args.transfer_dedup_iou is not None
+                       else args.min_overlap)
+            before = calls_lf.select(pl.len()).collect().item()
+            calls_lf = dedup_transferred_calls(calls_lf, iou_min).cache()
+            after = calls_lf.select(pl.len()).collect().item()
+            if before:
+                print(f"[{job['tool']}/{job['variant']}] dedup-transfers: "
+                      f"{before} -> {after} calls "
+                      f"({100 * (before - after) / before:.1f}% were redundant transfers "
+                      f"of the same region)", file=sys.stderr)
+
+    if calls_lf is None:
+        scored = pl.DataFrame(
+            schema={
+                "query_acc": pl.String, "pfam_id": pl.String, "qstart": pl.Int64,
+                "qend": pl.Int64, "score": pl.Float64, "iou": pl.Float64,
+                "cover": pl.Float64, "true_start": pl.Int64, "true_end": pl.Int64,
+                "is_tp": pl.Boolean,
+            }
+        )
+    else:
+        scored = score_calls(calls_lf, truth_lf, args.min_overlap, semantics)
+
+    scored = classify_scoreable(scored, truth, args.gray_min_annotated_fraction)
+    scored.write_parquet(job["calls_out"], compression="zstd")
+
+    # IC is estimated once on the whole answer key, not per stratum. A family's rarity is
+    # a property of the proteome; re-estimating it inside each cut would make the same
+    # family worth different amounts in different strata and break comparability.
+    ic = cm.information_content(truth)
+
+    ident = {"truth_set": args.truth_set,
+             "tool": job["tool"], "variant": job["variant"], "species": args.species,
+             "species_mya": args.species_mya,
+             # Stamped on every row so an alignment tool and a motif tool are never
+             # silently compared on boundary metrics that mean different things.
+             "interval_semantics": semantics,
+             # Both settings are meant to be run and reported side by side; without this
+             # stamp the two sets of rows are indistinguishable once pooled.
+             "dedup_transfers": bool(job["dedup"])}
+    rows, curves = [], []
+
+    for split in ("all", "selection", "heldout"):
+        if split != "all" and "split" not in truth.columns:
+            continue
+        for axis, value in strata_of(truth):
+            t_sub, c_sub = subset(truth, scored, split, axis, value)
+            if t_sub.height == 0:
+                continue
+
+            reachable = (
+                t_sub if target_families is None
+                else t_sub.join(target_families, on="pfam_id", how="inner")
+            )
+            points = operating_points(c_sub, reachable.height)
+            m = compute_metrics(c_sub, points, t_sub, reachable, args.min_overlap)
+
+            pc = cm.protein_centric_curve(c_sub, t_sub, ic)
+            m.update(cm.cafa_scalars(pc))
+            m.update(cm.boundary_metrics(c_sub, t_sub, args.strict_iou))
+            m.update(cm.domain_count_metrics(c_sub, t_sub))
+            m.update(cm.sensitivity_to_first_fp(c_sub, t_sub))
+            m.update(ident)
+            m.update({"split": split, "stratum_axis": axis, "stratum": value})
+            rows.append(m)
+
+            # Curves only for the ungrouped cut. One per split x stratum x combo would
+            # dwarf the metrics they support across a 1017-combo sweep.
+            if axis == "all" and job["curve_out"] is not None:
+                curves.append(
+                    downsample(points, args.max_curve_points).with_columns(
+                        pl.lit(split).alias("split"),
+                        **{k: pl.lit(v) for k, v in ident.items()},
+                    )
+                )
+
+    pl.DataFrame(rows, infer_schema_length=None).write_parquet(
+        job["metrics_out"], compression="zstd"
+    )
+    if job["curve_out"] is not None:
+        (pl.concat(curves, how="diagonal_relaxed") if curves
+         else pl.DataFrame(schema={"split": pl.String})).write_parquet(
+            job["curve_out"], compression="zstd"
+        )
+
+    headline = next(
+        (r for r in rows if r["split"] == "all" and r["stratum_axis"] == "all"), {}
+    )
+    print(json.dumps(
+        {k: v for k, v in headline.items() if not k.startswith("stratum")}, indent=2
+    ))
+    print(f"\nemitted {len(rows)} metric rows across splits x strata")
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    # Optional because --manifest supplies them per row instead. Exactly one of the two
+    # forms must be given, checked after parsing.
+    p.add_argument("--regions", type=Path)
+    p.add_argument("--tool")
+    p.add_argument("--variant")
+    p.add_argument("--manifest", type=Path,
+                   help="TSV of tool<TAB>variant<TAB>regions_path, one row per arm, all "
+                        "sharing this species and truth set. Scores every row in one "
+                        "process so the answer key is read once rather than once per arm, "
+                        "and so a full sweep is 27 SLURM jobs instead of ~10_100.")
+    p.add_argument("--species", required=True)
+    p.add_argument("--truth-set", default="pfam",
+                   help="which truth set this row was measured against")
+    p.add_argument("--species-mya", type=float, default=None,
+                   help="divergence from human in millions of years; the x-axis for "
+                        "per-species plots")
+    p.add_argument("--truth", required=True, type=Path)
+    p.add_argument("--domain-map", type=Path)
+    p.add_argument("--target-disorder", type=Path,
+                   help="optional metapredict parquet for THIS species' proteome; bins each "
+                        "human instance by the disorder of the target it could best "
+                        "transfer from. Requires an --identity table carrying best_target.")
+    p.add_argument("--identity", type=Path,
+                   help="per-domain-pair percent identity for this species; the "
+                        "twilight-zone stratification axis")
+    p.add_argument("--covariates", type=Path,
+                   help="per-protein HGNC group / omega / pLDDT / disorder table")
+    p.add_argument("--direct-annotation", action="store_true")
+    p.add_argument("--kmerseek-rank-by", default="region_enrichment",
+                   choices=["jaccard", "region_enrichment", "region_n_shared_kmers",
+                            "region_poisson_score"],
+                   help="Which kmerseek column ranks calls, bigger is better for all four. "
+                        "region_enrichment (default) is region-scoped and normalised by "
+                        "the target DB's expected shared k-mers. jaccard is whole-protein "
+                        "so it cannot separate regions of one "
+                        "pair; region_n_shared_kmers is region_length-ksize+1, so it ranks "
+                        "by region length alone; region_poisson_score reproduces the "
+                        "pre-2026-08-26 behaviour. The Bonferroni filter is independent of "
+                        "this choice and always uses the region Poisson tail.")
+    p.add_argument("--kmerseek-max-bonferroni-p", type=float, default=0.05,
+                   help="Drop kmerseek regions whose Bonferroni-corrected Poisson tail "
+                        "(raw p x region_search_space x db_n_targets) is at or above this. "
+                        "0 disables the filter. Applies to kmerseek only.")
+    p.add_argument("--dedup-fragments", action="store_true",
+                   help="collapse regions duplicated by AlphaFold's overlapping structure "
+                        "fragments. Only for arms that read AlphaFold files -- see "
+                        "dedup_fragment_regions() for why this is not applied globally.")
+    p.add_argument("--fragment-iou", type=float, default=0.9,
+                   help="how coincident two regions on the same (query, target) pair must "
+                        "be, on BOTH sides, to count as the same alignment seen twice")
+    p.add_argument("--dedup-transfers", action="store_true",
+                   help="collapse calls that are the same prediction reached through "
+                        "different targets: one call per (query, family, region) instead of "
+                        "one per target domain hit. Separates detection from the redundancy "
+                        "of the target proteome -- run both settings and report the pair. "
+                        "See dedup_transferred_calls().")
+    p.add_argument("--dedup-transfer-modes", default="off,on",
+                   help="which dedup settings to score each manifest arm under, as a comma "
+                        "list of 'off' and 'on'. Both by default: the un-deduplicated number "
+                        "measures redundant output, the deduplicated one measures detection, "
+                        "and the paper wants the pair. Ignored on the single --regions path, "
+                        "which takes --dedup-transfers instead.")
+    p.add_argument("--transfer-dedup-iou", type=float, default=None,
+                   help="how much two calls of the same family on the same query protein "
+                        "must overlap each other to count as one annotation "
+                        "(default: --min-overlap, i.e. they would claim the same instance)")
+    p.add_argument("--min-overlap", type=float, default=0.5)
+    p.add_argument("--strict-iou", type=float, default=0.8)
+    p.add_argument("--gray-min-annotated-fraction", type=float, default=0.5,
+                   help="share of a call that must lie in annotated territory before it "
+                        "counts as a confident false positive rather than gray zone")
+    # Zinc fingers are INCLUDED by default. The exclusion was inherited from an
+    # orthology benchmark, where the scored object is a protein pair and a tandem array
+    # inflates protein-level k-mer sharing through repeat content. This benchmark scores
+    # DOMAINS: a twelve-finger protein contains twelve domains, and the correct
+    # answer is twelve correctly-bounded regions. The confound does not transfer, so the
+    # exclusion should not either.
+    p.add_argument("--exclude-zinc-finger-from-hgnc", action="store_true",
+                   help="restore the orthology-era exclusion of zinc-finger groups from "
+                        "the per-group HGNC sweep (off by default; see the note above)")
+    p.add_argument("--interval-semantics", choices=["alignment", "motif"],
+                   default="alignment",
+                   help="motif for tools reporting discontinuous residue sets (Folddisco)")
+    # Not required under --manifest: output names are derived per row from truth_set,
+    # tool, variant and species, because one process writes a trio per arm.
+    p.add_argument("--calls-out", type=Path)
+    p.add_argument("--metrics-out", type=Path)
+    p.add_argument("--curve-out", type=Path)
+    p.add_argument("--max-curve-points", type=int, default=2000)
+    args = p.parse_args()
+
+    if not args.direct_annotation and args.domain_map is None:
+        raise SystemExit("--domain-map is required unless --direct-annotation is set")
+    if bool(args.manifest) == bool(args.regions):
+        raise SystemExit("pass exactly one of --manifest or --regions")
+    if args.regions and not (args.tool and args.variant
+                             and args.calls_out and args.metrics_out):
+        raise SystemExit("--regions requires --tool, --variant, --calls-out and --metrics-out")
+
+    truth_lf = pl.scan_parquet(args.truth)
+    truth = truth_lf.collect()
+    covariates = pl.read_parquet(args.covariates) if args.covariates else None
+    identity = None
+    if args.identity and args.identity.exists() and args.identity.stat().st_size > 0:
+        try:
+            identity = pl.read_parquet(args.identity)
+        except Exception:
+            identity = None   # sentinel file when --skip_identity is set
+    truth = attach_strata(truth, covariates,
+                          keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
+    truth = attach_identity(truth, identity)
+
+    target_disorder = None
+    if (args.target_disorder and args.target_disorder.exists()
+            and args.target_disorder.stat().st_size > 0):
+        try:
+            target_disorder = pl.read_parquet(args.target_disorder)
+        except Exception:
+            target_disorder = None   # sentinel file when the arm is skipped
+    truth = attach_target_disorder(truth, target_disorder)
+
+    # One job per (tool, variant) when batched, or the single --regions when not. Batching
+    # exists because SLURM rate-limits submission: one task per (truth_set, species, tool,
+    # variant) is ~10_100 sbatch calls for a full sweep, against 27 when grouped by species.
+    # Each manifest row is scored once per dedup mode. The two live in the same task because
+    # the expensive setup -- reading and IC-weighting the truth table -- is shared, and
+    # because the pair is only meaningful compared to itself: same truth, same calls, one
+    # difference. The un-deduplicated stem is left exactly as it was so already-published
+    # paths and the globs that read them keep working; only the new mode gets a suffix.
+    modes = [m.strip() for m in args.dedup_transfer_modes.split(",") if m.strip()]
+    bad = [m for m in modes if m not in ("off", "on")]
+    if bad:
+        raise SystemExit(f"--dedup-transfer-modes takes 'off' and/or 'on', got {bad}")
+    if not modes:
+        raise SystemExit("--dedup-transfer-modes needs at least one mode")
+
+    if args.manifest:
+        jobs = []
+        for line in Path(args.manifest).read_text().splitlines():
+            if not line.strip():
+                continue
+            tool, variant, regions = line.split("\t")
+            for mode in modes:
+                stem = f"{args.truth_set}.{tool}.{variant}.{args.species}"
+                if mode == "on":
+                    stem += ".dedup"
+                jobs.append({"tool": tool, "variant": variant, "regions": Path(regions),
+                             "dedup": mode == "on",
+                             "calls_out": Path(f"{stem}.calls.parquet"),
+                             "metrics_out": Path(f"{stem}.metrics.parquet"),
+                             "curve_out": Path(f"{stem}.curve.parquet")})
+    else:
+        # The single-arm path keeps taking the plain boolean: output names are given
+        # explicitly there, so there is nowhere to put a second mode's files.
+        jobs = [{"tool": args.tool, "variant": args.variant, "regions": args.regions,
+                 "dedup": bool(args.dedup_transfers),
+                 "calls_out": args.calls_out, "metrics_out": args.metrics_out,
+                 "curve_out": args.curve_out}]
+
+    for i, job in enumerate(jobs, 1):
+        tag = f"{job['tool']}/{job['variant']}" + (" [dedup]" if job["dedup"] else "")
+        print(f"[{i}/{len(jobs)}] {tag}", file=sys.stderr)
+        score_one(args, truth, truth_lf, job)
+
+
+if __name__ == "__main__":
+    main()

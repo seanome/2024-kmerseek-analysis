@@ -1,0 +1,26 @@
+# Dockerfile.eval — lightweight Python + polars image for evaluation steps.
+# Used by: evaluate_scope40.py, format_kmerseek_results.py, aggregate_rocx.py,
+#           parseScopeHeaders, subsetFasta, collectPdbstyleStructures, chunkFasta,
+#           mergeEsmfoldStructures, aggregateROCX.
+#
+# Build: docker build -f docker/Dockerfile.eval -t scope40-eval:1.0 .
+# Push:  docker tag scope40-eval:1.0 <REGISTRY>/scope40-eval:1.0
+#        docker push <REGISTRY>/scope40-eval:1.0
+
+FROM python:3.12-slim
+
+# procps: Nextflow needs 'ps' to collect task metrics
+# curl, gzip: used in a few download / decompress steps
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+        procps \
+        curl \
+        gzip \
+ && rm -rf /var/lib/apt/lists/*
+
+# Pin polars to a known-good version; pyarrow needed for parquet write (future use)
+RUN pip install --no-cache-dir \
+    polars==1.7.1 \
+    pyarrow==17.0.0
+
+WORKDIR /data

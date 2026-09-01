@@ -1,0 +1,13 @@
+{
+  "human":       {"taxon_id": "9606",   "mya": 0,    "name": "Homo sapiens",                  "qfo_proteome": "UP000005640", "qfo_subdir": "Eukaryota"},
+  "mouse":       {"taxon_id": "10090",  "mya": 100,  "name": "Mus musculus",                  "qfo_proteome": "UP000000589", "qfo_subdir": "Eukaryota"},
+  "chicken":     {"taxon_id": "9031",   "mya": 300,  "name": "Gallus gallus",                 "qfo_proteome": "UP000000539", "qfo_subdir": "Eukaryota"},
+  "zebrafish":   {"taxon_id": "7955",   "mya": 430,  "name": "Danio rerio",                   "qfo_proteome": "UP000000437", "qfo_subdir": "Eukaryota"},
+  "ciona":       {"taxon_id": "7719",   "mya": 550,  "name": "Ciona intestinalis",            "qfo_proteome": "UP000008144", "qfo_subdir": "Eukaryota"},
+  "fly":         {"taxon_id": "7227",   "mya": 600,  "name": "Drosophila melanogaster",       "qfo_proteome": "UP000000803", "qfo_subdir": "Eukaryota"},
+  "worm":        {"taxon_id": "6239",   "mya": 650,  "name": "Caenorhabditis elegans",        "qfo_proteome": "UP000001940", "qfo_subdir": "Eukaryota"},
+  "yeast":       {"taxon_id": "559292", "mya": 900,  "name": "Saccharomyces cerevisiae S288C","qfo_proteome": "UP000002311", "qfo_subdir": "Eukaryota",
+                  "_note": "QfO uses taxon 559292 (S. cerevisiae S288C); user specified 4932 which is the species-level taxon"},
+  "arabidopsis": {"taxon_id": "3702",   "mya": 1500, "name": "Arabidopsis thaliana",          "qfo_proteome": "UP000006548", "qfo_subdir": "Eukaryota"},
+  "ecoli":       {"taxon_id": "83333",  "mya": 2000, "name": "Escherichia coli K-12",         "qfo_proteome": "UP000000625", "qfo_subdir": "Bacteria"}
+}

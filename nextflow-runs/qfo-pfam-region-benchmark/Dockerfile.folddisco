@@ -1,0 +1,22 @@
+# folddisco with the ENTRYPOINT cleared, for Nextflow + Apptainer.
+#
+# ghcr.io/steineggerlab/folddisco:master sets ENTRYPOINT ["/usr/local/bin/folddisco"].
+# Nextflow runs a task by handing the container `/bin/bash .command.run`; under Apptainer
+# an OCI ENTRYPOINT becomes the SIF runscript, and the task dies with exit 1 and no output
+# at all -- .command.out is empty, and the only thing in the log is Nextflow's unrelated
+# "Command 'ps' ... cannot be found" warning. Nothing points at the entrypoint.
+#
+# The same image runs correctly under Docker, which is why this reproduces on Sherlock and
+# not locally: Docker's ENTRYPOINT is bypassed by the way Nextflow invokes it, Apptainer's
+# runscript is not.
+#
+# procps is added for `ps`, which Nextflow uses to collect task metrics; without it every
+# task logs that warning and the trace has no peak_rss.
+FROM ghcr.io/steineggerlab/folddisco:master
+
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends procps \
+    && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT []
+CMD ["/bin/bash"]

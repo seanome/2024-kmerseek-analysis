@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find ~/data/quest-for-orthologs -type f -name *.fasta -o -name *.fa)",
+      "Bash(find ~/data/quest-for-orthologs -type f ! -name .DS_Store -exec ls -lh {})",
+      "Bash(2)",
+      "Read(//Users/olga/code/2024-kmerseek-analysis/**)",
+      "Bash(sort -k2)",
+      "Bash(find ~/data -name *.gz)",
+      "Bash(find ~/data/quest-for-orthologs -type f ! -name \".DS_Store\" -name \"*.fasta\" -exec wc -l {} +)",
+      "Bash(du -sh ~/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143/*/)",
+      "Bash(head -20 ~/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143/Eukaryota/*.idmapping)",
+      "Bash(grep -E \"\\\\.\\(fasta|xml|idmapping|gene2acc|miss\\)$\")",
+      "Bash(chmod +x /Users/olga/code/2024-kmerseek-analysis/results/pfam_benchmark/run_all_annotations.sh)",
+      "Bash(jupyter kernelspec:*)",
+      "Bash(/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python -m ipykernel install --user --name 2025-kmerseek-analysis --display-name \"2025-kmerseek-analysis\")",
+      "Bash(docker context:*)",
+      "Bash(docker stats:*)",
+      "Bash(/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python -c \"import sys; import polars; import ortholog_analysis_utils as ou; print\\(''OK''\\)\")",
+      "Bash(/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/jupyter nbconvert:*)",
+      "Bash(docker build:*)",
+      "Read(//Users/olga/Library/Jupyter/kernels/2025-kmerseek-analysis/**)",
+      "Bash(/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python -c \"import gprofiler, requests; print\\(''gprofiler:'', gprofiler.__version__\\); print\\(''requests: OK''\\)\")",
+      "Bash(/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python -c \"import sys; sys.path.insert\\(0, ''notebooks''\\); import ortholog_analysis_utils as ou; print\\(''OK''\\)\")",
+      "Bash(/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python -c \"from gprofiler import GProfiler; print\\(''gprofiler OK''\\)\")",
+      "Read(//Users/olga/anaconda3/share/jupyter/kernels/python3/**)",
+      "Bash(while read:*)",
+      "Bash(do echo:*)",
+      "Bash(find /Users/olga/data -name Orthogroups*)",
+      "Bash(find /Users/olga/data -name *.tsv -path *orthofinder*)",
+      "Bash(tee /tmp/build_pfam_annotations.log)",
+      "Bash(sort -k5 -h)",
+      "Bash(sort -k5 -rh)",
+      "Bash(du -sh ~/data/qfo-pfam-benchmark/kmerseek-results/*.csv.gz)",
+      "Bash(zcat ~/data/qfo-pfam-benchmark/kmerseek-results/human_vs_mouse.hp.k20.results.csv.gz)"
+    ]
+  }
+}
