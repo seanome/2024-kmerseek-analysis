@@ -145,6 +145,17 @@ PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 # that already has biology loaded -- it worked interactively and failed from make.
 NEXTFLOW ?= /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow
 
+# That env ships its own JVM under lib/jvm and does not put it on PATH. macOS carries a
+# /usr/bin/java STUB which exists but is not a runtime, so `command -v java` succeeds and
+# nextflow still dies with "Unable to locate a Java Runtime" -- which is what every Mac-side
+# nextflow target did, with an error naming Java rather than the missing JAVA_HOME. Derived
+# from NEXTFLOW so overriding one moves the other, and guarded on the JVM actually being
+# there so this stays inert on Sherlock, where `ml load biology nextflow` supplies both.
+NEXTFLOW_JVM := $(patsubst %/bin/nextflow,%/lib/jvm,$(NEXTFLOW))
+ifneq ($(wildcard $(NEXTFLOW_JVM)/bin/java),)
+export JAVA_HOME := $(NEXTFLOW_JVM)
+endif
+
 # Sherlock compute nodes are amd64; an Apple Silicon build defaults to arm64, which
 # Apptainer refuses to run.
 DOCKER_PLATFORM := linux/amd64
@@ -298,8 +309,13 @@ MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/qf
 # also the target you typed. A helper target that only ever runs as somebody else's
 # prerequisite -- multiqc-preflight -- sets this to the name you actually typed, since
 # being told to ssh over and run an internal target is not advice anyone can follow.
+# Falls back to what was actually TYPED when the guard fires inside a prerequisite. Being
+# told "'prefetch-images' runs on Sherlock" after typing `make run-mini` names an internal
+# target and hides the fact that run-mini-local exists -- which is exactly what happened.
+# GUARD_NAME still wins where a target sets it explicitly.
 GUARD_NAME =
-guard_name = $(if $(GUARD_NAME),$(GUARD_NAME),$@)
+guard_name = $(strip $(if $(GUARD_NAME),$(GUARD_NAME),\
+             $(if $(filter $@,$(MAKECMDGOALS)),$@,$(firstword $(MAKECMDGOALS)))))
 
 define require_mac
 	@if [ "$(ON_CLUSTER)" = "yes" ]; then \
@@ -315,6 +331,9 @@ define require_mac
 	fi
 endef
 
+# The `-local` twin is looked up by grepping this file rather than kept as a list, because
+# a list drifts: `run-mini` sent someone to ssh into Sherlock for a smoke test that
+# `run-mini-local` runs on the Mac in minutes, and no list would have been updated for it.
 define require_cluster
 	@if [ "$(ON_CLUSTER)" != "yes" ]; then \
 	  echo ""; \
@@ -323,6 +342,11 @@ define require_cluster
 	  echo "  ssh $(SHERLOCK_HOST)"; \
 	  echo "    cd \$$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark"; \
 	  echo "    make $(guard_name)"; \
+	  if grep -qE "^$(guard_name)-local:" $(firstword $(MAKEFILE_LIST)); then \
+	    echo ""; \
+	    echo "  Or run it here instead -- there is a Mac-side twin:"; \
+	    echo "    make $(guard_name)-local"; \
+	  fi; \
 	  echo ""; \
 	  exit 1; \
 	fi
