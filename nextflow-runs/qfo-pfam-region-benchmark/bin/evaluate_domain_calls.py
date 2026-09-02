@@ -764,14 +764,15 @@ def assign_instances(calls: pl.DataFrame, candidates: pl.DataFrame,
     #
     # Adding the call's identity and its matched instance makes the key unique, so the walk
     # is reproducible. Same class of bug as the one tests/test_dedup_passes.py guards for
-    # the pairwise suppression passes.
-    order = ["score", "_is_point", "elig",
-             "query_acc", "pfam_id", "qstart", "qend", "true_start", "true_end"]
+    # the pairwise suppression passes. Those trailing keys are cm.CALL_TIEBREAK, shared
+    # with sensitivity_to_first_fp rather than repeated, so the two stages that rank calls
+    # cannot come to disagree about what "first" means.
+    order = ["score", "_is_point", "elig", *cm.CALL_TIEBREAK]
     elig = (
         candidates.with_columns(elig_key, is_point.alias("_is_point"))
         .filter(pl.col("elig") >= min_overlap)
         .sort(order,
-              descending=[True, False, True] + [False] * 6,
+              descending=[True, False, True] + [False] * len(cm.CALL_TIEBREAK),
               nulls_last=True)
     )
 
@@ -1085,7 +1086,11 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     # The reported point above depends on each tool's own default cutoff, which differs
     # between tools and is not a property of the method. This is the comparable one.
     if points.height:
-        best = points.sort("f1", descending=True).head(1).to_dicts()[0]
+        # Threshold breaks the tie, lowest first. Score plateaus put several thresholds at
+        # the same best F1, and the one reported has to be the same one every run.
+        best = points.sort(
+            ["f1", "score_threshold"], descending=[True, False]
+        ).head(1).to_dicts()[0]
         metrics.update({
             "best_f1": best["f1"],
             "best_f1_threshold": best["score_threshold"],

@@ -47,6 +47,31 @@ import polars as pl
 
 DEFAULT_N_THRESHOLDS = 101
 
+# Fields that, with the score, put a total order on the scored-calls table.
+#
+# The table reaches these metrics from a group_by, so its row order is whatever polars
+# happened to emit -- it differs between runs on byte-identical input. Any step that reads
+# calls in rank order has to break score ties itself, or "the first of these two
+# equally-scored calls" means a different call each run. Ties are not a corner case:
+# rank_roc_auc's docstring makes the same point, HP alphabets at low ksize produce large
+# blocks of identical region scores.
+#
+# Which order the tiebreak imposes does not matter, only that it is fixed and total. It is
+# total because (query_acc, pfam_id, qstart, qend) is a call's identity and score_calls
+# groups on exactly those four, so no two rows of the scored table share them; the truth
+# coordinates extend that to the pre-assignment candidate table, where one call appears
+# once per annotation it could match.
+#
+# It lives here, and assign_instances reads it from here, because the two are the same
+# rule applied at two stages -- one deciding which tied call claims an annotation, the
+# other where the first false positive sits. Two hand-maintained copies would drift.
+CALL_TIEBREAK = ("query_acc", "pfam_id", "qstart", "qend", "true_start", "true_end")
+
+
+def rank_key() -> tuple[list[str], list[bool]]:
+    """Sort arguments that rank calls best-first, with ties broken deterministically."""
+    return ["score", *CALL_TIEBREAK], [True] + [False] * len(CALL_TIEBREAK)
+
 
 def information_content(truth: pl.DataFrame) -> pl.DataFrame:
     """IC(family) = -log2(proteins carrying it / proteins total).
@@ -300,9 +325,12 @@ def cafa_scalars(curve: pl.DataFrame, prefix: str = "") -> dict:
                "fmax_recall": 0.0, "wfmax": 0.0, "smin": None, "smin_threshold": None,
                "smin_ru": None, "smin_mi": None}
         return {f"{prefix}{k}": v for k, v in out.items()}
-    best_f = curve.sort("f", descending=True).head(1).to_dicts()[0]
-    best_wf = curve.sort("wf", descending=True).head(1).to_dicts()[0]
-    best_s = curve.sort("s", descending=False).head(1).to_dicts()[0]
+    # Threshold breaks each tie, lowest first. A plateau where several thresholds reach the
+    # same Fmax is normal, and without the tiebreak the threshold reported next to it is
+    # whichever row the sort happened to leave on top.
+    best_f = curve.sort(["f", "threshold"], descending=[True, False]).head(1).to_dicts()[0]
+    best_wf = curve.sort(["wf", "threshold"], descending=[True, False]).head(1).to_dicts()[0]
+    best_s = curve.sort(["s", "threshold"], descending=[False, False]).head(1).to_dicts()[0]
     out = {
         "fmax": best_f["f"],
         "fmax_threshold": best_f["threshold"],
@@ -485,6 +513,12 @@ def sensitivity_to_first_fp(calls: pl.DataFrame, truth: pl.DataFrame) -> dict:
     Averaged over query proteins that produced at least one call. A protein a tool stayed
     silent on has no ranking to evaluate and is excluded rather than scored 0 -- scoring it
     would conflate "ranked badly" with "said nothing", which are different failures.
+
+    Calls tied on score are ranked by CALL_TIEBREAK. Without it, four runs on identical
+    input gave four different values of the mean, spanning 56%, and three of the median,
+    while every other column stayed bit-identical -- which is what made it read as a quirk
+    of this metric rather than as the ordering bug assign_instances already breaks the same
+    ties to avoid.
     """
     out = {"sens_first_fp_mean": None, "sens_first_fp_median": None,
            "n_proteins_ranked": 0}
@@ -494,12 +528,19 @@ def sensitivity_to_first_fp(calls: pl.DataFrame, truth: pl.DataFrame) -> dict:
     n_true = truth.group_by("accession").agg(pl.len().alias("n_true")).rename(
         {"accession": "query_acc"}
     )
-    ranked = calls.sort("score", descending=True, nulls_last=True)
-
+    by, desc = rank_key()
     per = (
-        ranked.group_by("query_acc", maintain_order=True)
-        .agg(pl.col("is_tp").alias("hits"))
+        calls.group_by("query_acc")
+        # Sorted inside the aggregation rather than by sorting the frame and trusting
+        # group_by to keep rows in order within a group: the walk below reads this list
+        # positionally, so its order IS the metric and belongs in the expression that
+        # builds it.
+        .agg(pl.col("is_tp").sort_by(by, descending=desc, nulls_last=True).alias("hits"))
         .join(n_true, on="query_acc", how="inner")
+        # The group order matters too, though only in the last bits: the mean below is a
+        # float sum, and adding the same per-query values in a different order does not
+        # give back the same double.
+        .sort("query_acc")
     )
     if per.height == 0:
         return out

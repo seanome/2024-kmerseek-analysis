@@ -141,7 +141,10 @@ def write_decoy_regions(truth_path: Path, target_map: Path, out: Path,
     tgt = target[0]
 
     lines, made = [], 0
-    for acc, grp in truth.group_by("accession"):
+    # maintain_order, because the loop stops after `n` and a bare group_by hands them back
+    # in a different order each call -- so two calls picked different proteins and the
+    # "same" regions file was not the same file. Same reason write_perfect_regions sorts.
+    for acc, grp in truth.group_by("accession", maintain_order=True):
         acc = acc[0] if isinstance(acc, tuple) else acc
         plen = grp["protein_length"].max()
         if plen is None:
