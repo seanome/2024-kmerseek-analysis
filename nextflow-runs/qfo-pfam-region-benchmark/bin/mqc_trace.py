@@ -262,6 +262,83 @@ def merge_timings(trace: pl.DataFrame, sidecars: pl.DataFrame) -> pl.DataFrame:
     return pl.concat([trace, fresh], how="diagonal_relaxed")
 
 
+#: Processes that split ONE logical search across several tasks. Their per-task rows are
+#: fragments: a rate or a duration taken from one row describes a fraction of the query
+#: set, not the search. folddiscoQuery runs 20 chunks per target species, so a median over
+#: its raw rows understates the search by ~23x and inflates queries-per-second by the same
+#: factor. Anything reporting per-search cost has to collapse these first.
+CHUNKED_PROCESSES = {"folddiscoQuery"}
+
+
+def species_from_tag(tag: str | None) -> str:
+    """Target species out of a trace tag, or "unknown".
+
+    Tags are not one shape. Searches read `human_vs_<species>`, optionally with a chunk
+    suffix; kmerseek reads `<species>_<alphabet>_k<k>_lc<bool>`; database builds read
+    `<species>` or `<species>_domains`. The `human_vs_` form is tried first because it is
+    the only one that cannot be confused with an alphabet name.
+    """
+    if not tag or tag == "-":
+        return "unknown"
+    m = re.search(r"human_vs_(\w+?)(?:\s|$|\.|\[)", tag)
+    if m:
+        return m.group(1)
+    m = re.match(r"^([A-Za-z0-9]+?)_(?:.+_k\d+_lc(?:true|false)|domains)$", tag)
+    if m:
+        return m.group(1)
+    m = re.match(r"^([A-Za-z0-9]+)$", tag.strip())
+    return m.group(1) if m else "unknown"
+
+
+def collapse_chunked_searches(trace: pl.DataFrame) -> pl.DataFrame:
+    """Sum every CHUNKED_PROCESSES task back into one row per (process, variant, species).
+
+    Time is additive across chunks and CPU-hours are too, so both are summed. `cpus` is
+    kept as the per-task request rather than summed: it describes how wide one task was,
+    and summing it would claim a core count no single job ever held. Non-chunked rows pass
+    through untouched, so this is safe to apply to a whole trace.
+    """
+    if trace.height == 0 or "process" not in trace.columns:
+        return trace
+    chunked = trace.filter(pl.col("process").is_in(list(CHUNKED_PROCESSES)))
+    if chunked.height == 0:
+        return trace
+    rest = trace.filter(~pl.col("process").is_in(list(CHUNKED_PROCESSES)))
+    keys = ["process", "tool", "is_search", "status"]
+    merged = (
+        chunked.with_columns(
+            _sp=pl.col("tag").map_elements(species_from_tag, return_dtype=pl.String),
+            _var=pl.struct("process", "tag").map_elements(
+                lambda r: variant_from_tag(r["process"], r["tag"]), return_dtype=pl.String),
+        )
+        .group_by(keys + ["_sp", "_var"])
+        .agg(
+            pl.col("realtime_s").sum(),
+            pl.col("duration_s").sum(),
+            pl.col("cpu_hours").sum(),
+            pl.col("cpus").max(),
+            pl.col("attempt").max(),
+            pl.col("peak_rss_b").max(),
+            pl.col("requested_mem_b").max(),
+            pl.col("pct_cpu").mean(),
+            pl.col("read_b").sum(),
+            pl.col("write_b").sum(),
+            pl.col("mem_used_frac").max(),
+            pl.col("exit").first(),
+            pl.len().alias("_n_chunks"),
+        )
+        .with_columns(tag=pl.lit("human_vs_") + pl.col("_sp"))
+        .drop("_sp", "_var")
+    )
+    # A real trace carries columns this aggregation has no meaning for -- task_id, hash,
+    # native_id, a work dir. They identify ONE task and a collapsed row is several, so they
+    # are filled with null rather than picked arbitrarily from whichever chunk sorted first.
+    for col in rest.columns:
+        if col not in merged.columns:
+            merged = merged.with_columns(pl.lit(None, dtype=rest.schema[col]).alias(col))
+    return pl.concat([rest, merged.select(rest.columns)], how="vertical_relaxed")
+
+
 def variant_from_tag(process: str, tag: str | None) -> str:
     """Recover a variant label from a process tag, matching the metrics table's spelling.
 

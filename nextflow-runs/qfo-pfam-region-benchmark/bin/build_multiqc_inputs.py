@@ -1231,9 +1231,17 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
 
 
 def _search_tasks(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
-    """Search tasks with a usable run time, annotated with their query rate."""
+    """One row per logical search, with a usable run time and its query rate.
+
+    Chunked processes are collapsed FIRST. folddiscoQuery splits one search across 20
+    tasks per target species, so before this every rate here described a fraction of the
+    query set while dividing by the whole of it: folddisco read as 0.30 queries/s and
+    55 min per search when it is really 0.013 and 20.9 h, a 23x error in its favour on
+    both axes. That fed the frontier plot's y axis and the capability table's cost column.
+    """
     if trace.height == 0:
         return trace.head(0)
+    trace = mt.collapse_chunked_searches(trace)
     searches = trace.filter(
         pl.col("is_search") & pl.col("realtime_s").is_not_null() & (pl.col("realtime_s") > 0)
     )
@@ -1259,7 +1267,8 @@ def throughput_per_tool(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
     disagree about which tasks went into the median.
     """
     empty = pl.DataFrame(schema={"tool": pl.String, "queries_per_s": pl.Float64,
-                                 "search_s": pl.Float64, "cpu_hours": pl.Float64})
+                                 "search_s": pl.Float64, "cpu_hours": pl.Float64,
+                                 "cpu_hours_per_search": pl.Float64})
     per_task = _search_tasks(trace, n_queries)
     if per_task.height == 0:
         return empty
@@ -1267,6 +1276,12 @@ def throughput_per_tool(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
         pl.col("qps").median().alias("queries_per_s"),
         pl.col("realtime_s").median().alias("search_s"),
         pl.col("cpu_hours").sum().alias("cpu_hours"),
+        # What one search costs, as opposed to what the whole sweep cost. The sum is the
+        # right number for "how much cluster time did this run burn" and the wrong one for
+        # comparing tools: kmerseek runs 406 arms per species and every baseline runs one,
+        # so its total is a parameter sweep set against single configurations. A user ships
+        # one arm, and this is what that arm costs.
+        pl.col("cpu_hours").median().alias("cpu_hours_per_search"),
     )
     # mmseqs2 runs two variants under one process name, so the trace's process column
     # cannot separate them; the metrics table spells them apart. Emit both spellings from
@@ -1291,7 +1306,8 @@ def throughput_per_variant(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
     """
     empty = pl.DataFrame(schema={"tool": pl.String, "variant": pl.String,
                                  "queries_per_s": pl.Float64, "search_s": pl.Float64,
-                                 "cpu_hours": pl.Float64})
+                                 "cpu_hours": pl.Float64,
+                                 "cpu_hours_per_search": pl.Float64})
     per_task = _search_tasks(trace, n_queries)
     if per_task.height == 0:
         return empty
@@ -1300,7 +1316,8 @@ def throughput_per_variant(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
         .group_by("tool", "trace_variant")
         .agg(pl.col("qps").median().alias("queries_per_s"),
              pl.col("realtime_s").median().alias("search_s"),
-             pl.col("cpu_hours").sum().alias("cpu_hours"))
+             pl.col("cpu_hours").sum().alias("cpu_hours"),
+             pl.col("cpu_hours").median().alias("cpu_hours_per_search"))
         .rename({"trace_variant": "variant"})
     )
 
