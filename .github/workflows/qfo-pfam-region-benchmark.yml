@@ -69,15 +69,29 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # Left floating on purpose. The Mac and Sherlock both run 25.10.4 out of the
+      # nf-core-v2 conda env, so pinning here would match production -- but it was CI
+      # floating ahead to 26.4.6 that caught nextflow.config's `def` declarations, which
+      # 26.x rejects and 25.10.4 accepts. The config resolves under both now, and keeping
+      # this unpinned is what will catch the next such change while it is still cheap.
       - uses: nf-core/setup-nextflow@v2
 
       # Catches a syntax error or a broken profile without pulling a single container. The
       # profiles are checked separately because a layered profile that fails to resolve is
       # silent otherwise: Nextflow applies them in the order they are DECLARED in the config
       # file, not the order given on the command line.
+      #
+      # Output is captured and printed on failure rather than sent to /dev/null. Discarding
+      # it is how this step once failed with exit 1 and no message at all: Nextflow writes
+      # some of its errors to stdout, so the reason went in the bin with the config dump.
       - name: nextflow config resolves
         run: |
-          nextflow config . -profile standard >/dev/null
-          nextflow config . -profile standard,mini >/dev/null
-          nextflow config . -profile sherlock >/dev/null
-          nextflow config . -profile sherlock,mini >/dev/null
+          for profile in standard "standard,mini" sherlock "sherlock,mini"; do
+            echo "== -profile $profile =="
+            if ! nextflow config . -profile "$profile" >"$RUNNER_TEMP/config.out" 2>"$RUNNER_TEMP/config.err"; then
+              echo "FAILED to resolve -profile $profile"
+              cat "$RUNNER_TEMP/config.err" "$RUNNER_TEMP/config.out"
+              exit 1
+            fi
+          done
+          echo "all four profiles resolve"
