@@ -71,9 +71,43 @@ IDENTITY_BINS = [0.0, 20.0, 30.0, 40.0, 60.0, 100.01]
 # from the boundary metrics -- see cafa_metrics.boundary_metrics(exclude_points=).
 FEATURE_LENGTH_BINS = [1, 2, 16, 31, 61, 121, 251]
 
+# The disorder axis at the resolution the claim is actually made at.
+#
+# Four bins is too few to read a shape from. The report's disorder figure had exactly four
+# x positions, so "structure-based accuracy falls with disorder and a sequence-only method
+# does not" rested on four points per arm, and the interesting middle of the range -- where
+# the coarse 0.1-0.3 bin holds a third of the human query set -- was one number.
+#
+# Fmax cannot be made per-protein to fix that: it is a threshold-optimised, protein-macro-
+# averaged F (see cafa_metrics.protein_centric_curve), so it only exists over a POPULATION
+# of queries. The resolution therefore has to come from more populations, not from smaller
+# ones -- which is what these edges are.
+#
+# Widths are not uniform, and that is the point. disorder_fraction_plddt is heavily
+# left-skewed on the human proteome: half the queries sit under 0.154 and the top decile
+# spreads over 0.5-0.93. Uniform 0.05-wide bins would put ten near-empty cells in the tail
+# and pile a third of the query set into the first two. These edges were fitted to the
+# observed distribution of the 997 chr6 (midi) queries so that every bin clears
+# MIN_STRATUM_PROTEINS on the smallest query set this pipeline runs -- the counts are
+# 102 / 71 / 83 / 74 / 65 / 76 / 72 / 68 / 68 / 44 / 78 / 80 / 61 / 55 proteins, and on the
+# heldout half alone 54 / 29 / 34 / 33 / 39 / 44 / 33 / 36 / 29 / 23 / 39 / 40 / 32 / 27.
+# A whole-proteome query set has ~20x that in every bin.
+#
+# The last bin is wide because the data is: only 55 of 997 queries are past 0.6 disorder,
+# and splitting them further would put every cell under the floor. That is exactly the bin
+# whose midpoint lies furthest from its contents (0.805 against a measured mean of 0.713),
+# which is why every row also carries `stratum_value_mean` and the report plots that.
+DISORDER_FINE_EDGES = [0.0, 0.015, 0.035, 0.06, 0.085, 0.11, 0.14, 0.175, 0.215,
+                       0.26, 0.31, 0.38, 0.47, 0.60, 1.01]
+
 STRATA = {
     "plddt": ("mean_plddt", [0, 50, 70, 90, 100]),
     "disorder": ("disorder_fraction_plddt", [0.0, 0.1, 0.3, 0.6, 1.01]),
+    # The same covariate as `disorder`, cut fourteen ways instead of four. Kept beside the
+    # coarse axis rather than replacing it: the coarse bins are what the identity and
+    # target-side disorder axes share, and a reader comparing across them needs the four-bin
+    # reading to still exist.
+    "disorder_fine": ("disorder_fraction_plddt", DISORDER_FINE_EDGES),
     # Same bins as the pLDDT proxy on purpose, so the two axes are read side by side and a
     # disagreement between them is visible rather than buried in different binning.
     "disorder_seq": ("disorder_fraction_metapredict", [0.0, 0.1, 0.3, 0.6, 1.01]),
@@ -1273,8 +1307,38 @@ def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
 
     cov = cov.with_columns(exprs)
 
-    keep = ["accession"] + [c for c in cov.columns if c.startswith("stratum_")]
+    # The RAW covariate column rides along beside the bin label, for every numeric axis.
+    # Without it a row can only say which bin it is, and the report is then forced to draw
+    # the bin's midpoint as its x -- a coordinate no protein in the cell necessarily has.
+    # On the widest disorder bin the midpoint sits 0.092 away from the mean of what is
+    # actually in it (0.805 against 0.713), which on a 0-1 axis is a tenth of the plot.
+    #
+    # Only columns the truth does not already carry, so a covariate file that happens to
+    # name a column the answer key also names cannot silently shadow it in the join.
+    raw = [col for col, _ in STRATA.values()
+           if col in cov.columns and col not in truth.columns]
+    keep = (["accession"] + sorted(set(raw))
+            + [c for c in cov.columns if c.startswith("stratum_")])
     return truth.join(cov.select(keep), on="accession", how="left")
+
+
+def stratum_value_mean(t_sub: pl.DataFrame, axis: str) -> float | None:
+    """The measured mean of the covariate over the PROTEINS in one stratum cell.
+
+    Per protein, not per truth row. The covariate is a property of the query protein and
+    the truth frame is one row per domain instance, so averaging it as it stands would
+    weight a twelve-finger protein twelve times and pull the reported x toward whichever
+    proteins happen to carry the most annotations.
+
+    None for every axis that is not a numeric cut -- hgnc, mhc, geneset, identity and the
+    rest have no underlying number to average, and a null is the honest answer rather than
+    a zero the report would plot.
+    """
+    col = STRATA.get(axis, (None, None))[0]
+    if col is None or col not in t_sub.columns or t_sub.height == 0:
+        return None
+    values = t_sub.unique(subset="accession")[col].drop_nulls()
+    return float(values.mean()) if values.len() else None
 
 
 def strata_of(truth: pl.DataFrame) -> list[tuple[str, str]]:
@@ -1640,6 +1704,10 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
                 # AND instances, because the floor counts proteins while every rate on the
                 # row is per instance.
                 "n_stratum_proteins": t_sub["accession"].n_unique(),
+                # Where this cell actually sits on its covariate, averaged over the
+                # proteins in it. The report plots this as the x coordinate instead of the
+                # bin's midpoint, so a wide bin is drawn where its contents are.
+                "stratum_value_mean": stratum_value_mean(t_sub, axis),
                 # How many distinct labels the reachability join has to work with. A
                 # reachability ceiling only means something when `pfam_id` is a FAMILY: on
                 # the Swiss-Prot truth set it is one of ~15 feature types, every proteome
