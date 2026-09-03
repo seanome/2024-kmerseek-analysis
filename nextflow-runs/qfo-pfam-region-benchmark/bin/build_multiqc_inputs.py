@@ -2876,6 +2876,12 @@ def section_plddt_regime(out: Path, metrics: pl.DataFrame, primary_truth: str,
 # to retain out to. A run with a single proteome has no divergence axis at all.
 RETENTION_MIN_SPECIES = 2
 
+# Fraction of the drawn y range two reference lines have to be apart before their labels
+# are left separate. Deliberately generous: a pooled label is always readable and an
+# overlapped pair never is, so the cost of merging one pair too many is a longer string
+# and the cost of merging one too few is a label nobody can read.
+RETENTION_LABEL_GAP = 0.08
+
 
 def _hp_family(alphabet: str) -> str:
     """Which band of the alphabet axis a name belongs to, for the plot's three groups."""
@@ -2912,6 +2918,93 @@ def _endpoint_fmax(cut: pl.DataFrame, near: float, far: float,
         pl.col("fmax").filter(pl.col("species_mya") == far).max().alias("fmax_far")))
 
 
+def _retention_rows(picked: pl.DataFrame, ends: pl.DataFrame) -> pl.DataFrame:
+    """The plotted rows for one pair of endpoints: one per alphabet, with far/near.
+
+    Split out of section_alphabet_retention so the endpoint search and the section body
+    build the rows the same way rather than two copies drifting apart.
+    """
+    if ends.height == 0:
+        return picked.head(0)
+    return (picked.join(ends, on=["alphabet", "ksize"], how="inner")
+                  .drop_nulls(["fmax_near", "fmax_far"])
+                  .filter(pl.col("fmax_near") > 0)
+                  .with_columns((pl.col("fmax_far") / pl.col("fmax_near"))
+                                .alias("retention"))
+                  .sort("n_classes"))
+
+
+def _pick_far_endpoint(km_report: pl.DataFrame, picked: pl.DataFrame,
+                       mya: list[float], near: float):
+    """The most diverged proteome the plotted encodings can still be measured at.
+
+    The furthest proteome in the run is the one this section wants, and on Swiss-Prot it
+    is the one it gets. On the Pfam and Pfam-N truth sets of the midi-plus run it is not
+    usable: every kmerseek arm scores exactly Fmax 0 at E. coli -- 0 of 812 Pfam-N rows
+    have a single true-positive call there -- so `fmax_far` is 0.0 rather than null, the
+    ratio is 0.0 for all nineteen alphabets at once, and the plot is a flat row of zeroes
+    on the alphabet axis. The baselines are unaffected, because they do score at E. coli,
+    so the section reads as "kmerseek retains nothing, structure retains a quarter" when
+    what actually happened is that the numerator is below every arm's detection floor.
+
+    The section already refuses to divide by a zero denominator. This is the same refusal
+    on the numerator: step inward to the furthest proteome where at least one plotted
+    encoding scores above zero, and hand back the ones stepped over so the caption can
+    name them. An arm that is zero at a proteome where others are not keeps its zero --
+    that is a real difference between alphabets, which is what the section is for.
+
+    Returns (far, rows, skipped, saw_any_near). `far` is None when no proteome past
+    `near` is usable; `saw_any_near` says whether that was the denominator's fault.
+    """
+    skipped: list[float] = []
+    saw_any_near = False
+    for cand in reversed(mya[1:]):
+        ends = _endpoint_fmax(km_report, near, cand, ["alphabet", "ksize"])
+        rows = _retention_rows(picked, ends)
+        if rows.height:
+            saw_any_near = True
+            if rows["fmax_far"].max() > 0:
+                return cand, rows, skipped, saw_any_near
+        skipped.append(cand)
+    return None, picked.head(0), skipped, saw_any_near
+
+
+def _space_line_labels(lines: list[dict], gap: float) -> list[dict]:
+    """Pool the labels of reference lines that sit too close to be read separately.
+
+    MultiQC 1.35 renders a `y_lines` label as a plotly shape label centred on the line and
+    keeps nothing but the text -- `FlatLine.parse_label` in multiqc/plots/plot.py drops
+    every other field of a dict label as deprecated -- so there is no offset or anchor to
+    nudge with. Two baselines a percentage point apart print their labels on top of each
+    other, which is what "reseek (26%)" and "prostt5 (25%)" did here.
+
+    The lines stay exactly where their values put them. Only the text moves: each cluster
+    of lines within `gap` of each other gets one label on its topmost line carrying every
+    name in the cluster, and the rest are drawn unlabelled.
+    """
+    ordered = sorted(lines, key=lambda ln: ln["value"])
+    out: list[dict] = []
+    cluster: list[dict] = []
+
+    def flush():
+        if not cluster:
+            return
+        text = " · ".join(ln["label"] for ln in cluster if ln.get("label"))
+        for ln in cluster:
+            out.append({**ln, "label": None})
+        if text:
+            out[-1]["label"] = text
+
+    for ln in ordered:
+        if cluster and ln["value"] - cluster[-1]["value"] < gap:
+            cluster.append(ln)
+            continue
+        flush()
+        cluster = [ln]
+    flush()
+    return out
+
+
 def section_alphabet_retention(out: Path, metrics: pl.DataFrame) -> None:
     """Fraction of Fmax an alphabet keeps from the nearest proteome out to the furthest.
 
@@ -2939,7 +3032,7 @@ def section_alphabet_retention(out: Path, metrics: pl.DataFrame) -> None:
         mya = sorted(whole["species_mya"].unique().to_list())
         if len(mya) < RETENTION_MIN_SPECIES:
             continue
-        near, far = mya[0], mya[-1]
+        near = mya[0]
         name_of = {r["species_mya"]: r["species"]
                    for r in whole.select("species_mya", "species").unique().to_dicts()}
 
@@ -2962,34 +3055,46 @@ def section_alphabet_retention(out: Path, metrics: pl.DataFrame) -> None:
                            .group_by("alphabet", maintain_order=True).head(1))
         if picked.height == 0:
             continue
-        ends = _endpoint_fmax(km_report, near, far, ["alphabet", "ksize"])
-        if ends.height == 0:
-            continue
-        rows = (picked.join(ends, on=["alphabet", "ksize"], how="inner")
-                      .drop_nulls(["fmax_near", "fmax_far"])
-                      .filter(pl.col("fmax_near") > 0)
-                      .with_columns((pl.col("fmax_far") / pl.col("fmax_near"))
-                                    .alias("retention"))
-                      .sort("n_classes"))
-        # Retention is far/near, so an arm scoring zero at the near proteome has no
-        # retention rather than a retention of zero. Every arm scoring zero there is a
-        # real state -- the mini query set puts every kmerseek arm at Fmax 0 on the Pfam
-        # heldout half -- and skipping quietly would leave a reader looking for a section
-        # the config's order list promises.
-        if rows.height == 0:
+        # Retention is far/near, so a zero at EITHER end is a missing measurement rather
+        # than a retention of zero: a zero denominator has no ratio at all, and a zero
+        # numerator shared by every arm is a proteome past the whole method's detection
+        # floor, which flattens the alphabet axis to a row of zeroes while the baselines
+        # -- which do score there -- keep real values beside it.
+        far, rows, skipped, saw_any_near = _pick_far_endpoint(km_report, picked, mya, near)
+        if far is None:
+            reason = (
+                f"no kmerseek alphabet has a non-zero Fmax at "
+                f"{name_of.get(near, near)} ({near:,.0f} Mya) on this truth set, and "
+                "retention is that number's divisor. A ratio out of zero is not a "
+                "retention of zero"
+                if not saw_any_near else
+                "no kmerseek alphabet has a non-zero Fmax at any target proteome past "
+                f"{name_of.get(near, near)} ({near:,.0f} Mya) on this truth set, so the "
+                "ratio has no numerator to report. A numerator of zero at every "
+                "alphabet at once is a detection floor, not a retention of zero")
             write_section(out, f"qfo_retention_{ts}", {
                 "id": f"qfo_retention_{ts}",
                 "section_name": f"Divergence retention vs alphabet size — {ts} truth",
                 "description": f"<p>{ts} truth, <code>{report_split}</code> split.</p>",
                 "plot_type": "html",
-                "data": (
-                    f"<p>Not plotted: no kmerseek alphabet has a non-zero Fmax at "
-                    f"{name_of.get(near, near)} ({near:,.0f} Mya) on this truth set, and "
-                    "retention is that number's divisor. A ratio out of zero is not a "
-                    "retention of zero, so nothing is drawn rather than a row of "
-                    "zeroes.</p>"),
+                "data": (f"<p>Not plotted: {reason}, so nothing is drawn rather than a "
+                         "row of zeroes.</p>"),
             })
             continue
+        floored = sorted(skipped)
+        floor_note = ""
+        if floored:
+            named = ", ".join(f"{name_of.get(m, m)} ({m:,.0f} Mya)" for m in floored)
+            floor_note = (
+                "<b>The furthest proteome in this run is not the far end of this "
+                f"plot.</b> Every kmerseek alphabet scores Fmax 0 at {named}, so the "
+                "ratio there is 0 for all of them and says nothing about the alphabet. "
+                f"The far end shown is {name_of.get(far, far)} ({far:,.0f} Mya), the "
+                "most diverged proteome "
+                f"where any alphabet still scores, and the baseline lines are recomputed "
+                f"on that same pair. Retention out to "
+                f"{name_of.get(floored[-1], floored[-1])} is not measurable here for "
+                f"kmerseek at all, which is a stronger statement than a low retention.")
 
         # Baselines: one variant each, the same two endpoints, on the reporting half.
         base_rows = report.filter(pl.col("tool") != "kmerseek")
@@ -3022,6 +3127,10 @@ def section_alphabet_retention(out: Path, metrics: pl.DataFrame) -> None:
             for cls, (tool, ret) in sorted(by_class.items()):
                 lines.append({"value": ret, "color": CLASSES[cls][1], "dash": "dash",
                               "width": 2, "label": f"{tool} ({ret:.0%})"})
+        if lines:
+            span = max([ln["value"] for ln in lines]
+                       + rows["retention"].to_list() + [0.0])
+            lines = _space_line_labels(lines, span * RETENTION_LABEL_GAP)
 
         best = rows.sort("retention", descending=True).row(0, named=True)
         worst = rows.sort("retention").row(0, named=True)
@@ -3062,6 +3171,7 @@ def section_alphabet_retention(out: Path, metrics: pl.DataFrame) -> None:
                 f"amino-acid classes that alphabet collapses the 20 residues into "
                 f"({ts} truth).</p>"
                 + bullets(
+                    floor_note,
                     "<b>y is a ratio and must never be read on its own.</b> A method that "
                     "starts low and stays low retains 100%. The table below carries the "
                     "absolute Fmax at both ends on every row, and that is the number that "
@@ -3104,7 +3214,9 @@ def section_alphabet_retention(out: Path, metrics: pl.DataFrame) -> None:
                      "description": "Fmax at the least diverged target proteome"},
             "far": {"title": far_col, "format": "{:,.3f}", "scale": "RdYlGn",
                     "min": 0, "max": 1,
-                    "description": "Fmax at the most diverged target proteome"},
+                    "description": "Fmax at the far endpoint of this plot, the most "
+                                   "diverged target proteome any alphabet still scores "
+                                   "above zero at"},
             "retention": {"title": "Retention", "format": "{:,.1%}", "scale": "Purples",
                           "description": "Far divided by near. Meaningless without the "
                                          "two columns it is a ratio of"},
@@ -3125,6 +3237,7 @@ def section_alphabet_retention(out: Path, metrics: pl.DataFrame) -> None:
                 f"<p>The plot above as numbers, with every baseline on the same two "
                 f"proteomes ({ts} truth, <code>{report_split}</code> split).</p>"
                 + bullets(
+                    floor_note,
                     f"<b>{near_col} and {far_col}</b> are the absolute Fmax the retention "
                     "column is a ratio of. Read them first: a row retaining 90% of a "
                     "score of 0.05 has nothing to report.",
