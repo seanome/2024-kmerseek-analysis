@@ -159,6 +159,17 @@ def main():
         default=Path("results/pfam_benchmark/pfam_release_cache"),
     )
     parser.add_argument("--force-download", action="store_true", help="Refetch Pfam-A.regions.tsv.gz even if already cached")
+    # The two halves of this script want different machines. Downloading 5 GB is
+    # network-bound and belongs on a login node, which is the only place outbound HTTP is
+    # guaranteed on Sherlock. Decompressing it and hashing 1.4M accessions through awk is
+    # ~15 minutes of single-core work and belongs in a SLURM allocation, not on a shared
+    # login node. Splitting them lets the Makefile put each where it goes.
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--download-only", action="store_true",
+                      help="fetch Pfam-A.regions.tsv.gz and stop (run on a login node)")
+    mode.add_argument("--skip-download", action="store_true",
+                      help="assume the regions file is already cached and only filter it "
+                           "(run inside a SLURM allocation)")
     args = parser.parse_args()
 
     args.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -166,11 +177,30 @@ def main():
     filtered_tsv   = args.cache_dir / "pfam_regions_qfo.tsv"
     out_parquet    = args.cache_dir / "pfam_regions_qfo.parquet"
 
+    if args.download_only:
+        print("=== download Pfam-A.regions.tsv.gz ===")
+        download_regions(args.cache_dir, force=args.force_download)
+        print("\nDownloaded. Now run the filter step (in a SLURM allocation):")
+        print("  make pfam-regions")
+        return
+
     print("=== Step 1/4: QfO accession list ===")
     write_accession_list(args.qfo_dir, accessions_txt)
 
-    print("\n=== Step 2/4: download Pfam-A.regions.tsv.gz ===")
-    regions_gz = download_regions(args.cache_dir, force=args.force_download)
+    print("\n=== Step 2/4: Pfam-A.regions.tsv.gz ===")
+    if args.skip_download:
+        regions_gz = args.cache_dir / "Pfam-A.regions.tsv.gz"
+        if not regions_gz.exists():
+            raise SystemExit(f"--skip-download but {regions_gz} is not there. "
+                             f"Run the download step first: make pfam-regions-download")
+        got = regions_gz.stat().st_size
+        if got != PFAM_REGIONS_BYTES:
+            raise SystemExit(f"{regions_gz} is {got:,} bytes, expected "
+                             f"{PFAM_REGIONS_BYTES:,} for Pfam {PFAM_RELEASE}. "
+                             f"Incomplete download -- re-run make pfam-regions-download.")
+        print(f"  have {regions_gz} ({got:,} bytes, Pfam {PFAM_RELEASE})")
+    else:
+        regions_gz = download_regions(args.cache_dir, force=args.force_download)
 
     print("\n=== Step 3/4: filter to our accessions ===")
     filter_regions(regions_gz, accessions_txt, filtered_tsv)

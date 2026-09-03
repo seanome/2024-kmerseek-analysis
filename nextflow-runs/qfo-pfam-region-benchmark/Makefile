@@ -253,7 +253,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
         qfo-download qfo-link qfo-verify-existing \
-        pfam-regions pfam-annotations \
+        pfam-regions pfam-regions-download pfam-annotations \
         run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
@@ -1195,15 +1195,35 @@ NOTEBOOKS_DIR    ?= ../../notebooks
 ## file on the FTP is no longer the Pfam 38.2 the existing ten species were built from --
 ## annotating half the species from a different release would be a confound in the
 ## divergence axis, which is the one thing this benchmark measures.
-pfam-regions:
+## The 5.05 GB download. Login node on purpose: it is network-bound, and the login nodes
+## are where outbound HTTP is guaranteed. Resumable, and a no-op once the file is complete.
+pfam-regions-download:
 	$(call require_cluster)
 	@mkdir -p $(PFAM_REGIONS_DIR)
 	apptainer exec \
 	  --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
 	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
 	  python3 $(NOTEBOOKS_DIR)/fetch_pfam_envelope_coords.py \
-	    --qfo-dir   data/qfo \
+	    --download-only \
 	    --cache-dir $(PFAM_REGIONS_DIR)
+
+## Decompress it and filter to all 78 proteomes' accessions. In a SLURM allocation, not on
+## the login node: this streams ~30 GB through gzip and awk against a 1.4M-key hash, which
+## is real single-core work and does not belong on a node everyone shares.
+PFAM_FILTER_MEM  ?= 16G
+PFAM_FILTER_TIME ?= 2:00:00
+
+pfam-regions: pfam-regions-download
+	$(call require_cluster)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	     --mem=$(PFAM_FILTER_MEM) --time=$(PFAM_FILTER_TIME) --cpus-per-task=2 \
+	  apptainer exec \
+	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	    python3 $(NOTEBOOKS_DIR)/fetch_pfam_envelope_coords.py \
+	      --skip-download \
+	      --qfo-dir   data/qfo \
+	      --cache-dir $(PFAM_REGIONS_DIR)
 
 ## Write {species}_pfam_domains.parquet, _architectures.parquet and _pfam_summary.json for
 ## every registry species that does not already have them.
@@ -1217,15 +1237,17 @@ PFAM_FORCE ?=
 
 pfam-annotations: pfam-regions
 	$(call require_cluster)
-	apptainer exec \
-	  --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
-	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
-	  python3 $(NOTEBOOKS_DIR)/build_pfam_architectures.py \
-	    --species all \
-	    --outdir          data/annotations \
-	    --qfo-dir         data/qfo \
-	    --regions-parquet $(PFAM_REGIONS_DIR)/pfam_regions_qfo.parquet \
-	    $(PFAM_FORCE)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	     --mem=$(PFAM_FILTER_MEM) --time=$(PFAM_FILTER_TIME) --cpus-per-task=2 \
+	  apptainer exec \
+	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	    python3 $(NOTEBOOKS_DIR)/build_pfam_architectures.py \
+	      --species all \
+	      --outdir          data/annotations \
+	      --qfo-dir         data/qfo \
+	      --regions-parquet $(PFAM_REGIONS_DIR)/pfam_regions_qfo.parquet \
+	      $(PFAM_FORCE)
 	@echo
 	@echo "annotated species: $$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null | wc -l) of 78"
 	@echo
