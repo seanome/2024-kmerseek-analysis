@@ -634,6 +634,41 @@ if (SPECIES.isEmpty()) {
           "${KNOWN_TARGETS*.label.join(', ')} (human is the query and is not a target)"
 }
 
+// ---- HHblits: which targets it is worth spending profile-profile time on -------------
+//
+// HHblits is the most expensive sequence arm by a wide margin: 555 CPU-hours across nine
+// targets in the run-midi/run-midi-plus traces, against 28 for phmmer and 12 for MMseqs2,
+// plus another 55 building the per-species profile databases. Across the 23 bacteria and
+// 7 archaea of the full QfO set that is thousands of CPU-hours for the arm least likely
+// to say anything the cheaper ones do not.
+//
+// null means every kingdom, so nothing changes for a run that does not set it.
+params.hhblits_kingdoms = null
+
+def HHBLITS_KINGDOMS = params.hhblits_kingdoms
+    ? params.hhblits_kingdoms.toString().tokenize(',')*.trim().findAll { it }
+    : null
+if (HHBLITS_KINGDOMS != null) {
+    def known_kingdoms = REGISTRY*.subdir.unique()
+    def bad = HHBLITS_KINGDOMS - known_kingdoms
+    if (bad) {
+        error "--hhblits_kingdoms names unknown kingdom(s): ${bad.join(', ')}. " +
+              "The registry has ${known_kingdoms.join(', ')}."
+    }
+}
+
+// The kingdom filter, plus the nine original targets unconditionally.
+//
+// That second clause is not a hedge. Those nine are already scored and sit in the shared
+// outdir, so including them costs no CPU -- every task is a cache hit. Excluding ecoli for
+// being a bacterium would therefore save nothing and would DELETE a paid-for arm from the
+// report, because aggregateMetrics reads the scoring channel rather than globbing the
+// published metrics directory: an arm that does not run this time is absent from
+// all_domain_metrics.parquet even though its parquet is still on disk.
+def HHBLITS_SPECIES = HHBLITS_KINGDOMS == null
+    ? SPECIES
+    : SPECIES.findAll { it.subdir in HHBLITS_KINGDOMS || it.label in DEFAULT_TARGET_LABELS }
+
 // HP-family alphabets at low ksize need far more RAM than everything else: a handful of
 // k-mers absorb a large share of the proteome, and the inverted index scales with the
 // most-degenerate k-mer's occurrence count. Size for the known-risk zone up front rather
@@ -3562,14 +3597,19 @@ workflow {
         // which silently stops meaning anything once the human label carries a digest.
         hhblits_out = Channel.empty()
         if (!bench_only) {
-            all_for_hhdb = species_ch.map { l, f -> tuple(l, f, false) }
+            // Filtered before hhblitsBuildDB, not after: the per-species profile database
+            // is a third of this arm's cost, and building one for a target that never gets
+            // searched is pure waste.
+            def hhblits_labels = HHBLITS_SPECIES*.label
+            all_for_hhdb = species_ch.filter { l, _f -> l in hhblits_labels }
+                .map { l, f -> tuple(l, f, false) }
                 .mix(Channel.of(tuple(HUMAN_LABEL, human_fasta, true)))
             hhdb_ch      = label_dbs(hhblitsBuildDB(all_for_hhdb), '_hhdb')
             human_hhdb   = hhdb_ch.filter { label, _db -> label == HUMAN_LABEL }.map { _label, db -> db }
             species_hhdb = hhdb_ch.filter { label, _db -> label != HUMAN_LABEL }
 
             hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
-            countArm(SPECIES*.label, "hhblits", 1)
+            countArm(hhblits_labels, "hhblits", 1)
         }
 
         baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
