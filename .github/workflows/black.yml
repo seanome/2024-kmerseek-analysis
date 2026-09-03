@@ -7,10 +7,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # `with:` sits at the same level as `uses:`. It was indented under it, which is not
-      # valid workflow YAML -- GitHub rejected the file, so this job had never once run.
+
+      # `with:` sits beside `uses:`, not indented under it. It was indented under it, which
+      # is not valid workflow YAML -- GitHub rejected the whole file, so this job had never
+      # run once since it was added.
+      #
+      # Blocking, not advisory. It was held at continue-on-error while the first run
+      # after the syntax fix reported 80 notebooks needing reformatting; #20 cleared that
+      # backlog and the four notebooks black genuinely cannot tokenize are excluded in
+      # pyproject.toml, so there is nothing left for it to be lenient about.
+      #
+      # --diff so a failure says what it wants changed instead of only naming the file.
       - uses: psf/black@stable
         with:
-          options: "--check --verbose"
+          options: "--check --diff --verbose"
           src: "./notebooks"
           jupyter: true
