@@ -1195,17 +1195,43 @@ NOTEBOOKS_DIR    ?= ../../notebooks
 ## file on the FTP is no longer the Pfam 38.2 the existing ten species were built from --
 ## annotating half the species from a different release would be a confound in the
 ## divergence axis, which is the one thing this benchmark measures.
-## The 5.05 GB download. Login node on purpose: it is network-bound, and the login nodes
-## are where outbound HTTP is guaranteed. Resumable, and a no-op once the file is complete.
+## The 5.05 GB download. On the login node and OUTSIDE the container, for two reasons:
+## the kmerseek image has no curl (it is a bioinformatics runtime, not a fetch tool --
+## running the fetcher inside it died with FileNotFoundError: 'curl'), and the login
+## nodes are where outbound HTTP is guaranteed on Sherlock. Nothing here needs python.
+##
+## -C - resumes from the exact byte offset, so an interrupted transfer continues rather
+## than restarting. --speed-limit/--speed-time abort a transfer that has silently stalled
+## instead of hanging for hours; EBI does stall on multi-GB files, and a bare curl gives
+## no sign of it. The loop re-invokes curl until the file reaches its expected size.
+PFAM_REGIONS_URL   ?= https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.regions.tsv.gz
+PFAM_REGIONS_BYTES ?= 5053457363
+PFAM_REGIONS_GZ     = $(PFAM_REGIONS_DIR)/Pfam-A.regions.tsv.gz
+PFAM_DOWNLOAD_TRIES ?= 30
+
 pfam-regions-download:
 	$(call require_cluster)
 	@mkdir -p $(PFAM_REGIONS_DIR)
-	apptainer exec \
-	  --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
-	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
-	  python3 $(NOTEBOOKS_DIR)/fetch_pfam_envelope_coords.py \
-	    --download-only \
-	    --cache-dir $(PFAM_REGIONS_DIR)
+	@set -e; \
+	 for i in $$(seq 1 $(PFAM_DOWNLOAD_TRIES)); do \
+	   if [ -f $(PFAM_REGIONS_GZ) ] && \
+	      [ "$$(stat -c %s $(PFAM_REGIONS_GZ))" = "$(PFAM_REGIONS_BYTES)" ]; then \
+	     echo "have $(PFAM_REGIONS_GZ) ($(PFAM_REGIONS_BYTES) bytes)"; exit 0; \
+	   fi; \
+	   echo "attempt $$i/$(PFAM_DOWNLOAD_TRIES): $(PFAM_REGIONS_URL)"; \
+	   curl -L -C - --fail --speed-limit 10240 --speed-time 120 \
+	        -o $(PFAM_REGIONS_GZ) $(PFAM_REGIONS_URL) || true; \
+	 done; \
+	 got=$$(stat -c %s $(PFAM_REGIONS_GZ) 2>/dev/null || echo 0); \
+	 if [ "$$got" != "$(PFAM_REGIONS_BYTES)" ]; then \
+	   echo; echo "  $(PFAM_REGIONS_GZ) is $$got bytes, expected $(PFAM_REGIONS_BYTES)."; \
+	   echo "  Re-run 'make pfam-regions-download'; curl -C - resumes where it stopped."; \
+	   echo "  If the size is stable but wrong, Pfam current_release has moved and the"; \
+	   echo "  existing ten species' annotations no longer match it -- see the note in"; \
+	   echo "  notebooks/fetch_pfam_envelope_coords.py before rebuilding anything."; \
+	   echo; exit 1; \
+	 fi; \
+	 echo "downloaded $(PFAM_REGIONS_GZ) ($$got bytes)"
 
 ## Decompress it and filter to all 78 proteomes' accessions. In a SLURM allocation, not on
 ## the login node: this streams ~30 GB through gzip and awk against a 1.4M-key hash, which
