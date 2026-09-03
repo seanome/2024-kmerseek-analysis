@@ -163,9 +163,31 @@ fetch_proteome_tar() {
     # re-running `make fetch-structures` to pick up one missing species redid human from
     # scratch first, which is what this is fixing. The per-accession path never had the
     # problem because it builds a .todo of what is actually absent.
+    # Signatures of an unfinished run. Computed BEFORE the marker is trusted, not only in
+    # the adoption path below, because a marker can itself be wrong: the first version of
+    # this skip adopted on a file count alone and stamped human as complete while 20_539
+    # .cif.gz files were still sitting unread in its directory. A marker is a claim about
+    # the directory, so the directory gets the last word.
+    #
+    #   *.cif.gz            the untar or the gunzip did not finish
+    #   *.pdb.gz            the PDB cleanup did not run. The wildcard untar normally keeps
+    #                       these out, but the no-wildcard fallback extracts them, and
+    #                       leaving them gives Foldseek and Folddisco two files per protein
+    #                       so every structure is counted twice.
+    #   AF-*-model_v*.cif   the rename did not finish, and the fragment-offset normalizers
+    #                       downstream key on the AF-<acc>-F<n>.cif form.
+    local leftovers
+    leftovers=$(find "$dest" \( -name '*.cif.gz' -o -name '*.pdb.gz' \
+                               -o -name 'AF-*-model_v*.cif' \) -print -quit)
+
     if [[ -f "$marker" && "$(cat "$marker" 2>/dev/null)" == "$archive" ]]; then
-        echo "  already extracted ($archive)"
-        return 0
+        if [[ -z "$leftovers" ]]; then
+            echo "  already extracted ($archive)"
+            return 0
+        fi
+        echo "  marker says extracted but $(basename "$leftovers") is still here --"
+        echo "  the directory is unfinished; re-extracting and rewriting the marker"
+        rm -f "$marker"
     fi
 
     # Adopt an extraction that predates the marker, so this fix does not itself cost one
@@ -175,31 +197,25 @@ fetch_proteome_tar() {
     # the whole reference proteome and add fragments on top, while the accession list is
     # only its annotated subset. An interrupted extraction lands under that bound and is
     # redone. Set FORCE_EXTRACT=1 to re-extract regardless.
-    if [[ -z "${FORCE_EXTRACT:-}" && -f "$tar_path.done" ]]; then
-        local have want leftovers
+    # Adopt an extraction that predates the marker, so introducing the marker did not cost
+    # one last full re-extract of everything already on disk. Requires the archive to have
+    # downloaded completely, no leftovers above, and at least as many .cif files as the
+    # species has annotated accessions -- a real lower bound, since AFDB's proteome archives
+    # cover the whole reference proteome and add fragments on top while the accession list
+    # is only its annotated subset. A count ALONE is not enough: `AF-*.cif` matches the
+    # un-renamed name too, so a directory interrupted partway through gunzip can pass the
+    # count while being unusable. That is how human got mis-marked.
+    if [[ -z "${FORCE_EXTRACT:-}" && -f "$tar_path.done" && -z "$leftovers" ]]; then
+        local have want
         have=$(find "$dest" -name 'AF-*.cif' | wc -l | tr -d ' ')
         want=$(grep -c . "$acc_file" | tr -d ' ')
-
-        # A count alone can be fooled by an INTERRUPTED run, and adopting one of those is
-        # worse than re-extracting. The three post-untar steps each leave a signature while
-        # they are unfinished:
-        #   *.cif.gz            the untar or the gunzip did not finish
-        #   *.pdb.gz            the PDB cleanup did not run. AFDB tars ship a .pdb.gz beside
-        #                       every .cif.gz, so leaving them gives Foldseek and Folddisco
-        #                       two files per protein and counts every structure twice.
-        #   AF-*-model_v*.cif   the rename did not finish, and the fragment-offset
-        #                       normalizers downstream key on the AF-<acc>-F<n>.cif form.
-        # `AF-*.cif` matches the un-renamed name too, so a directory interrupted partway
-        # through gunzip can pass the count check while being unusable. Refuse all three.
-        leftovers=$(find "$dest" \( -name '*.cif.gz' -o -name '*.pdb.gz' \
-                                   -o -name 'AF-*-model_v*.cif' \) -print -quit)
-        if [[ -n "$leftovers" ]]; then
-            echo "  partial extraction detected ($(basename "$leftovers")) -- re-extracting"
-        elif [[ "$have" -ge "$want" && "$want" -gt 0 ]]; then
+        if [[ "$have" -ge "$want" && "$want" -gt 0 ]]; then
             echo "  already extracted ($have cif >= $want annotated accessions); marking"
             echo "$archive" > "$marker"
             return 0
         fi
+    elif [[ -n "$leftovers" ]]; then
+        echo "  partial extraction detected ($(basename "$leftovers")) -- re-extracting"
     fi
 
     mkdir -p "$STRUCT_DIR/_archives"
