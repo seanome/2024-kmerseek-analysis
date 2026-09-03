@@ -124,10 +124,12 @@ def test_perfect_tools_only_errors_are_nested_transfers(perfect_pfam, perfect_pf
 def test_perfect_tool_places_every_true_positive_exactly(perfect_pfam):
     """Boundary error, not coverage.
 
-    ndo is deliberately NOT asserted to be 1.0: it divides by every truth residue, and the
-    fixture keeps instances whose family is absent from the target, which no transfer-based
-    method can reach. Those belong in the denominator -- that is what makes recall honest --
-    so ndo is bounded by the reachable fraction, not by whether placement was right.
+    residue_recall is deliberately NOT asserted to be 1.0: it divides by every truth
+    residue, and the fixture keeps instances whose family is absent from the target, which
+    no transfer-based method can reach. Those belong in the denominator -- that is what
+    makes recall honest -- so residue_recall is bounded by the reachable fraction, not by
+    whether placement was right. (This used to name the duplicate ndo column, which was
+    set to exactly this expression and has since been dropped.)
     """
     row = _ungrouped(perfect_pfam)
     assert row["dbd_median"] == pytest.approx(0.0)

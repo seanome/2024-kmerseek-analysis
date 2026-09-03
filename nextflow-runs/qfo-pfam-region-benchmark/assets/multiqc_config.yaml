@@ -60,8 +60,10 @@ skip_generalstats: false
 # Written to multiqc_plots/ as png, svg and pdf. The svg is the one that goes in a figure.
 export_plots: true
 
-# The sweep is 113 alphabet x ksize combos x 2 low-complexity arms; a leaderboard is
-# already reduced to one row per tool, but leave headroom for a run that widens.
+# The sweep is 113 alphabet x ksize combos x 2 low-complexity arms. The low-complexity
+# axis is no longer a reporting dimension -- at each alphabet's own best k the filter is
+# worth under 0.001 Fmax everywhere in the sweep -- but both arms are still SCORED, and a
+# leaderboard is already one row per tool. Leave headroom for a run that widens.
 max_table_rows: 2000
 
 # Plotly rather than a flat image, however many series a plot ends up with. These are
@@ -84,7 +86,13 @@ table_columns_visible:
 # smallest number. (Whole modules sort the other way round -- this report is one module,
 # so only this direction matters here.) An id listed but not produced is skipped.
 report_section_order:
+  # Reachability first: 43.9% of the answer key has no same-family instance in the
+  # target proteome, and every Fmax below divides by the reachable part. The reader
+  # meets that denominator before any leaderboard built on it.
+  qfo_reachability: { order: 5 }
   qfo_frontier: { order: 10 }
+  qfo_search_cost: { order: 12 }
+  qfo_search_cost_table: { order: 13 }
   qfo_capability: { order: 20 }
   qfo_leaderboard_swissprot: { order: 30 }
   qfo_leaderboard_pfamn: { order: 40 }
@@ -100,6 +108,10 @@ report_section_order:
   # table renders the table first -- see the note at 170 -- so it gets its own integer.
   qfo_boundary_dots: { order: 111 }
   qfo_pr_curve: { order: 120 }
+  qfo_recall_at_precision: { order: 121 }
+  qfo_recall_at_precision_table: { order: 122 }
+  qfo_call_volume: { order: 123 }
+  qfo_call_volume_table: { order: 124 }
   qfo_roc_curve: { order: 130 }
   qfo_identity: { order: 140 }
   # Fmax across the pLDDT bands as a shape, next to the twilight-zone axis it is read
@@ -110,7 +122,6 @@ report_section_order:
   # Which arm is pinned, named before the sections that mark it.
   qfo_canonical: { order: 145 }
   qfo_divergence: { order: 150 }
-  qfo_reachability: { order: 160 }
   qfo_tool_by_species_swissprot: { order: 151 }
   qfo_tool_by_species_table_swissprot: { order: 152 }
   qfo_tool_by_species_pfamn: { order: 153 }
@@ -127,21 +138,23 @@ report_section_order:
   # with that block rather than at the end. Each plot is followed by its own table, and the
   # order has to be an int -- order_modules_and_sections asserts it -- so two sections
   # cannot share a slot and take their positions from discovery order. They do not: giving
-  # a plot and its table the same number rendered the TABLE first. That is why
-  # qfo_alphabet_lcFalse moved from 170 to 179, to open eight integers here. It still
-  # precedes qfo_alphabet_lcTrue at 180, which is the only thing its number had to do.
+  # a plot and its table the same number rendered the TABLE first. Each heatmap is now
+  # followed by its own bits-per-k-mer strip plot rather than by a winner table: the
+  # winner tables are gone, because the margin over the runner-up is in the third
+  # decimal and naming one encoding asserted a precision the sweep does not have.
   qfo_encoding_divergence_swissprot: { order: 170 }
-  qfo_encoding_divergence_table_swissprot: { order: 171 }
+  qfo_bits_budget_swissprot: { order: 171 }
   qfo_encoding_divergence_pfamn: { order: 172 }
-  qfo_encoding_divergence_table_pfamn: { order: 173 }
+  qfo_bits_budget_pfamn: { order: 173 }
   qfo_encoding_divergence_mcsa: { order: 174 }
-  qfo_encoding_divergence_table_mcsa: { order: 175 }
+  qfo_bits_budget_mcsa: { order: 175 }
   qfo_encoding_divergence_pfam: { order: 176 }
-  qfo_encoding_divergence_table_pfam: { order: 177 }
-  qfo_alphabet_lcFalse: { order: 179 }
-  qfo_alphabet_lcTrue: { order: 180 }
-  # Divergence retention against alphabet size: the alphabet axis the two heatmaps above
-  # sweep, asked the other way round -- what each alphabet KEEPS out to the most diverged
+  qfo_bits_budget_pfam: { order: 177 }
+  qfo_alphabet: { order: 178 }
+  qfo_alphabet_dose_response: { order: 179 }
+  qfo_alphabet_dose_response_table: { order: 180 }
+  # Divergence retention against alphabet size: the alphabet axis the grid above sweeps,
+  # asked the other way round -- what each alphabet KEEPS out to the most diverged
   # proteome rather than which one won. It sits with the alphabet block rather than beside
   # qfo_divergence at 150, because no run of eight free integers survives up there. Each
   # plot takes the integer immediately before its own table: sharing a number renders the
@@ -188,6 +201,14 @@ report_section_order:
   qfo_ceiling_bpe: { order: 207 }
   qfo_grayzone: { order: 208 }
   qfo_run_summary: { order: 210 }
+  qfo_kmer_spectra: { order: 211 }
+  qfo_kmer_spectra_table: { order: 212 }
+  # The supplementary reachability panels, one per non-lead truth set. The lead one
+  # renders as bare qfo_reachability at 5.
+  qfo_reachability_swissprot: { order: 213 }
+  qfo_reachability_pfamn: { order: 214 }
+  qfo_reachability_mcsa: { order: 215 }
+  qfo_reachability_pfam: { order: 216 }
   qfo_res_cpu: { order: 220 }
   qfo_res_walltime: { order: 230 }
   qfo_res_throughput: { order: 240 }

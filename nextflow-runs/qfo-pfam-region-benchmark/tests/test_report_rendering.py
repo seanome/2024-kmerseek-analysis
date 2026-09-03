@@ -171,7 +171,7 @@ def boundary_metrics() -> pl.DataFrame:
             "truth_set": "swissprot", "tool": tool, "variant": variant,
             "species": "mouse", "split": "all", "stratum_axis": "all", "stratum": "all",
             "fmax": fmax, "family_fmax": fmax + 0.2, "median_iou_tp": iou,
-            "n_tp_strict": n_tp, "ndo": 0.1, "residue_f1": 0.1, "coverage": 0.5,
+            "n_tp_strict": n_tp, "residue_f1": 0.1, "coverage": 0.5,
             "interval_semantics": "alignment",
         })
     return pl.DataFrame(rows)

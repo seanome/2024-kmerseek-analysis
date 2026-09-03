@@ -1772,11 +1772,18 @@ def recall_at_precision(pairs: list[tuple[float, float]],
                         min_precision: float = RECALL_AT_PRECISION) -> float:
     """Highest recall on this curve at precision at or above `min_precision`.
 
-    Read off the same pairs the curve is drawn from, so the panel and the plot cannot
-    disagree. An arm that never reaches the precision returns 0: recall 0 is achievable at
-    any precision by calling nothing, so there is no such thing as "undefined" here.
+    Read off the DRAWN series rather than off the raw pairs, so the panel and the plot
+    cannot disagree even in the last decimal. curve_series rounds x to a fixed precision and
+    averages the y of any grid points that land on the same rounded x, which is what keeps
+    the drawn line single-valued; reading the raw pairs instead let the table report a
+    recall the line does not pass through. The difference is small and it is exactly the
+    kind of small that makes a reader distrust both numbers.
+
+    An arm that never reaches the precision returns 0: recall 0 is achievable at any
+    precision by calling nothing, so there is no such thing as "undefined" here.
     """
-    reached = [x for x, y in pairs if y is not None and y >= min_precision]
+    reached = [float(x) for x, y in curve_series(pairs).items()
+               if y is not None and y >= min_precision]
     return max(reached) if reached else 0.0
 
 
