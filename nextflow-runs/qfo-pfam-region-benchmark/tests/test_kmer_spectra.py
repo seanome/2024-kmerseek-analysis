@@ -62,19 +62,34 @@ def test_unparsable_filename_is_skipped_and_named(tmp_path, capsys):
     assert "spectrum.garbage.csv.gz" in capsys.readouterr().out
 
 
-def test_section_splits_the_low_complexity_arms_and_the_species(tmp_path):
+def test_section_splits_the_species_and_drops_the_low_complexity_dimension(tmp_path):
+    """One panel, not two. The filter changes Fmax by under 0.001 at every alphabet's own
+    best k, so drawing a second copy of this section for it doubled the report to show a
+    tail difference that changes no result. The supplementary low-complexity panel is the
+    whole record of the comparison."""
     src, out = tmp_path / "s", tmp_path / "o"
     src.mkdir(), out.mkdir()
     write(src, species="ecoli", lc="false")
     write(src, species="yeast", lc="false")
     write(src, species="ecoli", lc="true")
     bmi.section_kmer_spectra(out, *bmi.load_spectra(src))
-    off = json.loads((out / "qfo_kmer_spectra_lcFalse_mqc.json").read_text())
+    off = json.loads((out / "qfo_kmer_spectra_mqc.json").read_text())
     # One dataset per proteome: two proteomes are two different key sets and must never
     # share a panel.
     assert [d["name"] for d in off["pconfig"]["data_labels"]] == ["ecoli", "yeast"]
-    assert (out / "qfo_kmer_spectra_lcTrue_mqc.json").exists()
+    assert not list(out.glob("qfo_kmer_spectra_lc*"))
     assert off["pconfig"]["xlog"] and off["pconfig"]["ylog"]
+
+
+def test_the_summary_table_loses_the_low_complexity_arm_too(tmp_path):
+    src, out = tmp_path / "s2", tmp_path / "o2"
+    src.mkdir(), out.mkdir()
+    write(src, species="ecoli", lc="false")
+    write(src, species="ecoli", lc="true")
+    bmi.section_kmer_spectra(out, *bmi.load_spectra(src))
+    table = json.loads((out / "qfo_kmer_spectra_table_mqc.json").read_text())
+    assert not any("lcT" in k or "lcF" in k for k in table["data"])
+    assert len(table["data"]) == 1
 
 
 def test_no_spectra_writes_no_section(tmp_path):

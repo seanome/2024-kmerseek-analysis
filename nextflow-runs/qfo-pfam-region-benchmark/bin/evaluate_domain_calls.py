@@ -1113,7 +1113,12 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
         "roc_auc": rank_roc_auc(calls),
         "auprc": average_precision(points),
         "min_overlap": min_overlap,
-        "median_iou_tp": float(calls.filter("is_tp")["iou"].median()) if n_tp_calls else 0.0,
+        # median_iou_tp is NOT here any more. It is a boundary measurement and belongs on
+        # the same point-excluded subset as DBD and the terminal offsets, so it moved into
+        # cafa_metrics.boundary_metrics; score_one calls that straight after this and the
+        # column lands on the same row it always did. Computed here it ran over every true
+        # positive, and on a truth set carrying point features that mixed two different
+        # criteria into one median -- see boundary_metrics' docstring for the measurement.
     }
 
     # --- best achievable operating point, and where it sits ---

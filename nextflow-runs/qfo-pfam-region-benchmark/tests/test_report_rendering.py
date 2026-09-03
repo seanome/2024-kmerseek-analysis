@@ -239,11 +239,12 @@ def test_throughput_axis_ends_on_decades_so_plotly_draws_no_minor_ticks():
 
 
 def test_the_frontier_bar_is_not_set_by_a_tool_the_report_disqualifies(tmp_path):
-    """folddisco reaches 0.30 where every other arm sits between 0.11 and 0.18.
+    """A motif arm sets no reference line on the frontier.
 
     section_boundary says a motif arm reports the envelope of a discontinuous residue set
     and must not be ranked against the alignment arms. Letting one set the "best incumbent"
-    line is that ranking by the back door, and it moved the target by 0.12 Fmax.
+    line is that ranking by the back door. It used to get a named dotted line of its own,
+    which put it back into the comparison; now it is drawn as an open marker and no line.
     """
     rows = []
     for tool, acc, sem in (("folddisco", 0.30, "motif"), ("hhblits", 0.178, "alignment"),
@@ -252,7 +253,7 @@ def test_the_frontier_bar_is_not_set_by_a_tool_the_report_disqualifies(tmp_path)
             "truth_set": "swissprot", "tool": tool,
             "variant": "polarity4_k17_lcFalse" if tool == "kmerseek" else "-",
             "species": "mouse", "split": "all", "stratum_axis": "all", "stratum": "all",
-            "fmax": acc, "coverage": 0.5, "interval_semantics": sem,
+            "fmax": acc, "residue_f1": acc, "coverage": 0.5, "interval_semantics": sem,
         })
     import mqc_trace as mt
     trace = pl.DataFrame(
@@ -266,20 +267,49 @@ def test_the_frontier_bar_is_not_set_by_a_tool_the_report_disqualifies(tmp_path)
     bmi.section_frontier(tmp_path, pl.DataFrame(rows), trace, 60, "swissprot")
     sec = written(tmp_path)["qfo_frontier"]
     assert sec["plot_type"] == "scatter", sec.get("data")
-    values = {ln["label"]: ln["value"] for ln in sec["pconfig"]["x_lines"]}
+    # Accuracy is on y now and cost on x, so the incumbent bar is a horizontal.
+    values = {ln["label"]: ln["value"] for ln in sec["pconfig"]["y_lines"]}
     best = next(v for k, v in values.items() if k.startswith("best incumbent"))
     assert best == 0.178, "the bar is the best ALIGNMENT arm, not the motif one"
-    assert any("motif semantics" in k for k in values), "and the motif arm is still drawn"
+    assert not any("motif" in k for k in values), "the motif arm sets no line of its own"
+    assert sec["data"]["folddisco"]["marker_symbol"].endswith("-open"), "still drawn"
+
+
+def test_the_frontier_puts_cost_on_a_log_axis_rather_than_accuracy(tmp_path):
+    """Every arm's accuracy landed in a band 0.08 wide, so labels printed over each other.
+    Cost spans decades; accuracy does not."""
+    rows = [{
+        "truth_set": "swissprot", "tool": tool, "variant": "-", "species": "mouse",
+        "split": "all", "stratum_axis": "all", "stratum": "all",
+        "fmax": acc, "residue_f1": acc, "coverage": 0.5,
+        "interval_semantics": "alignment",
+    } for tool, acc in (("hhblits", 0.178), ("hmmer3_phmmer", 0.138))]
+    import mqc_trace as mt
+    trace = pl.DataFrame(
+        [{**{c: None for c in mt.TRACE_SCHEMA},
+          "process": "searchHhblits", "tag": f"{tool}:mouse", "status": "COMPLETED",
+          "tool": tool, "is_search": True, "realtime_s": 100.0, "cpus": 1,
+          "cpu_hours": hours}
+         for tool, hours in (("hhblits", 200.0), ("hmmer3_phmmer", 0.4))],
+        schema=mt.TRACE_SCHEMA,
+    )
+    bmi.section_frontier(tmp_path, pl.DataFrame(rows), trace, 60, "swissprot")
+    pconfig = written(tmp_path)["qfo_frontier"]["pconfig"]
+    assert pconfig["xlog"] is True
+    assert "CPU-hours" in pconfig["xlab"]
+    assert not pconfig.get("ylog")
 
 
 # --- denominators ----------------------------------------------------------------------
 
 def test_grayzone_prints_n_because_the_percentage_view_ranks_on_nothing_else(tmp_path):
-    """The share and the count point opposite ways, and only the share is drawn.
+    """The share and the count point opposite ways, so the panel carries both.
 
     In the midi run the highest true-positive share belongs to the arm with the smallest
     denominator in the report -- 50% of 3_894 calls against reseek's 0.09% of 39_669_449 --
-    and the percentage bars are the same width.
+    and on a percentage view those bars are the same width. So there is no percentage view:
+    the counts are grouped bars on a log axis and every arm's tick label carries its own
+    total and its own share.
     """
     rows = []
     arms = (("kmerseek", "protein20_k11_lcFalse", 1950, 1345, 605),
@@ -291,13 +321,19 @@ def test_grayzone_prints_n_because_the_percentage_view_ranks_on_nothing_else(tmp
             "n_tp_calls": tp, "n_fp_calls": fp, "n_gray_calls": gray, "coverage": 0.5,
         })
     bmi.section_grayzone(tmp_path, pl.DataFrame(rows), "swissprot", 10)
-    text = written(tmp_path)["qfo_grayzone"]["description"]
-    assert "39&thinsp;669&thinsp;449 calls" in text, "reseek's denominator, on the panel"
-    assert "3&thinsp;900 calls" in text, "and the small one it is ranked against"
-    # The count and the share have to stay two numbers. A blanket comma replacement over
-    # the assembled string ate the separator and ran them together.
-    assert "calls, " in text
-    assert "never on its own" in text
+    sec = written(tmp_path)["qfo_grayzone"]
+    keys = list(sec["data"])
+    # Ordered by total, largest first, with the denominator and the share in the label.
+    assert keys[0].startswith("reseek") and "39,669,449 calls" in keys[0]
+    assert "0.1% TP" in keys[0]
+    assert "3,900 calls" in keys[1] and "50.0% TP" in keys[1]
+    # No HTML entities in a tick label: they render in the browser and then break the PNG
+    # and PDF export, which is what goes in a figure.
+    assert not any("&" in k for k in keys)
+    assert sec["pconfig"]["xlog"] is True
+    assert sec["pconfig"]["stacking"] == "group"
+    assert sec["pconfig"]["cpswitch"] is False, "no percentage view to rank on"
+
 
 
 def test_low_complexity_collapses_to_one_panel_stating_the_negative_result(tmp_path):
