@@ -143,6 +143,21 @@ MINI_COMBOS  ?= protein20:10,hp_pbotc_1st_ed2:19
 # domain instances. chr6 because it carries the MHC, so this subsumes the MHC vignette.
 MIDI_TARGETS ?= mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
 
+# midi-plus searches one more target: Botryllus schlosseri, a colonial tunicate at the same
+# 550 MYA node as ciona. It is SEARCHED BUT NOT SCORED -- it has no Pfam annotations, so
+# build_domain_truth.py writes no domain map for it and main.nf's score_in inner-joins it
+# out of scoring. It contributes hits to look at, not metrics.
+#
+# Deliberately NOT added to MIDI_TARGETS. That variable also drives run-midi, which is the
+# nine-species scored run every published number comes from; widening it would change what
+# that run searches for a species that cannot contribute a number.
+MIDI_PLUS_TARGETS ?= $(MIDI_TARGETS),botryllus
+
+# The Botryllus proteome, which is not part of any QfO release. `make stage-botryllus`
+# cleans the download and writes it into the QfO tree; see that target.
+BOTRYLLUS_SRC  ?= $(HOME)/Downloads/botryllus_new_genome_protein.fasta
+BOTRYLLUS_DEST := $(QFO_DIR)/Eukaryota/BOTSCH2026_30301.fasta
+
 # Arms the local smoke tests leave out. The big stuff belongs on Sherlock.
 #
 # ProstT5 is the whole of it right now. prostt5Weights downloads the model over the
@@ -251,6 +266,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
+        stage-botryllus \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
         qfo-download qfo-link qfo-verify-existing \
         pfam-regions pfam-regions-download pfam-annotations \
@@ -276,6 +292,8 @@ help:
 	@echo "                        cache is untouched"
 	@echo "  push-folddisco-image  Push the FoldDisco image to Docker Hub"
 	@echo "  sync-pipeline         Push the current branch and update Sherlock"
+	@echo "  stage-botryllus       Clean the Botryllus proteome into the QfO tree"
+	@echo "                        (run-midi-plus's 10th, unscored target; then sync-data)"
 	@echo "  sync-data             Copy benchmark inputs to Sherlock"
 	@echo "  sync-structures       Copy AlphaFold structures to Sherlock"
 	@echo "  run-mhc-local         Smoke test: 25 MHC genes vs mouse, ProstT5 arm off"
@@ -301,7 +319,9 @@ help:
 	@echo "  run-mini             Run the mini smoke test"
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
-	@echo "                       Additive to run-midi, its own outdir, target DBs shared"
+	@echo "                       Additive to run-midi, its own outdir, target DBs shared."
+	@echo "                       Also searches botryllus, a 10th target that is NOT scored"
+	@echo "                       (no Pfam annotations). Needs 'make stage-botryllus' first"
 	@echo "  fetch-structures     Download AlphaFold structures ON the login node (~36 GB)"
 	@echo "  run-kmerseek         Run only the Kmerseek sweep"
 	@echo "  run-baselines        Run only the baseline tools"
@@ -933,6 +953,45 @@ qfo-link:
 	@ln -sfn $(QFO_REMOTE_DIR) data/qfo
 	@echo "data/qfo -> $$(readlink data/qfo)"
 
+# ---- Botryllus schlosseri, the one proteome that is not from a QfO release ------
+#
+# Cleans the download (repeated names disambiguated, one '.' residue replaced with X --
+# see bin/prepare_botryllus_fasta.py) and writes it INTO the QfO release directory. That
+# location is not a filing choice: main.nf resolves every target FASTA as
+# ${qfo_dir}/${subdir}/${proteome}_${taxon}.fasta, and the botryllus row in
+# assets/qfo_species.tsv is (Eukaryota, BOTSCH2026, 30301), so this is the only path the
+# pipeline can read it from. It also means `make sync-data` carries the file to the cluster
+# with no new rsync -- it already ships $(QFO_DIR) wholesale.
+#
+# Idempotent by CONTENT, not by timestamp. Nextflow hashes an input file by path, size and
+# mtime rather than by content, so rewriting byte-identical bytes is enough to invalidate
+# every task that reads the file directly -- the failure bin/make_mini_testset.py's
+# write_if_changed() docstring records. The converter writes a .tmp and it is moved into
+# place only when the bytes actually differ.
+stage-botryllus:
+	$(call require_mac)
+	@if [ ! -f "$(BOTRYLLUS_SRC)" ]; then \
+	  echo ""; \
+	  echo "  no Botryllus proteome at $(BOTRYLLUS_SRC)"; \
+	  echo "  point BOTRYLLUS_SRC at the downloaded FASTA:"; \
+	  echo "    make stage-botryllus BOTRYLLUS_SRC=/path/to/botryllus_proteins.fasta"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+	@mkdir -p "$(dir $(BOTRYLLUS_DEST))"
+	$(PYTHON) bin/prepare_botryllus_fasta.py \
+	  --in          "$(BOTRYLLUS_SRC)" \
+	  --out         "$(BOTRYLLUS_DEST).tmp" \
+	  --summary-out "$(BOTRYLLUS_DEST).prepare_summary.json"
+	@if [ -f "$(BOTRYLLUS_DEST)" ] && cmp -s "$(BOTRYLLUS_DEST).tmp" "$(BOTRYLLUS_DEST)"; then \
+	  /bin/rm -f "$(BOTRYLLUS_DEST).tmp"; \
+	  echo "  $(BOTRYLLUS_DEST) already up to date; mtime left alone so Nextflow keeps its cache"; \
+	else \
+	  /bin/mv -f "$(BOTRYLLUS_DEST).tmp" "$(BOTRYLLUS_DEST)"; \
+	  echo "  wrote $(BOTRYLLUS_DEST)"; \
+	fi
+	@echo "  now run: make sync-data"
+
 sync-data:
 	$(call require_mac)
 	@rm -rf $(SYNC_STAGE)
@@ -1517,6 +1576,19 @@ run-midi: prefetch-images midi-testset-sherlock
 # turns into a `query_set` column, so the original 964 stay reconstructible exactly.
 midi-plus-testset-sherlock:
 	$(call require_cluster)
+	@if [ -n "$(findstring botryllus,$(MIDI_PLUS_TARGETS))" ] && \
+	    [ ! -f data/qfo/Eukaryota/BOTSCH2026_30301.fasta ]; then \
+	  echo ""; \
+	  echo "  botryllus is in MIDI_PLUS_TARGETS but its proteome is not staged:"; \
+	  echo "    data/qfo/Eukaryota/BOTSCH2026_30301.fasta is missing"; \
+	  echo ""; \
+	  echo "  It is not part of the QfO release, so qfo-download does not fetch it."; \
+	  echo "  On your Mac:"; \
+	  echo "    cd $(MAC_PIPELINE_DIR)"; \
+	  echo "    make stage-botryllus && make sync-data"; \
+	  echo ""; \
+	  exit 1; \
+	fi
 	apptainer exec \
 	  --bind $$PWD:$$PWD --pwd $$PWD \
 	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
@@ -1527,7 +1599,7 @@ midi-plus-testset-sherlock:
 	    --gene-set        chr6_plus \
 	    --full-targets \
 	    --hgnc            data/covariates/hgnc_complete_set.txt \
-	    --target_species  $(MIDI_TARGETS) \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
 	    --structure-cache data/structures
 
 # Its OWN outdir, and that is the whole correctness argument for this target rather than a
@@ -1564,7 +1636,7 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    --outdir          $(MIDI_PLUS_OUTDIR) \
 	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
-	    --target_species  $(MIDI_TARGETS) \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
