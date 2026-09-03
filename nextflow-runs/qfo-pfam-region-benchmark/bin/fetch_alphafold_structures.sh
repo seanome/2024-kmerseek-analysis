@@ -176,10 +176,26 @@ fetch_proteome_tar() {
     # only its annotated subset. An interrupted extraction lands under that bound and is
     # redone. Set FORCE_EXTRACT=1 to re-extract regardless.
     if [[ -z "${FORCE_EXTRACT:-}" && -f "$tar_path.done" ]]; then
-        local have want
+        local have want leftovers
         have=$(find "$dest" -name 'AF-*.cif' | wc -l | tr -d ' ')
         want=$(grep -c . "$acc_file" | tr -d ' ')
-        if [[ "$have" -ge "$want" && "$want" -gt 0 ]]; then
+
+        # A count alone can be fooled by an INTERRUPTED run, and adopting one of those is
+        # worse than re-extracting. The three post-untar steps each leave a signature while
+        # they are unfinished:
+        #   *.cif.gz            the untar or the gunzip did not finish
+        #   *.pdb.gz            the PDB cleanup did not run. AFDB tars ship a .pdb.gz beside
+        #                       every .cif.gz, so leaving them gives Foldseek and Folddisco
+        #                       two files per protein and counts every structure twice.
+        #   AF-*-model_v*.cif   the rename did not finish, and the fragment-offset
+        #                       normalizers downstream key on the AF-<acc>-F<n>.cif form.
+        # `AF-*.cif` matches the un-renamed name too, so a directory interrupted partway
+        # through gunzip can pass the count check while being unusable. Refuse all three.
+        leftovers=$(find "$dest" \( -name '*.cif.gz' -o -name '*.pdb.gz' \
+                                   -o -name 'AF-*-model_v*.cif' \) -print -quit)
+        if [[ -n "$leftovers" ]]; then
+            echo "  partial extraction detected ($(basename "$leftovers")) -- re-extracting"
+        elif [[ "$have" -ge "$want" && "$want" -gt 0 ]]; then
             echo "  already extracted ($have cif >= $want annotated accessions); marking"
             echo "$archive" > "$marker"
             return 0
