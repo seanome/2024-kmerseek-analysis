@@ -1724,6 +1724,293 @@ def section_covariates(out: Path, metrics: pl.DataFrame, primary_truth: str,
         })
 
 
+# --- the disorder axis, drawn as dots at measured disorder ---------------------------
+#
+# What the four-bar Disorder section above cannot do, and why this is not just that plot
+# with more bars.
+#
+# THE Y AXIS IS NOT PER PROTEIN, AND CANNOT BE. Fmax is a threshold-optimised, protein-
+# macro-averaged F: cafa_metrics.protein_centric_curve sweeps a score threshold, averages
+# precision and recall over the proteins in the cut at each one, and takes the best F over
+# the sweep. It is defined over a POPULATION of queries and has no value for a single
+# protein. One dot per query protein labelled "Fmax" would be a fabricated statistic.
+#
+# The per-protein alternatives were measured rather than assumed, on the real midi-plus
+# calls (foldseek 3di_aa against mouse, Pfam truth, at that arm's own Fmax threshold of
+# 359.0): the protein's own F takes the value 0 on 472 of 998 queries and 1.0 on another
+# 110, so 58% of the dots would sit on two horizontal lines and four distinct values would
+# account for 65% of them. That is what a per-query scatter of this benchmark looks like,
+# and the reason is in the answer key -- 492 of the 998 human queries carry exactly one
+# annotated Pfam instance and the median is two, so per-query recall is a coin flip with
+# no room in between. The dense figure has to come from more populations, not from
+# smaller ones.
+#
+# So: more cuts, each still a population, each drawn where its proteins actually are.
+# STRATA["disorder_fine"] in evaluate_domain_calls.py cuts the query set fourteen ways
+# instead of four, and every metrics row carries `stratum_value_mean` -- the mean disorder
+# of the proteins in that cell -- which is what this plots as x. Not the bin midpoint: on
+# the widest cell those differ by 0.11.
+#
+# Falls back to the coarse four-bin `disorder` axis, and to the bin midpoint, on a results
+# tree scored before either existed, and says in the description which it drew.
+
+# How many kmerseek arms this section draws. The covariate bargraph takes --max-tools
+# (19 on the midi run), and at that width the legend is taller than the plot and the
+# fourteen kmerseek arms are fourteen lines of the same green: the figure stops being
+# readable as the comparison it exists to make. Every baseline still contributes its one
+# variant, so the trim only narrows the sweep block, and the pinned --canonical-variant
+# arm still rides along through best_variants.
+DISORDER_SCATTER_TOP_KMERSEEK = 2
+
+
+def _fine_disorder_axis(cut: pl.DataFrame) -> tuple[str, pl.DataFrame] | None:
+    """The finest disorder cut this results tree actually holds, with its rows."""
+    for axis in ("disorder_fine", "disorder"):
+        sub = cut.filter(pl.col("stratum_axis") == axis)
+        if sub.height:
+            return axis, sub
+    return None
+
+
+def _bin_x(rows: pl.DataFrame, label: str) -> float | None:
+    """Where a bin goes on the disorder axis: measured mean if scored, else midpoint.
+
+    The mean is a property of the query set, so every arm and every species in a cell
+    reports the same number; taking the mean over those rows is only a way to ignore the
+    nulls a partially-rescored tree would carry.
+    """
+    if "stratum_value_mean" in rows.columns:
+        measured = rows["stratum_value_mean"].drop_nulls()
+        if measured.len():
+            return float(measured.mean())
+    return band_midpoint(label)
+
+
+# Two points are a slope. This section's whole claim is that the slope is readable at a
+# resolution the four-bin plot does not have, so below this it has nothing the covariate
+# bargraph does not already say and writes nothing.
+MIN_DISORDER_POINTS = 4
+
+
+def section_disorder_scatter(out: Path, metrics: pl.DataFrame, primary_truth: str) -> None:
+    """Fmax against measured disorder, one dot per cut, for a legible set of arms."""
+    cut, split = pick_split(metrics.filter(pl.col("truth_set") == primary_truth))
+    found = _fine_disorder_axis(cut)
+    if found is None:
+        return
+    axis, sub = found
+
+    # best_variants takes the UNION of the top combos under every ranking metric, so
+    # top_kmerseek=2 comes back with four kmerseek arms, not two -- and on the midi run
+    # they arrive as two near-duplicate pairs (gbmr4_k21 with and without the
+    # low-complexity filter differ by 0.0005 Fmax) drawn in the same green. Trimmed here
+    # rather than by lowering top_kmerseek further, because the union is what keeps a
+    # sensitivity winner in every other section and this is the only place it hurts.
+    board = best_variants(ungrouped(cut), top_kmerseek=DISORDER_SCATTER_TOP_KMERSEEK)
+    keep, combos = [], []
+    for r in board.to_dicts():
+        if r["tool"] == "kmerseek" and not is_canonical(r["tool"], r["variant"]):
+            # Deduped on the alphabet x ksize combo, ignoring the low-complexity arm. The
+            # two lc arms of one combo are the same point twice: on the midi run the top
+            # two kmerseek arms by Fmax are gbmr4_k21_lcTrue and gbmr4_k21_lcFalse, 0.0005
+            # apart and drawn in the same green, so spending both slots on them would trim
+            # the legend without making the figure any more readable. The low-complexity
+            # comparison has its own section.
+            combo = r["variant"].rpartition("_lc")[0] or r["variant"]
+            if combo in combos:
+                continue
+            if len(combos) >= DISORDER_SCATTER_TOP_KMERSEEK:
+                continue
+            combos.append(combo)
+        keep.append((r["tool"], r["variant"], r["label"]))
+    if not keep:
+        return
+
+    labels = _bin_order(sub["stratum"].drop_nulls().unique().to_list())
+    bins = []
+    for label in labels:
+        rows = sub.filter(pl.col("stratum") == label)
+        x = _bin_x(rows, label)
+        if x is None:
+            continue
+        bins.append({
+            "label": label, "x": x,
+            "proteins": (int(rows["n_stratum_proteins"].max())
+                         if "n_stratum_proteins" in rows.columns
+                            and rows["n_stratum_proteins"].drop_nulls().len() else None),
+            "instances": (int(rows["n_truth_instances"].max())
+                          if "n_truth_instances" in rows.columns
+                             and rows["n_truth_instances"].drop_nulls().len() else None),
+            "measured": ("stratum_value_mean" in rows.columns
+                         and rows["stratum_value_mean"].drop_nulls().len() > 0),
+        })
+    if len(bins) < MIN_DISORDER_POINTS:
+        return
+
+    # All measured or none. A tree where only some arms were rescored has a measured mean
+    # on some cells and nothing on others, and mixing the two would draw part of the axis
+    # at measured disorder and part at bin midpoints under a single label saying one of
+    # them -- an axis whose meaning changes along its own length. The midpoint is the
+    # reading that exists for every cell, so a partial tree gets midpoints throughout and
+    # the description says so.
+    measured_x = all(b["measured"] for b in bins)
+    if not measured_x:
+        for b in bins:
+            b["x"] = band_midpoint(b["label"])
+        bins = [b for b in bins if b["x"] is not None]
+        if len(bins) < MIN_DISORDER_POINTS:
+            return
+
+    # A dict of series, not a list of points: custom content reads a top-level list as a
+    # list of DATASETS and dies in its numeric-x coercion. See section_ceiling_cardinality.
+    points: dict[str, list[dict]] = {}
+    slopes = {}
+    for tool, variant, label in keep:
+        arm = sub.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+        if arm.height == 0:
+            continue
+        by_bin = {r["stratum"]: r["fmax"]
+                  for r in arm.group_by("stratum").agg(pl.col("fmax").mean()).to_dicts()}
+        series = []
+        drawn = []
+        for b in bins:
+            y = by_bin.get(b["label"])
+            if y is None:
+                continue
+            series.append(scatter_point(
+                round(b["x"], 4), y, name=f"{label} @ disorder {b['x']:.3f}",
+                group=label, color=tool_color(tool),
+                n_proteins=b["proteins"], stratum=b["label"]))
+            drawn.append((b["x"], y))
+        if len(drawn) < MIN_DISORDER_POINTS:
+            continue
+        points[label] = series
+        drawn.sort()
+        # Ordered half against disordered half, not first cut against last. The endpoint
+        # cells are the two smallest populations on the axis and the most-ordered cut runs
+        # high for every arm in this benchmark, so a first-minus-last reading called every
+        # arm falling, kmerseek included, when its middle cuts are its best ones. Halves
+        # are still a description of these fourteen numbers rather than a fitted trend.
+        half = len(drawn) // 2
+        lo_half = sum(y for _, y in drawn[:half]) / half
+        hi_half = sum(y for _, y in drawn[-half:]) / half
+        slopes[label] = hi_half - lo_half
+    if not points:
+        return
+
+    n_bins = len(bins)
+    smallest = min((b["proteins"] for b in bins if b["proteins"] is not None), default=None)
+    falling = sorted(lb for lb, d in slopes.items() if d < 0)
+    rising = sorted(lb for lb, d in slopes.items() if d >= 0)
+
+    def listed(labels_):
+        return ", ".join(f"<code>{lb}</code>" for lb in labels_) or "none"
+
+    x_bullet = (
+        "<b>x is the measured mean disorder of the query proteins in that cut</b>, not "
+        "the cut's midpoint. The two agree to within 0.006 on the narrow cells and part "
+        "company at the wide end, where the top cell's midpoint (0.805) sits 0.092 above "
+        "the mean disorder of the proteins in it (0.713)."
+        if measured_x else
+        "<b>x is the cut's midpoint</b>, because this results tree was scored before "
+        "<code>stratum_value_mean</code> existed. Re-score to put each point at the "
+        "measured mean of its proteins instead; on the coarse axis the widest cell's "
+        "midpoint (0.805) is 0.092 above the mean disorder of what is in it (0.713).")
+    axis_bullet = (
+        f"<b>{n_bins} cuts of the query set</b>, from "
+        f"<code>STRATA[\"disorder_fine\"]</code>."
+        if axis == "disorder_fine" else
+        f"<b>{n_bins} cuts of the query set</b>, from the coarse four-bin "
+        "<code>disorder</code> axis — this results tree has no <code>disorder_fine</code> "
+        "rows. Re-score to get the fourteen-cut version this section is built for.")
+
+    write_section(out, "qfo_disorder_scatter", {
+        "id": "qfo_disorder_scatter",
+        "section_name": "Fmax against disorder",
+        "description": (
+            f"<p>Fmax against the fraction of the query's residues with pLDDT below 50 "
+            f"({primary_truth} truth, <code>{split}</code> split).</p>"
+            + bullets(
+                "<b>One dot is one cut of the query set, not one protein.</b> Its y is "
+                "the Fmax of the arm over the proteins in that cut: the score threshold "
+                "is swept, precision and recall are averaged over those proteins at each "
+                "threshold, and the best F over the sweep is the dot. Fmax is a "
+                "population statistic and has no per-protein value, so there is no "
+                "honest way to put one dot per query protein on this axis.",
+                axis_bullet,
+                x_bullet,
+                (f"<b>The smallest cut holds {smallest} query proteins</b> in this run. "
+                 "Every cut clears the per-stratum protein floor in "
+                 "<code>evaluate_domain_calls.py</code>, which is what stops the "
+                 "resolution being bought with cells too small to score."
+                 if smallest is not None else ""),
+                (f"<b>Lower on the disordered half of the axis</b>: {listed(falling)}. "
+                 f"<b>Level or higher</b>: {listed(rising)}. Each arm's mean Fmax over "
+                 "the more disordered half of the cuts against its mean over the more "
+                 "ordered half — a description of these points, not a fitted trend and "
+                 "not a test. Halves rather than the two end cuts, because those are the "
+                 "smallest populations on the axis."),
+                f"<b>Arms are trimmed to every baseline plus kmerseek's top "
+                f"{DISORDER_SCATTER_TOP_KMERSEEK} by Fmax</b>, rather than the "
+                "<code>--max-tools</code> set the four-bin Disorder section draws. That "
+                "set is mostly sweep combos, they are all drawn in the same green, and "
+                "several are near-duplicates of each other — the legend ends up taller "
+                "than the figure and says less. <b>The whole sweep is in the Disorder "
+                "section</b>; the table under this one carries only what is drawn here.",
+                "<b>Colour is the method class</b>, as everywhere else in this report.",
+                "<b>No error bars, here or anywhere in this report.</b> Each dot is a "
+                "mean over target proteomes with no resampling behind it, and the cuts "
+                "hold a few dozen proteins each, so a gap narrower than the scatter "
+                "between neighbouring cuts of the same arm is not a result.")),
+        "plot_type": "scatter",
+        "pconfig": {"id": "qfo_disorder_scatter_plot",
+                    "title": "Fmax vs disorder",
+                    "xlab": ("mean disorder of the proteins in the cut "
+                             "(fraction of residues with pLDDT < 50)" if measured_x
+                             else "disorder (cut midpoint)"),
+                    "ylab": "Fmax over the proteins in the cut",
+                    "xmin": 0, "xmax": 1, "ymin": 0, "height": 560,
+                    "showlegend": True},
+        "data": points,
+    })
+
+    table = {}
+    headers = {"x": {"title": "Disorder", "format": "{:,.3f}",
+                     "description": ("Measured mean disorder of the proteins in the cut"
+                                     if measured_x else "Cut midpoint")},
+               "proteins": {"title": "Proteins", "format": "{:,d}",
+                            "description": "Query proteins in the cut"},
+               "instances": {"title": "Instances", "format": "{:,d}",
+                             "description": "Annotated domain instances in the cut"}}
+    for b in bins:
+        row = {"x": b["x"], "proteins": b["proteins"], "instances": b["instances"]}
+        for label, series in points.items():
+            hit = next((p for p in series if p["stratum"] == b["label"]), None)
+            row[label] = hit["y"] if hit else None
+            headers.setdefault(label, {"title": label, "format": "{:,.3f}",
+                                       "scale": "RdYlGn", "min": 0, "max": 1,
+                                       "description": f"Fmax for {label} in this cut"})
+        table[b["label"]] = row
+    write_section(out, "qfo_disorder_scatter_table", {
+        "id": "qfo_disorder_scatter_table",
+        "section_name": "Fmax against disorder, per cut",
+        "description": (
+            f"<p>The numbers behind the scatter above: every cut's disorder, its "
+            f"denominators, and each drawn arm's Fmax over it ({primary_truth} truth, "
+            f"<code>{split}</code> split).</p>"
+            + bullets(
+                "<b>Proteins and instances are the denominators</b> the cut's Fmax was "
+                "computed over. They are the only thing a reader has to judge a gap by, "
+                "since nothing in this report carries a sampling error.")),
+        "plot_type": "table",
+        "pconfig": {"id": "qfo_disorder_scatter_table_plot",
+                    "title": "Fmax by disorder cut", "col1_header": "Disorder cut",
+                    "sort_rows": False},
+        "headers": headers,
+        "data": table,
+    })
+
+
 # Families ranked by the gap between kmerseek and the best baseline, not by size. "The
 # twenty biggest families" answers a question nobody asked; "where does this method win and
 # where does it lose" is the one a reader has.
@@ -6391,6 +6678,7 @@ def main():
     section_curves(args.outdir, curves, metrics, primary, args.max_lines)
     section_identity(args.outdir, metrics, primary, args.max_tools)
     section_covariates(args.outdir, metrics, primary, args.max_tools)
+    section_disorder_scatter(args.outdir, metrics, primary)
     section_plddt_regime(args.outdir, metrics, primary, args.max_tools)
     section_curated_sets(args.outdir, metrics, args.max_tools)
     section_search_space(args.outdir, metrics, primary)
