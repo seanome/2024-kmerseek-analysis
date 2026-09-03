@@ -151,11 +151,11 @@ def curation_caveat_note(truth_set: str | None,
                     f"{100 * reach[CURATION_CAVEAT_SPECIES]:.1f}%.")
     return (f"<b><code>{CURATION_CAVEAT_SPECIES}</code> is marked "
             f"{CURATION_CAVEAT_MARK} because this truth set understates it.</b> Swiss-Prot "
-            f"is manually curated and Ciona has 23 curated proteins, against 3_174 for "
-            f"fly, 2_999 for E. coli and 15_634 for mouse, so on this answer key a species "
+            f"is manually curated and Ciona has 23 curated proteins, against 3,174 for "
+            f"fly, 2,999 for E. coli and 15,634 for mouse, so on this answer key a species "
             f"ranks partly by how much of it has been curated." + measured
-            + " Its Pfam annotation is complete — 20_234 domain rows over 10_658 proteins "
-              "in 5_542 families — and on the Pfam truth set it sits above fly and "
+            + " Its Pfam annotation is complete — 20,234 domain rows over 10,658 proteins "
+              "in 5,542 families — and on the Pfam truth set it sits above fly and "
               "chicken. Read the Pfam panel for the biological ordering.")
 
 # For scatters grouped by something with no fixed class (alphabet, process). Okabe-Ito,
@@ -6942,10 +6942,10 @@ def _reachability_panel(out: Path, per: pl.DataFrame, truth_set: str, *,
             f"somewhere in each target proteome, ordered from most reachable to least "
             f"({truth_set} truth).</p>" + what
             + bullets(
-                "<b>Read this before any leaderboard.</b> No search of any kind can "
-                "transfer a family the target proteome does not have, so the pale part of "
-                "each bar is out of reach for every arm in this report and every "
-                "recall_reachable divides by the green part only.",
+                ("<b>Read this before any leaderboard.</b> " if is_lead else "")
+                + "No search of any kind can transfer a family the target proteome does "
+                  "not have, so the pale part of each bar is out of reach for every arm in "
+                  "this report and every recall_reachable divides by the green part only.",
                 shape,
                 "<b>Each bar's tick label carries its own reachable count</b>, since the "
                 "denominators are what the shares are of.",
