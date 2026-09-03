@@ -63,7 +63,7 @@ SHERLOCK_HOST  ?= sherlock
 SSH_MUX  := ssh -o ControlMaster=auto -o ControlPath=$$HOME/.ssh/cm-%r@%h:%p -o ControlPersist=30m
 RSYNC    := rsync -avz --progress -e "$(SSH_MUX)"
 REPO_URL       ?= https://github.com/seanome/2024-kmerseek-analysis.git
-BRANCH         ?= olgabot/qfo-pfam-region-benchmark
+BRANCH         ?= olgabot/midi-plus-all-qfo
 
 # $SCRATCH, never $HOME -- the home quota is small and the work dir is not.
 REMOTE_REPO    := $$SCRATCH/2024-kmerseek-analysis
@@ -95,6 +95,31 @@ PFAM_HMM_REMOTE ?= $$SCRATCH/data/pfam/Pfam-A.hmm
 PFAM_HMM_ARG     = $(if $(PFAM_HMM_REMOTE),--pfam_hmm $(PFAM_HMM_REMOTE))
 
 QFO_DIR        := /Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
+
+# --- QfO release, fetched ON SHERLOCK ---------------------------------------
+#
+# The whole 78-species release, straight from the EBI FTP to $SCRATCH, so the wide run
+# does not depend on 77 proteomes existing on a laptop first. 2.65 GB compressed.
+#
+# 2020_04 AND NOT THE CURRENT RELEASE, which is 2026_02. This is the release every
+# existing cache was built from, and species labels are the only key those caches have:
+# an index named ecoli.dayhoff6.k10.lcfalse.kmerseek.rocksdb says nothing about which
+# release its sequences came from, so newer FASTAs under the same labels would be reused
+# rather than rebuilt. assets/qfo_cache_critical.md5 pins the ten proteomes that decision
+# rests on and qfo-download verifies them after unpacking. EBI keeps old releases under
+# previous_releases/, which is what makes staying on 2020_04 possible at all.
+QFO_RELEASE      ?= QfO_release_2020_04_with_updated_UP000008143
+QFO_RELEASE_DIR  ?= qfo_release-2020_04_with_updated_UP000008143
+QFO_FTP_BASE     ?= https://ftp.ebi.ac.uk/pub/databases/reference_proteomes/previous_releases
+QFO_TARBALL_URL  ?= $(QFO_FTP_BASE)/$(QFO_RELEASE_DIR)/$(QFO_RELEASE).tar.gz
+QFO_TARBALL_SIZE ?= 2648666198
+
+# Outside the repo checkout and outside the pipeline's data/, because it is release data
+# shared by every worktree and every run -- the same reason Pfam-A.hmm lives in
+# $SCRATCH/data/pfam. data/qfo becomes a symlink to it.
+QFO_REMOTE_ROOT  ?= $$SCRATCH/data/quest-for-orthologs
+QFO_REMOTE_DIR   ?= $(QFO_REMOTE_ROOT)/$(QFO_RELEASE)
+
 STRUCT_DIR     := /Users/olga/data/alphafold_proteomes
 ACC_DIR        := /Users/olga/data/alphafold_proteomes/_accessions
 LOCAL_RESULTS  := /Users/olga/data/qfo-pfam-region-benchmark
@@ -227,6 +252,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
+        qfo-download qfo-link \
         run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
@@ -265,6 +291,9 @@ help:
 	@echo ""
 	@echo "Sherlock:"
 	@printf '%s\n' '  prefetch-images       Pull all pinned images into $$SCRATCH cache'
+	@echo "  qfo-download         Fetch the 78-species QfO 2020_04 release to \$$SCRATCH (2.65 GB)"
+	@echo "                       Resumable; verifies the ten cache-critical proteomes"
+	@echo "  qfo-link             Point this checkout's data/qfo at that release"
 	@echo "  mini-testset-sherlock Build the mini data set"
 	@echo "  run-mini             Run the mini smoke test"
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
@@ -303,7 +332,7 @@ help:
 # discriminator that needs no network.
 ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
-MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/qfo-pfam-region-benchmark/nextflow-runs/qfo-pfam-region-benchmark
+MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/midi-plus-all-qfo/nextflow-runs/qfo-pfam-region-benchmark
 
 # The name these two guards quote back at you. Normally the target being built, which is
 # also the target you typed. A helper target that only ever runs as somebody else's
@@ -804,6 +833,71 @@ sync-pfam:
 	@echo 'hmmscan annotation ceiling is now ENABLED for the run targets.'
 	@echo 'They already pass --pfam_hmm $(PFAM_HMM_REMOTE) -- no extra flag needed.'
 	@echo 'Point them elsewhere with PFAM_HMM_REMOTE=<path>, or PFAM_HMM_REMOTE= to run without it.'
+
+## Download the QfO release to Sherlock. Run it ON SHERLOCK, on a login node.
+##
+## Idempotent and resumable. curl -C - continues a partial file rather than restarting,
+## and --speed-limit/--speed-time aborts a transfer that has silently stalled instead of
+## hanging for hours -- multi-GB EBI transfers do stall, and a bare background curl gives
+## no sign of it. Re-run it after an abort; it picks up where it stopped.
+##
+## Costs nothing to re-run once complete: a release directory that already holds all 78
+## canonical FASTAs and passes the checksum verification is left alone.
+qfo-download:
+	$(call require_cluster)
+	@mkdir -p $(QFO_REMOTE_ROOT)
+	@if [ -d "$(QFO_REMOTE_DIR)" ] && [ "$$(ls $(QFO_REMOTE_DIR)/*/*.fasta 2>/dev/null \
+	     | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l)" -eq 78 ]; then \
+	  echo "have $(QFO_REMOTE_DIR) (78 canonical proteomes) -- verifying"; \
+	else \
+	  echo "fetching $(QFO_TARBALL_URL)"; \
+	  curl -L -C - --fail --retry 5 --retry-delay 10 \
+	       --speed-limit 10240 --speed-time 120 \
+	       -o $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz \
+	       $(QFO_TARBALL_URL); \
+	  got=$$(stat -c %s $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz); \
+	  if [ "$$got" != "$(QFO_TARBALL_SIZE)" ]; then \
+	    echo "  tarball is $$got bytes, expected $(QFO_TARBALL_SIZE) -- incomplete."; \
+	    echo "  Re-run 'make qfo-download'; curl -C - resumes it."; exit 1; \
+	  fi; \
+	  echo "unpacking into $(QFO_REMOTE_ROOT)"; \
+	  tar -xzf $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz -C $(QFO_REMOTE_ROOT); \
+	fi
+	@n=$$(ls $(QFO_REMOTE_DIR)/*/*.fasta 2>/dev/null \
+	      | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l); \
+	 if [ "$$n" -ne 78 ]; then \
+	   echo "  $(QFO_REMOTE_DIR) has $$n canonical proteomes, expected 78."; exit 1; \
+	 fi
+	@echo "verifying the ten proteomes existing caches were built from"
+	@cd $(QFO_REMOTE_DIR) && grep -v '^#' $(CURDIR)/assets/qfo_cache_critical.md5 \
+	   | md5sum -c - \
+	   || { echo; \
+	        echo "  A cache-critical proteome does not match assets/qfo_cache_critical.md5."; \
+	        echo "  This release is NOT the one run-midi-plus's indexes and searches were"; \
+	        echo "  built from, and species labels alone cannot tell them apart. Do not"; \
+	        echo "  point a run at it until this is resolved."; echo; exit 1; }
+	@echo
+	@echo "  $(QFO_REMOTE_DIR)"
+	@echo "  78 proteomes, ten checksums verified."
+	@echo
+	@echo "  Point the pipeline at it:"
+	@echo "    make qfo-link"
+	@echo
+
+## Point this checkout's data/qfo at the downloaded release. Separate from qfo-download so
+## a re-download never silently repoints a run's inputs.
+qfo-link:
+	$(call require_cluster)
+	@test -d $(QFO_REMOTE_DIR) || { \
+	  echo "  no $(QFO_REMOTE_DIR) -- run 'make qfo-download' first"; exit 1; }
+	@if [ -e data/qfo ] && [ ! -L data/qfo ]; then \
+	  echo "  data/qfo is a real directory, not a link. Leaving it alone: it may be the"; \
+	  echo "  rsynced copy the current caches were built from. Move it aside first if you"; \
+	  echo "  mean to replace it."; exit 1; \
+	fi
+	@mkdir -p data
+	@ln -sfn $(QFO_REMOTE_DIR) data/qfo
+	@echo "data/qfo -> $$(readlink data/qfo)"
 
 sync-data:
 	$(call require_mac)

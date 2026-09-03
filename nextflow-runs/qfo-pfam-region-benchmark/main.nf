@@ -154,11 +154,35 @@ params.kmerseek_extra_encodings = false
 params.kmerseek_extra_image = null
 params.kmerseek_combos    = null
 
-// Low-complexity k-mer removal, swept as a toggle rather than fixed: every alphabet and
-// ksize runs both with and without it, doubling the search count. Whether dropping
-// homopolymer-like k-mers helps depends on the alphabet, since a 2-letter alphabet
-// generates far more low-complexity k-mers than a 20-letter one.
-params.low_complexity_toggle = [false, true]
+// Low-complexity k-mer removal. Swept as a toggle when it was an open question -- every
+// alphabet and ksize with and without it, which doubled the search count -- and now fixed
+// OFF, because the sweep answered it: dropping low-complexity k-mers did not move the
+// metrics enough to pay for a second arm of every combo.
+//
+// `lc` is in the storeDir entry name (<label>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and
+// human_vs_<label>...lc<lc>.regions.parquet), so narrowing this list drops the lctrue
+// tasks and leaves every cached lcfalse index and search hitting exactly as before. Put
+// `true` back to measure it again:
+//   --low_complexity_toggle false,true
+params.low_complexity_toggle = [false]
+
+// On the command line a list arrives as the string "false,true", and .collect on a String
+// iterates its characters -- so the documented override would have silently produced ten
+// one-character "settings" rather than two booleans.
+def LC_TOGGLE = (params.low_complexity_toggle instanceof List
+                 ? params.low_complexity_toggle
+                 : params.low_complexity_toggle.toString().tokenize(','))
+    .collect { it.toString().trim().toLowerCase() }
+    .collect { v ->
+        if (!(v in ['true', 'false'])) {
+            error "--low_complexity_toggle takes true and/or false, not '${v}'"
+        }
+        v == 'true'
+    }
+    .unique()
+if (LC_TOGGLE.isEmpty()) {
+    error "--low_complexity_toggle is empty; it needs at least one of true, false"
+}
 
 // [cli_flag, label, kmin, kmax]. In kmerseek v0.4.0 the CLI name and the moltype written
 // into the CSV are the same string, so one column serves both.
@@ -511,28 +535,103 @@ params.folddisco_top    = 1000
 params.run_hmmscan    = file(params.pfam_hmm).exists()
 
 // ---------------------------------------------------------------------------
-// Species: human is query-only; the other 9 are targets.
+// Species: human is query-only; every other registry row is a possible target.
 // ---------------------------------------------------------------------------
-def ALL_SPECIES = [
-    [label: "mouse",       taxon: "10090",  proteome: "UP000000589", subdir: "Eukaryota", mya: 100],
-    [label: "chicken",     taxon: "9031",   proteome: "UP000000539", subdir: "Eukaryota", mya: 300],
-    [label: "zebrafish",   taxon: "7955",   proteome: "UP000000437", subdir: "Eukaryota", mya: 430],
-    [label: "ciona",       taxon: "7719",   proteome: "UP000008144", subdir: "Eukaryota", mya: 550],
-    [label: "fly",         taxon: "7227",   proteome: "UP000000803", subdir: "Eukaryota", mya: 600],
-    [label: "worm",        taxon: "6239",   proteome: "UP000001940", subdir: "Eukaryota", mya: 650],
-    [label: "yeast",       taxon: "559292", proteome: "UP000002311", subdir: "Eukaryota", mya: 900],
-    [label: "arabidopsis", taxon: "3702",   proteome: "UP000006548", subdir: "Eukaryota", mya: 1500],
-    [label: "ecoli",       taxon: "83333",  proteome: "UP000000625", subdir: "Bacteria",  mya: 2000],
-]
+// The registry is assets/qfo_species.tsv, generated from a QfO release directory by
+// bin/build_qfo_species_registry.py. It replaces the nine-row literal that used to sit
+// here and the two other hardcoded copies of the same list (make_mini_testset.py's
+// `proteomes` map, build_pfam_architectures.py's SPECIES_METADATA), which had already
+// drifted apart in both length and key names.
+//
+// A label is a CACHE KEY. kmerseekIndex stores target indexes as
+// <label>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and kmerseekSearch stores results as
+// human_vs_<label>...regions.parquet, neither of which carries a release or a checksum.
+// The registry generator pins and asserts the ten labels that already have caches for
+// exactly that reason.
+params.species_registry = "${projectDir}/assets/qfo_species.tsv"
+
+def registry_file = file(params.species_registry)
+if (!registry_file.exists()) {
+    error "Species registry not found: ${params.species_registry}\n" +
+          "Generate it with:\n" +
+          "  bin/build_qfo_species_registry.py --release <QfO dir> --out assets/qfo_species.tsv"
+}
+
+def registry_rows = registry_file.readLines().findAll { it.trim() }
+def registry_header = registry_rows[0].split('\t') as List
+['label', 'taxon', 'proteome', 'subdir', 'mya'].each { col ->
+    if (!registry_header.contains(col)) {
+        error "Species registry ${params.species_registry} has no '${col}' column; " +
+              "regenerate it with bin/build_qfo_species_registry.py"
+    }
+}
+def REGISTRY = registry_rows.drop(1).collect { line ->
+    def cells = line.split('\t', -1) as List
+    def rec = [registry_header, cells].transpose().collectEntries { k, v -> [(k): v] }
+    [label   : rec.label,
+     taxon   : rec.taxon,
+     proteome: rec.proteome,
+     subdir  : rec.subdir,
+     // Divergence from human in MYA. Empty for every species that has no sourced value,
+     // and null all the way through to scoreDomainCalls, which then omits --species-mya
+     // rather than passing a made-up coordinate to the divergence axis.
+     mya     : rec.mya?.trim() ? rec.mya.trim() as Integer : null]
+}
+
+// Human is the query. It is never a target, and never appears in a target list.
+def HUMAN = REGISTRY.find { it.label == 'human' }
+if (!HUMAN) {
+    error "No 'human' row in ${params.species_registry}; human is the query proteome"
+}
+def KNOWN_TARGETS = REGISTRY.findAll { it.label != 'human' }
+
+// The nine the benchmark has always run, in divergence order, and still the default.
+//
+// NOT "every row in the registry". The registry now holds all 77 QfO targets, and making
+// that the default would widen `make run`, `make run-midi` and every -resume of an
+// in-flight sweep from 9 targets to 77 the moment this file was pulled -- the same trap
+// EXTRA_ENCODINGS is split out to avoid on the alphabet axis. The wide run asks for its
+// targets explicitly, so the default matrix is byte-for-byte what it was.
+def DEFAULT_TARGET_LABELS = ['mouse', 'chicken', 'zebrafish', 'ciona', 'fly', 'worm',
+                             'yeast', 'arabidopsis', 'ecoli']
+def ALL_SPECIES = DEFAULT_TARGET_LABELS.collect { label ->
+    def row = KNOWN_TARGETS.find { it.label == label }
+    if (!row) {
+        error "Default target '${label}' is missing from ${params.species_registry}"
+    }
+    row
+}
 
 def requested = params.target_species ?: params.species
-def SPECIES = requested
-    ? ALL_SPECIES.findAll { it.label in requested.tokenize(',')*.trim() }
-    : ALL_SPECIES
+def SPECIES
+if (!requested) {
+    SPECIES = ALL_SPECIES
+}
+else if (requested.toString().trim().toLowerCase() == 'all') {
+    // Every QfO target, registry order (kingdom then label). Spelled as a word because
+    // listing 77 labels on a command line is how one gets silently dropped.
+    SPECIES = KNOWN_TARGETS
+}
+else {
+    def wanted = requested.tokenize(',')*.trim().findAll { it }
+    def unknown = wanted - KNOWN_TARGETS*.label
+    // Named-but-unknown is an error, not a silent drop. `--target_species mouse,mosue`
+    // otherwise runs one species and reports nine.
+    if (unknown) {
+        error "Unknown target species: ${unknown.join(', ')}.\n" +
+              "Known targets are the ${KNOWN_TARGETS.size()} non-human rows of " +
+              "${params.species_registry}; '--target_species all' selects them all. " +
+              (unknown.contains('human')
+                 ? "human is the QUERY and is never a target."
+                 : "")
+    }
+    // Ordered as the user asked, so a hand-written subset reads back the way it was typed.
+    SPECIES = wanted.collect { l -> KNOWN_TARGETS.find { it.label == l } }
+}
 
 if (SPECIES.isEmpty()) {
     error "No target species matched '${requested}'. Known targets: " +
-          "${ALL_SPECIES*.label.join(', ')} (human is the query and is not a target)"
+          "${KNOWN_TARGETS*.label.join(', ')} (human is the query and is not a target)"
 }
 
 // HP-family alphabets at low ksize need far more RAM than everything else: a handful of
@@ -2717,6 +2816,11 @@ process scoreDomainCalls {
     // and the policy has to be derived from it in exactly one place.
     def tdis_arg = target_disorder.name == 'NO_DISORDER' ? ""
                    : "--target-disorder ${target_disorder}"
+    // Rendered byte-for-byte as the old literal when mya is set, so every arm already
+    // scored keeps its task hash. Empty for a species with no sourced divergence time:
+    // evaluate_domain_calls.py defaults --species-mya to None and the report's divergence
+    // panels skip a null, where "null" as a float would abort the task.
+    def mya_arg = mya != null ? "--species-mya  ${mya}" : ""
     def manifest_rows = [tools, variants, regions].transpose()
         .collect { t, v, r -> "${t}\t${v}\t${r}" }.join("\n")
     """
@@ -2729,7 +2833,7 @@ MANIFEST_EOF
     evaluate_domain_calls.py \\
         --manifest     manifest.tsv \\
         --species      ${species} \\
-        --species-mya  ${mya} \\
+        ${mya_arg} \\
         --truth        ${truth} \\
         --domain-map   ${domain_map} \\
         --covariates   ${covariates} \\
@@ -3264,7 +3368,7 @@ workflow {
         // doubles the sweep, and it is the point: whether dropping low-complexity k-mers
         // helps is alphabet-dependent, so it has to be measured rather than chosen.
         combos = combos.collectMany { cli_flag, label, k ->
-            params.low_complexity_toggle.collect { lc -> tuple(cli_flag, label, k, lc) }
+            LC_TOGGLE.collect { lc -> tuple(cli_flag, label, k, lc) }
         }
 
         // Every combo becomes one kmerseekIndex store entry per species, named

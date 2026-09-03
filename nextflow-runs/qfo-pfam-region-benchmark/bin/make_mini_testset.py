@@ -21,6 +21,7 @@ and Folddisco arms.
 """
 
 import argparse
+import csv
 import json
 import io
 import shutil
@@ -31,6 +32,28 @@ import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gene_sets as gs  # noqa: E402
+
+
+# The species registry that main.nf also reads. Default resolves relative to this file so
+# the script works from any launch directory, the way the pipeline invokes it.
+DEFAULT_SPECIES_REGISTRY = Path(__file__).resolve().parent.parent / "assets" / "qfo_species.tsv"
+
+
+def load_species_registry(path: Path) -> dict[str, dict[str, str]]:
+    """label -> row, from assets/qfo_species.tsv. Insertion order is registry order."""
+    if not path.exists():
+        raise SystemExit(
+            f"species registry not found: {path}\n"
+            f"Generate it with:\n"
+            f"  bin/build_qfo_species_registry.py --release <QfO dir> "
+            f"--out assets/qfo_species.tsv"
+        )
+    with open(path, newline="") as fh:
+        rows = list(csv.DictReader(fh, delimiter="\t"))
+    missing = {"label", "taxon", "proteome", "subdir"} - set(rows[0] if rows else {})
+    if missing:
+        raise SystemExit(f"{path} is missing column(s): {', '.join(sorted(missing))}")
+    return {r["label"]: r for r in rows}
 
 
 def read_fasta(path: Path) -> dict[str, str]:
@@ -256,27 +279,33 @@ def main():
                         "to the full one -- the targets are literally the same files.")
     p.add_argument("--hgnc", type=Path,
                    help="HGNC table, required by --gene-set mhc to map symbols to accessions")
+    p.add_argument("--species-registry", type=Path, default=DEFAULT_SPECIES_REGISTRY,
+                   help="assets/qfo_species.tsv, the same species table main.nf reads")
     args = p.parse_args()
 
-    # QfO proteome files, keyed by the labels main.nf uses.
+    # QfO proteome files, keyed by the labels main.nf uses. Read from the same registry
+    # main.nf reads rather than restated here -- this map and main.nf's ALL_SPECIES were
+    # two hand-maintained copies of one list, and they had already drifted (this one
+    # carried human, that one did not).
+    registry = load_species_registry(args.species_registry)
     proteomes = {
-        "human": ("Eukaryota", "UP000005640_9606"),
-        "mouse": ("Eukaryota", "UP000000589_10090"),
-        "chicken": ("Eukaryota", "UP000000539_9031"),
-        "zebrafish": ("Eukaryota", "UP000000437_7955"),
-        "ciona": ("Eukaryota", "UP000008144_7719"),
-        "fly": ("Eukaryota", "UP000000803_7227"),
-        "worm": ("Eukaryota", "UP000001940_6239"),
-        "yeast": ("Eukaryota", "UP000002311_559292"),
-        "arabidopsis": ("Eukaryota", "UP000006548_3702"),
-        "ecoli": ("Bacteria", "UP000000625_83333"),
+        label: (rec["subdir"], f"{rec['proteome']}_{rec['taxon']}")
+        for label, rec in registry.items()
     }
     species = [s.strip() for s in args.species.split(",")]
+    # `all` here means the same thing it means to main.nf's --target_species: every
+    # non-human row. Human is the query and is staged by the query-side code below.
+    if species == ["all"]:
+        species = [l for l in registry if l != "human"]
 
     ann_out = args.outdir / "annotations"
     qfo_out = args.outdir / "qfo"
     struct_out = args.outdir / "structures"
-    for d in (ann_out, qfo_out / "Eukaryota", qfo_out / "Bacteria", struct_out):
+    # One directory per kingdom present in the registry, not the hardcoded
+    # Eukaryota/Bacteria pair: the QfO set also has seven Archaea, and staging one of them
+    # failed on a missing parent rather than on anything to do with the species.
+    kingdoms = {rec["subdir"] for rec in registry.values()}
+    for d in (ann_out, struct_out, *(qfo_out / k for k in sorted(kingdoms))):
         d.mkdir(parents=True, exist_ok=True)
 
     human = pl.read_parquet(args.annotations / "human_pfam_domains.parquet").filter(

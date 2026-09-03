@@ -1,0 +1,79 @@
+label	taxon	proteome	subdir	mya	n_proteins	scientific_name
+hsalinarum	64091	UP000000554	Archaea		2423	Halobacterium salinarum
+kcryptofilum	374847	UP000001686	Archaea		1602	Korarchaeum cryptofilum
+macetivorans	188937	UP000002487	Archaea		4468	Methanosarcina acetivorans
+mjannaschii	243232	UP000000805	Archaea		1787	Methanocaldococcus jannaschii
+nmaritimus	436308	UP000000792	Archaea		1795	Nitrosopumilus maritimus
+ssolfataricus	273057	UP000001974	Archaea		2938	Saccharolobus solfataricus
+tkodakarensis	69014	UP000000536	Archaea		2301	Thermococcus kodakarensis
+aaeolicus	224324	UP000000798	Bacteria		1553	Aquifex aeolicus
+bdiazoefficiens	224911	UP000002526	Bacteria		8253	Bradyrhizobium diazoefficiens
+bsubtilis	224308	UP000001570	Bacteria		4260	Bacillus subtilis
+bthetaiotaomicron	226186	UP000001414	Bacteria		4782	Bacteroides thetaiotaomicron
+caurantiacus	324602	UP000002008	Bacteria		3850	Chloroflexus aurantiacus
+ctrachomatis	272561	UP000000431	Bacteria		895	Chlamydia trachomatis
+dradiodurans	243230	UP000002524	Bacteria		3085	Deinococcus radiodurans
+dturgidum	515635	UP000007719	Bacteria		1743	Dictyoglomus turgidum
+ecoli	83333	UP000000625	Bacteria	2000	4391	Escherichia coli
+fnucleatum	190304	UP000002521	Bacteria		2046	Fusobacterium nucleatum subsp. nucleatum
+gsulfurreducens	243231	UP000000577	Bacteria		3402	Geobacter sulfurreducens
+gviolaceus	251221	UP000000557	Bacteria		4406	Gloeobacter violaceus
+hpylori	85962	UP000000429	Bacteria		1552	Helicobacter pylori
+linterrogans	189518	UP000001408	Bacteria		3676	Leptospira interrogans serogroup Icterohaemorrhagiae serovar Lai
+mgenitalium	243273	UP000000807	Bacteria		483	Mycoplasma genitalium
+mtuberculosis	83332	UP000001584	Bacteria		3993	Mycobacterium tuberculosis
+nmeningitidis	122586	UP000000425	Bacteria		2001	Neisseria meningitidis serogroup B
+paeruginosa	208964	UP000002438	Bacteria		5564	Pseudomonas aeruginosa
+rbaltica	243090	UP000001025	Bacteria		7271	Rhodopirellula baltica
+scoelicolor	100226	UP000001973	Bacteria		8038	Streptomyces coelicolor
+synechocystis	1111708	UP000001425	Bacteria		3507	Synechocystis sp.
+tmaritima	243274	UP000008183	Bacteria		1852	Thermotoga maritima
+tyellowstonii	289376	UP000000718	Bacteria		1982	Thermodesulfovibrio yellowstonii
+agambiae	7165	UP000007062	Eukaryota		12533	Anopheles gambiae
+arabidopsis	3702	UP000006548	Eukaryota	1500	27500	Arabidopsis thaliana
+bdendrobatidis	684364	UP000007241	Eukaryota		8610	Batrachochytrium dendrobatidis
+bfloridae	7739	UP000001554	Eukaryota		28542	Branchiostoma floridae
+btaurus	9913	UP000009136	Eukaryota		23845	Bos taurus
+calbicans	237561	UP000000559	Eukaryota		6035	Candida albicans
+chicken	9031	UP000000539	Eukaryota	300	18116	Gallus gallus
+ciona	7719	UP000008144	Eukaryota	550	16678	Ciona intestinalis
+clupus	9615	UP000002254	Eukaryota		20649	Canis lupus familiaris
+cneoformans	214684	UP000002149	Eukaryota		6604	Cryptococcus neoformans var. neoformans serotype D
+creinhardtii	3055	UP000006906	Eukaryota		17614	Chlamydomonas reinhardtii
+ddiscoideum	44689	UP000002195	Eukaryota		12739	Dictyostelium discoideum
+fly	7227	UP000000803	Eukaryota	600	13811	Drosophila melanogaster
+ggorilla	9595	UP000001519	Eukaryota		21792	Gorilla gorilla gorilla
+gintestinalis	184922	UP000001548	Eukaryota		7971	Giardia intestinalis
+hrobusta	6412	UP000015101	Eukaryota		23328	Helobdella robusta
+human	9606	UP000005640	Eukaryota	0	20600	Homo sapiens
+iscapularis	6945	UP000001555	Eukaryota		20473	Ixodes scapularis
+lmajor	5664	UP000000542	Eukaryota		8038	Leishmania major
+loculatus	7918	UP000018468	Eukaryota		18318	Lepisosteus oculatus
+mbrevicollis	81824	UP000001357	Eukaryota		9188	Monosiga brevicollis
+mdomestica	13616	UP000002280	Eukaryota		21225	Monodelphis domestica
+mouse	10090	UP000000589	Eukaryota	100	21989	Mus musculus
+ncrassa	367110	UP000001805	Eukaryota		9759	Neurospora crassa
+nfumigata	330879	UP000002530	Eukaryota		9647	Neosartorya fumigata
+nvectensis	45351	UP000001593	Eukaryota		24428	Nematostella vectensis
+olatipes	8090	UP000001038	Eukaryota		23617	Oryzias latipes
+osativa	39947	UP000059680	Eukaryota		43672	Oryza sativa subsp. japonica
+pfalciparum	36329	UP000001450	Eukaryota		5388	Plasmodium falciparum
+pgraminis	418459	UP000008783	Eukaryota		15688	Puccinia graminis f. sp. tritici
+pnodorum	321614	UP000001055	Eukaryota		15998	Phaeosphaeria nodorum
+ppatens	3218	UP000006727	Eukaryota		30857	Physcomitrella patens subsp. patens
+pramorum	164328	UP000005238	Eukaryota		15349	Phytophthora ramorum
+ptetraurelia	5888	UP000000600	Eukaryota		39461	Paramecium tetraurelia
+ptroglodytes	9598	UP000002277	Eukaryota		23053	Pan troglodytes
+rnorvegicus	10116	UP000002494	Eukaryota		21587	Rattus norvegicus
+spombe	284812	UP000002485	Eukaryota		5141	Schizosaccharomyces pombe
+ssclerotiorum	665079	UP000001312	Eukaryota		14445	Sclerotinia sclerotiorum
+tcastaneum	7070	UP000007266	Eukaryota		16568	Tribolium castaneum
+tpseudonana	35128	UP000001449	Eukaryota		11717	Thalassiosira pseudonana
+tvaginalis	5722	UP000001542	Eukaryota		50190	Trichomonas vaginalis
+umaydis	237631	UP000000561	Eukaryota		6788	Ustilago maydis
+worm	6239	UP000001940	Eukaryota	650	19819	Caenorhabditis elegans
+xtropicalis	8364	UP000008143	Eukaryota		17272	Xenopus tropicalis
+yeast	559292	UP000002311	Eukaryota	900	6049	Saccharomyces cerevisiae
+ylipolytica	284591	UP000001300	Eukaryota		6449	Yarrowia lipolytica
+zebrafish	7955	UP000000437	Eukaryota	430	25698	Danio rerio
+zmays	4577	UP000007305	Eukaryota		39400	Zea mays
