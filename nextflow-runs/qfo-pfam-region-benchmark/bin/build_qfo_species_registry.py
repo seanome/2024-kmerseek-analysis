@@ -11,7 +11,9 @@ make_mini_testset.py ten (it also holds human), and the notebook ten with differ
 Everything except `label` and `mya` is read out of the release itself rather than typed:
 the proteome ID and taxon come from the file name, the scientific name and taxon from the
 first FASTA header's OS= / OX= fields, and the protein count from the record count. Run it
-against a different release and the taxon or the protein count changes on its own.
+against a different release and the taxon or the protein count changes on its own. The one
+exception is EXTRA_ROWS, for proteomes that are not in any release and are staged locally;
+see the comment on it.
 
 LABELS ARE CACHE KEYS. kmerseekIndex stores its target indexes under
 ${db_cache}/kmerseek_index as <label>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb, and
@@ -74,6 +76,34 @@ LOCKED_MYA = {
     "ecoli": 2000,
 }
 
+# Species that are NOT in the QfO release and are staged locally instead. The release scan
+# below cannot see them, so without this list every regeneration would drop them and the
+# species would silently un-add itself -- the same class of failure LOCKED_LABELS guards
+# against, arriving from the other direction. A label is a cache key whether or not the
+# sequences came from the release, so a proteome staged by hand still has to survive being
+# regenerated.
+#
+# `proteome` is a filename component, not a UniProt accession: main.nf builds the path as
+# ${qfo_dir}/${subdir}/${proteome}_${taxon}.fasta, so BOTSCH2026 is a local id chosen to be
+# obviously not a UP-accession. `make stage-botryllus` writes that file.
+#
+# botryllus is a TARGET-ONLY species. It has no Pfam annotations, so build_domain_truth.py
+# writes no domain map for it and main.nf's score_in inner-joins it out of scoring: it is
+# searched by every sequence arm and by ProstT5, and produces no metrics. mya 550 puts it at
+# the same node as ciona on purpose -- two tunicates at one divergence is the comparison the
+# species was added for.
+EXTRA_ROWS = [
+    {
+        "label": "botryllus",
+        "taxon": "30301",
+        "proteome": "BOTSCH2026",
+        "subdir": "Eukaryota",
+        "mya": 550,
+        "n_proteins": 45339,
+        "scientific_name": "Botryllus schlosseri",
+    },
+]
+
 # Where the generated genus-initial + epithet scheme produces something useless. Only
 # strain-designator names land here: "Synechocystis sp. (strain PCC 6803)" has no epithet
 # to abbreviate, so the scheme yields "ssp".
@@ -126,13 +156,23 @@ def make_label(proteome: str, name: str) -> str:
 
 
 def canonical_fastas(release: Path):
-    """The canonical proteome FASTAs, excluding the isoform and DNA companions."""
+    """The canonical proteome FASTAs, excluding the isoform and DNA companions.
+
+    Also excluding the EXTRA_ROWS proteomes. `make stage-botryllus` writes its FASTA INTO
+    the release directory, because ${qfo_dir}/${subdir}/${proteome}_${taxon}.fasta is the
+    only path main.nf can resolve. That puts a file here whose headers are `>FUN000001_...`
+    with no OS= field, and binomial() raises on it -- so a staged local proteome would make
+    this generator crash rather than regenerate. It is described by EXTRA_ROWS instead.
+    """
+    skip = {f"{r['proteome']}_{r['taxon']}.fasta" for r in EXTRA_ROWS}
     for kingdom in KINGDOMS:
         d = release / kingdom
         if not d.is_dir():
             continue
         for fasta in sorted(d.glob("*.fasta")):
             if fasta.name.endswith(("_additional.fasta", "_DNA.fasta")):
+                continue
+            if fasta.name in skip:
                 continue
             yield kingdom, fasta
 
@@ -166,6 +206,22 @@ def main() -> int:
             "n_proteins": count_records(fasta),
             "scientific_name": name,
         })
+
+    # Locally staged proteomes, appended before the duplicate-label check so they are
+    # covered by it -- an EXTRA_ROWS label that collided with a release label would
+    # otherwise point two species at one cache. n_proteins is counted from the staged file
+    # when it is there, so the recorded number cannot drift from what is actually indexed;
+    # the recorded value is the fallback for a machine where the file has not been staged.
+    for extra in EXTRA_ROWS:
+        row = dict(extra)
+        staged = args.release / row["subdir"] / f"{row['proteome']}_{row['taxon']}.fasta"
+        if staged.exists():
+            row["n_proteins"] = count_records(staged)
+        else:
+            print(f"NOTE: {staged.name} is not staged in {args.release}; writing the "
+                  f"recorded n_proteins={row['n_proteins']} for '{row['label']}'. "
+                  f"Stage it with `make stage-botryllus`.", file=sys.stderr)
+        rows.append(row)
 
     labels = [r["label"] for r in rows]
     dups = sorted({l for l in labels if labels.count(l) > 1})

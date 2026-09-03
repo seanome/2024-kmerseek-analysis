@@ -3322,6 +3322,33 @@ workflow {
 
 
 
+    // Which targets will actually be SCORED. buildDomainTruth writes one
+    // <species>_domain_map.parquet per *_pfam_domains.parquet it finds in
+    // params.annotations, and score_in below joins each region file to that map with
+    // `combine(..., by: 0)` -- an INNER join on species. A target with no annotation table
+    // therefore gets searched by every arm and scored by none, which is a supported state:
+    // botryllus has no Pfam annotations and is in the run to be searched.
+    //
+    // Read from the same directory buildDomainTruth globs, so the two cannot disagree. This
+    // is a plain directory listing at workflow-definition time, before any channel runs.
+    // A directory that does not exist yet falls back to "assume all annotated", which is
+    // exactly what this counted before the check existed -- params.annotations for
+    // run-midi-plus is written by make_mini_testset.py, and a config-only invocation such
+    // as `nextflow config` or -preview never runs it.
+    def annotated = annotations.exists()
+        ? (files("${params.annotations}/*_pfam_domains.parquet")*.name
+               .collect { it - '_pfam_domains.parquet' } as Set)
+        : (SPECIES*.label as Set)
+    def unscored = SPECIES*.label.findAll { !annotated.contains(it) }
+    if (unscored) {
+        log.info "  targets searched but NOT scored: ${unscored.join(', ')} -- no " +
+                 "*_pfam_domains.parquet in ${params.annotations}, so buildDomainTruth " +
+                 "writes no domain map and score_in joins them out. Every sequence arm " +
+                 "and ProstT5 still search them (ProstT5 predicts 3Di from sequence, so " +
+                 "it needs no structures); the structure arms run only for targets with " +
+                 "staged structures, and report which below."
+    }
+
     // ---- kmerseek: alphabet x ksize x species ----
     // How many (tool, variant) arms each species will produce. scoreDomainCalls groups by
     // (truth_set, species), and groupTuple cannot emit a group until it knows the group is
@@ -3347,7 +3374,11 @@ workflow {
         // --gpu_benchmark, say -- so it must not be entered. withDefault would otherwise
         // create the key and the startup line would report tasks that never run.
         if (n <= 0) return
-        labels.each { arms_per_group[[it, group]] += n }
+        // Unannotated targets are filtered HERE rather than at the call sites, so the
+        // startup line reports what will be scored without a second expression restating
+        // the arm list -- the same reason the count is accumulated beside the arms.
+        labels.findAll { annotated.contains(it) }
+              .each { arms_per_group[[it, group]] += n }
     }
 
     kmerseek_regions = Channel.empty()

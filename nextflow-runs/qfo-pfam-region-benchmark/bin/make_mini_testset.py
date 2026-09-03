@@ -456,9 +456,34 @@ def main():
             # its own copies and ProstT5 pays for nine proteomes twice.
             sub, name = proteomes[sp]
             link(args.qfo_dir / sub / f"{name}.fasta", qfo_out / sub / f"{name}.fasta")
-            link(args.annotations / f"{sp}_pfam_domains.parquet",
-                 ann_out / f"{sp}_pfam_domains.parquet")
-            n_ann = pl.read_parquet(args.annotations / f"{sp}_pfam_domains.parquet").filter(
+
+            # A target with no annotation table is SEARCHED BUT NOT SCORED, and that is a
+            # supported state, not an error. botryllus is the case: it has no Pfam
+            # annotations at all.
+            #
+            # Nothing is synthesised for it. An empty annotation parquet would be worse
+            # than none: build_domain_truth.py writes one <species>_domain_map.parquet per
+            # annotation file it finds, so an empty file would produce an empty map, the
+            # species WOULD reach main.nf's score_in, and every metric would come back a
+            # real-looking 0.0. With no annotation file there is no domain map, and
+            # score_in's `combine(map_ch, by: 0)` is an inner join on species, so the
+            # species' region files are dropped before scoring and no group key for it is
+            # ever created.
+            ann_src = args.annotations / f"{sp}_pfam_domains.parquet"
+            if not ann_src.exists():
+                summary["species"][sp] = {
+                    "full_target": True, "annotated": False, "scored": False,
+                }
+                print(f"NOTE: {sp} has no {ann_src.name}, so it is searched but not "
+                      f"scored. Every sequence arm and ProstT5 will search it; the "
+                      f"structure arms skip it unless structures are staged. It produces "
+                      f"no metrics, because build_domain_truth.py writes a domain map "
+                      f"only for species that have an annotation table, and main.nf's "
+                      f"score_in inner-joins on that map.")
+                continue
+
+            link(ann_src, ann_out / f"{sp}_pfam_domains.parquet")
+            n_ann = pl.read_parquet(ann_src).filter(
                 pl.col("has_position")
             )
             summary["species"][sp] = {
@@ -471,7 +496,19 @@ def main():
             }
             continue
 
-        ann = pl.read_parquet(args.annotations / f"{sp}_pfam_domains.parquet").filter(
+        # Deliberately NOT the tolerance the --full-targets branch above applies. This path
+        # picks its targets BY their annotations -- half the proteins share a family with a
+        # query, half are decoys that do not -- so with no annotation table there is nothing
+        # to subset on and no defensible subset to write.
+        ann_src = args.annotations / f"{sp}_pfam_domains.parquet"
+        if not ann_src.exists():
+            raise SystemExit(
+                f"'{sp}' has no {ann_src.name}, and this mode subsets each target proteome "
+                f"BY its annotations (family-sharing targets plus decoys), so there is "
+                f"nothing to select on. Pass --full-targets to search an unannotated "
+                f"species unscored, or drop '{sp}' from --target-species."
+            )
+        ann = pl.read_parquet(ann_src).filter(
             pl.col("has_position")
         )
         sharing = (
@@ -538,7 +575,14 @@ def main():
     else:
         per_species_acc = {"human": query_acc}
         for sp in species:
-            ann = pl.read_parquet(ann_out / f"{sp}_pfam_domains.parquet")
+            # Unreachable for an unannotated species -- this is the non-full-targets path,
+            # which raises above for one -- but guarded rather than left as a latent crash
+            # if that ordering ever changes. No annotations means no accession list to
+            # fetch structures for, which is a skip, not a failure.
+            ann_path = ann_out / f"{sp}_pfam_domains.parquet"
+            if not ann_path.exists():
+                continue
+            ann = pl.read_parquet(ann_path)
             per_species_acc[sp] = set(ann["accession"].unique().to_list())
 
     # rglob, not iterdir: the local cache is one flat directory, but on a cluster the
