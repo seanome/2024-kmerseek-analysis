@@ -252,7 +252,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
-        qfo-download qfo-link \
+        qfo-download qfo-link qfo-verify-existing \
         run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
@@ -834,6 +834,36 @@ sync-pfam:
 	@echo 'They already pass --pfam_hmm $(PFAM_HMM_REMOTE) -- no extra flag needed.'
 	@echo 'Point them elsewhere with PFAM_HMM_REMOTE=<path>, or PFAM_HMM_REMOTE= to run without it.'
 
+## Is data/qfo already the right release? Checked BEFORE downloading anything, because it
+## usually is: sync-data rsyncs the whole QfO directory, not just the nine species the run
+## used, so a checkout that has ever been synced already holds all 78. Verified against
+## Sherlock on 2026-09-03 -- all ten cache-critical checksums matched, and the 2.65 GB
+## download would have been pure waste.
+##
+## Drops a .qfo-have marker for qfo-download to short-circuit on. A marker rather than a
+## make conditional because the answer depends on running md5sum, which cannot happen at
+## parse time.
+qfo-verify-existing:
+	$(call require_cluster)
+	@rm -f .qfo-have
+	@n=$$(ls data/qfo/*/*.fasta 2>/dev/null \
+	      | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l); \
+	 if [ "$$n" -ne 78 ]; then \
+	   echo "data/qfo has $$n canonical proteomes, not 78 -- fetching the release"; \
+	   exit 0; \
+	 fi; \
+	 if (cd data/qfo && grep -v '^#' $(CURDIR)/assets/qfo_cache_critical.md5 \
+	     | md5sum -c --status -); then \
+	   echo "data/qfo already holds all 78 proteomes of $(QFO_RELEASE),"; \
+	   echo "and the ten cache-critical checksums match. Nothing to download."; \
+	   touch .qfo-have; \
+	 else \
+	   echo "data/qfo has 78 proteomes but a cache-critical checksum does NOT match."; \
+	   echo "It is not the release the existing indexes and searches were built from."; \
+	   echo "Refusing to overwrite it -- move it aside first if you mean to replace it."; \
+	   exit 1; \
+	 fi
+
 ## Download the QfO release to Sherlock. Run it ON SHERLOCK, on a login node.
 ##
 ## Idempotent and resumable. curl -C - continues a partial file rather than restarting,
@@ -843,8 +873,9 @@ sync-pfam:
 ##
 ## Costs nothing to re-run once complete: a release directory that already holds all 78
 ## canonical FASTAs and passes the checksum verification is left alone.
-qfo-download:
+qfo-download: qfo-verify-existing
 	$(call require_cluster)
+	@test ! -f .qfo-have || { rm -f .qfo-have; exit 0; }
 	@mkdir -p $(QFO_REMOTE_ROOT)
 	@if [ -d "$(QFO_REMOTE_DIR)" ] && [ "$$(ls $(QFO_REMOTE_DIR)/*/*.fasta 2>/dev/null \
 	     | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l)" -eq 78 ]; then \

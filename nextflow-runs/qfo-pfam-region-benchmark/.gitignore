@@ -17,3 +17,6 @@ run-mini/
 
 # Symlink tree built and torn down by `make sync-data`.
 .sync-staging/
+
+# Marker dropped by qfo-verify-existing for qfo-download to short-circuit on.
+.qfo-have
