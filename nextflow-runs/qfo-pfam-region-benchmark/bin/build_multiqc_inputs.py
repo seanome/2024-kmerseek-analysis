@@ -151,11 +151,11 @@ def curation_caveat_note(truth_set: str | None,
                     f"{100 * reach[CURATION_CAVEAT_SPECIES]:.1f}%.")
     return (f"<b><code>{CURATION_CAVEAT_SPECIES}</code> is marked "
             f"{CURATION_CAVEAT_MARK} because this truth set understates it.</b> Swiss-Prot "
-            f"is manually curated and Ciona has 23 curated proteins, against 3_174 for "
-            f"fly, 2_999 for E. coli and 15_634 for mouse, so on this answer key a species "
+            f"is manually curated and Ciona has 23 curated proteins, against 3,174 for "
+            f"fly, 2,999 for E. coli and 15,634 for mouse, so on this answer key a species "
             f"ranks partly by how much of it has been curated." + measured
-            + " Its Pfam annotation is complete — 20_234 domain rows over 10_658 proteins "
-              "in 5_542 families — and on the Pfam truth set it sits above fly and "
+            + " Its Pfam annotation is complete — 20,234 domain rows over 10,658 proteins "
+              "in 5,542 families — and on the Pfam truth set it sits above fly and "
               "chicken. Read the Pfam panel for the biological ordering.")
 
 # For scatters grouped by something with no fixed class (alphabet, process). Okabe-Ito,
