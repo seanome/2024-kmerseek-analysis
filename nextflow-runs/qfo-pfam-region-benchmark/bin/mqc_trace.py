@@ -270,24 +270,24 @@ def merge_timings(trace: pl.DataFrame, sidecars: pl.DataFrame) -> pl.DataFrame:
 CHUNKED_PROCESSES = {"folddiscoQuery"}
 
 
-def species_from_tag(tag: str | None) -> str:
-    """Target species out of a trace tag, or "unknown".
+#: Processes whose ONE name covers several of the tools the metrics table names apart.
+#: mmseqs2Search runs both mmseqs2_seqseq and mmseqs2_iterative and carries which one in
+#: the tag's brackets, so `tool` alone pools two tools that are scored separately. Grouping
+#: a rate or a cost on `tool` here charges each of them the pair's total.
+MULTI_TOOL_PROCESSES = {"mmseqs2Search"}
 
-    Tags are not one shape. Searches read `human_vs_<species>`, optionally with a chunk
-    suffix; kmerseek reads `<species>_<alphabet>_k<k>_lc<bool>`; database builds read
-    `<species>` or `<species>_domains`. The `human_vs_` form is tried first because it is
-    the only one that cannot be confused with an alphabet name.
+
+def search_tool(process: str, tool: str, tag: str | None) -> str:
+    """The metrics table's tool name for one trace row.
+
+    Same as `tool` everywhere except MULTI_TOOL_PROCESSES, where the bracketed part of the
+    tag already spells the tool the way the metrics table does (`mmseqs2_seqseq`), and the
+    process name does not.
     """
-    if not tag or tag == "-":
-        return "unknown"
-    m = re.search(r"human_vs_(\w+?)(?:\s|$|\.|\[)", tag)
-    if m:
-        return m.group(1)
-    m = re.match(r"^([A-Za-z0-9]+?)_(?:.+_k\d+_lc(?:true|false)|domains)$", tag)
-    if m:
-        return m.group(1)
-    m = re.match(r"^([A-Za-z0-9]+)$", tag.strip())
-    return m.group(1) if m else "unknown"
+    if process not in MULTI_TOOL_PROCESSES:
+        return tool
+    m = re.search(r"\[(.+?)\]", tag or "")
+    return m.group(1) if m else tool
 
 
 def collapse_chunked_searches(trace: pl.DataFrame) -> pl.DataFrame:
@@ -359,7 +359,14 @@ def variant_from_tag(process: str, tag: str | None) -> str:
 
 
 def species_from_tag(tag: str | None) -> str | None:
-    """Target species out of a tag: `human_vs_yeast ...` or `yeast_hp_...`."""
+    """Target species out of a tag: `human_vs_yeast ...` or `yeast_hp_...`.
+
+    There was briefly a second definition of this name higher up the file, added with
+    collapse_chunked_searches. Python kept the LAST one, so the new definition never ran
+    and the caller silently got this one -- which happens to answer the same for every tag
+    shape in the trace, so nothing broke and nothing said so either. One definition, here,
+    because the next such pair will not be harmless.
+    """
     if not tag or tag == "-":
         return None
     m = re.match(r"^human_vs_([A-Za-z0-9]+)", tag)

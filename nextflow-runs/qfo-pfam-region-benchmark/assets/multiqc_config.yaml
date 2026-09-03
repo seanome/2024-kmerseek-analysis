@@ -86,6 +86,14 @@ table_columns_visible:
 report_section_order:
   qfo_frontier: { order: 10 }
   qfo_capability: { order: 20 }
+  # Cost against every accuracy metric, immediately after the capability table that gives
+  # each tool's cost as a number. Both cost axes, then the two panels that qualify a
+  # precision reading: how far each tool's default threshold sits from its own optimum,
+  # and how much recall survives a precision floor.
+  qfo_cost_cpu_hours_per_search: { order: 21 }
+  qfo_cost_queries_per_s: { order: 22 }
+  qfo_threshold_gain: { order: 23 }
+  qfo_recall_at_precision: { order: 24 }
   qfo_leaderboard_swissprot: { order: 30 }
   qfo_leaderboard_pfamn: { order: 40 }
   qfo_leaderboard_mcsa: { order: 50 }
@@ -102,11 +110,17 @@ report_section_order:
   qfo_pr_curve: { order: 120 }
   qfo_roc_curve: { order: 130 }
   qfo_identity: { order: 140 }
+  # The one identity bin with no midpoint, split out of the line plot above and drawn as
+  # bars. Immediately after the axis it was taken out of, so a reader meets it where they
+  # would otherwise look for the missing bin. 141 was free once the pLDDT pair moved to
+  # 143/144 -- there was no integer between 140 and 141, and order_modules_and_sections
+  # asserts an int, so the pair below shifted rather than this sharing a number.
+  qfo_identity_no_homolog: { order: 141 }
   # Fmax across the pLDDT bands as a shape, next to the twilight-zone axis it is read
   # against. Plot first, then its table on the next integer -- sharing a number renders
   # the TABLE first, which is the failure the note at 170 records.
-  qfo_plddt_regime: { order: 141 }
-  qfo_plddt_regime_table: { order: 142 }
+  qfo_plddt_regime: { order: 143 }
+  qfo_plddt_regime_table: { order: 144 }
   # Which arm is pinned, named before the sections that mark it.
   qfo_canonical: { order: 145 }
   qfo_divergence: { order: 150 }
@@ -196,5 +210,9 @@ report_section_order:
   qfo_res_efficiency: { order: 270 }
   qfo_res_io: { order: 280 }
   qfo_res_status: { order: 290 }
+  # Which arms this report could put a cost against. Immediately before the resource
+  # sections it qualifies, because a reader who has just seen an empty cost column needs
+  # the reason next to it and not at the end.
+  qfo_timing_coverage: { order: 295 }
   qfo_resources_missing: { order: 300 }
   qfo_citations: { order: 310 }
