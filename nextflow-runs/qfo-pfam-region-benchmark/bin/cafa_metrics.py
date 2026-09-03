@@ -322,9 +322,16 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
                      strict_iou: float = 0.8, exclude_points: bool = True) -> dict:
     """Residue-level overlap and boundary accuracy.
 
-    NDO here is the residue-level normalized domain overlap: correctly-labelled residues
-    over true domain residues. It is the quantity CASP's NDO score is built from, not
-    CASP's full scoring matrix, and is reported under that plainer definition.
+    There is no `ndo` key. There used to be, and it was assigned the value of
+    residue_recall on the line after it was computed -- one quantity under two names.
+    Every report table carrying both showed them identical to every printed decimal across
+    every arm, which reads as a corrupted column rather than as a duplicate. The
+    residue-level quantity is real and is kept; the CASP name is not, because what CASP
+    scores is a domain DECOMPOSITION of a chain -- an overlap matrix between a predicted
+    partition and a reference partition -- and calls here are per family and may overlap
+    each other, so a partition is not what this benchmark produces. Reporting a partition
+    metric's name over a plain residue recall claims a comparison to CASP that the data
+    cannot support.
 
     DBD is the distance in residues between a predicted boundary and the true one,
     reported as a median over correctly identified domains. Only correct calls have a
@@ -335,13 +342,14 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
     them, from every number below. A point feature is a single annotated residue -- a
     catalytic site, a metal ligand -- that build_swissprot_truth widens by one and
     build_mcsa_truth widens by a window purely so an interval exists at all. There is no
-    boundary to be right or wrong about at that length, so NDO, DBD and the terminal
+    boundary to be right or wrong about at that length, so the residue rates, DBD and the
+    terminal
     offsets would be measuring the widening rather than the prediction. Both sides are cut,
     truth and calls, so numerator and denominator keep describing the same set. Truth sets
     with no is_point column -- Pfam, Pfam-N -- are untouched.
     """
     out = {
-        "ndo": 0.0, "residue_precision": 0.0, "residue_recall": 0.0, "residue_f1": 0.0,
+        "residue_precision": 0.0, "residue_recall": 0.0, "residue_f1": 0.0,
         "dbd_median": None, "dbd_mean": None,
         "nterm_offset_median": None, "nterm_offset_mean": None, "nterm_offset_iqr": None,
         "cterm_offset_median": None, "cterm_offset_mean": None, "cterm_offset_iqr": None,
@@ -395,8 +403,9 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
             )
         )
         correct_residues = int(best["ov"].sum())
-        out["ndo"] = correct_residues / total_true_residues if total_true_residues else 0.0
-        out["residue_recall"] = out["ndo"]
+        out["residue_recall"] = (
+            correct_residues / total_true_residues if total_true_residues else 0.0
+        )
         out["residue_precision"] = (
             correct_residues / total_pred_residues if total_pred_residues else 0.0
         )

@@ -17,8 +17,11 @@ LEAD = ["truth_set", "tool", "variant", "species", "split", "stratum_axis", "str
 # family_fmax on (protein, family) set membership, and the difference between the two is
 # what separates a tool that never recognised a family from one that recognised it and drew
 # the boundary wrong.
-HEADLINE = ["fmax", "family_fmax", "auprc", "roc_auc", "smin", "ndo", "recall_reachable",
-            "precision"]
+# `ndo` was a second name for residue_recall, not a second measurement, so it is gone
+# rather than renamed in place: a run whose parquet still carries the old column simply
+# does not have it summarised.
+HEADLINE = ["fmax", "family_fmax", "auprc", "roc_auc", "smin", "residue_recall",
+            "recall_reachable", "precision"]
 
 # The leaderboard cut. `heldout` because the sweep picks its best combo on `selection`,
 # and scoring the winner on the data that chose it is optimistically biased; `all`

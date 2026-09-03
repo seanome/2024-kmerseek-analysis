@@ -125,6 +125,16 @@ TRACE_SCHEMA = {
     "realtime_s": pl.Float64, "duration_s": pl.Float64,
     "peak_rss_b": pl.Float64, "requested_mem_b": pl.Float64,
     "pct_cpu": pl.Float64, "read_b": pl.Float64, "write_b": pl.Float64,
+    # rchar/wchar beside read_bytes/write_bytes, because the PAIR is the measurement and
+    # either alone has been read wrong twice. read_bytes is what the block device
+    # delivered; rchar is what the process asked the kernel for. scoreDomainCalls has read
+    # 906 GB and then 1_052 GB of read_bytes against ~20 GB of rchar, and a gap that size
+    # is not duplicate reading -- it is polars re-faulting the pages of a memory-mapped
+    # parquet whose working set the task keeps evicting. Duplicate reading of a staged file
+    # moves BOTH numbers together. The two fixes those diagnoses call for are different and
+    # opposite (materialise the frame vs. score fewer times over the same file), so the
+    # report has to carry both columns rather than let a reader infer one from the other.
+    "rchar_b": pl.Float64, "wchar_b": pl.Float64,
     "tool": pl.String, "is_search": pl.Boolean, "cpu_hours": pl.Float64,
     "mem_used_frac": pl.Float64,
 }
@@ -146,6 +156,8 @@ def load_trace(path: Path) -> pl.DataFrame:
     df = _apply(df, "%cpu", parse_percent, "pct_cpu")
     df = _apply(df, "read_bytes", parse_memory, "read_b")
     df = _apply(df, "write_bytes", parse_memory, "write_b")
+    df = _apply(df, "rchar", parse_memory, "rchar_b")
+    df = _apply(df, "wchar", parse_memory, "wchar_b")
 
     for col, dtype in (("cpus", pl.Int64), ("attempt", pl.Int64)):
         if col in df.columns:
@@ -233,6 +245,8 @@ def load_timing_sidecars(path: Path | str | None) -> pl.DataFrame:
         pl.lit(None, dtype=pl.Float64).alias("pct_cpu"),
         pl.lit(None, dtype=pl.Float64).alias("read_b"),
         pl.lit(None, dtype=pl.Float64).alias("write_b"),
+        pl.lit(None, dtype=pl.Float64).alias("rchar_b"),
+        pl.lit(None, dtype=pl.Float64).alias("wchar_b"),
         pl.col("process").replace_strict(PROCESS_TO_TOOL, default="overhead").alias("tool"),
         pl.col("process").is_in(list(SEARCH_PROCESSES)).alias("is_search"),
         (pl.col("realtime_s") * pl.col("cpus") / 3600).alias("cpu_hours"),
@@ -323,6 +337,8 @@ def collapse_chunked_searches(trace: pl.DataFrame) -> pl.DataFrame:
             pl.col("pct_cpu").mean(),
             pl.col("read_b").sum(),
             pl.col("write_b").sum(),
+            pl.col("rchar_b").sum(),
+            pl.col("wchar_b").sum(),
             pl.col("mem_used_frac").max(),
             pl.col("exit").first(),
             pl.len().alias("_n_chunks"),
