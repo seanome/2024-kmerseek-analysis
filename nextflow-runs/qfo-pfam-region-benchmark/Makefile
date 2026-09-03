@@ -264,6 +264,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
+        run-midi-plus-all-qfo queue-empty \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         stage-botryllus \
@@ -319,6 +320,8 @@ help:
 	@echo "  run-mini             Run the mini smoke test"
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
+	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
+	@echo "                       Reuses run-midi-plus's stored searches; replaces its report"
 	@echo "                       Additive to run-midi, its own outdir, target DBs shared."
 	@echo "                       Also searches botryllus, a 10th target that is NOT scored"
 	@echo "                       (no Pfam annotations). Needs 'make stage-botryllus' first"
@@ -1637,6 +1640,106 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
 	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus across every QfO target -------------------------------------
+#
+# Same 998 queries as run-midi-plus, same alphabets, every QfO target instead of nine.
+# 77 targets, 68 of them new.
+#
+# SHARES run-midi-plus's outdir, and that is the whole point rather than an oversight.
+# kmerseekSearch stores under ${params.outdir}/kmerseek as
+# human_vs_<species>.<alphabet>.k<k>.lc<lc>.regions.parquet, and kmerseekIndex stores under
+# ${db_cache}/kmerseek_index. The query set here is byte-identical to run-midi-plus's -- the
+# same chr6_plus staging, the same 998 proteins -- so those 3654 stored searches and 3654
+# stored indexes are correct for this run and are reused rather than recomputed. That is
+# what the shared outdir buys, and it is only safe BECAUSE the query set is unchanged; this
+# is exactly the reasoning that gave run-midi-plus its own outdir when its query set grew
+# from 964 to 998.
+#
+# The cost of sharing: aggregateMetrics publishes all_domain_metrics.parquet to the outdir,
+# so this run REPLACES run-midi-plus's aggregate and its MultiQC report. Pull that report
+# first if you want to keep it -- `make pull-report-midi-plus`. The replacement is a
+# superset in species, not a different measurement.
+#
+# Structures: the 68 new targets have no AlphaFold models, so foldseek, reseek, folddisco
+# and the structure half of the report skip them on their own -- main.nf filters on
+# has_structs and make_mini_testset prints a NOTE per species. The nine originals keep
+# their structural arms. Nothing needs a flag for this.
+#
+# HHblits is restricted to eukaryotes plus the nine originals: 48 targets rather than 77.
+# See the note on params.hhblits_kingdoms in main.nf for why, and why ecoli stays in.
+ALLQFO_OUTDIR ?= $(MIDI_PLUS_OUTDIR)
+ALLQFO_RUN_DIR ?= run-midi-plus-all-qfo
+# Every non-human registry row: the 77 QfO targets plus botryllus.
+ALLQFO_TARGETS ?= all
+# Eukaryotes only, plus the nine originals -- see params.hhblits_kingdoms in main.nf.
+ALLQFO_HHBLITS_KINGDOMS ?= Eukaryota
+
+## Refuse to launch while anything of ours is still queued.
+##
+## Not defensive padding. Nextflow decides "already in the store" when it CREATES a task
+## and never re-checks, so a second writer against the same --db_cache does the full build
+## and then dies on `mv: Directory not empty`. main.nf's workflow.onError names leftover
+## jobs from a previous run as the most likely cause, and this project has hit it three
+## times on three different storeDir outputs. The terminal returning is not the same as the
+## queue draining, which is precisely how it keeps happening.
+queue-empty:
+	$(call require_cluster)
+	@n=$$(squeue -u $$USER -h 2>/dev/null | wc -l); \
+	 if [ "$$n" -ne 0 ]; then \
+	   echo; \
+	   echo "  $$n job(s) still queued or running under $$USER."; \
+	   echo "  Launching now would put two writers on the same storeDir under"; \
+	   echo "  $(ALLQFO_OUTDIR) and \$$(db_cache), which fails as"; \
+	   echo "  'mv: cannot move ... Directory not empty' after both have done the work."; \
+	   echo; \
+	   echo "  Wait for the queue to drain, then re-run:"; \
+	   echo "    squeue -u \$$USER"; \
+	   echo; \
+	   exit 1; \
+	 fi; \
+	 echo "queue is empty"
+
+run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
+run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	@# 78, not 79: the registry holds the 78 QfO species plus botryllus, and botryllus is
+	@# target-only by design -- no Pfam annotations, so build_domain_truth writes it no
+	@# domain map and score_in inner-joins it out. Do not go looking for a 79th file.
+	@n=$$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null | wc -l); \
+	 if [ "$$n" -lt 78 ]; then \
+	   echo; \
+	   echo "  Only $$n of the 78 QfO species have a Pfam answer key."; \
+	   echo "  A target with no annotation cannot transfer a single domain call, and"; \
+	   echo "  staging fails on the missing file rather than skipping the species."; \
+	   echo; \
+	   echo "    make pfam-annotations"; \
+	   echo; exit 1; \
+	 fi; \
+	 echo "answer key: $$n of 78 QfO species (botryllus is target-only, by design)"
+	mkdir -p $(ALLQFO_RUN_DIR)
+	cd $(ALLQFO_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(ALLQFO_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(ALLQFO_TARGETS) \
+	    --hhblits_kingdoms $(ALLQFO_HHBLITS_KINGDOMS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \

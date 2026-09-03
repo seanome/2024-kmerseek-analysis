@@ -17,8 +17,14 @@ LEAD = ["truth_set", "tool", "variant", "species", "split", "stratum_axis", "str
 # family_fmax on (protein, family) set membership, and the difference between the two is
 # what separates a tool that never recognised a family from one that recognised it and drew
 # the boundary wrong.
-HEADLINE = ["fmax", "family_fmax", "auprc", "roc_auc", "smin", "ndo", "recall_reachable",
-            "precision"]
+#
+# `ndo` is gone and `residue_recall` stands in its place. cafa_metrics.boundary_metrics set
+# ndo to exactly the residue_recall expression, so the leaderboard carried one number under
+# two names -- identical to twelve decimals on every arm. Normalized Domain Overlap is a
+# different quantity and was never computed; the residue quantity is kept under the name
+# that describes it.
+HEADLINE = ["fmax", "family_fmax", "auprc", "roc_auc", "smin", "residue_recall",
+            "recall_reachable", "precision"]
 
 # The leaderboard cut. `heldout` because the sweep picks its best combo on `selection`,
 # and scoring the winner on the data that chose it is optimistically biased; `all`

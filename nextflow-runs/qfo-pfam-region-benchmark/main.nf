@@ -795,20 +795,24 @@ params.score_memory_max    = '96 GB' // the old flat value, now a ceiling rather
 // `sinfo -p hns -o '%n %m'`.
 params.score_memory_retry_max = '128 GB'
 
-// How finely scoreDomainCalls batches its arms. One task per (truth_set, species) put all
-// ~415 arms of every tool in one job, which has two costs. Memory is sized from the
-// LARGEST file in the group, so every arm ran inside a reservation only the greediest one
-// needed; and a failure on arm 12 destroyed the work of the other 818.
+// How finely scoreDomainCalls batches its arms. One task per species put all ~415 arms of
+// every tool in one job, which has two costs. Memory is sized from the LARGEST file in the
+// group, so every arm ran inside a reservation only the greediest one needed; and a failure
+// on arm 12 destroyed the work of the other 818.
 //
 // Arms are scored sequentially, so a smaller group does not lower any single arm's peak.
 // What it lowers is the reservation the other arms sit inside, and how much work one
 // failure costs.
 //
-//   species    one task per (truth_set, species). The old behaviour, ~27 tasks.
-//   tool       one per (truth_set, species, tool). Isolates the baselines, which are the
+// The truth set is NOT one of these axes. Every truth set is scored inside whichever task
+// holds the arm, because splitting on it would fault the arm's region file in once per
+// truth set and that file is the only large thing scoring reads.
+//
+//   species    one task per species. The old behaviour, ~9 tasks.
+//   tool       one per (species, tool). Isolates the baselines, which are the
 //              memory-hungry arms, but still leaves ~406 kmerseek arms in one group.
 //   alphabet   as `tool`, with kmerseek split again by alphabet: ~28 groups per species,
-//              ~750 tasks for a full sweep. Region file sizes within one alphabet are
+//              ~250 tasks for a full sweep. Region file sizes within one alphabet are
 //              similar, so this is the setting where the memory estimate is actually tight.
 //
 // Finer is affordable only because the searches are done and cached. The per-arm shape was
@@ -963,7 +967,8 @@ def kmerseekSearchMemory = { label, ksize, targetBytes, attempt ->
 }
 
 // Wall clock for a batched scoring task, from the TOTAL bytes it will read. One task now
-// scores every arm for a species sequentially, so time is additive where memory is not.
+// scores every arm of a group against every truth set, sequentially, so time is additive
+// over both where memory is not.
 //
 // The rate is deliberately pessimistic. scoreDomainCalls timings measured so far are all
 // yeast on protein/dayhoff, reading 7.9-8.3 MB with no spread, so they cannot calibrate
@@ -981,12 +986,16 @@ params.score_time_max_hours   = 24
 // did not include the work being timed.
 params.dedup_transfer_modes = ['off', 'on']
 
-def scoreTime = { regions, attempt ->
+// n_truth is the number of truth sets scored inside ONE task. They share a task so that
+// each arm's region file is faulted in once rather than once per truth set, and the passes
+// are sequential, so wall clock multiplies by them exactly as it does by the dedup modes.
+def scoreTime = { regions, n_truth, attempt ->
     def files = regions instanceof List ? regions : [regions]
     long mb   = Math.max(1L, files.sum { (it.size() as long) }.intdiv(1024L * 1024L))
     int  nmod = Math.max(1, (params.dedup_transfer_modes as List).size())
-    long mins = (params.score_time_base_min as long)
-                + (mb * (params.score_time_per_mb_sec as long) * nmod).intdiv(60L)
+    int  nts  = Math.max(1, n_truth as int)
+    long mins = (params.score_time_base_min as long) * nts
+                + (mb * (params.score_time_per_mb_sec as long) * nmod * nts).intdiv(60L)
     long cap  = (params.score_time_max_hours as long) * 60L
     Duration.of("${Math.min(mins, cap) * attempt} min")
 }
@@ -2796,14 +2805,19 @@ process hhblitsBuildDB {
 
 process scoreDomainCalls {
     /*
-     * One task per (truth_set, species, scoring group). Reads each arm's regions, transfers
-     * Pfam labels through the target interval, scores the resulting query-side calls
-     * against human_domain_truth.parquet. Emits per-call detail (for downstream
-     * re-cutting) and a metrics row per arm.
+     * One task per (species, scoring group), scored against EVERY truth set. Reads each
+     * arm's regions, transfers Pfam labels through the target interval, scores the
+     * resulting query-side calls against each human_*_truth.parquet in turn. Emits
+     * per-call detail (for downstream re-cutting) and a metrics row per (arm, truth set).
+     *
+     * The truth sets live inside one task rather than one task each because the region
+     * file is the only large input scoring reads, and a task that is repeated per truth
+     * set faults the same file in again from the shared filesystem every time. See the
+     * measurement in the workflow, above `truth_bundle`.
      */
     // The tag names the group -- a tool, or `kmerseek:<alphabet>` -- and how many arms it
     // holds, which is what tells the two dozen tasks of one species apart in the log.
-    tag "${truth_set}: ${species} / ${group} (${tools.size()} arms)"
+    tag "${species} / ${group} (${tools.size()} arms x ${truth_labels.size()} truth)"
     // Its own label, NOT 'python'. Config directives beat script-declared ones, so while
     // this carried the python label that label's flat memory silently overrode the sizing
     // below. The scoring label sets the container and nothing else.
@@ -2813,7 +2827,10 @@ process scoreDomainCalls {
     // Sizing memory on the sum would reserve ~376x what any moment needs.
     memory { scoreMemory(regions instanceof List ? regions.max { it.size() } : regions,
                          task.attempt) }
-    time   { scoreTime(regions, task.attempt) }
+    // Walltime scales with the truth sets now that they share a task: the arms are scored
+    // sequentially per truth set, so wall clock is additive over them the same way it is
+    // over arms and dedup modes.
+    time   { scoreTime(regions, truth_labels.size(), task.attempt) }
     // Retry on ANY failure, not on the signal range. An OOM kill inside the container was
     // observed arriving as exit status 1 -- the log said `Killed`, the wrapper reported 1 --
     // so the 128..143 test never fired, the strategy fell through to `finish`, and one dead
@@ -2828,9 +2845,18 @@ process scoreDomainCalls {
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
+    // truths and domain_maps are parallel lists, index-aligned with truth_labels. They are
+    // staged into numbered directories because every truth arm names its per-species map
+    // <species>_domain_map.parquet, so three of them in one task collide: Nextflow refuses
+    // the task outright with "input file name collision" rather than renaming one. The
+    // `truth*/*` form keeps each file's own name inside truth1/, truth2/, ... and the
+    // script reads the staged path back off the variable, so nothing here has to predict
+    // the on-disk name.
     input:
-    tuple val(truth_set), val(species), val(group), val(tools), val(variants), val(mya),
-          path(regions, arity: '1..*'), path(truth), path(domain_map),
+    tuple val(species), val(group), val(tools), val(variants), val(mya),
+          path(regions, arity: '1..*'),
+          val(truth_labels), path(truths, stageAs: 'truth*/*'),
+          path(domain_maps, stageAs: 'map*/*'),
           path(covariates), path(identity), path(target_disorder)
 
     // Globs, because one task now writes a trio per arm. arity '1..*' for the same reason
@@ -2858,26 +2884,43 @@ process scoreDomainCalls {
     def mya_arg = mya != null ? "--species-mya  ${mya}" : ""
     def manifest_rows = [tools, variants, regions].transpose()
         .collect { t, v, r -> "${t}\t${v}\t${r}" }.join("\n")
+    // Same rule for the truth sets: built from the STAGED paths, index-paired with the
+    // labels. One row per truth set, read by the shell loop below.
+    def truth_rows = [truth_labels, truths, domain_maps].transpose()
+        .collect { ts, t, m -> "${ts}\t${t}\t${m}" }.join("\n")
     """
     cat > manifest.tsv << 'MANIFEST_EOF'
 ${manifest_rows}
 MANIFEST_EOF
 
-    echo "scoring \$(wc -l < manifest.tsv) arms for ${truth_set}/${species}"
+    cat > truth_sets.tsv << 'TRUTH_EOF'
+${truth_rows}
+TRUTH_EOF
 
-    evaluate_domain_calls.py \\
-        --manifest     manifest.tsv \\
-        --species      ${species} \\
-        ${mya_arg} \\
-        --truth        ${truth} \\
-        --domain-map   ${domain_map} \\
-        --covariates   ${covariates} \\
-        --identity     ${identity} \\
-        ${tdis_arg} \\
-        --min-overlap  ${params.min_overlap} \\
-        --strict-iou   ${params.strict_iou} \\
-        --dedup-transfer-modes ${(params.dedup_transfer_modes as List).join(',')} \\
-        --truth-set    ${truth_set}
+    echo "scoring \$(wc -l < manifest.tsv) arms for ${species} against " \\
+         "\$(wc -l < truth_sets.tsv) truth sets"
+
+    # One pass per truth set over the SAME staged region files. The first pass pays the
+    # read; the rest are served out of the page cache the first one filled, which is the
+    # whole point of putting them in one task. Sequential on purpose: the passes would
+    # otherwise contend for the memory sized for a single arm.
+    while IFS=\$'\\t' read -r truth_set truth domain_map; do
+        [ -n "\$truth_set" ] || continue
+        echo "  truth set \$truth_set"
+        evaluate_domain_calls.py \\
+            --manifest     manifest.tsv \\
+            --species      ${species} \\
+            ${mya_arg} \\
+            --truth        "\$truth" \\
+            --domain-map   "\$domain_map" \\
+            --covariates   ${covariates} \\
+            --identity     ${identity} \\
+            ${tdis_arg} \\
+            --min-overlap  ${params.min_overlap} \\
+            --strict-iou   ${params.strict_iou} \\
+            --dedup-transfer-modes ${(params.dedup_transfer_modes as List).join(',')} \\
+            --truth-set    "\$truth_set" < /dev/null
+    done < truth_sets.tsv
     """
 }
 
@@ -3324,10 +3367,13 @@ workflow {
 
     // Which targets will actually be SCORED. buildDomainTruth writes one
     // <species>_domain_map.parquet per *_pfam_domains.parquet it finds in
-    // params.annotations, and score_in below joins each region file to that map with
-    // `combine(..., by: 0)` -- an INNER join on species. A target with no annotation table
-    // therefore gets searched by every arm and scored by none, which is a supported state:
-    // botryllus has no Pfam annotations and is in the run to be searched.
+    // params.annotations, and score_grouped below joins each group to that species'
+    // truth_bundle with `combine(..., by: 0)` -- an INNER join on species. A target with no
+    // annotation table therefore gets searched by every arm and scored by none, which is a
+    // supported state: botryllus has no Pfam annotations and is in the run to be searched.
+    // The join moved after the grouping when the truth sets were bundled into one task;
+    // an unannotated species now forms a group and is dropped there instead of never
+    // reaching one, which costs nothing and drops exactly the same arms.
     //
     // Read from the same directory buildDomainTruth globs, so the two cannot disagree. This
     // is a plain directory listing at workflow-definition time, before any channel runs.
@@ -3351,8 +3397,9 @@ workflow {
 
     // ---- kmerseek: alphabet x ksize x species ----
     // How many (tool, variant) arms each species will produce. scoreDomainCalls groups by
-    // (truth_set, species), and groupTuple cannot emit a group until it knows the group is
-    // complete -- without a size it waits for the WHOLE channel to close, which means no
+    // (species, scoring group) -- the truth set is no longer part of the key, since one
+    // task scores them all -- and groupTuple cannot emit a group until it knows the group
+    // is complete: without a size it waits for the WHOLE channel to close, which means no
     // scoring starts until the last kmerseek search finishes.
     //
     // The count is accumulated at the same lines that build the arms, not re-derived from
@@ -3816,21 +3863,38 @@ workflow {
     // age travels with every metric row and notebooks can plot against it directly.
     def MYA = SPECIES.collectEntries { [(it.label): it.mya] }
 
-    // Cross every result with every truth set, joining on (truth_set, species) so a run
-    // never scores Pfam regions against a Swiss-Prot map or vice versa.
+    // Every truth set for one species, gathered into ONE bundle rather than crossed into
+    // the region channel. Still joined on (truth_set, species), so a run still never scores
+    // Pfam regions against a Swiss-Prot map -- the pairing now travels as three parallel
+    // lists in index order instead of as three separate tasks.
+    //
+    // Why this shape. Crossing here made each arm's region file an input to THREE tasks,
+    // one per truth set, and a region file is the only large thing scoring reads. Measured
+    // on the 2026-09-01 midi-plus trace: scoreDomainCalls read 1_113.8 GB of read_bytes
+    // over 756 tasks while its rchar was 20.4 GB, so essentially every byte arrives as an
+    // mmap fault rather than a read() -- and the per-task floor is 80 MB, which caps
+    // everything shared (truth, domain map, covariates, identity, disorder) at under 6% of
+    // the total. What scales is the arm's own regions: 99 MB per arm-scoring on average,
+    // and 405 MB for mouse/gbmr7 against 16 MB for mouse/protein20 at the same arm count.
+    // Reading it once for all three truth sets is the only multiplier this file controls.
+    //
+    // groupTuple keeps the three lists in the same order because they are grouped out of
+    // the same tuples, and the script pairs them by index off the STAGED paths.
+    //
+    // The cost of bundling is that no arm is scored until EVERY truth arm exists, where
+    // before each truth set's scoring started as soon as its own map did. That is free in
+    // practice: buildSwissprotTruth is the slowest of them at a few minutes and it runs
+    // alongside the searches, which are hours.
+    truth_bundle = map_ch
+        .combine(truth_sets, by: 0)
+        .map { ts, sp, domain_map, truth -> tuple(sp, ts, truth, domain_map) }
+        .groupTuple(by: 0)
+
     score_in = all_regions
         .map { species, tool, variant, regions ->
             tuple(species, tool, variant, MYA[species] ?: 0, regions)
         }
-        .combine(map_ch.map { ts, sp, m -> tuple(sp, ts, m) }, by: 0)
-        .map { species, tool, variant, mya, regions, ts, domain_map ->
-            tuple(ts, species, tool, variant, mya, regions, domain_map)
-        }
-        .combine(truth_sets, by: 0)
         .combine(covariates)
-        .map { ts, species, tool, variant, mya, regions, domain_map, truth, cov ->
-            tuple(species, ts, tool, variant, mya, regions, truth, domain_map, cov)
-        }
         // Identity is per (species, domain instance), so it joins on species. An empty
         // sentinel keeps the process signature fixed when --skip_identity is set.
         .combine(
@@ -3839,12 +3903,10 @@ workflow {
                 : identity_ch,
             by: 0
         )
-        .map { species, ts, tool, variant, mya, regions, truth, domain_map, cov, ident ->
-            tuple(ts, species, tool, variant, mya, regions, truth, domain_map, cov, ident)
-        }
 
-    // One task per (truth_set, species, scoring group) -- see params.score_group_by for
-    // what a group is and why it is no longer the whole species.
+    // One task per (species, scoring group) -- see params.score_group_by for what a group
+    // is and why it is no longer the whole species. Every truth set is scored inside that
+    // one task, which is what stops the same region file being faulted in three times.
     //
     // The per-arm shape was ~10_100 SLURM jobs for a full sweep, each a few seconds of work
     // behind minutes of scheduler latency, and Sherlock rate-limits submission per hour --
@@ -3853,8 +3915,9 @@ workflow {
     // tool in one job, sized for the largest file among them, and an OOM on arm 12 threw
     // away the other 818. The default now splits by tool, and kmerseek again by alphabet.
     //
-    // truth, domain_map, covariates and identity are identical within a group, so .first()
-    // on each is exact rather than an approximation; only tools, variants and regions vary.
+    // covariates, identity and disorder are identical within a group, so .first() on each
+    // is exact rather than an approximation; only tools, variants and regions vary. The
+    // truth sets are attached AFTER the grouping, per species, for the same reason.
     // Each species' own proteome disorder, keyed by the filename proteomeDisorder writes.
     // Falls back to the sentinel per species rather than globally, so a species whose
     // prediction is missing loses only its own target-side axis.
@@ -3863,9 +3926,6 @@ workflow {
         : disorder_all.map { f -> tuple(f.name.replaceAll(/\.disorder_metapredict\.parquet$/, ''), f) }
 
     score_in = score_in
-        .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident ->
-            tuple(sp, ts, tool, variant, mya, regions, truth, dm, cov, ident)
-        }
         .combine(
             params.skip_metapredict
                 ? Channel.fromList(SPECIES.collect {
@@ -3873,9 +3933,6 @@ workflow {
                 : tdis_by_species,
             by: 0
         )
-        .map { sp, ts, tool, variant, mya, regions, truth, dm, cov, ident, tdis ->
-            tuple(ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis)
-        }
 
     if (!(params.score_group_by in ['species', 'tool', 'alphabet'])) {
         error "--score_group_by takes species, tool or alphabet; got " +
@@ -3883,7 +3940,7 @@ workflow {
     }
 
     score_grouped = score_in
-        .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis ->
+        .map { sp, tool, variant, mya, regions, cov, ident, tdis ->
             // groupKey carries the expected size WITH the key, so each group is released
             // the moment its own arms are all in rather than when the whole channel
             // closes. Without it, no scoring could start until the last kmerseek search of
@@ -3895,8 +3952,8 @@ workflow {
                       "<alphabet>_k<ksize>_lc<True|False>. Run with " +
                       "--score_group_by tool to group kmerseek as one instead."
             }
-            tuple(groupKey(tuple(ts, sp, grp), arms_per_group[[sp, grp]]),
-                  tool, variant, mya, regions, truth, dm, cov, ident, tdis)
+            tuple(groupKey(tuple(sp, grp), arms_per_group[[sp, grp]]),
+                  tool, variant, mya, regions, cov, ident, tdis)
         }
         // remainder: true is the safety net for the count being WRONG. If arms_per_group
         // over-counts, the group never reaches its size and would hang forever; with
@@ -3904,9 +3961,17 @@ workflow {
         // behaviour this change replaces. An under-count still emits early, which is why
         // the count is accumulated beside the arms rather than restated.
         .groupTuple(by: 0, remainder: true)
-        .map { key, tools, variants, myas, regions, truths, dms, covs, idents, tdiss ->
-            tuple(key[0], key[1], key[2], tools, variants, myas.first(), regions,
-                  truths.first(), dms.first(), covs.first(), idents.first(), tdiss.first())
+        .map { key, tools, variants, myas, regions, covs, idents, tdiss ->
+            tuple(key[0], key[1], tools, variants, myas.first(), regions,
+                  covs.first(), idents.first(), tdiss.first())
+        }
+        // Truth sets ride in AFTER the grouping, so the arms are grouped once and every
+        // truth set reads the same staged region files.
+        .combine(truth_bundle, by: 0)
+        .map { sp, grp, tools, variants, mya, regions, cov, ident, tdis,
+               ts_labels, truths, maps ->
+            tuple(sp, grp, tools, variants, mya, regions,
+                  ts_labels, truths, maps, cov, ident, tdis)
         }
 
     // Read back off the same map the groups are keyed by, so the line cannot describe a
