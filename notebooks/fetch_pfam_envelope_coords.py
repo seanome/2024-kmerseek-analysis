@@ -38,6 +38,7 @@ Usage:
 
 import argparse
 import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -76,6 +77,19 @@ def download_regions(cache_dir: Path, force: bool = False, max_attempts: int = 3
     if dest.exists() and dest.stat().st_size == PFAM_REGIONS_BYTES:
         print(f"  have {dest} ({PFAM_REGIONS_BYTES:,} bytes, Pfam {PFAM_RELEASE})")
         return dest
+
+    # curl is not a given. This script is run inside the kmerseek apptainer image on the
+    # cluster, and that image has no curl -- calling it there died with a bare
+    # FileNotFoundError from subprocess, which reads like a missing input file rather than
+    # a missing tool. On Sherlock the download is done by `make pfam-regions-download`,
+    # on the host and outside the container, precisely because of this.
+    if shutil.which("curl") is None:
+        raise SystemExit(
+            "no curl on PATH, so this script cannot fetch Pfam-A.regions.tsv.gz.\n"
+            "On Sherlock, download it on the login node instead -- outside the container:\n"
+            "  make pfam-regions-download\n"
+            "then re-run the filter step with --skip-download (make pfam-regions)."
+        )
     print(f"  {PFAM_REGIONS_URL}")
     print(f"  -> {dest}")
     print("  ~4.7 GB compressed. EBI FTP stalls intermittently on large transfers — each stall")
