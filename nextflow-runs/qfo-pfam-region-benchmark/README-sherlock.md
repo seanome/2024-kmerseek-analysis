@@ -618,13 +618,14 @@ averaged across the two has no interpretation. Override with
 |---|---|
 | The frontier | sensitivity in the &lt;40% identity zone against measured throughput, with the best and fastest incumbent drawn in |
 | What each tool needs | 3D structures? alignment-free? accuracy and CPU-hours beside them |
-| Leaderboards | best variant per tool, one board per truth set |
+| Leaderboards | best variant per tool, one board per truth set, with interval Fmax and family Fmax side by side |
 | Truth sets and circularity | provenance, what each set is circular with, instances scored |
 | CAFA-style / Threshold / Boundary | the full metric tables, defined in the Metrics section below |
 | Twilight zone | Fmax by percent-identity bin |
 | Divergence | Fmax and reachable recall against divergence time |
 | Recall ceiling per species | how many human families the target proteome even has |
 | Alphabet x ksize | Fmax heatmap per low-complexity arm, plus a per-alphabet bar view of the toggle |
+| Reduced-alphabet information ceiling | best F1 against feature length / k per HP alphabet; alphabet x Swiss-Prot feature type, with its coverage twin; family Fmax against interval Fmax and the gap between them; BPE token boundaries against domain boundaries |
 | Gray-zone accounting | true / false / unscoreable calls per tool |
 | Run totals and resources | CPU-hours, task run times, peak RSS against requested, efficiency, I/O, task outcomes |
 
@@ -637,11 +638,135 @@ title, section order and plot limits are the only hand-edited part, in
 `assets/multiqc_config.yaml`. To add a section, write another function that calls
 `write_section()` and add its id to that file's `report_section_order`.
 
+#### Reduced-alphabet information ceiling
+
+One parent, rebuildable by `make multiqc` from published results with no search re-run.
+
+1. **Feature length against k.** `best_f1` against `median_feature_length / ksize` on a
+   log2 grid, one line per HP alphabet, with coverage as a switchable second dataset so no
+   number is read without knowing what share of its calls could be judged. 1.0 on the x
+   axis is a feature exactly one k-mer long. The point-feature bin is **not** on this
+   curve -- see Point features above.
+2. **Feature length against k, per k.** The same axis split by k instead of averaged over
+   it, one dataset per alphabet. This is the panel that decides what panel 1 means, and it
+   is the reason panel 1 alone is not enough:
+
+   - if the per-k curves **collapse** onto each other, `feature_length / k` is the
+     sufficient statistic and k trades against feature length one for one -- there is no k
+     floor to read here, only a statement about how many k-mers a feature must hold;
+   - if they **separate**, there is an absolute-k effect on top of the ratio, and the k at
+     which the curves stop improving is a k floor measured on annotated domains rather than
+     derived from keyspace arithmetic.
+
+   Averaging over k inside a ratio bin is exactly the operation that hides the difference,
+   so panel 1 cannot distinguish those two readings and this one can.
+3. **Feature type**, in two figures that never share a colour scale: the placement-scored
+   types (with a coverage twin) and the containment-scored point types. Rows run coarsest
+   alphabet at the top, columns shortest median feature on the left. Swiss-Prot only: the
+   other truth sets carry no feature types, so the axis is null there.
+4. **Recognition against delineation.** Interval `fmax` and `family_fmax` side by side per
+   alphabet, the gap between them on its own, and coverage on the same bars — then the same
+   gap as an alphabet x ksize heatmap so averaging over k cannot hide whether a wide gap
+   belongs to the alphabet or to the window length it was run at. The gap is what boundary
+   placement costs: a coarse alphabet with a high `family_fmax` and a wide gap recognises
+   families it cannot delineate, one with a low `family_fmax` has lost the family signal
+   itself, and `fmax` alone reads both as the same failure. Every alphabet is drawn,
+   `protein20` included, because the gap needs a reference to be large or small against.
+   The heatmap scale is symmetric around zero — see the family-Fmax notes under Metrics for
+   why the gap is not guaranteed positive.
+5. **BPE token boundaries.** How often a ProtBERTa_2 token boundary lands exactly on a Pfam
+   domain boundary, over the same rate on length- and composition-matched shuffled
+   sequences. Written by `bin/hp_bpe_boundary_diagnostic.py`, which is run by hand -- see
+   below -- so the panel is absent, not empty, when it has not been.
+
+Why these exist: Rannon & Burstein (bioRxiv 2026.02.08.701987v2, doi
+10.64898/2026.02.08.701987) trained pLMs on reduced alphabets and found their 2-letter
+model worst on signal peptides (ROC-AUC 0.75, PR-AUC 0.47), nearly lossless on solubility
+(relative F1 ~0.97) and strong on enzyme detection (~0.90). Signal peptides are ~20
+residues; solubility and enzyme class are whole-protein properties. If that is one
+feature-length gradient rather than three unrelated task results, their negative result is
+the low-k arm of this sweep measured independently by another lab. These panels put both
+gradients in domain units so that comparison is a measurement rather than an analogy. No
+expected ordering is encoded anywhere in the code.
+
+#### The BPE boundary diagnostic
+
+```
+make bpe-tokenizer        # 186 KB from Zenodo doi 10.5281/zenodo.18256943, checksum-verified
+make hp-bpe-diagnostic    # ~30 s of CPU; writes data/protberta/hp_bpe_boundary.{json,png}
+```
+
+Once the tarball is on disk, every Sherlock run target passes `--bpe_tokenizer`
+automatically (`BPE_NF_ARG` in the Makefile), so `make bpe-tokenizer` is the whole opt-in
+and there is no flag to remember on the run that matters.
+
+The BPE application is hand-written -- the merge table is a plain `vocab.json` /
+`merges.txt` pair, and pulling in `tokenizers` would mean a new container for a script that
+otherwise needs nothing. `--self-test` checks it against a textbook reference
+implementation on 509 sequences including homopolymer runs, which is where a heap-ordered
+merge and a left-to-right sweep can disagree:
+
+```
+python3 bin/hp_bpe_boundary_diagnostic.py --tokenizer data/protberta/ProtBERTa_tokenizers.tar.gz --self-test
+```
+
+Runs on the Mac or a login node, never on a compute node -- the tokenizer is a download and
+compute nodes have no outbound internet. To fold the result into a pipeline run instead,
+pass `--bpe_tokenizer ../data/protberta/ProtBERTa_tokenizers.tar.gz`; the `hpBpeBoundary`
+process publishes the same JSON to `<outdir>/diagnostics/` and the `report` entry picks it
+up from there on any later rebuild.
+
+Their split, read out of `burstein-lab/BioTokenizers`
+`data_processing/get_encoded_dataset.py` (`HYDROPHILIC_PHOBIC`), is
+`S T N K E Q H D R` hydrophilic (plus the ambiguity codes `Z` and `B`) against
+`A G I L M V P F W C Y` hydrophobic (plus `J`). Over the 20 canonical residues that is not
+merely close to `hp_lehninger_c_nonpolar2` -- it is **identical** to it, C and G both
+hydrophobic. The only difference is the ambiguity codes, which they map and none of our
+alphabets define. The diagnostic prints the per-residue disagreement against every one of
+our alphabets at run time rather than trusting this paragraph.
+
+What it measures is segmentation agreement, not end-to-end performance. A tokenizer whose
+boundaries never coincide with domain boundaries can still support a model that finds
+domains, and one whose boundaries agree perfectly can still be beaten by a k-mer method.
+`hp_random_control2` -- a random 10/10 split with the same class balance -- is in the
+figure for that reason: a bar not clearly above it is measuring the autocorrelation of any
+two-letter string rather than hydrophobicity.
+
 Throughput is measured from the trace: query proteins divided by each search task's wall
 time, median over target species. Indexing is inside the measurement for every arm,
 because each task builds what it needs and searches once -- a tool that would amortise an
 index over many searches is undersold, which is the honest reading of a benchmark that
 searches each target proteome once.
+
+## Tests
+
+`make test` runs everything downstream of search against a committed 60-protein fixture, in
+about 15 seconds, with no containers, no QfO download and no cluster. CI runs the same thing
+on every push touching this directory (`.github/workflows/qfo-pfam-region-benchmark.yml`).
+
+Search itself is not tested and cannot be on a hosted runner -- the baselines need multi-GB
+profile databases and the structure arms need AlphaFold models. Every arm's output is a
+region table, though, so the scoring path is driven with a **synthetic one whose right
+answer is known in advance**: for each truth instance, a region placed exactly on it whose
+target side covers a same-family domain. A correct scorer must return `recall_reachable`
+of exactly 1.0. That catches more than replaying a real tool would, because a real tool's
+numbers only tell you they moved, not which direction is right.
+
+The fixture lives in `tests/fixtures` (60 human proteins, 778 instances over 28 families,
+120 yeast targets, 180 real Swiss-Prot entries covering all 12 parsed FT types).
+Regenerate it with `tests/make_fixture.py` when the shape of the inputs changes.
+
+Each guard corresponds to a bug that actually happened, and each was checked by
+reintroducing the bug and confirming the test fails:
+
+| test | the bug it guards |
+|---|---|
+| `no_rate_metric_exceeds_one_on_any_stratum` | instance-level strata counted TPs from outside the cut; `recall_reachable` reached 2.11 |
+| `no_metric_is_nan_when_the_top_block_is_all_gray` | an all-gray threshold block gave precision 0/0, and polars sorts NaN largest, so it won `best_f1` |
+| `point_features_are_scoreable_by_containment_not_iou` | IoU against a 1-residue interval is unsatisfiable, so every point stratum scored 0 by construction |
+| `scoring_is_deterministic_under_score_ties` | the greedy one-to-one match sorted on a non-unique key; five identical runs gave 169, 169, 169, 169, 168 |
+| `perfect_tools_only_errors_are_nested_transfers` | asserts the *reason* precision is below 1.0 (nested Pfam domains), not a threshold that would pass for the wrong reason |
+
 
 ## Metrics
 
@@ -652,15 +777,54 @@ nothing here needs recomputing in a notebook.
 
 | column | meaning |
 |---|---|
-| `fmax` | CAFA's headline metric: max protein-centric F over thresholds |
+| `fmax` | CAFA's headline metric: max protein-centric F over thresholds, **interval-aware** |
 | `wfmax` | same, weighted by family information content |
 | `smin` | min sqrt(remaining uncertainty^2 + misinformation^2), in bits. **Lower is better** |
 | `smin_ru` / `smin_mi` | the two error terms at that threshold: information missed, information invented |
+| `family_fmax` | the same curve on the **set of families** called per protein, placement ignored |
+| `family_fmax_precision` / `_recall` | the operating point family Fmax is reached at |
+| `family_wfmax`, `family_smin`, `family_smin_ru` / `_mi`, `family_fmax_threshold` | the family-level twin of every scalar above |
+| `n_family_truth` / `n_family_calls` / `n_family_found` | distinct (protein, family) pairs in the answer key, predicted, and correct |
 
 `fmax` is *macro-averaged over proteins* -- precision over proteins that predicted
 something, recall over every protein with a true domain. `best_f1` below is
 micro-averaged over calls. They are different numbers on purpose; a few domain-dense
 proteins can move `best_f1` but not `fmax`.
+
+#### Family Fmax, beside interval Fmax and never instead of it
+
+`fmax` gates on `is_tp`, which interval matching sets. A tool that names the right Pfam
+family on the right protein but draws the boundary in the wrong place scores **zero**,
+identically to a tool that never recognised the family at all. Those are two different
+failures and one number cannot separate them.
+
+`family_fmax` is the CAFA-classic reading of the same machinery: per query protein, the
+SET of Pfam families called against the set truly present, interval placement ignored
+entirely. `cafa_metrics.protein_centric_curve` takes a `level=` parameter for this rather
+than carrying a second copy of the threshold sweep. Read the pair:
+
+| | high `family_fmax` | low `family_fmax` |
+|---|---|---|
+| **wide gap** | recognises the family, cannot delineate it | — |
+| **narrow gap** | recognises and delineates | has lost the family signal |
+
+Two properties of the family level worth knowing before reading a gap:
+
+- It is **exactly invariant to redundant calls**. Rows are collapsed to one per
+  `(query_acc, pfam_id)` keeping the best score, so a family transferred fifty times onto
+  one protein is one family prediction. Verified on the mini run by doubling every call
+  with a worse-scoring displaced copy: `family_fmax` moved by 0.00e+00 on all seven arms
+  tested while `fmax` fell (hmmscan 0.803 → 0.536, foldseek/yeast 0.057 → 0.048). This is
+  a separate mechanism from the fragment dedup, which is about one alignment reported once
+  per overlapping AlphaFold fragment.
+- `family_fmax >= fmax` is **usual but not guaranteed**, and nothing clamps it. Ignoring
+  placement can only help precision, but the family reading also swaps the recall
+  denominator from instances to families, and a per-protein macro-average is not invariant
+  under that swap. One protein with three instances of family A, all found, and one
+  instance of family B, missed: interval recall 3/4, family recall 1/2. Measured on the
+  mini run at **4 rows out of 2762**, three of them cells where one protein carries a
+  tandem array (an IGSF decoy at 51 instances per family, `fmax` 0.831 against
+  `family_fmax` 0.727) and one a 0.0012 threshold-grid difference.
 
 `wfmax` and `smin` are weakened relative to real CAFA, and the difference matters.
 CAFA weights GO terms by *information accretion*, defined against the ontology DAG as a
@@ -684,6 +848,70 @@ it is not the CAFA quantity. Do not describe these as information-accretion weig
 `ndo` is the residue-level normalized overlap CASP's NDO score is built from, not CASP's
 full scoring matrix. `dbd` is reported over correct calls only -- the distance from a
 wrong domain to a right one is not a boundary measurement.
+
+### Point features
+
+Two separate decisions, both about the same thing: a point feature asserts a residue and
+this benchmark scores intervals.
+
+#### They are scored by containment, not IoU
+
+A Swiss-Prot `ACT_SITE`, `BINDING` or `SITE` asserts a **residue**, not an interval;
+`build_swissprot_truth.py` widens it by one and `build_mcsa_truth.py` widens a catalytic
+residue by `--window` purely so an interval exists to score. Judging those by interval IoU
+is not a strict standard, it is an **unsatisfiable** one:
+
+> IoU against a 1-residue interval is `1 / call_length`. At `--min-overlap 0.5` a true
+> positive needs a call of at most 2 residues. Measured on the mini run: 97,706 calls
+> across 32 arms, shortest 3 residues, **none** ≤ 2 — so the best IoU any tool could reach
+> on a point feature was 0.333 against a 0.5 cutoff.
+
+Every point stratum therefore scored exactly 0 on **every** metric, `fmax` included —
+`protein_centric_curve` at its default `level="interval"` gates on `is_tp` too, so it did
+not rescue those rows. (`family_fmax` does not rescue them either, and is not a substitute
+for the fix below: it ignores placement, but a point instance whose family is never
+transferred at all is still a miss at either level.) That is not a hard benchmark, it is
+an unanswerable one, and it manufactures exactly the short-feature deficit the
+reduced-alphabet question exists to test.
+
+`--point-semantics cover` (the default) scores a point instance by containment instead:
+did the call cover the annotated residue. `--point-semantics iou` restores the old
+behaviour. `point_semantics` is stamped on every metric row beside `interval_semantics`,
+and `point_fraction` records what share of each cell is point features — at 1.0, every
+number on that row is a containment result and must not share an axis with a placement
+result.
+
+The cost, stated rather than hidden: containment favours long calls, since a 400-residue
+region covering a catalytic residue counts the same as a tight one. Two things bound it.
+`assign_instances` is one-to-one, so a call claims at most one instance; and precision
+still counts every call, so a tool that carpets the protein pays for it.
+
+Range instances are offered every call **before** point instances are offered any.
+Containment maxes out at 1.0, so without that ordering a point feature outbid every
+interval and a call correctly delineating a `DOMAIN` was consumed by an incidental
+`ACT_SITE` inside it. Measured over the 24 range-only cells on the MHC set: **0** changed
+on `n_instances_found`, `recall_reachable`, `n_tp_calls` or `fmax`. `precision` and
+`coverage` do move (10 and 20 cells, ~0.0004 in precision) because a call whose true match
+is a point feature outside a range cut is no longer charged there as a false positive — it
+becomes gray. That is the intended consequence, not leakage.
+
+This changes published Swiss-Prot and M-CSA numbers, including the ungrouped `all` row.
+M-CSA is affected hardest: every instance is a widened catalytic residue, so at
+`--window 5` the truth interval is 10 residues against a median call of 169, and that arm
+was reporting near-zero throughout.
+
+#### They are excluded from every boundary metric
+
+`n_point_instances_excluded` records how many. A Swiss-Prot `ACT_SITE` or `BINDING` residue is a single position that
+`build_swissprot_truth.py` widens by one, and an M-CSA catalytic residue is widened by a
+window, purely so an interval exists to score at all. There is no boundary to be right or
+wrong about at that length, so including them measured the widening rather than the
+prediction. Both sides are cut -- the truth rows and the calls that matched them -- so
+numerator and denominator keep describing the same set. The Pfam and Pfam-N truth sets have
+no `is_point` column and are untouched. This changed the Swiss-Prot and M-CSA boundary
+numbers when it landed; every M-CSA row is point features, so that arm now reports no
+boundary metrics at all, which is what `build_mcsa_truth.py`'s own docstring already said
+should happen.
 
 ### Threshold-based and threshold-free
 
@@ -853,12 +1081,52 @@ Every row also carries `stratum_axis` and `stratum`, cutting on the same axes th
 | `plddt` | mean pLDDT, bins 0-50/50-70/70-90/90-100 | rises to ~full once `make fetch-structures` completes |
 | `disorder` | fraction of residues with pLDDT < 50 | same as pLDDT |
 | `omega` | dN/dS from the human-mouse-dnds-omega pipeline | **1,289 only** |
+| `feature_length_bin` | the truth interval's own residue length | every instance, every truth set |
+| `feature_type` | Swiss-Prot FT type | Swiss-Prot truth only; **null** elsewhere |
 
 `geneset` carries the 200-series' curated sets: `mhc_class_i_heavy` (6),
 `antiviral_restriction_factor` (21), `igsf_decoy` (6), `fast_evolving_family` (462),
 `olfactory_receptor`, `cytochrome_p450_2_3`. The MIN_STRATUM_PROTEINS floor of 30 does not
-apply to `mhc` or `geneset` -- those sets are small on purpose and are the point of cutting
-on them. Every row reports its own n.
+apply to `mhc`, `geneset`, `identity`, `feature_length_bin` or `feature_type` -- those
+vocabularies are fixed and biologically defined rather than data-derived, and the floor
+exists to stop ~4,200 HGNC groups from producing single-protein strata, which is not a
+problem any of them has. `ACT_SITE` and `DNA_BIND` are small in every proteome that will
+ever be measured; dropping them would delete the short-feature end of the gradient
+`feature_length_bin` exists to measure. Every row reports its own `n_stratum_proteins` and
+`n_truth_instances`.
+
+#### `feature_length_bin` and `feature_type`
+
+`feature_length_bin` bins each truth interval by its own residue length --
+`1` (point features), `2-15`, `16-30`, `31-60`, `61-120`, `121-250`, `251+` -- on
+`domain_end - domain_start`, the same length convention the boundary metrics sum over. The
+unit is the annotation, not the protein: a 21-residue TRANSMEM helix and a 400-residue
+kinase domain in the same protein are different measurement problems for a k-mer method,
+and at k=19 the first admits three k-mers while the second admits 380.
+
+The quantity to read is `best_f1` against **`median_feature_length / ksize`**, not against
+raw length. Every method finds short features less reliably; the claim specific to a coarse
+alphabet is that it needs a long window, so the axis is how many k-mers the feature can
+hold. `median_feature_length` is on every metric row and is measured over the instances in
+that cell, never a bin midpoint.
+
+`feature_type` is one stratum per Swiss-Prot FT type -- `ACT_SITE`, `BINDING`, `DNA_BIND`,
+`MOTIF`, `REGION`, `TRANSMEM`, `DOMAIN`, `REPEAT`, `ZN_FING`, `COILED`, `SITE`,
+`INTRAMEM`. The Swiss-Prot truth set puts the FT type in the `pfam_id` column, keeping the
+name for schema compatibility. For Pfam and Pfam-N that column holds a family accession
+with no type variation to cut on, and for M-CSA an entry id, so the axis is **null** on
+those sets rather than empty-stringed -- null drops the axis, an empty string would invent
+a stratum named after nothing. The vocabulary is imported from `build_swissprot_truth.py`
+rather than re-listed, so the two cannot drift.
+
+Both axes are **instance-level**, which is load-bearing. Strata are applied to calls by
+protein, but one protein can carry a 90%-identity domain and a 25%-identity one, or a
+TRANSMEM and a DOMAIN. `restrict_tp_to_cut()` in `evaluate_domain_calls.py` clears `is_tp`
+on any call whose matched instance is outside the cut before either `compute_metrics` or
+`operating_points` sees the table, and marks it gray rather than a false positive -- it is a
+right answer about something the cut does not measure. Without that, `recall_reachable`
+exceeds 1.0 (2.11 observed on the MHC smoke set) and `best_f1` is computed from an inflated
+recall. `coverage` reports the share, as it does for every other gray call.
 
 Two things carried over from the notebooks that are easy to lose:
 

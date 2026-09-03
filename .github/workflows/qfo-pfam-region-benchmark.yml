@@ -1,0 +1,93 @@
+# Tests everything in the QfO Pfam region benchmark that runs downstream of search.
+#
+# Search itself is not exercised and cannot be on a hosted runner: the baselines need
+# multi-GB profile databases and the structure arms need AlphaFold models. Every arm's
+# output is a region table though, so the scoring path is driven with a synthetic one whose
+# right answer is known in advance -- which catches more than replaying a real tool would,
+# because a real tool's numbers only tell you they moved, not which way is correct.
+#
+# The fixture is 60 human proteins and 120 yeast targets, committed under tests/fixtures.
+# Regenerate it with tests/make_fixture.py when the shape of the inputs changes.
+
+name: qfo-pfam-region-benchmark
+
+on:
+  push:
+    paths:
+      - 'nextflow-runs/qfo-pfam-region-benchmark/**'
+      - '.github/workflows/qfo-pfam-region-benchmark.yml'
+  pull_request:
+    paths:
+      - 'nextflow-runs/qfo-pfam-region-benchmark/**'
+      - '.github/workflows/qfo-pfam-region-benchmark.yml'
+
+defaults:
+  run:
+    working-directory: nextflow-runs/qfo-pfam-region-benchmark
+
+jobs:
+  scoring:
+    name: scoring, metrics and report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # Pinned to the versions the pipeline container actually carries, read off the
+      # Dockerfile. Floating them would test something the pipeline never runs, and these
+      # pins exist for a reason the Dockerfile spells out: polars changed str.split's
+      # empty-field semantics between the versions in play here, and seven bin/ call sites
+      # depend on it.
+      - name: Install the container's python stack
+        run: pip install 'polars==1.43.2' 'pyarrow==25.0.1' 'numpy==2.5.2' pytest
+
+      # 186 KB, checksum-pinned. Fetched rather than committed: it is third-party data
+      # released under its own DOI, and vendoring someone else's artifact into this repo
+      # would detach it from that record.
+      - name: Fetch the ProtBERTa BPE tokenizers
+        run: make bpe-tokenizer
+
+      - name: Scoring, aggregation and report tests
+        run: python -m pytest tests/ -v
+
+  nextflow:
+    name: pipeline definition parses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Left floating on purpose, having been pinned to 25.10.4 for a while. The Mac and
+      # Sherlock both run 25.10.4 out of the nf-core-v2 conda env, so a pin would match
+      # production -- but it was CI floating ahead to 26.4.6 that caught nextflow.config's
+      # `def` declarations, which 26.x rejects and 25.10.4 accepts. The config resolves
+      # under both now, and unpinned is what will catch the next such change while it is
+      # still cheap.
+      - uses: nf-core/setup-nextflow@v2
+
+      # Catches a syntax error or a broken profile without pulling a single container. The
+      # profiles are checked separately because a layered profile that fails to resolve is
+      # silent otherwise: Nextflow applies them in the order they are DECLARED in the config
+      # file, not the order given on the command line.
+      # Output is captured and printed ON FAILURE rather than discarded. Sending it to
+      # /dev/null is how the first version of this step failed with exit 1 and no message
+      # at all: Nextflow writes some of its errors to stdout, so the reason went in the bin
+      # along with the config dump.
+      - name: nextflow config resolves
+        run: |
+          for p in standard "standard,mini" sherlock "sherlock,mini"; do
+            echo "== -profile $p =="
+            if ! nextflow config . -profile "$p" > cfg.out 2> cfg.err; then
+              echo "FAILED to resolve -profile $p"
+              cat cfg.err cfg.out
+              exit 1
+            fi
+          done
+          echo "all four profiles resolve"
