@@ -19,7 +19,9 @@
 # <accession_list_dir> holds <species>.accessions -- one UniProt accession per line,
 # written by `make structure-lists`. With no species named, all ten are fetched.
 #
-# Resumable: re-running skips anything already on disk. A bare backgrounded curl on
+# Resumable: re-running skips anything already on disk -- a species whose proteome
+# archive is already unpacked is skipped without re-extracting it (FORCE_EXTRACT=1
+# overrides), and the per-accession species fetch only what is missing. A bare backgrounded curl on
 # multi-GB EBI files hangs for hours after a silent stall, so every transfer here sets
 # --continue-at plus a speed floor that aborts and retries a stalled connection.
 
@@ -148,10 +150,41 @@ link_cached() {
 }
 
 fetch_proteome_tar() {
-    local species="$1" dest="$2" archive="$3"
+    local species="$1" dest="$2" archive="$3" acc_file="$4"
     # $archive is the full filename resolved from the listing, .tar included. Appending
     # another .tar here produced _v6.tar.tar and a 404.
     local tar_path="$STRUCT_DIR/_archives/${archive}"
+    local marker="$dest/.extracted"
+
+    # Skip a species that is already unpacked.
+    #
+    # The `.done` marker below only ever guarded the DOWNLOAD. Extraction ran every time:
+    # untar ~25 GB, gunzip every member, delete the PDB copies, rename every file. So
+    # re-running `make fetch-structures` to pick up one missing species redid human from
+    # scratch first, which is what this is fixing. The per-accession path never had the
+    # problem because it builds a .todo of what is actually absent.
+    if [[ -f "$marker" && "$(cat "$marker" 2>/dev/null)" == "$archive" ]]; then
+        echo "  already extracted ($archive)"
+        return 0
+    fi
+
+    # Adopt an extraction that predates the marker, so this fix does not itself cost one
+    # last full re-extract of everything already on disk. Only when the archive downloaded
+    # completely AND the directory holds at least as many .cif files as the species has
+    # annotated accessions -- a real lower bound, since the AFDB proteome archives cover
+    # the whole reference proteome and add fragments on top, while the accession list is
+    # only its annotated subset. An interrupted extraction lands under that bound and is
+    # redone. Set FORCE_EXTRACT=1 to re-extract regardless.
+    if [[ -z "${FORCE_EXTRACT:-}" && -f "$tar_path.done" ]]; then
+        local have want
+        have=$(find "$dest" -name 'AF-*.cif' | wc -l | tr -d ' ')
+        want=$(grep -c . "$acc_file" | tr -d ' ')
+        if [[ "$have" -ge "$want" && "$want" -gt 0 ]]; then
+            echo "  already extracted ($have cif >= $want annotated accessions); marking"
+            echo "$archive" > "$marker"
+            return 0
+        fi
+    fi
 
     mkdir -p "$STRUCT_DIR/_archives"
     if [[ ! -f "$tar_path.done" ]]; then
@@ -190,6 +223,10 @@ fetch_proteome_tar() {
         [[ -e "$f" ]] || continue
         mv -f "$f" "$dest/$(basename "$f" | sed -E 's/-model_v[0-9]+//')"
     done
+
+    # Written only after every step above succeeded, so an interrupted run leaves no marker
+    # and the next one redoes the extraction rather than trusting a half-unpacked directory.
+    echo "$archive" > "$marker"
 }
 
 fetch_per_accession() {
@@ -241,7 +278,7 @@ for species in "${TARGETS[@]}"; do
 
     archive="$(proteome_archive "$species")"
     if [[ -n "$archive" ]]; then
-        fetch_proteome_tar "$species" "$dest" "$archive"
+        fetch_proteome_tar "$species" "$dest" "$archive" "$acc_file"
     else
         fetch_per_accession "$species" "$dest" "$acc_file"
     fi
