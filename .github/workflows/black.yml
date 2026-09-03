@@ -12,16 +12,13 @@ jobs:
       # is not valid workflow YAML -- GitHub rejected the whole file, so this job had never
       # run once since it was added.
       #
-      # ADVISORY, not blocking, and that is a deliberate holding position rather than the
-      # end state. The first run after the syntax fix reported 80 notebooks that would be
-      # reformatted and 6 that black cannot reformat at all. Clearing that is its own piece
-      # of work -- it rewrites most of the notebook tree and would bury any real change in
-      # formatting noise -- and it should not gate unrelated pull requests in the meantime.
+      # Blocking, not advisory. It was held at continue-on-error while the first run
+      # after the syntax fix reported 80 notebooks needing reformatting; #20 cleared that
+      # backlog and the four notebooks black genuinely cannot tokenize are excluded in
+      # pyproject.toml, so there is nothing left for it to be lenient about.
       #
-      # The diff is printed so the backlog stays visible instead of silently accruing.
-      # Drop continue-on-error once the tree is formatted, so this starts enforcing.
+      # --diff so a failure says what it wants changed instead of only naming the file.
       - uses: psf/black@stable
-        continue-on-error: true
         with:
           options: "--check --diff --verbose"
           src: "./notebooks"

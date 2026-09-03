@@ -64,15 +64,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Pinned, not "latest". The Mac and Sherlock both run 25.10.4 out of the
-      # nf-core-v2 conda env, and CI floating ahead of that tests a Nextflow nobody
-      # uses -- the same drift the Dockerfile pins polars against. It is not
-      # hypothetical: the unpinned job installed 26.4.6 and `nextflow config` exited 1
-      # under it while every profile resolves cleanly on 25.10.4. Bump this when the
-      # conda env is bumped, and expect to fix whatever 26.x dislikes at that point.
+      # Left floating on purpose, having been pinned to 25.10.4 for a while. The Mac and
+      # Sherlock both run 25.10.4 out of the nf-core-v2 conda env, so a pin would match
+      # production -- but it was CI floating ahead to 26.4.6 that caught nextflow.config's
+      # `def` declarations, which 26.x rejects and 25.10.4 accepts. The config resolves
+      # under both now, and unpinned is what will catch the next such change while it is
+      # still cheap.
       - uses: nf-core/setup-nextflow@v2
-        with:
-          version: "25.10.4"
 
       # Catches a syntax error or a broken profile without pulling a single container. The
       # profiles are checked separately because a layered profile that fails to resolve is
