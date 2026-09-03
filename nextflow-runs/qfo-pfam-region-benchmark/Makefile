@@ -253,6 +253,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
         qfo-download qfo-link qfo-verify-existing \
+        pfam-regions pfam-annotations \
         run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
@@ -294,6 +295,8 @@ help:
 	@echo "  qfo-download         Fetch the 78-species QfO 2020_04 release to \$$SCRATCH (2.65 GB)"
 	@echo "                       Resumable; verifies the ten cache-critical proteomes"
 	@echo "  qfo-link             Point this checkout's data/qfo at that release"
+	@echo "  pfam-regions         Fetch Pfam-A.regions.tsv.gz (5 GB) and filter to QfO"
+	@echo "  pfam-annotations     Build the Pfam answer key for every species missing one"
 	@echo "  mini-testset-sherlock Build the mini data set"
 	@echo "  run-mini             Run the mini smoke test"
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
@@ -1168,6 +1171,65 @@ PFAMN_GZ   := data/pfamn/Pfam-N.gz
 # rsync, not curl. EBI serves this over rsync, which resumes a partial transfer natively --
 # the first attempt piped curl straight into the parser and died 27.8M lines in, and a pipe
 # cannot resume at all. Re-running this costs the remainder, not the whole 17.4 GB.
+# --- Pfam answer key for every QfO species ----------------------------------
+#
+# 68 of the 77 targets have no *_pfam_domains.parquet, and staging fails hard without one:
+# a target with no annotation cannot transfer a single domain call, so unlike a missing
+# structure directory (which the structure arms skip with a NOTE) this is not survivable.
+#
+# The source is Pfam's own bulk regions file, NOT the UniProt REST API. UniProt does not
+# expose Pfam positions -- entry JSON carries no Domain-type features and xref_pfam has no
+# start/end -- which is why the first ten species were rebuilt from Pfam-A.regions.tsv.gz
+# and why their parquets carry domain_ali_start/domain_ali_end that the API route cannot
+# produce. Verified again 2026-09-03: the API returns zero positioned Pfam features even
+# for ciona, whose annotations are 100% positioned on disk.
+#
+# Runs entirely on Sherlock. The 5.05 GB download, the single-pass awk filter and the
+# per-species parquets all happen here; nothing is staged through the Mac.
+PFAM_REGIONS_DIR ?= $$SCRATCH/data/pfam/regions
+# The scripts live at the repo root because notebooks 123 and 125 import them.
+NOTEBOOKS_DIR    ?= ../../notebooks
+
+## Download Pfam-A.regions.tsv.gz and filter it to all 78 QfO proteomes' accessions.
+## ~5 GB, resumable, and free to re-run once the file is complete. The script stops if the
+## file on the FTP is no longer the Pfam 38.2 the existing ten species were built from --
+## annotating half the species from a different release would be a confound in the
+## divergence axis, which is the one thing this benchmark measures.
+pfam-regions:
+	$(call require_cluster)
+	@mkdir -p $(PFAM_REGIONS_DIR)
+	apptainer exec \
+	  --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 $(NOTEBOOKS_DIR)/fetch_pfam_envelope_coords.py \
+	    --qfo-dir   data/qfo \
+	    --cache-dir $(PFAM_REGIONS_DIR)
+
+## Write {species}_pfam_domains.parquet, _architectures.parquet and _pfam_summary.json for
+## every registry species that does not already have them.
+##
+## The existing ten are SKIPPED, not rebuilt: process_species returns early when its
+## outputs exist. That is deliberate and load-bearing. Those parquets are the truth set
+## every already-scored arm in data/midi-plus/results was scored against, and rewriting
+## them -- even from the same Pfam release -- would invalidate that scoring. Pass
+## PFAM_FORCE=--force only if you mean to rebuild all 78 and rescore everything.
+PFAM_FORCE ?=
+
+pfam-annotations: pfam-regions
+	$(call require_cluster)
+	apptainer exec \
+	  --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 $(NOTEBOOKS_DIR)/build_pfam_architectures.py \
+	    --species all \
+	    --outdir          data/annotations \
+	    --qfo-dir         data/qfo \
+	    --regions-parquet $(PFAM_REGIONS_DIR)/pfam_regions_qfo.parquet \
+	    $(PFAM_FORCE)
+	@echo
+	@echo "annotated species: $$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null | wc -l) of 78"
+	@echo
+
 pfamn-download:
 	$(call require_cluster)
 	@mkdir -p data/pfamn
