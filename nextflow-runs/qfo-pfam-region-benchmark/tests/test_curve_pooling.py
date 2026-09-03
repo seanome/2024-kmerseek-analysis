@@ -122,15 +122,22 @@ def test_the_old_recall_binning_would_have_shown_the_jump():
 
 # --- what the curve and the table have to agree on -----------------------------------
 
-def test_recall_at_precision_is_read_off_the_same_pairs_the_curve_draws():
+def test_recall_at_precision_is_read_off_the_drawn_series_not_the_raw_pairs():
+    """The bar and the line have to agree in the last decimal, not roughly.
+
+    curve_series rounds x to a fixed precision and averages the y of any grid points that
+    land on the same rounded x, which is what keeps the drawn line single-valued. Reading
+    the raw pairs instead let the table report a recall the line does not pass through --
+    small, and exactly the kind of small that makes a reader distrust both numbers.
+    """
     pairs = pooled()
+    series = bmi.curve_series(pairs)
     # 0.3 rather than the report's 0.5: the fixture's pooled precision tops out at 0.49,
     # because two of its three species are hard. The threshold is not what is under test.
     got = bmi.recall_at_precision(pairs, 0.3)
-    reachable = [x for x, y in pairs if y >= 0.3]
-    assert got == max(reachable)
-    # and it is a point the drawn series actually contains
-    assert f"{got:.4f}" in bmi.curve_series(pairs)
+    drawn = max(float(x) for x, y in series.items() if y >= 0.3)
+    assert got == drawn
+    assert f"{got:.4f}" in series
 
 
 def test_an_arm_that_never_reaches_the_precision_returns_zero_not_none():
