@@ -1583,7 +1583,12 @@ run-midi: prefetch-images midi-testset-sherlock
 # turns into a `query_set` column, so the original 964 stay reconstructible exactly.
 midi-plus-testset-sherlock:
 	$(call require_cluster)
-	@if [ -n "$(findstring botryllus,$(MIDI_PLUS_TARGETS))" ] && \
+	@# `all` has to be tested separately. It selects every non-human registry row, which
+	@# now includes botryllus, but the literal string does not contain "botryllus" -- so a
+	@# findstring test alone passes run-midi-plus-all-qfo straight through the one check
+	@# that exists to catch the missing proteome, and it fails later and further away.
+	@if { [ "$(MIDI_PLUS_TARGETS)" = "all" ] || \
+	      [ -n "$(findstring botryllus,$(MIDI_PLUS_TARGETS))" ]; } && \
 	    [ ! -f data/qfo/Eukaryota/BOTSCH2026_30301.fasta ]; then \
 	  echo ""; \
 	  echo "  botryllus is in MIDI_PLUS_TARGETS but its proteome is not staged:"; \
@@ -1685,6 +1690,11 @@ ALLQFO_RUN_DIR ?= run-midi-plus-all-qfo
 ALLQFO_TARGETS ?= all
 # Eukaryotes only, plus the nine originals -- see params.hhblits_kingdoms in main.nf.
 ALLQFO_HHBLITS_KINGDOMS ?= Eukaryota
+# Registry species that have no Pfam answer key YET, as opposed to none that can exist.
+# Searched by every sequence arm and by ProstT5, scored by nothing, until the key lands.
+# Empty this as each one gains a data/annotations/<label>_pfam_domains.parquet -- the
+# preflight below fails if a name here already has one, so the list cannot go stale quietly.
+ALLQFO_PENDING_PFAM ?= botryllus
 
 ## Refuse to launch while anything of ours is still queued.
 ##
@@ -1715,20 +1725,30 @@ run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINER
 run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
 run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	$(call require_cluster)
-	@# Every registry species must either HAVE an answer key or be recorded as having
-	@# none available. A bare count cannot tell those apart, and the difference matters:
-	@# pnodorum's accessions appear zero times in all 129_292_765 rows of
-	@# Pfam-A.regions.tsv.gz, so no amount of re-running produces one, while a missing
-	@# botryllus key is by design and 68 missing keys means pfam-annotations never ran.
+	@# Every registry species must either HAVE an answer key, be recorded as having none
+	@# available, or be listed as pending. A bare count cannot tell those apart, and the
+	@# differences matter: pnodorum's accessions appear zero times in all 129_292_765 rows
+	@# of Pfam-A.regions.tsv.gz, so no amount of re-running produces one, while 68 missing
+	@# keys means pfam-annotations never ran.
 	@# build_pfam_architectures.py writes species_without_pfam.txt for exactly this.
+	@#
+	@# ALLQFO_PENDING_PFAM is the third state, and it is not the same as the second.
+	@# species_without_pfam.txt means "Pfam has nothing for this species, ever". Botryllus
+	@# is not in that category -- it is not in UniProt, so the bulk Pfam-A regions table
+	@# cannot cover it, but an hmmscan answer key is being built and it WILL be scored.
+	@# Filing it under species_without_pfam.txt to get past this check would record a
+	@# permanent fact that is false, and would then have to be un-recorded by hand at
+	@# exactly the moment everyone had forgotten it was there.
 	@reg=$$(tail -n +2 assets/qfo_species.tsv | cut -f1 | sort); \
 	 have=$$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null \
 	         | sed 's|.*/||; s|_pfam_domains.parquet||' | sort); \
 	 none=$$(cat data/annotations/species_without_pfam.txt 2>/dev/null | sort); \
-	 gap=$$(comm -23 <(echo "$$reg") <(sort -u <(echo "$$have") <(echo "$$none"))); \
+	 pend=$$(echo "$(ALLQFO_PENDING_PFAM)" | tr ', ' '\n\n' | grep . | sort); \
+	 gap=$$(comm -23 <(echo "$$reg") \
+	                 <(sort -u <(echo "$$have") <(echo "$$none") <(echo "$$pend"))); \
 	 if [ -n "$$gap" ]; then \
 	   echo; \
-	   echo "  No Pfam answer key, and not recorded as unavailable:"; \
+	   echo "  No Pfam answer key, and not recorded as unavailable or pending:"; \
 	   echo "$$gap" | sed 's/^/    /'; \
 	   echo; \
 	   echo "  A target with no annotation is searched but never scored, so this is only"; \
@@ -1737,9 +1757,22 @@ run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	   echo "    make pfam-annotations"; \
 	   echo; exit 1; \
 	 fi; \
+	 for p in $$pend; do \
+	   if echo "$$have" | grep -qx "$$p"; then \
+	     echo; \
+	     echo "  $$p is in ALLQFO_PENDING_PFAM but now HAS an answer key."; \
+	     echo "  It will be scored from this run on. Drop it from ALLQFO_PENDING_PFAM so"; \
+	     echo "  the list keeps meaning something."; \
+	     echo; exit 1; \
+	   fi; \
+	 done; \
 	 if [ -n "$$none" ]; then \
 	   echo "searched but NOT scored (no Pfam data exists for them):"; \
 	   echo "$$none" | sed 's/^/    /'; \
+	 fi; \
+	 if [ -n "$$pend" ]; then \
+	   echo "searched but not scored YET (answer key in progress):"; \
+	   echo "$$pend" | sed 's/^/    /'; \
 	 fi; \
 	 echo "answer key: $$(echo "$$have" | grep -c .) species scored"
 	mkdir -p $(ALLQFO_RUN_DIR)
