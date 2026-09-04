@@ -122,6 +122,13 @@ report_section_order:
   # Which arm is pinned, named before the sections that mark it.
   qfo_canonical: { order: 145 }
   qfo_divergence: { order: 150 }
+  # The identity/divergence pair, immediately ahead of the fuller divergence panel at
+  # 150 that they narrow to one metric on two axes. Two sections rather than one
+  # two-panel figure because MultiQC has no side-by-side layout; they share a pinned y
+  # range instead, which is the only thing a shared axis was for. They must stay
+  # adjacent: the identity panel is read against the Mya panel or not at all.
+  qfo_identity_pair_mya: { order: 148 }
+  qfo_identity_pair_pident: { order: 149 }
   qfo_tool_by_species_swissprot: { order: 151 }
   qfo_tool_by_species_table_swissprot: { order: 152 }
   qfo_tool_by_species_pfamn: { order: 153 }

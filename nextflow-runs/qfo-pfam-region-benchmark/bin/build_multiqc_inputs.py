@@ -6972,34 +6972,166 @@ def _reachability_panel(out: Path, per: pl.DataFrame, truth_set: str, *,
     }, supplementary=not is_lead)
 
 
-def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame,
-                                   identity: pl.DataFrame | None = None) -> None:
-    """STUB, not called. The identity-vs-divergence pair, once the identity table lands.
+def grouped(n: int) -> str:
+    """14_873, the way this project writes integers, without a comma anywhere near prose."""
+    return f"{int(n):,}".replace(",", "_")
 
-    What this panel is for: percent identity and divergence time are two different axes for
-    the same question and the report currently answers it on one of them. A tool that holds
-    its score out to 2000 Mya and a tool that holds it down to 20% identity are not making
-    the same claim -- divergence time is a property of the target proteome, identity is a
-    property of the individual domain pair -- and where the two disagree is where the
-    hypothesis is actually tested.
 
-    What it needs before it can be written:
+def identity_bin_midpoint(label: str) -> float | None:
+    """Numeric x for a "20-30%" identity band, so the axis is identity and not five slots.
 
-      * the identity table's schema, resolved. On this run's Swiss-Prot truth set every
-        instance falls into `no_homolog` because attach_identity joins on (accession,
-        pfam_id, domain_start, domain_end) and `pfam_id` there holds a curated feature type
-        rather than a Pfam accession. Until that join is fixed the identity axis exists
-        only on the Pfam truth set, which is the circular one.
-      * a decision about which quantity goes on which axis. Fmax per (identity bin,
-        species) is a two-way table, and it is not obvious whether the figure should be a
-        heatmap of it or two marginal panels.
-      * the per-bin denominators, so the panel can print n per bin. The gray-zone bins hold
-        several orders of magnitude fewer instances than the 60-100% bin.
-
-    Left uncalled deliberately. Wire it from main() once the schema is settled.
+    Same argument as band_midpoint, which this defers to once the percent sign is off: the
+    bins are not equal width (0-20 spans twenty points, 60-100 spans forty), and the claim
+    this panel tests is about where on the identity axis a tool stops working, so the
+    spacing carries the result.
     """
-    raise NotImplementedError(
-        "identity-vs-divergence is not built: the identity table schema is unresolved")
+    return band_midpoint(label.rstrip("%"))
+
+
+IDENTITY_BIN_ORDER = ["0-20%", "20-30%", "30-40%", "40-60%", "60-100%"]
+
+
+def _identity_truth_set(metrics: pl.DataFrame, primary_truth: str) -> tuple[str, bool]:
+    """The truth set whose identity bins are actually populated, and whether it was forced.
+
+    attach_identity joins on (accession, pfam_id, domain_start, domain_end). On Swiss-Prot
+    `pfam_id` holds a curated feature type rather than a Pfam accession, so nothing matches
+    and every instance lands in no_homolog -- one bin, no axis. Falling back to Pfam is the
+    only way to draw this panel at all, and Pfam is the truth set the sweep also selected
+    on, so the fallback is reported in the caption rather than made quietly.
+    """
+    for ts in [primary_truth] + [t for t in ("pfam", "pfamn") if t != primary_truth]:
+        bins = (metrics.filter((pl.col("truth_set") == ts)
+                               & (pl.col("stratum_axis") == "identity"))["stratum"]
+                .unique().to_list())
+        if len([b for b in bins if b in IDENTITY_BIN_ORDER]) >= MIN_COVARIATE_BINS:
+            return ts, ts != primary_truth
+    return "", False
+
+
+def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
+                                   max_tools: int) -> None:
+    """The same arms on two axes for the same question, drawn on one shared y range.
+
+    Divergence time is a property of the target proteome; percent identity is a property of
+    the individual domain pair. A tool that holds its score out to 2000 Mya and a tool that
+    holds it down to 20% identity are not making the same claim, and where the two axes
+    disagree for the SAME arm is where the hypothesis is actually tested rather than
+    restated. They are two sections rather than one two-panel figure because MultiQC has no
+    side-by-side layout; the y range is pinned across both so the heights are comparable,
+    which is the only thing the shared axis was for.
+    """
+    ts, forced = _identity_truth_set(metrics, primary_truth)
+    if not ts:
+        return
+    cut, split = pick_split(metrics.filter(pl.col("truth_set") == ts))
+    per_species = ungrouped(cut).filter(pl.col("species") != "all")
+    ident = cut.filter(pl.col("stratum_axis") == "identity")
+    if per_species.height == 0 or "species_mya" not in per_species.columns:
+        return
+
+    board = best_variants(per_species).head(max_tools)
+    keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
+    control = _divergence_control(per_species, {(t, v) for t, v, _ in keep})
+    if control and control[3]:
+        keep.append(control[:3])
+
+    bins = [b for b in IDENTITY_BIN_ORDER if b in ident["stratum"].unique().to_list()]
+    mya, pident = {}, {}
+    for tool, variant, label in keep:
+        sub = (per_species.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+               .group_by("species_mya").agg(pl.col("fmax").mean()).sort("species_mya"))
+        mya[label] = {str(r["species_mya"]): r["fmax"] for r in sub.to_dicts()}
+        isub = (ident.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+                .group_by("stratum").agg(pl.col("fmax").mean()))
+        lookup = {r["stratum"]: r["fmax"] for r in isub.to_dicts()}
+        pident[label] = {str(identity_bin_midpoint(b)): lookup[b]
+                         for b in bins if lookup.get(b) is not None}
+    mya = {k: v for k, v in mya.items() if v}
+    pident = {k: v for k, v in pident.items() if v}
+    if not mya or not pident:
+        return
+
+    # One y range over both panels. Read off the drawn values, not off the metric's 0-1
+    # bound: Fmax tops out near 0.3 here, and a 0-1 axis would flatten both panels into the
+    # bottom third and hide the very difference they are drawn to show.
+    ceiling = max([v for s in list(mya.values()) + list(pident.values())
+                   for v in s.values() if v is not None] or [1.0])
+    shared_ymax = round(ceiling * 1.08, 3)
+
+    # n per bin, so a bin holding forty instances is not read against one holding thousands.
+    # The count is a property of the answer key, not of the arm, so any arm's rows carry it;
+    # max guards against an arm that happens to be missing a species.
+    counts = {r["stratum"]: r["n"] for r in
+              ident.group_by("stratum")
+              .agg(pl.col("n_truth_instances").max().alias("n")).to_dicts()}
+    n_row = ", ".join(f"{b} n={grouped(counts.get(b, 0))}" for b in bins)
+    unreachable = counts.get("no_homolog", 0)
+    binned_total = sum(counts.get(b, 0) for b in bins)
+    top_share = (100 * counts.get("60-100%", 0) / binned_total) if binned_total else 0.0
+
+    lead = next((lbl for t, _, lbl in keep if t == "kmerseek"), None)
+    colors, dashes = emphasis_colors([lbl for _, _, lbl in keep], lead=lead,
+                                     control=control[2] if control else None)
+    forced_note = (
+        f"<b>Drawn on the <code>{ts}</code> truth set, not <code>{primary_truth}</code>.</b> "
+        f"On <code>{primary_truth}</code> the identity join has nothing to match: it keys on "
+        f"(accession, pfam_id, domain_start, domain_end) and that truth set's "
+        f"<code>pfam_id</code> holds a curated feature type rather than a Pfam accession, so "
+        f"every instance lands in <code>no_homolog</code> and there is no axis. "
+        f"<code>{ts}</code> is also the truth set the sweep selected its alphabet and k on, "
+        f"so read this pair as the weaker, circular evidence it is."
+    ) if forced else ""
+    shared = (
+        f"<b>Both panels share one y axis, 0 to {shared_ymax}.</b> They are the same arms "
+        f"and the same metric; only the x axis differs, so a height in one is a height in "
+        f"the other. The range is taken from the data rather than from Fmax's 0-1 bound."
+    )
+    skew = (
+        f"<b>{top_share:.0f}% of the instances that have any same-family target at all sit "
+        f"in the 60-100% band.</b> That is what the divergence panel is mostly built from, "
+        f"so a flat line across Mya is compatible with detecting only well-conserved "
+        f"domains. This is the stratification that decides between ancient-core detection "
+        f"and twilight-zone detection, and on this run it points at the former."
+    ) if binned_total else ""
+    disagree = (
+        "<b>Where the two panels disagree is the finding.</b> An arm that holds its level "
+        "across divergence time while falling away across identity is detecting an "
+        "ancient conserved core, not working in the twilight zone -- the distant proteomes "
+        "keep the domains that stayed similar, so a flat Mya line can be drawn entirely by "
+        "high-identity pairs. Read the identity panel before claiming remote homology."
+    )
+
+    for sid, name, panel, xlab, title, extra in (
+        ("qfo_identity_pair_mya", "Divergence axis", mya,
+         "divergence from human (Mya)", "Fmax vs divergence time",
+         "<b>Each point is one target proteome</b>, and these are the values the "
+         "leaderboard's means are taken over."),
+        ("qfo_identity_pair_pident", "Identity axis", pident,
+         "identity to closest same-family target domain (%)", "Fmax vs percent identity",
+         f"<b>Each point is an identity band, plotted at its midpoint</b> because the bands "
+         f"are not equal width, and the bands are nowhere near equally populated: {n_row}. "
+         f"A band holding tens of instances carries no result, whatever height it draws at. "
+         f"<b><code>no_homolog</code> is not on this axis</b> -- {grouped(unreachable)} "
+         f"instances with no same-family target domain at all have no identity to plot, and "
+         f"putting them at zero would read as an identity of zero rather than as absence. "
+         + skew),
+    ):
+        write_section(out, sid, {
+            "id": sid,
+            "section_name": name,
+            "description": (
+                f"<p>Fmax per arm, mean over target proteomes ({ts} truth, "
+                f"<code>{split}</code> split).</p>"
+                + bullets(extra, shared, forced_note, disagree)),
+            "plot_type": "linegraph",
+            "pconfig": {"id": f"{sid}_plot", "title": title, "xlab": xlab,
+                        "ylab": "Fmax (mean over target proteomes)",
+                        "ymin": 0, "ymax": shared_ymax, "height": 460,
+                        "style": "lines+markers",
+                        "colors": colors, "dash_styles": dashes},
+            "data": panel,
+        })
 
 
 ALPHABET_DOSE_METRICS = [
@@ -8032,6 +8164,9 @@ def main():
     section_hgnc(args.outdir, metrics, primary,
                  args.hgnc_min_instances, args.hgnc_top_n)
     section_divergence(args.outdir, metrics, primary, args.max_tools)
+    # Drawn beside the divergence panel at 148/149, just ahead of it: the identity half
+    # is only meaningful read against the Mya half, so the two must stay adjacent.
+    section_identity_vs_divergence(args.outdir, metrics, primary, args.max_tools)
     section_canonical(args.outdir, metrics)
     section_truthsets(args.outdir, metrics, args.max_tools)
     section_tool_by_species(args.outdir, metrics)
