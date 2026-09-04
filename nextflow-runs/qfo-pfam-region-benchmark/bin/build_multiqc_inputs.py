@@ -7009,6 +7009,122 @@ def _identity_truth_set(metrics: pl.DataFrame, primary_truth: str) -> tuple[str,
     return "", False
 
 
+# The comparison set for the annotated divergence panel: one arm per thing a reader might
+# reach for instead of kmerseek, rather than every arm that scored. Ordered profile ->
+# structure so the legend reads down the cost axis.
+DIVERGENCE_PEERS = ["mmseqs2_iterative", "hmmer3_phmmer", "hhblits", "foldseek"]
+
+
+def peer_annotation(tool: str, cost: dict[str, float]) -> str:
+    """What a reader has to spend, or install, to buy that line.
+
+    A tool's Fmax is not comparable to another's without this: hhblits sits above every
+    other line here and costs three orders of magnitude more per search, and foldseek needs
+    a structure for every query. Both facts belong on the line, not in a table elsewhere in
+    the report that the reader has to hold in their head.
+    """
+    bits = []
+    if cost.get(tool):
+        bits.append(f"{cost[tool]:.3g} CPU-h/search")
+    if NEEDS_3D.get(tool) == "Yes":
+        bits.append("needs structure")
+    return f" ({', '.join(bits)})" if bits else ""
+
+
+def section_divergence_annotated(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
+                                 n_queries: int, primary_truth: str) -> None:
+    """Fmax against divergence time for one kmerseek arm and four peers, cost on the label.
+
+    The full Divergence section draws every arm that ranked and answers "which is best".
+    This one answers the question a reader actually arrives with: for a target this far from
+    human, what do the realistic alternatives score, and what does each cost. Five lines,
+    because that is how many a reader can hold; the cost and the structure requirement ride
+    in the line's own label so the comparison cannot be read without them.
+    """
+    cut, split = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    cut = cut.filter(pl.col("species") != "all")
+    if cut.height == 0 or "species_mya" not in cut.columns:
+        return
+
+    # Ciona is dropped from THIS panel rather than marked, because a five-line figure has no
+    # room to explain it and a point every line dips on is read as biology. It stays in the
+    # full Divergence section, where the caveat has somewhere to live.
+    dropped = CURATION_CAVEAT_SPECIES if (
+        cut["species"] == CURATION_CAVEAT_SPECIES).any() else None
+    if dropped:
+        cut = cut.filter(pl.col("species") != CURATION_CAVEAT_SPECIES)
+
+    board = best_variants(cut)
+    km = next((r for r in board.to_dicts() if r["tool"] == "kmerseek"), None)
+    keep = ([(km["tool"], km["variant"], km["label"])] if km else [])
+    for tool in DIVERGENCE_PEERS:
+        row = next((r for r in board.to_dicts() if r["tool"] == tool), None)
+        if row:
+            keep.append((row["tool"], row["variant"], row["label"]))
+    if len(keep) < 2:
+        return
+
+    cost = {}
+    if trace is not None and trace.height:
+        per_tool = throughput_per_tool(trace, n_queries)
+        if per_tool.height:
+            n_species = max(int(cut["species"].n_unique()), 1)
+            cost = {r["tool"]: r["cpu_hours"] / n_species
+                    for r in per_tool.to_dicts() if r.get("cpu_hours")}
+
+    data, labels = {}, {}
+    for tool, variant, label in keep:
+        sub = (cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+               .group_by("species_mya").agg(pl.col("fmax").mean()).sort("species_mya"))
+        if sub.height == 0:
+            continue
+        shown = label + peer_annotation(tool, cost)
+        labels[label] = shown
+        data[shown] = {str(r["species_mya"]): r["fmax"] for r in sub.to_dicts()}
+    if not data:
+        return
+
+    lead = labels.get(km["label"]) if km else None
+    colors, dashes = emphasis_colors(list(data), lead=lead)
+    ticks = (cut.select("species", "species_mya").unique()
+             .sort("species_mya").to_dicts())
+    tick_note = ", ".join(f"{r['species']} {r['species_mya']:.0f}" for r in ticks)
+    omitted = (
+        f"<b><code>{dropped}</code> is omitted from this panel.</b> On the "
+        f"<code>{primary_truth}</code> answer key it carries 23 curated proteins against a "
+        f"median of 3,174, so its point measures curation depth rather than divergence. It "
+        f"is kept, and explained, in the full Divergence section and in the Pfam "
+        f"reachability panel where there is room to say why."
+    ) if dropped else ""
+
+    write_section(out, "qfo_divergence_annotated", {
+        "id": "qfo_divergence_annotated",
+        "section_name": "Divergence, against the alternatives",
+        "description": (
+            f"<p>Fmax against divergence time from human, for one kmerseek arm and the "
+            f"peers a reader would otherwise reach for ({primary_truth} truth, "
+            f"<code>{split}</code> split). Proteomes on the axis: {tick_note} Mya.</p>"
+            + bullets(
+                "<b>Cost and requirements are on the line's own label</b>, because Fmax "
+                "alone does not say what an arm costs to run or what it needs installed, "
+                "and the highest line here is also the most expensive by three orders of "
+                "magnitude.",
+                "<b>CPU-hours are per search, per proteome</b> -- the tool's total divided "
+                "by the number of target proteomes, so it is what one more species costs.",
+                omitted,
+                "<b>Five lines, not nineteen.</b> The full sweep is in the Divergence "
+                "section; this one is the comparison a reader arrives with.")),
+        "plot_type": "linegraph",
+        "pconfig": {"id": "qfo_divergence_annotated_plot",
+                    "title": f"Fmax vs target proteome ({primary_truth} truth)",
+                    "xlab": "divergence from human (Mya)",
+                    "ylab": "Fmax (per target proteome)",
+                    "ymin": 0, "height": 520, "style": "lines+markers",
+                    "colors": colors, "dash_styles": dashes},
+        "data": data,
+    })
+
+
 def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
                                    max_tools: int) -> None:
     """The same arms on two axes for the same question, drawn on one shared y range.
@@ -8164,6 +8280,9 @@ def main():
     section_hgnc(args.outdir, metrics, primary,
                  args.hgnc_min_instances, args.hgnc_top_n)
     section_divergence(args.outdir, metrics, primary, args.max_tools)
+    # The five-line version, drawn before the full sweep: it is the comparison a reader
+    # arrives with, and the nineteen-line panel is the follow-up.
+    section_divergence_annotated(args.outdir, metrics, trace, args.n_queries, primary)
     # Drawn beside the divergence panel at 148/149, just ahead of it: the identity half
     # is only meaningful read against the Mya half, so the two must stay adjacent.
     section_identity_vs_divergence(args.outdir, metrics, primary, args.max_tools)

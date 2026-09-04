@@ -127,6 +127,9 @@ report_section_order:
   # two-panel figure because MultiQC has no side-by-side layout; they share a pinned y
   # range instead, which is the only thing a shared axis was for. They must stay
   # adjacent: the identity panel is read against the Mya panel or not at all.
+  # Ahead of the identity pair and the full sweep: five lines with cost on the label is
+  # the comparison a reader arrives with; 147 keeps it adjacent to both.
+  qfo_divergence_annotated: { order: 147 }
   qfo_identity_pair_mya: { order: 148 }
   qfo_identity_pair_pident: { order: 149 }
   qfo_tool_by_species_swissprot: { order: 151 }
