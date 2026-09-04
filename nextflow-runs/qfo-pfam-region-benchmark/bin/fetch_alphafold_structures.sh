@@ -40,6 +40,9 @@ AFDB_BASE="https://ftp.ebi.ac.uk/pub/databases/alphafold/latest"
 AFDB_RSYNC="rsync://ftp.ebi.ac.uk/pub/databases/alphafold/latest"
 AFDB_FILES="https://alphafold.ebi.ac.uk/files"
 PARALLEL="${PARALLEL:-8}"
+# Above this many missing structures a species is skipped rather than fetched one
+# request at a time. See the note in fetch_per_accession.
+PER_ACCESSION_MAX="${PER_ACCESSION_MAX:-2000}"
 
 # Stall detection: abort a transfer holding under 10 KB/s for 120s, then resume it.
 CURL_COMMON=(--fail --silent --show-error --location --continue-at -
@@ -52,21 +55,24 @@ CURL_COMMON=(--fail --silent --show-error --location --continue-at -
 # a guess with an expiry date. v7 would break it again. so both are looked up once per
 # run and the script fails loudly if the lookup itself fails.
 #
-# species -> UniProt proteome id. Only the id is stable; the filename around it is not.
+# species -> UniProt proteome id, read from the species registry rather than restated here.
+#
+# This was a case statement naming eight species, with chicken and ciona hardcoded to ""
+# to force them down the per-accession path. That made it a fourth hand-maintained copy of
+# the species list, and it silently capped this script at ten species: every one of the
+# other 69 registry rows fell through to *) and got the per-accession path whether or not
+# AFDB publishes an archive for it.
+#
+# Nothing is hardcoded about availability now. proteome_archive() below greps the real AFDB
+# listing, so a species with no archive resolves to "" and takes the per-accession path by
+# measurement instead of by assertion -- which is what chicken and ciona were doing anyway.
+SPECIES_REGISTRY="${SPECIES_REGISTRY:-$(dirname "${BASH_SOURCE[0]}")/../assets/qfo_species.tsv}"
+
 proteome_id() {
-    case "$1" in
-        human)       echo "UP000005640" ;;
-        mouse)       echo "UP000000589" ;;
-        zebrafish)   echo "UP000000437" ;;
-        fly)         echo "UP000000803" ;;
-        worm)        echo "UP000001940" ;;
-        yeast)       echo "UP000002311" ;;
-        ecoli)       echo "UP000000625" ;;
-        arabidopsis) echo "UP000006548" ;;
-        # Confirmed absent from AFDB's proteome archives; fetched per accession.
-        chicken|ciona) echo "" ;;
-        *)           echo "" ;;
-    esac
+    [[ -f "$SPECIES_REGISTRY" ]] || {
+        echo "!! no species registry at $SPECIES_REGISTRY" >&2; exit 1; }
+    awk -F'\t' -v want="$1" 'NR==1{for(i=1;i<=NF;i++) h[$i]=i; next}
+                             $h["label"]==want {print $h["proteome"]; exit}' "$SPECIES_REGISTRY"
 }
 
 LISTING=""
@@ -271,8 +277,24 @@ fetch_per_accession() {
     done < "$acc_file"
 
     local n; n=$(wc -l < "$todo" | tr -d ' ')
-    echo "  fetching $n structures individually (parallel=$PARALLEL)"
     [[ "$n" -eq 0 ]] && { rm -f "$todo"; return; }
+
+    # A cap, because the per-accession path is now reachable for every species rather than
+    # for the two that were hardcoded into it. AFDB publishes an archive for only 19 of the
+    # 79 registry species; the other 60 hold ~480_000 annotated accessions between them, and
+    # quietly turning that into 480_000 individual HTTPS requests is not something to do to
+    # EBI by accident. chicken and ciona need 173 and 260, which is what this path is for.
+    if [[ "$n" -gt "$PER_ACCESSION_MAX" && -z "${ALLOW_LARGE_PER_ACCESSION:-}" ]]; then
+        echo "!! $species needs $n individual structure fetches, over the $PER_ACCESSION_MAX cap." >&2
+        echo "   AlphaFold publishes no proteome archive for it, so there is no bulk option." >&2
+        echo "   Skipping. ProstT5 predicts 3Di from sequence and needs no structures, which" >&2
+        echo "   is the arm that covers species like this one." >&2
+        echo "   Set ALLOW_LARGE_PER_ACCESSION=1 to do it anyway." >&2
+        rm -f "$todo"
+        return 0
+    fi
+
+    echo "  fetching $n structures individually (parallel=$PARALLEL)"
 
     # A 404 here is expected and not fatal: AlphaFold has no model for every UniProt
     # accession. Those proteins are absent from the Foldseek arm, which is the
