@@ -31,6 +31,7 @@ import gzip
 import os
 import subprocess
 import sys
+import tempfile
 from collections import defaultdict
 from pathlib import Path
 
@@ -74,6 +75,11 @@ def plddt_by_residue(path: Path) -> dict[int, float]:
     AFDB writes pLDDT into the B-factor column, one value per atom and constant across a
     residue's atoms, so taking the first atom seen per residue is exact rather than an
     approximation. Handles both mmCIF (the v6 cache) and PDB.
+
+    Returns author residue numbers. Chainsaw's boundaries are NOT author numbers -- its
+    README is explicit that they are consecutive indices from 1 -- so the caller must check
+    the two coincide before using one to index the other. They do for AFDB models, whose
+    auth numbering runs 1..N with no gaps, and that is asserted rather than assumed.
     """
     out: dict[int, float] = {}
     with open_maybe_gz(path) as fh:
@@ -109,8 +115,19 @@ def plddt_by_residue(path: Path) -> dict[int, float]:
     return out
 
 
-def run_chainsaw(structure_dir: Path, out_tsv: Path, python: str) -> None:
-    """Invoke Chainsaw over a directory of models."""
+def run_chainsaw(structure_dir: Path, out_tsv: Path, python: str,
+                 models: list[Path] | None = None) -> None:
+    """Invoke Chainsaw over a directory of models, from a sandbox of symlinks.
+
+    Chainsaw cannot hand an mmCIF to stride, so it converts each one to PDB and writes the
+    result next to the file it was given: feed it a directory of .cif and you get a
+    parallel set of .cif.pdb in that same directory. params.structures is the SHARED
+    AlphaFold cache that the foldseek arm builds its database from, so writing there would
+    put every protein into that database twice, and re-running this would parse each model
+    twice from its own leftovers. Neither failure announces itself.
+
+    The sandbox is symlinks, so nothing is copied and the conversions land on scratch.
+    """
     script = CHAINSAW_DIR / "get_predictions.py"
     if not script.is_file():
         sys.exit(
@@ -122,11 +139,16 @@ def run_chainsaw(structure_dir: Path, out_tsv: Path, python: str) -> None:
         )
     env = dict(os.environ)
     env.setdefault("STRIDE_EXE", str(CHAINSAW_DIR / "stride" / "stride"))
-    cmd = [python, str(script),
-           "--structure_directory", str(structure_dir),
-           "--output", str(out_tsv)]
-    print(f"[chainsaw] {' '.join(cmd)}", file=sys.stderr)
-    proc = subprocess.run(cmd, cwd=CHAINSAW_DIR, env=env)
+
+    with tempfile.TemporaryDirectory(prefix="chainsaw_in_") as tmp:
+        sandbox = Path(tmp)
+        for m in (models if models is not None else sorted(structure_dir.iterdir())):
+            (sandbox / m.name).symlink_to(m.resolve())
+        cmd = [python, str(script),
+               "--structure_directory", str(sandbox),
+               "--output", str(out_tsv)]
+        print(f"[chainsaw] {' '.join(cmd)}", file=sys.stderr)
+        proc = subprocess.run(cmd, cwd=CHAINSAW_DIR, env=env)
     if proc.returncode != 0:
         sys.exit(f"chainsaw failed with exit {proc.returncode}")
 
@@ -176,7 +198,7 @@ def main() -> None:
     tsv = args.chainsaw_tsv
     if tsv is None:
         tsv = args.out.with_suffix(".chainsaw.tsv")
-        run_chainsaw(args.structures, tsv, args.python)
+        run_chainsaw(args.structures, tsv, args.python, models=models)
 
     chainsaw = pl.read_csv(tsv, separator="\t")
     by_chain = {p.name.split(".")[0]: p for p in models}
@@ -190,6 +212,19 @@ def main() -> None:
             continue
         model = by_chain.get(chain_id)
         plddt = plddt_by_residue(model) if model else {}
+        # Chainsaw indexes residues consecutively from 1; plddt is keyed by author number.
+        # On an AFDB model those are the same sequence, and this is where that stops being
+        # a silent assumption. A structure with gaps or a non-1 start would otherwise get
+        # pLDDT read off the wrong residues and no error anywhere.
+        if plddt:
+            expected = set(range(1, int(rec["nres"]) + 1))
+            if set(plddt) != expected:
+                sys.exit(
+                    f"{chain_id}: author residue numbering is not 1..{rec['nres']} "
+                    f"(got {min(plddt)}..{max(plddt)}, {len(plddt)} residues). Chainsaw "
+                    f"boundaries are consecutive indices from 1, so pLDDT cannot be looked "
+                    f"up by author number for this model without a mapping."
+                )
         for segs in domains:
             residues = [r for s, e in segs for r in range(s, e + 1)]
             vals = [plddt[r] for r in residues if r in plddt]
