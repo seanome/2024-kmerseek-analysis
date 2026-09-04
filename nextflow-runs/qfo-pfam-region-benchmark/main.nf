@@ -1295,6 +1295,47 @@ process proteomeDisorder {
     """
 }
 
+process humanRegionDisorder {
+    /*
+     * Disorder averaged over each human DOMAIN, not over the protein that carries it.
+     *
+     * Deliberately NOT folded into proteomeDisorder, which is storeDir'd per proteome.
+     * That entry's name is keyed on the proteome; this table's content also depends on the
+     * TRUTH intervals, and an entry whose content depends on something outside its name is
+     * silently shared across runs that differ in that thing. Regenerating the answer key
+     * would leave a cached entry serving domain disorder for the old intervals, with
+     * nothing to notice it. A separate publishDir process re-runs when the truth changes,
+     * which is the behaviour this table needs.
+     *
+     * Cheap enough not to warrant a cache: one metapredict pass over the query FASTA.
+     */
+    tag "human regions"
+    label 'python'
+    publishDir "${params.outdir}/truth", mode: 'copy'
+
+    input:
+    tuple path(fasta), path(truth)
+
+    output:
+    path "human_domain_disorder.parquet", emit: regions
+    path "human_domain_disorder.json",    emit: summary
+
+    script:
+    def thr = params.metapredict_threshold ? "--threshold ${params.metapredict_threshold}" : ""
+    """
+    predict_disorder_metapredict.py \\
+        --fasta       ${fasta} \\
+        ${thr} \\
+        --out         per_protein_discarded.parquet \\
+        --domains     ${truth} \\
+        --domains-out human_domain_disorder.parquet \\
+        --summary-out human_domain_disorder.json
+
+    cat human_domain_disorder.json
+    """
+}
+
+
 process buildQueryCovariates {
     /*
      * Per-query-protein biology: HGNC gene group, dN/dS, mean pLDDT, disorder fraction.
@@ -1311,6 +1352,9 @@ process buildQueryCovariates {
     output:
     path "human_query_covariates.parquet", emit: covariates
     path "covariates_summary.json",        emit: summary
+    // Absent when the run has no structures, which is why it is optional rather than a
+    // sentinel: nothing downstream stages it, it is read from the published directory.
+    path "human_domain_plddt.parquet",     emit: region_plddt, optional: true
 
     script:
     def hgnc_arg   = hgnc.name   == 'NO_HGNC'   ? "" : "--hgnc ${hgnc}"
@@ -1322,10 +1366,14 @@ process buildQueryCovariates {
     // make_mini_testset.py wrote it next to the annotations; absent for a run built before
     // it existed, and for the full-proteome run where every query is the same bucket.
     def qsets_arg  = query_sets.name == 'NO_QUERY_SETS' ? "" : "--query-sets ${query_sets}"
+    // Per-domain pLDDT needs the residue track, so it rides along only when there are
+    // structures to read it from.
+    def regions_arg = structures.name == 'NO_STRUCTURES' ? "" : "--domains-out human_domain_plddt.parquet"
     """
     build_query_covariates.py \\
         --truth       ${truth} \\
         ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} ${mpred_arg} ${qsets_arg} \\
+        ${regions_arg} \\
         --out         human_query_covariates.parquet \\
         --summary-out covariates_summary.json
     """
@@ -3267,7 +3315,14 @@ workflow {
               dis,
               query_sets_file)
     }
-    covariates = buildQueryCovariates(cov_in).covariates
+    cov_out    = buildQueryCovariates(cov_in)
+    covariates = cov_out.covariates
+
+    // The region-level twins of the two protein-level disorder axes. Published for the
+    // report to read; nothing downstream stages them, so they add no task dependencies.
+    region_disorder = params.skip_metapredict
+        ? Channel.empty()
+        : humanRegionDisorder(truth_out.truth.map { t -> tuple(human_fasta, t) }).regions
 
     // One entry per truth set: (label, truth_parquet, species->map channel). Scoring runs
     // once per set, so every metric row says which truth it was measured against.
