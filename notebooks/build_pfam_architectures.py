@@ -208,6 +208,22 @@ def build_architectures(domains_df: pl.DataFrame) -> pl.DataFrame:
 # Per-species processing
 # ---------------------------------------------------------------------------
 
+NO_PFAM_MANIFEST = "species_without_pfam.txt"
+
+
+def _record_no_pfam(outdir: Path, species: str, absent: bool) -> None:
+    """Add or remove `species` from the no-answer-key manifest beside the parquets."""
+    path = outdir / NO_PFAM_MANIFEST
+    have = set()
+    if path.exists():
+        have = {l.strip() for l in path.read_text().splitlines() if l.strip()}
+    if absent:
+        have.add(species)
+    else:
+        have.discard(species)
+    path.write_text("".join(f"{s}\n" for s in sorted(have)))
+
+
 def process_species(species: str, qfo_dir: Path, outdir: Path, regions_df: pl.DataFrame, force: bool = False):
     outdir.mkdir(parents=True, exist_ok=True)
 
@@ -235,7 +251,14 @@ def process_species(species: str, qfo_dir: Path, outdir: Path, regions_df: pl.Da
     records = load_domains_from_bulk(species, qfo_accessions, lengths, regions_df)
 
     if not records:
+        # Recorded, not just warned about. Some species genuinely have no rows in
+        # Pfam-A.regions.tsv.gz -- pnodorum's accessions appear zero times in all
+        # 129_292_765 of them, checked 2026-09-04 -- and a species with no answer key is
+        # searched but not scored, which is a legitimate state the staging already handles.
+        # Writing it down is what lets a preflight tell "Pfam has nothing for this species"
+        # apart from "you forgot to run this script", which a bare file count cannot.
         print(f"  WARNING: no Pfam records found for {species} in the bulk regions file", file=sys.stderr)
+        _record_no_pfam(outdir, species, absent=True)
         return
 
     df = pl.DataFrame(records).with_columns([
@@ -251,6 +274,7 @@ def process_species(species: str, qfo_dir: Path, outdir: Path, regions_df: pl.Da
     print(f"  {after:,} proteins with Pfam matches, {len(df):,} domain-instance records (envelope positions from Pfam-A.regions.tsv.gz)")
 
     df.write_parquet(domains_path, compression="snappy")
+    _record_no_pfam(outdir, species, absent=False)
     print(f"  Saved: {domains_path}")
 
     # Build architectures

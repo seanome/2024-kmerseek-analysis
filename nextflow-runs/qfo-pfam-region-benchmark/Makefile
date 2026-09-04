@@ -1711,20 +1711,33 @@ run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINER
 run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
 run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	$(call require_cluster)
-	@# 78, not 79: the registry holds the 78 QfO species plus botryllus, and botryllus is
-	@# target-only by design -- no Pfam annotations, so build_domain_truth writes it no
-	@# domain map and score_in inner-joins it out. Do not go looking for a 79th file.
-	@n=$$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null | wc -l); \
-	 if [ "$$n" -lt 78 ]; then \
+	@# Every registry species must either HAVE an answer key or be recorded as having
+	@# none available. A bare count cannot tell those apart, and the difference matters:
+	@# pnodorum's accessions appear zero times in all 129_292_765 rows of
+	@# Pfam-A.regions.tsv.gz, so no amount of re-running produces one, while a missing
+	@# botryllus key is by design and 68 missing keys means pfam-annotations never ran.
+	@# build_pfam_architectures.py writes species_without_pfam.txt for exactly this.
+	@reg=$$(tail -n +2 assets/qfo_species.tsv | cut -f1 | sort); \
+	 have=$$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null \
+	         | sed 's|.*/||; s|_pfam_domains.parquet||' | sort); \
+	 none=$$(cat data/annotations/species_without_pfam.txt 2>/dev/null | sort); \
+	 gap=$$(comm -23 <(echo "$$reg") <(sort -u <(echo "$$have") <(echo "$$none"))); \
+	 if [ -n "$$gap" ]; then \
 	   echo; \
-	   echo "  Only $$n of the 78 QfO species have a Pfam answer key."; \
-	   echo "  A target with no annotation cannot transfer a single domain call, and"; \
-	   echo "  staging fails on the missing file rather than skipping the species."; \
+	   echo "  No Pfam answer key, and not recorded as unavailable:"; \
+	   echo "$$gap" | sed 's/^/    /'; \
+	   echo; \
+	   echo "  A target with no annotation is searched but never scored, so this is only"; \
+	   echo "  safe when Pfam genuinely has nothing for the species. Run:"; \
 	   echo; \
 	   echo "    make pfam-annotations"; \
 	   echo; exit 1; \
 	 fi; \
-	 echo "answer key: $$n of 78 QfO species (botryllus is target-only, by design)"
+	 if [ -n "$$none" ]; then \
+	   echo "searched but NOT scored (no Pfam data exists for them):"; \
+	   echo "$$none" | sed 's/^/    /'; \
+	 fi; \
+	 echo "answer key: $$(echo "$$have" | grep -c .) species scored"
 	mkdir -p $(ALLQFO_RUN_DIR)
 	cd $(ALLQFO_RUN_DIR) && \
 	  ml load biology nextflow && \
