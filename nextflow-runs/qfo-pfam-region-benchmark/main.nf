@@ -2905,7 +2905,8 @@ process scoreDomainCalls {
           path(regions, arity: '1..*'),
           val(truth_labels), path(truths, stageAs: 'truth*/*'),
           path(domain_maps, stageAs: 'map*/*'),
-          path(covariates), path(identity), path(target_disorder)
+          path(covariates), path(identity), path(target_disorder),
+          path(region_plddt), path(region_disorder)
 
     // Globs, because one task now writes a trio per arm. arity '1..*' for the same reason
     // it is on kmerseekIndex's chunk output: a glob emits a bare Path on a single match and
@@ -2923,6 +2924,12 @@ process scoreDomainCalls {
     // interval-semantics and dedup-fragments used to be decided here per tool. They now live
     // in evaluate_domain_calls.score_one, because a manifest row carries only the tool name
     // and the policy has to be derived from it in exactly one place.
+    // Same sentinel dance as --identity and --target-disorder above: absent tables become
+    // an empty flag rather than a null path, which Nextflow cannot stage.
+    def rplddt_arg = region_plddt.name  == 'NO_REGION_PLDDT'
+        ? "" : "--region-plddt ${region_plddt}"
+    def rdis_arg   = region_disorder.name == 'NO_REGION_DISORDER'
+        ? "" : "--region-disorder ${region_disorder}"
     def tdis_arg = target_disorder.name == 'NO_DISORDER' ? ""
                    : "--target-disorder ${target_disorder}"
     // Rendered byte-for-byte as the old literal when mya is set, so every arm already
@@ -2963,6 +2970,7 @@ TRUTH_EOF
             --domain-map   "\$domain_map" \\
             --covariates   ${covariates} \\
             --identity     ${identity} \\
+            ${rplddt_arg} ${rdis_arg} \\
             ${tdis_arg} \\
             --min-overlap  ${params.min_overlap} \\
             --strict-iou   ${params.strict_iou} \\
@@ -3989,13 +3997,23 @@ workflow {
             by: 0
         )
 
+    // The two region-level covariate tables. One file each, not per species -- they are
+    // properties of the human query domains -- so these broadcast rather than join. A run
+    // without structures or with --skip_metapredict has no table to stage, and the sentinel
+    // keeps the process signature fixed the way every other optional input here does.
+    score_in = score_in
+        .combine(cov_out.region_plddt
+                     .ifEmpty(file("${projectDir}/assets/NO_REGION_PLDDT")))
+        .combine(region_disorder
+                     .ifEmpty(file("${projectDir}/assets/NO_REGION_DISORDER")))
+
     if (!(params.score_group_by in ['species', 'tool', 'alphabet'])) {
         error "--score_group_by takes species, tool or alphabet; got " +
               "'${params.score_group_by}'."
     }
 
     score_grouped = score_in
-        .map { sp, tool, variant, mya, regions, cov, ident, tdis ->
+        .map { sp, tool, variant, mya, regions, cov, ident, tdis, rpl, rdis ->
             // groupKey carries the expected size WITH the key, so each group is released
             // the moment its own arms are all in rather than when the whole channel
             // closes. Without it, no scoring could start until the last kmerseek search of
