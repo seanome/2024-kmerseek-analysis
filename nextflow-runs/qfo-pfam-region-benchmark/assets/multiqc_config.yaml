@@ -117,6 +117,10 @@ report_section_order:
   # Fmax across the pLDDT bands as a shape, next to the twilight-zone axis it is read
   # against. Plot first, then its table on the next integer -- sharing a number renders
   # the TABLE first, which is the failure the note at 170 records.
+  # The region-level axes sit with the pLDDT/disorder block they correct, not at the end:
+  # a reader comparing the domain reading against the protein reading needs them adjacent.
+  qfo_plddt_region: { order: 143 }
+  qfo_disorder_region: { order: 144 }
   qfo_plddt_regime: { order: 141 }
   qfo_plddt_regime_table: { order: 142 }
   # Which arm is pinned, named before the sections that mark it.
