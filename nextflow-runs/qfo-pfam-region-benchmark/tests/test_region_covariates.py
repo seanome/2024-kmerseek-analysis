@@ -87,3 +87,68 @@ def test_region_disorder_joins_on_the_same_key_as_identity(tmp_path):
     cols = pl.read_parquet(out).columns
     for k in ("accession", "domain_start", "domain_end"):
         assert k in cols
+
+
+# --- the scoring side: region covariates become their own stratum axis -------------
+
+ed = _load("evaluate_domain_calls")
+
+
+def truth_frame():
+    """Two domains of ONE protein, one confident and ordered, one not. The whole point of
+    the region axes is that these must land in different strata."""
+    return pl.DataFrame({
+        "accession": ["P1", "P1"],
+        "pfam_id": ["PF1", "PF2"],
+        "domain_start": [1, 101],
+        "domain_end": [100, 200],
+    })
+
+
+def region_table(col, values):
+    return pl.DataFrame({
+        "accession": ["P1", "P1"],
+        "domain_start": [1, 101],
+        "domain_end": [100, 200],
+        col: values,
+    })
+
+
+def test_two_domains_of_one_protein_land_in_different_strata():
+    got = ed.attach_region_covariates(truth_frame(), {
+        "mean_plddt_region": region_table("mean_plddt_region", [96.0, 33.0]),
+        "mean_disorder_region": region_table("mean_disorder_region", [0.02, 0.55]),
+    })
+    assert got["stratum_plddt_region"].to_list() == ["95-97", "30-45"]
+    assert got["stratum_disorder_region"].n_unique() == 2
+
+
+def test_an_unmeasurable_domain_gets_no_stratum_rather_than_a_zero_one():
+    got = ed.attach_region_covariates(truth_frame(), {
+        "mean_plddt_region": region_table("mean_plddt_region", [96.0, None]),
+        "mean_disorder_region": None,
+    })
+    assert got["stratum_plddt_region"].to_list() == ["95-97", None]
+    # A missing table must not invent a stratum for every domain either.
+    assert got["stratum_disorder_region"].null_count() == got.height
+
+
+def test_region_stratum_mean_averages_instances_not_proteins():
+    """The per-protein rule that stratum_value_mean uses everywhere else would dedupe these
+    two rows to one and report an arbitrary one of the two values."""
+    t = ed.attach_region_covariates(truth_frame(), {
+        "mean_plddt_region": region_table("mean_plddt_region", [90.0, 80.0]),
+        "mean_disorder_region": None,
+    })
+    got = ed.stratum_value_mean(t, "plddt_region")
+    assert got == pytest.approx(85.0)
+
+
+def test_protein_level_axes_still_dedupe_by_protein():
+    """Guard on the branch: the region exception must not leak into the protein axes, where
+    a twelve-domain protein would then count twelve times."""
+    t = pl.DataFrame({
+        "accession": ["P1", "P1", "P2"],
+        "mean_plddt": [90.0, 90.0, 60.0],
+    })
+    assert ed.stratum_value_mean(t, "plddt") == pytest.approx(75.0)

@@ -100,8 +100,21 @@ FEATURE_LENGTH_BINS = [1, 2, 16, 31, 61, 121, 251]
 DISORDER_FINE_EDGES = [0.0, 0.015, 0.035, 0.06, 0.085, 0.11, 0.14, 0.175, 0.215,
                        0.26, 0.31, 0.38, 0.47, 0.60, 1.01]
 
+# Fourteen bins across the confident end, where the domains are. A flat 0-100 cut in tens
+# would put almost everything in two bins: modelled domains cluster high, and the question
+# is where along that clustering recovery starts to fall, not whether pLDDT 10 differs from
+# pLDDT 90.
+PLDDT_REGION_EDGES = [0, 30, 45, 55, 62, 68, 73, 78, 82, 86, 89, 92, 95, 97, 100.01]
+
 STRATA = {
     "plddt": ("mean_plddt", [0, 50, 70, 90, 100]),
+    # The region-level twins of `plddt` and `disorder_seq`. Those two are properties of the
+    # whole QUERY PROTEIN; these are measured over the domain instance's own residues, so
+    # an ordered domain in a mostly disordered protein no longer inherits its protein's
+    # number. Kept beside the protein-level axes rather than replacing them: the older axes
+    # are what the pLDDT-regime section and every earlier report are drawn on.
+    "plddt_region": ("mean_plddt_region", PLDDT_REGION_EDGES),
+    "disorder_region": ("mean_disorder_region", DISORDER_FINE_EDGES),
     "disorder": ("disorder_fraction_plddt", [0.0, 0.1, 0.3, 0.6, 1.01]),
     # The same covariate as `disorder`, cut fourteen ways instead of four. Kept beside the
     # coarse axis rather than replacing it: the coarse bins are what the identity and
@@ -127,6 +140,10 @@ MIN_STRATUM_PROTEINS = 30
 # and dropping them would delete the short-feature end of the very gradient being tested.
 # Every row reports its own n_stratum_proteins and n_truth_instances either way.
 UNFLOORED_AXES = ("mhc", "geneset", "identity", "feature_length_bin", "feature_type")
+
+# Axes whose covariate varies WITHIN a protein, so its stratum mean must be taken over
+# domain instances rather than over proteins. See stratum_value_mean.
+REGION_AXES = ("plddt_region", "disorder_region")
 
 # The vocabulary attach_feature_type recognises, from the truth builder itself.
 FEATURE_TYPES = sprot.RANGE_FEATURES | sprot.POINT_FEATURES
@@ -1169,6 +1186,55 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
     return joined.with_columns(expr.otherwise(None).alias("stratum_identity"))
 
 
+def _optional_parquet(path) -> pl.DataFrame | None:
+    """Read a parquet that may be absent, empty, or a sentinel file standing in for one."""
+    if not path or not path.exists() or path.stat().st_size == 0:
+        return None
+    try:
+        return pl.read_parquet(path)
+    except Exception:
+        return None
+
+
+def attach_region_covariates(truth: pl.DataFrame,
+                             tables: dict[str, pl.DataFrame | None]) -> pl.DataFrame:
+    """Join the per-domain pLDDT and disorder tables onto the truth frame.
+
+    Same key as attach_identity -- (accession, domain_start, domain_end) -- which is why
+    both emitters were written to it. A domain with no row, or a row whose value is null
+    because the interval was not modelled, keeps a null and lands in no stratum: strata_of
+    only cuts on non-null values, so an unmeasurable domain is absent from this axis
+    instead of being silently binned at zero.
+    """
+    key = ["accession", "domain_start", "domain_end"]
+    for col, table in tables.items():
+        if table is None or table.height == 0 or col not in table.columns:
+            truth = truth.with_columns(pl.lit(None, dtype=pl.Float64).alias(col))
+            continue
+        if not all(k in table.columns for k in key):
+            raise SystemExit(
+                f"region covariate table for {col} is missing one of {key}; it must be "
+                "keyed the same way as the identity table")
+        truth = truth.join(table.select(key + [col]).unique(subset=key),
+                           on=key, how="left")
+
+    # Cut here rather than in attach_strata, which bins the per-PROTEIN covariates frame and
+    # never sees these columns: they are joined onto truth, one value per domain instance.
+    exprs = []
+    for axis in REGION_AXES:
+        col, edges = STRATA[axis]
+        name = f"stratum_{axis}"
+        if col not in truth.columns:
+            exprs.append(pl.lit(None, dtype=pl.String).alias(name))
+            continue
+        expr = pl.when(pl.col(col).is_null()).then(pl.lit(None, dtype=pl.String))
+        for lo, hi in zip(edges[:-1], edges[1:]):
+            expr = expr.when((pl.col(col) >= lo) & (pl.col(col) < hi)).then(
+                pl.lit(f"{lo}-{hi}"))
+        exprs.append(expr.otherwise(None).alias(name))
+    return truth.with_columns(exprs)
+
+
 def attach_feature_length(truth: pl.DataFrame) -> pl.DataFrame:
     """Bin each truth interval by its own residue length, and keep the raw length.
 
@@ -1342,7 +1408,12 @@ def stratum_value_mean(t_sub: pl.DataFrame, axis: str) -> float | None:
     col = STRATA.get(axis, (None, None))[0]
     if col is None or col not in t_sub.columns or t_sub.height == 0:
         return None
-    values = t_sub.unique(subset="accession")[col].drop_nulls()
+    # Region axes are the exception to the per-protein rule above: the covariate is measured
+    # over each domain's own residues, so two instances of one protein carry different
+    # values and deduping by accession would keep an arbitrary one of them and discard the
+    # rest. Averaged over instances, which is the unit the axis is defined on.
+    values = (t_sub if axis in REGION_AXES
+              else t_sub.unique(subset="accession"))[col].drop_nulls()
     return float(values.mean()) if values.len() else None
 
 
@@ -1789,6 +1860,13 @@ def main():
                    help="optional metapredict parquet for THIS species' proteome; bins each "
                         "human instance by the disorder of the target it could best "
                         "transfer from. Requires an --identity table carrying best_target.")
+    p.add_argument("--region-plddt", type=Path,
+                   help="per-domain pLDDT parquet from build_query_covariates.py; adds "
+                        "the plddt_region axis, which unlike plddt is measured over the "
+                        "domain rather than over its whole protein")
+    p.add_argument("--region-disorder", type=Path,
+                   help="per-domain disorder parquet from predict_disorder_metapredict.py;"
+                        " adds the disorder_region axis, measured the same way")
     p.add_argument("--identity", type=Path,
                    help="per-domain-pair percent identity for this species; the "
                         "twilight-zone stratification axis")
@@ -1892,6 +1970,10 @@ def main():
     truth = attach_strata(truth, covariates,
                           keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
     truth = attach_identity(truth, identity)
+    truth = attach_region_covariates(truth, {
+        "mean_plddt_region": _optional_parquet(args.region_plddt),
+        "mean_disorder_region": _optional_parquet(args.region_disorder),
+    })
     truth = attach_feature_length(truth)
     truth = attach_feature_type(truth)
 
