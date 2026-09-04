@@ -37,6 +37,97 @@ def accession_of(header: str) -> str:
     return parts[1] if len(parts) >= 2 and parts[1] else first
 
 
+# The 21st and 22nd amino acids, substituted by their standard analogues.
+#
+# These are real residues, not sequencing damage. Pyrrolysine (O) is encoded by UAG in the
+# methylamine methyltransferases of the methanogenic archaea, and selenocysteine (U) by UGA
+# in selenoproteins across all three domains. Both appear in QfO reference proteomes:
+# macetivorans' MtmB1 (P58865) carries an O and is what first stopped this step, on the
+# 79-proteome run where the archaea enter the target set for the first time.
+#
+# metapredict's network is trained on the 20 standard residues and protfasta refuses
+# anything else. It already repairs what it calls fixable (B, Z, J, X and case), then
+# REVALIDATES and fails on whatever is left -- which is why passing a different
+# invalid_sequence_action does not help: O never reaches the network either way. So the
+# substitution has to happen before protfasta sees the file.
+#
+# O -> K and U -> C are the conventional mappings and the biologically defensible ones:
+# pyrrolysine is a lysine derivative, and selenocysteine is cysteine with selenium in place
+# of sulfur. Both keep the backbone and the rough polarity, which is all a per-residue
+# disorder predictor reads. This axis is a stratification covariate rather than a scored
+# quantity and the counts are single-digit per proteome, so the substitution cannot move a
+# metric -- but it is recorded in the summary rather than done silently.
+NONCANONICAL = {"O": "K", "U": "C"}
+
+# What protfasta repairs on its own. Left alone here so this script does not take over a
+# job the library already does, and so anything genuinely unexpected still errors.
+PROTFASTA_HANDLES = set("BZJX")
+STANDARD_AA = set("ACDEFGHIKLMNPQRSTVWY")
+
+
+def read_fasta(path: Path):
+    """(header, sequence) pairs, header without the leading '>'."""
+    header, buf = None, []
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if header is not None:
+                    yield header, "".join(buf)
+                header, buf = line[1:].rstrip("\n"), []
+            else:
+                buf.append(line.strip())
+    if header is not None:
+        yield header, "".join(buf)
+
+
+def substitute_noncanonical(fasta: Path, out: Path) -> dict:
+    """Rewrite `fasta` with O/U replaced. Returns per-symbol counts, {} if nothing changed.
+
+    Writes the output only when a substitution was actually needed, so the clean proteomes
+    -- most of the 79 -- pay one extra read and no write. Headers are copied verbatim,
+    which is what keeps accession_of() and every join downstream working.
+    """
+    counts: dict[str, int] = {}
+    unexpected: dict[str, str] = {}
+    records = []
+    for header, seq in read_fasta(fasta):
+        up = seq.upper()
+        for sym, repl in NONCANONICAL.items():
+            n = up.count(sym)
+            if n:
+                counts[sym] = counts.get(sym, 0) + n
+                up = up.replace(sym, repl)
+        # Anything still outside the standard 20 that protfasta does not repair itself,
+        # reported by accession and symbol rather than left to surface as a protfasta
+        # traceback naming a 450-residue sequence and no species.
+        leftover = set(up) - STANDARD_AA - PROTFASTA_HANDLES
+        if leftover and header not in unexpected:
+            unexpected[header] = "".join(sorted(leftover))
+        records.append((header, up))
+
+    if unexpected:
+        lines = [f"    {h.split()[0]}: {syms}" for h, syms in list(unexpected.items())[:5]]
+        raise SystemExit(
+            f"{fasta.name} holds residue symbols this script does not know how to map, "
+            f"and metapredict cannot score them:\n" + "\n".join(lines) +
+            (f"\n    ... and {len(unexpected) - 5} more entries" if len(unexpected) > 5 else "") +
+            f"\n\nKnown non-canonical residues are {sorted(NONCANONICAL)} "
+            f"(mapped to {[NONCANONICAL[k] for k in sorted(NONCANONICAL)]}); "
+            f"protfasta repairs {sorted(PROTFASTA_HANDLES)} on its own. Add the new symbol "
+            f"to NONCANONICAL with a justified analogue rather than stripping it."
+        )
+
+    if not counts:
+        return {}
+
+    with open(out, "w") as fh:
+        for header, seq in records:
+            fh.write(f">{header}\n")
+            for i in range(0, len(seq), 60):
+                fh.write(seq[i:i + 60] + "\n")
+    return counts
+
+
 def write_domain_disorder(domains: Path, out: Path,
                           by_accession: dict[str, list], thr: float) -> int:
     """One row per domain instance, disorder averaged over that instance's own residues.
@@ -92,7 +183,18 @@ def main() -> None:
 
     import metapredict as mp
 
-    preds = mp.predict_disorder_fasta(str(args.fasta), show_progress_bar=False)
+    # Substituted into a sibling file rather than in place: params.qfo_dir is the shared
+    # QfO release every run reads, and rewriting a proteome there would change an input
+    # hash for every other process that stages it.
+    cleaned = args.fasta.with_name(args.fasta.stem + ".canonical_aa.fasta")
+    substitutions = substitute_noncanonical(args.fasta, cleaned)
+    scored_fasta = cleaned if substitutions else args.fasta
+    if substitutions:
+        detail = ", ".join(f"{n} {sym}->{NONCANONICAL[sym]}"
+                           for sym, n in sorted(substitutions.items()))
+        print(f"NOTE: {args.fasta.name}: substituted {detail} before scoring")
+
+    preds = mp.predict_disorder_fasta(str(scored_fasta), show_progress_bar=False)
     thr = args.threshold if args.threshold is not None else 0.5
 
     rows, by_accession = [], {}
@@ -135,6 +237,10 @@ def main() -> None:
         "n_mostly_disordered":
             int((cov["disorder_fraction_metapredict"] >= 0.5).sum()) if cov.height else 0,
         "n_domains": n_domains,
+        # Empty for a proteome that needed none, so the field is always present and a
+        # reader never has to tell "no substitutions" apart from "an older run that did
+        # not record them".
+        "noncanonical_substitutions": substitutions,
     }
     if args.summary_out:
         args.summary_out.write_text(json.dumps(summary, indent=2))
