@@ -7031,6 +7031,114 @@ def peer_annotation(tool: str, cost: dict[str, float]) -> str:
     return f" ({', '.join(bits)})" if bits else ""
 
 
+# The two axes that are now measured over the domain rather than over its protein, with
+# the label each one carries on a figure.
+REGION_AXES = {
+    "plddt_region": ("mean pLDDT of the domain", "pLDDT"),
+    "disorder_region": ("mean disorder of the domain", "disorder"),
+}
+
+
+def region_axis_series(cut: pl.DataFrame, axis: str, keep: list) -> tuple[dict, dict, dict]:
+    """Fmax and reachable recall per arm along one region axis, plus the n behind each point.
+
+    x is `stratum_value_mean`, the measured mean of the covariate over the instances in that
+    bin, not the bin's midpoint. The bins are deliberately uneven -- modelled domains bunch
+    above pLDDT 60 -- so a midpoint would put a point where no domain sits.
+    """
+    sub = cut.filter(pl.col("stratum_axis") == axis)
+    if sub.height == 0 or "stratum_value_mean" not in sub.columns:
+        return {}, {}, {}
+    fmax, recall, counts = {}, {}, {}
+    for tool, variant, label in keep:
+        arm = sub.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+        if arm.height == 0:
+            continue
+        agg = (arm.group_by("stratum")
+               .agg(pl.col("stratum_value_mean").mean().alias("x"),
+                    pl.col("fmax").mean().alias("fmax"),
+                    pl.col("recall_reachable").mean().alias("recall"),
+                    pl.col("n_truth_instances").max().alias("n"))
+               .filter(pl.col("x").is_not_null())
+               .sort("x"))
+        if agg.height == 0:
+            continue
+        fmax[label] = {str(r["x"]): r["fmax"] for r in agg.to_dicts()}
+        recall[label] = {str(r["x"]): r["recall"] for r in agg.to_dicts()}
+        for r in agg.to_dicts():
+            counts[str(r["x"])] = max(counts.get(str(r["x"]), 0), r["n"] or 0)
+    return fmax, recall, counts
+
+
+def section_region_axes(out: Path, metrics: pl.DataFrame, primary_truth: str,
+                        max_tools: int) -> None:
+    """Recovery against the domain's own confidence and disorder, two readings per axis.
+
+    Fmax is computed over a SET of instances at a threshold, so there is no Fmax for a
+    single domain and no honest way to put one on a per-region scatter. What this does
+    instead is compute it within each narrow bin of the region covariate and plot it against
+    the measured mean of that bin, which is a continuous axis in everything but name.
+
+    Two panels per axis because the two readings can disagree and the disagreement is
+    informative: Fmax moves with the threshold an arm happens to pick, reachable recall does
+    not. An arm that holds Fmax across the axis while its recall falls is being carried by
+    precision on a shrinking set of calls.
+    """
+    cut, split = pick_split(metrics.filter(pl.col("truth_set") == primary_truth))
+    if cut.height == 0 or "stratum_axis" not in cut.columns:
+        return
+    board = best_variants(ungrouped(cut)).head(max_tools)
+    keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
+    lead = next((lbl for t, _, lbl in keep if t == "kmerseek"), None)
+
+    for axis, (xlab, short) in REGION_AXES.items():
+        fmax, recall, counts = region_axis_series(cut, axis, keep)
+        if len(fmax) < 2:
+            continue
+        colors, dashes = emphasis_colors(list(fmax), lead=lead)
+        n_row = ", ".join(
+            f"{float(x):.3g}: n={grouped(n)}"
+            for x, n in sorted(counts.items(), key=lambda kv: float(kv[0])))
+        protein_twin = "plddt" if axis == "plddt_region" else "disorder_seq"
+        write_section(out, f"qfo_{axis}", {
+            "id": f"qfo_{axis}",
+            "section_name": f"Region {short}",
+            "description": (
+                f"<p>Fmax and reachable recall against the {xlab}, mean over target "
+                f"proteomes ({primary_truth} truth, <code>{split}</code> split).</p>"
+                + bullets(
+                    f"<b>This is the domain's own {short}</b>, averaged over the residues "
+                    f"of that domain instance. The <code>{protein_twin}</code> axis "
+                    f"elsewhere in this report is the same quantity taken over the whole "
+                    f"query protein, which gives every domain of a protein the same value "
+                    f"-- an ordered domain inside a disordered protein reads as disordered "
+                    f"there and does not here.",
+                    "<b>x is the measured mean of each bin</b>, not the bin's midpoint. The "
+                    "bins are uneven because the data is, and a midpoint would put a point "
+                    "where no domain sits.",
+                    f"<b>Instances per bin:</b> {n_row}. A bin holding tens of domains "
+                    f"carries no result whatever height it draws at.",
+                    "<b>Read both panels.</b> Fmax moves with the threshold an arm picks "
+                    "and reachable recall does not, so an arm that holds Fmax while its "
+                    "recall falls is being carried by precision over a shrinking set of "
+                    "calls rather than still finding the domains.")),
+            "plot_type": "linegraph",
+            "pconfig": {
+                "id": f"qfo_{axis}_plot",
+                "title": f"Recovery vs {xlab}",
+                "xlab": xlab, "ylab": "score (mean over target proteomes)",
+                "ymin": 0, "height": 520, "style": "lines+markers",
+                "colors": colors, "dash_styles": dashes,
+                "data_labels": [
+                    {"name": "Fmax", "ylab": "Fmax (mean over target proteomes)"},
+                    {"name": "Recall (reachable)",
+                     "ylab": "recall_reachable (mean over target proteomes)"},
+                ],
+            },
+            "data": [fmax, recall],
+        })
+
+
 def section_divergence_annotated(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                                  n_queries: int, primary_truth: str) -> None:
     """Fmax against divergence time for one kmerseek arm and four peers, cost on the label.
@@ -8283,6 +8391,9 @@ def main():
     # The five-line version, drawn before the full sweep: it is the comparison a reader
     # arrives with, and the nineteen-line panel is the follow-up.
     section_divergence_annotated(args.outdir, metrics, trace, args.n_queries, primary)
+    # The region-level twins of the pLDDT and disorder sections, drawn on the domain's
+    # own value rather than its protein's.
+    section_region_axes(args.outdir, metrics, primary, args.max_tools)
     # Drawn beside the divergence panel at 148/149, just ahead of it: the identity half
     # is only meaningful read against the Mya half, so the two must stay adjacent.
     section_identity_vs_divergence(args.outdir, metrics, primary, args.max_tools)
