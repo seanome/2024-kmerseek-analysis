@@ -4026,7 +4026,7 @@ workflow {
                       "--score_group_by tool to group kmerseek as one instead."
             }
             tuple(groupKey(tuple(sp, grp), arms_per_group[[sp, grp]]),
-                  tool, variant, mya, regions, cov, ident, tdis)
+                  tool, variant, mya, regions, cov, ident, tdis, rpl, rdis)
         }
         // remainder: true is the safety net for the count being WRONG. If arms_per_group
         // over-counts, the group never reaches its size and would hang forever; with
@@ -4034,17 +4034,20 @@ workflow {
         // behaviour this change replaces. An under-count still emits early, which is why
         // the count is accumulated beside the arms rather than restated.
         .groupTuple(by: 0, remainder: true)
-        .map { key, tools, variants, myas, regions, covs, idents, tdiss ->
+        .map { key, tools, variants, myas, regions, covs, idents, tdiss, rpls, rdiss ->
+            // Same .first() as the other three: these are one file for the whole run, so
+            // every arm in a group carries the identical path.
             tuple(key[0], key[1], tools, variants, myas.first(), regions,
-                  covs.first(), idents.first(), tdiss.first())
+                  covs.first(), idents.first(), tdiss.first(),
+                  rpls.first(), rdiss.first())
         }
         // Truth sets ride in AFTER the grouping, so the arms are grouped once and every
         // truth set reads the same staged region files.
         .combine(truth_bundle, by: 0)
-        .map { sp, grp, tools, variants, mya, regions, cov, ident, tdis,
+        .map { sp, grp, tools, variants, mya, regions, cov, ident, tdis, rpl, rdis,
                ts_labels, truths, maps ->
             tuple(sp, grp, tools, variants, mya, regions,
-                  ts_labels, truths, maps, cov, ident, tdis)
+                  ts_labels, truths, maps, cov, ident, tdis, rpl, rdis)
         }
 
     // Read back off the same map the groups are keyed by, so the line cannot describe a
