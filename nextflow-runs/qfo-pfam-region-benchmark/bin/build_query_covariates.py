@@ -34,7 +34,15 @@ CA_ATOM_NAME_FIELD = 3
 PLDDT_FIELD = 14
 
 
-def parse_plddt(path: Path) -> tuple[int, float, float, float, float] | None:
+def read_plddt(path: Path) -> list[float] | None:
+    """The per-residue pLDDT track, one value per CA atom, in file order.
+
+    Kept as a list rather than reduced on the spot because a domain's own pLDDT is a slice
+    of this, and the protein mean cannot be sliced back apart: an ordered domain inside a
+    mostly-unconfident protein takes the protein's number and reads as unconfident.
+    AlphaFold models number residues 1..N against the sequence, so a truth interval indexes
+    straight into this track.
+    """
     opener = gzip.open if path.suffix == ".gz" else open
     try:
         with opener(path, "rt") as f:
@@ -47,8 +55,10 @@ def parse_plddt(path: Path) -> tuple[int, float, float, float, float] | None:
             ]
     except (OSError, ValueError):
         return None
-    if not plddts:
-        return None
+    return plddts or None
+
+
+def summarise_plddt(plddts: list[float]) -> tuple[int, float, float, float, float]:
     n = len(plddts)
     return (
         n,
@@ -59,7 +69,42 @@ def parse_plddt(path: Path) -> tuple[int, float, float, float, float] | None:
     )
 
 
-def load_plddt(struct_dir: Path, accessions: set[str]) -> pl.DataFrame:
+def parse_plddt(path: Path) -> tuple[int, float, float, float, float] | None:
+    plddts = read_plddt(path)
+    return summarise_plddt(plddts) if plddts else None
+
+
+def domain_plddt(truth: pl.DataFrame,
+                 tracks: dict[str, list[float]]) -> pl.DataFrame:
+    """One row per domain instance, pLDDT over that instance's own residues.
+
+    Truth coordinates are 1-based inclusive, so the slice is [start - 1, end). A domain
+    with no model, or whose interval runs past the modelled length, is kept with nulls
+    rather than dropped -- a missing row would quietly shrink the denominator of anything
+    drawn on this axis.
+    """
+    key = ["accession", "domain_start", "domain_end"]
+    rows = []
+    for r in truth.select(key).unique().iter_rows(named=True):
+        track = tracks.get(r["accession"])
+        lo, hi = int(r["domain_start"]) - 1, int(r["domain_end"])
+        window = track[lo:hi] if track and 0 <= lo < hi <= len(track) else []
+        n = len(window)
+        rows.append({
+            **r,
+            "n_residues_region_plddt": n,
+            "mean_plddt_region": (sum(window) / n) if n else None,
+            "min_plddt_region": min(window) if n else None,
+            "frac_plddt_lt50_region":
+                (sum(1 for v in window if v < 50) / n) if n else None,
+            "frac_plddt_lt70_region":
+                (sum(1 for v in window if v < 70) / n) if n else None,
+        })
+    return pl.DataFrame(rows)
+
+
+def load_plddt(struct_dir: Path, accessions: set[str],
+               tracks: dict[str, list[float]] | None = None) -> pl.DataFrame:
     schema = {
         "accession": pl.String, "n_residues": pl.Int64, "mean_plddt": pl.Float64,
         "min_plddt": pl.Float64, "frac_plddt_lt50": pl.Float64,
@@ -73,9 +118,11 @@ def load_plddt(struct_dir: Path, accessions: set[str]) -> pl.DataFrame:
         acc = path.name.split("-")[1]
         if acc not in accessions:
             continue
-        parsed = parse_plddt(path)
-        if parsed:
-            rows.append((acc,) + parsed)
+        track = read_plddt(path)
+        if track:
+            rows.append((acc,) + summarise_plddt(track))
+            if tracks is not None:
+                tracks.setdefault(acc, track)
     if not rows:
         return pl.DataFrame(schema=schema)
     return pl.DataFrame(rows, schema=list(schema), orient="row").unique(
@@ -156,6 +203,11 @@ def main():
                    help="optional accession -> query_set TSV from make_mini_testset.py")
     p.add_argument("--out", required=True, type=Path)
     p.add_argument("--summary-out", required=True, type=Path)
+    # Region-level pLDDT, on the same key the identity table uses. The per-protein columns
+    # above cannot answer "was this DOMAIN modelled confidently", which is the question the
+    # disorder claim is actually stated on.
+    p.add_argument("--domains-out", type=Path,
+                   help="optional per-domain-instance pLDDT parquet; needs --structures")
     args = p.parse_args()
 
     truth = pl.read_parquet(args.truth)
@@ -203,7 +255,8 @@ def main():
         summary["omega"] = "skipped: file not found or HGNC unavailable"
 
     if args.structures:
-        plddt = load_plddt(args.structures, accessions)
+        tracks: dict[str, list[float]] = {} if args.domains_out else None
+        plddt = load_plddt(args.structures, accessions, tracks)
         if plddt.height:
             cov = cov.join(plddt, on="accession", how="left")
             # The AlphaFold disorder proxy. Named for what it is rather than as plain
