@@ -809,12 +809,16 @@ sync-pipeline:
 ## the ssh from the Mac that makes you re-do two-factor for a command you are already
 ## sitting in front of. Assumes the Mac side has pushed; --ff-only so a diverged checkout
 ## stops rather than opening a merge in a shell you did not ask to be in.
+#
+## `cd && git`, not `git -C`: Sherlock's login nodes carry a git old enough that -C is not
+## a recognised option, and it fails with a usage dump rather than anything that names the
+## flag. Every git here runs on the cluster, so none of them can use it.
 pull-pipeline:
 	$(call require_cluster)
-	@echo "branch: $$(git -C $(REMOTE_REPO) rev-parse --abbrev-ref HEAD)"
-	git -C $(REMOTE_REPO) pull --ff-only
+	@cd $(REMOTE_REPO) && echo "branch: $$(git rev-parse --abbrev-ref HEAD)"
+	cd $(REMOTE_REPO) && git pull --ff-only
 	@echo
-	@git -C $(REMOTE_REPO) log --oneline -6
+	@cd $(REMOTE_REPO) && git log --oneline -6
 
 # Data may move by rsync. Annotations are small; proteomes are ~1 GB; structures ~60 GB.
 HGNC_FILE  := /Users/olga/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt
