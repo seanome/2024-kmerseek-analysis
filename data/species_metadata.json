@@ -9,5 +9,20 @@
   "yeast":       {"taxon_id": "559292", "mya": 900,  "name": "Saccharomyces cerevisiae S288C","qfo_proteome": "UP000002311", "qfo_subdir": "Eukaryota",
                   "_note": "QfO uses taxon 559292 (S. cerevisiae S288C); user specified 4932 which is the species-level taxon"},
   "arabidopsis": {"taxon_id": "3702",   "mya": 1500, "name": "Arabidopsis thaliana",          "qfo_proteome": "UP000006548", "qfo_subdir": "Eukaryota"},
-  "ecoli":       {"taxon_id": "83333",  "mya": 2000, "name": "Escherichia coli K-12",         "qfo_proteome": "UP000000625", "qfo_subdir": "Bacteria"}
+  "ecoli":       {"taxon_id": "83333",  "mya": 2000, "name": "Escherichia coli K-12",         "qfo_proteome": "UP000000625", "qfo_subdir": "Bacteria"},
+
+  "_annotate_note": "Rows below are QUERY proteomes for the proteome-annotate workflow, not QfO targets. annotate_clade_rank/annotate_clade is the clade removed from the reviewed Swiss-Prot reference so the transfer is never within-clade. afdb_models is the count of UniProtKB entries for the taxon carrying an AlphaFoldDB cross-reference, measured 2026-09-04.",
+
+  "cgigas":      {"taxon_id": "29159",  "name": "Magallana gigas",                  "uniprot_proteome": "UP000005408", "n_proteins": 57874,
+                  "annotate_query": true,  "annotate_clade_rank": "class", "annotate_clade": "Bivalvia",
+                  "afdb_models": 56595, "uniprotkb_entries": 58641, "swissprot_reviewed": 16,
+                  "afdb_proteome_archive": false,
+                  "_note": "Crassostrea gigas was renamed Magallana gigas. No AFDB proteome tarball, so structures come down the per-accession path (~57k requests). 96.5% of its UniProtKB entries have a model, so it is the species the structural truth key can actually be built on."},
+
+  "botryllus":   {"taxon_id": "30301",  "name": "Botryllus schlosseri",             "uniprot_proteome": null,          "n_proteins": 45339,
+                  "annotate_query": true,  "annotate_clade_rank": "class", "annotate_clade": "Ascidiacea",
+                  "afdb_models": 705, "uniprotkb_entries": 738, "swissprot_reviewed": 0,
+                  "afdb_proteome_archive": false,
+                  "staged_fasta": "Eukaryota/BOTSCH2026_30301.fasta",
+                  "_note": "BLOCKED for structural truth. The staged proteome is 45339 FUN* gene models from a 2026 genome annotation with no UniProt accessions, and AFDB is keyed on those accessions. The 705 models belong to 738 unrelated TrEMBL entries, so real coverage of the query set is ~1.6% and excludes FUN008084_FUN008084 (BHF). Needs its own folding run before this workflow can score it."}
 }
