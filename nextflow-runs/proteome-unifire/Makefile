@@ -50,7 +50,31 @@ SIF_DIR     ?= $(SCRATCH_DIR)/containers
 QFO_DIR         ?= $(HOME)/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
 BOTRYLLUS_FASTA ?= $(QFO_DIR)/Eukaryota/BOTSCH2026_30301.fasta
 CGIGAS_FASTA    ?= $(SCRATCH_DIR)/proteomes/UP000005408_29159.fasta
-PYTHON          ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+# Mac-side python is pinned to the conda env; on Sherlock that path does not exist, so this
+# falls back to whatever python3 the loaded modules supply. It needs polars -- `make
+# check-python` verifies that rather than letting a task die 20 minutes in.
+MAC_PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+ifneq ($(wildcard $(MAC_PYTHON)),)
+PYTHON ?= $(MAC_PYTHON)
+else
+PYTHON ?= python3
+endif
+
+# ---- Sherlock ------------------------------------------------------------------------
+# Code reaches Sherlock through git, never rsync. The clone is per-branch and lives on
+# $SCRATCH, matching the qfo-pfam-region-benchmark convention, so two branches cannot
+# publish into one another's outputs.
+SHERLOCK_HOST ?= sherlock
+REPO_URL      ?= https://github.com/seanome/2024-kmerseek-analysis/
+BRANCH        ?= $(shell git rev-parse --abbrev-ref HEAD)
+SSH_MUX       := ssh -o ControlMaster=auto -o ControlPath=$$HOME/.ssh/cm-%r@%h:%p -o ControlPersist=30m
+SHERLOCK_CLONE     ?= $$SCRATCH/2024-kmerseek-$(notdir $(BRANCH))
+SHERLOCK_CLONE_DIR := $(SHERLOCK_CLONE)/nextflow-runs/proteome-unifire
+
+# Modules to load before any run target on Sherlock. InterProScan and UniFIRE both need a
+# JVM; apptainer is usually present without a module. Unverified against the live module
+# tree -- override if `ml load java` is not the right name there.
+MODULES ?= java
 
 # UniFIRE asks for 24 GB minimum. The full image runs InterProScan inside it, which is the
 # part that actually wants the memory and the hours.
@@ -77,7 +101,34 @@ endif
 
 PREPARED := $(WORKDIR)/$(SPECIES)/$(SPECIES)_unifire.fasta
 
-.PHONY: help check-species prepare-fasta pull-unifire run-unifire run-unifire-mini \
+# ---- getting the code and running it on Sherlock --------------------------------------
+sherlock-clone:
+	git push origin $(BRANCH)
+	$(SSH_MUX) $(SHERLOCK_HOST) '\
+	  set -e; \
+	  if [ ! -d $(SHERLOCK_CLONE)/.git ]; then \
+	    git clone --branch $(BRANCH) $(REPO_URL) $(SHERLOCK_CLONE); \
+	  else \
+	    cd $(SHERLOCK_CLONE) && git fetch origin $(BRANCH) \
+	      && git checkout $(BRANCH) && git pull --ff-only; \
+	  fi; \
+	  echo "ready: $(SHERLOCK_CLONE_DIR)"'
+	@echo
+	@echo "now, on Sherlock:"
+	@echo "  ssh $(SHERLOCK_HOST)"
+	@echo "  cd $(SHERLOCK_CLONE_DIR)"
+
+sync:
+	git push origin $(BRANCH)
+	$(SSH_MUX) $(SHERLOCK_HOST) 'cd $(SHERLOCK_CLONE_DIR) && git pull --ff-only'
+
+check-python:
+	@$(PYTHON) -c 'import polars, sys; print("python OK:", sys.executable, "polars", polars.__version__)' \
+	  || { echo; echo "PYTHON=$(PYTHON) cannot import polars."; \
+	       echo "On Sherlock load or point at an env that has it:"; \
+	       echo "  make $(MAKECMDGOALS) PYTHON=/path/to/python3"; exit 1; }
+
+.PHONY: sherlock-clone sync check-python help check-species prepare-fasta pull-unifire run-unifire run-unifire-mini \
         run-unifire-lite summarise queue-empty
 
 help:
