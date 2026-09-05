@@ -724,6 +724,48 @@ workflow.onError {
     }
 }
 
+// One error strategy for every process that has no reason of its own to decide otherwise.
+//
+// Nextflow's default is `terminate`: the FIRST failure kills every task still running. On
+// 2026-09-05 that turned one hhblitsBuildDB task into a dead run -- zmays came back with
+// no exit status at all, and 582 tasks in flight went with it, including hhblitsSearch and
+// kmerseek arms that had been running for hours. Nothing about that task was wrong. It was
+// killed by the cluster.
+//
+// So: retry the failures the cluster inflicts, and hand every other failure to `finish`,
+// which stops submitting new work but lets the tasks already running complete and write
+// their results. Three exit conditions count as a kill:
+//
+//   Integer.MAX_VALUE   no .exitcode file was written at all -- a cgroup OOM kill, a
+//                       walltime kill, a node failure, a preemption. Nextflow uses this
+//                       as the sentinel and reports it as "terminated for an unknown
+//                       reason -- Likely it has been terminated by the external system"
+//                       (TaskProcessor compares task.exitStatus against Integer.MAX_VALUE
+//                       to choose that message). It is 2147483647, so it is NOT in
+//                       128..143, which is why the idiom used elsewhere in this file never
+//                       fired on the failure that motivated this and every process using
+//                       it fell through to its non-retry branch.
+//   null                the field is a nullable Integer; kept for the paths that leave it
+//                       unset. `null in 128..143` is false as well.
+//   128..143            the wrapper caught the signal and reported 128 + signo.
+//
+// Deliberately NOT retried: exit 1 and friends. A deterministic script error would fail
+// `retries` more times and cost that many more reservations to reach the same place, and
+// for the storeDir processes exit 1 is also how the "Directory not empty" unstage
+// collision arrives -- see the note on kmerseekIndex's errorStrategy for why retrying that
+// one was measured to make things worse rather than better.
+//
+// The attempt cap lives here rather than being left to maxRetries because an exhausted
+// `retry` is not the same as `finish`: it fails the run. Every path out of this closure
+// ends at `finish`, so a task that cannot be made to work costs its own arm and nothing
+// else. `retries` still has to match the process's own maxRetries, which is the number
+// that actually bounds the attempts.
+def retryOnKill = { task, int retries = 2 ->
+    def status = task.exitStatus
+    def killed = status == null || status == Integer.MAX_VALUE || status in 128..143
+    (killed && task.attempt <= retries) ? 'retry' : 'finish'
+}
+
 // Shell helpers both kmerseek processes paste into their scripts to time themselves.
 //
 // The kmerseek arm is the only one on storeDir rather than publishDir, and a storeDir hit
@@ -1060,6 +1102,10 @@ process buildDomainTruth {
     label 'python'
     publishDir "${params.outdir}/truth", mode: 'copy'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     path annotations_dir
 
@@ -1089,6 +1135,10 @@ process buildSwissprotTruth {
      */
     label 'python'
     publishDir "${params.outdir}/truth_swissprot", mode: 'copy'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple path(sprot_dat), path(annotations_dir)
@@ -1128,6 +1178,10 @@ process domainIdentity {
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     label 'high_cpu'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(query_db), path(target_db)
 
@@ -1157,6 +1211,10 @@ process parseIdentity {
     tag "${species}"
     label 'python'
     publishDir "${params.outdir}/identity", mode: 'copy', pattern: '*.parquet'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(species), path(tsv)
@@ -1229,6 +1287,10 @@ process extractDomainSequences {
     tag "${label}"
     label 'python'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(truth), path(fasta)
 
@@ -1274,6 +1336,10 @@ process proteomeDisorder {
     // already binds container = kmerseek_image via withLabel.
     storeDir "${DB_CACHE}/disorder"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(fasta)
 
@@ -1313,6 +1379,10 @@ process humanRegionDisorder {
     label 'python'
     publishDir "${params.outdir}/truth", mode: 'copy'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple path(fasta), path(truth)
 
@@ -1344,6 +1414,10 @@ process buildQueryCovariates {
      */
     label 'python'
     publishDir "${params.outdir}/truth", mode: 'copy'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple path(truth), path(hgnc), path(omega), path(structures), path(disorder),
@@ -1440,7 +1514,8 @@ process kmerseekIndex {
     // -- 1_500 measured tasks peaked at 7.00 GB and tracked the proteome alone -- so this
     // must NOT use kmerseekSearchMemory, which would put a search-sized ask on every one.
     memory { kmerseekIndexMemory(species_fasta.size(), task.attempt) }
-    // Retries the OOM signals only. Do NOT widen this to exit 1 to catch the
+    // Retries cluster kills only -- the signal range plus the no-exit-code sentinel, see
+    // retryOnKill. Do NOT widen this to exit 1 to catch the
     // "Directory not empty" unstage failure -- that was measured on 2026-08-27 and it does
     // not work. Nextflow reads the store when it CREATES a task and caches that decision
     // on the task itself, so a retry does not re-check: attempts 2 and 3 re-ran the whole
@@ -1456,7 +1531,7 @@ process kmerseekIndex {
     // from both. A RocksDB whose manifest and data files come from different builds is
     // corrupt, and the run reports success. Worse still, the merge writes into an entry a
     // concurrent kmerseekSearch may be reading. A loud failure is the better outcome.
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    errorStrategy { retryOnKill(task) }
     maxRetries 2
 
     input:
@@ -1549,13 +1624,13 @@ process kmerseekSearch {
     storeDir "${params.outdir}/kmerseek"
 
     memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
-    // Retry the OOM signals (128..143), stop the run on anything else. Deliberately not
+    // Retry cluster kills only (see retryOnKill), stop on anything else. Deliberately not
     // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
     // downstream as "this alphabet found nothing", which is indistinguishable from a real
     // negative. That has already happened once on this project -- 17 combos silently
     // searched ~1000 of 19,696 queries and looked like genuine misses. Failing loudly and
     // resuming costs queue time; a silent partial costs a wrong conclusion.
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    errorStrategy { retryOnKill(task) }
     maxRetries 2
 
     input:
@@ -1691,6 +1766,10 @@ process phmmerSearch {
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_phmmer", mode: 'copy', pattern: '*.tsv.gz'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(species_fasta), path(human_fasta)
 
@@ -1722,6 +1801,10 @@ process jackhmmerSearch {
     container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_jackhmmer", mode: 'copy', pattern: '*.tsv.gz'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(species), path(species_fasta), path(human_fasta)
@@ -1766,6 +1849,10 @@ process mmseqsDb {
     label 'high_cpu'
     storeDir "${DB_CACHE}/mmseqs_db"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(fasta)
 
@@ -1796,6 +1883,10 @@ process mmseqsDomainDb {
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     label 'high_cpu'
     storeDir "${params.outdir}/mmseqs_domain_db"
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(label), path(fasta)
@@ -1830,6 +1921,10 @@ process mmseqsPaddedDb {
     label 'high_cpu'
     storeDir "${DB_CACHE}/mmseqs_db_gpu"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(plain_db)
 
@@ -1855,6 +1950,10 @@ process mmseqs2Search {
     // bound, so a ternary on `gpu` in that position fails with "No such variable: gpu".
     // path() patterns interpolate per task and would be fine, but keeping both strings on
     // one side of the boundary means the CPU spelling is provably unchanged.
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), val(variant), val(num_iter), val(gpu), val(mode_variant),
           val(out_name), path(target_db), path(query_db)
@@ -1901,10 +2000,11 @@ process hhblitsSearch {
     tag "human_vs_${species}"
     container 'quay.io/biocontainers/hhsuite@sha256:4bf9bb5229de18f522a94f4443c19fdcbb0f0cb0e6ea92f5390aa170bcb0a24f'
     label 'high_cpu'
-    // A walltime kill arrives as SIGTERM, exit 143. Without this the default strategy is
-    // `terminate`, so the four large targets running past the wall would take the whole run
-    // down with them rather than being requeued with the longer limit the retry carries.
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'terminate' }
+    // A walltime kill usually arrives as SIGTERM, exit 143, and sometimes as no exit code
+    // at all; retryOnKill covers both. Without this the default strategy is `terminate`, so
+    // the four large targets running past the wall would take the whole run down with them
+    // rather than being requeued with the longer limit the retry carries.
+    errorStrategy { retryOnKill(task, 1) }
     maxRetries 1
     publishDir "${params.outdir}/regions/hhblits", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -2009,6 +2109,10 @@ process foldseekDb {
     label 'high_cpu'
     storeDir "${DB_CACHE}/foldseek_db"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(structures)
 
@@ -2053,6 +2157,10 @@ process foldseekPaddedDb {
     label 'high_cpu'
     storeDir "${DB_CACHE}/foldseek_db_gpu"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(plain_db)
 
@@ -2079,6 +2187,10 @@ process foldseekSearch {
 
     // mode_variant and out_name come from the workflow -- see the note in mmseqs2Search on
     // why an output val() cannot hold a ternary over an input.
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), val(gpu), val(mode_variant), val(out_name),
           path(target_db), path(query_db)
@@ -2143,6 +2255,10 @@ process reseekConvert {
     container 'quay.io/biocontainers/reseek@sha256:24f7c37150dd2c2f2f322b1387a08d2d1a4a279f46f98f1051f1745417675752'
     label 'high_cpu'
     storeDir "${DB_CACHE}/reseek_db"
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(species), path(structures)
@@ -2215,6 +2331,10 @@ process reseekSearch {
     label 'high_cpu'
     publishDir "${params.outdir}/regions/reseek", mode: 'copy', pattern: '*.tsv.gz'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(db), path(db_mu), path(human_bca)
 
@@ -2286,6 +2406,10 @@ process prostt5Weights {
     // re-fetched. Sharing comes from DB_CACHE, not from renaming the directory.
     storeDir "${DB_CACHE}/prostt5"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     output:
     path "weights"
 
@@ -2318,7 +2442,7 @@ process prostt5Db {
     cpus   { Math.max(1, (params.prostt5_cpus as int).intdiv(task.attempt)) }
     memory { MemoryUnit.of(params.prostt5_memory) * task.attempt }
     time   { params.prostt5_time }
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    errorStrategy { retryOnKill(task, 3) }
     maxRetries 3
     storeDir "${DB_CACHE}/prostt5_db"
 
@@ -2391,6 +2515,10 @@ process prostt5Search {
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*.tsv.gz'
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*_skipped.tsv'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(target_db), path(query_db)
 
@@ -2448,6 +2576,10 @@ process folddiscoIndex {
     container params.folddisco_image
     label 'high_cpu'
     storeDir "${DB_CACHE}/folddisco_index"
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(species), path(structures)
@@ -2555,6 +2687,10 @@ process folddiscoQuery {
     // ${params.structures}/${species} into the container, which is where the index recorded
     // its structures and where `folddisco query` reopens them from. Drop this input and
     // every query panics on "Failed to read CIF file" again.
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(index), path(target_structures), path(human_structures),
           val(chunk)
@@ -2676,6 +2812,10 @@ process folddiscoMerge {
     label 'python'
     publishDir "${params.outdir}/regions/folddisco", mode: 'copy', pattern: '*.tsv.gz'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(chunks)
 
@@ -2734,6 +2874,10 @@ process hmmscanAnnotate {
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmscan", mode: 'copy', pattern: '*.tsv.gz'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple path(human_fasta), path(pfam_hmm), path(pfam_hmm_aux)
 
@@ -2779,6 +2923,17 @@ process hhblitsBuildDB {
     // per-target database. The human entry is keyed by query-set digest (HUMAN_LABEL),
     // which is what makes sharing this directory safe -- see the note in the workflow.
     storeDir "${DB_CACHE}/hhblits_db"
+
+    // This process is the one that proved the point, on 2026-09-05: a storeDir database
+    // build with no error strategy of its own is a single point of failure for the entire
+    // run. zmays came back with an empty exit status -- "terminated by the external
+    // system" -- and took 582 running tasks down with it. See retryOnKill above.
+    //
+    // Retrying costs a full rebuild, because a killed task leaves nothing in the store.
+    // That is ~45 min for the largest proteome here against the ~14 h of queue and compute
+    // that the alternative threw away.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(label), path(fasta), val(is_query)
@@ -3011,6 +3166,10 @@ process scoreHmmscanCeiling {
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(tool), path(regions), path(truth), path(covariates)
 
@@ -3055,6 +3214,10 @@ process hpBpeBoundary {
     label 'python'
     publishDir "${params.outdir}/diagnostics", mode: 'copy'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple path(tokenizer), path(fasta), path(annotations)
 
@@ -3078,6 +3241,10 @@ process hpBpeBoundary {
 process aggregateMetrics {
     label 'python'
     publishDir params.outdir, mode: 'copy'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     path 'metrics/*'
