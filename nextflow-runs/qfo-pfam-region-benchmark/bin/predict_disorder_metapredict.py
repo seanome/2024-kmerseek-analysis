@@ -37,31 +37,45 @@ def accession_of(header: str) -> str:
     return parts[1] if len(parts) >= 2 and parts[1] else first
 
 
-# The 21st and 22nd amino acids, substituted by their standard analogues.
+# Pyrrolysine, the 22nd amino acid, substituted by its standard analogue.
 #
-# These are real residues, not sequencing damage. Pyrrolysine (O) is encoded by UAG in the
-# methylamine methyltransferases of the methanogenic archaea, and selenocysteine (U) by UGA
-# in selenoproteins across all three domains. Both appear in QfO reference proteomes:
-# macetivorans' MtmB1 (P58865) carries an O and is what first stopped this step, on the
-# 79-proteome run where the archaea enter the target set for the first time.
+# It is a real residue, not sequencing damage: encoded by UAG in the methylamine
+# methyltransferases of Methanosarcina. Across all 79 canonical QfO proteomes it occurs 7
+# times, in 7 proteins, in exactly one proteome -- macetivorans (UP000002487_188937), whose
+# MtmB1 (P58865) is what stopped this step on the run where the archaea first enter the
+# target set.
 #
-# metapredict's network is trained on the 20 standard residues and protfasta refuses
-# anything else. It already repairs what it calls fixable (B, Z, J, X and case), then
-# REVALIDATES and fails on whatever is left -- which is why passing a different
-# invalid_sequence_action does not help: O never reaches the network either way. So the
-# substitution has to happen before protfasta sees the file.
+# metapredict passes invalid_sequence_action='convert' to protfasta, which repairs some
+# symbols and then REVALIDATES, failing on what is left. Measured in the pinned container
+# (metapredict:2026-08-27) rather than assumed, one symbol at a time:
 #
-# O -> K and U -> C are the conventional mappings and the biologically defensible ones:
-# pyrrolysine is a lysine derivative, and selenocysteine is cysteine with selenium in place
-# of sulfur. Both keep the backbone and the rough polarity, which is all a per-residue
-# disorder predictor reads. This axis is a stratification covariate rather than a scored
-# quantity and the counts are single-digit per proteome, so the substitution cannot move a
-# metric -- but it is recorded in the summary rather than done silently.
-NONCANONICAL = {"O": "K", "U": "C"}
+#     B -> N     Z -> Q     X -> G     U -> C        repaired by protfasta
+#     J, O                                           rejected by protfasta
+#
+# So O is the only symbol that needs handling here, and it has to be handled before
+# protfasta sees the file -- changing invalid_sequence_action cannot help, because
+# 'convert' is already what metapredict passes and 'convert' is what rejects O.
+#
+# O -> K is the conventional mapping and the defensible one: pyrrolysine is a lysine
+# derivative, so the substitution keeps the backbone and the rough polarity, which is all a
+# per-residue disorder predictor reads. Disorder is a stratification covariate rather than a
+# scored quantity, and this is 7 residues in one proteome, so it cannot move a metric -- but
+# the count is recorded in the summary rather than applied silently.
+#
+# U is deliberately NOT here. protfasta already maps it to C, identically, so listing it
+# would claim credit for a substitution this script does not make and would write a cleaned
+# copy of the 21 selenoprotein-bearing proteomes -- human among them, at 36 U in 25
+# proteins -- for no change in the result.
+NONCANONICAL = {"O": "K"}
 
-# What protfasta repairs on its own. Left alone here so this script does not take over a
-# job the library already does, and so anything genuinely unexpected still errors.
-PROTFASTA_HANDLES = set("BZJX")
+# What protfasta repairs on its own, measured as above. Left to it so this script does not
+# take over a job the library already does, and so anything genuinely unexpected errors.
+#
+# J is NOT in this set, and that is the measurement rather than an oversight: protfasta
+# rejects it exactly as it rejects O. No QfO proteome contains one, so leaving J unmapped
+# means the guard below names it clearly if one ever appears, instead of this script waving
+# it through into the same opaque protfasta traceback it exists to prevent.
+PROTFASTA_HANDLES = set("BZXU")
 STANDARD_AA = set("ACDEFGHIKLMNPQRSTVWY")
 
 
@@ -81,7 +95,7 @@ def read_fasta(path: Path):
 
 
 def substitute_noncanonical(fasta: Path, out: Path) -> dict:
-    """Rewrite `fasta` with O/U replaced. Returns per-symbol counts, {} if nothing changed.
+    """Rewrite `fasta` with pyrrolysine replaced. Per-symbol counts, {} if nothing changed.
 
     Writes the output only when a substitution was actually needed, so the clean proteomes
     -- most of the 79 -- pay one extra read and no write. Headers are copied verbatim,
