@@ -2482,6 +2482,547 @@ def section_encoding_vs_divergence(out: Path, metrics: pl.DataFrame,
     """
     base = ungrouped(metrics.filter(pl.col("tool") == "kmerseek"))
     if base.height == 0 or "species" not in base.columns:
+# ---------------------------------------------------------------------------
+# Reduced-alphabet information ceiling
+# ---------------------------------------------------------------------------
+#
+# The thesis these three panels exist to measure, rather than assert: HP-alphabet
+# performance is a function of the TARGET FEATURE's length and type, not of the alphabet
+# alone.
+#
+# Rannon & Burstein (bioRxiv 2026.02.08.701987v2, doi 10.64898/2026.02.08.701987) trained
+# protein language models on reduced alphabets and found their 2-letter model worst on
+# signal peptides (ROC-AUC 0.75, PR-AUC 0.47) while nearly lossless on solubility (relative
+# F1 ~0.97) and strong on enzyme detection (~0.90). Signal peptides are ~20 residues;
+# solubility and enzyme class are whole-protein properties. Their BPE tokens are short and
+# our HP k floor is 18, so if that is one gradient rather than three unrelated task
+# results, their negative result is the low-k arm of this sweep measured independently by
+# another lab. These panels put both gradients in domain units so the comparison is a
+# measurement instead of an analogy.
+#
+# No expected ordering is encoded anywhere below. The numbers are emitted and fall where
+# they fall.
+CEILING_PARENT = {
+    "parent_id": "qfo_ceiling",
+    "parent_name": "Reduced-alphabet information ceiling",
+    "parent_description": (
+        "Whether a coarse alphabet works is a question about the feature being found, not "
+        "about the alphabet on its own. A 2-letter alphabet at k=19 spans 19 residues, so a "
+        "21-residue TRANSMEM helix admits three k-mers and a 400-residue kinase domain "
+        "admits 380. These panels cut the sweep on feature length and on feature type to "
+        "see whether that is where the reduced alphabets lose."
+    ),
+}
+
+# A cell is "containment-scored" once point features are the majority of its instances.
+# evaluate_domain_calls scores a point instance by whether the call covers the annotated
+# residue, because IoU against a 1-residue interval is arithmetically unsatisfiable -- so
+# those numbers answer a different question from the interval cells and must never share an
+# axis or a colour scale with them. On the mini run ACT_SITE comes out ABOVE DOMAIN, which
+# is a criterion difference and not a result, and putting the two in one heatmap row is how
+# that becomes a claim nobody meant to make.
+POINT_MAJORITY = 0.5
+
+
+def is_containment_scored(df: pl.DataFrame) -> pl.Expr:
+    """point_fraction past the majority mark, false when the column predates this."""
+    if "point_fraction" not in df.columns:
+        return pl.lit(False)
+    return pl.col("point_fraction").fill_null(0.0) > POINT_MAJORITY
+
+
+def _ratio_bin(col: pl.Expr) -> pl.Expr:
+    """Snap a feature_length/ksize ratio to a log2 grid, returning the bin's centre ratio.
+
+    Log2, not linear. The ratio spans roughly 0.03 (a one-residue point feature against
+    k=30) to 60 (titin's longest domain against k=18), and a linear grid would put every
+    short feature -- the whole left-hand end the claim is about -- into one column.
+    """
+    return (2.0 ** col.log(2).round(0)).round(4)
+
+
+def section_ceiling_length(out: Path, metrics: pl.DataFrame, primary_truth: str) -> None:
+    """best_f1 against feature_length / ksize, one line per HP alphabet.
+
+    The RATIO, not the raw length. Raw length would show every alphabet declining together
+    toward short features, which is true and uninformative -- every method finds short
+    things less reliably. The claim under test is specifically that a coarse alphabet needs
+    a long window, so the quantity is how many k-mers the feature can hold, and that is
+    feature_length / ksize. A ratio of 1 is a feature exactly one k-mer long.
+
+    Coverage rides along as a switchable second dataset rather than as a footnote. A
+    best_f1 computed over 12% of the calls in a cell is a different claim from the same
+    number over 90%, and the short-feature cells are exactly where coverage drops.
+    """
+    cut, split = pick_split(metrics.filter(
+        (pl.col("truth_set") == primary_truth)
+        & (pl.col("stratum_axis") == "feature_length_bin")
+        & (pl.col("tool") == "kmerseek")
+    ))
+    if cut.height == 0 or "median_feature_length" not in cut.columns:
+        return
+    # The point-feature bin is dropped from the ratio curve, not plotted at ratio ~0.05.
+    # It is scored by containment while every other bin is scored by placement, so it is
+    # not the left-hand end of this curve -- it is a different measurement that happens to
+    # sit at a small feature length. The feature-type panels report it on its own scale.
+    parsed = parse_kmerseek_variants(cut).filter(
+        pl.col("alphabet").str.starts_with("hp_")
+        & pl.col("median_feature_length").is_not_null()
+        & (pl.col("median_feature_length") > 0)
+        & ~is_containment_scored(cut)
+    )
+    if parsed.height == 0:
+        return
+
+    parsed = parsed.with_columns(
+        _ratio_bin(pl.col("median_feature_length") / pl.col("ksize")).alias("ratio")
+    )
+    alphas = sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes)
+
+    datasets, labels = [], []
+    for metric, ylab in (("best_f1", "best F1"), ("coverage", "coverage")):
+        if metric not in parsed.columns:
+            continue
+        data = {}
+        for alpha in alphas:
+            sub = parsed.filter(pl.col("alphabet") == alpha)
+            # Averaged over ksize, low-complexity arm and target species within a ratio
+            # bin, because the ratio is the axis: two combos landing on the same ratio by
+            # different routes are two measurements of the same quantity.
+            by_ratio = (sub.group_by("ratio").agg(pl.col(metric).mean())
+                           .sort("ratio").to_dicts())
+            series = {str(r["ratio"]): r[metric] for r in by_ratio if r[metric] is not None}
+            if series:
+                data[alpha] = series
+        if data:
+            datasets.append(data)
+            labels.append({"name": ylab, "ylab": ylab})
+    if not datasets:
+        return
+
+    n_cells = parsed.height
+    cov = parsed["coverage"].median() if "coverage" in parsed.columns else None
+    cov_note = f", median coverage {cov:.2f}" if cov is not None else ""
+    write_section(out, "qfo_ceiling_length", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_length",
+        "section_name": "Feature length against k",
+        "description": (
+            f"Best achievable F1 by how many k-mers the annotated feature can hold: the "
+            f"median feature length in the cell divided by the variant's k, one line per "
+            f"HP alphabet. {primary_truth} truth, <code>{split}</code> split, "
+            f"{n_cells} scored cells{cov_note}. "
+            "x is on a log2 grid and 1.0 is a feature exactly one k-mer long. Use the "
+            "buttons to switch between best F1 and the coverage each number was computed "
+            "over. Truth sets are never pooled: this panel is one truth set only, and the "
+            "feature-type panel below is Swiss-Prot only because Pfam carries no type "
+            "variation to cut on. The point-feature bin is <b>not</b> the left-hand end of "
+            "this curve and is not drawn on it: point instances are scored by containment "
+            "rather than placement, so they answer a different question and belong on their "
+            "own scale."),
+        "plot_type": "linegraph",
+        "pconfig": {"id": "qfo_ceiling_length_plot",
+                    "title": "best F1 by feature length / k",
+                    "xlab": "feature length / k (log2 grid)", "ylab": "best F1",
+                    "xlog": True, "ymin": 0, "ymax": 1, "height": 500,
+                    "data_labels": labels},
+        "data": datasets if len(datasets) > 1 else datasets[0],
+    })
+
+
+def section_ceiling_length_by_k(out: Path, metrics: pl.DataFrame,
+                               primary_truth: str) -> None:
+    """The same axis, one line per ksize instead of averaged over them.
+
+    This is the panel that decides what the averaged one means, and it has to exist beside
+    it rather than instead of it.
+
+    If the curves for every k COLLAPSE onto each other against feature_length / ksize, then
+    the ratio is the sufficient statistic: k trades against feature length one for one, and
+    there is no k-floor to read here -- only a statement about how many k-mers a feature has
+    to hold. If they SEPARATE, there is an absolute-k effect on top of the ratio, and the k
+    at which the curves stop improving is a k-floor measured on annotated domains rather
+    than derived from keyspace arithmetic. Those are different claims and the averaged
+    panel cannot tell them apart, because averaging over k inside a ratio bin is precisely
+    the operation that hides the separation.
+
+    One dataset per alphabet behind a switcher, for the same reason the low-complexity
+    section uses one: 7 HP alphabets x 12 ksizes is 84 lines in a single plot.
+    """
+    cut, split = pick_split(metrics.filter(
+        (pl.col("truth_set") == primary_truth)
+        & (pl.col("stratum_axis") == "feature_length_bin")
+        & (pl.col("tool") == "kmerseek")
+    ))
+    if cut.height == 0 or "median_feature_length" not in cut.columns:
+        return
+    parsed = parse_kmerseek_variants(cut).filter(
+        pl.col("alphabet").str.starts_with("hp_")
+        & pl.col("median_feature_length").is_not_null()
+        & (pl.col("median_feature_length") > 0)
+        # Same exclusion as the averaged panel, for the same reason.
+        & ~is_containment_scored(cut)
+    )
+    if parsed.height == 0:
+        return
+    parsed = parsed.with_columns(
+        _ratio_bin(pl.col("median_feature_length") / pl.col("ksize")).alias("ratio")
+    )
+
+    datasets, labels = [], []
+    for alpha in sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes):
+        sub = parsed.filter(pl.col("alphabet") == alpha)
+        data = {}
+        for k in sorted(sub["ksize"].unique().to_list()):
+            by_ratio = (sub.filter(pl.col("ksize") == k)
+                           .group_by("ratio").agg(pl.col("best_f1").mean())
+                           .sort("ratio").to_dicts())
+            series = {str(r["ratio"]): r["best_f1"] for r in by_ratio
+                      if r["best_f1"] is not None}
+            # A single point cannot show a plateau or a collapse, and a legend entry for it
+            # costs more than it carries.
+            if len(series) > 1:
+                data[f"k={k}"] = series
+        if data:
+            datasets.append(data)
+            labels.append({"name": alpha, "ylab": "best F1"})
+    if not datasets:
+        return
+
+    write_section(out, "qfo_ceiling_length_by_k", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_length_by_k",
+        "section_name": "Feature length against k, per k",
+        "description": (
+            f"The panel above, split by k instead of averaged over it "
+            f"({primary_truth} truth, <code>{split}</code> split; buttons switch alphabet). "
+            "Read it for one thing: do the lines lie on top of each other or not? If they "
+            "collapse, feature_length / k is the whole story and k trades against feature "
+            "length one for one. If they separate, there is an absolute-k effect on top of "
+            "the ratio, and the k at which the curves stop improving is a k floor measured "
+            "on annotated domains rather than derived from keyspace arithmetic. The "
+            "averaged panel cannot distinguish those, because averaging over k inside a "
+            "ratio bin is exactly what hides the separation."),
+        "plot_type": "linegraph",
+        "pconfig": {"id": "qfo_ceiling_length_by_k_plot",
+                    "title": "best F1 by feature length / k, per k",
+                    "xlab": "feature length / k (log2 grid)", "ylab": "best F1",
+                    "xlog": True, "ymin": 0, "ymax": 1, "height": 500,
+                    "data_labels": labels},
+        "data": datasets if len(datasets) > 1 else datasets[0],
+    })
+
+
+def section_ceiling_feature_type(out: Path, metrics: pl.DataFrame) -> None:
+    """Alphabet x Swiss-Prot feature type, and the coverage the same grid was scored over.
+
+    Swiss-Prot only, and not because it is the default primary truth set: `pfam_id` holds
+    the FT type there, while for Pfam and Pfam-N it holds a family accession with no type
+    variation to cut on and for M-CSA an entry id. evaluate_domain_calls leaves the axis
+    null on those sets, so there is nothing to plot even when one of them is primary.
+
+    Rows are ordered by class count, coarsest at the top, so any narrowing of the gap
+    between long structural features and short functional ones as the alphabet grows reads
+    down the figure.
+    """
+    sp = metrics.filter(
+        (pl.col("truth_set") == "swissprot")
+        & (pl.col("stratum_axis") == "feature_type")
+        & (pl.col("tool") == "kmerseek")
+    )
+    if sp.height == 0:
+        return
+    cut, split = pick_split(sp)
+    parsed = parse_kmerseek_variants(cut)
+    if parsed.height == 0:
+        return
+
+    # Types ordered by median feature length, shortest first, so the x axis is itself the
+    # length gradient rather than an alphabetical list. Ties and missing lengths sort last.
+    if "median_feature_length" in parsed.columns:
+        lengths = (parsed.group_by("stratum")
+                         .agg(pl.col("median_feature_length").median().alias("len"))
+                         .sort("len", nulls_last=True))
+        types = lengths["stratum"].to_list()
+    else:
+        types = sorted(parsed["stratum"].unique().to_list())
+    alphas = sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes)
+
+    # Split the columns by scoring criterion before anything is drawn. ACT_SITE and BINDING
+    # are scored by containment and DOMAIN by placement; on the mini run that puts ACT_SITE
+    # above DOMAIN, which is a criterion difference and not a result. Sliding an eye across
+    # one colour scale from one to the other is exactly the misreading this benchmark's
+    # "truth sets are never pooled" rule exists to prevent, so the two go in separate
+    # figures rather than in one with a footnote.
+    point_types = set(
+        parsed.filter(is_containment_scored(parsed))["stratum"].unique().to_list()
+    )
+    groups = [
+        ("", "placement (IoU)", [t for t in types if t not in point_types]),
+        ("_point", "containment", [t for t in types if t in point_types]),
+    ]
+
+    for group_suffix, criterion, group_types in groups:
+        if not group_types:
+            continue
+        # Coverage only for the placement grid: the containment grid is small, and a second
+        # figure per criterion is more navigation than the point rows can repay.
+        metrics_here = ((("best_f1", "best F1"), ("coverage", "coverage"))
+                        if group_suffix == "" else (("best_f1", "best F1"),))
+        _feature_type_heatmaps(out, parsed, alphas, group_types, group_suffix,
+                               criterion, metrics_here, split)
+
+
+def _feature_type_heatmaps(out, parsed, alphas, types, group_suffix, criterion,
+                           metrics_here, split) -> None:
+    """One heatmap per metric, for a single scoring criterion's columns.
+
+    `criterion` is not decoration. Placement columns and containment columns are separate
+    figures precisely so that nothing invites reading across them, and the only thing left
+    to stop a reader assuming otherwise is the figure saying which one it is.
+    """
+    sub = parsed.filter(pl.col("stratum").is_in(types))
+    n_by_type = (
+        sub.group_by("stratum").agg(pl.col("n_truth_instances").max().alias("n")).to_dicts()
+        if "n_truth_instances" in sub.columns else []
+    )
+    counts = ", ".join(f"{r['stratum']} n={r['n']}"
+                       for r in sorted(n_by_type, key=lambda r: -(r["n"] or 0)))
+    scored_by = (
+        "Scored by <b>containment</b>: a point feature asserts a residue, and the question "
+        "is whether the call covered it. IoU against a 1-residue interval is 1/call_length "
+        "and therefore unsatisfiable at any sane cutoff, which is why these columns are a "
+        "separate figure rather than the left-hand end of the placement grid. <b>Do not "
+        "compare these numbers with the placement heatmap</b> -- containment is the easier "
+        "criterion, and a higher number here is not a better result there."
+        if group_suffix else
+        "Scored by <b>placement</b>: the call has to coincide with the annotated interval, "
+        "not merely overlap it. Point features are in their own figure below, on the "
+        "containment criterion."
+    )
+
+    # Both metrics are on 0..1, so within one criterion the two heatmaps share a colour
+    # scale and can be read against each other rather than each against its own range.
+    for metric, title in metrics_here:
+        if metric not in sub.columns:
+            continue
+        grid = sub.group_by("alphabet", "stratum").agg(pl.col(metric).mean())
+        lookup = {(r["alphabet"], r["stratum"]): r[metric] for r in grid.to_dicts()}
+        rows = [[lookup.get((a, t)) for t in types] for a in alphas]
+        if not any(v is not None for row in rows for v in row):
+            continue
+        suffix = group_suffix + ("" if metric == "best_f1" else "_coverage")
+        if metric == "best_f1":
+            body = (
+                f"{title} per alphabet and Swiss-Prot feature type, "
+                f"<code>{split}</code> split. {scored_by} Rows run coarsest alphabet at the "
+                f"top to finest at the bottom; columns run shortest median feature on the "
+                f"left to longest on the right. The MIN_STRATUM_PROTEINS floor is waived on "
+                f"this axis -- ACT_SITE and DNA_BIND are small in every proteome, and "
+                f"dropping them would delete the short-feature end of the gradient. "
+                f"Instances per type: {counts}."
+            )
+        else:
+            body = (
+                "Share of calls that could be judged at all, on the same grid as the "
+                "best-F1 heatmap above. A high F1 over a low coverage is a different claim "
+                "from the same F1 over a high one."
+            )
+        write_section(out, f"qfo_ceiling_feature_type{suffix}", {
+            **CEILING_PARENT,
+            "id": f"qfo_ceiling_feature_type{suffix}",
+            "section_name": f"Feature type ({criterion}) — {title}",
+            "description": body,
+            "plot_type": "heatmap",
+            "pconfig": {"id": f"qfo_ceiling_feature_type{suffix}_plot",
+                        "title": f"{title} by alphabet and feature type ({criterion})",
+                        "xlab": "feature type", "ylab": "alphabet",
+                        "min": 0, "max": 1, "square": False, "height": 520},
+            "xcats": types,
+            "ycats": alphas,
+            "data": rows,
+        })
+
+
+def section_ceiling_recognition(out: Path, metrics: pl.DataFrame,
+                                primary_truth: str) -> None:
+    """Recognition against delineation per alphabet: family Fmax, Fmax, and the gap.
+
+    `fmax` gates on interval placement, so it scores "never recognised this family" and
+    "recognised it, drew the boundary wrong" identically at zero. `family_fmax` ignores
+    placement entirely. The difference between them is therefore what boundary placement
+    costs a given alphabet, and it is the quantity this parent exists to measure: an
+    alphabet that recognises families as well as protein20 but cannot delineate them has a
+    large gap, while one that has genuinely lost the family signal has a small gap and a
+    low family Fmax. Those are different failures and one number cannot tell them apart.
+
+    Every alphabet is drawn, not just the HP ones. protein20 is the reference the gap is
+    read against; dropping it would leave the HP numbers with nothing to be large or small
+    compared to.
+    """
+    cut, split = pick_split(ungrouped(metrics.filter(
+        (pl.col("truth_set") == primary_truth) & (pl.col("tool") == "kmerseek"))))
+    if cut.height == 0 or "family_fmax" not in cut.columns:
+        return
+    parsed = parse_kmerseek_variants(cut).with_columns(
+        (pl.col("family_fmax") - pl.col("fmax")).alias("family_gap")
+    )
+    if parsed.height == 0:
+        return
+    alphas = sorted(parsed["alphabet"].unique().to_list(), key=alphabet_classes)
+
+    # Averaged over ksize, low-complexity arm and target species. Each alphabet's row in
+    # the heatmap below keeps the ksize axis, so the averaging here is not the only view.
+    per_alpha = parsed.group_by("alphabet").agg(
+        pl.col("fmax").mean(), pl.col("family_fmax").mean(), pl.col("family_gap").mean(),
+        pl.col("coverage").mean() if "coverage" in parsed.columns else pl.lit(None).alias("coverage"),
+        pl.col("n_family_truth").median().alias("n_family_truth"),
+        pl.col("n_family_calls").median().alias("n_family_calls"),
+        pl.len().alias("n_cells"),
+    )
+    lookup = {r["alphabet"]: r for r in per_alpha.to_dicts()}
+
+    levels = {name: lookup[name] for name in alphas if name in lookup}
+    if not levels:
+        return
+    datasets = [
+        {a: {"fmax": r["fmax"], "family_fmax": r["family_fmax"]} for a, r in levels.items()},
+        {a: {"family_gap": r["family_gap"]} for a, r in levels.items()},
+        {a: {"coverage": r["coverage"]} for a, r in levels.items()},
+    ]
+    categories = [
+        {"fmax": {"name": "Fmax (family named AND placed)", "color": "#0f9d76"},
+         "family_fmax": {"name": "family Fmax (named only)", "color": "#c9528f"}},
+        {"family_gap": {"name": "family Fmax - Fmax", "color": "#c99a00"}},
+        {"coverage": {"name": "share of calls that could be judged", "color": "#7f7f7f"}},
+    ]
+    labels = [{"name": "Fmax vs family Fmax", "ylab": "Fmax"},
+              {"name": "gap", "ylab": "family Fmax - Fmax"},
+              {"name": "coverage", "ylab": "coverage"}]
+
+    n_cells = parsed.height
+    med_truth = int(parsed["n_family_truth"].median())
+    med_calls = int(parsed["n_family_calls"].median())
+    write_section(out, "qfo_ceiling_recognition", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_recognition",
+        "section_name": "Recognition against delineation",
+        "description": (
+            f"For each alphabet, the interval-aware <b>Fmax</b> beside the "
+            f"<b>family Fmax</b> that ignores where the call landed, averaged over ksize, "
+            f"low-complexity arm and target species ({primary_truth} truth, "
+            f"<code>{split}</code> split, {n_cells} scored cells; median "
+            f"{med_truth} distinct (protein, family) pairs in the answer key per cell and "
+            f"{med_calls} predicted). Fmax scores a tool that names the right family in the "
+            "wrong place at zero, identically to one that never recognised the family; "
+            "family Fmax scores only the naming. The distance between the two bars is "
+            "therefore what boundary placement costs that alphabet, and the second dataset "
+            "plots it directly. A coarse alphabet that has lost the family signal shows a "
+            "low family Fmax; one that recognises families but cannot delineate them shows "
+            "a high family Fmax and a wide gap. The third dataset is the share of calls "
+            "that could be judged at all, on the same bars, because neither Fmax means the "
+            "same thing over 12% of calls as over 90%. Truth sets are never pooled: this is "
+            "one truth set only."),
+        "plot_type": "bargraph",
+        "pconfig": {"id": "qfo_ceiling_recognition_plot",
+                    "title": "Fmax and family Fmax by alphabet",
+                    "ylab": "Fmax", "cpswitch": False, "stacking": "group",
+                    "height": 500, "data_labels": labels},
+        "categories": categories,
+        "data": datasets,
+    })
+
+    # The same gap with the ksize axis kept. Averaging over k is what hides whether a wide
+    # gap is a property of the alphabet or of the window length it was run at.
+    grid = parsed.group_by("alphabet", "ksize").agg(pl.col("family_gap").mean()).sort("ksize")
+    ks = sorted(grid["ksize"].unique().to_list())
+    cells = {(r["alphabet"], r["ksize"]): r["family_gap"] for r in grid.to_dicts()}
+    rows = [[cells.get((a, k)) for k in ks] for a in alphas]
+    if not any(v is not None for row in rows for v in row):
+        return
+    span = max(abs(v) for row in rows for v in row if v is not None)
+    write_section(out, "qfo_ceiling_recognition_k", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_recognition_k",
+        "section_name": "Recognition against delineation, by k",
+        "description": (
+            f"family Fmax minus Fmax for every alphabet and k-mer size ({primary_truth} "
+            f"truth, <code>{split}</code> split, averaged over the low-complexity arm and "
+            f"target species). Larger means more of what the alphabet recognised was thrown "
+            "away by landing in the wrong place. Blank cells are combos outside that "
+            "alphabet's k range. The scale is symmetric around zero because the gap is not "
+            "guaranteed positive: the family reading also swaps the recall denominator from "
+            "domain instances to families, so a cut dominated by a tandem array of one "
+            "family can lose more from that swap than it gains from ignoring placement."),
+        "plot_type": "heatmap",
+        "pconfig": {"id": "qfo_ceiling_recognition_k_plot",
+                    "title": "family Fmax - Fmax by alphabet and ksize",
+                    "xlab": "k", "ylab": "alphabet",
+                    "min": -span, "max": span, "square": False, "height": 500},
+        "xcats": [str(k) for k in ks],
+        "ycats": alphas,
+        "data": rows,
+    })
+
+
+def section_ceiling_bpe(out: Path, bpe: dict | None) -> None:
+    """ProtBERTa_2's learned token boundaries against Pfam domain boundaries.
+
+    Written from bin/hp_bpe_boundary_diagnostic.py's JSON, which is a standalone
+    measurement rather than anything this pipeline searched -- which is why the panel is
+    absent rather than empty when the diagnostic has not been run.
+    """
+    if not bpe or not bpe.get("alphabets"):
+        return
+    rows = bpe["alphabets"]
+    order = sorted(rows, key=lambda k: rows[k].get("enrichment") or 0.0, reverse=True)
+    data = {}
+    for name in order:
+        r = rows[name]
+        if r.get("enrichment") is None:
+            continue
+        label = name + (" (= ProtBERTa_2)" if r.get("identical_to_protberta_2")
+                                              and name != "protberta_2" else "")
+        data[label] = {"enrichment": r["enrichment"]}
+    if not data:
+        return
+    ctrl = rows.get("hp_random_control2", {}).get("enrichment")
+    control_note = (
+        f" The random 10/10 control sits at {ctrl:.2f}x: a bar that is not clearly above "
+        "it is measuring the autocorrelation of any two-letter string, not hydrophobicity."
+        if ctrl else "")
+    write_section(out, "qfo_ceiling_bpe", {
+        **CEILING_PARENT,
+        "id": "qfo_ceiling_bpe",
+        "section_name": "BPE token boundaries vs domain boundaries",
+        "description": (
+            f"How often a ProtBERTa_2 BPE token boundary falls exactly on a Pfam domain "
+            f"boundary, divided by the same rate on length- and composition-matched "
+            f"shuffled sequences. 1.0 is the null. Measured on "
+            f"{bpe.get('n_proteins', '?')} human proteins carrying "
+            f"{bpe.get('n_domain_instances', '?')} domain instances, with the tokenizer "
+            f"released at doi <code>{bpe.get('tokenizer_doi', '')}</code> applied to each "
+            f"alphabet's own h/p encoding.{control_note} "
+            "This is segmentation agreement, not end-to-end performance: a tokenizer whose "
+            "boundaries never coincide with domain boundaries can still support a model "
+            "that finds domains, and one whose boundaries agree perfectly can still be "
+            "beaten by a k-mer method."),
+        "plot_type": "bargraph",
+        "pconfig": {"id": "qfo_ceiling_bpe_plot",
+                    "title": "Domain-boundary enrichment at BPE token boundaries",
+                    "ylab": "observed / shuffled-null hit rate", "cpswitch": False,
+                    "height": 420},
+        "categories": {"enrichment": {"name": "enrichment over shuffled null",
+                                      "color": "#4c72b0"}},
+        "data": data,
+    })
+
+
+def section_boundary(out: Path, metrics: pl.DataFrame, primary_truth: str,
+                     max_tools: int) -> None:
+    """Right family in the wrong place is the failure mode this benchmark exists to catch."""
+    cut, split = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    if cut.height == 0:
         return
     if "species_mya" not in base.columns:
         return
@@ -4700,34 +5241,30 @@ def section_cafa(out: Path, metrics: pl.DataFrame, primary_truth: str,
         "id": "qfo_cafa",
         "section_name": "CAFA-style metrics",
         "description": (
-            f"<p>{primary_truth} truth, <code>{split}</code> split, averaged over target "
-            f"species.</p>"
-            + bullets(
-                "<b>Fmax</b> is the maximum F-score over score thresholds. The precision "
-                "and recall columns are the operating point where it is reached.",
-                "<b>Family Fmax</b> is the same curve read on the SET of Pfam families "
-                "called per query protein against the set truly present, with interval "
-                "placement ignored: the CAFA-classic reading. Fmax scores a tool that "
-                "names the right family in the wrong place at zero, exactly as it scores a "
-                "tool that never recognised the family, and the pair separates those.",
-                "<b>Gap</b> is family Fmax minus Fmax, so it is what boundary placement "
-                "costs. It is almost always positive but is not guaranteed to be: the "
-                "family reading also swaps the recall denominator from instances to "
-                "families, and on a protein carrying a tandem array of one family that "
-                "swap can cost more than ignoring placement gains.",
-                "<b>The three family counts</b> are the denominators: distinct "
-                "(protein, family) pairs in the answer key, predicted, and correct.",
-                "<b>wFmax</b> weights each family by its information content, "
-                "IC = -log<sub>2</sub> P(family), so recovering a rare family counts for "
-                "more than recovering a common one.",
-                "<b>Smin</b> is the minimum of sqrt(remaining uncertainty<sup>2</sup> + "
-                "misinformation<sup>2</sup>) in bits, and lower is better.",
-                "<b><code>smin_ru</code></b> is information still missing (false "
-                "negatives) and <b><code>smin_mi</code></b> is information invented (false "
-                "positives) at that threshold, so the two say which way a tool is failing.",
-                "<b>The weighting here is not CAFA's information accretion</b>, which is "
-                "defined over an ontology's parent-child structure. Pfam is flat, so plain "
-                "IC is used and the metric is reported under that narrower definition.")),
+            f"{primary_truth} truth, <code>{split}</code> split, averaged over target "
+            "species. <b>Fmax</b> is the maximum F-score over score thresholds; the "
+            "precision and recall columns are the operating point where it is reached. "
+            "<b>Family Fmax</b> is the same curve read on the SET of Pfam families called "
+            "per query protein against the set truly present, with interval placement "
+            "ignored — the CAFA-classic reading. Fmax scores a tool that names the right "
+            "family in the wrong place at zero, exactly as it scores a tool that never "
+            "recognised the family; the pair separates those. <b>Gap</b> is "
+            "family Fmax minus Fmax, so it is what boundary placement costs. It is almost "
+            "always positive but is not guaranteed to be: the family reading also swaps the "
+            "recall denominator from instances to families, and on a protein carrying a "
+            "tandem array of one family that swap can cost more than ignoring placement "
+            "gains. The three family counts are the denominators — distinct "
+            "(protein, family) pairs in the answer key, predicted, and correct.<br>"
+            "<b>wFmax</b> weights each family by its information content, "
+            "IC = -log<sub>2</sub> P(family), so recovering a rare family counts for more "
+            "than recovering a common one. <b>Smin</b> is the minimum of "
+            "sqrt(remaining uncertainty<sup>2</sup> + misinformation<sup>2</sup>) in bits, "
+            "and lower is better; <code>smin_ru</code> is information still missing (false "
+            "negatives) and <code>smin_mi</code> is information invented (false positives) "
+            "at that threshold, so the two say which way a tool is failing.<br>"
+            "The weighting here is <b>not</b> CAFA's information accretion, which is "
+            "defined over an ontology's parent-child structure. Pfam is flat, so plain IC "
+            "is used and the metric is reported under that narrower definition."),
         "plot_type": "table",
         "pconfig": {"id": "qfo_cafa_table", "title": f"CAFA-style metrics ({primary_truth})",
                     "col1_header": "Tool", "sort_rows": False, "scale": False},
