@@ -46,7 +46,33 @@ QFO_DIR       ?= $(HOME)/data/quest-for-orthologs/QfO_release_2020_04_with_updat
 BOTRYLLUS_FASTA ?= $(QFO_DIR)/Eukaryota/BOTSCH2026_30301.fasta
 CGIGAS_FASTA    ?= $(SCRATCH_DIR)/proteomes/UP000005408_29159.fasta
 
-PYTHON        ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+# Mac-side python is pinned to the conda env; on Sherlock that path does not exist, so this
+# falls back to whatever python3 the loaded modules supply. It needs polars -- `make
+# check-python` verifies that rather than letting a task die 20 minutes in.
+MAC_PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+ifneq ($(wildcard $(MAC_PYTHON)),)
+PYTHON ?= $(MAC_PYTHON)
+else
+PYTHON ?= python3
+endif
+
+# ---- Sherlock ------------------------------------------------------------------------
+# Code reaches Sherlock through git, never rsync. The clone is per-branch and lives on
+# $SCRATCH, matching the qfo-pfam-region-benchmark convention, so two branches cannot
+# publish into one another's outputs.
+SHERLOCK_HOST ?= sherlock
+REPO_URL      ?= https://github.com/seanome/2024-kmerseek-analysis/
+BRANCH        ?= $(shell git rev-parse --abbrev-ref HEAD)
+SSH_MUX       := ssh -o ControlMaster=auto -o ControlPath=$$HOME/.ssh/cm-%r@%h:%p -o ControlPersist=30m
+SHERLOCK_CLONE     ?= $$SCRATCH/2024-kmerseek-$(notdir $(BRANCH))
+SHERLOCK_CLONE_DIR := $(SHERLOCK_CLONE)/nextflow-runs/proteome-interproscan
+
+# Modules to load before any run target on Sherlock. InterProScan and UniFIRE both need a
+# JVM; apptainer is usually present without a module. Unverified against the live module
+# tree -- override if `ml load java` is not the right name there.
+MODULES ?= java
+# Expands to nothing on a machine with no Lmod, so the same recipe runs on the laptop.
+LOAD_MODULES := if command -v ml >/dev/null 2>&1; then ml load $(MODULES); fi;
 
 # Proteins per SLURM array task. 45_339 botryllus proteins at ~2000/chunk is 23 tasks;
 # InterProScan runs ~1-2 s/protein/core, so a chunk is roughly an hour on 16 cores.
@@ -75,7 +101,34 @@ else
   TAXID :=
 endif
 
-.PHONY: help download-interproscan stage-cgigas check-species chunks \
+# ---- getting the code and running it on Sherlock --------------------------------------
+sherlock-clone:
+	git push origin $(BRANCH)
+	$(SSH_MUX) $(SHERLOCK_HOST) '\
+	  set -e; \
+	  if [ ! -d $(SHERLOCK_CLONE)/.git ]; then \
+	    git clone --branch $(BRANCH) $(REPO_URL) $(SHERLOCK_CLONE); \
+	  else \
+	    cd $(SHERLOCK_CLONE) && git fetch origin $(BRANCH) \
+	      && git checkout $(BRANCH) && git pull --ff-only; \
+	  fi; \
+	  echo "ready: $(SHERLOCK_CLONE_DIR)"'
+	@echo
+	@echo "now, on Sherlock:"
+	@echo "  ssh $(SHERLOCK_HOST)"
+	@echo "  cd $(SHERLOCK_CLONE_DIR)"
+
+sync:
+	git push origin $(BRANCH)
+	$(SSH_MUX) $(SHERLOCK_HOST) 'cd $(SHERLOCK_CLONE_DIR) && git pull --ff-only'
+
+check-python:
+	@$(PYTHON) -c 'import polars, sys; print("python OK:", sys.executable, "polars", polars.__version__)' \
+	  || { echo; echo "PYTHON=$(PYTHON) cannot import polars."; \
+	       echo "On Sherlock load or point at an env that has it:"; \
+	       echo "  make $(MAKECMDGOALS) PYTHON=/path/to/python3"; exit 1; }
+
+.PHONY: sherlock-clone sync check-python help download-interproscan stage-cgigas check-species chunks \
         run-interproscan run-interproscan-mini merge queue-empty clean-chunks
 
 help:
@@ -117,8 +170,9 @@ download-interproscan:
 	  md5sum -c $(IPS_TARBALL).md5 && \
 	  tar -pxzf $(IPS_TARBALL)
 	@echo "==> building the member-database indexes (one-off, needs java)"
-	cd $(IPS_DIR) && $(PYTHON) setup.py -f interproscan.properties || \
-	  python3 setup.py -f interproscan.properties
+	cd $(IPS_DIR) && $(LOAD_MODULES) \
+	  ( $(PYTHON) setup.py -f interproscan.properties || \
+	    python3 setup.py -f interproscan.properties )
 	@echo "installed: $(IPS_SH)"
 
 stage-cgigas:
@@ -158,7 +212,7 @@ run-interproscan-mini: check-species
 	$(PYTHON) bin/split_fasta.py --in $(FASTA) \
 	  --outdir $(CHUNK_DIR)/$(SPECIES)-mini --chunk-size $(MINI_N) --max-chunks 1
 	@echo "==> $(MINI_N) proteins, in the foreground"
-	$(call IPS_CMD,$(CHUNK_DIR)/$(SPECIES)-mini/chunk_0000.fasta,$(OUTDIR)/$(SPECIES)-mini/$(SPECIES)-mini,$(OUTDIR)/$(SPECIES)-mini/tmp)
+	$(LOAD_MODULES) $(call IPS_CMD,$(CHUNK_DIR)/$(SPECIES)-mini/chunk_0000.fasta,$(OUTDIR)/$(SPECIES)-mini/$(SPECIES)-mini,$(OUTDIR)/$(SPECIES)-mini/tmp)
 	@echo "wrote $(OUTDIR)/$(SPECIES)-mini/"
 
 run-interproscan: check-species queue-empty chunks
@@ -169,7 +223,7 @@ run-interproscan: check-species queue-empty chunks
 	 sbatch --wait --array=0-$$((n-1)) --job-name=ips-$(SPECIES) \
 	   --cpus-per-task=$(CPUS) --mem=$(MEM) --time=$(TIME) --partition=$(PARTITION) \
 	   --output=$(OUTDIR)/$(SPECIES)/logs/%A_%a.out \
-	   --wrap='c=$$(printf "%04d" $$SLURM_ARRAY_TASK_ID); \
+	   --wrap='$(LOAD_MODULES) c=$$(printf "%04d" $$SLURM_ARRAY_TASK_ID); \
 	     $(IPS_SH) -i $(CHUNK_DIR)/$(SPECIES)/chunk_$$c.fasta \
 	       -f XML,TSV -o $(OUTDIR)/$(SPECIES)/chunk_$$c \
 	       -T $(OUTDIR)/$(SPECIES)/tmp_$$c -cpu $(CPUS) -dp -goterms -pa $(APPL_ARG)'
