@@ -7233,6 +7233,44 @@ def section_divergence_annotated(out: Path, metrics: pl.DataFrame, trace: pl.Dat
     })
 
 
+# Marks an arm on the identity pair that the PRIMARY truth set selected, on a panel that
+# had to be drawn on a different truth set. Same idea as CANONICAL_MARK: the legend says
+# where the arm came from, so the reader is not silently handed a different selection.
+PRIMARY_PICK_MARK = " †"
+
+
+def _primary_selected_arms(metrics: pl.DataFrame, primary_truth: str, ts: str,
+                           max_tools: int,
+                           already: set[tuple[str, str]]) -> list[tuple[str, str, str]]:
+    """The arms the PRIMARY truth set picked, for a panel that had to fall back to `ts`.
+
+    When the identity axis falls back to Pfam, best_variants runs over Pfam rows and the
+    panel draws whatever Pfam liked. Those are not the arms the rest of the report is
+    about. Every leaderboard, the frontier and the alphabet sweep select on the primary
+    truth set, and the two selections barely overlap: Pfam picks near-exact matchers -- 38
+    to 48 bits per k-mer on this report's own bits-budget panel -- while the primary set
+    picks arms down at 23 to 34 bits. A panel drawn on the Pfam picks alone answers whether
+    high-bit kmerseek is an exact matcher, which nobody disputes, rather than the question
+    it is captioned with.
+
+    So the primary picks are carried onto the panel and drawn from the fallback truth set's
+    own rows. Every arm was scored against every truth set, so those rows exist; what does
+    not exist is a primary-truth identity axis to draw them on, which is the whole reason
+    for the fallback. Arms with no rows under `ts` are dropped rather than drawn as a gap.
+    """
+    cut, _ = pick_split(metrics.filter(pl.col("truth_set") == primary_truth))
+    per_species = ungrouped(cut).filter(pl.col("species") != "all")
+    if per_species.height == 0:
+        return []
+    have = {(r["tool"], r["variant"]) for r in
+            metrics.filter(pl.col("truth_set") == ts)
+            .select("tool", "variant").unique().to_dicts()}
+    return [(r["tool"], r["variant"], r["label"] + PRIMARY_PICK_MARK)
+            for r in best_variants(per_species).head(max_tools).to_dicts()
+            if (r["tool"], r["variant"]) not in already
+            and (r["tool"], r["variant"]) in have]
+
+
 def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
                                    max_tools: int) -> None:
     """The same arms on two axes for the same question, drawn on one shared y range.
@@ -7256,6 +7294,9 @@ def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame, primary_tru
 
     board = best_variants(per_species).head(max_tools)
     keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
+    carried = (_primary_selected_arms(metrics, primary_truth, ts, max_tools,
+                                      {(t, v) for t, v, _ in keep}) if forced else [])
+    keep += carried
     control = _divergence_control(per_species, {(t, v) for t, v, _ in keep})
     if control and control[3]:
         keep.append(control[:3])
@@ -7304,8 +7345,21 @@ def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame, primary_tru
         f"<code>pfam_id</code> holds a curated feature type rather than a Pfam accession, so "
         f"every instance lands in <code>no_homolog</code> and there is no axis. "
         f"<code>{ts}</code> is also the truth set the sweep selected its alphabet and k on, "
-        f"so read this pair as the weaker, circular evidence it is."
+        f"so read this pair as the weaker, circular evidence it is. These metrics were "
+        f"scored before <code>attach_identity</code> learned to anchor a feature to the "
+        f"Pfam domain it sits in; rescoring is what moves this panel onto "
+        f"<code>{primary_truth}</code>, and until then the fallback is the only axis there is."
     ) if forced else ""
+    carried_note = (
+        f"<b>Arms marked {PRIMARY_PICK_MARK.strip()} are the <code>{primary_truth}</code> "
+        f"picks, carried onto a panel that <code>{ts}</code> selected.</b> "
+        + ", ".join(sorted(lbl.replace(PRIMARY_PICK_MARK, "") for _, _, lbl in carried))
+        + f". Without them this panel draws only what <code>{ts}</code> ranked, and the two "
+        f"selections are not the same tool: the <code>{ts}</code> picks sit high on the "
+        f"bits-per-k-mer axis where near-exact matching is the mechanism, and the arms that "
+        f"hold their level at the far end of the divergence panel are not among them. Their "
+        f"rows here are still <code>{ts}</code> rows -- only the selection is carried over."
+    ) if carried else ""
     shared = (
         f"<b>Both panels share one y axis, 0 to {shared_ymax}.</b> They are the same arms "
         f"and the same metric; only the x axis differs, so a height in one is a height in "
@@ -7316,7 +7370,8 @@ def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame, primary_tru
         f"in the 60-100% band.</b> That is what the divergence panel is mostly built from, "
         f"so a flat line across Mya is compatible with detecting only well-conserved "
         f"domains. This is the stratification that decides between ancient-core detection "
-        f"and twilight-zone detection, and on this run it points at the former."
+        f"and twilight-zone detection, and it decides it per arm: read it off the line you "
+        f"mean to make the claim about, not off the panel as a whole."
     ) if binned_total else ""
     disagree = (
         "<b>Where the two panels disagree is the finding.</b> An arm that holds its level "
@@ -7347,7 +7402,7 @@ def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame, primary_tru
             "description": (
                 f"<p>Fmax per arm, mean over target proteomes ({ts} truth, "
                 f"<code>{split}</code> split).</p>"
-                + bullets(extra, shared, forced_note, disagree)),
+                + bullets(extra, shared, forced_note, carried_note, disagree)),
             "plot_type": "linegraph",
             "pconfig": {"id": f"{sid}_plot", "title": title, "xlab": xlab,
                         "ylab": "Fmax (mean over target proteomes)",

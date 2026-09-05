@@ -1161,6 +1161,92 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     return metrics
 
 
+# The share of a truth interval that has to fall inside a Pfam domain before that domain's
+# identity is read as this interval's identity. Half is the same bar `--min-overlap` sets
+# for a call against its truth interval, and it is there for the same reason: a TRANSMEM
+# helix clipping the last two residues of a kinase domain is not sitting in that kinase
+# domain, and inheriting its identity would report a conserved core the feature is not in.
+IDENTITY_ANCHOR_MIN_OVERLAP = 0.5
+
+
+def _identity_key_is_joinable(truth: pl.DataFrame, identity: pl.DataFrame) -> bool:
+    """Whether this truth set's `pfam_id` is the same vocabulary the identity table uses.
+
+    The identity table is measured over the PFAM truth: its rows are Pfam domain instances
+    and its `pfam_id` is a Pfam accession. The pfam and pfamn truth sets share that
+    vocabulary, so their instances join to it exactly and there is nothing to fall back to.
+    The Swiss-Prot truth set does not -- there `pfam_id` holds a curated feature type from a
+    six-value vocabulary -- so the exact join matches nothing at all and every instance
+    lands in `no_homolog`, which is what turned the identity axis into a single bar.
+
+    Decided per FRAME rather than per row on purpose. Falling back row by row would also
+    fire on a pfam instance that simply has no same-family target, and hand it the identity
+    of some other domain that happens to overlap it -- which would move numbers that are
+    currently correct.
+    """
+    return bool(set(truth["pfam_id"].unique()) & set(identity["pfam_id"].unique()))
+
+
+def _anchor_identity_by_overlap(truth: pl.DataFrame,
+                                identity: pl.DataFrame,
+                                cols: list[str]) -> pl.DataFrame:
+    """Identity for a truth interval that is not itself a Pfam domain, via the one it sits in.
+
+    A Swiss-Prot feature has no identity of its own to measure: it is a binding site or a
+    transmembrane helix, not an alignable unit, and extract_domain_sequences never emitted
+    it as a query. What it does have is a position, and the Pfam domain covering that
+    position was measured. So the feature inherits the identity of the domain it lies in,
+    which is the quantity the twilight-zone claim is actually stated on -- how diverged is
+    the domain this site sits in.
+
+    The anchor is the domain covering the most of the feature, so a feature straddling two
+    domains takes the one it is mostly in. Ties fall to the closer homolog and then to the
+    anchor's own accession and start, which is a total order over the candidate rows: a
+    partial one leaves the pick to polars' row order and the bins move between identical
+    runs.
+
+    A feature that lies in no measured domain keeps a null `best_pident` and so keeps the
+    `no_homolog` label, which reads the same way it does on the Pfam truth set: there is no
+    same-family target identity to plot for this instance. Note that the identity table only
+    carries instances that HAVE a same-family match, so "sits in no domain" and "sits in a
+    domain nothing matched" are one case here, and neither has an identity.
+    """
+    key = ["accession", "pfam_id", "domain_start", "domain_end"]
+    anchor_cols = [c for c in cols if c not in key]
+    want = truth.select(key).unique()
+
+    overlap = (pl.min_horizontal("domain_end", "anchor_end")
+               - pl.max_horizontal("domain_start", "anchor_start"))
+    span = pl.col("domain_end") - pl.col("domain_start")
+
+    cand = (
+        want.join(
+            identity.select(
+                ["accession"] + anchor_cols
+                + [pl.col("pfam_id").alias("anchor_pfam"),
+                   pl.col("domain_start").alias("anchor_start"),
+                   pl.col("domain_end").alias("anchor_end")]),
+            on="accession", how="inner")
+        .with_columns(overlap.alias("_overlap"))
+        # span is at least 1 on every truth interval this project builds, point features
+        # included -- build_swissprot_truth writes end = start + 1 for those -- so the
+        # fraction has no zero denominator to guard.
+        .filter(pl.col("_overlap") > 0)
+        .filter((pl.col("_overlap") / span) >= IDENTITY_ANCHOR_MIN_OVERLAP)
+    )
+    if cand.height == 0:
+        return truth.with_columns(
+            [pl.lit(None, dtype=identity.schema[c]).alias(c) for c in anchor_cols])
+
+    best = (
+        cand.sort(["_overlap", "best_pident", "anchor_pfam", "anchor_start"],
+                  descending=[True, True, False, False], nulls_last=True)
+        .group_by(key, maintain_order=True)
+        .agg([pl.col(c).first() for c in anchor_cols])
+    )
+    return truth.join(best, on=key, how="left")
+
+
 def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.DataFrame:
     """Bin each domain instance by identity to its closest same-family target domain.
 
@@ -1168,6 +1254,14 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
     rather than being dropped or lumped into the lowest bin. They are unreachable by any
     transfer-based method, so mixing them into "<20%" would make every tool look worse in
     the bin the hypothesis cares most about.
+
+    Two ways in. A truth set whose instances ARE Pfam domains joins on the full key and
+    reads its own measured identity. A truth set whose instances are something else --
+    Swiss-Prot features -- has no identity of its own and takes the identity of the Pfam
+    domain it sits in, via _anchor_identity_by_overlap. Before that fallback existed the
+    Swiss-Prot exact join matched nothing and all 7_000 instances landed in `no_homolog`,
+    so the truth set the leaderboard is selected on had no identity axis at all and the
+    panel had to be drawn on Pfam instead.
     """
     if identity is None or identity.height == 0:
         return truth.with_columns(pl.lit(None, dtype=pl.String).alias("stratum_identity"))
@@ -1176,7 +1270,10 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
     # best_target rides along so a covariate of the winning target can be attached to this
     # human instance downstream. It is only present in tables written after 2026-08-27.
     cols = key + ["best_pident"] + (["best_target"] if "best_target" in identity.columns else [])
-    joined = truth.join(identity.select(cols), on=key, how="left")
+    if _identity_key_is_joinable(truth, identity):
+        joined = truth.join(identity.select(cols), on=key, how="left")
+    else:
+        joined = _anchor_identity_by_overlap(truth, identity, cols)
 
     expr = pl.when(pl.col("best_pident").is_null()).then(pl.lit("no_homolog"))
     for lo, hi in zip(IDENTITY_BINS[:-1], IDENTITY_BINS[1:]):
