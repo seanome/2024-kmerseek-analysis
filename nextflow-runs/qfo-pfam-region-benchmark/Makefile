@@ -1677,14 +1677,24 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 # has_structs and make_mini_testset prints a NOTE per species. The nine originals keep
 # their structural arms. Nothing needs a flag for this.
 #
-# HHblits is restricted to eukaryotes plus the nine originals: 48 targets rather than 77.
-# See the note on params.hhblits_kingdoms in main.nf for why, and why ecoli stays in.
+# HHblits runs on every kingdom. It is the most expensive sequence arm, and restricting it
+# to eukaryotes would save ~2_400 CPU-hours -- but it would also leave E. coli as the only
+# bacterium with a profile baseline, which is precisely the comparison the prokaryote
+# question needs. ALLQFO_HHBLITS_KINGDOMS=Eukaryota puts the saving back.
 ALLQFO_OUTDIR ?= $(MIDI_PLUS_OUTDIR)
 ALLQFO_RUN_DIR ?= run-midi-plus-all-qfo
 # Every non-human registry row: the 77 QfO targets plus botryllus.
 ALLQFO_TARGETS ?= all
-# Eukaryotes only, plus the nine originals -- see params.hhblits_kingdoms in main.nf.
-ALLQFO_HHBLITS_KINGDOMS ?= Eukaryota
+# Every kingdom, deliberately.
+#
+# This was Eukaryota-only to save the ~2_400 CPU-hours HHblits costs across 30 prokaryotes.
+# That saving is now the wrong trade. The open question is whether E. coli's collapse is an
+# E. coli problem or a prokaryote-wide one, and answering it needs the strongest profile
+# baseline present on the prokaryotes rather than on E. coli alone -- one bacterium with an
+# HHblits point and 22 without is not a comparison, it is a gap with a single dot in it.
+#
+# Set this back to Eukaryota to drop those hours once the prokaryote question is settled.
+ALLQFO_HHBLITS_KINGDOMS ?=
 
 ## Refuse to launch while anything of ours is still queued.
 ##
@@ -1756,7 +1766,7 @@ run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
 	    --target_species  $(ALLQFO_TARGETS) \
-	    --hhblits_kingdoms $(ALLQFO_HHBLITS_KINGDOMS) \
+	    $(if $(ALLQFO_HHBLITS_KINGDOMS),--hhblits_kingdoms $(ALLQFO_HHBLITS_KINGDOMS)) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
