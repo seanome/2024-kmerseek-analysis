@@ -17,12 +17,39 @@ intro_text: >
   then scoring that call against the human protein's own domain instances. Right family in
   the wrong place counts as a false positive. This is not pair-level orthology: a tool
   that finds the correct protein but misplaces the region scores no better than a miss.
+  <br><br>
+  "Dark" means two different things in this benchmark and they have to be stated
+  separately, because the data answers them in opposite directions.
+  <b>Dark by divergence</b> is a domain whose closest same-family relative is far away in
+  evolutionary time or in percent identity. That is where a coarse alphabet earns its
+  keep: read the Divergence and Divergence-retention sections, where the fraction of Fmax
+  an arm keeps out to the most distant proteome is a function of how many amino-acid
+  classes its alphabet collapses to, on one engine with nothing else varying.
+  <b>Dark by disorder</b> is a domain with no confident structure behind it. There, this
+  method does not win. On both disorder axes the coarse-alphabet arms fall off faster than
+  hhblits, phmmer and foldseek do, and the sequence-only axis, which shares neither the
+  AlphaFold-modelling confound nor the shallow-MSA confound, says the same thing as the
+  pLDDT one. That half of the claim does not survive its own measurement and is not made
+  here.
+  <br><br>
+  What the model-confidence bands show instead is a regime. Read across every band rather
+  than only at the disordered end, the coarse-alphabet arms are non-monotone: weakest where
+  the structure is most confident, strongest in the middle. The Model-confidence regime
+  section is that shape, and it is a claim about complementarity with the structure
+  methods rather than about replacing them.
 
 report_comment: >
   Numbers are read off <code>all_domain_metrics.parquet</code> and the Nextflow trace from
   the same run. Accuracy sections use the held-out half of the Pfam families, because the
   sweep picks its best alphabet and k-mer size on the other half and reporting the winner
   on the data that chose it is optimistically biased.
+  <br><br>
+  No number in this report carries a sampling error. Every value is a mean over target
+  proteomes with no resampling behind it, so a gap narrower than the species-to-species
+  spread the leaderboards report as an SD is not a result. Which kmerseek arm a figure
+  draws also depends on that figure's own ranking metric and truth set, so an arm followed
+  from one section to the next is not necessarily the same arm; pass
+  <code>--canonical-variant</code> to pin one and mark it everywhere.
 
 # Not a sequencing run: nothing here is a FASTQ and the sections are plots, not per-sample
 # QC. Turning these off removes UI that would only mislead.
@@ -68,24 +95,98 @@ report_section_order:
   qfo_cafa: { order: 90 }
   qfo_threshold: { order: 100 }
   qfo_boundary: { order: 110 }
+  # The same numbers as qfo_boundary drawn as one labelled point per arm, so it goes
+  # directly after the table it re-reads. 110 is taken and a plot sharing a number with a
+  # table renders the table first -- see the note at 170 -- so it gets its own integer.
+  qfo_boundary_dots: { order: 111 }
   qfo_pr_curve: { order: 120 }
   qfo_roc_curve: { order: 130 }
   qfo_identity: { order: 140 }
+  # Fmax across the pLDDT bands as a shape, next to the twilight-zone axis it is read
+  # against. Plot first, then its table on the next integer -- sharing a number renders
+  # the TABLE first, which is the failure the note at 170 records.
+  qfo_plddt_regime: { order: 141 }
+  qfo_plddt_regime_table: { order: 142 }
+  # Which arm is pinned, named before the sections that mark it.
+  qfo_canonical: { order: 145 }
   qfo_divergence: { order: 150 }
   qfo_reachability: { order: 160 }
-  qfo_alphabet_lcFalse: { order: 170 }
+  qfo_tool_by_species_swissprot: { order: 151 }
+  qfo_tool_by_species_table_swissprot: { order: 152 }
+  qfo_tool_by_species_pfamn: { order: 153 }
+  qfo_tool_by_species_table_pfamn: { order: 154 }
+  qfo_tool_by_species_mcsa: { order: 155 }
+  qfo_tool_by_species_table_mcsa: { order: 156 }
+  qfo_tool_by_species_pfam: { order: 157 }
+  qfo_tool_by_species_table_pfam: { order: 158 }
+  qfo_species_winners_swissprot: { order: 162 }
+  qfo_species_winners_pfamn: { order: 164 }
+  qfo_species_winners_mcsa: { order: 166 }
+  qfo_species_winners_pfam: { order: 168 }
+  # Winning encoding vs divergence: the same x axis as qfo_divergence (150), so it belongs
+  # with that block rather than at the end. Each plot is followed by its own table, and the
+  # order has to be an int -- order_modules_and_sections asserts it -- so two sections
+  # cannot share a slot and take their positions from discovery order. They do not: giving
+  # a plot and its table the same number rendered the TABLE first. That is why
+  # qfo_alphabet_lcFalse moved from 170 to 179, to open eight integers here. It still
+  # precedes qfo_alphabet_lcTrue at 180, which is the only thing its number had to do.
+  qfo_encoding_divergence_swissprot: { order: 170 }
+  qfo_encoding_divergence_table_swissprot: { order: 171 }
+  qfo_encoding_divergence_pfamn: { order: 172 }
+  qfo_encoding_divergence_table_pfamn: { order: 173 }
+  qfo_encoding_divergence_mcsa: { order: 174 }
+  qfo_encoding_divergence_table_mcsa: { order: 175 }
+  qfo_encoding_divergence_pfam: { order: 176 }
+  qfo_encoding_divergence_table_pfam: { order: 177 }
+  qfo_alphabet_lcFalse: { order: 179 }
   qfo_alphabet_lcTrue: { order: 180 }
-  qfo_lowcomplexity_bars: { order: 185 }
+  # Divergence retention against alphabet size: the alphabet axis the two heatmaps above
+  # sweep, asked the other way round -- what each alphabet KEEPS out to the most diverged
+  # proteome rather than which one won. It sits with the alphabet block rather than beside
+  # qfo_divergence at 150, because no run of eight free integers survives up there. Each
+  # plot takes the integer immediately before its own table: sharing a number renders the
+  # TABLE first, which is the failure the note at 170 records.
+  qfo_retention_swissprot: { order: 181 }
+  qfo_retention_table_swissprot: { order: 182 }
+  qfo_retention_pfamn: { order: 183 }
+  qfo_retention_table_pfamn: { order: 184 }
+  qfo_retention_mcsa: { order: 185 }
+  qfo_retention_table_mcsa: { order: 186 }
+  qfo_retention_pfam: { order: 187 }
+  qfo_retention_table_pfam: { order: 188 }
+  # qfo_lowcomplexity_bars is gone, not renumbered: the toggle's effect at each alphabet's
+  # own best k is under 0.001 Fmax everywhere in the sweep, so the 19-panel switcher and the
+  # per-alphabet delta bars both collapsed into the single alphabet x k grid at 190.
   qfo_lowcomplexity: { order: 190 }
-  qfo_ceiling_length: { order: 192 }
-  qfo_ceiling_length_by_k: { order: 193 }
-  qfo_ceiling_feature_type: { order: 194 }
-  qfo_ceiling_feature_type_coverage: { order: 195 }
-  qfo_ceiling_feature_type_point: { order: 196 }
+  # The ceiling block shifts up one to open 196 for qfo_ceiling_crossover, which re-reads
+  # the three feature-type heatmaps and therefore has to follow them and precede the
+  # recognition pair at 197. MultiQC's order must be an INT -- order_modules_and_sections
+  # asserts it -- so there is no 196.5 to slot into, and the way to insert a section
+  # between two consecutive integers is to move the block, not to fractionalise.
+  qfo_ceiling_length: { order: 191 }
+  qfo_ceiling_length_by_k: { order: 192 }
+  qfo_ceiling_feature_type: { order: 193 }
+  qfo_ceiling_feature_type_coverage: { order: 194 }
+  qfo_ceiling_feature_type_point: { order: 195 }
+  qfo_ceiling_crossover: { order: 196 }
   qfo_ceiling_recognition: { order: 197 }
   qfo_ceiling_recognition_k: { order: 198 }
-  qfo_ceiling_bpe: { order: 199 }
-  qfo_grayzone: { order: 200 }
+  # The same two quantities as qfo_ceiling_recognition against alphabet cardinality, so it
+  # belongs immediately after that pair. There were no free integers left between 198 and
+  # 200, and order_modules_and_sections asserts an int -- see the note at 170 above --
+  # so qfo_ceiling_bpe and qfo_grayzone move up to open ten. Each plot is followed by its
+  # own table on the next integer, never sharing one: a plot and its table on the same
+  # number renders the TABLE first, which is the failure that note records.
+  qfo_ceiling_cardinality_swissprot: { order: 199 }
+  qfo_ceiling_cardinality_table_swissprot: { order: 200 }
+  qfo_ceiling_cardinality_pfamn: { order: 201 }
+  qfo_ceiling_cardinality_table_pfamn: { order: 202 }
+  qfo_ceiling_cardinality_mcsa: { order: 203 }
+  qfo_ceiling_cardinality_table_mcsa: { order: 204 }
+  qfo_ceiling_cardinality_pfam: { order: 205 }
+  qfo_ceiling_cardinality_table_pfam: { order: 206 }
+  qfo_ceiling_bpe: { order: 207 }
+  qfo_grayzone: { order: 208 }
   qfo_run_summary: { order: 210 }
   qfo_res_cpu: { order: 220 }
   qfo_res_walltime: { order: 230 }

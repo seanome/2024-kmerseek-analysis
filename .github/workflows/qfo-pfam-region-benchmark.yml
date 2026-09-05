@@ -53,6 +53,10 @@ jobs:
       - name: Scoring, aggregation and report tests
         run: python -m pytest tests/ -v
 
+      # A standalone script with its own exit-code contract, not a pytest module -- see the
+      # note in tests/conftest.py. Run as its own step so that contract is honoured.
+      - name: Pairwise suppression pass checks
+        run: python tests/test_dedup_passes.py
   nextflow:
     name: pipeline definition parses
     runs-on: ubuntu-latest
@@ -64,18 +68,18 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Left floating on purpose, having been pinned to 25.10.4 for a while. The Mac and
-      # Sherlock both run 25.10.4 out of the nf-core-v2 conda env, so a pin would match
-      # production -- but it was CI floating ahead to 26.4.6 that caught nextflow.config's
-      # `def` declarations, which 26.x rejects and 25.10.4 accepts. The config resolves
-      # under both now, and unpinned is what will catch the next such change while it is
-      # still cheap.
       - uses: nf-core/setup-nextflow@v2
 
       # Catches a syntax error or a broken profile without pulling a single container. The
       # profiles are checked separately because a layered profile that fails to resolve is
       # silent otherwise: Nextflow applies them in the order they are DECLARED in the config
       # file, not the order given on the command line.
+      - name: nextflow config resolves
+        run: |
+          nextflow config . -profile standard >/dev/null
+          nextflow config . -profile standard,mini >/dev/null
+          nextflow config . -profile sherlock >/dev/null
+          nextflow config . -profile sherlock,mini >/dev/null
       # Output is captured and printed ON FAILURE rather than discarded. Sending it to
       # /dev/null is how the first version of this step failed with exit 1 and no message
       # at all: Nextflow writes some of its errors to stdout, so the reason went in the bin

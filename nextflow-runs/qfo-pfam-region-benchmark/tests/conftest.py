@@ -13,11 +13,11 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-# Standalone scripts under tests/ that are NOT pytest modules: they run at import and call
-# sys.exit, which pytest reports as an INTERNALERROR during collection. Listed here rather
-# than converted, because each documents its own `python3 tests/<name>.py` invocation and
-# has an exit-code contract. Naming one that does not exist on this branch is harmless, and
-# keeps collection working the moment it arrives from another.
+# test_dedup_passes.py is a standalone script, not a pytest module: it runs at import and
+# calls sys.exit, which pytest reports as an INTERNALERROR during collection. It is left
+# exactly as it is -- its own docstring documents `python3 tests/test_dedup_passes.py` as
+# the way to run it, and it has an exit-code contract CI depends on. CI runs it as its own
+# step instead of collecting it here.
 collect_ignore = ["test_dedup_passes.py"]
 
 BIN = Path(__file__).resolve().parents[1] / "bin"
@@ -141,7 +141,10 @@ def write_decoy_regions(truth_path: Path, target_map: Path, out: Path,
     tgt = target[0]
 
     lines, made = [], 0
-    for acc, grp in truth.group_by("accession"):
+    # maintain_order, because the loop stops after `n` and a bare group_by hands them back
+    # in a different order each call -- so two calls picked different proteins and the
+    # "same" regions file was not the same file. Same reason write_perfect_regions sorts.
+    for acc, grp in truth.group_by("accession", maintain_order=True):
         acc = acc[0] if isinstance(acc, tuple) else acc
         plen = grp["protein_length"].max()
         if plen is None:
@@ -181,17 +184,6 @@ def score(truth: Path, target_map: Path, regions: Path, workdir: Path,
         [sys.executable, str(BIN / "evaluate_domain_calls.py"),
          "--manifest", str(manifest), "--species", "yeast", "--species-mya", "1000",
          "--truth", str(truth), "--domain-map", str(target_map),
-         # The un-deduplicated arm only. The dedup-transfers pass is NOT deterministic on
-         # this branch -- it drops rows by a row index computed inside a lazy plan, the plan
-         # is re-executed per collect, and a re-executed scan does not return rows in the
-         # same order. Four identical runs here differ on 20 of 40 metric cells, and every
-         # one of them is a dedup_transfers=true row while the off arm is stable to the
-         # last integer.
-         #
-         # Sweeping it would make every assertion below flaky for a reason none of them is
-         # about. That pass has its own fix and its own test in flight on
-         # olgabot/score-domain-calls-oom; widen this to "off,on" once that lands.
-         "--dedup-transfer-modes", "off",
          "--truth-set", truth_set, *map(str, extra)],
         cwd=workdir, capture_output=True, text=True, check=True)
     files = sorted(workdir.glob("*.metrics.parquet"))
