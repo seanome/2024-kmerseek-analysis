@@ -13,6 +13,7 @@ Nothing here re-defines a constant `ou` already carries. `ou.MHC_CLASSES`,
 `ou.MHC_CLASS_COLORS`, `ou.ARD_I`, `ou.IG_I`, `ou.CONTACT_PROT` and `ou.mhc_gene_arch` are
 imported and re-exported so a notebook needs one import, not two.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -97,14 +98,30 @@ MHC_SUBREGION_COLORS: dict[str, str] = {
 #: Landmark genes worth labelling on a positional figure. Chosen for what an immunologist
 #: uses to orient inside the region, not for how they score.
 MHC_LANDMARKS: dict[str, str] = {
-    "HFE": "extended class I", "BTN3A1": "extended class I", "TRIM26": "extended class I",
-    "HLA-F": "class I", "HLA-G": "class I", "HLA-A": "class I", "MICA": "class I",
-    "HLA-C": "class I", "HLA-B": "class I", "MICB": "class I",
-    "TNF": "class III", "LTA": "class III", "C4A": "class III", "CFB": "class III",
-    "C2": "class III", "NOTCH4": "class III",
-    "HLA-DRA": "class II", "HLA-DRB1": "class II", "HLA-DQB1": "class II",
-    "TAP1": "class II", "PSMB9": "class II", "HLA-DPB1": "class II",
-    "COL11A2": "extended class II", "RXRB": "extended class II",
+    "HFE": "extended class I",
+    "BTN3A1": "extended class I",
+    "TRIM26": "extended class I",
+    "HLA-F": "class I",
+    "HLA-G": "class I",
+    "HLA-A": "class I",
+    "MICA": "class I",
+    "HLA-C": "class I",
+    "HLA-B": "class I",
+    "MICB": "class I",
+    "TNF": "class III",
+    "LTA": "class III",
+    "C4A": "class III",
+    "CFB": "class III",
+    "C2": "class III",
+    "NOTCH4": "class III",
+    "HLA-DRA": "class II",
+    "HLA-DRB1": "class II",
+    "HLA-DQB1": "class II",
+    "TAP1": "class II",
+    "PSMB9": "class II",
+    "HLA-DPB1": "class II",
+    "COL11A2": "extended class II",
+    "RXRB": "extended class II",
 }
 
 
@@ -117,7 +134,11 @@ def assign_subregion(midpoint: pl.Expr) -> pl.Expr:
     """
     expr = pl.lit(None, dtype=pl.String)
     for name, lo, hi in reversed(MHC_SUBREGIONS):
-        expr = pl.when((midpoint >= lo) & (midpoint <= hi)).then(pl.lit(name)).otherwise(expr)
+        expr = (
+            pl.when((midpoint >= lo) & (midpoint <= hi))
+            .then(pl.lit(name))
+            .otherwise(expr)
+        )
     return expr
 
 
@@ -129,16 +150,29 @@ def assign_subregion(midpoint: pl.Expr) -> pl.Expr:
 # round numbers for axis ordering, not literature point estimates.
 # ---------------------------------------------------------------------------
 SPECIES_MYA: dict[str, int] = {
-    "mouse": 100, "chicken": 300, "zebrafish": 430, "ciona": 550, "fly": 600,
-    "worm": 650, "yeast": 900, "arabidopsis": 1500, "ecoli": 2000,
+    "mouse": 100,
+    "chicken": 300,
+    "zebrafish": 430,
+    "ciona": 550,
+    "fly": 600,
+    "worm": 650,
+    "yeast": 900,
+    "arabidopsis": 1500,
+    "ecoli": 2000,
 }
 
 SPECIES_ORDER: list[str] = list(SPECIES_MYA)
 
 SPECIES_LABELS: dict[str, str] = {
-    "mouse": "mouse\n100", "chicken": "chicken\n300", "zebrafish": "zebrafish\n430",
-    "ciona": "ciona\n550", "fly": "fly\n600", "worm": "worm\n650",
-    "yeast": "yeast\n900", "arabidopsis": "arabidopsis\n1500", "ecoli": "E. coli\n2000",
+    "mouse": "mouse\n100",
+    "chicken": "chicken\n300",
+    "zebrafish": "zebrafish\n430",
+    "ciona": "ciona\n550",
+    "fly": "fly\n600",
+    "worm": "worm\n650",
+    "yeast": "yeast\n900",
+    "arabidopsis": "arabidopsis\n1500",
+    "ecoli": "E. coli\n2000",
 }
 
 #: Where adaptive immunity's own components stop existing, which is not where homology
@@ -187,10 +221,14 @@ DOMAIN_ROLE_COLORS: dict[str, str] = {
 def domain_role(pfam_id: pl.Expr) -> pl.Expr:
     """Pfam accession -> the role it plays in an MHC molecule, null for anything else."""
     return (
-        pl.when(pfam_id.is_in(list(PFAM_PLATFORM))).then(pl.lit("peptide-binding platform"))
-        .when(pfam_id == PFAM_IG_C1).then(pl.lit("Ig C1-set"))
-        .when(pfam_id == PFAM_CLASS_I_TAIL).then(pl.lit("class I tail"))
-        .when(pfam_id.is_in(list(PFAM_TAP))).then(pl.lit("ABC transporter"))
+        pl.when(pfam_id.is_in(list(PFAM_PLATFORM)))
+        .then(pl.lit("peptide-binding platform"))
+        .when(pfam_id == PFAM_IG_C1)
+        .then(pl.lit("Ig C1-set"))
+        .when(pfam_id == PFAM_CLASS_I_TAIL)
+        .then(pl.lit("class I tail"))
+        .when(pfam_id.is_in(list(PFAM_TAP)))
+        .then(pl.lit("ABC transporter"))
         .otherwise(pl.lit(None, dtype=pl.String))
     )
 
@@ -199,23 +237,37 @@ def domain_role(pfam_id: pl.Expr) -> pl.Expr:
 # Tool display names and grouping.
 # ---------------------------------------------------------------------------
 TOOL_FAMILY: dict[str, str] = {
-    "hmmer3_phmmer": "sequence", "hmmer3_jackhmmer": "sequence",
-    "mmseqs2_seqseq": "sequence", "mmseqs2_iterative": "sequence",
-    "hhblits": "profile", "prostt5": "predicted structure",
-    "foldseek": "structure", "reseek": "structure", "folddisco": "structure",
+    "hmmer3_phmmer": "sequence",
+    "hmmer3_jackhmmer": "sequence",
+    "mmseqs2_seqseq": "sequence",
+    "mmseqs2_iterative": "sequence",
+    "hhblits": "profile",
+    "prostt5": "predicted structure",
+    "foldseek": "structure",
+    "reseek": "structure",
+    "folddisco": "structure",
     "kmerseek": "kmerseek",
 }
 
 TOOL_LABELS: dict[str, str] = {
-    "hmmer3_phmmer": "phmmer", "hmmer3_jackhmmer": "jackhmmer",
-    "mmseqs2_seqseq": "MMseqs2", "mmseqs2_iterative": "MMseqs2 iterative",
-    "hhblits": "HHblits", "prostt5": "ProstT5", "foldseek": "Foldseek",
-    "reseek": "Reseek", "folddisco": "Folddisco", "kmerseek": "kmerseek",
+    "hmmer3_phmmer": "phmmer",
+    "hmmer3_jackhmmer": "jackhmmer",
+    "mmseqs2_seqseq": "MMseqs2",
+    "mmseqs2_iterative": "MMseqs2 iterative",
+    "hhblits": "HHblits",
+    "prostt5": "ProstT5",
+    "foldseek": "Foldseek",
+    "reseek": "Reseek",
+    "folddisco": "Folddisco",
+    "kmerseek": "kmerseek",
 }
 
 TOOL_FAMILY_COLORS: dict[str, str] = {
-    "sequence": "#999999", "profile": "#6ACC65", "predicted structure": "#B47CC7",
-    "structure": "#4878CF", "kmerseek": "#D65F5F",
+    "sequence": "#999999",
+    "profile": "#6ACC65",
+    "predicted structure": "#B47CC7",
+    "structure": "#4878CF",
+    "kmerseek": "#D65F5F",
 }
 
 
@@ -227,7 +279,12 @@ def arm_label(tool: pl.Expr, variant: pl.Expr) -> pl.Expr:
     """
     return (
         pl.when(tool == "kmerseek")
-        .then(pl.lit("kmerseek ") + variant.str.replace("_lcTrue", "").str.replace("_lcFalse", " (no LC mask)"))
+        .then(
+            pl.lit("kmerseek ")
+            + variant.str.replace("_lcTrue", "").str.replace(
+                "_lcFalse", " (no LC mask)"
+            )
+        )
         .otherwise(tool.replace_strict(TOOL_LABELS, default=tool))
     )
 
@@ -278,7 +335,9 @@ def reachable_families(species: str, pfam_ids: list[str]) -> set[str]:
     vertebrates by definition, so almost every MHC recall figure needs this denominator.
     """
     dm = load_target_domain_map(species)
-    return set(dm.filter(pl.col("pfam_id").is_in(pfam_ids))["pfam_id"].unique().to_list())
+    return set(
+        dm.filter(pl.col("pfam_id").is_in(pfam_ids))["pfam_id"].unique().to_list()
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -297,16 +356,23 @@ TARGET_DIR = MIDI_DIR / "targets"
 
 #: QfO reference-proteome accession per species, from the midi run's own `qfo/` directory.
 PROTEOME_ID: dict[str, str] = {
-    "human": "UP000005640_9606", "mouse": "UP000000589_10090",
-    "chicken": "UP000000539_9031", "zebrafish": "UP000000437_7955",
-    "ciona": "UP000008144_7719", "fly": "UP000000803_7227",
-    "worm": "UP000001940_6239", "yeast": "UP000002311_559292",
-    "arabidopsis": "UP000006548_3702", "ecoli": "UP000000625_83333",
+    "human": "UP000005640_9606",
+    "mouse": "UP000000589_10090",
+    "chicken": "UP000000539_9031",
+    "zebrafish": "UP000000437_7955",
+    "ciona": "UP000008144_7719",
+    "fly": "UP000000803_7227",
+    "worm": "UP000001940_6239",
+    "yeast": "UP000002311_559292",
+    "arabidopsis": "UP000006548_3702",
+    "ecoli": "UP000000625_83333",
 }
 
 #: Species with an Ensembl 116 gene-coordinate table pulled locally.
 ENSEMBL_SPECIES: dict[str, str] = {
-    "mouse": "mus_musculus", "chicken": "gallus_gallus", "zebrafish": "danio_rerio",
+    "mouse": "mus_musculus",
+    "chicken": "gallus_gallus",
+    "zebrafish": "danio_rerio",
 }
 
 #: Where each species keeps its MHC. Used only to orient a figure, never to select data.
@@ -334,10 +400,17 @@ def load_accession_to_gene(species: str) -> pl.DataFrame:
     hit that landed nowhere interesting.
     """
     path = TARGET_DIR / "genemap" / f"{PROTEOME_ID[species]}.tsv"
-    return (pl.read_csv(path, separator="\t", has_header=False,
-                        new_columns=["target_acc", "gene_symbol"], infer_schema_length=0)
-              .filter(pl.col("gene_symbol").is_not_null() & (pl.col("gene_symbol") != ""))
-              .unique(subset="target_acc"))
+    return (
+        pl.read_csv(
+            path,
+            separator="\t",
+            has_header=False,
+            new_columns=["target_acc", "gene_symbol"],
+            infer_schema_length=0,
+        )
+        .filter(pl.col("gene_symbol").is_not_null() & (pl.col("gene_symbol") != ""))
+        .unique(subset="target_acc")
+    )
 
 
 def load_target_gene_coordinates(species: str) -> pl.DataFrame:
@@ -349,11 +422,18 @@ def load_target_gene_coordinates(species: str) -> pl.DataFrame:
     """
     path = TARGET_DIR / "gtf" / f"{ENSEMBL_SPECIES[species]}.genes.tsv"
     cols = ["chrom", "start", "end", "strand", "gene_id", "gene_name", "biotype"]
-    return (pl.read_csv(path, separator="\t", has_header=False, new_columns=cols,
-                        infer_schema_length=0)
-              .with_columns(pl.col("start").cast(pl.Int64), pl.col("end").cast(pl.Int64))
-              .filter(pl.col("gene_name").is_not_null())
-              .with_columns(midpoint=(pl.col("start") + pl.col("end")) // 2))
+    return (
+        pl.read_csv(
+            path,
+            separator="\t",
+            has_header=False,
+            new_columns=cols,
+            infer_schema_length=0,
+        )
+        .with_columns(pl.col("start").cast(pl.Int64), pl.col("end").cast(pl.Int64))
+        .filter(pl.col("gene_name").is_not_null())
+        .with_columns(midpoint=(pl.col("start") + pl.col("end")) // 2)
+    )
 
 
 def target_locus_table(species: str) -> pl.DataFrame:
@@ -363,12 +443,21 @@ def target_locus_table(species: str) -> pl.DataFrame:
     zebrafish as `mhc1uba`, and Ensembl's capitalisation does not always agree.
     """
     genes = load_target_gene_coordinates(species).with_columns(
-        _key=pl.col("gene_name").str.to_lowercase())
+        _key=pl.col("gene_name").str.to_lowercase()
+    )
     acc = load_accession_to_gene(species).with_columns(
-        _key=pl.col("gene_symbol").str.to_lowercase())
-    return (acc.join(genes.unique(subset="_key"), on="_key", how="inner")
-               .select("target_acc", "gene_symbol", "chrom", "start", "end", "midpoint",
-                       "strand", "biotype"))
+        _key=pl.col("gene_symbol").str.to_lowercase()
+    )
+    return acc.join(genes.unique(subset="_key"), on="_key", how="inner").select(
+        "target_acc",
+        "gene_symbol",
+        "chrom",
+        "start",
+        "end",
+        "midpoint",
+        "strand",
+        "biotype",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -401,9 +490,13 @@ def load_pfam_names() -> pl.DataFrame:
                   else {split(a,p,"."); print p[1]"\t"n"\t"$0}}' \
           > ~/data/qfo-pfam-region-midi/pfam_a_names.tsv
     """
-    return pl.read_csv(PFAM_NAMES_TSV, separator="\t", has_header=False,
-                       new_columns=["pfam_id", "pfam_name", "pfam_desc"],
-                       infer_schema_length=0)
+    return pl.read_csv(
+        PFAM_NAMES_TSV,
+        separator="\t",
+        has_header=False,
+        new_columns=["pfam_id", "pfam_name", "pfam_desc"],
+        infer_schema_length=0,
+    )
 
 
 def pfam_label(pfam_ids: list[str]) -> dict[str, str]:
@@ -419,28 +512,45 @@ def focus_calls() -> pl.LazyFrame:
 
 def focus_arms() -> pl.DataFrame:
     """The (tool, variant) pairs the raw call table carries."""
-    return focus_calls().select("tool", "variant").unique().collect().sort("tool", "variant")
+    return (
+        focus_calls()
+        .select("tool", "variant")
+        .unique()
+        .collect()
+        .sort("tool", "variant")
+    )
 
 
 def core_truth() -> pl.DataFrame:
     """The true (gene, Pfam family) pairs on the curated MHC molecules, with role labels."""
     core = load_chr6_gene_map().filter(pl.col("mhc_class").is_not_null())
     truth = load_human_truth()
-    return (truth.join(core.select(accession="accession", hgnc_symbol="hgnc_symbol",
-                                   mhc_class="mhc_class"), on="accession", how="inner")
-                 .rename({"accession": "query_acc"})
-                 .with_columns(role=domain_role(pl.col("pfam_id"))))
+    return (
+        truth.join(
+            core.select(
+                accession="accession", hgnc_symbol="hgnc_symbol", mhc_class="mhc_class"
+            ),
+            on="accession",
+            how="inner",
+        )
+        .rename({"accession": "query_acc"})
+        .with_columns(role=domain_role(pl.col("pfam_id")))
+    )
 
 
 def window_truth() -> pl.DataFrame:
     """Every true domain on a gene inside the extended MHC window."""
     win = load_mhc_window().select(accession="accession", hgnc_symbol="hgnc_symbol")
-    return (load_human_truth().join(win, on="accession", how="inner")
-                              .rename({"accession": "query_acc"}))
+    return (
+        load_human_truth()
+        .join(win, on="accession", how="inner")
+        .rename({"accession": "query_acc"})
+    )
 
 
-def domain_grid(truth: pl.DataFrame, species: list[str],
-                arms: pl.DataFrame | None = None) -> pl.DataFrame:
+def domain_grid(
+    truth: pl.DataFrame, species: list[str], arms: pl.DataFrame | None = None
+) -> pl.DataFrame:
     """Zero-filled (true domain x arm x species) grid with the best IoU and cover reached.
 
     The raw call table has no row at all for a (gene, family, arm) an arm never called on,
@@ -450,21 +560,28 @@ def domain_grid(truth: pl.DataFrame, species: list[str],
     """
     arms = focus_arms() if arms is None else arms
     accs = truth["query_acc"].unique().to_list()
-    grid = (truth.join(arms, how="cross")
-                 .join(pl.DataFrame({"species": species}), how="cross"))
-    best = (focus_calls()
-            .filter(pl.col("query_acc").is_in(accs) & pl.col("species").is_in(species))
-            .group_by("species", "tool", "variant", "query_acc", "pfam_id")
-            .agg(best_iou=pl.col("iou").max(),
-                 best_cover=pl.col("cover").max(),
-                 n_calls=pl.len())
-            .collect())
-    return (grid.join(best, on=["species", "tool", "variant", "query_acc", "pfam_id"],
-                      how="left")
-                .with_columns(best_iou=pl.col("best_iou").fill_null(0.0),
-                              best_cover=pl.col("best_cover").fill_null(0.0),
-                              n_calls=pl.col("n_calls").fill_null(0),
-                              arm=pl.col("tool") + "." + pl.col("variant")))
+    grid = truth.join(arms, how="cross").join(
+        pl.DataFrame({"species": species}), how="cross"
+    )
+    best = (
+        focus_calls()
+        .filter(pl.col("query_acc").is_in(accs) & pl.col("species").is_in(species))
+        .group_by("species", "tool", "variant", "query_acc", "pfam_id")
+        .agg(
+            best_iou=pl.col("iou").max(),
+            best_cover=pl.col("cover").max(),
+            n_calls=pl.len(),
+        )
+        .collect()
+    )
+    return grid.join(
+        best, on=["species", "tool", "variant", "query_acc", "pfam_id"], how="left"
+    ).with_columns(
+        best_iou=pl.col("best_iou").fill_null(0.0),
+        best_cover=pl.col("best_cover").fill_null(0.0),
+        n_calls=pl.col("n_calls").fill_null(0),
+        arm=pl.col("tool") + "." + pl.col("variant"),
+    )
 
 
 def call_offsets(species: str, accessions: list[str] | None = None) -> pl.DataFrame:
@@ -478,26 +595,46 @@ def call_offsets(species: str, accessions: list[str] | None = None) -> pl.DataFr
     A query can carry several instances of one family; the call is scored against the
     instance it overlaps most, not the first one the join happens to emit.
     """
-    truth = load_human_truth().select(query_acc="accession", pfam_id="pfam_id",
-                                      t_start="domain_start", t_end="domain_end",
-                                      prot_len="protein_length")
+    truth = load_human_truth().select(
+        query_acc="accession",
+        pfam_id="pfam_id",
+        t_start="domain_start",
+        t_end="domain_end",
+        prot_len="protein_length",
+    )
     calls = focus_calls().filter(pl.col("species") == species)
     if accessions is not None:
         calls = calls.filter(pl.col("query_acc").is_in(accessions))
-    joined = (calls.select("query_acc", "pfam_id", "qstart", "qend", "score", "iou",
-                           "cover", "is_gray", "tool", "variant")
-                   .join(truth.lazy(), on=["query_acc", "pfam_id"], how="inner")
-                   .with_columns(overlap=(pl.min_horizontal("qend", "t_end")
-                                          - pl.max_horizontal("qstart", "t_start"))
-                                 .clip(lower_bound=0))
-                   .filter(pl.col("overlap") > 0)
-                   .sort("overlap", descending=True)
-                   .group_by("tool", "variant", "query_acc", "pfam_id", "qstart", "qend")
-                   .agg(pl.all().first()))
-    return (joined.collect()
-                  .with_columns(d_start=pl.col("qstart") - pl.col("t_start"),
-                                d_end=pl.col("qend") - pl.col("t_end"),
-                                arm=pl.col("tool") + "." + pl.col("variant")))
+    joined = (
+        calls.select(
+            "query_acc",
+            "pfam_id",
+            "qstart",
+            "qend",
+            "score",
+            "iou",
+            "cover",
+            "is_gray",
+            "tool",
+            "variant",
+        )
+        .join(truth.lazy(), on=["query_acc", "pfam_id"], how="inner")
+        .with_columns(
+            overlap=(
+                pl.min_horizontal("qend", "t_end")
+                - pl.max_horizontal("qstart", "t_start")
+            ).clip(lower_bound=0)
+        )
+        .filter(pl.col("overlap") > 0)
+        .sort("overlap", descending=True)
+        .group_by("tool", "variant", "query_acc", "pfam_id", "qstart", "qend")
+        .agg(pl.all().first())
+    )
+    return joined.collect().with_columns(
+        d_start=pl.col("qstart") - pl.col("t_start"),
+        d_end=pl.col("qend") - pl.col("t_end"),
+        arm=pl.col("tool") + "." + pl.col("variant"),
+    )
 
 
 def arm_ksize(variant: pl.Expr) -> pl.Expr:
@@ -505,8 +642,9 @@ def arm_ksize(variant: pl.Expr) -> pl.Expr:
     return variant.str.extract(r"_k(\d+)_", 1).cast(pl.Int64)
 
 
-def target_family_counts(pfam_ids: list[str],
-                         species: list[str] | None = None) -> pl.DataFrame:
+def target_family_counts(
+    pfam_ids: list[str], species: list[str] | None = None
+) -> pl.DataFrame:
     """How many proteins in each target proteome carry each family.
 
     Zero means the family is not annotated in that proteome, so no tool can score a true
@@ -517,10 +655,14 @@ def target_family_counts(pfam_ids: list[str],
     rows = []
     for sp in species:
         dm = load_target_domain_map(sp)
-        cnt = dict(dm.filter(pl.col("pfam_id").is_in(pfam_ids))
-                     .group_by("pfam_id")
-                     .agg(pl.col("accession").n_unique().alias("n"))
-                     .iter_rows())
-        rows += [{"species": sp, "pfam_id": p, "n_target_proteins": cnt.get(p, 0)}
-                 for p in pfam_ids]
+        cnt = dict(
+            dm.filter(pl.col("pfam_id").is_in(pfam_ids))
+            .group_by("pfam_id")
+            .agg(pl.col("accession").n_unique().alias("n"))
+            .iter_rows()
+        )
+        rows += [
+            {"species": sp, "pfam_id": p, "n_target_proteins": cnt.get(p, 0)}
+            for p in pfam_ids
+        ]
     return pl.DataFrame(rows)

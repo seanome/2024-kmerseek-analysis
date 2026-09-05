@@ -2482,6 +2482,176 @@ def section_encoding_vs_divergence(out: Path, metrics: pl.DataFrame,
     """
     base = ungrouped(metrics.filter(pl.col("tool") == "kmerseek"))
     if base.height == 0 or "species" not in base.columns:
+        return
+    if "species_mya" not in base.columns:
+        return
+    parsed = parse_kmerseek_variants(base)
+    if parsed.height == 0:
+        return
+
+    for ts in sorted(parsed["truth_set"].unique().to_list()):
+        cut, split = pick_selection_split(parsed.filter(pl.col("truth_set") == ts))
+        # `all` is the hmmscan ceiling's species, which reads no target proteome and so
+        # sits at no divergence time.
+        cut = cut.filter((pl.col("species") != "all")
+                         & pl.col("species_mya").is_not_null())
+        if cut.height == 0:
+            continue
+        cut = encoding_axes(cut)
+        if cut.height == 0:
+            continue
+
+        cols = [m for m in ENCODING_RANK_METRICS if m in cut.columns]
+        if not cols:
+            continue
+        titles = {m: fmt_metric_headers([m]).get(m, {}).get("title", m) for m in cols}
+
+        n_encodings = cut.select(pl.struct("alphabet", "ksize").n_unique()).item()
+
+        # One colour per metric, shared by that metric's three ranks so they read as one
+        # band, and one dash style per rank so the winner is still tellable from its
+        # runners-up inside that band. Colour alone would make nine indistinguishable
+        # lines; dash alone would lose which metric a line belongs to.
+        colors, dashes = {}, {}
+        series_by_panel = {key: {} for _, key, _ in ENCODING_PANELS}
+        table = {}
+        for i, metric in enumerate(cols):
+            color = SERIES_COLORS[i % len(SERIES_COLORS)]
+            top = best_encodings_per_species(cut, metric, top_n)
+            if top.height == 0:
+                continue
+            for rank in range(top_n):
+                rows = top.filter(pl.col("rank") == rank).sort("species_mya").to_dicts()
+                if not rows:
+                    continue
+                label = f"{titles[metric]} · {rank_name(rank)}"
+                colors[label] = color
+                dashes[label] = RANK_DASHES[min(rank, len(RANK_DASHES) - 1)]
+                for _, key, _ in ENCODING_PANELS:
+                    series_by_panel[key][label] = {
+                        str(r["species_mya"]): r[key] for r in rows}
+
+            # The numbers behind the top line, plus how far clear of the runner-up it was.
+            # A win of 0.001 on a 400-combo sweep is not a difference between encodings,
+            # and a reader cannot see that from the line alone.
+            best = {r["species"]: r for r in top.filter(pl.col("rank") == 0).to_dicts()}
+            second = {r["species"]: r for r in top.filter(pl.col("rank") == 1).to_dicts()}
+            for sp, r in best.items():
+                row = table.setdefault(sp, {"Mya": r["species_mya"]})
+                row[f"{metric}__enc"] = f"{r['alphabet']} k{r['ksize']}"
+                row[f"{metric}__classes"] = r["n_classes"]
+                row[f"{metric}__k"] = r["ksize"]
+                row[f"{metric}__bits"] = r["bits_per_kmer"]
+                runner = second.get(sp)
+                row[f"{metric}__margin"] = (
+                    abs(r[metric] - runner[metric]) if runner else None)
+
+        panels = [(name, key, series_by_panel[key])
+                  for name, key, _ in ENCODING_PANELS if series_by_panel[key]]
+        if not panels:
+            continue
+
+        lead = (f"<p>The kmerseek encoding that won each target proteome, against "
+                f"divergence time from human in millions of years — the same x axis as "
+                f"the Divergence section ({ts} truth, <code>{split}</code> split, "
+                f"{n_encodings:,} distinct alphabet x ksize encodings ranked).</p>")
+        write_section(out, f"qfo_encoding_divergence_{ts}", {
+            "id": f"qfo_encoding_divergence_{ts}",
+            "section_name": f"Winning encoding vs divergence — {ts} truth",
+            "description": lead + bullets(
+                "<b>Three panels behind the switcher.</b> <i>Alphabet size</i> is the "
+                "number of amino-acid classes the encoding collapses the 20 residues "
+                "into; <i>K-mer length</i> is k; <i>Bits per k-mer</i> is "
+                "<code>k · log2(classes)</code>, the information content of one k-mer.",
+                "<b>The question is whether the third panel is flat while the first two "
+                "move.</b> Coarser alphabet with a longer k, at constant bits, would say "
+                "the method needs a fixed amount of information per k-mer and trades "
+                "resolution against length to keep it. A bits curve that also moves says "
+                "there is no such budget.",
+                "<b>One colour per metric, three lines each — solid for the winner, "
+                "dashed for the 2nd, dotted for the 3rd.</b> The metrics disagree "
+                "about which encoding wins — Fmax is precision-dominated, reachable "
+                "recall is not, and sensitivity to the first false positive is "
+                "threshold-free — so each is drawn separately rather than one being "
+                "picked silently. Where they pick different alphabets, that is the "
+                "result.",
+                "<b>Read the three lines of a colour as a band, not the top one alone.</b> "
+                "Across hundreds of encodings the winner routinely beats the runner-up in "
+                "the third decimal. A trend that the <i>best</i> line shows and the "
+                "<i>2nd</i> and <i>3rd</i> do not is one encoding's noise. The table "
+                "below carries the actual margin over the runner-up per species.",
+                "<b>Ranked over distinct alphabet x ksize encodings</b>, each taken at its "
+                "better low-complexity arm. Ranking raw combos instead would make the 2nd "
+                "and 3rd lines the same encoding with the filter flipped, and the band "
+                "would look tight for a reason that has nothing to do with the encoding.",
+                "<b>Split</b> — the <code>selection</code> half wherever the truth set has "
+                "one, as in the per-species winners table: this section is for choosing an "
+                "encoding, and choosing on the heldout half is what the split exists to "
+                "prevent. Swiss-Prot and Pfam-N are scored whole and say <code>all</code>.",
+                "<b>Class counts come from the alphabet name</b>, which states them since "
+                "kmerseek PR #43 — <code>gbmr4</code> is 4 classes, "
+                "<code>hp_thomas_dill2</code> is 2. A name that carries no count is left "
+                "out rather than given a default, and the build log names it."),
+            "plot_type": "linegraph",
+            "pconfig": {"id": f"qfo_encoding_divergence_{ts}_plot",
+                        "title": f"Winning encoding vs divergence ({ts})",
+                        "xlab": "divergence from human (Mya)",
+                        "ylab": "encoding", "ymin": 0, "height": 500,
+                        # Nine species is nine points; without markers a reader cannot see
+                        # where a line actually has a measurement and where it is only
+                        # being interpolated between two proteomes.
+                        "style": "lines+markers",
+                        "colors": colors, "dash_styles": dashes,
+                        "data_labels": [{"name": name, "ylab": ylab}
+                                        for name, key, ylab in ENCODING_PANELS
+                                        if series_by_panel[key]]},
+            "data": [panel for _, _, panel in panels],
+        })
+
+        if not table:
+            continue
+        headers = {"Mya": {"title": "Mya", "description": "Divergence from human",
+                           "format": "{:,.0f}"}}
+        for metric in cols:
+            t = titles[metric]
+            headers[f"{metric}__enc"] = {
+                "title": f"{t}: encoding",
+                "description": f"Alphabet and k that won this proteome on {t}"}
+            headers[f"{metric}__classes"] = {
+                "title": f"{t}: classes", "format": "{:,.0f}", "scale": "Blues",
+                "description": "Amino-acid classes in that alphabet"}
+            headers[f"{metric}__k"] = {
+                "title": f"{t}: k", "format": "{:,.0f}", "scale": "Greens",
+                "description": "K-mer length"}
+            headers[f"{metric}__bits"] = {
+                "title": f"{t}: bits", "format": "{:,.1f}", "scale": "Purples",
+                "description": "k · log2(classes), information content of one k-mer"}
+            headers[f"{metric}__margin"] = {
+                "title": f"{t}: Δ2nd", "format": "{:,.4f}", "scale": "Reds",
+                "description": "How far the winner beat the 2nd-best encoding. Near zero "
+                               "means the two are not distinguishable on this metric"}
+        write_section(out, f"qfo_encoding_divergence_table_{ts}", {
+            "id": f"qfo_encoding_divergence_table_{ts}",
+            "section_name": f"Winning encoding by species — {ts} truth",
+            "description": (
+                f"<p>The panels above as numbers, one row per target proteome, ordered by "
+                f"divergence from human ({split} split, {ts} truth).</p>"
+                + bullets(
+                    "<b>encoding / classes / k / bits</b> — the winning alphabet, its "
+                    "class count, its k, and <code>k · log2(classes)</code>.",
+                    "<b>Δ2nd is the column to read first.</b> It is how far the winner "
+                    "beat the next distinct encoding on that metric. At 0.001 or below "
+                    "the two are the same result and the winner's alphabet is a coin "
+                    "flip, so a trend running through such rows is not evidence.",
+                    "<b>One block of columns per metric</b>, because they disagree about "
+                    "which encoding wins. Compare the blocks rather than reading one.")),
+            "plot_type": "table",
+            "pconfig": {"id": f"qfo_encoding_divergence_table_{ts}_table",
+                        "title": f"Winning encoding by species ({ts})",
+                        "col1_header": "Species", "sort_rows": False},
+            "headers": headers,
+            "data": dict(sorted(table.items(), key=lambda kv: kv[1]["Mya"])),
+        })
 # ---------------------------------------------------------------------------
 # Reduced-alphabet information ceiling
 # ---------------------------------------------------------------------------
