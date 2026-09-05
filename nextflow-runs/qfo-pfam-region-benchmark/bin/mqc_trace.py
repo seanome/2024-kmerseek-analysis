@@ -125,6 +125,16 @@ TRACE_SCHEMA = {
     "realtime_s": pl.Float64, "duration_s": pl.Float64,
     "peak_rss_b": pl.Float64, "requested_mem_b": pl.Float64,
     "pct_cpu": pl.Float64, "read_b": pl.Float64, "write_b": pl.Float64,
+    # rchar/wchar beside read_bytes/write_bytes, because the PAIR is the measurement and
+    # either alone has been read wrong twice. read_bytes is what the block device
+    # delivered; rchar is what the process asked the kernel for. scoreDomainCalls has read
+    # 906 GB and then 1_052 GB of read_bytes against ~20 GB of rchar, and a gap that size
+    # is not duplicate reading -- it is polars re-faulting the pages of a memory-mapped
+    # parquet whose working set the task keeps evicting. Duplicate reading of a staged file
+    # moves BOTH numbers together. The two fixes those diagnoses call for are different and
+    # opposite (materialise the frame vs. score fewer times over the same file), so the
+    # report has to carry both columns rather than let a reader infer one from the other.
+    "rchar_b": pl.Float64, "wchar_b": pl.Float64,
     "tool": pl.String, "is_search": pl.Boolean, "cpu_hours": pl.Float64,
     "mem_used_frac": pl.Float64,
 }
@@ -146,6 +156,8 @@ def load_trace(path: Path) -> pl.DataFrame:
     df = _apply(df, "%cpu", parse_percent, "pct_cpu")
     df = _apply(df, "read_bytes", parse_memory, "read_b")
     df = _apply(df, "write_bytes", parse_memory, "write_b")
+    df = _apply(df, "rchar", parse_memory, "rchar_b")
+    df = _apply(df, "wchar", parse_memory, "wchar_b")
 
     for col, dtype in (("cpus", pl.Int64), ("attempt", pl.Int64)):
         if col in df.columns:
@@ -233,6 +245,8 @@ def load_timing_sidecars(path: Path | str | None) -> pl.DataFrame:
         pl.lit(None, dtype=pl.Float64).alias("pct_cpu"),
         pl.lit(None, dtype=pl.Float64).alias("read_b"),
         pl.lit(None, dtype=pl.Float64).alias("write_b"),
+        pl.lit(None, dtype=pl.Float64).alias("rchar_b"),
+        pl.lit(None, dtype=pl.Float64).alias("wchar_b"),
         pl.col("process").replace_strict(PROCESS_TO_TOOL, default="overhead").alias("tool"),
         pl.col("process").is_in(list(SEARCH_PROCESSES)).alias("is_search"),
         (pl.col("realtime_s") * pl.col("cpus") / 3600).alias("cpu_hours"),
@@ -262,6 +276,85 @@ def merge_timings(trace: pl.DataFrame, sidecars: pl.DataFrame) -> pl.DataFrame:
     return pl.concat([trace, fresh], how="diagonal_relaxed")
 
 
+#: Processes that split ONE logical search across several tasks. Their per-task rows are
+#: fragments: a rate or a duration taken from one row describes a fraction of the query
+#: set, not the search. folddiscoQuery runs 20 chunks per target species, so a median over
+#: its raw rows understates the search by ~23x and inflates queries-per-second by the same
+#: factor. Anything reporting per-search cost has to collapse these first.
+CHUNKED_PROCESSES = {"folddiscoQuery"}
+
+
+#: Processes whose ONE name covers several of the tools the metrics table names apart.
+#: mmseqs2Search runs both mmseqs2_seqseq and mmseqs2_iterative and carries which one in
+#: the tag's brackets, so `tool` alone pools two tools that are scored separately. Grouping
+#: a rate or a cost on `tool` here charges each of them the pair's total.
+MULTI_TOOL_PROCESSES = {"mmseqs2Search"}
+
+
+def search_tool(process: str, tool: str, tag: str | None) -> str:
+    """The metrics table's tool name for one trace row.
+
+    Same as `tool` everywhere except MULTI_TOOL_PROCESSES, where the bracketed part of the
+    tag already spells the tool the way the metrics table does (`mmseqs2_seqseq`), and the
+    process name does not.
+    """
+    if process not in MULTI_TOOL_PROCESSES:
+        return tool
+    m = re.search(r"\[(.+?)\]", tag or "")
+    return m.group(1) if m else tool
+
+
+def collapse_chunked_searches(trace: pl.DataFrame) -> pl.DataFrame:
+    """Sum every CHUNKED_PROCESSES task back into one row per (process, variant, species).
+
+    Time is additive across chunks and CPU-hours are too, so both are summed. `cpus` is
+    kept as the per-task request rather than summed: it describes how wide one task was,
+    and summing it would claim a core count no single job ever held. Non-chunked rows pass
+    through untouched, so this is safe to apply to a whole trace.
+    """
+    if trace.height == 0 or "process" not in trace.columns:
+        return trace
+    chunked = trace.filter(pl.col("process").is_in(list(CHUNKED_PROCESSES)))
+    if chunked.height == 0:
+        return trace
+    rest = trace.filter(~pl.col("process").is_in(list(CHUNKED_PROCESSES)))
+    keys = ["process", "tool", "is_search", "status"]
+    merged = (
+        chunked.with_columns(
+            _sp=pl.col("tag").map_elements(species_from_tag, return_dtype=pl.String),
+            _var=pl.struct("process", "tag").map_elements(
+                lambda r: variant_from_tag(r["process"], r["tag"]), return_dtype=pl.String),
+        )
+        .group_by(keys + ["_sp", "_var"])
+        .agg(
+            pl.col("realtime_s").sum(),
+            pl.col("duration_s").sum(),
+            pl.col("cpu_hours").sum(),
+            pl.col("cpus").max(),
+            pl.col("attempt").max(),
+            pl.col("peak_rss_b").max(),
+            pl.col("requested_mem_b").max(),
+            pl.col("pct_cpu").mean(),
+            pl.col("read_b").sum(),
+            pl.col("write_b").sum(),
+            pl.col("rchar_b").sum(),
+            pl.col("wchar_b").sum(),
+            pl.col("mem_used_frac").max(),
+            pl.col("exit").first(),
+            pl.len().alias("_n_chunks"),
+        )
+        .with_columns(tag=pl.lit("human_vs_") + pl.col("_sp"))
+        .drop("_sp", "_var")
+    )
+    # A real trace carries columns this aggregation has no meaning for -- task_id, hash,
+    # native_id, a work dir. They identify ONE task and a collapsed row is several, so they
+    # are filled with null rather than picked arbitrarily from whichever chunk sorted first.
+    for col in rest.columns:
+        if col not in merged.columns:
+            merged = merged.with_columns(pl.lit(None, dtype=rest.schema[col]).alias(col))
+    return pl.concat([rest, merged.select(rest.columns)], how="vertical_relaxed")
+
+
 def variant_from_tag(process: str, tag: str | None) -> str:
     """Recover a variant label from a process tag, matching the metrics table's spelling.
 
@@ -282,7 +375,14 @@ def variant_from_tag(process: str, tag: str | None) -> str:
 
 
 def species_from_tag(tag: str | None) -> str | None:
-    """Target species out of a tag: `human_vs_yeast ...` or `yeast_hp_...`."""
+    """Target species out of a tag: `human_vs_yeast ...` or `yeast_hp_...`.
+
+    There was briefly a second definition of this name higher up the file, added with
+    collapse_chunked_searches. Python kept the LAST one, so the new definition never ran
+    and the caller silently got this one -- which happens to answer the same for every tag
+    shape in the trace, so nothing broke and nothing said so either. One definition, here,
+    because the next such pair will not be harmless.
+    """
     if not tag or tag == "-":
         return None
     m = re.match(r"^human_vs_([A-Za-z0-9]+)", tag)

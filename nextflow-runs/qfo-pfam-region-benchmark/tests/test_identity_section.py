@@ -57,7 +57,11 @@ def test_it_names_the_reason_the_swissprot_join_cannot_match(tmp_path):
 
 
 def test_a_real_gradient_is_still_drawn(tmp_path):
+    """Identity is a number, so the axis is numeric and the bins are drawn at their
+    midpoints. no_homolog has no midpoint and is not a point on an identity axis, so it
+    leaves this panel for qfo_identity_no_homolog rather than becoming an invented x."""
     cfg = section(tmp_path, {"0-20%": 0.05, "20-30%": 0.11, "30-40%": 0.2,
                              "no_homolog": 0.01})
-    assert cfg["plot_type"] == "bargraph"
-    assert list(cfg["categories"]) == ["0-20%", "20-30%", "30-40%", "no_homolog"]
+    assert cfg["plot_type"] == "linegraph"
+    for series in cfg["data"].values():
+        assert [float(x) for x in series] == [10.0, 25.0, 35.0]

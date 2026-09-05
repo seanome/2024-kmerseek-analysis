@@ -55,14 +55,19 @@ def test_single_bin_axis_says_so_instead_of_drawing_a_bargraph(tmp_path):
 def test_a_real_gradient_still_plots(tmp_path):
     out = written(tmp_path, {"0.0-0.1": 0.1, "0.1-0.25": 0.2, "0.25-0.5": 0.3})
     omega = out["qfo_omega"]
-    assert omega["plot_type"] == "bargraph"
-    # Sorted by lower edge, not by whatever order the frame happened to hold.
-    assert list(omega["categories"]) == ["0.0-0.1", "0.1-0.25", "0.25-0.5"]
+    # omega is a number, so it is an axis and not a row of category slots. The bins are
+    # unequal -- 0.1, 0.15, 0.25 wide here -- and category slots would draw all three gaps
+    # the same width.
+    assert omega["plot_type"] == "linegraph"
     assert set(omega["data"]) == {"foldseek", "kmerseek polarity4_k16_lcFalse",
                                   "hmmer3_phmmer"}
+    for series in omega["data"].values():
+        # Bin midpoints, ascending, not the order the frame happened to hold.
+        assert [float(x) for x in series] == [0.05, 0.175, 0.375]
     # The healthy axes in the same run must be untouched by the guard.
-    assert out["qfo_plddt"]["plot_type"] == "bargraph"
-    assert list(out["qfo_plddt"]["categories"]) == ["50-70", "70-90", "90-100"]
+    assert out["qfo_plddt"]["plot_type"] == "linegraph"
+    for series in out["qfo_plddt"]["data"].values():
+        assert [float(x) for x in series] == [60.0, 80.0, 95.0]
 
 
 def test_axis_absent_from_the_run_writes_no_section(tmp_path):
@@ -84,9 +89,8 @@ def test_empty_bins_are_dropped_from_the_categories(tmp_path):
     )
     bmi.section_covariates(tmp_path, m, "swissprot", 10)
     omega = json.loads((tmp_path / "qfo_omega_mqc.json").read_text())
-    assert list(omega["categories"]) == ["0.0-0.1", "0.1-0.25"]
     for series in omega["data"].values():
-        assert "0.25-0.5" not in series
+        assert [float(x) for x in series] == [0.05, 0.175]
 
 
 def test_omega_description_does_not_claim_species_specific_rows(tmp_path):
