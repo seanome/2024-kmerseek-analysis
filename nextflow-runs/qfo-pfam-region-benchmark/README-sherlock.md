@@ -499,15 +499,24 @@ task's own alphabet, ksize and target. Do not add a `memory` directive for
 script-declared ones in Nextflow, so a config-level "default" silently overrides the
 per-combo sizing and the HP jobs OOM.
 
-The proteome-size term applies to the 128 GB (saturated) branch only, and was added on
-2026-08-25. Without it every ecoli and yeast task asked for the full 128 GB and peaked at
-1.0-4.1 GB, and the resulting standing reservation is what SLURM answered by queueing the
-sweep rather than running it.
+Index and search are sized SEPARATELY, and this is where most of the saving is. Across
+1_500 completed `kmerseekIndex` tasks the peak was 7.00 GB and it tracked the target
+proteome and nothing else -- no ksize or alphabet signal at all -- while they were asking
+a search-sized 42.6 GB on average. `kmerseekIndexMemory` is linear in proteome size.
 
-The 32 GB branch stays flat on purpose. `isSaturated` is a hard threshold, so the
-hungriest tasks in the sweep are the ones just outside it -- `fly_dayhoff_k10` is
-unsaturated and peaked at 28.1 GB against its 32 GB. Scaling that branch by proteome size
-was measured to push it and `fly_dayhoff_k11` into OOM.
+`kmerseekSearchMemory` grades on KEYSPACE BITS, ksize x log2(class count), rather than
+branching on a hard `isSaturated` threshold. Fitted to 4_299 completed tasks over 15
+alphabets and ksize 5-30, the envelope of peak memory is `292 * exp(-0.1017 * bits)`:
+it halves every 6.8 bits, which is one halving per ~7 residues on a 2-letter alphabet and
+per ~1.6 on protein20.
+
+The hard threshold was replaced because its own worst cases sat just outside it. 59 tasks
+had a peak_rss within 5% of their request -- every `gbmr7` k=9-14 and every `gbmr4` k=12-13
+task, pinned at exactly 32.00 or 64.00 GB. A peak equal to the request to two decimals
+across nine different species is a cgroup ceiling, not a coincidence: those were clipped,
+so their true peaks are still unknown. Both alphabets are carried as named exceptions with
+floors set ABOVE the clip they were measured at (`params.kmerseek_memory_unmodelled`), and
+both should be re-measured with a request they cannot reach.
 
 The reason low ksize needs *more* memory, not less, is that a handful of k-mers absorb a
 large share of the proteome, and the inverted index scales with the most-degenerate
@@ -767,6 +776,8 @@ reintroducing the bug and confirming the test fails:
 | `scoring_is_deterministic_under_score_ties` | the greedy one-to-one match sorted on a non-unique key; five identical runs gave 169, 169, 169, 169, 168 |
 | `perfect_tools_only_errors_are_nested_transfers` | asserts the *reason* precision is below 1.0 (nested Pfam domains), not a threshold that would pass for the wrong reason |
 
+`tests/test_dedup_passes.py` is a standalone script with its own exit-code contract, not a
+pytest module; `make test` and CI run it as a separate step.
 
 ## Metrics
 

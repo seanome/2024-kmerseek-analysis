@@ -150,6 +150,10 @@ def main():
     p.add_argument("--metapredict", type=Path,
                    help="optional metapredict disorder parquet from "
                         "predict_disorder_metapredict.py")
+    # Which bucket of the query set each protein came from, written by
+    # make_mini_testset.py. Optional so a run built before it existed still works.
+    p.add_argument("--query-sets", type=Path,
+                   help="optional accession -> query_set TSV from make_mini_testset.py")
     p.add_argument("--out", required=True, type=Path)
     p.add_argument("--summary-out", required=True, type=Path)
     args = p.parse_args()
@@ -158,6 +162,23 @@ def main():
     accessions = set(truth["accession"].unique().to_list())
     cov = pl.DataFrame({"accession": sorted(accessions)})
     summary = {"n_query_proteins": len(accessions)}
+
+    # Joined first, before any other axis, so `query_set` is present even when HGNC,
+    # structures and omega are all absent. Downstream cuts key on it to reconstruct the
+    # original chr6 set exactly, and a run whose covariates lack it cannot be compared to
+    # one that has it -- so a missing file is reported, not silently skipped.
+    if args.query_sets and args.query_sets.exists():
+        qs = pl.read_csv(args.query_sets, separator="\t", infer_schema_length=0)
+        cov = cov.join(qs, on="accession", how="left")
+        counts = (
+            cov.group_by("query_set").len().sort("query_set").rows()
+        )
+        summary["query_sets"] = {
+            "n_covered": int(cov["query_set"].is_not_null().sum()),
+            "counts": {(k if k is not None else "unlabelled"): v for k, v in counts},
+        }
+    else:
+        summary["query_sets"] = "skipped: no query-set labels supplied"
 
     hgnc = pl.DataFrame(schema={"hgnc_symbol": pl.String, "accession": pl.String})
     if args.hgnc and args.hgnc.exists():

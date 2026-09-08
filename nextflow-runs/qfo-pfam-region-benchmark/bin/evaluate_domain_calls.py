@@ -26,7 +26,12 @@ families over target-side boundary noise, which is not what is being measured.
 """
 
 import argparse
+import bz2
+import gzip
 import json
+import lzma
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -116,6 +121,66 @@ def extract_accession(col: pl.Expr) -> pl.Expr:
         .then(col.str.split("|").list.get(1, null_on_oob=True))
         .otherwise(col)
     )
+
+
+# Compressed inputs already inflated in this process, keyed by source path. Every arm is
+# read once per dedup mode, so without this the same file is inflated twice.
+_INFLATED: dict[Path, Path] = {}
+
+
+def inflate_for_scan(path: Path) -> Path:
+    """Inflate a compressed CSV to a plain file next to the task's other work.
+
+    polars' CSV reader does NOT stream a compressed source: it decompresses the whole file
+    into memory before parsing. Measured on this project's data at up to 97x the compressed
+    size (1.9 GB -> 184.7 GB), which is how a scan that looks lazy OOM-kills a task. Every
+    baseline arm here arrives as .tsv.gz, and each is read more than once -- the schema
+    probe, the scan, then both again for the second dedup mode -- so each read paid that
+    cost over again.
+
+    Inflating to disk trades RAM for scratch space: polars memory-maps a plain file and
+    reads it in chunks. Returns the original path unchanged when the file is not compressed,
+    or when nothing here can decompress it, so a failure here degrades to the old behaviour
+    rather than losing the arm.
+    """
+    openers = {".gz": gzip.open, ".bz2": bz2.open, ".xz": lzma.open}
+    if path.suffix not in openers and path.suffix not in (".zst", ".zstd"):
+        return path
+
+    key = path.resolve()
+    cached = _INFLATED.get(key)
+    if cached is not None and cached.exists():
+        return cached
+
+    out = Path(f"{path.name}.inflated")
+    try:
+        if path.suffix in openers:
+            with openers[path.suffix](path, "rb") as src, open(out, "wb") as dst:
+                shutil.copyfileobj(src, dst, length=1 << 22)
+        else:
+            with open(out, "wb") as dst:
+                subprocess.run(["zstd", "-dc", str(path)], stdout=dst, check=True)
+    except (OSError, subprocess.SubprocessError):
+        out.unlink(missing_ok=True)
+        return path
+
+    print(f"inflated {path.name} ({path.stat().st_size / 1e6:.1f} MB) -> "
+          f"{out.name} ({out.stat().st_size / 1e6:.1f} MB) so polars can stream it",
+          file=sys.stderr)
+    _INFLATED[key] = out
+    return out
+
+
+def release_inflated(path: Path) -> None:
+    """Delete an arm's inflated copy once nothing will read it again.
+
+    A batched task scores ~415 arms in one directory. Holding every inflated baseline until
+    the process exits would leave tens of GB of scratch standing for files already scored,
+    which on a shared $SCRATCH is its own way to kill a long task.
+    """
+    out = _INFLATED.pop(path.resolve(), None)
+    if out is not None:
+        out.unlink(missing_ok=True)
 
 
 def load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
@@ -242,6 +307,12 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
             pl.col(score_col).cast(pl.Float64).alias("score"),
         )
 
+    # Everything below this point is CSV, so it is the path that has to be inflated first.
+    # The size check above deliberately stays on the ORIGINAL file: an empty gzip stream is
+    # not a zero-byte file, and its inflated form is, which scan_csv reports as NoDataError
+    # exactly as it did before.
+    path = inflate_for_scan(path)
+
     if direct:
         cols = ["query", "pfam_id", "qstart", "qend", "score", "evalue"]
         lf = pl.scan_csv(path, separator="\t", has_header=False, new_columns=cols)
@@ -260,25 +331,169 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
     # Widths are read off the file rather than declared, so one loader serves both.
     cols = ["query", "target", "qstart", "qend", "tstart", "tend", "score", "evalue",
             "n_matched_residues"]
-    probe = pl.scan_csv(path, separator="\t", has_header=False)
+    probe = pl.scan_csv(path, separator="\t", has_header=False, infer_schema_length=0)
     width = len(probe.collect_schema().names())
+    # Every column read as text, and cast here instead. polars infers a column's dtype from
+    # the first rows and then fails the WHOLE file on the first row that disagrees: one bad
+    # line 105 KB into a 1.2 GB hhblits table killed a task 829 arms in, with a message
+    # naming a byte offset and no tool. Whether a row is usable is a question about the
+    # tool's output, and it belongs here where the answer can name the arm.
     lf = pl.scan_csv(path, separator="\t", has_header=False,
-                     new_columns=cols[:width])
+                     new_columns=cols[:width], infer_schema_length=0)
     selection = [
         extract_accession(pl.col("query")).alias("query_acc"),
         extract_accession(pl.col("target")).alias("target_acc"),
-        pl.col("qstart").cast(pl.Int64),
-        pl.col("qend").cast(pl.Int64),
-        pl.col("tstart").cast(pl.Int64),
-        pl.col("tend").cast(pl.Int64),
-        pl.col("score").cast(pl.Float64),
+        pl.col("qstart").cast(pl.Int64, strict=False),
+        pl.col("qend").cast(pl.Int64, strict=False),
+        pl.col("tstart").cast(pl.Int64, strict=False),
+        pl.col("tend").cast(pl.Int64, strict=False),
+        pl.col("score").cast(pl.Float64, strict=False),
     ]
     if width >= 9:
-        selection.append(pl.col("n_matched_residues").cast(pl.Int64))
-    return lf.select(selection)
+        selection.append(pl.col("n_matched_residues").cast(pl.Int64, strict=False))
+    lf = lf.select(selection)
+
+    # A row whose coordinates did not parse carries a number from the wrong column, so it
+    # is not a hit that can be placed anywhere -- see the shifted-field note on the awk in
+    # hhblitsSearch. Dropping it is the only thing to do with it, but dropping it QUIETLY
+    # is not: the count belongs in the log next to the arm it came from.
+    #
+    # Not an error, deliberately. A batched task scores hundreds of arms, and one tool's
+    # malformed rows must not cost the rest of them their metrics. Every row failing is a
+    # different thing -- the file's whole layout is wrong rather than some of its rows --
+    # and that does raise, for the same reason hhblitsSearch treats zero hits as a failure.
+    #
+    # A reversed interval is the same corruption wearing a number that parses. The observed
+    # hhblits row shifted by four fields and put a FRACTION in qstart, which is obvious; a
+    # shift of one or two puts targetLen or mismatch there instead, and those are integers.
+    # end < start is the check that catches those, and no aligner here reports a hit
+    # backwards -- every one of them counts residues up. Left in, such a row scores as a
+    # false positive rather than as the broken row it is: overlap clips to zero and the IoU
+    # guard reads the negative union as no overlap, so the tool is quietly penalised for its
+    # writer.
+    bad = pl.any_horizontal(
+        pl.col("query_acc").is_null(), pl.col("target_acc").is_null(),
+        pl.col("qstart").is_null(), pl.col("qend").is_null(),
+        pl.col("tstart").is_null(), pl.col("tend").is_null(),
+        pl.col("score").is_null(),
+        pl.col("qend") < pl.col("qstart"),
+        pl.col("tend") < pl.col("tstart"),
+    )
+    counts = lf.select(pl.len().alias("total"),
+                       bad.sum().alias("bad")).collect().row(0, named=True)
+    if counts["bad"]:
+        if counts["bad"] == counts["total"]:
+            raise SystemExit(
+                f"every one of {counts['total']} rows in {path.name} has an unparseable "
+                f"coordinate or score, so the file's column layout is wrong rather than "
+                f"some of its rows. Check the writer for this arm before scoring it."
+            )
+        print(f"WARNING {path.name}: dropped {counts['bad']} of {counts['total']} rows "
+              f"({100 * counts['bad'] / counts['total']:.2f}%) whose coordinates or score "
+              f"did not parse, or whose interval ran backwards. These carry a value from "
+              f"the wrong column.", file=sys.stderr)
+        lf = lf.filter(~bad)
+    return lf
 
 
-def dedup_fragment_regions(regions: pl.LazyFrame, iou_min: float) -> pl.LazyFrame:
+# Peak memory of a pairwise suppression pass is set by the JOINED frame, whose height is
+# the sum of n^2 over the join-key groups -- not by the height of the table, and not by
+# anything the input file size can predict. A sensitive baseline against a whole proteome
+# puts thousands of calls of one family on one query protein, so a table polars reads in a
+# few GB can ask for billions of pair rows. That is what killed scoreDomainCalls on the
+# ecoli batch: the arm before it deduped 1.06 million calls fine, the next one was bigger,
+# and the task was OOM-killed with no metric written for any of the 818 arms behind it.
+#
+# The join is therefore run in batches holding roughly this many pair rows. A group is never
+# split across batches, so one group whose own n^2 exceeds the budget still goes through
+# whole -- the budget bounds the common case, it is not a hard ceiling.
+DEDUP_PAIR_BUDGET = 20_000_000
+
+
+def _suppress_overlapping(df: pl.DataFrame, keys: list[str],
+                          intervals: list[tuple[str, str]], iou_min: float,
+                          pair_budget: int) -> pl.DataFrame:
+    """Drop every row beaten by another row in its group -- the pass both dedups share.
+
+    A row is beaten when another row with the same `keys` overlaps it at IoU >= iou_min on
+    EVERY interval in `intervals`, and outranks it by score, ties broken by original row
+    order. Suppression is pairwise, not iterative: a row is dropped if any overlapping row
+    scores higher, even if that row is itself dropped.
+
+    Eager on purpose. The pass is a self-join, so the table is materialised whatever it is
+    handed, and a LAZY frame here was not merely slower -- it was wrong. The row index the
+    anti-join removes by is computed inside the plan, the plan is re-executed for each
+    collect, and a re-executed scan does not hand back its rows in the same order, so the
+    indices no longer name the same rows. On a file-backed arm the effect was visible:
+    identical reruns of the same input kept 16, then 6, then 17 of the same 30 surviving
+    calls, while the log line printed 30 every time because that count came from a different
+    execution than the file did.
+    """
+    all_cols = [c for pair in intervals for c in pair]
+    c = df.with_row_index("_rid")
+
+    # Exact duplicates go first, and this is not a micro-optimisation. Homology transfer
+    # emits the same interval once per target carrying the family, so most of a large group
+    # is rows identical but for their score. The pairwise rule already drops every one of
+    # them -- an interval's IoU with a copy of itself is 1, and one of any pair beats the
+    # other -- so keeping only the best row per distinct interval leaves the surviving set
+    # exactly as it was while removing the rows that make the join quadratic.
+    #
+    # "Best" is the order the pairwise rule itself uses: highest score, then lowest row
+    # index. So the row kept here is the row that would have survived, and it still beats
+    # everything the removed copies would have beaten -- it carries their score or better,
+    # and at equal score a lower index.
+    kept = (
+        c.sort(["score", "_rid"], descending=[True, False])
+        .unique(subset=keys + all_cols, keep="first", maintain_order=True)
+    )
+    left = kept.select("_rid", *keys, *all_cols, "score")
+
+    def iou(lo: str, hi: str) -> pl.Expr:
+        inter = (pl.min_horizontal(hi, f"{hi}_b")
+                 - pl.max_horizontal(lo, f"{lo}_b")).clip(lower_bound=0)
+        union = (pl.max_horizontal(hi, f"{hi}_b")
+                 - pl.min_horizontal(lo, f"{lo}_b"))
+        return pl.when(union > 0).then(inter / union).otherwise(0.0)
+
+    overlaps = pl.all_horizontal([iou(lo, hi) >= iou_min for lo, hi in intervals])
+    outranked = ((pl.col("score_b") > pl.col("score"))
+                 | ((pl.col("score_b") == pl.col("score"))
+                    & (pl.col("_rid_b") < pl.col("_rid"))))
+
+    # Batch assignment by a running total of each group's pair count, so a batch's join
+    # produces about pair_budget rows whatever the shape of the input. A group's rows stay
+    # together because the rule compares a row only against rows sharing its key.
+    sizes = left.group_by(keys).agg(pl.len().alias("_n"))
+    sizes = sizes.with_columns(
+        ((pl.col("_n").cast(pl.Int64) ** 2).cum_sum() // max(1, pair_budget)).alias("_batch")
+    )
+    left = left.join(sizes.select(*keys, "_batch"), on=keys, how="left")
+
+    beaten = []
+    for batch in left.partition_by("_batch", include_key=False):
+        right = batch.select(
+            pl.col("_rid").alias("_rid_b"), *keys,
+            *[pl.col(col).alias(f"{col}_b") for col in all_cols],
+            pl.col("score").alias("score_b"),
+        )
+        beaten.append(
+            batch.join(right, on=keys, how="inner")
+            .filter(pl.col("_rid") != pl.col("_rid_b"))
+            .filter(overlaps & outranked)
+            .select("_rid")
+            .unique()
+        )
+
+    beaten_ids = (pl.concat(beaten).unique() if beaten
+                  else pl.DataFrame(schema={"_rid": kept.schema["_rid"]}))
+    # Sorted back into input order: the anti-join gives no ordering guarantee, and the
+    # parquet written downstream is easier to diff against an older run when it does.
+    return kept.join(beaten_ids, on="_rid", how="anti").sort("_rid").drop("_rid")
+
+
+def dedup_fragment_regions(regions: pl.DataFrame, iou_min: float,
+                           pair_budget: int = DEDUP_PAIR_BUDGET) -> pl.DataFrame:
     """Collapse regions duplicated by AlphaFold's overlapping structure fragments.
 
     A protein over 2700 aa is modelled only as 1400-residue fragments on a 200-residue
@@ -302,39 +517,11 @@ def dedup_fragment_regions(regions: pl.LazyFrame, iou_min: float) -> pl.LazyFram
     Ties are broken by score, then by original row order, so the result does not depend on
     join ordering.
     """
-    c = regions.with_row_index("_rid")
-    left = c.select("_rid", "query_acc", "target_acc", "qstart", "qend",
-                    "tstart", "tend", "score")
-    right = left.select(
-        pl.col("_rid").alias("_rid_b"), "query_acc", "target_acc",
-        pl.col("qstart").alias("qstart_b"), pl.col("qend").alias("qend_b"),
-        pl.col("tstart").alias("tstart_b"), pl.col("tend").alias("tend_b"),
-        pl.col("score").alias("score_b"),
+    return _suppress_overlapping(
+        regions, keys=["query_acc", "target_acc"],
+        intervals=[("qstart", "qend"), ("tstart", "tend")],
+        iou_min=iou_min, pair_budget=pair_budget,
     )
-
-    def iou(a0, a1, b0, b1):
-        inter = (pl.min_horizontal(pl.col(a1), pl.col(b1))
-                 - pl.max_horizontal(pl.col(a0), pl.col(b0))).clip(lower_bound=0)
-        union = (pl.max_horizontal(pl.col(a1), pl.col(b1))
-                 - pl.min_horizontal(pl.col(a0), pl.col(b0)))
-        return pl.when(union > 0).then(inter / union).otherwise(0.0)
-
-    beaten = (
-        left.join(right, on=["query_acc", "target_acc"], how="inner")
-        .filter(pl.col("_rid") != pl.col("_rid_b"))
-        .filter(
-            (iou("qstart", "qend", "qstart_b", "qend_b") >= iou_min)
-            & (iou("tstart", "tend", "tstart_b", "tend_b") >= iou_min)
-            & (
-                (pl.col("score_b") > pl.col("score"))
-                | ((pl.col("score_b") == pl.col("score"))
-                   & (pl.col("_rid_b") < pl.col("_rid")))
-            )
-        )
-        .select("_rid")
-        .unique()
-    )
-    return c.join(beaten, on="_rid", how="anti").drop("_rid")
 
 
 def overlap_expr(a_start: str, a_end: str, b_start: str, b_end: str) -> pl.Expr:
@@ -365,7 +552,8 @@ def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overla
     )
 
 
-def dedup_transferred_calls(calls: pl.LazyFrame, iou_min: float) -> pl.LazyFrame:
+def dedup_transferred_calls(calls: pl.DataFrame, iou_min: float,
+                            pair_budget: int = DEDUP_PAIR_BUDGET) -> pl.DataFrame:
     """Collapse calls that are the same prediction arrived at via different targets.
 
     Homology transfer turns one query region into one call per target domain it covers. A
@@ -390,36 +578,15 @@ def dedup_transferred_calls(calls: pl.LazyFrame, iou_min: float) -> pl.LazyFrame
     Suppression is pairwise, not iterative NMS: a call is dropped if any overlapping call
     scores higher, even if that call is itself dropped. Ties break by score then original row
     order, so the result does not depend on join ordering.
+
+    Takes and returns an eager frame. The pass is a self-join, so the table is materialised
+    whatever the caller passes; taking it eager keeps the caller from collecting the same
+    source three times over (count, dedup, count) when each collect re-reads the arm's file.
     """
-    c = calls.with_row_index("_rid")
-    left = c.select("_rid", "query_acc", "pfam_id", "qstart", "qend", "score")
-    right = left.select(
-        pl.col("_rid").alias("_rid_b"), "query_acc", "pfam_id",
-        pl.col("qstart").alias("qstart_b"), pl.col("qend").alias("qend_b"),
-        pl.col("score").alias("score_b"),
+    return _suppress_overlapping(
+        calls, keys=["query_acc", "pfam_id"], intervals=[("qstart", "qend")],
+        iou_min=iou_min, pair_budget=pair_budget,
     )
-
-    inter = (pl.min_horizontal("qend", "qend_b")
-             - pl.max_horizontal("qstart", "qstart_b")).clip(lower_bound=0)
-    union = (pl.max_horizontal("qend", "qend_b")
-             - pl.min_horizontal("qstart", "qstart_b"))
-    iou = pl.when(union > 0).then(inter / union).otherwise(0.0)
-
-    beaten = (
-        left.join(right, on=["query_acc", "pfam_id"], how="inner")
-        .filter(pl.col("_rid") != pl.col("_rid_b"))
-        .filter(
-            (iou >= iou_min)
-            & (
-                (pl.col("score_b") > pl.col("score"))
-                | ((pl.col("score_b") == pl.col("score"))
-                   & (pl.col("_rid_b") < pl.col("_rid")))
-            )
-        )
-        .select("_rid")
-        .unique()
-    )
-    return c.join(beaten, on="_rid", how="anti").drop("_rid")
 
 
 def score_calls(calls: pl.LazyFrame, truth: pl.LazyFrame, min_overlap: float,
@@ -597,14 +764,15 @@ def assign_instances(calls: pl.DataFrame, candidates: pl.DataFrame,
     #
     # Adding the call's identity and its matched instance makes the key unique, so the walk
     # is reproducible. Same class of bug as the one tests/test_dedup_passes.py guards for
-    # the pairwise suppression passes.
-    order = ["score", "_is_point", "elig",
-             "query_acc", "pfam_id", "qstart", "qend", "true_start", "true_end"]
+    # the pairwise suppression passes. Those trailing keys are cm.CALL_TIEBREAK, shared
+    # with sensitivity_to_first_fp rather than repeated, so the two stages that rank calls
+    # cannot come to disagree about what "first" means.
+    order = ["score", "_is_point", "elig", *cm.CALL_TIEBREAK]
     elig = (
         candidates.with_columns(elig_key, is_point.alias("_is_point"))
         .filter(pl.col("elig") >= min_overlap)
         .sort(order,
-              descending=[True, False, True] + [False] * 6,
+              descending=[True, False, True] + [False] * len(cm.CALL_TIEBREAK),
               nulls_last=True)
     )
 
@@ -918,7 +1086,11 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     # The reported point above depends on each tool's own default cutoff, which differs
     # between tools and is not a property of the method. This is the comparable one.
     if points.height:
-        best = points.sort("f1", descending=True).head(1).to_dicts()[0]
+        # Threshold breaks the tie, lowest first. Score plateaus put several thresholds at
+        # the same best F1, and the one reported has to be the same one every run.
+        best = points.sort(
+            ["f1", "score_threshold"], descending=[True, False]
+        ).head(1).to_dicts()[0]
         metrics.update({
             "best_f1": best["f1"],
             "best_f1_threshold": best["score_threshold"],
@@ -1229,12 +1401,97 @@ def restrict_tp_to_cut(truth: pl.DataFrame, calls: pl.DataFrame) -> pl.DataFrame
     return out.with_columns(exprs).drop("in_cut")
 
 
-def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
+def target_map_coverage(map_lf: pl.LazyFrame, target_families: pl.DataFrame,
+                        map_path, job: dict) -> dict:
+    """How much target-side annotation this arm actually had to transfer from.
+
+    Every sequence-search arm scores by transferring a family label off the target
+    interval it aligned to, so the size of the transfer table is a hard ceiling on what
+    any of them can produce -- and it is a property of the TARGET ANNOTATION, not of the
+    tool or of evolutionary distance. Nothing in the metrics row recorded it, so a target
+    species with almost no annotation looked exactly like a species no tool could reach.
+
+    That is not hypothetical. On the Swiss-Prot truth set, Ciona intestinalis has 28
+    reviewed entries in UniProtKB/Swiss-Prot against 2_309 - 20_417 for every other target
+    species in the benchmark, so its transfer table is ~1/100th the size and every arm's
+    call count collapsed by 30-130x at 550 Mya. It read as an evolutionary cliff.
+
+    The existing reachability bar cannot catch it: on that truth set `pfam_id` holds a
+    Swiss-Prot FEATURE TYPE from a 15-value vocabulary (DOMAIN, TRANSMEM, ACT_SITE, ...),
+    so 28 proteins still cover almost every type and reachability reads 6_991 / 7_000.
+    These three counts are vocabulary-independent and do catch it.
+    """
+    stats = map_lf.select(
+        pl.len().alias("n"),
+        pl.col("accession").n_unique().alias("n_prot"),
+    ).collect().to_dicts()[0]
+    if stats["n"] == 0:
+        raise SystemExit(
+            f"empty domain map: {map_path} has no rows, so {job['tool']}/"
+            f"{job['variant']} can transfer nothing and would publish a valid-looking "
+            "all-zero result. Rebuild the target annotation before scoring."
+        )
+    return {
+        "n_target_map_instances": int(stats["n"]),
+        "n_target_map_proteins": int(stats["n_prot"]),
+        "n_target_families": int(target_families.height),
+    }
+
+
+def read_shared_inputs(args):
+    """Read the two frames every arm shares, ONCE, and hand back in-memory lazy views.
+
+    Both used to stay as `pl.scan_parquet` handles held across the whole task. A scan is
+    re-executed on every collect, so with A arms and M dedup modes a batched task re-read
+    the answer key and the target domain map A x M times over -- 24 arms x 2 modes = 48
+    passes over the same two files, from inside one task that had already staged them.
+
+    Measured on the 2026-08-31 midi trace, scoreDomainCalls was the largest disk reader in
+    the pipeline: 906.1 GB of read_bytes across 756 tasks, more than folddiscoQuery's
+    409.5 GB and more than every search process put together. Two facts identify the
+    cause. Read volume fits `0.073 GB x arms + 0.114 GB` (r = 0.50), so 820 of the 906 GB
+    scale with the ARM COUNT rather than with the number of tasks. And rchar over the same
+    756 tasks is only 19.5 GB -- the process asked the kernel for 19.5 GB and the block
+    device delivered 906. A 46x gap between the two is not ordinary reading: polars mmaps a
+    parquet scan, and re-collecting a mapped file whose pages the task's own working set
+    keeps evicting re-faults those pages in from disk, where they count in read_bytes and
+    never in rchar.
+
+    Collecting once turns 48 mapped passes into one read, so the amplification cannot
+    happen: what is in memory cannot be evicted and re-faulted from a file.
+
+    Why this rather than the alternatives that were weighed:
+
+      node-local scratch  moves the same 906 GB from the shared filesystem to local NVMe.
+                          Cheaper per byte, but it treats the symptom and still pays a copy
+                          in on every task.
+      collect()/broadcast the files are already staged once per task by Nextflow, by
+                          symlink. Sharing them harder cannot help, because the re-reads
+                          happen INSIDE a task that has one copy already.
+      coarser batching    strictly worse. Reads scale with arms per task, so putting more
+                          arms in a task multiplies the same per-arm re-read.
+
+    The cost is holding both frames resident. That is what scoreMemory in main.nf already
+    sizes for, and the observed peak over the 756 tasks was 30.6 GB against requests of
+    8-99 GB.
+    """
+    truth_lf = pl.scan_parquet(args.truth).collect().lazy()
+    domain_map_lf = (pl.scan_parquet(args.domain_map).collect().lazy()
+                     if args.domain_map else None)
+    return truth_lf, domain_map_lf
+
+
+def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
+              domain_map_lf=None):
     """Score one tool's regions against the already-loaded truth for one species.
 
     truth and truth_lf are passed in rather than read here because they are shared across
     every tool for a given (truth_set, species): a batched task scores ~376 of them, and
     re-reading the answer key that many times was most of the wall clock.
+
+    domain_map_lf is passed in for the same reason and is measured, not assumed. See
+    read_shared_inputs: scanning it here made the domain map the single largest disk
+    reader in the whole pipeline.
     """
     # Folddisco reports the envelope of a discontinuous residue set, not an alignment.
     # Scoring that by interval IoU would measure the envelope reduction rather than the
@@ -1257,9 +1514,14 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
     # it has to go while the target coordinates that identify it as a duplicate are still
     # in the table. transfer_domains drops them.
     if regions is not None and dedup_fragments and not args.direct_annotation:
-        before = regions.select(pl.len()).collect().item()
-        regions = dedup_fragment_regions(regions, args.fragment_iou).cache()
-        after = regions.select(pl.len()).collect().item()
+        # Collected once, for the reason _suppress_overlapping documents: deduping a lazy
+        # frame made the survivors depend on which execution of the plan produced them.
+        regions_df = regions.collect()
+        before = regions_df.height
+        regions_df = dedup_fragment_regions(regions_df, args.fragment_iou,
+                                            pair_budget=args.dedup_pair_budget)
+        after = regions_df.height
+        regions = regions_df.lazy()
         if before != after:
             print(f"fragment dedup: {before - after} of {before} regions were the same "
                   f"alignment seen in overlapping AlphaFold fragments "
@@ -1267,19 +1529,35 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
 
     if args.direct_annotation:
         target_families = None
+        target_coverage = {"n_target_map_instances": None,
+                           "n_target_map_proteins": None,
+                           "n_target_families": None}
         calls_lf = regions
     else:
-        map_lf = pl.scan_parquet(args.domain_map)
+        # Never pl.scan_parquet here. Every scan inside this function is paid once per
+        # (arm x dedup mode), and a batched task holds up to 24 arms.
+        map_lf = (domain_map_lf if domain_map_lf is not None
+                  else pl.scan_parquet(args.domain_map))
         target_families = map_lf.select("pfam_id").unique().collect()
+        target_coverage = target_map_coverage(map_lf, target_families,
+                                              args.domain_map, job)
         calls_lf = (
             transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
         )
         if calls_lf is not None and job["dedup"]:
             iou_min = (args.transfer_dedup_iou if args.transfer_dedup_iou is not None
                        else args.min_overlap)
-            before = calls_lf.select(pl.len()).collect().item()
-            calls_lf = dedup_transferred_calls(calls_lf, iou_min).cache()
-            after = calls_lf.select(pl.len()).collect().item()
+            # Collected once and reused. This used to be three lazy collects over the same
+            # plan -- one to count, one to dedup, one to count again -- and each of them
+            # re-read the arm's regions from disk and redid the transfer join. On a gzipped
+            # baseline that meant inflating the whole file three times (see
+            # inflate_for_scan).
+            calls_df = calls_lf.collect()
+            before = calls_df.height
+            calls_df = dedup_transferred_calls(calls_df, iou_min,
+                                               pair_budget=args.dedup_pair_budget)
+            after = calls_df.height
+            calls_lf = calls_df.lazy()
             if before:
                 print(f"[{job['tool']}/{job['variant']}] dedup-transfers: "
                       f"{before} -> {after} calls "
@@ -1319,6 +1597,11 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
              # Same reason, for the truth side. A cell scored by containment and one scored
              # by IoU are not the same measurement, and the row has to say which it is.
              "point_semantics": args.point_semantics}
+    # Target-side annotation coverage, on every row. See target_map_coverage: without it a
+    # species with almost no target annotation is indistinguishable from a species no tool
+    # could reach, and the reachability bar cannot tell the two apart on a truth set whose
+    # label vocabulary is small.
+    ident.update(target_coverage)
     rows, curves = [], []
 
     for split in ("all", "selection", "heldout"):
@@ -1357,6 +1640,14 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset()):
                 # AND instances, because the floor counts proteins while every rate on the
                 # row is per instance.
                 "n_stratum_proteins": t_sub["accession"].n_unique(),
+                # How many distinct labels the reachability join has to work with. A
+                # reachability ceiling only means something when `pfam_id` is a FAMILY: on
+                # the Swiss-Prot truth set it is one of ~15 feature types, every proteome
+                # has nearly all of them, and reachable / truth is then ~1.0 for every
+                # species by construction -- recall_reachable is plain recall wearing a
+                # reachability label. This column is what lets a reader tell which of the
+                # two a row is.
+                "n_truth_families": t_sub["pfam_id"].n_unique(),
                 # Measured, not a bin midpoint. The reduced-alphabet claim is stated on
                 # feature_length / ksize, and this is the numerator for this cell.
                 # What share of this cell is point features. 1.0 means every number on the
@@ -1477,6 +1768,12 @@ def main():
                         "1/call_length, so the criterion was unsatisfiable rather than "
                         "strict. Only affects truth sets carrying is_point: Swiss-Prot and "
                         "M-CSA.")
+    p.add_argument("--dedup-pair-budget", type=int, default=DEDUP_PAIR_BUDGET,
+                   help="how many pair rows the transfer-dedup self-join may materialise "
+                        "at once. Bounds peak memory of that pass, which is otherwise "
+                        "quadratic in how many calls of one family land on one query "
+                        "protein and is not predictable from the input file size "
+                        f"(default: {DEDUP_PAIR_BUDGET})")
     p.add_argument("--min-overlap", type=float, default=0.5)
     p.add_argument("--strict-iou", type=float, default=0.8)
     p.add_argument("--gray-min-annotated-fraction", type=float, default=0.5,
@@ -1510,7 +1807,7 @@ def main():
                              and args.calls_out and args.metrics_out):
         raise SystemExit("--regions requires --tool, --variant, --calls-out and --metrics-out")
 
-    truth_lf = pl.scan_parquet(args.truth)
+    truth_lf, domain_map_lf = read_shared_inputs(args)
     truth = truth_lf.collect()
     covariates = pl.read_parquet(args.covariates) if args.covariates else None
     identity = None
@@ -1581,7 +1878,12 @@ def main():
     for i, job in enumerate(jobs, 1):
         tag = f"{job['tool']}/{job['variant']}" + (" [dedup]" if job["dedup"] else "")
         print(f"[{i}/{len(jobs)}] {tag}", file=sys.stderr)
-        score_one(args, truth, truth_lf, job, instance_axes)
+        score_one(args, truth, truth_lf, job, instance_axes,
+                  domain_map_lf=domain_map_lf)
+        # Jobs for one arm are adjacent (one per dedup mode), so an arm's inflated copy is
+        # dead as soon as the next job reads a different file.
+        if i == len(jobs) or jobs[i]["regions"] != job["regions"]:
+            release_inflated(job["regions"])
 
 
 if __name__ == "__main__":

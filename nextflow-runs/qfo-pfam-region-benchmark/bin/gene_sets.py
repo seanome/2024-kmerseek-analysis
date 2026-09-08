@@ -82,3 +82,60 @@ ZINC_FINGER_GROUP_PATTERNS: dict[str, str] = {
 #: Below this many query proteins a per-group metric is too noisy to read. Matches notebook
 #: 206's own floor of 15 scored pairs.
 MIN_FAMILY_SIZE: int = 15
+
+# ---------------------------------------------------------------------------
+# The MHC's off-chromosome partners. The chr6 midi query set is defined by cytogenetic
+# location, so it captures the MHC itself and 736 non-MHC chr6 genes that serve as the
+# within-chromosome control -- but it cannot capture the parts of the antigen-presentation
+# system that live somewhere else. These four buckets are ADDITIVE to chr6, never a
+# replacement: notebook 221 section 2 measures every "the MHC behaves differently" claim
+# against those 736 controls, and dropping or diluting them would destroy the comparison.
+#
+# Every symbol below was resolved against data/covariates/hgnc_complete_set.txt rather than
+# recalled, and every accession was checked to be present in BOTH the QfO human proteome
+# (UP000005640_9606.fasta) and the Pfam answer key (human_pfam_domains.parquet). A query
+# with no truth instance cannot produce a true positive, so an unchecked symbol is a query
+# that silently costs compute and returns nothing.
+# ---------------------------------------------------------------------------
+
+#: The class I light chain. Beta-2 microglobulin pairs with every classical and
+#: non-classical class I heavy chain, but it sits on chr15, so a chr6-only query set scores
+#: the heavy chains without the subunit they fold against. One C1-set domain (PF07654).
+MHC_LIGHT_CHAIN: list[str] = ["B2M"]
+
+#: Class-I-like molecules that present lipids (CD1) and microbial metabolites (MR1) instead
+#: of peptides. CD1A-E are a chr1q23.1 cluster; MR1 is chr1q25.3. They carry the same
+#: C1-set fold as the class I heavy chains without the class I sequence identity, which is
+#: the case where a fold-aware or HP-patterning method should separate from a
+#: sequence-identity one. CD1A-E each carry PF07654 + PF16497; MR1 carries PF00129 + PF07654.
+CD1_MR1: list[str] = ["CD1A", "CD1B", "CD1C", "CD1D", "CD1E", "MR1"]
+
+#: The receptors that READ class I, as HGNC gene groups rather than a typed-out list.
+#: Membership of the KIR cluster in particular is the kind of thing that is wrong when
+#: recalled: the locus is copy-number variable, several members sit on 19q13.4 alternate
+#: reference loci, and KIR2DP1/KIR3DP1 are pseudogenes with no UniProt entry at all. Group
+#: matching against HGNC's own curation gets that right by construction; a remembered list
+#: does not. Resolves to 16 KIR + 11 LILR = 27 accessions, all on chr19q13.4x.
+KIR_LILR_GROUPS: list[str] = [
+    "Killer cell immunoglobulin like receptors",
+    "Activating leukocyte immunoglobulin like receptors",
+    "Inhibitory leukocyte immunoglobulin like receptors",
+]
+
+#: Bucket name -> how it is resolved. `make_mini_testset.py --gene-set chr6_plus` unions
+#: these with the chr6 set and writes one row per query to query_sets.tsv, so every
+#: downstream cut can reconstruct the original 964 chr6 queries and the 736-gene control
+#: exactly. Ordered: the first bucket a query matches wins, and chr6 is applied first, so a
+#: gene that is both on chr6 and in one of these lists stays labelled chr6. (Measured: the
+#: overlap is currently empty -- none of the 34 accessions here is on chr6.)
+MHC_PARTNER_BUCKETS: dict[str, str] = {
+    "b2m": "symbols",
+    "cd1_mr1": "symbols",
+    "kir_lilr": "gene_groups",
+}
+
+#: HGNC gene_group values arrive with stray double quotes when the table is read with
+#: quote_char=None, which is how every reader in this pipeline reads it (the file has
+#: unbalanced quotes in free-text columns, so real quote parsing breaks it). Strip them
+#: before matching or "Killer cell immunoglobulin like receptors" matches 5 of its 18 rows.
+GENE_GROUP_STRIP_CHARS: str = '"'

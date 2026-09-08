@@ -140,8 +140,21 @@ LOCAL_SKIP_ARMS ?= --skip_prostt5 true
 PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 
 # Mac-side Nextflow. Pinned to the conda env rather than relying on PATH; on Sherlock the
-# run targets use `ml load nextflow` instead.
+# run targets use `ml load biology nextflow` instead. Both words are needed: nextflow
+# lives under the `biology` hierarchy, so `ml load nextflow` resolves only in a shell
+# that already has biology loaded -- it worked interactively and failed from make.
 NEXTFLOW ?= /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow
+
+# That env ships its own JVM under lib/jvm and does not put it on PATH. macOS carries a
+# /usr/bin/java STUB which exists but is not a runtime, so `command -v java` succeeds and
+# nextflow still dies with "Unable to locate a Java Runtime" -- which is what every Mac-side
+# nextflow target did, with an error naming Java rather than the missing JAVA_HOME. Derived
+# from NEXTFLOW so overriding one moves the other, and guarded on the JVM actually being
+# there so this stays inert on Sherlock, where `ml load biology nextflow` supplies both.
+NEXTFLOW_JVM := $(patsubst %/bin/nextflow,%/lib/jvm,$(NEXTFLOW))
+ifneq ($(wildcard $(NEXTFLOW_JVM)/bin/java),)
+export JAVA_HOME := $(NEXTFLOW_JVM)
+endif
 
 # Sherlock compute nodes are amd64; an Apple Silicon build defaults to arm64, which
 # Apptainer refuses to run.
@@ -210,6 +223,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
+        midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
@@ -219,7 +233,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         pfamn-download pfamn-truth mcsa-truth help \
         bpe-tokenizer hp-bpe-diagnostic sherlock-clone test \
         fetch-structures-login \
-        multiqc multiqc-local multiqc-preflight multiqc-status \
+        multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
         build-image-rannon-burstein push-image-rannon-burstein \
         run-rannon-burstein multiqc-rannon-burstein \
         pull-report pull-report-mini pull-report-midi
@@ -254,6 +268,8 @@ help:
 	@echo "  mini-testset-sherlock Build the mini data set"
 	@echo "  run-mini             Run the mini smoke test"
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
+	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
+	@echo "                       Additive to run-midi, its own outdir, target DBs shared"
 	@echo "  fetch-structures     Download AlphaFold structures ON the login node (~36 GB)"
 	@echo "  run-kmerseek         Run only the Kmerseek sweep"
 	@echo "  run-baselines        Run only the baseline tools"
@@ -262,6 +278,7 @@ help:
 	@echo "  run                  Run the complete benchmark"
 	@echo "  run-rannon-burstein  polarity4 + funcgroups8 only, midi set, kmerseek only"
 	@echo "  multiqc              Rebuild the MultiQC report from published results"
+	@echo "  multiqc-partial      Report on the arms scored SO FAR, while a run is going"
 	@echo "  multiqc-rannon-burstein"
 	@echo "                       One report over run-midi AND run-rannon-burstein, so the"
 	@echo "                       two new alphabets appear next to every other tool"
@@ -292,8 +309,13 @@ MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/qf
 # also the target you typed. A helper target that only ever runs as somebody else's
 # prerequisite -- multiqc-preflight -- sets this to the name you actually typed, since
 # being told to ssh over and run an internal target is not advice anyone can follow.
+# Falls back to what was actually TYPED when the guard fires inside a prerequisite. Being
+# told "'prefetch-images' runs on Sherlock" after typing `make run-mini` names an internal
+# target and hides the fact that run-mini-local exists -- which is exactly what happened.
+# GUARD_NAME still wins where a target sets it explicitly.
 GUARD_NAME =
-guard_name = $(if $(GUARD_NAME),$(GUARD_NAME),$@)
+guard_name = $(strip $(if $(GUARD_NAME),$(GUARD_NAME),\
+             $(if $(filter $@,$(MAKECMDGOALS)),$@,$(firstword $(MAKECMDGOALS)))))
 
 define require_mac
 	@if [ "$(ON_CLUSTER)" = "yes" ]; then \
@@ -309,6 +331,9 @@ define require_mac
 	fi
 endef
 
+# The `-local` twin is looked up by grepping this file rather than kept as a list, because
+# a list drifts: `run-mini` sent someone to ssh into Sherlock for a smoke test that
+# `run-mini-local` runs on the Mac in minutes, and no list would have been updated for it.
 define require_cluster
 	@if [ "$(ON_CLUSTER)" != "yes" ]; then \
 	  echo ""; \
@@ -317,6 +342,11 @@ define require_cluster
 	  echo "  ssh $(SHERLOCK_HOST)"; \
 	  echo "    cd \$$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark"; \
 	  echo "    make $(guard_name)"; \
+	  if grep -qE "^$(guard_name)-local:" $(firstword $(MAKEFILE_LIST)); then \
+	    echo ""; \
+	    echo "  Or run it here instead -- there is a Mac-side twin:"; \
+	    echo "    make $(guard_name)-local"; \
+	  fi; \
 	  echo ""; \
 	  exit 1; \
 	fi
@@ -614,6 +644,15 @@ pull-report:
 	$(RSYNC) \
 	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/qfo_pfam_region_multiqc_plots/' \
 	  $(LOCAL_RESULTS)/qfo_pfam_region_multiqc_plots/
+	@# The k-mer spectra, so `make multiqc` can rebuild the spectra section locally. They
+	@# are small (one gzipped CSV per combo) and they are the only place the per-combo
+	@# k-mer occurrence distribution survives -- nothing else in the results tree carries
+	@# it, so a local rebuild without them silently drops the section.
+	@# `|| true`: a run that skipped kmerseek has no spectra directory, and that must not
+	@# fail a pull whose html and figures already came down.
+	-$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/spectra/' \
+	  $(LOCAL_RESULTS)/spectra/ || true
 	@echo; echo "open $(LOCAL_RESULTS)/qfo_pfam_region_multiqc.html"
 
 pull-report-mini:
@@ -621,6 +660,9 @@ pull-report-mini:
 
 pull-report-midi:
 	@$(MAKE) pull-report REMOTE_RESULTS=data/midi/results LOCAL_RESULTS=$(LOCAL_RESULTS)/midi
+
+pull-report-midi-plus:
+	@$(MAKE) pull-report REMOTE_RESULTS=data/midi-plus/results LOCAL_RESULTS=$(LOCAL_RESULTS)/midi-plus
 
 pull-mini:
 	$(call require_mac)
@@ -870,7 +912,7 @@ fetch-structures-sherlock:
 	  python3 bin/write_structure_lists.py \
 	    --annotations data/annotations \
 	    --outdir      data/structures/_accessions
-	ml load nextflow && \
+	ml load biology nextflow && \
 	  nextflow run main.nf -profile $(PROFILE) -resume \
 	    --fetch_structures true \
 	    --structures  $$PWD/data/structures \
@@ -962,6 +1004,7 @@ BPE_NF_ARG = $(if $(wildcard $(BPE_TARBALL)),--bpe_tokenizer ../$(BPE_TARBALL),)
 ## QfO download, no cluster: ~15 s. This is what CI runs.
 test:
 	$(PYTHON) -m pytest tests/ -v
+	$(PYTHON) tests/test_dedup_passes.py
 
 bpe-tokenizer:
 	@mkdir -p $(dir $(BPE_TARBALL))
@@ -1051,7 +1094,7 @@ pfamn-truth: pfamn-download
 define launch
 	mkdir -p run
 	cd run && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
 	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --qfo_dir     ../data/qfo \
@@ -1114,7 +1157,7 @@ gpu-benchmark: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
 	mkdir -p $(GPU_BENCH_DIR)
 	cd $(GPU_BENCH_DIR) && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --gpu_benchmark   true \
 	    --qfo_dir         $(GPU_BENCH_QFO) \
@@ -1204,7 +1247,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-midi
 	cd run-midi && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
@@ -1213,6 +1256,77 @@ run-midi: prefetch-images midi-testset-sherlock
 	    --annotations     ../data/midi/annotations \
 	    --structures      ../data/midi/structures \
 	    --outdir          $(MIDI_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(MIDI_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus: chr6 PLUS the MHC's off-chromosome partners ----------------
+#
+# The chr6 midi set is defined by cytogenetic location, so it misses the parts of the
+# antigen-presentation system that are not on chromosome 6: B2M (chr15, the class I light
+# chain), CD1A-E and MR1 (chr1, the lipid and metabolite presenters), and the KIR and LILR
+# clusters (chr19, the receptors that read class I). 34 proteins, all of them already in
+# both the QfO human proteome and the Pfam answer key.
+#
+# ADDITIVE, never a replacement. `--gene-set chr6_plus` unions the new buckets onto the
+# chr6 set and raises a hard error if a single chr6 query is lost, because notebook 221
+# measures every "the MHC behaves differently" claim against the 736 non-MHC chr6 genes.
+# make_mini_testset.py also writes annotations/query_sets.tsv, which buildQueryCovariates
+# turns into a `query_set` column, so the original 964 stay reconstructible exactly.
+midi-plus-testset-sherlock:
+	$(call require_cluster)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations     data/annotations \
+	    --qfo-dir         data/qfo \
+	    --outdir          data/midi-plus \
+	    --gene-set        chr6_plus \
+	    --full-targets \
+	    --hgnc            data/covariates/hgnc_complete_set.txt \
+	    --target_species  $(MIDI_TARGETS) \
+	    --structure-cache data/structures
+
+# Its OWN outdir, and that is the whole correctness argument for this target rather than a
+# tidiness preference. kmerseekSearch is on storeDir under ${params.outdir}/kmerseek, and
+# its entry name -- human_vs_<species>.<alphabet>.k<k>.lc<lc>.regions.parquet -- carries NO
+# query-set digest. Pointing this run at data/midi/results would therefore hit 3665 stored
+# results computed from the 964-query FASTA and return them for a 998-query run: the 34 new
+# proteins would silently contribute nothing and read as genuine negatives. That is the
+# exact failure the kmerseekSearch errorStrategy comment already records happening once on
+# this project. The same applies to ${params.outdir}/mmseqs_domain_db and .../spectra.
+#
+# --db_cache still points at ../results, which is where the TARGET-side databases live.
+# Those are safe to share: their storeDir entries are keyed on species alone
+# (mouse_mmdb, ecoli.dayhoff6.k10.lcfalse.kmerseek.rocksdb, ...), so they carry no query
+# dependence at all. The human-side entries in the same cache are keyed by an MD5 of the
+# query FASTA (HUMAN_LABEL, e.g. human-a45f7aae_mmdb), so the new query set gets its own
+# entry beside the old one instead of colliding with it. Verified against the deployed
+# cache, not assumed.
+MIDI_PLUS_OUTDIR ?= ../data/midi-plus/results
+
+run-midi-plus: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi-plus
+	cd run-midi-plus && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(MIDI_PLUS_OUTDIR) \
 	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
 	    --target_species  $(MIDI_TARGETS) \
@@ -1295,7 +1409,7 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
 	mkdir -p $(RB_RUN_DIR)
 	cd $(RB_RUN_DIR) && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image      $(RB_IMAGE_REMOTE) \
 	    --kmerseek_encodings  $(RB_ENCODINGS) \
@@ -1319,7 +1433,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-mini
 	cd run-mini && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile $(PROFILE),mini -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --qfo_dir         ../data/mini/qfo \
@@ -1370,7 +1484,7 @@ multiqc: multiqc-preflight prefetch-images
 	@echo "reporting on trace: $(TRACE)"
 	mkdir -p run-report
 	cd run-report && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
 	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --outdir     $(MULTIQC_OUTDIR) \
@@ -1402,6 +1516,81 @@ RB_TRACE           ?= $(shell ls -t $(RB_RUN_DIR)/*.trace.txt 2>/dev/null | head
 MIDI_TRACE         ?= $(shell ls -t run-midi/*.trace.txt 2>/dev/null | head -1)
 RB_COMBINED_TRACE  := $(RB_RUN_DIR)/combined.trace.txt
 
+## An intermediate report, built from the arms scored SO FAR. Meant to be run WHILE
+## `make run-midi` is still going, so a slow arm -- hhblits on the large targets is hours --
+## does not hold up looking at everything else.
+##
+## It reads <MIDI_OUTDIR>/metrics/*.metrics.parquet, which scoreDomainCalls publishes one
+## file at a time as each group finishes. all_domain_metrics.parquet is NOT what it reads:
+## aggregateMetrics writes that once, at the very end, which is the thing being waited on.
+##
+## Three separations, each load-bearing, because two nextflow processes must not share a
+## folder:
+##
+##   its own LAUNCH directory, run-report-partial, so .nextflow/, work/ and the log belong
+##   to it and not to the run in run-midi;
+##
+##   its own OUTDIR, because -entry report refuses an --outdir that is also one of its
+##   sources -- publishing this partial aggregate over the live run's would replace that
+##   run's all_domain_metrics.parquet with a subset, and a subset of the right shape is
+##   exactly what nobody notices;
+##
+##   --report_trace none, because Nextflow truncates any trace file it is itself writing
+##   and the live run owns its trace. Accuracy sections only; the time, CPU and memory
+##   sections come back when the run has finished and `make multiqc` reads its trace.
+##
+## Re-runnable as often as you like. Each run is a fresh snapshot of whatever has been
+## published by then.
+MIDI_PARTIAL_OUTDIR ?= ../data/midi/results-partial
+
+multiqc-partial: PREFETCH_CONTAINERS := $(IMAGE_REMOTE) $(ALL_CONTAINERS)
+multiqc-partial: prefetch-images
+	$(call require_cluster)
+	@# find, not `ls <dir>/*.metrics.parquet`. A full sweep publishes over 13_000 of them
+	@# and the shell expands the glob onto the command line, which at ~184 bytes a path is
+	@# 2.4 MB against a 2 MB ARG_MAX. execve then fails with E2BIG, `2>/dev/null` swallows
+	@# "Argument list too long", and the count comes back 0 -- a directory with 13_033 files
+	@# in it reported as empty, which is exactly how this target claimed there was nothing
+	@# to report on.
+	@n=$$(find $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics -name '*.metrics.parquet' 2>/dev/null | wc -l); \
+	 if [ "$$n" -eq 0 ]; then \
+	   echo ""; \
+	   echo "  Nothing scored yet under $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics."; \
+	   echo ""; \
+	   echo "  scoreDomainCalls publishes one metrics file per arm as it finishes, so that"; \
+	   echo "  directory fills up during a run rather than at the end of one."; \
+	   echo ""; \
+	   echo "  MIDI_OUTDIR is read relative to the run-midi LAUNCH directory, not to where"; \
+	   echo "  you are standing, because that is where run-midi passes it from. So"; \
+	   echo "  'MIDI_OUTDIR=results/' means run-midi/results, which is nothing. Leave it"; \
+	   echo "  unset to report on 'make run-midi':"; \
+	   echo ""; \
+	   echo "    make multiqc-partial"; \
+	   echo "        -> $(call rel_to_launch,run-midi,../data/midi/results)/metrics"; \
+	   echo ""; \
+	   echo "  or give an ABSOLUTE path to report on a different run (the full run's outdir"; \
+	   echo "  is $(abspath ../results), and rel_to_launch passes absolute paths through):"; \
+	   echo ""; \
+	   echo "    make multiqc-partial MIDI_OUTDIR=$(abspath ../results)"; \
+	   echo ""; \
+	   exit 1; \
+	 fi; \
+	 echo "reporting on $$n per-arm metric files -- a snapshot; the run keeps adding to them"
+	mkdir -p run-report-partial
+	cd run-report-partial && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)) \
+	    --outdir          $(MIDI_PARTIAL_OUTDIR) \
+	    --report_trace    none \
+	    --allow_dead_arms true \
+	    --qfo_dir         ../data/midi/qfo \
+	    $(NF_ARGS)
+	@echo
+	@echo "  Partial report under $(MIDI_PARTIAL_OUTDIR). Pull it to the Mac with:"
+	@echo "    make pull-report REMOTE_RESULTS=$(MIDI_PARTIAL_OUTDIR:../%=%) LOCAL_RESULTS=$(LOCAL_RESULTS)/midi-partial"
+
 multiqc-rannon-burstein: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 multiqc-rannon-burstein: prefetch-images
 	$(call require_cluster)
@@ -1425,7 +1614,7 @@ multiqc-rannon-burstein: prefetch-images
 	@tail -n +2 $(RB_TRACE) >> $(RB_COMBINED_TRACE)
 	mkdir -p run-report-rannon-burstein
 	cd run-report-rannon-burstein && \
-	  ml load nextflow && \
+	  ml load biology nextflow && \
 	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
 	    --kmerseek_image  $(RB_IMAGE_REMOTE) \
 	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)),$(call rel_to_launch,$(RB_RUN_DIR),$(RB_OUTDIR)) \

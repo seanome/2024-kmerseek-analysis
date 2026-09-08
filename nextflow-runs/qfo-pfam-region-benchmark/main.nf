@@ -342,6 +342,29 @@ params.multiqc_top_kmerseek = 5
 // runs have ended and executes no scoring task of its own.
 params.report_outdirs = null
 
+// An arm that scored zero calls everywhere stops the report by default: it is a broken arm
+// rather than a result, and hhblits and folddisco sat in that state unnoticed for the whole
+// life of this pipeline. See aggregate_domain_metrics.check_for_dead_arms.
+//
+// The partial report turns it off, and only the partial report. A snapshot of a run still
+// going legitimately contains an arm whose search has not finished, and refusing to draw
+// the other arms because of it defeats the point of looking early. The banner still prints
+// either way, so nothing is quietly built over a zero.
+params.allow_dead_arms = false
+
+// A TARGET species whose annotation table has collapsed against its peers stops the report
+// too, for the same reason and by the same route. Nothing fails when this happens: every
+// task runs, exits 0, and publishes a valid file holding a near-zero result, and the report
+// draws it as an evolutionary cliff. Ciona intestinalis has 28 UniProtKB/Swiss-Prot entries
+// against 2_309-20_417 for every other target species in this benchmark, so on the
+// Swiss-Prot truth set every one of the ten tools lost 30-130x of its calls at 550 Mya.
+// See aggregate_domain_metrics.check_thin_target_annotation.
+//
+// --allow_dead_arms also waives this, because the partial report needs both waived for the
+// same reason. Set this one on its own to publish a report over a species you have already
+// decided is annotation-limited rather than distant.
+params.allow_thin_targets = false
+
 // --- reduced-alphabet information ceiling ---------------------------------
 // The BPE boundary diagnostic: do the token boundaries ProtBERTa_2 learned on a 2-letter
 // alphabet land on Pfam domain boundaries? See bin/hp_bpe_boundary_diagnostic.py.
@@ -598,20 +621,25 @@ def alphabetClasses = { label ->
     m ? (m[0][1] as int) : 20
 }
 
-// Roughly the k-mer count of one full proteome; mouse reports 11_284_322 at protein20 k=4.
-// A combo whose keyspace is at or below this has every key occupied on average, which is
-// the regime that needs the large allocation.
-params.kmerseek_saturation_kmers = 11_300_000
-
-def isSaturated = { label, ksize ->
-    ksize * Math.log10(alphabetClasses(label)) <= Math.log10(params.kmerseek_saturation_kmers as double)
+// How big the k-mer keyspace is, in bits: ksize x log2(alphabet cardinality). This is the
+// one number that predicts kmerseek's memory, and it is what replaced the old
+// `isSaturated` HARD THRESHOLD against a proteome k-mer count. That threshold sorted every
+// combo into a saturated branch (scaled) and an unsaturated one (flat 32 GB), and its own
+// comment already recorded the failure mode: the hungriest tasks in the sweep were the
+// ones sitting just OUTSIDE it. The trace bears that out -- see kmerseekSearchMemory.
+def keyspaceBits = { label, ksize ->
+    ksize * (Math.log(alphabetClasses(label)) / Math.log(2.0d))
 }
 
-// Sized for full QfO proteomes. A mini/smoke run indexes a few hundred sequences and
-// needs nothing like this, so both figures are params -- the `mini` profile lowers them
-// rather than forcing a 128 GB request for a 300-protein test set.
-params.kmerseek_memory         = '32 GB'
-params.kmerseek_memory_hp_lowk = '128 GB'
+// Ceiling on a kmerseek search request, before the retry multiplier. Sized for full QfO
+// proteomes; a mini/smoke run indexes a few hundred sequences and needs nothing like it,
+// so the `mini` profile lowers this and kmerseek_memory_floor together rather than forcing
+// a 128 GB request for a 300-protein test set.
+//
+// 128 GB, not the 32 GB the old flat branch used. The measured worst cases are censored AT
+// 32 and 64 GB (see the note on kmerseekSearchMemory below), so 32 was not a ceiling that
+// anything fit under -- it was the wall those tasks were hitting.
+params.kmerseek_memory_max = '128 GB'
 
 // scoreDomainCalls is ~10_179 tasks on a full run, and a flat 96 GB for all of them is a
 // 5.8 TB standing ask at maxForks 60 -- it queues rather than runs. Size from the actual
@@ -626,34 +654,180 @@ params.kmerseek_memory_hp_lowk = '128 GB'
 params.score_memory_base   = '8 GB'
 params.score_memory_per_mb = 120     // MB of RAM per compressed MB of regions
 params.score_memory_max    = '96 GB' // the old flat value, now a ceiling rather than a floor
+// The ceiling AFTER the retry multiplier, which matters now that every failure retries and
+// not just a signal. Retries double the ask, so a task starting at the 96 GB cap would be
+// asking for 384 GB on its last attempt -- more than any node on `hns` has, and SLURM
+// rejects a job it cannot ever place instead of queueing it. Raise this only against
+// `sinfo -p hns -o '%n %m'`.
+params.score_memory_retry_max = '128 GB'
+
+// How finely scoreDomainCalls batches its arms. One task per (truth_set, species) put all
+// ~415 arms of every tool in one job, which has two costs. Memory is sized from the
+// LARGEST file in the group, so every arm ran inside a reservation only the greediest one
+// needed; and a failure on arm 12 destroyed the work of the other 818.
+//
+// Arms are scored sequentially, so a smaller group does not lower any single arm's peak.
+// What it lowers is the reservation the other arms sit inside, and how much work one
+// failure costs.
+//
+//   species    one task per (truth_set, species). The old behaviour, ~27 tasks.
+//   tool       one per (truth_set, species, tool). Isolates the baselines, which are the
+//              memory-hungry arms, but still leaves ~406 kmerseek arms in one group.
+//   alphabet   as `tool`, with kmerseek split again by alphabet: ~28 groups per species,
+//              ~750 tasks for a full sweep. Region file sizes within one alphabet are
+//              similar, so this is the setting where the memory estimate is actually tight.
+//
+// Finer is affordable only because the searches are done and cached. The per-arm shape was
+// ~10_100 jobs and hit Sherlock's submission rate limit, which is what grouping was for;
+// coarsen this if a run ever has to rebuild the searches too.
+params.score_group_by = 'alphabet'
 
 def scoreMemory = { regions, attempt ->
-    long mb    = Math.max(1L, (regions.size() as long).intdiv(1024L * 1024L))
-    long estMb = MemoryUnit.of(params.score_memory_base).toMega() + mb * (params.score_memory_per_mb as long)
-    long capMb = MemoryUnit.of(params.score_memory_max).toMega()
-    MemoryUnit.of("${Math.min(estMb, capMb)} MB") * attempt
+    long mb     = Math.max(1L, (regions.size() as long).intdiv(1024L * 1024L))
+    long estMb  = MemoryUnit.of(params.score_memory_base).toMega() + mb * (params.score_memory_per_mb as long)
+    long capMb  = MemoryUnit.of(params.score_memory_max).toMega()
+    long ceilMb = MemoryUnit.of(params.score_memory_retry_max).toMega()
+    MemoryUnit.of("${Math.min(Math.min(estMb, capMb) * attempt, ceilMb)} MB")
 }
 
-// Target proteome size, in MB of FASTA, that kmerseek_memory_hp_lowk is sized for.
+// Target proteome size, in MB of FASTA, that the search allocation is sized for.
 // Zebrafish is the largest QfO proteome at 16.7 MB. Ecoli is 1.8 MB.
 params.kmerseek_reference_proteome_mb = 17
-// Nothing drops below this however small the proteome: RocksDB write buffers and the
-// zstd output stream cost the same regardless of how little goes through them.
-params.kmerseek_memory_floor = '8 GB'
+// Nothing drops below this however small the proteome or however large the keyspace.
+// RocksDB write buffers and the zstd output stream cost the same regardless of how little
+// goes through them, and protein20 at k=11-13 still peaked at 7.00 GB.
+params.kmerseek_memory_floor = '10 GB'
 
-// The SATURATED allocation, and only that one, scales with the target proteome. The index
-// holds one posting list per proteome k-mer, so a 1.8 MB proteome cannot build the index a
-// 16.7 MB one does, and sizing on saturation alone asked 128 GB for every ecoli and yeast
-// task in the sweep against measured peaks of 1.0-4.1 GB. ecoli_hp_k20 reserved 128 GB and
-// touched 1.02 GB. Scaling those cuts the sweep's standing reservation by 26% with no task
-// dropping below the headroom it already had.
+// ===========================================================================
+// kmerseek memory as a function of ksize and alphabet cardinality
+// ===========================================================================
 //
-// The UNSATURATED 32 GB branch stays flat, and that is not an oversight. isSaturated is a
-// hard threshold, so the hungriest tasks in the whole sweep are the ones sitting just
-// OUTSIDE it: fly_dayhoff_k10 is unsaturated by the rule and peaked at 28.1 GB, which is
-// 1.14x of its 32 GB. There is no room to scale that branch down -- doing so by proteome
-// size was measured to put fly_dayhoff_k10 and k11 into OOM. Scale it only with new peak
-// data in hand, and raise the base first if you do.
+// Basis: 4_299 COMPLETED kmerseek tasks with a peak_rss, from the 2026-08-25, -26 and -27
+// Sherlock traces. 15 alphabets from 2 to 20 classes, ksize 5-30, nine target proteomes.
+//
+// The single predictor is KEYSPACE BITS, ksize x log2(classes). Memory halves for every
+// 6.8 bits of keyspace: an envelope fitted to the per-bits maximum, gbmr7 excluded, is
+//
+//     peak GB  =  292 * exp(-0.1017 * bits)          (r on the bucket maxima, monotone)
+//
+// which is 47 GB at 18 bits falling to 1.2 GB at 54. In k terms that is one halving per
+// ~7 residues on a 2-letter alphabet and per ~1.6 residues on protein20. Measured maxima
+// against the envelope: 63.9 GB at 18 bits (mmseqs12 k=5), 62.1 at 19 (hp_kyte_doolittle2
+// k=19), 32.0 at 24 (gbmr4 k=12), 11.3 at 32, 3.0 at 44, 2.4 at 54.
+//
+// Why bits and not the old saturation threshold. `isSaturated` compared classes^ksize
+// against a proteome k-mer count and branched hard. Everything on the flat 32 GB side got
+// the same ask whether it needed 2 GB or more than 32, and the trace shows 59 tasks whose
+// peak_rss came within 5% of their request -- every gbmr7 k=9-14 task and every gbmr4
+// k=12-13 task, pinned at exactly 32.00 or 64.00 GB. A peak that equals the request to two
+// decimals across nine different species is a cgroup ceiling, not a coincidence: those
+// tasks were clipped, so their true peaks are unknown and are lower bounds.
+//
+// gbmr4 and gbmr7 do not follow the rule and are carried as named exceptions rather than
+// smoothed away. Their peaks are censored -- gbmr7 at every ksize from 9 to 14, gbmr4 at
+// k=12-13 -- and gbmr7's do NOT scale with the target proteome: ecoli, a 1.8 MB proteome,
+// also hit 31.8 GB. Nothing in the keyspace model explains that.
+//
+// Their floors are set ABOVE the clip they were measured at, not at it. A censored peak is
+// a lower bound, so sizing to it is sizing to a number the task was already exceeding:
+// gbmr7 clipped at 64.00 GB gets 96, gbmr4 clipped at 32.00 GB gets 48. Both are provisional
+// and both should be re-measured with a request they cannot reach -- until then these are
+// the only two entries in the sweep whose true peak is unknown.
+params.kmerseek_memory_bits_base = 300    // GB at zero bits, before headroom
+params.kmerseek_memory_bits_decay = 0.1017 // per bit; 6.8 bits per halving
+// Multiplier on top of the envelope. 2.3, chosen against the measured minimum rather than
+// the median: at 2.0 no task in the 4_299-task basis is under-sized, but the five hottest
+// corners (fly/mouse dayhoff6 k=8, zebrafish/fly hp_kyte_doolittle2 k=19, zebrafish gbmr4
+// k=14) clear their own peak by only 1.13-1.40x, and those peaks are maxima over nine
+// species rather than a bound. 2.3 takes the worst case to 1.30x. At 1.6x, 15 tasks are
+// under-sized outright.
+//
+// This is the knob that trades footprint against requeues, and it is the reason the search
+// saving here is modest (~5%) while the index saving is large. Lower it only with a run
+// that shows the hot corners sitting well under their ask.
+params.kmerseek_memory_headroom = 2.3
+// Share of the search allocation that does NOT scale with the target proteome. The query
+// side is human either way, so a small target does not make the task small: yeast at 3 MB
+// still peaked at 25.7 GB on gbmr4 k=12. Scaling linearly to zero under-sized it.
+params.kmerseek_memory_size_floor_frac = 0.55
+// Alphabets the bits model provably does not fit, as a staircase of measured floors.
+// Format 'label:GB:maxKsize', comma-separated, several entries per label allowed; the
+// TIGHTEST bracket wins, that is the entry with the smallest maxKsize still >= this ksize.
+// Overridable from the CLI.
+//
+// The ksize bound is load-bearing. gbmr4 was clipped at k=12-13 and peaked at 5.3 GB by
+// k=21; a single floor applied at every ksize would hand 48 GB to combos measured at a
+// tenth of it and give back most of the saving. Each bracket covers the regime it was
+// measured in and nothing else.
+//
+// Each figure is 1.5x the worst peak measured inside its bracket:
+//   gbmr7 k<=14  96  (peaks 31.9-64.0, mostly censored -- lower bounds)
+//   gbmr7 k<=16  44  (peaks 19.5-29.4, uncensored)
+//   gbmr7 k<=18  22  (peaks 11.3-14.5, uncensored)
+//   gbmr4 k<=13  48  (peaks 32.00 at both k, censored at 6 and 4 of 9 species)
+// gbmr4 needs no bracket above k=13: the envelope already clears its k=14 peak of 27.2 GB.
+params.kmerseek_memory_unmodelled = 'gbmr7:96:14,gbmr7:44:16,gbmr7:22:18,gbmr4:48:13'
+
+// kmerseekIndex is sized SEPARATELY from kmerseekSearch and that is the largest single
+// saving here. Across 1_500 completed index tasks the peak was 7.00 GB and it tracks the
+// target proteome and nothing else -- 0.91 GB at 1.8 MB (ecoli) rising to 7.00 GB at
+// 16.7 MB (zebrafish), with no ksize or alphabet signal at all. The two processes shared
+// one closure, so every index task was asking a search-sized 32-128 GB. Mean request over
+// those 1_500 tasks was 42.6 GB against a 7.00 GB worst case.
+params.kmerseek_index_memory_max = '16 GB'
+
+def kmerseekUnmodelledFloorMb = { label, ksize ->
+    def brackets = (params.kmerseek_memory_unmodelled as String).tokenize(',')
+        .collect { it.trim() }.findAll { it }
+        .collect { it.tokenize(':') }
+        .findAll { it[0] == label }
+        .findAll { it.size() < 3 || (ksize as int) <= (it[2] as int) }
+    if (!brackets) return 0L
+    // Tightest bracket wins: the smallest maxKsize that still covers this ksize. An entry
+    // with no maxKsize applies at every ksize and sorts last.
+    def best = brackets.min { it.size() > 2 ? (it[2] as int) : Integer.MAX_VALUE }
+    (long) ((best[1] as double) * 1024L)
+}
+
+// Index memory: linear in the target proteome, capped, with the shared floor.
+// 2 GB + 0.9 GB per MB of FASTA gives >= 2.2x headroom on every one of the 1_500 measured
+// tasks. The slope is what the measurements say: 0.91 GB at 1.8 MB (ecoli) rising to
+// 7.00 GB at 16.7 MB (zebrafish) is ~0.41 GB/MB, so this is a little over 2x that.
+def kmerseekIndexMemory = { targetBytes, attempt ->
+    long mb     = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
+    long estMb  = (long) ((2.0d + 0.9d * mb) * 1024L)
+    long capMb  = Math.min(MemoryUnit.of(params.kmerseek_index_memory_max).toMega(),
+                           MemoryUnit.of(params.kmerseek_memory_max).toMega())
+    long floorMb = Math.min(capMb, MemoryUnit.of(params.kmerseek_memory_floor).toMega())
+    MemoryUnit.of("${Math.max(floorMb, Math.min(capMb, estMb))} MB") * attempt
+}
+
+// Search memory: the keyspace-bits envelope, scaled by target proteome size down to
+// kmerseek_memory_size_floor_frac, raised to any measured floor the model does not fit,
+// and clamped between kmerseek_memory_floor and kmerseek_memory (the ceiling).
+//
+// Effect on the 4_299-task basis: 0 tasks under-sized, total kmerseek reservation down
+// 37% (183_482 -> 115_779 GB-tasks), index down 72% and search down 15%.
+def kmerseekSearchMemory = { label, ksize, targetBytes, attempt ->
+    long mb      = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
+    double frac  = params.kmerseek_memory_size_floor_frac as double
+    double sizeF = frac + (1.0d - frac) *
+                   Math.min(1.0d, mb / (params.kmerseek_reference_proteome_mb as double))
+    double gb    = (params.kmerseek_memory_headroom as double)
+                   * (params.kmerseek_memory_bits_base as double)
+                   * Math.exp(-(params.kmerseek_memory_bits_decay as double)
+                              * keyspaceBits(label, ksize))
+                   * sizeF
+    long estMb   = (long) (gb * 1024L)
+    long capMb   = MemoryUnit.of(params.kmerseek_memory_max).toMega()
+    // The unmodelled floor is clamped by the ceiling too, so a mini run that lowers the
+    // ceiling to 8 GB does not get a 96 GB gbmr7 request on a 300-protein test set.
+    long floorMb = Math.min(capMb,
+                            Math.max(MemoryUnit.of(params.kmerseek_memory_floor).toMega(),
+                                     kmerseekUnmodelledFloorMb(label, ksize)))
+    MemoryUnit.of("${Math.max(floorMb, Math.min(capMb, estMb))} MB") * attempt
+}
+
 // Wall clock for a batched scoring task, from the TOTAL bytes it will read. One task now
 // scores every arm for a species sequentially, so time is additive where memory is not.
 //
@@ -683,16 +857,27 @@ def scoreTime = { regions, attempt ->
     Duration.of("${Math.min(mins, cap) * attempt} min")
 }
 
-def kmerseekMemory = { label, ksize, targetBytes, attempt ->
-    if (!isSaturated(label, ksize)) {
-        return MemoryUnit.of(params.kmerseek_memory) * attempt
-    }
-    long   mb   = Math.max(1L, (targetBytes as long).intdiv(1024L * 1024L))
-    double frac = Math.min(1.0d, mb / (params.kmerseek_reference_proteome_mb as double))
-    long sized  = Math.max(MemoryUnit.of(params.kmerseek_memory_floor).toMega(),
-                           (long) (MemoryUnit.of(params.kmerseek_memory_hp_lowk).toMega() * frac))
-    MemoryUnit.of("${sized} MB") * attempt
+// One place decides which scoring group an arm belongs to, and it is used both to COUNT
+// the arms in a group and to key the group itself. Two expressions would drift, and the
+// failure is quiet: a count that never matches its key leaves the group waiting for arms
+// that will never arrive, released only when the whole channel closes.
+def kmerseekGroup = { String alphabet -> "kmerseek:${alphabet}" }
+
+// Returns null when a kmerseek variant carries no readable alphabet, so the caller can
+// name the offending string rather than silently grouping it somewhere arbitrary.
+def scoreGroup = { String tool, String variant ->
+    if (params.score_group_by == 'species') return 'all'
+    if (tool != 'kmerseek' || params.score_group_by == 'tool') return tool
+    def m = (variant =~ /^(.+)_k\d+_lc(?:True|False)$/)
+    m ? kmerseekGroup(m[0][1]) : null
 }
+
+// kmerseekMemory used to live here: one closure for both kmerseek processes, branching on
+// isSaturated(). It has been replaced by kmerseekIndexMemory and kmerseekSearchMemory
+// above, which size the two separately and grade on keyspace bits instead of a hard
+// threshold. Do not reintroduce it -- it reads params.kmerseek_memory and
+// params.kmerseek_memory_hp_lowk, and neither exists any more, so it does not fail at
+// parse time but throws on MemoryUnit.of(null) once a task is actually created.
 
 // The trace file the MultiQC resource sections read. Resolved through a closure, never
 // at parse time: `trace.file` is created by Nextflow's observer as the run starts, so a
@@ -977,7 +1162,8 @@ process buildQueryCovariates {
     publishDir "${params.outdir}/truth", mode: 'copy'
 
     input:
-    tuple path(truth), path(hgnc), path(omega), path(structures), path(disorder)
+    tuple path(truth), path(hgnc), path(omega), path(structures), path(disorder),
+          path(query_sets)
 
     output:
     path "human_query_covariates.parquet", emit: covariates
@@ -989,10 +1175,14 @@ process buildQueryCovariates {
     def struct_arg = structures.name == 'NO_STRUCTURES' ? "" : "--structures ${structures}"
     def mobidb_arg = params.mobidb_cache ? "--mobidb ${params.mobidb_cache}" : ""
     def mpred_arg  = disorder.name == 'NO_DISORDER' ? "" : "--metapredict ${disorder}"
+    // Which bucket of the query set each protein came from. Present whenever
+    // make_mini_testset.py wrote it next to the annotations; absent for a run built before
+    // it existed, and for the full-proteome run where every query is the same bucket.
+    def qsets_arg  = query_sets.name == 'NO_QUERY_SETS' ? "" : "--query-sets ${query_sets}"
     """
     build_query_covariates.py \\
         --truth       ${truth} \\
-        ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} ${mpred_arg} \\
+        ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} ${mpred_arg} ${qsets_arg} \\
         --out         human_query_covariates.parquet \\
         --summary-out covariates_summary.json
     """
@@ -1055,7 +1245,10 @@ process kmerseekIndex {
     container { image }
     storeDir "${DB_CACHE}/kmerseek_index"
 
-    memory { kmerseekMemory(label, ksize, species_fasta.size(), task.attempt) }
+    // Index sizing only. Building the index does not care which alphabet or ksize it is
+    // -- 1_500 measured tasks peaked at 7.00 GB and tracked the proteome alone -- so this
+    // must NOT use kmerseekSearchMemory, which would put a search-sized ask on every one.
+    memory { kmerseekIndexMemory(species_fasta.size(), task.attempt) }
     // Retries the OOM signals only. Do NOT widen this to exit 1 to catch the
     // "Directory not empty" unstage failure -- that was measured on 2026-08-27 and it does
     // not work. Nextflow reads the store when it CREATES a task and caches that decision
@@ -1164,7 +1357,7 @@ process kmerseekSearch {
     container { image }
     storeDir "${params.outdir}/kmerseek"
 
-    memory { kmerseekMemory(label, ksize, target_bytes, task.attempt) }
+    memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
     // Retry the OOM signals (128..143), stop the run on anything else. Deliberately not
     // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
     // downstream as "this alphabet found nothing", which is indistinguishable from a real
@@ -1517,6 +1710,11 @@ process hhblitsSearch {
     tag "human_vs_${species}"
     container 'quay.io/biocontainers/hhsuite@sha256:4bf9bb5229de18f522a94f4443c19fdcbb0f0cb0e6ea92f5390aa170bcb0a24f'
     label 'high_cpu'
+    // A walltime kill arrives as SIGTERM, exit 143. Without this the default strategy is
+    // `terminate`, so the four large targets running past the wall would take the whole run
+    // down with them rather than being requeued with the longer limit the retry carries.
+    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'terminate' }
+    maxRetries 1
     publishDir "${params.outdir}/regions/hhblits", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
@@ -1535,6 +1733,21 @@ process hhblitsSearch {
     // "compatible to -outfmt 6" help text says: 3 is a fraction of the TARGET length and 4
     // is that length. Only 7-12 mean what the BLAST column of the same index means, and
     // those are the only ones read below.
+    //
+    // Reading by position is why the awk below has a known defect, left in deliberately.
+    // A record whose TARGET name carries whitespace shifts every later field left, and the
+    // row still comes out eight tab-separated columns wide and still looks like a hit.
+    // Measured on ciona: exactly one row in the whole table, query MED23_HUMAN, target name
+    // spread over five tokens beginning `1391093197`, so $7 held matched/targetLen (0.172)
+    // instead of qstart (107). Those rows are dropped and counted by name in
+    // evaluate_domain_calls.load_regions, which reports them per arm.
+    //
+    // Not fixed here because fixing it changes this script, which invalidates the storeDir
+    // and re-runs nine 16-core searches to recover one row. The fix when this arm is
+    // rebuilt for some other reason: fields 3-12 are always the LAST TEN whitespace tokens
+    // however many the names take, so read them as $(NF-5) $(NF-4) $(NF-3) $(NF-2) $NF
+    // $(NF-1), and take the target as the first $2..$(NF-10) token containing a `|`. The
+    // per-arm drop count in the scoring log says whether it is ever worth doing.
     //
     // The database is addressed by a base name, not by a file: HHDatabase::buildDatabaseName
     // appends _a3m / _hhm / _cs219 plus the ffindex extensions, and hhsearch opens cs219
@@ -1567,7 +1780,7 @@ process hhblitsSearch {
     ffindex_apply \\
         ${human_hhdb}/db_a3m.ffdata ${human_hhdb}/db_a3m.ffindex \\
         -d results.ffdata -i results.ffindex \\
-        -- hhsearch -i stdin -d "\$db" -blasttab /dev/stdout -cpu 1 -v 0
+        -- hhsearch -i stdin -d "\$db" -blasttab /dev/stdout -cpu ${task.cpus} -v 0
 
     ffindex_apply results.ffdata results.ffindex -- cat \\
     | awk 'NF >= 12 {print \$1 "\\t" \$2 "\\t" \$7 "\\t" \$8 "\\t" \$9 "\\t" \$10 "\\t" \$12 "\\t" \$11}' \\
@@ -2449,14 +2662,14 @@ process hhblitsBuildDB {
 
 process scoreDomainCalls {
     /*
-     * One task per (tool, variant, species). Reads the tool's regions, transfers Pfam
-     * labels through the target interval, scores the resulting query-side calls against
-     * human_domain_truth.parquet. Emits per-call detail (for downstream re-cutting) and
-     * a metrics row.
+     * One task per (truth_set, species, scoring group). Reads each arm's regions, transfers
+     * Pfam labels through the target interval, scores the resulting query-side calls
+     * against human_domain_truth.parquet. Emits per-call detail (for downstream
+     * re-cutting) and a metrics row per arm.
      */
-    // One task covers every arm for this species now, so the tag names the group rather
-    // than a tool. arms is the count because a full sweep is ~376 of them per species.
-    tag "${truth_set}: ${species} (${tools.size()} arms)"
+    // The tag names the group -- a tool, or `kmerseek:<alphabet>` -- and how many arms it
+    // holds, which is what tells the two dozen tasks of one species apart in the log.
+    tag "${truth_set}: ${species} / ${group} (${tools.size()} arms)"
     // Its own label, NOT 'python'. Config directives beat script-declared ones, so while
     // this carried the python label that label's flat memory silently overrode the sizing
     // below. The scoring label sets the container and nothing else.
@@ -2467,14 +2680,22 @@ process scoreDomainCalls {
     memory { scoreMemory(regions instanceof List ? regions.max { it.size() } : regions,
                          task.attempt) }
     time   { scoreTime(regions, task.attempt) }
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    // Retry on ANY failure, not on the signal range. An OOM kill inside the container was
+    // observed arriving as exit status 1 -- the log said `Killed`, the wrapper reported 1 --
+    // so the 128..143 test never fired, the strategy fell through to `finish`, and one dead
+    // arm cancelled the run with no metrics written for the other 829. A batched task is
+    // too expensive to lose to a mis-reported exit code, and the memory doubles on each
+    // attempt (up to score_memory_retry_max), so a retry is a different run rather than the
+    // same one again. A deterministic script error costs three cheap re-runs, because the
+    // script parses its manifest and truth table before it scores anything.
+    errorStrategy { task.attempt <= 3 ? 'retry' : 'finish' }
     maxRetries 3
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
-    tuple val(truth_set), val(species), val(tools), val(variants), val(mya),
+    tuple val(truth_set), val(species), val(group), val(tools), val(variants), val(mya),
           path(regions, arity: '1..*'), path(truth), path(domain_map),
           path(covariates), path(identity), path(target_disorder)
 
@@ -2631,7 +2852,8 @@ process aggregateMetrics {
 
     script:
     """
-    aggregate_domain_metrics.py \\
+    aggregate_domain_metrics.py ${params.allow_dead_arms ? '--allow-dead-arms' : ''} \\
+        ${params.allow_thin_targets ? '--allow-thin-targets' : ''} \\
         metrics curves \\
         all_domain_metrics.parquet all_domain_metrics.csv all_domain_curves.parquet
     """
@@ -2669,6 +2891,11 @@ process buildMultiqcInputs {
     input:
     tuple path(metrics), path(curves), path(trace), path(human_fasta), path(bpe)
     path kmerseek_timings, stageAs: 'kmerseek_timings/*'
+    // stageAs with a bare `*`, so every file keeps its own name. That is not cosmetic:
+    // spectrum.<species>.<alphabet>.k<ksize>.lc<true|false>.csv.gz carries the species and
+    // the low-complexity arm ONLY in the filename -- the CSV body holds moltype, ksize,
+    // occurrences and n_kmers and nothing else -- so a rename loses two of the four axes.
+    path kmerseek_spectra, stageAs: 'spectra/*'
 
     output:
     path "multiqc_in", emit: sections
@@ -2690,7 +2917,9 @@ process buildMultiqcInputs {
     //
     // The timings directory does not exist when the sweep produced no records (a run with
     // --skip_kmerseek, or one whose store predates the timings output), which the script
-    // treats as "no kmerseek rows" rather than as an error.
+    // treats as "no kmerseek rows" rather than as an error. The spectra directory is the
+    // same: load_spectra returns empty and the section is skipped, so --spectra always
+    // being passed does not make the spectra a required input.
     """
     set -euo pipefail
     n_queries=\$(grep -c '^>' ${human_fasta} || true)
@@ -2700,6 +2929,7 @@ process buildMultiqcInputs {
         --curves       ${curves} \\
         --trace        ${trace} \\
         --kmerseek-timings kmerseek_timings \\
+        --spectra      spectra \\
         --n-queries    \${n_queries} \\
         --max-tools    ${params.multiqc_max_tools} \\
         --max-lines    ${params.multiqc_max_lines} \\
@@ -2840,6 +3070,11 @@ workflow {
         ? Channel.value(file("${projectDir}/assets/NO_DISORDER"))
         : disorder_all.filter { it.name.startsWith("${HUMAN_LABEL}.") }
 
+    // Written by make_mini_testset.py next to the annotations it subsets, so it is found
+    // from params.annotations rather than needing its own param. Absent for the
+    // full-proteome run, where there is only one bucket and the label carries no
+    // information.
+    def query_sets_file = optional_or("${params.annotations}/query_sets.tsv", 'NO_QUERY_SETS')
     cov_in = truth_out.truth.combine(disorder_ch).map { t, dis ->
         tuple(t,
               optional_or(params.hgnc_file,  'NO_HGNC'),
@@ -2847,7 +3082,8 @@ workflow {
               file("${params.structures}/human").exists()
                   ? file("${params.structures}/human")
                   : file("${projectDir}/assets/NO_STRUCTURES"),
-              dis)
+              dis,
+              query_sets_file)
     }
     covariates = buildQueryCovariates(cov_in).covariates
 
@@ -2962,13 +3198,26 @@ workflow {
     // It is per species, not one number, because the structure arms only run for species
     // that have structures. groupKey carries a size per key, which is what makes that
     // expressible at all.
-    def arms_per_species = [:].withDefault { 0 }
-    def countArm = { List labels, int n -> labels.each { arms_per_species[it] += n } }
+    // Keyed by [species, scoring group] now, not by species: the group is what groupKey
+    // has to size. A key that was never counted reads 0 through withDefault, which means
+    // "released when the channel closes" via remainder: true below -- the same safety net
+    // an over-count already had.
+    def arms_per_group = [:].withDefault { 0 }
+    def countArm = { List labels, String group, int n ->
+        // A zero count is a group that does not exist -- an arm switched off by
+        // --gpu_benchmark, say -- so it must not be entered. withDefault would otherwise
+        // create the key and the startup line would report tasks that never run.
+        if (n <= 0) return
+        labels.each { arms_per_group[[it, group]] += n }
+    }
 
     kmerseek_regions = Channel.empty()
     // Per-task timings for the report. Separate from the trace because this arm is on
     // storeDir: a store hit runs no task and Nextflow records nothing for it.
     kmerseek_timings = Channel.empty()
+    // One k-mer frequency spectrum per combo, for the report's spectra section. Same
+    // storeDir reasoning as the timings above, and empty on a run that skips kmerseek.
+    kmerseek_spectra = Channel.empty()
     // --gpu_benchmark implies --skip_kmerseek. It measures the baselines' GPU path, and
     // forgetting the flag would queue the 3294-job sweep behind a timing run.
     if (!params.skip_kmerseek && !params.gpu_benchmark) {
@@ -3057,7 +3306,17 @@ workflow {
         |  spectra : one k-mer frequency spectrum per combo, published for plotting
         """.stripMargin()
 
-        countArm(SPECIES*.label, combos.size())
+        // Counted per alphabet rather than in one lump, because that is the grain the
+        // groups are keyed at. groupBy runs on the combo's own label -- the same field the
+        // result filename carries and scoreGroup reads back out of it -- so the count and
+        // the key cannot name different things.
+        if (params.score_group_by == 'alphabet') {
+            combos.groupBy { it[1] }.each { alphabet, cs ->
+                countArm(SPECIES*.label, kmerseekGroup(alphabet), cs.size())
+            }
+        } else {
+            countArm(SPECIES*.label, scoreGroup("kmerseek", null), combos.size())
+        }
         // Which image each combo runs under. Keyed on the alphabet's canonical name, the
         // same field KNOWN_ENCODINGS is looked up by, so an alphabet cannot be in
         // EXTRA_ENCODINGS and still be handed the older image. Falls back to the one image
@@ -3113,8 +3372,13 @@ workflow {
                 def lc = m[0][4] == 'true' ? 'lcTrue' : 'lcFalse'
                 tuple(m[0][1], "kmerseek", "${m[0][2]}_k${m[0][3]}_${lc}", pq)
             }
-        // Spectra are published for plotting and are not scored.
-        ks_out.spectrum.collectFile(
+        // Spectra are published for plotting and are not scored. The collectFile channel
+        // is kept rather than discarded: it carries the same files with their names
+        // intact, and the filename is the ONLY place the species and the low-complexity
+        // arm are recorded -- the CSV body has just moltype, ksize, occurrences, n_kmers.
+        // So these must reach the report un-renamed, which is why they are staged rather
+        // than read out of params.outdir.
+        kmerseek_spectra = ks_out.spectrum.collectFile(
             storeDir: "${params.outdir}/spectra", keepHeader: false
         )
     }
@@ -3137,7 +3401,8 @@ workflow {
 
         phmmer_out    = bench_only ? Channel.empty() : phmmerSearch(pair_ch)
         jackhmmer_out = bench_only ? Channel.empty() : jackhmmerSearch(pair_ch)
-        countArm(SPECIES*.label, bench_only ? 0 : 2)
+        countArm(SPECIES*.label, "hmmer3_phmmer",    bench_only ? 0 : 1)
+        countArm(SPECIES*.label, "hmmer3_jackhmmer", bench_only ? 0 : 1)
 
         // Both variants share one pair of databases, so createdb runs once per proteome
         // rather than once per (variant, species).
@@ -3183,7 +3448,9 @@ workflow {
             ]
         }
         mmseqs_out = mmseqs2Search(mmseqs_in)
-        countArm(SPECIES*.label, 2 * search_modes.size())   // seqseq + iterative, per mode
+        // seqseq and iterative are separate tools downstream, so they are separate groups.
+        countArm(SPECIES*.label, "mmseqs2_seqseq",    search_modes.size())
+        countArm(SPECIES*.label, "mmseqs2_iterative", search_modes.size())
 
         // HHblits: build the human query profile DB once, every species target DB once.
         // is_query travels as an explicit flag rather than being inferred from the label.
@@ -3198,7 +3465,7 @@ workflow {
             species_hhdb = hhdb_ch.filter { label, _db -> label != HUMAN_LABEL }
 
             hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
-            countArm(SPECIES*.label, 1)
+            countArm(SPECIES*.label, "hhblits", 1)
         }
 
         baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
@@ -3238,7 +3505,7 @@ workflow {
 
             prostt5_out = prostt5Search(p5_targets.combine(p5_human))
             baseline_regions = baseline_regions.mix(prostt5_out.regions)
-            countArm(SPECIES*.label, 1)
+            countArm(SPECIES*.label, "prostt5", 1)
         }
 
         // ---- foldseek ----
@@ -3314,7 +3581,7 @@ workflow {
 
             foldseek_out     = foldseekSearch(fs_in)
             baseline_regions = baseline_regions.mix(foldseek_out)
-            countArm(struct_species*.label, search_modes.size())
+            countArm(struct_species*.label, "foldseek", search_modes.size())
 
             // ---- Reseek: same structures, opposite alphabet direction ----
             // No GPU path exists. The pinned reseek image links no CUDA library, its usage
@@ -3333,7 +3600,7 @@ workflow {
 
                 reseek_out = reseekSearch(rs_target.combine(rs_human))
                 baseline_regions = baseline_regions.mix(reseek_out)
-                countArm(struct_species*.label, 1)
+                countArm(struct_species*.label, "reseek", 1)
             }
 
             // ---- folddisco ----
@@ -3360,7 +3627,7 @@ workflow {
                 )
                 folddisco_regions = folddiscoMerge(fd_out.groupTuple(by: 0))
                 baseline_regions  = baseline_regions.mix(folddisco_regions)
-                countArm(struct_species*.label, 1)
+                countArm(struct_species*.label, "folddisco", 1)
             }
         }
     }
@@ -3401,10 +3668,15 @@ workflow {
             tuple(ts, species, tool, variant, mya, regions, truth, domain_map, cov, ident)
         }
 
-    // One task per (truth_set, species) rather than per (truth_set, species, tool, variant).
+    // One task per (truth_set, species, scoring group) -- see params.score_group_by for
+    // what a group is and why it is no longer the whole species.
+    //
     // The per-arm shape was ~10_100 SLURM jobs for a full sweep, each a few seconds of work
     // behind minutes of scheduler latency, and Sherlock rate-limits submission per hour --
-    // a run died with "Reached jobs per hour limit" partway through. Grouped, it is 27.
+    // a run died with "Reached jobs per hour limit" partway through. Grouping by species
+    // alone took that to 27 and went too far the other way: ecoli put 415 arms of every
+    // tool in one job, sized for the largest file among them, and an OOM on arm 12 threw
+    // away the other 818. The default now splits by tool, and kmerseek again by alphabet.
     //
     // truth, domain_map, covariates and identity are identical within a group, so .first()
     // on each is exact rather than an approximation; only tools, variants and regions vary.
@@ -3430,28 +3702,47 @@ workflow {
             tuple(ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis)
         }
 
+    if (!(params.score_group_by in ['species', 'tool', 'alphabet'])) {
+        error "--score_group_by takes species, tool or alphabet; got " +
+              "'${params.score_group_by}'."
+    }
+
     score_grouped = score_in
         .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis ->
-            // groupKey carries the expected size WITH the key, so each (truth_set, species)
-            // group is released the moment its own arms are all in rather than when the
-            // whole channel closes. Without it, no scoring could start until the last
-            // kmerseek search of the last species finished.
-            tuple(groupKey(tuple(ts, sp), arms_per_species[sp]),
+            // groupKey carries the expected size WITH the key, so each group is released
+            // the moment its own arms are all in rather than when the whole channel
+            // closes. Without it, no scoring could start until the last kmerseek search of
+            // the last species finished.
+            def grp = scoreGroup(tool, variant)
+            if (grp == null) {
+                error "cannot read an alphabet out of the kmerseek variant `${variant}`, " +
+                      "so it cannot be assigned a scoring group. Expected " +
+                      "<alphabet>_k<ksize>_lc<True|False>. Run with " +
+                      "--score_group_by tool to group kmerseek as one instead."
+            }
+            tuple(groupKey(tuple(ts, sp, grp), arms_per_group[[sp, grp]]),
                   tool, variant, mya, regions, truth, dm, cov, ident, tdis)
         }
-        // remainder: true is the safety net for the count being WRONG. If arms_per_species
+        // remainder: true is the safety net for the count being WRONG. If arms_per_group
         // over-counts, the group never reaches its size and would hang forever; with
         // remainder it is released at channel close instead, which is exactly the
         // behaviour this change replaces. An under-count still emits early, which is why
         // the count is accumulated beside the arms rather than restated.
         .groupTuple(by: 0, remainder: true)
         .map { key, tools, variants, myas, regions, truths, dms, covs, idents, tdiss ->
-            tuple(key[0], key[1], tools, variants, myas.first(), regions,
+            tuple(key[0], key[1], key[2], tools, variants, myas.first(), regions,
                   truths.first(), dms.first(), covs.first(), idents.first(), tdiss.first())
         }
 
-    log.info "  scoring : one task per (truth set, species); arms per species = " +
-             "${arms_per_species.collect { k, v -> "${k}:${v}" }.join(', ')}"
+    // Read back off the same map the groups are keyed by, so the line cannot describe a
+    // grouping the run is not using.
+    def groups_per_species = arms_per_group.keySet().countBy { it[0] }
+    def arms_per_species   = [:].withDefault { 0 }
+    arms_per_group.each { k, v -> arms_per_species[k[0]] += v }
+    log.info "  scoring : grouped by ${params.score_group_by} -- " +
+             arms_per_species.sort().collect { sp, n ->
+                 "${sp}: ${n} arms in ${groups_per_species[sp]} tasks"
+             }.join(', ')
 
     scored = scoreDomainCalls(score_grouped)
 
@@ -3514,7 +3805,8 @@ workflow {
         // nothing at all, which would leave buildMultiqcInputs with an input channel that
         // never fires and drop the whole report on any run without kmerseek timings.
         multiqcFromMetrics(agg.metrics, agg.curves, human_fasta,
-                           kmerseek_timings.collect().ifEmpty([]), bpe_ch)
+                           kmerseek_timings.collect().ifEmpty([]), bpe_ch,
+                           kmerseek_spectra.collect().ifEmpty([]))
     }
 }
 
@@ -3530,6 +3822,7 @@ workflow multiqcFromMetrics {
     human_fasta
     kmerseek_timings
     bpe_boundary
+    kmerseek_spectra
 
     main:
     mqc_in = metrics
@@ -3538,7 +3831,7 @@ workflow multiqcFromMetrics {
         // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
         .map { m, c, b -> tuple(m, c, resolveTrace(), file(human_fasta), b) }
 
-    sections = buildMultiqcInputs(mqc_in, kmerseek_timings).sections
+    sections = buildMultiqcInputs(mqc_in, kmerseek_timings, kmerseek_spectra).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
 }
 
@@ -3617,6 +3910,15 @@ workflow report {
         file("${d}/kmerseek").exists() ? file("${d}/kmerseek/*.timings.jsonl") : []
     }
 
+    // The spectra come off disk here for the same reason the timings do: no kmerseek
+    // process runs in this entry, and kmerseekIndex published them to <outdir>/spectra
+    // during the sweep. Read per SOURCE outdir, so a report combining two runs gets both
+    // sets. Absent is normal -- a run that skipped kmerseek, or one whose store predates
+    // the spectrum output -- and the section is simply not drawn.
+    def ks_spectra = timing_dirs.collectMany { d ->
+        file("${d}/spectra").exists() ? file("${d}/spectra/*.csv.gz") : []
+    }
+
     def metrics_ch
     def curves_ch
 
@@ -3679,7 +3981,8 @@ workflow report {
 
         log.info "combining ${metric_files.size()} scored arms and ${curve_files.size()} " +
                  "curves from ${source_dirs.size()} outdirs into ${outdir}, trace ${trace}, " +
-                 "${ks_timings.size()} kmerseek timing records"
+                 "${ks_timings.size()} kmerseek timing records, " +
+                 "${ks_spectra.size()} spectra"
 
         // Channel.value, not Channel.of: one task staging every file, which is what
         // `path 'metrics/*'` expects and what the main workflow's .collect() produces.
@@ -3689,7 +3992,8 @@ workflow report {
     }
     else {
         log.info "building the report from ${outdir}, trace ${trace}, " +
-                 "${ks_timings.size()} kmerseek timing records"
+                 "${ks_timings.size()} kmerseek timing records, " +
+                 "${ks_spectra.size()} spectra"
         metrics_ch = Channel.of(metrics)
         curves_ch  = Channel.of(curves.exists() ? curves : file("${projectDir}/assets/NO_CURVES"))
     }
@@ -3705,5 +4009,6 @@ workflow report {
         human_fasta,
         Channel.of(ks_timings),
         Channel.of(bpe.exists() ? bpe : file("${projectDir}/assets/NO_BPE")),
+        Channel.of(ks_spectra),
     )
 }
