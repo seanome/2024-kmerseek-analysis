@@ -44,6 +44,14 @@ params.evalue_call          = 1e-3    // what counts as "found something" for th
 params.jackhmmer_iterations = 3
 params.mmseqs2_sensitivity  = 7
 
+// Queries per task. 45_339 botryllus proteins against 572_700 reference sequences is
+// ~1-3 s/query for phmmer and several times that for jackhmmer at 3 iterations, so the
+// whole proteome as one task is 12-38h for the cheapest arm and well past that for the
+// dearest -- past the 12h walltime, and a scheduler kill reports exitStatus
+// Integer.MAX_VALUE, so it would retry into the same wall. 2_000 gives 23 tasks that each
+// finish inside an hour or two.
+params.query_chunk_size = 2000
+
 params.kmerseek_alphabets = 'hp_thomas_dill2:23,protein20:10'
 params.mini               = false
 
@@ -78,41 +86,62 @@ process buildReference {
     """
 }
 
+process splitQuery {
+    tag "${species}"
+    label 'python_scoring'
+    cpus 1
+    memory '4 GB'
+
+    input:
+    tuple val(species), path(query)
+
+    output:
+    tuple val(species), path("chunks/chunk_*.fasta")
+
+    script:
+    """
+    set -euo pipefail
+    mkdir -p chunks
+    split_query_fasta.py --in ${query} --outdir chunks \\
+        --chunk-size ${params.query_chunk_size}
+    """
+}
+
 process phmmerSearch {
-    tag "${species}_vs_minus_${clade}"
+    tag "${species}.${chunk.simpleName}_vs_minus_${clade}"
     container HMMER
     label 'high_cpu'
     publishDir "${params.outdir}/${species}/hits", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
-    tuple val(species), val(clade), path(query), path(ref_dir)
+    tuple val(species), val(clade), path(chunk), path(ref_dir)
 
     output:
-    tuple val(species), val('phmmer'), path("${species}.phmmer.tsv.gz")
+    tuple val(species), val('phmmer'), path("${species}.${chunk.simpleName}.phmmer.tsv.gz")
 
     script:
     """
     set -euo pipefail
     phmmer --domtblout /dev/stdout --tblout /dev/null -o /dev/stderr --noali \\
         -E ${params.evalue_report} --cpu ${task.cpus} \\
-        ${query} ${ref_dir}/reference.fasta \\
+        ${chunk} ${ref_dir}/reference.fasta \\
     | grep -v '^#' \\
     | awk 'NF >= 22 {print \$4 "\\t" \$1 "\\t" \$20 "\\t" \$21 "\\t" \$14 "\\t" \$13}' \\
-    | gzip -c > ${species}.phmmer.tsv.gz
+    | gzip -c > ${species}.${chunk.simpleName}.phmmer.tsv.gz
     """
 }
 
 process jackhmmerSearch {
-    tag "${species}_vs_minus_${clade}"
+    tag "${species}.${chunk.simpleName}_vs_minus_${clade}"
     container HMMER
     label 'high_cpu'
     publishDir "${params.outdir}/${species}/hits", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
-    tuple val(species), val(clade), path(query), path(ref_dir)
+    tuple val(species), val(clade), path(chunk), path(ref_dir)
 
     output:
-    tuple val(species), val('jackhmmer'), path("${species}.jackhmmer.tsv.gz")
+    tuple val(species), val('jackhmmer'), path("${species}.${chunk.simpleName}.jackhmmer.tsv.gz")
 
     script:
     """
@@ -120,29 +149,29 @@ process jackhmmerSearch {
     jackhmmer -N ${params.jackhmmer_iterations} \\
         --domtblout /dev/stdout --tblout /dev/null -o /dev/stderr --noali \\
         -E ${params.evalue_report} --cpu ${task.cpus} \\
-        ${query} ${ref_dir}/reference.fasta \\
+        ${chunk} ${ref_dir}/reference.fasta \\
     | grep -v '^#' \\
     | awk 'NF >= 22 {print \$4 "\\t" \$1 "\\t" \$20 "\\t" \$21 "\\t" \$14 "\\t" \$13}' \\
-    | gzip -c > ${species}.jackhmmer.tsv.gz
+    | gzip -c > ${species}.${chunk.simpleName}.jackhmmer.tsv.gz
     """
 }
 
 process mmseqs2Search {
-    tag "${species}_vs_minus_${clade}"
+    tag "${species}.${chunk.simpleName}_vs_minus_${clade}"
     container MMSEQS
     label 'high_cpu'
     publishDir "${params.outdir}/${species}/hits", mode: 'copy', pattern: '*.tsv.gz'
 
     input:
-    tuple val(species), val(clade), path(query), path(ref_dir)
+    tuple val(species), val(clade), path(chunk), path(ref_dir)
 
     output:
-    tuple val(species), val('mmseqs2'), path("${species}.mmseqs2.tsv.gz")
+    tuple val(species), val('mmseqs2'), path("${species}.${chunk.simpleName}.mmseqs2.tsv.gz")
 
     script:
     """
     set -euo pipefail
-    mmseqs createdb ${query} qdb
+    mmseqs createdb ${chunk} qdb
     mmseqs createdb ${ref_dir}/reference.fasta tdb
     # --num-iterations 3 is the iterative arm. The dark set is defined against the STRONGEST
     # sequence search available, not the cheapest -- a protein that iterative search reaches
@@ -151,7 +180,7 @@ process mmseqs2Search {
         --num-iterations 3 -e ${params.evalue_report} --threads ${task.cpus}
     mmseqs convertalis qdb tdb res out.tsv \\
         --format-output 'query,target,tstart,tend,bits,evalue'
-    gzip -c out.tsv > ${species}.mmseqs2.tsv.gz
+    gzip -c out.tsv > ${species}.${chunk.simpleName}.mmseqs2.tsv.gz
     """
 }
 
@@ -209,8 +238,18 @@ workflow darkSet {
     log.info "  reference: reviewed Swiss-Prot minus ${clade}"
 
     ref_ch = buildReference(Channel.of(tuple(clade, file(params.swissprot_dat))))
-    in_ch  = ref_ch.map { r -> tuple(params.species, clade, query, r) }
 
+    // flatten() so each chunk is its own task rather than all of them arriving as one
+    // list to a single task -- which is the whole point of splitting.
+    chunks = splitQuery(Channel.of(tuple(params.species, query)))
+        .map { sp, cs -> cs }
+        .flatten()
+
+    in_ch = chunks.combine(ref_ch).map { c, r -> tuple(params.species, clade, c, r) }
+
+    // Every chunk's hits from every arm land in one list, so computeDarkSet still sees the
+    // whole proteome at once. A protein is dark only if NO arm placed it in ANY chunk, and
+    // that judgement cannot be made per chunk.
     hits = phmmerSearch(in_ch)
         .mix(jackhmmerSearch(in_ch))
         .mix(mmseqs2Search(in_ch))
