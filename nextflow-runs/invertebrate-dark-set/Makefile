@@ -38,8 +38,22 @@ SCRATCH_DIR ?= $(if $(SCRATCH),$(SCRATCH),$(HOME)/data)
 OUTDIR      ?= $(SCRATCH_DIR)/invertebrate-dark-set/results
 # One reference per excluded clade, shared by every species that asks for that clade.
 REF_CACHE   ?= $(SCRATCH_DIR)/invertebrate-dark-set/reference
-QFO_DIR     ?= $(HOME)/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
-SWISSPROT   ?= $(HOME)/data/uniprot/uniprot_sprot.dat.gz
+# Inputs are in different places on the laptop and on Sherlock, and hard-coding either
+# produced a run that launched against files that were not there. On Sherlock the shared
+# inputs are hard-linked into the region benchmark's data/ by its `sherlock-clone`, so that
+# is the second place to look. Both are probed for a file that must exist; the first hit
+# wins, and passing QFO_DIR= or SWISSPROT= on the command line still overrides.
+PRIMARY_DATA ?= $(SCRATCH_DIR)/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data
+
+QFO_CANDIDATES := $(HOME)/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143 \
+                  $(PRIMARY_DATA)/qfo
+QFO_DIR     ?= $(firstword $(foreach d,$(QFO_CANDIDATES),$(if $(wildcard $(d)/Eukaryota),$(d),)))
+
+SWISSPROT_CANDIDATES := $(HOME)/data/uniprot/uniprot_sprot.dat.gz \
+                        $(PRIMARY_DATA)/uniprot_sprot.dat.gz
+SWISSPROT   ?= $(firstword $(foreach f,$(SWISSPROT_CANDIDATES),$(if $(wildcard $(f)),$(f),)))
+
+BOTRYLLUS_FASTA ?= $(QFO_DIR)/Eukaryota/BOTSCH2026_30301.fasta
 
 SHERLOCK_HOST ?= sherlock
 REPO_URL      ?= https://github.com/seanome/2024-kmerseek-analysis/
@@ -52,7 +66,7 @@ SPECIES ?=
 NF_ARGS ?=
 MINI_N  ?= 200
 
-.PHONY: help check-species check-python sherlock-clone sync run-dark-set run-dark-set-mini queue-empty
+.PHONY: help check-species check-inputs check-python sherlock-clone sync run-dark-set run-dark-set-mini queue-note
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -75,6 +89,22 @@ check-species:
 # gating the run on it blocks a run that would have worked. It did exactly that on Sherlock,
 # where PYTHON falls back to a bare python3 with no polars. Kept as a manual diagnostic for
 # anyone running bin/ scripts by hand.
+# Nothing is launched until the inputs actually resolve. A missing reference or query does
+# not fail loudly downstream -- it produces an empty result that reads as a real one.
+check-inputs:
+	@ok=1; \
+	 if [ -z "$(QFO_DIR)" ] || [ ! -d "$(QFO_DIR)/Eukaryota" ]; then \
+	   echo "QfO tree not found. Looked for Eukaryota/ under:"; \
+	   for d in $(QFO_CANDIDATES); do echo "    $$d"; done; \
+	   echo "  override: make <target> QFO_DIR=/path/to/release"; ok=0; \
+	 else echo "QFO_DIR   = $(QFO_DIR)"; fi; \
+	 if [ -z "$(SWISSPROT)" ] || [ ! -f "$(SWISSPROT)" ]; then \
+	   echo "uniprot_sprot.dat.gz not found. Looked at:"; \
+	   for f in $(SWISSPROT_CANDIDATES); do echo "    $$f"; done; \
+	   echo "  override: make <target> SWISSPROT=/path/to/uniprot_sprot.dat.gz"; ok=0; \
+	 else echo "SWISSPROT = $(SWISSPROT)"; fi; \
+	 [ "$$ok" = 1 ] || exit 1
+
 check-python:
 	@$(PYTHON) -c 'import polars, sys; print("host python OK:", sys.executable, "polars", polars.__version__)' \
 	  || { echo; echo "host PYTHON=$(PYTHON) cannot import polars."; \
@@ -105,7 +135,7 @@ sync:
 # -resume, single dash. `--resume` is a pipeline param and silently does nothing.
 # Never piped through tee: the live task table is the point, and tee makes nextflow
 # reprint the whole table on every update.
-run-dark-set: check-species queue-empty
+run-dark-set: check-species check-inputs queue-note
 	$(NEXTFLOW) run main.nf -profile $(PROFILE) -resume \
 	  --species $(SPECIES) \
 	  --qfo_dir $(QFO_DIR) \
@@ -114,14 +144,20 @@ run-dark-set: check-species queue-empty
 	  --reference_cache $(REF_CACHE) \
 	  $(NF_ARGS)
 
-run-dark-set-mini: check-species
+run-dark-set-mini: check-species check-inputs
 	@mkdir -p $(OUTDIR)/_mini
-	@src=$(QFO_DIR)/Eukaryota/BOTSCH2026_30301.fasta; \
+	@# set -e plus an explicit count. Without both, a failed awk left an empty FASTA, printed
+	@# "staged 0 proteins", and make went on to launch nextflow against it -- a whole run
+	@# whose only possible answer was "every protein is dark".
+	@set -e; \
 	 if [ "$(SPECIES)" != "botryllus" ]; then \
-	   echo "the mini currently stages botryllus only; for cgigas pass --query_fasta yourself"; \
-	   exit 1; fi; \
-	 awk -v m=$(MINI_N) '/^>/{n++} n>m{exit} {print}' $$src > $(OUTDIR)/_mini/$(SPECIES).mini.fasta; \
-	 echo "staged $$(grep -c '^>' $(OUTDIR)/_mini/$(SPECIES).mini.fasta) proteins"
+	   echo "the mini stages botryllus only; for cgigas pass --query_fasta yourself"; exit 1; fi; \
+	 src="$(BOTRYLLUS_FASTA)"; \
+	 [ -f "$$src" ] || { echo "no botryllus proteome at $$src"; exit 1; }; \
+	 awk -v m=$(MINI_N) '/^>/{n++} n>m{exit} {print}' "$$src" > $(OUTDIR)/_mini/$(SPECIES).mini.fasta; \
+	 n=$$(grep -c '^>' $(OUTDIR)/_mini/$(SPECIES).mini.fasta || true); \
+	 [ "$$n" -gt 0 ] || { echo "staged 0 proteins from $$src -- refusing to launch"; exit 1; }; \
+	 echo "staged $$n proteins"
 	$(NEXTFLOW) run main.nf -profile $(PROFILE) -resume \
 	  --species $(SPECIES) \
 	  --query_fasta $(OUTDIR)/_mini/$(SPECIES).mini.fasta \
@@ -130,12 +166,18 @@ run-dark-set-mini: check-species
 	  --reference_cache $(REF_CACHE) \
 	  $(NF_ARGS)
 
-queue-empty:
+# Advisory, NOT a block. The original gate refused to launch while any job was queued,
+# which on this account is never true -- the region benchmark keeps several hundred jobs
+# pending for days, so the gate would have blocked this run indefinitely. It also could not
+# have told the two apart: nextflow names jobs after the process, and both pipelines have
+# nf-phmme, nf-jackh and nf-mmseq.
+#
+# Double-launching the same run is already prevented by nextflow's own session lock in the
+# launch directory, which is the mechanism that actually works. So this reports the queue
+# depth as context for how long a submission will sit, and gets out of the way.
+queue-note:
 	@if command -v squeue >/dev/null 2>&1; then \
 	  n=$$(squeue -u $$USER -h 2>/dev/null | wc -l | tr -d ' '); \
-	  if [ "$$n" -gt 0 ]; then \
-	    echo "$$n job(s) already queued or running:"; squeue -u $$USER; \
-	    echo; echo "wait, or override with SKIP_QUEUE_CHECK=1"; \
-	    [ -n "$(SKIP_QUEUE_CHECK)" ] || exit 1; \
-	  fi; \
+	  r=$$(squeue -u $$USER -h -t RUNNING 2>/dev/null | wc -l | tr -d ' '); \
+	  echo "queue: $$n job(s) total, $$r running -- this run's tasks queue behind them"; \
 	fi
