@@ -58,7 +58,7 @@ help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
 	@echo
 	@echo "  sherlock-clone          push and clone this branch to \$$SCRATCH"
-	@echo "  check-python            verify polars before a run, not during one"
+	@echo "  check-python            host python diagnostic; NOT needed for a run"
 	@echo "  run-dark-set-mini       SPECIES=<botryllus|cgigas>  plumbing check, $(MINI_N) proteins"
 	@echo "  run-dark-set            SPECIES=<botryllus|cgigas>  full proteome"
 	@echo
@@ -69,10 +69,19 @@ check-species:
 	@if [ -z "$(SPECIES)" ]; then \
 	  echo "SPECIES is required: make $(MAKECMDGOALS) SPECIES=botryllus"; exit 1; fi
 
+# NOT a prerequisite of the run targets, and deliberately so. Every python step in this
+# pipeline (buildReference, computeDarkSet) carries `label python_scoring`, which the
+# sherlock profile runs INSIDE params.kmerseek_image -- so the host python is never used and
+# gating the run on it blocks a run that would have worked. It did exactly that on Sherlock,
+# where PYTHON falls back to a bare python3 with no polars. Kept as a manual diagnostic for
+# anyone running bin/ scripts by hand.
 check-python:
-	@$(PYTHON) -c 'import polars, sys; print("python OK:", sys.executable, "polars", polars.__version__)' \
-	  || { echo; echo "PYTHON=$(PYTHON) cannot import polars."; \
-	       echo "  make $(MAKECMDGOALS) PYTHON=/path/to/python3"; exit 1; }
+	@$(PYTHON) -c 'import polars, sys; print("host python OK:", sys.executable, "polars", polars.__version__)' \
+	  || { echo; echo "host PYTHON=$(PYTHON) cannot import polars."; \
+	       echo "This does NOT block a pipeline run -- the python steps run in"; \
+	       echo "params.kmerseek_image. It only matters for running bin/ scripts by hand:"; \
+	       echo "  make <target> PYTHON=\"apptainer exec \$$SCRATCH/containers/kmerseek.sif python3\""; \
+	       exit 1; }
 
 sherlock-clone:
 	git push origin $(BRANCH)
@@ -96,7 +105,7 @@ sync:
 # -resume, single dash. `--resume` is a pipeline param and silently does nothing.
 # Never piped through tee: the live task table is the point, and tee makes nextflow
 # reprint the whole table on every update.
-run-dark-set: check-species check-python queue-empty
+run-dark-set: check-species queue-empty
 	$(NEXTFLOW) run main.nf -profile $(PROFILE) -resume \
 	  --species $(SPECIES) \
 	  --qfo_dir $(QFO_DIR) \
@@ -105,7 +114,7 @@ run-dark-set: check-species check-python queue-empty
 	  --reference_cache $(REF_CACHE) \
 	  $(NF_ARGS)
 
-run-dark-set-mini: check-species check-python
+run-dark-set-mini: check-species
 	@mkdir -p $(OUTDIR)/_mini
 	@src=$(QFO_DIR)/Eukaryota/BOTSCH2026_30301.fasta; \
 	 if [ "$(SPECIES)" != "botryllus" ]; then \
