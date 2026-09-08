@@ -57,7 +57,6 @@ jobs:
       # note in tests/conftest.py. Run as its own step so that contract is honoured.
       - name: Pairwise suppression pass checks
         run: python tests/test_dedup_passes.py
-
   nextflow:
     name: pipeline definition parses
     runs-on: ubuntu-latest
@@ -81,3 +80,18 @@ jobs:
           nextflow config . -profile standard,mini >/dev/null
           nextflow config . -profile sherlock >/dev/null
           nextflow config . -profile sherlock,mini >/dev/null
+      # Output is captured and printed ON FAILURE rather than discarded. Sending it to
+      # /dev/null is how the first version of this step failed with exit 1 and no message
+      # at all: Nextflow writes some of its errors to stdout, so the reason went in the bin
+      # along with the config dump.
+      - name: nextflow config resolves
+        run: |
+          for p in standard "standard,mini" sherlock "sherlock,mini"; do
+            echo "== -profile $p =="
+            if ! nextflow config . -profile "$p" > cfg.out 2> cfg.err; then
+              echo "FAILED to resolve -profile $p"
+              cat cfg.err cfg.out
+              exit 1
+            fi
+          done
+          echo "all four profiles resolve"

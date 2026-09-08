@@ -158,6 +158,17 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Nextflow runtime artifacts
+.nextflow/
+.nextflow.log*
+nextflow-runs/**/work/
+
+# kmer-spectra: generated data/results, gitignored so the Sherlock sparse checkout stays clean.
+# One consolidated `nextflow run` now sweeps all datasets from this directory directly (no more
+# per-dataset run-kN/ launch subdirectories), publishing to results-<dataset>/ (k2, k3, uniref50,
+# uniref90, uniref100).
+nextflow-runs/kmer-spectra/data/
+nextflow-runs/kmer-spectra/results-*/
 # macOS
 .DS_Store
 .AppleDouble
