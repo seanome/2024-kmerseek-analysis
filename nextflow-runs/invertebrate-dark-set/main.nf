@@ -52,8 +52,24 @@ params.mmseqs2_sensitivity  = 7
 // finish inside an hour or two.
 params.query_chunk_size = 2000
 
+// alphabet:ksize pairs. Both defaults are arms with a measured identity-axis row, so a
+// zero here can be read against a known baseline rather than guessed at. hp_pbotc is the
+// designated best HP arm but was renamed in PR #43 and its post-rename CLI flag has not
+// been resolved against the binary, so it is not defaulted in -- add it once confirmed.
 params.kmerseek_alphabets = 'hp_thomas_dill2:23,protein20:10'
-params.mini               = false
+
+// The low-complexity mask runs ON and OFF as a PAIR, always, not as a sweep dimension.
+// BHF's seven flagship matches included polar-biased low-complexity segments (ZNF292
+// pppphpppppppphhppp), so a dark-set hit that does not survive masking is not a finding.
+// Reporting one setting alone makes that unfalsifiable.
+params.kmerseek_lowcomp = 'true,false'
+
+params.threshold        = 0.0
+params.min_shared_kmers = 2
+params.max_query_pvalue = 0.05
+params.min_region_score = 1.3
+params.index_cache        = null
+params.with_kmerseek      = false
 
 HMMER   = 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
 MMSEQS  = 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
@@ -184,6 +200,112 @@ process mmseqs2Search {
     """
 }
 
+// Indexes the SAME clade-excluded reference the sequence arms search. Indexing all of
+// reviewed Swiss-Prot instead and dropping self-clade hits afterwards is safe for these two
+// species -- Ascidiacea is 0.02% of the database and Bivalvia 0.05%, so the index-time IDF
+// barely moves -- but it would leave kmerseek searching a target set the other arms never
+// saw, and a win from a hit the baselines had no access to is not a win. With only two
+// query clades the saving is one index build; the confound is permanent.
+process kmerseekIndex {
+    tag "minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}"
+    storeDir { params.index_cache ?: "${params.outdir}/kmerseek_index" }
+    container params.kmerseek_image
+    cpus 8
+    // The 2-letter alphabets at high k over 572_700 sequences are the corner where index
+    // memory has never been measured on a reference this size. Doubling on retry rather
+    // than guessing a ceiling; an exhausted ladder ends at finish, not at a dead run.
+    memory { 64.GB * task.attempt }
+    time   { 12.h * task.attempt }
+
+    input:
+    tuple val(clade), path(ref_dir), val(alphabet), val(ksize), val(lowcomp)
+
+    output:
+    tuple val(clade), val(alphabet), val(ksize), val(lowcomp),
+          path("minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb")
+
+    script:
+    def idx = "minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb"
+    def lc  = lowcomp == 'true' ? '--remove-low-complexity' : ''
+    """
+    set -euo pipefail
+    kmerseek index \\
+        --alphabet ${alphabet} --ksize ${ksize} \\
+        --input  ${ref_dir}/reference.fasta \\
+        --output ${idx} ${lc} \\
+        --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | tee index.log
+    """
+}
+
+process kmerseekSearch {
+    tag "${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}"
+    container params.kmerseek_image
+    label 'high_cpu'
+    publishDir "${params.outdir}/${species}/kmerseek", mode: 'copy', pattern: '*.zst'
+
+    input:
+    tuple val(species), val(clade), path(chunk), val(alphabet), val(ksize), val(lowcomp), path(index_dir)
+
+    output:
+    tuple val(species), val(alphabet), val(ksize), val(lowcomp),
+          path("${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}.queries.txt")
+    path "*.regions.csv.zst"
+
+    script:
+    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}"
+    def lc   = lowcomp == 'true' ? '--remove-low-complexity' : ''
+    """
+    set -euo pipefail
+    kmerseek search \\
+        --alphabet ${alphabet} --ksize ${ksize} \\
+        --query  ${chunk} --target ${index_dir} ${lc} \\
+        --threshold        ${params.threshold} \\
+        --min-shared-kmers ${params.min_shared_kmers} \\
+        --max-query-pvalue ${params.max_query_pvalue} \\
+        --min-region-score ${params.min_region_score} \\
+        2> ${slug}.log | zstd -T2 -o ${slug}.regions.csv.zst || true
+
+    # The queries that got any region, as a plain list. Extracted with zstd + awk rather
+    # than by reading the .zst in polars: scan_csv on a zstd CSV inflates the whole file in
+    # RAM (1.9 GB -> 184.7 GB once, on this project). The query column is found by HEADER
+    # NAME, never by position, so a column order change cannot silently shift it.
+    if [ -s ${slug}.regions.csv.zst ]; then
+        zstd -dc ${slug}.regions.csv.zst \\
+        | awk -F, 'NR==1 { for (i=1;i<=NF;i++) if (\$i=="query_name") c=i;
+                           if (!c) { print "no query_name column" > "/dev/stderr"; exit 3 }
+                           next }
+                   c { print \$c }' \\
+        | sort -u > ${slug}.queries.txt
+    else
+        : > ${slug}.queries.txt
+    fi
+    """
+}
+
+process kmerseekDarkGain {
+    tag "${species}"
+    label 'python_scoring'
+    memory '16 GB'
+    publishDir "${params.outdir}/${species}", mode: 'copy'
+
+    input:
+    tuple val(species), path(dark_parquet), path(query_lists)
+
+    output:
+    tuple path("${species}_kmerseek_dark_gain.parquet"),
+          path("${species}_kmerseek_dark_gain.json")
+
+    script:
+    """
+    set -euo pipefail
+    kmerseek_dark_gain.py \\
+        --dark ${dark_parquet} --species ${species} \\
+        --queries ${query_lists} \\
+        --out ${species}_kmerseek_dark_gain.parquet \\
+        --summary-out ${species}_kmerseek_dark_gain.json
+    """
+}
+
 process computeDarkSet {
     tag "${species}"
     label 'python_scoring'
@@ -256,7 +378,35 @@ workflow darkSet {
         .map { sp, arm, f -> f }
         .collect()
 
-    computeDarkSet(hits.map { h -> tuple(params.species, query, h) })
+    dark = computeDarkSet(hits.map { h -> tuple(params.species, query, h) })
+
+    // kmerseek is opt-in. The dark set is defined by the sequence arms alone and is worth
+    // having on its own; adding kmerseek costs an index over 572_700 sequences per
+    // alphabet/ksize/mask, which is the expensive part of this pipeline.
+    if (params.with_kmerseek) {
+        combos = Channel.fromList(
+            params.kmerseek_alphabets.tokenize(',')*.trim().findAll { it }.collectMany { spec ->
+                def (a, k) = spec.tokenize(':')
+                params.kmerseek_lowcomp.tokenize(',')*.trim().findAll { it }.collect { lc ->
+                    tuple(a, k as Integer, lc)
+                }
+            }
+        )
+
+        idx = kmerseekIndex(
+            ref_ch.combine(combos).map { r, a, k, lc -> tuple(clade, r, a, k, lc) })
+
+        ks_in = chunks.combine(idx).map { c, cl, a, k, lc, i ->
+            tuple(params.species, cl, c, a, k, lc, i)
+        }
+        ks = kmerseekSearch(ks_in)
+
+        // Every chunk and every combo reaches the gain step together: a protein counts as
+        // rescued only against the whole dark set, and the dark set is proteome-wide.
+        q_lists = ks[0].map { sp, a, k, lc, f -> f }.collect()
+        kmerseekDarkGain(dark.map { sp, dp, _j -> tuple(sp, dp) }.combine(q_lists)
+                             .map { sp, dp, q -> tuple(sp, dp, q) })
+    }
 }
 
 workflow { darkSet() }

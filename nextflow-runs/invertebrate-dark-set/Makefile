@@ -64,6 +64,8 @@ SHERLOCK_CLONE_DIR := $(SHERLOCK_CLONE)/nextflow-runs/invertebrate-dark-set
 
 SPECIES ?=
 NF_ARGS ?=
+WITH_KMERSEEK ?=
+KMERSEEK_ARGS := $(if $(WITH_KMERSEEK),--with_kmerseek true,)
 MINI_N  ?= 200
 
 .PHONY: help check-species check-inputs check-python sherlock-clone sync run-dark-set run-dark-set-mini queue-note
@@ -75,6 +77,7 @@ help:
 	@echo "  check-python            host python diagnostic; NOT needed for a run"
 	@echo "  run-dark-set-mini       SPECIES=<botryllus|cgigas>  plumbing check, $(MINI_N) proteins"
 	@echo "  run-dark-set            SPECIES=<botryllus|cgigas>  full proteome"
+	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
 	@echo
 	@echo "  PROFILE=$(PROFILE)  OUTDIR=$(OUTDIR)"
 	@echo "  REF_CACHE=$(REF_CACHE)  (one file per excluded clade, shared across species)"
@@ -142,7 +145,7 @@ run-dark-set: check-species check-inputs queue-note
 	  --swissprot_dat $(SWISSPROT) \
 	  --outdir $(OUTDIR) \
 	  --reference_cache $(REF_CACHE) \
-	  $(NF_ARGS)
+	  $(KMERSEEK_ARGS) $(NF_ARGS)
 
 run-dark-set-mini: check-species check-inputs
 	@mkdir -p $(OUTDIR)/_mini
@@ -162,9 +165,9 @@ run-dark-set-mini: check-species check-inputs
 	  --species $(SPECIES) \
 	  --query_fasta $(OUTDIR)/_mini/$(SPECIES).mini.fasta \
 	  --swissprot_dat $(SWISSPROT) \
-	  --outdir $(OUTDIR)/mini \
+	  --outdir $(OUTDIR)/mini --run_tag mini \
 	  --reference_cache $(REF_CACHE) \
-	  $(NF_ARGS)
+	  $(KMERSEEK_ARGS) $(NF_ARGS)
 
 # Advisory, NOT a block. The original gate refused to launch while any job was queued,
 # which on this account is never true -- the region benchmark keeps several hundred jobs
