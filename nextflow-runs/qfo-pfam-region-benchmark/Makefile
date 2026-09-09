@@ -216,6 +216,75 @@ SLURM_PARTITION ?= hns
 PREFETCH_MEM    ?= 48G
 PREFETCH_TIME   ?= 2:00:00
 
+# --- Where the head process itself runs ------------------------------------
+# In a SLURM allocation, not on the login node. Sherlock caps every process belonging to
+# @sh_users in /etc/security/limits.d/sh_login.conf:
+#
+#   cpu     10          ten CPU-MINUTES. The `-` column means soft == hard, so the kernel
+#                       skips SIGXCPU and goes straight to SIGKILL.
+#   as      33554432    32 GB of address space
+#   nofile  256
+#   nproc   512
+#
+# The 2026-09-08 all-QfO run died on the first of those. It was tracking ~31_000 tasks
+# (15_834 kmerseekIndex and 15_177 kmerseekSearch), crossed ten CPU-minutes 16.5 hours in,
+# and was killed at Sep-09 06:01:31: .nextflow.log stops mid-line with no OutOfMemoryError
+# and no shutdown sequence, and make reported Error 137. The four earlier runs in the same
+# directory all ended with "Execution complete -- Goodbye" because they were small enough
+# to stay under ten CPU-minutes. This is a limit the sweep grew into.
+#
+# It looks exactly like an out-of-memory kill and is not one, which matters because the
+# obvious fix is the wrong one: the budget is CPU seconds, so capping the JVM heap buys
+# nothing. A head process that submits and polls 31_000 SLURM jobs over several days will
+# always spend more than ten CPU-minutes doing it.
+#
+# On a compute node those four limits are unlimited, unlimited, 131072 and 12288 (measured
+# on sh04-04n19). Same move as prefetch-images converting images inside a job.
+#
+# What stays on the login node is the srun client relaying the head's output into your
+# tmux, which is a thin copy rather than the work -- but it is not free either, and a long
+# enough run could eventually walk it into the same ten minutes. If a run dies with the
+# head job still alive in `make running`, that is what happened; reattach rather than
+# relaunch.
+HEAD_CPUS ?= 2
+HEAD_MEM  ?= 16G
+# SLURM enforces --mem with a cgroup, and a JVM that sizes its heap off the NODE's 191 GB
+# would be killed inside a 16 GB allocation -- the same total-RAM-versus-cgroup mistake
+# noted above for mksquashfs. Pinned rather than left to container detection, with the
+# remainder for metaspace, thread stacks and the off-heap cache DB.
+HEAD_XMX  ?= 12g
+export NXF_OPTS := -Xms1g -Xmx$(HEAD_XMX)
+# QOS `normal` stops at 2 days. `long` reaches 7 and allows 4 running jobs per user, none
+# of which anything else here spends: every process in nextflow.config tops out at 48h.
+# Only the sweep that has to outlive several days takes one; see run-midi-plus-all-qfo.
+HEAD_QOS  ?= normal
+HEAD_TIME ?= 2-00:00:00
+# --pty because Nextflow prints its live task table only to a TTY. Without it every update
+# reprints the whole table, which is the damage `tee` does and the reason for the note on
+# it in README-sherlock.md.
+#
+# Launched with no terminal -- over a bare ssh, or with the output piped -- srun prints
+#
+#   srun: error: ioctl(TIOCGWINSZ): Inappropriate ioctl for device
+#   srun: error: Not using a pseudo-terminal, disregarding --pty option
+#
+# and then runs the job anyway. Both lines say `error:` and neither is one: you lose the
+# live table and nothing else.
+#
+# --mem, and never --mem-per-cpu. Whatever the head is allocated with is exported into the
+# environment it then submits from: probed on sh04-04n19 under SLURM 25.11.8, an 8 GB /
+# 2-cpu allocation passed SLURM_MEM_PER_NODE, SLURM_CPUS_PER_TASK and SLURM_TRES_PER_TASK
+# down to a child sbatch, and the child's own `#SBATCH --mem=4G --cpus-per-task=1` won on
+# both counts -- so the `#SBATCH` header Nextflow writes into every .command.run is safe.
+# --mem-per-cpu would export SLURM_MEM_PER_CPU instead, which is the half of the pair
+# sbatch treats as mutually exclusive with --mem. Untested, and no reason to find out.
+#
+# Recursive `=`, not `:=`, so the per-target overrides below are in scope when it expands.
+HEAD_SRUN = srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+                 --qos=$(HEAD_QOS) --time=$(HEAD_TIME) \
+                 --cpus-per-task=$(HEAD_CPUS) --mem=$(HEAD_MEM) \
+                 --job-name=nf-head --pty
+
 # --- MultiQC report --------------------------------------------------------
 # Which run's resource numbers the report describes. Defaults to the newest trace the main
 # run left behind; override for a specific one:
@@ -1396,7 +1465,7 @@ define launch
 	mkdir -p run
 	cd run && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
+	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
 	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --qfo_dir     ../data/qfo \
 	    --annotations ../data/annotations \
@@ -1549,7 +1618,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	mkdir -p run-midi
 	cd run-midi && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1633,7 +1702,7 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	mkdir -p run-midi-plus
 	cd run-midi-plus && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1721,6 +1790,11 @@ queue-empty:
 	 fi; \
 	 echo "queue is empty"
 
+# The only run whose head has to stay alive for the better part of a week, so it is the
+# only one that spends one of the four `long` slots. Everything it submits still runs
+# under `normal`; the QOS here applies to the head job alone.
+run-midi-plus-all-qfo: HEAD_QOS  := long
+run-midi-plus-all-qfo: HEAD_TIME := 7-00:00:00
 run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
 run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
@@ -1755,7 +1829,7 @@ run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	mkdir -p $(ALLQFO_RUN_DIR)
 	cd $(ALLQFO_RUN_DIR) && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1847,7 +1921,7 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	mkdir -p $(RB_RUN_DIR)
 	cd $(RB_RUN_DIR) && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image      $(RB_IMAGE_REMOTE) \
 	    --kmerseek_encodings  $(RB_ENCODINGS) \
 	    --skip_baselines      true \
@@ -1866,12 +1940,15 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	    $(NF_ARGS)
 
 # Same code path as the real run, scoped down. Do this before `make run`.
+# The smoke test takes the same route to the compute node as the real runs -- that is
+# what makes it a smoke test of the launch path and not just of the pipeline.
+run-mini: HEAD_TIME := 4:00:00
 run-mini: prefetch-images mini-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-mini
 	cd run-mini && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE),mini -resume \
+	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE),mini -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --qfo_dir         ../data/mini/qfo \
 	    --annotations     ../data/mini/annotations \

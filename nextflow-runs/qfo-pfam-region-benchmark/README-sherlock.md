@@ -480,6 +480,41 @@ Every run target blocks in the foreground and streams live output, so start your
 session first and run them inside it. They deliberately do not start tmux themselves.
 `make status` shows the SLURM queue from another pane.
 
+### The head process runs on a compute node
+
+The `nextflow` process itself is submitted as a job named `nf-head`. What stays on the
+login node is the `srun` client relaying its output into your tmux.
+
+Sherlock kills any login-node process that reaches ten CPU-MINUTES -- `cpu 10` in
+/etc/security/limits.d/sh_login.conf, with soft equal to hard, so the kernel sends SIGKILL
+rather than SIGXCPU. The all-QfO head crossed that 16.5 hours into the 2026-09-08 run
+while tracking ~31_000 tasks, and .nextflow.log stops mid-line with no OutOfMemoryError
+and no shutdown sequence; `make` reported Error 137. It reads as an out-of-memory kill and
+is not one, so nothing about the JVM heap would have saved it. Measured on a live head:
+20 CPU-seconds in the first 11 minutes, and a tmux server on the same node has spent 118
+CPU-seconds over 10 days, which is the margin the relay is left with.
+
+Two things follow from the head being a job:
+
+- `squeue` shows `nf-head` for the life of the run, and `queue-empty` counts it, so a
+  second run target refuses to start while one is alive. That is the intended behaviour:
+  two heads against one `--db_cache` is the storeDir race. It also means an unrelated run
+  of yours in the queue blocks a launch, and the guard cannot tell the two apart.
+- The head has a walltime like anything else: 2 days by default, 7 for
+  `run-midi-plus-all-qfo`, which takes one of the four `long` QOS slots to get them. When
+  it expires the run stops and the jobs it had already submitted keep going as orphans.
+  Let `squeue -u $USER` drain, then re-run the same target -- `-resume` picks it up.
+
+Size a head differently for one run without editing anything:
+
+```bash
+make run-midi HEAD_TIME=1-00:00:00 HEAD_MEM=32G HEAD_XMX=24g
+```
+
+`HEAD_XMX` is the JVM heap and has to stay under `HEAD_MEM`, which SLURM enforces with a
+cgroup. It is pinned rather than left to the JVM, which would otherwise size itself
+against the node's 191 GB and be killed inside the allocation.
+
 Run `run-kmerseek` and `run-baselines` in separate panes to get both arms going at once.
 
 Jobs go to the `hns` school-condo partition billed to `--account=ayeletv`. Check
