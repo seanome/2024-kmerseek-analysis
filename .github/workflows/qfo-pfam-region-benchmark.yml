@@ -47,7 +47,16 @@ jobs:
       # 186 KB, checksum-pinned. Fetched rather than committed: it is third-party data
       # released under its own DOI, and vendoring someone else's artifact into this repo
       # would detach it from that record.
+      #
+      # continue-on-error because this is the one step that depends on a third party being
+      # up, and nothing else here treats the tokenizer as required: BPE_NF_ARG omits the
+      # flag when the tarball is absent, and the single test that needs it skips itself with
+      # a reason. Without this, a Zenodo 504 fails the whole scoring job and reports it as
+      # "scoring, metrics and report" failing, which is a lie about the code under review --
+      # it happened on #23 and #25 on 2026-09-09. A red step here still shows the fetch
+      # broke; it just stops that from blocking a merge.
       - name: Fetch the ProtBERTa BPE tokenizers
+        continue-on-error: true
         run: make bpe-tokenizer
 
       - name: Scoring, aggregation and report tests
