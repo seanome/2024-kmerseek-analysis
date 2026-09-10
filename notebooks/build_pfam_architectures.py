@@ -46,9 +46,13 @@ import polars as pl
 # all 78 species of QfO 2020_04 and is generated from the release itself; this dict used to
 # carry ten, hand-typed, and was one of three copies of the same list that had drifted
 # apart. See nextflow-runs/qfo-pfam-region-benchmark/bin/build_qfo_species_registry.py.
-SPECIES_REGISTRY = (Path(__file__).resolve().parent.parent
-                    / "nextflow-runs" / "qfo-pfam-region-benchmark"
-                    / "assets" / "qfo_species.tsv")
+SPECIES_REGISTRY = (
+    Path(__file__).resolve().parent.parent
+    / "nextflow-runs"
+    / "qfo-pfam-region-benchmark"
+    / "assets"
+    / "qfo_species.tsv"
+)
 
 
 def load_species_metadata(path: Path = SPECIES_REGISTRY) -> dict:
@@ -81,6 +85,7 @@ SPECIES_METADATA = load_species_metadata()
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def extract_accession(header: str) -> str | None:
     """Extract UniProt accession from a FASTA header line."""
     h = header.lstrip(">").strip()
@@ -89,7 +94,10 @@ def extract_accession(header: str) -> str | None:
     if m:
         return m.group(1)
     # Bare accession: P12345 or A0A000ABC1
-    m = re.match(r"^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})\b", h)
+    m = re.match(
+        r"^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})\b",
+        h,
+    )
     if m:
         return m.group(1)
     return None
@@ -97,7 +105,11 @@ def extract_accession(header: str) -> str | None:
 
 def get_qfo_accessions(species: str, qfo_dir: Path) -> set:
     meta = SPECIES_METADATA[species]
-    fasta = qfo_dir / meta["qfo_subdir"] / f"{meta['qfo_proteome']}_{meta['taxon_id']}.fasta"
+    fasta = (
+        qfo_dir
+        / meta["qfo_subdir"]
+        / f"{meta['qfo_proteome']}_{meta['taxon_id']}.fasta"
+    )
     if not fasta.exists():
         raise FileNotFoundError(f"QfO FASTA not found: {fasta}")
     accessions = set()
@@ -114,7 +126,11 @@ def get_qfo_accessions(species: str, qfo_dir: Path) -> set:
 def get_qfo_lengths(species: str, qfo_dir: Path) -> dict:
     """Parse the QfO FASTA for {accession: sequence_length}."""
     meta = SPECIES_METADATA[species]
-    fasta = qfo_dir / meta["qfo_subdir"] / f"{meta['qfo_proteome']}_{meta['taxon_id']}.fasta"
+    fasta = (
+        qfo_dir
+        / meta["qfo_subdir"]
+        / f"{meta['qfo_proteome']}_{meta['taxon_id']}.fasta"
+    )
     lengths: dict[str, int] = {}
     acc = None
     seq_len = 0
@@ -136,6 +152,7 @@ def get_qfo_lengths(species: str, qfo_dir: Path) -> dict:
 # Bulk Pfam-A regions load (envelope + alignment positions)
 # ---------------------------------------------------------------------------
 
+
 def load_domains_from_bulk(
     species: str,
     qfo_accessions: set,
@@ -156,24 +173,29 @@ def load_domains_from_bulk(
     for row in sub.iter_rows(named=True):
         acc = row["accession"]
         start, end = row["domain_start"], row["domain_end"]
-        records.append({
-            "accession": acc,
-            "protein_length": lengths.get(acc),
-            "pfam_id": row["pfam_id"],
-            "domain_start": start,
-            "domain_end": end,
-            "domain_length": (end - start + 1) if start is not None and end is not None else None,
-            "domain_ali_start": row["ali_start"],
-            "domain_ali_end": row["ali_end"],
-            "domain_description": "",
-            "has_position": start is not None and end is not None,
-        })
+        records.append(
+            {
+                "accession": acc,
+                "protein_length": lengths.get(acc),
+                "pfam_id": row["pfam_id"],
+                "domain_start": start,
+                "domain_end": end,
+                "domain_length": (
+                    (end - start + 1) if start is not None and end is not None else None
+                ),
+                "domain_ali_start": row["ali_start"],
+                "domain_ali_end": row["ali_end"],
+                "domain_description": "",
+                "has_position": start is not None and end is not None,
+            }
+        )
     return records
 
 
 # ---------------------------------------------------------------------------
 # Architecture builder
 # ---------------------------------------------------------------------------
+
 
 def build_architectures(domains_df: pl.DataFrame) -> pl.DataFrame:
     """
@@ -190,16 +212,15 @@ def build_architectures(domains_df: pl.DataFrame) -> pl.DataFrame:
     # Sort within each accession by (sort_start, pfam_id)
     df = df.sort(["accession", "_sort_start", "pfam_id"])
 
-    arch_df = (
-        df.group_by("accession")
-        .agg([
+    arch_df = df.group_by("accession").agg(
+        [
             pl.col("pfam_id").alias("pfam_ids"),
             pl.col("pfam_id").str.join("-").alias("architecture"),
             pl.col("protein_length").first().alias("protein_length"),
             pl.col("pfam_id").count().alias("n_domains"),
             pl.col("domain_length").drop_nulls().mean().alias("mean_domain_length"),
             pl.col("has_position").any().alias("any_position"),
-        ])
+        ]
     )
     return arch_df
 
@@ -224,11 +245,17 @@ def _record_no_pfam(outdir: Path, species: str, absent: bool) -> None:
     path.write_text("".join(f"{s}\n" for s in sorted(have)))
 
 
-def process_species(species: str, qfo_dir: Path, outdir: Path, regions_df: pl.DataFrame, force: bool = False):
+def process_species(
+    species: str,
+    qfo_dir: Path,
+    outdir: Path,
+    regions_df: pl.DataFrame,
+    force: bool = False,
+):
     outdir.mkdir(parents=True, exist_ok=True)
 
     domains_path = outdir / f"{species}_pfam_domains.parquet"
-    arch_path    = outdir / f"{species}_architectures.parquet"
+    arch_path = outdir / f"{species}_architectures.parquet"
     summary_path = outdir / f"{species}_pfam_summary.json"
 
     if domains_path.exists() and arch_path.exists() and not force:
@@ -257,21 +284,28 @@ def process_species(species: str, qfo_dir: Path, outdir: Path, regions_df: pl.Da
         # searched but not scored, which is a legitimate state the staging already handles.
         # Writing it down is what lets a preflight tell "Pfam has nothing for this species"
         # apart from "you forgot to run this script", which a bare file count cannot.
-        print(f"  WARNING: no Pfam records found for {species} in the bulk regions file", file=sys.stderr)
+        print(
+            f"  WARNING: no Pfam records found for {species} in the bulk regions file",
+            file=sys.stderr,
+        )
         _record_no_pfam(outdir, species, absent=True)
         return
 
-    df = pl.DataFrame(records).with_columns([
-        pl.col("domain_start").cast(pl.Int32, strict=False),
-        pl.col("domain_end").cast(pl.Int32, strict=False),
-        pl.col("domain_length").cast(pl.Int32, strict=False),
-        pl.col("domain_ali_start").cast(pl.Int32, strict=False),
-        pl.col("domain_ali_end").cast(pl.Int32, strict=False),
-        pl.col("protein_length").cast(pl.Int32, strict=False),
-    ])
+    df = pl.DataFrame(records).with_columns(
+        [
+            pl.col("domain_start").cast(pl.Int32, strict=False),
+            pl.col("domain_end").cast(pl.Int32, strict=False),
+            pl.col("domain_length").cast(pl.Int32, strict=False),
+            pl.col("domain_ali_start").cast(pl.Int32, strict=False),
+            pl.col("domain_ali_end").cast(pl.Int32, strict=False),
+            pl.col("protein_length").cast(pl.Int32, strict=False),
+        ]
+    )
 
     after = df["accession"].n_unique()
-    print(f"  {after:,} proteins with Pfam matches, {len(df):,} domain-instance records (envelope positions from Pfam-A.regions.tsv.gz)")
+    print(
+        f"  {after:,} proteins with Pfam matches, {len(df):,} domain-instance records (envelope positions from Pfam-A.regions.tsv.gz)"
+    )
 
     df.write_parquet(domains_path, compression="snappy")
     _record_no_pfam(outdir, species, absent=False)
@@ -283,11 +317,11 @@ def process_species(species: str, qfo_dir: Path, outdir: Path, regions_df: pl.Da
     print(f"  Saved: {arch_path}")
 
     # Summary
-    n_proteins  = df["accession"].n_unique()
-    n_domains   = len(df)
-    n_families  = df["pfam_id"].n_unique()
-    n_multi     = arch_df.filter(pl.col("n_domains") >= 2).height
-    pct_qfo     = round(100 * n_proteins / len(qfo_accessions), 1)
+    n_proteins = df["accession"].n_unique()
+    n_domains = len(df)
+    n_families = df["pfam_id"].n_unique()
+    n_multi = arch_df.filter(pl.col("n_domains") >= 2).height
+    pct_qfo = round(100 * n_proteins / len(qfo_accessions), 1)
 
     top_pfam = (
         df.group_by("pfam_id")
@@ -313,51 +347,75 @@ def process_species(species: str, qfo_dir: Path, outdir: Path, regions_df: pl.Da
     with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
     print(f"  Saved: {summary_path}")
-    print(f"  Summary: {n_proteins:,} proteins with Pfam ({pct_qfo}% of QfO), "
-          f"{n_families:,} families, {n_multi:,} multi-domain")
+    print(
+        f"  Summary: {n_proteins:,} proteins with Pfam ({pct_qfo}% of QfO), "
+        f"{n_families:,} families, {n_multi:,} multi-domain"
+    )
 
 
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument(
-        "--species", nargs="+", default=["all"],
-        help="Species labels to process. 'all' = all species. Options: " + ", ".join(SPECIES_METADATA),
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "--outdir", type=Path,
+        "--species",
+        nargs="+",
+        default=["all"],
+        help="Species labels to process. 'all' = all species. Options: "
+        + ", ".join(SPECIES_METADATA),
+    )
+    parser.add_argument(
+        "--outdir",
+        type=Path,
         default=Path("results/pfam_benchmark/annotations"),
         help="Output directory (default: results/pfam_benchmark/annotations)",
     )
     parser.add_argument(
-        "--qfo-dir", type=Path,
-        default=Path.home() / "data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143",
+        "--qfo-dir",
+        type=Path,
+        default=Path.home()
+        / "data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143",
         help="Root directory of QfO 2020 release",
     )
     parser.add_argument(
-        "--regions-parquet", type=Path,
-        default=Path("results/pfam_benchmark/pfam_release_cache/pfam_regions_qfo.parquet"),
+        "--regions-parquet",
+        type=Path,
+        default=Path(
+            "results/pfam_benchmark/pfam_release_cache/pfam_regions_qfo.parquet"
+        ),
         help="Output of fetch_pfam_envelope_coords.py (run that first)",
     )
-    parser.add_argument("--force", action="store_true", help="Reprocess even if output files exist")
+    parser.add_argument(
+        "--force", action="store_true", help="Reprocess even if output files exist"
+    )
     args = parser.parse_args()
 
     species_list = list(SPECIES_METADATA) if args.species == ["all"] else args.species
     unknown = [s for s in species_list if s not in SPECIES_METADATA]
     if unknown:
-        print(f"Unknown species: {unknown}. Valid: {list(SPECIES_METADATA)}", file=sys.stderr)
+        print(
+            f"Unknown species: {unknown}. Valid: {list(SPECIES_METADATA)}",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     if not args.regions_parquet.exists():
-        print(f"Missing: {args.regions_parquet} — run fetch_pfam_envelope_coords.py first", file=sys.stderr)
+        print(
+            f"Missing: {args.regions_parquet} — run fetch_pfam_envelope_coords.py first",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     print(f"Loading {args.regions_parquet}...")
     regions_df = pl.read_parquet(args.regions_parquet)
-    print(f"  {len(regions_df):,} domain-instance rows, {regions_df['accession'].n_unique():,} accessions")
+    print(
+        f"  {len(regions_df):,} domain-instance rows, {regions_df['accession'].n_unique():,} accessions"
+    )
 
     for sp in species_list:
         process_species(sp, args.qfo_dir, args.outdir, regions_df, force=args.force)

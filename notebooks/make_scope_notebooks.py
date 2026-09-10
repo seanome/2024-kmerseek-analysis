@@ -2,6 +2,7 @@
 Script to generate notebooks 066, 067, and 068 for SCOPe benchmark analysis.
 Run with: python make_scope_notebooks.py
 """
+
 import json
 from pathlib import Path
 
@@ -11,33 +12,32 @@ from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
 def nb(cells):
     notebook = new_notebook()
-    notebook['cells'] = cells
-    notebook['metadata'] = {
-        'kernelspec': {
-            'display_name': 'Python 3 (2025-kmerseek-analysis)',
-            'language': 'python',
-            'name': '2025-kmerseek-analysis',
+    notebook["cells"] = cells
+    notebook["metadata"] = {
+        "kernelspec": {
+            "display_name": "Python 3 (2025-kmerseek-analysis)",
+            "language": "python",
+            "name": "2025-kmerseek-analysis",
         },
-        'language_info': {'name': 'python', 'version': '3.11'},
+        "language_info": {"name": "python", "version": "3.11"},
     }
     return notebook
 
 
 def write_nb(notebook, path):
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         nbformat.write(notebook, f)
-    print(f'Wrote {path}')
+    print(f"Wrote {path}")
 
 
 # ============================================================
 # Notebook 066: All-metrics AUC benchmark, k=15–45
 # ============================================================
 
-NB066_PATH = Path('066_scope_all_metrics_auc_k15_45.ipynb')
+NB066_PATH = Path("066_scope_all_metrics_auc_k15_45.ipynb")
 
 nb066_cells = [
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 # 066: KmerSeek HP SCOPe40 — All Metrics AUC Sweep, k=15–45
 
 Systematically evaluate every scoring metric at every k-size (k=15–45) on the
@@ -58,10 +58,8 @@ SCOPe40 all-vs-all benchmark and compare to FoldSeek and TEA baselines.
 | SCOPe40 database | v2.08, 40% identity cutoff | https://scop.berkeley.edu |
 | KmerSeek HP encoding | Hydrophobic-polar 2-letter alphabet | https://github.com/seanome/kmerseek |
 """),
-
-new_markdown_cell("## 1. Imports & Paths"),
-
-new_code_cell("""\
+    new_markdown_cell("## 1. Imports & Paths"),
+    new_code_cell("""\
 import sys
 from pathlib import Path
 
@@ -94,10 +92,8 @@ print(f'K-sizes to sweep: {KSIZES}')
 print(f'Benchmark dir exists: {BENCH_DIR.exists()}')
 print(f'TEA dir exists: {TEA_DIR.exists()}')
 """),
-
-new_markdown_cell("## 2. Load Baselines (FoldSeek, TEA)"),
-
-new_code_cell("""\
+    new_markdown_cell("## 2. Load Baselines (FoldSeek, TEA)"),
+    new_code_cell("""\
 foldseek, tea_all = load_baselines(TEA_DIR)
 
 print(f'FoldSeek: {len(foldseek):,} queries')
@@ -114,8 +110,7 @@ for name, df in [('FoldSeek', foldseek), ('TEA', tea_all)]:
     _, _, fold_auc = sensitivity_stats(df, 'FOLD')
     print(f'{name}: FAM={fam_auc:.4f}  SFAM={sfam_auc:.4f}  FOLD={fold_auc:.4f}')
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ## 3. AUC Sweep: All Metrics × K=15–45
 
 For each k-size, load the eval file, add composite scores, convert to ROCX
@@ -124,8 +119,7 @@ format for every metric, and record AUC restricted to the reference query set.
 **Note:** All k-files for k≤30 are stored as Parquet; k>30 as TSV.gz.
 Loading may take several minutes.
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 auc_rows = []
 
 # Metrics to include in the sweep
@@ -166,10 +160,8 @@ print(f'\\nSwept {len(auc_df):,} (ksize × metric) combinations.')
 auc_df.write_parquet(BENCH_DIR / 'scope_all_metrics_auc_sweep.parquet')
 print('Saved AUC sweep to scope_all_metrics_auc_sweep.parquet')
 """),
-
-new_markdown_cell("## 4. Heatmap: Superfamily AUC by Metric × K-size"),
-
-new_code_cell("""\
+    new_markdown_cell("## 4. Heatmap: Superfamily AUC by Metric × K-size"),
+    new_code_cell("""\
 # Pivot to matrix: rows = metrics, columns = k-sizes
 pivot = (
     auc_df
@@ -221,10 +213,8 @@ plt.savefig('../figures/066_all_metrics_auc_heatmap.png', dpi=150, bbox_inches='
 plt.show()
 print(f'Gold boxes = beats FoldSeek ({fs_sfam:.3f})')
 """),
-
-new_markdown_cell("## 5. Best Metric × K-size"),
-
-new_code_cell("""\
+    new_markdown_cell("## 5. Best Metric × K-size"),
+    new_code_cell("""\
 # Best overall by SFAM AUC
 best_row = auc_df.sort('auc_sfam', descending=True).row(0, named=True)
 print('=== BEST COMBINATION ===')
@@ -239,10 +229,8 @@ print('Top 10 (SFAM AUC):')
 print(auc_df.sort('auc_sfam', descending=True).head(10).select(
     ['ksize', 'label', 'auc_sfam', 'auc_fam']))
 """),
-
-new_markdown_cell("## 6. Best Metric Sensitivity Curve vs FoldSeek & TEA"),
-
-new_code_cell("""\
+    new_markdown_cell("## 6. Best Metric Sensitivity Curve vs FoldSeek & TEA"),
+    new_code_cell("""\
 best_k   = best_row['ksize']
 best_col = best_row['score_col']
 best_asc = next(asc for col, asc, _ in SCOPE_SCORE_COLS if col == best_col)
@@ -283,10 +271,10 @@ plt.tight_layout()
 plt.savefig('../figures/066_best_metric_sensitivity_curve.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("## 7. P-value Corrections vs Similarity Metrics: AUC at Optimal K"),
-
-new_code_cell("""\
+    new_markdown_cell(
+        "## 7. P-value Corrections vs Similarity Metrics: AUC at Optimal K"
+    ),
+    new_code_cell("""\
 # Group by metric category and show AUC at best k for each
 pval_metrics = ['Poisson p-value (raw)', 'Bonferroni', 'BH (FDR)', 'BY']
 sim_metrics  = ['Containment', 'Max Containment', 'Jaccard', 'TF-IDF', 'Enrichment']
@@ -323,10 +311,8 @@ plt.tight_layout()
 plt.savefig('../figures/066_metric_category_auc.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("## 8. AUC vs K-size for Best Metric (Line Plot)"),
-
-new_code_cell("""\
+    new_markdown_cell("## 8. AUC vs K-size for Best Metric (Line Plot)"),
+    new_code_cell("""\
 # Plot SFAM AUC vs k-size for selected metrics
 selected = ['BH (FDR)', '−log10(BH q) × Containment', 'Containment', 'TF-IDF']
 palette  = ['tomato', 'steelblue', 'seagreen', 'darkorange']
@@ -354,10 +340,8 @@ plt.tight_layout()
 plt.savefig('../figures/066_sfam_auc_vs_ksize.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("## 9. Summary Table"),
-
-new_code_cell("""\
+    new_markdown_cell("## 9. Summary Table"),
+    new_code_cell("""\
 # Compare best KmerSeek vs baselines
 print('=== AUC COMPARISON TABLE ===')
 print(f'{'Method':<35} {'SFAM AUC':>10} {'FAM AUC':>10} {'FOLD AUC':>10}')
@@ -384,8 +368,7 @@ for group_name, group_labels in [
     label = f'{group_name}: k={best[\"ksize\"]} {best[\"label\"]}'
     print(f'{label:<35} {best[\"auc_sfam\"]:>10.4f} {best[\"auc_fam\"]:>10.4f} {best[\"auc_fold\"]:>10.4f}')
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ---
 
 ## Summary for SAB
@@ -455,11 +438,10 @@ write_nb(nb(nb066_cells), NB066_PATH)
 # Notebook 067: BCL2 / Ced9 spotlight (k < 19)
 # ============================================================
 
-NB067_PATH = Path('067_scope_bcl2_ced9_small_k.ipynb')
+NB067_PATH = Path("067_scope_bcl2_ced9_small_k.ipynb")
 
 nb067_cells = [
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 # 067: BCL2 / Ced9 Spotlight — Can Any Metric Surface This Distant Pair?
 
 BCL2 (human anti-apoptotic protein) and Ced9 (C. elegans) are in the **same
@@ -482,10 +464,8 @@ them with k ≤ 19.
 | KmerSeek eval files | scope_eval.hp.k{15–18}.parquet | `/data/scope/results-scope-pvalue-benchmark/` |
 | BCL2 specific files | scope_eval.hp.k{k}.bcl2ced9.tsv.gz | same directory |
 """),
-
-new_markdown_cell("## 1. Imports & Paths"),
-
-new_code_cell("""\
+    new_markdown_cell("## 1. Imports & Paths"),
+    new_code_cell("""\
 import sys
 from pathlib import Path
 
@@ -519,10 +499,8 @@ print('  BCL2 and Ced9 both inhibit apoptosis via BH domains,')
 print('  but share <30% sequence identity — a classic distant homology case.')
 print('  Their structurally conserved core is ~19 residues of BH3-binding groove.')
 """),
-
-new_markdown_cell("## 2. BCL2/Ced9 Detection Across K-sizes (bcl2ced9 files)"),
-
-new_code_cell("""\
+    new_markdown_cell("## 2. BCL2/Ced9 Detection Across K-sizes (bcl2ced9 files)"),
+    new_code_cell("""\
 # Load the pre-extracted BCL2/Ced9 result files (produced by Nextflow pipeline)
 bcl2_rows = []
 
@@ -556,8 +534,7 @@ bcl2_df = pl.DataFrame(bcl2_rows)
 print('BCL2/Ced9 detection across k-sizes:')
 print(bcl2_df.select([c for c in bcl2_df.columns if c not in ('query_subseq', 'target_subseq')]))
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 # Plot p-values vs k-size for BCL2/Ced9
 found_df = bcl2_df.filter(pl.col('found') == True)
 print(f'BCL2/Ced9 found in {len(found_df)} k-sizes')
@@ -599,14 +576,12 @@ if len(found_df) > 0:
         print(f'  BCL2 subsequence: {best[\"query_subseq\"]}')
         print(f'  Ced9 subsequence: {best[\"target_subseq\"]}')
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ## 3. Load k=15–18 Eval Files
 
 Load the full eval files for k=15–18 to analyse all metrics, not just p-values.
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 # Load k=15–18 eval files
 eval_k = {}
 for k in [15, 16, 17, 18]:
@@ -621,15 +596,13 @@ for k in [15, 16, 17, 18]:
 foldseek, tea_all = load_baselines(TEA_DIR)
 ref_queries = set(foldseek['NAME'].to_list())
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ## 4. All-Metrics Sensitivity Curves for k=15–18
 
 For each k-size and metric, compute sensitivity-to-first-FP curves and compare
 to FoldSeek / TEA.  Also compute AUC restricted to the reference query set.
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 K_COLORS = {15: 'tomato', 16: 'steelblue', 17: '#2ca02c', 18: '#9467bd'}
 
 # P-value metrics (ascending=True)
@@ -679,14 +652,12 @@ plt.tight_layout()
 plt.savefig('../figures/067_small_k_sensitivity_by_metric.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ## 5. Can Any Metric Surface BCL2/Ced9 Above FPs?
 
 For BCL2 specifically, rank all targets by each metric and find Ced9's position.
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 results_bcl2 = []
 
 for k, df in sorted(eval_k.items()):
@@ -729,8 +700,7 @@ print('(Lower rank = better; rank=None means not found)')
 print()
 print(bcl2_rank_df.sort(['ksize', 'ced9_rank']))
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 # Heatmap: k-size × metric → Ced9 rank
 pivot = bcl2_rank_df.pivot(values='ced9_rank', index='metric', on='ksize')
 labels  = pivot['metric'].to_list()
@@ -761,8 +731,7 @@ plt.tight_layout()
 plt.savefig('../figures/067_bcl2_ced9_rank_heatmap.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ## 6. Strict-Alpha Pre-filtering
 
 BCL2 has many false positives from common helical patterns.  A strict alpha
@@ -770,8 +739,7 @@ pre-filter (keep only hits with p < α) removes these common-pattern matches,
 potentially surfacing Ced9.  This implements the "rarity principle"
 (Chantzi et al. 2024).
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 ALPHAS = [0.05, 0.01, 0.001, 1e-4]
 
 fig, axes = plt.subplots(1, len(eval_k), figsize=(5 * len(eval_k), 5), sharey=True)
@@ -808,8 +776,7 @@ plt.tight_layout()
 plt.savefig('../figures/067_bcl2_hits_by_alpha.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ---
 
 ## Summary for SAB
@@ -866,11 +833,10 @@ write_nb(nb(nb067_cells), NB067_PATH)
 # Notebook 068: Unique hits & SCOPe class enrichment
 # ============================================================
 
-NB068_PATH = Path('068_scope_unique_hits_scop_class_enrichment.ipynb')
+NB068_PATH = Path("068_scope_unique_hits_scop_class_enrichment.ipynb")
 
 nb068_cells = [
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 # 068: KmerSeek HP — Unique Hits & SCOPe Class Enrichment
 
 KmerSeek HP finds **73% of its hits not found by FoldSeek or TEA** at the
@@ -897,10 +863,8 @@ unique detections by SCOPe structural class and provides biological context.
 Weiss, M.A. et al. (2023). TEA: Transformer Embedding for homology detection
 and remote homology search. *Nature Methods*.
 """),
-
-new_markdown_cell("## 1. Imports & Paths"),
-
-new_code_cell("""\
+    new_markdown_cell("## 1. Imports & Paths"),
+    new_code_cell("""\
 import sys
 from pathlib import Path
 from collections import Counter
@@ -932,10 +896,8 @@ print('SCOPe class descriptions:')
 for cls, desc in SCOPE_CLASS_DESCRIPTIONS.items():
     print(f'  {cls}: {desc}')
 """),
-
-new_markdown_cell("## 2. Load Baselines and KmerSeek k=35,36"),
-
-new_code_cell("""\
+    new_markdown_cell("## 2. Load Baselines and KmerSeek k=35,36"),
+    new_code_cell("""\
 foldseek, tea_all = load_baselines(TEA_DIR)
 ref_queries = set(foldseek['NAME'].to_list())
 
@@ -949,8 +911,7 @@ for name, df in [('FoldSeek', foldseek), ('TEA', tea_all)]:
     _, _, fam  = sensitivity_stats(df, 'FAM')
     print(f'{name}: SFAM AUC={sfam:.4f}  FAM AUC={fam:.4f}')
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 # Load k=35, k=36 eval files and convert to ROCX using Bonferroni correction
 km_rocx = {}
 km_rocx_r = {}
@@ -968,10 +929,8 @@ for k in K_UNIQUE:
     _, _, sfam = sensitivity_stats(km_rocx_r[k], 'SFAM')
     print(f'  SFAM AUC (Bonferroni, restricted): {sfam:.4f}')
 """),
-
-new_markdown_cell("## 3. Sensitivity Curves: k=35,36 vs FoldSeek vs TEA"),
-
-new_code_cell("""\
+    new_markdown_cell("## 3. Sensitivity Curves: k=35,36 vs FoldSeek vs TEA"),
+    new_code_cell("""\
 fs_r  = rocx_restrict(foldseek, ref_queries)
 tea_r = rocx_restrict(tea_all,  ref_queries)
 
@@ -1002,8 +961,7 @@ plt.tight_layout()
 plt.savefig('../figures/068_sensitivity_k35_k36.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ## 4. Unique Hits Analysis
 
 A query is "detected by method X" if its sensitivity at the superfamily level > 0
@@ -1012,8 +970,7 @@ A query is "detected by method X" if its sensitivity at the superfamily level > 
 We identify queries where KmerSeek has sensitivity > 0 but **neither** FoldSeek
 nor TEA does.
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 def detected_queries(rocx_df: pl.DataFrame, level_col: str = 'SFAM') -> set:
     \"\"\"Return set of query IDs with sensitivity > 0 at the given level.\"\"\"
     return set(rocx_df.filter(pl.col(level_col) > 0)['NAME'].to_list())
@@ -1039,10 +996,8 @@ for k in K_UNIQUE:
     print(f'  Shared with FoldSeek/TEA:   {len(overlap):,}')
     print()
 """),
-
-new_markdown_cell("## 5. SCOPe Class Distribution of Unique vs All Hits"),
-
-new_code_cell("""\
+    new_markdown_cell("## 5. SCOPe Class Distribution of Unique vs All Hits"),
+    new_code_cell("""\
 def scop_class_from_rocx(rocx_df: pl.DataFrame) -> list:
     \"\"\"Extract the first character of the SCOP lineage (the class) for each row.\"\"\"
     return (
@@ -1090,8 +1045,7 @@ for cls in all_classes:
     print(f'{cls:<6} {pct_km_unique.get(cls, 0):>10.1f} {pct_km_all.get(cls, 0):>10.1f}'
           f' {pct_fs.get(cls, 0):>10.1f} {pct_tea.get(cls, 0):>10.1f}  {desc}')
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 # Bar chart: count of unique detections per class
 count_unique = Counter(classes_km_unique)
 
@@ -1148,8 +1102,7 @@ plt.tight_layout()
 plt.savefig('../figures/068_hp_unique_class_distribution.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ## 6. Class Enrichment: Why Does KmerSeek Enrich for c, e, f?
 
 | Class | Description | Why KmerSeek finds them |
@@ -1163,8 +1116,7 @@ new_markdown_cell("""\
 Most enzymes in the ceramide/sphingolipid de novo synthesis pathway fall into
 class c or f:
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 # Sphingolipid pathway enzymes and their SCOPe classes
 sphingolipid_enzymes = [
     ('SPT (SPTLC1-3)',   'Class c (c.67)', 'PLP-dependent transferase', 'Serine + Palmitoyl-CoA → 3-KDS'),
@@ -1190,10 +1142,8 @@ print()
 print('Class f appears for membrane-embedded enzymes (CERS, DEGS) whose active sites')
 print('require transmembrane helix scaffolding — these have pure-H HP runs.')
 """),
-
-new_markdown_cell("## 7. Families Unique to KmerSeek (not in FoldSeek or TEA)"),
-
-new_code_cell("""\
+    new_markdown_cell("## 7. Families Unique to KmerSeek (not in FoldSeek or TEA)"),
+    new_code_cell("""\
 # Extract SCOP family labels for unique queries
 def get_families(rocx_df: pl.DataFrame, query_set: set) -> list:
     \"\"\"Get list of SCOP family labels (first 4 parts of SCOP lineage).\"\"\"
@@ -1229,8 +1179,7 @@ for fam, cnt in fam_counts.most_common(20):
     desc = SCOPE_CLASS_DESCRIPTIONS.get(cls, '?')
     print(f'  {fam:<15} n={cnt:>2}  class {cls} ({desc[:40]})')
 """),
-
-new_code_cell("""\
+    new_code_cell("""\
 # Unique families by class
 class_fam_counts = {}
 for fam in unique_families:
@@ -1266,8 +1215,7 @@ plt.tight_layout()
 plt.savefig('../figures/068_unique_families_by_class.png', dpi=150, bbox_inches='tight')
 plt.show()
 """),
-
-new_markdown_cell("""\
+    new_markdown_cell("""\
 ---
 
 ## Summary for SAB
@@ -1334,4 +1282,4 @@ understudied organisms, where no structure is available.
 ]
 
 write_nb(nb(nb068_cells), NB068_PATH)
-print('\\nAll notebooks created successfully.')
+print("\\nAll notebooks created successfully.")
