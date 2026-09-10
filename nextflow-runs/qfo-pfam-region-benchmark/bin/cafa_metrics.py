@@ -350,26 +350,43 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
                      strict_iou: float = 0.8, exclude_points: bool = True) -> dict:
     """Residue-level overlap and boundary accuracy.
 
-    NDO here is the residue-level normalized domain overlap: correctly-labelled residues
-    over true domain residues. It is the quantity CASP's NDO score is built from, not
-    CASP's full scoring matrix, and is reported under that plainer definition.
+    `residue_recall` is correctly-labelled residues over true domain residues. There used
+    to be a second column, `ndo`, set to exactly this same expression, so the table carried
+    one number under two names and every arm showed the two identical to twelve decimals.
+    Normalized Domain Overlap is a different quantity -- CASP's NDO normalises per domain
+    against the best-matching predicted domain and sums over a scoring matrix this function
+    never builds -- so the column is gone rather than renamed. What is measured here is the
+    residue quantity, and it is reported under the name that describes it.
 
     DBD is the distance in residues between a predicted boundary and the true one,
     reported as a median over correctly identified domains. Only correct calls have a
     meaningful boundary error -- the distance from a wrong domain to a right one is not a
     boundary measurement.
 
+    `median_iou_tp` lives here, not in compute_metrics, for the same reason DBD does: it is
+    a boundary measurement and it has to be taken on the point-excluded subset. It used to
+    be computed over EVERY true positive, which on the Swiss-Prot truth set silently mixed
+    two criteria. A point instance is scored by containment (see score_calls), so its IoU
+    is 1/call_length -- near zero for any real call -- while an interval instance is scored
+    by IoU and lands near 0.7. The published median therefore ranked arms by what FRACTION
+    of their true positives were point features, not by how well they placed anything.
+    Measured on the mini run: kmerseek protein20 k10 read 0.071 over all TPs and 0.732 over
+    interval TPs, with 1/3 of its TPs being points; foldseek read 0.584 and 0.640 at 5/6
+    intervals. Point-excluded, every arm falls in 0.59-0.73 and the column compares
+    placement, which is what its title claims.
+
     `exclude_points` drops truth intervals flagged is_point, and the calls that matched
     them, from every number below. A point feature is a single annotated residue -- a
     catalytic site, a metal ligand -- that build_swissprot_truth widens by one and
     build_mcsa_truth widens by a window purely so an interval exists at all. There is no
-    boundary to be right or wrong about at that length, so NDO, DBD and the terminal
-    offsets would be measuring the widening rather than the prediction. Both sides are cut,
-    truth and calls, so numerator and denominator keep describing the same set. Truth sets
-    with no is_point column -- Pfam, Pfam-N -- are untouched.
+    boundary to be right or wrong about at that length, so the residue overlap, DBD and the
+    terminal offsets would be measuring the widening rather than the prediction. Both sides
+    are cut, truth and calls, so numerator and denominator keep describing the same set.
+    Truth sets with no is_point column -- Pfam, Pfam-N -- are untouched.
     """
     out = {
-        "ndo": 0.0, "residue_precision": 0.0, "residue_recall": 0.0, "residue_f1": 0.0,
+        "residue_precision": 0.0, "residue_recall": 0.0, "residue_f1": 0.0,
+        "median_iou_tp": 0.0,
         "dbd_median": None, "dbd_mean": None,
         "nterm_offset_median": None, "nterm_offset_mean": None, "nterm_offset_iqr": None,
         "cterm_offset_median": None, "cterm_offset_mean": None, "cterm_offset_iqr": None,
@@ -423,11 +440,17 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
             )
         )
         correct_residues = int(best["ov"].sum())
-        out["ndo"] = correct_residues / total_true_residues if total_true_residues else 0.0
-        out["residue_recall"] = out["ndo"]
+        out["residue_recall"] = (
+            correct_residues / total_true_residues if total_true_residues else 0.0
+        )
         out["residue_precision"] = (
             correct_residues / total_pred_residues if total_pred_residues else 0.0
         )
+        # Over the calls, not over `best`, so an instance hit by several regions weighs
+        # once per region exactly as the old compute_metrics version did. The only thing
+        # that changed is the subset: `calls` has already had point-matched rows removed
+        # above, so this is a median over interval placements alone.
+        out["median_iou_tp"] = float(tp["iou"].median())
         p, r = out["residue_precision"], out["residue_recall"]
         out["residue_f1"] = 2 * p * r / (p + r) if (p + r) else 0.0
 

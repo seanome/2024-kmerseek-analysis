@@ -21,6 +21,7 @@ and Folddisco arms.
 """
 
 import argparse
+import csv
 import json
 import io
 import shutil
@@ -31,6 +32,28 @@ import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gene_sets as gs  # noqa: E402
+
+
+# The species registry that main.nf also reads. Default resolves relative to this file so
+# the script works from any launch directory, the way the pipeline invokes it.
+DEFAULT_SPECIES_REGISTRY = Path(__file__).resolve().parent.parent / "assets" / "qfo_species.tsv"
+
+
+def load_species_registry(path: Path) -> dict[str, dict[str, str]]:
+    """label -> row, from assets/qfo_species.tsv. Insertion order is registry order."""
+    if not path.exists():
+        raise SystemExit(
+            f"species registry not found: {path}\n"
+            f"Generate it with:\n"
+            f"  bin/build_qfo_species_registry.py --release <QfO dir> "
+            f"--out assets/qfo_species.tsv"
+        )
+    with open(path, newline="") as fh:
+        rows = list(csv.DictReader(fh, delimiter="\t"))
+    missing = {"label", "taxon", "proteome", "subdir"} - set(rows[0] if rows else {})
+    if missing:
+        raise SystemExit(f"{path} is missing column(s): {', '.join(sorted(missing))}")
+    return {r["label"]: r for r in rows}
 
 
 def read_fasta(path: Path) -> dict[str, str]:
@@ -256,27 +279,33 @@ def main():
                         "to the full one -- the targets are literally the same files.")
     p.add_argument("--hgnc", type=Path,
                    help="HGNC table, required by --gene-set mhc to map symbols to accessions")
+    p.add_argument("--species-registry", type=Path, default=DEFAULT_SPECIES_REGISTRY,
+                   help="assets/qfo_species.tsv, the same species table main.nf reads")
     args = p.parse_args()
 
-    # QfO proteome files, keyed by the labels main.nf uses.
+    # QfO proteome files, keyed by the labels main.nf uses. Read from the same registry
+    # main.nf reads rather than restated here -- this map and main.nf's ALL_SPECIES were
+    # two hand-maintained copies of one list, and they had already drifted (this one
+    # carried human, that one did not).
+    registry = load_species_registry(args.species_registry)
     proteomes = {
-        "human": ("Eukaryota", "UP000005640_9606"),
-        "mouse": ("Eukaryota", "UP000000589_10090"),
-        "chicken": ("Eukaryota", "UP000000539_9031"),
-        "zebrafish": ("Eukaryota", "UP000000437_7955"),
-        "ciona": ("Eukaryota", "UP000008144_7719"),
-        "fly": ("Eukaryota", "UP000000803_7227"),
-        "worm": ("Eukaryota", "UP000001940_6239"),
-        "yeast": ("Eukaryota", "UP000002311_559292"),
-        "arabidopsis": ("Eukaryota", "UP000006548_3702"),
-        "ecoli": ("Bacteria", "UP000000625_83333"),
+        label: (rec["subdir"], f"{rec['proteome']}_{rec['taxon']}")
+        for label, rec in registry.items()
     }
     species = [s.strip() for s in args.species.split(",")]
+    # `all` here means the same thing it means to main.nf's --target_species: every
+    # non-human row. Human is the query and is staged by the query-side code below.
+    if species == ["all"]:
+        species = [l for l in registry if l != "human"]
 
     ann_out = args.outdir / "annotations"
     qfo_out = args.outdir / "qfo"
     struct_out = args.outdir / "structures"
-    for d in (ann_out, qfo_out / "Eukaryota", qfo_out / "Bacteria", struct_out):
+    # One directory per kingdom present in the registry, not the hardcoded
+    # Eukaryota/Bacteria pair: the QfO set also has seven Archaea, and staging one of them
+    # failed on a missing parent rather than on anything to do with the species.
+    kingdoms = {rec["subdir"] for rec in registry.values()}
+    for d in (ann_out, struct_out, *(qfo_out / k for k in sorted(kingdoms))):
         d.mkdir(parents=True, exist_ok=True)
 
     human = pl.read_parquet(args.annotations / "human_pfam_domains.parquet").filter(
@@ -427,9 +456,34 @@ def main():
             # its own copies and ProstT5 pays for nine proteomes twice.
             sub, name = proteomes[sp]
             link(args.qfo_dir / sub / f"{name}.fasta", qfo_out / sub / f"{name}.fasta")
-            link(args.annotations / f"{sp}_pfam_domains.parquet",
-                 ann_out / f"{sp}_pfam_domains.parquet")
-            n_ann = pl.read_parquet(args.annotations / f"{sp}_pfam_domains.parquet").filter(
+
+            # A target with no annotation table is SEARCHED BUT NOT SCORED, and that is a
+            # supported state, not an error. botryllus is the case: it has no Pfam
+            # annotations at all.
+            #
+            # Nothing is synthesised for it. An empty annotation parquet would be worse
+            # than none: build_domain_truth.py writes one <species>_domain_map.parquet per
+            # annotation file it finds, so an empty file would produce an empty map, the
+            # species WOULD reach main.nf's score_in, and every metric would come back a
+            # real-looking 0.0. With no annotation file there is no domain map, and
+            # score_in's `combine(map_ch, by: 0)` is an inner join on species, so the
+            # species' region files are dropped before scoring and no group key for it is
+            # ever created.
+            ann_src = args.annotations / f"{sp}_pfam_domains.parquet"
+            if not ann_src.exists():
+                summary["species"][sp] = {
+                    "full_target": True, "annotated": False, "scored": False,
+                }
+                print(f"NOTE: {sp} has no {ann_src.name}, so it is searched but not "
+                      f"scored. Every sequence arm and ProstT5 will search it; the "
+                      f"structure arms skip it unless structures are staged. It produces "
+                      f"no metrics, because build_domain_truth.py writes a domain map "
+                      f"only for species that have an annotation table, and main.nf's "
+                      f"score_in inner-joins on that map.")
+                continue
+
+            link(ann_src, ann_out / f"{sp}_pfam_domains.parquet")
+            n_ann = pl.read_parquet(ann_src).filter(
                 pl.col("has_position")
             )
             summary["species"][sp] = {
@@ -442,7 +496,19 @@ def main():
             }
             continue
 
-        ann = pl.read_parquet(args.annotations / f"{sp}_pfam_domains.parquet").filter(
+        # Deliberately NOT the tolerance the --full-targets branch above applies. This path
+        # picks its targets BY their annotations -- half the proteins share a family with a
+        # query, half are decoys that do not -- so with no annotation table there is nothing
+        # to subset on and no defensible subset to write.
+        ann_src = args.annotations / f"{sp}_pfam_domains.parquet"
+        if not ann_src.exists():
+            raise SystemExit(
+                f"'{sp}' has no {ann_src.name}, and this mode subsets each target proteome "
+                f"BY its annotations (family-sharing targets plus decoys), so there is "
+                f"nothing to select on. Pass --full-targets to search an unannotated "
+                f"species unscored, or drop '{sp}' from --target-species."
+            )
+        ann = pl.read_parquet(ann_src).filter(
             pl.col("has_position")
         )
         sharing = (
@@ -509,7 +575,14 @@ def main():
     else:
         per_species_acc = {"human": query_acc}
         for sp in species:
-            ann = pl.read_parquet(ann_out / f"{sp}_pfam_domains.parquet")
+            # Unreachable for an unannotated species -- this is the non-full-targets path,
+            # which raises above for one -- but guarded rather than left as a latent crash
+            # if that ordering ever changes. No annotations means no accession list to
+            # fetch structures for, which is a skip, not a failure.
+            ann_path = ann_out / f"{sp}_pfam_domains.parquet"
+            if not ann_path.exists():
+                continue
+            ann = pl.read_parquet(ann_path)
             per_species_acc[sp] = set(ann["accession"].unique().to_list())
 
     # rglob, not iterdir: the local cache is one flat directory, but on a cluster the

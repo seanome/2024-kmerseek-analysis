@@ -86,9 +86,56 @@ IDENTITY_BINS = [0.0, 20.0, 30.0, 40.0, 60.0, 100.01]
 # from the boundary metrics -- see cafa_metrics.boundary_metrics(exclude_points=).
 FEATURE_LENGTH_BINS = [1, 2, 16, 31, 61, 121, 251]
 
+# The disorder axis at the resolution the claim is actually made at.
+#
+# Four bins is too few to read a shape from. The report's disorder figure had exactly four
+# x positions, so "structure-based accuracy falls with disorder and a sequence-only method
+# does not" rested on four points per arm, and the interesting middle of the range -- where
+# the coarse 0.1-0.3 bin holds a third of the human query set -- was one number.
+#
+# Fmax cannot be made per-protein to fix that: it is a threshold-optimised, protein-macro-
+# averaged F (see cafa_metrics.protein_centric_curve), so it only exists over a POPULATION
+# of queries. The resolution therefore has to come from more populations, not from smaller
+# ones -- which is what these edges are.
+#
+# Widths are not uniform, and that is the point. disorder_fraction_plddt is heavily
+# left-skewed on the human proteome: half the queries sit under 0.154 and the top decile
+# spreads over 0.5-0.93. Uniform 0.05-wide bins would put ten near-empty cells in the tail
+# and pile a third of the query set into the first two. These edges were fitted to the
+# observed distribution of the 997 chr6 (midi) queries so that every bin clears
+# MIN_STRATUM_PROTEINS on the smallest query set this pipeline runs -- the counts are
+# 102 / 71 / 83 / 74 / 65 / 76 / 72 / 68 / 68 / 44 / 78 / 80 / 61 / 55 proteins, and on the
+# heldout half alone 54 / 29 / 34 / 33 / 39 / 44 / 33 / 36 / 29 / 23 / 39 / 40 / 32 / 27.
+# A whole-proteome query set has ~20x that in every bin.
+#
+# The last bin is wide because the data is: only 55 of 997 queries are past 0.6 disorder,
+# and splitting them further would put every cell under the floor. That is exactly the bin
+# whose midpoint lies furthest from its contents (0.805 against a measured mean of 0.713),
+# which is why every row also carries `stratum_value_mean` and the report plots that.
+DISORDER_FINE_EDGES = [0.0, 0.015, 0.035, 0.06, 0.085, 0.11, 0.14, 0.175, 0.215,
+                       0.26, 0.31, 0.38, 0.47, 0.60, 1.01]
+
+# Fourteen bins across the confident end, where the domains are. A flat 0-100 cut in tens
+# would put almost everything in two bins: modelled domains cluster high, and the question
+# is where along that clustering recovery starts to fall, not whether pLDDT 10 differs from
+# pLDDT 90.
+PLDDT_REGION_EDGES = [0, 30, 45, 55, 62, 68, 73, 78, 82, 86, 89, 92, 95, 97, 100.01]
+
 STRATA = {
     "plddt": ("mean_plddt", [0, 50, 70, 90, 100]),
+    # The region-level twins of `plddt` and `disorder_seq`. Those two are properties of the
+    # whole QUERY PROTEIN; these are measured over the domain instance's own residues, so
+    # an ordered domain in a mostly disordered protein no longer inherits its protein's
+    # number. Kept beside the protein-level axes rather than replacing them: the older axes
+    # are what the pLDDT-regime section and every earlier report are drawn on.
+    "plddt_region": ("mean_plddt_region", PLDDT_REGION_EDGES),
+    "disorder_region": ("mean_disorder_region", DISORDER_FINE_EDGES),
     "disorder": ("disorder_fraction_plddt", [0.0, 0.1, 0.3, 0.6, 1.01]),
+    # The same covariate as `disorder`, cut fourteen ways instead of four. Kept beside the
+    # coarse axis rather than replacing it: the coarse bins are what the identity and
+    # target-side disorder axes share, and a reader comparing across them needs the four-bin
+    # reading to still exist.
+    "disorder_fine": ("disorder_fraction_plddt", DISORDER_FINE_EDGES),
     # Same bins as the pLDDT proxy on purpose, so the two axes are read side by side and a
     # disagreement between them is visible rather than buried in different binning.
     "disorder_seq": ("disorder_fraction_metapredict", [0.0, 0.1, 0.3, 0.6, 1.01]),
@@ -108,6 +155,10 @@ MIN_STRATUM_PROTEINS = 30
 # and dropping them would delete the short-feature end of the very gradient being tested.
 # Every row reports its own n_stratum_proteins and n_truth_instances either way.
 UNFLOORED_AXES = ("mhc", "geneset", "identity", "feature_length_bin", "feature_type")
+
+# Axes whose covariate varies WITHIN a protein, so its stratum mean must be taken over
+# domain instances rather than over proteins. See stratum_value_mean.
+REGION_AXES = ("plddt_region", "disorder_region")
 
 # The vocabulary attach_feature_type recognises, from the truth builder itself.
 FEATURE_TYPES = sprot.RANGE_FEATURES | sprot.POINT_FEATURES
@@ -1127,7 +1178,12 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
         "roc_auc": rank_roc_auc(calls),
         "auprc": average_precision(points),
         "min_overlap": min_overlap,
-        "median_iou_tp": float(calls.filter("is_tp")["iou"].median()) if n_tp_calls else 0.0,
+        # median_iou_tp is NOT here any more. It is a boundary measurement and belongs on
+        # the same point-excluded subset as DBD and the terminal offsets, so it moved into
+        # cafa_metrics.boundary_metrics; score_one calls that straight after this and the
+        # column lands on the same row it always did. Computed here it ran over every true
+        # positive, and on a truth set carrying point features that mixed two different
+        # criteria into one median -- see boundary_metrics' docstring for the measurement.
     }
 
     # --- best achievable operating point, and where it sits ---
@@ -1176,6 +1232,55 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
             (pl.col("best_pident") >= lo) & (pl.col("best_pident") < hi)
         ).then(pl.lit(f"{int(lo)}-{int(hi)}%"))
     return joined.with_columns(expr.otherwise(None).alias("stratum_identity"))
+
+
+def _optional_parquet(path) -> pl.DataFrame | None:
+    """Read a parquet that may be absent, empty, or a sentinel file standing in for one."""
+    if not path or not path.exists() or path.stat().st_size == 0:
+        return None
+    try:
+        return pl.read_parquet(path)
+    except Exception:
+        return None
+
+
+def attach_region_covariates(truth: pl.DataFrame,
+                             tables: dict[str, pl.DataFrame | None]) -> pl.DataFrame:
+    """Join the per-domain pLDDT and disorder tables onto the truth frame.
+
+    Same key as attach_identity -- (accession, domain_start, domain_end) -- which is why
+    both emitters were written to it. A domain with no row, or a row whose value is null
+    because the interval was not modelled, keeps a null and lands in no stratum: strata_of
+    only cuts on non-null values, so an unmeasurable domain is absent from this axis
+    instead of being silently binned at zero.
+    """
+    key = ["accession", "domain_start", "domain_end"]
+    for col, table in tables.items():
+        if table is None or table.height == 0 or col not in table.columns:
+            truth = truth.with_columns(pl.lit(None, dtype=pl.Float64).alias(col))
+            continue
+        if not all(k in table.columns for k in key):
+            raise SystemExit(
+                f"region covariate table for {col} is missing one of {key}; it must be "
+                "keyed the same way as the identity table")
+        truth = truth.join(table.select(key + [col]).unique(subset=key),
+                           on=key, how="left")
+
+    # Cut here rather than in attach_strata, which bins the per-PROTEIN covariates frame and
+    # never sees these columns: they are joined onto truth, one value per domain instance.
+    exprs = []
+    for axis in REGION_AXES:
+        col, edges = STRATA[axis]
+        name = f"stratum_{axis}"
+        if col not in truth.columns:
+            exprs.append(pl.lit(None, dtype=pl.String).alias(name))
+            continue
+        expr = pl.when(pl.col(col).is_null()).then(pl.lit(None, dtype=pl.String))
+        for lo, hi in zip(edges[:-1], edges[1:]):
+            expr = expr.when((pl.col(col) >= lo) & (pl.col(col) < hi)).then(
+                pl.lit(f"{lo}-{hi}"))
+        exprs.append(expr.otherwise(None).alias(name))
+    return truth.with_columns(exprs)
 
 
 def attach_feature_length(truth: pl.DataFrame) -> pl.DataFrame:
@@ -1321,8 +1426,43 @@ def attach_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
 
     cov = cov.with_columns(exprs)
 
-    keep = ["accession"] + [c for c in cov.columns if c.startswith("stratum_")]
+    # The RAW covariate column rides along beside the bin label, for every numeric axis.
+    # Without it a row can only say which bin it is, and the report is then forced to draw
+    # the bin's midpoint as its x -- a coordinate no protein in the cell necessarily has.
+    # On the widest disorder bin the midpoint sits 0.092 away from the mean of what is
+    # actually in it (0.805 against 0.713), which on a 0-1 axis is a tenth of the plot.
+    #
+    # Only columns the truth does not already carry, so a covariate file that happens to
+    # name a column the answer key also names cannot silently shadow it in the join.
+    raw = [col for col, _ in STRATA.values()
+           if col in cov.columns and col not in truth.columns]
+    keep = (["accession"] + sorted(set(raw))
+            + [c for c in cov.columns if c.startswith("stratum_")])
     return truth.join(cov.select(keep), on="accession", how="left")
+
+
+def stratum_value_mean(t_sub: pl.DataFrame, axis: str) -> float | None:
+    """The measured mean of the covariate over the PROTEINS in one stratum cell.
+
+    Per protein, not per truth row. The covariate is a property of the query protein and
+    the truth frame is one row per domain instance, so averaging it as it stands would
+    weight a twelve-finger protein twelve times and pull the reported x toward whichever
+    proteins happen to carry the most annotations.
+
+    None for every axis that is not a numeric cut -- hgnc, mhc, geneset, identity and the
+    rest have no underlying number to average, and a null is the honest answer rather than
+    a zero the report would plot.
+    """
+    col = STRATA.get(axis, (None, None))[0]
+    if col is None or col not in t_sub.columns or t_sub.height == 0:
+        return None
+    # Region axes are the exception to the per-protein rule above: the covariate is measured
+    # over each domain's own residues, so two instances of one protein carry different
+    # values and deduping by accession would keep an arbitrary one of them and discard the
+    # rest. Averaged over instances, which is the unit the axis is defined on.
+    values = (t_sub if axis in REGION_AXES
+              else t_sub.unique(subset="accession"))[col].drop_nulls()
+    return float(values.mean()) if values.len() else None
 
 
 def strata_of(truth: pl.DataFrame) -> list[tuple[str, str]]:
@@ -1721,6 +1861,17 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
                 # AND instances, because the floor counts proteins while every rate on the
                 # row is per instance.
                 "n_stratum_proteins": t_sub["accession"].n_unique(),
+                # Where this cell actually sits on its covariate, averaged over the
+                # proteins in it. The report plots this as the x coordinate instead of the
+                # bin's midpoint, so a wide bin is drawn where its contents are.
+                "stratum_value_mean": stratum_value_mean(t_sub, axis),
+                # How many distinct labels the reachability join has to work with. A
+                # reachability ceiling only means something when `pfam_id` is a FAMILY: on
+                # the Swiss-Prot truth set it is one of ~15 feature types, every proteome
+                # has nearly all of them, and reachable / truth is then ~1.0 for every
+                # species by construction -- recall_reachable is plain recall wearing a
+                # reachability label. This column is what lets a reader tell which of the
+                # two a row is.
                 # How many distinct labels the truth cut has to work with. Twelve on the
                 # Swiss-Prot truth set, thousands on the Pfam ones, and the gap is why the
                 # two need different reachability keys -- see reachable_instances(). Kept
@@ -1795,6 +1946,13 @@ def main():
                    help="optional metapredict parquet for THIS species' proteome; bins each "
                         "human instance by the disorder of the target it could best "
                         "transfer from. Requires an --identity table carrying best_target.")
+    p.add_argument("--region-plddt", type=Path,
+                   help="per-domain pLDDT parquet from build_query_covariates.py; adds "
+                        "the plddt_region axis, which unlike plddt is measured over the "
+                        "domain rather than over its whole protein")
+    p.add_argument("--region-disorder", type=Path,
+                   help="per-domain disorder parquet from predict_disorder_metapredict.py;"
+                        " adds the disorder_region axis, measured the same way")
     p.add_argument("--identity", type=Path,
                    help="per-domain-pair percent identity for this species; the "
                         "twilight-zone stratification axis")
@@ -1898,6 +2056,10 @@ def main():
     truth = attach_strata(truth, covariates,
                           keep_zinc_finger=not args.exclude_zinc_finger_from_hgnc)
     truth = attach_identity(truth, identity)
+    truth = attach_region_covariates(truth, {
+        "mean_plddt_region": _optional_parquet(args.region_plddt),
+        "mean_disorder_region": _optional_parquet(args.region_disorder),
+    })
     truth = attach_feature_length(truth)
     truth = attach_feature_type(truth)
 
