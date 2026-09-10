@@ -155,68 +155,83 @@ run-dark-set: check-species check-inputs queue-note
 # Sherlock's login nodes enforce a TEN CPU-MINUTE cap and SIGKILL past it. A Nextflow head
 # process polling dozens of tasks burns that in well under an hour, and the kill looks
 # exactly like an OOM -- which is how a 90-task run died here with squeue left empty,
-# because Nextflow cancels its own jobs on shutdown.
+# because Nextflow cancels its own jobs on shutdown. On 2026-09-09 a login node also
+# rebooted and took a running head and its whole queue with it.
 #
-# So the driver itself goes to a compute node. It survives a dropped tmux, a closed laptop
-# and the CPU cap; it is the only way a full-proteome run finishes.
+# So the driver goes to a compute node, through tools/nf-head, which is the same submitter
+# the qfo-pfam-region-benchmark Makefile uses. It runs Nextflow inside a tmux session
+# there, so the live task table survives: `make watch-dark-set` attaches to it and Ctrl-b d
+# detaches without touching the run. That replaces the earlier --wrap driver, which had to
+# write to a file and therefore lost the table.
 #
-# The trade, stated plainly: Nextflow writes to a file rather than a terminal, so it turns
-# off the live task table and emits one line per task instead. `make watch-dark-set` tails
-# that. The table is nicer; a run that completes is nicer still.
-DRIVER_DIR   ?= $(OUTDIR)/driver
-DRIVER_LOG    = $(DRIVER_DIR)/$(SPECIES).driver.log
-DRIVER_CPUS  ?= 2
-DRIVER_MEM   ?= 16G
-DRIVER_TIME  ?= 48:00:00
-# The head process is mostly idle but must outlive every task it manages, so it asks for
-# little and for a long time -- the opposite shape to the work it submits.
-DRIVER_MODULES ?= biology nextflow
+# The partition is named here rather than inherited. The previous version passed
+# `--partition=$(PARTITION)` against a variable this Makefile never defined, so it expanded
+# to nothing, sbatch fell back to the cluster default of `normal`, and the driver landed on
+# the public partition. That is not merely untidy: `normal` has no partition QOS, so it is
+# checked against the normal QOS cap of cpu=512, and on 2026-09-10 the driver sat in
+# QOSMaxCpuPerUserLimit behind an unrelated 622-CPU sweep of ours on hns. hns carries the
+# `owner` partition QOS at cpu=99999 and would have started it immediately.
+HEAD_ACCOUNT   ?= ayeletv
+HEAD_PARTITION ?= hns
+HEAD_QOS       ?= normal
+HEAD_CPUS      ?= 2
+HEAD_MEM       ?= 16G
+# SLURM enforces --mem with a cgroup, and a JVM left to size its own heap would measure the
+# node's RAM rather than the allocation and be killed inside it.
+HEAD_XMX       ?= 12g
+export NXF_OPTS := -Xms1g -Xmx$(HEAD_XMX)
+HEAD_TIME      ?= 2-00:00:00
+HEAD_SESSION   ?= darkset
+# Per species, and deliberately not `nf-head`: the guard below, watch and stop all key on
+# this name, and the qfo benchmark runs a head of its own at the same time.
+HEAD_JOBNAME    = nfdrv-$(SPECIES)
+
+MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
+HEAD_SUBMIT = HEAD_ACCOUNT=$(HEAD_ACCOUNT) HEAD_PARTITION=$(HEAD_PARTITION) \
+              HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
+              HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
+              HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
+              HEAD_HINT_WATCH="make watch-dark-set SPECIES=$(SPECIES)" \
+              HEAD_HINT_STOP="make stop-dark-set SPECIES=$(SPECIES)" \
+              $(MAKEFILE_DIR)/tools/nf-head
 
 run-dark-set-sbatch: check-species check-inputs queue-note
-	@mkdir -p $(DRIVER_DIR)
-	@if squeue -u $$USER -h -o '%j' 2>/dev/null | grep -qx 'nfdrv-$(SPECIES)'; then \
+	@if squeue -u $$USER -h -o '%j' 2>/dev/null | grep -qx '$(HEAD_JOBNAME)'; then \
 	  echo "a driver for $(SPECIES) is already queued or running:"; \
-	  squeue -u $$USER -o '%.12i %.2t %.10M %j' | grep 'nfdrv-$(SPECIES)'; \
+	  squeue -u $$USER -o '%.12i %.2t %.10M %j' | grep '$(HEAD_JOBNAME)'; \
 	  echo; echo "watch it with:  make watch-dark-set SPECIES=$(SPECIES)"; \
 	  echo "or stop it with: make stop-dark-set SPECIES=$(SPECIES)"; \
 	  exit 1; fi
-	@jid=$$(sbatch --parsable --job-name=nfdrv-$(SPECIES) \
-	    --cpus-per-task=$(DRIVER_CPUS) --mem=$(DRIVER_MEM) --time=$(DRIVER_TIME) \
-	    --partition=$(PARTITION) --output=$(DRIVER_LOG) \
-	    --wrap='if command -v ml >/dev/null 2>&1; then ml load $(DRIVER_MODULES); fi; $(NF_RUN)'); \
-	  echo "driver submitted as job $$jid"; \
-	  echo "  log:   $(DRIVER_LOG)"; \
-	  echo "  watch: make watch-dark-set SPECIES=$(SPECIES)"; \
-	  echo "  stop:  make stop-dark-set SPECIES=$(SPECIES)"; \
-	  echo; echo "waiting for the driver to start..."; \
-	  while [ ! -s "$(DRIVER_LOG)" ]; do \
-	    st=$$(squeue -j $$jid -h -o '%t' 2>/dev/null); \
-	    if [ -z "$$st" ]; then echo "driver $$jid left the queue before writing a log:"; \
-	      sacct -j $$jid --format=JobID,State,ExitCode -X 2>/dev/null | head -3; exit 1; fi; \
-	    sleep 10; \
-	  done
-	@$(MAKE) --no-print-directory watch-dark-set SPECIES=$(SPECIES)
+	$(HEAD_SUBMIT) $(NF_RUN)
 
-# Follows the driver's log. Ctrl-C stops WATCHING, never the run -- that is the whole point
-# of putting the driver in a batch job, so it is said here rather than learned by accident.
+# Attaches to the driver's tmux and shows the live task table. Read-only, because a stray
+# Ctrl-C in an attached session reaches Nextflow and shuts the run down; Ctrl-b d detaches
+# and the run carries on. Stopping it deliberately is `make stop-dark-set`.
 watch-dark-set: check-species
-	@if [ ! -f "$(DRIVER_LOG)" ]; then \
-	  echo "no driver log at $(DRIVER_LOG)"; \
-	  echo "start one with: make run-dark-set-sbatch SPECIES=$(SPECIES)"; exit 1; fi
-	@echo "following $(DRIVER_LOG)"
-	@echo "Ctrl-C stops following; the run keeps going. Stop it with:"
-	@echo "  make stop-dark-set SPECIES=$(SPECIES)"
-	@echo
-	@tail -n 40 -f $(DRIVER_LOG)
+	@jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 if [ -z "$$jid" ]; then \
+	   pend=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T %r"); \
+	   if [ -n "$$pend" ]; then \
+	     echo "the driver for $(SPECIES) has not started yet:"; echo "$$pend" | sed 's/^/    /'; \
+	   else \
+	     echo "no driver for $(SPECIES)."; \
+	     echo "start one with: make run-dark-set-sbatch SPECIES=$(SPECIES)"; \
+	   fi; \
+	   exit 1; \
+	 fi; \
+	 exec srun --jobid=$$jid --overlap --pty tmux -S /tmp/nf-head-$$jid attach -r -t $(HEAD_SESSION)
 
-# Cancels the driver, which cancels the tasks it owns. Nothing finished is lost: the
+# Asks the run to stop the way Nextflow can handle. `scancel --signal=TERM --batch` signals
+# the batch script only and does not cancel the job, so the trap in tools/nf-head sends
+# Ctrl-C to Nextflow and it cancels its own tasks before exiting. Plain `scancel` kills the
+# driver outright and leaves those tasks behind. Nothing finished is lost either way: the
 # reference and indexes are under storeDir and completed tasks stay cached, so a later
 # run-dark-set-sbatch resumes rather than restarts.
 stop-dark-set: check-species
-	@jid=$$(squeue -u $$USER -h -o '%i %j' 2>/dev/null | awk '$$2=="nfdrv-$(SPECIES)"{print $$1}'); \
+	@jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i" | head -1); \
 	 if [ -z "$$jid" ]; then echo "no driver running for $(SPECIES)"; exit 0; fi; \
-	 echo "cancelling driver $$jid (its tasks go with it; finished work is cached)"; \
-	 scancel $$jid
+	 echo "asking driver $$jid to shut down; its tasks are cancelled as it goes"; \
+	 scancel --signal=TERM --batch $$jid
 
 run-dark-set-mini: check-species check-inputs
 	@mkdir -p $(OUTDIR)/_mini
