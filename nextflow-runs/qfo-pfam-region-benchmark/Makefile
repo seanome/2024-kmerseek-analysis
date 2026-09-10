@@ -63,7 +63,7 @@ SHERLOCK_HOST  ?= sherlock
 SSH_MUX  := ssh -o ControlMaster=auto -o ControlPath=$$HOME/.ssh/cm-%r@%h:%p -o ControlPersist=30m
 RSYNC    := rsync -avz --progress -e "$(SSH_MUX)"
 REPO_URL       ?= https://github.com/seanome/2024-kmerseek-analysis.git
-BRANCH         ?= olgabot/qfo-pfam-region-benchmark
+BRANCH         ?= olgabot/midi-plus-all-qfo
 
 # $SCRATCH, never $HOME -- the home quota is small and the work dir is not.
 REMOTE_REPO    := $$SCRATCH/2024-kmerseek-analysis
@@ -95,6 +95,31 @@ PFAM_HMM_REMOTE ?= $$SCRATCH/data/pfam/Pfam-A.hmm
 PFAM_HMM_ARG     = $(if $(PFAM_HMM_REMOTE),--pfam_hmm $(PFAM_HMM_REMOTE))
 
 QFO_DIR        := /Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
+
+# --- QfO release, fetched ON SHERLOCK ---------------------------------------
+#
+# The whole 78-species release, straight from the EBI FTP to $SCRATCH, so the wide run
+# does not depend on 77 proteomes existing on a laptop first. 2.65 GB compressed.
+#
+# 2020_04 AND NOT THE CURRENT RELEASE, which is 2026_02. This is the release every
+# existing cache was built from, and species labels are the only key those caches have:
+# an index named ecoli.dayhoff6.k10.lcfalse.kmerseek.rocksdb says nothing about which
+# release its sequences came from, so newer FASTAs under the same labels would be reused
+# rather than rebuilt. assets/qfo_cache_critical.md5 pins the ten proteomes that decision
+# rests on and qfo-download verifies them after unpacking. EBI keeps old releases under
+# previous_releases/, which is what makes staying on 2020_04 possible at all.
+QFO_RELEASE      ?= QfO_release_2020_04_with_updated_UP000008143
+QFO_RELEASE_DIR  ?= qfo_release-2020_04_with_updated_UP000008143
+QFO_FTP_BASE     ?= https://ftp.ebi.ac.uk/pub/databases/reference_proteomes/previous_releases
+QFO_TARBALL_URL  ?= $(QFO_FTP_BASE)/$(QFO_RELEASE_DIR)/$(QFO_RELEASE).tar.gz
+QFO_TARBALL_SIZE ?= 2648666198
+
+# Outside the repo checkout and outside the pipeline's data/, because it is release data
+# shared by every worktree and every run -- the same reason Pfam-A.hmm lives in
+# $SCRATCH/data/pfam. data/qfo becomes a symlink to it.
+QFO_REMOTE_ROOT  ?= $$SCRATCH/data/quest-for-orthologs
+QFO_REMOTE_DIR   ?= $(QFO_REMOTE_ROOT)/$(QFO_RELEASE)
+
 STRUCT_DIR     := /Users/olga/data/alphafold_proteomes
 ACC_DIR        := /Users/olga/data/alphafold_proteomes/_accessions
 LOCAL_RESULTS  := /Users/olga/data/qfo-pfam-region-benchmark
@@ -117,6 +142,21 @@ MINI_COMBOS  ?= protein20:10,hp_pbotc_1st_ed2:19
 # target side, ~5% of the query load -- 964 proteins carrying 2358 of the 50185 human Pfam
 # domain instances. chr6 because it carries the MHC, so this subsumes the MHC vignette.
 MIDI_TARGETS ?= mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
+
+# midi-plus searches one more target: Botryllus schlosseri, a colonial tunicate at the same
+# 550 MYA node as ciona. It is SEARCHED BUT NOT SCORED -- it has no Pfam annotations, so
+# build_domain_truth.py writes no domain map for it and main.nf's score_in inner-joins it
+# out of scoring. It contributes hits to look at, not metrics.
+#
+# Deliberately NOT added to MIDI_TARGETS. That variable also drives run-midi, which is the
+# nine-species scored run every published number comes from; widening it would change what
+# that run searches for a species that cannot contribute a number.
+MIDI_PLUS_TARGETS ?= $(MIDI_TARGETS),botryllus
+
+# The Botryllus proteome, which is not part of any QfO release. `make stage-botryllus`
+# cleans the download and writes it into the QfO tree; see that target.
+BOTRYLLUS_SRC  ?= $(HOME)/Downloads/botryllus_new_genome_protein.fasta
+BOTRYLLUS_DEST := $(QFO_DIR)/Eukaryota/BOTSCH2026_30301.fasta
 
 # Arms the local smoke tests leave out. The big stuff belongs on Sherlock.
 #
@@ -224,9 +264,13 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
+        run-midi-plus-all-qfo queue-empty \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
+        stage-botryllus \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
+        qfo-download qfo-link qfo-verify-existing \
+        pfam-regions pfam-regions-download pfam-annotations \
         run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
@@ -249,6 +293,8 @@ help:
 	@echo "                        cache is untouched"
 	@echo "  push-folddisco-image  Push the FoldDisco image to Docker Hub"
 	@echo "  sync-pipeline         Push the current branch and update Sherlock"
+	@echo "  stage-botryllus       Clean the Botryllus proteome into the QfO tree"
+	@echo "                        (run-midi-plus's 10th, unscored target; then sync-data)"
 	@echo "  sync-data             Copy benchmark inputs to Sherlock"
 	@echo "  sync-structures       Copy AlphaFold structures to Sherlock"
 	@echo "  run-mhc-local         Smoke test: 25 MHC genes vs mouse, ProstT5 arm off"
@@ -265,11 +311,20 @@ help:
 	@echo ""
 	@echo "Sherlock:"
 	@printf '%s\n' '  prefetch-images       Pull all pinned images into $$SCRATCH cache'
+	@echo "  qfo-download         Fetch the 78-species QfO 2020_04 release to \$$SCRATCH (2.65 GB)"
+	@echo "                       Resumable; verifies the ten cache-critical proteomes"
+	@echo "  qfo-link             Point this checkout's data/qfo at that release"
+	@echo "  pfam-regions         Fetch Pfam-A.regions.tsv.gz (5 GB) and filter to QfO"
+	@echo "  pfam-annotations     Build the Pfam answer key for every species missing one"
 	@echo "  mini-testset-sherlock Build the mini data set"
 	@echo "  run-mini             Run the mini smoke test"
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
-	@echo "                       Additive to run-midi, its own outdir, target DBs shared"
+	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
+	@echo "                       Reuses run-midi-plus's stored searches; replaces its report"
+	@echo "                       Additive to run-midi, its own outdir, target DBs shared."
+	@echo "                       Also searches botryllus, a 10th target that is NOT scored"
+	@echo "                       (no Pfam annotations). Needs 'make stage-botryllus' first"
 	@echo "  fetch-structures     Download AlphaFold structures ON the login node (~36 GB)"
 	@echo "  run-kmerseek         Run only the Kmerseek sweep"
 	@echo "  run-baselines        Run only the baseline tools"
@@ -303,7 +358,7 @@ help:
 # discriminator that needs no network.
 ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
-MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/qfo-pfam-region-benchmark/nextflow-runs/qfo-pfam-region-benchmark
+MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/midi-plus-all-qfo/nextflow-runs/qfo-pfam-region-benchmark
 
 # The name these two guards quote back at you. Normally the target being built, which is
 # also the target you typed. A helper target that only ever runs as somebody else's
@@ -754,12 +809,16 @@ sync-pipeline:
 ## the ssh from the Mac that makes you re-do two-factor for a command you are already
 ## sitting in front of. Assumes the Mac side has pushed; --ff-only so a diverged checkout
 ## stops rather than opening a merge in a shell you did not ask to be in.
+#
+## `cd && git`, not `git -C`: Sherlock's login nodes carry a git old enough that -C is not
+## a recognised option, and it fails with a usage dump rather than anything that names the
+## flag. Every git here runs on the cluster, so none of them can use it.
 pull-pipeline:
 	$(call require_cluster)
-	@echo "branch: $$(git -C $(REMOTE_REPO) rev-parse --abbrev-ref HEAD)"
-	git -C $(REMOTE_REPO) pull --ff-only
+	@cd $(REMOTE_REPO) && echo "branch: $$(git rev-parse --abbrev-ref HEAD)"
+	cd $(REMOTE_REPO) && git pull --ff-only
 	@echo
-	@git -C $(REMOTE_REPO) log --oneline -6
+	@cd $(REMOTE_REPO) && git log --oneline -6
 
 # Data may move by rsync. Annotations are small; proteomes are ~1 GB; structures ~60 GB.
 HGNC_FILE  := /Users/olga/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt
@@ -804,6 +863,141 @@ sync-pfam:
 	@echo 'hmmscan annotation ceiling is now ENABLED for the run targets.'
 	@echo 'They already pass --pfam_hmm $(PFAM_HMM_REMOTE) -- no extra flag needed.'
 	@echo 'Point them elsewhere with PFAM_HMM_REMOTE=<path>, or PFAM_HMM_REMOTE= to run without it.'
+
+## Is data/qfo already the right release? Checked BEFORE downloading anything, because it
+## usually is: sync-data rsyncs the whole QfO directory, not just the nine species the run
+## used, so a checkout that has ever been synced already holds all 78. Verified against
+## Sherlock on 2026-09-03 -- all ten cache-critical checksums matched, and the 2.65 GB
+## download would have been pure waste.
+##
+## Drops a .qfo-have marker for qfo-download to short-circuit on. A marker rather than a
+## make conditional because the answer depends on running md5sum, which cannot happen at
+## parse time.
+qfo-verify-existing:
+	$(call require_cluster)
+	@rm -f .qfo-have
+	@n=$$(ls data/qfo/*/*.fasta 2>/dev/null \
+	      | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l); \
+	 if [ "$$n" -ne 78 ]; then \
+	   echo "data/qfo has $$n canonical proteomes, not 78 -- fetching the release"; \
+	   exit 0; \
+	 fi; \
+	 if (cd data/qfo && grep -v '^#' $(CURDIR)/assets/qfo_cache_critical.md5 \
+	     | md5sum -c --status -); then \
+	   echo "data/qfo already holds all 78 proteomes of $(QFO_RELEASE),"; \
+	   echo "and the ten cache-critical checksums match. Nothing to download."; \
+	   touch .qfo-have; \
+	 else \
+	   echo "data/qfo has 78 proteomes but a cache-critical checksum does NOT match."; \
+	   echo "It is not the release the existing indexes and searches were built from."; \
+	   echo "Refusing to overwrite it -- move it aside first if you mean to replace it."; \
+	   exit 1; \
+	 fi
+
+## Download the QfO release to Sherlock. Run it ON SHERLOCK, on a login node.
+##
+## Idempotent and resumable. curl -C - continues a partial file rather than restarting,
+## and --speed-limit/--speed-time aborts a transfer that has silently stalled instead of
+## hanging for hours -- multi-GB EBI transfers do stall, and a bare background curl gives
+## no sign of it. Re-run it after an abort; it picks up where it stopped.
+##
+## Costs nothing to re-run once complete: a release directory that already holds all 78
+## canonical FASTAs and passes the checksum verification is left alone.
+qfo-download: qfo-verify-existing
+	$(call require_cluster)
+	@test ! -f .qfo-have || { rm -f .qfo-have; exit 0; }
+	@mkdir -p $(QFO_REMOTE_ROOT)
+	@if [ -d "$(QFO_REMOTE_DIR)" ] && [ "$$(ls $(QFO_REMOTE_DIR)/*/*.fasta 2>/dev/null \
+	     | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l)" -eq 78 ]; then \
+	  echo "have $(QFO_REMOTE_DIR) (78 canonical proteomes) -- verifying"; \
+	else \
+	  echo "fetching $(QFO_TARBALL_URL)"; \
+	  curl -L -C - --fail --retry 5 --retry-delay 10 \
+	       --speed-limit 10240 --speed-time 120 \
+	       -o $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz \
+	       $(QFO_TARBALL_URL); \
+	  got=$$(stat -c %s $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz); \
+	  if [ "$$got" != "$(QFO_TARBALL_SIZE)" ]; then \
+	    echo "  tarball is $$got bytes, expected $(QFO_TARBALL_SIZE) -- incomplete."; \
+	    echo "  Re-run 'make qfo-download'; curl -C - resumes it."; exit 1; \
+	  fi; \
+	  echo "unpacking into $(QFO_REMOTE_ROOT)"; \
+	  tar -xzf $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz -C $(QFO_REMOTE_ROOT); \
+	fi
+	@n=$$(ls $(QFO_REMOTE_DIR)/*/*.fasta 2>/dev/null \
+	      | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l); \
+	 if [ "$$n" -ne 78 ]; then \
+	   echo "  $(QFO_REMOTE_DIR) has $$n canonical proteomes, expected 78."; exit 1; \
+	 fi
+	@echo "verifying the ten proteomes existing caches were built from"
+	@cd $(QFO_REMOTE_DIR) && grep -v '^#' $(CURDIR)/assets/qfo_cache_critical.md5 \
+	   | md5sum -c - \
+	   || { echo; \
+	        echo "  A cache-critical proteome does not match assets/qfo_cache_critical.md5."; \
+	        echo "  This release is NOT the one run-midi-plus's indexes and searches were"; \
+	        echo "  built from, and species labels alone cannot tell them apart. Do not"; \
+	        echo "  point a run at it until this is resolved."; echo; exit 1; }
+	@echo
+	@echo "  $(QFO_REMOTE_DIR)"
+	@echo "  78 proteomes, ten checksums verified."
+	@echo
+	@echo "  Point the pipeline at it:"
+	@echo "    make qfo-link"
+	@echo
+
+## Point this checkout's data/qfo at the downloaded release. Separate from qfo-download so
+## a re-download never silently repoints a run's inputs.
+qfo-link:
+	$(call require_cluster)
+	@test -d $(QFO_REMOTE_DIR) || { \
+	  echo "  no $(QFO_REMOTE_DIR) -- run 'make qfo-download' first"; exit 1; }
+	@if [ -e data/qfo ] && [ ! -L data/qfo ]; then \
+	  echo "  data/qfo is a real directory, not a link. Leaving it alone: it may be the"; \
+	  echo "  rsynced copy the current caches were built from. Move it aside first if you"; \
+	  echo "  mean to replace it."; exit 1; \
+	fi
+	@mkdir -p data
+	@ln -sfn $(QFO_REMOTE_DIR) data/qfo
+	@echo "data/qfo -> $$(readlink data/qfo)"
+
+# ---- Botryllus schlosseri, the one proteome that is not from a QfO release ------
+#
+# Cleans the download (repeated names disambiguated, one '.' residue replaced with X --
+# see bin/prepare_botryllus_fasta.py) and writes it INTO the QfO release directory. That
+# location is not a filing choice: main.nf resolves every target FASTA as
+# ${qfo_dir}/${subdir}/${proteome}_${taxon}.fasta, and the botryllus row in
+# assets/qfo_species.tsv is (Eukaryota, BOTSCH2026, 30301), so this is the only path the
+# pipeline can read it from. It also means `make sync-data` carries the file to the cluster
+# with no new rsync -- it already ships $(QFO_DIR) wholesale.
+#
+# Idempotent by CONTENT, not by timestamp. Nextflow hashes an input file by path, size and
+# mtime rather than by content, so rewriting byte-identical bytes is enough to invalidate
+# every task that reads the file directly -- the failure bin/make_mini_testset.py's
+# write_if_changed() docstring records. The converter writes a .tmp and it is moved into
+# place only when the bytes actually differ.
+stage-botryllus:
+	$(call require_mac)
+	@if [ ! -f "$(BOTRYLLUS_SRC)" ]; then \
+	  echo ""; \
+	  echo "  no Botryllus proteome at $(BOTRYLLUS_SRC)"; \
+	  echo "  point BOTRYLLUS_SRC at the downloaded FASTA:"; \
+	  echo "    make stage-botryllus BOTRYLLUS_SRC=/path/to/botryllus_proteins.fasta"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+	@mkdir -p "$(dir $(BOTRYLLUS_DEST))"
+	$(PYTHON) bin/prepare_botryllus_fasta.py \
+	  --in          "$(BOTRYLLUS_SRC)" \
+	  --out         "$(BOTRYLLUS_DEST).tmp" \
+	  --summary-out "$(BOTRYLLUS_DEST).prepare_summary.json"
+	@if [ -f "$(BOTRYLLUS_DEST)" ] && cmp -s "$(BOTRYLLUS_DEST).tmp" "$(BOTRYLLUS_DEST)"; then \
+	  /bin/rm -f "$(BOTRYLLUS_DEST).tmp"; \
+	  echo "  $(BOTRYLLUS_DEST) already up to date; mtime left alone so Nextflow keeps its cache"; \
+	else \
+	  /bin/mv -f "$(BOTRYLLUS_DEST).tmp" "$(BOTRYLLUS_DEST)"; \
+	  echo "  wrote $(BOTRYLLUS_DEST)"; \
+	fi
+	@echo "  now run: make sync-data"
 
 sync-data:
 	$(call require_mac)
@@ -1043,6 +1237,113 @@ PFAMN_GZ   := data/pfamn/Pfam-N.gz
 # rsync, not curl. EBI serves this over rsync, which resumes a partial transfer natively --
 # the first attempt piped curl straight into the parser and died 27.8M lines in, and a pipe
 # cannot resume at all. Re-running this costs the remainder, not the whole 17.4 GB.
+# --- Pfam answer key for every QfO species ----------------------------------
+#
+# 68 of the 77 targets have no *_pfam_domains.parquet, and staging fails hard without one:
+# a target with no annotation cannot transfer a single domain call, so unlike a missing
+# structure directory (which the structure arms skip with a NOTE) this is not survivable.
+#
+# The source is Pfam's own bulk regions file, NOT the UniProt REST API. UniProt does not
+# expose Pfam positions -- entry JSON carries no Domain-type features and xref_pfam has no
+# start/end -- which is why the first ten species were rebuilt from Pfam-A.regions.tsv.gz
+# and why their parquets carry domain_ali_start/domain_ali_end that the API route cannot
+# produce. Verified again 2026-09-03: the API returns zero positioned Pfam features even
+# for ciona, whose annotations are 100% positioned on disk.
+#
+# Runs entirely on Sherlock. The 5.05 GB download, the single-pass awk filter and the
+# per-species parquets all happen here; nothing is staged through the Mac.
+PFAM_REGIONS_DIR ?= $$SCRATCH/data/pfam/regions
+# The scripts live at the repo root because notebooks 123 and 125 import them.
+NOTEBOOKS_DIR    ?= ../../notebooks
+
+## Download Pfam-A.regions.tsv.gz and filter it to all 78 QfO proteomes' accessions.
+## ~5 GB, resumable, and free to re-run once the file is complete. The script stops if the
+## file on the FTP is no longer the Pfam 38.2 the existing ten species were built from --
+## annotating half the species from a different release would be a confound in the
+## divergence axis, which is the one thing this benchmark measures.
+## The 5.05 GB download. On the login node and OUTSIDE the container, for two reasons:
+## the kmerseek image has no curl (it is a bioinformatics runtime, not a fetch tool --
+## running the fetcher inside it died with FileNotFoundError: 'curl'), and the login
+## nodes are where outbound HTTP is guaranteed on Sherlock. Nothing here needs python.
+##
+## -C - resumes from the exact byte offset, so an interrupted transfer continues rather
+## than restarting. --speed-limit/--speed-time abort a transfer that has silently stalled
+## instead of hanging for hours; EBI does stall on multi-GB files, and a bare curl gives
+## no sign of it. The loop re-invokes curl until the file reaches its expected size.
+PFAM_REGIONS_URL   ?= https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.regions.tsv.gz
+PFAM_REGIONS_BYTES ?= 5053457363
+PFAM_REGIONS_GZ     = $(PFAM_REGIONS_DIR)/Pfam-A.regions.tsv.gz
+PFAM_DOWNLOAD_TRIES ?= 30
+
+pfam-regions-download:
+	$(call require_cluster)
+	@mkdir -p $(PFAM_REGIONS_DIR)
+	@set -e; \
+	 for i in $$(seq 1 $(PFAM_DOWNLOAD_TRIES)); do \
+	   if [ -f $(PFAM_REGIONS_GZ) ] && \
+	      [ "$$(stat -c %s $(PFAM_REGIONS_GZ))" = "$(PFAM_REGIONS_BYTES)" ]; then \
+	     echo "have $(PFAM_REGIONS_GZ) ($(PFAM_REGIONS_BYTES) bytes)"; exit 0; \
+	   fi; \
+	   echo "attempt $$i/$(PFAM_DOWNLOAD_TRIES): $(PFAM_REGIONS_URL)"; \
+	   curl -L -C - --fail --speed-limit 10240 --speed-time 120 \
+	        -o $(PFAM_REGIONS_GZ) $(PFAM_REGIONS_URL) || true; \
+	 done; \
+	 got=$$(stat -c %s $(PFAM_REGIONS_GZ) 2>/dev/null || echo 0); \
+	 if [ "$$got" != "$(PFAM_REGIONS_BYTES)" ]; then \
+	   echo; echo "  $(PFAM_REGIONS_GZ) is $$got bytes, expected $(PFAM_REGIONS_BYTES)."; \
+	   echo "  Re-run 'make pfam-regions-download'; curl -C - resumes where it stopped."; \
+	   echo "  If the size is stable but wrong, Pfam current_release has moved and the"; \
+	   echo "  existing ten species' annotations no longer match it -- see the note in"; \
+	   echo "  notebooks/fetch_pfam_envelope_coords.py before rebuilding anything."; \
+	   echo; exit 1; \
+	 fi; \
+	 echo "downloaded $(PFAM_REGIONS_GZ) ($$got bytes)"
+
+## Decompress it and filter to all 78 proteomes' accessions. In a SLURM allocation, not on
+## the login node: this streams ~30 GB through gzip and awk against a 1.4M-key hash, which
+## is real single-core work and does not belong on a node everyone shares.
+PFAM_FILTER_MEM  ?= 16G
+PFAM_FILTER_TIME ?= 2:00:00
+
+pfam-regions: pfam-regions-download
+	$(call require_cluster)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	     --mem=$(PFAM_FILTER_MEM) --time=$(PFAM_FILTER_TIME) --cpus-per-task=2 \
+	  apptainer exec \
+	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	    python3 $(NOTEBOOKS_DIR)/fetch_pfam_envelope_coords.py \
+	      --skip-download \
+	      --qfo-dir   data/qfo \
+	      --cache-dir $(PFAM_REGIONS_DIR)
+
+## Write {species}_pfam_domains.parquet, _architectures.parquet and _pfam_summary.json for
+## every registry species that does not already have them.
+##
+## The existing ten are SKIPPED, not rebuilt: process_species returns early when its
+## outputs exist. That is deliberate and load-bearing. Those parquets are the truth set
+## every already-scored arm in data/midi-plus/results was scored against, and rewriting
+## them -- even from the same Pfam release -- would invalidate that scoring. Pass
+## PFAM_FORCE=--force only if you mean to rebuild all 78 and rescore everything.
+PFAM_FORCE ?=
+
+pfam-annotations: pfam-regions
+	$(call require_cluster)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	     --mem=$(PFAM_FILTER_MEM) --time=$(PFAM_FILTER_TIME) --cpus-per-task=2 \
+	  apptainer exec \
+	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	    python3 $(NOTEBOOKS_DIR)/build_pfam_architectures.py \
+	      --species all \
+	      --outdir          data/annotations \
+	      --qfo-dir         data/qfo \
+	      --regions-parquet $(PFAM_REGIONS_DIR)/pfam_regions_qfo.parquet \
+	      $(PFAM_FORCE)
+	@echo
+	@echo "annotated species: $$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null | wc -l) of 78"
+	@echo
+
 pfamn-download:
 	$(call require_cluster)
 	@mkdir -p data/pfamn
@@ -1282,6 +1583,19 @@ run-midi: prefetch-images midi-testset-sherlock
 # turns into a `query_set` column, so the original 964 stay reconstructible exactly.
 midi-plus-testset-sherlock:
 	$(call require_cluster)
+	@if [ -n "$(findstring botryllus,$(MIDI_PLUS_TARGETS))" ] && \
+	    [ ! -f data/qfo/Eukaryota/BOTSCH2026_30301.fasta ]; then \
+	  echo ""; \
+	  echo "  botryllus is in MIDI_PLUS_TARGETS but its proteome is not staged:"; \
+	  echo "    data/qfo/Eukaryota/BOTSCH2026_30301.fasta is missing"; \
+	  echo ""; \
+	  echo "  It is not part of the QfO release, so qfo-download does not fetch it."; \
+	  echo "  On your Mac:"; \
+	  echo "    cd $(MAC_PIPELINE_DIR)"; \
+	  echo "    make stage-botryllus && make sync-data"; \
+	  echo ""; \
+	  exit 1; \
+	fi
 	apptainer exec \
 	  --bind $$PWD:$$PWD --pwd $$PWD \
 	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
@@ -1292,7 +1606,7 @@ midi-plus-testset-sherlock:
 	    --gene-set        chr6_plus \
 	    --full-targets \
 	    --hgnc            data/covariates/hgnc_complete_set.txt \
-	    --target_species  $(MIDI_TARGETS) \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
 	    --structure-cache data/structures
 
 # Its OWN outdir, and that is the whole correctness argument for this target rather than a
@@ -1329,7 +1643,120 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    --outdir          $(MIDI_PLUS_OUTDIR) \
 	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
-	    --target_species  $(MIDI_TARGETS) \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus across every QfO target -------------------------------------
+#
+# Same 998 queries as run-midi-plus, same alphabets, every QfO target instead of nine.
+# 77 targets, 68 of them new.
+#
+# SHARES run-midi-plus's outdir, and that is the whole point rather than an oversight.
+# kmerseekSearch stores under ${params.outdir}/kmerseek as
+# human_vs_<species>.<alphabet>.k<k>.lc<lc>.regions.parquet, and kmerseekIndex stores under
+# ${db_cache}/kmerseek_index. The query set here is byte-identical to run-midi-plus's -- the
+# same chr6_plus staging, the same 998 proteins -- so those 3654 stored searches and 3654
+# stored indexes are correct for this run and are reused rather than recomputed. That is
+# what the shared outdir buys, and it is only safe BECAUSE the query set is unchanged; this
+# is exactly the reasoning that gave run-midi-plus its own outdir when its query set grew
+# from 964 to 998.
+#
+# The cost of sharing: aggregateMetrics publishes all_domain_metrics.parquet to the outdir,
+# so this run REPLACES run-midi-plus's aggregate and its MultiQC report. Pull that report
+# first if you want to keep it -- `make pull-report-midi-plus`. The replacement is a
+# superset in species, not a different measurement.
+#
+# Structures: the 68 new targets have no AlphaFold models, so foldseek, reseek, folddisco
+# and the structure half of the report skip them on their own -- main.nf filters on
+# has_structs and make_mini_testset prints a NOTE per species. The nine originals keep
+# their structural arms. Nothing needs a flag for this.
+#
+# HHblits is restricted to eukaryotes plus the nine originals: 48 targets rather than 77.
+# See the note on params.hhblits_kingdoms in main.nf for why, and why ecoli stays in.
+ALLQFO_OUTDIR ?= $(MIDI_PLUS_OUTDIR)
+ALLQFO_RUN_DIR ?= run-midi-plus-all-qfo
+# Every non-human registry row: the 77 QfO targets plus botryllus.
+ALLQFO_TARGETS ?= all
+# Eukaryotes only, plus the nine originals -- see params.hhblits_kingdoms in main.nf.
+ALLQFO_HHBLITS_KINGDOMS ?= Eukaryota
+
+## Refuse to launch while anything of ours is still queued.
+##
+## Not defensive padding. Nextflow decides "already in the store" when it CREATES a task
+## and never re-checks, so a second writer against the same --db_cache does the full build
+## and then dies on `mv: Directory not empty`. main.nf's workflow.onError names leftover
+## jobs from a previous run as the most likely cause, and this project has hit it three
+## times on three different storeDir outputs. The terminal returning is not the same as the
+## queue draining, which is precisely how it keeps happening.
+queue-empty:
+	$(call require_cluster)
+	@n=$$(squeue -u $$USER -h 2>/dev/null | wc -l); \
+	 if [ "$$n" -ne 0 ]; then \
+	   echo; \
+	   echo "  $$n job(s) still queued or running under $$USER."; \
+	   echo "  Launching now would put two writers on the same storeDir under"; \
+	   echo "  $(ALLQFO_OUTDIR) and \$$(db_cache), which fails as"; \
+	   echo "  'mv: cannot move ... Directory not empty' after both have done the work."; \
+	   echo; \
+	   echo "  Wait for the queue to drain, then re-run:"; \
+	   echo "    squeue -u \$$USER"; \
+	   echo; \
+	   exit 1; \
+	 fi; \
+	 echo "queue is empty"
+
+run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
+run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	@# Every registry species must either HAVE an answer key or be recorded as having
+	@# none available. A bare count cannot tell those apart, and the difference matters:
+	@# pnodorum's accessions appear zero times in all 129_292_765 rows of
+	@# Pfam-A.regions.tsv.gz, so no amount of re-running produces one, while a missing
+	@# botryllus key is by design and 68 missing keys means pfam-annotations never ran.
+	@# build_pfam_architectures.py writes species_without_pfam.txt for exactly this.
+	@reg=$$(tail -n +2 assets/qfo_species.tsv | cut -f1 | sort); \
+	 have=$$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null \
+	         | sed 's|.*/||; s|_pfam_domains.parquet||' | sort); \
+	 none=$$(cat data/annotations/species_without_pfam.txt 2>/dev/null | sort); \
+	 gap=$$(comm -23 <(echo "$$reg") <(sort -u <(echo "$$have") <(echo "$$none"))); \
+	 if [ -n "$$gap" ]; then \
+	   echo; \
+	   echo "  No Pfam answer key, and not recorded as unavailable:"; \
+	   echo "$$gap" | sed 's/^/    /'; \
+	   echo; \
+	   echo "  A target with no annotation is searched but never scored, so this is only"; \
+	   echo "  safe when Pfam genuinely has nothing for the species. Run:"; \
+	   echo; \
+	   echo "    make pfam-annotations"; \
+	   echo; exit 1; \
+	 fi; \
+	 if [ -n "$$none" ]; then \
+	   echo "searched but NOT scored (no Pfam data exists for them):"; \
+	   echo "$$none" | sed 's/^/    /'; \
+	 fi; \
+	 echo "answer key: $$(echo "$$have" | grep -c .) species scored"
+	mkdir -p $(ALLQFO_RUN_DIR)
+	cd $(ALLQFO_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(ALLQFO_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(ALLQFO_TARGETS) \
+	    --hhblits_kingdoms $(ALLQFO_HHBLITS_KINGDOMS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \

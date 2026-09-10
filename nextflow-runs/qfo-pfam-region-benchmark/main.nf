@@ -154,11 +154,35 @@ params.kmerseek_extra_encodings = false
 params.kmerseek_extra_image = null
 params.kmerseek_combos    = null
 
-// Low-complexity k-mer removal, swept as a toggle rather than fixed: every alphabet and
-// ksize runs both with and without it, doubling the search count. Whether dropping
-// homopolymer-like k-mers helps depends on the alphabet, since a 2-letter alphabet
-// generates far more low-complexity k-mers than a 20-letter one.
-params.low_complexity_toggle = [false, true]
+// Low-complexity k-mer removal. Swept as a toggle when it was an open question -- every
+// alphabet and ksize with and without it, which doubled the search count -- and now fixed
+// OFF, because the sweep answered it: dropping low-complexity k-mers did not move the
+// metrics enough to pay for a second arm of every combo.
+//
+// `lc` is in the storeDir entry name (<label>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and
+// human_vs_<label>...lc<lc>.regions.parquet), so narrowing this list drops the lctrue
+// tasks and leaves every cached lcfalse index and search hitting exactly as before. Put
+// `true` back to measure it again:
+//   --low_complexity_toggle false,true
+params.low_complexity_toggle = [false]
+
+// On the command line a list arrives as the string "false,true", and .collect on a String
+// iterates its characters -- so the documented override would have silently produced ten
+// one-character "settings" rather than two booleans.
+def LC_TOGGLE = (params.low_complexity_toggle instanceof List
+                 ? params.low_complexity_toggle
+                 : params.low_complexity_toggle.toString().tokenize(','))
+    .collect { it.toString().trim().toLowerCase() }
+    .collect { v ->
+        if (!(v in ['true', 'false'])) {
+            error "--low_complexity_toggle takes true and/or false, not '${v}'"
+        }
+        v == 'true'
+    }
+    .unique()
+if (LC_TOGGLE.isEmpty()) {
+    error "--low_complexity_toggle is empty; it needs at least one of true, false"
+}
 
 // [cli_flag, label, kmin, kmax]. In kmerseek v0.4.0 the CLI name and the moltype written
 // into the CSV are the same string, so one column serves both.
@@ -511,29 +535,139 @@ params.folddisco_top    = 1000
 params.run_hmmscan    = file(params.pfam_hmm).exists()
 
 // ---------------------------------------------------------------------------
-// Species: human is query-only; the other 9 are targets.
+// Species: human is query-only; every other registry row is a possible target.
 // ---------------------------------------------------------------------------
-def ALL_SPECIES = [
-    [label: "mouse",       taxon: "10090",  proteome: "UP000000589", subdir: "Eukaryota", mya: 100],
-    [label: "chicken",     taxon: "9031",   proteome: "UP000000539", subdir: "Eukaryota", mya: 300],
-    [label: "zebrafish",   taxon: "7955",   proteome: "UP000000437", subdir: "Eukaryota", mya: 430],
-    [label: "ciona",       taxon: "7719",   proteome: "UP000008144", subdir: "Eukaryota", mya: 550],
-    [label: "fly",         taxon: "7227",   proteome: "UP000000803", subdir: "Eukaryota", mya: 600],
-    [label: "worm",        taxon: "6239",   proteome: "UP000001940", subdir: "Eukaryota", mya: 650],
-    [label: "yeast",       taxon: "559292", proteome: "UP000002311", subdir: "Eukaryota", mya: 900],
-    [label: "arabidopsis", taxon: "3702",   proteome: "UP000006548", subdir: "Eukaryota", mya: 1500],
-    [label: "ecoli",       taxon: "83333",  proteome: "UP000000625", subdir: "Bacteria",  mya: 2000],
-]
+// The registry is assets/qfo_species.tsv, generated from a QfO release directory by
+// bin/build_qfo_species_registry.py. It replaces the nine-row literal that used to sit
+// here and the two other hardcoded copies of the same list (make_mini_testset.py's
+// `proteomes` map, build_pfam_architectures.py's SPECIES_METADATA), which had already
+// drifted apart in both length and key names.
+//
+// A label is a CACHE KEY. kmerseekIndex stores target indexes as
+// <label>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and kmerseekSearch stores results as
+// human_vs_<label>...regions.parquet, neither of which carries a release or a checksum.
+// The registry generator pins and asserts the ten labels that already have caches for
+// exactly that reason.
+params.species_registry = "${projectDir}/assets/qfo_species.tsv"
+
+def registry_file = file(params.species_registry)
+if (!registry_file.exists()) {
+    error "Species registry not found: ${params.species_registry}\n" +
+          "Generate it with:\n" +
+          "  bin/build_qfo_species_registry.py --release <QfO dir> --out assets/qfo_species.tsv"
+}
+
+def registry_rows = registry_file.readLines().findAll { it.trim() }
+def registry_header = registry_rows[0].split('\t') as List
+['label', 'taxon', 'proteome', 'subdir', 'mya'].each { col ->
+    if (!registry_header.contains(col)) {
+        error "Species registry ${params.species_registry} has no '${col}' column; " +
+              "regenerate it with bin/build_qfo_species_registry.py"
+    }
+}
+def REGISTRY = registry_rows.drop(1).collect { line ->
+    def cells = line.split('\t', -1) as List
+    def rec = [registry_header, cells].transpose().collectEntries { k, v -> [(k): v] }
+    [label   : rec.label,
+     taxon   : rec.taxon,
+     proteome: rec.proteome,
+     subdir  : rec.subdir,
+     // Divergence from human in MYA. Empty for every species that has no sourced value,
+     // and null all the way through to scoreDomainCalls, which then omits --species-mya
+     // rather than passing a made-up coordinate to the divergence axis.
+     mya     : rec.mya?.trim() ? rec.mya.trim() as Integer : null]
+}
+
+// Human is the query. It is never a target, and never appears in a target list.
+def HUMAN = REGISTRY.find { it.label == 'human' }
+if (!HUMAN) {
+    error "No 'human' row in ${params.species_registry}; human is the query proteome"
+}
+def KNOWN_TARGETS = REGISTRY.findAll { it.label != 'human' }
+
+// The nine the benchmark has always run, in divergence order, and still the default.
+//
+// NOT "every row in the registry". The registry now holds all 77 QfO targets, and making
+// that the default would widen `make run`, `make run-midi` and every -resume of an
+// in-flight sweep from 9 targets to 77 the moment this file was pulled -- the same trap
+// EXTRA_ENCODINGS is split out to avoid on the alphabet axis. The wide run asks for its
+// targets explicitly, so the default matrix is byte-for-byte what it was.
+def DEFAULT_TARGET_LABELS = ['mouse', 'chicken', 'zebrafish', 'ciona', 'fly', 'worm',
+                             'yeast', 'arabidopsis', 'ecoli']
+def ALL_SPECIES = DEFAULT_TARGET_LABELS.collect { label ->
+    def row = KNOWN_TARGETS.find { it.label == label }
+    if (!row) {
+        error "Default target '${label}' is missing from ${params.species_registry}"
+    }
+    row
+}
 
 def requested = params.target_species ?: params.species
-def SPECIES = requested
-    ? ALL_SPECIES.findAll { it.label in requested.tokenize(',')*.trim() }
-    : ALL_SPECIES
+def SPECIES
+if (!requested) {
+    SPECIES = ALL_SPECIES
+}
+else if (requested.toString().trim().toLowerCase() == 'all') {
+    // Every QfO target, registry order (kingdom then label). Spelled as a word because
+    // listing 77 labels on a command line is how one gets silently dropped.
+    SPECIES = KNOWN_TARGETS
+}
+else {
+    def wanted = requested.tokenize(',')*.trim().findAll { it }
+    def unknown = wanted - KNOWN_TARGETS*.label
+    // Named-but-unknown is an error, not a silent drop. `--target_species mouse,mosue`
+    // otherwise runs one species and reports nine.
+    if (unknown) {
+        error "Unknown target species: ${unknown.join(', ')}.\n" +
+              "Known targets are the ${KNOWN_TARGETS.size()} non-human rows of " +
+              "${params.species_registry}; '--target_species all' selects them all. " +
+              (unknown.contains('human')
+                 ? "human is the QUERY and is never a target."
+                 : "")
+    }
+    // Ordered as the user asked, so a hand-written subset reads back the way it was typed.
+    SPECIES = wanted.collect { l -> KNOWN_TARGETS.find { it.label == l } }
+}
 
 if (SPECIES.isEmpty()) {
     error "No target species matched '${requested}'. Known targets: " +
-          "${ALL_SPECIES*.label.join(', ')} (human is the query and is not a target)"
+          "${KNOWN_TARGETS*.label.join(', ')} (human is the query and is not a target)"
 }
+
+// ---- HHblits: which targets it is worth spending profile-profile time on -------------
+//
+// HHblits is the most expensive sequence arm by a wide margin: 555 CPU-hours across nine
+// targets in the run-midi/run-midi-plus traces, against 28 for phmmer and 12 for MMseqs2,
+// plus another 55 building the per-species profile databases. Across the 23 bacteria and
+// 7 archaea of the full QfO set that is thousands of CPU-hours for the arm least likely
+// to say anything the cheaper ones do not.
+//
+// null means every kingdom, so nothing changes for a run that does not set it.
+params.hhblits_kingdoms = null
+
+def HHBLITS_KINGDOMS = params.hhblits_kingdoms
+    ? params.hhblits_kingdoms.toString().tokenize(',')*.trim().findAll { it }
+    : null
+if (HHBLITS_KINGDOMS != null) {
+    def known_kingdoms = REGISTRY*.subdir.unique()
+    def bad = HHBLITS_KINGDOMS - known_kingdoms
+    if (bad) {
+        error "--hhblits_kingdoms names unknown kingdom(s): ${bad.join(', ')}. " +
+              "The registry has ${known_kingdoms.join(', ')}."
+    }
+}
+
+// The kingdom filter, plus the nine original targets unconditionally.
+//
+// That second clause is not a hedge. Those nine are already scored and sit in the shared
+// outdir, so including them costs no CPU -- every task is a cache hit. Excluding ecoli for
+// being a bacterium would therefore save nothing and would DELETE a paid-for arm from the
+// report, because aggregateMetrics reads the scoring channel rather than globbing the
+// published metrics directory: an arm that does not run this time is absent from
+// all_domain_metrics.parquet even though its parquet is still on disk.
+def HHBLITS_SPECIES = HHBLITS_KINGDOMS == null
+    ? SPECIES
+    : SPECIES.findAll { it.subdir in HHBLITS_KINGDOMS || it.label in DEFAULT_TARGET_LABELS }
 
 // HP-family alphabets at low ksize need far more RAM than everything else: a handful of
 // k-mers absorb a large share of the proteome, and the inverted index scales with the
@@ -588,6 +722,48 @@ workflow.onError {
         |exists, so the task becomes a store hit and costs nothing.
         """.stripMargin()
     }
+}
+
+// One error strategy for every process that has no reason of its own to decide otherwise.
+//
+// Nextflow's default is `terminate`: the FIRST failure kills every task still running. On
+// 2026-09-05 that turned one hhblitsBuildDB task into a dead run -- zmays came back with
+// no exit status at all, and 582 tasks in flight went with it, including hhblitsSearch and
+// kmerseek arms that had been running for hours. Nothing about that task was wrong. It was
+// killed by the cluster.
+//
+// So: retry the failures the cluster inflicts, and hand every other failure to `finish`,
+// which stops submitting new work but lets the tasks already running complete and write
+// their results. Three exit conditions count as a kill:
+//
+//   Integer.MAX_VALUE   no .exitcode file was written at all -- a cgroup OOM kill, a
+//                       walltime kill, a node failure, a preemption. Nextflow uses this
+//                       as the sentinel and reports it as "terminated for an unknown
+//                       reason -- Likely it has been terminated by the external system"
+//                       (TaskProcessor compares task.exitStatus against Integer.MAX_VALUE
+//                       to choose that message). It is 2147483647, so it is NOT in
+//                       128..143, which is why the idiom used elsewhere in this file never
+//                       fired on the failure that motivated this and every process using
+//                       it fell through to its non-retry branch.
+//   null                the field is a nullable Integer; kept for the paths that leave it
+//                       unset. `null in 128..143` is false as well.
+//   128..143            the wrapper caught the signal and reported 128 + signo.
+//
+// Deliberately NOT retried: exit 1 and friends. A deterministic script error would fail
+// `retries` more times and cost that many more reservations to reach the same place, and
+// for the storeDir processes exit 1 is also how the "Directory not empty" unstage
+// collision arrives -- see the note on kmerseekIndex's errorStrategy for why retrying that
+// one was measured to make things worse rather than better.
+//
+// The attempt cap lives here rather than being left to maxRetries because an exhausted
+// `retry` is not the same as `finish`: it fails the run. Every path out of this closure
+// ends at `finish`, so a task that cannot be made to work costs its own arm and nothing
+// else. `retries` still has to match the process's own maxRetries, which is the number
+// that actually bounds the attempts.
+def retryOnKill = { task, int retries = 2 ->
+    def status = task.exitStatus
+    def killed = status == null || status == Integer.MAX_VALUE || status in 128..143
+    (killed && task.attempt <= retries) ? 'retry' : 'finish'
 }
 
 // Shell helpers both kmerseek processes paste into their scripts to time themselves.
@@ -661,20 +837,24 @@ params.score_memory_max    = '96 GB' // the old flat value, now a ceiling rather
 // `sinfo -p hns -o '%n %m'`.
 params.score_memory_retry_max = '128 GB'
 
-// How finely scoreDomainCalls batches its arms. One task per (truth_set, species) put all
-// ~415 arms of every tool in one job, which has two costs. Memory is sized from the
-// LARGEST file in the group, so every arm ran inside a reservation only the greediest one
-// needed; and a failure on arm 12 destroyed the work of the other 818.
+// How finely scoreDomainCalls batches its arms. One task per species put all ~415 arms of
+// every tool in one job, which has two costs. Memory is sized from the LARGEST file in the
+// group, so every arm ran inside a reservation only the greediest one needed; and a failure
+// on arm 12 destroyed the work of the other 818.
 //
 // Arms are scored sequentially, so a smaller group does not lower any single arm's peak.
 // What it lowers is the reservation the other arms sit inside, and how much work one
 // failure costs.
 //
-//   species    one task per (truth_set, species). The old behaviour, ~27 tasks.
-//   tool       one per (truth_set, species, tool). Isolates the baselines, which are the
+// The truth set is NOT one of these axes. Every truth set is scored inside whichever task
+// holds the arm, because splitting on it would fault the arm's region file in once per
+// truth set and that file is the only large thing scoring reads.
+//
+//   species    one task per species. The old behaviour, ~9 tasks.
+//   tool       one per (species, tool). Isolates the baselines, which are the
 //              memory-hungry arms, but still leaves ~406 kmerseek arms in one group.
 //   alphabet   as `tool`, with kmerseek split again by alphabet: ~28 groups per species,
-//              ~750 tasks for a full sweep. Region file sizes within one alphabet are
+//              ~250 tasks for a full sweep. Region file sizes within one alphabet are
 //              similar, so this is the setting where the memory estimate is actually tight.
 //
 // Finer is affordable only because the searches are done and cached. The per-arm shape was
@@ -829,7 +1009,8 @@ def kmerseekSearchMemory = { label, ksize, targetBytes, attempt ->
 }
 
 // Wall clock for a batched scoring task, from the TOTAL bytes it will read. One task now
-// scores every arm for a species sequentially, so time is additive where memory is not.
+// scores every arm of a group against every truth set, sequentially, so time is additive
+// over both where memory is not.
 //
 // The rate is deliberately pessimistic. scoreDomainCalls timings measured so far are all
 // yeast on protein/dayhoff, reading 7.9-8.3 MB with no spread, so they cannot calibrate
@@ -847,12 +1028,16 @@ params.score_time_max_hours   = 24
 // did not include the work being timed.
 params.dedup_transfer_modes = ['off', 'on']
 
-def scoreTime = { regions, attempt ->
+// n_truth is the number of truth sets scored inside ONE task. They share a task so that
+// each arm's region file is faulted in once rather than once per truth set, and the passes
+// are sequential, so wall clock multiplies by them exactly as it does by the dedup modes.
+def scoreTime = { regions, n_truth, attempt ->
     def files = regions instanceof List ? regions : [regions]
     long mb   = Math.max(1L, files.sum { (it.size() as long) }.intdiv(1024L * 1024L))
     int  nmod = Math.max(1, (params.dedup_transfer_modes as List).size())
-    long mins = (params.score_time_base_min as long)
-                + (mb * (params.score_time_per_mb_sec as long) * nmod).intdiv(60L)
+    int  nts  = Math.max(1, n_truth as int)
+    long mins = (params.score_time_base_min as long) * nts
+                + (mb * (params.score_time_per_mb_sec as long) * nmod * nts).intdiv(60L)
     long cap  = (params.score_time_max_hours as long) * 60L
     Duration.of("${Math.min(mins, cap) * attempt} min")
 }
@@ -917,6 +1102,10 @@ process buildDomainTruth {
     label 'python'
     publishDir "${params.outdir}/truth", mode: 'copy'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     path annotations_dir
 
@@ -946,6 +1135,10 @@ process buildSwissprotTruth {
      */
     label 'python'
     publishDir "${params.outdir}/truth_swissprot", mode: 'copy'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple path(sprot_dat), path(annotations_dir)
@@ -985,6 +1178,10 @@ process domainIdentity {
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     label 'high_cpu'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(query_db), path(target_db)
 
@@ -1014,6 +1211,10 @@ process parseIdentity {
     tag "${species}"
     label 'python'
     publishDir "${params.outdir}/identity", mode: 'copy', pattern: '*.parquet'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(species), path(tsv)
@@ -1086,6 +1287,10 @@ process extractDomainSequences {
     tag "${label}"
     label 'python'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(truth), path(fasta)
 
@@ -1131,6 +1336,10 @@ process proteomeDisorder {
     // already binds container = kmerseek_image via withLabel.
     storeDir "${DB_CACHE}/disorder"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(fasta)
 
@@ -1152,6 +1361,51 @@ process proteomeDisorder {
     """
 }
 
+process humanRegionDisorder {
+    /*
+     * Disorder averaged over each human DOMAIN, not over the protein that carries it.
+     *
+     * Deliberately NOT folded into proteomeDisorder, which is storeDir'd per proteome.
+     * That entry's name is keyed on the proteome; this table's content also depends on the
+     * TRUTH intervals, and an entry whose content depends on something outside its name is
+     * silently shared across runs that differ in that thing. Regenerating the answer key
+     * would leave a cached entry serving domain disorder for the old intervals, with
+     * nothing to notice it. A separate publishDir process re-runs when the truth changes,
+     * which is the behaviour this table needs.
+     *
+     * Cheap enough not to warrant a cache: one metapredict pass over the query FASTA.
+     */
+    tag "human regions"
+    label 'python'
+    publishDir "${params.outdir}/truth", mode: 'copy'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple path(fasta), path(truth)
+
+    output:
+    path "human_domain_disorder.parquet", emit: regions
+    path "human_domain_disorder.json",    emit: summary
+
+    script:
+    def thr = params.metapredict_threshold ? "--threshold ${params.metapredict_threshold}" : ""
+    """
+    predict_disorder_metapredict.py \\
+        --fasta       ${fasta} \\
+        ${thr} \\
+        --out         per_protein_discarded.parquet \\
+        --domains     ${truth} \\
+        --domains-out human_domain_disorder.parquet \\
+        --summary-out human_domain_disorder.json
+
+    cat human_domain_disorder.json
+    """
+}
+
+
 process buildQueryCovariates {
     /*
      * Per-query-protein biology: HGNC gene group, dN/dS, mean pLDDT, disorder fraction.
@@ -1161,6 +1415,10 @@ process buildQueryCovariates {
     label 'python'
     publishDir "${params.outdir}/truth", mode: 'copy'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple path(truth), path(hgnc), path(omega), path(structures), path(disorder),
           path(query_sets)
@@ -1168,6 +1426,9 @@ process buildQueryCovariates {
     output:
     path "human_query_covariates.parquet", emit: covariates
     path "covariates_summary.json",        emit: summary
+    // Absent when the run has no structures, which is why it is optional rather than a
+    // sentinel: nothing downstream stages it, it is read from the published directory.
+    path "human_domain_plddt.parquet",     emit: region_plddt, optional: true
 
     script:
     def hgnc_arg   = hgnc.name   == 'NO_HGNC'   ? "" : "--hgnc ${hgnc}"
@@ -1179,10 +1440,14 @@ process buildQueryCovariates {
     // make_mini_testset.py wrote it next to the annotations; absent for a run built before
     // it existed, and for the full-proteome run where every query is the same bucket.
     def qsets_arg  = query_sets.name == 'NO_QUERY_SETS' ? "" : "--query-sets ${query_sets}"
+    // Per-domain pLDDT needs the residue track, so it rides along only when there are
+    // structures to read it from.
+    def regions_arg = structures.name == 'NO_STRUCTURES' ? "" : "--domains-out human_domain_plddt.parquet"
     """
     build_query_covariates.py \\
         --truth       ${truth} \\
         ${hgnc_arg} ${omega_arg} ${struct_arg} ${mobidb_arg} ${mpred_arg} ${qsets_arg} \\
+        ${regions_arg} \\
         --out         human_query_covariates.parquet \\
         --summary-out covariates_summary.json
     """
@@ -1249,7 +1514,8 @@ process kmerseekIndex {
     // -- 1_500 measured tasks peaked at 7.00 GB and tracked the proteome alone -- so this
     // must NOT use kmerseekSearchMemory, which would put a search-sized ask on every one.
     memory { kmerseekIndexMemory(species_fasta.size(), task.attempt) }
-    // Retries the OOM signals only. Do NOT widen this to exit 1 to catch the
+    // Retries cluster kills only -- the signal range plus the no-exit-code sentinel, see
+    // retryOnKill. Do NOT widen this to exit 1 to catch the
     // "Directory not empty" unstage failure -- that was measured on 2026-08-27 and it does
     // not work. Nextflow reads the store when it CREATES a task and caches that decision
     // on the task itself, so a retry does not re-check: attempts 2 and 3 re-ran the whole
@@ -1265,7 +1531,7 @@ process kmerseekIndex {
     // from both. A RocksDB whose manifest and data files come from different builds is
     // corrupt, and the run reports success. Worse still, the merge writes into an entry a
     // concurrent kmerseekSearch may be reading. A loud failure is the better outcome.
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    errorStrategy { retryOnKill(task) }
     maxRetries 2
 
     input:
@@ -1358,13 +1624,13 @@ process kmerseekSearch {
     storeDir "${params.outdir}/kmerseek"
 
     memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
-    // Retry the OOM signals (128..143), stop the run on anything else. Deliberately not
+    // Retry cluster kills only (see retryOnKill), stop on anything else. Deliberately not
     // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
     // downstream as "this alphabet found nothing", which is indistinguishable from a real
     // negative. That has already happened once on this project -- 17 combos silently
     // searched ~1000 of 19,696 queries and looked like genuine misses. Failing loudly and
     // resuming costs queue time; a silent partial costs a wrong conclusion.
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    errorStrategy { retryOnKill(task) }
     maxRetries 2
 
     input:
@@ -1500,6 +1766,10 @@ process phmmerSearch {
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_phmmer", mode: 'copy', pattern: '*.tsv.gz'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(species_fasta), path(human_fasta)
 
@@ -1531,6 +1801,10 @@ process jackhmmerSearch {
     container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_jackhmmer", mode: 'copy', pattern: '*.tsv.gz'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(species), path(species_fasta), path(human_fasta)
@@ -1575,6 +1849,10 @@ process mmseqsDb {
     label 'high_cpu'
     storeDir "${DB_CACHE}/mmseqs_db"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(fasta)
 
@@ -1605,6 +1883,10 @@ process mmseqsDomainDb {
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     label 'high_cpu'
     storeDir "${params.outdir}/mmseqs_domain_db"
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(label), path(fasta)
@@ -1639,6 +1921,10 @@ process mmseqsPaddedDb {
     label 'high_cpu'
     storeDir "${DB_CACHE}/mmseqs_db_gpu"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(plain_db)
 
@@ -1664,6 +1950,10 @@ process mmseqs2Search {
     // bound, so a ternary on `gpu` in that position fails with "No such variable: gpu".
     // path() patterns interpolate per task and would be fine, but keeping both strings on
     // one side of the boundary means the CPU spelling is provably unchanged.
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), val(variant), val(num_iter), val(gpu), val(mode_variant),
           val(out_name), path(target_db), path(query_db)
@@ -1710,10 +2000,11 @@ process hhblitsSearch {
     tag "human_vs_${species}"
     container 'quay.io/biocontainers/hhsuite@sha256:4bf9bb5229de18f522a94f4443c19fdcbb0f0cb0e6ea92f5390aa170bcb0a24f'
     label 'high_cpu'
-    // A walltime kill arrives as SIGTERM, exit 143. Without this the default strategy is
-    // `terminate`, so the four large targets running past the wall would take the whole run
-    // down with them rather than being requeued with the longer limit the retry carries.
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'terminate' }
+    // A walltime kill usually arrives as SIGTERM, exit 143, and sometimes as no exit code
+    // at all; retryOnKill covers both. Without this the default strategy is `terminate`, so
+    // the four large targets running past the wall would take the whole run down with them
+    // rather than being requeued with the longer limit the retry carries.
+    errorStrategy { retryOnKill(task, 1) }
     maxRetries 1
     publishDir "${params.outdir}/regions/hhblits", mode: 'copy', pattern: '*.tsv.gz'
 
@@ -1818,6 +2109,10 @@ process foldseekDb {
     label 'high_cpu'
     storeDir "${DB_CACHE}/foldseek_db"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(structures)
 
@@ -1862,6 +2157,10 @@ process foldseekPaddedDb {
     label 'high_cpu'
     storeDir "${DB_CACHE}/foldseek_db_gpu"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(label), path(plain_db)
 
@@ -1888,6 +2187,10 @@ process foldseekSearch {
 
     // mode_variant and out_name come from the workflow -- see the note in mmseqs2Search on
     // why an output val() cannot hold a ternary over an input.
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), val(gpu), val(mode_variant), val(out_name),
           path(target_db), path(query_db)
@@ -1952,6 +2255,10 @@ process reseekConvert {
     container 'quay.io/biocontainers/reseek@sha256:24f7c37150dd2c2f2f322b1387a08d2d1a4a279f46f98f1051f1745417675752'
     label 'high_cpu'
     storeDir "${DB_CACHE}/reseek_db"
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(species), path(structures)
@@ -2024,6 +2331,10 @@ process reseekSearch {
     label 'high_cpu'
     publishDir "${params.outdir}/regions/reseek", mode: 'copy', pattern: '*.tsv.gz'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(db), path(db_mu), path(human_bca)
 
@@ -2095,6 +2406,10 @@ process prostt5Weights {
     // re-fetched. Sharing comes from DB_CACHE, not from renaming the directory.
     storeDir "${DB_CACHE}/prostt5"
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     output:
     path "weights"
 
@@ -2127,7 +2442,7 @@ process prostt5Db {
     cpus   { Math.max(1, (params.prostt5_cpus as int).intdiv(task.attempt)) }
     memory { MemoryUnit.of(params.prostt5_memory) * task.attempt }
     time   { params.prostt5_time }
-    errorStrategy { task.exitStatus in 128..143 ? 'retry' : 'finish' }
+    errorStrategy { retryOnKill(task, 3) }
     maxRetries 3
     storeDir "${DB_CACHE}/prostt5_db"
 
@@ -2200,6 +2515,10 @@ process prostt5Search {
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*.tsv.gz'
     publishDir "${params.outdir}/regions/prostt5", mode: 'copy', pattern: '*_skipped.tsv'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(target_db), path(query_db)
 
@@ -2257,6 +2576,10 @@ process folddiscoIndex {
     container params.folddisco_image
     label 'high_cpu'
     storeDir "${DB_CACHE}/folddisco_index"
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(species), path(structures)
@@ -2364,6 +2687,10 @@ process folddiscoQuery {
     // ${params.structures}/${species} into the container, which is where the index recorded
     // its structures and where `folddisco query` reopens them from. Drop this input and
     // every query panics on "Failed to read CIF file" again.
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(index), path(target_structures), path(human_structures),
           val(chunk)
@@ -2485,6 +2812,10 @@ process folddiscoMerge {
     label 'python'
     publishDir "${params.outdir}/regions/folddisco", mode: 'copy', pattern: '*.tsv.gz'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple val(species), path(chunks)
 
@@ -2543,6 +2874,10 @@ process hmmscanAnnotate {
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmscan", mode: 'copy', pattern: '*.tsv.gz'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple path(human_fasta), path(pfam_hmm), path(pfam_hmm_aux)
 
@@ -2588,6 +2923,17 @@ process hhblitsBuildDB {
     // per-target database. The human entry is keyed by query-set digest (HUMAN_LABEL),
     // which is what makes sharing this directory safe -- see the note in the workflow.
     storeDir "${DB_CACHE}/hhblits_db"
+
+    // This process is the one that proved the point, on 2026-09-05: a storeDir database
+    // build with no error strategy of its own is a single point of failure for the entire
+    // run. zmays came back with an empty exit status -- "terminated by the external
+    // system" -- and took 582 running tasks down with it. See retryOnKill above.
+    //
+    // Retrying costs a full rebuild, because a killed task leaves nothing in the store.
+    // That is ~45 min for the largest proteome here against the ~14 h of queue and compute
+    // that the alternative threw away.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(label), path(fasta), val(is_query)
@@ -2662,14 +3008,19 @@ process hhblitsBuildDB {
 
 process scoreDomainCalls {
     /*
-     * One task per (truth_set, species, scoring group). Reads each arm's regions, transfers
-     * Pfam labels through the target interval, scores the resulting query-side calls
-     * against human_domain_truth.parquet. Emits per-call detail (for downstream
-     * re-cutting) and a metrics row per arm.
+     * One task per (species, scoring group), scored against EVERY truth set. Reads each
+     * arm's regions, transfers Pfam labels through the target interval, scores the
+     * resulting query-side calls against each human_*_truth.parquet in turn. Emits
+     * per-call detail (for downstream re-cutting) and a metrics row per (arm, truth set).
+     *
+     * The truth sets live inside one task rather than one task each because the region
+     * file is the only large input scoring reads, and a task that is repeated per truth
+     * set faults the same file in again from the shared filesystem every time. See the
+     * measurement in the workflow, above `truth_bundle`.
      */
     // The tag names the group -- a tool, or `kmerseek:<alphabet>` -- and how many arms it
     // holds, which is what tells the two dozen tasks of one species apart in the log.
-    tag "${truth_set}: ${species} / ${group} (${tools.size()} arms)"
+    tag "${species} / ${group} (${tools.size()} arms x ${truth_labels.size()} truth)"
     // Its own label, NOT 'python'. Config directives beat script-declared ones, so while
     // this carried the python label that label's flat memory silently overrode the sizing
     // below. The scoring label sets the container and nothing else.
@@ -2679,7 +3030,10 @@ process scoreDomainCalls {
     // Sizing memory on the sum would reserve ~376x what any moment needs.
     memory { scoreMemory(regions instanceof List ? regions.max { it.size() } : regions,
                          task.attempt) }
-    time   { scoreTime(regions, task.attempt) }
+    // Walltime scales with the truth sets now that they share a task: the arms are scored
+    // sequentially per truth set, so wall clock is additive over them the same way it is
+    // over arms and dedup modes.
+    time   { scoreTime(regions, truth_labels.size(), task.attempt) }
     // Retry on ANY failure, not on the signal range. An OOM kill inside the container was
     // observed arriving as exit status 1 -- the log said `Killed`, the wrapper reported 1 --
     // so the 128..143 test never fired, the strategy fell through to `finish`, and one dead
@@ -2694,10 +3048,20 @@ process scoreDomainCalls {
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
+    // truths and domain_maps are parallel lists, index-aligned with truth_labels. They are
+    // staged into numbered directories because every truth arm names its per-species map
+    // <species>_domain_map.parquet, so three of them in one task collide: Nextflow refuses
+    // the task outright with "input file name collision" rather than renaming one. The
+    // `truth*/*` form keeps each file's own name inside truth1/, truth2/, ... and the
+    // script reads the staged path back off the variable, so nothing here has to predict
+    // the on-disk name.
     input:
-    tuple val(truth_set), val(species), val(group), val(tools), val(variants), val(mya),
-          path(regions, arity: '1..*'), path(truth), path(domain_map),
-          path(covariates), path(identity), path(target_disorder)
+    tuple val(species), val(group), val(tools), val(variants), val(mya),
+          path(regions, arity: '1..*'),
+          val(truth_labels), path(truths, stageAs: 'truth*/*'),
+          path(domain_maps, stageAs: 'map*/*'),
+          path(covariates), path(identity), path(target_disorder),
+          path(region_plddt), path(region_disorder)
 
     // Globs, because one task now writes a trio per arm. arity '1..*' for the same reason
     // it is on kmerseekIndex's chunk output: a glob emits a bare Path on a single match and
@@ -2715,30 +3079,59 @@ process scoreDomainCalls {
     // interval-semantics and dedup-fragments used to be decided here per tool. They now live
     // in evaluate_domain_calls.score_one, because a manifest row carries only the tool name
     // and the policy has to be derived from it in exactly one place.
+    // Same sentinel dance as --identity and --target-disorder above: absent tables become
+    // an empty flag rather than a null path, which Nextflow cannot stage.
+    def rplddt_arg = region_plddt.name  == 'NO_REGION_PLDDT'
+        ? "" : "--region-plddt ${region_plddt}"
+    def rdis_arg   = region_disorder.name == 'NO_REGION_DISORDER'
+        ? "" : "--region-disorder ${region_disorder}"
     def tdis_arg = target_disorder.name == 'NO_DISORDER' ? ""
                    : "--target-disorder ${target_disorder}"
+    // Rendered byte-for-byte as the old literal when mya is set, so every arm already
+    // scored keeps its task hash. Empty for a species with no sourced divergence time:
+    // evaluate_domain_calls.py defaults --species-mya to None and the report's divergence
+    // panels skip a null, where "null" as a float would abort the task.
+    def mya_arg = mya != null ? "--species-mya  ${mya}" : ""
     def manifest_rows = [tools, variants, regions].transpose()
         .collect { t, v, r -> "${t}\t${v}\t${r}" }.join("\n")
+    // Same rule for the truth sets: built from the STAGED paths, index-paired with the
+    // labels. One row per truth set, read by the shell loop below.
+    def truth_rows = [truth_labels, truths, domain_maps].transpose()
+        .collect { ts, t, m -> "${ts}\t${t}\t${m}" }.join("\n")
     """
     cat > manifest.tsv << 'MANIFEST_EOF'
 ${manifest_rows}
 MANIFEST_EOF
 
-    echo "scoring \$(wc -l < manifest.tsv) arms for ${truth_set}/${species}"
+    cat > truth_sets.tsv << 'TRUTH_EOF'
+${truth_rows}
+TRUTH_EOF
 
-    evaluate_domain_calls.py \\
-        --manifest     manifest.tsv \\
-        --species      ${species} \\
-        --species-mya  ${mya} \\
-        --truth        ${truth} \\
-        --domain-map   ${domain_map} \\
-        --covariates   ${covariates} \\
-        --identity     ${identity} \\
-        ${tdis_arg} \\
-        --min-overlap  ${params.min_overlap} \\
-        --strict-iou   ${params.strict_iou} \\
-        --dedup-transfer-modes ${(params.dedup_transfer_modes as List).join(',')} \\
-        --truth-set    ${truth_set}
+    echo "scoring \$(wc -l < manifest.tsv) arms for ${species} against " \\
+         "\$(wc -l < truth_sets.tsv) truth sets"
+
+    # One pass per truth set over the SAME staged region files. The first pass pays the
+    # read; the rest are served out of the page cache the first one filled, which is the
+    # whole point of putting them in one task. Sequential on purpose: the passes would
+    # otherwise contend for the memory sized for a single arm.
+    while IFS=\$'\\t' read -r truth_set truth domain_map; do
+        [ -n "\$truth_set" ] || continue
+        echo "  truth set \$truth_set"
+        evaluate_domain_calls.py \\
+            --manifest     manifest.tsv \\
+            --species      ${species} \\
+            ${mya_arg} \\
+            --truth        "\$truth" \\
+            --domain-map   "\$domain_map" \\
+            --covariates   ${covariates} \\
+            --identity     ${identity} \\
+            ${rplddt_arg} ${rdis_arg} \\
+            ${tdis_arg} \\
+            --min-overlap  ${params.min_overlap} \\
+            --strict-iou   ${params.strict_iou} \\
+            --dedup-transfer-modes ${(params.dedup_transfer_modes as List).join(',')} \\
+            --truth-set    "\$truth_set" < /dev/null
+    done < truth_sets.tsv
     """
 }
 
@@ -2772,6 +3165,10 @@ process scoreHmmscanCeiling {
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
     publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     tuple val(tool), path(regions), path(truth), path(covariates)
@@ -2817,6 +3214,10 @@ process hpBpeBoundary {
     label 'python'
     publishDir "${params.outdir}/diagnostics", mode: 'copy'
 
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
     input:
     tuple path(tokenizer), path(fasta), path(annotations)
 
@@ -2840,6 +3241,10 @@ process hpBpeBoundary {
 process aggregateMetrics {
     label 'python'
     publishDir params.outdir, mode: 'copy'
+
+    // Cluster kills only, then `finish` -- see retryOnKill.
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
 
     input:
     path 'metrics/*'
@@ -3085,7 +3490,14 @@ workflow {
               dis,
               query_sets_file)
     }
-    covariates = buildQueryCovariates(cov_in).covariates
+    cov_out    = buildQueryCovariates(cov_in)
+    covariates = cov_out.covariates
+
+    // The region-level twins of the two protein-level disorder axes. Published for the
+    // report to read; nothing downstream stages them, so they add no task dependencies.
+    region_disorder = params.skip_metapredict
+        ? Channel.empty()
+        : humanRegionDisorder(truth_out.truth.map { t -> tuple(human_fasta, t) }).regions
 
     // One entry per truth set: (label, truth_parquet, species->map channel). Scoring runs
     // once per set, so every metric row says which truth it was measured against.
@@ -3183,10 +3595,41 @@ workflow {
 
 
 
+    // Which targets will actually be SCORED. buildDomainTruth writes one
+    // <species>_domain_map.parquet per *_pfam_domains.parquet it finds in
+    // params.annotations, and score_grouped below joins each group to that species'
+    // truth_bundle with `combine(..., by: 0)` -- an INNER join on species. A target with no
+    // annotation table therefore gets searched by every arm and scored by none, which is a
+    // supported state: botryllus has no Pfam annotations and is in the run to be searched.
+    // The join moved after the grouping when the truth sets were bundled into one task;
+    // an unannotated species now forms a group and is dropped there instead of never
+    // reaching one, which costs nothing and drops exactly the same arms.
+    //
+    // Read from the same directory buildDomainTruth globs, so the two cannot disagree. This
+    // is a plain directory listing at workflow-definition time, before any channel runs.
+    // A directory that does not exist yet falls back to "assume all annotated", which is
+    // exactly what this counted before the check existed -- params.annotations for
+    // run-midi-plus is written by make_mini_testset.py, and a config-only invocation such
+    // as `nextflow config` or -preview never runs it.
+    def annotated = annotations.exists()
+        ? (files("${params.annotations}/*_pfam_domains.parquet")*.name
+               .collect { it - '_pfam_domains.parquet' } as Set)
+        : (SPECIES*.label as Set)
+    def unscored = SPECIES*.label.findAll { !annotated.contains(it) }
+    if (unscored) {
+        log.info "  targets searched but NOT scored: ${unscored.join(', ')} -- no " +
+                 "*_pfam_domains.parquet in ${params.annotations}, so buildDomainTruth " +
+                 "writes no domain map and score_in joins them out. Every sequence arm " +
+                 "and ProstT5 still search them (ProstT5 predicts 3Di from sequence, so " +
+                 "it needs no structures); the structure arms run only for targets with " +
+                 "staged structures, and report which below."
+    }
+
     // ---- kmerseek: alphabet x ksize x species ----
     // How many (tool, variant) arms each species will produce. scoreDomainCalls groups by
-    // (truth_set, species), and groupTuple cannot emit a group until it knows the group is
-    // complete -- without a size it waits for the WHOLE channel to close, which means no
+    // (species, scoring group) -- the truth set is no longer part of the key, since one
+    // task scores them all -- and groupTuple cannot emit a group until it knows the group
+    // is complete: without a size it waits for the WHOLE channel to close, which means no
     // scoring starts until the last kmerseek search finishes.
     //
     // The count is accumulated at the same lines that build the arms, not re-derived from
@@ -3208,7 +3651,11 @@ workflow {
         // --gpu_benchmark, say -- so it must not be entered. withDefault would otherwise
         // create the key and the startup line would report tasks that never run.
         if (n <= 0) return
-        labels.each { arms_per_group[[it, group]] += n }
+        // Unannotated targets are filtered HERE rather than at the call sites, so the
+        // startup line reports what will be scored without a second expression restating
+        // the arm list -- the same reason the count is accumulated beside the arms.
+        labels.findAll { annotated.contains(it) }
+              .each { arms_per_group[[it, group]] += n }
     }
 
     kmerseek_regions = Channel.empty()
@@ -3264,7 +3711,7 @@ workflow {
         // doubles the sweep, and it is the point: whether dropping low-complexity k-mers
         // helps is alphabet-dependent, so it has to be measured rather than chosen.
         combos = combos.collectMany { cli_flag, label, k ->
-            params.low_complexity_toggle.collect { lc -> tuple(cli_flag, label, k, lc) }
+            LC_TOGGLE.collect { lc -> tuple(cli_flag, label, k, lc) }
         }
 
         // Every combo becomes one kmerseekIndex store entry per species, named
@@ -3458,14 +3905,19 @@ workflow {
         // which silently stops meaning anything once the human label carries a digest.
         hhblits_out = Channel.empty()
         if (!bench_only) {
-            all_for_hhdb = species_ch.map { l, f -> tuple(l, f, false) }
+            // Filtered before hhblitsBuildDB, not after: the per-species profile database
+            // is a third of this arm's cost, and building one for a target that never gets
+            // searched is pure waste.
+            def hhblits_labels = HHBLITS_SPECIES*.label
+            all_for_hhdb = species_ch.filter { l, _f -> l in hhblits_labels }
+                .map { l, f -> tuple(l, f, false) }
                 .mix(Channel.of(tuple(HUMAN_LABEL, human_fasta, true)))
             hhdb_ch      = label_dbs(hhblitsBuildDB(all_for_hhdb), '_hhdb')
             human_hhdb   = hhdb_ch.filter { label, _db -> label == HUMAN_LABEL }.map { _label, db -> db }
             species_hhdb = hhdb_ch.filter { label, _db -> label != HUMAN_LABEL }
 
             hhblits_out = hhblitsSearch(species_hhdb.combine(human_hhdb))
-            countArm(SPECIES*.label, "hhblits", 1)
+            countArm(hhblits_labels, "hhblits", 1)
         }
 
         baseline_regions = phmmer_out.mix(jackhmmer_out).mix(mmseqs_out).mix(hhblits_out)
@@ -3641,21 +4093,38 @@ workflow {
     // age travels with every metric row and notebooks can plot against it directly.
     def MYA = SPECIES.collectEntries { [(it.label): it.mya] }
 
-    // Cross every result with every truth set, joining on (truth_set, species) so a run
-    // never scores Pfam regions against a Swiss-Prot map or vice versa.
+    // Every truth set for one species, gathered into ONE bundle rather than crossed into
+    // the region channel. Still joined on (truth_set, species), so a run still never scores
+    // Pfam regions against a Swiss-Prot map -- the pairing now travels as three parallel
+    // lists in index order instead of as three separate tasks.
+    //
+    // Why this shape. Crossing here made each arm's region file an input to THREE tasks,
+    // one per truth set, and a region file is the only large thing scoring reads. Measured
+    // on the 2026-09-01 midi-plus trace: scoreDomainCalls read 1_113.8 GB of read_bytes
+    // over 756 tasks while its rchar was 20.4 GB, so essentially every byte arrives as an
+    // mmap fault rather than a read() -- and the per-task floor is 80 MB, which caps
+    // everything shared (truth, domain map, covariates, identity, disorder) at under 6% of
+    // the total. What scales is the arm's own regions: 99 MB per arm-scoring on average,
+    // and 405 MB for mouse/gbmr7 against 16 MB for mouse/protein20 at the same arm count.
+    // Reading it once for all three truth sets is the only multiplier this file controls.
+    //
+    // groupTuple keeps the three lists in the same order because they are grouped out of
+    // the same tuples, and the script pairs them by index off the STAGED paths.
+    //
+    // The cost of bundling is that no arm is scored until EVERY truth arm exists, where
+    // before each truth set's scoring started as soon as its own map did. That is free in
+    // practice: buildSwissprotTruth is the slowest of them at a few minutes and it runs
+    // alongside the searches, which are hours.
+    truth_bundle = map_ch
+        .combine(truth_sets, by: 0)
+        .map { ts, sp, domain_map, truth -> tuple(sp, ts, truth, domain_map) }
+        .groupTuple(by: 0)
+
     score_in = all_regions
         .map { species, tool, variant, regions ->
             tuple(species, tool, variant, MYA[species] ?: 0, regions)
         }
-        .combine(map_ch.map { ts, sp, m -> tuple(sp, ts, m) }, by: 0)
-        .map { species, tool, variant, mya, regions, ts, domain_map ->
-            tuple(ts, species, tool, variant, mya, regions, domain_map)
-        }
-        .combine(truth_sets, by: 0)
         .combine(covariates)
-        .map { ts, species, tool, variant, mya, regions, domain_map, truth, cov ->
-            tuple(species, ts, tool, variant, mya, regions, truth, domain_map, cov)
-        }
         // Identity is per (species, domain instance), so it joins on species. An empty
         // sentinel keeps the process signature fixed when --skip_identity is set.
         .combine(
@@ -3664,12 +4133,10 @@ workflow {
                 : identity_ch,
             by: 0
         )
-        .map { species, ts, tool, variant, mya, regions, truth, domain_map, cov, ident ->
-            tuple(ts, species, tool, variant, mya, regions, truth, domain_map, cov, ident)
-        }
 
-    // One task per (truth_set, species, scoring group) -- see params.score_group_by for
-    // what a group is and why it is no longer the whole species.
+    // One task per (species, scoring group) -- see params.score_group_by for what a group
+    // is and why it is no longer the whole species. Every truth set is scored inside that
+    // one task, which is what stops the same region file being faulted in three times.
     //
     // The per-arm shape was ~10_100 SLURM jobs for a full sweep, each a few seconds of work
     // behind minutes of scheduler latency, and Sherlock rate-limits submission per hour --
@@ -3678,8 +4145,9 @@ workflow {
     // tool in one job, sized for the largest file among them, and an OOM on arm 12 threw
     // away the other 818. The default now splits by tool, and kmerseek again by alphabet.
     //
-    // truth, domain_map, covariates and identity are identical within a group, so .first()
-    // on each is exact rather than an approximation; only tools, variants and regions vary.
+    // covariates, identity and disorder are identical within a group, so .first() on each
+    // is exact rather than an approximation; only tools, variants and regions vary. The
+    // truth sets are attached AFTER the grouping, per species, for the same reason.
     // Each species' own proteome disorder, keyed by the filename proteomeDisorder writes.
     // Falls back to the sentinel per species rather than globally, so a species whose
     // prediction is missing loses only its own target-side axis.
@@ -3688,9 +4156,6 @@ workflow {
         : disorder_all.map { f -> tuple(f.name.replaceAll(/\.disorder_metapredict\.parquet$/, ''), f) }
 
     score_in = score_in
-        .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident ->
-            tuple(sp, ts, tool, variant, mya, regions, truth, dm, cov, ident)
-        }
         .combine(
             params.skip_metapredict
                 ? Channel.fromList(SPECIES.collect {
@@ -3698,9 +4163,16 @@ workflow {
                 : tdis_by_species,
             by: 0
         )
-        .map { sp, ts, tool, variant, mya, regions, truth, dm, cov, ident, tdis ->
-            tuple(ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis)
-        }
+
+    // The two region-level covariate tables. One file each, not per species -- they are
+    // properties of the human query domains -- so these broadcast rather than join. A run
+    // without structures or with --skip_metapredict has no table to stage, and the sentinel
+    // keeps the process signature fixed the way every other optional input here does.
+    score_in = score_in
+        .combine(cov_out.region_plddt
+                     .ifEmpty(file("${projectDir}/assets/NO_REGION_PLDDT")))
+        .combine(region_disorder
+                     .ifEmpty(file("${projectDir}/assets/NO_REGION_DISORDER")))
 
     if (!(params.score_group_by in ['species', 'tool', 'alphabet'])) {
         error "--score_group_by takes species, tool or alphabet; got " +
@@ -3708,7 +4180,7 @@ workflow {
     }
 
     score_grouped = score_in
-        .map { ts, sp, tool, variant, mya, regions, truth, dm, cov, ident, tdis ->
+        .map { sp, tool, variant, mya, regions, cov, ident, tdis, rpl, rdis ->
             // groupKey carries the expected size WITH the key, so each group is released
             // the moment its own arms are all in rather than when the whole channel
             // closes. Without it, no scoring could start until the last kmerseek search of
@@ -3720,8 +4192,8 @@ workflow {
                       "<alphabet>_k<ksize>_lc<True|False>. Run with " +
                       "--score_group_by tool to group kmerseek as one instead."
             }
-            tuple(groupKey(tuple(ts, sp, grp), arms_per_group[[sp, grp]]),
-                  tool, variant, mya, regions, truth, dm, cov, ident, tdis)
+            tuple(groupKey(tuple(sp, grp), arms_per_group[[sp, grp]]),
+                  tool, variant, mya, regions, cov, ident, tdis, rpl, rdis)
         }
         // remainder: true is the safety net for the count being WRONG. If arms_per_group
         // over-counts, the group never reaches its size and would hang forever; with
@@ -3729,9 +4201,20 @@ workflow {
         // behaviour this change replaces. An under-count still emits early, which is why
         // the count is accumulated beside the arms rather than restated.
         .groupTuple(by: 0, remainder: true)
-        .map { key, tools, variants, myas, regions, truths, dms, covs, idents, tdiss ->
-            tuple(key[0], key[1], key[2], tools, variants, myas.first(), regions,
-                  truths.first(), dms.first(), covs.first(), idents.first(), tdiss.first())
+        .map { key, tools, variants, myas, regions, covs, idents, tdiss, rpls, rdiss ->
+            // Same .first() as the other three: these are one file for the whole run, so
+            // every arm in a group carries the identical path.
+            tuple(key[0], key[1], tools, variants, myas.first(), regions,
+                  covs.first(), idents.first(), tdiss.first(),
+                  rpls.first(), rdiss.first())
+        }
+        // Truth sets ride in AFTER the grouping, so the arms are grouped once and every
+        // truth set reads the same staged region files.
+        .combine(truth_bundle, by: 0)
+        .map { sp, grp, tools, variants, mya, regions, cov, ident, tdis, rpl, rdis,
+               ts_labels, truths, maps ->
+            tuple(sp, grp, tools, variants, mya, regions,
+                  ts_labels, truths, maps, cov, ident, tdis, rpl, rdis)
         }
 
     // Read back off the same map the groups are keyed by, so the line cannot describe a

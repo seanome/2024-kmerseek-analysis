@@ -19,7 +19,9 @@
 # <accession_list_dir> holds <species>.accessions -- one UniProt accession per line,
 # written by `make structure-lists`. With no species named, all ten are fetched.
 #
-# Resumable: re-running skips anything already on disk. A bare backgrounded curl on
+# Resumable: re-running skips anything already on disk -- a species whose proteome
+# archive is already unpacked is skipped without re-extracting it (FORCE_EXTRACT=1
+# overrides), and the per-accession species fetch only what is missing. A bare backgrounded curl on
 # multi-GB EBI files hangs for hours after a silent stall, so every transfer here sets
 # --continue-at plus a speed floor that aborts and retries a stalled connection.
 
@@ -38,6 +40,9 @@ AFDB_BASE="https://ftp.ebi.ac.uk/pub/databases/alphafold/latest"
 AFDB_RSYNC="rsync://ftp.ebi.ac.uk/pub/databases/alphafold/latest"
 AFDB_FILES="https://alphafold.ebi.ac.uk/files"
 PARALLEL="${PARALLEL:-8}"
+# Above this many missing structures a species is skipped rather than fetched one
+# request at a time. See the note in fetch_per_accession.
+PER_ACCESSION_MAX="${PER_ACCESSION_MAX:-2000}"
 
 # Stall detection: abort a transfer holding under 10 KB/s for 120s, then resume it.
 CURL_COMMON=(--fail --silent --show-error --location --continue-at -
@@ -50,21 +55,24 @@ CURL_COMMON=(--fail --silent --show-error --location --continue-at -
 # a guess with an expiry date. v7 would break it again. so both are looked up once per
 # run and the script fails loudly if the lookup itself fails.
 #
-# species -> UniProt proteome id. Only the id is stable; the filename around it is not.
+# species -> UniProt proteome id, read from the species registry rather than restated here.
+#
+# This was a case statement naming eight species, with chicken and ciona hardcoded to ""
+# to force them down the per-accession path. That made it a fourth hand-maintained copy of
+# the species list, and it silently capped this script at ten species: every one of the
+# other 69 registry rows fell through to *) and got the per-accession path whether or not
+# AFDB publishes an archive for it.
+#
+# Nothing is hardcoded about availability now. proteome_archive() below greps the real AFDB
+# listing, so a species with no archive resolves to "" and takes the per-accession path by
+# measurement instead of by assertion -- which is what chicken and ciona were doing anyway.
+SPECIES_REGISTRY="${SPECIES_REGISTRY:-$(dirname "${BASH_SOURCE[0]}")/../assets/qfo_species.tsv}"
+
 proteome_id() {
-    case "$1" in
-        human)       echo "UP000005640" ;;
-        mouse)       echo "UP000000589" ;;
-        zebrafish)   echo "UP000000437" ;;
-        fly)         echo "UP000000803" ;;
-        worm)        echo "UP000001940" ;;
-        yeast)       echo "UP000002311" ;;
-        ecoli)       echo "UP000000625" ;;
-        arabidopsis) echo "UP000006548" ;;
-        # Confirmed absent from AFDB's proteome archives; fetched per accession.
-        chicken|ciona) echo "" ;;
-        *)           echo "" ;;
-    esac
+    [[ -f "$SPECIES_REGISTRY" ]] || {
+        echo "!! no species registry at $SPECIES_REGISTRY" >&2; exit 1; }
+    awk -F'\t' -v want="$1" 'NR==1{for(i=1;i<=NF;i++) h[$i]=i; next}
+                             $h["label"]==want {print $h["proteome"]; exit}' "$SPECIES_REGISTRY"
 }
 
 LISTING=""
@@ -148,10 +156,73 @@ link_cached() {
 }
 
 fetch_proteome_tar() {
-    local species="$1" dest="$2" archive="$3"
+    local species="$1" dest="$2" archive="$3" acc_file="$4"
     # $archive is the full filename resolved from the listing, .tar included. Appending
     # another .tar here produced _v6.tar.tar and a 404.
     local tar_path="$STRUCT_DIR/_archives/${archive}"
+    local marker="$dest/.extracted"
+
+    # Skip a species that is already unpacked.
+    #
+    # The `.done` marker below only ever guarded the DOWNLOAD. Extraction ran every time:
+    # untar ~25 GB, gunzip every member, delete the PDB copies, rename every file. So
+    # re-running `make fetch-structures` to pick up one missing species redid human from
+    # scratch first, which is what this is fixing. The per-accession path never had the
+    # problem because it builds a .todo of what is actually absent.
+    # Signatures of an unfinished run. Computed BEFORE the marker is trusted, not only in
+    # the adoption path below, because a marker can itself be wrong: the first version of
+    # this skip adopted on a file count alone and stamped human as complete while 20_539
+    # .cif.gz files were still sitting unread in its directory. A marker is a claim about
+    # the directory, so the directory gets the last word.
+    #
+    #   *.cif.gz            the untar or the gunzip did not finish
+    #   *.pdb.gz            the PDB cleanup did not run. The wildcard untar normally keeps
+    #                       these out, but the no-wildcard fallback extracts them, and
+    #                       leaving them gives Foldseek and Folddisco two files per protein
+    #                       so every structure is counted twice.
+    #   AF-*-model_v*.cif   the rename did not finish, and the fragment-offset normalizers
+    #                       downstream key on the AF-<acc>-F<n>.cif form.
+    local leftovers
+    leftovers=$(find "$dest" \( -name '*.cif.gz' -o -name '*.pdb.gz' \
+                               -o -name 'AF-*-model_v*.cif' \) -print -quit)
+
+    if [[ -f "$marker" && "$(cat "$marker" 2>/dev/null)" == "$archive" ]]; then
+        if [[ -z "$leftovers" ]]; then
+            echo "  already extracted ($archive)"
+            return 0
+        fi
+        echo "  marker says extracted but $(basename "$leftovers") is still here --"
+        echo "  the directory is unfinished; re-extracting and rewriting the marker"
+        rm -f "$marker"
+    fi
+
+    # Adopt an extraction that predates the marker, so this fix does not itself cost one
+    # last full re-extract of everything already on disk. Only when the archive downloaded
+    # completely AND the directory holds at least as many .cif files as the species has
+    # annotated accessions -- a real lower bound, since the AFDB proteome archives cover
+    # the whole reference proteome and add fragments on top, while the accession list is
+    # only its annotated subset. An interrupted extraction lands under that bound and is
+    # redone. Set FORCE_EXTRACT=1 to re-extract regardless.
+    # Adopt an extraction that predates the marker, so introducing the marker did not cost
+    # one last full re-extract of everything already on disk. Requires the archive to have
+    # downloaded completely, no leftovers above, and at least as many .cif files as the
+    # species has annotated accessions -- a real lower bound, since AFDB's proteome archives
+    # cover the whole reference proteome and add fragments on top while the accession list
+    # is only its annotated subset. A count ALONE is not enough: `AF-*.cif` matches the
+    # un-renamed name too, so a directory interrupted partway through gunzip can pass the
+    # count while being unusable. That is how human got mis-marked.
+    if [[ -z "${FORCE_EXTRACT:-}" && -f "$tar_path.done" && -z "$leftovers" ]]; then
+        local have want
+        have=$(find "$dest" -name 'AF-*.cif' | wc -l | tr -d ' ')
+        want=$(grep -c . "$acc_file" | tr -d ' ')
+        if [[ "$have" -ge "$want" && "$want" -gt 0 ]]; then
+            echo "  already extracted ($have cif >= $want annotated accessions); marking"
+            echo "$archive" > "$marker"
+            return 0
+        fi
+    elif [[ -n "$leftovers" ]]; then
+        echo "  partial extraction detected ($(basename "$leftovers")) -- re-extracting"
+    fi
 
     mkdir -p "$STRUCT_DIR/_archives"
     if [[ ! -f "$tar_path.done" ]]; then
@@ -190,6 +261,10 @@ fetch_proteome_tar() {
         [[ -e "$f" ]] || continue
         mv -f "$f" "$dest/$(basename "$f" | sed -E 's/-model_v[0-9]+//')"
     done
+
+    # Written only after every step above succeeded, so an interrupted run leaves no marker
+    # and the next one redoes the extraction rather than trusting a half-unpacked directory.
+    echo "$archive" > "$marker"
 }
 
 fetch_per_accession() {
@@ -202,8 +277,24 @@ fetch_per_accession() {
     done < "$acc_file"
 
     local n; n=$(wc -l < "$todo" | tr -d ' ')
-    echo "  fetching $n structures individually (parallel=$PARALLEL)"
     [[ "$n" -eq 0 ]] && { rm -f "$todo"; return; }
+
+    # A cap, because the per-accession path is now reachable for every species rather than
+    # for the two that were hardcoded into it. AFDB publishes an archive for only 19 of the
+    # 79 registry species; the other 60 hold ~480_000 annotated accessions between them, and
+    # quietly turning that into 480_000 individual HTTPS requests is not something to do to
+    # EBI by accident. chicken and ciona need 173 and 260, which is what this path is for.
+    if [[ "$n" -gt "$PER_ACCESSION_MAX" && -z "${ALLOW_LARGE_PER_ACCESSION:-}" ]]; then
+        echo "!! $species needs $n individual structure fetches, over the $PER_ACCESSION_MAX cap." >&2
+        echo "   AlphaFold publishes no proteome archive for it, so there is no bulk option." >&2
+        echo "   Skipping. ProstT5 predicts 3Di from sequence and needs no structures, which" >&2
+        echo "   is the arm that covers species like this one." >&2
+        echo "   Set ALLOW_LARGE_PER_ACCESSION=1 to do it anyway." >&2
+        rm -f "$todo"
+        return 0
+    fi
+
+    echo "  fetching $n structures individually (parallel=$PARALLEL)"
 
     # A 404 here is expected and not fatal: AlphaFold has no model for every UniProt
     # accession. Those proteins are absent from the Foldseek arm, which is the
@@ -241,7 +332,7 @@ for species in "${TARGETS[@]}"; do
 
     archive="$(proteome_archive "$species")"
     if [[ -n "$archive" ]]; then
-        fetch_proteome_tar "$species" "$dest" "$archive"
+        fetch_proteome_tar "$species" "$dest" "$archive" "$acc_file"
     else
         fetch_per_accession "$species" "$dest" "$acc_file"
     fi

@@ -47,6 +47,31 @@ import polars as pl
 
 DEFAULT_N_THRESHOLDS = 101
 
+# Fields that, with the score, put a total order on the scored-calls table.
+#
+# The table reaches these metrics from a group_by, so its row order is whatever polars
+# happened to emit -- it differs between runs on byte-identical input. Any step that reads
+# calls in rank order has to break score ties itself, or "the first of these two
+# equally-scored calls" means a different call each run. Ties are not a corner case:
+# rank_roc_auc's docstring makes the same point, HP alphabets at low ksize produce large
+# blocks of identical region scores.
+#
+# Which order the tiebreak imposes does not matter, only that it is fixed and total. It is
+# total because (query_acc, pfam_id, qstart, qend) is a call's identity and score_calls
+# groups on exactly those four, so no two rows of the scored table share them; the truth
+# coordinates extend that to the pre-assignment candidate table, where one call appears
+# once per annotation it could match.
+#
+# It lives here, and assign_instances reads it from here, because the two are the same
+# rule applied at two stages -- one deciding which tied call claims an annotation, the
+# other where the first false positive sits. Two hand-maintained copies would drift.
+CALL_TIEBREAK = ("query_acc", "pfam_id", "qstart", "qend", "true_start", "true_end")
+
+
+def rank_key() -> tuple[list[str], list[bool]]:
+    """Sort arguments that rank calls best-first, with ties broken deterministically."""
+    return ["score", *CALL_TIEBREAK], [True] + [False] * len(CALL_TIEBREAK)
+
 
 def information_content(truth: pl.DataFrame) -> pl.DataFrame:
     """IC(family) = -log2(proteins carrying it / proteins total).
@@ -300,9 +325,12 @@ def cafa_scalars(curve: pl.DataFrame, prefix: str = "") -> dict:
                "fmax_recall": 0.0, "wfmax": 0.0, "smin": None, "smin_threshold": None,
                "smin_ru": None, "smin_mi": None}
         return {f"{prefix}{k}": v for k, v in out.items()}
-    best_f = curve.sort("f", descending=True).head(1).to_dicts()[0]
-    best_wf = curve.sort("wf", descending=True).head(1).to_dicts()[0]
-    best_s = curve.sort("s", descending=False).head(1).to_dicts()[0]
+    # Threshold breaks each tie, lowest first. A plateau where several thresholds reach the
+    # same Fmax is normal, and without the tiebreak the threshold reported next to it is
+    # whichever row the sort happened to leave on top.
+    best_f = curve.sort(["f", "threshold"], descending=[True, False]).head(1).to_dicts()[0]
+    best_wf = curve.sort(["wf", "threshold"], descending=[True, False]).head(1).to_dicts()[0]
+    best_s = curve.sort(["s", "threshold"], descending=[False, False]).head(1).to_dicts()[0]
     out = {
         "fmax": best_f["f"],
         "fmax_threshold": best_f["threshold"],
@@ -322,34 +350,47 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
                      strict_iou: float = 0.8, exclude_points: bool = True) -> dict:
     """Residue-level overlap and boundary accuracy.
 
-    There is no `ndo` key. There used to be, and it was assigned the value of
-    residue_recall on the line after it was computed -- one quantity under two names.
-    Every report table carrying both showed them identical to every printed decimal across
-    every arm, which reads as a corrupted column rather than as a duplicate. The
-    residue-level quantity is real and is kept; the CASP name is not, because what CASP
-    scores is a domain DECOMPOSITION of a chain -- an overlap matrix between a predicted
-    partition and a reference partition -- and calls here are per family and may overlap
-    each other, so a partition is not what this benchmark produces. Reporting a partition
-    metric's name over a plain residue recall claims a comparison to CASP that the data
-    cannot support.
+    `residue_recall` is correctly-labelled residues over true domain residues. There used
+    to be a second column, `ndo`, assigned that same value on the line after it
+    was computed. One quantity under two names, and every arm showed the two identical to
+    twelve decimals, which reads as a corrupted column rather than as a duplicate. The
+    residue quantity is real and is kept; the CASP name is not. What CASP's NDO scores is a
+    domain DECOMPOSITION of a chain -- an overlap matrix between a predicted partition and
+    a reference partition, normalised per domain against the best-matching predicted domain
+    and summed over a scoring matrix this function never builds. Calls here are per family
+    and may overlap each other, so a partition is not what this benchmark produces, and
+    reporting a partition metric's name over a plain residue recall would claim a
+    comparison to CASP that the data cannot support.
 
     DBD is the distance in residues between a predicted boundary and the true one,
     reported as a median over correctly identified domains. Only correct calls have a
     meaningful boundary error -- the distance from a wrong domain to a right one is not a
     boundary measurement.
 
+    `median_iou_tp` lives here, not in compute_metrics, for the same reason DBD does: it is
+    a boundary measurement and it has to be taken on the point-excluded subset. It used to
+    be computed over EVERY true positive, which on the Swiss-Prot truth set silently mixed
+    two criteria. A point instance is scored by containment (see score_calls), so its IoU
+    is 1/call_length -- near zero for any real call -- while an interval instance is scored
+    by IoU and lands near 0.7. The published median therefore ranked arms by what FRACTION
+    of their true positives were point features, not by how well they placed anything.
+    Measured on the mini run: kmerseek protein20 k10 read 0.071 over all TPs and 0.732 over
+    interval TPs, with 1/3 of its TPs being points; foldseek read 0.584 and 0.640 at 5/6
+    intervals. Point-excluded, every arm falls in 0.59-0.73 and the column compares
+    placement, which is what its title claims.
+
     `exclude_points` drops truth intervals flagged is_point, and the calls that matched
     them, from every number below. A point feature is a single annotated residue -- a
     catalytic site, a metal ligand -- that build_swissprot_truth widens by one and
     build_mcsa_truth widens by a window purely so an interval exists at all. There is no
-    boundary to be right or wrong about at that length, so the residue rates, DBD and the
-    terminal
-    offsets would be measuring the widening rather than the prediction. Both sides are cut,
-    truth and calls, so numerator and denominator keep describing the same set. Truth sets
-    with no is_point column -- Pfam, Pfam-N -- are untouched.
+    boundary to be right or wrong about at that length, so the residue overlap, DBD and the
+    terminal offsets would be measuring the widening rather than the prediction. Both sides
+    are cut, truth and calls, so numerator and denominator keep describing the same set.
+    Truth sets with no is_point column -- Pfam, Pfam-N -- are untouched.
     """
     out = {
         "residue_precision": 0.0, "residue_recall": 0.0, "residue_f1": 0.0,
+        "median_iou_tp": 0.0,
         "dbd_median": None, "dbd_mean": None,
         "nterm_offset_median": None, "nterm_offset_mean": None, "nterm_offset_iqr": None,
         "cterm_offset_median": None, "cterm_offset_mean": None, "cterm_offset_iqr": None,
@@ -409,6 +450,11 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
         out["residue_precision"] = (
             correct_residues / total_pred_residues if total_pred_residues else 0.0
         )
+        # Over the calls, not over `best`, so an instance hit by several regions weighs
+        # once per region exactly as the old compute_metrics version did. The only thing
+        # that changed is the subset: `calls` has already had point-matched rows removed
+        # above, so this is a median over interval placements alone.
+        out["median_iou_tp"] = float(tp["iou"].median())
         p, r = out["residue_precision"], out["residue_recall"]
         out["residue_f1"] = 2 * p * r / (p + r) if (p + r) else 0.0
 
@@ -494,6 +540,12 @@ def sensitivity_to_first_fp(calls: pl.DataFrame, truth: pl.DataFrame) -> dict:
     Averaged over query proteins that produced at least one call. A protein a tool stayed
     silent on has no ranking to evaluate and is excluded rather than scored 0 -- scoring it
     would conflate "ranked badly" with "said nothing", which are different failures.
+
+    Calls tied on score are ranked by CALL_TIEBREAK. Without it, four runs on identical
+    input gave four different values of the mean, spanning 56%, and three of the median,
+    while every other column stayed bit-identical -- which is what made it read as a quirk
+    of this metric rather than as the ordering bug assign_instances already breaks the same
+    ties to avoid.
     """
     out = {"sens_first_fp_mean": None, "sens_first_fp_median": None,
            "n_proteins_ranked": 0}
@@ -503,12 +555,19 @@ def sensitivity_to_first_fp(calls: pl.DataFrame, truth: pl.DataFrame) -> dict:
     n_true = truth.group_by("accession").agg(pl.len().alias("n_true")).rename(
         {"accession": "query_acc"}
     )
-    ranked = calls.sort("score", descending=True, nulls_last=True)
-
+    by, desc = rank_key()
     per = (
-        ranked.group_by("query_acc", maintain_order=True)
-        .agg(pl.col("is_tp").alias("hits"))
+        calls.group_by("query_acc")
+        # Sorted inside the aggregation rather than by sorting the frame and trusting
+        # group_by to keep rows in order within a group: the walk below reads this list
+        # positionally, so its order IS the metric and belongs in the expression that
+        # builds it.
+        .agg(pl.col("is_tp").sort_by(by, descending=desc, nulls_last=True).alias("hits"))
         .join(n_true, on="query_acc", how="inner")
+        # The group order matters too, though only in the last bits: the mean below is a
+        # float sum, and adding the same per-query values in a different order does not
+        # give back the same double.
+        .sort("query_acc")
     )
     if per.height == 0:
         return out

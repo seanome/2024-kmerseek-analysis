@@ -1,11 +1,24 @@
-"""Winning encoding vs divergence: alphabet size, ksize and bits per k-mer against Mya.
+"""The encoding score surface, and the bits budget read off it.
 
-The claim the section exists to test is that the encoding kmerseek needs gets COARSER and
+The claim these panels exist to test is that the encoding kmerseek needs gets COARSER and
 LONGER as the target proteome moves away from human, while the product -- k * log2(classes),
-the information in one k-mer -- holds still. These tests fix the three things that would
-make such a plot lie: the bits arithmetic, ranking distinct encodings rather than the same
-one with the low-complexity filter flipped, and dropping an alphabet whose class count is
-not knowable instead of defaulting it onto the bits axis.
+the information in one k-mer -- holds still.
+
+What this block used to draw was an ARGMAX: the best encoding per proteome, its class
+count, its k and its bits, three metrics times three ranks, nine crossing lines behind a
+truth-set switcher. The winner's margin over the runner-up is routinely in the third
+decimal across a sweep this size, so that figure plotted the least stable summary of the
+surface; alphabet size and k do not interpolate between proteomes, so the connecting lines
+asserted encodings that do not exist; and the score distribution -- the thing that says
+whether the winner means anything -- was discarded before drawing.
+
+Two panels replace it. Panel A is the surface itself, every encoding against every
+proteome. Panel B is the budget as a number: per proteome, the encodings within one
+standard error of that proteome's best, strip-plotted on the bits axis with their median,
+so the caption can quote the height with an interval or say there is no single height.
+
+These tests fix the arithmetic both panels rest on, the shape of each panel, and the
+conventions that run through the report.
 """
 import json
 import math
@@ -19,8 +32,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bin"))
 import build_multiqc_inputs as bmi  # noqa: E402
 
 
-def row(variant, species, mya, fmax, recall, split="selection", truth="pfam"):
+def row(variant, species, mya, fmax, recall, split="selection", truth="pfam",
+        reachable=10_000):
     return {"tool": "kmerseek", "variant": variant, "species": species,
+            # The denominator one_se divides by. Without it the bits-budget panel has no
+            # noise scale and writes nothing, which is the honest behaviour and not what
+            # these fixtures are testing.
+            "n_reachable_instances": reachable,
             # Float, because the real column is: evaluate_domain_calls writes --species-mya
             # as a float and the x-axis keys are str() of it, so an int fixture would key
             # the series "100" where the pipeline keys it "100.0".
@@ -44,11 +62,18 @@ NEAR_FAR = pl.DataFrame([
 
 
 def build(tmp_path, metrics=NEAR_FAR, truth="pfam"):
+    """(Panel A, Panel B) for one truth set, or (None, None) where a panel is not written."""
     bmi.section_encoding_vs_divergence(tmp_path, metrics)
-    plot = tmp_path / f"qfo_encoding_divergence_{truth}_mqc.json"
-    table = tmp_path / f"qfo_encoding_divergence_table_{truth}_mqc.json"
-    return (json.loads(plot.read_text()) if plot.exists() else None,
-            json.loads(table.read_text()) if table.exists() else None)
+    surface = tmp_path / f"qfo_encoding_divergence_{truth}_mqc.json"
+    budget = tmp_path / f"qfo_bits_budget_{truth}_mqc.json"
+    return (json.loads(surface.read_text()) if surface.exists() else None,
+            json.loads(budget.read_text()) if budget.exists() else None)
+
+
+def cell(surface, encoding, species):
+    """Panel A's value for one encoding against one proteome."""
+    col = next(i for i, c in enumerate(surface["xcats"]) if c.startswith(species))
+    return surface["data"][surface["ycats"].index(encoding)][col]
 
 
 # --- the arithmetic the whole section rests on --------------------------------------
@@ -80,56 +105,105 @@ def test_an_alphabet_with_no_class_count_is_dropped_and_named(capsys):
     assert "mystery_alphabet" in capsys.readouterr().out, "and must be named, not silent"
 
 
-# --- the plot -----------------------------------------------------------------------
+# --- Panel A, the score surface -----------------------------------------------------
 
-def test_three_panels_alphabet_size_ksize_and_bits(tmp_path):
-    plot, _ = build(tmp_path)
-    assert [d["name"] for d in plot["pconfig"]["data_labels"]] == [
-        "Alphabet size", "K-mer length", "Bits per k-mer"]
-    assert len(plot["data"]) == 3
+def test_the_surface_is_a_heatmap_of_every_encoding_against_every_proteome(tmp_path):
+    surface, _ = build(tmp_path)
+    assert surface["plot_type"] == "heatmap"
+    assert sorted(surface["ycats"]) == sorted(
+        ["protein20 k5", "gbmr4 k11", "hp_thomas_dill2 k25"])
+    assert len(surface["xcats"]) == 2
+    assert len(surface["data"]) == 3 and len(surface["data"][0]) == 2
+
+
+def test_encodings_are_sorted_by_bits_so_a_band_is_readable(tmp_path):
+    surface, _ = build(tmp_path)
+    # protein20 k5 is 5 * log2(20) = 21.6 bits, gbmr4 k11 is 22, hp_thomas_dill2 k25
+    # is 25. Low at the bottom.
+    assert surface["ycats"] == ["protein20 k5", "gbmr4 k11", "hp_thomas_dill2 k25"]
+
+
+def test_proteomes_run_in_divergence_order(tmp_path):
+    surface, _ = build(tmp_path)
+    assert surface["xcats"][0].startswith("mouse")
+    assert surface["xcats"][1].startswith("ecoli")
+
+
+def test_the_tick_label_carries_the_denominator(tmp_path):
+    # The reachable count varies between proteomes, so the same score is a different
+    # amount of evidence in each column.
+    surface, _ = build(tmp_path)
+    assert "10,000" in surface["xcats"][0]
+
+
+def test_the_colour_range_comes_from_the_data_not_from_the_metric_bound(tmp_path):
+    surface, _ = build(tmp_path)
+    assert surface["pconfig"]["max"] == pytest.approx(0.90)
+    assert surface["pconfig"]["colstops"] == bmi.SEQUENTIAL_COLSTOPS
+
+
+def test_the_cells_are_the_measured_scores(tmp_path):
+    surface, _ = build(tmp_path)
+    assert cell(surface, "protein20 k5", "mouse") == pytest.approx(0.90)
+    assert cell(surface, "hp_thomas_dill2 k25", "ecoli") == pytest.approx(0.50)
+
+
+def test_the_per_proteome_best_is_named_rather_than_drawn_as_its_own_series(tmp_path):
+    # An argmax is one cell of the surface, not a line across it. MultiQC's heatmap has no
+    # annotation layer, so the winner is named in the caption and marked in Panel B.
+    surface, _ = build(tmp_path)
+    assert "protein20 k5" in surface["description"]
+    assert "hp_thomas_dill2 k25" in surface["description"]
+
+
+# --- Panel B, the bits budget --------------------------------------------------------
+
+def test_the_budget_panel_is_points_with_a_median_rule(tmp_path):
+    _, budget = build(tmp_path)
+    assert budget["plot_type"] == "scatter"
+    assert "bits per k-mer" in budget["pconfig"]["ylab"]
+    assert budget["pconfig"]["y_lines"][0]["label"].startswith("pooled median")
+
+
+def test_the_budget_panel_holds_only_encodings_within_one_se_of_best(tmp_path):
+    # On mouse, protein20 k5 wins at 0.90 and the SE over 10_000 instances is 0.003, so
+    # nothing else is inside the band. The strip is a set, not a top-N.
+    _, budget = build(tmp_path)
+    mouse = [k for k in budget["data"] if k.startswith("mouse")]
+    assert mouse == ["mouse protein20 k5"]
+    assert "median mouse" in budget["data"], "the median of the strip is drawn too"
+
+
+def test_a_noisier_denominator_widens_the_strip(tmp_path):
+    # On ecoli the best is 0.50; at n=5 the SE is 0.224, so gbmr4 at 0.30 comes inside the
+    # band and the winner stops standing alone. That widening is what the panel is for.
+    noisy = pl.DataFrame([{**r, "n_reachable_instances": 5} for r in NEAR_FAR.to_dicts()])
+    _, budget = build(tmp_path, noisy)
+    ecoli = [k for k in budget["data"] if k.startswith("ecoli")]
+    assert len(ecoli) == 2
+
+
+def test_the_argmax_is_the_marked_point_not_the_whole_figure(tmp_path):
+    _, budget = build(tmp_path)
+    best = budget["data"]["mouse protein20 k5"]
+    assert best["group"] == "best encoding"
+    assert best["annotation"] == "protein20 k5"
+    assert best["y"] == pytest.approx(5 * math.log2(20))
+
+
+def test_the_caption_quotes_the_interval_rather_than_asserting_a_budget(tmp_path):
+    _, budget = build(tmp_path)
+    text = budget["description"]
+    assert "interquartile range" in text
+    assert ("The strips sit at the same height" in text
+            or "The strips do not sit at one height" in text)
 
 
 def test_x_axis_is_divergence_time_not_species_name(tmp_path):
-    plot, _ = build(tmp_path)
-    for panel in plot["data"]:
-        for series in panel.values():
-            assert sorted(series) == ["100.0", "2000.0"]
-    assert "Mya" in plot["pconfig"]["xlab"]
-
-
-def test_the_winning_encoding_gets_coarser_and_longer_with_divergence(tmp_path):
-    plot, _ = build(tmp_path)
-    classes, ksize, bits = plot["data"]
-    line = "Fmax (mean) · best"
-    near, far = sorted(classes[line])[0], sorted(classes[line])[1]
-    assert classes[line][near] == 20 and classes[line][far] == 2
-    assert ksize[line][near] == 5 and ksize[line][far] == 25
-    # And the bits axis is the one that barely moves, which is the point of the third panel.
-    assert bits[line][near] == pytest.approx(5 * math.log2(20))
-    assert bits[line][far] == pytest.approx(25.0)
-
-
-def test_each_metric_gets_its_own_series_because_they_disagree(tmp_path):
-    # On mouse, Fmax picks protein20 k5 and reachable recall picks it too; on ecoli they
-    # both pick hp. What matters is that both are drawn rather than one chosen silently.
-    plot, _ = build(tmp_path)
-    names = set(plot["data"][0])
-    assert "Fmax (mean) · best" in names
-    assert any(n.startswith("Recall (reachable)") for n in names)
-
-
-def test_the_three_ranks_of_one_metric_share_a_colour(tmp_path):
-    plot, _ = build(tmp_path)
-    colors = plot["pconfig"]["colors"]
-    fmax = {c for n, c in colors.items() if n.startswith("Fmax")}
-    recall = {c for n, c in colors.items() if n.startswith("Recall")}
-    assert len(fmax) == 1 and len(recall) == 1 and fmax != recall
-
-
-def test_runner_up_lines_are_drawn_so_a_lone_winner_cannot_pass_as_a_trend(tmp_path):
-    plot, _ = build(tmp_path)
-    names = set(plot["data"][0])
-    assert {"Fmax (mean) · best", "Fmax (mean) · 2nd", "Fmax (mean) · 3rd"} <= names
+    _, budget = build(tmp_path)
+    assert "Mya" in budget["pconfig"]["xlab"]
+    xs = {round(v["x"]) for k, v in budget["data"].items() if k.startswith("median")}
+    assert xs == {100, 2000}
 
 
 # --- ranking distinct encodings, not the same one twice ------------------------------
@@ -159,6 +233,16 @@ def test_an_encoding_is_taken_at_its_better_low_complexity_arm(tmp_path):
     assert top.height == 1 and top["fmax"].to_list() == [0.70]
 
 
+def test_the_surface_also_collapses_the_low_complexity_arm(tmp_path):
+    arms = pl.DataFrame([
+        row("gbmr4_k11_lcFalse", "mouse", 100, 0.20, 0.10),
+        row("gbmr4_k11_lcTrue",  "mouse", 100, 0.70, 0.60),
+    ])
+    surface, _ = build(tmp_path, arms)
+    assert surface["ycats"] == ["gbmr4 k11"]
+    assert cell(surface, "gbmr4 k11", "mouse") == pytest.approx(0.70)
+
+
 def test_smin_ranks_the_other_way_round():
     # Semantic distance: the best encoding is the SMALLEST. Ranking it like the rest would
     # crown the worst one and nothing on the plot would look wrong.
@@ -169,24 +253,17 @@ def test_smin_ranks_the_other_way_round():
     assert best["alphabet"].to_list() == ["protein20"], "smin 0.10 is the best on mouse"
 
 
-# --- the table beside the plot -------------------------------------------------------
+# --- the noise scale both panels use -------------------------------------------------
 
-def test_the_table_reports_how_far_clear_the_winner_was(tmp_path):
-    _, table = build(tmp_path)
-    assert table["data"]["mouse"]["fmax__margin"] == pytest.approx(0.30)
-    assert table["data"]["mouse"]["fmax__enc"] == "protein20 k5"
-    assert table["data"]["mouse"]["fmax__bits"] == pytest.approx(5 * math.log2(20))
+def test_one_se_is_the_binomial_scale_and_shrinks_with_the_denominator():
+    assert bmi.one_se(0.5, 100) == pytest.approx(0.05)
+    assert bmi.one_se(0.5, 10_000) == pytest.approx(0.005)
 
 
-def test_a_species_whose_winner_has_no_runner_up_gets_a_blank_margin(tmp_path):
-    lone = pl.DataFrame([row("gbmr4_k11_lcFalse", "mouse", 100, 0.6, 0.5)])
-    _, table = build(tmp_path, lone)
-    assert table["data"]["mouse"]["fmax__margin"] is None
-
-
-def test_table_rows_run_in_divergence_order_not_alphabetical(tmp_path):
-    _, table = build(tmp_path)
-    assert list(table["data"]) == ["mouse", "ecoli"]
+def test_one_se_is_none_without_a_denominator_rather_than_a_fabricated_zero():
+    assert bmi.one_se(0.5, None) is None
+    assert bmi.one_se(0.5, 0) is None
+    assert bmi.one_se(None, 100) is None
 
 
 # --- the conventions that run through the whole report -------------------------------
@@ -201,7 +278,21 @@ def test_truth_sets_are_never_pooled(tmp_path):
     assert (tmp_path / "qfo_encoding_divergence_pfam_mqc.json").exists()
     assert (tmp_path / "qfo_encoding_divergence_swissprot_mqc.json").exists()
     sprot, _ = build(tmp_path, mixed, truth="swissprot")
-    assert list(sprot["data"][0]["Fmax (mean) · best"]) == ["100.0"], "pfam rows leaked in"
+    assert len(sprot["xcats"]) == 1, "pfam rows leaked in"
+    assert cell(sprot, "protein20 k5", "mouse") == pytest.approx(0.11)
+
+
+def test_the_truth_set_the_report_does_not_lead_on_is_marked_supplementary(tmp_path):
+    mixed = pl.concat([
+        NEAR_FAR,
+        pl.DataFrame([row("protein20_k5_lcFalse", "mouse", 100, 0.11, 0.12,
+                          split="all", truth="swissprot")]),
+    ])
+    surface, _ = build(tmp_path, mixed)
+    assert surface["parent_id"] == bmi.SUPP_PARENT_ID
+    assert surface["section_name"].startswith("Supp: ")
+    primary, _ = build(tmp_path, mixed, truth=bmi.PRIMARY_TRUTH)
+    assert primary["parent_id"] == "qfo_region"
 
 
 def test_the_selection_split_is_preferred_over_heldout(tmp_path):
@@ -211,9 +302,8 @@ def test_the_selection_split_is_preferred_over_heldout(tmp_path):
         pl.DataFrame([row("hsdm17_k9_lcFalse", "mouse", 100, 0.99, 0.99,
                           split="heldout")]),
     ])
-    plot, table = build(tmp_path, mixed)
-    assert table["data"]["mouse"]["fmax__enc"] == "protein20 k5"
-    assert plot["data"][0]["Fmax (mean) · best"]["100.0"] == 20
+    surface, _ = build(tmp_path, mixed)
+    assert "hsdm17 k9" not in surface["ycats"]
 
 
 def test_the_hmmscan_ceiling_species_is_not_placed_on_the_divergence_axis(tmp_path):
@@ -222,9 +312,9 @@ def test_the_hmmscan_ceiling_species_is_not_placed_on_the_divergence_axis(tmp_pa
         NEAR_FAR,
         pl.DataFrame([row("protein20_k5_lcFalse", "all", None, 0.99, 0.99)]),
     ], how="diagonal_relaxed")
-    plot, table = build(tmp_path, with_ceiling)
-    assert "all" not in table["data"]
-    assert sorted(plot["data"][0]["Fmax (mean) · best"]) == ["100.0", "2000.0"]
+    surface, _ = build(tmp_path, with_ceiling)
+    assert not any(c.startswith("all") for c in surface["xcats"])
+    assert len(surface["xcats"]) == 2
 
 
 def test_non_kmerseek_tools_are_not_ranked_here(tmp_path):
@@ -232,10 +322,11 @@ def test_non_kmerseek_tools_are_not_ranked_here(tmp_path):
         NEAR_FAR,
         pl.DataFrame([{**row("single_seq", "mouse", 100, 0.99, 0.99), "tool": "hhblits"}]),
     ])
-    plot, _ = build(tmp_path, with_baseline)
-    assert plot["data"][0]["Fmax (mean) · best"]["100.0"] == 20
+    surface, _ = build(tmp_path, with_baseline)
+    assert cell(surface, "protein20 k5", "mouse") == pytest.approx(0.90)
 
 
 def test_a_run_with_no_divergence_column_writes_nothing(tmp_path):
     bmi.section_encoding_vs_divergence(tmp_path, NEAR_FAR.drop("species_mya"))
     assert not list(tmp_path.glob("qfo_encoding_divergence*"))
+    assert not list(tmp_path.glob("qfo_bits_budget*"))
