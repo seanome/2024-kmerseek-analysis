@@ -265,6 +265,10 @@ HEAD_QOS  ?= normal
 HEAD_TIME ?= 2-00:00:00
 # The tmux session name inside the head job. `make watch` attaches to it.
 HEAD_SESSION ?= qfo
+# The SLURM job name. Every squeue lookup in watch/attach/stop keys on it, so two pipelines
+# submitting heads at once must not share one -- the invertebrate dark set uses
+# nfdrv-<species> for exactly that reason.
+HEAD_JOBNAME ?= nf-head
 
 # tools/nf-head writes and submits the job script; see the header there for what it does
 # and why. Deliberately NOT in bin/: Nextflow stages bin/ into every task and counts it in
@@ -276,7 +280,8 @@ MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
               HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
-              HEAD_SESSION=$(HEAD_SESSION) $(MAKEFILE_DIR)/tools/nf-head
+              HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
+              $(MAKEFILE_DIR)/tools/nf-head
 
 # --- MultiQC report --------------------------------------------------------
 # Which run's resource numbers the report describes. Defaults to the newest trace the main
@@ -2171,10 +2176,10 @@ watch attach:
 	$(call require_cluster)
 	@jid="$(JOBID)"; \
 	 if [ -z "$$jid" ]; then \
-	   jid=$$(squeue -u $$USER -h -n nf-head -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	   jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
 	 fi; \
 	 if [ -z "$$jid" ]; then \
-	   pend=$$(squeue -u $$USER -h -n nf-head -o "%i %T %r"); \
+	   pend=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T %r"); \
 	   if [ -n "$$pend" ]; then \
 	     echo "no nf-head is RUNNING yet:"; echo "$$pend" | sed 's/^/    /'; \
 	   else \
@@ -2197,7 +2202,7 @@ stop:
 	$(call require_cluster)
 	@jid="$(JOBID)"; \
 	 if [ -z "$$jid" ]; then \
-	   jid=$$(squeue -u $$USER -h -n nf-head -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	   jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
 	 fi; \
 	 if [ -z "$$jid" ]; then echo "no nf-head job is running"; exit 1; fi; \
 	 scancel --signal=TERM --batch $$jid && \
