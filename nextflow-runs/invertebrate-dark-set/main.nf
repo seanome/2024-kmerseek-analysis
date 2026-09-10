@@ -28,6 +28,8 @@
 
 nextflow.enable.dsl = 2
 
+include { compareDarkLengths } from './modules/length.nf'
+
 def home = System.getProperty('user.home')
 
 params.species        = null          // cgigas | botryllus
@@ -70,6 +72,14 @@ params.max_query_pvalue = 0.05
 params.min_region_score = 1.3
 params.index_cache        = null
 params.with_kmerseek      = false
+
+// Length of the dark proteins against the placed ones. On by default and cheap -- it reads
+// the query FASTA and the dark parquet and nothing else -- because the dark fraction should
+// not be quoted without it. Botryllus is a 2026 annotation, and a new gene set's tail of
+// fragments and spurious ORF calls is dark for reasons that have nothing to do with
+// homology detection being hard. Junk models are short, so this says whether shortness is
+// what is inflating the number.
+params.with_length_comparison = true
 
 HMMER   = 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
 MMSEQS  = 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
@@ -379,6 +389,12 @@ workflow darkSet {
         .collect()
 
     dark = computeDarkSet(hits.map { h -> tuple(params.species, query, h) })
+
+    // `query` is a file value, not a channel, so this is a plain 3-tuple per emission --
+    // no combine(), and none of combine()'s tuple-concatenation trap.
+    if (params.with_length_comparison) {
+        compareDarkLengths(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
+    }
 
     // kmerseek is opt-in. The dark set is defined by the sequence arms alone and is worth
     // having on its own; adding kmerseek costs an index over 572_700 sequences per
