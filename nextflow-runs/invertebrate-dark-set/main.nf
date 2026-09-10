@@ -89,6 +89,24 @@ params.with_length_comparison = true
 // dark count depends on. See modules/disorder.nf.
 params.with_disorder      = true
 
+// The MultiQC report. On by default: it costs one python task and one multiqc task at the
+// end of a run that has already done every search, and a run whose numbers exist only as
+// JSON on a scratch filesystem is a run nobody reads.
+params.with_multiqc        = true
+params.multiqc_dark_config = "${projectDir}/assets/multiqc_dark_config.yaml"
+
+// Set only by `-entry darkReport`, where the report IS the work and a failure has to be
+// loud. Inside a full run the report is the last step after every search has already
+// succeeded, so failing the whole run over a plot would throw away a finished proteome --
+// there it is allowed to fail and the run still ends green. The errorStrategy that reads
+// this lives in nextflow.config, not in the process body: a config-level setting always
+// beats a directive declared in the process.
+params.report_only        = false
+
+// The report lives in its own module file. main.nf is where every other arm is also being
+// added, and a report process defined here would put three sets of edits in one hunk.
+include { darkReportFrom } from './modules/report'
+
 HMMER   = 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
 MMSEQS  = 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
 
@@ -398,16 +416,22 @@ workflow darkSet {
 
     dark = computeDarkSet(hits.map { h -> tuple(params.species, query, h) })
 
-    // `query` is a file value, not a channel, so this is a plain 3-tuple per emission --
+    // Everything the report can draw besides the headline. Each optional arm mixes its own
+    // products in where it runs, so a run without that arm contributes nothing and the
+    // report omits the section by name instead of drawing an empty one.
+    report_extra = Channel.empty()
+
+    // `query` is a file value, not a channel, so these are plain 3-tuples per emission --
     // no combine(), and none of combine()'s tuple-concatenation trap.
     if (params.with_length_comparison) {
-        compareDarkLengths(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
+        len = compareDarkLengths(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
+        report_extra = report_extra.mix(len.map { sp, pq, js -> [pq, js] }.flatten())
+    }
 
-    // Is the dark set more disordered than the placed set? `query` is a plain file, not a
-    // channel, so this is a straight map with no combine() -- and therefore none of the
-    // tuple-spreading that makes the kmerseek wiring below need `.map { [it] }`.
+    // Is the dark set more disordered than the placed set?
     if (params.with_disorder) {
-        darkSetDisorder(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
+        dis = darkSetDisorder(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
+        report_extra = report_extra.mix(dis.map { sp, pq, js -> [pq, js] }.flatten())
     }
 
     // kmerseek is opt-in. The dark set is defined by the sequence arms alone and is worth
@@ -440,8 +464,61 @@ workflow darkSet {
         // so the result is (species, parquet, [46 files]) -- which is what the process
         // signature declares.
         q_lists = ks[0].map { sp, a, k, lc, f -> f }.collect().map { q -> [q] }
-        kmerseekDarkGain(dark.map { sp, dp, _j -> tuple(sp, dp) }.combine(q_lists))
+        gain = kmerseekDarkGain(dark.map { sp, dp, _j -> tuple(sp, dp) }.combine(q_lists))
+
+        // The parquet and the JSON both go to the report directory; only the JSON is read,
+        // and the report picks it out by suffix, so sending both costs a symlink.
+        report_extra = report_extra.mix(gain.flatten())
     }
+
+    if (params.with_multiqc) {
+        // `.collect().ifEmpty([])` and NOT `.combine()`. A run with no optional arm has an
+        // empty channel, whose collect() emits nothing at all and would leave the report
+        // task waiting forever; ifEmpty gives it the empty list instead. The collected list
+        // then reaches the process as its own input declaration rather than through
+        // combine(), which concatenates tuples and would spread the list into N positional
+        // arguments -- the bug that already broke kmerseekDarkGain here once.
+        darkReportFrom(dark.map { sp, _dp, js -> tuple(sp, js) },
+                       report_extra.collect().ifEmpty([]))
+    }
+}
+
+/*
+ * Report only, over a results directory a previous run already published.
+ *
+ * The searches are the expensive part and they are already done; re-rendering the report
+ * after a plot changes should not need the work directory that produced them. So this
+ * entry reads the published products straight out of --outdir and builds the report from
+ * whichever of them exist. `make multiqc-dark-set SPECIES=<x>` is this entry.
+ */
+workflow darkReport {
+    if (!params.species) error "--species is required"
+
+    def sp  = params.species
+    def dir = file("${params.outdir}/${sp}")
+    def summary = file("${dir}/${sp}_dark_summary.json")
+    if (!summary.exists()) {
+        error "no dark summary at ${summary}\n" +
+              "  This entry reports on a finished run; it does not compute one.\n" +
+              "  Run the dark set first:  make run-dark-set SPECIES=${sp}"
+    }
+
+    // Named suffixes, not a glob. A glob over the directory would also sweep in
+    // <species>_dark_set.parquet -- one row per dark protein, staged for nothing -- and
+    // would quietly pick up whatever else a future arm publishes there, including files
+    // this report has no idea how to read.
+    def optional_products = [
+        "_kmerseek_dark_gain.json", "_kmerseek_dark_gain.parquet",
+        "_length_summary.json", "_length_comparison.parquet",
+        "_disorder_summary.json", "_disorder.parquet",
+    ].collect { file("${dir}/${sp}${it}") }.findAll { it.exists() }
+
+    log.info "  reporting on : ${dir}"
+    log.info "  optional arms: " + (optional_products
+        ? optional_products*.name.join(', ') : "none found, their sections are omitted")
+
+    darkReportFrom(Channel.of(tuple(sp, summary)),
+                   Channel.value(optional_products))
 }
 
 workflow { darkSet() }
