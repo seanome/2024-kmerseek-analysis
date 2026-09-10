@@ -6020,34 +6020,30 @@ def section_cafa(out: Path, metrics: pl.DataFrame, primary_truth: str,
         "id": "qfo_cafa",
         "section_name": "CAFA-style metrics",
         "description": (
-            f"<p>{primary_truth} truth, <code>{split}</code> split, averaged over target "
-            f"species.</p>"
-            + bullets(
-                "<b>Fmax</b> is the maximum F-score over score thresholds. The precision "
-                "and recall columns are the operating point where it is reached.",
-                "<b>Family Fmax</b> is the same curve read on the SET of Pfam families "
-                "called per query protein against the set truly present, with interval "
-                "placement ignored: the CAFA-classic reading. Fmax scores a tool that "
-                "names the right family in the wrong place at zero, exactly as it scores a "
-                "tool that never recognised the family, and the pair separates those.",
-                "<b>Gap</b> is family Fmax minus Fmax, so it is what boundary placement "
-                "costs. It is almost always positive but is not guaranteed to be: the "
-                "family reading also swaps the recall denominator from instances to "
-                "families, and on a protein carrying a tandem array of one family that "
-                "swap can cost more than ignoring placement gains.",
-                "<b>The three family counts</b> are the denominators: distinct "
-                "(protein, family) pairs in the answer key, predicted, and correct.",
-                "<b>wFmax</b> weights each family by its information content, "
-                "IC = -log<sub>2</sub> P(family), so recovering a rare family counts for "
-                "more than recovering a common one.",
-                "<b>Smin</b> is the minimum of sqrt(remaining uncertainty<sup>2</sup> + "
-                "misinformation<sup>2</sup>) in bits, and lower is better.",
-                "<b><code>smin_ru</code></b> is information still missing (false "
-                "negatives) and <b><code>smin_mi</code></b> is information invented (false "
-                "positives) at that threshold, so the two say which way a tool is failing.",
-                "<b>The weighting here is not CAFA's information accretion</b>, which is "
-                "defined over an ontology's parent-child structure. Pfam is flat, so plain "
-                "IC is used and the metric is reported under that narrower definition.")),
+            f"{primary_truth} truth, <code>{split}</code> split, averaged over target "
+            "species. <b>Fmax</b> is the maximum F-score over score thresholds; the "
+            "precision and recall columns are the operating point where it is reached. "
+            "<b>Family Fmax</b> is the same curve read on the SET of Pfam families called "
+            "per query protein against the set truly present, with interval placement "
+            "ignored — the CAFA-classic reading. Fmax scores a tool that names the right "
+            "family in the wrong place at zero, exactly as it scores a tool that never "
+            "recognised the family; the pair separates those. <b>Gap</b> is "
+            "family Fmax minus Fmax, so it is what boundary placement costs. It is almost "
+            "always positive but is not guaranteed to be: the family reading also swaps the "
+            "recall denominator from instances to families, and on a protein carrying a "
+            "tandem array of one family that swap can cost more than ignoring placement "
+            "gains. The three family counts are the denominators — distinct "
+            "(protein, family) pairs in the answer key, predicted, and correct.<br>"
+            "<b>wFmax</b> weights each family by its information content, "
+            "IC = -log<sub>2</sub> P(family), so recovering a rare family counts for more "
+            "than recovering a common one. <b>Smin</b> is the minimum of "
+            "sqrt(remaining uncertainty<sup>2</sup> + misinformation<sup>2</sup>) in bits, "
+            "and lower is better; <code>smin_ru</code> is information still missing (false "
+            "negatives) and <code>smin_mi</code> is information invented (false positives) "
+            "at that threshold, so the two say which way a tool is failing.<br>"
+            "The weighting here is <b>not</b> CAFA's information accretion, which is "
+            "defined over an ontology's parent-child structure. Pfam is flat, so plain IC "
+            "is used and the metric is reported under that narrower definition."),
         "plot_type": "table",
         "pconfig": {"id": "qfo_cafa_table", "title": f"CAFA-style metrics ({primary_truth})",
                     "col1_header": "Tool", "sort_rows": False, "scale": False, "no_violin": True},
@@ -6751,16 +6747,39 @@ def section_dedup_transfers(out: Path, metrics_all: pl.DataFrame, primary_truth:
     })
 
 
-# Below this many distinct labels in the answer key, `pfam_id` is a category vocabulary
-# rather than a family vocabulary: every proteome carries nearly all of it, the reachability
-# join matches everything, and the bar stops being a ceiling. Kept in step with
-# MIN_REACHABILITY_VOCAB in aggregate_domain_metrics.py.
+# Reported as context, and used as the fallback trigger only when the instance counts the
+# real test needs are not on the table. Kept in step with MIN_REACHABILITY_VOCAB in
+# aggregate_domain_metrics.py.
 MIN_REACHABILITY_VOCAB = 50
+
+# The real test: the bar is not a ceiling when it excludes essentially nothing. In step
+# with VACUOUS_REACHABILITY_RATIO in aggregate_domain_metrics.py, and see it for why a
+# small vocabulary on its own no longer implies a vacuous join.
+VACUOUS_REACHABILITY_RATIO = 0.99
 
 # Ratio to the median at which a target species has so little annotation that its recall is
 # capped by curation coverage rather than by divergence. In step with THIN_TARGET_RATIO in
 # aggregate_domain_metrics.py.
 THIN_TARGET_RATIO = 0.05
+
+
+def _join_is_vacuous(per: pl.DataFrame) -> bool:
+    """Did the reachability join actually exclude anything, on this run?
+
+    True when it excluded essentially nothing for every species. When the instance counts
+    are not on the table there is nothing to measure, so the small-vocabulary heuristic is
+    left to decide on its own and this returns True.
+    """
+    need = {"n_truth_instances", "n_reachable_instances"}
+    if not need.issubset(set(per.columns)):
+        return True
+    sub = per.filter(pl.col("n_truth_instances") > 0)
+    if sub.height == 0:
+        return True
+    ratio = sub.select(
+        (pl.col("n_reachable_instances") / pl.col("n_truth_instances")).alias("r")
+    )["r"]
+    return float(ratio.min()) >= VACUOUS_REACHABILITY_RATIO
 
 
 def reachability_caveat(per: pl.DataFrame, primary_truth: str) -> str:
@@ -6783,7 +6802,7 @@ def reachability_caveat(per: pl.DataFrame, primary_truth: str) -> str:
     notes = []
     if "n_truth_families" in per.columns:
         vocab = int(per["n_truth_families"].max() or 0)
-        if vocab < MIN_REACHABILITY_VOCAB:
+        if vocab < MIN_REACHABILITY_VOCAB and _join_is_vacuous(per):
             notes.append(
                 f"<p><b>This bar is not a ceiling on the <code>{primary_truth}</code> "
                 f"truth set.</b> Its <code>pfam_id</code> column holds one of {vocab} "
@@ -7007,6 +7026,230 @@ def _identity_truth_set(metrics: pl.DataFrame, primary_truth: str) -> tuple[str,
         if len([b for b in bins if b in IDENTITY_BIN_ORDER]) >= MIN_COVARIATE_BINS:
             return ts, ts != primary_truth
     return "", False
+
+
+# The comparison set for the annotated divergence panel: one arm per thing a reader might
+# reach for instead of kmerseek, rather than every arm that scored. Ordered profile ->
+# structure so the legend reads down the cost axis.
+DIVERGENCE_PEERS = ["mmseqs2_iterative", "hmmer3_phmmer", "hhblits", "foldseek"]
+
+
+def peer_annotation(tool: str, cost: dict[str, float]) -> str:
+    """What a reader has to spend, or install, to buy that line.
+
+    A tool's Fmax is not comparable to another's without this: hhblits sits above every
+    other line here and costs three orders of magnitude more per search, and foldseek needs
+    a structure for every query. Both facts belong on the line, not in a table elsewhere in
+    the report that the reader has to hold in their head.
+    """
+    bits = []
+    if cost.get(tool):
+        bits.append(f"{cost[tool]:.3g} CPU-h/search")
+    if NEEDS_3D.get(tool) == "Yes":
+        bits.append("needs structure")
+    return f" ({', '.join(bits)})" if bits else ""
+
+
+# The two axes that are now measured over the domain rather than over its protein, with
+# the label each one carries on a figure.
+REGION_AXES = {
+    "plddt_region": ("mean pLDDT of the domain", "pLDDT"),
+    "disorder_region": ("mean disorder of the domain", "disorder"),
+}
+
+
+def region_axis_series(cut: pl.DataFrame, axis: str, keep: list) -> tuple[dict, dict, dict]:
+    """Fmax and reachable recall per arm along one region axis, plus the n behind each point.
+
+    x is `stratum_value_mean`, the measured mean of the covariate over the instances in that
+    bin, not the bin's midpoint. The bins are deliberately uneven -- modelled domains bunch
+    above pLDDT 60 -- so a midpoint would put a point where no domain sits.
+    """
+    sub = cut.filter(pl.col("stratum_axis") == axis)
+    if sub.height == 0 or "stratum_value_mean" not in sub.columns:
+        return {}, {}, {}
+    fmax, recall, counts = {}, {}, {}
+    for tool, variant, label in keep:
+        arm = sub.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+        if arm.height == 0:
+            continue
+        agg = (arm.group_by("stratum")
+               .agg(pl.col("stratum_value_mean").mean().alias("x"),
+                    pl.col("fmax").mean().alias("fmax"),
+                    pl.col("recall_reachable").mean().alias("recall"),
+                    pl.col("n_truth_instances").max().alias("n"))
+               .filter(pl.col("x").is_not_null())
+               .sort("x"))
+        if agg.height == 0:
+            continue
+        fmax[label] = {str(r["x"]): r["fmax"] for r in agg.to_dicts()}
+        recall[label] = {str(r["x"]): r["recall"] for r in agg.to_dicts()}
+        for r in agg.to_dicts():
+            counts[str(r["x"])] = max(counts.get(str(r["x"]), 0), r["n"] or 0)
+    return fmax, recall, counts
+
+
+def section_region_axes(out: Path, metrics: pl.DataFrame, primary_truth: str,
+                        max_tools: int) -> None:
+    """Recovery against the domain's own confidence and disorder, two readings per axis.
+
+    Fmax is computed over a SET of instances at a threshold, so there is no Fmax for a
+    single domain and no honest way to put one on a per-region scatter. What this does
+    instead is compute it within each narrow bin of the region covariate and plot it against
+    the measured mean of that bin, which is a continuous axis in everything but name.
+
+    Two panels per axis because the two readings can disagree and the disagreement is
+    informative: Fmax moves with the threshold an arm happens to pick, reachable recall does
+    not. An arm that holds Fmax across the axis while its recall falls is being carried by
+    precision on a shrinking set of calls.
+    """
+    cut, split = pick_split(metrics.filter(pl.col("truth_set") == primary_truth))
+    if cut.height == 0 or "stratum_axis" not in cut.columns:
+        return
+    board = best_variants(ungrouped(cut)).head(max_tools)
+    keep = [(r["tool"], r["variant"], r["label"]) for r in board.to_dicts()]
+    lead = next((lbl for t, _, lbl in keep if t == "kmerseek"), None)
+
+    for axis, (xlab, short) in REGION_AXES.items():
+        fmax, recall, counts = region_axis_series(cut, axis, keep)
+        if len(fmax) < 2:
+            continue
+        colors, dashes = emphasis_colors(list(fmax), lead=lead)
+        n_row = ", ".join(
+            f"{float(x):.3g}: n={grouped(n)}"
+            for x, n in sorted(counts.items(), key=lambda kv: float(kv[0])))
+        protein_twin = "plddt" if axis == "plddt_region" else "disorder_seq"
+        write_section(out, f"qfo_{axis}", {
+            "id": f"qfo_{axis}",
+            "section_name": f"Region {short}",
+            "description": (
+                f"<p>Fmax and reachable recall against the {xlab}, mean over target "
+                f"proteomes ({primary_truth} truth, <code>{split}</code> split).</p>"
+                + bullets(
+                    f"<b>This is the domain's own {short}</b>, averaged over the residues "
+                    f"of that domain instance. The <code>{protein_twin}</code> axis "
+                    f"elsewhere in this report is the same quantity taken over the whole "
+                    f"query protein, which gives every domain of a protein the same value "
+                    f"-- an ordered domain inside a disordered protein reads as disordered "
+                    f"there and does not here.",
+                    "<b>x is the measured mean of each bin</b>, not the bin's midpoint. The "
+                    "bins are uneven because the data is, and a midpoint would put a point "
+                    "where no domain sits.",
+                    f"<b>Instances per bin:</b> {n_row}. A bin holding tens of domains "
+                    f"carries no result whatever height it draws at.",
+                    "<b>Read both panels.</b> Fmax moves with the threshold an arm picks "
+                    "and reachable recall does not, so an arm that holds Fmax while its "
+                    "recall falls is being carried by precision over a shrinking set of "
+                    "calls rather than still finding the domains.")),
+            "plot_type": "linegraph",
+            "pconfig": {
+                "id": f"qfo_{axis}_plot",
+                "title": f"Recovery vs {xlab}",
+                "xlab": xlab, "ylab": "score (mean over target proteomes)",
+                "ymin": 0, "height": 520, "style": "lines+markers",
+                "colors": colors, "dash_styles": dashes,
+                "data_labels": [
+                    {"name": "Fmax", "ylab": "Fmax (mean over target proteomes)"},
+                    {"name": "Recall (reachable)",
+                     "ylab": "recall_reachable (mean over target proteomes)"},
+                ],
+            },
+            "data": [fmax, recall],
+        })
+
+
+def section_divergence_annotated(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
+                                 n_queries: int, primary_truth: str) -> None:
+    """Fmax against divergence time for one kmerseek arm and four peers, cost on the label.
+
+    The full Divergence section draws every arm that ranked and answers "which is best".
+    This one answers the question a reader actually arrives with: for a target this far from
+    human, what do the realistic alternatives score, and what does each cost. Five lines,
+    because that is how many a reader can hold; the cost and the structure requirement ride
+    in the line's own label so the comparison cannot be read without them.
+    """
+    cut, split = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    cut = cut.filter(pl.col("species") != "all")
+    if cut.height == 0 or "species_mya" not in cut.columns:
+        return
+
+    # Ciona is dropped from THIS panel rather than marked, because a five-line figure has no
+    # room to explain it and a point every line dips on is read as biology. It stays in the
+    # full Divergence section, where the caveat has somewhere to live.
+    dropped = CURATION_CAVEAT_SPECIES if (
+        cut["species"] == CURATION_CAVEAT_SPECIES).any() else None
+    if dropped:
+        cut = cut.filter(pl.col("species") != CURATION_CAVEAT_SPECIES)
+
+    board = best_variants(cut)
+    km = next((r for r in board.to_dicts() if r["tool"] == "kmerseek"), None)
+    keep = ([(km["tool"], km["variant"], km["label"])] if km else [])
+    for tool in DIVERGENCE_PEERS:
+        row = next((r for r in board.to_dicts() if r["tool"] == tool), None)
+        if row:
+            keep.append((row["tool"], row["variant"], row["label"]))
+    if len(keep) < 2:
+        return
+
+    cost = {}
+    if trace is not None and trace.height:
+        per_tool = throughput_per_tool(trace, n_queries)
+        if per_tool.height:
+            n_species = max(int(cut["species"].n_unique()), 1)
+            cost = {r["tool"]: r["cpu_hours"] / n_species
+                    for r in per_tool.to_dicts() if r.get("cpu_hours")}
+
+    data, labels = {}, {}
+    for tool, variant, label in keep:
+        sub = (cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
+               .group_by("species_mya").agg(pl.col("fmax").mean()).sort("species_mya"))
+        if sub.height == 0:
+            continue
+        shown = label + peer_annotation(tool, cost)
+        labels[label] = shown
+        data[shown] = {str(r["species_mya"]): r["fmax"] for r in sub.to_dicts()}
+    if not data:
+        return
+
+    lead = labels.get(km["label"]) if km else None
+    colors, dashes = emphasis_colors(list(data), lead=lead)
+    ticks = (cut.select("species", "species_mya").unique()
+             .sort("species_mya").to_dicts())
+    tick_note = ", ".join(f"{r['species']} {r['species_mya']:.0f}" for r in ticks)
+    omitted = (
+        f"<b><code>{dropped}</code> is omitted from this panel.</b> On the "
+        f"<code>{primary_truth}</code> answer key it carries 23 curated proteins against a "
+        f"median of 3,174, so its point measures curation depth rather than divergence. It "
+        f"is kept, and explained, in the full Divergence section and in the Pfam "
+        f"reachability panel where there is room to say why."
+    ) if dropped else ""
+
+    write_section(out, "qfo_divergence_annotated", {
+        "id": "qfo_divergence_annotated",
+        "section_name": "Divergence, against the alternatives",
+        "description": (
+            f"<p>Fmax against divergence time from human, for one kmerseek arm and the "
+            f"peers a reader would otherwise reach for ({primary_truth} truth, "
+            f"<code>{split}</code> split). Proteomes on the axis: {tick_note} Mya.</p>"
+            + bullets(
+                "<b>Cost and requirements are on the line's own label</b>, because Fmax "
+                "alone does not say what an arm costs to run or what it needs installed, "
+                "and the highest line here is also the most expensive by three orders of "
+                "magnitude.",
+                "<b>CPU-hours are per search, per proteome</b> -- the tool's total divided "
+                "by the number of target proteomes, so it is what one more species costs.",
+                omitted,
+                "<b>Five lines, not nineteen.</b> The full sweep is in the Divergence "
+                "section; this one is the comparison a reader arrives with.")),
+        "plot_type": "linegraph",
+        "pconfig": {"id": "qfo_divergence_annotated_plot",
+                    "title": f"Fmax vs target proteome ({primary_truth} truth)",
+                    "xlab": "divergence from human (Mya)",
+                    "ylab": "Fmax (per target proteome)",
+                    "ymin": 0, "height": 520, "style": "lines+markers",
+                    "colors": colors, "dash_styles": dashes},
+        "data": data,
+    })
 
 
 def section_identity_vs_divergence(out: Path, metrics: pl.DataFrame, primary_truth: str,
@@ -8164,6 +8407,12 @@ def main():
     section_hgnc(args.outdir, metrics, primary,
                  args.hgnc_min_instances, args.hgnc_top_n)
     section_divergence(args.outdir, metrics, primary, args.max_tools)
+    # The five-line version, drawn before the full sweep: it is the comparison a reader
+    # arrives with, and the nineteen-line panel is the follow-up.
+    section_divergence_annotated(args.outdir, metrics, trace, args.n_queries, primary)
+    # The region-level twins of the pLDDT and disorder sections, drawn on the domain's
+    # own value rather than its protein's.
+    section_region_axes(args.outdir, metrics, primary, args.max_tools)
     # Drawn beside the divergence panel at 148/149, just ahead of it: the identity half
     # is only meaningful read against the Mya half, so the two must stay adjacent.
     section_identity_vs_divergence(args.outdir, metrics, primary, args.max_tools)
