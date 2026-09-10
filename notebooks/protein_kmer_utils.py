@@ -142,8 +142,8 @@ def display_kmer_alignment(
     match_context = match_seq[match_start:match_end]
 
     # Create the visualization
-    padding = '.' * context
-    alignment_line = f'{padding}{kmer}{padding}'
+    padding = "." * context
+    alignment_line = f"{padding}{kmer}{padding}"
 
     print(f"{query_label:>5}: {query_context} {query_start}-{query_end}")
     print(f"       {alignment_line}")

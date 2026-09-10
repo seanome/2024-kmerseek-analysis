@@ -1,0 +1,33 @@
+# Black configuration. There is no package here -- this file exists so the notebook
+# formatter behaves identically for `black ./notebooks` locally and in CI, rather than
+# depending on flags someone remembers to pass.
+
+[tool.black]
+# Six notebooks black cannot parse, and therefore cannot format. Excluded rather than
+# left to fail the run, because `--check` treats "cannot format" as an error and one
+# unparseable cell would keep the whole lint red no matter how clean everything else is.
+#
+# Two categories, and only one of them is black's problem:
+#
+#   Shell-escape cells. A `!` line whose argument contains a token like
+#   `2024-10-08__protein_k5-20` does not tokenize as Python, and black's notebook support
+#   gives up on the cell with "invalid decimal literal". The code is fine; the formatter
+#   cannot read it.
+#     004-rewrite-multisearch-parser-to-polars
+#     007-mem-opt-process-protein-benchmarks-polars
+#     020-explore-protein-benchmark-polars
+#     023-compute-sklearn-benchmarks-plot-protein-benchmark
+#
+# Two more notebooks used to be listed here for real syntax errors rather than tokenizer
+# limits. Both are repaired in this branch and are formatted like everything else:
+# 022's cell 12 was the single truncated line `sns.catplot(`, and 062's cell 17 had literal
+# newlines inside three string literals where `\n` was meant. Nothing else belongs on this
+# list unless black genuinely cannot read it.
+extend-exclude = '''
+/notebooks/(
+    004-rewrite-multisearch-parser-to-polars
+  | 007-mem-opt-process-protein-benchmarks-polars
+  | 020-explore-protein-benchmark-polars
+  | 023-compute-sklearn-benchmarks-plot-protein-benchmark
+)\.ipynb$
+'''
