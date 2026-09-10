@@ -1753,7 +1753,7 @@ ALLQFO_TARGETS ?= all
 # Set this back to Eukaryota to drop those hours once the prokaryote question is settled.
 ALLQFO_HHBLITS_KINGDOMS ?=
 
-## Refuse to launch while anything of ours is still queued.
+## Refuse to launch while anything that writes THIS pipeline's storeDirs is still queued.
 ##
 ## Not defensive padding. Nextflow decides "already in the store" when it CREATES a task
 ## and never re-checks, so a second writer against the same --db_cache does the full build
@@ -1761,22 +1761,44 @@ ALLQFO_HHBLITS_KINGDOMS ?=
 ## jobs from a previous run as the most likely cause, and this project has hit it three
 ## times on three different storeDir outputs. The terminal returning is not the same as the
 ## queue draining, which is precisely how it keeps happening.
+##
+## Scoped by work directory, not by user. Counting every job under $USER was the first
+## version and it was wrong in the direction that gets a guard disabled: an unrelated run
+## in another checkout -- the invertebrate dark set, on 2026-09-10 -- blocks a launch it
+## cannot possibly collide with, and the only way past is to ignore the check. A guard
+## people have to route around stops being a guard.
+##
+## `squeue -o %Z` gives each job's work directory in one call. Every job that can reach
+## this pipeline's storeDirs is launched from somewhere under this directory: the nf-head
+## job's work dir is its launch directory, and each task's is under <launch dir>/work. Two
+## run targets here still block each other, which is the case the guard was written for,
+## because run-midi and run-midi-plus-all-qfo share --db_cache ../results.
 queue-empty:
 	$(call require_cluster)
-	@n=$$(squeue -u $$USER -h 2>/dev/null | wc -l); \
+	@here="$(MAKEFILE_DIR)/"; \
+	 mine=$$(squeue -u $$USER -h -o "%i %Z" 2>/dev/null | awk -v p="$$here" 'index($$2,p)==1'); \
+	 n=$$(printf '%s' "$$mine" | grep -c . ); \
 	 if [ "$$n" -ne 0 ]; then \
 	   echo; \
-	   echo "  $$n job(s) still queued or running under $$USER."; \
+	   echo "  $$n job(s) of this pipeline still queued or running:"; \
+	   echo "$$mine" | head -5 | sed 's/^/    /'; \
+	   echo; \
 	   echo "  Launching now would put two writers on the same storeDir under"; \
 	   echo "  $(ALLQFO_OUTDIR) and \$$(db_cache), which fails as"; \
 	   echo "  'mv: cannot move ... Directory not empty' after both have done the work."; \
 	   echo; \
-	   echo "  Wait for the queue to drain, then re-run:"; \
-	   echo "    squeue -u \$$USER"; \
+	   echo "  Wait for them to drain, or stop the run that owns them:"; \
+	   echo "    make running"; \
+	   echo "    make stop"; \
 	   echo; \
 	   exit 1; \
 	 fi; \
-	 echo "queue is empty"
+	 other=$$(squeue -u $$USER -h 2>/dev/null | grep -c .); \
+	 if [ "$$other" -ne 0 ]; then \
+	   echo "clear here; $$other job(s) of yours elsewhere, which cannot reach these storeDirs"; \
+	 else \
+	   echo "queue is empty"; \
+	 fi
 
 # The only run whose head has to stay alive for the better part of a week, so it is the
 # only one that spends one of the four `long` slots. Everything it submits still runs
