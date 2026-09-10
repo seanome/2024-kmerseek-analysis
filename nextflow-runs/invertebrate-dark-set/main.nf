@@ -30,6 +30,8 @@ nextflow.enable.dsl = 2
 
 include { compareDarkLengths } from './modules/length.nf'
 
+include { darkSetDisorder } from './modules/disorder.nf'
+
 def home = System.getProperty('user.home')
 
 params.species        = null          // cgigas | botryllus
@@ -80,6 +82,12 @@ params.with_kmerseek      = false
 // homology detection being hard. Junk models are short, so this says whether shortness is
 // what is inflating the number.
 params.with_length_comparison = true
+
+// Disorder is ON by default, unlike kmerseek. It is one metapredict pass over the query
+// proteome with no index to build, so it costs a rounding error next to the three search
+// arms -- and it is a check on the dark set's own composition, which every reading of the
+// dark count depends on. See modules/disorder.nf.
+params.with_disorder      = true
 
 HMMER   = 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
 MMSEQS  = 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
@@ -394,6 +402,12 @@ workflow darkSet {
     // no combine(), and none of combine()'s tuple-concatenation trap.
     if (params.with_length_comparison) {
         compareDarkLengths(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
+
+    // Is the dark set more disordered than the placed set? `query` is a plain file, not a
+    // channel, so this is a straight map with no combine() -- and therefore none of the
+    // tuple-spreading that makes the kmerseek wiring below need `.map { [it] }`.
+    if (params.with_disorder) {
+        darkSetDisorder(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
     }
 
     // kmerseek is opt-in. The dark set is defined by the sequence arms alone and is worth
