@@ -226,9 +226,8 @@ PREFETCH_TIME   ?= 2:00:00
 # 2026-09-08 all-QfO run was tracking ~31_000 tasks (15_834 kmerseekIndex and 15_177
 # kmerseekSearch), crossed ten CPU-minutes 16.5 hours in, and died at Sep-09 06:01:31 with
 # .nextflow.log stopping mid-line, no OutOfMemoryError in any of its 24 MB, and no shutdown
-# sequence. make reported Error 137. It reads exactly like an out-of-memory kill and is not
-# one, which matters because it means capping the JVM heap fixes nothing: the budget is CPU
-# seconds. The four earlier runs in that directory all reached "Execution complete --
+# sequence. make reported Error 137. It reads like an out-of-memory kill and is not one.
+# Capping the JVM heap fixes nothing, because the budget is CPU seconds rather than bytes. The four earlier runs in that directory all reached "Execution complete --
 # Goodbye" because they were small enough to stay under ten minutes. Measured rate on a
 # live head: 1.45% of one core, which reaches ten CPU-minutes in about 11 hours.
 #
@@ -267,7 +266,7 @@ HEAD_TIME ?= 2-00:00:00
 HEAD_SESSION ?= qfo
 # The SLURM job name. Every squeue lookup in watch/attach/stop keys on it, so two pipelines
 # submitting heads at once must not share one -- the invertebrate dark set uses
-# nfdrv-<species> for exactly that reason.
+# nfdrv-<species> for that reason.
 HEAD_JOBNAME ?= nf-head
 
 # tools/nf-head writes and submits the job script; see the header there for what it does
@@ -390,7 +389,7 @@ help:
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
 	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
 	@echo "  watch                attach to the running head and see the live table"
-	@echo "  stop                 ask the running head to shut down cleanly"
+	@echo "  stop                 ask the running head to cancel its tasks and exit"
 	@echo "                       Reuses run-midi-plus's stored searches; replaces its report"
 	@echo "                       Additive to run-midi, its own outdir, target DBs shared."
 	@echo "                       Also searches botryllus, a 10th target that is NOT scored"
