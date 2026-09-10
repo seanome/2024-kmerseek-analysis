@@ -250,9 +250,17 @@ HEAD_MEM  ?= 16G
 # remainder for metaspace, thread stacks and the off-heap cache DB.
 HEAD_XMX  ?= 12g
 export NXF_OPTS := -Xms1g -Xmx$(HEAD_XMX)
-# QOS `normal` stops at 2 days. `long` reaches 7 and allows 4 running jobs per user, none
-# of which anything else here spends: every process in nextflow.config tops out at 48h.
-# Only the sweep that has to outlive several days takes one; see run-midi-plus-all-qfo.
+# `normal`, and not `long`, even for the seven-day head. hns declares
+# AllowQos=normal,high_p,system and carries a partition QOS of `owner` whose MaxWall is 7
+# days. `long` is not on that list -- it is allowed on the public `normal` PARTITION only
+# -- so asking for it here fails at submission with "Invalid qos specification", which is
+# how the first all-QfO launch died.
+#
+# The `normal` QOS's own 2-day MaxWall does not bind on hns; the partition QOS is what
+# applies. Probed with sbatch --test-only: hns + normal + 7 days is accepted and placed at
+# the same moment as the 2-day version, while normal + long + 7 days would not have started
+# for another 3.5 hours. So the condo is both the faster and the simpler answer, and
+# nothing here needs one of the four `long` slots after all.
 HEAD_QOS  ?= normal
 HEAD_TIME ?= 2-00:00:00
 # The tmux session name inside the head job. `make watch` attaches to it.
@@ -1800,10 +1808,9 @@ queue-empty:
 	   echo "queue is empty"; \
 	 fi
 
-# The only run whose head has to stay alive for the better part of a week, so it is the
-# only one that spends one of the four `long` slots. Everything it submits still runs
-# under `normal`; the QOS here applies to the head job alone.
-run-midi-plus-all-qfo: HEAD_QOS  := long
+# The only run whose head has to stay alive for the better part of a week. It gets there on
+# the partition QOS rather than a QOS of its own -- see the note on HEAD_QOS above for why
+# `long` is not usable on hns.
 run-midi-plus-all-qfo: HEAD_TIME := 7-00:00:00
 run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all

@@ -525,7 +525,14 @@ make run-midi HEAD_TIME=1-00:00:00 HEAD_MEM=32G HEAD_XMX=24g
 `HEAD_XMX` is the JVM heap and has to stay under `HEAD_MEM`, which SLURM enforces with a
 cgroup. It is pinned rather than left to the JVM, which would otherwise size itself against
 the node's 191 GB and be killed inside the allocation. `run-midi-plus-all-qfo` gets 7 days
-and takes one of the four `long` QOS slots; everything else gets 2 days under `normal`.
+and everything else 2, both under the `normal` QOS.
+
+Not the `long` QOS, which is the obvious-looking choice and fails: hns declares
+`AllowQos=normal,high_p,system`, so `--qos=long` is rejected at submission with "Invalid
+qos specification". Seven days is available anyway, through the partition's own `owner`
+QOS whose MaxWall is 7 days. Probed with `sbatch --test-only`: hns with `normal` and 7 days
+is accepted and placed at the same moment as the 2-day version, while the public `normal`
+partition with `long` would not have started for another 3.5 hours.
 
 `squeue` shows `nf-head` for the life of the run and `queue-empty` counts it, so a second
 run target refuses to start while one is alive. That is intended -- two heads against one
