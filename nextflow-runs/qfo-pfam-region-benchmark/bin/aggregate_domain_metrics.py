@@ -80,10 +80,17 @@ def check_for_dead_arms(metrics: pl.DataFrame) -> str | None:
 # against a human query set) sits within 5x.
 THIN_TARGET_RATIO = 0.05
 
-# Reachability is only a ceiling when `pfam_id` is a family. Below this many distinct
-# labels in the answer key it is a category vocabulary, every proteome has nearly all of
-# it, and reachable / truth is ~1.0 for every species by construction.
+# Below this many distinct labels the answer key is a category vocabulary rather than a
+# family one, which is what puts a reachability join at risk of matching everything.
 MIN_REACHABILITY_VOCAB = 50
+
+# A small vocabulary is the risk; this is the confirmation that it bit. Both are required.
+# They used to be one test, because a small vocabulary always HAD meant a vacuous join --
+# then the Swiss-Prot truth set was re-keyed on (feature type, Pfam family of the annotated
+# protein), which leaves the vocabulary at twelve and moves the ratio to 0.05-0.98. On the
+# vocabulary alone this warning would now fire over correct numbers, which is the way a
+# diagnostic gets ignored.
+VACUOUS_REACHABILITY_RATIO = 0.99
 
 
 def check_thin_target_annotation(metrics: pl.DataFrame) -> str | None:
@@ -166,13 +173,18 @@ def check_degenerate_reachability(metrics: pl.DataFrame) -> str | None:
         per = sub.group_by("species").agg(
             pl.col("n_truth_instances").max().alias("truth"),
             pl.col("n_reachable_instances").max().alias("reach"),
-        )
-        frac = per.select(
-            (pl.col("reach") / pl.col("truth")).mean()
-        ).item()
+        ).filter(pl.col("truth") > 0)
+        if per.height == 0:
+            continue
+        ratio = per.select((pl.col("reach") / pl.col("truth")).alias("r"))["r"]
+        # Every species, not the mean: one genuinely unreachable species among eight
+        # vacuous ones would pull an average down far enough to hide the defect.
+        if float(ratio.min()) < VACUOUS_REACHABILITY_RATIO:
+            continue
         lines.append(
             f"  {ts}: {vocab} distinct labels in the answer key, "
-            f"reachable / truth averages {frac:.3f} over {per.height} species"
+            f"reachable / truth averages {float(ratio.mean()):.3f} and never drops below "
+            f"{float(ratio.min()):.3f} over {per.height} species"
         )
     if not lines:
         return None
