@@ -6964,12 +6964,17 @@ def _reachability_panel(out: Path, per: pl.DataFrame, truth_set: str, *,
         "id": "qfo_reachability" if is_lead else f"qfo_reachability_{truth_set}",
         "section_name": f"Recall ceiling per species — {truth_set} truth",
         "description": (
-            f"<p>The share of the {total:,}-instance answer key whose family exists "
+            f"<p>The share of the {total:,}-instance answer key whose label exists "
             f"somewhere in each target proteome, ordered from most reachable to least "
             f"({truth_set} truth).</p>" + what
             + bullets(
+                "<b>Reachable</b> is instances some annotated target protein could have "
+                "supplied the label for. On the Pfam truth sets that means the family "
+                "exists somewhere in the target; on the Swiss-Prot truth set, where the "
+                "label is one of twelve feature types, it means a target protein carries "
+                "that feature type <i>and</i> shares a Pfam family with the human query.",
                 ("<b>Read this before any leaderboard.</b> " if is_lead else "")
-                + "No search of any kind can transfer a family the target proteome does "
+                + "No search of any kind can transfer a label the target proteome does "
                   "not have, so the pale part of each bar is out of reach for every arm in "
                   "this report and every recall_reachable divides by the green part only.",
                 shape,
