@@ -6976,7 +6976,7 @@ def _reachability_panel(out: Path, per: pl.DataFrame, truth_set: str, *,
                 "every recall_reachable in this report divides by the reachable bar only, "
                 "and counts only instances inside it.",
                 "<b>Species</b> are ordered by divergence time.")
-            + reachability_caveat(per, primary_truth)),
+            + reachability_caveat(per, truth_set)),
         "plot_type": "bargraph",
         "pconfig": {"id": ("qfo_reachability_plot" if is_lead
                            else f"qfo_reachability_{truth_set}_plot"),
