@@ -2221,11 +2221,41 @@ status:
 ## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes and
 ## `1-02:19:10` is a day. That distinction has already cost a wrong call about whether a
 ## job was stuck. PENDING jobs show 0:00.
+##
+## The counts come first, because at sweep scale the table is hundreds of lines and the
+## question is usually "how much is moving" rather than "what is job 42726837". Pending
+## jobs are grouped by squeue's own reason, which is what distinguishes a queue that is
+## merely busy (Priority, Resources) from one that has hit a limit and will not drain on
+## its own (QOSMaxJobsPerUserLimit, AssocMaxWallDurationPerJobLimit).
+##
+## Work directories come from `squeue -o %Z` rather than a `scontrol show job` per row.
+## The old form cost one round trip per job, which is fine for nine baseline jobs and not
+## fine for the four hundred this sweep can have in flight at once.
 running:
 	$(call require_cluster)
-	@printf "%-10s %-4s %-10s %-24s %s\n" JOBID ST TIME PROCESS TAG
-	@squeue -u $$USER -h --account=$${SLURM_ACCOUNT:-ayeletv} -o "%i %t %M" | while read j st tm; do \
-	   w=$$(scontrol show job $$j 2>/dev/null | tr ' ' '\n' | grep -m1 WorkDir | cut -d= -f2); \
+	@here="$(MAKEFILE_DIR)/"; \
+	 sq=$$(squeue -u $$USER -h --account=$${SLURM_ACCOUNT:-ayeletv} -o "%i|%t|%M|%r|%Z" 2>/dev/null | grep .); \
+	 if [ -z "$$sq" ]; then echo "no jobs in the queue"; exit 0; fi; \
+	 tot=$$(printf '%s\n' "$$sq" | grep -c .); \
+	 run=$$(printf '%s\n' "$$sq" | cut -d'|' -f2 | grep -cx R); \
+	 pnd=$$(printf '%s\n' "$$sq" | cut -d'|' -f2 | grep -cx PD); \
+	 oth=$$((tot - run - pnd)); \
+	 mine=$$(printf '%s\n' "$$sq" | awk -F'|' -v p="$$here" 'index($$5,p)==1' | grep -c .); \
+	 line="$$tot job(s): $$run running, $$pnd pending"; \
+	 if [ "$$oth" -gt 0 ]; then line="$$line, $$oth in other states"; fi; \
+	 echo "$$line"; \
+	 echo "  $$mine from this pipeline, $$((tot - mine)) elsewhere"; \
+	 if [ "$$pnd" -gt 0 ]; then \
+	   echo "  why the pending ones are waiting:"; \
+	   printf '%s\n' "$$sq" | awk -F'|' '$$2=="PD" {print $$4}' | sort | uniq -c | sort -rn | head -5 | sed 's/^/   /'; \
+	 fi; \
+	 if [ "$$oth" -gt 0 ]; then \
+	   echo "  the other states:"; \
+	   printf '%s\n' "$$sq" | awk -F'|' '$$2!="R" && $$2!="PD" {print $$2}' | sort | uniq -c | sort -rn | sed 's/^/   /'; \
+	 fi; \
+	 echo; \
+	 printf "%-10s %-4s %-10s %-24s %s\n" JOBID ST TIME PROCESS TAG; \
+	 printf '%s\n' "$$sq" | while IFS='|' read j st tm rsn w; do \
 	   n=$$(sed -n "s/^### name: '\(.*\)'.*/\1/p" "$$w/.command.run" 2>/dev/null | head -1); \
 	   if [ -z "$$n" ]; then n="(no .command.run under $$(basename "$$w" 2>/dev/null))"; fi; \
 	   pr=$$(printf '%s' "$$n" | sed 's/ (.*//'); \
