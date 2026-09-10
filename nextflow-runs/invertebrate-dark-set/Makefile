@@ -68,7 +68,8 @@ WITH_KMERSEEK ?=
 KMERSEEK_ARGS := $(if $(WITH_KMERSEEK),--with_kmerseek true,)
 MINI_N  ?= 200
 
-.PHONY: help check-species check-inputs check-python sherlock-clone sync run-dark-set run-dark-set-mini queue-note
+.PHONY: help check-species check-inputs check-python sherlock-clone sync run-dark-set \
+        run-dark-set-sbatch watch-dark-set stop-dark-set run-dark-set-mini queue-note
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -76,7 +77,10 @@ help:
 	@echo "  sherlock-clone          push and clone this branch to \$$SCRATCH"
 	@echo "  check-python            host python diagnostic; NOT needed for a run"
 	@echo "  run-dark-set-mini       SPECIES=<botryllus|cgigas>  plumbing check, $(MINI_N) proteins"
-	@echo "  run-dark-set            SPECIES=<botryllus|cgigas>  full proteome"
+	@echo "  run-dark-set            SPECIES=<...>  full proteome, driver in this shell"
+	@echo "  run-dark-set-sbatch     SPECIES=<...>  driver on a compute node (USE THIS)"
+	@echo "  watch-dark-set          SPECIES=<...>  follow a running driver's log"
+	@echo "  stop-dark-set           SPECIES=<...>  cancel the driver and its tasks"
 	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
 	@echo
 	@echo "  PROFILE=$(PROFILE)  OUTDIR=$(OUTDIR)"
@@ -138,14 +142,81 @@ sync:
 # -resume, single dash. `--resume` is a pipeline param and silently does nothing.
 # Never piped through tee: the live task table is the point, and tee makes nextflow
 # reprint the whole table on every update.
+# One definition, used by the foreground driver and the sbatch driver alike, so the two
+# cannot drift into running different pipelines.
+NF_RUN = $(NEXTFLOW) run main.nf -profile $(PROFILE) -resume \
+	  --species $(SPECIES) --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
+	  --outdir $(OUTDIR) --reference_cache $(REF_CACHE) $(KMERSEEK_ARGS) $(NF_ARGS)
+
 run-dark-set: check-species check-inputs queue-note
-	$(NEXTFLOW) run main.nf -profile $(PROFILE) -resume \
-	  --species $(SPECIES) \
-	  --qfo_dir $(QFO_DIR) \
-	  --swissprot_dat $(SWISSPROT) \
-	  --outdir $(OUTDIR) \
-	  --reference_cache $(REF_CACHE) \
-	  $(KMERSEEK_ARGS) $(NF_ARGS)
+	$(NF_RUN)
+
+# ---- the driver as a batch job -------------------------------------------------------
+# Sherlock's login nodes enforce a TEN CPU-MINUTE cap and SIGKILL past it. A Nextflow head
+# process polling dozens of tasks burns that in well under an hour, and the kill looks
+# exactly like an OOM -- which is how a 90-task run died here with squeue left empty,
+# because Nextflow cancels its own jobs on shutdown.
+#
+# So the driver itself goes to a compute node. It survives a dropped tmux, a closed laptop
+# and the CPU cap; it is the only way a full-proteome run finishes.
+#
+# The trade, stated plainly: Nextflow writes to a file rather than a terminal, so it turns
+# off the live task table and emits one line per task instead. `make watch-dark-set` tails
+# that. The table is nicer; a run that completes is nicer still.
+DRIVER_DIR   ?= $(OUTDIR)/driver
+DRIVER_LOG    = $(DRIVER_DIR)/$(SPECIES).driver.log
+DRIVER_CPUS  ?= 2
+DRIVER_MEM   ?= 16G
+DRIVER_TIME  ?= 48:00:00
+# The head process is mostly idle but must outlive every task it manages, so it asks for
+# little and for a long time -- the opposite shape to the work it submits.
+DRIVER_MODULES ?= biology nextflow
+
+run-dark-set-sbatch: check-species check-inputs queue-note
+	@mkdir -p $(DRIVER_DIR)
+	@if squeue -u $$USER -h -o '%j' 2>/dev/null | grep -qx 'nfdrv-$(SPECIES)'; then \
+	  echo "a driver for $(SPECIES) is already queued or running:"; \
+	  squeue -u $$USER -o '%.12i %.2t %.10M %j' | grep 'nfdrv-$(SPECIES)'; \
+	  echo; echo "watch it with:  make watch-dark-set SPECIES=$(SPECIES)"; \
+	  echo "or stop it with: make stop-dark-set SPECIES=$(SPECIES)"; \
+	  exit 1; fi
+	@jid=$$(sbatch --parsable --job-name=nfdrv-$(SPECIES) \
+	    --cpus-per-task=$(DRIVER_CPUS) --mem=$(DRIVER_MEM) --time=$(DRIVER_TIME) \
+	    --partition=$(PARTITION) --output=$(DRIVER_LOG) \
+	    --wrap='if command -v ml >/dev/null 2>&1; then ml load $(DRIVER_MODULES); fi; $(NF_RUN)'); \
+	  echo "driver submitted as job $$jid"; \
+	  echo "  log:   $(DRIVER_LOG)"; \
+	  echo "  watch: make watch-dark-set SPECIES=$(SPECIES)"; \
+	  echo "  stop:  make stop-dark-set SPECIES=$(SPECIES)"; \
+	  echo; echo "waiting for the driver to start..."; \
+	  while [ ! -s "$(DRIVER_LOG)" ]; do \
+	    st=$$(squeue -j $$jid -h -o '%t' 2>/dev/null); \
+	    if [ -z "$$st" ]; then echo "driver $$jid left the queue before writing a log:"; \
+	      sacct -j $$jid --format=JobID,State,ExitCode -X 2>/dev/null | head -3; exit 1; fi; \
+	    sleep 10; \
+	  done
+	@$(MAKE) --no-print-directory watch-dark-set SPECIES=$(SPECIES)
+
+# Follows the driver's log. Ctrl-C stops WATCHING, never the run -- that is the whole point
+# of putting the driver in a batch job, so it is said here rather than learned by accident.
+watch-dark-set: check-species
+	@if [ ! -f "$(DRIVER_LOG)" ]; then \
+	  echo "no driver log at $(DRIVER_LOG)"; \
+	  echo "start one with: make run-dark-set-sbatch SPECIES=$(SPECIES)"; exit 1; fi
+	@echo "following $(DRIVER_LOG)"
+	@echo "Ctrl-C stops following; the run keeps going. Stop it with:"
+	@echo "  make stop-dark-set SPECIES=$(SPECIES)"
+	@echo
+	@tail -n 40 -f $(DRIVER_LOG)
+
+# Cancels the driver, which cancels the tasks it owns. Nothing finished is lost: the
+# reference and indexes are under storeDir and completed tasks stay cached, so a later
+# run-dark-set-sbatch resumes rather than restarts.
+stop-dark-set: check-species
+	@jid=$$(squeue -u $$USER -h -o '%i %j' 2>/dev/null | awk '$$2=="nfdrv-$(SPECIES)"{print $$1}'); \
+	 if [ -z "$$jid" ]; then echo "no driver running for $(SPECIES)"; exit 0; fi; \
+	 echo "cancelling driver $$jid (its tasks go with it; finished work is cached)"; \
+	 scancel $$jid
 
 run-dark-set-mini: check-species check-inputs
 	@mkdir -p $(OUTDIR)/_mini

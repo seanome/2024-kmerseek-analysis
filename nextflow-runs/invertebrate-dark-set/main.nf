@@ -403,9 +403,14 @@ workflow darkSet {
 
         // Every chunk and every combo reaches the gain step together: a protein counts as
         // rescued only against the whole dark set, and the dark set is proteome-wide.
-        q_lists = ks[0].map { sp, a, k, lc, f -> f }.collect()
-        kmerseekDarkGain(dark.map { sp, dp, _j -> tuple(sp, dp) }.combine(q_lists)
-                             .map { sp, dp, q -> tuple(sp, dp, q) })
+        // `.map { [it] }` on the collected list is load-bearing. combine() CONCATENATES
+        // tuples, so combining (species, parquet) with a channel emitting a 46-element
+        // List spreads it into one 48-element tuple and the downstream closure is handed
+        // 48 arguments. Wrapping the list in a single-element tuple keeps it as one item,
+        // so the result is (species, parquet, [46 files]) -- which is what the process
+        // signature declares.
+        q_lists = ks[0].map { sp, a, k, lc, f -> f }.collect().map { q -> [q] }
+        kmerseekDarkGain(dark.map { sp, dp, _j -> tuple(sp, dp) }.combine(q_lists))
     }
 }
 
