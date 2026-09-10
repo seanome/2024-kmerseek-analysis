@@ -217,35 +217,31 @@ PREFETCH_MEM    ?= 48G
 PREFETCH_TIME   ?= 2:00:00
 
 # --- Where the head process itself runs ------------------------------------
-# In a SLURM allocation, not on the login node. Sherlock caps every process belonging to
-# @sh_users in /etc/security/limits.d/sh_login.conf:
+# As a SLURM job, in a tmux session on a compute node. Not on a login node, and not tied
+# to your terminal. Two separate things forced this, a day apart:
 #
-#   cpu     10          ten CPU-MINUTES. The `-` column means soft == hard, so the kernel
-#                       skips SIGXCPU and goes straight to SIGKILL.
-#   as      33554432    32 GB of address space
-#   nofile  256
-#   nproc   512
+# The ten-CPU-MINUTE cap. /etc/security/limits.d/sh_login.conf caps every process
+# belonging to @sh_users: `cpu 10`, `as 33554432`, `nofile 256`, `nproc 512`. The `-`
+# column means soft equals hard, so the kernel skips SIGXCPU and sends SIGKILL. The
+# 2026-09-08 all-QfO run was tracking ~31_000 tasks (15_834 kmerseekIndex and 15_177
+# kmerseekSearch), crossed ten CPU-minutes 16.5 hours in, and died at Sep-09 06:01:31 with
+# .nextflow.log stopping mid-line, no OutOfMemoryError in any of its 24 MB, and no shutdown
+# sequence. make reported Error 137. It reads exactly like an out-of-memory kill and is not
+# one, which matters because it means capping the JVM heap fixes nothing: the budget is CPU
+# seconds. The four earlier runs in that directory all reached "Execution complete --
+# Goodbye" because they were small enough to stay under ten minutes. Measured rate on a
+# live head: 1.45% of one core, which reaches ten CPU-minutes in about 11 hours.
 #
-# The 2026-09-08 all-QfO run died on the first of those. It was tracking ~31_000 tasks
-# (15_834 kmerseekIndex and 15_177 kmerseekSearch), crossed ten CPU-minutes 16.5 hours in,
-# and was killed at Sep-09 06:01:31: .nextflow.log stops mid-line with no OutOfMemoryError
-# and no shutdown sequence, and make reported Error 137. The four earlier runs in the same
-# directory all ended with "Execution complete -- Goodbye" because they were small enough
-# to stay under ten CPU-minutes. This is a limit the sweep grew into.
+# The login node itself. On 2026-09-09 sh03-ln07 rebooted at 15:53 and came back without
+# /scratch mounted, taking with it a 10-day tmux, a running head, and every job that head
+# had submitted -- it got SIGTERM on the way down and cancelled its own queue. Boot times
+# across the eight login nodes are scattered over four months with no cycle, so there is no
+# safe node to pin to; two of them had been up 121 days and one had been up 5 minutes.
 #
-# It looks exactly like an out-of-memory kill and is not one, which matters because the
-# obvious fix is the wrong one: the budget is CPU seconds, so capping the JVM heap buys
-# nothing. A head process that submits and polls 31_000 SLURM jobs over several days will
-# always spend more than ten CPU-minutes doing it.
+# A batch job is out of reach of both. Nothing of the run is left on a login node.
 #
 # On a compute node those four limits are unlimited, unlimited, 131072 and 12288 (measured
 # on sh04-04n19). Same move as prefetch-images converting images inside a job.
-#
-# What stays on the login node is the srun client relaying the head's output into your
-# tmux, which is a thin copy rather than the work -- but it is not free either, and a long
-# enough run could eventually walk it into the same ten minutes. If a run dies with the
-# head job still alive in `make running`, that is what happened; reattach rather than
-# relaunch.
 HEAD_CPUS ?= 2
 HEAD_MEM  ?= 16G
 # SLURM enforces --mem with a cgroup, and a JVM that sizes its heap off the NODE's 191 GB
@@ -259,31 +255,20 @@ export NXF_OPTS := -Xms1g -Xmx$(HEAD_XMX)
 # Only the sweep that has to outlive several days takes one; see run-midi-plus-all-qfo.
 HEAD_QOS  ?= normal
 HEAD_TIME ?= 2-00:00:00
-# --pty because Nextflow prints its live task table only to a TTY. Without it every update
-# reprints the whole table, which is the damage `tee` does and the reason for the note on
-# it in README-sherlock.md.
-#
-# Launched with no terminal -- over a bare ssh, or with the output piped -- srun prints
-#
-#   srun: error: ioctl(TIOCGWINSZ): Inappropriate ioctl for device
-#   srun: error: Not using a pseudo-terminal, disregarding --pty option
-#
-# and then runs the job anyway. Both lines say `error:` and neither is one: you lose the
-# live table and nothing else.
-#
-# --mem, and never --mem-per-cpu. Whatever the head is allocated with is exported into the
-# environment it then submits from: probed on sh04-04n19 under SLURM 25.11.8, an 8 GB /
-# 2-cpu allocation passed SLURM_MEM_PER_NODE, SLURM_CPUS_PER_TASK and SLURM_TRES_PER_TASK
-# down to a child sbatch, and the child's own `#SBATCH --mem=4G --cpus-per-task=1` won on
-# both counts -- so the `#SBATCH` header Nextflow writes into every .command.run is safe.
-# --mem-per-cpu would export SLURM_MEM_PER_CPU instead, which is the half of the pair
-# sbatch treats as mutually exclusive with --mem. Untested, and no reason to find out.
+# The tmux session name inside the head job. `make watch` attaches to it.
+HEAD_SESSION ?= qfo
+
+# tools/nf-head writes and submits the job script; see the header there for what it does
+# and why. Deliberately NOT in bin/: Nextflow stages bin/ into every task and counts it in
+# the task hash, so a file added there would invalidate the resume cache for every one of
+# the sweep's completed tasks.
 #
 # Recursive `=`, not `:=`, so the per-target overrides below are in scope when it expands.
-HEAD_SRUN = srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
-                 --qos=$(HEAD_QOS) --time=$(HEAD_TIME) \
-                 --cpus-per-task=$(HEAD_CPUS) --mem=$(HEAD_MEM) \
-                 --job-name=nf-head --pty
+MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
+HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
+              HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
+              HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
+              HEAD_SESSION=$(HEAD_SESSION) $(MAKEFILE_DIR)/tools/nf-head
 
 # --- MultiQC report --------------------------------------------------------
 # Which run's resource numbers the report describes. Defaults to the newest trace the main
@@ -334,6 +319,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
         run-midi-plus-all-qfo queue-empty \
+        watch attach stop \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         stage-botryllus \
@@ -390,6 +376,8 @@ help:
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
 	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
+	@echo "  watch                attach to the running head and see the live table"
+	@echo "  stop                 ask the running head to shut down cleanly"
 	@echo "                       Reuses run-midi-plus's stored searches; replaces its report"
 	@echo "                       Additive to run-midi, its own outdir, target DBs shared."
 	@echo "                       Also searches botryllus, a 10th target that is NOT scored"
@@ -1465,7 +1453,7 @@ define launch
 	mkdir -p run
 	cd run && \
 	  ml load biology nextflow && \
-	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
 	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --qfo_dir     ../data/qfo \
 	    --annotations ../data/annotations \
@@ -1618,7 +1606,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	mkdir -p run-midi
 	cd run-midi && \
 	  ml load biology nextflow && \
-	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1702,7 +1690,7 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	mkdir -p run-midi-plus
 	cd run-midi-plus && \
 	  ml load biology nextflow && \
-	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1829,7 +1817,7 @@ run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	mkdir -p $(ALLQFO_RUN_DIR)
 	cd $(ALLQFO_RUN_DIR) && \
 	  ml load biology nextflow && \
-	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1921,7 +1909,7 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	mkdir -p $(RB_RUN_DIR)
 	cd $(RB_RUN_DIR) && \
 	  ml load biology nextflow && \
-	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image      $(RB_IMAGE_REMOTE) \
 	    --kmerseek_encodings  $(RB_ENCODINGS) \
 	    --skip_baselines      true \
@@ -1948,7 +1936,7 @@ run-mini: prefetch-images mini-testset-sherlock
 	mkdir -p run-mini
 	cd run-mini && \
 	  ml load biology nextflow && \
-	  $(HEAD_SRUN) nextflow run ../main.nf -profile $(PROFILE),mini -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE),mini -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --qfo_dir         ../data/mini/qfo \
 	    --annotations     ../data/mini/annotations \
@@ -2136,6 +2124,55 @@ multiqc-rannon-burstein: prefetch-images
 	    --report_trace    $(abspath $(RB_COMBINED_TRACE)) \
 	    --qfo_dir         ../data/midi/qfo \
 	    $(NF_ARGS)
+
+## Attach to the head job's tmux and watch the live task table.
+##
+## The socket is /tmp/nf-head-<jobid> on the head's own node, and `srun --jobid` puts you
+## on that node, so nothing has to travel through the filesystem for this to find it.
+##
+## `watch` is read-only, because a stray Ctrl-C in an attached session reaches Nextflow and
+## shuts the run down. Detach with Ctrl-b d and the run carries on. `attach` is the same
+## thing writable, for when typing into it is what you mean -- though `make stop` is the
+## safer way to end a run.
+##
+## Pass JOBID=<id> when more than one head is alive.
+watch:  HEAD_ATTACH := -r
+attach: HEAD_ATTACH :=
+watch attach:
+	$(call require_cluster)
+	@jid="$(JOBID)"; \
+	 if [ -z "$$jid" ]; then \
+	   jid=$$(squeue -u $$USER -h -n nf-head -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 fi; \
+	 if [ -z "$$jid" ]; then \
+	   pend=$$(squeue -u $$USER -h -n nf-head -o "%i %T %r"); \
+	   if [ -n "$$pend" ]; then \
+	     echo "no nf-head is RUNNING yet:"; echo "$$pend" | sed 's/^/    /'; \
+	   else \
+	     echo "no nf-head job. Start one with a run target, or pass JOBID=<id>."; \
+	   fi; \
+	   exit 1; \
+	 fi; \
+	 exec srun --jobid=$$jid --overlap --pty \
+	      tmux -S /tmp/nf-head-$$jid attach $(HEAD_ATTACH) -t $(HEAD_SESSION)
+
+## Ask the run to stop the way Nextflow can handle: Ctrl-C, so it cancels the jobs it has
+## in flight rather than leaving them as orphans for the next launch's queue-empty check to
+## trip over.
+##
+## `scancel --signal=TERM --batch` signals the batch script only and does NOT cancel the
+## job, so the trap in tools/nf-head gets to do that work and the job ends by itself once
+## Nextflow has finished shutting down. Plain `scancel <jobid>` is the hard version, and it
+## is the one that leaves the orphans.
+stop:
+	$(call require_cluster)
+	@jid="$(JOBID)"; \
+	 if [ -z "$$jid" ]; then \
+	   jid=$$(squeue -u $$USER -h -n nf-head -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 fi; \
+	 if [ -z "$$jid" ]; then echo "no nf-head job is running"; exit 1; fi; \
+	 scancel --signal=TERM --batch $$jid && \
+	 echo "asked job $$jid to shut down; watch it drain with: make running"
 
 status:
 	$(call require_cluster)

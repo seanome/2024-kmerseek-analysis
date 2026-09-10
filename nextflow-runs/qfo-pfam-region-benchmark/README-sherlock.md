@@ -480,40 +480,59 @@ Every run target blocks in the foreground and streams live output, so start your
 session first and run them inside it. They deliberately do not start tmux themselves.
 `make status` shows the SLURM queue from another pane.
 
-### The head process runs on a compute node
+### The head process is a job, and you attach to it
 
-The `nextflow` process itself is submitted as a job named `nf-head`. What stays on the
-login node is the `srun` client relaying its output into your tmux.
+`nextflow` itself runs as a SLURM job called `nf-head`, inside a tmux session on a compute
+node. Nothing of the run is left on a login node. A run target submits that job, waits for
+it to start, and drops you into the live task table exactly as before -- the difference is
+that **Ctrl-b d** now detaches and leaves the run going, and the run survives you logging
+out, your laptop sleeping, and the login node rebooting.
+
+```bash
+make watch      # the live table again, read-only
+make attach     # the same, writable
+make stop       # ask the run to shut down cleanly
+```
+
+`watch` is read-only on purpose: a stray Ctrl-C in an attached session goes to Nextflow and
+shuts the run down. `make stop` is the deliberate version, and it is gentler than it looks
+-- it signals only the batch script, whose trap sends Ctrl-C to Nextflow so it cancels the
+jobs it has in flight. Plain `scancel <jobid>` skips that and leaves orphans behind, which
+the next launch's `queue-empty` check will then refuse to start over.
+
+Two limits made this necessary, a day apart.
 
 Sherlock kills any login-node process that reaches ten CPU-MINUTES -- `cpu 10` in
 /etc/security/limits.d/sh_login.conf, with soft equal to hard, so the kernel sends SIGKILL
-rather than SIGXCPU. The all-QfO head crossed that 16.5 hours into the 2026-09-08 run
-while tracking ~31_000 tasks, and .nextflow.log stops mid-line with no OutOfMemoryError
-and no shutdown sequence; `make` reported Error 137. It reads as an out-of-memory kill and
-is not one, so nothing about the JVM heap would have saved it. Measured on a live head:
-20 CPU-seconds in the first 11 minutes, and a tmux server on the same node has spent 118
-CPU-seconds over 10 days, which is the margin the relay is left with.
+rather than SIGXCPU. The all-QfO head crossed that 16.5 hours into the 2026-09-08 run while
+tracking ~31_000 tasks; .nextflow.log stops mid-line with no OutOfMemoryError and no
+shutdown sequence, and `make` reported Error 137. It reads as an out-of-memory kill and is
+not one, so nothing about the JVM heap would have saved it. Measured on a live head: 1.45%
+of one core, which reaches ten CPU-minutes in about eleven hours.
 
-Two things follow from the head being a job:
+Then on 2026-09-09 sh03-ln07 rebooted at 15:53 and came back without /scratch mounted,
+taking with it a 10-day tmux, a running head, and that head's whole queue -- it got SIGTERM
+on the way down and cancelled its own jobs. Login node boot times are scattered across four
+months with no cycle: two nodes had been up 121 days and one had been up five minutes. So
+there is no node safe to pin a session to, and the answer is not to pin one.
 
-- `squeue` shows `nf-head` for the life of the run, and `queue-empty` counts it, so a
-  second run target refuses to start while one is alive. That is the intended behaviour:
-  two heads against one `--db_cache` is the storeDir race. It also means an unrelated run
-  of yours in the queue blocks a launch, and the guard cannot tell the two apart.
-- The head has a walltime like anything else: 2 days by default, 7 for
-  `run-midi-plus-all-qfo`, which takes one of the four `long` QOS slots to get them. When
-  it expires the run stops and the jobs it had already submitted keep going as orphans.
-  Let `squeue -u $USER` drain, then re-run the same target -- `-resume` picks it up.
-
-Size a head differently for one run without editing anything:
+Sizing, if a head needs longer or more room:
 
 ```bash
 make run-midi HEAD_TIME=1-00:00:00 HEAD_MEM=32G HEAD_XMX=24g
 ```
 
 `HEAD_XMX` is the JVM heap and has to stay under `HEAD_MEM`, which SLURM enforces with a
-cgroup. It is pinned rather than left to the JVM, which would otherwise size itself
-against the node's 191 GB and be killed inside the allocation.
+cgroup. It is pinned rather than left to the JVM, which would otherwise size itself against
+the node's 191 GB and be killed inside the allocation. `run-midi-plus-all-qfo` gets 7 days
+and takes one of the four `long` QOS slots; everything else gets 2 days under `normal`.
+
+`squeue` shows `nf-head` for the life of the run and `queue-empty` counts it, so a second
+run target refuses to start while one is alive. That is intended -- two heads against one
+`--db_cache` is the storeDir race -- but it also means an unrelated run of yours in the
+queue blocks a launch, and the guard cannot tell the two apart.
+
+`NF_HEAD_DETACH=1` submits without attaching, if you only want the job id back.
 
 Run `run-kmerseek` and `run-baselines` in separate panes to get both arms going at once.
 
