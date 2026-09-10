@@ -11,9 +11,9 @@
 # 2026-09-09 sh03-ln07 rebooted at 15:53 and took a tmux, a running head and its whole
 # queue with it. A batch job is reachable by neither.
 #
-# tmux, rather than plain sbatch, because the live task table is the point: `make watch`
-# attaches to this session and gets the identical coloured display, and detaching leaves
-# the run alone.
+# tmux, rather than plain sbatch, because the live task table only exists on a TTY.
+# `make watch` attaches to this session and gets the same coloured display. Detaching
+# leaves the run alone.
 #
 # Configured entirely through the environment so the Makefile stays the single place that
 # decides sizing. Every one of these is required -- a default here would be a second place
@@ -122,7 +122,7 @@ status=\$(cat $qdir/.nf-head.status 2>/dev/null || echo 1)
 echo "nf-head: run exited with status \$status"
 # A run stopped through the path above exits 130, the shell's code for SIGINT, so sacct
 # records the job as FAILED with ExitCode 130:0. That is the Ctrl-C, not a crash. Left
-# unmapped because a run that was interrupted genuinely did not finish.
+# unmapped because a run that was interrupted did not finish.
 exit "\$status"
 EOF
 

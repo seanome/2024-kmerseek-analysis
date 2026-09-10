@@ -224,7 +224,7 @@ watch-dark-set: check-species
 # Asks the run to stop the way Nextflow can handle. `scancel --signal=TERM --batch` signals
 # the batch script only and does not cancel the job, so the trap in tools/nf-head sends
 # Ctrl-C to Nextflow and it cancels its own tasks before exiting. Plain `scancel` kills the
-# driver outright and leaves those tasks behind. Nothing finished is lost either way: the
+# driver and leaves those tasks behind. Nothing finished is lost either way: the
 # reference and indexes are under storeDir and completed tasks stay cached, so a later
 # run-dark-set-sbatch resumes rather than restarts.
 stop-dark-set: check-species
