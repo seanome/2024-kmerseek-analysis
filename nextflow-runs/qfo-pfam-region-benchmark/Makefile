@@ -2319,8 +2319,12 @@ clean-folddisco-index:
 	/bin/rm -rf $(REMOTE_FOLDDISCO_DIR)
 
 ## Where kmerseekSearch stores its region tables. Defaults to the outdir run-midi-plus and
-## run-midi-plus-all-qfo share; point it elsewhere for another run's outdir.
-KMERSEEK_REGIONS_DIR ?= $(MIDI_PLUS_OUTDIR)/kmerseek
+## run-midi-plus-all-qfo share; point it elsewhere for another run's outdir. MIDI_PLUS_OUTDIR
+## is written against the launch directory (`../data/midi-plus/results`), and this target
+## runs from the pipeline directory one level up, so it goes through rel_to_launch like
+## every other outdir read from here. Without that it looked for `../data/...` beside the
+## pipeline and reported no store.
+KMERSEEK_REGIONS_DIR ?= $(call rel_to_launch,run-midi-plus-all-qfo,$(MIDI_PLUS_OUTDIR))/kmerseek
 
 ## Delete every zero-byte kmerseek regions parquet so the next -resume searches it again.
 ##
