@@ -760,10 +760,49 @@ workflow.onError {
 // ends at `finish`, so a task that cannot be made to work costs its own arm and nothing
 // else. `retries` still has to match the process's own maxRetries, which is the number
 // that actually bounds the attempts.
-def retryOnKill = { task, int retries = 2 ->
+//
+// The kill test itself lives in killedByCluster so that retryOnKillElseIgnore below can
+// share it rather than restate the three conditions and drift.
+def killedByCluster = { task ->
     def status = task.exitStatus
-    def killed = status == null || status == Integer.MAX_VALUE || status in 128..143
-    (killed && task.attempt <= retries) ? 'retry' : 'finish'
+    status == null || status == Integer.MAX_VALUE || status in 128..143
+}
+
+def retryOnKill = { task, int retries = 2 ->
+    (killedByCluster(task) && task.attempt <= retries) ? 'retry' : 'finish'
+}
+
+// kmerseekSearch's variant: a kill that has used up its retries is ignored, not finished.
+//
+// retryOnKill hands an exhausted kill to `finish`, which stops the run. For every other
+// process that is right, but for the search sweep it is not. A reduced-alphabet combo at
+// low k (gbmr7 k9-12, gbmr4 k12-13, polarity4 k10-13 on the 2026-09-10 run) can be
+// infeasible on the memory it can get, and an infeasible combo is an expected outcome of
+// sweeping alphabet against ksize, not a broken run. Stopping the run on it strands every
+// other arm behind it.
+//
+// Ignoring is safe here because of how kmerseekSearch fails. Its script re-raises a
+// signal exit of kmerseek itself (see the note in the script), so a killed search
+// produces no regions parquet and storeDir stays empty for that combo. An ignored task
+// emits nothing, so the arm never reaches scoreDomainCalls, and a later -resume finds
+// the store empty and runs the search again. A missing arm is honest. What the pipeline
+// did before this was store the kill as a zero-byte parquet, which storeDir then served
+// as "done" on every later run and scoring read as recall 0 forever: 178 of the 227
+// empty region files on the 2026-09-10 run were exit 137, not empty results.
+//
+// Memory sizing is what makes the retries worth having: kmerseekSearchMemory multiplies
+// by task.attempt under a params.kmerseek_memory_max of 128 GB, and hns has 15 nodes with
+// 1 to 1.5 TB, so attempts 2 and 3 (256 and 384 GB) can be placed.
+//
+// A non-kill failure still goes to `finish`. A script error is a bug, and a bug must stop
+// the run rather than quietly cost an arm.
+def retryOnKillElseIgnore = { task, int retries = 2 ->
+    if (!killedByCluster(task)) return 'finish'
+    if (task.attempt <= retries) return 'retry'
+    log.warn "${task.process} (${task.tag}) was killed on attempt ${task.attempt} of " +
+             "${retries + 1} at ${task.memory}; ignoring it. Nothing is stored for this " +
+             "combo, so -resume will try it again."
+    'ignore'
 }
 
 // Shell helpers both kmerseek processes paste into their scripts to time themselves.
@@ -1624,13 +1663,15 @@ process kmerseekSearch {
     storeDir "${params.outdir}/kmerseek"
 
     memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
-    // Retry cluster kills only (see retryOnKill), stop on anything else. Deliberately not
-    // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
-    // downstream as "this alphabet found nothing", which is indistinguishable from a real
-    // negative. That has already happened once on this project -- 17 combos silently
-    // searched ~1000 of 19,696 queries and looked like genuine misses. Failing loudly and
-    // resuming costs queue time; a silent partial costs a wrong conclusion.
-    errorStrategy { retryOnKill(task) }
+    // Retry cluster kills, ignore a kill that has used up its retries, stop on anything
+    // else (see retryOnKillElseIgnore). Ignoring a kill is safe only because the script
+    // below re-raises kmerseek's own signal exit instead of storing it as a no-hit result:
+    // an ignored task writes nothing to the store, so the arm is absent from scoring rather
+    // than present as a zero, and -resume runs it again. A stored empty result is the
+    // dangerous case, and this project has produced it twice -- 17 combos that silently
+    // searched ~1000 of 19,696 queries and looked like misses, then 178 OOM kills stored as
+    // empty region files on the 2026-09-10 run.
+    errorStrategy { retryOnKillElseIgnore(task) }
     maxRetries 2
 
     input:
@@ -1699,11 +1740,22 @@ process kmerseekSearch {
     _cmd_s=\$(_elapsed_s \$_cmd_t0)
     set -e
 
-    # kmerseek's own nonzero exit stays tolerated: a combo that finds nothing is a real
-    # result. zstd's does NOT. It used to share this `|| true`, so "cannot write block:
-    # Cannot allocate memory" left a truncated .zst that polars read as far as it could
-    # before dying on "incomplete frame" -- a memory failure surfacing as a parquet error
-    # two steps later. Re-raise it as a signal so the retry ladder doubles the allocation.
+    # kmerseek's own nonzero exit stays tolerated, with one exception: a combo that finds
+    # nothing is a real result, a search that died by signal is not. 128..143 is how bash
+    # reports a signal death, and 137 is the cgroup OOM killer. The killer takes the
+    # kmerseek process, the shell survives, and until this check the shell went on to
+    # write an empty parquet into storeDir, where it counted as done and nothing would ever
+    # re-run it: 178 of the 227 empty region files on the 2026-09-10 run were exit 137.
+    # Re-raising the same status lets errorStrategy see the kill and double the memory.
+    if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then
+        echo "kmerseek search died by signal (exit \${rc[0]}); not a no-hit result" >&2
+        exit "\${rc[0]}"
+    fi
+    # zstd's nonzero exit is NOT tolerated either. It used to share the `|| true`, so
+    # "cannot write block: Cannot allocate memory" left a truncated .zst that polars read as
+    # far as it could before dying on "incomplete frame" -- a memory failure surfacing as a
+    # parquet error two steps later. Re-raise it as a signal so the retry ladder doubles
+    # the allocation.
     if [ "\${rc[1]}" -ne 0 ]; then
         echo "zstd exited \${rc[1]}: the region stream is truncated, not a short result" >&2
         exit 137
@@ -4232,7 +4284,10 @@ workflow {
         // over-counts, the group never reaches its size and would hang forever; with
         // remainder it is released at channel close instead, which is exactly the
         // behaviour this change replaces. An under-count still emits early, which is why
-        // the count is accumulated beside the arms rather than restated.
+        // the count is accumulated beside the arms rather than restated. A kmerseekSearch
+        // that retryOnKillElseIgnore ignored is now one way a group comes up short: the
+        // ignored task emits nothing, the group is counted for it anyway, and remainder
+        // releases the group with that arm missing once the channel closes.
         .groupTuple(by: 0, remainder: true)
         .map { key, tools, variants, myas, regions, covs, idents, tdiss, rpls, rdiss ->
             // Same .first() as the other three: these are one file for the whole run, so

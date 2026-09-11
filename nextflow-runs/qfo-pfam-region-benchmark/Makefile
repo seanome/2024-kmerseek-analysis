@@ -347,7 +347,8 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
         build-image-rannon-burstein push-image-rannon-burstein \
         run-rannon-burstein multiqc-rannon-burstein \
-        pull-report pull-report-mini pull-report-midi
+        pull-report pull-report-mini pull-report-midi \
+        purge-empty-kmerseek-regions
 
 help:
 	@echo "Mac:"
@@ -416,6 +417,9 @@ help:
 	@echo "Cleanup:"
 	@echo "  clean-image-cache    Remove partial Apptainer pulls"
 	@echo "  clean-cache          Remove all cached Apptainer images"
+	@echo "  purge-empty-kmerseek-regions"
+	@echo "                       Delete zero-byte kmerseek region files (stored OOM kills)"
+	@echo "                       so the next -resume searches those combos again"
 
 
 # --- which machine am I on? -------------------------------------------------
@@ -2313,6 +2317,34 @@ clean-folddisco-index:
 	@du -sh $(REMOTE_FOLDDISCO_DIR) 2>/dev/null || echo "no folddisco index at $(REMOTE_FOLDDISCO_DIR)"
 	@read -p "delete the folddisco indexes above? they rebuild on the next run [y/N] " a; [ "$$a" = y ] || exit 1
 	/bin/rm -rf $(REMOTE_FOLDDISCO_DIR)
+
+## Where kmerseekSearch stores its region tables. Defaults to the outdir run-midi-plus and
+## run-midi-plus-all-qfo share; point it elsewhere for another run's outdir.
+KMERSEEK_REGIONS_DIR ?= $(MIDI_PLUS_OUTDIR)/kmerseek
+
+## Delete every zero-byte kmerseek regions parquet so the next -resume searches it again.
+##
+## These files are OOM kills stored as results. Until the fix on kmerseekSearch, a
+## `kmerseek search` killed by the cgroup memory limit exited 137, the shell around it
+## survived, treated the nonzero exit as "found nothing", and wrote an empty parquet into
+## storeDir. storeDir then saw the output present and served it as done on every later
+## run, and scoring read it as recall 0. On the 2026-09-10 run 227 stored region files were
+## zero bytes and 178 of them were exit 137 (mostly gbmr7 k9-12, gbmr4 k12-13, polarity4
+## k10-13). Removing the regions parquet alone is enough: storeDir decides "done" by the
+## declared outputs existing, so a missing regions file makes the task run again under the
+## corrected script, which now re-raises the kill instead of storing it.
+##
+## /bin/rm, not rm: the interactive shell aliases rm to `rm -i`, which hangs a make target.
+purge-empty-kmerseek-regions:
+	$(call require_cluster)
+	@if [ ! -d "$(KMERSEEK_REGIONS_DIR)" ]; then \
+	  echo "no kmerseek store at $(KMERSEEK_REGIONS_DIR)"; exit 1; \
+	fi
+	@n=$$(find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 | wc -l | tr -d ' '); \
+	 echo "$$n zero-byte regions file(s) under $(KMERSEEK_REGIONS_DIR)"; \
+	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 | sort | sed 's/^/  /'; \
+	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 -exec /bin/rm -f {} +; \
+	 echo "deleted $$n; the next -resume runs those searches again"
 
 ## How much disk the shared cache is holding, and how much is left. Check this before
 ## launching the full sweep. Everything under results/ is shared between run-midi and run:
