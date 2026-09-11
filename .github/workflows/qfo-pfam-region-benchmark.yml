@@ -83,12 +83,6 @@ jobs:
       # profiles are checked separately because a layered profile that fails to resolve is
       # silent otherwise: Nextflow applies them in the order they are DECLARED in the config
       # file, not the order given on the command line.
-      - name: nextflow config resolves
-        run: |
-          nextflow config . -profile standard >/dev/null
-          nextflow config . -profile standard,mini >/dev/null
-          nextflow config . -profile sherlock >/dev/null
-          nextflow config . -profile sherlock,mini >/dev/null
       # Output is captured and printed ON FAILURE rather than discarded. Sending it to
       # /dev/null is how the first version of this step failed with exit 1 and no message
       # at all: Nextflow writes some of its errors to stdout, so the reason went in the bin
