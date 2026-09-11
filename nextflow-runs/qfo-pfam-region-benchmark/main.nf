@@ -871,9 +871,10 @@ params.score_memory_per_mb = 120     // MB of RAM per compressed MB of regions
 params.score_memory_max    = '96 GB' // the old flat value, now a ceiling rather than a floor
 // The ceiling AFTER the retry multiplier, which matters now that every failure retries and
 // not just a signal. Retries double the ask, so a task starting at the 96 GB cap would be
-// asking for 384 GB on its last attempt -- more than any node on `hns` has, and SLURM
-// rejects a job it cannot ever place instead of queueing it. Raise this only against
-// `sinfo -p hns -o '%n %m'`.
+// asking for 384 GB on its last attempt. Only 15 of hns's 136 nodes have that much (12 at
+// 1 TB, 3 at 1.5 TB; the other 121 are 192-256 GB, per `sinfo -p hns -N -o '%m'` on
+// 2026-09-11), so such a task waits for one of those fifteen behind every other big job.
+// Raise this only after checking that output again.
 params.score_memory_retry_max = '128 GB'
 
 // How finely scoreDomainCalls batches its arms. One task per species put all ~415 arms of
