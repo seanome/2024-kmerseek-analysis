@@ -7731,18 +7731,23 @@ def _reachability_panel(out: Path, per: pl.DataFrame, truth_set: str, *,
         "id": "qfo_reachability" if is_lead else f"qfo_reachability_{truth_set}",
         "section_name": f"Recall ceiling per species — {truth_set} truth",
         "description": (
-            "<p>Human domain instances the target proteome could have supplied against "
-            "those it could not.</p>"
+            f"<p>The share of the {total:,}-instance answer key whose label exists "
+            f"somewhere in each target proteome, ordered from most reachable to least "
+            f"({truth_set} truth).</p>" + what
             + bullets(
                 "<b>Reachable</b> is instances some annotated target protein could have "
                 "supplied the label for. On the Pfam truth sets that means the family "
                 "exists somewhere in the target; on the Swiss-Prot truth set, where the "
                 "label is one of twelve feature types, it means a target protein carries "
                 "that feature type <i>and</i> shares a Pfam family with the human query.",
-                "No search of any kind can transfer a label the target does not have, so "
-                "every recall_reachable in this report divides by the reachable bar only, "
-                "and counts only instances inside it.",
-                "<b>Species</b> are ordered by divergence time.")
+                ("<b>Read this before any leaderboard.</b> " if is_lead else "")
+                + "No search of any kind can transfer a label the target proteome does "
+                  "not have, so the pale part of each bar is out of reach for every arm in "
+                  "this report and every recall_reachable divides by the green part only.",
+                shape,
+                "<b>Each bar's tick label carries its own reachable count</b>, since the "
+                "denominators are what the shares are of.",
+                curation_caveat_note(truth_set, reach))
             + reachability_caveat(per, truth_set)),
         "plot_type": "bargraph",
         "pconfig": {"id": ("qfo_reachability_plot" if is_lead
