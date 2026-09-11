@@ -28,6 +28,10 @@
 
 nextflow.enable.dsl = 2
 
+include { compareDarkLengths } from './modules/length.nf'
+
+include { darkSetDisorder } from './modules/disorder.nf'
+
 def home = System.getProperty('user.home')
 
 params.species        = null          // cgigas | botryllus
@@ -70,6 +74,38 @@ params.max_query_pvalue = 0.05
 params.min_region_score = 1.3
 params.index_cache        = null
 params.with_kmerseek      = false
+
+// Length of the dark proteins against the placed ones. On by default and cheap -- it reads
+// the query FASTA and the dark parquet and nothing else -- because the dark fraction should
+// not be quoted without it. Botryllus is a 2026 annotation, and a new gene set's tail of
+// fragments and spurious ORF calls is dark for reasons that have nothing to do with
+// homology detection being hard. Junk models are short, so this says whether shortness is
+// what is inflating the number.
+params.with_length_comparison = true
+
+// Disorder is ON by default, unlike kmerseek. It is one metapredict pass over the query
+// proteome with no index to build, so it costs a rounding error next to the three search
+// arms -- and it is a check on the dark set's own composition, which every reading of the
+// dark count depends on. See modules/disorder.nf.
+params.with_disorder      = true
+
+// The MultiQC report. On by default: it costs one python task and one multiqc task at the
+// end of a run that has already done every search, and a run whose numbers exist only as
+// JSON on a scratch filesystem is a run nobody reads.
+params.with_multiqc        = true
+params.multiqc_dark_config = "${projectDir}/assets/multiqc_dark_config.yaml"
+
+// Set only by `-entry darkReport`, where the report IS the work and a failure has to be
+// loud. Inside a full run the report is the last step after every search has already
+// succeeded, so failing the whole run over a plot would throw away a finished proteome --
+// there it is allowed to fail and the run still ends green. The errorStrategy that reads
+// this lives in nextflow.config, not in the process body: a config-level setting always
+// beats a directive declared in the process.
+params.report_only        = false
+
+// The report lives in its own module file. main.nf is where every other arm is also being
+// added, and a report process defined here would put three sets of edits in one hunk.
+include { darkReportFrom } from './modules/report'
 
 HMMER   = 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
 MMSEQS  = 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
@@ -380,6 +416,24 @@ workflow darkSet {
 
     dark = computeDarkSet(hits.map { h -> tuple(params.species, query, h) })
 
+    // Everything the report can draw besides the headline. Each optional arm mixes its own
+    // products in where it runs, so a run without that arm contributes nothing and the
+    // report omits the section by name instead of drawing an empty one.
+    report_extra = Channel.empty()
+
+    // `query` is a file value, not a channel, so these are plain 3-tuples per emission --
+    // no combine(), and none of combine()'s tuple-concatenation trap.
+    if (params.with_length_comparison) {
+        len = compareDarkLengths(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
+        report_extra = report_extra.mix(len.map { sp, pq, js -> [pq, js] }.flatten())
+    }
+
+    // Is the dark set more disordered than the placed set?
+    if (params.with_disorder) {
+        dis = darkSetDisorder(dark.map { sp, dp, _j -> tuple(sp, query, dp) })
+        report_extra = report_extra.mix(dis.map { sp, pq, js -> [pq, js] }.flatten())
+    }
+
     // kmerseek is opt-in. The dark set is defined by the sequence arms alone and is worth
     // having on its own; adding kmerseek costs an index over 572_700 sequences per
     // alphabet/ksize/mask, which is the expensive part of this pipeline.
@@ -410,8 +464,61 @@ workflow darkSet {
         // so the result is (species, parquet, [46 files]) -- which is what the process
         // signature declares.
         q_lists = ks[0].map { sp, a, k, lc, f -> f }.collect().map { q -> [q] }
-        kmerseekDarkGain(dark.map { sp, dp, _j -> tuple(sp, dp) }.combine(q_lists))
+        gain = kmerseekDarkGain(dark.map { sp, dp, _j -> tuple(sp, dp) }.combine(q_lists))
+
+        // The parquet and the JSON both go to the report directory; only the JSON is read,
+        // and the report picks it out by suffix, so sending both costs a symlink.
+        report_extra = report_extra.mix(gain.flatten())
     }
+
+    if (params.with_multiqc) {
+        // `.collect().ifEmpty([])` and NOT `.combine()`. A run with no optional arm has an
+        // empty channel, whose collect() emits nothing at all and would leave the report
+        // task waiting forever; ifEmpty gives it the empty list instead. The collected list
+        // then reaches the process as its own input declaration rather than through
+        // combine(), which concatenates tuples and would spread the list into N positional
+        // arguments -- the bug that already broke kmerseekDarkGain here once.
+        darkReportFrom(dark.map { sp, _dp, js -> tuple(sp, js) },
+                       report_extra.collect().ifEmpty([]))
+    }
+}
+
+/*
+ * Report only, over a results directory a previous run already published.
+ *
+ * The searches are the expensive part and they are already done; re-rendering the report
+ * after a plot changes should not need the work directory that produced them. So this
+ * entry reads the published products straight out of --outdir and builds the report from
+ * whichever of them exist. `make multiqc-dark-set SPECIES=<x>` is this entry.
+ */
+workflow darkReport {
+    if (!params.species) error "--species is required"
+
+    def sp  = params.species
+    def dir = file("${params.outdir}/${sp}")
+    def summary = file("${dir}/${sp}_dark_summary.json")
+    if (!summary.exists()) {
+        error "no dark summary at ${summary}\n" +
+              "  This entry reports on a finished run; it does not compute one.\n" +
+              "  Run the dark set first:  make run-dark-set SPECIES=${sp}"
+    }
+
+    // Named suffixes, not a glob. A glob over the directory would also sweep in
+    // <species>_dark_set.parquet -- one row per dark protein, staged for nothing -- and
+    // would quietly pick up whatever else a future arm publishes there, including files
+    // this report has no idea how to read.
+    def optional_products = [
+        "_kmerseek_dark_gain.json", "_kmerseek_dark_gain.parquet",
+        "_length_summary.json", "_length_comparison.parquet",
+        "_disorder_summary.json", "_disorder.parquet",
+    ].collect { file("${dir}/${sp}${it}") }.findAll { it.exists() }
+
+    log.info "  reporting on : ${dir}"
+    log.info "  optional arms: " + (optional_products
+        ? optional_products*.name.join(', ') : "none found, their sections are omitted")
+
+    darkReportFrom(Channel.of(tuple(sp, summary)),
+                   Channel.value(optional_products))
 }
 
 workflow { darkSet() }

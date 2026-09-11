@@ -1,0 +1,76 @@
+# MultiQC settings for the invertebrate dark-set report.
+#
+# The sections are written by bin/build_dark_multiqc_inputs.py as *_mqc.json -- machine
+# generated, one file per panel. This file holds only what a person edits: the title, the
+# order the sections appear in, and the report-wide plot settings.
+#
+# Section ids here must match the ids that script writes. An id listed but not produced is
+# skipped with a debug message, which is what makes the optional arms safe to list.
+
+title: "Invertebrate dark set"
+subtitle: "The proteins phmmer, jackhmmer and mmseqs2 all fail to place, and what kmerseek reaches inside them"
+intro_text: >
+  The dark set is every protein in an invertebrate proteome that three sequence searches
+  <i>all</i> fail to place into reviewed Swiss-Prot with the query's own clade removed. It
+  is the denominator of the proteome-annotate claim: a protein phmmer already places is not
+  territory kmerseek can add anything in, so the only proteins worth arguing about are the
+  ones where every arm returned nothing.
+  <br><br>
+  <b>This number needs no answer key.</b> C. gigas has 16 reviewed Swiss-Prot entries and
+  Botryllus has none, so neither can be scored for accuracy until the structural key
+  exists. "No arm hit this protein" is a property of the searches alone, which is why it
+  can be measured now.
+  <br><br>
+  <b>What the report cannot tell you.</b> Reach is not accuracy: a kmerseek region on a
+  dark protein says something was found there, not that the family label is right. And a
+  dark protein may be a real protein whose homologs sequence search cannot reach, or a
+  spurious gene model with nothing to find. The length and disorder panels are the cheap
+  discriminators between those two; the annotation evidence is what settles it.
+
+report_comment: >
+  The low-complexity mask is reported as a PAIR, on and off, in every panel that touches
+  it. A dark protein kmerseek reaches only with the mask off is a property of amino-acid
+  composition rather than of homology, and one side of the pair shown alone cannot be told
+  apart from that. A combo measured on only one side is named and dropped rather than
+  drawn.
+
+# Not a sequencing run: nothing here is a FASTQ and the sections are plots, not per-sample
+# QC. Turning these off removes UI that would only mislead.
+show_analysis_paths: false
+show_analysis_time: true
+skip_generalstats: true
+
+# Written to the plots directory as png, svg and pdf. The svg is the one that goes in a
+# figure.
+export_plots: true
+
+# Plotly rather than a flat image. The mask pair is meant to be hovered.
+plots_force_interactive: true
+
+# report_section_order is ONE scale. A partial ordering competes with MultiQC's own
+# 10/20/30 defaults for the sections left out of it, and the result is silently
+# mis-sorted -- so every id this pipeline can write is listed here, including the ones a
+# given run omits. Sections inside a module sort by ASCENDING order value.
+#
+# Each plot takes the integer immediately before its own table. A plot and a table sharing
+# one number renders the TABLE first, and the order value must be an int, so there is no
+# half-step to slot into: inserting a panel between two consecutive integers means moving
+# the block, not fractionalising.
+report_section_order:
+  # The headline first: every other panel is a fraction of, or a qualification of, this
+  # one number.
+  dark_headline: { order: 10 }
+  dark_headline_table: { order: 11 }
+  # Then the check that every arm ran. Iterative search sees everything a single-pass
+  # search sees, so this ordering has to hold before the headline means anything.
+  dark_per_arm: { order: 20 }
+  dark_per_arm_table: { order: 21 }
+  # The reason the pipeline exists, and the only panel where the mask pair appears.
+  dark_kmerseek_mask: { order: 30 }
+  dark_kmerseek_mask_table: { order: 31 }
+  # The two cheap explanations of a large dark fraction that are not "homology is hard".
+  # Both are optional arms; a run without them omits the panel and says so at 60.
+  dark_length: { order: 40 }
+  dark_disorder: { order: 50 }
+  # What this run could not build. Last, because it is a caveat on everything above.
+  dark_missing: { order: 60 }

@@ -69,7 +69,8 @@ KMERSEEK_ARGS := $(if $(WITH_KMERSEEK),--with_kmerseek true,)
 MINI_N  ?= 200
 
 .PHONY: help check-species check-inputs check-python sherlock-clone sync run-dark-set \
-        run-dark-set-sbatch watch-dark-set stop-dark-set run-dark-set-mini queue-note
+        run-dark-set-sbatch watch-dark-set stop-dark-set run-dark-set-mini queue-note \
+        multiqc-dark-set
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -82,6 +83,7 @@ help:
 	@echo "  watch-dark-set          SPECIES=<...>  follow a running driver's log"
 	@echo "  stop-dark-set           SPECIES=<...>  cancel the driver and its tasks"
 	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
+	@echo "  multiqc-dark-set        SPECIES=<...>  re-render the report on a finished run"
 	@echo
 	@echo "  PROFILE=$(PROFILE)  OUTDIR=$(OUTDIR)"
 	@echo "  REF_CACHE=$(REF_CACHE)  (one file per excluded clade, shared across species)"
@@ -150,6 +152,23 @@ NF_RUN = $(NEXTFLOW) run main.nf -profile $(PROFILE) -resume \
 
 run-dark-set: check-species check-inputs queue-note
 	$(NF_RUN)
+
+# ---- the report on its own -----------------------------------------------------------
+# A full run builds the report itself, at the end. This re-renders it over a results
+# directory that already exists, which is what you want after editing a section or after
+# a later arm (length, disorder, kmerseek) has published its products into the same place.
+# It reads $(OUTDIR)/$(SPECIES)/ and touches no search.
+#
+# --report_only true is not decoration: it flips the report processes from 'ignore' to
+# 'terminate'. In a full run a failed plot must not throw away a finished proteome; here
+# the report IS the work, so a failure has to be loud instead of leaving yesterday's HTML
+# in place and exiting green.
+multiqc-dark-set: check-species check-inputs
+	$(NEXTFLOW) run main.nf -profile $(PROFILE) -entry darkReport -resume \
+	  --species $(SPECIES) --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
+	  --outdir $(OUTDIR) --report_only true $(NF_ARGS)
+	@echo
+	@echo "report: $(OUTDIR)/$(SPECIES)/$(SPECIES)_dark_set_multiqc.html"
 
 # ---- the driver as a batch job -------------------------------------------------------
 # Sherlock's login nodes enforce a TEN CPU-MINUTE cap and SIGKILL past it. A Nextflow head
