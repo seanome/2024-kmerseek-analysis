@@ -3548,7 +3548,40 @@ workflow {
             Channel.of(tuple("swissprot", 1)).combine(sprot.truth)
                 .map { label, _i, t -> tuple(label, t) }
         )
-        map_ch = map_ch.mix(map_of(sprot.maps).map { sp, m -> tuple("swissprot", sp, m) })
+        // A proteome with no reviewed Swiss-Prot entries still gets a
+        // <species>_domain_map.parquet, with the right columns and no rows, because the
+        // script writes one per annotated species. Scoring refuses an empty map on purpose
+        // (evaluate_domain_calls.py, "empty domain map"): for Pfam it means the target
+        // annotation was never built, and the scorer has no way to tell that apart from a
+        // proteome nobody has curated. On the 77-species run pramorum and loculatus had
+        // n_features 0, scoreDomainCalls failed on both, and the `finish` that followed
+        // stopped every scoring task that had not started yet.
+        //
+        // The gate lives here rather than in either script because buildSwissprotTruth's
+        // outputs are inputs to hundreds of cached scoring tasks, and a bin/ script named
+        // in a task's command is part of that task's hash. Dropping the species from the
+        // channel changes only its own tasks' inputs. truth_bundle gathers whatever maps
+        // a species has, so a dropped species is scored against Pfam alone, the same way
+        // a species with no pfamn map already is.
+        sprot_features = sprot.summary.map { f ->
+            new groovy.json.JsonSlurper().parseText(f.text)
+                .findAll { _k, v -> v instanceof Map && v.containsKey('n_features') }
+                .collectEntries { k, v -> [k, v.n_features] }
+        }
+        map_ch = map_ch.mix(
+            map_of(sprot.maps).combine(sprot_features)
+                .filter { sp, _m, n_features ->
+                    def keep = (n_features[sp] ?: 0) > 0
+                    if (!keep) {
+                        log.warn "swissprot arm skipped for ${sp}: the proteome has no " +
+                                 "reviewed Swiss-Prot entries, so its domain map has no " +
+                                 "rows and scoring it would publish an all-zero result. " +
+                                 "It is scored against the other truth sets only."
+                    }
+                    keep
+                }
+                .map { sp, m, _n -> tuple("swissprot", sp, m) }
+        )
     } else {
         log.warn "swissprot_dat not found (${params.swissprot_dat}) -- running without the " +
                  "Swiss-Prot truth arm. Pfam is circular with the profile baselines; see README."
