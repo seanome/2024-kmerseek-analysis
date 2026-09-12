@@ -153,6 +153,23 @@ params.kmerseek_extra_encodings = false
 // already has the alphabets wants.
 params.kmerseek_extra_image = null
 params.kmerseek_combos    = null
+// Sweep only the (target, combo) cells whose search result is already in the store, and
+// launch no new search. For finishing a run whose remaining searches are the ones that
+// cannot finish. On 2026-09-11 run-midi-plus had every arm scored except 16 gbmr7 k9-k11
+// searches that were OOM-killed at 96, 192 and 288 GB and then ignored, and a plain
+// -resume would have run all sixteen through the same three attempts, about three hours
+// each, before ignoring them again and letting the report build. An ignored search leaves
+// the store empty on purpose (see kmerseekSearch), so "not in the store" is exactly "did
+// not finish", and this says so without naming cells.
+//
+// Per cell, not per combo: yeast, ecoli and ciona finished gbmr7 ksizes the larger
+// proteomes could not, and those results stay in the sweep. The per-arm counts are taken
+// from the same filtered list, so a scoring group closes on the cells that will arrive
+// rather than waiting for the whole search channel to end.
+//
+// An error when the store holds nothing, because on a fresh --outdir this would otherwise
+// sweep nothing and build a report over it.
+params.kmerseek_stored_only = false
 
 // Low-complexity k-mer removal. Swept as a toggle when it was an open question -- every
 // alphabet and ksize with and without it, which doubled the search count -- and now fixed
@@ -3826,6 +3843,33 @@ workflow {
                   "and the second fails at unstage. Check --kmerseek_combos and " +
                   "--kmerseek_encodings for repeats."
         }
+        // One key for a (target, combo) cell, shared by the store filter, the count and
+        // the index/search rejoin below, so none of them can name a cell differently.
+        def comboKey = { sp, lab, k, lc -> "${sp}|${lab}|${k}|${lc}".toString() }
+
+        // Every cell the sweep will search: each target against each combo. Under
+        // --kmerseek_stored_only this is cut down to the cells already in the store
+        // BEFORE anything is counted or logged, so the arm counts and the startup line
+        // describe the searches that will actually arrive.
+        def cells = SPECIES*.label.collectMany { sp ->
+            combos.collect { cli_flag, label, k, lc -> tuple(sp, cli_flag, label, k, lc) }
+        }
+        def skipped = []
+        if (params.kmerseek_stored_only) {
+            // The same path kmerseekSearch's storeDir and output name resolve to. An
+            // ignored search leaves nothing here, so exists() is "finished".
+            def stored = { sp, label, k, lc ->
+                file("${params.outdir}/kmerseek/human_vs_${sp}.${label}.k${k}.lc${lc}.regions.parquet").exists()
+            }
+            (cells, skipped) = cells.split { sp, _cli, label, k, lc -> stored(sp, label, k, lc) }
+            if (!cells) {
+                error "--kmerseek_stored_only, but ${params.outdir}/kmerseek holds none of the " +
+                      "${skipped.size()} searches this sweep names. The flag finishes a run " +
+                      "that already searched; it cannot start one."
+            }
+        }
+        def keep = cells.collect { sp, _cli, label, k, lc -> comboKey(sp, label, k, lc) } as Set
+
         // Spell out the query/target asymmetry at startup. "2 species" reading as
         // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
         // this line exists to prevent.
@@ -3838,18 +3882,24 @@ workflow {
         |            each named human_vs_<target>, e.g. human_vs_${SPECIES[0].label}
         |  spectra : one k-mer frequency spectrum per combo, published for plotting
         """.stripMargin()
+        if (params.kmerseek_stored_only) {
+            log.info "  --kmerseek_stored_only: ${cells.size()} searches are in the store, " +
+                     "${skipped.size()} are not and will not run:\n" +
+                     skipped.collect { sp, _cli, label, k, lc ->
+                         "    human_vs_${sp} ${label} k${k} lc${lc}"
+                     }.join('\n')
+        }
 
         // Counted per alphabet rather than in one lump, because that is the grain the
         // groups are keyed at. groupBy runs on the combo's own label -- the same field the
         // result filename carries and scoreGroup reads back out of it -- so the count and
-        // the key cannot name different things.
-        if (params.score_group_by == 'alphabet') {
-            combos.groupBy { it[1] }.each { alphabet, cs ->
-                countArm(SPECIES*.label, kmerseekGroup(alphabet), cs.size())
-            }
-        } else {
-            countArm(SPECIES*.label, scoreGroup("kmerseek", null), combos.size())
-        }
+        // the key cannot name different things. Per target as well, because under
+        // --kmerseek_stored_only two targets can have finished different ksizes of one
+        // alphabet.
+        cells.groupBy { sp, _cli, label, _k, _lc ->
+            [sp, params.score_group_by == 'alphabet' ? kmerseekGroup(label)
+                                                     : scoreGroup("kmerseek", null)]
+        }.each { key, cs -> countArm([key[0]], key[1], cs.size()) }
         // Which image each combo runs under. Keyed on the alphabet's canonical name, the
         // same field KNOWN_ENCODINGS is looked up by, so an alphabet cannot be in
         // EXTRA_ENCODINGS and still be handed the older image. Falls back to the one image
@@ -3861,6 +3911,9 @@ workflow {
                 ? params.kmerseek_extra_image : params.kmerseek_image
         }
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
+            .filter { species, _fasta, _cli, label, ksize, lowcomp ->
+                comboKey(species, label, ksize, lowcomp) in keep
+            }
             .map { species, fasta, cli_flag, label, ksize, lowcomp ->
                 tuple(species, fasta, cli_flag, label, ksize, lowcomp, imageFor(cli_flag))
             }
@@ -3872,8 +3925,6 @@ workflow {
         // joined back against the input channel. That recovers cli_flag and the target
         // FASTA size, neither of which survives in the name, without reparsing either out
         // of a filename that was never meant to carry them.
-        def comboKey = { sp, lab, k, lc -> "${sp}|${lab}|${k}|${lc}" }
-
         combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp, image ->
             tuple(comboKey(species, label, ksize, lowcomp),
                   species, cli_flag, label, ksize, lowcomp, fasta.size(), image)
