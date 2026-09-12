@@ -138,18 +138,26 @@ def parse(path):
     return run
 
 
-def root_cause(workdir, limit=160):
-    """Last line of .command.err that is not container start-up noise."""
-    err = os.path.join(workdir, ".command.err")
-    try:
-        with open(err, errors="replace") as fh:
-            lines = [l.strip() for l in fh if l.strip()]
-    except OSError:
+def root_cause(workdir, limit=300):
+    """Last line of the task's stderr that is not container start-up noise, falling back to
+    the last line of stdout that looks like an error: mmseqs reports `Error: Create profile
+    died` on stdout and leaves stderr with nothing but the apptainer banner."""
+    def lines_of(name):
+        try:
+            with open(os.path.join(workdir, name), errors="replace") as fh:
+                return [l.strip() for l in fh if l.strip() and not l.startswith(NOISE)]
+        except OSError:
+            return None
+
+    err = lines_of(".command.err")
+    if err is None:
         return "(.command.err not readable)"
-    lines = [l for l in lines if not l.startswith(NOISE)]
-    if not lines:
-        return "(no stderr beyond apptainer start-up)"
-    last = lines[-1]
+    if not err:
+        out = lines_of(".command.out") or []
+        err = [l for l in out if re.search(r"error|fatal|cannot|killed|died", l, re.I)]
+    if not err:
+        return "(no stderr beyond apptainer start-up, and nothing error-shaped on stdout)"
+    last = err[-1]
     return last if len(last) <= limit else last[:limit - 3] + "..."
 
 
