@@ -259,8 +259,10 @@ stop-dark-set: check-species
 # is the question a dead tmux session leaves behind, and the answer used to be grepping a
 # 400 KB log for ERROR and then walking into the work dir. HISTORY=1 gives one line per
 # rotated log instead; LOG=.nextflow.log.2 picks an older run.
+# The script is scripts/nf-postmortem at the repo root, one copy shared with the qfo
+# benchmark's `make postmortem` (PR #35), for the same reason nf-head lives there.
 status-dark-set: check-species
-	@$(MAKEFILE_DIR)/tools/nf-postmortem $(if $(HISTORY),--history,--jobname $(HEAD_JOBNAME) $(LOG))
+	@$(MAKEFILE_DIR)/../../scripts/nf-postmortem $(if $(HISTORY),--history,--jobname $(HEAD_JOBNAME) $(LOG))
 
 run-dark-set-mini: check-species check-inputs
 	@mkdir -p $(OUTDIR)/_mini
