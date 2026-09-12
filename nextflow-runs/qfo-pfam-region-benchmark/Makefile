@@ -271,7 +271,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
         qfo-download qfo-link qfo-verify-existing \
         pfam-regions pfam-regions-download pfam-annotations \
-        run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
+        run run-kmerseek run-baselines rannon-burstein-all status running postmortem kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
@@ -340,6 +340,8 @@ help:
 	@echo "  multiqc-status       Show what that report would be built from"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
+	@echo "  postmortem           Did the last run end, what killed it, what it said"
+	@echo "                       HISTORY=1 for one line per past run, LOG=.nextflow.log.2 for an older one"
 	@echo "  rannon-burstein-all  Search polarity4/funcgroups8, then build the combined report"
 	@echo "  running              Show the process and tag behind each running job"
 	@echo "  kill-jobs            Cancel every job on the account (confirms first)"
@@ -2086,6 +2088,15 @@ multiqc-rannon-burstein: prefetch-images
 status:
 	$(call require_cluster)
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+
+## What happened to a run, from its .nextflow.log: whether it ended, which task took it
+## down and what that task printed, per-process counts, every failed task with its work
+## dir. This is the question a dead tmux session leaves behind, and the answer used to be
+## grepping a 400 KB log for ERROR and then walking into the work dir. Needs no cluster:
+## it reads the log in this directory and the failed tasks' .command.err, so it works on a
+## pulled-back copy too. JOBNAME=<slurm job name> adds the head jobs from sacct.
+postmortem:
+	@../../scripts/nf-postmortem $(if $(HISTORY),--history,$(if $(JOBNAME),--jobname $(JOBNAME)) $(LOG))
 
 ## What each running job actually IS: process AND tag, in separate columns.
 ##
