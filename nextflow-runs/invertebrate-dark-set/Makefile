@@ -69,7 +69,7 @@ KMERSEEK_ARGS := $(if $(WITH_KMERSEEK),--with_kmerseek true,)
 MINI_N  ?= 200
 
 .PHONY: help check-species check-inputs check-python sherlock-clone sync run-dark-set \
-        run-dark-set-sbatch watch-dark-set stop-dark-set run-dark-set-mini queue-note \
+        run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
         multiqc-dark-set
 
 help:
@@ -82,6 +82,8 @@ help:
 	@echo "  run-dark-set-sbatch     SPECIES=<...>  driver on a compute node (USE THIS)"
 	@echo "  watch-dark-set          SPECIES=<...>  follow a running driver's log"
 	@echo "  stop-dark-set           SPECIES=<...>  cancel the driver and its tasks"
+	@echo "  status-dark-set         SPECIES=<...>  did it end, what killed it, what it said"
+	@echo "                          add HISTORY=1 for one line per past run"
 	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
 	@echo "  multiqc-dark-set        SPECIES=<...>  re-render the report on a finished run"
 	@echo
@@ -251,6 +253,14 @@ stop-dark-set: check-species
 	 if [ -z "$$jid" ]; then echo "no driver running for $(SPECIES)"; exit 0; fi; \
 	 echo "asking driver $$jid to shut down; its tasks are cancelled as it goes"; \
 	 scancel --signal=TERM --batch $$jid
+
+# What happened. Reads .nextflow.log and says whether the run ended, which task took it
+# down and what that task printed, per-process counts, and the head jobs from sacct. This
+# is the question a dead tmux session leaves behind, and the answer used to be grepping a
+# 400 KB log for ERROR and then walking into the work dir. HISTORY=1 gives one line per
+# rotated log instead; LOG=.nextflow.log.2 picks an older run.
+status-dark-set: check-species
+	@$(MAKEFILE_DIR)/tools/nf-postmortem $(if $(HISTORY),--history,--jobname $(HEAD_JOBNAME) $(LOG))
 
 run-dark-set-mini: check-species check-inputs
 	@mkdir -p $(OUTDIR)/_mini
