@@ -361,6 +361,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
         build-image-rannon-burstein push-image-rannon-burstein \
         build-image-extend push-image-extend run-midi-plus-extend \
+        dark-queries dark-testset dark-decoy-testset run-dark run-dark-decoy \
         run-rannon-burstein multiqc-rannon-burstein \
         pull-report pull-report-mini pull-report-midi \
         purge-empty-kmerseek-regions
@@ -372,6 +373,8 @@ help:
 	@echo "  push-image            Push the Kmerseek image to Docker Hub"
 	@echo "  push-image-extend     Push the kmerseek image with --extend-mismatch-penalty"
 	@echo "  run-midi-plus-extend  Extended-seed k ladder for one alphabet, resumed in run-midi-plus"
+	@echo "  run-dark / run-dark-decoy"
+	@echo "                        Dark-stratum queries (no sequence-arm hit) on ECO:0000269 truth, and their circular-shift twin"
 	@echo "  push-image-rannon-burstein"
 	@echo "                        Push a SECOND Kmerseek image carrying polarity4 and"
 	@echo "                        funcgroups8, under its own tag so the running sweep's"
@@ -1834,6 +1837,93 @@ run-midi-plus-extend: prefetch-images midi-plus-testset-sherlock
 	    --prostt5_weights ../data/prostt5/weights \
 	    $(PFAM_HMM_ARG) \
 	    $(NF_ARGS)
+
+# ---- dark stratum: queries no sequence arm can annotate ---------------------
+#
+# Experiment 5. Queries: human proteins with no hit from hmmscan, phmmer, jackhmmer or
+# MMseqs2 against any target of a finished run (bin/select_dark_queries.py reads that
+# run's regions/). Truth: Swiss-Prot features with experimental evidence only
+# (--swissprot_evidence ECO:0000269), scored at the feature level; the Pfam answer key is
+# empty for these queries by construction. Comparators: the no-search predictors are a
+# notebook question (nb 231's controls); the null is the circular-shift twin below.
+#
+# Two runs, two outdirs, one query list. dark-testset stages the queries as they are;
+# dark-decoy-testset stages every query rotated by half its length under the SAME header,
+# so the decoy run scores against the same truth and every region hit it makes is a false
+# positive by construction. The two outdirs must differ for the storeDir reason the
+# midi-plus comment above gives: the kmerseek entry name carries no query digest.
+#
+# Only the kmerseek arm (extended, chained, E-value ranked) and the structure arms run;
+# the sequence arms are zero on this set by definition and are skipped.
+DARK_SOURCE_OUTDIR ?= $(MIDI_PLUS_OUTDIR)
+DARK_OUTDIR        ?= ../data/dark/results
+DARK_DECOY_OUTDIR  ?= ../data/dark-decoy/results
+DARK_TARGETS       ?= $(MIDI_TARGETS)
+DARK_EVIDENCE      ?= ECO:0000269
+
+dark-queries:
+	$(call require_cluster)
+	python3 bin/select_dark_queries.py \
+	    --regions-dir  $(DARK_SOURCE_OUTDIR)/regions \
+	    --human-fasta  data/qfo/Eukaryota/UP000005640_9606.fasta \
+	    --out          data/dark_queries.txt \
+	    --summary-out  data/dark_queries.json
+
+dark-testset: dark-queries
+	$(call require_cluster)
+	apptainer exec --bind $$PWD:$$PWD --pwd $$PWD docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations data/annotations --qfo-dir data/qfo --outdir data/dark \
+	    --gene-set list --query-list data/dark_queries.txt --full-targets \
+	    --target_species $(DARK_TARGETS) --structure-cache data/structures
+
+dark-decoy-testset: dark-queries
+	$(call require_cluster)
+	apptainer exec --bind $$PWD:$$PWD --pwd $$PWD docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations data/annotations --qfo-dir data/qfo --outdir data/dark-decoy \
+	    --gene-set list --query-list data/dark_queries.txt --full-targets --circular-shift \
+	    --target_species $(DARK_TARGETS) --structure-cache data/structures
+
+define dark_run
+	$(call require_cluster)
+	mkdir -p $(1)
+	cd $(1) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image          $(IMAGE_REMOTE) \
+	    --kmerseek_search_image   $(EXT_IMAGE_REMOTE) \
+	    --kmerseek_extend_penalty $(EXT_PENALTY) \
+	    --kmerseek_combos         $(EXT_COMBOS) \
+	    --kmerseek_rank_by        $(EXT_RANK_BY) \
+	    --kmerseek_max_evalue     $(EXT_MAX_EVALUE) \
+	    --kmerseek_chain_max_gap   $(EXT_CHAIN_GAP) \
+	    --kmerseek_chain_max_shift $(EXT_CHAIN_SHIFT) \
+	    --swissprot_evidence      $(DARK_EVIDENCE) \
+	    --skip_baselines          true \
+	    --run_hmmscan             false \
+	    --qfo_dir         ../$(2)/qfo \
+	    --annotations     ../$(2)/annotations \
+	    --structures      ../$(2)/structures \
+	    --outdir          $(3) \
+	    --db_cache        ../results \
+	    --target_species  $(DARK_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+endef
+
+run-dark: PREFETCH_CONTAINERS := $(EXT_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-dark: prefetch-images dark-testset
+	$(call dark_run,run-dark,data/dark,$(DARK_OUTDIR))
+
+run-dark-decoy: PREFETCH_CONTAINERS := $(EXT_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-dark-decoy: prefetch-images dark-decoy-testset
+	$(call dark_run,run-dark-decoy,data/dark-decoy,$(DARK_DECOY_OUTDIR))
 
 # ---- midi-plus across every QfO target -------------------------------------
 #

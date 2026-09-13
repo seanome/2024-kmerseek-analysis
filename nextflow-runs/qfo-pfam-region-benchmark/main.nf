@@ -172,6 +172,10 @@ params.kmerseek_extend_xdrop   = 8
 // off. Only emitted with the extension flags, for the same image-compatibility reason.
 params.kmerseek_chain_max_gap   = 0
 params.kmerseek_chain_max_shift = 0
+// Keep only Swiss-Prot features whose /evidence carries this ECO code. ECO:0000269 is
+// "experimental evidence used in manual assertion": the dark-stratum answer key, where a
+// feature must not itself be someone's homology inference. Null keeps every feature.
+params.swissprot_evidence = null
 // The image kmerseekSearch runs under, when it must differ from the one the indexes were
 // built with. The extended arm needs a kmerseek build that has --extend-mismatch-penalty;
 // the indexes are storeDir hits and never consult the container, so leaving
@@ -1254,7 +1258,8 @@ process buildSwissprotTruth {
         --annotations ${annotations_dir} \\
         --truth-out   human_swissprot_truth.parquet \\
         --map-outdir  . \\
-        --summary-out swissprot_summary.json
+        --summary-out swissprot_summary.json \\
+        ${params.swissprot_evidence ? "--evidence ${params.swissprot_evidence}" : ""}
     """
 }
 

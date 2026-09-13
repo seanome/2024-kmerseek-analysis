@@ -49,13 +49,45 @@ DEFAULT_FEATURES = sorted(RANGE_FEATURES | POINT_FEATURES)
 FT_RE = re.compile(r"^FT\s{3}(\w+)\s+([<>?]?\d+)(?:\.\.([<>?]?\d+))?\s*$")
 
 
-def parse(dat_path: Path, wanted_types: set[str], wanted_acc: set[str] | None):
+# The evidence qualifier that follows an FT feature line: FT                   /evidence="ECO:0000269|PubMed:..."
+EVIDENCE_RE = re.compile(r'^FT\s+/evidence="([^"]*)"')
+
+
+def parse(dat_path: Path, wanted_types: set[str], wanted_acc: set[str] | None,
+          evidence: str | None = None):
+    """One row per feature. With `evidence` set (an ECO code such as ECO:0000269, the code
+    for "experimental evidence used in manual assertion"), a feature is kept only when one
+    of its /evidence qualifiers carries that code. The qualifier follows the feature line,
+    so a candidate row is held back until the next FT feature line or the record end.
+
+    That is the dark-stratum truth set: features a person asserted from an experiment, not
+    ones propagated by similarity (ECO:0000250) or predicted (ECO:0000255/256), so a hit
+    on them cannot be a hit on someone else's homology inference.
+    """
     acc = None
     seq_len = None
     rows = []
+    pending = None  # (row, evidence codes seen) for the last feature line
     opener = gzip.open if dat_path.suffix == ".gz" else open
+
+    def flush():
+        nonlocal pending
+        if pending is not None:
+            row, codes = pending
+            if evidence is None or any(evidence in c for c in codes):
+                rows.append(row)
+        pending = None
+
     with opener(dat_path, "rt", errors="replace") as f:
         for line in f:
+            if evidence is not None and pending is not None:
+                m = EVIDENCE_RE.match(line.rstrip("\n"))
+                if m:
+                    pending[1].append(m.group(1))
+                    continue
+                if not FT_RE.match(line.rstrip("\n")) and line.startswith("FT "):
+                    continue  # another qualifier (/note=...) of the pending feature
+                flush()
             if line.startswith("AC "):
                 if acc is None:
                     acc = line[5:].split(";")[0].strip()
@@ -81,9 +113,15 @@ def parse(dat_path: Path, wanted_types: set[str], wanted_acc: set[str] | None):
                     continue
                 start = int(start_s)
                 end = int(end_s) if end_s else start
-                rows.append((acc, ftype, start, end, seq_len, end_s is None))
+                row = (acc, ftype, start, end, seq_len, end_s is None)
+                if evidence is None:
+                    rows.append(row)
+                else:
+                    pending = (row, [])
             elif line.startswith("//"):
+                flush()
                 acc, seq_len = None, None
+    flush()
     return rows
 
 
@@ -97,6 +135,9 @@ def main():
     p.add_argument("--map-outdir", required=True, type=Path)
     p.add_argument("--summary-out", required=True, type=Path)
     p.add_argument("--features", nargs="*", default=DEFAULT_FEATURES)
+    p.add_argument("--evidence", default=None,
+                   help="keep only features whose /evidence carries this ECO code, e.g. "
+                        "ECO:0000269 (experimental, manually asserted). Default: every feature.")
     args = p.parse_args()
 
     species_acc = {}
@@ -108,7 +149,7 @@ def main():
 
     all_acc = set().union(*species_acc.values())
     wanted = set(args.features)
-    rows = parse(args.sprot_dat, wanted, all_acc)
+    rows = parse(args.sprot_dat, wanted, all_acc, args.evidence)
 
     df = pl.DataFrame(
         rows,
@@ -135,6 +176,7 @@ def main():
         "source": str(args.sprot_dat),
         "note": "pfam_id column holds the Swiss-Prot feature type, not a Pfam accession",
         "features_requested": sorted(wanted),
+        "evidence_filter": args.evidence,
         "human": {
             "n_features": human.height,
             "n_proteins": human["accession"].n_unique(),

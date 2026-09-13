@@ -103,12 +103,27 @@ def write_parquet_if_changed(df, out: Path) -> bool:
     return write_if_changed(out, buf.getvalue())
 
 
-def write_fasta(records: dict[str, str], keep: set[str], out: Path) -> int:
+def circular_shift(seq: str) -> str:
+    """Rotate a FASTA sequence body by half its length, keeping the line structure's
+    trailing newline. The decoy for the dark-stratum run: same composition, same
+    amphipathic periodicity, same accession, so every region hit scored against the
+    original coordinates is a false positive by construction. Reversal would also keep
+    composition but breaks nothing a k-mer index cares about less than rotation does:
+    a rotated protein shares almost all its k-mers with the original, which is exactly why
+    it is the right decoy for a search whose truth is positional -- the k-mers are still
+    there, at the wrong place."""
+    body = seq.replace("\n", "")
+    half = len(body) // 2
+    rot = body[half:] + body[:half]
+    return "\n".join(rot[i:i + 60] for i in range(0, len(rot), 60)) + "\n"
+
+
+def write_fasta(records: dict[str, str], keep: set[str], out: Path, shift: bool = False) -> int:
     n = 0
     chunks = []
     for header, seq in records.items():
         if accession_of(header) in keep:
-            chunks.append(f"{header}\n{seq}")
+            chunks.append(f"{header}\n{circular_shift(seq) if shift else seq}")
             n += 1
     write_if_changed(out, "".join(chunks).encode())
     return n
@@ -263,7 +278,7 @@ def main():
                    help="per species, split evenly between family-sharing and decoy")
     p.add_argument("--structure-cache", type=Path,
                    default=Path.home() / "data/alphafold_structures")
-    p.add_argument("--gene-set", choices=["default", "mhc", "chr6", "chr6_plus"],
+    p.add_argument("--gene-set", choices=["default", "mhc", "chr6", "chr6_plus", "list"],
                    default="default",
                    help="mhc restricts queries to the MHC region genes of notebooks 210-216; "
                         "chr6 takes every HGNC gene on chromosome 6 (the MHC's chromosome), "
@@ -272,6 +287,16 @@ def main():
                         "(B2M, CD1A-E, MR1, the KIR and LILR clusters). chr6_plus is a "
                         "superset of chr6 by construction, so the 736-gene within-chromosome "
                         "control survives intact")
+    p.add_argument("--query-list", type=Path,
+                   help="with --gene-set list: a file of human accessions, one per line. "
+                        "Accessions need not carry a Pfam annotation -- the dark-stratum "
+                        "queries by definition do not -- so the Pfam truth for such a run "
+                        "is empty and the Swiss-Prot truth (build_swissprot_truth.py, "
+                        "--evidence ECO:0000269) is the answer key.")
+    p.add_argument("--circular-shift", action="store_true",
+                   help="write every query rotated by half its length under its own header: "
+                        "the decoy twin of a run. Score it against the same truth; every hit "
+                        "is a false positive by construction.")
     p.add_argument("--full-targets", action="store_true",
                    help="do not subset the target proteomes: symlink the real FASTAs, "
                         "annotations and structure directories straight through. Only the "
@@ -359,6 +384,13 @@ def main():
                     f"chr6_plus dropped {len(chr6_only - query_acc)} chr6 queries; it must "
                     f"be a superset of chr6"
                 )
+    elif args.gene_set == "list":
+        if not args.query_list or not args.query_list.exists():
+            raise SystemExit("--gene-set list requires --query-list")
+        query_acc = {l.strip() for l in args.query_list.read_text().splitlines() if l.strip() and not l.startswith("#")}
+        query_buckets = {acc: "list" for acc in query_acc}
+        n_pfam = human.filter(pl.col("accession").is_in(list(query_acc)))["accession"].n_unique()
+        print(f"NOTE: list query set: {len(query_acc)} accessions, {n_pfam} of them with a Pfam annotation")
     else:
         query_acc = set(pick_queries(human, args.n_queries))
         query_buckets = {acc: "default" for acc in query_acc}
@@ -394,8 +426,9 @@ def main():
     # ---- query side ----
     sub, name = proteomes["human"]
     human_fa = read_fasta(args.qfo_dir / sub / f"{name}.fasta")
-    n_written = write_fasta(human_fa, query_acc, qfo_out / sub / f"{name}.fasta")
+    n_written = write_fasta(human_fa, query_acc, qfo_out / sub / f"{name}.fasta", shift=args.circular_shift)
     summary["human_fasta_records"] = n_written
+    summary["circular_shift"] = args.circular_shift
 
     human_sub = human.filter(pl.col("accession").is_in(query_acc))
     write_parquet_if_changed(human_sub, ann_out / "human_pfam_domains.parquet")
