@@ -360,7 +360,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
         build-image-rannon-burstein push-image-rannon-burstein \
-        build-image-extend push-image-extend run-midi-plus-extend \
+        build-image-extend push-image-extend run-midi-plus-extend run-midi-plus-band \
         dark-queries dark-testset dark-decoy-testset run-dark run-dark-decoy \
         run-rannon-burstein multiqc-rannon-burstein \
         pull-report pull-report-mini pull-report-midi \
@@ -372,6 +372,7 @@ help:
 	@echo "  build-image-local     Build the native Kmerseek image for local Docker"
 	@echo "  push-image            Push the Kmerseek image to Docker Hub"
 	@echo "  push-image-extend     Push the kmerseek image with --extend-mismatch-penalty"
+	@echo "  run-midi-plus-band    Four alphabets on k ladders inside 23-32 bits, lc off, no Folddisco/Reseek (the sweep that replaces the matrix)"
 	@echo "  run-midi-plus-extend  Extended-seed k ladder for one alphabet, resumed in run-midi-plus"
 	@echo "  run-dark / run-dark-decoy"
 	@echo "                        Dark-stratum queries (no sequence-arm hit) on ECO:0000269 truth, and their circular-shift twin"
@@ -1770,6 +1771,49 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    $(PFAM_HMM_ARG) \
 	    $(NF_ARGS)
 
+# ---- the band: four alphabets on a k ladder inside 23-32 bits ----------------
+#
+# The 19-alphabet x 12-ksize x lc sweep answered its question: the winner is not
+# identifiable on 7 of 9 proteomes, what the data support is a 23-32-bit band, and the
+# low-complexity toggle moves Fmax by under 0.001. Every run from here sweeps four
+# alphabets on k ladders inside that band, with lc off, which is about a tenth of the
+# 13,398 index tasks and 403 GB of scratch a full matrix costs. Folddisco (694 CPU-h,
+# excluded from IoU and precision anyway) and Reseek (148 CPU-h for a sentence) are off
+# by default; put them back with BAND_STRUCT_ARGS= if the dark stratum finds something
+# Folddisco should confirm.
+#
+# Bits per symbol from main.nf's entropy table: hp_thomas_dill2 0.966, gbmr4 1.522,
+# wwmj5 2.197, protein20 4.176. The ladders below span 23-32 bits for each.
+BAND_COMBOS ?= hp_thomas_dill2:24,hp_thomas_dill2:27,hp_thomas_dill2:30,hp_thomas_dill2:33,gbmr4:15,gbmr4:17,gbmr4:19,gbmr4:21,wwmj5:11,wwmj5:12,wwmj5:14,wwmj5:15,protein20:6,protein20:7,protein20:8
+BAND_STRUCT_ARGS ?= --skip_folddisco true --skip_reseek true
+
+run-midi-plus-band: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus-band: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi-plus
+	cd run-midi-plus && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --kmerseek_combos $(BAND_COMBOS) \
+	    $(BAND_STRUCT_ARGS) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(MIDI_PLUS_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
 # ---- midi-plus, extended arm ----------------------------------------------
 #
 # The same 998 queries and nine targets as run-midi-plus, searched with kmerseek's seed
@@ -1823,6 +1867,7 @@ run-midi-plus-extend: prefetch-images midi-plus-testset-sherlock
 	    --kmerseek_max_evalue     $(EXT_MAX_EVALUE) \
 	    --kmerseek_chain_max_gap   $(EXT_CHAIN_GAP) \
 	    --kmerseek_chain_max_shift $(EXT_CHAIN_SHIFT) \
+	    $(BAND_STRUCT_ARGS) \
 	    --qfo_dir         ../data/midi-plus/qfo \
 	    --annotations     ../data/midi-plus/annotations \
 	    --structures      ../data/midi-plus/structures \
@@ -2019,6 +2064,12 @@ queue-empty:
 # The only run whose head has to stay alive for the better part of a week. It gets there on
 # the partition QOS rather than a QOS of its own -- see the note on HEAD_QOS above for why
 # `long` is not usable on hns.
+# RETIRED 2026-09-13. ~31,000 tasks per attempt, died twice, and its question (claim 2
+# across the taxonomic ladder) is answered: HP kappa is flat across every clade for every
+# alphabet (nb 234) and on Pfam truth kmerseek is at 0.06 by fly (nb 236). Sixty-nine more
+# proteomes move no verdict. The salvage is a ~12-species ladder aimed at the crossover
+# (rat, dog, opossum, platypus, chicken, frog, zebrafish, two or three bivalves); set
+# ALLQFO_TARGETS to that list rather than `all` if the target is ever run again.
 run-midi-plus-all-qfo: HEAD_TIME := 7-00:00:00
 run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
