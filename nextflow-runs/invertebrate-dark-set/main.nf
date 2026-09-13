@@ -299,7 +299,13 @@ process kmerseekSearch {
         --min-shared-kmers ${params.min_shared_kmers} \\
         --max-query-pvalue ${params.max_query_pvalue} \\
         --min-region-score ${params.min_region_score} \\
-        2> ${slug}.log | zstd -T2 -o ${slug}.regions.csv.zst || true
+        2> ${slug}.log | zstd -T2 -o ${slug}.regions.csv.zst
+    # No `|| true` here, on purpose. A search that finds nothing exits 0 (checked against
+    # the 0.4.0 binary), so tolerating a non-zero exit protects nothing -- and on
+    # 2026-09-12 it hid 32 of 92 tasks dying on a RocksDB LOCK race (kmerseek PR #53) as
+    # 32 empty result files, which the gain step then counted as "kmerseek found none".
+    # Under pipefail a failed search or a failed zstd fails the task, and the retry above
+    # gets three attempts before the run stops.
 
     # The queries that got any region, as a plain list. Extracted with zstd + awk rather
     # than by reading the .zst in polars: scan_csv on a zstd CSV inflates the whole file in
