@@ -27,9 +27,26 @@ HUMAN_FASTA = Path(
 )
 
 KYTE_DOOLITTLE = {
-    "A": 1.8, "R": -4.5, "N": -3.5, "D": -3.5, "C": 2.5, "Q": -3.5, "E": -3.5, "G": -0.4,
-    "H": -3.2, "I": 4.5, "L": 3.8, "K": -3.9, "M": 1.9, "F": 2.8, "P": -1.6, "S": -0.8,
-    "T": -0.7, "W": -0.9, "Y": -1.3, "V": 4.2,
+    "A": 1.8,
+    "R": -4.5,
+    "N": -3.5,
+    "D": -3.5,
+    "C": 2.5,
+    "Q": -3.5,
+    "E": -3.5,
+    "G": -0.4,
+    "H": -3.2,
+    "I": 4.5,
+    "L": 3.8,
+    "K": -3.9,
+    "M": 1.9,
+    "F": 2.8,
+    "P": -1.6,
+    "S": -0.8,
+    "T": -0.7,
+    "W": -0.9,
+    "Y": -1.3,
+    "V": 4.2,
 }
 
 #: The feature types whose truth intervals a hydrophobicity scan could reproduce with no
@@ -65,7 +82,9 @@ def _segments(mask: np.ndarray) -> list[tuple[int, int]]:
     return list(zip(np.flatnonzero(d == 1).tolist(), np.flatnonzero(d == -1).tolist()))
 
 
-def kd_transmem_calls(seqs: dict[str, str], window: int = 19, threshold: float = 1.6) -> pl.DataFrame:
+def kd_transmem_calls(
+    seqs: dict[str, str], window: int = 19, threshold: float = 1.6
+) -> pl.DataFrame:
     """Windows whose mean hydropathy exceeds `threshold`; merged into segments spanning
     the full windows. Score is the segment's best window mean."""
     rows = []
@@ -74,19 +93,42 @@ def kd_transmem_calls(seqs: dict[str, str], window: int = 19, threshold: float =
         h = np.array([KYTE_DOOLITTLE.get(c, 0.0) for c in s.upper()])
         if h.size < window:
             continue
-        means = np.convolve(h, np.ones(window) / window, mode="valid")  # centre index i -> residues i..i+window-1
+        means = np.convolve(
+            h, np.ones(window) / window, mode="valid"
+        )  # centre index i -> residues i..i+window-1
         hot = means > threshold
         for a, b in _segments(hot):
             # window centres a..b-1 -> residues a .. b-1+window-1 (0-based), 1-based inclusive below
-            rows.append({"query_acc": acc, "pfam_id": "TRANSMEM", "qstart": a + 1, "qend": b - 1 + window,
-                         "score": float(means[a:b].max())})
-    return pl.DataFrame(rows, schema={"query_acc": pl.String, "pfam_id": pl.String, "qstart": pl.Int64, "qend": pl.Int64, "score": pl.Float64})
+            rows.append(
+                {
+                    "query_acc": acc,
+                    "pfam_id": "TRANSMEM",
+                    "qstart": a + 1,
+                    "qend": b - 1 + window,
+                    "score": float(means[a:b].max()),
+                }
+            )
+    return pl.DataFrame(
+        rows,
+        schema={
+            "query_acc": pl.String,
+            "pfam_id": pl.String,
+            "qstart": pl.Int64,
+            "qend": pl.Int64,
+            "score": pl.Float64,
+        },
+    )
 
 
-def hp_run_calls(seqs: dict[str, str], h_residues: str = "ACFILMVWY", min_run: int = 12,
-                 max_polar: int = 0) -> pl.DataFrame:
+def hp_run_calls(
+    seqs: dict[str, str],
+    h_residues: str = "ACFILMVWY",
+    min_run: int = 12,
+    max_polar: int = 0,
+) -> pl.DataFrame:
     """Runs of hydrophobic-class residues of length >= `min_run`, allowing up to
-    `max_polar` polar residues inside the run (0 = exact run). Score is the run length."""
+    `max_polar` polar residues inside the run (0 = exact run). Score is the run length.
+    """
     hset = set(h_residues)
     rows = []
     for acc, s in seqs.items():
@@ -115,8 +157,25 @@ def hp_run_calls(seqs: dict[str, str], h_residues: str = "ACFILMVWY", min_run: i
                 i = last_h + 1
         for a, b in segs:
             if b - a >= min_run:
-                rows.append({"query_acc": acc, "pfam_id": "TRANSMEM", "qstart": a + 1, "qend": b, "score": float(b - a)})
-    return pl.DataFrame(rows, schema={"query_acc": pl.String, "pfam_id": pl.String, "qstart": pl.Int64, "qend": pl.Int64, "score": pl.Float64})
+                rows.append(
+                    {
+                        "query_acc": acc,
+                        "pfam_id": "TRANSMEM",
+                        "qstart": a + 1,
+                        "qend": b,
+                        "score": float(b - a),
+                    }
+                )
+    return pl.DataFrame(
+        rows,
+        schema={
+            "query_acc": pl.String,
+            "pfam_id": pl.String,
+            "qstart": pl.Int64,
+            "qend": pl.Int64,
+            "score": pl.Float64,
+        },
+    )
 
 
 def parse_arm(filename: str) -> dict:
@@ -127,7 +186,13 @@ def parse_arm(filename: str) -> dict:
     core = parts[1:-3] if dedup else parts[1:-2]
     tool, species = core[0], core[-1]
     variant = ".".join(core[1:-1])
-    return {"tool": tool, "variant": variant, "species": species, "dedup": dedup, "arm": f"{tool}.{variant}"}
+    return {
+        "tool": tool,
+        "variant": variant,
+        "species": species,
+        "dedup": dedup,
+        "arm": f"{tool}.{variant}",
+    }
 
 
 def fmax_for(calls: pl.DataFrame, truth: pl.DataFrame, ic: pl.DataFrame, cm) -> dict:

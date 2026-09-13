@@ -32,7 +32,26 @@ import polars as pl
 # ---------------------------------------------------------------------------
 ALPHABET_CLUSTERS: dict[str, list[str]] = {
     "protein20": list("ACDEFGHIKLMNPQRSTVWY"),
-    "uniprot18": ["A", "R", "N", "D", "C", "Q", "EP", "G", "HL", "I", "K", "M", "F", "S", "T", "W", "Y", "V"],
+    "uniprot18": [
+        "A",
+        "R",
+        "N",
+        "D",
+        "C",
+        "Q",
+        "EP",
+        "G",
+        "HL",
+        "I",
+        "K",
+        "M",
+        "F",
+        "S",
+        "T",
+        "W",
+        "Y",
+        "V",
+    ],
     "sdm12": ["A", "D", "KER", "N", "TSQ", "YF", "LIVM", "C", "W", "H", "G", "P"],
     "gbmr7": ["DN", "AEFIKLMQRVWY", "CH", "T", "S", "G", "P"],
     "dayhoff6": ["C", "AGPST", "DENQ", "FWY", "HKR", "ILMV"],
@@ -52,7 +71,16 @@ ALPHABET_CLUSTERS: dict[str, list[str]] = {
 HP2 = [a for a in ALPHABET_CLUSTERS if a.startswith("hp_") and a.endswith("2")]
 
 #: A short panel for figures where all 15 would be unreadable.
-PANEL = ["protein20", "sdm12", "dayhoff6", "polarity4", "gbmr4", "hp_pbotc_1st_ed2", "hp_thomas_dill2", "hp_lehninger2"]
+PANEL = [
+    "protein20",
+    "sdm12",
+    "dayhoff6",
+    "polarity4",
+    "gbmr4",
+    "hp_pbotc_1st_ed2",
+    "hp_thomas_dill2",
+    "hp_lehninger2",
+]
 
 GAP = 255
 
@@ -66,7 +94,9 @@ def _table(clusters: list[str]) -> np.ndarray:
     return t
 
 
-TABLES: dict[str, np.ndarray] = {name: _table(cl) for name, cl in ALPHABET_CLUSTERS.items()}
+TABLES: dict[str, np.ndarray] = {
+    name: _table(cl) for name, cl in ALPHABET_CLUSTERS.items()
+}
 SIZES: dict[str, int] = {name: len(cl) for name, cl in ALPHABET_CLUSTERS.items()}
 BITS: dict[str, float] = {name: float(np.log2(n)) for name, n in SIZES.items()}
 
@@ -121,15 +151,17 @@ def pair_stats(
             ta_s = ta.copy()
             ta_s[t_res_idx] = tab[ts]
             null_runs.append(longest_true_run((qa == ta_s) & both))
-        rows.append({
-            "alphabet": name,
-            "n_cols": n,
-            "agree": float(agree),
-            "expected": expected,
-            "kappa": float(kappa),
-            "longest_run": run,
-            "longest_run_null": float(np.mean(null_runs)),
-        })
+        rows.append(
+            {
+                "alphabet": name,
+                "n_cols": n,
+                "agree": float(agree),
+                "expected": expected,
+                "kappa": float(kappa),
+                "longest_run": run,
+                "longest_run_null": float(np.mean(null_runs)),
+            }
+        )
     return rows
 
 
@@ -163,7 +195,9 @@ def add_identity_bin(df: pl.DataFrame, col: str = "seqid_ali") -> pl.DataFrame:
     )
 
 
-def bootstrap_mean_ci(x: np.ndarray, n_boot: int = 500, seed: int = 0) -> tuple[float, float, float]:
+def bootstrap_mean_ci(
+    x: np.ndarray, n_boot: int = 500, seed: int = 0
+) -> tuple[float, float, float]:
     x = np.asarray(x, dtype=float)
     x = x[~np.isnan(x)]
     if x.size == 0:
@@ -171,23 +205,42 @@ def bootstrap_mean_ci(x: np.ndarray, n_boot: int = 500, seed: int = 0) -> tuple[
     rng = np.random.default_rng(seed)
     idx = rng.integers(0, x.size, size=(n_boot, x.size))
     means = x[idx].mean(axis=1)
-    return float(x.mean()), float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))
+    return (
+        float(x.mean()),
+        float(np.percentile(means, 2.5)),
+        float(np.percentile(means, 97.5)),
+    )
 
 
-def summarise(df: pl.DataFrame, by: list[str], value: str, n_boot: int = 500) -> pl.DataFrame:
+def summarise(
+    df: pl.DataFrame, by: list[str], value: str, n_boot: int = 500
+) -> pl.DataFrame:
     """Mean with a bootstrap 95% CI of `value`, grouped by `by`."""
     rows = []
     for keys, g in df.group_by(by, maintain_order=True):
         m, lo, hi = bootstrap_mean_ci(g[value].to_numpy(), n_boot)
-        rows.append({**dict(zip(by, keys)), "n": g.height, f"{value}_mean": m, f"{value}_lo": lo, f"{value}_hi": hi})
+        rows.append(
+            {
+                **dict(zip(by, keys)),
+                "n": g.height,
+                f"{value}_mean": m,
+                f"{value}_lo": lo,
+                f"{value}_hi": hi,
+            }
+        )
     return pl.DataFrame(rows)
 
 
-def frac_run_at_least(df: pl.DataFrame, by: list[str], ks: list[int], col: str = "longest_run") -> pl.DataFrame:
+def frac_run_at_least(
+    df: pl.DataFrame, by: list[str], ks: list[int], col: str = "longest_run"
+) -> pl.DataFrame:
     """Fraction of pairs whose longest exact run reaches each k, grouped by `by`."""
     return (
         df.group_by(by, maintain_order=True)
-        .agg([pl.len().alias("n")] + [(pl.col(col) >= k).mean().alias(f"k{k}") for k in ks])
+        .agg(
+            [pl.len().alias("n")]
+            + [(pl.col(col) >= k).mean().alias(f"k{k}") for k in ks]
+        )
         .unpivot(index=by + ["n"], variable_name="k", value_name="frac")
         .with_columns(pl.col("k").str.strip_prefix("k").cast(pl.Int64))
     )
@@ -199,8 +252,19 @@ def frac_run_at_least(df: pl.DataFrame, by: list[str], ks: list[int], col: str =
 NO_TOOL = "none (no search result: computed from alignments and alphabet tables only)"
 
 
-def finish_figure(fig, path, tools: str, hypothesis: str, conclusion: str, title: str | None = None,
-                  *, footer_y: float = -0.01, header_y: float = 1.005, dpi: int = 200, wrap: int | None = None):
+def finish_figure(
+    fig,
+    path,
+    tools: str,
+    hypothesis: str,
+    conclusion: str,
+    title: str | None = None,
+    *,
+    footer_y: float = -0.01,
+    header_y: float = 1.005,
+    dpi: int = 200,
+    wrap: int | None = None,
+):
     """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`."""
     try:
         fig.tight_layout()
@@ -212,13 +276,38 @@ def finish_figure(fig, path, tools: str, hypothesis: str, conclusion: str, title
     is_km = "kmerseek" in tools and not tools.startswith("no kmerseek")
     tool_lines = textwrap.wrap("TOOLS: " + tools, wrap)
     y = header_y
-    fig.text(0.0, y, "\n".join(tool_lines), ha="left", va="bottom", fontsize=9.5, fontweight="bold",
-             color="#8B1A1A" if is_km else "#1F3B73",
-             bbox=dict(boxstyle="round,pad=0.35", facecolor="#FBEAEA" if is_km else "#E8EEF8", edgecolor="none"))
+    fig.text(
+        0.0,
+        y,
+        "\n".join(tool_lines),
+        ha="left",
+        va="bottom",
+        fontsize=9.5,
+        fontweight="bold",
+        color="#8B1A1A" if is_km else "#1F3B73",
+        bbox=dict(
+            boxstyle="round,pad=0.35",
+            facecolor="#FBEAEA" if is_km else "#E8EEF8",
+            edgecolor="none",
+        ),
+    )
     y += line(9.5) * len(tool_lines) + line(9.5) * 0.9
     if title:
-        fig.text(0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold")
-    foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap("Conclusion: " + conclusion, wrap)
-    fig.text(0.0, footer_y, "\n".join(foot), ha="left", va="top", fontsize=9, color="#222222", linespacing=1.35,
-             bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"))
+        fig.text(
+            0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold"
+        )
+    foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap(
+        "Conclusion: " + conclusion, wrap
+    )
+    fig.text(
+        0.0,
+        footer_y,
+        "\n".join(foot),
+        ha="left",
+        va="top",
+        fontsize=9,
+        color="#222222",
+        linespacing=1.35,
+        bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
+    )
     fig.savefig(path, dpi=dpi, bbox_inches="tight")

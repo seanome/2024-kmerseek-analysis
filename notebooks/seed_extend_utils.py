@@ -23,7 +23,9 @@ from hp_conservation_utils import GAP, TABLES, longest_true_run
 WALL = -10_000.0
 
 
-def column_scores(qa: np.ndarray, ta: np.ndarray, penalty: float) -> tuple[np.ndarray, np.ndarray]:
+def column_scores(
+    qa: np.ndarray, ta: np.ndarray, penalty: float
+) -> tuple[np.ndarray, np.ndarray]:
     """Per-column score and the match mask, with gap columns set to WALL and unmatched."""
     both = (qa != GAP) & (ta != GAP)
     same = (qa == ta) & both
@@ -32,13 +34,15 @@ def column_scores(qa: np.ndarray, ta: np.ndarray, penalty: float) -> tuple[np.nd
     return sc, same
 
 
-def best_segment_containing_runs(sc: np.ndarray, same: np.ndarray, min_run: int) -> float:
+def best_segment_containing_runs(
+    sc: np.ndarray, same: np.ndarray, min_run: int
+) -> float:
     """Best ungapped segment score among segments that contain a run of >= min_run matches.
     min_run = 0 returns the best local segment overall (0 if nothing positive)."""
     n = sc.size
     if n == 0:
         return 0.0
-    P = np.concatenate(([0.0], np.cumsum(sc)))          # P[i] = sum(sc[:i])
+    P = np.concatenate(([0.0], np.cumsum(sc)))  # P[i] = sum(sc[:i])
     # Best extension leftward from column a: max(0, P[a] - min_{i<=a} P[i]).
     left = P - np.minimum.accumulate(P)
     # Best extension rightward from column b: max(0, max_{j>=b} P[j] - P[b]).
@@ -57,8 +61,15 @@ def best_segment_containing_runs(sc: np.ndarray, same: np.ndarray, min_run: int)
     return float((seed + left[a] + right[b]).max())
 
 
-def pair_seed_extend(qaln: str, taln: str, alphabet: str, penalties: list[float], seeds: list[int],
-                     n_shuffle: int, rng: np.random.Generator) -> list[dict]:
+def pair_seed_extend(
+    qaln: str,
+    taln: str,
+    alphabet: str,
+    penalties: list[float],
+    seeds: list[int],
+    n_shuffle: int,
+    rng: np.random.Generator,
+) -> list[dict]:
     tab = TABLES[alphabet]
     q = np.frombuffer(qaln.encode(), dtype=np.uint8)
     t = np.frombuffer(taln.encode(), dtype=np.uint8)
@@ -74,18 +85,37 @@ def pair_seed_extend(qaln: str, taln: str, alphabet: str, penalties: list[float]
         for kind, tt in targets:
             sc, same = column_scores(qa, tt, c)
             for s in seeds:
-                rows.append({"alphabet": alphabet, "penalty": c, "seed": s, "kind": kind,
-                             "score": best_segment_containing_runs(sc, same, s)})
+                rows.append(
+                    {
+                        "alphabet": alphabet,
+                        "penalty": c,
+                        "seed": s,
+                        "kind": kind,
+                        "score": best_segment_containing_runs(sc, same, s),
+                    }
+                )
     return rows
 
 
-def recall_at_null_quantile(df: pl.DataFrame, by: list[str], fpr: float) -> pl.DataFrame:
+def recall_at_null_quantile(
+    df: pl.DataFrame, by: list[str], fpr: float
+) -> pl.DataFrame:
     """Per group in `by`: threshold = (1-fpr) quantile of null scores (pooled over identity
     bins), recall = share of real pairs scoring strictly above it, per identity bin."""
-    thr = (df.filter(pl.col("kind") != "real").group_by(by)
-           .agg(pl.col("score").quantile(1 - fpr, interpolation="higher").alias("threshold")))
+    thr = (
+        df.filter(pl.col("kind") != "real")
+        .group_by(by)
+        .agg(
+            pl.col("score").quantile(1 - fpr, interpolation="higher").alias("threshold")
+        )
+    )
     real = df.filter(pl.col("kind") == "real").join(thr, on=by)
-    return (real.group_by(by + ["identity_bin"])
-            .agg(pl.len().alias("n_pairs"), (pl.col("score") > pl.col("threshold")).mean().alias("recall"),
-                 pl.col("threshold").first())
-            .with_columns(pl.lit(fpr).alias("fpr")))
+    return (
+        real.group_by(by + ["identity_bin"])
+        .agg(
+            pl.len().alias("n_pairs"),
+            (pl.col("score") > pl.col("threshold")).mean().alias("recall"),
+            pl.col("threshold").first(),
+        )
+        .with_columns(pl.lit(fpr).alias("fpr"))
+    )
