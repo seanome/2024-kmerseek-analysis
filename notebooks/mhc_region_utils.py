@@ -20,7 +20,7 @@ Vocabulary used across the notebooks, in plain words:
   `COMPARISON_TOOLS`. Eight are scored on IoU; Folddisco is scored on coverage.
 * **found** (``covered`` in the tables): a hit overlaps at least half of the true domain.
   Asks whether the search reached the domain at all.
-* **boundary matched** (``delimited`` in the tables): the hit's interval and the true
+* **boundary matched** (``boundary_matched`` in the tables): the hit's interval and the true
   domain agree at IoU >= 0.5, IoU being the overlap divided by the union of the two
   intervals. Asks whether the hit's start and end are right. This is the run's own
   true-positive rule.
