@@ -1790,9 +1790,9 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 # Memory: the QfO HP sweep floor is k=18 for a reason -- a 2-letter alphabet at k=12 shares
 # k-mers with most of a proteome (on SCOPe40, ~11,500 target pairs and 22 M regions per 300
 # queries, 17 GB RSS). kmerseekSearchMemory grades on keyspace bits and will start these
-# low; the retry ladder doubles on a kill. Start with EXT_COMBOS as set and add k=10 only
-# once k=12 has run.
-EXT_COMBOS  ?= hp_thomas_dill2:12,hp_thomas_dill2:15,hp_thomas_dill2:19,hp_thomas_dill2:23
+# low; the retry ladder doubles on a kill. The ladder starts at k=15; add k=12 (and only
+# then k=10) once k=15 has run and its peak memory is known.
+EXT_COMBOS  ?= hp_thomas_dill2:15,hp_thomas_dill2:19,hp_thomas_dill2:23
 EXT_PENALTY ?= 2
 # Scoring ranks the extended arm by its Karlin-Altschul bits with an E-value cutoff in
 # place of the Bonferroni filter, because the Poisson count still reads exact k-mers and
