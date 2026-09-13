@@ -4,9 +4,9 @@
 # machine-generated, one file per plot. This file holds only what a person edits: the
 # title, the order sections appear in, and the report-wide plot settings.
 #
-# Section ids here must match the ids that script writes. An id listed but not produced
-# is skipped with a debug message, so listing every truth set (pfam, swissprot, pfamn,
-# mcsa) is safe even when a run builds only some of them.
+# Section ids here must match the ids that script writes. See the note above
+# report_section_order for why every id has to be listed rather than only the ones being
+# moved.
 
 title: "QfO Pfam region benchmark"
 subtitle: "Domain finding across nine target proteomes: which stretch of a human protein is a PF00001, and did the tool find it"
@@ -82,18 +82,44 @@ num_datasets_plot_limit: 100000
 table_columns_visible:
   qfo_general_stats: true
 
-# Sections inside a module are sorted by ascending order value, so the frontier gets the
-# smallest number. (Whole modules sort the other way round -- this report is one module,
-# so only this direction matters here.) An id listed but not produced is skipped.
+# Sections inside a module are sorted by ascending order value. EVERY section this report
+# can write is listed below, with no gaps in what is covered, and that completeness is the
+# point rather than tidiness.
+#
+# MultiQC gives an UNLISTED section a default position of 10, 20, 30 ... in discovery
+# order, and then sorts the listed and unlisted together on one scale. So a partial list
+# does not layer over the defaults, it competes with them: with ~90 sections the unlisted
+# ones run out past 900, and in the midi-plus report that put the whole ceiling block and
+# every MHC panel AFTER the citations, which were sitting at 310 and were supposed to be
+# last. Nothing was misnumbered -- the numbers were being compared against a scale that
+# had grown underneath them. Listing everything removes the second scale.
+#
+# Consequences of that, worth keeping in mind when editing:
+#   - A new section MUST be added here, or it lands somewhere arbitrary in the middle.
+#   - Order values must be ints; order_modules_and_sections asserts it. There is no
+#     fraction to slot between two neighbours, which is why these are spaced by 10.
+#   - A plot and its table must not share a number: sharing one renders the TABLE first.
+#   - An id listed but not produced is skipped with a debug message, so listing every
+#     truth set (pfam, pfamn, swissprot, mcsa) is safe when a run builds only some.
+#
+# qfo_conclusions is first, immediately after the General Statistics table, because it is
+# the reading order for everything below it.
 report_section_order:
+  # Conclusions first, immediately after General Statistics: every number in it is
+  # computed from the frames the sections below draw, negative results included.
+  qfo_conclusions: { order: 1 }
   # Reachability first: 43.9% of the answer key has no same-family instance in the
   # target proteome, and every Fmax below divides by the reachable part. The reader
   # meets that denominator before any leaderboard built on it.
   qfo_reachability: { order: 5 }
   qfo_frontier: { order: 10 }
+  qfo_timing_coverage: { order: 11 }
   qfo_search_cost: { order: 12 }
   qfo_search_cost_table: { order: 13 }
+  qfo_cost_cpu_hours_per_search: { order: 14 }
+  qfo_cost_queries_per_s: { order: 15 }
   qfo_capability: { order: 20 }
+  qfo_search_space: { order: 21 }
   qfo_leaderboard_swissprot: { order: 30 }
   qfo_leaderboard_pfamn: { order: 40 }
   qfo_leaderboard_mcsa: { order: 50 }
@@ -112,8 +138,16 @@ report_section_order:
   qfo_recall_at_precision_table: { order: 122 }
   qfo_call_volume: { order: 123 }
   qfo_call_volume_table: { order: 124 }
+  qfo_threshold_gain: { order: 125 }
   qfo_roc_curve: { order: 130 }
+  qfo_plddt: { order: 131 }
+  qfo_disorder: { order: 132 }
+  qfo_disorder_seq: { order: 133 }
+  qfo_disorder_target: { order: 134 }
+  qfo_disorder_scatter: { order: 135 }
+  qfo_disorder_scatter_table: { order: 136 }
   qfo_identity: { order: 140 }
+  qfo_identity_no_homolog: { order: 146 }
   # Fmax across the pLDDT bands as a shape, next to the twilight-zone axis it is read
   # against. Plot first, then its table on the next integer -- sharing a number renders
   # the TABLE first, which is the failure the note at 170 records.
@@ -144,6 +178,7 @@ report_section_order:
   qfo_tool_by_species_table_mcsa: { order: 156 }
   qfo_tool_by_species_pfam: { order: 157 }
   qfo_tool_by_species_table_pfam: { order: 158 }
+  qfo_omega: { order: 159 }
   qfo_species_winners_swissprot: { order: 162 }
   qfo_species_winners_pfamn: { order: 164 }
   qfo_species_winners_mcsa: { order: 166 }
@@ -181,6 +216,7 @@ report_section_order:
   qfo_retention_table_mcsa: { order: 186 }
   qfo_retention_pfam: { order: 187 }
   qfo_retention_table_pfam: { order: 188 }
+  qfo_ceiling: { order: 189 }
   # qfo_lowcomplexity_bars is gone, not renumbered: the toggle's effect at each alphabet's
   # own best k is under 0.001 Fmax everywhere in the sweep, so the 19-panel switcher and the
   # per-alphabet delta bars both collapsed into the single alphabet x k grid at 190.
@@ -232,4 +268,25 @@ report_section_order:
   qfo_res_io: { order: 280 }
   qfo_res_status: { order: 290 }
   qfo_resources_missing: { order: 300 }
+  # Supplementary. These have no free integer next to the sections they belong with, and
+  # an id left out of this map falls to MultiQC's own default rather than keeping its
+  # place, so they are ordered late and together rather than not at all.
+  qfo_hgnc: { order: 291 }
+  qfo_curated_geneset_swissprot: { order: 292 }
+  qfo_curated_geneset_pfamn: { order: 293 }
+  qfo_curated_geneset_mcsa: { order: 294 }
+  qfo_curated_geneset_pfam: { order: 295 }
+  qfo_curated_mhc_swissprot: { order: 296 }
+  qfo_curated_mhc_pfamn: { order: 297 }
+  qfo_curated_mhc_mcsa: { order: 298 }
+  qfo_curated_mhc_pfam: { order: 299 }
+  qfo_dedup_bar: { order: 301 }
+  qfo_dedup_table: { order: 302 }
+  qfo_encoding_divergence_table_swissprot: { order: 303 }
+  qfo_encoding_divergence_table_pfamn: { order: 304 }
+  qfo_encoding_divergence_table_mcsa: { order: 305 }
+  qfo_encoding_divergence_table_pfam: { order: 306 }
+  qfo_alphabet_lcFalse: { order: 307 }
+  qfo_alphabet_lcTrue: { order: 308 }
+  qfo_kmer_spectra_lc: { order: 309 }
   qfo_citations: { order: 310 }

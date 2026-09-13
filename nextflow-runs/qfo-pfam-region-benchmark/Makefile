@@ -269,10 +269,11 @@ HEAD_SESSION ?= qfo
 # nfdrv-<species> for that reason.
 HEAD_JOBNAME ?= nf-head
 
-# tools/nf-head writes and submits the job script; see the header there for what it does
-# and why. Deliberately NOT in bin/: Nextflow stages bin/ into every task and counts it in
-# the task hash, so a file added there would invalidate the resume cache for every one of
-# the sweep's completed tasks.
+# scripts/nf-head, shared with the other Sherlock pipelines, writes and submits the job
+# script; see the header there for what it does and why. Deliberately NOT in this
+# pipeline's bin/: Nextflow stages bin/ into every task and counts it in the task hash, so
+# a file added there would invalidate the resume cache for every one of the sweep's
+# completed tasks.
 #
 # Recursive `=`, not `:=`, so the per-target overrides below are in scope when it expands.
 MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
@@ -280,7 +281,7 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
               HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
               HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
-              $(MAKEFILE_DIR)/tools/nf-head
+              $(MAKEFILE_DIR)/../../scripts/nf-head
 
 # --- MultiQC report --------------------------------------------------------
 # Which run's resource numbers the report describes. Defaults to the newest trace the main
@@ -338,7 +339,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
         qfo-download qfo-link qfo-verify-existing \
         pfam-regions pfam-regions-download pfam-annotations \
-        run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
+        run run-kmerseek run-baselines rannon-burstein-all status running postmortem kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
@@ -410,6 +411,8 @@ help:
 	@echo "  multiqc-status       Show what that report would be built from"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
+	@echo "  postmortem           Did the last run end, what killed it, what it said"
+	@echo "                       HISTORY=1 for one line per past run, LOG=.nextflow.log.2 for an older one"
 	@echo "  rannon-burstein-all  Search polarity4/funcgroups8, then build the combined report"
 	@echo "  running              Show the process and tag behind each running job"
 	@echo "  kill-jobs            Cancel every job on the account (confirms first)"
@@ -2198,7 +2201,7 @@ watch attach:
 ## trip over.
 ##
 ## `scancel --signal=TERM --batch` signals the batch script only and does NOT cancel the
-## job, so the trap in tools/nf-head gets to do that work and the job ends by itself once
+## job, so the trap in scripts/nf-head gets to do that work and the job ends by itself once
 ## Nextflow has finished shutting down. Plain `scancel <jobid>` is the hard version, and it
 ## is the one that leaves the orphans.
 stop:
@@ -2214,6 +2217,15 @@ stop:
 status:
 	$(call require_cluster)
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+
+## What happened to a run, from its .nextflow.log: whether it ended, which task took it
+## down and what that task printed, per-process counts, every failed task with its work
+## dir. This is the question a dead tmux session leaves behind, and the answer used to be
+## grepping a 400 KB log for ERROR and then walking into the work dir. Needs no cluster:
+## it reads the log in this directory and the failed tasks' .command.err, so it works on a
+## pulled-back copy too. JOBNAME=<slurm job name> adds the head jobs from sacct.
+postmortem:
+	@../../scripts/nf-postmortem $(if $(HISTORY),--history,$(if $(JOBNAME),--jobname $(JOBNAME)) $(LOG))
 
 ## What each running job actually IS: process AND tag, in separate columns.
 ##

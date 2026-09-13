@@ -828,6 +828,11 @@ def fmt_metric_headers(cols: list[str]) -> dict:
                              description="Fraction of calls that could be judged at all"),
         "smin":         dict(title="Smin", scale="RdYlGn-rev", format="{:,.2f}",
                              description="CAFA semantic distance; lower is better"),
+        "residue_recall": dict(title="Residue rec.", min=0, max=1, scale="BuGn",
+                               format="{:,.3f}",
+                               description="Correctly-labelled residues over true domain "
+                                           "residues. Reported as nDO in earlier versions "
+                                           "of this report; same number, plainer name"),
         "sens_first_fp_mean": dict(title="Sens. to 1st FP", min=0, max=1, scale="YlGn",
                                    format="{:,.3f}",
                                    description="Domains recovered above a query's first "
@@ -1367,6 +1372,7 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
             "search_min": (search_s / 60) if search_s is not None else None,
             "queries_per_s": row.get("queries_per_s"),
             "cpu_hours": row.get("cpu_hours"),
+            "cpu_hours_per_search": row.get("cpu_hours_per_search"),
         }
     write_section(out, "qfo_capability", {
         "id": "qfo_capability",
@@ -1385,10 +1391,17 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                             "the whole query set against one target proteome, median over "
                             "target species. This is the frontier plot's y axis; lower is "
                             "better.",
-                            "<b>CPU-hours</b> is summed over this combo's SEARCH tasks, or "
-                            "over the whole arm where the trace cannot separate variants. "
-                            "Database construction is excluded for every arm, "
-                            "kmerseekIndex included; it is under CPU time by process.")),
+                            "<b>CPU-hours</b> is summed over this combo's SEARCH tasks. "
+                            "Where the timing data cannot separate a tool's variants the "
+                            "tool-level figure fills in, but only for a tool that HAS one "
+                            "variant, so the two are the same measurement; a kmerseek arm "
+                            "with no timing of its own is left empty rather than charged "
+                            "the sweep's total. Database construction is excluded for "
+                            "every arm, kmerseekIndex included; it is under CPU time by "
+                            "process.",
+                            "<b>CPU-h / search</b> is what ONE search costs, which is the "
+                            "column to compare tools on. CPU-hours is a total over "
+                            "however many searches this arm ran.")),
         "plot_type": "table",
         "pconfig": {"id": "qfo_capability_table", "title": "Method capabilities and cost",
                     "col1_header": "Tool", "sort_rows": False, "scale": False, "no_violin": True},
@@ -1410,11 +1423,20 @@ def section_frontier(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
                                            "y axis; lower is better"),
             "queries_per_s": dict(title="Queries/s", scale="Blues", format="{:,.1f}"),
             "cpu_hours": dict(title="CPU-hours", scale="Reds", format="{:,.2f}",
-                              description="Summed over this combo's SEARCH tasks, or "
-                                          "over the whole arm where the trace cannot "
-                                          "separate variants. Database construction is "
-                                          "excluded for every arm, kmerseekIndex "
-                                          "included; it is under CPU time by process"),
+                              description="Summed over this combo's SEARCH tasks. A "
+                                          "tool-level figure fills in only where that "
+                                          "tool has a single variant. Database "
+                                          "construction is excluded for every arm, "
+                                          "kmerseekIndex included; it is under CPU time "
+                                          "by process"),
+            "cpu_hours_per_search": dict(title="CPU-h / search", scale="Reds",
+                                         format="{:,.3f}",
+                                         description="What one search of the whole query "
+                                                     "set against one target proteome "
+                                                     "costs, median over target species. "
+                                                     "This is the column to compare tools "
+                                                     "on; CPU-hours is a total over "
+                                                     "however many searches an arm ran"),
         },
         "data": cap,
     })
@@ -1558,9 +1580,17 @@ def section_search_cost(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
 
 
 def _search_tasks(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
-    """Search tasks with a usable run time, annotated with their query rate."""
+    """One row per logical search, with a usable run time and its query rate.
+
+    Chunked processes are collapsed FIRST. folddiscoQuery splits one search across 20
+    tasks per target species, so before this every rate here described a fraction of the
+    query set while dividing by the whole of it: folddisco read as 0.30 queries/s and
+    55 min per search when it is really 0.013 and 20.9 h, a 23x error in its favour on
+    both axes. That fed the frontier plot's y axis and the capability table's cost column.
+    """
     if trace.height == 0:
         return trace.head(0)
+    trace = mt.collapse_chunked_searches(trace)
     searches = trace.filter(
         pl.col("is_search") & pl.col("realtime_s").is_not_null() & (pl.col("realtime_s") > 0)
     )
@@ -1568,9 +1598,22 @@ def _search_tasks(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
         return searches
     return searches.with_columns(
         (n_queries / pl.col("realtime_s")).alias("qps"),
-        pl.struct("process", "tag")
-          .map_elements(lambda r: mt.variant_from_tag(r["process"], r["tag"]),
+        # The metrics table's tool name, which is not always the process's. mmseqs2Search
+        # runs mmseqs2_seqseq and mmseqs2_iterative under one process and names which in
+        # the tag's brackets, so grouping on `tool` charged each of them the pair's total
+        # -- 18 tasks summed and then shown twice, once per tool.
+        pl.struct("process", "tool", "tag")
+          .map_elements(lambda r: mt.search_tool(r["process"], r["tool"], r["tag"]),
                         return_dtype=pl.String)
+          .alias("search_tool"),
+        # "default" for the multi-tool processes: their brackets carry a TOOL name, which
+        # search_tool has already taken, and reading it again as a variant would invent a
+        # variant the metrics table has never heard of (its mmseqs2 variant is `s7`).
+        pl.struct("process", "tag")
+          .map_elements(
+              lambda r: ("default" if r["process"] in mt.MULTI_TOOL_PROCESSES
+                         else mt.variant_from_tag(r["process"], r["tag"])),
+              return_dtype=pl.String)
           .alias("trace_variant"),
     )
 
@@ -1586,26 +1629,33 @@ def throughput_per_tool(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
     disagree about which tasks went into the median.
     """
     empty = pl.DataFrame(schema={"tool": pl.String, "queries_per_s": pl.Float64,
-                                 "search_s": pl.Float64, "cpu_hours": pl.Float64})
+                                 "search_s": pl.Float64, "cpu_hours": pl.Float64,
+                                 "cpu_hours_per_search": pl.Float64,
+                                 "n_timed_variants": pl.UInt32})
     per_task = _search_tasks(trace, n_queries)
     if per_task.height == 0:
         return empty
-    rate = per_task.group_by("tool").agg(
+    rate = per_task.group_by("search_tool").agg(
         pl.col("qps").median().alias("queries_per_s"),
         pl.col("realtime_s").median().alias("search_s"),
         pl.col("cpu_hours").sum().alias("cpu_hours"),
+        # How many variants of this tool the timing data can tell apart. It is what decides
+        # whether an arm with no timing row of its own may borrow this one: for a tool with
+        # a single variant the two are the same measurement, and for kmerseek's 406 they
+        # are a sweep total against one configuration. See attach_throughput.
+        pl.col("trace_variant").n_unique().alias("n_timed_variants"),
+        # What one search costs, as opposed to what the whole sweep cost. The sum is the
+        # right number for "how much cluster time did this run burn" and the wrong one for
+        # comparing tools: kmerseek runs 406 arms per species and every baseline runs one,
+        # so its total is a parameter sweep set against single configurations. A user ships
+        # one arm, and this is what that arm costs.
+        pl.col("cpu_hours").median().alias("cpu_hours_per_search"),
     )
-    # mmseqs2 runs two variants under one process name, so the trace's process column
-    # cannot separate them; the metrics table spells them apart. Emit both spellings from
-    # the one rate rather than dropping mmseqs2 out of the join entirely.
-    mm = rate.filter(pl.col("tool") == "mmseqs2")
-    if mm.height:
-        rate = pl.concat([
-            rate.filter(pl.col("tool") != "mmseqs2"),
-            mm.with_columns(pl.lit("mmseqs2_seqseq").alias("tool")),
-            mm.with_columns(pl.lit("mmseqs2_iterative").alias("tool")),
-        ])
-    return rate
+    # mmseqs2's two tools used to be handled here, by computing one pooled figure over both
+    # and emitting it under each name. That charged each of them the pair's total: 18 tasks
+    # summed, then shown twice. They are separated upstream now, in _search_tasks, so the
+    # grouping key IS the metrics table's tool name and no fan-out is needed.
+    return rate.rename({"search_tool": "tool"})
 
 
 def throughput_per_variant(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
@@ -1618,52 +1668,67 @@ def throughput_per_variant(trace: pl.DataFrame, n_queries: int) -> pl.DataFrame:
     """
     empty = pl.DataFrame(schema={"tool": pl.String, "variant": pl.String,
                                  "queries_per_s": pl.Float64, "search_s": pl.Float64,
-                                 "cpu_hours": pl.Float64})
+                                 "cpu_hours": pl.Float64,
+                                 "cpu_hours_per_search": pl.Float64})
     per_task = _search_tasks(trace, n_queries)
     if per_task.height == 0:
         return empty
     return (
         per_task.filter(pl.col("trace_variant") != "default")
-        .group_by("tool", "trace_variant")
+        .group_by("search_tool", "trace_variant")
         .agg(pl.col("qps").median().alias("queries_per_s"),
              pl.col("realtime_s").median().alias("search_s"),
-             pl.col("cpu_hours").sum().alias("cpu_hours"))
-        .rename({"trace_variant": "variant"})
+             pl.col("cpu_hours").sum().alias("cpu_hours"),
+             pl.col("cpu_hours").median().alias("cpu_hours_per_search"))
+        .rename({"trace_variant": "variant", "search_tool": "tool"})
     )
 
 
 def attach_throughput(sel: pl.DataFrame, trace: pl.DataFrame,
                       n_queries: int) -> pl.DataFrame:
-    """Add queries_per_s, search_s and cpu_hours to a (tool, variant) selection.
+    """Add queries_per_s, search_s, cpu_hours and cpu_hours_per_search to a selection.
 
-    Per variant where the trace can tell them apart, per arm otherwise. Rows with neither
-    are returned with nulls; the caller decides whether to drop them.
+    Per variant where the timing data can tell variants apart. Where it cannot, the
+    tool-level figure fills in ONLY IF that tool has a single variant in the timing data,
+    which is what makes the two the same measurement: every baseline runs one configuration
+    per species, so its arm figure and its variant figure are computed over the same nine
+    searches.
+
+    kmerseek is the case that rule exists for. Its arm total is a sum over 406 variants x 9
+    species, and coalescing it into a variant that had no timing row of its own put that
+    whole-sweep total in a per-arm cell: protein20_k11, uniprot18_k11 and hsdm17_k11 each
+    read 345.80 CPU-h in the midi report, which is the sweep, not the arm. `search_s` and
+    `queries_per_s` leaked the same way, as a median over every arm in the sweep. A cell
+    showing a number measured on a different quantity than its row is worse than an empty
+    cell, so an arm with no timing of its own now gets null and the report says so.
+
+    Rows with neither are returned with nulls; the caller decides whether to drop them.
     """
+    cols = ["queries_per_s", "search_s", "cpu_hours", "cpu_hours_per_search"]
     by_variant = throughput_per_variant(trace, n_queries)
     by_tool = throughput_per_tool(trace, n_queries)
     out = sel
     if by_variant.height:
         out = out.join(by_variant, on=["tool", "variant"], how="left")
     else:
-        out = out.with_columns(pl.lit(None, dtype=pl.Float64).alias("queries_per_s"),
-                               pl.lit(None, dtype=pl.Float64).alias("search_s"),
-                               pl.lit(None, dtype=pl.Float64).alias("cpu_hours"))
+        out = out.with_columns(
+            [pl.lit(None, dtype=pl.Float64).alias(c) for c in cols])
     if by_tool.height:
-        out = out.join(by_tool.rename({"queries_per_s": "_qps_tool",
-                                       "search_s": "_search_tool",
-                                       "cpu_hours": "_cpu_tool"}),
-                       on="tool", how="left")
+        # Every shared column renamed, not three of four. Leaving cpu_hours_per_search
+        # unrenamed made polars suffix it `cpu_hours_per_search_right` on the join, so the
+        # frame carried two columns of that name's meaning and the sections read whichever
+        # one they happened to ask for.
+        eligible = by_tool.filter(pl.col("n_timed_variants") <= 1)
+        renamed = eligible.rename({c: f"_{c}_tool" for c in cols})
+        out = out.join(renamed.drop("n_timed_variants"), on="tool", how="left")
     else:
-        out = out.with_columns(pl.lit(None, dtype=pl.Float64).alias("_qps_tool"),
-                               pl.lit(None, dtype=pl.Float64).alias("_search_tool"),
-                               pl.lit(None, dtype=pl.Float64).alias("_cpu_tool"))
+        out = out.with_columns(
+            [pl.lit(None, dtype=pl.Float64).alias(f"_{c}_tool") for c in cols])
     # coalesce, not min/max_horizontal: those skip nulls in a way that would silently
-    # substitute the arm total wherever a variant genuinely measured zero.
+    # substitute the arm figure wherever a variant genuinely measured zero.
     return out.with_columns(
-        pl.coalesce("queries_per_s", "_qps_tool").alias("queries_per_s"),
-        pl.coalesce("search_s", "_search_tool").alias("search_s"),
-        pl.coalesce("cpu_hours", "_cpu_tool").alias("cpu_hours"),
-    ).drop("_qps_tool", "_search_tool", "_cpu_tool")
+        [pl.coalesce(c, f"_{c}_tool").alias(c) for c in cols]
+    ).drop([f"_{c}_tool" for c in cols])
 
 
 # Positions down each species' curve that the pooled curve is evaluated at. 101 is one
@@ -1674,6 +1739,35 @@ POOLED_CURVE_GRID = 101
 # Precision the recall panel reports at. 0.5 is the point where a call is as likely right
 # as wrong, which is the weakest cutoff a reader would act on.
 RECALL_AT_PRECISION = 0.5
+
+
+def _per_species_curves(sub: pl.DataFrame, xcol: str, ycol: str
+                        ) -> list[tuple[str, np.ndarray, np.ndarray]]:
+    """One (species, xs, ys) triple per species, each ordered most stringent first.
+
+    Sorted within a species, not globally. score_threshold is unique inside one species'
+    curve, so it is a total order there and the rank is reproducible; a global sort would
+    interleave species. Rows where either coordinate is not finite are dropped, and a
+    species left with nothing is dropped rather than contributing an empty curve.
+
+    Shared by pool_curve_over_species and pool_curve_provenance so the line and the
+    sentence describing where it ends are read off the same grouping.
+    """
+    if sub.height == 0 or "species" not in sub.columns:
+        return []
+    order_col = "score_threshold" if "score_threshold" in sub.columns else xcol
+    descending = order_col == "score_threshold"
+    per_species = []
+    for (species,), one in sub.group_by("species", maintain_order=True):
+        one = one.sort(order_col, descending=descending, nulls_last=True)
+        xs = one[xcol].to_numpy().astype(float)
+        ys = one[ycol].to_numpy().astype(float)
+        keep = np.isfinite(xs) & np.isfinite(ys)
+        xs, ys = xs[keep], ys[keep]
+        if xs.size == 0:
+            continue
+        per_species.append((species, xs, ys))
+    return per_species
 
 
 def pool_curve_over_species(sub: pl.DataFrame, xcol: str, ycol: str,
@@ -1719,23 +1813,7 @@ def pool_curve_over_species(sub: pl.DataFrame, xcol: str, ycol: str,
     Returns (x, y) pairs from the most stringent end to the most permissive, so the caller
     can both draw them and read a value off them.
     """
-    if sub.height == 0 or "species" not in sub.columns:
-        return []
-    # Sort within a species, not globally. score_threshold is unique inside one species'
-    # curve, so it is a total order there and the rank is reproducible; a global sort would
-    # interleave species.
-    order_col = "score_threshold" if "score_threshold" in sub.columns else xcol
-    descending = order_col == "score_threshold"
-    per_species = []
-    for (species,), one in sub.group_by("species", maintain_order=True):
-        one = one.sort(order_col, descending=descending, nulls_last=True)
-        xs = one[xcol].to_numpy().astype(float)
-        ys = one[ycol].to_numpy().astype(float)
-        keep = np.isfinite(xs) & np.isfinite(ys)
-        xs, ys = xs[keep], ys[keep]
-        if xs.size == 0:
-            continue
-        per_species.append((species, xs, ys))
+    per_species = _per_species_curves(sub, xcol, ycol)
     if not per_species:
         return []
 
@@ -1753,6 +1831,29 @@ def pool_curve_over_species(sub: pl.DataFrame, xcol: str, ycol: str,
     return [(float(x), float(y)) for x, y in zip(mean_x, mean_y)]
 
 
+def pool_curve_provenance(sub: pl.DataFrame, xcol: str,
+                          pairs: list[tuple[float, float]]) -> dict:
+    """How many species the pooled line averages, where it ends, and which species set it.
+
+    The rightmost drawn x is the mean over species of each species' own maximum x, so a
+    reader who is told only the endpoint cannot tell a line that every proteome reached
+    from one that a single proteome dragged out. Naming the shortest and longest says how
+    wide that mean is.
+
+    Read off the same grouping the line is drawn from, so the sentence and the curve cannot
+    disagree.
+    """
+    per_species = _per_species_curves(sub, xcol, xcol)
+    if not per_species or not pairs:
+        return {}
+    maxima = [(species, float(xs.max())) for species, xs, _ in per_species]
+    return {
+        "n_species": len(per_species),
+        "max_x": pairs[-1][0],
+        "shortest": min(maxima, key=lambda t: t[1]),
+        "longest": max(maxima, key=lambda t: t[1]),
+    }
+
 
 def curve_series(pairs: list[tuple[float, float]], decimals: int = 4) -> dict:
     """Pairs as the {x: y} map MultiQC's linegraph wants, one y per distinct x.
@@ -1766,25 +1867,6 @@ def curve_series(pairs: list[tuple[float, float]], decimals: int = 4) -> dict:
     for x, y in pairs:
         grouped.setdefault(f"{x:.{decimals}f}", []).append(y)
     return {k: sum(v) / len(v) for k, v in grouped.items()}
-
-
-def recall_at_precision(pairs: list[tuple[float, float]],
-                        min_precision: float = RECALL_AT_PRECISION) -> float:
-    """Highest recall on this curve at precision at or above `min_precision`.
-
-    Read off the DRAWN series rather than off the raw pairs, so the panel and the plot
-    cannot disagree even in the last decimal. curve_series rounds x to a fixed precision and
-    averages the y of any grid points that land on the same rounded x, which is what keeps
-    the drawn line single-valued; reading the raw pairs instead let the table report a
-    recall the line does not pass through. The difference is small and it is exactly the
-    kind of small that makes a reader distrust both numbers.
-
-    An arm that never reaches the precision returns 0: recall 0 is achievable at any
-    precision by calling nothing, so there is no such thing as "undefined" here.
-    """
-    reached = [float(x) for x, y in curve_series(pairs).items()
-               if y is not None and y >= min_precision]
-    return max(reached) if reached else 0.0
 
 
 def curve_lines(board: pl.DataFrame, max_lines: int) -> list[tuple[str, str, str]]:
@@ -1815,9 +1897,15 @@ def section_recall_at_precision(out: Path, cached: dict, cut: pl.DataFrame,
                                 n_species: int) -> None:
     """How far each arm reaches while still being right half the time. 3.4.
 
-    Read off the same pooled curves the PR panel draws, through the same two functions, so
-    the bar and the line cannot disagree. `cached` carries the pairs already computed for
-    the arms the PR panel drew; every other arm on the board is pooled here.
+    The bar is recall_at_precision: measured inside each species and then averaged, never
+    off the pooled curve. An arm can clear the precision floor in a mean over species
+    without clearing it in any one of them, and this panel is the report's headline claim,
+    so it is measured where a reader could act on it. `cached` carries the pooled pairs the
+    PR panel drew, used here only for the two curve endpoints beside the bar.
+
+    That makes the bar and the line two different aggregations of the same curves, which
+    the section text says out loud. They are not expected to be equal, and the endpoint
+    columns are what ties them together.
 
     Motif arms are left out rather than ranked last. A tool that reports the envelope of a
     discontinuous residue set is answering a different question from one that reports an
@@ -1825,6 +1913,8 @@ def section_recall_at_precision(out: Path, cached: dict, cut: pl.DataFrame,
     the alignment rows. Ranking them here would be that comparison by the back door.
     """
     dropped = _motif_tools(cut)
+    rap = {(r["tool"], r["variant"]): r["recall_at_precision"]
+           for r in recall_at_precision(cut, RECALL_AT_PRECISION).to_dicts()}
     data = {}
     for row in board.to_dicts():
         tool, variant, label = row["tool"], row["variant"], row["label"]
@@ -1838,7 +1928,7 @@ def section_recall_at_precision(out: Path, cached: dict, cut: pl.DataFrame,
             pairs = pool_curve_over_species(sub, "recall_reachable", "precision")
         if not pairs:
             continue
-        data[label] = {"recall_at_p": recall_at_precision(pairs),
+        data[label] = {"recall_at_p": rap.get((tool, variant), 0.0),
                        "max_precision": max(y for _, y in pairs),
                        "max_recall": max(x for x, _ in pairs)}
     if not data:
@@ -1857,9 +1947,11 @@ def section_recall_at_precision(out: Path, cached: dict, cut: pl.DataFrame,
             f"{RECALL_AT_PRECISION:g} of its calls are correct "
             f"({primary_truth} truth, <code>{split}</code> split).</p>"
             + bullets(
-                f"<b>Both axes are means over the {n_species} target proteomes at a "
-                "matched score threshold</b>, read off the same pooled curves the "
-                "precision/recall panel draws. The bar and the line are the same numbers.",
+                f"<b>Measured inside each of the {n_species} target proteomes and then "
+                "averaged.</b> Not read off the pooled curve in the precision/recall "
+                "panel: an arm can clear the precision floor in a mean over species "
+                "without clearing it in any one of them, and this is the number a reader "
+                "would act on.",
                 "<b>Threshold-free.</b> No tool's shipped default cutoff enters this; each "
                 "arm is allowed its own best operating point.",
                 "<b>An arm at 0</b> never reaches this precision anywhere on its curve, "
@@ -1941,6 +2033,7 @@ def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
         data, colors, dashes = {}, {}, {}
         greys = cycle(["#8c8c8c", "#5c5c5c", "#b0b0b0", "#3f3f3f", "#9c9c9c"])
         grey_dashes = cycle(["solid", "dash", "dot", "dashdot", "longdash"])
+        infos = {}
         for tool, variant, label in keep:
             sub = cut.filter((pl.col("tool") == tool) & (pl.col("variant") == variant))
             if sub.height == 0:
@@ -1949,6 +2042,7 @@ def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
             if not pairs:
                 continue
             data[label] = curve_series(pairs)
+            infos[label] = pool_curve_provenance(sub, xcol, pairs)
             if kind == "pr":
                 pr_pairs[label] = pairs
             if tool == "kmerseek":
@@ -1965,6 +2059,11 @@ def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
         # grid that tops out at 0.28. Padded 10% and never past 1.
         xtop = max(float(x) for series in data.values() for x in series)
         xmax = min(1.0, max(xtop * 1.1, 0.02))
+        # Named in the text rather than left to the reader's eye: two lines can stop at the
+        # same x with very different species behind them.
+        ends = ", ".join(f"<code>{lb}</code> {infos[lb]['max_x']:.3f}"
+                         for lb in sorted(infos, key=lambda k: -infos[k]["max_x"])[:5]
+                         if infos.get(lb))
         write_section(out, f"qfo_{kind}_curve", {
             "id": f"qfo_{kind}_curve",
             "section_name": f"{title} curves",
@@ -1975,13 +2074,33 @@ def section_curves(out: Path, curves: pl.DataFrame, metrics: pl.DataFrame,
                                 "<b>Recall</b> counts distinct true domain instances; "
                                 "<b>precision</b> counts calls.",
                                 f"<b>Both axes are means over the {n_species} target "
-                                "proteomes at a matched score threshold.</b> Threshold is "
-                                "the curve's own parameter and means the same thing in "
-                                "every species of one arm, so every proteome is in the "
-                                "mean at every point of the line. A proteome whose calls "
-                                "have run out contributes recall 0 and stays in, rather "
-                                "than dropping out and leaving the easiest proteomes "
-                                "averaging with each other.",
+                                "proteomes, paired by rank down each species' own "
+                                "curve.</b> Position u down a curve is defined for every "
+                                "species at every u, so every proteome is in the mean at "
+                                "every point of the line and no point is an average over "
+                                "a subset. Rank rather than a matched score threshold: an "
+                                "E-value depends on the size of the database it was "
+                                "computed against, and these proteomes differ several-fold "
+                                "in size, so the same number is not the same stringency in "
+                                "two of them.",
+                                ("<b>Where each line ends</b> \u2014 its rightmost point "
+                                 "is the mean over species of that arm's own maximum "
+                                 + ("recall" if kind == "pr" else "false positive rate")
+                                 + ": " + ends + "."
+                                 + (" That is the denominator the \"Recall at precision "
+                                    f">= {RECALL_AT_PRECISION:g}\" panel is built from, "
+                                    "so the two can be read against each other."
+                                    if kind == "pr" else "")) if ends else "",
+                                "<b>An earlier version of this panel was wrong</b> and the "
+                                "numbers it showed should not be quoted. It binned recall "
+                                "to two decimals and stopped at the first bin not holding "
+                                "every species, which in practice is the first bin no "
+                                "species landed in, so several arms were drawn as a single "
+                                "point. No scalar metric went through that code: AUPRC, "
+                                "ROC AUC, Fmax and sensitivity to first FP are each "
+                                "computed per species on the full unpooled curve in "
+                                "<code>evaluate_domain_calls.py</code> and averaged "
+                                "afterwards.",
                                 "<b>Read the shape, not only the height.</b> An arm whose "
                                 "curve is high and stops early is precise over a short "
                                 "reach; one whose curve runs far to the right while "
@@ -2078,25 +2197,79 @@ def section_identity(out: Path, metrics: pl.DataFrame, primary_truth: str,
         })
         return
     data = {label: {b: series.get(b) for b in order} for label, series in data.items()}
-    write_section(out, "qfo_identity", {
-        "id": "qfo_identity",
-        "section_name": "Twilight zone",
-        "description": (
-            f"<p>Fmax by percent identity between a domain instance and its closest "
-            f"same-family domain in the target proteome ({primary_truth} truth, "
-            f"<code>{split}</code> split).</p>"
-            + bullets(
-                "<b>Each bin</b> is a percent-identity band between the human domain "
-                "instance and its closest same-family domain in the target proteome.",
-                "<b><code>no_homolog</code></b> is instances with no same-family target "
-                "domain at all: unreachable by transfer, kept as their own bin so they "
-                "never contaminate the &lt;20% bin the hypothesis cares about.")),
-        "plot_type": "bargraph",
-        "pconfig": {"id": "qfo_identity_plot", "title": "Fmax by percent identity",
-                    "ylab": "Fmax", "cpswitch": False, "stacking": "group", "height": 500},
-        "categories": {b: {"name": b, "color": IDENTITY_COLORS.get(b)} for b in order},
-        "data": data,
-    })
+    colors = {lb: tool_color(t) for t, _v, lb in keep if lb in data}
+
+    # Percent identity is a number, so the axis is a number. The five graded bins go on a
+    # line plot at their midpoints; `no_homolog` is not a point on that axis at all -- it
+    # is the instances with no same-family target domain to have an identity WITH -- so it
+    # goes in its own bar chart below rather than at an invented x. Hanging it off the
+    # right-hand end as "100%+" would put the least reachable instances where the most
+    # reachable ones belong, which is the reading the separate bin exists to prevent.
+    numeric = [(b, band_midpoint(b)) for b in order]
+    numeric = [(b, x) for b, x in numeric if x is not None]
+    offaxis = [b for b in order if band_midpoint(b) is None]
+    lines = {label: {x: s.get(b) for b, x in numeric} for label, s in data.items()}
+    lines = {lb: s for lb, s in lines.items() if any(v is not None for v in s.values())}
+
+    if len(numeric) >= MIN_COVARIATE_BINS and lines:
+        write_section(out, "qfo_identity", {
+            "id": "qfo_identity",
+            "section_name": "Twilight zone",
+            "description": (
+                f"<p>Fmax against percent identity between a domain instance and its "
+                f"closest same-family domain in the target proteome ({primary_truth} "
+                f"truth, <code>{split}</code> split).</p>"
+                + bullets(
+                    "<b>x is the identity bin's midpoint</b>, not a category slot. The "
+                    "bins are 10, 10, 20 and 40 points wide, so equal slots would draw "
+                    "three of the four gaps at the wrong width — and the left-hand end, "
+                    "under 20% identity, is where the claim is stated.",
+                    "<b>Lower identity is to the left</b>, which is the direction the "
+                    "hypothesis is about: a method that keeps Fmax as x falls is finding "
+                    "domains that sequence identity no longer marks.",
+                    "<b><code>no_homolog</code> is not on this axis.</b> Those instances "
+                    "have no same-family target domain to have an identity with, so there "
+                    "is no x to put them at. They are the bar chart in the section below, "
+                    "kept apart so they never contaminate the &lt;20% bin.")),
+            "plot_type": "linegraph",
+            "pconfig": {"id": "qfo_identity_plot",
+                        "title": "Fmax vs percent identity",
+                        "xlab": "percent identity to closest same-family target "
+                                "(bin midpoint)",
+                        "ylab": "Fmax", "ymin": 0, "height": 500,
+                        "style": "lines+markers", "colors": colors, "showlegend": True},
+            "data": lines,
+        })
+
+    # The companion bar for the bin that has no midpoint. One category, drawn on purpose:
+    # unlike the covariate axes there is no gradient being claimed here, so a bar per arm
+    # is the honest figure rather than a degenerate line.
+    bar = {label: {b: s.get(b) for b in offaxis} for label, s in data.items()}
+    bar = {lb: s for lb, s in bar.items() if any(v is not None for v in s.values())}
+    if offaxis and bar:
+        write_section(out, "qfo_identity_no_homolog", {
+            "id": "qfo_identity_no_homolog",
+            "section_name": "Twilight zone: no homolog",
+            "description": (
+                f"<p>Fmax on the instances with no same-family domain anywhere in the "
+                f"target proteome ({primary_truth} truth, <code>{split}</code> split).</p>"
+                + bullets(
+                    "<b>Bars, not a line.</b> This is the one identity bin with no "
+                    "midpoint, because there is no identity to a homolog that does not "
+                    "exist. It is split out of the plot above rather than placed at an "
+                    "invented position on that axis.",
+                    "<b>These instances are unreachable by transfer</b>: the scoring has "
+                    "no same-family target to carry an annotation from. Read this as a "
+                    "floor, not as a bin of the gradient above.")),
+            "plot_type": "bargraph",
+            "pconfig": {"id": "qfo_identity_no_homolog_plot",
+                        "title": "Fmax, instances with no same-family target",
+                        "ylab": "Fmax", "cpswitch": False, "stacking": "group",
+                        "height": 400},
+            "categories": {b: {"name": b, "color": IDENTITY_COLORS.get(b)}
+                           for b in offaxis},
+            "data": bar,
+        })
 
 
 # The three covariate axes evaluate_domain_calls stratifies on that nothing rendered until
@@ -2191,6 +2364,19 @@ COVARIATE_EMPTY_NOTE = {
 }
 
 
+def _bin_lo(label: str) -> float:
+    """Lower edge of a bin label, or +inf for one that has none.
+
+    Trailing units are stripped so "0-20%" reads 0 rather than failing. +inf, not a raise:
+    an open-ended bin ("251+") and a categorical one ("no_homolog") both belong at the end
+    of a numeric axis, and a bin label nobody anticipated should not take the report down.
+    """
+    try:
+        return float(label.split("-")[0].rstrip("%"))
+    except (ValueError, IndexError):
+        return float("inf")
+
+
 def _bin_order(values: list[str]) -> list[str]:
     """Sort bin labels by their lower edge.
 
@@ -2198,13 +2384,11 @@ def _bin_order(values: list[str]) -> list[str]:
     a second copy of those numbers is a thing that drifts. attach_strata writes them as
     f"{lo}-{hi}", so the lower edge is parseable; anything unparseable sorts last rather
     than raising, since a missing bin should not take the whole report down.
+
+    Sorting numerically is the point. As strings "121-250" sorts before "16-30", which on
+    the feature-length axis puts the bins in an order that is not the covariate's.
     """
-    def lo(label: str) -> float:
-        try:
-            return float(label.split("-")[0])
-        except (ValueError, IndexError):
-            return float("inf")
-    return sorted(values, key=lo)
+    return sorted(values, key=_bin_lo)
 
 
 # A covariate axis is a claim about a gradient: Fmax is supposed to move as the covariate
@@ -2287,18 +2471,51 @@ def section_covariates(out: Path, metrics: pl.DataFrame, primary_truth: str,
                 "data": empty_covariate_note(axis, order, sub_axis),
             })
             continue
-        data = {label: {b: series[b] for b in order} for label, series in data.items()}
+        # Every one of these axes is numeric -- a disorder fraction, a mean pLDDT, a dN/dS
+        # -- so it is drawn as x against y on the covariate's own scale, not as grouped
+        # bars in category slots. Bars answer "who wins this bin" and hide the thing the
+        # section exists for, which is whether a line rises, falls or turns over as the
+        # covariate moves. Equal-width slots also misplace unequal bins: the disorder bins
+        # span 0.1, 0.2, 0.3 and 0.41, so three of the four gaps would be drawn wrong.
+        points = [(b, band_midpoint(b)) for b in order]
+        numeric = [(b, x) for b, x in points if x is not None]
+        offaxis = [b for b, x in points if x is None]
+        series = {label: {x: s[b] for b, x in numeric} for label, s in data.items()}
+        series = {lb: s for lb, s in series.items()
+                  if any(v is not None for v in s.values())}
+        if not series or len(numeric) < MIN_COVARIATE_BINS:
+            write_section(out, f"qfo_{axis}", {
+                "id": f"qfo_{axis}",
+                "section_name": title,
+                "description": (f"<p>{primary_truth} truth, <code>{split}</code> "
+                                f"split.</p>" + blurb),
+                "plot_type": "html",
+                "data": empty_covariate_note(axis, order, sub_axis),
+            })
+            continue
+        edges = ", ".join(f"<code>{b}</code> at {x:g}" for b, x in numeric)
+        note = [
+            "<b>x is the bin's midpoint</b>, not a category slot, so a bin sits the "
+            f"distance from its neighbour that it actually spans — {edges}.",
+            "<b>Colour is the method class</b>, as everywhere else in this report.",
+        ]
+        if offaxis:
+            note.append(
+                "<b>Not on this axis</b> — " + ", ".join(f"<code>{b}</code>" for b in offaxis)
+                + ". These bins have no midpoint to place them at, so they are left off "
+                "rather than given an invented x.")
         write_section(out, f"qfo_{axis}", {
             "id": f"qfo_{axis}",
             "section_name": title,
             "description": (f"<p>{primary_truth} truth, <code>{split}</code> split.</p>"
-                            + blurb),
-            "plot_type": "bargraph",
-            "pconfig": {"id": f"qfo_{axis}_plot", "title": f"Fmax by {axis}",
-                        "ylab": "Fmax", "cpswitch": False, "stacking": "group",
-                        "height": 500, "showlegend": True},
-            "categories": {b: {"name": b} for b in order},
-            "data": data,
+                            + blurb + bullets(*note)),
+            "plot_type": "linegraph",
+            "pconfig": {"id": f"qfo_{axis}_plot", "title": f"Fmax vs {axis}",
+                        "xlab": f"{axis} (bin midpoint)", "ylab": "Fmax",
+                        "ymin": 0, "height": 500, "style": "lines+markers",
+                        "colors": {lb: tool_color(t) for t, _v, lb in keep if lb in series},
+                        "showlegend": True},
+            "data": series,
         })
 
 
@@ -3266,6 +3483,87 @@ def alphabet_classes(alphabet: str) -> int:
 LOWER_IS_BETTER = {"smin"}
 
 
+# --- the shippable arm -----------------------------------------------------------------
+#
+# Every panel that draws kmerseek draws 406 arms. Taking a max over them against ONE
+# configuration per baseline is selection bias, and the arms that win are not the same
+# arms: precision comes from the 17-20 letter alphabets and the best AUPRC from the 4-5
+# letter ones, so no single configuration wins both. "kmerseek wins precision and AUPRC"
+# describes the upper envelope of a sweep, not something a reader could install.
+#
+# So the sweep is drawn as a cloud and ONE arm is marked. The rule below picks it, and the
+# rule is the point: picking whichever arm wins the panel being drawn would reproduce the
+# envelope one panel at a time.
+CANONICAL_RULE_METRICS = ("fmax", "auprc", "precision", "recall_reachable")
+
+
+def canonical_kmerseek_arm(cut: pl.DataFrame) -> tuple[str, str] | None:
+    """One kmerseek arm to mark in every panel, chosen the same way in all of them.
+
+    Best MEAN RANK across CANONICAL_RULE_METRICS, each ranked over every kmerseek arm on
+    the same rows. A mean rank cannot be won by being extreme on one axis, which is what
+    disqualifies picking on any single metric: the precision leader and the AUPRC leader
+    are different arms and each would make its own panel look like a result.
+
+    Ties break toward the smaller alphabet and then the smaller k -- the cheaper arm to
+    run and the one the hypothesis is actually about -- so the choice is deterministic and
+    does not depend on row order.
+
+    An explicit --canonical-variant overrides this entirely; a project that has decided
+    what it ships should not have that re-derived from whichever run is being reported on.
+    """
+    if CANONICAL is not None:
+        return CANONICAL
+    ks = cut.filter(pl.col("tool") == "kmerseek")
+    if ks.height == 0:
+        return None
+    have = [m for m in CANONICAL_RULE_METRICS if m in ks.columns]
+    if not have:
+        return None
+    per_arm = ks.group_by("variant").agg([pl.col(m).mean().alias(m) for m in have])
+    if per_arm.height == 0:
+        return None
+    ranked = per_arm.with_columns([
+        # descending=True so rank 1 is the best; every metric in the rule set is
+        # higher-is-better. A metric that is all-null over the sweep would rank everything
+        # equal, which is harmless, rather than dropping the arm out.
+        pl.col(m).rank(method="average", descending=True).alias(f"_r_{m}") for m in have
+    ])
+    ranked = ranked.with_columns(
+        pl.mean_horizontal([f"_r_{m}" for m in have]).alias("_mean_rank"))
+    ranked = parse_kmerseek_variants(ranked)
+    if ranked.height == 0:
+        return None
+    ranked = ranked.with_columns(
+        pl.col("alphabet").map_elements(alphabet_classes, return_dtype=pl.Int64)
+          .alias("_classes"))
+    pick = ranked.sort(["_mean_rank", "_classes", "ksize"]).row(0, named=True)
+    return ("kmerseek", pick["variant"])
+
+
+def truncated_alphabets(cut: pl.DataFrame, metric: str = "fmax") -> tuple[int, int]:
+    """(alphabets still improving at the largest k swept, alphabets swept at all).
+
+    An alphabet whose score is still rising where the sweep stops has not been shown its
+    own optimum, so its number in every panel is a lower bound rather than a result. The
+    coarse alphabets are the ones this bites -- they need the longest windows, which is the
+    hypothesis under test -- so it has to be said wherever the sweep is drawn.
+    """
+    ks = parse_kmerseek_variants(cut.filter(pl.col("tool") == "kmerseek"))
+    if ks.height == 0 or metric not in ks.columns:
+        return 0, 0
+    grid = (ks.group_by("alphabet", "ksize").agg(pl.col(metric).mean().alias("y"))
+              .sort("alphabet", "ksize"))
+    rising = 0
+    alphabets = sorted(grid["alphabet"].unique().to_list())
+    for a in alphabets:
+        ys = grid.filter(pl.col("alphabet") == a)["y"].to_list()
+        ys = [y for y in ys if y is not None]
+        if len(ys) >= 2 and ys[-1] >= ys[-2]:
+            rising += 1
+    return rising, len(alphabets)
+
+
 def pick_selection_split(df: pl.DataFrame) -> tuple[pl.DataFrame, str]:
     """The SELECTION half if the run produced one, otherwise whatever pick_split finds.
 
@@ -3838,12 +4136,17 @@ def band_midpoint(label: str) -> float | None:
     Equal-width categories would put 90-100 as far from 70-90 as 70-90 is from 50-70,
     which is twice the pLDDT it spans -- and the crossover this plot exists to show
     happens between exactly those two bands, so the spacing is load-bearing.
+
+    Shared by every numeric stratum axis, so it strips a trailing unit: the identity bins
+    read "20-30%". None for a bin with no midpoint to give -- an open-ended "251+", or a
+    categorical "no_homolog" -- and the caller has to decide what to do with those rather
+    than being handed a number that would place them somewhere false on the axis.
     """
     parts = label.split("-")
     if len(parts) != 2:
         return None
     try:
-        lo, hi = float(parts[0]), float(parts[1])
+        lo, hi = float(parts[0].rstrip("%")), float(parts[1].rstrip("%"))
     except ValueError:
         return None
     return (lo + hi) / 2
@@ -3943,8 +4246,10 @@ def section_plddt_regime(out: Path, metrics: pl.DataFrame, primary_truth: str,
             f"({primary_truth} truth, <code>{split}</code> split).</p>"
             + bullets(
                 "<b>Same numbers as the Model confidence section</b>, same arms and same "
-                "split. Only the form differs: that one is a grouped bar chart, which "
-                "answers who wins a band and hides whether a line rises, falls or peaks.",
+                "split, and now the same form: both are drawn against pLDDT rather than "
+                "in category slots. What this section adds is the per-band denominators "
+                "and the peak column below, which is what separates a monotone dependence "
+                "on structure quality from a regime.",
                 "<b>x is the band's midpoint</b>, not a category slot, so 90-100 sits the "
                 "distance from 70-90 that it actually spans. The crossover happens "
                 "between those two bands, so equal spacing would move it.",
@@ -5785,7 +6090,9 @@ def section_boundary(out: Path, metrics: pl.DataFrame, primary_truth: str,
                                       description="Measured from the prediction side"),
             "residue_recall": dict(title="Residue rec.", min=0, max=1, scale="BuGn",
                                    format="{:,.3f}",
-                                   description="Measured from the truth side"),
+                                   description="Measured from the truth side. This is the "
+                                               "column earlier reports also printed as "
+                                               "nDO; the duplicate is gone"),
             "residue_f1": dict(title="Residue F1", min=0, max=1, scale="BuGn",
                                format="{:,.3f}"),
             "median_iou_tp": dict(title="Median IoU (TP)", min=0, max=1, scale="Greens",
@@ -6020,34 +6327,30 @@ def section_cafa(out: Path, metrics: pl.DataFrame, primary_truth: str,
         "id": "qfo_cafa",
         "section_name": "CAFA-style metrics",
         "description": (
-            f"<p>{primary_truth} truth, <code>{split}</code> split, averaged over target "
-            f"species.</p>"
-            + bullets(
-                "<b>Fmax</b> is the maximum F-score over score thresholds. The precision "
-                "and recall columns are the operating point where it is reached.",
-                "<b>Family Fmax</b> is the same curve read on the SET of Pfam families "
-                "called per query protein against the set truly present, with interval "
-                "placement ignored: the CAFA-classic reading. Fmax scores a tool that "
-                "names the right family in the wrong place at zero, exactly as it scores a "
-                "tool that never recognised the family, and the pair separates those.",
-                "<b>Gap</b> is family Fmax minus Fmax, so it is what boundary placement "
-                "costs. It is almost always positive but is not guaranteed to be: the "
-                "family reading also swaps the recall denominator from instances to "
-                "families, and on a protein carrying a tandem array of one family that "
-                "swap can cost more than ignoring placement gains.",
-                "<b>The three family counts</b> are the denominators: distinct "
-                "(protein, family) pairs in the answer key, predicted, and correct.",
-                "<b>wFmax</b> weights each family by its information content, "
-                "IC = -log<sub>2</sub> P(family), so recovering a rare family counts for "
-                "more than recovering a common one.",
-                "<b>Smin</b> is the minimum of sqrt(remaining uncertainty<sup>2</sup> + "
-                "misinformation<sup>2</sup>) in bits, and lower is better.",
-                "<b><code>smin_ru</code></b> is information still missing (false "
-                "negatives) and <b><code>smin_mi</code></b> is information invented (false "
-                "positives) at that threshold, so the two say which way a tool is failing.",
-                "<b>The weighting here is not CAFA's information accretion</b>, which is "
-                "defined over an ontology's parent-child structure. Pfam is flat, so plain "
-                "IC is used and the metric is reported under that narrower definition.")),
+            f"{primary_truth} truth, <code>{split}</code> split, averaged over target "
+            "species. <b>Fmax</b> is the maximum F-score over score thresholds; the "
+            "precision and recall columns are the operating point where it is reached. "
+            "<b>Family Fmax</b> is the same curve read on the SET of Pfam families called "
+            "per query protein against the set truly present, with interval placement "
+            "ignored — the CAFA-classic reading. Fmax scores a tool that names the right "
+            "family in the wrong place at zero, exactly as it scores a tool that never "
+            "recognised the family; the pair separates those. <b>Gap</b> is "
+            "family Fmax minus Fmax, so it is what boundary placement costs. It is almost "
+            "always positive but is not guaranteed to be: the family reading also swaps the "
+            "recall denominator from instances to families, and on a protein carrying a "
+            "tandem array of one family that swap can cost more than ignoring placement "
+            "gains. The three family counts are the denominators — distinct "
+            "(protein, family) pairs in the answer key, predicted, and correct.<br>"
+            "<b>wFmax</b> weights each family by its information content, "
+            "IC = -log<sub>2</sub> P(family), so recovering a rare family counts for more "
+            "than recovering a common one. <b>Smin</b> is the minimum of "
+            "sqrt(remaining uncertainty<sup>2</sup> + misinformation<sup>2</sup>) in bits, "
+            "and lower is better; <code>smin_ru</code> is information still missing (false "
+            "negatives) and <code>smin_mi</code> is information invented (false positives) "
+            "at that threshold, so the two say which way a tool is failing.<br>"
+            "The weighting here is <b>not</b> CAFA's information accretion, which is "
+            "defined over an ontology's parent-child structure. Pfam is flat, so plain IC "
+            "is used and the metric is reported under that narrower definition."),
         "plot_type": "table",
         "pconfig": {"id": "qfo_cafa_table", "title": f"CAFA-style metrics ({primary_truth})",
                     "col1_header": "Tool", "sort_rows": False, "scale": False, "no_violin": True},
@@ -6262,8 +6565,9 @@ CITATIONS = [
      "Friedberg, I., et al. Critical Assessment of Functional Annotation (CAFA), periodic "
      "challenges.",
      "https://www.biofunctionprediction.org/"),
-    ("CASP — nDO and the domain-boundary metrics come from the structure-assessment "
-     "lineage (CASP, and the Chainsaw / Merizo parsers that follow it)",
+    ("CASP — the domain-boundary metrics (DBD, terminal offsets) come from the "
+     "structure-assessment lineage (CASP, and the Chainsaw / Merizo parsers that follow "
+     "it). This report does NOT report an nDO; see the note below",
      "Critical Assessment of Protein Structure Prediction (CASP) challenge metrics.",
      "https://predictioncenter.org/"),
     ("Pfam — the primary truth set, and the annotation ceiling hmmscan is run against",
@@ -6283,12 +6587,467 @@ CITATIONS = [
      "searching for the analysis of massive data sets. <i>Nature Biotechnology</i>, 35, "
      "1026-1028.",
      "https://doi.org/10.1038/nbt.3988"),
-    ("HH-suite — the profile-profile baseline",
+    ("HH-suite — the profile-profile baseline (hhblits)",
      "Steinegger, M., et al. (2019). HH-suite3 for fast remote homology detection and deep "
      "protein annotation. <i>BMC Bioinformatics</i>, 20, 473.",
      "https://doi.org/10.1186/s12859-019-3019-7"),
+    ("kmerseek — the method under test. Reduced-alphabet k-mer search over FracMinHash "
+     "sketches; the sketching and containment machinery is sourmash's",
+     "Irber, L., Pierce-Ward, N. T., et al. (2022). Lightweight compositional analysis of "
+     "metagenomes with FracMinHash and minimum metagenome covers. <i>bioRxiv</i> "
+     "2022.01.11.475838. Software: sourmash, "
+     "<i>Journal of Open Source Software</i>, 1(5), 27 (2016).",
+     "https://doi.org/10.1101/2022.01.11.475838"),
+    ("ProstT5 — the sequence-to-3Di language model, the arm that predicts Foldseek's "
+     "alphabet instead of reading a structure",
+     "Heinzinger, M., et al. (2024). Bilingual language model for protein sequence and "
+     "structure. <i>NAR Genomics and Bioinformatics</i>, 6(4), lqae150.",
+     "https://doi.org/10.1093/nargab/lqae150"),
+    ("Folddisco — the motif-index arm. It reports the envelope of a discontinuous residue "
+     "set rather than an alignment, which is why the boundary and frontier sections hold "
+     "it apart from the alignment arms rather than ranking it against them",
+     "Kim, H., et al. (2026). Structural motif search across the protein universe with "
+     "Folddisco. <i>Nature Biotechnology</i>. Preprint: <i>bioRxiv</i> "
+     "2025.07.06.663357.",
+     "https://doi.org/10.1038/s41587-026-03162-9"),
+    ("MMseqs2 iterative search (mmseqs2_iterative) — the same engine run in its "
+     "profile-building sensitivity mode. Same paper as the single-pass arm above; it is "
+     "listed as its own row because this report scores the two as separate arms and they "
+     "sit at different points on every cost axis",
+     "Steinegger, M., &amp; Soding, J. (2017). MMseqs2 enables sensitive protein sequence "
+     "searching for the analysis of massive data sets. <i>Nature Biotechnology</i>, 35, "
+     "1026-1028.",
+     "https://doi.org/10.1038/nbt.3988"),
+    ("AlphaFold and the AlphaFold Protein Structure Database — every structure the "
+     "structure arms search, and the pLDDT the model-confidence sections band on",
+     "Jumper, J., et al. (2021). Highly accurate protein structure prediction with "
+     "AlphaFold. <i>Nature</i>, 596, 583-589. Varadi, M., et al. (2024). AlphaFold "
+     "Protein Structure Database in 2024. <i>Nucleic Acids Research</i>, 52(D1), "
+     "D368-D375.",
+     "https://doi.org/10.1038/s41586-021-03819-2"),
+    ("metapredict — the sequence-only disorder axis, the one that shares neither the "
+     "AlphaFold-modelling confound nor the shallow-MSA confound with pLDDT",
+     "Emenecker, R. J., Griffith, D., &amp; Holehouse, A. S. (2021). Metapredict: a fast, "
+     "accurate, and easy-to-use predictor of consensus disorder and structure. "
+     "<i>Biophysical Journal</i>, 120(20), 4312-4319.",
+     "https://doi.org/10.1016/j.bpj.2021.08.039"),
+    ("Quest for Orthologs — where the nine target proteomes and the reference proteome "
+     "set come from",
+     "Altenhoff, A. M., et al. (2016). Standardized benchmarking in the quest for "
+     "orthologs. <i>Nature Methods</i>, 13, 425-430.",
+     "https://doi.org/10.1038/nmeth.3830"),
+    ("UniProt and Swiss-Prot — the query proteome, and the curated feature truth set. Its "
+     "coverage is not uniform across the nine species, which the truth-set sections "
+     "report rather than average over",
+     "The UniProt Consortium (2025). UniProt: the Universal Protein Knowledgebase in "
+     "2025. <i>Nucleic Acids Research</i>, 53(D1), D609-D617.",
+     "https://doi.org/10.1093/nar/gkae1010"),
+    ("Pfam-N — the deep-learning extension of Pfam, scored here as its own truth set "
+     "because it labels instances Pfam-A's HMMs miss",
+     "Bileschi, M. L., et al. (2022). Using deep learning to annotate the protein "
+     "universe. <i>Nature Biotechnology</i>, 40, 932-937.",
+     "https://doi.org/10.1038/s41587-021-01179-w"),
+    ("M-CSA — the catalytic-residue truth set. Its features are single residues, which is "
+     "why they are scored by containment and excluded from every boundary number",
+     "Ribeiro, A. J. M., et al. (2018). Mechanism and Catalytic Site Atlas (M-CSA). "
+     "<i>Nucleic Acids Research</i>, 46(D1), D618-D623.",
+     "https://doi.org/10.1093/nar/gkx1012"),
+    ("TimeTree — the divergence times on the x axis of every Divergence section",
+     "Kumar, S., et al. (2022). TimeTree 5: an expanded resource for species divergence "
+     "times. <i>Molecular Biology and Evolution</i>, 39(8), msac174.",
+     "https://doi.org/10.1093/molbev/msac174"),
+    ("HGNC — the gene-family groupings behind the curated gene-set and MHC sections",
+     "Seal, R. L., et al. (2023). Genenames.org: the HGNC resources in 2023. "
+     "<i>Nucleic Acids Research</i>, 51(D1), D1003-D1009.",
+     "https://doi.org/10.1093/nar/gkac888"),
+    ("MultiQC — this report",
+     "Ewels, P., et al. (2016). MultiQC: summarize analysis results for multiple tools and "
+     "samples in a single report. <i>Bioinformatics</i>, 32(19), 3047-3048.",
+     "https://doi.org/10.1093/bioinformatics/btw354"),
+    ("Nextflow — the workflow every number here was produced by",
+     "Di Tommaso, P., et al. (2017). Nextflow enables reproducible computational "
+     "workflows. <i>Nature Biotechnology</i>, 35, 316-319.",
+     "https://doi.org/10.1038/nbt.3820"),
 ]
 
+
+# ---------------------------------------------------------------------------
+# what this run concluded
+# ---------------------------------------------------------------------------
+
+def _fmt(v, nd=3):
+    return "-" if v is None else f"{v:.{nd}f}"
+
+
+def _best_and_runner(rows: list[dict], key: str, higher: bool = True):
+    """Top arm and top NON-kmerseek arm on `key`, from a list of {label, tool, key}."""
+    have = [r for r in rows if r.get(key) is not None]
+    if not have:
+        return None, None
+    pick = max if higher else min
+    top = pick(have, key=lambda r: r[key])
+    base = [r for r in have if r["tool"] != "kmerseek"]
+    return top, (pick(base, key=lambda r: r[key]) if base else None)
+
+
+def conclusion_recall_at_precision(curves, metrics, primary_truth, floor=0.5):
+    """The deliverable-recall headline, and how far ahead of the best baseline it is."""
+    if curves.height == 0:
+        return ""
+    ccut, _ = pick_split(curves.filter(pl.col("truth_set") == primary_truth))
+    mcut, _ = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    if ccut.height == 0 or mcut.height == 0:
+        return ""
+    rap = recall_at_precision(ccut, floor)
+    if rap.height == 0:
+        return ""
+    lookup = {(r["tool"], r["variant"]): r["recall_at_precision"] for r in rap.to_dicts()}
+    # Motif arms are left out of the comparison for the reason section_boundary gives: an
+    # arm reporting the envelope of a discontinuous residue set is not measuring the same
+    # thing, so it cannot set or lose a bar against the alignment arms.
+    semantics = ({r["tool"]: r["interval_semantics"] for r in
+                  mcut.select("tool", "interval_semantics").unique().to_dicts()}
+                 if "interval_semantics" in mcut.columns else {})
+    rows = [{"label": r["label"], "tool": r["tool"],
+             "v": lookup.get((r["tool"], r["variant"]))}
+            for r in best_variants(mcut).to_dicts()
+            if semantics.get(r["tool"], "alignment") != "motif"]
+    top, base = _best_and_runner(rows, "v")
+    if top is None:
+        return ""
+    if base is None or not base["v"]:
+        return (f"<b>Deliverable recall</b> — at a precision floor of {floor:g}, the "
+                f"leading arm is <code>{top['label']}</code> at {_fmt(top['v'])}.")
+    lead = (top["v"] / base["v"] - 1) * 100
+    ks = [r for r in rows if r["tool"] == "kmerseek" and r["v"] is not None]
+    ks_top = sorted(ks, key=lambda r: -r["v"])[:3]
+    ahead = ("The top three arms on this metric are all kmerseek "
+             f"({', '.join('<code>' + r['label'] + '</code>' for r in ks_top)}). "
+             if len(ks_top) == 3 and all(
+                 r["v"] >= base["v"] for r in ks_top) else "")
+    return (
+        f"<b>Deliverable recall is where the case is strongest.</b> At a precision floor "
+        f"of {floor:g} — the operating point that means \"annotations you would hand a "
+        f"collaborator\" — <code>{top['label']}</code> reaches {_fmt(top['v'])} against "
+        f"{_fmt(base['v'])} for the best baseline (<code>{base['label']}</code>), "
+        f"{lead:+.0f}%. {ahead}Read it in the "
+        f"\"Recall at precision &gt;= {floor:g}\" section; it is a mean over target "
+        f"species, computed per species and then averaged, with no resampling behind it.")
+
+
+def conclusion_threshold_gain(metrics, primary_truth):
+    """Why the Fmax comparison is a fair fight: who is already at their own optimum."""
+    cut, _ = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    # best_f1 / f1_reachable, the same pair section_threshold_gain draws. Not fmax / f1:
+    # those are two different metrics and their ratio is not bounded below by 1.
+    need = {"best_f1", "f1_reachable", "n_calls"}
+    if cut.height == 0 or not need.issubset(set(cut.columns)):
+        return ""
+    rows = []
+    for r in best_variants(cut).to_dicts():
+        sub = cut.filter((pl.col("tool") == r["tool"])
+                         & (pl.col("variant") == r["variant"]))
+        f1 = sub["f1_reachable"].mean()
+        best = sub["best_f1"].mean()
+        calls = sub["n_calls"].mean()
+        if not f1 or not best:
+            continue
+        rows.append({"label": r["label"], "tool": r["tool"], "gain": best / f1,
+                     "calls": calls})
+    ks = [r for r in rows if r["tool"] == "kmerseek"]
+    base = [r for r in rows if r["tool"] != "kmerseek"]
+    if not ks or not base:
+        return ""
+    ks_gain = min(r["gain"] for r in ks)
+    worst = max(base, key=lambda r: r["gain"])
+    ks_calls = min(r["calls"] for r in ks if r["calls"])
+    ratio = (worst["calls"] / ks_calls) if ks_calls else None
+    vol = (f" and it gets there by thresholding a dump about "
+           f"{ratio:,.0f}x larger" if ratio and ratio > 2 else "")
+    near = ("already at its own optimum" if ks_gain < 1.02 else
+            f"within {(ks_gain - 1) * 100:.0f}% of its own optimum")
+    return (
+        f"<b>The threshold comparison is not the fight it looks like.</b> kmerseek's "
+        f"shipped threshold is {near} ({ks_gain:.2f}x from thresholding), while "
+        f"<code>{worst['label']}</code> gains {worst['gain']:.1f}x{vol}. Ranking on a "
+        f"best-threshold number alone hands every baseline an operating point nobody ships "
+        f"with. See \"Default threshold against best threshold\".")
+
+
+def conclusion_divergence(metrics, primary_truth):
+    """The claim the paper is actually about, at the most distant proteome in the run."""
+    cut, _ = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    if cut.height == 0 or "species_mya" not in cut.columns or "fmax" not in cut.columns:
+        return ""
+    far = cut.filter(pl.col("species_mya") == pl.col("species_mya").max())
+    if far.height == 0:
+        return ""
+    mya = float(far["species_mya"].max())
+    species = far["species"].unique().to_list()
+    board = best_variants(cut)
+    semantics = ({r["tool"]: r["interval_semantics"] for r in
+                  cut.select("tool", "interval_semantics").unique().to_dicts()}
+                 if "interval_semantics" in cut.columns else {})
+    rows = []
+    for r in board.to_dicts():
+        if semantics.get(r["tool"], "alignment") == "motif":
+            continue
+        sub = far.filter((pl.col("tool") == r["tool"])
+                         & (pl.col("variant") == r["variant"]))
+        if sub.height == 0:
+            continue
+        rows.append({"label": r["label"], "tool": r["tool"],
+                     "v": float(sub["fmax"].mean())})
+    ks = [r for r in rows if r["tool"] == "kmerseek"]
+    base = [r for r in rows if r["tool"] != "kmerseek"]
+    if not ks or not base:
+        return ""
+    ks_top = max(ks, key=lambda r: r["v"])
+    beaten = [r for r in base if r["v"] < ks_top["v"]]
+    above = [r for r in base if r["v"] >= ks_top["v"]]
+    above_txt = ("nothing" if not above else
+                 ", ".join(f"<code>{r['label']}</code> ({_fmt(r['v'])})"
+                           for r in sorted(above, key=lambda r: -r["v"])))
+    return (
+        f"<b>At the largest divergence this run covers</b> ({', '.join(species)}, "
+        f"~{mya:,.0f} Mya), <code>{ks_top['label']}</code> reaches Fmax {_fmt(ks_top['v'])} "
+        f"and beats {len(beaten)} of the {len(base)} baselines. Above it: {above_txt}. "
+        f"This is the clause of the hypothesis the report supports: the alphabet is the "
+        f"only thing that varies between kmerseek arms — same engine, same queries, same "
+        f"truth — so the spread across alphabets at this distance is attributable to the "
+        f"encoding and to nothing else. See the Divergence and Divergence-retention "
+        f"sections.")
+
+
+def conclusion_boundary(metrics, primary_truth):
+    """Placement, not just recognition: does the call land on the domain."""
+    cut, _ = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    if cut.height == 0 or "median_iou_tp" not in cut.columns:
+        return ""
+    semantics = ({r["tool"]: r["interval_semantics"] for r in
+                  cut.select("tool", "interval_semantics").unique().to_dicts()}
+                 if "interval_semantics" in cut.columns else {})
+    rows = []
+    for r in best_variants(cut).to_dicts():
+        if semantics.get(r["tool"], "alignment") == "motif":
+            continue
+        sub = cut.filter((pl.col("tool") == r["tool"])
+                         & (pl.col("variant") == r["variant"]))
+        v = sub["median_iou_tp"].mean()
+        if v is not None:
+            rows.append({"label": r["label"], "tool": r["tool"], "v": float(v)})
+    top, base = _best_and_runner(rows, "v")
+    if top is None or base is None:
+        return ""
+    return (
+        f"<b>The calls land in the right place.</b> Median IoU over true positives is "
+        f"{_fmt(top['v'])} for <code>{top['label']}</code> against {_fmt(base['v'])} for "
+        f"the best baseline (<code>{base['label']}</code>). That is a localisation "
+        f"statement about calls already counted correct, so read it next to recall rather "
+        f"than instead of it. Motif arms are excluded: they report the envelope of a "
+        f"discontinuous residue set, which is a different measurement. See \"Boundary "
+        f"accuracy\".")
+
+
+def conclusion_plddt(metrics, primary_truth):
+    """The regime claim, stated as a peak position and not as a win over anybody."""
+    cut, _ = pick_split(metrics.filter(pl.col("truth_set") == primary_truth))
+    band = cut.filter(pl.col("stratum_axis") == "plddt")
+    if band.height == 0:
+        return ""
+    order = _bin_order(band["stratum"].drop_nulls().unique().to_list())
+    if len(order) < 3:
+        return ""
+    peaks = {}
+    for r in best_variants(ungrouped(cut)).to_dicts():
+        sub = band.filter((pl.col("tool") == r["tool"])
+                          & (pl.col("variant") == r["variant"]))
+        by_bin = {b: v for b, v in
+                  (sub.group_by("stratum").agg(pl.col("fmax").mean())
+                      .select("stratum", "fmax").iter_rows())
+                  if v is not None}
+        if len(by_bin) < 3:
+            continue
+        peaks[r["label"]] = (max(by_bin, key=by_bin.get), by_bin)
+    if not peaks:
+        return ""
+    top_band = order[-1]
+    mid = [lb for lb, (pk, _) in peaks.items() if pk != top_band]
+    if not mid:
+        return ""
+    mid_txt = ", ".join(f"<code>{lb}</code> (peaks in <code>{peaks[lb][0]}</code>)"
+                        for lb in sorted(mid))
+    # Whether anything else reaches as high IN that band is a separate question from where
+    # each arm peaks, and conflating the two is how "only method that peaks in the middle"
+    # became "beats everyone in the middle" in an earlier draft.
+    lead = sorted(mid, key=lambda lb: -peaks[lb][1][peaks[lb][0]])[0]
+    lead_band, lead_bins = peaks[lead]
+    rivals = sorted(((lb, v[1].get(lead_band)) for lb, v in peaks.items() if lb != lead),
+                    key=lambda t: -(t[1] or 0))
+    tie = ""
+    if rivals and rivals[0][1] is not None:
+        gap = lead_bins[lead_band] - rivals[0][1]
+        if gap <= 0.005:
+            tie = (f" It does not out-score everything there: "
+                   f"<code>{rivals[0][0]}</code> is at "
+                   f"{_fmt(rivals[0][1])} in the same band against "
+                   f"{_fmt(lead_bins[lead_band])}, which is a tie, not a win.")
+    return (
+        f"<b>A regime, not a disorder win.</b> Read across the model-confidence bands "
+        f"rather than only at the disordered end: {mid_txt} — these are the arms whose "
+        f"best band is not the most confident one. The defensible statement is that they "
+        f"peak where the structure is least trustworthy, not that they beat the structure "
+        f"methods there.{tie} See \"Model-confidence regime\".")
+
+
+def _rate(v):
+    """A throughput, at a precision that survives its own magnitude.
+
+    Rates in this benchmark span four orders (hhblits at 0.02 q/s, mmseqs2 at 166), and
+    "{:,.1f}" printed the slow end as 0.0 q/s -- which makes the arm look unmeasured
+    rather than slow, in the sentence whose whole job is the comparison.
+    """
+    return f"{v:,.3f}" if v < 1 else (f"{v:,.1f}" if v < 100 else f"{v:,.0f}")
+
+
+def conclusion_speed(metrics, trace, n_queries, primary_truth):
+    """The speed claim, narrowed to the comparison set it actually holds against."""
+    cut, _ = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    if cut.height == 0:
+        return ""
+    board = attach_throughput(best_variants(cut), trace, n_queries)
+    if "queries_per_s" not in board.columns:
+        return ""
+    rows = [{"label": r["label"], "tool": r["tool"], "v": r["queries_per_s"]}
+            for r in board.to_dicts() if r.get("queries_per_s")]
+    ks = [r for r in rows if r["tool"] == "kmerseek"]
+    base = [r for r in rows if r["tool"] != "kmerseek"]
+    if not ks or not base:
+        return ""
+    ks_top = max(ks, key=lambda r: r["v"])
+    faster = sorted([r for r in base if r["v"] > ks_top["v"]], key=lambda r: -r["v"])
+    slower = sorted([r for r in base if r["v"] <= ks_top["v"]], key=lambda r: r["v"])
+    if not slower:
+        return ""
+    worst = slower[0]
+    span = ks_top["v"] / worst["v"]
+    # "up to 1x" is not a speed claim. Below 2x the honest sentence is that the arms are
+    # comparable, and the report should not dress that up.
+    span_txt = (f" — up to {span:,.0f}x" if span >= 2 else
+                ", which is the same order of magnitude; the gap to those is not a speed "
+                "result")
+    slow_txt = ", ".join(f"<code>{r['label']}</code> ({_rate(r['v'])} q/s)"
+                         for r in slower[:4])
+    magnitudes = [r for r in slower if ks_top["v"] / r["v"] >= 100]
+    order_txt = (" Against " + ", ".join(f"<code>{r['label']}</code>" for r in magnitudes)
+                 + " the gap is two orders of magnitude or more, which is the comparison "
+                   "the \"orders of magnitude faster\" phrasing is licensed for."
+                 if magnitudes else "")
+    fast_txt = (" It is NOT the fastest arm in the run: "
+                + ", ".join(f"<code>{r['label']}</code> ({_rate(r['v'])} q/s, "
+                            f"{r['v'] / ks_top['v']:.1f}x)" for r in faster[:3])
+                + " are faster, so the claim to make is \"orders of magnitude faster than "
+                  "the profile and structure methods\" with the comparison set named, "
+                  "never \"faster than everything\"."
+                if faster else "")
+    return (
+        f"<b>Speed, stated against a named comparison set.</b> "
+        f"<code>{ks_top['label']}</code> runs at {_rate(ks_top['v'])} query proteins/s "
+        f"against {slow_txt}{span_txt}.{order_txt}{fast_txt} "
+        f"Every rate is one search of the whole query set against one target proteome, "
+        f"median over species, search only. See \"The frontier\" and the two cost "
+        f"sections.")
+
+
+def conclusion_reachability(metrics, primary_truth):
+    """The census: how much of the answer key is reachable at all, per species."""
+    cut, _ = pick_split(metrics.filter(pl.col("truth_set") == primary_truth))
+    need = {"n_reachable", "n_instances", "species"}
+    if cut.height == 0 or not need.issubset(set(cut.columns)):
+        return ""
+    per = (ungrouped(cut).group_by("species")
+           .agg(pl.col("n_reachable").max(), pl.col("n_instances").max())
+           .drop_nulls().sort("n_reachable"))
+    if per.height == 0:
+        return ""
+    tot_r = int(per["n_reachable"].sum())
+    tot_i = int(per["n_instances"].sum())
+    if not tot_i:
+        return ""
+    lo = per.head(1).to_dicts()[0]
+    hi = per.tail(1).to_dicts()[0]
+    lo_pct = 100 * lo["n_reachable"] / lo["n_instances"] if lo["n_instances"] else 0
+    hi_pct = 100 * hi["n_reachable"] / hi["n_instances"] if hi["n_instances"] else 0
+    # A denominator that does not vary across species is the signature of the bug this
+    # replaced, so say plainly that it varies now and by how much.
+    return (
+        f"<b>{100 - 100 * tot_r / tot_i:.0f}% of the answer key is unreachable</b> — "
+        f"{tot_i - tot_r:,} of {tot_i:,} human domain instances have no same-family "
+        f"instance anywhere in the target proteome, so no search tool can find them and "
+        f"every recall number here is over the reachable remainder. The ceiling varies by "
+        f"species from <code>{lo['species']}</code> at {lo_pct:.1f}% to "
+        f"<code>{hi['species']}</code> at {hi_pct:.1f}%. A species far below its "
+        f"phylogenetic neighbours is a target-annotation problem, not a search result: "
+        f"check that species' hmmscan output before reading anything into its accuracy. "
+        f"See \"Recall ceiling per species\".")
+
+
+def section_conclusions(out: Path, metrics: pl.DataFrame, curves: pl.DataFrame,
+                        trace: pl.DataFrame, n_queries: int,
+                        primary_truth: str) -> None:
+    """What this run concluded, in front of the sections that back each point.
+
+    First after the general statistics on purpose. Every number below is computed from the
+    same frames the sections downstream draw, and each point names the section that holds
+    the figure -- so this is a reading order, not a summary written by hand that can drift
+    from the plots. A point whose inputs are missing from a run drops out rather than
+    printing a stale sentence.
+
+    The negative results are here too, and in the same list rather than in a footnote. A
+    conclusions block that carries only what went well is the one a reviewer stops
+    trusting.
+    """
+    found = [
+        conclusion_recall_at_precision(curves, metrics, primary_truth),
+        conclusion_divergence(metrics, primary_truth),
+        conclusion_threshold_gain(metrics, primary_truth),
+        conclusion_boundary(metrics, primary_truth),
+        conclusion_plddt(metrics, primary_truth),
+        conclusion_speed(metrics, trace, n_queries, primary_truth),
+    ]
+    caveats = [
+        conclusion_reachability(metrics, primary_truth),
+        "<b>The disorder half of the hypothesis is not supported here and is not made.</b> "
+        "On both disorder axes the coarse-alphabet arms fall off faster than hhblits, "
+        "phmmer and foldseek. The sequence-only axis shares neither the "
+        "AlphaFold-modelling confound nor the shallow-MSA confound with pLDDT and says the "
+        "same thing, so the result is not an artefact of how disorder was measured.",
+        "<b>No number in this report carries a sampling error.</b> Every value is a mean "
+        "over target proteomes with no resampling behind it. A gap narrower than the "
+        "species-to-species SD the leaderboards print is not a result.",
+        "<b>Reduction buys recognition, not placement.</b> The alphabet dose-response is "
+        "much steeper for family recognition than for where the call lands, so \"a coarser "
+        "alphabet is better\" is a claim about finding the family, and the boundary "
+        "numbers are what has to carry the rest. See \"Recognition against delineation\".",
+    ]
+    body = [f for f in found if f]
+    if not body:
+        return
+    write_section(out, "qfo_conclusions", {
+        "id": "qfo_conclusions",
+        "section_name": "What this run concluded",
+        "description": (
+            f"<p>The findings this run supports, each one computed from the same table the "
+            f"section named beside it draws, on the <code>{primary_truth}</code> truth "
+            f"set. Read this first and then go to the figure.</p>"),
+        "plot_type": "html",
+        "data": (
+            "<h4 style='margin-top:0.4em'>What the run shows</h4>"
+            + bullets(*body)
+            + "<h4>What it does not show, and what would break it</h4>"
+            + bullets(*[c for c in caveats if c])
+        ),
+    })
 
 def section_citations(out: Path) -> None:
     """Where the metrics and the baselines come from, next to the numbers they produced."""
@@ -6308,9 +7067,13 @@ def section_citations(out: Path) -> None:
             "<code>bin/cafa_metrics.py</code> and <code>bin/evaluate_domain_calls.py</code>; "
             "two of them depart from the source deliberately and say so at the point of "
             "use. wFmax weights by plain information content rather than CAFA's "
-            "ontology-based information accretion, because Pfam is flat. nDO is the "
-            "residue-level overlap CASP's NDO score is built from, not CASP's full scoring "
-            "matrix.</p>"
+            "ontology-based information accretion, because Pfam is flat. The nDO column "
+            "earlier versions of this report carried is gone: it was assigned the value "
+            "of residue_recall and the two were one number under two names, which read "
+            "as a corrupted column. What CASP scores is a domain DECOMPOSITION of a "
+            "chain; calls here are per family and may overlap, so a partition metric's "
+            "name over a plain residue recall claimed a comparison the data cannot "
+            "support. The quantity is kept, under <code>residue_recall</code>.</p>"
         ),
     })
 
@@ -6751,16 +7514,39 @@ def section_dedup_transfers(out: Path, metrics_all: pl.DataFrame, primary_truth:
     })
 
 
-# Below this many distinct labels in the answer key, `pfam_id` is a category vocabulary
-# rather than a family vocabulary: every proteome carries nearly all of it, the reachability
-# join matches everything, and the bar stops being a ceiling. Kept in step with
-# MIN_REACHABILITY_VOCAB in aggregate_domain_metrics.py.
+# Reported as context, and used as the fallback trigger only when the instance counts the
+# real test needs are not on the table. Kept in step with MIN_REACHABILITY_VOCAB in
+# aggregate_domain_metrics.py.
 MIN_REACHABILITY_VOCAB = 50
+
+# The real test: the bar is not a ceiling when it excludes essentially nothing. In step
+# with VACUOUS_REACHABILITY_RATIO in aggregate_domain_metrics.py, and see it for why a
+# small vocabulary on its own no longer implies a vacuous join.
+VACUOUS_REACHABILITY_RATIO = 0.99
 
 # Ratio to the median at which a target species has so little annotation that its recall is
 # capped by curation coverage rather than by divergence. In step with THIN_TARGET_RATIO in
 # aggregate_domain_metrics.py.
 THIN_TARGET_RATIO = 0.05
+
+
+def _join_is_vacuous(per: pl.DataFrame) -> bool:
+    """Did the reachability join actually exclude anything, on this run?
+
+    True when it excluded essentially nothing for every species. When the instance counts
+    are not on the table there is nothing to measure, so the small-vocabulary heuristic is
+    left to decide on its own and this returns True.
+    """
+    need = {"n_truth_instances", "n_reachable_instances"}
+    if not need.issubset(set(per.columns)):
+        return True
+    sub = per.filter(pl.col("n_truth_instances") > 0)
+    if sub.height == 0:
+        return True
+    ratio = sub.select(
+        (pl.col("n_reachable_instances") / pl.col("n_truth_instances")).alias("r")
+    )["r"]
+    return float(ratio.min()) >= VACUOUS_REACHABILITY_RATIO
 
 
 def reachability_caveat(per: pl.DataFrame, primary_truth: str) -> str:
@@ -6783,7 +7569,7 @@ def reachability_caveat(per: pl.DataFrame, primary_truth: str) -> str:
     notes = []
     if "n_truth_families" in per.columns:
         vocab = int(per["n_truth_families"].max() or 0)
-        if vocab < MIN_REACHABILITY_VOCAB:
+        if vocab < MIN_REACHABILITY_VOCAB and _join_is_vacuous(per):
             notes.append(
                 f"<p><b>This bar is not a ceiling on the <code>{primary_truth}</code> "
                 f"truth set.</b> Its <code>pfam_id</code> column holds one of {vocab} "
@@ -6945,18 +7731,18 @@ def _reachability_panel(out: Path, per: pl.DataFrame, truth_set: str, *,
         "id": "qfo_reachability" if is_lead else f"qfo_reachability_{truth_set}",
         "section_name": f"Recall ceiling per species — {truth_set} truth",
         "description": (
-            f"<p>The share of the {total:,}-instance answer key whose family exists "
-            f"somewhere in each target proteome, ordered from most reachable to least "
-            f"({truth_set} truth).</p>" + what
+            "<p>Human domain instances the target proteome could have supplied against "
+            "those it could not.</p>"
             + bullets(
-                ("<b>Read this before any leaderboard.</b> " if is_lead else "")
-                + "No search of any kind can transfer a family the target proteome does "
-                  "not have, so the pale part of each bar is out of reach for every arm in "
-                  "this report and every recall_reachable divides by the green part only.",
-                shape,
-                "<b>Each bar's tick label carries its own reachable count</b>, since the "
-                "denominators are what the shares are of.",
-                curation_caveat_note(truth_set, reach))
+                "<b>Reachable</b> is instances some annotated target protein could have "
+                "supplied the label for. On the Pfam truth sets that means the family "
+                "exists somewhere in the target; on the Swiss-Prot truth set, where the "
+                "label is one of twelve feature types, it means a target protein carries "
+                "that feature type <i>and</i> shares a Pfam family with the human query.",
+                "No search of any kind can transfer a label the target does not have, so "
+                "every recall_reachable in this report divides by the reachable bar only, "
+                "and counts only instances inside it.",
+                "<b>Species</b> are ordered by divergence time.")
             + reachability_caveat(per, truth_set)),
         "plot_type": "bargraph",
         "pconfig": {"id": ("qfo_reachability_plot" if is_lead
@@ -7947,27 +8733,85 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
     # --- I/O ---
     io = done.filter(pl.col("read_b").is_not_null() | pl.col("write_b").is_not_null())
     if io.height:
-        agg = (io.group_by("process")
-                 .agg((pl.col("read_b").sum() / 1024**3).alias("read_gb"),
-                      (pl.col("write_b").sum() / 1024**3).alias("write_gb"))
-                 .sort("write_gb", descending=True))
+        has_char = ("rchar_b" in io.columns
+                    and io["rchar_b"].null_count() < io.height)
+        aggs = [(pl.col("read_b").sum() / 1024**3).alias("read_gb"),
+                (pl.col("write_b").sum() / 1024**3).alias("write_gb")]
+        if has_char:
+            aggs += [(pl.col("rchar_b").sum() / 1024**3).alias("rchar_gb"),
+                     (pl.col("wchar_b").sum() / 1024**3).alias("wchar_gb")]
+        agg = io.group_by("process").agg(aggs).sort("read_gb", descending=True)
+        rows = agg.to_dicts()
+
+        amp = ""
+        if has_char:
+            # The one process whose two numbers disagree most, named with the ratio, so the
+            # question is answered in the report instead of re-argued from the read column.
+            worst = max(
+                (r for r in rows if (r.get("rchar_gb") or 0) > 0.5),
+                key=lambda r: r["read_gb"] / r["rchar_gb"], default=None)
+            if worst is not None:
+                ratio = worst["read_gb"] / worst["rchar_gb"]
+                amp = (
+                    f"<b>Largest gap between the two in this run</b> — "
+                    f"<code>{worst['process']}</code> asked the kernel for "
+                    f"{worst['rchar_gb']:,.1f} GB and the block device delivered "
+                    f"{worst['read_gb']:,.1f} GB, a factor of {ratio:,.0f}. "
+                    + ("Above about 5x that is re-faulting rather than reading: polars "
+                       "memory-maps a parquet scan, and re-collecting a plan over a mapped "
+                       "file whose pages the task's own working set keeps evicting brings "
+                       "them back from disk every time, where they count in read_bytes and "
+                       "never in rchar. The fix is to materialise the frame once "
+                       "(<code>.collect().lazy()</code>), not to read the file fewer times."
+                       if ratio >= 5 else
+                       "Near 1x the process is genuinely reading that much, so the fix is "
+                       "to read the file fewer times -- fewer passes per task, or fewer "
+                       "tasks over the same staged input -- and materialising frames will "
+                       "not help."))
+
         write_section(out, "qfo_res_io", {
             "id": "qfo_res_io",
             "section_name": "Disk I/O",
             "description": (
-                "<p>Bytes read and written per process.</p>"
+                "<p>Bytes read and written per process, from the block device and from "
+                "the process's own syscalls.</p>"
                 + bullets(
-                    "<b>The search arms dominate.</b> HP alphabets at low k produce "
-                    "enormous match volume by design, since the p-value filter is left "
-                    "lenient so Bonferroni correction can happen downstream.",
-                    "This plot is where that cost shows up.")),
+                    "<b>read / written</b> are the trace's <code>read_bytes</code> and "
+                    "<code>write_bytes</code>: what the block device actually moved.",
+                    "<b>rchar / wchar</b> are what the process ASKED the kernel for. "
+                    "Both columns are here because either one alone is ambiguous, and "
+                    "this pipeline's largest reader has now been diagnosed twice off the "
+                    "read column by itself. A process reading the same staged file "
+                    "several times moves both numbers together; a process re-faulting a "
+                    "memory-mapped file moves only read_bytes."
+                    if has_char else
+                    "<b>rchar / wchar are missing from this trace.</b> Add "
+                    "<code>rchar,wchar</code> to <code>trace.fields</code> in "
+                    "nextflow.config; without them a large read column cannot be told "
+                    "apart from page re-faulting, and the two have opposite fixes.",
+                    amp,
+                    "<b>The search arms dominate the WRITE side.</b> HP alphabets at low "
+                    "k produce enormous match volume by design, since the p-value filter "
+                    "is left lenient so Bonferroni correction can happen downstream.")),
             "plot_type": "bargraph",
+            # sort_samples, not sort_rows: this is a bargraph and rows are already
+            # ordered by read volume, which is the ordering the panel is read for.
+            # logswitch rather than a hard log axis -- the four-order spread needs log to
+            # be readable, and the totals need linear.
             "pconfig": {"id": "qfo_res_io_plot", "title": "Disk I/O by process",
-                        "ylab": "GB", "cpswitch": False, "stacking": "group", "height": 450},
-            "categories": {"read_gb": {"name": "read", "color": "#2b7bba"},
-                           "write_gb": {"name": "written", "color": "#c9528f"}},
-            "data": {r["process"]: {"read_gb": r["read_gb"], "write_gb": r["write_gb"]}
-                     for r in agg.to_dicts()},
+                        "ylab": "GB", "cpswitch": False, "stacking": "group",
+                        "logswitch": True, "logswitch_active": True,
+                        "sort_samples": False, "height": 450},
+            "categories": ({"read_gb": {"name": "read (block device)", "color": "#2b7bba"},
+                            "rchar_gb": {"name": "read (syscall)", "color": "#9ecae1"},
+                            "write_gb": {"name": "written (block device)",
+                                         "color": "#c9528f"},
+                            "wchar_gb": {"name": "written (syscall)", "color": "#f2b5d4"}}
+                           if has_char else
+                           {"read_gb": {"name": "read", "color": "#2b7bba"},
+                            "write_gb": {"name": "written", "color": "#c9528f"}}),
+            "data": {r["process"]: {k: v for k, v in r.items() if k != "process"}
+                     for r in rows},
         })
 
     # --- task outcomes ---
@@ -8010,6 +8854,449 @@ def section_resources(out: Path, trace: pl.DataFrame, n_queries: int,
 
 
 # ---------------------------------------------------------------------------
+# where a tool's default threshold sits, and what it costs
+# ---------------------------------------------------------------------------
+
+def section_threshold_gain(out: Path, metrics: pl.DataFrame, primary_truth: str,
+                           max_tools: int) -> None:
+    """An arm's F1 at its shipped threshold beside its F1 at its best one, and the ratio.
+
+    The ratio is how far a tool's default operating point sits from its own optimum, and it
+    is the context a precision column needs: a tool that emits far more calls than it should
+    has a low default precision and a high ratio, and comparing its default precision
+    against a tool already sitting at its optimum compares two different things.
+
+    Both sides of the ratio are the SAME formula, f1(precision, recall_reachable), read at
+    two thresholds. That is what makes it a ratio at all, and it is a correction. It used to
+    be `fmax / f1`, which is three different quantities in two slots: fmax is CAFA's
+    protein-centric macro-average, while `f1` on the metrics row is call-level precision
+    against recall over EVERY truth instance rather than the reachable ones. Dividing one by
+    the other measures the difference between the metrics as much as the difference between
+    the thresholds, and it is not bounded below by 1 -- the midi-plus report printed a
+    "gain" of 0.99 for one kmerseek arm, which read as the best threshold being worse than
+    the default. `best_f1 / f1_reachable` cannot do that: best_f1 is the maximum of exactly
+    that expression over the arm's own curve, and the default operating point is a point on
+    that curve, so the ratio is >= 1 by construction.
+
+    Fmax stays on the table as its own column, because it is what the leaderboards rank on
+    and a reader needs to see it beside the operating point it is not measured at.
+
+    Call volume is here for the same reason as precision. Precision is a property of what a
+    tool chose to emit, so how much it emitted belongs next to it.
+    """
+    cut, split = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    if cut.height == 0 or not {"best_f1", "f1_reachable"}.issubset(set(cut.columns)):
+        return
+    board = best_variants(cut).head(max_tools)
+    if board.height == 0:
+        return
+
+    per_arm = cut.group_by("tool", "variant").agg(
+        pl.col("fmax").mean().alias("fmax"),
+        pl.col("f1_reachable").mean().alias("f1"),
+        pl.col("best_f1").mean().alias("best_f1"),
+        pl.col("precision").mean().alias("precision"),
+        pl.col("n_calls").mean().alias("calls_per_species"),
+        pl.col("n_tp_calls").mean().alias("tp_per_species"),
+    )
+    lookup = {(r["tool"], r["variant"]): r for r in per_arm.to_dicts()}
+
+    data = {}
+    for r in board.to_dicts():
+        src = lookup.get((r["tool"], r["variant"]))
+        if src is None:
+            continue
+        f1 = src["f1"]
+        data[r["label"]] = {
+            "fmax": src["fmax"],
+            "f1": f1,
+            "best_f1": src["best_f1"],
+            "gain": (src["best_f1"] / f1) if f1 else None,
+            "precision": src["precision"],
+            "calls_per_species": src["calls_per_species"],
+            "tp_per_species": src["tp_per_species"],
+        }
+    if not data:
+        return
+
+    gains = {lb: v["gain"] for lb, v in data.items() if v["gain"] is not None}
+    calls = {lb: v["calls_per_species"] for lb, v in data.items()
+             if v["calls_per_species"] is not None}
+    ours = [lb for lb in gains if lb.startswith("kmerseek")]
+    lead = ""
+    if ours and len(gains) > 1:
+        best_ours = min(ours, key=lambda lb: gains[lb])
+        worst = max(gains, key=gains.get)
+        lead = (f"<b>In this run the smallest gain from thresholding is "
+                f"<code>{min(gains, key=gains.get)}</code> at "
+                f"{gains[min(gains, key=gains.get)]:.2f}x and the largest is "
+                f"<code>{worst}</code> at {gains[worst]:,.0f}x</b>; "
+                f"<code>{best_ours}</code> is at {gains[best_ours]:.2f}x. An arm near 1x "
+                "is already at its own optimum at its default threshold, so its default "
+                "precision is comparable to its best precision. An arm in the tens or "
+                "hundreds is not, and its default precision is a number about its default, "
+                "not about the method.")
+    volume = ""
+    if calls:
+        lo_lb = min(calls, key=calls.get)
+        hi_lb = max(calls, key=calls.get)
+        volume = (f"<b>Call volume differs by "
+                  f"{calls[hi_lb] / max(calls[lo_lb], 1):,.0f}x across this table</b> — "
+                  f"<code>{lo_lb}</code> emits {calls[lo_lb]:,.0f} calls per target "
+                  f"proteome and <code>{hi_lb}</code> emits {calls[hi_lb]:,.0f}. Any "
+                  "precision or IoU comparison has to carry that: precision is measured "
+                  "over what a tool chose to emit.")
+
+    write_section(out, "qfo_threshold_gain", {
+        "id": "qfo_threshold_gain",
+        "section_name": "Default threshold against best threshold",
+        "description": (
+            f"<p>Where each arm's shipped operating point sits relative to its own best "
+            f"one ({primary_truth} truth, <code>{split}</code> split, mean over target "
+            f"species).</p>"
+            + bullets(
+                "<b>F1 (default)</b> and <b>F1 (best threshold)</b> are the same "
+                "expression — call precision against recall over the reachable instances — "
+                "read at the threshold the tool shipped with and at the arm's own best "
+                "one.",
+                "<b>Gain</b> is their ratio: how much thresholding would buy. It is the "
+                "column that says whether a default-threshold precision number describes "
+                "the method or just its default. It cannot fall below 1, because the "
+                "default point is a point on the curve the maximum is taken over.",
+                "<b>Fmax</b> is on the table because it is what the leaderboards rank on, "
+                "not as the numerator of the gain. It is CAFA's protein-centric average "
+                "and is not the same quantity as the two F1 columns; earlier versions of "
+                "this report divided it by an F1 with a different recall denominator and "
+                "reported the result as a gain, which is why one arm came out at 0.99.",
+                lead,
+                volume,
+                "<b>Calls / proteome</b> and <b>TP / proteome</b> are means over target "
+                "species for this one arm, never summed over a sweep: kmerseek's total "
+                "across 406 configurations is not a number any single configuration "
+                "produces, and comparing it against one baseline job would overstate its "
+                "call volume by roughly the size of the sweep.")),
+        "plot_type": "table",
+        "pconfig": {"id": "qfo_threshold_gain_table",
+                    "title": "Default vs best threshold", "col1_header": "Arm",
+                    "sort_rows": False},
+        "headers": {
+            "fmax": dict(title="Fmax", min=0, max=1, scale="RdYlGn", format="{:,.3f}",
+                         description="Best F1 over all thresholds"),
+            "f1": dict(title="F1 (default)", min=0, max=1, scale="RdYlGn",
+                       format="{:,.3f}",
+                       description="F1 at the threshold the tool shipped with, over the "
+                                   "reachable instances"),
+            "best_f1": dict(title="F1 (best threshold)", min=0, max=1, scale="RdYlGn",
+                            format="{:,.3f}",
+                            description="The same expression at the arm's own best "
+                                        "threshold"),
+            "gain": dict(title="Gain (best F1 / default F1)", scale="Reds",
+                         format="{:,.2f}",
+                         description="How far the default operating point sits from this "
+                                     "arm's own optimum. 1.0 is already optimal"),
+            "precision": dict(title="Precision (default)", min=0, max=1, scale="Oranges",
+                              format="{:,.3f}",
+                              description="At the default threshold, so read it next to "
+                                          "the gain column"),
+            "calls_per_species": dict(title="Calls / proteome", scale="Blues",
+                                      format="{:,.0f}",
+                                      description="Mean over target species, this arm "
+                                                  "alone"),
+            "tp_per_species": dict(title="TP / proteome", scale="Greens",
+                                   format="{:,.0f}",
+                                   description="Mean over target species, this arm alone"),
+        },
+        "data": data,
+    })
+
+
+def recall_at_precision(curves: pl.DataFrame, floor: float = 0.5) -> pl.DataFrame:
+    """Highest recall each arm reaches while precision stays at or above `floor`.
+
+    The "annotations you would hand a collaborator" number: a curve's area says how well a
+    tool ranks, and this says how much it can actually deliver at a precision somebody
+    would accept. Computed per species and then averaged, never over a pooled curve --
+    pooling averages precision across species inside a recall bin, and an arm can clear the
+    floor in that average without clearing it anywhere.
+    """
+    need = {"tool", "variant", "species", "recall_reachable", "precision"}
+    if curves.height == 0 or not need.issubset(set(curves.columns)):
+        return pl.DataFrame(schema={"tool": pl.String, "variant": pl.String,
+                                    "recall_at_precision": pl.Float64})
+    ok = curves.filter(pl.col("precision") >= floor)
+    if ok.height == 0:
+        return pl.DataFrame(schema={"tool": pl.String, "variant": pl.String,
+                                    "recall_at_precision": pl.Float64})
+    return (ok.group_by("tool", "variant", "species")
+              .agg(pl.col("recall_reachable").max().alias("r"))
+              .group_by("tool", "variant")
+              .agg(pl.col("r").mean().alias("recall_at_precision")))
+
+
+# ---------------------------------------------------------------------------
+# cost against accuracy
+# ---------------------------------------------------------------------------
+
+#: Metrics drawn against cost, and how each is labelled. Order is the order of the dataset
+#: switcher, so the two the argument is made on come first. f1 sits next to fmax on purpose
+#: -- see the note in section_cost_vs_metric about what their ratio says.
+COST_METRICS = [
+    ("fmax", "Fmax"),
+    ("f1", "F1 at the default threshold"),
+    ("auprc", "AUPRC"),
+    ("recall_reachable", "Recall (reachable)"),
+    ("precision", "Precision at the default threshold"),
+    ("family_fmax", "Family Fmax"),
+    ("roc_auc", "ROC AUC"),
+    ("median_iou_tp", "Median IoU (true positives)"),
+    ("residue_recall", "Residue recall"),
+]
+
+#: The two ways to spend something on one search. Both are per SEARCH, never a sweep total:
+#: a panel whose x is "what this run burned" would place kmerseek's 406 arms at the cost of
+#: all 406 and every baseline at the cost of one.
+COST_AXES = [
+    ("cpu_hours_per_search", "CPU-hours per search (log scale)", True),
+    ("queries_per_s", "query proteins / s (log scale)", True),
+]
+
+
+def section_cost_vs_metric(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
+                           n_queries: int, primary_truth: str) -> None:
+    """Every headline metric against what one search costs, both cost axes.
+
+    The sweep is a cloud and the canonical arm is a marker. Drawing kmerseek as its best
+    arm per panel would put a different configuration in each one and let the reader add
+    them up into a tool that does not exist.
+    """
+    cut, split = pick_split(ungrouped(metrics.filter(pl.col("truth_set") == primary_truth)))
+    if cut.height == 0:
+        return
+
+    # Every arm, not just the leaderboard's: the cloud IS the point of this panel.
+    have = [m for m, _ in COST_METRICS if m in cut.columns]
+    if not have:
+        return
+    arms = cut.group_by("tool", "variant").agg(
+        [pl.col(m).mean().alias(m) for m in have])
+    arms = attach_throughput(arms, trace, n_queries)
+
+    # A cost panel needs more than one tool on it. With no trace, kmerseek is the only arm
+    # with a measured cost -- it times itself into its storeDir and the baselines do not --
+    # so this would draw 406 kmerseek points on a cost axis with nothing to compare them
+    # against, which is the same failure the timing-coverage section exists to name. Drawn
+    # only when at least two tools are on it; otherwise that section says why.
+    priced = arms.filter(pl.col("cpu_hours_per_search").is_not_null()
+                         | pl.col("queries_per_s").is_not_null())
+    if priced["tool"].n_unique() < 2:
+        print("cost-vs-metric panels skipped: only "
+              f"{priced['tool'].n_unique()} tool has a measured cost in this run")
+        return
+
+    canon = canonical_kmerseek_arm(cut)
+    ks_alpha = parse_kmerseek_variants(
+        arms.filter(pl.col("tool") == "kmerseek").select("tool", "variant"))
+    classes_of = {r["variant"]: alphabet_classes(r["alphabet"])
+                  for r in ks_alpha.to_dicts()} if ks_alpha.height else {}
+    sizes = sorted(set(classes_of.values()))
+
+    rows = arms.to_dicts()
+    n_placed = 0
+    for xcol, xlab, xlog in COST_AXES:
+        panels, labels = [], []
+        for metric, mlabel in COST_METRICS:
+            if metric not in have:
+                continue
+            points = {}
+            for r in rows:
+                x, y = r.get(xcol), r.get(metric)
+                if x is None or y is None or (xlog and x <= 0):
+                    continue
+                tool, variant = r["tool"], r["variant"]
+                is_ks = tool == "kmerseek"
+                is_canon = canon is not None and (tool, variant) == canon
+                if is_ks and not is_canon:
+                    # The sweep, drawn faintly and shaded by alphabet size so the two ends
+                    # of the cloud are distinguishable. No annotation: 405 labels would
+                    # bury the marked arm and the baselines both.
+                    points[f"{tool} {variant}"] = scatter_point(
+                        x, y, name=f"kmerseek {variant}",
+                        group=f"kmerseek sweep ({classes_of.get(variant, '?')} letters)",
+                        color=_alphabet_shade(classes_of.get(variant), sizes),
+                        marker_size=5, marker_line_width=0, opacity=0.35)
+                else:
+                    cls = tool_class(tool)
+                    points[label_of(tool, variant)] = scatter_point(
+                        x, y, name=label_of(tool, variant),
+                        group=CLASSES[cls][0], color=CLASSES[cls][1],
+                        annotation=short_label(tool, variant),
+                        marker_size=17 if is_canon else 13,
+                        marker_line_width=2, opacity=1.0,
+                        marker_symbol=TOOL_SYMBOL.get(tool, "circle"))
+            if not points:
+                continue
+            panels.append(points)
+            labels.append({"name": mlabel, "ylab": mlabel})
+            n_placed = max(n_placed, len(points))
+        if not panels:
+            continue
+
+        rising, n_alpha = truncated_alphabets(cut)
+        canon_note = (
+            f"<b>The marked arm is <code>{canon[1]}</code></b>, chosen by best mean rank "
+            f"across {', '.join(CANONICAL_RULE_METRICS)} over every kmerseek arm — not by "
+            "whichever arm wins the panel you are looking at. It is the same arm in every "
+            "panel, which is what makes reading across them legitimate."
+            if canon else "")
+        write_section(out, f"qfo_cost_{xcol}", {
+            "id": f"qfo_cost_{xcol}",
+            "section_name": ("Accuracy against CPU cost" if xcol == "cpu_hours_per_search"
+                             else "Accuracy against throughput"),
+            "description": (
+                f"<p>Each accuracy metric against what one search costs "
+                f"({primary_truth} truth, <code>{split}</code> split). Use the switcher "
+                f"above the plot to change the metric.</p>"
+                + bullets(
+                    "<b>x is per SEARCH</b> — one pass of the whole query set against one "
+                    "target proteome, median over target species. Not a run total: "
+                    "kmerseek's sweep ran 406 configurations where each baseline ran one, "
+                    "so a total would compare a parameter sweep against single jobs.",
+                    "<b>The faint cloud is the kmerseek sweep</b>, shaded light to dark by "
+                    "alphabet size. It shows the spread a sweep covers; it is not a "
+                    "result, because no one configuration sits at all of those points.",
+                    canon_note,
+                    f"<b>{rising} of {n_alpha} alphabets are still improving at the "
+                    "largest k this sweep tested</b>, so their points are lower bounds "
+                    "rather than their best. The coarse alphabets are the ones affected, "
+                    "and they are the ones the hypothesis is about.",
+                    "<b>F1 and Fmax are adjacent in the switcher on purpose.</b> Fmax "
+                    "picks each arm's best threshold and F1 uses the one the tool shipped "
+                    "with, so their ratio is how far a tool's default operating point sits "
+                    "from its own optimum. The \"Default threshold against best "
+                    "threshold\" section reports that ratio, and the call volume it comes "
+                    "with, per arm.",
+                    "<b>Colour is the method class</b> for everything except the sweep "
+                    "cloud, and marker shape is the individual tool.")),
+            "plot_type": "scatter",
+            "pconfig": {
+                "id": f"qfo_cost_{xcol}_plot",
+                "title": f"Accuracy against {'CPU-hours per search' if xcol == 'cpu_hours_per_search' else 'throughput'}",
+                "xlab": xlab, "ylab": labels[0]["name"],
+                "xlog": xlog, "height": 600, "showlegend": True,
+                "xsuffix": "", "ysuffix": "",
+                "x_decimals": 3, "y_decimals": 3,
+                "data_labels": labels,
+            },
+            "data": panels,
+        })
+
+    if n_placed:
+        print(f"cost-vs-metric panels drawn on {n_placed} arms with both a metric "
+              f"and a cost")
+
+
+def _alphabet_shade(classes: int | None, sizes: list[int]) -> str:
+    """Light-to-dark green for the sweep cloud, ordered by alphabet size.
+
+    The cloud's own gradient, kept away from the class palette: these points are not a
+    method class, they are one method's parameter space, and giving them the kmerseek green
+    at full strength would make 405 configurations look like 405 results.
+    """
+    shades = ["#d5efe6", "#a9dfcd", "#7ccfb4", "#4fbf9b", "#2e9e7e", "#1d7a60"]
+    if classes is None or not sizes:
+        return shades[0]
+    try:
+        i = sizes.index(classes)
+    except ValueError:
+        return shades[0]
+    return shades[min(i * len(shades) // max(len(sizes), 1), len(shades) - 1)]
+
+
+# ---------------------------------------------------------------------------
+# timing coverage
+# ---------------------------------------------------------------------------
+#
+# The report can time some arms and not others, and it used to show that as an empty cell.
+# An empty cell next to a full one reads as "this tool is free", which is the opposite of
+# what a blank means here.
+#
+# The asymmetry is structural, not a bug in the parsing. kmerseek's search is on storeDir,
+# so a store hit executes no task and Nextflow writes no trace row for it however honestly
+# it reports cached ones; that arm therefore times ITSELF and leaves a JSON record beside
+# its result, which load_timing_sidecars reads back. The nine baselines have no such
+# mechanism -- they are timed only by the trace. So in any run that has no trace, kmerseek
+# is timed and every tool it is being compared against is not.
+#
+# `make multiqc-partial` is exactly that run: it passes --report_trace none, on purpose,
+# because it is meant to be run WHILE the sweep is still going and Nextflow truncates any
+# trace file it is itself writing. resolveTrace then falls through to assets/NO_TRACE, a
+# placeholder with no columns, and load_trace returns an empty frame. The timing sidecars
+# still come off the storeDir. That is the whole cause: not CACHED rows being dropped --
+# a CACHED row does carry realtime, and _search_tasks keeps it.
+
+
+def timing_coverage(board: pl.DataFrame) -> tuple[list[str], list[str]]:
+    """Split an attach_throughput'd board into the arms that have a rate and those without."""
+    timed, untimed = [], []
+    for row in board.to_dicts():
+        (timed if row.get("queries_per_s") is not None else untimed).append(row["label"])
+    return timed, untimed
+
+
+def section_timing_coverage(out: Path, board: pl.DataFrame,
+                            trace: pl.DataFrame) -> tuple[list[str], list[str]]:
+    """Name the arms this run could not time, and why. Returns (timed, untimed)."""
+    timed, untimed = timing_coverage(board)
+    if not untimed:
+        return timed, untimed
+
+    # No trace at all, as opposed to a trace this arm is missing from. Every row in the
+    # frame came from a stored timing record, which only kmerseek writes.
+    stored_only = bool(trace.height) and bool(
+        (trace["status"] == mt.STORED).all())
+    if stored_only or trace.height == 0:
+        why = (
+            "<p>This report was built without a Nextflow trace, so the only timings it has "
+            "are the ones kmerseek records for itself beside its stored results. That is "
+            "the normal state of a <code>make multiqc-partial</code> report: it passes "
+            "<code>--report_trace none</code> because it runs while the sweep is still "
+            "going, and Nextflow truncates any trace file it is itself writing.</p>"
+            "<p>The nine baselines have no self-timing mechanism. They are timed by the "
+            "trace or not at all, so their cost is not missing from this run, it was never "
+            "measured into a file this run can read. <code>make multiqc</code> against the "
+            "finished run's trace is what fills them in.</p>")
+    else:
+        why = (
+            "<p>These arms have no search task in the trace this report was built from. An "
+            "arm scored from a previous run's published metrics but not re-executed in the "
+            "run being timed is the usual reason.</p>")
+
+    # The body goes in `data`, not only in `description`: MultiQC drops an html section
+    # whose data is empty, so a section that said everything in its description rendered
+    # as nothing at all.
+    write_section(out, "qfo_timing_coverage", {
+        "id": "qfo_timing_coverage",
+        "section_name": "What this report could time",
+        "description": (
+            f"<p>{len(timed)} of {len(timed) + len(untimed)} arms on the leaderboard have "
+            "a measured search cost in this report.</p>"),
+        "plot_type": "html",
+        "data": why + bullets(
+            "<b>Timed</b> — " + (", ".join(f"<code>{t}</code>" for t in timed) or "none"),
+            "<b>Not timed</b> — " + ", ".join(f"<code>{t}</code>" for t in untimed),
+            "<b>An arm that is not timed is left empty, never filled from its tool's "
+            "total.</b> kmerseek's arm total is a sum over its whole parameter sweep, and "
+            "substituting it into one arm's cell put 345.80 CPU-h against single "
+            "configurations in the midi report. A tool-level figure fills in only where "
+            "that tool has one variant, which makes it the same measurement.",
+            "<b>The cost columns are dropped from the General Statistics table</b> while "
+            "any arm is untimed, rather than shown for some tools and blank for others. A "
+            "blank cell beside a filled one reads as a speed result, not as a gap."),
+    })
+    return timed, untimed
+
+
+# ---------------------------------------------------------------------------
 # general statistics
 # ---------------------------------------------------------------------------
 
@@ -8020,32 +9307,48 @@ def section_general_stats(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
     if board.height == 0:
         return
     board = attach_throughput(board, trace, n_queries)
+    timed, untimed = section_timing_coverage(out, board, trace)
+
+    # The two cost columns are shown only when every arm on this table has a cost. This is
+    # the top-of-report comparison table, and a Q/s column filled in for kmerseek and empty
+    # for the nine tools it is being compared against does not read as "not measured", it
+    # reads as a speed result. Partial cost is reported in the section above instead, which
+    # can say which arms it covers; a general-stats column cannot.
+    show_cost = bool(timed) and not untimed
+
     data = {}
     for row in board.to_dicts():
-        data[row["label"]] = {
+        cells = {
             "fmax": row.get("fmax"),
             "auprc": row.get("auprc"),
             "recall_reachable": row.get("recall_reachable"),
             "precision": row.get("precision"),
-            "queries_per_s": row.get("queries_per_s"),
-            "cpu_hours": row.get("cpu_hours"),
         }
+        if show_cost:
+            cells["queries_per_s"] = row.get("queries_per_s")
+            cells["cpu_hours"] = row.get("cpu_hours")
+        data[row["label"]] = cells
+    pconfig = [
+        {"fmax": dict(title="Fmax", min=0, max=1, scale="RdYlGn", format="{:,.3f}",
+                      description=f"Best variant, {primary_truth} truth")},
+        {"auprc": dict(title="AUPRC", min=0, max=1, scale="Blues", format="{:,.3f}")},
+        {"recall_reachable": dict(title="Recall", min=0, max=1, scale="Greens",
+                                  format="{:,.3f}",
+                                  description="Against transferable instances only")},
+        {"precision": dict(title="Prec.", min=0, max=1, scale="Oranges",
+                           format="{:,.3f}")},
+    ]
+    if show_cost:
+        pconfig += [
+            {"queries_per_s": dict(title="Q/s", scale="Purples", format="{:,.1f}",
+                                   description="Median over target species")},
+            {"cpu_hours": dict(title="CPU-h", scale="Reds", format="{:,.2f}",
+                               description="Summed over this arm's search tasks")},
+        ]
     write_section(out, "qfo_general_stats", {
         "id": "qfo_general_stats",
         "plot_type": "generalstats",
-        "pconfig": [
-            {"fmax": dict(title="Fmax", min=0, max=1, scale="RdYlGn", format="{:,.3f}",
-                          description=f"Best variant, {primary_truth} truth")},
-            {"auprc": dict(title="AUPRC", min=0, max=1, scale="Blues", format="{:,.3f}")},
-            {"recall_reachable": dict(title="Recall", min=0, max=1, scale="Greens",
-                                      format="{:,.3f}",
-                                      description="Against transferable instances only")},
-            {"precision": dict(title="Prec.", min=0, max=1, scale="Oranges",
-                               format="{:,.3f}")},
-            {"queries_per_s": dict(title="Q/s", scale="Purples", format="{:,.1f}",
-                                   description="Median over target species")},
-            {"cpu_hours": dict(title="CPU-h", scale="Reds", format="{:,.2f}")},
-        ],
+        "pconfig": pconfig,
         "data": data,
     })
 
@@ -8317,8 +9620,11 @@ def main():
                         "a bare variant, which means kmerseek. It is forced into every "
                         "board and its row key is marked, so a reader can follow the same "
                         "configuration between sections that each rank on their own "
-                        "metric. Off by default: with no pin, nothing in the report "
-                        "changes, and no arm is hard-coded as the canonical one.")
+                        "metric. Without a pin one is DERIVED by rule -- best mean rank "
+                        "across Fmax, AUPRC, precision and recall over every kmerseek arm "
+                        "-- because a report that shows only the sweep's upper envelope "
+                        "describes no configuration a reader could run. Pass "
+                        "'none' to turn that off and go back to an unmarked report.")
     p.add_argument("--dedup-mode", choices=["off", "on"], default="off",
                    help="which dedup-transfer scoring the report's sections use. 'off' is "
                         "the tool's output as reported, redundant copies of a call charged "
@@ -8370,6 +9676,25 @@ def main():
     # copy is the main report's without every one of them taking the argument.
     PRIMARY_TRUTH = primary
 
+    # Derive the canonical arm before any section runs, so every board is built against the
+    # same one. Without this the report shows kmerseek only as the best arm PER PANEL, and
+    # the winners differ by metric -- precision comes from the 17-20 letter alphabets, the
+    # best AUPRC from the 4-5 letter ones -- so reading two panels together describes an
+    # upper envelope over 406 configurations rather than any one of them.
+    #
+    # `--canonical-variant none` opts out; a bare absence does not, because the unmarked
+    # report is the one that reads as a result.
+    if (args.canonical_variant or "").lower() == "none":
+        CANONICAL = None
+    elif CANONICAL is None:
+        pick_cut, _ = pick_split(ungrouped(
+            metrics.filter(pl.col("truth_set") == primary)))
+        CANONICAL = canonical_kmerseek_arm(pick_cut)
+        if CANONICAL:
+            print(f"canonical arm derived by rule: {CANONICAL[0]}:{CANONICAL[1]} "
+                  f"(best mean rank across {', '.join(CANONICAL_RULE_METRICS)})")
+
+    section_conclusions(args.outdir, metrics, curves, trace, args.n_queries, primary)
     section_frontier(args.outdir, metrics, trace, args.n_queries, primary,
                      args.top_kmerseek)
     section_search_cost(args.outdir, metrics, trace, args.n_queries, primary,
@@ -8379,6 +9704,8 @@ def main():
     section_threshold_metrics(args.outdir, metrics, primary, args.max_tools)
     section_truth_provenance(args.outdir, metrics)
     section_curves(args.outdir, curves, metrics, primary, args.max_lines)
+    section_threshold_gain(args.outdir, metrics, primary, args.max_tools)
+    section_cost_vs_metric(args.outdir, metrics, trace, args.n_queries, primary)
     section_identity(args.outdir, metrics, primary, args.max_tools)
     section_covariates(args.outdir, metrics, primary, args.max_tools)
     section_disorder_scatter(args.outdir, metrics, primary)

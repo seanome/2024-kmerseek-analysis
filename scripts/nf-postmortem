@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+"""What happened to a Nextflow run, read from its .nextflow.log.
+
+Answers the question a dead tmux session leaves behind: did the run finish, and if not,
+which task took it down, with what exit code, and what did that task actually say. One
+screen instead of grepping a 400 KB log for "ERROR" and then walking into the work dir.
+
+    scripts/nf-postmortem          the latest run in this directory
+    scripts/nf-postmortem --history  one line per run, newest first, across the rotated logs
+    scripts/nf-postmortem .nextflow.log.2  a specific run
+
+Runs on the login node's bare python3 (3.6 on Sherlock) with the standard library only:
+it reads one log file and, for each failed task, the tail of that task's .command.err.
+"""
+
+import argparse
+import glob
+import os
+import re
+import subprocess
+import sys
+from collections import Counter, OrderedDict
+
+LAUNCH = re.compile(r"^(\S+ \S+) \[main\] DEBUG nextflow\.cli\.Launcher - \$> (.*)$")
+SUBMITTED = re.compile(r"Submitted process > (\S+) \((.*)\)$")
+CACHED = re.compile(r"Cached process > (\S+) \((.*)\)$")
+STORED = re.compile(r"\[skipping\] Stored process > (\S+) \(")
+COMPLETED = re.compile(
+    r"^(\S+ \S+) .*Task completed > TaskHandler\[jobId: (\S+); id: \d+; name: (\S+) \((.*?)\); "
+    r"status: \S+; exit: (\S+); error: [^;]*; workDir: (\S+) ")
+RETRIED = re.compile(r"NOTE: Process `(\S+) \((.*?)\)` terminated with an error exit status \((\S+)\) -- Execution is retried")
+FATAL = re.compile(r"^(\S+ \S+) .*ERROR nextflow\.processor\.TaskProcessor - Error executing process > '(\S+) \((.*?)\)'")
+CANCELLED = re.compile(r"^(\S+ \S+) .*Execution cancelled")
+ABORTED = re.compile(r"^(\S+ \S+) .*Session aborted -- Cause: (.*)$")
+STATS = re.compile(r"^(\S+ \S+) .*Workflow completed > WorkflowStats\[(.*)\]")
+GOODBYE = re.compile(r"^(\S+ \S+) .*Execution complete -- Goodbye")
+
+# Apptainer prints this on every container start; it is never the reason anything failed.
+NOISE = ("WARNING: Not virtualizing pid namespace",)
+
+
+def short(name):
+    return name.split(":")[-1]
+
+
+def parse(path):
+    run = {
+        "path": path, "launched": None, "cmd": None, "ended": None, "how": None,
+        "cancelled_at": None, "stats": OrderedDict(),
+        "submitted": Counter(), "cached": Counter(), "stored": Counter(),
+        "ok": Counter(), "failed": [], "last_ts": None,
+    }
+    with open(path, errors="replace") as fh:
+        for line in fh:
+            line = line.rstrip("\n")
+            ts = line[:19] if re.match(r"^[A-Z][a-z]{2}-\d\d \d\d:\d\d:\d\d", line) else None
+            if ts:
+                run["last_ts"] = ts
+            m = LAUNCH.match(line)
+            if m:
+                run["launched"], run["cmd"] = m.group(1), m.group(2)
+                continue
+            m = SUBMITTED.search(line)
+            if m:
+                run["submitted"][short(m.group(1))] += 1
+                continue
+            m = CACHED.search(line)
+            if m:
+                run["cached"][short(m.group(1))] += 1
+                continue
+            m = STORED.search(line)
+            if m:
+                run["stored"][short(m.group(1))] += 1
+                continue
+            m = COMPLETED.match(line)
+            if m:
+                when, jobid, name, tag, exit_code, workdir = m.groups()
+                if exit_code == "0":
+                    run["ok"][short(name)] += 1
+                else:
+                    run["failed"].append({
+                        "when": when, "name": short(name), "tag": tag, "exit": exit_code,
+                        "workdir": workdir, "jobid": jobid, "fate": "?",
+                    })
+                continue
+            m = RETRIED.search(line)
+            if m:
+                for f in reversed(run["failed"]):
+                    if f["name"] == short(m.group(1)) and f["tag"] == m.group(2) and f["fate"] == "?":
+                        f["fate"] = "retried"
+                        break
+                continue
+            m = FATAL.match(line)
+            if m:
+                key = (short(m.group(2)), m.group(3))
+                for f in reversed(run["failed"]):
+                    if (f["name"], f["tag"]) == key and f["fate"] == "?":
+                        f["fate"] = "fatal"
+                        break
+                continue
+            m = CANCELLED.match(line)
+            if m and run["cancelled_at"] is None:
+                run["cancelled_at"] = m.group(1)
+                continue
+            m = ABORTED.match(line)
+            if m:
+                run["how"] = "aborted: " + m.group(2)
+                continue
+            m = STATS.match(line)
+            if m:
+                for kv in m.group(2).split(";"):
+                    kv = kv.strip()
+                    if "=" in kv:
+                        k, v = kv.split("=", 1)
+                        run["stats"][k.strip()] = v.strip()
+                continue
+            m = GOODBYE.match(line)
+            if m:
+                run["ended"] = m.group(1)
+    # The task that triggered the shutdown comes first; a signal that arrived after it
+    # (someone running `make stop` on a run already winding down) is appended, not
+    # mistaken for the cause.
+    fatal = [f for f in run["failed"] if f["fate"] == "fatal"]
+    cause = "%s (%s) exit %s" % (fatal[0]["name"], fatal[0]["tag"], fatal[0]["exit"]) if fatal else None
+    signal = run["how"]
+    if signal and len(signal) > 100:
+        signal = signal[:97] + "..."
+    if run["ended"] is None:
+        run["how"] = signal or "still running, or killed without a shutdown"
+    elif cause and signal:
+        run["how"] = "%s; then %s" % (cause, signal)
+    elif cause or signal:
+        run["how"] = cause or signal
+    elif run["stats"].get("failedCount", "0") != "0":
+        run["how"] = "failed tasks but no fatal one recorded"
+    else:
+        run["how"] = "finished"
+    return run
+
+
+def root_cause(workdir, limit=300):
+    """Last line of the task's stderr that is not container start-up noise, falling back to
+    the last line of stdout that looks like an error: mmseqs reports `Error: Create profile
+    died` on stdout and leaves stderr with nothing but the apptainer banner."""
+    def lines_of(name):
+        try:
+            with open(os.path.join(workdir, name), errors="replace") as fh:
+                return [l.strip() for l in fh if l.strip() and not l.startswith(NOISE)]
+        except OSError:
+            return None
+
+    err = lines_of(".command.err")
+    if err is None:
+        return "(.command.err not readable)"
+    if not err:
+        out = lines_of(".command.out") or []
+        err = [l for l in out if re.search(r"error|fatal|cannot|killed|died", l, re.I)]
+    if not err:
+        return "(no stderr beyond apptainer start-up, and nothing error-shaped on stdout)"
+    last = err[-1]
+    return last if len(last) <= limit else last[:limit - 3] + "..."
+
+
+def drivers(jobname):
+    """Head jobs for this run, newest last, from sacct. Empty off the cluster."""
+    try:
+        out = subprocess.run(
+            ["sacct", "-u", os.environ.get("USER", ""), "-n", "-X", "-P", "-S", "now-14days",
+             "--name", jobname, "--format", "JobID,State,Start,End,ExitCode,NodeList"],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20,
+            universal_newlines=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    return [l.split("|") for l in out.splitlines() if l.strip()]
+
+
+def one_line(run):
+    st = run["stats"]
+    tally = "ok %s, failed %s, cached %s, pending %s, retries %s" % (
+        st.get("succeededCount", "?"), st.get("failedCount", "?"), st.get("cachedCount", "?"),
+        st.get("pendingCount", "?"), st.get("retriesCount", "?"))
+    return "%-16s %s -> %s  %s  [%s]" % (
+        os.path.basename(run["path"]), run["launched"] or "?",
+        run["ended"] or ("last line " + (run["last_ts"] or "?")), run["how"], tally)
+
+
+def report(run, jobname):
+    print("run:      %s" % run["path"])
+    print("launched: %s" % (run["launched"] or "?"))
+    if run["cmd"]:
+        print("command:  %s" % run["cmd"])
+    heads = drivers(jobname) if jobname else []
+    live = heads[-1] if heads and heads[-1][1] in ("RUNNING", "PENDING") else None
+    if run["ended"]:
+        print("ended:    %s  %s" % (run["ended"], run["how"]))
+    elif live:
+        print("ended:    no -- head job %s is %s on %s; last log line %s" % (
+            live[0], live[1], live[5], run["last_ts"] or "?"))
+    else:
+        print("ended:    NOT ENDED  (%s; last log line %s)" % (run["how"], run["last_ts"] or "?"))
+    if run["cancelled_at"]:
+        print("          shutdown began %s; tasks already submitted were allowed to finish" % run["cancelled_at"])
+
+    if heads:
+        print()
+        print("head jobs (%s), newest last:" % jobname)
+        for jobid, state, start, end, code, node in heads[-6:]:
+            print("    %-10s %-10s %s -> %s  exit %s  %s" % (jobid, state, start, end, code, node))
+
+    names = sorted(set(run["submitted"]) | set(run["cached"]) | set(run["stored"]) | set(run["ok"])
+                   | set(f["name"] for f in run["failed"]))
+    if names:
+        print()
+        print("%-24s %9s %6s %6s %6s %6s %8s" % ("process", "submitted", "ok", "cached", "stored", "failed", "unfinished"))
+        for n in names:
+            failed = sum(1 for f in run["failed"] if f["name"] == n)
+            # submitted but never reported back: killed with the head, or still running
+            unfinished = run["submitted"][n] - run["ok"][n] - failed
+            print("%-24s %9d %6d %6d %6d %6d %8d" % (
+                n, run["submitted"][n], run["ok"][n], run["cached"][n], run["stored"][n],
+                failed, max(unfinished, 0)))
+
+    if run["failed"]:
+        print()
+        print("failed tasks, in order:")
+        for f in run["failed"]:
+            print("  %s  %s (%s)  exit %s  %s" % (f["when"], f["name"], f["tag"], f["exit"],
+                                                  {"retried": "-> retried",
+                                                   "fatal": "-> TOOK THE RUN DOWN"}.get(f["fate"], "")))
+            print("      %s" % root_cause(f["workdir"]))
+            print("      %s" % f["workdir"])
+    print()
+    if run["ended"] and run["how"] != "finished":
+        print("everything that completed is cached; relaunch with -resume (the make target does) to pick up the rest.")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("log", nargs="?", default=".nextflow.log")
+    ap.add_argument("--history", action="store_true", help="one line per rotated log, newest first")
+    ap.add_argument("--jobname", default=None, help="head job name for the sacct section, e.g. nfdrv-botryllus")
+    args = ap.parse_args()
+
+    if args.history:
+        logs = sorted(glob.glob(".nextflow.log*"),
+                      key=lambda p: (0 if p == ".nextflow.log" else int(p.rsplit(".", 1)[1])))
+        for p in logs:
+            print(one_line(parse(p)))
+        return
+    if not os.path.exists(args.log):
+        sys.exit("no %s here; run this from the pipeline's launch directory" % args.log)
+    report(parse(args.log), args.jobname)
+
+
+if __name__ == "__main__":
+    main()

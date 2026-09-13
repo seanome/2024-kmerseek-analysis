@@ -12,17 +12,12 @@ from scope_kmerseek_utils import (
     load_kmerseek_results,
     add_scope_hierarchical_levels,
     calculate_sensitivity_to_first_fp,
-    save_processed_data
+    save_processed_data,
 )
 from pathlib import Path
 
 
-def process_kmerseek_results(
-    results_dir,
-    output_dir,
-    pattern="*hp*.csv",
-    metrics=None
-):
+def process_kmerseek_results(results_dir, output_dir, pattern="*hp*.csv", metrics=None):
     """
     Complete workflow for processing KmerSeek results.
 
@@ -40,9 +35,9 @@ def process_kmerseek_results(
     """
     if metrics is None:
         metrics = {
-            'TF-IDF': 'tfidf',
-            'Jaccard': 'jaccard',
-            'Max Containment': 'max_containment'
+            "TF-IDF": "tfidf",
+            "Jaccard": "jaccard",
+            "Max Containment": "max_containment",
         }
 
     output_dir = Path(output_dir)
@@ -58,7 +53,7 @@ def process_kmerseek_results(
         pattern=pattern,
         add_ksize_from_filename=True,
         max_rows=15_000_000,
-        size_threshold_gb=8.0
+        size_threshold_gb=8.0,
     )
 
     print(f"\nLoaded {df.shape[0]:,} rows with {df.shape[1]} columns")
@@ -71,7 +66,9 @@ def process_kmerseek_results(
     # Add hierarchical level columns
     df = add_scope_hierarchical_levels(df)
     print(f"Added hierarchical level columns")
-    print(f"New columns: {[c for c in df.columns if 'family' in c or 'fold' in c or 'class' in c]}")
+    print(
+        f"New columns: {[c for c in df.columns if 'family' in c or 'fold' in c or 'class' in c]}"
+    )
 
     # Save processed data with hierarchical levels
     processed_file = output_dir / f"processed_with_levels.parquet"
@@ -82,9 +79,9 @@ def process_kmerseek_results(
     print("=" * 80)
 
     levels = {
-        'Family': 'family_match',
-        'Superfamily': 'superfamily_match',
-        'Fold': 'fold_match'
+        "Family": "family_match",
+        "Superfamily": "superfamily_match",
+        "Fold": "fold_match",
     }
 
     # Calculate sensitivity for each metric and level combination
@@ -99,11 +96,14 @@ def process_kmerseek_results(
                 df,
                 metric_col=metric_col,
                 level_match_col=level_match_col,
-                group_by_cols=['ksize']  # Group by ksize to get separate results per k
+                group_by_cols=["ksize"],  # Group by ksize to get separate results per k
             )
 
             # Save results
-            output_file = output_dir / f"sensitivity_{level_name.lower()}_{metric_name.lower().replace(' ', '_').replace('-', '_')}.parquet"
+            output_file = (
+                output_dir
+                / f"sensitivity_{level_name.lower()}_{metric_name.lower().replace(' ', '_').replace('-', '_')}.parquet"
+            )
             save_processed_data(sensitivity_df, output_file)
 
             print(f"Saved {sensitivity_df.shape[0]:,} queries to {output_file.name}")
@@ -118,9 +118,13 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: python example_use_scope_utils.py <results_dir> [output_dir] [pattern]")
+        print(
+            "Usage: python example_use_scope_utils.py <results_dir> [output_dir] [pattern]"
+        )
         print("\nExample:")
-        print("  python example_use_scope_utils.py /path/to/results /path/to/output '*hp*.csv'")
+        print(
+            "  python example_use_scope_utils.py /path/to/results /path/to/output '*hp*.csv'"
+        )
         sys.exit(1)
 
     results_dir = sys.argv[1]

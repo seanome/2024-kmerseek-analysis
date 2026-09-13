@@ -351,12 +351,16 @@ def boundary_metrics(calls: pl.DataFrame, truth: pl.DataFrame,
     """Residue-level overlap and boundary accuracy.
 
     `residue_recall` is correctly-labelled residues over true domain residues. There used
-    to be a second column, `ndo`, set to exactly this same expression, so the table carried
-    one number under two names and every arm showed the two identical to twelve decimals.
-    Normalized Domain Overlap is a different quantity -- CASP's NDO normalises per domain
-    against the best-matching predicted domain and sums over a scoring matrix this function
-    never builds -- so the column is gone rather than renamed. What is measured here is the
-    residue quantity, and it is reported under the name that describes it.
+    to be a second column, `ndo`, assigned that same value on the line after it
+    was computed. One quantity under two names, and every arm showed the two identical to
+    twelve decimals, which reads as a corrupted column rather than as a duplicate. The
+    residue quantity is real and is kept; the CASP name is not. What CASP's NDO scores is a
+    domain DECOMPOSITION of a chain -- an overlap matrix between a predicted partition and
+    a reference partition, normalised per domain against the best-matching predicted domain
+    and summed over a scoring matrix this function never builds. Calls here are per family
+    and may overlap each other, so a partition is not what this benchmark produces, and
+    reporting a partition metric's name over a plain residue recall would claim a
+    comparison to CASP that the data cannot support.
 
     DBD is the distance in residues between a predicted boundary and the true one,
     reported as a median over correctly identified domains. Only correct calls have a
