@@ -626,7 +626,11 @@ def call_offsets(species: str, accessions: list[str] | None = None) -> pl.DataFr
             ).clip(lower_bound=0)
         )
         .filter(pl.col("overlap") > 0)
-        .sort("overlap", descending=True)
+        # Total sort key. `overlap` alone leaves ties to polars' arbitrary row order, so a
+        # call overlapping two instances of one family equally picks a different one each
+        # run, and every d_start/d_end derived from it moves. (t_start, t_end) identifies
+        # the instance, so adding them makes the choice deterministic.
+        .sort(["overlap", "t_start", "t_end"], descending=[True, False, False])
         .group_by("tool", "variant", "query_acc", "pfam_id", "qstart", "qend")
         .agg(pl.all().first())
     )
