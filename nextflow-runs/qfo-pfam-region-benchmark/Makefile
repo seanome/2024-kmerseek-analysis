@@ -1958,9 +1958,13 @@ DARK_DECOY_OUTDIR  ?= ../data/dark-decoy/results
 DARK_TARGETS       ?= $(MIDI_TARGETS)
 DARK_EVIDENCE      ?= ECO:0000269
 
+# Inside the image, like every other python step here: the login node's python3 is 3.6
+# (no `from __future__ import annotations`, no polars).
 dark-queries:
 	$(call require_cluster)
-	python3 bin/select_dark_queries.py \
+	apptainer exec --bind $$PWD:$$PWD --bind $$(cd $(DARK_SOURCE_OUTDIR) && pwd):$$(cd $(DARK_SOURCE_OUTDIR) && pwd) --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/select_dark_queries.py \
 	    --regions-dir  $(DARK_SOURCE_OUTDIR)/regions \
 	    --human-fasta  data/qfo/Eukaryota/UP000005640_9606.fasta \
 	    --out          data/dark_queries.txt \

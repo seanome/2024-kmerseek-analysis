@@ -92,7 +92,13 @@ proteome_archive() {
     if [[ -z "$up" ]]; then echo ""; return 0; fi
     fetch_listing
     # Newest first, so a directory carrying several versions resolves to the current one.
-    grep "^${up}_" "$LISTING" | sort -Vr | head -1
+    # `|| true` because a species with no archive (chicken, ciona, every non-model
+    # organism) makes grep exit 1, pipefail carries that out of the pipeline, and the
+    # caller's `archive="$(proteome_archive ...)"` then kills the whole run under `set -e`
+    # with no message. That is what stopped `make fetch-structures` at chicken on
+    # 2026-09-13, right after "linked from cache: 0". No archive is a normal answer here:
+    # it is what sends the species down the per-accession path.
+    { grep "^${up}_" "$LISTING" || true; } | sort -Vr | head -1
 }
 
 # Model version for per-accession fetches, probed against real accessions rather than
