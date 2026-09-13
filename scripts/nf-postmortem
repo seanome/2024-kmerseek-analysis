@@ -38,6 +38,11 @@ GOODBYE = re.compile(r"^(\S+ \S+) .*Execution complete -- Goodbye")
 # Apptainer prints this on every container start; it is never the reason anything failed.
 NOISE = ("WARNING: Not virtualizing pid namespace",)
 
+# 128 + signal. 137 is SIGKILL, which on a SLURM node is nearly always the cgroup memory
+# limit; the OOM verdict below confirms it when slurmstepd logged one.
+EXIT_GLOSS = {"137": " (SIGKILL)", "139": " (SIGSEGV)", "134": " (SIGABRT)", "143": " (SIGTERM)",
+              "255": " (container never started?)", "70": " (zstd: could not write)"}
+
 
 def short(name):
     return name.split(":")[-1]
@@ -138,10 +143,41 @@ def parse(path):
     return run
 
 
+def slurm_verdict(workdir):
+    """What SLURM itself said about the task, when it said anything.
+
+    A cgroup OOM kill leaves exit 137 and a stderr whose last line is bash job-control
+    noise (`65946 Done | zstd ...`), which is what the stderr rule below would print. The
+    real statement is slurmstepd's `Detected 1 oom_kill event` in .command.log, and the
+    number that matters next to it is the --mem the task asked for, in .command.run."""
+    try:
+        with open(os.path.join(workdir, ".command.log"), errors="replace") as fh:
+            oom = [l.strip() for l in fh if "oom_kill" in l or "oom-kill" in l]
+    except OSError:
+        return None
+    if not oom:
+        return None
+    mem = "?"
+    try:
+        with open(os.path.join(workdir, ".command.run"), errors="replace") as fh:
+            for l in fh:
+                m = re.match(r"#SBATCH --mem[= ](\S+)", l)
+                if m:
+                    mem = m.group(1)
+    except OSError:
+        pass
+    return "SLURM cgroup OOM kill at --mem %s: %s" % (mem, oom[-1])
+
+
 def root_cause(workdir, limit=300):
-    """Last line of the task's stderr that is not container start-up noise, falling back to
-    the last line of stdout that looks like an error: mmseqs reports `Error: Create profile
-    died` on stdout and leaves stderr with nothing but the apptainer banner."""
+    """Why the task died, in one line: SLURM's OOM verdict if there is one, else the last
+    line of stderr that is not container start-up noise, else the last line of stdout that
+    looks like an error (mmseqs reports `Error: Create profile died` on stdout and leaves
+    stderr with nothing but the apptainer banner)."""
+    verdict = slurm_verdict(workdir)
+    if verdict:
+        return verdict if len(verdict) <= limit else verdict[:limit - 3] + "..."
+
     def lines_of(name):
         try:
             with open(os.path.join(workdir, name), errors="replace") as fh:
@@ -224,7 +260,8 @@ def report(run, jobname):
         print()
         print("failed tasks, in order:")
         for f in run["failed"]:
-            print("  %s  %s (%s)  exit %s  %s" % (f["when"], f["name"], f["tag"], f["exit"],
+            print("  %s  %s (%s)  exit %s%s  %s" % (f["when"], f["name"], f["tag"], f["exit"],
+                                                    EXIT_GLOSS.get(f["exit"], ""),
                                                   {"retried": "-> retried",
                                                    "fatal": "-> TOOK THE RUN DOWN"}.get(f["fate"], "")))
             print("      %s" % root_cause(f["workdir"]))
