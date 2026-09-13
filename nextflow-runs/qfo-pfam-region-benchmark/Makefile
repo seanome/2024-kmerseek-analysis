@@ -360,7 +360,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
         build-image-rannon-burstein push-image-rannon-burstein \
-        build-image-extend push-image-extend run-midi-plus-extend run-midi-plus-band \
+        build-image-extend push-image-extend run-midi-plus-extend run-midi-plus-band run-midi-plus-ladder \
         dark-queries dark-testset dark-decoy-testset run-dark run-dark-decoy \
         run-rannon-burstein multiqc-rannon-burstein \
         pull-report pull-report-mini pull-report-midi \
@@ -374,6 +374,7 @@ help:
 	@echo "  push-image-extend     Push the kmerseek image with --extend-mismatch-penalty"
 	@echo "  run-midi-plus-band    Four alphabets on k ladders inside 23-32 bits, lc off, no Folddisco/Reseek (the sweep that replaces the matrix)"
 	@echo "  run-midi-plus-extend  Extended-seed k ladder for one alphabet, resumed in run-midi-plus"
+	@echo "  run-midi-plus-ladder  Band combos on the divergence ladder (chimp, rat, dog, cow, opossum, xenopus + the nine), resumed in the all-QfO run dir"
 	@echo "  run-dark / run-dark-decoy"
 	@echo "                        Dark-stratum queries (no sequence-arm hit) on ECO:0000269 truth, and their circular-shift twin"
 	@echo "  push-image-rannon-burstein"
@@ -1806,6 +1807,57 @@ run-midi-plus-band: prefetch-images midi-plus-testset-sherlock
 	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
 	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# ---- the divergence ladder: fill the close-range window --------------------
+#
+# The only place kmerseek keeps up is one data point, mouse at ~90 Mya, and the
+# "crossover at 108 Mya" (nb 236) is an interpolation between mouse and chicken, 220 Mya
+# apart. These targets sit between them and below: chimp (6 Mya) measures the scorer's
+# ceiling with divergence removed (reachability, the IoU rule, the length penalty); rat
+# (90) checks mouse is not special; dog and cow (95) are second lineages at the mouse
+# distance; opossum (160) is the first point past the estimated crossover; xenopus (350)
+# sits between chicken and zebrafish. Macaque (~29 Mya) and platypus (~180) are not QfO
+# reference proteomes; add them the way stage-botryllus adds a non-QfO proteome if the
+# ladder needs them. Gorilla is skipped: two near-identical primates measure the ceiling
+# twice. Pfam is the truth set here (thin Swiss-Prot curation on the primates, and Pfam
+# is the headline after nb 231).
+#
+# Resumed in the all-QfO run directory on purpose: that run finished phmmer, jackhmmer,
+# MMseqs2 and HHblits for every one of these species and 198 of 203 kmerseek searches
+# each (checked 2026-09-13), so with the band combos and -resume the new work is scoring
+# and the report. Foldseek ran only where AlphaFold models were staged (rat); fetch
+# structures for the others before expecting a Foldseek row.
+LADDER_TARGETS ?= ptroglodytes,rnorvegicus,clupus,btaurus,mdomestica,xtropicalis,$(MIDI_TARGETS)
+
+# Stage every proteome, as the all-QfO run did: the staging is symlinks and it is what
+# put the ladder species' FASTAs and annotations under data/midi-plus in the first place.
+run-midi-plus-ladder: MIDI_PLUS_TARGETS := all
+run-midi-plus-ladder: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus-ladder: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p $(ALLQFO_RUN_DIR)
+	cd $(ALLQFO_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --kmerseek_combos $(BAND_COMBOS) \
+	    $(BAND_STRUCT_ARGS) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(ALLQFO_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(LADDER_TARGETS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \

@@ -34,16 +34,16 @@ arabidopsis	3702	UP000006548	Eukaryota	1500	27500	Arabidopsis thaliana
 bdendrobatidis	684364	UP000007241	Eukaryota		8610	Batrachochytrium dendrobatidis
 bfloridae	7739	UP000001554	Eukaryota		28542	Branchiostoma floridae
 botryllus	30301	BOTSCH2026	Eukaryota	550	45339	Botryllus schlosseri
-btaurus	9913	UP000009136	Eukaryota		23845	Bos taurus
+btaurus	9913	UP000009136	Eukaryota	95	23845	Bos taurus
 calbicans	237561	UP000000559	Eukaryota		6035	Candida albicans
 chicken	9031	UP000000539	Eukaryota	300	18116	Gallus gallus
 ciona	7719	UP000008144	Eukaryota	550	16678	Ciona intestinalis
-clupus	9615	UP000002254	Eukaryota		20649	Canis lupus familiaris
+clupus	9615	UP000002254	Eukaryota	95	20649	Canis lupus familiaris
 cneoformans	214684	UP000002149	Eukaryota		6604	Cryptococcus neoformans var. neoformans serotype D
 creinhardtii	3055	UP000006906	Eukaryota		17614	Chlamydomonas reinhardtii
 ddiscoideum	44689	UP000002195	Eukaryota		12739	Dictyostelium discoideum
 fly	7227	UP000000803	Eukaryota	600	13811	Drosophila melanogaster
-ggorilla	9595	UP000001519	Eukaryota		21792	Gorilla gorilla gorilla
+ggorilla	9595	UP000001519	Eukaryota	9	21792	Gorilla gorilla gorilla
 gintestinalis	184922	UP000001548	Eukaryota		7971	Giardia intestinalis
 hrobusta	6412	UP000015101	Eukaryota		23328	Helobdella robusta
 human	9606	UP000005640	Eukaryota	0	20600	Homo sapiens
@@ -51,7 +51,7 @@ iscapularis	6945	UP000001555	Eukaryota		20473	Ixodes scapularis
 lmajor	5664	UP000000542	Eukaryota		8038	Leishmania major
 loculatus	7918	UP000018468	Eukaryota		18318	Lepisosteus oculatus
 mbrevicollis	81824	UP000001357	Eukaryota		9188	Monosiga brevicollis
-mdomestica	13616	UP000002280	Eukaryota		21225	Monodelphis domestica
+mdomestica	13616	UP000002280	Eukaryota	160	21225	Monodelphis domestica
 mouse	10090	UP000000589	Eukaryota	100	21989	Mus musculus
 ncrassa	367110	UP000001805	Eukaryota		9759	Neurospora crassa
 nfumigata	330879	UP000002530	Eukaryota		9647	Neosartorya fumigata
@@ -64,8 +64,8 @@ pnodorum	321614	UP000001055	Eukaryota		15998	Phaeosphaeria nodorum
 ppatens	3218	UP000006727	Eukaryota		30857	Physcomitrella patens subsp. patens
 pramorum	164328	UP000005238	Eukaryota		15349	Phytophthora ramorum
 ptetraurelia	5888	UP000000600	Eukaryota		39461	Paramecium tetraurelia
-ptroglodytes	9598	UP000002277	Eukaryota		23053	Pan troglodytes
-rnorvegicus	10116	UP000002494	Eukaryota		21587	Rattus norvegicus
+ptroglodytes	9598	UP000002277	Eukaryota	6	23053	Pan troglodytes
+rnorvegicus	10116	UP000002494	Eukaryota	90	21587	Rattus norvegicus
 spombe	284812	UP000002485	Eukaryota		5141	Schizosaccharomyces pombe
 ssclerotiorum	665079	UP000001312	Eukaryota		14445	Sclerotinia sclerotiorum
 tcastaneum	7070	UP000007266	Eukaryota		16568	Tribolium castaneum
@@ -73,7 +73,7 @@ tpseudonana	35128	UP000001449	Eukaryota		11717	Thalassiosira pseudonana
 tvaginalis	5722	UP000001542	Eukaryota		50190	Trichomonas vaginalis
 umaydis	237631	UP000000561	Eukaryota		6788	Ustilago maydis
 worm	6239	UP000001940	Eukaryota	650	19819	Caenorhabditis elegans
-xtropicalis	8364	UP000008143	Eukaryota		17272	Xenopus tropicalis
+xtropicalis	8364	UP000008143	Eukaryota	350	17272	Xenopus tropicalis
 yeast	559292	UP000002311	Eukaryota	900	6049	Saccharomyces cerevisiae
 ylipolytica	284591	UP000001300	Eukaryota		6449	Yarrowia lipolytica
 zebrafish	7955	UP000000437	Eukaryota	430	25698	Danio rerio
