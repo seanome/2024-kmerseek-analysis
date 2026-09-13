@@ -48,7 +48,8 @@ RB_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(RB_IMAGE_TAG)
 # The kmerseek commit that added polarity4 and funcgroups8.
 RB_REQUIRED_SHA ?= dd630a8
 
-# A THIRD kmerseek image, carrying --extend-mismatch-penalty (kmerseek PR #54, 31b510f).
+# A THIRD kmerseek image, carrying --extend-mismatch-penalty and the Karlin-Altschul
+# E-value (kmerseek PR #54, bd120d3).
 # Same reasoning as RB_IMAGE_TAG: bumping IMAGE_TAG would rehash every kmerseek task in the
 # sweep. This one is passed as --kmerseek_search_image, so only kmerseekSearch runs under
 # it, and only the extended arm's searches -- which have new filenames anyway -- are new
@@ -59,7 +60,7 @@ EXT_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(EXT_IMAGE_TAG)
 # until PR #54 lands, and pointing KMERSEEK_SRC at it would silently change what
 # build-image produces for everything else.
 KMERSEEK_EXT_SRC ?= /Users/olga/code/kmerseek/.claude/worktrees/extend-mismatch
-EXT_REQUIRED_SHA ?= 31b510f
+EXT_REQUIRED_SHA ?= bd120d3
 
 METAPREDICT_TAG    ?= 2026-08-27
 METAPREDICT_REMOTE := docker.io/olgabot/metapredict:$(METAPREDICT_TAG)
@@ -1793,6 +1794,12 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 # once k=12 has run.
 EXT_COMBOS  ?= hp_thomas_dill2:12,hp_thomas_dill2:15,hp_thomas_dill2:19,hp_thomas_dill2:23
 EXT_PENALTY ?= 2
+# Scoring ranks the extended arm by its Karlin-Altschul bits with an E-value cutoff in
+# place of the Bonferroni filter, because the Poisson count still reads exact k-mers and
+# is blind to the extension. --ka-k inside the image is the K fitted on SCOPe40 decoys
+# for hp_thomas_dill at k=12, penalty 2; other ladders need their own fit.
+EXT_RANK_BY    ?= region_ka_bits
+EXT_MAX_EVALUE ?= 1
 
 run-midi-plus-extend: PREFETCH_CONTAINERS := $(EXT_IMAGE_REMOTE) $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus-extend: prefetch-images midi-plus-testset-sherlock
@@ -1805,6 +1812,8 @@ run-midi-plus-extend: prefetch-images midi-plus-testset-sherlock
 	    --kmerseek_search_image   $(EXT_IMAGE_REMOTE) \
 	    --kmerseek_extend_penalty $(EXT_PENALTY) \
 	    --kmerseek_combos         $(EXT_COMBOS) \
+	    --kmerseek_rank_by        $(EXT_RANK_BY) \
+	    --kmerseek_max_evalue     $(EXT_MAX_EVALUE) \
 	    --qfo_dir         ../data/midi-plus/qfo \
 	    --annotations     ../data/midi-plus/annotations \
 	    --structures      ../data/midi-plus/structures \

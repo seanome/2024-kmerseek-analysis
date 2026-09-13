@@ -235,7 +235,8 @@ def release_inflated(path: Path) -> None:
 
 
 def load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
-                 max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
+                 max_bonferroni_p: float | None = 0.05,
+                 max_evalue: float | None = None) -> pl.LazyFrame | None:
     """Normalize any tool's output to one schema. Returns None for an empty result, which
     is a real outcome (a combo that found nothing), not an error.
 
@@ -247,13 +248,14 @@ def load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
     score column its own output already carries.
     """
     try:
-        return _load_regions(path, direct, rank_by, max_bonferroni_p)
+        return _load_regions(path, direct, rank_by, max_bonferroni_p, max_evalue)
     except pl.exceptions.NoDataError:
         return None
 
 
 def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
-                  max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
+                  max_bonferroni_p: float | None = 0.05,
+                  max_evalue: float | None = None) -> pl.LazyFrame | None:
     if path.stat().st_size == 0:
         return None
 
@@ -336,7 +338,20 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
                 f"arm with a kmerseek that reports the search-space counts."
             )
 
-        if max_bonferroni_p is not None:
+        # An E-value cutoff replaces the Bonferroni filter rather than stacking on it. The
+        # Poisson tail counts exact k-mers, which an extended region (kmerseek PR #54) has
+        # fewer of per residue than an exact one, so Bonferroni on it would throw away the
+        # regions the extension exists to keep. region_evalue is already a database-wide
+        # expectation (K m n e^-lambda S), so no further correction applies.
+        if max_evalue is not None:
+            if "region_evalue" not in names:
+                raise SystemExit(
+                    f"{path} has no `region_evalue` column, so --kmerseek-max-evalue cannot "
+                    f"be applied. Re-run the search arm with --extend-mismatch-penalty on a "
+                    f"kmerseek that has PR #54."
+                )
+            lf = lf.filter(pl.col("region_evalue").cast(pl.Float64) <= max_evalue)
+        elif max_bonferroni_p is not None:
             raw_p = (pl.col("region_tail_probability").cast(pl.Float64)
                      if "region_tail_probability" in names
                      else (10.0 ** -pl.col("region_poisson_score").cast(pl.Float64)))
@@ -1648,6 +1663,7 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
         rank_by=args.kmerseek_rank_by,
         max_bonferroni_p=(args.kmerseek_max_bonferroni_p
                           if args.kmerseek_max_bonferroni_p > 0 else None),
+        max_evalue=args.kmerseek_max_evalue,
     )
 
     # Before transfer, not after: a fragment duplicate is one alignment reported twice, so
@@ -1875,15 +1891,21 @@ def main():
     p.add_argument("--direct-annotation", action="store_true")
     p.add_argument("--kmerseek-rank-by", default="region_enrichment",
                    choices=["jaccard", "region_enrichment", "region_n_shared_kmers",
-                            "region_poisson_score"],
+                            "region_poisson_score", "region_ka_bits"],
                    help="Which kmerseek column ranks calls, bigger is better for all four. "
                         "region_enrichment (default) is region-scoped and normalised by "
                         "the target DB's expected shared k-mers. jaccard is whole-protein "
                         "so it cannot separate regions of one "
                         "pair; region_n_shared_kmers is region_length-ksize+1, so it ranks "
                         "by region length alone; region_poisson_score reproduces the "
-                        "pre-2026-08-26 behaviour. The Bonferroni filter is independent of "
-                        "this choice and always uses the region Poisson tail.")
+                        "pre-2026-08-26 behaviour. region_ka_bits is the Karlin-Altschul "
+                        "score of an extended region (kmerseek PR #54) and is the one "
+                        "column that sees the extension. The Bonferroni filter is "
+                        "independent of this choice and always uses the region Poisson tail.")
+    p.add_argument("--kmerseek-max-evalue", type=float, default=None,
+                   help="Keep only kmerseek regions with region_evalue at or below this, "
+                        "INSTEAD of the Bonferroni filter. For arms searched with "
+                        "--extend-mismatch-penalty; requires the region_evalue column.")
     p.add_argument("--kmerseek-max-bonferroni-p", type=float, default=0.05,
                    help="Drop kmerseek regions whose Bonferroni-corrected Poisson tail "
                         "(raw p x region_search_space x db_n_targets) is at or above this. "

@@ -173,6 +173,13 @@ params.kmerseek_extend_xdrop   = 8
 // params.kmerseek_image alone keeps every python-labelled process and the index cache on
 // the image they were run with. Unset means the search uses the same image as the index.
 params.kmerseek_search_image   = null
+// How kmerseek regions are ranked and pre-filtered in scoring. The defaults are the
+// scorer's own (region_enrichment, Bonferroni on the Poisson tail) and are NOT written
+// into the command when left alone, so a resumed run keeps its scoring cache. The extended
+// arm wants `region_ka_bits` with an E-value cutoff instead: its Poisson count still
+// reads exact k-mers, and only the Karlin-Altschul score sees the extension.
+params.kmerseek_rank_by    = null
+params.kmerseek_max_evalue = null
 params.kmerseek_combos    = null
 // Sweep only the (target, combo) cells whose search result is already in the store, and
 // launch no new search. For finishing a run whose remaining searches are the ones that
@@ -3240,6 +3247,8 @@ TRUTH_EOF
             --min-overlap  ${params.min_overlap} \\
             --strict-iou   ${params.strict_iou} \\
             --dedup-transfer-modes ${(params.dedup_transfer_modes as List).join(',')} \\
+            ${params.kmerseek_rank_by ? "--kmerseek-rank-by ${params.kmerseek_rank_by}" : ""} \\
+            ${params.kmerseek_max_evalue != null ? "--kmerseek-max-evalue ${params.kmerseek_max_evalue}" : ""} \\
             --truth-set    "\$truth_set" < /dev/null
     done < truth_sets.tsv
     """
