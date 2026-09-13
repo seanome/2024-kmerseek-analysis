@@ -152,6 +152,27 @@ params.kmerseek_extra_encodings = false
 // its cache. Unset means one image for everything, which is what a run whose kmerseek build
 // already has the alphabets wants.
 params.kmerseek_extra_image = null
+// Seed extension for every kmerseek search in the sweep (kmerseek PR #54,
+// --extend-mismatch-penalty / --extend-xdrop). 0 keeps regions exact, which is also the only
+// value an image older than that PR accepts, so the flags are emitted only when it is set.
+//
+// The penalty is part of the SEARCH arm's name: a run with --kmerseek_extend_penalty 2
+// writes human_vs_<sp>.<alphabet>_ext2.k<k>.lc<lc>.regions.parquet and scores the variant
+// <alphabet>_ext2_k<k>_lc<lc>. That is what keeps it out of the exact arm's storeDir
+// entries -- kmerseekSearch keeps its results under storeDir, so a search that reused the
+// exact arm's filename would be SKIPPED as already done, flag or no flag -- and what lets
+// the report show the two side by side. The INDEX does not depend on the penalty and keeps
+// its plain name, so the extended run inherits every cached index.
+//
+// Integers only: the value is spelled into filenames, and 2 and 2.0 would be two arms.
+params.kmerseek_extend_penalty = 0
+params.kmerseek_extend_xdrop   = 8
+// The image kmerseekSearch runs under, when it must differ from the one the indexes were
+// built with. The extended arm needs a kmerseek build that has --extend-mismatch-penalty;
+// the indexes are storeDir hits and never consult the container, so leaving
+// params.kmerseek_image alone keeps every python-labelled process and the index cache on
+// the image they were run with. Unset means the search uses the same image as the index.
+params.kmerseek_search_image   = null
 params.kmerseek_combos    = null
 // Sweep only the (target, combo) cells whose search result is already in the store, and
 // launch no new search. For finishing a run whose remaining searches are the ones that
@@ -849,8 +870,17 @@ def KMERSEEK_TIMER_SH = '''# GNU date's %N is nanoseconds. BSD date (macOS, when
 // Class count is the trailing number in every encoding name: protein20, gbmr4,
 // hp_lehninger_hpc3, hp_thomas_dill_no_c2.
 def alphabetClasses = { label ->
-    def m = label =~ /(\d+)$/
+    // The search arm's label may carry the extension suffix (hp_thomas_dill2_ext2); the
+    // class count is the digits at the end of the ALPHABET, not of the penalty.
+    def m = label.replaceAll(/_ext\d+$/, '') =~ /(\d+)$/
     m ? (m[0][1] as int) : 20
+}
+
+// The name a kmerseek SEARCH arm carries: the alphabet label, plus the extension penalty
+// when one is set. The index arm keeps the bare label (see params.kmerseek_extend_penalty).
+def searchLabel = { String label ->
+    def p = params.kmerseek_extend_penalty as int
+    p > 0 ? "${label}_ext${p}".toString() : label
 }
 
 // How big the k-mer keyspace is, in bits: ksize x log2(alphabet cardinality). This is the
@@ -1671,7 +1701,7 @@ process kmerseekSearch {
      * entries keep hitting; they simply have no record, which the report reports as a gap
      * rather than as a zero.
      */
-    tag "${species}_${label}_k${ksize}_lc${lowcomp}"
+    tag "${species}_${search_label}_k${ksize}_lc${lowcomp}"
     // Dynamic, and reading the task's own input rather than a param. An alphabet that
     // needs a newer kmerseek build gets one without moving every other process onto it.
     // nextflow.config deliberately sets no container for these two: a config selector
@@ -1693,36 +1723,45 @@ process kmerseekSearch {
     maxRetries 2
 
     input:
-    tuple val(species), val(cli_flag), val(label), val(ksize), val(lowcomp),
+    // `label` names the index (alphabet only); `search_label` names this arm's results
+    // and carries the extension penalty when one is set. See params.kmerseek_extend_penalty.
+    tuple val(species), val(cli_flag), val(label), val(search_label), val(ksize), val(lowcomp),
           val(target_bytes), path(index_dir), path(human_fasta), val(image)
 
     output:
-    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
-    path "spectrum.${species}.${label}.k${ksize}.lc${lowcomp}.csv.gz",           emit: spectrum
-    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.timings.jsonl",
+    path "human_vs_${species}.${search_label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
+    path "spectrum.${species}.${search_label}.k${ksize}.lc${lowcomp}.csv.gz",           emit: spectrum
+    path "human_vs_${species}.${search_label}.k${ksize}.lc${lowcomp}.timings.jsonl",
          optional: true, emit: timing
 
     script:
-    def slug      = "${label}.k${ksize}.lc${lowcomp}"
+    def slug      = "${search_label}.k${ksize}.lc${lowcomp}"
+    def index_slug = "${label}.k${ksize}.lc${lowcomp}"
     def out_zst   = "human_vs_${species}.${slug}.regions.csv.zst"
     def out_pq    = "human_vs_${species}.${slug}.regions.parquet"
     def log_file  = "human_vs_${species}.${slug}.log"
     def spectrum  = "spectrum.${species}.${slug}.csv.gz"
+    def index_spectrum = "spectrum.${species}.${index_slug}.csv.gz"
     def timings   = "human_vs_${species}.${slug}.timings.jsonl"
     def lc_flag   = lowcomp ? "--remove-low-complexity" : ""
+    // Emitted only when set, so an image that predates the flags still runs the exact arm.
+    def penalty   = params.kmerseek_extend_penalty as int
+    def ext_flags = penalty > 0
+        ? "--extend-mismatch-penalty ${penalty} --extend-xdrop ${params.kmerseek_extend_xdrop}"
+        : ""
     """
     set -euo pipefail
     ${KMERSEEK_TIMER_SH}
 
     _task_t0=\$(_now_ms)
 
-    echo "=== Search: human vs ${species} (${cli_flag} k=${ksize} lc=${lowcomp}) ===" | tee ${log_file}
+    echo "=== Search: human vs ${species} (${cli_flag} k=${ksize} lc=${lowcomp} extend=${penalty}) ===" | tee ${log_file}
     echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
 
     # Carried out of the index directory rather than rebuilt: the spectrum is a property of
     # the target proteome under this alphabet/ksize, which is exactly what kmerseekIndex
     # already computed and stored.
-    cp ${index_dir}/${spectrum} ${spectrum} 2>/dev/null || touch ${spectrum}
+    cp ${index_dir}/${index_spectrum} ${spectrum} 2>/dev/null || touch ${spectrum}
 
     # The index's own timing record, carried out of the store the same way. An index built
     # before this record existed simply has none, so the report shows the search cost with
@@ -1752,6 +1791,7 @@ process kmerseekSearch {
         --min-shared-kmers  ${params.min_shared_kmers} \\
         --max-query-pvalue  ${params.max_query_pvalue} \\
         --min-region-score  ${params.min_region_score} \\
+        ${ext_flags} \\
         2>> ${log_file} \\
         | zstd -T2 -o ${out_zst}
     rc=(\${PIPESTATUS[@]})
@@ -1818,7 +1858,7 @@ PYEOF
     # foldseek's 17.1 and prostt5's 14.4. command_s is the `kmerseek search` invocation
     # alone, kept for attributing the difference rather than for the headline number.
     printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s}\\n' \\
-        "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
+        "${species}_${search_label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
         "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" >> ${timings}
     """
 }
@@ -3859,7 +3899,7 @@ workflow {
             // The same path kmerseekSearch's storeDir and output name resolve to. An
             // ignored search leaves nothing here, so exists() is "finished".
             def stored = { sp, label, k, lc ->
-                file("${params.outdir}/kmerseek/human_vs_${sp}.${label}.k${k}.lc${lc}.regions.parquet").exists()
+                file("${params.outdir}/kmerseek/human_vs_${sp}.${searchLabel(label)}.k${k}.lc${lc}.regions.parquet").exists()
             }
             (cells, skipped) = cells.split { sp, _cli, label, k, lc -> stored(sp, label, k, lc) }
             if (!cells) {
@@ -3896,8 +3936,10 @@ workflow {
         // the key cannot name different things. Per target as well, because under
         // --kmerseek_stored_only two targets can have finished different ksizes of one
         // alphabet.
+        // On the SEARCH label: that is the alphabet the result filename carries and
+        // scoreGroup reads back out of the variant, extension suffix included.
         cells.groupBy { sp, _cli, label, _k, _lc ->
-            [sp, params.score_group_by == 'alphabet' ? kmerseekGroup(label)
+            [sp, params.score_group_by == 'alphabet' ? kmerseekGroup(searchLabel(label))
                                                      : scoreGroup("kmerseek", null)]
         }.each { key, cs -> countArm([key[0]], key[1], cs.size()) }
         // Which image each combo runs under. Keyed on the alphabet's canonical name, the
@@ -3938,8 +3980,8 @@ workflow {
             }
             .join(combo_meta)
             .map { _key, d, species, cli_flag, label, ksize, lowcomp, target_bytes, image ->
-                tuple(species, cli_flag, label, ksize, lowcomp, target_bytes, d, human_fasta,
-                      image)
+                tuple(species, cli_flag, label, searchLabel(label), ksize, lowcomp, target_bytes,
+                      d, human_fasta, params.kmerseek_search_image ?: image)
             }
 
         // Rebuild (species, tool, variant) from the filename. The process emits a bare

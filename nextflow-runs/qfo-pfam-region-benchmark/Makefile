@@ -48,6 +48,19 @@ RB_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(RB_IMAGE_TAG)
 # The kmerseek commit that added polarity4 and funcgroups8.
 RB_REQUIRED_SHA ?= dd630a8
 
+# A THIRD kmerseek image, carrying --extend-mismatch-penalty (kmerseek PR #54, 31b510f).
+# Same reasoning as RB_IMAGE_TAG: bumping IMAGE_TAG would rehash every kmerseek task in the
+# sweep. This one is passed as --kmerseek_search_image, so only kmerseekSearch runs under
+# it, and only the extended arm's searches -- which have new filenames anyway -- are new
+# work. Indexes are storeDir hits and never consult the container.
+EXT_IMAGE_TAG    ?= 2026-09-13-extend-mismatch
+EXT_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(EXT_IMAGE_TAG)
+# Built from its own worktree, not KMERSEEK_SRC: the flag lives on olgabot/extend-mismatch
+# until PR #54 lands, and pointing KMERSEEK_SRC at it would silently change what
+# build-image produces for everything else.
+KMERSEEK_EXT_SRC ?= /Users/olga/code/kmerseek/.claude/worktrees/extend-mismatch
+EXT_REQUIRED_SHA ?= 31b510f
+
 METAPREDICT_TAG    ?= 2026-08-27
 METAPREDICT_REMOTE := docker.io/olgabot/metapredict:$(METAPREDICT_TAG)
 FOLDDISCO_TAG    ?= 2026-08-20-noentrypoint
@@ -346,6 +359,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
         build-image-rannon-burstein push-image-rannon-burstein \
+        build-image-extend push-image-extend run-midi-plus-extend \
         run-rannon-burstein multiqc-rannon-burstein \
         pull-report pull-report-mini pull-report-midi \
         purge-empty-kmerseek-regions
@@ -355,6 +369,8 @@ help:
 	@echo "  build-image           Build the amd64 Kmerseek image for Sherlock"
 	@echo "  build-image-local     Build the native Kmerseek image for local Docker"
 	@echo "  push-image            Push the Kmerseek image to Docker Hub"
+	@echo "  push-image-extend     Push the kmerseek image with --extend-mismatch-penalty"
+	@echo "  run-midi-plus-extend  Extended-seed k ladder for one alphabet, resumed in run-midi-plus"
 	@echo "  push-image-rannon-burstein"
 	@echo "                        Push a SECOND Kmerseek image carrying polarity4 and"
 	@echo "                        funcgroups8, under its own tag so the running sweep's"
@@ -586,6 +602,31 @@ push-image-rannon-burstein: build-image-rannon-burstein
 	$(call require_mac)
 	docker tag kmerseek-region:rannon-burstein $(RB_IMAGE_REMOTE)
 	docker push $(RB_IMAGE_REMOTE)
+
+# The image with seed extension. Same Dockerfile, a different source worktree (see
+# KMERSEEK_EXT_SRC), and the same ancestry check as build-image-rannon-burstein: an image
+# built from a worktree without 31b510f would push, prefetch and launch, then fail every
+# extended search on "unexpected argument '--extend-mismatch-penalty'" after the queue wait.
+build-image-extend:
+	$(call require_mac)
+	@if ! git -C $(KMERSEEK_EXT_SRC) merge-base --is-ancestor $(EXT_REQUIRED_SHA) HEAD; then \
+	  echo ""; \
+	  echo "  $(KMERSEEK_EXT_SRC) is at $$(git -C $(KMERSEEK_EXT_SRC) rev-parse --short HEAD),"; \
+	  echo "  which does not contain $(EXT_REQUIRED_SHA) -- the commit that added"; \
+	  echo "  --extend-mismatch-penalty. An image built from it would not have the flag."; \
+	  echo ""; \
+	  exit 1; \
+	fi
+	@echo "building $(EXT_IMAGE_REMOTE) from kmerseek $$(git -C $(KMERSEEK_EXT_SRC) rev-parse HEAD)"
+	docker build --platform $(DOCKER_PLATFORM) -t kmerseek-region:extend \
+	  --build-arg GIT_SHA=$$(git -C $(KMERSEEK_EXT_SRC) rev-parse HEAD) \
+	  -f Dockerfile \
+	  $(KMERSEEK_EXT_SRC)
+
+push-image-extend: build-image-extend
+	$(call require_mac)
+	docker tag kmerseek-region:extend $(EXT_IMAGE_REMOTE)
+	docker push $(EXT_IMAGE_REMOTE)
 
 # Native-arch build, for running the mini set on this Mac. The amd64 image above cannot
 # execute here: polars requires AVX2, Apple Silicon emulation does not provide it, and the
@@ -1710,6 +1751,60 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(MIDI_PLUS_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus, extended arm ----------------------------------------------
+#
+# The same 998 queries and nine targets as run-midi-plus, searched with kmerseek's seed
+# extension (--extend-mismatch-penalty, kmerseek PR #54) on a k ladder for one 2-letter
+# alphabet. The question it answers is the identity panel's: does letting a region span
+# class flips move recall at 20-40% identity, where the exact arm scores zero (notebooks
+# 230 and 232 in this repo say the ceiling is the primitive, not the biology).
+#
+# Runs IN run-midi-plus's directory with -resume, deliberately. The baselines are not on
+# storeDir, so a fresh run directory would recompute HHblits, phmmer and the rest from
+# scratch; resuming in the directory that already ran them makes every baseline a cache
+# hit, the extended searches the only new kmerseek work, and the scoring and report re-run
+# over the extended arm plus the baselines. The exact kmerseek arms are NOT in this run
+# (--kmerseek_combos names only the extended ladder) and stay untouched in the store; put
+# them beside the extended arm in a notebook from the previous aggregate.
+#
+# The cost, as for run-midi-plus-all-qfo: aggregateMetrics publishes into the shared
+# outdir, so this REPLACES run-midi-plus's aggregate and report. `make pull-report-midi-plus`
+# first if you want to keep them.
+#
+# Memory: the QfO HP sweep floor is k=18 for a reason -- a 2-letter alphabet at k=12 shares
+# k-mers with most of a proteome (on SCOPe40, ~11,500 target pairs and 22 M regions per 300
+# queries, 17 GB RSS). kmerseekSearchMemory grades on keyspace bits and will start these
+# low; the retry ladder doubles on a kill. Start with EXT_COMBOS as set and add k=10 only
+# once k=12 has run.
+EXT_COMBOS  ?= hp_thomas_dill2:12,hp_thomas_dill2:15,hp_thomas_dill2:19,hp_thomas_dill2:23
+EXT_PENALTY ?= 2
+
+run-midi-plus-extend: PREFETCH_CONTAINERS := $(EXT_IMAGE_REMOTE) $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus-extend: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi-plus
+	cd run-midi-plus && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image          $(IMAGE_REMOTE) \
+	    --kmerseek_search_image   $(EXT_IMAGE_REMOTE) \
+	    --kmerseek_extend_penalty $(EXT_PENALTY) \
+	    --kmerseek_combos         $(EXT_COMBOS) \
 	    --qfo_dir         ../data/midi-plus/qfo \
 	    --annotations     ../data/midi-plus/annotations \
 	    --structures      ../data/midi-plus/structures \

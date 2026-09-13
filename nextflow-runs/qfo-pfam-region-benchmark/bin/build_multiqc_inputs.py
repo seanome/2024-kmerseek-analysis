@@ -3256,7 +3256,9 @@ def alphabet_classes(alphabet: str) -> int:
     Every alphabet was renamed in kmerseek PR #43 to state its class count, so the name is
     the authority. Anything unparsable sorts last rather than raising.
     """
-    m = re.search(r"(\d+)$", alphabet)
+    # A search arm run with --kmerseek_extend_penalty carries the penalty as a suffix
+    # (hp_thomas_dill2_ext2); the class count is the alphabet's, not the penalty.
+    m = re.search(r"(\d+)$", re.sub(r"_ext\d+$", "", alphabet))
     return int(m.group(1)) if m else 10_000
 
 
