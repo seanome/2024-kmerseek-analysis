@@ -49,18 +49,18 @@ RB_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(RB_IMAGE_TAG)
 RB_REQUIRED_SHA ?= dd630a8
 
 # A THIRD kmerseek image, carrying --extend-mismatch-penalty and the Karlin-Altschul
-# E-value (kmerseek PR #54, bd120d3).
+# E-value and colinear chaining (kmerseek PR #54, 92aa969).
 # Same reasoning as RB_IMAGE_TAG: bumping IMAGE_TAG would rehash every kmerseek task in the
 # sweep. This one is passed as --kmerseek_search_image, so only kmerseekSearch runs under
 # it, and only the extended arm's searches -- which have new filenames anyway -- are new
 # work. Indexes are storeDir hits and never consult the container.
-EXT_IMAGE_TAG    ?= 2026-09-13-extend-mismatch
+EXT_IMAGE_TAG    ?= 2026-09-13-extend-chain
 EXT_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(EXT_IMAGE_TAG)
 # Built from its own worktree, not KMERSEEK_SRC: the flag lives on olgabot/extend-mismatch
 # until PR #54 lands, and pointing KMERSEEK_SRC at it would silently change what
 # build-image produces for everything else.
 KMERSEEK_EXT_SRC ?= /Users/olga/code/kmerseek/.claude/worktrees/extend-mismatch
-EXT_REQUIRED_SHA ?= bd120d3
+EXT_REQUIRED_SHA ?= 92aa969
 
 METAPREDICT_TAG    ?= 2026-08-27
 METAPREDICT_REMOTE := docker.io/olgabot/metapredict:$(METAPREDICT_TAG)
@@ -1800,6 +1800,10 @@ EXT_PENALTY ?= 2
 # for hp_thomas_dill at k=12, penalty 2; other ladders need their own fit.
 EXT_RANK_BY    ?= region_ka_bits
 EXT_MAX_EVALUE ?= 1
+# Chain colinear regions up to 30 residues apart within 10 diagonals before transfer, so a
+# domain no single run covers can still carry its label (the transfer rule needs half of it).
+EXT_CHAIN_GAP   ?= 30
+EXT_CHAIN_SHIFT ?= 10
 
 run-midi-plus-extend: PREFETCH_CONTAINERS := $(EXT_IMAGE_REMOTE) $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus-extend: prefetch-images midi-plus-testset-sherlock
@@ -1814,6 +1818,8 @@ run-midi-plus-extend: prefetch-images midi-plus-testset-sherlock
 	    --kmerseek_combos         $(EXT_COMBOS) \
 	    --kmerseek_rank_by        $(EXT_RANK_BY) \
 	    --kmerseek_max_evalue     $(EXT_MAX_EVALUE) \
+	    --kmerseek_chain_max_gap   $(EXT_CHAIN_GAP) \
+	    --kmerseek_chain_max_shift $(EXT_CHAIN_SHIFT) \
 	    --qfo_dir         ../data/midi-plus/qfo \
 	    --annotations     ../data/midi-plus/annotations \
 	    --structures      ../data/midi-plus/structures \

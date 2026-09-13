@@ -167,6 +167,11 @@ params.kmerseek_extra_image = null
 // Integers only: the value is spelled into filenames, and 2 and 2.0 would be two arms.
 params.kmerseek_extend_penalty = 0
 params.kmerseek_extend_xdrop   = 8
+// Chain colinear extended regions (kmerseek --chain-max-gap / --chain-max-shift, 92aa969)
+// so a domain that one gapless run cannot cover becomes one call for transfer. Both 0 =
+// off. Only emitted with the extension flags, for the same image-compatibility reason.
+params.kmerseek_chain_max_gap   = 0
+params.kmerseek_chain_max_shift = 0
 // The image kmerseekSearch runs under, when it must differ from the one the indexes were
 // built with. The extended arm needs a kmerseek build that has --extend-mismatch-penalty;
 // the indexes are storeDir hits and never consult the container, so leaving
@@ -1754,7 +1759,8 @@ process kmerseekSearch {
     // Emitted only when set, so an image that predates the flags still runs the exact arm.
     def penalty   = params.kmerseek_extend_penalty as int
     def ext_flags = penalty > 0
-        ? "--extend-mismatch-penalty ${penalty} --extend-xdrop ${params.kmerseek_extend_xdrop}"
+        ? "--extend-mismatch-penalty ${penalty} --extend-xdrop ${params.kmerseek_extend_xdrop}" +
+          " --chain-max-gap ${params.kmerseek_chain_max_gap} --chain-max-shift ${params.kmerseek_chain_max_shift}"
         : ""
     """
     set -euo pipefail
