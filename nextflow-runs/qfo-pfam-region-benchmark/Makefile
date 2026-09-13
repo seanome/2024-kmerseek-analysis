@@ -1833,7 +1833,13 @@ run-midi-plus-band: prefetch-images midi-plus-testset-sherlock
 # MMseqs2 and HHblits for every one of these species and 198 of 203 kmerseek searches
 # each (checked 2026-09-13), so with the band combos and -resume the new work is scoring
 # and the report. Foldseek ran only where AlphaFold models were staged (rat); fetch
-# structures for the others before expecting a Foldseek row.
+# structures for the others before expecting a Foldseek row:
+#   for s in ptroglodytes clupus btaurus mdomestica xtropicalis; do make fetch-structures SPECIES_ONE=$s; done
+#
+# --allow_thin_targets: opossum has 35 UniProtKB/Swiss-Prot entries (ciona 23), so the
+# Swiss-Prot truth set's thin-annotation gate stops aggregateMetrics on this species set
+# (it did, 2026-09-13 16:06). Pfam is the truth set the ladder is read on; the Swiss-Prot
+# columns for mdomestica and ciona are annotation-limited and the report says so.
 LADDER_TARGETS ?= ptroglodytes,rnorvegicus,clupus,btaurus,mdomestica,xtropicalis,$(MIDI_TARGETS)
 
 # Stage every proteome, as the all-QfO run did: the staging is symlinks and it is what
@@ -1851,6 +1857,7 @@ run-midi-plus-ladder: prefetch-images midi-plus-testset-sherlock
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
 	    --kmerseek_combos $(BAND_COMBOS) \
 	    $(BAND_STRUCT_ARGS) \
+	    --allow_thin_targets true \
 	    --qfo_dir         ../data/midi-plus/qfo \
 	    --annotations     ../data/midi-plus/annotations \
 	    --structures      ../data/midi-plus/structures \
