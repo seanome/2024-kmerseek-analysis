@@ -153,6 +153,23 @@ params.kmerseek_extra_encodings = false
 // already has the alphabets wants.
 params.kmerseek_extra_image = null
 params.kmerseek_combos    = null
+// Sweep only the (target, combo) cells whose search result is already in the store, and
+// launch no new search. For finishing a run whose remaining searches are the ones that
+// cannot finish. On 2026-09-11 run-midi-plus had every arm scored except 16 gbmr7 k9-k11
+// searches that were OOM-killed at 96, 192 and 288 GB and then ignored, and a plain
+// -resume would have run all sixteen through the same three attempts, about three hours
+// each, before ignoring them again and letting the report build. An ignored search leaves
+// the store empty on purpose (see kmerseekSearch), so "not in the store" is exactly "did
+// not finish", and this says so without naming cells.
+//
+// Per cell, not per combo: yeast, ecoli and ciona finished gbmr7 ksizes the larger
+// proteomes could not, and those results stay in the sweep. The per-arm counts are taken
+// from the same filtered list, so a scoring group closes on the cells that will arrive
+// rather than waiting for the whole search channel to end.
+//
+// An error when the store holds nothing, because on a fresh --outdir this would otherwise
+// sweep nothing and build a report over it.
+params.kmerseek_stored_only = false
 
 // Low-complexity k-mer removal. Swept as a toggle when it was an open question -- every
 // alphabet and ksize with and without it, which doubled the search count -- and now fixed
@@ -760,10 +777,49 @@ workflow.onError {
 // ends at `finish`, so a task that cannot be made to work costs its own arm and nothing
 // else. `retries` still has to match the process's own maxRetries, which is the number
 // that actually bounds the attempts.
-def retryOnKill = { task, int retries = 2 ->
+//
+// The kill test itself lives in killedByCluster so that retryOnKillElseIgnore below can
+// share it rather than restate the three conditions and drift.
+def killedByCluster = { task ->
     def status = task.exitStatus
-    def killed = status == null || status == Integer.MAX_VALUE || status in 128..143
-    (killed && task.attempt <= retries) ? 'retry' : 'finish'
+    status == null || status == Integer.MAX_VALUE || status in 128..143
+}
+
+def retryOnKill = { task, int retries = 2 ->
+    (killedByCluster(task) && task.attempt <= retries) ? 'retry' : 'finish'
+}
+
+// kmerseekSearch's variant: a kill that has used up its retries is ignored, not finished.
+//
+// retryOnKill hands an exhausted kill to `finish`, which stops the run. For every other
+// process that is right, but for the search sweep it is not. A reduced-alphabet combo at
+// low k (gbmr7 k9-12, gbmr4 k12-13, polarity4 k10-13 on the 2026-09-10 run) can be
+// infeasible on the memory it can get, and an infeasible combo is an expected outcome of
+// sweeping alphabet against ksize, not a broken run. Stopping the run on it strands every
+// other arm behind it.
+//
+// Ignoring is safe here because of how kmerseekSearch fails. Its script re-raises a
+// signal exit of kmerseek itself (see the note in the script), so a killed search
+// produces no regions parquet and storeDir stays empty for that combo. An ignored task
+// emits nothing, so the arm never reaches scoreDomainCalls, and a later -resume finds
+// the store empty and runs the search again. A missing arm is honest. What the pipeline
+// did before this was store the kill as a zero-byte parquet, which storeDir then served
+// as "done" on every later run and scoring read as recall 0 forever: 178 of the 227
+// empty region files on the 2026-09-10 run were exit 137, not empty results.
+//
+// Memory sizing is what makes the retries worth having: kmerseekSearchMemory multiplies
+// by task.attempt under a params.kmerseek_memory_max of 128 GB, and hns has 15 nodes with
+// 1 to 1.5 TB, so attempts 2 and 3 (256 and 384 GB) can be placed.
+//
+// A non-kill failure still goes to `finish`. A script error is a bug, and a bug must stop
+// the run rather than quietly cost an arm.
+def retryOnKillElseIgnore = { task, int retries = 2 ->
+    if (!killedByCluster(task)) return 'finish'
+    if (task.attempt <= retries) return 'retry'
+    log.warn "${task.process} (${task.tag}) was killed on attempt ${task.attempt} of " +
+             "${retries + 1} at ${task.memory}; ignoring it. Nothing is stored for this " +
+             "combo, so -resume will try it again."
+    'ignore'
 }
 
 // Shell helpers both kmerseek processes paste into their scripts to time themselves.
@@ -832,9 +888,10 @@ params.score_memory_per_mb = 120     // MB of RAM per compressed MB of regions
 params.score_memory_max    = '96 GB' // the old flat value, now a ceiling rather than a floor
 // The ceiling AFTER the retry multiplier, which matters now that every failure retries and
 // not just a signal. Retries double the ask, so a task starting at the 96 GB cap would be
-// asking for 384 GB on its last attempt -- more than any node on `hns` has, and SLURM
-// rejects a job it cannot ever place instead of queueing it. Raise this only against
-// `sinfo -p hns -o '%n %m'`.
+// asking for 384 GB on its last attempt. Only 15 of hns's 136 nodes have that much (12 at
+// 1 TB, 3 at 1.5 TB; the other 121 are 192-256 GB, per `sinfo -p hns -N -o '%m'` on
+// 2026-09-11), so such a task waits for one of those fifteen behind every other big job.
+// Raise this only after checking that output again.
 params.score_memory_retry_max = '128 GB'
 
 // How finely scoreDomainCalls batches its arms. One task per species put all ~415 arms of
@@ -1624,13 +1681,15 @@ process kmerseekSearch {
     storeDir "${params.outdir}/kmerseek"
 
     memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
-    // Retry cluster kills only (see retryOnKill), stop on anything else. Deliberately not
-    // 'ignore': a combo that dies and gets skipped leaves an empty result that reads
-    // downstream as "this alphabet found nothing", which is indistinguishable from a real
-    // negative. That has already happened once on this project -- 17 combos silently
-    // searched ~1000 of 19,696 queries and looked like genuine misses. Failing loudly and
-    // resuming costs queue time; a silent partial costs a wrong conclusion.
-    errorStrategy { retryOnKill(task) }
+    // Retry cluster kills, ignore a kill that has used up its retries, stop on anything
+    // else (see retryOnKillElseIgnore). Ignoring a kill is safe only because the script
+    // below re-raises kmerseek's own signal exit instead of storing it as a no-hit result:
+    // an ignored task writes nothing to the store, so the arm is absent from scoring rather
+    // than present as a zero, and -resume runs it again. A stored empty result is the
+    // dangerous case, and this project has produced it twice -- 17 combos that silently
+    // searched ~1000 of 19,696 queries and looked like misses, then 178 OOM kills stored as
+    // empty region files on the 2026-09-10 run.
+    errorStrategy { retryOnKillElseIgnore(task) }
     maxRetries 2
 
     input:
@@ -1699,11 +1758,22 @@ process kmerseekSearch {
     _cmd_s=\$(_elapsed_s \$_cmd_t0)
     set -e
 
-    # kmerseek's own nonzero exit stays tolerated: a combo that finds nothing is a real
-    # result. zstd's does NOT. It used to share this `|| true`, so "cannot write block:
-    # Cannot allocate memory" left a truncated .zst that polars read as far as it could
-    # before dying on "incomplete frame" -- a memory failure surfacing as a parquet error
-    # two steps later. Re-raise it as a signal so the retry ladder doubles the allocation.
+    # kmerseek's own nonzero exit stays tolerated, with one exception: a combo that finds
+    # nothing is a real result, a search that died by signal is not. 128..143 is how bash
+    # reports a signal death, and 137 is the cgroup OOM killer. The killer takes the
+    # kmerseek process, the shell survives, and until this check the shell went on to
+    # write an empty parquet into storeDir, where it counted as done and nothing would ever
+    # re-run it: 178 of the 227 empty region files on the 2026-09-10 run were exit 137.
+    # Re-raising the same status lets errorStrategy see the kill and double the memory.
+    if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then
+        echo "kmerseek search died by signal (exit \${rc[0]}); not a no-hit result" >&2
+        exit "\${rc[0]}"
+    fi
+    # zstd's nonzero exit is NOT tolerated either. It used to share the `|| true`, so
+    # "cannot write block: Cannot allocate memory" left a truncated .zst that polars read as
+    # far as it could before dying on "incomplete frame" -- a memory failure surfacing as a
+    # parquet error two steps later. Re-raise it as a signal so the retry ladder doubles
+    # the allocation.
     if [ "\${rc[1]}" -ne 0 ]; then
         echo "zstd exited \${rc[1]}: the region stream is truncated, not a short result" >&2
         exit 137
@@ -3548,7 +3618,40 @@ workflow {
             Channel.of(tuple("swissprot", 1)).combine(sprot.truth)
                 .map { label, _i, t -> tuple(label, t) }
         )
-        map_ch = map_ch.mix(map_of(sprot.maps).map { sp, m -> tuple("swissprot", sp, m) })
+        // A proteome with no reviewed Swiss-Prot entries still gets a
+        // <species>_domain_map.parquet, with the right columns and no rows, because the
+        // script writes one per annotated species. Scoring refuses an empty map on purpose
+        // (evaluate_domain_calls.py, "empty domain map"): for Pfam it means the target
+        // annotation was never built, and the scorer has no way to tell that apart from a
+        // proteome nobody has curated. On the 77-species run pramorum and loculatus had
+        // n_features 0, scoreDomainCalls failed on both, and the `finish` that followed
+        // stopped every scoring task that had not started yet.
+        //
+        // The gate lives here rather than in either script because buildSwissprotTruth's
+        // outputs are inputs to hundreds of cached scoring tasks, and a bin/ script named
+        // in a task's command is part of that task's hash. Dropping the species from the
+        // channel changes only its own tasks' inputs. truth_bundle gathers whatever maps
+        // a species has, so a dropped species is scored against Pfam alone, the same way
+        // a species with no pfamn map already is.
+        sprot_features = sprot.summary.map { f ->
+            new groovy.json.JsonSlurper().parseText(f.text)
+                .findAll { _k, v -> v instanceof Map && v.containsKey('n_features') }
+                .collectEntries { k, v -> [k, v.n_features] }
+        }
+        map_ch = map_ch.mix(
+            map_of(sprot.maps).combine(sprot_features)
+                .filter { sp, _m, n_features ->
+                    def keep = (n_features[sp] ?: 0) > 0
+                    if (!keep) {
+                        log.warn "swissprot arm skipped for ${sp}: the proteome has no " +
+                                 "reviewed Swiss-Prot entries, so its domain map has no " +
+                                 "rows and scoring it would publish an all-zero result. " +
+                                 "It is scored against the other truth sets only."
+                    }
+                    keep
+                }
+                .map { sp, m, _n -> tuple("swissprot", sp, m) }
+        )
     } else {
         log.warn "swissprot_dat not found (${params.swissprot_dat}) -- running without the " +
                  "Swiss-Prot truth arm. Pfam is circular with the profile baselines; see README."
@@ -3740,6 +3843,33 @@ workflow {
                   "and the second fails at unstage. Check --kmerseek_combos and " +
                   "--kmerseek_encodings for repeats."
         }
+        // One key for a (target, combo) cell, shared by the store filter, the count and
+        // the index/search rejoin below, so none of them can name a cell differently.
+        def comboKey = { sp, lab, k, lc -> "${sp}|${lab}|${k}|${lc}".toString() }
+
+        // Every cell the sweep will search: each target against each combo. Under
+        // --kmerseek_stored_only this is cut down to the cells already in the store
+        // BEFORE anything is counted or logged, so the arm counts and the startup line
+        // describe the searches that will actually arrive.
+        def cells = SPECIES*.label.collectMany { sp ->
+            combos.collect { cli_flag, label, k, lc -> tuple(sp, cli_flag, label, k, lc) }
+        }
+        def skipped = []
+        if (params.kmerseek_stored_only) {
+            // The same path kmerseekSearch's storeDir and output name resolve to. An
+            // ignored search leaves nothing here, so exists() is "finished".
+            def stored = { sp, label, k, lc ->
+                file("${params.outdir}/kmerseek/human_vs_${sp}.${label}.k${k}.lc${lc}.regions.parquet").exists()
+            }
+            (cells, skipped) = cells.split { sp, _cli, label, k, lc -> stored(sp, label, k, lc) }
+            if (!cells) {
+                error "--kmerseek_stored_only, but ${params.outdir}/kmerseek holds none of the " +
+                      "${skipped.size()} searches this sweep names. The flag finishes a run " +
+                      "that already searched; it cannot start one."
+            }
+        }
+        def keep = cells.collect { sp, _cli, label, k, lc -> comboKey(sp, label, k, lc) } as Set
+
         // Spell out the query/target asymmetry at startup. "2 species" reading as
         // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
         // this line exists to prevent.
@@ -3752,18 +3882,24 @@ workflow {
         |            each named human_vs_<target>, e.g. human_vs_${SPECIES[0].label}
         |  spectra : one k-mer frequency spectrum per combo, published for plotting
         """.stripMargin()
+        if (params.kmerseek_stored_only) {
+            log.info "  --kmerseek_stored_only: ${cells.size()} searches are in the store, " +
+                     "${skipped.size()} are not and will not run:\n" +
+                     skipped.collect { sp, _cli, label, k, lc ->
+                         "    human_vs_${sp} ${label} k${k} lc${lc}"
+                     }.join('\n')
+        }
 
         // Counted per alphabet rather than in one lump, because that is the grain the
         // groups are keyed at. groupBy runs on the combo's own label -- the same field the
         // result filename carries and scoreGroup reads back out of it -- so the count and
-        // the key cannot name different things.
-        if (params.score_group_by == 'alphabet') {
-            combos.groupBy { it[1] }.each { alphabet, cs ->
-                countArm(SPECIES*.label, kmerseekGroup(alphabet), cs.size())
-            }
-        } else {
-            countArm(SPECIES*.label, scoreGroup("kmerseek", null), combos.size())
-        }
+        // the key cannot name different things. Per target as well, because under
+        // --kmerseek_stored_only two targets can have finished different ksizes of one
+        // alphabet.
+        cells.groupBy { sp, _cli, label, _k, _lc ->
+            [sp, params.score_group_by == 'alphabet' ? kmerseekGroup(label)
+                                                     : scoreGroup("kmerseek", null)]
+        }.each { key, cs -> countArm([key[0]], key[1], cs.size()) }
         // Which image each combo runs under. Keyed on the alphabet's canonical name, the
         // same field KNOWN_ENCODINGS is looked up by, so an alphabet cannot be in
         // EXTRA_ENCODINGS and still be handed the older image. Falls back to the one image
@@ -3775,6 +3911,9 @@ workflow {
                 ? params.kmerseek_extra_image : params.kmerseek_image
         }
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
+            .filter { species, _fasta, _cli, label, ksize, lowcomp ->
+                comboKey(species, label, ksize, lowcomp) in keep
+            }
             .map { species, fasta, cli_flag, label, ksize, lowcomp ->
                 tuple(species, fasta, cli_flag, label, ksize, lowcomp, imageFor(cli_flag))
             }
@@ -3786,8 +3925,6 @@ workflow {
         // joined back against the input channel. That recovers cli_flag and the target
         // FASTA size, neither of which survives in the name, without reparsing either out
         // of a filename that was never meant to carry them.
-        def comboKey = { sp, lab, k, lc -> "${sp}|${lab}|${k}|${lc}" }
-
         combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp, image ->
             tuple(comboKey(species, label, ksize, lowcomp),
                   species, cli_flag, label, ksize, lowcomp, fasta.size(), image)
@@ -4199,7 +4336,10 @@ workflow {
         // over-counts, the group never reaches its size and would hang forever; with
         // remainder it is released at channel close instead, which is exactly the
         // behaviour this change replaces. An under-count still emits early, which is why
-        // the count is accumulated beside the arms rather than restated.
+        // the count is accumulated beside the arms rather than restated. A kmerseekSearch
+        // that retryOnKillElseIgnore ignored is now one way a group comes up short: the
+        // ignored task emits nothing, the group is counted for it anyway, and remainder
+        // releases the group with that arm missing once the channel closes.
         .groupTuple(by: 0, remainder: true)
         .map { key, tools, variants, myas, regions, covs, idents, tdiss, rpls, rdiss ->
             // Same .first() as the other three: these are one file for the whole run, so
