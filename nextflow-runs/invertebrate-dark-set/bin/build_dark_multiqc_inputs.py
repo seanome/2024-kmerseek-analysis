@@ -374,6 +374,8 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
     pairs = pick(gain, "mask_pairs", default=[]) or []
     combos = pick(gain, "by_combo", default=[]) or []
 
+    section_kmerseek_sweep(out, species, combos, dark_n, omitted)
+
     # Every combo that has only one mask setting measured. Drawn alone, a mask-OFF bar
     # would present a composition artifact as a result, so these are named and dropped.
     seen: dict[tuple, set] = {}
@@ -394,10 +396,11 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
             f"artifact, so it is not drawn.")
 
     if not pairs:
-        omitted.add("kmerseek reach in the dark set",
+        omitted.add("kmerseek mask pair",
                     "the kmerseek arm ran but no alphabet/ksize combo has BOTH mask "
-                    "settings, and a single mask setting drawn alone would present a "
-                    "possible composition artifact as a result. "
+                    "settings, so the paired panel is not drawn: a single mask setting "
+                    "alone cannot separate a rescue from a composition artifact. The "
+                    "reach-by-k panels above still show what ran. "
                     + (f"Combos with one side only: "
                        f"{', '.join(f'{a} k{k}' for a, k in sorted(unpaired, key=str))}."
                        if unpaired else "No combos were scored at all."))
@@ -486,6 +489,113 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
                                       "format": "{:,.4f}", "min": 0, "max": 1},
             "fraction_dark_mask_off": {"title": "fraction of dark, mask OFF",
                                        "format": "{:,.4f}", "min": 0, "max": 1},
+        },
+        "data": table,
+    })
+
+
+def section_kmerseek_sweep(out: Path, species: str, combos: list[dict], dark_n,
+                           omitted: Omitted) -> None:
+    """Reach against ksize, one line per alphabet, dark and placed side by side.
+
+    Drawn only when some alphabet was run at more than one ksize: the two-combo default
+    run has nothing to put on a k axis, and the mask-pair panel already shows it.
+
+    The placed panel is what keeps the dark panel honest. "Reached" saturates: on
+    Botryllus hp_thomas_dill2 k23 put a region on every one of the 45_339 proteins, dark
+    and placed alike, which is an arm reporting something for everything rather than a
+    rescue. Read the two panels together -- the k where the placed fraction begins to
+    fall away from 1.0 is the k from which the dark fraction starts to mean anything, and
+    an alphabet whose dark line sits well under its placed line is discriminating.
+    """
+    by_lc: dict[bool, dict[str, dict[int, dict]]] = {}
+    for row in combos:
+        a, k = row.get("alphabet"), row.get("ksize")
+        if a is None or k is None:
+            continue
+        by_lc.setdefault(bool(row.get("low_complexity_mask")), {}) \
+             .setdefault(a, {})[int(k)] = row
+    swept = any(len(ks) > 1 for arms in by_lc.values() for ks in arms.values())
+    if not swept:
+        return
+
+    table = {}
+    for lc in sorted(by_lc, reverse=True):
+        arms = by_lc[lc]
+        suffix = "on" if lc else "off"
+        dark_lines = {a: {k: r.get("fraction_dark_reached") for k, r in sorted(ks.items())}
+                      for a, ks in sorted(arms.items())}
+        placed_lines = {a: {k: r.get("fraction_placed_reached") for k, r in sorted(ks.items())}
+                        for a, ks in sorted(arms.items())}
+        for a, ks in sorted(arms.items()):
+            for k, r in sorted(ks.items()):
+                table[f"{a} k{k} mask {suffix.upper()}"] = {
+                    "dark_reached": r.get("dark_reached"),
+                    "fraction_dark_reached": r.get("fraction_dark_reached"),
+                    "placed_reached": r.get("placed_reached"),
+                    "fraction_placed_reached": r.get("fraction_placed_reached"),
+                }
+        has_placed = any(v is not None for line in placed_lines.values() for v in line.values())
+
+        write_section(out, f"dark_kmerseek_sweep_{suffix}", {
+            "id": f"dark_kmerseek_sweep_{suffix}",
+            "section_name": f"kmerseek reach by alphabet and k, mask {suffix.upper()}",
+            "description": (
+                f"<p>Fraction of the {num(dark_n)} dark proteins with any kmerseek region, "
+                f"against ksize, one line per alphabet, low-complexity mask {suffix.upper()}."
+                f"</p>"
+                + bullets(
+                    "<b>A line at 1.0 is saturation, not rescue.</b> An arm that reports a "
+                    "region for every dark protein reports one for every placed protein "
+                    "too; see the placed panel that follows. The k where the placed line "
+                    "starts to fall away from 1.0 is the k from which this line means "
+                    "anything.",
+                    "<b>Reach is not accuracy.</b> A region on a dark protein says kmerseek "
+                    "found something there, not that the family label is right; that "
+                    "needs the structural key.")),
+            "plot_type": "linegraph",
+            "pconfig": {"id": f"dark_kmerseek_sweep_{suffix}_plot",
+                        "title": f"{species}: dark proteins reached vs k, mask {suffix.upper()}",
+                        "xlab": "ksize", "ylab": "fraction of dark proteins reached",
+                        "ymin": 0, "ymax": 1},
+            "data": dark_lines,
+        })
+        if has_placed:
+            write_section(out, f"dark_kmerseek_sweep_placed_{suffix}", {
+                "id": f"dark_kmerseek_sweep_placed_{suffix}",
+                "section_name": f"the same on the PLACED proteins, mask {suffix.upper()}",
+                "description": (
+                    "<p>Fraction of the proteins some sequence arm DID place that kmerseek "
+                    "also put a region on, against ksize. These are proteins with a known "
+                    "homolog in the reference, so this line is the closest thing to "
+                    "sensitivity a run without an answer key has.</p>"
+                    + bullets(
+                        "<b>Read it against the dark panel above.</b> An alphabet whose dark "
+                        "line sits well under its placed line is discriminating; one where "
+                        "the two coincide is reporting on composition, not homology.")),
+                "plot_type": "linegraph",
+                "pconfig": {"id": f"dark_kmerseek_sweep_placed_{suffix}_plot",
+                            "title": f"{species}: placed proteins reached vs k, mask {suffix.upper()}",
+                            "xlab": "ksize", "ylab": "fraction of placed proteins reached",
+                            "ymin": 0, "ymax": 1},
+                "data": placed_lines,
+            })
+
+    write_section(out, "dark_kmerseek_sweep_table", {
+        "id": "dark_kmerseek_sweep_table",
+        "section_name": "Reach by alphabet and k, as numbers",
+        "description": "<p>Every combo of the sweep, dark and placed reach side by side.</p>",
+        "plot_type": "table",
+        "pconfig": {"id": "dark_kmerseek_sweep_table_plot",
+                    "title": f"{species}: reach per combo",
+                    "col1_header": "alphabet, ksize, mask", "sort_rows": False},
+        "headers": {
+            "dark_reached": {"title": "dark reached", "format": "{:,.0f}"},
+            "fraction_dark_reached": {"title": "fraction of dark", "format": "{:,.4f}",
+                                      "min": 0, "max": 1},
+            "placed_reached": {"title": "placed reached", "format": "{:,.0f}"},
+            "fraction_placed_reached": {"title": "fraction of placed", "format": "{:,.4f}",
+                                        "min": 0, "max": 1},
         },
         "data": table,
     })

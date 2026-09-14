@@ -36,6 +36,12 @@ process compareDarkLengths {
           path("${species}_length_comparison.parquet"),
           path("${species}_length_summary.json")
 
+    stub:
+    """
+    touch ${species}_length_comparison.parquet
+    echo '{"species": "${species}"}' > ${species}_length_summary.json
+    """
+
     script:
     """
     set -euo pipefail

@@ -22,15 +22,21 @@ process buildDarkMultiqcInputs {
     publishDir "${params.outdir}/${species}/multiqc", mode: 'copy'
 
     input:
-    tuple val(species), path(dark_summary)
     // stageAs with a bare `*` so every file keeps its published name. That is not
     // cosmetic: which arm a file came from is carried ONLY in the filename, and a rename
     // to input.1, input.2 would leave the script unable to tell a length parquet from a
-    // disorder one.
-    path extras, stageAs: 'extras/*'
+    // disorder one. `extras` is a list, and may be the empty list for a species that ran
+    // no optional arm.
+    tuple val(species), path(dark_summary), path(extras, stageAs: 'extras/*')
 
     output:
     tuple val(species), path("multiqc_in"), emit: sections
+
+    stub:
+    """
+    mkdir -p multiqc_in
+    ls extras 2>/dev/null > multiqc_in/staged.txt || true
+    """
 
     script:
     """
@@ -69,6 +75,12 @@ process darkMultiqcReport {
     // is what goes into a figure, and a work directory is not a place to keep one.
     path "${species}_dark_set_multiqc_plots", emit: plots
 
+    stub:
+    """
+    touch ${species}_dark_set_multiqc.html
+    mkdir -p ${species}_dark_set_multiqc_data ${species}_dark_set_multiqc_plots
+    """
+
     script:
     // Compute nodes on Sherlock have no outbound internet, so the update check has nothing
     // to reach and only costs a timeout. MPLCONFIGDIR keeps matplotlib's cache inside the
@@ -90,22 +102,18 @@ process darkMultiqcReport {
 /*
  * Both steps, wired.
  *
- * `dark_ch`  : tuple(species, <species>_dark_summary.json)  -- required
- * `extras_ch`: a channel emitting ONE list of optional files, already collected.
- *
- * The two arrive as separate input declarations rather than as one combined tuple, on
- * purpose. `.combine()` CONCATENATES tuples, so combining a (species, path) pair with a
- * channel carrying a collected list spreads that list into one long tuple and the process
- * is handed N positional arguments instead of a list. That exact bug already broke this
- * pipeline once, in kmerseekDarkGain. Two declarations cannot express it.
+ * `report_ch`: tuple(species, <species>_dark_summary.json, [optional files]) -- one per
+ * species. The list is the third element of the tuple rather than a separate collected
+ * channel: with several species in one run each species' report needs ITS OWN extras,
+ * which a single collected list cannot express, and `.join` on the species key is what
+ * pairs them. An empty list is a species that ran no optional arm.
  */
 workflow darkReportFrom {
     take:
-    dark_ch
-    extras_ch
+    report_ch
 
     main:
-    sections = buildDarkMultiqcInputs(dark_ch, extras_ch).sections
+    sections = buildDarkMultiqcInputs(report_ch).sections
     report = darkMultiqcReport(
         sections.map { sp, dir -> tuple(sp, dir, file(params.multiqc_dark_config)) })
 

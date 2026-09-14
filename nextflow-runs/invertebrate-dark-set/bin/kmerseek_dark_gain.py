@@ -14,6 +14,15 @@ large mask-off-only number is a negative result wearing a positive one's clothes
 This is REACH, not accuracy. A region on a dark protein says kmerseek found something
 there, not that the family label is right -- that needs the structural key. A number here
 is necessary for the claim and nowhere near sufficient.
+
+The PLACED set is counted next to the dark one, for the same combos, because reach alone
+saturates. On Botryllus, hp_thomas_dill2 k23 put a region on 20_448 of 20_448 dark
+proteins -- and on all 45_339 proteins of the proteome, which is not a rescue, it is an arm
+that reports something for everything. An arm that reaches 95% of the placed proteins and
+10% of the dark ones is discriminating; one that reaches 100% of both is saturated, and
+its dark number means nothing. The two columns side by side are what tell those apart,
+and across a ksize sweep the k where the placed fraction starts to fall is the k where
+the dark fraction starts to mean something.
 """
 
 import argparse
@@ -23,6 +32,16 @@ from pathlib import Path
 
 import polars as pl
 
+
+def query_accessions(fasta: Path) -> set[str]:
+    """First whitespace token of every header, verbatim -- the key every arm reports."""
+    accs = set()
+    with open(fasta) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                accs.add(line[1:].strip().split()[0])
+    return accs
+
 # <chunk>.<alphabet>.k<ksize>.lc<true|false>.queries.txt
 NAME = re.compile(r"^(?P<chunk>[^.]+)\.(?P<alphabet>.+)\.k(?P<ksize>\d+)\.lc(?P<lc>true|false)\.queries\.txt$")
 
@@ -31,6 +50,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dark", type=Path, required=True)
+    ap.add_argument("--query", type=Path, required=True,
+                    help="the proteome every arm searched; the placed set is this minus --dark")
     ap.add_argument("--species", required=True)
     ap.add_argument("--queries", type=Path, nargs="+", required=True)
     ap.add_argument("--out", type=Path, required=True)
@@ -38,6 +59,13 @@ def main() -> None:
     args = ap.parse_args()
 
     dark = set(pl.read_parquet(args.dark)["accession"].to_list())
+    proteome = query_accessions(args.query)
+    stray = dark - proteome
+    if stray:
+        raise SystemExit(
+            f"{len(stray)} dark accessions are not in {args.query} (e.g. "
+            f"{sorted(stray)[:3]}): the dark set and the proteome disagree on the key.")
+    placed = proteome - dark
     if not dark:
         raise SystemExit(
             f"the dark set for '{args.species}' is empty, so there is nothing for kmerseek "
@@ -62,12 +90,17 @@ def main() -> None:
     rows = []
     for (alphabet, ksize, lc), hit in sorted(combos.items()):
         rescued = hit & dark
+        seen_placed = hit & placed
         rows.append({
             "species": args.species, "alphabet": alphabet, "ksize": ksize,
             "low_complexity_mask": lc,
             "dark_proteins": len(dark),
             "dark_reached": len(rescued),
             "fraction_dark_reached": round(len(rescued) / len(dark), 4),
+            "placed_proteins": len(placed),
+            "placed_reached": len(seen_placed),
+            "fraction_placed_reached": (round(len(seen_placed) / len(placed), 4)
+                                        if placed else None),
             "queries_with_any_region": len(hit),
         })
     df = pl.DataFrame(rows)
@@ -89,6 +122,7 @@ def main() -> None:
             })
 
     summary = {"species": args.species, "dark_proteins": len(dark),
+               "placed_proteins": len(placed),
                "by_combo": rows, "mask_pairs": paired}
     print(json.dumps(summary, indent=2))
     if paired:

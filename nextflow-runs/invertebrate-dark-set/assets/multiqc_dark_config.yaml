@@ -65,6 +65,13 @@ report_section_order:
   # search sees, so this ordering has to hold before the headline means anything.
   dark_per_arm: { order: 20 }
   dark_per_arm_table: { order: 21 }
+  # The sweep, when an alphabet ran at more than one k: dark reach against k, then the
+  # same on the placed proteins (the saturation check), per mask setting, then the table.
+  dark_kmerseek_sweep_on: { order: 24 }
+  dark_kmerseek_sweep_placed_on: { order: 25 }
+  dark_kmerseek_sweep_off: { order: 26 }
+  dark_kmerseek_sweep_placed_off: { order: 27 }
+  dark_kmerseek_sweep_table: { order: 28 }
   # The reason the pipeline exists, and the only panel where the mask pair appears.
   dark_kmerseek_mask: { order: 30 }
   dark_kmerseek_mask_table: { order: 31 }

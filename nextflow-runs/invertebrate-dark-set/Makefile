@@ -9,11 +9,16 @@
 #
 #   make run-dark-set SPECIES=botryllus     full proteome
 #   make run-dark-set-mini SPECIES=botryllus  200 proteins, one node, sanity only
+#   make run-ladder-sweep-sbatch            the nine midi-plus QfO species, every
+#                                           alphabet x ksize, each against Swiss-Prot
+#                                           minus its own clade -- the scale the
+#                                           Botryllus number is read against
 #
 # The mini is a plumbing check, NOT a small answer: a dark fraction measured on 200
 # proteins is not the proteome's dark fraction.
 
 SHELL := /bin/bash
+MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 
 MAC_PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 ifneq ($(wildcard $(MAC_PYTHON)),)
@@ -62,15 +67,47 @@ SSH_MUX       := ssh -o ControlMaster=auto -o ControlPath=$$HOME/.ssh/cm-%r@%h:%
 SHERLOCK_CLONE     ?= $$SCRATCH/2024-kmerseek-$(notdir $(BRANCH))
 SHERLOCK_CLONE_DIR := $(SHERLOCK_CLONE)/nextflow-runs/invertebrate-dark-set
 
+# One registry label, or a comma-separated list; every species in the list runs against
+# Swiss-Prot minus ITS OWN clade, with one dark set and one report each.
 SPECIES ?=
 NF_ARGS ?=
 WITH_KMERSEEK ?=
 KMERSEEK_ARGS := $(if $(WITH_KMERSEEK),--with_kmerseek true,)
 MINI_N  ?= 200
 
-.PHONY: help check-species check-inputs check-python sherlock-clone sync run-dark-set \
+# What the driver job, the trace files and (for the ladder) the launch directory are named
+# after. Defaults to SPECIES, which is what every single-species target has always used;
+# the ladder target sets it to `ladder` so that `make watch-dark-set RUN=ladder` and
+# `make stop-dark-set RUN=ladder` find the right head without spelling out nine species.
+RUN ?= $(SPECIES)
+
+# The nine QfO species of the midi-plus ladder, in divergence order from human. The same
+# list as qfo-pfam-region-benchmark's MIDI_TARGETS; botryllus is deliberately not in it,
+# because its dark set is already published and this run is the scale to read it against.
+# Add it back with SPECIES= on the command line once the sweep is wanted on it too.
+LADDER_SPECIES ?= mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
+
+# The ladder's own launch directory. Nextflow keeps its session lock, history and
+# .nextflow.log in the directory it is launched from, so a ladder head and a single-species
+# head launched from the same directory would refuse to coexist -- and the second would
+# also rotate the first's log out from under `make status-dark-set`. The single-species
+# targets keep launching from here, as they always have.
+LAUNCH_DIR ?= $(MAKEFILE_DIR)
+LADDER_LAUNCH_DIR := $(MAKEFILE_DIR)/runs/ladder
+
+# Ladder scale. ~1_650 index builds and ~14_800 searches on top of 243 sequence-arm
+# chunks; the region benchmark ran a sweep of the same shape at these widths. The head
+# tracks ~17_000 tasks and the Botryllus head reached 11.3 GB on 175, so the JVM gets
+# room; 7 days is the hns walltime ceiling, and a head that dies at the wall resumes.
+LADDER_MAX_FORKS  ?= 150
+LADDER_QUEUE_SIZE ?= 400
+LADDER_HEAD_TIME  ?= 7-00:00:00
+LADDER_HEAD_MEM   ?= 32G
+LADDER_HEAD_XMX   ?= 24g
+
+.PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
-        multiqc-dark-set
+        multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -87,12 +124,25 @@ help:
 	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
 	@echo "  multiqc-dark-set        SPECIES=<...>  re-render the report on a finished run"
 	@echo
+	@echo "  run-ladder-sweep-sbatch  the nine midi-plus QfO species, every alphabet x ksize"
+	@echo "                          (SPECIES= to override the list; LOWCOMP=false for one"
+	@echo "                          mask setting instead of the pair; NF_ARGS= passes through)"
+	@echo "  ladder-plan             what run-ladder-sweep-sbatch would submit, without submitting"
+	@echo "  watch-dark-set RUN=ladder / stop-dark-set RUN=ladder / status-dark-set RUN=ladder"
+	@echo
 	@echo "  PROFILE=$(PROFILE)  OUTDIR=$(OUTDIR)"
 	@echo "  REF_CACHE=$(REF_CACHE)  (one file per excluded clade, shared across species)"
 
 check-species:
 	@if [ -z "$(SPECIES)" ]; then \
 	  echo "SPECIES is required: make $(MAKECMDGOALS) SPECIES=botryllus"; exit 1; fi
+
+# watch, stop and status key on the driver's NAME, which is RUN: the species for a
+# single-species run, `ladder` for the ladder. RUN defaults to SPECIES, so SPECIES=x
+# still works for those.
+check-run:
+	@if [ -z "$(RUN)" ]; then \
+	  echo "RUN (or SPECIES) is required: make $(MAKECMDGOALS) SPECIES=botryllus, or RUN=ladder"; exit 1; fi
 
 # NOT a prerequisite of the run targets, and deliberately so. Every python step in this
 # pipeline (buildReference, computeDarkSet) carries `label python_scoring`, which the
@@ -148,7 +198,9 @@ sync:
 # reprint the whole table on every update.
 # One definition, used by the foreground driver and the sbatch driver alike, so the two
 # cannot drift into running different pipelines.
-NF_RUN = $(NEXTFLOW) run main.nf -profile $(PROFILE) -resume \
+# main.nf by absolute path, so the same definition works from the ladder's launch
+# directory as from this one.
+NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
 	  --species $(SPECIES) --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
 	  --outdir $(OUTDIR) --reference_cache $(REF_CACHE) $(KMERSEEK_ARGS) $(NF_ARGS)
 
@@ -166,7 +218,7 @@ run-dark-set: check-species check-inputs queue-note
 # the report IS the work, so a failure has to be loud instead of leaving yesterday's HTML
 # in place and exiting green.
 multiqc-dark-set: check-species check-inputs
-	$(NEXTFLOW) run main.nf -profile $(PROFILE) -entry darkReport -resume \
+	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -entry darkReport -resume \
 	  --species $(SPECIES) --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
 	  --outdir $(OUTDIR) --report_only true $(NF_ARGS)
 	@echo
@@ -205,38 +257,83 @@ HEAD_TIME      ?= 2-00:00:00
 HEAD_SESSION   ?= darkset
 # Per species, and deliberately not `nf-head`: the guard below, watch and stop all key on
 # this name, and the qfo benchmark runs a head of its own at the same time.
-HEAD_JOBNAME    = nfdrv-$(SPECIES)
+HEAD_JOBNAME    = nfdrv-$(RUN)
 
-MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 HEAD_SUBMIT = HEAD_ACCOUNT=$(HEAD_ACCOUNT) HEAD_PARTITION=$(HEAD_PARTITION) \
               HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
               HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
               HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
-              HEAD_HINT_WATCH="make watch-dark-set SPECIES=$(SPECIES)" \
-              HEAD_HINT_STOP="make stop-dark-set SPECIES=$(SPECIES)" \
+              HEAD_HINT_WATCH="make watch-dark-set RUN=$(RUN)" \
+              HEAD_HINT_STOP="make stop-dark-set RUN=$(RUN)" \
               $(MAKEFILE_DIR)/tools/nf-head
 
 run-dark-set-sbatch: check-species check-inputs queue-note
 	@if squeue -u $$USER -h -o '%j' 2>/dev/null | grep -qx '$(HEAD_JOBNAME)'; then \
-	  echo "a driver for $(SPECIES) is already queued or running:"; \
+	  echo "a driver named $(HEAD_JOBNAME) is already queued or running:"; \
 	  squeue -u $$USER -o '%.12i %.2t %.10M %j' | grep '$(HEAD_JOBNAME)'; \
-	  echo; echo "watch it with:  make watch-dark-set SPECIES=$(SPECIES)"; \
-	  echo "or stop it with: make stop-dark-set SPECIES=$(SPECIES)"; \
+	  echo; echo "watch it with:  make watch-dark-set RUN=$(RUN)"; \
+	  echo "or stop it with: make stop-dark-set RUN=$(RUN)"; \
 	  exit 1; fi
-	$(HEAD_SUBMIT) $(NF_RUN)
+	@mkdir -p $(LAUNCH_DIR)
+	cd $(LAUNCH_DIR) && $(HEAD_SUBMIT) $(NF_RUN)
+
+# ---- the ladder: nine QfO species, the whole alphabet x ksize matrix ------------------
+# Each species is the QUERY against reviewed Swiss-Prot minus its own clade, which is the
+# construction Botryllus got, so its numbers land on the same axis. Species whose
+# annotation is deep enough that a dark protein is a real miss rather than a gene-model
+# artefact give the dark fraction a scale, and sweeping every alphabet and ksize on them
+# says where on the k axis "dark reached" stops meaning "reports something for
+# everything" -- on Botryllus, hp_thomas_dill2 k23 put a region on all 45_339 proteins.
+#
+# Scale, from the Botryllus measurements (2026-09-13): 183 alphabet x ksize combos, or
+# 203 with --kmerseek_extra_encodings; 9 clade-specific references, so one index build
+# per clade per combo (1_647 at 5-10 min and 90-150 GB each, ~10 GB on disk each -- the
+# index store alone is ~16 TB, and $SCRATCH is purged 90 days after last write); 81 query
+# chunks of 2_000 across the nine proteomes, so ~14_800 searches at 3-30 min and 24-137 GB
+# each. Roughly 3_000 search task-hours, 2-3 days at LADDER_MAX_FORKS, and every number
+# above DOUBLES with the mask pair. LOWCOMP=false runs the mask OFF only; see the note on
+# params.kmerseek_lowcomp in main.nf for what the pair guards against and why the ladder
+# may drop it. `make ladder-plan` prints the expansion without submitting anything.
+LOWCOMP ?=
+LADDER_LC_ARGS := $(if $(LOWCOMP),--kmerseek_lowcomp $(LOWCOMP),)
+LADDER_NF_ARGS  = --kmerseek_sweep true --run_tag ladder \
+                  --max_forks $(LADDER_MAX_FORKS) --queue_size $(LADDER_QUEUE_SIZE) \
+                  $(LADDER_LC_ARGS) $(NF_ARGS)
+
+run-ladder-sweep-sbatch:
+	@$(MAKE) run-dark-set-sbatch SPECIES=$(if $(SPECIES),$(SPECIES),$(LADDER_SPECIES)) RUN=ladder \
+	  WITH_KMERSEEK=1 LAUNCH_DIR=$(LADDER_LAUNCH_DIR) \
+	  HEAD_TIME=$(LADDER_HEAD_TIME) HEAD_MEM=$(LADDER_HEAD_MEM) HEAD_XMX=$(LADDER_HEAD_XMX) \
+	  NF_ARGS="$(LADDER_NF_ARGS)"
+
+# The foreground version, for a shell that is already on a compute node. Not for a login
+# node: see run-dark-set-sbatch.
+run-ladder-sweep:
+	@$(MAKE) run-dark-set SPECIES=$(if $(SPECIES),$(SPECIES),$(LADDER_SPECIES)) RUN=ladder \
+	  WITH_KMERSEEK=1 NF_ARGS="$(LADDER_NF_ARGS)"
+
+# What the ladder would expand to: species, clades, combo count and the per-combo memory
+# asks, from the same code path as the run, with nothing submitted. Uses Nextflow's
+# -preview, which resolves the workflow and prints its log lines without creating tasks.
+ladder-plan: check-inputs
+	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -preview \
+	  --species $(if $(SPECIES),$(SPECIES),$(LADDER_SPECIES)) \
+	  --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
+	  --outdir $(OUTDIR) --reference_cache $(REF_CACHE) --with_kmerseek true \
+	  $(LADDER_NF_ARGS)
 
 # Attaches to the driver's tmux and shows the live task table. Read-only, because a stray
 # Ctrl-C in an attached session reaches Nextflow and shuts the run down; Ctrl-b d detaches
 # and the run carries on. Stopping it deliberately is `make stop-dark-set`.
-watch-dark-set: check-species
+watch-dark-set: check-run
 	@jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
 	 if [ -z "$$jid" ]; then \
 	   pend=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T %r"); \
 	   if [ -n "$$pend" ]; then \
-	     echo "the driver for $(SPECIES) has not started yet:"; echo "$$pend" | sed 's/^/    /'; \
+	     echo "the driver $(HEAD_JOBNAME) has not started yet:"; echo "$$pend" | sed 's/^/    /'; \
 	   else \
-	     echo "no driver for $(SPECIES)."; \
-	     echo "start one with: make run-dark-set-sbatch SPECIES=$(SPECIES)"; \
+	     echo "no driver named $(HEAD_JOBNAME)."; \
+	     echo "start one with: make run-dark-set-sbatch SPECIES=$(RUN), or make run-ladder-sweep-sbatch"; \
 	   fi; \
 	   exit 1; \
 	 fi; \
@@ -248,9 +345,9 @@ watch-dark-set: check-species
 # driver and leaves those tasks behind. Nothing finished is lost either way: the
 # reference and indexes are under storeDir and completed tasks stay cached, so a later
 # run-dark-set-sbatch resumes rather than restarts.
-stop-dark-set: check-species
+stop-dark-set: check-run
 	@jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i" | head -1); \
-	 if [ -z "$$jid" ]; then echo "no driver running for $(SPECIES)"; exit 0; fi; \
+	 if [ -z "$$jid" ]; then echo "no driver named $(HEAD_JOBNAME) is running"; exit 0; fi; \
 	 echo "asking driver $$jid to shut down; its tasks are cancelled as it goes"; \
 	 scancel --signal=TERM --batch $$jid
 
@@ -261,8 +358,9 @@ stop-dark-set: check-species
 # rotated log instead; LOG=.nextflow.log.2 picks an older run.
 # The script is scripts/nf-postmortem at the repo root, one copy shared with the qfo
 # benchmark's `make postmortem` (PR #35), for the same reason nf-head lives there.
-status-dark-set: check-species
-	@$(MAKEFILE_DIR)/../../scripts/nf-postmortem $(if $(HISTORY),--history,--jobname $(HEAD_JOBNAME) $(LOG))
+status-dark-set: check-run
+	@cd $(if $(filter ladder,$(RUN)),$(LADDER_LAUNCH_DIR),$(LAUNCH_DIR)) && \
+	  $(MAKEFILE_DIR)/../../scripts/nf-postmortem $(if $(HISTORY),--history,--jobname $(HEAD_JOBNAME) $(LOG))
 
 run-dark-set-mini: check-species check-inputs
 	@mkdir -p $(OUTDIR)/_mini
@@ -278,7 +376,7 @@ run-dark-set-mini: check-species check-inputs
 	 n=$$(grep -c '^>' $(OUTDIR)/_mini/$(SPECIES).mini.fasta || true); \
 	 [ "$$n" -gt 0 ] || { echo "staged 0 proteins from $$src -- refusing to launch"; exit 1; }; \
 	 echo "staged $$n proteins"
-	$(NEXTFLOW) run main.nf -profile $(PROFILE) -resume \
+	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
 	  --species $(SPECIES) \
 	  --query_fasta $(OUTDIR)/_mini/$(SPECIES).mini.fasta \
 	  --swissprot_dat $(SWISSPROT) \

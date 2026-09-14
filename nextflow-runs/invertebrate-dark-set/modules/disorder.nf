@@ -52,6 +52,12 @@ process darkSetDisorder {
           path("${species}_disorder.parquet"),
           path("${species}_disorder_summary.json")
 
+    stub:
+    """
+    touch ${species}_disorder.parquet
+    echo '{"species": "${species}"}' > ${species}_disorder_summary.json
+    """
+
     script:
     def thr = params.metapredict_threshold ? "--threshold ${params.metapredict_threshold}" : ""
     """
