@@ -1,0 +1,184 @@
+#!/bin/bash
+#
+# Submit a command as a SLURM job that runs it inside a tmux session on a compute node.
+#
+#   nf-head nextflow run ../main.nf -profile sherlock -resume ...
+#
+# Everything about this exists so that the Nextflow head process is not on a login node.
+# Sherlock caps every login-node process at ten CPU-MINUTES (`cpu 10` in
+# /etc/security/limits.d/sh_login.conf, soft equal to hard, so SIGKILL rather than
+# SIGXCPU), which a head tracking ~31_000 tasks crosses in well under a day; and on
+# 2026-09-09 sh03-ln07 rebooted at 15:53 and took a tmux, a running head and its whole
+# queue with it. A batch job is reachable by neither.
+#
+# tmux, rather than plain sbatch, because the live task table only exists on a TTY.
+# `make watch` attaches to this session and gets the same coloured display. Detaching
+# leaves the run alone.
+#
+# Configured entirely through the environment so the Makefile stays the single place that
+# decides sizing. Every one of these is required -- a default here would be a second place
+# to look.
+set -uo pipefail
+
+for v in HEAD_ACCOUNT HEAD_PARTITION HEAD_QOS HEAD_TIME HEAD_CPUS HEAD_MEM HEAD_SESSION HEAD_JOBNAME; do
+    if [ -z "${!v:-}" ]; then
+        echo "nf-head: $v is not set -- launch through the Makefile, not directly" >&2
+        exit 2
+    fi
+done
+
+if [ $# -eq 0 ]; then
+    echo "nf-head: nothing to run" >&2
+    exit 2
+fi
+
+# What `make watch` and `make stop` are called in the pipeline that submitted this. Only
+# the wording of the closing message; nothing depends on them.
+watch_hint=${HEAD_HINT_WATCH:-make watch}
+stop_hint=${HEAD_HINT_STOP:-make stop}
+
+launch_dir=$PWD
+script="$launch_dir/.nf-head.sbatch"
+
+qdir=$(printf '%q' "$launch_dir")
+runner="$launch_dir/.nf-head.run"
+
+# The command goes into its own runner script rather than into the job script's tmux line.
+# printf %q produces text meant to be reused UNQUOTED, so the one safe place for it is a
+# line of its own: embedded in a quoted tmux argument instead, a `$` in any argument would
+# survive as a literal and then be expanded a second time by the shell tmux spawns.
+# Nothing in today's command line contains one, because make expands them before this
+# script sees argv, but that is luck rather than design.
+{
+    echo '#!/bin/bash'
+    printf 'cd %s || exit 1\n' "$qdir"
+    printf '%q ' "$@"
+    printf '\nstatus=$?\n'
+    printf 'echo $status > %s/.nf-head.status\n' "$qdir"
+    printf 'exit $status\n'
+} > "$runner"
+chmod +x "$runner"
+
+cat > "$script" <<EOF
+#!/bin/bash
+#SBATCH --job-name=$HEAD_JOBNAME
+#SBATCH --account=$HEAD_ACCOUNT
+#SBATCH --partition=$HEAD_PARTITION
+#SBATCH --qos=$HEAD_QOS
+#SBATCH --time=$HEAD_TIME
+#SBATCH --cpus-per-task=$HEAD_CPUS
+#SBATCH --mem=$HEAD_MEM
+#SBATCH --output=$launch_dir/nf-head.%j.log
+#SBATCH --signal=B:TERM@180
+set -uo pipefail
+
+cd $qdir || exit 1
+
+# The submitting shell had already run \`ml load biology nextflow\`, and sbatch exports its
+# environment, so PATH normally carries nextflow in already. This is for the case where it
+# does not -- a requeue, or a hand-submitted script.
+if ! command -v module >/dev/null 2>&1; then
+    for f in /usr/share/lmod/lmod/init/bash /etc/profile.d/modules.sh; do
+        [ -r "\$f" ] && . "\$f" && break
+    done
+fi
+command -v nextflow >/dev/null 2>&1 || module load biology nextflow
+
+# Node-local on purpose. \`make watch\` attaches through \`srun --jobid\`, which lands on
+# this same node, and a unix socket on Lustre is not something to depend on.
+sock=/tmp/nf-head-\$SLURM_JOB_ID
+echo "\$sock" > $qdir/.nf-head.sock
+echo "nf-head: job \$SLURM_JOB_ID on \$(hostname), tmux socket \$sock"
+
+# .nf-head.run carries the command; it writes the exit code to .nf-head.status, which is
+# how a status gets out of a session nobody was attached to.
+rm -f $qdir/.nf-head.status
+tmux -S "\$sock" new-session -d -s $HEAD_SESSION $qdir/.nf-head.run
+
+if ! tmux -S "\$sock" has-session -t $HEAD_SESSION 2>/dev/null; then
+    echo "nf-head: tmux did not start a session -- nothing is running" >&2
+    exit 1
+fi
+
+# SLURM sends this 180 seconds before the walltime, thanks to --signal=B:TERM@180. Ctrl-C
+# is what Nextflow handles gracefully: it stops submitting and cancels the jobs it has in
+# flight, which is what keeps the queue from filling with orphans that then block the next
+# launch's queue-empty check.
+graceful() {
+    # TERM arrives from one of two places and both want the same thing: \`make stop\`, which
+    # signals the batch script and nothing else, or --signal=B:TERM@180 three minutes ahead
+    # of the walltime.
+    echo "nf-head: TERM received (make stop, or the walltime is near) -- sending Ctrl-C"
+    tmux -S "\$sock" send-keys -t $HEAD_SESSION C-c 2>/dev/null || true
+}
+trap graceful TERM
+
+while tmux -S "\$sock" has-session -t $HEAD_SESSION 2>/dev/null; do
+    sleep 20 &
+    wait \$!            # so the TERM trap fires during the sleep rather than after it
+done
+
+status=\$(cat $qdir/.nf-head.status 2>/dev/null || echo 1)
+echo "nf-head: run exited with status \$status"
+# A run stopped through the path above exits 130, the shell's code for SIGINT, so sacct
+# records the job as FAILED with ExitCode 130:0. That is the Ctrl-C, not a crash. Left
+# unmapped because a run that was interrupted did not finish.
+exit "\$status"
+EOF
+
+out=$(sbatch --parsable "$script" 2>&1) || {
+    echo "nf-head: sbatch refused the job" >&2
+    echo "$out" >&2
+    exit 1
+}
+jobid=${out%%;*}
+echo "$jobid" > "$launch_dir/.nf-head.jobid"
+
+rel=$(basename "$launch_dir")
+sock=/tmp/nf-head-$jobid
+
+cat <<MSG
+
+nf-head: submitted $HEAD_JOBNAME as job $jobid
+         $HEAD_CPUS cpus, $HEAD_MEM, $HEAD_TIME, $HEAD_PARTITION, qos=$HEAD_QOS
+
+  watch    $watch_hint         the live table, read-only
+  stop     $stop_hint          Ctrl-C the run so it cancels its own jobs
+  log      $rel/nf-head.$jobid.log
+
+The run survives you logging out, and survives a login node rebooting.
+MSG
+
+# Wait for it to start and drop straight into the live table, so `make run-...` still feels
+# like it did when the head ran in the foreground -- the difference being that Ctrl-b d now
+# leaves it running. Ctrl-C during this wait only stops the waiting; the job is already
+# submitted and stays submitted.
+#
+# Skipped when there is no terminal to draw on (a pipe, a cron), and by NF_HEAD_DETACH=1
+# for when you just want the job id back.
+if [ "${NF_HEAD_DETACH:-0}" = "1" ] || [ ! -t 1 ]; then
+    exit 0
+fi
+
+echo "waiting for job $jobid to start -- Ctrl-C is safe here, it leaves the job queued"
+while :; do
+    state=$(squeue -j "$jobid" -h -o %T 2>/dev/null)
+    case "$state" in
+        RUNNING) break ;;
+        "")      echo "nf-head: job $jobid left the queue before it ran; see $rel/nf-head.$jobid.log" >&2
+                 exit 1 ;;
+        *)       sleep 10 ;;
+    esac
+done
+
+# A moment for the batch script to create the session before we ask to attach to it.
+for _ in $(seq 1 30); do
+    srun --jobid="$jobid" --overlap tmux -S "$sock" has-session -t "$HEAD_SESSION" \
+        >/dev/null 2>&1 && break
+    sleep 2
+done
+
+# -r, read-only: a stray Ctrl-C in an attached session goes to Nextflow and shuts the run
+# down. Detach with Ctrl-b d.
+exec srun --jobid="$jobid" --overlap --pty \
+     tmux -S "$sock" attach -r -t "$HEAD_SESSION"
