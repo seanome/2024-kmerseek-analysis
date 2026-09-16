@@ -787,6 +787,85 @@ def covariate_section(out: Path, species: str, section_id: str, name: str,
     })
 
 
+MIN_AA = (0, 50, 100, 200)
+
+
+def section_dark_by_length(out: Path, species: str, df: pl.DataFrame | None,
+                           omitted: Omitted) -> None:
+    """The headline fraction recomputed over proteins of at least 50, 100 and 200 aa.
+
+    Computed from the length parquet here rather than read from the length summary, so a
+    report re-rendered over a run that predates dark_fraction_by_min_length still gets
+    the panel. The raw number counts a 60-aa gene model that nothing can align the same as
+    a 400-aa protein nothing can place; on the QfO ladder 48% of ciona's dark set was under
+    100 aa against 16-18% everywhere else, and its fraction moved from 29% to 18% at
+    >= 100 aa while no other species moved more than four points.
+    """
+    if df is None:
+        omitted.add("dark fraction by minimum length",
+                    "this run produced no length parquet, so the fraction could not be "
+                    "recomputed over proteins of at least 50, 100 and 200 aa.")
+        return
+    value_col = pick_col(df, LENGTH_COLS)
+    group_col = pick_col(df, GROUP_COLS)
+    if value_col is None or group_col is None:
+        omitted.add("dark fraction by minimum length",
+                    f"the length parquet has no column named any of {LENGTH_COLS} or "
+                    f"{GROUP_COLS}; found {list(df.columns)}.")
+        return
+    is_dark = (df[group_col].cast(pl.Utf8).str.to_lowercase().is_in(["dark", "true", "1"]))
+    lengths = df[value_col].cast(pl.Float64)
+    rows = {}
+    for cut in MIN_AA:
+        keep = lengths >= cut
+        n = int(keep.sum())
+        n_dark = int((keep & is_dark).sum())
+        rows[f">= {cut} aa" if cut else "all proteins"] = {
+            "proteins": n, "dark": n_dark,
+            "fraction_dark": (n_dark / n) if n else None,
+        }
+    raw = rows["all proteins"]["fraction_dark"]
+    at100 = rows[">= 100 aa"]["fraction_dark"]
+    write_section(out, "dark_headline_by_length", {
+        "id": "dark_headline_by_length",
+        "section_name": "Dark fraction by minimum protein length",
+        "description": (
+            "<p>The headline fraction again, over proteins of at least 50, 100 and 200 "
+            "residues.</p>"
+            + bullets(
+                f"<b>All proteins {pct(raw)}, at least 100 aa {pct(at100)}.</b> The gap "
+                f"between the two is the part of the dark set that is short gene models, "
+                f"which are dark because there is little to align, not because homology "
+                f"detection failed.",
+                "<b>Compare species at the same cut.</b> Annotations differ in how many "
+                "short models they carry (ciona: 48% of its dark set under 100 aa; mouse, "
+                "worm, Botryllus: 16-18%), so the raw fraction is not comparable across "
+                "proteomes and the >= 100 aa one is closer to it.")),
+        "plot_type": "bargraph",
+        "pconfig": {"id": "dark_headline_by_length_plot",
+                    "title": f"{species}: dark fraction by minimum length",
+                    "ylab": "fraction dark", "ymax": 1, "cpswitch": False,
+                    "sort_samples": False},
+        "categories": {"fraction_dark": {"name": "fraction dark", "color": C_DARK}},
+        "data": {k: {"fraction_dark": v["fraction_dark"]} for k, v in rows.items()},
+    })
+    write_section(out, "dark_headline_by_length_table", {
+        "id": "dark_headline_by_length_table",
+        "section_name": "Dark fraction by minimum length, as numbers",
+        "description": "<p>The panel above as counts.</p>",
+        "plot_type": "table",
+        "pconfig": {"id": "dark_headline_by_length_table_plot",
+                    "title": f"{species}: dark fraction by minimum length",
+                    "col1_header": "proteins kept", "sort_rows": False},
+        "headers": {
+            "proteins": {"title": "proteins", "format": "{:,.0f}"},
+            "dark": {"title": "dark", "format": "{:,.0f}"},
+            "fraction_dark": {"title": "fraction dark", "format": "{:,.4f}", "min": 0, "max": 1},
+        },
+        "data": rows,
+    })
+
+
 def section_length(out: Path, species: str, df, summary, omitted: Omitted) -> None:
     extras = []
     if summary:
@@ -917,8 +996,9 @@ def main() -> None:
     section_headline(out, args.species, summary)
     section_per_arm(out, args.species, summary, omitted)
     section_kmerseek(out, args.species, load_json(extras["gain_json"]), omitted)
-    section_length(out, args.species,
-                   load_parquet(extras["length_parquet"]),
+    length_df = load_parquet(extras["length_parquet"])
+    section_dark_by_length(out, args.species, length_df, omitted)
+    section_length(out, args.species, length_df,
                    load_json(extras["length_summary"]), omitted)
     section_disorder(out, args.species,
                      load_parquet(extras["disorder_parquet"]),

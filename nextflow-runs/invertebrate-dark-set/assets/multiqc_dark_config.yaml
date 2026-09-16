@@ -61,6 +61,10 @@ report_section_order:
   # one number.
   dark_headline: { order: 10 }
   dark_headline_table: { order: 11 }
+  # The headline over proteins of at least 50/100/200 aa: a qualification of the number
+  # directly above it, so it sits before the per-arm check.
+  dark_headline_by_length: { order: 12 }
+  dark_headline_by_length_table: { order: 13 }
   # Then the check that every arm ran. Iterative search sees everything a single-pass
   # search sees, so this ordering has to hold before the headline means anything.
   dark_per_arm: { order: 20 }

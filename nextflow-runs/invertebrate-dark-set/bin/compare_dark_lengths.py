@@ -43,6 +43,14 @@ import polars as pl
 # read directly instead of inferred from a median.
 SHORT_AA = (50, 100)
 
+# The dark fraction recomputed over proteins of at least this many residues. The raw
+# fraction counts a 60-aa gene model that nothing can align the same as a 400-aa protein
+# nothing can place, and on the QfO ladder that mattered: 48% of ciona's dark set is under
+# 100 aa against 16-18% for the other species, and the ciona fraction moved from 29% to
+# 18% at >= 100 aa while nothing else moved more than four points. 0 is the raw number,
+# kept in the same table so the two are read side by side.
+MIN_AA = (0, 50, 100, 200)
+
 
 def mann_whitney_u(x: np.ndarray, y: np.ndarray) -> tuple[float, float]:
     """Two-sided Mann-Whitney U. Returns (U for x, p-value).
@@ -218,12 +226,24 @@ def main() -> None:
     dark_stats = group_stats(marked, "dark")
     placed_stats = group_stats(marked, "placed")
 
+    by_min_length = []
+    for cut in MIN_AA:
+        kept = marked.filter(pl.col("length") >= cut)
+        n_kept_dark = int((kept["group"] == "dark").sum())
+        by_min_length.append({
+            "min_aa": cut,
+            "proteins": kept.height,
+            "dark": n_kept_dark,
+            "fraction_dark": round(n_kept_dark / kept.height, 4) if kept.height else None,
+        })
+
     summary = {
         "species": args.species,
         "proteins_in_proteome": marked.height,
         "proteins_dark": n_dark,
         "proteins_placed": n_placed,
         "fraction_dark": round(n_dark / marked.height, 4),
+        "dark_fraction_by_min_length": by_min_length,
         "duplicate_accessions_dropped": n_duplicate_accessions,
         "dark": dark_stats,
         "placed": placed_stats,
@@ -260,6 +280,9 @@ def main() -> None:
     for cut in SHORT_AA:
         print(f"Under {cut} aa: {100 * dark_stats[f'fraction_under_{cut}aa']:.1f}% of dark, "
               f"{100 * placed_stats[f'fraction_under_{cut}aa']:.1f}% of placed.")
+    print("Dark fraction over proteins of at least: " + ", ".join(
+        f"{r['min_aa']} aa {100 * r['fraction_dark']:.1f}% ({r['dark']}/{r['proteins']})"
+        for r in by_min_length if r["fraction_dark"] is not None))
 
     if args.summary_out:
         args.summary_out.write_text(json.dumps(summary, indent=2))
