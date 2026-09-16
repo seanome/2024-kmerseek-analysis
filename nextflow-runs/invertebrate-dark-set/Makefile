@@ -107,7 +107,7 @@ LADDER_HEAD_XMX   ?= 24g
 
 .PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
-        multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan
+        multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan sweep-dark-set
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -268,6 +268,11 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(HEAD_ACCOUNT) HEAD_PARTITION=$(HEAD_PARTITION) \
               $(MAKEFILE_DIR)/tools/nf-head
 
 run-dark-set-sbatch: check-species check-inputs queue-note
+	@n=$$(squeue -u $$USER -h -o '%j' 2>/dev/null | grep -c '^nf-darkSet_' || true); \
+	 if [ "$$n" != 0 ] && ! squeue -u $$USER -h -o '%j' 2>/dev/null | grep -q '^nfdrv-'; then \
+	   echo "WARNING: $$n nf-darkSet_ task(s) are in the queue with no driver alive -- orphans of"; \
+	   echo "         a stopped run. An orphaned index build finishing under this run collides on"; \
+	   echo "         storeDir. Clear them first:  make sweep-dark-set"; exit 1; fi
 	@if squeue -u $$USER -h -o '%j' 2>/dev/null | grep -qx '$(HEAD_JOBNAME)'; then \
 	  echo "a driver named $(HEAD_JOBNAME) is already queued or running:"; \
 	  squeue -u $$USER -o '%.12i %.2t %.10M %j' | grep '$(HEAD_JOBNAME)'; \
@@ -349,11 +354,41 @@ watch-dark-set: check-run
 # driver and leaves those tasks behind. Nothing finished is lost either way: the
 # reference and indexes are under storeDir and completed tasks stay cached, so a later
 # run-dark-set-sbatch resumes rather than restarts.
+#
+# Then it waits for the head to be gone and cancels whatever tasks it left behind. On
+# 2026-09-16 Nextflow logged "Killing running tasks (296)" and exited 13 seconds later,
+# and 222 of them were still queued or running: slurmctld throttles cancel RPCs
+# (`scancel: _add_delay: adding delay in RPC send`), so a burst of 296 scancels from a
+# process that is about to exit does not all land. Orphaned tasks are not just wasted
+# node-hours -- an orphaned kmerseekIndex that finishes after the next run has already
+# created the same task is the storeDir "Directory not empty" collision.
 stop-dark-set: check-run
 	@jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i" | head -1); \
-	 if [ -z "$$jid" ]; then echo "no driver named $(HEAD_JOBNAME) is running"; exit 0; fi; \
-	 echo "asking driver $$jid to shut down; its tasks are cancelled as it goes"; \
-	 scancel --signal=TERM --batch $$jid
+	 if [ -z "$$jid" ]; then echo "no driver named $(HEAD_JOBNAME) is running"; \
+	 else \
+	   echo "asking driver $$jid to shut down; its tasks are cancelled as it goes"; \
+	   scancel --signal=TERM --batch $$jid; \
+	   for i in $$(seq 1 30); do \
+	     squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i" | grep -q . || break; sleep 5; \
+	   done; \
+	 fi; \
+	 $(MAKE) --no-print-directory sweep-dark-set
+
+# Cancel every task this pipeline's processes submitted, whatever run they belong to.
+# Tasks are named nf-darkSet_<process>_(<tag>) by Nextflow, so the prefix is the only
+# handle; a single-species run and the ladder share it. Run this only when no driver of
+# this pipeline is alive, which is what stop-dark-set checks first. Cancelling a few
+# hundred jobs takes a minute or two under slurmctld's RPC throttle; that is normal.
+sweep-dark-set:
+	@ids=$$(squeue -u $$USER -h -o "%i %j" | awk '$$2 ~ /^nf-darkSet_/ {print $$1}'); \
+	 n=$$(echo "$$ids" | grep -c . || true); \
+	 if [ "$$n" = 0 ]; then echo "no nf-darkSet_ tasks left in the queue"; exit 0; fi; \
+	 if squeue -u $$USER -h -o '%j' | grep -q '^nfdrv-'; then \
+	   echo "a driver is still running:"; squeue -u $$USER -o '%.12i %.2t %.10M %j' | grep nfdrv-; \
+	   echo "its tasks are not orphans; stop it first (make stop-dark-set RUN=<run>)"; exit 1; fi; \
+	 echo "cancelling $$n orphaned nf-darkSet_ task(s) -- slurmctld throttles this, give it a minute"; \
+	 echo "$$ids" | xargs scancel 2>&1 | grep -v _add_delay || true; \
+	 echo "left: $$(squeue -u $$USER -h -o '%j' | grep -c '^nf-darkSet_' || true)"
 
 # What happened. Reads .nextflow.log and says whether the run ended, which task took it
 # down and what that task printed, per-process counts, and the head jobs from sacct. This
