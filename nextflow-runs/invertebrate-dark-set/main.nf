@@ -112,19 +112,31 @@ params.min_region_score = 1.3
 params.index_cache        = null
 params.with_kmerseek      = false
 
-// Memory for the two kmerseek processes, sized per combo from the k-mer keyspace rather
-// than a flat ladder. Both models are calibrated on the Botryllus run of 2026-09-13
-// against the 572_850-sequence minus_Ascidiacea reference, which is the only reference
-// size this pipeline builds, so no size term is needed. See kmerseekIndexMemory and
-// kmerseekSearchMemory for the fits; these are the knobs.
+// Memory for the two kmerseek processes, sized per task rather than as a flat ladder.
+// The index is sized from the keyspace; the SEARCH is sized from the index's own k-mer
+// spectrum, which every kmerseekIndex task writes and which is the only thing that
+// predicted the ladder run's peaks (see kmerseekSearchMemory). These are the knobs.
 //
-// Retries multiply the first ask by kmerseek_memory_retry_factor per attempt, never
-// beyond kmerseek_memory_max. 250 GB is placeable on hns: 22 nodes carry 256 GB and 15
-// carry 1-1.5 TB. Ask for more and SLURM rejects the job outright rather than queueing it.
-params.kmerseek_memory_max          = '250 GB'
+// Retries multiply the first ask by kmerseek_memory_retry_factor per attempt. Two caps,
+// because hns has two kinds of node: a first attempt stays under
+// kmerseek_memory_first_max so it can land on the 121 nodes with 192-256 GB, and a retry
+// may grow to kmerseek_memory_max, which only the 15 bigmem nodes (1-1.5 TB) can take.
+// Ask for more than any node has and SLURM rejects the job outright rather than queueing.
+params.kmerseek_memory_first_max    = '250 GB'
+params.kmerseek_memory_max          = '500 GB'
 params.kmerseek_memory_retry_factor = 1.5
 params.kmerseek_search_memory_floor = '24 GB'
 params.kmerseek_index_memory_floor  = '48 GB'
+// Search-memory model, peak GB = headroom x (base + slope x sqrt(load)); see
+// kmerseekSearchMemory for what load is and where these numbers come from.
+params.kmerseek_search_memory_base     = 36
+params.kmerseek_search_memory_slope    = 2.34
+params.kmerseek_search_memory_headroom = 2.0
+// A combo whose PREDICTED median peak, times this, is above kmerseek_memory_max is not
+// searched at all; see the skip in the workflow. 2.0 is the worst chunk-to-median ratio
+// the ladder run measured (2.54, zebrafish and fly) rounded down, so a combo that passes
+// has a real chance on its last attempt rather than a certainty of ending the run.
+params.kmerseek_skip_factor = 2.0
 
 // Length of the dark proteins against the placed ones. On by default and cheap -- it reads
 // the query FASTA and the dark parquet and nothing else -- because the dark fraction should
@@ -163,46 +175,99 @@ MMSEQS  = 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad
 
 // --- kmerseek memory ---------------------------------------------------------------------
 //
-// Two opposite curves in the keyspace, both measured on the Botryllus run of 2026-09-13
-// (sacct MaxRSS, 572_850-sequence reference, 2_000-query chunks):
+// INDEX: grows with how many DISTINCT k-mers the reference has, which the keyspace caps.
+// Measured on the ladder run of 2026-09-14 (495 builds, 572k-sequence references): 51-57
+// GB below 20 bits, rising to a plateau of 74-83 GB past ~40 bits, once every one of the
+// reference's ~200M k-mers is its own key. Floor plus a term that saturates near 28 bits,
+// times 1.4 -- the spread across builds of one combo is small because nothing about the
+// index depends on the query.
 //
-//   index   hp_thomas_dill2 k23 (22 bits)   64.2 GB      protein20 k10 (43 bits)  92.3 GB
-//   search  hp_thomas_dill2 k23 lcfalse     median 64 GB across 23 chunks, one at 158 GB
-//           hp_thomas_dill2 k23 lctrue      ~50 GB
-//           protein20 k10                   20-22 GB
+// SEARCH: the other way round, and NOT a function of the keyspace. A small keyspace means
+// each query k-mer matches many reference k-mers, and the per-query match set is what
+// fills memory -- but how many it matches depends on how SKEWED the reference's k-mer
+// spectrum is, not on how many keys exist. gbmr7 puts G and P alone and 40% of residues
+// in one class, so at k=9 its most common k-mer occurs 380_000 times in the reference;
+// the entropy-bits model that sized the first ladder run put gbmr7 k16 at 29 GB and it
+// died three times at 65. That run OOM-killed 259 of 1_057 searches, every one in a
+// skewed alphabet at low k (gbmr7, gbmr4, hp_kyte_doolittle2, hp_lehninger_hpc3, and the
+// kmin of everything else), and ended the run.
 //
-// The INDEX grows with how many DISTINCT k-mers the reference has, which the keyspace
-// caps: at 22 bits there are only 4.2M possible keys, at 43 bits every one of the
-// reference's ~200M k-mers is its own key and the index carries them all. That saturates
-// once 2^bits passes the k-mer count, around 28 bits, so the model is a floor plus a term
-// that rises to a ceiling there and stays.
+// What did predict the 618 uncapped peaks (r2 0.60, against 0.56 for the best keyspace
+// model) is the LOAD of the index's own spectrum: the expected posting-list length hit by
+// a random reference k-mer, sum(occ^2 x n_kmers) / sum(occ x n_kmers), read from the
+// spectrum.csv.gz that kmerseekIndex writes into every index. peak ~ 36 + 2.34 x
+// sqrt(load) GB at the median; the chunk-to-median ratio ran up to 2.5 (zebrafish, fly),
+// and worm's chunks sit 1.6x over the cross-species median throughout, so the first ask
+// carries 2.0x headroom and the retries take the rest. The mask ON arm sits ~20% under
+// mask OFF. Peaks that came out exactly at the 24 GB floor are the cgroup limit read back
+// as RSS -- RocksDB's file-backed pages fill whatever is allowed -- not a need for 24 GB.
 //
-// The SEARCH goes the other way: a small keyspace means every query k-mer matches a
-// large share of the reference, and the per-query match set is what fills memory. An
-// exponential through the two measured points gives 0.058 per bit -- a halving every
-// 12 bits -- with a 243 GB intercept. The mask ON arm sits ~20% under mask OFF.
-//
-// Headroom is 1.6x the median on the search side, which leaves the one 2.5x chunk to a
-// retry rather than reserving for it on every task; 1.5x on the index side, whose spread
-// across chunks is nil because it does not see the chunks.
+// The spectrum is read once per index, in the workflow's skip filter, and cached BY INDEX
+// NAME. The name is the key on purpose: inside a process directive a path input is a
+// TaskPath that knows only its staged name (toAbsolutePath() throws
+// UnsupportedOperationException, resolve() is relative to the staged name), so the
+// memory closure cannot open the file itself. The filter sees the real path, runs before
+// any search task is created, and leaves the number here for the closure to look up.
+
+def SPECTRUM_LOAD = java.util.Collections.synchronizedMap([:])
+
+def spectrumLoad = { Path index_dir ->
+    def key = index_dir.name
+    def hit = SPECTRUM_LOAD[key]
+    if (hit != null) return hit
+    def f = index_dir.resolve('spectrum.csv.gz')
+    if (!f.exists()) {
+        error "no spectrum.csv.gz inside ${index_dir}: kmerseekIndex writes one into every " +
+              "index and the search memory model reads it. An index without one was built " +
+              "by something else."
+    }
+    double num = 0.0d, den = 0.0d
+    new java.util.zip.GZIPInputStream(f.newInputStream()).withReader('UTF-8') { r ->
+        r.eachLine { line ->
+            if (line.startsWith('#') || line.startsWith('moltype')) return
+            def c = line.split(',')
+            double occ = c[2] as double, n = c[3] as double
+            num += occ * occ * n
+            den += occ * n
+        }
+    }
+    double load = den > 0 ? num / den : 0.0d
+    SPECTRUM_LOAD[key] = load
+    load
+}
+
+// The model's median prediction, before headroom -- the number the skip decision uses.
+def searchMedianGb = { double load, String lowcomp ->
+    double base  = params.kmerseek_search_memory_base as double
+    double slope = params.kmerseek_search_memory_slope as double
+    (base + slope * Math.sqrt(load)) * (lowcomp == 'true' ? 0.8d : 1.0d)
+}
+
 def memoryLadder = { double firstGb, int attempt ->
-    long capMb   = MemoryUnit.of(params.kmerseek_memory_max).toMega()
-    double f     = params.kmerseek_memory_retry_factor as double
-    long askMb   = (long) (firstGb * 1024L * Math.pow(f, attempt - 1))
+    long firstCapMb = MemoryUnit.of(params.kmerseek_memory_first_max).toMega()
+    long capMb      = MemoryUnit.of(params.kmerseek_memory_max).toMega()
+    double f        = params.kmerseek_memory_retry_factor as double
+    long first      = Math.min(firstCapMb, (long) (firstGb * 1024L))
+    long askMb      = (long) (first * Math.pow(f, attempt - 1))
     MemoryUnit.of("${Math.min(capMb, askMb)} MB")
 }
 
 def kmerseekIndexMemory = { String label, int ksize, int attempt ->
     double bits    = keyspaceBits(label, ksize)
     double filled  = Math.min(1.0d, Math.pow(2.0d, bits - 28.0d))
-    double gb      = 1.5d * (60.0d + 40.0d * filled)
+    double gb      = 1.4d * (52.0d + 36.0d * filled)
     double floorGb = MemoryUnit.of(params.kmerseek_index_memory_floor).toGiga()
     memoryLadder(Math.max(floorGb, gb), attempt)
 }
 
-def kmerseekSearchMemory = { String label, int ksize, String lowcomp, int attempt ->
-    double bits    = keyspaceBits(label, ksize)
-    double gb      = 1.6d * 243.0d * Math.exp(-0.058d * bits) * (lowcomp == 'true' ? 0.8d : 1.0d)
+def kmerseekSearchMemory = { Path index_dir, String lowcomp, int attempt ->
+    def load = SPECTRUM_LOAD[index_dir.name]
+    if (load == null) {
+        error "no spectrum load cached for ${index_dir.name}: the skip filter in the workflow " +
+              "is what fills the cache, and every kmerseekSearch input has to pass through it"
+    }
+    double gb      = (params.kmerseek_search_memory_headroom as double)
+                     * searchMedianGb(load as double, lowcomp)
     double floorGb = MemoryUnit.of(params.kmerseek_search_memory_floor).toGiga()
     memoryLadder(Math.max(floorGb, gb), attempt)
 }
@@ -408,9 +473,15 @@ process kmerseekIndex {
     """
 
     stub:
+    // A spectrum with the shape the real one has, skewed enough at low k that the skip
+    // filter fires for the stub run too: occurrence counts scale down with ksize.
+    def top = Math.max(1, (long) (400000 / Math.pow(2, ksize as int)))
     """
-    mkdir -p minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb
-    touch minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb/CURRENT
+    d=minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb
+    mkdir -p \$d
+    touch \$d/CURRENT
+    printf '# stub\nmoltype,ksize,occurrences,n_kmers\n${alphabet},${ksize},1,1000000\n${alphabet},${ksize},${top},10\n' \
+        | gzip -c > \$d/spectrum.csv.gz
     """
 }
 
@@ -423,7 +494,7 @@ process kmerseekSearch {
     // cgroup-killed on 7 of 23 Botryllus chunks of hp_thomas_dill2 k23 with the mask OFF
     // (exit 137) and every retry cost a full requeue; the per-combo model asks for what the
     // measured peak needs the first time.
-    memory { kmerseekSearchMemory(alphabet, ksize as int, lowcomp, task.attempt) }
+    memory { kmerseekSearchMemory(index_dir, lowcomp, task.attempt) }
 
     input:
     tuple val(species), val(clade), path(chunk), val(alphabet), val(ksize), val(lowcomp), path(index_dir)
@@ -662,15 +733,15 @@ workflow darkSet {
         def n_lc     = COMBOS.collect { it[2] }.unique().size()
         def n_clades = SPECIES*.clade.unique().size()
         def idx_gb   = COMBOS.collect { a, k, _lc -> kmerseekIndexMemory(a, k as int, 1).toGiga() }
-        def srch_gb  = COMBOS.collect { a, k, lc  -> kmerseekSearchMemory(a, k as int, lc, 1).toGiga() }
         log.info "  kmerseek : ${COMBOS.size()} combos -- ${n_alpha} alphabet(s), " +
                  "${COMBOS.size().intdiv(n_lc)} alphabet x ksize pair(s), mask setting(s): " +
                  "${COMBOS.collect { it[2] }.unique().join(',')}"
         log.info "             ${n_clades * COMBOS.size()} index builds (${n_clades} clade(s) x combos), " +
                  "first-attempt memory ${idx_gb.min()}-${idx_gb.max()} GB"
-        log.info "             ${total_chunks * COMBOS.size()} searches (chunks x combos), " +
-                 "first-attempt memory ${srch_gb.min()}-${srch_gb.max()} GB, " +
-                 "mean ${Math.round(srch_gb.sum() / srch_gb.size())} GB"
+        log.info "             up to ${total_chunks * COMBOS.size()} searches (chunks x combos); each is " +
+                 "sized from its index's k-mer spectrum once that index exists, " +
+                 "${params.kmerseek_search_memory_floor}-${params.kmerseek_memory_first_max} on the first " +
+                 "attempt, and a combo predicted past ${params.kmerseek_memory_max} is skipped and logged"
     }
 
     // One reference per clade removed, however many species ask for it.
@@ -737,8 +808,41 @@ workflow darkSet {
 
         idx = kmerseekIndex(ref_ch.combine(combos).map { cl, r, a, k, lc -> tuple(cl, r, a, k, lc) })
 
+        // Combos no node can search are dropped HERE, with the index in hand, rather than
+        // discovered three OOM kills later. gbmr7 at k=9 against a 572k-sequence reference
+        // has a predicted median peak of ~360 GB and a worst chunk near 900; nothing on
+        // hns takes that, and the region benchmark's entropy-derived k floors were set on
+        // 20k-protein targets, thirty times smaller. A dropped combo is named in the log
+        // and is simply absent from the sweep panels -- an absent point, not a zero.
+        double capGb = MemoryUnit.of(params.kmerseek_memory_max).toGiga()
+        double skipF = params.kmerseek_skip_factor as double
+        runnable = idx.filter { cl, a, k, lc, i ->
+            double load = spectrumLoad(i)
+            double med  = searchMedianGb(load, lc)
+            if (med * skipF > capGb) {
+                log.warn "skipping minus_${cl}.${a}.k${k}.lc${lc}: spectrum load ${Math.round(load)}, " +
+                         "predicted median peak ${Math.round(med)} GB x ${skipF} is over the " +
+                         "${Math.round(capGb)} GB ceiling"
+                return false
+            }
+            true
+        }
+
         ks = kmerseekSearch(
-            chunks.combine(idx, by: 0).map { cl, sp, c, a, k, lc, i -> tuple(sp, cl, c, a, k, lc, i) })
+            chunks.combine(runnable, by: 0).map { cl, sp, c, a, k, lc, i -> tuple(sp, cl, c, a, k, lc, i) })
+
+        // How many combos each species actually searches, AFTER the skip above. The
+        // groupKey size below has to be exact: groupTuple discards a group that never
+        // reaches its size (remainder is false by default), so counting the skipped
+        // combos in would silently drop that species' gain step, and counting too few
+        // would emit early on a partial set -- the "17 combos searched ~1000 queries and
+        // looked like real negatives" failure this project has already had once. The
+        // count is known once every index build of a clade has finished, which is long
+        // before its searches are.
+        n_combos = runnable
+            .map { cl, _a, _k, _lc, _i -> tuple(cl, 1) }
+            .groupTuple()
+            .flatMap { cl, ones -> SPECIES.findAll { it.clade == cl }.collect { s -> tuple(s.label, ones.size()) } }
 
         // Every chunk and every combo of a species reaches the gain step together: a
         // protein counts as rescued only against the whole dark set, and the dark set is
@@ -746,7 +850,8 @@ workflow darkSet {
         q_lists = ks.queries
             .map { sp, _a, _k, _lc, f -> tuple(sp, f) }
             .combine(n_chunks, by: 0)
-            .map { sp, f, n -> tuple(groupKey(sp, n * COMBOS.size()), f) }
+            .combine(n_combos, by: 0)
+            .map { sp, f, n, m -> tuple(groupKey(sp, n * m), f) }
             .groupTuple()
             .map { k, fs -> tuple(k.getGroupTarget(), fs) }
 

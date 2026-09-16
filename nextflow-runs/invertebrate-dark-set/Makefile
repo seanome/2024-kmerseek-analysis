@@ -291,7 +291,11 @@ run-dark-set-sbatch: check-species check-inputs queue-note
 # index store alone is ~16 TB, and $SCRATCH is purged 90 days after last write); 81 query
 # chunks of 2_000 across the nine proteomes, so ~14_800 searches at 3-30 min and 24-137 GB
 # each. Roughly 3_000 search task-hours, 2-3 days at LADDER_MAX_FORKS, and every number
-# above DOUBLES with the mask pair. LOWCOMP=false runs the mask OFF only; see the note on
+# above DOUBLES with the mask pair. Search memory is sized per index from its k-mer
+# spectrum (see kmerseekSearchMemory in main.nf), and a combo no hns node can hold --
+# gbmr7 at k=9-10 against a 572k-sequence reference -- is skipped and named in the log
+# rather than run into three OOM kills; the first ladder attempt (2026-09-14) lost 259 of
+# 1_057 searches that way and ended on the third kill of one chunk. LOWCOMP=false runs the mask OFF only; see the note on
 # params.kmerseek_lowcomp in main.nf for what the pair guards against and why the ladder
 # may drop it. `make ladder-plan` prints the expansion without submitting anything.
 LOWCOMP ?=
