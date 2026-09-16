@@ -453,6 +453,60 @@ TOOL_FAMILY_COLORS: dict[str, str] = {
     "kmerseek": "#D65F5F",
 }
 
+# ---------------------------------------------------------------------------
+# One mark per meaning, shared by every notebook that draws the same thing.
+#
+# Three colour sets that never overlap inside one figure: tool families above; the five
+# census classes below; and a single teal for the two scoring outcomes, told apart by
+# fill rather than hue so the pair survives greyscale. Nothing else is green or teal.
+# ---------------------------------------------------------------------------
+#: The five census classes of notebook 226, in stacking order.
+CENSUS_CLASS_ORDER: list[str] = [
+    "family absent from target",
+    "present, inaccessible by transfer",
+    "reachable via length fraction",
+    "reachable via single-domain target",
+    "reachable via both",
+]
+CENSUS_CLASS_COLORS: dict[str, str] = {
+    "family absent from target": "#333333",
+    "present, inaccessible by transfer": "#D65F5F",
+    "reachable via length fraction": "#F2C57C",
+    "reachable via single-domain target": "#9EC8E8",
+    "reachable via both": "#4878CF",
+}
+
+OUTCOME_TEAL: str = "#1B7F79"
+#: Legend text for the two outcomes, with the definition in the label itself.
+FOUND_LABEL: str = "found: at least half the true domain lies inside a call"
+BOUNDARY_LABEL: str = "boundary matched: a call overlaps the true domain at IoU >= 0.5"
+
+
+def outcome_style(kind: str) -> dict:
+    """Bar style for ``"found"`` (hollow teal) or ``"boundary matched"`` (filled teal)."""
+    if kind == "found":
+        return dict(facecolor="none", edgecolor=OUTCOME_TEAL, linewidth=1.6)
+    return dict(facecolor=OUTCOME_TEAL, edgecolor=OUTCOME_TEAL, linewidth=0)
+
+
+def legend_above(ax, ncol: int = 2, title_pad: float | None = None, fontsize: float = 8.5, **kw):
+    """Put the legend between the axes title and the plot, so it is read before the marks.
+
+    ``title_pad`` lifts the title clear of the legend; one legend row needs about 16 pt,
+    two rows about 30 pt. Call after ``ax.set_title``.
+    """
+    handles, labels = ax.get_legend_handles_labels()
+    if not handles:
+        return None
+    rows = -(-len(labels) // ncol)
+    if title_pad is None:
+        title_pad = 12 + 14 * rows
+    ax.set_title(ax.get_title(), pad=title_pad)
+    return ax.legend(
+        handles, labels, loc="lower left", bbox_to_anchor=(0.0, 1.0), ncol=ncol,
+        frameon=False, fontsize=fontsize, borderaxespad=0.0, handlelength=1.6, **kw,
+    )
+
 
 def arm_label(tool: pl.Expr, variant: pl.Expr) -> pl.Expr:
     """`tool`/`variant` -> the short string used on axes, e.g. ``kmerseek hp_pbotc_1st_ed2 k=19``.
