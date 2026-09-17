@@ -101,7 +101,9 @@ EXTRACT_DIR = MIDI_DIR / "extract"
 HUMAN_TRUTH = TRUTH_DIR / "human_domain_truth.parquet"
 HUMAN_COVARIATES = TRUTH_DIR / "human_query_covariates.parquet"
 QUERY_GENE_MAP = MIDI_DIR / "query_gene_map.parquet"
-CHR6_GENE_MAP = QUERY_GENE_MAP  # older name, kept so notebooks written on midi still run
+CHR6_GENE_MAP = (
+    QUERY_GENE_MAP  # older name, kept so notebooks written on midi still run
+)
 CHR6_GENCODE = MIDI_DIR / "gencode_v50_chr6_genes.parquet"
 
 GENE_LEVEL_ALL_ARMS = EXTRACT_DIR / "mhc_gene_level_all_arms.parquet"
@@ -365,13 +367,17 @@ COMPARISON_TOOLS_TEXT: str = ", ".join(TOOL_LABELS[t] for t in COMPARISON_TOOLS)
 IOU_SCORED_TOOLS_TEXT: str = ", ".join(TOOL_LABELS[t] for t in IOU_SCORED_TOOLS)
 
 #: For figures that draw no search result at all.
-NO_TOOL: str = "none (no search result: drawn from the query set and Pfam annotations only)"
+NO_TOOL: str = (
+    "none (no search result: drawn from the query set and Pfam annotations only)"
+)
 
 #: The designated best kmerseek arm, see feedback_best_ksize: hp_pbotc_1st_ed k=19.
 BEST_KMERSEEK: tuple[str, int] = ("hp_pbotc_1st_ed2", 19)
 
 
-def kmerseek_label(alphabet: str, ksize: int, lc: bool = True, short: bool = False) -> str:
+def kmerseek_label(
+    alphabet: str, ksize: int, lc: bool = True, short: bool = False
+) -> str:
     """One kmerseek arm, named so alphabet and k are never implicit.
 
     ``short`` gives the axis form ``kmerseek hp_pbotc_1st_ed2 k=19``; the default gives the
@@ -417,13 +423,19 @@ def arm_pretty(arm: str) -> str:
     if tool == "kmerseek":
         m = re.match(r"(.+?)_k(\d+)_lc(True|False)$", variant)
         if m:
-            return kmerseek_label(m.group(1), int(m.group(2)), m.group(3) == "True", short=True)
+            return kmerseek_label(
+                m.group(1), int(m.group(2)), m.group(3) == "True", short=True
+            )
         return f"kmerseek {variant}"
     return TOOL_LABELS.get(tool, tool)
 
 
-def tools_text(comparison: list[str] | None = None, kmerseek=None, lc: bool = True,
-               note: str | None = None) -> str:
+def tools_text(
+    comparison: list[str] | None = None,
+    kmerseek=None,
+    lc: bool = True,
+    note: str | None = None,
+) -> str:
     """Build the TOOLS line for a figure footer.
 
     ``comparison`` is a list of pipeline tool ids (``hmmer3_phmmer`` ...), ``kmerseek`` a
@@ -444,6 +456,7 @@ def tools_text(comparison: list[str] | None = None, kmerseek=None, lc: bool = Tr
         bits.append(NO_TOOL)
     text = " | ".join(bits)
     return f"{text} ({note})" if note else text
+
 
 TOOL_FAMILY_COLORS: dict[str, str] = {
     "sequence": "#999999",
@@ -489,7 +502,9 @@ def outcome_style(kind: str) -> dict:
     return dict(facecolor=OUTCOME_TEAL, edgecolor=OUTCOME_TEAL, linewidth=0)
 
 
-def legend_above(ax, ncol: int = 2, title_pad: float | None = None, fontsize: float = 8.5, **kw):
+def legend_above(
+    ax, ncol: int = 2, title_pad: float | None = None, fontsize: float = 8.5, **kw
+):
     """Put the legend between the axes title and the plot, so it is read before the marks.
 
     ``title_pad`` lifts the title clear of the legend; one legend row needs about 16 pt,
@@ -503,8 +518,16 @@ def legend_above(ax, ncol: int = 2, title_pad: float | None = None, fontsize: fl
         title_pad = 12 + 14 * rows
     ax.set_title(ax.get_title(), pad=title_pad)
     return ax.legend(
-        handles, labels, loc="lower left", bbox_to_anchor=(0.0, 1.0), ncol=ncol,
-        frameon=False, fontsize=fontsize, borderaxespad=0.0, handlelength=1.6, **kw,
+        handles,
+        labels,
+        loc="lower left",
+        bbox_to_anchor=(0.0, 1.0),
+        ncol=ncol,
+        frameon=False,
+        fontsize=fontsize,
+        borderaxespad=0.0,
+        handlelength=1.6,
+        **kw,
     )
 
 
@@ -574,22 +597,38 @@ def finish_figure(
     tool_lines = textwrap.wrap("TOOLS: " + tools, wrap)
     y = header_y
     fig.text(
-        0.0, y, "\n".join(tool_lines), ha="left", va="bottom", fontsize=9.5,
-        fontweight="bold", color="#8B1A1A" if is_km else "#1F3B73",
-        bbox=dict(boxstyle="round,pad=0.35", facecolor="#FBEAEA" if is_km else "#E8EEF8",
-                  edgecolor="none"),
+        0.0,
+        y,
+        "\n".join(tool_lines),
+        ha="left",
+        va="bottom",
+        fontsize=9.5,
+        fontweight="bold",
+        color="#8B1A1A" if is_km else "#1F3B73",
+        bbox=dict(
+            boxstyle="round,pad=0.35",
+            facecolor="#FBEAEA" if is_km else "#E8EEF8",
+            edgecolor="none",
+        ),
     )
     y += line(9.5) * len(tool_lines) + line(9.5) * 0.9
     if title:
-        fig.text(0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold")
+        fig.text(
+            0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold"
+        )
 
-    foot = (
-        textwrap.wrap("Hypothesis: " + hypothesis, wrap)
-        + textwrap.wrap("Conclusion: " + conclusion, wrap)
+    foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap(
+        "Conclusion: " + conclusion, wrap
     )
     fig.text(
-        0.0, footer_y, "\n".join(foot), ha="left", va="top", fontsize=9,
-        color="#222222", linespacing=1.35,
+        0.0,
+        footer_y,
+        "\n".join(foot),
+        ha="left",
+        va="top",
+        fontsize=9,
+        color="#222222",
+        linespacing=1.35,
         bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
     )
     fig.savefig(path, dpi=dpi, bbox_inches="tight")
