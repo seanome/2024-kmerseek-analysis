@@ -52,6 +52,7 @@ C_MASK_OFF = "#c9528f"   # mask OFF: the number that may be composition rather t
 C_SINGLE = "#2b7bba"     # single-pass search
 C_ITER = "#c99a00"       # iterative search
 C_UNION = "#0f9d76"      # any arm at all
+C_CLADE = "#7b4fb3"      # an entry from the query's own clade: what the target has removed
 
 # The arms this pipeline runs, and whether each is a single-pass or an iterative search.
 # The ordering iterative >= single-pass is the correctness signal for the whole dark set:
@@ -207,6 +208,25 @@ SVG_LINE_PX = 16
 SVG_PAD = 8
 
 
+# Google Material Symbols (Apache 2.0), outlined, 24 px, fetched from
+# fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/<name>/default/24px.svg
+# and inlined, because the report is rendered on compute nodes with no internet and has
+# to stay a single self-contained file. viewBox is 0 -960 960 960 for every one.
+ICONS = {
+    "database": "M480-120q-151 0-255.5-46.5T120-280v-400q0-66 105.5-113T480-840q149 0 254.5 47T840-680v400q0 67-104.5 113.5T480-120Zm0-479q89 0 179-25.5T760-679q-11-29-100.5-55T480-760q-91 0-178.5 25.5T200-679q14 30 101.5 55T480-599Zm0 199q42 0 81-4t74.5-11.5q35.5-7.5 67-18.5t57.5-25v-120q-26 14-57.5 25t-67 18.5Q600-528 561-524t-81 4q-42 0-82-4t-75.5-11.5Q287-543 256-554t-56-25v120q25 14 56 25t66.5 18.5Q358-408 398-404t82 4Zm0 200q46 0 93.5-7t87.5-18.5q40-11.5 67-26t32-29.5v-98q-26 14-57.5 25t-67 18.5Q600-328 561-324t-81 4q-42 0-82-4t-75.5-11.5Q287-343 256-354t-56-25v99q5 15 31.5 29t66.5 25.5q40 11.5 88 18.5t94 7Z",
+    "genetics": "M200-40v-40q0-139 58-225.5T418-480q-102-88-160-174.5T200-880v-40h80v40q0 11 .5 20.5T282-840h396q1-10 1.5-19.5t.5-20.5v-40h80v40q0 139-58 225.5T542-480q102 88 160 174.5T760-80v40h-80v-40q0-11-.5-20.5T678-120H282q-1 10-1.5 19.5T280-80v40h-80Zm138-640h284q13-19 22.5-38t17.5-42H298q8 22 17.5 41.5T338-680Zm142 148q20-17 39-34t36-34H405q17 17 36 34t39 34Zm-75 172h150q-17-17-36-34t-39-34q-20 17-39 34t-36 34ZM298-200h364q-8-22-17.5-41.5T622-280H338q-13 19-22.5 38T298-200Z",
+    "search": "M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z",
+    "search_off": "M138.5-138.5Q80-197 80-280t58.5-141.5Q197-480 280-480t141.5 58.5Q480-363 480-280t-58.5 141.5Q363-80 280-80t-141.5-58.5ZM824-120 568-376q-12-13-25.5-26.5T516-428q38-24 61-64t23-88q0-75-52.5-127.5T420-760q-75 0-127.5 52.5T240-580q0 6 .5 11.5T242-557q-18 2-39.5 8T164-535q-2-11-3-22t-1-23q0-109 75.5-184.5T420-840q109 0 184.5 75.5T680-580q0 43-13.5 81.5T629-428l251 252-56 56Zm-615-61 71-71 70 71 29-28-71-71 71-71-28-28-71 71-71-71-28 28 71 71-71 71 28 28Z",
+    "straighten": "M160-240q-33 0-56.5-23.5T80-320v-320q0-33 23.5-56.5T160-720h640q33 0 56.5 23.5T880-640v320q0 33-23.5 56.5T800-240H160Zm0-80h640v-320H680v160h-80v-160h-80v160h-80v-160h-80v160h-80v-160H160v320Zm120-160h80-80Zm160 0h80-80Zm160 0h80-80Zm-120 0Z",
+    "summarize": "M348.5-611.5Q360-623 360-640t-11.5-28.5Q337-680 320-680t-28.5 11.5Q280-657 280-640t11.5 28.5Q303-600 320-600t28.5-11.5Zm0 160Q360-463 360-480t-11.5-28.5Q337-520 320-520t-28.5 11.5Q280-497 280-480t11.5 28.5Q303-440 320-440t28.5-11.5Zm0 160Q360-303 360-320t-11.5-28.5Q337-360 320-360t-28.5 11.5Q280-337 280-320t11.5 28.5Q303-280 320-280t28.5-11.5ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h440l200 200v440q0 33-23.5 56.5T760-120H200Zm0-80h560v-400H600v-160H200v560Zm0-560v160-160 560-560Z",
+    "table_rows": "M760-200v-120H200v120h560Zm0-200v-160H200v160h560Zm0-240v-120H200v120h560ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z",
+    "task_alt": "M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z",
+    "waves": "M80-146v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62.5-8.5q37.5 0 62.5 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-174.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-164 544.5-155t-64.5 9q-39 0-64.5-9t-46-19.5Q349-185 329-193.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-164 143.5-155T80-146Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-352.5q-21-10.5-41-19t-49-8.5q-29 0-49.5 8.5t-41 19Q569-342 544-333t-64 9q-39 0-64.5-9t-46-19.5Q349-363 329-371.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-342 143.5-333T80-324Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-530.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-520 544.5-511t-64.5 9q-39 0-64.5-9t-46-19.5Q349-541 329-549.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-520 143.5-511T80-502Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-708.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-698 544.5-689t-64.5 9q-39 0-64.5-9t-46-19.5Q349-719 329-727.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-698 143.5-689T80-680Z",
+}
+
+ICON_PX = 28
+
+
 def wrap(text: str, width_px: int) -> list[str]:
     return textwrap.wrap(text, max(8, (width_px - 2 * SVG_PAD) // SVG_CHAR_PX))
 
@@ -224,19 +244,33 @@ class Flow:
         self.parts: list[str] = []
         self.bottom = 0
 
+    def icon(self, name: str, x: float, y: float, *, fill: str = "currentColor",
+             px: int = ICON_PX) -> None:
+        self.parts.append(
+            f'<svg x="{x}" y="{y}" width="{px}" height="{px}" viewBox="0 -960 960 960">'
+            f'<path d="{ICONS[name]}" fill="{fill}"/></svg>')
+
     def box(self, x: int, y: int, w: int, lines: list[str], *, fill: str | None = None,
             stroke: str = "currentColor", stroke_w: float = 1.2, dashed: bool = False,
-            text_fill: str = "currentColor", bold_first: bool = False) -> tuple[int, int, int, int]:
-        h = SVG_LINE_PX * len(lines) + 2 * SVG_PAD
+            text_fill: str = "currentColor", bold_first: bool = False,
+            icon: str | None = None) -> tuple[int, int, int, int]:
+        h = max(SVG_LINE_PX * len(lines) + 2 * SVG_PAD, ICON_PX + 2 * SVG_PAD if icon else 0)
         dash = ' stroke-dasharray="6 4"' if dashed else ""
         self.parts.append(
             f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="4" '
             f'fill="{fill or "none"}" stroke="{stroke}" stroke-width="{stroke_w}"{dash}/>')
+        # The icon sits at the left edge, vertically centred; the text is centred on what
+        # is left of the box so the two never overlap.
+        tx = x + w / 2
+        if icon:
+            self.icon(icon, x + SVG_PAD, y + (h - ICON_PX) / 2, fill=text_fill)
+            tx = x + SVG_PAD + ICON_PX + (w - SVG_PAD - ICON_PX) / 2
+        y_text = y + (h - SVG_LINE_PX * len(lines)) / 2
         for i, line in enumerate(lines):
             weight = ' font-weight="bold"' if bold_first and i == 0 else ""
-            ty = y + SVG_PAD + SVG_LINE_PX * (i + 1) - 4
+            ty = y_text + SVG_LINE_PX * (i + 1) - 4
             self.parts.append(
-                f'<text x="{x + w / 2}" y="{ty}" text-anchor="middle" fill="{text_fill}"'
+                f'<text x="{tx}" y="{ty}" text-anchor="middle" fill="{text_fill}"'
                 f'{weight}>{line}</text>')
         self.bottom = max(self.bottom, y + h)
         return x, y, w, h
@@ -262,11 +296,31 @@ class Flow:
                 f'<text x="{x}" y="{y + SVG_LINE_PX * i}" text-anchor="{anchor}" '
                 f'fill="currentColor">{line}</text>')
 
+    def stack(self, cx: int, y: int, n: int, clade: set[int], *, removed: bool = False,
+              w: int = 70) -> int:
+        """A database as a stack of entries, one line each, centred on cx from y down.
+
+        Indices in `clade` are the entries from the query's own clade: drawn in C_CLADE, or
+        left as a gap when `removed`. Returns the y below the stack.
+        """
+        step = 6
+        for i in range(n):
+            if i in clade and removed:
+                continue
+            colour = C_CLADE if i in clade else "currentColor"
+            self.parts.append(
+                f'<rect x="{cx - w / 2}" y="{y + i * step}" width="{w}" height="3" rx="1.5" '
+                f'fill="{colour}"/>')
+        return y + n * step
+
     def swatch(self, x: int, y: int, text: str, *, fill: str | None = None,
-               stroke: str = "currentColor", dashed: bool = False, arrow: bool = False) -> int:
+               stroke: str = "currentColor", dashed: bool = False, arrow: bool = False,
+               icon: str | None = None) -> int:
         """One legend entry at (x, y); returns the x where the next one can start."""
         if arrow:
             self.line(x, y - 4, x + 22, y - 4, arrow=True)
+        elif icon:
+            self.icon(icon, x, y - 15, px=20)
         else:
             dash = ' stroke-dasharray="4 3"' if dashed else ""
             self.parts.append(
@@ -320,63 +374,107 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     x = f.swatch(x, y, "iterative search", stroke=C_ITER)
     x = f.swatch(x, y, "placed by a sequence arm", fill=C_PLACED, stroke=C_PLACED)
     f.swatch(x, y, "dark to every arm", fill=C_DARK, stroke=C_DARK)
+    y = 62
+    x = 20
+    x = f.swatch(x, y, "query sequences", icon="genetics")
+    x = f.swatch(x, y, "target database", icon="database")
+    x = f.swatch(x, y, "a search tool", icon="search")
+    x = f.swatch(x, y, "hits", icon="table_rows")
+    y = 84
+    x = 20
+    x = f.swatch(x, y, "placed", icon="task_alt")
+    x = f.swatch(x, y, "dark", icon="search_off")
+    x = f.swatch(x, y, "report", icon="summarize")
+    f.swatch(x, y, "an entry from the query's own clade", fill=C_CLADE, stroke=C_CLADE)
 
     half = 350
     lx, rx = 20, 410
     lmid, rmid = lx + half // 2, rx + half // 2
 
-    # Row A: the two inputs.
-    ya = 66
-    a_l = f.box(lx, ya, half, [f"{species} proteome", f"{num(total)} proteins"], bold_first=True)
-    a_r = f.box(rx, ya, half, ["reviewed Swiss-Prot", f"{num(sp_total)} entries"], bold_first=True)
+    # Row A: the two inputs, each column headed by its role. The direction is the one a
+    # new genome faces (the proteome asks, Swiss-Prot answers), which is the reverse of
+    # every other pipeline here, so it is written out rather than left to position.
+    f.parts.append(f'<text x="{lmid}" y="70" text-anchor="middle" fill="currentColor" '
+                   f'font-weight="bold" font-size="14">QUERY: what is searched</text>'.replace('y="70"', 'y="116"'))
+    f.parts.append(f'<text x="{rmid}" y="70" text-anchor="middle" fill="currentColor" '
+                   f'font-weight="bold" font-size="14">TARGET DATABASE: what is searched against</text>'.replace('y="70"', 'y="116"'))
+    ya = 126
+    a_l = f.box(lx, ya, half, [f"query: {species} proteome", f"{num(total)} proteins"],
+                bold_first=True, icon="genetics")
+    a_r = f.box(rx, ya, half, ["target: reviewed Swiss-Prot", f"{num(sp_total)} entries"],
+                bold_first=True, icon="database")
 
     # Row B: chunks and the clade-excluded reference.
-    yb = a_l[1] + a_l[3] + 64
+    # The target's construction as a cartoon: Swiss-Prot as a stack of entries with the
+    # query's own clade marked, then the same stack with those entries gone. Two of eleven
+    # lines stand for {excluded} of {sp_total}: far larger than life, and the caption says so.
+    a_bot = a_r[1] + a_r[3]
+    y_cart = a_bot + 26
+    n_lines, clade_idx = 11, {3, 7}
+    f.line(rmid, a_bot, rmid, y_cart - 8)
+    f.label(rmid - 105, y_cart - 10, ["Swiss-Prot"])
+    f.label(rmid + 105, y_cart - 10, [f"minus {clade_txt}"])
+    y_stack_end = f.stack(rmid - 105, y_cart, n_lines, clade_idx)
+    f.stack(rmid + 105, y_cart, n_lines, clade_idx, removed=True)
+    y_mid = y_cart + (n_lines * 6) // 2
+    f.line(rmid - 60, y_mid, rmid + 60, y_mid, arrow=True)
+    f.label(rmid, y_mid - 8, [f"remove {clade_txt}"])
+    frac_txt = pct(excluded / sp_total, 2) if excluded is not None and sp_total else "n/a"
+    f.label(rmid, y_stack_end + 20, wrap(
+        f"{num(excluded)} of {num(sp_total)} entries ({frac_txt}), drawn far larger than life",
+        half - 20))
+    yb = y_stack_end + 20 + SVG_LINE_PX * 2 + 14
+    f.line(rmid, y_stack_end + 20 + SVG_LINE_PX * 2 - 4, rmid, yb, arrow=True)
     f.step(lmid, a_l[1] + a_l[3], yb, wrap(
         f"split into chunks of {num(chunk)}, headers cut to the accession", half - 40))
-    f.step(rmid, a_r[1] + a_r[3], yb, wrap(
-        f"remove the query's own clade, {clade_txt}: {num(excluded)} entries", half - 40))
-    b_l = f.box(lx, yb, half, [f"{num(n_chunks)} query chunks"])
-    b_r = f.box(rx, yb, half, [f"reference: Swiss-Prot minus {clade_txt}", f"{num(kept)} entries"])
+    b_l = f.box(lx, yb, half, [f"query: {num(n_chunks)} chunks of the proteome"], icon="genetics")
+    b_r = f.box(rx, yb, half, [f"target: Swiss-Prot minus {clade_txt}", f"{num(kept)} entries"],
+                icon="database")
 
     # Row C: the three arms, every chunk against the reference. Both B boxes feed one bar,
     # and the bar feeds each arm, so six crossing arrows become two lines and three.
     third = 230
     cols = [20, 275, 530]
     cmids = [c + third // 2 for c in cols]
-    ybar = max(b_l[1] + b_l[3], b_r[1] + b_r[3]) + 34
+    search = ["every query chunk searched against the target",
+              f"{num(n_chunks)} chunks x 3 arms = {num(3 * n_chunks) if n_chunks else 'n/a'} searches"]
+    ybar = max(b_l[1] + b_l[3], b_r[1] + b_r[3]) + 18 + SVG_LINE_PX * len(search)
     yc = ybar + 26
     f.line(lmid, b_l[1] + b_l[3], lmid, ybar)
     f.line(rmid, b_r[1] + b_r[3], rmid, ybar)
     f.line(cmids[0], ybar, cmids[-1], ybar)
-    f.label(SVG_W // 2, ybar - 6, [f"every chunk against the reference: {num(n_chunks)} chunks x 3 arms"])
+    f.label(SVG_W // 2, ybar - 6 - SVG_LINE_PX * (len(search) - 1), search)
     for cm in cmids:
         f.line(cm, ybar, cm, yc, arrow=True)
     arm_boxes = [
-        f.box(cols[0], yc, third, ["phmmer", "one pass"], stroke=C_SINGLE, stroke_w=2.5, bold_first=True),
+        f.box(cols[0], yc, third, ["phmmer", "one pass"], stroke=C_SINGLE, stroke_w=2.5,
+              bold_first=True, icon="search"),
         f.box(cols[1], yc, third, ["jackhmmer", f"{pick(run, 'jackhmmer_iterations', default=3)} iterations"],
-              stroke=C_ITER, stroke_w=2.5, bold_first=True),
+              stroke=C_ITER, stroke_w=2.5, bold_first=True, icon="search"),
         f.box(cols[2], yc, third, ["mmseqs2", f"sensitivity {pick(run, 'mmseqs2_sensitivity', default=7)}, "
-                                   "3 iterations"], stroke=C_ITER, stroke_w=2.5, bold_first=True),
+                                   "3 iterations"], stroke=C_ITER, stroke_w=2.5, bold_first=True,
+              icon="search"),
     ]
 
     # Row D: all hits at the report cutoff.
     yd = arm_boxes[0][1] + arm_boxes[0][3] + 30
     for cm, b in zip(cmids, arm_boxes):
         f.line(cm, b[1] + b[3], cm, yd, arrow=True)
-    d = f.box(20, yd, 740, [f"hits from all three arms, kept at E &le; {evalue_txt(pick(run, 'evalue_report', default=10))}",
-                            f"{num(raw_rows)} rows"])
+    d = f.box(20, yd, 740, [f"hits of query proteins in the target, all three arms, kept at "
+                            f"E &le; {evalue_txt(pick(run, 'evalue_report', default=10))}",
+                            f"{num(raw_rows)} rows"], icon="table_rows")
 
     # Row E: the call, placed against dark.
     ye = d[1] + d[3] + 64
-    call = wrap(f"a protein is placed when any arm has a hit at E &le; {evalue_txt(evalue)}, dark when none has", 330)
+    call = [f"placed: some arm has a target hit at E &le; {evalue_txt(evalue)}",
+            "dark: no arm has one"]
     f.step(lmid, d[1] + d[3], ye, [])
     f.step(rmid, d[1] + d[3], ye, [])
     f.label(SVG_W // 2, d[1] + d[3] + 24, call)
-    e_l = f.box(lx, ye, half, ["placed by at least one arm", f"{num(placed)} proteins ({pct(1 - frac) if frac is not None else 'n/a'})"],
-                fill=C_PLACED, stroke=C_PLACED, text_fill="#ffffff", bold_first=True)
-    e_r = f.box(rx, ye, half, ["dark to every arm", f"{num(dark)} proteins ({pct(frac)})"],
-                fill=C_DARK, stroke=C_DARK, text_fill="#ffffff", bold_first=True)
+    e_l = f.box(lx, ye, half, ["placed: a target hit from at least one arm", f"{num(placed)} proteins ({pct(1 - frac) if frac is not None else 'n/a'})"],
+                fill=C_PLACED, stroke=C_PLACED, text_fill="#ffffff", bold_first=True, icon="task_alt")
+    e_r = f.box(rx, ye, half, ["dark: no target hit from any arm", f"{num(dark)} proteins ({pct(frac)})"],
+                fill=C_DARK, stroke=C_DARK, text_fill="#ffffff", bold_first=True, icon="search_off")
 
     # Row F: the optional arms, each reading both sets.
     ybar2 = e_l[1] + e_l[3] + 34
@@ -387,20 +485,23 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     f.label(SVG_W // 2, ybar2 - 6, ["dark set against placed set"])
     for cm in cmids:
         f.line(cm, ybar2, cm, yf, arrow=True)
+    tw = third - ICON_PX - SVG_PAD
     opt = [
-        ("length", ["protein length"] + wrap("read from the FASTA; is the dark set short gene models?", third)),
-        ("disorder", ["predicted disorder"] + wrap("metapredict, mean per protein; is the dark set unfolded?", third)),
-        ("kmerseek", ["kmerseek regions"] + wrap(kmerseek_line, third)
-                     + wrap("dark proteins with at least one region", third)),
+        ("length", "straighten", ["protein length"]
+         + wrap("read from the FASTA; is the dark set short gene models?", tw)),
+        ("disorder", "waves", ["predicted disorder"]
+         + wrap("metapredict, mean per protein; is the dark set unfolded?", tw)),
+        ("kmerseek", "search", ["kmerseek regions"] + wrap(kmerseek_line, tw)
+         + wrap("dark proteins with at least one region", tw)),
     ]
-    f_boxes = [f.box(c, yf, third, lines, dashed=not arms[key], bold_first=True)
-               for c, (key, lines) in zip(cols, opt)]
+    f_boxes = [f.box(c, yf, third, lines, dashed=not arms[key], bold_first=True, icon=ic)
+               for c, (key, ic, lines) in zip(cols, opt)]
 
     # Row G: this report.
     yg = max(b[1] + b[3] for b in f_boxes) + 30
     for cm, b in zip(cmids, f_boxes):
         f.line(cm, b[1] + b[3], cm, yg, arrow=True)
-    f.box(20, yg, 740, ["this report: one panel per step, in the order above"])
+    f.box(20, yg, 740, ["this report: one panel per step, in the order above"], icon="summarize")
     return f.render()
 
 
@@ -424,24 +525,27 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
     pairs = pick(gain, "mask_pairs", default=[]) or []
     if pairs:
         kmerseek_line = (f"{len(pairs)} alphabet x k pair(s), low-complexity mask on and off; "
-                         f"reference indexed once per setting, every chunk searched")
+                         f"target indexed once per setting, every query chunk searched")
     elif combos:
-        kmerseek_line = (f"{len(combos)} alphabet x k x mask setting(s); reference indexed once "
-                         f"per setting, every chunk searched")
+        kmerseek_line = (f"{len(combos)} alphabet x k x mask setting(s); target indexed once "
+                         f"per setting, every query chunk searched")
     else:
-        kmerseek_line = "reference indexed per alphabet, k and mask setting; every chunk searched"
+        kmerseek_line = "target indexed per alphabet, k and mask setting; every query chunk searched"
     arms = {"length": length_df is not None, "disorder": disorder_df is not None,
             "kmerseek": bool(combos)}
 
     steps = [
-        f"<b>Query.</b> The {species} proteome, {num(total)} proteins, split into "
+        f"<b>Query: the {species} proteome.</b> {num(total)} proteins, split into "
         f"{num(n_chunks)} chunks of {num(chunk)} so each search is one job. Headers are "
         f"cut to the bare accession first, because the three searches and kmerseek each "
-        f"report a UniProt header differently and the dark call needs one key.",
-        f"<b>Reference.</b> Reviewed Swiss-Prot, {num(sp_total)} entries, with every "
+        f"report a UniProt header differently and the dark call needs one key. The "
+        f"direction is the one a new genome faces: the proteome asks, Swiss-Prot answers. "
+        f"(The other pipelines in this repository run the reverse, human as the query "
+        f"against a proteome as the target.)",
+        f"<b>Target database: reviewed Swiss-Prot.</b> {num(sp_total)} entries, with every "
         f"entry from the query's own clade removed ({clade_txt}: {num(excluded)} "
         f"entries), leaving {num(kept)}. Every species this pipeline runs gets the same "
-        f"construction.",
+        f"construction. The pipeline's files call this the reference.",
         f"<b>Three sequence searches</b>, every chunk against the reference: phmmer (one "
         f"pass), jackhmmer ({pick(run, 'jackhmmer_iterations', default=3)} iterations, the "
         f"profile rebuilt from the hits after each round) and mmseqs2 (sensitivity "
@@ -459,8 +563,8 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
                      "metapredict, dark against placed.")
     if arms["kmerseek"]:
         steps.append(
-            f"<b>kmerseek.</b> The reference indexed once per alphabet, k and "
-            f"low-complexity mask setting, every chunk searched against it. A protein "
+            f"<b>kmerseek.</b> The target indexed once per alphabet, k and "
+            f"low-complexity mask setting, every query chunk searched against it. A protein "
             f"counts as <i>reached</i> when kmerseek reports at least one region on it "
             f"(region score &ge; {pick(run, 'min_region_score', default=1.3)}, query "
             f"p &le; {pick(run, 'max_query_pvalue', default=0.05)}, at least "
