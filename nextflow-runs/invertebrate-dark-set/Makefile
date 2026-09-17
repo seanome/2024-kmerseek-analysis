@@ -109,7 +109,7 @@ LADDER_HEAD_XMX   ?= 24g
 
 .PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
-        multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan sweep-dark-set
+        multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -121,6 +121,7 @@ help:
 	@echo "  run-dark-set-sbatch     SPECIES=<...>  driver on a compute node (USE THIS)"
 	@echo "  watch-dark-set          SPECIES=<...>  follow a running driver's log"
 	@echo "  stop-dark-set           SPECIES=<...>  cancel the driver and its tasks"
+	@echo "  cancel-orphan-tasks     cancel nf-darkSet_ tasks left in the queue after a driver died"
 	@echo "  status-dark-set         SPECIES=<...>  did it end, what killed it, what it said"
 	@echo "                          add HISTORY=1 for one line per past run"
 	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
@@ -274,7 +275,7 @@ run-dark-set-sbatch: check-species check-inputs queue-note
 	 if [ "$$n" != 0 ] && ! squeue -u $$USER -h -o '%j' 2>/dev/null | grep -q '^nfdrv-'; then \
 	   echo "WARNING: $$n nf-darkSet_ task(s) are in the queue with no driver alive -- orphans of"; \
 	   echo "         a stopped run. An orphaned index build finishing under this run collides on"; \
-	   echo "         storeDir. Clear them first:  make sweep-dark-set"; exit 1; fi
+	   echo "         storeDir. Cancel them first:  make cancel-orphan-tasks"; exit 1; fi
 	@if squeue -u $$USER -h -o '%j' 2>/dev/null | grep -qx '$(HEAD_JOBNAME)'; then \
 	  echo "a driver named $(HEAD_JOBNAME) is already queued or running:"; \
 	  squeue -u $$USER -o '%.12i %.2t %.10M %j' | grep '$(HEAD_JOBNAME)'; \
@@ -377,14 +378,17 @@ stop-dark-set: check-run
 	     squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i" | grep -q . || break; sleep 5; \
 	   done; \
 	 fi; \
-	 $(MAKE) --no-print-directory sweep-dark-set
+	 $(MAKE) --no-print-directory cancel-orphan-tasks
 
 # Cancel every task this pipeline's processes submitted, whatever run they belong to.
+# Named for what it does, not "sweep": in this Makefile a sweep is the alphabet x ksize
+# parameter sweep (run-ladder-sweep-sbatch), and a cleanup target with the same word in
+# it read as a second kind of run.
 # Tasks are named nf-darkSet_<process>_(<tag>) by Nextflow, so the prefix is the only
 # handle; a single-species run and the ladder share it. Run this only when no driver of
 # this pipeline is alive, which is what stop-dark-set checks first. Cancelling a few
 # hundred jobs takes a minute or two under slurmctld's RPC throttle; that is normal.
-sweep-dark-set:
+cancel-orphan-tasks:
 	@ids=$$(squeue -u $$USER -h -o "%i %j" | awk '$$2 ~ /^nf-darkSet_/ {print $$1}'); \
 	 n=$$(echo "$$ids" | grep -c . || true); \
 	 if [ "$$n" = 0 ]; then echo "no nf-darkSet_ tasks left in the queue"; exit 0; fi; \
