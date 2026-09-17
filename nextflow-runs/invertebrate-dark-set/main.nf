@@ -866,9 +866,17 @@ workflow darkSet {
         // the process N positional arguments, the bug that already broke kmerseekDarkGain
         // here once.
         extras = report_extra.groupTuple()
+        // The overview quotes the clade removed and the reference's own entry counts, so
+        // each species' row is joined to its clade and then to that clade's summary.json.
+        clade_of    = Channel.fromList(SPECIES.collect { s -> tuple(s.label, s.clade) })
+        ref_summary = ref_ch.map { cl, dir -> tuple(cl, dir.resolve('summary.json')) }
         darkReportFrom(dark.map { sp, _dp, js -> tuple(sp, js) }
             .join(extras, remainder: true)
-            .map { sp, js, ex -> tuple(sp, js, ex ?: []) })
+            .map { sp, js, ex -> tuple(sp, js, ex ?: []) }
+            .join(clade_of)
+            .map { sp, js, ex, cl -> tuple(cl, sp, js, ex) }
+            .combine(ref_summary, by: 0)
+            .map { cl, sp, js, ex, rs -> tuple(sp, cl, js, rs, ex) })
     }
 }
 
@@ -884,13 +892,35 @@ workflow darkSet {
 workflow darkReport {
     if (!params.species) error "--species is required"
 
-    def rows = params.species.toString().tokenize(',')*.trim().findAll { it }.collect { sp ->
+    def names = params.species.toString().tokenize(',')*.trim().findAll { it }
+    if (names.size() > 1 && params.exclude_clade) {
+        error "--exclude_clade overrides ONE species' registry row; with ${names.size()} " +
+              "species there is no way to say which"
+    }
+    def reg      = loadRegistry()
+    def ref_root = params.reference_cache ?: "${params.outdir}/reference"
+
+    def rows = names.collect { sp ->
         def dir = file("${params.outdir}/${sp}")
         def summary = file("${dir}/${sp}_dark_summary.json")
         if (!summary.exists()) {
             error "no dark summary at ${summary}\n" +
                   "  This entry reports on a finished run; it does not compute one.\n" +
                   "  Run the dark set first:  make run-dark-set SPECIES=${sp}"
+        }
+
+        // The clade the run removed, and that reference's own summary. The overview
+        // section quotes both; a re-render that cannot find the reference the run used
+        // is pointed at --reference_cache rather than left to describe the wrong one.
+        def clade = params.exclude_clade ?: reg[sp]?.annotate_clade
+        if (!clade) error "no clade to exclude for ${sp} in the registry; pass --exclude_clade"
+        def ref_summary = file("${ref_root}/minus_${clade}/summary.json")
+        if (!ref_summary.exists()) {
+            error "no reference summary at ${ref_summary}\n" +
+                  "  The report quotes how many Swiss-Prot entries the reference kept and " +
+                  "removed.\n" +
+                  "  Pass --reference_cache <dir> pointing at where the run built " +
+                  "minus_${clade}/ (make passes REF_CACHE)."
         }
 
         // Named suffixes, not a glob. A glob over the directory would also sweep in
@@ -906,7 +936,7 @@ workflow darkReport {
         log.info "  reporting on : ${dir}"
         log.info "  optional arms: " + (optional_products
             ? optional_products*.name.join(', ') : "none found, their sections are omitted")
-        tuple(sp, summary, optional_products)
+        tuple(sp, clade, summary, ref_summary, optional_products)
     }
 
     darkReportFrom(Channel.fromList(rows))

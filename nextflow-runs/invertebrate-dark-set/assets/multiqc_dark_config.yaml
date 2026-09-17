@@ -11,21 +11,14 @@ title: "Invertebrate dark set"
 subtitle: "The proteins phmmer, jackhmmer and mmseqs2 all fail to place, and what kmerseek reaches inside them"
 intro_text: >
   The dark set is every protein in an invertebrate proteome that three sequence searches
-  <i>all</i> fail to place into reviewed Swiss-Prot with the query's own clade removed. It
-  is the denominator of the proteome-annotate claim: a protein phmmer already places is not
-  territory kmerseek can add anything in, so the only proteins worth arguing about are the
-  ones where every arm returned nothing.
+  (phmmer, jackhmmer, mmseqs2) <i>all</i> fail to place into reviewed Swiss-Prot with the
+  query's own clade removed. It is the only part of the proteome where kmerseek can add
+  anything, and it needs no answer key: "no arm hit this protein" is a property of the
+  searches alone, so it can be measured on a species with no curated entries at all.
   <br><br>
-  <b>This number needs no answer key.</b> C. gigas has 16 reviewed Swiss-Prot entries and
-  Botryllus has none, so neither can be scored for accuracy until the structural key
-  exists. "No arm hit this protein" is a property of the searches alone, which is why it
-  can be measured now.
-  <br><br>
-  <b>What the report cannot tell you.</b> Reach is not accuracy: a kmerseek region on a
-  dark protein says something was found there, not that the family label is right. And a
-  dark protein may be a real protein whose homologs sequence search cannot reach, or a
-  spurious gene model with nothing to find. The length and disorder panels are the cheap
-  discriminators between those two; the annotation evidence is what settles it.
+  The first section says what was run, with this run's numbers, why it was built this
+  way, and how the data flows from the two inputs to the panels. Every panel after it is
+  one step of that flow.
 
 report_comment: >
   The low-complexity mask is reported as a PAIR, on and off, in every panel that touches
@@ -57,7 +50,10 @@ plots_force_interactive: true
 # half-step to slot into: inserting a panel between two consecutive integers means moving
 # the block, not fractionalising.
 report_section_order:
-  # The headline first: every other panel is a fraction of, or a qualification of, this
+  # What was done and why, with the data-flow diagram. Before the numbers, because every
+  # number below is read against the construction this section describes.
+  dark_overview: { order: 5 }
+  # The headline next: every other panel is a fraction of, or a qualification of, this
   # one number.
   dark_headline: { order: 10 }
   dark_headline_table: { order: 11 }

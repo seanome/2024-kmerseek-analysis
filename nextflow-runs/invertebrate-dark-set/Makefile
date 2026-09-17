@@ -220,7 +220,7 @@ run-dark-set: check-species check-inputs queue-note
 multiqc-dark-set: check-species check-inputs
 	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -entry darkReport -resume \
 	  --species $(SPECIES) --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
-	  --outdir $(OUTDIR) --report_only true $(NF_ARGS)
+	  --outdir $(OUTDIR) --reference_cache $(REF_CACHE) --report_only true $(NF_ARGS)
 	@echo
 	@echo "report: $(OUTDIR)/$(SPECIES)/$(SPECIES)_dark_set_multiqc.html"
 
