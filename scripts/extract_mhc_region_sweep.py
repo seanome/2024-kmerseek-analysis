@@ -58,16 +58,23 @@ def main():
                    "hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,"
                    "hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2")
     p.add_argument("--lc", default="true", choices=["true", "false", "both"])
+    p.add_argument("--species", default=None,
+                   help="comma-separated target species to keep. The midi-plus results "
+                        "directory is shared with the 77-target all-QfO run; without this "
+                        "filter every HP file of every species is read.")
     p.add_argument("--threads", type=int, default=8)
     a = p.parse_args()
 
     keep = set(open(a.mhc_core).read().split())
     alphabets = set(a.alphabets.split(","))
+    species = set(a.species.split(",")) if a.species else None
     files = []
     for f in sorted(glob.glob(f"{a.results}/kmerseek/human_vs_*.regions.parquet")):
         m = re.match(r"human_vs_(\w+?)\.([\w]+)\.k(\d+)\.lc(true|false)\.regions\.parquet",
                      os.path.basename(f))
         if not m or m.group(2) not in alphabets:
+            continue
+        if species is not None and m.group(1) not in species:
             continue
         if a.lc != "both" and m.group(4) != a.lc:
             continue

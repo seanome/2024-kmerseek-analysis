@@ -133,9 +133,16 @@ def main():
     p.add_argument("--region-combos",
                    default="hp_pbotc_1st_ed2:19,hp_pbotc_1st_ed2:21,hp_pbotc_1st_ed2:24,"
                            "hp_thomas_dill2:26,protein20:10,dayhoff6:12,funcgroups8:12",
-                   help="alphabet:ksize pairs, lctrue only. Every ksize of every alphabet "
-                        "is ~11 GB of reads and tens of millions of rows; the notebooks "
-                        "only need the arms the calls tables single out.")
+                   help="alphabet:ksize[:lc] triples, lc defaulting to true. Every ksize "
+                        "of every alphabet is ~11 GB of reads and tens of millions of "
+                        "rows; the notebooks only need the arms the calls tables single "
+                        "out. Botryllus was searched only with the all-QfO run's "
+                        "lcfalse arms, so its combos carry an explicit :false.")
+    p.add_argument("--species", default=None,
+                   help="comma-separated target species to keep. The midi-plus results "
+                        "directory is shared with the 77-target all-QfO run, whose "
+                        "kmerseek files sit next to the nine scored species' and would "
+                        "otherwise be read too.")
     p.add_argument("--threads", type=int, default=8)
     p.add_argument("--only", default="ABCDE", help="which of the five products to build")
     a = p.parse_args()
@@ -145,11 +152,16 @@ def main():
     window = set(open(a.mhc_window).read().split())
     core = set(open(a.mhc_core).read().split())
     focus = set(json.load(open(a.focus_arms)))
+    species = set(a.species.split(",")) if a.species else None
+
+    def keep_species(sp):
+        return species is None or sp in species
     print(f"MHC window genes: {len(window)}   core: {len(core)}   focus arms: {len(focus)}",
           flush=True)
 
     all_calls = sorted(glob.glob(f"{R}/calls/pfam.*.calls.parquet"))
-    calls = [c for c in all_calls if not c.endswith(".dedup.calls.parquet")]
+    calls = [c for c in all_calls if not c.endswith(".dedup.calls.parquet")
+             and keep_species(parse_call_name(c)["species"])]
     print(f"pfam call files: {len(calls)} (of {len(all_calls)} incl. dedup)", flush=True)
 
     # ---- A + B: every arm, aggregated -------------------------------------------------
@@ -178,14 +190,20 @@ def main():
     # ---- D: kmerseek region hits (target side) ----------------------------------------
     if "D" in only:
         print("D: kmerseek region hits...", flush=True)
-        combos = {(c.split(":")[0], int(c.split(":")[1])) for c in a.region_combos.split(",")}
+        combos = set()
+        for c in a.region_combos.split(","):
+            parts = c.split(":")
+            lc = parts[2].lower() if len(parts) > 2 else "true"
+            combos.add((parts[0], int(parts[1]), lc))
         frames = []
         for f in sorted(glob.glob(f"{R}/kmerseek/human_vs_*.regions.parquet")):
             b = os.path.basename(f)
             m = re.match(r"human_vs_(\w+?)\.([\w]+)\.k(\d+)\.lc(true|false)\.regions\.parquet", b)
-            if not m or m.group(4) != "true" or (m.group(2), int(m.group(3))) not in combos:
+            if not m or (m.group(2), int(m.group(3)), m.group(4)) not in combos:
                 continue
             sp, alpha, k = m.group(1), m.group(2), int(m.group(3))
+            if not keep_species(sp):
+                continue
             try:
                 df = (pl.scan_parquet(f)
                         .with_columns(strip_acc(pl.col("query_name")).alias("query_acc"))
@@ -198,7 +216,8 @@ def main():
             if df.is_empty():
                 continue
             frames.append(df.with_columns(species=pl.lit(sp), alphabet=pl.lit(alpha),
-                                          ksize=pl.lit(k, dtype=pl.Int64)))
+                                          ksize=pl.lit(k, dtype=pl.Int64),
+                                          lc=pl.lit(m.group(4) == "true")))
         write(concat(frames), f"{OUT}/mhc_kmerseek_regions.parquet", "D kmerseek regions")
 
     # ---- E: baseline region hits ------------------------------------------------------
@@ -209,7 +228,7 @@ def main():
             tool = os.path.basename(os.path.dirname(f))
             b = os.path.basename(f)
             m = re.match(r"human_vs_(\w+?)\.", b)
-            if not m:
+            if not m or not keep_species(m.group(1)) or b.endswith("_skipped.tsv"):
                 continue
             names = (BASELINE_COLS[:7] + ["extra", "evalue"] if tool == "folddisco"
                      else BASELINE_COLS)
