@@ -81,11 +81,13 @@ MINI_N  ?= 200
 # `make stop-dark-set RUN=ladder` find the right head without spelling out nine species.
 RUN ?= $(SPECIES)
 
-# The nine QfO species of the midi-plus ladder, in divergence order from human. The same
-# list as qfo-pfam-region-benchmark's MIDI_TARGETS; botryllus is deliberately not in it,
+# Human plus the nine QfO species of the midi-plus ladder, in divergence order from
+# human. The nine are the same list as qfo-pfam-region-benchmark's MIDI_TARGETS. Human
+# subtracts Mammalia, the same clade as mouse, so the two share one reference and one set
+# of indexes and human adds only its searches. Botryllus is deliberately not in the list,
 # because its dark set is already published and this run is the scale to read it against.
 # Add it back with SPECIES= on the command line once the sweep is wanted on it too.
-LADDER_SPECIES ?= mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
+LADDER_SPECIES ?= human,mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
 
 # The ladder's own launch directory. Nextflow keeps its session lock, history and
 # .nextflow.log in the directory it is launched from, so a ladder head and a single-species
@@ -282,7 +284,7 @@ run-dark-set-sbatch: check-species check-inputs queue-note
 	@mkdir -p $(LAUNCH_DIR)
 	cd $(LAUNCH_DIR) && $(HEAD_SUBMIT) $(NF_RUN)
 
-# ---- the ladder: nine QfO species, the whole alphabet x ksize matrix ------------------
+# ---- the ladder: human + nine QfO species, the whole alphabet x ksize matrix ----------
 # Each species is the QUERY against reviewed Swiss-Prot minus its own clade, which is the
 # construction Botryllus got, so its numbers land on the same axis. Species whose
 # annotation is deep enough that a dark protein is a real miss rather than a gene-model

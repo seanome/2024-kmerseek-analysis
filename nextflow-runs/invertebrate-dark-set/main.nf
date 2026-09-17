@@ -117,14 +117,21 @@ params.with_kmerseek      = false
 // spectrum, which every kmerseekIndex task writes and which is the only thing that
 // predicted the ladder run's peaks (see kmerseekSearchMemory). These are the knobs.
 //
-// Retries multiply the first ask by kmerseek_memory_retry_factor per attempt. Two caps,
-// because hns has two kinds of node: a first attempt stays under
-// kmerseek_memory_first_max so it can land on the 121 nodes with 192-256 GB, and a retry
-// may grow to kmerseek_memory_max, which only the 15 bigmem nodes (1-1.5 TB) can take.
-// Ask for more than any node has and SLURM rejects the job outright rather than queueing.
-params.kmerseek_memory_first_max    = '250 GB'
+// Retries multiply the first ask by kmerseek_memory_retry_factor per attempt, up to
+// kmerseek_memory_max. hns has 121 nodes with 192-256 GB and 15 bigmem nodes with
+// 1-1.5 TB; ask for more than any node has and SLURM rejects the job outright rather
+// than queueing. kmerseek_memory_first_max used to hold the first ask at 250 GB so it
+// could land on the small nodes, with the bigmem nodes reserved for retries. The ladder
+// run (amazing_koch, 2026-09-16) showed what that costs: gbmr7 k11-12 asked the 250 GB
+// cap, died, asked 375 GB, died again, and only the third attempt could reach 500 GB --
+// three queue waits and up to 12 h of walltime for one search. Both caps are now the
+// ceiling: a task the model says needs a bigmem node goes there on its first attempt.
+// The retry factor is 2, not 1.5, for the same reason: the retries that completed in
+// that run peaked at 1.09-1.49x their first ask, and the 43 that died a second time
+// needed more than 1.5x, so a 1.5x step bought one more queue wait and nothing else.
+params.kmerseek_memory_first_max    = '500 GB'
 params.kmerseek_memory_max          = '500 GB'
-params.kmerseek_memory_retry_factor = 1.5
+params.kmerseek_memory_retry_factor = 2.0
 params.kmerseek_search_memory_floor = '24 GB'
 params.kmerseek_index_memory_floor  = '48 GB'
 // Search-memory model, peak GB = headroom x (base + slope x sqrt(load)); see
@@ -132,6 +139,23 @@ params.kmerseek_index_memory_floor  = '48 GB'
 params.kmerseek_search_memory_base     = 36
 params.kmerseek_search_memory_slope    = 2.34
 params.kmerseek_search_memory_headroom = 2.0
+// A per-alphabet multiplier on top of the model. The spectrum load is an INDEX-side
+// number and cannot see how many hits a query chunk will materialise, and that is where
+// the model was wrong: in the ladder run (6_143 first attempts audited on 2026-09-17,
+// requested --mem against peak_rss) the first attempt was cgroup-killed on 74% of gbmr7
+// searches, 68% of hp_kyte_doolittle2, 42% of hp_thomas_dill_no_c2, 34% of gbmr4 and 32%
+// of hp_thomas_dill2, against 0-1% for protein20, uniprot18 and hp_lehninger2. Tasks that
+// did complete used a median 63% (p90 87%) of their ask, so the model is not padded, it
+// is mis-shaped for those alphabets. The factors are the smallest step of 1.25 above the
+// worst peak/ask ratio measured for each alphabet; where most of the alphabet's tasks
+// still had no completed attempt (gbmr7 193 of 268, hp_kyte_doolittle2 226 of 318) the
+// ratio is censored at the 1.5x retry that also died, and the factor is 2. An alphabet
+// not listed gets 1.0.
+params.kmerseek_search_memory_alphabet_factor = [
+    gbmr7: 2.0, hp_kyte_doolittle2: 2.0, hp_thomas_dill_no_c2: 2.0, gbmr4: 2.0,
+    hp_thomas_dill2: 1.5, dayhoff6: 1.5, mmseqs12: 1.5, sdm12: 1.5, wwmj5: 1.5, hsdm17: 1.5,
+    hp_lehninger_hpc3: 1.25, hp_pbotc_1st_ed2: 1.25, wass14: 1.25,
+]
 // A combo whose PREDICTED median peak, times this, is above kmerseek_memory_max is not
 // searched at all; see the skip in the workflow. 2.0 is the worst chunk-to-median ratio
 // the ladder run measured (2.54, zebrafish and fly) rounded down, so a combo that passes
@@ -260,13 +284,14 @@ def kmerseekIndexMemory = { String label, int ksize, int attempt ->
     memoryLadder(Math.max(floorGb, gb), attempt)
 }
 
-def kmerseekSearchMemory = { Path index_dir, String lowcomp, int attempt ->
+def kmerseekSearchMemory = { Path index_dir, String alphabet, String lowcomp, int attempt ->
     def load = SPECTRUM_LOAD[index_dir.name]
     if (load == null) {
         error "no spectrum load cached for ${index_dir.name}: the skip filter in the workflow " +
               "is what fills the cache, and every kmerseekSearch input has to pass through it"
     }
-    double gb      = (params.kmerseek_search_memory_headroom as double)
+    double factor  = (params.kmerseek_search_memory_alphabet_factor[alphabet] ?: 1.0) as double
+    double gb      = (params.kmerseek_search_memory_headroom as double) * factor
                      * searchMedianGb(load as double, lowcomp)
     double floorGb = MemoryUnit.of(params.kmerseek_search_memory_floor).toGiga()
     memoryLadder(Math.max(floorGb, gb), attempt)
@@ -494,7 +519,7 @@ process kmerseekSearch {
     // cgroup-killed on 7 of 23 Botryllus chunks of hp_thomas_dill2 k23 with the mask OFF
     // (exit 137) and every retry cost a full requeue; the per-combo model asks for what the
     // measured peak needs the first time.
-    memory { kmerseekSearchMemory(index_dir, lowcomp, task.attempt) }
+    memory { kmerseekSearchMemory(index_dir, alphabet, lowcomp, task.attempt) }
 
     input:
     tuple val(species), val(clade), path(chunk), val(alphabet), val(ksize), val(lowcomp), path(index_dir)
