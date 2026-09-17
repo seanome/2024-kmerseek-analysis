@@ -138,7 +138,11 @@ params.kmerseek_index_memory_floor  = '48 GB'
 // kmerseekSearchMemory for what load is and where these numbers come from.
 params.kmerseek_search_memory_base     = 36
 params.kmerseek_search_memory_slope    = 2.34
-params.kmerseek_search_memory_headroom = 2.0
+// 1.5 is what the ladder sweep ran with (passed on the command line on 2026-09-16), and
+// the asks the per-alphabet factors below were measured against; the audited failure
+// rates and peak/ask ratios are all relative to headroom 1.5, so the two numbers move
+// together. 2.0 was the earlier default and over-asked for the alphabets that never die.
+params.kmerseek_search_memory_headroom = 1.5
 // A per-alphabet multiplier on top of the model. The spectrum load is an INDEX-side
 // number and cannot see how many hits a query chunk will materialise, and that is where
 // the model was wrong: in the ladder run (6_143 first attempts audited on 2026-09-17,
@@ -146,8 +150,9 @@ params.kmerseek_search_memory_headroom = 2.0
 // searches, 68% of hp_kyte_doolittle2, 42% of hp_thomas_dill_no_c2, 34% of gbmr4 and 32%
 // of hp_thomas_dill2, against 0-1% for protein20, uniprot18 and hp_lehninger2. Tasks that
 // did complete used a median 63% (p90 87%) of their ask, so the model is not padded, it
-// is mis-shaped for those alphabets. The factors are the smallest step of 1.25 above the
-// worst peak/ask ratio measured for each alphabet; where most of the alphabet's tasks
+// is mis-shaped for those alphabets. Those asks were headroom 1.5 x the model, which is
+// the default now. The factors are the smallest step of 1.25 above the worst peak/ask
+// ratio measured for each alphabet; where most of the alphabet's tasks
 // still had no completed attempt (gbmr7 193 of 268, hp_kyte_doolittle2 226 of 318) the
 // ratio is censored at the 1.5x retry that also died, and the factor is 2. An alphabet
 // not listed gets 1.0.

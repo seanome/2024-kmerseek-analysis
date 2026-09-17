@@ -302,10 +302,13 @@ run-dark-set-sbatch: check-species check-inputs queue-note
 # spectrum (see kmerseekSearchMemory in main.nf), and a combo no hns node can hold --
 # gbmr7 at k=9-10 against a 572k-sequence reference -- is skipped and named in the log
 # rather than run into three OOM kills; the first ladder attempt (2026-09-14) lost 259 of
-# 1_057 searches that way and ended on the third kill of one chunk. LOWCOMP=false runs the mask OFF only; see the note on
-# params.kmerseek_lowcomp in main.nf for what the pair guards against and why the ladder
-# may drop it. `make ladder-plan` prints the expansion without submitting anything.
-LOWCOMP ?=
+# 1_057 searches that way and ended on the third kill of one chunk. See the note on
+# params.kmerseek_lowcomp in main.nf for what the mask pair guards against and why the
+# ladder drops it. `make ladder-plan` prints the expansion without submitting anything.
+# false by default: the ladder ran the mask OFF only (2026-09-16), and a relaunch that
+# forgot to pass LOWCOMP=false doubled the sweep to 16_601 searches and 3_294 indexes.
+# LOWCOMP=true,false runs the pair.
+LOWCOMP ?= false
 LADDER_LC_ARGS := $(if $(LOWCOMP),--kmerseek_lowcomp $(LOWCOMP),)
 LADDER_NF_ARGS  = --kmerseek_sweep true --run_tag ladder \
                   --max_forks $(LADDER_MAX_FORKS) --queue_size $(LADDER_QUEUE_SIZE) \
