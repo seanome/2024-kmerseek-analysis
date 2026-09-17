@@ -79,11 +79,6 @@ def load_species_metadata(path: Path = SPECIES_REGISTRY) -> dict:
     return meta
 
 
-UNIPROT_API = "https://rest.uniprot.org/uniprotkb/search"
-PAGE_SIZE = 500
-REQUEST_DELAY = 0.5  # seconds between pages (be polite to UniProt)
-MAX_RETRIES = 5
-
 SPECIES_METADATA = load_species_metadata()
 
 # ---------------------------------------------------------------------------
@@ -153,27 +148,6 @@ def get_qfo_lengths(species: str, qfo_dir: Path) -> dict:
     return lengths
 
 
-def _get_with_retry(
-    url: str, params: dict, max_retries: int = MAX_RETRIES
-) -> requests.Response:
-    delay = 2.0
-    for attempt in range(max_retries):
-        try:
-            resp = requests.get(url, params=params, timeout=120)
-            resp.raise_for_status()
-            return resp
-        except requests.RequestException as e:
-            if attempt == max_retries - 1:
-                raise
-            print(
-                f"  Attempt {attempt + 1} failed: {e}. Retrying in {delay:.0f}s...",
-                file=sys.stderr,
-            )
-            time.sleep(delay)
-            delay = min(delay * 2, 60)
-    raise RuntimeError("Unreachable")
-
-
 # ---------------------------------------------------------------------------
 # Bulk Pfam-A regions load (envelope + alignment positions)
 # ---------------------------------------------------------------------------
@@ -215,130 +189,6 @@ def load_domains_from_bulk(
                 "has_position": start is not None and end is not None,
             }
         )
-    return records
-
-
-# ---------------------------------------------------------------------------
-# UniProt fetch (JSON for domain positions)
-# ---------------------------------------------------------------------------
-
-
-def fetch_pfam_domains_json(taxon_id: str) -> list[dict]:
-    """
-    Fetch Pfam domain annotations from UniProt REST API.
-
-    Uses JSON format to capture domain start/end positions from the
-    `features` array.  Falls back to xref_pfam cross-references when
-    feature positions are not available.
-
-    Returns list of dicts:
-        accession, protein_length, pfam_id, domain_start, domain_end,
-        domain_description, has_position
-    """
-    records = []
-    params = {
-        "query": f"(organism_id:{taxon_id}) AND (database:pfam)",
-        "fields": "accession,length,xref_pfam,ft_domain",
-        "format": "json",
-        "size": str(PAGE_SIZE),
-    }
-
-    page = 0
-    cursor = None
-
-    while True:
-        if cursor:
-            params["cursor"] = cursor
-        elif "cursor" in params:
-            del params["cursor"]
-
-        resp = _get_with_retry(UNIPROT_API, params)
-        data = resp.json()
-        results = data.get("results", [])
-
-        for entry in results:
-            acc = entry.get("primaryAccession", "")
-            length = (entry.get("sequence") or {}).get("length", 0)
-
-            # --- Parse domain features (have start/end positions) ---
-            features = entry.get("features", [])
-            pfam_from_features: dict[str, dict] = {}  # pfam_id -> {start, end, desc}
-
-            for feat in features:
-                if feat.get("type") != "Domain":
-                    continue
-                desc = feat.get("description", "")
-                loc = feat.get("location", {})
-                start = (loc.get("start") or {}).get("value")
-                end = (loc.get("end") or {}).get("value")
-                # Look for Pfam ID in evidences
-                for ev in feat.get("evidences", []):
-                    src = ev.get("source", {})
-                    if isinstance(src, dict) and src.get("name") == "Pfam":
-                        pfam_id = src.get("id", "")
-                        if pfam_id:
-                            pfam_from_features[pfam_id] = {
-                                "start": start,
-                                "end": end,
-                                "desc": desc,
-                            }
-
-            # --- Parse xref_pfam cross-references (no positions) ---
-            xrefs = entry.get("uniProtKBCrossReferences", [])
-            pfam_xref_ids = {x["id"] for x in xrefs if x.get("database") == "Pfam"}
-
-            # Merge: prefer feature positions, fall back to xrefs
-            all_pfam_ids = pfam_xref_ids | set(pfam_from_features.keys())
-
-            for pfam_id in all_pfam_ids:
-                if pfam_id in pfam_from_features:
-                    info = pfam_from_features[pfam_id]
-                    records.append(
-                        {
-                            "accession": acc,
-                            "protein_length": length,
-                            "pfam_id": pfam_id,
-                            "domain_start": info["start"],
-                            "domain_end": info["end"],
-                            "domain_length": (
-                                (info["end"] - info["start"] + 1)
-                                if info["start"] is not None and info["end"] is not None
-                                else None
-                            ),
-                            "domain_description": info["desc"],
-                            "has_position": True,
-                        }
-                    )
-                else:
-                    records.append(
-                        {
-                            "accession": acc,
-                            "protein_length": length,
-                            "pfam_id": pfam_id,
-                            "domain_start": None,
-                            "domain_end": None,
-                            "domain_length": None,
-                            "domain_description": "",
-                            "has_position": False,
-                        }
-                    )
-
-        page += 1
-        total = data.get("totalResults", "?")
-        print(
-            f"  Page {page}: +{len(results)} proteins, cumulative domains: {len(records)} / ~{total} proteins"
-        )
-
-        # Pagination via Link header
-        link = resp.headers.get("Link", "")
-        if 'rel="next"' in link:
-            m = re.search(r"[?&]cursor=([^&>]+)", link)
-            if m:
-                cursor = m.group(1)
-                time.sleep(REQUEST_DELAY)
-                continue
-        break
-
     return records
 
 
