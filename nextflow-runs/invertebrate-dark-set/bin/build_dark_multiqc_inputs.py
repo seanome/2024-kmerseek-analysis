@@ -46,13 +46,20 @@ PARENT_DESCRIPTION = ("One report per species: what was done, how much of the pr
                       "that part.")
 
 # One colour per idea, reused across sections so a thing keeps its identity.
-C_DARK = "#0f9d76"       # the dark set, and the mask-ON arm: what survives scrutiny
-C_PLACED = "#7f7f7f"     # placed by a sequence arm: the part that is not the question
-C_MASK_OFF = "#c9528f"   # mask OFF: the number that may be composition rather than homology
-C_SINGLE = "#2b7bba"     # single-pass search
-C_ITER = "#c99a00"       # iterative search
-C_UNION = "#0f9d76"      # any arm at all
-C_CLADE = "#7b4fb3"      # an entry from the query's own clade: what the target has removed
+#
+# Green is "something was found" and grey is "nothing was found", in every panel: a protein
+# placed by a sequence arm, the union of the arms, and a kmerseek reach the mask supports
+# are all finds and all green; the dark set is grey. Until 2026-09-17 the dark set was
+# green because it is the object of the report, which read as the opposite of what it is.
+C_FOUND = "#0f9d76"      # a hit exists: placed, any arm, kmerseek reach with the mask ON
+C_PLACED = C_FOUND       # placed by a sequence arm
+C_UNION = C_FOUND        # placed by any arm at all
+C_MASK_ON = C_FOUND      # kmerseek reach with the low-complexity mask ON
+C_DARK = "#7f7f7f"       # the dark set: no arm found anything
+C_MASK_OFF = "#c9528f"   # mask OFF: a reach that may be composition rather than homology
+C_SINGLE = "#2b7bba"     # single-pass search  (the per-arm panel only)
+C_ITER = "#c99a00"       # iterative search    (the per-arm panel only)
+C_CLADE = "#7b4fb3"      # the query's own clade: the query itself, and what the target drops
 
 # The arms this pipeline runs, and whether each is a single-pass or an iterative search.
 # The ordering iterative >= single-pass is the correctness signal for the whole dark set:
@@ -370,10 +377,8 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     f.swatch(x, y, "an optional arm this run did not do", dashed=True)
     y = 40
     x = 20
-    x = f.swatch(x, y, "single-pass search", stroke=C_SINGLE)
-    x = f.swatch(x, y, "iterative search", stroke=C_ITER)
-    x = f.swatch(x, y, "placed by a sequence arm", fill=C_PLACED, stroke=C_PLACED)
-    f.swatch(x, y, "dark to every arm", fill=C_DARK, stroke=C_DARK)
+    x = f.swatch(x, y, "placed: some arm found it in the target", fill=C_PLACED, stroke=C_PLACED)
+    f.swatch(x, y, "dark: no arm found anything", fill=C_DARK, stroke=C_DARK)
     y = 62
     x = 20
     x = f.swatch(x, y, "query sequences", icon="genetics")
@@ -385,7 +390,8 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     x = f.swatch(x, y, "placed", icon="task_alt")
     x = f.swatch(x, y, "dark", icon="search_off")
     x = f.swatch(x, y, "report", icon="summarize")
-    f.swatch(x, y, "an entry from the query's own clade", fill=C_CLADE, stroke=C_CLADE)
+    f.swatch(x, y, f"from the query's own clade, {clade_txt}: the query, and what the "
+                   f"target drops", fill=C_CLADE, stroke=C_CLADE)
 
     half = 350
     lx, rx = 20, 410
@@ -400,7 +406,7 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
                    f'font-weight="bold" font-size="14">TARGET DATABASE: what is searched against</text>'.replace('y="70"', 'y="116"'))
     ya = 126
     a_l = f.box(lx, ya, half, [f"query: {species} proteome", f"{num(total)} proteins"],
-                bold_first=True, icon="genetics")
+                bold_first=True, icon="genetics", stroke=C_CLADE, stroke_w=2.5)
     a_r = f.box(rx, ya, half, ["target: reviewed Swiss-Prot", f"{num(sp_total)} entries"],
                 bold_first=True, icon="database")
 
@@ -427,7 +433,8 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     f.line(rmid, y_stack_end + 20 + SVG_LINE_PX * 2 - 4, rmid, yb, arrow=True)
     f.step(lmid, a_l[1] + a_l[3], yb, wrap(
         f"split into chunks of {num(chunk)}, headers cut to the accession", half - 40))
-    b_l = f.box(lx, yb, half, [f"query: {num(n_chunks)} chunks of the proteome"], icon="genetics")
+    b_l = f.box(lx, yb, half, [f"query: {num(n_chunks)} chunks of the proteome"], icon="genetics",
+                stroke=C_CLADE, stroke_w=2.5)
     b_r = f.box(rx, yb, half, [f"target: Swiss-Prot minus {clade_txt}", f"{num(kept)} entries"],
                 icon="database")
 
@@ -447,13 +454,11 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     for cm in cmids:
         f.line(cm, ybar, cm, yc, arrow=True)
     arm_boxes = [
-        f.box(cols[0], yc, third, ["phmmer", "one pass"], stroke=C_SINGLE, stroke_w=2.5,
-              bold_first=True, icon="search"),
+        f.box(cols[0], yc, third, ["phmmer", "one pass"], bold_first=True, icon="search"),
         f.box(cols[1], yc, third, ["jackhmmer", f"{pick(run, 'jackhmmer_iterations', default=3)} iterations"],
-              stroke=C_ITER, stroke_w=2.5, bold_first=True, icon="search"),
+              bold_first=True, icon="search"),
         f.box(cols[2], yc, third, ["mmseqs2", f"sensitivity {pick(run, 'mmseqs2_sensitivity', default=7)}, "
-                                   "3 iterations"], stroke=C_ITER, stroke_w=2.5, bold_first=True,
-              icon="search"),
+                                   "3 iterations"], bold_first=True, icon="search"),
     ]
 
     # Row D: all hits at the report cutoff.
@@ -891,7 +896,7 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
                     # that does not exist.
                     "cpswitch": False, "stacking": "group", "sort_samples": False},
         "categories": {
-            "mask_on": {"name": "low-complexity mask ON", "color": C_DARK},
+            "mask_on": {"name": "low-complexity mask ON", "color": C_MASK_ON},
             "mask_off": {"name": "mask OFF", "color": C_MASK_OFF},
         },
         "data": data,
