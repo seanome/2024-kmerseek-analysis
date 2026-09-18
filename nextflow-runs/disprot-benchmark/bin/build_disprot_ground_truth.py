@@ -1,4 +1,4 @@
-#!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+#!/usr/bin/env python3
 """
 build_disprot_ground_truth.py
 

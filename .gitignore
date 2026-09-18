@@ -199,3 +199,8 @@ results-test/
 # whichever one it opens -- including throwaway merge-resolution checkouts -- so the folder
 # is per-checkout scratch, not shared project config.
 .idea/
+
+# disprot-benchmark: the stub run's placeholder inputs and outputs, and `make multiqc`'s
+# staging directory.
+nextflow-runs/disprot-benchmark/stub-results/
+nextflow-runs/disprot-benchmark/mqc_input/
