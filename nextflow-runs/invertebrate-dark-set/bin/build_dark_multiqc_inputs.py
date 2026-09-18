@@ -32,10 +32,21 @@ Three rules run through every section here.
 import argparse
 import json
 import math
-import textwrap
 from pathlib import Path
 
 import polars as pl
+
+# The data-flow diagram in the overview is drawn by the module every report in this
+# repository shares. Under Nextflow it is staged into the task directory and found
+# through PYTHONPATH; run by hand from bin/, it is found at ../../shared.
+try:
+    import flow_diagram as fd
+except ImportError:  # pragma: no cover - the by-hand path
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared"))
+    import flow_diagram as fd
+
+wrap = fd.wrap
 
 PARENT_ID = "invertebrate_dark_set"
 PARENT_NAME = "Invertebrate dark set"
@@ -145,6 +156,10 @@ def bullets(*items: str) -> str:
 
 
 def write_section(outdir: Path, section_id: str, cfg: dict) -> None:
+    # A way back to the flow from every panel it links to.
+    if section_id != "dark_overview" and "description" in cfg:
+        cfg["description"] += ('<p style="font-size:12px"><a href="#dark_overview">'
+                               '&uarr; back to the data flow</a></p>')
     cfg.setdefault("parent_id", PARENT_ID)
     cfg.setdefault("parent_name", PARENT_NAME)
     cfg.setdefault("parent_description", PARENT_DESCRIPTION)
@@ -205,147 +220,22 @@ class Omitted:
 
 # --- 0) overview: what was done, why, and the data flow ------------------------------
 
-# The diagram is inline SVG built here, so every box carries this run's own count. Text is
-# 12 px and about 7 px per character; box widths are chosen so the longest line fits, and
-# `wrap` folds anything longer rather than letting it run off the canvas.
-SVG_W = 780
-SVG_FONT_PX = 12
-SVG_CHAR_PX = 7
-SVG_LINE_PX = 16
-SVG_PAD = 8
-
-
-# Google Material Symbols (Apache 2.0), outlined, 24 px, fetched from
-# fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/<name>/default/24px.svg
-# and inlined, because the report is rendered on compute nodes with no internet and has
-# to stay a single self-contained file. viewBox is 0 -960 960 960 for every one.
-ICONS = {
-    "database": "M480-120q-151 0-255.5-46.5T120-280v-400q0-66 105.5-113T480-840q149 0 254.5 47T840-680v400q0 67-104.5 113.5T480-120Zm0-479q89 0 179-25.5T760-679q-11-29-100.5-55T480-760q-91 0-178.5 25.5T200-679q14 30 101.5 55T480-599Zm0 199q42 0 81-4t74.5-11.5q35.5-7.5 67-18.5t57.5-25v-120q-26 14-57.5 25t-67 18.5Q600-528 561-524t-81 4q-42 0-82-4t-75.5-11.5Q287-543 256-554t-56-25v120q25 14 56 25t66.5 18.5Q358-408 398-404t82 4Zm0 200q46 0 93.5-7t87.5-18.5q40-11.5 67-26t32-29.5v-98q-26 14-57.5 25t-67 18.5Q600-328 561-324t-81 4q-42 0-82-4t-75.5-11.5Q287-343 256-354t-56-25v99q5 15 31.5 29t66.5 25.5q40 11.5 88 18.5t94 7Z",
-    "genetics": "M200-40v-40q0-139 58-225.5T418-480q-102-88-160-174.5T200-880v-40h80v40q0 11 .5 20.5T282-840h396q1-10 1.5-19.5t.5-20.5v-40h80v40q0 139-58 225.5T542-480q102 88 160 174.5T760-80v40h-80v-40q0-11-.5-20.5T678-120H282q-1 10-1.5 19.5T280-80v40h-80Zm138-640h284q13-19 22.5-38t17.5-42H298q8 22 17.5 41.5T338-680Zm142 148q20-17 39-34t36-34H405q17 17 36 34t39 34Zm-75 172h150q-17-17-36-34t-39-34q-20 17-39 34t-36 34ZM298-200h364q-8-22-17.5-41.5T622-280H338q-13 19-22.5 38T298-200Z",
-    "search": "M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z",
-    "search_off": "M138.5-138.5Q80-197 80-280t58.5-141.5Q197-480 280-480t141.5 58.5Q480-363 480-280t-58.5 141.5Q363-80 280-80t-141.5-58.5ZM824-120 568-376q-12-13-25.5-26.5T516-428q38-24 61-64t23-88q0-75-52.5-127.5T420-760q-75 0-127.5 52.5T240-580q0 6 .5 11.5T242-557q-18 2-39.5 8T164-535q-2-11-3-22t-1-23q0-109 75.5-184.5T420-840q109 0 184.5 75.5T680-580q0 43-13.5 81.5T629-428l251 252-56 56Zm-615-61 71-71 70 71 29-28-71-71 71-71-28-28-71 71-71-71-28 28 71 71-71 71 28 28Z",
-    "straighten": "M160-240q-33 0-56.5-23.5T80-320v-320q0-33 23.5-56.5T160-720h640q33 0 56.5 23.5T880-640v320q0 33-23.5 56.5T800-240H160Zm0-80h640v-320H680v160h-80v-160h-80v160h-80v-160h-80v160h-80v-160H160v320Zm120-160h80-80Zm160 0h80-80Zm160 0h80-80Zm-120 0Z",
-    "summarize": "M348.5-611.5Q360-623 360-640t-11.5-28.5Q337-680 320-680t-28.5 11.5Q280-657 280-640t11.5 28.5Q303-600 320-600t28.5-11.5Zm0 160Q360-463 360-480t-11.5-28.5Q337-520 320-520t-28.5 11.5Q280-497 280-480t11.5 28.5Q303-440 320-440t28.5-11.5Zm0 160Q360-303 360-320t-11.5-28.5Q337-360 320-360t-28.5 11.5Q280-337 280-320t11.5 28.5Q303-280 320-280t28.5-11.5ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h440l200 200v440q0 33-23.5 56.5T760-120H200Zm0-80h560v-400H600v-160H200v560Zm0-560v160-160 560-560Z",
-    "table_rows": "M760-200v-120H200v120h560Zm0-200v-160H200v160h560Zm0-240v-120H200v120h560ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z",
-    "task_alt": "M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z",
-    "waves": "M80-146v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62.5-8.5q37.5 0 62.5 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-174.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-164 544.5-155t-64.5 9q-39 0-64.5-9t-46-19.5Q349-185 329-193.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-164 143.5-155T80-146Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-352.5q-21-10.5-41-19t-49-8.5q-29 0-49.5 8.5t-41 19Q569-342 544-333t-64 9q-39 0-64.5-9t-46-19.5Q349-363 329-371.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-342 143.5-333T80-324Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-530.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-520 544.5-511t-64.5 9q-39 0-64.5-9t-46-19.5Q349-541 329-549.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-520 143.5-511T80-502Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-708.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-698 544.5-689t-64.5 9q-39 0-64.5-9t-46-19.5Q349-719 329-727.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-698 143.5-689T80-680Z",
-}
-
-ICON_PX = 28
-
-
-def wrap(text: str, width_px: int) -> list[str]:
-    return textwrap.wrap(text, max(8, (width_px - 2 * SVG_PAD) // SVG_CHAR_PX))
-
-
-class Flow:
-    """A top-to-bottom data-flow diagram as inline SVG.
-
-    Boxes are sets of sequences (with their count) or a step that makes one; arrows are the
-    steps between them, labelled with the tool that runs them. `currentColor` for outlines
-    and text, so the drawing follows MultiQC's light and dark themes; the only fixed colours
-    are the ones the panels below already use for the same ideas.
-    """
-
-    def __init__(self) -> None:
-        self.parts: list[str] = []
-        self.bottom = 0
-
-    def icon(self, name: str, x: float, y: float, *, fill: str = "currentColor",
-             px: int = ICON_PX) -> None:
-        self.parts.append(
-            f'<svg x="{x}" y="{y}" width="{px}" height="{px}" viewBox="0 -960 960 960">'
-            f'<path d="{ICONS[name]}" fill="{fill}"/></svg>')
-
-    def box(self, x: int, y: int, w: int, lines: list[str], *, fill: str | None = None,
-            stroke: str = "currentColor", stroke_w: float = 1.2, dashed: bool = False,
-            text_fill: str = "currentColor", bold_first: bool = False,
-            icon: str | None = None) -> tuple[int, int, int, int]:
-        h = max(SVG_LINE_PX * len(lines) + 2 * SVG_PAD, ICON_PX + 2 * SVG_PAD if icon else 0)
-        dash = ' stroke-dasharray="6 4"' if dashed else ""
-        self.parts.append(
-            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="4" '
-            f'fill="{fill or "none"}" stroke="{stroke}" stroke-width="{stroke_w}"{dash}/>')
-        # The icon sits at the left edge, vertically centred; the text is centred on what
-        # is left of the box so the two never overlap.
-        tx = x + w / 2
-        if icon:
-            self.icon(icon, x + SVG_PAD, y + (h - ICON_PX) / 2, fill=text_fill)
-            tx = x + SVG_PAD + ICON_PX + (w - SVG_PAD - ICON_PX) / 2
-        y_text = y + (h - SVG_LINE_PX * len(lines)) / 2
-        for i, line in enumerate(lines):
-            weight = ' font-weight="bold"' if bold_first and i == 0 else ""
-            ty = y_text + SVG_LINE_PX * (i + 1) - 4
-            self.parts.append(
-                f'<text x="{tx}" y="{ty}" text-anchor="middle" fill="{text_fill}"'
-                f'{weight}>{line}</text>')
-        self.bottom = max(self.bottom, y + h)
-        return x, y, w, h
-
-    def line(self, x1: int, y1: int, x2: int, y2: int, *, arrow: bool = False) -> None:
-        head = ' marker-end="url(#flow-arrow)"' if arrow else ""
-        self.parts.append(
-            f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="currentColor" '
-            f'stroke-width="1.2"{head}/>')
-
-    def step(self, x: int, y1: int, y2: int, lines: list[str]) -> None:
-        """An arrow from y1 down to y2 with its label in the middle, the line broken around
-        the text so the words are never struck through."""
-        block = SVG_LINE_PX * len(lines)
-        top = (y1 + y2) / 2 - block / 2
-        self.line(x, y1, x, int(top) - 4)
-        self.label(x, int(top) + SVG_LINE_PX - 4, lines)
-        self.line(x, int(top + block) + 4, x, y2, arrow=True)
-
-    def label(self, x: int, y: int, lines: list[str], *, anchor: str = "middle") -> None:
-        for i, line in enumerate(lines):
-            self.parts.append(
-                f'<text x="{x}" y="{y + SVG_LINE_PX * i}" text-anchor="{anchor}" '
-                f'fill="currentColor">{line}</text>')
-
-    def stack(self, cx: int, y: int, n: int, clade: set[int], *, removed: bool = False,
-              w: int = 70) -> int:
-        """A database as a stack of entries, one line each, centred on cx from y down.
-
-        Indices in `clade` are the entries from the query's own clade: drawn in C_CLADE, or
-        left as a gap when `removed`. Returns the y below the stack.
-        """
-        step = 6
-        for i in range(n):
-            if i in clade and removed:
-                continue
-            colour = C_CLADE if i in clade else "currentColor"
-            self.parts.append(
-                f'<rect x="{cx - w / 2}" y="{y + i * step}" width="{w}" height="3" rx="1.5" '
-                f'fill="{colour}"/>')
-        return y + n * step
-
-    def swatch(self, x: int, y: int, text: str, *, fill: str | None = None,
-               stroke: str = "currentColor", dashed: bool = False, arrow: bool = False,
-               icon: str | None = None) -> int:
-        """One legend entry at (x, y); returns the x where the next one can start."""
-        if arrow:
-            self.line(x, y - 4, x + 22, y - 4, arrow=True)
-        elif icon:
-            self.icon(icon, x, y - 15, px=20)
-        else:
-            dash = ' stroke-dasharray="4 3"' if dashed else ""
-            self.parts.append(
-                f'<rect x="{x}" y="{y - 10}" width="22" height="12" rx="2" '
-                f'fill="{fill or "none"}" stroke="{stroke}" stroke-width="1.5"{dash}/>')
-        self.parts.append(f'<text x="{x + 28}" y="{y}" fill="currentColor">{text}</text>')
-        return x + 28 + SVG_CHAR_PX * len(text) + 22
-
-    def render(self) -> str:
-        h = self.bottom + SVG_PAD
-        return (
-            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {h}" '
-            f'width="100%" style="max-width:{SVG_W}px;font-family:sans-serif;'
-            f'font-size:{SVG_FONT_PX}px;display:block;margin:0 auto">'
-            '<defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
-            'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
-            '<path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker></defs>'
-            + "".join(self.parts) + "</svg>")
+def dark_by_length(length_df) -> dict[int, dict]:
+    """{min_aa: {kept, dark}} from the length parquet, the same numbers as the
+    'Dark fraction by minimum length' table, or {} when the run has no length arm."""
+    if length_df is None:
+        return {}
+    value_col = pick_col(length_df, LENGTH_COLS)
+    group_col = pick_col(length_df, GROUP_COLS)
+    if value_col is None or group_col is None:
+        return {}
+    is_dark = length_df[group_col].cast(pl.Utf8).str.to_lowercase().is_in(["dark", "true", "1"])
+    lengths = length_df[value_col].cast(pl.Float64)
+    out = {}
+    for cut in MIN_AA:
+        keep = lengths >= cut
+        out[cut] = {"kept": int(keep.sum()), "dark": int((keep & is_dark).sum())}
+    return out
 
 
 def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | None,
@@ -353,7 +243,8 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     """The pipeline as a picture, top to bottom, every box with this run's own count.
 
     `arms` says which optional arm produced anything in this run; one that did not is drawn
-    dashed, which is the same claim the "Not in this report" section makes in words.
+    dashed, which is the same claim the "Not in this report" section makes in words. Every
+    box is a node and every arrow knows which boxes it joins, for the script.
     """
     total = pick(summary, "proteins_in_proteome")
     placed = pick(summary, "proteins_placed_by_any_arm")
@@ -368,7 +259,7 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     sp_total = kept + excluded if kept is not None and excluded is not None else None
     clade_txt = clade or pick(ref, "excluded_clade") or "the query's own clade"
 
-    f = Flow()
+    f = fd.Flow()
     # Legend first, so every mark below is explained before it is seen.
     y = 18
     x = 20
@@ -392,6 +283,11 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     x = f.swatch(x, y, "report", icon="summarize")
     f.swatch(x, y, f"from the query's own clade, {clade_txt}: the query, and what the "
                    f"target drops", fill=C_CLADE, stroke=C_CLADE)
+    y = 106
+    x = 20
+    for entry in fd.INTERACTION_LEGEND:
+        x = f.swatch(x, y, **entry)
+    f.swatch(x, y, "pale bar: its share of the proteins counted", fill=C_PLACED, stroke=C_PLACED)
 
     half = 350
     lx, rx = 20, 410
@@ -400,23 +296,23 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     # Row A: the two inputs, each column headed by its role. The direction is the one a
     # new genome faces (the proteome asks, Swiss-Prot answers), which is the reverse of
     # every other pipeline here, so it is written out rather than left to position.
-    f.parts.append(f'<text x="{lmid}" y="70" text-anchor="middle" fill="currentColor" '
-                   f'font-weight="bold" font-size="14">QUERY: what is searched</text>'.replace('y="70"', 'y="116"'))
-    f.parts.append(f'<text x="{rmid}" y="70" text-anchor="middle" fill="currentColor" '
-                   f'font-weight="bold" font-size="14">TARGET DATABASE: what is searched against</text>'.replace('y="70"', 'y="116"'))
-    ya = 126
+    f.parts.append(f'<text x="{lmid}" y="138" text-anchor="middle" fill="currentColor" '
+                   f'font-weight="bold" font-size="14">QUERY: what is searched</text>')
+    f.parts.append(f'<text x="{rmid}" y="138" text-anchor="middle" fill="currentColor" '
+                   f'font-weight="bold" font-size="14">TARGET DATABASE: what is searched against</text>')
+    ya = 148
     a_l = f.box(lx, ya, half, [f"query: {species} proteome", f"{num(total)} proteins"],
-                bold_first=True, icon="genetics", stroke=C_CLADE, stroke_w=2.5)
+                bold_first=True, icon="genetics", stroke=C_CLADE, stroke_w=2.5, node="q0")
     a_r = f.box(rx, ya, half, ["target: reviewed Swiss-Prot", f"{num(sp_total)} entries"],
-                bold_first=True, icon="database")
+                bold_first=True, icon="database", node="t0")
 
-    # Row B: chunks and the clade-excluded reference.
     # The target's construction as a cartoon: Swiss-Prot as a stack of entries with the
     # query's own clade marked, then the same stack with those entries gone. Two of eleven
     # lines stand for {excluded} of {sp_total}: far larger than life, and the caption says so.
     a_bot = a_r[1] + a_r[3]
     y_cart = a_bot + 26
     n_lines, clade_idx = 11, {3, 7}
+    f.group("t0", "t1")
     f.line(rmid, a_bot, rmid, y_cart - 8)
     f.label(rmid - 105, y_cart - 10, ["Swiss-Prot"])
     f.label(rmid + 105, y_cart - 10, [f"minus {clade_txt}"])
@@ -429,68 +325,77 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
     f.label(rmid, y_stack_end + 20, wrap(
         f"{num(excluded)} of {num(sp_total)} entries ({frac_txt}), drawn far larger than life",
         half - 20))
-    yb = y_stack_end + 20 + SVG_LINE_PX * 2 + 14
-    f.line(rmid, y_stack_end + 20 + SVG_LINE_PX * 2 - 4, rmid, yb, arrow=True)
+    yb = y_stack_end + 20 + fd.SVG_LINE_PX * 2 + 14
+    f.line(rmid, y_stack_end + 20 + fd.SVG_LINE_PX * 2 - 4, rmid, yb, arrow=True)
+    f.end_group()
     f.step(lmid, a_l[1] + a_l[3], yb, wrap(
-        f"split into chunks of {num(chunk)}, headers cut to the accession", half - 40))
+        f"split into chunks of {num(chunk)}, headers cut to the accession", half - 40),
+        frm="q0", to="q1")
     b_l = f.box(lx, yb, half, [f"query: {num(n_chunks)} chunks of the proteome"], icon="genetics",
-                stroke=C_CLADE, stroke_w=2.5)
+                stroke=C_CLADE, stroke_w=2.5, node="q1")
     b_r = f.box(rx, yb, half, [f"target: Swiss-Prot minus {clade_txt}", f"{num(kept)} entries"],
-                icon="database")
+                icon="database", node="t1")
 
     # Row C: the three arms, every chunk against the reference. Both B boxes feed one bar,
     # and the bar feeds each arm, so six crossing arrows become two lines and three.
     third = 230
     cols = [20, 275, 530]
     cmids = [c + third // 2 for c in cols]
+    arm_ids = ["phmmer", "jackhmmer", "mmseqs2"]
     search = ["every query chunk searched against the target",
               f"{num(n_chunks)} chunks x 3 arms = {num(3 * n_chunks) if n_chunks else 'n/a'} searches"]
-    ybar = max(b_l[1] + b_l[3], b_r[1] + b_r[3]) + 18 + SVG_LINE_PX * len(search)
+    ybar = max(b_l[1] + b_l[3], b_r[1] + b_r[3]) + 18 + fd.SVG_LINE_PX * len(search)
     yc = ybar + 26
-    f.line(lmid, b_l[1] + b_l[3], lmid, ybar)
-    f.line(rmid, b_r[1] + b_r[3], rmid, ybar)
-    f.line(cmids[0], ybar, cmids[-1], ybar)
-    f.label(SVG_W // 2, ybar - 6 - SVG_LINE_PX * (len(search) - 1), search)
-    for cm in cmids:
-        f.line(cm, ybar, cm, yc, arrow=True)
+    f.line(lmid, b_l[1] + b_l[3], lmid, ybar, frm="q1", to=arm_ids)
+    f.line(rmid, b_r[1] + b_r[3], rmid, ybar, frm="t1", to=arm_ids)
+    f.line(cmids[0], ybar, cmids[-1], ybar, frm=["q1", "t1"], to=arm_ids)
+    f.label(fd.SVG_W // 2, ybar - 6 - fd.SVG_LINE_PX * (len(search) - 1), search,
+            frm=["q1", "t1"], to=arm_ids)
+    for cm, aid in zip(cmids, arm_ids):
+        f.line(cm, ybar, cm, yc, arrow=True, frm=["q1", "t1"], to=aid)
     arm_boxes = [
-        f.box(cols[0], yc, third, ["phmmer", "one pass"], bold_first=True, icon="search"),
+        f.box(cols[0], yc, third, ["phmmer", "one pass"], bold_first=True, icon="search",
+              node="phmmer"),
         f.box(cols[1], yc, third, ["jackhmmer", f"{pick(run, 'jackhmmer_iterations', default=3)} iterations"],
-              bold_first=True, icon="search"),
+              bold_first=True, icon="search", node="jackhmmer"),
         f.box(cols[2], yc, third, ["mmseqs2", f"sensitivity {pick(run, 'mmseqs2_sensitivity', default=7)}, "
-                                   "3 iterations"], bold_first=True, icon="search"),
+                                   "3 iterations"], bold_first=True, icon="search", node="mmseqs2"),
     ]
 
     # Row D: all hits at the report cutoff.
     yd = arm_boxes[0][1] + arm_boxes[0][3] + 30
-    for cm, b in zip(cmids, arm_boxes):
-        f.line(cm, b[1] + b[3], cm, yd, arrow=True)
+    for cm, b, aid in zip(cmids, arm_boxes, arm_ids):
+        f.line(cm, b[1] + b[3], cm, yd, arrow=True, frm=aid, to="hits")
     d = f.box(20, yd, 740, [f"hits of query proteins in the target, all three arms, kept at "
                             f"E &le; {evalue_txt(pick(run, 'evalue_report', default=10))}",
-                            f"{num(raw_rows)} rows"], icon="table_rows")
+                            f"{num(raw_rows)} rows"], icon="table_rows", node="hits")
 
     # Row E: the call, placed against dark.
     ye = d[1] + d[3] + 64
     call = [f"placed: some arm has a target hit at E &le; {evalue_txt(evalue)}",
             "dark: no arm has one"]
-    f.step(lmid, d[1] + d[3], ye, [])
-    f.step(rmid, d[1] + d[3], ye, [])
-    f.label(SVG_W // 2, d[1] + d[3] + 24, call)
-    e_l = f.box(lx, ye, half, ["placed: a target hit from at least one arm", f"{num(placed)} proteins ({pct(1 - frac) if frac is not None else 'n/a'})"],
-                fill=C_PLACED, stroke=C_PLACED, text_fill="#ffffff", bold_first=True, icon="task_alt")
+    f.step(lmid, d[1] + d[3], ye, [], frm="hits", to="placed")
+    f.step(rmid, d[1] + d[3], ye, [], frm="hits", to="dark")
+    f.label(fd.SVG_W // 2, d[1] + d[3] + 24, call, frm="hits", to=["placed", "dark"])
+    e_l = f.box(lx, ye, half, ["placed: a target hit from at least one arm",
+                               f"{num(placed)} proteins ({pct(1 - frac) if frac is not None else 'n/a'})"],
+                fill=C_PLACED, stroke=C_PLACED, text_fill="#ffffff", bold_first=True, icon="task_alt",
+                node="placed", count_line=1, share=True)
     e_r = f.box(rx, ye, half, ["dark: no target hit from any arm", f"{num(dark)} proteins ({pct(frac)})"],
-                fill=C_DARK, stroke=C_DARK, text_fill="#ffffff", bold_first=True, icon="search_off")
+                fill=C_DARK, stroke=C_DARK, text_fill="#ffffff", bold_first=True, icon="search_off",
+                node="dark", count_line=1, share=True)
 
     # Row F: the optional arms, each reading both sets.
+    opt_ids = ["length", "disorder", "kmerseek"]
     ybar2 = e_l[1] + e_l[3] + 34
     yf = ybar2 + 26
-    f.line(lmid, e_l[1] + e_l[3], lmid, ybar2)
-    f.line(rmid, e_r[1] + e_r[3], rmid, ybar2)
-    f.line(cmids[0], ybar2, cmids[-1], ybar2)
-    f.label(SVG_W // 2, ybar2 - 6, ["dark set against placed set"])
-    for cm in cmids:
-        f.line(cm, ybar2, cm, yf, arrow=True)
-    tw = third - ICON_PX - SVG_PAD
+    f.line(lmid, e_l[1] + e_l[3], lmid, ybar2, frm="placed", to=opt_ids)
+    f.line(rmid, e_r[1] + e_r[3], rmid, ybar2, frm="dark", to=opt_ids)
+    f.line(cmids[0], ybar2, cmids[-1], ybar2, frm=["placed", "dark"], to=opt_ids)
+    f.label(fd.SVG_W // 2, ybar2 - 6, ["dark set against placed set"], frm=["placed", "dark"], to=opt_ids)
+    for cm, oid in zip(cmids, opt_ids):
+        f.line(cm, ybar2, cm, yf, arrow=True, frm=["placed", "dark"], to=oid)
+    tw = third - fd.ICON_PX - fd.SVG_PAD
     opt = [
         ("length", "straighten", ["protein length"]
          + wrap("read from the FASTA; is the dark set short gene models?", tw)),
@@ -499,20 +404,196 @@ def dark_flow_svg(species: str, summary: dict, ref: dict | None, clade: str | No
         ("kmerseek", "search", ["kmerseek regions"] + wrap(kmerseek_line, tw)
          + wrap("dark proteins with at least one region", tw)),
     ]
-    f_boxes = [f.box(c, yf, third, lines, dashed=not arms[key], bold_first=True, icon=ic)
+    f_boxes = [f.box(c, yf, third, lines, dashed=not arms[key], bold_first=True, icon=ic, node=key)
                for c, (key, ic, lines) in zip(cols, opt)]
 
     # Row G: this report.
     yg = max(b[1] + b[3] for b in f_boxes) + 30
-    for cm, b in zip(cmids, f_boxes):
-        f.line(cm, b[1] + b[3], cm, yg, arrow=True)
-    f.box(20, yg, 740, ["this report: one panel per step, in the order above"], icon="summarize")
+    for cm, b, oid in zip(cmids, f_boxes, opt_ids):
+        f.line(cm, b[1] + b[3], cm, yg, arrow=True, frm=oid, to="report")
+    f.box(20, yg, 740, ["this report: one panel per step, in the order above"], icon="summarize",
+          node="report")
     return f.render()
+
+
+def flow_details(species: str, summary: dict, ref: dict | None, clade: str | None, run: dict,
+                 gain: dict | None, length_summary: dict | None, disorder_summary: dict | None,
+                 arms: dict[str, bool], by_len: dict) -> dict:
+    """What each box opens with: a sentence or two, the numbers, and the report sections
+    that show it. Every number here is one the panels below also print."""
+    total = pick(summary, "proteins_in_proteome")
+    placed = pick(summary, "proteins_placed_by_any_arm")
+    dark = pick(summary, "proteins_dark")
+    raw_rows = pick(summary, "raw_hit_rows")
+    evalue = evalue_txt(pick(summary, "evalue_call"))
+    chunk = pick(run, "query_chunk_size")
+    n_chunks = math.ceil(total / chunk) if total and chunk else None
+    kept = pick(ref, "entries_kept")
+    excluded = pick(ref, "entries_excluded")
+    sp_total = kept + excluded if kept is not None and excluded is not None else None
+    clade_txt = clade or pick(ref, "excluded_clade") or "the query's own clade"
+    per_arm = pick(summary, "proteins_placed_per_arm", default={}) or {}
+    e_rep = evalue_txt(pick(run, "evalue_report", default=10))
+
+    def stat(s, side, key="median", digits=0):
+        v = pick(pick(s, side, f"{side}_stats", default={}) or {}, key)
+        return f"{float(v):.{digits}f}" if v is not None else None
+
+    def iqr(s, side, digits=0):
+        lo, hi = stat(s, side, "p25", digits), stat(s, side, "p75", digits)
+        return f" (IQR {lo}-{hi})" if lo and hi else ""
+
+    d = {}
+    d["q0"] = {
+        "title": f"query: {species} proteome", "count": f"{num(total)} proteins",
+        "text": f"The proteome as annotated: every protein in the {species} FASTA. The "
+                f"direction is the one a new genome faces: the proteome asks, Swiss-Prot answers.",
+        "facts": [["proteins", num(total)]]
+                 + ([["median length, dark / placed",
+                      f"{stat(length_summary, 'dark')} aa / {stat(length_summary, 'placed')} aa"]]
+                    if stat(length_summary, "dark") else []),
+        "links": [["How much of the proteome is dark", "dark_headline"]]}
+    d["t0"] = {
+        "title": "target: reviewed Swiss-Prot", "count": f"{num(sp_total)} entries",
+        "text": "Reviewed Swiss-Prot before anything is removed. Every species this pipeline "
+                "runs is searched against the same construction, which is what makes the dark "
+                "fractions comparable.",
+        "facts": [["entries", num(sp_total)]],
+        "links": [["What was done, and why", "dark_overview"]]}
+    d["q1"] = {
+        "title": f"query: {num(n_chunks)} chunks of the proteome", "count": "",
+        "text": f"The proteome split into chunks of {num(chunk)} so each search is one job. "
+                f"Headers are cut to the bare accession because the three searches and kmerseek "
+                f"each report a UniProt header differently and the dark call needs one key.",
+        "facts": [["chunks", num(n_chunks)],
+                  ["searches (chunks x 3 arms)", num(3 * n_chunks) if n_chunks else "n/a"]],
+        "links": [["What was done, and why", "dark_overview"]]}
+    d["t1"] = {
+        "title": f"target: Swiss-Prot minus {clade_txt}", "count": f"{num(kept)} entries",
+        "text": f"Swiss-Prot with every {clade_txt} entry removed, so a hit has to come from "
+                f"outside the query's own clade. Without this a well-curated species would place "
+                f"its proteome on its own entries and the dark fraction would measure curation "
+                f"depth, not how far sequence search reaches.",
+        "facts": [["entries kept", num(kept)],
+                  [f"entries dropped ({clade_txt})",
+                   f"{num(excluded)} ({pct(excluded / sp_total, 2) if excluded is not None and sp_total else 'n/a'})"]],
+        "links": [["What was done, and why", "dark_overview"]]}
+    arm_text = {
+        "phmmer": "Single-pass profile search (HMMER). The cheapest arm; the two iterative arms "
+                  "must place at least as many proteins as this one, which is the check the "
+                  "per-arm panel makes.",
+        "jackhmmer": f"Iterative profile search: {pick(run, 'jackhmmer_iterations', default=3)} "
+                     f"rounds, the profile rebuilt from the hits after each.",
+        "mmseqs2": f"Iterative k-mer prefilter plus alignment at sensitivity "
+                   f"{pick(run, 'mmseqs2_sensitivity', default=7)}, 3 rounds.",
+    }
+    arm_kind = {"phmmer": "single pass",
+                "jackhmmer": f"iterative, {pick(run, 'jackhmmer_iterations', default=3)} rounds",
+                "mmseqs2": f"iterative, sensitivity {pick(run, 'mmseqs2_sensitivity', default=7)}, 3 rounds"}
+    for arm in ["phmmer", "jackhmmer", "mmseqs2"]:
+        n_arm = per_arm.get(arm)
+        d[arm] = {
+            "title": arm, "count": arm_kind[arm],
+            "text": arm_text[arm],
+            "facts": ([[f"proteins placed at E <= {evalue}",
+                        f"{num(n_arm)} ({pct(n_arm / total)} of proteome)" if n_arm is not None and total else num(n_arm)]]
+                      if n_arm is not None else []) + [["kind", arm_kind[arm]]],
+            "links": ([["What each arm placed", "dark_per_arm"],
+                       ["Placed per arm, as numbers", "dark_per_arm_table"]] if per_arm else [])}
+    d["hits"] = {
+        "title": "hits of query proteins in the target", "count": f"{num(raw_rows)} rows",
+        "text": f"Every hit any arm reported, kept at the permissive cutoff E <= {e_rep}. Keeping "
+                f"this table is what lets the call cutoff be moved without re-running a search.",
+        "facts": [["rows", num(raw_rows)], ["report cutoff", f"E <= {e_rep}"], ["call cutoff", f"E <= {evalue}"]],
+        "links": [["Dark set in numbers", "dark_headline_table"]]}
+    len_links = [["Dark fraction by minimum protein length", "dark_headline_by_length"]] if by_len else []
+    d["placed"] = {
+        "title": "placed: a target hit from at least one arm", "count": "",
+        "text": f"A protein is placed when any arm has a hit at E <= {evalue}. Placed is the union "
+                f"of the three arms, so it is larger than any single arm.",
+        "facts": [["placed by any arm, no length cut", num(placed)]],
+        "links": [["How much of the proteome is dark", "dark_headline"]] + len_links}
+    d["dark"] = {
+        "title": "dark: no target hit from any arm", "count": "",
+        "text": f"A protein is dark when no arm has a hit at E <= {evalue}. This set is the "
+                f"denominator for every claim about kmerseek adding annotation: it can only add "
+                f"something where phmmer, jackhmmer and mmseqs2 all found nothing. Dark is not the "
+                f"same as annotatable: a dark protein may be a real protein that sequence search "
+                f"cannot reach, or a spurious gene model.",
+        "facts": [["dark, no length cut", num(dark)]],
+        "links": [["How much of the proteome is dark", "dark_headline"]] + len_links}
+    d["length"] = {
+        "title": "protein length", "count": "read from the FASTA",
+        "text": "Is the dark set just short gene models? Length is read from the FASTA and "
+                "compared dark against placed. If dark proteins skew sharply shorter, part of "
+                "the headline is annotation noise rather than hard homology.",
+        "facts": ([["median length, dark", f"{stat(length_summary, 'dark')} aa{iqr(length_summary, 'dark')}"],
+                   ["median length, placed", f"{stat(length_summary, 'placed')} aa{iqr(length_summary, 'placed')}"]]
+                  if stat(length_summary, "dark") else []),
+        "links": [["Protein length, dark vs placed", "dark_length"]] if arms["length"] else []}
+    d["disorder"] = {
+        "title": "predicted disorder", "count": "metapredict, mean per protein",
+        "text": "Is the dark set unfolded? Mean predicted disorder per protein from metapredict "
+                "(each residue scored 0 to 1), dark against placed. A protein with no folded "
+                "core has little for a profile or a k-mer to hold on to.",
+        "facts": ([["median disorder, dark", stat(disorder_summary, "dark", digits=3)],
+                   ["median disorder, placed", stat(disorder_summary, "placed", digits=3)]]
+                  if stat(disorder_summary, "dark", digits=3) else []),
+        "links": [["Predicted disorder, dark vs placed", "dark_disorder"]] if arms["disorder"] else []}
+    pairs = pick(gain, "mask_pairs", default=[]) or []
+    d["kmerseek"] = {
+        "title": "kmerseek regions",
+        "count": f"{len(pairs)} alphabet x k pair(s), mask on / off" if pairs else "",
+        "text": f"The target is indexed once per alphabet, k and low-complexity mask setting; "
+                f"every query chunk is searched against it. A protein counts as reached when "
+                f"kmerseek reports at least one region on it (region score >= "
+                f"{pick(run, 'min_region_score', default=1.3)}, query p <= "
+                f"{pick(run, 'max_query_pvalue', default=0.05)}, at least "
+                f"{pick(run, 'min_shared_kmers', default=2)} shared k-mers). Reached is counted "
+                f"inside the dark set and, as a control, inside the placed set.",
+        "facts": [[f"{r.get('alphabet')} k{r.get('ksize')}, mask on / off",
+                   f"{num(r.get('dark_reached_mask_on'))} / {num(r.get('dark_reached_mask_off'))} of {num(dark)} dark"]
+                  for r in pairs],
+        "links": ([["kmerseek reach inside the dark set", "dark_kmerseek_mask"],
+                   ["Mask pair, as numbers", "dark_kmerseek_mask_table"]] if pairs else [])}
+    d["report"] = {
+        "title": "this report", "count": "",
+        "text": "One panel per step, in the order of this drawing. What a run did not do is "
+                "listed by name at the end.",
+        "facts": [], "links": [["What was done, and why", "dark_overview"]]}
+    return d
+
+
+def length_control(by_len: dict) -> dict | None:
+    """The length cut: the placed / dark counts, shares and facts over proteins of at
+    least 0, 50, 100 and 200 aa, from the same table the report prints."""
+    if not by_len:
+        return None
+    options = []
+    for cut in MIN_AA:
+        if cut not in by_len:
+            continue
+        d = by_len[cut]
+        kept, dark = d["kept"], d["dark"]
+        placed = kept - dark
+        cut_txt = f"at least {cut} aa" if cut else "no length cut"
+        options.append({
+            "id": str(cut), "label": "all" if cut == 0 else f"&ge; {cut} aa",
+            "subs": {"placed": f"{num(placed)} proteins ({pct(placed / kept) if kept else 'n/a'})",
+                     "dark": f"{num(dark)} proteins ({pct(dark / kept) if kept else 'n/a'})"},
+            "shares": {"placed": placed / kept if kept else 0, "dark": dark / kept if kept else 0},
+            "facts": {"placed": [[f"proteins counted ({cut_txt})", num(kept)], ["placed", num(placed)],
+                                 ["fraction placed", pct(placed / kept) if kept else "n/a"]],
+                      "dark": [[f"proteins counted ({cut_txt})", num(kept)], ["dark", num(dark)],
+                               ["fraction dark", pct(dark / kept) if kept else "n/a"]]},
+        })
+    return {"label": "Count only proteins at least this long", "options": options}
 
 
 def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
                      clade: str | None, run: dict, gain: dict | None,
-                     length_df, disorder_df) -> None:
+                     length_df, disorder_df, length_summary: dict | None = None,
+                     disorder_summary: dict | None = None) -> None:
     total = pick(summary, "proteins_in_proteome")
     placed = pick(summary, "proteins_placed_by_any_arm")
     dark = pick(summary, "proteins_dark")
@@ -538,6 +619,7 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
         kmerseek_line = "target indexed per alphabet, k and mask setting; every query chunk searched"
     arms = {"length": length_df is not None, "disorder": disorder_df is not None,
             "kmerseek": bool(combos)}
+    by_len = dark_by_length(length_df)
 
     steps = [
         f"<b>Query: the {species} proteome.</b> {num(total)} proteins, split into "
@@ -610,8 +692,20 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
             "<h4>Why</h4>" + why +
             "<h4>Data flow</h4>"
             "<p>Read top to bottom. A box is a set of sequences with its count in this run; "
-            "an arrow is the step that makes the next one, labelled with the tool.</p>"
-            + dark_flow_svg(species, summary, ref, clade, run, arms, kmerseek_line)),
+            "an arrow is the step that makes the next one, labelled with the tool. Hover a "
+            "box to see what feeds it; click it for what it is, its numbers, and the panels "
+            "that show it.</p>"
+            + fd.interactive(
+                dark_flow_svg(species, summary, ref, clade, run, arms, kmerseek_line),
+                flow_details(species, summary, ref, clade, run, gain, length_summary,
+                             disorder_summary, arms, by_len),
+                control=length_control(by_len),
+                footnote=("The searches were run on the whole proteome; the length cut only "
+                          "changes which proteins are counted in the placed / dark row, the "
+                          "same numbers as the \"Dark fraction by minimum length\" table. "
+                          "Per-arm and kmerseek numbers do not change with the cut.")
+                         if by_len else None,
+                uid="dark-flow")),
     })
 
 
@@ -1441,7 +1535,8 @@ def main() -> None:
 
     section_overview(out, args.species, summary, load_json(args.reference_summary),
                      args.clade, load_json(args.run_params) or {}, gain,
-                     length_df, disorder_df)
+                     length_df, disorder_df,
+                     load_json(extras["length_summary"]), load_json(extras["disorder_summary"]))
     section_headline(out, args.species, summary)
     section_per_arm(out, args.species, summary, omitted)
     section_kmerseek(out, args.species, gain, omitted)

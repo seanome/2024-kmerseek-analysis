@@ -34,6 +34,10 @@ process buildDarkMultiqcInputs {
     tuple val(species), val(clade), path(dark_summary),
           path(reference_summary, stageAs: 'reference_summary.json'),
           path(extras, stageAs: 'extras/*')
+    // The data-flow diagram module every report in the repository shares. Staged rather
+    // than imported from ../shared by path: under Apptainer only staged paths are bound
+    // into the container, and the script finds it through PYTHONPATH below.
+    path flow_module, stageAs: 'flow_diagram.py'
 
     output:
     tuple val(species), path("multiqc_in"), emit: sections
@@ -61,6 +65,7 @@ process buildDarkMultiqcInputs {
     ])
     """
     set -euo pipefail
+    export PYTHONPATH="\$PWD\${PYTHONPATH:+:\$PYTHONPATH}"
     # stageAs creates extras/ only when there is something to stage, so a run with no
     # optional arm has no directory at all. mkdir rather than a conditional flag: the
     # script treats an empty directory and a missing one the same way, and this keeps the
@@ -139,7 +144,8 @@ workflow darkReportFrom {
     report_ch
 
     main:
-    sections = buildDarkMultiqcInputs(report_ch).sections
+    flow_module = Channel.value(file("${projectDir}/../shared/flow_diagram.py"))
+    sections = buildDarkMultiqcInputs(report_ch, flow_module).sections
     report = darkMultiqcReport(
         sections.map { sp, dir -> tuple(sp, dir, file(params.multiqc_dark_config)) })
 
