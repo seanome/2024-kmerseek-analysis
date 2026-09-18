@@ -105,7 +105,10 @@ table_columns_visible:
 # qfo_conclusions is first, immediately after the General Statistics table, because it is
 # the reading order for everything below it.
 report_section_order:
-  # Conclusions first, immediately after General Statistics: every number in it is
+  # What was done and why, with the data-flow diagram, before everything: the
+  # conclusions are read against the construction it describes.
+  qfo_overview: { order: 0 }
+  # Conclusions next, immediately after General Statistics: every number in it is
   # computed from the frames the sections below draw, negative results included.
   qfo_conclusions: { order: 1 }
   # Reachability first: 43.9% of the answer key has no same-family instance in the

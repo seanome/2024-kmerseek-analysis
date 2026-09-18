@@ -34,6 +34,16 @@ import polars as pl
 
 import mqc_trace as mt
 
+# The data-flow diagram in the overview section is drawn by the module every report in
+# this repository shares. Under Nextflow it is staged into the task directory and found
+# through PYTHONPATH; run by hand from bin/, it is found at ../../shared.
+try:
+    import flow_diagram as fd
+except ImportError:  # pragma: no cover - the by-hand path
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared"))
+    import flow_diagram as fd
+
 # Threshold-free, so a tool that ships a lenient default cutoff is not rewarded for it.
 # fmax and family_fmax are the same CAFA machinery read at two levels -- interval placement
 # and (protein, family) set membership -- and both are headline because either alone is
@@ -6992,6 +7002,296 @@ def conclusion_reachability(metrics, primary_truth):
         f"See \"Recall ceiling per species\".")
 
 
+# --- overview: what was done, why, and the data flow ------------------------------------
+
+# The search arms as the diagram groups them: one box per tool class, in the class colours
+# the whole report uses. The order is the reading order of the frontier section.
+ARM_BOXES = [
+    ("kmerseek", ["kmerseek"]),
+    ("alignment", ["hmmer3_phmmer", "hmmer3_jackhmmer", "mmseqs2_seqseq", "mmseqs2_iterative",
+                   "hhblits"]),
+    ("structure", ["foldseek", "reseek", "folddisco"]),
+    ("plm", ["prostt5"]),
+    ("ceiling", ["hmmscan"]),
+]
+ARM_WORDS = {
+    "hmmer3_phmmer": "phmmer", "hmmer3_jackhmmer": "jackhmmer",
+    "mmseqs2_seqseq": "mmseqs2", "mmseqs2_iterative": "mmseqs2 iterative",
+    "hhblits": "hhblits", "foldseek": "foldseek", "reseek": "reseek",
+    "folddisco": "folddisco", "prostt5": "ProstT5", "hmmscan": "hmmscan",
+}
+TRUTH_WORDS = {
+    "pfam": "Pfam domains", "swissprot": "Swiss-Prot features", "pfamn": "Pfam-N domains",
+    "mcsa": "M-CSA catalytic sites",
+}
+
+
+def overview_facts(metrics: pl.DataFrame, n_queries: int) -> dict:
+    """This run's own numbers for the overview, read off the unstratified metric rows.
+
+    Everything the overview quotes is looked up here and nowhere else, so a run that lacks
+    a column drops the number (num() prints n/a) rather than the section.
+    """
+    f: dict = {"n_queries": n_queries}
+    ov = metrics
+    if "stratum_axis" in ov.columns:
+        ov = ov.filter(pl.col("stratum_axis") == "all")
+    if "dedup_transfers" in ov.columns:
+        ov = ov.filter(~pl.col("dedup_transfers"))
+    if "split" in ov.columns:
+        ov = ov.filter(pl.col("split") == "all")
+    f["tools"] = sorted(set(metrics["tool"].to_list())) if "tool" in metrics.columns else []
+    f["truth_sets"] = ([t for t in ["pfam", "swissprot", "pfamn", "mcsa"]
+                        if t in set(metrics["truth_set"].to_list())]
+                       if "truth_set" in metrics.columns else [])
+    sp = ov.filter(pl.col("species") != "all") if "species" in ov.columns else ov.clear()
+    f["species"] = sorted(set(sp["species"].to_list())) if sp.height else []
+    if sp.height and "species_mya" in sp.columns:
+        mya = sp.drop_nulls("species_mya")["species_mya"]
+        f["mya_min"], f["mya_max"] = (mya.min(), mya.max()) if mya.len() else (None, None)
+    else:
+        f["mya_min"] = f["mya_max"] = None
+    # The answer key per truth set is the same for every species and tool: instances and
+    # families on the query proteins. Read from the Pfam-keyed rows first, any row second.
+    f["truth"] = {}
+    for ts in f["truth_sets"]:
+        rows = sp.filter(pl.col("truth_set") == ts)
+        if rows.height == 0:
+            continue
+        f["truth"][ts] = {
+            "instances": rows["n_truth_instances"].max() if "n_truth_instances" in rows.columns else None,
+            "families": rows["n_truth_families"].max() if "n_truth_families" in rows.columns else None,
+            "reachable_min": rows["n_reachable_instances"].min() if "n_reachable_instances" in rows.columns else None,
+            "reachable_max": rows["n_reachable_instances"].max() if "n_reachable_instances" in rows.columns else None,
+            "scored_min": rows["n_proteins_scored"].min() if "n_proteins_scored" in rows.columns else None,
+            "scored_max": rows["n_proteins_scored"].max() if "n_proteins_scored" in rows.columns else None,
+        }
+    # The Pfam domain map on the targets: what transfer reads.
+    pf = sp.filter(pl.col("truth_set") == "pfam") if "truth_set" in sp.columns else sp.clear()
+    if pf.height and "n_target_map_instances" in pf.columns:
+        per = (pf.drop_nulls("n_target_map_instances")
+                 .group_by("species").agg(pl.col("n_target_map_instances").max(),
+                                          pl.col("n_target_map_proteins").max()))
+        f["map_min"] = per["n_target_map_instances"].min() if per.height else None
+        f["map_max"] = per["n_target_map_instances"].max() if per.height else None
+        f["map_prot_min"] = per["n_target_map_proteins"].min() if per.height else None
+        f["map_prot_max"] = per["n_target_map_proteins"].max() if per.height else None
+    else:
+        f["map_min"] = f["map_max"] = f["map_prot_min"] = f["map_prot_max"] = None
+    f["min_overlap"] = (metrics["min_overlap"].drop_nulls().mode().first()
+                        if "min_overlap" in metrics.columns and metrics["min_overlap"].drop_nulls().len()
+                        else 0.5)
+    km = metrics.filter(pl.col("tool") == "kmerseek") if "tool" in metrics.columns else metrics.clear()
+    variants = sorted(set(km["variant"].to_list())) if km.height else []
+    f["n_variants"] = len(variants)
+    f["n_alphabets"] = len({v.rsplit("_k", 1)[0] for v in variants})
+    f["lc_both"] = any(v.endswith("lcTrue") for v in variants) and any(v.endswith("lcFalse") for v in variants)
+    f["split"] = pick_split(ungrouped(metrics))[1] if metrics.height else "all"
+    return f
+
+
+def overview_flow_svg(f: dict) -> str:
+    """The benchmark as a picture: two inputs (three with structures), the arms by class,
+    then regions, calls, scores, metrics and the report, each with this run's count."""
+    tools = set(f["tools"])
+    F = fd.Flow()
+    y = F.legend([
+        [dict(text="sequences or results, with a count"),
+         dict(text="a step", arrow=True),
+         dict(text="an arm this run did not do", dashed=True)],
+        [dict(text=CLASSES[c][0], stroke=CLASSES[c][1]) for c in
+         ["kmerseek", "alignment", "structure"]],
+        [dict(text=CLASSES[c][0], stroke=CLASSES[c][1]) for c in ["plm", "ceiling"]],
+        [dict(text="query proteins", icon="genetics"), dict(text="target proteomes", icon="database"),
+         dict(text="a search tool", icon="search"), dict(text="regions, calls, scores", icon="table_rows"),
+         dict(text="the report", icon="summarize")],
+    ])
+
+    cols = fd.columns(3)
+    mids = [fd.mid(c) for c in cols]
+    F.label(mids[0], y + 8, ["QUERY"], bold=True, size=14)
+    F.label(mids[1], y + 8, ["TARGETS"], bold=True, size=14)
+    F.label(mids[2], y + 8, ["STRUCTURES"], bold=True, size=14)
+    ya = y + 18
+    tw = cols[0][1] - fd.ICON_PX - fd.SVG_PAD
+    pf = f["truth"].get("pfam", {})
+    a0 = F.box(cols[0][0], ya, cols[0][1],
+               ["human proteome", f"{fd.num(f['n_queries'])} proteins"]
+               + fd.wrap(f"its own Pfam domains are the answer key: {fd.num(pf.get('instances'))} "
+                         f"instances in {fd.num(pf.get('families'))} families", tw),
+               bold_first=True, icon="genetics")
+    n_sp = len(f["species"])
+    a1 = F.box(cols[1][0], ya, cols[1][1],
+               [f"{n_sp} QfO proteomes"]
+               + fd.wrap(f"{fd.num(f['mya_min'])} to {fd.num(f['mya_max'])} million years from human; "
+                         f"each with its Pfam domains, {fd.num(f['map_min'])} to {fd.num(f['map_max'])} "
+                         f"per proteome, which is what transfer reads", tw),
+               bold_first=True, icon="database")
+    has_struct = bool(tools & set(ARM_BOXES[2][1]))
+    a2 = F.box(cols[2][0], ya, cols[2][1],
+               ["AlphaFold models"]
+               + fd.wrap("of the query and target proteins, for the structure arms", tw),
+               bold_first=True, dashed=not has_struct)
+    y_from = max(b[1] + b[3] for b in (a0, a1, a2))
+
+    # The arms, one box per class, dashed when no tool of that class ran.
+    arm_cols = fd.columns(5, gap=12)
+    arm_mids = [fd.mid(c) for c in arm_cols]
+    F.fan(mids, y_from, arm_mids, y_from + 18 + fd.SVG_LINE_PX + 26,
+          ["every query against every target proteome"])
+    yb = y_from + 18 + fd.SVG_LINE_PX + 26
+    arm_boxes = []
+    aw = arm_cols[0][1] - fd.ICON_PX - fd.SVG_PAD
+    for (cls, members), (x, w) in zip(ARM_BOXES, arm_cols):
+        ran = [m for m in members if m in tools]
+        if cls == "kmerseek":
+            lines = ["kmerseek"] + fd.wrap(
+                f"{fd.num(f['n_variants'])} alphabet x k variants over {fd.num(f['n_alphabets'])} "
+                f"alphabet(s)" + (", mask on and off" if f["lc_both"] else ""), aw)
+        else:
+            head = {"alignment": "sequence alignment", "structure": "structure search",
+                    "plm": "language model", "ceiling": "annotation ceiling"}[cls]
+            lines = [head] + fd.wrap(", ".join(ARM_WORDS[m] for m in (ran or members)), aw)
+            if cls == "ceiling":
+                lines += fd.wrap("the query against Pfam-A, no target", aw)
+        arm_boxes.append(F.box(x, yb, w, lines, stroke=CLASSES[cls][1], stroke_w=2.5,
+                               bold_first=True, icon="search", dashed=not ran))
+    y_arms = max(b[1] + b[3] for b in arm_boxes)
+
+    # Regions, calls, scores, metrics, report: full width, each step labelled.
+    full = (20, fd.SVG_W - 40)
+    xm = fd.SVG_W // 2
+    for m in arm_mids:
+        F.line(m, y_arms, m, y_arms + 26, arrow=True)
+    r = F.box(full[0], y_arms + 26, full[1],
+              ["aligned regions: a query interval, the target interval it matched, and a score"],
+              icon="table_rows")
+    mo = f["min_overlap"]
+    y_next = r[1] + r[3]
+    step1 = fd.wrap(f"transfer: a region claims a Pfam family when it covers at least "
+                    f"{fd.pct(mo, 0)} of that domain on the target; the query interval, carrying "
+                    f"the label, is now a domain call (hmmscan names the family itself)", 600)
+    F.step(xm, y_next, y_next + 24 + fd.SVG_LINE_PX * len(step1) + 24, step1)
+    c = F.box(full[0], y_next + 24 + fd.SVG_LINE_PX * len(step1) + 24, full[1],
+              ["domain calls: a family label on a query interval"], icon="table_rows")
+    y_next = c[1] + c[3]
+    keys = "; ".join(f"{TRUTH_WORDS.get(ts, ts)} {fd.num(v.get('instances'))}"
+                     for ts, v in f["truth"].items())
+    step2 = fd.wrap(f"score against the query's own domains ({keys}): a true positive needs "
+                    f"the right family AND an overlap of at least {fd.pct(mo, 0)} (overlap over union) with a real "
+                    f"instance; right family in the wrong place is a false positive", 600)
+    F.step(xm, y_next, y_next + 24 + fd.SVG_LINE_PX * len(step2) + 24, step2)
+    sc = F.box(full[0], y_next + 24 + fd.SVG_LINE_PX * len(step2) + 24, full[1],
+               ["scored calls per tool, variant, target proteome and answer key"]
+               + fd.wrap(f"accuracy reported on the {f['split']} half of the families; "
+                         f"recall over the instances a target can reach at all "
+                         f"({fd.num(pf.get('reachable_min'))} to {fd.num(pf.get('reachable_max'))} "
+                         f"of {fd.num(pf.get('instances'))} Pfam instances, by proteome)", full[1] - 60),
+               icon="table_rows")
+    y_next = sc[1] + sc[3]
+    step3 = ["cut by axis: divergence (Mya), percent identity, pLDDT, disorder, gene set, feature length;",
+             "cost from the Nextflow trace"]
+    F.step(xm, y_next, y_next + 24 + fd.SVG_LINE_PX * 2 + 24, step3)
+    F.box(full[0], y_next + 24 + fd.SVG_LINE_PX * 2 + 24, full[1],
+          ["this report: conclusions first, then one section per axis"], icon="summarize")
+    return F.render()
+
+
+def section_overview(out: Path, metrics: pl.DataFrame, n_queries: int,
+                     primary_truth: str) -> None:
+    """What was done, why, and the data flow. First in the report, before the conclusions:
+    every number in the conclusions is read against the construction described here."""
+    f = overview_facts(metrics, n_queries)
+    tools = set(f["tools"])
+    pf = f["truth"].get("pfam", {})
+    arms = []
+    for cls, members in ARM_BOXES:
+        ran = [ARM_WORDS.get(m, m) for m in members if m in tools]
+        if ran:
+            arms.append(f"<b>{CLASSES[cls][0]}</b>: {', '.join(ran)}")
+    truth_lines = []
+    for ts, v in f["truth"].items():
+        fam = f" in {fd.num(v['families'])} families" if v.get("families") else ""
+        truth_lines.append(f"{TRUTH_WORDS.get(ts, ts)}: {fd.num(v['instances'])} instances{fam}")
+
+    steps = [
+        f"<b>Query: the human proteome.</b> {fd.num(f['n_queries'])} proteins searched. Their "
+        f"own annotated domains are the answer key, so no target species needs curation of "
+        f"its own: " + "; ".join(truth_lines) + ".",
+        f"<b>Targets: {len(f['species'])} Quest-for-Orthologs proteomes</b> "
+        f"({', '.join(f['species'])}), {fd.num(f['mya_min'])} to {fd.num(f['mya_max'])} million "
+        f"years from human. Each carries its own Pfam annotation, {fd.num(f['map_min'])} to "
+        f"{fd.num(f['map_max'])} domain instances on {fd.num(f['map_prot_min'])} to "
+        f"{fd.num(f['map_prot_max'])} proteins; that map is what a hit's family is read from.",
+        "<b>Search.</b> Every query against every target proteome, one arm per tool: "
+        + "; ".join(arms) + ". kmerseek runs "
+        f"{fd.num(f['n_variants'])} alphabet x k variants over {fd.num(f['n_alphabets'])} "
+        f"alphabet(s)" + (", with the low-complexity mask on and off" if f["lc_both"] else "")
+        + ". Every arm reports aligned regions: a query interval, the target interval it "
+        "matched, and a score.",
+        f"<b>Transfer.</b> A region claims a Pfam family when it covers at least "
+        f"{fd.pct(f['min_overlap'], 0)} of that domain on the target protein. The region's "
+        f"query interval, carrying the family label, is now a domain call. hmmscan skips "
+        f"this step: it searches the query against Pfam-A directly and names the family "
+        f"itself, which is why it is the ceiling and not a competitor.",
+        f"<b>Score.</b> A call is a true positive when the query protein has that family "
+        f"<i>and</i> the call overlaps a real instance of it by at least "
+        f"{fd.pct(f['min_overlap'], 0)} (overlap divided by union). Right family in the wrong "
+        f"place is a false positive. Scored per tool, variant, target proteome and answer "
+        f"key; recall is over the instances a target can reach at all, meaning the family "
+        f"has at least one instance in that proteome ({fd.num(pf.get('reachable_min'))} to "
+        f"{fd.num(pf.get('reachable_max'))} of {fd.num(pf.get('instances'))} Pfam instances, "
+        f"by proteome).",
+        f"<b>Report.</b> Accuracy is read on the <code>{f['split']}</code> half of the "
+        f"families; the sweep picked its best alphabet and k on the other half. The scores "
+        f"are then cut by every axis the sections below use (divergence in million years, "
+        f"percent identity, pLDDT, disorder, HGNC gene set, feature length) and joined to "
+        f"the Nextflow trace for cost.",
+    ]
+    why = bullets(
+        "<b>Domain finding, not orthology.</b> A tool that finds the right protein but puts "
+        "the region in the wrong place has not found the domain, and pair-level benchmarks "
+        "cannot see the difference. Scoring the interval is what makes a region-reporting "
+        "tool comparable to an annotation.",
+        "<b>The answer key is the query's own annotation</b>, so the benchmark needs no "
+        "curation on the target side and can run against any proteome with a Pfam map. The "
+        "target's map is used only to name a hit's family.",
+        f"<b>More than one answer key</b>, because Pfam domains are defined by profile HMMs "
+        f"and phmmer, jackhmmer and hhblits are profile methods: on Pfam those baselines are "
+        f"scored against their own kind of model. Swiss-Prot features are curated from the "
+        f"literature and defined by function, circular with neither the profile nor the "
+        f"structure arms. The primary set for this report is <code>{primary_truth}</code>.",
+        "<b>hmmscan against Pfam-A is the ceiling.</b> Pfam truth is hmmscan output, so it "
+        "measures the most any tool could score on Pfam and puts a number on the "
+        "circularity.",
+        "<b>The target proteome is the divergence axis.</b> The same human queries against "
+        "mouse and against E. coli ask how far each tool reaches back in time, on one "
+        "engine with nothing else varying.",
+        "<b>Held-out families</b>, because the alphabet x k sweep chooses its winner on the "
+        "selection half and reporting the winner on the data that chose it is biased "
+        "upward.",
+    )
+    write_section(out, "qfo_overview", {
+        "id": "qfo_overview",
+        "section_name": "What was done, and why",
+        "description": (
+            "<p>Human query proteins searched against Quest-for-Orthologs target proteomes, "
+            "every reported region turned into a Pfam domain call and scored against the "
+            "human protein's own domains. The steps, this run's numbers, and the flow of "
+            "data from the inputs to the sections below.</p>"),
+        "plot_type": "html",
+        "data": (
+            "<h4 style='margin-top:0.4em'>What was done</h4><ol>"
+            + "".join(f"<li>{s}</li>" for s in steps) + "</ol>"
+            "<h4>Why</h4>" + why +
+            "<h4>Data flow</h4>"
+            "<p>Read top to bottom. A box is a set of sequences or results with its count in "
+            "this run; an arrow is the step that makes the next one. Arm boxes take the "
+            "colour their tool class has in every other section.</p>"
+            + overview_flow_svg(f)),
+    })
+
+
 def section_conclusions(out: Path, metrics: pl.DataFrame, curves: pl.DataFrame,
                         trace: pl.DataFrame, n_queries: int,
                         primary_truth: str) -> None:
@@ -9694,6 +9994,7 @@ def main():
             print(f"canonical arm derived by rule: {CANONICAL[0]}:{CANONICAL[1]} "
                   f"(best mean rank across {', '.join(CANONICAL_RULE_METRICS)})")
 
+    section_overview(args.outdir, metrics, args.n_queries, primary)
     section_conclusions(args.outdir, metrics, curves, trace, args.n_queries, primary)
     section_frontier(args.outdir, metrics, trace, args.n_queries, primary,
                      args.top_kmerseek)

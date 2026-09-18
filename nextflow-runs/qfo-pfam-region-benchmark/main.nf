@@ -3365,6 +3365,10 @@ process buildMultiqcInputs {
 
     input:
     tuple path(metrics), path(curves), path(trace), path(human_fasta), path(bpe)
+    // The data-flow diagram module every report in the repository shares. Staged rather
+    // than imported from ../shared by path: under Apptainer only staged paths are bound
+    // into the container, and the report script finds it through PYTHONPATH below.
+    path flow_module, stageAs: 'flow_diagram.py'
     path kmerseek_timings, stageAs: 'kmerseek_timings/*'
     // stageAs with a bare `*`, so every file keeps its own name. That is not cosmetic:
     // spectrum.<species>.<alphabet>.k<ksize>.lc<true|false>.csv.gz carries the species and
@@ -3397,6 +3401,7 @@ process buildMultiqcInputs {
     // being passed does not make the spectra a required input.
     """
     set -euo pipefail
+    export PYTHONPATH="\$PWD\${PYTHONPATH:+:\$PYTHONPATH}"
     n_queries=\$(grep -c '^>' ${human_fasta} || true)
 
     build_multiqc_inputs.py \\
@@ -4454,7 +4459,8 @@ workflow multiqcFromMetrics {
         // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
         .map { m, c, b -> tuple(m, c, resolveTrace(), file(human_fasta), b) }
 
-    sections = buildMultiqcInputs(mqc_in, kmerseek_timings, kmerseek_spectra).sections
+    flow_module = Channel.value(file("${projectDir}/../shared/flow_diagram.py"))
+    sections = buildMultiqcInputs(mqc_in, flow_module, kmerseek_timings, kmerseek_spectra).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
 }
 
