@@ -105,8 +105,18 @@ table_columns_visible:
 # qfo_conclusions is first, immediately after the General Statistics table, because it is
 # the reading order for everything below it.
 report_section_order:
-  # What was done and why, with the data-flow diagram, before everything: the
-  # conclusions are read against the construction it describes.
+  # MODULES first. The three custom-content modules (the main report, the reduced-alphabet
+  # ceiling block, the supplement) sort among themselves with the LARGEST order first,
+  # the reverse of how the sections inside a module sort. Until 2026-09-18 only
+  # qfo_ceiling carried a module-level order (189, below), so it opened the report ahead
+  # of the main module and the overview was the fourth heading down. The three are named
+  # here with the main module highest.
+  qfo_region: { order: 1000 }
+  qfo_ceiling: { order: 900 }
+  qfo_region_supp: { order: 800 }
+  # SECTIONS inside a module sort by ASCENDING order value. What was done and why, with
+  # the data-flow diagram, before everything: the conclusions are read against the
+  # construction it describes.
   qfo_overview: { order: 0 }
   # Conclusions next, immediately after General Statistics: every number in it is
   # computed from the frames the sections below draw, negative results included.
@@ -219,7 +229,6 @@ report_section_order:
   qfo_retention_table_mcsa: { order: 186 }
   qfo_retention_pfam: { order: 187 }
   qfo_retention_table_pfam: { order: 188 }
-  qfo_ceiling: { order: 189 }
   # qfo_lowcomplexity_bars is gone, not renumbered: the toggle's effect at each alphabet's
   # own best k is under 0.001 Fmax everywhere in the sweep, so the 19-panel switcher and the
   # per-alphabet delta bars both collapsed into the single alphabet x k grid at 190.
