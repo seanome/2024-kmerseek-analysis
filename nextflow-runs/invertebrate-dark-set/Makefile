@@ -109,7 +109,8 @@ LADDER_HEAD_XMX   ?= 24g
 
 .PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
-        multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks
+        multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
+        lock-indexes unlock-indexes
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -122,6 +123,8 @@ help:
 	@echo "  watch-dark-set          SPECIES=<...>  follow a running driver's log"
 	@echo "  stop-dark-set           SPECIES=<...>  cancel the driver and its tasks"
 	@echo "  cancel-orphan-tasks     cancel nf-darkSet_ tasks left in the queue after a driver died"
+	@echo "  lock-indexes            make every built kmerseek index read-only (run before a relaunch)"
+	@echo "  unlock-indexes          make them writable again, to delete or rebuild one"
 	@echo "  status-dark-set         SPECIES=<...>  did it end, what killed it, what it said"
 	@echo "                          add HISTORY=1 for one line per past run"
 	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
@@ -379,6 +382,19 @@ stop-dark-set: check-run
 	   done; \
 	 fi; \
 	 $(MAKE) --no-print-directory cancel-orphan-tasks
+
+# The indexes kmerseekIndex builds are read-only from 2026-09-18 on (see the chmod in
+# main.nf). lock-indexes applies the same to indexes built before that, so a search that
+# opens one read-write fails instead of silently invalidating the cache of every finished
+# search on it. Permissions change ctime, not mtime, so locking does not touch the cache.
+# unlock-indexes is for deleting or rebuilding one by hand.
+lock-indexes:
+	@d=$(OUTDIR)/kmerseek_index; n=$$(find $$d -maxdepth 1 -name '*.rocksdb' -perm -u+w | wc -l); \
+	 echo "locking $$n writable index dir(s) under $$d"; \
+	 find $$d -maxdepth 1 -name '*.rocksdb' -perm -u+w -exec chmod -R a-w {} +
+unlock-indexes:
+	@d=$(OUTDIR)/kmerseek_index; echo "unlocking every index under $$d"; \
+	 find $$d -maxdepth 1 -name '*.rocksdb' -exec chmod -R u+w {} +
 
 # Cancel every task this pipeline's processes submitted, whatever run they belong to.
 # Named for what it does, not "sweep": in this Makefile a sweep is the alphabet x ksize

@@ -500,6 +500,14 @@ process kmerseekIndex {
         --input  ${ref_dir}/reference.fasta \\
         --output ${idx} ${lc} \\
         --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | tee index.log
+    # An index is immutable once built. A search that opens it read-write (the image
+    # before 2026-09-13-rocksdb-4gb-readonly did) rewrites CURRENT, MANIFEST and LOG,
+    # and Nextflow hashes a directory input from its files' names, sizes and mtimes, so
+    # every finished search on that index silently loses its cache on the next -resume.
+    # On 2026-09-17 one accidental run with the old image cost 272 mouse searches that
+    # way. Read-only permissions turn that into a loud open failure. To delete an index,
+    # chmod -R u+w it first (make unlock-indexes).
+    chmod -R a-w ${idx}
     """
 
     stub:
