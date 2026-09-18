@@ -432,6 +432,7 @@ process multiQC {
     // The data-flow diagram module every report in the repository shares, staged so the
     // script finds it through PYTHONPATH whatever the working directory is.
     path flow_module, stageAs: 'flow_diagram.py'
+    path explainers_module, stageAs: 'metric_explainers.py'
 
     output:
     path "multiqc_report.html"
@@ -724,7 +725,8 @@ workflow {
 
     // MultiQC: single-document summary of the whole encoding x ksize sweep
     multiQC(agg_out[1], ortholog_stats, file(params.human_fasta), file(params.mouse_fasta),
-            Channel.value(file("${projectDir}/../shared/flow_diagram.py")))
+            Channel.value(file("${projectDir}/../shared/flow_diagram.py")),
+            Channel.value(file("${projectDir}/../shared/metric_explainers.py")))
 
     eval_outputs[0].subscribe { encoding, ksize, eval_file ->
         println("Completed evaluation: ${encoding} k=${ksize} -> ${eval_file}")

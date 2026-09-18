@@ -40,9 +40,11 @@ from pathlib import Path
 # PYTHONPATH; run by hand from bin/, it is found at ../../shared.
 try:
     import flow_diagram as fd
+    import metric_explainers as mx
 except ImportError:  # pragma: no cover - the by-hand path
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared"))
     import flow_diagram as fd
+    import metric_explainers as mx
 
 ENCODING_COLORS = {
     "hp": "#9C27B0",
@@ -86,7 +88,7 @@ FAMILIES = [
 # Every section id this script writes, in reading order. report_section_order is one
 # scale, so every id is listed. Each file here is its own MultiQC module (no parent_id),
 # and modules sort with the LARGEST order first, so the first id gets the largest number.
-SECTION_ORDER = ["overview", "sweep_completeness", "encoding_completion", "summary_table",
+SECTION_ORDER = ["overview", "metric_explainers", "sweep_completeness", "encoding_completion", "summary_table",
                  "bh_recall_vs_ksize_mqc", "bh_precision_vs_ksize_mqc",
                  "total_hits_vs_ksize_mqc"]
 
@@ -280,6 +282,24 @@ def overview_control(f: dict) -> dict | None:
                                               ["BH recall vs ksize", "bh_recall_vs_ksize_mqc"],
                                               ["BH precision vs ksize", "bh_precision_vs_ksize_mqc"]]}})
     return {"label": "Encoding family", "options": options}
+
+
+def write_metric_explainers(out: Path) -> None:
+    """How to read the metrics: the correction step as a picture, and what total_hits is."""
+    hits = ("<div class='mx'><h5>Search space size (total_hits)</h5><p class='def'>The number of "
+            "human x mouse protein pairs a combo reported at all, before any correction: every pair "
+            "with at least 2 shared k-mers and a Poisson p of at most 0.05. It is the m the correction "
+            "divides by, and a proxy for what the combo costs in compute and storage. A shorter k or a "
+            "coarser alphabet reports more pairs.</p></div>")
+    cfg = {
+        "id": "metric_explainers",
+        "section_name": "How to read the metrics",
+        "description": ("<p>Precision and recall in the tables below are read after multiple-testing "
+                        "correction. The example is a toy; the tables carry the numbers.</p>"),
+        "plot_type": "html",
+        "data": mx.bundle(mx.bh(alpha=0.05), hits),
+    }
+    (out / "metric_explainers_mqc.json").write_text(json.dumps(cfg, indent=1))
 
 
 def write_overview(out: Path, results: list[dict], stats: dict, n_human, n_mouse) -> None:
@@ -507,6 +527,7 @@ def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
     results = load_results(sweep_json)
     write_overview(out, results, read_ortholog_stats(stats_txt),
                    count_fasta(human_fa), count_fasta(mouse_fa))
+    write_metric_explainers(out)
     encodings = sorted({r["encoding"] for r in results})
     n_complete = sum(is_complete(r) for r in results)
     print(f"Loaded {len(results)} sweep entries ({n_complete} complete, "
