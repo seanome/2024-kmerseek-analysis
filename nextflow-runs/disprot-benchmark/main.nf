@@ -456,6 +456,7 @@ process multiQC {
     // The data-flow diagram module every report in the repository shares, staged so the
     // script finds it through PYTHONPATH whatever the working directory is.
     path flow_module, stageAs: 'flow_diagram.py'
+    path explainers_module, stageAs: 'metric_explainers.py'
 
     output:
     path "multiqc_report.html"
@@ -618,7 +619,8 @@ workflow {
     // Step 11: MultiQC
     // -----------------------------------------------------------------------
     multiQC(agg_out[0], gt_out.stats,
-            Channel.value(file("${projectDir}/../shared/flow_diagram.py")))
+            Channel.value(file("${projectDir}/../shared/flow_diagram.py")),
+            Channel.value(file("${projectDir}/../shared/metric_explainers.py")))
 
     // Summary log
     all_results.subscribe { species, tool, _tsv ->

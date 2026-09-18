@@ -30,9 +30,11 @@ import polars as pl
 # PYTHONPATH; run by hand from bin/, it is found at ../../shared.
 try:
     import flow_diagram as fd
+    import metric_explainers as mx
 except ImportError:  # pragma: no cover - the by-hand path
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared"))
     import flow_diagram as fd
+    import metric_explainers as mx
 
 
 MYA = {
@@ -58,7 +60,7 @@ DISORDER_CATEGORIES = ["ordered", "partial", "disordered", "all"]
 # a partial list competes with MultiQC's own defaults for the ids left out, so every id is
 # listed. Table ids are the TSV stems minus _mqc; the line graphs carry their own id.
 SECTION_ORDER = (
-    ["overview"]
+    ["overview", "metric_explainers"]
     + [f"{m}_{cat}" for cat in DISORDER_CATEGORIES for m in ("auc_pr", "recall_fdr5")]
     + ["auc_pr_vs_mya_mqc", "recall_fdr5_vs_mya_mqc"]
 )
@@ -257,6 +259,24 @@ def overview_control(f: dict) -> dict:
         options.append({"id": cat, "label": labels[cat], "subs": subs, "bars": bars, "facts": facts,
                         "links": links})
     return {"label": "Disorder bin of the query (mean metapredict score)", "options": options}
+
+
+def write_metric_explainers(out: Path) -> None:
+    """How to read the metrics: the threshold sweep read as AUC-PR, recall at 5% FDR, and
+    AUC-ROC, with a widget for the first two."""
+    roc = ("<div class='mx'><h5>AUC-ROC</h5><p class='def'>The same sweep of the cutoff, read on "
+           "different axes: the share of true pairs found against the share of false pairs let "
+           "through. 0.5 is a coin toss, 1 is perfect. With many more negative pairs than positive "
+           "ones it moves less than AUC-PR does, which is why AUC-PR is the headline here.</p></div>")
+    cfg = {
+        "id": "metric_explainers",
+        "section_name": "How to read the metrics",
+        "description": ("<p>The three metrics in the tables below are one threshold sweep read three "
+                        "ways. The example is a toy; the tables carry the numbers.</p>"),
+        "plot_type": "html",
+        "data": mx.bundle(mx.threshold(floor=0.95, title="AUC-PR and recall at 5% FDR over a score threshold"), roc),
+    }
+    (out / "metric_explainers_mqc.json").write_text(json.dumps(cfg, indent=1))
 
 
 def write_overview(out: Path, df: pl.DataFrame, n_queries: int | None) -> None:
@@ -482,6 +502,7 @@ def main(metrics_parquet: str, outdir: str, stats_txt: str | None = None) -> Non
 
     # ── Overview: what was done, why, and the data flow ──────────────────────
     write_overview(out, df, read_query_count(Path(stats_txt) if stats_txt else None))
+    write_metric_explainers(out)
 
     # ── Per-disorder-category tables ─────────────────────────────────────────
     for cat in DISORDER_CATEGORIES:
