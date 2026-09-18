@@ -53,6 +53,8 @@ report_section_order:
   # What was done and why, with the data-flow diagram. Before the numbers, because every
   # number below is read against the construction this section describes.
   dark_overview: { order: 5 }
+  # How to read the numbers: the dark fraction and the mask pair, as a schematic.
+  dark_metric_explainers: { order: 6 }
   # The headline next: every other panel is a fraction of, or a qualification of, this
   # one number.
   dark_headline: { order: 10 }

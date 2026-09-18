@@ -38,6 +38,7 @@ process buildDarkMultiqcInputs {
     // than imported from ../shared by path: under Apptainer only staged paths are bound
     // into the container, and the script finds it through PYTHONPATH below.
     path flow_module, stageAs: 'flow_diagram.py'
+    path explainers_module, stageAs: 'metric_explainers.py'
 
     output:
     tuple val(species), path("multiqc_in"), emit: sections
@@ -148,7 +149,8 @@ workflow darkReportFrom {
 
     main:
     flow_module = Channel.value(file("${projectDir}/../shared/flow_diagram.py"))
-    sections = buildDarkMultiqcInputs(report_ch, flow_module).sections
+    explainers  = Channel.value(file("${projectDir}/../shared/metric_explainers.py"))
+    sections = buildDarkMultiqcInputs(report_ch, flow_module, explainers).sections
     report = darkMultiqcReport(
         sections.map { sp, dir -> tuple(sp, dir, file(params.multiqc_dark_config)) })
 

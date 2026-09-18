@@ -41,10 +41,12 @@ import polars as pl
 # through PYTHONPATH; run by hand from bin/, it is found at ../../shared.
 try:
     import flow_diagram as fd
+    import metric_explainers as mx
 except ImportError:  # pragma: no cover - the by-hand path
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared"))
     import flow_diagram as fd
+    import metric_explainers as mx
 
 
 PARENT_ID = "invertebrate_dark_set"
@@ -628,6 +630,19 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
                           "Per-arm and kmerseek numbers do not change with the cut.")
                          if by_len else None),
                 uid="dark-flow")),
+    })
+
+
+def section_metric_explainers(out: Path, species: str) -> None:
+    """How to read the numbers: the dark fraction and the mask pair, as a schematic."""
+    write_section(out, "dark_metric_explainers", {
+        "id": "dark_metric_explainers",
+        "section_name": "How to read the numbers",
+        "description": (
+            f"<p>The two ideas the panels below rest on. The bar widths are a schematic, not "
+            f"{species}'s numbers; those are in the panels.</p>"),
+        "plot_type": "html",
+        "data": mx.bundle(mx.fraction()),
     })
 
 
@@ -1459,6 +1474,7 @@ def main() -> None:
                      args.clade, load_json(args.run_params) or {}, gain,
                      length_df, disorder_df,
                      load_json(extras["length_summary"]), load_json(extras["disorder_summary"]))
+    section_metric_explainers(out, args.species)
     section_headline(out, args.species, summary)
     section_per_arm(out, args.species, summary, omitted)
     section_kmerseek(out, args.species, gain, omitted)
