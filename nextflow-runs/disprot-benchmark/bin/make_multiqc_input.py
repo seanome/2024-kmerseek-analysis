@@ -94,6 +94,18 @@ def overview_facts(df: pl.DataFrame, n_queries: int | None) -> dict:
     f["pairs_min"], f["pairs_max"] = (one["n_pairs"].min(), one["n_pairs"].max()) if one.height else (None, None)
     f["pairs_total"] = int(one["n_pairs"].sum()) if one.height else None
     f["pos_total"] = int(one["n_positives"].sum()) if one.height else None
+    # A tool that ran but reported no pair on any proteome has no metric to show. Said
+    # in words rather than drawn as a normal arm: on the 2026-08 DisProt run Foldseek's
+    # nine result files were all empty and its column vanished from every table.
+    f["found"] = {t: int(df.filter(pl.col("tool") == t)["n_found"].sum()) for t in f["tools"]}
+    # AUC-PR per tool per bin, as the mean over the proteomes that have a value.
+    f["aucpr"] = {}
+    for cat in DISORDER_CATEGORIES:
+        sub = df.filter(pl.col("disorder_category") == cat)
+        f["aucpr"][cat] = {}
+        for t in f["tools"]:
+            vals = sub.filter(pl.col("tool") == t)["auc_pr"].drop_nulls().drop_nans()
+            f["aucpr"][cat][t] = (float(vals.mean()), int(vals.len())) if vals.len() else (None, 0)
     return f
 
 
@@ -110,6 +122,7 @@ def overview_flow_svg(f: dict) -> str:
          dict(text="a search tool", icon="search")],
         [dict(text="scores and labels", icon="table_rows"), dict(text="disorder", icon="waves"),
          dict(text="the report", icon="summarize")],
+        fd.INTERACTION_LEGEND,
     ])
     half = 350
     lx, rx = 20, 410
@@ -121,19 +134,21 @@ def overview_flow_svg(f: dict) -> str:
     a_l = F.box(lx, ya, half, ["human proteins with a DisProt entry", f"{fd.num(f['n_queries'])} proteins"]
                 + fd.wrap("the subset of the Pfam pair benchmark's human queries that DisProt "
                           "annotates as having a disordered region", tw),
-                bold_first=True, icon="genetics")
+                bold_first=True, icon="genetics", node="q0")
     a_r = F.box(rx, ya, half, [f"{len(f['species'])} QfO proteomes"]
                 + fd.wrap(f"{fd.num(f['mya_min'])} to {fd.num(f['mya_max'])} million years from human", tw),
-                bold_first=True, icon="database")
+                bold_first=True, icon="database", node="t0")
     y_from = max(a_l[1] + a_l[3], a_r[1] + a_r[3])
 
-    # One arm per tool that ran; Foldseek is the one a run may skip.
+    # One arm per tool; Foldseek is the one a run may skip, and a tool that reported no
+    # pair at all says so in its box.
     known = ["kmerseek", "foldseek", "mmseqs2"]
     ran = {t.split("_k")[0]: t for t in f["tools"]}
     cols = fd.columns(3)
     mids = [fd.mid(c) for c in cols]
     yb = y_from + 18 + fd.SVG_LINE_PX + 26
-    F.fan([lmid, rmid], y_from, mids, yb, ["every query against every target proteome"])
+    F.fan([lmid, rmid], y_from, mids, yb, ["every query against every target proteome"],
+          frm=["q0", "t0"], to=known)
     boxes = []
     aw = cols[0][1] - fd.ICON_PX - fd.SVG_PAD
     for name, (x, w) in zip(known, cols):
@@ -141,14 +156,18 @@ def overview_flow_svg(f: dict) -> str:
         word = tool_word(tool) if tool else tool_word(name)
         head, _, rest = word.partition(" (")
         lines = [head] + fd.wrap(rest.rstrip(")"), aw)
+        if tool and f["found"].get(tool) == 0:
+            lines += fd.wrap("ran, reported 0 pairs on every proteome: no metric", aw)
+        lines.append("")
         boxes.append(F.box(x, yb, w, lines, stroke=arm_colour.get(tool, "#888888"), stroke_w=2.5,
-                           bold_first=True, icon="search", dashed=tool is None))
+                           bold_first=True, icon="search", dashed=tool is None, node=name,
+                           count_line=len(lines) - 1))
     y_arms = max(b[1] + b[3] for b in boxes)
-    for m in mids:
-        F.line(m, y_arms, m, y_arms + 26, arrow=True)
+    for m, name in zip(mids, known):
+        F.line(m, y_arms, m, y_arms + 26, arrow=True, frm=name, to="scores")
     sc = F.box(20, y_arms + 26, 740,
                ["a score for every human protein x target protein pair the tool reported"],
-               icon="table_rows")
+               icon="table_rows", node="scores")
 
     # The two side inputs to scoring, with the pair scores passing between them.
     y_side = sc[1] + sc[3] + 30
@@ -159,28 +178,121 @@ def overview_flow_svg(f: dict) -> str:
                           f"when they share none; {fd.num(f['pairs_min'])} to {fd.num(f['pairs_max'])} "
                           f"pairs per proteome, {fd.num(f['pairs_total'])} in all, "
                           f"{fd.num(f['pos_total'])} positive", sw - fd.ICON_PX - fd.SVG_PAD),
-                bold_first=True, icon="table_rows")
+                bold_first=True, icon="table_rows", node="key")
     dis = F.box(fd.SVG_W - 20 - sw, y_side, sw, ["disorder of each query protein"]
                 + fd.wrap("metapredict, mean over the protein: ordered below 0.2, partial 0.2 to 0.5, "
                           "disordered above 0.5", sw - fd.ICON_PX - fd.SVG_PAD),
-                bold_first=True, icon="waves")
+                bold_first=True, icon="waves", node="disorder")
     y_side_end = max(key[1] + key[3], dis[1] + dis[3])
     y_sc = y_side_end + 30
-    F.step(xm, sc[1] + sc[3], y_sc, ["join on the pair,", "then on the query"])
-    F.line(20 + sw // 2, key[1] + key[3], 20 + sw // 2, y_sc, arrow=True)
-    F.line(fd.SVG_W - 20 - sw // 2, dis[1] + dis[3], fd.SVG_W - 20 - sw // 2, y_sc, arrow=True)
+    F.step(xm, sc[1] + sc[3], y_sc, ["join on the pair,", "then on the query"], frm="scores", to="metrics")
+    F.line(20 + sw // 2, key[1] + key[3], 20 + sw // 2, y_sc, arrow=True, frm="key", to="metrics")
+    F.line(fd.SVG_W - 20 - sw // 2, dis[1] + dis[3], fd.SVG_W - 20 - sw // 2, y_sc, arrow=True,
+           frm="disorder", to="metrics")
     m = F.box(20, y_sc, 740, ["AUC-PR, AUC-ROC and recall at 5% FDR"]
               + fd.wrap("per tool, per target proteome, per disorder bin; a pair the tool did not "
-                        "report scores 0", 740 - 60), icon="table_rows", bold_first=True)
-    F.line(xm, m[1] + m[3], xm, m[1] + m[3] + 26, arrow=True)
+                        "report scores 0", 740 - 60), icon="table_rows", bold_first=True, node="metrics")
+    F.line(xm, m[1] + m[3], xm, m[1] + m[3] + 26, arrow=True, frm="metrics", to="report")
     F.box(20, m[1] + m[3] + 26, 740, ["this report: one table per metric and bin, then the two "
-                                      "curves against divergence"], icon="summarize")
+                                      "curves against divergence"], icon="summarize", node="report")
     return F.render()
+
+
+def overview_details(f: dict) -> dict:
+    ran = {t.split("_k")[0]: t for t in f["tools"]}
+    tool_text = {
+        "kmerseek": "Reads the sequence whether or not it folds. The question is whether a "
+                    "disordered region can carry a homology signal a structure search cannot see.",
+        "foldseek": "Structure search over AlphaFold models. A region with no stable fold has "
+                    "nothing for Foldseek to encode, which is the contrast the benchmark is built on.",
+        "mmseqs2": "Sequence alignment: the conventional sequence baseline.",
+    }
+    d = {
+        "q0": {"title": "human proteins with a DisProt entry", "count": f"{fd.num(f['n_queries'])} proteins",
+               "text": "Nothing else is rebuilt: the queries are a subset of the whole-proteome pair "
+                       "benchmark, so a difference here is a difference in the proteins, not in the "
+                       "labelling.",
+               "facts": [["proteins", fd.num(f["n_queries"])],
+                         ["source", "DisProt-annotated human queries of the Pfam pair benchmark"]],
+               "links": [["What was done, and why", "overview"]]},
+        "t0": {"title": f"{len(f['species'])} QfO proteomes",
+               "count": f"{fd.num(f['mya_min'])} to {fd.num(f['mya_max'])} million years from human",
+               "text": "The same targets the pair benchmark uses; each proteome is a point on the "
+                       "divergence axis.",
+               "facts": [["proteomes", ", ".join(f["species"])]],
+               "links": [["AUC-PR vs evolutionary distance", "auc_pr_vs_mya_mqc"]]},
+        "scores": {"title": "pair scores", "count": "",
+                   "text": "Every pair each tool reported, with the tool's own score. Scales differ "
+                           "between tools and kmerseek's is not calibrated at 5% FDR, so AUC-PR "
+                           "(ranking only) is read before recall at a threshold.",
+                   "facts": [[f"{tool_word(t).split(' (')[0]}: pairs reported, all proteomes", fd.num(n)]
+                             for t, n in f["found"].items()],
+                   "links": [["What was done, and why", "overview"]]},
+        "key": {"title": "answer key: Pfam pair labels",
+                "count": f"{fd.num(f['pairs_total'])} pairs, {fd.num(f['pos_total'])} positive",
+                "text": "Pfam pair labels reused from the whole-proteome pair benchmark, restricted "
+                        "to DisProt queries. A pair is positive when the two proteins share a Pfam "
+                        "family and negative when they share none.",
+                "facts": [["pairs per proteome", f"{fd.num(f['pairs_min'])} to {fd.num(f['pairs_max'])}"],
+                          ["pairs in all", fd.num(f["pairs_total"])], ["positive pairs", fd.num(f["pos_total"])]],
+                "links": [["What was done, and why", "overview"]]},
+        "disorder": {"title": "disorder of each query protein", "count": "metapredict, mean over the protein",
+                     "text": "metapredict scores every residue 0 to 1; the mean over the protein puts "
+                             "the query in a bin. The bins are what make the comparison: same tools, "
+                             "same pairs, split by how disordered the query is.",
+                     "facts": [["ordered", "mean below 0.2"], ["partial", "0.2 to 0.5"], ["disordered", "above 0.5"]],
+                     "links": [["AUC-PR: disordered proteins", "auc_pr_disordered"]]},
+        "metrics": {"title": "AUC-PR, AUC-ROC and recall at 5% FDR", "count": "",
+                    "text": "One value per tool, per target proteome, per bin. A pair the tool did not "
+                            "report scores 0, so a tool that reports few pairs loses recall rather "
+                            "than being excused.",
+                    "facts": [], "links": [["AUC-PR: all proteins", "auc_pr_all"],
+                                           ["Recall @ FDR 5%: all proteins", "recall_fdr5_all"]]},
+        "report": {"title": "this report", "count": "",
+                   "text": "One table per metric and bin, rows ordered by divergence, then the two "
+                           "curves of metric against divergence.",
+                   "facts": [], "links": [["AUC-PR vs evolutionary distance", "auc_pr_vs_mya_mqc"],
+                                          ["Recall @ FDR 5% vs evolutionary distance", "recall_fdr5_vs_mya_mqc"]]},
+    }
+    for name in ["kmerseek", "foldseek", "mmseqs2"]:
+        tool = ran.get(name)
+        d[name] = {"title": tool_word(tool or name).split(" (")[0],
+                   "count": tool_word(tool).partition(" (")[2].rstrip(")") if tool else "did not run",
+                   "text": tool_text[name]
+                           + (" On this run it reported no pair on any proteome, so it has no metric "
+                              "and no column in the tables." if tool and f["found"].get(tool) == 0 else ""),
+                   "facts": [], "links": []}
+    return d
+
+
+def overview_control(f: dict) -> dict:
+    """The disorder-bin control: each tool's AUC-PR in the bin, as the mean over the
+    proteomes with a value, and links to that bin's two tables."""
+    ran = {t.split("_k")[0]: t for t in f["tools"]}
+    labels = {"all": "all", "ordered": "ordered, below 0.2", "partial": "partial, 0.2 to 0.5",
+              "disordered": "disordered, above 0.5"}
+    options = []
+    for cat in ["all", "ordered", "partial", "disordered"]:
+        subs, facts, links = {}, {}, {}
+        for name, tool in ran.items():
+            v, n = f["aucpr"][cat][tool]
+            if v is None:
+                subs[name] = "no metric in this bin"
+                facts[name] = [["bin", labels[cat]], ["AUC-PR", "no value"]]
+            else:
+                subs[name] = f"AUC-PR {v:.2f}, mean over {n} proteomes"
+                facts[name] = [["bin", labels[cat]], [f"AUC-PR, mean over {n} proteomes", f"{v:.3f}"]]
+            links[name] = [[f"AUC-PR: {cat} proteins", f"auc_pr_{cat}"],
+                           [f"Recall @ FDR 5%: {cat} proteins", f"recall_fdr5_{cat}"]]
+        options.append({"id": cat, "label": labels[cat], "subs": subs, "facts": facts, "links": links})
+    return {"label": "Disorder bin of the query (mean metapredict score)", "options": options}
 
 
 def write_overview(out: Path, df: pl.DataFrame, n_queries: int | None) -> None:
     f = overview_facts(df, n_queries)
-    arms = "; ".join(tool_word(t) for t in f["tools"])
+    arms = "; ".join(
+        tool_word(t) + (" (ran, but reported no pair on any proteome, so it has no metric)"
+                        if f["found"].get(t) == 0 else "") for t in f["tools"])
     steps = [
         f"<b>Query: human proteins with a DisProt entry.</b> {fd.num(f['n_queries'])} proteins: "
         f"the human queries of the Pfam pair benchmark that DisProt annotates as carrying a "
@@ -217,6 +329,11 @@ def write_overview(out: Path, df: pl.DataFrame, n_queries: int | None) -> None:
         "<b>The target proteome is the divergence axis.</b> The same queries against mouse "
         "and against E. coli ask how far each signal reaches back in time.",
     ])
+    block = fd.interactive(
+        overview_flow_svg(f), overview_details(f), control=overview_control(f),
+        footnote="AUC-PR in the details is the mean over the proteomes that have a value in "
+                 "that bin; a proteome with no pair in a bin has no row in that table.",
+        uid="disprot-flow")
     cfg = {
         "id": "overview",
         "section_name": "What was done, and why",
@@ -233,8 +350,10 @@ def write_overview(out: Path, df: pl.DataFrame, n_queries: int | None) -> None:
             "<h4>Data flow</h4>"
             "<p>Read top to bottom. A box is a set of sequences or results with its count in "
             "this run; an arrow is the step that makes the next one. Arm boxes take the colour "
-            "their tool has in the curves below.</p>"
-            + overview_flow_svg(f)),
+            "their tool has in the curves below. Hover a box to see what feeds it; click it "
+            "for what it is, its numbers, and the tables that show it; switch the disorder bin "
+            "to see each tool's AUC-PR in it.</p>"
+            + block),
     }
     (out / "overview_mqc.json").write_text(json.dumps(cfg, indent=1))
 
@@ -263,7 +382,7 @@ def write_table_mqc(path: Path, rows: dict, tools: list[str],
     with open(path, "w") as f:
         f.write(f"# plot_type: 'table'\n")
         f.write(f"# section_name: '{section_name}'\n")
-        f.write(f"# description: '{description}'\n")
+        f.write(f"# description: '{description} <a href=\"#overview\">&uarr; back to the data flow</a>'\n")
         f.write(f"# pconfig:\n")
         f.write(f"#   namespace: 'DisProt Benchmark'\n")
         header = "Sample\t" + "\t".join(tools)
@@ -301,7 +420,7 @@ def write_linegraph_mqc(path: Path, df: pl.DataFrame, metric: str,
     lines = [
         f"id: '{path.stem}'",
         f"section_name: '{section_name}'",
-        f"description: '{description}'",
+        f"description: '{description} <a href=\"#overview\">&uarr; back to the data flow</a>'",
         f"plot_type: 'linegraph'",
         f"pconfig:",
         f"  id: '{path.stem}_plot'",
