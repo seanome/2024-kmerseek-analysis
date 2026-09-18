@@ -3456,8 +3456,11 @@ process multiqcReport {
     set -euo pipefail
     export MPLCONFIGDIR=\$PWD/.mplconfig
 
+    # report_header.yaml is the run-in-six-lines block under the title, written by
+    # build_multiqc_inputs.py from the metrics; a later --config adds to the earlier one.
     multiqc ${sections} \\
         --config ${mqc_config} \\
+        \$( [ -f ${sections}/report_header.yaml ] && echo --config ${sections}/report_header.yaml ) \\
         --filename qfo_pfam_region_multiqc.html \\
         --outdir . \\
         --no-version-check \\
