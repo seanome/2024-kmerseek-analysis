@@ -9,6 +9,14 @@ One module, so the reports draw the same way. A builder script stages this file 
 itself (Nextflow: `path 'flow_diagram.py'` plus `PYTHONPATH=$PWD`) or, run by hand from a
 pipeline's bin/, finds it at ../../shared relative to its own path.
 
+The drawing is also clickable. A box drawn with `node=` is wrapped in a <g class="node"
+data-id=...>, and every line or label drawn with `frm=`/`to=` carries data-from / data-to
+(space-separated ids). `interactive()` wraps the SVG with a details panel, an optional
+control, and the script that uses those attributes: hover fades everything that is not
+upstream of the box under the pointer, click opens the box's details with links to the
+report sections that show it, and the control swaps the counts, share bars, facts and
+links for one setting (a length cut, a disorder bin, an answer key).
+
 Drawing rules, from the clear-figures checklist:
   one mark per meaning     a colour or line style means one thing in the whole picture, and
                            the same thing it means in the panels below the picture
@@ -23,6 +31,7 @@ and `wrap` folds anything longer rather than letting it leave the canvas. Outlin
 are `currentColor`, so the drawing follows MultiQC's light and dark themes.
 """
 
+import json
 import math
 import textwrap
 
@@ -38,6 +47,9 @@ ICON_PX = 28
 C_FOUND = "#0f9d76"
 C_NONE = "#7f7f7f"
 C_CLADE = "#7b4fb3"
+# The box whose details are open. Not a data colour: it marks a state of the page and
+# appears nowhere else in any report.
+C_OPEN = "#d97b00"
 
 # Google Material Symbols (Apache 2.0), outlined, 24 px, fetched from
 # fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/<name>/default/24px.svg
@@ -94,6 +106,14 @@ class Flow:
         self.parts: list[str] = []
         self.bottom = 0
 
+    @staticmethod
+    def _edge_attrs(frm, to) -> str:
+        if not frm and not to:
+            return ""
+        f = " ".join(frm) if isinstance(frm, (list, tuple, set)) else (frm or "")
+        t = " ".join(to) if isinstance(to, (list, tuple, set)) else (to or "")
+        return f' data-from="{f}" data-to="{t}"'
+
     # -- primitives -----------------------------------------------------------------
 
     def icon(self, name: str, x: float, y: float, *, fill: str = "currentColor",
@@ -105,17 +125,26 @@ class Flow:
     def box(self, x: int, y: int, w: int, lines: list[str], *, fill: str | None = None,
             stroke: str = "currentColor", stroke_w: float = 1.2, dashed: bool = False,
             text_fill: str = "currentColor", bold_first: bool = False,
-            icon: str | None = None) -> tuple[int, int, int, int]:
+            icon: str | None = None, node: str | None = None,
+            count_line: int | None = None, share: bool = False) -> tuple[int, int, int, int]:
         """A rounded box with centred text lines and an optional icon at its left edge.
 
         Returns (x, y, w, h). The icon is vertically centred; the text is centred on what
-        is left of the box so the two never overlap.
+        is left of the box so the two never overlap. `node` makes it clickable;
+        `count_line` is the index of the line a control may rewrite; `share` adds the pale
+        bar along the bottom whose width a control sets to the box's share of a total.
         """
         h = max(SVG_LINE_PX * len(lines) + 2 * SVG_PAD, ICON_PX + 2 * SVG_PAD if icon else 0)
         dash = ' stroke-dasharray="6 4"' if dashed else ""
+        if node:
+            self.parts.append(f'<g class="node" data-id="{node}" tabindex="0" role="button">')
         self.parts.append(
-            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="4" '
+            f'<rect class="box" x="{x}" y="{y}" width="{w}" height="{h}" rx="4" '
             f'fill="{fill or "none"}" stroke="{stroke}" stroke-width="{stroke_w}"{dash}/>')
+        if share:
+            self.parts.append(
+                f'<rect class="share" data-share="{node}" x="{x}" y="{y + h - 6}" width="0" '
+                f'height="6" fill="#ffffff" opacity="0.55"/>')
         tx = x + w / 2
         if icon:
             self.icon(icon, x + SVG_PAD, y + (h - ICON_PX) / 2, fill=text_fill)
@@ -123,49 +152,66 @@ class Flow:
         y_text = y + (h - SVG_LINE_PX * len(lines)) / 2
         for i, line in enumerate(lines):
             weight = ' font-weight="bold"' if bold_first and i == 0 else ""
+            cls = ' class="count"' if i == count_line else ""
             ty = y_text + SVG_LINE_PX * (i + 1) - 4
             self.parts.append(
-                f'<text x="{tx}" y="{ty}" text-anchor="middle" fill="{text_fill}"'
+                f'<text{cls} x="{tx}" y="{ty}" text-anchor="middle" fill="{text_fill}"'
                 f'{weight}>{line}</text>')
+        if node:
+            self.parts.append('</g>')
         self.bottom = max(self.bottom, y + h)
         return x, y, w, h
 
-    def line(self, x1: float, y1: float, x2: float, y2: float, *, arrow: bool = False) -> None:
+    def line(self, x1: float, y1: float, x2: float, y2: float, *, arrow: bool = False,
+             frm=None, to=None) -> None:
         head = ' marker-end="url(#flow-arrow)"' if arrow else ""
         self.parts.append(
-            f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="currentColor" '
-            f'stroke-width="1.2"{head}/>')
+            f'<line class="edge"{self._edge_attrs(frm, to)} x1="{x1}" y1="{y1}" x2="{x2}" '
+            f'y2="{y2}" stroke="currentColor" stroke-width="1.2"{head}/>')
 
     def label(self, x: float, y: float, lines: list[str], *, anchor: str = "middle",
-              bold: bool = False, size: int | None = None) -> None:
+              bold: bool = False, size: int | None = None, frm=None, to=None) -> None:
         weight = ' font-weight="bold"' if bold else ""
         fs = f' font-size="{size}"' if size else ""
+        cls = ' class="elabel"' if frm or to else ""
         for i, line in enumerate(lines):
             self.parts.append(
-                f'<text x="{x}" y="{y + SVG_LINE_PX * i}" text-anchor="{anchor}" '
-                f'fill="currentColor"{weight}{fs}>{line}</text>')
+                f'<text{cls}{self._edge_attrs(frm, to)} x="{x}" y="{y + SVG_LINE_PX * i}" '
+                f'text-anchor="{anchor}" fill="currentColor"{weight}{fs}>{line}</text>')
         self.bottom = max(self.bottom, int(y + SVG_LINE_PX * len(lines)))
 
-    def step(self, x: float, y1: float, y2: float, lines: list[str]) -> None:
+    def step(self, x: float, y1: float, y2: float, lines: list[str], *, frm=None,
+             to=None) -> None:
         """An arrow from y1 down to y2 with its label in the middle, the line broken
         around the text so the words are never struck through."""
         block = SVG_LINE_PX * len(lines)
         top = (y1 + y2) / 2 - block / 2
-        self.line(x, y1, x, int(top) - 4)
-        self.label(x, int(top) + SVG_LINE_PX - 4, lines)
-        self.line(x, int(top + block) + 4, x, y2, arrow=True)
+        self.line(x, y1, x, int(top) - 4, frm=frm, to=to)
+        self.label(x, int(top) + SVG_LINE_PX - 4, lines, frm=frm, to=to)
+        self.line(x, int(top + block) + 4, x, y2, arrow=True, frm=frm, to=to)
 
     def fan(self, sources: list[float], y_from: float, targets: list[float], y_to: float,
-            lines: list[str]) -> None:
+            lines: list[str], *, frm: list[str] | None = None,
+            to: list[str] | None = None) -> None:
         """Several boxes feeding several boxes through one horizontal bar, labelled above
-        the bar. Two lines in and three arrows out instead of six crossing arrows."""
+        the bar. Two lines in and three arrows out instead of six crossing arrows. `frm`
+        and `to` are the node ids in the same order as `sources` and `targets`."""
+        frm = frm or []
+        to = to or []
         ybar = y_from + 18 + SVG_LINE_PX * len(lines)
-        for sx in sources:
-            self.line(sx, y_from, sx, ybar)
-        self.line(min(sources + targets), ybar, max(sources + targets), ybar)
-        self.label(self.w / 2, ybar - 6 - SVG_LINE_PX * (len(lines) - 1), lines)
-        for tx in targets:
-            self.line(tx, ybar, tx, y_to, arrow=True)
+        for i, sx in enumerate(sources):
+            self.line(sx, y_from, sx, ybar, frm=frm[i] if i < len(frm) else None, to=to)
+        self.line(min(sources + targets), ybar, max(sources + targets), ybar, frm=frm, to=to)
+        self.label(self.w / 2, ybar - 6 - SVG_LINE_PX * (len(lines) - 1), lines, frm=frm, to=to)
+        for i, tx in enumerate(targets):
+            self.line(tx, ybar, tx, y_to, arrow=True, frm=frm, to=to[i] if i < len(to) else None)
+
+    def group(self, frm, to) -> None:
+        """Open a group of marks that fades as one edge; close it with end_group()."""
+        self.parts.append(f'<g class="edge-group"{self._edge_attrs(frm, to)}>')
+
+    def end_group(self) -> None:
+        self.parts.append('</g>')
 
     def stack(self, cx: float, y: float, n: int, marked: set[int], *, removed: bool = False,
               w: int = 70, colour: str = C_CLADE) -> int:
@@ -186,8 +232,8 @@ class Flow:
         return int(y + n * step)
 
     def swatch(self, x: int, y: int, text: str, *, fill: str | None = None,
-               stroke: str = "currentColor", dashed: bool = False, arrow: bool = False,
-               icon: str | None = None) -> int:
+               stroke: str = "currentColor", stroke_w: float = 1.5, dashed: bool = False,
+               arrow: bool = False, icon: str | None = None, opacity: float = 1.0) -> int:
         """One legend entry at (x, y); returns the x where the next one can start."""
         if arrow:
             self.line(x, y - 4, x + 22, y - 4, arrow=True)
@@ -195,9 +241,10 @@ class Flow:
             self.icon(icon, x, y - 15, px=20)
         else:
             dash = ' stroke-dasharray="4 3"' if dashed else ""
+            op = f' opacity="{opacity}"' if opacity < 1 else ""
             self.parts.append(
                 f'<rect x="{x}" y="{y - 10}" width="22" height="12" rx="2" '
-                f'fill="{fill or "none"}" stroke="{stroke}" stroke-width="1.5"{dash}/>')
+                f'fill="{fill or "none"}" stroke="{stroke}" stroke-width="{stroke_w}"{dash}{op}/>')
         self.parts.append(f'<text x="{x + 28}" y="{y}" fill="currentColor">{text}</text>')
         self.bottom = max(self.bottom, y + 4)
         return x + 28 + SVG_CHAR_PX * len(text) + 22
@@ -235,3 +282,135 @@ def columns(n: int, gap: int = 20, width: int = SVG_W, margin: int = 20) -> list
 
 def mid(col: tuple[int, int]) -> int:
     return col[0] + col[1] // 2
+
+
+INTERACTION_LEGEND = [
+    dict(text="faded: not upstream of the box under the pointer", opacity=0.25),
+    dict(text="orange edge: the box whose details are open", stroke=C_OPEN, stroke_w=2.5),
+]
+
+CSS = """
+<style>
+.flow-block .grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.flow-block .grid{grid-template-columns:1fr}}
+.flow-block .diagram{border:1px solid rgba(127,127,127,.3);border-radius:8px;padding:8px;overflow-x:auto}
+.flow-block .node{cursor:pointer;transition:opacity .15s}
+.flow-block .node:focus{outline:none}
+.flow-block .node:focus-visible rect.box,.flow-block .node.selected rect.box{stroke:%(open)s;stroke-width:3}
+.flow-block .edge,.flow-block .elabel,.flow-block .edge-group{transition:opacity .15s}
+.flow-block .faded{opacity:.22}
+.flow-block .share{transition:width .25s}
+.flow-block .panel{border:1px solid rgba(127,127,127,.3);border-radius:8px;padding:12px 14px;position:sticky;top:12px}
+.flow-block .panel h5{margin:0 0 4px;font-size:15px;font-weight:600}
+.flow-block .panel .n{font-family:monospace;font-size:14px;margin:0 0 8px;opacity:.85}
+.flow-block .panel p{margin:0 0 8px}
+.flow-block .panel dl{margin:0 0 10px;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px}
+.flow-block .panel dt{opacity:.7}
+.flow-block .panel dd{margin:0;font-family:monospace;font-size:12px}
+.flow-block .links a{display:inline-block;font-size:12px;border:1px solid rgba(127,127,127,.5);border-radius:999px;padding:2px 10px;margin:2px 4px 2px 0;text-decoration:none}
+.flow-block .links a:hover{border-color:currentColor}
+.flow-block .control{margin:0 0 10px}
+.flow-block .control label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-bottom:5px}
+.flow-block .seg{display:inline-flex;flex-wrap:wrap;border:1px solid rgba(127,127,127,.5);border-radius:6px;overflow:hidden}
+.flow-block .seg button{background:transparent;color:inherit;border:0;border-right:1px solid rgba(127,127,127,.5);padding:5px 11px;font:inherit;cursor:pointer}
+.flow-block .seg button:last-child{border-right:0}
+.flow-block .seg button[aria-pressed="true"]{background:%(open)s;color:#fff}
+.flow-block .foot{font-size:12px;opacity:.75;margin-top:10px}
+@media (prefers-reduced-motion: reduce){.flow-block .node,.flow-block .edge,.flow-block .elabel,.flow-block .share{transition:none}}
+</style>
+"""
+
+JS = """
+<script>
+(function(){
+  var root=document.getElementById('%(uid)s'); if(!root) return;
+  var svg=root.querySelector('svg');
+  var data=JSON.parse(root.querySelector('script[type="application/json"]').textContent);
+  var nodes={}; svg.querySelectorAll('.node').forEach(function(g){nodes[g.getAttribute('data-id')]=g;});
+  var edges=[]; svg.querySelectorAll('[data-from]').forEach(function(e){
+    var f=e.getAttribute('data-from'), t=e.getAttribute('data-to');
+    edges.push({el:e,from:f?f.split(' '):[],to:t?t.split(' '):[]});});
+  var parents={}; edges.forEach(function(e){e.to.forEach(function(t){e.from.forEach(function(f){(parents[t]=parents[t]||[]).push(f);});});});
+  function upstream(id){var s={};s[id]=1;var st=[id];while(st.length){var n=st.pop();(parents[n]||[]).forEach(function(p){if(!s[p]){s[p]=1;st.push(p);}});}return s;}
+  var selected=null, option=(data.control&&data.control.options.length)?data.control.options[0]:null;
+  function highlight(id){
+    if(!id){Object.keys(nodes).forEach(function(k){nodes[k].classList.remove('faded');});edges.forEach(function(e){e.el.classList.remove('faded');});return;}
+    var up=upstream(id);
+    Object.keys(nodes).forEach(function(k){nodes[k].classList.toggle('faded',!up[k]);});
+    edges.forEach(function(e){var a=e.from.some(function(f){return up[f];}),b=e.to.some(function(t){return up[t];});e.el.classList.toggle('faded',!(a&&b));});
+  }
+  function opt(key,id){return option&&option[key]&&option[key][id]!==undefined?option[key][id]:null;}
+  function select(id){
+    selected=id;
+    Object.keys(nodes).forEach(function(k){nodes[k].classList.toggle('selected',k===id);});
+    highlight(id);
+    var d=data.details[id]||{title:id,count:'',text:'',facts:[],links:[]};
+    root.querySelector('.p-title').textContent=d.title||id;
+    var sub=opt('subs',id); root.querySelector('.p-count').textContent=sub!==null?sub:(d.count||'');
+    root.querySelector('.p-text').textContent=d.text||'';
+    var dl=root.querySelector('.p-facts'); dl.innerHTML='';
+    var facts=(opt('facts',id)||[]).concat(d.facts||[]);
+    facts.forEach(function(kv){var dt=document.createElement('dt');dt.textContent=kv[0];var dd=document.createElement('dd');dd.textContent=kv[1];dl.appendChild(dt);dl.appendChild(dd);});
+    var L=root.querySelector('.p-links'); L.innerHTML='';
+    (opt('links',id)||d.links||[]).forEach(function(nl){var a=document.createElement('a');a.href='#'+nl[1];a.textContent='\u2192 '+nl[0];L.appendChild(a);});
+  }
+  Object.keys(nodes).forEach(function(id){var g=nodes[id];
+    g.addEventListener('mouseenter',function(){highlight(id);});
+    g.addEventListener('mouseleave',function(){highlight(selected);});
+    g.addEventListener('focus',function(){highlight(id);});
+    g.addEventListener('blur',function(){highlight(selected);});
+    g.addEventListener('click',function(){select(id);});
+    g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();select(id);}});
+  });
+  function applyOption(){
+    if(!option) return;
+    Object.keys(option.subs||{}).forEach(function(id){var g=nodes[id]; if(!g) return;
+      var t=g.querySelector('text.count'); if(t) t.textContent=option.subs[id];});
+    Object.keys(option.shares||{}).forEach(function(id){var g=nodes[id]; if(!g) return;
+      var sp=svg.querySelector('[data-share="'+id+'"]'); if(sp){var w=+g.querySelector('rect.box').getAttribute('width'); sp.setAttribute('width',w*option.shares[id]);}});
+    if(selected) select(selected);
+  }
+  root.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){
+    root.querySelectorAll('.seg button').forEach(function(x){x.setAttribute('aria-pressed','false');});
+    b.setAttribute('aria-pressed','true');
+    var id=b.getAttribute('data-option'); option=data.control.options.filter(function(o){return o.id===id;})[0]||null; applyOption();});});
+  applyOption();
+})();
+</script>
+"""
+
+
+def interactive(svg: str, details: dict, *, control: dict | None = None,
+                footnote: str | None = None, uid: str = "flow-block") -> str:
+    """The diagram with its details panel, an optional control, and the script.
+
+    `details` is {node id: {title, count, text, facts: [[k, v]], links: [[name, anchor]]}}.
+    `control` is {label, options: [{id, label, subs: {id: text}, shares: {id: fraction},
+    facts: {id: [[k, v]]}, links: {id: [[name, anchor]]}}]}; the first option is active
+    to start with. Everything is data, so the script is the same in every report.
+    """
+    controls = ""
+    if control and control.get("options"):
+        buttons = "".join(
+            f'<button type="button" data-option="{o["id"]}" '
+            f'aria-pressed="{"true" if i == 0 else "false"}">{o["label"]}</button>'
+            for i, o in enumerate(control["options"]))
+        controls = (f'<div class="control"><label>{control["label"]}</label>'
+                    f'<div class="seg" role="group" aria-label="{control["label"]}">{buttons}</div></div>')
+    payload = json.dumps({"details": details, "control": control})
+    foot = f'<p class="foot">{footnote}</p>' if footnote else ""
+    return (
+        CSS % {"open": C_OPEN}
+        + f'<div id="{uid}" class="flow-block">'
+        + controls
+        + '<div class="grid">'
+        + f'<div class="diagram">{svg}</div>'
+        + '<aside class="panel" aria-live="polite"><h5 class="p-title">Click a box</h5>'
+          '<p class="n p-count"></p>'
+          '<p class="p-text">Each box opens here with what it is, how it was made, and which '
+          'panels below show it. Hover a box first to see what feeds it.</p>'
+          '<dl class="p-facts"></dl><div class="links p-links"></div></aside>'
+        + '</div>' + foot
+        + f'<script type="application/json">{payload}</script>'
+        + JS % {"uid": uid}
+        + '</div>')
