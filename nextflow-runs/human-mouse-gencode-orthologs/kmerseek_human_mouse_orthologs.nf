@@ -425,6 +425,13 @@ process multiQC {
 
     input:
     path sweep_json
+    // For the overview section's counts: the answer key's size and the two proteomes'.
+    path ortholog_stats
+    path human_fasta
+    path mouse_fasta
+    // The data-flow diagram module every report in the repository shares, staged so the
+    // script finds it through PYTHONPATH whatever the working directory is.
+    path flow_module, stageAs: 'flow_diagram.py'
 
     output:
     path "multiqc_report.html"
@@ -432,7 +439,9 @@ process multiQC {
 
     script:
     """
-    make_multiqc_input.py ${sweep_json} mqc_input/
+    export PYTHONPATH="\$PWD\${PYTHONPATH:+:\$PYTHONPATH}"
+    make_multiqc_input.py ${sweep_json} mqc_input/ \\
+        ${ortholog_stats} ${human_fasta} ${mouse_fasta}
 
     /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/multiqc \\
         mqc_input/ \\
@@ -714,7 +723,8 @@ workflow {
     agg_out = aggregateResults(summaries)
 
     // MultiQC: single-document summary of the whole encoding x ksize sweep
-    multiQC(agg_out[1])
+    multiQC(agg_out[1], ortholog_stats, file(params.human_fasta), file(params.mouse_fasta),
+            Channel.value(file("${projectDir}/../shared/flow_diagram.py")))
 
     eval_outputs[0].subscribe { encoding, ksize, eval_file ->
         println("Completed evaluation: ${encoding} k=${ksize} -> ${eval_file}")
