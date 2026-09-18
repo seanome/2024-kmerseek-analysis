@@ -451,6 +451,11 @@ process multiQC {
 
     input:
     path metrics_parquet
+    // benchmark_stats.txt from buildDisprotGroundTruth: the query count the overview quotes.
+    path stats_txt
+    // The data-flow diagram module every report in the repository shares, staged so the
+    // script finds it through PYTHONPATH whatever the working directory is.
+    path flow_module, stageAs: 'flow_diagram.py'
 
     output:
     path "multiqc_report.html"
@@ -458,9 +463,11 @@ process multiQC {
 
     script:
     """
+    export PYTHONPATH="\$PWD\${PYTHONPATH:+:\$PYTHONPATH}"
     ${projectDir}/bin/make_multiqc_input.py \\
         ${metrics_parquet} \\
-        mqc_input/
+        mqc_input/ \\
+        ${stats_txt}
 
     /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/multiqc \\
         mqc_input/ \\
@@ -610,7 +617,8 @@ workflow {
     // -----------------------------------------------------------------------
     // Step 11: MultiQC
     // -----------------------------------------------------------------------
-    multiQC(agg_out[0])
+    multiQC(agg_out[0], gt_out.stats,
+            Channel.value(file("${projectDir}/../shared/flow_diagram.py")))
 
     // Summary log
     all_results.subscribe { species, tool, _tsv ->
