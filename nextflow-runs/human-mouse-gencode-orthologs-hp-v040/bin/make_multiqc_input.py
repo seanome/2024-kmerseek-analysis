@@ -147,80 +147,62 @@ def overview_facts(results: list[dict], stats: dict, n_human, n_mouse) -> dict:
     }
 
 
-def overview_flow_svg(f: dict) -> str:
-    F = fd.Flow()
-    y = F.legend([
-        [dict(text="sequences or results, with a count"), dict(text="a step", arrow=True),
-         dict(text="an encoding family this run did not do", dashed=True)],
-        [dict(text=fam["name"], stroke=fam["colour"]) for fam in f["families"]],
-        [dict(text="query proteins", icon="genetics"), dict(text="target proteins", icon="database"),
-         dict(text="a search", icon="search"), dict(text="hits and labels", icon="table_rows"),
-         dict(text="the report", icon="summarize")],
-        fd.INTERACTION_LEGEND,
-    ])
-    half = 350
-    lx, rx = 20, 410
-    lmid, rmid = lx + half // 2, rx + half // 2
-    F.label(lmid, y + 8, ["QUERY: what is searched"], bold=True, size=14)
-    F.label(rmid, y + 8, ["TARGET: what is searched against"], bold=True, size=14)
-    ya = y + 18
-    tw = half - fd.ICON_PX - fd.SVG_PAD
-    a_l = F.box(lx, ya, half, ["human GENCODE canonical proteins", f"{fd.num(f['n_human'])} proteins"],
-                bold_first=True, icon="genetics", node="q0")
-    a_r = F.box(rx, ya, half, ["mouse GENCODE canonical proteins", f"{fd.num(f['n_mouse'])} proteins"]
-                + fd.wrap("indexed once per encoding and k", tw), bold_first=True, icon="database", node="t0")
-    y_from = max(a_l[1] + a_l[3], a_r[1] + a_r[3])
-
-    n = max(len(f["families"]), 1)
-    cols = fd.columns(n)
-    mids = [fd.mid(c) for c in cols]
+def overview_flow_spec(f: dict) -> dict:
+    """The sweep as a box-and-arrow spec: query and target meet at a junction and one bus
+    fans out to the encoding families; the answer key enters the metrics box from the
+    side. The bars show combos completed, which describe what ran, not the metrics."""
+    fam_x = {"hp": 20, "dayhoff": 270, "protein": 520}
+    kinds = {fam["id"]: {"color": fam["colour"], "label": fam["name"]} for fam in f["families"]}
+    arms = {}
+    for fam in f["families"]:
+        arms[fam["id"]] = {"x": fam_x[fam["id"]], "y": 200, "w": 220, "h": 66, "icon": "search", "kind": fam["id"],
+                           "title": fam["name"],
+                           "sub": f"{fam['n_encodings']} encoding(s), k {fam['k_min']}–{fam['k_max']}: "
+                                  f"{fam['n_complete']} of {fam['n_attempted']} combos",
+                           "bar": True, "dashed": fam["n_complete"] == 0}
+    nodes = {
+        "q0": {"x": 20, "y": 66, "w": 320, "h": 52, "icon": "genetics",
+               "title": "human GENCODE canonical proteins", "sub": f"{fd.num(f['n_human'])} proteins"},
+        "t0": {"x": 420, "y": 66, "w": 320, "h": 52, "icon": "database",
+               "title": "mouse GENCODE canonical proteins",
+               "sub": f"{fd.num(f['n_mouse'])} proteins, {fd.num(f['n_attempted'])} indexes (one per combo)"},
+        "J1": {"junction": True, "x": 380, "y": 92},
+        **arms,
+        "hits": {"x": 20, "y": 340, "w": 720, "h": 56, "icon": "table_rows",
+                 "title": "hits: pairs with ≥ 2 shared k-mers and Poisson p ≤ 0.05",
+                 "sub": f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])} per combo"},
+        "key": {"x": 20, "y": 450, "w": 340, "h": 60, "icon": "table_rows",
+                "title": "answer key: MGI/JAX ortholog pairs",
+                "sub": f"{fd.num(f['pairs'])} pairs over {fd.num(f['human_with_ortholog'])} human genes"},
+        "metrics": {"x": 20, "y": 580, "w": 720, "h": 56, "icon": "table_rows",
+                    "title": "precision and recall after multiple-testing correction, alpha 0.05",
+                    "sub": "Bonferroni, BH, BY and two-stage BH"},
+        "report": {"x": 20, "y": 680, "w": 720, "h": 44, "icon": "summarize",
+                   "title": "this report: which combos completed, the metrics table, and precision, recall "
+                            "and hit count against k"},
+    }
     fam_ids = [fam["id"] for fam in f["families"]]
-    yb = y_from + 18 + fd.SVG_LINE_PX * 2 + 26
-    F.fan([lmid, rmid], y_from, mids, yb,
-          ["kmerseek search, every human protein against the mouse index,",
-           f"once per encoding x k: {fd.num(f['n_complete'])} of {fd.num(f['n_attempted'])} combos completed"],
-          frm=["q0", "t0"], to=fam_ids)
-    boxes = []
-    aw = cols[0][1] - fd.ICON_PX - fd.SVG_PAD
-    for fam, (x, w) in zip(f["families"], cols):
-        lines = [fam["name"]] + fd.wrap(
-            f"{fam['n_encodings']} encoding(s), k {fam['k_min']} to {fam['k_max']}: "
-            f"{fam['n_complete']} of {fam['n_attempted']} combos completed", aw)
-        boxes.append(F.box(x, yb, w, lines, stroke=fam["colour"], stroke_w=2.5, bold_first=True,
-                           icon="search", dashed=fam["n_complete"] == 0, node=fam["id"]))
-    y_arms = max(b[1] + b[3] for b in boxes)
-    for m, fid in zip(mids, fam_ids):
-        F.line(m, y_arms, m, y_arms + 26, arrow=True, frm=fid, to="hits")
-    h = F.box(20, y_arms + 26, 740,
-              ["hits: human protein x mouse protein pairs with at least 2 shared k-mers and Poisson p at most 0.05"]
-              + fd.wrap(f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])} per combo", 700),
-              icon="table_rows", node="hits")
-
-    # The answer key comes in from the side; the hits pass down the middle.
-    y_side = h[1] + h[3] + 30
-    xm = fd.SVG_W // 2
-    sw = 300
-    key = F.box(20, y_side, sw, ["answer key: MGI/JAX ortholog pairs"]
-                + fd.wrap(f"{fd.num(f['pairs'])} human-mouse gene pairs over "
-                          f"{fd.num(f['human_with_ortholog'])} human genes, "
-                          f"{fd.num(f['one_to_one'])} of them with exactly one mouse ortholog",
-                          sw - fd.ICON_PX - fd.SVG_PAD),
-                bold_first=True, icon="table_rows", node="key")
-    y_sc = key[1] + key[3] + 30
-    F.step(xm + 100, h[1] + h[3], y_sc, ["a hit is an ortholog when", "its gene pair is in the key"],
-           frm="hits", to="metrics")
-    F.line(20 + sw // 2, key[1] + key[3], 20 + sw // 2, y_sc, arrow=True, frm="key", to="metrics")
-    m = F.box(20, y_sc, 740, ["precision and recall after multiple-testing correction, alpha 0.05"]
-              + fd.wrap("Bonferroni, BH, BY and two-stage BH over every hit's Poisson p-value; "
-                        "precision is the corrected hits that are orthologs, recall is the "
-                        "ortholog hits that survive correction over the ortholog hits with "
-                        "p below 0.05", 680),
-              icon="table_rows", bold_first=True, node="metrics")
-    F.line(xm, m[1] + m[3], xm, m[1] + m[3] + 26, arrow=True, frm="metrics", to="report")
-    F.box(20, m[1] + m[3] + 26, 740,
-          ["this report: which combos completed, the metrics table, and precision, recall "
-           "and hit count against k"], icon="summarize", node="report")
-    return F.render()
+    edges = [{"from": "q0", "to": "J1"}, {"from": "t0", "to": "J1"}]
+    for i, fid in enumerate(fam_ids):
+        e = {"from": "J1", "to": fid, "bus": 60}
+        if i == 0:
+            e.update({"label": ["kmerseek search, every human protein against the mouse index,",
+                                f"once per encoding x k: {fd.num(f['n_complete'])} of {fd.num(f['n_attempted'])} combos completed"],
+                      "lx": 392, "ly": 146, "anchor": "start"})
+        edges.append(e)
+    edges += [{"from": fid, "to": "hits"} for fid in fam_ids]
+    edges += [
+        {"from": "hits", "to": "metrics", "label": ["correct every hit's Poisson p over all hits of its combo;",
+                                                    "a hit is an ortholog when its gene pair is in the key"],
+         "lx": 560, "ly": 540},
+        {"from": "key", "to": "metrics"}, {"from": "metrics", "to": "report"},
+    ]
+    return {"height": 740, "kinds": kinds,
+            "barLegend": "bar along the bottom of a family: combos completed (full width = every combo attempted)",
+            "lanes": [[30, 130, "inputs"], [170, 290, "search"], [320, 410, "hits"], [430, 530, "labels"],
+                      [560, 650, "metrics"], [670, 740, "report"]],
+            "headers": [[190, 52, "QUERY: what is searched"], [570, 52, "TARGET: what is searched against"]],
+            "nodes": nodes, "edges": edges}
 
 
 def overview_details(f: dict) -> dict:
@@ -280,6 +262,8 @@ def overview_control(f: dict) -> dict | None:
     if not f["families"]:
         return None
     options = []
+    bars = {fam["id"]: (fam["n_complete"] / fam["n_attempted"] if fam["n_attempted"] else 0)
+            for fam in f["families"]}
     for fam in f["families"]:
         facts = []
         for enc in fam["encodings"]:
@@ -289,7 +273,7 @@ def overview_control(f: dict) -> dict | None:
                 facts.append([f"{enc}: best BH recall (k)", f"{e['best_recall'][0]:.3f} (k={e['best_recall'][1]})"])
             if e.get("best_precision") is not None:
                 facts.append([f"{enc}: best BH precision (k)", f"{e['best_precision'][0]:.3f} (k={e['best_precision'][1]})"])
-        options.append({"id": fam["id"], "label": fam["name"],
+        options.append({"id": fam["id"], "label": fam["name"], "bars": bars,
                         "facts": {fam["id"]: facts},
                         "links": {fam["id"]: [["Sweep completeness", "sweep_completeness"],
                                               ["Completion by encoding", "encoding_completion"],
@@ -352,16 +336,18 @@ def write_overview(out: Path, results: list[dict], stats: dict, n_human, n_mouse
             + "".join(f"<li>{s}</li>" for s in steps) + "</ol>"
             "<h4>Why</h4><ul>" + why + "</ul>"
             "<h4>Data flow</h4>"
-            "<p>Read top to bottom. A box is a set of sequences or results with its count in "
-            "this run; an arrow is the step that makes the next one. Encoding-family boxes "
-            "take the colour their encodings have in the curves below. Hover a box to see "
-            "what feeds it; click it for what it is, its numbers, and the sections that show "
-            "it; pick an encoding family to see each of its encodings.</p>"
-            + fd.interactive(overview_flow_svg(f), overview_details(f), control=overview_control(f),
-                             footnote="Recall is measured among the ortholog hits the search "
-                                      "reported with p below 0.05, not among every MGI pair, so "
-                                      "it is recall of the correction step, not of the search.",
-                             uid="sweep-flow")),
+            "<p>Read top to bottom; the label on the left says what kind of thing each row "
+            "holds. A box holds a name and one number; an arrow is the step that makes the "
+            "next box. Family boxes take the colour their encodings have in the curves below, "
+            "and their bars show how many combos completed. Hover a box to see what feeds it; "
+            "click it for what it is, its numbers, and the sections that show it; pick a "
+            "family to see each of its encodings.</p>"
+            + fd.block(dict(overview_flow_spec(f), title="human-mouse ortholog sweep",
+                            details=overview_details(f), control=overview_control(f),
+                            footnote="Recall is measured among the ortholog hits the search "
+                                     "reported with p below 0.05, not among every MGI pair, so "
+                                     "it is recall of the correction step, not of the search."),
+                       uid="sweep-flow")),
     }
     (out / "overview_mqc.json").write_text(json.dumps(cfg, indent=1))
 
@@ -486,7 +472,7 @@ def write_linegraph(
     path.write_text("\n".join(lines) + "\n")
 
 
-def write_multiqc_config(path: Path, encodings: list[str]) -> None:
+def write_multiqc_config(path: Path, encodings: list[str], header: str = "") -> None:
     content = """\
 title: "Human-Mouse GENCODE Ortholog K-mer Sweep (HP, kmerseek 0.4.0)"
 subtitle: "HP alphabet encodings x k=15-19 — human vs mouse canonical proteins"
@@ -499,10 +485,7 @@ intro_text: >
   The first section says what was run, with this run's numbers, why, and how the data
   flows to the sections.
 
-report_header_info:
-  - Ground truth: "MGI/JAX HOM_MouseHumanSequence orthologs"
-  - Comparison: "human vs mouse, all canonical GENCODE proteins"
-  - Correction: "Bonferroni / BH / BY / two-stage BH, alpha=0.05"
+{header}
 
 custom_data:
   sweep_completeness:
@@ -513,7 +496,7 @@ custom_data:
 report_section_order:
 """ + "\n".join(f"  {sid}: {{ order: {len(SECTION_ORDER) - i} }}"
                 for i, sid in enumerate(SECTION_ORDER)) + "\n"
-    path.write_text(content)
+    path.write_text(content.replace("{header}", header))
 
 
 def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
@@ -557,7 +540,16 @@ def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
         ylog=True,
     )
 
-    write_multiqc_config(out / "multiqc_config.yaml", encodings)
+    f = overview_facts(results, read_ortholog_stats(stats_txt), count_fasta(human_fa), count_fasta(mouse_fa))
+    write_multiqc_config(out / "multiqc_config.yaml", encodings, header=fd.header_yaml([
+        ("Query", f"human GENCODE canonical proteins, {fd.num(f['n_human'])}"),
+        ("Target", f"mouse GENCODE canonical proteins, {fd.num(f['n_mouse'])}, indexed once per encoding and k"),
+        ("Sweep", "; ".join(f"{fam['name']}: {fam['n_encodings']} encoding(s), k {fam['k_min']} to {fam['k_max']}, "
+                            f"{fam['n_complete']} of {fam['n_attempted']} combos completed" for fam in f["families"])),
+        ("Ground truth", f"MGI/JAX HOM_MouseHumanSequence ortholog pairs: {fd.num(f['pairs'])} pairs over "
+                         f"{fd.num(f['human_with_ortholog'])} human genes"),
+        ("Correction", "Bonferroni, BH, BY and two-stage BH over every hit's Poisson p-value, alpha 0.05"),
+    ]))
 
     print(f"Wrote MultiQC input files to {out}/")
     for f in sorted(out.iterdir()):
