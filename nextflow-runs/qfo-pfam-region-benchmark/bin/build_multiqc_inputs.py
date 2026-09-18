@@ -9754,7 +9754,7 @@ def section_timing_coverage(out: Path, board: pl.DataFrame,
             "substituting it into one arm's cell put 345.80 CPU-h against single "
             "configurations in the midi report. A tool-level figure fills in only where "
             "that tool has one variant, which makes it the same measurement.",
-            "<b>The cost columns are dropped from the General Statistics table</b> while "
+            "<b>The cost columns are dropped from the at-a-glance table</b> while "
             "any arm is untimed, rather than shown for some tools and blank for others. A "
             "blank cell beside a filled one reads as a speed result, not as a gap."),
     })
@@ -9793,27 +9793,33 @@ def section_general_stats(out: Path, metrics: pl.DataFrame, trace: pl.DataFrame,
             cells["queries_per_s"] = row.get("queries_per_s")
             cells["cpu_hours"] = row.get("cpu_hours")
         data[row["label"]] = cells
-    pconfig = [
-        {"fmax": dict(title="Fmax", min=0, max=1, scale="RdYlGn", format="{:,.3f}",
-                      description=f"Best variant, {primary_truth} truth")},
-        {"auprc": dict(title="AUPRC", min=0, max=1, scale="Blues", format="{:,.3f}")},
-        {"recall_reachable": dict(title="Recall", min=0, max=1, scale="Greens",
-                                  format="{:,.3f}",
-                                  description="Against transferable instances only")},
-        {"precision": dict(title="Prec.", min=0, max=1, scale="Oranges",
-                           format="{:,.3f}")},
-    ]
+    # An ordinary table section rather than MultiQC's General Statistics: General Statistics
+    # is the page's own top element and nothing can be placed above it, and the reader
+    # meets the data flow first. Same columns, same rows, one section down.
+    headers = {
+        "fmax": dict(title="Fmax", min=0, max=1, scale="RdYlGn", format="{:,.3f}",
+                     description=f"Best variant, {primary_truth} truth"),
+        "auprc": dict(title="AUPRC", min=0, max=1, scale="Blues", format="{:,.3f}"),
+        "recall_reachable": dict(title="Recall", min=0, max=1, scale="Greens", format="{:,.3f}",
+                                 description="Against transferable instances only"),
+        "precision": dict(title="Prec.", min=0, max=1, scale="Oranges", format="{:,.3f}"),
+    }
     if show_cost:
-        pconfig += [
-            {"queries_per_s": dict(title="Q/s", scale="Purples", format="{:,.1f}",
-                                   description="Median over target species")},
-            {"cpu_hours": dict(title="CPU-h", scale="Reds", format="{:,.2f}",
-                               description="Summed over this arm's search tasks")},
-        ]
+        headers["queries_per_s"] = dict(title="Q/s", scale="Purples", format="{:,.1f}",
+                                        description="Median over target species")
+        headers["cpu_hours"] = dict(title="CPU-h", scale="Reds", format="{:,.2f}",
+                                    description="Summed over this arm's search tasks")
     write_section(out, "qfo_general_stats", {
         "id": "qfo_general_stats",
-        "plot_type": "generalstats",
-        "pconfig": pconfig,
+        "section_name": "Every arm at a glance",
+        "description": (
+            f"<p>Each tool's best variant on the <code>{primary_truth}</code> answer key, "
+            f"ranked by Fmax; every value is a mean over target proteomes. The rest of the "
+            f"report is the evidence behind each cell.</p>"),
+        "plot_type": "table",
+        "pconfig": {"id": "qfo_general_stats_table", "title": "Every arm at a glance",
+                    "col1_header": "arm", "sort_rows": False},
+        "headers": headers,
         "data": data,
     })
 
