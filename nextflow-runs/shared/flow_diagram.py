@@ -1,54 +1,57 @@
-"""Data-flow diagrams for the MultiQC report overviews, as inline SVG.
+"""Data-flow diagrams for the MultiQC report overviews.
 
 Every MultiQC report in this repository opens with a section that says what was done, why,
 and how the data flowed from the inputs to the panels. The picture half of that is drawn
-here: boxes for sets of sequences or results, each with this run's count, and arrows for
-the steps between them, labelled with the tool that ran the step.
+here, from a spec each report's builder writes: boxes (a name and one number each),
+junctions where two inputs meet, swimlanes naming what kind of thing each row holds, the
+arrows between boxes, what each box opens with when clicked, and a control whose options
+carry the numbers that change with it. One script, shared by every report, routes and
+draws the spec in the browser, so the four reports are drawn the same way and a change
+to the drawing rules is one change.
 
-One module, so the reports draw the same way. A builder script stages this file next to
-itself (Nextflow: `path 'flow_diagram.py'` plus `PYTHONPATH=$PWD`) or, run by hand from a
-pipeline's bin/, finds it at ../../shared relative to its own path.
+A builder stages this file next to itself (Nextflow: `path 'flow_diagram.py'` plus
+`PYTHONPATH=$PWD`) or, run by hand from a pipeline's bin/, finds it at ../../shared.
 
-The drawing is also clickable. A box drawn with `node=` is wrapped in a <g class="node"
-data-id=...>, and every line or label drawn with `frm=`/`to=` carries data-from / data-to
-(space-separated ids). `interactive()` wraps the SVG with a details panel, an optional
-control, and the script that uses those attributes: hover fades everything that is not
-upstream of the box under the pointer, click opens the box's details with links to the
-report sections that show it, and the control swaps the counts, share bars, facts and
-links for one setting (a length cut, a disorder bin, an answer key).
+Drawing rules, from the clear-figures checklist and the 2026-09-18 review:
+  no crossing lines      two inputs meet at a junction (the dot) and one bus fans out
+                         from it; an arrow drops straight down when its source sits over
+                         its target; a side input enters a wide box at its own x
+  row labels             a swimlane label on the left says what a row holds (inputs,
+                         search, hits, ...) before any box is read
+  one name, one number   a box holds a title and one count; everything else is in the
+                         panel when the box is clicked
+  labels beside lines    a step label sits beside its arrow, never on it
+  legend before marks    the legend is above the drawing, and every bar's meaning is in it
+  bars that move         a bar along the bottom of a box is its value on one scale per
+                         row; switching the control slides it and leaves an orange tick
+                         where it was, so the size and direction of the change stay visible
+  no fake numbers        a bar shows only what the report itself carries
 
-Drawing rules, from the clear-figures checklist:
-  one mark per meaning     a colour or line style means one thing in the whole picture, and
-                           the same thing it means in the panels below the picture
-  legend before marks      the legend is the first row, so every mark is explained before
-                           it is seen
-  a count on every box     a box without a number is decoration
-  words, not colour, for   a category the words already carry (one pass vs 3 iterations)
-  detail                   does not also get a hue; three hues plus a neutral is the budget
-
-Text is 12 px at about 7 px per character; box widths are chosen so the longest line fits
-and `wrap` folds anything longer rather than letting it leave the canvas. Outlines and text
-are `currentColor`, so the drawing follows MultiQC's light and dark themes.
+Spec, as JSON:
+  title, subtitle, warning?   text above the drawing
+  height                      SVG height; width is 760 plus a 34 px margin for lane labels
+  kinds: {kind: {color, fill?, label}}          box outline (or fill) colours, in the legend
+  barLegend?                  what a bar along the bottom of a box means (and its full width)
+  lanes: [[y0, y1, label], ...]                  swimlanes, top to bottom
+  headers: [[x, y, text], ...]                   column headings
+  nodes: {id: {x, y, w, h, icon, kind?, title, sub?, bar?, strip?} | {junction: true, x, y,
+          label?, labelSide?}}
+  edges: [{from, to, label?, bus?, lx?, ly?, anchor?}, ...]
+  details: {id: {text, facts: [[k, v]], links: [[name, anchor]]}}
+  control?: {label, options: [{id, label, subs: {id: text}, bars: {id: fraction},
+             facts: {id: [[k, v]]}, links: {id: [[name, anchor]]}}]}
+  footnote?
 """
 
 import json
-import math
-import textwrap
-
-SVG_W = 780
-SVG_FONT_PX = 12
-SVG_CHAR_PX = 7
-SVG_LINE_PX = 16
-SVG_PAD = 8
-ICON_PX = 28
 
 # Green is "something was found" and grey is "nothing was found", in every report that uses
 # these. Purple marks the query's own clade where a report removes it from the target.
 C_FOUND = "#0f9d76"
 C_NONE = "#7f7f7f"
 C_CLADE = "#7b4fb3"
-# The box whose details are open. Not a data colour: it marks a state of the page and
-# appears nowhere else in any report.
+# The box whose details are open, and the tick where a bar was before the last click. Not
+# data colours: they mark a state of the page and appear nowhere else in any report.
 C_OPEN = "#d97b00"
 
 # Google Material Symbols (Apache 2.0), outlined, 24 px, fetched from
@@ -56,11 +59,11 @@ C_OPEN = "#d97b00"
 # and inlined, because the reports are rendered on compute nodes with no internet and have
 # to stay one self-contained file each. viewBox is 0 -960 960 960 for every one.
 #
-#   genetics     query sequences          search      a search tool
-#   database     a target database        table_rows  a table of hits or calls
-#   task_alt     found / placed           search_off  nothing found
-#   straighten   protein length           waves       disorder
-#   summarize    the report itself
+#   genetics     query sequences          search        a search tool
+#   database     a target database        table_rows    a table of hits or calls
+#   task_alt     found / placed           search_off    nothing found
+#   straighten   protein length           waves         disorder
+#   summarize    the report itself        deployed_code predicted structures
 ICONS = {
     "database": "M480-120q-151 0-255.5-46.5T120-280v-400q0-66 105.5-113T480-840q149 0 254.5 47T840-680v400q0 67-104.5 113.5T480-120Zm0-479q89 0 179-25.5T760-679q-11-29-100.5-55T480-760q-91 0-178.5 25.5T200-679q14 30 101.5 55T480-599Zm0 199q42 0 81-4t74.5-11.5q35.5-7.5 67-18.5t57.5-25v-120q-26 14-57.5 25t-67 18.5Q600-528 561-524t-81 4q-42 0-82-4t-75.5-11.5Q287-543 256-554t-56-25v120q25 14 56 25t66.5 18.5Q358-408 398-404t82 4Zm0 200q46 0 93.5-7t87.5-18.5q40-11.5 67-26t32-29.5v-98q-26 14-57.5 25t-67 18.5Q600-328 561-324t-81 4q-42 0-82-4t-75.5-11.5Q287-343 256-354t-56-25v99q5 15 31.5 29t66.5 25.5q40 11.5 88 18.5t94 7Z",
     "genetics": "M200-40v-40q0-139 58-225.5T418-480q-102-88-160-174.5T200-880v-40h80v40q0 11 .5 20.5T282-840h396q1-10 1.5-19.5t.5-20.5v-40h80v40q0 139-58 225.5T542-480q102 88 160 174.5T760-80v40h-80v-40q0-11-.5-20.5T678-120H282q-1 10-1.5 19.5T280-80v40h-80Zm138-640h284q13-19 22.5-38t17.5-42H298q8 22 17.5 41.5T338-680Zm142 148q20-17 39-34t36-34H405q17 17 36 34t39 34Zm-75 172h150q-17-17-36-34t-39-34q-20 17-39 34t-36 34ZM298-200h364q-8-22-17.5-41.5T622-280H338q-13 19-22.5 38T298-200Z",
@@ -70,7 +73,7 @@ ICONS = {
     "summarize": "M348.5-611.5Q360-623 360-640t-11.5-28.5Q337-680 320-680t-28.5 11.5Q280-657 280-640t11.5 28.5Q303-600 320-600t28.5-11.5Zm0 160Q360-463 360-480t-11.5-28.5Q337-520 320-520t-28.5 11.5Q280-497 280-480t11.5 28.5Q303-440 320-440t28.5-11.5Zm0 160Q360-303 360-320t-11.5-28.5Q337-360 320-360t-28.5 11.5Q280-337 280-320t11.5 28.5Q303-280 320-280t28.5-11.5ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h440l200 200v440q0 33-23.5 56.5T760-120H200Zm0-80h560v-400H600v-160H200v560Zm0-560v160-160 560-560Z",
     "table_rows": "M760-200v-120H200v120h560Zm0-200v-160H200v160h560Zm0-240v-120H200v120h560ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z",
     "task_alt": "M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q65 0 123 19t107 53l-58 59q-38-24-81-37.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-18-2-36t-6-35l65-65q11 32 17 66t6 70q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-56-216L254-466l56-56 114 114 400-401 56 56-456 457Z",
-    "waves": "M80-146v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62.5-8.5q37.5 0 62.5 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-174.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-164 544.5-155t-64.5 9q-39 0-64.5-9t-46-19.5Q349-185 329-193.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-164 143.5-155T80-146Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-352.5q-21-10.5-41-19t-49-8.5q-29 0-49.5 8.5t-41 19Q569-342 544-333t-64 9q-39 0-64.5-9t-46-19.5Q349-363 329-371.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-342 143.5-333T80-324Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-530.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-520 544.5-511t-64.5 9q-39 0-64.5-9t-46-19.5Q349-541 329-549.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-520 143.5-511T80-502Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-708.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-698 544.5-689t-64.5 9q-39 0-64.5-9t-46-19.5Q349-719 329-727.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-698 143.5-689T80-680Z",
+    "waves": "M80-146v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62.5-8.5q37.5 0 62.5 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-174.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-164 544.5-155t-64.5 9q-39 0-64.5-9t-46-19.5Q349-185 329-193.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-164 143.5-155T80-146Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-352.5q-21-10.5-41-19t-49-8.5q-29 0-49.5 8.5t-41 19Q569-342 544-333t-64 9q-39 0-64.5-9t-46-19.5Q349-363 329-371.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-342 143.5-333T80-324Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-530.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-520 544.5-511t-64.5 9q-39 0-64.5-9t-46-19.5Q349-541 329-549.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-520 143.5-511T80-502Zm0-178v-78q29 0 49.5-9t41.5-19.5q21-10.5 46.5-19t63-8.5q37.5 0 62 8.5t45.5 19q21 10.5 42 19.5t50 9q29 0 50-9t42-19.5q21-10.5 46-19t62-8.5q38 0 63 8.5t46 19q21 10.5 42 19.5t49 9v78q-38 0-63.5-9T770-708.5q-21-10.5-41-19t-49-8.5q-28 0-48.5 8.5t-41 19Q570-698 544.5-689t-64.5 9q-39 0-64.5-9t-46-19.5Q349-719 329-727.5t-48.5-8.5q-28.5 0-49 8.5t-41.5 19Q169-698 143.5-689T80-680Z",    "deployed_code": "M440-91 160-252q-19-11-29.5-29T120-321v-318q0-22 10.5-40t29.5-29l280-161q19-11 40-11t40 11l280 161q19 11 29.5 29t10.5 40v318q0 22-10.5 40T800-252L520-91q-19 11-40 11t-40-11Zm0-92v-284L200-608v276l240 149Zm80 0 240-149v-276L520-467v284ZM480-536l237-137-237-137-237 137 237 137Z",
 }
 
 
@@ -89,220 +92,51 @@ def pct(value, digits: int = 1) -> str:
     return f"{100 * float(value):.{digits}f}%"
 
 
-def wrap(text: str, width_px: int) -> list[str]:
-    """Fold `text` so every line fits in a box `width_px` wide, padding included."""
-    return textwrap.wrap(text, max(8, (width_px - 2 * SVG_PAD) // SVG_CHAR_PX))
+def header_yaml(items: list[tuple[str, str]]) -> str:
+    """MultiQC's report_header_info (the key-value block under the report title), as
+    YAML written by hand: the scoring containers carry no PyYAML, and a list of quoted
+    strings needs none. Every value is double-quoted, so colons and commas are safe."""
+    def q(v) -> str:
+        return '"' + str(v).replace("\\", "\\\\").replace('"', '\\"') + '"'
+    return "report_header_info:\n" + "".join(f"  - {q(k)}: {q(v)}\n" for k, v in items)
 
-
-class Flow:
-    """A top-to-bottom data-flow diagram as inline SVG.
-
-    Coordinates are in a fixed SVG_W-wide frame; the height grows with what is drawn.
-    Methods return the geometry they drew so the next row can be placed against it.
-    """
-
-    def __init__(self, width: int = SVG_W) -> None:
-        self.w = width
-        self.parts: list[str] = []
-        self.bottom = 0
-
-    @staticmethod
-    def _edge_attrs(frm, to) -> str:
-        if not frm and not to:
-            return ""
-        f = " ".join(frm) if isinstance(frm, (list, tuple, set)) else (frm or "")
-        t = " ".join(to) if isinstance(to, (list, tuple, set)) else (to or "")
-        return f' data-from="{f}" data-to="{t}"'
-
-    # -- primitives -----------------------------------------------------------------
-
-    def icon(self, name: str, x: float, y: float, *, fill: str = "currentColor",
-             px: int = ICON_PX) -> None:
-        self.parts.append(
-            f'<svg x="{x}" y="{y}" width="{px}" height="{px}" viewBox="0 -960 960 960">'
-            f'<path d="{ICONS[name]}" fill="{fill}"/></svg>')
-
-    def box(self, x: int, y: int, w: int, lines: list[str], *, fill: str | None = None,
-            stroke: str = "currentColor", stroke_w: float = 1.2, dashed: bool = False,
-            text_fill: str = "currentColor", bold_first: bool = False,
-            icon: str | None = None, node: str | None = None,
-            count_line: int | None = None, share: bool = False) -> tuple[int, int, int, int]:
-        """A rounded box with centred text lines and an optional icon at its left edge.
-
-        Returns (x, y, w, h). The icon is vertically centred; the text is centred on what
-        is left of the box so the two never overlap. `node` makes it clickable;
-        `count_line` is the index of the line a control may rewrite; `share` adds the pale
-        bar along the bottom whose width a control sets to the box's share of a total.
-        """
-        h = max(SVG_LINE_PX * len(lines) + 2 * SVG_PAD, ICON_PX + 2 * SVG_PAD if icon else 0)
-        dash = ' stroke-dasharray="6 4"' if dashed else ""
-        if node:
-            self.parts.append(f'<g class="node" data-id="{node}" tabindex="0" role="button">')
-        self.parts.append(
-            f'<rect class="box" x="{x}" y="{y}" width="{w}" height="{h}" rx="4" '
-            f'fill="{fill or "none"}" stroke="{stroke}" stroke-width="{stroke_w}"{dash}/>')
-        if share:
-            self.parts.append(
-                f'<rect class="share" data-share="{node}" x="{x}" y="{y + h - 6}" width="0" '
-                f'height="6" fill="#ffffff" opacity="0.55"/>')
-        tx = x + w / 2
-        if icon:
-            self.icon(icon, x + SVG_PAD, y + (h - ICON_PX) / 2, fill=text_fill)
-            tx = x + SVG_PAD + ICON_PX + (w - SVG_PAD - ICON_PX) / 2
-        y_text = y + (h - SVG_LINE_PX * len(lines)) / 2
-        for i, line in enumerate(lines):
-            weight = ' font-weight="bold"' if bold_first and i == 0 else ""
-            cls = ' class="count"' if i == count_line else ""
-            ty = y_text + SVG_LINE_PX * (i + 1) - 4
-            self.parts.append(
-                f'<text{cls} x="{tx}" y="{ty}" text-anchor="middle" fill="{text_fill}"'
-                f'{weight}>{line}</text>')
-        if node:
-            self.parts.append('</g>')
-        self.bottom = max(self.bottom, y + h)
-        return x, y, w, h
-
-    def line(self, x1: float, y1: float, x2: float, y2: float, *, arrow: bool = False,
-             frm=None, to=None) -> None:
-        head = ' marker-end="url(#flow-arrow)"' if arrow else ""
-        self.parts.append(
-            f'<line class="edge"{self._edge_attrs(frm, to)} x1="{x1}" y1="{y1}" x2="{x2}" '
-            f'y2="{y2}" stroke="currentColor" stroke-width="1.2"{head}/>')
-
-    def label(self, x: float, y: float, lines: list[str], *, anchor: str = "middle",
-              bold: bool = False, size: int | None = None, frm=None, to=None) -> None:
-        weight = ' font-weight="bold"' if bold else ""
-        fs = f' font-size="{size}"' if size else ""
-        cls = ' class="elabel"' if frm or to else ""
-        for i, line in enumerate(lines):
-            self.parts.append(
-                f'<text{cls}{self._edge_attrs(frm, to)} x="{x}" y="{y + SVG_LINE_PX * i}" '
-                f'text-anchor="{anchor}" fill="currentColor"{weight}{fs}>{line}</text>')
-        self.bottom = max(self.bottom, int(y + SVG_LINE_PX * len(lines)))
-
-    def step(self, x: float, y1: float, y2: float, lines: list[str], *, frm=None,
-             to=None) -> None:
-        """An arrow from y1 down to y2 with its label in the middle, the line broken
-        around the text so the words are never struck through."""
-        block = SVG_LINE_PX * len(lines)
-        top = (y1 + y2) / 2 - block / 2
-        self.line(x, y1, x, int(top) - 4, frm=frm, to=to)
-        self.label(x, int(top) + SVG_LINE_PX - 4, lines, frm=frm, to=to)
-        self.line(x, int(top + block) + 4, x, y2, arrow=True, frm=frm, to=to)
-
-    def fan(self, sources: list[float], y_from: float, targets: list[float], y_to: float,
-            lines: list[str], *, frm: list[str] | None = None,
-            to: list[str] | None = None) -> None:
-        """Several boxes feeding several boxes through one horizontal bar, labelled above
-        the bar. Two lines in and three arrows out instead of six crossing arrows. `frm`
-        and `to` are the node ids in the same order as `sources` and `targets`."""
-        frm = frm or []
-        to = to or []
-        ybar = y_from + 18 + SVG_LINE_PX * len(lines)
-        for i, sx in enumerate(sources):
-            self.line(sx, y_from, sx, ybar, frm=frm[i] if i < len(frm) else None, to=to)
-        self.line(min(sources + targets), ybar, max(sources + targets), ybar, frm=frm, to=to)
-        self.label(self.w / 2, ybar - 6 - SVG_LINE_PX * (len(lines) - 1), lines, frm=frm, to=to)
-        for i, tx in enumerate(targets):
-            self.line(tx, ybar, tx, y_to, arrow=True, frm=frm, to=to[i] if i < len(to) else None)
-
-    def group(self, frm, to) -> None:
-        """Open a group of marks that fades as one edge; close it with end_group()."""
-        self.parts.append(f'<g class="edge-group"{self._edge_attrs(frm, to)}>')
-
-    def end_group(self) -> None:
-        self.parts.append('</g>')
-
-    def stack(self, cx: float, y: float, n: int, marked: set[int], *, removed: bool = False,
-              w: int = 70, colour: str = C_CLADE) -> int:
-        """A database as a stack of entries, one line each, centred on cx from y down.
-
-        Indices in `marked` are drawn in `colour`, or left as a gap when `removed`.
-        Returns the y below the stack.
-        """
-        step = 6
-        for i in range(n):
-            if i in marked and removed:
-                continue
-            c = colour if i in marked else "currentColor"
-            self.parts.append(
-                f'<rect x="{cx - w / 2}" y="{y + i * step}" width="{w}" height="3" rx="1.5" '
-                f'fill="{c}"/>')
-        self.bottom = max(self.bottom, int(y + n * step))
-        return int(y + n * step)
-
-    def swatch(self, x: int, y: int, text: str, *, fill: str | None = None,
-               stroke: str = "currentColor", stroke_w: float = 1.5, dashed: bool = False,
-               arrow: bool = False, icon: str | None = None, opacity: float = 1.0) -> int:
-        """One legend entry at (x, y); returns the x where the next one can start."""
-        if arrow:
-            self.line(x, y - 4, x + 22, y - 4, arrow=True)
-        elif icon:
-            self.icon(icon, x, y - 15, px=20)
-        else:
-            dash = ' stroke-dasharray="4 3"' if dashed else ""
-            op = f' opacity="{opacity}"' if opacity < 1 else ""
-            self.parts.append(
-                f'<rect x="{x}" y="{y - 10}" width="22" height="12" rx="2" '
-                f'fill="{fill or "none"}" stroke="{stroke}" stroke-width="{stroke_w}"{dash}{op}/>')
-        self.parts.append(f'<text x="{x + 28}" y="{y}" fill="currentColor">{text}</text>')
-        self.bottom = max(self.bottom, y + 4)
-        return x + 28 + SVG_CHAR_PX * len(text) + 22
-
-    def legend(self, rows: list[list[dict]], y: int = 18) -> int:
-        """Legend rows, each a list of swatch() keyword dicts with a `text`. Returns the y
-        below the last row. Rows are the caller's: a row that would run past the right
-        edge is the caller's to split, and this raises rather than clipping."""
-        for row in rows:
-            x = 20
-            for entry in row:
-                x = self.swatch(x, y, **entry)
-            if x - 22 > self.w:
-                raise ValueError(f"legend row runs past {self.w} px: {[e['text'] for e in row]}")
-            y += 22
-        return y
-
-    def render(self) -> str:
-        h = self.bottom + SVG_PAD
-        return (
-            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {self.w} {h}" '
-            f'width="100%" style="max-width:{self.w}px;font-family:sans-serif;'
-            f'font-size:{SVG_FONT_PX}px;display:block;margin:0 auto">'
-            '<defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
-            'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
-            '<path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker></defs>'
-            + "".join(self.parts) + "</svg>")
-
-
-def columns(n: int, gap: int = 20, width: int = SVG_W, margin: int = 20) -> list[tuple[int, int]]:
-    """(x, w) for n equal columns across the frame."""
-    w = (width - 2 * margin - gap * (n - 1)) // n
-    return [(margin + i * (w + gap), w) for i in range(n)]
-
-
-def mid(col: tuple[int, int]) -> int:
-    return col[0] + col[1] // 2
-
-
-INTERACTION_LEGEND = [
-    dict(text="faded: not upstream of the box under the pointer", opacity=0.25),
-    dict(text="orange edge: the box whose details are open", stroke=C_OPEN, stroke_w=2.5),
-]
 
 CSS = """
 <style>
-.flow-block .grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:18px;align-items:start}
+.flow-block .grid{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px;align-items:start}
 @media (max-width:820px){.flow-block .grid{grid-template-columns:1fr}}
+.flow-block .warn{border:1px solid %(open)s;border-radius:6px;padding:8px 12px;margin:0 0 12px;font-size:13px}
+.flow-block .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;margin-bottom:10px}
+.flow-block .legend span{display:inline-flex;align-items:center;gap:7px}
+.flow-block .sw{width:22px;height:12px;border:1.5px solid currentColor;border-radius:2px;display:inline-block;flex:none;position:relative}
+.flow-block .sw.faded{opacity:.25}
+.flow-block .sw.bar::after{content:"";position:absolute;left:1px;right:40%%;bottom:1px;height:4px;background:currentColor;opacity:.8}
+.flow-block .sw.ghost::after{content:"";position:absolute;left:60%%;bottom:0;width:2px;height:8px;background:%(open)s}
+.flow-block .dot{width:10px;height:10px;border-radius:50%%;background:currentColor;display:inline-block;flex:none;margin:0 6px}
+.flow-block .arrow{width:22px;height:12px;display:inline-block;flex:none}
 .flow-block .diagram{border:1px solid rgba(127,127,127,.3);border-radius:8px;padding:8px;overflow-x:auto}
+.flow-block svg.flow{display:block;width:100%%;max-width:1000px;margin:0 auto;font-family:inherit;font-size:12px;color:inherit}
+.flow-block .lane{fill:currentColor;opacity:.05}
+.flow-block .lanelabel{fill:currentColor;opacity:.65;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
 .flow-block .node{cursor:pointer;transition:opacity .15s}
+.flow-block .node rect.box{fill:none;stroke:currentColor;stroke-width:1.5}
+.flow-block .node.filled text,.flow-block .node.filled .icon{fill:#fff}
+.flow-block .node text{fill:currentColor}
+.flow-block .node text.count{font-family:monospace;font-size:11px}
+.flow-block .node .icon{fill:currentColor}
 .flow-block .node:focus{outline:none}
-.flow-block .node:focus-visible rect.box,.flow-block .node.selected rect.box{stroke:%(open)s;stroke-width:3}
-.flow-block .edge,.flow-block .elabel,.flow-block .edge-group{transition:opacity .15s}
+.flow-block .node:focus-visible rect.box,.flow-block .node.selected rect.box{stroke-width:3;stroke:%(open)s !important}
+.flow-block .junction circle{fill:currentColor}
+.flow-block .junction text{fill:currentColor;opacity:.7;font-size:11px}
+.flow-block .edge{stroke:currentColor;stroke-width:1.2;fill:none;transition:opacity .15s}
+.flow-block .elabel{fill:currentColor;opacity:.75;font-size:11px;transition:opacity .15s}
 .flow-block .faded{opacity:.22}
-.flow-block .share{transition:width .25s}
+.flow-block .vbar{fill:currentColor;opacity:.8;transition:width .4s ease}
+.flow-block .filled .vbar{fill:#fff;opacity:.6}
+.flow-block .vghost{fill:%(open)s;transition:x .4s ease,opacity .4s}
 .flow-block .panel{border:1px solid rgba(127,127,127,.3);border-radius:8px;padding:12px 14px;position:sticky;top:12px}
 .flow-block .panel h5{margin:0 0 4px;font-size:15px;font-weight:600}
-.flow-block .panel .n{font-family:monospace;font-size:14px;margin:0 0 8px;opacity:.85}
+.flow-block .panel .n{font-family:monospace;font-size:13px;margin:0 0 8px;opacity:.85}
 .flow-block .panel p{margin:0 0 8px}
 .flow-block .panel dl{margin:0 0 10px;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px}
 .flow-block .panel dt{opacity:.7}
@@ -315,102 +149,179 @@ CSS = """
 .flow-block .seg button{background:transparent;color:inherit;border:0;border-right:1px solid rgba(127,127,127,.5);padding:5px 11px;font:inherit;cursor:pointer}
 .flow-block .seg button:last-child{border-right:0}
 .flow-block .seg button[aria-pressed="true"]{background:%(open)s;color:#fff}
+.flow-block .seg button:focus-visible{outline:2px solid %(open)s;outline-offset:2px}
 .flow-block .foot{font-size:12px;opacity:.75;margin-top:10px}
-@media (prefers-reduced-motion: reduce){.flow-block .node,.flow-block .edge,.flow-block .elabel,.flow-block .share{transition:none}}
+@media (prefers-reduced-motion: reduce){.flow-block .node,.flow-block .edge,.flow-block .elabel,.flow-block .vbar,.flow-block .vghost{transition:none}}
 </style>
 """
 
-JS = """
+# The renderer, ported from the 2026-09-18 mockup (kmerseek-report-flows v2). Everything it
+# reads is the spec; the control's options carry their numbers, so no code is per report.
+JS = r"""
 <script>
 (function(){
   var root=document.getElementById('%(uid)s'); if(!root) return;
-  var svg=root.querySelector('svg');
-  var data=JSON.parse(root.querySelector('script[type="application/json"]').textContent);
-  var nodes={}; svg.querySelectorAll('.node').forEach(function(g){nodes[g.getAttribute('data-id')]=g;});
-  var edges=[]; svg.querySelectorAll('[data-from]').forEach(function(e){
-    var f=e.getAttribute('data-from'), t=e.getAttribute('data-to');
-    edges.push({el:e,from:f?f.split(' '):[],to:t?t.split(' '):[]});});
-  var parents={}; edges.forEach(function(e){e.to.forEach(function(t){e.from.forEach(function(f){(parents[t]=parents[t]||[]).push(f);});});});
+  var spec=JSON.parse(root.querySelector('script[type="application/json"]').textContent);
+  var icons=spec.icons;
+  var OX=34, W=760;
+  var view=root.querySelector('.view');
+  var NS='http://www.w3.org/2000/svg';
+  function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+  function h(t,cls,text){var e=document.createElement(t);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+
+  if(spec.warning){view.appendChild(h('p','warn',spec.warning));}
+  var option=(spec.control&&spec.control.options.length)?spec.control.options[0]:null, prevOption=null;
+  if(spec.control){
+    var c=h('div','control'); var lab=h('label',null,spec.control.label); c.appendChild(lab);
+    var seg=h('div','seg'); seg.setAttribute('role','group'); seg.setAttribute('aria-label',spec.control.label);
+    spec.control.options.forEach(function(o,i){var b=h('button',null,o.label);b.type='button';b.setAttribute('data-id',o.id);b.setAttribute('aria-pressed',i===0?'true':'false');seg.appendChild(b);});
+    seg.addEventListener('click',function(e){var b=e.target.closest('button');if(!b||b.getAttribute('data-id')===(option&&option.id))return;
+      seg.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');
+      prevOption=option;option=spec.control.options.filter(function(o){return o.id===b.getAttribute('data-id');})[0];applyOption();});
+    c.appendChild(seg); view.appendChild(c);
+  }
+
+  // Legend: the fixed grammar first, then this report's box colours, then the marks the
+  // page adds (bar, ghost tick, faded, open).
+  var lg=h('div','legend'); lg.setAttribute('aria-label','legend');
+  function item(sw,text){var s=document.createElement('span');s.innerHTML=sw+text;lg.appendChild(s);}
+  item('<i class="sw"></i>','a set of sequences or results, with its count');
+  item('<svg class="arrow" viewBox="0 0 22 12"><line x1="0" y1="6" x2="16" y2="6" stroke="currentColor" stroke-width="1.5"/><path d="M15 2 L21 6 L15 10 z" fill="currentColor"/></svg>','a step, labelled with what it does');
+  item('<i class="dot"></i>','two inputs meet here and go on together');
+  Object.keys(spec.kinds||{}).forEach(function(k){var kd=spec.kinds[k];item('<i class="sw" style="border-color:'+kd.color+';'+(kd.fill?'background:'+kd.color+';':'')+'border-width:2px"></i>',kd.label);});
+  item('<i class="sw" style="border-style:dashed"></i>','dashed: an arm this run did not do');
+  item('<span style="opacity:.8">icons</span>','DNA: query proteins; cylinder: target database; magnifier: a search; rows: a table; cube: predicted structures; sheet: the report');
+  if(spec.barLegend) item('<i class="sw bar"></i>',spec.barLegend);
+  if(spec.control) item('<i class="sw ghost"></i>','orange tick: where the bar was before the last click');
+  item('<i class="sw faded"></i>','faded: not upstream of the box under the pointer');
+  item('<i class="sw" style="border-color:%(open)s;border-width:2.5px"></i>','orange edge: the box whose details are open');
+  view.appendChild(lg);
+
+  var grid=h('div','grid'); var dwrap=h('div','diagram');
+  var svg=el('svg',{class:'flow',viewBox:'0 0 '+(W+OX)+' '+spec.height,role:'img','aria-label':spec.title||'data flow'});
+  var defs=el('defs',{}); var m=el('marker',{id:'ah-%(uid)s',viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'7',markerHeight:'7',orient:'auto-start-reverse'});
+  m.appendChild(el('path',{d:'M0 0 L10 5 L0 10 z',fill:'currentColor'})); defs.appendChild(m); svg.appendChild(defs);
+  dwrap.appendChild(svg); grid.appendChild(dwrap);
+  var panel=h('aside','panel'); panel.setAttribute('aria-live','polite');
+  panel.innerHTML='<h5 class="p-title">Click a box</h5><p class="n p-count"></p><p class="p-text">Each box opens here with what it is, how it was made, and which panels below show it.</p><dl class="p-facts"></dl><div class="links p-links"></div>';
+  grid.appendChild(panel); view.appendChild(grid);
+  if(spec.footnote){view.appendChild(h('p','foot',spec.footnote));}
+
+  // Row lanes first, so they sit behind everything; every other lane is shaded.
+  (spec.lanes||[]).forEach(function(l,i){var y0=l[0],y1=l[1];
+    if(i%%2===0) svg.appendChild(el('rect',{class:'lane',x:0,y:y0,width:W+OX,height:y1-y0}));
+    var t=el('text',{class:'lanelabel',x:12,y:(y0+y1)/2,'text-anchor':'middle',transform:'rotate(-90 12 '+((y0+y1)/2)+')'});t.textContent=l[2];svg.appendChild(t);});
+  var G=el('g',{transform:'translate('+OX+',0)'}); svg.appendChild(G);
+  (spec.headers||[]).forEach(function(hd){var t=el('text',{x:hd[0],y:hd[1],'text-anchor':'middle','font-weight':'600',fill:'currentColor'});t.textContent=hd[2];G.appendChild(t);});
+
+  var nodes=spec.nodes, edges=spec.edges;
+  var parents={}; edges.forEach(function(e){(parents[e.to]=parents[e.to]||[]).push(e.from);});
   function upstream(id){var s={};s[id]=1;var st=[id];while(st.length){var n=st.pop();(parents[n]||[]).forEach(function(p){if(!s[p]){s[p]=1;st.push(p);}});}return s;}
-  var selected=null, option=(data.control&&data.control.options.length)?data.control.options[0]:null;
+  function isJ(id){return !!nodes[id].junction;}
+  function cx(n){return n.junction?n.x:n.x+n.w/2;} function bottom(n){return n.junction?n.y+5:n.y+n.h;} function top(n){return n.junction?n.y-5:n.y;}
+
+  // Routing: a straight drop when the source sits over the target; otherwise down, across,
+  // down. Into a junction from a box: down to the junction's row, then across into it. Out
+  // of a junction: down to a bus a little below it, across, down.
+  function route(e){
+    var A=nodes[e.from],B=nodes[e.to];
+    if(B.junction&&A.junction){return {d:'M'+A.x+' '+(A.y+5)+' L'+A.x+' '+B.y+' L'+(B.x+(A.x<B.x?-6:6))+' '+B.y,lx:(A.x+B.x)/2,ly:B.y-6};}
+    if(B.junction){var x1=cx(A); if(Math.abs(x1-B.x)<1) return {d:'M'+x1+' '+bottom(A)+' L'+x1+' '+(B.y-6),lx:x1,ly:(bottom(A)+B.y)/2};
+      if(Math.abs(A.y+A.h/2-B.y)<A.h/2){var side=x1<B.x?A.x+A.w:A.x; return {d:'M'+side+' '+B.y+' L'+(B.x+(x1<B.x?-6:6))+' '+B.y,lx:(side+B.x)/2,ly:B.y-8};}
+      return {d:'M'+x1+' '+bottom(A)+' L'+x1+' '+B.y+' L'+(B.x+(x1<B.x?-6:6))+' '+B.y,lx:x1,ly:(bottom(A)+B.y)/2};}
+    var x1=cx(A),x2=cx(B),y1=bottom(A),y2=top(B);
+    if(!A.junction&&x1>=B.x&&x1<=B.x+B.w) return {d:'M'+x1+' '+y1+' L'+x1+' '+y2,lx:x1,ly:(y1+y2)/2,straight:true};
+    var my=A.junction?(A.y+(e.bus||22)):(e.bus!==undefined?e.bus:(y1+y2)/2);
+    return {d:'M'+x1+' '+y1+' L'+x1+' '+my+' L'+x2+' '+my+' L'+x2+' '+y2,lx:x2,ly:my};
+  }
+  var edgeEls=[];
+  edges.forEach(function(e){
+    var r=route(e);
+    var pth=el('path',{d:r.d,class:'edge','marker-end':'url(#ah-%(uid)s)'}); G.appendChild(pth); edgeEls.push({a:e.from,b:e.to,el:pth});
+    if(e.label){var lines=Array.isArray(e.label)?e.label:[e.label];
+      var wpx=Math.max.apply(null,lines.map(function(l){return l.length;}))*6.2;
+      // Beside the line, never on it: a label on a straight drop sits to the right of
+      // the line, or to the left when it would run off the canvas.
+      var anchor=e.anchor||'middle', lx;
+      if(e.lx!==undefined){lx=e.lx;}
+      else if(r.straight){ if(r.lx+8+wpx<=W-4){lx=r.lx+8;anchor='start';} else if(r.lx-8-wpx>=4){lx=r.lx-8;anchor='end';} else {lx=Math.min(Math.max(r.lx,wpx/2+4),W-4-wpx/2);} }
+      else {lx=Math.min(Math.max(r.lx,wpx/2+4),W-4-wpx/2);}
+      var baseY=e.ly!==undefined?e.ly:(r.straight?r.ly+4:r.ly-6);
+      lines.forEach(function(ln,i){var t=el('text',{x:lx,y:baseY-(lines.length-1-i)*13,'text-anchor':anchor,class:'elabel'});t.textContent=ln;G.appendChild(t);edgeEls.push({a:e.from,b:e.to,el:t});});}
+  });
+
+  var nodeEls={}, selected=null;
+  function wrap(str,maxChars){var words=str.split(' '),lines=[],cur='';words.forEach(function(w){if((cur+' '+w).trim().length>maxChars){lines.push(cur.trim());cur=w;}else cur+=' '+w;});if(cur.trim())lines.push(cur.trim());return lines;}
+  Object.keys(nodes).forEach(function(id){var n=nodes[id];
+    if(n.junction){var g=el('g',{class:'junction'});g.appendChild(el('circle',{cx:n.x,cy:n.y,r:5}));
+      if(n.label){var t=el('text',{x:n.x+(n.labelSide==='left'?-10:10),y:n.y+4,'text-anchor':n.labelSide==='left'?'end':'start'});t.textContent=n.label;g.appendChild(t);}
+      G.appendChild(g);nodeEls[id]={g:g};return;}
+    var kind=spec.kinds&&spec.kinds[n.kind];
+    var g=el('g',{class:'node'+(kind&&kind.fill?' filled':''),tabindex:'0',role:'button','data-id':id});
+    var box=el('rect',{class:'box',x:n.x,y:n.y,width:n.w,height:n.h,rx:4});
+    if(kind){box.style.stroke=kind.color;box.style.strokeWidth=2;if(kind.fill)box.style.fill=kind.color;}
+    if(n.dashed){box.setAttribute('stroke-dasharray','6 4');}
+    g.appendChild(box);
+    if(n.strip){g.appendChild(el('rect',{x:n.x+1,y:n.y+n.h-7,width:n.w-2,height:6,fill:n.strip}));}
+    var narrow=n.w<160;
+    if(!narrow&&icons[n.icon]){var ic=el('g',{transform:'translate('+(n.x+10)+','+(n.y+(n.h-22)/2+22-(n.bar?4:0))+') scale('+(22/960)+')'});ic.appendChild(el('path',{class:'icon',d:icons[n.icon]}));g.appendChild(ic);}
+    var tx=narrow?n.x+n.w/2:n.x+n.w/2+12, maxChars=Math.floor((narrow?n.w-12:n.w-44)/6.6);
+    var titleLines=wrap(n.title,maxChars), textH=n.h-(n.bar?10:0);
+    var subEl=el('g',{'data-sub':id});
+    function drawText(sub){subEl.innerHTML='';var subLines=sub?wrap(sub,maxChars):[];var total=titleLines.length+subLines.length;var y0=n.y+textH/2-(total-1)*6.5+4;
+      titleLines.forEach(function(ln,i){var t=el('text',{x:tx,y:y0+i*13,'text-anchor':'middle','font-weight':'600'});t.textContent=ln;subEl.appendChild(t);});
+      subLines.forEach(function(ln,i){var t=el('text',{x:tx,y:y0+(titleLines.length+i)*13,'text-anchor':'middle',class:'count'});t.textContent=ln;subEl.appendChild(t);});}
+    drawText(n.sub||''); g.appendChild(subEl);
+    var barEl=null,ghostEl=null;
+    if(n.bar){barEl=el('rect',{class:'vbar',x:n.x+2,y:n.y+n.h-8,width:0,height:6});ghostEl=el('rect',{class:'vghost',x:n.x+2,y:n.y+n.h-10,width:2,height:10,opacity:0});g.appendChild(barEl);g.appendChild(ghostEl);}
+    g.setAttribute('aria-label',n.title+(n.sub?' '+n.sub:''));
+    g.addEventListener('mouseenter',function(){highlight(id);});g.addEventListener('mouseleave',function(){highlight(selected);});
+    g.addEventListener('focus',function(){highlight(id);});g.addEventListener('blur',function(){highlight(selected);});
+    g.addEventListener('click',function(){select(id);});g.addEventListener('keydown',function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(id);}});
+    G.appendChild(g); nodeEls[id]={g:g,drawText:drawText,barEl:barEl,ghostEl:ghostEl,lastFrac:null};
+  });
+
   function highlight(id){
-    if(!id){Object.keys(nodes).forEach(function(k){nodes[k].classList.remove('faded');});edges.forEach(function(e){e.el.classList.remove('faded');});return;}
+    if(!id){Object.keys(nodeEls).forEach(function(k){nodeEls[k].g.classList.remove('faded');});edgeEls.forEach(function(e){e.el.classList.remove('faded');});return;}
     var up=upstream(id);
-    Object.keys(nodes).forEach(function(k){nodes[k].classList.toggle('faded',!up[k]);});
-    edges.forEach(function(e){var a=e.from.some(function(f){return up[f];}),b=e.to.some(function(t){return up[t];});e.el.classList.toggle('faded',!(a&&b));});
+    Object.keys(nodeEls).forEach(function(k){nodeEls[k].g.classList.toggle('faded',!up[k]);});
+    edgeEls.forEach(function(e){e.el.classList.toggle('faded',!(up[e.a]&&up[e.b]));});
   }
   function opt(key,id){return option&&option[key]&&option[key][id]!==undefined?option[key][id]:null;}
   function select(id){
-    selected=id;
-    Object.keys(nodes).forEach(function(k){nodes[k].classList.toggle('selected',k===id);});
-    highlight(id);
-    var d=data.details[id]||{title:id,count:'',text:'',facts:[],links:[]};
-    root.querySelector('.p-title').textContent=d.title||id;
-    var sub=opt('subs',id); root.querySelector('.p-count').textContent=sub!==null?sub:(d.count||'');
-    root.querySelector('.p-text').textContent=d.text||'';
-    var dl=root.querySelector('.p-facts'); dl.innerHTML='';
-    var facts=(opt('facts',id)||[]).concat(d.facts||[]);
-    facts.forEach(function(kv){var dt=document.createElement('dt');dt.textContent=kv[0];var dd=document.createElement('dd');dd.textContent=kv[1];dl.appendChild(dt);dl.appendChild(dd);});
-    var L=root.querySelector('.p-links'); L.innerHTML='';
-    (opt('links',id)||d.links||[]).forEach(function(nl){var a=document.createElement('a');a.href='#'+nl[1];a.textContent='\u2192 '+nl[0];L.appendChild(a);});
+    if(isJ(id))return;
+    selected=id;Object.keys(nodeEls).forEach(function(k){nodeEls[k].g.classList.toggle('selected',k===id);});highlight(id);
+    var d=spec.details[id]||{};
+    panel.querySelector('.p-title').textContent=nodes[id].title;
+    var sub=opt('subs',id); panel.querySelector('.p-count').textContent=sub!==null?sub:(nodes[id].sub||'');
+    panel.querySelector('.p-text').textContent=d.text||'';
+    var facts=(opt('facts',id)||[]).concat(d.facts||[]), links=opt('links',id)||d.links||[];
+    var dl=panel.querySelector('.p-facts');dl.innerHTML='';facts.forEach(function(kv){var dt=document.createElement('dt');dt.textContent=kv[0];var dd=document.createElement('dd');dd.textContent=kv[1];dl.appendChild(dt);dl.appendChild(dd);});
+    var L=panel.querySelector('.p-links');L.innerHTML='';links.forEach(function(nl){var a=document.createElement('a');a.href='#'+nl[1];a.textContent='→ '+nl[0];L.appendChild(a);});
   }
-  Object.keys(nodes).forEach(function(id){var g=nodes[id];
-    g.addEventListener('mouseenter',function(){highlight(id);});
-    g.addEventListener('mouseleave',function(){highlight(selected);});
-    g.addEventListener('focus',function(){highlight(id);});
-    g.addEventListener('blur',function(){highlight(selected);});
-    g.addEventListener('click',function(){select(id);});
-    g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();select(id);}});
-  });
   function applyOption(){
-    if(!option) return;
-    Object.keys(option.subs||{}).forEach(function(id){var g=nodes[id]; if(!g) return;
-      var t=g.querySelector('text.count'); if(t) t.textContent=option.subs[id];});
-    Object.keys(option.shares||{}).forEach(function(id){var g=nodes[id]; if(!g) return;
-      var sp=svg.querySelector('[data-share="'+id+'"]'); if(sp){var w=+g.querySelector('rect.box').getAttribute('width'); sp.setAttribute('width',w*option.shares[id]);}});
-    if(selected) select(selected);
+    if(!option)return;
+    Object.keys(option.subs||{}).forEach(function(id){var ne=nodeEls[id];if(!ne||!ne.drawText)return;ne.drawText(option.subs[id]);ne.g.setAttribute('aria-label',nodes[id].title+' '+option.subs[id]);});
+    Object.keys(option.bars||{}).forEach(function(id){var ne=nodeEls[id];if(!ne||!ne.barEl)return;var w=nodes[id].w-4;var frac=option.bars[id];
+      if(ne.lastFrac!==null&&prevOption!==null){ne.ghostEl.setAttribute('x',nodes[id].x+2+w*ne.lastFrac-1);ne.ghostEl.setAttribute('opacity',1);}
+      ne.barEl.setAttribute('width',Math.max(0,w*Math.min(1,frac)));ne.lastFrac=frac;});
+    if(selected)select(selected);
   }
-  root.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){
-    root.querySelectorAll('.seg button').forEach(function(x){x.setAttribute('aria-pressed','false');});
-    b.setAttribute('aria-pressed','true');
-    var id=b.getAttribute('data-option'); option=data.control.options.filter(function(o){return o.id===id;})[0]||null; applyOption();});});
   applyOption();
 })();
 </script>
 """
 
 
-def interactive(svg: str, details: dict, *, control: dict | None = None,
-                footnote: str | None = None, uid: str = "flow-block") -> str:
-    """The diagram with its details panel, an optional control, and the script.
-
-    `details` is {node id: {title, count, text, facts: [[k, v]], links: [[name, anchor]]}}.
-    `control` is {label, options: [{id, label, subs: {id: text}, shares: {id: fraction},
-    facts: {id: [[k, v]]}, links: {id: [[name, anchor]]}}]}; the first option is active
-    to start with. Everything is data, so the script is the same in every report.
-    """
-    controls = ""
-    if control and control.get("options"):
-        buttons = "".join(
-            f'<button type="button" data-option="{o["id"]}" '
-            f'aria-pressed="{"true" if i == 0 else "false"}">{o["label"]}</button>'
-            for i, o in enumerate(control["options"]))
-        controls = (f'<div class="control"><label>{control["label"]}</label>'
-                    f'<div class="seg" role="group" aria-label="{control["label"]}">{buttons}</div></div>')
-    payload = json.dumps({"details": details, "control": control})
-    foot = f'<p class="foot">{footnote}</p>' if footnote else ""
+def block(spec: dict, *, uid: str = "flow-block") -> str:
+    """The overview's drawing as one HTML block: the spec as JSON, the renderer, and the
+    container it fills. Legend, control, diagram, panel and footnote are all drawn by the
+    script from the spec, so what the reader sees is exactly what the spec says."""
+    payload = dict(spec)
+    payload["icons"] = ICONS
     return (
         CSS % {"open": C_OPEN}
-        + f'<div id="{uid}" class="flow-block">'
-        + controls
-        + '<div class="grid">'
-        + f'<div class="diagram">{svg}</div>'
-        + '<aside class="panel" aria-live="polite"><h5 class="p-title">Click a box</h5>'
-          '<p class="n p-count"></p>'
-          '<p class="p-text">Each box opens here with what it is, how it was made, and which '
-          'panels below show it. Hover a box first to see what feeds it.</p>'
-          '<dl class="p-facts"></dl><div class="links p-links"></div></aside>'
-        + '</div>' + foot
-        + f'<script type="application/json">{payload}</script>'
-        + JS % {"uid": uid}
+        + f'<div id="{uid}" class="flow-block"><div class="view"></div>'
+        + f'<script type="application/json">{json.dumps(payload)}</script>'
+        + JS % {"uid": uid, "open": C_OPEN}
         + '</div>')

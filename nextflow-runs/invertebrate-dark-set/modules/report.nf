@@ -119,8 +119,11 @@ process darkMultiqcReport {
     set -euo pipefail
     export MPLCONFIGDIR=\$PWD/.mplconfig
 
+    # report_header.yaml is the run-in-five-lines block under the title, written by
+    # build_dark_multiqc_inputs.py; a later --config adds to the earlier one.
     multiqc ${sections} \\
         --config ${mqc_config} \\
+        \$( [ -f ${sections}/report_header.yaml ] && echo --config ${sections}/report_header.yaml ) \\
         --filename ${species}_dark_set_multiqc.html \\
         --outdir . \\
         --no-version-check \\
