@@ -39,10 +39,12 @@ import mqc_trace as mt
 # through PYTHONPATH; run by hand from bin/, it is found at ../../shared.
 try:
     import flow_diagram as fd
+    import metric_explainers as mx
 except ImportError:  # pragma: no cover - the by-hand path
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared"))
     import flow_diagram as fd
+    import metric_explainers as mx
 
 # Threshold-free, so a tool that ships a lenient default cutoff is not rewarded for it.
 # fmax and family_fmax are the same CAFA machinery read at two levels -- interval placement
@@ -7457,6 +7459,30 @@ def section_overview(out: Path, metrics: pl.DataFrame, n_queries: int,
     })
 
 
+def section_metric_explainers(out: Path, metrics: pl.DataFrame, primary_truth: str) -> None:
+    """How to read the metrics: one small picture or widget per idea the tables rest on.
+    Every example inside is a toy and says so; the report's numbers are in the sections."""
+    mo = float(metrics["min_overlap"].drop_nulls().mode().first()) if "min_overlap" in metrics.columns \
+        and metrics["min_overlap"].drop_nulls().len() else 0.5
+    cost = ("<div class='mx'><h5>The cost columns</h5><p class='def'><b>Q/s</b> is queries per second: "
+            "the human proteins searched divided by the arm's wall-clock search time, the median over "
+            "target proteomes. <b>CPU-h</b> is the CPU time summed over that arm's search tasks. Both come "
+            "from the Nextflow trace of the run (kmerseek's from the timing records its store keeps), and "
+            "both are shown only when every arm on the table has one, so a blank never reads as a speed "
+            "result.</p></div>")
+    write_section(out, "qfo_metric_explainers", {
+        "id": "qfo_metric_explainers",
+        "section_name": "How to read the metrics",
+        "description": (
+            f"<p>Four ideas every table below rests on, each with a picture you can move. The "
+            f"examples are toys; the numbers on the <code>{primary_truth}</code> answer key are in the "
+            f"sections.</p>"),
+        "plot_type": "html",
+        "data": mx.bundle(mx.iou(min_overlap=mo), mx.threshold(floor=0.95, mention_fdr=False),
+                          mx.reachable(), cost),
+    })
+
+
 def section_conclusions(out: Path, metrics: pl.DataFrame, curves: pl.DataFrame,
                         trace: pl.DataFrame, n_queries: int,
                         primary_truth: str) -> None:
@@ -10166,6 +10192,7 @@ def main():
                   f"(best mean rank across {', '.join(CANONICAL_RULE_METRICS)})")
 
     section_overview(args.outdir, metrics, args.n_queries, primary)
+    section_metric_explainers(args.outdir, metrics, primary)
     section_conclusions(args.outdir, metrics, curves, trace, args.n_queries, primary)
     section_frontier(args.outdir, metrics, trace, args.n_queries, primary,
                      args.top_kmerseek)

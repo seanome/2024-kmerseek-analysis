@@ -3369,6 +3369,7 @@ process buildMultiqcInputs {
     // than imported from ../shared by path: under Apptainer only staged paths are bound
     // into the container, and the report script finds it through PYTHONPATH below.
     path flow_module, stageAs: 'flow_diagram.py'
+    path explainers_module, stageAs: 'metric_explainers.py'
     path kmerseek_timings, stageAs: 'kmerseek_timings/*'
     // stageAs with a bare `*`, so every file keeps its own name. That is not cosmetic:
     // spectrum.<species>.<alphabet>.k<ksize>.lc<true|false>.csv.gz carries the species and
@@ -4463,7 +4464,8 @@ workflow multiqcFromMetrics {
         .map { m, c, b -> tuple(m, c, resolveTrace(), file(human_fasta), b) }
 
     flow_module = Channel.value(file("${projectDir}/../shared/flow_diagram.py"))
-    sections = buildMultiqcInputs(mqc_in, flow_module, kmerseek_timings, kmerseek_spectra).sections
+    explainers  = Channel.value(file("${projectDir}/../shared/metric_explainers.py"))
+    sections = buildMultiqcInputs(mqc_in, flow_module, explainers, kmerseek_timings, kmerseek_spectra).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
 }
 
