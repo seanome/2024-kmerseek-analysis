@@ -123,10 +123,21 @@ params.kmerseek_scaled = '1'
 // maximal run of shared k-mers, `extend` grows each run outward through mismatches
 // (X-drop) and ranks it with a Karlin-Altschul E-value, chaining colinear runs.
 params.kmerseek_extension = 'exact'
-params.kmerseek_extend_mismatch_penalty = 2
-params.kmerseek_extend_xdrop            = 8
-params.kmerseek_chain_max_gap           = 30
-params.kmerseek_chain_max_shift         = 10
+// Mismatch penalties C for the `extend` arms, one search arm per value. A number is used
+// as given; `opt` is the alphabet's own optimum, C_best = -ln(1 - kappa) /
+// ln(1 + kappa / f - kappa) with equal class shares f = 1 / classes (the log-odds
+// scoring behind BLOSUM, Altschul 1991, written for a +1 / -C scheme; see
+// docs/kmerseek_evalue_explainer, equation 2b). kappa is the copy rate measured in
+// aligned Pfam pairs at 20-30% identity (analysis notebook 230), in kappaTable below. With
+// two letters a match is weak evidence and a mismatch must count for a lot (C 1.63);
+// with twenty a match is strong evidence and a mismatch is what most positions of a
+// true pair look like (C 0.14). 2 is the value every kmerseek #54 benchmark used.
+params.kmerseek_mismatch_penalty = '2'
+// The X-drop scales with C so that the walk still ends after the same run of
+// mismatches: X = xdrop_per_penalty x C, 8 at C = 2.
+params.kmerseek_extend_xdrop_per_penalty = 4
+params.kmerseek_chain_max_gap            = 30
+params.kmerseek_chain_max_shift          = 10
 // An extended region's E-value needs lambda and K fitted on ITS index. The fit runs at
 // index time on this many of the reference's own sequences and is stored in the index,
 // so every search chunk reads the same fit; 0 skips it, and an `extend` search would
@@ -522,14 +533,19 @@ process kmerseekIndex {
     def idx = "minus_${clade}.${alphabet}.k${ksize}${scaled == 1 ? '' : '.s' + scaled}.lc${lowcomp}.kmerseek.rocksdb"
     def lc  = lowcomp == 'true' ? '--remove-low-complexity' : ''
     // The Karlin-Altschul fit lives in the index and is only wanted when an `extend` arm
-    // will read it. The fit searches --ka-queries reference sequences against the index
-    // it just built, so this task then costs a search's memory as well (see the memory
-    // directive).
-    def ka  = (params.kmerseek_ka_queries as int) > 0 && ('extend' in resolveExtensions())
-              ? "--extend-mismatch-penalty ${params.kmerseek_extend_mismatch_penalty} " +
-                "--extend-xdrop ${params.kmerseek_extend_xdrop} " +
-                "--ka-queries ${params.kmerseek_ka_queries}"
-              : ''
+    // will read it. One fit per mismatch penalty: `kmerseek index` stores the first, and
+    // `kmerseek calibrate` adds one per further penalty, before the index is made
+    // read-only below. Each fit searches --ka-queries reference sequences against the
+    // index it just built, so this task then costs a search's memory as well (see the
+    // memory directive).
+    def nq   = params.kmerseek_ka_queries as int
+    def pens = (nq > 0 && resolveExtensions().any { it.startsWith('extend:') }) ? penaltiesFor(alphabet) : []
+    def ka   = pens ? "--extend-mismatch-penalty ${pens[0]} --extend-xdrop ${xdropFor(pens[0])} --ka-queries ${nq}"
+                    : '--ka-queries 0'
+    def more = pens.drop(1).collect { c ->
+        "kmerseek calibrate --target ${idx} --extend-mismatch-penalty ${c} " +
+        "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} 2>&1 | tee -a index.log"
+    }.join('\n    ')
     """
     set -euo pipefail
     kmerseek index \\
@@ -537,6 +553,7 @@ process kmerseekIndex {
         --input  ${ref_dir}/reference.fasta \\
         --output ${idx} ${lc} ${ka} \\
         --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | tee index.log
+    ${more}
     # An index is immutable once built. A search that opens it read-write (the image
     # before 2026-09-13-rocksdb-4gb-readonly did) rewrites CURRENT, MANIFEST and LOG,
     # and Nextflow hashes a directory input from its files' names, sizes and mtimes, so
@@ -561,7 +578,7 @@ process kmerseekIndex {
 }
 
 process kmerseekSearch {
-    tag "${species}.${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${ext}"
+    tag "${species}.${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}"
     container params.kmerseek_image
     publishDir "${params.outdir}/${species}/kmerseek", mode: 'copy', pattern: '*.zst'
     // Sized per combo in the body -- see kmerseekSearchMemory and the note on
@@ -577,13 +594,13 @@ process kmerseekSearch {
 
     output:
     tuple val(species), val(alphabet), val(ksize), val(lowcomp), val(scaled), val(ext),
-          path("${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${ext}.queries.tsv"), emit: queries
+          path("${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}.queries.tsv"), emit: queries
     path "*.regions.csv.zst", emit: regions
 
     script:
-    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${ext}"
+    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}"
     def lc   = lowcomp == 'true' ? '--remove-low-complexity' : ''
-    def flags = extensionFlags(ext)
+    def flags = extensionFlags(ext, alphabet)
     """
     set -euo pipefail
     kmerseek search \\
@@ -623,10 +640,11 @@ process kmerseekSearch {
     """
 
     stub:
-    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${ext}"
+    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}"
+    def ev   = ext == 'exact' ? 'inf' : '1e-5'
     """
-    printf 'query_name,target_name,region_evalue\\n${species}_B,Q6GZX4,${ext == 'extend' ? '1e-5' : 'inf'}\\n' | zstd -o ${slug}.regions.csv.zst
-    printf 'query_name\\tmin_region_evalue\\n${species}_B\\t${ext == 'extend' ? '1e-5' : 'inf'}\\n' > ${slug}.queries.tsv
+    printf 'query_name,target_name,region_evalue\\n${species}_B,Q6GZX4,${ev}\\n' | zstd -o ${slug}.regions.csv.zst
+    printf 'query_name\\tmin_region_evalue\\n${species}_B\\t${ev}\\n' > ${slug}.queries.tsv
     """
 }
 
@@ -788,22 +806,92 @@ def resolveCombos() {
     pairs.collectMany { a, k -> lcs.collectMany { lc -> scaleds.collect { sc -> [a, k, lc, sc as int] } } }
 }
 
-// The search-time arms over one index. Validated once, here, so a typo does not surface
-// as a failed search hours in.
+// kappa, the copy rate: the fraction of aligned positions in a Pfam pair at 20-30%
+// identity where the target carries the query's class because it was conserved, over
+// and above chance agreement. Analysis notebook 230 (2026-09-13), as quoted in the
+// E-value explainer. Only these four alphabets were measured; hp_pbotc_1st_ed2 is a
+// two-letter hydrophobic/polar split like hp_thomas_dill2 (they differ on C, G and P),
+// so it borrows that value -- an assumption, named in the run log.
+// A function, not a top-level map: a script-level `def` is not in scope inside the
+// functions below (only the closures capture it).
+def kappaTable() {
+    [
+        hp_thomas_dill2 : 0.4626,
+        hp_pbotc_1st_ed2: 0.4626,  // borrowed from hp_thomas_dill2, see above
+        gbmr4           : 0.4257,
+        wwmj5           : 0.3262,
+        protein20       : 0.1988,
+    ]
+}
+
+// The number of classes is the trailing integer of every 0.4 alphabet name.
+def alphabetClasses(String alphabet) {
+    def m = alphabet =~ /(\d+)$/
+    if (!m) error "cannot read the class count off alphabet name '${alphabet}'"
+    m[0][1] as int
+}
+
+// C_best for one alphabet, equal class shares. Rounded to two decimals so the same
+// string reaches `kmerseek calibrate` at index time and `kmerseek search` later: the
+// stored fit is looked up by exact penalty and X-drop.
+def optimalPenalty(String alphabet) {
+    def kappa = kappaTable()[alphabet]
+    if (kappa == null) {
+        error "no kappa measured for ${alphabet}, so no `opt` mismatch penalty for it; " +
+              "measured: ${kappaTable().keySet().join(', ')}. Give a number instead."
+    }
+    double f = 1.0d / alphabetClasses(alphabet)
+    double c = -Math.log(1.0d - kappa) / Math.log(1.0d + kappa / f - kappa)
+    penaltyString(c)
+}
+
+// 2 -> "2", 1.63 -> "1.63", 0.14 -> "0.14": the shortest string that still names the
+// value, used in file names, arm labels and on the kmerseek command line alike.
+def penaltyString(double c) {
+    def sf = String.format('%.2f', c)
+    sf.contains('.') ? sf.replaceAll(/0+$/, '').replaceAll(/\.$/, '') : sf
+}
+
+// The mismatch penalties one alphabet's `extend` arms use, as strings.
+def penaltiesFor(String alphabet) {
+    params.kmerseek_mismatch_penalty.toString().tokenize(',')*.trim().findAll { it }.collect { spec ->
+        spec == 'opt' ? optimalPenalty(alphabet) : penaltyString(spec as double)
+    }.unique()
+}
+
+def xdropFor(String penalty) {
+    penaltyString((params.kmerseek_extend_xdrop_per_penalty as double) * (penalty as double))
+}
+
+// The search-time arms over one index, as specs: `exact`, or `extend:<C>` with C a number
+// or `opt`. Validated once, here, so a typo does not surface as a failed search hours in.
+// The numeric C of an `opt` arm depends on the alphabet and is resolved in the process.
 def resolveExtensions() {
     def exts = params.kmerseek_extension.toString().tokenize(',')*.trim().findAll { it }
     def bad = exts.findAll { !(it in ['exact', 'extend']) }
     if (bad) error "--kmerseek_extension takes exact and/or extend, not '${bad.join(', ')}'"
     if (!exts) error "--kmerseek_extension is empty; it needs at least one of exact, extend"
-    exts
+    def pens = params.kmerseek_mismatch_penalty.toString().tokenize(',')*.trim().findAll { it }
+    def badP = pens.findAll { !(it == 'opt' || it ==~ /\d+(\.\d+)?/) }
+    if (badP) error "--kmerseek_mismatch_penalty takes numbers and/or opt, not '${badP.join(', ')}'"
+    if ('extend' in exts && !pens) error "--kmerseek_mismatch_penalty is empty but an extend arm is wanted"
+    exts.collectMany { e -> e == 'exact' ? ['exact'] : pens.collect { "extend:${it}".toString() } }
 }
 
-// The kmerseek search flags one extension arm adds. `exact` adds nothing, so its command
-// line is the one every earlier run used.
-def extensionFlags(String ext) {
-    if (ext == 'exact') return ''
-    "--extend-mismatch-penalty ${params.kmerseek_extend_mismatch_penalty} " +
-    "--extend-xdrop ${params.kmerseek_extend_xdrop} " +
+// The part of a search's file name and arm label that says which arm it is: `exact`, or
+// `extend-c<C>` with the numeric penalty.
+def armName(String spec, String alphabet) {
+    if (spec == 'exact') return 'exact'
+    def c = spec.substring('extend:'.length())
+    "extend-c${c == 'opt' ? optimalPenalty(alphabet) : penaltyString(c as double)}"
+}
+
+// The kmerseek search flags one arm adds. `exact` adds nothing, so its command line is
+// the one every earlier run used.
+def extensionFlags(String spec, String alphabet) {
+    if (spec == 'exact') return ''
+    def c = armName(spec, alphabet).substring('extend-c'.length())
+    "--extend-mismatch-penalty ${c} --extend-xdrop ${xdropFor(c)} " +
     "--chain-max-gap ${params.kmerseek_chain_max_gap} " +
     "--chain-max-shift ${params.kmerseek_chain_max_shift}"
 }
@@ -844,6 +932,12 @@ workflow darkSet {
                  "${COMBOS.collect { it[2] }.unique().join(',')}, scaled: " +
                  "${COMBOS.collect { it[3] }.unique().join(',')}; search arms per index: " +
                  "${EXTENSIONS.join(',')}"
+        if (EXTENSIONS.any { it.startsWith('extend:') }) {
+            COMBOS.collect { it[0] }.unique().each { a ->
+                log.info "             ${a}: extend penalties C = ${penaltiesFor(a).join(', ')}" +
+                         (kappaTable()[a] != null ? " (kappa ${kappaTable()[a]}, ${alphabetClasses(a)} classes)" : '')
+            }
+        }
         log.info "             ${n_clades * COMBOS.size()} index builds (${n_clades} clade(s) x combos), " +
                  "first-attempt memory ${idx_gb.min()}-${idx_gb.max()} GB"
         log.info "             up to ${total_chunks * COMBOS.size() * EXTENSIONS.size()} searches (chunks x combos x arms); each is " +

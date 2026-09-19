@@ -49,11 +49,11 @@ def query_accessions(fasta: Path) -> set[str]:
                 accs.add(line[1:].strip().split()[0])
     return accs
 
-# <chunk>.<alphabet>.k<ksize>.s<scaled>.lc<true|false>.<exact|extend>.queries.tsv
+# <chunk>.<alphabet>.k<ksize>.s<scaled>.lc<true|false>.<exact|extend-c<C>>.queries.tsv
 # The two-column TSV holds every query with any region and the smallest region_evalue
 # among its regions ("inf" on an exact arm).
 NAME = re.compile(r"^(?P<chunk>[^.]+)\.(?P<alphabet>.+)\.k(?P<ksize>\d+)\.s(?P<scaled>\d+)"
-                  r"\.lc(?P<lc>true|false)\.(?P<ext>exact|extend)\.queries\.tsv$")
+                  r"\.lc(?P<lc>true|false)\.(?P<ext>exact|extend-c[0-9.]+)\.queries\.tsv$")
 
 
 def arm_label(alphabet: str, scaled: int, ext: str, evalue_max) -> str:
@@ -63,7 +63,8 @@ def arm_label(alphabet: str, scaled: int, ext: str, evalue_max) -> str:
     if scaled != 1:
         parts.append(f"scaled {scaled}")
     if ext != "exact":
-        parts.append(ext)
+        # extend-c1.63 -> "extend C=1.63": the mismatch penalty is part of the arm.
+        parts.append(f"extend C={ext[len('extend-c'):]}")
     if evalue_max is not None:
         parts.append(f"E<={evalue_max:g}")
     return " ".join(parts)

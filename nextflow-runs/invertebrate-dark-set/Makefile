@@ -354,15 +354,20 @@ run-ladder-sweep:
 # context, never from kmerseek's own Dockerfile: that one ships the binary alone, and
 # every python_scoring step (splitQuery first) runs in this image too. rc1 was built the
 # wrong way and failed every splitQuery with `python3: No such file or directory`.
-V4_IMAGE       ?= docker.io/olgabot/kmerseek:0.4.0-rc2
+V4_IMAGE       ?= docker.io/olgabot/kmerseek:0.4.0-rc3
 V4_OUTDIR      ?= $(SCRATCH_DIR)/invertebrate-dark-set/results-0.4
 V4_LAUNCH_DIR  := $(MAKEFILE_DIR)/runs/ladder-0.4
 V4_ALPHABETS   ?= protein20:10,hp_pbotc_1st_ed2:19,hp_thomas_dill2:23,hp_pbotc_1st_ed2:12,hp_thomas_dill2:12
 V4_SCALED      ?= 1,2,5,10
 V4_EXTENSION   ?= exact,extend
+# Mismatch penalties for the extend arms: 2 (every kmerseek #54 benchmark) and each
+# alphabet's own optimum from its measured copy rate kappa (1.63 for the two-letter HP
+# alphabets, 0.14 for protein20; see params.kmerseek_mismatch_penalty in main.nf).
+V4_PENALTY     ?= 2,opt
 V4_NF_ARGS      = --run_tag ladder-0.4 --kmerseek_image $(V4_IMAGE) \
                   --kmerseek_alphabets $(V4_ALPHABETS) --kmerseek_scaled $(V4_SCALED) \
-                  --kmerseek_extension $(V4_EXTENSION) --kmerseek_lowcomp $(LOWCOMP) \
+                  --kmerseek_extension $(V4_EXTENSION) --kmerseek_mismatch_penalty $(V4_PENALTY) \
+                  --kmerseek_lowcomp $(LOWCOMP) \
                   --max_forks $(LADDER_MAX_FORKS) --queue_size $(LADDER_QUEUE_SIZE) $(NF_ARGS)
 
 run-ladder-0.4-sbatch:
