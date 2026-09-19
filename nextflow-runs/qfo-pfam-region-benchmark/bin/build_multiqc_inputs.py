@@ -7147,7 +7147,8 @@ def overview_flow_spec(f: dict) -> dict:
         elif ran[cls]:
             sub = ", ".join(ARM_WORDS[m] for m in ran[cls])
         nodes[cls] = {"x": arm_x[cls], "y": 250, "w": 136, "h": 90, "icon": "search", "kind": cls,
-                      "title": ARM_HEAD[cls], "sub": sub, "bar": True, "dashed": not ran[cls]}
+                      "title": ARM_HEAD[cls], "sub": sub, "bar": True, "dashed": not ran[cls],
+                      "samples": [cls] + _members + [ARM_WORDS.get(m, m) for m in _members]}
     nodes.update({
         "regions": {"x": 20, "y": 400, "w": 720, "h": 44, "icon": "table_rows",
                     "title": "aligned regions: a query interval, the target interval it matched, and a score"},
@@ -7185,6 +7186,7 @@ def overview_flow_spec(f: dict) -> dict:
             "lanes": [[30, 180, "inputs"], [220, 350, "search"], [380, 450, "regions"], [500, 570, "calls"],
                       [620, 720, "scored"], [770, 860, "report"]],
             "headers": [[120, 52, "QUERY"], [400, 52, "TARGETS"], [640, 52, "STRUCTURES"]],
+            "classOf": {m: cls for cls, members in ARM_BOXES for m in members},
             "nodes": nodes, "edges": edges}
 
 
