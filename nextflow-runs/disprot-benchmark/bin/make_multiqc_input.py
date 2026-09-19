@@ -127,7 +127,8 @@ def overview_flow_spec(f: dict) -> dict:
         if tool and f["found"].get(tool) == 0:
             sub = "reported 0 pairs on every proteome"
         arms[name] = {"x": x, "y": 200, "w": 220, "h": 66, "icon": "search", "kind": name if tool else None,
-                      "title": head, "sub": sub, "bar": True, "dashed": tool is None}
+                      "title": head, "sub": sub, "bar": True, "dashed": tool is None,
+                      "samples": [name] + ([tool] if tool and tool != name else [])}
     nodes = {
         "q0": {"x": 20, "y": 66, "w": 320, "h": 52, "icon": "genetics",
                "title": "human proteins with a DisProt entry", "sub": f"{fd.num(f['n_queries'])} proteins"},
