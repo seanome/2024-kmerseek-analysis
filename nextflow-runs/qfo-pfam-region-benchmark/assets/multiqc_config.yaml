@@ -9,7 +9,12 @@
 # moved.
 
 title: "QfO Pfam region benchmark"
-subtitle: "Domain finding across nine target proteomes: which stretch of a human protein is a PF00001, and did the tool find it"
+subtitle: "Domain finding across Quest-for-Orthologs target proteomes: which stretch of a human protein is a PF00001, and did the tool find it"
+# What was done and why, with this run's own numbers, is the first section ("What was done,
+# and why"). Nothing about the results lives here: every claim in the report is computed
+# from the run in the "What this run concluded" section, so a sentence written by hand up
+# here could only go stale or contradict it. Until 2026-09-19 this text carried a
+# disorder-direction claim from an earlier run that the data of later runs reversed.
 intro_text: >
   Every tool here searches human query proteins against a Quest-for-Orthologs target
   proteome and reports aligned regions. Each region becomes a domain call by transferring
@@ -17,32 +22,13 @@ intro_text: >
   then scoring that call against the human protein's own domain instances. Right family in
   the wrong place counts as a false positive. This is not pair-level orthology: a tool
   that finds the correct protein but misplaces the region scores no better than a miss.
-  <br><br>
-  "Dark" means two different things in this benchmark and they have to be stated
-  separately, because the data answers them in opposite directions.
-  <b>Dark by divergence</b> is a domain whose closest same-family relative is far away in
-  evolutionary time or in percent identity. That is where a coarse alphabet earns its
-  keep: read the Divergence and Divergence-retention sections, where the fraction of Fmax
-  an arm keeps out to the most distant proteome is a function of how many amino-acid
-  classes its alphabet collapses to, on one engine with nothing else varying.
-  <b>Dark by disorder</b> is a domain with no confident structure behind it. There, this
-  method does not win. On both disorder axes the coarse-alphabet arms fall off faster than
-  hhblits, phmmer and foldseek do, and the sequence-only axis, which shares neither the
-  AlphaFold-modelling confound nor the shallow-MSA confound, says the same thing as the
-  pLDDT one. That half of the claim does not survive its own measurement and is not made
-  here.
-  <br><br>
-  What the model-confidence bands show instead is a regime. Read across every band rather
-  than only at the disordered end, the coarse-alphabet arms are non-monotone: weakest where
-  the structure is most confident, strongest in the middle. The Model-confidence regime
-  section is that shape, and it is a claim about complementarity with the structure
-  methods rather than about replacing them.
 
 report_comment: >
   Numbers are read off <code>all_domain_metrics.parquet</code> and the Nextflow trace from
-  the same run. Accuracy sections use the held-out half of the Pfam families, because the
-  sweep picks its best alphabet and k-mer size on the other half and reporting the winner
-  on the data that chose it is optimistically biased.
+  the same run. Only the Pfam answer key is split in half: the sweep picks kmerseek's
+  alphabet and k on one half and its Pfam accuracy is read on the other, because reporting
+  the winner on the data that chose it is optimistically biased. The Swiss-Prot and Pfam-N
+  keys are not swept and are scored whole.
   <br><br>
   No number in this report carries a sampling error. Every value is a mean over target
   proteomes with no resampling behind it, so a gap narrower than the species-to-species
@@ -101,207 +87,160 @@ num_datasets_plot_limit: 100000
 #   - An id listed but not produced is skipped with a debug message, so listing every
 #     truth set (pfam, pfamn, swissprot, mcsa) is safe when a run builds only some.
 #
-# qfo_conclusions comes right after the overview and the at-a-glance table, because it is
-# the reading order for everything below it.
+# The order is the story, one group per question, in the order a reader needs the
+# answers (rewritten 2026-09-19; before that the cost sections, which are empty in any
+# run without a trace, came fourth, and the recognition-vs-placement pair was split
+# across two modules). Numbers are spaced by 5 within a group and each group starts 200
+# above the last, so a section can be inserted without renumbering the file.
 report_section_order:
-  # MODULES first. The three custom-content modules (the main report, the reduced-alphabet
-  # ceiling block, the supplement) sort among themselves with the LARGEST order first,
-  # the reverse of how the sections inside a module sort. Until 2026-09-18 only
-  # qfo_ceiling carried a module-level order (189, below), so it opened the report ahead
-  # of the main module and the overview was the fourth heading down. The three are named
-  # here with the main module highest.
+  # MODULES first. The three custom-content modules (the main report, the alphabet
+  # block, the supplement) sort among themselves with the LARGEST order first, the
+  # reverse of how the sections inside a module sort. The main module is highest.
   qfo_region: { order: 1000 }
   qfo_ceiling: { order: 900 }
   qfo_region_supp: { order: 800 }
-  # SECTIONS inside a module sort by ASCENDING order value. What was done and why, with
-  # the data-flow diagram, before everything: the conclusions are read against the
-  # construction it describes.
-  qfo_overview: { order: 0 }
-  # The at-a-glance table, which used to be MultiQC's General Statistics, right after it.
-  qfo_general_stats: { order: 1 }
-  # How to read the metrics: a picture per idea the tables rest on, before the first table.
-  qfo_metric_explainers: { order: 2 }
-  # Conclusions next, after the at-a-glance table: every number in it is
-  # computed from the frames the sections below draw, negative results included.
-  qfo_conclusions: { order: 3 }
-  # Reachability first: 43.9% of the answer key has no same-family instance in the
-  # target proteome, and every Fmax below divides by the reachable part. The reader
-  # meets that denominator before any leaderboard built on it.
-  qfo_reachability: { order: 5 }
-  qfo_frontier: { order: 10 }
-  qfo_timing_coverage: { order: 11 }
-  qfo_search_cost: { order: 12 }
-  qfo_search_cost_table: { order: 13 }
-  qfo_cost_cpu_hours_per_search: { order: 14 }
-  qfo_cost_queries_per_s: { order: 15 }
-  qfo_capability: { order: 20 }
-  qfo_search_space: { order: 21 }
-  qfo_leaderboard_swissprot: { order: 30 }
-  qfo_leaderboard_pfamn: { order: 40 }
-  qfo_leaderboard_mcsa: { order: 50 }
-  qfo_leaderboard_pfam: { order: 60 }
-  qfo_truth_provenance: { order: 70 }
-  qfo_truthsets: { order: 80 }
-  qfo_cafa: { order: 90 }
-  qfo_threshold: { order: 100 }
-  qfo_boundary: { order: 110 }
-  # The same numbers as qfo_boundary drawn as one labelled point per arm, so it goes
-  # directly after the table it re-reads. 110 is taken and a plot sharing a number with a
-  # table renders the table first -- see the note at 170 -- so it gets its own integer.
-  qfo_boundary_dots: { order: 111 }
-  qfo_pr_curve: { order: 120 }
-  qfo_recall_at_precision: { order: 121 }
-  qfo_recall_at_precision_table: { order: 122 }
-  qfo_call_volume: { order: 123 }
-  qfo_call_volume_table: { order: 124 }
-  qfo_threshold_gain: { order: 125 }
-  qfo_roc_curve: { order: 130 }
-  qfo_plddt: { order: 131 }
-  qfo_disorder: { order: 132 }
-  qfo_disorder_seq: { order: 133 }
-  qfo_disorder_target: { order: 134 }
-  qfo_disorder_scatter: { order: 135 }
-  qfo_disorder_scatter_table: { order: 136 }
-  qfo_identity: { order: 140 }
-  qfo_identity_no_homolog: { order: 146 }
-  # Fmax across the pLDDT bands as a shape, next to the twilight-zone axis it is read
-  # against. Plot first, then its table on the next integer -- sharing a number renders
-  # the TABLE first, which is the failure the note at 170 records.
-  # The region-level axes sit with the pLDDT/disorder block they correct, not at the end:
-  # a reader comparing the domain reading against the protein reading needs them adjacent.
-  qfo_plddt_region: { order: 143 }
-  qfo_disorder_region: { order: 144 }
-  qfo_plddt_regime: { order: 141 }
-  qfo_plddt_regime_table: { order: 142 }
-  # Which arm is pinned, named before the sections that mark it.
-  qfo_canonical: { order: 145 }
-  qfo_divergence: { order: 150 }
-  # The identity/divergence pair, immediately ahead of the fuller divergence panel at
-  # 150 that they narrow to one metric on two axes. Two sections rather than one
-  # two-panel figure because MultiQC has no side-by-side layout; they share a pinned y
-  # range instead, which is the only thing a shared axis was for. They must stay
-  # adjacent: the identity panel is read against the Mya panel or not at all.
-  # Ahead of the identity pair and the full sweep: five lines with cost on the label is
-  # the comparison a reader arrives with; 147 keeps it adjacent to both.
-  qfo_divergence_annotated: { order: 147 }
-  qfo_identity_pair_mya: { order: 148 }
-  qfo_identity_pair_pident: { order: 149 }
-  qfo_tool_by_species_swissprot: { order: 151 }
-  qfo_tool_by_species_table_swissprot: { order: 152 }
-  qfo_tool_by_species_pfamn: { order: 153 }
-  qfo_tool_by_species_table_pfamn: { order: 154 }
-  qfo_tool_by_species_mcsa: { order: 155 }
-  qfo_tool_by_species_table_mcsa: { order: 156 }
-  qfo_tool_by_species_pfam: { order: 157 }
-  qfo_tool_by_species_table_pfam: { order: 158 }
-  qfo_omega: { order: 159 }
-  qfo_species_winners_swissprot: { order: 162 }
-  qfo_species_winners_pfamn: { order: 164 }
-  qfo_species_winners_mcsa: { order: 166 }
-  qfo_species_winners_pfam: { order: 168 }
-  # Winning encoding vs divergence: the same x axis as qfo_divergence (150), so it belongs
-  # with that block rather than at the end. Each plot is followed by its own table, and the
-  # order has to be an int -- order_modules_and_sections asserts it -- so two sections
-  # cannot share a slot and take their positions from discovery order. They do not: giving
-  # a plot and its table the same number rendered the TABLE first. Each heatmap is now
-  # followed by its own bits-per-k-mer strip plot rather than by a winner table: the
-  # winner tables are gone, because the margin over the runner-up is in the third
-  # decimal and naming one encoding asserted a precision the sweep does not have.
-  qfo_encoding_divergence_swissprot: { order: 170 }
-  qfo_bits_budget_swissprot: { order: 171 }
-  qfo_encoding_divergence_pfamn: { order: 172 }
-  qfo_bits_budget_pfamn: { order: 173 }
-  qfo_encoding_divergence_mcsa: { order: 174 }
-  qfo_bits_budget_mcsa: { order: 175 }
-  qfo_encoding_divergence_pfam: { order: 176 }
-  qfo_bits_budget_pfam: { order: 177 }
-  qfo_alphabet: { order: 178 }
-  qfo_alphabet_dose_response: { order: 179 }
+
+  # 1. Read first: what was done, the arms at a glance, how to read the numbers, what the run concluded.
+  qfo_overview: { order: 100 }
+  qfo_general_stats: { order: 105 }
+  qfo_metric_explainers: { order: 110 }
+  qfo_conclusions: { order: 115 }
+  # 2. The answer keys: where the truth comes from, and what a target proteome can supply at all.
+  qfo_truth_provenance: { order: 300 }
+  qfo_truthsets: { order: 305 }
+  qfo_reachability: { order: 310 }
+  qfo_reachability_swissprot: { order: 315 }
+  qfo_reachability_pfamn: { order: 320 }
+  qfo_reachability_mcsa: { order: 325 }
+  qfo_reachability_pfam: { order: 330 }
+  # 3. The comparison, and whether it is fair: leaderboards, threshold-free metrics, then what each arm had to report to get there.
+  qfo_leaderboard_swissprot: { order: 500 }
+  qfo_leaderboard_pfamn: { order: 505 }
+  qfo_leaderboard_mcsa: { order: 510 }
+  qfo_leaderboard_pfam: { order: 515 }
+  qfo_cafa: { order: 520 }
+  qfo_threshold: { order: 525 }
+  qfo_pr_curve: { order: 530 }
+  qfo_recall_at_precision: { order: 535 }
+  qfo_recall_at_precision_table: { order: 540 }
+  qfo_roc_curve: { order: 545 }
+  qfo_call_volume: { order: 550 }
+  qfo_call_volume_table: { order: 555 }
+  qfo_threshold_gain: { order: 560 }
+  qfo_search_space: { order: 565 }
+  qfo_grayzone: { order: 570 }
+  qfo_dedup_bar: { order: 575 }
+  qfo_dedup_table: { order: 580 }
+  # 4. Where a correct call lands.
+  qfo_boundary: { order: 700 }
+  qfo_boundary_dots: { order: 705 }
+  # 5. How far back in time, and how far apart in sequence. The pinned arm is named first because the sections after it mark it.
+  qfo_canonical: { order: 900 }
+  qfo_divergence_annotated: { order: 905 }
+  qfo_identity_pair_mya: { order: 910 }
+  qfo_identity_pair_pident: { order: 915 }
+  qfo_divergence: { order: 920 }
+  qfo_identity: { order: 925 }
+  qfo_identity_no_homolog: { order: 930 }
+  qfo_tool_by_species_swissprot: { order: 935 }
+  qfo_tool_by_species_table_swissprot: { order: 940 }
+  qfo_tool_by_species_pfamn: { order: 945 }
+  qfo_tool_by_species_table_pfamn: { order: 950 }
+  qfo_tool_by_species_mcsa: { order: 955 }
+  qfo_tool_by_species_table_mcsa: { order: 960 }
+  qfo_tool_by_species_pfam: { order: 965 }
+  qfo_tool_by_species_table_pfam: { order: 970 }
+  # 6. Which query proteins: structure confidence, disorder, selection, curated gene sets.
+  qfo_plddt: { order: 1100 }
+  qfo_plddt_regime: { order: 1105 }
+  qfo_plddt_regime_table: { order: 1110 }
+  qfo_plddt_region: { order: 1115 }
+  qfo_disorder: { order: 1120 }
+  qfo_disorder_seq: { order: 1125 }
+  qfo_disorder_target: { order: 1130 }
+  qfo_disorder_region: { order: 1135 }
+  qfo_disorder_scatter: { order: 1140 }
+  qfo_disorder_scatter_table: { order: 1145 }
+  qfo_omega: { order: 1150 }
+  qfo_hgnc: { order: 1155 }
+  qfo_curated_geneset_swissprot: { order: 1160 }
+  qfo_curated_geneset_pfamn: { order: 1165 }
+  qfo_curated_geneset_mcsa: { order: 1170 }
+  qfo_curated_geneset_pfam: { order: 1175 }
+  qfo_curated_mhc_swissprot: { order: 1180 }
+  qfo_curated_mhc_pfamn: { order: 1185 }
+  qfo_curated_mhc_mcsa: { order: 1190 }
+  qfo_curated_mhc_pfam: { order: 1195 }
+  # 7. The kmerseek sweep: alphabet and k, whether a winner is identifiable, what each alphabet keeps out to the furthest proteome.
+  qfo_alphabet: { order: 1300 }
+  qfo_alphabet_lcFalse: { order: 1301 }
+  qfo_alphabet_lcTrue: { order: 1302 }
+  qfo_lowcomplexity: { order: 1305 }
+  qfo_species_winners_swissprot: { order: 1310 }
+  qfo_species_winners_pfamn: { order: 1315 }
+  qfo_species_winners_mcsa: { order: 1320 }
+  qfo_species_winners_pfam: { order: 1325 }
+  qfo_encoding_divergence_swissprot: { order: 1330 }
+  qfo_bits_budget_swissprot: { order: 1335 }
+  qfo_encoding_divergence_pfamn: { order: 1340 }
+  qfo_bits_budget_pfamn: { order: 1345 }
+  qfo_encoding_divergence_mcsa: { order: 1350 }
+  qfo_bits_budget_mcsa: { order: 1355 }
+  qfo_encoding_divergence_pfam: { order: 1360 }
+  qfo_bits_budget_pfam: { order: 1365 }
+  qfo_encoding_divergence_table_swissprot: { order: 1370 }
+  qfo_encoding_divergence_table_pfamn: { order: 1375 }
+  qfo_encoding_divergence_table_mcsa: { order: 1380 }
+  qfo_encoding_divergence_table_pfam: { order: 1385 }
+  qfo_retention_swissprot: { order: 1390 }
+  qfo_retention_table_swissprot: { order: 1395 }
+  qfo_retention_pfamn: { order: 1400 }
+  qfo_retention_table_pfamn: { order: 1405 }
+  qfo_retention_mcsa: { order: 1410 }
+  qfo_retention_table_mcsa: { order: 1415 }
+  qfo_retention_pfam: { order: 1420 }
+  qfo_retention_table_pfam: { order: 1425 }
+  qfo_kmer_spectra: { order: 1430 }
+  qfo_kmer_spectra_table: { order: 1435 }
+  qfo_kmer_spectra_lc: { order: 1440 }
+  # 8. Cost. In a run built without a trace most of these say so and stop; they sit last so the report does not open on three empty sections.
+  qfo_frontier: { order: 1500 }
+  qfo_timing_coverage: { order: 1505 }
+  qfo_capability: { order: 1510 }
+  qfo_search_cost: { order: 1515 }
+  qfo_search_cost_table: { order: 1520 }
+  qfo_cost_cpu_hours_per_search: { order: 1525 }
+  qfo_cost_queries_per_s: { order: 1530 }
+  qfo_res_cpu: { order: 1535 }
+  qfo_res_walltime: { order: 1540 }
+  qfo_res_throughput: { order: 1545 }
+  qfo_res_memory: { order: 1550 }
+  qfo_res_kmerseek_memory: { order: 1555 }
+  qfo_res_efficiency: { order: 1560 }
+  qfo_res_io: { order: 1565 }
+  qfo_res_status: { order: 1570 }
+  qfo_resources_missing: { order: 1575 }
+  qfo_run_summary: { order: 1580 }
+  # 9. Methods and citations.
+  qfo_citations: { order: 1700 }
+  # The alphabet block (module qfo_ceiling), in its own reading order: feature length,
+  # feature type, then recognition against placement averaged over k and at best k.
+  qfo_ceiling_length: { order: 10 }
+  qfo_ceiling_length_by_k: { order: 20 }
+  qfo_ceiling_feature_type: { order: 30 }
+  qfo_ceiling_feature_type_coverage: { order: 40 }
+  qfo_ceiling_feature_type_point: { order: 50 }
+  qfo_ceiling_crossover: { order: 60 }
+  qfo_ceiling_recognition: { order: 70 }
+  qfo_ceiling_recognition_k: { order: 80 }
+  qfo_ceiling_cardinality_swissprot: { order: 90 }
+  qfo_ceiling_cardinality_table_swissprot: { order: 100 }
+  qfo_ceiling_cardinality_pfamn: { order: 110 }
+  qfo_ceiling_cardinality_table_pfamn: { order: 120 }
+  qfo_ceiling_cardinality_mcsa: { order: 130 }
+  qfo_ceiling_cardinality_table_mcsa: { order: 140 }
+  qfo_ceiling_cardinality_pfam: { order: 150 }
+  qfo_ceiling_cardinality_table_pfam: { order: 160 }
+  qfo_alphabet_dose_response: { order: 170 }
   qfo_alphabet_dose_response_table: { order: 180 }
-  # Divergence retention against alphabet size: the alphabet axis the grid above sweeps,
-  # asked the other way round -- what each alphabet KEEPS out to the most diverged
-  # proteome rather than which one won. It sits with the alphabet block rather than beside
-  # qfo_divergence at 150, because no run of eight free integers survives up there. Each
-  # plot takes the integer immediately before its own table: sharing a number renders the
-  # TABLE first, which is the failure the note at 170 records.
-  qfo_retention_swissprot: { order: 181 }
-  qfo_retention_table_swissprot: { order: 182 }
-  qfo_retention_pfamn: { order: 183 }
-  qfo_retention_table_pfamn: { order: 184 }
-  qfo_retention_mcsa: { order: 185 }
-  qfo_retention_table_mcsa: { order: 186 }
-  qfo_retention_pfam: { order: 187 }
-  qfo_retention_table_pfam: { order: 188 }
-  # qfo_lowcomplexity_bars is gone, not renumbered: the toggle's effect at each alphabet's
-  # own best k is under 0.001 Fmax everywhere in the sweep, so the 19-panel switcher and the
-  # per-alphabet delta bars both collapsed into the single alphabet x k grid at 190.
-  qfo_lowcomplexity: { order: 190 }
-  # The ceiling block shifts up one to open 196 for qfo_ceiling_crossover, which re-reads
-  # the three feature-type heatmaps and therefore has to follow them and precede the
-  # recognition pair at 197. MultiQC's order must be an INT -- order_modules_and_sections
-  # asserts it -- so there is no 196.5 to slot into, and the way to insert a section
-  # between two consecutive integers is to move the block, not to fractionalise.
-  qfo_ceiling_length: { order: 191 }
-  qfo_ceiling_length_by_k: { order: 192 }
-  qfo_ceiling_feature_type: { order: 193 }
-  qfo_ceiling_feature_type_coverage: { order: 194 }
-  qfo_ceiling_feature_type_point: { order: 195 }
-  qfo_ceiling_crossover: { order: 196 }
-  qfo_ceiling_recognition: { order: 197 }
-  qfo_ceiling_recognition_k: { order: 198 }
-  # The same two quantities as qfo_ceiling_recognition against alphabet cardinality, so it
-  # belongs immediately after that pair. There were no free integers left between 198 and
-  # 200, and order_modules_and_sections asserts an int -- see the note at 170 above --
-  # so qfo_ceiling_bpe and qfo_grayzone move up to open ten. Each plot is followed by its
-  # own table on the next integer, never sharing one: a plot and its table on the same
-  # number renders the TABLE first, which is the failure that note records.
-  qfo_ceiling_cardinality_swissprot: { order: 199 }
-  qfo_ceiling_cardinality_table_swissprot: { order: 200 }
-  qfo_ceiling_cardinality_pfamn: { order: 201 }
-  qfo_ceiling_cardinality_table_pfamn: { order: 202 }
-  qfo_ceiling_cardinality_mcsa: { order: 203 }
-  qfo_ceiling_cardinality_table_mcsa: { order: 204 }
-  qfo_ceiling_cardinality_pfam: { order: 205 }
-  qfo_ceiling_cardinality_table_pfam: { order: 206 }
-  qfo_ceiling_bpe: { order: 207 }
-  qfo_grayzone: { order: 208 }
-  qfo_run_summary: { order: 210 }
-  qfo_kmer_spectra: { order: 211 }
-  qfo_kmer_spectra_table: { order: 212 }
-  # The supplementary reachability panels, one per non-lead truth set. The lead one
-  # renders as bare qfo_reachability at 5.
-  qfo_reachability_swissprot: { order: 213 }
-  qfo_reachability_pfamn: { order: 214 }
-  qfo_reachability_mcsa: { order: 215 }
-  qfo_reachability_pfam: { order: 216 }
-  qfo_res_cpu: { order: 220 }
-  qfo_res_walltime: { order: 230 }
-  qfo_res_throughput: { order: 240 }
-  qfo_res_memory: { order: 250 }
-  qfo_res_kmerseek_memory: { order: 260 }
-  qfo_res_efficiency: { order: 270 }
-  qfo_res_io: { order: 280 }
-  qfo_res_status: { order: 290 }
-  qfo_resources_missing: { order: 300 }
-  # Supplementary. These have no free integer next to the sections they belong with, and
-  # an id left out of this map falls to MultiQC's own default rather than keeping its
-  # place, so they are ordered late and together rather than not at all.
-  qfo_hgnc: { order: 291 }
-  qfo_curated_geneset_swissprot: { order: 292 }
-  qfo_curated_geneset_pfamn: { order: 293 }
-  qfo_curated_geneset_mcsa: { order: 294 }
-  qfo_curated_geneset_pfam: { order: 295 }
-  qfo_curated_mhc_swissprot: { order: 296 }
-  qfo_curated_mhc_pfamn: { order: 297 }
-  qfo_curated_mhc_mcsa: { order: 298 }
-  qfo_curated_mhc_pfam: { order: 299 }
-  qfo_dedup_bar: { order: 301 }
-  qfo_dedup_table: { order: 302 }
-  qfo_encoding_divergence_table_swissprot: { order: 303 }
-  qfo_encoding_divergence_table_pfamn: { order: 304 }
-  qfo_encoding_divergence_table_mcsa: { order: 305 }
-  qfo_encoding_divergence_table_pfam: { order: 306 }
-  qfo_alphabet_lcFalse: { order: 307 }
-  qfo_alphabet_lcTrue: { order: 308 }
-  qfo_kmer_spectra_lc: { order: 309 }
-  qfo_citations: { order: 310 }
+  qfo_ceiling_bpe: { order: 190 }
