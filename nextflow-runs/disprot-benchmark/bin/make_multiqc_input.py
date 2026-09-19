@@ -54,7 +54,9 @@ TOOL_COLORS = {
     "kmerseek_k20": "#E1BEE7",
 }
 
-DISORDER_CATEGORIES = ["ordered", "partial", "disordered", "all"]
+# Reading order: every protein first, then the three disorder bins from least to most
+# disordered, so the split is read against the whole it splits.
+DISORDER_CATEGORIES = ["all", "ordered", "partial", "disordered"]
 
 # Every section id this script writes, in reading order. report_section_order is one scale:
 # a partial list competes with MultiQC's own defaults for the ids left out, so every id is
@@ -192,9 +194,9 @@ def overview_details(f: dict) -> dict:
                "facts": [["proteomes", ", ".join(f["species"])]],
                "links": [["AUC-PR vs evolutionary distance", "auc_pr_vs_mya_mqc"]]},
         "scores": {"title": "pair scores", "count": "",
-                   "text": "Every pair each tool reported, with the tool's own score. Scales differ "
-                           "between tools and kmerseek's is not calibrated at 5% FDR, so AUC-PR "
-                           "(ranking only) is read before recall at a threshold.",
+                   "text": "Every pair each tool reported, with the tool's own score. Scores are on "
+                           "different scales, so no metric here compares a score across tools: each "
+                           "one walks a tool's own ranking from the top.",
                    "facts": [[f"{tool_word(t).split(' (')[0]}: pairs reported, all proteomes", fd.num(n)]
                              for t, n in f["found"].items()],
                    "links": [["What was done, and why", "overview"]]},
@@ -315,9 +317,11 @@ def write_overview(out: Path, df: pl.DataFrame, n_queries: int | None) -> None:
         "<b>The answer key is reused, not rebuilt.</b> The Pfam pair labels are the ones the "
         "whole-proteome pair benchmark already uses, restricted to DisProt queries, so a "
         "difference here is a difference in the proteins, not in the labelling.",
-        "<b>AUC-PR before recall at a threshold.</b> The tools' scores are on different "
-        "scales and kmerseek's is not calibrated at 5% FDR, so a threshold metric mixes "
-        "ranking with calibration. AUC-PR reads the ranking alone.",
+        "<b>Two readings of one ranking.</b> Both metrics walk each tool's own ranking from "
+        "the top; no cutoff is chosen by the tool. AUC-PR is the whole curve. Recall at 5% "
+        "FDR is how far down the list a reader gets before one pair in twenty is wrong, "
+        "the operating point a curated annotation needs; a tool can rank well overall and "
+        "still score near zero there if a few false pairs sit at the very top of its list.",
         "<b>The target proteome is the divergence axis.</b> The same queries against mouse "
         "and against E. coli ask how far each signal reaches back in time.",
     ])
@@ -479,11 +483,12 @@ table_columns_placement:
 
 section_comments:
   auc_pr_all: >
-    Area under precision-recall curve (all query proteins, mean across 9 species).
-    Higher is better. Random baseline ≈ fraction of positives.
+    Area under the precision-recall curve, every query protein, one row per target
+    proteome. Higher is better; a random ranking scores about the share of positive pairs.
   recall_fdr5_all: >
-    Recall at 5% FDR threshold (all query proteins). Reflects operating-point performance.
-    Kmerseek scores are not calibrated at this threshold — AUC-PR is a fairer comparison.
+    Recall reached while precision stays at or above 0.95, walking each tool's own ranking
+    from the top; no cutoff is chosen by the tool. Near zero means false pairs sit at the
+    top of that tool's list, whatever its AUC-PR.
 """
     with open(path, "w") as f:
         f.write(content)
@@ -514,7 +519,8 @@ def main(metrics_parquet: str, outdir: str, stats_txt: str | None = None) -> Non
         write_table_mqc(
             out / f"auc_pr_{suffix}_mqc.tsv", rows, tools,
             section_name=f"AUC-PR — {cat} proteins",
-            description=f"Area under precision-recall curve for {cat} proteins (rows = species ordered by divergence).",
+            description=(f"Area under the precision-recall curve, {cat} query proteins, one row per "
+                         f"target proteome in divergence order."),
         )
 
         # Recall@FDR5
@@ -522,7 +528,8 @@ def main(metrics_parquet: str, outdir: str, stats_txt: str | None = None) -> Non
         write_table_mqc(
             out / f"recall_fdr5_{suffix}_mqc.tsv", rows, tools,
             section_name=f"Recall @ FDR 5% — {cat} proteins",
-            description=f"Fraction of true homologs found at ≤5% FDR for {cat} proteins.",
+            description=(f"Recall reached while precision stays at or above 0.95, {cat} query "
+                         f"proteins, one row per target proteome in divergence order."),
         )
 
     # ── Line graph: AUC-PR vs Mya (all proteins) ─────────────────────────────
@@ -530,7 +537,9 @@ def main(metrics_parquet: str, outdir: str, stats_txt: str | None = None) -> Non
         out / "auc_pr_vs_mya_mqc.yaml", df,
         metric="auc_pr",
         section_name="AUC-PR vs evolutionary distance",
-        description="AUC-PR as a function of divergence time (Mya). Steeper drop = worse performance at large evolutionary distances.",
+        description=("AUC-PR against divergence time in million years, every query protein. A "
+                     "line that falls is a tool that finds fewer of the pairs the further the "
+                     "proteome is from human."),
         disorder_cat="all",
     )
 
@@ -539,7 +548,9 @@ def main(metrics_parquet: str, outdir: str, stats_txt: str | None = None) -> Non
         out / "recall_fdr5_vs_mya_mqc.yaml", df,
         metric="recall_at_fdr05",
         section_name="Recall @ FDR 5% vs evolutionary distance",
-        description="Recall at 5% FDR vs divergence time. Kmerseek recall is low due to score calibration, not ranking failure.",
+        description=("Recall at precision 0.95 or better against divergence time, every query "
+                     "protein. Read it against the AUC-PR line above: a tool low here but not "
+                     "there ranks well overall and has false pairs near the top of its list."),
         disorder_cat="all",
     )
 
