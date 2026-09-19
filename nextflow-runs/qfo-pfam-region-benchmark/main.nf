@@ -3365,6 +3365,11 @@ process buildMultiqcInputs {
 
     input:
     tuple path(metrics), path(curves), path(trace), path(human_fasta), path(bpe)
+    // The data-flow diagram module every report in the repository shares. Staged rather
+    // than imported from ../shared by path: under Apptainer only staged paths are bound
+    // into the container, and the report script finds it through PYTHONPATH below.
+    path flow_module, stageAs: 'flow_diagram.py'
+    path explainers_module, stageAs: 'metric_explainers.py'
     path kmerseek_timings, stageAs: 'kmerseek_timings/*'
     // stageAs with a bare `*`, so every file keeps its own name. That is not cosmetic:
     // spectrum.<species>.<alphabet>.k<ksize>.lc<true|false>.csv.gz carries the species and
@@ -3397,6 +3402,7 @@ process buildMultiqcInputs {
     // being passed does not make the spectra a required input.
     """
     set -euo pipefail
+    export PYTHONPATH="\$PWD\${PYTHONPATH:+:\$PYTHONPATH}"
     n_queries=\$(grep -c '^>' ${human_fasta} || true)
 
     build_multiqc_inputs.py \\
@@ -3451,8 +3457,11 @@ process multiqcReport {
     set -euo pipefail
     export MPLCONFIGDIR=\$PWD/.mplconfig
 
+    # report_header.yaml is the run-in-six-lines block under the title, written by
+    # build_multiqc_inputs.py from the metrics; a later --config adds to the earlier one.
     multiqc ${sections} \\
         --config ${mqc_config} \\
+        \$( [ -f ${sections}/report_header.yaml ] && echo --config ${sections}/report_header.yaml ) \\
         --filename qfo_pfam_region_multiqc.html \\
         --outdir . \\
         --no-version-check \\
@@ -4454,7 +4463,9 @@ workflow multiqcFromMetrics {
         // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
         .map { m, c, b -> tuple(m, c, resolveTrace(), file(human_fasta), b) }
 
-    sections = buildMultiqcInputs(mqc_in, kmerseek_timings, kmerseek_spectra).sections
+    flow_module = Channel.value(file("${projectDir}/../shared/flow_diagram.py"))
+    explainers  = Channel.value(file("${projectDir}/../shared/metric_explainers.py"))
+    sections = buildMultiqcInputs(mqc_in, flow_module, explainers, kmerseek_timings, kmerseek_spectra).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
 }
 

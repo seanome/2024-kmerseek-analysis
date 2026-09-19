@@ -55,7 +55,9 @@ report_comment: >
 # QC. Turning these off removes UI that would only mislead.
 show_analysis_paths: false
 show_analysis_time: true
-skip_generalstats: false
+# The top-of-page General Statistics element is off: it cannot be placed below a section,
+# and the reader meets the data flow first. The same table is the section right after it.
+skip_generalstats: true
 
 # Written to multiqc_plots/ as png, svg and pdf. The svg is the one that goes in a figure.
 export_plots: true
@@ -79,9 +81,6 @@ plots_defer_loading_numseries: 100000
 # press "Show plot" is still driven by this one, so both have to be raised.
 num_datasets_plot_limit: 100000
 
-table_columns_visible:
-  qfo_general_stats: true
-
 # Sections inside a module are sorted by ascending order value. EVERY section this report
 # can write is listed below, with no gaps in what is covered, and that completeness is the
 # point rather than tidiness.
@@ -102,12 +101,29 @@ table_columns_visible:
 #   - An id listed but not produced is skipped with a debug message, so listing every
 #     truth set (pfam, pfamn, swissprot, mcsa) is safe when a run builds only some.
 #
-# qfo_conclusions is first, immediately after the General Statistics table, because it is
+# qfo_conclusions comes right after the overview and the at-a-glance table, because it is
 # the reading order for everything below it.
 report_section_order:
-  # Conclusions first, immediately after General Statistics: every number in it is
+  # MODULES first. The three custom-content modules (the main report, the reduced-alphabet
+  # ceiling block, the supplement) sort among themselves with the LARGEST order first,
+  # the reverse of how the sections inside a module sort. Until 2026-09-18 only
+  # qfo_ceiling carried a module-level order (189, below), so it opened the report ahead
+  # of the main module and the overview was the fourth heading down. The three are named
+  # here with the main module highest.
+  qfo_region: { order: 1000 }
+  qfo_ceiling: { order: 900 }
+  qfo_region_supp: { order: 800 }
+  # SECTIONS inside a module sort by ASCENDING order value. What was done and why, with
+  # the data-flow diagram, before everything: the conclusions are read against the
+  # construction it describes.
+  qfo_overview: { order: 0 }
+  # The at-a-glance table, which used to be MultiQC's General Statistics, right after it.
+  qfo_general_stats: { order: 1 }
+  # How to read the metrics: a picture per idea the tables rest on, before the first table.
+  qfo_metric_explainers: { order: 2 }
+  # Conclusions next, after the at-a-glance table: every number in it is
   # computed from the frames the sections below draw, negative results included.
-  qfo_conclusions: { order: 1 }
+  qfo_conclusions: { order: 3 }
   # Reachability first: 43.9% of the answer key has no same-family instance in the
   # target proteome, and every Fmax below divides by the reachable part. The reader
   # meets that denominator before any leaderboard built on it.
@@ -216,7 +232,6 @@ report_section_order:
   qfo_retention_table_mcsa: { order: 186 }
   qfo_retention_pfam: { order: 187 }
   qfo_retention_table_pfam: { order: 188 }
-  qfo_ceiling: { order: 189 }
   # qfo_lowcomplexity_bars is gone, not renumbered: the toggle's effect at each alphabet's
   # own best k is under 0.001 Fmax everywhere in the sweep, so the 19-panel switcher and the
   # per-alphabet delta bars both collapsed into the single alphabet x k grid at 190.
