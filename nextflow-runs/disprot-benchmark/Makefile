@@ -30,7 +30,8 @@ resume-mobidb-foldseek:
 multiqc:
 	bin/make_multiqc_input.py \
 	    $(HOME)/data/disprot-benchmark/disprot/results/all_disprot_metrics.parquet \
-	    /tmp/disprot_mqc_input
+	    /tmp/disprot_mqc_input \
+	    $(HOME)/data/disprot-benchmark/disprot/results/disprot/benchmark_stats.txt
 	/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/multiqc \
 	    /tmp/disprot_mqc_input/ \
 	    --config /tmp/disprot_mqc_input/multiqc_config.yaml \
