@@ -350,7 +350,11 @@ run-ladder-sweep:
 # two HP alphabets at k12, the seed length the extension was measured at on SCOPe40
 # (kmerseek #54). 5 pairs x 4 scaled x 1 mask = 20 indexes per clade, 2 search arms each:
 # ~4_000 searches, the same order as one quarter of the 0.3 ladder.
-V4_IMAGE       ?= docker.io/olgabot/kmerseek:0.4.0-rc1
+# Built from qfo-pfam-region-benchmark/Dockerfile with the kmerseek release checkout as
+# context, never from kmerseek's own Dockerfile: that one ships the binary alone, and
+# every python_scoring step (splitQuery first) runs in this image too. rc1 was built the
+# wrong way and failed every splitQuery with `python3: No such file or directory`.
+V4_IMAGE       ?= docker.io/olgabot/kmerseek:0.4.0-rc2
 V4_OUTDIR      ?= $(SCRATCH_DIR)/invertebrate-dark-set/results-0.4
 V4_LAUNCH_DIR  := $(MAKEFILE_DIR)/runs/ladder-0.4
 V4_ALPHABETS   ?= protein20:10,hp_pbotc_1st_ed2:19,hp_thomas_dill2:23,hp_pbotc_1st_ed2:12,hp_thomas_dill2:12
