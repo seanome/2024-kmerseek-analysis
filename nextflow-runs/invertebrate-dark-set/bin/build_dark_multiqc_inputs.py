@@ -845,7 +845,7 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
     # would present a composition artifact as a result, so these are named and dropped.
     seen: dict[tuple, set] = {}
     for row in combos:
-        key = (row.get("alphabet"), row.get("ksize"))
+        key = (arm_of(row), row.get("ksize"))
         seen.setdefault(key, set()).add(bool(row.get("low_complexity_mask")))
     unpaired = {k: v for k, v in seen.items() if len(v) < 2}
 
@@ -874,7 +874,7 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
     data = {}
     table = {}
     for row in pairs:
-        label = f"{row['alphabet']} k{row['ksize']}"
+        label = f"{arm_of(row)} k{row['ksize']}"
         on = row.get("dark_reached_mask_on")
         off = row.get("dark_reached_mask_off")
         lost = row.get("lost_to_masking")
@@ -906,10 +906,10 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
                 "homology. BHF's flagship matches included polar-biased low-complexity "
                 "segments, which is why this pipeline runs the mask as a paired setting "
                 "rather than as a sweep dimension.",
-                f"<b>Best arm with the mask ON: <code>{best['alphabet']} "
+                f"<b>Best arm with the mask ON: <code>{arm_of(best)} "
                 f"k{best['ksize']}</code></b>, reaching {num(best_on)} of {num(dark_n)} "
                 f"dark proteins ({pct((best_on / dark_n) if dark_n else None)}).",
-                f"<b>Largest loss to masking: <code>{worst_loss['alphabet']} "
+                f"<b>Largest loss to masking: <code>{arm_of(worst_loss)} "
                 f"k{worst_loss['ksize']}</code></b> at "
                 f"{num(worst_loss.get('lost_to_masking'))} proteins, which is the part of "
                 f"that arm's mask-off number that the filter does not support.",
@@ -959,6 +959,13 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
     })
 
 
+def arm_of(row: dict) -> str:
+    """The label an arm is grouped and drawn by. kmerseek 0.4 rows carry `arm` (alphabet
+    plus scaled, extension and E-value cutoff when they differ from a plain exact search);
+    older gain tables have only the alphabet."""
+    return row.get("arm") or str(row.get("alphabet"))
+
+
 def section_kmerseek_sweep(out: Path, species: str, combos: list[dict], dark_n,
                            omitted: Omitted) -> None:
     """Reach against ksize, one line per alphabet, dark and placed side by side.
@@ -975,8 +982,8 @@ def section_kmerseek_sweep(out: Path, species: str, combos: list[dict], dark_n,
     """
     by_lc: dict[bool, dict[str, dict[int, dict]]] = {}
     for row in combos:
-        a, k = row.get("alphabet"), row.get("ksize")
-        if a is None or k is None:
+        a, k = arm_of(row), row.get("ksize")
+        if row.get("alphabet") is None or k is None:
             continue
         by_lc.setdefault(bool(row.get("low_complexity_mask")), {}) \
              .setdefault(a, {})[int(k)] = row

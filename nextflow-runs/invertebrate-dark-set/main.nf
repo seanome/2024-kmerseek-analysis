@@ -112,6 +112,32 @@ params.min_region_score = 1.3
 params.index_cache        = null
 params.with_kmerseek      = false
 
+// kmerseek 0.4 arms. Every value below is a list, and the arms are the product.
+//
+// --scaled is an INDEX-time setting (FracMinHash: keep the k-mers whose hash falls in
+// the lowest 1/N of the hash space), so it is a dimension of the index, named in the
+// index directory, and search reads it back. Indexing memory and index size fall almost
+// linearly with N; what it costs is a short match none of whose k-mers survive.
+params.kmerseek_scaled = '1'
+// Extension is a SEARCH-time setting over the same index: `exact` is a region as a
+// maximal run of shared k-mers, `extend` grows each run outward through mismatches
+// (X-drop) and ranks it with a Karlin-Altschul E-value, chaining colinear runs.
+params.kmerseek_extension = 'exact'
+params.kmerseek_extend_mismatch_penalty = 2
+params.kmerseek_extend_xdrop            = 8
+params.kmerseek_chain_max_gap           = 30
+params.kmerseek_chain_max_shift         = 10
+// An extended region's E-value needs lambda and K fitted on ITS index. The fit runs at
+// index time on this many of the reference's own sequences and is stored in the index,
+// so every search chunk reads the same fit; 0 skips it, and an `extend` search would
+// then have to fit its own. Only done when an `extend` arm is wanted.
+params.kmerseek_ka_queries = 500
+// The dark-gain step counts a dark protein as reached when ANY region lands on it, which
+// saturates (see kmerseek_dark_gain.py). An `extend` arm also carries region_evalue, so
+// it is counted again at each of these cutoffs; an `exact` arm has no E-value and is
+// counted at none.
+params.kmerseek_evalue_max = '0.01,0.0001'
+
 // Memory for the two kmerseek processes, sized per task rather than as a flat ladder.
 // The index is sized from the keyspace; the SEARCH is sized from the index's own k-mer
 // spectrum, which every kmerseekIndex task writes and which is the only thing that
@@ -473,7 +499,7 @@ process mmseqs2Search {
 // larger still, and an IDF computed with the query's own clade in the pool is a different
 // statistic. So: one index per clade per combo, and the confound never arises.
 process kmerseekIndex {
-    tag "minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}"
+    tag "minus_${clade}.${alphabet}.k${ksize}${scaled == 1 ? '' : '.s' + scaled}.lc${lowcomp}"
     storeDir { params.index_cache ?: "${params.outdir}/kmerseek_index" }
     container params.kmerseek_image
     // Sized per combo in the body -- see kmerseekIndexMemory. No `label` here on purpose:
@@ -484,21 +510,32 @@ process kmerseekIndex {
     memory { kmerseekIndexMemory(alphabet, ksize as int, task.attempt) }
 
     input:
-    tuple val(clade), path(ref_dir), val(alphabet), val(ksize), val(lowcomp)
+    tuple val(clade), path(ref_dir), val(alphabet), val(ksize), val(lowcomp), val(scaled)
 
     output:
-    tuple val(clade), val(alphabet), val(ksize), val(lowcomp),
-          path("minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb")
+    tuple val(clade), val(alphabet), val(ksize), val(lowcomp), val(scaled),
+          path("minus_${clade}.${alphabet}.k${ksize}${scaled == 1 ? '' : '.s' + scaled}.lc${lowcomp}.kmerseek.rocksdb")
 
     script:
-    def idx = "minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb"
+    // scaled=1 keeps the name every index built before 0.4 has, so a store of those
+    // still hits; any other value names itself.
+    def idx = "minus_${clade}.${alphabet}.k${ksize}${scaled == 1 ? '' : '.s' + scaled}.lc${lowcomp}.kmerseek.rocksdb"
     def lc  = lowcomp == 'true' ? '--remove-low-complexity' : ''
+    // The Karlin-Altschul fit lives in the index and is only wanted when an `extend` arm
+    // will read it. The fit searches --ka-queries reference sequences against the index
+    // it just built, so this task then costs a search's memory as well (see the memory
+    // directive).
+    def ka  = (params.kmerseek_ka_queries as int) > 0 && ('extend' in resolveExtensions())
+              ? "--extend-mismatch-penalty ${params.kmerseek_extend_mismatch_penalty} " +
+                "--extend-xdrop ${params.kmerseek_extend_xdrop} " +
+                "--ka-queries ${params.kmerseek_ka_queries}"
+              : ''
     """
     set -euo pipefail
     kmerseek index \\
-        --alphabet ${alphabet} --ksize ${ksize} \\
+        --alphabet ${alphabet} --ksize ${ksize} --scaled ${scaled} \\
         --input  ${ref_dir}/reference.fasta \\
-        --output ${idx} ${lc} \\
+        --output ${idx} ${lc} ${ka} \\
         --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | tee index.log
     # An index is immutable once built. A search that opens it read-write (the image
     # before 2026-09-13-rocksdb-4gb-readonly did) rewrites CURRENT, MANIFEST and LOG,
@@ -515,7 +552,7 @@ process kmerseekIndex {
     // filter fires for the stub run too: occurrence counts scale down with ksize.
     def top = Math.max(1, (long) (400000 / Math.pow(2, ksize as int)))
     """
-    d=minus_${clade}.${alphabet}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb
+    d=minus_${clade}.${alphabet}.k${ksize}${scaled == 1 ? '' : '.s' + scaled}.lc${lowcomp}.kmerseek.rocksdb
     mkdir -p \$d
     touch \$d/CURRENT
     printf '# stub\nmoltype,ksize,occurrences,n_kmers\n${alphabet},${ksize},1,1000000\n${alphabet},${ksize},${top},10\n' \
@@ -524,7 +561,7 @@ process kmerseekIndex {
 }
 
 process kmerseekSearch {
-    tag "${species}.${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}"
+    tag "${species}.${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${ext}"
     container params.kmerseek_image
     publishDir "${params.outdir}/${species}/kmerseek", mode: 'copy', pattern: '*.zst'
     // Sized per combo in the body -- see kmerseekSearchMemory and the note on
@@ -535,21 +572,23 @@ process kmerseekSearch {
     memory { kmerseekSearchMemory(index_dir, alphabet, lowcomp, task.attempt) }
 
     input:
-    tuple val(species), val(clade), path(chunk), val(alphabet), val(ksize), val(lowcomp), path(index_dir)
+    tuple val(species), val(clade), path(chunk), val(alphabet), val(ksize), val(lowcomp), val(scaled),
+          val(ext), path(index_dir)
 
     output:
-    tuple val(species), val(alphabet), val(ksize), val(lowcomp),
-          path("${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}.queries.txt"), emit: queries
+    tuple val(species), val(alphabet), val(ksize), val(lowcomp), val(scaled), val(ext),
+          path("${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${ext}.queries.tsv"), emit: queries
     path "*.regions.csv.zst", emit: regions
 
     script:
-    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}"
+    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${ext}"
     def lc   = lowcomp == 'true' ? '--remove-low-complexity' : ''
+    def flags = extensionFlags(ext)
     """
     set -euo pipefail
     kmerseek search \\
         --alphabet ${alphabet} --ksize ${ksize} \\
-        --query  ${chunk} --target ${index_dir} ${lc} \\
+        --query  ${chunk} --target ${index_dir} ${lc} ${flags} \\
         --threshold        ${params.threshold} \\
         --min-shared-kmers ${params.min_shared_kmers} \\
         --max-query-pvalue ${params.max_query_pvalue} \\
@@ -562,30 +601,32 @@ process kmerseekSearch {
     # Under pipefail a failed search or a failed zstd fails the task, and the retry above
     # gets three attempts before the run stops.
 
-    # The queries that got any region, as a plain list. Extracted with zstd + awk rather
-    # than by reading the .zst in polars: scan_csv on a zstd CSV inflates the whole file in
-    # RAM (1.9 GB -> 184.7 GB once, on this project). The query column is found by HEADER
-    # NAME, never by position, so a column order change cannot silently shift it. Splitting
-    # on a bare comma is safe only because splitQuery rewrote every header to the bare
-    # accession: kmerseek writes the WHOLE header into query_name, and a QfO description
-    # line carries commas.
+    # The queries that got any region, one per line with the smallest region_evalue any
+    # of its regions carries (inf on an `exact` arm, where no E-value exists). Extracted
+    # with zstd + awk rather than by reading the .zst in polars: scan_csv on a zstd CSV
+    # inflates the whole file in RAM (1.9 GB -> 184.7 GB once, on this project). Both
+    # columns are found by HEADER NAME, never by position, so a column order change cannot
+    # silently shift them. Splitting on a bare comma is safe only because splitQuery
+    # rewrote every header to the bare accession: kmerseek writes the WHOLE header into
+    # query_name, and a QfO description line carries commas.
+    printf 'query_name\\tmin_region_evalue\\n' > ${slug}.queries.tsv
     if [ -s ${slug}.regions.csv.zst ]; then
         zstd -dc ${slug}.regions.csv.zst \\
-        | awk -F, 'NR==1 { for (i=1;i<=NF;i++) if (\$i=="query_name") c=i;
+        | awk -F, 'NR==1 { for (i=1;i<=NF;i++) { if (\$i=="query_name") c=i; if (\$i=="region_evalue") e=i }
                            if (!c) { print "no query_name column" > "/dev/stderr"; exit 3 }
                            next }
-                   c { print \$c }' \\
-        | sort -u > ${slug}.queries.txt
-    else
-        : > ${slug}.queries.txt
+                   c { v = e ? \$e : "inf"; if (v == "" ) v = "inf";
+                       if (!(\$c in m) || (v+0) < (m[\$c]+0)) m[\$c] = v }
+                   END { for (q in m) print q "\\t" m[q] }' \\
+        | sort >> ${slug}.queries.tsv
     fi
     """
 
     stub:
-    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}"
+    def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${ext}"
     """
-    printf 'query_name,target_name\\n${species}_B,Q6GZX4\\n' | zstd -o ${slug}.regions.csv.zst
-    echo ${species}_B > ${slug}.queries.txt
+    printf 'query_name,target_name,region_evalue\\n${species}_B,Q6GZX4,${ext == 'extend' ? '1e-5' : 'inf'}\\n' | zstd -o ${slug}.regions.csv.zst
+    printf 'query_name\\tmin_region_evalue\\n${species}_B\\t${ext == 'extend' ? '1e-5' : 'inf'}\\n' > ${slug}.queries.tsv
     """
 }
 
@@ -608,7 +649,8 @@ process kmerseekDarkGain {
     set -euo pipefail
     kmerseek_dark_gain.py \\
         --dark ${dark_parquet} --query ${query} --species ${species} \\
-        --queries queries/*.queries.txt \\
+        --queries queries/*.queries.tsv \\
+        --evalue-max ${params.kmerseek_evalue_max} \\
         --out ${species}_kmerseek_dark_gain.parquet \\
         --summary-out ${species}_kmerseek_dark_gain.json
     """
@@ -739,7 +781,31 @@ def resolveCombos() {
             [parts[0], parts[1] as Integer]
         }
     }
-    pairs.collectMany { a, k -> lcs.collect { lc -> [a, k, lc] } }
+    def scaleds = params.kmerseek_scaled.toString().tokenize(',')*.trim().findAll { it }
+    def badS = scaleds.findAll { !(it ==~ /\d+/) || (it as int) < 1 || (it as int) > 10 }
+    if (badS) error "--kmerseek_scaled takes integers 1..10, not '${badS.join(', ')}'"
+    if (!scaleds) error "--kmerseek_scaled is empty; it needs at least one value"
+    pairs.collectMany { a, k -> lcs.collectMany { lc -> scaleds.collect { sc -> [a, k, lc, sc as int] } } }
+}
+
+// The search-time arms over one index. Validated once, here, so a typo does not surface
+// as a failed search hours in.
+def resolveExtensions() {
+    def exts = params.kmerseek_extension.toString().tokenize(',')*.trim().findAll { it }
+    def bad = exts.findAll { !(it in ['exact', 'extend']) }
+    if (bad) error "--kmerseek_extension takes exact and/or extend, not '${bad.join(', ')}'"
+    if (!exts) error "--kmerseek_extension is empty; it needs at least one of exact, extend"
+    exts
+}
+
+// The kmerseek search flags one extension arm adds. `exact` adds nothing, so its command
+// line is the one every earlier run used.
+def extensionFlags(String ext) {
+    if (ext == 'exact') return ''
+    "--extend-mismatch-penalty ${params.kmerseek_extend_mismatch_penalty} " +
+    "--extend-xdrop ${params.kmerseek_extend_xdrop} " +
+    "--chain-max-gap ${params.kmerseek_chain_max_gap} " +
+    "--chain-max-shift ${params.kmerseek_chain_max_shift}"
 }
 
 // Every path output declared as a glob arrives as a single path when it matched one
@@ -766,17 +832,21 @@ workflow darkSet {
              n_chunks_of.collect { k, v -> "${k} ${v}" }.join(', ')
 
     def COMBOS = params.with_kmerseek ? resolveCombos() : []
+    def EXTENSIONS = params.with_kmerseek ? resolveExtensions() : []
     if (params.with_kmerseek) {
         def n_alpha  = COMBOS.collect { it[0] }.unique().size()
         def n_lc     = COMBOS.collect { it[2] }.unique().size()
+        def n_sc     = COMBOS.collect { it[3] }.unique().size()
         def n_clades = SPECIES*.clade.unique().size()
-        def idx_gb   = COMBOS.collect { a, k, _lc -> kmerseekIndexMemory(a, k as int, 1).toGiga() }
-        log.info "  kmerseek : ${COMBOS.size()} combos -- ${n_alpha} alphabet(s), " +
-                 "${COMBOS.size().intdiv(n_lc)} alphabet x ksize pair(s), mask setting(s): " +
-                 "${COMBOS.collect { it[2] }.unique().join(',')}"
+        def idx_gb   = COMBOS.collect { a, k, _lc, _sc -> kmerseekIndexMemory(a, k as int, 1).toGiga() }
+        log.info "  kmerseek : ${COMBOS.size()} index combos -- ${n_alpha} alphabet(s), " +
+                 "${COMBOS.size().intdiv(n_lc * n_sc)} alphabet x ksize pair(s), mask setting(s): " +
+                 "${COMBOS.collect { it[2] }.unique().join(',')}, scaled: " +
+                 "${COMBOS.collect { it[3] }.unique().join(',')}; search arms per index: " +
+                 "${EXTENSIONS.join(',')}"
         log.info "             ${n_clades * COMBOS.size()} index builds (${n_clades} clade(s) x combos), " +
                  "first-attempt memory ${idx_gb.min()}-${idx_gb.max()} GB"
-        log.info "             up to ${total_chunks * COMBOS.size()} searches (chunks x combos); each is " +
+        log.info "             up to ${total_chunks * COMBOS.size() * EXTENSIONS.size()} searches (chunks x combos x arms); each is " +
                  "sized from its index's k-mer spectrum once that index exists, " +
                  "${params.kmerseek_search_memory_floor}-${params.kmerseek_memory_first_max} on the first " +
                  "attempt, and a combo predicted past ${params.kmerseek_memory_max} is skipped and logged"
@@ -842,9 +912,9 @@ workflow darkSet {
     // having on its own; adding kmerseek costs an index over 572_700 sequences per clade
     // per alphabet/ksize/mask, which is the expensive part of this pipeline.
     if (params.with_kmerseek) {
-        combos = Channel.fromList(COMBOS.collect { a, k, lc -> tuple(a, k, lc) })
+        combos = Channel.fromList(COMBOS.collect { a, k, lc, sc -> tuple(a, k, lc, sc) })
 
-        idx = kmerseekIndex(ref_ch.combine(combos).map { cl, r, a, k, lc -> tuple(cl, r, a, k, lc) })
+        idx = kmerseekIndex(ref_ch.combine(combos).map { cl, r, a, k, lc, sc -> tuple(cl, r, a, k, lc, sc) })
 
         // Combos no node can search are dropped HERE, with the index in hand, rather than
         // discovered three OOM kills later. gbmr7 at k=9 against a 572k-sequence reference
@@ -854,11 +924,11 @@ workflow darkSet {
         // and is simply absent from the sweep panels -- an absent point, not a zero.
         double capGb = MemoryUnit.of(params.kmerseek_memory_max).toGiga()
         double skipF = params.kmerseek_skip_factor as double
-        runnable = idx.filter { cl, a, k, lc, i ->
+        runnable = idx.filter { cl, a, k, lc, sc, i ->
             double load = spectrumLoad(i)
             double med  = searchMedianGb(load, lc)
             if (med * skipF > capGb) {
-                log.warn "skipping minus_${cl}.${a}.k${k}.lc${lc}: spectrum load ${Math.round(load)}, " +
+                log.warn "skipping minus_${cl}.${a}.k${k}.s${sc}.lc${lc}: spectrum load ${Math.round(load)}, " +
                          "predicted median peak ${Math.round(med)} GB x ${skipF} is over the " +
                          "${Math.round(capGb)} GB ceiling"
                 return false
@@ -866,8 +936,11 @@ workflow darkSet {
             true
         }
 
+        // Every runnable index is searched once per extension arm.
+        arms = Channel.fromList(EXTENSIONS)
         ks = kmerseekSearch(
-            chunks.combine(runnable, by: 0).map { cl, sp, c, a, k, lc, i -> tuple(sp, cl, c, a, k, lc, i) })
+            chunks.combine(runnable, by: 0).combine(arms)
+                  .map { cl, sp, c, a, k, lc, sc, i, ext -> tuple(sp, cl, c, a, k, lc, sc, ext, i) })
 
         // How many combos each species actually searches, AFTER the skip above. The
         // groupKey size below has to be exact: groupTuple discards a group that never
@@ -878,15 +951,15 @@ workflow darkSet {
         // count is known once every index build of a clade has finished, which is long
         // before its searches are.
         n_combos = runnable
-            .map { cl, _a, _k, _lc, _i -> tuple(cl, 1) }
+            .map { cl, _a, _k, _lc, _sc, _i -> tuple(cl, 1) }
             .groupTuple()
-            .flatMap { cl, ones -> SPECIES.findAll { it.clade == cl }.collect { s -> tuple(s.label, ones.size()) } }
+            .flatMap { cl, ones -> SPECIES.findAll { it.clade == cl }.collect { s -> tuple(s.label, ones.size() * EXTENSIONS.size()) } }
 
         // Every chunk and every combo of a species reaches the gain step together: a
         // protein counts as rescued only against the whole dark set, and the dark set is
         // proteome-wide. Closed per species by groupKey, as for the hits above.
         q_lists = ks.queries
-            .map { sp, _a, _k, _lc, f -> tuple(sp, f) }
+            .map { sp, _a, _k, _lc, _sc, _ext, f -> tuple(sp, f) }
             .combine(n_chunks, by: 0)
             .combine(n_combos, by: 0)
             .map { sp, f, n, m -> tuple(groupKey(sp, n * m), f) }

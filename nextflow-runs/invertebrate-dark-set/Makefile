@@ -110,7 +110,7 @@ LADDER_HEAD_XMX   ?= 24g
 .PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
         multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
-        lock-indexes unlock-indexes
+        lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -124,6 +124,8 @@ help:
 	@echo "  stop-dark-set           SPECIES=<...>  cancel the driver and its tasks"
 	@echo "  cancel-orphan-tasks     cancel nf-darkSet_ tasks left in the queue after a driver died"
 	@echo "  lock-indexes            make every built kmerseek index read-only (run before a relaunch)"
+	@echo "  run-ladder-0.4-sbatch   the ladder with kmerseek 0.4: scaled x extension arms, own results dir"
+	@echo "  ladder-0.4-plan         print what that expands to without submitting"
 	@echo "  unlock-indexes          make them writable again, to delete or rebuild one"
 	@echo "  status-dark-set         SPECIES=<...>  did it end, what killed it, what it said"
 	@echo "                          add HISTORY=1 for one line per past run"
@@ -329,6 +331,48 @@ run-ladder-sweep-sbatch:
 run-ladder-sweep:
 	@$(MAKE) run-dark-set SPECIES=$(if $(SPECIES),$(SPECIES),$(LADDER_SPECIES)) RUN=ladder \
 	  WITH_KMERSEEK=1 NF_ARGS="$(LADDER_NF_ARGS)"
+
+# ---- kmerseek 0.4 on the ladder: scaled, extension, E-value, read-only index ----------
+#
+# The same ten proteomes and clade-subtracted references, searched with kmerseek 0.4 on a
+# focused set of alphabet x k pairs and the two 0.4 settings that change what "reached"
+# means: --scaled (1, 2, 5, 10: keep 1/N of the k-mers) and extension (exact runs, or runs
+# grown through mismatches with a Karlin-Altschul E-value and colinear chaining). The gain
+# step then counts a dark protein as reached at E <= 0.01 and E <= 1e-4 as well as at
+# "any region", which is the number the 0.3 sweep could not produce.
+#
+# Everything about this run is kept apart from the 0.3 ladder: its own results directory
+# (0.4 refuses an index of an older schema, so the 1_647 stored 0.3 indexes cannot be
+# reused and must not be found), its own launch directory (a second head in runs/ladder
+# would refuse to start next to the first), its own driver name, and the 0.4 image. The
+# pairs: protein20 k10 (the exact-k-mer baseline), hp_pbotc_1st_ed2 k19 (the HP alphabet
+# and k the genome-wide ranking chose), hp_thomas_dill2 k23 (the Botryllus arm), and the
+# two HP alphabets at k12, the seed length the extension was measured at on SCOPe40
+# (kmerseek #54). 5 pairs x 4 scaled x 1 mask = 20 indexes per clade, 2 search arms each:
+# ~4_000 searches, the same order as one quarter of the 0.3 ladder.
+V4_IMAGE       ?= docker.io/olgabot/kmerseek:0.4.0-rc1
+V4_OUTDIR      ?= $(SCRATCH_DIR)/invertebrate-dark-set/results-0.4
+V4_LAUNCH_DIR  := $(MAKEFILE_DIR)/runs/ladder-0.4
+V4_ALPHABETS   ?= protein20:10,hp_pbotc_1st_ed2:19,hp_thomas_dill2:23,hp_pbotc_1st_ed2:12,hp_thomas_dill2:12
+V4_SCALED      ?= 1,2,5,10
+V4_EXTENSION   ?= exact,extend
+V4_NF_ARGS      = --run_tag ladder-0.4 --kmerseek_image $(V4_IMAGE) \
+                  --kmerseek_alphabets $(V4_ALPHABETS) --kmerseek_scaled $(V4_SCALED) \
+                  --kmerseek_extension $(V4_EXTENSION) --kmerseek_lowcomp $(LOWCOMP) \
+                  --max_forks $(LADDER_MAX_FORKS) --queue_size $(LADDER_QUEUE_SIZE) $(NF_ARGS)
+
+run-ladder-0.4-sbatch:
+	@$(MAKE) run-dark-set-sbatch SPECIES=$(if $(SPECIES),$(SPECIES),$(LADDER_SPECIES)) RUN=ladder-0.4 \
+	  WITH_KMERSEEK=1 LAUNCH_DIR=$(V4_LAUNCH_DIR) OUTDIR=$(V4_OUTDIR) \
+	  HEAD_TIME=$(LADDER_HEAD_TIME) HEAD_MEM=$(LADDER_HEAD_MEM) HEAD_XMX=$(LADDER_HEAD_XMX) \
+	  NF_ARGS="$(V4_NF_ARGS)"
+
+ladder-0.4-plan: check-inputs
+	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -preview \
+	  --species $(if $(SPECIES),$(SPECIES),$(LADDER_SPECIES)) \
+	  --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
+	  --outdir $(V4_OUTDIR) --reference_cache $(REF_CACHE) --with_kmerseek true \
+	  $(V4_NF_ARGS)
 
 # What the ladder would expand to: species, clades, combo count and the per-combo memory
 # asks, from the same code path as the run, with nothing submitted. Uses Nextflow's
