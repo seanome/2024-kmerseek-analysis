@@ -161,7 +161,8 @@ def overview_flow_spec(f: dict) -> dict:
                            "title": fam["name"],
                            "sub": f"{fam['n_encodings']} encoding(s), k {fam['k_min']}–{fam['k_max']}: "
                                   f"{fam['n_complete']} of {fam['n_attempted']} combos",
-                           "bar": True, "dashed": fam["n_complete"] == 0}
+                           "bar": True, "dashed": fam["n_complete"] == 0,
+                           "samples": [fam["id"]] + sorted(fam["encodings"])}
     nodes = {
         "q0": {"x": 20, "y": 66, "w": 320, "h": 52, "icon": "genetics",
                "title": "human GENCODE canonical proteins", "sub": f"{fd.num(f['n_human'])} proteins"},
