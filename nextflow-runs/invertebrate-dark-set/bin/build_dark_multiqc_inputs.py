@@ -421,13 +421,13 @@ def flow_details(species: str, summary: dict, ref: dict | None, clade: str | Non
     len_links = [["Dark fraction by minimum protein length", "dark_headline_by_length"]] if by_len else []
     d["placed"] = {
         "title": "placed: a target hit from at least one arm", "count": "",
-        "text": f"A protein is placed when any arm has a hit at E <= {evalue}. Placed is the union "
+        "text": f"A protein is placed when any arm has a hit at E \u2264 {evalue}. Placed is the union "
                 f"of the three arms, so it is larger than any single arm.",
         "facts": [["placed by any arm, no length cut", num(placed)]],
         "links": [["How much of the proteome is dark", "dark_headline"]] + len_links}
     d["dark"] = {
         "title": "dark: no target hit from any arm", "count": "",
-        "text": f"A protein is dark when no arm has a hit at E <= {evalue}. This set is the "
+        "text": f"A protein is dark when no arm has a hit at E \u2264 {evalue}. This set is the "
                 f"denominator for every claim about kmerseek adding annotation: it can only add "
                 f"something where phmmer, jackhmmer and mmseqs2 all found nothing. Dark is not the "
                 f"same as annotatable: a dark protein may be a real protein that sequence search "
@@ -787,9 +787,10 @@ def section_per_arm(out: Path, species: str, summary: dict, omitted: Omitted) ->
                 unions_ok,
                 "<b>Colour is the kind of search</b>: single-pass, iterative, or the union "
                 "of all three. That is the axis the check is about.",
-                "<b>The dark set is defined against the strongest arm, not the cheapest.</b> "
-                "A protein iterative search reaches is not dark, and counting it as dark "
-                "would inflate the headline in the direction the claim wants.")),
+                "<b>The dark set is defined against the union of all three arms, not the "
+                "cheapest one.</b> A protein any arm reaches, iterative search included, is "
+                "not dark; counting it as dark would inflate the headline in the direction "
+                "the claim wants.")),
         "plot_type": "bargraph",
         "pconfig": {"id": "dark_per_arm_plot",
                     "title": f"{species}: proteins placed, by arm",
@@ -896,6 +897,25 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
     best_on = best.get("dark_reached_mask_on")
     worst_loss = max(pairs, key=lambda r: r.get("lost_to_masking") or 0)
 
+    # An arm that reaches every protein, placed and dark alike, has a region cutoff that
+    # lets everything through; its reach then says nothing about the dark set and must
+    # not be read as a rescue. Computed from by_combo, which carries the placed side.
+    placed_n = pick(gain, "placed_proteins")
+    saturated = sorted({
+        f"{r['alphabet']} k{r['ksize']}" for r in combos
+        if dark_n and placed_n and (r.get("dark_reached") or 0) >= 0.99 * dark_n
+        and (r.get("placed_reached") or 0) >= 0.99 * placed_n})
+    saturated_note = ""
+    if saturated:
+        saturated_note = (
+            "<b>Not a rescue: </b>" + ", ".join(f"<code>{a}</code>" for a in saturated)
+            + (" reaches" if len(saturated) == 1 else " reach")
+            + " at least 99% of the placed proteins and 99% of the dark ones alike, so at "
+              "this run's region cutoff the arm puts a region on nearly every protein in "
+              "the proteome. A reach that does not separate dark from placed says nothing "
+              "about the dark set; read that arm's bar as a cutoff that needs tightening, "
+              "not as a result.")
+
     write_section(out, "dark_kmerseek_mask", {
         "id": "dark_kmerseek_mask",
         "section_name": "kmerseek reach inside the dark set",
@@ -909,6 +929,7 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
                 "homology. BHF's flagship matches included polar-biased low-complexity "
                 "segments, which is why this pipeline runs the mask as a paired setting "
                 "rather than as a sweep dimension.",
+                saturated_note,
                 f"<b>Best arm with the mask ON: <code>{best['alphabet']} "
                 f"k{best['ksize']}</code></b>, reaching {num(best_on)} of {num(dark_n)} "
                 f"dark proteins ({pct((best_on / dark_n) if dark_n else None)}).",
@@ -1364,10 +1385,11 @@ def section_length(out: Path, species: str, df, summary, omitted: Omitted) -> No
 
 def section_disorder(out: Path, species: str, df, summary, omitted: Omitted) -> None:
     extras = [
-        "<b>Disorder is where this method does not win.</b> On the benchmark's disorder "
-        "axes the coarse-alphabet arms fall off faster than the profile and structure "
-        "baselines do, so a dark set that is mostly disordered is a limit on what any of "
-        "this can reach, not an opportunity.",
+        "<b>Disorder is not where this method gains ground.</b> On the QfO region "
+        "benchmark's disorder axis the coarse-alphabet arms sit well below the profile and "
+        "structure baselines in every disorder bin, and no arm of any kind does well on the "
+        "most disordered queries, so a dark set that is mostly disordered is a limit on what "
+        "any of this can reach, not an opportunity.",
         "<b>metapredict scores a residue 0 to 1</b>; the value binned here is the mean "
         "over each protein, so a protein with one long disordered loop and a folded domain "
         "lands mid-scale rather than at either end.",
