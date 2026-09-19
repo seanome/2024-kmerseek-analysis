@@ -101,7 +101,11 @@ def header_yaml(items: list[tuple[str, str]]) -> str:
     YAML written by hand: the scoring containers carry no PyYAML, and a list of quoted
     strings needs none. Every value is double-quoted, so colons and commas are safe."""
     def q(v) -> str:
-        return '"' + str(v).replace("\\", "\\\\").replace('"', '\\"') + '"'
+        # MultiQC renders these values as HTML and drops everything from a bare "<" on:
+        # "E <= 0.001; dark when none has" rendered as "E " until 2026-09-19. Comparison
+        # signs become the one-character symbols, and any other "<" is escaped.
+        v = str(v).replace("<=", "\u2264").replace(">=", "\u2265").replace("<", "&lt;")
+        return '"' + v.replace("\\", "\\\\").replace('"', '\\"') + '"'
     return "report_header_info:\n" + "".join(f"  - {q(k)}: {q(v)}\n" for k, v in items)
 
 

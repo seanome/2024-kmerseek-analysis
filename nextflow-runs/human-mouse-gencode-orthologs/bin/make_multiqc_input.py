@@ -79,6 +79,22 @@ def is_complete(r: dict) -> bool:
 
 # The three encoding families, in the colours the curves use for their members. HP has
 # six variants and one colour family; the box names the count rather than each one.
+# What a hit is, what m (the correction's divisor) counts, and what recall is over, for THIS
+# pipeline. The hp-v040 sibling searches with kmerseek 0.4.0's own --min-shared-kmers /
+# --max-pvalue and defines m as every comparison, so its copy of this block differs.
+# Until 2026-09-19 the report described total_hits as "at least 2 shared k-mers and p <= 0.05"
+# and, two sections later, as "pre-filtered to p < 0.001"; neither was what the evaluator
+# counts.
+HITS = {
+    "hit": "a human x mouse protein pair with a Poisson p-value of at most 0.05, the search's "
+           "own cutoff",
+    "m": "every pair the search reported at p \u2264 0.05, counted before the pre-filter",
+    "prefilter": "at least 2 shared k-mers and at least 100x the expected number of shared "
+                 "k-mers (about p below 0.001); the pre-filter is applied before correction so "
+                 "the evaluator fits in memory, and m still counts every reported pair",
+    "recall_over": "ortholog hits kept by the pre-filter",
+}
+
 FAMILIES = [
     ("hp", "HP alphabets", lambda e: e.startswith("hp"), ENCODING_COLORS["hp"]),
     ("dayhoff", "Dayhoff", lambda e: e == "dayhoff", ENCODING_COLORS["dayhoff"]),
@@ -88,9 +104,11 @@ FAMILIES = [
 # Every section id this script writes, in reading order. report_section_order is one
 # scale, so every id is listed. Each file here is its own MultiQC module (no parent_id),
 # and modules sort with the LARGEST order first, so the first id gets the largest number.
-SECTION_ORDER = ["overview", "metric_explainers", "sweep_completeness", "encoding_completion", "summary_table",
+# Reading order: what ran, then recall, precision and cost against k, then the full table
+# of numbers last, since it is the reference the three curves are drawn from.
+SECTION_ORDER = ["overview", "metric_explainers", "sweep_completeness", "encoding_completion",
                  "bh_recall_vs_ksize_mqc", "bh_precision_vs_ksize_mqc",
-                 "total_hits_vs_ksize_mqc"]
+                 "total_hits_vs_ksize_mqc", "summary_table"]
 
 
 def count_fasta(path: str | None) -> int | None:
@@ -181,8 +199,8 @@ def overview_flow_spec(f: dict) -> dict:
                     "title": "precision and recall after multiple-testing correction, alpha 0.05",
                     "sub": "Bonferroni, BH, BY and two-stage BH"},
         "report": {"x": 20, "y": 680, "w": 720, "h": 44, "icon": "summarize",
-                   "title": "this report: which combos completed, the metrics table, and precision, recall "
-                            "and hit count against k"},
+                   "title": "this report: which combos completed, then recall, precision and hit count "
+                            "against k, then the full table"},
     }
     fam_ids = [fam["id"] for fam in f["families"]]
     edges = [{"from": "q0", "to": "J1"}, {"from": "t0", "to": "J1"}]
@@ -226,8 +244,9 @@ def overview_details(f: dict) -> dict:
                          ["indexes built", f"{fd.num(f['n_attempted'])} (one per combo)"]],
                "links": [["What was done, and why", "overview"]]},
         "hits": {"title": "hits", "count": f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])} per combo",
-                 "text": "The search's own filters: at least 2 shared k-mers and a Poisson p-value "
-                         "of at most 0.05.",
+                 "text": f"A hit is {HITS['hit']}."
+                         + (f" Before correction the evaluator keeps {HITS['prefilter']}."
+                            if HITS["prefilter"] else ""),
                  "facts": [["hits per combo", f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])}"]],
                  "links": [["Search space size vs ksize", "total_hits_vs_ksize_mqc"]]},
         "key": {"title": "answer key: MGI/JAX ortholog pairs", "count": f"{fd.num(f['pairs'])} pairs",
@@ -245,8 +264,8 @@ def overview_details(f: dict) -> dict:
                                            ["BH recall vs ksize", "bh_recall_vs_ksize_mqc"],
                                            ["BH precision vs ksize", "bh_precision_vs_ksize_mqc"]]},
         "report": {"title": "this report", "count": "",
-                   "text": "Completion first, then the metrics table, then precision, recall and hit "
-                           "count against k, one line per encoding.",
+                   "text": "Completion first, then recall, precision and hit count against k, one "
+                           "line per encoding, then the full table of numbers.",
                    "facts": [], "links": [["Sweep completeness", "sweep_completeness"]]},
     }
     for fam in f["families"]:
@@ -287,18 +306,16 @@ def overview_control(f: dict) -> dict | None:
 
 def write_metric_explainers(out: Path) -> None:
     """How to read the metrics: the correction step as a picture, and what total_hits is."""
-    hits = ("<div class='mx'><h5>Search space size (total_hits)</h5><p class='def'>The number of "
-            "human x mouse protein pairs a combo reported at all, before any correction: every pair "
-            "with at least 2 shared k-mers and a Poisson p of at most 0.05. It is the m the correction "
-            "divides by, and a proxy for what the combo costs in compute and storage. A shorter k or a "
-            "coarser alphabet reports more pairs.</p></div>")
+    hits = (f"<div class='mx'><h5>Search space size (total_hits)</h5><p class='def'>The m the "
+            f"correction divides by: {HITS['m']}. It is also a proxy for what the combo costs in "
+            f"compute and storage. A shorter k or a coarser alphabet reports more pairs.</p></div>")
     cfg = {
         "id": "metric_explainers",
         "section_name": "How to read the metrics",
         "description": ("<p>Precision and recall in the tables below are read after multiple-testing "
                         "correction. The example is a toy; the tables carry the numbers.</p>"),
         "plot_type": "html",
-        "data": mx.bundle(mx.bh(alpha=0.05), hits),
+        "data": mx.bundle(mx.bh(alpha=0.05, m_words=HITS["m"], recall_over=HITS["recall_over"]), hits),
     }
     (out / "metric_explainers_mqc.json").write_text(json.dumps(cfg, indent=1))
 
@@ -314,21 +331,20 @@ def write_overview(out: Path, results: list[dict], stats: dict, n_human, n_mouse
         f"<b>Target: mouse GENCODE canonical proteins.</b> {fd.num(f['n_mouse'])} proteins, "
         f"indexed once per encoding and k.",
         f"<b>Search.</b> kmerseek, every human protein against the mouse index, once per "
-        f"encoding x k: {fam_txt}. A hit is a human x mouse protein pair with at least 2 "
-        f"shared k-mers and a Poisson p-value of at most 0.05 (the search's own filters); "
-        f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])} hits per combo.",
+        f"encoding x k: {fam_txt}. A hit is {HITS['hit']}; "
+        f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])} hits per combo."
+        + (f" Before scoring, the evaluator keeps {HITS['prefilter']}." if HITS["prefilter"] else ""),
         f"<b>Answer key: MGI/JAX ortholog pairs.</b> {fd.num(f['pairs'])} human-mouse gene "
         f"pairs from HOM_MouseHumanSequence.rpt over {fd.num(f['human_with_ortholog'])} human "
         f"genes, {fd.num(f['one_to_one'])} of them with exactly one mouse ortholog. A hit "
         f"is an ortholog when its gene pair is in the key.",
-        "<b>Score.</b> Every hit's Poisson p-value is corrected for multiple testing over "
-        "all hits of that combo, four ways (Bonferroni, BH, BY, two-stage BH), at alpha "
-        "0.05. Precision is the share of corrected hits that are orthologs. Recall is the "
-        "share of ortholog hits that survive correction, over the ortholog hits with "
-        "p below 0.05: it is recall among what the search reported, not among every MGI "
-        "pair.",
-        "<b>Report.</b> Which encoding x k combos completed, the metrics table, and "
-        "precision, recall and hit count against k, one line per encoding.",
+        f"<b>Score.</b> Every hit's Poisson p-value is corrected for multiple testing, "
+        f"four ways (Bonferroni, BH, BY, two-stage BH) at alpha 0.05, with m = {HITS['m']}. "
+        f"Precision is the share of corrected hits that are orthologs. Recall is the share "
+        f"of {HITS['recall_over']} that survive correction: it is recall among what the "
+        f"search reported, not among every MGI pair.",
+        "<b>Report.</b> Which encoding x k combos completed, then recall, precision and hit "
+        "count against k, one line per encoding, then the full table of numbers.",
     ]
     why = "".join(f"<li>{w}</li>" for w in [
         "<b>Which alphabet and which k.</b> The same query and target under every encoding "
@@ -555,8 +571,8 @@ def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
         out / "total_hits_vs_ksize_mqc.yaml", results,
         value_fn=lambda r: r.get("total_hits"),
         section_name="Search space size vs ksize",
-        description="Total human-mouse protein pairs tested (pre-filtered to poisson p<0.001 "
-                     "where noted in the underlying summary.txt) — proxy for compute/storage cost.",
+        description=(f"The m each correction divides by: {HITS['m']}. Also a proxy for "
+                     f"compute and storage cost."),
         ylab="total_hits",
         ylog=True,
     )
@@ -569,7 +585,8 @@ def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
                             f"{fam['n_complete']} of {fam['n_attempted']} combos completed" for fam in f["families"])),
         ("Ground truth", f"MGI/JAX HOM_MouseHumanSequence ortholog pairs: {fd.num(f['pairs'])} pairs over "
                          f"{fd.num(f['human_with_ortholog'])} human genes"),
-        ("Correction", "Bonferroni, BH, BY and two-stage BH over every hit's Poisson p-value, alpha 0.05"),
+        ("Correction", f"Bonferroni, BH, BY and two-stage BH over every hit's Poisson p-value, alpha 0.05, "
+                       f"m = {HITS['m']}"),
     ]))
 
     print(f"Wrote MultiQC input files to {out}/")
