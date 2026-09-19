@@ -93,11 +93,11 @@ num_datasets_plot_limit: 100000
 # across two modules). Numbers are spaced by 5 within a group and each group starts 200
 # above the last, so a section can be inserted without renumbering the file.
 report_section_order:
-  # MODULES first. The three custom-content modules (the main report, the alphabet
-  # block, the supplement) sort among themselves with the LARGEST order first, the
-  # reverse of how the sections inside a module sort. The main module is highest.
+  # MODULES first. The two custom-content modules (the main report, the supplement) sort
+  # among themselves with the LARGEST order first, the reverse of how the sections inside
+  # a module sort. The main module is highest. (The alphabet block was a third module,
+  # qfo_ceiling, until 2026-09-19; it is now a run of sections inside the main module.)
   qfo_region: { order: 1000 }
-  qfo_ceiling: { order: 900 }
   qfo_region_supp: { order: 800 }
 
   # 1. Read first: what was done, the arms at a glance, how to read the numbers, what the run concluded.
@@ -137,9 +137,9 @@ report_section_order:
   # 5. How far back in time, and how far apart in sequence. The pinned arm is named first because the sections after it mark it.
   qfo_canonical: { order: 900 }
   qfo_divergence_annotated: { order: 905 }
-  qfo_identity_pair_mya: { order: 910 }
-  qfo_identity_pair_pident: { order: 915 }
-  qfo_divergence: { order: 920 }
+  qfo_divergence: { order: 910 }
+  qfo_identity_pair_mya: { order: 915 }
+  qfo_identity_pair_pident: { order: 920 }
   qfo_identity: { order: 925 }
   qfo_identity_no_homolog: { order: 930 }
   qfo_tool_by_species_swissprot: { order: 935 }
@@ -203,44 +203,45 @@ report_section_order:
   qfo_kmer_spectra: { order: 1430 }
   qfo_kmer_spectra_table: { order: 1435 }
   qfo_kmer_spectra_lc: { order: 1440 }
-  # 8. Cost. In a run built without a trace most of these say so and stop; they sit last so the report does not open on three empty sections.
-  qfo_frontier: { order: 1500 }
-  qfo_timing_coverage: { order: 1505 }
-  qfo_capability: { order: 1510 }
-  qfo_search_cost: { order: 1515 }
-  qfo_search_cost_table: { order: 1520 }
-  qfo_cost_cpu_hours_per_search: { order: 1525 }
-  qfo_cost_queries_per_s: { order: 1530 }
-  qfo_res_cpu: { order: 1535 }
-  qfo_res_walltime: { order: 1540 }
-  qfo_res_throughput: { order: 1545 }
-  qfo_res_memory: { order: 1550 }
-  qfo_res_kmerseek_memory: { order: 1555 }
-  qfo_res_efficiency: { order: 1560 }
-  qfo_res_io: { order: 1565 }
-  qfo_res_status: { order: 1570 }
-  qfo_resources_missing: { order: 1575 }
-  qfo_run_summary: { order: 1580 }
-  # 9. Methods and citations.
-  qfo_citations: { order: 1700 }
-  # The alphabet block (module qfo_ceiling), in its own reading order: feature length,
-  # feature type, then recognition against placement averaged over k and at best k.
-  qfo_ceiling_length: { order: 10 }
-  qfo_ceiling_length_by_k: { order: 20 }
-  qfo_ceiling_feature_type: { order: 30 }
-  qfo_ceiling_feature_type_coverage: { order: 40 }
-  qfo_ceiling_feature_type_point: { order: 50 }
-  qfo_ceiling_crossover: { order: 60 }
-  qfo_ceiling_recognition: { order: 70 }
-  qfo_ceiling_recognition_k: { order: 80 }
-  qfo_ceiling_cardinality_swissprot: { order: 90 }
-  qfo_ceiling_cardinality_table_swissprot: { order: 100 }
-  qfo_ceiling_cardinality_pfamn: { order: 110 }
-  qfo_ceiling_cardinality_table_pfamn: { order: 120 }
-  qfo_ceiling_cardinality_mcsa: { order: 130 }
-  qfo_ceiling_cardinality_table_mcsa: { order: 140 }
-  qfo_ceiling_cardinality_pfam: { order: 150 }
-  qfo_ceiling_cardinality_table_pfam: { order: 160 }
-  qfo_alphabet_dose_response: { order: 170 }
-  qfo_alphabet_dose_response_table: { order: 180 }
-  qfo_ceiling_bpe: { order: 190 }
+  # 9. Cost. In a run built without a trace most of these say so and stop; they sit last so the report does not open on three empty sections.
+  qfo_frontier: { order: 1700 }
+  qfo_timing_coverage: { order: 1705 }
+  qfo_capability: { order: 1710 }
+  qfo_search_cost: { order: 1715 }
+  qfo_search_cost_table: { order: 1720 }
+  qfo_cost_cpu_hours_per_search: { order: 1725 }
+  qfo_cost_queries_per_s: { order: 1730 }
+  qfo_res_cpu: { order: 1735 }
+  qfo_res_walltime: { order: 1740 }
+  qfo_res_throughput: { order: 1745 }
+  qfo_res_memory: { order: 1750 }
+  qfo_res_kmerseek_memory: { order: 1755 }
+  qfo_res_efficiency: { order: 1760 }
+  qfo_res_io: { order: 1765 }
+  qfo_res_status: { order: 1770 }
+  qfo_resources_missing: { order: 1775 }
+  qfo_run_summary: { order: 1780 }
+  # 10. Methods and citations.
+  qfo_citations: { order: 1900 }
+  # 8. What a coarse alphabet keeps and loses: only kmerseek, cut by feature length,
+  #    feature type, and recognition against placement (averaged over k, then at best k).
+  qfo_ceiling_intro: { order: 1500 }
+  qfo_ceiling_length: { order: 1505 }
+  qfo_ceiling_length_by_k: { order: 1510 }
+  qfo_ceiling_feature_type: { order: 1515 }
+  qfo_ceiling_feature_type_coverage: { order: 1520 }
+  qfo_ceiling_feature_type_point: { order: 1525 }
+  qfo_ceiling_crossover: { order: 1530 }
+  qfo_ceiling_recognition: { order: 1535 }
+  qfo_ceiling_recognition_k: { order: 1540 }
+  qfo_ceiling_cardinality_swissprot: { order: 1545 }
+  qfo_ceiling_cardinality_table_swissprot: { order: 1550 }
+  qfo_ceiling_cardinality_pfamn: { order: 1555 }
+  qfo_ceiling_cardinality_table_pfamn: { order: 1560 }
+  qfo_ceiling_cardinality_mcsa: { order: 1565 }
+  qfo_ceiling_cardinality_table_mcsa: { order: 1570 }
+  qfo_ceiling_cardinality_pfam: { order: 1575 }
+  qfo_ceiling_cardinality_table_pfam: { order: 1580 }
+  qfo_alphabet_dose_response: { order: 1585 }
+  qfo_alphabet_dose_response_table: { order: 1590 }
+  qfo_ceiling_bpe: { order: 1595 }

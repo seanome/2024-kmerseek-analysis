@@ -336,8 +336,10 @@ params.min_overlap = 0.5
 // time/CPU/memory, in the sections built by bin/build_multiqc_inputs.py.
 //
 // The frontier and the curve sections need ONE truth set, since a number averaged across
-// Pfam and Swiss-Prot has no interpretation. Default is whichever of them is present,
-// preferring Swiss-Prot because Pfam is circular with the profile baselines.
+// Pfam and Swiss-Prot has no interpretation. Default is Pfam when present (since
+// 2026-09-19; Swiss-Prot before that): every proteome carries a full Pfam map, whereas
+// Swiss-Prot coverage follows curation depth and ranks Ciona by its 23 reviewed proteins.
+// Pfam's circularity with the profile baselines is measured by the hmmscan ceiling.
 params.skip_multiqc = false
 params.multiqc_primary_truth = null
 params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
