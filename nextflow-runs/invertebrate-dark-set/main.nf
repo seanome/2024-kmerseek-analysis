@@ -111,6 +111,11 @@ params.max_query_pvalue = 0.05
 params.min_region_score = 1.3
 params.index_cache        = null
 params.with_kmerseek      = false
+// A null for kmerseek reach: the dark proteins with their residues shuffled (same length,
+// same composition, no homology), searched with the same combos. What kmerseek reaches
+// on those is what it reaches by composition alone. Off by default because it doubles
+// the search count over the dark set; needs --with_kmerseek.
+params.with_shuffle_control = false
 
 // Memory for the two kmerseek processes, sized per task rather than as a flat ladder.
 // The index is sized from the keyspace; the SEARCH is sized from the index's own k-mer
@@ -538,8 +543,12 @@ process kmerseekSearch {
     tuple val(species), val(clade), path(chunk), val(alphabet), val(ksize), val(lowcomp), path(index_dir)
 
     output:
+    // The queries that got any region, and beside it each query's best region score, so
+    // the gain step can count reach at a stricter cutoff than the run's own without
+    // re-reading the regions.
     tuple val(species), val(alphabet), val(ksize), val(lowcomp),
-          path("${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}.queries.txt"), emit: queries
+          path("${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}.queries.txt"),
+          path("${chunk.simpleName}.${alphabet}.k${ksize}.lc${lowcomp}.query_scores.tsv"), emit: queries
     path "*.regions.csv.zst", emit: regions
 
     script:
@@ -569,15 +578,25 @@ process kmerseekSearch {
     # on a bare comma is safe only because splitQuery rewrote every header to the bare
     # accession: kmerseek writes the WHOLE header into query_name, and a QfO description
     # line carries commas.
+    # query_scores.tsv is each query's best region_poisson_score (the column
+    # --min-region-score thresholds) and that region's start and end, found by header
+    # name the same way.
     if [ -s ${slug}.regions.csv.zst ]; then
         zstd -dc ${slug}.regions.csv.zst \\
-        | awk -F, 'NR==1 { for (i=1;i<=NF;i++) if (\$i=="query_name") c=i;
+        | awk -F, 'NR==1 { for (i=1;i<=NF;i++) { if (\$i=="query_name") c=i;
+                                                 if (\$i=="region_poisson_score") r=i;
+                                                 if (\$i=="region_start") a=i;
+                                                 if (\$i=="region_end") b=i }
                            if (!c) { print "no query_name column" > "/dev/stderr"; exit 3 }
+                           if (!r) { print "no region_poisson_score column" > "/dev/stderr"; exit 3 }
                            next }
-                   c { print \$c }' \\
-        | sort -u > ${slug}.queries.txt
+                   { if (!(\$c in best) || \$r+0 > best[\$c]) { best[\$c]=\$r+0; s[\$c]=\$a; e[\$c]=\$b } }
+                   END { for (q in best) printf "%s\\t%s\\t%s\\t%s\\n", q, best[q], s[q], e[q] }' \\
+        | sort > ${slug}.query_scores.tsv
+        cut -f1 ${slug}.query_scores.tsv > ${slug}.queries.txt
     else
         : > ${slug}.queries.txt
+        : > ${slug}.query_scores.tsv
     fi
     """
 
@@ -586,6 +605,39 @@ process kmerseekSearch {
     """
     printf 'query_name,target_name\\n${species}_B,Q6GZX4\\n' | zstd -o ${slug}.regions.csv.zst
     echo ${species}_B > ${slug}.queries.txt
+    printf '${species}_B\\t4.2\\t3\\t12\\n' > ${slug}.query_scores.tsv
+    """
+}
+
+
+process shuffleDarkQueries {
+    /*
+     * The dark proteins with their residues shuffled, chunked like the real proteome.
+     * Searched under the species label "<species>.shuffled" so the kmerseek outputs of
+     * the two cannot be confused; the gain step maps them back.
+     */
+    tag "${species}"
+    label 'python_scoring'
+    cpus 1
+    memory '4 GB'
+
+    input:
+    tuple val(species), path(query), path(dark_parquet)
+
+    output:
+    tuple val(species), path("shuffled/chunk_*.fasta"), emit: chunks
+
+    script:
+    """
+    set -euo pipefail
+    shuffle_dark_queries.py --query ${query} --dark ${dark_parquet} \\
+        --outdir shuffled --chunk-size ${params.query_chunk_size}
+    """
+
+    stub:
+    """
+    mkdir -p shuffled
+    printf '>${species}_B\\nQAGNLDEESILKQETSM\\n' > shuffled/chunk_0000.fasta
     """
 }
 
@@ -596,7 +648,12 @@ process kmerseekDarkGain {
     publishDir "${params.outdir}/${species}", mode: 'copy'
 
     input:
-    tuple val(species), path(query), path(dark_parquet), path(query_lists, stageAs: 'queries/*')
+    // query_lists holds both the .queries.txt and the .query_scores.tsv of every chunk
+    // and combo; shuffled_lists the same for the shuffled dark proteins, or an empty
+    // list when --with_shuffle_control is off.
+    tuple val(species), path(query), path(dark_parquet),
+          path(query_lists, stageAs: 'queries/*'), path(shuffled_lists, stageAs: 'shuffled/*')
+    path registry, stageAs: 'species_metadata.json'
 
     output:
     tuple val(species),
@@ -604,11 +661,19 @@ process kmerseekDarkGain {
           path("${species}_kmerseek_dark_gain.json")
 
     script:
+    // Reach is also counted at 3 and 10 (region p <= 1e-3 and 1e-10) beside the run's own
+    // cutoff, so a 100% at the run cutoff can be read against a stricter one.
+    def cuts = ([params.min_region_score as double, 3.0, 10.0] as Set).sort().join(' ')
     """
     set -euo pipefail
+    mkdir -p shuffled
     kmerseek_dark_gain.py \\
         --dark ${dark_parquet} --query ${query} --species ${species} \\
         --queries queries/*.queries.txt \\
+        --scores \$(ls queries/*.query_scores.tsv 2>/dev/null) \\
+        --thresholds ${cuts} \\
+        --shuffled \$(ls shuffled/*.queries.txt 2>/dev/null) \\
+        --registry ${registry} \\
         --out ${species}_kmerseek_dark_gain.parquet \\
         --summary-out ${species}_kmerseek_dark_gain.json
     """
@@ -629,6 +694,8 @@ process computeDarkSet {
 
     input:
     tuple val(species), path(query), path(hits, stageAs: 'hits/*')
+    // The registry names the focus proteins (BHF for Botryllus) the report follows.
+    path registry, stageAs: 'species_metadata.json'
 
     output:
     tuple val(species), path("${species}_dark_set.parquet"), path("${species}_dark_summary.json")
@@ -639,6 +706,7 @@ process computeDarkSet {
     compute_dark_set.py \\
         --query ${query} --species ${species} \\
         --evalue-call ${params.evalue_call} \\
+        --registry ${registry} \\
         --hits hits/*.tsv.gz \\
         --out ${species}_dark_set.parquet \\
         --summary-out ${species}_dark_summary.json
@@ -700,7 +768,10 @@ def resolveSpecies() {
                           "nor qfo_proteome+qfo_subdir+taxon_id; pass --query_fasta"
         def query = file(qpath)
         if (!query.exists()) error "query proteome missing for ${sp}: ${query}"
-        [label: sp, clade: clade, query: query]
+        // Proteins followed through the report as worked examples (BHF for Botryllus),
+        // from the registry: accession -> what it is. Empty for a species with none.
+        def focus = (row.focus_proteins ?: [:]) as Map
+        [label: sp, clade: clade, query: query, name: (row.name ?: sp), focus: focus]
     }
 }
 
@@ -816,7 +887,8 @@ workflow darkSet {
         .groupTuple()
         .map { k, fs -> tuple(k.getGroupTarget(), fs) }
 
-    dark = computeDarkSet(proteome.join(hits))
+    registry_file = Channel.value(file(params.registry))
+    dark = computeDarkSet(proteome.join(hits), registry_file)
 
     // Everything the report can draw besides the headline, as (species, file). Each
     // optional arm mixes its own products in where it runs, so a run without that arm
@@ -866,8 +938,28 @@ workflow darkSet {
             true
         }
 
-        ks = kmerseekSearch(
-            chunks.combine(runnable, by: 0).map { cl, sp, c, a, k, lc, i -> tuple(sp, cl, c, a, k, lc, i) })
+        search_in = chunks.combine(runnable, by: 0)
+            .map { cl, sp, c, a, k, lc, i -> tuple(sp, cl, c, a, k, lc, i) }
+
+        // The shuffled null: the dark proteins re-searched with their residues shuffled,
+        // through the SAME kmerseekSearch call (a process cannot be invoked twice) under
+        // the label "<species>.shuffled", so nothing downstream can mix the two. The
+        // dark set exists only after the three sequence searches, so these chunks join
+        // the search channel late; that is ordinary dataflow.
+        if (params.with_shuffle_control) {
+            shuffled = shuffleDarkQueries(dark_with_query)
+            n_shuffled_chunks = shuffled.chunks.map { sp, cs -> tuple(sp, asList(cs).size()) }
+            sh_chunks = shuffled.chunks
+                .flatMap { sp, cs -> asList(cs).collect { c -> tuple(sp, c) } }
+                .combine(Channel.fromList(SPECIES.collect { s -> tuple(s.label, s.clade) }), by: 0)
+                .map { sp, c, cl -> tuple(cl, "${sp}.shuffled".toString(), c) }
+            search_in = search_in.mix(
+                sh_chunks.combine(runnable, by: 0)
+                    .map { cl, sp, c, a, k, lc, i -> tuple(sp, cl, c, a, k, lc, i) })
+        }
+
+        ks = kmerseekSearch(search_in)
+        real_queries = ks.queries.filter { it[0] !=~ /\.shuffled$/ }
 
         // How many combos each species actually searches, AFTER the skip above. The
         // groupKey size below has to be exact: groupTuple discards a group that never
@@ -885,15 +977,30 @@ workflow darkSet {
         // Every chunk and every combo of a species reaches the gain step together: a
         // protein counts as rescued only against the whole dark set, and the dark set is
         // proteome-wide. Closed per species by groupKey, as for the hits above.
-        q_lists = ks.queries
-            .map { sp, _a, _k, _lc, f -> tuple(sp, f) }
+        q_lists = real_queries
+            .map { sp, _a, _k, _lc, f, sc -> tuple(sp, [f, sc]) }
             .combine(n_chunks, by: 0)
             .combine(n_combos, by: 0)
-            .map { sp, f, n, m -> tuple(groupKey(sp, n * m), f) }
+            .map { sp, fs, n, m -> tuple(groupKey(sp, n * m), fs) }
             .groupTuple()
-            .map { k, fs -> tuple(k.getGroupTarget(), fs) }
+            .map { k, fs -> tuple(k.getGroupTarget(), fs.flatten()) }
 
-        gain = kmerseekDarkGain(dark_with_query.join(q_lists))
+        // The shuffled lists, grouped the same way and joined back on the real species
+        // label; an empty list per species when the control is off, so the gain step's
+        // input has one shape.
+        if (params.with_shuffle_control) {
+            sh_lists = ks.queries.filter { it[0] =~ /\.shuffled$/ }
+                .map { sp, _a, _k, _lc, f, _sc -> tuple(sp.replaceFirst(/\.shuffled$/, ''), f) }
+                .combine(n_shuffled_chunks, by: 0)
+                .combine(n_combos, by: 0)
+                .map { sp, f, n, m -> tuple(groupKey(sp, n * m), f) }
+                .groupTuple()
+                .map { k, fs -> tuple(k.getGroupTarget(), fs) }
+        } else {
+            sh_lists = dark_with_query.map { sp, _q, _dp -> tuple(sp, []) }
+        }
+
+        gain = kmerseekDarkGain(dark_with_query.join(q_lists).join(sh_lists), registry_file)
         report_extra = report_extra.mix(gain.flatMap { sp, pq, js -> [tuple(sp, pq), tuple(sp, js)] })
     }
 

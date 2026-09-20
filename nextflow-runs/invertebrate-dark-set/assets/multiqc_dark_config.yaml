@@ -7,18 +7,13 @@
 # Section ids here must match the ids that script writes. An id listed but not produced is
 # skipped with a debug message, which is what makes the optional arms safe to list.
 
+# The title, the subtitle and the first screen (intro_text) are WRITTEN BY THE BUILDER into
+# multiqc_in/report_header.yaml, which darkMultiqcReport passes as a later --config: the
+# title names the species (one report per species, and this file cannot know which), and
+# the first screen carries the run's numbers, which a line typed here cannot keep current.
+# The title below is the fallback for a report built without a registry.
 title: "Invertebrate dark set"
 subtitle: "The proteins phmmer, jackhmmer and mmseqs2 all fail to place, and what kmerseek reaches inside them"
-intro_text: >
-  The dark set is every protein in an invertebrate proteome that three sequence searches
-  (phmmer, jackhmmer, mmseqs2) <i>all</i> fail to place into reviewed Swiss-Prot with the
-  query's own clade removed. It is the only part of the proteome where kmerseek can add
-  anything, and it needs no answer key: "no arm hit this protein" is a property of the
-  searches alone, so it can be measured on a species with no curated entries at all.
-  <br><br>
-  The first section says what was run, with this run's numbers, why it was built this
-  way, and how the data flows from the two inputs to the panels. Every panel after it is
-  one step of that flow.
 
 report_comment: >
   The low-complexity mask is reported as a PAIR, on and off, in every panel that touches
@@ -81,5 +76,8 @@ report_section_order:
   # Both are optional arms; a run without them omits the panel and says so at 60.
   dark_length: { order: 40 }
   dark_disorder: { order: 50 }
+  # One protein followed through every panel above (the registry's focus_proteins; BHF
+  # for Botryllus). After the panels it reads back to.
+  dark_focus: { order: 55 }
   # What this run could not build. Last, because it is a caveat on everything above.
   dark_missing: { order: 60 }

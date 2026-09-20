@@ -39,6 +39,9 @@ process buildDarkMultiqcInputs {
     // into the container, and the script finds it through PYTHONPATH below.
     path flow_module, stageAs: 'flow_diagram.py'
     path explainers_module, stageAs: 'metric_explainers.py'
+    // The registry: the species' name for the title and prose, and its focus proteins
+    // (BHF for Botryllus), the worked examples the report follows.
+    path registry, stageAs: 'species_metadata.json'
 
     output:
     tuple val(species), path("multiqc_in"), emit: sections
@@ -81,6 +84,7 @@ process buildDarkMultiqcInputs {
         --dark-summary      ${dark_summary} \\
         --reference-summary ${reference_summary} \\
         --run-params        run_params.json \\
+        --registry          ${registry} \\
         --extra-dir         extras \\
         --outdir            multiqc_in
     """
@@ -150,7 +154,8 @@ workflow darkReportFrom {
     main:
     flow_module = Channel.value(file("${projectDir}/../shared/flow_diagram.py"))
     explainers  = Channel.value(file("${projectDir}/../shared/metric_explainers.py"))
-    sections = buildDarkMultiqcInputs(report_ch, flow_module, explainers).sections
+    registry    = Channel.value(file(params.registry))
+    sections = buildDarkMultiqcInputs(report_ch, flow_module, explainers, registry).sections
     report = darkMultiqcReport(
         sections.map { sp, dir -> tuple(sp, dir, file(params.multiqc_dark_config)) })
 

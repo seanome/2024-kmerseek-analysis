@@ -72,7 +72,11 @@ SHERLOCK_CLONE_DIR := $(SHERLOCK_CLONE)/nextflow-runs/invertebrate-dark-set
 SPECIES ?=
 NF_ARGS ?=
 WITH_KMERSEEK ?=
-KMERSEEK_ARGS := $(if $(WITH_KMERSEEK),--with_kmerseek true,)
+# WITH_SHUFFLE=1 adds the null for kmerseek reach: the dark proteins with their residues
+# shuffled, searched with the same combos. Doubles the search count over the dark set.
+WITH_SHUFFLE ?=
+KMERSEEK_ARGS := $(if $(WITH_KMERSEEK),--with_kmerseek true,) \
+                 $(if $(WITH_SHUFFLE),--with_shuffle_control true,)
 MINI_N  ?= 200
 
 # What the driver job, the trace files and (for the ladder) the launch directory are named
@@ -127,7 +131,7 @@ help:
 	@echo "  unlock-indexes          make them writable again, to delete or rebuild one"
 	@echo "  status-dark-set         SPECIES=<...>  did it end, what killed it, what it said"
 	@echo "                          add HISTORY=1 for one line per past run"
-	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
+	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm, WITH_SHUFFLE=1 for its shuffled null"
 	@echo "  multiqc-dark-set        SPECIES=<...>  re-render the report on a finished run"
 	@echo
 	@echo "  run-ladder-sweep-sbatch  the nine midi-plus QfO species, every alphabet x ksize"

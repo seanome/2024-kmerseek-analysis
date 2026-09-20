@@ -374,6 +374,10 @@
       "Styelidae",
       "Botryllus"
     ],
-    "_ladder_provenance": "constructed, not measured: 0 reviewed Swiss-Prot entries for taxon 30301, so there is no OC line to read. Shares ciona's prefix through Ascidiacea."
+    "_ladder_provenance": "constructed, not measured: 0 reviewed Swiss-Prot entries for taxon 30301, so there is no OC line to read. Shares ciona's prefix through Ascidiacea.",
+    "focus_proteins": {
+      "FUN008084_FUN008084": "BHF, the Botryllus histocompatibility factor: the protein whose kmerseek prediction the Voskoboynik lab tested"
+    },
+    "_focus_note": "focus_proteins are followed through the dark-set report as worked examples: placed or dark per arm, length, disorder, and kmerseek reach per setting. Keyed by the bare accession the proteome's headers are cut to."
   }
 }

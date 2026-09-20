@@ -56,6 +56,14 @@ def query_accessions(fasta: Path) -> list[str]:
     return accs
 
 
+def focus_proteins(registry: Path | None, species: str) -> dict[str, str]:
+    """accession -> what it is, from the registry row's focus_proteins; {} without one."""
+    if registry is None or not registry.exists():
+        return {}
+    row = json.loads(registry.read_text()).get(species) or {}
+    return dict(row.get("focus_proteins") or {})
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -63,6 +71,10 @@ def main() -> None:
     ap.add_argument("--species", required=True)
     ap.add_argument("--hits", type=Path, nargs="+", required=True)
     ap.add_argument("--evalue-call", type=float, default=1e-3)
+    ap.add_argument("--registry", type=Path, default=None,
+                    help="species_metadata.json; its focus_proteins for --species are "
+                         "followed through the report, so their per-arm best E-value "
+                         "and placed/dark call are written into the summary")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--summary-out", type=Path, default=None)
     args = ap.parse_args()
@@ -104,6 +116,20 @@ def main() -> None:
 
     total = proteome.height
     n_dark = dark.height
+    # The focus proteins: for each, whether it is placed, and every arm's best E-value
+    # against it (None where the arm reported nothing at the permissive cutoff).
+    focus = {}
+    for acc, what in focus_proteins(args.registry, args.species).items():
+        mine = hits.filter(pl.col("query") == acc)
+        arms = {}
+        for arm in sorted(hits["arm"].unique().to_list()):
+            best = mine.filter(pl.col("arm") == arm)["evalue"].min()
+            arms[arm] = {"best_evalue": (float(best) if best is not None else None),
+                         "placed": bool(best is not None and best <= args.evalue_call)}
+        focus[acc] = {"what": what, "in_proteome": acc in accs,
+                      "placed": any(a["placed"] for a in arms.values()),
+                      "per_arm": arms}
+
     summary = {
         "species": args.species,
         "proteins_in_proteome": total,
@@ -113,6 +139,7 @@ def main() -> None:
         "evalue_call": args.evalue_call,
         "proteins_placed_per_arm": per_arm,
         "raw_hit_rows": hits.height,
+        "focus_proteins": focus,
     }
     print(json.dumps(summary, indent=2))
     print(f"\n{args.species}: {n_dark} of {total} proteins ({100 * n_dark / total:.1f}%) "

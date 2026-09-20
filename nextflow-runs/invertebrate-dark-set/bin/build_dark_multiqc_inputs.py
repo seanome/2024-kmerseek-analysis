@@ -51,6 +51,21 @@ except ImportError:  # pragma: no cover - the by-hand path
 
 PARENT_ID = "invertebrate_dark_set"
 PARENT_NAME = "Invertebrate dark set"
+
+# The species' name in prose (Botryllus schlosseri), from the registry row; the label
+# (botryllus) stays in plot titles, table keys and file names. Set once in main().
+SPECIES_NAME: str | None = None
+
+
+def sp_name(species: str) -> str:
+    """The species for a sentence: the binomial in italics, or the label."""
+    return f"<i>{SPECIES_NAME}</i>" if SPECIES_NAME else species
+
+
+def registry_row(registry: Path | None, species: str) -> dict:
+    if registry is None or not registry.exists():
+        return {}
+    return dict(json.loads(registry.read_text()).get(species) or {})
 # The module's own intro line. Without one MultiQC reuses the first section's description
 # as the module description, so the first panel's text appeared twice in a row.
 PARENT_DESCRIPTION = ("One report per species: what was done, how much of the proteome no "
@@ -502,10 +517,190 @@ def length_control(by_len: dict) -> dict | None:
     return {"label": "Count only proteins at least this long", "options": options}
 
 
+# --- the first screen -----------------------------------------------------------------
+
+def best_pair(gain: dict | None) -> dict | None:
+    pairs = pick(gain, "mask_pairs", default=[]) or []
+    return max(pairs, key=lambda r: r.get("dark_reached_mask_on") or 0) if pairs else None
+
+
+def combo_row(gain: dict | None, alphabet: str, ksize: int, mask: bool) -> dict | None:
+    for r in pick(gain, "by_combo", default=[]) or []:
+        if (r.get("alphabet"), r.get("ksize"), bool(r.get("low_complexity_mask"))) == (alphabet, ksize, mask):
+            return r
+    return None
+
+
+def alphabet_words(gain: dict | None) -> str:
+    """'hp_thomas_dill2: 2 classes, hydrophobic and polar; protein20: no grouping'."""
+    names = sorted({r["alphabet"] for r in pick(gain, "by_combo", default=[]) or []
+                    if r.get("alphabet")})
+    parts = []
+    for a in names:
+        n = int(a.rstrip("0123456789") != a and a[len(a.rstrip("0123456789")):] or 0)
+        if n >= 20:
+            parts.append(f"<code>{a}</code>: no grouping, all 20 amino acids")
+        elif a.startswith("hp_") and n:
+            parts.append(f"<code>{a}</code>: {n} classes, hydrophobic and polar")
+        elif n:
+            parts.append(f"<code>{a}</code>: {n} classes")
+        else:
+            parts.append(f"<code>{a}</code>")
+    return "; ".join(parts)
+
+
+def first_screen_html(species: str, summary: dict, ref: dict | None, clade_txt: str,
+                      run: dict, gain: dict | None, length_summary: dict | None,
+                      disorder_summary: dict | None, by_len: dict,
+                      registry: dict | None) -> str:
+    """What kmerseek is, the question, the answer with its numbers, what kmerseek reaches
+    and the caveat, why the clade is removed, the focus protein, and a reading order."""
+    name = sp_name(species)
+    total = pick(summary, "proteins_in_proteome")
+    dark = pick(summary, "proteins_dark")
+    frac = pick(summary, "fraction_dark")
+    evalue = pick(summary, "evalue_call")
+    kept = pick(ref, "entries_kept")
+    excluded = pick(ref, "entries_excluded")
+    own = pick(registry or {}, "swissprot_reviewed")
+
+    b100 = by_len.get(100) if by_len else None
+    at100 = (b100["dark"] / b100["kept"]) if b100 and b100.get("kept") else None
+    answer = f"{pct(frac)} of the proteome is dark: {num(dark)} of {num(total)} proteins."
+    if at100 is not None:
+        answer += (f" Counting only proteins of at least 100 residues it is {pct(at100)}; "
+                   f"the difference is short gene models, which are dark because there is "
+                   f"little to align.")
+    medians = []
+    if length_summary:
+        d, q = pick(length_summary, "dark", default={}), pick(length_summary, "placed", default={})
+        if pick(d, "median") is not None and pick(q, "median") is not None:
+            word = "shorter" if float(pick(d, "median")) < float(pick(q, "median")) else "longer"
+            medians.append(f"{word} than placed ones (median {float(pick(d, 'median')):.0f} "
+                           f"against {float(pick(q, 'median')):.0f} residues)")
+    if disorder_summary:
+        d, q = pick(disorder_summary, "dark", default={}), pick(disorder_summary, "placed", default={})
+        if pick(d, "median") is not None and pick(q, "median") is not None:
+            word = "more" if float(pick(d, "median")) > float(pick(q, "median")) else "less"
+            medians.append(f"{word} disordered (median metapredict score "
+                           f"{float(pick(d, 'median')):.3f} against "
+                           f"{float(pick(q, 'median')):.3f}, on a 0 to 1 scale)")
+    if medians:
+        answer += " Dark proteins are " + " and ".join(medians) + "."
+
+    reach = ""
+    best = best_pair(gain)
+    if best:
+        dark_n = pick(gain, "dark_proteins") or dark
+        on, off = best.get("dark_reached_mask_on"), best.get("dark_reached_mask_off")
+        alpha = alphabet_words(gain)
+        row_on = combo_row(gain, best["alphabet"], best["ksize"], True)
+        placed_n = pick(gain, "placed_proteins")
+        reach = (f"With <code>{best['alphabet']}</code> at k={best['ksize']}, kmerseek "
+                 f"reports a region on {num(on)} of the {num(dark_n)} dark proteins "
+                 f"({pct(on / dark_n if dark_n else None)}) with the low-complexity mask "
+                 f"on, {num(off)} with it off. That is reach, not accuracy: it says the "
+                 f"search returns something for a protein, not that the family label "
+                 f"would be right.")
+        if dark_n and on is not None and on >= 0.99 * dark_n:
+            reach += (" At 100% it also says this setting is too permissive to be "
+                      "informative on its own.")
+        if row_on and row_on.get("placed_reached") is not None and placed_n:
+            reach += (f" The same setting reaches {pct(row_on['placed_reached'] / placed_n)} "
+                      f"of the placed proteins, the control for whether reach separates "
+                      f"dark from placed at all.")
+        else:
+            reach += " The control, the same count inside the placed set, is not in this run."
+        if not pick(gain, "has_shuffled_control"):
+            reach += (" The shuffled-sequence control (the same search on the dark proteins "
+                      "with their residues shuffled) is not in this run.")
+        else:
+            sh = row_on.get("shuffled_dark_reached") if row_on else None
+            if sh is not None and dark_n:
+                reach += (f" On the same proteins with their residues shuffled it reaches "
+                          f"{pct(sh / dark_n)}, which is what composition alone gives.")
+        others = [r for r in pick(gain, "mask_pairs", default=[]) or []
+                  if (r["alphabet"], r["ksize"]) != (best["alphabet"], best["ksize"])]
+        if others:
+            o = others[0]
+            reach += (f" <code>{o['alphabet']}</code> at k={o['ksize']} reaches "
+                      f"{num(o.get('dark_reached_mask_on'))} dark proteins "
+                      f"({pct((o.get('dark_reached_mask_on') or 0) / dark_n if dark_n else None)}), "
+                      f"{num(o.get('dark_reached_mask_off'))} with the mask off.")
+        reach = (f"<p><b>What kmerseek reaches inside the dark set, and the caveat.</b> "
+                 f"{reach}</p>")
+        alphabets = f" ({alpha})" if alpha else ""
+    else:
+        alphabets = ""
+
+    own_txt = (f" {name}'s own {num(own)} reviewed entries are among them, so a protein "
+               f"cannot be placed by hitting itself." if own else
+               f" {name} itself has no reviewed Swiss-Prot entry, so the entries removed "
+               f"are its relatives'.")
+    n_all = (num(kept + excluded) if kept is not None and excluded is not None
+             else "the reviewed")
+    clade = (f"<p><b>Why the target has {clade_txt} removed.</b> All {num(excluded)} "
+             f"reviewed Swiss-Prot entries from the query's own clade are taken out of the "
+             f"{n_all} entries, so every hit has to come from outside that clade.{own_txt} "
+             f"The same is done for every species this pipeline runs, which is what makes "
+             f"their dark fractions comparable.</p>")
+
+    focus = ""
+    for acc, f in (pick(summary, "focus_proteins", default={}) or {}).items():
+        what = f.get("what") or acc
+        if not f.get("in_proteome", True):
+            focus += f"<p><b>{what}</b> (<code>{acc}</code>) is not in this proteome.</p>"
+            continue
+        arms = f.get("per_arm") or {}
+        placed_by = [a for a, v in arms.items() if v.get("placed")]
+        call = (f"placed by {', '.join(placed_by)}" if placed_by else
+                "dark: none of phmmer, jackhmmer and mmseqs2 places it")
+        g = (pick(gain, "focus_proteins", default={}) or {}).get(acc, {})
+        hits = [(k, v) for k, v in (g.get("per_combo") or {}).items()
+                if v.get("reached") and v.get("low_complexity_mask")]
+        km = ""
+        if g:
+            if hits:
+                k, v = max(hits, key=lambda kv: kv[1].get("best_region_score") or 0)
+                where = (f" at residues {v['best_region'][0]}-{v['best_region'][1]}"
+                         if v.get("best_region") else "")
+                km = (f"; kmerseek reaches it with the mask on under {len(hits)} of "
+                      f"{sum(1 for v2 in g['per_combo'].values() if v2.get('low_complexity_mask'))} "
+                      f"settings, best <code>{k.rsplit(' lc', 1)[0]}</code>{where}")
+            else:
+                km = "; no kmerseek setting with the mask on reaches it"
+        focus += (f"<p><b>{what}</b> (<code>{acc}</code>) is {call}{km}. It is followed "
+                  f"through every panel in <a href='#dark_focus'>One protein followed "
+                  f"through</a>.</p>")
+
+    return (
+        f"<p><b>What kmerseek is.</b> A search tool that first groups the 20 amino acids "
+        f"into a few classes{alphabets} and then looks for runs of <i>k</i> consecutive "
+        f"classes that two proteins share, instead of aligning residues. The idea is that "
+        f"a domain keeps its pattern of hydrophobic and polar positions long after the "
+        f"residues themselves have changed.</p>"
+        f"<p><b>The question this report answers.</b> How much of the {name} proteome can "
+        f"no sequence search place into a curated database, and what does kmerseek see "
+        f"inside that part? A protein is <b>placed</b> when phmmer, jackhmmer or mmseqs2 "
+        f"finds it a hit at E &le; {evalue_txt(evalue)} in reviewed Swiss-Prot; it is "
+        f"<b>dark</b> when none of the three does. That call needs no answer key, so it "
+        f"can be made for a species with no curated entries of its own.</p>"
+        f"<p><b>The answer.</b> {answer}</p>"
+        + reach + clade + focus
+        + "<p><b>Read in this order:</b> <a href='#dark_headline'>How much of the proteome "
+          "is dark</a>, <a href='#dark_headline_by_length'>by minimum length</a>, "
+          "<a href='#dark_length'>length</a> and <a href='#dark_disorder'>disorder</a>, "
+          "then <a href='#dark_kmerseek_mask'>kmerseek reach</a>. The low-complexity mask "
+          "is always shown as a pair, on and off, because a protein reached only with the "
+          "mask off was found through a low-complexity stretch, which is composition "
+          "rather than homology.</p>")
+
+
 def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
                      clade: str | None, run: dict, gain: dict | None,
                      length_df, disorder_df, length_summary: dict | None = None,
-                     disorder_summary: dict | None = None) -> None:
+                     disorder_summary: dict | None = None,
+                     registry: dict | None = None) -> None:
     total = pick(summary, "proteins_in_proteome")
     placed = pick(summary, "proteins_placed_by_any_arm")
     dark = pick(summary, "proteins_dark")
@@ -534,7 +729,7 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
     by_len = dark_by_length(length_df)
 
     steps = [
-        f"<b>Query: the {species} proteome.</b> {num(total)} proteins, split into "
+        f"<b>Query: the {sp_name(species)} proteome.</b> {num(total)} proteins, split into "
         f"{num(n_chunks)} chunks of {num(chunk)} so each search is one job. Headers are "
         f"cut to the bare accession first, because the three searches and kmerseek each "
         f"report a UniProt header differently and the dark call needs one key. The "
@@ -578,8 +773,8 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
         "more of a proteome is a claim about this set of proteins and no other.",
         f"<b>It needs no answer key.</b> Whether a family label is right cannot be scored "
         f"for a species with no curated entries, but \"no arm hit this protein\" is a "
-        f"property of the searches alone. That is why this number exists for {species} "
-        f"before any structural key does.",
+        f"property of the searches alone. That is why this number exists for "
+        f"{sp_name(species)} before any structural key does.",
         "<b>The clade is removed so a hit has to come from outside it.</b> A species with "
         "deep Swiss-Prot coverage would otherwise place most of its proteome on its own "
         "entries, and the dark fraction would measure curation depth rather than how far "
@@ -595,8 +790,20 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
     per_arm = pick(summary, "proteins_placed_per_arm", default={}) or {}
     combos_txt = (f"; kmerseek: {len(pairs)} alphabet x k pair(s), mask on and off" if pairs
                   else f"; kmerseek: {len(combos)} setting(s)" if combos else "")
-    (out / "report_header.yaml").write_text(fd.header_yaml([
-        ("Query", f"{species} proteome, {num(total)} proteins"),
+    # The title and the first screen come from the builder too: the title names the
+    # species (one report per species, and the config's title cannot know which), and the
+    # first screen carries numbers, which a hand-written config line cannot keep current.
+    name = SPECIES_NAME or species
+    (out / "report_header.yaml").write_text(
+        fd.yaml_html("title", f"{name} dark set")
+        + fd.yaml_html("subtitle", f"The <i>{name}</i> proteins that phmmer, jackhmmer and "
+                                   f"mmseqs2 all fail to place, and what kmerseek reaches "
+                                   f"inside them")
+        + fd.yaml_html("intro_text", first_screen_html(
+            species, summary, ref, clade_txt, run, gain, length_summary, disorder_summary,
+            by_len, registry))
+        + fd.header_yaml([
+        ("Query", f"{name} proteome, {num(total)} proteins"),
         ("Target", f"reviewed Swiss-Prot minus {clade_txt}: {num(kept)} entries kept, {num(excluded)} removed"),
         ("Arms", "phmmer (one pass), jackhmmer (3 iterations), mmseqs2 (sensitivity 7, 3 iterations)"
                  + combos_txt),
@@ -607,7 +814,7 @@ def section_overview(out: Path, species: str, summary: dict, ref: dict | None,
         "id": "dark_overview",
         "section_name": "What was done, and why",
         "description": (
-            f"<p>The dark set of <b>{species}</b>: the proteins that three sequence "
+            f"<p>The dark set of {sp_name(species)}: the proteins that three sequence "
             f"searches all fail to place into reviewed Swiss-Prot with {clade_txt} removed, "
             f"and what the optional arms say about them. The steps, this run's numbers, and "
             f"the flow of data from the two inputs to the panels below.</p>"),
@@ -643,7 +850,7 @@ def section_metric_explainers(out: Path, species: str) -> None:
         "section_name": "How to read the numbers",
         "description": (
             f"<p>The two ideas the panels below rest on. The bar widths are a schematic, not "
-            f"{species}'s numbers; those are in the panels.</p>"),
+            f"{sp_name(species)}'s numbers; those are in the panels.</p>"),
         "plot_type": "html",
         "data": mx.bundle(mx.fraction()),
     })
@@ -666,7 +873,7 @@ def section_headline(out: Path, species: str, summary: dict) -> None:
         "id": "dark_headline",
         "section_name": "How much of the proteome is dark",
         "description": (
-            f"<p>Every protein in <b>{species}</b> that phmmer, jackhmmer and mmseqs2 "
+            f"<p>Every protein in {sp_name(species)} that phmmer, jackhmmer and mmseqs2 "
             f"<i>all</i> failed to place into reviewed Swiss-Prot with the query's own "
             f"clade removed.</p>"
             + bullets(
@@ -875,7 +1082,14 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
                        if unpaired else "No combos were scored at all."))
         return
 
-    data = {}
+    placed_n = pick(gain, "placed_proteins")
+    thresholds = [str(t) for t in (pick(gain, "thresholds", default=[]) or [])]
+    has_shuffled = bool(pick(gain, "has_shuffled_control"))
+
+    # Three datasets on one panel, each a fraction so the bars are comparable: the dark
+    # set, the placed set (the control), and the shuffled dark proteins (the null) when
+    # the run has them. Colour is the mask setting in every dataset.
+    dark_data, placed_data, shuffled_data = {}, {}, {}
     table = {}
     for row in pairs:
         label = f"{row['alphabet']} k{row['ksize']}"
@@ -884,14 +1098,28 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
         lost = row.get("lost_to_masking")
         if lost is None and on is not None and off is not None:
             lost = off - on
-        data[label] = {"mask_on": on, "mask_off": off}
-        table[label] = {
-            "mask_on": on,
-            "mask_off": off,
-            "lost_to_masking": lost,
-            "fraction_dark_mask_on": (on / dark_n) if dark_n else None,
-            "fraction_dark_mask_off": (off / dark_n) if dark_n else None,
+        r_on = combo_row(gain, row["alphabet"], row["ksize"], True) or {}
+        r_off = combo_row(gain, row["alphabet"], row["ksize"], False) or {}
+        frac = lambda v, n: (v / n) if (v is not None and n) else None
+        dark_data[label] = {"mask_on": frac(on, dark_n), "mask_off": frac(off, dark_n)}
+        placed_data[label] = {"mask_on": frac(r_on.get("placed_reached"), placed_n),
+                              "mask_off": frac(r_off.get("placed_reached"), placed_n)}
+        shuffled_data[label] = {"mask_on": frac(r_on.get("shuffled_dark_reached"), dark_n),
+                                "mask_off": frac(r_off.get("shuffled_dark_reached"), dark_n)}
+        cell = {
+            "mask_on": on, "mask_off": off, "lost_to_masking": lost,
+            "fraction_dark_mask_on": frac(on, dark_n),
+            "fraction_dark_mask_off": frac(off, dark_n),
+            "fraction_placed_mask_on": frac(r_on.get("placed_reached"), placed_n),
+            "fraction_placed_mask_off": frac(r_off.get("placed_reached"), placed_n),
         }
+        for t in thresholds:
+            cell[f"fraction_dark_mask_on_at_{t}"] = frac((r_on.get("dark_reached_at") or {}).get(t), dark_n)
+            cell[f"fraction_placed_mask_on_at_{t}"] = frac((r_on.get("placed_reached_at") or {}).get(t), placed_n)
+        if has_shuffled:
+            cell["fraction_shuffled_mask_on"] = frac(r_on.get("shuffled_dark_reached"), dark_n)
+            cell["fraction_shuffled_mask_off"] = frac(r_off.get("shuffled_dark_reached"), dark_n)
+        table[label] = cell
 
     best = max(pairs, key=lambda r: r.get("dark_reached_mask_on") or 0)
     best_on = best.get("dark_reached_mask_on")
@@ -900,7 +1128,6 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
     # An arm that reaches every protein, placed and dark alike, has a region cutoff that
     # lets everything through; its reach then says nothing about the dark set and must
     # not be read as a rescue. Computed from by_combo, which carries the placed side.
-    placed_n = pick(gain, "placed_proteins")
     saturated = sorted({
         f"{r['alphabet']} k{r['ksize']}" for r in combos
         if dark_n and placed_n and (r.get("dark_reached") or 0) >= 0.99 * dark_n
@@ -910,75 +1137,153 @@ def section_kmerseek(out: Path, species: str, gain: dict | None, omitted: Omitte
         saturated_note = (
             "<b>Not a rescue: </b>" + ", ".join(f"<code>{a}</code>" for a in saturated)
             + (" reaches" if len(saturated) == 1 else " reach")
-            + " at least 99% of the placed proteins and 99% of the dark ones alike, so at "
+            + " at least 99% of the placed proteins and 99% of the dark ones alike. At "
               "this run's region cutoff the arm puts a region on nearly every protein in "
               "the proteome. A reach that does not separate dark from placed says nothing "
               "about the dark set; read that arm's bar as a cutoff that needs tightening, "
-              "not as a result.")
+              "not as a result."
+            + (" The stricter cutoffs in the table below are that tightening." if thresholds
+               else ""))
 
+    best_placed = combo_row(gain, best["alphabet"], best["ksize"], True) or {}
+    best_frac = (best_on / dark_n) if dark_n and best_on is not None else None
+    best_txt = (f"<b>Best arm with the mask ON: <code>{best['alphabet']} "
+                f"k{best['ksize']}</code></b>, reaching {num(best_on)} of {num(dark_n)} "
+                f"dark proteins ({pct(best_frac)})")
+    if best_placed.get("placed_reached") is not None and placed_n:
+        best_txt += (f", and {pct(best_placed['placed_reached'] / placed_n)} of the placed "
+                     f"proteins")
+    best_txt += "."
+    if best_frac is not None and best_frac >= 0.99:
+        best_txt += (" A setting that reaches every dark protein is reaching everything; "
+                     "on its own this row says the setting is permissive, not that the "
+                     "dark set is annotatable. What tells the two apart is the same count "
+                     "inside the placed set (the column beside it) and on shuffled "
+                     "sequences"
+                     + (" (the third tab of the panel)." if has_shuffled else
+                        ", which is not in this run."))
+
+    control_note = (
+        "<b>The placed set is the control.</b> An arm that reaches 95% of the placed "
+        "proteins and 10% of the dark ones is discriminating; one that reaches 100% of "
+        "both is saturated, and its dark number means nothing. The two are side by side "
+        "as fractions, one tab each, so the bars are comparable.")
+    shuffled_note = (
+        "<b>The shuffled dark proteins are the null.</b> Each dark protein with its "
+        "residues shuffled keeps its length and composition and loses everything else, so "
+        "what kmerseek reaches on those is what it reaches by composition alone. A dark "
+        "reach the shuffled copies match is not a homology signal."
+        if has_shuffled else
+        "<b>No shuffled-sequence control in this run.</b> The same search on the dark "
+        "proteins with their residues shuffled would say what composition alone reaches; "
+        "run with <code>--with_shuffle_control true</code> to add it.")
+    threshold_note = (
+        f"<b>Reach at stricter cutoffs</b> is in the table below: the run's own region "
+        f"score cutoff and {', '.join(thresholds[1:])} (region p &le; "
+        f"{', '.join(f'1e-{int(float(t))}' for t in thresholds[1:])}). A reach of 100% "
+        f"at the run cutoff can then be read against what survives a tighter one."
+        if len(thresholds) > 1 else
+        "<b>Reach at a stricter cutoff is not in this run</b>; it needs the per-query "
+        "scores a run before 2026-09-20 did not keep.")
+
+    datasets = [dark_data, placed_data] + ([shuffled_data] if has_shuffled else [])
+    data_labels = [{"name": "dark set", "ylab": "fraction of dark proteins reached"},
+                   {"name": "placed set (control)", "ylab": "fraction of placed proteins reached"}]
+    if has_shuffled:
+        data_labels.append({"name": "shuffled dark proteins (null)",
+                            "ylab": "fraction of shuffled dark proteins reached"})
     write_section(out, "dark_kmerseek_mask", {
         "id": "dark_kmerseek_mask",
         "section_name": "kmerseek reach inside the dark set",
         "description": (
-            f"<p>Dark proteins kmerseek put a region on, out of {num(dark_n)}, with the "
-            f"low-complexity mask ON and OFF side by side. The two bars in a group are the "
-            f"same search with the filter switched.</p>"
+            f"<p>The fraction of the {num(dark_n)} dark proteins kmerseek put a region on, "
+            f"with the low-complexity mask ON and OFF side by side. The second tab is the "
+            f"same fraction inside the {num(placed_n)} placed proteins, the control"
+            + ("; the third is the shuffled dark proteins, the null" if has_shuffled else "")
+            + ". The two bars in a group are the same search with the filter switched.</p>"
             + bullets(
                 "<b>Read the pair, never one bar.</b> A rescue present with the mask off "
                 "and gone with it on is a property of amino-acid composition, not of "
                 "homology. BHF's flagship matches included polar-biased low-complexity "
                 "segments, which is why this pipeline runs the mask as a paired setting "
                 "rather than as a sweep dimension.",
+                control_note,
+                shuffled_note,
                 saturated_note,
-                f"<b>Best arm with the mask ON: <code>{best['alphabet']} "
-                f"k{best['ksize']}</code></b>, reaching {num(best_on)} of {num(dark_n)} "
-                f"dark proteins ({pct((best_on / dark_n) if dark_n else None)}).",
+                best_txt,
                 f"<b>Largest loss to masking: <code>{worst_loss['alphabet']} "
                 f"k{worst_loss['ksize']}</code></b> at "
                 f"{num(worst_loss.get('lost_to_masking'))} proteins, which is the part of "
                 f"that arm's mask-off number that the filter does not support.",
+                threshold_note,
                 unpaired_note,
                 "<b>This is reach, not accuracy.</b> A region on a dark protein says "
-                "kmerseek found something there, not that the family label is right. That "
-                "needs the structural key, which does not exist for this species yet: the "
-                "number here is necessary for the claim and nowhere near sufficient.")),
+                "kmerseek found something there, not that the family label is right. "
+                "Checking the label needs a structural answer key, which does not exist "
+                "for this species yet. The number here is necessary for any claim about "
+                "annotating the dark set, and nowhere near sufficient.")),
         "plot_type": "bargraph",
         "pconfig": {"id": "dark_kmerseek_mask_plot",
-                    "title": f"{species}: dark proteins reached, mask ON vs OFF",
-                    "ylab": "dark proteins reached",
+                    "title": f"{species}: fraction reached, mask ON vs OFF",
+                    "ylab": "fraction of proteins reached", "ymax": 1,
                     # Grouped, never stacked. The two bars are the same proteins counted
                     # twice under different settings, so stacking them would draw a total
                     # that does not exist.
-                    "cpswitch": False, "stacking": "group", "sort_samples": False},
+                    "cpswitch": False, "stacking": "group", "sort_samples": False,
+                    "data_labels": data_labels},
         "categories": {
             "mask_on": {"name": "low-complexity mask ON", "color": C_MASK_ON},
             "mask_off": {"name": "mask OFF", "color": C_MASK_OFF},
         },
-        "data": data,
+        "data": datasets,
     })
 
+    headers = {
+        "mask_on": {"title": "dark reached, mask ON", "format": "{:,.0f}"},
+        "mask_off": {"title": "dark reached, mask OFF", "format": "{:,.0f}"},
+        "lost_to_masking": {"title": "lost to masking", "format": "{:,.0f}"},
+        "fraction_dark_mask_on": {"title": "fraction of dark, mask ON",
+                                  "format": "{:,.4f}", "min": 0, "max": 1},
+        "fraction_dark_mask_off": {"title": "fraction of dark, mask OFF",
+                                   "format": "{:,.4f}", "min": 0, "max": 1},
+        "fraction_placed_mask_on": {"title": "fraction of placed, mask ON (control)",
+                                    "format": "{:,.4f}", "min": 0, "max": 1},
+        "fraction_placed_mask_off": {"title": "fraction of placed, mask OFF (control)",
+                                     "format": "{:,.4f}", "min": 0, "max": 1},
+    }
+    for t in thresholds:
+        headers[f"fraction_dark_mask_on_at_{t}"] = {
+            "title": f"fraction of dark, mask ON, score \u2265 {t}",
+            "format": "{:,.4f}", "min": 0, "max": 1}
+        headers[f"fraction_placed_mask_on_at_{t}"] = {
+            "title": f"fraction of placed, mask ON, score \u2265 {t}",
+            "format": "{:,.4f}", "min": 0, "max": 1}
+    if has_shuffled:
+        headers["fraction_shuffled_mask_on"] = {
+            "title": "fraction of shuffled dark, mask ON (null)",
+            "format": "{:,.4f}", "min": 0, "max": 1}
+        headers["fraction_shuffled_mask_off"] = {
+            "title": "fraction of shuffled dark, mask OFF (null)",
+            "format": "{:,.4f}", "min": 0, "max": 1}
     write_section(out, "dark_kmerseek_mask_table", {
         "id": "dark_kmerseek_mask_table",
         "section_name": "Mask pair, as numbers",
         "description": (
-            "<p>The panel above as numbers, with what masking costs each arm.</p>"
+            "<p>The panel above as numbers, with what masking costs each arm, the placed "
+            "set beside the dark one, and reach at stricter region-score cutoffs where the "
+            "run kept the scores.</p>"
             + bullets(
                 "<b>lost_to_masking</b> is mask-off minus mask-on: dark proteins reached "
                 "only when the low-complexity filter is off.",
-                "<b>The fractions are of the dark set</b>, not of the proteome.")),
+                "<b>The fractions are of the set named in the column</b>: the dark set, "
+                "the placed set, or the shuffled dark proteins.",
+                "<b>A score cutoff column</b> counts the proteins whose best region scores "
+                "at or above that cutoff; the run's own cutoff is the first of them.")),
         "plot_type": "table",
         "pconfig": {"id": "dark_kmerseek_mask_table_plot",
                     "title": f"{species}: dark reach by alphabet and k",
                     "col1_header": "alphabet, ksize", "sort_rows": False},
-        "headers": {
-            "mask_on": {"title": "reached, mask ON", "format": "{:,.0f}"},
-            "mask_off": {"title": "reached, mask OFF", "format": "{:,.0f}"},
-            "lost_to_masking": {"title": "lost to masking", "format": "{:,.0f}"},
-            "fraction_dark_mask_on": {"title": "fraction of dark, mask ON",
-                                      "format": "{:,.4f}", "min": 0, "max": 1},
-            "fraction_dark_mask_off": {"title": "fraction of dark, mask OFF",
-                                       "format": "{:,.4f}", "min": 0, "max": 1},
-        },
+        "headers": headers,
         "data": table,
     })
 
@@ -1152,33 +1457,51 @@ def normalise_groups(df: pl.DataFrame, group_col: str) -> pl.DataFrame:
           .otherwise(pl.col(group_col).cast(pl.Utf8).str.to_lowercase()).alias("_group"))
 
 
-def mw_bullet(summary: dict | None) -> str:
-    """The Mann-Whitney line, effect size first."""
+def mw_bullet(summary: dict | None, higher_word: str = "higher",
+              lower_word: str = "lower") -> str:
+    """The Mann-Whitney line, effect size first. `higher_word` / `lower_word` are the
+    axis's own words for the two directions: longer / shorter, more / less disordered."""
     if not summary:
         return ""
     mw = pick(summary, "mann_whitney_u", "mann_whitney", "mannwhitneyu", "mannwhitney",
               default=None)
     if not isinstance(mw, dict):
         mw = summary
-    p = pick(mw, "p_value", "pvalue", "p")
+    p = pick(mw, "p_value", "pvalue", "p", "mannwhitneyu_p")
     cles = pick(mw, "common_language_effect_size", "cles", "effect_size")
     rbc = pick(mw, "rank_biserial_correlation", "rank_biserial")
-    if p is None and cles is None:
+    if p is None and cles is None and rbc is None:
         return ""
+    # Both scripts count U for the dark group, so the common-language effect size is
+    # P(a random dark protein is HIGHER than a random placed one) and rank-biserial is
+    # 2 x that - 1. Until 2026-09-20 this bullet printed that probability with the word
+    # "lower", so a dark set that was shorter (P(higher) = 0.195) read as "lower ... with
+    # probability 0.195", the direction reversed. The probability is now stated as the
+    # chance of the direction the data shows, and the words come from the axis.
+    p_higher = float(cles) if cles is not None else (float(rbc) + 1) / 2
     parts = []
-    if cles is not None:
-        direction = ("lower" if float(cles) < 0.5
-                     else "higher" if float(cles) > 0.5 else "the same as")
-        parts.append(
-            f"a randomly drawn dark protein is {direction} than a randomly drawn placed "
-            f"one with probability {float(cles):.3f} (0.5 is no difference)")
-    if rbc is not None:
-        parts.append(f"rank-biserial {float(rbc):+.3f}")
+    if p_higher > 0.5:
+        parts.append(f"The chance that a randomly drawn dark protein is {higher_word} than "
+                     f"a randomly drawn placed one is {p_higher:.3f} (0.5 would be no "
+                     f"difference)")
+    elif p_higher < 0.5:
+        parts.append(f"The chance that a randomly drawn dark protein is {lower_word} than "
+                     f"a randomly drawn placed one is {1 - p_higher:.3f} (0.5 would be no "
+                     f"difference)")
+    else:
+        parts.append("A randomly drawn dark protein is as likely to be above as below a "
+                     "randomly drawn placed one (0.5, no difference)")
+    parts.append(f"rank-biserial correlation, the same comparison on a -1 to 1 scale, is "
+                 f"{2 * p_higher - 1:+.3f}")
     if p is not None:
-        parts.append(f"Mann-Whitney p={float(p):.3g}")
-    return ("<b>Read the effect size, not the p-value</b> — " + ", ".join(parts)
+        p = float(p)
+        # Below about 1e-300 the software prints 0; say that rather than "p=0".
+        parts.append("the Mann-Whitney p-value is below the smallest number the software "
+                     "prints (1e-300)" if p < 1e-300 else f"Mann-Whitney p={p:.3g}")
+    return ("<b>Read the effect size, not the p-value.</b> " + "; ".join(parts)
             + ". At tens of thousands of proteins the test is significant at effect sizes "
-              "far too small to matter.")
+              "far too small to matter, which is why the p-value is not the number to "
+              "read.")
 
 
 def stat_bullet(summary: dict | None, unit: str, digits: int = 0) -> str:
@@ -1208,7 +1531,8 @@ def covariate_section(out: Path, species: str, section_id: str, name: str,
                       value_candidates: list[str], edges: list[float],
                       axis_label: str, unit: str, digits: int,
                       preamble: str, extra_bullets: list[str],
-                      omitted: Omitted, what: str) -> None:
+                      omitted: Omitted, what: str,
+                      higher_word: str = "higher", lower_word: str = "lower") -> None:
     """One dark-vs-placed distribution panel, or a named omission if it cannot be built."""
     if df is None and summary is None:
         omitted.add(name, f"this run produced no {what} products, so the comparison was "
@@ -1253,7 +1577,7 @@ def covariate_section(out: Path, species: str, section_id: str, name: str,
             f"<p>{preamble}</p>"
             + bullets(
                 stat_bullet(summary, unit, digits),
-                mw_bullet(summary),
+                mw_bullet(summary, higher_word, lower_word),
                 *extra_bullets,
                 "<b>Each series is a percentage of its own group</b>, because the two "
                 "groups are nowhere near the same size and raw counts would show only "
@@ -1327,9 +1651,8 @@ def section_dark_by_length(out: Path, species: str, df: pl.DataFrame | None,
                 f"which are dark because there is little to align, not because homology "
                 f"detection failed.",
                 "<b>Compare species at the same cut.</b> Annotations differ in how many "
-                "short models they carry (ciona: 48% of its dark set under 100 aa; mouse, "
-                "worm, Botryllus: 16-18%), so the raw fraction is not comparable across "
-                "proteomes and the >= 100 aa one is closer to it.")),
+                "short gene models they carry, so the raw fraction is not comparable "
+                "across proteomes; the &ge; 100 aa one is closer to comparable.")),
         "plot_type": "bargraph",
         "pconfig": {"id": "dark_headline_by_length_plot",
                     "title": f"{species}: dark fraction by minimum length",
@@ -1362,15 +1685,17 @@ def section_length(out: Path, species: str, df, summary, omitted: Omitted) -> No
         placed = pick(summary, "placed", default={})
         for cut in (50, 100):
             key = f"fraction_under_{cut}aa"
-            if pick(dark, key) is not None and pick(placed, key) is not None:
-                extras.append(f"<b>Under {cut} aa</b>: {pct(pick(dark, key))} of dark "
-                              f"against {pct(pick(placed, key))} of placed.")
+            d, q = pick(dark, key), pick(placed, key)
+            # A proteome with no protein under the cut has nothing to say at that cut.
+            if d is not None and q is not None and (float(d) or float(q)):
+                extras.append(f"<b>Under {cut} aa</b>: {pct(d)} of dark against "
+                              f"{pct(q)} of placed.")
         ratio = pick(summary, "median_ratio_dark_over_placed")
         if ratio is not None:
             extras.append(f"<b>Median length ratio dark/placed</b>: {float(ratio):.3f}.")
     extras.append(
-        "<b>Length is a proxy and only a proxy.</b> A short protein is also genuinely "
-        "harder for sequence search, so a shortness skew is consistent with spurious gene "
+        "<b>Length is a proxy and only a proxy.</b> A short protein is also harder for "
+        "sequence search, so a shortness skew is consistent with spurious gene "
         "models but does not prove them. Separating the two needs the annotation evidence, "
         "not this panel.")
     covariate_section(
@@ -1380,15 +1705,15 @@ def section_length(out: Path, species: str, df, summary, omitted: Omitted) -> No
         "fragments and mispredictions, and nothing places a spurious model into Swiss-Prot "
         "because there is nothing to place. If dark proteins skew sharply shorter, part of "
         "the headline is annotation noise rather than hard homology.",
-        extras, omitted, "length")
+        extras, omitted, "length", higher_word="longer", lower_word="shorter")
 
 
 def section_disorder(out: Path, species: str, df, summary, omitted: Omitted) -> None:
     extras = [
         "<b>Disorder is not where this method gains ground.</b> On the QfO region "
-        "benchmark's disorder axis the coarse-alphabet arms sit well below the profile and "
-        "structure baselines in every disorder bin, and no arm of any kind does well on the "
-        "most disordered queries, so a dark set that is mostly disordered is a limit on what "
+        "benchmark's disorder axis the coarse-alphabet arms sit below the profile "
+        "baselines in every disorder bin. No arm of any kind does well on the most "
+        "disordered queries. So a dark set that is mostly disordered is a limit on what "
         "any of this can reach, not an opportunity.",
         "<b>metapredict scores a residue 0 to 1</b>; the value binned here is the mean "
         "over each protein, so a protein with one long disordered loop and a folded domain "
@@ -1401,7 +1726,157 @@ def section_disorder(out: Path, species: str, df, summary, omitted: Omitted) -> 
         "Is the dark set disordered? A protein with no folded core has little for a "
         "profile or a k-mer to hold on to, so a dark set concentrated at high disorder is "
         "a different explanation of the headline than divergence is.",
-        extras, omitted, "disorder")
+        extras, omitted, "disorder", higher_word="more disordered",
+        lower_word="less disordered")
+
+
+# --- one protein followed through -----------------------------------------------------
+
+def protein_svg(length: int, region: tuple[int, int] | None, label: str) -> str:
+    """The protein as a line, the kmerseek region as a box on it. One mark per meaning:
+    the grey line is the protein, the green box is where the best region with the mask
+    on lands, and the legend sits above the drawing."""
+    w, pad = 640, 30
+    scale = (w - 2 * pad) / max(length, 1)
+    y = 56
+    box = ""
+    if region:
+        a, b = region
+        x0, x1 = pad + (a - 1) * scale, pad + b * scale
+        box = (f"<rect x='{x0:.1f}' y='{y - 9}' width='{max(x1 - x0, 2):.1f}' height='18' "
+               f"fill='{C_MASK_ON}' fill-opacity='0.85'/>"
+               f"<text x='{x0:.1f}' y='{y + 26}' font-size='11' fill='currentColor'>{a}</text>"
+               f"<text x='{x1:.1f}' y='{y + 26}' font-size='11' fill='currentColor' "
+               f"text-anchor='end'>{b}</text>")
+    legend = (f"<rect x='{pad}' y='8' width='22' height='4' fill='#7f7f7f'/>"
+              f"<text x='{pad + 28}' y='13' font-size='11' fill='currentColor'>the protein, "
+              f"{length} residues</text>"
+              + (f"<rect x='{pad + 200}' y='4' width='14' height='12' fill='{C_MASK_ON}' "
+                 f"fill-opacity='0.85'/><text x='{pad + 220}' y='13' font-size='11' "
+                 f"fill='currentColor'>best kmerseek region with the mask on ({label})</text>"
+                 if region else
+                 f"<text x='{pad + 200}' y='13' font-size='11' fill='currentColor'>no "
+                 f"kmerseek region with the mask on</text>"))
+    return (f"<svg viewBox='0 0 {w} 100' width='100%' style='max-width:{w}px;display:block'>"
+            f"{legend}<line x1='{pad}' y1='{y}' x2='{w - pad}' y2='{y}' stroke='#7f7f7f' "
+            f"stroke-width='4'/><text x='{pad}' y='{y + 26}' font-size='11' "
+            f"fill='currentColor'>{'' if region and region[0] <= 3 else 1}</text>"
+            f"<text x='{w - pad}' y='{y + 26}' font-size='11' fill='currentColor' "
+            f"text-anchor='end'>{'' if region and region[1] >= length - 3 else length}</text>"
+            f"{box}</svg>")
+
+
+def section_focus(out: Path, species: str, summary: dict, gain: dict | None,
+                  length_df, disorder_df, run: dict) -> None:
+    """One protein (BHF for Botryllus) followed through every panel: its call per arm
+    with the best E-value, its length and disorder against the two distributions, and
+    its kmerseek reach per setting with the best region drawn on the protein."""
+    focus = pick(summary, "focus_proteins", default={}) or {}
+    if not focus:
+        return
+    evalue = pick(summary, "evalue_call")
+    gfocus = pick(gain, "focus_proteins", default={}) or {}
+    blocks = []
+    for acc, f in focus.items():
+        what = f.get("what") or acc
+        if not f.get("in_proteome", True):
+            blocks.append(f"<h4>{what}</h4><p><code>{acc}</code> is not in this proteome.</p>")
+            continue
+        arms = f.get("per_arm") or {}
+        rows = ""
+        for arm, v in sorted(arms.items(),
+                             key=lambda kv: ARM_ORDER.index(kv[0]) if kv[0] in ARM_ORDER else 9):
+            e = v.get("best_evalue")
+            rows += (f"<tr><td>{arm}</td><td>{evalue_txt(e) if e is not None else 'no hit'}</td>"
+                     f"<td>{'placed' if v.get('placed') else 'not placed'}</td></tr>")
+        call = "dark" if not f.get("placed") else "placed"
+        per_arm = (f"<p><b>{call.capitalize()}.</b> Each arm's best E-value against the "
+                   f"protein; placed means at or below the call cutoff, E &le; "
+                   f"{evalue_txt(evalue)}.</p>"
+                   f"<table class='table table-sm' style='max-width:420px;font-size:12px'>"
+                   f"<thead><tr><th>arm</th><th>best E-value</th><th>call</th></tr></thead>"
+                   f"<tbody>{rows}</tbody></table>")
+        length = None
+        covar = []
+        if length_df is not None:
+            vc, gc = pick_col(length_df, LENGTH_COLS), pick_col(length_df, GROUP_COLS)
+            if vc:
+                hit = length_df.filter(pl.col("accession") == acc) if "accession" in length_df.columns else length_df.head(0)
+                if hit.height:
+                    length = int(hit[vc][0])
+                    lo = int((length_df[vc] <= length).sum())
+                    covar.append(f"<b>Length</b> {length} residues, longer than "
+                                 f"{pct(lo / length_df.height)} of the proteome, in the "
+                                 f"<code>{bin_label(length, LENGTH_EDGES)}</code> bin of "
+                                 f"the length panel.")
+        if disorder_df is not None:
+            vc = pick_col(disorder_df, DISORDER_COLS)
+            if vc and "accession" in disorder_df.columns:
+                hit = disorder_df.filter(pl.col("accession") == acc)
+                if hit.height and hit[vc][0] is not None:
+                    d = float(hit[vc][0])
+                    lo = int((disorder_df[vc] <= d).sum())
+                    covar.append(f"<b>Mean predicted disorder</b> {d:.3f}, more disordered "
+                                 f"than {pct(lo / disorder_df.height)} of the proteome, in "
+                                 f"the <code>{bin_label(d, DISORDER_EDGES)}</code> bin of "
+                                 f"the disorder panel.")
+        km = ""
+        g = gfocus.get(acc)
+        if g:
+            per = g.get("per_combo") or {}
+            trs = ""
+            for _k, v in sorted(per.items(), key=lambda kv: (kv[1]["alphabet"], kv[1]["ksize"],
+                                                              not kv[1]["low_complexity_mask"])):
+                score = v.get("best_region_score")
+                region = v.get("best_region")
+                sh = v.get("shuffled_reached")
+                trs += ("<tr><td>{a} k{k}</td><td>{m}</td><td>{r}</td><td>{s}</td><td>{g}</td>"
+                        "<td>{h}</td></tr>").format(
+                    a=v["alphabet"], k=v["ksize"],
+                    m="on" if v.get("low_complexity_mask") else "off",
+                    r="yes" if v.get("reached") else "no",
+                    s="-" if score is None else f"{score:.2f}",
+                    g="-" if not region else f"{region[0]}-{region[1]}",
+                    h="-" if sh is None else ("yes" if sh else "no"))
+            best_on = [(k, v) for k, v in per.items() if v.get("reached") and v.get("low_complexity_mask")]
+            pic = ""
+            if length:
+                if best_on:
+                    k, v = max(best_on, key=lambda kv: kv[1].get("best_region_score") or 0)
+                    pic = protein_svg(length, tuple(v["best_region"]) if v.get("best_region") else None,
+                                      k.rsplit(" lc", 1)[0])
+                else:
+                    pic = protein_svg(length, None, "")
+            km = (f"<p><b>kmerseek, per setting.</b> Reached means at least one region at "
+                  f"the run's cutoff (score &ge; {pick(run, 'min_region_score', default=1.3)}); "
+                  f"the best region is the highest-scoring one. The shuffled column is the "
+                  f"same search on this protein with its residues shuffled, where the run "
+                  f"has that control.</p>"
+                  f"<table class='table table-sm' style='max-width:640px;font-size:12px'>"
+                  f"<thead><tr><th>setting</th><th>mask</th><th>reached</th>"
+                  f"<th>best region score</th><th>best region (residues)</th>"
+                  f"<th>shuffled copy reached</th></tr></thead><tbody>{trs}</tbody></table>"
+                  + pic)
+        blocks.append(f"<h4>{what}</h4><p><code>{acc}</code></p>" + per_arm
+                      + (bullets(*covar) if covar else "") + km)
+    write_section(out, "dark_focus", {
+        "id": "dark_focus",
+        "section_name": "One protein followed through",
+        "description": (
+            f"<p>The same numbers as every panel above, for one protein at a time: its "
+            f"call per arm, where it sits on the length and disorder distributions, and "
+            f"what each kmerseek setting reports on it. The proteins are named in the "
+            f"species registry.</p>"),
+        "plot_type": "html",
+        "data": "".join(blocks),
+    })
+
+
+def bin_label(value: float, edges: list[float]) -> str:
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        if lo <= value < hi:
+            return f"{lo:g}-{hi:g}"
+    return f"{edges[-1]:g}+" if value >= edges[-1] else f"<{edges[0]:g}"
 
 
 # --- what the run did not produce ------------------------------------------------------
@@ -1473,11 +1948,17 @@ def main() -> None:
     ap.add_argument("--extra-dir", type=Path, default=None,
                     help="directory of optional products, matched by published suffix. "
                          "Anything named by an explicit flag is not looked for here.")
+    ap.add_argument("--registry", type=Path, default=None,
+                    help="species_metadata.json: the species' name for the title and the "
+                         "prose, and its focus proteins")
     ap.add_argument("--outdir", type=Path, required=True)
     args = ap.parse_args()
 
+    global SPECIES_NAME
     out = args.outdir
     out.mkdir(parents=True, exist_ok=True)
+    reg_row = registry_row(args.registry, args.species)
+    SPECIES_NAME = reg_row.get("name") or None
 
     summary = load_json(args.dark_summary)
     if summary is None:
@@ -1495,10 +1976,12 @@ def main() -> None:
     length_df = load_parquet(extras["length_parquet"])
     disorder_df = load_parquet(extras["disorder_parquet"])
 
+    run_params = load_json(args.run_params) or {}
     section_overview(out, args.species, summary, load_json(args.reference_summary),
-                     args.clade, load_json(args.run_params) or {}, gain,
+                     args.clade, run_params, gain,
                      length_df, disorder_df,
-                     load_json(extras["length_summary"]), load_json(extras["disorder_summary"]))
+                     load_json(extras["length_summary"]), load_json(extras["disorder_summary"]),
+                     registry=reg_row)
     section_metric_explainers(out, args.species)
     section_headline(out, args.species, summary)
     section_per_arm(out, args.species, summary, omitted)
@@ -1508,6 +1991,7 @@ def main() -> None:
                    load_json(extras["length_summary"]), omitted)
     section_disorder(out, args.species, disorder_df,
                      load_json(extras["disorder_summary"]), omitted)
+    section_focus(out, args.species, summary, gain, length_df, disorder_df, run_params)
     section_omitted(out, omitted)
 
     written = sorted(p.name for p in out.glob("*_mqc.json"))
