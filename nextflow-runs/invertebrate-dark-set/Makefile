@@ -110,7 +110,8 @@ LADDER_HEAD_XMX   ?= 24g
 .PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
         multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
-        lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan rescue-indexes-0.4 \
+        lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan \
+        run-ladder-0.4-midi-sbatch ladder-0.4-midi-plan rescue-indexes-0.4 \
         run-ladder-0.4-sweep-sbatch ladder-0.4-sweep-plan
 
 help:
@@ -127,6 +128,8 @@ help:
 	@echo "  lock-indexes            make every built kmerseek index read-only (run before a relaunch)"
 	@echo "  run-ladder-0.4-sbatch   the ladder with kmerseek 0.4: scaled x extension arms, own results dir"
 	@echo "  ladder-0.4-plan         print what that expands to without submitting"
+	@echo "  run-ladder-0.4-midi-sbatch  the whole 0.4 sweep on human, worm and yeast only"
+	@echo "  ladder-0.4-midi-plan    print what that expands to without submitting"
 	@echo "  run-ladder-0.4-sweep-sbatch  the same on the full 183-combo table plus the k=12 HP arms (weeks of queue)"
 	@echo "  ladder-0.4-sweep-plan   print what THAT expands to without submitting"
 	@echo "  unlock-indexes          make them writable again, to delete or rebuild one"
@@ -396,6 +399,24 @@ run-ladder-0.4-sweep-sbatch:
 
 ladder-0.4-sweep-plan:
 	@$(MAKE) ladder-0.4-plan NF_ARGS="$(V4_SWEEP_ARGS) $(NF_ARGS)"
+
+# The midi run: the whole sweep above on three query species, human, worm and yeast --
+# one vertebrate, one invertebrate, one fungus, at the ladder's near, middle and far
+# rungs -- to test alphabets, scaled and extension before the nine-species run. Its own
+# run tag, launch dir and driver name so it can be watched and stopped on its own; the
+# same results dir and index store as the ladder, so every index it builds is a storeDir
+# hit for the full run later. Decided 2026-09-20. About 3 references x 185 combos x 4
+# scaled = 2_200 index builds and 25 chunks x 740 indexes x 3 arms = 50_000 searches.
+MIDI_SPECIES     ?= human,worm,yeast
+V4_MIDI_LAUNCH_DIR := $(MAKEFILE_DIR)/runs/ladder-0.4-midi
+run-ladder-0.4-midi-sbatch:
+	@$(MAKE) run-dark-set-sbatch SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) RUN=ladder-0.4-midi \
+	  WITH_KMERSEEK=1 LAUNCH_DIR=$(V4_MIDI_LAUNCH_DIR) OUTDIR=$(V4_OUTDIR) \
+	  HEAD_TIME=$(LADDER_HEAD_TIME) HEAD_MEM=$(LADDER_HEAD_MEM) HEAD_XMX=$(LADDER_HEAD_XMX) \
+	  NF_ARGS="$(subst --run_tag ladder-0.4,--run_tag ladder-0.4-midi,$(V4_NF_ARGS)) $(V4_SWEEP_ARGS)"
+
+ladder-0.4-midi-plan:
+	@$(MAKE) ladder-0.4-plan SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) NF_ARGS="$(V4_SWEEP_ARGS) $(NF_ARGS)"
 
 ladder-0.4-plan: check-inputs
 	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -preview \
