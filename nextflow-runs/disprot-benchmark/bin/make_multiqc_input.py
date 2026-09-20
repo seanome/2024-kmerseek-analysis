@@ -64,7 +64,7 @@ DISORDER_CATEGORIES = ["all", "ordered", "partial", "disordered"]
 SECTION_ORDER = (
     ["overview", "metric_explainers"]
     + [f"{m}_{cat}" for cat in DISORDER_CATEGORIES for m in ("auc_pr", "recall_fdr5")]
-    + ["auc_pr_vs_mya_mqc", "recall_fdr5_vs_mya_mqc"]
+    + ["auc_pr_vs_mya_mqc", "recall_fdr5_vs_mya_mqc", "not_in_run"]
 )
 
 TOOL_WORDS = {
@@ -87,9 +87,29 @@ def read_query_count(stats_path: Path | None) -> int | None:
     return int(m.group(1)) if m else None
 
 
+def empty_arms(df: pl.DataFrame) -> list[str]:
+    """Tools that ran but reported no pair on any proteome. They have no metric, so they
+    are named as failed arms and left out of every table and of the subtitle."""
+    return sorted(t for t in df["tool"].unique().to_list()
+                  if int(df.filter(pl.col("tool") == t)["n_found"].sum()) == 0)
+
+
+# Why an arm can come back empty, by tool, for the "Not in this run" note. Foldseek's is
+# the 2026-08 DisProt run: download_alphafold.py asked for model_v4 files the server had
+# stopped serving and never looked at the v6 files in the cache, so every search ran on
+# zero structures (fixed 2026-09-20; the run has to be repeated).
+EMPTY_ARM_WHY = {
+    "foldseek": ("its searches ran on zero AlphaFold structures. The structure downloader "
+                 "asked for a model version the AlphaFold server no longer serves and did "
+                 "not recognise the version in the cache, so every protein was listed as "
+                 "missing. Fixed on 2026-09-20; this arm needs the run repeated."),
+}
+
+
 def overview_facts(df: pl.DataFrame, n_queries: int | None) -> dict:
     """This run's numbers for the overview, read off the metrics and nowhere else."""
     f = {"n_queries": n_queries, "tools": sorted(df["tool"].unique().to_list())}
+    f["empty"] = empty_arms(df)
     f["species"] = [sp for sp in SPECIES_ORDER if sp in set(df["species"].to_list())]
     mya = [MYA[sp] for sp in f["species"]]
     f["mya_min"], f["mya_max"] = (min(mya), max(mya)) if mya else (None, None)
@@ -126,10 +146,13 @@ def overview_flow_spec(f: dict) -> dict:
         word = tool_word(tool or name)
         head, _, rest = word.partition(" (")
         sub = rest.rstrip(")")
-        if tool and f["found"].get(tool) == 0:
-            sub = "reported 0 pairs on every proteome"
+        empty = bool(tool) and f["found"].get(tool) == 0
+        if empty:
+            sub = "ran, reported 0 pairs: a failed arm"
+        # Dashed for an arm that did not run AND for one that ran on nothing: neither has a
+        # number in this report.
         arms[name] = {"x": x, "y": 200, "w": 220, "h": 66, "icon": "search", "kind": name if tool else None,
-                      "title": head, "sub": sub, "bar": True, "dashed": tool is None,
+                      "title": head, "sub": sub, "bar": True, "dashed": tool is None or empty,
                       "samples": [name] + ([tool] if tool and tool != name else [])}
     nodes = {
         "q0": {"x": 20, "y": 66, "w": 320, "h": 52, "icon": "genetics",
@@ -264,6 +287,119 @@ def overview_control(f: dict) -> dict:
     return {"label": "Disorder bin of the query (mean metapredict score)", "options": options}
 
 
+def first_screen_html(f: dict, df: pl.DataFrame) -> str:
+    """What kmerseek is, the question, the answer with its numbers, the caveats, a reading
+    order and the words the tables use. Written here, not in the config, because the
+    answer carries numbers."""
+    ran = [t for t in f["tools"] if t not in f["empty"]]
+    km = [t for t in ran if t.startswith("kmerseek")]
+    base = [t for t in ran if not t.startswith("kmerseek")]
+
+    def mean_of(tool, cat):
+        v, n = f["aucpr"][cat].get(tool, (None, 0))
+        return v, n
+
+    answer = []
+    if km and base:
+        k = max(km, key=lambda t: mean_of(t, "all")[0] or 0)
+        b = max(base, key=lambda t: mean_of(t, "all")[0] or 0)
+        kv, kn = mean_of(k, "all")
+        bv, bn = mean_of(b, "all")
+        if kv is not None and bv is not None:
+            answer.append(f"Over every query protein, {tool_word(k).split(' (')[0]} "
+                          f"(k={k.split('_k')[1]}) has a mean AUC-PR of {kv:.2f} over "
+                          f"{kn} proteomes against {bv:.2f} for "
+                          f"{tool_word(b).split(' (')[0]}, so its ranking of pairs is "
+                          f"{'better' if kv > bv else 'worse'} overall.")
+        kd, _ = mean_of(k, "disordered")
+        bd, _ = mean_of(b, "disordered")
+        ko, _ = mean_of(k, "ordered")
+        bo, _ = mean_of(b, "ordered")
+        if None not in (kd, bd, ko, bo):
+            gap_d, gap_o = kd - bd, ko - bo
+            answer.append(f"Split by how disordered the query is, the gap is {gap_o:+.2f} on "
+                          f"ordered queries and {gap_d:+.2f} on disordered ones"
+                          + (", so disorder does not change which tool ranks pairs better."
+                             if (gap_d > 0) == (gap_o > 0) else
+                             ", so the two tools change places between the bins."))
+    # Recall at 5% FDR, on all proteins.
+    r = df.filter(pl.col("disorder_category") == "all")
+    rec = {}
+    for t in ran:
+        vals = r.filter(pl.col("tool") == t)["recall_at_fdr05"].drop_nulls().drop_nans()
+        if vals.len():
+            rec[t] = float(vals.mean())
+    if km and base and all(t in rec for t in (km[0], base[0])):
+        k = max(km, key=lambda t: rec.get(t, 0))
+        b = max(base, key=lambda t: rec.get(t, 0))
+        answer.append(f"At 5% FDR, the operating point a curated annotation needs, "
+                      f"{tool_word(k).split(' (')[0]} recovers {rec[k]:.2f} of the true "
+                      f"pairs against {rec[b]:.2f} for {tool_word(b).split(' (')[0]} "
+                      f"(mean over proteomes).")
+    failed = ""
+    if f["empty"]:
+        failed = (" " + ", ".join(tool_word(t).split(" (")[0] for t in f["empty"])
+                  + (" ran but reported no pair on any proteome, so it is a failed arm "
+                     "here, not a result; \"Not in this run\" at the end says why."))
+    n_sp = len(f["species"])
+    glossary = "".join(f"<li>{g}</li>" for g in [
+        "<b>Pair.</b> One human query protein and one protein of the target proteome. "
+        "A tool reports a score for the pairs it found; a pair it did not report scores 0.",
+        "<b>Positive pair.</b> The two proteins share a Pfam family (the answer key, taken "
+        "from the whole-proteome pair benchmark). Negative: they share none.",
+        "<b>AUC-PR.</b> Walk each tool's own ranking of pairs from the top; at each step "
+        "precision is the share of pairs so far that are positive and recall the share of "
+        "positive pairs reached. The area under that curve. A random ranking scores about "
+        "the share of positive pairs.",
+        "<b>Recall at 5% FDR.</b> How far down the ranking a reader gets while precision is "
+        "still at least 0.95, as a share of the positive pairs. Near zero means false "
+        "pairs sit at the top of the list, whatever the AUC-PR.",
+        "<b>AUC-ROC.</b> The same walk on different axes: true pairs found against false "
+        "pairs let through. 0.5 is a coin toss.",
+        "<b>Disorder bin.</b> metapredict scores each residue 0 to 1; the mean over the "
+        "query protein puts it in a bin: ordered below 0.2, partial 0.2 to 0.5, "
+        "disordered above 0.5.",
+        f"<b>Mean over proteomes.</b> Every number in the head is a mean over the target "
+        f"proteomes that have a value ({n_sp} at most); no number carries a sampling "
+        f"error, so read a small gap as a tie.",
+        "<b>Mya.</b> Million years since the target species and human shared an ancestor.",
+    ])
+    return (
+        "<p><b>What kmerseek is.</b> A search tool that first groups the 20 amino acids "
+        "into a few classes (here two: hydrophobic and polar) and then looks for runs of "
+        "<i>k</i> consecutive classes that two proteins share, instead of aligning "
+        "residues.</p>"
+        "<p><b>The question this report answers.</b> Can a disordered region carry a "
+        "homology signal? A region with no stable fold has nothing for a structure search "
+        "to encode; a k-mer method reads the sequence regardless. The same human proteins "
+        f"(the {fd.num(f['n_queries'])} with a DisProt entry) are searched against "
+        f"{n_sp} proteomes by each tool, every reported pair is scored against the Pfam "
+        "pair labels, and the scores are split by how disordered the query is.</p>"
+        + (f"<p><b>The answer.</b> {' '.join(answer)}{failed}</p>" if answer else
+           (f"<p><b>The answer.</b>{failed}</p>" if failed else ""))
+        + "<p><b>Read in this order:</b> <a href='#overview'>What was done, and why</a>, "
+          "<a href='#metric_explainers'>How to read the metrics</a>, "
+          "<a href='#auc_pr_all'>AUC-PR on all proteins</a>, then the same table on the "
+          "<a href='#auc_pr_disordered'>disordered</a> queries, then "
+          "<a href='#auc_pr_vs_mya_mqc'>AUC-PR against divergence</a>.</p>"
+          "<h4>Words used on every page</h4><ul>" + glossary + "</ul>")
+
+
+def write_not_in_run(out: Path, f: dict) -> None:
+    """The arms this run has no number for, and why. Absent when every arm reported."""
+    if not f["empty"]:
+        return
+    items = "".join(
+        f"<li><b>{tool_word(t)}.</b> Not built: "
+        + EMPTY_ARM_WHY.get(t.split("_k")[0], "it ran but reported no pair on any proteome.")
+        + "</li>" for t in f["empty"])
+    cfg = {"id": "not_in_run", "section_name": "Not in this run",
+           "description": "<p>Arms with no number in this report, and why. None changes a "
+                          "number above; the tables and the curves leave them out.</p>",
+           "plot_type": "html", "data": f"<ul>{items}</ul>"}
+    (out / "not_in_run_mqc.json").write_text(json.dumps(cfg, indent=1))
+
+
 def write_metric_explainers(out: Path) -> None:
     """How to read the metrics: the threshold sweep read as AUC-PR, recall at 5% FDR, and
     AUC-ROC, with a widget for the first two."""
@@ -285,7 +421,8 @@ def write_metric_explainers(out: Path) -> None:
 def write_overview(out: Path, df: pl.DataFrame, n_queries: int | None) -> None:
     f = overview_facts(df, n_queries)
     arms = "; ".join(
-        tool_word(t) + (" (ran, but reported no pair on any proteome, so it has no metric)"
+        tool_word(t) + (" (ran, but reported no pair on any proteome: a failed arm, see "
+                        "\"Not in this run\")"
                         if f["found"].get(t) == 0 else "") for t in f["tools"])
     steps = [
         f"<b>Query: human proteins with a DisProt entry.</b> {fd.num(f['n_queries'])} proteins: "
@@ -356,40 +493,70 @@ def write_overview(out: Path, df: pl.DataFrame, n_queries: int | None) -> None:
     (out / "overview_mqc.json").write_text(json.dumps(cfg, indent=1))
 
 
-def pivot_metric(df: pl.DataFrame, metric: str, disorder_cat: str) -> pl.DataFrame:
-    """Return wide table: rows=species, cols=tool values."""
+def pivot_metric(df: pl.DataFrame, metric: str, disorder_cat: str):
+    """Wide table: rows = species, columns = the tools that reported anything, then the
+    pairs and positives in the bin. Values to three decimals. Returns (rows, tools,
+    blank): `blank` lists the species whose cells are empty and why."""
     sub = df.filter(pl.col("disorder_category") == disorder_cat)
-    tools = sorted(sub["tool"].unique().to_list())
-    rows = {}
+    tools = [t for t in sorted(sub["tool"].unique().to_list()) if t not in empty_arms(df)]
+    rows, all_pos, none, other = {}, [], [], []
     for sp in SPECIES_ORDER:
         if sp not in MYA:
             continue
         row = {"Sample": sp}
+        here = sub.filter(pl.col("species") == sp)
+        if here.height == 0:
+            continue
+        n_pairs, n_pos = int(here["n_pairs"].max()), int(here["n_positives"].max())
         for tool in tools:
-            val = sub.filter(
-                (pl.col("species") == sp) & (pl.col("tool") == tool)
-            )[metric].to_list()
-            row[tool] = round(val[0], 4) if val and val[0] is not None and val[0] == val[0] else ""
+            val = here.filter(pl.col("tool") == tool)[metric].to_list()
+            row[tool] = (f"{val[0]:.3f}" if val and val[0] is not None and val[0] == val[0]
+                         else "")
+        row["pairs"] = n_pairs
+        row["positive"] = n_pos
         rows[sp] = row
-    return rows, tools
+        if any(row[t] == "" for t in tools):
+            if n_pairs and n_pairs == n_pos:
+                all_pos.append(f"{sp} ({n_pairs} pairs)")
+            elif n_pairs == 0:
+                none.append(sp)
+            else:
+                other.append(sp)
+    blank = []
+    if all_pos:
+        blank.append(", ".join(all_pos) + ": every pair in this bin is positive, and with "
+                     "no negative pair there is no precision to compute")
+    if none:
+        blank.append(", ".join(none) + ": no pair in this bin")
+    if other:
+        blank.append(", ".join(other) + ": the tool reported no pair in this bin")
+    return rows, tools, blank
 
 
 def write_table_mqc(path: Path, rows: dict, tools: list[str],
                     section_name: str, description: str,
-                    scale: str = "RdYlGn") -> None:
+                    blank: list[str] | None = None) -> None:
+    if blank:
+        description += (" Blank cells: " + "; ".join(blank) + ".")
+    cols = tools + ["pairs", "positive"]
     with open(path, "w") as f:
         f.write(f"# plot_type: 'table'\n")
         f.write(f"# section_name: '{section_name}'\n")
         f.write(f"# description: '{description} <a href=\"#overview\">&uarr; back to the data flow</a>'\n")
         f.write(f"# pconfig:\n")
         f.write(f"#   namespace: 'DisProt Benchmark'\n")
-        header = "Sample\t" + "\t".join(tools)
+        f.write(f"# headers:\n")
+        for t in tools:
+            f.write(f"#   {t}:\n#     format: '{{:,.3f}}'\n#     min: 0\n#     max: 1\n")
+        f.write(f"#   pairs:\n#     title: 'pairs'\n#     description: 'human x target pairs in this bin'\n#     format: '{{:,.0f}}'\n#     scale: false\n")
+        f.write(f"#   positive:\n#     title: 'positive'\n#     description: 'pairs that share a Pfam family'\n#     format: '{{:,.0f}}'\n#     scale: false\n")
+        header = "Sample\t" + "\t".join(cols)
         f.write(header + "\n")
         for sp in SPECIES_ORDER:
             if sp not in rows:
                 continue
             r = rows[sp]
-            vals = "\t".join(str(r.get(t, "")) for t in tools)
+            vals = "\t".join(str(r.get(t, "")) for t in cols)
             f.write(f"{sp}\t{vals}\n")
 
 
@@ -398,7 +565,7 @@ def write_linegraph_mqc(path: Path, df: pl.DataFrame, metric: str,
                         disorder_cat: str = "all") -> None:
     """Write a MultiQC custom linegraph YAML (x=MYA, lines=tools)."""
     sub = df.filter(pl.col("disorder_category") == disorder_cat)
-    tools = sorted(sub["tool"].unique().to_list())
+    tools = [t for t in sorted(sub["tool"].unique().to_list()) if t not in empty_arms(df)]
 
     datasets = []
     for tool in tools:
@@ -406,7 +573,7 @@ def write_linegraph_mqc(path: Path, df: pl.DataFrame, metric: str,
         points = {}
         for row in t_sub.iter_rows(named=True):
             if row[metric] is not None and row[metric] == row[metric]:
-                points[row["mya"]] = round(row[metric], 4)
+                points[row["mya"]] = round(row[metric], 3)
         if points:
             datasets.append({tool: points})
 
@@ -441,12 +608,14 @@ def write_linegraph_mqc(path: Path, df: pl.DataFrame, metric: str,
         f.write("\n".join(lines) + "\n")
 
 
-def write_multiqc_config(path: Path, tools: list[str], header: str = "") -> None:
+def write_multiqc_config(path: Path, tools: list[str], header: str = "",
+                         intro: str = "", empty: list[str] = ()) -> None:
     tool_color_block = "\n".join(
         f"  '{t}': '{TOOL_COLORS.get(t, '#888888')}'"
         for t in tools
     )
-    tool_list = ", ".join(tool_word(t).split(" (")[0] for t in tools)
+    # The subtitle names the arms that have a number; a failed arm is not one of them.
+    tool_list = ", ".join(tool_word(t).split(" (")[0] for t in tools if t not in empty)
     # Each file here is its own MultiQC module (no parent_id), and MODULES sort with the
     # largest order first, the reverse of sections inside one module. So the first id in
     # SECTION_ORDER gets the largest number.
@@ -455,12 +624,7 @@ def write_multiqc_config(path: Path, tools: list[str], header: str = "") -> None
     content = f"""\
 title: "DisProt Benchmark"
 subtitle: "{tool_list}: homology detection through intrinsically disordered regions"
-intro_text: >
-  Human proteins with a DisProt entry, searched against nine QfO proteomes (100 to 2000
-  million years from human) by {tool_list}, scored against the Pfam pair labels and split
-  by how disordered the query protein is. The first section says what was run, with this
-  run's numbers, why, and how the data flows to the tables.
-
+{fd.yaml_html("intro_text", intro) if intro else ""}
 report_section_order:
 {order_block}
 
@@ -515,21 +679,25 @@ def main(metrics_parquet: str, outdir: str, stats_txt: str | None = None) -> Non
         suffix = cat.replace(" ", "_")
 
         # AUC-PR
-        rows, tools = pivot_metric(df, "auc_pr", cat)
+        rows, tools, blank = pivot_metric(df, "auc_pr", cat)
         write_table_mqc(
             out / f"auc_pr_{suffix}_mqc.tsv", rows, tools,
             section_name=f"AUC-PR — {cat} proteins",
             description=(f"Area under the precision-recall curve, {cat} query proteins, one row per "
-                         f"target proteome in divergence order."),
+                         f"target proteome in divergence order, with the pairs and positive "
+                         f"pairs in the bin."),
+            blank=blank,
         )
 
         # Recall@FDR5
-        rows, tools = pivot_metric(df, "recall_at_fdr05", cat)
+        rows, tools, blank = pivot_metric(df, "recall_at_fdr05", cat)
         write_table_mqc(
             out / f"recall_fdr5_{suffix}_mqc.tsv", rows, tools,
             section_name=f"Recall @ FDR 5% — {cat} proteins",
             description=(f"Recall reached while precision stays at or above 0.95, {cat} query "
-                         f"proteins, one row per target proteome in divergence order."),
+                         f"proteins, one row per target proteome in divergence order, with the "
+                         f"pairs and positive pairs in the bin."),
+            blank=blank,
         )
 
     # ── Line graph: AUC-PR vs Mya (all proteins) ─────────────────────────────
@@ -556,9 +724,11 @@ def main(metrics_parquet: str, outdir: str, stats_txt: str | None = None) -> Non
 
     # ── MultiQC config ────────────────────────────────────────────────────────
     f = overview_facts(df, read_query_count(Path(stats_txt) if stats_txt else None))
-    arms = "; ".join(tool_word(t) + (" (ran, reported no pair)" if f["found"].get(t) == 0 else "")
+    arms = "; ".join(tool_word(t) + (" (ran, reported no pair: a failed arm)" if f["found"].get(t) == 0 else "")
                      for t in f["tools"])
-    write_multiqc_config(out / "multiqc_config.yaml", all_tools, header=fd.header_yaml([
+    write_not_in_run(out, f)
+    write_multiqc_config(out / "multiqc_config.yaml", all_tools, intro=first_screen_html(f, df),
+                         empty=f["empty"], header=fd.header_yaml([
         ("Query", f"human proteins with a DisProt entry, {fd.num(f['n_queries'])} proteins"),
         ("Targets", f"{len(f['species'])} Quest-for-Orthologs proteomes, {fd.num(f['mya_min'])} to "
                     f"{fd.num(f['mya_max'])} million years from human"),
