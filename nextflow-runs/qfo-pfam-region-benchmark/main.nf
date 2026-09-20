@@ -336,8 +336,10 @@ params.min_overlap = 0.5
 // time/CPU/memory, in the sections built by bin/build_multiqc_inputs.py.
 //
 // The frontier and the curve sections need ONE truth set, since a number averaged across
-// Pfam and Swiss-Prot has no interpretation. Default is whichever of them is present,
-// preferring Swiss-Prot because Pfam is circular with the profile baselines.
+// Pfam and Swiss-Prot has no interpretation. Default is Pfam when present (since
+// 2026-09-19; Swiss-Prot before that): every proteome carries a full Pfam map, whereas
+// Swiss-Prot coverage follows curation depth and ranks Ciona by its 23 reviewed proteins.
+// Pfam's circularity with the profile baselines is measured by the hmmscan ceiling.
 params.skip_multiqc = false
 params.multiqc_primary_truth = null
 params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
@@ -350,6 +352,12 @@ params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
 params.multiqc_max_tools    = 20
 params.multiqc_max_lines    = 12
 params.multiqc_top_kmerseek = 5
+// What the query FASTA holds, in words, for the head of the report: "human proteins from
+// chromosome 6, a test subset". The metrics carry no record of which gene set built the
+// query FASTA (a chromosome-6 subset and the whole proteome look the same in the parquet),
+// so the run that knows says it here. Null means the head says "human proteins" and
+// nothing about a subset. The Makefile's midi targets set it.
+params.query_set_label = null
 
 // One report covering SEVERAL runs' outdirs. Comma-separated, `-entry report` only.
 //
@@ -3365,6 +3373,11 @@ process buildMultiqcInputs {
 
     input:
     tuple path(metrics), path(curves), path(trace), path(human_fasta), path(bpe)
+    // The data-flow diagram module every report in the repository shares. Staged rather
+    // than imported from ../shared by path: under Apptainer only staged paths are bound
+    // into the container, and the report script finds it through PYTHONPATH below.
+    path flow_module, stageAs: 'flow_diagram.py'
+    path explainers_module, stageAs: 'metric_explainers.py'
     path kmerseek_timings, stageAs: 'kmerseek_timings/*'
     // stageAs with a bare `*`, so every file keeps its own name. That is not cosmetic:
     // spectrum.<species>.<alphabet>.k<ksize>.lc<true|false>.csv.gz carries the species and
@@ -3378,6 +3391,9 @@ process buildMultiqcInputs {
     script:
     def primary = params.multiqc_primary_truth
         ? "--primary-truth ${params.multiqc_primary_truth}" : ""
+    // Quoted: the label is a phrase with spaces and an apostrophe is possible.
+    def query_set = params.query_set_label
+        ? "--query-set \"${params.query_set_label.replace('"', '\\"')}\"" : ""
     // The BPE panel is a side measurement no search produced, so its absence is normal.
     // The sentinel keeps this process's input signature fixed either way.
     def bpe_arg = bpe.name == 'NO_BPE' ? "" : "--bpe-boundary ${bpe}"
@@ -3397,6 +3413,7 @@ process buildMultiqcInputs {
     // being passed does not make the spectra a required input.
     """
     set -euo pipefail
+    export PYTHONPATH="\$PWD\${PYTHONPATH:+:\$PYTHONPATH}"
     n_queries=\$(grep -c '^>' ${human_fasta} || true)
 
     build_multiqc_inputs.py \\
@@ -3409,7 +3426,7 @@ process buildMultiqcInputs {
         --max-tools    ${params.multiqc_max_tools} \\
         --max-lines    ${params.multiqc_max_lines} \\
         --top-kmerseek ${params.multiqc_top_kmerseek} \\
-        --outdir       multiqc_in ${primary} ${bpe_arg}
+        --outdir       multiqc_in ${primary} ${bpe_arg} ${query_set}
     """
 }
 
@@ -3451,8 +3468,11 @@ process multiqcReport {
     set -euo pipefail
     export MPLCONFIGDIR=\$PWD/.mplconfig
 
+    # report_header.yaml is the run-in-six-lines block under the title, written by
+    # build_multiqc_inputs.py from the metrics; a later --config adds to the earlier one.
     multiqc ${sections} \\
         --config ${mqc_config} \\
+        \$( [ -f ${sections}/report_header.yaml ] && echo --config ${sections}/report_header.yaml ) \\
         --filename qfo_pfam_region_multiqc.html \\
         --outdir . \\
         --no-version-check \\
@@ -4454,7 +4474,9 @@ workflow multiqcFromMetrics {
         // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
         .map { m, c, b -> tuple(m, c, resolveTrace(), file(human_fasta), b) }
 
-    sections = buildMultiqcInputs(mqc_in, kmerseek_timings, kmerseek_spectra).sections
+    flow_module = Channel.value(file("${projectDir}/../shared/flow_diagram.py"))
+    explainers  = Channel.value(file("${projectDir}/../shared/metric_explainers.py"))
+    sections = buildMultiqcInputs(mqc_in, flow_module, explainers, kmerseek_timings, kmerseek_spectra).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
 }
 
