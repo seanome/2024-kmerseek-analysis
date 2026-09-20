@@ -51,6 +51,13 @@ params.kmerseek_encoding = "hp-thomas-dill"
 
 // Foldseek
 params.skip_foldseek     = false
+// Reuse what an earlier run published under --outdir instead of recomputing it: the
+// ground truth, the query FASTA, the disorder scores, and every search result file that
+// is non-empty. Only the arms whose published file is missing or EMPTY are run. Added
+// 2026-09-20 to repeat the Foldseek arm alone after the structure downloader was fixed:
+// the old work/ had been pruned, so -resume had nothing to resume, and a full rerun
+// needs the kmerseek 0.3.1 image, which no longer exists.
+params.reuse_results     = false
 params.evalue_report     = 10.0
 
 // MMseqs2
@@ -460,7 +467,10 @@ process multiQC {
 
     output:
     path "multiqc_report.html"
-    path "multiqc_data/"
+    // multiqc names the data directory after --filename: multiqc_report_data/, not
+    // multiqc_data/. The old name made the process fail on a missing output after the
+    // report had been written (fixed 2026-09-20).
+    path "multiqc_report_data/"
 
     script:
     """
@@ -495,45 +505,74 @@ workflow {
         }
     )
 
+    // A published search result that has something in it. An empty file is what an arm
+    // that ran on nothing wrote (Foldseek, 2026-08), and it must be rerun, not reused.
+    def published = { String tool, String species ->
+        def f = file("${params.outdir}/${tool}/human_vs_${species}.${tool}.tsv.gz")
+        if (!f.exists()) return null
+        def stream = new java.util.zip.GZIPInputStream(f.newInputStream())
+        try { return stream.read() == -1 ? null : f } finally { stream.close() }
+    }
+    def reuse = params.reuse_results
+    if (reuse) {
+        def gt_dir = file("${params.outdir}/disprot")
+        for (name in ["disprot_benchmark_queries.fasta", "benchmark_stats.txt", "query_disorder_scores.tsv"]) {
+            if (!gt_dir.resolve(name).exists()) {
+                error "--reuse_results: ${gt_dir}/${name} is missing; run without the flag first"
+            }
+        }
+        log.info "reusing the ground truth, disorder scores and non-empty search results under ${params.outdir}"
+    }
+
     // -----------------------------------------------------------------------
     // Steps 1-3: Build IDR benchmark dataset (DisProt or MobiDB)
     // -----------------------------------------------------------------------
-    if (params.database == "mobidb") {
-        disprot_raw = downloadMobidb(params.mobidb_json ?: "null")
+    if (reuse) {
+        def gt_dir = file("${params.outdir}/disprot")
+        disprot_gt_ch = Channel.fromList(SPECIES.collect { s ->
+            tuple(s.label, gt_dir.resolve("gt/human_vs_${s.label}_ground_truth.parquet")) })
+        query_fasta = Channel.value(gt_dir.resolve("disprot_benchmark_queries.fasta"))
+        gt_stats    = Channel.value(gt_dir.resolve("benchmark_stats.txt"))
+        disorder_scores = Channel.value(gt_dir.resolve("query_disorder_scores.tsv"))
     } else {
-        disprot_raw = downloadDisprot(params.disprot_json ?: "null")
-    }
-
-    disprot_mapping = mapDisprotToPfam(
-        disprot_raw,
-        file(params.pfam_pairs_dir)
-    )
-
-    gt_out = buildDisprotGroundTruth(
-        disprot_mapping,
-        file(params.pfam_pairs_dir),
-        human_fasta
-    )
-
-    // Emit benchmark stats to log
-    gt_out.stats.subscribe { f -> log.info "Benchmark stats:\n" + f.text }
-
-    // Per-species ground truth channel: (species_label, parquet_file)
-    disprot_gt_ch = gt_out.gt_parquets
-        .flatten()
-        .map { f ->
-            def m = (f.name =~ /human_vs_(.+)_ground_truth\.parquet/)
-            def label = m ? m[0][1] : f.baseName
-            tuple(label, f)
+        if (params.database == "mobidb") {
+            disprot_raw = downloadMobidb(params.mobidb_json ?: "null")
+        } else {
+            disprot_raw = downloadDisprot(params.disprot_json ?: "null")
         }
 
-    // Single query FASTA (DisProt human proteins that passed filtering)
-    query_fasta = gt_out.query_fasta
+        disprot_mapping = mapDisprotToPfam(
+            disprot_raw,
+            file(params.pfam_pairs_dir)
+        )
 
-    // -----------------------------------------------------------------------
-    // Step 4: Predict disorder scores
-    // -----------------------------------------------------------------------
-    disorder_scores = predictDisorder(query_fasta)
+        gt_out = buildDisprotGroundTruth(
+            disprot_mapping,
+            file(params.pfam_pairs_dir),
+            human_fasta
+        )
+
+        // Emit benchmark stats to log
+        gt_out.stats.subscribe { f -> log.info "Benchmark stats:\n" + f.text }
+
+        // Per-species ground truth channel: (species_label, parquet_file)
+        disprot_gt_ch = gt_out.gt_parquets
+            .flatten()
+            .map { f ->
+                def m = (f.name =~ /human_vs_(.+)_ground_truth\.parquet/)
+                def label = m ? m[0][1] : f.baseName
+                tuple(label, f)
+            }
+
+        // Single query FASTA (DisProt human proteins that passed filtering)
+        query_fasta = gt_out.query_fasta
+        gt_stats    = gt_out.stats
+
+        // -----------------------------------------------------------------------
+        // Step 4: Predict disorder scores
+        // -----------------------------------------------------------------------
+        disorder_scores = predictDisorder(query_fasta)
+    }
 
     // -----------------------------------------------------------------------
     // Step 5: Kmerseek (species × k combinations)
@@ -543,9 +582,15 @@ workflow {
         : params.kmerseek_k_values.toString().tokenize(',').collect { it.trim().toInteger() }
     k_ch = Channel.fromList(k_list)
 
-    // Build one index per species × k
+    // Species x k combos whose result is already published, and the ones to search.
+    kmerseek_reused = Channel.fromList(reuse ? SPECIES.collectMany { s -> k_list.collect { k ->
+        def f = published("kmerseek_k${k}", s.label)
+        f ? tuple(s.label, "kmerseek_k${k}".toString(), f) : null } }.findAll { it } : [])
     kmerseek_index_input = species_ch.combine(k_ch)
+        .filter { species, _fasta, k -> !(reuse && published("kmerseek_k${k}", species)) }
         .map { species, fasta, k -> tuple(species, fasta, k) }
+
+    // Build one index per species × k
     kmerseek_index_ch = kmerseekIndex(kmerseek_index_input)
 
     // Search with query FASTA against each index
@@ -554,16 +599,18 @@ workflow {
         .combine(query_fasta)
         .map { species, k, db, qf -> tuple(species, k, db, qf) }
     kmerseek_raw_ch = kmerseekSearch(kmerseek_search_input)
-    kmerseek_results = formatKmerseekResults(kmerseek_raw_ch)
+    kmerseek_results = formatKmerseekResults(kmerseek_raw_ch).mix(kmerseek_reused)
 
     // -----------------------------------------------------------------------
     // Step 6: Foldseek (optional)
     // -----------------------------------------------------------------------
-    foldseek_results = Channel.empty()
+    foldseek_results = Channel.fromList(reuse ? SPECIES.collect { s ->
+        def f = published("foldseek", s.label); f ? tuple(s.label, "foldseek", f) : null }.findAll { it } : [])
     if (!params.skip_foldseek) {
         // Download structures for human queries AND all species in one channel.
         // Human is tagged "human"; species use their species label.
-        all_for_af = query_fasta.map { f -> tuple("human", f) }.mix(species_ch)
+        all_for_af = query_fasta.map { f -> tuple("human", f) }
+            .mix(species_ch.filter { species, _fasta -> !(reuse && published("foldseek", species)) })
         all_structs_ch = downloadAlphaFoldStructures(all_for_af)
 
         human_structs_ch   = all_structs_ch.filter { label, _structs -> label == "human" }
@@ -576,16 +623,19 @@ workflow {
                 tuple(sp_label, hu_structs, sp_structs)
             }
 
-        foldseek_results = foldseekSearch(foldseek_input)
+        foldseek_results = foldseek_results.mix(foldseekSearch(foldseek_input))
     }
 
     // -----------------------------------------------------------------------
     // Step 7: MMseqs2
     // -----------------------------------------------------------------------
+    mmseqs2_reused = Channel.fromList(reuse ? SPECIES.collect { s ->
+        def f = published("mmseqs2", s.label); f ? tuple(s.label, "mmseqs2", f) : null }.findAll { it } : [])
     mmseqs2_input = species_ch
+        .filter { species, _fasta -> !(reuse && published("mmseqs2", species)) }
         .combine(query_fasta)
         .map { species, fasta, qf -> tuple(species, fasta, qf) }
-    mmseqs2_results = mmseqs2EasySearch(mmseqs2_input)
+    mmseqs2_results = mmseqs2EasySearch(mmseqs2_input).mix(mmseqs2_reused)
 
     // -----------------------------------------------------------------------
     // Step 8: Evaluate — join tool results with ground truth + disorder scores
@@ -618,7 +668,7 @@ workflow {
     // -----------------------------------------------------------------------
     // Step 11: MultiQC
     // -----------------------------------------------------------------------
-    multiQC(agg_out[0], gt_out.stats,
+    multiQC(agg_out[0], gt_stats,
             Channel.value(file("${projectDir}/../shared/flow_diagram.py")),
             Channel.value(file("${projectDir}/../shared/metric_explainers.py")))
 
