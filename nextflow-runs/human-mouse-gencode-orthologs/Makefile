@@ -11,7 +11,10 @@ DOCKER_MEMORY_MIB := 102400
 multiqc:
 	bin/make_multiqc_input.py \
 	    $(OUTDIR)/kmer_sweep_summary.json \
-	    /tmp/human_mouse_orthologs_mqc_input
+	    /tmp/human_mouse_orthologs_mqc_input \
+	    $(OUTDIR)/ortholog_stats.txt \
+	    $(HOME)/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa \
+	    $(HOME)/data/gencode/mouse/m38/gencode.vM38.pc_translations.canonical.fa
 	/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/multiqc \
 	    /tmp/human_mouse_orthologs_mqc_input/ \
 	    --config /tmp/human_mouse_orthologs_mqc_input/multiqc_config.yaml \

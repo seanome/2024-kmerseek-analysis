@@ -255,7 +255,10 @@ def reachable() -> str:
                   body, cfg, toy="Toy example: one query protein with three domains.")
 
 
-def bh(alpha: float = 0.05) -> str:
+def bh(alpha: float = 0.05, m_words: str = "all hits of its combo",
+       recall_over: str = "ortholog hits with p below \u03b1") -> str:
+    """The correction step as a picture. `m_words` says what m counts and `recall_over` what
+    the recall denominator is, because the two ortholog pipelines define them differently."""
     p = [{"p": 0.0004, "o": True}, {"p": 0.001, "o": True}, {"p": 0.003, "o": True}, {"p": 0.006, "o": False},
          {"p": 0.011, "o": True}, {"p": 0.014, "o": True}, {"p": 0.02, "o": False}, {"p": 0.031, "o": True},
          {"p": 0.04, "o": False}, {"p": 0.055, "o": True}, {"p": 0.08, "o": False}, {"p": 0.12, "o": True}]
@@ -265,10 +268,10 @@ def bh(alpha: float = 0.05) -> str:
               '<button type="button" data-m="bonferroni" aria-pressed="false">Bonferroni</button></div></div>'
               '<svg viewBox="0 0 760 200"></svg>')
     return _block("bh", "Precision and recall after multiple-testing correction",
-                  f"Every hit's Poisson p-value is corrected over all hits of its combo. Benjamini-Hochberg "
+                  f"Every hit's Poisson p-value is corrected with m = {m_words}. Benjamini-Hochberg "
                   f"ranks the p-values and calls those under the line α · rank / m; Bonferroni uses "
                   f"the flat line α / m. Precision is the share of called hits that are orthologs; recall "
-                  f"is the share of ortholog hits with p below α that survive the correction, so it is "
+                  f"is the share of {recall_over} that survive the correction, so it is "
                   f"recall of the correction step, not of the search.",
                   body, {"p": p, "alpha": alpha}, toy="Toy example: 12 hits with made-up p-values, α = 0.05.")
 
