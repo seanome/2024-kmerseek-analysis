@@ -110,7 +110,7 @@ def test_it_is_written_and_says_which_truth_set(tmp_path):
     cfg = built(tmp_path)
     assert cfg, "the conclusions section was not written"
     assert cfg["id"] == "qfo_conclusions"
-    assert "pfam" in cfg["description"]
+    assert "Pfam answer key" in cfg["description"]
 
 
 def test_the_recall_at_precision_headline_names_the_arm_and_the_baseline(tmp_path):

@@ -352,6 +352,12 @@ params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
 params.multiqc_max_tools    = 20
 params.multiqc_max_lines    = 12
 params.multiqc_top_kmerseek = 5
+// What the query FASTA holds, in words, for the head of the report: "human proteins from
+// chromosome 6, a test subset". The metrics carry no record of which gene set built the
+// query FASTA (a chromosome-6 subset and the whole proteome look the same in the parquet),
+// so the run that knows says it here. Null means the head says "human proteins" and
+// nothing about a subset. The Makefile's midi targets set it.
+params.query_set_label = null
 
 // One report covering SEVERAL runs' outdirs. Comma-separated, `-entry report` only.
 //
@@ -3385,6 +3391,9 @@ process buildMultiqcInputs {
     script:
     def primary = params.multiqc_primary_truth
         ? "--primary-truth ${params.multiqc_primary_truth}" : ""
+    // Quoted: the label is a phrase with spaces and an apostrophe is possible.
+    def query_set = params.query_set_label
+        ? "--query-set \"${params.query_set_label.replace('"', '\\"')}\"" : ""
     // The BPE panel is a side measurement no search produced, so its absence is normal.
     // The sentinel keeps this process's input signature fixed either way.
     def bpe_arg = bpe.name == 'NO_BPE' ? "" : "--bpe-boundary ${bpe}"
@@ -3417,7 +3426,7 @@ process buildMultiqcInputs {
         --max-tools    ${params.multiqc_max_tools} \\
         --max-lines    ${params.multiqc_max_lines} \\
         --top-kmerseek ${params.multiqc_top_kmerseek} \\
-        --outdir       multiqc_in ${primary} ${bpe_arg}
+        --outdir       multiqc_in ${primary} ${bpe_arg} ${query_set}
     """
 }
 

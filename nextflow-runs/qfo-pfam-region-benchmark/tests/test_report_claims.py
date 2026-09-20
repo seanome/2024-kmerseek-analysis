@@ -423,7 +423,7 @@ def test_a_pinned_arm_that_does_not_exist_is_reported_loudly(tmp_path):
     bmi.CANONICAL = ("kmerseek", "not_a_real_alphabet_k9_lcFalse")
     bmi.section_canonical(tmp_path, plddt_metrics())
     sec = json.loads((tmp_path / "qfo_canonical_mqc.json").read_text())
-    assert "Pinned arm not found" in sec["data"]
+    assert "The arm to mark was not found" in sec["data"]
 
 
 def test_the_pinned_section_names_the_arm_and_its_score(tmp_path):
@@ -431,7 +431,7 @@ def test_the_pinned_section_names_the_arm_and_its_score(tmp_path):
     bmi.section_canonical(tmp_path, plddt_metrics())
     sec = json.loads((tmp_path / "qfo_canonical_mqc.json").read_text())
     assert "polarity4_k16_lcFalse" in sec["data"]
-    assert "swissprot" in sec["data"]
+    assert "Swiss-Prot features" in sec["data"]
     assert "How it is chosen" in sec["description"]
     assert "No arm is hard-coded" in sec["description"]
     assert sec["data"].count(bmi.CANONICAL_MARK.strip()) == 1, (

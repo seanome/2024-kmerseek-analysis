@@ -143,6 +143,16 @@ MINI_COMBOS  ?= protein20:10,hp_pbotc_1st_ed2:19
 # domain instances. chr6 because it carries the MHC, so this subsumes the MHC vignette.
 MIDI_TARGETS ?= mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
 
+# What the query FASTA holds, in words, for the head of the MultiQC report. The metrics
+# carry no record of which gene set built the query FASTA, so the run that knows says it.
+# The midi targets set QUERY_SET_LABEL themselves; a `make multiqc*` on another run's
+# results passes it on the command line, or leaves it empty and the head says "human
+# proteins" with nothing about a subset.
+MIDI_QUERY_SET      := human proteins from chromosome 6, a test subset of the proteome
+MIDI_PLUS_QUERY_SET := human proteins from chromosome 6 plus the MHC's partners on other chromosomes, a test subset of the proteome
+QUERY_SET_LABEL ?=
+QUERY_SET_NF_ARG  = $(if $(QUERY_SET_LABEL),--query_set_label "$(QUERY_SET_LABEL)",)
+
 # midi-plus searches one more target: Botryllus schlosseri, a colonial tunicate at the same
 # 550 MYA node as ciona. It is SEARCHED BUT NOT SCORED -- it has no Pfam annotations, so
 # build_domain_truth.py writes no domain map for it and main.nf's score_in inner-joins it
@@ -755,6 +765,7 @@ multiqc-local:
 	    --outdir     $(MULTIQC_OUTDIR_LOCAL) \
 	    --report_trace $(abspath $(TRACE_LOCAL)) \
 	    --qfo_dir    $(QFO_DIR) \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
 # The report is one self-contained HTML plus its exported figures. The figures come down
@@ -1619,6 +1630,7 @@ MIDI_OUTDIR ?= ../data/midi/results
 # per-task container rather than a per-run one.
 #
 # Both images are prefetched because a run now genuinely uses both.
+run-midi: QUERY_SET_LABEL := $(MIDI_QUERY_SET)
 run-midi: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi: prefetch-images midi-testset-sherlock
 	$(call require_cluster)
@@ -1642,6 +1654,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	    --pfamn_dir       ../data/pfamn \
 	    --prostt5_weights ../data/prostt5/weights \
 	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
 # ---- midi-plus: chr6 PLUS the MHC's off-chromosome partners ----------------
@@ -1708,6 +1721,7 @@ midi-plus-testset-sherlock:
 # cache, not assumed.
 MIDI_PLUS_OUTDIR ?= ../data/midi-plus/results
 
+run-midi-plus: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
 run-midi-plus: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	$(call require_cluster)
@@ -1731,6 +1745,7 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    --pfamn_dir       ../data/pfamn \
 	    --prostt5_weights ../data/prostt5/weights \
 	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
 # ---- midi-plus across every QfO target -------------------------------------
@@ -1833,6 +1848,7 @@ queue-empty:
 # The only run whose head has to stay alive for the better part of a week. It gets there on
 # the partition QOS rather than a QOS of its own -- see the note on HEAD_QOS above for why
 # `long` is not usable on hns.
+run-midi-plus-all-qfo: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
 run-midi-plus-all-qfo: HEAD_TIME := 7-00:00:00
 run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
@@ -1909,6 +1925,7 @@ run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	    --pfamn_dir       ../data/pfamn \
 	    --prostt5_weights ../data/prostt5/weights \
 	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
 # ---- polarity4 and funcgroups8 (Rannon & Burstein 2026) --------------------
@@ -2066,6 +2083,7 @@ multiqc: multiqc-preflight prefetch-images
 	    --outdir     $(MULTIQC_OUTDIR) \
 	    --report_trace $(abspath $(TRACE)) \
 	    --qfo_dir    ../data/qfo \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
 # ---- one report over run-midi AND run-rannon-burstein ---------------------
@@ -2119,6 +2137,7 @@ RB_COMBINED_TRACE  := $(RB_RUN_DIR)/combined.trace.txt
 ## published by then.
 MIDI_PARTIAL_OUTDIR ?= ../data/midi/results-partial
 
+multiqc-partial: QUERY_SET_LABEL := $(MIDI_QUERY_SET)
 multiqc-partial: PREFETCH_CONTAINERS := $(IMAGE_REMOTE) $(ALL_CONTAINERS)
 multiqc-partial: prefetch-images
 	$(call require_cluster)
@@ -2162,6 +2181,7 @@ multiqc-partial: prefetch-images
 	    --report_trace    none \
 	    --allow_dead_arms true \
 	    --qfo_dir         ../data/midi/qfo \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 	@echo
 	@echo "  Partial report under $(MIDI_PARTIAL_OUTDIR). Pull it to the Mac with:"
@@ -2197,6 +2217,7 @@ multiqc-rannon-burstein: prefetch-images
 	    --outdir          $(RB_COMBINED_OUTDIR) \
 	    --report_trace    $(abspath $(RB_COMBINED_TRACE)) \
 	    --qfo_dir         ../data/midi/qfo \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
 ## Attach to the head job's tmux and watch the live task table.

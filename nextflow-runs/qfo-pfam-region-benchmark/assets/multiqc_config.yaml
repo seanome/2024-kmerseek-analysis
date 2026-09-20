@@ -9,33 +9,22 @@
 # moved.
 
 title: "QfO Pfam region benchmark"
-subtitle: "Domain finding across Quest-for-Orthologs target proteomes: which stretch of a human protein is a PF00001, and did the tool find it"
-# What was done and why, with this run's own numbers, is the first section ("What was done,
-# and why"). Nothing about the results lives here: every claim in the report is computed
-# from the run in the "What this run concluded" section, so a sentence written by hand up
-# here could only go stale or contradict it. Until 2026-09-19 this text carried a
-# disorder-direction claim from an earlier run that the data of later runs reversed.
-intro_text: >
-  Every tool here searches human query proteins against a Quest-for-Orthologs target
-  proteome and reports aligned regions. Each region becomes a domain call by transferring
-  the Pfam families annotated on the overlapped target interval onto the query interval,
-  then scoring that call against the human protein's own domain instances. Right family in
-  the wrong place counts as a false positive. This is not pair-level orthology: a tool
-  that finds the correct protein but misplaces the region scores no better than a miss.
+subtitle: "Domain finding across Quest-for-Orthologs target proteomes: which stretch of a human protein is a given Pfam domain, and did the tool find it"
+# The first screen (what kmerseek is, the question, the answer with its numbers, the
+# caveats, the reading order, the words) is `intro_text`, and it is WRITTEN BY THE BUILDER
+# into multiqc_in/report_header.yaml, which multiqcReport passes as a later --config. It is
+# not here because the answer carries numbers, and a number typed into this file is stale
+# by the next run. Until 2026-09-19 this file carried a disorder-direction claim from an
+# earlier run that the data of later runs reversed.
 
 report_comment: >
-  Numbers are read off <code>all_domain_metrics.parquet</code> and the Nextflow trace from
-  the same run. Only the Pfam answer key is split in half: the sweep picks kmerseek's
-  alphabet and k on one half and its Pfam accuracy is read on the other, because reporting
-  the winner on the data that chose it is optimistically biased. The Swiss-Prot and Pfam-N
-  keys are not swept and are scored whole.
-  <br><br>
-  No number in this report carries a sampling error. Every value is a mean over target
-  proteomes with no resampling behind it, so a gap narrower than the species-to-species
-  spread the leaderboards report as an SD is not a result. Which kmerseek arm a figure
-  draws also depends on that figure's own ranking metric and truth set, so an arm followed
-  from one section to the next is not necessarily the same arm; pass
-  <code>--canonical-variant</code> to pin one and mark it everywhere.
+  Only the Pfam answer key is split in half: the sweep picks kmerseek's alphabet and k on
+  one half and its Pfam accuracy is read on the other, because reporting the winner on the
+  data that chose it is optimistically biased. The Swiss-Prot and Pfam-N keys are not
+  swept and are scored whole. Which kmerseek arm a figure draws depends on that figure's
+  own ranking metric and answer key, so the arm marked &#9733; is drawn in every figure
+  and is the one to follow from section to section. How the report was built, with every
+  file and flag name, is in "Reproducing this report" at the end.
 
 # Not a sequencing run: nothing here is a FASTQ and the sections are plots, not per-sample
 # QC. Turning these off removes UI that would only mislead.
@@ -101,9 +90,11 @@ report_section_order:
   qfo_region_supp: { order: 800 }
 
   # 1. Read first: what was done, the arms at a glance, how to read the numbers, what the run concluded.
+  # The explainers come before the at-a-glance table so Fmax is defined before the first
+  # table that uses it (swapped 2026-09-20).
   qfo_overview: { order: 100 }
-  qfo_general_stats: { order: 105 }
-  qfo_metric_explainers: { order: 110 }
+  qfo_metric_explainers: { order: 105 }
+  qfo_general_stats: { order: 110 }
   qfo_conclusions: { order: 115 }
   # 2. The answer keys: where the truth comes from, and what a target proteome can supply at all.
   qfo_truth_provenance: { order: 300 }
@@ -203,7 +194,7 @@ report_section_order:
   qfo_kmer_spectra: { order: 1430 }
   qfo_kmer_spectra_table: { order: 1435 }
   qfo_kmer_spectra_lc: { order: 1440 }
-  # 9. Cost. In a run built without a trace most of these say so and stop; they sit last so the report does not open on three empty sections.
+  # 9. Cost. In a run built without a trace these are absent and "Not in this run" says so.
   qfo_frontier: { order: 1700 }
   qfo_timing_coverage: { order: 1705 }
   qfo_capability: { order: 1710 }
@@ -219,9 +210,10 @@ report_section_order:
   qfo_res_efficiency: { order: 1760 }
   qfo_res_io: { order: 1765 }
   qfo_res_status: { order: 1770 }
-  qfo_resources_missing: { order: 1775 }
   qfo_run_summary: { order: 1780 }
-  # 10. Methods and citations.
+  # 10. What this run could not draw, how to rebuild it, and the citations.
+  qfo_not_in_run: { order: 1890 }
+  qfo_reproduce: { order: 1895 }
   qfo_citations: { order: 1900 }
   # 8. What a coarse alphabet keeps and loses: only kmerseek, cut by feature length,
   #    feature type, and recognition against placement (averaged over k, then at best k).

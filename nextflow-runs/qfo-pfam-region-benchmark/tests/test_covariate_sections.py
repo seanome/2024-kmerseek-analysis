@@ -43,16 +43,22 @@ def written(tmp_path, omega_bins) -> dict:
 
 
 def test_single_bin_axis_says_so_instead_of_drawing_a_bargraph(tmp_path):
+    bmi.NOT_IN_RUN.clear()
     out = written(tmp_path, {"0.1-0.25": 0.2})
-    omega = out["qfo_omega"]
-    assert omega["plot_type"] == "html", "one bin must not become a bargraph"
-    assert "0.1-0.25" in omega["data"]
+    # One bin is not a section (until 2026-09-20 it was one that said "Not plotted"); it
+    # is a line in the "Not in this run" list, with the reason.
+    assert "qfo_omega" not in out, "one bin must not become a section"
+    what, why = next((w, y) for w, y in bmi.NOT_IN_RUN if "Selective pressure" in w)
+    assert "0.1-0.25" in why
     # The reason, not just the absence. A reader deciding whether to re-run needs to know
     # it is a coverage problem on this query set and not a broken axis, and what a query
     # set without the problem looks like.
-    assert "one chromosome" in omega["data"]
-    assert "per-stratum protein floor" in omega["data"]
-    assert "whole-proteome query set" in omega["data"]
+    assert "one chromosome" in why
+    assert "minimum a bin needs" in why
+    assert "whole-proteome query set" in why
+    bmi.section_not_in_run(tmp_path)
+    listed = json.loads((tmp_path / "qfo_not_in_run_mqc.json").read_text())
+    assert "0.1-0.25" in listed["data"]
 
 
 def test_a_real_gradient_still_plots(tmp_path):
