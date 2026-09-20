@@ -561,7 +561,17 @@ process kmerseekIndex {
     # On 2026-09-17 one accidental run with the old image cost 272 mouse searches that
     # way. Read-only permissions turn that into a loud open failure. To delete an index,
     # chmod -R u+w it first (make unlock-indexes).
+    #
+    # The files go read-only here; the directory itself stays writable, because
+    # Nextflow's storeDir step is a rename into another parent, and renaming a
+    # directory rewrites its `..` entry, which needs write permission on that
+    # directory. With the directory locked too, every index task on 2026-09-19 built
+    # its index and then died at stage-out with `mv: ... Permission denied` (147 tasks,
+    # each retried). Read-only files are enough for the loud failure: a read-write open
+    # starts by opening LOCK for writing, which EACCES stops. `make lock-indexes` closes
+    # the directory bit afterwards, in place.
     chmod -R a-w ${idx}
+    chmod u+w ${idx}
     """
 
     stub:
