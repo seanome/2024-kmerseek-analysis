@@ -48,8 +48,11 @@ def test_single_bin_axis_says_so_instead_of_drawing_a_bargraph(tmp_path):
     assert omega["plot_type"] == "html", "one bin must not become a bargraph"
     assert "0.1-0.25" in omega["data"]
     # The reason, not just the absence. A reader deciding whether to re-run needs to know
-    # it is a coverage problem on this query set and not a broken axis.
-    assert "chromosome 6" in omega["data"]
+    # it is a coverage problem on this query set and not a broken axis, and what a query
+    # set without the problem looks like.
+    assert "one chromosome" in omega["data"]
+    assert "per-stratum protein floor" in omega["data"]
+    assert "whole-proteome query set" in omega["data"]
 
 
 def test_a_real_gradient_still_plots(tmp_path):

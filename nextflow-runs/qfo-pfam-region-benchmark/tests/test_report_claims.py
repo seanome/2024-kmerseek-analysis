@@ -105,11 +105,12 @@ def test_a_non_monotone_arm_is_named_in_the_caption(tmp_path):
     assert "foldseek" not in plot["description"].split("peak below the top band")[1][:400]
 
 
-def test_when_every_arm_climbs_the_caption_says_there_is_no_regime(tmp_path):
+def test_when_every_arm_climbs_the_caption_says_so(tmp_path):
     monotone = {k: {"50-70": 0.1, "70-90": 0.2, "90-100": 0.3} for k in BANDS}
     plot, _ = regime(tmp_path, monotone)
     assert "every arm peaks in the top band" in plot["description"]
-    assert "no regime to claim" in plot["description"]
+    assert "none does best in a middle band" in plot["description"]
+    assert "peak below the top band" not in plot["description"]
 
 
 def test_the_peak_column_matches_the_lines(tmp_path):
@@ -347,9 +348,20 @@ def test_a_higher_bar_from_another_class_is_not_swallowed():
 
 def test_pfam_n_is_stated_rather_than_left_to_be_noticed():
     text = bmi.pfamn_bullet(FLAT_DROP, FLAT_TOOLS)
-    assert "reverses the Pfam ordering" in text
+    # Both ranks are printed, so "changes" is a comparison the reader can check.
+    assert "changes the ordering" in text
     assert "ranks 3 of 3" in text, text
+    assert "against 1 of 3 on Pfam" in text, text
     assert "sequence alignment 0.065" in text, "the class it loses to is named"
+
+
+def test_pfam_n_that_keeps_the_ordering_is_not_called_a_change():
+    # Until 2026-09-19 the bullet said "reverses the Pfam ordering" whether or not it did.
+    same_order = {tool: {**sets, "pfamn": sets["pfam"] / 10}
+                  for tool, sets in FLAT_DROP.items()}
+    text = bmi.pfamn_bullet(same_order, FLAT_TOOLS)
+    assert "keeps the Pfam ordering" in text, text
+    assert "changes the ordering" not in text
 
 
 def test_the_section_caption_no_longer_calls_the_gap_a_measure_of_circularity(tmp_path):
@@ -420,6 +432,7 @@ def test_the_pinned_section_names_the_arm_and_its_score(tmp_path):
     sec = json.loads((tmp_path / "qfo_canonical_mqc.json").read_text())
     assert "polarity4_k16_lcFalse" in sec["data"]
     assert "swissprot" in sec["data"]
-    assert "Off by default" in sec["description"]
+    assert "How it is chosen" in sec["description"]
+    assert "No arm is hard-coded" in sec["description"]
     assert sec["data"].count(bmi.CANONICAL_MARK.strip()) == 1, (
         "the row key already carries the mark; printing both reads as '... ★ ★'")
