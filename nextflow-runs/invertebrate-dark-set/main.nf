@@ -665,6 +665,7 @@ process kmerseekSearch {
     def flags = extensionFlags(ext, alphabet)
     """
     set -euo pipefail
+    set +e
     kmerseek search \\
         --alphabet ${alphabet} --ksize ${ksize} \\
         --query  ${chunk} --target ${index_dir} ${lc} ${flags} \\
@@ -673,8 +674,22 @@ process kmerseekSearch {
         --max-query-pvalue ${params.max_query_pvalue} \\
         --min-region-score ${params.min_region_score} \\
         2> ${slug}.log | zstd -T2 -o ${slug}.regions.csv.zst
-    # No `|| true` here, on purpose. A search that finds nothing exits 0 (checked against
-    # the 0.4.0 binary), so tolerating a non-zero exit protects nothing -- and on
+    status=(\${PIPESTATUS[@]})
+    set -e
+    # One failure is not a failure of the task: an `extend` search refused because the
+    # index holds no Karlin-Altschul fit for its penalty (the index-time fit found too
+    # few score bins; it happens on 20-letter alphabets from k=8 or so). That arm cannot
+    # be searched against that index at all, so it is recorded as unfitted rather than
+    # as zero reach: the queries file starts with a #nofit line, the gain step lists the
+    # arm under unfitted_arms and draws no row for it, and the regions file is a header.
+    if [ "\${status[0]}" -ne 0 ] && grep -q "no Karlin-Altschul fit" ${slug}.log; then
+        printf '#nofit\\t%s\\n' "\$(grep -m1 'no Karlin-Altschul fit' ${slug}.log | tr '\\t' ' ')" > ${slug}.queries.tsv
+        printf 'query_name,target_name,region_evalue\\n' | zstd -T2 -f -o ${slug}.regions.csv.zst
+        exit 0
+    fi
+    [ "\${status[0]}" -eq 0 ] && [ "\${status[1]}" -eq 0 ] || exit 1
+    # No `|| true` for any other failure, on purpose. A search that finds nothing exits 0
+    # (checked against the 0.4.0 binary), so tolerating a non-zero exit protects nothing -- and on
     # 2026-09-12 it hid 32 of 92 tasks dying on a RocksDB LOCK race (kmerseek PR #53) as
     # 32 empty result files, which the gain step then counted as "kmerseek found none".
     # Under pipefail a failed search or a failed zstd fails the task, and the retry above
@@ -978,7 +993,13 @@ def armName(String spec, String alphabet) {
 def extensionFlags(String spec, String alphabet) {
     if (spec == 'exact') return ''
     def c = armName(spec, alphabet).substring('extend-c'.length())
-    "--extend-mismatch-penalty ${c} --extend-xdrop ${xdropFor(c)} " +
+    // --ka-queries 0: the E-value's lambda and K come from the fit the index build stored
+    // for this penalty and X-drop, or the search is refused. The binary's default is to
+    // refit on 200 reference sequences when no fit is stored, which is 200 extra
+    // searches in every chunk and, where the index-time fit failed for want of score
+    // bins, fails the same way after doing them. The refusal is handled in the search
+    // script: the arm is recorded as unfitted for that index.
+    "--extend-mismatch-penalty ${c} --extend-xdrop ${xdropFor(c)} --ka-queries 0 " +
     "--chain-max-gap ${params.kmerseek_chain_max_gap} " +
     "--chain-max-shift ${params.kmerseek_chain_max_shift}"
 }

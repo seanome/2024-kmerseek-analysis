@@ -70,11 +70,15 @@ def arm_label(alphabet: str, scaled: int, ext: str, evalue_max) -> str:
     return " ".join(parts)
 
 
-def read_queries(f: Path) -> dict[str, float]:
-    """query accession -> smallest region E-value, from one search chunk's TSV."""
+def read_queries(f: Path) -> dict[str, float] | None:
+    """query accession -> smallest region E-value, from one search chunk's TSV. None when
+    the file starts with a #nofit line: the search was refused because the index holds no
+    Karlin-Altschul fit for that arm's penalty, so the arm was not searched at all."""
     out: dict[str, float] = {}
     with open(f) as fh:
         header = fh.readline().rstrip("\n").split("\t")
+        if header and header[0] == "#nofit":
+            return None
         if header[:2] != ["query_name", "min_region_evalue"]:
             raise SystemExit(f"{f.name}: expected a query_name/min_region_evalue header, got {header}")
         for line in fh:
@@ -122,6 +126,7 @@ def main() -> None:
 
     # combo -> {query accession: smallest E-value}, unioned across chunks
     combos: dict[tuple, dict[str, float]] = {}
+    unfitted: set[tuple] = set()
     unparsed = []
     for f in args.queries:
         m = NAME.match(f.name)
@@ -129,12 +134,27 @@ def main() -> None:
             unparsed.append(f.name)
             continue
         key = (m["alphabet"], int(m["ksize"]), m["lc"] == "true", int(m["scaled"]), m["ext"])
+        got = read_queries(f)
+        if got is None:
+            unfitted.add(key)
+            continue
         acc = combos.setdefault(key, {})
-        for q, ev in read_queries(f).items():
+        for q, ev in got.items():
             if q not in acc or ev < acc[q]:
                 acc[q] = ev
     if unparsed:
         raise SystemExit(f"could not parse combo from: {', '.join(unparsed[:5])}")
+    # A fit is a property of the index, so every chunk of an unfitted arm is refused
+    # alike; a mix would mean two chunks saw two different indexes.
+    mixed = unfitted & set(combos)
+    if mixed:
+        raise SystemExit(f"arms both refused and searched across chunks: {sorted(mixed)[:3]}")
+    unfitted_arms = [
+        {"alphabet": a, "ksize": k, "low_complexity_mask": lc, "scaled": sc, "extension": ext,
+         "arm": arm_label(a, sc, ext, None),
+         "reason": "no Karlin-Altschul fit stored in the index for this penalty (too few score bins at index time)"}
+        for a, k, lc, sc, ext in sorted(unfitted)
+    ]
 
     rows = []
     for (alphabet, ksize, lc, scaled, ext), evalues in sorted(combos.items()):
@@ -179,8 +199,12 @@ def main() -> None:
 
     summary = {"species": args.species, "dark_proteins": len(dark),
                "placed_proteins": len(placed),
-               "by_combo": rows, "mask_pairs": paired}
+               "by_combo": rows, "mask_pairs": paired, "unfitted_arms": unfitted_arms}
     print(json.dumps(summary, indent=2))
+    if unfitted_arms:
+        print(f"\n{len(unfitted_arms)} arm(s) not searched, no Karlin-Altschul fit in the index:")
+        for u in unfitted_arms:
+            print(f"  {u['arm']} k{u['ksize']}")
     if paired:
         print("\nsurviving the low-complexity mask (the number that counts):")
         for q in paired:
