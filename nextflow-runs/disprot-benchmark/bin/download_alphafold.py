@@ -2,11 +2,21 @@
 """
 download_alphafold.py
 
-Download AlphaFold v4 CIF structures for proteins in a FASTA file.
-Caches files: skips proteins already present in --cache dir.
+Download AlphaFold CIF structures for proteins in a FASTA file.
+Caches files: skips proteins already present in --cache dir, whatever model version the
+cached file carries.
 
 Usage:
     download_alphafold.py --fasta <fasta> --outdir <dir> --cache <dir> [--max-workers N]
+
+The model version is RESOLVED, never assumed. Until 2026-09-20 this script asked for
+AF-<acc>-F1-model_v4.cif by name, which the AlphaFold server had stopped serving (404 on
+every accession) while the cache held 54_339 v6 files under a name this script never
+looked for. Every protein of every species was listed as missing, every Foldseek search
+ran on zero CIF files, and the DisProt report carried a Foldseek arm with no pair on any
+proteome. Now the cache is checked for any AF-<acc>-F1-model_v*.cif, and a download asks
+the AlphaFold API which file is current (https://alphafold.ebi.ac.uk/api/prediction/<acc>)
+and fetches that.
 
 Rate-limited: respects EBI fair-use (~5 concurrent at most).
 Proteins with no AlphaFold model are listed in missing_structures.txt.
@@ -14,6 +24,8 @@ Proteins with no AlphaFold model are listed in missing_structures.txt.
 
 import argparse
 import concurrent.futures
+import json
+import re
 import socket
 import sys
 import threading
@@ -23,7 +35,31 @@ import urllib.request
 from pathlib import Path
 
 
-AF_URL = "https://alphafold.ebi.ac.uk/files/AF-{acc}-F1-model_v4.cif"
+# The API says which model file is current for an accession; the file URL is read off it.
+AF_API = "https://alphafold.ebi.ac.uk/api/prediction/{acc}"
+CACHED = "AF-{acc}-F1-model_v*.cif"
+VERSION = re.compile(r"-model_v(\d+)\.cif$")
+
+
+def cached_model(cache: Path, acc: str) -> Path | None:
+    """The cached CIF for acc at the highest model version present, or None."""
+    found = [p for p in cache.glob(CACHED.format(acc=acc)) if p.stat().st_size > 0]
+    if not found:
+        return None
+    return max(found, key=lambda p: int(VERSION.search(p.name).group(1)))
+
+
+def current_cif_url(acc: str) -> str | None:
+    """The current model's CIF URL from the AlphaFold API, or None when there is no
+    model (404) for the accession."""
+    with urllib.request.urlopen(AF_API.format(acc=acc), timeout=30) as resp:
+        entries = json.loads(resp.read().decode())
+    # One entry per fragment; F1 is the whole-chain model this pipeline uses.
+    for e in entries if isinstance(entries, list) else [entries]:
+        url = e.get("cifUrl")
+        if url and "-F1-" in url:
+            return url
+    return None
 
 # Circuit-breaker: set when DNS is confirmed dead so workers abort immediately.
 _dns_dead = threading.Event()
@@ -53,24 +89,25 @@ def read_accessions(fasta_path: str) -> list[str]:
 
 def download_one(acc: str, outdir: Path, cache: Path) -> tuple[str, bool]:
     """Download CIF for acc. Returns (acc, success)."""
-    filename = f"AF-{acc}-F1-model_v4.cif"
-
-    # Check cache first
-    cache_file = cache / filename
-    if cache_file.exists() and cache_file.stat().st_size > 0:
-        dest = outdir / filename
+    # Check cache first, at whatever model version it holds.
+    cache_file = cached_model(cache, acc)
+    if cache_file is not None:
+        dest = outdir / cache_file.name
         if not dest.exists():
             dest.symlink_to(cache_file.resolve())
         return acc, True
-
-    url = AF_URL.format(acc=acc)
-    dest = outdir / filename
 
     for attempt in range(3):
         if _dns_dead.is_set():
             return acc, False   # circuit-breaker: network is gone, abort immediately
 
         try:
+            url = current_cif_url(acc)
+            if url is None:
+                return acc, False   # the API lists no whole-chain model
+            filename = url.rsplit("/", 1)[-1]
+            dest = outdir / filename
+            cache_file = cache / filename
             with urllib.request.urlopen(url, timeout=30) as resp:
                 data = resp.read()
             dest.write_bytes(data)
