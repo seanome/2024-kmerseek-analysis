@@ -109,6 +109,14 @@ def header_yaml(items: list[tuple[str, str]]) -> str:
     return "report_header_info:\n" + "".join(f"  - {q(k)}: {q(v)}\n" for k, v in items)
 
 
+def yaml_html(key: str, html: str) -> str:
+    """One top-level MultiQC config key holding HTML (intro_text, report_comment), as a
+    double-quoted YAML scalar. Unlike header_yaml this keeps every "<": the value is meant
+    to be markup. Newlines become spaces so the scalar stays on one line."""
+    v = " ".join(html.split())
+    return f'{key}: "' + v.replace("\\", "\\\\").replace('"', '\\"') + '"\n'
+
+
 # The v3 renderer and its style, from the 2026-09-19 review (flow.js, flow.css), inlined so
 # a report stays one self-contained file. The style is built on currentColor, so the block
 # takes MultiQC's light or dark theme with no configuration. Beyond drawing the spec it

@@ -16,7 +16,7 @@ One script and one style, shared by every report, keyed by the widget kind:
   reachable  which answer-key instances a target proteome can reach at all, the
              denominator of recall
   bh         Benjamini-Hochberg correction over a toy set of p-values, with precision
-             and recall as the sweep report defines them
+             and kept-after-correction as the sweep report defines them
   fraction   a proteome split into placed and dark, and the mask pair
 
 Colours: green is a true positive or a placed protein, red a false positive, grey the
@@ -153,7 +153,7 @@ JS = r"""
       svg.appendChild(el('text',{x:X(m)+6,y:Y(method==='bh'?alpha:alpha/m)+4,fill:'%(mark)s'},method==='bh'?'BH line: α · rank / m':'Bonferroni: α / m'));
       ps.forEach(function(q,i){var r=i<=last; if(r) rej.push(q); svg.appendChild(el('circle',{cx:X(i+1),cy:Y(Math.min(q.p,alpha*3)),r:6,fill:q.o?'%(tp)s':'%(fp)s',opacity:r?1:.3}));});
       var tp=rej.filter(function(q){return q.o;}).length, orthAlpha=ps.filter(function(q){return q.o&&q.p<alpha;}).length;
-      dl(root,[['hits below the line (rejected = called)',rej.length+' of '+m],['precision: orthologs among the called',rej.length?f3(tp/rej.length):'none called'],['recall: orthologs called / ortholog hits with p < α',orthAlpha?f3(tp/orthAlpha)+' ('+tp+' of '+orthAlpha+')':'n/a'],['α',String(alpha)]]);
+      dl(root,[['hits below the line (rejected = called)',rej.length+' of '+m],['precision: orthologs among the called',rej.length?f3(tp/rej.length):'none called'],['kept after correction: orthologs called / ortholog hits with p < α',orthAlpha?f3(tp/orthAlpha)+' ('+tp+' of '+orthAlpha+')':'n/a'],['α',String(alpha)]]);
     }
     root.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){root.querySelectorAll('.seg button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');method=b.getAttribute('data-m');draw();});});
     draw();
@@ -258,7 +258,9 @@ def reachable() -> str:
 def bh(alpha: float = 0.05, m_words: str = "all hits of its combo",
        recall_over: str = "ortholog hits with p below \u03b1") -> str:
     """The correction step as a picture. `m_words` says what m counts and `recall_over` what
-    the recall denominator is, because the two ortholog pipelines define them differently."""
+    the kept-after-correction denominator is, because the two ortholog pipelines define
+    them differently. The column was called recall until 2026-09-20; it is not recall of
+    the search, so the widget names it for what it is."""
     p = [{"p": 0.0004, "o": True}, {"p": 0.001, "o": True}, {"p": 0.003, "o": True}, {"p": 0.006, "o": False},
          {"p": 0.011, "o": True}, {"p": 0.014, "o": True}, {"p": 0.02, "o": False}, {"p": 0.031, "o": True},
          {"p": 0.04, "o": False}, {"p": 0.055, "o": True}, {"p": 0.08, "o": False}, {"p": 0.12, "o": True}]
@@ -267,12 +269,13 @@ def bh(alpha: float = 0.05, m_words: str = "all hits of its combo",
             + '<div class="ctrl"><span>method</span><div class="seg"><button type="button" data-m="bh" aria-pressed="true">Benjamini-Hochberg</button>'
               '<button type="button" data-m="bonferroni" aria-pressed="false">Bonferroni</button></div></div>'
               '<svg viewBox="0 0 760 200"></svg>')
-    return _block("bh", "Precision and recall after multiple-testing correction",
+    return _block("bh", "Precision, and ortholog hits kept, after multiple-testing correction",
                   f"Every hit's Poisson p-value is corrected with m = {m_words}. Benjamini-Hochberg "
                   f"ranks the p-values and calls those under the line α · rank / m; Bonferroni uses "
-                  f"the flat line α / m. Precision is the share of called hits that are orthologs; recall "
-                  f"is the share of {recall_over} that survive the correction, so it is "
-                  f"recall of the correction step, not of the search.",
+                  f"the flat line α / m. Precision is the share of called hits that are orthologs. "
+                  f"Kept after correction is the share of {recall_over} that are still called "
+                  f"after the correction; it is not recall of the search, because an ortholog "
+                  f"the search never reported is not in its denominator.",
                   body, {"p": p, "alpha": alpha}, toy="Toy example: 12 hits with made-up p-values, α = 0.05.")
 
 
