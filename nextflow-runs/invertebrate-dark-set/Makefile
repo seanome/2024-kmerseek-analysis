@@ -110,7 +110,7 @@ LADDER_HEAD_XMX   ?= 24g
 .PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
         multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
-        lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan
+        lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan rescue-indexes-0.4
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -127,6 +127,7 @@ help:
 	@echo "  run-ladder-0.4-sbatch   the ladder with kmerseek 0.4: scaled x extension arms, own results dir"
 	@echo "  ladder-0.4-plan         print what that expands to without submitting"
 	@echo "  unlock-indexes          make them writable again, to delete or rebuild one"
+	@echo "  rescue-indexes-0.4      move indexes that failed only at the storeDir mv into results-0.4 (run stopped first)"
 	@echo "  status-dark-set         SPECIES=<...>  did it end, what killed it, what it said"
 	@echo "                          add HISTORY=1 for one line per past run"
 	@echo "                          add WITH_KMERSEEK=1 for the kmerseek arm"
@@ -448,6 +449,26 @@ lock-indexes:
 unlock-indexes:
 	@d=$(OUTDIR)/kmerseek_index; echo "unlocking every index under $$d"; \
 	 find $$d -maxdepth 1 -name '*.rocksdb' -exec chmod -R u+w {} +
+
+# On 2026-09-19 every kmerseekIndex task in the ladder-0.4 run built its index and then
+# failed at Nextflow's storeDir mv (see the chmod note in kmerseekIndex in main.nf). The
+# script had run to its end under `set -e`, so each of those work dirs holds a whole
+# index, calibration fits included. This moves them into the storeDir so the relaunch
+# finds them and skips the build. Only work dirs whose error is that mv qualify; a task
+# that died earlier leaves no rocksdb dir behind, or leaves one this does not touch
+# because its .command.err says something else. Run after `make stop-dark-set
+# RUN=ladder-0.4`, before the relaunch, so no live task is mid-move.
+rescue-indexes-0.4:
+	@d=$(V4_OUTDIR)/kmerseek_index; mkdir -p $$d; n=0; skipped=0; \
+	 for e in $$(grep -l 'cannot move .*Permission denied' $(V4_LAUNCH_DIR)/work/*/*/.command.err 2>/dev/null); do \
+	   w=$$(dirname $$e); \
+	   for idx in $$w/*.kmerseek.rocksdb; do \
+	     [ -d "$$idx" ] || continue; b=$$(basename $$idx); \
+	     if [ -e "$$d/$$b" ]; then skipped=$$((skipped+1)); continue; fi; \
+	     chmod u+w "$$idx" && mv "$$idx" "$$d/" && n=$$((n+1)); \
+	   done; \
+	 done; \
+	 echo "rescued $$n index(es) into $$d; $$skipped already there (retries of the same combo)"
 
 # Cancel every task this pipeline's processes submitted, whatever run they belong to.
 # Named for what it does, not "sweep": in this Makefile a sweep is the alphabet x ksize
