@@ -18,7 +18,7 @@ Outputs (all written to <outdir>/):
   completeness_mqc.yaml         — heatmap: 1=complete, 0=incomplete, per encoding x ksize
   encoding_completion_mqc.tsv   — table: n complete / incomplete per encoding
   summary_table_mqc.tsv         — table: full metrics for every complete combo
-  bh_recall_vs_ksize_mqc.yaml   — linegraph: BH recall vs ksize, one line per encoding
+  bh_kept_vs_ksize_mqc.yaml     — linegraph: ortholog hits kept after BH correction vs ksize, one line per encoding
   bh_precision_vs_ksize_mqc.yaml— linegraph: BH precision vs ksize, one line per encoding
   total_hits_vs_ksize_mqc.yaml  — linegraph: search-space size (total_hits) vs ksize
   multiqc_config.yaml           — section order, titles, colors
@@ -107,8 +107,15 @@ FAMILIES = [
 # Reading order: what ran, then recall, precision and cost against k, then the full table
 # of numbers last, since it is the reference the three curves are drawn from.
 SECTION_ORDER = ["overview", "metric_explainers", "sweep_completeness", "encoding_completion",
-                 "bh_recall_vs_ksize_mqc", "bh_precision_vs_ksize_mqc",
+                 "bh_kept_vs_ksize_mqc", "bh_precision_vs_ksize_mqc",
                  "total_hits_vs_ksize_mqc", "summary_table"]
+
+# The column the evaluator calls "recall" is the share of the ortholog hits below alpha
+# that are still called after correction. It is not recall of the search (an ortholog
+# the search never reported is not in the denominator), so the report names it for what
+# it is and never carries the word "recall" with a caveat beside it (renamed 2026-09-20).
+KEPT = "kept after correction"
+KEPT_LONG = "the share of ortholog hits with p below alpha that are still called after correction"
 
 
 def count_fasta(path: str | None) -> int | None:
@@ -151,7 +158,7 @@ def overview_facts(results: list[dict], stats: dict, n_human, n_mouse) -> dict:
                         if r["mht"].get("bh", {}).get(metric) is not None]
                 return max(vals) if vals else None
             encodings[enc] = {"n_attempted": len(er), "n_complete": len(ed),
-                              "best_recall": best("recall"), "best_precision": best("precision")}
+                              "best_kept": best("recall"), "best_precision": best("precision")}
         fams.append({"id": fid, "name": name, "colour": colour,
                      "n_encodings": len(encodings), "encodings": encodings,
                      "k_min": ks[0], "k_max": ks[-1],
@@ -196,10 +203,10 @@ def overview_flow_spec(f: dict) -> dict:
                 "title": "answer key: MGI/JAX ortholog pairs",
                 "sub": f"{fd.num(f['pairs'])} pairs over {fd.num(f['human_with_ortholog'])} human genes"},
         "metrics": {"x": 20, "y": 580, "w": 720, "h": 56, "icon": "table_rows",
-                    "title": "precision and recall after multiple-testing correction, alpha 0.05",
+                    "title": "precision, and ortholog hits kept, after multiple-testing correction (alpha 0.05)",
                     "sub": "Bonferroni, BH, BY and two-stage BH"},
         "report": {"x": 20, "y": 680, "w": 720, "h": 44, "icon": "summarize",
-                   "title": "this report: which combos completed, then recall, precision and hit count "
+                   "title": "this report: which combos completed, then hits kept, precision and hit count "
                             "against k, then the full table"},
     }
     fam_ids = [fam["id"] for fam in f["families"]]
@@ -255,16 +262,16 @@ def overview_details(f: dict) -> dict:
                 "facts": [["pairs", fd.num(f["pairs"])], ["human genes covered", fd.num(f["human_with_ortholog"])],
                           ["with exactly one mouse ortholog", fd.num(f["one_to_one"])]],
                 "links": [["What was done, and why", "overview"]]},
-        "metrics": {"title": "precision and recall after multiple-testing correction", "count": "alpha 0.05",
-                    "text": "Each hit's p-value is corrected over everything that combo reported, four "
-                            "ways. Precision is the share of corrected hits that are orthologs; recall "
-                            "is the share of ortholog hits with p below 0.05 that survive correction. A "
-                            "combo that reports more pairs is not rewarded for it.",
+        "metrics": {"title": "precision, and ortholog hits kept, after correction", "count": "alpha 0.05",
+                    "text": f"Each hit's p-value is corrected over everything that combo reported, four "
+                            f"ways. Precision is the share of corrected hits that are orthologs; "
+                            f"{KEPT} is {KEPT_LONG}. A combo that reports more pairs is not rewarded "
+                            f"for it.",
                     "facts": [], "links": [["Sweep metrics (complete combos only)", "summary_table"],
-                                           ["BH recall vs ksize", "bh_recall_vs_ksize_mqc"],
+                                           ["Ortholog hits kept after BH correction, vs k", "bh_kept_vs_ksize_mqc"],
                                            ["BH precision vs ksize", "bh_precision_vs_ksize_mqc"]]},
         "report": {"title": "this report", "count": "",
-                   "text": "Completion first, then recall, precision and hit count against k, one "
+                   "text": "Completion first, then hits kept, precision and hit count against k, one "
                            "line per encoding, then the full table of numbers.",
                    "facts": [], "links": [["Sweep completeness", "sweep_completeness"]]},
     }
@@ -280,7 +287,7 @@ def overview_details(f: dict) -> dict:
 
 def overview_control(f: dict) -> dict | None:
     """The encoding-family control: for the chosen family, each encoding's completed
-    combos and its best BH recall and precision over k."""
+    combos and its best BH kept-after-correction and precision over k."""
     if not f["families"]:
         return None
     options = []
@@ -291,15 +298,15 @@ def overview_control(f: dict) -> dict | None:
         for enc in fam["encodings"]:
             e = fam["encodings"][enc]
             facts.append([f"{enc}: combos completed", f"{e['n_complete']} of {e['n_attempted']}"])
-            if e.get("best_recall") is not None:
-                facts.append([f"{enc}: best BH recall (k)", f"{e['best_recall'][0]:.3f} (k={e['best_recall'][1]})"])
+            if e.get("best_kept") is not None:
+                facts.append([f"{enc}: best BH {KEPT} (k)", f"{e['best_kept'][0]:.3f} (k={e['best_kept'][1]})"])
             if e.get("best_precision") is not None:
                 facts.append([f"{enc}: best BH precision (k)", f"{e['best_precision'][0]:.3f} (k={e['best_precision'][1]})"])
         options.append({"id": fam["id"], "label": fam["name"], "bars": bars,
                         "facts": {fam["id"]: facts},
                         "links": {fam["id"]: [["Sweep completeness", "sweep_completeness"],
                                               ["Completion by encoding", "encoding_completion"],
-                                              ["BH recall vs ksize", "bh_recall_vs_ksize_mqc"],
+                                              ["Ortholog hits kept after BH correction, vs k", "bh_kept_vs_ksize_mqc"],
                                               ["BH precision vs ksize", "bh_precision_vs_ksize_mqc"]]}})
     return {"label": "Encoding family", "options": options}
 
@@ -312,8 +319,8 @@ def write_metric_explainers(out: Path) -> None:
     cfg = {
         "id": "metric_explainers",
         "section_name": "How to read the metrics",
-        "description": ("<p>Precision and recall in the tables below are read after multiple-testing "
-                        "correction. The example is a toy; the tables carry the numbers.</p>"),
+        "description": (f"<p>Precision and {KEPT} in the tables below are read after multiple-testing "
+                        f"correction. The example is a toy; the tables carry the numbers.</p>"),
         "plot_type": "html",
         "data": mx.bundle(mx.bh(alpha=0.05, m_words=HITS["m"], recall_over=HITS["recall_over"]), hits),
     }
@@ -340,10 +347,11 @@ def write_overview(out: Path, results: list[dict], stats: dict, n_human, n_mouse
         f"is an ortholog when its gene pair is in the key.",
         f"<b>Score.</b> Every hit's Poisson p-value is corrected for multiple testing, "
         f"four ways (Bonferroni, BH, BY, two-stage BH) at alpha 0.05, with m = {HITS['m']}. "
-        f"Precision is the share of corrected hits that are orthologs. Recall is the share "
-        f"of {HITS['recall_over']} that survive correction: it is recall among what the "
-        f"search reported, not among every MGI pair.",
-        "<b>Report.</b> Which encoding x k combos completed, then recall, precision and hit "
+        f"Precision is the share of corrected hits that are orthologs. <i>{KEPT.capitalize()}</i> "
+        f"is the share of {HITS['recall_over']} that are still called after correction. It "
+        f"is not recall of the search: an ortholog the search never reported is not in its "
+        f"denominator.",
+        "<b>Report.</b> Which encoding x k combos completed, then hits kept, precision and hit "
         "count against k, one line per encoding, then the full table of numbers.",
     ]
     why = "".join(f"<li>{w}</li>" for w in [
@@ -381,9 +389,9 @@ def write_overview(out: Path, results: list[dict], stats: dict, n_human, n_mouse
             "family to see each of its encodings.</p>"
             + fd.block(dict(overview_flow_spec(f), title="human-mouse ortholog sweep",
                             details=overview_details(f), control=overview_control(f),
-                            footnote="Recall is measured among the ortholog hits the search "
-                                     "reported with p below 0.05, not among every MGI pair, so "
-                                     "it is recall of the correction step, not of the search."),
+                            footnote=f"\"{KEPT}\" is measured among the ortholog hits the search "
+                                     f"reported with p below 0.05, not among every MGI pair: it is "
+                                     f"what the correction step keeps, not recall of the search."),
                        uid="sweep-flow")),
     }
     (out / "overview_mqc.json").write_text(json.dumps(cfg, indent=1))
@@ -447,16 +455,22 @@ def write_summary_table(path: Path, results: list[dict]) -> None:
 
     cols = ["ksize", "n_ortholog", "n_non_ortholog", "total_hits"]
     for m in MHT_METHODS:
-        cols += [f"{m}_precision", f"{m}_recall"]
+        cols += [f"{m}_precision", f"{m}_kept"]
 
     with open(path, "w") as f:
         f.write("# plot_type: 'table'\n")
         f.write("# section_name: 'Sweep metrics (complete combos only)'\n")
-        f.write("# description: 'Multiple-hypothesis-testing precision/recall (alpha=0.05) "
-                "for every encoding x ksize combination that completed evaluation. "
-                "<a href=\"#overview\">&uarr; back to the data flow</a>'\n")
+        f.write(f"# description: 'Precision, and ortholog hits {KEPT} (alpha=0.05), "
+                f"for every encoding x ksize combination that completed evaluation. A _kept "
+                f"column is {KEPT_LONG}; it is not recall of the search. Values to three "
+                f"decimals. <a href=\"#overview\">&uarr; back to the data flow</a>'\n")
         f.write("# pconfig:\n")
         f.write("#   namespace: 'Human-Mouse Ortholog Sweep'\n")
+        f.write("# headers:\n")
+        for m in MHT_METHODS:
+            f.write(f"#   {m}_precision:\n#     format: '{{:,.3f}}'\n#     min: 0\n#     max: 1\n")
+            f.write(f"#   {m}_kept:\n#     title: '{m} kept'\n#     description: '{KEPT_LONG} ({m})'\n"
+                    f"#     format: '{{:,.3f}}'\n#     min: 0\n#     max: 1\n")
         f.write("Sample\t" + "\t".join(cols) + "\n")
         for r in complete:
             sample = f"{r['encoding']}_k{r['ksize']}"
@@ -509,17 +523,108 @@ def write_linegraph(
     path.write_text("\n".join(lines) + "\n")
 
 
-def write_multiqc_config(path: Path, encodings: list[str], header: str = "") -> None:
+# --- the first screen -------------------------------------------------------------------
+
+def filter_note(results: list[dict]) -> str:
+    """Whether the Poisson filter is filtering anything at this run's setting: the share
+    of the m tests that passed p below alpha, from the evaluator's n_pairs_below_alpha.
+    Empty for a run scored before that count existed."""
+    rows = []
+    for r in results:
+        if not is_complete(r):
+            continue
+        below = r["mht"].get("n_pairs_below_alpha")
+        m = r.get("total_hits")
+        if below is not None and m:
+            rows.append((r["encoding"], r["ksize"], below, m, below / m))
+    if not rows:
+        return ""
+    worst = max(rows, key=lambda t: t[4])
+    alpha = next((r["mht"].get("alpha") for r in results if is_complete(r)
+                  and r["mht"].get("alpha") is not None), 0.05)
+    if worst[4] >= 0.5:
+        return (f"At the search's own cutoff the Poisson filter is not filtering: under "
+                f"<code>{worst[0]}</code> at k={worst[1]}, {fd.num(worst[2])} of the "
+                f"{fd.num(worst[3])} possible pairs ({100 * worst[4]:.0f}%) pass "
+                f"p &le; {alpha:g}. The correction step is what does the filtering there, "
+                f"and every number on this page is read after it.")
+    lo = min(rows, key=lambda t: t[4])
+    return (f"The Poisson filter keeps {100 * lo[4]:.1f}% to {100 * worst[4]:.1f}% of the "
+            f"possible pairs at p &le; {alpha:g}, depending on the encoding and k.")
+
+
+def first_screen_html(f: dict, results: list[dict]) -> str:
+    """What kmerseek is, the question, the answer with its numbers, the caveat, a reading
+    order and the words the sections use. Written here because the answer carries numbers."""
+    best = []
+    for fam in f["families"]:
+        for enc, e in fam["encodings"].items():
+            if e.get("best_kept") is not None and e.get("best_precision") is not None:
+                best.append((enc, e["best_kept"], e["best_precision"]))
+    answer = []
+    if best:
+        top = max(best, key=lambda t: t[1][0])
+        answer.append(f"The encoding that keeps the most ortholog hits after BH correction is "
+                      f"<code>{top[0]}</code> at k={top[1][1]}: {top[1][0]:.3f} {KEPT}, with "
+                      f"precision {top[2][0]:.3f} at its own best k ({top[2][1]}).")
+        lo = min(best, key=lambda t: t[1][0])
+        if lo[0] != top[0]:
+            answer.append(f"The lowest is <code>{lo[0]}</code> at {lo[1][0]:.3f} (k={lo[1][1]}).")
+    if f["n_complete"] < f["n_attempted"]:
+        answer.append(f"{f['n_attempted'] - f['n_complete']} of {f['n_attempted']} combos did not "
+                      f"complete and are listed as incomplete, not read as zero.")
+    fn = filter_note(results)
+    if fn:
+        answer.append(fn)
+    fams = "; ".join(f"{fam['name']}: {fam['n_encodings']} encoding(s), k {fam['k_min']} to "
+                     f"{fam['k_max']}" for fam in f["families"])
+    glossary = "".join(f"<li>{g}</li>" for g in [
+        "<b>Encoding.</b> How the 20 amino acids are grouped before searching: the HP "
+        "alphabets keep two classes, hydrophobic and polar; Dayhoff six; protein all 20. "
+        "<b>k</b> is the length of the run of consecutive classes two proteins must share.",
+        "<b>Combo.</b> One encoding at one k, run over every human protein against the "
+        "mouse index. A combo that ran out of memory is incomplete.",
+        f"<b>Hit.</b> {HITS['hit'][0].upper() + HITS['hit'][1:]}.",
+        "<b>Ortholog hit.</b> A hit whose human and mouse genes are an MGI/JAX ortholog "
+        "pair, the answer key.",
+        f"<b>m.</b> What the correction divides by: {HITS['m']}.",
+        "<b>Correction.</b> Every hit's Poisson p-value is corrected for multiple testing "
+        "four ways (Bonferroni, BH, BY, two-stage BH) at alpha 0.05; a hit is called when "
+        "its corrected p is at or below alpha.",
+        "<b>Precision.</b> The share of called hits that are ortholog hits.",
+        f"<b>{KEPT.capitalize()}.</b> {KEPT_LONG[0].upper() + KEPT_LONG[1:]}. It is not "
+        f"recall of the search: an ortholog the search never reported is not in the "
+        f"denominator. Earlier drafts called this column recall.",
+        "<b>total_hits.</b> The m of that combo, and a proxy for what it costs to run.",
+    ])
+    return (
+        "<p><b>What kmerseek is.</b> A search tool that first groups the 20 amino acids "
+        "into a few classes (two, hydrophobic and polar, in the HP alphabets) and then "
+        "looks for runs of <i>k</i> consecutive classes that two proteins share, instead of "
+        "aligning residues.</p>"
+        f"<p><b>The question this report answers.</b> Which encoding and which k, on one "
+        f"pair of proteomes close enough that most genes have an ortholog to find? "
+        f"{fd.num(f['n_human'])} human proteins are searched against {fd.num(f['n_mouse'])} "
+        f"mouse proteins under every encoding and k ({fams}); every hit is labelled "
+        f"against the MGI/JAX ortholog pairs and counted after multiple-testing "
+        f"correction.</p>"
+        + (f"<p><b>The answer.</b> {' '.join(answer)}</p>" if answer else "")
+        + "<p><b>Read in this order:</b> <a href='#overview'>What was done, and why</a>, "
+          "<a href='#metric_explainers'>How to read the metrics</a>, "
+          "<a href='#sweep_completeness'>which combos completed</a>, "
+          "<a href='#bh_kept_vs_ksize_mqc'>hits kept after correction against k</a>, "
+          "<a href='#bh_precision_vs_ksize_mqc'>precision against k</a>; the "
+          "<a href='#summary_table'>full table</a> is last.</p>"
+          "<h4>Words used on every page</h4><ul>" + glossary + "</ul>")
+
+
+
+def write_multiqc_config(path: Path, encodings: list[str], header: str = "",
+                         intro: str = "") -> None:
     content = """\
 title: "Human-Mouse GENCODE Ortholog K-mer Sweep"
 subtitle: "Kmerseek encoding x ksize sweep — human vs mouse canonical proteins"
-intro_text: >
-  Sweeps kmerseek alphabet encodings (hp variants, dayhoff, protein) across their
-  respective ksize ranges, searching all human GENCODE proteins against a mouse
-  GENCODE index. Ground truth: MGI/JAX human-mouse ortholog gene pairs. Evaluated
-  with Poisson-test multiple-hypothesis correction (Bonferroni, BH, BY, two-stage BH).
-  The first section says what was run, with this run's numbers, why, and how the data
-  flows to the sections.
+{intro}
 
 {header}
 
@@ -532,7 +637,8 @@ custom_data:
 report_section_order:
 """ + "\n".join(f"  {sid}: {{ order: {len(SECTION_ORDER) - i} }}"
                 for i, sid in enumerate(SECTION_ORDER)) + "\n"
-    path.write_text(content.replace("{header}", header))
+    path.write_text(content.replace("{header}", header)
+                    .replace("{intro}", fd.yaml_html("intro_text", intro) if intro else ""))
 
 
 def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
@@ -554,11 +660,13 @@ def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
     write_summary_table(out / "summary_table_mqc.tsv", results)
 
     write_linegraph(
-        out / "bh_recall_vs_ksize_mqc.yaml", results,
+        out / "bh_kept_vs_ksize_mqc.yaml", results,
         value_fn=lambda r: r["mht"].get("bh", {}).get("recall"),
-        section_name="BH recall vs ksize",
-        description="Recall of BH-corrected significant hits (alpha=0.05) against MGI/JAX orthologs.",
-        ylab="BH recall",
+        section_name="Ortholog hits kept after BH correction, vs k",
+        description=(f"The share of ortholog hits with p below 0.05 that BH correction (alpha 0.05) "
+                     f"still calls, against MGI/JAX orthologs. Not recall of the search: an "
+                     f"ortholog the search never reported is not in the denominator."),
+        ylab=f"ortholog hits {KEPT} (BH)",
     )
     write_linegraph(
         out / "bh_precision_vs_ksize_mqc.yaml", results,
@@ -578,7 +686,8 @@ def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
     )
 
     f = overview_facts(results, read_ortholog_stats(stats_txt), count_fasta(human_fa), count_fasta(mouse_fa))
-    write_multiqc_config(out / "multiqc_config.yaml", encodings, header=fd.header_yaml([
+    write_multiqc_config(out / "multiqc_config.yaml", encodings,
+                         intro=first_screen_html(f, results), header=fd.header_yaml([
         ("Query", f"human GENCODE canonical proteins, {fd.num(f['n_human'])}"),
         ("Target", f"mouse GENCODE canonical proteins, {fd.num(f['n_mouse'])}, indexed once per encoding and k"),
         ("Sweep", "; ".join(f"{fam['name']}: {fam['n_encodings']} encoding(s), k {fam['k_min']} to {fam['k_max']}, "
