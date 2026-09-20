@@ -171,6 +171,23 @@ params.kmerseek_memory_max          = '500 GB'
 params.kmerseek_memory_retry_factor = 2.0
 params.kmerseek_search_memory_floor = '24 GB'
 params.kmerseek_index_memory_floor  = '48 GB'
+// The Karlin-Altschul fit that `kmerseek index` runs when an extend arm is wanted is a
+// search of --ka-queries reference sequences against the index just built, and once
+// the k-mer space is crowded that search, not the build, sets the task's peak. Peak RSS
+// of whole builds in the ladder-0.4 run (2026-09-20, 8 CPUs, 500 queries):
+//   2-letter k19 (19 keyspace bits), scaled 1 / 2 / 5 / 10:  44 / 25 / 14 / 10 GB
+//   2-letter k23 (23 bits):                                  42 / 24 / 12 /  8 GB
+//   protein20 k10 (43 bits):                                 18 /  9 /  4 /  2 GB
+//   2-letter k12 (12 bits): scaled 10 = 61-70 GB, scaled 5 = 106 GB; scaled 1 and 2
+//     never finished, cgroup-killed at the 74 GB ask and the 149 GB retry (67 kills,
+//     every OOM in that run). The keyspace model above asked 73 GB for them because
+//     12 bits fills nothing -- the build IS small; the fit is what needs the memory.
+// Fit peak ~ 300 x 2^(-(bits - 12) / 2.5) x scaled^-0.7 GB: 43 GB at 19 bits (measured
+// 44), 300 at 12 bits and scaled 1 (extrapolated along the scaled curve), 60 at 12 bits
+// and scaled 10 (measured 61-70). Scaling with the query count is assumed linear.
+params.kmerseek_ka_fit_memory_gb_at_12_bits = 300
+params.kmerseek_ka_fit_memory_halving_bits  = 2.5
+params.kmerseek_ka_fit_memory_scaled_power  = 0.7
 // Search-memory model, peak GB = headroom x (base + slope x sqrt(load)); see
 // kmerseekSearchMemory for what load is and where these numbers come from.
 params.kmerseek_search_memory_base     = 36
@@ -318,10 +335,25 @@ def memoryLadder = { double firstGb, int attempt ->
     MemoryUnit.of("${Math.min(capMb, askMb)} MB")
 }
 
-def kmerseekIndexMemory = { String label, int ksize, int attempt ->
+// Median peak of the Karlin-Altschul fit inside kmerseekIndex, before headroom; 0 when
+// no extend arm wants a fit. Constants and their measurements: params.kmerseek_ka_fit_*.
+def kaFitGb = { String label, int ksize, int scaled ->
+    int nq = params.kmerseek_ka_queries as int
+    if (nq <= 0 || !resolveExtensions().any { it.startsWith('extend:') }) return 0.0d
+    double bits = keyspaceBits(label, ksize)
+    double at12 = params.kmerseek_ka_fit_memory_gb_at_12_bits as double
+    double halv = params.kmerseek_ka_fit_memory_halving_bits as double
+    double pw   = params.kmerseek_ka_fit_memory_scaled_power as double
+    at12 * Math.pow(2.0d, -(bits - 12.0d) / halv) * Math.pow((double) scaled, -pw) * (nq / 500.0d)
+}
+
+// Build and fit run one after the other in the same task, so the ask is the larger of
+// the two models, not their sum.
+def kmerseekIndexMemory = { String label, int ksize, int scaled, int attempt ->
     double bits    = keyspaceBits(label, ksize)
     double filled  = Math.min(1.0d, Math.pow(2.0d, bits - 28.0d))
-    double gb      = 1.4d * (52.0d + 36.0d * filled)
+    double build   = 52.0d + 36.0d * filled
+    double gb      = 1.4d * Math.max(build, kaFitGb(label, ksize, scaled))
     double floorGb = MemoryUnit.of(params.kmerseek_index_memory_floor).toGiga()
     memoryLadder(Math.max(floorGb, gb), attempt)
 }
@@ -518,7 +550,7 @@ process kmerseekIndex {
     // process block does not, which is the one arrangement under which this closure is
     // the memory that actually applies. cpus and time come from `withName: kmerseekIndex`
     // in nextflow.config, which sets neither memory nor label.
-    memory { kmerseekIndexMemory(alphabet, ksize as int, task.attempt) }
+    memory { kmerseekIndexMemory(alphabet, ksize as int, scaled as int, task.attempt) }
 
     input:
     tuple val(clade), path(ref_dir), val(alphabet), val(ksize), val(lowcomp), val(scaled)
@@ -945,7 +977,7 @@ workflow darkSet {
         def n_lc     = COMBOS.collect { it[2] }.unique().size()
         def n_sc     = COMBOS.collect { it[3] }.unique().size()
         def n_clades = SPECIES*.clade.unique().size()
-        def idx_gb   = COMBOS.collect { a, k, _lc, _sc -> kmerseekIndexMemory(a, k as int, 1).toGiga() }
+        def idx_gb   = COMBOS.collect { a, k, _lc, sc -> kmerseekIndexMemory(a, k as int, sc as int, 1).toGiga() }
         log.info "  kmerseek : ${COMBOS.size()} index combos -- ${n_alpha} alphabet(s), " +
                  "${COMBOS.size().intdiv(n_lc * n_sc)} alphabet x ksize pair(s), mask setting(s): " +
                  "${COMBOS.collect { it[2] }.unique().join(',')}, scaled: " +
