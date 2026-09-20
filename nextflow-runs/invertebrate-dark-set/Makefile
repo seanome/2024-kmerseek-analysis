@@ -110,7 +110,8 @@ LADDER_HEAD_XMX   ?= 24g
 .PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
         multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
-        lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan rescue-indexes-0.4
+        lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan rescue-indexes-0.4 \
+        run-ladder-0.4-sweep-sbatch ladder-0.4-sweep-plan
 
 help:
 	@echo "Dark set: proteins no sequence arm can place into the reference"
@@ -126,6 +127,8 @@ help:
 	@echo "  lock-indexes            make every built kmerseek index read-only (run before a relaunch)"
 	@echo "  run-ladder-0.4-sbatch   the ladder with kmerseek 0.4: scaled x extension arms, own results dir"
 	@echo "  ladder-0.4-plan         print what that expands to without submitting"
+	@echo "  run-ladder-0.4-sweep-sbatch  the same on the full 183-combo table plus the k=12 HP arms (weeks of queue)"
+	@echo "  ladder-0.4-sweep-plan   print what THAT expands to without submitting"
 	@echo "  unlock-indexes          make them writable again, to delete or rebuild one"
 	@echo "  rescue-indexes-0.4      move indexes that failed only at the storeDir mv into results-0.4 (run stopped first)"
 	@echo "  status-dark-set         SPECIES=<...>  did it end, what killed it, what it said"
@@ -376,6 +379,23 @@ run-ladder-0.4-sbatch:
 	  WITH_KMERSEEK=1 LAUNCH_DIR=$(V4_LAUNCH_DIR) OUTDIR=$(V4_OUTDIR) \
 	  HEAD_TIME=$(LADDER_HEAD_TIME) HEAD_MEM=$(LADDER_HEAD_MEM) HEAD_XMX=$(LADDER_HEAD_XMX) \
 	  NF_ARGS="$(V4_NF_ARGS)"
+
+# The whole 0.3 ladder table (every alphabet over its ksize range, 183 pairs) under 0.4,
+# plus the two k=12 HP pairs the table's k floor leaves out, at every scaled level and
+# every arm above. Same run tag, launch dir and results dir as run-ladder-0.4-sbatch, so
+# it is that run continued with more combos: every index and search already done is a
+# storeDir hit or a cached task. Decided 2026-09-20 to see whether a subsampled index
+# gives the same answer as the full one, across the whole table. Rough size from the
+# measured runs: 6_660 index tasks, 202_000 searches, 250_000+ CPU-hours -- 2.4 days of
+# the entire hns partition, so weeks at a normal share. The head's 7-day walltime will
+# run out before that; relaunch the same target and -resume carries on.
+V4_SWEEP_PLUS ?= hp_pbotc_1st_ed2:12,hp_thomas_dill2:12
+V4_SWEEP_ARGS  = --kmerseek_sweep true --kmerseek_sweep_plus $(V4_SWEEP_PLUS)
+run-ladder-0.4-sweep-sbatch:
+	@$(MAKE) run-ladder-0.4-sbatch NF_ARGS="$(V4_SWEEP_ARGS) $(NF_ARGS)"
+
+ladder-0.4-sweep-plan:
+	@$(MAKE) ladder-0.4-plan NF_ARGS="$(V4_SWEEP_ARGS) $(NF_ARGS)"
 
 ladder-0.4-plan: check-inputs
 	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -preview \

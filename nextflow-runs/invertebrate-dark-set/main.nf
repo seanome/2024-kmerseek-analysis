@@ -93,6 +93,12 @@ params.kmerseek_alphabets = 'hp_thomas_dill2:23,protein20:10'
 params.kmerseek_sweep           = false
 params.kmerseek_extra_encodings = false
 params.kmerseek_encodings       = null
+// alphabet:ksize pairs appended to a sweep's table, for combos the table's k ranges
+// leave out. The 0.4 ladder wants the two-letter HP alphabets at k=12, six below the
+// table's HP floor, because only an extension arm can use k-mers that short. Ignored
+// unless --kmerseek_sweep or --kmerseek_encodings is on; without a sweep,
+// --kmerseek_alphabets already names every pair outright.
+params.kmerseek_sweep_plus      = ''
 
 // The low-complexity mask runs ON and OFF as a PAIR by default, not as a sweep dimension.
 // BHF's seven flagship matches included polar-biased low-complexity segments (ZNF292
@@ -185,6 +191,7 @@ params.kmerseek_index_memory_floor  = '48 GB'
 // Fit peak ~ 300 x 2^(-(bits - 12) / 2.5) x scaled^-0.7 GB: 43 GB at 19 bits (measured
 // 44), 300 at 12 bits and scaled 1 (extrapolated along the scaled curve), 60 at 12 bits
 // and scaled 10 (measured 61-70). Scaling with the query count is assumed linear.
+params.kmerseek_index_build_gb              = 45
 params.kmerseek_ka_fit_memory_gb_at_12_bits = 300
 params.kmerseek_ka_fit_memory_halving_bits  = 2.5
 params.kmerseek_ka_fit_memory_scaled_power  = 0.7
@@ -348,11 +355,15 @@ def kaFitGb = { String label, int ksize, int scaled ->
 }
 
 // Build and fit run one after the other in the same task, so the ask is the larger of
-// the two models, not their sum.
+// the two models, not their sum. The build term was `52 + 36 x filled` GB, fit on the
+// 0.3 builder, where filled = min(1, 2^(bits - 28)); 0.3 did peak at 74 GB on protein20
+// k10. The 0.4 builder peaks at 18 GB there, 42 GB (max 56) at 23 bits and 44 GB
+// (max 48) at 19 bits, at scaled 1 -- three points that do not follow the keyspace at
+// all -- so for 0.4 the build term is a flat params.kmerseek_index_build_gb that covers
+// every one of them, and the 2x retry reaches the old ask if a combo exceeds it. Refit
+// once the full-table run has measured a build for every alphabet.
 def kmerseekIndexMemory = { String label, int ksize, int scaled, int attempt ->
-    double bits    = keyspaceBits(label, ksize)
-    double filled  = Math.min(1.0d, Math.pow(2.0d, bits - 28.0d))
-    double build   = 52.0d + 36.0d * filled
+    double build   = params.kmerseek_index_build_gb as double
     double gb      = 1.4d * Math.max(build, kaFitGb(label, ksize, scaled))
     double floorGb = MemoryUnit.of(params.kmerseek_index_memory_floor).toGiga()
     memoryLadder(Math.max(floorGb, gb), attempt)
@@ -840,6 +851,18 @@ def resolveCombos() {
             table = wanted.collect { w -> knownEncodings().find { it[0] == w } }
         }
         pairs = expandEncodings(table).collect { cli, _label, k -> [cli, k] }
+        def plus = params.kmerseek_sweep_plus.toString().tokenize(',')*.trim().findAll { it }.collect { spec ->
+            def parts = spec.tokenize(':')
+            if (parts.size() != 2 || !(parts[1] ==~ /\d+/)) {
+                error "--kmerseek_sweep_plus entries are alphabet:ksize, not '${spec}'"
+            }
+            if (!(parts[0] in knownEncodings()*.get(0))) {
+                error "Unknown alphabet in --kmerseek_sweep_plus: ${parts[0]}. " +
+                      "Known: ${knownEncodings()*.get(0).join(', ')}"
+            }
+            [parts[0], parts[1] as Integer]
+        }
+        pairs = (pairs + plus).unique()
     }
     else {
         pairs = params.kmerseek_alphabets.tokenize(',')*.trim().findAll { it }.collect { spec ->
@@ -903,11 +926,24 @@ def penaltyString(double c) {
     sf.contains('.') ? sf.replaceAll(/0+$/, '').replaceAll(/\.$/, '') : sf
 }
 
-// The mismatch penalties one alphabet's `extend` arms use, as strings.
+// The mismatch penalties one alphabet's `extend` arms use, as strings. `opt` needs a
+// measured kappa, and only five alphabets have one (kappaTable), so on a run over the
+// whole table `opt` is an arm those five get and the others do not: it is dropped here
+// for an alphabet without a kappa, and armsFor below drops the matching search arm.
+// The plan log names every alphabet this happens to.
+def hasOptimalPenalty(String alphabet) { kappaTable()[alphabet] != null }
+
 def penaltiesFor(String alphabet) {
     params.kmerseek_mismatch_penalty.toString().tokenize(',')*.trim().findAll { it }.collect { spec ->
-        spec == 'opt' ? optimalPenalty(alphabet) : penaltyString(spec as double)
-    }.unique()
+        spec == 'opt' ? (hasOptimalPenalty(alphabet) ? optimalPenalty(alphabet) : null)
+                      : penaltyString(spec as double)
+    }.findAll { it != null }.unique()
+}
+
+// The search arms one alphabet's indexes get: every requested arm, minus `extend:opt`
+// where no kappa is measured.
+def armsFor(String alphabet) {
+    resolveExtensions().findAll { it != 'extend:opt' || hasOptimalPenalty(alphabet) }
 }
 
 def xdropFor(String penalty) {
@@ -985,13 +1021,14 @@ workflow darkSet {
                  "${EXTENSIONS.join(',')}"
         if (EXTENSIONS.any { it.startsWith('extend:') }) {
             COMBOS.collect { it[0] }.unique().each { a ->
-                log.info "             ${a}: extend penalties C = ${penaltiesFor(a).join(', ')}" +
-                         (kappaTable()[a] != null ? " (kappa ${kappaTable()[a]}, ${alphabetClasses(a)} classes)" : '')
+                log.info "             ${a}: extend penalties C = ${penaltiesFor(a).join(', ') ?: 'none'}" +
+                         (hasOptimalPenalty(a) ? " (kappa ${kappaTable()[a]}, ${alphabetClasses(a)} classes)"
+                                               : (EXTENSIONS.contains('extend:opt') ? ' (no kappa measured: the opt arm is skipped)' : ''))
             }
         }
         log.info "             ${n_clades * COMBOS.size()} index builds (${n_clades} clade(s) x combos), " +
                  "first-attempt memory ${idx_gb.min()}-${idx_gb.max()} GB"
-        log.info "             up to ${total_chunks * COMBOS.size() * EXTENSIONS.size()} searches (chunks x combos x arms); each is " +
+        log.info "             up to ${total_chunks * COMBOS.sum { armsFor(it[0]).size() }} searches (chunks x combos x arms); each is " +
                  "sized from its index's k-mer spectrum once that index exists, " +
                  "${params.kmerseek_search_memory_floor}-${params.kmerseek_memory_first_max} on the first " +
                  "attempt, and a combo predicted past ${params.kmerseek_memory_max} is skipped and logged"
@@ -1081,11 +1118,10 @@ workflow darkSet {
             true
         }
 
-        // Every runnable index is searched once per extension arm.
-        arms = Channel.fromList(EXTENSIONS)
+        // Every runnable index is searched once per extension arm its alphabet has.
         ks = kmerseekSearch(
-            chunks.combine(runnable, by: 0).combine(arms)
-                  .map { cl, sp, c, a, k, lc, sc, i, ext -> tuple(sp, cl, c, a, k, lc, sc, ext, i) })
+            chunks.combine(runnable, by: 0)
+                  .flatMap { cl, sp, c, a, k, lc, sc, i -> armsFor(a).collect { ext -> tuple(sp, cl, c, a, k, lc, sc, ext, i) } })
 
         // How many combos each species actually searches, AFTER the skip above. The
         // groupKey size below has to be exact: groupTuple discards a group that never
@@ -1096,9 +1132,9 @@ workflow darkSet {
         // count is known once every index build of a clade has finished, which is long
         // before its searches are.
         n_combos = runnable
-            .map { cl, _a, _k, _lc, _sc, _i -> tuple(cl, 1) }
+            .map { cl, a, _k, _lc, _sc, _i -> tuple(cl, armsFor(a).size()) }
             .groupTuple()
-            .flatMap { cl, ones -> SPECIES.findAll { it.clade == cl }.collect { s -> tuple(s.label, ones.size() * EXTENSIONS.size()) } }
+            .flatMap { cl, arms -> SPECIES.findAll { it.clade == cl }.collect { s -> tuple(s.label, arms.sum()) } }
 
         // Every chunk and every combo of a species reaches the gain step together: a
         // protein counts as rescued only against the whole dark set, and the dark set is
