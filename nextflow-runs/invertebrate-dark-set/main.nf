@@ -544,15 +544,24 @@ process kmerseekIndex {
                     : '--ka-queries 0'
     def more = pens.drop(1).collect { c ->
         "kmerseek calibrate --target ${idx} --extend-mismatch-penalty ${c} " +
-        "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} 2>&1 | tee -a index.log"
+        "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} 2>&1 | stamp | tee -a index.log"
     }.join('\n    ')
     """
     set -euo pipefail
+    # One timestamp per log line. The index build and the Karlin-Altschul E-value fit
+    # both happen inside the one `kmerseek index` call and it prints no times, so
+    # without this the two cannot be told apart afterwards (2026-09-20: the fit turned
+    # out to be 25x the CPU of the build at hp_pbotc_1st_ed2 k19, and only the task
+    # total was measurable). Build = from "start" to "Fitting Karlin-Altschul"; fit =
+    # from there to "Stored in the index". Bash's own printf stamps, so it costs no
+    # process per line and needs nothing from the image.
+    stamp() { while IFS= read -r line; do printf '%(%Y-%m-%dT%H:%M:%S)T %s\\n' -1 "\$line"; done; }
+    echo start | stamp | tee index.log
     kmerseek index \\
         --alphabet ${alphabet} --ksize ${ksize} --scaled ${scaled} \\
         --input  ${ref_dir}/reference.fasta \\
         --output ${idx} ${lc} ${ka} \\
-        --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | tee index.log
+        --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | stamp | tee -a index.log
     ${more}
     # An index is immutable once built. A search that opens it read-write (the image
     # before 2026-09-13-rocksdb-4gb-readonly did) rewrites CURRENT, MANIFEST and LOG,
