@@ -216,6 +216,73 @@ SLURM_PARTITION ?= hns
 PREFETCH_MEM    ?= 48G
 PREFETCH_TIME   ?= 2:00:00
 
+# --- Where the head process itself runs ------------------------------------
+# As a SLURM job, in a tmux session on a compute node. Not on a login node, and not tied
+# to your terminal. Two separate things forced this, a day apart:
+#
+# The ten-CPU-MINUTE cap. /etc/security/limits.d/sh_login.conf caps every process
+# belonging to @sh_users: `cpu 10`, `as 33554432`, `nofile 256`, `nproc 512`. The `-`
+# column means soft equals hard, so the kernel skips SIGXCPU and sends SIGKILL. The
+# 2026-09-08 all-QfO run was tracking ~31_000 tasks (15_834 kmerseekIndex and 15_177
+# kmerseekSearch), crossed ten CPU-minutes 16.5 hours in, and died at Sep-09 06:01:31 with
+# .nextflow.log stopping mid-line, no OutOfMemoryError in any of its 24 MB, and no shutdown
+# sequence. make reported Error 137. It reads like an out-of-memory kill and is not one.
+# Capping the JVM heap fixes nothing, because the budget is CPU seconds rather than bytes. The four earlier runs in that directory all reached "Execution complete --
+# Goodbye" because they were small enough to stay under ten minutes. Measured rate on a
+# live head: 1.45% of one core, which reaches ten CPU-minutes in about 11 hours.
+#
+# The login node itself. On 2026-09-09 sh03-ln07 rebooted at 15:53 and came back without
+# /scratch mounted, taking with it a 10-day tmux, a running head, and every job that head
+# had submitted -- it got SIGTERM on the way down and cancelled its own queue. Boot times
+# across the eight login nodes are scattered over four months with no cycle, so there is no
+# safe node to pin to; two of them had been up 121 days and one had been up 5 minutes.
+#
+# A batch job is out of reach of both. Nothing of the run is left on a login node.
+#
+# On a compute node those four limits are unlimited, unlimited, 131072 and 12288 (measured
+# on sh04-04n19). Same move as prefetch-images converting images inside a job.
+HEAD_CPUS ?= 2
+HEAD_MEM  ?= 16G
+# SLURM enforces --mem with a cgroup, and a JVM that sizes its heap off the NODE's 191 GB
+# would be killed inside a 16 GB allocation -- the same total-RAM-versus-cgroup mistake
+# noted above for mksquashfs. Pinned rather than left to container detection, with the
+# remainder for metaspace, thread stacks and the off-heap cache DB.
+HEAD_XMX  ?= 12g
+export NXF_OPTS := -Xms1g -Xmx$(HEAD_XMX)
+# `normal`, and not `long`, even for the seven-day head. hns declares
+# AllowQos=normal,high_p,system and carries a partition QOS of `owner` whose MaxWall is 7
+# days. `long` is not on that list -- it is allowed on the public `normal` PARTITION only
+# -- so asking for it here fails at submission with "Invalid qos specification", which is
+# how the first all-QfO launch died.
+#
+# The `normal` QOS's own 2-day MaxWall does not bind on hns; the partition QOS is what
+# applies. Probed with sbatch --test-only: hns + normal + 7 days is accepted and placed at
+# the same moment as the 2-day version, while normal + long + 7 days would not have started
+# for another 3.5 hours. So the condo is both the faster and the simpler answer, and
+# nothing here needs one of the four `long` slots after all.
+HEAD_QOS  ?= normal
+HEAD_TIME ?= 2-00:00:00
+# The tmux session name inside the head job. `make watch` attaches to it.
+HEAD_SESSION ?= qfo
+# The SLURM job name. Every squeue lookup in watch/attach/stop keys on it, so two pipelines
+# submitting heads at once must not share one -- the invertebrate dark set uses
+# nfdrv-<species> for that reason.
+HEAD_JOBNAME ?= nf-head
+
+# scripts/nf-head, shared with the other Sherlock pipelines, writes and submits the job
+# script; see the header there for what it does and why. Deliberately NOT in this
+# pipeline's bin/: Nextflow stages bin/ into every task and counts it in the task hash, so
+# a file added there would invalidate the resume cache for every one of the sweep's
+# completed tasks.
+#
+# Recursive `=`, not `:=`, so the per-target overrides below are in scope when it expands.
+MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
+HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
+              HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
+              HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
+              HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
+              $(MAKEFILE_DIR)/../../scripts/nf-head
+
 # --- MultiQC report --------------------------------------------------------
 # Which run's resource numbers the report describes. Defaults to the newest trace the main
 # run left behind; override for a specific one:
@@ -265,13 +332,14 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
         run-midi-plus-all-qfo queue-empty \
+        watch attach stop \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
         stage-botryllus \
         sync-pipeline sync-data sync-pfam sync-structures pull-results \
         qfo-download qfo-link qfo-verify-existing \
         pfam-regions pfam-regions-download pfam-annotations \
-        run run-kmerseek run-baselines rannon-burstein-all status running kill-jobs clean-cache clean-indexes index-disk \
+        run run-kmerseek run-baselines rannon-burstein-all status running postmortem kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
         pfamn-download pfamn-truth mcsa-truth help \
@@ -280,7 +348,8 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
         build-image-rannon-burstein push-image-rannon-burstein \
         run-rannon-burstein multiqc-rannon-burstein \
-        pull-report pull-report-mini pull-report-midi
+        pull-report pull-report-mini pull-report-midi \
+        purge-empty-kmerseek-regions
 
 help:
 	@echo "Mac:"
@@ -321,6 +390,8 @@ help:
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
 	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
+	@echo "  watch                attach to the running head and see the live table"
+	@echo "  stop                 ask the running head to cancel its tasks and exit"
 	@echo "                       Reuses run-midi-plus's stored searches; replaces its report"
 	@echo "                       Additive to run-midi, its own outdir, target DBs shared."
 	@echo "                       Also searches botryllus, a 10th target that is NOT scored"
@@ -340,6 +411,8 @@ help:
 	@echo "  multiqc-status       Show what that report would be built from"
 	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
 	@echo "  status               Show this user's SLURM jobs"
+	@echo "  postmortem           Did the last run end, what killed it, what it said"
+	@echo "                       HISTORY=1 for one line per past run, LOG=.nextflow.log.2 for an older one"
 	@echo "  rannon-burstein-all  Search polarity4/funcgroups8, then build the combined report"
 	@echo "  running              Show the process and tag behind each running job"
 	@echo "  kill-jobs            Cancel every job on the account (confirms first)"
@@ -347,6 +420,9 @@ help:
 	@echo "Cleanup:"
 	@echo "  clean-image-cache    Remove partial Apptainer pulls"
 	@echo "  clean-cache          Remove all cached Apptainer images"
+	@echo "  purge-empty-kmerseek-regions"
+	@echo "                       Delete zero-byte kmerseek region files (stored OOM kills)"
+	@echo "                       so the next -resume searches those combos again"
 
 
 # --- which machine am I on? -------------------------------------------------
@@ -1396,7 +1472,7 @@ define launch
 	mkdir -p run
 	cd run && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
 	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --qfo_dir     ../data/qfo \
 	    --annotations ../data/annotations \
@@ -1549,7 +1625,7 @@ run-midi: prefetch-images midi-testset-sherlock
 	mkdir -p run-midi
 	cd run-midi && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1638,7 +1714,7 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	mkdir -p run-midi-plus
 	cd run-midi-plus && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1682,21 +1758,32 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 # has_structs and make_mini_testset prints a NOTE per species. The nine originals keep
 # their structural arms. Nothing needs a flag for this.
 #
-# HHblits is restricted to eukaryotes plus the nine originals: 48 targets rather than 77.
-# See the note on params.hhblits_kingdoms in main.nf for why, and why ecoli stays in.
+# HHblits runs on every kingdom. It is the most expensive sequence arm, and restricting it
+# to eukaryotes would save ~2_400 CPU-hours -- but it would also leave E. coli as the only
+# bacterium with a profile baseline, which is precisely the comparison the prokaryote
+# question needs. ALLQFO_HHBLITS_KINGDOMS=Eukaryota puts the saving back.
 ALLQFO_OUTDIR ?= $(MIDI_PLUS_OUTDIR)
 ALLQFO_RUN_DIR ?= run-midi-plus-all-qfo
 # Every non-human registry row: the 77 QfO targets plus botryllus.
 ALLQFO_TARGETS ?= all
-# Eukaryotes only, plus the nine originals -- see params.hhblits_kingdoms in main.nf.
-ALLQFO_HHBLITS_KINGDOMS ?= Eukaryota
+
 # Registry species that have no Pfam answer key YET, as opposed to none that can exist.
 # Searched by every sequence arm and by ProstT5, scored by nothing, until the key lands.
 # Empty this as each one gains a data/annotations/<label>_pfam_domains.parquet -- the
 # preflight below fails if a name here already has one, so the list cannot go stale quietly.
 ALLQFO_PENDING_PFAM ?= botryllus
+# Every kingdom, deliberately.
+#
+# This was Eukaryota-only to save the ~2_400 CPU-hours HHblits costs across 30 prokaryotes.
+# That saving is now the wrong trade. The open question is whether E. coli's collapse is an
+# E. coli problem or a prokaryote-wide one, and answering it needs the strongest profile
+# baseline present on the prokaryotes rather than on E. coli alone -- one bacterium with an
+# HHblits point and 22 without is not a comparison, it is a gap with a single dot in it.
+#
+# Set this back to Eukaryota to drop those hours once the prokaryote question is settled.
+ALLQFO_HHBLITS_KINGDOMS ?=
 
-## Refuse to launch while anything of ours is still queued.
+## Refuse to launch while anything that writes THIS pipeline's storeDirs is still queued.
 ##
 ## Not defensive padding. Nextflow decides "already in the store" when it CREATES a task
 ## and never re-checks, so a second writer against the same --db_cache does the full build
@@ -1704,23 +1791,49 @@ ALLQFO_PENDING_PFAM ?= botryllus
 ## jobs from a previous run as the most likely cause, and this project has hit it three
 ## times on three different storeDir outputs. The terminal returning is not the same as the
 ## queue draining, which is precisely how it keeps happening.
+##
+## Scoped by work directory, not by user. Counting every job under $USER was the first
+## version and it was wrong in the direction that gets a guard disabled: an unrelated run
+## in another checkout -- the invertebrate dark set, on 2026-09-10 -- blocks a launch it
+## cannot possibly collide with, and the only way past is to ignore the check. A guard
+## people have to route around stops being a guard.
+##
+## `squeue -o %Z` gives each job's work directory in one call. Every job that can reach
+## this pipeline's storeDirs is launched from somewhere under this directory: the nf-head
+## job's work dir is its launch directory, and each task's is under <launch dir>/work. Two
+## run targets here still block each other, which is the case the guard was written for,
+## because run-midi and run-midi-plus-all-qfo share --db_cache ../results.
 queue-empty:
 	$(call require_cluster)
-	@n=$$(squeue -u $$USER -h 2>/dev/null | wc -l); \
+	@here="$(MAKEFILE_DIR)/"; \
+	 mine=$$(squeue -u $$USER -h -o "%i %Z" 2>/dev/null | awk -v p="$$here" 'index($$2,p)==1'); \
+	 n=$$(printf '%s' "$$mine" | grep -c . ); \
 	 if [ "$$n" -ne 0 ]; then \
 	   echo; \
-	   echo "  $$n job(s) still queued or running under $$USER."; \
+	   echo "  $$n job(s) of this pipeline still queued or running:"; \
+	   echo "$$mine" | head -5 | sed 's/^/    /'; \
+	   echo; \
 	   echo "  Launching now would put two writers on the same storeDir under"; \
 	   echo "  $(ALLQFO_OUTDIR) and \$$(db_cache), which fails as"; \
 	   echo "  'mv: cannot move ... Directory not empty' after both have done the work."; \
 	   echo; \
-	   echo "  Wait for the queue to drain, then re-run:"; \
-	   echo "    squeue -u \$$USER"; \
+	   echo "  Wait for them to drain, or stop the run that owns them:"; \
+	   echo "    make running"; \
+	   echo "    make stop"; \
 	   echo; \
 	   exit 1; \
 	 fi; \
-	 echo "queue is empty"
+	 other=$$(squeue -u $$USER -h 2>/dev/null | grep -c .); \
+	 if [ "$$other" -ne 0 ]; then \
+	   echo "clear here; $$other job(s) of yours elsewhere, which cannot reach these storeDirs"; \
+	 else \
+	   echo "queue is empty"; \
+	 fi
 
+# The only run whose head has to stay alive for the better part of a week. It gets there on
+# the partition QOS rather than a QOS of its own -- see the note on HEAD_QOS above for why
+# `long` is not usable on hns.
+run-midi-plus-all-qfo: HEAD_TIME := 7-00:00:00
 run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
 run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
@@ -1778,7 +1891,7 @@ run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	mkdir -p $(ALLQFO_RUN_DIR)
 	cd $(ALLQFO_RUN_DIR) && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
@@ -1789,7 +1902,7 @@ run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
 	    $(BPE_NF_ARG) \
 	    --db_cache        ../results \
 	    --target_species  $(ALLQFO_TARGETS) \
-	    --hhblits_kingdoms $(ALLQFO_HHBLITS_KINGDOMS) \
+	    $(if $(ALLQFO_HHBLITS_KINGDOMS),--hhblits_kingdoms $(ALLQFO_HHBLITS_KINGDOMS)) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
 	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
@@ -1870,7 +1983,7 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	mkdir -p $(RB_RUN_DIR)
 	cd $(RB_RUN_DIR) && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
 	    --kmerseek_image      $(RB_IMAGE_REMOTE) \
 	    --kmerseek_encodings  $(RB_ENCODINGS) \
 	    --skip_baselines      true \
@@ -1889,12 +2002,15 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	    $(NF_ARGS)
 
 # Same code path as the real run, scoped down. Do this before `make run`.
+# The smoke test takes the same route to the compute node as the real runs -- that is
+# what makes it a smoke test of the launch path and not just of the pipeline.
+run-mini: HEAD_TIME := 4:00:00
 run-mini: prefetch-images mini-testset-sherlock
 	$(call require_cluster)
 	mkdir -p run-mini
 	cd run-mini && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile $(PROFILE),mini -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE),mini -resume \
 	    --kmerseek_image  $(IMAGE_REMOTE) \
 	    --qfo_dir         ../data/mini/qfo \
 	    --annotations     ../data/mini/annotations \
@@ -2083,9 +2199,67 @@ multiqc-rannon-burstein: prefetch-images
 	    --qfo_dir         ../data/midi/qfo \
 	    $(NF_ARGS)
 
+## Attach to the head job's tmux and watch the live task table.
+##
+## The socket is /tmp/nf-head-<jobid> on the head's own node, and `srun --jobid` puts you
+## on that node, so nothing has to travel through the filesystem for this to find it.
+##
+## `watch` is read-only, because a stray Ctrl-C in an attached session reaches Nextflow and
+## shuts the run down. Detach with Ctrl-b d and the run carries on. `attach` is the same
+## thing writable, for when typing into it is what you mean -- though `make stop` is the
+## safer way to end a run.
+##
+## Pass JOBID=<id> when more than one head is alive.
+watch:  HEAD_ATTACH := -r
+attach: HEAD_ATTACH :=
+watch attach:
+	$(call require_cluster)
+	@jid="$(JOBID)"; \
+	 if [ -z "$$jid" ]; then \
+	   jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 fi; \
+	 if [ -z "$$jid" ]; then \
+	   pend=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T %r"); \
+	   if [ -n "$$pend" ]; then \
+	     echo "no nf-head is RUNNING yet:"; echo "$$pend" | sed 's/^/    /'; \
+	   else \
+	     echo "no nf-head job. Start one with a run target, or pass JOBID=<id>."; \
+	   fi; \
+	   exit 1; \
+	 fi; \
+	 exec srun --jobid=$$jid --overlap --pty \
+	      tmux -S /tmp/nf-head-$$jid attach $(HEAD_ATTACH) -t $(HEAD_SESSION)
+
+## Ask the run to stop the way Nextflow can handle: Ctrl-C, so it cancels the jobs it has
+## in flight rather than leaving them as orphans for the next launch's queue-empty check to
+## trip over.
+##
+## `scancel --signal=TERM --batch` signals the batch script only and does NOT cancel the
+## job, so the trap in scripts/nf-head gets to do that work and the job ends by itself once
+## Nextflow has finished shutting down. Plain `scancel <jobid>` is the hard version, and it
+## is the one that leaves the orphans.
+stop:
+	$(call require_cluster)
+	@jid="$(JOBID)"; \
+	 if [ -z "$$jid" ]; then \
+	   jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 fi; \
+	 if [ -z "$$jid" ]; then echo "no nf-head job is running"; exit 1; fi; \
+	 scancel --signal=TERM --batch $$jid && \
+	 echo "asked job $$jid to shut down; watch it drain with: make running"
+
 status:
 	$(call require_cluster)
 	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+
+## What happened to a run, from its .nextflow.log: whether it ended, which task took it
+## down and what that task printed, per-process counts, every failed task with its work
+## dir. This is the question a dead tmux session leaves behind, and the answer used to be
+## grepping a 400 KB log for ERROR and then walking into the work dir. Needs no cluster:
+## it reads the log in this directory and the failed tasks' .command.err, so it works on a
+## pulled-back copy too. JOBNAME=<slurm job name> adds the head jobs from sacct.
+postmortem:
+	@../../scripts/nf-postmortem $(if $(HISTORY),--history,$(if $(JOBNAME),--jobname $(JOBNAME)) $(LOG))
 
 ## What each running job actually IS: process AND tag, in separate columns.
 ##
@@ -2101,11 +2275,41 @@ status:
 ## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes and
 ## `1-02:19:10` is a day. That distinction has already cost a wrong call about whether a
 ## job was stuck. PENDING jobs show 0:00.
+##
+## The counts come first, because at sweep scale the table is hundreds of lines and the
+## question is usually "how much is moving" rather than "what is job 42726837". Pending
+## jobs are grouped by squeue's own reason, which is what distinguishes a queue that is
+## merely busy (Priority, Resources) from one that has hit a limit and will not drain on
+## its own (QOSMaxJobsPerUserLimit, AssocMaxWallDurationPerJobLimit).
+##
+## Work directories come from `squeue -o %Z` rather than a `scontrol show job` per row.
+## The old form cost one round trip per job, which is fine for nine baseline jobs and not
+## fine for the four hundred this sweep can have in flight at once.
 running:
 	$(call require_cluster)
-	@printf "%-10s %-4s %-10s %-24s %s\n" JOBID ST TIME PROCESS TAG
-	@squeue -u $$USER -h --account=$${SLURM_ACCOUNT:-ayeletv} -o "%i %t %M" | while read j st tm; do \
-	   w=$$(scontrol show job $$j 2>/dev/null | tr ' ' '\n' | grep -m1 WorkDir | cut -d= -f2); \
+	@here="$(MAKEFILE_DIR)/"; \
+	 sq=$$(squeue -u $$USER -h --account=$${SLURM_ACCOUNT:-ayeletv} -o "%i|%t|%M|%r|%Z" 2>/dev/null | grep .); \
+	 if [ -z "$$sq" ]; then echo "no jobs in the queue"; exit 0; fi; \
+	 tot=$$(printf '%s\n' "$$sq" | grep -c .); \
+	 run=$$(printf '%s\n' "$$sq" | cut -d'|' -f2 | grep -cx R); \
+	 pnd=$$(printf '%s\n' "$$sq" | cut -d'|' -f2 | grep -cx PD); \
+	 oth=$$((tot - run - pnd)); \
+	 mine=$$(printf '%s\n' "$$sq" | awk -F'|' -v p="$$here" 'index($$5,p)==1' | grep -c .); \
+	 line="$$tot job(s): $$run running, $$pnd pending"; \
+	 if [ "$$oth" -gt 0 ]; then line="$$line, $$oth in other states"; fi; \
+	 echo "$$line"; \
+	 echo "  $$mine from this pipeline, $$((tot - mine)) elsewhere"; \
+	 if [ "$$pnd" -gt 0 ]; then \
+	   echo "  why the pending ones are waiting:"; \
+	   printf '%s\n' "$$sq" | awk -F'|' '$$2=="PD" {print $$4}' | sort | uniq -c | sort -rn | head -5 | sed 's/^/   /'; \
+	 fi; \
+	 if [ "$$oth" -gt 0 ]; then \
+	   echo "  the other states:"; \
+	   printf '%s\n' "$$sq" | awk -F'|' '$$2!="R" && $$2!="PD" {print $$2}' | sort | uniq -c | sort -rn | sed 's/^/   /'; \
+	 fi; \
+	 echo; \
+	 printf "%-10s %-4s %-10s %-24s %s\n" JOBID ST TIME PROCESS TAG; \
+	 printf '%s\n' "$$sq" | while IFS='|' read j st tm rsn w; do \
 	   n=$$(sed -n "s/^### name: '\(.*\)'.*/\1/p" "$$w/.command.run" 2>/dev/null | head -1); \
 	   if [ -z "$$n" ]; then n="(no .command.run under $$(basename "$$w" 2>/dev/null))"; fi; \
 	   pr=$$(printf '%s' "$$n" | sed 's/ (.*//'); \
@@ -2159,6 +2363,38 @@ clean-folddisco-index:
 	@du -sh $(REMOTE_FOLDDISCO_DIR) 2>/dev/null || echo "no folddisco index at $(REMOTE_FOLDDISCO_DIR)"
 	@read -p "delete the folddisco indexes above? they rebuild on the next run [y/N] " a; [ "$$a" = y ] || exit 1
 	/bin/rm -rf $(REMOTE_FOLDDISCO_DIR)
+
+## Where kmerseekSearch stores its region tables. Defaults to the outdir run-midi-plus and
+## run-midi-plus-all-qfo share; point it elsewhere for another run's outdir. MIDI_PLUS_OUTDIR
+## is written against the launch directory (`../data/midi-plus/results`), and this target
+## runs from the pipeline directory one level up, so it goes through rel_to_launch like
+## every other outdir read from here. Without that it looked for `../data/...` beside the
+## pipeline and reported no store.
+KMERSEEK_REGIONS_DIR ?= $(call rel_to_launch,run-midi-plus-all-qfo,$(MIDI_PLUS_OUTDIR))/kmerseek
+
+## Delete every zero-byte kmerseek regions parquet so the next -resume searches it again.
+##
+## These files are OOM kills stored as results. Until the fix on kmerseekSearch, a
+## `kmerseek search` killed by the cgroup memory limit exited 137, the shell around it
+## survived, treated the nonzero exit as "found nothing", and wrote an empty parquet into
+## storeDir. storeDir then saw the output present and served it as done on every later
+## run, and scoring read it as recall 0. On the 2026-09-10 run 227 stored region files were
+## zero bytes and 178 of them were exit 137 (mostly gbmr7 k9-12, gbmr4 k12-13, polarity4
+## k10-13). Removing the regions parquet alone is enough: storeDir decides "done" by the
+## declared outputs existing, so a missing regions file makes the task run again under the
+## corrected script, which now re-raises the kill instead of storing it.
+##
+## /bin/rm, not rm: the interactive shell aliases rm to `rm -i`, which hangs a make target.
+purge-empty-kmerseek-regions:
+	$(call require_cluster)
+	@if [ ! -d "$(KMERSEEK_REGIONS_DIR)" ]; then \
+	  echo "no kmerseek store at $(KMERSEEK_REGIONS_DIR)"; exit 1; \
+	fi
+	@n=$$(find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 | wc -l | tr -d ' '); \
+	 echo "$$n zero-byte regions file(s) under $(KMERSEEK_REGIONS_DIR)"; \
+	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 | sort | sed 's/^/  /'; \
+	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 -exec /bin/rm -f {} +; \
+	 echo "deleted $$n; the next -resume runs those searches again"
 
 ## How much disk the shared cache is holding, and how much is left. Check this before
 ## launching the full sweep. Everything under results/ is shared between run-midi and run:

@@ -60,8 +60,8 @@ HARD_B = curve("ecoli", [(1, 0.12, 0.04), (2, 0.10, 0.11), (3, 0.05, 0.18),
 SUB = pl.concat([EASY, HARD_A, HARD_B])
 
 
-def pooled():
-    return bmi.pool_curve_over_species(SUB, "recall_reachable", "precision")
+def pooled(sub=SUB):
+    return bmi.pool_curve_over_species(sub, "recall_reachable", "precision")
 
 
 # --- the truncation is gone ----------------------------------------------------------
@@ -122,28 +122,35 @@ def test_the_old_recall_binning_would_have_shown_the_jump():
 
 # --- what the curve and the table have to agree on -----------------------------------
 
-def test_recall_at_precision_is_read_off_the_drawn_series_not_the_raw_pairs():
-    """The bar and the line have to agree in the last decimal, not roughly.
+def test_recall_at_precision_is_measured_inside_a_species_not_on_the_pooled_curve():
+    """The headline number has to be reachable somewhere, not only on an average.
 
-    curve_series rounds x to a fixed precision and averages the y of any grid points that
-    land on the same rounded x, which is what keeps the drawn line single-valued. Reading
-    the raw pairs instead let the table report a recall the line does not pass through --
-    small, and exactly the kind of small that makes a reader distrust both numbers.
+    Pooling averages precision across species at matched rank, so an arm can sit above the
+    floor on the pooled line while sitting below it in every species. Measuring inside each
+    species and then averaging is the number a reader could act on, and it is the only
+    computation in the file -- the conclusions section quotes this same function.
     """
-    pairs = pooled()
-    series = bmi.curve_series(pairs)
-    # 0.3 rather than the report's 0.5: the fixture's pooled precision tops out at 0.49,
-    # because two of its three species are hard. The threshold is not what is under test.
-    got = bmi.recall_at_precision(pairs, 0.3)
-    drawn = max(float(x) for x, y in series.items() if y >= 0.3)
-    assert got == drawn
-    assert f"{got:.4f}" in series
+    # 0.3 rather than the report's 0.5: two of the fixture's three species are hard, so
+    # its precision tops out below 0.5. The threshold is not what is under test.
+    rap = bmi.recall_at_precision(SUB.with_columns(
+        pl.lit("kmerseek").alias("tool"), pl.lit("v").alias("variant")), 0.3)
+    got = rap["recall_at_precision"][0]
+    # mouse clears 0.3 out to recall 0.30 and ciona only at recall 0.00. ecoli never
+    # clears it at all and is DROPPED from the mean rather than entering it as a 0, so the
+    # answer is over two species, not three. That is this function's behaviour and the
+    # number the report publishes; it flatters an arm that fails in some proteomes, and
+    # the denominator is worth stating wherever the bar is quoted.
+    assert got == pytest_approx((0.30 + 0.00) / 2)
+    # And it is NOT what the pooled line would have given, which is the point.
+    pooled_line = bmi.curve_series(pooled())
+    on_the_line = max(float(x) for x, y in pooled_line.items() if y >= 0.3)
+    assert on_the_line != pytest_approx(got)
 
 
-def test_an_arm_that_never_reaches_the_precision_returns_zero_not_none():
-    low = curve("mouse", [(1, 0.4, 0.10), (2, 0.2, 0.20), (3, 0.0, 0.30)])
-    pairs = bmi.pool_curve_over_species(low, "recall_reachable", "precision")
-    assert bmi.recall_at_precision(pairs, 0.5) == 0.0
+def test_an_arm_that_never_reaches_the_precision_is_absent_rather_than_zero():
+    low = curve("mouse", [(1, 0.4, 0.10), (2, 0.2, 0.20), (3, 0.0, 0.30)]).with_columns(
+        pl.lit("kmerseek").alias("tool"), pl.lit("v").alias("variant"))
+    assert bmi.recall_at_precision(low, 0.5).height == 0
 
 
 def test_series_keys_are_numeric_strings_at_fixed_precision():
@@ -167,6 +174,37 @@ def test_a_frame_without_a_threshold_falls_back_to_ordering_on_x():
     fallback = bmi.pool_curve_over_species(
         SUB.drop("score_threshold"), "recall_reachable", "precision")
     assert max(x for x, _ in fallback) == pytest_approx((0.30 + 0.12 + 0.12) / 3)
+
+
+def test_a_one_point_species_is_carried_flat_rather_than_dropped():
+    # A species with a single operating point cannot be interpolated, and dropping it would
+    # quietly change which species the mean is over. It is held flat at its own value
+    # instead, so it is in the mean at every point of the line.
+    one = curve("botryllus", [(1, 0.08, 0.40)])
+    pairs = bmi.pool_curve_over_species(
+        pl.concat([EASY, one]), "recall_reachable", "precision")
+    assert len(pairs) == bmi.POOLED_CURVE_GRID
+    assert max(x for x, _ in pairs) == pytest_approx((0.30 + 0.08) / 2)
+    assert min(x for x, _ in pairs) == pytest_approx((0.00 + 0.08) / 2)
+
+
+# --- what the section text says about the endpoint -----------------------------------
+
+def test_provenance_names_the_species_that_set_each_end():
+    # The panel prints where each line stops. That sentence is read off the same grouping
+    # the line is drawn from, so it cannot disagree with the curve.
+    pairs = pooled()
+    info = bmi.pool_curve_provenance(SUB, "recall_reachable", pairs)
+    assert info["n_species"] == 3
+    assert info["max_x"] == pytest_approx((0.30 + 0.12 + 0.12) / 3)
+    assert info["longest"][0] == "mouse"
+    assert info["longest"][1] == pytest_approx(0.30)
+    assert info["shortest"][1] == pytest_approx(0.12)
+
+
+def test_provenance_is_empty_when_there_is_no_curve_to_describe():
+    assert bmi.pool_curve_provenance(SUB, "recall_reachable", []) == {}
+    assert bmi.pool_curve_provenance(SUB.drop("species"), "recall_reachable", pooled()) == {}
 
 
 def pytest_approx(value, tol=1e-9):

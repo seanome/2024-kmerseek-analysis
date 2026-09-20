@@ -59,5 +59,13 @@ def test_it_names_the_reason_the_swissprot_join_cannot_match(tmp_path):
 def test_a_real_gradient_is_still_drawn(tmp_path):
     cfg = section(tmp_path, {"0-20%": 0.05, "20-30%": 0.11, "30-40%": 0.2,
                              "no_homolog": 0.01})
-    assert cfg["plot_type"] == "bargraph"
-    assert list(cfg["categories"]) == ["0-20%", "20-30%", "30-40%", "no_homolog"]
+    assert cfg["plot_type"] == "linegraph"
+    # Only the numeric bins, at their midpoints. `no_homolog` is not a point on a percent
+    # identity axis -- it is the absence of one -- so putting it in the same category list
+    # as "0-20%" was the confusion this split fixes.
+    for series in cfg["data"].values():
+        assert [float(x) for x in series] == [10.0, 25.0, 35.0]
+        assert "no_homolog" not in series
+    # It keeps its own categorical panel beside the axis, rather than being dropped.
+    no_homolog = json.loads((tmp_path / "qfo_identity_no_homolog_mqc.json").read_text())
+    assert no_homolog["plot_type"] == "bargraph"

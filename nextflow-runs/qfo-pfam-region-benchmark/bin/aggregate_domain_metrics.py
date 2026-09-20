@@ -22,7 +22,8 @@ LEAD = ["truth_set", "tool", "variant", "species", "split", "stratum_axis", "str
 # ndo to exactly the residue_recall expression, so the leaderboard carried one number under
 # two names -- identical to twelve decimals on every arm. Normalized Domain Overlap is a
 # different quantity and was never computed; the residue quantity is kept under the name
-# that describes it.
+# that describes it. It is gone rather than renamed in place, so a run whose parquet still
+# carries the old column simply does not have it summarised.
 HEADLINE = ["fmax", "family_fmax", "auprc", "roc_auc", "smin", "residue_recall",
             "recall_reachable", "precision"]
 
