@@ -1405,6 +1405,7 @@ def section_landmarks(out: Path, species: str, lm: dict | None, omitted: Omitted
 
     for i, pair in enumerate(lm["pairs"]):
         q, t = pair["query"], pair["target"]
+        any_target = t == "*"
         table = {}
         for arm in ["phmmer", "jackhmmer", "mmseqs2"]:
             v = pair["sequence_arms"].get(arm, {"found": False})
@@ -1412,6 +1413,8 @@ def section_landmarks(out: Path, species: str, lm: dict | None, omitted: Omitted
                 "found": "yes" if v["found"] else "no",
                 "evalue": fmt_e(v.get("best_evalue")),
                 "score": v.get("bits"),
+                "best_target": v.get("best_target", "") if any_target else "",
+                "n_targets": v.get("n_targets") if any_target else None,
                 "target_region": (f"{v.get('tstart')}-{v.get('tend')}" if v["found"] else ""),
             }
         for r in pair["kmerseek_arms"]:
@@ -1419,6 +1422,8 @@ def section_landmarks(out: Path, species: str, lm: dict | None, omitted: Omitted
                 "found": "yes" if r["found"] else "no",
                 "evalue": fmt_e(r.get("region_evalue")),
                 "score": r.get("region_poisson_score"),
+                "best_target": r.get("best_target", "") if any_target else "",
+                "n_targets": r.get("n_targets") if any_target else None,
                 "query_region": (f"{r.get('region_start')}-{r.get('region_end')}" if r["found"] else ""),
                 "target_region": (f"{r.get('target_start')}-{r.get('target_end')}" if r["found"] else ""),
                 "n_regions": r.get("n_regions"),
@@ -1426,34 +1431,44 @@ def section_landmarks(out: Path, species: str, lm: dict | None, omitted: Omitted
         n_found = pair["n_kmerseek_arms_found"]
         n_arms = pair["n_kmerseek_arms"]
         seq_found = [a for a, v in pair["sequence_arms"].items() if v["found"]]
+        what = "anything at all" if any_target else f"<b>{t}</b>"
+        headers = {
+            "found": {"title": "found"},
+            "evalue": {"title": "best E-value"},
+            "score": {"title": "score", "format": "{:,.1f}"},
+            "query_region": {"title": "query region"},
+            "target_region": {"title": "target region"},
+            "n_regions": {"title": "regions", "format": "{:,.0f}"},
+        }
+        if any_target:
+            headers["best_target"] = {"title": "best target"}
+            headers["n_targets"] = {"title": "targets", "format": "{:,.0f}"}
         write_section(out, f"dark_landmark_{i}", {
             "id": f"dark_landmark_{i}",
-            "section_name": f"Landmark pair: {q} against {t}",
+            "section_name": (f"Hero query: {q}, every target" if any_target
+                             else f"Landmark pair: {q} against {t}"),
             "description": (
-                f"<p><b>{q}</b> ({species}) searched against the reference, which holds "
-                f"<b>{t}</b>. The query is {'in' if pair['query_dark'] else 'not in'} the dark "
-                f"set. The sequence arms that put it on {t}: "
+                f"<p><b>{q}</b> ({species}) searched against the reference"
+                + ("" if any_target else f", which holds <b>{t}</b>")
+                + f". The query is {'in' if pair['query_dark'] else 'not in'} the dark "
+                f"set. Sequence arms that found {what}: "
                 f"{', '.join(seq_found) if seq_found else 'none'}. kmerseek arms that put a "
-                f"region on {t}: <b>{n_found} of {n_arms}</b>.</p>"
+                f"region on {what}: <b>{n_found} of {n_arms}</b>.</p>"
                 + bullets(
-                    "<b>found</b>: any hit (sequence arm) or any region (kmerseek) joining "
-                    "the two, at the run's own thresholds.",
-                    "<b>evalue</b>: the arm's best E-value on this target. A kmerseek "
-                    "<code>exact</code> arm has none; its <b>score</b> is the best region's "
-                    "-log10 Poisson probability.",
+                    "<b>found</b>: any hit (sequence arm) or any region (kmerseek), at the "
+                    "run's own thresholds.",
+                    "<b>evalue</b>: the arm's best E-value. A kmerseek <code>exact</code> arm "
+                    "has none; its <b>score</b> is the best region's -log10 Poisson probability.",
                     "<b>query_region / target_region</b>: the best region's coordinates on "
-                    "each protein, 0-based, end exclusive.")),
+                    "each protein, 0-based, end exclusive."
+                    + ("" if not any_target else
+                       " <b>best target</b> is the target of that region; <b>targets</b> "
+                       "is how many distinct targets the arm put a region on."))),
             "plot_type": "table",
-            "pconfig": {"id": f"dark_landmark_{i}_plot", "title": f"{species}: {q} vs {t} by arm",
+            "pconfig": {"id": f"dark_landmark_{i}_plot",
+                        "title": f"{species}: {q} vs {'every target' if any_target else t} by arm",
                         "col1_header": "arm", "sort_rows": False},
-            "headers": {
-                "found": {"title": "found"},
-                "evalue": {"title": "best E-value"},
-                "score": {"title": "score", "format": "{:,.1f}"},
-                "query_region": {"title": "query region"},
-                "target_region": {"title": "target region"},
-                "n_regions": {"title": "regions", "format": "{:,.0f}"},
-            },
+            "headers": headers,
             "data": table,
         })
 

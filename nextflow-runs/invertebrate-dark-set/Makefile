@@ -408,14 +408,18 @@ run-ladder-0.4-sweep-sbatch:
 ladder-0.4-sweep-plan:
 	@$(MAKE) ladder-0.4-plan NF_ARGS="$(V4_SWEEP_ARGS) $(NF_ARGS)"
 
-# The midi run: the whole sweep above on three query species, human, worm and yeast --
-# one vertebrate, one invertebrate, one fungus, at the ladder's near, middle and far
-# rungs -- to test alphabets, scaled and extension before the nine-species run. Its own
+# The midi run: the whole sweep above on human, worm and yeast -- one vertebrate, one
+# invertebrate, one fungus, at the ladder's near, middle and far rungs -- plus the two
+# hero-query species below, to test alphabets, scaled and extension before the
+# nine-species run. Its own
 # run tag, launch dir and driver name so it can be watched and stopped on its own; the
 # same results dir and index store as the ladder, so every index it builds is a storeDir
 # hit for the full run later. Decided 2026-09-20. About 3 references x 185 combos x 4
 # scaled = 2_200 index builds and 25 chunks x 740 indexes x 3 arms = 50_000 searches.
-MIDI_SPECIES     ?= human,worm,yeast
+# Plus Borrelia (P66, the CD47 mimic; not in QfO, staged by hand, see the registry) and
+# Botryllus (BHF): the two hero queries. Botryllus is 23 chunks and its own reference,
+# roughly doubling the midi run; its sequence-arm hits are in the 0.3 results already.
+MIDI_SPECIES     ?= human,worm,yeast,borrelia,botryllus
 V4_MIDI_LAUNCH_DIR := $(MAKEFILE_DIR)/runs/ladder-0.4-midi
 run-ladder-0.4-midi-sbatch:
 	@$(MAKE) run-dark-set-sbatch SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) RUN=ladder-0.4-midi \

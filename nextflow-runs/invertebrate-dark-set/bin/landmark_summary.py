@@ -7,6 +7,10 @@ default, each way round). For each pair this reports whether the query is in the
 what each sequence arm's best hit on the target was, and for every kmerseek arm whether any
 region joined the two, with the best region's E-value, region score and coordinates.
 
+A target of `*` is every target: the query is followed on its own (the Botryllus
+histocompatibility factor has no named partner), and each arm reports how many targets
+and regions it put on the query, and its best target.
+
 The kmerseek side reads the per-search landmark CSVs the search task writes: every row of
 a landmark query, all columns. The sequence side reads the arms' hit tables.
 """
@@ -38,10 +42,16 @@ def arm_of_hits(path: Path) -> str:
 
 
 def read_hits(path: Path) -> pl.DataFrame:
+    """An arm's hit table, tagged with the arm; an arm that found nothing (an empty file,
+    or a gzip of nothing) is an empty frame, not an error."""
+    empty = pl.DataFrame({c: pl.Series([], dtype=pl.Utf8) for c in HIT_COLS})
     if path.stat().st_size == 0:
-        return pl.DataFrame({c: [] for c in HIT_COLS}).with_columns(pl.lit("").alias("arm"))
-    df = pl.read_csv(path, separator="\t", has_header=False, infer_schema_length=0,
-                     truncate_ragged_lines=True, new_columns=HIT_COLS)
+        return empty.with_columns(pl.lit(arm_of_hits(path)).alias("arm"))
+    try:
+        df = pl.read_csv(path, separator="\t", has_header=False, infer_schema_length=0,
+                         truncate_ragged_lines=True, new_columns=HIT_COLS)
+    except pl.exceptions.NoDataError:
+        df = empty
     return df.with_columns(pl.lit(arm_of_hits(path)).alias("arm"))
 
 
@@ -85,23 +95,31 @@ def main() -> None:
     out_pairs = []
     arm_rows = []
     for query, target in pairs:
+        any_target = target == "*"
         seq = {}
         for arm in ["phmmer", "jackhmmer", "mmseqs2"]:
-            h = hits.filter((pl.col("arm") == arm) & (pl.col("query") == query)
-                            & (pl.col("target") == target)).sort("evalue")
+            h = hits.filter((pl.col("arm") == arm) & (pl.col("query") == query))
+            if not any_target:
+                h = h.filter(pl.col("target") == target)
+            h = h.sort("evalue")
             seq[arm] = ({"found": True, "best_evalue": h["evalue"][0], "bits": h["bits"][0],
-                         "tstart": h["tstart"][0], "tend": h["tend"][0]}
-                        if h.height else {"found": False})
+                         "tstart": h["tstart"][0], "tend": h["tend"][0],
+                         "best_target": h["target"][0], "n_targets": h["target"].n_unique()}
+                        if h.height else {"found": False, "n_targets": 0})
         km = []
         for alphabet, ksize, scaled, ext in arms:
             found = False
             best = None
             n = 0
+            n_targets = 0
             if rows is not None:
-                r = rows.filter((pl.col("query_name") == query) & (pl.col("target_name") == target)
+                r = rows.filter((pl.col("query_name") == query)
                                 & (pl.col("alphabet") == alphabet) & (pl.col("ksize") == ksize)
                                 & (pl.col("scaled") == scaled) & (pl.col("extension") == ext))
+                if not any_target:
+                    r = r.filter(pl.col("target_name") == target)
                 n = r.height
+                n_targets = r["target_name"].n_unique() if n else 0
                 if n:
                     found = True
                     r = r.with_columns(pl.col("region_evalue").cast(pl.Float64, strict=False),
@@ -115,10 +133,13 @@ def main() -> None:
                                                   "region_ka_bits", "region_start", "region_end",
                                                   "target_start", "target_end", "region_length",
                                                   "region_n_mismatches"]}
+                    best["best_target"] = b.get("target_name")
             row = {"species": args.species, "query": query, "target": target,
                    "alphabet": alphabet, "ksize": ksize, "scaled": scaled, "extension": ext,
                    "arm": arm_label(alphabet, ksize, scaled, ext), "found": found,
-                   "n_regions": n, **{k: (best or {}).get(k) for k in [
+                   "n_regions": n, "n_targets": n_targets,
+                   "best_target": (best or {}).get("best_target"),
+                   **{k: (best or {}).get(k) for k in [
                        "region_evalue", "region_poisson_score", "region_ka_bits",
                        "region_start", "region_end", "target_start", "target_end",
                        "region_length", "region_n_mismatches"]}}
@@ -131,7 +152,8 @@ def main() -> None:
 
     schema = {"species": pl.Utf8, "query": pl.Utf8, "target": pl.Utf8, "alphabet": pl.Utf8,
               "ksize": pl.Int32, "scaled": pl.Int32, "extension": pl.Utf8, "arm": pl.Utf8,
-              "found": pl.Boolean, "n_regions": pl.Int64, "region_evalue": pl.Float64,
+              "found": pl.Boolean, "n_regions": pl.Int64, "n_targets": pl.Int64,
+              "best_target": pl.Utf8, "region_evalue": pl.Float64,
               "region_poisson_score": pl.Float64, "region_ka_bits": pl.Float64,
               "region_start": pl.Utf8, "region_end": pl.Utf8, "target_start": pl.Utf8,
               "target_end": pl.Utf8, "region_length": pl.Utf8, "region_n_mismatches": pl.Utf8}

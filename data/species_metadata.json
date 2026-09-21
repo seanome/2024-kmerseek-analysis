@@ -375,5 +375,22 @@
       "Botryllus"
     ],
     "_ladder_provenance": "constructed, not measured: 0 reviewed Swiss-Prot entries for taxon 30301, so there is no OC line to read. Shares ciona's prefix through Ascidiacea."
+  },
+  "borrelia": {
+    "taxon_id": "224326",
+    "name": "Borreliella burgdorferi B31",
+    "annotate_query": true,
+    "annotate_clade_rank": "class",
+    "annotate_clade": "Spirochaetia",
+    "staged_fasta": "Bacteria/BORBU_UP000001807_224326.fasta",
+    "annotate_ladder": [
+      "Bacteria",
+      "Spirochaetota",
+      "Spirochaetia",
+      "Spirochaetales",
+      "Borreliaceae",
+      "Borreliella"
+    ],
+    "_note": "Not a QfO proteome. UniProt reference proteome UP000001807 (1_291 entries, 413 of them reviewed), fetched 2026-09-21 from rest.uniprot.org/uniprotkb/stream?query=proteome:UP000001807&format=fasta and staged under --qfo_dir. Added for P66 (H7C7N8, TrEMBL), the outer membrane protein that mimics human CD47's SIRPalpha face (Tal et al. 2024, PMC11092639): the dark-set landmark borrelia:H7C7N8:Q08722 asks whether any arm puts P66 on CD47. The lineage is Swiss-Prot's OC line for the BORBU entries; Spirochaetia is the class and matches 4_455 Swiss-Prot entries."
   }
 }

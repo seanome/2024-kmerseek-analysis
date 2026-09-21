@@ -162,9 +162,14 @@ params.kmerseek_evalue_max = '0.01,0.0001'
 // this target, and how well. Human BCL2 (P10415) and C. elegans CED-9 (P41958) are the
 // classic remote Bcl-2 family pair (about 25% identical, the same fold), one of the
 // cases this project exists for; each is searched from its own species against the
-// reference that still holds the other. Accessions are bare, as splitQuery and
-// buildReference write every header.
-params.landmarks = 'human:P10415:P41958,worm:P41958:P10415'
+// reference that still holds the other. Borrelia P66 (H7C7N8) mimics human CD47's
+// (Q08722) SIRPalpha-binding face without sequence similarity (Tal et al. 2024): P66 is
+// the query from its own proteome, CD47 is in Swiss-Prot minus Spirochaetia. A target of
+// `*` means every target: the arm-by-arm table then lists what each arm finds for the
+// query at all, which is what the Botryllus histocompatibility factor BHF
+// (FUN008084_FUN008084; BLAST 0, HMMer 0) needs, having no named partner. Accessions
+// are bare, as splitQuery and buildReference write every header.
+params.landmarks = 'human:P10415:P41958,worm:P41958:P10415,borrelia:H7C7N8:Q08722,botryllus:FUN008084_FUN008084:*'
 
 // Memory for the two kmerseek processes, sized per task rather than as a flat ladder.
 // The index is sized from the keyspace; the SEARCH is sized from the index's own k-mer
