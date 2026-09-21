@@ -152,14 +152,18 @@ params.kmerseek_chain_max_shift          = 10
 // so every search chunk reads the same fit; 0 skips it, and an `extend` search would
 // then have to fit its own. Only done when an `extend` arm is wanted.
 params.kmerseek_ka_queries = 500
-// On the alphabets with many classes a mismatch at C_opt costs little (0.14 on
-// protein20), extension runs through dozens of them, and the regions are long and few:
-// 500 queries gave 80_000-320_000 regions and "too few score bins to fit" on protein20
-// from k=8, uniprot18 from k=12, hsdm17 (2026-09-21, 8 of the first 35 store fits).
-// More queries put more regions in the tail bins the fit needs, so alphabets with at
-// least this many classes fit on this many queries instead.
-params.kmerseek_ka_queries_many        = 1500
-params.kmerseek_ka_queries_min_classes = 12
+// The fit needs regions, and the regions a query produces fall with the bits per
+// seed, k x log2(classes): chance seeds halve with every bit. On 2026-09-21 every fit
+// that failed ("too few score bins": protein20 from k=8, uniprot18 from k=12, hsdm17)
+// sat above 33 bits, every fit that worked below (protein20 k5 at 21.6, uniprot18 k7 at
+// 29, the HP arms at 19-30). So the query count is 500 up to bits_base bits, doubles
+// every bits_per_doubling above it, and stops at ka_queries_max: protein20 k5 500, k8
+// about 1_400, k10 the cap; uniprot18 k8 about 1_000; hsdm17 k11 the cap; HP 500.
+// A doubling per 3 bits compensates a third of the loss (full compensation would be a
+// doubling per bit, 16_000 queries at 35 bits); the cap is the cost ceiling.
+params.kmerseek_ka_queries_bits_base        = 30
+params.kmerseek_ka_queries_bits_per_doubling = 3
+params.kmerseek_ka_queries_max              = 3000
 // For the calibrateStore entry only: which penalties to fit on every stored index;
 // which clades' indexes (comma list, empty = every clade in the store); and a regex
 // naming indexes to leave alone (e.g. the k=12 HP pairs a sweep no longer runs).
@@ -375,7 +379,7 @@ def memoryLadder = { double firstGb, int attempt ->
 // Median peak of the Karlin-Altschul fit inside kmerseekIndex, before headroom; 0 when
 // no extend arm wants a fit. Constants and their measurements: params.kmerseek_ka_fit_*.
 def kaFitGb = { String label, int ksize, int scaled ->
-    int nq = kaQueriesFor(label)
+    int nq = kaQueriesFor(label, ksize)
     if (nq <= 0 || !resolveExtensions().any { it.startsWith('extend:') }) return 0.0d
     double bits = keyspaceBits(label, ksize)
     double at12 = params.kmerseek_ka_fit_memory_gb_at_12_bits as double
@@ -641,7 +645,7 @@ process kmerseekIndex {
     // read-only below. Each fit searches --ka-queries reference sequences against the
     // index it just built, so this task then costs a search's memory as well (see the
     // memory directive).
-    def nq   = kaQueriesFor(alphabet)
+    def nq   = kaQueriesFor(alphabet, ksize as int)
     def pens = (nq > 0 && resolveExtensions().any { it.startsWith('extend:') }) ? penaltiesFor(alphabet) : []
     def ka   = pens ? "--extend-mismatch-penalty ${pens[0]} --extend-xdrop ${xdropFor(pens[0])} --ka-queries ${nq}"
                     : '--ka-queries 0'
@@ -720,7 +724,7 @@ process calibrateStoredIndex {
 
     script:
     def name = file(index_path).name
-    def nq   = kaQueriesFor(alphabet)
+    def nq   = kaQueriesFor(alphabet, ksize as int)
     def fits = penalties.collect { c ->
         "kmerseek calibrate --target ${index_path} --extend-mismatch-penalty ${c} " +
         "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} 2>&1 | stamp | tee -a ${name}.calibrate.log"
@@ -1070,12 +1074,18 @@ def alphabetClasses(String alphabet) {
     m[0][1] as int
 }
 
-// How many reference sequences the Karlin-Altschul fit searches for this alphabet.
-def kaQueriesFor(String alphabet) {
+// How many reference sequences the Karlin-Altschul fit searches for this alphabet and
+// k; see params.kmerseek_ka_queries_bits_base. Rounded to the nearest 50.
+def kaQueriesFor(String alphabet, int ksize) {
     int nq = params.kmerseek_ka_queries as int
     if (nq <= 0) return 0
-    alphabetClasses(alphabet) >= (params.kmerseek_ka_queries_min_classes as int)
-        ? (params.kmerseek_ka_queries_many as int) : nq
+    double bits  = keyspaceBits(alphabet, ksize)
+    double base  = params.kmerseek_ka_queries_bits_base as double
+    double per   = params.kmerseek_ka_queries_bits_per_doubling as double
+    int cap      = params.kmerseek_ka_queries_max as int
+    if (bits <= base) return nq
+    int n = (int) Math.round(nq * Math.pow(2.0d, (bits - base) / per) / 50.0d) * 50
+    Math.min(cap, n)
 }
 
 // C_best for one alphabet, equal class shares. Rounded to two decimals so the same
