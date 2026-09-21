@@ -77,6 +77,12 @@ report_section_order:
   # The reason the pipeline exists, and the only panel where the mask pair appears.
   dark_kmerseek_mask: { order: 30 }
   dark_kmerseek_mask_table: { order: 31 }
+  # The landmark pairs (params.landmarks), one table each: the named remote pair, arm by
+  # arm. After the mask pair because it is one example read against those numbers.
+  dark_landmark_0: { order: 32 }
+  dark_landmark_1: { order: 33 }
+  dark_landmark_2: { order: 34 }
+  dark_landmark_3: { order: 35 }
   # The two cheap explanations of a large dark fraction that are not "homology is hard".
   # Both are optional arms; a run without them omits the panel and says so at 60.
   dark_length: { order: 40 }

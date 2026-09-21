@@ -157,6 +157,14 @@ params.kmerseek_ka_queries = 500
 // it is counted again at each of these cutoffs; an `exact` arm has no E-value and is
 // counted at none.
 params.kmerseek_evalue_max = '0.01,0.0001'
+// Landmark pairs, species:query:target, one per entry. A pair the report tracks by name
+// across every arm: did the sequence arms and did each kmerseek arm put this query on
+// this target, and how well. Human BCL2 (P10415) and C. elegans CED-9 (P41958) are the
+// classic remote Bcl-2 family pair (about 25% identical, the same fold), one of the
+// cases this project exists for; each is searched from its own species against the
+// reference that still holds the other. Accessions are bare, as splitQuery and
+// buildReference write every header.
+params.landmarks = 'human:P10415:P41958,worm:P41958:P10415'
 
 // Memory for the two kmerseek processes, sized per task rather than as a flat ladder.
 // The index is sized from the keyspace; the SEARCH is sized from the index's own k-mer
@@ -689,13 +697,16 @@ process kmerseekSearch {
 
     output:
     tuple val(species), val(alphabet), val(ksize), val(lowcomp), val(scaled), val(ext),
-          path("${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}.queries.tsv"), emit: queries
+          path("${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}.queries.tsv"),
+          path("${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}.landmarks.csv"), emit: queries
     path "*.regions.csv.zst", emit: regions
 
     script:
     def slug = "${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}"
     def lc   = lowcomp == 'true' ? '--remove-low-complexity' : ''
     def flags = extensionFlags(ext, alphabet)
+    // The landmark queries of this species, for awk: a space-separated list, or empty.
+    def lmq  = landmarksFor(species).collect { it[0] }.unique().join(' ')
     """
     set -euo pipefail
     set +e
@@ -718,6 +729,7 @@ process kmerseekSearch {
     if [ "\${status[0]}" -ne 0 ] && grep -q "no Karlin-Altschul fit" ${slug}.log; then
         printf '#nofit\\t%s\\n' "\$(grep -m1 'no Karlin-Altschul fit' ${slug}.log | tr '\\t' ' ')" > ${slug}.queries.tsv
         printf 'query_name,target_name,region_evalue\\n' | zstd -T2 -f -o ${slug}.regions.csv.zst
+        printf 'query_name,target_name,region_evalue\\n' > ${slug}.landmarks.csv
         exit 0
     fi
     [ "\${status[0]}" -eq 0 ] && [ "\${status[1]}" -eq 0 ] || exit 1
@@ -747,6 +759,17 @@ process kmerseekSearch {
                    END { for (q in m) print q "\\t" m[q] }' \\
         | sort >> ${slug}.queries.tsv
     fi
+
+    # Every row of this species' landmark queries, all columns, for the landmark table in
+    # the report. Header only when the species has no landmark or the query hit nothing.
+    if [ -s ${slug}.regions.csv.zst ]; then
+        zstd -dc ${slug}.regions.csv.zst \\
+        | awk -F, -v q="${lmq}" 'BEGIN { n = split(q, a, " "); for (i = 1; i <= n; i++) want[a[i]] = 1 }
+                   NR==1 { for (i=1;i<=NF;i++) if (\$i=="query_name") c=i; print; next }
+                   (\$c in want) { print }' > ${slug}.landmarks.csv
+    else
+        printf 'query_name,target_name,region_evalue\\n' > ${slug}.landmarks.csv
+    fi
     """
 
     stub:
@@ -755,6 +778,7 @@ process kmerseekSearch {
     """
     printf 'query_name,target_name,region_evalue\\n${species}_B,Q6GZX4,${ev}\\n' | zstd -o ${slug}.regions.csv.zst
     printf 'query_name\\tmin_region_evalue\\n${species}_B\\t${ev}\\n' > ${slug}.queries.tsv
+    printf 'query_name,target_name,region_evalue\\n' > ${slug}.landmarks.csv
     """
 }
 
@@ -788,6 +812,37 @@ process kmerseekDarkGain {
     touch ${species}_kmerseek_dark_gain.parquet
     echo "{\\"species\\": \\"${species}\\", \\"n_query_lists\\": \$(ls queries | wc -l)}" \\
         > ${species}_kmerseek_dark_gain.json
+    """
+}
+
+// One species' landmark pairs (see params.landmarks) across every arm: found or not, and
+// how well, from the sequence arms' hit tables and the kmerseek searches' landmark rows.
+process landmarkSummary {
+    tag "${species}"
+    label 'python_scoring'
+    memory '8 GB'
+    publishDir "${params.outdir}/${species}", mode: 'copy'
+
+    input:
+    tuple val(species), path(dark_parquet), path(hits, stageAs: 'hits/*'), path(landmark_csvs, stageAs: 'landmarks/*')
+
+    output:
+    tuple val(species), path("${species}_landmarks.parquet"), path("${species}_landmarks.json")
+
+    script:
+    def pairs = landmarksFor(species).collect { q, t -> "${q}:${t}" }.join(',')
+    """
+    set -euo pipefail
+    landmark_summary.py \\
+        --species ${species} --pairs '${pairs}' --dark ${dark_parquet} \\
+        --hits hits/*.tsv.gz --landmark-csvs landmarks/*.landmarks.csv \\
+        --out ${species}_landmarks.parquet --summary-out ${species}_landmarks.json
+    """
+
+    stub:
+    """
+    touch ${species}_landmarks.parquet
+    echo '{"species": "${species}", "pairs": []}' > ${species}_landmarks.json
     """
 }
 
@@ -998,6 +1053,15 @@ def xdropFor(String penalty) {
     penaltyString((params.kmerseek_extend_xdrop_per_penalty as double) * (penalty as double))
 }
 
+// The landmark pairs of one species, as [query, target] accession pairs.
+def landmarksFor(String species) {
+    params.landmarks.toString().tokenize(',')*.trim().findAll { it }.collect { spec ->
+        def parts = spec.tokenize(':')
+        if (parts.size() != 3) error "--landmarks entries are species:query:target, not '${spec}'"
+        parts
+    }.findAll { it[0] == species }.collect { [it[1], it[2]] }
+}
+
 // The search-time arms over one index, as specs: `exact`, or `extend:<C>` with C a number
 // or `opt`. Validated once, here, so a typo does not surface as a failed search hours in.
 // The numeric C of an `opt` arm depends on the alphabet and is resolved in the process.
@@ -1193,7 +1257,7 @@ workflow darkSet {
         // protein counts as rescued only against the whole dark set, and the dark set is
         // proteome-wide. Closed per species by groupKey, as for the hits above.
         q_lists = ks.queries
-            .map { sp, _a, _k, _lc, _sc, _ext, f -> tuple(sp, f) }
+            .map { sp, _a, _k, _lc, _sc, _ext, f, _lm -> tuple(sp, f) }
             .combine(n_chunks, by: 0)
             .combine(n_combos, by: 0)
             .map { sp, f, n, m -> tuple(groupKey(sp, n * m), f) }
@@ -1202,6 +1266,17 @@ workflow darkSet {
 
         gain = kmerseekDarkGain(dark_with_query.join(q_lists))
         report_extra = report_extra.mix(gain.flatMap { sp, pq, js -> [tuple(sp, pq), tuple(sp, js)] })
+
+        // The landmark rows, grouped exactly as the query lists are (same tasks, same count).
+        lm_lists = ks.queries
+            .map { sp, _a, _k, _lc, _sc, _ext, _f, lm -> tuple(sp, lm) }
+            .combine(n_chunks, by: 0)
+            .combine(n_combos, by: 0)
+            .map { sp, lm, n, m -> tuple(groupKey(sp, n * m), lm) }
+            .groupTuple()
+            .map { k, fs -> tuple(k.getGroupTarget(), fs) }
+        landmarks = landmarkSummary(dark.map { sp, dp, _js -> tuple(sp, dp) }.join(hits).join(lm_lists))
+        report_extra = report_extra.mix(landmarks.flatMap { sp, pq, js -> [tuple(sp, pq), tuple(sp, js)] })
     }
 
     if (params.with_multiqc) {

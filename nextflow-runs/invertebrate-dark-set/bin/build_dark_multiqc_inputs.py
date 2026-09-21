@@ -1388,6 +1388,76 @@ def section_disorder(out: Path, species: str, df, summary, omitted: Omitted) -> 
 
 # --- what the run did not produce ------------------------------------------------------
 
+def section_landmarks(out: Path, species: str, lm: dict | None, omitted: Omitted) -> None:
+    """The landmark pairs (params.landmarks) as a table: every arm, found or not, and the
+    best region. One table per pair, sequence arms first."""
+    if lm is None or not lm.get("pairs"):
+        omitted.add("landmark pair", "no landmark pair is configured for this species "
+                    "(params.landmarks names species:query:target).")
+        return
+
+    def fmt_e(v):
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return ""
+        return "" if v != v or v == float("inf") else f"{v:.1e}"
+
+    for i, pair in enumerate(lm["pairs"]):
+        q, t = pair["query"], pair["target"]
+        table = {}
+        for arm in ["phmmer", "jackhmmer", "mmseqs2"]:
+            v = pair["sequence_arms"].get(arm, {"found": False})
+            table[f"{arm} (sequence)"] = {
+                "found": "yes" if v["found"] else "no",
+                "evalue": fmt_e(v.get("best_evalue")),
+                "score": v.get("bits"),
+                "target_region": (f"{v.get('tstart')}-{v.get('tend')}" if v["found"] else ""),
+            }
+        for r in pair["kmerseek_arms"]:
+            table[f"kmerseek {r['arm']}"] = {
+                "found": "yes" if r["found"] else "no",
+                "evalue": fmt_e(r.get("region_evalue")),
+                "score": r.get("region_poisson_score"),
+                "query_region": (f"{r.get('region_start')}-{r.get('region_end')}" if r["found"] else ""),
+                "target_region": (f"{r.get('target_start')}-{r.get('target_end')}" if r["found"] else ""),
+                "n_regions": r.get("n_regions"),
+            }
+        n_found = pair["n_kmerseek_arms_found"]
+        n_arms = pair["n_kmerseek_arms"]
+        seq_found = [a for a, v in pair["sequence_arms"].items() if v["found"]]
+        write_section(out, f"dark_landmark_{i}", {
+            "id": f"dark_landmark_{i}",
+            "section_name": f"Landmark pair: {q} against {t}",
+            "description": (
+                f"<p><b>{q}</b> ({species}) searched against the reference, which holds "
+                f"<b>{t}</b>. The query is {'in' if pair['query_dark'] else 'not in'} the dark "
+                f"set. The sequence arms that put it on {t}: "
+                f"{', '.join(seq_found) if seq_found else 'none'}. kmerseek arms that put a "
+                f"region on {t}: <b>{n_found} of {n_arms}</b>.</p>"
+                + bullets(
+                    "<b>found</b>: any hit (sequence arm) or any region (kmerseek) joining "
+                    "the two, at the run's own thresholds.",
+                    "<b>evalue</b>: the arm's best E-value on this target. A kmerseek "
+                    "<code>exact</code> arm has none; its <b>score</b> is the best region's "
+                    "-log10 Poisson probability.",
+                    "<b>query_region / target_region</b>: the best region's coordinates on "
+                    "each protein, 0-based, end exclusive.")),
+            "plot_type": "table",
+            "pconfig": {"id": f"dark_landmark_{i}_plot", "title": f"{species}: {q} vs {t} by arm",
+                        "col1_header": "arm", "sort_rows": False},
+            "headers": {
+                "found": {"title": "found"},
+                "evalue": {"title": "best E-value"},
+                "score": {"title": "score", "format": "{:,.1f}"},
+                "query_region": {"title": "query region"},
+                "target_region": {"title": "target region"},
+                "n_regions": {"title": "regions", "format": "{:,.0f}"},
+            },
+            "data": table,
+        })
+
+
 def section_omitted(out: Path, omitted: Omitted) -> None:
     if not omitted.items:
         return
@@ -1415,6 +1485,7 @@ EXTRA_SUFFIXES = {
     "length_parquet": "_length_comparison.parquet",
     "disorder_summary": "_disorder_summary.json",
     "disorder_parquet": "_disorder.parquet",
+    "landmarks_json": "_landmarks.json",
 }
 
 
@@ -1452,6 +1523,8 @@ def main() -> None:
     ap.add_argument("--length-parquet", type=Path, default=None)
     ap.add_argument("--disorder-summary", type=Path, default=None)
     ap.add_argument("--disorder-parquet", type=Path, default=None)
+    ap.add_argument("--landmarks-json", type=Path, default=None,
+                    help="optional <species>_landmarks.json from landmarkSummary")
     ap.add_argument("--extra-dir", type=Path, default=None,
                     help="directory of optional products, matched by published suffix. "
                          "Anything named by an explicit flag is not looked for here.")
@@ -1485,6 +1558,7 @@ def main() -> None:
     section_headline(out, args.species, summary)
     section_per_arm(out, args.species, summary, omitted)
     section_kmerseek(out, args.species, gain, omitted)
+    section_landmarks(out, args.species, load_json(extras["landmarks_json"]), omitted)
     section_dark_by_length(out, args.species, length_df, omitted)
     section_length(out, args.species, length_df,
                    load_json(extras["length_summary"]), omitted)
