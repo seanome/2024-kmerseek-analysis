@@ -471,8 +471,11 @@ process phmmerSearch {
     input:
     tuple val(species), val(clade), path(chunk), path(ref_dir)
 
+    // No arm label in the output: storeDir can only pre-resolve a `val` that is an input,
+    // so a literal val('phmmer') here made every task "storeDir can only be used with
+    // `val` and `path` outputs" and nothing was ever stored. The file name says the arm.
     output:
-    tuple val(species), val('phmmer'), path("${species}.${chunk.simpleName}.phmmer.tsv.gz")
+    tuple val(species), path("${species}.${chunk.simpleName}.phmmer.tsv.gz")
 
     script:
     """
@@ -507,8 +510,11 @@ process jackhmmerSearch {
     input:
     tuple val(species), val(clade), path(chunk), path(ref_dir)
 
+    // No arm label in the output: storeDir can only pre-resolve a `val` that is an input,
+    // so a literal val('jackhmmer') here made every task "storeDir can only be used with
+    // `val` and `path` outputs" and nothing was ever stored. The file name says the arm.
     output:
-    tuple val(species), val('jackhmmer'), path("${species}.${chunk.simpleName}.jackhmmer.tsv.gz")
+    tuple val(species), path("${species}.${chunk.simpleName}.jackhmmer.tsv.gz")
 
     script:
     """
@@ -544,8 +550,11 @@ process mmseqs2Search {
     input:
     tuple val(species), val(clade), path(chunk), path(ref_dir)
 
+    // No arm label in the output: storeDir can only pre-resolve a `val` that is an input,
+    // so a literal val('mmseqs2') here made every task "storeDir can only be used with
+    // `val` and `path` outputs" and nothing was ever stored. The file name says the arm.
     output:
-    tuple val(species), val('mmseqs2'), path("${species}.${chunk.simpleName}.mmseqs2.tsv.gz")
+    tuple val(species), path("${species}.${chunk.simpleName}.mmseqs2.tsv.gz")
 
     script:
     """
@@ -1107,7 +1116,6 @@ workflow darkSet {
     hits = phmmerSearch(in_ch)
         .mix(jackhmmerSearch(in_ch))
         .mix(mmseqs2Search(in_ch))
-        .map { sp, _arm, f -> tuple(sp, f) }
         .combine(n_chunks, by: 0)
         .map { sp, f, n -> tuple(groupKey(sp, n * 3), f) }
         .groupTuple()
