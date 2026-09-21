@@ -152,6 +152,8 @@ params.kmerseek_chain_max_shift          = 10
 // so every search chunk reads the same fit; 0 skips it, and an `extend` search would
 // then have to fit its own. Only done when an `extend` arm is wanted.
 params.kmerseek_ka_queries = 500
+// For the calibrateStore entry only: which penalties to fit on every stored index.
+params.calibrate_penalties = 'opt'
 // The dark-gain step counts a dark protein as reached when ANY region lands on it, which
 // saturates (see kmerseek_dark_gain.py). An `extend` arm also carries region_evalue, so
 // it is counted again at each of these cutoffs; an `exact` arm has no E-value and is
@@ -685,6 +687,48 @@ process kmerseekIndex {
     """
 }
 
+// One stored index gets the Karlin-Altschul fits its alphabet's penalties need, in
+// place. For the calibrateStore entry: the fit an index carries is looked up by exact
+// penalty and X-drop, so whenever a penalty changes after indexes are built (the kappa
+// table gained thirteen alphabets and corrected hp_pbotc_1st_ed2 on 2026-09-21) every
+// stored index would refuse the new arm as unfitted until it is fitted for it. The fit
+// is a --ka-queries search against the index, so it is sized as the index task's fit is.
+// Idempotent: calibrate replaces an earlier fit for the same pair; the files are
+// unlocked for the write and locked again after.
+process calibrateStoredIndex {
+    tag "${file(index_path).name.replace('.kmerseek.rocksdb', '')}"
+    container params.kmerseek_image
+    memory { kmerseekIndexMemory(alphabet, ksize as int, scaled as int, task.attempt) }
+
+    input:
+    tuple val(index_path), val(alphabet), val(ksize), val(scaled), val(penalties)
+
+    output:
+    path "${file(index_path).name}.calibrate.log"
+
+    script:
+    def name = file(index_path).name
+    def nq   = params.kmerseek_ka_queries as int
+    def fits = penalties.collect { c ->
+        "kmerseek calibrate --target ${index_path} --extend-mismatch-penalty ${c} " +
+        "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} 2>&1 | stamp | tee -a ${name}.calibrate.log"
+    }.join('\n    ')
+    """
+    set -euo pipefail
+    stamp() { while IFS= read -r line; do printf '%(%Y-%m-%dT%H:%M:%S)T %s\\n' -1 "\$line"; done; }
+    echo "start ${name}: penalties ${penalties.join(' ')}" | stamp | tee ${name}.calibrate.log
+    chmod -R u+w ${index_path}
+    ${fits}
+    chmod -R a-w ${index_path}
+    chmod u+w ${index_path}
+    """
+
+    stub:
+    """
+    echo stub > ${file(index_path).name}.calibrate.log
+    """
+}
+
 process kmerseekSearch {
     tag "${species}.${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}"
     container params.kmerseek_image
@@ -990,20 +1034,21 @@ def resolveCombos() {
 
 // kappa, the copy rate: the fraction of aligned positions in a Pfam pair at 20-30%
 // identity where the target carries the query's class because it was conserved, over
-// and above chance agreement. Analysis notebook 230 (2026-09-13), as quoted in the
-// E-value explainer. Only these four alphabets were measured; hp_pbotc_1st_ed2 is a
-// two-letter hydrophobic/polar split like hp_thomas_dill2 (they differ on C, G and P),
-// so it borrows that value -- an assumption, named in the run log.
+// and above chance agreement. One number per alphabet, from analysis notebook 230's
+// Pfam seed pairs (all 17 sweep alphabets; see assets/kappa_by_alphabet.tsv for the
+// values, their confidence intervals and how the three the notebook left out were
+// added). It is a property of the alphabet and of homologs, not of a database: the
+// database-dependent numbers, K and lambda, are fitted on every index at build time.
 // A function, not a top-level map: a script-level `def` is not in scope inside the
 // functions below (only the closures capture it).
 def kappaTable() {
-    [
-        hp_thomas_dill2 : 0.4626,
-        hp_pbotc_1st_ed2: 0.4626,  // borrowed from hp_thomas_dill2, see above
-        gbmr4           : 0.4257,
-        wwmj5           : 0.3262,
-        protein20       : 0.1988,
-    ]
+    def table = [:]
+    file("${projectDir}/assets/kappa_by_alphabet.tsv").readLines().each { line ->
+        if (line.startsWith('#') || line.startsWith('alphabet') || !line.trim()) return
+        def f = line.split('\t')
+        table[f[0]] = f[2] as double
+    }
+    table
 }
 
 // The number of classes is the trailing integer of every 0.4 alphabet name.
@@ -1365,6 +1410,33 @@ workflow darkReport {
     }
 
     darkReportFrom(Channel.fromList(rows))
+}
+
+/*
+ * Fit every stored index for the penalties its alphabet's `extend` arms use now.
+ *
+ * Reads the index store (--index_cache or --outdir/kmerseek_index), parses alphabet,
+ * ksize and scaled off each directory name, and runs `kmerseek calibrate` for each
+ * penalty of --calibrate_penalties (`opt` and/or numbers, same spelling as
+ * --kmerseek_mismatch_penalty; default `opt`, since C = 2 was fitted at build time).
+ * `make calibrate-store-0.4` is this entry. Nothing else in the store is touched.
+ */
+workflow calibrateStore {
+    def store = file(params.index_cache ?: "${params.outdir}/kmerseek_index")
+    if (!store.isDirectory()) error "no index store at ${store}"
+    def specs = params.calibrate_penalties.toString().tokenize(',')*.trim().findAll { it }
+    if (!specs) error "--calibrate_penalties is empty"
+    def dirs = store.listFiles().findAll { it.isDirectory() && it.name.endsWith('.kmerseek.rocksdb') }
+    def items = dirs.collect { d ->
+        def m = d.name =~ /^minus_[A-Za-z]+\.(.+?)\.k(\d+)(?:\.s(\d+))?\.lc(true|false)\.kmerseek\.rocksdb$/
+        if (!m) error "cannot parse ${d.name}"
+        def alphabet = m[0][1]
+        def pens = specs.collect { spec -> spec == 'opt' ? optimalPenalty(alphabet) : penaltyString(spec as double) }.unique()
+        tuple(d.toAbsolutePath().toString(), alphabet, m[0][2] as int, (m[0][3] ?: '1') as int, pens)
+    }
+    log.info "calibrating ${items.size()} stored index(es) under ${store} for penalties ${specs.join(',')}"
+    items.groupBy { it[1] }.each { a, l -> log.info "  ${a}: ${l.size()} index(es), C = ${l[0][4].join(', ')}" }
+    calibrateStoredIndex(Channel.fromList(items))
 }
 
 workflow { darkSet() }

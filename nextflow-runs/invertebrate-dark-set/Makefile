@@ -111,7 +111,7 @@ LADDER_HEAD_XMX   ?= 24g
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
         multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
         lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan \
-        run-ladder-0.4-midi-sbatch ladder-0.4-midi-plan rescue-indexes-0.4 \
+        run-ladder-0.4-midi-sbatch ladder-0.4-midi-plan calibrate-store-0.4 rescue-indexes-0.4 \
         run-ladder-0.4-sweep-sbatch ladder-0.4-sweep-plan
 
 help:
@@ -130,6 +130,7 @@ help:
 	@echo "  ladder-0.4-plan         print what that expands to without submitting"
 	@echo "  run-ladder-0.4-midi-sbatch  the whole 0.4 sweep on human, worm and yeast only"
 	@echo "  ladder-0.4-midi-plan    print what that expands to without submitting"
+	@echo "  calibrate-store-0.4     fit every stored 0.4 index for the opt penalty (CAL_PENALTIES= to choose)"
 	@echo "  run-ladder-0.4-sweep-sbatch  the same on the full 183-combo table plus the k=15 HP arms (weeks of queue)"
 	@echo "  ladder-0.4-sweep-plan   print what THAT expands to without submitting"
 	@echo "  unlock-indexes          make them writable again, to delete or rebuild one"
@@ -426,6 +427,24 @@ run-ladder-0.4-midi-sbatch:
 	  WITH_KMERSEEK=1 LAUNCH_DIR=$(V4_MIDI_LAUNCH_DIR) OUTDIR=$(V4_OUTDIR) \
 	  HEAD_TIME=$(LADDER_HEAD_TIME) HEAD_MEM=$(LADDER_HEAD_MEM) HEAD_XMX=$(LADDER_HEAD_XMX) \
 	  NF_ARGS="$(subst --run_tag ladder-0.4,--run_tag ladder-0.4-midi,$(V4_NF_ARGS)) $(V4_SWEEP_ARGS)"
+
+# Fit every index already in the 0.4 store for the penalties the extend arms use now
+# (the `opt` one by default): after a kappa changes or gains an alphabet, indexes built
+# before carry no fit for the new C and every search at it would be refused. One task
+# per stored index, sized as the index task's fit is. Its own launch dir; run it with no
+# 0.4 head alive, since it opens each index read-write.
+V4_CAL_LAUNCH_DIR := $(MAKEFILE_DIR)/runs/calibrate-0.4
+calibrate-store-0.4: check-inputs
+	@mkdir -p $(V4_CAL_LAUNCH_DIR); cd $(V4_CAL_LAUNCH_DIR) && \
+	  HEAD_ACCOUNT=$(HEAD_ACCOUNT) HEAD_PARTITION=$(HEAD_PARTITION) HEAD_QOS=$(HEAD_QOS) \
+	  HEAD_TIME=1-00:00:00 HEAD_CPUS=2 HEAD_MEM=16G HEAD_SESSION=$(HEAD_SESSION) \
+	  HEAD_JOBNAME=nfdrv-calibrate-0.4 HEAD_HINT_WATCH="make watch-dark-set RUN=calibrate-0.4" \
+	  HEAD_HINT_STOP="make stop-dark-set RUN=calibrate-0.4" $(MAKEFILE_DIR)/tools/nf-head \
+	  $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -entry calibrateStore -resume \
+	    --outdir $(V4_OUTDIR) --kmerseek_image $(V4_IMAGE) --run_tag calibrate-0.4 \
+	    --kmerseek_extension exact,extend --kmerseek_mismatch_penalty $(V4_PENALTY) \
+	    --calibrate_penalties $(if $(CAL_PENALTIES),$(CAL_PENALTIES),opt) \
+	    --max_forks $(LADDER_MAX_FORKS) --queue_size $(LADDER_QUEUE_SIZE) $(NF_ARGS)
 
 ladder-0.4-midi-plan:
 	@$(MAKE) ladder-0.4-plan SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) NF_ARGS="$(V4_SWEEP_ARGS) $(NF_ARGS)"
