@@ -152,6 +152,14 @@ params.kmerseek_chain_max_shift          = 10
 // so every search chunk reads the same fit; 0 skips it, and an `extend` search would
 // then have to fit its own. Only done when an `extend` arm is wanted.
 params.kmerseek_ka_queries = 500
+// On the alphabets with many classes a mismatch at C_opt costs little (0.14 on
+// protein20), extension runs through dozens of them, and the regions are long and few:
+// 500 queries gave 80_000-320_000 regions and "too few score bins to fit" on protein20
+// from k=8, uniprot18 from k=12, hsdm17 (2026-09-21, 8 of the first 35 store fits).
+// More queries put more regions in the tail bins the fit needs, so alphabets with at
+// least this many classes fit on this many queries instead.
+params.kmerseek_ka_queries_many        = 1500
+params.kmerseek_ka_queries_min_classes = 12
 // For the calibrateStore entry only: which penalties to fit on every stored index;
 // which clades' indexes (comma list, empty = every clade in the store); and a regex
 // naming indexes to leave alone (e.g. the k=12 HP pairs a sweep no longer runs).
@@ -367,7 +375,7 @@ def memoryLadder = { double firstGb, int attempt ->
 // Median peak of the Karlin-Altschul fit inside kmerseekIndex, before headroom; 0 when
 // no extend arm wants a fit. Constants and their measurements: params.kmerseek_ka_fit_*.
 def kaFitGb = { String label, int ksize, int scaled ->
-    int nq = params.kmerseek_ka_queries as int
+    int nq = kaQueriesFor(label)
     if (nq <= 0 || !resolveExtensions().any { it.startsWith('extend:') }) return 0.0d
     double bits = keyspaceBits(label, ksize)
     double at12 = params.kmerseek_ka_fit_memory_gb_at_12_bits as double
@@ -633,7 +641,7 @@ process kmerseekIndex {
     // read-only below. Each fit searches --ka-queries reference sequences against the
     // index it just built, so this task then costs a search's memory as well (see the
     // memory directive).
-    def nq   = params.kmerseek_ka_queries as int
+    def nq   = kaQueriesFor(alphabet)
     def pens = (nq > 0 && resolveExtensions().any { it.startsWith('extend:') }) ? penaltiesFor(alphabet) : []
     def ka   = pens ? "--extend-mismatch-penalty ${pens[0]} --extend-xdrop ${xdropFor(pens[0])} --ka-queries ${nq}"
                     : '--ka-queries 0'
@@ -712,7 +720,7 @@ process calibrateStoredIndex {
 
     script:
     def name = file(index_path).name
-    def nq   = params.kmerseek_ka_queries as int
+    def nq   = kaQueriesFor(alphabet)
     def fits = penalties.collect { c ->
         "kmerseek calibrate --target ${index_path} --extend-mismatch-penalty ${c} " +
         "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} 2>&1 | stamp | tee -a ${name}.calibrate.log"
@@ -1060,6 +1068,14 @@ def alphabetClasses(String alphabet) {
     def m = alphabet =~ /(\d+)$/
     if (!m) error "cannot read the class count off alphabet name '${alphabet}'"
     m[0][1] as int
+}
+
+// How many reference sequences the Karlin-Altschul fit searches for this alphabet.
+def kaQueriesFor(String alphabet) {
+    int nq = params.kmerseek_ka_queries as int
+    if (nq <= 0) return 0
+    alphabetClasses(alphabet) >= (params.kmerseek_ka_queries_min_classes as int)
+        ? (params.kmerseek_ka_queries_many as int) : nq
 }
 
 // C_best for one alphabet, equal class shares. Rounded to two decimals so the same
