@@ -371,7 +371,10 @@ V4_EXTENSION   ?= exact,extend
 # alphabet's own optimum from its measured copy rate kappa (1.63 for the two-letter HP
 # alphabets, 0.14 for protein20; see params.kmerseek_mismatch_penalty in main.nf).
 V4_PENALTY     ?= 2,opt
-V4_NF_ARGS      = --run_tag ladder-0.4 --kmerseek_image $(V4_IMAGE) \
+# --hits_cache $(OUTDIR): the 0.3 ladder's results directory, where its phmmer,
+# jackhmmer and mmseqs2 hits for every chunk of every ladder species already are. The
+# 0.4 run stores and looks up its sequence-arm hits there and repeats none of them.
+V4_NF_ARGS      = --run_tag ladder-0.4 --kmerseek_image $(V4_IMAGE) --hits_cache $(OUTDIR) \
                   --kmerseek_alphabets $(V4_ALPHABETS) --kmerseek_scaled $(V4_SCALED) \
                   --kmerseek_extension $(V4_EXTENSION) --kmerseek_mismatch_penalty $(V4_PENALTY) \
                   --kmerseek_lowcomp $(LOWCOMP) \

@@ -116,6 +116,9 @@ params.min_shared_kmers = 2
 params.max_query_pvalue = 0.05
 params.min_region_score = 1.3
 params.index_cache        = null
+// Where the sequence arms' hits are stored and looked up (see phmmerSearch); defaults
+// to this run's --outdir, and a second run points it at the first run's.
+params.hits_cache         = null
 params.with_kmerseek      = false
 
 // kmerseek 0.4 arms. Every value below is a list, and the arms are the product.
@@ -456,7 +459,14 @@ process phmmerSearch {
     tag "${species}.${chunk.simpleName}_vs_minus_${clade}"
     container HMMER
     label 'high_cpu'
-    publishDir "${params.outdir}/${species}/hits", mode: 'copy', pattern: '*.tsv.gz'
+    // storeDir, not publishDir: a chunk's hits against a reference do not depend on
+    // anything but the two of them, so a second run (the 0.4 ladder, from its own launch
+    // and results directories) finds them here and skips the task instead of repeating
+    // hours of jackhmmer. --hits_cache points at another run's results directory; the
+    // file name is the same one publishDir wrote there before this change. One output
+    // per process, on purpose: storeDir with two outputs is the "Directory not empty"
+    // failure this project has had twice.
+    storeDir "${params.hits_cache ?: params.outdir}/${species}/hits"
 
     input:
     tuple val(species), val(clade), path(chunk), path(ref_dir)
@@ -485,7 +495,14 @@ process jackhmmerSearch {
     tag "${species}.${chunk.simpleName}_vs_minus_${clade}"
     container HMMER
     label 'high_cpu'
-    publishDir "${params.outdir}/${species}/hits", mode: 'copy', pattern: '*.tsv.gz'
+    // storeDir, not publishDir: a chunk's hits against a reference do not depend on
+    // anything but the two of them, so a second run (the 0.4 ladder, from its own launch
+    // and results directories) finds them here and skips the task instead of repeating
+    // hours of jackhmmer. --hits_cache points at another run's results directory; the
+    // file name is the same one publishDir wrote there before this change. One output
+    // per process, on purpose: storeDir with two outputs is the "Directory not empty"
+    // failure this project has had twice.
+    storeDir "${params.hits_cache ?: params.outdir}/${species}/hits"
 
     input:
     tuple val(species), val(clade), path(chunk), path(ref_dir)
@@ -515,7 +532,14 @@ process mmseqs2Search {
     tag "${species}.${chunk.simpleName}_vs_minus_${clade}"
     container MMSEQS
     label 'high_cpu'
-    publishDir "${params.outdir}/${species}/hits", mode: 'copy', pattern: '*.tsv.gz'
+    // storeDir, not publishDir: a chunk's hits against a reference do not depend on
+    // anything but the two of them, so a second run (the 0.4 ladder, from its own launch
+    // and results directories) finds them here and skips the task instead of repeating
+    // hours of jackhmmer. --hits_cache points at another run's results directory; the
+    // file name is the same one publishDir wrote there before this change. One output
+    // per process, on purpose: storeDir with two outputs is the "Directory not empty"
+    // failure this project has had twice.
+    storeDir "${params.hits_cache ?: params.outdir}/${species}/hits"
 
     input:
     tuple val(species), val(clade), path(chunk), path(ref_dir)
