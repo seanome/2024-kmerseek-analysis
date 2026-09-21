@@ -432,7 +432,9 @@ run-ladder-0.4-midi-sbatch:
 # (the `opt` one by default): after a kappa changes or gains an alphabet, indexes built
 # before carry no fit for the new C and every search at it would be refused. One task
 # per stored index, sized as the index task's fit is. Its own launch dir; run it with no
-# 0.4 head alive, since it opens each index read-write.
+# 0.4 head alive, since it opens each index read-write. CAL_CLADES= limits it to the
+# clades a run needs (the store holds nine, the midi run searches five) and CAL_EXCLUDE=
+# is a regex on index names to leave alone (the k=12 HP pairs the sweep dropped).
 V4_CAL_LAUNCH_DIR := $(MAKEFILE_DIR)/runs/calibrate-0.4
 calibrate-store-0.4: check-inputs
 	@mkdir -p $(V4_CAL_LAUNCH_DIR); cd $(V4_CAL_LAUNCH_DIR) && \
@@ -444,6 +446,7 @@ calibrate-store-0.4: check-inputs
 	    --outdir $(V4_OUTDIR) --kmerseek_image $(V4_IMAGE) --run_tag calibrate-0.4 \
 	    --kmerseek_extension exact,extend --kmerseek_mismatch_penalty $(V4_PENALTY) \
 	    --calibrate_penalties $(if $(CAL_PENALTIES),$(CAL_PENALTIES),opt) \
+	    --calibrate_clades '$(CAL_CLADES)' --calibrate_exclude '$(CAL_EXCLUDE)' \
 	    --max_forks $(LADDER_MAX_FORKS) --queue_size $(LADDER_QUEUE_SIZE) $(NF_ARGS)
 
 ladder-0.4-midi-plan:

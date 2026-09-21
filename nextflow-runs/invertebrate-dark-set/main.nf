@@ -152,8 +152,12 @@ params.kmerseek_chain_max_shift          = 10
 // so every search chunk reads the same fit; 0 skips it, and an `extend` search would
 // then have to fit its own. Only done when an `extend` arm is wanted.
 params.kmerseek_ka_queries = 500
-// For the calibrateStore entry only: which penalties to fit on every stored index.
+// For the calibrateStore entry only: which penalties to fit on every stored index;
+// which clades' indexes (comma list, empty = every clade in the store); and a regex
+// naming indexes to leave alone (e.g. the k=12 HP pairs a sweep no longer runs).
 params.calibrate_penalties = 'opt'
+params.calibrate_clades    = ''
+params.calibrate_exclude   = ''
 // The dark-gain step counts a dark protein as reached when ANY region lands on it, which
 // saturates (see kmerseek_dark_gain.py). An `extend` arm also carries region_evalue, so
 // it is counted again at each of these cutoffs; an `exact` arm has no E-value and is
@@ -1426,15 +1430,23 @@ workflow calibrateStore {
     if (!store.isDirectory()) error "no index store at ${store}"
     def specs = params.calibrate_penalties.toString().tokenize(',')*.trim().findAll { it }
     if (!specs) error "--calibrate_penalties is empty"
+    def clades  = params.calibrate_clades.toString().tokenize(',')*.trim().findAll { it }
+    def exclude = params.calibrate_exclude.toString()
     def dirs = store.listFiles().findAll { it.isDirectory() && it.name.endsWith('.kmerseek.rocksdb') }
-    def items = dirs.collect { d ->
+    def skipped = 0
+    def items = dirs.findAll { d ->
+        def keep = (!clades || clades.any { d.name.startsWith("minus_${it}.") }) && !(exclude && d.name =~ exclude)
+        if (!keep) skipped++
+        keep
+    }.collect { d ->
         def m = d.name =~ /^minus_[A-Za-z]+\.(.+?)\.k(\d+)(?:\.s(\d+))?\.lc(true|false)\.kmerseek\.rocksdb$/
         if (!m) error "cannot parse ${d.name}"
         def alphabet = m[0][1]
         def pens = specs.collect { spec -> spec == 'opt' ? optimalPenalty(alphabet) : penaltyString(spec as double) }.unique()
         tuple(d.toAbsolutePath().toString(), alphabet, m[0][2] as int, (m[0][3] ?: '1') as int, pens)
     }
-    log.info "calibrating ${items.size()} stored index(es) under ${store} for penalties ${specs.join(',')}"
+    log.info "calibrating ${items.size()} stored index(es) under ${store} for penalties ${specs.join(',')}" +
+             (skipped ? " (${skipped} left alone: not in --calibrate_clades or matching --calibrate_exclude)" : '')
     items.groupBy { it[1] }.each { a, l -> log.info "  ${a}: ${l.size()} index(es), C = ${l[0][4].join(', ')}" }
     calibrateStoredIndex(Channel.fromList(items))
 }
