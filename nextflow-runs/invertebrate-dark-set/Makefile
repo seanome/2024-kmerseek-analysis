@@ -124,7 +124,7 @@ help:
 	@echo "  run-dark-set-sbatch     SPECIES=<...>  driver on a compute node (USE THIS)"
 	@echo "  watch-dark-set          SPECIES=<...>  follow a running driver's log"
 	@echo "  stop-dark-set           SPECIES=<...>  cancel the driver and its tasks"
-	@echo "  cancel-orphan-tasks     cancel nf-darkSet_ tasks left in the queue after a driver died"
+	@echo "  cancel-orphan-tasks     cancel this pipeline's tasks left in the queue after a driver died"
 	@echo "  lock-indexes            make every built kmerseek index read-only (run before a relaunch)"
 	@echo "  run-ladder-0.4-sbatch   the ladder with kmerseek 0.4: scaled x extension arms, own results dir"
 	@echo "  ladder-0.4-plan         print what that expands to without submitting"
@@ -284,9 +284,9 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(HEAD_ACCOUNT) HEAD_PARTITION=$(HEAD_PARTITION) \
               $(MAKEFILE_DIR)/tools/nf-head
 
 run-dark-set-sbatch: check-species check-inputs queue-note
-	@n=$$(squeue -u $$USER -h -o '%j' 2>/dev/null | grep -c '^nf-darkSet_' || true); \
+	@n=$$(squeue -u $$USER -h -o '%j' 2>/dev/null | grep -cE '$(TASK_PREFIX_RE)' || true); \
 	 if [ "$$n" != 0 ] && ! squeue -u $$USER -h -o '%j' 2>/dev/null | grep -q '^nfdrv-'; then \
-	   echo "WARNING: $$n nf-darkSet_ task(s) are in the queue with no driver alive -- orphans of"; \
+	   echo "WARNING: $$n task(s) of this pipeline are in the queue with no driver alive -- orphans of"; \
 	   echo "         a stopped run. An orphaned index build finishing under this run collides on"; \
 	   echo "         storeDir. Cancel them first:  make cancel-orphan-tasks"; exit 1; fi
 	@if squeue -u $$USER -h -o '%j' 2>/dev/null | grep -qx '$(HEAD_JOBNAME)'; then \
@@ -545,24 +545,33 @@ rescue-indexes-0.4:
 	 done; \
 	 echo "rescued $$n index(es) into $$d; $$skipped already there (retries of the same combo)"
 
-# Cancel every task this pipeline's processes submitted, whatever run they belong to.
-# Named for what it does, not "sweep": in this Makefile a sweep is the alphabet x ksize
-# parameter sweep (run-ladder-sweep-sbatch), and a cleanup target with the same word in
-# it read as a second kind of run.
-# Tasks are named nf-darkSet_<process>_(<tag>) by Nextflow, so the prefix is the only
-# handle; a single-species run and the ladder share it. Run this only when no driver of
-# this pipeline is alive, which is what stop-dark-set checks first. Cancelling a few
-# hundred jobs takes a minute or two under slurmctld's RPC throttle; that is normal.
+# Cancel every orphaned task of this pipeline: one whose driver (the nfdrv- head job) is
+# gone. Named for what it does, not "sweep": in this Makefile a sweep is the alphabet x
+# ksize parameter sweep (run-ladder-sweep-sbatch), and a cleanup target with the same
+# word in it read as a second kind of run.
+# Tasks are named nf-<entry>_<process>_(<tag>) by Nextflow, one prefix per entry
+# workflow of main.nf (darkSet, darkReport, calibrateStore), so the prefix is the only
+# handle; a single-species run and the ladder share it. Until 2026-09-21 only
+# nf-darkSet_ was matched, so the 115 calibrateStore tasks a stopped calibrate-0.4 head
+# left behind were reported as "no tasks left", kept running, and held the RocksDB LOCK
+# of 83 indexes the restarted run then failed to open.
+# Which tasks are orphans: SLURM job ids only grow, and a head submits its tasks after
+# it started, so every task of a live head has a higher id than the head. A task with an
+# id below the LOWEST live head's id was submitted by a head that no longer exists. With
+# no head alive every task is an orphan. So this is safe to run beside a live run, which
+# is exactly the state a failed stop leaves behind. Cancelling a few hundred jobs takes
+# a minute or two under slurmctld's RPC throttle; that is normal.
+TASK_PREFIX_RE = ^nf-(darkSet|darkReport|calibrateStore)_
 cancel-orphan-tasks:
-	@ids=$$(squeue -u $$USER -h -o "%i %j" | awk '$$2 ~ /^nf-darkSet_/ {print $$1}'); \
+	@floor=$$(squeue -u $$USER -h -o "%i %j" | awk '$$2 ~ /^nfdrv-/ {print $$1}' | sort -n | head -1); \
+	 ids=$$(squeue -u $$USER -h -o "%i %j" | awk -v f="$${floor:-999999999999}" '$$2 ~ /$(TASK_PREFIX_RE)/ && $$1+0 < f+0 {print $$1}'); \
 	 n=$$(echo "$$ids" | grep -c . || true); \
-	 if [ "$$n" = 0 ]; then echo "no nf-darkSet_ tasks left in the queue"; exit 0; fi; \
-	 if squeue -u $$USER -h -o '%j' | grep -q '^nfdrv-'; then \
-	   echo "a driver is still running:"; squeue -u $$USER -o '%.12i %.2t %.10M %j' | grep nfdrv-; \
-	   echo "its tasks are not orphans; stop it first (make stop-dark-set RUN=<run>)"; exit 1; fi; \
-	 echo "cancelling $$n orphaned nf-darkSet_ task(s) -- slurmctld throttles this, give it a minute"; \
+	 live=$$(squeue -u $$USER -h -o "%j" | grep -cE '$(TASK_PREFIX_RE)' || true); \
+	 if [ -n "$$floor" ]; then echo "lowest live driver is job $$floor; $$((live - n)) task(s) above it belong to live driver(s) and stay"; fi; \
+	 if [ "$$n" = 0 ]; then echo "no orphaned tasks of this pipeline in the queue"; exit 0; fi; \
+	 echo "cancelling $$n orphaned task(s) of this pipeline -- slurmctld throttles this, give it a minute"; \
 	 echo "$$ids" | xargs scancel 2>&1 | grep -v _add_delay || true; \
-	 echo "left: $$(squeue -u $$USER -h -o '%j' | grep -c '^nf-darkSet_' || true)"
+	 echo "left: $$(squeue -u $$USER -h -o '%j' | grep -cE '$(TASK_PREFIX_RE)' || true) task(s) of this pipeline in the queue"
 
 # What happened. Reads .nextflow.log and says whether the run ended, which task took it
 # down and what that task printed, per-process counts, and the head jobs from sacct. This
