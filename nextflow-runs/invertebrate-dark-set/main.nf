@@ -152,15 +152,19 @@ params.kmerseek_chain_max_shift          = 10
 // so every search chunk reads the same fit; 0 skips it, and an `extend` search would
 // then have to fit its own. Only done when an `extend` arm is wanted.
 params.kmerseek_ka_queries = 500
-// The fit needs regions, and the regions a query produces fall with the bits per
-// seed, k x log2(classes): chance seeds halve with every bit. On 2026-09-21 every fit
-// that failed ("too few score bins": protein20 from k=8, uniprot18 from k=12, hsdm17)
-// sat above 33 bits, every fit that worked below (protein20 k5 at 21.6, uniprot18 k7 at
-// 29, the HP arms at 19-30). So the query count is 500 up to bits_base bits, doubles
-// every bits_per_doubling above it, and stops at ka_queries_max: protein20 k5 500, k8
-// about 1_400, k10 the cap; uniprot18 k8 about 1_000; hsdm17 k11 the cap; HP 500.
-// A doubling per 3 bits compensates a third of the loss (full compensation would be a
-// doubling per bit, 16_000 queries at 35 bits); the cap is the cost ceiling.
+// More queries above 30 bits per seed (k x log2(classes)): 500 up to bits_base, doubling
+// every bits_per_doubling above it, capped at ka_queries_max, so protein20 k5 500, k8
+// about 1_400, k10 the cap; uniprot18 k8 about 1_000; HP 500. Written on 2026-09-21 on
+// the premise that a refused fit ("too few score bins") was short of regions, since
+// every refusal sat above 33 bits. The calibration pass that ran it showed the premise
+// wrong: the refused fits had 160k to 4.6M regions (dayhoff6 k15 scaled 2 at 3_000
+// queries), and what the fit needs is at least MIN_FIT_POINTS = 4 half-nat score bins
+// ABOVE the most populated one with MIN_BIN_COUNT = 30 regions each, in the real and
+// the shuffled curve both (kmerseek karlin_altschul.rs). That is a spread, not a count;
+// more queries scale every bin the same and buy little. The rule stays because it did
+// fit 7 of 26 protein20 k9-13 indexes that 500 might not have, and the survival CSVs
+// each fit now writes (ka_survival.C<penalty>.csv in the index) are what will say
+// what the fit itself should do differently.
 params.kmerseek_ka_queries_bits_base        = 30
 params.kmerseek_ka_queries_bits_per_doubling = 3
 params.kmerseek_ka_queries_max              = 3000
@@ -647,11 +651,18 @@ process kmerseekIndex {
     // memory directive).
     def nq   = kaQueriesFor(alphabet, ksize as int)
     def pens = (nq > 0 && resolveExtensions().any { it.startsWith('extend:') }) ? penaltiesFor(alphabet) : []
-    def ka   = pens ? "--extend-mismatch-penalty ${pens[0]} --extend-xdrop ${xdropFor(pens[0])} --ka-queries ${nq}"
+    // Every fit also writes the score histogram it was read from (or refused on) into
+    // the index, next to the spectrum: ka_survival.C<penalty>.csv, one per penalty. A
+    // refused fit has the fit columns empty and `fitted` false. From kmerseek
+    // 0.4.0-rc5; before it a refused fit wrote nothing, which is why the 34 of 138
+    // refusals on 2026-09-21 could not be looked at.
+    def ka   = pens ? "--extend-mismatch-penalty ${pens[0]} --extend-xdrop ${xdropFor(pens[0])} " +
+                      "--ka-queries ${nq} --ka-survival-out ${idx}/ka_survival.C${pens[0]}.csv"
                     : '--ka-queries 0'
     def more = pens.drop(1).collect { c ->
         "kmerseek calibrate --target ${idx} --extend-mismatch-penalty ${c} " +
-        "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} 2>&1 | stamp | tee -a index.log"
+        "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} " +
+        "--ka-survival-out ${idx}/ka_survival.C${c}.csv 2>&1 | stamp | tee -a index.log"
     }.join('\n    ')
     """
     set -euo pipefail
@@ -715,19 +726,26 @@ process calibrateStoredIndex {
     tag "${file(index_path).name.replace('.kmerseek.rocksdb', '')}"
     container params.kmerseek_image
     memory { kmerseekIndexMemory(alphabet, ksize as int, scaled as int, task.attempt) }
+    // The log and each fit's score histogram, one CSV per penalty, named after the
+    // index: <index>.ka_survival.C<penalty>.csv. The same CSV is also copied into the
+    // index dir, where kmerseekIndex writes it at build time, so both paths agree.
+    publishDir "${params.outdir}/ka_survival", mode: 'copy'
 
     input:
     tuple val(index_path), val(alphabet), val(ksize), val(scaled), val(penalties)
 
     output:
     path "${file(index_path).name}.calibrate.log"
+    path "${file(index_path).name}.ka_survival.C*.csv", optional: true
 
     script:
     def name = file(index_path).name
     def nq   = kaQueriesFor(alphabet, ksize as int)
     def fits = penalties.collect { c ->
         "kmerseek calibrate --target ${index_path} --extend-mismatch-penalty ${c} " +
-        "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} 2>&1 | stamp | tee -a ${name}.calibrate.log"
+        "--extend-xdrop ${xdropFor(c)} --ka-queries ${nq} " +
+        "--ka-survival-out ${name}.ka_survival.C${c}.csv 2>&1 | stamp | tee -a ${name}.calibrate.log\n    " +
+        "cp ${name}.ka_survival.C${c}.csv ${index_path}/ka_survival.C${c}.csv"
     }.join('\n    ')
     """
     set -euo pipefail

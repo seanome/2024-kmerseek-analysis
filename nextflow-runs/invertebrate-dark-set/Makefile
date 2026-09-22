@@ -362,7 +362,7 @@ run-ladder-sweep:
 # context, never from kmerseek's own Dockerfile: that one ships the binary alone, and
 # every python_scoring step (splitQuery first) runs in this image too. rc1 was built the
 # wrong way and failed every splitQuery with `python3: No such file or directory`.
-V4_IMAGE       ?= docker.io/olgabot/kmerseek:0.4.0-rc4
+V4_IMAGE       ?= docker.io/olgabot/kmerseek:0.4.0-rc5
 V4_OUTDIR      ?= $(SCRATCH_DIR)/invertebrate-dark-set/results-0.4
 V4_LAUNCH_DIR  := $(MAKEFILE_DIR)/runs/ladder-0.4
 V4_ALPHABETS   ?= protein20:10,hp_pbotc_1st_ed2:19,hp_thomas_dill2:23,hp_pbotc_1st_ed2:15,hp_thomas_dill2:15
