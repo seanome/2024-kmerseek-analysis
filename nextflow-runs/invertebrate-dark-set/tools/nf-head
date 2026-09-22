@@ -32,6 +32,13 @@ if [ $# -eq 0 ]; then
     exit 2
 fi
 
+# HEAD_AFTER=<jobid> (optional) holds this head in the queue until that job has ended
+# with exit 0 (SLURM afterok). For chaining one run behind another that must not overlap
+# it, such as the midi launch behind a store calibration that opens every index
+# read-write. If the earlier job fails, this one stays pending with the reason
+# DependencyNeverSatisfied rather than starting on a half-done store; cancel it and
+# relaunch by hand.
+#
 # What `make watch` and `make stop` are called in the pipeline that submitted this. Only
 # the wording of the closing message; nothing depends on them.
 watch_hint=${HEAD_HINT_WATCH:-make watch}
@@ -70,6 +77,7 @@ cat > "$script" <<EOF
 #SBATCH --mem=$HEAD_MEM
 #SBATCH --output=$launch_dir/nf-head.%j.log
 #SBATCH --signal=B:TERM@180
+${HEAD_AFTER:+#SBATCH --dependency=afterok:$HEAD_AFTER}
 set -uo pipefail
 
 cd $qdir || exit 1

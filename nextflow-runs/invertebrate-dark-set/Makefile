@@ -275,10 +275,20 @@ HEAD_SESSION   ?= darkset
 # this name, and the qfo benchmark runs a head of its own at the same time.
 HEAD_JOBNAME    = nfdrv-$(RUN)
 
-HEAD_SUBMIT = HEAD_ACCOUNT=$(HEAD_ACCOUNT) HEAD_PARTITION=$(HEAD_PARTITION) \
+# AFTER_RUN=<run> on any launch target holds the new head until that run's driver
+# (nfdrv-<run>) has exited 0, through SLURM's afterok dependency (see tools/nf-head).
+# Added 2026-09-21 so `make run-ladder-0.4-midi-sbatch AFTER_RUN=calibrate-0.4` can be
+# submitted before bed: the calibration opens every stored index read-write, and a
+# search running on one of those indexes at the same time loses its cache. The lookup
+# fails loudly when no such driver is in the queue, since a missing dependency would
+# otherwise just mean "start now".
+AFTER_JOBID = $(if $(AFTER_RUN),$(shell squeue -u $$USER -h -n nfdrv-$(AFTER_RUN) -o %i 2>/dev/null | head -1),)
+HEAD_SUBMIT = $(if $(AFTER_RUN),$(if $(AFTER_JOBID),,$(error AFTER_RUN=$(AFTER_RUN): no driver named nfdrv-$(AFTER_RUN) is in the queue))) \
+              HEAD_ACCOUNT=$(HEAD_ACCOUNT) HEAD_PARTITION=$(HEAD_PARTITION) \
               HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
               HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
               HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
+              HEAD_AFTER=$(AFTER_JOBID) \
               HEAD_HINT_WATCH="make watch-dark-set RUN=$(RUN)" \
               HEAD_HINT_STOP="make stop-dark-set RUN=$(RUN)" \
               $(MAKEFILE_DIR)/tools/nf-head
