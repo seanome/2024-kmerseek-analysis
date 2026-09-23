@@ -610,6 +610,29 @@ if (!HUMAN) {
 }
 def KNOWN_TARGETS = REGISTRY.findAll { it.label != 'human' }
 
+// Human against itself: the all-against-all run.
+//
+// Every other arm asks "did the tool find titin's Ig domain in a MOUSE protein". This one
+// asks it of another HUMAN protein, which is the only way to get a large number of SHORT
+// correct matches: the question "where does k-mer rarity stop beating the E-value" is a
+// question about matches under ~40 aa, and nine cross-species targets do not supply
+// enough of them to answer it. Measured on 2026-09-23 from a 933-protein all-against-all:
+// correct matches under 30 aa grow as proteins^2.07 (all-against-all gives N^2 pairs), so
+// 933 proteins yield 10 and the 95% bootstrap band on the AUC is +-0.12 to +-0.19 -- too
+// wide to separate two curves 0.11 apart. The registry's 20_600 human proteins put that
+// band near +-0.01.
+//
+// Off by default, and human stays out of `--target_species all`, for the reason
+// DEFAULT_TARGET_LABELS gives about the 77-row registry: nothing a bare `nextflow run` or
+// an in-flight -resume expands to may widen because this file was pulled. Asking for it
+// takes both --human_all_vs_all and naming human in --target_species.
+//
+// The query-side warning on kmerseekIndex does NOT apply here. It rejects making human the
+// target of a SPECIES query, which moves the scored interval onto the species protein.
+// Here both sides are human and the scored interval is a human domain instance either way,
+// which is what the benchmark's unit has always been.
+params.human_all_vs_all = false
+
 // The nine the benchmark has always run, in divergence order, and still the default.
 //
 // NOT "every row in the registry". The registry now holds all 77 QfO targets, and making
@@ -639,7 +662,9 @@ else if (requested.toString().trim().toLowerCase() == 'all') {
 }
 else {
     def wanted = requested.tokenize(',')*.trim().findAll { it }
-    def unknown = wanted - KNOWN_TARGETS*.label
+    // Human is targetable only when the flag says so, and never through 'all' above.
+    def targetable = params.human_all_vs_all ? KNOWN_TARGETS + [HUMAN] : KNOWN_TARGETS
+    def unknown = wanted - targetable*.label
     // Named-but-unknown is an error, not a silent drop. `--target_species mouse,mosue`
     // otherwise runs one species and reports nine.
     if (unknown) {
@@ -647,11 +672,13 @@ else {
               "Known targets are the ${KNOWN_TARGETS.size()} non-human rows of " +
               "${params.species_registry}; '--target_species all' selects them all. " +
               (unknown.contains('human')
-                 ? "human is the QUERY and is never a target."
+                 ? "human is the QUERY. To search it against itself as well, pass " +
+                   "--human_all_vs_all and name human in --target_species; see the " +
+                   "note on params.human_all_vs_all."
                  : "")
     }
     // Ordered as the user asked, so a hand-written subset reads back the way it was typed.
-    SPECIES = wanted.collect { l -> KNOWN_TARGETS.find { it.label == l } }
+    SPECIES = wanted.collect { l -> targetable.find { it.label == l } }
 }
 
 if (SPECIES.isEmpty()) {
@@ -3894,7 +3921,7 @@ workflow {
         // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
         // this line exists to prevent.
         log.info """
-        |  query   : human (UP000005640_9606) -- always, and never listed as a target
+        |  query   : human (UP000005640_9606) -- always${SPECIES*.label.contains('human') ? ', and searched against itself as well' : ', and never listed as a target'}
         |  targets : ${SPECIES*.label.join(', ')}
         |  alphabet: ${combos.collect { it[1] }.unique().join(', ')}
         |  combos  : ${combos.size()} (alphabet x ksize x low-complexity on/off)

@@ -335,7 +335,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 # second multi-GB image for arms it never executes.
 PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
 
-.PHONY: bootstrap-sherlock build-image build-image-local push-image \
+.PHONY: run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image \
         build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
@@ -1630,6 +1630,52 @@ MIDI_OUTDIR ?= ../data/midi/results
 # per-task container rather than a per-run one.
 #
 # Both images are prefetched because a run now genuinely uses both.
+# ---- human against itself: the all-against-all arm --------------------------------
+#
+# Why it exists: the benchmark's other nine arms are human against another species, and
+# they do not produce enough SHORT correct matches to rank scores on. Measured on
+# 2026-09-23 from a 933-protein human all-against-all, correct matches under 30 aa grow
+# as proteins^2.07, so 933 proteins give 10 of them and a 95% bootstrap band on the AUC
+# of +-0.12 to +-0.19. The registry's 20_600 human proteins are the fix.
+#
+# ALLVALL_IMAGE is not $(IMAGE_REMOTE), deliberately. The columns this arm exists to rank
+# -- region_mean_idf and region_evalue -- arrived in kmerseek 0.4; the default image
+# predates them and writes neither, so the run would finish and rank nothing. Pinned to a
+# tag resolved off Docker Hub on 2026-09-23, not guessed. Re-resolve before a rerun.
+#
+# Its own launch dir and its own outdir, so nothing here can move the nine-species sweep's
+# results or its report. --db_cache IS shared: the index is stored as
+# human.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb, a name no other arm can write, so it
+# lands beside them without collision.
+#
+# One combo by default, the one the scratchpad experiment used. Widen with
+# KMERSEEK_COMBOS= once the arm has run once and the cost is known: the search is
+# 20_600 queries against a 20_600-sequence index, which nothing here has measured yet.
+ALLVALL_IMAGE   ?= docker.io/olgabot/kmerseek:0.4.0-rc5
+ALLVALL_OUTDIR  ?= ../data/allvall/results
+ALLVALL_COMBOS  ?= hp_lehninger2:24
+ALLVALL_LOWCOMP ?= true
+
+run-human-allvall: PREFETCH_CONTAINERS := $(ALLVALL_IMAGE)
+run-human-allvall: prefetch-images
+	$(call require_cluster)
+	mkdir -p run-human-allvall
+	cd run-human-allvall && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --human_all_vs_all \
+	    --target_species      human \
+	    --kmerseek_image      $(ALLVALL_IMAGE) \
+	    --kmerseek_combos     $(ALLVALL_COMBOS) \
+	    --low_complexity_toggle $(ALLVALL_LOWCOMP) \
+	    --outdir              $(ALLVALL_OUTDIR) \
+	    --db_cache            ../results \
+	    --qfo_dir             ../data/qfo \
+	    --annotations         ../data/annotations \
+	    --swissprot_dat       ../data/uniprot_sprot.dat.gz \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
 run-midi: QUERY_SET_LABEL := $(MIDI_QUERY_SET)
 run-midi: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi: prefetch-images midi-testset-sherlock
