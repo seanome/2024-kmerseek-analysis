@@ -291,7 +291,87 @@ cd47 = (ranks.filter((pl.col("query") == "P66") & (pl.col("alphabet") == "hp_leh
 print("\nCD47's rank among the human proteins hit by P66, hp_lehninger2 (PR #44's control: 91st-92nd percentile of 300 random proteins at k=18-20):")
 print(cd47)
 """),
-md("## 9. Conclusions\n\n(filled in after execution)"),
+md(r"""
+## 9. Why so few regions have an E-value
+
+This kmerseek build solves lambda from each region's own two spans. A region whose own
+identity is above C / (1 + C), the point where a match stops being evidence at mismatch
+penalty C, gets lambda 0 and E = inf. With the kappa-optimal penalties that limit is 62%
+for hp_lehninger2 (C = 1.51) but only 12 to 19% for the 12- to 20-class alphabets
+(C = 0.14 to 0.24), so nearly every extended region of those alphabets loses its E-value,
+including the best ones.
+
+Three alphabets lose every region for a second reason. The kappa-optimal penalty was
+derived assuming equal class shares (1 / classes). On this proteome the chance match
+probability is 0.39 for gbmr7 (one class holds most residues), 0.48 for hp_lehninger_hpc3
+and 0.40 for gbmr4, and at those rates a chance position scores at or above zero, so no
+lambda exists at any k. The right panel shows that drift for every alphabet; the fix is
+to derive the penalty from the measured class shares (Sigma p_i^2, the chance match
+probability) instead of 1 / classes.
+"""),
+code(r"""
+lz = au.lambda_zero_figure(
+    arms, FIG / "241_no_evalue_mechanism.png",
+    hypothesis="Regions lose their E-value only where the Karlin-Altschul fit is refused.",
+    conclusion=(lambda a: (
+        f"{a.filter(pl.col('chance_drift') >= -0.001)['alphabet'].n_unique()} alphabets have a chance drift at or above 0 "
+        f"({', '.join(a.filter(pl.col('chance_drift') >= -0.001).sort('chance_drift', descending=True)['alphabet'])}) and no lambda at any k. "
+        f"Across all arms with regions, the median share of regions with no E-value is {arms['frac_lambda_zero'].median():.2f}; "
+        f"for hp_lehninger2 it is {arms.filter(pl.col('alphabet') == 'hp_lehninger2')['frac_lambda_zero'].mean():.2f} and for protein20 "
+        f"{arms.filter(pl.col('alphabet') == 'protein20')['frac_lambda_zero'].mean():.2f}. The penalty, not the fit, decides which regions can have an E-value."))(
+        arms.group_by("alphabet").agg(pl.col("chance_drift").first())),
+)
+print(lz)
+print(arms.group_by("alphabet").agg(pl.col("frac_lambda_zero").mean().round(2).alias("mean_share_no_evalue"),
+                                    (pl.col("frac_lambda_zero") >= 0.999).sum().alias("arms_with_no_evalue_at_all"),
+                                    pl.len().alias("arms")).sort("mean_share_no_evalue", descending=True))
+"""),
+md(r"""
+## 10. Conclusions
+
+**No alphabet and no metric puts either known partner near the top of the human
+proteome.** BCL2 is among the hits for 13 of 19 alphabets when Ced9 is the query, and its
+best rank over every k and every metric is 213 of 18_064 proteins hit (polarity4, mean
+IDF, k=9, 16 bits); under hp_lehninger2 it is 1_204 of 3_195 (mean IDF, k=19). CD47 is
+among the hits for 16 of 19 alphabets when P66 is the query, best 166 of 18_775
+(hp_lehninger_hpc3, E-value, k=14, 16 bits). Both partners are only in view below about
+25 bits per seed, where thousands of human proteins are in view with them, and both
+disappear before the seed carries the ~32 bits an E-value of 1 needs on this database.
+Their own best E-values are 1_955 (BCL2, wwmj5 k=9) and 707 (CD47).
+
+**The 20-letter alphabet is not the answer either.** protein20 and uniprot18 never have
+BCL2 or CD47 among the hits at any k; wass14 never has CD47; hsdm17, sdm12 and the two
+Thomas-Dill 2-letter alphabets never have BCL2. The coarse alphabets keep the pair in
+view a few bits longer, at the price of a larger crowd.
+
+**The pairwise layer agrees with PR #44** on every one of the 12 k values both ladders
+ran, and this sweep's rank among 19_732 proteins is the whole-proteome form of PR #44's
+300-random-protein control: under hp_lehninger2 and the five metrics, CD47 sits between
+the 27th and the 86th percentile of the proteins P66 hits, never in the top 5%.
+
+**BHF gets nothing that beats chance.** Of the 71 arms with an E-value, 3 put a human
+protein just under E = 1 (SCN10A 0.61 at polarity4 k=13, SFI1 0.84 at hp_lehninger_c_nonpolar2
+k=28, FXYD5 0.99 at gbmr7 k=8), which is what 71 independent searches are expected to
+produce by chance.
+
+**Two things about the E-value itself, which matter beyond these three proteins.**
+(1) The per-region lambda gives E = inf to every region whose own identity is above
+C / (1 + C); with the kappa penalties that removes 35% of hp_lehninger2 regions and
+88 to 98% for the 12- to 20-class alphabets, and it removes the best-matching regions
+first. (2) The kappa-optimal penalty assumes equal class shares; on this proteome
+gbmr7, hp_lehninger_hpc3 and gbmr4 have a chance match rate high enough that a chance
+position scores at or above zero, so no lambda exists for them at any k. 81 of 152 arms
+ended without a Karlin-Altschul fit; above about 30 bits both curves run out of score
+bins, and below it the many-class alphabets have curves too narrow to hold four bins
+however many queries are searched.
+
+**What this changes.** The E-value, mean IDF, tf-idf, enrichment and Poisson p-value
+all rank the known partner in the hundreds to thousands, because the matched region
+carries 16 to 25 bits against a background that needs 32. Ranking metrics cannot fix a
+seed that is too short; what the gold standard needs is a longer region, which means
+extension or chaining that survives past the identity limit, and a penalty derived
+from the real class shares so that an E-value exists for it.
+"""),
 ]
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},

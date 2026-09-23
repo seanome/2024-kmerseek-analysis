@@ -25,6 +25,7 @@ n_tied says how many share the partner's exact value, so rank 1 with n_tied 40 m
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -55,6 +56,21 @@ METRICS = [
 # reports them: Ced9 162-181 against BCL2 138-157 (the BH3-binding groove; the
 # 19-residue core notebook 220 found and this sweep reproduces at hp_lehninger2 k=17).
 GOLD_WINDOW = {"Ced9": (150, 195), "BCL2": (125, 170)}
+
+
+_PMATCH = re.compile(r"match probability ([0-9.]+)")
+
+
+def match_probability_from_log(index_log: Path, penalty: float) -> dict:
+    """The database's own chance match probability p, as the index-time fit printed it,
+    and the expected score of a chance position, p - C (1 - p)."""
+    if not index_log.exists():
+        return {"p_match": None, "chance_drift": None}
+    m = _PMATCH.search(index_log.read_text())
+    if not m:
+        return {"p_match": None, "chance_drift": None}
+    p = float(m.group(1))
+    return {"p_match": p, "chance_drift": p - penalty * (1 - p)}
 
 
 def gene_symbol(target_name: str) -> str:
@@ -214,6 +230,14 @@ def main() -> None:
             sub = df.filter(pl.col("query_name") == q)
             arm[f"n_regions_{q}"] = sub.height
             arm[f"n_targets_{q}"] = sub["target_name"].n_unique()
+        # The per-region lambda is 0, and the E-value inf, for every region whose own
+        # identity is above C / (1 + C). This is the share of regions that lost their
+        # E-value that way; with the database's chance match probability p and the
+        # penalty C, a chance position scores p - C (1 - p): at or above 0 no lambda
+        # exists for any region.
+        if "region_ka_lambda" in df.columns:
+            arm["frac_lambda_zero"] = float((df["region_ka_lambda"] == 0).mean())
+        arm.update(match_probability_from_log(OUT / "logs" / f"{tag}.index.log", float(c)))
         arms.append(arm)
         ranks.extend(rank_rows(df, a, k, bits))
         regions.append(df.with_columns(

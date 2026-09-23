@@ -237,11 +237,11 @@ def bhf_matrix(ranks: pl.DataFrame, arms: pl.DataFrame, path: Path, hypothesis: 
             below_one.setdefault(y, []).append(f"{row['top_gene']} E={v:.2g} at {x:.0f} bits")
     # Names go in the empty space right of the last arm, with a leader from the row.
     for y, labels in below_one.items():
-        ax.text(46.5, y, "; ".join(labels), va="center", ha="right", fontsize=6.5, zorder=5,
+        ax.text(51.5, y, "; ".join(labels), va="center", ha="right", fontsize=6.5, zorder=5,
                 bbox=dict(boxstyle="round,pad=0.15", facecolor="white", edgecolor="none", alpha=0.85))
     ax.set_title("best E-value of any human protein", fontsize=11)
     _rows_axis(ax)
-    ax.set_xlim(13, 47)
+    ax.set_xlim(13, 52)
     cb = fig.colorbar(mpl.cm.ScalarMappable(norm=norm_e, cmap=ramp_e), ax=ax, fraction=0.04, pad=0.02)
     cb.set_label("best E-value (lower is more surprising)", fontsize=8)
 
@@ -304,39 +304,89 @@ def pair_matrix(arms: pl.DataFrame, path: Path, hypothesis: str, conclusion: str
 
 def partner_evalue_figure(ranks: pl.DataFrame, arms: pl.DataFrame, path: Path,
                           hypothesis: str, conclusion: str) -> pl.DataFrame:
-    """Two panels: the E-value BCL2 (left) and CD47 (right) themselves get at every arm
-    where they are among the hits, against the E = 1 line. Every arm of one alphabet is
-    joined by a line and the alphabet is named at the line's right end."""
+    """Two panels in the row layout: the E-value BCL2 (left) and CD47 (right) themselves
+    get at every arm where they are among the hits and an E-value exists. The best one
+    per alphabet is written at the right edge."""
+    norm = mpl.colors.LogNorm(vmin=1e-1, vmax=1e6)
     handles = [
-        Line2D([], [], marker="o", ls="-", ms=6, color=RANK_RAMP(0.5), label="the partner's own E-value at one arm; arms of one alphabet joined, alphabet named at the right end"),
-        Line2D([], [], ls="--", color="#c0392b", label="E = 1: one region this good expected by chance in the whole search"),
+        Line2D([], [], marker="o", ls="", ms=8, color=RANK_RAMP(0.5), label="the partner is among the hits and has an E-value; colour = that E-value (dark = below 1)"),
+        Line2D([], [], marker="x", ls="", ms=7, color=NOT_FOUND, label="the partner is not among the hits at this arm, or the arm has no E-value"),
     ]
-    fig, axes = _figure_with_legend_row(2, (13, 6.0), handles, sharey=True)
+    fig, axes = _figure_with_legend_row(2, (13.5, 8.0), handles)
     tables = []
     for ax, (q, partner) in zip(axes, [("Ced9", "BCL2"), ("P66", "CD47")]):
-        sub = (ranks.filter((pl.col("query") == q) & (pl.col("metric") == "E-value")
-                            & pl.col("partner_found") & pl.col("partner_value").is_not_null())
-               .join(arms.select("alphabet", "ksize", "fitted"), on=["alphabet", "ksize"], how="left")
-               .filter(pl.col("fitted") == True)  # noqa: E712
-               .sort("alphabet", "bits"))
-        tables.append(sub.select("query", "alphabet", "ksize", "bits", "partner_value", "rank", "n_targets"))
-        for a in ORDER:
-            s = sub.filter(pl.col("alphabet") == a)
-            if s.height == 0:
+        sub = (ranks.filter((pl.col("query") == q) & (pl.col("metric") == "E-value"))
+               .join(arms.select("alphabet", "ksize", "fitted", "searched"), on=["alphabet", "ksize"], how="left")
+               .filter(pl.col("searched")))
+        best: dict[int, float] = {}
+        for row in sub.iter_rows(named=True):
+            y, x = ROW[row["alphabet"]], row["bits"]
+            ok = row["fitted"] is True and row["partner_found"] and row["partner_value"] is not None
+            if not ok:
+                ax.scatter(x, y, s=30, marker="x", color=NOT_FOUND, zorder=3)
                 continue
-            xs, ys = s["bits"].to_list(), s["partner_value"].to_list()
-            ax.plot(xs, ys, "-o", color=RANK_RAMP(0.5), ms=5, lw=1.2)
-            ax.text(xs[-1] + 0.6, ys[-1], a, fontsize=7, va="center")
-        ax.axhline(1, ls="--", color="#c0392b", lw=1.2)
-        ax.set_yscale("log")
-        ax.set_ylim(0.1, 1e6)
-        ax.set_xlim(13, 47)
-        ax.set_xticks([16, 20, 24, 28, 32, 36, 40, 44])
-        ax.set_xlabel("information in one seed (bits = k × bits per position)", fontsize=9)
+            v = row["partner_value"]
+            ax.scatter(x, y, s=62, c=[RANK_RAMP(norm(v))], edgecolors="white", lw=0.4, zorder=4)
+            best[y] = min(best.get(y, float("inf")), v)
+        for y, v in best.items():
+            ax.text(51.5, y, f"best E = {v:_.0f}" if v >= 10 else f"best E = {v:.2g}",
+                    va="center", ha="right", fontsize=7.5)
         ax.set_title(f"{partner}'s own E-value when {q} is the query", fontsize=10.5)
-        ax.grid(alpha=0.25)
-        ax.spines[["top", "right"]].set_visible(False)
-    axes[0].set_ylabel("E-value of the partner's best region (log scale, lower is more surprising)", fontsize=9)
+        _rows_axis(ax)
+        ax.set_xlim(13, 52)
+        tables.append(sub.filter(pl.col("partner_found") & (pl.col("fitted") == True))  # noqa: E712
+                      .select("query", "alphabet", "ksize", "bits", "partner_value", "rank", "n_targets"))
+    cb = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=RANK_RAMP), ax=axes, fraction=0.02, pad=0.02)
+    cb.set_label("E-value of the partner's best region (lower is more surprising; 1 = chance)", fontsize=8)
     finish_figure(fig, path, tools=TOOLS, hypothesis=hypothesis, conclusion=conclusion,
                   header_y=1.01, footer_y=-0.02)
     return pl.concat(tables)
+
+
+def lambda_zero_figure(arms: pl.DataFrame, path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
+    """Which regions can get an E-value at all. Left: the share of regions at each arm
+    whose per-region lambda is 0 (E = inf) because the region's own identity is above
+    C / (1 + C). Right, one bar per alphabet: the expected score of a chance position,
+    p - C (1 - p), with the database's chance match probability p and the alphabet's
+    penalty C; at or above 0 no lambda exists for any region."""
+    norm = mpl.colors.Normalize(vmin=0, vmax=1)
+    handles = [
+        Line2D([], [], marker="o", ls="", ms=8, color=RAMP(0.75), label="left: colour = share of the arm's regions with no E-value (per-region lambda 0)"),
+        Line2D([], [], marker="x", ls="", ms=7, color=NOT_FOUND, label="left: no region at this arm for any of the three queries"),
+        Line2D([], [], marker="s", ls="", ms=9, color=RAMP(0.75), label="right: expected score of one chance position at this alphabet's penalty; at or above the zero line no lambda can exist"),
+    ]
+    fig, axes = _figure_with_legend_row(2, (14, 8.0), handles, sharey=True, width_ratios=[1.6, 1.0])
+    ax = axes[0]
+    for row in arms.iter_rows(named=True):
+        y, x = ROW[row["alphabet"]], row["bits"]
+        f = row.get("frac_lambda_zero")
+        if f is None:
+            ax.scatter(x, y, s=30, marker="x", color=NOT_FOUND, zorder=3)
+        else:
+            ax.scatter(x, y, s=62, c=[RAMP(norm(f))], edgecolors="white", lw=0.4, zorder=4)
+    ax.set_title("share of regions with no E-value, by arm", fontsize=11)
+    _rows_axis(ax)
+    cb = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=RAMP), ax=ax, fraction=0.04, pad=0.02)
+    cb.set_label("share of regions with lambda 0 (E = inf)", fontsize=8)
+
+    ax = axes[1]
+    per = (arms.group_by("alphabet").agg(pl.col("chance_drift").first(), pl.col("p_match").first(),
+                                          pl.col("penalty").first()))
+    for row in per.iter_rows(named=True):
+        y = ROW[row["alphabet"]]
+        d = row["chance_drift"]
+        if d is None:
+            continue
+        ax.barh(y, d, height=0.55, color=RAMP(0.75), zorder=2)
+        # Labels sit right of the zero line (or of a positive bar), never on a bar.
+        ax.text(max(d, 0) + 0.03, y, f"p = {row['p_match']:.2f}, C = {row['penalty']:g}",
+                va="center", ha="left", fontsize=7)
+    ax.axvline(0, color="#c0392b", ls="--", lw=1.2)
+    ax.set_xlim(-1.6, 0.9)
+    ax.set_xlabel("expected score of a chance position: p − C (1 − p)", fontsize=9)
+    ax.set_title("can a lambda exist at all?", fontsize=11)
+    ax.grid(axis="x", alpha=0.25)
+    ax.spines[["top", "right"]].set_visible(False)
+    finish_figure(fig, path, tools=TOOLS, hypothesis=hypothesis, conclusion=conclusion,
+                  header_y=1.01, footer_y=-0.02)
+    return per.sort("chance_drift", descending=True)
