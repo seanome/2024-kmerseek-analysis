@@ -242,24 +242,41 @@ params.kmerseek_search_memory_slope    = 2.34
 // rates and peak/ask ratios are all relative to headroom 1.5, so the two numbers move
 // together. 2.0 was the earlier default and over-asked for the alphabets that never die.
 params.kmerseek_search_memory_headroom = 1.5
-// A per-alphabet multiplier on top of the model. The spectrum load is an INDEX-side
-// number and cannot see how many hits a query chunk will materialise, and that is where
-// the model was wrong: in the ladder run (6_143 first attempts audited on 2026-09-17,
-// requested --mem against peak_rss) the first attempt was cgroup-killed on 74% of gbmr7
-// searches, 68% of hp_kyte_doolittle2, 42% of hp_thomas_dill_no_c2, 34% of gbmr4 and 32%
-// of hp_thomas_dill2, against 0-1% for protein20, uniprot18 and hp_lehninger2. Tasks that
-// did complete used a median 63% (p90 87%) of their ask, so the model is not padded, it
-// is mis-shaped for those alphabets. Those asks were headroom 1.5 x the model, which is
-// the default now. The factors are the smallest step of 1.25 above the worst peak/ask
-// ratio measured for each alphabet; where most of the alphabet's tasks
-// still had no completed attempt (gbmr7 193 of 268, hp_kyte_doolittle2 226 of 318) the
-// ratio is censored at the 1.5x retry that also died, and the factor is 2. An alphabet
-// not listed gets 1.0.
-params.kmerseek_search_memory_alphabet_factor = [
-    gbmr7: 2.0, hp_kyte_doolittle2: 2.0, hp_thomas_dill_no_c2: 2.0, gbmr4: 2.0,
-    hp_thomas_dill2: 1.5, dayhoff6: 1.5, mmseqs12: 1.5, sdm12: 1.5, wwmj5: 1.5, hsdm17: 1.5,
-    hp_lehninger_hpc3: 1.25, hp_pbotc_1st_ed2: 1.25, wass14: 1.25,
-]
+// A per-alphabet multiplier on top of the model, for alphabets the model under-asks for.
+// Every one is 1.0 now; what follows is why the knob exists and why it is empty.
+//
+// It was added on 2026-09-17, after the ladder run (amazing_koch, image
+// olgabot/kmerseek:2026-09-13-rocksdb-4gb-readonly, 6_143 first attempts audited,
+// requested --mem against peak_rss) was cgroup-killed on the first attempt of 74% of
+// gbmr7 searches, 68% of hp_kyte_doolittle2, 42% of hp_thomas_dill_no_c2, 34% of gbmr4
+// and 32% of hp_thomas_dill2, against 0-1% for protein20, uniprot18 and hp_lehninger2.
+// Tasks that did complete used a median 63% (p90 87%) of their ask, so the model was not
+// padded, it was mis-shaped for those alphabets. The factors set there were gbmr7,
+// hp_kyte_doolittle2, hp_thomas_dill_no_c2 and gbmr4 at 2.0; hp_thomas_dill2, dayhoff6,
+// mmseqs12, sdm12, wwmj5 and hsdm17 at 1.5; hp_lehninger_hpc3, hp_pbotc_1st_ed2 and
+// wass14 at 1.25.
+//
+// 0.4 does not need them, and they were measured on an engine that predates it. Audited
+// again on 2026-09-23 over the 10_170 searches the midi run (ladder-0.4-midi, image
+// 0.4.0-rc5) had completed: ONE search was killed, and the four alphabets carrying the
+// 2.0 factor had the lowest peaks in the run. gbmr7 asked a median 184 GB and never
+// passed 100; gbmr4 asked 176 and never passed 131; hp_kyte_doolittle2 asked 172 and
+// never passed 134. Across every search the run asked for 1_062_166 GB and used 178_931.
+//
+// The factors cost throughput, because the size of the ask decides which nodes a task can
+// land on. hns has 136 nodes: 99 at ~192 GB, 22 at 256 GB, 15 bigmem at 1-1.5 TB. 664 of
+// those searches asked past 192 GB and 11 of them ever used more than that. A search
+// asking past 256 GB waited a median 210 minutes for one of the 15 bigmem nodes and then
+// ran for 20, against a 2-minute wait for a search that fits an ordinary node. The
+// waiting tasks hold the --max_forks slots while they wait: 95 of 155 at the time of the
+// audit, which is why the run's throughput fell from 915 searches an hour to 345.
+//
+// Replaying the retry ladder over the same 10_170 searches with every factor at 1.0:
+// 10_135 land on the first attempt, 35 need the 2x retry, none run out of attempts, and
+// the searches whose FIRST ask needs a bigmem node fall from 292 to 26. Put a factor back
+// only against a peak measured on the image in use, never against one from an older
+// engine. An alphabet not listed gets 1.0.
+params.kmerseek_search_memory_alphabet_factor = [:]
 // A combo whose PREDICTED median peak, times this, is above kmerseek_memory_max is not
 // searched at all; see the skip in the workflow. 2.0 is the worst chunk-to-median ratio
 // the ladder run measured (2.54, zebrafish and fly) rounded down, so a combo that passes
