@@ -45,7 +45,8 @@ METRICS = [
     ("region_tail_probability", True, "Poisson p-value"),
     ("region_n_shared_kmers", False, "shared k-mers"),
     ("containment", False, "containment"),
-    ("query_tfidf", False, "protein tf-idf"),
+    # query_tfidf is one value per query, the same on every target, so it cannot rank
+    # targets and is left out.
     ("query_enrichment", False, "protein enrichment"),
     ("query_poisson_pvalue", True, "protein Poisson p-value"),
 ]

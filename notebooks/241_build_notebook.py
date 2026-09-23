@@ -233,7 +233,65 @@ bhf = au.bhf_matrix(
 )
 print(bhf.filter(pl.col("n_targets_BHF") > 0).sort("best_value", nulls_last=True).head(40))
 """),
-md("## 8. Conclusions\n\n(filled in after execution)"),
+md(r"""
+## 8. Cross-check against PR #44's P66 ladder and random-protein control
+
+[PR #44](https://github.com/seanome/2024-kmerseek-analysis/pull/44) (`analysis/ranking-metrics-p66/`)
+ran P66 against CD47 pairwise down a k ladder for four alphabets and, as a control,
+against 300 random human proteins of similar length (242-404 aa). Its reading: CD47
+appears only at short k (hp_lehninger2 last at k=20 with 2 shared k-mers, polarity4 at
+k=12, funcgroups8 at k=8, protein20 never), and at k=18 26 of the 300 random proteins
+match or beat CD47's 4 shared k-mers (91st percentile), at k=20 24 of 300 beat its 2 (92nd).
+
+This sweep's pairwise layer is the same measurement, and its rank of CD47 among every
+human protein hit is the same control with all 19_732 proteins as the sample instead
+of 300. The table joins the two ladders on the k values both ran; every shared count
+should agree exactly, since both call `kmerseek pair` on the same two sequences.
+"""),
+code(r"""
+import json, subprocess
+
+# PR #44's ladder, read from its branch so nothing is copied by hand.
+def pr44_csv(name):
+    ref = "origin/olgabot/ranking-metrics-and-p66"
+    subprocess.run(["git", "fetch", "-q", "origin", "olgabot/ranking-metrics-and-p66"], check=False)
+    out = subprocess.run(["git", "show", f"{ref}:analysis/ranking-metrics-p66/{name}"],
+                         capture_output=True, text=True)
+    if out.returncode != 0:
+        print(f"PR #44's {name} not reachable: {out.stderr.strip()[:120]}")
+        return None
+    import io
+    return pl.read_csv(io.StringIO(out.stdout))
+
+theirs = pr44_csv("cd47_ladder.csv")
+mine = []
+for f in sorted((au.DATA / "pair").glob("*.P66.json")):
+    a, k = f.name.replace(".P66.json", "").rsplit(".k", 1)
+    d = json.loads(f.read_text())
+    mine.append({"alphabet": a, "k": int(k), "shared_kmers_241": len(d["shared_kmers"]), "regions_241": len(d["regions"])})
+mine = pl.DataFrame(mine)
+if theirs is not None:
+    joined = (theirs.rename({"shared_kmers": "shared_kmers_pr44", "regions": "regions_pr44"})
+              .join(mine, on=["alphabet", "k"], how="inner")
+              .with_columns((pl.col("shared_kmers_pr44") == pl.col("shared_kmers_241")).alias("agree"))
+              .sort("alphabet", "k"))
+    print(joined)
+    print(f"\n{joined['agree'].sum()} of {joined.height} shared-k-mer counts agree on the k values both ladders ran")
+last_k = (mine.filter(pl.col("shared_kmers_241") > 0).group_by("alphabet")
+          .agg(pl.col("k").max().alias("last_k_with_shared_kmer_241")).sort("alphabet"))
+print("\nlast k with any shared P66/CD47 k-mer, this sweep, all alphabets:")
+print(last_k)
+
+# CD47's rank among every human protein hit: the whole-proteome control.
+cd47 = (ranks.filter((pl.col("query") == "P66") & (pl.col("alphabet") == "hp_lehninger2") & pl.col("partner_found")
+                     & pl.col("metric").is_in(au.METRICS5 + ["shared k-mers"]))
+        .select("ksize", "bits", "metric", "rank", "n_targets")
+        .with_columns((100 * (1 - (pl.col("rank") - 1) / pl.col("n_targets"))).round(0).alias("percentile_among_hits"))
+        .sort("ksize", "metric"))
+print("\nCD47's rank among the human proteins hit by P66, hp_lehninger2 (PR #44's control: 91st-92nd percentile of 300 random proteins at k=18-20):")
+print(cd47)
+"""),
+md("## 9. Conclusions\n\n(filled in after execution)"),
 ]
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
