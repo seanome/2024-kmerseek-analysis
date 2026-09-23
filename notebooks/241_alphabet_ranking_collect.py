@@ -67,9 +67,15 @@ def read_plan() -> pl.DataFrame:
 
 def read_survival(tag: str) -> dict:
     """fitted, lambda, K from the ka_survival CSV the index build wrote."""
-    p = OUT / "ka_survival" / f"{tag}.csv"
+    # The driver retries a refused fit with more queries and shuffles and writes the
+    # retry's curve beside the first one; the retry is the fit the search then used.
+    p = OUT / "ka_survival" / f"{tag}.retry.csv"
     if not p.exists():
-        return {"fitted": None, "ka_lambda": None, "ka_k": None}
+        p = OUT / "ka_survival" / f"{tag}.csv"
+    if not p.exists():
+        return {"fitted": None, "ka_lambda": None, "ka_k": None,
+                "ka_lambda_analytic": None, "match_probability": None,
+                "n_reference_regions": None}
     # Columns as kmerseek 0.4 writes them: `slope` is the fitted lambda, `k` is K,
     # `lambda_analytic` and `match_probability` are the closed form, `fitted` says
     # whether the fit was accepted. Every row repeats the fit, so the first row is enough.
@@ -164,7 +170,7 @@ def rank_rows(df: pl.DataFrame, alphabet: str, k: int, bits: float) -> list[dict
                                  partner_found=False, rank=None, n_tied=None,
                                  partner_value=None, best_value=None, top_gene=None))
                 continue
-            best = per["v"].min() if lower else per["v"].max()
+            best = float(per["v"].min() if lower else per["v"].max())
             top = per.filter(pl.col("v") == best)["gene"][0]
             rec = dict(alphabet=alphabet, ksize=k, bits=bits, query=q, metric=label,
                        n_regions=n_regions, n_targets=n_targets, partner=partner,
@@ -176,7 +182,7 @@ def rank_rows(df: pl.DataFrame, alphabet: str, k: int, bits: float) -> list[dict
                 if hit.height == 0:
                     rec.update(partner_found=False, rank=None, n_tied=None, partner_value=None)
                 else:
-                    pv = hit["v"][0]
+                    pv = float(hit["v"][0])
                     better = (per["v"] < pv).sum() if lower else (per["v"] > pv).sum()
                     tied = (per["v"] == pv).sum() - 1
                     rec.update(partner_found=True, rank=int(better) + 1, n_tied=int(tied),
@@ -212,8 +218,13 @@ def main() -> None:
         regions.append(df.with_columns(
             pl.lit(a).alias("alphabet"), pl.lit(k).alias("ksize_arm"), pl.lit(bits).alias("bits")))
 
-    pl.DataFrame(arms).write_csv(OUT / "arms.csv")
-    pl.DataFrame(ranks).write_csv(OUT / "ranks.csv")
+    pl.DataFrame(arms, infer_schema_length=None).write_csv(OUT / "arms.csv")
+    rank_schema = {"alphabet": pl.Utf8, "ksize": pl.Int64, "bits": pl.Float64, "query": pl.Utf8,
+                   "metric": pl.Utf8, "n_regions": pl.Int64, "n_targets": pl.Int64,
+                   "partner": pl.Utf8, "partner_found": pl.Boolean, "rank": pl.Int64,
+                   "n_tied": pl.Int64, "partner_value": pl.Float64, "best_value": pl.Float64,
+                   "top_gene": pl.Utf8}
+    pl.DataFrame(ranks, schema=rank_schema).write_csv(OUT / "ranks.csv")
     if regions:
         keep = list(dict.fromkeys(
             ["alphabet", "ksize_arm", "bits", "query_name", "target_name", "gene",
