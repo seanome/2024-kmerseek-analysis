@@ -18,7 +18,7 @@ code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden":
 
 cells = [
 md(r"""
-# 241: What every alphabet can see, on three test cases
+# 241: What every alphabet can see, on BCL2/Ced9, P66/CD47 and BHF
 
 Three query proteins, each searched against the same background, the 19_732 canonical
 human proteins of GENCODE v49, with all 19 alphabets kmerseek supports:
