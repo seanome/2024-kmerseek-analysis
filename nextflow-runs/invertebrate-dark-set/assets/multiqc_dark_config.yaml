@@ -86,6 +86,10 @@ report_section_order:
   # The two cheap explanations of a large dark fraction that are not "homology is hard".
   # Both are optional arms; a run without them omits the panel and says so at 60.
   dark_length: { order: 40 }
+  # Pfam right after length: both answer "are these real proteins", length with a
+  # proxy and this one directly, so the direct answer reads against the proxy.
+  dark_pfam: { order: 45 }
+  dark_pfam_table: { order: 46 }
   dark_disorder: { order: 50 }
   # What this run could not build. Last, because it is a caveat on everything above.
   dark_missing: { order: 60 }

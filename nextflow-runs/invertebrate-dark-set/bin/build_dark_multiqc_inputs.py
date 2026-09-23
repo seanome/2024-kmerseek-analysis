@@ -1388,6 +1388,57 @@ def section_disorder(out: Path, species: str, df, summary, omitted: Omitted) -> 
 
 # --- what the run did not produce ------------------------------------------------------
 
+def section_pfam(out: Path, species: str, df, summary, omitted: Omitted) -> None:
+    """How much of the dark set carries a recognisable Pfam domain.
+
+    This is the direct answer to "are these real proteins", which the length section can
+    only approach with a proxy. It is not circular: darkness is three pairwise SEQUENCE
+    searches against reviewed Swiss-Prot minus the query's clade, and Pfam is a profile-HMM
+    library over a different database, so a protein can carry a domain and still be dark.
+    """
+    if summary is None:
+        omitted.add("Pfam on the dark set",
+                    "this run had no Pfam arm (--with_pfam with --pfam_hmm).")
+        return
+
+    n_dark = pick(summary, "proteins_dark", default=0) or 0
+    n_with = pick(summary, "dark_proteins_with_pfam", default=0) or 0
+    frac = pick(summary, "fraction_of_dark_with_pfam")
+    table = {
+        "carries a Pfam domain": {
+            "proteins": n_with,
+            "share of the dark set": f"{100 * frac:.1f}%" if frac is not None else "",
+            "reading": "a real protein that no sequence arm placed",
+        },
+        "no Pfam domain": {
+            "proteins": n_dark - n_with,
+            "share of the dark set": (f"{100 * (1 - frac):.1f}%"
+                                      if frac is not None else ""),
+            "reading": "either genuinely novel, or not a real protein",
+        },
+    }
+    desc = (
+        "Do the dark proteins carry known domains? The headline says no sequence arm "
+        "placed them. A protein that still carries a Pfam domain is a real protein those "
+        "arms missed, which is the strongest reading of the number; one with no domain is "
+        "either genuinely novel or not a real gene. "
+        f"Domains are called at Pfam's own gathering threshold (hmmsearch --cut_ga) over "
+        f"{n_dark} dark proteins."
+    )
+    if df is not None and df.height:
+        desc += (f" {df.height} domain instances from "
+                 f"{df['pfam_acc'].n_unique()} distinct families.")
+    write_section(out, "dark_pfam", {
+        "id": "dark_pfam",
+        "section_name": "Pfam domains on the dark set",
+        "description": desc,
+        "plot_type": "table",
+        "pconfig": {"id": "dark_pfam_table", "title": f"{species}: dark set vs Pfam",
+                    "col1_header": "dark proteins"},
+        "data": table,
+    })
+
+
 def section_landmarks(out: Path, species: str, lm: dict | None, omitted: Omitted) -> None:
     """The landmark pairs (params.landmarks) as a table: every arm, found or not, and the
     best region. One table per pair, sequence arms first."""
@@ -1501,6 +1552,8 @@ EXTRA_SUFFIXES = {
     "disorder_summary": "_disorder_summary.json",
     "disorder_parquet": "_disorder.parquet",
     "landmarks_json": "_landmarks.json",
+    "pfam_summary": "_pfam_summary.json",
+    "pfam_parquet": "_pfam.parquet",
 }
 
 
@@ -1538,6 +1591,8 @@ def main() -> None:
     ap.add_argument("--length-parquet", type=Path, default=None)
     ap.add_argument("--disorder-summary", type=Path, default=None)
     ap.add_argument("--disorder-parquet", type=Path, default=None)
+    ap.add_argument("--pfam-summary", type=Path, default=None)
+    ap.add_argument("--pfam-parquet", type=Path, default=None)
     ap.add_argument("--landmarks-json", type=Path, default=None,
                     help="optional <species>_landmarks.json from landmarkSummary")
     ap.add_argument("--extra-dir", type=Path, default=None,
@@ -1564,6 +1619,8 @@ def main() -> None:
     gain = load_json(extras["gain_json"])
     length_df = load_parquet(extras["length_parquet"])
     disorder_df = load_parquet(extras["disorder_parquet"])
+    pfam_df = load_parquet(extras["pfam_parquet"])
+    pfam_summary = load_json(extras["pfam_summary"])
 
     section_overview(out, args.species, summary, load_json(args.reference_summary),
                      args.clade, load_json(args.run_params) or {}, gain,
@@ -1577,6 +1634,7 @@ def main() -> None:
     section_dark_by_length(out, args.species, length_df, omitted)
     section_length(out, args.species, length_df,
                    load_json(extras["length_summary"]), omitted)
+    section_pfam(out, args.species, pfam_df, pfam_summary, omitted)
     section_disorder(out, args.species, disorder_df,
                      load_json(extras["disorder_summary"]), omitted)
     section_omitted(out, omitted)
