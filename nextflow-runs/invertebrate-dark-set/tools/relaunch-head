@@ -52,10 +52,27 @@ cd "$RELAUNCH_DIR" || exit 1
 # orphaned index build finishing under the new run collides on storeDir.
 echo "relaunch: clearing tasks the old head left behind"
 make cancel-orphan-tasks
+
+# Count what is left the way cancel-orphan-tasks chooses what to cancel: only tasks below
+# the lowest live driver are orphans. Counting every task of this pipeline instead would
+# sit here for the full ten minutes whenever another run is alive, since its tasks never
+# go away.
+orphans_left() {
+    squeue -u "$USER" -h -o '%i %j' 2>/dev/null | awk -v re="$RELAUNCH_TASK_RE" '
+        BEGIN { n = 0; floor = 0 }
+        $2 ~ /^nfdrv-/ { if (floor == 0 || $1 + 0 < floor) floor = $1 + 0; next }
+        { id[n] = $1 + 0; name[n] = $2; n++ }
+        END {
+            if (floor == 0) floor = 1e18
+            c = 0
+            for (i = 0; i < n; i++) if (name[i] ~ re && id[i] < floor) c++
+            print c
+        }'
+}
 for _ in $(seq 1 20); do
-    n=$(squeue -u "$USER" -h -o '%j' 2>/dev/null | grep -cE "$RELAUNCH_TASK_RE" || true)
+    n=$(orphans_left)
     [ "$n" = 0 ] && break
-    echo "relaunch: $n task(s) still draining"
+    echo "relaunch: $n orphaned task(s) still draining"
     sleep 30
 done
 
