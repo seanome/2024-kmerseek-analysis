@@ -297,7 +297,7 @@ def null_summary(case: str, partner: str) -> pl.DataFrame:
         for stat in ("best_single_rank", "ensemble_rank"):
             row[f"{stat}_true"] = round(true[stat], 1)
             row[f"{stat}_random_median"] = round(nul[stat].median(), 1)
-            row[f"{stat}_p"] = round((1 + (nul[stat] <= true[stat]).sum()) / (1 + nul.height), 4)
+            row[f"{stat}_p"] = (1 + (nul[stat] <= true[stat]).sum()) / (1 + nul.height)  # rounded only when shown
         rows.append(row)
     return pl.DataFrame(rows)
 
@@ -429,10 +429,11 @@ def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
     true query's length. Purple diamond: the true query."""
     handles = [
         Line2D([], [], marker="o", ls="", ms=5, color=GREY, alpha=0.6, label="one of 300 random human proteins of the query's length, used as the query"),
-        Line2D([], [], marker="D", ls="", ms=8, color=PURPLE, label="the true query (Ced9 or P66)"),
+        Line2D([], [], marker="D", ls="", ms=8, color=PURPLE, label="the true query (Ced9 or P66); p right of each row = share of random queries at least as good"),
     ]
     pairs = [("Ced9", "BCL2"), ("P66", "CD47")]
-    fig, axes = _figure_with_legend_row(2, (13, 6.4), handles, sharey=True)
+    fig, axes = _figure_with_legend_row(2, (14, 6.4), handles, sharey=True)
+    fig.subplots_adjust(wspace=0.22)
     rng = np.random.default_rng(0)
     rows = []
     for ax, (case, partner) in zip(axes, pairs):
@@ -446,7 +447,10 @@ def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
                 ax.scatter(nul, y + rng.uniform(-0.25, 0.25, len(nul)), s=6, color=GREY, alpha=0.5, lw=0)
                 ax.scatter([tr], [y], marker="D", s=55, color=PURPLE, zorder=4)
                 p = (1 + (nul <= tr).sum()) / (1 + len(nul))
-                ax.text(2.5e4, y, f"p = {p:.3f}", va="center", ha="right", fontsize=7.5)
+                # each panel's own p, just outside its right edge: the panels share row
+                # labels, so a p-value in the label would be the last panel's for both
+                ax.text(1.01, y, f"p = {p:.3f}", transform=ax.get_yaxis_transform(), va="center",
+                        ha="left", fontsize=7.5, clip_on=False)
                 yt.append(y); yl.append(f"{m}, {lab}"); y += 1
             y += 0.6
         ax.set_yticks(yt); ax.set_yticklabels(yl, fontsize=8); ax.set_ylim(y - 0.4, -0.8)
@@ -679,7 +683,7 @@ def fig_subset_null(dists: dict, case: str, partner: str, path: Path, hypothesis
     purple diamond: the true query's."""
     handles = [
         Line2D([], [], marker="o", ls="", ms=5, color=GREY, alpha=0.6, label="one random human protein of the query's length: its best subset of that size"),
-        Line2D([], [], marker="D", ls="", ms=8, color=PURPLE, label=f"{case}: its best subset of that size"),
+        Line2D([], [], marker="D", ls="", ms=8, color=PURPLE, label=f"{case}: its best subset of that size; p in each row label = share of random queries at least as good"),
     ]
     fig, (ax,) = _figure_with_legend_row(1, (10.5, 5.6), handles)
     rng = np.random.default_rng(0)
@@ -690,8 +694,7 @@ def fig_subset_null(dists: dict, case: str, partner: str, path: Path, hypothesis
             ax.scatter(nul, y + rng.uniform(-0.25, 0.25, len(nul)), s=6, color=GREY, alpha=0.5, lw=0)
             ax.scatter([tr], [y], marker="D", s=55, color=PURPLE, zorder=4)
             p = (1 + (nul <= tr).sum()) / (1 + len(nul))
-            ax.text(2.5e4, y, f"p = {p:.3f}", va="center", ha="right", fontsize=8)
-            yt.append(y); yl.append(f"{rule}, {sz} alphabet{'s' if sz > 1 else ''}"); y += 1
+            yt.append(y); yl.append(f"{rule}, {sz} alphabet{'s' if sz > 1 else ''} (p = {p:.3f})"); y += 1
         y += 0.7
     ax.set_yticks(yt); ax.set_yticklabels(yl, fontsize=8); ax.set_ylim(y - 0.5, -0.8)
     _rank_axis(ax, f"{partner}: geometric mean of its normalised ranks over the subset, x 19_732 (lower is better)")

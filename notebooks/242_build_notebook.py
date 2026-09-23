@@ -348,8 +348,10 @@ treats "not hit here" as a bottom rank favours proteins that are hit everywhere.
 **CD47 is a sticky target.** Ced9, with no known link to CD47, ranks it 21st at its best
 single arm and 744th combined (Poisson p-value), above where P66 puts it and above where
 Ced9 puts BCL2. CD47 has 33 membrane-helix-like hydrophobic windows, BCL2 none. A high rank
-of CD47 for P66 is weak evidence for a P66-CD47 link. Section 5 measures how often random
-queries of P66's length rank CD47 as high.
+of CD47 for P66 is weak evidence for a P66-CD47 link, and section 7 confirms it on 300
+random human proteins of P66's length: their best single arm under mean IDF puts CD47 at a
+median rank of 906, P66's at 2_704 (p = 0.82). Only P66's E-value arm puts CD47 higher than
+most random queries do (166 against a median of 1_978, p = 0.047), one of 10 comparisons.
 
 **Three alphabets instead of 19 does not change that.** Combining only hp_lehninger2,
 polarity4 and funcgroups8 (section 5) puts BCL2 at 3_561 and CD47 at 3_916 at best, better
@@ -363,12 +365,20 @@ the best subsets put BCL2 at 54 (polarity4 + wass14), 36 (three alphabets) and 2
 hp_lehninger_c_nonpolar2, polarity4, wwmj5, wass14), against 213 for polarity4 alone. The
 same four put CD47 at 4_313 and the control at 2_221. Over all 2- to 4-alphabet subsets,
 how well a subset ranks BCL2 tracks how well it ranks the control (Spearman 0.50) as
-closely as CD47 (0.46). Whether rank 23 is more than the best of 5_016 tries is what
-section 7b measures, by giving 300 random queries the same two choices.
+closely as CD47 (0.46).
+
+**Once random queries get the same choices, BCL2 does not stand out.** Section 7b gives each
+of 300 random human proteins of Ced9's length its own best k per alphabet and its own best
+subset. Ced9's best subset then beats 75% to 83% of them (p = 0.25, 0.21, 0.18 and 0.17 for
+1 to 4 alphabets). The smaller p-values with k fixed at Ced9's choice (0.093 down to 0.030)
+come from giving Ced9 an advantage the random queries do not get. For CD47, random queries
+of P66's length do better than P66 under every rule (p = 0.60 to 0.78).
 
 **What could still work.** A combination that does not reward being hit: rank only among
 the proteins every alphabet hits, or normalise each protein's score by how often it is hit
-by random queries (the section 5 run gives that background for BCL2 and CD47). Neither
+by random queries (section 7's run gives that background for BCL2 and CD47). Notebook 243
+tests the first properly: a model trained on Pfam labels, with length and the
+membrane-helix-like windows as features, tested on families it has not seen. Neither
 changes the bits the pair carries, so the E-value stays far above 1.
 """),
 ]
