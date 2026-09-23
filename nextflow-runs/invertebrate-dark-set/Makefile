@@ -107,7 +107,7 @@ LADDER_HEAD_TIME  ?= 7-00:00:00
 LADDER_HEAD_MEM   ?= 32G
 LADDER_HEAD_XMX   ?= 24g
 
-.PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set \
+.PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set relaunch-at \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
         multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
         lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan \
@@ -307,6 +307,34 @@ run-dark-set-sbatch: check-species check-inputs queue-note
 	  exit 1; fi
 	@mkdir -p $(LAUNCH_DIR)
 	cd $(LAUNCH_DIR) && $(HEAD_SUBMIT) $(NF_RUN)
+
+# Hand a relaunch to SLURM instead of waiting up for it. AT=<time> is anything
+# `sbatch --begin` takes: 23:00, now+2hours, 2026-09-24T06:00. The job wakes then, waits
+# for nfdrv-$(RUN) to leave the queue, clears the tasks it left behind, and runs
+# RELAUNCH_TARGET. tools/relaunch-head says why it polls for the name instead of chaining
+# a --dependency on the old head. Added 2026-09-23, when the midi run's head was 17 h from
+# its walltime with 18% of its searches done.
+#
+#   make relaunch-at AT=23:00 RUN=ladder-0.4-midi RELAUNCH_TARGET=run-ladder-0.4-midi-sbatch
+RELAUNCH_TARGET ?=
+RELAUNCH_WAIT   ?= 3600
+RELAUNCH_LOGDIR := $(MAKEFILE_DIR)/runs/relaunch
+relaunch-at: check-run
+	@test -n "$(AT)" || { echo "AT=<time> is required: anything sbatch --begin takes, e.g. AT=23:00"; exit 1; }
+	@test -n "$(RELAUNCH_TARGET)" || { echo "RELAUNCH_TARGET=<make target> is required, e.g. RELAUNCH_TARGET=run-ladder-0.4-midi-sbatch"; exit 1; }
+	@mkdir -p $(RELAUNCH_LOGDIR)
+	@jid=$$(sbatch --parsable --job-name=nfrelaunch-$(RUN) \
+	    --account=$(HEAD_ACCOUNT) --partition=$(HEAD_PARTITION) --qos=$(HEAD_QOS) \
+	    --time=04:00:00 --cpus-per-task=1 --mem=2G --begin='$(AT)' \
+	    --output=$(RELAUNCH_LOGDIR)/relaunch-$(RUN).%j.log \
+	    --export=ALL,RELAUNCH_RUN=$(RUN),RELAUNCH_TARGET=$(RELAUNCH_TARGET),RELAUNCH_DIR=$(MAKEFILE_DIR),RELAUNCH_WAIT=$(RELAUNCH_WAIT) \
+	    $(MAKEFILE_DIR)/tools/relaunch-head) && \
+	  echo "relaunch of $(RUN) queued as job $$jid" && \
+	  echo "  wakes at: $(AT)" && \
+	  echo "  then runs: make $(RELAUNCH_TARGET)" && \
+	  echo "  log:       $(RELAUNCH_LOGDIR)/relaunch-$(RUN).$$jid.log" && \
+	  squeue -j $$jid -o '%.12i %.2t %.20S %j'
+
 
 # ---- the ladder: human + nine QfO species, the whole alphabet x ksize matrix ----------
 # Each species is the QUERY against reviewed Swiss-Prot minus its own clade, which is the

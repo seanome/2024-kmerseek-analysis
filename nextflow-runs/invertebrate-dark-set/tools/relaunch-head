@@ -1,0 +1,66 @@
+#!/bin/bash
+# Wait for a Nextflow head driver to leave the SLURM queue, clear the tasks it left
+# behind, and launch the next head. Meant to be submitted as a SLURM job with
+# --begin=<time> by `make relaunch-at`, so a relaunch can be handed to the scheduler
+# instead of being waited up for.
+#
+# Why not --dependency=afterok on the old head: a head that reaches its walltime gets
+# TERM 180 s early, sends Ctrl-C to Nextflow and exits 130, so afterok is never satisfied
+# and the chained job waits forever. afterany would fire, but run-dark-set-sbatch also
+# refuses to submit while a driver of the same name is alive, and a queued-but-held job
+# still counts. Polling for the name to disappear handles both.
+#
+# Added 2026-09-23.
+set -uo pipefail
+
+: "${RELAUNCH_RUN:?RELAUNCH_RUN=<run tag> is required}"
+: "${RELAUNCH_TARGET:?RELAUNCH_TARGET=<make target> is required}"
+: "${RELAUNCH_DIR:?RELAUNCH_DIR=<directory holding the pipeline Makefile> is required}"
+RELAUNCH_TASK_RE=${RELAUNCH_TASK_RE:-^nf-(darkSet|darkReport|calibrateStore)_}
+RELAUNCH_WAIT=${RELAUNCH_WAIT:-3600}
+
+echo "relaunch: started $(date)"
+echo "relaunch: waiting up to ${RELAUNCH_WAIT}s for nfdrv-${RELAUNCH_RUN} to leave the queue"
+
+waited=0
+while squeue -u "$USER" -h -o '%j' 2>/dev/null | grep -qx "nfdrv-${RELAUNCH_RUN}"; do
+    if [ "$waited" -ge "$RELAUNCH_WAIT" ]; then
+        echo "relaunch: nfdrv-${RELAUNCH_RUN} is STILL in the queue after ${waited}s." >&2
+        echo "relaunch: NOTHING was launched. Stop it and launch by hand:" >&2
+        echo "relaunch:   cd ${RELAUNCH_DIR} && make stop-dark-set RUN=${RELAUNCH_RUN}" >&2
+        echo "relaunch:   cd ${RELAUNCH_DIR} && make ${RELAUNCH_TARGET}" >&2
+        exit 1
+    fi
+    sleep 30
+    waited=$((waited + 30))
+done
+echo "relaunch: nfdrv-${RELAUNCH_RUN} left the queue after ${waited}s"
+
+# This script IS a SLURM job, and the head it is about to submit is a separate one.
+# SLURM_* / SBATCH_* variables describe THIS job and some of them are read by a nested
+# sbatch, which would silently hand the head this job's 1 CPU and 2 GB instead of the
+# ones tools/nf-head asks for. Drop them all before submitting anything.
+for v in $(env | sed -n 's/^\(SLURM_[A-Z0-9_]*\)=.*/\1/p; s/^\(SBATCH_[A-Z0-9_]*\)=.*/\1/p'); do
+    unset "$v"
+done
+
+cd "$RELAUNCH_DIR" || exit 1
+
+# A head killed at its walltime cancels what it had in flight, but slurmctld throttles a
+# large scancel, so tasks are still draining minutes later -- and run-dark-set-sbatch
+# refuses to start while any task sits in the queue with no driver alive, because an
+# orphaned index build finishing under the new run collides on storeDir.
+echo "relaunch: clearing tasks the old head left behind"
+make cancel-orphan-tasks
+for _ in $(seq 1 20); do
+    n=$(squeue -u "$USER" -h -o '%j' 2>/dev/null | grep -cE "$RELAUNCH_TASK_RE" || true)
+    [ "$n" = 0 ] && break
+    echo "relaunch: $n task(s) still draining"
+    sleep 30
+done
+
+echo "relaunch: launching ${RELAUNCH_TARGET}"
+make "$RELAUNCH_TARGET"
+status=$?
+echo "relaunch: ${RELAUNCH_TARGET} exited ${status} at $(date)"
+exit "$status"
