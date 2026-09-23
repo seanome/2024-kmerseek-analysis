@@ -91,6 +91,22 @@ K_MIN, K_MAX = 5, 50
 # Penalty for the one alphabet with no measured kappa: the value every kmerseek #54
 # benchmark used, X-drop 8.
 FALLBACK_PENALTY, FALLBACK_XDROP = "2", "8"
+# When the 200-query fit at index time is refused, retry with this many queries and
+# this many shuffles of each. Above ~30 bits both curves are short; 1000 x 8 rescued
+# hp_lehninger2 k=32 in 8 seconds.
+RETRY_QUERIES, RETRY_SHUFFLES = 1000, 8
+
+
+def fitted(survival_csv: Path) -> bool | None:
+    """The `fitted` flag from a ka_survival CSV; None when the file is missing or empty."""
+    if not survival_csv.exists():
+        return None
+    with open(survival_csv) as fh:
+        header = fh.readline().rstrip("\n").split(",")
+        row = fh.readline().rstrip("\n").split(",")
+    if "fitted" not in header or len(row) < len(header):
+        return None
+    return row[header.index("fitted")].strip().lower() == "true"
 
 
 def residue_counts() -> collections.Counter:
@@ -174,6 +190,32 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
             return rec
     else:
         rec["index_rc"], rec["index_s"] = 0, 0.0
+
+    # The Karlin-Altschul fit is refused when either curve runs out of score bins, which
+    # happens above about 30 bits per seed. First retry with more calibration queries
+    # and more shuffles of each (the two knobs that fill the two curves); if still
+    # refused, search with exact regions only so every other metric is still computed,
+    # and mark the arm as having no E-value.
+    fit = fitted(survival)
+    rec["fit_first"] = fit
+    if fit is False:
+        retry_out = OUT / "ka_survival" / f"{tag}.retry.csv"
+        cal_cmd = [
+            str(KMERSEEK), "calibrate", "-t", str(idx),
+            "--extend-mismatch-penalty", c, "--extend-xdrop", x,
+            "--ka-queries", str(RETRY_QUERIES), "--ka-reference-shuffles", str(RETRY_SHUFFLES),
+            "--ka-survival-out", str(retry_out),
+        ]
+        rc, dt = run(cal_cmd, logs / f"{tag}.calibrate.log")
+        rec["calibrate_rc"], rec["calibrate_s"] = rc, round(dt, 1)
+        fit = fitted(retry_out)
+    rec["fitted"] = fit
+    if fit is not True:
+        # Exact regions only: no extension, so no E-value, but IDF, tf-idf, enrichment
+        # and the Poisson score are all still written.
+        search_cmd = [a for a in search_cmd if a not in ("--extend-mismatch-penalty", "--extend-xdrop", c, x)]
+        search_cmd += ["--extend-mismatch-penalty", "0"]
+        (OUT / "search" / f"{tag}.nofit").write_text("no Karlin-Altschul fit; searched with exact regions\n")
 
     if not search_csv.exists():
         rc, dt = run(search_cmd, logs / f"{tag}.search.log")
