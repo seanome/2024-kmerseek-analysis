@@ -82,6 +82,33 @@ proteins of similar length, CD47 sits at the 91st percentile of shared k-mers at
 k=18 and the 92nd at k=20, with 26 and 24 random proteins matching or beating it.
 It is an ordinary protein by this measure, not a hit.
 
+## Do BHF's matches land on real human domains
+
+`bhf_domain_landing_test.py` applies the same 20% rule to the BHF case. BHF has no
+Pfam annotation of its own, so the rule goes on the human side: a region counts as
+on a domain when it overlaps a Pfam domain of the human target by at least 20% of
+the region's own length. Gene symbols map to UniProt through HGNC and the domains
+come from InterPro; 56 of 60 genes have the same length in UniProt and GENCODE,
+and the 4 that do not are dropped rather than mis-labelled.
+
+The raw number means nothing on its own, because proteins are substantially
+covered by domains anyway. The comparison is an exact placement null: slide a
+window of the same length to every position in that same human protein and count
+how often it would pass.
+
+| group | on a domain | expected from random placement |
+|---|---|---|
+| all 60 regions | 24 (40%) | 27.4 (46%) |
+| 10 best by E-value | 6 (60%) | 5.4 (54%) |
+| next 24 with an E-value | 12 (50%) | 11.6 (48%) |
+| 26 with no E-value | 6 (23%) | 10.4 (40%) |
+
+BHF lands on domains slightly *less* often than chance, and random placement
+reaches 24 or more 89% of the time. Ranking by E-value does not help: the ten best
+regions beat their own expectation by 0.6 regions. The regions with no E-value,
+whose own spans sit past the composition boundary, are the ones furthest below
+chance, which is what compositionally biased stretches outside domains look like.
+
 ## Running it
 
 ```bash
@@ -89,6 +116,8 @@ KS=$HOME/code/kmerseek-ka-lambda-region/target/release/kmerseek
 python3 build_labeled_benchmark.py --kmerseek $KS --outdir out
 python3 score_ranking_metrics.py --pairs out/labeled_pairs.parquet
 bash p66_alphabet_ladder.sh $KS out
+python3 bhf_domain_landing_test.py \
+  --hits ~/data/botryllus/kmerseek-lambda-region/BHF.hp_lehninger2.k24.scaled1.lcremoved.lambda-region.query_subset.csv
 ```
 
 Use the Python in `2025-kmerseek-analysis`. The kmerseek build is the
