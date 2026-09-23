@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write notebooks/241_alphabet_ranking_three_cases.ipynb from cell sources.
+"""Write notebooks/241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb from cell sources.
 
 Run it, then execute the notebook with nbconvert. The markdown that quotes numbers is
 generated from the tables inside the notebook (printed cells), so nothing here is
@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-OUT = HERE / "241_alphabet_ranking_three_cases.ipynb"
+OUT = HERE / "241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
 code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
@@ -82,21 +82,32 @@ md(r"""
 The Karlin-Altschul fit needs four score bins with 30 regions in both the real and the
 shuffled curve. Above about 30 bits per seed both curves run short and the fit is
 refused; the retry with more queries and shuffles rescues some. An arm without a fit has
-every metric but the E-value.
+every metric but the E-value. Rows in the figure are grouped by how many letters the
+alphabet has. Getting a fit is not the same as being able to give a region an E-value:
+section 10 is about three alphabets that pass this step and still cannot produce one.
 """),
 code(r"""
-fit = (arms.with_columns(
-        pl.when(pl.col("fitted") == True).then(pl.lit("fitted"))
-          .when(pl.col("fitted") == False).then(pl.lit("refused: no E-value"))
-          .otherwise(pl.lit("not run")).alias("fit"))
-    .group_by("alphabet", "fit").agg(pl.len().alias("arms"), pl.col("bits").min().round(0).alias("from_bits"),
-                                     pl.col("bits").max().round(0).alias("to_bits"))
-    .sort("alphabet", "fit"))
-print(fit)
 n_fit = arms.filter(pl.col("fitted") == True).height
 n_ref = arms.filter(pl.col("fitted") == False).height
-print(f"\n{n_fit} arms fitted, {n_ref} refused after the retry (no E-value), "
-      f"{arms.filter(pl.col('fitted').is_null()).height} not run")
+n_non = arms.filter(pl.col("fitted").is_null()).height
+fit = au.fit_status_figure(
+    arms, FIG / "241_which_arms_have_an_evalue.png",
+    hypothesis="Every arm that was searched also gets a Karlin-Altschul fit, so every arm has an E-value.",
+    conclusion=(lambda never, part: (
+        f"{n_fit} of {arms.height} arms have an E-value and {n_ref} were refused a fit even after the retry. "
+        + (f"{never.height} alphabets ({', '.join(never['alphabet'])}) are refused at every k they were run at. "
+           if never.height else "Every alphabet gets a fit at some k. ")
+        + f"The refusals are not one clean band at the high-bit end: across the other {part.height} alphabets "
+          f"the first refused arm sits anywhere from {part['first_refused_bits'].min():.0f} to "
+          f"{part['first_refused_bits'].max():.0f} bits."))(
+        *(lambda g: (g.filter(pl.col("n_fitted") == 0), g.filter((pl.col("n_fitted") > 0) & (pl.col("n_refused") > 0))))(
+            arms.filter(pl.col("fitted").is_not_null()).group_by("alphabet").agg(
+                (pl.col("fitted") == True).sum().alias("n_fitted"),
+                (pl.col("fitted") == False).sum().alias("n_refused"),
+                pl.col("bits").filter(pl.col("fitted") == False).min().alias("first_refused_bits")).sort("alphabet"))),
+)
+print(fit)
+print(f"\n{n_fit} arms fitted, {n_ref} refused after the retry (no E-value), {n_non} not run")
 """),
 md(r"""
 ## 2. The pairwise layer: do the two proteins share any exact k-mer at all?
@@ -127,8 +138,8 @@ md(r"""
 
 One dot per arm. Colour is BCL2's rank among every human protein with at least one
 region, under that panel's metric; a target's score is its best region. A grey cross
-means BCL2 has no region at that arm. An open circle in the E-value panel means the arm
-has no E-value. The number of proteins hit falls with seed information (thousands at 16
+means BCL2 has no region at that arm. A small black dot in the E-value panel means the
+arm has no E-value. The number of proteins hit falls with seed information (thousands at 16
 bits, a handful at 28), so a rank is only comparable to other ranks at the same arm; the
 table under the figure carries the denominator.
 """),
@@ -186,7 +197,59 @@ best = au.best_rank_figure(
 print(best.sort("query", "classes", "alphabet"))
 """),
 md(r"""
-## 6. Why: the partner's own E-value against chance
+## 6. Is that better than a human protein picked at random?
+
+A rank of 213 out of 18_064 sounds far from random, but it is the *best* of many tries:
+the sweep gives the partner one rank per alphabet, per k and per metric, and section 5
+keeps the smallest. The fair comparison keeps the smallest of the same many ranks for a
+human protein that is not the partner. A protein that is among the n proteins an arm
+hits has, under chance alone, a rank anywhere in 1 to n with equal probability, so
+drawing one rank per arm and keeping the smallest says what "best of this sweep" is
+worth on its own. 20_000 such draws give the grey range in the figure.
+"""),
+code(r"""
+null = au.null_rank_figure(
+    ranks, FIG / "241_best_rank_vs_random_protein.png",
+    hypothesis="The best rank the known partner reaches is better than the best rank a human protein picked at random reaches over the same arms.",
+    conclusion=(lambda n: "; ".join(
+        f"{r['query']}: best rank {r['observed_best_rank']:_} of {r['n_targets_at_best']:_} over {r['n_combos']} arm x metric combinations, "
+        f"while a randomly drawn human protein reaches {r['null_median']:.0f} (middle 90%: {r['null_p05']:.0f} to {r['null_p95']:.0f}) "
+        f"and does as well or better in {100 * r['p_random_at_least_as_good']:.0f}% of draws"
+        for r in n.iter_rows(named=True)) + ". Neither partner beats the luck of being scored 100 or more times.")(
+        pl.DataFrame([au.random_protein_null(ranks, q) for q in ("Ced9", "P66")])),
+)
+print(null)
+"""),
+md(r"""
+### Every metric the search writes, not just the five
+
+Sections 3 to 5 use the five metrics a user would rank on. The search writes six more
+(bit score, Poisson score, shared k-mers, containment, protein enrichment, protein
+Poisson p-value). Here is the best each one ever does for the known partner, as a
+percent of the proteins that arm hit, so a rank of 213 out of 18_064 and a rank of 173
+out of 1_161 can be compared. Ties are marked, because a metric that gives thousands of
+proteins the same value hands out its rank 1 arbitrarily: `region_ka_bits` did exactly
+that until this run, returning 0 for every region of an arm with no lambda and so
+putting BCL2 at rank 1 of 18_303 with 18_302 proteins tied. The collector now leaves the
+bit score empty where there is no lambda, the same as the E-value.
+"""),
+code(r"""
+ms = au.metric_sweep_figure(
+    ranks, FIG / "241_every_metric.png",
+    hypothesis="One of the eleven metrics puts the known partner in the top 10 of the human proteome.",
+    conclusion=(lambda g, r: (
+        f"No. The best any metric does is {g['metric'][0]} for BCL2 "
+        f"({g['rank'][0]:_} of {g['n_targets'][0]:_}, the top {g['best_percent'][0]:.2f}%, {g['alphabet'][0]} k={g['ksize'][0]}) "
+        f"and {r['metric'][0]} for CD47 "
+        f"({r['rank'][0]:_} of {r['n_targets'][0]:_}, the top {r['best_percent'][0]:.2f}%, {r['alphabet'][0]} k={r['ksize'][0]}). "
+        f"The top 10 of the human proteome is the top {100 * 10 / au.N_HUMAN:.2f}%, so the best metric "
+        f"lands {g['best_percent'][0] / (100 * 10 / au.N_HUMAN):.0f} times further down the list than that."))(
+        au.best_per_metric(ranks, "Ced9"), au.best_per_metric(ranks, "P66")),
+)
+print(ms.sort("query", "best_percent"))
+"""),
+md(r"""
+## 7. Why: the partner's own E-value against chance
 
 The rank is a symptom. The cause is the amount of evidence in the matched region. Here
 is the E-value BCL2 and CD47 themselves get at every arm where they have one. E = 1 means
@@ -214,7 +277,7 @@ pe = au.partner_evalue_figure(
 print(pe.sort("query", "partner_value"))
 """),
 md(r"""
-## 7. The application: what BHF gets
+## 8. The application: what BHF gets
 
 BHF has no known partner, so the two panels show what any alphabet returns: the best
 E-value of any human protein (left; a black ring where it is below 1, with the gene
@@ -234,7 +297,7 @@ bhf = au.bhf_matrix(
 print(bhf.filter(pl.col("n_targets_BHF") > 0).sort("best_value", nulls_last=True).head(40))
 """),
 md(r"""
-## 8. Cross-check against PR #44's P66 ladder and random-protein control
+## 9. Cross-check against PR #44's P66 ladder and random-protein control
 
 [PR #44](https://github.com/seanome/2024-kmerseek-analysis/pull/44) (`analysis/ranking-metrics-p66/`)
 ran P66 against CD47 pairwise down a k ladder for four alphabets and, as a control,
@@ -284,41 +347,87 @@ print(last_k)
 
 # CD47's rank among every human protein hit: the whole-proteome control.
 cd47 = (ranks.filter((pl.col("query") == "P66") & (pl.col("alphabet") == "hp_lehninger2") & pl.col("partner_found")
-                     & pl.col("metric").is_in(au.METRICS5 + ["shared k-mers"]))
+                     & pl.col("metric").is_in(au.METRICS5))
         .select("ksize", "bits", "metric", "rank", "n_targets")
         .with_columns((100 * (1 - (pl.col("rank") - 1) / pl.col("n_targets"))).round(0).alias("percentile_among_hits"))
         .sort("ksize", "metric"))
-print("\nCD47's rank among the human proteins hit by P66, hp_lehninger2 (PR #44's control: 91st-92nd percentile of 300 random proteins at k=18-20):")
+print("\nCD47's rank among the human proteins hit by P66, hp_lehninger2:")
 print(cd47)
+
+# PR #44's 300 random human proteins of similar length, the same measurement.
+control = pr44_csv("random_ladder.csv")
+mine_hl = ({r["k"]: r["shared_kmers"] for r in theirs.filter(pl.col("alphabet") == "hp_lehninger2").iter_rows(named=True)}
+           if theirs is not None else
+           {r["k"]: r["shared_kmers_241"] for r in mine.filter(pl.col("alphabet") == "hp_lehninger2").iter_rows(named=True)})
+if control is not None:
+    beat = (control.group_by("k").agg(pl.len().alias("n_random"),
+                                      pl.col("shared_kmers").alias("counts")).sort("k")
+            .with_columns(pl.col("k").replace_strict(mine_hl, default=None).alias("cd47_shared_kmers")))
+    beat = beat.with_columns(pl.struct("counts", "cd47_shared_kmers").map_elements(
+        lambda d: None if d["cd47_shared_kmers"] is None else
+        round(100.0 * sum(c < d["cd47_shared_kmers"] for c in d["counts"]) / len(d["counts"])),
+        return_dtype=pl.Float64).alias("percent_of_random_proteins_cd47_beats")).drop("counts")
+    print("\nPR #44's control, recomputed from its random_ladder.csv:")
+    print(beat)
+
+au.pr44_crosscheck_figure(
+    mine, theirs, control, cd47, FIG / "241_pr44_crosscheck.png",
+    hypothesis="The two ladders measure the same thing, and CD47 stands out from other human proteins under both controls.",
+    conclusion=(f"{joined['agree'].sum()} of {joined.height} shared-k-mer counts agree exactly between the two ladders. "
+                if theirs is not None else "")
+    + (f"CD47 beats {beat['percent_of_random_proteins_cd47_beats'].min():.0f} to "
+       f"{beat['percent_of_random_proteins_cd47_beats'].max():.0f}% of PR #44's 300 random human proteins, and "
+       if control is not None else "")
+    + f"{cd47['percentile_among_hits'].min():.0f} to {cd47['percentile_among_hits'].max():.0f}% of the "
+      f"19_732-protein hit list, depending on k and metric. It is above the middle of both sets and in the top of neither.",
+)
 """),
 md(r"""
-## 9. Why so few regions have an E-value
+## 10. Why so few regions have an E-value
 
-This kmerseek build solves lambda from each region's own two spans. A region whose own
-identity is above C / (1 + C), the point where a match stops being evidence at mismatch
-penalty C, gets lambda 0 and E = inf. With the kappa-optimal penalties that limit is 62%
-for hp_lehninger2 (C = 1.51) but only 12 to 19% for the 12- to 20-class alphabets
-(C = 0.14 to 0.24), so nearly every extended region of those alphabets loses its E-value,
-including the best ones.
+An E-value says how many matches this good the search expects to see by chance. Getting
+one needs a number called lambda, the scale that turns a match's raw score into the
+units chance is counted in. No lambda, no E-value.
 
-Three alphabets lose every region for a second reason. The kappa-optimal penalty was
-derived assuming equal class shares (1 / classes). On this proteome the chance match
-probability is 0.39 for gbmr7 (one class holds most residues), 0.48 for hp_lehninger_hpc3
-and 0.40 for gbmr4, and at those rates a chance position scores at or above zero, so no
-lambda exists at any k. The right panel shows that drift for every alphabet; the fix is
-to derive the penalty from the measured class shares (Sigma p_i^2, the chance match
-probability) instead of 1 / classes.
+**A match has to lose ground on average when it is only chance.** Each matched position
+scores +1 and each mismatched position scores −C, where C is the mismatch penalty. If
+the two sequences were unrelated, a position would match by luck with probability p, the
+chance that two random residues of this proteome fall in the same class. So one position
+of a chance match scores p − C (1 − p) on average. That number has to be **below zero**.
+Below zero, a chance match loses score the longer it runs, high scores stay rare, and
+lambda exists. At or above zero, a chance match keeps gaining score just by running
+longer, no score is ever surprising, and there is no lambda and no E-value at any k.
+That is what the right panel shows: bars to the left of the red line are fine, bars
+touching or crossing it mean the alphabet can never produce an E-value.
+
+**Even where lambda exists for the alphabet, it can come out as zero for a region.**
+This kmerseek build solves lambda from each region's own two spans, and a region whose
+own identity is above C / (1 + C) gets lambda 0, so it has no E-value. With the
+kappa-optimal penalties that limit is 62% identity for hp_lehninger2 (C = 1.51) but only
+12 to 19% for the 12- to 20-class alphabets (C = 0.14 to 0.24). Those alphabets lose
+almost every extended region, and they lose the closest-matching ones first, which are
+exactly the regions a search is for.
+
+The two problems have one root: the penalty C is derived from kappa assuming every class
+holds the same share of residues (1 / classes). On this proteome the real chance match
+probability is 0.39 for gbmr7 (one class holds most residues), 0.48 for
+hp_lehninger_hpc3 and 0.40 for gbmr4, all far above 1 / classes, which is why their bars
+sit at or past zero. The fix is to derive C from the measured class shares (p = sum of
+p_i squared) instead.
 """),
 code(r"""
 lz = au.lambda_zero_figure(
     arms, FIG / "241_no_evalue_mechanism.png",
-    hypothesis="Regions lose their E-value only where the Karlin-Altschul fit is refused.",
+    hypothesis="A region has no E-value only because the Karlin-Altschul fit on its index was refused.",
     conclusion=(lambda a: (
-        f"{a.filter(pl.col('chance_drift') >= -0.001)['alphabet'].n_unique()} alphabets have a chance drift at or above 0 "
-        f"({', '.join(a.filter(pl.col('chance_drift') >= -0.001).sort('chance_drift', descending=True)['alphabet'])}) and no lambda at any k. "
-        f"Across all arms with regions, the median share of regions with no E-value is {arms['frac_lambda_zero'].median():.2f}; "
-        f"for hp_lehninger2 it is {arms.filter(pl.col('alphabet') == 'hp_lehninger2')['frac_lambda_zero'].mean():.2f} and for protein20 "
-        f"{arms.filter(pl.col('alphabet') == 'protein20')['frac_lambda_zero'].mean():.2f}. The penalty, not the fit, decides which regions can have an E-value."))(
+        f"No: the mismatch penalty decides it, not the fit. For "
+        f"{a.filter(pl.col('chance_drift') >= -0.001)['alphabet'].n_unique()} alphabets "
+        f"({', '.join(a.filter(pl.col('chance_drift') >= -0.001).sort('chance_drift', descending=True)['alphabet'])}) "
+        f"a chance match gains score on average instead of losing it, so those alphabets can never have an E-value, at any k. "
+        f"Among the alphabets that can, the share of regions that still come out with no E-value is "
+        f"{arms.join(a.filter(pl.col('chance_drift') < -0.001).select('alphabet'), on='alphabet')['frac_lambda_zero'].median():.2f} at the median arm: "
+        f"{arms.filter(pl.col('alphabet') == 'hp_lehninger2')['frac_lambda_zero'].mean():.2f} for hp_lehninger2, "
+        f"{arms.filter(pl.col('alphabet') == 'protein20')['frac_lambda_zero'].mean():.2f} for protein20."))(
         arms.group_by("alphabet").agg(pl.col("chance_drift").first())),
 )
 print(lz)
@@ -327,7 +436,7 @@ print(arms.group_by("alphabet").agg(pl.col("frac_lambda_zero").mean().round(2).a
                                     pl.len().alias("arms")).sort("mean_share_no_evalue", descending=True))
 """),
 md(r"""
-## 10. Conclusions
+## 11. Conclusions
 
 **No alphabet and no metric puts either known partner near the top of the human
 proteome.** BCL2 is among the hits for 13 of 19 alphabets when Ced9 is the query, and its
@@ -338,6 +447,23 @@ among the hits for 16 of 19 alphabets when P66 is the query, best 166 of 18_775
 25 bits per seed, where thousands of human proteins are in view with them, and both
 disappear before the seed carries the ~32 bits an E-value of 1 needs on this database.
 Their own best E-values are 1_955 (BCL2, wwmj5 k=9) and 707 (CD47).
+
+**And that best rank is not better than luck.** The 213 is the smallest of 102 ranks,
+one per alphabet, k and metric. Draw a human protein at random from each of those same
+102 hit lists and keep the smallest rank, and it comes out at 42 (middle 90%: 4 to 176);
+a random protein does as well or better than BCL2 in 97% of 20_000 draws, and better than
+CD47 in 90%. At the level of the whole sweep the known partner is not separable from an
+arbitrary protein the search happened to hit.
+
+**No ranking metric rescues it, and one of the eleven was lying.** Across all eleven
+metrics the search writes, the best the partner ever reaches is the top 1.18% for BCL2
+(mean IDF, polarity4 k=9) and the top 0.88% for CD47 (E-value, hp_lehninger_hpc3 k=14).
+The top 10 of the human proteome is the top 0.05%, so the best metric lands about 20
+times further down the list. `region_ka_bits` looked like the exception, putting BCL2 at
+rank 1 of 18_303 under gbmr7 k=10, but that arm has no lambda, so the bit score is 0 for
+every region and 18_302 proteins were tied with it. The collector now leaves the bit
+score empty where there is no lambda, the same as the E-value; after that it ranks BCL2
+1_352 of 5_153, the same as the E-value it is a transform of.
 
 **The 20-letter alphabet is not the answer either.** protein20 and uniprot18 never have
 BCL2 or CD47 among the hits at any k; wass14 never has CD47; hsdm17, sdm12 and the two
