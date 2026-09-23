@@ -192,7 +192,51 @@ print(summary.filter(pl.col("partner") == "CD47").select(
 print("\nFigure: section 1, grey rows.")
 """),
 md(r"""
-## 5. The query-side null: does Ced9 rank BCL2 higher than a random query does?
+## 5. Only three alphabets: hp_lehninger2, polarity4, funcgroups8
+
+These three are the alphabets in which PR #44 saw CD47 in view for P66. They were picked
+after seeing where the partner appears, which tilts this test in the partner's favour.
+Same combination as section 1, restricted to their arms.
+"""),
+code(r"""
+SUB = ae.SUBSET3
+subrows = []
+for m in ae.METRICS:
+    s3, arms3 = ae.ensemble(m, SUB)
+    subrows.append(ae.partner_summary(s3, arms3, m, alphabets=SUB)
+                   .join(summary.filter(pl.col("metric") == m).select("query", "partner", pl.col("ens_rank_by_alphabet").alias("all19")),
+                         on=["query", "partner"]))
+    if m == "mean IDF":
+        bhf3 = s3.filter(pl.col("query_name") == "BHF").sort("ens_rank_by_alphabet").head(8).select("gene", "length", "ens_rank_by_alphabet")
+sub = pl.concat(subrows).filter(pl.col("query").is_in(["Ced9", "P66"]))
+crowd3 = []
+for q, p in [("Ced9", "BCL2"), ("P66", "CD47")]:
+    pa, pp = ae.beat_counts("mean IDF", q, p, SUB)
+    crowd3.append(dict(query=q, partner=p, beat_in_all_three=pp.filter(pl.col("n_alphabets_beating") == pa.height).height))
+crowd3 = pl.DataFrame(crowd3)
+t = sub.filter(pl.col("is_true_pair"))
+ctl = sub.filter((pl.col("query") == "Ced9") & (pl.col("partner") == "CD47"))
+ae.fig_subset(
+    sub, FIG / "242_three_alphabets_only.png", SUB,
+    hypothesis="Combining only hp_lehninger2, polarity4 and funcgroups8 puts the known partner near the top.",
+    conclusion=(
+        f"It does better than combining all 19 but not better than one alphabet alone. BCL2: best single arm "
+        f"{t.filter(pl.col('partner') == 'BCL2')['best_single_rank'].min()}, three combined "
+        f"{t.filter(pl.col('partner') == 'BCL2')['ens_rank_by_alphabet'].min():_} at best; CD47: "
+        f"{t.filter(pl.col('partner') == 'CD47')['best_single_rank'].min():_} and "
+        f"{t.filter(pl.col('partner') == 'CD47')['ens_rank_by_alphabet'].min():_}. What the three lift to the top is the control: "
+        f"Ced9 ranks CD47 {ctl['ens_rank_by_alphabet'].min()} combined. "
+        f"{crowd3.filter(pl.col('partner') == 'BCL2')['beat_in_all_three'][0]} proteins beat BCL2 in all three alphabets, "
+        f"so no rule that asks for agreement can put it above rank "
+        f"{crowd3.filter(pl.col('partner') == 'BCL2')['beat_in_all_three'][0] + 1}."),
+)
+print(sub.select("query", "partner", "metric", "best_single_rank", "best_single_arm", "ens_rank_by_alphabet", "all19",
+                 "pct_by_alphabet_among_peers").sort("query", "partner", "metric"))
+print(crowd3)
+print("BHF, best 8 under the three combined (mean IDF):", bhf3.rows())
+"""),
+md(r"""
+## 6. The query-side null: does Ced9 rank BCL2 higher than a random query does?
 
 Sections 1 to 4 compare the partner with the other human proteins for one query. The
 direct test swaps the query: 300 random human proteins of the query's length (within 25%,
@@ -207,7 +251,9 @@ The search is run by `242_null_queries.py` (about 1.6 billion regions, about 3 h
 """),
 code(r"""
 if not ae.null_available():
-    print("The null has not been run yet. Run notebooks/242_null_queries.py, then re-execute this notebook.")
+    done, expected = ae.null_progress()
+    print(f"The null run is not complete ({done} of {expected or 494} chunks). Run or finish "
+          "notebooks/242_null_queries.py, then re-execute this notebook.")
 else:
     nul = ae.fig_null(
         FIG / "242_query_side_null.png",
@@ -220,7 +266,7 @@ else:
     print(nul)
 """),
 md(r"""
-## 6. Conclusions
+## 7. Conclusions
 
 **Combining alphabets does not lift either partner.** Under every one of the five metrics
 the combined rank of BCL2 and CD47 is worse than their best single arm: BCL2 falls from
@@ -241,6 +287,12 @@ single arm and 744th combined (Poisson p-value), above where P66 puts it and abo
 Ced9 puts BCL2. CD47 has 33 membrane-helix-like hydrophobic windows, BCL2 none. A high rank
 of CD47 for P66 is weak evidence for a P66-CD47 link. Section 5 measures how often random
 queries of P66's length rank CD47 as high.
+
+**Three alphabets instead of 19 does not change that.** Combining only hp_lehninger2,
+polarity4 and funcgroups8 (section 5) puts BCL2 at 3_561 and CD47 at 3_916 at best, better
+than all 19 combined and worse than polarity4 alone for BCL2 (213). It lifts Ced9's rank
+of CD47, the control with no known link, to 12. Nine proteins beat BCL2 in all three
+alphabets, so no rule that requires agreement can rank it above 10.
 
 **What could still work.** A combination that does not reward being hit: rank only among
 the proteins every alphabet hits, or normalise each protein's score by how often it is hit

@@ -59,13 +59,16 @@ def human_lengths() -> pl.DataFrame:
     return df.with_columns(pl.col("target_name").str.split("|").list.get(6).alias("gene"))
 
 
-def arm_ranks(metric: str) -> pl.DataFrame:
+def arm_ranks(metric: str, alphabets: list[str] | None = None) -> pl.DataFrame:
     """One row per (query, alphabet, k, target hit): its rank at that arm, average rank
-    for ties, plus n_hit, the number of proteins the arm hit for that query."""
+    for ties, plus n_hit, the number of proteins the arm hit for that query. With
+    `alphabets`, only those alphabets' arms."""
     col, lower = METRICS[metric]
     lf = (pl.scan_parquet(DATA / "regions.parquet")
           .select("query_name", "alphabet", "ksize_arm", "target_name", "gene", col)
           .filter(pl.col(col).is_not_null() & pl.col(col).is_finite()))
+    if alphabets:
+        lf = lf.filter(pl.col("alphabet").is_in(alphabets))
     best = (pl.col(col).min() if lower else pl.col(col).max()).alias("v")
     per = (lf.group_by("query_name", "alphabet", "ksize_arm", "target_name", "gene").agg(best)
              .collect())
@@ -76,13 +79,13 @@ def arm_ranks(metric: str) -> pl.DataFrame:
     )
 
 
-def ensemble(metric: str) -> tuple[pl.DataFrame, pl.DataFrame]:
+def ensemble(metric: str, alphabets: list[str] | None = None) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Ensemble scores for every (query, human protein), and the per-arm table.
 
     Returns (scores, arms): scores has query_name, target_name, gene, log_rp_by_arm,
     log_rp_by_alphabet, votes_arm, votes_alphabet, ens_rank_by_arm,
     ens_rank_by_alphabet; arms has one row per (query, alphabet, k) with n_hit."""
-    r = arm_ranks(metric)
+    r = arm_ranks(metric, alphabets)
     r = r.with_columns(
         (pl.col("rank") / N).log().alias("log_r"),
         ((pl.col("n_hit") + 1 + N) / 2 / N).log().alias("log_unhit"),
@@ -137,12 +140,13 @@ def ensemble(metric: str) -> tuple[pl.DataFrame, pl.DataFrame]:
     return scores, arms
 
 
-def partner_summary(scores: pl.DataFrame, arms: pl.DataFrame, metric: str, rel: float = 0.25) -> pl.DataFrame:
+def partner_summary(scores: pl.DataFrame, arms: pl.DataFrame, metric: str, rel: float = 0.25,
+                    alphabets: list[str] | None = None) -> pl.DataFrame:
     """For each (query, partner) pair and for the partners scored under the other
     queries (a check that the partner is not simply a protein every query ranks high):
     the best single-arm rank, the two ensemble ranks among 19_732, the top-1% votes,
     and the ensemble percentile among human proteins within +/- rel of its length."""
-    per_arm = arm_ranks(metric)
+    per_arm = arm_ranks(metric, alphabets)
     rows = []
     for q in QUERIES:
         for partner in PARTNER.values():
@@ -168,7 +172,8 @@ def partner_summary(scores: pl.DataFrame, arms: pl.DataFrame, metric: str, rel: 
     return pl.DataFrame(rows)
 
 
-def beat_counts(metric: str, query: str, partner: str) -> tuple[pl.DataFrame, pl.DataFrame]:
+def beat_counts(metric: str, query: str, partner: str,
+                alphabets: list[str] | None = None) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Is it the same crowd that beats the partner in every alphabet, or a different one?
 
     For each alphabet where the partner is hit, take the arm where the partner ranks
@@ -176,7 +181,7 @@ def beat_counts(metric: str, query: str, partner: str) -> tuple[pl.DataFrame, pl
     (per_alphabet, per_protein): per_alphabet has each alphabet's arm, the partner's
     rank and n_beat; per_protein counts, for every protein that beats the partner
     somewhere, the number of alphabets in which it does."""
-    r = arm_ranks(metric).filter(pl.col("query_name") == query)
+    r = arm_ranks(metric, alphabets).filter(pl.col("query_name") == query)
     p = (r.filter(pl.col("gene") == partner).sort("rank")
            .group_by("alphabet").first()
            .select("alphabet", "ksize_arm", pl.col("rank").alias("partner_rank"), "n_hit"))
@@ -207,8 +212,22 @@ def independent_expectation(per_alpha: pl.DataFrame) -> np.ndarray:
 NULL = DATA / "null"
 
 
+def null_progress() -> tuple[int, int]:
+    """(chunks done, chunks expected) for the 242_null_queries.py run."""
+    import json
+    if not (NULL / "arms.json").exists():
+        return 0, 0
+    arms = json.loads((NULL / "arms.json").read_text())
+    sets = json.loads((NULL / "query_sets.json").read_text())
+    chunk = 25
+    expected = len(arms) * sum(-(-len(v) // chunk) for v in sets.values())
+    return len(list((NULL / "ranks").glob("*.parquet"))), expected
+
+
 def null_available() -> bool:
-    return (NULL / "arms.json").exists() and any((NULL / "ranks").glob("*.parquet"))
+    """True only when every chunk of the null run has been written."""
+    done, expected = null_progress()
+    return expected > 0 and done >= expected
 
 
 def null_table(case: str, partner: str) -> pl.DataFrame:
@@ -409,3 +428,41 @@ def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
     finish_figure(fig, path, tools=TOOLS.replace("no new search", "plus 300 random queries per pair on 19 arms (242_null_queries.py)"),
                   hypothesis=hypothesis, conclusion=conclusion, header_y=1.01, footer_y=-0.02)
     return pl.concat(rows)
+
+
+SUBSET3 = ["hp_lehninger2", "polarity4", "funcgroups8"]
+
+
+def fig_subset(sub: pl.DataFrame, path: Path, subset: list[str], hypothesis: str, conclusion: str):
+    """Rows: (query, partner, metric). Open circle: best single arm among the subset's
+    alphabets. Filled square: combined over the subset. Filled diamond: combined over
+    all 19 alphabets, for comparison. Grey rows: the no-known-link control."""
+    order = [("Ced9", "BCL2"), ("P66", "CD47"), ("Ced9", "CD47")]
+    title = {("Ced9", "BCL2"): "Ced9 → BCL2, known homolog", ("P66", "CD47"): "P66 → CD47, proposed partner",
+             ("Ced9", "CD47"): "Ced9 → CD47, no known link (control)"}
+    handles = [
+        Line2D([], [], marker="o", ls="", ms=8, markerfacecolor="white", markeredgecolor=PURPLE, markeredgewidth=1.6,
+               label=f"best rank at any single arm of {', '.join(subset)}"),
+        Line2D([], [], marker="s", ls="", ms=8, color=PURPLE, label=f"combined over those {len(subset)} alphabets"),
+        Line2D([], [], marker="D", ls="", ms=7, color=PURPLE, label="combined over all 19 alphabets (section 1), for comparison"),
+        Line2D([], [], marker="s", ls="", ms=8, color=GREY, label="grey: the same marks for the pair with no known link, the control"),
+    ]
+    fig, (ax,) = _figure_with_legend_row(1, (11, 7.6), handles)
+    y, ticks, labels = 0, [], []
+    for pair in order:
+        col = GREY if pair == ("Ced9", "CD47") else PURPLE
+        s = sub.filter((pl.col("query") == pair[0]) & (pl.col("partner") == pair[1]))
+        ax.text(0.85, y - 0.6, title[pair], fontsize=9.5, fontweight="bold", va="bottom")
+        for m in METRICS:
+            r = s.filter(pl.col("metric") == m).row(0, named=True)
+            a, b, c = r["best_single_rank"], r["ens_rank_by_alphabet"], r["all19"]
+            ax.plot([min(a, b, c), max(a, b, c)], [y, y], color=col, lw=1, alpha=0.5, zorder=1)
+            ax.scatter([a], [y], s=60, facecolors="white", edgecolors=col, linewidths=1.6, zorder=3)
+            ax.scatter([b], [y], s=60, marker="s", color=col, zorder=4)
+            ax.scatter([c], [y], s=50, marker="D", color=col, zorder=3)
+            ticks.append(y); labels.append(m); y += 1
+        y += 1.4
+    ax.set_yticks(ticks); ax.set_yticklabels(labels, fontsize=8.5)
+    ax.set_ylim(y - 1, -1.4)
+    _rank_axis(ax, "rank among the 19_732 human proteins (1 = best, log scale)")
+    finish_figure(fig, path, tools=TOOLS, hypothesis=hypothesis, conclusion=conclusion, header_y=1.01, footer_y=-0.02)
