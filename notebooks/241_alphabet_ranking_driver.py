@@ -34,6 +34,7 @@ import collections
 import concurrent.futures as cf
 import json
 import math
+import re
 import subprocess
 import sys
 import time
@@ -95,6 +96,19 @@ FALLBACK_PENALTY, FALLBACK_XDROP = "2", "8"
 # this many shuffles of each. Above ~30 bits both curves are short; 1000 x 8 rescued
 # hp_lehninger2 k=32 in 8 seconds.
 RETRY_QUERIES, RETRY_SHUFFLES = 1000, 8
+# No retry when the first fit already had at least this many regions on BOTH curves.
+DENSE_REGIONS = 100_000
+
+_COUNTS = re.compile(r"(\d+) queries gave (\d+) regions and (\d+) shuffled queries gave (\d+) chance regions")
+
+
+def first_fit_counts(index_log: Path) -> tuple[int | None, int | None]:
+    """(real regions, shuffled regions) the index-time fit reported when it was refused;
+    (None, None) when it was accepted or the log is missing."""
+    if not index_log.exists():
+        return None, None
+    m = _COUNTS.search(index_log.read_text())
+    return (int(m.group(2)), int(m.group(4))) if m else (None, None)
 
 
 def fitted(survival_csv: Path) -> bool | None:
@@ -198,7 +212,17 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
     # and mark the arm as having no E-value.
     fit = fitted(survival)
     rec["fit_first"] = fit
-    if fit is False:
+    real_n, chance_n = first_fit_counts(logs / f"{tag}.index.log")
+    rec["fit_first_regions"], rec["fit_first_chance_regions"] = real_n, chance_n
+    # A refusal with millions of regions on both curves is not a shortage the retry can
+    # fix: the score distribution is too narrow to hold four bins above its peak (the
+    # low-k arms of the many-class alphabets, gbmr7 k=10: 65 M real, 59 M shuffled).
+    # More queries and shuffles multiply that work for the same verdict.
+    if fit is False and real_n is not None and chance_n is not None \
+            and min(real_n, chance_n) >= DENSE_REGIONS:
+        rec["retry_skipped"] = "both curves already dense; too few bins, not too few regions"
+        fit = False
+    elif fit is False:
         retry_out = OUT / "ka_survival" / f"{tag}.retry.csv"
         cal_cmd = [
             str(KMERSEEK), "calibrate", "-t", str(idx),
