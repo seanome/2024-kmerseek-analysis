@@ -212,21 +212,47 @@ def independent_expectation(per_alpha: pl.DataFrame) -> np.ndarray:
 NULL = DATA / "null"
 
 
-def null_progress() -> tuple[int, int]:
-    """(chunks done, chunks expected) for the 242_null_queries.py run."""
+HEAVY_BITS = 20.5  # arms at or below this seed information return many regions per query
+
+
+def chunk_tags(case: str, alphabet: str, k: int, bits: float, n_queries: int) -> list[str]:
+    """Output file stems of one arm of the null run. Arms at or below HEAVY_BITS are
+    searched 25 queries at a time (cNN); lighter arms all at once (all), because a search
+    costs about 4 seconds to start whatever it finds."""
+    base = f"{case}.{alphabet}.k{k}"
+    if bits <= HEAVY_BITS:
+        return [f"{base}.c{i:02d}" for i in range(-(-n_queries // 25))]
+    return [f"{base}.all"]
+
+
+def arm_set(which: str) -> list[dict]:
+    """The arms a 242_null_queries.py --arms <which> run searches, from the sweep plan
+    (not from the run's own arms.json, which the latest run overwrites)."""
     import json
-    if not (NULL / "arms.json").exists():
+    plan = pl.DataFrame(json.loads((DATA / "plan.json").read_text()))
+    bits = dict(zip(zip(plan["alphabet"], plan["ksize"]), plan["bits"]))
+    if which == "all":
+        return [{"alphabet": a, "k": k, "bits": b} for (a, k), b in bits.items()]
+    chosen = lowest_arms() if which == "lowest" else best_arms()
+    return [{"alphabet": a, "k": k, "bits": bits[(a, k)]} for a, k in chosen.items()]
+
+
+def null_progress(arm_set_name: str = "all") -> tuple[int, int]:
+    """(chunks done, chunks expected) for a 242_null_queries.py --arms <name> run."""
+    import json
+    if not (NULL / "query_sets.json").exists():
         return 0, 0
-    arms = json.loads((NULL / "arms.json").read_text())
+    arms = arm_set(arm_set_name)
     sets = json.loads((NULL / "query_sets.json").read_text())
-    chunk = 25
-    expected = len(arms) * sum(-(-len(v) // chunk) for v in sets.values())
-    return len(list((NULL / "ranks").glob("*.parquet"))), expected
+    want = {f"{t}.parquet" for a in arms for c, v in sets.items()
+            for t in chunk_tags(c, a["alphabet"], a["k"], a["bits"], len(v))}
+    have = {p.name for p in (NULL / "ranks").glob("*.parquet")}
+    return len(want & have), len(want)
 
 
-def null_available() -> bool:
-    """True only when every chunk of the null run has been written."""
-    done, expected = null_progress()
+def null_available(arm_set: str = "all") -> bool:
+    """True only when every chunk of that null run has been written."""
+    done, expected = null_progress(arm_set)
     return expected > 0 and done >= expected
 
 
@@ -236,8 +262,10 @@ def null_table(case: str, partner: str) -> pl.DataFrame:
     that did not hit the partner at an arm gets the middle of the tied bottom ranks."""
     import json
     names = json.loads((NULL / "query_sets.json").read_text())[case]
-    arms = json.loads((NULL / "arms.json").read_text())
-    r = pl.read_parquet(sorted((NULL / "ranks").glob(f"{case}.*.parquet"))).filter(pl.col("gene") == partner)
+    arms = arm_set("lowest")
+    files = [NULL / "ranks" / f"{t}.parquet" for a in arms
+             for t in chunk_tags(case, a["alphabet"], a["k"], a["bits"], len(names))]
+    r = pl.read_parquet([f for f in files if f.exists()]).filter(pl.col("gene") == partner)
     grid = (pl.DataFrame({"query_name": names})
               .join(pl.DataFrame({"alphabet": [a["alphabet"] for a in arms], "k": [a["k"] for a in arms]}), how="cross")
               .join(pl.DataFrame({"metric": list(METRICS)}), how="cross"))
@@ -466,3 +494,206 @@ def fig_subset(sub: pl.DataFrame, path: Path, subset: list[str], hypothesis: str
     ax.set_ylim(y - 1, -1.4)
     _rank_axis(ax, "rank among the 19_732 human proteins (1 = best, log scale)")
     finish_figure(fig, path, tools=TOOLS, hypothesis=hypothesis, conclusion=conclusion, header_y=1.01, footer_y=-0.02)
+
+
+# ---------------------------------------------------------------------------
+# Every subset of 2 to 4 alphabets
+# ---------------------------------------------------------------------------
+from itertools import combinations  # noqa: E402
+
+ALPHABETS19 = ["hp_lehninger2", "hp_thomas_dill2", "hp_kyte_doolittle2", "hp_thomas_dill_no_c2",
+               "hp_lehninger_c_nonpolar2", "hp_pbotc_1st_ed2", "hp_lehninger_hpc3", "gbmr4", "polarity4",
+               "wwmj5", "dayhoff6", "gbmr7", "funcgroups8", "sdm12", "mmseqs12", "wass14", "hsdm17",
+               "uniprot18", "protein20"]
+# (query, partner): the two proposed pairs, and CD47 for Ced9 as the control with no known link
+SUBSET_PAIRS = [("Ced9", "BCL2"), ("P66", "CD47"), ("Ced9", "CD47")]
+
+
+def lowest_arms() -> dict[str, int]:
+    """alphabet -> its lowest-bit k, the arm 242_null_queries.py searches."""
+    import json
+    plan = pl.DataFrame(json.loads((DATA / "plan.json").read_text()))
+    return dict(plan.sort("bits").group_by("alphabet").first().select("alphabet", "ksize").iter_rows())
+
+
+def best_arms() -> dict[str, int]:
+    """alphabet -> the k at which Ced9 ranks BCL2 best under mean IDF; the lowest-bit k
+    for an alphabet that never has BCL2 among the hits. Written to
+    best_k_by_bcl2_mean_idf.json so 242_null_queries.py --arms best searches the same arms."""
+    import json
+    r = arm_ranks("mean IDF").filter((pl.col("query_name") == "Ced9") & (pl.col("gene") == "BCL2"))
+    b = dict(r.sort("rank", "ksize_arm").group_by("alphabet").first().select("alphabet", "ksize_arm").iter_rows())
+    low = lowest_arms()
+    best = {a: int(b.get(a, low[a])) for a in ALPHABETS19}
+    (DATA / "best_k_by_bcl2_mean_idf.json").write_text(json.dumps(best, indent=1))
+    return best
+
+
+def log_rank_matrix(metric: str, query: str, mode: str = "lowest") -> tuple[np.ndarray, list[str], list[str]]:
+    """(M, genes, alphabets): M[t, a] is protein t's log normalised rank in alphabet a for
+    this query. mode "lowest": the alphabet's lowest-bit arm only. mode "all": the mean
+    over all its arms. A protein an arm did not hit gets the middle of the tied bottom."""
+    import json
+    plan = pl.DataFrame(json.loads((DATA / "plan.json").read_text()))
+    arms = plan.select("alphabet", pl.col("ksize").alias("ksize_arm"))
+    if mode in ("lowest", "best"):
+        pick = lowest_arms() if mode == "lowest" else best_arms()
+        arms = arms.filter(pl.struct("alphabet", "ksize_arm").map_elements(
+            lambda s: pick[s["alphabet"]] == s["ksize_arm"], return_dtype=pl.Boolean))
+    r = arm_ranks(metric).filter(pl.col("query_name") == query).join(arms, on=["alphabet", "ksize_arm"])
+    nhit = arms.join(r.group_by("alphabet", "ksize_arm").agg(pl.len().alias("n_hit")),
+                     on=["alphabet", "ksize_arm"], how="left").with_columns(pl.col("n_hit").fill_null(0))
+    genes = human_lengths()["target_name"].to_list()
+    gi = {g: i for i, g in enumerate(genes)}
+    M = np.zeros((len(genes), len(ALPHABETS19)))
+    for j, a in enumerate(ALPHABETS19):
+        ks = nhit.filter(pl.col("alphabet") == a)
+        col = np.zeros(len(genes))
+        for k, n in ks.select("ksize_arm", "n_hit").iter_rows():
+            v = np.full(len(genes), math.log((n + 1 + N) / 2 / N))
+            h = r.filter((pl.col("alphabet") == a) & (pl.col("ksize_arm") == k))
+            idx = np.array([gi[t] for t in h["target_name"]], dtype=int)
+            if len(idx):
+                v[idx] = np.log(h["rank"].to_numpy() / N)
+            col += v
+        M[:, j] = col / max(ks.height, 1)
+    return M, [t.split("|")[6] for t in genes], ALPHABETS19
+
+
+def subset_scan(metric: str, mode: str = "lowest", sizes=(1, 2, 3, 4)) -> pl.DataFrame:
+    """Every subset of the 19 alphabets of the given sizes: the combined rank (rank
+    product, each alphabet once) of each pair's partner among the 19_732 proteins.
+    Rank = 1 + the number of proteins with a strictly better combined score."""
+    mats = {q: log_rank_matrix(metric, q, mode) for q in {q for q, _ in SUBSET_PAIRS}}
+    subsets = [c for s in sizes for c in combinations(range(len(ALPHABETS19)), s)]
+    out = {"subset": [" + ".join(ALPHABETS19[i] for i in c) for c in subsets],
+           "size": [len(c) for c in subsets]}
+    for q, p in SUBSET_PAIRS:
+        M, genes, _ = mats[q]
+        pi = genes.index(p)
+        ranks = np.empty(len(subsets), dtype=np.int64)
+        for s in sizes:
+            idx = [i for i, c in enumerate(subsets) if len(c) == s]
+            cols = np.array([subsets[i] for i in idx])          # (n_subsets, s)
+            # score of every protein for every subset of this size, in blocks to bound memory
+            for b in range(0, len(idx), 256):
+                blk = cols[b:b + 256]
+                sc = M[:, blk].mean(axis=2)                     # (n_proteins, n_blk)
+                # Ties take the middle rank: an arm with no E-value ties every protein,
+                # and counting only strictly better proteins would call that rank 1.
+                better = (sc < sc[pi]).sum(axis=0)
+                tied = (sc == sc[pi]).sum(axis=0) - 1
+                ranks[idx[b:b + 256]] = 1 + better + tied // 2
+        out[f"{q}->{p}"] = ranks
+    return pl.DataFrame(out).with_columns(pl.lit(metric).alias("metric"), pl.lit(mode).alias("arms"))
+
+
+
+def null_arm_matrix(case: str, partner: str, metric: str = "mean IDF") -> pl.DataFrame:
+    """Every (query, alphabet, k) of the --arms all null run: the partner's log normalised
+    rank, with the middle of the tied bottom ranks when the query did not hit it."""
+    import json
+    names = json.loads((NULL / "query_sets.json").read_text())[case]
+    arms = arm_set("all")
+    files = [NULL / "ranks" / f"{t}.parquet" for a in arms
+             for t in chunk_tags(case, a["alphabet"], a["k"], a["bits"], len(names))]
+    r = (pl.read_parquet([f for f in files if f.exists()])
+           .filter((pl.col("gene") == partner) & (pl.col("metric") == metric))
+           .select("query_name", "alphabet", pl.col("k").cast(pl.Int64), "rank", "n_hit"))
+    grid = pl.DataFrame({"query_name": names}).join(
+        pl.DataFrame({"alphabet": [a["alphabet"] for a in arms], "k": [a["k"] for a in arms]}), how="cross")
+    g = grid.join(r, on=["query_name", "alphabet", "k"], how="left").with_columns(pl.col("n_hit").fill_null(0))
+    Neff = pl.when(pl.col("query_name") == case).then(pl.lit(N)).otherwise(pl.lit(N - 1))
+    return g.with_columns(pl.when(pl.col("rank").is_not_null()).then((pl.col("rank") / Neff).log())
+                            .otherwise(((pl.col("n_hit") + 1 + Neff) / 2 / Neff).log()).alias("log_r"))
+
+
+def null_subset_test(case: str, partner: str, metric: str = "mean IDF", sizes=(1, 2, 3, 4)) -> tuple[pl.DataFrame, dict]:
+    """Does the true query still stand out once every random query gets the same
+    advantages? For each query: pick k per alphabet (either the k Ced9 ranks BCL2 best
+    at, the same for everyone, or each query's own best k), then the best subset of each
+    size (the lowest mean log normalised rank of the partner). The p-value is the share
+    of the 300 random queries whose best subset scores at least as well as the true
+    query's, (1 + count) / 301. Scores are shown as rank-scale values, exp(score) x 19_732."""
+    g = null_arm_matrix(case, partner, metric)
+    names = g["query_name"].unique(maintain_order=True).to_list()
+    best = best_arms()
+    mats = {
+        "k picked on BCL2 (same for every query)": g.filter(pl.struct("alphabet", "k").map_elements(
+            lambda s: best[s["alphabet"]] == s["k"], return_dtype=pl.Boolean)),
+        "each query's own best k": g.group_by("query_name", "alphabet").agg(pl.col("log_r").min()),
+    }
+    rows, dists = [], {}
+    for rule, m in mats.items():
+        wide = m.pivot(on="alphabet", index="query_name", values="log_r").select(["query_name"] + ALPHABETS19)
+        wide = pl.DataFrame({"query_name": names}).join(wide, on="query_name", how="left")
+        X = wide.select(ALPHABETS19).to_numpy()
+        ti = names.index(case)
+        for sz in sizes:
+            combos = np.array(list(combinations(range(len(ALPHABETS19)), sz)))
+            sc = X[:, combos].mean(axis=2)          # (queries, subsets)
+            bi = sc.argmin(axis=1)
+            b = sc[np.arange(len(names)), bi]
+            nul = np.delete(b, ti)
+            p = (1 + (nul <= b[ti]).sum()) / (1 + len(nul))
+            rows.append(dict(case=case, partner=partner, k_rule=rule, size=sz,
+                             true_best_subset=" + ".join(ALPHABETS19[i] for i in combos[bi[ti]]),
+                             true_score_rank_scale=round(float(np.exp(b[ti]) * N), 1),
+                             random_median_rank_scale=round(float(np.exp(np.median(nul)) * N), 1),
+                             p=round(float(p), 4)))
+            dists[(rule, sz)] = (np.exp(nul) * N, float(np.exp(b[ti]) * N))
+    return pl.DataFrame(rows), dists
+
+
+def fig_subset_scan(scan: pl.DataFrame, path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
+    """Three panels (BCL2 for Ced9, CD47 for P66, CD47 for Ced9 the control); x: number of
+    alphabets combined; y: the partner's combined rank. Light dots: every subset; dark
+    diamond: the best subset for BCL2 at that size, so a panel shows whether the subsets
+    picked for BCL2 also help the other pairs."""
+    cols = [("Ced9->BCL2", "Ced9 → BCL2, known homolog"), ("P66->CD47", "P66 → CD47, proposed partner"),
+            ("Ced9->CD47", "Ced9 → CD47, no known link (control)")]
+    handles = [
+        Line2D([], [], marker="o", ls="", ms=5, color=RAMP(0.25), label="one subset of the 19 alphabets (each alphabet at the k where Ced9 ranks BCL2 best; mean IDF)"),
+        Line2D([], [], marker="D", ls="", ms=8, color=PURPLE, label="the subset that ranks BCL2 best at that size, followed into every panel"),
+    ]
+    fig, axes = _figure_with_legend_row(3, (15, 6.2), handles, sharey=True)
+    rng = np.random.default_rng(0)
+    best = scan.sort("Ced9->BCL2").group_by("size").first().sort("size")
+    for ax, (c, t) in zip(axes, cols):
+        for sz in sorted(scan["size"].unique()):
+            v = scan.filter(pl.col("size") == sz)[c].to_numpy()
+            ax.scatter(sz + rng.uniform(-0.28, 0.28, len(v)), v, s=3, color=RAMP(0.25), alpha=0.5, lw=0, rasterized=True)
+        ax.plot(best["size"], best[c], "D-", color=PURPLE, ms=7, lw=1.2, zorder=4)
+        for sz, v in zip(best["size"], best[c]):
+            ax.annotate(f"{v:_}", (sz, v), xytext=(8, -3), textcoords="offset points", fontsize=8, color=PURPLE)
+        ax.set_yscale("log"); ax.set_ylim(2.5e4, 8)  # rank 1 at the top
+        ax.set_xticks(sorted(scan["size"].unique())); ax.set_xlabel("alphabets combined", fontsize=9)
+        ax.set_title(t, fontsize=10); ax.grid(alpha=0.2); ax.spines[["top", "right"]].set_visible(False)
+    axes[0].set_ylabel("rank among the 19_732 human proteins (1 = best, log scale)", fontsize=9)
+    finish_figure(fig, path, tools=TOOLS, hypothesis=hypothesis, conclusion=conclusion, header_y=1.01, footer_y=-0.02)
+    return best.select("size", "subset", "Ced9->BCL2", "P66->CD47", "Ced9->CD47")
+
+
+def fig_subset_null(dists: dict, case: str, partner: str, path: Path, hypothesis: str, conclusion: str):
+    """Rows: k rule x subset size. Grey dots: the 300 random queries' best-subset score;
+    purple diamond: the true query's."""
+    handles = [
+        Line2D([], [], marker="o", ls="", ms=5, color=GREY, alpha=0.6, label="one random human protein of the query's length: its best subset of that size"),
+        Line2D([], [], marker="D", ls="", ms=8, color=PURPLE, label=f"{case}: its best subset of that size"),
+    ]
+    fig, (ax,) = _figure_with_legend_row(1, (10.5, 5.6), handles)
+    rng = np.random.default_rng(0)
+    yt, yl, y = [], [], 0
+    for rule in ["k picked on BCL2 (same for every query)", "each query's own best k"]:
+        for sz in (1, 2, 3, 4):
+            nul, tr = dists[(rule, sz)]
+            ax.scatter(nul, y + rng.uniform(-0.25, 0.25, len(nul)), s=6, color=GREY, alpha=0.5, lw=0)
+            ax.scatter([tr], [y], marker="D", s=55, color=PURPLE, zorder=4)
+            p = (1 + (nul <= tr).sum()) / (1 + len(nul))
+            ax.text(2.5e4, y, f"p = {p:.3f}", va="center", ha="right", fontsize=8)
+            yt.append(y); yl.append(f"{rule}, {sz} alphabet{'s' if sz > 1 else ''}"); y += 1
+        y += 0.7
+    ax.set_yticks(yt); ax.set_yticklabels(yl, fontsize=8); ax.set_ylim(y - 0.5, -0.8)
+    _rank_axis(ax, f"{partner}: geometric mean of its normalised ranks over the subset, x 19_732 (lower is better)")
+    finish_figure(fig, path, tools=TOOLS.replace("no new search", "plus 300 random queries on all 152 arms (242_null_queries.py --arms all)"),
+                  hypothesis=hypothesis, conclusion=conclusion, header_y=1.01, footer_y=-0.02)

@@ -236,7 +236,44 @@ print(crowd3)
 print("BHF, best 8 under the three combined (mean IDF):", bhf3.rows())
 """),
 md(r"""
-## 6. The query-side null: does Ced9 rank BCL2 higher than a random query does?
+## 6. Every subset of 2, 3 and 4 alphabets, each at its best k, ranked by mean IDF
+
+Each alphabet is used at one k: the k where Ced9 ranks BCL2 best under mean IDF (for the
+six alphabets that never have BCL2 among the hits, their lowest-bit k). All 5_016 subsets
+of 1 to 4 alphabets are combined as in section 1 and scored by mean IDF. Both the k and the
+subset are picked by how well they rank BCL2, so the best subsets here are what an
+optimist would report; the other two panels show whether the same subsets help CD47 and
+the control, and section 7 gives every random query the same two picks.
+"""),
+code(r"""
+scan = ae.subset_scan("mean IDF", "best")
+scan.write_parquet(ae.DATA / "subset_scan.best_k.mean_idf.parquet")
+best_by_size = scan.sort("Ced9->BCL2").group_by("size").first().sort("size")
+from scipy.stats import spearmanr as _sp
+multi = scan.filter(pl.col("size") > 1)
+rho_cd47 = _sp(multi["Ced9->BCL2"], multi["P66->CD47"]).statistic
+rho_ctl = _sp(multi["Ced9->BCL2"], multi["Ced9->CD47"]).statistic
+top50 = multi.sort("Ced9->BCL2").head(50)
+membership = sorted(((sum(a in x.split(" + ") for x in top50["subset"]), a) for a in ae.ALPHABETS19), reverse=True)
+b4 = best_by_size.filter(pl.col("size") == 4).row(0, named=True)
+b1 = best_by_size.filter(pl.col("size") == 1).row(0, named=True)
+ae.fig_subset_scan(
+    scan, FIG / "242_every_subset_of_alphabets.png",
+    hypothesis="Some small set of alphabets, combined, puts BCL2 near the top, and the same set helps CD47.",
+    conclusion=(f"Combining lifts BCL2 from {b1['Ced9->BCL2']} ({b1['subset']} alone) to {b4['Ced9->BCL2']} "
+                f"({b4['subset']}), but that set puts CD47 at {b4['P66->CD47']:_} and the control at {b4['Ced9->CD47']:_}. "
+                f"Across all 2- to 4-alphabet subsets, how well a subset ranks BCL2 tracks how well it ranks the control "
+                f"(Spearman {rho_ctl:.2f}) as closely as CD47 ({rho_cd47:.2f})."),
+)
+print(best_by_size.select("size", "subset", "Ced9->BCL2", "P66->CD47", "Ced9->CD47"))
+print("\nbest subset for CD47 at each size:")
+print(scan.sort("P66->CD47").group_by("size").first().sort("size").select("size", "subset", "Ced9->BCL2", "P66->CD47", "Ced9->CD47"))
+print("\nhow often each alphabet appears in the 50 best subsets for BCL2:", [(a, n) for n, a in membership if n])
+print("\nmedian rank over all subsets of each size:")
+print(scan.group_by("size").agg(pl.col("Ced9->BCL2").median(), pl.col("P66->CD47").median(), pl.col("Ced9->CD47").median()).sort("size"))
+"""),
+md(r"""
+## 7. The query-side null: does Ced9 rank BCL2 higher than a random query does?
 
 Sections 1 to 4 compare the partner with the other human proteins for one query. The
 direct test swaps the query: 300 random human proteins of the query's length (within 25%,
@@ -250,10 +287,10 @@ The search is run by `242_null_queries.py` (about 1.6 billion regions, about 3 h
 3 workers); until its output exists this section says so and stops.
 """),
 code(r"""
-if not ae.null_available():
-    done, expected = ae.null_progress()
-    print(f"The null run is not complete ({done} of {expected or 494} chunks). Run or finish "
-          "notebooks/242_null_queries.py, then re-execute this notebook.")
+if not ae.null_available("lowest"):
+    done, expected = ae.null_progress("lowest")
+    print(f"The null run on each alphabet's lowest-bit arm is not complete ({done} of {expected or 494} chunks). "
+          "Run or finish notebooks/242_null_queries.py --arms lowest, then re-execute this notebook.")
 else:
     nul = ae.fig_null(
         FIG / "242_query_side_null.png",
@@ -266,7 +303,33 @@ else:
     print(nul)
 """),
 md(r"""
-## 7. Conclusions
+### 7b. The best subset, against random queries given the same picks
+
+Section 6 picked each alphabet's k and then the subset by how well they rank BCL2. Here
+every random query gets the same two picks: the best subset of each size by its own rank
+of the partner, with k either fixed at the k picked for Ced9 or each query's own best k.
+The second rule is the fair one: Ced9's k was picked on its own answer too. This needs
+the null run over all 152 arms (`242_null_queries.py --arms all`).
+"""),
+code(r"""
+if not ae.null_available("all"):
+    done, expected = ae.null_progress("all")
+    print(f"The null run over all arms is not complete ({done} of {expected} chunks). "
+          "Run notebooks/242_null_queries.py --arms all, then re-execute this notebook.")
+else:
+    for case, partner in [("Ced9", "BCL2"), ("P66", "CD47")]:
+        tbl, dists = ae.null_subset_test(case, partner)
+        fair = tbl.filter(pl.col("k_rule") == "each query's own best k")
+        ae.fig_subset_null(
+            dists, case, partner, FIG / f"242_best_subset_vs_random_queries.{partner}.png",
+            hypothesis=f"{case}'s best subset of alphabets ranks {partner} higher than the best subset of a random query does.",
+            conclusion=("With each query picking its own k and subset: " + "; ".join(
+                f"{r['size']} alphabet{'s' if r['size'] > 1 else ''}, p = {r['p']:.3f}" for r in fair.iter_rows(named=True)) + "."),
+        )
+        print(tbl)
+"""),
+md(r"""
+## 8. Conclusions
 
 **Combining alphabets does not lift either partner.** Under every one of the five metrics
 the combined rank of BCL2 and CD47 is worse than their best single arm: BCL2 falls from
@@ -293,6 +356,15 @@ polarity4 and funcgroups8 (section 5) puts BCL2 at 3_561 and CD47 at 3_916 at be
 than all 19 combined and worse than polarity4 alone for BCL2 (213). It lifts Ced9's rank
 of CD47, the control with no known link, to 12. Nine proteins beat BCL2 in all three
 alphabets, so no rule that requires agreement can rank it above 10.
+
+**Choosing the alphabets and their k for BCL2 does lift it, on the answer it was chosen on.**
+With each alphabet at the k where Ced9 ranks BCL2 best and scored by mean IDF (section 6),
+the best subsets put BCL2 at 54 (polarity4 + wass14), 36 (three alphabets) and 23 (four:
+hp_lehninger_c_nonpolar2, polarity4, wwmj5, wass14), against 213 for polarity4 alone. The
+same four put CD47 at 4_313 and the control at 2_221. Over all 2- to 4-alphabet subsets,
+how well a subset ranks BCL2 tracks how well it ranks the control (Spearman 0.50) as
+closely as CD47 (0.46). Whether rank 23 is more than the best of 5_016 tries is what
+section 7b measures, by giving 300 random queries the same two choices.
 
 **What could still work.** A combination that does not reward being hit: rank only among
 the proteins every alphabet hits, or normalise each protein's score by how often it is hit

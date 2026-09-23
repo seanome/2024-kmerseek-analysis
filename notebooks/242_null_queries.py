@@ -15,17 +15,21 @@ query's own protein is removed from its hit list before ranking. Both partners, 
 and CD47, are ranked for every query, so the run also says how often each partner
 ranks high for any query at all.
 
-Queries are searched 25 at a time; each chunk's CSV is reduced to the partners'
+Queries are searched 25 at a time on arms at or below 20.5 bits and all at once on
+lighter arms (a search costs about 4 seconds to start); each chunk's CSV is reduced to the partners'
 ranks and deleted, so the run needs little disk and resumes chunk by chunk.
 
 Output: /Users/olga/data/botryllus/alphabet-ranking-three-cases/null/ranks/*.parquet
 with one row per (case, query, alphabet, k, metric, partner): rank among the proteins
 the query hit (None when the partner was not hit), and n_hit.
 
-About 1.6 billion regions in all (gbmr7 k=8 is 442 M of them), about 3 hours with
-3 workers on the Mac.
+--arms lowest: about 1.6 billion regions (gbmr7 k=8 is 442 M of them).
 
-Usage: 242_null_queries.py [--workers 3] [--n 300] [--chunk 25]
+--arms all searches every arm of the sweep (152), so each random query can be given its
+own best k per alphabet, as Ced9 is when k is picked by where it ranks BCL2: about 1.9
+billion regions, about 40 minutes with 3 workers (measured pace, 50 M regions a minute).
+
+Usage: 242_null_queries.py [--workers 3] [--n 300] [--chunk 25] [--arms lowest|best|all]
 """
 
 from __future__ import annotations
@@ -76,11 +80,21 @@ def read_fasta(p: Path) -> dict[str, str]:
     return out
 
 
-def arms() -> list[dict]:
-    """One arm per alphabet, its lowest-bit k, with the penalty the sweep used and
-    whether its index has a Karlin-Altschul fit."""
+def arms(which: str = "lowest") -> list[dict]:
+    """One arm per alphabet with the penalty the sweep used and whether its index has a
+    Karlin-Altschul fit. "lowest": the alphabet's lowest-bit k. "best": the k at which
+    Ced9 ranks BCL2 best under mean IDF (best_k_by_bcl2_mean_idf.json, written by
+    notebook 242; the lowest-bit k for the six alphabets that never have BCL2 among
+    the hits)."""
     plan = pl.DataFrame(json.loads((D / "plan.json").read_text()))
-    pick = plan.sort("bits").group_by("alphabet").first().sort("bits")
+    if which == "all":
+        pick = plan.sort("alphabet", "bits")
+    elif which == "best":
+        best = json.loads((D / "best_k_by_bcl2_mean_idf.json").read_text())
+        pick = plan.filter(pl.struct("alphabet", "ksize").map_elements(
+            lambda r: best[r["alphabet"]] == r["ksize"], return_dtype=pl.Boolean)).sort("bits")
+    else:
+        pick = plan.sort("bits").group_by("alphabet").first().sort("bits")
     out = []
     for a, k, b, c, x in pick.select("alphabet", "ksize", "bits", "penalty", "xdrop").iter_rows():
         out.append(dict(alphabet=a, k=k, bits=b, penalty=c, xdrop=x,
@@ -129,8 +143,7 @@ def reduce_chunk(csv: Path, case: str, arm: dict) -> pl.DataFrame:
                                         pl.lit(arm["k"]).alias("k"), pl.lit(arm["bits"]).alias("bits"))
 
 
-def one_chunk(case: str, i: int, chunk: list[tuple[str, str]], arm: dict) -> str:
-    tag = f"{case}.{arm['alphabet']}.k{arm['k']}.c{i:02d}"
+def one_chunk(case: str, tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
     done = OUT / "ranks" / f"{tag}.parquet"
     if done.exists():
         return f"{tag} cached"
@@ -160,19 +173,26 @@ def main() -> None:
     ap.add_argument("--chunk", type=int, default=25)
     ap.add_argument("--out", type=Path, default=OUT, help="output folder (a smoke test writes elsewhere)")
     ap.add_argument("--alphabets", default="", help="comma-separated subset, for a smoke test")
+    ap.add_argument("--arms", choices=["lowest", "best", "all"], default="lowest",
+                    help="which k per alphabet; chunks already searched for an arm are reused")
     args = ap.parse_args()
     set_out(args.out)
     for d in ("ranks", "tmp", "logs"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
     sets = query_sets(args.n)
     (OUT / "query_sets.json").write_text(json.dumps({c: [h for h, _ in v] for c, v in sets.items()}, indent=1))
-    A = [a for a in arms() if not args.alphabets or a["alphabet"] in args.alphabets.split(",")]
+    A = [a for a in arms(args.arms) if not args.alphabets or a["alphabet"] in args.alphabets.split(",")]
+    (OUT / f"arms.{args.arms}.json").write_text(json.dumps(A, indent=1))
     (OUT / "arms.json").write_text(json.dumps(A, indent=1))
     jobs = []
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from alphabet_ensemble_utils import chunk_tags  # the one chunking rule, shared with the analysis
     for arm in A:
         for case, qs in sets.items():
-            for i in range(0, len(qs), args.chunk):
-                jobs.append((case, i // args.chunk, qs[i:i + args.chunk], arm))
+            tags = chunk_tags(case, arm["alphabet"], arm["k"], arm["bits"], len(qs))
+            size = args.chunk if len(tags) > 1 else len(qs)
+            for i, tag in enumerate(tags):
+                jobs.append((case, tag, qs[i * size:(i + 1) * size], arm))
     print(f"{len(jobs)} chunks over {len(A)} arms", file=sys.stderr, flush=True)
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
         for msg in ex.map(lambda j: one_chunk(*j), jobs):
