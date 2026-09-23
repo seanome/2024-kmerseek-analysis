@@ -1,0 +1,207 @@
+#!/bin/bash
+#
+# What the matched-permissive flags cost, measured rather than guessed.
+#
+# Runs phmmer, jackhmmer and mmseqs2 over the same queries and the same reference twice --
+# once with the flags the pipeline uses today, once with the flags MATCHED-PERMISSIVE.md
+# proposes -- and prints wall time, CPU time, peak memory and how many rows each wrote.
+# The open question it exists to answer: jackhmmer's `--max` turns every acceleration
+# filter off ("less speed, more power", with no number in the HMMER documentation) and the
+# dark set runs it for three iterations, so the cost could be anything from 2x to 100x.
+#
+#   tools/time-permissive --queries <species.fasta> --reference <reference.fasta> \
+#       [--outdir DIR] [--queries-n 100] [--cpus 8] [--timeout 2h]
+#
+# A SAMPLE of queries, not a chunk: every tool here scales linearly in queries against a
+# fixed reference, so 100 queries priced exactly beats 2_000 queries timed out. The table
+# prints seconds per query, and the projection to a whole proteome is that times its
+# protein count.
+#
+# An arm that hits --timeout is reported as "> <timeout>" and its row is still printed:
+# a search too slow to finish 100 queries in two hours is already the answer for a run
+# with 19_696 of them.
+#
+# Not a SLURM job itself. `make time-permissive-chunk` runs it inside srun on a compute
+# node, because a login node kills anything past ten CPU-minutes.
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+pipeline_dir=$(dirname "$here")
+
+queries=""
+reference=""
+outdir="${PWD}/time-permissive"
+queries_n=100
+cpus=8
+timeout_per_arm=2h
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --queries)    queries=$2;         shift 2 ;;
+        --reference)  reference=$2;       shift 2 ;;
+        --outdir)     outdir=$2;          shift 2 ;;
+        --queries-n)  queries_n=$2;       shift 2 ;;
+        --cpus)       cpus=$2;            shift 2 ;;
+        --timeout)    timeout_per_arm=$2; shift 2 ;;
+        *) echo "time-permissive: unknown argument $1" >&2; exit 2 ;;
+    esac
+done
+
+for v in queries reference; do
+    if [ -z "${!v}" ]; then
+        echo "time-permissive: --$v is required" >&2
+        exit 2
+    fi
+    if [ ! -s "${!v}" ]; then
+        echo "time-permissive: --$v is not a file with anything in it: ${!v}" >&2
+        exit 2
+    fi
+done
+
+# The images the pipeline runs, read out of main.nf rather than repeated here. A second
+# literal of a container digest is a second thing to update, and the one that gets missed
+# is the one that silently measures a different binary than the run uses.
+HMMER=$(sed -n "s/^HMMER *= *'\(.*\)'.*/\1/p" "$pipeline_dir/main.nf" | head -1)
+MMSEQS=$(sed -n "s/^MMSEQS *= *'\(.*\)'.*/\1/p" "$pipeline_dir/main.nf" | head -1)
+if [ -z "$HMMER" ] || [ -z "$MMSEQS" ]; then
+    echo "time-permissive: could not read the HMMER and MMSEQS image lines out of $pipeline_dir/main.nf" >&2
+    exit 1
+fi
+
+# The same image cache Nextflow uses (nextflow.config, apptainer.cacheDir), so this measures
+# the images already on disk instead of pulling its own copies.
+export APPTAINER_CACHEDIR="${SCRATCH:-$HOME}/apptainer-cache"
+# apptainer binds $PWD and $HOME and nothing else, and both the reference and the query
+# proteome usually sit on $SCRATCH. Without this every arm fails on a file it can see from
+# the shell and not from inside the container.
+export APPTAINER_BINDPATH="${APPTAINER_BINDPATH:+$APPTAINER_BINDPATH,}${SCRATCH:-/tmp}"
+
+# Nextflow converts each image to a single .img in its cache; apptainer's own cache is laid
+# out differently and would re-pull. Use the .img the pipeline already built when it is
+# there, so this measures the same bytes the run does.
+nf_image() {
+    local img="$APPTAINER_CACHEDIR/$(printf '%s' "$1" | tr '/:' '--').img"
+    if [ -s "$img" ]; then printf '%s' "$img"; else printf 'docker://%s' "$1"; fi
+}
+HMMER_IMG=$(nf_image "$HMMER")
+MMSEQS_IMG=$(nf_image "$MMSEQS")
+
+mkdir -p "$outdir"
+cd "$outdir"
+
+# Warm the images BEFORE the timer starts. A pull or a squashfs conversion inside the first
+# timed arm would be charged to phmmer, and phmmer is the arm the others are measured
+# against.
+for img in "$HMMER_IMG" "$MMSEQS_IMG"; do
+    echo "warming $img"
+    apptainer exec "$img" true
+done
+
+# The query sample, staged exactly as the pipeline stages it: split_query_fasta.py rewrites
+# every header to a bare accession, which is what mmseqs reports back and what the dark-set
+# scoring joins on. Timing the raw QfO file instead would measure a different join.
+if [ ! -s sample.fasta ]; then
+    echo "staging $queries_n queries with the pipeline's own splitter"
+    mkdir -p staged
+    PATH="$pipeline_dir/bin:$PATH" split_query_fasta.py \
+        --in "$queries" --outdir staged --proteome-out staged/proteome.fasta \
+        --chunk-size "$queries_n" > /dev/null
+    cp staged/chunk_0000.fasta sample.fasta
+fi
+n_queries=$(grep -c '^>' sample.fasta)
+n_targets=$(grep -c '^>' "$reference")
+echo "sample: $n_queries queries against $n_targets reference sequences, $cpus cpus, timeout $timeout_per_arm per arm"
+
+results=results.tsv
+printf 'arm\tflags\tstatus\twall_s\tcpu_s\tmax_rss_kb\trows\trows_per_query\ts_per_query\n' > "$results"
+
+# One arm: name, the image, and the command. /usr/bin/time is GNU time 1.7 on this cluster
+# and runs on the HOST, around apptainer, because the biocontainers do not all carry a
+# `time` binary and a missing one inside the container is silent.
+run_arm() {
+    local name=$1 flags_label=$2 image=$3 outfile=$4   # image: a path or a docker:// uri
+    shift 4
+    local log="${name}.log" tm="${name}.time"
+    local status=ok
+    echo "  running $name ($flags_label)"
+    set +e
+    /usr/bin/time -v -o "$tm" \
+        timeout "$timeout_per_arm" \
+        apptainer exec "$image" "$@" > "$log" 2>&1
+    local rc=$?
+    set -e
+    if [ $rc -eq 124 ]; then
+        status="timeout"
+    elif [ $rc -ne 0 ]; then
+        status="failed(rc=$rc)"
+    fi
+
+    local wall cpu_u cpu_s rss rows
+    wall=$(sed -n 's/.*Elapsed (wall clock) time (h:mm:ss or m:ss): //p' "$tm" |
+           awk -F: '{ if (NF == 3) print $1 * 3600 + $2 * 60 + $3; else print $1 * 60 + $2 }')
+    cpu_u=$(sed -n 's/.*User time (seconds): //p' "$tm")
+    cpu_s=$(sed -n 's/.*System time (seconds): //p' "$tm")
+    rss=$(sed -n 's/.*Maximum resident set size (kbytes): //p' "$tm")
+    rows=$(if [ -s "$outfile" ]; then grep -vc '^#' "$outfile" || true; else echo 0; fi)
+
+    awk -v a="$name" -v f="$flags_label" -v st="$status" -v w="${wall:-0}" \
+        -v cu="${cpu_u:-0}" -v cs="${cpu_s:-0}" -v r="${rss:-0}" -v rows="${rows:-0}" -v n="$n_queries" \
+        'BEGIN { printf "%s\t%s\t%s\t%.1f\t%.1f\t%d\t%d\t%.1f\t%.3f\n",
+                 a, f, st, w, cu + cs, r, rows, rows / n, w / n }' >> "$results"
+}
+
+# --- the sequence arms, now and proposed ------------------------------------------------
+#
+# phmmer and jackhmmer report to --domtblout, so the row count is domains, not sequences:
+# that is the list the ranked comparison reads, one row per matched region, the same unit
+# mmseqs2 and kmerseek report.
+
+run_arm phmmer-now "-E 10" "$HMMER_IMG" phmmer.now.tbl \
+    phmmer --domtblout phmmer.now.tbl --tblout /dev/null -o /dev/null --noali \
+        -E 10.0 --cpu "$cpus" sample.fasta "$reference"
+
+run_arm phmmer-permissive "--max -E 1000 --domE 1000" "$HMMER_IMG" phmmer.perm.tbl \
+    phmmer --max --domtblout phmmer.perm.tbl --tblout /dev/null -o /dev/null --noali \
+        -E 1000 --domE 1000 --cpu "$cpus" sample.fasta "$reference"
+
+run_arm jackhmmer-now "-N 3 -E 10" "$HMMER_IMG" jackhmmer.now.tbl \
+    jackhmmer -N 3 --domtblout jackhmmer.now.tbl --tblout /dev/null -o /dev/null --noali \
+        -E 10.0 --cpu "$cpus" sample.fasta "$reference"
+
+# The one this script exists for.
+run_arm jackhmmer-permissive "-N 3 --max -E 1000 --domE 1000" "$HMMER_IMG" jackhmmer.perm.tbl \
+    jackhmmer -N 3 --max --domtblout jackhmmer.perm.tbl --tblout /dev/null -o /dev/null --noali \
+        -E 1000 --domE 1000 --cpu "$cpus" sample.fasta "$reference"
+
+# --- mmseqs2 ----------------------------------------------------------------------------
+#
+# createdb runs before the timer and is not counted: it is the same work for both flag sets
+# and would only dilute the difference being measured.
+mmseqs_arm() {
+    local label=$1 out=$2 flags_label=$3 flags=$4
+    /bin/rm -rf "mm_$label"
+    mkdir -p "mm_$label"
+    ( cd "mm_$label" \
+      && apptainer exec "$MMSEQS_IMG" mmseqs createdb ../sample.fasta qdb > createdb.log 2>&1 \
+      && apptainer exec "$MMSEQS_IMG" mmseqs createdb "$reference" tdb >> createdb.log 2>&1 )
+    run_arm "mmseqs2-$label" "$flags_label" "$MMSEQS_IMG" "$out" \
+        bash -c "cd mm_$label && mmseqs search qdb tdb res tmp $flags --threads $cpus > search.log 2>&1 && \
+                 mmseqs convertalis qdb tdb res ../$out --format-output 'query,target,tstart,tend,bits,evalue' >> search.log 2>&1"
+}
+
+mmseqs_arm now  mmseqs.now.tsv  "-s 7 -e 10, --max-seqs at its default 300" \
+    "-s 7 --num-iterations 3 -e 10.0"
+mmseqs_arm perm mmseqs.perm.tsv "-s 7.5 -e 1000 --max-seqs 1000 --min-ungapped-score 0 --mask 0 -c 0" \
+    "-s 7.5 --num-iterations 3 -e 1000 --max-seqs 1000 --min-ungapped-score 0 --mask 0 -c 0"
+
+# --- the table --------------------------------------------------------------------------
+echo
+column -t -s $'\t' "$results"
+echo
+echo "written to $outdir/$results"
+awk -F'\t' 'NR > 1 && $1 ~ /permissive|perm/ { p[$1] = $4 } NR > 1 && $1 ~ /now/ { n[$1] = $4 }
+     END { print "cost of the permissive flags, as a multiple of the flags in use now:"
+           for (k in p) { base = k; sub(/-(permissive|perm)$/, "-now", base)
+                          if (base in n && n[base] > 0) printf "  %-22s %5.1fx\n", k, p[k] / n[base] } }' "$results"
+echo
+echo "to project a whole proteome: s_per_query x its protein count (human 19_696, worm 19_827, yeast 6_060)"

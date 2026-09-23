@@ -583,6 +583,43 @@ cancel-orphan-tasks:
 	 echo "$$ids" | xargs scancel 2>&1 | grep -v _add_delay || true; \
 	 echo "left: $$(squeue -u $$USER -h -o '%j' | grep -cE '$(TASK_PREFIX_RE)' || true) task(s) of this pipeline in the queue"
 
+# What the matched-permissive flags cost, measured on one sample of queries before any
+# re-run is launched (see MATCHED-PERMISSIVE.md). Runs phmmer, jackhmmer and mmseqs2 twice
+# each, with the flags in use now and with the proposed ones, and prints wall time, CPU
+# time, peak memory and rows written per query.
+#
+# jackhmmer is the reason it exists: `--max` turns every acceleration filter off, the dark
+# set runs three iterations, and HMMER documents the cost as "less speed, more power"
+# without a number. TIME_QUERIES is deliberately small -- these tools scale linearly in
+# queries against a fixed reference, so 100 queries priced exactly is worth more than 2_000
+# timed out -- and TIME_TIMEOUT caps each arm so one slow one cannot eat the allocation.
+#
+# Blocks in the foreground under srun, on a compute node: a login node SIGKILLs anything
+# past ten CPU-minutes, and the whole point is to watch the table appear.
+TIME_SPECIES  ?= yeast
+TIME_CLADE    ?= Saccharomycetes
+TIME_PROTEOME ?= $(QFO_DIR)/Eukaryota/UP000002311_559292.fasta
+TIME_REF      ?= $(REF_CACHE)/minus_$(TIME_CLADE)/reference.fasta
+TIME_QUERIES  ?= 100
+TIME_CPUS     ?= 8
+TIME_MEM      ?= 64G
+TIME_TIME     ?= 8:00:00
+TIME_TIMEOUT  ?= 2h
+TIME_OUTDIR   ?= $(MAKEFILE_DIR)/runs/time-permissive
+time-permissive-chunk:
+	@test -s '$(TIME_PROTEOME)' || { echo "no query proteome at $(TIME_PROTEOME)"; \
+	  echo "pass TIME_PROTEOME=<species fasta> (and TIME_CLADE=<its clade>)"; exit 1; }
+	@test -s '$(TIME_REF)' || { echo "no reference at $(TIME_REF)"; \
+	  echo "the dark-set run builds it; pass TIME_REF=<reference.fasta> to point elsewhere"; exit 1; }
+	@mkdir -p $(TIME_OUTDIR)
+	srun --account=$(HEAD_ACCOUNT) --partition=$(HEAD_PARTITION) --qos=$(HEAD_QOS) \
+	  --cpus-per-task=$(TIME_CPUS) --mem=$(TIME_MEM) --time=$(TIME_TIME) \
+	  --job-name=time-permissive --pty \
+	  $(MAKEFILE_DIR)/tools/time-permissive \
+	    --queries '$(TIME_PROTEOME)' --reference '$(TIME_REF)' \
+	    --outdir '$(TIME_OUTDIR)' --queries-n $(TIME_QUERIES) \
+	    --cpus $(TIME_CPUS) --timeout $(TIME_TIMEOUT)
+
 # What happened. Reads .nextflow.log and says whether the run ended, which task took it
 # down and what that task printed, per-process counts, and the head jobs from sacct. This
 # is the question a dead tmux session leaves behind, and the answer used to be grepping a
