@@ -277,16 +277,26 @@ def full_grid(
 
 def landing_summary(grid: pl.DataFrame, by: list[str]) -> pl.DataFrame:
     """Fraction of regions landed on, and the median IoU over the regions landed on."""
-    return (
+    passing = []
+    if "passes" in grid.columns:
+        passing = [
+            pl.col("passes").sum().alias("n_passing"),
+            pl.col("land_iou").filter(pl.col("passes")).median().alias("median_iou_passing"),
+        ]
+    out = (
         grid.group_by(by)
         .agg(
             n_regions=pl.len(),
             n_landed=pl.col("landed").sum(),
             median_iou_landed=pl.col("land_iou").filter(pl.col("landed")).median(),
+            *passing,
         )
         .with_columns(frac_landed=pl.col("n_landed") / pl.col("n_regions"))
         .sort(by)
     )
+    if passing:
+        out = out.with_columns(frac_passing=pl.col("n_passing") / pl.col("n_regions"))
+    return out
 
 
 def choose_arms(
@@ -416,7 +426,7 @@ def random_query_p(
     ranks: pl.DataFrame,
     regions: pl.DataFrame,
     n_draw: int = 200,
-    tol: float = 0.1,
+    tol: float = 0.2,
 ) -> pl.DataFrame:
     """Length-matched random-query control for landed cases.
 
@@ -426,6 +436,10 @@ def random_query_p(
     many put T at rank <= r. A query that does not list T at all did not reach it.
     p = (1 + reached) / (1 + drawn). The draw is the first n_draw by SHA-1 of
     accession + case key, so it is the same every run.
+
+    tol is 20%, not 10%: the query set is 476 proteins, and within 10% of a protein's
+    length and outside its gene group there were a median of about 22 others, which puts
+    the smallest possible p at 1 / 23 = 0.043, barely under 0.05.
     """
     plen = regions.select("query_acc", "protein_length", "split_unit").unique(
         "query_acc"

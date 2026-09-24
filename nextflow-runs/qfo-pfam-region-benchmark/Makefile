@@ -1948,6 +1948,8 @@ run-disprot: prefetch-images disprot-testset-sherlock
 	    $(NF_ARGS)
 
 # ---- the same, on the Mac, for one target: the dry run ----
+# 40 GB caps: with ProstT5's 64 GB task running, a 48 GB search does not fit the 110 GB the
+# local executor has and waits for it; 40 GB fits beside it.
 # --skip_metapredict: the metapredict image is amd64 and crawls under emulation here, and
 # notebook 251 reads disorder from scripts/prep_251_region_covariates.py, not from this run.
 # A native arm64 build of the rc5 source: the published image is amd64, and under Rosetta
@@ -1968,8 +1970,12 @@ DISPROT_LOCAL_PROSTT5 ?= $(DISPROT_DIR)/prostt5/weights
 
 disprot-testset-local:
 	$(call require_mac)
-	@ln -sfn $(HOME)/data/alphafold_structures/structures/$(DISPROT_LOCAL_TARGET) \
-	  $(DISPROT_LOCAL_STRUCTS)/$(DISPROT_LOCAL_TARGET)
+	@# A QfO species' models come from the shared per-species folders; the pooled target's
+	@# were fetched into $(DISPROT_LOCAL_STRUCTS)/disprot by hand (see the PR).
+	@if [ "$(DISPROT_LOCAL_TARGET)" != disprot ]; then \
+	  ln -sfn $(HOME)/data/alphafold_structures/structures/$(DISPROT_LOCAL_TARGET) \
+	    $(DISPROT_LOCAL_STRUCTS)/$(DISPROT_LOCAL_TARGET); \
+	fi
 	$(PYTHON) bin/make_mini_testset.py \
 	    --annotations      $(ANNOTATIONS) \
 	    --qfo-dir          $(QFO_DIR) \
@@ -1990,8 +1996,8 @@ run-disprot-local: disprot-testset-local
 	    $(DISPROT_ARMS) \
 	    --prostt5_gpu     false \
 	    --prostt5_weights $(DISPROT_LOCAL_PROSTT5) \
-	    --kmerseek_memory_max '48 GB' \
-	    --score_memory_max    '48 GB' \
+	    --kmerseek_memory_max '40 GB' \
+	    --score_memory_max    '40 GB' \
 	    --qfo_dir         $(DISPROT_LOCAL_DIR)/qfo \
 	    --annotations     $(DISPROT_LOCAL_DIR)/annotations \
 	    --structures      $(DISPROT_LOCAL_DIR)/structures \

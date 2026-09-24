@@ -206,6 +206,14 @@ md(r"""
 
 The landing tables come from `scripts/reduce_disprot_region_landing.py`. A region no tool
 reached counts as missed; the fraction is over every human region in the report half.
+
+Every tool here reports deep (E-value up to 1_000, or every kmerseek region), so each human
+protein's list holds hundreds of chance hits, and a short chance hit can land inside a
+disordered stretch by position alone. So every landed call, from every tool, also goes
+through the two controls of section 5, and a landing counts as **passing** when both are
+under 5%: the chance that a window of the same length dropped anywhere on the human protein
+lands on the region, and the share of length-matched random human queries that rank the
+same target protein as high.
 """)
 
 code(r"""
@@ -236,6 +244,15 @@ BOTH = pl.concat([KM, CMP], how="diagonal_relaxed").join(
     R.select(*KEY, "query_half", "term_half", "term_name", "length", "mean_plddt_region",
              "disorder_fraction_region", "has_model", "protein_length", "gene", "kd_landed"), on=KEY)
 REPORT = BOTH.filter(pl.col("query_half") == "report")
+
+# Both controls, on every landed call of every tool (see section 5).
+CKEY = [*KEY, "arm", "target", "label_rule"]
+LANDED = du.add_placement_p(REPORT.filter("landed").join(R.select(*KEY, "split_unit"), on=KEY))
+RQ = du.random_query_p(LANDED, RANKS, R)
+LANDED = (LANDED.join(RQ.select(*CKEY, "case_rank", "n_drawn", "random_query_p"), on=CKEY, how="left")
+          .with_columns(passes=(pl.col("placement_p") < 0.05) & (pl.col("random_query_p") < 0.05)))
+REPORT = REPORT.join(LANDED.select(*CKEY, "placement_p", "case_rank", "n_drawn", "random_query_p", "passes"),
+                     on=CKEY, how="left").with_columns(pl.col("passes").fill_null(False))
 
 SUM = du.landing_summary(REPORT, ["target", "label_rule", "tool_label"])
 print("\nreport half, per target and label rule:")
@@ -279,27 +296,38 @@ for i, rule in enumerate(rules):
         s = {r["tool_label"]: r for r in SUM.filter((pl.col("target") == t) & (pl.col("label_rule") == rule)).iter_rows(named=True)}
         y = np.arange(len(order))
         vals = [100 * s[k]["frac_landed"] if k in s else 0 for k in order]
-        ax.barh(y, vals, color=[mu.TOOL_FAMILY_COLORS[FAM[k]] for k in order], height=0.7)
+        passv = [100 * s[k]["frac_passing"] if k in s else 0 for k in order]
+        cols = [mu.TOOL_FAMILY_COLORS[FAM[k]] for k in order]
+        ax.barh(y, vals, color="white", edgecolor=cols, hatch="////", height=0.7, lw=0.8)
+        ax.barh(y, passv, color=cols, edgecolor=cols, height=0.7, lw=0.8)
         for yy, k, v in zip(y, order, vals):
             n = s[k]["n_landed"] if k in s else 0
-            ax.text(v + 0.5, yy, f"{n}", va="center", fontsize=7.5)
+            n_p = s[k]["n_passing"] if k in s else 0
+            ax.text(v + 0.3, yy, f"{n_p} of {n}", va="center", fontsize=7.5)
         ax.set_yticks(y, order)
         ax.invert_yaxis()
         ax.set_xlim(0, max(5, max(vals) * 1.35))
         ax.set_title(f"{du.TARGET_LABEL[t]}; {du.LABEL_RULES[rule]}", fontsize=9)
         if i == len(rules) - 1:
-            ax.set_xlabel("human regions landed on (%)\nnumber at bar end = regions")
-handles = [plt.Rectangle((0, 0), 1, 1, color=mu.TOOL_FAMILY_COLORS[f]) for f in FAM_LABEL if f in {FAM[k] for k in order}]
-fig.legend(handles, [FAM_LABEL[f] for f in FAM_LABEL if f in {FAM[k] for k in order}],
-           loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, frameon=False)
+            ax.set_xlabel("human regions (%)")
+fams = [f for f in FAM_LABEL if f in {FAM[k] for k in order}]
+handles = [plt.Rectangle((0, 0), 1, 1, color=mu.TOOL_FAMILY_COLORS[f]) for f in fams]
+labels = [FAM_LABEL[f] for f in fams]
+handles += [plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor="#555555", hatch="////"),
+            plt.Rectangle((0, 0), 1, 1, facecolor="#555555", edgecolor="#555555")]
+labels += ["landed on the region (bar length)", "landed and passed both controls (solid part)"]
+handles.append(plt.Line2D([], [], ls="", marker=""))
+labels.append("number at bar end: regions passing both controls, of regions landed on")
+fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, frameon=False)
+LABEL_TO_TOOL = {v: k for k, v in du.COMPARISON_ARMS.items()}
+DRAWN = [LABEL_TO_TOOL[k] for k in order if k in LABEL_TO_TOOL]
 mu.finish_figure(
     fig, FIG / "251_disprot_landing_by_tool.png",
-    mu.tools_text(["foldseek", "prostt5", "reseek", "hmmer3_phmmer", "hmmer3_jackhmmer", "mmseqs2_seqseq", "mmseqs2_iterative"],
-                  "kmerseek: arm picked per DisProt function term on the choose half, ungapped regions"),
-    hypothesis="On disordered functional regions kmerseek lands on more human regions than the structure tools at the same list length.",
+    mu.tools_text(DRAWN, "kmerseek: arm picked per DisProt function term on the choose half, ungapped regions"),
+    hypothesis="On disordered functional regions kmerseek lands on more human regions than the structure tools at the same list length, and more of its landings pass both controls.",
     conclusion=NARRATIVE.get("fig2_conclusion", "(conclusion written after the first execution)"),
     title="Report half: share of human DisProt regions each tool lands on, every tool cut to 1_000 targets per protein",
-    header_y=1.08,
+    header_y=1.16,
 )
 """)
 
@@ -370,12 +398,14 @@ LABEL = {**he.CATEGORY_LABEL,
          "no call": "no labelled call overlaps the region",
          "no AlphaFold model": "the human protein has no AlphaFold model to search with"}
 LABEL["equal or higher IoU"] = "call reaches kmerseek's IoU or higher"
+LABEL["inside, lower IoU"] = "call mostly inside the region, lower IoU than kmerseek"
+LABEL["spills"] = "call overlaps the region but < 50% of the call is inside it"
 rows = ST.group_by("target", "label_rule", "tool_label", "category").agg(n=pl.len())
 panels = [(t, r) for t in TARGETS for r in du.LABEL_RULES]
 fig, axes = plt.subplots(1, len(panels), figsize=(3.4 * len(panels) + 1, 2.6), squeeze=False)
 for ax, (t, rule) in zip(axes[0], panels):
     sub = rows.filter((pl.col("target") == t) & (pl.col("label_rule") == rule))
-    tools = [l for l in du.STRUCTURE_ARMS.values()]
+    tools = [l for l in du.STRUCTURE_ARMS.values() if l in set(ST["tool_label"])]
     total = KM_LAND.filter((pl.col("target") == t) & (pl.col("label_rule") == rule)).height
     for yy, tl in enumerate(tools):
         left = 0
@@ -393,11 +423,11 @@ handles = [plt.Rectangle((0, 0), 1, 1, **STYLE[c], lw=0.8) for c in CATS]
 fig.legend(handles, [LABEL[c] for c in CATS], loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False, fontsize=8)
 mu.finish_figure(
     fig, FIG / "251_disprot_structure_tools_per_region.png",
-    mu.tools_text(["foldseek", "prostt5", "reseek"], "kmerseek: arm picked per DisProt function term (defines which regions are counted)"),
+    mu.tools_text(sorted(ST["tool"].unique()), "kmerseek: arm picked per DisProt function term (defines which regions are counted)"),
     hypothesis="Where kmerseek lands on a disordered functional region, the structure tools make no call or a call that spills past it.",
     conclusion=NARRATIVE.get("fig3_conclusion", "(conclusion written after the first execution)"),
-    title="Report half, regions kmerseek landed on: what Foldseek, ProstT5 and Reseek did on each",
-    header_y=1.2,
+    title="Report half, regions kmerseek landed on: what each structure tool did on the same region",
+    header_y=1.32,
 )
 """)
 
@@ -414,7 +444,7 @@ Four checks, each asking whether a landed call could have landed without homolog
    same length dropped anywhere on the human protein lands on the region by the same rule.
    A call only counts as evidence when this chance is under 5%.
 3. **Length-matched random queries**: for each landed case, other human query proteins of
-   the same length (within 10%, a different HGNC gene group) are asked whether they put the
+   the same length (within 20%, a different HGNC gene group) are asked whether they put the
    same target protein at the same rank or better. p = (1 + queries that do) / (1 + queries asked).
 4. **Is a ranking score region length in disguise?** Spearman correlation of each score
    with call length, over every call in the lists.
@@ -424,21 +454,19 @@ code(r"""
 kd = R.filter(pl.col("query_half") == "report")
 print(f"1. Kyte-Doolittle scan lands on {kd['kd_landed'].sum()} of {kd.height} report-half regions")
 
-KMC = (REPORT.filter(pl.col("tool_label").str.starts_with("kmerseek") & pl.col("landed"))
-       .join(R.select(*KEY, "split_unit"), on=KEY))
-KMC = du.add_placement_p(KMC)
-RQ = du.random_query_p(KMC, RANKS, R)
-KMC = KMC.join(RQ.select(*KEY, "arm", "target", "label_rule", "case_rank", "n_drawn", "random_query_p"),
-               on=[*KEY, "arm", "target", "label_rule"], how="left")
-print(f"\n2-3. landed kmerseek cases (report half): {KMC.height}")
-print(KMC.group_by("target", "label_rule").agg(
+print("\n2-3. every tool's landed calls (report half) and how many pass each control:")
+CTRL = (LANDED.group_by("target", "label_rule", "tool_label").agg(
     landed=pl.len(),
+    median_rank=pl.col("case_rank").median(),
     placement_p_under_05=(pl.col("placement_p") < 0.05).sum(),
     random_query_p_under_05=(pl.col("random_query_p") < 0.05).sum(),
-    both=((pl.col("placement_p") < 0.05) & (pl.col("random_query_p") < 0.05)).sum(),
+    both=pl.col("passes").sum(),
     also_kd_landed=pl.col("kd_landed").sum(),
     median_random_queries_drawn=pl.col("n_drawn").median(),
-).sort("target", "label_rule"))
+).sort("target", "label_rule", "tool_label"))
+print(CTRL)
+CTRL.write_csv(TAB / "251_controls_by_tool.csv")
+KMC = LANDED.filter(pl.col("tool_label").str.starts_with("kmerseek"))
 
 print("\n4. Spearman rho of each ranking score with call length:")
 RHO_T = (RHO.with_columns(tool_label=pl.col("arm").map_elements(du.arm_label, return_dtype=pl.String))
@@ -454,20 +482,22 @@ code(r"""
 fig, axes = plt.subplots(1, 3, figsize=(12.5, 3.3))
 ax = axes[0]
 v = KMC["placement_p"].drop_nulls().to_numpy()
-ax.hist(v, bins=np.linspace(0, 1, 21), color="#D65F5F", label=f"landed kmerseek calls (n = {len(v)})")
+ax.hist(v, bins=np.linspace(0, 1, 21), color="#D65F5F", label=f"landed kmerseek calls, both targets and label rules (n = {len(v)})")
 ax.axvline(0.05, color="#222222", ls="--", lw=1.2, label="p = 0.05")
 ax.set_xlabel("chance a same-length window lands\nat a random position (placement p)")
 ax.set_ylabel("calls (n)")
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), frameon=False, fontsize=8)
 ax = axes[1]
 v = KMC["random_query_p"].drop_nulls().to_numpy()
-ax.hist(v, bins=np.linspace(0, 1, 21), color="#D65F5F", label=f"landed kmerseek cases (n = {len(v)})")
+ax.hist(v, bins=np.linspace(0, 1, 21), color="#D65F5F", label=f"landed kmerseek cases, both targets and label rules (n = {len(v)})")
 ax.axvline(0.05, color="#222222", ls="--", lw=1.2, label="p = 0.05")
 ax.set_xlabel("share of length-matched random queries that rank\nthe same target as high (random-query p)")
 ax.set_ylabel("cases (n)")
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), frameon=False, fontsize=8)
 ax = axes[2]
-lab = [f"{r['tool']}\n{r['rank_by']}" for r in RHO_T.iter_rows(named=True)]
+SCORE_NAME = {"mean_idf": "mean k-mer rarity", "evalue_score": "-log10 E-value", "score": "bit score"}
+lab = [f"{du.COMPARISON_ARMS.get(r['tool'], r['tool'])}: {SCORE_NAME.get(r['rank_by'], r['rank_by'])}"
+       for r in RHO_T.iter_rows(named=True)]
 ax.barh(range(RHO_T.height), RHO_T["median_rho"].to_numpy(), color="#999999", height=0.6, label="median over arms")
 ax.errorbar(RHO_T["median_rho"].to_numpy(), range(RHO_T.height),
             xerr=[RHO_T["median_rho"] - RHO_T["min_rho"], RHO_T["max_rho"] - RHO_T["median_rho"]],
@@ -480,8 +510,8 @@ ax.set_xlabel("Spearman rho, score vs call length")
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), frameon=False, fontsize=8)
 mu.finish_figure(
     fig, FIG / "251_disprot_controls.png",
-    mu.tools_text(["foldseek", "prostt5", "reseek", "hmmer3_phmmer", "hmmer3_jackhmmer", "mmseqs2_seqseq", "mmseqs2_iterative"],
-                  "kmerseek: arm picked per DisProt function term"),
+    mu.tools_text(sorted(t for t in RHO_T["tool"].unique() if t != "kmerseek"),
+                  "kmerseek: every arm run (length check); arm picked per term (placement and random-query p)"),
     hypothesis="kmerseek's landed calls are not explained by where a call of that length falls, by the query's length, or by a score that only measures length.",
     conclusion=NARRATIVE.get("fig4_conclusion", "(conclusion written after the first execution)"),
     title="Controls on the landed kmerseek calls (report half)",
@@ -505,8 +535,10 @@ ACFILMPVWY, P = DEGHKNQRST) with its own match line. Coordinates are 1-based and
 code(r"""
 worst = {"no AlphaFold model": 4, "no call": 4, "spills": 3, "inside, lower IoU": 2, "equal or higher IoU": 0}
 score = (ST.with_columns(w=pl.col("category").replace_strict(worst, default=0))
-           .group_by("target", "label_rule", *KEY).agg(structure_badness=pl.col("w").sum(),
-                                                      categories=pl.col("category").str.concat("; ")))
+           .sort("tool_label")
+           .group_by("target", "label_rule", *KEY).agg(
+               structure_badness=pl.col("w").sum(),
+               categories=pl.concat_str("tool_label", pl.lit(": "), "category").str.join("; ")))
 TOP = (KMC.filter((pl.col("placement_p") < 0.05) & (pl.col("random_query_p") < 0.05))
           .join(score, on=["target", "label_rule", *KEY], how="left")
           .sort(["label_rule", "structure_badness", "land_iou"], descending=[True, True, True])
