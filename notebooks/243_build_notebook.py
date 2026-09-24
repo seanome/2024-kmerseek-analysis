@@ -90,9 +90,12 @@ assert not bad, f"arms searched differently from the human search, rerun them: {
 print("every searched arm matches its human search setting (extended or exact)")
 
 T = lr.training_table()
-print(T.group_by("split", "correct").agg(pl.len().alias("candidates")).sort("split", "correct"))
-dropped = T.filter(pl.col("split").is_null()).height
-print(f"\n{dropped:_} candidates touch families of both splits (or none, on proteins split both ways) and are left out")
+counts = pl.read_csv(lr.PF998 / "candidate_counts.csv", schema_overrides={"split": pl.Utf8})
+print("every candidate, by split (null = touches families of both splits, left out):")
+print(counts.sort("split", "correct"))
+print("\nkept for the model (every correct one; 50 incorrect per correct one in training; 3 M incorrect held-out,")
+print("each kept incorrect candidate weighted by how many it stands for):")
+print(T.group_by("split", "correct").agg(pl.len().alias("kept"), pl.col("weight").sum().round(0).alias("stands_for")).sort("split", "correct"))
 train = T.filter(pl.col("split") == "selection")
 test = T.filter(pl.col("split") == "heldout")
 """),
@@ -101,32 +104,41 @@ md(r"""
 
 Precision-recall on the held-out families for the three nested models, with three single
 features beside them. Average precision is the area under each curve; chance is the share
-of candidates that are correct.
+of candidates that are correct. The held-out incorrect candidates are a random 3 M, each
+weighted by how many it stands for, so the curves estimate those over every candidate.
 """),
 code(r"""
 models, infos, curves = {}, {}, {}
 y = test["correct"].to_numpy()
+w = test["weight"].to_numpy()
 for name, feats in lr.FEATURE_SETS.items():
     m, info = lr.fit_model(train, feats)
     models[name], infos[name] = m, info
     p = m.predict_proba(test.select(feats).to_numpy())[:, 1]
-    prec, rec, _ = precision_recall_curve(y, p)
-    curves[name] = (rec, prec, average_precision_score(y, p))
+    prec, rec, _ = precision_recall_curve(y, p, sample_weight=w)
+    curves[name] = (rec, prec, average_precision_score(y, p, sample_weight=w))
 for name, col in [("number of alphabets that find it", "n_alphabets"),
                   ("hp_lehninger2 bit score", "hp_lehninger2__bit_score"),
                   ("candidate length", "log_span_length")]:
     s = test[col].to_numpy()
-    prec, rec, _ = precision_recall_curve(y, s)
-    curves[name] = (rec, prec, average_precision_score(y, s))
-ap = pl.DataFrame({"ranker": list(curves), "heldout_average_precision": [round(v[2], 4) for v in curves.values()]})
+    prec, rec, _ = precision_recall_curve(y, s, sample_weight=w)
+    curves[name] = (rec, prec, average_precision_score(y, s, sample_weight=w))
+def recall_at(rec, prec, target):
+    ok = prec >= target
+    return float(rec[ok].max()) if ok.any() else 0.0
+ap = pl.DataFrame({"ranker": list(curves),
+                   "heldout_average_precision": [round(v[2], 4) for v in curves.values()],
+                   "recall_at_precision_0.5": [round(recall_at(v[0], v[1], 0.5), 4) for v in curves.values()],
+                   "recall_at_precision_0.1": [round(recall_at(v[0], v[1], 0.1), 4) for v in curves.values()]})
 full, one, base = (curves[k][2] for k in ["+ all 19 alphabets", "+ hp_lehninger2's own values", "length and hydrophobic make-up only"])
 lr.fig_heldout(
-    curves, float(y.mean()), FIG / "243_heldout_precision_recall.png",
+    curves, float((w * y).sum() / w.sum()), FIG / "243_heldout_precision_recall.png",
     hypothesis="A model that sees all 19 alphabets finds correct domain matches on unseen Pfam families better than one that sees a single alphabet.",
     conclusion=(f"Average precision on held-out families: all 19 alphabets {full:.3f}, hp_lehninger2 alone {one:.3f}, "
-                f"length and hydrophobic make-up alone {base:.3f}; chance {y.mean():.4f}. "
+                f"length and hydrophobic make-up alone {base:.3f}; chance {(w * y).sum() / w.sum():.4f}. "
                 + ("Adding the other 18 alphabets raises it by a factor of " + f"{full / one:.1f}." if full > one
-                   else "Adding the other 18 alphabets does not raise it.")),
+                   else "Adding the other 18 alphabets does not raise it.")
+                + f" At half the kept candidates correct, the full model finds {recall_at(*curves['+ all 19 alphabets'][:2], 0.5):.1%} of the correct ones."),
 )
 print(ap)
 print({k: {kk: v[kk] for kk in ("C", "n_pos", "n_neg")} for k, v in infos.items()})
@@ -140,18 +152,16 @@ overlap heavily, so a single coefficient is not a clean measure of one alphabet'
 section 1's nested comparison is.
 """),
 code(r"""
+m_full = models["+ all 19 alphabets"]
+cf = dict(zip(lr.FEATURES, m_full.named_steps["logisticregression"].coef_[0]))
+order = sorted(cf, key=cf.get, reverse=True)
+top = pl.DataFrame({"feature": [lr.feature_label(f) for f in order[:8]], "coefficient": [round(float(cf[f]), 3) for f in order[:8]]})
+bottom = pl.DataFrame({"feature": [lr.feature_label(f) for f in order[::-1][:5]], "coefficient": [round(float(cf[f]), 3) for f in order[::-1][:5]]})
 coef = lr.fig_coefficients(
-    models["+ all 19 alphabets"], lr.FEATURES, FIG / "243_model_coefficients.png",
+    m_full, lr.FEATURES, FIG / "243_model_coefficients.png",
     hypothesis="The model leans on a few alphabets, not on length.",
-    conclusion="(filled below)",
-)
-top = coef.head(8)
-bottom = coef.sort("coefficient").head(5)
-lr.fig_coefficients(
-    models["+ all 19 alphabets"], lr.FEATURES, FIG / "243_model_coefficients.png",
-    hypothesis="The model leans on a few alphabets, not on length.",
-    conclusion=("Largest positive weights: " + ", ".join(f"{f} {c:+.2f}" for f, c in top.rows()[:5])
-                + ". Largest negative: " + ", ".join(f"{f} {c:+.2f}" for f, c in bottom.rows()[:3]) + "."),
+    conclusion=("The two largest weights are on length: " + ", ".join(f"{f} {c:+.2f}" for f, c in bottom.rows()[:2])
+                + ". The largest positive weights: " + ", ".join(f"{f} {c:+.2f}" for f, c in top.rows()[:3]) + "."),
 )
 print(top); print(bottom)
 """),
@@ -168,7 +178,9 @@ rows, tops = [], {}
 for q in ["Ced9", "P66", "BHF"]:
     Q = lr.query_table(q)
     ts = lr.target_scores(Q, full_model.predict_proba(Q.select(lr.FEATURES).to_numpy())[:, 1])
-    tops[q] = ts.sort("prob", descending=True).head(10).select("gene", "prob", "n_alphabets")
+    tops[q] = (ts.sort("prob", descending=True).head(10)
+                 .select("gene", "prob", "n_alphabets", pl.col("hydrophobic_windows_target").exp().sub(1).round(0).cast(pl.Int64)
+                         .alias("membrane_helix_like_windows_in_match")))
     for partner in ["BCL2", "CD47"]:
         idx = ts["gene"].to_list().index(partner) if partner in ts["gene"].to_list() else None
         if idx is None:
@@ -184,7 +196,8 @@ k = app.filter((pl.col("query") == "Ced9") & (pl.col("partner") == "CD47") & (pl
 lr.fig_application(
     app, FIG / "243_model_on_three_cases.png",
     hypothesis="The trained model puts BCL2 near the top for Ced9 without having been fitted to it.",
-    conclusion=f"The model ranks BCL2 {b:_.0f} for Ced9, CD47 {c:_.0f} for P66, and the control, CD47 for Ced9, {k:_.0f}.",
+    conclusion=(f"The model ranks BCL2 {b:_.0f} for Ced9 and the control, CD47 for Ced9, {k:_.0f}: it does not tell the "
+                f"known homolog from the control. CD47 for P66 is {c:_.0f}. The best single arm of notebook 241 put BCL2 at 213."),
 )
 print(app)
 for q, t in tops.items():
@@ -193,8 +206,28 @@ for q, t in tops.items():
 md(r"""
 ## 4. Conclusions
 
-(written once every arm of `243_pfam998_search.py` has been searched; the first cell says
-how many are in)
+1. **On Pfam families the model never saw, combining alphabets helps.** Average
+   precision is 0.046 with all 19 alphabets, 0.029 with hp_lehninger2 alone and 0.011 with
+   length and hydrophobic make-up alone; chance is 0.0009. The other 18 alphabets add a
+   factor of 1.6.
+2. **The gain is at the very top of the list only.** With half the kept matches correct,
+   the full model finds 3.5% of the correct matches and the hp_lehninger2 model 2.2%. By 10%
+   recall every ranker is close to chance.
+3. **The largest weights are on protein length, not on any alphabet.** The query's and
+   the target's length weigh -0.71 and -0.70 per standard deviation: a match between two
+   short proteins is more often a shared Pfam family. The largest alphabet weights are on
+   bit scores: sdm12 +0.23, mmseqs12 +0.18, and three 2-letter hydrophobic-polar alphabets
+   +0.11 to +0.15.
+4. **Applied to the three cases, the model does not separate BCL2 from the control.** It
+   ranks BCL2 3_539 for Ced9 and CD47, which has no known link to Ced9, 3_388. It ranks CD47
+   2_969 for P66. The four highest-ranked proteins for Ced9 are olfactory receptors (OR4F3,
+   OR4F16, OR4F21, OR4F29), each matched over a stretch with 8 membrane-helix-like windows;
+   the membrane pull that notebook 242 found is still there, although the windows are
+   a feature (their weights are about +0.02).
+5. **Together with notebook 242.** A random human protein of Ced9's length ranks BCL2 as
+   well as Ced9 does in about one case in five, even with the best alphabets and k picked
+   for each query. The trained model does no better. The limit is in what each arm sees for
+   this pair, not in how the arms are combined.
 """),
 ]
 
