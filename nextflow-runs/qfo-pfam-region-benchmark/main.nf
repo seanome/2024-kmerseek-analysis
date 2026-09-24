@@ -318,6 +318,27 @@ params.min_shared_kmers = 2
 params.max_query_pvalue = 0.05
 params.min_region_score = 1.3
 
+// FracMinHash subsampling at index time (kmerseek index --scaled, 1 to 10). 1 keeps every
+// k-mer and is the only value the benchmark runs by default. A list sweeps it as one more
+// arm axis, e.g. --kmerseek_scaled 1,2,5,10 for the ELM motif run. Index and result names
+// carry `.s<N>` after the ksize only when N > 1, so every scaled-1 store entry keeps the
+// name it has always had and stays a cache hit.
+params.kmerseek_scaled = [1]
+def SCALED = (params.kmerseek_scaled instanceof List
+              ? params.kmerseek_scaled
+              : params.kmerseek_scaled.toString().tokenize(','))
+    .collect { it.toString().trim() }
+    .collect { v ->
+        if (!(v ==~ /\d+/) || !((v as Integer) in 1..10)) {
+            error "--kmerseek_scaled takes integers from 1 to 10 (kmerseek's limit), not '${v}'"
+        }
+        v as Integer
+    }
+    .unique()
+
+// `.s<N>` for scaled > 1, empty for scaled 1. Used in every index and result name.
+def scaledTag(s) { (s as Integer) > 1 ? ".s${s}" : "" }
+
 // --- baseline tool settings ------------------------------------------------
 params.mmseqs2_sensitivity = 7
 params.mmseqs2_iterations  = 3
@@ -619,18 +640,18 @@ def KNOWN_TARGETS = REGISTRY.findAll { it.label != 'human' }
 // targets explicitly, so the default matrix is byte-for-byte what it was.
 def DEFAULT_TARGET_LABELS = ['mouse', 'chicken', 'zebrafish', 'ciona', 'fly', 'worm',
                              'yeast', 'arabidopsis', 'ecoli']
-def ALL_SPECIES = DEFAULT_TARGET_LABELS.collect { label ->
-    def row = KNOWN_TARGETS.find { it.label == label }
-    if (!row) {
-        error "Default target '${label}' is missing from ${params.species_registry}"
-    }
-    row
-}
-
 def requested = params.target_species ?: params.species
 def SPECIES
 if (!requested) {
-    SPECIES = ALL_SPECIES
+    // Checked only when the defaults are used, so a registry built for another target set
+    // (the ELM run's elm_species.tsv) works with --target_species.
+    SPECIES = DEFAULT_TARGET_LABELS.collect { label ->
+        def row = KNOWN_TARGETS.find { it.label == label }
+        if (!row) {
+            error "Default target '${label}' is missing from ${params.species_registry}"
+        }
+        row
+    }
 }
 else if (requested.toString().trim().toLowerCase() == 'all') {
     // Every QfO target, registry order (kingdom then label). Spelled as a word because
@@ -1118,7 +1139,7 @@ def kmerseekGroup = { String alphabet -> "kmerseek:${alphabet}" }
 def scoreGroup = { String tool, String variant ->
     if (params.score_group_by == 'species') return 'all'
     if (tool != 'kmerseek' || params.score_group_by == 'tool') return tool
-    def m = (variant =~ /^(.+)_k\d+_lc(?:True|False)$/)
+    def m = (variant =~ /^(.+)_k\d+(?:_s\d+)?_lc(?:True|False)$/)
     m ? kmerseekGroup(m[0][1]) : null
 }
 
@@ -1566,7 +1587,7 @@ process kmerseekIndex {
      * swap answers "what does the mouse region look like" instead of "did the tool find
      * titin's Ig domain". Rejected deliberately on 2026-08-24, not overlooked.
      */
-    tag "${species}_${label}_k${ksize}_lc${lowcomp}"
+    tag "${species}_${label}_k${ksize}${scaledTag(scaled)}_lc${lowcomp}"
     // Dynamic, and reading the task's own input rather than a param. An alphabet that
     // needs a newer kmerseek build gets one without moving every other process onto it.
     // nextflow.config deliberately sets no container for these two: a config selector
@@ -1601,13 +1622,13 @@ process kmerseekIndex {
 
     input:
     tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize),
-          val(lowcomp), val(image)
+          val(lowcomp), val(scaled), val(image)
 
     output:
-    path "${species}.${label}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb"
+    path "${species}.${label}.k${ksize}${scaledTag(scaled)}.lc${lowcomp}.kmerseek.rocksdb"
 
     script:
-    def slug      = "${label}.k${ksize}.lc${lowcomp}"
+    def slug      = "${label}.k${ksize}${scaledTag(scaled)}.lc${lowcomp}"
     def index_dir = "${species}.${slug}.kmerseek.rocksdb"
     def spectrum  = "spectrum.${species}.${slug}.csv.gz"
     // The new CLI treats --remove-low-complexity as a presence-only index flag. Search
@@ -1621,7 +1642,7 @@ process kmerseekIndex {
 
     _task_t0=\$(_now_ms)
 
-    echo "=== Index: ${species} ${cli_flag} k=${ksize} lc=${lowcomp} ===" | tee index.log
+    echo "=== Index: ${species} ${cli_flag} k=${ksize} scaled=${scaled} lc=${lowcomp} ===" | tee index.log
     echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a index.log
 
     # --kmer-stats-out writes the k-mer frequency spectrum for this proteome under this
@@ -1634,6 +1655,7 @@ process kmerseekIndex {
         --ksize    ${ksize} \\
         --input    ${species_fasta} \\
         --output   ${index_dir} \\
+        --scaled   ${scaled} \\
         ${lc_flag} \\
         --kmer-stats-out ${spectrum} \\
         2>&1 | tee -a index.log
@@ -1645,7 +1667,7 @@ process kmerseekIndex {
     # command_s is the `kmerseek index` invocation alone; realtime_s is the whole task, so
     # it is the figure comparable to a Nextflow trace row for any other process.
     printf '{"process":"kmerseekIndex","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":null}\\n' \\
-        "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
+        "${species}_${label}_k${ksize}${scaledTag(scaled)}_lc${lowcomp}" "${task.cpus}" \\
         "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" > ${timing}
 
     # Nested inside the index directory, not emitted alongside it -- see the storeDir note
@@ -1679,7 +1701,7 @@ process kmerseekSearch {
      * entries keep hitting; they simply have no record, which the report reports as a gap
      * rather than as a zero.
      */
-    tag "${species}_${label}_k${ksize}_lc${lowcomp}"
+    tag "${species}_${label}_k${ksize}${scaledTag(scaled)}_lc${lowcomp}"
     // Dynamic, and reading the task's own input rather than a param. An alphabet that
     // needs a newer kmerseek build gets one without moving every other process onto it.
     // nextflow.config deliberately sets no container for these two: a config selector
@@ -1701,17 +1723,17 @@ process kmerseekSearch {
     maxRetries 2
 
     input:
-    tuple val(species), val(cli_flag), val(label), val(ksize), val(lowcomp),
+    tuple val(species), val(cli_flag), val(label), val(ksize), val(lowcomp), val(scaled),
           val(target_bytes), path(index_dir), path(human_fasta), val(image)
 
     output:
-    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
-    path "spectrum.${species}.${label}.k${ksize}.lc${lowcomp}.csv.gz",           emit: spectrum
-    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.timings.jsonl",
+    path "human_vs_${species}.${label}.k${ksize}${scaledTag(scaled)}.lc${lowcomp}.regions.parquet",  emit: regions
+    path "spectrum.${species}.${label}.k${ksize}${scaledTag(scaled)}.lc${lowcomp}.csv.gz",           emit: spectrum
+    path "human_vs_${species}.${label}.k${ksize}${scaledTag(scaled)}.lc${lowcomp}.timings.jsonl",
          optional: true, emit: timing
 
     script:
-    def slug      = "${label}.k${ksize}.lc${lowcomp}"
+    def slug      = "${label}.k${ksize}${scaledTag(scaled)}.lc${lowcomp}"
     def out_zst   = "human_vs_${species}.${slug}.regions.csv.zst"
     def out_pq    = "human_vs_${species}.${slug}.regions.parquet"
     def log_file  = "human_vs_${species}.${slug}.log"
@@ -1724,7 +1746,7 @@ process kmerseekSearch {
 
     _task_t0=\$(_now_ms)
 
-    echo "=== Search: human vs ${species} (${cli_flag} k=${ksize} lc=${lowcomp}) ===" | tee ${log_file}
+    echo "=== Search: human vs ${species} (${cli_flag} k=${ksize} scaled=${scaled} lc=${lowcomp}) ===" | tee ${log_file}
     echo "Start: \$(date '+%Y-%m-%d %H:%M:%S')" | tee -a ${log_file}
 
     # Carried out of the index directory rather than rebuilt: the spectrum is a property of
@@ -1760,6 +1782,7 @@ process kmerseekSearch {
         --min-shared-kmers  ${params.min_shared_kmers} \\
         --max-query-pvalue  ${params.max_query_pvalue} \\
         --min-region-score  ${params.min_region_score} \\
+        ${task.ext.args ?: ''} \\
         2>> ${log_file} \\
         | zstd -T2 -o ${out_zst}
     rc=(\${PIPESTATUS[@]})
@@ -1826,7 +1849,7 @@ PYEOF
     # foldseek's 17.1 and prostt5's 14.4. command_s is the `kmerseek search` invocation
     # alone, kept for attributing the difference rather than for the headline number.
     printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s}\\n' \\
-        "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
+        "${species}_${label}_k${ksize}${scaledTag(scaled)}_lc${lowcomp}" "${task.cpus}" \\
         "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" >> ${timings}
     """
 }
@@ -1866,6 +1889,7 @@ process phmmerSearch {
         -o /dev/stderr \\
         --noali \\
         -E ${params.evalue_report} \\
+        ${task.ext.args ?: ''} \\
         --cpu ${task.cpus} \\
         ${human_fasta} ${species_fasta} \\
     | grep -v '^#' \\
@@ -1904,6 +1928,7 @@ process jackhmmerSearch {
         -o /dev/stderr \\
         --noali \\
         -E ${params.evalue_report} \\
+        ${task.ext.args ?: ''} \\
         --cpu ${task.cpus} \\
         ${human_fasta} ${species_fasta} \\
     | grep -v '^#' \\
@@ -2056,7 +2081,8 @@ process mmseqs2Search {
         ${mode_flag} \\
         ${iter_flag} \\
         --max-seqs 1000 \\
-        -e ${params.evalue_report}
+        -e ${params.evalue_report} \\
+        ${task.ext.args ?: ''}
 
     # convertalis reads the SAME target database the search used. makepaddedseqdb renumbers
     # the database keys, so resolving a GPU result against the plain database would emit
@@ -3836,6 +3862,11 @@ workflow {
         combos = combos.collectMany { cli_flag, label, k ->
             LC_TOGGLE.collect { lc -> tuple(cli_flag, label, k, lc) }
         }
+        // And with --kmerseek_scaled. One value (1) by default, so this adds no arms unless
+        // a list is asked for.
+        combos = combos.collectMany { cli_flag, label, k, lc ->
+            SCALED.collect { sc -> tuple(cli_flag, label, k, lc, sc) }
+        }
 
         // Every combo becomes one kmerseekIndex store entry per species, named
         // <species>.<label>.k<ksize>.lc<lowcomp>.kmerseek.rocksdb. Species are unique by
@@ -3855,7 +3886,7 @@ workflow {
         // case where a repeated combo is the SYMPTOM of a wrong list, and the run would
         // then report on fewer combos than were asked for without saying so.
         def dupCombos = combos
-            .countBy { _cli, label, k, lc -> "${label}.k${k}.lc${lc}" }
+            .countBy { _cli, label, k, lc, sc -> "${label}.k${k}${scaledTag(sc)}.lc${lc}" }
             .findAll { _key, n -> n > 1 }*.key
         if (dupCombos) {
             error "Duplicate kmerseek combos: ${dupCombos.join(', ')}. Each names one " +
@@ -3865,30 +3896,30 @@ workflow {
         }
         // One key for a (target, combo) cell, shared by the store filter, the count and
         // the index/search rejoin below, so none of them can name a cell differently.
-        def comboKey = { sp, lab, k, lc -> "${sp}|${lab}|${k}|${lc}".toString() }
+        def comboKey = { sp, lab, k, lc, sc -> "${sp}|${lab}|${k}|${lc}|${sc}".toString() }
 
         // Every cell the sweep will search: each target against each combo. Under
         // --kmerseek_stored_only this is cut down to the cells already in the store
         // BEFORE anything is counted or logged, so the arm counts and the startup line
         // describe the searches that will actually arrive.
         def cells = SPECIES*.label.collectMany { sp ->
-            combos.collect { cli_flag, label, k, lc -> tuple(sp, cli_flag, label, k, lc) }
+            combos.collect { cli_flag, label, k, lc, sc -> tuple(sp, cli_flag, label, k, lc, sc) }
         }
         def skipped = []
         if (params.kmerseek_stored_only) {
             // The same path kmerseekSearch's storeDir and output name resolve to. An
             // ignored search leaves nothing here, so exists() is "finished".
-            def stored = { sp, label, k, lc ->
-                file("${params.outdir}/kmerseek/human_vs_${sp}.${label}.k${k}.lc${lc}.regions.parquet").exists()
+            def stored = { sp, label, k, lc, sc ->
+                file("${params.outdir}/kmerseek/human_vs_${sp}.${label}.k${k}${scaledTag(sc)}.lc${lc}.regions.parquet").exists()
             }
-            (cells, skipped) = cells.split { sp, _cli, label, k, lc -> stored(sp, label, k, lc) }
+            (cells, skipped) = cells.split { sp, _cli, label, k, lc, sc -> stored(sp, label, k, lc, sc) }
             if (!cells) {
                 error "--kmerseek_stored_only, but ${params.outdir}/kmerseek holds none of the " +
                       "${skipped.size()} searches this sweep names. The flag finishes a run " +
                       "that already searched; it cannot start one."
             }
         }
-        def keep = cells.collect { sp, _cli, label, k, lc -> comboKey(sp, label, k, lc) } as Set
+        def keep = cells.collect { sp, _cli, label, k, lc, sc -> comboKey(sp, label, k, lc, sc) } as Set
 
         // Spell out the query/target asymmetry at startup. "2 species" reading as
         // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
@@ -3897,7 +3928,7 @@ workflow {
         |  query   : human (UP000005640_9606) -- always, and never listed as a target
         |  targets : ${SPECIES*.label.join(', ')}
         |  alphabet: ${combos.collect { it[1] }.unique().join(', ')}
-        |  combos  : ${combos.size()} (alphabet x ksize x low-complexity on/off)
+        |  combos  : ${combos.size()} (alphabet x ksize x low-complexity on/off x scaled ${SCALED.join('/')})
         |  searches: ${combos.size()} x ${SPECIES.size()} targets = ${combos.size() * SPECIES.size()}
         |            each named human_vs_<target>, e.g. human_vs_${SPECIES[0].label}
         |  spectra : one k-mer frequency spectrum per combo, published for plotting
@@ -3905,8 +3936,8 @@ workflow {
         if (params.kmerseek_stored_only) {
             log.info "  --kmerseek_stored_only: ${cells.size()} searches are in the store, " +
                      "${skipped.size()} are not and will not run:\n" +
-                     skipped.collect { sp, _cli, label, k, lc ->
-                         "    human_vs_${sp} ${label} k${k} lc${lc}"
+                     skipped.collect { sp, _cli, label, k, lc, sc ->
+                         "    human_vs_${sp} ${label} k${k}${scaledTag(sc)} lc${lc}"
                      }.join('\n')
         }
 
@@ -3916,7 +3947,7 @@ workflow {
         // the key cannot name different things. Per target as well, because under
         // --kmerseek_stored_only two targets can have finished different ksizes of one
         // alphabet.
-        cells.groupBy { sp, _cli, label, _k, _lc ->
+        cells.groupBy { sp, _cli, label, _k, _lc, _sc ->
             [sp, params.score_group_by == 'alphabet' ? kmerseekGroup(label)
                                                      : scoreGroup("kmerseek", null)]
         }.each { key, cs -> countArm([key[0]], key[1], cs.size()) }
@@ -3931,11 +3962,11 @@ workflow {
                 ? params.kmerseek_extra_image : params.kmerseek_image
         }
         kmerseek_in = species_ch.combine(Channel.fromList(combos))
-            .filter { species, _fasta, _cli, label, ksize, lowcomp ->
-                comboKey(species, label, ksize, lowcomp) in keep
+            .filter { species, _fasta, _cli, label, ksize, lowcomp, sc ->
+                comboKey(species, label, ksize, lowcomp, sc) in keep
             }
-            .map { species, fasta, cli_flag, label, ksize, lowcomp ->
-                tuple(species, fasta, cli_flag, label, ksize, lowcomp, imageFor(cli_flag))
+            .map { species, fasta, cli_flag, label, ksize, lowcomp, sc ->
+                tuple(species, fasta, cli_flag, label, ksize, lowcomp, sc, imageFor(cli_flag))
             }
         idx_out = kmerseekIndex(kmerseek_in)
 
@@ -3945,20 +3976,20 @@ workflow {
         // joined back against the input channel. That recovers cli_flag and the target
         // FASTA size, neither of which survives in the name, without reparsing either out
         // of a filename that was never meant to carry them.
-        combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp, image ->
-            tuple(comboKey(species, label, ksize, lowcomp),
-                  species, cli_flag, label, ksize, lowcomp, fasta.size(), image)
+        combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp, sc, image ->
+            tuple(comboKey(species, label, ksize, lowcomp, sc),
+                  species, cli_flag, label, ksize, lowcomp, sc, fasta.size(), image)
         }
 
         search_in = idx_out
             .map { d ->
-                def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lc(true|false)\.kmerseek\.rocksdb$/)
+                def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)(?:\.s(\d+))?\.lc(true|false)\.kmerseek\.rocksdb$/)
                 if (!m) error "cannot parse kmerseek index directory name: ${d.name}"
-                tuple(comboKey(m[0][1], m[0][2], m[0][3], m[0][4]), d)
+                tuple(comboKey(m[0][1], m[0][2], m[0][3], m[0][5], (m[0][4] ?: '1') as Integer), d)
             }
             .join(combo_meta)
-            .map { _key, d, species, cli_flag, label, ksize, lowcomp, target_bytes, image ->
-                tuple(species, cli_flag, label, ksize, lowcomp, target_bytes, d, human_fasta,
+            .map { _key, d, species, cli_flag, label, ksize, lowcomp, sc, target_bytes, image ->
+                tuple(species, cli_flag, label, ksize, lowcomp, sc, target_bytes, d, human_fasta,
                       image)
             }
 
@@ -3971,10 +4002,11 @@ workflow {
         // arms of the toggle are separate rows everywhere downstream rather than pooled.
         kmerseek_regions = ks_out.regions
             .map { pq ->
-                def m = (pq.name =~ /^human_vs_(.+?)\.(.+)\.k(\d+)\.lc(true|false)\.regions\.parquet$/)
+                def m = (pq.name =~ /^human_vs_(.+?)\.(.+)\.k(\d+)(?:\.s(\d+))?\.lc(true|false)\.regions\.parquet$/)
                 if (!m) error "cannot parse kmerseek result filename: ${pq.name}"
-                def lc = m[0][4] == 'true' ? 'lcTrue' : 'lcFalse'
-                tuple(m[0][1], "kmerseek", "${m[0][2]}_k${m[0][3]}_${lc}", pq)
+                def lc = m[0][5] == 'true' ? 'lcTrue' : 'lcFalse'
+                def sc = m[0][4] ? "_s${m[0][4]}" : ""
+                tuple(m[0][1], "kmerseek", "${m[0][2]}_k${m[0][3]}${sc}_${lc}", pq)
             }
         // Spectra are published for plotting and are not scored. The collectFile channel
         // is kept rather than discarded: it carries the same files with their names
