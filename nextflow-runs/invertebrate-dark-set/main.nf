@@ -120,6 +120,25 @@ params.kmerseek_sweep_plus      = ''
 // that can be done without changing what the arms report.
 params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12'
 
+// A ceiling on region_evalue, applied in the search's own pipe so the oversized table is
+// never written at all. null turns it off, which is what an image older than 0.4 needs:
+// region_evalue does not exist there and the filter fails loudly rather than passing
+// everything through.
+//
+// 10_000 is not a significance threshold in the usual sense, and it is not meant to be.
+// Measured 2026-09-24 on the 86 GB wass14 k5 file, 417_766 targets: E<=10_000 keeps 1.38%
+// of rows, E<=100_000 keeps 15.6%, E<=1_000 keeps 0.13%. Translated to the 989-target
+// all-against-all where the calls are labelled -- a score reads 422x higher an E-value on
+// the dark set, so the same cut is E<=23.7 there -- E<=10_000 keeps 94.9% of correct calls
+// overall and 62.5% of correct calls at 24-39 aa. E<=1_000 drops short recall to 41.7% for
+// another 10x of disk, which is the bad half of the trade; E<=100_000 costs only 6x.
+//
+// Why a disk filter is needed at all: the run was 22% through its searches on 41 TB, which
+// projects to about 186 TB against a 100 TB quota. A mean-IDF floor cannot do this job --
+// measured on the same file, mean IDF cuts at most 48% of rows where the E-value cuts
+// 98.6%.
+params.max_region_evalue        = 10000
+
 // The low-complexity mask runs ON and OFF as a PAIR by default, not as a sweep dimension.
 // BHF's seven flagship matches included polar-biased low-complexity segments (ZNF292
 // pppphpppppppphhppp), so a dark-set hit that does not survive masking is not a finding.
@@ -827,6 +846,13 @@ process kmerseekSearch {
     def flags = extensionFlags(ext, alphabet)
     // The landmark queries of this species, for awk: a space-separated list, or empty.
     def lmq  = landmarksFor(species).collect { it[0] }.unique().join(' ')
+    // Single-quoted throughout so neither Groovy nor bash touches awk's own $ variables.
+    def evCut = params.max_region_evalue == null ? 'cat' :
+        ('awk -F, -v max=' + params.max_region_evalue + ' \'' +
+         'NR==1 { for (i=1;i<=NF;i++) if ($i=="region_evalue") c=i; ' +
+         'if (!c) { print "region_evalue column missing: --max_region_evalue needs a 0.4 " ' +
+         '"image, pass --max_region_evalue null for an older one" > "/dev/stderr"; exit 3 } ' +
+         'print; next } ($c+0) <= max\'')
     """
     set -euo pipefail
     set +e
@@ -837,7 +863,9 @@ process kmerseekSearch {
         --min-shared-kmers ${params.min_shared_kmers} \\
         --max-query-pvalue ${params.max_query_pvalue} \\
         --min-region-score ${params.min_region_score} \\
-        2> ${slug}.log | zstd -T2 -o ${slug}.regions.csv.zst
+        2> ${slug}.log \\
+      | ${evCut} \\
+      | zstd -T2 -o ${slug}.regions.csv.zst
     status=(\${PIPESTATUS[@]})
     set -e
     # One failure is not a failure of the task: an `extend` search refused because the
@@ -852,7 +880,8 @@ process kmerseekSearch {
         printf 'query_name,target_name,region_evalue\\n' > ${slug}.landmarks.csv
         exit 0
     fi
-    [ "\${status[0]}" -eq 0 ] && [ "\${status[1]}" -eq 0 ] || exit 1
+    [ "\${status[0]}" -eq 0 ] && [ "\${status[1]}" -eq 0 ] \\
+        && [ "\${status[2]:-0}" -eq 0 ] || exit 1
     # No `|| true` for any other failure, on purpose. A search that finds nothing exits 0
     # (checked against the 0.4.0 binary), so tolerating a non-zero exit protects nothing -- and on
     # 2026-09-12 it hid 32 of 92 tasks dying on a RocksDB LOCK race (kmerseek PR #53) as
