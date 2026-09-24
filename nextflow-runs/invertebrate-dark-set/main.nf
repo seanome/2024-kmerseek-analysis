@@ -99,6 +99,26 @@ params.kmerseek_encodings       = null
 // unless --kmerseek_sweep or --kmerseek_encodings is on; without a sweep,
 // --kmerseek_alphabets already names every pair outright.
 params.kmerseek_sweep_plus      = ''
+// Alphabet:ksize pairs the sweep does NOT run, same spelling as --kmerseek_sweep_plus and
+// applied after it. Set to a default rather than left empty, because these three are not a
+// preference: they are the combos measured on 2026-09-24 to be writing the run out of disk
+// for regions that are chance.
+//
+// The midi run was 22% through its searches and had used 41 TB, 19 in work and 22 in
+// published results, which projects to about 186 TB against a 100 TB quota. 1_518 region
+// files over 2 GB held 15.4 TB of the 22. Single files reached 134 GB (mmseqs12 k5),
+// 86 GB (gbmr4 k12 on yeast) and 85 GB (wass14 k5).
+//
+// They are chance, not signal. Sampling 3_000_000 rows of the 86 GB wass14 k5 file: 14% of
+// regions clear region_poisson_score 3, and ELEVEN rows have a Karlin-Altschul E-value at
+// or below 1. Eleven in three million. A small alphabet at k=5 matches nearly everything
+// it sees, which is why the file is that size and why almost none of it means anything.
+//
+// Not a low-ksize rule. The largest consumer overall is hp_pbotc_1st_ed2 at k=19, 1_453 GB,
+// which is the project's designated best combo and stays. The real cure is filtering on
+// region_evalue, which 0.4 writes and the pipeline does not yet use; this list is the part
+// that can be done without changing what the arms report.
+params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12'
 
 // The low-complexity mask runs ON and OFF as a PAIR by default, not as a sweep dimension.
 // BHF's seven flagship matches included polar-biased low-complexity segments (ZNF292
@@ -1065,7 +1085,27 @@ def resolveCombos() {
             }
             [parts[0], parts[1] as Integer]
         }
+        def parseSpecs = { String raw, String flag ->
+            raw.toString().tokenize(',')*.trim().findAll { it }.collect { spec ->
+                def parts = spec.tokenize(':')
+                if (parts.size() != 2 || !(parts[1] ==~ /\d+/)) {
+                    error "${flag} entries are alphabet:ksize, not '${spec}'"
+                }
+                if (!(parts[0] in knownEncodings()*.get(0))) {
+                    error "Unknown alphabet in ${flag}: ${parts[0]}. " +
+                          "Known: ${knownEncodings()*.get(0).join(', ')}"
+                }
+                [parts[0], parts[1] as Integer]
+            }
+        }
+        def minus = parseSpecs(params.kmerseek_sweep_minus, '--kmerseek_sweep_minus')
         pairs = (pairs + plus).unique()
+        if (minus) {
+            def before = pairs.size()
+            pairs = pairs.findAll { a, k -> !minus.any { m -> m[0] == a && m[1] == k } }
+            log.info "  dropped  : ${before - pairs.size()} alphabet x ksize pair(s) by " +
+                     "--kmerseek_sweep_minus (${minus.collect { it[0] + ':' + it[1] }.join(', ')})"
+        }
     }
     else {
         pairs = params.kmerseek_alphabets.tokenize(',')*.trim().findAll { it }.collect { spec ->
