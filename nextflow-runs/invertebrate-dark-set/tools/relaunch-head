@@ -57,11 +57,18 @@ make cancel-orphan-tasks
 # the lowest live driver are orphans. Counting every task of this pipeline instead would
 # sit here for the full ten minutes whenever another run is alive, since its tasks never
 # go away.
+#
+# A task in CG is skipped for the same reason the guard skips it. CG is SLURM's
+# COMPLETING: the work is done and only teardown remains, scancel cannot touch it, and it
+# leaves the queue when it leaves, on its own schedule. On 2026-09-23 one sat in CG for
+# six hours on a node wedged by a full filesystem; this loop counted it as draining and
+# waited its full ten minutes for something that was never going to move.
 orphans_left() {
-    squeue -u "$USER" -h -o '%i %j' 2>/dev/null | awk -v re="$RELAUNCH_TASK_RE" '
+    squeue -u "$USER" -h -o '%t %i %j' 2>/dev/null | awk -v re="$RELAUNCH_TASK_RE" '
         BEGIN { n = 0; floor = 0 }
-        $2 ~ /^nfdrv-/ { if (floor == 0 || $1 + 0 < floor) floor = $1 + 0; next }
-        { id[n] = $1 + 0; name[n] = $2; n++ }
+        $1 == "CG" { next }
+        $3 ~ /^nfdrv-/ { if (floor == 0 || $2 + 0 < floor) floor = $2 + 0; next }
+        { id[n] = $2 + 0; name[n] = $3; n++ }
         END {
             if (floor == 0) floor = 1e18
             c = 0

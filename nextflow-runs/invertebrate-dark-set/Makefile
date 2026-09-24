@@ -294,7 +294,14 @@ HEAD_SUBMIT = $(if $(AFTER_RUN),$(if $(AFTER_JOBID),,$(error AFTER_RUN=$(AFTER_R
               $(MAKEFILE_DIR)/tools/nf-head
 
 run-dark-set-sbatch: check-species check-inputs queue-note
-	@n=$$(squeue -u $$USER -h -o '%j' 2>/dev/null | grep -cE '$(TASK_PREFIX_RE)' || true); \
+# A task in CG is NOT an orphan. CG is SLURM's COMPLETING: the job has finished its work
+# and only teardown is left, so it can never write to a storeDir again -- the opposite of
+# the case this guard exists for, which is a task that has not run yet and still could.
+# scancel does nothing to a CG job either, so counting one here is a deadlock: on
+# 2026-09-23 a kmerseekIndex job sat in CG for six hours on a node wedged by a full
+# filesystem, and it blocked every relaunch of this pipeline until it cleared.
+	@n=$$(squeue -u $$USER -h -o '%t %j' 2>/dev/null \
+	      | awk '$$1 != "CG" && $$2 ~ /$(TASK_PREFIX_RE)/' | wc -l); \
 	 if [ "$$n" != 0 ] && ! squeue -u $$USER -h -o '%j' 2>/dev/null | grep -q '^nfdrv-'; then \
 	   echo "WARNING: $$n task(s) of this pipeline are in the queue with no driver alive -- orphans of"; \
 	   echo "         a stopped run. An orphaned index build finishing under this run collides on"; \
@@ -602,7 +609,9 @@ rescue-indexes-0.4:
 TASK_PREFIX_RE = ^nf-(darkSet|darkReport|calibrateStore)_
 cancel-orphan-tasks:
 	@floor=$$(squeue -u $$USER -h -o "%i %j" | awk '$$2 ~ /^nfdrv-/ {print $$1}' | sort -n | head -1); \
-	 ids=$$(squeue -u $$USER -h -o "%i %j" | awk -v f="$${floor:-999999999999}" '$$2 ~ /$(TASK_PREFIX_RE)/ && $$1+0 < f+0 {print $$1}'); \
+	 ids=$$(squeue -u $$USER -h -o "%t %i %j" | awk -v f="$${floor:-999999999999}" '$$1 != "CG" && $$3 ~ /$(TASK_PREFIX_RE)/ && $$2+0 < f+0 {print $$2}'); \
+	 cg=$$(squeue -u $$USER -h -o "%t %j" | awk '$$1 == "CG" && $$2 ~ /$(TASK_PREFIX_RE)/' | wc -l); \
+	 [ "$$cg" != 0 ] && echo "$$cg task(s) are in CG (completing); scancel cannot touch those and they are not orphans"; \
 	 n=$$(echo "$$ids" | grep -c . || true); \
 	 live=$$(squeue -u $$USER -h -o "%j" | grep -cE '$(TASK_PREFIX_RE)' || true); \
 	 if [ -n "$$floor" ]; then echo "lowest live driver is job $$floor; $$((live - n)) task(s) above it belong to live driver(s) and stay"; fi; \
