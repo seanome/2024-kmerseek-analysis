@@ -335,7 +335,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 # second multi-GB image for arms it never executes.
 PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
 
-.PHONY: run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
+.PHONY: run-midi-plus-0.4 run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image \
         build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
@@ -1766,6 +1766,56 @@ midi-plus-testset-sherlock:
 # entry beside the old one instead of colliding with it. Verified against the deployed
 # cache, not assumed.
 MIDI_PLUS_OUTDIR ?= ../data/midi-plus/results
+
+# ---- midi-plus under kmerseek 0.4: the run that writes mean IDF and the E-value -------
+#
+# Same 998-protein human query and same ten targets as run-midi-plus. The only thing that
+# changes is the engine, and it changes the columns: region_mean_idf, region_tfidf,
+# region_ka_bits and region_evalue exist in 0.4 and in nothing before it. The midi-plus
+# outputs already on disk carry query_tfidf, region_poisson_score and region_enrichment and
+# none of those four, so no rescoring of them can rank by mean IDF or by an E-value.
+#
+# ITS OWN --db_cache, and that is the whole reason this is a separate target rather than
+# run-midi-plus with a different image. A stored index is named
+# <target>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and the name says nothing about which
+# kmerseek built it. Pointed at ../results, 0.4 would find 17_696 indexes built by 0.3,
+# sitting at exactly the names it wants. 0.4 checks the builder and refuses them, so the
+# arm dies; and a 0.4 build that did land would overwrite an index the older runs still
+# read. Neither is worth risking for the disk it saves.
+#
+# Cost, measured on 2026-09-24 rather than guessed: 10 targets x ~203 combos = ~2_030
+# index builds at a ~380 MB average in the existing store, so about 1 TB, plus the search
+# outputs. The query is 998 proteins, so the searches themselves are small.
+ALLIDF_IMAGE  ?= docker.io/olgabot/kmerseek:0.4.0-rc5
+ALLIDF_OUTDIR ?= ../data/midi-plus-0.4/results
+ALLIDF_CACHE  ?= ../results-0.4
+
+run-midi-plus-0.4: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
+run-midi-plus-0.4: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE) $(ALL_CONTAINERS)
+run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi-plus-0.4
+	cd run-midi-plus-0.4 && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(ALLIDF_IMAGE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(ALLIDF_IMAGE) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(ALLIDF_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        $(ALLIDF_CACHE) \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
 
 run-midi-plus: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
 run-midi-plus: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
