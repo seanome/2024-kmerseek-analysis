@@ -58,6 +58,37 @@ NAME = re.compile(r"^(?P<chunk>[^.]+)\.(?P<alphabet>.+)\.k(?P<ksize>\d+)\.lc(?P<
                   r"\.(?P<kind>queries\.txt|query_scores\.tsv)$")
 
 
+def paired_wins(real_best: dict, shuf_best: dict, accs, deltas) -> dict:
+    """Each protein against ITS OWN shuffled copy, same length and composition.
+
+    This is the readout that survives saturation. A per-combo fraction is unreadable once
+    the cutoff reaches every protein -- 20_448 of 20_448 against a control that is also
+    20_448 of 20_448 says nothing. The paired difference still separates them, because it
+    asks whether THIS protein scored better than its own shuffle, not whether some
+    threshold was cleared.
+
+    A protein neither side reached carries no information, so it is out of the
+    denominator; n_compared reports how many were left. A protein only one side reached
+    counts, with the missing side as minus infinity.
+    """
+    out = {"n_compared": 0, "wins_at": {}}
+    pairs = []
+    for a in accs:
+        r = real_best.get(a)
+        h = shuf_best.get(a)
+        if r is None and h is None:
+            continue
+        pairs.append((r if r is not None else float("-inf"),
+                      h if h is not None else float("-inf")))
+    out["n_compared"] = len(pairs)
+    for d in deltas:
+        n = sum(1 for r, h in pairs if r - h >= d and r != float("-inf"))
+        out["wins_at"][str(d)] = n
+        out.setdefault("fraction_at", {})[str(d)] = (round(n / len(pairs), 4)
+                                                     if pairs else None)
+    return out
+
+
 def read_lists(files, what: str) -> tuple[dict, dict]:
     """combo -> set of query accessions with any region, and combo -> {accession: max
     region score} where the file carries scores. Unioned across chunks."""
@@ -109,6 +140,11 @@ def main() -> None:
     ap.add_argument("--scores", type=Path, nargs="*", default=[],
                     help="per-query maximum region score files, one per chunk and combo; "
                          "optional, and absent from runs before 2026-09-20")
+    ap.add_argument("--run-cutoff", type=float, default=None,
+                    help="the --min-region-score the search itself ran at, so the output "
+                         "records which threshold was the run's own rather than leaving it "
+                         "to be inferred. main.nf passes params.min_region_score; the "
+                         "default here is only for running this by hand.")
     ap.add_argument("--thresholds", type=float, nargs="+", default=[1.3, 3.0, 10.0],
                     help="region-score cutoffs to count reach at when --scores is given; "
                          "the first should be the run's own --min-region-score")
@@ -141,11 +177,19 @@ def main() -> None:
     # combo -> set of query accessions with any region, unioned across chunks
     combos, _ = read_lists(args.queries, "--queries")
     _, scores = read_lists(args.scores, "--scores")
-    shuffled, _ = read_lists(args.shuffled, "--shuffled")
+    shuffled, shuffled_scores = read_lists(args.shuffled, "--shuffled")
     # The shuffled lists carry the dark accessions with a suffix or not at all, depending
     # on how the shuffled FASTA named them; either way only the dark set can be in them.
     shuffled = {k: {a.removesuffix("_shuffled") for a in v} & dark for k, v in shuffled.items()}
-    thresholds = sorted(set(args.thresholds))
+    # The scores were being dropped on the floor, which left the control alive only at the
+    # run's own cutoff -- the cutoff at which everything is reached, so the comparison said
+    # nothing. Same accession rule as the hit lists above.
+    shuffled_scores = {k: {a.removesuffix("_shuffled"): v for a, v in d.items()}
+                       for k, d in shuffled_scores.items()}
+    # The run's own cutoff is always among the thresholds, whatever else was asked for:
+    # a control that exists only at cutoffs the run never used cannot speak about the run.
+    thresholds = sorted(set(args.thresholds) | ({args.run_cutoff}
+                                                if args.run_cutoff is not None else set()))
 
     rows = []
     for (alphabet, ksize, lc), hit in sorted(combos.items()):
@@ -175,6 +219,32 @@ def main() -> None:
         if key in shuffled:
             row["shuffled_dark_reached"] = len(shuffled[key])
             row["fraction_shuffled_dark_reached"] = round(len(shuffled[key]) / len(dark), 4)
+        if key in shuffled_scores:
+            shuf_best = {a: v for a, (v, _r) in shuffled_scores[key].items()}
+            row["shuffled_dark_reached_at"] = {
+                str(t): sum(1 for a in dark if shuf_best.get(a, float("-inf")) >= t)
+                for t in thresholds}
+            if key in scores:
+                real_best = {a: v for a, (v, _r) in scores[key].items()}
+                # Delta 0 is the sign test: did this protein beat its own shuffle at all.
+                deltas = [0.0] + thresholds
+                row["dark_vs_own_shuffle"] = paired_wins(real_best, shuf_best, dark, deltas)
+                # The positive control: if the PLACED proteins do not beat their
+                # shuffles either, the arm is reading composition and the dark number
+                # means nothing. Only computable when placed proteins were actually
+                # shuffled -- shuffle_dark_queries.py does the dark set by default, and
+                # --also-placed adds a sample. Without them every placed protein would
+                # face a missing shuffle, score an automatic win, and the control would
+                # read 100% while measuring nothing.
+                placed_shuffled = placed & set(shuf_best)
+                if placed_shuffled:
+                    row["placed_vs_own_shuffle"] = paired_wins(
+                        real_best, shuf_best, placed_shuffled, deltas)
+                else:
+                    row["placed_vs_own_shuffle"] = None
+                    row["placed_control_absent"] = (
+                        "no placed protein was shuffled; rerun shuffle_dark_queries.py "
+                        "with --also-placed N")
         rows.append(row)
     # The parquet keeps the flat columns; the nested per-threshold counts are in the JSON.
     df = pl.DataFrame([{k: v for k, v in r.items() if not isinstance(v, dict)} for r in rows])
@@ -213,12 +283,37 @@ def main() -> None:
     summary = {"species": args.species, "dark_proteins": len(dark),
                "placed_proteins": len(placed),
                "thresholds": thresholds if scores else [],
+               "run_cutoff": args.run_cutoff,
                "has_shuffled_control": bool(shuffled),
                "by_combo": rows, "mask_pairs": paired,
                "focus_proteins": focus}
     print(json.dumps(summary, indent=2))
+    # The paired comparison first, because it is the number that survives saturation.
+    # "Reached" counts are a threshold statement and go under it, not above it.
+    beat = [r for r in rows if r.get("dark_vs_own_shuffle")]
+    if beat:
+        print("\neach dark protein against its own shuffled copy (the number that counts):")
+        for r in beat:
+            d = r["dark_vs_own_shuffle"]
+            n = d["n_compared"]
+            w = d["wins_at"].get("0.0", d["wins_at"].get("0"))
+            frac = f"{100 * w / n:.1f}%" if n else "n/a"
+            print(f"  {r['alphabet']} k{r['ksize']} lc{str(r['low_complexity_mask']).lower()}: "
+                  f"{w} of {n} dark proteins beat their own shuffle ({frac})")
+            pc = r.get("placed_vs_own_shuffle")
+            if pc and pc["n_compared"]:
+                pw = pc["wins_at"].get("0.0", pc["wins_at"].get("0"))
+                print(f"      positive control, placed proteins: {pw} of "
+                      f"{pc['n_compared']} beat theirs "
+                      f"({100 * pw / pc['n_compared']:.1f}%)")
+            elif r.get("placed_control_absent"):
+                print(f"      positive control: {r['placed_control_absent']}")
+    elif args.shuffled:
+        print("\nno paired comparison: the shuffled arm ran but wrote no scores, so the "
+              "control exists only at the run cutoff, where everything is reached.")
+
     if paired:
-        print("\nsurviving the low-complexity mask (the number that counts):")
+        print("\nsurviving the low-complexity mask:")
         for q in paired:
             print(f"  {q['alphabet']} k{q['ksize']}: {q['dark_reached_mask_on']} of "
                   f"{len(dark)} dark proteins reached with the mask ON "

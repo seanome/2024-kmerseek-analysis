@@ -662,7 +662,13 @@ process kmerseekDarkGain {
 
     script:
     // Reach is also counted at 3 and 10 (region p <= 1e-3 and 1e-10) beside the run's own
-    // cutoff, so a 100% at the run cutoff can be read against a stricter one.
+    // cutoff, so a 100% at the run cutoff can be read against a stricter one. --run-cutoff
+    // names which of them the run actually used, so the output cannot drift from the param.
+    //
+    // Both file kinds go to --shuffled. It used to pass only *.queries.txt, which threw
+    // the shuffled scores away before the script saw them: the control then existed only
+    // at the run cutoff, which on Botryllus reaches 20_448 of 20_448, so it was compared
+    // against a number that could not distinguish anything.
     def cuts = ([params.min_region_score as double, 3.0, 10.0] as Set).sort().join(' ')
     """
     set -euo pipefail
@@ -672,7 +678,8 @@ process kmerseekDarkGain {
         --queries queries/*.queries.txt \\
         --scores \$(ls queries/*.query_scores.tsv 2>/dev/null) \\
         --thresholds ${cuts} \\
-        --shuffled \$(ls shuffled/*.queries.txt 2>/dev/null) \\
+        --run-cutoff ${params.min_region_score} \\
+        --shuffled \$(ls shuffled/*.queries.txt shuffled/*.query_scores.tsv 2>/dev/null) \\
         --registry ${registry} \\
         --out ${species}_kmerseek_dark_gain.parquet \\
         --summary-out ${species}_kmerseek_dark_gain.json
