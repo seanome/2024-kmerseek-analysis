@@ -1790,6 +1790,25 @@ ALLIDF_IMAGE  ?= docker.io/olgabot/kmerseek:0.4.0-rc5
 ALLIDF_OUTDIR ?= ../data/midi-plus-0.4/results
 ALLIDF_CACHE  ?= ../results-0.4
 
+# Only the kmerseek arm runs. This target exists to produce region_mean_idf and
+# region_evalue, which no other arm writes, and every other arm has already run under
+# run-midi-plus with its outputs in ../results.
+#
+# It is not an optimisation, it is a correction. --db_cache is shared by EVERY tool, not
+# just kmerseek, so pointing it at a fresh directory -- which the kmerseek 0.3/0.4 index
+# name collision forces -- also makes Foldseek, MMseqs2, ProstT5, Reseek, Folddisco and
+# HHblits find an empty store and rebuild databases that have no version conflict at all.
+# Caught 2026-09-24, 23 minutes into a run that had queued 11 hhblitsBuildDB, 11 prostt5Db,
+# 10 foldseekDb, 10 reseekConvert, 9 folddiscoIndex and 8 mmseqsDb jobs. By this
+# Makefile's own measurement HHblits alone is 555 CPU-hours over nine targets plus 55 for
+# the profile databases, against 28 for phmmer and 12 for MMseqs2.
+#
+# skip_baselines covers phmmer, jackhmmer, hhblits and mmseqs2 together. Truth building,
+# domain identity and disorder stay on: they are covariates the scoring reads, and they
+# are cheap next to a structure database.
+ALLIDF_SKIP ?= --skip_baselines true --skip_foldseek true --skip_folddisco true \
+               --skip_reseek true --skip_prostt5 true
+
 run-midi-plus-0.4: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
 run-midi-plus-0.4: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE) $(ALL_CONTAINERS)
 run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
@@ -1801,6 +1820,7 @@ run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
 	    --kmerseek_image  $(ALLIDF_IMAGE) \
 	    --kmerseek_extra_encodings true \
 	    --kmerseek_extra_image     $(ALLIDF_IMAGE) \
+	    $(ALLIDF_SKIP) \
 	    --qfo_dir         ../data/midi-plus/qfo \
 	    --annotations     ../data/midi-plus/annotations \
 	    --structures      ../data/midi-plus/structures \
