@@ -476,6 +476,19 @@ params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip t
 // folddisco database once and the full run reuses it, instead of paying for ProstT5
 // inference over nine proteomes twice.
 params.db_cache = null
+// Where kmerseek's index store lives, when it must NOT be the one beside every other
+// tool's. Defaults to ${DB_CACHE}/kmerseek_index, so a run that does not set it behaves
+// exactly as before.
+//
+// It exists because a kmerseek index is named
+// <target>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and the name says nothing about which
+// kmerseek built it. Running 0.4 against a store built by 0.3 means 0.4 finds indexes at
+// the names it wants, checks the builder, and refuses them. The obvious workaround --
+// point --db_cache somewhere fresh -- is wrong, and cost a run on 2026-09-24: db_cache is
+// shared by Foldseek, MMseqs2, ProstT5, Reseek, Folddisco and HHblits too, so a fresh one
+// makes all of them miss stores that were already built and rebuild databases that have
+// no version conflict. Separating the one store that does have a conflict is the fix.
+params.kmerseek_index_cache = null
 
 params.prostt5_max_len = 6000
 
@@ -737,6 +750,7 @@ def HHBLITS_SPECIES = HHBLITS_KINGDOMS == null
 // flags 47 of the 184 alphabet x ksize combos, including every low-ksize case in the
 // non-HP alphabets that a name-based rule cannot see.
 def DB_CACHE = params.db_cache ?: params.outdir
+def KMERSEEK_INDEX_CACHE = params.kmerseek_index_cache ?: "${DB_CACHE}/kmerseek_index"
 
 // Three runs have now died on the same unstage failure, on three different directory
 // outputs under storeDir (foldseekDb, prostt5Db, kmerseekIndex), and each time it had to
@@ -1600,7 +1614,7 @@ process kmerseekIndex {
     // beats a process directive, so a `container = params.kmerseek_image` there would
     // silently put every task back on one image and this line would never be consulted.
     container { image }
-    storeDir "${DB_CACHE}/kmerseek_index"
+    storeDir KMERSEEK_INDEX_CACHE
 
     // Index sizing only. Building the index does not care which alphabet or ksize it is
     // -- 1_500 measured tasks peaked at 7.00 GB and tracked the proteome alone -- so this

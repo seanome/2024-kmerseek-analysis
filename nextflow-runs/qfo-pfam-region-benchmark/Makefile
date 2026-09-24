@@ -1788,7 +1788,12 @@ MIDI_PLUS_OUTDIR ?= ../data/midi-plus/results
 # outputs. The query is 998 proteins, so the searches themselves are small.
 ALLIDF_IMAGE  ?= docker.io/olgabot/kmerseek:0.4.0-rc5
 ALLIDF_OUTDIR ?= ../data/midi-plus-0.4/results
-ALLIDF_CACHE  ?= ../results-0.4
+# db_cache stays on ../results so every OTHER tool's storeDir hits what run-midi-plus
+# already built: Foldseek, MMseqs2, ProstT5, Reseek, Folddisco and HHblits databases, and
+# the phmmer / jackhmmer / mmseqs2 search results. Only kmerseek's index store moves,
+# because only kmerseek has a 0.3-versus-0.4 name collision.
+ALLIDF_CACHE  ?= ../results
+ALLIDF_INDEX  ?= ../results/kmerseek_index_0.4
 
 # Only the kmerseek arm runs. This target exists to produce region_mean_idf and
 # region_evalue, which no other arm writes, and every other arm has already run under
@@ -1806,8 +1811,11 @@ ALLIDF_CACHE  ?= ../results-0.4
 # skip_baselines covers phmmer, jackhmmer, hhblits and mmseqs2 together. Truth building,
 # domain identity and disorder stay on: they are covariates the scoring reads, and they
 # are cheap next to a structure database.
-ALLIDF_SKIP ?= --skip_baselines true --skip_foldseek true --skip_folddisco true \
-               --skip_reseek true --skip_prostt5 true
+# Left EMPTY on purpose. The arms are not skipped by flag any more; their storeDir
+# entries in ../results are simply hit, which costs a task that never executes and keeps
+# their regions available to the scoring beside the kmerseek ones. Set it to
+# `--skip_baselines true --skip_foldseek true ...` for a run that wants none of them.
+ALLIDF_SKIP ?=
 
 run-midi-plus-0.4: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
 run-midi-plus-0.4: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE) $(ALL_CONTAINERS)
@@ -1826,7 +1834,8 @@ run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
 	    --structures      ../data/midi-plus/structures \
 	    --outdir          $(ALLIDF_OUTDIR) \
 	    $(BPE_NF_ARG) \
-	    --db_cache        $(ALLIDF_CACHE) \
+	    --db_cache            $(ALLIDF_CACHE) \
+	    --kmerseek_index_cache $(ALLIDF_INDEX) \
 	    --target_species  $(MIDI_PLUS_TARGETS) \
 	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
 	    --omega_file      ../data/covariates/omega_results.tsv \
