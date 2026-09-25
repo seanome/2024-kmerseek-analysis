@@ -208,7 +208,7 @@ for g in GROUPS:
     per_inst = sub.group_by("elm_instance").agg(
         *[pl.col(f"{w}_pr_same_class").mean() for w, _ in WINDOWS],
         *[pl.col(f"{w}_identity").mean() for w, _ in WINDOWS],
-        pl.col("pr_same_class_chance").mean())
+        pl.col("pr_same_class_chance").mean()).sort("elm_instance")  # fixed order: group_by's is arbitrary
     for w, _ in WINDOWS:
         m, lo, hi = boot_mean(per_inst[f"{w}_pr_same_class"].to_numpy())
         mi, _, _ = boot_mean(per_inst[f"{w}_identity"].to_numpy())
@@ -345,6 +345,144 @@ for g in GROUPS:
 """)
 
 md(NARRATIVE.get("stage0", ""))
+
+md(r"""
+## Step 4. Target-side labels: how many cases can "transfer" be scored on?
+
+Transfer (did a tool copy the right motif label from the target) needs a label on the target
+protein. `scripts/elm_tiers.py` projects each human motif onto its 1:1 OMA ortholog through
+the MAFFT alignment and looks for three kinds of label there, each in its own table:
+
+- `tier_experimental`: the ortholog carries its own ELM "true positive" instance of the same
+  class, overlapping the projected position.
+- `tier_swissprot`: the ortholog has a Swiss-Prot MOTIF or REGION feature overlapping the
+  projected position (UniProtKB/Swiss-Prot flat file on disk, see the provenance file).
+- `tier_regex_projected`: the class regex matches the ortholog there. Quarantined: used only
+  for the cover check, never as a headline, because the regex is a competitor.
+
+`regex_matches_target` is computed once per pair, in its own step (`regex_on_target`), and
+read in exactly two places: as the truth of `tier_regex_projected`, and as the filter that
+selects the "regex fails" stratum (correction C1).
+""")
+
+code(r"""
+T = Path("/Users/olga/data/elm-motif-transfer/tiers")
+EXP = pl.read_parquet(T / "tier_experimental.parquet")
+SPR = pl.read_parquet(T / "tier_swissprot.parquet").with_columns(
+    experimental_evidence=pl.col("sp_evidence").str.contains("ECO:0000269"),
+    disordered_note=pl.col("sp_note").str.contains("(?i)^disordered"))
+ROT = pl.read_parquet(T / "regex_on_target.parquet")
+C1 = pl.read_parquet(T / "regex_fails_stratum.parquet")
+order = {s: i for i, s in enumerate(SPECIES)}
+
+exp_at = EXP.filter("overlaps_projection")
+spr_exp = SPR.filter(pl.col("experimental_evidence") & ~pl.col("disordered_note"))
+truth = (pl.DataFrame({"species": SPECIES[:-1]})
+         .join(exp_at.group_by("species").agg(elm_experimental=pl.col("elm_instance").n_unique()), on="species", how="left")
+         .join(spr_exp.group_by("species").agg(swissprot_experimental=pl.col("elm_instance").n_unique()), on="species", how="left")
+         .join(ROT.group_by("species").agg(pairs=pl.len(), share_regex_matches_target=pl.col("regex_matches_target").mean()),
+               on="species", how="left")
+         .fill_null(0))
+print("Human ELM instances with a target-side label at the aligned position, per species:")
+print(truth.with_columns(pl.col("share_regex_matches_target").round(3)))
+truth.write_csv(TAB / "250_step4_truth_by_species.csv")
+print(f"\ntier_experimental at the aligned position: {exp_at.height} rows, "
+      f"{exp_at['elm_instance'].n_unique()} human instances; beyond mouse: "
+      f"{exp_at.filter(pl.col('species') != 'mouse')['elm_instance'].n_unique()}")
+print("\ntier_swissprot features at the aligned position, by kind:")
+print(SPR.group_by("sp_type", "disordered_note", "experimental_evidence").len().sort("sp_type", "disordered_note", "experimental_evidence"))
+print(f"\nC1 regex-fails stratum (experimental label present, regex does not match the ortholog): "
+      f"{C1.height} rows")
+print(f"Swiss-Prot experimental features where regex_matches_target is false: "
+      f"{spr_exp.join(ROT.select('elm_instance', 'species', 'regex_matches_target'), on=['elm_instance', 'species']).filter(~pl.col('regex_matches_target')).height} rows")
+n_exp = exp_at["elm_instance"].n_unique()
+print(f"\nC3 regime: n(tier_experimental) = {n_exp}; "
+      + ("under 50, so tier_swissprot is primary" if n_exp < 50 else
+         f"50 or more overall, but {exp_at.filter(pl.col('species') == 'mouse')['elm_instance'].n_unique()} are mouse"))
+
+fig, ax = plt.subplots(figsize=(7, 3.6))
+y = np.arange(truth.height)
+ax.barh(y - 0.2, truth["elm_experimental"], height=0.4, color="#7F77DD", edgecolor="0.3", label="ortholog has its own experimental ELM instance")
+ax.barh(y + 0.2, truth["swissprot_experimental"], height=0.4, color="white", edgecolor="#0F6E56", hatch="///",
+        label="ortholog has a Swiss-Prot feature with experimental evidence")
+for yi, a, b in zip(y, truth["elm_experimental"], truth["swissprot_experimental"]):
+    ax.annotate(str(a), (a, yi - 0.2), xytext=(3, 0), textcoords="offset points", va="center", fontsize=8)
+    ax.annotate(str(b), (b, yi + 0.2), xytext=(3, 0), textcoords="offset points", va="center", fontsize=8)
+ax.set_yticks(y, truth["species"])
+ax.invert_yaxis()
+ax.set_xlabel("human ELM instances with a labelled ortholog at the aligned position (n)")
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), frameon=False, fontsize=8)
+fig.savefig(FIG / "250_step4_truth_by_species.png", dpi=200)
+""")
+
+md(r"""
+## Mismatch penalty: does the Pfam kappa hold on these pairs?
+
+The extension's mismatch penalty C per alphabet comes from kappa, the chance-corrected class
+agreement, measured on Pfam-A 38.2 seed pairs at 20-30% identity (`assets/
+kappa_by_alphabet.pfam_a_38.2_seed_pairs_20-30pct_identity.tsv`, notebook 230).
+`scripts/elm_kappa.py` measures kappa on the ELM ortholog pairs with notebook 230's own
+function (`hp_conservation_utils.pair_stats`), for the motif, the 10 residues each side, and
+the rest of the protein. The motif and flanks are pooled over all pairs of a species (6 and
+20 columns per pair are too few for a per-pair value); the rest of the protein is also given
+as notebook 230's per-pair mean over pairs with at least 50 columns. C = -ln(1 - kappa) /
+ln(1 + kappa x classes - kappa).
+""")
+
+code(r"""
+K = pl.read_csv(TAB / "250_elm_kappa_by_species.csv")
+PF = pl.read_csv(Path("../nextflow-runs/qfo-pfam-region-benchmark/assets/kappa_by_alphabet.pfam_a_38.2_seed_pairs_20-30pct_identity.tsv"),
+                 separator="\t", comment_prefix="#").select("alphabet", pl.col("kappa").alias("kappa_pfam"), pl.col("c_opt").alias("C_pfam"))
+k_hp = (K.filter(pl.col("alphabet") == "hp_pbotc_1st_ed2")
+        .select("species", "mya", "window", "n_pairs", "kappa_pooled", "C_pooled", "kappa_per_pair_mean", "C_per_pair_mean")
+        .sort("mya", "window"))
+print("hp_pbotc_1st_ed2 on the ELM ortholog pairs (Pfam 20-30% identity: kappa 0.4389, C 1.59):")
+print(k_hp.with_columns(pl.col(pl.Float64).round(3)))
+far = (K.filter((pl.col("mya") >= 550) & (pl.col("window") == "flanks"))
+       .group_by("alphabet").agg(kappa_flanks_550plus=pl.col("kappa_pooled").mean(), C_flanks_550plus=pl.col("C_pooled").mean())
+       .join(PF, on="alphabet", how="left").sort("alphabet"))
+print("\nEvery alphabet: flanks, mean over species at 550 Mya or more, against the Pfam value:")
+print(far.with_columns(pl.col(pl.Float64).round(3)))
+
+fig, ax = plt.subplots(figsize=(7, 3.4))
+for w, ls, mk in (("flanks", "-", "o"), ("rest", "--", "s")):
+    s = k_hp.filter(pl.col("window") == w)
+    ax.plot(s["mya"], s["C_pooled"], ls=ls, marker=mk, color="#3B6EA5", label=f"ELM ortholog pairs, {'10 residues each side' if w == 'flanks' else 'rest of the protein'}")
+ax.axhline(1.59, color="0.45", ls=":", label="Pfam-A 38.2 seed pairs, 20-30% identity (in use)")
+ax.set_xscale("log")
+ax.set_xticks([100, 300, 550, 900, 1500], ["100", "300", "550", "900", "1500"])
+ax.set_xlabel("divergence from human (Mya)")
+ax.set_ylabel("mismatch penalty C,\nhp_pbotc_1st_ed2")
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), frameon=False, fontsize=8)
+fig.savefig(FIG / "250_kappa_penalty_by_species.png", dpi=200)
+""")
+
+md(r"""
+## Seed lengths: two per alphabet, within memory
+
+`scripts/elm_seed_floor.py` counts, with `kmerseek index --stats-only` on the QfO human
+proteome, how many human proteins contain a seed taken at a random position. `k_main` is the
+shortest k under 100 proteins; `k_small` the shortest under 1_000, raised until it fits the
+128 GB search memory limit as measured on the same nine proteomes in the midi-plus trace.
+""")
+
+code(r"""
+TK = pl.read_csv(TAB / "250_two_k_per_alphabet.csv")
+print(f"memory: load cap {TK['load_cap'][0]} (largest load whose worst midi-plus search stayed under 128 GB)")
+print(TK.select("alphabet", "k_main", "proteins_per_seed_k_main", "k_small", "k_small_fits_memory",
+                "proteins_per_seed_k_small_fits_memory"))
+fig, ax = plt.subplots(figsize=(7, 4.6))
+y = np.arange(TK.height)
+ax.scatter(TK["k_main"], y, marker="o", color="#3B6EA5", label="k_main: under 100 proteins per seed", zorder=3)
+ks = TK["k_small_fits_memory"].to_list()
+ax.scatter([k for k in ks if k is not None], [yi for yi, k in zip(y, ks) if k is not None], marker="s",
+           facecolor="white", edgecolor="#C98A2B", label="k_small: under 1_000 and within 128 GB", zorder=3)
+ax.set_yticks(y, TK["alphabet"], fontsize=8)
+ax.invert_yaxis()
+ax.set_xlabel("seed length k (residues)")
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), frameon=False, fontsize=8, ncol=1)
+fig.savefig(FIG / "250_two_k_per_alphabet.png", dpi=200)
+""")
 
 # The search sections below are the pooled-target design of 2026-09-24. They stay out of the
 # notebook until the Stage 0 verdict has been read and the search is rewired for the
