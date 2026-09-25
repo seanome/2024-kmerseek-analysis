@@ -335,7 +335,7 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 # second multi-GB image for arms it never executes.
 PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
 
-.PHONY: bootstrap-sherlock build-image build-image-local push-image \
+.PHONY: run-midi-plus-0.4 run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image \
         build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
@@ -1630,6 +1630,52 @@ MIDI_OUTDIR ?= ../data/midi/results
 # per-task container rather than a per-run one.
 #
 # Both images are prefetched because a run now genuinely uses both.
+# ---- human against itself: the all-against-all arm --------------------------------
+#
+# Why it exists: the benchmark's other nine arms are human against another species, and
+# they do not produce enough SHORT correct matches to rank scores on. Measured on
+# 2026-09-23 from a 933-protein human all-against-all, correct matches under 30 aa grow
+# as proteins^2.07, so 933 proteins give 10 of them and a 95% bootstrap band on the AUC
+# of +-0.12 to +-0.19. The registry's 20_600 human proteins are the fix.
+#
+# ALLVALL_IMAGE is not $(IMAGE_REMOTE), deliberately. The columns this arm exists to rank
+# -- region_mean_idf and region_evalue -- arrived in kmerseek 0.4; the default image
+# predates them and writes neither, so the run would finish and rank nothing. Pinned to a
+# tag resolved off Docker Hub on 2026-09-23, not guessed. Re-resolve before a rerun.
+#
+# Its own launch dir and its own outdir, so nothing here can move the nine-species sweep's
+# results or its report. --db_cache IS shared: the index is stored as
+# human.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb, a name no other arm can write, so it
+# lands beside them without collision.
+#
+# One combo by default, the one the scratchpad experiment used. Widen with
+# KMERSEEK_COMBOS= once the arm has run once and the cost is known: the search is
+# 20_600 queries against a 20_600-sequence index, which nothing here has measured yet.
+ALLVALL_IMAGE   ?= docker.io/olgabot/kmerseek:0.4.0-rc5
+ALLVALL_OUTDIR  ?= ../data/allvall/results
+ALLVALL_COMBOS  ?= hp_lehninger2:24
+ALLVALL_LOWCOMP ?= true
+
+run-human-allvall: PREFETCH_CONTAINERS := $(ALLVALL_IMAGE)
+run-human-allvall: prefetch-images
+	$(call require_cluster)
+	mkdir -p run-human-allvall
+	cd run-human-allvall && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --human_all_vs_all \
+	    --target_species      human \
+	    --kmerseek_image      $(ALLVALL_IMAGE) \
+	    --kmerseek_combos     $(ALLVALL_COMBOS) \
+	    --low_complexity_toggle $(ALLVALL_LOWCOMP) \
+	    --outdir              $(ALLVALL_OUTDIR) \
+	    --db_cache            ../results \
+	    --qfo_dir             ../data/qfo \
+	    --annotations         ../data/annotations \
+	    --swissprot_dat       ../data/uniprot_sprot.dat.gz \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
 run-midi: QUERY_SET_LABEL := $(MIDI_QUERY_SET)
 run-midi: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi: prefetch-images midi-testset-sherlock
@@ -1720,6 +1766,85 @@ midi-plus-testset-sherlock:
 # entry beside the old one instead of colliding with it. Verified against the deployed
 # cache, not assumed.
 MIDI_PLUS_OUTDIR ?= ../data/midi-plus/results
+
+# ---- midi-plus under kmerseek 0.4: the run that writes mean IDF and the E-value -------
+#
+# Same 998-protein human query and same ten targets as run-midi-plus. The only thing that
+# changes is the engine, and it changes the columns: region_mean_idf, region_tfidf,
+# region_ka_bits and region_evalue exist in 0.4 and in nothing before it. The midi-plus
+# outputs already on disk carry query_tfidf, region_poisson_score and region_enrichment and
+# none of those four, so no rescoring of them can rank by mean IDF or by an E-value.
+#
+# ITS OWN --db_cache, and that is the whole reason this is a separate target rather than
+# run-midi-plus with a different image. A stored index is named
+# <target>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and the name says nothing about which
+# kmerseek built it. Pointed at ../results, 0.4 would find 17_696 indexes built by 0.3,
+# sitting at exactly the names it wants. 0.4 checks the builder and refuses them, so the
+# arm dies; and a 0.4 build that did land would overwrite an index the older runs still
+# read. Neither is worth risking for the disk it saves.
+#
+# Cost, measured on 2026-09-24 rather than guessed: 10 targets x ~203 combos = ~2_030
+# index builds at a ~380 MB average in the existing store, so about 1 TB, plus the search
+# outputs. The query is 998 proteins, so the searches themselves are small.
+ALLIDF_IMAGE  ?= docker.io/olgabot/kmerseek:0.4.0-rc5
+ALLIDF_OUTDIR ?= ../data/midi-plus-0.4/results
+# db_cache stays on ../results so every OTHER tool's storeDir hits what run-midi-plus
+# already built: Foldseek, MMseqs2, ProstT5, Reseek, Folddisco and HHblits databases, and
+# the phmmer / jackhmmer / mmseqs2 search results. Only kmerseek's index store moves,
+# because only kmerseek has a 0.3-versus-0.4 name collision.
+ALLIDF_CACHE  ?= ../results
+ALLIDF_INDEX  ?= ../results/kmerseek_index_0.4
+
+# Only the kmerseek arm runs. This target exists to produce region_mean_idf and
+# region_evalue, which no other arm writes, and every other arm has already run under
+# run-midi-plus with its outputs in ../results.
+#
+# It is not an optimisation, it is a correction. --db_cache is shared by EVERY tool, not
+# just kmerseek, so pointing it at a fresh directory -- which the kmerseek 0.3/0.4 index
+# name collision forces -- also makes Foldseek, MMseqs2, ProstT5, Reseek, Folddisco and
+# HHblits find an empty store and rebuild databases that have no version conflict at all.
+# Caught 2026-09-24, 23 minutes into a run that had queued 11 hhblitsBuildDB, 11 prostt5Db,
+# 10 foldseekDb, 10 reseekConvert, 9 folddiscoIndex and 8 mmseqsDb jobs. By this
+# Makefile's own measurement HHblits alone is 555 CPU-hours over nine targets plus 55 for
+# the profile databases, against 28 for phmmer and 12 for MMseqs2.
+#
+# skip_baselines covers phmmer, jackhmmer, hhblits and mmseqs2 together. Truth building,
+# domain identity and disorder stay on: they are covariates the scoring reads, and they
+# are cheap next to a structure database.
+# Left EMPTY on purpose. The arms are not skipped by flag any more; their storeDir
+# entries in ../results are simply hit, which costs a task that never executes and keeps
+# their regions available to the scoring beside the kmerseek ones. Set it to
+# `--skip_baselines true --skip_foldseek true ...` for a run that wants none of them.
+ALLIDF_SKIP ?=
+
+run-midi-plus-0.4: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
+run-midi-plus-0.4: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE) $(ALL_CONTAINERS)
+run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi-plus-0.4
+	cd run-midi-plus-0.4 && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(ALLIDF_IMAGE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(ALLIDF_IMAGE) \
+	    $(ALLIDF_SKIP) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(ALLIDF_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache            $(ALLIDF_CACHE) \
+	    --kmerseek_index_cache $(ALLIDF_INDEX) \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
 
 run-midi-plus: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
 run-midi-plus: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)

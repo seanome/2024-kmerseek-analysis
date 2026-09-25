@@ -249,6 +249,31 @@ def release_inflated(path: Path) -> None:
         out.unlink(missing_ok=True)
 
 
+def drop_self_matches(lf: pl.LazyFrame, names: list[str] | None = None) -> pl.LazyFrame:
+    """Drop a protein matched against itself.
+
+    A no-op for every cross-species arm, where a human accession and a mouse one can
+    never be equal and no md5 is shared. It exists for the human all-against-all arm
+    (--human_all_vs_all), where query and target are the same proteome: there a
+    protein's best hit is itself, at perfect overlap with its own domains, and counting
+    those would score the benchmark on identity rather than on homology detection.
+
+    Two separate cases, so two separate filters:
+
+    * Same accession. kmerseek already suppresses this -- a 933-protein human
+      all-against-all on 2026-09-23 had 0 rows with query_name == target_name -- so the
+      filter is belt and braces against a tool that does not.
+    * Different accessions holding the SAME sequence, 26 of 11_298 rows in that run.
+      These survive an accession check by construction, so they need the md5 columns.
+      Applied only when both are present, and BEFORE the select that drops them.
+    """
+    if names is not None:
+        if "query_md5" in names and "target_md5" in names:
+            lf = lf.filter(pl.col("query_md5") != pl.col("target_md5"))
+        return lf
+    return lf.filter(pl.col("query_acc") != pl.col("target_acc"))
+
+
 def load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
                  max_bonferroni_p: float | None = 0.05) -> pl.LazyFrame | None:
     """Normalize any tool's output to one schema. Returns None for an empty result, which
@@ -363,7 +388,8 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
                 pl.min_horizontal(raw_p * n_tests, pl.lit(1.0)) < max_bonferroni_p
             )
 
-        return lf.select(
+        lf = drop_self_matches(lf, names)
+        return drop_self_matches(lf.select(
             extract_accession(pl.col("query_name")).alias("query_acc"),
             extract_accession(pl.col("target_name")).alias("target_acc"),
             pl.col("region_start").cast(pl.Int64).alias("qstart"),
@@ -371,7 +397,7 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
             pl.col("target_start").cast(pl.Int64).alias("tstart"),
             pl.col("target_end").cast(pl.Int64).alias("tend"),
             pl.col(score_col).cast(pl.Float64).alias("score"),
-        )
+        ))
 
     # Everything below this point is CSV, so it is the path that has to be inflated first.
     # The size check above deliberately stays on the ORIGINAL file: an empty gzip stream is
@@ -418,6 +444,10 @@ def _load_regions(path: Path, direct: bool, rank_by: str = "region_enrichment",
     if width >= 9:
         selection.append(pl.col("n_matched_residues").cast(pl.Int64, strict=False))
     lf = lf.select(selection)
+
+    # Same self-match rule the parquet branch applies, for the baseline tools. These are
+    # TSV and carry no md5, so the accession check is all there is here.
+    lf = drop_self_matches(lf)
 
     # A row whose coordinates did not parse carries a number from the wrong column, so it
     # is not a hit that can be placed anywhere -- see the shifted-field note on the awk in
