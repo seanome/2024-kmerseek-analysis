@@ -58,8 +58,10 @@ non-human family members added) and all cut at $E \le 1000$:
 
 * kmerseek, 150 alphabet and k combinations: the nb 241 ladder without gbmr7 k8 and k10,
   whose index builds were killed for memory while fitting the Karlin-Altschul constants.
-  Ungapped extension; kmerseek branch `olgabot/run-evalue` at 5fdfdcc, where every region has a
-  `region_evalue`
+  Every combination uses ungapped extension. kmerseek branch
+  `olgabot/extend-without-fit-ka-fixes` at 90c581a (PRs #88 and #89 on `olgabot/run-evalue`):
+  every region has a `region_evalue`, and regions are extended even where the index has
+  no Karlin-Altschul fit
 * phmmer (HMMER 3.4), `--max`
 * MMseqs2 18.8cc5c, sensitivity `-s 7.5`, `--exhaustive-search 1`
 * Foldseek 10.941cd33 on AlphaFold DB v6 models, `--exhaustive-search 1`

@@ -16,14 +16,15 @@ Mac. Their SHA-256 checksums are below so a rerun can check it read the same fil
 | human proteome | Mac: `/Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143/Eukaryota/UP000005640_9606.fasta`; Sherlock: `/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/qfo/Eukaryota/UP000005640_9606.fasta` (the two copies have the same MD5, `74bf5689099474ca85a96b090c722ece`) | Quest for Orthologs reference proteome, 20_600 proteins; the 8 human family members in it are identical to their UniProt 2026_03 sequences | QfO release 2020_04 | `3793b9bfcc956a278494734bb775a010513f5764d8047fcdb283d2aeaa7fefb8` |
 | human AlphaFold models | Sherlock: `/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/structures/human/`, unpacked from `_archives/UP000005640_9606_HUMAN_v6.tar` (5_177_506_304 bytes, dated 2026-08-19) | AlphaFold DB human proteome; the Foldseek database holds 20_336 models for the 20_608 database proteins (the other 272 have no model) | AlphaFold DB v6 | not recorded |
 | family AlphaFold models | fetched at run time by `bin/fetch_afdb.py`; versions in `results/structures/afdb_models.tsv` | current model per accession from the AlphaFold DB API; each model's sequence checked equal to the UniProt sequence | v6 (model date 2025-08-01), fetched 2026-09-25 | per file, not recorded |
-| kmerseek alphabet and k ladder | `nextflow-runs/deep-twilight-controls/assets/arms.tsv` (in git) | alphabet, k, bits per seed, mismatch penalty and give-up margin from nb 241's `arms.csv`, without gbmr7 k8 and k10 (commit c0be2ef) | 150 rows | `6f406a0c83cf7d46a6797dc3e67059aaf658e950f5f664d96ea1f8503c7a223a` |
+| kmerseek alphabet and k ladder | `nextflow-runs/deep-twilight-controls/assets/arms.tsv` (in git) | alphabet, k, bits per seed, mismatch penalty and give-up margin from nb 241's `arms.csv`, without gbmr7 k8 and k10 (commit c0be2ef); `ka_reference_shuffles` is the fewest of 1, 4, 32 at which the index fits, from `scripts/measure_ka_fit_recovery.py` (output `/Users/olga/data/deep-twilight-controls/ka_fit_recovery.90c581a.tsv`), 1 where none does | 150 rows | `c1591d01dbfb1ba23a1d5e615c9209e81f132ed59af7e672b98607c2039b1bda` |
 
 ## Tools
 
 | tool | version | where it runs |
 |---|---|---|
 | Nextflow | 25.04.7 (`ml load biology nextflow` on Sherlock) | pipeline head |
-| kmerseek | branch `olgabot/run-evalue`, commit `5fdfdcc5e30dc1e78110ff0c24846637e0509439`; image `docker.io/olgabot/kmerseek@sha256:3e4f4d77f996ee97addbc235b68b3afd2f21130865e0eb2cba7abf7968a2d140` (tag `2026-09-25-run-evalue-5fdfdcc-rtcompat`), built from `nextflow-runs/deep-twilight-controls/Dockerfile` by `make push-image` | `kmerseekArm`; the same image runs every python step (python 3.13, polars[rtcompat] 1.43.2, numpy 2.5.2, pyarrow 25.0.1) |
+| kmerseek (searches) | branch `olgabot/extend-without-fit-ka-fixes`, commit `90c581a011d42002eeeb204ec6efea79ece0359d` (seanome/kmerseek#89 on #88 on `olgabot/run-evalue`); image `docker.io/olgabot/kmerseek@sha256:f08eeda6b7dc719c7e03fc69ac9779591498639bf75c00a0e91dc90cbcb52dd5` (tag `2026-09-25-ka-fixes-90c581a`), built from `nextflow-runs/deep-twilight-controls/Dockerfile` by `make push-image` | `kmerseekArm`, with `--ka-reference-shuffles` per combination from `assets/arms.tsv` |
+| kmerseek image for the python steps | branch `olgabot/run-evalue`, commit `5fdfdcc5e30dc1e78110ff0c24846637e0509439`; image `docker.io/olgabot/kmerseek@sha256:3e4f4d77f996ee97addbc235b68b3afd2f21130865e0eb2cba7abf7968a2d140` (tag `2026-09-25-run-evalue-5fdfdcc-rtcompat`) | every python step (python 3.13, polars[rtcompat] 1.43.2, numpy 2.5.2, pyarrow 25.0.1) |
 | HMMER (phmmer) | 3.4, `quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c` | `phmmerSearch`: `--max -E 1000 --domE 1000 --incE 1000 --incdomE 1000 -A` |
 | MMseqs2 | 18.8cc5c, `quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef` | `mmseqsSearch`: `-a -s 7.5 --exhaustive-search 1 -e 1000 --max-seqs 100000` |
 | Foldseek | 10.941cd33, `quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a` | `foldseekSearch`: `-a --exhaustive-search 1 -e 1000 --max-seqs 100000` |
@@ -37,21 +38,26 @@ Mac. Their SHA-256 checksums are below so a rerun can check it read the same fil
 | 1. Labels and sequences | `python scripts/make_deep_twilight_pairs_tsv.py` | UniProt REST | `tables/deep_twilight_pairs.tsv`, `assets/deep_twilight_proteins.fasta` |
 | 2. Image | `make push-image` in `nextflow-runs/deep-twilight-controls` | kmerseek at `KMERSEEK_SHA` (`git archive`) | the kmerseek image |
 | 3. Pipeline | `make run` in `nextflow-runs/deep-twilight-controls` on Sherlock | 1, human proteome, human AlphaFold models, `assets/arms.tsv` | `results/database/`, `results/kmerseek/<alphabet>.k<k>.{hits.parquet,pairs.tsv,log}`, `results/baselines/{phmmer,mmseqs2,foldseek}.tsv`, `results/identity/needle_identity.tsv`, `results/structures/` |
-| 4. Scoring | the pipeline's `scoreTransfer` process (`bin/score_transfer.py`). In this run the head job was cancelled before it ran, so it was run on the Mac in the same image, on the pulled results, with the command in `scoreTransfer` | 3, 1 | `results/outcomes.parquet`, `results/calls.parquet`, `results/pair_kmers.parquet` |
+| 0. Fit recovery | `python scripts/measure_ka_fit_recovery.py <kmerseek 90c581a> results/database/database.fasta /Users/olga/data/deep-twilight-controls/ka_fit_recovery.90c581a.tsv` (on the Mac) | the database from step 3 | the per-combination shuffle counts copied into `assets/arms.tsv` |
+| 4. Scoring | the pipeline's `scoreTransfer` process (`bin/score_transfer.py`), run on Sherlock in job 45223635 | 3, 1 | `results/outcomes.parquet`, `results/calls.parquet`, `results/pair_kmers.parquet` |
 | 5. Notebook | `python scripts/make_nb252.py`, then `jupyter nbconvert --to notebook --execute --inplace notebooks/252_deep_twilight_controls.ipynb` | 4, 1, `results/kmerseek/*.log` (extension status) | the notebook, `figures/252_deep_twilight_label_transfer.png` |
 
 ## Result files read by the notebook
 
+From Sherlock job 45223635 (2026-09-25). Its phmmer, MMseqs2, Foldseek, needle and
+database steps came from cache; the MMseqs2 and Foldseek tables were last written by the
+same commands in job 45220937, which was stopped after them.
+
 | file | SHA-256 |
 |---|---|
-| `results/outcomes.parquet` | `290bb8f717f0f454bc305f931e2d1e54917488a3b60bb94b252d2f327305104e` |
-| `results/calls.parquet` | `a3f7345178be5ff4d03c8b871e8b4d3afe698fd5b08187df1d5b3ef9815ac614` |
-| `results/pair_kmers.parquet` | `ded321b52ab99cd2d6e8f003dc36fa5a6268b3f7e1f36505577c16b9a2f9d5f4` |
+| `results/outcomes.parquet` | `12d77dc34b8eb88a164dfc994eee75a13d8f918f01013228822b4435de648458` |
+| `results/calls.parquet` | `72428fd0da31c3ebe7a825fc03b2bfbdf1f37b084d1d43c86fe921c57eaef34c` |
+| `results/pair_kmers.parquet` | `fb2284c5bb0a2d04d49e31fad93203518ac0cf7c1d462cf290615b281e07cd11` |
 | `results/database/database.fasta` | `39a8abb7b59c23ae16a356ed19e1964fd483c493147b417799f317a7d384cd8a` |
 | `results/identity/needle_identity.tsv` | `9eeb2c11af472c317a1655d0f58500f71167f94ca85b7b60b57c9f2944f22d93` |
 | `results/baselines/phmmer.tsv` | `27e57c52c22489c3d4c44e92faa5f7ede8117ec60dfa060a020894ce74a150b9` |
-| `results/baselines/mmseqs2.tsv` | `c4c2543acbdbd80d29d0ce88200186a25aa09c186ee3b952120dfaacfe993199` |
-| `results/baselines/foldseek.tsv` | `ccdd6d55639aa2bcb9fc900e0950baf535c5ea7c224958619bb5ea1a934c7b7c` |
+| `results/baselines/mmseqs2.tsv` | `a52fef6a7e73cb7339a55a90edd6258ea0f54132bf5fd013a8859051cb938f64` |
+| `results/baselines/foldseek.tsv` | `c556f5513cbd146c0b57864abb9a2bb161664bc7967a8741c828e532f6092510` |
 
 ## Family references
 
