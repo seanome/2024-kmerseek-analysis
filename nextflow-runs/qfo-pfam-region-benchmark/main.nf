@@ -332,7 +332,7 @@ params.min_region_score = 1.3
 // row, so this is what makes an E-value ranking possible at all.
 //
 // C is the alphabet's own optimum, from its measured copy rate kappa in
-// assets/kappa_by_alphabet.tsv (analysis notebook 230; copied from the invertebrate
+// assets/kappa_by_alphabet.pfam_a_38.2_seed_pairs_20-30pct_identity.tsv (analysis notebook 230; copied from the invertebrate
 // dark-set pipeline, which introduced it): C = -ln(1 - kappa) / ln(1 + kappa x classes -
 // kappa). 1.59 for hp_pbotc_1st_ed2, 0.14 for protein20. X = xdrop_per_penalty x C. An
 // alphabet with no measured kappa (funcgroups8) keeps exact regions and the plan log says so.
@@ -953,7 +953,7 @@ def keyspaceBits = { label, ksize ->
 }
 
 // kappa per alphabet, read once. See params.kmerseek_extend.
-def KAPPA = file("${projectDir}/assets/kappa_by_alphabet.tsv").readLines()
+def KAPPA = file("${projectDir}/assets/kappa_by_alphabet.pfam_a_38.2_seed_pairs_20-30pct_identity.tsv").readLines()
     .findAll { it.trim() && !it.startsWith('#') && !it.startsWith('alphabet\t') }
     .collectEntries { line -> def f = line.split('\t'); [(f[0]): f[2] as double] }
 
