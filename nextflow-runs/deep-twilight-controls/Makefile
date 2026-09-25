@@ -1,4 +1,4 @@
-# Deep-twilight controls: 16 family proteins, 152 kmerseek arms plus phmmer, MMseqs2 and
+# Deep-twilight controls: 16 family proteins, 150 kmerseek arms plus phmmer, MMseqs2 and
 # Foldseek, all searched against the QfO human proteome plus the 8 non-human family members.
 #
 #   make push-image      (laptop) build the kmerseek image from KMERSEEK_SHA and push it

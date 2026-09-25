@@ -10,9 +10,14 @@
  * (--max_evalue) means the same thing for all of them. Only family-to-family alignments
  * are scored.
  *
- *   kmerseek  every alphabet and k in assets/arms.tsv (152 arms), extended with the
+ *   kmerseek  every alphabet and k in assets/arms.tsv (150 arms), extended with the
  *             per-alphabet penalty and give-up margin from the same table; region_evalue
  *             on every region
+ *             gbmr7 k8 and k10 are left out. Both were killed for memory at 8, 16 and
+ *             24 GB inside the index's Karlin-Altschul fit, and the fit cannot succeed:
+ *             two random gbmr7 letters match 39% of the time, so at penalty 0.32 a
+ *             random position scores +0.20 on average and no lambda exists (notebooks
+ *             241 and 245). Their search would have fallen back to exact k-mers.
  *   phmmer    --max, E-values from the database size
  *   MMseqs2   -s 7.5 --exhaustive-search 1
  *   Foldseek  AlphaFold DB models, --exhaustive-search 1
@@ -53,10 +58,6 @@ process stageDatabase {
 process kmerseekArm {
     tag "${alphabet} k${ksize}"
     container params.kmerseek_image
-    // gbmr7 at k 8 and 10 (16 and 20 bits per seed) was killed for memory at 8, 16 and
-    // 24 GB, all three times inside the index's Karlin-Altschul fit (200 of the
-    // database's own proteins searched against it). Every other arm finished in 8 GB.
-    memory { alphabet == 'gbmr7' && (ksize as int) <= 10 ? [96.GB, 180.GB, 180.GB][task.attempt - 1] : 8.GB * task.attempt }
     publishDir "${params.outdir}/kmerseek", mode: 'copy', pattern: '*.{parquet,tsv,log}'
 
     input:
