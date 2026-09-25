@@ -335,7 +335,8 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 # second multi-GB image for arms it never executes.
 PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
 
-.PHONY: run-midi-plus-0.4 run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
+.PHONY: run-midi-plus-0.4 stage-disprot disprot-testset-sherlock run-disprot \
+        disprot-testset-local run-disprot-local reduce-disprot run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image \
         build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
@@ -1845,6 +1846,178 @@ run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
 	    $(PFAM_HMM_ARG) \
 	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
+
+# ---- DisProt functional-region transfer (notebook 251) ------------------------------
+#
+# Human proteins with an experimentally supported DisProt functional region are the
+# queries. The targets are the nine QfO proteomes plus `disprot`, one FASTA holding every
+# non-human DisProt protein with such a region (see the note on its row in
+# bin/build_qfo_species_registry.py). The question: does a tool put the target's DisProt
+# function label on the right stretch of the human protein? Scoring is not the pipeline's
+# own; scripts/reduce_disprot_region_landing.py reads this run's region tables afterwards,
+# the way notebook 244's reduction reads midi-plus.
+#
+# Same arm set as midi-plus under kmerseek 0.4, with the ungapped extension on so every
+# region carries an E-value (params.kmerseek_extend), and every kmerseek region kept
+# (--max_query_pvalue 1, as notebook 250's ELM benchmark sets it). The comparators run with
+# their filters opened as MATCHED-PERMISSIVE.md specifies; every tool is then cut to the
+# same list length, 1000 target proteins per query, in the reduction.
+#
+# Output volume is the thing to watch. --max_query_pvalue 1 keeps every pair sharing two
+# k-mers; the dry run on yeast (see the PR) measures it before the full run.
+DISPROT_DIR     ?= $(HOME)/data/disprot-region-transfer
+DISPROT_FASTA   := $(QFO_DIR)/Pooled/DISPROT202606_0.fasta
+DISPROT_QUERIES := $(QFO_DIR)/Pooled/DISPROT202606_human_queries.txt
+DISPROT_TARGETS ?= $(MIDI_TARGETS),disprot
+DISPROT_OUTDIR  ?= ../data/disprot/results
+DISPROT_QUERY_SET := human proteins with an experimentally supported DisProt functional region (DisProt 2026_06)
+DISPROT_PVALUE  ?= 1
+# The comparators' opened filters, from MATCHED-PERMISSIVE.md.
+DISPROT_PERMISSIVE = --evalue_report 1000 \
+	--hmmer_extra_flags '--max --domE 1000' \
+	--mmseqs2_sensitivity 7.5 \
+	--mmseqs2_extra_flags '--min-ungapped-score 0 --mask 0'
+DISPROT_ARMS = --kmerseek_extend true \
+	--max_query_pvalue $(DISPROT_PVALUE) \
+	--low_complexity_toggle true,false \
+	--skip_folddisco true \
+	--skip_hhblits true \
+	$(DISPROT_PERMISSIVE)
+
+# Mac: download DisProt, write the tables and the pooled FASTA, and put the FASTA and the
+# query list into the QfO tree the way stage-botryllus does, so `make sync-data` carries
+# them to Sherlock. Idempotent: an unchanged file keeps its mtime and Nextflow its cache.
+stage-disprot:
+	$(call require_mac)
+	$(PYTHON) ../../scripts/fetch_disprot.py --qfo-dir $(QFO_DIR) --out-dir $(DISPROT_DIR)
+	@mkdir -p $(QFO_DIR)/Pooled
+	@for pair in "$(DISPROT_DIR)/disprot_nonhuman.fasta $(DISPROT_FASTA)" \
+	             "$(DISPROT_DIR)/human_query_accessions.txt $(DISPROT_QUERIES)"; do \
+	  set -- $$pair; \
+	  if [ -f "$$2" ] && cmp -s "$$1" "$$2"; then echo "  $$2 up to date"; \
+	  else cat "$$1" > "$$2"; echo "  wrote $$2"; fi; \
+	done
+	@echo "  structures for the pooled target: $(DISPROT_DIR)/structures/disprot"
+	@echo "  now run: make sync-data, and rsync that structures directory to"
+	@echo "  data/structures/disprot in the Sherlock clone"
+
+disprot-testset-sherlock:
+	$(call require_cluster)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations      data/annotations \
+	    --qfo-dir          data/qfo \
+	    --outdir           data/disprot \
+	    --gene-set         disprot \
+	    --query-accessions data/qfo/Pooled/DISPROT202606_human_queries.txt \
+	    --full-targets \
+	    --hgnc             data/covariates/hgnc_complete_set.txt \
+	    --target_species   $(DISPROT_TARGETS) \
+	    --structure-cache  data/structures
+
+# Its own outdir: kmerseekSearch's store entry names carry no query-set digest (see
+# run-midi-plus). The index store is run-midi-plus-0.4's: an extended index is named
+# .ka-c<C>, so it can never be mistaken for one of that run's exact indexes.
+run-disprot: QUERY_SET_LABEL := $(DISPROT_QUERY_SET)
+run-disprot: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE) $(ALL_CONTAINERS)
+run-disprot: prefetch-images disprot-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-disprot
+	cd run-disprot && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(ALLIDF_IMAGE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(ALLIDF_IMAGE) \
+	    $(DISPROT_ARMS) \
+	    --qfo_dir         ../data/disprot/qfo \
+	    --annotations     ../data/disprot/annotations \
+	    --structures      ../data/disprot/structures \
+	    --outdir          $(DISPROT_OUTDIR) \
+	    --db_cache            $(ALLIDF_CACHE) \
+	    --kmerseek_index_cache $(ALLIDF_INDEX) \
+	    --target_species  $(DISPROT_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+# ---- the same, on the Mac, for one target: the dry run ----
+# 40 GB caps: with ProstT5's 64 GB task running, a 48 GB search does not fit the 110 GB the
+# local executor has and waits for it; 40 GB fits beside it.
+# --skip_metapredict: the metapredict image is amd64 and crawls under emulation here, and
+# notebook 251 reads disorder from scripts/prep_251_region_covariates.py, not from this run.
+# A native arm64 build of the rc5 source: the published image is amd64, and under Rosetta
+# polars' AVX2 build is not safe (it warns and can die with an illegal instruction). Build
+# it from kmerseek 0aed5ca, the commit rc5 records in /etc/kmerseek_git_sha, with this
+# directory's Dockerfile.
+DISPROT_LOCAL_IMAGE   ?= kmerseek-region:0.4.0-rc5-arm64
+DISPROT_LOCAL_DIR     ?= $(DISPROT_DIR)/dryrun
+DISPROT_LOCAL_TARGET  ?= yeast
+DISPROT_LOCAL_COMBOS  ?= hp_pbotc_1st_ed2:19,protein20:8
+DISPROT_LOCAL_STRUCTS ?= $(DISPROT_DIR)/structures
+# HGNC_FILE's path is not on every Mac; the midi-plus data folder keeps a copy.
+DISPROT_LOCAL_HGNC    ?= $(HOME)/data/qfo-pfam-region-midi-plus/hgnc_complete_set.txt
+# Fetched once with the pipeline's foldseek image (`foldseek databases ProstT5 <dir> tmp`).
+# prostt5Weights cannot fetch them itself here: its reachability check sends HEAD to a URL
+# whose root answers 404, and reads that as no internet.
+DISPROT_LOCAL_PROSTT5 ?= $(DISPROT_DIR)/prostt5/weights
+
+disprot-testset-local:
+	$(call require_mac)
+	@# A QfO species' models come from the shared per-species folders; the pooled target's
+	@# were fetched into $(DISPROT_LOCAL_STRUCTS)/disprot by hand (see the PR).
+	@if [ "$(DISPROT_LOCAL_TARGET)" != disprot ]; then \
+	  ln -sfn $(HOME)/data/alphafold_structures/structures/$(DISPROT_LOCAL_TARGET) \
+	    $(DISPROT_LOCAL_STRUCTS)/$(DISPROT_LOCAL_TARGET); \
+	fi
+	$(PYTHON) bin/make_mini_testset.py \
+	    --annotations      $(ANNOTATIONS) \
+	    --qfo-dir          $(QFO_DIR) \
+	    --outdir           $(DISPROT_LOCAL_DIR) \
+	    --gene-set         disprot \
+	    --query-accessions $(DISPROT_QUERIES) \
+	    --full-targets \
+	    --hgnc             $(DISPROT_LOCAL_HGNC) \
+	    --target_species   $(DISPROT_LOCAL_TARGET) \
+	    --structure-cache  $(DISPROT_LOCAL_STRUCTS)
+
+run-disprot-local: disprot-testset-local
+	$(call require_mac)
+	mkdir -p run-disprot-local && cd run-disprot-local && \
+	  NXF_JAVA_HOME=$(NEXTFLOW_JVM) $(NEXTFLOW) -c ../assets/local_dryrun.config \
+	    run ../main.nf -profile standard -resume \
+	    --kmerseek_image  $(DISPROT_LOCAL_IMAGE) \
+	    $(DISPROT_ARMS) \
+	    --prostt5_gpu     false \
+	    --prostt5_weights $(DISPROT_LOCAL_PROSTT5) \
+	    --kmerseek_memory_max '40 GB' \
+	    --score_memory_max    '40 GB' \
+	    --qfo_dir         $(DISPROT_LOCAL_DIR)/qfo \
+	    --annotations     $(DISPROT_LOCAL_DIR)/annotations \
+	    --structures      $(DISPROT_LOCAL_DIR)/structures \
+	    --outdir          $(DISPROT_LOCAL_DIR)/results \
+	    --target_species  $(DISPROT_LOCAL_TARGET) \
+	    --kmerseek_combos $(DISPROT_LOCAL_COMBOS) \
+	    --hgnc_file       $(DISPROT_LOCAL_HGNC) \
+	    --omega_file      $(OMEGA_FILE) \
+	    --swissprot_dat   $(SPROT_DAT) \
+	    --query_set_label "$(DISPROT_QUERY_SET)" \
+	    --skip_metapredict true \
+	    $(NF_ARGS)
+
+# The reduction, after either run. REDUCE_RESULTS names the run's results directory.
+REDUCE_RESULTS ?= $(DISPROT_LOCAL_DIR)/results
+reduce-disprot:
+	$(PYTHON) ../../scripts/reduce_disprot_region_landing.py \
+	    --results     $(REDUCE_RESULTS) \
+	    --disprot-dir $(DISPROT_DIR) \
+	    --out-dir     $(REDUCE_RESULTS)/landing_disprot
 
 run-midi-plus: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
 run-midi-plus: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)

@@ -1,0 +1,29 @@
+target,label_rule,tool_label,landed,median_rank,placement_p_under_05,random_query_p_under_05,both,also_kd_landed,median_random_queries_drawn
+disprot,any_term,Foldseek,307,174.0,88,43,5,0,60.0
+disprot,any_term,MMseqs2,33,4.0,7,26,2,0,81.0
+disprot,any_term,MMseqs2 iterative,59,7.0,6,40,1,0,60.0
+disprot,any_term,Reseek,333,245.0,98,32,2,0,57.0
+disprot,any_term,jackhmmer,448,172.0,174,69,19,0,61.0
+disprot,any_term,"kmerseek, arm picked per term",190,51.0,45,82,9,0,56.0
+disprot,any_term,phmmer,464,168.0,183,61,17,0,61.0
+disprot,same_term,Foldseek,160,156.5,37,24,4,0,76.5
+disprot,same_term,MMseqs2,9,5.0,2,6,0,0,56.0
+disprot,same_term,MMseqs2 iterative,17,6.0,1,10,0,0,52.0
+disprot,same_term,Reseek,194,278.5,53,14,3,0,60.0
+disprot,same_term,jackhmmer,217,197.0,64,28,4,0,76.0
+disprot,same_term,"kmerseek, arm picked per term",56,51.5,13,22,4,0,57.0
+disprot,same_term,phmmer,232,191.0,64,27,8,0,78.0
+yeast,any_term,Foldseek,117,442.0,5,20,0,0,51.0
+yeast,any_term,MMseqs2,2,4.0,0,2,0,0,27.0
+yeast,any_term,MMseqs2 iterative,4,2.5,0,4,0,0,31.0
+yeast,any_term,Reseek,125,493.0,13,30,0,0,54.0
+yeast,any_term,jackhmmer,160,333.0,27,19,3,0,56.5
+yeast,any_term,"kmerseek, arm picked per term",56,401.0,7,19,1,0,55.0
+yeast,any_term,phmmer,164,392.0,23,19,4,0,56.0
+yeast,same_term,Foldseek,37,282.0,1,5,0,0,52.0
+yeast,same_term,MMseqs2,1,4.0,0,1,0,0,27.0
+yeast,same_term,MMseqs2 iterative,2,4.5,0,2,0,0,31.0
+yeast,same_term,Reseek,42,466.5,5,9,0,0,57.5
+yeast,same_term,jackhmmer,39,431.0,7,3,0,0,66.0
+yeast,same_term,"kmerseek, arm picked per term",13,303.0,2,3,1,0,78.0
+yeast,same_term,phmmer,40,304.0,3,3,1,0,63.0
