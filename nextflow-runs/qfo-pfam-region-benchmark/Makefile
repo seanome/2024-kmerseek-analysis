@@ -2652,3 +2652,44 @@ reduce-elm-motif:
 	mkdir -p $(ELM_REDUCE_DIR)/logs $(ELM_REDUCE_DIR)/code
 	cd ../.. && git archive HEAD | tar -x -C $(ELM_REDUCE_DIR)/code
 	cd $(ELM_REDUCE_DIR) && sbatch code/scripts/reduce_elm_landing.sbatch
+
+# ---- ELM cover search (notebook 250) -----------------------------------------
+# Human ELM proteins (assets/elm_cover_query_accessions.txt) against the nine QfO proteomes,
+# kmerseek at two seed lengths per alphabet with the extension on, mask off and on, scaled
+# 1/2/5/10, and the comparators with their filters opened. conf/elm_cover.config holds all of
+# it; docs/elm_motif_transfer_provenance.md says where every input comes from.
+#
+#   make elm-cover-inputs                      Sherlock: stage data/elm-cover (seconds)
+#   make run-elm-search ELM_TARGETS=chicken    Sherlock: the dry run, one target
+#   make run-elm-search                        Sherlock: all nine targets
+ELM_TARGETS      ?=
+ELM_COVER_DIR    ?= data/elm-cover
+ELM_COVER_OUTDIR ?= ../$(ELM_COVER_DIR)/results
+ELM_TARGETS_ARG   = $(if $(ELM_TARGETS),--target_species $(ELM_TARGETS))
+
+.PHONY: elm-cover-inputs run-elm-search
+
+elm-cover-inputs:
+	$(call require_cluster)
+	apptainer exec --bind $$PWD/../..:$$PWD/../.. --pwd $$PWD docker://$(ELM_IMAGE_REMOTE) \
+	  python3 ../../scripts/elm_cover_inputs.py --stage --data data --out $(ELM_COVER_DIR)
+
+run-elm-search: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-elm-search: prefetch-images
+	$(call require_cluster)
+	@test -f $(ELM_COVER_DIR)/qfo/Eukaryota/UP000005640_9606.fasta || { \
+	  echo "  $(ELM_COVER_DIR) is not staged. Run: make elm-cover-inputs"; exit 1; }
+	mkdir -p run-elm-search
+	cd run-elm-search && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -c ../conf/elm_cover.config -resume \
+	    --kmerseek_image   $(ELM_IMAGE_REMOTE) \
+	    --qfo_dir          ../$(ELM_COVER_DIR)/qfo \
+	    --annotations      ../$(ELM_COVER_DIR)/annotations \
+	    --structures       ../$(ELM_COVER_DIR)/structures \
+	    --outdir           $(ELM_COVER_OUTDIR) \
+	    --db_cache         ../results \
+	    $(ELM_TARGETS_ARG) \
+	    --hgnc_file        ../data/covariates/hgnc_complete_set.txt \
+	    --prostt5_weights  ../data/prostt5/weights \
+	    $(NF_ARGS)

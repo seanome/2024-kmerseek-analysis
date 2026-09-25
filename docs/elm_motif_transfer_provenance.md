@@ -40,6 +40,8 @@ SHA-256 checksums are here so a rerun can check it read the same files.
 | 3. Kappa on ELM pairs | `python scripts/elm_kappa.py` | 2, `notebooks/hp_conservation_utils.py` | `stage0/elm_kappa_*.parquet`, `tables/250_elm_kappa_by_species.csv` |
 | 4. Tiers | `python scripts/elm_tiers.py` | 1, 2, Swiss-Prot flat file | `tiers/regex_on_target.parquet`, `tier_experimental`, `tier_swissprot`, `tier_regex_projected`, `regex_fails_stratum` |
 | 5. Seed lengths | `python scripts/elm_seed_floor.py` | QfO human proteome, kmerseek image, midi-plus trace | `seed_floor/human.<alphabet>.k<k>.csv`, `seed_floor/scan.csv`, `tables/250_two_k_per_alphabet.csv` |
+| 7. Search inputs | `python scripts/elm_cover_inputs.py --write-assets` (Mac, once), then `make elm-cover-inputs` (Sherlock) | 2 | `assets/elm_cover_query_accessions.txt` (1_303), `assets/elm_cover_instances.tsv` (2_160), `data/elm-cover/` on Sherlock |
+| 8. Cover search | `make run-elm-search` in `nextflow-runs/qfo-pfam-region-benchmark` with `conf/elm_cover.config` | 5, 7 | region tables under `data/elm-cover/results/` |
 | 6. Notebook | `python scripts/make_nb250.py`, then `jupyter nbconvert --execute` on `notebooks/250_elm_motif_transfer.ipynb` | 1-5 | the notebook, `figures/250_*`, `tables/250_*` |
 
 All data outputs are under `/Users/olga/data/elm-motif-transfer/` (`stage0/`, `tiers/`,
