@@ -32,7 +32,7 @@ SMOKE_HUMAN_FASTA ?= /Users/olga/data/quest-for-orthologs/QfO_release_2020_04_wi
 REMOTE_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis-deep-twilight/nextflow-runs/deep-twilight-controls
 
 SLURM_ACCOUNT   ?= ayeletv
-SLURM_PARTITION ?= hns
+SLURM_PARTITION ?= hns,normal
 HEAD_QOS     ?= normal
 HEAD_TIME    ?= 12:00:00
 HEAD_CPUS    ?= 2
