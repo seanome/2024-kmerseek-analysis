@@ -8,6 +8,8 @@
 #   make stop            (Sherlock) ask the head to shut down cleanly
 #   make pull-results    (laptop) copy results/ back for notebook 252
 
+SHELL := /bin/bash
+
 KMERSEEK_REPO ?= /Users/olga/code/kmerseek
 KMERSEEK_SHA  ?= 5fdfdcc5e30dc1e78110ff0c24846637e0509439
 IMAGE_TAG     ?= 2026-09-25-run-evalue-5fdfdcc-rtcompat
