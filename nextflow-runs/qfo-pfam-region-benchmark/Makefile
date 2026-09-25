@@ -2490,8 +2490,8 @@ sync-elm-data:
 run-elm-motif: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-elm-motif: prefetch-images
 	$(call require_cluster)
-	@test -f ../data/elm-motif/elm_species.tsv || { \
-	  echo "  ../data/elm-motif is not staged. On your Mac: make elm-inputs sync-elm-data"; exit 1; }
+	@test -f data/elm-motif/elm_species.tsv || { \
+	  echo "  data/elm-motif is not staged. On the Mac: make elm-inputs sync-elm-data"; exit 1; }
 	mkdir -p run-elm-motif
 	cd run-elm-motif && \
 	  ml load biology nextflow && \
@@ -2513,7 +2513,7 @@ run-elm-motif: prefetch-images
 ELM_REDUCE_DIR ?= $(SCRATCH)/250-elm
 reduce-elm-motif:
 	$(call require_cluster)
-	@test -d ../data/elm-motif/results/kmerseek || { echo "  no ELM results yet: make run-elm-motif first"; exit 1; }
+	@test -d data/elm-motif/results/kmerseek || { echo "  no ELM results yet: make run-elm-motif first"; exit 1; }
 	mkdir -p $(ELM_REDUCE_DIR)/logs $(ELM_REDUCE_DIR)/code
 	cd ../.. && git archive HEAD | tar -x -C $(ELM_REDUCE_DIR)/code
 	cd $(ELM_REDUCE_DIR) && sbatch code/scripts/reduce_elm_landing.sbatch
