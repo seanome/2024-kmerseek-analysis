@@ -76,7 +76,7 @@ def load_labels() -> pl.DataFrame:
 
 
 def load_arms() -> pl.DataFrame:
-    """The 152 kmerseek arms, ordered by bits per residue of the alphabet, then k."""
+    """The kmerseek arms in assets/arms.tsv, ordered by bits per residue of the alphabet, then k."""
     arms = pl.read_csv(ARMS, separator="\t")
     per_res = arms.group_by("alphabet").agg(
         (pl.col("bits") / pl.col("ksize")).mean().alias("bits_per_residue")

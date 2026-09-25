@@ -7,7 +7,7 @@ identity than phmmer and MMseqs2, and Foldseek reaches the bottom of every famil
 Lowest global identity at which each tool placed the label correctly, and how many of the
 pairs that carry the label it got right:
 
-| family | Foldseek | phmmer | MMseqs2 | kmerseek, best of 151 alphabet-k combinations |
+| family | Foldseek | phmmer | MMseqs2 | kmerseek, best of 150 alphabet-k combinations |
 |---|---|---|---|---|
 | globins (56) | 12.7%, 56 of 56 | 17.6%, 45 of 56 | 19.9%, 15 of 56 | 23.9% |
 | cystatins (24) | 12.5%, 24 of 24 | 12.5%, 18 of 24 | 14.0%, 13 of 24 | 14.0% |
@@ -22,8 +22,8 @@ the results, so it overstates what one fixed setting would do.
   On the other 50 globin pairs (12.7% to 35.2%, including soybean leghemoglobin and
   barley hemoglobin at 35.2%) no combination placed it.
 * Cystatins. At 12.5% to 15.5% (the stefins against chicken cystatin and cystatin C),
-  kmerseek placed the label correctly with at most 4 of 151 combinations. At 41.8% (chicken cystatin and
-  cystatin C) it was 13% to 32% of combinations, and at 53.1% (stefin A and B) 26% to 62%.
+  kmerseek placed the label correctly with at most 4 of 150 combinations. At 41.8% (chicken cystatin and
+  cystatin C) it was 13% to 33% of combinations, and at 53.1% (stefin A and B) 26% to 62%.
 * Lysozyme and alpha-lactalbumin. phmmer, MMseqs2 and Foldseek each aligned all 8
   lysozyme-to-lactalbumin pairs (33% to 36%). They carried the catalytic residues onto
   alpha-lactalbumin, which has none, and the calcium-binding residues onto lysozyme, which
@@ -39,11 +39,12 @@ features in regions with no confident structure.
 
 Two limits of the kmerseek side of this run:
 
-* 85 of the 151 combinations were searched without extension. Their index could not fit
+* 85 of the 150 combinations were searched without extension. Their index could not fit
   the Karlin-Altschul constants, and an extended search refuses to run without them. On
   those combinations every region is an exact run and `region_evalue` is
-  `region_run_evalue`. All 8 protein20 combinations are among them. gbmr7 k8 has no
-  results: it was killed for memory at 96 GB during that fit.
+  `region_run_evalue`. All 8 protein20 combinations are among them. gbmr7 k8 and k10
+  are left out of the ladder (commit c0be2ef): both were killed for memory during that
+  fit at 8, 16 and 24 GB.
 * The placement check says nothing about a call that spans the whole target, because such
-  a call has only one position it can take. That is 376 of kmerseek's 1_078 correct calls.
-  Of the rest, 354 have $\Pr(\text{correct by placement}) < 0.05$.
+  a call has only one position it can take. That is 372 of kmerseek's 1_072 correct calls.
+  Of the rest, 352 have $\Pr(\text{correct by placement}) < 0.05$.

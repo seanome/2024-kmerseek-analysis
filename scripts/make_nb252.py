@@ -56,9 +56,9 @@ This is a control, not the hero example. All 16 proteins have confident AlphaFol
 Tools, all searching the same database (the 20_600-protein QfO human proteome with the 8
 non-human family members added) and all cut at $E \le 1000$:
 
-* kmerseek, every alphabet and k of the nb 241 ladder (151 of its 152 combinations; gbmr7
-  at k=8 was killed for memory at 96 GB while its index fitted the Karlin-Altschul
-  constants), with ungapped extension; kmerseek branch `olgabot/run-evalue` at 5fdfdcc, where every region has a
+* kmerseek, 150 alphabet and k combinations: the nb 241 ladder without gbmr7 k8 and k10,
+  whose index builds were killed for memory while fitting the Karlin-Altschul constants.
+  Ungapped extension; kmerseek branch `olgabot/run-evalue` at 5fdfdcc, where every region has a
   `region_evalue`
 * phmmer (HMMER 3.4), `--max`
 * MMseqs2 18.8cc5c, sensitivity `-s 7.5`, `--exhaustive-search 1`
@@ -218,7 +218,7 @@ counts = (
 )
 print("baselines, outcome counts per family:")
 print(counts)
-print("kmerseek, outcome counts over all 151 alphabet-k combinations:")
+print("kmerseek, outcome counts over all 150 alphabet-k combinations:")
 print(outcomes.filter(pl.col("tool") == "kmerseek").group_by("family", "outcome").len()
       .pivot(on="outcome", index="family", values="len").fill_null(0))
 """)
@@ -227,7 +227,7 @@ md(r"""
 ### Lowest identity at which each tool still places the label correctly
 
 For kmerseek two rows: the single alphabet and k that is right at the lowest identity
-(chosen after seeing the results, so it is an upper bound), and the share of the 151
+(chosen after seeing the results, so it is an upper bound), and the share of the 150
 combinations that are right on each pair.
 """)
 
@@ -241,7 +241,7 @@ lowest = (
 km_best = (
     right.filter(pl.col("tool") == "kmerseek")
     .group_by("family").agg(pl.col("needle_identity_pct").min().alias("lowest_identity_correct_pct"))
-    .with_columns(tool=pl.lit("kmerseek, best of 151"))
+    .with_columns(tool=pl.lit("kmerseek, best of 150"))
 )
 n_with_label = outcomes.filter(pl.col("target_has_label")).select("family", "query", "target", "label").unique().group_by("family").len().rename({"len": "n_label_pairs"})
 print(pl.concat([lowest.drop("n_correct"), km_best.select(lowest.drop("n_correct").columns)])
@@ -250,11 +250,11 @@ print(pl.concat([lowest.drop("n_correct"), km_best.select(lowest.drop("n_correct
 share = (
     outcomes.filter((pl.col("tool") == "kmerseek") & pl.col("target_has_label"))
     .group_by("family", "query", "target", "label", "needle_identity_pct")
-    .agg((pl.col("outcome") == "correct").mean().alias("share_of_151_correct"))
+    .agg((pl.col("outcome") == "correct").mean().alias("share_of_150_correct"))
     .sort("family", "needle_identity_pct")
 )
 print(share.with_columns(query_name=pl.col("query").replace_strict(names), target_name=pl.col("target").replace_strict(names))
-      .select("family", "needle_identity_pct", "query_name", "target_name", "label", "share_of_151_correct"))
+      .select("family", "needle_identity_pct", "query_name", "target_name", "label", "share_of_150_correct"))
 """)
 
 md(r"""
