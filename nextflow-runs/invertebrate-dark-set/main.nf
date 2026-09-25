@@ -39,6 +39,7 @@
 nextflow.enable.dsl = 2
 
 include { compareDarkLengths } from './modules/length.nf'
+include { extractDarkFasta; pfamSearchDark; summarizeDarkPfam } from './modules/pfam.nf'
 
 include { darkSetDisorder } from './modules/disorder.nf'
 
@@ -329,6 +330,23 @@ params.kmerseek_skip_factor = 2.0
 // homology detection being hard. Junk models are short, so this says whether shortness is
 // what is inflating the number.
 params.with_length_comparison = true
+
+// Pfam domains on the dark set. OFF by default, and not because it is expensive: it needs
+// a Pfam-A.hmm that nothing else in this pipeline requires, so a run without one must
+// still work rather than fail at the first task.
+//
+// What it buys: the dark set's headline is "no sequence arm placed these", and the first
+// question asked of it is whether they are real proteins. with_length_comparison answers
+// that with a proxy. A dark protein carrying a Pfam domain answers it outright -- a real
+// protein that phmmer, jackhmmer and mmseqs2 all still failed to place. Darkness is
+// defined by three pairwise SEQUENCE searches against reviewed Swiss-Prot minus the
+// query's clade; Pfam is a profile-HMM library over a different database, so carrying a
+// Pfam domain and being dark is not a contradiction. See modules/pfam.nf.
+params.with_pfam    = false
+params.pfam_hmm     = null
+// Pfam's own gathering threshold decides membership (hmmsearch --cut_ga). This only
+// tightens it further; 1.0 leaves every call --cut_ga accepted.
+params.pfam_i_evalue = 1.0
 
 // Disorder is ON by default, unlike kmerseek. It is one metapredict pass over the query
 // proteome with no index to build, so it costs a rounding error next to the three search
@@ -1385,6 +1403,22 @@ workflow darkSet {
         report_extra = report_extra.mix(len.flatMap { sp, pq, js -> [tuple(sp, pq), tuple(sp, js)] })
     }
 
+    // Do the dark proteins carry Pfam domains? A yes is the strongest form of the
+    // headline: a real protein with a recognisable domain that no sequence arm placed.
+    if (params.with_pfam) {
+        if (!params.pfam_hmm || !file(params.pfam_hmm).exists()) {
+            error "--with_pfam needs --pfam_hmm pointing at a Pfam-A.hmm; " +
+                  "got ${params.pfam_hmm ?: 'nothing'}"
+        }
+        pfam_hmm_f = file(params.pfam_hmm)
+        pfam = summarizeDarkPfam(
+            pfamSearchDark(
+                extractDarkFasta(dark_with_query).map { sp, fa, dp ->
+                    tuple(sp, fa, dp, pfam_hmm_f)
+                }))
+        report_extra = report_extra.mix(pfam.flatMap { sp, pq, js -> [tuple(sp, pq), tuple(sp, js)] })
+    }
+
     // Is the dark set more disordered than the placed set?
     if (params.with_disorder) {
         dis = darkSetDisorder(dark_with_query)
@@ -1535,6 +1569,7 @@ workflow darkReport {
             "_kmerseek_dark_gain.json", "_kmerseek_dark_gain.parquet",
             "_length_summary.json", "_length_comparison.parquet",
             "_disorder_summary.json", "_disorder.parquet",
+            "_pfam_summary.json", "_pfam.parquet",
         ].collect { file("${dir}/${sp}${it}") }.findAll { it.exists() }
 
         log.info "  reporting on : ${dir}"
