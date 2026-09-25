@@ -53,6 +53,10 @@ process stageDatabase {
 process kmerseekArm {
     tag "${alphabet} k${ksize}"
     container params.kmerseek_image
+    // gbmr7 at k 8 and 10 (16 and 20 bits per seed) was killed for memory at 8, 16 and
+    // 24 GB, all three times inside the index's Karlin-Altschul fit (200 of the
+    // database's own proteins searched against it). Every other arm finished in 8 GB.
+    memory { alphabet == 'gbmr7' && (ksize as int) <= 10 ? [96.GB, 180.GB, 180.GB][task.attempt - 1] : 8.GB * task.attempt }
     publishDir "${params.outdir}/kmerseek", mode: 'copy', pattern: '*.{parquet,tsv,log}'
 
     input:
