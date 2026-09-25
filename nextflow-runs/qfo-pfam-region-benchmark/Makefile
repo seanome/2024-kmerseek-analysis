@@ -2555,3 +2555,141 @@ index-disk:
 	@echo "--- orphaned pre-digest human entries (safe to delete) ---"
 	@find results -maxdepth 2 \( -name 'human_*' -o -name 'human.bca' \) 2>/dev/null || true
 	@echo "--- quota ---"; lfs quota -h -u $$USER $$SCRATCH 2>/dev/null || df -h $$SCRATCH
+
+# ---- ELM motif transfer (notebook 250) ---------------------------------------
+# Queries: human proteins with an experimentally supported ELM instance. Target: every
+# non-human protein with one, pooled (elm_pooled), or the chicken ones alone for the dry run
+# (elm_chicken). Arm set: every alphabet at every k, low-complexity mask on and off, scaled
+# 1, 2, 5 and 10; comparators with their filters opened. conf/elm_motif.config holds all of
+# it. The pipeline searches only; scripts/reduce_elm_landing.py scores.
+#
+#   make elm-inputs             Mac: download ELM, fetch sequences/models, stage inputs
+#   make run-elm-motif-local    Mac: chicken dry run on a few arms
+#   make sync-elm-data          Mac: copy the staged inputs to Sherlock
+#   make run-elm-motif          Sherlock: the full run against elm_pooled
+#   make reduce-elm-motif       Sherlock: score it (SLURM array)
+ELM_DIR_LOCAL    ?= /Users/olga/data/elm-motif-transfer
+ELM_PYTHON       ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+ELM_IMAGE_TAG    ?= 0.4.0-rc5
+ELM_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(ELM_IMAGE_TAG)
+ELM_IMAGE_LOCAL  ?= kmerseek-region:$(ELM_IMAGE_TAG)-arm64
+ELM_TARGET       ?= elm_pooled
+ELM_DRY_COMBOS   ?= hp_pbotc_1st_ed2:19,hp_thomas_dill_no_c2:19,gbmr4:16,mmseqs12:7,protein20:5
+ELM_OUTDIR       ?= ../data/elm-motif/results
+ELM_HGNC_LOCAL   ?= /Users/olga/data/qfo-pfam-region-midi-plus/hgnc_complete_set.txt
+
+.PHONY: run-elm-stage0 elm-inputs run-elm-motif-local sync-elm-data run-elm-motif reduce-elm-motif
+
+# Stage 0 (no search, laptop): do motif flanks keep their HP pattern in 1:1 OMA orthologs?
+# Writes stage0/ under ELM_DIR_LOCAL and executes notebook 250's Stage 0 section.
+run-elm-stage0:
+	$(call require_mac)
+	$(ELM_PYTHON) ../../scripts/fetch_elm.py --out-dir $(ELM_DIR_LOCAL)
+	$(ELM_PYTHON) ../../scripts/elm_stage0_flanks.py --out-dir $(ELM_DIR_LOCAL)/stage0
+	$(ELM_PYTHON) ../../scripts/make_nb250.py
+	cd ../../notebooks && $(dir $(ELM_PYTHON))jupyter nbconvert --to notebook --execute --inplace \
+	  --ExecutePreprocessor.timeout=1200 250_elm_motif_transfer.ipynb
+
+elm-inputs:
+	$(call require_mac)
+	$(ELM_PYTHON) ../../scripts/fetch_elm.py --out-dir $(ELM_DIR_LOCAL)
+	$(ELM_PYTHON) ../../scripts/prep_elm_inputs.py --elm-dir $(ELM_DIR_LOCAL)
+
+run-elm-motif-local:
+	$(call require_mac)
+	mkdir -p run-elm-motif && cd run-elm-motif && \
+	  $(NEXTFLOW) run ../main.nf -profile standard,mini -c ../conf/elm_motif.config -resume \
+	    --kmerseek_image   $(ELM_IMAGE_LOCAL) \
+	    --species_registry $(ELM_DIR_LOCAL)/pipeline/elm_species.tsv \
+	    --qfo_dir          $(ELM_DIR_LOCAL)/pipeline/qfo \
+	    --annotations      $(ELM_DIR_LOCAL)/pipeline/annotations \
+	    --structures       $(ELM_DIR_LOCAL)/pipeline/structures \
+	    --outdir           $(ELM_DIR_LOCAL)/dry-run-chicken/results \
+	    --db_cache         $(ELM_DIR_LOCAL)/dry-run-chicken/cache \
+	    --target_species   elm_chicken \
+	    --kmerseek_combos  $(ELM_DRY_COMBOS) \
+	    --hgnc_file        $(ELM_HGNC_LOCAL) \
+	    $(LOCAL_SKIP_ARMS) \
+	    $(NF_ARGS)
+
+sync-elm-data:
+	$(call require_mac)
+	$(RSYNC) --copy-links $(ELM_DIR_LOCAL)/pipeline/ \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/elm-motif/'
+	$(RSYNC) $(ELM_DIR_LOCAL)/elm_instances_tp.parquet \
+	  $(ELM_DIR_LOCAL)/elm_instance_checks.parquet \
+	  $(ELM_DIR_LOCAL)/elm_instance_covariates.parquet \
+	  $(ELM_DIR_LOCAL)/elm_proteins.fasta \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/elm-motif/'
+
+run-elm-motif: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-elm-motif: prefetch-images
+	$(call require_cluster)
+	@test -f data/elm-motif/elm_species.tsv || { \
+	  echo "  data/elm-motif is not staged. On the Mac: make elm-inputs sync-elm-data"; exit 1; }
+	mkdir -p run-elm-motif
+	cd run-elm-motif && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -c ../conf/elm_motif.config -resume \
+	    --kmerseek_image   $(ELM_IMAGE_REMOTE) \
+	    --species_registry ../data/elm-motif/elm_species.tsv \
+	    --qfo_dir          ../data/elm-motif/qfo \
+	    --annotations      ../data/elm-motif/annotations \
+	    --structures       ../data/elm-motif/structures \
+	    --outdir           $(ELM_OUTDIR) \
+	    --db_cache         ../data/elm-motif/cache \
+	    --target_species   $(ELM_TARGET) \
+	    --hgnc_file        ../data/covariates/hgnc_complete_set.txt \
+	    --prostt5_weights  ../data/prostt5/weights \
+	    $(NF_ARGS)
+
+# Scoring runs from its own work directory with a snapshot of the code at HEAD, so a later
+# `git pull` in this clone cannot change the code under a running array.
+ELM_REDUCE_DIR ?= $(SCRATCH)/250-elm
+reduce-elm-motif:
+	$(call require_cluster)
+	@test -d data/elm-motif/results/kmerseek || { echo "  no ELM results yet: make run-elm-motif first"; exit 1; }
+	mkdir -p $(ELM_REDUCE_DIR)/logs $(ELM_REDUCE_DIR)/code
+	cd ../.. && git archive HEAD | tar -x -C $(ELM_REDUCE_DIR)/code
+	cd $(ELM_REDUCE_DIR) && sbatch code/scripts/reduce_elm_landing.sbatch
+
+# ---- ELM cover search (notebook 250) -----------------------------------------
+# Human ELM proteins (assets/elm_cover_query_accessions.txt) against the nine QfO proteomes,
+# kmerseek at two seed lengths per alphabet with the extension on, mask off and on, scaled
+# 1/2/5/10, and the comparators with their filters opened. conf/elm_cover.config holds all of
+# it; docs/elm_motif_transfer_provenance.md says where every input comes from.
+#
+#   make elm-cover-inputs                      Sherlock: stage data/elm-cover (seconds)
+#   make run-elm-search ELM_TARGETS=chicken    Sherlock: the dry run, one target
+#   make run-elm-search                        Sherlock: all nine targets
+ELM_TARGETS      ?=
+ELM_COVER_DIR    ?= data/elm-cover
+ELM_COVER_OUTDIR ?= ../$(ELM_COVER_DIR)/results
+ELM_TARGETS_ARG   = $(if $(ELM_TARGETS),--target_species $(ELM_TARGETS))
+
+.PHONY: elm-cover-inputs run-elm-search
+
+elm-cover-inputs:
+	$(call require_cluster)
+	apptainer exec --bind $$PWD/../..:$$PWD/../.. --pwd $$PWD docker://$(ELM_IMAGE_REMOTE) \
+	  python3 ../../scripts/elm_cover_inputs.py --stage --data data --out $(ELM_COVER_DIR)
+
+run-elm-search: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-elm-search: prefetch-images
+	$(call require_cluster)
+	@test -f $(ELM_COVER_DIR)/qfo/Eukaryota/UP000005640_9606.fasta || { \
+	  echo "  $(ELM_COVER_DIR) is not staged. Run: make elm-cover-inputs"; exit 1; }
+	mkdir -p run-elm-search
+	cd run-elm-search && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -c ../conf/elm_cover.config -resume \
+	    --kmerseek_image   $(ELM_IMAGE_REMOTE) \
+	    --qfo_dir          ../$(ELM_COVER_DIR)/qfo \
+	    --annotations      ../$(ELM_COVER_DIR)/annotations \
+	    --structures       ../$(ELM_COVER_DIR)/structures \
+	    --outdir           $(ELM_COVER_OUTDIR) \
+	    --db_cache         ../results \
+	    $(ELM_TARGETS_ARG) \
+	    --hgnc_file        ../data/covariates/hgnc_complete_set.txt \
+	    --prostt5_weights  ../data/prostt5/weights \
+	    $(NF_ARGS)
