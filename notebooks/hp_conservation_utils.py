@@ -264,12 +264,19 @@ def finish_figure(
     header_y: float = 1.005,
     dpi: int = 200,
     wrap: int | None = None,
+    tight: bool = True,
 ):
-    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`."""
-    try:
-        fig.tight_layout()
-    except Exception:  # noqa: BLE001
-        pass
+    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`.
+
+    `tight=False` for a figure that has already placed its own margins: tight_layout
+    refuses to run on some layouts and silently leaves matplotlib's default top margin
+    of 0.88, which shows up as a band of white between the TOOLS line and the figure.
+    """
+    if tight:
+        try:
+            fig.tight_layout()
+        except Exception:  # noqa: BLE001
+            pass
     w_in, h_in = fig.get_size_inches()
     wrap = wrap or max(70, int(w_in * 12))
     line = lambda pt: pt / 72.0 / h_in * 1.45
