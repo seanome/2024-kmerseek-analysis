@@ -1,4 +1,4 @@
-# kmerseek (branch olgabot/run-evalue, every region gets region_evalue) + python/polars.
+# kmerseek (branch olgabot/extend-without-fit, on olgabot/run-evalue) + python/polars.
 #
 # Copied from nextflow-runs/qfo-pfam-region-benchmark/Dockerfile; only the kmerseek commit
 # differs. Build context is the kmerseek repo root, at the commit named by GIT_SHA:
@@ -10,7 +10,7 @@
 # ---- builder ---------------------------------------------------------------
 FROM rust:slim AS builder
 
-ARG GIT_SHA=5fdfdcc5e30dc1e78110ff0c24846637e0509439
+ARG GIT_SHA=ffe71ceca5349b388767deea11f20fb3c396953a
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         clang cmake git libclang-dev python3 \

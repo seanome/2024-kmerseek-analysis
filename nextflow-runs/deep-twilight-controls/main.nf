@@ -57,7 +57,7 @@ process stageDatabase {
 
 process kmerseekArm {
     tag "${alphabet} k${ksize}"
-    container params.kmerseek_image
+    container params.kmerseek_search_image
     publishDir "${params.outdir}/kmerseek", mode: 'copy', pattern: '*.{parquet,tsv,log}'
 
     input:
@@ -79,23 +79,14 @@ process kmerseekArm {
     kmerseek index --input ${database} --output idx --ksize ${ksize} --alphabet ${alphabet} \\
         --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} >> \$log 2>&1
 
-    # An index whose Karlin-Altschul fit was refused makes an extended search refuse too.
-    # Such an arm is searched exact instead; region_evalue is then region_run_evalue, which
-    # needs no fit, and the `extended` column says which it was.
-    extended=true
-    if ! kmerseek search -q ${family} -t idx -k ${ksize} -a ${alphabet} \\
-            --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} \\
-            --threshold 0 --min-shared-kmers 1 --max-query-pvalue 1 \\
-            -o search.csv >> \$log 2>&1; then
-        grep -q 'no Karlin-Altschul fit' \$log || exit 1
-        echo "## no Karlin-Altschul fit: searching exact (penalty 0)" >> \$log
-        extended=false
-        kmerseek search -q ${family} -t idx -k ${ksize} -a ${alphabet} \\
-            --extend-mismatch-penalty 0 \\
-            --threshold 0 --min-shared-kmers 1 --max-query-pvalue 1 \\
-            -o search.csv >> \$log 2>&1
-    fi
-    kmerseek_family_hits.py search.csv ${family} ${alphabet} ${ksize} \$extended ${arm}.hits.parquet
+    # Every arm is extended. Where the index has no Karlin-Altschul fit, kmerseek (from
+    # PR seanome/kmerseek#88) still extends, leaves region_ka_evalue empty, and reports
+    # region_run_evalue as region_evalue; the log's "Karlin-Altschul: no fit" line says so.
+    kmerseek search -q ${family} -t idx -k ${ksize} -a ${alphabet} \\
+        --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} \\
+        --threshold 0 --min-shared-kmers 1 --max-query-pvalue 1 \\
+        -o search.csv >> \$log 2>&1
+    kmerseek_family_hits.py search.csv ${family} ${alphabet} ${ksize} true ${arm}.hits.parquet
 
     mkdir pair
     while read -r q t; do
