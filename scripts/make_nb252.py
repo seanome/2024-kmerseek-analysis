@@ -250,11 +250,20 @@ print(pl.concat([lowest.drop("n_correct"), km_best.select(lowest.drop("n_correct
 share = (
     outcomes.filter((pl.col("tool") == "kmerseek") & pl.col("target_has_label"))
     .group_by("family", "query", "target", "label", "needle_identity_pct")
-    .agg((pl.col("outcome") == "correct").mean().alias("share_of_150_correct"))
+    .agg(
+        (pl.col("outcome") == "correct").sum().alias("n_of_150_correct"),
+        (pl.col("outcome") == "correct").mean().alias("share_of_150_correct"),
+    )
     .sort("family", "needle_identity_pct")
 )
 print(share.with_columns(query_name=pl.col("query").replace_strict(names), target_name=pl.col("target").replace_strict(names))
-      .select("family", "needle_identity_pct", "query_name", "target_name", "label", "share_of_150_correct"))
+      .select("family", "needle_identity_pct", "query_name", "target_name", "label", "n_of_150_correct", "share_of_150_correct"))
+
+print("globins: kmerseek combinations that place the label correctly below 80% identity")
+print(outcomes.filter((pl.col("tool") == "kmerseek") & (pl.col("family") == "globin")
+                      & (pl.col("outcome") == "correct") & (pl.col("needle_identity_pct") < 80))
+      .select("alphabet", "ksize", "query", "target", "needle_identity_pct", "call_evalue")
+      .sort("needle_identity_pct", "alphabet"))
 """)
 
 md(r"""
@@ -267,10 +276,15 @@ scale), never filled with a number.
 """)
 
 code(r"""
+# whether each combination was extended, read from its kmerseekArm log
+ext = pl.DataFrame([
+    dict(alphabet=a, ksize=k,
+         extended="no Karlin-Altschul fit: searching exact" not in (R / "kmerseek" / f"{a}.k{k}.log").read_text())
+    for a, k in zip(arms["alphabet"], arms["ksize"])
+])
+print(ext.group_by("extended").len())
+print(ext.group_by("alphabet").agg(pl.col("extended").sum().alias("n_extended"), pl.len().alias("n")).sort("alphabet"))
 km_calls = calls.filter(pl.col("tool") == "kmerseek")
-print(arms.join(km_calls.group_by("alphabet", "ksize").agg(pl.col("extended").first()),
-                on=["alphabet", "ksize"], how="left")
-      .group_by("extended").len())
 print(km_calls.group_by("evalue_source").agg(pl.len(), pl.col("ka_evalue").null_count().alias("ka_evalue_empty")))
 
 placed = outcomes.filter((pl.col("tool") == "kmerseek") & (pl.col("outcome") == "correct"))
@@ -280,6 +294,8 @@ print(placed.group_by("family", "label").agg(
     pl.col("placement_null").median().alias("median_Pr_correct_by_placement"),
     pl.col("placement_null").max().alias("max_Pr_correct_by_placement"),
 ).sort("family", "label"))
+print(f"{placed.height} correct calls; {(placed['placement_null'] == 1).sum()} span the whole target "
+      f"(one possible position); {(placed['placement_null'] < 0.05).sum()} have Pr(correct by placement) < 0.05")
 """)
 
 md(r"""

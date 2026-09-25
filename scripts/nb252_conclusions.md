@@ -18,7 +18,9 @@ the results, so it overstates what one fixed setting would do.
 
 * Globins. Below 84% identity, kmerseek placed the heme iron histidine on only two pairs.
   Human hemoglobin alpha and beta (43.6%) were right with dayhoff6 k7, mmseqs12 k5 and
-  sdm12 k5. Human myoglobin and hemoglobin beta (23.9%) were right with gbmr4 k10 only.
+  sdm12 k5. Human myoglobin and hemoglobin beta (23.9%) were right with gbmr4 k10 only, at
+  E = 154 and 162: an unrelated query would find that many regions as good in this
+  database, so that call is at chance level.
   On the other 50 globin pairs (12.7% to 35.2%, including soybean leghemoglobin and
   barley hemoglobin at 35.2%) no combination placed it.
 * Cystatins. At 12.5% to 15.5% (the stefins against chicken cystatin and cystatin C),
