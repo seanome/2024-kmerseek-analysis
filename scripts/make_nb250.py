@@ -13,6 +13,7 @@ the chicken dry run executes it against its own landing directory:
 """
 
 import json
+import os
 from pathlib import Path
 
 cells = []
@@ -34,53 +35,323 @@ def code(source):
 NARRATIVE_FILE = Path(__file__).with_name("make_nb250_narrative.json")
 NARRATIVE = json.loads(NARRATIVE_FILE.read_text()) if NARRATIVE_FILE.exists() else {}
 
+
+def write_notebook():
+    nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "2025-kmerseek-analysis", "language": "python", "name": "2025-kmerseek-analysis"}, "language_info": {"name": "python", "version": "3.13"}}, "nbformat": 4, "nbformat_minor": 5}
+    out = Path(__file__).resolve().parents[1] / "notebooks" / "250_elm_motif_transfer.ipynb"
+    out.write_text(json.dumps(nb, indent=1))
+    print(f"wrote {out} ({len(cells)} cells)")
+
+
 md(r"""
 # 250. Transferring ELM motif labels across species
 
-ELM (the Eukaryotic Linear Motif resource) lists short motifs, most of them 5 to 8 residues,
-that a protein uses to bind a partner, get modified, get cut or be sent somewhere in the
-cell. Each entry is one motif at one position in one protein, backed by experiments. The
-question here is whether a tool can put the right motif label on a human protein by
-matching it to a protein from another species that carries the same motif.
+ELM (the Eukaryotic Linear Motif resource) lists short motifs, most of them 3 to 15
+residues, that a protein uses to bind a partner, get modified, get cut or be sent somewhere
+in the cell. Each entry is one motif at one position in one protein, backed by experiments.
+The question is whether a coarse alphabet can place such a motif from sequence alone.
 
-A case is one human ELM instance (the query side), the target set, and the target protein
-the tool took the motif label from. Truth is the instance on the human protein.
+The design has one problem to solve first. A hydrophobic-polar (HP) seed is 19 to 30
+residues, and a motif is 3 to 15. An exact seed can only cover a motif by also matching the
+8 to 20 flanking residues around it, and those flanks are mostly disordered. Whether that
+can happen depends on whether the flanks keep their HP pattern in the ortholog. Stage 0
+measures that on real ortholog pairs, with no search.
 
-**Run.** `make run-elm-motif` in `nextflow-runs/qfo-pfam-region-benchmark` with
-`conf/elm_motif.config`. Queries: every human protein with an experimentally supported ELM
-instance. Targets: every non-human protein with one, pooled into one database. Scored by
-`scripts/reduce_elm_landing.py`.
+**Sources.**
 
-**Where each number comes from.**
-
-| quantity | function |
+| quantity | where it comes from |
 |---|---|
-| ELM instances and classes | `scripts/fetch_elm.py`, the ELM TSV exports; only instances ELM marks "true positive" |
-| usable instance | `scripts/prep_elm_inputs.py`: the instance lies inside the current UniProt sequence and the class regex matches a stretch overlapping it |
-| pLDDT over a motif | `bin/build_query_covariates.read_plddt` on the current AlphaFold model, only when the model's sequence equals the UniProt sequence |
-| disorder over a motif | `bin/predict_disorder_metapredict.py`, metapredict 3.0.1, threshold 0.5 |
-| each tool's calls | `scripts/reduce_elm_landing.py`: the pipeline's `load_regions` (kmerseek ranked by `region_mean_idf`, every region kept), `dedup_fragment_regions` (Foldseek, Reseek), each query's list cut at its first 1000 rows, then the transfer rule: a row takes the class of every target instance it covers by at least half |
-| Kyte-Doolittle scan | notebook 231's `swissprot_control_utils.kd_transmem_calls` (window 19, mean hydropathy > 1.6), scored by position |
-| placement null, random-query control | defined in section 3 |
+| ELM instances and classes | `scripts/fetch_elm.py`: the ELM TSV exports, instances ELM marks "true positive" |
+| usable instance | inside the QfO 2020_04 human sequence, and the class regex matches a stretch overlapping it (`scripts/elm_stage0_flanks.py`) |
+| orthologs | 1:1 OMA pairs from the QfO release's `.idmapping` files, as `nextflow-runs/qfo-dnds-omega/bin/build_ortholog_pairs.py` pairs them. E. coli has no OMA cross-references in this release. |
+| alignment | MAFFT 7.526 L-INS-i (`--localpair --maxiterate 1000`), one human-ortholog pair at a time |
+| pLDDT over a motif | `bin/build_query_covariates.read_plddt` on the pipeline's human models for the midi-plus proteins, and on the AlphaFold cache for the rest when the model is as long as the sequence |
+| disorder over the motif and its flanks | `bin/predict_disorder_metapredict.py`, metapredict 3.0.1, threshold 0.5 |
+| Swiss-Prot features over a motif | `truth_swissprot/human_swissprot_truth.parquet` of the midi-plus run (midi-plus proteins only) |
 
-**Definitions used throughout.**
+**Three windows of the human protein.** *Motif*: the ELM instance's own residues.
+*Flanks*: the 10 residues on each side (fewer at a protein end). *Rest*: every other
+residue. Over each window, counting only alignment columns where both proteins have a
+residue:
 
-- *Lands*: the call covers at least half of the human motif. This is the transfer rule
-  applied on the query side.
-- *Overlap score (IoU)*: overlap between the call and the motif divided by their union.
-  Recorded, never thresholded. A call of length *c* on a motif of length *m* < *c* scores
-  at most *m*/*c*, so a 19-residue call on a 6-residue motif scores at most 0.32.
-- *Counted*: a landed call that also beats the placement null and, where computed, the
-  random-query control (section 3).
+$$\Pr(\text{same class}) = \frac{\text{columns where human and ortholog residues are in the same hp\_pbotc\_1st\_ed2 class}}{\text{columns with a residue on both sides}}$$
 
-**Splits.** Query proteins are grouped by HGNC gene group; a protein with no group is its
-own unit. Each unit goes to the "choose" half or the "report" half by the parity of the
-first byte of the SHA-1 of its name. Arms are chosen on the choose half; every number after
-section 4 is from the report half. Separately, each ELM functional site (ELM's own grouping
-of its numbered classes, e.g. the four `LIG_SH3_*` classes are one site) goes to "choose"
-or "held_out" the same way, and section 6 scores one arm, chosen on the choose sites, on
-the held-out sites only.
+with classes H = ACFILMPVWY and P = DEGHKNQRST, and percent identity the same with "same
+residue" on top. The level expected by chance is
+
+$$\Pr(\text{same class} \mid \text{chance}) = h_{\text{human}}\, h_{\text{ortholog}} + p_{\text{human}}\, p_{\text{ortholog}}$$
+
+where $h_{\text{human}}$ and $p_{\text{human}}$ are the hydrophobic and polar shares of the
+whole human protein, and $h_{\text{ortholog}}$, $p_{\text{ortholog}}$ the same for the
+ortholog.
+
+**Longest HP run covering the motif.** The longest run of consecutive alignment columns,
+with no gap on either side, where every column has the same HP class on both proteins,
+among runs that contain at least 80% of the motif's residues. An exact seed of length $k$
+covering the motif can exist only if this run is at least $k$ long.
+
+**Gate.** If fewer than 10% of instances have a run of 19 or more in chicken and every
+species beyond it, exact 19-mers cannot carry this benchmark, and the mismatch-tolerant
+extension arms have to.
 """)
+
+code(r"""
+import sys
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import polars as pl
+
+sys.path.insert(0, str(Path.cwd()))
+import hero_example_utils as he
+
+plt.rcParams.update({"figure.dpi": 110, "savefig.bbox": "tight", "font.size": 9.5})
+pl.Config.set_tbl_rows(40)
+pl.Config.set_tbl_cols(20)
+pl.Config.set_tbl_width_chars(200)
+
+FIG = Path("../figures")
+TAB = Path("../tables")
+S0 = Path("/Users/olga/data/elm-motif-transfer/stage0")
+INST = pl.read_parquet(S0 / "stage0_instances.parquet")
+PAIRS = pl.read_parquet(S0 / "stage0_pairs.parquet")
+SPECIES = ["mouse", "chicken", "zebrafish", "ciona", "fly", "worm", "yeast", "arabidopsis", "ecoli"]
+GROUP = {"mouse": "mouse (100 Mya)", "chicken": "chicken, zebrafish (300-430 Mya)",
+         "zebrafish": "chicken, zebrafish (300-430 Mya)", "ciona": "ciona, fly, worm (550-650 Mya)",
+         "fly": "ciona, fly, worm (550-650 Mya)", "worm": "ciona, fly, worm (550-650 Mya)",
+         "yeast": "yeast, arabidopsis (900-1500 Mya)", "arabidopsis": "yeast, arabidopsis (900-1500 Mya)"}
+GROUPS = list(dict.fromkeys(GROUP.values()))
+PAIRS = PAIRS.with_columns(group=pl.col("species").replace_strict(GROUP, default=None))
+BINS = ["3-6 aa", "7-10 aa", "11-15 aa", "16+ aa"]
+
+def counts(df, label):
+    return (df.group_by("length_bin").agg(instances=pl.len(), proteins=pl.col("accession").n_unique())
+            .with_columns(set=pl.lit(label)))
+
+tab = pl.concat([counts(INST, "all human proteins"), counts(INST.filter("in_midi_plus"), "midi-plus proteins")])
+print(f"usable human ELM instances: {INST.height:_} on {INST['accession'].n_unique():_} proteins, "
+      f"{INST['elm_class'].n_unique()} classes; on the 998 midi-plus proteins: "
+      f"{INST.filter('in_midi_plus').height} on {INST.filter('in_midi_plus')['accession'].n_unique()} proteins")
+print(tab.pivot(on="set", index="length_bin", values="instances").sort(
+    pl.col("length_bin").replace_strict({b: i for i, b in enumerate(BINS)})))
+print(f"PubMed IDs listed by ELM: {INST['pmids'].str.split(' ').list.len().sum():_} "
+      f"over {INST.height:_} instances")
+""")
+
+code(r"""
+cov = INST.group_by("length_bin").agg(
+    n=pl.len(),
+    n_with_plddt=pl.col("mean_plddt_motif").is_not_null().sum(),
+    median_plddt_motif=pl.col("mean_plddt_motif").median(),
+    share_plddt_below_50=(pl.col("mean_plddt_motif") < 50).mean(),
+    median_disorder_motif=pl.col("frac_disordered_motif").median(),
+    median_disorder_flanks=pl.col("frac_disordered_flanks").median(),
+    share_flanks_mostly_disordered=(pl.col("frac_disordered_flanks") >= 0.5).mean(),
+).sort(pl.col("length_bin").replace_strict({b: i for i, b in enumerate(BINS)}))
+print("Per-motif covariates by motif length (disorder = share of residues metapredict calls disordered):")
+print(cov)
+mp = INST.filter("in_midi_plus").explode("swissprot_features")
+print("\nSwiss-Prot feature types overlapping a motif, midi-plus proteins only:")
+print(mp.group_by("swissprot_features").len().sort("len", descending=True))
+
+fig, axes = plt.subplots(1, 3, figsize=(11.5, 3.2))
+for ax, col, lab, bins in [
+    (axes[0], "motif_length", "motif length (aa)", np.arange(0, 50, 2)),
+    (axes[1], "mean_plddt_motif", "mean pLDDT over the motif", np.arange(0, 102, 5)),
+    (axes[2], None, "share of residues called disordered\n(metapredict 3.0.1, threshold 0.5)", np.linspace(0, 1, 11)),
+]:
+    if col:
+        v = INST[col].drop_nulls().to_numpy()
+        ax.hist(v, bins=bins, histtype="step", lw=1.6, color="#3B6EA5",
+                weights=np.full(v.size, 100 / v.size))
+    else:
+        for c, ls, lab2 in (("frac_disordered_motif", "-", "motif"), ("frac_disordered_flanks", "--", "the 10 residues on each side")):
+            v = INST[c].drop_nulls().to_numpy()
+            ax.hist(v, bins=bins, histtype="step", lw=1.6, ls=ls, color="#3B6EA5" if ls == "-" else "#C98A2B",
+                    weights=np.full(v.size, 100 / v.size), label=f"{lab2}, n = {v.size:_}")
+        ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.28), frameon=False, fontsize=8)
+    ax.set_xlabel(lab)
+    ax.set_ylabel("% of motifs")
+fig.suptitle(f"The {INST.height:_} usable human ELM motifs", y=1.12)
+fig.savefig(FIG / "250_stage0_motif_covariates.png", dpi=200)
+""")
+
+md(r"""
+## Stage 0. Do the flanks keep their HP pattern?
+""")
+
+code(r"""
+per_sp = (PAIRS.group_by("species").agg(instances=pl.len(), proteins=pl.col("accession").n_unique(),
+                                         midi_plus_instances=pl.col("in_midi_plus").sum(),
+                                         median_rest_identity=pl.col("rest_identity").median())
+          .join(pl.DataFrame({"species": SPECIES}), on="species", how="right")
+          .fill_null(0).with_columns(pl.col("species").replace_strict(GROUP, default="no OMA pairs").alias("group")))
+print("Human ELM instances with a 1:1 OMA ortholog, per species:")
+print(per_sp.select("species", "group", "instances", "proteins", "midi_plus_instances", "median_rest_identity"))
+
+rng = np.random.default_rng(250)
+def boot_mean(v, n=1000):
+    v = np.asarray(v, float)
+    v = v[~np.isnan(v)]
+    if v.size == 0:
+        return np.nan, np.nan, np.nan
+    b = rng.choice(v, (n, v.size)).mean(1)
+    return v.mean(), *np.percentile(b, [2.5, 97.5])
+
+WINDOWS = [("motif", "motif"), ("flanks", "10 residues\neach side"), ("rest", "rest of\nthe protein")]
+rows = []
+for g in GROUPS:
+    sub = PAIRS.filter(pl.col("group") == g)
+    # One value per human instance: the mean over its orthologs in the group, so the interval
+    # resamples instances, not instance-species pairs.
+    per_inst = sub.group_by("elm_instance").agg(
+        *[pl.col(f"{w}_pr_same_class").mean() for w, _ in WINDOWS],
+        *[pl.col(f"{w}_identity").mean() for w, _ in WINDOWS],
+        pl.col("pr_same_class_chance").mean())
+    for w, _ in WINDOWS:
+        m, lo, hi = boot_mean(per_inst[f"{w}_pr_same_class"].to_numpy())
+        mi, _, _ = boot_mean(per_inst[f"{w}_identity"].to_numpy())
+        rows.append({"group": g, "window": w, "n_instances": per_inst.height, "pr_same_class": m,
+                     "ci_low": lo, "ci_high": hi, "identity": mi,
+                     "pr_same_class_chance": per_inst["pr_same_class_chance"].mean()})
+W = pl.DataFrame(rows)
+print("\nPr(same hp_pbotc_1st_ed2 class) and percent identity by window, mean over instances, "
+      "95% bootstrap interval by instance:")
+print(W.with_columns(pl.col(pl.Float64).round(3)))
+W.write_csv(TAB / "250_stage0_windows.csv")
+
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 3.8))
+# One blue ramp, darkest = closest to human: the groups are ordered by distance.
+COL = dict(zip(GROUPS, ["#08306B", "#2171B5", "#6BAED6", "#B7D4EA"]))
+chance = W["pr_same_class_chance"]
+a1.axhline(chance.mean(), color="0.45", ls=":", lw=1.2, zorder=0,
+           label=(f"chance level, {chance.min():.2f} in every group" if f"{chance.min():.2f}" == f"{chance.max():.2f}"
+                  else f"chance level, {chance.min():.2f}-{chance.max():.2f}"))
+x = np.arange(len(WINDOWS))
+for g in GROUPS:
+    s = W.filter(pl.col("group") == g)
+    if s.is_empty():
+        continue
+    a1.errorbar(x, s["pr_same_class"], yerr=[s["pr_same_class"] - s["ci_low"], s["ci_high"] - s["pr_same_class"]],
+                marker="o", ms=4, capsize=3, color=COL[g], label=f"{g}, n = {s['n_instances'][0]}")
+    a2.plot(x, 100 * s["identity"], marker="o", ms=4, color=COL[g])
+for a, lab in ((a1, "Pr(same HP class)"), (a2, "identity (%)")):
+    a.set_xticks(x, [l for _, l in WINDOWS])
+    a.set_ylabel(lab)
+a1.set_ylim(0.4, 1.0)
+a2.set_ylim(0, 100)
+fig.legend(*a1.get_legend_handles_labels(), loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 1.1))
+fig.savefig(FIG / "250_stage0_flank_conservation.png", dpi=200)
+""")
+
+code(r"""
+runs = (PAIRS.group_by("species").agg(
+            n_instances=pl.len(),
+            share_run_ge_19=(pl.col("longest_hp_run_covering_motif") >= 19).mean(),
+            share_run_ge_10=(pl.col("longest_hp_run_covering_motif") >= 10).mean(),
+            median_run=pl.col("longest_hp_run_covering_motif").median())
+        .join(pl.DataFrame({"species": SPECIES}), on="species", how="right")
+        .with_columns(mya=pl.col("species").replace_strict(dict(zip(SPECIES, [100, 300, 430, 550, 600, 650, 900, 1500, 2000])))))
+print("Longest run of identical HP classes covering >= 80% of the motif, per species:")
+print(runs.select("species", "mya", "n_instances", "share_run_ge_10", "share_run_ge_19", "median_run")
+      .with_columns(pl.col(pl.Float64).round(3)))
+runs.write_csv(TAB / "250_stage0_longest_hp_run.csv")
+by_bin = (PAIRS.filter(pl.col("mya") >= 300).group_by("length_bin").agg(
+    n=pl.len(), share_run_ge_19=(pl.col("longest_hp_run_covering_motif") >= 19).mean(),
+    share_run_ge_10=(pl.col("longest_hp_run_covering_motif") >= 10).mean())
+    .sort(pl.col("length_bin").replace_strict({b: i for i, b in enumerate(BINS)})))
+print("\nChicken and beyond, by motif length:")
+print(by_bin.with_columns(pl.col(pl.Float64).round(3)))
+
+fig, ax = plt.subplots(figsize=(7.5, 3.4))
+r = runs.filter(pl.col("n_instances").is_not_null() & (pl.col("n_instances") > 0))
+xs = np.arange(r.height)
+ax.bar(xs - 0.2, 100 * r["share_run_ge_10"], width=0.4, color="#9DB9D8", edgecolor="0.3", label="run of 10 or more")
+ax.bar(xs + 0.2, 100 * r["share_run_ge_19"], width=0.4, color="#1B4F8A", edgecolor="0.3", hatch="//", label="run of 19 or more")
+ax.axhline(10, color="0.35", ls=":", lw=1)
+ax.text(r.height - 0.5, 10.5, "10%", ha="right", va="bottom", fontsize=8, color="0.35")
+ax.set_xticks(xs, [f"{s}\n{m} Mya\nn = {n}" for s, m, n in zip(r["species"], r["mya"], r["n_instances"])], fontsize=8)
+ax.set_ylabel("% of instances")
+ax.set_ylim(0, 100)
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False)
+fig.savefig(FIG / "250_stage0_longest_hp_run.png", dpi=200)
+""")
+
+code(r"""
+# Verdict, computed, species by species from chicken outward (300 Mya and beyond).
+far = runs.filter((pl.col("mya") >= 300) & (pl.col("n_instances") > 0)).sort("mya")
+under = far.filter(pl.col("share_run_ge_19") < 0.10)
+over = far.filter(pl.col("share_run_ge_19") >= 0.10)
+print("Share of instances with an identical-HP-class run of 19 or more covering the motif:")
+for r in far.iter_rows(named=True):
+    print(f"  {r['species']:12s} {r['mya']:>5} Mya  {100 * r['share_run_ge_19']:5.1f}%  "
+          f"(run of 10 or more: {100 * r['share_run_ge_10']:5.1f}%, n = {r['n_instances']})")
+if over.is_empty():
+    print("VERDICT: under 10% in chicken and every species beyond it. Exact 19-mers cannot carry this "
+          "benchmark; the extension arms are load-bearing.")
+else:
+    print(f"VERDICT: the gate as written (under 10% in chicken AND every species beyond) is not met: "
+          f"{', '.join(over['species'])} are at or above 10%. It is met from "
+          f"{under['species'][0] if under.height else 'no species'} outward "
+          f"({', '.join(under['species'])}): there, exact 19-mers cannot carry the benchmark and the "
+          f"extension arms are load-bearing.")
+""")
+
+code(r"""
+# The residues behind the numbers: one instance per species group, the one whose longest
+# covering HP run is the group median. Motif +- 10, human above ortholog, then the classes.
+def show(r):
+    aln = (S0 / "alignments" / r["species"] / f"{r['accession']}__{r['ortholog']}.fasta").read_text().split(">")[1:]
+    ha, ta = ["".join(x.splitlines()[1:]).upper() for x in aln]
+    pos = []
+    i = 0
+    for c in ha:
+        pos.append(None if c == "-" else i)
+        i += c != "-"
+    s, e = r["start"], r["end"]
+    cols = [k for k, p in enumerate(pos) if p is not None and s - 10 <= p < e + 10]
+    c0, c1 = cols[0], cols[-1] + 1
+    hs, ts = ha[c0:c1], ta[c0:c1]
+    ident = sum(a == b and a != "-" for a, b in zip(hs, ts))
+    cls = lambda x: "-" if x == "-" else he.class_string(x)
+    hc, tc = "".join(cls(a) for a in hs), "".join(cls(b) for b in ts)
+    motif = "".join("*" if pos[k] is not None and s <= pos[k] < e else " " for k in range(c0, c1))
+    run = [(a == b and a != "-") for a, b in zip(hc, tc)]
+    best, cur, bs, st = 0, 0, 0, 0
+    for k, ok in enumerate(run):
+        cur, st = (cur + 1, st) if ok else (0, k + 1)
+        if cur > best:
+            best, bs = cur, st
+    seed = "".join("^" if bs <= k < bs + best else " " for k in range(len(run)))
+    lab = 40
+    print(f"--- {r['elm_class']}, human {r['accession']} motif {s + 1}-{e} ({e - s} aa), {r['species']} "
+          f"{r['ortholog']}; {ident} of {len(hs)} alignment columns identical over motif +-10; "
+          f"longest covering HP run in the whole alignment: {r['longest_hp_run_covering_motif']}")
+    print(f"{'motif':<{lab}}{motif}")
+    print(f"{'human ' + r['accession']:<{lab}}{hs}")
+    print(f"{'':<{lab}}{''.join('|' if a == b and a != '-' else ' ' for a, b in zip(hs, ts))}")
+    print(f"{r['species'] + ' ' + r['ortholog']:<{lab}}{ts}")
+    print(f"{'hp_pbotc_1st_ed2':<{lab}}{hc}")
+    print(f"{'':<{lab}}{''.join('|' if x else ' ' for x in run)}")
+    print(f"{'':<{lab}}{tc}")
+    print(f"{'longest same-class run in this window':<{lab}}{seed}\n")
+
+J = PAIRS.join(INST.select("elm_instance", "start", "end"), on="elm_instance")
+for g in GROUPS:
+    sub = J.filter(pl.col("group") == g).sort("longest_hp_run_covering_motif", "elm_instance")
+    if sub.height:
+        show(sub.row(sub.height // 2, named=True))
+""")
+
+md(NARRATIVE.get("stage0", ""))
+
+# The search sections below are the pooled-target design of 2026-09-24. They stay out of the
+# notebook until the Stage 0 verdict has been read and the search is rewired for the
+# nine-species, three-tier design (Olga, 2026-09-25).
+if os.environ.get("NB250_SEARCH_SECTIONS") != "1":
+    write_notebook()
+    raise SystemExit(0)
 
 code(r"""
 import sys
@@ -574,7 +845,4 @@ for i, r in enumerate(TOP.iter_rows(named=True), 1):
 
 md(NARRATIVE.get("verdict", ""))
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "2025-kmerseek-analysis", "language": "python", "name": "2025-kmerseek-analysis"}, "language_info": {"name": "python", "version": "3.13"}}, "nbformat": 4, "nbformat_minor": 5}
-out = Path(__file__).resolve().parents[1] / "notebooks" / "250_elm_motif_transfer.ipynb"
-out.write_text(json.dumps(nb, indent=1))
-print(f"wrote {out} ({len(cells)} cells)")
+write_notebook()

@@ -2453,7 +2453,17 @@ ELM_DRY_COMBOS   ?= hp_pbotc_1st_ed2:19,hp_thomas_dill_no_c2:19,gbmr4:16,mmseqs1
 ELM_OUTDIR       ?= ../data/elm-motif/results
 ELM_HGNC_LOCAL   ?= /Users/olga/data/qfo-pfam-region-midi-plus/hgnc_complete_set.txt
 
-.PHONY: elm-inputs run-elm-motif-local sync-elm-data run-elm-motif reduce-elm-motif
+.PHONY: run-elm-stage0 elm-inputs run-elm-motif-local sync-elm-data run-elm-motif reduce-elm-motif
+
+# Stage 0 (no search, laptop): do motif flanks keep their HP pattern in 1:1 OMA orthologs?
+# Writes stage0/ under ELM_DIR_LOCAL and executes notebook 250's Stage 0 section.
+run-elm-stage0:
+	$(call require_mac)
+	$(ELM_PYTHON) ../../scripts/fetch_elm.py --out-dir $(ELM_DIR_LOCAL)
+	$(ELM_PYTHON) ../../scripts/elm_stage0_flanks.py --out-dir $(ELM_DIR_LOCAL)/stage0
+	$(ELM_PYTHON) ../../scripts/make_nb250.py
+	cd ../../notebooks && $(dir $(ELM_PYTHON))jupyter nbconvert --to notebook --execute --inplace \
+	  --ExecutePreprocessor.timeout=1200 250_elm_motif_transfer.ipynb
 
 elm-inputs:
 	$(call require_mac)

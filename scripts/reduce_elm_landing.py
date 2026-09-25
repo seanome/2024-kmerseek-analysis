@@ -27,8 +27,8 @@ Steps per region table:
        cover = overlap / motif length     (share of the motif the call covers)
        inside = overlap / call length
        iou    = overlap / union           (the overlap score; recorded, never thresholded)
-     "Landed" is cover >= 0.5: the call covers at least half of the motif, the same rule
-     the transfer applies on the target side.
+     "Landed" is cover >= 0.8: the call covers at least 80% of the motif. centre_offset is
+     the distance in residues between the centre of the call and the centre of the motif.
   4. Exact-placement null for the chosen landed call: slide a window of the call's length
      to every position of the query protein and count the share of positions that would
      also land on the motif (p_place_query); do the same on the target protein against
@@ -64,7 +64,10 @@ import polars as pl
 
 HUMAN = "Homo sapiens"
 LIST_LENGTH = 1000
-COVER_MIN = 0.5
+#: A call lands when it covers at least this share of the human motif. Scored this way
+#: round, not as "80% of the call inside the feature" (notebook 244), because a call is at
+#: least k residues long and most motifs are shorter than k.
+COVER_MIN = 0.8
 FRAGMENT_TOOLS = {"foldseek", "reseek"}
 KM_SCORES = [
     "region_mean_idf",
@@ -81,8 +84,12 @@ KM_RE = re.compile(
 BL_RE = re.compile(r"^human_vs_(?P<t>[a-z_]+)\.(?P<tool>[a-z0-9_]+)\.tsv\.gz$")
 
 
-def list_jobs(results: Path) -> list[dict]:
+def list_jobs(results: Path, extended: bool = False) -> list[dict]:
+    """Every region table under one results directory. An extended run's kmerseek arms get
+    the suffix `_ext`; its comparators are not read (the extended run does not run them).
+    """
     jobs = []
+    ext = "_ext" if extended else ""
     for p in sorted((results / "kmerseek").glob("human_vs_*.regions.parquet")):
         m = KM_RE.match(p.name)
         if not m:
@@ -94,9 +101,11 @@ def list_jobs(results: Path) -> list[dict]:
                 "path": p,
                 "target": m["t"],
                 "tool": "kmerseek",
-                "arm": f"kmerseek.{m['alpha']}_k{m['k']}_s{s}_lc{lc}",
+                "arm": f"kmerseek.{m['alpha']}_k{m['k']}_s{s}_lc{lc}{ext}",
             }
         )
+    if extended:
+        return jobs
     for p in sorted((results / "regions").glob("*/human_vs_*.tsv.gz")):
         m = BL_RE.match(p.name)
         if m and m["tool"] == p.parent.name:
@@ -192,7 +201,14 @@ def score_calls(
                 - pl.min_horizontal("qstart", "true_start")
             ),
         )
-        .with_columns(landed=pl.col("cover") >= COVER_MIN)
+        .with_columns(
+            landed=pl.col("cover") >= COVER_MIN,
+            # Residues between the centre of the call and the centre of the motif.
+            centre_offset=(
+                (pl.col("qstart") + pl.col("qend")) / 2
+                - (pl.col("true_start") + pl.col("true_end")) / 2
+            ).abs(),
+        )
     )
 
 
@@ -213,6 +229,7 @@ def per_instance(m: pl.DataFrame) -> pl.DataFrame:
         "iou",
         "cover",
         "inside",
+        "centre_offset",
     ]
     cols = [c for c in cols if c in m.columns]
     best = (
@@ -382,6 +399,12 @@ def main() -> None:
         "--results", type=Path, required=True, help="the ELM run's results/ directory"
     )
     ap.add_argument(
+        "--results-extended",
+        type=Path,
+        default=None,
+        help="the extended run's results/ directory (make run-elm-motif ELM_EXTEND=1)",
+    )
+    ap.add_argument(
         "--elm-dir",
         type=Path,
         required=True,
@@ -430,6 +453,8 @@ def main() -> None:
     lengths = read_fasta_lengths(args.elm_dir / "elm_proteins.fasta")
 
     jobs = list_jobs(args.results)
+    if args.results_extended is not None:
+        jobs += list_jobs(args.results_extended, extended=True)
     target_sets = sorted({j["target"] for j in jobs})
     for t in target_sets:
         jobs.append(

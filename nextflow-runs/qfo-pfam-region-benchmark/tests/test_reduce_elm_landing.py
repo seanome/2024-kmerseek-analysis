@@ -32,10 +32,10 @@ def test_rank_and_cut_ranks_within_query_and_breaks_ties_by_target():
     assert out.filter(pl.col("query_acc") == "q2")["rank"].to_list() == [1]
 
 
-def test_place_share_counts_windows_covering_half_the_motif():
-    # Protein 20 aa, motif [10, 14) (4 aa), window 4: a start p lands if the window covers
-    # >= 2 residues of the motif, i.e. p in 8..12 -> 5 of 17 starts.
-    assert rel.place_share(20, 4, [(10, 14)]) == pytest.approx(5 / 17)
+def test_place_share_counts_windows_covering_80pct_of_the_motif():
+    # Protein 20 aa, motif [10, 14) (4 aa), window 6: a start p lands if the window covers
+    # >= 80% of the motif (3.2, so all 4 residues), i.e. p in 8..10 -> 3 of 15 starts.
+    assert rel.place_share(20, 6, [(10, 14)]) == pytest.approx(3 / 15)
     assert rel.place_share(20, 21, [(10, 14)]) is None
     assert rel.place_share(20, 4, []) is None
 
@@ -64,6 +64,6 @@ def test_score_calls_lands_on_half_cover_and_keeps_iou():
         }
     )
     m = rel.score_calls(calls, human, by_label=True).sort("elm_instance")
-    # i1 lies inside the 19-residue call: cover 1, IoU 6/19. i2 overlaps 2 of 6: not landed.
+    # i1 lies inside the 19-residue call: cover 1, IoU 6/19. i2 has 2 of 6 covered: not landed.
     assert m["landed"].to_list() == [True, False]
     assert m["iou"][0] == pytest.approx(6 / 19)
