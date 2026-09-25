@@ -14,6 +14,8 @@ the chicken dry run executes it against its own landing directory:
 
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 cells = []
@@ -40,6 +42,8 @@ def write_notebook():
     nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "2025-kmerseek-analysis", "language": "python", "name": "2025-kmerseek-analysis"}, "language_info": {"name": "python", "version": "3.13"}}, "nbformat": 4, "nbformat_minor": 5}
     out = Path(__file__).resolve().parents[1] / "notebooks" / "250_elm_motif_transfer.ipynb"
     out.write_text(json.dumps(nb, indent=1))
+    # CI checks notebooks/ with `black --check` (jupyter mode), so format the cells as written.
+    subprocess.run([sys.executable, "-m", "black", "-q", str(out)], check=True)
     print(f"wrote {out} ({len(cells)} cells)")
 
 
