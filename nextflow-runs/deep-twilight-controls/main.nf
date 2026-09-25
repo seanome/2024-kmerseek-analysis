@@ -61,7 +61,7 @@ process kmerseekArm {
     publishDir "${params.outdir}/kmerseek", mode: 'copy', pattern: '*.{parquet,tsv,log}'
 
     input:
-    tuple val(alphabet), val(ksize), val(penalty), val(xdrop)
+    tuple val(alphabet), val(ksize), val(penalty), val(xdrop), val(shuffles)
     path database
     path family
     path pairs
@@ -76,11 +76,14 @@ process kmerseekArm {
     """
     set -euo pipefail
     log=${arm}.log
+    # shuffles: the fewest reference shuffles at which this index's Karlin-Altschul fit
+    # succeeds, measured by scripts/measure_ka_fit_recovery.py; 1 where no count does
     kmerseek index --input ${database} --output idx --ksize ${ksize} --alphabet ${alphabet} \\
-        --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} >> \$log 2>&1
+        --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} \\
+        --ka-reference-shuffles ${shuffles} >> \$log 2>&1
 
     # Every arm is extended. Where the index has no Karlin-Altschul fit, kmerseek (from
-    # PR seanome/kmerseek#88) still extends, leaves region_ka_evalue empty, and reports
+    # PR seanome/kmerseek#88, with #89) still extends, leaves region_ka_evalue empty, and reports
     # region_run_evalue as region_evalue; the log's "Karlin-Altschul: no fit" line says so.
     kmerseek search -q ${family} -t idx -k ${ksize} -a ${alphabet} \\
         --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} \\
@@ -313,7 +316,7 @@ workflow {
 
     arm_ch = Channel.fromPath(arms)
         .splitCsv(header: true, sep: '\t')
-        .map { r -> tuple(r.alphabet, r.ksize as int, r.penalty, r.xdrop) }
+        .map { r -> tuple(r.alphabet, r.ksize as int, r.penalty, r.xdrop, r.ka_reference_shuffles as int) }
     km = kmerseekArm(arm_ch, db.fasta, family, db.pairs)
 
     ph = parsePhmmer(phmmerSearch(db.fasta, family), family)

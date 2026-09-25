@@ -269,21 +269,33 @@ print(outcomes.filter((pl.col("tool") == "kmerseek") & (pl.col("family") == "glo
 md(r"""
 ## 4. kmerseek: which regions were extended, where the E-value came from, and the placement check
 
-An alphabet-k combination whose index could not fit the Karlin-Altschul constants was
-searched without extension; its `region_evalue` is then `region_run_evalue`.
+Every combination is searched with ungapped extension. Where the index could not fit the
+Karlin-Altschul constants, the regions are still extended (kmerseek PR #88) but get no
+`region_ka_evalue`, and their `region_evalue` is `region_run_evalue`.
 `region_ka_evalue` is left empty where the pair has no positive $\lambda$ (Karlin-Altschul
 scale), never filled with a number.
 """)
 
 code(r"""
-# whether each combination was extended, read from its kmerseekArm log
-ext = pl.DataFrame([
-    dict(alphabet=a, ksize=k,
-         extended="no Karlin-Altschul fit: searching exact" not in (R / "kmerseek" / f"{a}.k{k}.log").read_text())
-    for a, k in zip(arms["alphabet"], arms["ksize"])
-])
-print(ext.group_by("extended").len())
-print(ext.group_by("alphabet").agg(pl.col("extended").sum().alias("n_extended"), pl.len().alias("n")).sort("alphabet"))
+# every combination is extended; whether its index has a Karlin-Altschul fit is read from
+# the kmerseekArm log ("Karlin-Altschul: no fit" when it does not)
+ext = pl.DataFrame(
+    [
+        dict(
+            alphabet=a,
+            ksize=k,
+            has_ka_fit="Karlin-Altschul: no fit"
+            not in (R / "kmerseek" / f"{a}.k{k}.log").read_text(),
+        )
+        for a, k in zip(arms["alphabet"], arms["ksize"])
+    ]
+)
+print(ext.group_by("has_ka_fit").len())
+print(
+    ext.group_by("alphabet")
+    .agg(pl.col("has_ka_fit").sum().alias("n_with_fit"), pl.len().alias("n"))
+    .sort("alphabet")
+)
 km_calls = calls.filter(pl.col("tool") == "kmerseek")
 print(km_calls.group_by("evalue_source").agg(pl.len(), pl.col("ka_evalue").null_count().alias("ka_evalue_empty")))
 

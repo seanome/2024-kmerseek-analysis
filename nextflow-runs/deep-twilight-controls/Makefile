@@ -13,8 +13,8 @@ SHELL := /bin/bash
 KMERSEEK_REPO ?= /Users/olga/code/kmerseek
 # The search image (params.kmerseek_search_image). The python steps still run in
 # 2026-09-25-run-evalue-5fdfdcc-rtcompat (params.kmerseek_image), built from 5fdfdcc.
-KMERSEEK_SHA  ?= ffe71ceca5349b388767deea11f20fb3c396953a
-IMAGE_TAG     ?= 2026-09-25-extend-without-fit-ffe71ce
+KMERSEEK_SHA  ?= 90c581a011d42002eeeb204ec6efea79ece0359d
+IMAGE_TAG     ?= 2026-09-25-ka-fixes-90c581a
 IMAGE_REMOTE  := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
 
 NEXTFLOW ?= /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow
