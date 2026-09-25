@@ -260,12 +260,15 @@ def drop_self_matches(lf: pl.LazyFrame, names: list[str] | None = None) -> pl.La
 
     Two separate cases, so two separate filters:
 
-    * Same accession. kmerseek already suppresses this -- a 933-protein human
-      all-against-all on 2026-09-23 had 0 rows with query_name == target_name -- so the
-      filter is belt and braces against a tool that does not.
+    * Same accession. kmerseek already drops these -- a 933-protein human
+      all-against-all on 2026-09-23 had 0 rows with query_name == target_name. The
+      other tools do not: DIAMOND, MMseqs2, Foldseek and the rest report a protein as
+      its own top hit when searched against its own proteome. So the accession filter
+      is for them, on the TSV branch of load_regions.
     * Different accessions holding the SAME sequence, 26 of 11_298 rows in that run.
-      These survive an accession check by construction, so they need the md5 columns.
-      Applied only when both are present, and BEFORE the select that drops them.
+      kmerseek reported all 26. They survive an accession
+      check by construction, so they need the md5 columns. Applied only when both are
+      present, and BEFORE the select that drops them.
     """
     if names is not None:
         if "query_md5" in names and "target_md5" in names:
