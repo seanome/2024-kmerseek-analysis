@@ -28,11 +28,15 @@ for line in open(family_fasta):
 
 rows = ["accession\tmodel\tlatest_version\tmean_plddt\tsequence_matches_uniprot"]
 for acc, seq in seqs.items():
-    with urllib.request.urlopen(f"https://alphafold.ebi.ac.uk/api/prediction/{acc}") as r:
+    with urllib.request.urlopen(
+        f"https://alphafold.ebi.ac.uk/api/prediction/{acc}"
+    ) as r:
         entry = next(e for e in json.load(r) if e.get("uniprotAccession") == acc)
     model_seq = entry.get("sequence") or entry.get("uniprotSequence")
     if model_seq != seq:
-        sys.exit(f"{acc}: AlphaFold DB model sequence differs from the UniProt sequence")
+        sys.exit(
+            f"{acc}: AlphaFold DB model sequence differs from the UniProt sequence"
+        )
     urllib.request.urlretrieve(entry["cifUrl"], outdir / f"AF-{acc}-F1.cif")
     rows.append(
         f"{acc}\t{entry['cifUrl'].rsplit('/', 1)[-1]}\t{entry.get('latestVersion')}\t"

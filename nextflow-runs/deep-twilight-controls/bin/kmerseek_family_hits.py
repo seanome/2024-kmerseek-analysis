@@ -13,7 +13,9 @@ import polars as pl
 
 csv, family_fasta, alphabet, ksize, extended, out = sys.argv[1:7]
 family = [
-    line[1:].split()[0].split("|")[1] for line in open(family_fasta) if line.startswith(">")
+    line[1:].split()[0].split("|")[1]
+    for line in open(family_fasta)
+    if line.startswith(">")
 ]
 
 acc = lambda col: pl.col(col).str.split(" ").list.get(0).str.split("|").list.get(1)
@@ -26,7 +28,8 @@ numeric = [
     c
     for c in hits.columns
     if c.startswith(("region_", "target_start", "target_end", "containment", "query_"))
-    and c not in ("region_subseq", "region_evalue_source", "query_name", "query_md5", "query")
+    and c
+    not in ("region_subseq", "region_evalue_source", "query_name", "query_md5", "query")
 ]
 hits = hits.with_columns(
     [pl.col(c).cast(pl.Float64, strict=False) for c in numeric],

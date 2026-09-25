@@ -18,7 +18,13 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 TSV = REPO / "tables" / "deep_twilight_pairs.tsv"
-FASTA = REPO / "nextflow-runs" / "deep-twilight-controls" / "assets" / "deep_twilight_proteins.fasta"
+FASTA = (
+    REPO
+    / "nextflow-runs"
+    / "deep-twilight-controls"
+    / "assets"
+    / "deep_twilight_proteins.fasta"
+)
 
 # (family, accession, common name)
 PROTEINS = [
@@ -48,7 +54,8 @@ def heme_iron_histidine(f):
     return (
         f["type"] == "Binding site"
         and f.get("ligand", {}).get("name") == "heme b"
-        and f.get("description") in {"proximal binding residue", "axial binding residue"}
+        and f.get("description")
+        in {"proximal binding residue", "axial binding residue"}
     )
 
 
@@ -58,7 +65,8 @@ RULES = {
     "catalytic residue": lambda f: f["type"] == "Active site",
     "calcium-binding residue": lambda f: f["type"] == "Binding site"
     and f.get("ligand", {}).get("name") == "Ca(2+)",
-    "reactive site": lambda f: f["type"] == "Site" and f.get("description") == "Reactive site",
+    "reactive site": lambda f: f["type"] == "Site"
+    and f.get("description") == "Reactive site",
     "secondary area of contact": lambda f: f["type"] == "Motif"
     and f.get("description") == "Secondary area of contact",
 }
@@ -97,7 +105,12 @@ def main():
             pos = positions(hits)
             residues = "".join(seq[p - 1] for p in pos)
             evidence = sorted(
-                {e.get("evidenceCode", "") for f in hits for e in f.get("evidences", [])} - {""}
+                {
+                    e.get("evidenceCode", "")
+                    for f in hits
+                    for e in f.get("evidences", [])
+                }
+                - {""}
             )
             described = sorted(
                 {
@@ -140,7 +153,9 @@ def main():
         "evidence_codes",
     ]
     TSV.parent.mkdir(parents=True, exist_ok=True)
-    TSV.write_text("\t".join(header) + "\n" + "".join("\t".join(r) + "\n" for r in rows))
+    TSV.write_text(
+        "\t".join(header) + "\n" + "".join("\t".join(r) + "\n" for r in rows)
+    )
     FASTA.write_text("".join(fasta))
     print(f"wrote {len(rows)} rows for {len(PROTEINS)} proteins to {TSV}")
 

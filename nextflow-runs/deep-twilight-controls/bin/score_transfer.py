@@ -13,7 +13,9 @@ label the query carries, with Q the query's labelled residues and T the target's
   no call          no call places any residue of Q on the target
   carried wrongly  T is empty (the target has no such label in Swiss-Prot) and a call places
                    a residue of Q on the target anyway
-  not carried      T is empty and no call places a residue of Q on the target
+  not carried      T is empty, the tool has a call on this pair, and none places a
+                   residue of Q on the target
+  (a pair with no call at all is "no call" whether or not the target has the label)
 
 For an ungapped kmerseek call that covers a residue of Q, placement_null is the share of
 positions the same-length window could take on the target at which a residue of Q would
@@ -56,16 +58,15 @@ labels = pl.read_csv(args.labels, separator="\t", infer_schema_length=0)
 family_of = dict(zip(labels["accession"], labels["family"]))
 label_pos = {}  # (accession, label) -> set of 1-based positions
 for r in labels.iter_rows(named=True):
-    label_pos[(r["accession"], r["label"])] = {int(p) for p in r["positions"].split(",")}
+    label_pos[(r["accession"], r["label"])] = {
+        int(p) for p in r["positions"].split(",")
+    }
 query_labels = {}
-for (a, lab) in label_pos:
+for a, lab in label_pos:
     query_labels.setdefault(a, []).append(lab)
 
 ordered_pairs = [
-    (q, t)
-    for q in seqs
-    for t in seqs
-    if q != t and family_of[q] == family_of[t]
+    (q, t) for q in seqs for t in seqs if q != t and family_of[q] == family_of[t]
 ]
 
 # --- calls ------------------------------------------------------------------------------
@@ -145,19 +146,33 @@ for r in calls.iter_rows(named=True):
     qs, ts = seqs[r["query"]], seqs[r["target"]]
     n_ident = sum(qs[a - 1] == ts[b - 1] for a, b in pairs)
     # the aligned strings must be the proteins' own residues at the stated coordinates
-    assert r["qaln"].replace("-", "") == qs[r["qstart"] - 1 : r["qstart"] - 1 + len(r["qaln"].replace("-", ""))], (
-        r["tool"], r["query"], r["target"], r["qstart"])
-    assert r["taln"].replace("-", "") == ts[r["tstart"] - 1 : r["tstart"] - 1 + len(r["taln"].replace("-", ""))], (
-        r["tool"], r["query"], r["target"], r["tstart"])
-    rows_calls.append(dict(call_id=r["call_id"], n_aligned=len(pairs), n_identical=n_ident))
+    assert (
+        r["qaln"].replace("-", "")
+        == qs[r["qstart"] - 1 : r["qstart"] - 1 + len(r["qaln"].replace("-", ""))]
+    ), (r["tool"], r["query"], r["target"], r["qstart"])
+    assert (
+        r["taln"].replace("-", "")
+        == ts[r["tstart"] - 1 : r["tstart"] - 1 + len(r["taln"].replace("-", ""))]
+    ), (r["tool"], r["query"], r["target"], r["tstart"])
+    rows_calls.append(
+        dict(call_id=r["call_id"], n_aligned=len(pairs), n_identical=n_ident)
+    )
 calls = calls.join(pl.DataFrame(rows_calls), on="call_id")
 calls.write_parquet(outdir / "calls.parquet")
 
 # --- outcomes ---------------------------------------------------------------------------
+# Only the arms that produced an output file are scored; an arm with no file (a task that
+# never finished) would otherwise show as "no call" on every pair.
 arms = pl.read_csv(args.arms, separator="\t")
-arm_keys = [("kmerseek", a, k) for a, k in zip(arms["alphabet"], arms["ksize"])] + [
-    (t, None, None) for t in ("phmmer", "mmseqs2", "foldseek")
-]
+ran = set()
+for p in args.kmerseek:
+    alphabet, k = Path(p).name.removesuffix(".hits.parquet").rsplit(".k", 1)
+    ran.add((alphabet, int(k)))
+missing = [(a, k) for a, k in zip(arms["alphabet"], arms["ksize"]) if (a, k) not in ran]
+print(f"{len(ran)} of {arms.height} kmerseek arms have results; missing: {missing}")
+arm_keys = [
+    ("kmerseek", a, k) for a, k in zip(arms["alphabet"], arms["ksize"]) if (a, k) in ran
+] + [(t, None, None) for t in ("phmmer", "mmseqs2", "foldseek")]
 passing = calls.filter(pl.col("evalue") <= args.max_evalue)
 by_arm_pair = {}
 for r in passing.iter_rows(named=True):
@@ -181,7 +196,9 @@ for tool, alphabet, ksize in arm_keys:
                 null = None
                 if tool == "kmerseek" and T:
                     L, n = len(pairs), len(seqs[t])
-                    offsets = [a - r["qstart"] for a in Q if r["qstart"] <= a <= r["qend"]]
+                    offsets = [
+                        a - r["qstart"] for a in Q if r["qstart"] <= a <= r["qend"]
+                    ]
                     good = sum(
                         any(s + o in T for o in offsets) for s in range(1, n - L + 2)
                     )
@@ -190,9 +207,18 @@ for tool, alphabet, ksize in arm_keys:
                 if best is None or cand[:2] < best[:2]:
                     best = cand
             if T:
-                outcome = "no call" if best is None else ("correct" if best[0] == 0 else "misplaced")
+                outcome = (
+                    "no call"
+                    if best is None
+                    else ("correct" if best[0] == 0 else "misplaced")
+                )
+            elif best is not None:
+                outcome = "carried wrongly"
             else:
-                outcome = "not carried" if best is None else "carried wrongly"
+                # "not carried" needs a call on the pair that leaves the label off; with
+                # no call on the pair at all the tool has not been tested on it
+                on_pair = bool(by_arm_pair.get((tool, alphabet, ksize, q, t)))
+                outcome = "not carried" if on_pair else "no call"
             r = best[2] if best else None
             out.append(
                 dict(
@@ -212,8 +238,13 @@ for tool, alphabet, ksize in arm_keys:
             )
 outcomes = pl.DataFrame(
     out,
-    schema_overrides=dict(alphabet=pl.String, ksize=pl.Int64, call_id=pl.UInt32,
-                          call_evalue=pl.Float64, placement_null=pl.Float64),
+    schema_overrides=dict(
+        alphabet=pl.String,
+        ksize=pl.Int64,
+        call_id=pl.UInt32,
+        call_evalue=pl.Float64,
+        placement_null=pl.Float64,
+    ),
 )
 
 identity = pl.read_csv(args.identity, separator="\t")
@@ -233,6 +264,4 @@ if args.pairs:
         outdir / "pair_kmers.parquet"
     )
 
-print(
-    outcomes.group_by("tool", "outcome").len().sort("tool", "outcome")
-)
+print(outcomes.group_by("tool", "outcome").len().sort("tool", "outcome"))

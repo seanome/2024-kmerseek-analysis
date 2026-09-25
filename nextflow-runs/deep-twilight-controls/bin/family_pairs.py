@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """List every ordered pair of different proteins in the same family, as FASTA header tokens.
 
-    family_pairs.py labels.tsv family.fasta family_pairs.tsv
+family_pairs.py labels.tsv family.fasta family_pairs.tsv
 """
 
 import sys

@@ -35,13 +35,15 @@ def fasta(path):
 
 
 acc = lambda name: name.split("|")[1]
-(query_name, query_seq), = fasta(query_fa).items()
+((query_name, query_seq),) = fasta(query_fa).items()
 family = {acc(n) for n in fasta(family_fa)}
 
 # Stockholm: concatenate each row's blocks
 rows, rf = {}, ""
 for line in open(sto):
-    if not line.strip() or line.startswith(("# STOCKHOLM", "//", "#=GF", "#=GS", "#=GR")):
+    if not line.strip() or line.startswith(
+        ("# STOCKHOLM", "//", "#=GF", "#=GS", "#=GR")
+    ):
         continue
     if line.startswith("#=GC RF"):
         rf += line.split()[-1]
@@ -106,9 +108,17 @@ for name, s in rows.items():
     )
 
 schema = dict(
-    tool=pl.String, query=pl.String, target=pl.String, evalue=pl.Float64,
-    bitscore=pl.Float64, qstart=pl.Int64, qend=pl.Int64, tstart=pl.Int64, tend=pl.Int64,
-    qaln=pl.String, taln=pl.String,
+    tool=pl.String,
+    query=pl.String,
+    target=pl.String,
+    evalue=pl.Float64,
+    bitscore=pl.Float64,
+    qstart=pl.Int64,
+    qend=pl.Int64,
+    tstart=pl.Int64,
+    tend=pl.Int64,
+    qaln=pl.String,
+    taln=pl.String,
 )
 pl.DataFrame(out_rows, schema=schema).write_csv(out, separator="\t")
 print(f"{acc(query_name)}: {len(out_rows)} family domains")
