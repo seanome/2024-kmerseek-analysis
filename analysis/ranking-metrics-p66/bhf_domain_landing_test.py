@@ -14,62 +14,24 @@ BHF has to beat.
 Two things this checks before trusting a coordinate:
 
   * Gene symbols are mapped to UniProt through HGNC, then Pfam domains are pulled
-    from InterPro, which is keyed on UniProt.
+    from InterPro, which is keyed on UniProt. InterPro's answers are cached on
+    disk by notebooks/interpro_utils.py, so a rerun does not ask again.
   * UniProt and GENCODE do not always agree on the sequence, and a coordinate
     cannot transfer when they differ. Genes whose two lengths disagree are
     dropped rather than silently mis-labelled.
 """
 import argparse
-import json
-import time
-import urllib.error
-import urllib.request
+import sys
 from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 import polars as pl
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "notebooks"))
+from interpro_utils import fetch_pfam_domains  # noqa: E402
+
 HGNC = Path("/Users/olga/data/qfo-pfam-region-midi-plus/hgnc_complete_set.txt")
-API = "https://www.ebi.ac.uk/interpro/api/entry/pfam/protein/uniprot/{}/?page_size=200"
-
-
-def fetch_pfam(accessions: dict, pause: float = 0.12) -> pl.DataFrame:
-    """Pfam domains with coordinates, one row per interval. 204 means no Pfam entry."""
-    rows, failed = [], []
-    for symbol, acc in accessions.items():
-        payload = None
-        for attempt in range(3):
-            try:
-                with urllib.request.urlopen(API.format(acc), timeout=45) as fh:
-                    payload = json.loads(fh.read().decode())
-                break
-            except urllib.error.HTTPError as e:
-                if e.code == 204:
-                    payload = {"results": []}
-                    break
-                if attempt == 2:
-                    break
-                time.sleep(2)
-            except Exception:
-                if attempt == 2:
-                    break
-                time.sleep(2)
-        if payload is None:
-            failed.append(symbol)
-            continue
-        for res in payload.get("results", []):
-            pfam = res["metadata"]["accession"]
-            for prot in res.get("proteins", []):
-                for loc in prot.get("entry_protein_locations", []):
-                    for frag in loc.get("fragments", []):
-                        rows.append({"symbol": symbol, "accession": acc, "pfam_id": pfam,
-                                     "uniprot_length": prot.get("protein_length"),
-                                     "domain_start": frag["start"], "domain_end": frag["end"]})
-        time.sleep(pause)
-    if failed:
-        print(f"  no Pfam answer for {len(failed)}: {failed}")
-    return pl.DataFrame(rows)
 
 
 def overlap(a0: int, a1: int, b0: int, b1: int) -> int:
@@ -97,7 +59,7 @@ def main() -> None:
                if r["symbol"] in genes}
     print(f"mapped to UniProt through HGNC: {len(mapping)} of {len(genes)}")
 
-    pfam = fetch_pfam(mapping)
+    pfam = fetch_pfam_domains(mapping)
     pfam.write_csv(args.outdir / "bhf_targets_pfam.csv")
 
     # A coordinate only transfers when the two databases agree on the sequence.
