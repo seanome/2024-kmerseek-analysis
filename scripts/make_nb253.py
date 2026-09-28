@@ -51,12 +51,12 @@ md(r"""
 # 253. Can a search put a human ELM motif on its chicken ortholog?
 
 A call **covers** a motif when the human side of the call holds at least 80% of the
-motif's residues. Covering a motif with a call to *some* chicken protein is easy: each
+motif's residues. Covering a motif with a call to *some* chicken protein is easy. Each
 human query keeps its best 1_000 chicken proteins, and most motifs sit inside a longer
-domain that many chicken proteins share. So the question asked here is narrower. For a
-human protein with a 1:1 ortholog in chicken (same OMA group, one member in each species),
-did the search put the motif on the ortholog, **at the place where the motif sits in the
-ortholog**?
+domain that many chicken proteins share. So the question asked here is narrower. Take a
+human protein with a 1:1 ortholog in chicken: the same OMA group, one member in each
+species. Did the search put the motif on the ortholog, **at the place where the motif sits
+in the ortholog**?
 
 "At the place" is measured against a protein alignment made without any of these
 searches. Notebook 250 (Stage 0) aligned each human protein to its ortholog with MAFFT.
@@ -65,8 +65,8 @@ residues: the **projected motif**. A call to the ortholog is **on position** whe
 chicken side holds at least 80% of the projected motif.
 
 Inputs: 2_160 experimentally supported human ELM instances on 1_303 proteins. Of these,
-550 are on a protein with a chicken ortholog, and 540 of those have a projected motif (the
-other 10 have no ortholog residue aligned to any motif residue). Every arm searched the
+550 are on a protein with a chicken ortholog. 540 of those have a projected motif; the
+other 10 have no ortholog residue aligned to any motif residue. Every arm searched the
 1_303 human proteins against the whole chicken proteome (QfO 2020_04, 17_837 proteins).
 Only chicken has been searched so far.
 
@@ -127,7 +127,7 @@ summaries = [json.loads(p.read_text()) for p in sorted(COVER.glob("*.summary.jso
 S = pl.DataFrame([{**{k: v for k, v in s.items() if k != "length_check"},
                    "spearman_vs_length": (s.get("length_check") or {}).get("spearman_vs_length"),
                    **parse_arm(s["arm"])} for s in summaries], infer_schema_length=None)
-I = pl.concat([pl.read_parquet(p) for p in sorted(COVER.glob("*.instances.parquet"))], how="vertical_relaxed")
+I = pl.concat([pl.read_parquet(p) for p in sorted(COVER.glob("*.instances.parquet"))], how="diagonal_relaxed")
 # Foldseek and Reseek count along the AlphaFold model; a query whose model is not the QfO
 # sequence is not scoreable for them (reduce_elm_cover.py). Arms scored before that column
 # existed are sequence arms, where every query is scoreable.
@@ -146,12 +146,12 @@ print(f"{I['elm_instance'].n_unique()} ELM instances; {I.filter('has_ortholog')[
 md(r"""
 ## 1. Which arms ran
 
-An arm is one search setting: for kmerseek an alphabet, a k-mer length k, the
-low-complexity mask off or on, and scaled 1, 2, 5 or 10 (scaled s keeps about one k-mer in
-s from the chicken proteome, so the index is smaller). The eight comparison tools are one
-arm each. The list of kmerseek arms that should exist is read from the search's own
-configuration, so an arm that never wrote a result shows up here as missing, not as an
-arm that found nothing.
+An arm is one search setting. For kmerseek that is an alphabet, a k-mer length k, the
+low-complexity mask off or on, and scaled 1, 2, 5 or 10. Scaled s keeps about one k-mer in
+s from the chicken proteome, so the index is smaller. The eight comparison tools are one
+arm each. The kmerseek arms that should exist are read from the search's own
+configuration. So an arm that never wrote a result shows up here as missing, not as an arm
+that found nothing.
 """)
 
 code(r"""
@@ -178,13 +178,13 @@ arms.write_csv(TAB / "253_arm_status.csv")
 md(r"""
 ## 2. Covering a motif is easy; putting it on position is not
 
-Each check below is stricter than the one before it. The **placement check** from notebook
-250 asks how often a window the same length as the call, dropped at a random place on the
-human protein, would also cover the motif; a call passes when that happens less than 5% of
-the time. It looks at the human side only, so a long alignment of a whole ortholog fails it
-even when it is right: a window that long covers the motif wherever it is dropped. The
-on-position check does not have that problem, because it asks where the call sits on the
-chicken side.
+Each check below is stricter than the one before it. The **placement check** is from
+notebook 250. Drop a window the same length as the call at a random place on the human
+protein: how often does it also cover the motif? A call passes when that happens less than
+5% of the time. The check looks at the human side only. So a long alignment of a whole
+ortholog fails it even when it is right, because a window that long covers the motif
+wherever it is dropped. The on-position check does not have that problem: it asks where
+the call sits on the chicken side.
 """)
 
 code(r"""
@@ -302,7 +302,7 @@ else:
     data = [ratio.filter(pl.col("scaled") == s)["ratio"].to_numpy() for s in summ["scaled"]]
     ax.boxplot(data, tick_labels=[f"scaled {s}" for s in summ["scaled"]], widths=0.5,
                medianprops={"color": "#3B6EA5"}, flierprops={"marker": ".", "markersize": 3})
-    ax.axhline(1, color="0.55", ls=":", lw=0.8, label="no loss against scaled 1")
+    ax.axhline(1, color="0.55", ls=":", lw=0.8, label="same share as at scaled 1")
     ax.set_ylabel("on-position share,\nrelative to scaled 1")
     ax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)
     fig.savefig(FIG / "253_scaled_cost.png", dpi=200, bbox_inches="tight")
@@ -395,10 +395,10 @@ md(NARRATIVE.get("section6", ""))
 md(r"""
 ## 7. Does the kmerseek score just follow call length?
 
-For each kmerseek arm, the Spearman correlation between `region_mean_idf` (the score that
-ranks its calls) and the call's length in residues, on a fixed sample of about one call in
-1_000. A score that tracks length would rank long calls first whatever they match, which
-would make covering a motif easy for the wrong reason.
+For each kmerseek arm, this is the Spearman correlation between `region_mean_idf`, the
+score that ranks its calls, and the call's length in residues. It uses a fixed sample of
+about one call in 1_000. A score that tracks length ranks long calls first whatever they
+match, which makes covering a motif easy for the wrong reason.
 """)
 
 code(r"""
