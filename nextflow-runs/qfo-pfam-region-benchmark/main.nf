@@ -1876,7 +1876,9 @@ process kmerseekSearch {
     // beats a process directive, so a `container = params.kmerseek_image` there would
     // silently put every task back on one image and this line would never be consulted.
     container { image }
-    storeDir kmerseekStore()
+    // Interpolated, not `storeDir kmerseekStore()`: Nextflow reads a bare call there as a
+    // directive named kmerseekStore and stops ("Unknown process directive").
+    storeDir "${kmerseekStore()}"
 
     memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
     // Retry cluster kills, ignore a kill that has used up its retries, stop on anything
@@ -4127,7 +4129,7 @@ workflow {
         |  query   : human (UP000005640_9606) -- always${SPECIES*.label.contains('human') ? ', and searched against itself as well' : ', and never listed as a target'}
         |  targets : ${SPECIES*.label.join(', ')}
         |  alphabet: ${combos.collect { it[1] }.unique().join(', ')}
-        |  combos  : ${combos.size()} (alphabet x ksize x low-complexity on/off x scaled ${SCALED.join('/')})
+        |  combos  : ${combos.size()} (${params.kmerseek_combos?.contains(':s') ? 'pinned: alphabet:k:scaled:mask as listed' : "alphabet x ksize x low-complexity on/off x scaled ${SCALED.join('/')}"})
         |  searches: ${combos.size()} x ${SPECIES.size()} targets = ${combos.size() * SPECIES.size()}
         |            each named human_vs_<target>, e.g. human_vs_${SPECIES[0].label}
         |  spectra : one k-mer frequency spectrum per combo, published for plotting
