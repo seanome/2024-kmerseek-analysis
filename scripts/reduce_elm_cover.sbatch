@@ -4,7 +4,8 @@
 # Scores every arm of one target species: 268 kmerseek arms and the eight comparison tools
 # for chicken. Each task takes every 20th arm by name. Submitted by `make reduce-elm-cover`
 # in nextflow-runs/qfo-pfam-region-benchmark, from a work directory holding code/ (a git
-# archive of HEAD) and logs/. ELM_SPECIES picks the target (default chicken).
+# archive of HEAD) and logs/. ELM_SPECIES picks the target (default chicken);
+# ELM_KMERSEEK_SUBDIR the kmerseek store (kmerseek_top1000 for `make run-elm-search-all`).
 #
 # A task skips any arm whose summary JSON already exists, so resubmitting the same array
 # after a failure redoes only what is missing. On the Mac, three arms (9 MB to 1.6 GB of
@@ -34,6 +35,7 @@ cd "tmp/${SLURM_ARRAY_TASK_ID}"
 apptainer exec --bind /scratch "$IMAGE" python3 ../../code/scripts/reduce_elm_cover.py \
     --results "$COVER/results" \
     --species "$SPECIES" \
+    --kmerseek-subdir "${ELM_KMERSEEK_SUBDIR:-kmerseek}" \
     --instances "../../$ASSETS/elm_cover_instances.tsv" \
     --orthologs "../../$ASSETS/elm_cover_orthologs.tsv" \
     --projections "../../$ASSETS/elm_cover_projections.tsv" \
