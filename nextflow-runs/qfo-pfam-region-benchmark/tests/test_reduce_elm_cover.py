@@ -47,6 +47,16 @@ def workdir(tmp_path):
     res = tmp_path / "results"
     (res / "kmerseek").mkdir(parents=True)
     (res / "regions" / "hmmer3_phmmer").mkdir(parents=True)
+    (res / "regions" / "foldseek").mkdir(parents=True)
+    # Foldseek counts along the AlphaFold model. Q1's model has 210 residues against 200 in
+    # the FASTA, so Q1 is not scoreable for Foldseek; Q2's model matches.
+    with gzip.open(res / "regions" / "foldseek" / "human_vs_chicken.foldseek.tsv.gz", "wt") as fh:
+        fh.write("Q1\tT1\t41\t50\t101\t110\t300\t1e-9\n")
+    st = tmp_path / "structures"
+    st.mkdir()
+    for acc, n in [("Q1", 210), ("Q2", 60)]:
+        (st / f"AF-{acc}-F1-model_v6.cif").write_text("".join(
+            f"ATOM {i} C CA . ALA A 1 {i} ? 0 0 0 1 90 1 ALA A CA 1\n" for i in range(1, n + 1)))
     kmerseek_rows([("Q1", "T3", 41, 48, 10, 0), ("Q1", "T2", 0, 200, 9, 0), ("Q1", "T1", 38, 48, 5, 0)]
                   ).write_parquet(res / "kmerseek" / "human_vs_chicken.toy.k5.lcfalse.regions.parquet")
     (res / "kmerseek" / "human_vs_chicken.toy.k6.lcfalse.regions.parquet").write_bytes(b"")
@@ -66,14 +76,22 @@ def workdir(tmp_path):
     return tmp_path
 
 
-def run(workdir, *extra):
+def run(workdir, *extra, ok=True):
     cmd = [sys.executable, str(SCRIPT), "--results", workdir / "results", "--species", "chicken",
            "--instances", workdir / "instances.tsv", "--orthologs", workdir / "orthologs.tsv",
-           "--projections", workdir / "projections.tsv", "--query-fasta", workdir / "q.fasta", "--qfo-bin", BIN, "--out-dir", workdir / "out",
+           "--projections", workdir / "projections.tsv", "--query-fasta", workdir / "q.fasta",
+           "--structures", workdir / "structures", "--qfo-bin", BIN, "--out-dir", workdir / "out",
            *extra]
     proc = subprocess.run(list(map(str, cmd)), capture_output=True, text=True, cwd=workdir)
-    assert proc.returncode == 0, proc.stderr
+    assert (proc.returncode == 0) == ok, proc.stderr
     return proc
+
+
+def write_hhblits(workdir, rows):
+    d = workdir / "results" / "regions" / "hhblits"
+    d.mkdir(parents=True, exist_ok=True)
+    with gzip.open(d / "human_vs_chicken.hhblits.tsv.gz", "wt") as fh:
+        fh.writelines(rows)
 
 
 def row(workdir, arm, inst):
@@ -124,5 +142,36 @@ def test_tasks_split_the_arms_and_rerun_skips(workdir):
     for task in range(2):
         out = run(workdir, "--task", str(task), "--n-tasks", "2").stdout
         names |= {line.split(":")[0] for line in out.splitlines() if line and not line.startswith("task")}
-    assert names == {"toy.k5.lcfalse", "toy.k6.lcfalse", "hmmer3_phmmer"}
+    assert names == {"toy.k5.lcfalse", "toy.k6.lcfalse", "hmmer3_phmmer", "foldseek"}
     assert "already scored" in run(workdir).stdout
+
+
+def test_structure_tool_skips_queries_whose_model_differs(workdir):
+    run(workdir, "--arm", "foldseek")
+    r = row(workdir, "foldseek", "E1")
+    assert r["query_scoreable"] is False and r["best_rank"] is None   # Q1's model is 210, not 200
+    assert row(workdir, "foldseek", "E2")["query_scoreable"] is True
+    s = json.loads((workdir / "out" / "foldseek.summary.json").read_text())
+    assert s["structure_status"] == {"differs": 1, "same": 1} and s["n_instances_scoreable"] == 1
+
+
+def test_sequence_tools_score_every_query(workdir):
+    run(workdir, "--arm", "hmmer3_phmmer")
+    assert row(workdir, "hmmer3_phmmer", "E1")["query_scoreable"] is True
+
+
+def test_a_rare_malformed_row_is_dropped_and_counted(workdir):
+    # 150 good covering calls on 150 targets, and one row ending at 2_555 on a 200-aa query.
+    good = [f"sp|Q1|Q1_HUMAN\ttr|X{i}|X{i}_CHICK\t41\t50\t1\t10\t{500 - i}\t1e-5\n" for i in range(150)]
+    write_hhblits(workdir, good + ["sp|Q1|Q1_HUMAN\ttr|Y|Y_CHICK\t41\t2555\t1\t10\t900\t1e-9\n"])
+    proc = run(workdir, "--arm", "hhblits")
+    assert "dropped 1 covering calls" in proc.stderr
+    s = json.loads((workdir / "out" / "hhblits.summary.json").read_text())
+    assert s["n_covering_calls_past_query_end"] == 1
+    assert row(workdir, "hhblits", "E1")["best_rank"] == 2   # Y ranked first, then dropped
+
+
+def test_many_calls_past_the_end_stop_the_arm(workdir):
+    write_hhblits(workdir, ["sp|Q1|Q1_HUMAN\ttr|Y|Y_CHICK\t41\t2555\t1\t10\t900\t1e-9\n"])
+    proc = run(workdir, "--arm", "hhblits", ok=False)
+    assert "coordinate convention" in proc.stderr
