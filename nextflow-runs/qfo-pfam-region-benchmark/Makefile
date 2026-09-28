@@ -2662,12 +2662,13 @@ reduce-elm-motif:
 #   make elm-cover-inputs                      Sherlock: stage data/elm-cover (seconds)
 #   make run-elm-search ELM_TARGETS=chicken    Sherlock: the dry run, one target
 #   make run-elm-search                        Sherlock: all nine targets
+#   make reduce-elm-cover                      Sherlock: score it, one SLURM task per 1/20 of the arms
 ELM_TARGETS      ?=
 ELM_COVER_DIR    ?= data/elm-cover
 ELM_COVER_OUTDIR ?= ../$(ELM_COVER_DIR)/results
 ELM_TARGETS_ARG   = $(if $(ELM_TARGETS),--target_species $(ELM_TARGETS))
 
-.PHONY: elm-cover-inputs run-elm-search
+.PHONY: elm-cover-inputs run-elm-search reduce-elm-cover
 
 elm-cover-inputs:
 	$(call require_cluster)
@@ -2693,3 +2694,15 @@ run-elm-search: prefetch-images
 	    --hgnc_file        ../data/covariates/hgnc_complete_set.txt \
 	    --prostt5_weights  ../data/prostt5/weights \
 	    $(NF_ARGS)
+
+# Scoring runs from its own work directory with a snapshot of the code at HEAD, so a later
+# `git pull` in this clone cannot change the code under a running array. Outputs land in
+# $(ELM_COVER_REDUCE_DIR)/cover/<species>/, one instances parquet and one summary JSON per arm.
+ELM_COVER_REDUCE_DIR ?= $(SCRATCH)/250-elm-cover
+ELM_SPECIES          ?= chicken
+reduce-elm-cover:
+	$(call require_cluster)
+	@test -d $(ELM_COVER_DIR)/results/kmerseek || { echo "  no ELM cover results yet: make run-elm-search first"; exit 1; }
+	mkdir -p $(ELM_COVER_REDUCE_DIR)/logs $(ELM_COVER_REDUCE_DIR)/code
+	cd ../.. && git archive HEAD | tar -x -C $(ELM_COVER_REDUCE_DIR)/code
+	cd $(ELM_COVER_REDUCE_DIR) && ELM_SPECIES=$(ELM_SPECIES) sbatch --export=ALL code/scripts/reduce_elm_cover.sbatch
