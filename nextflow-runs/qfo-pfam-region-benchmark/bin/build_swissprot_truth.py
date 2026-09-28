@@ -13,11 +13,11 @@ rather than by any sequence model or fold. They are circular with neither the pr
 baselines nor the structure baselines, which is what makes them usable for the
 invertebrate arm where predicted structures are weakest.
 
-Emits the SAME schema as build_domain_truth.py -- accession, pfam_id, domain_start,
-domain_end, protein_length -- so the whole existing scoring path runs against it unchanged.
-The `pfam_id` column carries the feature type (ACT_SITE, TRANSMEM, ...) rather than a Pfam
-accession; the column name is kept for schema compatibility and the meaning is recorded in
-the summary.
+Emits build_domain_truth.py's schema -- accession, pfam_id, domain_start, domain_end,
+protein_length -- plus `is_point` and `anchor_pfam`, so the whole existing scoring path
+runs against it unchanged. The `pfam_id` column carries the feature type (ACT_SITE,
+TRANSMEM, ...) rather than a Pfam accession; the column name is kept for schema
+compatibility and the meaning is recorded in the summary.
 
 Point vs range features behave differently and both are kept, flagged by `is_point`:
   range  DNA_BIND, TRANSMEM, REGION, MOTIF, COILED, ZN_FING, REPEAT, DOMAIN
@@ -26,6 +26,23 @@ Point vs range features behave differently and both are kept, flagged by `is_poi
          -- catalytic/binding residue recall. A 1-residue truth interval cannot be scored
             by boundary IoU in any meaningful way, so downstream work should filter on
             is_point rather than silently mixing the two.
+
+`anchor_pfam` is the reachability key, and it is why this truth set needs a column the
+Pfam truth set does not. Reachability asks whether a human annotation could have been
+transferred from this target proteome at all, so a tool is not punished for missing
+something the target does not contain. Under the Pfam truth set the answer key IS the
+transfer key -- `pfam_id` is a family, and "the target has family F" is a real, varying
+statement. Here `pfam_id` is a Swiss-Prot feature type with twelve levels, and "the target
+proteome contains at least one TRANSMEM somewhere" is true of every proteome. Joining on
+it returned the same constant for eight of nine species (7000, and 6991 for ciona, which
+is 7000 minus the 9 human INTRAMEM features) -- a denominator that measured nothing.
+
+So each row carries the Pfam families of ITS OWN protein, on both sides. A human feature
+instance is reachable in a target proteome when that proteome has a single annotated
+protein that both carries the same feature type and shares a Pfam family with the human
+query -- the two things one homology transfer needs. Under the Pfam truth set the second
+condition is implied by the first, which is why the Pfam and Pfam-N arms keep the plain
+family join and are unchanged by any of this.
 """
 
 import argparse
@@ -87,6 +104,46 @@ def parse(dat_path: Path, wanted_types: set[str], wanted_acc: set[str] | None):
     return rows
 
 
+def add_anchor(features: pl.DataFrame, anchor: pl.DataFrame, label: str) -> pl.DataFrame:
+    """Attach each protein's Pfam families to its Swiss-Prot features.
+
+    The join is total by construction -- `features` was already restricted to accessions
+    that appear in this species' Pfam annotation -- so a null anchor means the annotation
+    tables disagree with each other, and a silent empty list would quietly shrink every
+    reachability denominator downstream. Fail instead.
+    """
+    out = features.join(anchor, on="accession", how="left")
+    missing = out.filter(pl.col("anchor_pfam").is_null())["accession"].unique().to_list()
+    if missing:
+        raise SystemExit(
+            f"{label}: {len(missing)} accessions carry Swiss-Prot features but no Pfam "
+            f"annotation, e.g. {missing[:5]}. The two annotation tables are out of sync."
+        )
+    return out
+
+
+def reachable_count(human_instances: pl.DataFrame, target: pl.DataFrame) -> int:
+    """How many human feature instances this target proteome could transfer.
+
+    One annotated target protein has to do both jobs: carry the feature type being
+    transferred, and be findable from the human query. Sharing a Pfam family stands in for
+    findable -- it is the only homology signal available that no tool under test produced,
+    so it cannot hand any arm its own difficulty. Requiring both of ONE protein, rather
+    than each of some protein, is what a single transfer event actually needs.
+    """
+    key = ["accession", "pfam_id", "domain_start", "domain_end"]
+    target_keys = (
+        target.select("pfam_id", "anchor_pfam").explode("anchor_pfam").unique()
+    )
+    return (
+        human_instances.explode("anchor_pfam")
+        .join(target_keys, on=["pfam_id", "anchor_pfam"], how="semi")
+        .select(key)
+        .unique()
+        .height
+    )
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--sprot-dat", required=True, type=Path)
@@ -100,9 +157,14 @@ def main():
     args = p.parse_args()
 
     species_acc = {}
+    species_anchor = {}
     for path in sorted(args.annotations.glob("*_pfam_domains.parquet")):
         sp = path.name.replace("_pfam_domains.parquet", "")
-        species_acc[sp] = set(pl.read_parquet(path)["accession"].unique().to_list())
+        ann = pl.read_parquet(path).select("accession", "pfam_id").unique()
+        species_acc[sp] = set(ann["accession"].unique().to_list())
+        species_anchor[sp] = ann.group_by("accession").agg(
+            pl.col("pfam_id").unique().sort().alias("anchor_pfam")
+        )
     if "human" not in species_acc:
         raise SystemExit("no human_pfam_domains.parquet; cannot define the query side")
 
@@ -127,8 +189,16 @@ def main():
         .alias("domain_end")
     ).filter(pl.col("domain_end") > pl.col("domain_start"))
 
-    human = df.filter(pl.col("accession").is_in(species_acc["human"]))
+    human = add_anchor(df.filter(pl.col("accession").is_in(species_acc["human"])),
+                       species_anchor["human"], "human")
     human.write_parquet(args.truth_out, compression="zstd")
+
+    # One row per distinct human feature instance, carrying its protein's Pfam families.
+    # The summary's reachability counts are computed from this, by exactly the join the
+    # scorer performs, so the two can never drift into disagreeing about the denominator.
+    human_instances = human.select(
+        "accession", "pfam_id", "domain_start", "domain_end", "anchor_pfam"
+    ).unique(subset=["accession", "pfam_id", "domain_start", "domain_end"])
 
     args.map_outdir.mkdir(parents=True, exist_ok=True)
     summary = {
@@ -138,6 +208,9 @@ def main():
         "human": {
             "n_features": human.height,
             "n_proteins": human["accession"].n_unique(),
+            "n_proteins_pfam_annotated": len(species_acc["human"]),
+            "coverage_fraction": (human["accession"].n_unique()
+                                  / len(species_acc["human"])) if species_acc["human"] else 0.0,
             "n_point": int(human["is_point"].sum()),
             "by_type": {
                 r["pfam_id"]: r["len"]
@@ -148,17 +221,29 @@ def main():
     for sp, accs in species_acc.items():
         if sp == "human":
             continue
-        sub = df.filter(pl.col("accession").is_in(accs))
+        sub = add_anchor(df.filter(pl.col("accession").is_in(accs)), species_anchor[sp], sp)
         sub.write_parquet(args.map_outdir / f"{sp}_domain_map.parquet", compression="zstd")
         summary[sp] = {
             "n_features": sub.height,
             "n_proteins": sub["accession"].n_unique(),
-            # Recall ceiling, same as the Pfam truth: a feature type absent from the target
-            # cannot be transferred by any search.
+            # Denominator is the Pfam-annotated proteome, which is the set the Pfam truth
+            # arm transfers from, so the two arms' coverage is on one scale. Ciona lands at
+            # 0.2% against mouse's 76%: Swiss-Prot has 28 reviewed entries for it in total.
+            # That is a property of the annotation database, not of any tool, and it is
+            # what makes ciona's swissprot call counts collapse while its pfam column is
+            # normal. Reported so that collapse is attributable rather than mysterious.
+            "n_proteins_pfam_annotated": len(accs),
+            "coverage_fraction": (sub["accession"].n_unique() / len(accs)) if accs else 0.0,
+            # The old ceiling, kept only to show what it was worth. A feature type absent
+            # from the target cannot be transferred -- true, but with twelve types it is
+            # 12 for every proteome that has any annotation at all, which is why the
+            # denominator it produced was a constant.
             "n_human_types_present": (
                 sub.select("pfam_id").unique()
                 .join(human.select("pfam_id").unique(), on="pfam_id", how="inner").height
             ),
+            "n_reachable_human_features": reachable_count(human_instances, sub),
+            "n_human_features": human.height,
         }
 
     args.summary_out.write_text(json.dumps(summary, indent=2))

@@ -59,6 +59,13 @@ STRATA = {
 # where no metric is stable. Only groups with at least this many query proteins are cut.
 MIN_STRATUM_PROTEINS = 30
 
+# One true domain instance, named twice. The truth table calls it
+# (accession, pfam_id, domain_start, domain_end); a scored call carries the same instance
+# as (query_acc, pfam_id, true_start, true_end). Both spellings appear in enough joins that
+# they are worth naming once.
+TRUTH_INSTANCE_KEY = ["accession", "pfam_id", "domain_start", "domain_end"]
+CALL_INSTANCE_KEY = ["query_acc", "pfam_id", "true_start", "true_end"]
+
 # Boolean covariate columns that each become their own stratum, so the 200-series' curated
 # gene sets are cut out of the box rather than reconstructed in a notebook.
 GENE_SET_FLAGS = {
@@ -563,7 +570,8 @@ def rank_roc_auc(calls: pl.DataFrame) -> float | None:
     return (sum_pos_ranks - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
 
 
-def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
+def operating_points(calls: pl.DataFrame, reachable_keys: pl.DataFrame,
+                     n_reachable: int) -> pl.DataFrame:
     """Every score threshold's full operating point, in one descending-score pass.
 
     Each row is "keep all calls scoring at least this much". Cumulative counts are taken
@@ -574,6 +582,13 @@ def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
       recall_reachable       instance-level -- of the domains that could be found, how
                              many were, counting each true instance once no matter how
                              many regions hit it
+
+    `reachable_keys` restricts the numerator to the same instances `n_reachable` counts.
+    Without it a recovery the reachability rule did not predict would raise the ratio
+    against a denominator that never contained it, and recall_reachable -- and the AUPRC
+    integrated over it -- could exceed 1. Under the Pfam truth set this is a no-op: a call
+    carries the family it was transferred from, so a true positive's family is by
+    definition present in the target and its instance is by definition reachable.
     """
     if calls.height == 0 or "is_gray" not in calls.columns:
         return pl.DataFrame(
@@ -587,8 +602,11 @@ def operating_points(calls: pl.DataFrame, n_reachable: int) -> pl.DataFrame:
 
     ranked = (
         calls.sort("score", descending=True, nulls_last=True)
+        .join(reachable_keys.with_columns(pl.lit(True).alias("_reach")),
+              on=CALL_INSTANCE_KEY, how="left")
+        .with_columns(pl.col("_reach").fill_null(False))
         .with_columns(
-            pl.when("is_tp")
+            pl.when(pl.col("is_tp") & pl.col("_reach"))
             .then(pl.struct("query_acc", "pfam_id", "true_start", "true_end"))
             .otherwise(None)
             .alias("tp_key")
@@ -733,6 +751,73 @@ def classify_scoreable(calls: pl.DataFrame, truth: pl.DataFrame,
     )
 
 
+def instance_keys(truth: pl.DataFrame) -> pl.DataFrame:
+    """Truth rows as the call-side instance key, deduplicated."""
+    return truth.select(
+        pl.col("accession").alias("query_acc"), "pfam_id",
+        pl.col("domain_start").alias("true_start"),
+        pl.col("domain_end").alias("true_end"),
+    ).unique()
+
+
+def attach_reachability(truth: pl.DataFrame, domain_map: Path | None,
+                        direct_annotation: bool) -> pl.DataFrame:
+    """Mark each true instance with whether this target proteome could transfer it.
+
+    A tool cannot be blamed for missing an annotation the target does not carry, so
+    recall_reachable divides by the instances that were transferable rather than by the
+    whole answer key. What counts as transferable depends on what the answer key's label
+    IS, and the two truth sets differ:
+
+      Pfam / Pfam-N   `pfam_id` is a family accession. "This proteome contains family F"
+                      varies from 298 of 2358 human instances (E. coli) to 2334 (mouse),
+                      so the family join is the whole rule.
+
+      Swiss-Prot      `pfam_id` is a curated FEATURE TYPE with twelve levels -- REGION,
+                      BINDING, TRANSMEM, ... Every proteome with any annotation has
+                      essentially all twelve, so the same join returned 7000 for eight of
+                      nine species and 6991 for ciona (7000 minus the 9 human INTRAMEM
+                      features, the one type ciona's 23 annotated proteins lack). It was a
+                      constant, and a constant is not a ceiling.
+
+    So when both sides carry `anchor_pfam` -- the Pfam families of the protein the row sits
+    on, written by build_swissprot_truth.py -- reachability additionally requires a shared
+    family, and requires ONE target protein to satisfy both halves: carry the feature type
+    and share the family. That is what a single homology transfer needs. The anchor is a
+    Pfam annotation, produced by no tool under test, so no arm defines its own difficulty.
+
+    The Pfam arms are untouched. They have no `anchor_pfam` column, so they take the plain
+    family join below -- and the extra condition would be vacuous there anyway, since the
+    target protein carrying family F shares family F with the query by definition. Verified
+    on the midi run: identical denominators for all nine species.
+    """
+    if direct_annotation or domain_map is None:
+        # No target proteome in play -- hmmscan reads Pfam-A directly -- so nothing is
+        # unreachable and the ceiling is the whole answer key.
+        return truth.with_columns(pl.lit(True).alias("is_reachable"))
+
+    target = pl.read_parquet(domain_map)
+    anchored = "anchor_pfam" in target.columns and "anchor_pfam" in truth.columns
+    if anchored:
+        keys = target.select("pfam_id", "anchor_pfam").explode("anchor_pfam").unique()
+        hit = (
+            truth.select(TRUTH_INSTANCE_KEY + ["anchor_pfam"])
+            .explode("anchor_pfam")
+            .join(keys, on=["pfam_id", "anchor_pfam"], how="semi")
+            .select(TRUTH_INSTANCE_KEY).unique()
+        )
+        on = TRUTH_INSTANCE_KEY
+    else:
+        hit = target.select("pfam_id").unique()
+        on = ["pfam_id"]
+
+    return (
+        truth.join(hit.with_columns(pl.lit(True).alias("is_reachable")), on=on, how="left")
+        # A left join leaves the flag null, not false, for every row that did not match.
+        .with_columns(pl.col("is_reachable").fill_null(False))
+    )
+
+
 def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFrame,
                     reachable: pl.DataFrame, min_overlap: float) -> dict:
     n_calls = calls.height
@@ -748,19 +833,28 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     # produced recall above 1.0 (observed: 2.77). Restricting the numerator to instances
     # in this cell makes numerator and denominator describe the same set.
     if n_calls:
-        key = ["query_acc", "pfam_id", "true_start", "true_end"]
+        key = CALL_INSTANCE_KEY
         truth_keys = truth.select(
             pl.col("accession").alias("query_acc"), "pfam_id",
             pl.col("domain_start").alias("true_start"),
             pl.col("domain_end").alias("true_end"),
         ).unique()
-        found = (
+        found_keys = (
             calls.filter("is_tp").select(key).unique()
             .join(truth_keys, on=key, how="inner")
-            .height
         )
+        found = found_keys.height
+        # Numerator and denominator over the same set, the same rule the identity strata
+        # follow above. A recovery reached through a target protein that shares no Pfam
+        # family with the query is real, and is still counted in `recall` and reported as
+        # n_instances_found_unreachable, but it is not evidence about the subproblem
+        # recall_reachable measures and it would otherwise push that ratio past 1.
+        found_reachable = found_keys.join(
+            instance_keys(reachable), on=key, how="semi"
+        ).height
     else:
         found = 0
+        found_reachable = 0
     n_truth = truth.height
     n_reachable = reachable.height
 
@@ -774,7 +868,7 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
     # never be mistaken for a free improvement -- the gap between these two IS the effect.
     precision_strict = n_tp_calls / n_calls if n_calls else 0.0
     recall = found / n_truth if n_truth else 0.0
-    recall_reachable = found / n_reachable if n_reachable else 0.0
+    recall_reachable = found_reachable / n_reachable if n_reachable else 0.0
 
     def f1(p, r):
         return 2 * p * r / (p + r) if (p + r) else 0.0
@@ -790,6 +884,13 @@ def compute_metrics(calls: pl.DataFrame, points: pl.DataFrame, truth: pl.DataFra
         "n_truth_instances": n_truth,
         "n_reachable_instances": n_reachable,
         "n_instances_found": found,
+        "n_instances_found_reachable": found_reachable,
+        # Recoveries the reachability rule did not predict. Zero for the Pfam truth sets by
+        # construction; above zero only where a tool transferred an annotation from a
+        # target protein with no Pfam family in common with the query. Worth watching
+        # rather than hiding: for foldseek against E. coli under Swiss-Prot truth it is
+        # most of the recoveries, which says what kind of match is producing them.
+        "n_instances_found_unreachable": found - found_reachable,
         # --- operating point the tool reported at ---
         "precision": precision,
         "precision_strict": precision_strict,
@@ -1043,11 +1144,9 @@ def score_one(args, truth, truth_lf, job):
                   f"({100 * (before - after) / before:.1f}%)", file=sys.stderr)
 
     if args.direct_annotation:
-        target_families = None
         calls_lf = regions
     else:
         map_lf = pl.scan_parquet(args.domain_map)
-        target_families = map_lf.select("pfam_id").unique().collect()
         calls_lf = (
             transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
         )
@@ -1102,11 +1201,11 @@ def score_one(args, truth, truth_lf, job):
             if t_sub.height == 0:
                 continue
 
-            reachable = (
-                t_sub if target_families is None
-                else t_sub.join(target_families, on="pfam_id", how="inner")
-            )
-            points = operating_points(c_sub, reachable.height)
+            # Computed once on the whole truth table by attach_reachability, then cut with
+            # the stratum, so every split x stratum cell divides by the instances that
+            # were transferable IN THAT CELL rather than by the species-wide count.
+            reachable = t_sub.filter(pl.col("is_reachable"))
+            points = operating_points(c_sub, instance_keys(reachable), reachable.height)
             m = compute_metrics(c_sub, points, t_sub, reachable, args.min_overlap)
 
             pc = cm.protein_centric_curve(c_sub, t_sub, ic)
@@ -1268,6 +1367,12 @@ def main():
         except Exception:
             target_disorder = None   # sentinel file when the arm is skipped
     truth = attach_target_disorder(truth, target_disorder)
+    # Last, so `is_reachable` survives every attach_* join above rather than being dropped
+    # or duplicated by one of them. Once per task, not once per arm: the target proteome is
+    # fixed for the whole manifest, and a batched task scores ~376 arms against it.
+    truth = attach_reachability(truth, args.domain_map, args.direct_annotation)
+    print(f"reachable: {int(truth['is_reachable'].sum())} of {truth.height} true instances "
+          f"are transferable from {args.species}", file=sys.stderr)
 
     # One job per (tool, variant) when batched, or the single --regions when not. Batching
     # exists because SLURM rate-limits submission: one task per (truth_set, species, tool,
