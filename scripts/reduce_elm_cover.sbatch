@@ -38,6 +38,7 @@ apptainer exec --bind /scratch "$IMAGE" python3 ../../code/scripts/reduce_elm_co
     --orthologs "../../$ASSETS/elm_cover_orthologs.tsv" \
     --projections "../../$ASSETS/elm_cover_projections.tsv" \
     --query-fasta "$COVER/qfo/Eukaryota/UP000005640_9606.fasta" \
+    --structures "$COVER/structures/human" \
     --qfo-bin ../../code/nextflow-runs/qfo-pfam-region-benchmark/bin \
     --out-dir "../../cover/$SPECIES" \
     --task "${SLURM_ARRAY_TASK_ID}" \

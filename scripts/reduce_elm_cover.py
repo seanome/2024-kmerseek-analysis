@@ -29,6 +29,17 @@ motif where the alignment puts it, which is what copying a motif label needs.
 Coordinates: kmerseek regions and the ELM instances are 0-based and end-exclusive; the
 comparator tables are 1-based inclusive, and their starts are shifted down by one here.
 
+Foldseek and Reseek count positions along the AlphaFold model, not the QfO sequence. For 32
+of the 1_303 queries the model's sequence differs; for some it is longer (Q9Y4K1: 1_723 aa
+in QfO, 2_131 in the model), so every call on them sits in a different frame from the
+motif. For these two tools a query is scored only when its model (--structures) has the
+QfO length and at least 95% identical residues; its motifs are otherwise marked
+`query_scoreable = false` and left out of that tool's denominators, not counted as missed.
+
+A covering call that ends past its query's length is a malformed row (2 of 27.6 million
+HHblits rows on the chicken run). It is dropped and counted; more than 1% of an arm's
+covering calls doing so stops the arm, because that is a coordinate convention gone wrong.
+
 Writes, per arm, into --out-dir:
   <arm>.instances.parquet  one row per ELM instance: the best rank of a covering call to
                            any target and to the query's 1:1 ortholog, each with and without
@@ -51,31 +62,62 @@ from pathlib import Path
 import polars as pl
 
 KMERSEEK_RANK_BY = "region_mean_idf"
+# Tools whose coordinates count along the AlphaFold model rather than the query sequence.
+STRUCTURE_TOOLS = {"foldseek", "reseek"}
+MIN_MODEL_IDENTITY = 0.95
+MAX_PAST_END_SHARE = 0.01
+THREE_TO_ONE = dict(ALA="A", ARG="R", ASN="N", ASP="D", CYS="C", GLN="Q", GLU="E", GLY="G",
+                    HIS="H", ILE="I", LEU="L", LYS="K", MET="M", PHE="F", PRO="P", SER="S",
+                    THR="T", TRP="W", TYR="Y", VAL="V", SEC="U", PYL="O")
 # Calls kept for the length check: a hash of the call's coordinates picks the same rows on
 # every run, about one in LENGTH_SAMPLE_EVERY.
 LENGTH_SAMPLE_EVERY = 1_000
 
 
-def read_lengths(fasta: Path) -> pl.DataFrame:
-    """Query accession and sequence length from a UniProt FASTA (sp|ACC|NAME ...)."""
-    accs, lens, n = [], [], 0
-    acc = None
+def read_sequences(fasta: Path) -> dict[str, str]:
+    """Query accession -> sequence, from a UniProt FASTA (sp|ACC|NAME ...)."""
+    seqs, acc = {}, None
     with open(fasta) as fh:
         for line in fh:
             if line.startswith(">"):
-                if acc is not None:
-                    accs.append(acc)
-                    lens.append(n)
                 head = line[1:].split()[0]
                 acc = head.split("|")[1] if "|" in head else head
-                n = 0
-            else:
-                n += len(line.strip())
-    if acc is not None:
-        accs.append(acc)
-        lens.append(n)
-    return pl.DataFrame({"query_acc": accs, "query_length": lens},
+                seqs[acc] = []
+            elif acc is not None:
+                seqs[acc].append(line.strip())
+    return {a: "".join(v) for a, v in seqs.items()}
+
+
+def lengths_frame(seqs: dict[str, str]) -> pl.DataFrame:
+    return pl.DataFrame({"query_acc": list(seqs), "query_length": [len(v) for v in seqs.values()]},
                         schema={"query_acc": pl.String, "query_length": pl.Int64})
+
+
+def model_sequence(cif: Path) -> str:
+    """The residues an AlphaFold model's ATOM records carry, in label_seq_id order."""
+    res = {}
+    with open(cif) as fh:
+        for line in fh:
+            if line.startswith("ATOM"):
+                f = line.split()
+                res[int(f[8])] = THREE_TO_ONE.get(f[5], "X")
+    return "".join(res[i] for i in sorted(res))
+
+
+def structure_status(seqs: dict[str, str], structures: Path) -> pl.DataFrame:
+    """Per query: `same` when the model has the QfO length and >= MIN_MODEL_IDENTITY
+    identical residues, else `differs`, or `no model` when there is no AF-<acc>-F1*.cif."""
+    rows = []
+    for acc, seq in seqs.items():
+        cifs = sorted(structures.glob(f"AF-{acc}-F1*.cif"))
+        if not cifs:
+            rows.append((acc, "no model", None))
+            continue
+        m = model_sequence(cifs[0])
+        same = len(m) == len(seq) and sum(a == b for a, b in zip(m, seq)) >= MIN_MODEL_IDENTITY * len(seq)
+        rows.append((acc, "same" if same else "differs", len(m)))
+    return pl.DataFrame(rows, schema={"query_acc": pl.String, "structure_status": pl.String,
+                                      "model_length": pl.Int64}, orient="row")
 
 
 def load_calls(path: Path, qfo_bin: Path) -> pl.LazyFrame | None:
@@ -197,23 +239,41 @@ def score_arm(path: Path, arm: str, args) -> dict:
         print(f"{arm}: empty region file, recorded as a missing arm")
         return summary
 
+    tool = arm if not (path.suffix == ".parquet") else "kmerseek"
     instances = pl.read_csv(args.instances, separator="\t")
     orthologs = (pl.read_csv(args.orthologs, separator="\t")
                  .filter(pl.col("species") == args.species))
     projections = (pl.read_csv(args.projections, separator="\t")
                    .filter(pl.col("species") == args.species))
-    lengths = read_lengths(args.query_fasta)
+    seqs = read_sequences(args.query_fasta)
+    lengths = lengths_frame(seqs)
+    scoreable = lengths.select("query_acc", query_scoreable=pl.lit(True))
+    if tool in STRUCTURE_TOOLS:
+        if args.structures is None:
+            raise SystemExit(f"{arm} counts positions along the AlphaFold model: pass --structures")
+        st = structure_status(seqs, args.structures)
+        scoreable = st.select("query_acc", query_scoreable=pl.col("structure_status") == "same")
+        bad = scoreable.filter(~pl.col("query_scoreable"))["query_acc"].to_list()
+        summary["structure_status"] = dict(st["structure_status"].value_counts().rows())
+        calls = calls.filter(~pl.col("query_acc").is_in(bad))
 
     keep = top_targets(calls, args.list_length)
     cover = covering_calls(calls, instances, keep, lengths, args.min_cover)
-    too_long = cover.filter(pl.col("qend") > pl.col("query_length")).height
-    if too_long:
-        raise SystemExit(f"{arm}: {too_long} covering calls end past their query's length; "
-                         f"the coordinate convention for this tool is wrong")
+    past_end = cover.filter(pl.col("qend") > pl.col("query_length"))
+    summary["n_covering_calls_past_query_end"] = past_end.height
+    if past_end.height > MAX_PAST_END_SHARE * max(cover.height, 1):
+        raise SystemExit(f"{arm}: {past_end.height} of {cover.height} covering calls end past their "
+                         f"query's length; the coordinate convention for this tool is wrong")
+    if past_end.height:
+        print(f"{arm}: dropped {past_end.height} covering calls that end past their query's length "
+              f"(malformed rows), on {past_end['query_acc'].n_unique()} queries", file=sys.stderr)
+        cover = cover.filter(pl.col("qend") <= pl.col("query_length"))
     if cover["query_length"].null_count():
         raise SystemExit(f"{arm}: {cover['query_length'].null_count()} covering calls on a query "
                          f"missing from {args.query_fasta}")
     table = per_instance(cover, instances, orthologs, projections, args.alpha, args.min_cover)
+    table = table.join(scoreable.rename({"query_acc": "accession"}), on="accession", how="left").with_columns(
+        pl.col("query_scoreable").fill_null(False))
     table.insert_column(0, pl.lit(arm).alias("arm"))
     table.write_parquet(out / f"{arm}.instances.parquet")
 
@@ -223,6 +283,7 @@ def score_arm(path: Path, arm: str, args) -> dict:
         n_listed_pairs=keep.height,
         n_covering_calls=cover.height,
         n_instances=table.height,
+        n_instances_scoreable=int(table["query_scoreable"].sum()),
         n_covered=int(table["best_rank"].is_not_null().sum()),
         n_covered_placed=int(table["best_rank_placed"].is_not_null().sum()),
         n_with_ortholog=int(table["has_ortholog"].sum()),
@@ -262,6 +323,8 @@ def main() -> None:
     ap.add_argument("--projections", type=Path, required=True, help="assets/elm_cover_projections.tsv")
     ap.add_argument("--query-fasta", type=Path, required=True,
                     help="data/elm-cover/qfo/Eukaryota/UP000005640_9606.fasta")
+    ap.add_argument("--structures", type=Path, default=None,
+                    help="the query AlphaFold models the structure tools searched (AF-<acc>-F1*.cif)")
     ap.add_argument("--qfo-bin", type=Path, required=True, help="the region benchmark's bin/")
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--min-cover", type=float, default=0.8)
