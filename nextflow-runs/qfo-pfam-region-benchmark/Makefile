@@ -2407,61 +2407,25 @@ status:
 postmortem:
 	@../../scripts/nf-postmortem $(if $(HISTORY),--history,$(if $(JOBNAME),--jobname $(JOBNAME)) $(LOG))
 
-## What each running job actually IS: process AND tag, in separate columns.
+## Every Nextflow run with jobs in the queue, then one row per job of the runs under this
+## pipeline folder. scripts/nf-running does the work; its docstring says how a job is tied
+## to its run.
 ##
-## Read from `### name:` on line 3 of the task's own .command.run, which Nextflow writes
-## and which carries both. Nothing here is inferred. The first version of this target
-## guessed the tag out of .command.sh with regexes, which gave `human_vs_ecoli` for six
-## different tools and a bare work-directory hash for every process whose script matched
-## neither pattern -- reseekConvert, scoreDomainCalls and the truth builders among them.
+## Runs are named by where they live (clone, pipeline, run folder), so the watch reads the
+## same from any pipeline folder. The version before 2026-09-28 counted only jobs under
+## this folder and called the rest "elsewhere": with the dark-set midi run queued it read
+## "0 from this pipeline, 112 elsewhere", and it showed that run's head as "(no
+## .command.run under ladder-0.4-midi)", because a head has no task file.
 ##
-## The SLURM job name cannot be used for this: it truncates to `nf-kmers` for every
-## kmerseek task whatever its alphabet, which is the whole reason `status` is not enough.
+## Process and tag come from `### name:` in each task's own .command.run, which Nextflow
+## writes and which carries both. The SLURM job name cannot be used for this pipeline: it
+## truncates to `nf-kmers` for every kmerseek task whatever its alphabet.
 ##
 ## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes and
-## `1-02:19:10` is a day. That distinction has already cost a wrong call about whether a
-## job was stuck. PENDING jobs show 0:00.
-##
-## The counts come first, because at sweep scale the table is hundreds of lines and the
-## question is usually "how much is moving" rather than "what is job 42726837". Pending
-## jobs are grouped by squeue's own reason, which is what distinguishes a queue that is
-## merely busy (Priority, Resources) from one that has hit a limit and will not drain on
-## its own (QOSMaxJobsPerUserLimit, AssocMaxWallDurationPerJobLimit).
-##
-## Work directories come from `squeue -o %Z` rather than a `scontrol show job` per row.
-## The old form cost one round trip per job, which is fine for nine baseline jobs and not
-## fine for the four hundred this sweep can have in flight at once.
+## `1-02:19:10` is a day. PENDING jobs show 0:00.
 running:
 	$(call require_cluster)
-	@here="$(MAKEFILE_DIR)/"; \
-	 sq=$$(squeue -u $$USER -h --account=$${SLURM_ACCOUNT:-ayeletv} -o "%i|%t|%M|%r|%Z" 2>/dev/null | grep .); \
-	 if [ -z "$$sq" ]; then echo "no jobs in the queue"; exit 0; fi; \
-	 tot=$$(printf '%s\n' "$$sq" | grep -c .); \
-	 run=$$(printf '%s\n' "$$sq" | cut -d'|' -f2 | grep -cx R); \
-	 pnd=$$(printf '%s\n' "$$sq" | cut -d'|' -f2 | grep -cx PD); \
-	 oth=$$((tot - run - pnd)); \
-	 mine=$$(printf '%s\n' "$$sq" | awk -F'|' -v p="$$here" 'index($$5,p)==1' | grep -c .); \
-	 line="$$tot job(s): $$run running, $$pnd pending"; \
-	 if [ "$$oth" -gt 0 ]; then line="$$line, $$oth in other states"; fi; \
-	 echo "$$line"; \
-	 echo "  $$mine from this pipeline, $$((tot - mine)) elsewhere"; \
-	 if [ "$$pnd" -gt 0 ]; then \
-	   echo "  why the pending ones are waiting:"; \
-	   printf '%s\n' "$$sq" | awk -F'|' '$$2=="PD" {print $$4}' | sort | uniq -c | sort -rn | head -5 | sed 's/^/   /'; \
-	 fi; \
-	 if [ "$$oth" -gt 0 ]; then \
-	   echo "  the other states:"; \
-	   printf '%s\n' "$$sq" | awk -F'|' '$$2!="R" && $$2!="PD" {print $$2}' | sort | uniq -c | sort -rn | sed 's/^/   /'; \
-	 fi; \
-	 echo; \
-	 printf "%-10s %-4s %-10s %-24s %s\n" JOBID ST TIME PROCESS TAG; \
-	 printf '%s\n' "$$sq" | while IFS='|' read j st tm rsn w; do \
-	   n=$$(sed -n "s/^### name: '\(.*\)'.*/\1/p" "$$w/.command.run" 2>/dev/null | head -1); \
-	   if [ -z "$$n" ]; then n="(no .command.run under $$(basename "$$w" 2>/dev/null))"; fi; \
-	   pr=$$(printf '%s' "$$n" | sed 's/ (.*//'); \
-	   tg=$$(printf '%s' "$$n" | sed -n 's/.*(\(.*\))$$/\1/p'); \
-	   printf "%-10s %-4s %-10s %-24s %s\n" "$$j" "$$st" "$$tm" "$$pr" "$$tg"; \
-	 done; true
+	@python3 ../../scripts/nf-running --jobs "$(MAKEFILE_DIR)"
 
 ## Cancel every job on this account, then show what is left.
 ##
