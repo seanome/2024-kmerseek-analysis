@@ -9,6 +9,9 @@ assets/ (in git, so Sherlock gets them by `git pull`):
   elm_cover_query_accessions.txt   the 1_303 human proteins with a usable ELM instance
   elm_cover_instances.tsv          the 2_160 instances: class, accession, start, end
                                    (0-based, end-exclusive), motif length, length bin, regex
+  elm_cover_orthologs.tsv          each query protein's 1:1 OMA ortholog in each target
+                                   species (stage0/stage0_pairs.parquet), so the cover score
+                                   can ask whether a covering call reached the ortholog
 
 --stage DATA_DIR (Mac or Sherlock, in the pipeline directory): build the qfo-shaped input
 folder the pipeline reads, from files already there:
@@ -43,7 +46,11 @@ def write_assets(stage0: Path) -> None:
     inst.select("elm_instance", "elm_class", "accession", "start", "end", "motif_length", "length_bin",
                 "in_midi_plus", "regex").sort("accession", "start", "elm_instance").write_csv(
         ASSETS / "elm_cover_instances.tsv", separator="\t")
-    print(f"wrote {len(accs)} query accessions and {inst.height} instances to {ASSETS}")
+    orth = (pl.read_parquet(stage0 / "stage0_pairs.parquet")
+            .select("accession", "species", "ortholog").unique().sort("species", "accession"))
+    orth.write_csv(ASSETS / "elm_cover_orthologs.tsv", separator="\t")
+    print(f"wrote {len(accs)} query accessions, {inst.height} instances and {orth.height} "
+          f"ortholog pairs to {ASSETS}")
 
 
 def read_fasta(path: Path, keep: set[str]) -> list[tuple[str, str]]:
