@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import time
 from pathlib import Path
 
@@ -36,16 +37,26 @@ import requests
 
 # ---------------------------------------------------------------------------
 # Paths (defaults – callers can override)
+#
+# Overridable via env var so this module works unchanged on Sherlock (no /Users/olga
+# there) -- unset, every default below is byte-identical to the hardcoded Mac path this
+# replaced, so no existing notebook or pipeline invocation changes behavior.
 # ---------------------------------------------------------------------------
 
-DATA_DIR = Path("/Users/olga/data/gencode/results-human-mouse-orthologs")
+DATA_DIR = Path(os.environ.get(
+    "KMERSEEK_DATA_DIR", "/Users/olga/data/gencode/results-human-mouse-orthologs"
+))
 
 # The kmerseek 0.4.0 HP-only pipeline (nextflow-runs/human-mouse-gencode-orthologs-hp-v040)
 # keeps a fully separate outdir so it can never invalidate the main pipeline's resume cache.
 # Its k=18-19 HP results live only here, so `genome_wide_results_file` falls back to these
 # dirs before giving up.
-EXTRA_DATA_DIRS = [Path("/Users/olga/data/gencode/results-human-mouse-orthologs-hp-v040")]
-OF_DIR = Path("/Users/olga/data/gencode/data-for-orthofinder/OrthoFinder/Results_Mar03")
+EXTRA_DATA_DIRS = [Path(p) for p in os.environ.get(
+    "KMERSEEK_EXTRA_DATA_DIRS", "/Users/olga/data/gencode/results-human-mouse-orthologs-hp-v040"
+).split(os.pathsep) if p]
+OF_DIR = Path(os.environ.get(
+    "KMERSEEK_OF_DIR", "/Users/olga/data/gencode/data-for-orthofinder/OrthoFinder/Results_Mar03"
+))
 
 # ---------------------------------------------------------------------------
 # Alphabet information content (bits per encoded symbol / per k-mer)
@@ -955,7 +966,7 @@ def length_floor_mask(
 # sufficient there.
 # ---------------------------------------------------------------------------
 
-GENCODE_DIR = Path("/Users/olga/data/gencode")
+GENCODE_DIR = Path(os.environ.get("KMERSEEK_GENCODE_DIR", "/Users/olga/data/gencode"))
 HUMAN_GTF_CHR_PATCH_HAPL_SCAFF = GENCODE_DIR / "human/v49/gencode.v49.chr_patch_hapl_scaff.annotation.gtf.gz"
 MOUSE_GTF_BASIC = GENCODE_DIR / "mouse/m38/gencode.vM38.basic.annotation.gtf.gz"
 

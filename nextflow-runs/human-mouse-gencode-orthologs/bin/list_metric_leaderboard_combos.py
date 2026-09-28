@@ -18,13 +18,16 @@ Usage:
 """
 
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
 
 import polars as pl
 
-sys.path.insert(0, "/Users/olga/code/2024-kmerseek-analysis/notebooks")
+sys.path.insert(0, os.environ.get(
+    "KMERSEEK_NOTEBOOKS_DIR", "/Users/olga/code/2024-kmerseek-analysis/notebooks"
+))
 import ortholog_analysis_utils as ou  # noqa: E402
 
 FILENAME_RE = re.compile(

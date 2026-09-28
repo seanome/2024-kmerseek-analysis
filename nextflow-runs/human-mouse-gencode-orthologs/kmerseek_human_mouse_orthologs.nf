@@ -38,6 +38,26 @@ params.threshold = 0.0
 params.min_shared_kmers = 2
 params.max_pvalue = 0.05
 
+// Interpreter for the Python steps below (parseOrthologMapping, aggregate*, listMetric-
+// LeaderboardCombos, computeMetricLeaderboard, computeRbhF1, computeFamilyAuc) -- called
+// explicitly rather than relying on each bin/*.py script's own shebang, so the same .nf file
+// runs unchanged on Sherlock (see nextflow-runs/human-mouse-gencode-orthologs/README-sherlock.md):
+// the -profile sherlock block overrides this to the container's python instead of this
+// Mac-only absolute conda path. See global CLAUDE.md for why this must be a real absolute
+// path rather than `#!/usr/bin/env python3` or a bare `python3` -- beforeScript/conda
+// directives don't reliably activate a conda env for inline scripts under Nextflow 25.x.
+params.python_bin = "/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3"
+
+// Sherlock (-profile sherlock) sets this true: the search/index/convert/evaluate chain below
+// is already done -- its results were rsynced from the Mac, not recomputed -- so running it
+// again would kmerseek-search every combo from scratch (multi-day) for no reason. This is the
+// SAME situation run_family_auc_direct.sh/run_rbh_f1_direct.sh's header comments describe for
+// -resume on a local Mac run: searchHumanVsMouse's storeDir target is the RAW csv.zst, which
+// convertResultsToParquet deletes after conversion, so a combo that's already fully processed
+// (parquet-only, no raw csv.zst left) does NOT look "done" to storeDir -- Nextflow would try to
+// redo the search. Skipping the whole chain sidesteps that instead of fighting it.
+params.skip_search = false
+
 process downloadOrthologMapping {
     publishDir params.outdir, mode: 'copy'
 
@@ -62,7 +82,7 @@ process parseOrthologMapping {
 
     script:
     """
-    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    #!${params.python_bin}
     import csv
     from collections import defaultdict
 
@@ -364,7 +384,7 @@ process aggregateResults {
 
     script:
     """
-    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    #!${params.python_bin}
     import glob, json, re
 
     results = []
@@ -484,7 +504,7 @@ process listMetricLeaderboardCombos {
 
     script:
     """
-    list_metric_leaderboard_combos.py --data-dir ${params.outdir} --output combos.csv
+    ${params.python_bin} \$(which list_metric_leaderboard_combos.py) --data-dir ${params.outdir} --output combos.csv
     """
 }
 
@@ -500,7 +520,7 @@ process computeMetricLeaderboard {
 
     script:
     """
-    compute_metric_leaderboard_combo.py \\
+    ${params.python_bin} \$(which compute_metric_leaderboard_combo.py) \\
         --dash-encoding ${dash_encoding} \\
         --display-encoding ${display_encoding} \\
         --ksize ${ksize} \\
@@ -529,7 +549,7 @@ process computeRbhF1 {
 
     script:
     """
-    compute_rbh_f1_combo.py \\
+    ${params.python_bin} \$(which compute_rbh_f1_combo.py) \\
         --dash-encoding ${dash_encoding} \\
         --display-encoding ${display_encoding} \\
         --ksize ${ksize} \\
@@ -550,7 +570,7 @@ process aggregateRbhF1 {
 
     script:
     """
-    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    #!${params.python_bin}
     import polars as pl
     from pathlib import Path
 
@@ -573,7 +593,7 @@ process aggregateMetricLeaderboard {
 
     script:
     """
-    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    #!${params.python_bin}
     import polars as pl
     from pathlib import Path
 
@@ -586,16 +606,14 @@ process aggregateMetricLeaderboard {
 }
 
 // ---------------------------------------------------------------------------
-// Notebook 206 section 4's family-anchor AUC sweep, moved out of the notebook the same way
+// Notebook 206 section 4/9's family-anchor AUC sweep, moved out of the notebook the same way
 // notebook 200 §1/§2b were above. Also generalizes it from 5 hand-picked HGNC families
 // (Olfactory receptors, CYP2/CYP3, antiviral restriction factors, sperm/testis) to every HGNC
 // gene_group with >=15 protein-coding genes (~279 families) -- see
-// compute_family_auc_combo.py's docstring. Restricted to the SAME 9-combo scope the notebook
-// already used (protein/dayhoff best-k, 6 HP variants @ k=30, hp-pbotc-1st-ed's extra k=19
-// point) rather than the full alphabet x ksize sweep -- that reduced scope was already a
-// deliberate tractability call in the notebook, unaffected by the family-count generalization
-// since compute_family_auc_combo.py still scans each raw file exactly once regardless of how
-// many families it's scored against.
+// compute_family_auc_combo.py's docstring. Run over the SAME full combo_tuples sweep as
+// computeRbhF1/computeMetricLeaderboard (every alphabet x ksize on disk, not just section 4's
+// fixed 9/10-combo subset) -- compute_family_auc_combo.py scans each raw file exactly once
+// regardless of family count, so the per-combo cost doesn't change; only the combo count does.
 // ---------------------------------------------------------------------------
 
 process computeFamilyAuc {
@@ -610,7 +628,7 @@ process computeFamilyAuc {
 
     script:
     """
-    compute_family_auc_combo.py \\
+    ${params.python_bin} \$(which compute_family_auc_combo.py) \\
         --dash-encoding ${dash_encoding} \\
         --display-encoding ${display_encoding} \\
         --ksize ${ksize} \\
@@ -630,7 +648,7 @@ process aggregateFamilyAuc {
 
     script:
     """
-    #!/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+    #!${params.python_bin}
     import polars as pl
     from pathlib import Path
 
@@ -643,89 +661,98 @@ process aggregateFamilyAuc {
 }
 
 workflow {
-    // Download and parse ortholog mapping
-    ortholog_file = downloadOrthologMapping()
-    (ortholog_pairs, ortholog_stats) = parseOrthologMapping(ortholog_file)
+    if (!params.skip_search) {
+        // Download and parse ortholog mapping
+        ortholog_file = downloadOrthologMapping()
+        (ortholog_pairs, ortholog_stats) = parseOrthologMapping(ortholog_file)
 
-    // Encoding × ksize ranges — alphabet size determines useful ksize:
-    //   hp variants  k=18-30  (2-letter; 'hp' storeDir results reused). Floor lowered from 20
-    //                to 18 on 2026-08-11 -- see file header comment. k15-17 still excluded:
-    //                projected ~1-1.7TB for full k15-19 coverage vs. limited free disk at the
-    //                time; revisit once there's more headroom.
-    //   dayhoff      k=10-20  (6-letter)
-    //   protein      k=5-15   (20-letter)
-    hp_ksizes      = Channel.of(18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)
-    dayhoff_ksizes = Channel.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-    protein_ksizes = Channel.of(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
+        // Encoding × ksize ranges — alphabet size determines useful ksize:
+        //   hp variants  k=18-30  (2-letter; 'hp' storeDir results reused). Floor lowered from
+        //                20 to 18 on 2026-08-11 -- see file header comment. k15-17 still
+        //                excluded: projected ~1-1.7TB for full k15-19 coverage vs. limited free
+        //                disk at the time; revisit once there's more headroom.
+        //   dayhoff      k=10-20  (6-letter)
+        //   protein      k=5-15   (20-letter)
+        hp_ksizes      = Channel.of(18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)
+        dayhoff_ksizes = Channel.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+        protein_ksizes = Channel.of(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
 
-    hp_enc_ksize = Channel.of(
-        'hp-lehninger',
-        'hp-thomas-dill',
-        'hp-kyte-doolittle',
-        'hp-thomas-dill-no-c',
-        'hp-lehninger-plus-c',
-        'hp-pbotc-1st-ed'
-    ).combine(hp_ksizes)
+        hp_enc_ksize = Channel.of(
+            'hp-lehninger',
+            'hp-thomas-dill',
+            'hp-kyte-doolittle',
+            'hp-thomas-dill-no-c',
+            'hp-lehninger-plus-c',
+            'hp-pbotc-1st-ed'
+        ).combine(hp_ksizes)
 
-    dayhoff_enc_ksize = Channel.of('dayhoff').combine(dayhoff_ksizes)
-    protein_enc_ksize = Channel.of('protein').combine(protein_ksizes)
+        dayhoff_enc_ksize = Channel.of('dayhoff').combine(dayhoff_ksizes)
+        protein_enc_ksize = Channel.of('protein').combine(protein_ksizes)
 
-    all_enc_ksize = hp_enc_ksize.mix(dayhoff_enc_ksize).mix(protein_enc_ksize)
+        all_enc_ksize = hp_enc_ksize.mix(dayhoff_enc_ksize).mix(protein_enc_ksize)
 
-    // FASTA files are already uncompressed - use directly
-    human_decompressed = channel.of(tuple('human', file(params.human_fasta)))
-    mouse_decompressed = channel.of(tuple('mouse', file(params.mouse_fasta)))
+        // FASTA files are already uncompressed - use directly
+        human_decompressed = channel.of(tuple('human', file(params.human_fasta)))
+        mouse_decompressed = channel.of(tuple('mouse', file(params.mouse_fasta)))
 
-    // Index mouse database for each (encoding, ksize)
-    mouse_index_params = mouse_decompressed
-        .combine(all_enc_ksize)
-        .map { species, fasta, encoding, ksize -> tuple(species, fasta, encoding, ksize) }
+        // Index mouse database for each (encoding, ksize)
+        mouse_index_params = mouse_decompressed
+            .combine(all_enc_ksize)
+            .map { species, fasta, encoding, ksize -> tuple(species, fasta, encoding, ksize) }
 
-    indexed = indexDatabase(mouse_index_params)
-    index_only = indexed[0]
-    // (species, encoding, ksize, index_path)
+        indexed = indexDatabase(mouse_index_params)
+        index_only = indexed[0]
+        // (species, encoding, ksize, index_path)
 
-    // Get mouse indexes by (encoding, ksize)
-    mouse_indexes = index_only.map { species, encoding, ksize, index -> tuple(encoding, ksize, index) }
+        // Get mouse indexes by (encoding, ksize)
+        mouse_indexes = index_only.map { species, encoding, ksize, index -> tuple(encoding, ksize, index) }
 
-    // Combine human FASTA with mouse indexes by (encoding, ksize)
-    human_fasta_enc_ksize = human_decompressed
-        .combine(all_enc_ksize)
-        .map { species, fasta, encoding, ksize -> tuple(encoding, ksize, fasta) }
+        // Combine human FASTA with mouse indexes by (encoding, ksize)
+        human_fasta_enc_ksize = human_decompressed
+            .combine(all_enc_ksize)
+            .map { species, fasta, encoding, ksize -> tuple(encoding, ksize, fasta) }
 
-    search_inputs = human_fasta_enc_ksize.join(mouse_indexes, by: [0, 1])
-    // (encoding, ksize, human_fasta, mouse_index)
+        search_inputs = human_fasta_enc_ksize.join(mouse_indexes, by: [0, 1])
+        // (encoding, ksize, human_fasta, mouse_index)
 
-    // Search human against mouse
-    search_outputs = searchHumanVsMouse(search_inputs)
-    search_results = search_outputs[0]
-    // (encoding, ksize, results_csv_zst)
+        // Search human against mouse
+        search_outputs = searchHumanVsMouse(search_inputs)
+        search_results = search_outputs[0]
+        // (encoding, ksize, results_csv_zst)
 
-    // Convert to parquet immediately and drop the raw csv.zst (see process comment) --
-    // everything downstream reads the parquet.
-    parquet_results = convertResultsToParquet(search_results)
-    // (encoding, ksize, results_parquet)
+        // Convert to parquet immediately and drop the raw csv.zst (see process comment) --
+        // everything downstream reads the parquet.
+        parquet_results = convertResultsToParquet(search_results)
+        // (encoding, ksize, results_parquet)
 
-    // Evaluate ortholog detection
-    eval_inputs = parquet_results.combine(ortholog_pairs)
-    // (encoding, ksize, results_parquet, ortholog_pairs)
-    eval_outputs = evaluateOrthologs(eval_inputs)
+        // Evaluate ortholog detection
+        eval_inputs = parquet_results.combine(ortholog_pairs)
+        // (encoding, ksize, results_parquet, ortholog_pairs)
+        eval_outputs = evaluateOrthologs(eval_inputs)
 
-    // Collect all summary files for aggregation
-    summaries = eval_outputs[1].collect()
-    agg_out = aggregateResults(summaries)
+        // Collect all summary files for aggregation
+        summaries = eval_outputs[1].collect()
+        agg_out = aggregateResults(summaries)
 
-    // MultiQC: single-document summary of the whole encoding x ksize sweep
-    multiQC(agg_out[1])
+        // MultiQC: single-document summary of the whole encoding x ksize sweep
+        multiQC(agg_out[1])
 
-    eval_outputs[0].subscribe { encoding, ksize, eval_file ->
-        println("Completed evaluation: ${encoding} k=${ksize} -> ${eval_file}")
+        eval_outputs[0].subscribe { encoding, ksize, eval_file ->
+            println("Completed evaluation: ${encoding} k=${ksize} -> ${eval_file}")
+        }
+
+        // Notebook 200 §2b's sweep. parquet_results.collect() is a barrier, not a real input --
+        // see listMetricLeaderboardCombos's comment: without it, this runs at t=0 and misses
+        // everything the search/convert chain above produces during THIS invocation.
+        combos_ready = parquet_results.collect()
+    } else {
+        // params.skip_search: no search/convert chain ran this invocation, so there's no real
+        // barrier to wait on -- listMetricLeaderboardCombos rescans the filesystem itself and
+        // just needs something to fire on.
+        combos_ready = Channel.value(true)
     }
 
-    // Notebook 200 §2b's sweep. parquet_results.collect() is a barrier, not a real input --
-    // see listMetricLeaderboardCombos's comment: without it, this runs at t=0 and misses
-    // everything the search/convert chain above produces during THIS invocation.
-    combo_tuples = listMetricLeaderboardCombos(parquet_results.collect())
+    combo_tuples = listMetricLeaderboardCombos(combos_ready)
         .splitCsv(header: true)
         .map { row -> tuple(row.dash_encoding, row.display_encoding, row.ksize as Integer) }
     leaderboard_csvs = computeMetricLeaderboard(combo_tuples)
@@ -735,22 +762,11 @@ workflow {
     rbh_f1_csvs = computeRbhF1(combo_tuples)
     aggregateRbhF1(rbh_f1_csvs.collect())
 
-    // Notebook 206 §4's family-anchor AUC sweep -- fixed 9-combo list (protein/dayhoff best-k,
-    // 6 HP variants @ k=30, hp-pbotc-1st-ed's extra k=19 point), NOT the full combo_tuples
-    // sweep above -- see computeFamilyAuc's comment for why that reduced scope carries over
-    // unchanged from the notebook.
-    family_combo_tuples = Channel.of(
-        tuple('protein', 'protein', 15),
-        tuple('dayhoff', 'dayhoff', 20),
-        tuple('hp', 'hp', 30),
-        tuple('hp-lehninger', 'hp_lehninger', 30),
-        tuple('hp-thomas-dill', 'hp_thomas_dill', 30),
-        tuple('hp-kyte-doolittle', 'hp_kyte_doolittle', 30),
-        tuple('hp-thomas-dill-no-c', 'hp_thomas_dill_no_c', 30),
-        tuple('hp-lehninger-plus-c', 'hp_lehninger_plus_c', 30),
-        tuple('hp-pbotc-1st-ed', 'hp_pbotc_1st_ed', 30),
-        tuple('hp-pbotc-1st-ed', 'hp_pbotc_1st_ed', 19),
-    )
-    family_auc_csvs = computeFamilyAuc(family_combo_tuples)
+    // Notebook 206 §9's all-HGNC-family AUC sweep -- same full combo_tuples list as
+    // computeRbhF1/computeMetricLeaderboard above (~100 combos: 78 HP + 11 dayhoff + 11
+    // protein), not the fixed 9/10-combo subset section 4's hand-picked-family plots use.
+    // compute_family_auc_combo.py scans each raw file once regardless of combo count, so this
+    // is the same per-combo cost as the other two sweeps, just ~10x more combos.
+    family_auc_csvs = computeFamilyAuc(combo_tuples)
     aggregateFamilyAuc(family_auc_csvs.collect())
 }

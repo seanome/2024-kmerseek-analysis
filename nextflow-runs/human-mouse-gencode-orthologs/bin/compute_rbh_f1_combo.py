@@ -20,6 +20,7 @@ Usage:
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -28,7 +29,9 @@ import polars as pl
 from scipy.stats import poisson
 from sklearn.metrics import average_precision_score, roc_auc_score
 
-sys.path.insert(0, "/Users/olga/code/2024-kmerseek-analysis/notebooks")
+sys.path.insert(0, os.environ.get(
+    "KMERSEEK_NOTEBOOKS_DIR", "/Users/olga/code/2024-kmerseek-analysis/notebooks"
+))
 import ortholog_analysis_utils as ou  # noqa: E402
 
 RBH_SCHEMA = {

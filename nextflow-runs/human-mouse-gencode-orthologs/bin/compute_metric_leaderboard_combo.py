@@ -19,13 +19,16 @@ Usage:
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
 import polars as pl
 
-sys.path.insert(0, "/Users/olga/code/2024-kmerseek-analysis/notebooks")
+sys.path.insert(0, os.environ.get(
+    "KMERSEEK_NOTEBOOKS_DIR", "/Users/olga/code/2024-kmerseek-analysis/notebooks"
+))
 import ortholog_analysis_utils as ou  # noqa: E402
 
 COMPOSITE_COLUMNS = ["query_name", "target_name", "jaccard", "containment",
