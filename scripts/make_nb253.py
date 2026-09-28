@@ -128,8 +128,17 @@ S = pl.DataFrame([{**{k: v for k, v in s.items() if k != "length_check"},
                    "spearman_vs_length": (s.get("length_check") or {}).get("spearman_vs_length"),
                    **parse_arm(s["arm"])} for s in summaries], infer_schema_length=None)
 I = pl.concat([pl.read_parquet(p) for p in sorted(COVER.glob("*.instances.parquet"))], how="vertical_relaxed")
+# Foldseek and Reseek count along the AlphaFold model; a query whose model is not the QfO
+# sequence is not scoreable for them (reduce_elm_cover.py). Arms scored before that column
+# existed are sequence arms, where every query is scoreable.
+if "query_scoreable" not in I.columns:
+    I = I.with_columns(query_scoreable=pl.lit(True))
+I = I.with_columns(pl.col("query_scoreable").fill_null(True))
 I = I.join(S.select("arm", "tool", "alphabet", "k", "scaled", "mask"), on="arm")
 print(f"{S.height} arms with a summary: {S['status'].value_counts().sort('status').rows()}")
+print("Motifs left out because the query's AlphaFold model is not its QfO sequence:")
+print(I.group_by("tool").agg(not_scoreable=(~pl.col("query_scoreable")).sum() / pl.col("arm").n_unique())
+      .filter(pl.col("not_scoreable") > 0))
 print(f"{I['elm_instance'].n_unique()} ELM instances; {I.filter('has_ortholog')['elm_instance'].n_unique()} on a protein "
       f"with a chicken ortholog; {I.filter('has_projection')['elm_instance'].n_unique()} with a projected motif")
 """)
@@ -180,6 +189,7 @@ chicken side.
 
 code(r"""
 def shares(frame):
+    frame = frame.filter("query_scoreable")
     orth = frame.filter("has_ortholog")
     proj = frame.filter("has_projection")
     return {
@@ -310,7 +320,7 @@ comparison tools and for the best kmerseek arm of section 2.
 
 code(r"""
 pick = SH.filter(pl.col("tool") != "kmerseek")["arm"].to_list() + best_km["arm"].to_list()
-R = (I.filter(pl.col("arm").is_in(pick) & pl.col("has_projection"))
+R = (I.filter(pl.col("arm").is_in(pick) & pl.col("has_projection") & pl.col("query_scoreable"))
      .with_columns(label=pl.col("arm").map_elements(arm_label, return_dtype=pl.String)))
 rk = R.group_by("label").agg(
     on_position=pl.col("ortholog_rank_on_position").is_not_null().sum(),
@@ -329,8 +339,9 @@ for col, colour, name in [("rank_1", "#3B6EA5", "ortholog is the best chicken hi
     ax.barh(rk["label"], rk[col], left=left, color=colour, edgecolor="0.3", label=name)
     left += rk[col].to_numpy()
 ax.invert_yaxis()
-ax.set_xlim(0, R["elm_instance"].n_unique())
-ax.set_xlabel(f"motifs put on position on the chicken ortholog (n, of {R['elm_instance'].n_unique()})")
+ax.set_xlim(0, R.group_by("label").len()["len"].max())
+ax.set_xlabel("motifs put on position on the chicken ortholog (n; Foldseek and Reseek\n"
+              "leave out queries whose AlphaFold model is not the QfO sequence)")
 ax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), ncol=2, frameon=False, fontsize=8)
 fig.savefig(FIG / "253_ortholog_rank.png", dpi=200, bbox_inches="tight")
 """)
