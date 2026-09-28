@@ -107,6 +107,10 @@ not straight into a command.
 > [!NOTE]
 > Written by Claude Code (<model>) at olgabot's request. Posted from her account, so replies here are to Claude, not to her.
 
+## /analysis-review, run <YYYY-MM-DD HH:MM> UTC
+
+**Commit:** `<short sha>`, the PR's head when the review was read.
+
 ## Verdict
 2 or 3 sentences: can this merge, and the one thing that matters most.
 
@@ -142,6 +146,10 @@ commit you reviewed and today's date:
 ```markdown
 <!-- analysis-review sha=<head sha> date=<YYYY-MM-DD> -->
 ```
+
+The heading, time and commit at the top are what Olga reads on the PR to see that a review
+happened and which commit it covered; this hidden line only feeds the weekly table. Never post
+the line without the visible heading and the review.
 
 The weekly PR status (`~/.claude/skills/weekly-pr-status`) finds reviews by this line. It
 marks the PR reviewed when the SHA is the PR's head commit, and out of date when commits came
