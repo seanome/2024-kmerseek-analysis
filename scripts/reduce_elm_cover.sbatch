@@ -12,7 +12,7 @@
 # hence 64 GB.
 #SBATCH --job-name=250-elm-cover
 #SBATCH --account=ayeletv
-#SBATCH --partition=hns
+#SBATCH --partition=hns,normal
 #SBATCH --array=0-19
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
