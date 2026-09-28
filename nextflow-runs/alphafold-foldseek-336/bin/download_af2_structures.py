@@ -23,11 +23,11 @@ import urllib.request
 from pathlib import Path
 
 
-AF_CIF_URL = "https://alphafold.ebi.ac.uk/files/AF-{acc}-F1-model_v4.cif"
+AF_CIF_URL = "https://alphafold.ebi.ac.uk/files/AF-{acc}-F1-model_v6.cif"
 
 
 def download_one(acc: str, outdir: Path, cache: Path) -> tuple[str, bool]:
-    filename = f"AF-{acc}-F1-model_v4.cif"
+    filename = f"AF-{acc}-F1-model_v6.cif"
     cache_file = cache / filename
     dest = outdir / filename
 
