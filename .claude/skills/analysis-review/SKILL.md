@@ -136,8 +136,19 @@ Do not edit the notebook unless asked.
 
 ## Step 4: post it on the PR
 
-When the review is of a PR, post it as one comment on the PR. Use `gh api`, never
-`gh pr comment` or `gh pr edit`:
+When the review is of a PR, end the review file with this line, filled in with the head
+commit you reviewed and today's date:
+
+```markdown
+<!-- analysis-review sha=<head sha> date=<YYYY-MM-DD> -->
+```
+
+The weekly PR status (`~/.claude/skills/weekly-pr-status`) finds reviews by this line. It
+marks the PR reviewed when the SHA is the PR's head commit, and out of date when commits came
+after it. Get the SHA with
+`gh api repos/seanome/2024-kmerseek-analysis/pulls/<n> --jq .head.sha`.
+
+Post it as one comment on the PR. Use `gh api`, never `gh pr comment` or `gh pr edit`:
 
 ```bash
 gh api -X POST repos/seanome/2024-kmerseek-analysis/issues/<n>/comments -F body=@<review.md> --jq .html_url
