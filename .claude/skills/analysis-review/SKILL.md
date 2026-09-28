@@ -1,6 +1,6 @@
 ---
 name: analysis-review
-description: Review a Jupyter notebook, a notebook helper module, or a PR in 2024-kmerseek-analysis for analysis mistakes a linter cannot see. Trigger when asked to review, check or "look over" a notebook, a figure notebook, a results PR or a claim in one; before opening a PR that adds or changes a notebook; and when finishing a notebook. It checks every number in the text against a printed output, ties, nulls, joins, sort order, which arm and query set a number comes from, and the project's naming rules. The /rustacean-review skill covers Rust; this one covers the analysis.
+description: Review a Jupyter notebook, a notebook helper module, or a PR in 2024-kmerseek-analysis for analysis mistakes a linter cannot see. Trigger when asked to review, check or "look over" a notebook, a figure notebook, a results PR or a claim in one; before opening a PR that adds or changes a notebook; and when finishing a notebook. It checks every number in the text against a printed output, ties, nulls, joins, sort order, which arm and query set a number comes from, and the project's naming rules. When the review is of a PR, it posts the review as one PR comment, in the same layout as /rustacean-review. /rustacean-review covers Rust; this one covers the analysis.
 ---
 
 # Analysis review for 2024-kmerseek-analysis notebooks
@@ -98,12 +98,59 @@ reporting it. If you cannot confirm one, label it "unverified".
     - "Sweep" means only the alphabet × k-mer size parameter sweep.
     - Integers are written `14_873` in code (the script catches `= 14,873`).
 
-## Step 3: report
+## Step 3: write the review
 
-List findings most severe first: wrong numbers and unsupported claims, then statistics, then
-data-source mix-ups, then reuse and wording. Say which rules you could not check and why
-(for example, the data file the notebook reads is on Sherlock). Do not edit the notebook
-unless asked.
+Use the same layout as a `/rustacean-review` comment. Write it to a file in the scratchpad,
+not straight into a command.
+
+```markdown
+> [!NOTE]
+> Written by Claude Code (<model>) at olgabot's request. Posted from her account, so replies here are to Claude, not to her.
+
+## Verdict
+2 or 3 sentences: can this merge, and the one thing that matters most.
+
+## Tooling
+The commit reviewed, and what ran: `pre-commit run --files ...` per hook, and any cell or
+number you re-computed. What could not run and why (for example, the input is on Sherlock).
+
+## Blocking
+Wrong numbers, claims with no printed source, a statistic that does not hold. Often empty.
+
+## Should fix
+Missing n_tied or null, unstated dedup setting or query set, a reimplemented helper.
+
+## Consider
+Wording and judgement calls the author may decline.
+
+## Verified clean
+What you checked and found right, named specifically ("all 14 numbers in cell 7 match the
+table printed in cell 6").
+```
+
+Each finding gives: the notebook and cell (`notebooks/241_x.ipynb`, cell 7), what is wrong in
+one sentence, what goes wrong because of it, the fix, and how sure you are. If you
+re-computed a number, say so and give both values.
+
+Do not edit the notebook unless asked.
+
+## Step 4: post it on the PR
+
+When the review is of a PR, post it as one comment on the PR. Use `gh api`, never
+`gh pr comment` or `gh pr edit`:
+
+```bash
+gh api -X POST repos/seanome/2024-kmerseek-analysis/issues/<n>/comments -F body=@<review.md> --jq .html_url
+```
+
+Then read it back and check the Verdict came through:
+
+```bash
+gh api repos/seanome/2024-kmerseek-analysis/issues/<n>/comments --jq '.[-1].body' | head -8
+```
+
+Give Olga the link. If the review is of local changes with no PR, show it in the chat
+instead.
 
 When a review finds a mistake that no rule here covers, add the rule to this file with the
 date and the notebook it came from.
