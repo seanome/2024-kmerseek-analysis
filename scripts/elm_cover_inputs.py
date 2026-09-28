@@ -12,6 +12,10 @@ assets/ (in git, so Sherlock gets them by `git pull`):
   elm_cover_orthologs.tsv          each query protein's 1:1 OMA ortholog in each target
                                    species (stage0/stage0_pairs.parquet), so the cover score
                                    can ask whether a covering call reached the ortholog
+  elm_cover_projections.tsv        each motif projected onto that ortholog through the
+                                   Stage 0 MAFFT alignment (tiers/regex_on_target.parquet,
+                                   from scripts/elm_tiers.py), 0-based end-exclusive; the
+                                   window of ortholog residues aligned to motif residues
 
 --stage DATA_DIR (Mac or Sherlock, in the pipeline directory): build the qfo-shaped input
 folder the pipeline reads, from files already there:
@@ -39,7 +43,7 @@ ASSETS = PIPE / "assets"
 NINE = ["mouse", "chicken", "zebrafish", "ciona", "fly", "worm", "yeast", "arabidopsis", "ecoli"]
 
 
-def write_assets(stage0: Path) -> None:
+def write_assets(stage0: Path, tiers: Path) -> None:
     inst = pl.read_parquet(stage0 / "stage0_instances.parquet")
     accs = sorted(inst["accession"].unique().to_list())
     (ASSETS / "elm_cover_query_accessions.txt").write_text("\n".join(accs) + "\n")
@@ -49,8 +53,13 @@ def write_assets(stage0: Path) -> None:
     orth = (pl.read_parquet(stage0 / "stage0_pairs.parquet")
             .select("accession", "species", "ortholog").unique().sort("species", "accession"))
     orth.write_csv(ASSETS / "elm_cover_orthologs.tsv", separator="\t")
-    print(f"wrote {len(accs)} query accessions, {inst.height} instances and {orth.height} "
-          f"ortholog pairs to {ASSETS}")
+    proj = (pl.read_parquet(tiers / "regex_on_target.parquet")
+            .filter(pl.col("proj_start").is_not_null())
+            .select("elm_instance", "accession", "species", "ortholog", "proj_start", "proj_end")
+            .sort("species", "accession", "elm_instance"))
+    proj.write_csv(ASSETS / "elm_cover_projections.tsv", separator="\t")
+    print(f"wrote {len(accs)} query accessions, {inst.height} instances, {orth.height} "
+          f"ortholog pairs and {proj.height} projected motifs to {ASSETS}")
 
 
 def read_fasta(path: Path, keep: set[str]) -> list[tuple[str, str]]:
@@ -119,12 +128,13 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--write-assets", action="store_true")
     ap.add_argument("--stage0", type=Path, default=Path("/Users/olga/data/elm-motif-transfer/stage0"))
+    ap.add_argument("--tiers", type=Path, default=Path("/Users/olga/data/elm-motif-transfer/tiers"))
     ap.add_argument("--stage", action="store_true")
     ap.add_argument("--data", type=Path, default=Path("data"), help="the pipeline's data/ folder")
     ap.add_argument("--out", type=Path, default=Path("data/elm-cover"))
     args = ap.parse_args()
     if args.write_assets:
-        write_assets(args.stage0)
+        write_assets(args.stage0, args.tiers)
     if args.stage:
         stage(args.data, args.out)
 
