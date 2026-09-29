@@ -30,4 +30,4 @@ running:
 	  echo ""; \
 	  exit 1; \
 	fi
-	@python3 scripts/nf-running
+	@python3 $$SCRATCH/nf-running
