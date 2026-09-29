@@ -162,6 +162,9 @@ params.kmerseek_combos    = null
 // task (bin/cut_top_targets.py). 0 keeps everything. A cut table lives in its own store,
 // <outdir>/kmerseek_top<N>, so it can never be served to a run that wants the whole table.
 params.kmerseek_top_targets = 0
+// The rankings the cut keeps the union of: COLUMN:max or COLUMN:min, comma-separated. See
+// bin/cut_top_targets.py for why the ELM search keeps both.
+params.kmerseek_top_targets_by = 'region_mean_idf:max,region_evalue:min'
 // Sweep only the (target, combo) cells whose search result is already in the store, and
 // launch no new search. For finishing a run whose remaining searches are the ones that
 // cannot finish. On 2026-09-11 run-midi-plus had every arm scored except 16 gbmr7 k9-k11
@@ -2041,6 +2044,7 @@ PYEOF
 
     if [ ${params.kmerseek_top_targets} -gt 0 ] && [ -s ${out_pq} ]; then
         cut_top_targets.py --in ${out_pq} --out cut.${out_pq} --top ${params.kmerseek_top_targets} \
+            ${params.kmerseek_top_targets_by.tokenize(',').collect { "--rank-by ${it.trim()}" }.join(' ')} \
             | tee -a ${log_file}
         mv cut.${out_pq} ${out_pq}
     fi
