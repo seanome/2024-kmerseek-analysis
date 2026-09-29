@@ -1,8 +1,9 @@
 """Class shares of Swiss-Prot residues for all 19 kmerseek alphabets.
 
 One row per alphabet. Each bar is every Swiss-Prot residue, split by the class of that
-alphabet it falls in, with the residues of each class printed inside its segment. The
-number at the right is the sum of squared class shares, the chance that two unrelated
+alphabet it falls in, with the residues of each class printed inside its segment. Two
+shades of blue alternate only to separate neighbouring classes. The number at the right
+is the sum of squared class shares, the chance that two unrelated
 residues fall in the same class.
 
 Class definitions are copied from kmerseek's ``src/rust/alphabets.rs`` (dayhoff6 from
@@ -54,7 +55,8 @@ ALPHABETS: dict[str, list[str]] = {
     "hp_kyte_doolittle2": ["ACFILMV", "DEGHKNPQRSTWY"],
 }  # fmt: skip
 
-BAR = "#a9c1ec"
+# Two shades that alternate only to tell neighbouring classes apart.
+BARS = ("#a9c1ec", "#7f9fdb")
 INK = "#1b1f24"
 MUTED = "#5b6673"
 MONO = "DejaVu Sans Mono"
@@ -81,7 +83,7 @@ def main(out: Path) -> None:
     order = sorted(ALPHABETS, key=lambda a: (-len(ALPHABETS[a]), a))
 
     fig = plt.figure(figsize=(7.2, 5.4))
-    ax = fig.add_axes([0.235, 0.075, 0.625, 0.82])
+    ax = fig.add_axes([0.235, 0.075, 0.625, 0.805])
     bar_h = 0.74
     bar_width_pt = ax.get_position().width * fig.get_figwidth() * 72
 
@@ -90,8 +92,8 @@ def main(out: Path) -> None:
         classes = ALPHABETS[name]
         shares = class_shares(classes)
         left = 0.0
-        for c, q in zip(classes, shares):
-            ax.barh(row, q, left=left, height=bar_h, color=BAR,
+        for i, (c, q) in enumerate(zip(classes, shares)):
+            ax.barh(row, q, left=left, height=bar_h, color=BARS[i % 2],
                     edgecolor="white", linewidth=0.8)  # fmt: skip
             seg_pt = q * bar_width_pt - 1.2
             size = min(LABEL_PT, seg_pt / (len(c) * MONO_EM))
@@ -113,11 +115,14 @@ def main(out: Path) -> None:
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
 
-    head_y = 0.905
+    head_y = 0.925
     pos = ax.get_position()
     fig.text(pos.x0 + pos.width / 2, head_y,
              "Classes of each alphabet, with the residues in each class",
              ha="center", va="bottom", fontsize=7.5, color=INK)  # fmt: skip
+    fig.text(pos.x0 + pos.width / 2, head_y - 0.004,
+             "(light and dark blue alternate only to separate neighbouring classes)",
+             ha="center", va="top", fontsize=6.5, color=MUTED)  # fmt: skip
     fig.text(pos.x1 + 0.02 * pos.width, head_y,
              "Same class\nby chance,\n$\\Sigma_c\\, q_c^2$",
              ha="left", va="bottom", fontsize=7, color=INK, linespacing=1.2)  # fmt: skip
