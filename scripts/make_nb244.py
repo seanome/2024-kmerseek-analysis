@@ -611,28 +611,28 @@ Each protein is a thin line with its Swiss-Prot features as boxes labelled by ty
 feature being scored has a heavy outline. Under each protein, one row per tool shows that
 tool's call on this protein: the best call of the feature's type that overlaps the instance.
 The target panel shows a comparison tool's call only when it is on the same target protein
-as kmerseek's.
+as kmerseek's. The tools, top to bottom: the kmerseek arm chosen for the feature type, the
+best kmerseek arm of another alphabet, phmmer, MMseqs2, MMseqs2 iterative, Foldseek, ProstT5,
+Reseek and the Kyte-Doolittle scan.
+
+All 183 rows of `tables/244_hero_candidates.csv` are drawn the same way by
+`scripts/export_244_case_calls.py`, in `figures/244_cases/`, numbered by CSV row (`case_id`,
+from 0). The call coordinates behind every figure are in `tables/244_case_calls.csv`.
 """)
 
 code(r"""
+# The same function draws all 183 cases in scripts/export_244_case_calls.py
+# (figures/244_cases/); here it draws the top 10, numbered by rank.
 notes = pl.read_parquet(he.EXTRACT / "244_swissprot_feature_notes.parquet")
-for i, r in enumerate(TOP.iter_rows(named=True), start=1):
-    oth = (L.filter((pl.col("arm") == r["other_arm"]) & (pl.col("species") == r["species"]))
-           .join(pl.DataFrame({k: [r[k]] for k in KEY}), on=KEY, how="semi").row(0, named=True))
-    fig = he.draw_candidate(r, oth, notes)
-    outcome = "; ".join(f"{lab} {r[f'{lab}|category']}" for lab in ["Foldseek", "ProstT5", "Reseek", "phmmer", "MMseqs2"])
+CASES = he.load_cases(L, INST)
+top_ids = TOP.select(KEY + ["species"]).with_row_index("rank", offset=1).join(
+    CASES.select(KEY + ["species", "case_id"]), on=KEY + ["species"], how="left")
+assert top_ids["case_id"].null_count() == 0
+for i, cid in top_ids.select("rank", "case_id").iter_rows():
+    r = CASES.filter(pl.col("case_id") == cid).row(0, named=True)
     sym = r["hgnc_symbol"] or r["accession"]
-    mu.finish_figure(
-        fig, FIG / f"244_candidate_{i:02d}_{sym}_{r['pfam_id']}_{r['species']}.png",
-        tools=f"kmerseek {he.arm_short(r['chosen_arm'])} (chosen for {r['pfam_id']} in Stage 0) and {he.arm_short(r['other_arm'])}; phmmer, MMseqs2, Foldseek, ProstT5, Reseek; Kyte-Doolittle scan",
-        hypothesis=f"kmerseek places the human {r['pfam_id']} feature \"{he.short_note(r['note'])}\" on its {r['species']} counterpart and the structure tools do not.",
-        conclusion=(f"kmerseek IoU {r['land_iou']:.2f}, {r['n_identical']} of {r['region_length']} residues identical; {outcome}; "
-                    f"Kyte-Doolittle scan {'landed' if r['kd_landed'] else 'did not land'}; "
-                    f"pLDDT {r['mean_plddt_region'] if r['mean_plddt_region'] is None else round(r['mean_plddt_region'])}, "
-                    f"disorder fraction {r['disorder_fraction_region'] if r['disorder_fraction_region'] is None else round(r['disorder_fraction_region'], 2)}."),
-        title=f"{i}. human {sym} {r['pfam_id']} \"{he.short_note(r['note'])}\" ({r['feature_length']} aa) and {r['species']} {r['land_target_acc']}",
-        layout=False,
-    )
+    he.case_figure(r, notes, i, FIG / f"244_candidate_{i:02d}_{sym}_{r['pfam_id']}_{r['species']}.png", dpi=200, pdf=False)
+print(top_ids.select("rank", "case_id"))
 """)
 
 md(r"""
