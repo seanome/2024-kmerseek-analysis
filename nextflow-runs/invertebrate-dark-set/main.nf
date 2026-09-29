@@ -1364,7 +1364,7 @@ workflow darkSet {
         def n_clades = SPECIES*.clade.unique().size()
         def idx_gb   = COMBOS.collect { a, k, _lc, sc -> kmerseekIndexMemory(a, k as int, sc as int, 1).toGiga() }
         log.info "  kmerseek : ${COMBOS.size()} index combos -- ${n_alpha} alphabet(s), " +
-                 "${COMBOS.size().intdiv(n_lc * n_sc)} alphabet x ksize pair(s), mask setting(s): " +
+                 "${COMBOS.collect { [it[0], it[1]] }.unique().size()} alphabet x ksize pair(s), mask setting(s): " +
                  "${COMBOS.collect { it[2] }.unique().join(',')}, scaled: " +
                  "${COMBOS.collect { it[3] }.unique().join(',')}; search arms per index: " +
                  "${EXTENSIONS.join(',')}"
@@ -1374,6 +1374,12 @@ workflow darkSet {
                          (hasOptimalPenalty(a) ? " (kappa ${kappaTable()[a]}, ${alphabetClasses(a)} classes)"
                                                : (EXTENSIONS.contains('extend:opt') ? ' (no kappa measured: the opt arm is skipped)' : ''))
             }
+        }
+        if (tableScaled() || params.kmerseek_table_arms.toString().trim()) {
+            def n_table = COMBOS.findAll { isTablePair(it[0], it[1]) }.collect { [it[0], it[1]] }.unique().size()
+            log.info "             table narrowed: ${n_table} pair(s) from the sweep table at scaled " +
+                     "${tableScaled().join(',') ?: 'all'}, arms ${params.kmerseek_table_arms ?: 'all'}; " +
+                     "the ${namedPairs().size()} pair(s) in --kmerseek_alphabets keep every setting"
         }
         log.info "             ${n_clades * COMBOS.size()} index builds (${n_clades} clade(s) x combos), " +
                  "first-attempt memory ${idx_gb.min()}-${idx_gb.max()} GB"
