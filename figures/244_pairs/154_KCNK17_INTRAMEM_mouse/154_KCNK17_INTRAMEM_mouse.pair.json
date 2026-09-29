@@ -1,0 +1,81 @@
+{
+  "ksize": 7,
+  "moltype": "mmseqs12",
+  "classes": {
+    "a": "AST",
+    "c": "C",
+    "e": "EQ",
+    "f": "FY",
+    "g": "G",
+    "h": "H",
+    "i": "IV",
+    "k": "KR",
+    "l": "LM",
+    "n": "DN",
+    "p": "P",
+    "w": "W"
+  },
+  "query": {
+    "name": "Q96T54 species=human Potassium channel subfamily K member 17",
+    "sequence": "MYRPRARAAPEGRVRGCAVPSTVLLLLAYLAYLALGTGVFWTLEGRAAQDSSRSFQRDKWELLQNFTCLDRPALDSLIRDVVQAYKNGASLLSNTTSMGRWELVGSFFFSVSTITTIGYGNLSPNTMAARLFCIFFALVGIPLNLVVLNRLGHLMQQGVNHWASRLGGTWQDPDKARWLAGSGALLSGLLLFLLLPPLLFSHMEGWSYTEGFYFAFITLSTVGFGDYVIGMNPSQRYPLWYKNMVSLWILFGMAWLALIIKLILSQLETPGRVCSCCHHSSKEDFKSQSWRQGPDREPESHSPQQGCYPEGPMGIIQHLEPSAHAAGCGKDS",
+    "encoded": "lfkpkakaapegkikgcaipaaillllaflaflalgagifwalegkaaenaakafeknkwellenfaclnkpalnalikniieafkngaallanaaalgkweligafffaiaaiaaigfgnlapnalaaklfciffaligiplnliilnklghlleeginhwaaklggawenpnkakwlagagallaglllflllppllfahlegwafaegfffafialaaigfgnfiiglnpaekfplwfknlialwilfglawlaliiklilaeleapgkicacchhaakenfkaeawkegpnkepeahapeegcfpegplgiiehlepaahaagcgkna"
+  },
+  "target": {
+    "name": "Q8CFS6 species=mouse Potassium voltage-gated channel subfamily V member 2",
+    "sequence": "MLKQSNERRWSLSYKPWSTPETEDVPNTGSNQHRRSICSLGARTGSQASIAPQWTEGNYNYYIEEDEDCGEEGEDWKDDLAEENQKAECLTSLLDGHNDTPAQMSTLKVNVGGHSYLLECCELANYPKTRLGRLATSTTRRGQLGLCDDYEAQTDEYFFDRDPAVFQLIYNFYTSGVLLVRDELCPRSFLEELGYWGVRLKYTPRCCRICFEERRDELSEQLKIQRELRAQAQAEEAEELFRDMRFYGPQRQRLWNLMEKPFSSVAAKAMGVATNLFVLISVVALALNTVEEMQHQAEQGTGGGDPRPILEHVEMLCVAFFTLEFLLRLASTPNLQRFARSALNLVDLVAILPFYLQLLLECFTSEDQRHNKDSPREHDLETVGRVGKVGQVLRIMRLMRIFRILKLARHSTGLRAFGFTLRQCYQQVGCLMLFITMGIFSFSAAVYSVEHDVPGTNFTSILHAWWWAAVSISTVGYGDMYPETHLGRLFAFLCIAFGIILNGMPISILYNKFSDYYSKLKAYEYTAIRRERGKVNFMQRATKKMAECLSESHAQSTTRQEN",
+    "encoded": "llkeanekkwalafkpwaapeaenipnaganehkkaicalgakagaeaaiapewaegnfnffieenencgeegenwknnlaeenekaeclaallnghnnapaelaalkinigghaflleccelanfpkaklgklaaaaakkgelglcnnfeaeanefffnknpaifelifnffaagilliknelcpkafleelgfwgiklkfapkcckicfeekknelaeelkiekelkaeaeaeeaeelfknlkffgpekeklwnllekpfaaiaakalgiaanlfiliaiialalnaieeleheaeegagggnpkpilehiellciaffalefllklaaapnlekfakaalnlinliailpfflelllecfaaenekhnknapkehnleaigkigkigeilkilkllkifkilklakhaaglkafgfalkecfeeigclllfialgifafaaaifaiehnipganfaailhawwwaaiaiaaigfgnlfpeahlgklfaflciafgiilnglpiailfnkfanffaklkafefaaikkekgkinflekaakklaeclaeahaeaaakeen"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 112,
+      "target_pos": 470,
+      "kmer": "aiaaigf",
+      "query_kmer": "TITTIGY",
+      "target_kmer": "SISTVGY"
+    },
+    {
+      "query_pos": 113,
+      "target_pos": 471,
+      "kmer": "iaaigfg",
+      "query_kmer": "ITTIGYG",
+      "target_kmer": "ISTVGYG"
+    },
+    {
+      "query_pos": 114,
+      "target_pos": 472,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "STVGYGD"
+    },
+    {
+      "query_pos": 115,
+      "target_pos": 473,
+      "kmer": "aigfgnl",
+      "query_kmer": "TIGYGNL",
+      "target_kmer": "TVGYGDM"
+    },
+    {
+      "query_pos": 219,
+      "target_pos": 472,
+      "kmer": "aaigfgn",
+      "query_kmer": "STVGFGD",
+      "target_kmer": "STVGYGD"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 112,
+      "query_end": 122,
+      "target_start": 470,
+      "target_end": 480,
+      "length": 10
+    },
+    {
+      "query_start": 219,
+      "query_end": 226,
+      "target_start": 472,
+      "target_end": 479,
+      "length": 7
+    }
+  ]
+}

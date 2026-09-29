@@ -1,0 +1,214 @@
+{
+  "ksize": 7,
+  "moltype": "mmseqs12",
+  "classes": {
+    "a": "AST",
+    "c": "C",
+    "e": "EQ",
+    "f": "FY",
+    "g": "G",
+    "h": "H",
+    "i": "IV",
+    "k": "KR",
+    "l": "LM",
+    "n": "DN",
+    "p": "P",
+    "w": "W"
+  },
+  "query": {
+    "name": "Q96T55 species=human Potassium channel subfamily K member 16",
+    "sequence": "MPSAGLCSCWGGRVLPLLLAYVCYLLLGATIFQLLERQAEAQSRDQFQLEKLRFLENYTCLDQWAMEQFVQVIMEAWVKGVNPKGNSTNPSNWDFGSSFFFAGTVVTTIGYGNLAPSTEAGQVFCVFYALLGIPLNVIFLNHLGTGLRAHLAAIERWEDRPRRSQVLQVLGLALFLTLGTLVILIFPPMVFSHVEGWSFSEGFYFAFITLSTIGFGDYVVGTDPSKHYISVYRSLAAIWILLGLAWLALILPLGPLLLHRCCQLWLLSLRQGCGAKAAPGRRPRRGSTAARGVQVTPQDFPISKKGLGS",
+    "encoded": "lpaaglcacwggkilplllaficflllgaaifellekeaeaeaknefeleklkflenfaclnewaleefieiileawikginpkgnaanpanwnfgaafffagaiiaaigfgnlapaaeageifciffallgiplniiflnhlgaglkahlaaiekwenkpkkaeileilglalflalgaliilifpplifahiegwafaegfffafialaaigfgnfiiganpakhfiaifkalaaiwillglawlalilplgplllhkccelwllalkegcgakaapgkkpkkgaaaakgieiapenfpiakkglga"
+  },
+  "target": {
+    "name": "O88454 species=mouse Potassium channel subfamily K member 4",
+    "sequence": "MRSTTLLALLALVLLYLVSGALVFQALEQPHEQQAQKKMDHGRDQFLRDHPCVSQKSLEDFIKLLVEALGGGANPETSWTNSSNHSSAWNLGSAFFFSGTIITTIGYGNIVLHTDAGRLFCIFYALVGIPLFGMLLAGVGDRLGSSLRRGIGHIEAIFLKWHVPPGLVRSLSAVLFLLIGCLLFVLTPTFVFSYMESWSKLEAIYFVIVTLTTVGFGDYVPGDGTGQNSPAYQPLVWFWILFGLAYFASVLTTIGNWLRAVSRRTRAEMGGLTAQAASWTGTVTARVTQRTGPSAPPPEKEQPLLPSSLPAPPAVVEPAGRPGSPAPAEKVETPSPPTASALDYPSENLAFIDESSDTQSERGCALPRAPRGRRRPNPSKKPSRPRGPGRLRDKAVPV",
+    "encoded": "lkaaallallalillfliagalifealeepheeeaekklnhgkneflknhpciaekalenfiklliealggganpeaawanaanhaaawnlgaafffagaiiaaigfgniilhanagklfciffaligiplfglllagignklgaalkkgighieaiflkwhippglikalaailflligcllfilapafifafleawakleaiffiiialaaigfgnfipgngagenapafepliwfwilfglaffaailaaignwlkaiakkakaelgglaaeaaawagaiaakiaekagpaapppekeepllpaalpappaiiepagkpgapapaekieapappaaaalnfpaenlafineaanaeaekgcalpkapkgkkkpnpakkpakpkgpgklknkaipi"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 95,
+      "target_pos": 91,
+      "kmer": "gaafffa",
+      "query_kmer": "GSSFFFA",
+      "target_kmer": "GSAFFFS"
+    },
+    {
+      "query_pos": 96,
+      "target_pos": 92,
+      "kmer": "aafffag",
+      "query_kmer": "SSFFFAG",
+      "target_kmer": "SAFFFSG"
+    },
+    {
+      "query_pos": 97,
+      "target_pos": 93,
+      "kmer": "afffaga",
+      "query_kmer": "SFFFAGT",
+      "target_kmer": "AFFFSGT"
+    },
+    {
+      "query_pos": 98,
+      "target_pos": 94,
+      "kmer": "fffagai",
+      "query_kmer": "FFFAGTV",
+      "target_kmer": "FFFSGTI"
+    },
+    {
+      "query_pos": 99,
+      "target_pos": 95,
+      "kmer": "ffagaii",
+      "query_kmer": "FFAGTVV",
+      "target_kmer": "FFSGTII"
+    },
+    {
+      "query_pos": 100,
+      "target_pos": 96,
+      "kmer": "fagaiia",
+      "query_kmer": "FAGTVVT",
+      "target_kmer": "FSGTIIT"
+    },
+    {
+      "query_pos": 101,
+      "target_pos": 97,
+      "kmer": "agaiiaa",
+      "query_kmer": "AGTVVTT",
+      "target_kmer": "SGTIITT"
+    },
+    {
+      "query_pos": 102,
+      "target_pos": 98,
+      "kmer": "gaiiaai",
+      "query_kmer": "GTVVTTI",
+      "target_kmer": "GTIITTI"
+    },
+    {
+      "query_pos": 103,
+      "target_pos": 99,
+      "kmer": "aiiaaig",
+      "query_kmer": "TVVTTIG",
+      "target_kmer": "TIITTIG"
+    },
+    {
+      "query_pos": 104,
+      "target_pos": 100,
+      "kmer": "iiaaigf",
+      "query_kmer": "VVTTIGY",
+      "target_kmer": "IITTIGY"
+    },
+    {
+      "query_pos": 105,
+      "target_pos": 101,
+      "kmer": "iaaigfg",
+      "query_kmer": "VTTIGYG",
+      "target_kmer": "ITTIGYG"
+    },
+    {
+      "query_pos": 106,
+      "target_pos": 102,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "TTIGYGN"
+    },
+    {
+      "query_pos": 106,
+      "target_pos": 211,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "TTVGFGD"
+    },
+    {
+      "query_pos": 123,
+      "target_pos": 119,
+      "kmer": "fciffal",
+      "query_kmer": "FCVFYAL",
+      "target_kmer": "FCIFYAL"
+    },
+    {
+      "query_pos": 207,
+      "target_pos": 208,
+      "kmer": "ialaaig",
+      "query_kmer": "ITLSTIG",
+      "target_kmer": "VTLTTVG"
+    },
+    {
+      "query_pos": 208,
+      "target_pos": 209,
+      "kmer": "alaaigf",
+      "query_kmer": "TLSTIGF",
+      "target_kmer": "TLTTVGF"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 210,
+      "kmer": "laaigfg",
+      "query_kmer": "LSTIGFG",
+      "target_kmer": "LTTVGFG"
+    },
+    {
+      "query_pos": 210,
+      "target_pos": 102,
+      "kmer": "aaigfgn",
+      "query_kmer": "STIGFGD",
+      "target_kmer": "TTIGYGN"
+    },
+    {
+      "query_pos": 210,
+      "target_pos": 211,
+      "kmer": "aaigfgn",
+      "query_kmer": "STIGFGD",
+      "target_kmer": "TTVGFGD"
+    },
+    {
+      "query_pos": 211,
+      "target_pos": 212,
+      "kmer": "aigfgnf",
+      "query_kmer": "TIGFGDY",
+      "target_kmer": "TVGFGDY"
+    },
+    {
+      "query_pos": 212,
+      "target_pos": 213,
+      "kmer": "igfgnfi",
+      "query_kmer": "IGFGDYV",
+      "target_kmer": "VGFGDYV"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 95,
+      "query_end": 113,
+      "target_start": 91,
+      "target_end": 109,
+      "length": 18
+    },
+    {
+      "query_start": 207,
+      "query_end": 219,
+      "target_start": 208,
+      "target_end": 220,
+      "length": 12
+    },
+    {
+      "query_start": 106,
+      "query_end": 113,
+      "target_start": 211,
+      "target_end": 218,
+      "length": 7
+    },
+    {
+      "query_start": 123,
+      "query_end": 130,
+      "target_start": 119,
+      "target_end": 126,
+      "length": 7
+    },
+    {
+      "query_start": 210,
+      "query_end": 217,
+      "target_start": 102,
+      "target_end": 109,
+      "length": 7
+    }
+  ]
+}

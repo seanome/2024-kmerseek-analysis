@@ -1,0 +1,522 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "P08922 species=human Proto-oncogene tyrosine-protein kinase ROS",
+    "sequence": "MKNIYCLIPKLVNFATLGCLWISVVQCTVLNSCLKSCVTNLGQQLDLGTPHNLSEPCIQGCHFWNSVDQKNCALKCRESCEVGCSSAEGAYEEEVLENADLPTAPFASSIGSHNMTLRWKSANFSGVKYIIQWKYAQLLGSWTYTKTVSRPSYVVKPLHPFTEYIFRVVWIFTAQLQLYSPPSPSYRTHPHGVPETAPLIRNIESSSPDTVEVSWDPPQFPGGPILGYNLRLISKNQKLDAGTQRTSFQFYSTLPNTIYRFSIAAVNEVGEGPEAESSITTSSSAVQQEEQWLFLSRKTSLRKRSLKHLVDEAHCLRLDAIYHNITGISVDVHQQIVYFSEGTLIWAKKAANMSDVSDLRIFYRGSGLISSISIDWLYQRMYFIMDELVCVCDLENCSNIEEITPPSISAPQKIVADSYNGYVFYLLRDGIYRADLPVPSGRCAEAVRIVESCTLKDFAIKPQAKRIIYFNDTAQVFMSTFLDGSASHLILPRIPFADVKSFACENNDFLVTDGKVIFQQDALSFNEFIVGCDLSHIEEFGFGNLVIFGSSSQLHPLPGRPQELSVLFGSHQALVQWKPPALAIGANVILISDIIELFELGPSAWQNWTYEVKVSTQDPPEVTHIFLNISGTMLNVPELQSAMKYKVSVRASSPKRPGPWSEPSVGTTLVPASEPPFIMAVKEDGLWSKPLNSFGPGEFLSSDIGNVSDMDWYNNSLYYSDTKGDVFVWLLNGTDISENYHLPSIAGAGALAFEWLGHFLYWAGKTYVIQRQSVLTGHTDIVTHVKLLVNDMVVDSVGGYLYWTTLYSVESTRLNGESSLVLQTQPWFSGKKVIALTLDLSDGLLYWLVQDSQCIHLYTAVLRGQSTGDTTITEFAAWSTSEISQNALMYYSGRLFWINGFRIITTQEIGQKTSVSVLEPARFNQFTIIQTSLKPLPGNFSFTPKVIPDSVQESSFRIEGNASSFQILWNGPPAVDWGVVFYSVEFSAHSKFLASEQHSLPVFTVEGLEPYALFNLSVTPYTYWGKGPKTSLSLRAPETVPSAPENPRIFILPSGKCCNKNEVVVEFRWNKPKHENGVLTKFEIFYNISNQSITNKTCEDWIAVNVTPSVMSFQLEGMSPRCFIAFQVRAFTSKGPGPYADVVKSTTSEINPFPHLITLLGNKIVFLDMDQNQVVWTFSAERVISAVCYTADNEMGYYAEGDSLFLLHLHNRSSSELFQDSLVFDITVITIDWISRHLYFALKESQNGMQVFDVDLEHKVKYPREVKIHNRNSTIISFSVYPLLSRLYWTEVSNFGYQMFYYSIISHTLHRILQPTATNQQNKRNQCSCNVTEFELSGAMAIDTSNLEKPLIYFAKAQEIWAMDLEGCQCWRVITVPAMLAGKTLVSLTVDGDLIYWIITAKDSTQIYQAKKGNGAIVSQVKALRSRHILAYSSVMQPFPDKAFLSLASDTVEPTILNATNTSLTIRLPLAKTNLTWYGITSPTPTYLVYYAEVNDRKNSSDLKYRILEFQDSIALIEDLQPFSTYMIQIAVKNYYSDPLEHLPPGKEIWGKTKNGVPEAVQLINTTVRSDTSLIISWRESHKPNGPKESVRYQLAISHLALIPETPLRQSEFPNGRLTLLVTRLSGGNIYVLKVLACHSEEMWCTESHPVTVEMFNTPEKPYSLVPENTSLQFNWKAPLNVNLIRFWVELQKWKYNEFYHVKTSCSQGPAYVCNITNLQPYTSYNVRVVVVYKTGENSTSLPESFKTKAGVPNKPGIPKLLEGSKNSIQWEKAEDNGCRITYYILEIRKSTSNNLQNQNLRWKMTFNGSCSSVCTWKSKNLKGIFQFRVVAANNLGFGEYSGISENIILVGDDFWIPETSFILTIIVGIFLVVTIPLTFVWHRRLKNQKSAKEGVTVLINEDKELAELRGLAAGVGLANACYAIHTLPTQEEIENLPAFPREKLTLRLLLGSGAFGEVYEGTAVDILGVGSGEIKVAVKTLKKGSTDQEKIEFLKEAHLMSKFNHPNILKQLGVCLLNEPQYIILELMEGGDLLTYLRKARMATFYGPLLTLVDLVDLCVDISKGCVYLERMHFIHRDLAARNCLVSVKDYTSPRIVKIGDFGLARDIYKNDYYRKRGEGLLPVRWMAPESLMDGIFTTQSDVWSFGILIWEILTLGHQPYPAHSNLDVLNYVQTGGRLEPPRNCPDDLWNLMTQCWAQEPDQRPTFHRIQDQLQLFRNFFLNSIYKSRDEANNSGVINESFEGEDGDVICLNSDDIMPVALMETKNREGLNYMVLATECGQGEEKSEGPLGSQESESCGLRKEEKEPHADKDFCQEKQVAYCPSGKPEGLNYACLTHSGYGDGSD",
+    "encoded": "lknlycllpkllnyatlgclwltlltctllntclktcltnlgttldlgtphnltkpcltgchywntldtkncalkckktcklgcttakgaykkkllknadlptapyattlgthnltlkwktanytglkylltwkyatllgtwtytktltkptyllkplhpytkylykllwlytatltlytpptptykthphglpktapllknlktttpdtlkltwdpptypggpllgynlklltkntkldagttkttytyyttlpntlykytlaalnklgkgpkakttltttttalttkktwlyltkkttlkkktlkhlldkahclkldalyhnltgltldlhttllyytkgtllwakkaanltdltdlklyykgtgllttltldwlytklyylldkllclcdlknctnlkkltpptltaptklladtyngylyyllkdglykadlplptgkcakalkllktctlkdyalkptakkllyyndtatlylttyldgtathlllpklpyadlktyacknndylltdgkllyttdaltynkyllgcdlthlkkygygnlllygttttlhplpgkptkltllygthtalltwkppalalganlllltdllklyklgptawtnwtyklkltttdppklthlylnltgtllnlpklttalkykltlkattpkkpgpwtkptlgttllpatkppyllalkkdglwtkplntygpgkylttdlgnltdldwynntlyytdtkgdlylwllngtdltknyhlptlagagalaykwlghylywagktylltkttlltghtdllthlklllndllldtlggylywttlytlkttklngkttllltttpwytgkkllaltldltdgllywlltdttclhlytallkgtttgdttltkyaawtttklttnallyytgklywlngyklltttklgtkttltllkpakyntytlltttlkplpgnytytpkllpdtltkttyklkgnattytllwngppaldwgllyytlkytahtkylatkthtlplytlkglkpyalynltltpytywgkgpkttltlkapktlptapknpklyllptgkccnknklllkykwnkpkhknglltkyklyynltnttltnktckdwlalnltptlltytlkgltpkcylaytlkayttkgpgpyadllkttttklnpyphlltllgnkllyldldtntllwtytakklltalcytadnklgyyakgdtlyllhlhnktttklytdtllydltlltldwltkhlyyalkkttngltlydldlkhklkypkklklhnknttlltytlyplltklywtkltnygytlyyytllthtlhklltptatnttnkkntctcnltkykltgalaldttnlkkpllyyakatklwaldlkgctcwklltlpallagktlltltldgdllywlltakdtttlytakkgngallttlkalktkhllayttlltpypdkayltlatdtlkptllnatnttltlklplaktnltwyglttptptyllyyaklndkknttdlkykllkytdtlallkdltpyttylltlalknyytdplkhlppgkklwgktknglpkaltllnttlktdttllltwkkthkpngpkktlkytlalthlallpktplkttkypngkltllltkltggnlyllkllachtkklwctkthpltlklyntpkkpytllpknttltynwkaplnlnllkywlkltkwkynkyyhlkttcttgpaylcnltnltpyttynlkllllyktgkntttlpktyktkaglpnkpglpkllkgtkntltwkkakdngckltyyllklkktttnnltntnlkwkltyngtcttlctwktknlkglytykllaannlgygkytgltknllllgddywlpkttylltlllglyllltlpltylwhkklkntktakkgltlllnkdkklaklkglaaglglanacyalhtlpttkklknlpaypkkkltlklllgtgaygklykgtaldllglgtgklklalktlkkgttdtkklkylkkahlltkynhpnllktlglcllnkptylllkllkggdlltylkkaklatyygplltlldlldlcldltkgclylkklhylhkdlaaknclltlkdyttpkllklgdyglakdlykndyykkkgkgllplkwlapktlldglyttttdlwtyglllwklltlghtpypahtnldllnylttggklkppkncpddlwnllttcwatkpdtkptyhkltdtltlyknyylntlyktkdkanntgllnktykgkdgdllclntddllplallktknkkglnylllatkcgtgkkktkgplgttktktcglkkkkkkphadkdyctkktlaycptgkpkglnyaclthtgygdgtd"
+  },
+  "target": {
+    "name": "P26618 species=mouse Platelet-derived growth factor receptor alpha",
+    "sequence": "MGTSHQVFLVLSCLLTGPGLISCQLLLPSILPNENEKIVQLNSSFSLRCVGESEVSWQHPMSEEDDPNVEIRSEENNSGLFVTVLEVVNASAAHTGWYTCYYNHTQTDESEIEGRHIYIYVPDPDMAFVPLGMTDSLVIVEEDDSAIIPCRTTDPETQVTLHNNGRLVPASYDSRQGFNGTFSVGPYICEATVKGRTFKTSEFNVYALKATSELNLEMDARQTVYKAGETIVVTCAVFNNEVVDLQWTYPGEVRNKGITMLEEIKLPSIKLVYTLTVPKATVKDSGEYECAARQATKEVKEMKRVTISVHEKGFVEIEPTFGQLEAVNLHEVREFVVEVQAYPTPRISWLKDNLTLIENLTEITTDVQKSQETRYQSKLKLIRAKEEDSGHYTIIVQNEDDVKSYTFELSTLVPASILDLVDDHHGSGGGQTVRCTAEGTPLPEIDWMICKHIKKCNNDTSWTVLASNVSNIITELPRRGRSTVEGRVSFAKVEETIAVRCLAKNNLSVVARELKLVAPTLRSELTVAAAVLVLLVIVIVSLIVLVVIWKQKPRYEIRWRVIESISPDGHEYIYVDPMQLPYDSRWEFPRDGLVLGRILGSGAFGKVVEGTAYGLSRSQPVMKVAVKMLKPTARSSEKQALMSELKIMTHLGPHLNIVNLLGACTKSGPIYIITEYCFYGDLVNYLHKNRDSFMSQHPEKPKKDLDIFGLNPADESTRSYVILSFENNGDYMDMKQADTTQYVPMLERKEVSKYSDIQRSLYDRPASYKKKSMLDSEVKNLLSDDDSEGLTLLDLLSFTYQVARGMEFLASKNCVHRDLAARNVLLAQGKIVKICDFGLARDIMHDSNYVSKGSTFLPVKWMAPESIFDNLYTTLSDVWSYGILLWEIFSLGGTPYPGMMVDSTFYNKIKSGYRMAKPDHATSEVYEIMVQCWNSEPEKRPSFYHLSEIVENLLPGQYKKSYEKIHLDFLKSDHPAVARMRVDSDNAYIGVTYKNEEDKLKDWEGGLDEQRLSADSGYIIPLPDIDPVPEEEDLGKRNRHSSQTSEESAIETGSSSSTFIKREDETIEDIDMMDDIGIDSSDLVEDSFL",
+    "encoded": "lgtthtlyllltclltgpglltctlllptllpnknkklltlnttytlkclgktkltwthpltkkddpnlklktkknntglyltllkllnataahtgwytcyynhtttdktklkgkhlylylpdpdlaylplgltdtllllkkddtallpckttdpkttltlhnngkllpatydtktgyngtytlgpylckatlkgktykttkynlyalkattklnlkldakttlykagktllltcalynnklldltwtypgklknkgltllkklklptlkllytltlpkatlkdtgkykcaaktatkklkklkkltltlhkkgylklkptygtlkalnlhklkkyllkltayptpkltwlkdnltllknltklttdltkttktkyttklkllkakkkdtghytllltnkddlktytyklttllpatlldllddhhgtgggttlkctakgtplpkldwllckhlkkcnndttwtllatnltnlltklpkkgkttlkgkltyaklkktlalkclaknnltllakklkllaptlktkltlaaalllllllllltlllllllwktkpkyklkwkllktltpdghkylyldpltlpydtkwkypkdglllgkllgtgaygkllkgtaygltkttpllklalkllkptakttkktalltklkllthlgphlnllnllgactktgplylltkycyygdllnylhknkdtyltthpkkpkkdldlyglnpadkttktyllltyknngdyldlktadtttylpllkkkkltkytdltktlydkpatykkktlldtklknlltdddtkgltlldlltytytlakglkylatknclhkdlaaknlllatgkllklcdyglakdllhdtnyltkgttylplkwlapktlydnlyttltdlwtyglllwklytlggtpypgllldttyynklktgyklakpdhattklykllltcwntkpkkkptyyhltkllknllpgtykktykklhldylktdhpalaklkldtdnaylgltyknkkdklkdwkggldktkltadtgyllplpdldplpkkkdlgkknkhtttttkktalktgtttttylkkkdktlkdldllddlgldttdllkdtyl"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 23,
+      "target_pos": 19,
+      "kmer": "lltctl",
+      "query_kmer": "VVQCTV",
+      "target_kmer": "LISCQL"
+    },
+    {
+      "query_pos": 24,
+      "target_pos": 20,
+      "kmer": "ltctll",
+      "query_kmer": "VQCTVL",
+      "target_kmer": "ISCQLL"
+    },
+    {
+      "query_pos": 445,
+      "target_pos": 624,
+      "kmer": "alkllk",
+      "query_kmer": "AVRIVE",
+      "target_kmer": "AVKMLK"
+    },
+    {
+      "query_pos": 459,
+      "target_pos": 628,
+      "kmer": "lkptak",
+      "query_kmer": "IKPQAK",
+      "target_kmer": "LKPTAR"
+    },
+    {
+      "query_pos": 666,
+      "target_pos": 409,
+      "kmer": "ttllpa",
+      "query_kmer": "TTLVPA",
+      "target_kmer": "STLVPA"
+    },
+    {
+      "query_pos": 667,
+      "target_pos": 410,
+      "kmer": "tllpat",
+      "query_kmer": "TLVPAS",
+      "target_kmer": "TLVPAS"
+    },
+    {
+      "query_pos": 911,
+      "target_pos": 155,
+      "kmer": "kttltl",
+      "query_kmer": "KTSVSV",
+      "target_kmer": "ETQVTL"
+    },
+    {
+      "query_pos": 990,
+      "target_pos": 806,
+      "kmer": "kylatk",
+      "query_kmer": "KFLASE",
+      "target_kmer": "EFLASK"
+    },
+    {
+      "query_pos": 1027,
+      "target_pos": 154,
+      "kmer": "pkttlt",
+      "query_kmer": "PKTSLS",
+      "target_kmer": "PETQVT"
+    },
+    {
+      "query_pos": 1028,
+      "target_pos": 155,
+      "kmer": "kttltl",
+      "query_kmer": "KTSLSL",
+      "target_kmer": "ETQVTL"
+    },
+    {
+      "query_pos": 1380,
+      "target_pos": 226,
+      "kmer": "agktll",
+      "query_kmer": "AGKTLV",
+      "target_kmer": "AGETIV"
+    },
+    {
+      "query_pos": 1759,
+      "target_pos": 605,
+      "kmer": "kllkgt",
+      "query_kmer": "KLLEGS",
+      "target_kmer": "KVVEGT"
+    },
+    {
+      "query_pos": 1862,
+      "target_pos": 538,
+      "kmer": "lltlll",
+      "query_kmer": "ILTIIV",
+      "target_kmer": "IVSLIV"
+    },
+    {
+      "query_pos": 1869,
+      "target_pos": 6,
+      "kmer": "lylllt",
+      "query_kmer": "IFLVVT",
+      "target_kmer": "VFLVLS"
+    },
+    {
+      "query_pos": 1893,
+      "target_pos": 255,
+      "kmer": "kgltll",
+      "query_kmer": "EGVTVL",
+      "target_kmer": "KGITML"
+    },
+    {
+      "query_pos": 1893,
+      "target_pos": 787,
+      "kmer": "kgltll",
+      "query_kmer": "EGVTVL",
+      "target_kmer": "EGLTLL"
+    },
+    {
+      "query_pos": 1949,
+      "target_pos": 597,
+      "kmer": "llgtga",
+      "query_kmer": "LLGSGA",
+      "target_kmer": "ILGSGA"
+    },
+    {
+      "query_pos": 1950,
+      "target_pos": 598,
+      "kmer": "lgtgay",
+      "query_kmer": "LGSGAF",
+      "target_kmer": "LGSGAF"
+    },
+    {
+      "query_pos": 1951,
+      "target_pos": 599,
+      "kmer": "gtgayg",
+      "query_kmer": "GSGAFG",
+      "target_kmer": "GSGAFG"
+    },
+    {
+      "query_pos": 1952,
+      "target_pos": 600,
+      "kmer": "tgaygk",
+      "query_kmer": "SGAFGE",
+      "target_kmer": "SGAFGK"
+    },
+    {
+      "query_pos": 1953,
+      "target_pos": 601,
+      "kmer": "gaygkl",
+      "query_kmer": "GAFGEV",
+      "target_kmer": "GAFGKV"
+    },
+    {
+      "query_pos": 1974,
+      "target_pos": 621,
+      "kmer": "lklalk",
+      "query_kmer": "IKVAVK",
+      "target_kmer": "MKVAVK"
+    },
+    {
+      "query_pos": 2050,
+      "target_pos": 789,
+      "kmer": "ltlldl",
+      "query_kmer": "LTLVDL",
+      "target_kmer": "LTLLDL"
+    },
+    {
+      "query_pos": 2051,
+      "target_pos": 415,
+      "kmer": "tlldll",
+      "query_kmer": "TLVDLV",
+      "target_kmer": "SILDLV"
+    },
+    {
+      "query_pos": 2051,
+      "target_pos": 790,
+      "kmer": "tlldll",
+      "query_kmer": "TLVDLV",
+      "target_kmer": "TLLDLL"
+    },
+    {
+      "query_pos": 2052,
+      "target_pos": 416,
+      "kmer": "lldlld",
+      "query_kmer": "LVDLVD",
+      "target_kmer": "ILDLVD"
+    },
+    {
+      "query_pos": 2075,
+      "target_pos": 814,
+      "kmer": "lhkdla",
+      "query_kmer": "IHRDLA",
+      "target_kmer": "VHRDLA"
+    },
+    {
+      "query_pos": 2076,
+      "target_pos": 815,
+      "kmer": "hkdlaa",
+      "query_kmer": "HRDLAA",
+      "target_kmer": "HRDLAA"
+    },
+    {
+      "query_pos": 2077,
+      "target_pos": 816,
+      "kmer": "kdlaak",
+      "query_kmer": "RDLAAR",
+      "target_kmer": "RDLAAR"
+    },
+    {
+      "query_pos": 2078,
+      "target_pos": 817,
+      "kmer": "dlaakn",
+      "query_kmer": "DLAARN",
+      "target_kmer": "DLAARN"
+    },
+    {
+      "query_pos": 2101,
+      "target_pos": 835,
+      "kmer": "dyglak",
+      "query_kmer": "DFGLAR",
+      "target_kmer": "DFGLAR"
+    },
+    {
+      "query_pos": 2102,
+      "target_pos": 836,
+      "kmer": "yglakd",
+      "query_kmer": "FGLARD",
+      "target_kmer": "FGLARD"
+    },
+    {
+      "query_pos": 2103,
+      "target_pos": 837,
+      "kmer": "glakdl",
+      "query_kmer": "GLARDI",
+      "target_kmer": "GLARDI"
+    },
+    {
+      "query_pos": 2122,
+      "target_pos": 856,
+      "kmer": "lplkwl",
+      "query_kmer": "LPVRWM",
+      "target_kmer": "LPVKWM"
+    },
+    {
+      "query_pos": 2123,
+      "target_pos": 857,
+      "kmer": "plkwla",
+      "query_kmer": "PVRWMA",
+      "target_kmer": "PVKWMA"
+    },
+    {
+      "query_pos": 2124,
+      "target_pos": 858,
+      "kmer": "lkwlap",
+      "query_kmer": "VRWMAP",
+      "target_kmer": "VKWMAP"
+    },
+    {
+      "query_pos": 2125,
+      "target_pos": 859,
+      "kmer": "kwlapk",
+      "query_kmer": "RWMAPE",
+      "target_kmer": "KWMAPE"
+    },
+    {
+      "query_pos": 2126,
+      "target_pos": 860,
+      "kmer": "wlapkt",
+      "query_kmer": "WMAPES",
+      "target_kmer": "WMAPES"
+    },
+    {
+      "query_pos": 2127,
+      "target_pos": 861,
+      "kmer": "lapktl",
+      "query_kmer": "MAPESL",
+      "target_kmer": "MAPESI"
+    },
+    {
+      "query_pos": 2141,
+      "target_pos": 875,
+      "kmer": "tdlwty",
+      "query_kmer": "SDVWSF",
+      "target_kmer": "SDVWSY"
+    },
+    {
+      "query_pos": 2142,
+      "target_pos": 876,
+      "kmer": "dlwtyg",
+      "query_kmer": "DVWSFG",
+      "target_kmer": "DVWSYG"
+    },
+    {
+      "query_pos": 2143,
+      "target_pos": 877,
+      "kmer": "lwtygl",
+      "query_kmer": "VWSFGI",
+      "target_kmer": "VWSYGI"
+    },
+    {
+      "query_pos": 2144,
+      "target_pos": 878,
+      "kmer": "wtygll",
+      "query_kmer": "WSFGIL",
+      "target_kmer": "WSYGIL"
+    },
+    {
+      "query_pos": 2145,
+      "target_pos": 879,
+      "kmer": "tyglll",
+      "query_kmer": "SFGILI",
+      "target_kmer": "SYGILL"
+    },
+    {
+      "query_pos": 2146,
+      "target_pos": 880,
+      "kmer": "yglllw",
+      "query_kmer": "FGILIW",
+      "target_kmer": "YGILLW"
+    },
+    {
+      "query_pos": 2147,
+      "target_pos": 881,
+      "kmer": "glllwk",
+      "query_kmer": "GILIWE",
+      "target_kmer": "GILLWE"
+    },
+    {
+      "query_pos": 2148,
+      "target_pos": 882,
+      "kmer": "lllwkl",
+      "query_kmer": "ILIWEI",
+      "target_kmer": "ILLWEI"
+    },
+    {
+      "query_pos": 2168,
+      "target_pos": 680,
+      "kmer": "dllnyl",
+      "query_kmer": "DVLNYV",
+      "target_kmer": "DLVNYL"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 2141,
+      "query_end": 2154,
+      "target_start": 875,
+      "target_end": 888,
+      "length": 13
+    },
+    {
+      "query_start": 2122,
+      "query_end": 2133,
+      "target_start": 856,
+      "target_end": 867,
+      "length": 11
+    },
+    {
+      "query_start": 1949,
+      "query_end": 1959,
+      "target_start": 597,
+      "target_end": 607,
+      "length": 10
+    },
+    {
+      "query_start": 2075,
+      "query_end": 2084,
+      "target_start": 814,
+      "target_end": 823,
+      "length": 9
+    },
+    {
+      "query_start": 2101,
+      "query_end": 2109,
+      "target_start": 835,
+      "target_end": 843,
+      "length": 8
+    },
+    {
+      "query_start": 23,
+      "query_end": 30,
+      "target_start": 19,
+      "target_end": 26,
+      "length": 7
+    },
+    {
+      "query_start": 666,
+      "query_end": 673,
+      "target_start": 409,
+      "target_end": 416,
+      "length": 7
+    },
+    {
+      "query_start": 1027,
+      "query_end": 1034,
+      "target_start": 154,
+      "target_end": 161,
+      "length": 7
+    },
+    {
+      "query_start": 2050,
+      "query_end": 2057,
+      "target_start": 789,
+      "target_end": 796,
+      "length": 7
+    },
+    {
+      "query_start": 2051,
+      "query_end": 2058,
+      "target_start": 415,
+      "target_end": 422,
+      "length": 7
+    },
+    {
+      "query_start": 445,
+      "query_end": 451,
+      "target_start": 624,
+      "target_end": 630,
+      "length": 6
+    },
+    {
+      "query_start": 459,
+      "query_end": 465,
+      "target_start": 628,
+      "target_end": 634,
+      "length": 6
+    },
+    {
+      "query_start": 911,
+      "query_end": 917,
+      "target_start": 155,
+      "target_end": 161,
+      "length": 6
+    },
+    {
+      "query_start": 990,
+      "query_end": 996,
+      "target_start": 806,
+      "target_end": 812,
+      "length": 6
+    },
+    {
+      "query_start": 1380,
+      "query_end": 1386,
+      "target_start": 226,
+      "target_end": 232,
+      "length": 6
+    },
+    {
+      "query_start": 1759,
+      "query_end": 1765,
+      "target_start": 605,
+      "target_end": 611,
+      "length": 6
+    },
+    {
+      "query_start": 1862,
+      "query_end": 1868,
+      "target_start": 538,
+      "target_end": 544,
+      "length": 6
+    },
+    {
+      "query_start": 1869,
+      "query_end": 1875,
+      "target_start": 6,
+      "target_end": 12,
+      "length": 6
+    },
+    {
+      "query_start": 1893,
+      "query_end": 1899,
+      "target_start": 255,
+      "target_end": 261,
+      "length": 6
+    },
+    {
+      "query_start": 1893,
+      "query_end": 1899,
+      "target_start": 787,
+      "target_end": 793,
+      "length": 6
+    },
+    {
+      "query_start": 1974,
+      "query_end": 1980,
+      "target_start": 621,
+      "target_end": 627,
+      "length": 6
+    },
+    {
+      "query_start": 2168,
+      "query_end": 2174,
+      "target_start": 680,
+      "target_end": 686,
+      "length": 6
+    }
+  ]
+}

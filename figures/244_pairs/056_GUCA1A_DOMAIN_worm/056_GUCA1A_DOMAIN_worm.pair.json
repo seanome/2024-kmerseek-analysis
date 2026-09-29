@@ -1,0 +1,64 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill_no_c2",
+  "classes": {
+    "h": "AFILMVWY",
+    "p": "CDEGHKNPQRST"
+  },
+  "query": {
+    "name": "P43080 species=human Guanylyl cyclase-activating protein 1",
+    "sequence": "MGNVMEGKSVEELSSTECHQWYKKFMTECPSGQLTLYEFRQFFGLKNLSPSASQYVEQMFETFDFNKDGYIDFMEYVAALSLVLKGKVEQKLRWYFKLYDVDGNGCIDRDELLTIIQAIRAINPCSDTTMTAEEFTDTVFSKIDVNGDGELSLEEFIEGVQKDQMLLDTLTRSLDLTRIVRRLQNGEQDEEGADEAAEAAG",
+    "encoded": "hpphhpppphpphppppppphhpphhppppppphphhphpphhphpphppphpphhpphhpphphpppphhphhphhhhhphhhppphppphphhhphhphppppphpppphhphhphhphhppppppphphpphppphhpphphppppphphpphhpphpppphhhpphppphphpphhpphppppppppphpphhphhp"
+  },
+  "target": {
+    "name": "G5EBX9 species=worm Serine/threonine-protein phosphatase with EF-hands pef-1",
+    "sequence": "MGCGPSSGRQNPSTELKKSTRATTTTTSSSQRNNYNDNNQNTSSSSGNKKESSSSSKQHSSKKSKKSNSKKNRSPSPQPQLTIKSAILIQKWYRRCEARLEARRRATWQIFTALEYAGEQDQLKLYDFFADVIRAMAEENGKGGVENGRNSPLMSALSHYAKPSLMDSEGETVKKMLEDTSPTNVDIDRNYKGPTLSLPLDKPQVAKMIEAFKVNKVLHPKYVLMILHEARKIFKAMPSVSRISTSISNQVTICGDLHGKFDDLCIILYKNGYPSVDNPYIFNGDFVDRGGQSIEVLCVLFALVIVDPMSIYLNRGNHEDHIMNLRYGFIKELSTKYKDLSTPITRLLEDVFSWLPIATIIDRDIFVVHGGISDQTEVSKLDKIPRHRFQSVLRPPVNKGMESEKENSAVNVDEWKQMLDIMWSDPKQNKGCWPNVFRGGGSYFGADITASFLEKHGFRLLVRSHECKFEGYEFSHNNTCLTVFSASNYYETGSNRGAYVKFIGKSKQPHFVQYMASKTHRKSTLRERLGVVEESAVKELKEKLSSFHTDLQKEFEIMDIEKSGKLPILKWSDCVERITGLNLPWIALAPKVATLSEDGKYVMYKEDRRIAQVGGTHAQEKDIVESLYRHKSTLETLFRFMDKDNSGQVSMKEFIDACEVLGKYTKRPLQTDYISQIAESIDFNKDGFIDLNELLEAFRLVDRPLLR",
+    "encoded": "hpppppppppppppphppppphpppppppppppphppppppppppppppppppppppppppppppppppppppppppppphphpphhhhpphhpppphphphppphphphhphhphhppppphphhphhhphhphhhppppppphppppppphhphhpphhppphhpppppphpphhppppppphphppphpppphphphpppphhphhphhphpphhppphhhhhhpphpphhphhpphpphppphppphphppphppphpphphhhhppphpphppphhhppphhpppppphphhphhhhhhhhpphphhhpppppppphhphphphhpphppphpphppphpphhpphhphhphhphhppphhhhppphppppphpphpphpppphpphhppphppphppppppphhphpphpphhphhhppppppppphpphhppppphhphphphphhpppphphhhpppppphpphphpppppphphhphpphhppppppphhhphhppppppphhphhhpppppppphppphphhppphhpphppphpphppphppphphhphppppphphhphppphpphpphphphhhhhpphhphppppphhhhppppphhphpppphpppphhpphhppppphpphhphhppppppphphpphhphpphhpphpppphppphhpphhpphphpppphhphpphhphhphhppphhp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 52,
+      "target_pos": 670,
+      "kmer": "pphhpphhpphphpppphh",
+      "query_kmer": "SQYVEQMFETFDFNKDGYI",
+      "target_kmer": "TDYISQIAESIDFNKDGFI"
+    },
+    {
+      "query_pos": 53,
+      "target_pos": 671,
+      "kmer": "phhpphhpphphpppphhp",
+      "query_kmer": "QYVEQMFETFDFNKDGYID",
+      "target_kmer": "DYISQIAESIDFNKDGFID"
+    },
+    {
+      "query_pos": 54,
+      "target_pos": 672,
+      "kmer": "hhpphhpphphpppphhph",
+      "query_kmer": "YVEQMFETFDFNKDGYIDF",
+      "target_kmer": "YISQIAESIDFNKDGFIDL"
+    },
+    {
+      "query_pos": 116,
+      "target_pos": 635,
+      "kmer": "phhphhppppppphphpph",
+      "query_kmer": "QAIRAINPCSDTTMTAEEF",
+      "target_kmer": "TLFRFMDKDNSGQVSMKEF"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 52,
+      "query_end": 73,
+      "target_start": 670,
+      "target_end": 691,
+      "length": 21
+    },
+    {
+      "query_start": 116,
+      "query_end": 135,
+      "target_start": 635,
+      "target_end": 654,
+      "length": 19
+    }
+  ]
+}

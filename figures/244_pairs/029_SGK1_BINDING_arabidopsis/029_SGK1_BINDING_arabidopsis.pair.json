@@ -1,0 +1,67 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "O00141 species=human Serine/threonine-protein kinase Sgk1",
+    "sequence": "MTVKTEAAKGTLTYSRMRGMVAILIAFMKQRRMGLNDFIQKIANNSYACKHPEVQSILKISQPQEPELMNANPSPPPSPSQQINLGPSSNPHAKPSDFHFLKVIGKGSFGKVLLARHKAEEVFYAVKVLQKKAILKKKEEKHIMSERNVLLKNVKHPFLVGLHFSFQTADKLYFVLDYINGGELFYHLQRERCFLEPRARFYAAEIASALGYLHSLNIVYRDLKPENILLDSQGHIVLTDFGLCKENIEHNSTTSTFCGTPEYLAPEVLHKQPYDRTVDWWCLGAVLYEMLYGLPPFYSRNTAEMYDNILNKPLQLKPNITNSARHLLEGLLQKDRTKRLGAKDDFMEIKSHVFFSLINWDDLINKKITPPFNPNVSGPNDLRHFDPEFTEEPVPNSIGKSPDSVLVTASVKEAAEAFLGFSYAPPTDSFL",
+    "encoded": "ltlktkaakgtltytklkgllalllaylktkklglndyltklanntyackhpklttllklttptkpkllnanptppptptttlnlgpttnphakptdyhylkllgkgtygklllakhkakklyyalklltkkallkkkkkkhlltkknlllknlkhpyllglhytyttadklyylldylnggklyyhltkkkcylkpkakyyaaklatalgylhtlnllykdlkpknllldttghllltdyglckknlkhntttttycgtpkylapkllhktpydktldwwclgallykllyglppyytkntaklydnllnkpltlkpnltntakhllkglltkdktkklgakddylklkthlyytllnwddllnkkltppynpnltgpndlkhydpkytkkplpntlgktpdtllltatlkkaakaylgytyapptdtyl"
+  },
+  "target": {
+    "name": "P25859 species=arabidopsis Cyclin-dependent kinase B1-1",
+    "sequence": "MEKYEKLEKVGEGTYGKVYKAMEKGTGKLVALKKTRLEMDEEGIPPTALREISLLQMLSTSIYVVRLLCVEHVHQPSTKSQSTKSNLYLVFEYLDTDLKKFIDSYRKGPNPKPLEPFLIQKLMFQLCKGVAHCHSHGVLHRDLKPQNLLLVKDKELLKIADLGLGRAFTVPLKSYTHEIVTLWYRAPEVLLGSTHYSTGVDMWSVGCIFAEMVRRQALFPGDSEFQQLLHIFRLLGTPTEQQWPGVSTLRDWHVYPKWEPQDLTLAVPSLSPQGVDLLTKMLKYNPAERISAKTALDHPYFDSLDKSQF",
+    "encoded": "lkkykklkklgkgtygklykalkkgtgkllalkktklkldkkglpptalkkltlltlltttlyllkllclkhlhtpttkttttktnlyllykyldtdlkkyldtykkgpnpkplkpylltkllytlckglahchthgllhkdlkptnllllkdkkllkladlglgkaytlplktythklltlwykapklllgtthyttgldlwtlgclyakllkktalypgdtkyttllhlykllgtptkttwpglttlkdwhlypkwkptdltlalptltptgldlltkllkynpakkltaktaldhpyydtldktty"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 103,
+      "target_pos": 9,
+      "kmer": "lgkgty",
+      "query_kmer": "IGKGSF",
+      "target_kmer": "VGEGTY"
+    },
+    {
+      "query_pos": 104,
+      "target_pos": 10,
+      "kmer": "gkgtyg",
+      "query_kmer": "GKGSFG",
+      "target_kmer": "GEGTYG"
+    },
+    {
+      "query_pos": 105,
+      "target_pos": 11,
+      "kmer": "kgtygk",
+      "query_kmer": "KGSFGK",
+      "target_kmer": "EGTYGK"
+    },
+    {
+      "query_pos": 106,
+      "target_pos": 12,
+      "kmer": "gtygkl",
+      "query_kmer": "GSFGKV",
+      "target_kmer": "GTYGKV"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 103,
+      "query_end": 112,
+      "target_start": 9,
+      "target_end": 18,
+      "length": 9
+    }
+  ]
+}

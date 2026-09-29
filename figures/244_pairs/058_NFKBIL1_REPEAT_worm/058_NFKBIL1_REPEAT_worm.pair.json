@@ -1,0 +1,120 @@
+{
+  "ksize": 19,
+  "moltype": "hp_kyte_doolittle2",
+  "classes": {
+    "h": "ACFILMV",
+    "p": "DEGHKNPQRSTWY"
+  },
+  "query": {
+    "name": "Q9UBC1 species=human NF-kappa-B inhibitor-like protein 1",
+    "sequence": "MSNPSPQVPEEEASTSVCRPKSSMASTSRRQRRERRFRRYLSAGRLVRAQALLQRHPGLDVDAGQPPPLHRACARHDAPALCLLLRLGADPAHQDRHGDTALHAAARQGPDAYTDFFLPLLSRCPSAMGIKNKDGETPGQILGWGPPWDSAEEEEEDDASKEREWRQKLQGELEDEWQEVMGRFEGDASHETQEPESFSAWSDRLAREHAQKCQQQQREAEGSCRPPRAEGSSQSWRQQEEEQRLFRERARAKEEELRESRARRAQEALGDREPKPTRAGPREEHPRGAGRGSLWRFGDVPWPCPGGGDPEAMAAALVARGPPLEEQGALRRYLRVQQVRWHPDRFLQRFRSQIETWELGRVMGAVTALSQALNRHAEALK",
+    "encoded": "hpppppphpppphppphhppppphhppppppppppphppphphpphhphphhhppppphphphppppphpphhhppphphhhhhhphphpphpppppppphhphhhppppphppphhhphhpphpphhphpppppppppphhpppppppphppppppphppppppppphppphpppppphhpphppphppppppppphphpppphhppphpphpppppphppphpppphppppppppppppppphhppphphpppphpppphpphpphhppppppppphppppppppphpppphpphpphppphppppppphhhhhhhhpppphpppphhppphphpphpppppphhpphppphpppphpphhphhphhpphhppphphhp"
+  },
+  "target": {
+    "name": "Q18297 species=worm Transient receptor potential cation channel subfamily A member 1 homolog",
+    "sequence": "MSKKSLGLDVRLELEGLISNDDTIRSEKDGRQASIFRVAELDARTEADNLRSIIHQSAREGNVNALQEALLKAPLAVNAQDGDFMTPLHYAARYGNYDAVKLLLSKNALPNTKNREGDTPLHIASKYIYGYSDICSIIDEDQADSARKYNTATKKIINALVSENAEIDPVNKYQLTPLHYAAMKSNFSALHALIKLKADVDAEDDNKMTPLLLACVHGSQEIIQELIKANSNVTKRDQRLNTVFHIVALRGEPEYLEMMMDHDPVEAIKALNLFNNEKKTPLRMAVEGNHPETLKKILQMEKKNSCKWMDREKELIHFAAEKGFLEVLKALVEAGGNKNELNEVKAVPLHVAAQMNQLEVVSYLIEEEKDNIDVVDEQGLTPLMMAVTHDSKKCVEYLIAKKANLTITDKDERTPVFIGAKFNALSSVEYILDHLRKKNKETERSALKSPTRNTLRIVSEDVRRTMVNMVDRDQNTPMHIVASNGYLEMMQLLQKHGASITQVNEDEETALHRAAIGGQTGAVRQLLEWDIRLLLMKDEMGNSALHLAARSGHDATTKVLLDNGADKEAKNSYQKTPLQVAVDSGKLETCQRLVAKGAQIESSSDTKTVLHTAAFYGNESIVRYFIAEGVTIDRRDEEGKTAFDIACENDHKDVARAFLETDQWKNLMIPCDVIPLDKHRNPVNMKRRTPFRTLLTKFPELASFVMDNCIEKSKEETDSTQSVAYNFEFLDDTYMMRCVSDDGTGEQLIGCKSAYDEDFKLEKDAQSYASNYDRVYKYHPLKLMADAEKLHLLNHPLSKALLKYKWNRLGRPMYYFALFMYLVFIVSLTQYVRHTKAPYNVWNEESYYDSEYFDENETCPQINTTKPDVVWKIIIQTLAVCQILVECFQLFQRKFAYLVNWENWIDCFIYSTALITVYDFSECSATSGVRQNWQWILAALCIFFGWINLLFMIRKMPRFGIFVVMFVDIVKTFFRFFPVFVLFIIAFSSSFYVILQNRPEFSTIFMSPLKTTVMMIGEFEFTGIFHGDETTHAEKMFGPAHTAVACALFFFFCIIMTILLMNLLVGLAVDDIKGVQEKAELKRLAMQVDLVLQIEASLHFFIQRTKKYATCRYATFPYGKLHKTGFAGWWSNFRRRFGLSVSTDPEIDEMYEREAEFTSEMTQKLQNQAAKLKNIQENIDVMYEKQVRLEAIIAKLATGLNINIELEEKDN",
+    "encoded": "hpppphphphphphpphhppppphpppppppphphhphhphphppphpphpphhppphpppphphhpphhhphphhhphpppphhpphpphhpppppphhphhhppphhppppppppppphphhppphppppphhphhpppphpphppppphppphhphhhppphphpphpppphpphpphhhppphphhphhhphphphphppppphpphhhhhhppppphhpphhphppphpppppphpphhphhhhpppppphphhhpppphphhphhphhppppppphphhhppppppphpphhphppppphpphppppphhphhhppphhphhphhhphpppppphpphphhphphhhphpphphhpphhpppppphphhpppphpphhhhhpppppphhpphhhpphphphpppppppphhhphphphhpphpphhpphpppppppppphhppppppphphhppphppphhphhppppppphphhhpppphphhphhpppphphpphpppppphhpphhhppppphhpphhppphphhhhppphppphhphhhppppphppphhhppphppphpppppppphphhhpppphpphpphhhpphphpppppppphhpphhhppppphhpphhhpphphppppppppphhphhhpppppphhphhhppppppphhhphphhphpppppphphppppphpphhpphpphhphhhpphhpppppppppppphhpphphhpppphhphhpppppppphhphpphpppphphppphppphppppphppppphphhhphpphphhppphpphhhpppppphppphpphhhhhphhhhhphppphpppphppphppppppppppphppppphpphpppppphhpphhhpphhhhphhhphhphhppphhphhppppphphhhppphhhphpphpphphppphpppppphhhhhhhhhpphphhhhhpphpphphhhhhhhphhpphhphhphhhhhhhhhppphphhhppppphpphhhpphppphhhhpphphpphhppppppphpphhpphpphhhhhhhhhhhhhhphhhhphhhphhhpphpphppphphpphhhphphhhphphphphhhpppppphphpphphpppphpppphhppppphppphphphppppphpphpppphphppphppphppphhphpphppphphhpppphphphhhhphhpphphphphppppp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 92,
+      "target_pos": 633,
+      "kmer": "pppppppphhphhhppppp",
+      "query_kmer": "HQDRHGDTALHAAARQGPD",
+      "target_kmer": "RRDEEGKTAFDIACENDHK"
+    },
+    {
+      "query_pos": 97,
+      "target_pos": 540,
+      "kmer": "ppphhphhhppppphppph",
+      "query_kmer": "GDTALHAAARQGPDAYTDF",
+      "target_kmer": "GNSALHLAARSGHDATTKV"
+    },
+    {
+      "query_pos": 98,
+      "target_pos": 541,
+      "kmer": "pphhphhhppppphppphh",
+      "query_kmer": "DTALHAAARQGPDAYTDFF",
+      "target_kmer": "NSALHLAARSGHDATTKVL"
+    },
+    {
+      "query_pos": 99,
+      "target_pos": 542,
+      "kmer": "phhphhhppppphppphhh",
+      "query_kmer": "TALHAAARQGPDAYTDFFL",
+      "target_kmer": "SALHLAARSGHDATTKVLL"
+    },
+    {
+      "query_pos": 100,
+      "target_pos": 543,
+      "kmer": "hhphhhppppphppphhhp",
+      "query_kmer": "ALHAAARQGPDAYTDFFLP",
+      "target_kmer": "ALHLAARSGHDATTKVLLD"
+    },
+    {
+      "query_pos": 128,
+      "target_pos": 433,
+      "kmer": "phpppppppppphhppppp",
+      "query_kmer": "GIKNKDGETPGQILGWGPP",
+      "target_kmer": "HLRKKNKETERSALKSPTR"
+    },
+    {
+      "query_pos": 129,
+      "target_pos": 434,
+      "kmer": "hpppppppppphhpppppp",
+      "query_kmer": "IKNKDGETPGQILGWGPPW",
+      "target_kmer": "LRKKNKETERSALKSPTRN"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 435,
+      "kmer": "pppppppppphhppppppp",
+      "query_kmer": "KNKDGETPGQILGWGPPWD",
+      "target_kmer": "RKKNKETERSALKSPTRNT"
+    },
+    {
+      "query_pos": 330,
+      "target_pos": 494,
+      "kmer": "ppphphpphpppppphhpp",
+      "query_kmer": "RRYLRVQQVRWHPDRFLQR",
+      "target_kmer": "KHGASITQVNEDEETALHR"
+    },
+    {
+      "query_pos": 331,
+      "target_pos": 495,
+      "kmer": "pphphpphpppppphhpph",
+      "query_kmer": "RYLRVQQVRWHPDRFLQRF",
+      "target_kmer": "HGASITQVNEDEETALHRA"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 97,
+      "query_end": 119,
+      "target_start": 540,
+      "target_end": 562,
+      "length": 22
+    },
+    {
+      "query_start": 128,
+      "query_end": 149,
+      "target_start": 433,
+      "target_end": 454,
+      "length": 21
+    },
+    {
+      "query_start": 330,
+      "query_end": 350,
+      "target_start": 494,
+      "target_end": 514,
+      "length": 20
+    },
+    {
+      "query_start": 92,
+      "query_end": 111,
+      "target_start": 633,
+      "target_end": 652,
+      "length": 19
+    }
+  ]
+}

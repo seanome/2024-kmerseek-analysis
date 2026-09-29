@@ -1,0 +1,1359 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill_no_c2",
+  "classes": {
+    "h": "AFILMVWY",
+    "p": "CDEGHKNPQRST"
+  },
+  "query": {
+    "name": "Q9UJN7 species=human Zinc finger protein 391",
+    "sequence": "MESLRGNTAQGPTNEEDYKNEGQLSRQTKCPAQKKSSFENTVVRKVSVTLKEIFTGEEGPESSEFSLSPNLDAQQKIPKGHGSPISRKNSKDNSDLIKHQRLFSQRKPCKCNECEKAFSYQSDLLVHSRIHGGEKPFECNKCGKSFSRSTHLIEHQRTHTGEKPYECNECGKAFSRSTHLSLHQRIHTGEKPYECSECGKAFSRSTNLSQHQRTHTQERPYKCNECGKAFGDRSTIIQHQRIHTGENPYECSKCGKAFSWISSLTEHQRTHTGENPYECSECGKVFSRSSSLTEHQRIHSGEKPHECRVCGKGFSRSSSLIIHQRTHTGEKPYKCNDCGKAFCQSSTLIRHQHLHTKE",
+    "encoded": "hpphpppphpppppppphppppphppppppphppppphppphhpphphphpphhpppppppppphphppphphppphppppppphpppppppppphhpppphhppppppppppppphhphppphhhppphpppppphpppppppphppppphhppppppppppphppppppphhppppphphppphpppppphppppppphhppppphpppppppppppphppppppphhppppphhpppphpppppphppppppphhphhpphpppppppppppphppppppphhppppphppppphpppppppppphpppphppppphhhpppppppppphppppppphhppppphhpppphpppp"
+  },
+  "target": {
+    "name": "Q07230 species=mouse Zinc finger and SCAN domain-containing protein 2",
+    "sequence": "MAAEVPAVSTPLSPLVQVPQEEDEQAEVTTMILEDDAWVQEAVLQEDGPESEPFPQSAGKGSPQEEDAAEGPQGALVRFRELCRRWLRPEVHTKEQMLTVLPREIQAWLQEHRPESSEEAVALVEDLTQTFRHSDFEIQSENGENSNEDMFEGVESHGMFLNISGGEGGQQSDGDSDFERDCGSGGAQGHAPGEDPRVVPSEGREVGQLIGLQGTYLGEKPYECPQCGKTFSRKSHLITHERTHTGEKYYKCDECGKSFSDGSNFSRHQTTHTGEKPYKCRDCGKSFSRSANLITHQRIHTGEKPFQCAECGKSFSRSPNLIAHQRTHTGEKPYSCPECGKSFGNRSSLNTHQGIHTGEKPYACKECGESFSYNSNLIRHQRIHTGEKPYKCTECGQKFSQSSALITHRRTHTGEKPYQCGECGKNFSRSSNLATHRRTHLVEKPYKCGLCGKSFSQSSSLIAHQGTHTGEKPYECLTCGESFSWSSNLIKHQRTHTGEKPYRCGDCGKGFSQRSQLVVHQRTHTGEKPYKCLMCGKSFSRGSILVMHQRAHLGDKPYRCPECGKGFSWNSVLIIHQRIHTGEKPYRCPECGKGFSNSSNFITHQRTHLKEKLY",
+    "encoded": "hhhphphhppphpphhphppppppphphpphhhppphhhpphhhppppppppphppphppppppppphhppppphhhphpphppphhppphppppphhphhppphphhhpppppppppphhhhhpphppphpppphphppppppppppphhpphpppphhhphpppppppppppppphpppppppphppphpppppphhpppppphpphhphppphhpppphpppppppphppppphhpppppppppphhpppppppphppppphpppppppppppphpppppppphppphphhpppphpppppphpphppppphppppphhhpppppppppphpppppppphppppphppppphpppppphhppppppphphppphhpppphpppppphpppppppphpppphhhppppppppppphpppppppphppppphhpppppphhppphppphpppphppppphhhpppppppppphpphppppphphppphhppppppppppphpppppppphppppphhhpppppppppphpphhpppphpppphhhhppphphpppphpppppppphphpphhhhppphpppppphpppppppphppppphhpppppphppphh"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 3,
+      "target_pos": 216,
+      "kmer": "hpppphpppppppphpppp",
+      "query_kmer": "LRGNTAQGPTNEEDYKNEG",
+      "target_kmer": "LGEKPYECPQCGKTFSRKS"
+    },
+    {
+      "query_pos": 4,
+      "target_pos": 217,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "RGNTAQGPTNEEDYKNEGQ",
+      "target_kmer": "GEKPYECPQCGKTFSRKSH"
+    },
+    {
+      "query_pos": 4,
+      "target_pos": 329,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "RGNTAQGPTNEEDYKNEGQ",
+      "target_kmer": "GEKPYSCPECGKSFGNRSS"
+    },
+    {
+      "query_pos": 4,
+      "target_pos": 413,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "RGNTAQGPTNEEDYKNEGQ",
+      "target_kmer": "GEKPYQCGECGKNFSRSSN"
+    },
+    {
+      "query_pos": 4,
+      "target_pos": 497,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "RGNTAQGPTNEEDYKNEGQ",
+      "target_kmer": "GEKPYRCGDCGKGFSQRSQ"
+    },
+    {
+      "query_pos": 4,
+      "target_pos": 581,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "RGNTAQGPTNEEDYKNEGQ",
+      "target_kmer": "GEKPYRCPECGKGFSNSSN"
+    },
+    {
+      "query_pos": 5,
+      "target_pos": 218,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "GNTAQGPTNEEDYKNEGQL",
+      "target_kmer": "EKPYECPQCGKTFSRKSHL"
+    },
+    {
+      "query_pos": 5,
+      "target_pos": 330,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "GNTAQGPTNEEDYKNEGQL",
+      "target_kmer": "EKPYSCPECGKSFGNRSSL"
+    },
+    {
+      "query_pos": 5,
+      "target_pos": 414,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "GNTAQGPTNEEDYKNEGQL",
+      "target_kmer": "EKPYQCGECGKNFSRSSNL"
+    },
+    {
+      "query_pos": 5,
+      "target_pos": 498,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "GNTAQGPTNEEDYKNEGQL",
+      "target_kmer": "EKPYRCGDCGKGFSQRSQL"
+    },
+    {
+      "query_pos": 5,
+      "target_pos": 582,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "GNTAQGPTNEEDYKNEGQL",
+      "target_kmer": "EKPYRCPECGKGFSNSSNF"
+    },
+    {
+      "query_pos": 6,
+      "target_pos": 331,
+      "kmer": "pphpppppppphppppphp",
+      "query_kmer": "NTAQGPTNEEDYKNEGQLS",
+      "target_kmer": "KPYSCPECGKSFGNRSSLN"
+    },
+    {
+      "query_pos": 7,
+      "target_pos": 332,
+      "kmer": "phpppppppphppppphpp",
+      "query_kmer": "TAQGPTNEEDYKNEGQLSR",
+      "target_kmer": "PYSCPECGKSFGNRSSLNT"
+    },
+    {
+      "query_pos": 8,
+      "target_pos": 249,
+      "kmer": "hpppppppphppppphppp",
+      "query_kmer": "AQGPTNEEDYKNEGQLSRQ",
+      "target_kmer": "YKCDECGKSFSDGSNFSRH"
+    },
+    {
+      "query_pos": 8,
+      "target_pos": 333,
+      "kmer": "hpppppppphppppphppp",
+      "query_kmer": "AQGPTNEEDYKNEGQLSRQ",
+      "target_kmer": "YSCPECGKSFGNRSSLNTH"
+    },
+    {
+      "query_pos": 9,
+      "target_pos": 250,
+      "kmer": "pppppppphppppphpppp",
+      "query_kmer": "QGPTNEEDYKNEGQLSRQT",
+      "target_kmer": "KCDECGKSFSDGSNFSRHQ"
+    },
+    {
+      "query_pos": 9,
+      "target_pos": 334,
+      "kmer": "pppppppphppppphpppp",
+      "query_kmer": "QGPTNEEDYKNEGQLSRQT",
+      "target_kmer": "SCPECGKSFGNRSSLNTHQ"
+    },
+    {
+      "query_pos": 10,
+      "target_pos": 251,
+      "kmer": "ppppppphppppphppppp",
+      "query_kmer": "GPTNEEDYKNEGQLSRQTK",
+      "target_kmer": "CDECGKSFSDGSNFSRHQT"
+    },
+    {
+      "query_pos": 10,
+      "target_pos": 335,
+      "kmer": "ppppppphppppphppppp",
+      "query_kmer": "GPTNEEDYKNEGQLSRQTK",
+      "target_kmer": "CPECGKSFGNRSSLNTHQG"
+    },
+    {
+      "query_pos": 11,
+      "target_pos": 252,
+      "kmer": "pppppphppppphpppppp",
+      "query_kmer": "PTNEEDYKNEGQLSRQTKC",
+      "target_kmer": "DECGKSFSDGSNFSRHQTT"
+    },
+    {
+      "query_pos": 12,
+      "target_pos": 253,
+      "kmer": "ppppphppppphppppppp",
+      "query_kmer": "TNEEDYKNEGQLSRQTKCP",
+      "target_kmer": "ECGKSFSDGSNFSRHQTTH"
+    },
+    {
+      "query_pos": 123,
+      "target_pos": 572,
+      "kmer": "hhhppphpppppphppppp",
+      "query_kmer": "LLVHSRIHGGEKPFECNKC",
+      "target_kmer": "LIIHQRIHTGEKPYRCPEC"
+    },
+    {
+      "query_pos": 124,
+      "target_pos": 573,
+      "kmer": "hhppphpppppphpppppp",
+      "query_kmer": "LVHSRIHGGEKPFECNKCG",
+      "target_kmer": "IIHQRIHTGEKPYRCPECG"
+    },
+    {
+      "query_pos": 125,
+      "target_pos": 574,
+      "kmer": "hppphpppppphppppppp",
+      "query_kmer": "VHSRIHGGEKPFECNKCGK",
+      "target_kmer": "IHQRIHTGEKPYRCPECGK"
+    },
+    {
+      "query_pos": 126,
+      "target_pos": 379,
+      "kmer": "ppphpppppphpppppppp",
+      "query_kmer": "HSRIHGGEKPFECNKCGKS",
+      "target_kmer": "HQRIHTGEKPYKCTECGQK"
+    },
+    {
+      "query_pos": 126,
+      "target_pos": 575,
+      "kmer": "ppphpppppphpppppppp",
+      "query_kmer": "HSRIHGGEKPFECNKCGKS",
+      "target_kmer": "HQRIHTGEKPYRCPECGKG"
+    },
+    {
+      "query_pos": 127,
+      "target_pos": 380,
+      "kmer": "pphpppppphpppppppph",
+      "query_kmer": "SRIHGGEKPFECNKCGKSF",
+      "target_kmer": "QRIHTGEKPYKCTECGQKF"
+    },
+    {
+      "query_pos": 127,
+      "target_pos": 576,
+      "kmer": "pphpppppphpppppppph",
+      "query_kmer": "SRIHGGEKPFECNKCGKSF",
+      "target_kmer": "QRIHTGEKPYRCPECGKGF"
+    },
+    {
+      "query_pos": 128,
+      "target_pos": 381,
+      "kmer": "phpppppphpppppppphp",
+      "query_kmer": "RIHGGEKPFECNKCGKSFS",
+      "target_kmer": "RIHTGEKPYKCTECGQKFS"
+    },
+    {
+      "query_pos": 128,
+      "target_pos": 577,
+      "kmer": "phpppppphpppppppphp",
+      "query_kmer": "RIHGGEKPFECNKCGKSFS",
+      "target_kmer": "RIHTGEKPYRCPECGKGFS"
+    },
+    {
+      "query_pos": 129,
+      "target_pos": 382,
+      "kmer": "hpppppphpppppppphpp",
+      "query_kmer": "IHGGEKPFECNKCGKSFSR",
+      "target_kmer": "IHTGEKPYKCTECGQKFSQ"
+    },
+    {
+      "query_pos": 129,
+      "target_pos": 578,
+      "kmer": "hpppppphpppppppphpp",
+      "query_kmer": "IHGGEKPFECNKCGKSFSR",
+      "target_kmer": "IHTGEKPYRCPECGKGFSN"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 171,
+      "kmer": "pppppphpppppppphppp",
+      "query_kmer": "HGGEKPFECNKCGKSFSRS",
+      "target_kmer": "SDGDSDFERDCGSGGAQGH"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 271,
+      "kmer": "pppppphpppppppphppp",
+      "query_kmer": "HGGEKPFECNKCGKSFSRS",
+      "target_kmer": "HTGEKPYKCRDCGKSFSRS"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 327,
+      "kmer": "pppppphpppppppphppp",
+      "query_kmer": "HGGEKPFECNKCGKSFSRS",
+      "target_kmer": "HTGEKPYSCPECGKSFGNR"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 383,
+      "kmer": "pppppphpppppppphppp",
+      "query_kmer": "HGGEKPFECNKCGKSFSRS",
+      "target_kmer": "HTGEKPYKCTECGQKFSQS"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 411,
+      "kmer": "pppppphpppppppphppp",
+      "query_kmer": "HGGEKPFECNKCGKSFSRS",
+      "target_kmer": "HTGEKPYQCGECGKNFSRS"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 495,
+      "kmer": "pppppphpppppppphppp",
+      "query_kmer": "HGGEKPFECNKCGKSFSRS",
+      "target_kmer": "HTGEKPYRCGDCGKGFSQR"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 579,
+      "kmer": "pppppphpppppppphppp",
+      "query_kmer": "HGGEKPFECNKCGKSFSRS",
+      "target_kmer": "HTGEKPYRCPECGKGFSNS"
+    },
+    {
+      "query_pos": 131,
+      "target_pos": 328,
+      "kmer": "ppppphpppppppphpppp",
+      "query_kmer": "GGEKPFECNKCGKSFSRST",
+      "target_kmer": "TGEKPYSCPECGKSFGNRS"
+    },
+    {
+      "query_pos": 131,
+      "target_pos": 384,
+      "kmer": "ppppphpppppppphpppp",
+      "query_kmer": "GGEKPFECNKCGKSFSRST",
+      "target_kmer": "TGEKPYKCTECGQKFSQSS"
+    },
+    {
+      "query_pos": 131,
+      "target_pos": 412,
+      "kmer": "ppppphpppppppphpppp",
+      "query_kmer": "GGEKPFECNKCGKSFSRST",
+      "target_kmer": "TGEKPYQCGECGKNFSRSS"
+    },
+    {
+      "query_pos": 131,
+      "target_pos": 496,
+      "kmer": "ppppphpppppppphpppp",
+      "query_kmer": "GGEKPFECNKCGKSFSRST",
+      "target_kmer": "TGEKPYRCGDCGKGFSQRS"
+    },
+    {
+      "query_pos": 131,
+      "target_pos": 580,
+      "kmer": "ppppphpppppppphpppp",
+      "query_kmer": "GGEKPFECNKCGKSFSRST",
+      "target_kmer": "TGEKPYRCPECGKGFSNSS"
+    },
+    {
+      "query_pos": 132,
+      "target_pos": 217,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "GEKPFECNKCGKSFSRSTH",
+      "target_kmer": "GEKPYECPQCGKTFSRKSH"
+    },
+    {
+      "query_pos": 132,
+      "target_pos": 329,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "GEKPFECNKCGKSFSRSTH",
+      "target_kmer": "GEKPYSCPECGKSFGNRSS"
+    },
+    {
+      "query_pos": 132,
+      "target_pos": 413,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "GEKPFECNKCGKSFSRSTH",
+      "target_kmer": "GEKPYQCGECGKNFSRSSN"
+    },
+    {
+      "query_pos": 132,
+      "target_pos": 497,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "GEKPFECNKCGKSFSRSTH",
+      "target_kmer": "GEKPYRCGDCGKGFSQRSQ"
+    },
+    {
+      "query_pos": 132,
+      "target_pos": 581,
+      "kmer": "pppphpppppppphppppp",
+      "query_kmer": "GEKPFECNKCGKSFSRSTH",
+      "target_kmer": "GEKPYRCPECGKGFSNSSN"
+    },
+    {
+      "query_pos": 133,
+      "target_pos": 218,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "EKPFECNKCGKSFSRSTHL",
+      "target_kmer": "EKPYECPQCGKTFSRKSHL"
+    },
+    {
+      "query_pos": 133,
+      "target_pos": 330,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "EKPFECNKCGKSFSRSTHL",
+      "target_kmer": "EKPYSCPECGKSFGNRSSL"
+    },
+    {
+      "query_pos": 133,
+      "target_pos": 414,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "EKPFECNKCGKSFSRSTHL",
+      "target_kmer": "EKPYQCGECGKNFSRSSNL"
+    },
+    {
+      "query_pos": 133,
+      "target_pos": 498,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "EKPFECNKCGKSFSRSTHL",
+      "target_kmer": "EKPYRCGDCGKGFSQRSQL"
+    },
+    {
+      "query_pos": 133,
+      "target_pos": 582,
+      "kmer": "ppphpppppppphppppph",
+      "query_kmer": "EKPFECNKCGKSFSRSTHL",
+      "target_kmer": "EKPYRCPECGKGFSNSSNF"
+    },
+    {
+      "query_pos": 134,
+      "target_pos": 219,
+      "kmer": "pphpppppppphppppphh",
+      "query_kmer": "KPFECNKCGKSFSRSTHLI",
+      "target_kmer": "KPYECPQCGKTFSRKSHLI"
+    },
+    {
+      "query_pos": 134,
+      "target_pos": 415,
+      "kmer": "pphpppppppphppppphh",
+      "query_kmer": "KPFECNKCGKSFSRSTHLI",
+      "target_kmer": "KPYQCGECGKNFSRSSNLA"
+    },
+    {
+      "query_pos": 134,
+      "target_pos": 499,
+      "kmer": "pphpppppppphppppphh",
+      "query_kmer": "KPFECNKCGKSFSRSTHLI",
+      "target_kmer": "KPYRCGDCGKGFSQRSQLV"
+    },
+    {
+      "query_pos": 134,
+      "target_pos": 583,
+      "kmer": "pphpppppppphppppphh",
+      "query_kmer": "KPFECNKCGKSFSRSTHLI",
+      "target_kmer": "KPYRCPECGKGFSNSSNFI"
+    },
+    {
+      "query_pos": 135,
+      "target_pos": 220,
+      "kmer": "phpppppppphppppphhp",
+      "query_kmer": "PFECNKCGKSFSRSTHLIE",
+      "target_kmer": "PYECPQCGKTFSRKSHLIT"
+    },
+    {
+      "query_pos": 135,
+      "target_pos": 416,
+      "kmer": "phpppppppphppppphhp",
+      "query_kmer": "PFECNKCGKSFSRSTHLIE",
+      "target_kmer": "PYQCGECGKNFSRSSNLAT"
+    },
+    {
+      "query_pos": 135,
+      "target_pos": 584,
+      "kmer": "phpppppppphppppphhp",
+      "query_kmer": "PFECNKCGKSFSRSTHLIE",
+      "target_kmer": "PYRCPECGKGFSNSSNFIT"
+    },
+    {
+      "query_pos": 136,
+      "target_pos": 221,
+      "kmer": "hpppppppphppppphhpp",
+      "query_kmer": "FECNKCGKSFSRSTHLIEH",
+      "target_kmer": "YECPQCGKTFSRKSHLITH"
+    },
+    {
+      "query_pos": 136,
+      "target_pos": 417,
+      "kmer": "hpppppppphppppphhpp",
+      "query_kmer": "FECNKCGKSFSRSTHLIEH",
+      "target_kmer": "YQCGECGKNFSRSSNLATH"
+    },
+    {
+      "query_pos": 136,
+      "target_pos": 585,
+      "kmer": "hpppppppphppppphhpp",
+      "query_kmer": "FECNKCGKSFSRSTHLIEH",
+      "target_kmer": "YRCPECGKGFSNSSNFITH"
+    },
+    {
+      "query_pos": 137,
+      "target_pos": 222,
+      "kmer": "pppppppphppppphhppp",
+      "query_kmer": "ECNKCGKSFSRSTHLIEHQ",
+      "target_kmer": "ECPQCGKTFSRKSHLITHE"
+    },
+    {
+      "query_pos": 137,
+      "target_pos": 418,
+      "kmer": "pppppppphppppphhppp",
+      "query_kmer": "ECNKCGKSFSRSTHLIEHQ",
+      "target_kmer": "QCGECGKNFSRSSNLATHR"
+    },
+    {
+      "query_pos": 137,
+      "target_pos": 586,
+      "kmer": "pppppppphppppphhppp",
+      "query_kmer": "ECNKCGKSFSRSTHLIEHQ",
+      "target_kmer": "RCPECGKGFSNSSNFITHQ"
+    },
+    {
+      "query_pos": 138,
+      "target_pos": 223,
+      "kmer": "ppppppphppppphhpppp",
+      "query_kmer": "CNKCGKSFSRSTHLIEHQR",
+      "target_kmer": "CPQCGKTFSRKSHLITHER"
+    },
+    {
+      "query_pos": 138,
+      "target_pos": 419,
+      "kmer": "ppppppphppppphhpppp",
+      "query_kmer": "CNKCGKSFSRSTHLIEHQR",
+      "target_kmer": "CGECGKNFSRSSNLATHRR"
+    },
+    {
+      "query_pos": 138,
+      "target_pos": 587,
+      "kmer": "ppppppphppppphhpppp",
+      "query_kmer": "CNKCGKSFSRSTHLIEHQR",
+      "target_kmer": "CPECGKGFSNSSNFITHQR"
+    },
+    {
+      "query_pos": 139,
+      "target_pos": 224,
+      "kmer": "pppppphppppphhppppp",
+      "query_kmer": "NKCGKSFSRSTHLIEHQRT",
+      "target_kmer": "PQCGKTFSRKSHLITHERT"
+    },
+    {
+      "query_pos": 139,
+      "target_pos": 420,
+      "kmer": "pppppphppppphhppppp",
+      "query_kmer": "NKCGKSFSRSTHLIEHQRT",
+      "target_kmer": "GECGKNFSRSSNLATHRRT"
+    },
+    {
+      "query_pos": 139,
+      "target_pos": 588,
+      "kmer": "pppppphppppphhppppp",
+      "query_kmer": "NKCGKSFSRSTHLIEHQRT",
+      "target_kmer": "PECGKGFSNSSNFITHQRT"
+    },
+    {
+      "query_pos": 140,
+      "target_pos": 225,
+      "kmer": "ppppphppppphhpppppp",
+      "query_kmer": "KCGKSFSRSTHLIEHQRTH",
+      "target_kmer": "QCGKTFSRKSHLITHERTH"
+    },
+    {
+      "query_pos": 140,
+      "target_pos": 421,
+      "kmer": "ppppphppppphhpppppp",
+      "query_kmer": "KCGKSFSRSTHLIEHQRTH",
+      "target_kmer": "ECGKNFSRSSNLATHRRTH"
+    },
+    {
+      "query_pos": 140,
+      "target_pos": 589,
+      "kmer": "ppppphppppphhpppppp",
+      "query_kmer": "KCGKSFSRSTHLIEHQRTH",
+      "target_kmer": "ECGKGFSNSSNFITHQRTH"
+    },
+    {
+      "query_pos": 141,
+      "target_pos": 226,
+      "kmer": "pppphppppphhppppppp",
+      "query_kmer": "CGKSFSRSTHLIEHQRTHT",
+      "target_kmer": "CGKTFSRKSHLITHERTHT"
+    },
+    {
+      "query_pos": 142,
+      "target_pos": 227,
+      "kmer": "ppphppppphhpppppppp",
+      "query_kmer": "GKSFSRSTHLIEHQRTHTG",
+      "target_kmer": "GKTFSRKSHLITHERTHTG"
+    },
+    {
+      "query_pos": 143,
+      "target_pos": 228,
+      "kmer": "pphppppphhppppppppp",
+      "query_kmer": "KSFSRSTHLIEHQRTHTGE",
+      "target_kmer": "KTFSRKSHLITHERTHTGE"
+    },
+    {
+      "query_pos": 144,
+      "target_pos": 229,
+      "kmer": "phppppphhpppppppppp",
+      "query_kmer": "SFSRSTHLIEHQRTHTGEK",
+      "target_kmer": "TFSRKSHLITHERTHTGEK"
+    },
+    {
+      "query_pos": 148,
+      "target_pos": 485,
+      "kmer": "ppphhppppppppppphpp",
+      "query_kmer": "STHLIEHQRTHTGEKPYEC",
+      "target_kmer": "SSNLIKHQRTHTGEKPYRC"
+    },
+    {
+      "query_pos": 149,
+      "target_pos": 486,
+      "kmer": "pphhppppppppppphppp",
+      "query_kmer": "THLIEHQRTHTGEKPYECN",
+      "target_kmer": "SNLIKHQRTHTGEKPYRCG"
+    },
+    {
+      "query_pos": 150,
+      "target_pos": 487,
+      "kmer": "phhppppppppppphpppp",
+      "query_kmer": "HLIEHQRTHTGEKPYECNE",
+      "target_kmer": "NLIKHQRTHTGEKPYRCGD"
+    },
+    {
+      "query_pos": 151,
+      "target_pos": 404,
+      "kmer": "hhppppppppppphppppp",
+      "query_kmer": "LIEHQRTHTGEKPYECNEC",
+      "target_kmer": "LITHRRTHTGEKPYQCGEC"
+    },
+    {
+      "query_pos": 151,
+      "target_pos": 488,
+      "kmer": "hhppppppppppphppppp",
+      "query_kmer": "LIEHQRTHTGEKPYECNEC",
+      "target_kmer": "LIKHQRTHTGEKPYRCGDC"
+    },
+    {
+      "query_pos": 152,
+      "target_pos": 405,
+      "kmer": "hppppppppppphpppppp",
+      "query_kmer": "IEHQRTHTGEKPYECNECG",
+      "target_kmer": "ITHRRTHTGEKPYQCGECG"
+    },
+    {
+      "query_pos": 152,
+      "target_pos": 489,
+      "kmer": "hppppppppppphpppppp",
+      "query_kmer": "IEHQRTHTGEKPYECNECG",
+      "target_kmer": "IKHQRTHTGEKPYRCGDCG"
+    },
+    {
+      "query_pos": 153,
+      "target_pos": 166,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "EHQRTHTGEKPYECNECGK",
+      "target_kmer": "EGGQQSDGDSDFERDCGSG"
+    },
+    {
+      "query_pos": 153,
+      "target_pos": 266,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "EHQRTHTGEKPYECNECGK",
+      "target_kmer": "RHQTTHTGEKPYKCRDCGK"
+    },
+    {
+      "query_pos": 153,
+      "target_pos": 406,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "EHQRTHTGEKPYECNECGK",
+      "target_kmer": "THRRTHTGEKPYQCGECGK"
+    },
+    {
+      "query_pos": 153,
+      "target_pos": 490,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "EHQRTHTGEKPYECNECGK",
+      "target_kmer": "KHQRTHTGEKPYRCGDCGK"
+    },
+    {
+      "query_pos": 181,
+      "target_pos": 574,
+      "kmer": "hppphpppppphppppppp",
+      "query_kmer": "LHQRIHTGEKPYECSECGK",
+      "target_kmer": "IHQRIHTGEKPYRCPECGK"
+    },
+    {
+      "query_pos": 201,
+      "target_pos": 258,
+      "kmer": "hppppphpppppppppppp",
+      "query_kmer": "FSRSTNLSQHQRTHTQERP",
+      "target_kmer": "FSDGSNFSRHQTTHTGEKP"
+    },
+    {
+      "query_pos": 202,
+      "target_pos": 259,
+      "kmer": "ppppphpppppppppppph",
+      "query_kmer": "SRSTNLSQHQRTHTQERPY",
+      "target_kmer": "SDGSNFSRHQTTHTGEKPY"
+    },
+    {
+      "query_pos": 203,
+      "target_pos": 260,
+      "kmer": "pppphpppppppppppphp",
+      "query_kmer": "RSTNLSQHQRTHTQERPYK",
+      "target_kmer": "DGSNFSRHQTTHTGEKPYK"
+    },
+    {
+      "query_pos": 204,
+      "target_pos": 261,
+      "kmer": "ppphpppppppppppphpp",
+      "query_kmer": "STNLSQHQRTHTQERPYKC",
+      "target_kmer": "GSNFSRHQTTHTGEKPYKC"
+    },
+    {
+      "query_pos": 205,
+      "target_pos": 262,
+      "kmer": "pphpppppppppppphppp",
+      "query_kmer": "TNLSQHQRTHTQERPYKCN",
+      "target_kmer": "SNFSRHQTTHTGEKPYKCR"
+    },
+    {
+      "query_pos": 206,
+      "target_pos": 263,
+      "kmer": "phpppppppppppphpppp",
+      "query_kmer": "NLSQHQRTHTQERPYKCNE",
+      "target_kmer": "NFSRHQTTHTGEKPYKCRD"
+    },
+    {
+      "query_pos": 207,
+      "target_pos": 264,
+      "kmer": "hpppppppppppphppppp",
+      "query_kmer": "LSQHQRTHTQERPYKCNEC",
+      "target_kmer": "FSRHQTTHTGEKPYKCRDC"
+    },
+    {
+      "query_pos": 208,
+      "target_pos": 165,
+      "kmer": "pppppppppppphpppppp",
+      "query_kmer": "SQHQRTHTQERPYKCNECG",
+      "target_kmer": "GEGGQQSDGDSDFERDCGS"
+    },
+    {
+      "query_pos": 208,
+      "target_pos": 265,
+      "kmer": "pppppppppppphpppppp",
+      "query_kmer": "SQHQRTHTQERPYKCNECG",
+      "target_kmer": "SRHQTTHTGEKPYKCRDCG"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 166,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "QHQRTHTQERPYKCNECGK",
+      "target_kmer": "EGGQQSDGDSDFERDCGSG"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 266,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "QHQRTHTQERPYKCNECGK",
+      "target_kmer": "RHQTTHTGEKPYKCRDCGK"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 406,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "QHQRTHTQERPYKCNECGK",
+      "target_kmer": "THRRTHTGEKPYQCGECGK"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 490,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "QHQRTHTQERPYKCNECGK",
+      "target_kmer": "KHQRTHTGEKPYRCGDCGK"
+    },
+    {
+      "query_pos": 232,
+      "target_pos": 373,
+      "kmer": "ppphhpppphpppppphpp",
+      "query_kmer": "RSTIIQHQRIHTGENPYEC",
+      "target_kmer": "NSNLIRHQRIHTGEKPYKC"
+    },
+    {
+      "query_pos": 233,
+      "target_pos": 374,
+      "kmer": "pphhpppphpppppphppp",
+      "query_kmer": "STIIQHQRIHTGENPYECS",
+      "target_kmer": "SNLIRHQRIHTGEKPYKCT"
+    },
+    {
+      "query_pos": 234,
+      "target_pos": 375,
+      "kmer": "phhpppphpppppphpppp",
+      "query_kmer": "TIIQHQRIHTGENPYECSK",
+      "target_kmer": "NLIRHQRIHTGEKPYKCTE"
+    },
+    {
+      "query_pos": 235,
+      "target_pos": 376,
+      "kmer": "hhpppphpppppphppppp",
+      "query_kmer": "IIQHQRIHTGENPYECSKC",
+      "target_kmer": "LIRHQRIHTGEKPYKCTEC"
+    },
+    {
+      "query_pos": 236,
+      "target_pos": 377,
+      "kmer": "hpppphpppppphpppppp",
+      "query_kmer": "IQHQRIHTGENPYECSKCG",
+      "target_kmer": "IRHQRIHTGEKPYKCTECG"
+    },
+    {
+      "query_pos": 237,
+      "target_pos": 378,
+      "kmer": "pppphpppppphppppppp",
+      "query_kmer": "QHQRIHTGENPYECSKCGK",
+      "target_kmer": "RHQRIHTGEKPYKCTECGQ"
+    },
+    {
+      "query_pos": 261,
+      "target_pos": 262,
+      "kmer": "pphpppppppppppphppp",
+      "query_kmer": "SSLTEHQRTHTGENPYECS",
+      "target_kmer": "SNFSRHQTTHTGEKPYKCR"
+    },
+    {
+      "query_pos": 262,
+      "target_pos": 263,
+      "kmer": "phpppppppppppphpppp",
+      "query_kmer": "SLTEHQRTHTGENPYECSE",
+      "target_kmer": "NFSRHQTTHTGEKPYKCRD"
+    },
+    {
+      "query_pos": 263,
+      "target_pos": 264,
+      "kmer": "hpppppppppppphppppp",
+      "query_kmer": "LTEHQRTHTGENPYECSEC",
+      "target_kmer": "FSRHQTTHTGEKPYKCRDC"
+    },
+    {
+      "query_pos": 264,
+      "target_pos": 165,
+      "kmer": "pppppppppppphpppppp",
+      "query_kmer": "TEHQRTHTGENPYECSECG",
+      "target_kmer": "GEGGQQSDGDSDFERDCGS"
+    },
+    {
+      "query_pos": 264,
+      "target_pos": 265,
+      "kmer": "pppppppppppphpppppp",
+      "query_kmer": "TEHQRTHTGENPYECSECG",
+      "target_kmer": "SRHQTTHTGEKPYKCRDCG"
+    },
+    {
+      "query_pos": 265,
+      "target_pos": 166,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "EHQRTHTGENPYECSECGK",
+      "target_kmer": "EGGQQSDGDSDFERDCGSG"
+    },
+    {
+      "query_pos": 265,
+      "target_pos": 266,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "EHQRTHTGENPYECSECGK",
+      "target_kmer": "RHQTTHTGEKPYKCRDCGK"
+    },
+    {
+      "query_pos": 265,
+      "target_pos": 406,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "EHQRTHTGENPYECSECGK",
+      "target_kmer": "THRRTHTGEKPYQCGECGK"
+    },
+    {
+      "query_pos": 265,
+      "target_pos": 490,
+      "kmer": "ppppppppppphppppppp",
+      "query_kmer": "EHQRTHTGENPYECSECGK",
+      "target_kmer": "KHQRTHTGEKPYRCGDCGK"
+    },
+    {
+      "query_pos": 285,
+      "target_pos": 342,
+      "kmer": "hppppphppppphpppppp",
+      "query_kmer": "FSRSSSLTEHQRIHSGEKP",
+      "target_kmer": "FGNRSSLNTHQGIHTGEKP"
+    },
+    {
+      "query_pos": 286,
+      "target_pos": 253,
+      "kmer": "ppppphppppphppppppp",
+      "query_kmer": "SRSSSLTEHQRIHSGEKPH",
+      "target_kmer": "ECGKSFSDGSNFSRHQTTH"
+    },
+    {
+      "query_pos": 287,
+      "target_pos": 254,
+      "kmer": "pppphppppphpppppppp",
+      "query_kmer": "RSSSLTEHQRIHSGEKPHE",
+      "target_kmer": "CGKSFSDGSNFSRHQTTHT"
+    },
+    {
+      "query_pos": 288,
+      "target_pos": 255,
+      "kmer": "ppphppppphppppppppp",
+      "query_kmer": "SSSLTEHQRIHSGEKPHEC",
+      "target_kmer": "GKSFSDGSNFSRHQTTHTG"
+    },
+    {
+      "query_pos": 289,
+      "target_pos": 256,
+      "kmer": "pphppppphpppppppppp",
+      "query_kmer": "SSLTEHQRIHSGEKPHECR",
+      "target_kmer": "KSFSDGSNFSRHQTTHTGE"
+    },
+    {
+      "query_pos": 305,
+      "target_pos": 446,
+      "kmer": "ppphpppphppppphhhpp",
+      "query_kmer": "ECRVCGKGFSRSSSLIIHQ",
+      "target_kmer": "KCGLCGKSFSQSSSLIAHQ"
+    },
+    {
+      "query_pos": 306,
+      "target_pos": 447,
+      "kmer": "pphpppphppppphhhppp",
+      "query_kmer": "CRVCGKGFSRSSSLIIHQR",
+      "target_kmer": "CGLCGKSFSQSSSLIAHQG"
+    },
+    {
+      "query_pos": 307,
+      "target_pos": 448,
+      "kmer": "phpppphppppphhhpppp",
+      "query_kmer": "RVCGKGFSRSSSLIIHQRT",
+      "target_kmer": "GLCGKSFSQSSSLIAHQGT"
+    },
+    {
+      "query_pos": 308,
+      "target_pos": 449,
+      "kmer": "hpppphppppphhhppppp",
+      "query_kmer": "VCGKGFSRSSSLIIHQRTH",
+      "target_kmer": "LCGKSFSQSSSLIAHQGTH"
+    },
+    {
+      "query_pos": 309,
+      "target_pos": 310,
+      "kmer": "pppphppppphhhpppppp",
+      "query_kmer": "CGKGFSRSSSLIIHQRTHT",
+      "target_kmer": "CGKSFSRSPNLIAHQRTHT"
+    },
+    {
+      "query_pos": 309,
+      "target_pos": 450,
+      "kmer": "pppphppppphhhpppppp",
+      "query_kmer": "CGKGFSRSSSLIIHQRTHT",
+      "target_kmer": "CGKSFSQSSSLIAHQGTHT"
+    },
+    {
+      "query_pos": 309,
+      "target_pos": 506,
+      "kmer": "pppphppppphhhpppppp",
+      "query_kmer": "CGKGFSRSSSLIIHQRTHT",
+      "target_kmer": "CGKGFSQRSQLVVHQRTHT"
+    },
+    {
+      "query_pos": 310,
+      "target_pos": 311,
+      "kmer": "ppphppppphhhppppppp",
+      "query_kmer": "GKGFSRSSSLIIHQRTHTG",
+      "target_kmer": "GKSFSRSPNLIAHQRTHTG"
+    },
+    {
+      "query_pos": 310,
+      "target_pos": 451,
+      "kmer": "ppphppppphhhppppppp",
+      "query_kmer": "GKGFSRSSSLIIHQRTHTG",
+      "target_kmer": "GKSFSQSSSLIAHQGTHTG"
+    },
+    {
+      "query_pos": 310,
+      "target_pos": 507,
+      "kmer": "ppphppppphhhppppppp",
+      "query_kmer": "GKGFSRSSSLIIHQRTHTG",
+      "target_kmer": "GKGFSQRSQLVVHQRTHTG"
+    },
+    {
+      "query_pos": 311,
+      "target_pos": 312,
+      "kmer": "pphppppphhhpppppppp",
+      "query_kmer": "KGFSRSSSLIIHQRTHTGE",
+      "target_kmer": "KSFSRSPNLIAHQRTHTGE"
+    },
+    {
+      "query_pos": 311,
+      "target_pos": 452,
+      "kmer": "pphppppphhhpppppppp",
+      "query_kmer": "KGFSRSSSLIIHQRTHTGE",
+      "target_kmer": "KSFSQSSSLIAHQGTHTGE"
+    },
+    {
+      "query_pos": 311,
+      "target_pos": 508,
+      "kmer": "pphppppphhhpppppppp",
+      "query_kmer": "KGFSRSSSLIIHQRTHTGE",
+      "target_kmer": "KGFSQRSQLVVHQRTHTGE"
+    },
+    {
+      "query_pos": 312,
+      "target_pos": 313,
+      "kmer": "phppppphhhppppppppp",
+      "query_kmer": "GFSRSSSLIIHQRTHTGEK",
+      "target_kmer": "SFSRSPNLIAHQRTHTGEK"
+    },
+    {
+      "query_pos": 312,
+      "target_pos": 453,
+      "kmer": "phppppphhhppppppppp",
+      "query_kmer": "GFSRSSSLIIHQRTHTGEK",
+      "target_kmer": "SFSQSSSLIAHQGTHTGEK"
+    },
+    {
+      "query_pos": 312,
+      "target_pos": 509,
+      "kmer": "phppppphhhppppppppp",
+      "query_kmer": "GFSRSSSLIIHQRTHTGEK",
+      "target_kmer": "GFSQRSQLVVHQRTHTGEK"
+    },
+    {
+      "query_pos": 313,
+      "target_pos": 314,
+      "kmer": "hppppphhhpppppppppp",
+      "query_kmer": "FSRSSSLIIHQRTHTGEKP",
+      "target_kmer": "FSRSPNLIAHQRTHTGEKP"
+    },
+    {
+      "query_pos": 313,
+      "target_pos": 454,
+      "kmer": "hppppphhhpppppppppp",
+      "query_kmer": "FSRSSSLIIHQRTHTGEKP",
+      "target_kmer": "FSQSSSLIAHQGTHTGEKP"
+    },
+    {
+      "query_pos": 313,
+      "target_pos": 510,
+      "kmer": "hppppphhhpppppppppp",
+      "query_kmer": "FSRSSSLIIHQRTHTGEKP",
+      "target_kmer": "FSQRSQLVVHQRTHTGEKP"
+    },
+    {
+      "query_pos": 314,
+      "target_pos": 315,
+      "kmer": "ppppphhhpppppppppph",
+      "query_kmer": "SRSSSLIIHQRTHTGEKPY",
+      "target_kmer": "SRSPNLIAHQRTHTGEKPY"
+    },
+    {
+      "query_pos": 314,
+      "target_pos": 455,
+      "kmer": "ppppphhhpppppppppph",
+      "query_kmer": "SRSSSLIIHQRTHTGEKPY",
+      "target_kmer": "SQSSSLIAHQGTHTGEKPY"
+    },
+    {
+      "query_pos": 314,
+      "target_pos": 511,
+      "kmer": "ppppphhhpppppppppph",
+      "query_kmer": "SRSSSLIIHQRTHTGEKPY",
+      "target_kmer": "SQRSQLVVHQRTHTGEKPY"
+    },
+    {
+      "query_pos": 315,
+      "target_pos": 316,
+      "kmer": "pppphhhpppppppppphp",
+      "query_kmer": "RSSSLIIHQRTHTGEKPYK",
+      "target_kmer": "RSPNLIAHQRTHTGEKPYS"
+    },
+    {
+      "query_pos": 315,
+      "target_pos": 456,
+      "kmer": "pppphhhpppppppppphp",
+      "query_kmer": "RSSSLIIHQRTHTGEKPYK",
+      "target_kmer": "QSSSLIAHQGTHTGEKPYE"
+    },
+    {
+      "query_pos": 315,
+      "target_pos": 512,
+      "kmer": "pppphhhpppppppppphp",
+      "query_kmer": "RSSSLIIHQRTHTGEKPYK",
+      "target_kmer": "QRSQLVVHQRTHTGEKPYK"
+    },
+    {
+      "query_pos": 316,
+      "target_pos": 317,
+      "kmer": "ppphhhpppppppppphpp",
+      "query_kmer": "SSSLIIHQRTHTGEKPYKC",
+      "target_kmer": "SPNLIAHQRTHTGEKPYSC"
+    },
+    {
+      "query_pos": 316,
+      "target_pos": 457,
+      "kmer": "ppphhhpppppppppphpp",
+      "query_kmer": "SSSLIIHQRTHTGEKPYKC",
+      "target_kmer": "SSSLIAHQGTHTGEKPYEC"
+    },
+    {
+      "query_pos": 316,
+      "target_pos": 513,
+      "kmer": "ppphhhpppppppppphpp",
+      "query_kmer": "SSSLIIHQRTHTGEKPYKC",
+      "target_kmer": "RSQLVVHQRTHTGEKPYKC"
+    },
+    {
+      "query_pos": 317,
+      "target_pos": 318,
+      "kmer": "pphhhpppppppppphppp",
+      "query_kmer": "SSLIIHQRTHTGEKPYKCN",
+      "target_kmer": "PNLIAHQRTHTGEKPYSCP"
+    },
+    {
+      "query_pos": 318,
+      "target_pos": 319,
+      "kmer": "phhhpppppppppphpppp",
+      "query_kmer": "SLIIHQRTHTGEKPYKCND",
+      "target_kmer": "NLIAHQRTHTGEKPYSCPE"
+    },
+    {
+      "query_pos": 319,
+      "target_pos": 320,
+      "kmer": "hhhpppppppppphppppp",
+      "query_kmer": "LIIHQRTHTGEKPYKCNDC",
+      "target_kmer": "LIAHQRTHTGEKPYSCPEC"
+    },
+    {
+      "query_pos": 320,
+      "target_pos": 321,
+      "kmer": "hhpppppppppphpppppp",
+      "query_kmer": "IIHQRTHTGEKPYKCNDCG",
+      "target_kmer": "IAHQRTHTGEKPYSCPECG"
+    },
+    {
+      "query_pos": 321,
+      "target_pos": 322,
+      "kmer": "hpppppppppphppppppp",
+      "query_kmer": "IHQRTHTGEKPYKCNDCGK",
+      "target_kmer": "AHQRTHTGEKPYSCPECGK"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 123,
+      "query_end": 159,
+      "target_start": 572,
+      "target_end": 608,
+      "length": 36
+    },
+    {
+      "query_start": 132,
+      "query_end": 163,
+      "target_start": 217,
+      "target_end": 248,
+      "length": 31
+    },
+    {
+      "query_start": 309,
+      "query_end": 340,
+      "target_start": 310,
+      "target_end": 341,
+      "length": 31
+    },
+    {
+      "query_start": 305,
+      "query_end": 335,
+      "target_start": 446,
+      "target_end": 476,
+      "length": 30
+    },
+    {
+      "query_start": 130,
+      "query_end": 159,
+      "target_start": 411,
+      "target_end": 440,
+      "length": 29
+    },
+    {
+      "query_start": 201,
+      "query_end": 228,
+      "target_start": 258,
+      "target_end": 285,
+      "length": 27
+    },
+    {
+      "query_start": 309,
+      "query_end": 335,
+      "target_start": 506,
+      "target_end": 532,
+      "length": 26
+    },
+    {
+      "query_start": 4,
+      "query_end": 29,
+      "target_start": 329,
+      "target_end": 354,
+      "length": 25
+    },
+    {
+      "query_start": 126,
+      "query_end": 150,
+      "target_start": 379,
+      "target_end": 403,
+      "length": 24
+    },
+    {
+      "query_start": 148,
+      "query_end": 172,
+      "target_start": 485,
+      "target_end": 509,
+      "length": 24
+    },
+    {
+      "query_start": 232,
+      "query_end": 256,
+      "target_start": 373,
+      "target_end": 397,
+      "length": 24
+    },
+    {
+      "query_start": 8,
+      "query_end": 31,
+      "target_start": 249,
+      "target_end": 272,
+      "length": 23
+    },
+    {
+      "query_start": 130,
+      "query_end": 153,
+      "target_start": 495,
+      "target_end": 518,
+      "length": 23
+    },
+    {
+      "query_start": 261,
+      "query_end": 284,
+      "target_start": 262,
+      "target_end": 285,
+      "length": 23
+    },
+    {
+      "query_start": 130,
+      "query_end": 152,
+      "target_start": 327,
+      "target_end": 349,
+      "length": 22
+    },
+    {
+      "query_start": 286,
+      "query_end": 308,
+      "target_start": 253,
+      "target_end": 275,
+      "length": 22
+    },
+    {
+      "query_start": 3,
+      "query_end": 24,
+      "target_start": 216,
+      "target_end": 237,
+      "length": 21
+    },
+    {
+      "query_start": 151,
+      "query_end": 172,
+      "target_start": 404,
+      "target_end": 425,
+      "length": 21
+    },
+    {
+      "query_start": 4,
+      "query_end": 24,
+      "target_start": 413,
+      "target_end": 433,
+      "length": 20
+    },
+    {
+      "query_start": 4,
+      "query_end": 24,
+      "target_start": 497,
+      "target_end": 517,
+      "length": 20
+    },
+    {
+      "query_start": 4,
+      "query_end": 24,
+      "target_start": 581,
+      "target_end": 601,
+      "length": 20
+    },
+    {
+      "query_start": 208,
+      "query_end": 228,
+      "target_start": 165,
+      "target_end": 185,
+      "length": 20
+    },
+    {
+      "query_start": 264,
+      "query_end": 284,
+      "target_start": 165,
+      "target_end": 185,
+      "length": 20
+    },
+    {
+      "query_start": 130,
+      "query_end": 149,
+      "target_start": 171,
+      "target_end": 190,
+      "length": 19
+    },
+    {
+      "query_start": 130,
+      "query_end": 149,
+      "target_start": 271,
+      "target_end": 290,
+      "length": 19
+    },
+    {
+      "query_start": 153,
+      "query_end": 172,
+      "target_start": 166,
+      "target_end": 185,
+      "length": 19
+    },
+    {
+      "query_start": 153,
+      "query_end": 172,
+      "target_start": 266,
+      "target_end": 285,
+      "length": 19
+    },
+    {
+      "query_start": 181,
+      "query_end": 200,
+      "target_start": 574,
+      "target_end": 593,
+      "length": 19
+    },
+    {
+      "query_start": 209,
+      "query_end": 228,
+      "target_start": 406,
+      "target_end": 425,
+      "length": 19
+    },
+    {
+      "query_start": 209,
+      "query_end": 228,
+      "target_start": 490,
+      "target_end": 509,
+      "length": 19
+    },
+    {
+      "query_start": 265,
+      "query_end": 284,
+      "target_start": 406,
+      "target_end": 425,
+      "length": 19
+    },
+    {
+      "query_start": 265,
+      "query_end": 284,
+      "target_start": 490,
+      "target_end": 509,
+      "length": 19
+    },
+    {
+      "query_start": 285,
+      "query_end": 304,
+      "target_start": 342,
+      "target_end": 361,
+      "length": 19
+    }
+  ]
+}

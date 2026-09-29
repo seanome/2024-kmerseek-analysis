@@ -1,0 +1,190 @@
+{
+  "ksize": 18,
+  "moltype": "hp_lehninger_c_nonpolar2",
+  "classes": {
+    "h": "ACFGILMPVWY",
+    "p": "DEHKNQRST"
+  },
+  "query": {
+    "name": "Q96RN1 species=human Testis anion transporter 1",
+    "sequence": "MAQLERSAISGFSSKSRRNSFAYDVKREVYNEETFQQEHKRKASSSGNMNINITTFRHHVQCRCSWHRFLRCVLTIFPFLEWMCMYRLKDWLLGDLLAGISVGLVQVPQGLTLSLLARQLIPPLNIAYAAFCSSVIYVIFGSCHQMSIGSFFLVSALLINVLKVSPFNNGQLVMGSFVKNEFSAPSYLMGYNKSLSVVATTTFLTGIIQLIMGVLGLGFIATYLPESAMSAYLAAVALHIMLSQLTFIFGIMISFHAGPISFFYDIINYCVALPKANSTSILVFLTVVVALRINKCIRISFNQYPIEFPMELFLIIGFTVIANKISMATETSQTLIDMIPYSFLLPVTPDFSLLPKIILQAFSLSLVSSFLLIFLGKKIASLHNYSVNSNQDLIAIGLCNVVSSFFRSCVFTGAIARTIIQDKSGGRQQFASLVGAGVMLLLMVKMGHFFYTLPNAVLAGIILSNVIPYLETISNLPSLWRQDQYDCALWMMTFSSSIFLGLDIGLIISVVSAFFITTVRSHRAKILLLGQIPNTNIYRSINDYREIITIPGVKIFQCCSSITFVNVYYLKHKLLKEVDMVKVPLKEEEIFSLFNSSDTNLQGGKICRCFCNCDDLEPLPRILYTERFENKLDPEASSINLIHCSHFESMNTSQTASEDQVPYTVSSVSQKNQGQQYEEVEEVWLPNNSSRNSSPGLPDVAESQGRRSLIPYSDASLLPSVHTIILDFSMVHYVDSRGLVVLRQICNAFQNANILILIAGCHSSIVRAFERNDFFDAGITKTQLFLSVHDAVLFALSRKVIGSSELSIDESETVIRETYSETDKNDNSRYKMSSSFLGSQKNVSPGFIKIQQPVEEESELDLELESEQEAGLGLDLDLDRELEPEMEPKAETETKTQTEMEPQPETEPEMEPNPKSRPRAHTFPQQRYWPMYHPSMASTQSQTQTRTWSVERRRHPMDSYSPEGNSNEDV",
+    "encoded": "hhphppphhphhpppppppphhhphppphhpppphppppppphppphphphphpphppphphphphpphhphhhphhhhhphhhhhphpphhhhphhhhhphhhhphhphhphphhhpphhhhhphhhhhhhpphhhhhhhphpphphhphhhhphhhhphhphphhpphphhhhphhppphphhphhhhhppphphhhppphhphhhphhhhhhhhhhhhphhhpphhphhhhhhhhphhhpphphhhhhhhphphhhhphhhphhphhhhhhphpppphhhhhphhhhhphpphhphphpphhhphhhphhhhhhhphhhpphphhpppppphhphhhhphhhhhphphphhhphhhphhphphhpphhhhhhhpphhphpphphppppphhhhhhhphhpphhpphhhphhhhpphhpppphhppphhphhhhhhhhhhhhphhphhhphhphhhhhhhhpphhhhhpphpphhphhpppphphhhhhhphppphhhhhphhhhhphhphhhhpphpppphphhhhhphhppphhpphpphpphhphhhhphhphhpphphhphhhhppphhpphphhphhhpppphhphhpppppphphhphhphhhphpphphhhphhhppphppphphphpphphhphpphpphppppphpppphhhphpphppppphpphpphpphhhhpppppppphhhhphhppphppphhhhpphphhhphpphhhphphhphhppphhhhhpphhphhpphphhhhhhhhppphhphhpppphhphhhpppphhhphpphhhhhhppphhhppphphppppphhppphpppppppppphphppphhhpppphphhhhphpphhppppphphphppppphhhhhphphppphphphphphppppppppphphphppphphphphppphphpphhppphhhhhphphhpppppppppphphppppphhpphphphppppph"
+  },
+  "target": {
+    "name": "Q7T2C4 species=zebrafish STAS domain-containing protein",
+    "sequence": "MEHVTVSEEPSATLMYHVERPIFSEAYIDSELLHKRKKTPKPYKLRVAEHLCCSSEKVKSVVFGFLPILTWLPSYPLKEYLFGDIVSGISTGVMQLPQGLAYAMLAAVPPVFGLYSSFYPVLLYTFFGTSKHISIGTFAVISLMIGGVAVREAPDSMFMVNGTNSSLVVNIEARDSRRVEVVVALTTLVGIIQFVLGLLRFGFLAIYLTEPLVRGFTTAAAVHVSVSQLKYLLGVKTARFNGPLSVVYSLDAVLRNIADTNIVTLIIGLGCTVFLYIIKQLNERFKKKLLIPIPGEIIVVIVSTGISYGMLMSENYGVDVVGKIPTGLLPPKVPDFSVFPNLFADAVPIAVVGFSITISLAKTFALKYGYSVDGNQELIALGLCNFVSSFFHTFVVTASMSRSLVQESTGGHTEIAGLLASLLVLLVVVAIGFVFQPLPTTVLAAIIMVNLLGMFKQTRDIPVLWRKSKIELAIWLVSFFASVLLGLDYGLAVAMAFAILTVIYRTQRPKNVVLGQIPDTGLYFDVDEYEEAEECSGIKIFQSNSSIYFANSELYVKALKAKTGIDPEKLLDAKKLQLKYAKRDTEGTKTVNQGSLLKKNAVVLLDMELGVTHEVLNGPQKPKHVHTNGQMTEKHIESESEDEFFLQRLTPIHSVILDFTPVNFIDSVGAKTIKSVIKEYATVDVKVVLAGCSRTLLSELRTLQFFSEPVTPDLIFPTIHDAVLQCKRWRDLPVHPNIH",
+    "encoded": "hpphphppphphphhhphpphhhpphhhppphhpppppphphhphphhpphhhpppphpphhhhhhhhhphhhphhhpphhhhphhphhpphhhphhphhhhhhhhhhhhhhhhhpphhhhhhhphhhpppphphhphhhhphhhhhhhhpphhpphhhhphpppphhhphphppppphphhhhhpphhhhhphhhhhhphhhhhhhhpphhhphhpphhhhphphpphphhhhhpphphphhhphhhphphhhpphhppphhphhhhhhhphhhhhhpphppphppphhhhhhhphhhhhhpphhphhhhhppphhhphhhphhphhhhhphhphphhhphhhphhhhhhhhhphphphhpphhhphhhphphppphhhhhhhphhpphhpphhhphphppphhpppphhppphhhhhhphhhhhhhhhhhhhhphhhpphhhhhhhhphhhhhppppphhhhhpppphphhhhhhphhhphhhhhphhhhhhhhhhhhphhhpppphpphhhhphhpphhhhphpphpphpphphhphhppppphhhhppphhhphhphpphhphpphhphpphphphhppppphppphpphphhppphhhhhphphhhppphhphhpphpphppphphpppphppppppphhhpphphhpphhhphphhphhpphhhpphpphhpphhphphphhhhhhppphhpphpphphhpphhphphhhhphpphhhphpphpphhhphphp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 68,
+      "target_pos": 475,
+      "kmer": "hhphhhphhhhhphhhhh",
+      "query_kmer": "FLRCVLTIFPFLEWMCMY",
+      "target_kmer": "LVSFFASVLLGLDYGLAV"
+    },
+    {
+      "query_pos": 125,
+      "target_pos": 108,
+      "kmer": "hhhhhhhpphhhhhhhph",
+      "query_kmer": "IAYAAFCSSVIYVIFGSC",
+      "target_kmer": "PPVFGLYSSFYPVLLYTF"
+    },
+    {
+      "query_pos": 205,
+      "target_pos": 484,
+      "kmer": "hhhphhhhhhhhhhhhph",
+      "query_kmer": "GIIQLIMGVLGLGFIATY",
+      "target_kmer": "LGLDYGLAVAMAFAILTV"
+    },
+    {
+      "query_pos": 206,
+      "target_pos": 485,
+      "kmer": "hhphhhhhhhhhhhhphh",
+      "query_kmer": "IIQLIMGVLGLGFIATYL",
+      "target_kmer": "GLDYGLAVAMAFAILTVI"
+    },
+    {
+      "query_pos": 207,
+      "target_pos": 486,
+      "kmer": "hphhhhhhhhhhhhphhh",
+      "query_kmer": "IQLIMGVLGLGFIATYLP",
+      "target_kmer": "LDYGLAVAMAFAILTVIY"
+    },
+    {
+      "query_pos": 208,
+      "target_pos": 487,
+      "kmer": "phhhhhhhhhhhhphhhp",
+      "query_kmer": "QLIMGVLGLGFIATYLPE",
+      "target_kmer": "DYGLAVAMAFAILTVIYR"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 423,
+      "kmer": "hhhhhhhhhhhhphhhpp",
+      "query_kmer": "LIMGVLGLGFIATYLPES",
+      "target_kmer": "VLLVVVAIGFVFQPLPTT"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 488,
+      "kmer": "hhhhhhhhhhhhphhhpp",
+      "query_kmer": "LIMGVLGLGFIATYLPES",
+      "target_kmer": "YGLAVAMAFAILTVIYRT"
+    },
+    {
+      "query_pos": 210,
+      "target_pos": 424,
+      "kmer": "hhhhhhhhhhhphhhpph",
+      "query_kmer": "IMGVLGLGFIATYLPESA",
+      "target_kmer": "LLVVVAIGFVFQPLPTTV"
+    },
+    {
+      "query_pos": 211,
+      "target_pos": 425,
+      "kmer": "hhhhhhhhhhphhhpphh",
+      "query_kmer": "MGVLGLGFIATYLPESAM",
+      "target_kmer": "LVVVAIGFVFQPLPTTVL"
+    },
+    {
+      "query_pos": 389,
+      "target_pos": 374,
+      "kmer": "ppphhhhhhhphhpphhp",
+      "query_kmer": "NQDLIAIGLCNVVSSFFR",
+      "target_kmer": "NQELIALGLCNFVSSFFH"
+    },
+    {
+      "query_pos": 390,
+      "target_pos": 375,
+      "kmer": "pphhhhhhhphhpphhpp",
+      "query_kmer": "QDLIAIGLCNVVSSFFRS",
+      "target_kmer": "QELIALGLCNFVSSFFHT"
+    },
+    {
+      "query_pos": 391,
+      "target_pos": 376,
+      "kmer": "phhhhhhhphhpphhpph",
+      "query_kmer": "DLIAIGLCNVVSSFFRSC",
+      "target_kmer": "ELIALGLCNFVSSFFHTF"
+    },
+    {
+      "query_pos": 392,
+      "target_pos": 377,
+      "kmer": "hhhhhhhphhpphhpphh",
+      "query_kmer": "LIAIGLCNVVSSFFRSCV",
+      "target_kmer": "LIALGLCNFVSSFFHTFV"
+    },
+    {
+      "query_pos": 393,
+      "target_pos": 378,
+      "kmer": "hhhhhhphhpphhpphhh",
+      "query_kmer": "IAIGLCNVVSSFFRSCVF",
+      "target_kmer": "IALGLCNFVSSFFHTFVV"
+    },
+    {
+      "query_pos": 394,
+      "target_pos": 379,
+      "kmer": "hhhhhphhpphhpphhhp",
+      "query_kmer": "AIGLCNVVSSFFRSCVFT",
+      "target_kmer": "ALGLCNFVSSFFHTFVVT"
+    },
+    {
+      "query_pos": 395,
+      "target_pos": 380,
+      "kmer": "hhhhphhpphhpphhhph",
+      "query_kmer": "IGLCNVVSSFFRSCVFTG",
+      "target_kmer": "LGLCNFVSSFFHTFVVTA"
+    },
+    {
+      "query_pos": 429,
+      "target_pos": 485,
+      "kmer": "hhphhhhhhhhhhhhphh",
+      "query_kmer": "FASLVGAGVMLLLMVKMG",
+      "target_kmer": "GLDYGLAVAMAFAILTVI"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 389,
+      "query_end": 413,
+      "target_start": 374,
+      "target_end": 398,
+      "length": 24
+    },
+    {
+      "query_start": 205,
+      "query_end": 227,
+      "target_start": 484,
+      "target_end": 506,
+      "length": 22
+    },
+    {
+      "query_start": 209,
+      "query_end": 229,
+      "target_start": 423,
+      "target_end": 443,
+      "length": 20
+    },
+    {
+      "query_start": 68,
+      "query_end": 86,
+      "target_start": 475,
+      "target_end": 493,
+      "length": 18
+    },
+    {
+      "query_start": 125,
+      "query_end": 143,
+      "target_start": 108,
+      "target_end": 126,
+      "length": 18
+    },
+    {
+      "query_start": 429,
+      "query_end": 447,
+      "target_start": 485,
+      "target_end": 503,
+      "length": 18
+    }
+  ]
+}

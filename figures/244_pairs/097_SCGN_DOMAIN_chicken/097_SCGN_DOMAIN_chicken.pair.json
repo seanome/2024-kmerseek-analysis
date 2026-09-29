@@ -1,0 +1,92 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill_no_c2",
+  "classes": {
+    "h": "AFILMVWY",
+    "p": "CDEGHKNPQRST"
+  },
+  "query": {
+    "name": "O76038 species=human Secretagogin",
+    "sequence": "MDSSREPTLGRLDAAGFWQVWQRFDADEKGYIEEKELDAFFLHMLMKLGTDDTVMKANLHKVKQQFMTTQDASKDGRIRMKELAGMFLSEDENFLLLFRRENPLDSSVEFMQIWRKYDADSSGFISAAELRNFLRDLFLHHKKAISEAKLEEYTGTMMKIFDRNKDGRLDLNDLARILALQENFLLQFKMDACSTEERKRDFEKIFAYYDVSKTGALEGPEVDGFVKDMMELVQPSISGVDLDKFREILLRHCDVNKDGKIQKSELALCLGLKINP",
+    "encoded": "hppppppphpphphhphhphhpphphpppphhpppphphhhhphhhphppppphhphphpphppphhpppphppppphphpphhphhhppppphhhhhppppphppphphhphhpphphpppphhphhphpphhpphhhpppphhpphphpphppphhphhppppppphphpphhphhhhppphhhphphphppppppppphpphhhhhphpppphhpppphpphhpphhphhppphpphphpphpphhhpppphppppphpppphhhphphphpp"
+  },
+  "target": {
+    "name": "P07090 species=chicken Calretinin",
+    "sequence": "MAGQRAPHLHLAELSASQFLDVWRHFDADGNGYIEGKELENFFQELESARKGTGVDSKRDSLGDKMKEFMHKYDKNADGKIEMAELAQILPTEENFLLCFRQHVGSSSEFMEAWRRYDTDRSGYIEANELKGFLSDLLKKANRPYDEAKLQEYTQTILRMFDMNGDGKLGLSEMSRLLPVQENFLLKFQGMKLSSEEFNAIFAFYDKDGSGFIDEHELDALLKDLYEKNKKEMSIQQLTNYRRSIMNLSDGGKLYRKELEVVLCSEPPL",
+    "encoded": "hhppphpphphhphphpphhphhpphphpppphhpppphpphhpphpphppppphpppppphppphpphhpphppphppphphhphhphhppppphhhphppphppppphhphhpphpppppphhphpphpphhpphhpphppphpphphpphppphhphhphppppphphpphpphhphppphhhphpphphpppphphhhhhhpppppphhpppphphhhpphhpppppphphpphpphppphhphppppphhppphphhhppppph"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 15,
+      "target_pos": 17,
+      "kmer": "phhphhpphphpppphhpp",
+      "query_kmer": "GFWQVWQRFDADEKGYIEE",
+      "target_kmer": "QFLDVWRHFDADGNGYIEG"
+    },
+    {
+      "query_pos": 16,
+      "target_pos": 18,
+      "kmer": "hhphhpphphpppphhppp",
+      "query_kmer": "FWQVWQRFDADEKGYIEEK",
+      "target_kmer": "FLDVWRHFDADGNGYIEGK"
+    },
+    {
+      "query_pos": 17,
+      "target_pos": 19,
+      "kmer": "hphhpphphpppphhpppp",
+      "query_kmer": "WQVWQRFDADEKGYIEEKE",
+      "target_kmer": "LDVWRHFDADGNGYIEGKE"
+    },
+    {
+      "query_pos": 18,
+      "target_pos": 20,
+      "kmer": "phhpphphpppphhpppph",
+      "query_kmer": "QVWQRFDADEKGYIEEKEL",
+      "target_kmer": "DVWRHFDADGNGYIEGKEL"
+    },
+    {
+      "query_pos": 19,
+      "target_pos": 21,
+      "kmer": "hhpphphpppphhpppphp",
+      "query_kmer": "VWQRFDADEKGYIEEKELD",
+      "target_kmer": "VWRHFDADGNGYIEGKELE"
+    },
+    {
+      "query_pos": 208,
+      "target_pos": 25,
+      "kmer": "hphpppphhpppphpphhp",
+      "query_kmer": "YDVSKTGALEGPEVDGFVK",
+      "target_kmer": "FDADGNGYIEGKELENFFQ"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 26,
+      "kmer": "phpppphhpppphpphhpp",
+      "query_kmer": "DVSKTGALEGPEVDGFVKD",
+      "target_kmer": "DADGNGYIEGKELENFFQE"
+    },
+    {
+      "query_pos": 210,
+      "target_pos": 27,
+      "kmer": "hpppphhpppphpphhpph",
+      "query_kmer": "VSKTGALEGPEVDGFVKDM",
+      "target_kmer": "ADGNGYIEGKELENFFQEL"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 15,
+      "query_end": 38,
+      "target_start": 17,
+      "target_end": 40,
+      "length": 23
+    },
+    {
+      "query_start": 208,
+      "query_end": 229,
+      "target_start": 25,
+      "target_end": 46,
+      "length": 21
+    }
+  ]
+}

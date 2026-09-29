@@ -1,0 +1,109 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "O15264 species=human Mitogen-activated protein kinase 13",
+    "sequence": "MSLIRKKGFYKQDVNKTAWELPKTYVSPTHVGSGAYGSVCSAIDKRSGEKVAIKKLSRPFQSEIFAKRAYRELLLLKHMQHENVIGLLDVFTPASSLRNFYDFYLVMPFMQTDLQKIMGMEFSEEKIQYLVYQMLKGLKYIHSAGVVHRDLKPGNLAVNEDCELKILDFGLARHADAEMTGYVVTRWYRAPEVILSWMHYNQTVDIWSVGCIMAEMLTGKTLFKGKDYLDQLTQILKVTGVPGTEFVQKLNDKAAKSYIQSLPQTPRKDFTQLFPRASPQAADLLEKMLELDVDKRLTAAQALTHPFFEPFRDPEEETEAQQPFDDSLEHEKLTVDEWKQHIYKEIVNFSPIARKDSRRRSGMKL",
+    "encoded": "ltllkkkgyyktdlnktawklpktyltpthlgtgaygtlctaldkktgkklalkkltkpyttklyakkaykkllllkhlthknllglldlytpattlknyydyylllpylttdltkllglkytkkkltyllytllkglkylhtagllhkdlkpgnlalnkdcklklldyglakhadakltgylltkwykapkllltwlhynttldlwtlgcllaklltgktlykgkdyldtlttllkltglpgtkyltklndkaaktylttlpttpkkdyttlypkatptaadllkkllkldldkkltaatalthpyykpykdpkkktkattpyddtlkhkkltldkwkthlykkllnytplakkdtkkktglkl"
+  },
+  "target": {
+    "name": "Q8I113 species=worm MAP kinase-interacting serine/threonine-protein kinase mnk-1",
+    "sequence": "MFFLDNTDSMTSSSRGITMPNTISSHEDVGGYSPRKVGIQHDYSAVGGGGAAFHHLHTSAATPRHVATSEFYDDEEATSPRGGIEIGAGGGKMMANLRRHRQRERETYEDEDVLSSSDESSGRPIPRYVGRDTDHVFGEFEMDDEDVVMRREDGYGEDETDEDYFDEEEPVAELLPLGGGTRRVPRTPGRKNSSKCGFFDYYKLTDEHLGSGAYGSVTTCKSIKSGVEYAVKIVDKQGETHSRKRILREVNIFKTCKDHPNIVQLLDWFEDETNFYLVMEKMRGGPLLQHILQRKYFTEEEARRVTKDISLALKFMHDRGIAHRDVKPENVLCTDPNHVSPVKLCDLDLASQRPPQHERHPLSQVASEPDLASPVGSAEFMAPEVVDAYVGDSLKYDKKCDTWSLGVILYIMLAGYAPFQGMCDDEDCGWSEGKPCEDCQQDLFHRIQDGYYEFPEEEWGMISEEAKDLVSNLLKRDPVDRFNADQILSHRWLQQSAASTILQTPSNLINRKDSARDVQQMSEHFNLMNRLADTRLSARFDNKMTMSECGSDLGTATIHGDGSFLSMGGEPFGTFPRKKSVGIAIEKSRSGEFTPPISRASPTTPPPSMLNLSEDLTDSPVKRRSADDSGTFSLFSPASSNGDDSICSPPMVFVDMPSIQLFGTGALLTSVQMTPRHTTEDDASLKSFEDEQENANPIHRIETQVNV",
+    "encoded": "lyyldntdtlttttkgltlpntltthkdlggytpkklglthdytalggggaayhhlhttaatpkhlattkyyddkkattpkgglklgagggkllanlkkhktkkkktykdkdlltttdkttgkplpkylgkdtdhlygkyklddkdlllkkkdgygkdktdkdyydkkkplakllplgggtkklpktpgkknttkcgyydyykltdkhlgtgaygtlttcktlktglkyalklldktgkthtkkkllkklnlyktckdhpnlltlldwykdktnyylllkklkggpllthlltkkyytkkkakkltkdltlalkylhdkglahkdlkpknllctdpnhltplklcdldlattkppthkkhplttlatkpdlatplgtakylapklldaylgdtlkydkkcdtwtlglllylllagyapytglcddkdcgwtkgkpckdcttdlyhkltdgyykypkkkwglltkkakdlltnllkkdpldkynadtllthkwltttaattllttptnllnkkdtakdlttltkhynllnkladtkltakydnkltltkcgtdlgtatlhgdgtyltlggkpygtypkkktlglalkktktgkytppltkatpttppptllnltkdltdtplkkktaddtgtytlytpattngddtlctppllyldlptltlygtgallttltltpkhttkddatlktykdktknanplhklkttlnl"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 29,
+      "target_pos": 207,
+      "kmer": "hlgtga",
+      "query_kmer": "HVGSGA",
+      "target_kmer": "HLGSGA"
+    },
+    {
+      "query_pos": 30,
+      "target_pos": 208,
+      "kmer": "lgtgay",
+      "query_kmer": "VGSGAY",
+      "target_kmer": "LGSGAY"
+    },
+    {
+      "query_pos": 31,
+      "target_pos": 209,
+      "kmer": "gtgayg",
+      "query_kmer": "GSGAYG",
+      "target_kmer": "GSGAYG"
+    },
+    {
+      "query_pos": 32,
+      "target_pos": 210,
+      "kmer": "tgaygt",
+      "query_kmer": "SGAYGS",
+      "target_kmer": "SGAYGS"
+    },
+    {
+      "query_pos": 33,
+      "target_pos": 211,
+      "kmer": "gaygtl",
+      "query_kmer": "GAYGSV",
+      "target_kmer": "GAYGSV"
+    },
+    {
+      "query_pos": 89,
+      "target_pos": 633,
+      "kmer": "lytpat",
+      "query_kmer": "VFTPAS",
+      "target_kmer": "LFSPAS"
+    },
+    {
+      "query_pos": 90,
+      "target_pos": 634,
+      "kmer": "ytpatt",
+      "query_kmer": "FTPASS",
+      "target_kmer": "FSPASS"
+    },
+    {
+      "query_pos": 147,
+      "target_pos": 322,
+      "kmer": "hkdlkp",
+      "query_kmer": "HRDLKP",
+      "target_kmer": "HRDVKP"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 29,
+      "query_end": 39,
+      "target_start": 207,
+      "target_end": 217,
+      "length": 10
+    },
+    {
+      "query_start": 89,
+      "query_end": 96,
+      "target_start": 633,
+      "target_end": 640,
+      "length": 7
+    },
+    {
+      "query_start": 147,
+      "query_end": 153,
+      "target_start": 322,
+      "target_end": 328,
+      "length": 6
+    }
+  ]
+}

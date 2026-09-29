@@ -1,0 +1,148 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill_no_c2",
+  "classes": {
+    "h": "AFILMVWY",
+    "p": "CDEGHKNPQRST"
+  },
+  "query": {
+    "name": "P43080 species=human Guanylyl cyclase-activating protein 1",
+    "sequence": "MGNVMEGKSVEELSSTECHQWYKKFMTECPSGQLTLYEFRQFFGLKNLSPSASQYVEQMFETFDFNKDGYIDFMEYVAALSLVLKGKVEQKLRWYFKLYDVDGNGCIDRDELLTIIQAIRAINPCSDTTMTAEEFTDTVFSKIDVNGDGELSLEEFIEGVQKDQMLLDTLTRSLDLTRIVRRLQNGEQDEEGADEAAEAAG",
+    "encoded": "hpphhpppphpphppppppphhpphhppppppphphhphpphhphpphppphpphhpphhpphphpppphhphhphhhhhphhhppphppphphhhphhphppppphpppphhphhphhphhppppppphphpphppphhpphphppppphphpphhpphpppphhhpphppphphpphhpphppppppppphpphhphhp"
+  },
+  "target": {
+    "name": "P36609 species=worm Neuronal calcium sensor 2",
+    "sequence": "MGIKGSKPKLSKEDLEFLKKNTNFTEEQIKEWYKGFVQDCPKGHLTKEQFIKVYKDFFPSGSAEGFCEHVFRTFDTDNSGFIDFKEFLLAINVTSSGTPEQKLEWAFRMYDIDGNGTIDEKEMIKIIEAIYEMLGPEVTKSADDSPRKRAKMIFEKMDVNNDKELTLKEFVDGCLADKELFQILTNEVKK",
+    "encoded": "hphpppppphpppphphhppppphpppphpphhpphhppppppphpppphhphhpphhpppphpphppphhpphpppppphhphpphhhhhphppppppppphphhhphhphppppphpppphhphhphhhphhppphppphppppppphphhhpphphppppphphpphhppphhppphhphhppphpp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 88,
+      "target_pos": 99,
+      "kmer": "ppphphhhphhphppppph",
+      "query_kmer": "EQKLRWYFKLYDVDGNGCI",
+      "target_kmer": "EQKLEWAFRMYDIDGNGTI"
+    },
+    {
+      "query_pos": 89,
+      "target_pos": 100,
+      "kmer": "pphphhhphhphppppphp",
+      "query_kmer": "QKLRWYFKLYDVDGNGCID",
+      "target_kmer": "QKLEWAFRMYDIDGNGTID"
+    },
+    {
+      "query_pos": 90,
+      "target_pos": 101,
+      "kmer": "phphhhphhphppppphpp",
+      "query_kmer": "KLRWYFKLYDVDGNGCIDR",
+      "target_kmer": "KLEWAFRMYDIDGNGTIDE"
+    },
+    {
+      "query_pos": 91,
+      "target_pos": 102,
+      "kmer": "hphhhphhphppppphppp",
+      "query_kmer": "LRWYFKLYDVDGNGCIDRD",
+      "target_kmer": "LEWAFRMYDIDGNGTIDEK"
+    },
+    {
+      "query_pos": 92,
+      "target_pos": 103,
+      "kmer": "phhhphhphppppphpppp",
+      "query_kmer": "RWYFKLYDVDGNGCIDRDE",
+      "target_kmer": "EWAFRMYDIDGNGTIDEKE"
+    },
+    {
+      "query_pos": 93,
+      "target_pos": 104,
+      "kmer": "hhhphhphppppphpppph",
+      "query_kmer": "WYFKLYDVDGNGCIDRDEL",
+      "target_kmer": "WAFRMYDIDGNGTIDEKEM"
+    },
+    {
+      "query_pos": 94,
+      "target_pos": 105,
+      "kmer": "hhphhphppppphpppphh",
+      "query_kmer": "YFKLYDVDGNGCIDRDELL",
+      "target_kmer": "AFRMYDIDGNGTIDEKEMI"
+    },
+    {
+      "query_pos": 95,
+      "target_pos": 106,
+      "kmer": "hphhphppppphpppphhp",
+      "query_kmer": "FKLYDVDGNGCIDRDELLT",
+      "target_kmer": "FRMYDIDGNGTIDEKEMIK"
+    },
+    {
+      "query_pos": 96,
+      "target_pos": 107,
+      "kmer": "phhphppppphpppphhph",
+      "query_kmer": "KLYDVDGNGCIDRDELLTI",
+      "target_kmer": "RMYDIDGNGTIDEKEMIKI"
+    },
+    {
+      "query_pos": 97,
+      "target_pos": 108,
+      "kmer": "hhphppppphpppphhphh",
+      "query_kmer": "LYDVDGNGCIDRDELLTII",
+      "target_kmer": "MYDIDGNGTIDEKEMIKII"
+    },
+    {
+      "query_pos": 98,
+      "target_pos": 109,
+      "kmer": "hphppppphpppphhphhp",
+      "query_kmer": "YDVDGNGCIDRDELLTIIQ",
+      "target_kmer": "YDIDGNGTIDEKEMIKIIE"
+    },
+    {
+      "query_pos": 99,
+      "target_pos": 110,
+      "kmer": "phppppphpppphhphhph",
+      "query_kmer": "DVDGNGCIDRDELLTIIQA",
+      "target_kmer": "DIDGNGTIDEKEMIKIIEA"
+    },
+    {
+      "query_pos": 100,
+      "target_pos": 111,
+      "kmer": "hppppphpppphhphhphh",
+      "query_kmer": "VDGNGCIDRDELLTIIQAI",
+      "target_kmer": "IDGNGTIDEKEMIKIIEAI"
+    },
+    {
+      "query_pos": 138,
+      "target_pos": 152,
+      "kmer": "hhpphphppppphphpphh",
+      "query_kmer": "VFSKIDVNGDGELSLEEFI",
+      "target_kmer": "IFEKMDVNNDKELTLKEFV"
+    },
+    {
+      "query_pos": 139,
+      "target_pos": 153,
+      "kmer": "hpphphppppphphpphhp",
+      "query_kmer": "FSKIDVNGDGELSLEEFIE",
+      "target_kmer": "FEKMDVNNDKELTLKEFVD"
+    },
+    {
+      "query_pos": 140,
+      "target_pos": 154,
+      "kmer": "pphphppppphphpphhpp",
+      "query_kmer": "SKIDVNGDGELSLEEFIEG",
+      "target_kmer": "EKMDVNNDKELTLKEFVDG"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 88,
+      "query_end": 119,
+      "target_start": 99,
+      "target_end": 130,
+      "length": 31
+    },
+    {
+      "query_start": 138,
+      "query_end": 159,
+      "target_start": 152,
+      "target_end": 173,
+      "length": 21
+    }
+  ]
+}

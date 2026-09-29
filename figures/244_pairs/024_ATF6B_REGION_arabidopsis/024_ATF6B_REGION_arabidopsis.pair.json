@@ -1,0 +1,64 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill2",
+  "classes": {
+    "h": "ACFILMVWY",
+    "p": "DEGHKNPQRST"
+  },
+  "query": {
+    "name": "Q99941 species=human Cyclic AMP-dependent transcription factor ATF-6 beta",
+    "sequence": "MAELMLLSEIADPTRFFTDNLLSPEDWGLQNSTLYSGLDEVAEEQTQLFRCPEQDVPFDGSSLDVGMDVSPSEPPWELLPIFPDLQVKSEPSSPCSSSSLSSESSRLSTEPSSEALGVGEVLHVKTESLAPPLCLLGDDPTSSFETVQINVIPTSDDSSDVQTKIEPVSPCSSVNSEASLLSADSSSQAFIGEEVLEVKTESLSPSGCLLWDVPAPSLGAVQISMGPSLDGSSGKALPTRKPPLQPKPVVLTTVPMPSRAVPPSTTVLLQSLVQPPPVSPVVLIQGAIRVQPEGPAPSLPRPERKSIVPAPMPGNSCPPEVDAKLLKRQQRMIKNRESACQSRRKKKEYLQGLEARLQAVLADNQQLRRENAALRRRLEALLAENSELKLGSGNRKVVCIMVFLLFIAFNFGPVSISEPPSAPISPRMNKGEPQPRRHLLGFSEQEPVQGVEPLQGSSQGPKEPQPSPTDQPSFSNLTAFPGGAKELLLRDLDQLFLSSDCRHFNRTESLRLADELSGWVQRHQRGRRKIPQRAQERQKSQPRKKSPPVKAVPIQPPGPPERDSVGQLQLYRHPDRSQPAFLDAIDRREDTFYVVSFRRDHLLLPAISHNKTSRPKMSLVMPAMAPNETLSGRGAPGDYEEMMQIECEVMDTRVIHIKTSTVPPSLRKQPSPTPGNATGGPLPVSAASQAHQASHQPLYLNHP",
+    "encoded": "hhphhhhpphhpppphhppphhpppphphpppphhpphpphhppppphhphpppphphpppphphphphpppppphphhphhpphphppppppphpppphpppppphppppppphhphpphhphpppphhpphhhhppppppphpphphphhpppppppphppphpphpphpphppphphhphppppphhhppphhphpppphpppphhhhphphpphphhphphppphpppppphhpppppphpppphhhpphphppphhppppphhhpphhpppphpphhhhpphhphppppphpphppppppphhphphpppphppphphphhppppphhppppphhpppppppphhpphphphphhhhpppphpppphhhppphphhhhpppphphpppppphhhhhhhhhhhhhphpphphppppphphppphpppppppppphhphppppphpphpphppppppppppppppppppphpphphhppphpphhhpphpphhhppphpphppppphphhpphpphhppppppppphppphpppppppppppppphphhphpppppppppphpphphhpppppppphhhphhpppppphhhhphpppphhhphhppppppppphphhhphhhpppphpppphppphpphhphphphhppphhphpppphppphpppppppppphpppphphphhpphpphpppphhhppp"
+  },
+  "target": {
+    "name": "P42777 species=arabidopsis G-box-binding factor 4",
+    "sequence": "MASFKLMSSSNSDLSRRNSSSASSSPSIRSSHHLRPNPHADHSRISFAYGGGVNDYTFASDSKPFEMAIDVDRSIGDRNSVNNGKSVDDVWKEIVSGEQKTIMMKEEEPEDIMTLEDFLAKAEMDEGASDEIDVKIPTERLNNDGSYTFDFPMQRHSSFQMVEGSMGGGVTRGKRGRVMMEAMDKAAAQRQKRMIKNRESAARSRERKQAYQVELETLAAKLEEENEQLLKEIEESTKERYKKLMEVLIPVDEKPRPPSRPLSRSHSLEW",
+    "encoded": "hhphphhpppppphppppppphppppphppppphppppphpppphphhhppphpphphhppppphphhhphppphppppphppppphpphhpphhpppppphhhppppppphhphpphhhphphppphppphphphpppphppppphphphphppppphphhppphppphppppppphhhphhpphhhppppphhppppphhppppppphhphphpphhhphpppppphhpphppppppphpphhphhhphpppppppppphppppphph"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 324,
+      "target_pos": 186,
+      "kmer": "hhppppphhppppphhppp",
+      "query_kmer": "LLKRQQRMIKNRESACQSR",
+      "target_kmer": "AAQRQKRMIKNRESAARSR"
+    },
+    {
+      "query_pos": 325,
+      "target_pos": 187,
+      "kmer": "hppppphhppppphhpppp",
+      "query_kmer": "LKRQQRMIKNRESACQSRR",
+      "target_kmer": "AQRQKRMIKNRESAARSRE"
+    },
+    {
+      "query_pos": 326,
+      "target_pos": 188,
+      "kmer": "ppppphhppppphhppppp",
+      "query_kmer": "KRQQRMIKNRESACQSRRK",
+      "target_kmer": "QRQKRMIKNRESAARSRER"
+    },
+    {
+      "query_pos": 327,
+      "target_pos": 189,
+      "kmer": "pppphhppppphhpppppp",
+      "query_kmer": "RQQRMIKNRESACQSRRKK",
+      "target_kmer": "RQKRMIKNRESAARSRERK"
+    },
+    {
+      "query_pos": 328,
+      "target_pos": 190,
+      "kmer": "ppphhppppphhppppppp",
+      "query_kmer": "QQRMIKNRESACQSRRKKK",
+      "target_kmer": "QKRMIKNRESAARSRERKQ"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 324,
+      "query_end": 347,
+      "target_start": 186,
+      "target_end": 209,
+      "length": 23
+    }
+  ]
+}

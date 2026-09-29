@@ -1,0 +1,88 @@
+{
+  "ksize": 7,
+  "moltype": "mmseqs12",
+  "classes": {
+    "a": "AST",
+    "c": "C",
+    "e": "EQ",
+    "f": "FY",
+    "g": "G",
+    "h": "H",
+    "i": "IV",
+    "k": "KR",
+    "l": "LM",
+    "n": "DN",
+    "p": "P",
+    "w": "W"
+  },
+  "query": {
+    "name": "Q96T55 species=human Potassium channel subfamily K member 16",
+    "sequence": "MPSAGLCSCWGGRVLPLLLAYVCYLLLGATIFQLLERQAEAQSRDQFQLEKLRFLENYTCLDQWAMEQFVQVIMEAWVKGVNPKGNSTNPSNWDFGSSFFFAGTVVTTIGYGNLAPSTEAGQVFCVFYALLGIPLNVIFLNHLGTGLRAHLAAIERWEDRPRRSQVLQVLGLALFLTLGTLVILIFPPMVFSHVEGWSFSEGFYFAFITLSTIGFGDYVVGTDPSKHYISVYRSLAAIWILLGLAWLALILPLGPLLLHRCCQLWLLSLRQGCGAKAAPGRRPRRGSTAARGVQVTPQDFPISKKGLGS",
+    "encoded": "lpaaglcacwggkilplllaficflllgaaifellekeaeaeaknefeleklkflenfaclnewaleefieiileawikginpkgnaanpanwnfgaafffagaiiaaigfgnlapaaeageifciffallgiplniiflnhlgaglkahlaaiekwenkpkkaeileilglalflalgaliilifpplifahiegwafaegfffafialaaigfgnfiiganpakhfiaifkalaaiwillglawlalilplgplllhkccelwllalkegcgakaapgkkpkkgaaaakgieiapenfpiakkglga"
+  },
+  "target": {
+    "name": "O73606 species=chicken Potassium voltage-gated channel subfamily G member 2",
+    "sequence": "MALLTGNADRAFSSYSFNKLENLCEVQTKKGFFYRKAKLLHPDEDLCYLARLDDRTRFVIINVGGIKYKVPWTTLENCPLTRLGKLKSCNNYDEIMNICDDYDVSCNEFFFDRNPSAFRTIMTFLTAGKLRLLREMCALSFQEELVYWGIEEDHLEWCCKKRLQQKEEEAAEARMYEGEMMFSETTQCAFQDNNWLSLCMRNLRDMVENPHSGIPGKIFACISISFVAITAVSLCISTMPDVREEEDRGECSQKCYDIFVLETVCVAWFSFEFLLRSIQAENKCAFLKTPLNIIDILAILPFYISLIVDMASTKNSSKPGGGAGNKYLERVGLVLRFLRALRILYVMRLARHSLGLQTLGLTVRRCTREFGLLLLFLCVAMALFSPLVYLAESELGAKQEFTSIPTSYWWAVISMTTVGYGDMVPRSIPGQVVALSSILSGILLMAFPVTSIFHTFSRSYSELKEQQQRAASRQMHQLEESTKLAGGGSSQWITAASPPDAAREDGRPELDQEAKRSC",
+    "encoded": "lallagnankafaafafnklenlceieakkgfffkkakllhpnenlcflaklnnkakfiiiniggikfkipwaalencplaklgklkacnnfneilnicnnfniacnefffnknpaafkailaflaagklkllkelcalafeeelifwgieenhlewcckkkleekeeeaaeaklfegellfaeaaecafennnwlalclknlknlienphagipgkifaciaiafiaiaaialciaalpnikeeenkgecaekcfnifileaiciawfafefllkaieaenkcaflkaplniinilailpffialiinlaaaknaakpgggagnkflekiglilkflkalkilfilklakhalglealglaikkcakefgllllflcialalfapliflaeaelgakeefaaipaafwwaiialaaigfgnlipkaipgeiialaailagilllafpiaaifhafakafaelkeeeekaaakelheleeaaklagggaaewiaaaappnaakengkpelneeakkac"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 106,
+      "target_pos": 415,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "TTVGYGD"
+    },
+    {
+      "query_pos": 107,
+      "target_pos": 416,
+      "kmer": "aigfgnl",
+      "query_kmer": "TIGYGNL",
+      "target_kmer": "TVGYGDM"
+    },
+    {
+      "query_pos": 207,
+      "target_pos": 412,
+      "kmer": "ialaaig",
+      "query_kmer": "ITLSTIG",
+      "target_kmer": "ISMTTVG"
+    },
+    {
+      "query_pos": 208,
+      "target_pos": 413,
+      "kmer": "alaaigf",
+      "query_kmer": "TLSTIGF",
+      "target_kmer": "SMTTVGY"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 414,
+      "kmer": "laaigfg",
+      "query_kmer": "LSTIGFG",
+      "target_kmer": "MTTVGYG"
+    },
+    {
+      "query_pos": 210,
+      "target_pos": 415,
+      "kmer": "aaigfgn",
+      "query_kmer": "STIGFGD",
+      "target_kmer": "TTVGYGD"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 207,
+      "query_end": 217,
+      "target_start": 412,
+      "target_end": 422,
+      "length": 10
+    },
+    {
+      "query_start": 106,
+      "query_end": 114,
+      "target_start": 415,
+      "target_end": 423,
+      "length": 8
+    }
+  ]
+}

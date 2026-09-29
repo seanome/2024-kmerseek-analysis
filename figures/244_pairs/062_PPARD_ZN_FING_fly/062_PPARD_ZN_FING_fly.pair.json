@@ -1,0 +1,85 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill_no_c2",
+  "classes": {
+    "h": "AFILMVWY",
+    "p": "CDEGHKNPQRST"
+  },
+  "query": {
+    "name": "Q03181 species=human Peroxisome proliferator-activated receptor delta",
+    "sequence": "MEQPQEEAPEVREEEEKEEVAEAEGAPELNGGPQHALPSSSYTDLSRSSSPPSLLDQLQMGCDGASCGSLNMECRVCGDKASGFHYGVHACEGCKGFFRRTIRMKLEYEKCERSCKIQKKNRNKCQYCRFQKCLALGMSHNAIRFGRMPEAEKRKLVAGLTANEGSQYNPQVADLKAFSKHIYNAYLKNFNMTKKKARSILTGKASHTAPFVIHDIETLWQAEKGLVWKQLVNGLPPYKEISVHVFYRCQCTTVETVRELTEFAKSIPSFSSLFLNDQVTLLKYGVHEAIFAMLASIVNKDGLLVANGSGFVTREFLRSLRKPFSDIIEPKFEFAVKFNALELDDSDLALFIAAIILCGDRPGLMNVPRVEAIQDTILRALEFHLQANHPDAQYLFPKLLQKMADLRQLVTEHAQMMQRIKKTETETSLHPLLQEIYKDMY",
+    "encoded": "hpppppphpphpppppppphhphpphpphpppppphhpppphpphpppppppphhpphphpppphpppphphppphpppphpphphphphpppppphhppphphphphpppppppphppppppppphpphppphhhphppphhphpphpphpppphhhphphppppphppphhphphhppphhphhhpphphpppphpphhppphppphphhhpphpphhphppphhhpphhpphpphpphphphhhpppppphpphpphpphhpphpphpphhhppphphhphphpphhhhhhhphhpppphhhhpppphhppphhpphppphpphhppphphhhphphhphpppphhhhhhhhhhpppppphhphpphphhppphhphhphphphpppphphhhpphhpphhphpphhppphphhpphpppppppphpphhpphhpphh"
+  },
+  "target": {
+    "name": "P16376 species=fly Steroid receptor seven-up, isoform A",
+    "sequence": "MCASPSTAPGFFNPRPQSGAELSAFDIGLSRSMGLGVPPHSAWHEPPASLGGHLHAASAGPGTTTGSVATGGGGTTPSSVASQQSAVIKQDLSCPSLNQAGSGHHPGIKEDLSSSLPSANGGSAGGHHSGSGSGSGSGVNPGHGSDMLPLIKGHGQDMLTSIKGQPTGCGSTTPSSQANSSHSQSSNSGSQIDSKQNIECVVCGDKSSGKHYGQFTCEGCKSFFKRSVRRNLTYSCRGSRNCPIDQHHRNQCQYCRLKKCLKMGMRREAVQRGRVPPTQPGLAGMHGQYQIANGDPMGIAGFNGHSYLSSYISLLLRAEPYPTSRYGQCMQPNNIMGIDNICELAARLLFSAVEWAKNIPFFPELQVTDQVALLRLVWSELFVLNASQCSMPLHVAPLLAAAGLHASPMAADRVVAFMDHIRIFQEQVEKLKALHVDSAEYSCLKAIVLFTTGKLLDILYKDVPALLTKVSALLGKGSTASNDDVLAVVRDHLDELNRQEQESQAQQQAPLHLAAFMNCVAGVEAAVQQAEQAQVPTSSASASVSAPLVPSAGSAFSSCQAKSAGSEMDLLASLYAQAQATPPSSGGGDASGHNNSSGLGASLPTQSQSGSSSRNLTASPLSTSLATAPAPASASAPAPVPTSSVAQVPVPAPVPVTSSASSSSLGGGAYQTPSAAAAAAAMFHYQTPPRAAFGSAFDMFHHSTPFGVGVGHAHALAHSSGSGSASFGSPSYRYSPYSLAGSRWQL",
+    "encoded": "hphpppphpphhppppppphphphhphphppphphphpppphhpppphphppphphhphpppppppphhpppppppppphhpppphhhppphpppphpphppppppphppphppphpphpppphpppppppppppppphppppppphhphhpppppphhpphppppppppppppppphppppppppppppphppppphpphhppppppppphpphppppppphhppphppphphppppppppphppppppppphpphppphphphppphhpppphpppppphhphppphphhpppphphhphpppphhpphhphhhphpphpppphppphpppphhphpphpphhhphhhphhphhpphphhpphphppphhhhphhhpphhhhphpppphphphhphhhhhphphpphhhpphhhhhpphphhppphpphphhphpphphpphphhhhhpppphhphhhpphphhhpphphhhppppphpppphhhhhppphpphpppppppphppphphphhhhhpphhphphhhpphpphphpppphphphphphhpphpphhpppphpphppphphhhphhhphphppppppppphpppppppphphphpppppppppppphphpphppphhphphphphphphphpppphhphphphphphppphpppphppphhpppphhhhhhhhhphppppphhhpphhphhppppphphphpphphhhppppppphphpppphphpphphhppphph"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 108,
+      "target_pos": 235,
+      "kmer": "pppppppphppppppppph",
+      "query_kmer": "EKCERSCKIQKKNRNKCQY",
+      "target_kmer": "CRGSRNCPIDQHHRNQCQY"
+    },
+    {
+      "query_pos": 109,
+      "target_pos": 236,
+      "kmer": "ppppppphppppppppphp",
+      "query_kmer": "KCERSCKIQKKNRNKCQYC",
+      "target_kmer": "RGSRNCPIDQHHRNQCQYC"
+    },
+    {
+      "query_pos": 110,
+      "target_pos": 237,
+      "kmer": "pppppphppppppppphpp",
+      "query_kmer": "CERSCKIQKKNRNKCQYCR",
+      "target_kmer": "GSRNCPIDQHHRNQCQYCR"
+    },
+    {
+      "query_pos": 111,
+      "target_pos": 238,
+      "kmer": "ppppphppppppppphpph",
+      "query_kmer": "ERSCKIQKKNRNKCQYCRF",
+      "target_kmer": "SRNCPIDQHHRNQCQYCRL"
+    },
+    {
+      "query_pos": 112,
+      "target_pos": 239,
+      "kmer": "pppphppppppppphpphp",
+      "query_kmer": "RSCKIQKKNRNKCQYCRFQ",
+      "target_kmer": "RNCPIDQHHRNQCQYCRLK"
+    },
+    {
+      "query_pos": 113,
+      "target_pos": 240,
+      "kmer": "ppphppppppppphpphpp",
+      "query_kmer": "SCKIQKKNRNKCQYCRFQK",
+      "target_kmer": "NCPIDQHHRNQCQYCRLKK"
+    },
+    {
+      "query_pos": 114,
+      "target_pos": 241,
+      "kmer": "pphppppppppphpphppp",
+      "query_kmer": "CKIQKKNRNKCQYCRFQKC",
+      "target_kmer": "CPIDQHHRNQCQYCRLKKC"
+    },
+    {
+      "query_pos": 115,
+      "target_pos": 242,
+      "kmer": "phppppppppphpphppph",
+      "query_kmer": "KIQKKNRNKCQYCRFQKCL",
+      "target_kmer": "PIDQHHRNQCQYCRLKKCL"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 108,
+      "query_end": 134,
+      "target_start": 235,
+      "target_end": 261,
+      "length": 26
+    }
+  ]
+}
