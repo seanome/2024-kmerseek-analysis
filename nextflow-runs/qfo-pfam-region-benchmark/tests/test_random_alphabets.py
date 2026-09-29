@@ -121,7 +121,9 @@ def test_pbotc_partition_round_trips_to_kmerseek_hp_string():
 
 
 def test_committed_control_partition_is_pbotc():
-    table = ep.read_partition(REPO / "data" / "random_alphabets" / "pbotc_encoded2.tsv")
+    table = ep.read_partition(
+        REPO / "data" / "random_alphabets" / "encoded_hp_pbotc_1st_ed2.tsv"
+    )
     assert table == pbotc_table()
 
 
@@ -161,3 +163,86 @@ def test_bad_partition_is_refused(tmp_path):
     part.write_text("residue\tclass\nA\t1\n")
     with pytest.raises(ValueError):
         ep.read_partition(part)
+
+
+# --------------------------------------------------------------------------
+# compare_encoded_control.py and the reduction script's file names
+# --------------------------------------------------------------------------
+
+
+def _load(name, rel):
+    spec = importlib.util.spec_from_file_location(name, REPO / rel)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _regions(**overrides):
+    import polars as pl
+
+    base = {
+        "query_name": ["q1", "q1", "q2"],
+        "target_name": ["t1", "t1", "t2"],
+        "region_start": [0, 0, 5],
+        "region_end": [30, 30, 40],
+        "target_start": [2, 50, 7],
+        "target_end": [32, 80, 42],
+        "region_n_shared_kmers": [12, 12, 17],
+        "region_length": [30, 30, 35],
+        "region_mean_idf": [3.1, 3.1, 2.2],
+        "region_enrichment": [5.0, 5.0, 7.5],
+        "region_tail_probability": [1e-6, 1e-6, 1e-9],
+        "region_evalue": [1e-3, 1e-3, 1e-5],
+        "region_ka_bits": [30.0, 30.0, 40.0],
+    }
+    base.update(overrides)
+    return pl.DataFrame(base)
+
+
+def test_control_diff_passes_on_identical_tables(tmp_path):
+    cc = _load("compare_encoded_control", "scripts/compare_encoded_control.py")
+    _regions().write_parquet(tmp_path / "a.parquet")
+    _regions().write_parquet(tmp_path / "b.parquet")
+    res = cc.compare(tmp_path / "a.parquet", tmp_path / "b.parquet")
+    assert res["n_rows_differing_gated"] == 0
+    # q1 has two rows over one query region: 2 distinct regions, 3 rows.
+    assert res["n_regions_reference"] == 2 and res["n_rows_reference"] == 3
+
+
+def test_control_diff_gates_counts_and_only_reports_evalues(tmp_path):
+    cc = _load("compare_encoded_control", "scripts/compare_encoded_control.py")
+    _regions().write_parquet(tmp_path / "a.parquet")
+    _regions(
+        region_n_shared_kmers=[12, 11, 17], region_evalue=[1e-3, 1e-3, 1e-1]
+    ).write_parquet(tmp_path / "b.parquet")
+    res = cc.compare(tmp_path / "a.parquet", tmp_path / "b.parquet")
+    assert res["n_gated_diff"] == 1
+    assert res["n_region_evalue_diff"] == 1
+    assert res["n_pass_evalue_0.01_in_one_only"] == 1
+    assert res["max_evalue_ratio"] == pytest.approx(1e4)
+
+
+def test_reduction_reads_extension_arm_names():
+    rd = _load("reduce_landing", "scripts/reduce_swissprot_instance_landing.py")
+    m = rd.KM_RE.match(
+        "human_vs_zebrafish.random2_01.k19.lcfalse.extend-c1.63.regions.parquet"
+    )
+    assert (m["alpha"], m["k"], m["ext"]) == ("random2_01", "19", "extend-c1.63")
+    m = rd.KM_RE.match(
+        "human_vs_zebrafish.hp_pbotc_1st_ed2.k19.lcfalse.regions.parquet"
+    )
+    assert (m["alpha"], m["ext"]) == ("hp_pbotc_1st_ed2", None)
+
+
+def test_encoded_hp_partitions_match_the_readme(tmp_path):
+    ra.write_hp(tmp_path)
+    for alphabet, h in ra.HP_HYDROPHOBIC.items():
+        table = ep.read_partition(tmp_path / f"encoded_{alphabet}.tsv")
+        assert {r for r, c in table.items() if c == 1} == set(h)
+        committed = REPO / "data" / "random_alphabets" / f"encoded_{alphabet}.tsv"
+        assert (
+            committed.read_text() == (tmp_path / f"encoded_{alphabet}.tsv").read_text()
+        )
+    assert (tmp_path / "hp2.manifest.tsv").read_text() == (
+        REPO / "data" / "random_alphabets" / "hp2.manifest.tsv"
+    ).read_text()

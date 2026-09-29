@@ -1851,33 +1851,50 @@ run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
 #
 # Does the short-feature result belong to hydrophobic-polar, or to any 2-letter alphabet?
 # Ten partitions of the 20 amino acids into 10 and 10, drawn at random
-# (scripts/random_alphabets.py), searched with the same query set, targets and kmerseek
-# build as the six real H/P arms notebook 244 scored.
+# (scripts/random_alphabets.py), and the six built-in H/P alphabets beside them, all under
+# kmerseek 0.4 with the same settings: the midi-plus query set, the nine targets, k19 and
+# k26, mask off, extension at C = 1.63 and C = 2 with region_evalue from a Karlin-Altschul
+# fit stored per index. 16 x 2 x 9 = 288 indexes, x 2 penalties = 576 searches.
 #
-# The same kmerseek build as run-midi-plus, NOT 0.4: the real H/P tables these are compared
-# against are run-midi-plus's, made by $(IMAGE_REMOTE) (kmerseek 0.3.1), and the index
-# cache is the one that build wrote. The encoded partitions are new store entries
-# (<target>.random2_NN.k<k>.lcfalse.kmerseek.rocksdb), so nothing already there is reused
-# or overwritten. There is no --reuse_results flag in this pipeline; storeDir is what
-# makes a rerun skip every finished search.
+# The H/P arms run here too because nothing else has them under 0.4: run-midi-plus-0.4
+# stopped after one search (2026-09-24), and notebook 244 scored 0.3.1 tables. They run
+# ENCODED, like the random partitions (encoded_hp_<alphabet>, hydrophobic -> A), so every
+# arm's E-value fit is made the same way. kmerseek's fit shuffles the sequence it is given:
+# amino acids for a built-in alphabet, A/D for an encoded one. On the laptop control that
+# let 11-13% more rows through E <= 0.01 for the encoded arm, while positions, n_shared and
+# mean IDF were identical.
 #
-# RANDOM_A_BASE is the pipeline directory whose data/midi-plus and results/ this reads and
-# writes. The default is this clone. The main Sherlock clone has a live head in it, so run
-# from a second clone and point this at the main one:
+# Writes where run-midi-plus-0.4 writes (ALLIDF_OUTDIR, ALLIDF_INDEX), under names it never
+# uses: every search file ends .extend-c<C>.regions.parquet, and the indexes, which carry
+# the fits, go in their own ka_fit/ folder of the 0.4 index store. There is no
+# --reuse_results flag in this pipeline; storeDir already skips every finished index and
+# search on a rerun.
+#
+# RANDOM_A_BASE is the pipeline directory whose data/ and results/ this reads and writes.
+# The default is this clone. The main Sherlock clone has a live head in it, so run from a
+# second clone and point this at the main one:
 #   make run-random-alphabets RANDOM_A_BASE=/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark
 RANDOM_A_BASE      ?= $(MAKEFILE_DIR)
-RANDOM_A_MANIFEST  ?= $(MAKEFILE_DIR)/../../data/random_alphabets/random2.manifest.tsv
-RANDOM_A_CONTROL   ?= $(MAKEFILE_DIR)/../../data/random_alphabets/control.manifest.tsv
+RANDOM_A_DATA      ?= $(MAKEFILE_DIR)/../../data/random_alphabets
+RANDOM_A_MANIFESTS ?= $(RANDOM_A_DATA)/random2.manifest.tsv,$(RANDOM_A_DATA)/hp2.manifest.tsv
+RANDOM_A_CONTROL   ?= $(RANDOM_A_DATA)/control.manifest.tsv
 RANDOM_A_KSIZES    ?= 19,26
-RANDOM_A_IMAGE_IMG  = $${SCRATCH}/apptainer-cache/$(subst /,-,$(subst :,-,$(IMAGE_REMOTE))).img
+RANDOM_A_PENALTIES ?= 1.63,2
+comma := ,
+RANDOM_A_OUTDIR     = $(RANDOM_A_BASE)/data/midi-plus-0.4/results
+RANDOM_A_IMAGE_IMG  = $${SCRATCH}/apptainer-cache/$(subst /,-,$(subst :,-,$(ALLIDF_IMAGE))).img
 RANDOM_A_ARGS = -entry randomAlphabets -profile $(PROFILE) -resume \
-	    --kmerseek_image $(IMAGE_REMOTE) \
-	    --qfo_dir        $(RANDOM_A_BASE)/data/midi-plus/qfo \
-	    --outdir         $(RANDOM_A_BASE)/data/midi-plus/results \
-	    --db_cache       $(RANDOM_A_BASE)/results
+	    --kmerseek_image       $(ALLIDF_IMAGE) \
+	    --qfo_dir              $(RANDOM_A_BASE)/data/midi-plus/qfo \
+	    --outdir               $(RANDOM_A_OUTDIR) \
+	    --db_cache             $(RANDOM_A_BASE)/results \
+	    --kmerseek_index_cache $(RANDOM_A_BASE)/results/kmerseek_index_0.4 \
+	    --extra_encoded_penalties $(RANDOM_A_PENALTIES)
 
-# Positive control, first: pbotc's own partition encoded as A/D, human -> zebrafish, k19.
-run-random-alphabets-control: PREFETCH_CONTAINERS := $(IMAGE_REMOTE)
+# Positive control, first: pbotc's own partition encoded as A/D and run as protein20,
+# next to the built-in hp_pbotc_1st_ed2, human -> zebrafish, k19, both penalties. The
+# encoded arm's searches are part of run-random-alphabets too, and are not repeated there.
+run-random-alphabets-control: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE)
 run-random-alphabets-control: HEAD_JOBNAME := nf-246-control
 run-random-alphabets-control: prefetch-images
 	$(call require_cluster)
@@ -1890,20 +1907,23 @@ run-random-alphabets-control: prefetch-images
 	    --extra_encoded_ksizes 19 \
 	    $(NF_ARGS)
 
-# The diff against the real hp_pbotc_1st_ed2 k19 table. Blocks until it prints; exits 1 if
-# more than 0.1% of rows differ.
+# The diff, one per penalty. Blocks until it prints; exits 1 if more than 0.1% of rows
+# differ in position, n_shared or mean IDF. E-values are reported, not gated: the fit's
+# shuffled decoys are shuffled amino acids for the built-in alphabet and shuffled A/D for
+# the encoded one, so the two fits differ a little by construction.
 diff-random-alphabets-control:
 	$(call require_cluster)
 	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
 	  --time=01:00:00 --cpus-per-task=4 --mem=64G --job-name=246-control-diff \
-	  apptainer exec --bind /scratch $(RANDOM_A_IMAGE_IMG) \
-	  python3 $(MAKEFILE_DIR)/../../scripts/compare_encoded_control.py \
-	    --reference $(RANDOM_A_BASE)/data/midi-plus/results/kmerseek/human_vs_zebrafish.hp_pbotc_1st_ed2.k19.lcfalse.regions.parquet \
-	    --encoded   $(RANDOM_A_BASE)/data/midi-plus/results/kmerseek/human_vs_zebrafish.pbotc_encoded2.k19.lcfalse.regions.parquet \
-	    --out       $(MAKEFILE_DIR)/run-random-alphabets-control/control_diff.json
+	  apptainer exec --bind /scratch $(RANDOM_A_IMAGE_IMG) sh -c 'set -e; for c in $(subst $(comma), ,$(RANDOM_A_PENALTIES)); do \
+	    python3 $(MAKEFILE_DIR)/../../scripts/compare_encoded_control.py \
+	      --reference $(RANDOM_A_OUTDIR)/kmerseek/human_vs_zebrafish.hp_pbotc_1st_ed2.k19.lcfalse.extend-c$$c.regions.parquet \
+	      --encoded   $(RANDOM_A_OUTDIR)/kmerseek/human_vs_zebrafish.encoded_hp_pbotc_1st_ed2.k19.lcfalse.extend-c$$c.regions.parquet \
+	      --out       $(MAKEFILE_DIR)/run-random-alphabets-control/control_diff.C$$c.json; done'
 
-# The ten partitions x k19 and k26 x the nine midi-plus targets, mask off: 180 searches.
-run-random-alphabets: PREFETCH_CONTAINERS := $(IMAGE_REMOTE)
+# The ten partitions and the six H/P alphabets x k19, k26 x nine targets x two penalties:
+# 576 searches.
+run-random-alphabets: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE)
 run-random-alphabets: HEAD_JOBNAME := nf-246-random
 run-random-alphabets: prefetch-images
 	$(call require_cluster)
@@ -1912,7 +1932,7 @@ run-random-alphabets: prefetch-images
 	  ml load biology nextflow && \
 	  $(HEAD_SUBMIT) nextflow run ../main.nf $(RANDOM_A_ARGS) \
 	    --target_species $(MIDI_TARGETS) \
-	    --extra_encoded_alphabets $(RANDOM_A_MANIFEST) \
+	    --extra_encoded_alphabets $(RANDOM_A_MANIFESTS) \
 	    --extra_encoded_ksizes $(RANDOM_A_KSIZES) \
 	    $(NF_ARGS)
 

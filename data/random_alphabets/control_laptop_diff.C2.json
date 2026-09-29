@@ -1,0 +1,37 @@
+{
+ "reference": "human_vs_zebrafish.hp_pbotc_1st_ed2.k19.lcfalse.extend-c2",
+ "encoded": "human_vs_zebrafish.encoded_hp_pbotc_1st_ed2.k19.lcfalse.extend-c2 (run under the name pbotc_encoded2; same partition)",
+ "n_rows_reference": 375204,
+ "n_rows_encoded": 375204,
+ "n_regions_reference": 371400,
+ "n_regions_encoded": 371400,
+ "n_regions_only_reference": 0,
+ "n_regions_only_encoded": 0,
+ "n_only_reference": 0,
+ "n_only_encoded": 0,
+ "gated_columns": [
+  "region_n_shared_kmers",
+  "region_length",
+  "region_mean_idf",
+  "region_enrichment",
+  "region_tail_probability"
+ ],
+ "reported_columns": [
+  "region_evalue",
+  "region_ka_bits"
+ ],
+ "n_both": 375204,
+ "n_gated_diff": 0,
+ "n_region_evalue_diff": 375011,
+ "n_region_ka_bits_diff": 373714,
+ "max_evalue_ratio": 47959.89104657711,
+ "median_evalue_ratio": 1.0765586170650012,
+ "n_pass_evalue_0.01_in_one_only": 52,
+ "n_pass_evalue_0.01_reference": 450,
+ "n_pass_evalue_0.01_encoded": 502,
+ "n_rows_differing_gated": 0,
+ "frac_differing_gated": 0.0,
+ "max_diff_frac": 0.001,
+ "pass": true,
+ "run": "laptop, 50 midi-plus queries vs zebrafish, local arm64 image kmerseek-region:0.4.0-rc5-arm64, which reports kmerseek 0.4.0 (the amd64 rc5 image crashes in its polars step under emulation), -entry randomAlphabets"
+}

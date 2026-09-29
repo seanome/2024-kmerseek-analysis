@@ -1,3 +1,4 @@
-# positive control: hp_pbotc_1st_ed2 partition (h = ACFILMPVWY -> A, p = DEGHKNQRST -> D), run as protein20
+# positive control: hp_pbotc_1st_ed2 encoded as A/D and run as protein20, next to the built-in alphabet on the same inputs
 name	partition_tsv	alphabet
-pbotc_encoded2	pbotc_encoded2.tsv	protein20
+encoded_hp_pbotc_1st_ed2	encoded_hp_pbotc_1st_ed2.tsv	protein20
+hp_pbotc_1st_ed2	-	hp_pbotc_1st_ed2

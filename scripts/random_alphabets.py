@@ -15,6 +15,9 @@ an earlier accepted one is also drawn again. Both counts go in the manifest head
 
 Writes, under --out-dir:
   random2_<01..10>.tsv    residue, class (1 or 2)
+  encoded_hp_*.tsv, hp2.manifest.tsv
+                          the six H/P alphabets as partitions, encoded the same way
+                          (see write_hp)
   random2.manifest.tsv    one row per partition: name, class-1 and class-2 residues, the
                           mean Kyte-Doolittle hydropathy of each class, and the distance
                           to the nearest H/P alphabet; the seed and rejection counts are
@@ -150,12 +153,43 @@ def write(out_dir: Path, seed: int = SEED) -> Path:
     return manifest
 
 
+def write_hp(out_dir: Path) -> Path:
+    """The six H/P alphabets as partitions, so they run through the same A/D encoding.
+
+    Encoded like the random partitions, the H/P arms get their E-value fit the same way:
+    kmerseek's fit shuffles the sequence it is given, which is amino acids for a built-in
+    alphabet and A/D for an encoded one, and on the notebook 246 positive control the
+    A/D-shuffled fit let 11-13% more rows through E <= 0.01. Positions, n_shared and mean
+    IDF are identical either way. Class 1 is the hydrophobic class. Named
+    encoded_<alphabet>, never hp_*, which names kmerseek's own alphabets.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for alphabet, h in HP_HYDROPHOBIC.items():
+        name = f"encoded_{alphabet}"
+        with open(out_dir / f"{name}.tsv", "w") as fh:
+            fh.write("residue\tclass\n")
+            for r in AMINO_ACIDS:
+                fh.write(f"{r}\t{1 if r in h else 2}\n")
+        rows.append(f"{name}\t{name}.tsv\tprotein20\n")
+    manifest = out_dir / "hp2.manifest.tsv"
+    with open(manifest, "w") as fh:
+        fh.write(
+            "# the six 2-letter H/P alphabets in kmerseek's README table, encoded as A/D "
+            "(hydrophobic -> A) and run as protein20, like the random partitions\n"
+        )
+        fh.write("name\tpartition_tsv\talphabet\n")
+        fh.writelines(rows)
+    return manifest
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--out-dir", type=Path, default=Path("data/random_alphabets"))
     ap.add_argument("--seed", type=int, default=SEED)
     args = ap.parse_args(argv)
     manifest = write(args.out_dir, args.seed)
+    write_hp(args.out_dir)
     print(manifest.read_text(), end="")
     return 0
 
