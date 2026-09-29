@@ -335,7 +335,8 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 # second multi-GB image for arms it never executes.
 PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
 
-.PHONY: run-midi-plus-0.4 run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
+.PHONY: run-midi-plus-0.4 run-human-allvall \
+        run-random-alphabets run-random-alphabets-control diff-random-alphabets-control bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image \
         build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
@@ -1844,6 +1845,75 @@ run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
 	    --prostt5_weights ../data/prostt5/weights \
 	    $(PFAM_HMM_ARG) \
 	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+# ---- notebook 246: ten random 2-letter partitions (experiment A) --------------------
+#
+# Does the short-feature result belong to hydrophobic-polar, or to any 2-letter alphabet?
+# Ten partitions of the 20 amino acids into 10 and 10, drawn at random
+# (scripts/random_alphabets.py), searched with the same query set, targets and kmerseek
+# build as the six real H/P arms notebook 244 scored.
+#
+# The same kmerseek build as run-midi-plus, NOT 0.4: the real H/P tables these are compared
+# against are run-midi-plus's, made by $(IMAGE_REMOTE) (kmerseek 0.3.1), and the index
+# cache is the one that build wrote. The encoded partitions are new store entries
+# (<target>.random2_NN.k<k>.lcfalse.kmerseek.rocksdb), so nothing already there is reused
+# or overwritten. There is no --reuse_results flag in this pipeline; storeDir is what
+# makes a rerun skip every finished search.
+#
+# RANDOM_A_BASE is the pipeline directory whose data/midi-plus and results/ this reads and
+# writes. The default is this clone. The main Sherlock clone has a live head in it, so run
+# from a second clone and point this at the main one:
+#   make run-random-alphabets RANDOM_A_BASE=/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark
+RANDOM_A_BASE      ?= $(MAKEFILE_DIR)
+RANDOM_A_MANIFEST  ?= $(MAKEFILE_DIR)/../../data/random_alphabets/random2.manifest.tsv
+RANDOM_A_CONTROL   ?= $(MAKEFILE_DIR)/../../data/random_alphabets/control.manifest.tsv
+RANDOM_A_KSIZES    ?= 19,26
+RANDOM_A_IMAGE_IMG  = $${SCRATCH}/apptainer-cache/$(subst /,-,$(subst :,-,$(IMAGE_REMOTE))).img
+RANDOM_A_ARGS = -entry randomAlphabets -profile $(PROFILE) -resume \
+	    --kmerseek_image $(IMAGE_REMOTE) \
+	    --qfo_dir        $(RANDOM_A_BASE)/data/midi-plus/qfo \
+	    --outdir         $(RANDOM_A_BASE)/data/midi-plus/results \
+	    --db_cache       $(RANDOM_A_BASE)/results
+
+# Positive control, first: pbotc's own partition encoded as A/D, human -> zebrafish, k19.
+run-random-alphabets-control: PREFETCH_CONTAINERS := $(IMAGE_REMOTE)
+run-random-alphabets-control: HEAD_JOBNAME := nf-246-control
+run-random-alphabets-control: prefetch-images
+	$(call require_cluster)
+	mkdir -p run-random-alphabets-control
+	cd run-random-alphabets-control && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf $(RANDOM_A_ARGS) \
+	    --target_species zebrafish \
+	    --extra_encoded_alphabets $(RANDOM_A_CONTROL) \
+	    --extra_encoded_ksizes 19 \
+	    $(NF_ARGS)
+
+# The diff against the real hp_pbotc_1st_ed2 k19 table. Blocks until it prints; exits 1 if
+# more than 0.1% of rows differ.
+diff-random-alphabets-control:
+	$(call require_cluster)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	  --time=01:00:00 --cpus-per-task=4 --mem=64G --job-name=246-control-diff \
+	  apptainer exec --bind /scratch $(RANDOM_A_IMAGE_IMG) \
+	  python3 $(MAKEFILE_DIR)/../../scripts/compare_encoded_control.py \
+	    --reference $(RANDOM_A_BASE)/data/midi-plus/results/kmerseek/human_vs_zebrafish.hp_pbotc_1st_ed2.k19.lcfalse.regions.parquet \
+	    --encoded   $(RANDOM_A_BASE)/data/midi-plus/results/kmerseek/human_vs_zebrafish.pbotc_encoded2.k19.lcfalse.regions.parquet \
+	    --out       $(MAKEFILE_DIR)/run-random-alphabets-control/control_diff.json
+
+# The ten partitions x k19 and k26 x the nine midi-plus targets, mask off: 180 searches.
+run-random-alphabets: PREFETCH_CONTAINERS := $(IMAGE_REMOTE)
+run-random-alphabets: HEAD_JOBNAME := nf-246-random
+run-random-alphabets: prefetch-images
+	$(call require_cluster)
+	mkdir -p run-random-alphabets
+	cd run-random-alphabets && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf $(RANDOM_A_ARGS) \
+	    --target_species $(MIDI_TARGETS) \
+	    --extra_encoded_alphabets $(RANDOM_A_MANIFEST) \
+	    --extra_encoded_ksizes $(RANDOM_A_KSIZES) \
 	    $(NF_ARGS)
 
 run-midi-plus: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)

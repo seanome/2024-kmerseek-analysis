@@ -171,6 +171,22 @@ params.kmerseek_combos    = null
 // sweep nothing and build a report over it.
 params.kmerseek_stored_only = false
 
+// Two-letter partitions that are not kmerseek alphabets, for notebook 246 (experiment A:
+// is the H/P result about hydrophobicity or about any 2-letter alphabet). Read only by
+// `-entry randomAlphabets`; the main workflow ignores them.
+//
+// A manifest TSV ('#' lines skipped) with columns name, partition_tsv and optionally
+// alphabet. partition_tsv is a residue/class file next to the manifest (see
+// bin/encode_partition.py) or '-' for none. With a partition, query and target FASTAs are
+// rewritten class 1 -> A, class 2 -> D and searched as protein20, which is the same exact
+// k-mer match a built-in 2-letter alphabet with that partition makes. The name is the
+// arm's label in every file name, so results land as
+//   human_vs_<species>.<name>.k<k>.lcfalse.regions.parquet
+// beside the real arms. Mask off only: kmerseek's low-complexity mask would be computed on
+// the A/D string, which is not what it computes for a built-in alphabet.
+params.extra_encoded_alphabets = null
+params.extra_encoded_ksizes    = '19'
+
 // Low-complexity k-mer removal. Swept as a toggle when it was an open question -- every
 // alphabet and ksize with and without it, which doubled the search count -- and now fixed
 // OFF, because the sweep answered it: dropping low-complexity k-mers did not move the
@@ -898,6 +914,11 @@ def KMERSEEK_TIMER_SH = '''# GNU date's %N is nanoseconds. BSD date (macOS, when
 // Class count is the trailing number in every encoding name: protein20, gbmr4,
 // hp_lehninger_hpc3, hp_thomas_dill_no_c2.
 def alphabetClasses = { label ->
+    // random2_07 is partition 7 of the 2-class draws (notebook 246): the class count is
+    // the number before the underscore, and 07 read as a class count would size memory for
+    // a 1-letter alphabet.
+    def r = label =~ /^random(\d+)_\d+$/
+    if (r) return (r[0][1] as int)
     def m = label =~ /(\d+)$/
     m ? (m[0][1] as int) : 20
 }
@@ -1869,6 +1890,34 @@ PYEOF
     printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s}\\n' \\
         "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
         "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" >> ${timings}
+    """
+}
+
+process encodeFastaPartition {
+    /*
+     * Rewrite one proteome under one 2-letter partition (bin/encode_partition.py) for
+     * `-entry randomAlphabets`. Stored beside the other per-proteome databases, so the ten
+     * random partitions are encoded once per proteome however often the entry is rerun.
+     * One output file, so storeDir has nothing to trip on.
+     */
+    tag "${label}_${name}"
+    container params.kmerseek_image
+    storeDir "${DB_CACHE}/encoded_fasta"
+    cpus 1
+    memory '2 GB'
+    time '1h'
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple val(label), path(fasta), val(name), path(partition)
+
+    output:
+    path "${label}.${name}.fasta"
+
+    script:
+    """
+    encode_partition.py --partition ${partition} --input ${fasta} --output ${label}.${name}.fasta
     """
 }
 
@@ -4492,6 +4541,96 @@ workflow {
                            kmerseek_timings.collect().ifEmpty([]), bpe_ch,
                            kmerseek_spectra.collect().ifEmpty([]))
     }
+}
+
+
+// ---------------------------------------------------------------------------
+// `nextflow run main.nf -entry randomAlphabets --extra_encoded_alphabets <manifest>`
+//
+// kmerseek index and search for 2-letter partitions that are not kmerseek alphabets
+// (notebook 246). Searches only: the region tables go to ${outdir}/kmerseek under the same
+// names the main workflow uses, and are scored outside the pipeline
+// (scripts/reduce_swissprot_instance_landing.py), the same way notebook 244 scored the
+// real arms. The same two processes as the main sweep, so memory, retries and storeDir
+// behave the same; a partition's label sizes its memory as a 2-class alphabet (see
+// alphabetClasses).
+// ---------------------------------------------------------------------------
+workflow randomAlphabets {
+    if (!params.extra_encoded_alphabets) {
+        error "-entry randomAlphabets needs --extra_encoded_alphabets <manifest.tsv>"
+    }
+    def manifest = file(params.extra_encoded_alphabets)
+    if (!manifest.exists()) error "no manifest at ${manifest}"
+    def lines  = manifest.readLines().findAll { it.trim() && !it.startsWith('#') }
+    def header = lines[0].split('\t') as List
+    ['name', 'partition_tsv'].each { col ->
+        if (!(col in header)) error "${manifest}: no '${col}' column in ${header}"
+    }
+    def ARMS = lines.drop(1).collect { line ->
+        def row = [header, line.split('\t') as List].transpose().collectEntries()
+        def part = row.partition_tsv == '-' ? null : manifest.parent.resolve(row.partition_tsv)
+        if (part && !part.exists()) error "${manifest}: partition file ${part} does not exist"
+        if (row.name.startsWith('hp_') && part) {
+            error "${row.name}: an encoded partition may not be named hp_*, which names kmerseek's own alphabets"
+        }
+        [name: row.name, partition: part, alphabet: row.alphabet ?: 'protein20']
+    }
+    def ksizes = params.extra_encoded_ksizes.toString().tokenize(',').collect { it.trim() as int }
+
+    def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
+    def human_label = "human-" + java.security.MessageDigest.getInstance('MD5')
+        .digest(human_fasta.bytes).encodeHex().toString().take(8)
+    def targets = SPECIES.collect { s ->
+        tuple(s.label, file("${params.qfo_dir}/${s.subdir}/${s.proteome}_${s.taxon}.fasta"))
+    }
+    log.info """
+    |  randomAlphabets
+    |  arms    : ${ARMS*.name.join(', ')}
+    |  ksizes  : ${ksizes.join(', ')}, low-complexity mask off
+    |  query   : ${human_fasta} (${human_label})
+    |  targets : ${targets*.get(0).join(', ')}
+    |  searches: ${ARMS.size()} x ${ksizes.size()} x ${targets.size()} = ${ARMS.size() * ksizes.size() * targets.size()}
+    """.stripMargin()
+
+    // Every proteome, human included, under every partition that has one. An arm with no
+    // partition (the built-in alphabet in the laptop control manifest) uses the FASTA as is.
+    def encoded_arms = ARMS.findAll { it.partition }
+    def proteomes = [tuple(human_label, human_fasta)] + targets
+    enc_in = Channel.fromList(proteomes.collectMany { lab, fa ->
+        encoded_arms.collect { a -> tuple(lab, fa, a.name, a.partition) }
+    })
+    encoded = encodeFastaPartition(enc_in).map { f ->
+        def m = (f.name =~ /^(.+?)\.(.+)\.fasta$/)
+        tuple(m[0][1], m[0][2], f)
+    }
+    plain = Channel.fromList(proteomes.collectMany { lab, fa ->
+        ARMS.findAll { !it.partition }.collect { a -> tuple(lab, a.name, fa) }
+    })
+    // (proteome label, arm name, fasta) for every proteome under every arm
+    fastas = encoded.mix(plain)
+
+    def alphabetOf = ARMS.collectEntries { [it.name, it.alphabet] }
+    index_in = fastas
+        .filter { lab, _name, _f -> lab != human_label }
+        .combine(Channel.fromList(ksizes))
+        .map { sp, name, f, k -> tuple(sp, f, alphabetOf[name], name, k, false, params.kmerseek_image) }
+    idx_out = kmerseekIndex(index_in)
+
+    target_bytes = index_in.map { sp, f, _cli, name, k, _lc, _img -> tuple("${sp}|${name}|${k}".toString(), f.size()) }
+    query_for = fastas.filter { lab, _n, _f -> lab == human_label }.map { _l, name, f -> tuple(name, f) }
+    search_in = idx_out
+        .map { d ->
+            def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lc(true|false)\.kmerseek\.rocksdb$/)
+            if (!m) error "cannot parse kmerseek index directory name: ${d.name}"
+            tuple("${m[0][1]}|${m[0][2]}|${m[0][3]}".toString(), m[0][1], m[0][2], m[0][3] as int, d)
+        }
+        .join(target_bytes)
+        .map { _key, sp, name, k, d, bytes -> tuple(name, sp, k, d, bytes) }
+        .combine(query_for, by: 0)
+        .map { name, sp, k, d, bytes, q ->
+            tuple(sp, alphabetOf[name], name, k, false, bytes, d, q, params.kmerseek_image)
+        }
+    kmerseekSearch(search_in)
 }
 
 

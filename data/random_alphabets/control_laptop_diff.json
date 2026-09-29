@@ -1,0 +1,20 @@
+{
+ "reference": "human_vs_zebrafish.hp_pbotc_1st_ed2.k19.lcfalse (50 midi-plus queries, laptop, kmerseek 0.3.1 image)",
+ "encoded": "human_vs_zebrafish.pbotc_encoded2.k19.lcfalse (same)",
+ "n_rows_reference": 436222,
+ "n_rows_encoded": 436222,
+ "n_regions_reference": 370151,
+ "n_regions_encoded": 370151,
+ "n_regions_only_reference": 0,
+ "n_regions_only_encoded": 0,
+ "n_only_reference": 0,
+ "n_only_encoded": 0,
+ "n_both": 436222,
+ "n_exact_diff": 0,
+ "n_score_diff": 0,
+ "n_any_diff": 0,
+ "n_rows_differing": 0,
+ "frac_differing": 0.0,
+ "max_diff_frac": 0.001,
+ "pass": true
+}
