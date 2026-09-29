@@ -12,8 +12,11 @@ from that pipeline's folder or any other. The first version of `make running` co
 jobs under the folder it ran from and called the rest "elsewhere"; on 2026-09-28 that read
 "0 from this pipeline, 112 elsewhere" while 112 tasks of the dark-set midi run were queued.
 
-A head is a job named nfdrv-<run> (tools/nf-head). A relaunch waiting for a head to exit is
-nfrelaunch-<run>. Tasks whose run has no head in the queue are flagged: nothing will collect
+A head is a job named nfdrv-<run> (the dark-set pipeline), or any job that is not a task and
+sits in a launch folder: one holding .nextflow.log or the .nf-head.jobid that scripts/nf-head
+writes before the head starts. The region benchmark names its heads nf-head, nf-disprot,
+nf-246-control and so on, so the name alone cannot tell. A relaunch waiting for a head to
+exit is nfrelaunch-<run>. Tasks whose run has no head in the queue are flagged: nothing will collect
 their results, and a later -resume can collide with them on storeDir.
 
 TIME is squeue's [DD-[HH:]]MM:SS: `4:03` is four minutes, `1-02:19:10` is a day and two hours.
@@ -28,7 +31,7 @@ import subprocess
 import sys
 from collections import Counter, OrderedDict
 
-STATE_WORDS = {"R": "running", "PD": "pending", "CG": "completing"}
+STATE_WORDS = {"R": "running", "PD": "pending", "CG": "completing", "CF": "starting up"}
 NAME_LINE = re.compile(r"^### name: '(.*)'")
 
 
@@ -65,6 +68,10 @@ def task_name(job):
     return process, tag.rstrip(")")
 
 
+def is_launch_folder(d):
+    return any(os.path.exists(os.path.join(d, f)) for f in (".nextflow.log", ".nf-head.jobid"))
+
+
 def classify(job):
     """(run folder, role) for one job; role is head, relaunch, task or other."""
     d, name = job["dir"], job["name"]
@@ -74,6 +81,8 @@ def classify(job):
         return "nfrelaunch:" + name[len("nfrelaunch-"):], "relaunch"
     if "/work/" in d:
         return d.split("/work/")[0], "task"
+    if is_launch_folder(d):
+        return d.rstrip("/"), "head"
     return None, "other"
 
 
