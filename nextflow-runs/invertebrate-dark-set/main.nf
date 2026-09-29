@@ -99,6 +99,16 @@ params.kmerseek_encodings       = null
 // unless --kmerseek_sweep or --kmerseek_encodings is on; without a sweep,
 // --kmerseek_alphabets already names every pair outright.
 params.kmerseek_sweep_plus      = ''
+// A sweep runs its whole table at every --kmerseek_scaled value and every search arm. These
+// two narrow the TABLE to one setting while the pairs named in --kmerseek_alphabets keep all
+// of them. Empty means no narrowing. Added 2026-09-29: the midi run's table at 4 scaled x 3
+// arms was up to 107_016 searches, about three weeks at the 150 an hour it was making, and
+// the report's "reach by alphabet and k" plot draws one line per alphabet at one setting.
+// The table keeps scaled 1, exact: the setting of the 0.3 ladder it is read against, and
+// one that needs no Karlin-Altschul fit (34 stored indexes have none). Extension and
+// subsampling are measured on the named pairs, at every setting.
+params.kmerseek_table_scaled    = ''
+params.kmerseek_table_arms      = ''
 // Alphabet:ksize pairs the sweep does NOT run, same spelling as --kmerseek_sweep_plus and
 // applied after it. Set to a default rather than left empty, because these three are not a
 // preference: they are the combos measured on 2026-09-24 to be writing the run out of disk
@@ -1149,7 +1159,34 @@ def resolveCombos() {
     def badS = scaleds.findAll { !(it ==~ /\d+/) || (it as int) < 1 || (it as int) > 10 }
     if (badS) error "--kmerseek_scaled takes integers 1..10, not '${badS.join(', ')}'"
     if (!scaleds) error "--kmerseek_scaled is empty; it needs at least one value"
-    pairs.collectMany { a, k -> lcs.collectMany { lc -> scaleds.collect { sc -> [a, k, lc, sc as int] } } }
+    def narrowed = tableScaled()
+    pairs.collectMany { a, k ->
+        def sc_for = (narrowed && isTablePair(a, k)) ? narrowed : scaleds
+        lcs.collectMany { lc -> sc_for.collect { sc -> [a, k, lc, sc as int] } }
+    }
+}
+
+// The pairs named in --kmerseek_alphabets, as [alphabet, ksize].
+def namedPairs() {
+    params.kmerseek_alphabets.toString().tokenize(',')*.trim().findAll { it }.collect { spec ->
+        def parts = spec.tokenize(':')
+        [parts[0], parts[1] as Integer]
+    }
+}
+
+// True for a pair that only the sweep's table brings in (not one named in --kmerseek_alphabets).
+// Only a sweep has a table; without one every pair is named.
+def isTablePair(String alphabet, k) {
+    (params.kmerseek_sweep || params.kmerseek_encodings) &&
+        !namedPairs().any { it[0] == alphabet && it[1] == (k as Integer) }
+}
+
+// --kmerseek_table_scaled as a list of strings, or [] when not narrowed.
+def tableScaled() {
+    def v = params.kmerseek_table_scaled.toString().tokenize(',')*.trim().findAll { it }
+    def bad = v.findAll { !(it ==~ /\d+/) || (it as int) < 1 || (it as int) > 10 }
+    if (bad) error "--kmerseek_table_scaled takes integers 1..10, not '${bad.join(', ')}'"
+    v
 }
 
 // kappa, the copy rate: the fraction of aligned positions in a Pfam pair at 20-30%
@@ -1227,10 +1264,20 @@ def penaltiesFor(String alphabet) {
     }.findAll { it != null }.unique()
 }
 
-// The search arms one alphabet's indexes get: every requested arm, minus `extend:opt`
-// where no kappa is measured.
-def armsFor(String alphabet) {
-    resolveExtensions().findAll { it != 'extend:opt' || hasOptimalPenalty(alphabet) }
+// The search arms one index gets: every requested arm, minus `extend:opt` where no kappa is
+// measured, and only --kmerseek_table_arms for a pair the sweep's table brings in.
+def armsFor(String alphabet, ksize) {
+    def arms = resolveExtensions().findAll { it != 'extend:opt' || hasOptimalPenalty(alphabet) }
+    def only = params.kmerseek_table_arms.toString().tokenize(',')*.trim().findAll { it }
+    if (only && isTablePair(alphabet, ksize)) {
+        def unknown = only - arms
+        if (unknown) {
+            error "--kmerseek_table_arms names ${unknown.join(', ')}, which is not a search arm " +
+                  "of this run (${arms.join(', ')}); arms are spelled exact or extend:<C>"
+        }
+        arms = arms.findAll { it in only }
+    }
+    arms
 }
 
 def xdropFor(String penalty) {
@@ -1330,7 +1377,7 @@ workflow darkSet {
         }
         log.info "             ${n_clades * COMBOS.size()} index builds (${n_clades} clade(s) x combos), " +
                  "first-attempt memory ${idx_gb.min()}-${idx_gb.max()} GB"
-        log.info "             up to ${total_chunks * COMBOS.sum { armsFor(it[0]).size() }} searches (chunks x combos x arms); each is " +
+        log.info "             up to ${total_chunks * COMBOS.sum { armsFor(it[0], it[1]).size() }} searches (chunks x combos x arms); each is " +
                  "sized from its index's k-mer spectrum once that index exists, " +
                  "${params.kmerseek_search_memory_floor}-${params.kmerseek_memory_first_max} on the first " +
                  "attempt, and a combo predicted past ${params.kmerseek_memory_max} is skipped and logged"
@@ -1422,7 +1469,7 @@ workflow darkSet {
         // Every runnable index is searched once per extension arm its alphabet has.
         ks = kmerseekSearch(
             chunks.combine(runnable, by: 0)
-                  .flatMap { cl, sp, c, a, k, lc, sc, i -> armsFor(a).collect { ext -> tuple(sp, cl, c, a, k, lc, sc, ext, i) } })
+                  .flatMap { cl, sp, c, a, k, lc, sc, i -> armsFor(a, k).collect { ext -> tuple(sp, cl, c, a, k, lc, sc, ext, i) } })
 
         // How many combos each species actually searches, AFTER the skip above. The
         // groupKey size below has to be exact: groupTuple discards a group that never
@@ -1433,7 +1480,7 @@ workflow darkSet {
         // count is known once every index build of a clade has finished, which is long
         // before its searches are.
         n_combos = runnable
-            .map { cl, a, _k, _lc, _sc, _i -> tuple(cl, armsFor(a).size()) }
+            .map { cl, a, k, _lc, _sc, _i -> tuple(cl, armsFor(a, k).size()) }
             .groupTuple()
             .flatMap { cl, arms -> SPECIES.findAll { it.clade == cl }.collect { s -> tuple(s.label, arms.sum()) } }
 
