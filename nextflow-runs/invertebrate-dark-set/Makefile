@@ -466,17 +466,20 @@ ladder-0.4-sweep-plan:
 # Botryllus (BHF): the two hero queries. Botryllus is 23 chunks and its own reference,
 # roughly doubling the midi run; its sequence-arm hits are in the 0.3 results already.
 MIDI_SPECIES     ?= human,worm,yeast,borrelia,botryllus
-# The table of the midi sweep runs at one setting; the five named pairs (V4_ALPHABETS) keep
-# every scaled and arm. Cut 2026-09-29: at 4 scaled x 3 arms the table was up to 107_016
-# searches, about three weeks at 150 an hour, against a 7-day head. See
-# params.kmerseek_table_scaled in main.nf. MIDI_TABLE_ARGS= runs the whole table again.
-MIDI_TABLE_ARGS  ?= --kmerseek_table_scaled 1 --kmerseek_table_arms exact
+# The midi run is scaled 1 and 10 for every pair; scaled 2 and 5 are dropped. The table of
+# the sweep runs exact only; the five named pairs (V4_ALPHABETS) keep all three arms. Cut
+# 2026-09-29: at 4 scaled x 3 arms the table was up to 107_016 searches, about three weeks
+# at 150 an hour, against a 7-day head. Scaled 10 stays because on the chicken ELM run
+# (notebook 253) it placed about twice the motifs of scaled 1 under the k-mer-rarity
+# ranking. See params.kmerseek_table_scaled in main.nf.
+MIDI_SCALED      ?= 1,10
+MIDI_TABLE_ARGS  ?= --kmerseek_table_scaled $(MIDI_SCALED) --kmerseek_table_arms exact
 V4_MIDI_LAUNCH_DIR := $(MAKEFILE_DIR)/runs/ladder-0.4-midi
 run-ladder-0.4-midi-sbatch:
 	@$(MAKE) run-dark-set-sbatch SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) RUN=ladder-0.4-midi \
 	  WITH_KMERSEEK=1 LAUNCH_DIR=$(V4_MIDI_LAUNCH_DIR) OUTDIR=$(V4_OUTDIR) \
 	  HEAD_TIME=$(LADDER_HEAD_TIME) HEAD_MEM=$(LADDER_HEAD_MEM) HEAD_XMX=$(LADDER_HEAD_XMX) \
-	  NF_ARGS="$(subst --run_tag ladder-0.4,--run_tag ladder-0.4-midi,$(V4_NF_ARGS)) $(V4_SWEEP_ARGS) $(MIDI_TABLE_ARGS)"
+	  NF_ARGS="$(subst --kmerseek_scaled $(V4_SCALED),--kmerseek_scaled $(MIDI_SCALED),$(subst --run_tag ladder-0.4,--run_tag ladder-0.4-midi,$(V4_NF_ARGS))) $(V4_SWEEP_ARGS) $(MIDI_TABLE_ARGS)"
 
 # Fit every index already in the 0.4 store for the penalties the extend arms use now
 # (the `opt` one by default): after a kappa changes or gains an alphabet, indexes built
@@ -500,7 +503,8 @@ calibrate-store-0.4: check-inputs
 	    --max_forks $(LADDER_MAX_FORKS) --queue_size $(LADDER_QUEUE_SIZE) $(NF_ARGS)
 
 ladder-0.4-midi-plan:
-	@$(MAKE) ladder-0.4-plan SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) NF_ARGS="$(V4_SWEEP_ARGS) $(MIDI_TABLE_ARGS) $(NF_ARGS)"
+	@$(MAKE) ladder-0.4-plan SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) V4_SCALED=$(MIDI_SCALED) \
+	  NF_ARGS="$(V4_SWEEP_ARGS) $(MIDI_TABLE_ARGS) $(NF_ARGS)"
 
 ladder-0.4-plan: check-inputs
 	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -preview \
