@@ -734,7 +734,8 @@
     "match_line": "................|...:....|...",
     "identity": "2 of 29 identical",
     "encoded": "HP      phhphphphpphhppphphhphhhhhhph",
-    "source_cell": 18
+    "source_cell": 18,
+    "note": "The notebook prints only the start positions (Q[87], T[230]); the end positions are start + 29 - 1."
    }
   ],
   "verdict": "alive",
@@ -747,7 +748,7 @@
   },
   "date": "2026-08-30",
   "pr": 14,
-  "notes": "H1 still says '068'. The 0.8643 AUC is over 156 queries only, against FoldSeek on 5,713. Cell 18 prints about 600 aligned pairs; only the cross-fold Talin example the verdict cites is copied here (start-end are as printed, 0-based start plus region length). About a quarter of hits from unique queries are not same-family (442 of 603). The sphingolipid table in cell 16 is typed in by hand, not computed."
+  "notes": "H1 still says '068'. The 0.8643 AUC is over 156 queries only, against FoldSeek on 5,713. Cell 18 prints about 600 aligned pairs; only the cross-fold Talin example the verdict cites is copied here (start-end are as printed, 0-based start plus region length). About a quarter of hits from unique queries are not same-family (442 of 603). The sphingolipid table in cell 16 is typed in by hand, not computed. Residue end positions are computed from the printed start and region_len=29; the notebook does not print them."
  },
  {
   "id": "072",
@@ -5302,11 +5303,11 @@
   "source": {
    "path": "notebooks/244_hero_example_candidates.ipynb",
    "branch": "olgabot/hero-example-244",
-   "commit": "d20bb22"
+   "commit": "972948e"
   },
-  "date": "2026-09-24",
+  "date": "2026-09-25",
   "pr": 49,
-  "notes": "A newer copy is on olgabot/244-all-case-figures (PR #78, a892d96, 2026-09-29). Its printed numbers are the same. The differences: the code is reformatted; two tables print their rows or columns in a different order; the SITE line names a different best arm at 0.000 (sdm12 k9 in PR #78, hsdm17 k5 in PR #49); the figure cell now draws from a case table and prints a rank-to-case_id table (ranks 1-10 = case_id 0, 3, 4, 7, 8, 9, 10, 11, 23, 25); the figure-cell markdown says all 183 cases are drawn by scripts/export_244_case_calls.py into figures/244_cases/ with coordinates in tables/244_case_calls.csv. The verdict text is unchanged. The residues list holds all ten top-10 alignments printed in cell 13; the encoded lines are hp_pbotc_1st_ed2 classes even when the calling arm used another alphabet. Most comparisons 'spill' because each tool reports one interval per alignment and aligns across the whole collagen stretch or protein; the hero feature has mean pLDDT 46.8. The Kyte-Doolittle scan is a hydropathy window scan, not a search tool. Notebook 254 (PR #77) reports that seed extension loses these placements."
+  "notes": "A newer copy is on olgabot/244-all-case-figures (PR #78, a892d96, 2026-09-29). Its printed numbers are the same. The differences: the code is reformatted; two tables print their rows or columns in a different order; the SITE line names a different best arm at 0.000 (sdm12 k9 in PR #78, hsdm17 k5 in PR #49); the figure cell now draws from a case table and prints a rank-to-case_id table (ranks 1-10 = case_id 0, 3, 4, 7, 8, 9, 10, 11, 23, 25); the figure-cell markdown says all 183 cases are drawn by scripts/export_244_case_calls.py into figures/244_cases/ with coordinates in tables/244_case_calls.csv. The verdict text is unchanged. The residues list holds all ten top-10 alignments printed in cell 13; the encoded lines are hp_pbotc_1st_ed2 classes even when the calling arm used another alphabet. Most comparisons 'spill' because each tool reports one interval per alignment and aligns across the whole collagen stretch or protein; the hero feature has mean pLDDT 46.8. The Kyte-Doolittle scan is a hydropathy window scan, not a search tool. Notebook 254 (PR #77) reports that seed extension loses these placements. The branch on GitHub is one commit ahead of the copy first read (972948e, black formatting only); all 19 output cells are identical, so the numbers and residues hold for the linked version."
  },
  {
   "id": "245",
