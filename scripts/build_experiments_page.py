@@ -176,7 +176,7 @@ VERDICTS.forEach(([k, label]) => chip(document.getElementById("vchips"), k, labe
 
 document.getElementById("head").innerHTML = COLS.map(([k, label]) =>
   `<th scope="col" aria-sort="none" data-col="${k}"><button type="button" title="Sort by ${esc(label)}">${esc(label)}<span class="arrow" aria-hidden="true"></span></button></th>`).join("");
-document.querySelectorAll("th button").forEach(b => b.addEventListener("click", () => {
+document.querySelectorAll("#head th button").forEach(b => b.addEventListener("click", () => {
   const col = b.parentElement.dataset.col;
   if (state.sort === col) state.dir = -state.dir; else { state.sort = col; state.dir = 1; }
   render();
@@ -228,7 +228,7 @@ function render() {
     (!state.claims.size || state.claims.has(r.claim)) &&
     (!state.q || haystack(r).includes(state.q)));
   rows.sort((a, b) => state.dir * cmp(key(a, state.sort), key(b, state.sort)));
-  document.querySelectorAll("th").forEach(th => {
+  document.querySelectorAll("#head th").forEach(th => {
     const on = th.dataset.col === state.sort;
     th.setAttribute("aria-sort", on ? (state.dir > 0 ? "ascending" : "descending") : "none");
     th.querySelector(".arrow").textContent = on ? (state.dir > 0 ? "▲" : "▼") : "";
@@ -238,8 +238,8 @@ function render() {
   body.innerHTML = rows.map(r => {
     const id = String(r.id), open = state.open.has(id);
     const res = (r.result || []).length
-      ? `<ul class="rlist">${r.result.slice(0, 3).map(x => `<li>${esc(x.name)}: <span class="val">${esc(x.value)}</span></li>`).join("")}` +
-        (r.result.length > 3 ? `<li class="muted">and ${r.result.length - 3} more: open the row to see them</li>` : "") + `</ul>`
+      ? `<ul class="rlist">${r.result.slice(0, open ? r.result.length : 3).map(x => `<li>${esc(x.name)}: <span class="val">${esc(x.value)}</span></li>`).join("")}` +
+        (!open && r.result.length > 3 ? `<li class="muted">and ${r.result.length - 3} more: click the row to see them</li>` : "") + `</ul>`
       : `<span class="muted">no outputs</span>`;
     return `<tr class="row${open ? " open" : ""}" tabindex="0" aria-expanded="${open}" data-id="${esc(id)}">` +
       `<td class="id">${esc(id)}</td><td class="title">${esc(r.title)}</td><td class="question">${esc(r.question)}</td>` +
