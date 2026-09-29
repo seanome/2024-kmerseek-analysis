@@ -2510,7 +2510,9 @@ purge-empty-kmerseek-regions:
 ## region of each arm cover it (half the domain) and delimit it (IoU >= 0.5)? One job per
 ## kmerseek region parquet and per comparison-tool TSV of the ten midi-plus targets, scored
 ## by scripts/delimitation_pre_transfer.py --results as a SLURM array of at most
-## DELIM_TASKS tasks (20, as reduce-elm-cover uses). A second job, queued to start only if
+## DELIM_TASKS tasks. That is 5, fewer than reduce-elm-cover's 20: a 2.9 GB region file
+## scores in seconds, so 20 tasks would each finish in a few minutes, and Sherlock asks for
+## tasks of at least 10 minutes. A second job, queued to start only if
 ## every array task succeeds, joins the outputs into
 ## $(DELIM_REDUCE_DIR)/238_delimitation_pre_transfer_full{,.hits}.parquet.
 ##
@@ -2521,7 +2523,7 @@ purge-empty-kmerseek-regions:
 DELIM_RESULTS    ?= $(SCRATCH)/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results
 DELIM_REDUCE_DIR ?= $(SCRATCH)/238-delimitation
 DELIM_IMAGE      ?= $(SCRATCH)/apptainer-cache/docker.io-olgabot-kmerseek-0.4.0-rc5.img
-DELIM_TASKS      ?= 20
+DELIM_TASKS      ?= 5
 DELIM_ONLY       ?=
 DELIM_LIST = apptainer exec --bind /scratch $(DELIM_IMAGE) python3 $(DELIM_REDUCE_DIR)/code/scripts/delimitation_pre_transfer.py \
 	--results $(DELIM_RESULTS) --list $(if $(DELIM_ONLY),--only '$(DELIM_ONLY)')
@@ -2545,7 +2547,7 @@ reduce-delimitation: reduce-delimitation-list
 	       sbatch --parsable --export=ALL --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
 	         --array=0-$$(( t - 1 )) code/scripts/reduce_delimitation.sbatch); \
 	  c=$$(sbatch --parsable --dependency=afterok:$$a --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
-	         --job-name=238-delimitation-concat --cpus-per-task=8 --mem=64G --time=04:00:00 \
+	         --job-name=238-delimitation-concat --cpus-per-task=8 --mem=32G --time=02:00:00 \
 	         --output=logs/concat_%j.log \
 	         --wrap "apptainer exec --bind /scratch $(DELIM_IMAGE) python3 code/scripts/concat_delimitation_pre_transfer.py \
 	                 --in-dir per-job --out 238_delimitation_pre_transfer_full.parquet"); \
