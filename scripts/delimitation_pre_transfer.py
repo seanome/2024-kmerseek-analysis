@@ -124,7 +124,10 @@ def score(
 def list_jobs(results: Path, species: set[str]) -> list[dict]:
     """One job per kmerseek region parquet and per comparison-tool TSV of the given species,
     sorted by output name. Files that match neither pattern (hmmscan's human.hmmscan.tsv.gz,
-    ProstT5's uncompressed _skipped.tsv) are not jobs."""
+    ProstT5's uncompressed _skipped.tsv) are not jobs. Nor is a zero-byte file: that is a
+    search that wrote nothing (all of hp_thomas_dill2_ext2 in the midi-plus run), not a
+    search that found nothing, so it is left out as a missing arm and named by --list.
+    """
     jobs = []
     for f in sorted((results / "kmerseek").glob("human_vs_*.regions.parquet")):
         m = KMERSEEK_FILE.match(f.name)
@@ -243,10 +246,16 @@ def main_full(args) -> None:
     jobs = list_jobs(args.results, set((args.species or MIDI_PLUS_SPECIES).split(",")))
     if args.only:
         jobs = [j for j in jobs if re.search(args.only, j["name"])]
+    empty = [j for j in jobs if j["path"].stat().st_size == 0]
+    jobs = [j for j in jobs if j["path"].stat().st_size > 0]
     if args.list:
         for j in jobs:
             print(j["name"], j["path"].stat().st_size, sep="\t")
-        print(f"{len(jobs)} jobs", file=sys.stderr)
+        for j in empty:
+            print(f"not a job, zero bytes: {j['path']}", file=sys.stderr)
+        print(
+            f"{len(jobs)} jobs ({len(empty)} zero-byte files left out)", file=sys.stderr
+        )
         return
     mine = jobs[args.task :: args.n_tasks]
     args.out_dir.mkdir(parents=True, exist_ok=True)

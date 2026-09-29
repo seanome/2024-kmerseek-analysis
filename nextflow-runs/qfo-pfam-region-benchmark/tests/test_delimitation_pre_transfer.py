@@ -89,6 +89,12 @@ def results(tmp_path):
     tool_file(
         res / "regions" / "hmmscan" / "human.hmmscan.tsv.gz", [("Q1", 1, 10, "1e-5")]
     )
+    # A search that wrote nothing: not a job, named on --list.
+    (
+        res
+        / "kmerseek"
+        / "human_vs_mouse.hp_thomas_dill2_ext2.k12.lcfalse.regions.parquet"
+    ).touch()
     (res / "regions" / "prostt5").mkdir()
     (res / "regions" / "prostt5" / "human_vs_mouse.prostt5_skipped.tsv").write_text(
         "Q1\n"
@@ -142,7 +148,10 @@ def test_list_is_the_midi_plus_species_only(results):
     assert not [
         n for n in names if "tmaritima" in n or "hmmscan" in n or "prostt5" in n
     ]
-    assert "8 jobs" in proc.stderr
+    assert "8 jobs (1 zero-byte files left out)" in proc.stderr
+    assert (
+        "human_vs_mouse.hp_thomas_dill2_ext2.k12.lcfalse.regions.parquet" in proc.stderr
+    )
 
 
 def test_whole_protein_call_covers_but_does_not_delimit(results):
