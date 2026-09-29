@@ -209,7 +209,7 @@ function detail(r) {
     `<tr><td>${esc(x.name)}</td><td class="val">${esc(x.value)}</td><td>${x.source_cell >= 0 ? "cell " + x.source_cell : "results file"}</td><td><code>${esc(x.output_line)}</code></td></tr>`).join("");
   const res = (r.residues || []).map(p => {
     const lines = [p.query, p.match_line, p.target].join("\n") + (p.encoded ? "\n\n" + p.encoded : "");
-    return `<p><strong>${esc(p.pair)}</strong>: ${esc(p.identity)}${p.source_cell >= 0 ? ", cell " + p.source_cell : ""}</p><pre>${esc(lines)}</pre>`;
+    return `<p><strong>${esc(p.pair)}</strong>: ${esc(p.identity)}${p.source_cell >= 0 ? ", cell " + p.source_cell : ""}${p.note ? ". " + esc(p.note) : ""}</p><pre>${esc(lines)}</pre>`;
   }).join("");
   const thead = `<tr><th>number</th><th>value as printed</th><th>where</th><th>printed line</th></tr>`;
   return `<h3>What happened: every number, with the output it was copied from</h3>` +
