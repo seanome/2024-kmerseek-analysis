@@ -7,13 +7,15 @@
 #       code/scripts/pfam_fair_table.sbatch
 #
 # Pfam-A.clans.tsv.gz must come from the same Pfam release as the run's truth; fetch it on a
-# login node (compute nodes have no internet) and put it next to code/.
+# login node (compute nodes have no internet) and put it next to code/. The truth is Pfam
+# 38.2 (notebooks/fetch_pfam_envelope_coords.py), so fetch it from releases/Pfam38.2/, not
+# current_release. This stage reads at most 1,870 files of up to 2,435 rows each.
 #SBATCH --job-name=pfam-table
 #SBATCH --account=ayeletv
 #SBATCH --partition=hns
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
-#SBATCH --time=02:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=00:30:00
 #SBATCH --output=logs/%x_%j.log
 
 set -euo pipefail

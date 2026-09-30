@@ -25,8 +25,9 @@ Choosing kmerseek's setting (mask on only, as in notebook 244 Stage 0):
             instance uses the one setting best over all lengths (kmerseek_length_source).
   clan      one setting per Pfam clan, chosen on the clan's selection-half instances. The
             pipeline splits by family, so held-out families are new to the choice; a clan
-            with fewer than --min-clan-instances selection instances, or a family in no clan,
-            uses its length bin's setting instead (column kmerseek_clan_source says which).
+            with fewer than --min-clan-instances selection instances, a clan no setting
+            touches on the selection half, or a family in no clan, uses its length bin's
+            setting instead (column kmerseek_clan_source says which).
 
 "Lands" is notebook 244's rule, applied to any overlapping call of the family (not only the
 best-IoU one): at least 80% of the call inside the domain and the call
@@ -161,8 +162,11 @@ def main():
 
     by_len = choose(km, inst_sp, "length_bin")
     overall = choose(km, inst_sp.with_columns(all_lengths=pl.lit("all lengths")), "all_lengths")
+    # A clan where no setting touches any selection instance would get the first setting by
+    # name (every setting ties at zero), so it uses its length bin's setting instead.
     by_clan = choose(km, inst_sp, "clan").filter(
-        (pl.col("n_rows") >= args.min_clan_instances * len(species)) & (pl.col("clan") != "no clan"))
+        (pl.col("n_rows") >= args.min_clan_instances * len(species)) & (pl.col("clan") != "no clan")
+        & (pl.col("mean_iou") > 0))
     pl.concat([
         by_len.rename({"length_bin": "group"}).with_columns(scheme=pl.lit("length bin")),
         overall.rename({"all_lengths": "group"}).with_columns(scheme=pl.lit("fallback: all lengths")),
