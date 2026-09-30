@@ -615,13 +615,13 @@ as kmerseek's. The tools, top to bottom: the kmerseek arm chosen for the feature
 best kmerseek arm of another alphabet, phmmer, MMseqs2, MMseqs2 iterative, Foldseek, ProstT5,
 Reseek and the Kyte-Doolittle scan.
 
-All 183 rows of `tables/244_hero_candidates.csv` are drawn the same way by
+All rows of `tables/244_hero_candidates.csv` are drawn the same way by
 `scripts/export_244_case_calls.py`, in `figures/244_cases/`, numbered by CSV row (`case_id`,
 from 0). The call coordinates behind every figure are in `tables/244_case_calls.csv`.
 """)
 
 code(r"""
-# The same function draws all 183 cases in scripts/export_244_case_calls.py
+# The same function draws every case in scripts/export_244_case_calls.py
 # (figures/244_cases/); here it draws the top 10, numbered by rank.
 notes = pl.read_parquet(he.EXTRACT / "244_swissprot_feature_notes.parquet")
 CASES = he.load_cases(L, INST)

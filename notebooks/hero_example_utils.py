@@ -13,9 +13,17 @@ Every table here comes from one of three places, named at each loader:
 
 Coordinates. Truth intervals are 1-based and inclusive. kmerseek region coordinates are
 0-based and end-exclusive (checked in notebook 244: under that reading the query and target
-class strings are identical at every position of all 300 regions tested). The landing
-fractions use the pipeline's own arithmetic (``overlap_expr``), which compares the two
-directly, as the benchmark does. Residues printed and drawn use each convention correctly.
+class strings are identical at every position of all 300 regions tested). Aligner and
+Kyte-Doolittle scan coordinates are 1-based and inclusive.
+
+The reduction computed inside, cover and IoU with the pipeline's ``overlap_expr``
+(``min(end) - max(start)``), which is right for two end-exclusive intervals only. Read
+against inclusive truth, a kmerseek call was scored against the feature without its first
+residue, and an aligner call as if both it and the feature ended one residue early.
+``load_landing`` and ``load_instances`` recompute all three from the coordinates on
+1-based inclusive intervals (``closed_fractions``). Which call is "best" and whether an
+instance "landed" are still the reduction's, made under the old arithmetic: about 0.3% of
+kmerseek landing calls fall below 80% inside or 30% cover when recomputed.
 """
 
 from __future__ import annotations
@@ -210,13 +218,24 @@ def load_instances() -> pl.DataFrame:
         .with_columns(
             feature_length=pl.col("domain_end") - pl.col("domain_start") + 1,
             kd_landed=pl.col("kd_landed").fill_null(False),
+            **dict(
+                zip(
+                    ["kd_inside", "_kd_cover", "kd_best_iou"],
+                    closed_fractions(
+                        pl.col("kd_qstart"),
+                        pl.col("kd_qend"),
+                        pl.col("domain_start"),
+                        pl.col("domain_end"),
+                    ),
+                )
+            ),
             type_split=pl.when(pl.col("pfam_id").is_in(COMPOSITION_TYPES))
             .then(pl.lit("composition"))
             .otherwise(pl.lit("held out")),
         )
     )
     assert out.height == t.height, (out.height, t.height)
-    return out.with_columns(
+    return out.drop("_kd_cover").with_columns(
         feature_label=feature_label(pl.col("pfam_id"), pl.col("note"))
     )
 
@@ -260,13 +279,46 @@ def load_landing(landing_dir: Path = LANDING_DIR) -> pl.DataFrame:
     files = sorted(Path(landing_dir).glob("*.instances.parquet"))
     parts = [pl.read_parquet(f) for f in files]
     parts = [p for p in parts if p.height]
-    d = pl.concat(parts, how="diagonal_relaxed")
-    return d.rename(
+    d = pl.concat(parts, how="diagonal_relaxed").rename(
         {
             "query_acc": "accession",
             "true_start": "domain_start",
             "true_end": "domain_end",
         }
+    )
+    # kmerseek starts are 0-based; its end-exclusive end is already the 1-based last residue.
+    shift = (pl.col("tool") == "kmerseek").cast(pl.Int64)
+    fixed = {}
+    for p in ("best_", "land_"):
+        inside, cover, iou = closed_fractions(
+            pl.col(f"{p}qstart") + shift,
+            pl.col(f"{p}qend"),
+            pl.col("domain_start"),
+            pl.col("domain_end"),
+        )
+        fixed |= {f"{p}inside": inside, f"{p}cover": cover, f"{p}iou": iou}
+    # max_iou_inside_half is over every call, which the reduction did not keep.
+    return d.with_columns(**fixed).drop("max_iou_inside_half")
+
+
+def closed_fractions(
+    start: pl.Expr, end: pl.Expr, feat_start: pl.Expr, feat_end: pl.Expr
+) -> tuple[pl.Expr, pl.Expr, pl.Expr]:
+    """(inside, cover, IoU) of a call and a feature, both 1-based inclusive.
+
+    inside = overlap / call length, cover = overlap / feature length,
+    IoU = overlap / union, where a residue range a..b has length b - a + 1.
+    All three are null when the call is missing (min/max_horizontal skip nulls, so without the
+    guard a missing call would score IoU 1.0).
+    """
+    ov = (
+        pl.min_horizontal(end, feat_end) - pl.max_horizontal(start, feat_start) + 1
+    ).clip(lower_bound=0)
+    union = pl.max_horizontal(end, feat_end) - pl.min_horizontal(start, feat_start) + 1
+    missing = start.is_null() | end.is_null()
+    return tuple(
+        pl.when(missing).then(None).otherwise(x)
+        for x in (ov / (end - start + 1), ov / (feat_end - feat_start + 1), ov / union)
     )
 
 
@@ -279,18 +331,22 @@ def load_calls_by_type(landing_dir: Path = LANDING_DIR) -> pl.DataFrame:
 def classify_comparison(km_iou: pl.Expr, prefix: str = "") -> pl.Expr:
     """Criterion 3 category of one comparison arm on one instance.
 
-    Expects the landing table's columns under ``prefix``: best_iou (highest IoU of any call
-    of that type overlapping the instance), any_inside_half (some call has >= 50% of its
-    length inside the instance), n_overlapping_calls.
+    Expects the landing table's columns under ``prefix``: best_iou and best_inside (IoU and
+    share inside the instance of the best call of that type overlapping the instance, as
+    the reduction chose it; the call the figures draw), n_overlapping_calls.
 
       no call              no call of that type overlaps the instance
-      spills               every overlapping call has < 50% of its length inside
-      inside, lower IoU    a call sits mostly inside, but its IoU is below kmerseek's
-      equal or higher IoU  some call reaches kmerseek's IoU (criterion 3 fails)
+      spills               the drawn call has < 50% of its length inside
+      inside, lower IoU    the drawn call sits mostly inside, but its IoU is below kmerseek's
+      equal or higher IoU  the drawn call reaches kmerseek's IoU (criterion 3 fails)
+
+    The label describes the drawn call. It used to read "inside" off any_inside_half (any
+    call of the type, not only the drawn one), which labelled SCUBE3 MMseqs2 iterative and
+    DLL1 Reseek (46% of the drawn call inside) "inside, lower IoU".
     """
     n = pl.col(f"{prefix}n_overlapping_calls").fill_null(0)
     iou = pl.col(f"{prefix}best_iou").fill_null(0.0)
-    inside = pl.col(f"{prefix}any_inside_half").fill_null(False)
+    inside = pl.col(f"{prefix}best_inside").fill_null(0.0) >= 0.5
     return (
         pl.when(n == 0)
         .then(pl.lit("no call"))
