@@ -367,3 +367,65 @@ def handles(control_label: str, tick_label: str | None = None,
     if tick_label:
         h.append(Line2D([], [], color="black", lw=0, marker="|", ms=12, mew=1.2, label=tick_label))
     return h
+
+
+# ---------------------------------------------------------------- every alphabet at once
+GRID_METRICS = ["E-value", "bit score", "tf-idf", "shared k-mers", "Poisson p-value", "mean IDF", "enrichment"]
+
+
+def gain_over_length(per_pair: pl.DataFrame, rule: str, stat: str = "ap") -> pl.DataFrame:
+    """One row per (alphabet, metric): the median over that alphabet's k-mer sizes of the
+    metric's AUC or AP minus region length's on the same matches, and how many
+    alphabet-ksize pairs went into it (the E-value and bit score exist only where the
+    index has a Karlin-Altschul fit)."""
+    d = per_pair.filter((pl.col("rule") == rule) & (pl.col("metric") != "region length")
+                        & pl.col(stat).is_not_nan())
+    return (d.with_columns((pl.col(stat) - pl.col(f"length_{stat}")).alias("gain"))
+             .group_by("alphabet", "metric")
+             .agg(pl.col("gain").median().alias("median_gain"), pl.len().alias("n_pairs"),
+                  (pl.col("gain") > 0).sum().alias("n_pairs_above_length"))
+             .sort("alphabet", "metric"))
+
+
+def fig_gain_grid(g: pl.DataFrame, path: Path, title: str, stat_label: str):
+    """Rows: the 19 alphabets. Columns: ranking metrics. Cell colour and number: median
+    over k-mer sizes of (metric - region length). Blue: the metric ranks correct matches
+    higher than length alone; red: lower; white: the same. Small grey number: how many
+    alphabet-ksize pairs the median is over."""
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import TwoSlopeNorm
+    alphas = sorted(g["alphabet"].unique().to_list())
+    M = np.full((len(alphas), len(GRID_METRICS)), np.nan)
+    N = np.zeros_like(M, dtype=int)
+    for r in g.iter_rows(named=True):
+        if r["metric"] in GRID_METRICS:
+            i, j = alphas.index(r["alphabet"]), GRID_METRICS.index(r["metric"])
+            M[i, j], N[i, j] = r["median_gain"], r["n_pairs"]
+    lim = float(np.nanmax(np.abs(M)))
+    fig = plt.figure(figsize=(10.5, 10.0))
+    cax = fig.add_axes([0.30, 0.855, 0.45, 0.016])
+    ax = fig.add_axes([0.30, 0.04, 0.68, 0.74])
+    im = ax.imshow(M, cmap="RdBu", norm=TwoSlopeNorm(0, -lim, lim), aspect="auto")
+    cb = fig.colorbar(im, cax=cax, orientation="horizontal")
+    cb.set_label(f"{stat_label}: metric minus region length (median over k-mer sizes)\n"
+                 "blue = ranks correct matches higher than length alone, red = lower", fontsize=9)
+    cax.xaxis.set_label_position("top")
+    for i in range(len(alphas)):
+        for j in range(len(GRID_METRICS)):
+            if np.isnan(M[i, j]):
+                ax.text(j, i, "no E-value", ha="center", va="center", fontsize=7, color="#777777")
+                continue
+            dark = abs(M[i, j]) > 0.6 * lim
+            ax.text(j, i - 0.12, f"{M[i, j]:+.2f}", ha="center", va="center", fontsize=8.5,
+                    color="white" if dark else "black")
+            ax.text(j, i + 0.28, f"n={N[i, j]}", ha="center", va="center", fontsize=6.5,
+                    color="#f0f0f0" if dark else "#555555")
+    ax.set_xticks(range(len(GRID_METRICS)))
+    ax.set_xticklabels(GRID_METRICS, fontsize=9)
+    ax.xaxis.tick_top()
+    ax.set_yticks(range(len(alphas)))
+    ax.set_yticklabels(alphas, fontsize=9)
+    ax.tick_params(length=0)
+    fig.text(0.01, 0.99, title, fontsize=9.5, va="top")
+    fig.savefig(path, dpi=200, bbox_inches="tight")
+    return fig

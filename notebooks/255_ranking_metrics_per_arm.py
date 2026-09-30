@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """ROC AUC, average precision and precision at 1 of each kmerseek ranking metric, for
-every arm (one alphabet at one k) of the notebook 243 all-against-all search of the 998
+every alphabet-ksize pair of the notebook 243 all-against-all search of the 998
 Pfam-annotated human proteins. Input for notebook 255.
 
-Each arm's regions (`/Users/olga/data/alphabet-logreg-pfam998/regions/<alphabet>.k<k>.parquet`,
+Each alphabet-ksize pair's regions (`/Users/olga/data/alphabet-logreg-pfam998/regions/<alphabet>.k<k>.parquet`,
 written by 243_pfam998_search.py) are labelled with the four overlap rules of
 ranking_metrics_utils.label_regions, reduced to one row per unordered pair of region spans
 (the direction with the lower E-value), and scored. That search kept every region
-(--threshold 0 --min-shared-kmers 1 --min-region-score 0), so an arm has many more
+(--threshold 0 --min-shared-kmers 1 --min-region-score 0), so an alphabet-ksize pair has many more
 matches than the 5_649 of labeled_pairs_overlap_rules.parquet.
 
 243_pfam998_search.py kept only region-level columns, so region_poisson_score,
-containment, query_enrichment and query_poisson_pvalue cannot be scored per arm.
+containment, query_enrichment and query_poisson_pvalue cannot be scored per alphabet-ksize pair.
 
 Usage: 255_ranking_metrics_per_arm.py [--out PATH] [--arms hp_lehninger2.k24,...]
-Resumes: arms already in the output file are skipped.
+Resumes: alphabet-ksize pairs already in the output file are skipped.
 """
 
 from __future__ import annotations

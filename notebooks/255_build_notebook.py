@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write notebooks/255_ranking_metrics_vs_human_pfam.ipynb; execute it with
     jupyter nbconvert --to notebook --execute --inplace 255_ranking_metrics_vs_human_pfam.ipynb
-from notebooks/. The per-arm table comes from 255_ranking_metrics_per_arm.py (run it first)."""
+from notebooks/. The table per alphabet-ksize pair comes from 255_ranking_metrics_per_arm.py (run it first)."""
 
 import json
 from pathlib import Path
@@ -100,7 +100,7 @@ md(r"""
 
 `label_regions` recomputes the four rules from the region coordinates and the midi-plus
 human domain truth (kmerseek starts are 0-based, ends inclusive). It agrees with every
-stored label. The same function labels the 152 arms in section 7.
+stored label. The same function labels the 152 alphabet-ksize pairs in section 7.
 """),
 code(r"""
 rebuilt = rm.label_regions(df.drop(RULES))
@@ -301,30 +301,30 @@ fig.tight_layout(rect=(0, 0, 1, 0.95))
 fig.savefig(FIG / "255_auc_by_length_bin.png", bbox_inches="tight")
 """),
 md(r"""
-## 7. Every alphabet and k (152 arms of the notebook 243 search)
+## 7. Every alphabet and k (152 alphabet-ksize pairs of the notebook 243 search)
 
-`255_ranking_metrics_per_arm.py` labels every region of every arm with the same rules and
+`255_ranking_metrics_per_arm.py` labels every region of every alphabet-ksize pair with the same rules and
 keeps one row per pair of spans. That search kept every region kmerseek reported
-(threshold 0, one shared k-mer, minimum region score 0), so each arm has more matches than
+(threshold 0, one shared k-mer, minimum region score 0), so each alphabet-ksize pair has more matches than
 the 5_649 above: hp_lehninger2 k=24 has 8_731 there. Its search file does not carry
 region_poisson_score, containment, query_enrichment or query_poisson_pvalue, so those four
-cannot be scored per arm. No interval is computed per arm. When the two directions of a
+cannot be scored per alphabet-ksize pair. No interval is computed per alphabet-ksize pair. When the two directions of a
 pair have the same E-value (for example both infinite), the kept direction is the one whose
 query name sorts first; the stored 5_649 file broke those ties another way (checked below).
 """),
 code(r"""
-# Cross-check: the hp_lehninger2 k=24 arm of the notebook 243 search against the stored
+# Cross-check: the hp_lehninger2 k=24 alphabet-ksize pair of the notebook 243 search against the stored
 # any-overlap labels of the 11_298 directed hits the 5_649 matches were built from.
 hits = pl.read_parquet(rm.LABELS.parent / "human_pfam_allvall_labeled_hits.parquet")
 k = ["query_name", "target_name", "region_start", "region_end", "target_start", "target_end"]
 a243 = rm.label_regions(pl.read_parquet(rm.PF998 / "regions" / "hp_lehninger2.k24.parquet"))
 j = (hits.select(k + ["is_true_domain_match", "region_mean_idf"]).with_columns([pl.col(c).cast(pl.Float64) for c in k[2:]])
      .join(a243.select(k + ["correct_any_overlap", pl.col("region_mean_idf").alias("idf_243")]), on=k, how="inner"))
-print(f"{hits.height:_} stored hits; {j.height:_} have the same coordinates in the notebook 243 arm; "
+print(f"{hits.height:_} stored hits; {j.height:_} have the same coordinates in the notebook 243 alphabet-ksize pair; "
       f"labels disagree on {int((j['is_true_domain_match'] != j['correct_any_overlap']).sum())}; "
       f"mean IDF differs on {int(((j['region_mean_idf'] - j['idf_243']).abs() > 1e-6).sum())}")
 
-# The one-row-per-pair step used for the arms, applied to the stored hits.
+# The one-row-per-pair step used for the alphabet-ksize pairs, applied to the stored hits.
 m = rm.independent_matches(hits)
 kept_other = df.join(m.select(k), on=k, how="anti")
 print(f"independent_matches on the stored hits: {m.height:_} pairs (stored file: {df.height:_}); "
@@ -341,21 +341,21 @@ assert (tie_check["region_evalue"] == tie_check["e_kept"]).all()
 code(r"""
 arm = pl.read_parquet(rm.PER_ARM)
 n_arms = arm.select("alphabet", "ksize").unique().height
-print(f"{rm.PER_ARM}: {n_arms} arms")
+print(f"{rm.PER_ARM}: {n_arms} alphabet-ksize pairs")
 no_ka = arm.filter((pl.col("column") == "region_evalue") & (pl.col("rule") == "any overlap") & (pl.col("n_scored") == 0))
-print(f"{no_ka.height} arms have no E-value on any match (exact regions, no Karlin-Altschul fit)")
+print(f"{no_ka.height} alphabet-ksize pairs have no E-value on any match (exact regions, no Karlin-Altschul fit)")
 arm = arm.with_columns((pl.col("auc") - pl.col("length_auc")).alias("auc_minus_length"),
                        (pl.col("ap") - pl.col("length_ap")).alias("ap_minus_length"))
 summary = (arm.filter(pl.col("column") != "region_length").drop_nulls("auc").filter(pl.col("auc").is_not_nan())
-           .group_by("rule", "metric").agg(pl.len().alias("arms scored"),
-                                           (pl.col("auc_minus_length") > 0.01).sum().alias("arms: AUC > length + 0.01"),
-                                           (pl.col("auc_minus_length") < -0.01).sum().alias("arms: AUC < length - 0.01"),
+           .group_by("rule", "metric").agg(pl.len().alias("alphabet-ksize pairs scored"),
+                                           (pl.col("auc_minus_length") > 0.01).sum().alias("alphabet-ksize pairs: AUC > length + 0.01"),
+                                           (pl.col("auc_minus_length") < -0.01).sum().alias("alphabet-ksize pairs: AUC < length - 0.01"),
                                            pl.col("auc_minus_length").median().alias("median AUC - length AUC"),
                                            pl.col("auc_minus_length").max().alias("max AUC - length AUC"),
-                                           (pl.col("ap_minus_length") > 0.01).sum().alias("arms: AP > length + 0.01"))
+                                           (pl.col("ap_minus_length") > 0.01).sum().alias("alphabet-ksize pairs: AP > length + 0.01"))
            .sort("rule", "median AUC - length AUC", descending=[False, True]))
 print(summary)
-print("\nThe 10 arms where a metric's AUC is furthest above length's, rules any overlap and IoU ≥ 0.2:")
+print("\nThe 10 alphabet-ksize pairs where a metric's AUC is furthest above length's, rules any overlap and IoU ≥ 0.2:")
 print(arm.filter(pl.col("rule").is_in(["any overlap", "IoU ≥ 0.2"]) & (pl.col("column") != "region_length"))
       .filter(pl.col("auc_minus_length").is_not_nan()).drop_nulls("auc_minus_length")
       .sort("auc_minus_length", descending=True).head(10)
@@ -378,25 +378,50 @@ for i, rule in enumerate(show_rules):
         ax.scatter(t["bits"], t["length_auc"], s=60, color="#d9d9d9", lw=0, zorder=1)
         ax.scatter(t["bits"], t["auc"], s=12, color=rm.COLOR[c], edgecolor="black", lw=0.3, zorder=3)
         ax.axhline(0.5, color="#888888", lw=0.8, ls=":")
-        ax.set_title(f"{rm.NAME[c]}\nrule: {rule}  ({t.height} arms)", fontsize=9, loc="left")
+        ax.set_title(f"{rm.NAME[c]}\nrule: {rule}  ({t.height} alphabet-ksize pairs)", fontsize=9, loc="left")
         if i == len(show_rules) - 1:
             ax.set_xlabel("seed information (bits per k-mer)")
         if j == 0:
             ax.set_ylabel("ROC AUC")
 from matplotlib.lines import Line2D
 rm.legend_row(fig, [Line2D([], [], marker="o", color="#666666", mec="black", mew=0.3, ls="none", ms=5,
-                           label="kmerseek metric, one arm (alphabet at one k)"),
+                           label="kmerseek metric, one alphabet-ksize pair (alphabet at one k)"),
                     Line2D([], [], marker="o", color="#d9d9d9", ls="none", ms=10,
-                           label="region length on the same arm and matches")], y=1.02)
-fig.suptitle(f"ROC AUC of each region metric per alphabet and k ({n_arms} arms), with region length on the same matches behind it\n"
+                           label="region length on the same alphabet-ksize pair and matches")], y=1.02)
+fig.suptitle(f"ROC AUC of each region metric per alphabet and k ({n_arms} alphabet-ksize pairs), with region length on the same matches behind it\n"
              "all-against-all search of 998 human Pfam proteins (notebook 243); dotted line: AUC 0.5", y=1.09, fontsize=11)
 fig.tight_layout()
 fig.savefig(FIG / "255_auc_per_arm.png", bbox_inches="tight")
 for rule in show_rules:
     w = (arm.filter((pl.col("rule") == rule) & pl.col("column").is_in(mets + ["region_length"]))
          .pivot(on="metric", index=["alphabet", "ksize", "bits", "n_matches"], values="auc").sort("bits"))
-    print(f"\nROC AUC per arm, rule: {rule} (region length column: length over all matches of the arm)")
+    print(f"\nROC AUC per alphabet-ksize pair, rule: {rule} (region length column: length over all matches of the alphabet-ksize pair)")
     print(w)
+"""),
+md(r"""
+### All 19 alphabets on one page
+
+The figure above asks the reader to pair each coloured dot with the grey dot behind it. This
+grid shows the difference directly. Each cell is one alphabet and one metric: the metric's
+average precision minus region length's on the same matches, as the median over that
+alphabet's k-mer sizes, under IoU ≥ 0.2. Average precision is used rather than AUC because
+at the small k-mer sizes almost no match is correct, and there AUC looks good while the top
+of the list is nearly all wrong. Blue: the metric puts correct matches higher than length
+alone does. Red: lower. n: the number of alphabet-ksize pairs in the median (the E-value and
+bit score exist only where the index has a Karlin-Altschul fit).
+"""),
+code(r"""
+gain = rm.gain_over_length(arm, "IoU ≥ 0.2", "ap")
+rm.fig_gain_grid(
+    gain, FIG / "255_all_alphabets_ap_gain_over_length.png",
+    "All 19 alphabets: does a ranking metric put correct Pfam domain matches higher than region length does?\n"
+    "all-against-all search of 998 human Pfam proteins (notebook 243), correct = IoU >= 0.2 with a Pfam domain; AP = average precision",
+    "average precision")
+print(gain.pivot(on="metric", index="alphabet", values="median_gain").select(["alphabet"] + rm.GRID_METRICS)
+          .with_columns(pl.exclude("alphabet").round(3)).sort("alphabet"))
+print("\nalphabets where the metric's median is above length's (of 19):")
+print(gain.group_by("metric").agg((pl.col("median_gain") > 0).sum().alias("alphabets above length"),
+                                  pl.col("median_gain").median().round(3).alias("median over alphabets")).sort("metric"))
 """),
 md(r"""
 ## 8. Checks
@@ -459,10 +484,10 @@ four rules are given in the order any overlap / ≥20% of the region inside the 
    (any overlap). tf-idf stays within 0.08 of length in every bin.
 8. Across the 152 alphabet and k combinations of the notebook 243 search, tf-idf's median
    AUC minus length's AUC is 0.000 to 0.004 depending on the rule. Mean IDF and enrichment
-   have an AUC more than 0.01 below length's in 139 to 144 of 152 arms. Only 70 arms have an E-value; its AP is
+   have an AUC more than 0.01 below length's in 139 to 144 of 152 alphabet-ksize pairs. Only 70 alphabet-ksize pairs have an E-value; its AP is
    more than 0.01 above length's in 57 of the 70 under IoU ≥ 0.2 and in 26 under any
    overlap. The largest AUC gains over length (up to +0.18, funcgroups8 k=6 and gbmr7
-   k=10 under IoU ≥ 0.2) come from arms with 5 to 7 million matches and a base rate of
+   k=10 under IoU ≥ 0.2) come from alphabet-ksize pairs with 5 to 7 million matches and a base rate of
    0.001 or below. There mean IDF and enrichment have AP 0.002 to 0.008 against 0.141 to
    0.199 for length: a higher AUC with almost no correct matches at the top of the list.
 
@@ -471,9 +496,9 @@ follows length closely (Spearman rho in section 8). The E-value adds something t
 long matches by whether they land inside the domain, and a missing E-value marks a match
 that is almost never correct.
 
-Not computed: intervals per arm; the four protein-level and Poisson-score columns per arm
-(not kept by `243_pfam998_search.py`); mean reciprocal rank per arm. Precision at 1 per
-arm is in `per_arm_metrics.parquet` but not drawn.
+Not computed: intervals per alphabet-ksize pair; the four protein-level and Poisson-score columns per alphabet-ksize pair
+(not kept by `243_pfam998_search.py`); mean reciprocal rank per alphabet-ksize pair. Precision at 1 per
+alphabet-ksize pair is in `per_arm_metrics.parquet` but not drawn.
 """),
 ]
 
