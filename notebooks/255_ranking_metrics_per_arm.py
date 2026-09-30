@@ -13,7 +13,13 @@ matches than the 5_649 of labeled_pairs_overlap_rules.parquet.
 243_pfam998_search.py kept only region-level columns, so region_poisson_score,
 containment, query_enrichment and query_poisson_pvalue cannot be scored per alphabet-ksize pair.
 
-Usage: 255_ranking_metrics_per_arm.py [--out PATH] [--arms hp_lehninger2.k24,...]
+With --regions-dir pointing at the output of 257_pfam998_search_kmerseek_preview.py (a
+newer kmerseek, where every row has an E-value), every metric column that search kept is
+scored, including the two E-value parts: region_ka_evalue (extension, only where the pair
+has a positive lambda) and region_run_evalue (exact run, every row). Write it to its own
+--out so the notebook 243 scores are kept.
+
+Usage: 255_ranking_metrics_per_arm.py [--out PATH] [--arms hp_lehninger2.k24,...] [--regions-dir DIR]
 Resumes: alphabet-ksize pairs already in the output file are skipped.
 """
 
@@ -31,10 +37,13 @@ import polars as pl
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ranking_metrics_utils as rm  # noqa: E402
 
-COLS = ["region_evalue", "region_ka_bits", "region_mean_idf", "region_tfidf", "region_enrichment",
-        "region_tail_probability", "region_n_shared_kmers", "region_length"]
-READ = ["query_name", "target_name", "region_start", "region_end", "target_start", "target_end",
-        "region_ka_lambda"] + COLS
+# The E-value's two parts in the newer kmerseek (257_pfam998_search_kmerseek_preview.py).
+rm.NAME.update({"region_ka_evalue": "E-value, extension only", "region_run_evalue": "E-value, exact run"})
+rm.LOWER.update({"region_ka_evalue": True, "region_run_evalue": True})
+COLS = ["region_evalue", "region_ka_evalue", "region_run_evalue", "region_ka_bits", "region_mean_idf",
+        "region_tfidf", "region_enrichment", "region_poisson_score", "region_tail_probability",
+        "region_n_shared_kmers", "containment", "query_enrichment", "query_poisson_pvalue", "region_length"]
+BASE = ["query_name", "target_name", "region_start", "region_end", "target_start", "target_end"]
 
 
 def precision_at_1(df: pl.DataFrame, s: np.ndarray, rule: str) -> tuple[float, float, int]:
@@ -53,7 +62,9 @@ def one_arm(path: Path, truth: pl.DataFrame, bits: dict) -> pl.DataFrame:
     tag = path.stem
     alphabet, k = tag.rsplit(".k", 1)
     t0 = time.time()
-    raw = pl.read_parquet(path, columns=READ)
+    have = set(pl.read_parquet_schema(path))
+    cols = [c for c in COLS if c in have]
+    raw = pl.read_parquet(path, columns=BASE + [c for c in ["region_ka_lambda"] if c in have] + cols)
     n_raw = raw.height
     df = rm.independent_matches(rm.label_regions(raw, truth))
     del raw
@@ -61,7 +72,7 @@ def one_arm(path: Path, truth: pl.DataFrame, bits: dict) -> pl.DataFrame:
     rows = []
     for rule, _ in rm.RULES:
         y = df[rule].to_numpy()
-        for c in COLS:
+        for c in cols:
             s = rm.score(df, c)
             ok = np.isfinite(s)
             p1, p1_rand, nq = precision_at_1(df, s, rule) if ok.any() else (np.nan, np.nan, 0)
@@ -80,11 +91,12 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=rm.PER_ARM)
     ap.add_argument("--arms", default="")
+    ap.add_argument("--regions-dir", type=Path, default=rm.PF998 / "regions")
     args = ap.parse_args()
     plan = json.loads(rm.PLAN.read_text())
     bits = {f"{p['alphabet']}.k{p['ksize']}": p["bits"] for p in plan}
     truth = pl.read_parquet(rm.TRUTH)
-    paths = sorted((rm.PF998 / "regions").glob("*.parquet"), key=lambda p: p.stat().st_size)
+    paths = sorted(args.regions_dir.glob("*.parquet"), key=lambda p: p.stat().st_size)
     if args.arms:
         paths = [p for p in paths if p.stem in args.arms.split(",")]
     done = pl.read_parquet(args.out) if args.out.exists() else None
