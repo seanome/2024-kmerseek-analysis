@@ -36,6 +36,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "notebooks"))
 import hero_example_utils as he  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "scripts"))
+import export_244_bonus_cases as bonus  # noqa: E402
+
 TAB = ROOT / "tables"
 FIG = ROOT / "figures" / "244_cases"
 
@@ -112,6 +115,9 @@ def main():
     )
     n_seq = write_fasta(cases, TAB / "244_case_sequences.fasta")
     print(f"wrote {TAB / '244_case_sequences.fasta'}: {n_seq} sequences")
+    # The two bonus cases go back after the notebook's rows (see that script's docstring).
+    if bonus.HITS.exists():
+        bonus.write_bonus()
     if args.no_figures:
         return
 
