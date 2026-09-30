@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""The memory each kmerseek index build needs on its FIRST attempt, from the builds a run has
+already tried, written as assets/kmerseek_index_memory_measured.tsv for main.nf to read.
+
+    tools/index-memory-table runs/ladder-0.4-midi [more run folders] > assets/kmerseek_index_memory_measured.tsv
+
+For every kmerseekIndex attempt in the runs' .nextflow.log* it reads the index name, the exit
+status and the work folder, and from the work folder the memory the attempt asked for
+(#SBATCH --mem). Then, per alphabet, k and scaled, over every clade:
+
+  killed, later built   first ask = the largest ask that succeeded
+  killed, never built   first ask = 2 x the largest killed ask, capped at 500 GB
+  never killed          no row: main.nf's model is enough
+
+A kill is exit 137 or 135 (the cgroup memory killer). Exit "-" is a task the scheduler ended
+(walltime, node failure) and says nothing about memory, so it is not counted. The measured
+peak is not used: RocksDB's file pages fill whatever the cgroup allows, so a build that asked
+63 GB reads back a 62.98 GB peak whatever it needed.
+
+Python 3.6, standard library only, for Sherlock's login node.
+"""
+
+import glob
+import os
+import re
+import sys
+from collections import defaultdict
+
+DONE = re.compile(r"Task completed > TaskHandler\[jobId: \S+; id: \d+; name: \S*kmerseekIndex "
+                  r"\(([^)]*)\); status: \S+; exit: (\S+); error: [^;]*; workDir: (\S+) ")
+NAME = re.compile(r"^minus_[A-Za-z]+\.(.+)\.k(\d+)(?:\.s(\d+))?\.lc(true|false)$")
+MEM = re.compile(r"^#SBATCH --mem[= ](\d+)([MG]?)")
+KILLED = {"137", "135"}
+CAP_GB = 500
+
+
+def asked_gb(workdir):
+    try:
+        with open(os.path.join(workdir, ".command.run")) as fh:
+            for line in fh:
+                m = MEM.match(line)
+                if m:
+                    mb = int(m.group(1)) * (1024 if m.group(2) == "G" else 1)
+                    return mb / 1024.0
+                if line.startswith("### name"):
+                    return None
+    except OSError:
+        return None
+    return None
+
+
+def main():
+    attempts = {}
+    for run in sys.argv[1:]:
+        for log in sorted(glob.glob(os.path.join(run, ".nextflow.log*"))):
+            with open(log, errors="replace") as fh:
+                for line in fh:
+                    m = DONE.search(line)
+                    if m:
+                        attempts[m.group(3)] = (m.group(1), m.group(2))
+    ok = defaultdict(list)
+    killed = defaultdict(list)
+    for wd, (name, status) in attempts.items():
+        m = NAME.match(name)
+        gb = asked_gb(wd)
+        if not m or gb is None:
+            continue
+        key = (m.group(1), int(m.group(2)), int(m.group(3) or 1))
+        if status == "0":
+            ok[key].append(gb)
+        elif status in KILLED:
+            killed[key].append(gb)
+    print("alphabet\tksize\tscaled\tfirst_ask_gb\tbasis")
+    for key in sorted(killed):
+        if ok.get(key):
+            gb, basis = max(ok[key]), "largest ask that built, after a kill"
+        else:
+            gb, basis = min(CAP_GB, 2 * max(killed[key])), "twice the largest killed ask; never built"
+        print("{}\t{}\t{}\t{}\t{}".format(key[0], key[1], key[2], int(round(gb)), basis))
+    sys.stderr.write("{} attempts read, {} alphabet x k x scaled with a kill\n".format(len(attempts), len(killed)))
+
+
+if __name__ == "__main__":
+    main()

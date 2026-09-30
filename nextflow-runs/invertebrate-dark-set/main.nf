@@ -128,7 +128,12 @@ params.kmerseek_table_arms      = ''
 // which is the project's designated best combo and stays. The real cure is filtering on
 // region_evalue, which 0.4 writes and the pipeline does not yet use; this list is the part
 // that can be done without changing what the arms report.
-params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12'
+// gbmr7 k9 and k10 were added 2026-09-30 for a different reason: their SEARCHES cannot run.
+// Every gbmr7 k9 index the 0.4 runs built had its searches skipped for predicted memory
+// (median 340-398 GB, x2 past the 500 GB ceiling), after an index build that itself needed
+// 126 GB to over 252 GB. k10 never built; its search load should sit between k11's measured
+// 5_800-7_900 (searchable, about 232 GB median) and k9's 17_000-24_000 (skipped).
+params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12,gbmr7:9,gbmr7:10'
 
 // A ceiling on region_evalue, applied in the search's own pipe so the oversized table is
 // never written at all. null turns it off, which is what an image older than 0.4 needs:
@@ -466,11 +471,21 @@ def kaFitGb = { String label, int ksize, int scaled ->
 // all -- so for 0.4 the build term is a flat params.kmerseek_index_build_gb that covers
 // every one of them, and the 2x retry reaches the old ask if a combo exceeds it. Refit
 // once the full-table run has measured a build for every alphabet.
+//
+// The model under-sizes some builds badly: gbmr7 at k 9-12 and scaled 1-2 needed 221 GB to
+// over 252 GB against a 63 GB first ask, because its skewed spectrum makes the fit far
+// heavier than the keyspace says. So the first ask is also at least what an earlier run
+// MEASURED for the same alphabet, k and scaled: assets/kmerseek_index_memory_measured.tsv,
+// written by tools/index-memory-table from the runs' logs (the ask that built after a kill,
+// or twice the largest killed ask when nothing built). Built 2026-09-30 from ladder-0.4 and
+// ladder-0.4-midi, where 195 of 3_295 index attempts were killed for memory, 166 of them
+// gbmr7. Regenerate it after a run that kills new combos.
 def kmerseekIndexMemory = { String label, int ksize, int scaled, int attempt ->
-    double build   = params.kmerseek_index_build_gb as double
-    double gb      = 1.4d * Math.max(build, kaFitGb(label, ksize, scaled))
-    double floorGb = MemoryUnit.of(params.kmerseek_index_memory_floor).toGiga()
-    memoryLadder(Math.max(floorGb, gb), attempt)
+    double build    = params.kmerseek_index_build_gb as double
+    double gb       = 1.4d * Math.max(build, kaFitGb(label, ksize, scaled))
+    double floorGb  = MemoryUnit.of(params.kmerseek_index_memory_floor).toGiga()
+    double measured = (indexMemoryMeasured()["${label}|${ksize}|${scaled}".toString()] ?: 0) as double
+    memoryLadder(Math.max(Math.max(floorGb, gb), measured), attempt)
 }
 
 def kmerseekSearchMemory = { Path index_dir, String alphabet, String lowcomp, int attempt ->
@@ -1187,6 +1202,20 @@ def tableScaled() {
     def bad = v.findAll { !(it ==~ /\d+/) || (it as int) < 1 || (it as int) > 10 }
     if (bad) error "--kmerseek_table_scaled takes integers 1..10, not '${bad.join(', ')}'"
     v
+}
+
+// alphabet|ksize|scaled -> first ask in GB, from assets/kmerseek_index_memory_measured.tsv
+// (see kmerseekIndexMemory). A function, like kappaTable, so it is in scope in closures.
+def indexMemoryMeasured() {
+    def table = [:]
+    def f = file("${projectDir}/assets/kmerseek_index_memory_measured.tsv")
+    if (!f.exists()) return table
+    f.readLines().each { line ->
+        if (line.startsWith('alphabet') || !line.trim()) return
+        def c = line.split('\t')
+        table["${c[0]}|${c[1]}|${c[2]}".toString()] = c[3] as double
+    }
+    table
 }
 
 // kappa, the copy rate: the fraction of aligned positions in a Pfam pair at 20-30%
