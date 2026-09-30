@@ -122,8 +122,8 @@ function hitsSVG(q,H,cls){
   H.rows.forEach((r,i)=>{const y=top+i*rh,isP=R.partner&&r.gene===R.partner,sel=refRow[q]===r.gene;
     s+='<g class="hr" tabindex="0" role="button" data-g="'+esc(r.gene)+'" aria-label="'+esc(r.gene)+'">';
     s+='<rect x="2" y="'+y+'" width="'+(W-4)+'" height="'+(rh-2)+'" rx="3" fill="'+(isP?'var(--accent-t)':'transparent')+'" stroke="'+(sel?'var(--ink)':'none')+'" stroke-width="2"/>';
-    s+='<text x="8" y="'+(y+14)+'" font-size="11" font-family="var(--mono)" fill="var(--soft)">'+r.pos+'.</text><text x="50" y="'+(y+14)+'" font-size="11.5" font-family="var(--mono)" fill="var(--ink)" font-weight="'+(isP?600:400)+'">'+esc(r.gene).slice(0,11)+'</text>';
-    s+='<text x="'+(x0-8)+'" y="'+(y+14)+'" text-anchor="end" font-size="10.5" font-family="var(--mono)" fill="var(--soft)">'+(H.by==='E-value'?'E '+eFmt(r.E):'IDF '+r.idf)+'</text>';
+    s+='<text x="8" y="'+(y+14)+'" font-size="11" font-family="var(--mono)" fill="var(--soft)">'+(r.pos==null?'–':fmt(r.pos)+'.')+'</text><text x="58" y="'+(y+14)+'" font-size="11.5" font-family="var(--mono)" fill="var(--ink)" font-weight="'+(isP||r.fig1?600:400)+'">'+(r.fig1?'◆ ':'')+esc(r.gene).slice(0,11)+'</text>';
+    s+='<text x="'+(x0-8)+'" y="'+(y+14)+'" text-anchor="end" font-size="10.5" font-family="var(--mono)" fill="var(--soft)">'+(H.m==='E'?'E '+eFmt(r.E):H.m==='idf'?'IDF '+r.idf:'tf-idf '+r.tfidf)+'</text>';
     s+='<line x1="'+x0+'" y1="'+(y+10)+'" x2="'+x1+'" y2="'+(y+10)+'" stroke="var(--line)"/>';
     r.rg.forEach(g=>{s+='<rect x="'+X(g[0]).toFixed(1)+'" y="'+(y+4)+'" width="'+Math.max(2,X(g[1])-X(g[0])).toFixed(1)+'" height="12" rx="1.5" fill="var(--ink)"/>'});
     s+='</g>'});
@@ -134,34 +134,39 @@ function hitsSVG(q,H,cls){
 }
 function rowResidues(q,r,cls){
   const enc=s=>[...s].map(c=>cls[c]||'?').join(''); let out='';
-  r.rg.forEach((g,n)=>{const L=g[1]-g[0],qe=enc(g[6]),te=enc(g[7]);let id=0,cl=0,m='',mc='';
-    for(let j=0;j<L;j++){const a=g[6][j]===g[7][j],c=qe[j]===te[j];id+=a;cl+=c;m+=a?'|':' ';mc+=c?'|':' '}
-    out+='<b>'+(n+1)+'.</b> '+q+' '+(g[0]+1)+'–'+g[1]+', '+r.gene+' '+(g[2]+1)+'–'+g[3]+': '+L+' aa, E '+eFmt(g[4])+', mean IDF '+g[5]+', '+id+' of '+L+' residues identical, '+cl+' of '+L+' classes identical\n';
+  r.rg.forEach((g,n)=>{const L=g[1]-g[0],qe=enc(g[7]),te=enc(g[8]);let id=0,cl=0,m='',mc='';
+    for(let j=0;j<L;j++){const a=g[7][j]===g[8][j],c=qe[j]===te[j];id+=a;cl+=c;m+=a?'|':' ';mc+=c?'|':' '}
+    out+='<b>'+(n+1)+'.</b> '+q+' '+(g[0]+1)+'–'+g[1]+', '+r.gene+' '+(g[2]+1)+'–'+g[3]+': '+L+' aa, E '+eFmt(g[4])+', mean IDF '+g[5]+', tf-idf '+g[6]+', '+id+' of '+L+' residues identical, '+cl+' of '+L+' classes identical\n';
     const w=Math.max(q.length,r.gene.length)+1;
-    out+=q.padEnd(w)+String(g[0]+1).padStart(5)+' '+esc(g[6])+' '+g[1]+'\n'+' '.repeat(w+6)+m+'\n'+r.gene.padEnd(w)+String(g[2]+1).padStart(5)+' '+esc(g[7])+' '+g[3]+'\n';
+    out+=q.padEnd(w)+String(g[0]+1).padStart(5)+' '+esc(g[7])+' '+g[1]+'\n'+' '.repeat(w+6)+m+'\n'+r.gene.padEnd(w)+String(g[2]+1).padStart(5)+' '+esc(g[8])+' '+g[3]+'\n';
     out+='classes'.padEnd(w+6)+qe+'\n'+' '.repeat(w+6)+mc+'\n'+' '.repeat(w+6)+te+'\n\n'});
   return out.replace(/\n+$/,'');
 }
 function renderRef(){
   const el=$('refcard'); document.querySelectorAll('#refpick button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===refSel));
-  const q=refSel,R=REF[q],[a,k]=refArm[q],H=HITS241[q+'|'+a+'|'+k],pc=PAIRS['Ced9|'+a+'|'+k],cls={};
+  const q=refSel,R=REF[q],[a,k]=refArm[q];
+  if(!HITS[q]){el.innerHTML='<p class="note">Loading '+q+'\'s hit lists…</p>';loadHits(q);return}
+  const H=HITS[q]==='error'?null:hitView(q,HITS[q][q+'|'+a+'|'+k]),pc=PAIRS['Ced9|'+a+'|'+k],cls={};
   Object.entries(pc.cls).forEach(([sym,res])=>[...res].forEach(c=>cls[c]=sym));
   let h='<div class="head"><h2>'+R.title+'</h2><span class="tag">'+LK.nb241+'</span></div><p class="lede2">'+R.lede+'</p>';
+  h+=rankSummary(q);
   h+='<div class="refgrid" id="refgrid" style="--mw:'+marginW+'px"><aside class="margin" id="margin">'+margin(q)+'</aside><div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Drag to resize the alphabet panel" tabindex="0"></div><div class="main">';
   const bits=PLAN[a].find(x=>x.k===k).bits;
   h+='<h3 class="hh">'+a+' ('+LETTERS[a]+' letters), k = '+k+', '+bits+' bits per seed</h3>';
   if(R.partner){const m=META241[q+'|'+a+'|'+k];h+='<div class="nums">';
-    ['E-value','mean IDF','bit score','shared k-mers'].forEach(mt=>{const r=m.ranks[mt];
+    ['E-value','mean IDF','tf-idf','shared k-mers'].forEach(mt=>{const r=m.ranks[mt];
       h+='<div class="n">'+R.partner+' rank by '+mt+'<b>'+(!r?'not computed':r[0]==null?'not hit':fmt(r[0])+' of '+fmt(r[1])+(r[2]?' ('+fmt(r[2])+' tied)':''))+'</b></div>'});
-    h+='</div><p class="note">'+R.best+'</p>'}
+    h+='</div>'}
   h+=toolsPanel(q,a,k,H);
   h+='<h3 class="hh">kmerseek\'s top hits at '+a+', k = '+k+'</h3>';
-  if(!H){h+='<p class="note">The search at this alphabet and k hit no human protein.</p>'}else{
+  h+=metricSwitch(q);
+  if(HITS[q]==='error'){h+='<p class="note">The hit lists did not load. They are the file hits241.'+q+'.json next to this page.</p>'}
+  else if(!H||!H.rows.length){h+='<p class="note">'+(H&&H.nAny?'No human protein has a finite '+H.by+' at this alphabet and k. Choose another ranking above.':'The search at this alphabet and k hit no human protein.')+'</p>'}else{
     if(!refRow[q]||!H.rows.some(r=>r.gene===refRow[q]))refRow[q]=(R.partner&&H.rows.some(r=>r.gene===R.partner))?R.partner:H.rows[0].gene;
-    h+='<p class="note">The top '+Math.min(20,H.n)+' of '+fmt(H.n)+' human proteins hit, ordered by each protein\'s best region '+H.by+(H.by==='mean IDF'?' (no region has a finite E-value at this alphabet and k)':'')+(R.partner&&!H.rows.some(r=>r.gene===R.partner)?'. '+R.partner+' is not among the proteins hit.':R.partner&&H.rows[H.rows.length-1].gene===R.partner&&H.rows.length>20?'. '+R.partner+' is added as the last row with its own position.':'.')+' Click a protein to see its matched residues.</p>';
+    h+='<p class="note">The top '+Math.min(20,H.n)+' of '+fmt(H.n)+' human proteins ranked by '+H.by+', ordered by each protein\'s best region'+(R.partner&&!H.rows.some(r=>r.gene===R.partner)?'. '+R.partner+' is not ranked under this statistic.':H.rows.length>Math.min(20,H.n)?'. '+(q==='BHF'?'Figure 1 draft genes':R.partner)+' outside the top 20 are added below with their own rank (– = not ranked).':'.')+' Click a protein to see its matched residues.</p>';
     h+='<div class="legend pl">'+(q==='Ced9'?'<span class="lg"><span class="sw" style="background:var(--feat-t);border-color:var(--feat);border-width:2px"></span>BH1 motif, the known shared region (shaded down every row)</span><span class="lg"><span class="sw" style="background:var(--panel);border-color:var(--soft)"></span>another UniProt motif on Ced9 (BH4, BH2)</span>':'')
       +'<span class="lg"><span class="sw" style="background:var(--ink);border-color:var(--ink);height:8px"></span>a region kmerseek\'s search reported, drawn at the '+q+' positions it matches</span>'
-      +(R.partner?'<span class="lg"><span class="sw" style="background:var(--accent-t);border-color:var(--accent-t)"></span>the '+(q==='Ced9'?'known homologue':'proposed partner')+', '+R.partner+'</span>':'')
+      +(R.partner?'<span class="lg"><span class="sw" style="background:var(--accent-t);border-color:var(--accent-t)"></span>the '+(q==='Ced9'?'known homologue':'proposed partner')+', '+R.partner+'</span>':'<span class="lg"><span class="sw" style="background:transparent;border:none;text-align:center">◆</span>a gene named in the Figure 1 draft</span>')
       +'<span class="lg"><span class="sw" style="background:transparent;border-color:var(--ink);border-width:2px"></span>the protein whose residues are shown below</span></div>';
     h+='<div class="fig">'+hitsSVG(q,H,cls)+'</div>';
     const r=H.rows.find(x=>x.gene===refRow[q]);
@@ -174,6 +179,7 @@ function renderRef(){
   const sc=$('margin')?$('margin').scrollTop:0;
   el.innerHTML=h; $('margin').scrollTop=sc;
   wireResizer(); wireTips(el);
+  el.querySelectorAll('.mswitch button').forEach(b=>b.onclick=()=>{refMetric[q]=b.dataset.m;renderRef()});
   el.querySelectorAll('.chip[data-a]').forEach(b=>b.onclick=()=>{refArm[q]=[b.dataset.a,+b.dataset.k];renderRef()});
   el.querySelectorAll('.hr').forEach(g=>{const go=()=>{refRow[q]=g.dataset.g;renderRef()};g.onclick=go;g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}});
 }
@@ -231,4 +237,34 @@ function wireTips(el){
     const show=()=>{tip.textContent=n.dataset.tip;tip.hidden=false;const b=n.getBoundingClientRect();tip.style.left=Math.min(window.innerWidth-tip.offsetWidth-8,b.left)+'px';tip.style.top=(b.bottom+6)+'px'};
     n.onmouseenter=show;n.onfocus=show;n.onmouseleave=()=>tip.hidden=true;n.onblur=()=>tip.hidden=true;});
 }
+
+// ---- ranking statistic: E-value, mean IDF or tf-idf ----
+const HITS={}; const METS=[['E','E-value'],['idf','mean IDF'],['tfidf','tf-idf']]; const refMetric={Ced9:'E',P66:'E',BHF:'E'};
+function loadHits(q){fetch('hits241.'+q+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{HITS[q]=d;renderRef()}).catch(()=>{HITS[q]='error';renderRef()})}
+function hitView(q,raw){
+  if(!raw)return null; const m=refMetric[q],R=REF[q];
+  const tracked=g=>(R.partner&&g===R.partner)||(q==='BHF'&&FIG1.has(g));
+  const all=raw.rows.map(r=>({...r,pos:r.rk[m],fig1:q==='BHF'&&FIG1.has(r.gene)}));
+  const top=all.filter(r=>r.pos!=null).sort((x,y)=>x.pos-y.pos||x.gene.localeCompare(y.gene)).slice(0,20);
+  const extra=all.filter(r=>tracked(r.gene)&&!top.includes(r)).sort((x,y)=>(x.pos??1e9)-(y.pos??1e9));
+  return {m,by:METS.find(x=>x[0]===m)[1],n:raw.n[m],nAny:Math.max(...Object.values(raw.n)),rows:top.concat(extra)};
+}
+function metricSwitch(q){return '<div class="mswitch" role="group" aria-label="Rank kmerseek\'s hits by">Rank kmerseek\'s hits by '+METS.map(([m,l])=>'<button data-m="'+m+'" aria-pressed="'+(refMetric[q]===m)+'">'+l+'</button>').join('')+'<span class="note">Each protein scores its best region: lowest E-value, highest mean IDF (how rare the region\'s k-mers are in the human proteome, averaged), or highest tf-idf (those rarities summed over the region). Rank = 1 + the number of proteins that score better, as in notebook 241.</span></div>'}
+const FIG1=new Set(['ZNF292','RSF1','TSHZ1','TSHZ2','TSHZ3','RNMT','SFI1','TRAPPC10','NDNF']);
+function rankSummary(q){
+  const R=REF[q];
+  if(q==='BHF'){
+    let h='<h3 class="hh">Do the Figure 1 draft genes come back under mean IDF or tf-idf?</h3><p class="note">Each gene\'s best rank over all 152 alphabet and k values, where it was reached, and how many human proteins that setting hit. The last column of each statistic is the share of 20,000 draws in which a human protein picked at random from the same hit lists, at the same alphabet and k values, ranks as well or better (the null from '+LK.nb241s6+'). Near 1 means the rank is what chance gives.</p><div class="tbl"><table><thead><tr><th rowspan="2">gene</th>'+METS.map(x=>'<th colspan="3">'+x[1]+'</th>').join('')+'</tr><tr>'+METS.map(()=>'<th>best rank</th><th>where (proteins hit)</th><th>random as good</th>').join('')+'</tr></thead><tbody>';
+    BHFFIG1.forEach(r=>{h+='<tr><td class="g">'+r.gene+'</td>';METS.forEach(([m])=>{h+=r['best_'+m]==null?'<td>–</td><td></td><td></td>':'<td class="num">'+fmt(r['best_'+m])+'</td><td class="w">'+esc(r['at_'+m])+'</td><td class="num">'+Math.round(100*r['p_random_as_good_'+m])+'%</td>'});h+='</tr>'});
+    return h+'</tbody></table></div><p class="note">Every Figure 1 draft gene still reaches a high rank somewhere under mean IDF or tf-idf, and RSF1 and SFI1 reach rank 1. Those best ranks come from high k, where only 10 to 124 human proteins are hit at all, and a random protein from the same lists does as well in 28% to 92% of draws. None of the nine stands out from chance under any of the three statistics.</p>';
+  }
+  const rows=SUMM241.filter(r=>r.query===q&&r.gene===R.partner);
+  let h='<h3 class="hh">Where '+R.partner+' ranks under each statistic</h3><div class="tbl"><table><thead><tr><th>statistic</th><th>alphabet and k values where '+R.partner+' is ranked</th><th>best rank, of the proteins ranked</th><th>where</th><th>best share of the ranked list</th></tr></thead><tbody>';
+  METS.forEach(([m,l])=>{const ok=rows.filter(r=>r['rank_'+m]!=null);
+    if(!ok.length){h+='<tr><td>'+l+'</td><td class="num">0</td><td>–</td><td></td><td></td></tr>';return}
+    const b=ok.reduce((x,y)=>y['rank_'+m]<x['rank_'+m]?y:x), p=ok.reduce((x,y)=>y['rank_'+m]/y['n_'+m]<x['rank_'+m]/x['n_'+m]?y:x);
+    h+='<tr><td>'+l+'</td><td class="num">'+ok.length+' of 152</td><td class="num">'+fmt(b['rank_'+m])+' of '+fmt(b['n_'+m])+'</td><td class="w">'+b.alphabet+' k'+b.k+'</td><td class="num">'+(100*p['rank_'+m]/p['n_'+m]).toFixed(1)+'% ('+p.alphabet+' k'+p.k+')</td></tr>'});
+  return h+'</tbody></table></div><p class="note">"Ranked" counts the proteins with a finite value under that statistic; notebook 241 divides by every protein hit, so its E-value ranks read "of" a larger number. '+R.best+'</p>';
+}
+// draw the page last, after every declaration above
 showTab(location.hash==='#pairs'?'pairs':'cases');

@@ -13,9 +13,15 @@ def clean(o):
     if isinstance(o,dict): return {k:clean(v) for k,v in o.items()}
     if isinstance(o,list): return [clean(v) for v in o]
     return o
+import polars as _pl
+BHFFIG1=_pl.read_csv(T+"bhf_fig1_ranks.csv").to_dicts()
+# the hit lists are too big to embed: one file per query next to the page, fetched on demand
+_h=json.load(open(T+"hits241.json"))
+for _q in ["Ced9","P66","BHF"]:
+    open(str(ROOT/"reports"/"case_gallery"/("hits241."+_q+".json")),"w").write(json.dumps(clean({k:v for k,v in _h.items() if k.startswith(_q+"|")}),separators=(",",":")))
 L=lambda f: json.dumps(clean(json.load(open(S+f))),separators=(",",":"))
 js=open(str(ROOT/"scripts"/"case_gallery"/"pair_view.js")).read().replace("' '.repeat(w)+'classes'.padStart(5).slice(-5)+' '","'classes'.padEnd(w+6)")
-block="const PAIRS="+L("pairdata.json")+";\nconst META241="+L("meta241.json")+";\nconst BHFARMS="+L("bhf_arms.json")+";\nconst HITS241="+L("hits241.json")+";\nconst OTHER="+L("other_tools.json")+";\n"+js
+block="const PAIRS="+L("pairdata.json")+";\nconst META241="+L("meta241.json")+";\nconst BHFARMS="+L("bhf_arms.json")+";\nconst SUMM241="+L("hits241_summary.json")+";\nconst BHFFIG1="+json.dumps(BHFFIG1,separators=(",",":"))+";\nconst OTHER="+L("other_tools.json")+";\n"+js
 s=s[:i]+block+s[j:]
 css=""".refgrid{display:grid;grid-template-columns:232px minmax(0,1fr);gap:20px;margin-top:10px;position:relative;z-index:0}
 .margin{border-right:1px solid var(--line);padding-right:14px}
@@ -47,7 +53,15 @@ open(PAGE,"w").write(s)
 i=s.index('<script>')+8; open("/dev/null","w").write(s[i:s.rindex('</script>')])
 print(len(s))
 
-EXTRA=""".malpha{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;margin:0 0 5px}
+EXTRA=""".mswitch{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px;font-size:13px}
+.mswitch button[aria-pressed="true"]{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.mswitch .note{flex-basis:100%;margin:2px 0 0}
+.tbl{overflow-x:auto;margin:6px 0}
+.tbl table{border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:3px 8px;text-align:left;vertical-align:top}
+.tbl th{font-weight:600;color:var(--soft);font-size:12px}
+.tbl td.num{text-align:right;font-family:var(--mono)}.tbl td.g{font-family:var(--mono);font-weight:600}.tbl td.w{font-family:var(--mono);font-size:11.5px}
+.malpha{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;margin:0 0 5px}
 .mname{cursor:help;min-width:0}
 .chips{display:inline-flex;flex-wrap:wrap;gap:3px;margin:0}
 .chip{min-width:24px;padding:0 3px;font-size:10.5px}
@@ -60,7 +74,7 @@ EXTRA=""".malpha{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;ma
 #tip{position:fixed;z-index:10;max-width:360px;background:var(--ink);color:var(--panel);font:12px/1.4 var(--mono);padding:6px 8px;border-radius:6px;pointer-events:none}
 details.alltools{margin-top:8px}details.alltools summary{cursor:pointer;font-size:13px;color:var(--accent)}
 """
-if ".resizer{" not in s: s=s.replace("</style>",EXTRA+"</style>",1)
+if ".mswitch{" not in s: s=s.replace("</style>",EXTRA+"</style>",1)
 if 'id="tip"' not in s: s=s.replace('<div id="tabpairs" hidden>','<div id="tip" hidden></div>\n<div id="tabpairs" hidden>',1)
 open(PAGE,"w").write(s)
 i=s.index('<script>')+8; open("/dev/null","w").write(s[i:s.rindex('</script>')])
