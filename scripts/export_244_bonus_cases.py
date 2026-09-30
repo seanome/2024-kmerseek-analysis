@@ -385,14 +385,14 @@ def case_a_calls(hits: pl.DataFrame) -> tuple[list[dict], dict]:
         else:
             cat, call = "no call", {}
         if not h.height:
-            note = "no human hit at E <= 10"
+            note = "no human hit reported"
         elif on_bcl2.height and not scored:
             spans = ", ".join(
                 f"{a}-{b}" for a, b in on_bcl2.select("tstart", "tend").rows()
             )
             note = f"BCL2 is hit at {spans}, not on BH1"
         elif not on_bcl2.height:
-            note = f"BCL2 not among its {n_targets(h)} at E <= 10"
+            note = f"BCL2 not among its {n_targets(h)} reported"
         else:
             note = f"BCL2 is target {partner_rank} of {n_hit} by E-value"
         rows.append(
@@ -418,7 +418,7 @@ def case_b_calls(hits: pl.DataFrame) -> tuple[list[dict], dict, set[str]]:
                         note="not run: BHF has no AlphaFold model")  # fmt: skip
         elif not h.height:
             row |= dict(outcome="no call", outcome_on_human="no call",
-                        note="no human hit at E <= 10")  # fmt: skip
+                        note="no human hit reported")  # fmt: skip
         else:
             r = h.row(0, named=True)  # rank_hits sorted it: lowest E-value first
             targets.add(r["target"])
@@ -427,7 +427,7 @@ def case_b_calls(hits: pl.DataFrame) -> tuple[list[dict], dict, set[str]]:
                 target=r["target"], query_start=r["qstart"], query_end=r["qend"],
                 target_start=r["tstart"], target_end=r["tend"], score=r["score"],
                 evalue=r["evalue"],
-                note=f"{n_targets(h)} at E <= 10",
+                note=f"{n_targets(h)} reported",
             )  # fmt: skip
         rows.append(row)
         if label in TOOLS:  # the candidate table has no category column for kmerseek
