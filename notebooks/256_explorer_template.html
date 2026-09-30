@@ -61,12 +61,13 @@ summary{cursor:pointer;color:var(--ink);font-weight:500}
 
 <div class="wrap">
   <h1>BHF against 300 shuffled copies of itself</h1>
-  <p class="lede">Notebook 256. BHF (<i>Botryllus</i> histocompatibility factor, <span id="bhfLen"></span> aa) and 300 shuffled copies of BHF were each searched with kmerseek against the <span id="nHuman"></span> canonical human proteins (GENCODE v49). A shuffled copy has BHF's length, its amino-acid counts and its count of every adjacent residue pair (a dipeptide shuffle), but any real match to a human protein is gone. Whatever a copy finds, BHF could find by chance.</p>
+  <p class="lede">Notebooks 256 and 258. BHF (<i>Botryllus</i> histocompatibility factor, <span id="bhfLen"></span> aa) and 300 shuffled copies of BHF were each searched with kmerseek against the <span id="nHuman"></span> canonical human proteins (GENCODE v49). A shuffled copy has BHF's length, its amino-acid counts and its count of every adjacent residue pair (a dipeptide shuffle), but any real match to a human protein is gone. Whatever a copy finds, BHF could find by chance.</p>
   <p class="lede">An <b>alphabet-ksize pair</b> is one reduced amino-acid alphabet at one k-mer size, the search settings of notebook 241. Each pair ranks the human proteins under 11 ranking metrics. Pick a metric below.</p>
 
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-best" aria-selected="true" aria-controls="view-best">BHF's best score against its copies</button>
     <button role="tab" id="tab-talk" aria-selected="false" aria-controls="view-talk">The 2024 talk's hits</button>
+    <button role="tab" id="tab-cls" aria-selected="false" aria-controls="view-cls">Zinc finger, membrane, extracellular</button>
   </div>
 
   <h3>Ranking metric (alphabet-ksize pairs where BHF beats 95% of its copies, of all pairs where BHF has a score)</h3>
@@ -78,7 +79,7 @@ summary{cursor:pointer;color:var(--ink);font-weight:500}
       <div>
         <h2>Best score per alphabet-ksize pair</h2>
         <div class="legend" id="stripLegend"></div>
-        <p class="note">Each row is one alphabet-ksize pair, sorted by alphabet (bold heading), then k-mer size. A query's <b>best score</b> is the score of its top-ranked human protein. Each row has its own scale, running from the worst value in the row on the left to the best on the right<span id="logNote"></span>. Copies that hit no human protein on a pair are not drawn and count as worse than BHF. The number on the right is the share of copies at least as good as BHF, counted as (1 + copies at least as good) / 301 so it is never 0. Click a row.</p>
+        <p class="note">Each row is one alphabet-ksize pair, sorted by alphabet (bold heading), then k-mer size. A query's <b>best score</b> is the score of its top-ranked human protein. Each row has its own scale, running from the worst value in the row on the left to the best on the right<span id="logNote"></span>. Copies that hit no human protein on a pair are not drawn and count as worse than BHF.<span id="zeroNote" hidden> Values the search reports as exactly 0 cannot go on a log axis; they sit in the column marked 0 at the right end, after the dashed tick, and tie with each other.</span> The number on the right is the share of copies at least as good as BHF, counted as (1 + copies at least as good) / 301 so it is never 0. Click a row.</p>
         <div class="chart" id="stripBox"><canvas id="strip" tabindex="0" aria-label="Strip chart, one row per alphabet-ksize pair"></canvas><div class="tip" id="tip" hidden></div></div>
       </div>
       <aside class="detail" id="detail" aria-live="polite"></aside>
@@ -94,14 +95,32 @@ summary{cursor:pointer;color:var(--ink);font-weight:500}
     <div id="talkTable" style="overflow-x:auto;margin-top:14px"></div>
   </section>
 
-  <p class="note" style="margin-top:28px">Source: branch olgabot/bhf-dipeptide-shuffle-null, notebooks/256_explorer_data.py, which calls best_score_p, talk_in_top, talk_summary, bhf_best_regions and with_human_region from notebooks/bhf_shuffle_null_utils.py. kmerseek 0.4.0 (982a055). Region coordinates come from notebook 241's regions.parquet.</p>
+  <section id="view-cls" role="tabpanel" hidden>
+    <h2>Do BHF's matches land on zinc fingers, membrane regions or extracellular parts?</h2>
+    <p>Notebook 258. For every query, alphabet-ksize pair and ranking metric, the search kept the best region of each of the query's 10 best human proteins. A match <b>lands on a class</b> when at least half of its human region lies inside that class. The classes come from reviewed UniProt human entries, matched to the GENCODE proteins by identical sequence (<span id="fMatched"></span> proteins):</p>
+    <ul class="note" style="margin-top:0">
+      <li><b>zinc finger</b>: UniProt zinc finger regions;</li>
+      <li><b>membrane</b>: transmembrane and intramembrane segments, regions annotated as interacting with membranes, and lipid anchors (myristoylation, palmitoylation, prenylation sites) widened by 5 residues on each side;</li>
+      <li><b>extracellular</b>: extracellular topological domains, and the mature chain of secreted proteins with no transmembrane segment;</li>
+      <li><b>disordered</b>: UniProt's MobiDB-lite disordered regions. Zinc finger, membrane and extracellular are counted outside these.</li>
+    </ul>
+    <p class="note">Each dot is one query's share of its matches on the class, among matches in a human protein with a reviewed UniProt entry (<span id="fAnnot"></span>). The number on the right is the share of copies at least as high as BHF, (1 + copies) / 301. The top block pools every metric; the lower block follows the metric picked above.</p>
+    <div class="legend" id="clsLegend"></div>
+    <div class="chart" style="overflow-x:auto"><svg id="clsSvg" role="img" aria-label="Share of matches on each UniProt class, BHF against copies"></svg></div>
+    <h3 style="margin-top:18px">Membrane, one alphabet at a time (all k-mer sizes and metrics together)</h3>
+    <p class="note">With 19 alphabets, about one is expected at 0.05 or less by chance. Notebook 258 finds that gbmr7 puts K, R, E and Q in one class with L, I, V and F, so a basic stretch and a membrane helix look alike to it.</p>
+    <div id="memTable" style="overflow-x:auto"></div>
+    <p class="note" style="margin-top:10px">These matches come from a repeat of the 256 search with the regions kept (256_bhf_dipeptide_shuffle_null.py --keep-regions). Notebook 258 reports that the repeat changed some E-values and bit scores in the twelfth decimal place and reordered 76 of 293_315 top proteins.</p>
+  </section>
+
+  <p class="note" style="margin-top:28px">Source: branch olgabot/bhf-dipeptide-shuffle-null, notebooks/256_explorer_data.py, which calls best_score_p, talk_in_top, talk_summary, bhf_best_regions and with_human_region from notebooks/bhf_shuffle_null_utils.py, and feature_table, load_regions, label_matches, class_shares and class_test from notebooks/bhf_feature_utils.py (notebook 258). kmerseek 0.4.0 (982a055). Region coordinates come from notebook 241's regions.parquet.</p>
 </div>
 
 <script>
 const D = /*DATA*/null;
 const $ = s => document.querySelector(s);
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const LOG = m => m.lower_is_better;   // E-value and the p-values drawn on a log scale
+const LOG = m => m.log10_axis;   // E-value, the p-values and the Poisson score: log10 axis
 const fmt = (v, m) => {
   if (v === null || v === undefined) return "no hit";
   if (m && m.lower_is_better) return v === 0 ? "0" : (Math.abs(v) < 1e-3 || v >= 1e4 ? v.toExponential(2) : +v.toPrecision(3) + "");
@@ -152,10 +171,12 @@ function drawSummary() {
 
 /* ---------- strip chart ---------- */
 let rows = [], geo = {};
-function tval(v, m) { return LOG(m) ? -Math.log10(Math.max(v, 1e-300)) : v; }
+// position on the row scale, better to the right; a 0 on a log axis gets its own column
+function tval(v, m) { if (!LOG(m)) return v; return m.lower_is_better ? -Math.log10(v) : Math.log10(v); }
 function drawStrip() {
   const m = D.metrics[state.metric];
-  $("#logNote").textContent = LOG(m) ? " (log scale; better means smaller for " + m.name + ")" : "";
+  $("#logNote").textContent = LOG(m) ? ` (log10 scale${m.lower_is_better ? "; smaller is better for " + m.name : ""})` : "";
+  const hasZero = LOG(m) && m.pairs.some(p => p.bhf === 0 || p.copies.some(v => v === 0));
   $("#stripLegend").innerHTML =
     `<span>${sw.copy()} one shuffled copy's best score</span><span>${sw.bhf()} BHF's best score</span><span>${sw.pass()} BHF beats at least 95% of its copies</span>`;
   rows = m.pairs;
@@ -165,8 +186,9 @@ function drawStrip() {
   const ys = []; let yy = TOP, prev = null;
   rows.forEach((p, i) => { if (p.alphabet !== prev) { yy += GH; prev = p.alphabet; } ys.push(yy); yy += RH; });
   const H = yy + 8;
-  const L = 46, R = narrow ? 58 : 150, x0 = L + 8, x1 = W - R - 10;
+  const L = 46, R = narrow ? 58 : 150, x0 = L + 8, xz = W - R - 16, x1 = hasZero ? xz - 26 : W - R - 10;
   geo = { RH, TOP, L, R, x0, x1, W, narrow, ys };
+  $("#zeroNote").hidden = !hasZero;
   const dpr = window.devicePixelRatio || 1;
   cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px";
   const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
@@ -174,6 +196,7 @@ function drawStrip() {
   c.font = "600 11px " + css("--sans"); c.fillStyle = muted; c.textBaseline = "middle";
   c.textAlign = "left"; c.fillText("k-mer size", 4, 10);
   c.textAlign = "center"; c.fillText("worse  ←   best score   →  better", (x0 + x1) / 2, 10);
+  if (hasZero) c.fillText("0", xz, 10);
   c.textAlign = "right"; c.fillText(narrow ? "share" : "copies as good · share", W - 4, 10);
   let prevA = null;
   rows.forEach((p, i) => {
@@ -187,14 +210,16 @@ function drawStrip() {
     c.textAlign = "right"; c.fillStyle = muted; c.fillText("k " + p.k, L, cy);
     prevA = p.alphabet;
     c.strokeStyle = rule; c.beginPath(); c.moveTo(x0, cy + .5); c.lineTo(x1, cy + .5); c.stroke();
-    const vals = p.copies.filter(v => v !== null).map(v => tval(v, m));
-    const tb = tval(p.bhf, m);
-    let lo = Math.min(tb, ...vals), hi = Math.max(tb, ...vals); if (hi === lo) { lo -= 1; hi += 1; }
+    const isZ = v => hasZero && v === 0;
+    const vals = [p.bhf, ...p.copies].filter(v => v !== null && !isZ(v)).map(v => tval(v, m));
+    let lo = Math.min(...vals), hi = Math.max(...vals); if (!vals.length) { lo = 0; hi = 1; } if (hi === lo) { lo -= 1; hi += 1; }
     const X = t => x0 + (t - lo) / (hi - lo) * (x1 - x0);
+    const XV = v => isZ(v) ? xz : X(tval(v, m));
+    if (hasZero) { c.strokeStyle = rule; c.setLineDash([2, 2]); c.beginPath(); c.moveTo(xz - 13, cy - 6); c.lineTo(xz - 13, cy + 6); c.stroke(); c.setLineDash([]); }
     c.fillStyle = copy; c.globalAlpha = .45;
-    p.copies.forEach((v, j) => { if (v === null) return; const jy = ((j * 7919) % 9) - 4; c.beginPath(); c.arc(X(tval(v, m)), cy + jy * .9, 2, 0, 7); c.fill(); });
+    p.copies.forEach((v, j) => { if (v === null) return; const jy = ((j * 7919) % 9) - 4; c.beginPath(); c.arc(XV(v), cy + jy * .9, 2, 0, 7); c.fill(); });
     c.globalAlpha = 1;
-    const bx = X(tb); c.fillStyle = bhf; c.strokeStyle = css("--panel"); c.lineWidth = 1.2;
+    const bx = XV(p.bhf); c.fillStyle = bhf; c.strokeStyle = css("--panel"); c.lineWidth = 1.2;
     c.beginPath(); c.moveTo(bx, cy - 6); c.lineTo(bx + 6, cy); c.lineTo(bx, cy + 6); c.lineTo(bx - 6, cy); c.closePath(); c.fill(); c.stroke();
     const pass = p.p <= PASS;
     c.textAlign = "right"; c.fillStyle = ink; c.font = (pass ? "600 " : "") + "11.5px " + css("--sans");
@@ -250,10 +275,10 @@ function drawDetail() {
   }
   h += `<h3>BHF's top ${Math.min(D.top, p.top10.length)} human proteins</h3>`;
   if (p.top10.length < D.top) h += `<p class="note">BHF hit only ${p.top10.length} human protein${p.top10.length === 1 ? "" : "s"} at this pair.</p>`;
-  h += `<p class="note">Next to each: how many of the ${D.n_copies} copies also have that protein in their own top 10 here. A protein that many copies also find comes to the top for any sequence with BHF's make-up. <span class="tag" style="margin:0">2024 talk</span> marks the talk's proteins.</p>`;
-  h += `<div style="overflow-x:auto"><table><thead><tr><th>rank</th><th>human protein</th><th colspan="2">copies with it in their top 10</th></tr></thead><tbody>`;
-  p.top10.forEach(([g, n], i) => {
-    h += `<tr><td class="num">${i + 1}</td><td>${g}${D.talk_genes.includes(g) ? '<span class="tag">2024 talk</span>' : ""}</td><td class="num">${n} of ${D.n_copies}</td><td style="width:40%"><span class="bar" style="width:${(100 * n / D.n_copies).toFixed(1)}%"></span></td></tr>`;
+  h += `<p class="note">Next to each: how many of the ${D.n_copies} copies also have that protein in their own top 10 here. A protein that many copies also find comes to the top for any sequence with BHF's make-up. <span class="tag" style="margin:0">2024 talk</span> marks the talk's proteins. The last column is from notebook 258: the UniProt class that holds at least half of the human side of BHF's match (see the third tab).</p>`;
+  h += `<div style="overflow-x:auto"><table><thead><tr><th>rank</th><th>human protein</th><th colspan="2">copies with it in their top 10</th><th>UniProt class of the matched human region</th></tr></thead><tbody>`;
+  p.top10.forEach(([g, n, cls], i) => {
+    h += `<tr><td class="num">${i + 1}</td><td>${g}${D.talk_genes.includes(g) ? '<span class="tag">2024 talk</span>' : ""}</td><td class="num">${n} of ${D.n_copies}</td><td style="width:28%"><span class="bar" style="width:${(100 * n / D.n_copies).toFixed(1)}%"></span></td><td>${cls ?? ""}</td></tr>`;
   });
   h += `</tbody></table></div>`;
   el.innerHTML = h;
@@ -273,31 +298,32 @@ function proteinSvg(r) {
     s += `<rect x="${bx}" y="${y - 7}" width="${bw}" height="14" fill="${q.col}" fill-opacity=".3" stroke="${q.col}"/>`;
     const lab = `${q.a + 1}-${q.b}`, lx = Math.min(Math.max(bx + bw / 2, L + 20), L + w - 20);
     s += `<text x="${lx}" y="${y + 20}" text-anchor="middle" fill="${css('--ink')}">${lab}</text>`;
-    s += `<text x="${L}" y="${y + 20}" fill="${css('--muted')}">1</text><text x="${L + w}" y="${y + 20}" text-anchor="end" fill="${css('--muted')}">${q.len}</text>`;
+    // the protein's first and last residue numbers, unless the region label would run into them
+    const half = lab.length * 3.5 + 6;
+    if (lx - half > L + 10) s += `<text x="${L}" y="${y + 20}" fill="${css('--muted')}">1</text>`;
+    if (lx + half < L + w - String(q.len).length * 7) s += `<text x="${L + w}" y="${y + 20}" text-anchor="end" fill="${css('--muted')}">${q.len}</text>`;
   });
   return s + `</svg>`;
 }
 function alignment(r, alpha) {
-  const a = r.bhf_seq, b = r.human_seq || "", g = groupOf(alpha), n = a.length;
-  let id = 0, grp = 0, line = "";
-  for (let i = 0; i < n; i++) {
-    if (a[i] === b[i]) { id++; line += "|"; }
-    else if (g[a[i]] !== undefined && g[a[i]] === g[b[i]]) { grp++; line += "+"; }
-    else line += " ";
-  }
-  const lab1 = "BHF", lab2 = r.gene.length > 9 ? r.gene.slice(0, 9) : r.gene, pad = Math.max(lab1.length, lab2.length) + 1;
+  const a = r.bhf_seq, b = r.human_seq || "", n = a.length, line = r.match_line, enc = r.bhf_encoded != null;
+  const lab2 = r.gene, pad = (enc ? Math.max(9, lab2.length + 6) : Math.max(3, lab2.length)) + 1;
   const c = 50, nw = String(Math.max(r.end, r.human_end)).length;
+  const L = (lab, x, cl, from, to) => `<span class="${cl}">${lab.padEnd(pad)}${from === "" ? "".padStart(nw) : String(from).padStart(nw)} ${x}${to === "" ? "" : " " + to}</span>\n`;
   let out = "";
   for (let i = 0; i < n; i += c) {
-    const s1 = a.slice(i, i + c), s2 = b.slice(i, i + c), ml = line.slice(i, i + c);
-    const aStart = r.start + i + 1, aEnd = r.start + i + s1.length, hStart = r.human_start + i + 1, hEnd = r.human_start + i + s2.length;
-    out += `<span class="b">${lab1.padEnd(pad)}${String(aStart).padStart(nw)} ${s1} ${aEnd}</span>\n`;
-    out += `<span class="c">${"".padEnd(pad)}${"".padStart(nw)} ${ml}</span>\n`;
-    out += `<span class="h">${lab2.padEnd(pad)}${String(hStart).padStart(nw)} ${s2} ${hEnd}</span>\n`;
+    const s1 = a.slice(i, i + c), s2 = b.slice(i, i + c);
+    const aS = r.start + i + 1, aE = r.start + i + s1.length, hS = r.human_start + i + 1, hE = r.human_start + i + s2.length;
+    out += L("BHF", s1, "b", aS, aE) + L("", line.slice(i, i + c), "c", "", "") + L(lab2, s2, "h", hS, hE);
+    if (enc) {
+      const e1 = r.bhf_encoded.slice(i, i + c), e2 = r.human_encoded.slice(i, i + c);
+      const em = [...e1].map((x, j) => x === e2[j] ? "|" : " ").join("");
+      out += "\n" + L("BHF class", e1, "b", aS, aE) + L("", em, "c", "", "") + L(lab2 + " class", e2, "h", hS, hE);
+    }
     if (i + c < n) out += "\n";
   }
-  const cls = (D.clusters[alpha] || []).length;
-  return `<p class="note">BHF ${r.start + 1}-${r.end} against ${r.gene} ${r.human_start + 1}-${r.human_end}, ${n} residues, no gaps (kmerseek regions are ungapped). <b>|</b> same residue: ${id} of ${n}. <b>+</b> different residue, same letter in ${alpha} (${cls} letters): ${grp} of ${n}.</p><div class="aln">${out}</div>`;
+  const key = enc ? (D.clusters[alpha] || []).map((g, i) => `${i}=${g}`).join("  ") : "";
+  return `<p class="note">BHF ${r.start + 1}-${r.end} against ${r.gene} ${r.human_start + 1}-${r.human_end}, ${n} residues, no gaps (kmerseek regions are ungapped). <b>|</b> same residue: ${r.n_identical} of ${n}. <b>+</b> different residue in the same class of ${alpha} (${r.n_classes} classes). Same class, counting identical residues: ${r.n_same_class} of ${n}.${enc ? ` The second block writes each residue as the number of its ${alpha} class, which is what kmerseek compared: ${key}.` : ""}</p><div class="aln">${out}</div>`;
 }
 
 /* ---------- 2024 talk view ---------- */
@@ -329,17 +355,54 @@ function drawTalk() {
   $("#talkTable").innerHTML = tb + `</tbody></table>`;
 }
 
+/* ---------- notebook 258 view ---------- */
+function drawClasses() {
+  const F = D.features, m = D.metrics[state.metric], nf = x => x.toLocaleString("en-US").replace(/,/g, "_");
+  $("#fMatched").textContent = `${nf(F.n_matched)} of ${nf(F.n_gencode)}`;
+  $("#fAnnot").textContent = `${nf(F.n_matches_annotated)} of ${nf(F.n_matches)} matches`;
+  $("#clsLegend").innerHTML = `<span>${sw.band()} middle 95% of the 300 copies</span><span>${sw.copy()} one shuffled copy</span><span>${sw.bhf()} BHF</span>`;
+  const blocks = [["All metrics pooled", F.pooled], [m.name, m.classes]];
+  const W = Math.max(560, $("#view-cls").clientWidth), L = 150, R = 90, RH = 28, GH = 26, TOP = 24;
+  let mx = 0; blocks.forEach(([, b]) => b.forEach(r => { mx = Math.max(mx, r.bhf_pct, ...r.copies_pct); }));
+  mx = Math.ceil(mx / 10) * 10;
+  const H = TOP + blocks.length * (GH + 4 * RH) + 44, X = v => L + v / mx * (W - L - R);
+  const ink = css("--ink"), muted = css("--muted"), rule = css("--rule"), yEnd = H - 44;
+  let s = "";
+  for (let t = 0; t <= mx; t += 10) s += `<line x1="${X(t)}" x2="${X(t)}" y1="${TOP}" y2="${yEnd}" stroke="${rule}"/><text x="${X(t)}" y="${yEnd + 14}" text-anchor="middle" fill="${muted}" font-size="11">${t}%</text>`;
+  s += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle" fill="${ink}" font-size="12">% of a query's top-10 matches that land on the class</text>`;
+  s += `<text x="${W - R + 8}" y="${TOP - 8}" fill="${muted}" font-size="11">share ≥ BHF</text>`;
+  let y0 = TOP;
+  blocks.forEach(([title, rows]) => {
+    s += `<text x="4" y="${y0 + 17}" fill="${ink}" font-size="12.5" font-weight="700">${title}</text>`;
+    y0 += GH;
+    rows.forEach(r => {
+      const y = y0 + RH / 2;
+      s += `<rect x="${X(r.copies_p2_5)}" y="${y - 9}" width="${Math.max(1, X(r.copies_p97_5) - X(r.copies_p2_5))}" height="18" fill="${css('--band')}"/>`;
+      r.copies_pct.forEach((v, j) => { const jy = ((j * 7919) % 11) - 5; s += `<circle cx="${X(v)}" cy="${y + jy}" r="2" fill="${css('--copy')}" fill-opacity=".45"/>`; });
+      const bx = X(r.bhf_pct);
+      s += `<path d="M${bx} ${y - 7}L${bx + 7} ${y}L${bx} ${y + 7}L${bx - 7} ${y}Z" fill="${css('--bhf')}" stroke="${css('--panel')}"/>`;
+      s += `<text x="${L - 8}" y="${y + 4}" text-anchor="end" fill="${ink}" font-size="12">${r.cls}</text>`;
+      s += `<text x="${W - R + 8}" y="${y + 4}" fill="${ink}" font-size="12" font-weight="${r.p <= PASS ? 700 : 400}">${r.p.toFixed(3)}</text>`;
+      y0 += RH;
+    });
+  });
+  const svg = $("#clsSvg"); svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("font-family", css("--sans")); svg.innerHTML = s;
+  let tb = `<table><thead><tr><th>alphabet</th><th class="num">BHF: % on membrane</th><th class="num">copies: median</th><th class="num">copies: middle 95%</th><th class="num">share of copies ≥ BHF</th></tr></thead><tbody>`;
+  F.membrane_by_alphabet.forEach(r => { tb += `<tr style="${r.p <= PASS ? "font-weight:600" : ""}"><td>${r.alphabet}</td><td class="num">${r.bhf_pct}%</td><td class="num">${r.copies_median_pct}%</td><td class="num">${r.copies_p2_5}-${r.copies_p97_5}%</td><td class="num">${r.p.toFixed(3)}</td></tr>`; });
+  $("#memTable").innerHTML = tb + `</tbody></table>`;
+}
+
 /* ---------- tabs and render ---------- */
 function render() {
   drawMetrics();
-  const best = state.tab === "best";
-  $("#tab-best").setAttribute("aria-selected", best); $("#tab-talk").setAttribute("aria-selected", !best);
-  $("#view-best").hidden = !best; $("#view-talk").hidden = best;
-  if (best) { drawSummary(); drawStrip(); drawDetail(); } else drawTalk();
+  ["best", "talk", "cls"].forEach(t => { $("#tab-" + t).setAttribute("aria-selected", state.tab === t); $("#view-" + t).hidden = state.tab !== t; });
+  if (state.tab === "best") { drawSummary(); drawStrip(); drawDetail(); } else if (state.tab === "talk") drawTalk(); else drawClasses();
 }
 $("#tab-best").onclick = () => { state.tab = "best"; save(); render(); };
 $("#tab-talk").onclick = () => { state.tab = "talk"; save(); render(); };
+$("#tab-cls").onclick = () => { state.tab = "cls"; save(); render(); };
 if (location.hash === "#talk") state.tab = "talk";
+if (location.hash === "#classes") state.tab = "cls";
 let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
 new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
