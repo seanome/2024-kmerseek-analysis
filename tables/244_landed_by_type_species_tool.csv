@@ -1,0 +1,334 @@
+feature_type,species,tool,n_cases,n_landed,n_spills,n_no_call,mean_iou,median_iou
+BINDING,arabidopsis,kmerseek chosen arm,6,6,0,0,0.983,1.0
+BINDING,arabidopsis,kmerseek best other alphabet,6,6,0,0,1.0,1.0
+BINDING,arabidopsis,phmmer,6,0,6,0,0.145,0.157
+BINDING,arabidopsis,MMseqs2,6,0,6,0,0.064,0.064
+BINDING,arabidopsis,MMseqs2 iterative,6,0,6,0,0.291,0.31
+BINDING,arabidopsis,Foldseek,6,0,6,0,0.061,0.061
+BINDING,arabidopsis,ProstT5,6,0,6,0,0.056,0.06
+BINDING,arabidopsis,Reseek,6,0,6,0,0.103,0.11
+BINDING,arabidopsis,Kyte-Doolittle scan,6,0,0,6,,
+BINDING,chicken,kmerseek chosen arm,2,2,0,0,0.9,0.9
+BINDING,chicken,kmerseek best other alphabet,2,2,0,0,0.9,0.9
+BINDING,chicken,phmmer,2,0,2,0,0.099,0.099
+BINDING,chicken,MMseqs2,2,0,2,0,0.057,0.057
+BINDING,chicken,MMseqs2 iterative,2,0,2,0,0.054,0.054
+BINDING,chicken,Foldseek,2,0,2,0,0.041,0.041
+BINDING,chicken,ProstT5,2,0,2,0,0.033,0.033
+BINDING,chicken,Reseek,2,0,2,0,0.064,0.064
+BINDING,chicken,Kyte-Doolittle scan,2,0,0,2,,
+BINDING,fly,kmerseek chosen arm,5,5,0,0,0.98,1.0
+BINDING,fly,kmerseek best other alphabet,5,5,0,0,0.92,1.0
+BINDING,fly,phmmer,5,0,5,0,0.145,0.145
+BINDING,fly,MMseqs2,5,0,5,0,0.055,0.048
+BINDING,fly,MMseqs2 iterative,5,0,5,0,0.068,0.068
+BINDING,fly,Foldseek,5,0,5,0,0.035,0.035
+BINDING,fly,ProstT5,5,0,5,0,0.035,0.035
+BINDING,fly,Reseek,5,0,5,0,0.095,0.092
+BINDING,fly,Kyte-Doolittle scan,5,0,0,5,,
+BINDING,mouse,kmerseek chosen arm,7,7,0,0,0.971,1.0
+BINDING,mouse,kmerseek best other alphabet,7,7,0,0,0.984,1.0
+BINDING,mouse,phmmer,7,0,7,0,0.232,0.25
+BINDING,mouse,MMseqs2,7,0,7,0,0.066,0.066
+BINDING,mouse,MMseqs2 iterative,7,1,6,0,0.162,0.071
+BINDING,mouse,Foldseek,7,0,7,0,0.053,0.06
+BINDING,mouse,ProstT5,7,0,7,0,0.064,0.042
+BINDING,mouse,Reseek,7,0,7,0,0.13,0.125
+BINDING,mouse,Kyte-Doolittle scan,7,0,0,7,,
+BINDING,worm,kmerseek chosen arm,6,6,0,0,0.983,1.0
+BINDING,worm,kmerseek best other alphabet,6,6,0,0,0.963,1.0
+BINDING,worm,phmmer,6,0,6,0,0.251,0.236
+BINDING,worm,MMseqs2,6,0,6,0,0.057,0.058
+BINDING,worm,MMseqs2 iterative,6,0,6,0,0.063,0.063
+BINDING,worm,Foldseek,6,0,6,0,0.044,0.036
+BINDING,worm,ProstT5,6,0,6,0,0.044,0.034
+BINDING,worm,Reseek,6,0,6,0,0.107,0.111
+BINDING,worm,Kyte-Doolittle scan,6,0,0,6,,
+BINDING,yeast,kmerseek chosen arm,8,8,0,0,0.975,1.0
+BINDING,yeast,kmerseek best other alphabet,8,8,0,0,0.947,0.95
+BINDING,yeast,phmmer,8,0,8,0,0.318,0.321
+BINDING,yeast,MMseqs2,8,0,8,0,0.062,0.062
+BINDING,yeast,MMseqs2 iterative,8,0,8,0,0.063,0.063
+BINDING,yeast,Foldseek,8,0,8,0,0.053,0.041
+BINDING,yeast,ProstT5,8,0,8,0,0.048,0.038
+BINDING,yeast,Reseek,8,0,8,0,0.095,0.094
+BINDING,yeast,Kyte-Doolittle scan,8,0,0,8,,
+BINDING,zebrafish,kmerseek chosen arm,4,4,0,0,0.95,0.95
+BINDING,zebrafish,kmerseek best other alphabet,4,4,0,0,0.925,0.95
+BINDING,zebrafish,phmmer,4,0,4,0,0.166,0.128
+BINDING,zebrafish,MMseqs2,4,0,4,0,0.062,0.061
+BINDING,zebrafish,MMseqs2 iterative,4,1,3,0,0.219,0.065
+BINDING,zebrafish,Foldseek,4,0,4,0,0.038,0.036
+BINDING,zebrafish,ProstT5,4,0,4,0,0.038,0.034
+BINDING,zebrafish,Reseek,4,0,4,0,0.083,0.079
+BINDING,zebrafish,Kyte-Doolittle scan,4,0,0,4,,
+DNA_BIND,arabidopsis,kmerseek chosen arm,1,1,0,0,0.889,0.889
+DNA_BIND,arabidopsis,kmerseek best other alphabet,1,1,0,0,0.96,0.96
+DNA_BIND,arabidopsis,phmmer,1,0,1,0,0.27,0.27
+DNA_BIND,arabidopsis,MMseqs2,1,1,0,0,0.5,0.5
+DNA_BIND,arabidopsis,MMseqs2 iterative,1,1,0,0,0.5,0.5
+DNA_BIND,arabidopsis,Foldseek,1,0,1,0,0.173,0.173
+DNA_BIND,arabidopsis,ProstT5,1,0,1,0,0.183,0.183
+DNA_BIND,arabidopsis,Reseek,1,0,1,0,0.216,0.216
+DNA_BIND,arabidopsis,Kyte-Doolittle scan,1,0,0,1,,
+DOMAIN,chicken,kmerseek chosen arm,7,7,0,0,0.637,0.6
+DOMAIN,chicken,kmerseek best other alphabet,7,7,0,0,0.692,0.697
+DOMAIN,chicken,phmmer,7,1,5,0,0.305,0.333
+DOMAIN,chicken,MMseqs2,7,0,7,0,0.207,0.093
+DOMAIN,chicken,MMseqs2 iterative,7,1,6,0,0.251,0.095
+DOMAIN,chicken,Foldseek,7,0,5,2,0.197,0.176
+DOMAIN,chicken,ProstT5,7,0,7,0,0.176,0.107
+DOMAIN,chicken,Reseek,7,2,3,2,0.492,0.468
+DOMAIN,chicken,Kyte-Doolittle scan,7,0,0,7,,
+DOMAIN,mouse,kmerseek chosen arm,4,4,0,0,0.779,0.767
+DOMAIN,mouse,kmerseek best other alphabet,4,4,0,0,0.765,0.763
+DOMAIN,mouse,phmmer,4,3,1,0,0.612,0.708
+DOMAIN,mouse,MMseqs2,4,2,2,0,0.643,0.602
+DOMAIN,mouse,MMseqs2 iterative,4,2,2,0,0.61,0.607
+DOMAIN,mouse,Foldseek,4,1,3,0,0.406,0.315
+DOMAIN,mouse,ProstT5,4,3,1,0,0.542,0.567
+DOMAIN,mouse,Reseek,4,2,2,0,0.563,0.578
+DOMAIN,mouse,Kyte-Doolittle scan,4,0,0,4,,
+DOMAIN,worm,kmerseek chosen arm,2,2,0,0,0.722,0.722
+DOMAIN,worm,kmerseek best other alphabet,2,2,0,0,0.726,0.726
+DOMAIN,worm,phmmer,2,2,0,0,0.819,0.819
+DOMAIN,worm,MMseqs2,2,1,1,0,0.479,0.479
+DOMAIN,worm,MMseqs2 iterative,2,1,1,0,0.628,0.628
+DOMAIN,worm,Foldseek,2,0,2,0,0.33,0.33
+DOMAIN,worm,ProstT5,2,0,2,0,0.423,0.423
+DOMAIN,worm,Reseek,2,2,0,0,0.576,0.576
+DOMAIN,worm,Kyte-Doolittle scan,2,0,0,2,,
+DOMAIN,zebrafish,kmerseek chosen arm,3,2,0,0,0.59,0.569
+DOMAIN,zebrafish,kmerseek best other alphabet,3,3,0,0,0.634,0.569
+DOMAIN,zebrafish,phmmer,3,3,0,0,0.765,0.687
+DOMAIN,zebrafish,MMseqs2,3,1,1,1,0.632,0.632
+DOMAIN,zebrafish,MMseqs2 iterative,3,1,1,1,0.631,0.631
+DOMAIN,zebrafish,Foldseek,3,0,2,1,0.166,0.166
+DOMAIN,zebrafish,ProstT5,3,0,3,0,0.097,0.089
+DOMAIN,zebrafish,Reseek,3,0,2,1,0.349,0.349
+DOMAIN,zebrafish,Kyte-Doolittle scan,3,0,0,3,,
+INTRAMEM,arabidopsis,kmerseek chosen arm,2,2,0,0,0.5,0.5
+INTRAMEM,arabidopsis,kmerseek best other alphabet,2,2,0,0,0.85,0.85
+INTRAMEM,arabidopsis,phmmer,2,1,1,0,0.497,0.497
+INTRAMEM,arabidopsis,MMseqs2,2,1,1,0,0.485,0.485
+INTRAMEM,arabidopsis,MMseqs2 iterative,2,1,0,1,0.556,0.556
+INTRAMEM,arabidopsis,Foldseek,2,0,2,0,0.135,0.135
+INTRAMEM,arabidopsis,ProstT5,2,0,2,0,0.127,0.127
+INTRAMEM,arabidopsis,Reseek,2,0,2,0,0.154,0.154
+INTRAMEM,arabidopsis,Kyte-Doolittle scan,2,0,0,2,,
+INTRAMEM,chicken,kmerseek chosen arm,3,2,0,0,0.452,0.5
+INTRAMEM,chicken,kmerseek best other alphabet,3,3,0,0,0.798,0.909
+INTRAMEM,chicken,phmmer,3,1,1,1,0.488,0.488
+INTRAMEM,chicken,MMseqs2,3,1,2,0,0.519,0.455
+INTRAMEM,chicken,MMseqs2 iterative,3,1,0,2,0.658,0.658
+INTRAMEM,chicken,Foldseek,3,0,3,0,0.182,0.19
+INTRAMEM,chicken,ProstT5,3,0,2,1,0.092,0.092
+INTRAMEM,chicken,Reseek,3,0,3,0,0.124,0.128
+INTRAMEM,chicken,Kyte-Doolittle scan,3,0,0,3,,
+INTRAMEM,fly,kmerseek chosen arm,5,4,0,0,0.48,0.5
+INTRAMEM,fly,kmerseek best other alphabet,5,5,0,0,0.713,0.632
+INTRAMEM,fly,phmmer,5,0,5,0,0.219,0.11
+INTRAMEM,fly,MMseqs2,5,0,5,0,0.246,0.217
+INTRAMEM,fly,MMseqs2 iterative,5,0,5,0,0.25,0.11
+INTRAMEM,fly,Foldseek,5,0,5,0,0.091,0.079
+INTRAMEM,fly,ProstT5,5,0,5,0,0.094,0.092
+INTRAMEM,fly,Reseek,5,0,5,0,0.065,0.067
+INTRAMEM,fly,Kyte-Doolittle scan,5,0,0,5,,
+INTRAMEM,mouse,kmerseek chosen arm,5,3,0,0,0.536,0.526
+INTRAMEM,mouse,kmerseek best other alphabet,5,5,0,0,0.898,0.905
+INTRAMEM,mouse,phmmer,5,3,2,0,0.532,0.528
+INTRAMEM,mouse,MMseqs2,5,4,1,0,0.644,0.528
+INTRAMEM,mouse,MMseqs2 iterative,5,4,1,0,0.712,0.704
+INTRAMEM,mouse,Foldseek,5,0,5,0,0.179,0.124
+INTRAMEM,mouse,ProstT5,5,0,5,0,0.141,0.12
+INTRAMEM,mouse,Reseek,5,0,5,0,0.165,0.176
+INTRAMEM,mouse,Kyte-Doolittle scan,5,0,0,5,,
+INTRAMEM,worm,kmerseek chosen arm,5,4,0,0,0.547,0.526
+INTRAMEM,worm,kmerseek best other alphabet,5,5,0,0,0.916,0.947
+INTRAMEM,worm,phmmer,5,1,4,0,0.46,0.413
+INTRAMEM,worm,MMseqs2,5,1,4,0,0.259,0.142
+INTRAMEM,worm,MMseqs2 iterative,5,2,3,0,0.337,0.23
+INTRAMEM,worm,Foldseek,5,0,5,0,0.106,0.092
+INTRAMEM,worm,ProstT5,5,0,5,0,0.118,0.115
+INTRAMEM,worm,Reseek,5,0,5,0,0.112,0.093
+INTRAMEM,worm,Kyte-Doolittle scan,5,0,0,5,,
+INTRAMEM,zebrafish,kmerseek chosen arm,1,1,0,0,0.526,0.526
+INTRAMEM,zebrafish,kmerseek best other alphabet,1,1,0,0,0.737,0.737
+INTRAMEM,zebrafish,phmmer,1,0,1,0,0.145,0.145
+INTRAMEM,zebrafish,MMseqs2,1,0,1,0,0.07,0.07
+INTRAMEM,zebrafish,MMseqs2 iterative,1,0,1,0,0.092,0.092
+INTRAMEM,zebrafish,Foldseek,1,0,1,0,0.061,0.061
+INTRAMEM,zebrafish,ProstT5,1,0,1,0,0.064,0.064
+INTRAMEM,zebrafish,Reseek,1,0,1,0,0.074,0.074
+INTRAMEM,zebrafish,Kyte-Doolittle scan,1,0,0,1,,
+REGION,arabidopsis,kmerseek chosen arm,1,1,0,0,0.913,0.913
+REGION,arabidopsis,kmerseek best other alphabet,1,1,0,0,1.0,1.0
+REGION,arabidopsis,phmmer,1,1,0,0,0.512,0.512
+REGION,arabidopsis,MMseqs2,1,1,0,0,0.5,0.5
+REGION,arabidopsis,MMseqs2 iterative,1,1,0,0,0.5,0.5
+REGION,arabidopsis,Foldseek,1,0,1,0,0.194,0.194
+REGION,arabidopsis,ProstT5,1,0,1,0,0.089,0.089
+REGION,arabidopsis,Reseek,1,1,0,0,0.552,0.552
+REGION,arabidopsis,Kyte-Doolittle scan,1,0,0,1,,
+REGION,mouse,kmerseek chosen arm,5,5,0,0,0.799,0.8
+REGION,mouse,kmerseek best other alphabet,5,5,0,0,0.854,0.944
+REGION,mouse,phmmer,5,0,5,0,0.153,0.168
+REGION,mouse,MMseqs2,5,0,5,0,0.086,0.068
+REGION,mouse,MMseqs2 iterative,5,0,5,0,0.107,0.07
+REGION,mouse,Foldseek,5,0,5,0,0.204,0.188
+REGION,mouse,ProstT5,5,0,5,0,0.201,0.179
+REGION,mouse,Reseek,5,2,3,0,0.499,0.447
+REGION,mouse,Kyte-Doolittle scan,5,0,0,5,,
+REGION,zebrafish,kmerseek chosen arm,2,2,0,0,0.897,0.897
+REGION,zebrafish,kmerseek best other alphabet,2,2,0,0,0.95,0.95
+REGION,zebrafish,phmmer,2,0,2,0,0.31,0.31
+REGION,zebrafish,MMseqs2,2,0,2,0,0.285,0.285
+REGION,zebrafish,MMseqs2 iterative,2,0,2,0,0.285,0.285
+REGION,zebrafish,Foldseek,2,1,1,0,0.316,0.316
+REGION,zebrafish,ProstT5,2,0,2,0,0.234,0.234
+REGION,zebrafish,Reseek,2,2,0,0,0.835,0.835
+REGION,zebrafish,Kyte-Doolittle scan,2,0,0,2,,
+REPEAT,arabidopsis,kmerseek chosen arm,1,1,0,0,0.844,0.844
+REPEAT,arabidopsis,kmerseek best other alphabet,1,1,0,0,0.938,0.938
+REPEAT,arabidopsis,phmmer,1,1,0,0,0.968,0.968
+REPEAT,arabidopsis,MMseqs2,1,0,1,0,0.312,0.312
+REPEAT,arabidopsis,MMseqs2 iterative,1,0,1,0,0.476,0.476
+REPEAT,arabidopsis,Foldseek,1,0,1,0,0.275,0.275
+REPEAT,arabidopsis,ProstT5,1,0,1,0,0.201,0.201
+REPEAT,arabidopsis,Reseek,1,0,1,0,0.179,0.179
+REPEAT,arabidopsis,Kyte-Doolittle scan,1,0,0,1,,
+REPEAT,chicken,kmerseek chosen arm,3,3,0,0,0.661,0.65
+REPEAT,chicken,kmerseek best other alphabet,3,3,0,0,0.711,0.775
+REPEAT,chicken,phmmer,3,1,2,0,0.4,0.256
+REPEAT,chicken,MMseqs2,3,0,3,0,0.296,0.256
+REPEAT,chicken,MMseqs2 iterative,3,1,2,0,0.318,0.256
+REPEAT,chicken,Foldseek,3,0,3,0,0.124,0.154
+REPEAT,chicken,ProstT5,3,0,3,0,0.141,0.139
+REPEAT,chicken,Reseek,3,0,3,0,0.202,0.2
+REPEAT,chicken,Kyte-Doolittle scan,3,0,0,3,,
+REPEAT,mouse,kmerseek chosen arm,10,10,0,0,0.766,0.779
+REPEAT,mouse,kmerseek best other alphabet,10,10,0,0,0.784,0.793
+REPEAT,mouse,phmmer,10,2,8,0,0.37,0.297
+REPEAT,mouse,MMseqs2,10,1,9,0,0.269,0.211
+REPEAT,mouse,MMseqs2 iterative,10,2,8,0,0.317,0.243
+REPEAT,mouse,Foldseek,10,0,10,0,0.141,0.145
+REPEAT,mouse,ProstT5,10,0,10,0,0.16,0.148
+REPEAT,mouse,Reseek,10,1,8,0,0.32,0.315
+REPEAT,mouse,Kyte-Doolittle scan,10,0,0,10,,
+REPEAT,worm,kmerseek chosen arm,2,2,0,0,0.689,0.689
+REPEAT,worm,kmerseek best other alphabet,2,1,0,0,0.65,0.65
+REPEAT,worm,phmmer,2,1,1,0,0.548,0.548
+REPEAT,worm,MMseqs2,2,1,1,0,0.443,0.443
+REPEAT,worm,MMseqs2 iterative,2,1,1,0,0.422,0.422
+REPEAT,worm,Foldseek,2,0,2,0,0.299,0.299
+REPEAT,worm,ProstT5,2,0,2,0,0.292,0.292
+REPEAT,worm,Reseek,2,0,2,0,0.285,0.285
+REPEAT,worm,Kyte-Doolittle scan,2,0,0,2,,
+REPEAT,zebrafish,kmerseek chosen arm,7,7,0,0,0.705,0.677
+REPEAT,zebrafish,kmerseek best other alphabet,7,7,0,0,0.812,0.829
+REPEAT,zebrafish,phmmer,7,4,3,0,0.56,0.66
+REPEAT,zebrafish,MMseqs2,7,1,6,0,0.275,0.348
+REPEAT,zebrafish,MMseqs2 iterative,7,2,3,1,0.46,0.488
+REPEAT,zebrafish,Foldseek,7,0,7,0,0.171,0.163
+REPEAT,zebrafish,ProstT5,7,0,7,0,0.138,0.144
+REPEAT,zebrafish,Reseek,7,0,7,0,0.236,0.213
+REPEAT,zebrafish,Kyte-Doolittle scan,7,0,0,7,,
+TRANSMEM,chicken,kmerseek chosen arm,1,1,0,0,0.75,0.75
+TRANSMEM,chicken,kmerseek best other alphabet,1,1,0,0,0.81,0.81
+TRANSMEM,chicken,phmmer,1,1,0,0,0.667,0.667
+TRANSMEM,chicken,MMseqs2,1,0,1,0,0.052,0.052
+TRANSMEM,chicken,MMseqs2 iterative,1,0,1,0,0.052,0.052
+TRANSMEM,chicken,Foldseek,1,0,1,0,0.052,0.052
+TRANSMEM,chicken,ProstT5,1,0,1,0,0.051,0.051
+TRANSMEM,chicken,Reseek,1,0,1,0,0.457,0.457
+TRANSMEM,chicken,Kyte-Doolittle scan,1,0,0,1,,
+TRANSMEM,fly,kmerseek chosen arm,2,2,0,0,0.919,0.919
+TRANSMEM,fly,kmerseek best other alphabet,2,2,0,0,0.919,0.919
+TRANSMEM,fly,phmmer,2,0,2,0,0.068,0.068
+TRANSMEM,fly,MMseqs2,2,0,2,0,0.055,0.055
+TRANSMEM,fly,MMseqs2 iterative,2,0,2,0,0.101,0.101
+TRANSMEM,fly,Foldseek,2,0,2,0,0.112,0.112
+TRANSMEM,fly,ProstT5,2,0,2,0,0.12,0.12
+TRANSMEM,fly,Reseek,2,1,1,0,0.551,0.551
+TRANSMEM,fly,Kyte-Doolittle scan,2,1,1,0,0.55,0.55
+TRANSMEM,mouse,kmerseek chosen arm,6,6,0,0,0.955,0.955
+TRANSMEM,mouse,kmerseek best other alphabet,6,6,0,0,0.985,1.0
+TRANSMEM,mouse,phmmer,6,2,4,0,0.385,0.376
+TRANSMEM,mouse,MMseqs2,6,0,5,0,0.268,0.26
+TRANSMEM,mouse,MMseqs2 iterative,6,1,5,0,0.295,0.321
+TRANSMEM,mouse,Foldseek,6,0,6,0,0.1,0.085
+TRANSMEM,mouse,ProstT5,6,0,6,0,0.096,0.085
+TRANSMEM,mouse,Reseek,6,1,5,0,0.415,0.466
+TRANSMEM,mouse,Kyte-Doolittle scan,6,2,0,4,0.751,0.751
+TRANSMEM,worm,kmerseek chosen arm,1,1,0,0,0.792,0.792
+TRANSMEM,worm,kmerseek best other alphabet,1,1,0,0,0.792,0.792
+TRANSMEM,worm,phmmer,1,0,1,0,0.094,0.094
+TRANSMEM,worm,MMseqs2,1,0,1,0,0.098,0.098
+TRANSMEM,worm,MMseqs2 iterative,1,0,1,0,0.144,0.144
+TRANSMEM,worm,Foldseek,1,0,1,0,0.163,0.163
+TRANSMEM,worm,ProstT5,1,0,1,0,0.133,0.133
+TRANSMEM,worm,Reseek,1,0,1,0,0.172,0.172
+TRANSMEM,worm,Kyte-Doolittle scan,1,0,0,1,,
+TRANSMEM,zebrafish,kmerseek chosen arm,1,1,0,0,0.875,0.875
+TRANSMEM,zebrafish,kmerseek best other alphabet,1,1,0,0,0.727,0.727
+TRANSMEM,zebrafish,phmmer,1,0,1,0,0.038,0.038
+TRANSMEM,zebrafish,MMseqs2,1,0,1,0,0.027,0.027
+TRANSMEM,zebrafish,MMseqs2 iterative,1,0,1,0,0.042,0.042
+TRANSMEM,zebrafish,Foldseek,1,0,1,0,0.081,0.081
+TRANSMEM,zebrafish,ProstT5,1,0,1,0,0.056,0.056
+TRANSMEM,zebrafish,Reseek,1,0,1,0,0.183,0.183
+TRANSMEM,zebrafish,Kyte-Doolittle scan,1,1,0,0,0.905,0.905
+ZN_FING,arabidopsis,kmerseek chosen arm,1,1,0,0,0.676,0.676
+ZN_FING,arabidopsis,kmerseek best other alphabet,1,1,0,0,0.676,0.676
+ZN_FING,arabidopsis,phmmer,1,0,1,0,0.228,0.228
+ZN_FING,arabidopsis,MMseqs2,1,0,1,0,0.351,0.351
+ZN_FING,arabidopsis,MMseqs2 iterative,1,0,1,0,0.303,0.303
+ZN_FING,arabidopsis,Foldseek,1,0,1,0,0.202,0.202
+ZN_FING,arabidopsis,ProstT5,1,0,1,0,0.189,0.189
+ZN_FING,arabidopsis,Reseek,1,1,0,0,0.507,0.507
+ZN_FING,arabidopsis,Kyte-Doolittle scan,1,0,0,1,,
+ZN_FING,chicken,kmerseek chosen arm,1,1,0,0,0.808,0.808
+ZN_FING,chicken,kmerseek best other alphabet,1,1,0,0,0.87,0.87
+ZN_FING,chicken,phmmer,1,0,1,0,0.451,0.451
+ZN_FING,chicken,MMseqs2,1,0,1,0,0.271,0.271
+ZN_FING,chicken,MMseqs2 iterative,1,0,1,0,0.277,0.277
+ZN_FING,chicken,Foldseek,1,0,1,0,0.303,0.303
+ZN_FING,chicken,ProstT5,1,0,1,0,0.08,0.08
+ZN_FING,chicken,Reseek,1,0,1,0,0.189,0.189
+ZN_FING,chicken,Kyte-Doolittle scan,1,0,0,1,,
+ZN_FING,fly,kmerseek chosen arm,4,4,0,0,0.846,0.88
+ZN_FING,fly,kmerseek best other alphabet,4,4,0,0,0.91,0.937
+ZN_FING,fly,phmmer,4,2,2,0,0.624,0.613
+ZN_FING,fly,MMseqs2,4,1,3,0,0.444,0.406
+ZN_FING,fly,MMseqs2 iterative,4,0,4,0,0.37,0.371
+ZN_FING,fly,Foldseek,4,0,4,0,0.217,0.238
+ZN_FING,fly,ProstT5,4,0,4,0,0.144,0.131
+ZN_FING,fly,Reseek,4,0,4,0,0.286,0.258
+ZN_FING,fly,Kyte-Doolittle scan,4,0,0,4,,
+ZN_FING,mouse,kmerseek chosen arm,49,49,0,0,0.867,0.88
+ZN_FING,mouse,kmerseek best other alphabet,49,49,0,0,0.942,0.958
+ZN_FING,mouse,phmmer,49,47,2,0,0.845,0.92
+ZN_FING,mouse,MMseqs2,49,13,36,0,0.454,0.442
+ZN_FING,mouse,MMseqs2 iterative,49,19,30,0,0.584,0.469
+ZN_FING,mouse,Foldseek,49,0,49,0,0.205,0.189
+ZN_FING,mouse,ProstT5,49,0,49,0,0.172,0.164
+ZN_FING,mouse,Reseek,49,9,40,0,0.379,0.338
+ZN_FING,mouse,Kyte-Doolittle scan,49,0,0,49,,
+ZN_FING,worm,kmerseek chosen arm,4,4,0,0,0.787,0.795
+ZN_FING,worm,kmerseek best other alphabet,4,4,0,0,0.85,0.872
+ZN_FING,worm,phmmer,4,2,2,0,0.577,0.577
+ZN_FING,worm,MMseqs2,4,0,4,0,0.42,0.414
+ZN_FING,worm,MMseqs2 iterative,4,1,3,0,0.553,0.464
+ZN_FING,worm,Foldseek,4,0,3,1,0.223,0.28
+ZN_FING,worm,ProstT5,4,0,4,0,0.176,0.159
+ZN_FING,worm,Reseek,4,0,3,1,0.346,0.383
+ZN_FING,worm,Kyte-Doolittle scan,4,0,0,4,,
+ZN_FING,zebrafish,kmerseek chosen arm,5,5,0,0,0.789,0.852
+ZN_FING,zebrafish,kmerseek best other alphabet,5,5,0,0,0.828,0.875
+ZN_FING,zebrafish,phmmer,5,3,2,0,0.572,0.527
+ZN_FING,zebrafish,MMseqs2,5,2,3,0,0.404,0.28
+ZN_FING,zebrafish,MMseqs2 iterative,5,1,4,0,0.44,0.434
+ZN_FING,zebrafish,Foldseek,5,0,5,0,0.146,0.093
+ZN_FING,zebrafish,ProstT5,5,0,5,0,0.197,0.158
+ZN_FING,zebrafish,Reseek,5,1,4,0,0.297,0.284
+ZN_FING,zebrafish,Kyte-Doolittle scan,5,0,0,5,,

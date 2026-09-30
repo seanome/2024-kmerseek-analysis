@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Export the call coordinates behind every case of tables/244_hero_candidates.csv.
 
-Writes, for all 183 cases (one case = one CSV row, ``case_id`` = its 0-based row index):
+Writes, for every case (one case = one CSV row, ``case_id`` = its 0-based row index):
 
 * tables/244_case_calls.csv: one row per (case, tool), nine tools per case, with the
   coordinates notebook 244 draws (1-based, inclusive on both proteins).

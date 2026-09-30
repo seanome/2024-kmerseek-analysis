@@ -77,6 +77,49 @@ def test_call_elsewhere_keeps_target_columns_empty(calls):
     assert el["other_target_start"].is_not_null().all()
 
 
+def test_iou_is_on_closed_intervals_for_every_tool(calls):
+    """Every IoU, kmerseek included, is overlap / union on 1-based inclusive ranges.
+
+    Before 2026-09-30 the column came from the pipeline's overlap_expr (min end - max
+    start): kmerseek calls matched only the feature without its first residue, and every
+    other tool only with both ranges one residue short at the end.
+    """
+    c = calls.filter(pl.col("iou").is_not_null())
+    qs, qe = pl.col("query_start"), pl.col("query_end")
+    fs, fe = pl.col("feature_start"), pl.col("feature_end")
+    ov = (pl.min_horizontal(qe, fe) - pl.max_horizontal(qs, fs) + 1).clip(lower_bound=0)
+    union = pl.max_horizontal(qe, fe) - pl.min_horizontal(qs, fs) + 1
+    off = c.with_columns(closed=ov / union).filter(
+        (pl.col("closed") - pl.col("iou")).abs() > 0.0005 + 1e-9
+    )
+    assert off.height == 0, off.select("case_id", "tool", "iou", "closed")
+
+
+@pytest.mark.parametrize(
+    "gene,feature_start,tool",
+    [("SCUBE3", 318, "MMseqs2 iterative"), ("DLL1", 447, "Reseek")],
+)
+def test_drawn_call_under_half_inside_is_labelled_spills(
+    calls, gene, feature_start, tool
+):
+    """Both drawn calls have 46% of their length inside the feature."""
+    row = calls.filter(
+        (pl.col("gene") == gene)
+        & (pl.col("feature_start") == feature_start)
+        & (pl.col("species") == "mouse")
+        & (pl.col("tool") == tool)
+    )
+    assert row.height == 1, row
+    r = row.row(0, named=True)
+    ov = (
+        min(r["query_end"], r["feature_end"])
+        - max(r["query_start"], r["feature_start"])
+        + 1
+    )
+    assert ov / (r["query_end"] - r["query_start"] + 1) < 0.5
+    assert r["outcome_on_human"] == "spills"
+
+
 def test_exporter_reproduces_the_committed_rows(calls):
     sys.path.insert(0, str(ROOT / "notebooks"))
     sys.path.insert(0, str(ROOT / "scripts"))
