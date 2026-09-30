@@ -175,3 +175,12 @@ def test_many_calls_past_the_end_stop_the_arm(workdir):
     write_hhblits(workdir, ["sp|Q1|Q1_HUMAN\ttr|Y|Y_CHICK\t41\t2555\t1\t10\t900\t1e-9\n"])
     proc = run(workdir, "--arm", "hhblits", ok=False)
     assert "coordinate convention" in proc.stderr
+
+
+def test_kmerseek_subdir_reads_a_cut_store(workdir):
+    store = workdir / "results" / "kmerseek_top1000"
+    store.mkdir()
+    (workdir / "results" / "kmerseek" / "human_vs_chicken.toy.k5.lcfalse.regions.parquet").rename(
+        store / "human_vs_chicken.toy.k5.lcfalse.regions.parquet")
+    out = run(workdir, "--kmerseek-subdir", "kmerseek_top1000", "--list-arms").stdout
+    assert "toy.k5.lcfalse" in out and "toy.k6.lcfalse" not in out
