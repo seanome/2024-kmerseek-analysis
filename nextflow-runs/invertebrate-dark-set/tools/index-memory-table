@@ -8,9 +8,13 @@ For every kmerseekIndex attempt in the runs' .nextflow.log* it reads the index n
 status and the work folder, and from the work folder the memory the attempt asked for
 (#SBATCH --mem). Then, per alphabet, k and scaled, over every clade:
 
-  killed, later built   first ask = the largest ask that succeeded
-  killed, never built   first ask = 2 x the largest killed ask, capped at 500 GB
-  never killed          no row: main.nf's model is enough
+  a larger ask built     first ask = the largest ask that built
+  otherwise              first ask = 2 x the largest killed ask, capped at 500 GB
+  never killed           no row: main.nf's model is enough
+
+"Otherwise" includes a setting that built at the same ask another clade was killed at: on
+2026-09-30 gbmr4 k21 scaled 1 built at 63 GB in one clade and was killed at 63 GB in
+another, and the first version of this rule kept 63.
 
 A kill is exit 137 or 135 (the cgroup memory killer). Exit "-" is a task the scheduler ended
 (walltime, node failure) and says nothing about memory, so it is not counted. The measured
@@ -72,10 +76,10 @@ def main():
             killed[key].append(gb)
     print("alphabet\tksize\tscaled\tfirst_ask_gb\tbasis")
     for key in sorted(killed):
-        if ok.get(key):
-            gb, basis = max(ok[key]), "largest ask that built, after a kill"
+        if ok.get(key) and max(ok[key]) > max(killed[key]):
+            gb, basis = max(ok[key]), "largest ask that built, above every killed ask"
         else:
-            gb, basis = min(CAP_GB, 2 * max(killed[key])), "twice the largest killed ask; never built"
+            gb, basis = min(CAP_GB, 2 * max(killed[key])), "twice the largest killed ask"
         print("{}\t{}\t{}\t{}\t{}".format(key[0], key[1], key[2], int(round(gb)), basis))
     sys.stderr.write("{} attempts read, {} alphabet x k x scaled with a kill\n".format(len(attempts), len(killed)))
 
