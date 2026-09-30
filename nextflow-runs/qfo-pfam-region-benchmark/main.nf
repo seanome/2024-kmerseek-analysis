@@ -322,6 +322,17 @@ params.min_region_score = 1.3
 params.mmseqs2_sensitivity = 7
 params.mmseqs2_iterations  = 3
 params.jackhmmer_iterations = 3
+
+// Walltime for phmmer and jackhmmer, from what they measured, so the first attempt is long
+// enough. Runtime is proportional to the target proteome's size and to the number of human
+// queries: hours = rate x target FASTA MB x queries / 1_000, times the headroom, at the
+// 8 cores the Sherlock profile gives them. The rates are the largest measured on the ELM
+// cover runs of 2026-09-25 to -30 (1_303 queries, 8 targets each): jackhmmer 0.41-0.69,
+// phmmer 0.14-0.33 hours per MB per 1_000 queries. Added 2026-09-30, after jackhmmer on
+// zebrafish (17.6 MB) hit the flat 12 h limit at 11 h 59 min and had to run again; this
+// rule gives it 24 h (predicted 13-16 h). The Sherlock profile reads task.ext.hours.
+params.hmmer_hours_per_mb_per_1k_queries = 'phmmer:0.33,jackhmmer:0.69'
+params.hmmer_time_headroom               = 1.5
 params.evalue_report       = 10.0
 
 // --- domain-call scoring ---------------------------------------------------
@@ -1879,8 +1890,20 @@ PYEOF
 // domain gets transferred, the query interval is what gets scored.
 // ===========================================================================
 
+// Target FASTA size (MB) by species label, and the query count, filled where pair_ch is
+// built (the real paths are known there; a staged path inside a directive is not openable).
+def HMMER_SIZES = java.util.Collections.synchronizedMap([:])
+def hmmerHours = { String tool, String species ->
+    def rates = params.hmmer_hours_per_mb_per_1k_queries.toString().tokenize(',')
+        .collectEntries { def kv = it.trim().tokenize(':'); [(kv[0]): kv[1] as double] }
+    double mb = (HMMER_SIZES[species] ?: 0) as double
+    double nq = (HMMER_SIZES['__queries__'] ?: 1000) as double
+    (params.hmmer_time_headroom as double) * (rates[tool] ?: 0.0d) * mb * nq / 1000.0d
+}
+
 process phmmerSearch {
     tag "human_vs_${species}"
+    ext hours: { hmmerHours('phmmer', species) }
     container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_phmmer", mode: 'copy', pattern: '*.tsv.gz'
@@ -1917,6 +1940,7 @@ process phmmerSearch {
 
 process jackhmmerSearch {
     tag "human_vs_${species}"
+    ext hours: { hmmerHours('jackhmmer', species) }
     container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_jackhmmer", mode: 'copy', pattern: '*.tsv.gz'
@@ -4042,7 +4066,11 @@ workflow {
         // binaries. See the note on params.gpu_benchmark.
         def bench_only = params.gpu_benchmark
 
-        pair_ch = species_ch.map { species, fasta -> tuple(species, fasta, human_fasta) }
+        HMMER_SIZES['__queries__'] = human_fasta.countFasta()
+        pair_ch = species_ch.map { species, fasta ->
+            HMMER_SIZES[species] = fasta.size() / 1.0e6d
+            tuple(species, fasta, human_fasta)
+        }
 
         phmmer_out    = bench_only ? Channel.empty() : phmmerSearch(pair_ch)
         jackhmmer_out = bench_only ? Channel.empty() : jackhmmerSearch(pair_ch)
