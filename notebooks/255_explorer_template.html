@@ -92,6 +92,13 @@ table.verdict .calc{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .gloss div{padding:4px 0;border-top:1px solid var(--rule)}
 .gloss b{font-weight:600}
 .verdictline{font-size:14.5px;max-width:none;margin:4px 0 8px}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;margin:14px 0 6px}
+.flow .step{flex:1 1 170px;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.4;min-width:0}
+.flow .step .k{display:block;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.flow .step.io{border:1.5px solid var(--ink)}
+.flow .arr{align-self:center;color:var(--muted);font-size:18px;flex:0 0 auto}
+@media (max-width:700px){.flow{flex-direction:column}.flow .arr{transform:rotate(90deg);align-self:center}}
+.preview{border-left:3px solid var(--ink);background:var(--surface);padding:6px 10px;font-size:13.5px;margin:8px 0 0;max-width:none}
 footer{margin-top:30px;border-top:1px solid var(--rule);padding-top:10px;font-size:12.5px;color:var(--muted)}
 footer p{max-width:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -99,7 +106,20 @@ footer p{max-width:none}
 
 <div class="wrap">
 <h1>Ranking metrics against human Pfam domains</h1>
-<p class="lead">kmerseek scores every matched region in several ways. This page asks which score puts correct Pfam domain matches at the top of the list, and whether any does better than the length of the matched region alone. <b>Proteins:</b> the <span class="num" id="n-prot">—</span> human query proteins of the midi-plus Pfam benchmark run, each with at least one Pfam domain: <span id="set-line">—</span> Their <span class="num" id="n-dom">—</span> Pfam domains (<span class="num" id="n-fam">—</span> families) are the truth. <b>Search:</b> notebook 243 searched these proteins against each other (all against all, not against the other species of the midi-plus run), with <span class="num" id="n-alpha">—</span> alphabets at <span class="num" id="n-k">—</span> k-mer sizes each, <span class="num" id="n-pairs">—</span> alphabet-ksize pairs in all. Notebook 255 scores the results.</p>
+<p class="lead">kmerseek scores every matched region in several ways. This page asks which score puts correct Pfam domain matches at the top of the list, and whether any does better than the length of the matched region alone. <b>Proteins:</b> the <span class="num" id="n-prot">—</span> human query proteins of the midi-plus Pfam benchmark run, each with at least one Pfam domain: <span id="set-line">—</span> Their <span class="num" id="n-dom">—</span> Pfam domains (<span class="num" id="n-fam">—</span> families) are the truth. <b>Search:</b> these proteins were searched against each other (all against all, not against the other species of the midi-plus run), with <span class="num" id="n-alpha">—</span> alphabets at <span class="num" id="n-k">—</span> k-mer sizes each, <span class="num" id="n-pairs">—</span> alphabet-ksize pairs in all. The search was run twice, with two kmerseek builds; the switch in the control bar picks which one the page shows. Notebook 255 scores the results.</p>
+
+<div class="flow" role="img" aria-label="What went in, what was done, and what came out">
+  <div class="step io"><span class="k">Input</span><b><span class="num" id="f-prot">—</span> human proteins</b>, each with a Pfam domain. Their <span class="num" id="f-dom">—</span> Pfam domains are the right answers.</div>
+  <div class="arr" aria-hidden="true">→</div>
+  <div class="step"><span class="k">Search</span>kmerseek searches every protein against all of them, at <span class="num" id="f-pairs">—</span> alphabet-ksize pairs. Twice: with kmerseek 982a055 (notebook 243) and with the preview build 8978e78 (notebook 257).</div>
+  <div class="arr" aria-hidden="true">→</div>
+  <div class="step"><span class="k">Matches</span>Each match is a matched span on each of two proteins. kmerseek gives it a value under each ranking metric (<span id="f-nmet">—</span>).</div>
+  <div class="arr" aria-hidden="true">→</div>
+  <div class="step"><span class="k">Check</span>A match is correct when both spans overlap a domain of the same Pfam family, under one of four overlap rules.</div>
+  <div class="arr" aria-hidden="true">→</div>
+  <div class="step io"><span class="k">Output (this page)</span>For each alphabet-ksize pair, metric and rule: how well the metric puts correct matches first (average precision, ROC AUC), and how that compares with ranking by region length alone.</div>
+</div>
+<p class="preview" id="preview-note" hidden><b>Preview build.</b> kmerseek 8978e78 is the tip of a local branch that has not been reviewed or merged (notebook 257, <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/85">seanome/2024-kmerseek-analysis#85</a>). Its numbers can change before a release.</p>
 
 <div class="defs">
   <div>
@@ -150,6 +170,7 @@ footer p{max-width:none}
 </section>
 
 <div class="bar" role="group" aria-label="Controls">
+  <div class="ctl"><span>Search</span><div class="seg" id="run"></div></div>
   <label class="ctl"><span>Overlap rule</span><select id="rule"></select></label>
   <div class="ctl"><span>Statistic</span><div class="seg" id="stat"><button data-v="ap">average precision</button><button data-v="auc">ROC AUC</button></div></div>
   <div class="ctl"><span>Show</span><div class="seg" id="show"><button data-v="value">the value</button><button data-v="diff">value minus length</button></div></div>
@@ -206,9 +227,9 @@ footer p{max-width:none}
 
 <section class="note">
   <div>
-    <h2>The E-value exists only where kmerseek could fit a score scale</h2>
-    <p>kmerseek turns a region's score into bits and an E-value with a Karlin-Altschul fit: a per-region scale (lambda) that says how fast high scores become rare by chance. When it cannot fit that scale, it writes E = infinity and a bit score of 0. This page treats both as missing, so the E-value and bit score are judged only on the matches they can score, and length is judged on those same matches.</p>
-    <p>A missing E-value almost always marks a wrong match. <span id="ev-live">—</span></p>
+    <h2 id="ev-h">—</h2>
+    <p id="ev-intro">—</p>
+    <p><span id="ev-lead">—</span> <span id="ev-live">—</span></p>
     <p><span id="ev-all">—</span></p>
   </div>
   <div class="panel">
@@ -222,13 +243,14 @@ footer p{max-width:none}
 </section>
 
 <footer>
-  <p>Source: notebook 255 and <span class="mono">255_ranking_metrics_per_arm.py</span> on branch <span class="mono">olgabot/ranking-metrics-vs-human-pfam</span> (<a href="https://github.com/seanome/2024-kmerseek-analysis/pull/84">seanome/2024-kmerseek-analysis#84</a>). Grid numbers come from <span class="mono">per_arm_metrics.parquet</span>. Curves are sampled at 100 points by <span class="mono">255_explorer_data.py</span> from the same labelled matches. AP and AUC recomputed from the full curves differ from the table by at most <span id="maxdiff">—</span>. The notebook also scores the Poisson score, containment and two whole-protein scores; the notebook 243 search files do not carry them, so they are not here. The search used the kmerseek build of notebook 243; in a newer build (kmerseek 8978e78, notebook 257) every match has an E-value, so the E-value section describes this search only.</p>
+  <p>Source: notebook 255 and <span class="mono">255_ranking_metrics_per_arm.py</span> on branch <span class="mono">olgabot/ranking-metrics-vs-human-pfam</span> (<a href="https://github.com/seanome/2024-kmerseek-analysis/pull/84">seanome/2024-kmerseek-analysis#84</a>). Grid numbers come from <span class="mono">per_arm_metrics.parquet</span> (kmerseek 982a055, notebook 243 search) and <span class="mono">per_arm_metrics.kmerseek-8978e78.parquet</span> (kmerseek 8978e78, notebook 257 search, scored by <span class="mono">255_ranking_metrics_per_arm.py --regions-dir</span>). Curves are sampled at 100 points by <span class="mono">255_explorer_data.py</span> from the same labelled matches. AP and AUC recomputed from the full curves differ from the table by at most <span id="maxdiff">—</span> in the search shown. The notebook 243 search files do not carry the Poisson score, containment or the two whole-protein scores, so that search shows 7 metrics and the preview search 13. The two builds find different matches (no alphabet-ksize pair has the same number of matches in both), so a cell's change between searches mixes a change in the metric with a change in the matches.</p>
 </footer>
 </div>
 <div id="tip" hidden></div>
 
 <script>
-const D = /*DATA*/null;
+const RUNS = /*DATA*/null;
+let D = RUNS[0].data;
 const $ = s => document.querySelector(s);
 const NS = "http://www.w3.org/2000/svg";
 const fmtN = n => n == null ? "—" : Math.round(n).toLocaleString("en-US");
@@ -238,17 +260,31 @@ const sgn = (v, d = 3) => v == null || Number.isNaN(v) ? "—" : (v > 0 ? "+" : 
 const pct = v => v == null ? "—" : (100 * v < 0.1 && v > 0 ? (100 * v).toFixed(2) : (100 * v).toFixed(1)) + "%";
 
 // ------------------------------------------------------------------ data
-const C = D.columns, rows = D.rows.map(r => Object.fromEntries(C.map((c, i) => [c, r[i]])));
-const idx = new Map(rows.map(r => [`${r.alphabet}|${r.ksize}|${r.rule}|${r.metric}`, r]));
+// one table per search; `rows`, `idx` and METRICS follow the search picked in the bar
+const tables = RUNS.map(R => {
+  const C = R.data.columns, rs = R.data.rows.map(r => Object.fromEntries(C.map((c, i) => [c, r[i]])));
+  return {rows: rs, idx: new Map(rs.map(r => [`${r.alphabet}|${r.ksize}|${r.rule}|${r.metric}`, r]))};
+});
+let RI = 0, rows = tables[0].rows, idx = tables[0].idx;
 const alphabets = [...new Set(rows.map(r => r.alphabet))].sort();
 const ks = {}; const bitsOf = {};
 for (const r of rows) { (ks[r.alphabet] ??= new Set()).add(r.ksize); bitsOf[`${r.alphabet}|${r.ksize}`] = r.bits; }
 for (const a in ks) ks[a] = [...ks[a]].sort((x, y) => x - y);
-const METRICS = ["E-value", "bit score", "tf-idf", "shared k-mers", "Poisson p-value", "mean IDF", "enrichment"];
+// the three E-values stay separate: never merged, each its own row and column
+const ORDER = ["E-value", "E-value, extension only", "E-value, exact run", "bit score", "tf-idf", "shared k-mers",
+  "Poisson p-value", "Poisson score", "mean IDF", "enrichment", "containment", "protein enrichment", "protein Poisson p-value"];
+let METRICS = [];
+const otherIdx = () => tables[1 - RI].idx;
+function useRun(i) {
+  RI = i; D = RUNS[i].data; rows = tables[i].rows; idx = tables[i].idx;
+  const have = new Set(rows.map(r => r.metric));
+  METRICS = ORDER.filter(m => have.has(m));
+  if (!METRICS.includes(S.metric)) S.metric = "E-value";
+}
 const RULE_SHORT = {"any overlap": "any overlap", "≥20% of the matched region inside the domain": "≥20% of region",
   "≥20% of the domain covered by the region": "≥20% of domain", "IoU ≥ 0.2": "IoU ≥ 0.2"};
 const STAT = {ap: "average precision", auc: "ROC AUC"};
-const MISSING_WORD = {"E-value": "no E-value", "bit score": "no bit score"};
+const MISSING_WORD = {"E-value": "no E-value", "bit score": "no bit score", "E-value, extension only": "not extended"};
 
 function decode(b64) {
   const s = atob(b64), dv = new DataView(new ArrayBuffer(s.length));
@@ -260,7 +296,7 @@ function decode(b64) {
 
 // ------------------------------------------------------------------ state
 const S = {rule: "IoU ≥ 0.2", stat: "ap", show: "diff", metric: "E-value", cols: "k", tab: "grid",
-           sel: {alphabet: "hp_lehninger2", k: 24}, logfpr: false};
+           sel: {alphabet: "hp_lehninger2", k: 24}, logfpr: false, run: RUNS[0].id};
 try { const t = localStorage.getItem("rm255-tab"); if (t === "grid" || t === "median") S.tab = t; } catch (e) {}
 if (location.hash === "#median") S.tab = "median";
 
@@ -385,7 +421,7 @@ function drawGrid() {
         return `<b>${a}</b>, k = ${k} (${f2(r.bits)} bits)<br>${S.metric}, ${RULE_SHORT[S.rule]}<br>` +
           `${STAT[S.stat]}: <b>${f3(st.v)}</b>; region length: ${f3(st.L)}; difference ${sgn(st.d)}<br>` +
           `base rate (share of scored matches that are correct): ${pct(r.base_rate)}<br>` +
-          `matches: ${fmtN(r.n_matches)}; scored by ${S.metric}: ${fmtN(r.n_scored)}`;
+          `matches: ${fmtN(r.n_matches)}; scored by ${S.metric}: ${fmtN(r.n_scored)}` + otherLine(a, k);
       };
       g.addEventListener("mouseenter", e => showTip(e, html()));
       g.addEventListener("mousemove", moveTip);
@@ -398,6 +434,13 @@ function drawGrid() {
   $("#grid-caption").textContent = `Each cell is one alphabet-ksize pair: its ${STAT[S.stat]} for ${S.metric} under "${RULE_SHORT[S.rule]}"` +
     (S.show === "diff" ? ", minus region length's on the same matches." : ".") +
     " Hover for the base rate and the number of matches; click for the precision-recall and ROC curves.";
+}
+
+function otherLine(a, k) {
+  const o = otherIdx().get(`${a}|${k}|${S.rule}|${S.metric}`), name = RUNS[1 - RI].label;
+  if (!o) return `<br><span style="color:var(--muted)">${name}: ${S.metric} not in that search</span>`;
+  const st = cellStat(o);
+  return `<br><span style="color:var(--muted)">${name}: ${STAT[S.stat]} ${f3(st.v)}, minus length ${sgn(st.d)}; ${fmtN(o.n_matches)} matches</span>`;
 }
 
 // ------------------------------------------------------------------ median tab
@@ -474,7 +517,9 @@ function drawDetail() {
   if (!cv || !r) {
     empty.hidden = false;
     empty.textContent = r && r.n_scored === 0
-      ? `kmerseek fitted no score scale for any match of ${a} at k = ${k}, so there is no ${S.metric} to rank.`
+      ? (S.metric === "E-value, extension only"
+        ? `No match of ${a} at k = ${k} was extended with a positive lambda, so there is no extension E-value to rank.`
+        : `kmerseek fitted no score scale for any match of ${a} at k = ${k}, so there is no ${S.metric} to rank.`)
       : `No match of ${a} at k = ${k} scored by ${S.metric} is correct under this rule, so there is no curve.`;
     $("#readout").innerHTML = "";
     return;
@@ -504,6 +549,8 @@ function drawDetail() {
     ["base rate", pct(r.base_rate), "same matches"],
     ["correct / scored", `${fmtN(r.n_correct)} / ${fmtN(r.n_scored)}`, ""],
     ["top match correct", pct(r.precision_at_1), `random order ${pct(r.precision_at_1_random)}`]];
+  { const o = otherIdx().get(`${a}|${k}|${S.rule}|${S.metric}`);
+    ro.push([`other search: AP`, o ? f3(o.ap) : "not in it", o ? f3(o.length_ap) : ""]); }
   $("#readout").innerHTML = ro.map((x, i) => x.map(s => `<span class="${i === 0 ? "h" : ""}">${s}</span>`).join("")).join("") +
     `<span style="grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:4px">"Top match correct": over the ${fmtN(r.n_queries_with_correct)} query proteins with at least one correct match, the share whose best-scored match is correct (ties averaged). The dotted line on the left is the base rate; on the right, the diagonal.</span>`;
 }
@@ -526,19 +573,28 @@ function drawCounts() {
   for (const p of [0, .5, 1]) txt(svg, L + p * W, yA + 4, `${p * 100}%`, {"text-anchor": p === 0 ? "start" : p === 1 ? "end" : "middle", "font-size": 10, class: "mut"});
   txt(svg, L + W + 8, yA + 4, "share of matches", {"font-size": 10, class: "mut"});
 
-  const e = idx.get(`${a}|${k}|${S.rule}|E-value`);
+  // the E-value that can be missing: the only E-value in the 982a055 search, the extension part in 8978e78
+  const preview = METRICS.includes("E-value, extension only"), EV = preview ? "E-value, extension only" : "E-value";
+  const word = preview ? "no extension E-value" : "no E-value", has = preview ? "an extension E-value" : "an E-value";
+  $("#ev-h").textContent = preview ? "Every match has an E-value; the extension part exists only for some" : "The E-value exists only where kmerseek could fit a score scale";
+  $("#ev-intro").textContent = preview
+    ? "In kmerseek 8978e78 a match's E-value comes from one of two parts. The extension E-value (Karlin-Altschul) exists only when the region was extended and the protein pair has a positive lambda, the scale that says how fast high scores become rare by chance. The exact-run E-value exists for every match. \"E-value\" is the extension E-value where there is one and the exact-run E-value otherwise, so every match has one. The page keeps all three as separate metrics."
+    : "kmerseek turns a region's score into bits and an E-value with a Karlin-Altschul fit: a per-region scale (lambda) that says how fast high scores become rare by chance. When it cannot fit that scale, it writes E = infinity and a bit score of 0. This page treats both as missing, so the E-value and bit score are judged only on the matches they can score, and length is judged on those same matches.";
+  const e = idx.get(`${a}|${k}|${S.rule}|${EV}`);
   if (!e) return;
   const nu = e.n_matches - e.n_scored, cu = e.n_correct_all - e.n_correct;
+  $("#ev-lead").textContent = `How often a match with ${word} is correct:`;
   $("#ev-live").textContent = e.n_scored === 0
-    ? `${a} at k = ${k} has no E-value on any of its ${fmtN(e.n_matches)} matches, so the E-value and bit score cannot rank it at all.`
-    : `For ${a} at k = ${k} under "${RULE_SHORT[S.rule]}", ${fmtN(nu)} of ${fmtN(e.n_matches)} matches have no E-value, and ${fmtN(cu)} of them are correct (${pct(nu ? cu / nu : null)}). Among the ${fmtN(e.n_scored)} matches with an E-value, ${pct(e.base_rate)} are correct.`;
+    ? `${a} at k = ${k} has ${word} on any of its ${fmtN(e.n_matches)} matches.`
+    : `for ${a} at k = ${k} under "${RULE_SHORT[S.rule]}", ${fmtN(nu)} of ${fmtN(e.n_matches)} matches have ${word}, and ${fmtN(cu)} of them are correct (${pct(nu ? cu / nu : null)}). Among the ${fmtN(e.n_scored)} matches with ${has}, ${pct(e.base_rate)} are correct.`;
   let tu = 0, tc = 0, ts = 0, tsc = 0, none = 0;
-  for (const r of rows) if (r.rule === S.rule && r.metric === "E-value") {
+  for (const r of rows) if (r.rule === S.rule && r.metric === EV) {
     if (r.n_scored === 0) { none++; continue; }
     tu += r.n_matches - r.n_scored; tc += r.n_correct_all - r.n_correct; ts += r.n_scored; tsc += r.n_correct;
   }
   const N = alphabets.reduce((s, x) => s + ks[x].length, 0);
-  $("#ev-all").textContent = `Over the ${N - none} alphabet-ksize pairs with an E-value on at least one match, under the same rule: ${fmtN(tc)} of ${fmtN(tu)} matches with no E-value are correct (${pct(tu ? tc / tu : null)}), against ${pct(tsc / ts)} of the ${fmtN(ts)} matches with one. The other ${none} alphabet-ksize pairs have no E-value on any match, which is why the E-value and bit score columns show gaps.`;
+  $("#ev-all").textContent = `Over the ${N - none} alphabet-ksize pairs with ${has} on at least one match, under the same rule: ${fmtN(tc)} of ${fmtN(tu)} matches with ${word} are correct (${pct(tu ? tc / tu : null)}), against ${pct(ts ? tsc / ts : null)} of the ${fmtN(ts)} matches with one. The other ${none} alphabet-ksize pairs have ${word} on any match, which is why the ${EV} column shows gaps.` +
+    (preview ? "" : " In the preview build (switch in the control bar) every match has an E-value.");
 }
 
 // ------------------------------------------------------------------ overlap rules figure
@@ -587,6 +643,12 @@ function drawRules() {
 }
 
 // ------------------------------------------------------------------ ranking
+const GLOSS_PREVIEW = {
+  "E-value": "The extension E-value where the region was extended and the protein pair has a positive lambda, otherwise the exact-run E-value (kmerseek's region_evalue). Every match has one. Smaller is better.",
+  "E-value, extension only": "Karlin-Altschul E-value of an extended region: K × m × n × e^(−lambda × score), m the query's length and n the database's size. Missing when the region was not extended or the pair has no positive lambda. Smaller is better.",
+  "E-value, exact run": "Expected number of runs at least this long, where both proteins have the same alphabet letter at every position, between unrelated proteins: (1 − Pr(same)) × m × n × Pr(same)^run length, with Pr(same) the chance that two positions share a letter, m the query's length and n the database's residues. Every match has one. Smaller is better.",
+  "bit score": "Karlin-Altschul bit score of an extended region; 0 for a region that was not extended. Bigger is better.",
+};
 const GLOSS = {
   "E-value": "Expected number of regions scoring this well by chance in the search, from a Karlin-Altschul fit. Smaller is better. Missing where the fit failed.",
   "bit score": "The region's score rescaled with the same Karlin-Altschul fit, so scores from different searches compare. Bigger is better.",
@@ -595,7 +657,12 @@ const GLOSS = {
   "shared k-mers": "Number of k-mers in the region shared with the target. When every region is one unbroken run of shared k-mers, this is region length − k + 1 and ranks matches the same way length does (a tie). Where it differs from length, some regions are not single unbroken runs.",
   "Poisson p-value": "Chance of seeing at least this many shared k-mers if the expected number is the sum of the k-mers' database frequencies. Smaller is better; kmerseek warns it is not calibrated.",
   "enrichment": "Shared k-mers divided by the number expected by chance (the same expectation as the Poisson p-value).",
+  "Poisson score": "−log10 of the Poisson p-value, so bigger is better. It ranks matches exactly as the Poisson p-value does, and gives the same AP and AUC at every alphabet-ksize pair and rule (checked on all 608). kmerseek calls it a score for ranking, not a calibrated probability.",
+  "containment": "Share of the query protein's k-mers found in the target protein. One value per protein pair, so every match between the same two proteins gets it.",
+  "protein enrichment": "Enrichment for the whole protein pair: the pair's shared k-mers divided by the number expected by chance from the query's k-mers' frequencies in the database. One value per protein pair.",
+  "protein Poisson p-value": "Chance of at least the protein pair's number of shared k-mers, if the expected number is the one protein enrichment divides by. One value per protein pair. Smaller is better.",
 };
+const gloss = m => (METRICS.includes("E-value, extension only") && GLOSS_PREVIEW[m]) || GLOSS[m];
 const TIE = 1e-9;
 function rankData() {
   const sc = $("#scope").value;
@@ -633,7 +700,7 @@ function drawRank() {
     const pick = () => { S.metric = r.m; metSel.value = r.m; if (S.tab !== "grid") setTab("grid"); else drawGrid(); drawRank(); drawDetail(); };
     lab.addEventListener("click", pick);
     lab.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
-    lab.addEventListener("mouseenter", e => showTip(e, `<b>${r.m}</b><br>${GLOSS[r.m]}<br>click to show it in the grid`));
+    lab.addEventListener("mouseenter", e => showTip(e, `<b>${r.m}</b><br>${gloss(r.m)}<br>click to show it in the grid`));
     lab.addEventListener("mousemove", moveTip); lab.addEventListener("mouseleave", hideTip);
     for (const p of r.pts) {
       let h = 0; for (const c of p.a + p.k) h = (h * 31 + c.charCodeAt(0)) % 997;
@@ -672,15 +739,21 @@ const ruleSel = $("#rule");
 for (const r of D.rules) { const o = document.createElement("option"); o.value = r; o.textContent = RULE_SHORT[r]; ruleSel.appendChild(o); }
 ruleSel.value = S.rule; ruleSel.addEventListener("change", () => { S.rule = ruleSel.value; redraw(); });
 const metSel = $("#metric");
-for (const m of METRICS) { const o = document.createElement("option"); o.value = m; o.textContent = m; metSel.appendChild(o); }
-metSel.value = S.metric; metSel.addEventListener("change", () => { S.metric = metSel.value; if (S.tab !== "grid") setTab("grid"); else drawGrid(); drawRank(); drawDetail(); });
+function fillMetrics() { metSel.innerHTML = ""; for (const m of METRICS) { const o = document.createElement("option"); o.value = m; o.textContent = m; metSel.appendChild(o); } metSel.value = S.metric; }
+metSel.addEventListener("change", () => { S.metric = metSel.value; if (S.tab !== "grid") setTab("grid"); else drawGrid(); drawRank(); drawDetail(); });
 const scopeSel = $("#scope");
 { const o = document.createElement("option"); o.value = "all"; o.textContent = "all 19 alphabets"; scopeSel.appendChild(o); }
 for (const a of alphabets) { const o = document.createElement("option"); o.value = a; o.textContent = a; scopeSel.appendChild(o); }
 scopeSel.addEventListener("change", drawRank);
 for (const k of ["ds", "de", "ss", "se"]) $("#" + k).addEventListener("input", e => { R[k] = +e.target.value; drawRules(); });
 for (const [name, v] of PRESETS) { const b = document.createElement("button"); b.type = "button"; b.textContent = name; b.addEventListener("click", () => { [R.ds, R.de, R.ss, R.se] = v; drawRules(); }); $("#presets").appendChild(b); }
-$("#gloss").innerHTML = METRICS.map(m => `<div><b>${m}</b>: ${GLOSS[m]}</div>`).join("");
+function drawGloss() { $("#gloss").innerHTML = METRICS.map(m => `<div><b>${m}</b>: ${gloss(m)}</div>`).join(""); }
+$("#run").innerHTML = RUNS.map(R => `<button data-v="${R.id}">${R.label}</button>`).join("");
+function setRun() {
+  useRun(RUNS.findIndex(R => R.id === S.run)); fillMetrics(); drawGloss(); drawStatic();
+  $("#preview-note").hidden = !RUNS[RI].preview;
+}
+seg("#run", "run", () => { setRun(); redraw(); });
 seg("#stat", "stat", redraw); seg("#show", "show", redraw);
 seg("#cols", "cols", () => { if (S.tab !== "grid") setTab("grid"); else drawGrid(); });
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.v)));
@@ -693,12 +766,18 @@ $("#n-alpha").textContent = alphabets.length;
   $("#set-line").textContent = `${fmtN(q.chr6)} genes from all of chromosome 6 (${P.chr6_start_mb} to ${P.chr6_end_mb} Mb; ${P.n_chr6_mhc} of them in the MHC region), plus ${q.kir_lilr + q.cd1_mr1 + q.b2m} immune genes elsewhere: ${q.kir_lilr} KIR and LILR receptors (chromosome 19), CD1A-E and MR1 (${q.cd1_mr1}, chromosome 1) and B2M (chromosome 15).`; }
 { const n = alphabets.map(a => ks[a].length); $("#n-k").textContent = `${Math.min(...n)} to ${Math.max(...n)}`; }
 $("#n-pairs").textContent = alphabets.reduce((s, x) => s + ks[x].length, 0);
+$("#f-prot").textContent = fmtN(D.protein_set.n_proteins); $("#f-dom").textContent = fmtN(D.protein_set.n_domains);
+$("#f-pairs").textContent = alphabets.reduce((s, x) => s + ks[x].length, 0);
+$("#f-nmet").textContent = RUNS.map(R => `${new Set(R.data.rows.map(r => r[R.data.columns.indexOf("metric")])).size - 1} in the ${R.short} search`).join(", ") + ", each also compared with region length";
+function drawStatic() {
 { const [m, e] = (D.max_abs_diff || 0).toExponential(0).split("e"); $("#maxdiff").innerHTML = D.max_abs_diff ? `${m} × 10<sup>${e.replace("-", "−")}</sup>` : "0"; }
 { // AUC caveat: the highest AUC among alphabet-ksize pairs and metrics where under 1% of scored matches are correct
   const cand = rows.filter(r => r.rule === "IoU ≥ 0.2" && r.metric !== "region length" && valid(r.auc) && valid(r.ap) && r.base_rate < 0.01);
   cand.sort((x, y) => y.auc - x.auc);
   const c = cand[0];
-  if (c) $("#auc-example").textContent = `Under IoU ≥ 0.2, ${c.metric} for ${c.alphabet} at k = ${c.ksize} has AUC ${f2(c.auc)}. Only ${pct(c.base_rate)} of its ${fmtN(c.n_scored)} matches are correct, and its average precision is ${f3(c.ap)}.`;
+  if (c) $("#auc-example").textContent = `Under IoU ≥ 0.2, ${c.metric} for ${c.alphabet} at k = ${c.ksize} has AUC ${f2(c.auc)}. Only ${pct(c.base_rate)} of its ${fmtN(c.n_scored)} matches are correct, and its average precision is ${f3(c.ap)} (${RUNS[RI].short} search).`;
 }
+}
+setRun();
 setTab(S.tab); drawRank(); drawRules(); drawDetail(); drawCounts();
 </script>

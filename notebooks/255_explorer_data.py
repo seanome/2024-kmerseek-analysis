@@ -11,8 +11,17 @@ and compared with per_arm_metrics.parquet; the largest difference is printed.
 
 Curves are stored as base64 little-endian uint16 (value * 65535), 100 points each.
 
-Usage: 255_explorer_data.py [--workers 4] [--out PATH]
-Per-pair results are cached in <out dir>/explorer_parts/ so a rerun resumes.
+Usage: 255_explorer_data.py [--workers 4] [--out PATH] [--per-arm PATH] [--regions-dir DIR]
+Per-pair results are cached in <out dir>/explorer_parts<suffix>/ so a rerun resumes, where
+<suffix> is whatever follows "explorer_data" in the --out name.
+
+Both searches: the defaults read the notebook 243 search (kmerseek 982a055). For the
+notebook 257 rerun (kmerseek 8978e78, a preview build) pass
+  --regions-dir /Users/olga/data/alphabet-logreg-pfam998-kmerseek-8978e78/regions
+  --per-arm .../per_arm_metrics.kmerseek-8978e78.parquet
+  --out .../explorer_data.kmerseek-8978e78.json
+Every metric column the regions files carry is drawn, with the names that
+255_ranking_metrics_per_arm.py gives them.
 """
 
 from __future__ import annotations
@@ -29,11 +38,12 @@ import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ranking_metrics_utils as rm  # noqa: E402
+from importlib import import_module  # noqa: E402
 
-COLS = ["region_evalue", "region_ka_bits", "region_mean_idf", "region_tfidf", "region_enrichment",
-        "region_tail_probability", "region_n_shared_kmers"]
-READ = ["query_name", "target_name", "region_start", "region_end", "target_start", "target_end",
-        "region_ka_lambda", "region_length"] + COLS
+# importing it adds the two E-value parts to rm.NAME and rm.LOWER
+PER_ARM_SCRIPT = import_module("255_ranking_metrics_per_arm")
+COLS = [c for c in PER_ARM_SCRIPT.COLS if c != "region_length"]
+BASE = ["query_name", "target_name", "region_start", "region_end", "target_start", "target_end", "region_length"]
 RECALL_GRID = np.round(np.arange(1, 101) / 100, 2)  # 0.01 .. 1.00
 # ROC: dense at small false-positive rates, where a low base rate puts the useful cutoffs
 FPR_GRID = np.unique(np.round(np.r_[np.logspace(-5, -1, 40), np.linspace(0, 1, 61)], 6))
@@ -81,13 +91,16 @@ def curves(s: np.ndarray, y: np.ndarray):
 def one_pair(path: Path) -> dict:
     alphabet, k = path.stem.rsplit(".k", 1)
     truth = pl.read_parquet(rm.TRUTH)
-    df = rm.independent_matches(rm.label_regions(pl.read_parquet(path, columns=READ), truth))
+    have = set(pl.read_parquet_schema(path))
+    cols = [c for c in COLS if c in have]
+    read = BASE + [c for c in ["region_ka_lambda"] if c in have] + cols
+    df = rm.independent_matches(rm.label_regions(pl.read_parquet(path, columns=read), truth))
     L = rm.score(df, "region_length")
-    scores = {c: rm.score(df, c) for c in COLS}
+    scores = {c: rm.score(df, c) for c in cols}
     out = {}
     for rule, rname in rm.RULES:
         y = df[rule].to_numpy()
-        for c in COLS:
+        for c in scores:
             ok = np.isfinite(scores[c])
             m = curves(scores[c][ok], y[ok]) if ok.any() else None
             l = curves(L[ok], y[ok]) if ok.any() else None
@@ -102,10 +115,12 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument("--per-arm", type=Path, default=rm.PER_ARM)
+    ap.add_argument("--regions-dir", type=Path, default=rm.PF998 / "regions")
     args = ap.parse_args()
-    parts = args.out.parent / "explorer_parts"
+    parts = args.out.parent / ("explorer_parts" + args.out.stem.removeprefix("explorer_data"))
     parts.mkdir(exist_ok=True)
-    paths = sorted((rm.PF998 / "regions").glob("*.parquet"), key=lambda p: p.stat().st_size)
+    paths = sorted(args.regions_dir.glob("*.parquet"), key=lambda p: p.stat().st_size)
     todo = [p for p in paths if not (parts / f"{p.stem}.json").exists()]
     with ProcessPoolExecutor(args.workers) as ex:
         futs = {ex.submit(one_pair, p): p for p in todo}
@@ -114,7 +129,7 @@ def main() -> None:
             (parts / f"{futs[f].stem}.json").write_text(json.dumps(r))
             print(f"{futs[f].stem}: {r['n']:_} matches", file=sys.stderr, flush=True)
 
-    arm = pl.read_parquet(rm.PER_ARM)
+    arm = pl.read_parquet(args.per_arm)
     got = [json.loads((parts / f"{p.stem}.json").read_text()) for p in paths]
     # recomputed AP / AUC against the stored table
     ref = {(r["alphabet"], r["ksize"], r["rule"], r["metric"]): r for r in arm.iter_rows(named=True)}
