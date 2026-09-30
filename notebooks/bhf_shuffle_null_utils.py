@@ -1,12 +1,12 @@
 """Tables and figures for notebook 256: BHF against 300 dipeptide-shuffled copies of itself.
 
 Input: the top/*.parquet files of 256_bhf_dipeptide_shuffle_null.py, one row per (query,
-arm, ranking metric), where an arm is one alphabet at one seed length k of the notebook
-241 sweep. A query that hit no human protein on an arm has no row there.
+alphabet-ksize pair, ranking metric), where an alphabet-ksize pair is one alphabet at one seed length k of the notebook
+241 sweep. A query that hit no human protein on an alphabet-ksize pair has no row there.
 
-Every comparison is made on the same set of arms for BHF and for the copies: the arms
+Every comparison is made on the same set of alphabet-ksize pairs for BHF and for the copies: the alphabet-ksize pairs
 where BHF itself has a value under that metric (the settings of notebook 241's BHF
-figures). On those arms a copy with no row counts as finding nothing.
+figures). On those alphabet-ksize pairs a copy with no row counts as finding nothing.
 """
 
 from __future__ import annotations
@@ -69,8 +69,8 @@ def bhf_arms(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def full_grid(df: pl.DataFrame) -> pl.DataFrame:
-    """Every query on every BHF arm, with its row where it has one (nulls where the query
-    found nothing on that arm)."""
+    """Every query on every BHF alphabet-ksize pair, with its row where it has one (nulls where the query
+    found nothing on that alphabet-ksize pair)."""
     q = pl.DataFrame({"query_name": queries()})
     grid = bhf_arms(df).join(q, how="cross")
     return grid.join(df, on=["metric", "alphabet", "k", "query_name"], how="left").with_columns(
@@ -78,13 +78,13 @@ def full_grid(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def talk_in_top(df: pl.DataFrame) -> pl.DataFrame:
-    """Per query and metric: the share of BHF's arms where one of the 2024 talk's human
+    """Per query and metric: the share of BHF's alphabet-ksize pairs where one of the 2024 talk's human
     proteins ranks in the top 10. Ties take their best rank (rank 'min'), for BHF and
     copies alike."""
     g = full_grid(df).with_columns((pl.col("talk_best_rank") <= TOP).fill_null(False).alias("hit"))
     return (g.group_by("metric", "query_name", "is_bhf")
-             .agg(pl.len().alias("n_arms"), pl.col("hit").sum().alias("n_top"))
-             .with_columns((100 * pl.col("n_top") / pl.col("n_arms")).alias("pct")))
+             .agg(pl.len().alias("n_alphabet_ksize_pairs"), pl.col("hit").sum().alias("n_top"))
+             .with_columns((100 * pl.col("n_top") / pl.col("n_alphabet_ksize_pairs")).alias("pct")))
 
 
 def talk_summary(t: pl.DataFrame) -> pl.DataFrame:
@@ -96,7 +96,7 @@ def talk_summary(t: pl.DataFrame) -> pl.DataFrame:
         b = s.filter(pl.col("is_bhf"))
         nul = s.filter(~pl.col("is_bhf"))["pct"].to_numpy()
         bp = b["pct"][0]
-        rows.append(dict(metric=m, n_arms=b["n_arms"][0], bhf_n_top=b["n_top"][0], bhf_pct=round(bp, 1),
+        rows.append(dict(metric=m, n_alphabet_ksize_pairs=b["n_alphabet_ksize_pairs"][0], bhf_n_top=b["n_top"][0], bhf_pct=round(bp, 1),
                          copies_median_pct=round(float(np.median(nul)), 1),
                          copies_p2_5=round(float(np.percentile(nul, 2.5)), 1),
                          copies_p97_5=round(float(np.percentile(nul, 97.5)), 1),
@@ -106,9 +106,9 @@ def talk_summary(t: pl.DataFrame) -> pl.DataFrame:
 
 
 def best_score_p(df: pl.DataFrame) -> pl.DataFrame:
-    """Per metric and arm: the share of copies whose best score is at least as good as
+    """Per metric and alphabet-ksize pair: the share of copies whose best score is at least as good as
     BHF's, counting (1 + copies at least as good) / (1 + copies). A copy that found
-    nothing on the arm is worse than BHF."""
+    nothing on the alphabet-ksize pair is worse than BHF."""
     g = full_grid(df)
     rows = []
     for m, lower in METRICS.items():
@@ -129,8 +129,8 @@ def best_score_p(df: pl.DataFrame) -> pl.DataFrame:
 
 def best_score_summary(p: pl.DataFrame) -> pl.DataFrame:
     return (p.group_by("metric")
-             .agg(pl.len().alias("n_arms"),
-                  (pl.col("p") <= 0.05).sum().alias("n_arms_p_le_0_05"),
+             .agg(pl.len().alias("n_alphabet_ksize_pairs"),
+                  (pl.col("p") <= 0.05).sum().alias("n_pairs_p_le_0_05"),
                   (0.05 * pl.len()).round(1).alias("expected_by_chance"),
                   pl.col("p").min().alias("smallest_p"),
                   pl.col("p").median().alias("median_p"))
@@ -139,8 +139,8 @@ def best_score_summary(p: pl.DataFrame) -> pl.DataFrame:
 
 
 def sticky_top_hits(df: pl.DataFrame) -> pl.DataFrame:
-    """For BHF's #1 protein at each arm: the share of copies that have the same protein in
-    their own top 10 on that arm. A high share means the protein comes to the top for any
+    """For BHF's #1 protein at each alphabet-ksize pair: the share of copies that have the same protein in
+    their own top 10 on that alphabet-ksize pair. A high share means the protein comes to the top for any
     sequence with BHF's composition."""
     g = full_grid(df)
     b = g.filter(pl.col("is_bhf")).select("metric", "alphabet", "k", pl.col("top_gene").alias("bhf_top_gene"))
@@ -152,15 +152,15 @@ def sticky_top_hits(df: pl.DataFrame) -> pl.DataFrame:
 
 def sticky_summary(per_arm: pl.DataFrame) -> pl.DataFrame:
     return (per_arm.group_by("metric")
-                   .agg(pl.len().alias("n_arms"),
+                   .agg(pl.len().alias("n_alphabet_ksize_pairs"),
                         pl.col("pct_copies_top10").median().round(1).alias("median_pct_copies"),
-                        (pl.col("pct_copies_top10") >= 10).sum().alias("n_arms_ge_10pct"))
+                        (pl.col("pct_copies_top10") >= 10).sum().alias("n_pairs_ge_10pct"))
                    .with_columns(pl.col("metric").replace_strict({m: i for i, m in enumerate(METRICS)}).alias("_o"))
                    .sort("_o").drop("_o"))
 
 
 def top_gene_recurrence(df: pl.DataFrame, n: int = 8) -> pl.DataFrame:
-    """The proteins most often #1 across (copy, arm) pairs for one metric family, next to
+    """The proteins most often #1 across (copy, alphabet-ksize pair) cells for one metric, next to
     how often each is #1 for BHF."""
     g = full_grid(df).filter(pl.col("top_gene").is_not_null())
     cop = (g.filter(~pl.col("is_bhf")).group_by("metric", "top_gene").len("n_copy_arm")
@@ -182,11 +182,11 @@ FIG = Path(__file__).resolve().parent.parent / "figures"
 PURPLE = RAMP(0.85)
 GREY = "#9a9a9a"
 TOOLS = ("kmerseek 0.4.0 (982a055) search, 256_bhf_dipeptide_shuffle_null.py: BHF and 300 dipeptide-shuffled "
-         "copies against the 19_732 GENCODE v49 canonical human proteins, 152 alphabet x k arms of notebook 241")
+         "copies against the 19_732 GENCODE v49 canonical human proteins, 152 alphabet-ksize pairs of notebook 241")
 
 
 def fig_talk_top10(t: pl.DataFrame, summ: pl.DataFrame, path: Path, hypothesis: str, conclusion: str):
-    """One row per metric: BHF's share of arms with a 2024-talk protein in the top 10
+    """One row per metric: BHF's share of alphabet-ksize pairs with a 2024-talk protein in the top 10
     (purple diamond) over the 300 copies' shares (grey dots, with their middle 95% as a
     pale band drawn first)."""
     handles = [
@@ -206,19 +206,19 @@ def fig_talk_top10(t: pl.DataFrame, summ: pl.DataFrame, path: Path, hypothesis: 
         ax.scatter([r["bhf_pct"]], [y], marker="D", s=55, color=PURPLE, zorder=4)
         ax.text(1.01, y, f"p = {r['p']:.3f}", transform=ax.get_yaxis_transform(), va="center", ha="left", fontsize=8, clip_on=False)
     ax.set_yticks(range(len(ms)))
-    ax.set_yticklabels([f"{m} ({summ.filter(pl.col('metric') == m)['n_arms'][0]} arms)" for m in ms], fontsize=9)
+    ax.set_yticklabels([f"{m} ({summ.filter(pl.col('metric') == m)['n_alphabet_ksize_pairs'][0]} alphabet-ksize pairs)" for m in ms], fontsize=9)
     ax.set_ylim(len(ms) - 0.5, -0.5)
     ax.set_xlim(left=-1.5)  # a diamond at 0% would otherwise sit half outside the axes
-    ax.set_xlabel("% of arms where ZNF292, RSF1, TSHZ1-3, RNMT, SFI1, CETN2, TRAPPC10 or NDNF\nranks in the query's top 10 human proteins")
+    ax.set_xlabel("% of alphabet-ksize pairs where ZNF292, RSF1, TSHZ1-3, RNMT, SFI1, CETN2, TRAPPC10 or NDNF\nranks in the query's top 10 human proteins")
     ax.grid(axis="x", color="#eeeeee", zorder=0)
     finish_figure(fig, path, tools=TOOLS, hypothesis=hypothesis, conclusion=conclusion, header_y=1.01, footer_y=-0.02, tight=False)
 
 
 def fig_best_score_p(p: pl.DataFrame, path: Path, hypothesis: str, conclusion: str):
-    """One row per metric, one dot per arm: the share of copies whose best score is at
+    """One row per metric, one dot per alphabet-ksize pair: the share of copies whose best score is at
     least as good as BHF's. Under chance the dots spread evenly from 0 to 1."""
     handles = [
-        Line2D([], [], marker="o", ls="", ms=5, color=PURPLE, alpha=0.7, label="one arm (alphabet x k): share of the 300 copies whose best human hit scores at least as well as BHF's"),
+        Line2D([], [], marker="o", ls="", ms=5, color=PURPLE, alpha=0.7, label="one alphabet-ksize pair: share of the 300 copies whose best human hit scores at least as well as BHF's"),
         Line2D([], [], ls="--", color="#555555", label="0.05: BHF better than 95% of its copies"),
     ]
     ms = [m for m in METRICS if m in p["metric"].unique().to_list()]
@@ -228,7 +228,7 @@ def fig_best_score_p(p: pl.DataFrame, path: Path, hypothesis: str, conclusion: s
         v = p.filter(pl.col("metric") == m)["p"].to_numpy()
         ax.scatter(v, y + rng.uniform(-0.25, 0.25, len(v)), s=12, color=PURPLE, alpha=0.6, lw=0, zorder=3)
         k = (v <= 0.05).sum()
-        ax.text(1.01, y, f"{k} of {len(v)} arms ≤ 0.05", transform=ax.get_yaxis_transform(), va="center", ha="left", fontsize=8, clip_on=False)
+        ax.text(1.01, y, f"{k} of {len(v)} alphabet-ksize pairs ≤ 0.05", transform=ax.get_yaxis_transform(), va="center", ha="left", fontsize=8, clip_on=False)
     ax.axvline(0.05, ls="--", color="#555555", lw=1, zorder=2)
     ax.set_xscale("log")
     ax.set_xlim(1 / 400, 1.05)
@@ -261,7 +261,7 @@ def _entropy(s: str) -> float:
 
 
 def bhf_best_regions(p: pl.DataFrame) -> pl.DataFrame:
-    """For every (metric, arm) cell of best_score_p: the BHF region that gave BHF's best
+    """For every (metric, alphabet-ksize pair) cell of best_score_p: the BHF region that gave BHF's best
     value, from notebook 241's regions.parquet (kmerseek coordinates, 0-based, end
     exclusive). Adds the region's residues, its share of charged residues (D, E, K, R)
     and its Shannon entropy in bits per residue."""
@@ -290,7 +290,7 @@ def bhf_best_regions(p: pl.DataFrame) -> pl.DataFrame:
 
 def fig_region_coverage(reg: pl.DataFrame, path: Path, hypothesis: str, conclusion: str):
     """BHF drawn as a line (residues 1-252). Below it, for every residue, the number of
-    (metric, arm) cells whose best BHF region covers it: all cells as a pale band drawn
+    (metric, alphabet-ksize pair) cells whose best BHF region covers it: all cells as a pale band drawn
     first, the cells where BHF beats 95% of its copies as a purple line on top. A strip
     under the axis marks the lysine and arginine residues."""
     bhf = bhf_sequence()
@@ -304,7 +304,7 @@ def fig_region_coverage(reg: pl.DataFrame, path: Path, hypothesis: str, conclusi
     call, cwin = cover(reg), cover(reg.filter(pl.col("beats_95pct")))
     nall, nwin = reg.height, reg.filter(pl.col("beats_95pct")).height
     handles = [
-        Patch(color="#e4e4e4", label=f"all {nall} (metric, arm) cells: BHF's best region covers this residue"),
+        Patch(color="#e4e4e4", label=f"all {nall} (metric, alphabet-ksize pair) cells: BHF's best region covers this residue"),
         Line2D([], [], color=PURPLE, lw=2, label=f"the {nwin} cells where BHF beats at least 95% of its 300 shuffled copies"),
         Line2D([], [], marker="|", ls="", ms=9, color="#b35900", label="K or R (lysine, arginine) in BHF"),
     ]
@@ -318,7 +318,7 @@ def fig_region_coverage(reg: pl.DataFrame, path: Path, hypothesis: str, conclusi
     ax.set_ylim(-0.16 * top, top * 1.05)
     ax.set_xlim(0, L + 1)
     ax.set_xlabel("BHF residue (1-252); black line = BHF")
-    ax.set_ylabel("number of (metric, arm) cells")
+    ax.set_ylabel("number of (metric, alphabet-ksize pair) cells")
     ax.spines[["top", "right"]].set_visible(False)
     finish_figure(fig, path, tools=TOOLS + "; BHF regions from notebook 241 regions.parquet",
                   hypothesis=hypothesis, conclusion=conclusion, header_y=1.01, footer_y=-0.03, tight=False)

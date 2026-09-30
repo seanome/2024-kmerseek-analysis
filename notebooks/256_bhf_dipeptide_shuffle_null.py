@@ -3,28 +3,28 @@
 proteome that a scrambled BHF does not?
 
 BHF is searched against the human canonical proteome together with 300 shuffled copies
-of itself, on every arm of the notebook 241 sweep (152 alphabet x k combinations, same
+of itself, on all 152 alphabet-ksize pairs of the notebook 241 sweep (same
 indexes, same search flags as 241 and 242). Each copy keeps BHF's length, its amino-acid
 counts and its counts of every adjacent pair of residues (a dipeptide shuffle,
 Altschul-Erickson 1985), so it has BHF's composition and its short repeats, and no
 real homology.
 
-For each query, arm and ranking metric the run keeps: the best value over the human
+For each query, alphabet-ksize pair and ranking metric the run keeps: the best value over the human
 proteins it hit, the protein that value belongs to and how many proteins tie with it,
 the number of proteins hit, the ten best proteins, and the rank of each human protein
 named as a BHF hit in the 2024 Evolgenome talk. A human protein's value is that of its
-best region, as in 241. A query that hit no human protein on an arm has no row for that
-arm: count it as "found nothing", not as missing data.
+best region, as in 241. A query that hit no human protein on an alphabet-ksize pair has no row for that
+alphabet-ksize pair: count it as "found nothing", not as missing data.
 
-Queries are searched 25 at a time on arms at or below 20.5 bits of seed information and
+Queries are searched 25 at a time on alphabet-ksize pairs at or below 20.5 bits of seed information and
 all at once on the others (chunk_tags in alphabet_ensemble_utils.py, shared with 242).
 Each chunk's CSV is reduced and deleted, so the run needs little disk and resumes chunk
 by chunk.
 
 Output: /Users/olga/data/botryllus/alphabet-ranking-three-cases/null_bhf_dipeptide/
   queries.fa           BHF first, then shuf000..shuf299
-  arms.json            the arms searched
-  top/<tag>.parquet    one row per (query, arm, metric)
+  arms.json            the alphabet-ksize pairs searched
+  top/<tag>.parquet    one row per (query, alphabet-ksize pair, metric)
 
 Usage: 256_bhf_dipeptide_shuffle_null.py [--workers 3] [--n 300] [--seed 0]
                                          [--alphabets a,b] [--out DIR]
@@ -147,7 +147,7 @@ def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
           .with_columns(pl.col("query_name").str.strip_chars(),
                         pl.col("target_name").str.split("|").list.get(6).alias("gene")))
     # No lambda means no score scale: the E-value is inf and the bit score 0 for every
-    # region of the arm. Ranking on either would tie the whole proteome (see 241).
+    # region of the alphabet-ksize pair. Ranking on either would tie the whole proteome (see 241).
     df = df.with_columns(pl.when(pl.col("region_ka_lambda") > 0).then(pl.col("region_ka_bits"))
                          .alias("region_ka_bits"))
     rows = []
@@ -233,7 +233,7 @@ def main() -> None:
         tags = chunk_tags(CASE, arm["alphabet"], arm["k"], arm["bits"], len(qs))
         size = 25 if len(tags) > 1 else len(qs)
         jobs += [(tag, qs[i * size:(i + 1) * size], arm) for i, tag in enumerate(tags)]
-    print(f"{len(qs)} queries, {len(jobs)} chunks over {len(A)} arms", file=sys.stderr, flush=True)
+    print(f"{len(qs)} queries, {len(jobs)} chunks over {len(A)} alphabet-ksize pairs", file=sys.stderr, flush=True)
     failed = 0
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
         for msg in ex.map(lambda j: one_chunk(*j), jobs):
