@@ -3,6 +3,14 @@
 already tried, written as assets/kmerseek_index_memory_measured.tsv for main.nf to read.
 
     tools/index-memory-table runs/ladder-0.4-midi [more run folders] > assets/kmerseek_index_memory_measured.tsv
+    tools/index-memory-table --searches runs/ladder-0.4-midi [...] > assets/kmerseek_search_memory_measured.tsv
+
+With --searches it does the same for kmerseekSearch, keyed by the index each search reads
+(minus_<clade>.<alphabet>.k<k>[.s<scaled>].lc<mask>), since that index sets the memory: every
+chunk and arm over one index gets the table's first ask. A search killed behind a pipe exits
+1, not 137 (the pipe reports the last command's status), so a search attempt counts as killed
+when its .command.err says "Killed" as well as on exit 137 or 135. On 2026-09-30 that was 337
+killed search attempts in the 0.4 runs, 328 of them showing exit 1.
 
 For every kmerseekIndex attempt in the runs' .nextflow.log* it reads the index name, the exit
 status and the work folder, and from the work folder the memory the attempt asked for
@@ -30,8 +38,30 @@ import re
 import sys
 from collections import defaultdict
 
-DONE = re.compile(r"Task completed > TaskHandler\[jobId: \S+; id: \d+; name: \S*kmerseekIndex "
+PROCESS = "kmerseekSearch" if "--searches" in sys.argv else "kmerseekIndex"
+DONE = re.compile(r"Task completed > TaskHandler\[jobId: \S+; id: \d+; name: \S*" + PROCESS + r" "
                   r"\(([^)]*)\); status: \S+; exit: (\S+); error: [^;]*; workDir: (\S+) ")
+INDEX = re.compile(r"(minus_[A-Za-z]+\.[A-Za-z0-9_]+\.k\d+(?:\.s\d+)?\.lc(?:true|false))\.kmerseek\.rocksdb")
+
+
+def search_key(workdir):
+    """The index a search read, from its .command.sh, as the table key."""
+    try:
+        m = INDEX.search(open(os.path.join(workdir, ".command.sh"), errors="replace").read())
+    except OSError:
+        return None
+    return m.group(1) if m else None
+
+
+def was_killed(workdir, status):
+    if status in KILLED:
+        return True
+    if PROCESS != "kmerseekSearch" or status == "0":
+        return False
+    try:
+        return "Killed" in open(os.path.join(workdir, ".command.err"), errors="replace").read()[-8000:]
+    except OSError:
+        return False
 NAME = re.compile(r"^minus_[A-Za-z]+\.(.+)\.k(\d+)(?:\.s(\d+))?\.lc(true|false)$")
 MEM = re.compile(r"^#SBATCH --mem[= ](\d+)([MG]?)")
 KILLED = {"137", "135"}
@@ -55,7 +85,7 @@ def asked_gb(workdir):
 
 def main():
     attempts = {}
-    for run in sys.argv[1:]:
+    for run in [a for a in sys.argv[1:] if not a.startswith("--")]:
         for log in sorted(glob.glob(os.path.join(run, ".nextflow.log*"))):
             with open(log, errors="replace") as fh:
                 for line in fh:
@@ -65,22 +95,31 @@ def main():
     ok = defaultdict(list)
     killed = defaultdict(list)
     for wd, (name, status) in attempts.items():
-        m = NAME.match(name)
         gb = asked_gb(wd)
-        if not m or gb is None:
+        if gb is None:
             continue
-        key = (m.group(1), int(m.group(2)), int(m.group(3) or 1))
+        if PROCESS == "kmerseekSearch":
+            k = search_key(wd)
+            if k is None:
+                continue
+            key = (k,)
+        else:
+            m = NAME.match(name)
+            if not m:
+                continue
+            key = (m.group(1), int(m.group(2)), int(m.group(3) or 1))
         if status == "0":
             ok[key].append(gb)
-        elif status in KILLED:
+        elif was_killed(wd, status):
             killed[key].append(gb)
-    print("alphabet\tksize\tscaled\tfirst_ask_gb\tbasis")
+    print("index\tfirst_ask_gb\tbasis" if PROCESS == "kmerseekSearch"
+          else "alphabet\tksize\tscaled\tfirst_ask_gb\tbasis")
     for key in sorted(killed):
         if ok.get(key) and max(ok[key]) > max(killed[key]):
             gb, basis = max(ok[key]), "largest ask that built, above every killed ask"
         else:
             gb, basis = min(CAP_GB, 2 * max(killed[key])), "twice the largest killed ask"
-        print("{}\t{}\t{}\t{}\t{}".format(key[0], key[1], key[2], int(round(gb)), basis))
+        print("\t".join([str(x) for x in key] + [str(int(round(gb))), basis]))
     sys.stderr.write("{} attempts read, {} alphabet x k x scaled with a kill\n".format(len(attempts), len(killed)))
 
 

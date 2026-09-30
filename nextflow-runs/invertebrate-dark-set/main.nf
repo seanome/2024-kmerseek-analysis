@@ -488,6 +488,29 @@ def kmerseekIndexMemory = { String label, int ksize, int scaled, int attempt ->
     memoryLadder(Math.max(Math.max(floorGb, gb), measured), attempt)
 }
 
+// Measured first asks for searches, from assets/kmerseek_search_memory_measured.tsv
+// (tools/index-memory-table --searches), keyed by the index a search reads. 337 search
+// attempts in the 0.4 runs were killed for memory (328 of them showing exit 1, behind the
+// search's pipe), 0.1-3.2% of each alphabet's searches. A search reading an index in the
+// table asks what that index measured. A search on an index NOT in the table, whose
+// alphabet, k and scaled were killed on another clade's index, asks twice the model: every
+// such kill built at 2x the model's first ask or less. The rest keep the model, because
+// doubling a whole alphabet to spare 1-3% of its searches would send most of them to the
+// big-memory nodes, which queued for hours in this run.
+def searchMemoryMeasured() {
+    def table = [:]
+    def f = file("${projectDir}/assets/kmerseek_search_memory_measured.tsv")
+    if (!f.exists()) return table
+    f.readLines().each { line ->
+        if (line.startsWith('index') || !line.trim()) return
+        def c = line.split('\t')
+        table[c[0]] = c[1] as double
+    }
+    table
+}
+// minus_<clade>.<alphabet>.k<k>[.s<scaled>].lc<mask> -> <alphabet>.k<k>[.s<scaled>]
+def indexSetting(String stem) { stem.replaceFirst(/^minus_[A-Za-z]+\./, '').replaceFirst(/\.lc(true|false)$/, '') }
+
 def kmerseekSearchMemory = { Path index_dir, String alphabet, String lowcomp, int attempt ->
     def load = SPECTRUM_LOAD[index_dir.name]
     if (load == null) {
@@ -498,7 +521,15 @@ def kmerseekSearchMemory = { Path index_dir, String alphabet, String lowcomp, in
     double gb      = (params.kmerseek_search_memory_headroom as double) * factor
                      * searchMedianGb(load as double, lowcomp)
     double floorGb = MemoryUnit.of(params.kmerseek_search_memory_floor).toGiga()
-    memoryLadder(Math.max(floorGb, gb), attempt)
+    def measured   = searchMemoryMeasured()
+    String stem    = index_dir.name.replaceFirst(/\.kmerseek\.rocksdb$/, '')
+    double first   = Math.max(floorGb, gb)
+    if (measured.containsKey(stem)) {
+        first = Math.max(first, measured[stem] as double)
+    } else if (measured.keySet().any { indexSetting(it) == indexSetting(stem) }) {
+        first = 2.0d * first
+    }
+    memoryLadder(first, attempt)
 }
 
 // The reference is keyed by the CLADE REMOVED, not by the species asking for it. Chordata
