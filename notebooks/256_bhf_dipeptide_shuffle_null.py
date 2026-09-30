@@ -56,6 +56,8 @@ KMERSEEK = null242.KMERSEEK
 D = null242.D
 OUT = D / "null_bhf_dipeptide"
 CASE = "BHF"
+KEEP_REGIONS = False  # --keep-regions: also write regions/<tag>.parquet
+COORDS = ["region_start", "region_end", "target_start", "target_end"]
 
 # Human proteins named as BHF hits in the 2024 Evolgenome talk (k = 24, orpheum +
 # sourmash, hp alphabet). TSHZ1-3 are paralogs; SFI1 and CETN2 were one hit.
@@ -138,7 +140,7 @@ def make_queries(n: int, seed: int) -> list[tuple[str, str]]:
 
 def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
     """One row per (query, metric) for the queries in this chunk that hit anything."""
-    cols = ["query_name", "target_name", "region_ka_lambda"] + [c for c, _ in METRICS.values()]
+    cols = ["query_name", "target_name", "region_ka_lambda"] + [c for c, _ in METRICS.values()] + COORDS
     if csv.stat().st_size == 0:
         return pl.DataFrame()
     df = (pl.read_csv(csv, columns=cols, infer_schema_length=0)
@@ -180,6 +182,38 @@ def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
         pl.lit(arm["bits"]).alias("bits"), pl.lit(arm["nofit"]).alias("nofit"))
 
 
+def top_regions(csv: Path, arm: dict) -> pl.DataFrame:
+    """With --keep-regions: for each query, alphabet-ksize pair and metric, the best region
+    of each of the query's ten best human proteins, with query and target coordinates
+    (0-based, end exclusive). Same ranking and tie order as reduce_chunk."""
+    cols = ["query_name", "target_name", "region_ka_lambda"] + [c for c, _ in METRICS.values()] + COORDS
+    if csv.stat().st_size == 0:
+        return pl.DataFrame()
+    df = (pl.read_csv(csv, columns=cols, infer_schema_length=0)
+          .with_columns([pl.col(c).cast(pl.Float64, strict=False)
+                         for c in cols if c not in ("query_name", "target_name")])
+          .with_columns([pl.col(c).cast(pl.Int64) for c in COORDS])
+          .with_columns(pl.col("query_name").str.strip_chars(),
+                        pl.col("target_name").str.split("|").list.get(6).alias("gene"))
+          .with_columns(pl.when(pl.col("region_ka_lambda") > 0).then(pl.col("region_ka_bits"))
+                        .alias("region_ka_bits")))
+    out = []
+    for label, (col, lower) in METRICS.items():
+        v = df.filter(pl.col(col).is_not_null() & pl.col(col).is_finite())
+        if v.height == 0:
+            continue
+        best = (v.sort("query_name", col, "gene", "region_start", descending=[False, not lower, False, False])
+                 .group_by("query_name", "gene", maintain_order=True).first())
+        best = best.with_columns(pl.col(col).rank("min", descending=not lower).over("query_name").alias("rank"),
+                                 pl.int_range(pl.len()).over("query_name").alias("order"))
+        out.append(best.filter(pl.col("order") < 10)
+                       .select("query_name", "gene", "target_name", *COORDS, "rank", pl.col(col).alias("value"))
+                       .with_columns(pl.lit(label).alias("metric")))
+    if not out:
+        return pl.DataFrame()
+    return pl.concat(out).with_columns(pl.lit(arm["alphabet"]).alias("alphabet"), pl.lit(arm["k"]).alias("k"))
+
+
 def one_chunk(tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
     done = OUT / "top" / f"{tag}.parquet"
     if done.exists():
@@ -196,6 +230,8 @@ def one_chunk(tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
         rc = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT).returncode
     if rc != 0 or not csv.exists():
         return f"{tag} FAILED rc={rc} (log: {OUT / 'logs' / (tag + '.log')})"
+    if KEEP_REGIONS:
+        top_regions(csv, arm).write_parquet(OUT / "regions" / f"{tag}.parquet")
     reduce_chunk(csv, arm).write_parquet(done)
     csv.unlink(missing_ok=True)
     fa.unlink(missing_ok=True)
@@ -210,14 +246,17 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", type=Path, default=OUT, help="output folder (a smoke test writes elsewhere)")
     ap.add_argument("--alphabets", default="", help="comma-separated subset, for a smoke test")
+    ap.add_argument("--keep-regions", action="store_true",
+                    help="also keep the coordinates of each query's ten best human proteins (regions/)")
     args = ap.parse_args()
-    OUT = args.out
-    for d in ("top", "tmp", "logs"):
+    global KEEP_REGIONS
+    OUT, KEEP_REGIONS = args.out, args.keep_regions
+    for d in ("top", "tmp", "logs", "regions"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
     # Cached chunks hold the queries they were searched with; a different --n or --seed
     # would silently mix two query sets, so refuse it.
     manifest = OUT / "run.json"
-    want = {"n": args.n, "seed": args.seed}
+    want = {"n": args.n, "seed": args.seed, "keep_regions": args.keep_regions}
     if manifest.exists() and json.loads(manifest.read_text()) != want:
         sys.exit(f"{OUT} holds a run with {manifest.read_text().strip()}; use another --out")
     if not manifest.exists() and any((OUT / "top").glob("*.parquet")):
