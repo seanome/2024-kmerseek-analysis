@@ -16,6 +16,8 @@ Pfam answer key, and writes:
                               written with its mirror image, so a list of kmerseek wins never
                               appears without the matching list of aligner wins.
   pfam_candidates_counts.csv  the size of every view per length bin, both directions.
+  pfam_settings_left_out.csv  kmerseek settings the run did not finish on every species,
+                              left out of the choice (written only when there are any).
 
 Choosing kmerseek's setting (mask on only, as in notebook 244 Stage 0):
 
@@ -146,6 +148,17 @@ def main():
     if len(species) < args.n_species or files["species"].n_unique() < args.n_species:
         problems.append(f"{files['species'].n_unique()} species in the inputs, {args.n_species} expected")
     short = per_arm.filter(pl.col("n") < files["species"].n_unique())
+    # A kmerseek setting the run did not finish on every species (gbmr7 at k 9-10 runs out of
+    # memory on the larger targets) cannot be compared with the others on the same rows, so
+    # it is left out of the choice and listed. A missing aligner file still stops the build.
+    km_short = short.filter(pl.col("arm").str.starts_with("kmerseek."))
+    if km_short.height:
+        km_short.rename({"n": "n_species"}).sort("arm").write_csv(
+            args.out_dir / "pfam_settings_left_out.csv")
+        print(f"left out {km_short.height} kmerseek settings missing some species: "
+              f"{km_short['arm'].sort().to_list()}")
+        calls = calls.filter(~pl.col("arm").is_in(km_short["arm"].to_list()))
+        short = short.filter(~pl.col("arm").str.starts_with("kmerseek."))
     if short.height:
         problems.append(f"{short.height} settings or tools lack some species, e.g. {short['arm'][:5].to_list()}")
     missing_tools = [t for t in ALIGNERS if t not in tools_seen]
