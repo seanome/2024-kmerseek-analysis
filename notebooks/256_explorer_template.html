@@ -56,6 +56,22 @@ td.num{text-align:right;white-space:nowrap}
 section{position:relative;z-index:0}
 details{margin:12px 0}
 summary{cursor:pointer;color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;margin:14px 0 4px}
+.flow .step{flex:1 1 160px;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.4;min-width:0}
+.flow .step .k{display:block;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.flow .step.io{border:1.5px solid var(--ink)}
+.flow .arr{align-self:center;color:var(--muted);font-size:18px;flex:0 0 auto}
+@media (max-width:700px){.flow{flex-direction:column}.flow .arr{transform:rotate(90deg)}}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--panel);margin:0 0 8px}
+.seg button{font:13px var(--sans);padding:5px 12px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+table.pick tr[data-i]{cursor:pointer}
+table.pick tr[data-i]:hover td{background:var(--bg)}
+table.pick tr.cur td{background:var(--sel)}
+table.pick tr:focus-visible{outline:2px solid var(--bhf)}
+.stepbtn{font:13px var(--sans);padding:3px 10px;border:1px solid var(--rule);border-radius:4px;background:var(--panel);color:var(--ink);cursor:pointer}
+.stepbtn:disabled{opacity:.4;cursor:default}
 .warn{border-left:3px solid var(--ink);padding:8px 12px;background:var(--panel);margin:0 0 14px;max-width:82ch}
 </style>
 
@@ -63,6 +79,18 @@ summary{cursor:pointer;color:var(--ink);font-weight:500}
   <h1>BHF against 300 shuffled copies of itself</h1>
   <p class="lede">Notebooks 256 and 258. BHF (<i>Botryllus</i> histocompatibility factor, <span id="bhfLen"></span> aa) and 300 shuffled copies of BHF were each searched with kmerseek against the <span id="nHuman"></span> canonical human proteins (GENCODE v49). A shuffled copy has BHF's length, its amino-acid counts and its count of every adjacent residue pair (a dipeptide shuffle), but any real match to a human protein is gone. Whatever a copy finds, BHF could find by chance.</p>
   <p class="lede">An <b>alphabet-ksize pair</b> is one reduced amino-acid alphabet at one k-mer size, the search settings of notebook 241. Each pair ranks the human proteins under 11 ranking metrics. Pick a metric below.</p>
+
+  <div class="flow" role="img" aria-label="What went in, what was done, and what came out">
+    <div class="step io"><span class="k">Input</span><b>BHF</b> (<span class="num" id="fBhf"></span> aa) and <b><span id="fCopies"></span> shuffled copies</b> of it: same length, amino-acid counts and adjacent-pair counts, residues in a new order.</div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="step"><span class="k">Search</span>kmerseek searches each of the <span id="fQueries"></span> against the <span id="fHuman"></span> human proteins, at <span id="fPairs"></span> alphabet-ksize pairs (<span id="fAlpha"></span> alphabets).</div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="step"><span class="k">Rank</span>At each pair, each of <span id="fMetrics"></span> ranking metrics orders the human proteins. Kept per query: its best score and its top 10 proteins with their matched regions.</div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="step"><span class="k">Compare</span>BHF against its copies: the share of copies at least as good as BHF. Near 0 means BHF's result is hard to get by chance.</div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="step io"><span class="k">Output (the three tabs)</span>Best score per pair; how often the 2024 talk's proteins reach the top 10; which UniProt regions (zinc finger, membrane, extracellular, disordered) the matches land on.</div>
+  </div>
 
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-best" aria-selected="true" aria-controls="view-best">BHF's best score against its copies</button>
@@ -107,8 +135,9 @@ summary{cursor:pointer;color:var(--ink);font-weight:500}
     <p class="note">Each dot is one query's share of its matches on the class, among matches in a human protein with a reviewed UniProt entry (<span id="fAnnot"></span>). The number on the right is the share of copies at least as high as BHF, (1 + copies) / 301. The top block pools every metric; the lower block follows the metric picked above.</p>
     <div class="legend" id="clsLegend"></div>
     <div class="chart" style="overflow-x:auto"><svg id="clsSvg" role="img" aria-label="Share of matches on each UniProt class, BHF against copies"></svg></div>
-    <h3 style="margin-top:18px">Membrane, one alphabet at a time (all k-mer sizes and metrics together)</h3>
-    <p class="note">With 19 alphabets, about one is expected at 0.05 or less by chance. Notebook 258 finds that gbmr7 puts K, R, E and Q in one class with L, I, V and F, so a basic stretch and a membrane helix look alike to it.</p>
+    <h3 style="margin-top:18px" id="alphaHead">One alphabet at a time (all k-mer sizes and metrics together)</h3>
+    <div class="seg" id="clsPick" role="group" aria-label="UniProt class for the table"></div>
+    <p class="note" id="alphaNote"></p>
     <div id="memTable" style="overflow-x:auto"></div>
     <p class="note" style="margin-top:10px">These matches come from a repeat of the 256 search with the regions kept (256_bhf_dipeptide_shuffle_null.py --keep-regions). Notebook 258 reports that the repeat changed some E-values and bit scores in the twelfth decimal place and reordered 76 of 293_315 top proteins.</p>
   </section>
@@ -129,13 +158,17 @@ const fmt = (v, m) => {
 const fmtP = p => p.toFixed(3);
 const PASS = 0.05;
 
-let state = { metric: 0, pair: null, tab: "best" };
-try { const s = JSON.parse(localStorage.getItem("bhf256") || "{}"); if (s.metric != null && D.metrics[s.metric]) state.metric = s.metric; if (s.tab) state.tab = s.tab; } catch (e) {}
-const save = () => { try { localStorage.setItem("bhf256", JSON.stringify({ metric: state.metric, tab: state.tab })); } catch (e) {} };
+let state = { metric: 0, pair: null, tab: "best", cls: "membrane" };
+try { const s = JSON.parse(localStorage.getItem("bhf256") || "{}"); if (s.metric != null && D.metrics[s.metric]) state.metric = s.metric; if (s.tab) state.tab = s.tab; if (s.cls && D.features.by_alphabet[s.cls]) state.cls = s.cls; } catch (e) {}
+const save = () => { try { localStorage.setItem("bhf256", JSON.stringify({ metric: state.metric, tab: state.tab, cls: state.cls })); } catch (e) {} };
 
 $("#bhfLen").textContent = D.bhf_length;
 $("#nHuman").textContent = D.n_human.toLocaleString("en-US").replace(/,/g, "_");
 $("#talkGenes").textContent = D.talk_genes.join(", ");
+{ const nf = x => x.toLocaleString("en-US").replace(/,/g, "_");
+  $("#fBhf").textContent = D.bhf_length; $("#fCopies").textContent = D.n_copies; $("#fQueries").textContent = `${D.n_copies + 1} queries`;
+  $("#fHuman").textContent = nf(D.n_human); $("#fPairs").textContent = D.n_pairs_searched; $("#fAlpha").textContent = D.n_alphabets;
+  $("#fMetrics").textContent = D.metrics.length; }
 
 /* ---------- metric buttons ---------- */
 function drawMetrics() {
@@ -157,6 +190,7 @@ const sw = {
   band: () => `<svg width="22" height="12"><rect x="0" y="1" width="22" height="10" fill="${css('--band')}"/></svg>`,
   bline: () => `<svg width="30" height="12"><line x1="0" y1="6" x2="30" y2="6" stroke="${css('--ink')}" stroke-width="2"/></svg>`,
   bbox: () => `<svg width="22" height="12"><rect x="1" y="1" width="20" height="10" fill="${css('--bhf')}" fill-opacity=".3" stroke="${css('--bhf')}"/></svg>`,
+  bout: () => `<svg width="22" height="12"><rect x="1" y="1" width="20" height="10" fill="none" stroke="${css('--bhf')}"/></svg>`,
   hbox: () => `<svg width="22" height="12"><rect x="1" y="1" width="20" height="10" fill="${css('--human')}" fill-opacity=".3" stroke="${css('--human')}"/></svg>`,
 };
 
@@ -265,23 +299,64 @@ function drawDetail() {
     <dt>copies at least as good</dt><dd>${p.n_as_good} of ${p.n_copies}; share (1 + ${p.n_as_good}) / 301 = ${fmtP(p.p)}${p.p <= PASS ? " <b>(BHF beats at least 95% of its copies)</b>" : ""}</dd>
     <dt>copies that hit nothing</dt><dd>${p.n_copies_no_hit} of ${p.n_copies}</dd>
     <dt>human proteins BHF hit</dt><dd>${p.bhf_n_hit.toLocaleString("en-US").replace(/,/g, "_")}</dd></dl>`;
-  if (r) {
-    h += `<h3>Where BHF's best region sits</h3>`;
-    h += `<div class="legend"><span>${sw.bline()} protein, drawn to its own length</span><span>${sw.bbox()} BHF's best region</span><span>${sw.hbox()} the matching region of ${r.gene}</span></div>`;
-    h += proteinSvg(r);
-    if (["containment", "protein enrichment", "protein Poisson p-value"].includes(m.name))
-      h += `<p class="note">${m.name} scores the whole human protein, so every region of ${r.gene} has the same score. The region shown is the first one along BHF.</p>`;
-    h += `<h3>Residues</h3>` + alignment(r, p.alphabet);
-  }
-  h += `<h3>BHF's top ${Math.min(D.top, p.top10.length)} human proteins</h3>`;
+  // the selected top-10 protein: rank 1 is notebook 241's region (as in notebook 256), ranks 2-10 the repeat search's
+  const key = `${state.metric}|${state.pair}`;
+  if (state.rowKey !== key) { state.row = 0; state.rowKey = key; }
+  const regionOf = i => {
+    const t = p.top10[i]; if (!t) return null;
+    if (i === 0 && r && r.gene === t[0]) return r;
+    const q = t[3]; if (!q) return null;
+    return { ...q, gene: t[0], bhf_seq: D.bhf_seq.slice(q.start, q.end) };
+  };
+  const i0 = Math.min(state.row, Math.max(0, p.top10.length - 1)), sel = regionOf(i0), gsel = p.top10[i0] ? p.top10[i0][0] : null;
+  h += `<h3>BHF's top ${Math.min(D.top, p.top10.length)} human proteins: where each one matches BHF</h3>`;
   if (p.top10.length < D.top) h += `<p class="note">BHF hit only ${p.top10.length} human protein${p.top10.length === 1 ? "" : "s"} at this pair.</p>`;
+  h += `<p class="note">Click a box, a table row, or use the buttons to step through the proteins. The selected protein's match is drawn and its residues are shown below the table.</p>`;
+  h += `<div class="legend"><span>${sw.bline()} BHF, residues 1-${D.bhf_length}</span><span>${sw.bout()} the region of BHF matched by one protein (number = rank)</span><span>${sw.bbox()} the selected protein's region</span></div>`;
+  h += stackSvg(p, regionOf, i0);
+  h += `<div style="display:flex;gap:6px;align-items:center;margin:4px 0 10px"><button type="button" class="stepbtn" id="rowPrev" ${i0 === 0 ? "disabled" : ""}>previous</button><button type="button" class="stepbtn" id="rowNext" ${i0 >= p.top10.length - 1 ? "disabled" : ""}>next</button><span class="note" style="margin:0">rank ${i0 + 1} of ${p.top10.length}: ${gsel ?? ""}</span></div>`;
   h += `<p class="note">Next to each: how many of the ${D.n_copies} copies also have that protein in their own top 10 here. A protein that many copies also find comes to the top for any sequence with BHF's make-up. <span class="tag" style="margin:0">2024 talk</span> marks the talk's proteins. The last column is from notebook 258: the UniProt class that holds at least half of the human side of BHF's match (see the third tab).</p>`;
-  h += `<div style="overflow-x:auto"><table><thead><tr><th>rank</th><th>human protein</th><th colspan="2">copies with it in their top 10</th><th>UniProt class of the matched human region</th></tr></thead><tbody>`;
+  h += `<div style="overflow-x:auto"><table class="pick"><thead><tr><th>rank</th><th>human protein</th><th>BHF region</th><th colspan="2">copies with it in their top 10</th><th>UniProt class of the matched human region</th></tr></thead><tbody>`;
   p.top10.forEach(([g, n, cls], i) => {
-    h += `<tr><td class="num">${i + 1}</td><td>${g}${D.talk_genes.includes(g) ? '<span class="tag">2024 talk</span>' : ""}</td><td class="num">${n} of ${D.n_copies}</td><td style="width:28%"><span class="bar" style="width:${(100 * n / D.n_copies).toFixed(1)}%"></span></td><td>${cls ?? ""}</td></tr>`;
+    const q = regionOf(i);
+    h += `<tr data-i="${i}" tabindex="0" class="${i === i0 ? "cur" : ""}"><td class="num">${i + 1}</td><td>${g}${D.talk_genes.includes(g) ? '<span class="tag">2024 talk</span>' : ""}</td><td class="num">${q ? `${q.start + 1}-${q.end}` : "none kept"}</td><td class="num">${n} of ${D.n_copies}</td><td style="width:22%"><span class="bar" style="width:${(100 * n / D.n_copies).toFixed(1)}%"></span></td><td>${cls ?? ""}</td></tr>`;
   });
   h += `</tbody></table></div>`;
+  if (sel) {
+    h += `<h3 style="margin-top:14px">Rank ${i0 + 1}: BHF against ${sel.gene}</h3>`;
+    h += `<div class="legend"><span>${sw.bline()} protein, drawn to its own length</span><span>${sw.bbox()} BHF's region</span><span>${sw.hbox()} the matching region of ${sel.gene}</span></div>`;
+    h += proteinSvg(sel);
+    if (["containment", "protein enrichment", "protein Poisson p-value"].includes(m.name))
+      h += `<p class="note">${m.name} scores the whole human protein, so every region of ${sel.gene} has the same score. The region shown is the first one along BHF.</p>`;
+    h += alignment(sel, p.alphabet);
+    h += `<p class="note">${i0 === 0 && sel === r ? "Rank 1's region comes from notebook 241's region table, as in notebook 256." : "This region comes from the repeat search that kept each query's top 10 regions (notebook 258)."} For ${D.features.n_top1_region_differs} of the 1_076 (metric, alphabet-ksize pair) combinations the repeat search picked a different BHF region for the #1 protein.</p>`;
+  } else if (gsel) h += `<p class="note">No region was kept for ${gsel} at this pair: the repeat search that kept the top 10 regions ranked a different set of proteins here.</p>`;
+  const top = el.scrollTop;
   el.innerHTML = h;
+  el.scrollTop = top;
+  const go = i => { state.row = i; drawDetail(); };
+  el.querySelectorAll("table.pick tr[data-i]").forEach(tr => { tr.onclick = () => go(+tr.dataset.i); tr.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(+tr.dataset.i); } }; });
+  el.querySelectorAll("[data-box]").forEach(b => b.addEventListener("click", () => go(+b.dataset.box)));
+  const pv = $("#rowPrev"), nx = $("#rowNext");
+  if (pv) pv.onclick = () => go(i0 - 1); if (nx) nx.onclick = () => go(i0 + 1);
+}
+function stackSvg(p, regionOf, i0) {
+  const W = Math.max(280, $("#detail").clientWidth - 34), L = 22, Rm = 12, w = W - L - Rm, rh = 13, top = 8;
+  const n = p.top10.length, H = top + 14 + n * rh + 18, X = v => L + v / D.bhf_length * w;
+  let s = `<svg width="${W}" height="${H}" style="max-width:100%;display:block" font-family="${css('--sans')}" font-size="10">`;
+  s += `<line x1="${L}" x2="${L + w}" y1="${top + 6}" y2="${top + 6}" stroke="${css('--ink')}" stroke-width="2"/>`;
+  p.top10.forEach((t, i) => {
+    const q = regionOf(i), y = top + 14 + i * rh;
+    s += `<text x="${L - 6}" y="${y + 9}" text-anchor="end" fill="${css(i === i0 ? '--ink' : '--muted')}" font-weight="${i === i0 ? 700 : 400}">${i + 1}</text>`;
+    if (!q) return;
+    const x = X(q.start), bw = Math.max(3, X(q.end) - X(q.start));
+    s += `<rect data-box="${i}" x="${x}" y="${y}" width="${bw}" height="10" fill="${css('--bhf')}" fill-opacity="${i === i0 ? .45 : 0}" stroke="${css('--bhf')}" stroke-width="${i === i0 ? 1.6 : 1}" style="cursor:pointer"><title>${t[0]}: BHF ${q.start + 1}-${q.end}</title></rect>`;
+  });
+  for (const v of [1, 50, 100, 150, 200, D.bhf_length]) {
+    const x = X(v === 1 ? 0 : v);
+    s += `<text x="${x}" y="${H - 4}" text-anchor="${v === 1 ? "start" : v === D.bhf_length ? "end" : "middle"}" fill="${css('--muted')}">${v}</text>`;
+  }
+  return s + `</svg>`;
 }
 function proteinSvg(r) {
   const W = Math.max(280, $("#detail").clientWidth - 34), L = 12, Rm = 12, w = W - L - Rm;
@@ -387,8 +462,15 @@ function drawClasses() {
     });
   });
   const svg = $("#clsSvg"); svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("font-family", css("--sans")); svg.innerHTML = s;
-  let tb = `<table><thead><tr><th>alphabet</th><th class="num">BHF: % on membrane</th><th class="num">copies: median</th><th class="num">copies: middle 95%</th><th class="num">share of copies ≥ BHF</th></tr></thead><tbody>`;
-  F.membrane_by_alphabet.forEach(r => { tb += `<tr style="${r.p <= PASS ? "font-weight:600" : ""}"><td>${r.alphabet}</td><td class="num">${r.bhf_pct}%</td><td class="num">${r.copies_median_pct}%</td><td class="num">${r.copies_p2_5}-${r.copies_p97_5}%</td><td class="num">${r.p.toFixed(3)}</td></tr>`; });
+  const cls = state.cls, rowsA = F.by_alphabet[cls], nA = rowsA.length, nLow = rowsA.filter(r => r.p <= PASS).length;
+  $("#clsPick").innerHTML = Object.keys(F.by_alphabet).map(c => `<button type="button" data-c="${c}" aria-pressed="${c === cls}">${c}</button>`).join("");
+  $("#clsPick").querySelectorAll("button").forEach(b => b.onclick = () => { state.cls = b.dataset.c; save(); drawClasses(); });
+  $("#alphaHead").textContent = `${cls[0].toUpperCase() + cls.slice(1)}, one alphabet at a time (all k-mer sizes and metrics together)`;
+  $("#alphaNote").textContent = `Rows sorted by the share of copies at least as high as BHF, smallest first; bold where it is 0.05 or less (${nLow} of ${nA} alphabets). With ${nA} alphabets, about ${(0.05 * nA).toFixed(1)} are expected at 0.05 or less by chance. ` +
+    (cls === "disordered" ? "Disordered regions are UniProt's MobiDB-lite regions." : `Counted outside disordered regions.`) +
+    (cls === "membrane" ? " Notebook 258 finds that gbmr7 puts K, R, E and Q in one class with L, I, V and F, so a basic stretch and a membrane helix look alike to it." : "");
+  let tb = `<table><thead><tr><th>alphabet</th><th class="num">BHF: % on ${cls}</th><th class="num">copies: median</th><th class="num">copies: middle 95%</th><th class="num">share of copies ≥ BHF</th></tr></thead><tbody>`;
+  rowsA.forEach(r => { tb += `<tr style="${r.p <= PASS ? "font-weight:600" : ""}"><td>${r.alphabet}</td><td class="num">${r.bhf_pct}%</td><td class="num">${r.copies_median_pct}%</td><td class="num">${r.copies_p2_5}-${r.copies_p97_5}%</td><td class="num">${r.p.toFixed(3)}</td></tr>`; });
   $("#memTable").innerHTML = tb + `</tbody></table>`;
 }
 
