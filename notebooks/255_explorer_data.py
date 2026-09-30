@@ -38,6 +38,21 @@ RECALL_GRID = np.round(np.arange(1, 101) / 100, 2)  # 0.01 .. 1.00
 # ROC: dense at small false-positive rates, where a low base rate puts the useful cutoffs
 FPR_GRID = np.unique(np.round(np.r_[np.logspace(-5, -1, 40), np.linspace(0, 1, 61)], 6))
 OUT = rm.PER_ARM.parent / "explorer_data.json"
+# which genes the 998 proteins are: chromosome 6, the MHC subregions, and the immune extras
+QUERY_MAP = Path("/Users/olga/data/qfo-pfam-region-midi-plus/query_gene_map.parquet")
+
+
+def protein_set() -> dict:
+    """Where the 998 query proteins come from, counted from the midi-plus query map and the
+    human Pfam truth, so the page states it from data."""
+    truth = pl.read_parquet(rm.TRUTH)
+    q = pl.read_parquet(QUERY_MAP).filter(pl.col("accession").is_in(truth["accession"].unique().to_list()))
+    sets = dict(q.group_by("query_set").len().iter_rows())
+    chr6 = q.filter(pl.col("query_set") == "chr6")
+    return dict(n_proteins=truth["accession"].n_unique(), n_domains=truth.height,
+                n_families=truth["pfam_id"].n_unique(), query_sets=sets,
+                n_chr6_mhc=chr6.filter(pl.col("mhc_subregion").is_not_null()).height,
+                chr6_start_mb=round(chr6["start"].min() / 1e6, 1), chr6_end_mb=round(chr6["end"].max() / 1e6, 1))
 
 
 def enc(v: np.ndarray) -> str:
@@ -121,7 +136,7 @@ def main() -> None:
     data = dict(columns=keep, rows=[[None if isinstance(v, float) and not np.isfinite(v) else
                                      (round(v, 5) if isinstance(v, float) else v) for v in r] for r in rows.iter_rows()],
                 rules=[n for _, n in rm.RULES], recall_grid=RECALL_GRID.tolist(), fpr_grid=FPR_GRID.tolist(),
-                max_abs_diff=worst, curves=curves_out)
+                max_abs_diff=worst, protein_set=protein_set(), curves=curves_out)
     args.out.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
     print(f"wrote {args.out} ({args.out.stat().st_size / 1e6:.1f} MB)", file=sys.stderr)
 
