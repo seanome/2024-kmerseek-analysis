@@ -1,0 +1,348 @@
+<title>BHF Shuffle Null</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<style>
+:root{
+  --bg:#f7f6fa; --panel:#ffffff; --ink:#1d1b24; --muted:#5f5b6b; --rule:#dedbe6; --tint:#efe9fb;
+  --bhf:#6a2fb0; --copy:#8c8a93; --band:#e3e1e8; --human:#0f7b77; --sel:#f0eaff;
+  --serif:"Source Serif 4",Georgia,serif; --sans:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark; --bg:#15131b; --panel:#1e1b26; --ink:#ecebf1; --muted:#a8a4b5; --rule:#34303f; --tint:#2a2238;
+  --bhf:#b58cf0; --copy:#8a8795; --band:#322e3c; --human:#43c1bb; --sel:#2c2340;}}
+:root[data-theme="dark"]{
+  color-scheme:dark; --bg:#15131b; --panel:#1e1b26; --ink:#ecebf1; --muted:#a8a4b5; --rule:#34303f; --tint:#2a2238;
+  --bhf:#b58cf0; --copy:#8a8795; --band:#322e3c; --human:#43c1bb; --sel:#2c2340;}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--sans)}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:28px 60px}
+h1{font:600 30px/1.2 var(--serif);margin:0 0 6px;text-wrap:balance}
+h2{font:600 20px/1.3 var(--serif);margin:0 0 8px;text-wrap:balance}
+h3{font:600 13px/1.3 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+p{margin:0 0 10px;max-width:72ch}
+.lede{color:var(--muted);max-width:80ch}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin:22px 0 18px;flex-wrap:wrap}
+.tabs button{font:500 14px var(--sans);background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+button:focus-visible,.metric:focus-visible,canvas:focus-visible{outline:2px solid var(--bhf);outline-offset:2px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px;margin:8px 0 16px}
+.metric{font:13px var(--sans);text-align:left;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--ink);display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}
+.metric .n{color:var(--muted)}
+.metric[aria-pressed="true"]{border-color:var(--ink);background:var(--tint)}
+.metric[aria-pressed="true"] .n{color:var(--ink)}
+.summary{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;margin-bottom:18px}
+.summary .big{font:600 22px/1.3 var(--serif);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.detail{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;position:relative}
+@media (min-width:901px){.detail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink);margin:0 0 8px;align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend svg{flex:none}
+.note{font-size:12.5px;color:var(--muted);margin:0 0 8px;max-width:80ch}
+.chart{position:relative;isolation:isolate}
+canvas{display:block;width:100%;cursor:pointer}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:6px 8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap;font-variant-numeric:tabular-nums;z-index:2}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:13px;font-variant-numeric:tabular-nums;margin:6px 0 12px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.aln{font:12.5px/1.45 var(--mono);white-space:pre;overflow-x:auto;background:var(--bg);border-radius:6px;padding:8px 10px;margin:6px 0 10px}
+.aln .b{color:var(--bhf)} .aln .h{color:var(--human)} .aln .c{color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th{font-weight:500;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule);padding:4px 6px}
+td{padding:3px 6px;border-bottom:1px solid var(--rule)}
+td.num{text-align:right;white-space:nowrap}
+.bar{display:inline-block;height:9px;background:var(--copy);vertical-align:middle;border-radius:1px}
+.tag{font-size:11px;border:1px solid var(--muted);border-radius:3px;padding:0 4px;margin-left:6px;color:var(--muted)}
+section{position:relative;z-index:0}
+details{margin:12px 0}
+summary{cursor:pointer;color:var(--ink);font-weight:500}
+.warn{border-left:3px solid var(--ink);padding:8px 12px;background:var(--panel);margin:0 0 14px;max-width:82ch}
+</style>
+
+<div class="wrap">
+  <h1>BHF against 300 shuffled copies of itself</h1>
+  <p class="lede">Notebook 256. BHF (<i>Botryllus</i> histocompatibility factor, <span id="bhfLen"></span> aa) and 300 shuffled copies of BHF were each searched with kmerseek against the <span id="nHuman"></span> canonical human proteins (GENCODE v49). A shuffled copy has BHF's length, its amino-acid counts and its count of every adjacent residue pair (a dipeptide shuffle), but any real match to a human protein is gone. Whatever a copy finds, BHF could find by chance.</p>
+  <p class="lede">An <b>alphabet-ksize pair</b> is one reduced amino-acid alphabet at one k-mer size, the search settings of notebook 241. Each pair ranks the human proteins under 11 ranking metrics. Pick a metric below.</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-best" aria-selected="true" aria-controls="view-best">BHF's best score against its copies</button>
+    <button role="tab" id="tab-talk" aria-selected="false" aria-controls="view-talk">The 2024 talk's hits</button>
+  </div>
+
+  <h3>Ranking metric (alphabet-ksize pairs where BHF beats 95% of its copies, of all pairs where BHF has a score)</h3>
+  <div class="metrics" id="metrics"></div>
+
+  <section id="view-best" role="tabpanel">
+    <div class="summary" id="summary"></div>
+    <div class="grid">
+      <div>
+        <h2>Best score per alphabet-ksize pair</h2>
+        <div class="legend" id="stripLegend"></div>
+        <p class="note">Each row is one alphabet-ksize pair, sorted by alphabet (bold heading), then k-mer size. A query's <b>best score</b> is the score of its top-ranked human protein. Each row has its own scale, running from the worst value in the row on the left to the best on the right<span id="logNote"></span>. Copies that hit no human protein on a pair are not drawn and count as worse than BHF. The number on the right is the share of copies at least as good as BHF, counted as (1 + copies at least as good) / 301 so it is never 0. Click a row.</p>
+        <div class="chart" id="stripBox"><canvas id="strip" tabindex="0" aria-label="Strip chart, one row per alphabet-ksize pair"></canvas><div class="tip" id="tip" hidden></div></div>
+      </div>
+      <aside class="detail" id="detail" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section id="view-talk" role="tabpanel" hidden>
+    <h2>How often the 2024 talk's human proteins reach the top 10</h2>
+    <div class="warn">The 2024 Evolgenome talk named <span id="talkGenes"></span> as BHF hits. That list was picked from BHF's own best hits in a k-mer search. Any query's own best hits come back when it is searched again and not when it is shuffled, so BHF beating its copies here is expected. It shows these hits depend on the order of BHF's residues, not that they are homologs.</div>
+    <div class="legend" id="talkLegend"></div>
+    <p class="note">For each metric: the share of alphabet-ksize pairs where at least one of these proteins ranks in the query's top 10. Tied proteins take their best rank, for BHF and copies alike. The number on the right is the share of copies at least as high as BHF, (1 + copies) / 301. The selected metric is in bold.</p>
+    <div class="chart" style="overflow-x:auto"><svg id="talkSvg" role="img" aria-label="BHF against copies, 2024 talk hits in the top 10"></svg></div>
+    <div id="talkTable" style="overflow-x:auto;margin-top:14px"></div>
+  </section>
+
+  <p class="note" style="margin-top:28px">Source: branch olgabot/bhf-dipeptide-shuffle-null, notebooks/256_explorer_data.py, which calls best_score_p, talk_in_top, talk_summary, bhf_best_regions and with_human_region from notebooks/bhf_shuffle_null_utils.py. kmerseek 0.4.0 (982a055). Region coordinates come from notebook 241's regions.parquet.</p>
+</div>
+
+<script>
+const D = /*DATA*/null;
+const $ = s => document.querySelector(s);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const LOG = m => m.lower_is_better;   // E-value and the p-values drawn on a log scale
+const fmt = (v, m) => {
+  if (v === null || v === undefined) return "no hit";
+  if (m && m.lower_is_better) return v === 0 ? "0" : (Math.abs(v) < 1e-3 || v >= 1e4 ? v.toExponential(2) : +v.toPrecision(3) + "");
+  return Math.abs(v) >= 1e4 ? v.toExponential(2) : +v.toPrecision(4) + "";
+};
+const fmtP = p => p.toFixed(3);
+const PASS = 0.05;
+
+let state = { metric: 0, pair: null, tab: "best" };
+try { const s = JSON.parse(localStorage.getItem("bhf256") || "{}"); if (s.metric != null && D.metrics[s.metric]) state.metric = s.metric; if (s.tab) state.tab = s.tab; } catch (e) {}
+const save = () => { try { localStorage.setItem("bhf256", JSON.stringify({ metric: state.metric, tab: state.tab })); } catch (e) {} };
+
+$("#bhfLen").textContent = D.bhf_length;
+$("#nHuman").textContent = D.n_human.toLocaleString("en-US").replace(/,/g, "_");
+$("#talkGenes").textContent = D.talk_genes.join(", ");
+
+/* ---------- metric buttons ---------- */
+function drawMetrics() {
+  const box = $("#metrics"); box.innerHTML = "";
+  D.metrics.forEach((m, i) => {
+    const b = document.createElement("button");
+    b.className = "metric"; b.id = "metric-" + i; b.setAttribute("aria-pressed", i === state.metric);
+    b.innerHTML = `<span>${m.name}</span><span class="n">${m.summary.n_pairs_p_le_0_05} of ${m.summary.n_pairs}</span>`;
+    b.onclick = () => { state.metric = i; state.pair = null; save(); render(); };
+    box.appendChild(b);
+  });
+}
+
+/* ---------- legend swatches ---------- */
+const sw = {
+  copy: () => `<svg width="12" height="12"><circle cx="6" cy="6" r="3" fill="${css('--copy')}" fill-opacity=".7"/></svg>`,
+  bhf: () => `<svg width="14" height="14"><path d="M7 1 L13 7 L7 13 L1 7Z" fill="${css('--bhf')}"/></svg>`,
+  pass: () => `<svg width="12" height="12"><rect x="2" y="2" width="8" height="8" fill="${css('--ink')}"/></svg>`,
+  band: () => `<svg width="22" height="12"><rect x="0" y="1" width="22" height="10" fill="${css('--band')}"/></svg>`,
+  bline: () => `<svg width="30" height="12"><line x1="0" y1="6" x2="30" y2="6" stroke="${css('--ink')}" stroke-width="2"/></svg>`,
+  bbox: () => `<svg width="22" height="12"><rect x="1" y="1" width="20" height="10" fill="${css('--bhf')}" fill-opacity=".3" stroke="${css('--bhf')}"/></svg>`,
+  hbox: () => `<svg width="22" height="12"><rect x="1" y="1" width="20" height="10" fill="${css('--human')}" fill-opacity=".3" stroke="${css('--human')}"/></svg>`,
+};
+
+/* ---------- summary ---------- */
+function drawSummary() {
+  const m = D.metrics[state.metric], S = m.summary, n = S.n_pairs;
+  const ev = D.metrics.find(x => x.name === "E-value").summary.n_pairs, all = Math.max(...D.metrics.map(x => x.summary.n_pairs));
+  $("#summary").innerHTML =
+    `<div class="big">${m.name}: BHF beats at least 95% of its copies at ${S.n_pairs_p_le_0_05} of ${n} alphabet-ksize pairs. Chance alone gives ${S.expected_by_chance} (5% of ${n}).</div>` +
+    `<p class="note" style="margin:6px 0 0">"Beats at least 95% of its copies" means the share of copies at least as good as BHF is 0.05 or less. ${m.lower_is_better ? "Lower is better for this metric." : "Higher is better for this metric."} ${n === ev && n < all ? `BHF hit something at ${all} alphabet-ksize pairs, but kmerseek fitted an E-value scale at only ${ev} of them, so ${m.name} exists only there.` : ""}</p>`;
+}
+
+/* ---------- strip chart ---------- */
+let rows = [], geo = {};
+function tval(v, m) { return LOG(m) ? -Math.log10(Math.max(v, 1e-300)) : v; }
+function drawStrip() {
+  const m = D.metrics[state.metric];
+  $("#logNote").textContent = LOG(m) ? " (log scale; better means smaller for " + m.name + ")" : "";
+  $("#stripLegend").innerHTML =
+    `<span>${sw.copy()} one shuffled copy's best score</span><span>${sw.bhf()} BHF's best score</span><span>${sw.pass()} BHF beats at least 95% of its copies</span>`;
+  rows = m.pairs;
+  const cv = $("#strip"), W = $("#stripBox").clientWidth, narrow = W < 560;
+  const RH = 16, GH = 20, TOP = 22;
+  // one heading row per alphabet, then one row per k
+  const ys = []; let yy = TOP, prev = null;
+  rows.forEach((p, i) => { if (p.alphabet !== prev) { yy += GH; prev = p.alphabet; } ys.push(yy); yy += RH; });
+  const H = yy + 8;
+  const L = 46, R = narrow ? 58 : 150, x0 = L + 8, x1 = W - R - 10;
+  geo = { RH, TOP, L, R, x0, x1, W, narrow, ys };
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px";
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
+  const ink = css("--ink"), muted = css("--muted"), rule = css("--rule"), copy = css("--copy"), bhf = css("--bhf"), sel = css("--sel");
+  c.font = "600 11px " + css("--sans"); c.fillStyle = muted; c.textBaseline = "middle";
+  c.textAlign = "left"; c.fillText("k-mer size", 4, 10);
+  c.textAlign = "center"; c.fillText("worse  ←   best score   →  better", (x0 + x1) / 2, 10);
+  c.textAlign = "right"; c.fillText(narrow ? "share" : "copies as good · share", W - 4, 10);
+  let prevA = null;
+  rows.forEach((p, i) => {
+    const y = ys[i], cy = y + RH / 2;
+    if (p.alphabet !== prevA) {
+      if (i > 0) { c.strokeStyle = rule; c.lineWidth = 1; c.beginPath(); c.moveTo(0, y - GH + 3.5); c.lineTo(W, y - GH + 3.5); c.stroke(); }
+      c.font = "600 12px " + css("--sans"); c.textAlign = "left"; c.fillStyle = ink; c.fillText(p.alphabet, 4, y - GH / 2 + 3);
+    }
+    if (state.pair === i) { c.fillStyle = sel; c.fillRect(0, y, W, RH); }
+    c.font = "11.5px " + css("--sans");
+    c.textAlign = "right"; c.fillStyle = muted; c.fillText("k " + p.k, L, cy);
+    prevA = p.alphabet;
+    c.strokeStyle = rule; c.beginPath(); c.moveTo(x0, cy + .5); c.lineTo(x1, cy + .5); c.stroke();
+    const vals = p.copies.filter(v => v !== null).map(v => tval(v, m));
+    const tb = tval(p.bhf, m);
+    let lo = Math.min(tb, ...vals), hi = Math.max(tb, ...vals); if (hi === lo) { lo -= 1; hi += 1; }
+    const X = t => x0 + (t - lo) / (hi - lo) * (x1 - x0);
+    c.fillStyle = copy; c.globalAlpha = .45;
+    p.copies.forEach((v, j) => { if (v === null) return; const jy = ((j * 7919) % 9) - 4; c.beginPath(); c.arc(X(tval(v, m)), cy + jy * .9, 2, 0, 7); c.fill(); });
+    c.globalAlpha = 1;
+    const bx = X(tb); c.fillStyle = bhf; c.strokeStyle = css("--panel"); c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(bx, cy - 6); c.lineTo(bx + 6, cy); c.lineTo(bx, cy + 6); c.lineTo(bx - 6, cy); c.closePath(); c.fill(); c.stroke();
+    const pass = p.p <= PASS;
+    c.textAlign = "right"; c.fillStyle = ink; c.font = (pass ? "600 " : "") + "11.5px " + css("--sans");
+    c.fillText(narrow ? fmtP(p.p) : `${p.n_as_good} of ${p.n_copies} · ${fmtP(p.p)}`, W - 16, cy);
+    if (pass) { c.fillStyle = ink; c.fillRect(W - 11, cy - 4, 8, 8); }
+  });
+}
+function rowAt(ev) {
+  const r = $("#strip").getBoundingClientRect(), y = ev.clientY - r.top;
+  const i = geo.ys.findIndex(t => y >= t && y < t + geo.RH);
+  return i >= 0 ? { i, x: ev.clientX - r.left, y } : null;
+}
+$("#strip").addEventListener("click", ev => { const h = rowAt(ev); if (h) { state.pair = h.i; drawStrip(); drawDetail(); if (innerWidth <= 900) $("#detail").scrollIntoView({ behavior: "smooth", block: "start" }); } });
+$("#strip").addEventListener("mousemove", ev => {
+  const h = rowAt(ev), tip = $("#tip");
+  if (!h) { tip.hidden = true; return; }
+  const m = D.metrics[state.metric], p = rows[h.i];
+  const s = p.copies.filter(v => v !== null).sort((a, b) => a - b), med = s.length ? s[Math.floor((s.length - 1) / 2)] : null;
+  tip.innerHTML = `<b>${p.alphabet}, k ${p.k}</b><br>BHF ${fmt(p.bhf, m)} (${p.bhf_top_gene})<br>copies: ${p.n_as_good} of ${p.n_copies} at least as good; ${p.n_copies_no_hit} hit nothing<br>share at least as good: ${fmtP(p.p)}`;
+  tip.hidden = false;
+  const bw = $("#stripBox").clientWidth, tw = tip.offsetWidth;
+  tip.style.left = Math.min(Math.max(h.x + 12, 0), bw - tw - 4) + "px"; tip.style.top = (h.y + 14) + "px";
+});
+$("#strip").addEventListener("mouseleave", () => $("#tip").hidden = true);
+$("#strip").addEventListener("keydown", ev => {
+  if (ev.key !== "ArrowDown" && ev.key !== "ArrowUp") return; ev.preventDefault();
+  const n = rows.length; state.pair = state.pair == null ? 0 : Math.min(n - 1, Math.max(0, state.pair + (ev.key === "ArrowDown" ? 1 : -1)));
+  drawStrip(); drawDetail();
+});
+
+/* ---------- detail panel ---------- */
+function groupOf(alpha) { const g = {}; (D.clusters[alpha] || []).forEach((s, i) => [...s].forEach(a => g[a] = i)); return g; }
+function drawDetail() {
+  const m = D.metrics[state.metric], el = $("#detail");
+  if (state.pair == null) {
+    const best = m.pairs.reduce((a, p, i) => p.p < m.pairs[a].p ? i : a, 0);
+    el.innerHTML = `<h2>Click an alphabet-ksize pair</h2><p class="note">The panel shows where on BHF its best match sits, the BHF and human residues of that region, and BHF's top 10 human proteins. Under ${m.name}, the pair with the smallest share of copies at least as good is ${m.pairs[best].alphabet}, k ${m.pairs[best].k} (${fmtP(m.pairs[best].p)}).</p>`;
+    return;
+  }
+  const p = m.pairs[state.pair], r = p.region;
+  let h = `<h2>${p.alphabet}, k ${p.k} · ${m.name}</h2>`;
+  h += `<dl class="kv"><dt>BHF's best score</dt><dd>${fmt(p.bhf, m)}, against ${p.bhf_top_gene}${p.bhf_n_tied > 1 ? ` (${p.bhf_n_tied} proteins tie for this score)` : ""}</dd>
+    <dt>copies at least as good</dt><dd>${p.n_as_good} of ${p.n_copies}; share (1 + ${p.n_as_good}) / 301 = ${fmtP(p.p)}${p.p <= PASS ? " <b>(BHF beats at least 95% of its copies)</b>" : ""}</dd>
+    <dt>copies that hit nothing</dt><dd>${p.n_copies_no_hit} of ${p.n_copies}</dd>
+    <dt>human proteins BHF hit</dt><dd>${p.bhf_n_hit.toLocaleString("en-US").replace(/,/g, "_")}</dd></dl>`;
+  if (r) {
+    h += `<h3>Where BHF's best region sits</h3>`;
+    h += `<div class="legend"><span>${sw.bline()} protein, drawn to its own length</span><span>${sw.bbox()} BHF's best region</span><span>${sw.hbox()} the matching region of ${r.gene}</span></div>`;
+    h += proteinSvg(r);
+    if (["containment", "protein enrichment", "protein Poisson p-value"].includes(m.name))
+      h += `<p class="note">${m.name} scores the whole human protein, so every region of ${r.gene} has the same score. The region shown is the first one along BHF.</p>`;
+    h += `<h3>Residues</h3>` + alignment(r, p.alphabet);
+  }
+  h += `<h3>BHF's top ${Math.min(D.top, p.top10.length)} human proteins</h3>`;
+  if (p.top10.length < D.top) h += `<p class="note">BHF hit only ${p.top10.length} human protein${p.top10.length === 1 ? "" : "s"} at this pair.</p>`;
+  h += `<p class="note">Next to each: how many of the ${D.n_copies} copies also have that protein in their own top 10 here. A protein that many copies also find comes to the top for any sequence with BHF's make-up. <span class="tag" style="margin:0">2024 talk</span> marks the talk's proteins.</p>`;
+  h += `<div style="overflow-x:auto"><table><thead><tr><th>rank</th><th>human protein</th><th colspan="2">copies with it in their top 10</th></tr></thead><tbody>`;
+  p.top10.forEach(([g, n], i) => {
+    h += `<tr><td class="num">${i + 1}</td><td>${g}${D.talk_genes.includes(g) ? '<span class="tag">2024 talk</span>' : ""}</td><td class="num">${n} of ${D.n_copies}</td><td style="width:40%"><span class="bar" style="width:${(100 * n / D.n_copies).toFixed(1)}%"></span></td></tr>`;
+  });
+  h += `</tbody></table></div>`;
+  el.innerHTML = h;
+}
+function proteinSvg(r) {
+  const W = Math.max(280, $("#detail").clientWidth - 34), L = 12, Rm = 12, w = W - L - Rm;
+  const rowsP = [
+    { name: "BHF", len: D.bhf_length, a: r.start, b: r.end, col: css("--bhf") },
+    { name: r.gene, len: r.human_length, a: r.human_start, b: r.human_end, col: css("--human") },
+  ];
+  let s = `<svg width="${W}" height="${rowsP.length * 58}" style="max-width:100%;display:block;margin-bottom:8px" font-family="${css('--sans')}" font-size="11">`;
+  rowsP.forEach((q, i) => {
+    const y = i * 58 + 24, X = v => L + v / q.len * w;
+    s += `<text x="${L}" y="${y - 13}" fill="${css('--ink')}" font-weight="600">${q.name}, ${q.len.toLocaleString("en-US").replace(/,/g, "_")} aa</text>`;
+    s += `<line x1="${L}" x2="${L + w}" y1="${y}" y2="${y}" stroke="${css('--ink')}" stroke-width="2"/>`;
+    const bx = X(q.a), bw = Math.max(3, X(q.b) - X(q.a));
+    s += `<rect x="${bx}" y="${y - 7}" width="${bw}" height="14" fill="${q.col}" fill-opacity=".3" stroke="${q.col}"/>`;
+    const lab = `${q.a + 1}-${q.b}`, lx = Math.min(Math.max(bx + bw / 2, L + 20), L + w - 20);
+    s += `<text x="${lx}" y="${y + 20}" text-anchor="middle" fill="${css('--ink')}">${lab}</text>`;
+    s += `<text x="${L}" y="${y + 20}" fill="${css('--muted')}">1</text><text x="${L + w}" y="${y + 20}" text-anchor="end" fill="${css('--muted')}">${q.len}</text>`;
+  });
+  return s + `</svg>`;
+}
+function alignment(r, alpha) {
+  const a = r.bhf_seq, b = r.human_seq || "", g = groupOf(alpha), n = a.length;
+  let id = 0, grp = 0, line = "";
+  for (let i = 0; i < n; i++) {
+    if (a[i] === b[i]) { id++; line += "|"; }
+    else if (g[a[i]] !== undefined && g[a[i]] === g[b[i]]) { grp++; line += "+"; }
+    else line += " ";
+  }
+  const lab1 = "BHF", lab2 = r.gene.length > 9 ? r.gene.slice(0, 9) : r.gene, pad = Math.max(lab1.length, lab2.length) + 1;
+  const c = 50, nw = String(Math.max(r.end, r.human_end)).length;
+  let out = "";
+  for (let i = 0; i < n; i += c) {
+    const s1 = a.slice(i, i + c), s2 = b.slice(i, i + c), ml = line.slice(i, i + c);
+    const aStart = r.start + i + 1, aEnd = r.start + i + s1.length, hStart = r.human_start + i + 1, hEnd = r.human_start + i + s2.length;
+    out += `<span class="b">${lab1.padEnd(pad)}${String(aStart).padStart(nw)} ${s1} ${aEnd}</span>\n`;
+    out += `<span class="c">${"".padEnd(pad)}${"".padStart(nw)} ${ml}</span>\n`;
+    out += `<span class="h">${lab2.padEnd(pad)}${String(hStart).padStart(nw)} ${s2} ${hEnd}</span>\n`;
+    if (i + c < n) out += "\n";
+  }
+  const cls = (D.clusters[alpha] || []).length;
+  return `<p class="note">BHF ${r.start + 1}-${r.end} against ${r.gene} ${r.human_start + 1}-${r.human_end}, ${n} residues, no gaps (kmerseek regions are ungapped). <b>|</b> same residue: ${id} of ${n}. <b>+</b> different residue, same letter in ${alpha} (${cls} letters): ${grp} of ${n}.</p><div class="aln">${out}</div>`;
+}
+
+/* ---------- 2024 talk view ---------- */
+function drawTalk() {
+  $("#talkLegend").innerHTML = `<span>${sw.band()} middle 95% of the 300 copies</span><span>${sw.copy()} one shuffled copy</span><span>${sw.bhf()} BHF</span>`;
+  const ms = D.metrics.filter(m => m.talk);
+  const W = Math.max(560, $("#view-talk").clientWidth), L = 210, R = 90, RH = 30, TOP = 24, H = TOP + ms.length * RH + 44;
+  let mx = 0; ms.forEach(m => { mx = Math.max(mx, m.talk.bhf_pct, ...m.talk.copies_pct); });
+  mx = Math.ceil(mx / 5) * 5;
+  const X = v => L + v / mx * (W - L - R);
+  const ink = css("--ink"), muted = css("--muted"), rule = css("--rule");
+  let s = "";
+  for (let t = 0; t <= mx; t += 5) s += `<line x1="${X(t)}" x2="${X(t)}" y1="${TOP}" y2="${TOP + ms.length * RH}" stroke="${rule}"/><text x="${X(t)}" y="${TOP + ms.length * RH + 14}" text-anchor="middle" fill="${muted}" font-size="11">${t}%</text>`;
+  s += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle" fill="${ink}" font-size="12">% of alphabet-ksize pairs with one of the talk's proteins in the top 10</text>`;
+  ms.forEach((m, i) => {
+    const t = m.talk, y = TOP + i * RH + RH / 2, selm = D.metrics.indexOf(m) === state.metric;
+    s += `<rect x="${X(t.copies_p2_5)}" y="${y - 10}" width="${Math.max(1, X(t.copies_p97_5) - X(t.copies_p2_5))}" height="20" fill="${css('--band')}"/>`;
+    t.copies_pct.forEach((v, j) => { const jy = ((j * 7919) % 13) - 6; s += `<circle cx="${X(v)}" cy="${y + jy}" r="2" fill="${css('--copy')}" fill-opacity=".45"/>`; });
+    const bx = X(t.bhf_pct);
+    s += `<path d="M${bx} ${y - 7}L${bx + 7} ${y}L${bx} ${y + 7}L${bx - 7} ${y}Z" fill="${css('--bhf')}" stroke="${css('--panel')}"/>`;
+    s += `<text x="${L - 8}" y="${y + 4}" text-anchor="end" fill="${ink}" font-size="12" font-weight="${selm ? 700 : 400}">${m.name} (${t.n_pairs} pairs)</text>`;
+    s += `<text x="${W - R + 8}" y="${y + 4}" fill="${ink}" font-size="12" font-weight="${selm ? 700 : 400}">${t.p.toFixed(3)}</text>`;
+  });
+  s += `<text x="${W - R + 8}" y="${TOP - 8}" fill="${muted}" font-size="11">share ≥ BHF</text>`;
+  const svg = $("#talkSvg"); svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("font-family", css("--sans")); svg.innerHTML = s;
+  let tb = `<table><thead><tr><th>metric</th><th class="num">pairs</th><th class="num">BHF: pairs with a talk protein in the top 10</th><th class="num">copies: median</th><th class="num">copies: middle 95%</th><th class="num">share of copies ≥ BHF</th></tr></thead><tbody>`;
+  ms.forEach(m => { const t = m.talk, selm = D.metrics.indexOf(m) === state.metric;
+    tb += `<tr style="${selm ? "font-weight:600" : ""}"><td>${m.name}</td><td class="num">${t.n_pairs}</td><td class="num">${t.bhf_n_top} (${t.bhf_pct}%)</td><td class="num">${t.copies_median_pct}%</td><td class="num">${t.copies_p2_5}-${t.copies_p97_5}%</td><td class="num">${t.p.toFixed(3)}</td></tr>`; });
+  $("#talkTable").innerHTML = tb + `</tbody></table>`;
+}
+
+/* ---------- tabs and render ---------- */
+function render() {
+  drawMetrics();
+  const best = state.tab === "best";
+  $("#tab-best").setAttribute("aria-selected", best); $("#tab-talk").setAttribute("aria-selected", !best);
+  $("#view-best").hidden = !best; $("#view-talk").hidden = best;
+  if (best) { drawSummary(); drawStrip(); drawDetail(); } else drawTalk();
+}
+$("#tab-best").onclick = () => { state.tab = "best"; save(); render(); };
+$("#tab-talk").onclick = () => { state.tab = "talk"; save(); render(); };
+if (location.hash === "#talk") state.tab = "talk";
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+document.fonts && document.fonts.ready.then(render);
+render();
+</script>
