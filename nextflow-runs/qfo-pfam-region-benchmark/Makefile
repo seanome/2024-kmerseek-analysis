@@ -2830,11 +2830,17 @@ M04_TARGETS ?= $(MIDI_PLUS_TARGETS)
 M04_CONF    ?= ../conf/midi_plus_04_extend.config
 M04_QFO      = $(if $(filter decoy,$(M04_RUN)),../data/midi-plus-decoy/qfo,../data/midi-plus/qfo)
 M04_OUTDIR   = ../data/midi-plus-0.4-extend$(if $(filter decoy,$(M04_RUN)),-decoy,)/results
-# Shuffled queries have no structures, no truth and nothing to score: kmerseek only.
-M04_SKIP     = $(if $(filter decoy,$(M04_RUN)),--skip_baselines true --skip_foldseek true \
-               --skip_folddisco true --skip_reseek true --skip_prostt5 true --skip_hhblits true \
-               --skip_identity true --skip_metapredict true --skip_multiqc true \
-               --skip_scoring true --run_hmmscan false,)
+# kmerseek only, in both runs. Only the comparison tools' DATABASES are on storeDir in
+# ../results; their searches (phmmer, jackhmmer, MMseqs2, HHblits, Foldseek, Reseek,
+# Folddisco) are reused only through a run directory's own work cache, which a new run
+# directory does not have. Left on, they would all run again (HHblits alone ~555 CPU-hours,
+# measured above). Their 0.3 results are in data/midi-plus/results and do not depend on the
+# kmerseek version. Shuffled queries additionally have no truth: no identity, disorder,
+# scoring, hmmscan ceiling or report.
+M04_SKIP     = --skip_baselines true --skip_foldseek true --skip_folddisco true \
+               --skip_reseek true --skip_prostt5 true --skip_hhblits true \
+               $(if $(filter decoy,$(M04_RUN)),--skip_identity true --skip_metapredict true \
+               --skip_multiqc true --skip_scoring true --run_hmmscan false,)
 
 .PHONY: midi-plus-decoy-testset run-midi-plus-0.4-extend
 
