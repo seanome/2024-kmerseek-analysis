@@ -1,0 +1,327 @@
+alphabet,ksize,bits,kmer_letters,p66_start_uniprot,p66_end_uniprot,p66_start_mature,p66_end_mature,cd47_start_uniprot,cd47_end_uniprot,cd47_start_mature,cd47_end_mature,p66_residues,cd47_residues,n_identical_residues,overlaps_p66_loop,n_p66_loop_residues_covered,overlaps_cd47_contact_span,n_cd47_contact_residues_covered,cd47_feature_hit
+dayhoff6,7,15.97,decebce,106,112,85,91,85,91,67,73,KIDVGDI,KIEVSQL,3,false,0,false,0,Disulfide bond
+dayhoff6,7,15.97,bbccdbe,155,161,134,140,293,299,275,281,PSNDRAV,ASNQKTI,2,false,0,false,0,Alternative sequence: in isoform OA3-293
+dayhoff6,7,15.97,bedbbee,160,166,139,145,265,271,247,253,AVRGTIL,PMHGPLL,2,false,0,false,0,Topological domain: Extracellular
+dayhoff6,7,15.97,ebbcfbe,317,323,296,302,198,204,180,186,MGTDFGI,VPGEYSL,0,false,0,false,0,Beta strand
+dayhoff6,7,15.97,ebdbbcf,336,342,315,321,106,112,88,94,ISKAANF,VSHTGNY,2,false,0,false,0,Helix
+dayhoff6,7,15.97,ebbfeeb,547,553,526,532,234,240,216,222,IGAYILG,LTSFVIA,0,false,0,false,0,Topological domain: Cytoplasmic
+funcgroups8,6,16.37,ggkgdg,94,99,73,78,91,96,73,78,ALKAEG,LLKGDA,2,false,0,false,0,Helix
+funcgroups8,6,16.37,gsgngg,175,180,154,159,16,21,-2,3,GTIQLG,GSAQLL,3,false,0,false,0,Signal
+funcgroups8,6,16.37,sgnggf,176,181,155,160,17,22,-1,4,TIQLGY,SAQLLF,2,false,0,false,0,Signal
+funcgroups8,6,16.37,sfgggg,189,194,168,173,236,241,218,223,TFAIGG,SFVIAI,2,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,ggggsg,191,196,170,175,8,13,-10,-5,AIGGTG,LLLGSA,1,false,0,false,0,Signal
+funcgroups8,6,16.37,ggggsg,191,196,170,175,183,188,165,170,AIGGTG,GLVITV,1,false,0,false,0,Helix
+funcgroups8,6,16.37,ggggsg,191,196,170,175,253,258,235,240,AIGGTG,VVGLSL,1,false,0,false,0,Helix
+funcgroups8,6,16.37,ngggfg,215,220,194,199,245,250,227,232,QGILYG,QVIAYI,3,false,0,false,0,Helix
+funcgroups8,6,16.37,gggfgg,216,221,195,200,246,251,228,233,GILYGI,VIAYIL,2,false,0,false,0,Helix
+funcgroups8,6,16.37,dksggg,273,278,252,257,174,179,156,161,DKSVVG,EKTIAL,1,false,0,false,0,Topological domain: Cytoplasmic
+funcgroups8,6,16.37,dggsws,280,285,259,264,104,109,86,91,DLLSPT,DAVSHT,3,false,0,false,0,Helix
+funcgroups8,6,16.37,ggswsg,281,286,260,265,105,110,87,92,LLSPTL,AVSHTG,2,false,0,false,0,Helix
+funcgroups8,6,16.37,sggggs,289,294,268,273,230,235,212,217,SAILAS,TAIGLT,2,false,0,false,0,Topological domain: Cytoplasmic
+funcgroups8,6,16.37,gkfkgg,297,302,276,281,129,134,111,116,AKYKLG,LKYRVV,2,false,0,false,0,Beta strand
+funcgroups8,6,16.37,gfssgg,375,380,354,359,227,232,209,214,AFSTGA,VFSTAI,3,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,sggsgg,378,383,357,362,273,278,255,260,TGASIG,SGLSIL,3,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,ksgggg,415,420,394,399,175,180,157,162,KSGVAL,KTIALL,2,false,0,false,0,Topological domain: Cytoplasmic
+funcgroups8,6,16.37,sggggg,416,421,395,400,176,181,158,163,SGVALG,TIALLV,1,false,0,false,0,Topological domain: Cytoplasmic
+funcgroups8,6,16.37,sggggg,416,421,395,400,187,192,169,174,SGVALG,TVIVIV,0,false,0,false,0,Helix
+funcgroups8,6,16.37,sggggg,416,421,395,400,208,213,190,195,SGVALG,TGLGLI,2,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,sggggg,416,421,395,400,217,222,199,204,SGVALG,TGILIL,1,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,sggggg,416,421,395,400,276,281,258,263,SGVALG,SILALA,3,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,gggggg,417,422,396,401,4,9,-14,-9,GVALGI,LVAALL,2,false,0,false,0,Signal
+funcgroups8,6,16.37,gggggg,417,422,396,401,5,10,-13,-8,GVALGI,VAALLL,2,false,0,false,0,Signal
+funcgroups8,6,16.37,gggggg,417,422,396,401,6,11,-12,-7,GVALGI,AALLLG,1,false,0,false,0,Signal
+funcgroups8,6,16.37,gggggg,417,422,396,401,177,182,159,164,GVALGI,IALLVA,1,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,gggggg,417,422,396,401,178,183,160,165,GVALGI,ALLVAG,0,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,179,184,161,166,GVALGI,LLVAGL,1,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,180,185,162,167,GVALGI,LVAGLV,2,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,181,186,163,168,GVALGI,VAGLVI,2,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,188,193,170,175,GVALGI,VIVIVG,0,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,189,194,171,176,GVALGI,IVIVGA,2,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,190,195,172,177,GVALGI,VIVGAI,1,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,191,196,173,178,GVALGI,IVGAIL,1,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,209,214,191,196,GVALGI,GLGLIV,2,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,gggggg,417,422,396,401,218,223,200,205,GVALGI,GILILL,1,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,gggggg,417,422,396,401,238,243,220,225,GVALGI,VIAILV,1,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,239,244,221,226,GVALGI,IAILVI,2,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,250,255,232,237,GVALGI,ILAVVG,1,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggg,417,422,396,401,251,256,233,238,GVALGI,LAVVGL,1,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggs,418,423,397,402,7,12,-11,-6,VALGIS,ALLLGS,2,false,0,false,0,Signal
+funcgroups8,6,16.37,gggggs,418,423,397,402,182,187,164,169,VALGIS,AGLVIT,2,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggs,418,423,397,402,210,215,192,197,VALGIS,LGLIVT,1,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,gggggs,418,423,397,402,252,257,234,239,VALGIS,AVVGLS,2,false,0,false,0,Helix
+funcgroups8,6,16.37,gggngg,462,467,441,446,242,247,224,229,GIINGL,LVIQVI,1,false,0,false,0,Helix
+funcgroups8,6,16.37,gggngg,462,467,441,446,279,284,261,266,GIINGL,ALAQLL,1,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,ggnggg,463,468,442,447,243,248,225,230,IINGLG,VIQVIA,1,false,0,false,0,Helix
+funcgroups8,6,16.37,ggnggg,463,468,442,447,280,285,262,267,IINGLG,LAQLLG,2,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,gggggf,522,527,501,506,143,148,125,130,LGLALY,ILIVIF,0,false,0,false,0,Turn
+funcgroups8,6,16.37,gggggf,522,527,501,506,192,197,174,179,LGLALY,VGAILF,2,false,0,false,0,Helix
+funcgroups8,6,16.37,gggggf,522,527,501,506,283,288,265,270,LGLALY,LLGLVY,2,false,0,false,0,Transmembrane: Helical
+funcgroups8,6,16.37,ggggfg,523,528,502,507,193,198,175,180,GLALYL,GAILFV,2,false,0,false,0,Helix
+funcgroups8,6,16.37,ssdgfg,538,543,517,522,51,56,33,38,STEAYV,TTEVYV,4,false,0,false,0,Helix
+funcgroups8,6,16.37,gggfgg,547,552,526,531,246,251,228,233,IGAYIL,VIAYIL,4,false,0,false,0,Helix
+funcgroups8,6,16.37,ggfggg,548,553,527,532,247,252,229,234,GAYILG,IAYILA,4,false,0,false,0,Helix
+funcgroups8,6,16.37,ggggsg,602,607,581,586,8,13,-10,-5,AAIGSA,LLLGSA,3,false,0,false,0,Signal
+funcgroups8,6,16.37,ggggsg,602,607,581,586,183,188,165,170,AAIGSA,GLVITV,0,false,0,false,0,Helix
+funcgroups8,6,16.37,ggggsg,602,607,581,586,253,258,235,240,AAIGSA,VVGLSL,1,false,0,false,0,Helix
+funcgroups8,7,19.1,gsgnggf,175,181,154,160,16,22,-2,4,GTIQLGY,GSAQLLF,3,false,0,false,0,Signal
+funcgroups8,7,19.1,ngggfgg,215,221,194,200,245,251,227,233,QGILYGI,QVIAYIL,3,false,0,false,0,Helix
+funcgroups8,7,19.1,dggswsg,280,286,259,265,104,110,86,92,DLLSPTL,DAVSHTG,3,false,0,false,0,Helix
+funcgroups8,7,19.1,ksggggg,415,421,394,400,175,181,157,163,KSGVALG,KTIALLV,2,false,0,false,0,Topological domain: Cytoplasmic
+funcgroups8,7,19.1,sgggggg,416,422,395,401,176,182,158,164,SGVALGI,TIALLVA,1,false,0,false,0,Topological domain: Cytoplasmic
+funcgroups8,7,19.1,sgggggg,416,422,395,401,187,193,169,175,SGVALGI,TVIVIVG,0,false,0,false,0,Helix
+funcgroups8,7,19.1,sgggggg,416,422,395,401,208,214,190,196,SGVALGI,TGLGLIV,2,false,0,false,0,Transmembrane: Helical
+funcgroups8,7,19.1,sgggggg,416,422,395,401,217,223,199,205,SGVALGI,TGILILL,1,false,0,false,0,Transmembrane: Helical
+funcgroups8,7,19.1,ggggggs,417,423,396,402,6,12,-12,-6,GVALGIS,AALLLGS,2,false,0,false,0,Signal
+funcgroups8,7,19.1,ggggggs,417,423,396,402,181,187,163,169,GVALGIS,VAGLVIT,2,false,0,false,0,Helix
+funcgroups8,7,19.1,ggggggs,417,423,396,402,209,215,191,197,GVALGIS,GLGLIVT,2,false,0,false,0,Transmembrane: Helical
+funcgroups8,7,19.1,ggggggs,417,423,396,402,251,257,233,239,GVALGIS,LAVVGLS,2,false,0,false,0,Helix
+funcgroups8,7,19.1,gggnggg,462,468,441,447,242,248,224,230,GIINGLG,LVIQVIA,1,false,0,false,0,Helix
+funcgroups8,7,19.1,gggnggg,462,468,441,447,279,285,261,267,GIINGLG,ALAQLLG,2,false,0,false,0,Transmembrane: Helical
+funcgroups8,7,19.1,gggggfg,522,528,501,507,192,198,174,180,LGLALYL,VGAILFV,2,false,0,false,0,Helix
+funcgroups8,7,19.1,gggfggg,547,553,526,532,246,252,228,234,IGAYILG,VIAYILA,4,false,0,false,0,Helix
+gbmr4,10,15.28,yaaaaayaya,42,51,21,30,22,31,4,13,FENTSEFRLD,FNKTKSVEFT,2,false,0,false,0,Domain: Ig-like V-type
+gbmr4,10,15.28,yaaaaayaya,42,51,21,30,100,109,82,91,FENTSEFRLD,MDKSDAVSHT,0,false,0,false,0,Beta strand
+gbmr4,10,15.28,aaaaayayay,43,52,22,31,23,32,5,14,ENTSEFRLDM,NKTKSVEFTF,1,false,0,false,0,Glycosylation: N-linked (GlcNAc...) asparagine
+gbmr4,10,15.28,yaaaaayaya,59,68,38,47,22,31,4,13,FENKSKITIK,FNKTKSVEFT,1,false,0,false,0,Domain: Ig-like V-type
+gbmr4,10,15.28,yaaaaayaya,59,68,38,47,100,109,82,91,FENKSKITIK,MDKSDAVSHT,0,false,0,false,0,Beta strand
+gbmr4,10,15.28,aaaaayayay,60,69,39,48,23,32,5,14,ENKSKITIKL,NKTKSVEFTF,0,false,0,false,0,Glycosylation: N-linked (GlcNAc...) asparagine
+gbmr4,10,15.28,yayyayyyay,116,125,95,104,244,253,226,235,INMYDFFIKI,IQVIAYILAV,1,false,0,false,0,Helix
+gbmr4,10,15.28,aayaaaayay,260,269,239,248,79,88,61,70,ETFNNSSITY,TDFSSAKIEV,2,false,0,false,0,Helix
+gbmr4,10,15.28,ayaaaayaya,261,270,240,249,80,89,62,71,TFNNSSITYS,DFSSAKIEVS,3,false,0,false,0,Helix
+gbmr4,10,15.28,aayayaaaaa,362,371,341,350,96,105,78,87,NALNFSKNTE,ASLKMDKSDA,2,false,0,false,0,Disulfide bond
+gbmr4,10,15.28,ayayaaaaay,363,372,342,351,97,106,79,88,ALNFSKNTEL,SLKMDKSDAV,2,false,0,false,0,Disulfide bond
+gbmr4,10,15.28,aaaayayaga,392,401,371,380,102,111,84,93,EKESWAIKGS,KSDAVSHTGN,1,false,0,false,0,Helix
+gbmr4,10,15.28,ayayayaaya,448,457,427,436,111,120,93,102,SLNVEISSYE,NYTCEVTELT,1,false,0,true,4,Glycosylation: N-linked (GlcNAc...) asparagine
+gbmr4,10,15.28,yayayaayaa,449,458,428,437,112,121,94,103,LNVEISSYED,YTCEVTELTR,1,false,0,true,5,Beta strand
+gbmr4,10,15.28,ayayaayaaa,450,459,429,438,113,122,95,104,NVEISSYEDN,TCEVTELTRE,1,false,0,true,6,Beta strand
+gbmr4,10,15.28,aaypaayaaa,485,494,464,473,75,84,57,66,ENYPTTISST,STVPTDFSSA,4,false,0,false,0,Beta strand
+gbmr4,10,15.28,aypaayaaaa,486,495,465,474,76,85,58,67,NYPTTISSTT,TVPTDFSSAK,4,false,0,false,0,Beta strand
+gbmr4,10,15.28,aayaaaaaaa,489,498,468,477,44,53,26,35,TTISSTTENN,TNMEAQNTTE,1,false,0,false,0,Beta strand
+gbmr4,10,15.28,aaaaaayyya,559,568,538,547,48,57,30,39,SSDATKIYLK,AQNTTEVYVK,3,false,0,false,0,Disulfide bond
+gbmr4,10,15.28,gaayyayaya,605,614,584,593,123,132,105,114,GSAFLQFKIA,GETIIELKYR,2,false,0,true,1,Beta strand
+gbmr4,10,15.28,aayyayayay,606,615,585,594,124,133,106,115,SAFLQFKIAY,ETIIELKYRV,1,false,0,true,1,Beta strand
+gbmr7,8,15.88,aaaapaaa,67,74,46,53,145,152,127,134,IKLKPFEA,IVIFPIFA,3,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,asaaaaaa,84,91,63,70,275,282,257,264,FSAYIKVE,LSILALAQ,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,adaaaaaa,91,98,70,77,141,148,123,130,EDLALKAE,ENILIVIF,1,false,0,false,0,Turn
+gbmr7,8,15.88,aaaaaaga,93,100,72,79,56,63,38,45,LALKAEGK,VKWKFKGR,2,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaaaaga,93,100,72,79,152,159,134,141,LALKAEGK,AILLFWGQ,2,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaga,93,100,72,79,177,184,159,166,LALKAEGK,IALLVAGL,3,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaga,93,100,72,79,249,256,231,238,LALKAEGK,YILAVVGL,2,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaga,93,100,72,79,279,286,261,268,LALKAEGK,ALAQLLGL,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaagaa,94,101,73,80,153,160,135,142,ALKAEGKK,ILLFWGQF,2,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaagaa,94,101,73,80,178,185,160,167,ALKAEGKK,ALLVAGLV,3,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaagaa,94,101,73,80,188,195,170,177,ALKAEGKK,VIVIVGAI,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaagaa,94,101,73,80,280,287,262,269,ALKAEGKK,LAQLLGLV,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaagaag,95,102,74,81,154,161,136,143,LKAEGKKG,LLFWGQFG,3,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aastaaga,147,154,126,133,227,234,209,216,FKSTYYGF,VFSTAIGL,3,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaagaaat,217,224,196,203,180,187,162,169,ILYGIQAT,LVAGLVIT,2,false,0,false,0,Helix
+gbmr7,8,15.88,aagaaata,218,225,197,204,181,188,163,170,LYGIQATW,VAGLVITV,2,false,0,false,0,Helix
+gbmr7,8,15.88,agaaataa,219,226,198,205,182,189,164,171,YGIQATWK,AGLVITVI,2,false,0,false,0,Helix
+gbmr7,8,15.88,aaaasaga,290,297,269,276,312,319,294,301,AILASFGA,AFKESKGM,3,false,0,false,0,Alternative sequence: in isoform OA3-312
+gbmr7,8,15.88,aaasagaa,291,298,270,277,313,320,295,302,ILASFGAK,FKESKGMM,2,false,0,false,0,Alternative sequence: in isoform OA3-312
+gbmr7,8,15.88,taaaaaag,311,318,290,297,176,183,158,165,TYLILQMG,TIALLVAG,3,false,0,false,0,Topological domain: Cytoplasmic
+gbmr7,8,15.88,aaasaaaa,392,399,371,378,86,93,68,75,EKESWAIK,IEVSQLLK,2,false,0,false,0,Disulfide bond
+gbmr7,8,15.88,aasaaaag,393,400,372,379,87,94,69,76,KESWAIKG,EVSQLLKG,3,false,0,false,0,Disulfide bond
+gbmr7,8,15.88,aaaaasaa,478,485,457,464,84,91,66,73,ILRQKSVE,AKIEVSQL,1,false,0,false,0,Disulfide bond
+gbmr7,8,15.88,aaaaasaa,478,485,457,464,130,137,112,119,ILRQKSVE,KYRVVSWF,2,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaagaaa,519,526,498,505,179,186,161,168,AMKLGLAL,LLVAGLVI,2,false,0,false,0,Helix
+gbmr7,8,15.88,aaaagaaa,519,526,498,505,189,196,171,178,AMKLGLAL,IVIVGAIL,2,false,0,false,0,Helix
+gbmr7,8,15.88,aaaagaaa,519,526,498,505,281,288,263,270,AMKLGLAL,AQLLGLVY,4,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaagaaaa,520,527,499,506,190,197,172,179,MKLGLALY,VIVGAILF,2,false,0,false,0,Helix
+gbmr7,8,15.88,aaagaaaa,520,527,499,506,282,289,264,271,MKLGLALY,QLLGLVYM,3,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aagaaaaa,521,528,500,507,191,198,173,180,KLGLALYL,IVGAILFV,2,false,0,false,0,Helix
+gbmr7,8,15.88,aagaaaaa,521,528,500,507,283,290,265,272,KLGLALYL,LLGLVYMK,3,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaapaa,540,547,519,526,144,151,126,133,EAYVVPYI,LIVIFPIF,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,gasaaaaa,570,577,549,556,274,281,256,263,GLSLEKLI,GLSILALA,4,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,asaaaaaa,571,578,550,557,275,282,257,264,LSLEKLIR,LSILALAQ,3,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,saaaaaaa,572,579,551,558,236,243,218,225,SLEKLIRF,SFVIAILV,2,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,saaaaaaa,572,579,551,558,276,283,258,265,SLEKLIRF,SILALAQL,2,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,saaaaaaa,606,613,585,592,236,243,218,225,SAFLQFKI,SFVIAILV,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,saaaaaaa,606,613,585,592,276,283,258,265,SAFLQFKI,SILALAQL,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,53,60,35,42,AFLQFKIA,EVYVKWKF,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,54,61,36,43,AFLQFKIA,VYVKWKFK,1,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,126,133,108,115,AFLQFKIA,IIELKYRV,0,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,127,134,109,116,AFLQFKIA,IELKYRVV,1,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,150,157,132,139,AFLQFKIA,IFAILLFW,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,237,244,219,226,AFLQFKIA,FVIAILVI,0,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,238,245,220,227,AFLQFKIA,VIAILVIQ,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,239,246,221,228,AFLQFKIA,IAILVIQV,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,240,247,222,229,AFLQFKIA,AILVIQVI,2,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,241,248,223,230,AFLQFKIA,ILVIQVIA,2,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,242,249,224,231,AFLQFKIA,LVIQVIAY,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,243,250,225,232,AFLQFKIA,VIQVIAYI,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,244,251,226,233,AFLQFKIA,IQVIAYIL,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,245,252,227,234,AFLQFKIA,QVIAYILA,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,246,253,228,235,AFLQFKIA,VIAYILAV,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,247,254,229,236,AFLQFKIA,IAYILAVV,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,277,284,259,266,AFLQFKIA,ILALAQLL,0,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaaa,607,614,586,593,286,293,268,275,AFLQFKIA,LVYMKFVA,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,53,60,35,42,FLQFKIAY,EVYVKWKF,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,54,61,36,43,FLQFKIAY,VYVKWKFK,0,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,126,133,108,115,FLQFKIAY,IIELKYRV,1,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,127,134,109,116,FLQFKIAY,IELKYRVV,0,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,150,157,132,139,FLQFKIAY,IFAILLFW,0,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,237,244,219,226,FLQFKIAY,FVIAILVI,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,238,245,220,227,FLQFKIAY,VIAILVIQ,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,239,246,221,228,FLQFKIAY,IAILVIQV,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,240,247,222,229,FLQFKIAY,AILVIQVI,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,241,248,223,230,FLQFKIAY,ILVIQVIA,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,242,249,224,231,FLQFKIAY,LVIQVIAY,3,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,243,250,225,232,FLQFKIAY,VIQVIAYI,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,244,251,226,233,FLQFKIAY,IQVIAYIL,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,245,252,227,234,FLQFKIAY,QVIAYILA,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,246,253,228,235,FLQFKIAY,VIAYILAV,1,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,247,254,229,236,FLQFKIAY,IAYILAVV,0,false,0,false,0,Helix
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,277,284,259,266,FLQFKIAY,ILALAQLL,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaaa,608,615,587,594,286,293,268,275,FLQFKIAY,LVYMKFVA,1,false,0,false,0,Transmembrane: Helical
+gbmr7,8,15.88,aaaaaaas,609,616,588,595,128,135,110,117,LQFKIAYS,ELKYRVVS,1,false,0,false,0,Beta strand
+gbmr7,8,15.88,aaaaaaas,609,616,588,595,287,294,269,276,LQFKIAYS,VYMKFVAS,2,false,0,false,0,Transmembrane: Helical
+gbmr7,10,19.86,aaaaaagaag,93,102,72,81,152,161,134,143,LALKAEGKKG,AILLFWGQFG,3,false,0,false,0,Transmembrane: Helical
+gbmr7,10,19.86,aaagaaataa,217,226,196,205,180,189,162,171,ILYGIQATWK,LVAGLVITVI,2,false,0,false,0,Helix
+gbmr7,10,19.86,aaaagaaaaa,519,528,498,507,189,198,171,180,AMKLGLALYL,IVIVGAILFV,2,false,0,false,0,Helix
+gbmr7,10,19.86,aaaagaaaaa,519,528,498,507,281,290,263,272,AMKLGLALYL,AQLLGLVYMK,4,false,0,false,0,Transmembrane: Helical
+gbmr7,10,19.86,gasaaaaaaa,570,579,549,558,274,283,256,265,GLSLEKLIRF,GLSILALAQL,4,false,0,false,0,Transmembrane: Helical
+gbmr7,10,19.86,saaaaaaaaa,606,615,585,594,236,245,218,227,SAFLQFKIAY,SFVIAILVIQ,1,false,0,false,0,Transmembrane: Helical
+gbmr7,10,19.86,aaaaaaaaas,607,616,586,595,126,135,108,117,AFLQFKIAYS,IIELKYRVVS,1,false,0,false,0,Beta strand
+hp_kyte_doolittle2,17,15.93,hphpphpppppphpppp,142,158,121,137,160,176,142,158,APMTGFKSTYYGFPSND,FGIKTLKYRSGGMDEKT,2,false,0,false,0,Transmembrane: Helical
+hp_kyte_doolittle2,17,15.93,ppppphppppphhppph,149,165,128,144,294,310,276,292,STYYGFPSNDRAVRGTI,SNQKTIQPPRKAVEEPL,3,false,0,false,0,Alternative sequence: in isoform OA3-293
+hp_kyte_doolittle2,17,15.93,hppphphpphpppppph,297,313,276,292,156,172,138,154,AKYKLGLTKINDKNTYL,FWGQFGIKTLKYRSGGM,1,false,0,false,0,Transmembrane: Helical
+hp_kyte_doolittle2,17,15.93,ppphphpphpppppphh,298,314,277,293,111,127,93,109,KYKLGLTKINDKNTYLI,NYTCEVTELTREGETII,3,false,0,true,7,Glycosylation: N-linked (GlcNAc...) asparagine
+hp_lehninger2,16,16.0,hhhhphhhppppphph,35,50,14,29,286,301,268,283,PWMPTFGFENTSEFRL,LVYMKFVASNQKTIQP,2,false,0,false,0,Transmembrane: Helical
+hp_lehninger2,16,16.0,hphhhppppphphphp,38,53,17,32,18,33,0,15,PTFGFENTSEFRLDMD,AQLLFNKTKSVEFTFC,2,false,0,false,0,Signal
+hp_lehninger2,16,16.0,phhhppppphphphpp,39,54,18,33,19,34,1,16,TFGFENTSEFRLDMDE,QLLFNKTKSVEFTFCN,2,false,0,false,0,Modified residue: Pyrrolidone carboxylic acid
+hp_lehninger2,16,16.0,pppphphphpppphhh,263,278,242,257,24,39,6,21,NNSSITYSLKDKSVVG,KTKSVEFTFCNDTVVI,3,false,0,false,0,Domain: Ig-like V-type
+hp_lehninger2,16,16.0,hhphppphhhhhhhhh,534,549,513,528,136,151,118,133,IASISTEAYVVPYIGA,WFSPNENILIVIFPIF,2,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,16,16.0,hphppphhhhhhhhhh,535,550,514,529,137,152,119,134,ASISTEAYVVPYIGAY,FSPNENILIVIFPIFA,2,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,16,16.0,phppphhhhhhhhhhh,536,551,515,530,138,153,120,135,SISTEAYVVPYIGAYI,SPNENILIVIFPIFAI,3,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,16,16.0,hppphhhhhhhhhhhh,537,552,516,531,139,154,121,136,ISTEAYVVPYIGAYIL,PNENILIVIFPIFAIL,3,false,0,false,0,Turn
+hp_lehninger2,16,16.0,ppphhhhhhhhhhhhh,538,553,517,532,140,155,122,137,STEAYVVPYIGAYILG,NENILIVIFPIFAILL,3,false,0,false,0,Turn
+hp_lehninger2,16,16.0,pphhhhhhhhhhhhhh,539,554,518,533,141,156,123,138,TEAYVVPYIGAYILGP,ENILIVIFPIFAILLF,3,false,0,false,0,Turn
+hp_lehninger2,17,17.0,hphhhppppphphphpp,38,54,17,33,18,34,0,16,PTFGFENTSEFRLDMDE,AQLLFNKTKSVEFTFCN,2,false,0,false,0,Signal
+hp_lehninger2,17,17.0,hhphppphhhhhhhhhh,534,550,513,529,136,152,118,134,IASISTEAYVVPYIGAY,WFSPNENILIVIFPIFA,2,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,17,17.0,hphppphhhhhhhhhhh,535,551,514,530,137,153,119,135,ASISTEAYVVPYIGAYI,FSPNENILIVIFPIFAI,3,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,17,17.0,phppphhhhhhhhhhhh,536,552,515,531,138,154,120,136,SISTEAYVVPYIGAYIL,SPNENILIVIFPIFAIL,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,17,17.0,hppphhhhhhhhhhhhh,537,553,516,532,139,155,121,137,ISTEAYVVPYIGAYILG,PNENILIVIFPIFAILL,3,false,0,false,0,Turn
+hp_lehninger2,17,17.0,ppphhhhhhhhhhhhhh,538,554,517,533,140,156,122,138,STEAYVVPYIGAYILGP,NENILIVIFPIFAILLF,3,false,0,false,0,Turn
+hp_lehninger2,19,19.0,hhphppphhhhhhhhhhhh,534,552,513,531,136,154,118,136,IASISTEAYVVPYIGAYIL,WFSPNENILIVIFPIFAIL,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,19,19.0,hphppphhhhhhhhhhhhh,535,553,514,532,137,155,119,137,ASISTEAYVVPYIGAYILG,FSPNENILIVIFPIFAILL,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,19,19.0,phppphhhhhhhhhhhhhh,536,554,515,533,138,156,120,138,SISTEAYVVPYIGAYILGP,SPNENILIVIFPIFAILLF,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,20,20.0,hhphppphhhhhhhhhhhhh,534,553,513,532,136,155,118,137,IASISTEAYVVPYIGAYILG,WFSPNENILIVIFPIFAILL,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger2,20,20.0,hphppphhhhhhhhhhhhhh,535,554,514,533,137,156,119,138,ASISTEAYVVPYIGAYILGP,FSPNENILIVIFPIFAILLF,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_c_nonpolar2,16,15.98,hhhhphhhppppphph,35,50,14,29,286,301,268,283,PWMPTFGFENTSEFRL,LVYMKFVASNQKTIQP,2,false,0,false,0,Transmembrane: Helical
+hp_lehninger_c_nonpolar2,16,15.98,hhphppphhhhhhhhh,534,549,513,528,136,151,118,133,IASISTEAYVVPYIGA,WFSPNENILIVIFPIF,2,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_c_nonpolar2,16,15.98,hphppphhhhhhhhhh,535,550,514,529,137,152,119,134,ASISTEAYVVPYIGAY,FSPNENILIVIFPIFA,2,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_c_nonpolar2,16,15.98,phppphhhhhhhhhhh,536,551,515,530,138,153,120,135,SISTEAYVVPYIGAYI,SPNENILIVIFPIFAI,3,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_c_nonpolar2,16,15.98,hppphhhhhhhhhhhh,537,552,516,531,139,154,121,136,ISTEAYVVPYIGAYIL,PNENILIVIFPIFAIL,3,false,0,false,0,Turn
+hp_lehninger_c_nonpolar2,16,15.98,ppphhhhhhhhhhhhh,538,553,517,532,140,155,122,137,STEAYVVPYIGAYILG,NENILIVIFPIFAILL,3,false,0,false,0,Turn
+hp_lehninger_c_nonpolar2,16,15.98,pphhhhhhhhhhhhhh,539,554,518,533,141,156,123,138,TEAYVVPYIGAYILGP,ENILIVIFPIFAILLF,3,false,0,false,0,Turn
+hp_lehninger_c_nonpolar2,20,19.98,hhphppphhhhhhhhhhhhh,534,553,513,532,136,155,118,137,IASISTEAYVVPYIGAYILG,WFSPNENILIVIFPIFAILL,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_c_nonpolar2,20,19.98,hphppphhhhhhhhhhhhhh,535,554,514,533,137,156,119,138,ASISTEAYVVPYIGAYILGP,FSPNENILIVIFPIFAILLF,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_hpc3,14,15.88,hhhhphhhppppph,35,48,14,27,286,299,268,281,PWMPTFGFENTSEF,LVYMKFVASNQKTI,2,false,0,false,0,Transmembrane: Helical
+hp_lehninger_hpc3,14,15.88,hhhphhhppppphp,36,49,15,28,287,300,269,282,WMPTFGFENTSEFR,VYMKFVASNQKTIQ,2,false,0,false,0,Transmembrane: Helical
+hp_lehninger_hpc3,14,15.88,hhphhhppppphph,37,50,16,29,288,301,270,283,MPTFGFENTSEFRL,YMKFVASNQKTIQP,2,false,0,false,0,Transmembrane: Helical
+hp_lehninger_hpc3,14,15.88,hphhhppppphphp,38,51,17,30,18,31,0,13,PTFGFENTSEFRLD,AQLLFNKTKSVEFT,2,false,0,false,0,Signal
+hp_lehninger_hpc3,14,15.88,phhhppppphphph,39,52,18,31,19,32,1,14,TFGFENTSEFRLDM,QLLFNKTKSVEFTF,2,false,0,false,0,Modified residue: Pyrrolidone carboxylic acid
+hp_lehninger_hpc3,14,15.88,hhphhhhhhhphhh,519,532,498,511,280,293,262,275,AMKLGLALYLDYAI,LAQLLGLVYMKFVA,2,false,0,false,0,Transmembrane: Helical
+hp_lehninger_hpc3,14,15.88,hhhhhhhphhhhhh,522,535,501,514,180,193,162,175,LGLALYLDYAIPIA,LVAGLVITVIVIVG,2,false,0,false,0,Helix
+hp_lehninger_hpc3,14,15.88,hhhhhhhphhhhhh,522,535,501,514,238,251,220,233,LGLALYLDYAIPIA,VIAILVIQVIAYIL,2,false,0,false,0,Helix
+hp_lehninger_hpc3,14,15.88,hhphppphhhhhhh,534,547,513,526,136,149,118,131,IASISTEAYVVPYI,WFSPNENILIVIFP,2,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_hpc3,14,15.88,hphppphhhhhhhh,535,548,514,527,137,150,119,132,ASISTEAYVVPYIG,FSPNENILIVIFPI,2,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_hpc3,14,15.88,phppphhhhhhhhh,536,549,515,528,138,151,120,133,SISTEAYVVPYIGA,SPNENILIVIFPIF,2,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_hpc3,14,15.88,hppphhhhhhhhhh,537,550,516,529,139,152,121,134,ISTEAYVVPYIGAY,PNENILIVIFPIFA,1,false,0,false,0,Turn
+hp_lehninger_hpc3,14,15.88,ppphhhhhhhhhhh,538,551,517,530,140,153,122,135,STEAYVVPYIGAYI,NENILIVIFPIFAI,2,false,0,false,0,Turn
+hp_lehninger_hpc3,14,15.88,pphhhhhhhhhhhh,539,552,518,531,141,154,123,136,TEAYVVPYIGAYIL,ENILIVIFPIFAIL,3,false,0,false,0,Turn
+hp_lehninger_hpc3,14,15.88,phhhhhhhhhhhhh,540,553,519,532,142,155,124,137,EAYVVPYIGAYILG,NILIVIFPIFAILL,3,false,0,false,0,Turn
+hp_lehninger_hpc3,14,15.88,phhhhhhhhhhhhh,540,553,519,532,187,200,169,182,EAYVVPYIGAYILG,TVIVIVGAILFVPG,2,false,0,false,0,Helix
+hp_lehninger_hpc3,14,15.88,hhhhhhhhhhhhhh,541,554,520,533,143,156,125,138,AYVVPYIGAYILGP,ILIVIFPIFAILLF,3,false,0,false,0,Turn
+hp_lehninger_hpc3,14,15.88,hhhhhhhhhhhhhh,541,554,520,533,144,157,126,139,AYVVPYIGAYILGP,LIVIFPIFAILLFW,4,false,0,false,0,Transmembrane: Helical
+hp_lehninger_hpc3,14,15.88,hhhhhhhhhhhhhh,541,554,520,533,145,158,127,140,AYVVPYIGAYILGP,IVIFPIFAILLFWG,1,false,0,false,0,Transmembrane: Helical
+hp_lehninger_hpc3,14,15.88,hhhhhhhhhhhhhp,542,555,521,534,146,159,128,141,YVVPYIGAYILGPS,VIFPIFAILLFWGQ,1,false,0,false,0,Transmembrane: Helical
+hp_lehninger_hpc3,14,15.88,hhhhhhhhhhhhhp,542,555,521,534,188,201,170,183,YVVPYIGAYILGPS,VIVIVGAILFVPGE,1,false,0,false,0,Helix
+hp_lehninger_hpc3,18,20.41,hhphppphhhhhhhhhhh,534,551,513,530,136,153,118,135,IASISTEAYVVPYIGAYI,WFSPNENILIVIFPIFAI,3,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_hpc3,18,20.41,hphppphhhhhhhhhhhh,535,552,514,531,137,154,119,136,ASISTEAYVVPYIGAYIL,FSPNENILIVIFPIFAIL,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_hpc3,18,20.41,phppphhhhhhhhhhhhh,536,553,515,532,138,155,120,137,SISTEAYVVPYIGAYILG,SPNENILIVIFPIFAILL,4,false,0,false,0,Topological domain: Extracellular
+hp_lehninger_hpc3,18,20.41,hppphhhhhhhhhhhhhh,537,554,516,533,139,156,121,138,ISTEAYVVPYIGAYILGP,PNENILIVIFPIFAILLF,3,false,0,false,0,Turn
+hp_lehninger_hpc3,21,23.81,hhphppphhhhhhhhhhhhhh,534,554,513,533,136,156,118,138,IASISTEAYVVPYIGAYILGP,WFSPNENILIVIFPIFAILLF,4,false,0,false,0,Topological domain: Extracellular
+hp_pbotc_1st_ed2,16,15.91,ppphphphpppphhpp,264,279,243,258,93,108,75,90,NSSITYSLKDKSVVGN,KGDASLKMDKSDAVSH,1,false,0,false,0,Helix
+hp_pbotc_1st_ed2,16,15.91,pphphphpppphhppp,265,280,244,259,94,109,76,91,SSITYSLKDKSVVGND,GDASLKMDKSDAVSHT,1,false,0,false,0,Disulfide bond
+hp_pbotc_1st_ed2,16,15.91,pphphphpphpppppp,447,462,426,441,110,125,92,107,QSLNVEISSYEDNKKG,GNYTCEVTELTREGET,1,false,0,true,7,Beta strand
+hp_pbotc_1st_ed2,16,15.91,phphphpphpppppph,448,463,427,442,111,126,93,108,SLNVEISSYEDNKKGI,NYTCEVTELTREGETI,2,false,0,true,7,Glycosylation: N-linked (GlcNAc...) asparagine
+hp_pbotc_1st_ed2,16,15.91,hphphpphpppppphh,449,464,428,443,112,127,94,109,LNVEISSYEDNKKGII,YTCEVTELTREGETII,3,false,0,true,7,Beta strand
+hp_pbotc_1st_ed2,16,15.91,phphpphpppppphhp,450,465,429,444,113,128,95,110,NVEISSYEDNKKGIIN,TCEVTELTREGETIIE,3,false,0,true,7,Beta strand
+hp_thomas_dill2,17,16.42,ppphphphpppphhppp,264,280,243,259,93,109,75,91,NSSITYSLKDKSVVGND,KGDASLKMDKSDAVSHT,1,false,0,false,0,Helix
+hp_thomas_dill2,17,16.42,pphphphpphpppppph,447,463,426,442,110,126,92,108,QSLNVEISSYEDNKKGI,GNYTCEVTELTREGETI,2,false,0,true,7,Beta strand
+hp_thomas_dill2,17,16.42,phphphpphpppppphh,448,464,427,443,111,127,93,109,SLNVEISSYEDNKKGII,NYTCEVTELTREGETII,3,false,0,true,7,Glycosylation: N-linked (GlcNAc...) asparagine
+hp_thomas_dill2,17,16.42,hphphpphpppppphhp,449,465,428,444,112,128,94,110,LNVEISSYEDNKKGIIN,YTCEVTELTREGETIIE,3,false,0,true,7,Beta strand
+hp_thomas_dill_no_c2,17,16.15,ppphphphpppphhppp,264,280,243,259,93,109,75,91,NSSITYSLKDKSVVGND,KGDASLKMDKSDAVSHT,1,false,0,false,0,Helix
+hsdm17,5,18.73,tklyl,563,567,542,546,52,56,34,38,TKIYL,TEVYV,2,false,0,false,0,Helix
+hsdm17,5,18.73,klylk,564,568,543,547,53,57,35,39,KIYLK,EVYVK,2,false,0,false,0,Helix
+hsdm17,6,22.47,tklylk,563,568,542,547,52,57,34,39,TKIYLK,TEVYVK,3,false,0,false,0,Helix
+mmseqs12,5,16.49,enaae,43,47,22,26,49,53,31,35,ENTSE,QNTTE,3,false,0,false,0,Disulfide bond
+mmseqs12,5,16.49,falkn,269,273,248,252,202,206,184,188,YSLKD,YSLKN,4,false,0,false,0,Beta strand
+mmseqs12,5,16.49,aaigl,471,475,450,454,230,234,212,216,TSIGL,TAIGL,4,false,0,false,0,Topological domain: Cytoplasmic
+mmseqs12,5,16.49,ekaie,481,485,460,464,296,300,278,282,QKSVE,QKTIQ,2,false,0,false,0,Alternative sequence: in isoform OA3-293
+polarity4,9,16.06,gsgggggsg,188,196,167,175,275,283,257,265,LTFAIGGTG,LSILALAQL,1,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,gsgggggsg,188,196,167,175,281,289,263,271,LTFAIGGTG,AQLLGLVYM,0,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,gggggsgsg,190,198,169,177,252,260,234,242,FAIGGTGTG,AVVGLSLCI,1,false,0,false,0,Helix
+polarity4,9,16.06,ggsggsgsd,252,260,231,239,133,141,115,123,GLSGAYGNE,VVSWFSPNE,3,false,0,false,0,Helix
+polarity4,9,16.06,gsggsgsds,253,261,232,240,134,142,116,124,LSGAYGNET,VSWFSPNEN,3,false,0,false,0,Helix
+polarity4,9,16.06,sggsgsdsg,254,262,233,241,135,143,117,125,SGAYGNETF,SWFSPNENI,3,false,0,false,0,Helix
+polarity4,9,16.06,ggggsgggh,290,298,269,277,155,163,137,145,AILASFGAK,LFWGQFGIK,3,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,gggsggghs,291,299,270,278,156,164,138,146,ILASFGAKY,FWGQFGIKT,3,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,sggsggggg,378,386,357,365,273,281,255,263,TGASIGFAW,SGLSILALA,3,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,ggsgggggs,379,387,358,366,274,282,256,264,GASIGFAWN,GLSILALAQ,3,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,ggsgggggs,379,387,358,366,280,288,262,270,GASIGFAWN,LAQLLGLVY,1,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,sggggggss,416,424,395,403,208,216,190,198,SGVALGISY,TGLGLIVTS,2,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,gggsggggg,462,470,441,449,184,192,166,174,GIINGLGWI,LVITVIVIV,1,false,0,false,0,Helix
+polarity4,9,16.06,gggsggggg,462,470,441,449,246,254,228,236,GIINGLGWI,VIAYILAVV,2,false,0,false,0,Helix
+polarity4,9,16.06,gggsggggg,462,470,441,449,279,287,261,269,GIINGLGWI,ALAQLLGLV,2,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,ggsgggggs,463,471,442,450,274,282,256,264,IINGLGWIT,GLSILALAQ,1,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,ggsgggggs,463,471,442,450,280,288,262,270,IINGLGWIT,LAQLLGLVY,2,false,0,false,0,Transmembrane: Helical
+polarity4,9,16.06,ggggssggg,467,475,446,454,231,239,213,221,LGWITSIGL,AIGLTSFVI,2,false,0,false,0,Topological domain: Cytoplasmic
+polarity4,9,16.06,gghgggggs,519,527,498,506,265,273,247,255,AMKLGLALY,PMHGPLLIS,2,false,0,false,0,Topological domain: Extracellular
+polarity4,9,16.06,ghgggggsg,520,528,499,507,266,274,248,256,MKLGLALYL,MHGPLLISG,2,false,0,false,0,Topological domain: Extracellular
+polarity4,9,16.06,gggggsgss,531,539,510,518,7,15,-11,-3,AIPIASIST,ALLLGSACC,2,false,0,false,0,Signal
+polarity4,9,16.06,gsgggsggg,541,549,520,528,244,252,226,234,AYVVPYIGA,IQVIAYILA,4,false,0,false,0,Helix
+polarity4,9,16.06,gsgggsggg,541,549,520,528,258,266,240,248,AYVVPYIGA,LCIAACIPM,1,false,0,false,0,Turn
+polarity4,9,16.06,gggsgggsg,543,551,522,530,242,250,224,232,VVPYIGAYI,LVIQVIAYI,4,false,0,false,0,Helix
+polarity4,9,16.06,ggsgggsgg,544,552,523,531,243,251,225,233,VPYIGAYIL,VIQVIAYIL,5,false,0,false,0,Helix
+polarity4,9,16.06,gsgggsggg,545,553,524,532,244,252,226,234,PYIGAYILG,IQVIAYILA,4,false,0,false,0,Helix
+polarity4,9,16.06,gsgggsggg,545,553,524,532,258,266,240,248,PYIGAYILG,LCIAACIPM,3,false,0,false,0,Turn
+polarity4,9,16.06,sgggsgggg,546,554,525,533,245,253,227,235,YIGAYILGP,QVIAYILAV,4,false,0,false,0,Helix
+polarity4,9,16.06,ggggsgggs,602,610,581,589,241,249,223,231,AAIGSAFLQ,ILVIQVIAY,0,false,0,false,0,Helix
+polarity4,9,16.06,gggsgggsg,603,611,582,590,242,250,224,232,AIGSAFLQF,LVIQVIAYI,0,false,0,false,0,Helix
+polarity4,11,19.63,ggsggsgsdsg,252,262,231,241,133,143,115,125,GLSGAYGNETF,VVSWFSPNENI,3,false,0,false,0,Helix
+polarity4,11,19.63,gggsgggsggg,543,553,522,532,242,252,224,234,VVPYIGAYILG,LVIQVIAYILA,5,false,0,false,0,Helix
+polarity4,11,19.63,ggsgggsgggg,544,554,523,533,243,253,225,235,VPYIGAYILGP,VIQVIAYILAV,5,false,0,false,0,Helix
+sdm12,5,15.67,lkltt,123,127,102,106,86,90,68,72,IKIST,IEVSQ,2,false,0,false,0,Disulfide bond
+sdm12,5,15.67,klttl,124,128,103,107,87,91,69,73,KISTM,EVSQL,1,false,0,false,0,Disulfide bond
+sdm12,5,15.67,llltl,313,317,292,296,184,188,166,170,LILQM,LVITV,1,false,0,false,0,Helix
+sdm12,5,15.67,llltl,313,317,292,296,242,246,224,228,LILQM,LVIQV,2,false,0,false,0,Helix
+sdm12,5,15.67,ttkly,405,409,384,388,51,55,33,37,STRLF,TTEVY,1,false,0,false,0,Helix
+sdm12,5,15.67,alglt,419,423,398,402,231,235,213,217,ALGIS,AIGLT,2,false,0,false,0,Topological domain: Cytoplasmic
+sdm12,5,15.67,lkltt,451,455,430,434,86,90,68,72,VEISS,IEVSQ,2,false,0,false,0,Disulfide bond
+sdm12,5,15.67,kglln,461,465,440,444,317,321,299,303,KGIIN,KGMMN,3,false,0,false,0,Alternative sequence: in isoform OA3-312
+sdm12,5,15.67,ktktl,480,484,459,463,24,28,6,10,RQKSV,KTKSV,3,false,0,false,0,Domain: Ig-like V-type
+sdm12,5,15.67,tktlk,481,485,460,464,25,29,7,11,QKSVE,TKSVE,4,false,0,false,0,Domain: Ig-like V-type
+sdm12,5,15.67,tklyl,563,567,542,546,52,56,34,38,TKIYL,TEVYV,2,false,0,false,0,Helix
+sdm12,5,15.67,klylk,564,568,543,547,53,57,35,39,KIYLK,EVYVK,2,false,0,false,0,Helix
+sdm12,5,15.67,tgltl,569,573,548,552,273,277,255,259,TGLSL,SGLSI,3,false,0,false,0,Transmembrane: Helical
+sdm12,6,18.8,lklttl,123,128,102,107,86,91,68,73,IKISTM,IEVSQL,2,false,0,false,0,Disulfide bond
+sdm12,6,18.8,ktktlk,480,485,459,464,24,29,6,11,RQKSVE,KTKSVE,4,false,0,false,0,Domain: Ig-like V-type
+sdm12,6,18.8,tklylk,563,568,542,547,52,57,34,39,TKIYLK,TEVYVK,3,false,0,false,0,Helix
+wwmj5,7,15.38,ddgcsac,81,87,60,66,307,313,289,295,DDPFSAY,EEPLNAF,2,false,0,false,0,Alternative sequence: in isoform OA3-305
+wwmj5,7,15.38,dcccscs,120,126,99,105,53,59,35,41,DFFIKIS,EVYVKWK,1,false,0,false,0,Helix
+wwmj5,7,15.38,gacsssa,284,290,263,269,70,76,52,58,PTLSNSA,GALNKST,2,false,0,false,0,Helix
+wwmj5,7,15.38,acsssac,285,291,264,270,71,77,53,59,TLSNSAI,ALNKSTV,2,false,0,false,0,Helix
+wwmj5,7,15.38,accccsc,311,317,290,296,240,246,222,228,TYLILQM,AILVIQV,2,false,0,false,0,Helix
+wwmj5,7,15.38,sacscss,362,368,341,347,163,169,145,151,NALNFSK,KTLKYRS,1,false,0,false,0,Topological domain: Cytoplasmic
+wwmj5,7,15.38,csgsdsc,398,404,377,383,137,143,119,125,IKGSDSY,FSPNENI,0,false,0,false,0,Topological domain: Extracellular
+wwmj5,7,15.38,csacsds,438,444,417,423,310,316,292,298,LKTISEN,LNAFKES,2,false,0,false,0,Alternative sequence: in isoform OA3-305
+wwmj5,7,15.38,scdcssc,450,456,429,435,85,91,67,73,NVEISSY,KIEVSQL,2,false,0,false,0,Disulfide bond
+wwmj5,7,15.38,aagscac,510,516,489,495,108,114,90,96,TTPNLTF,HTGNYTC,3,false,0,false,0,Disulfide bond
+wwmj5,7,15.38,agscacd,511,517,490,496,109,115,91,97,TPNLTFE,TGNYTCE,4,false,0,true,1,Disulfide bond
+wwmj5,7,15.38,acgcasc,531,537,510,516,231,237,213,219,AIPIASI,AIGLTSF,3,false,0,false,0,Topological domain: Cytoplasmic
+wwmj5,7,15.38,dacccgc,540,546,519,525,35,41,17,23,EAYVVPY,DTVVIPC,2,false,0,false,0,Beta strand
+wwmj5,7,15.38,acccgcc,541,547,520,526,36,42,18,24,AYVVPYI,TVVIPCF,2,false,0,false,0,Beta strand
+wwmj5,7,15.38,ccgaccc,546,552,525,531,191,197,173,179,YIGAYIL,IVGAILF,2,false,0,false,0,Helix
