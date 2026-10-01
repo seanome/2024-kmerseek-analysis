@@ -14,7 +14,7 @@ hooks. This skill covers what needs reading.
 Changed 2026-10-01 after an adversarial review of PR #56 found that the skill checked that
 each number existed but not whether the sentence around it was true, trusted saved outputs
 as current, and never checked its own findings. Steps 0, 2, 3 and 5, rules 2, 9–11 and
-21–26, and the section "Preparing for an Adversarial Reviewer #2: Stress-testing the
+21–26, and the section "Preparing for an Adversarial Reviewer 2: Stress-testing the
 findings" were added then. A hook now refuses to post a review comment without that
 section (see Step 6).
 
@@ -236,7 +236,7 @@ Wording and judgement calls the author may decline.
 What you checked and found right, each with the check behind it ("all 14 numbers in cell
 7 match the table printed in cell 6, searched by value").
 
-## Preparing for an Adversarial Reviewer #2: Stress-testing the findings
+## Preparing for an Adversarial Reviewer 2: Stress-testing the findings
 - Headline re-computed: <the number> from <input> by <second method>: <value> vs <value>.
 - Outputs current: last run <date>; helpers last changed <date>; inputs dated <date>.
 - Finding <n>: tried to show it wrong by <what>; <result>.
@@ -248,7 +248,7 @@ one sentence, what goes wrong because of it, the fix, and CONFIRMED or PLAUSIBLE
 re-computed a number, give both values.
 
 `.claude/hooks/require_review_check.py` refuses to post an `/analysis-review` comment that
-has no "## Preparing for an Adversarial Reviewer #2: Stress-testing the findings" heading,
+has no "## Preparing for an Adversarial Reviewer 2: Stress-testing the findings" heading,
 no bullet under it, or no "Not tested" line. If nothing went untested, write
 "Not tested: nothing" and say why.
 
