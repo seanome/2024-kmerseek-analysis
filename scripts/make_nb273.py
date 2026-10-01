@@ -266,15 +266,17 @@ md(r"""
 Top row: mean share of aligned positions in the same class, per 100, with a 95% bootstrap
 interval of the mean (500 resamples of pairs). Solid bars are the real pairs, hatched bars
 the same pairs with one sequence shuffled. The black line across each pair of bars is the
-chance rate from the pairs' own class shares; the hatched bar should sit on it, which checks
-the formula against the shuffle. Bottom row: mean evidence per aligned position, I, in bits.
+chance rate from the pairs' own class shares. The hatched bar should sit on it, which checks
+the formula against the shuffle. It sits up to 0.3 per 100 above the line for H/P, because the
+shuffle also draws the target residues that face a gap in the query, and those are more polar
+than the aligned ones. Bottom row: mean evidence per aligned position, I, in bits.
 Higher is better; the hatched bar is what an unrelated pair of the same composition and
 length scores.
 
 Left column: Pfam seed pairs by identity over aligned positions. Right column: SCOPe pairs by
 how SCOPe relates the two domains, all identities pooled. The SCOPe categories differ in
-identity (median 13% for same superfamily, different family; 7% for different fold, see
-notebook 230 section 1), so the right column mixes relatedness with identity.
+identity (median identity per category is printed under the figure), so the right column mixes
+relatedness with identity.
 """)
 
 code(r"""
@@ -334,8 +336,21 @@ print("Pfam-A 38.2 seed pairs, mean [95% bootstrap interval]")
 print(per100_table(pf_s, "identity_bin"))
 print("\nSCOPe 2.08 40% set, USalign pairs, mean [95% bootstrap interval]")
 print(per100_table(sc_s, "category"))
+print("\nSCOPe identity over aligned positions, per category, after this notebook's filters")
+print(
+    scope.filter(pl.col("alphabet") == HP)
+    .group_by("category")
+    .agg(
+        pl.len().alias("pairs"),
+        (pl.col("seqid_ali").median() * 100).round(1).alias("median identity %"),
+        ((pl.col("seqid_ali") < 0.2).mean() * 100).round(1).alias("% of pairs under 20%"),
+    )
+    .with_columns(pl.col("category").cast(pl.Enum(CAT_ORDER)))
+    .sort("category")
+)
 
 W = 0.2
+CHANCE_COLOR = "#2166ac"  # used for nothing else
 SLOTS = [(HP, False, -1.5), (HP, True, -0.5), (P20, False, 0.5), (P20, True, 1.5)]
 
 
@@ -363,7 +378,7 @@ def draw(ax_top, ax_bot, s, key, order, ticklabels):
                             ha="center", va="bottom", fontsize=7.5)
         if not shuffled:
             ch = d["expected_mean"].to_numpy() * 100
-            ax_top.hlines(ch, xi - W * 0.5, xi + W * 1.5, color="black", lw=2.2, zorder=5)
+            ax_top.hlines(ch, xi - W * 0.5, xi + W * 1.5, color=CHANCE_COLOR, lw=2.2, zorder=5)
     for ax in (ax_top, ax_bot):
         ax.set_xticks(x, ticklabels)
         ax.grid(axis="y", alpha=0.3)
@@ -402,7 +417,7 @@ handles = [
           label="hp_thomas_dill2 (H = ACFILMVWY, P = DEGHKNPQRST), real pairs"),
     Patch(facecolor="white", edgecolor=COLOR[HP], hatch="///",
           label="hp_thomas_dill2, target residues shuffled"),
-    Line2D([], [], color="black", lw=2.2,
+    Line2D([], [], color=CHANCE_COLOR, lw=2.2,
            label="chance from each pair's own class shares (top row only)"),
     Patch(facecolor=COLOR[P20], edgecolor=COLOR[P20], label="protein20 (20 amino acids), real pairs"),
     Patch(facecolor="white", edgecolor=COLOR[P20], hatch="///",
@@ -441,11 +456,12 @@ hc.finish_figure(
     ),
     conclusion=(
         f"At 20-30% identity in Pfam, {hp_a:.0f} of 100 positions agree in H/P against "
-        f"{hp_c:.0f} by chance, and {p_a:.0f} of 100 are identical against {p_c:.0f}. Each "
+        f"{hp_c:.0f} by chance, and {p_a:.0f} of 100 are identical against {p_c:.0f}, chance taken "
+        f"from each pair's own shares (section 3: a random partner gives less). Each "
         f"aligned position carries {hp_i:.2f} bits in H/P and {p_i:.2f} bits as 20 amino acids, "
         f"so a 20-letter position is worth more evidence. In SCOPe, real H/P agreement exceeds "
         f"shuffled by {sf_hp:.0f} per 100 for same superfamily, different family, and by "
-        f"{df_hp:.0f} per 100 for different folds, which share no ancestor."
+        f"{df_hp:.0f} per 100 for different folds, which SCOPe does not call related."
     ),
 )
 """)
@@ -462,6 +478,13 @@ which is what section 2 plots. "I of the mean rates" puts the bin's mean Pr(agre
 Pr(chance) into the formula once, which is how the estimate was made. They differ because I
 curves upward: pairs far above chance add more than pairs near chance take away, and short
 alignments add some I by sampling noise alone (the shuffled I).
+
+The per-pair chance has one more catch. Two homologs at 20-30% identity share a quarter of
+their residues, and those identical residues also make the two compositions alike. So
+"chance from the pair's own shares" absorbs part of the signal it is compared against. To
+see how much, chance is also computed with each query against the target of a different,
+randomly chosen pair (Pfam only, triangles), and from the residue shares pooled over all
+pairs in the bin.
 
 Each quantity is drawn on the axis of its unit: per 100 positions on the left, bits on the
 right. Black horizontal bars are the estimates. A measured point within the grey band
@@ -499,7 +522,7 @@ for lab, a, m, est in EST:
         rows.append(dict(quantity=lab, unit="per 100", dataset=ds, version="measured mean",
                          estimate=est, measured=round(v, 1),
                          lo=round(100 * g(s, a, m, "lo"), 1), hi=round(100 * g(s, a, m, "hi"), 1),
-                         difference=round(v - est, 1), within_rule=abs(v - est) <= TOL_100,
+                         difference=round(v - est, 1), within_rule=bool(abs(v - est) <= TOL_100),
                          pairs=s.filter(pl.col("alphabet") == a)["n"][0]))
 for lab, a, est in EST_I:
     for ds, s in [("Pfam 20-30%", pf_bin), ("SCOPe same superfamily, diff. family, 20-30%", sc_bin)]:
@@ -514,37 +537,68 @@ for lab, a, est in EST_I:
                              lo=None if lo is None else round(lo, 3),
                              hi=None if hi is None else round(hi, 3),
                              difference=round(float(v) - est, 3),
-                             within_rule=abs(float(v) - est) <= TOL_BITS, pairs=n))
+                             within_rule=bool(abs(float(v) - est) <= TOL_BITS), pairs=n))
 cmp = pl.DataFrame(rows)
 print(cmp)
 
-# Chance for protein20 from the pooled residue shares of all 20-30% pairs, for comparison
-# with the per-pair chance above. If they differ, partners' compositions are correlated.
-aln_bin = hc.add_identity_bin(
-    pl.read_parquet(PFAM_ALN).filter(pl.col("lali") >= MIN_COLS)
-).filter(pl.col("identity_bin") == "20-30%")
-codes = hc.TABLES[P20][
-    np.frombuffer("".join(aln_bin["qaln"].to_list() + aln_bin["taln"].to_list()).encode(), np.uint8)
-]
-codes = codes[codes != hc.GAP]
-f_pool = np.bincount(codes, minlength=20) / codes.size
-print(
-    f"\nprotein20 chance per 100 at 20-30% identity: from pooled residue shares "
-    f"{100 * (f_pool ** 2).sum():.2f}; mean of per-pair chance {100 * g(pf_bin, P20, 'expected'):.2f}"
+# Chance with a random partner: each query's aligned class shares against the aligned class
+# shares of a different pair's target (a derangement, so no pair meets its own target). Also
+# chance from shares pooled over every aligned residue in the bin.
+keys_bin = pfam.filter((pl.col("alphabet") == HP) & (pl.col("identity_bin") == "20-30%")).select(
+    "family", "query", "target"
 )
+aln_bin = pl.read_parquet(PFAM_ALN).join(keys_bin, on=["family", "query", "target"], how="semi")
+
+
+def aligned_class_shares(qaln, taln, alphabet):
+    # Class shares of query and target over the columns where both have a residue.
+    q = np.frombuffer(qaln.encode(), np.uint8)
+    t = np.frombuffer(taln.encode(), np.uint8)
+    both = (hc.TABLES[P20][q] != hc.GAP) & (hc.TABLES[P20][t] != hc.GAP)
+    tab, k = hc.TABLES[alphabet], hc.SIZES[alphabet]
+    n = both.sum()
+    return np.bincount(tab[q][both], minlength=k)[:k] / n, np.bincount(tab[t][both], minlength=k)[:k] / n
+
+
+rng_partner = np.random.default_rng(SEED)
+order = rng_partner.permutation(aln_bin.height)
+partner = np.empty(aln_bin.height, dtype=int)
+partner[order] = np.roll(order, 1)
+alt_rows = []
+for lab, a, m, est in EST:
+    if m != "expected":
+        continue
+    sh = [aligned_class_shares(qa, ta, a) for qa, ta in zip(aln_bin["qaln"], aln_bin["taln"])]
+    fq = np.array([x[0] for x in sh])
+    ft = np.array([x[1] for x in sh])
+    own = (fq * ft).sum(axis=1).mean()
+    rand = (fq * ft[partner]).sum(axis=1).mean()
+    pooled = ((fq.mean(axis=0) + ft.mean(axis=0)) / 2) ** 2
+    print(
+        f"{a}: chance per 100 at Pfam 20-30%, {aln_bin.height:_} pairs: own partner {100 * own:.2f}; "
+        f"random other pair's target {100 * rand:.2f}; pooled shares {100 * pooled.sum():.2f}; estimate {est}"
+    )
+    alt_rows.append(dict(quantity=lab, unit="per 100", dataset="Pfam 20-30%",
+                         version="chance with a random partner", estimate=est,
+                         measured=round(100 * rand, 1), lo=None, hi=None,
+                         difference=round(100 * rand - est, 1),
+                         within_rule=bool(abs(100 * rand - est) <= TOL_100), pairs=aln_bin.height))
+cmp = pl.concat([cmp, pl.DataFrame(alt_rows)], how="vertical_relaxed")
 
 # x offset of each point inside its group; the I-minus-shuffled version is in the table only.
 OFFSET = {
-    ("Pfam 20-30%", "measured mean"): -0.15,
-    ("SCOPe same superfamily, diff. family, 20-30%", "measured mean"): 0.15,
+    ("Pfam 20-30%", "measured mean"): -0.22,
+    ("Pfam 20-30%", "chance with a random partner"): 0.0,
+    ("SCOPe same superfamily, diff. family, 20-30%", "measured mean"): 0.22,
     ("Pfam 20-30%", "mean of per-pair I"): -0.27,
     ("Pfam 20-30%", "I of the mean rates"): -0.09,
     ("SCOPe same superfamily, diff. family, 20-30%", "mean of per-pair I"): 0.09,
     ("SCOPe same superfamily, diff. family, 20-30%", "I of the mean rates"): 0.27,
 }
 DS_MARK = {"Pfam 20-30%": "o", "SCOPe same superfamily, diff. family, 20-30%": "s"}
-fig = plt.figure(figsize=(14, 5.6))
-gs = fig.add_gridspec(2, 2, height_ratios=[0.55, 4], width_ratios=[4, 2.4])
+RANDOM_MARK = "^"
+fig = plt.figure(figsize=(14, 6.0))
+gs = fig.add_gridspec(2, 2, height_ratios=[0.75, 4], width_ratios=[4, 2.4])
 leg_ax = fig.add_subplot(gs[0, :])
 leg_ax.axis("off")
 axl, axr = fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])
@@ -565,11 +619,12 @@ for ax, unit, labels, tol in [
                 continue
             xx = i + OFFSET[key]
             hollow = r["version"] == "I of the mean rates"
-            ax.plot(xx, r["measured"], DS_MARK[r["dataset"]], ms=8, mec=COLOR[a],
+            mark = RANDOM_MARK if r["version"] == "chance with a random partner" else DS_MARK[r["dataset"]]
+            ax.plot(xx, r["measured"], mark, ms=8, mec=COLOR[a],
                     mfc="white" if hollow else COLOR[a], zorder=4)
             if r["lo"] is not None:
                 ax.vlines(xx, r["lo"], r["hi"], color=COLOR[a], lw=1)
-            ax.annotate(f"{r['measured']:.2f}" if unit == "bits" else f"{r['measured']:.0f}",
+            ax.annotate(f"{r['measured']:.2f}" if unit == "bits" else f"{r['measured']:.1f}",
                         (xx, r["measured"]), textcoords="offset points",
                         # label on the side away from the estimate line, so it never sits on it
                         xytext=(0, 7) if r["measured"] >= est else (0, -7),
@@ -585,21 +640,39 @@ axl.set_ylim(0, 85)
 axr.set_ylabel("evidence per aligned position, I (bits)")
 axr.set_ylim(0.10, 0.31)
 axr.set_title("y axis starts at 0.10 bits", fontsize=9)
+def pair_of_marks(fill):
+    return tuple(
+        Line2D([], [], ls="none", marker=mk, mfc=fill, mec="0.3", ms=8) for mk in ("o", "s")
+    )
+
+
 handles = [
-    Line2D([], [], color="black", lw=2.5, label="estimate from kappa and Swiss-Prot shares"),
-    Patch(color="0.88", label="decision-rule band: estimate ± 3 per 100, or ± 0.03 bits"),
-    Patch(color=COLOR[HP], label="hp_thomas_dill2 (H/P)"),
-    Patch(color=COLOR[P20], label="protein20 (20 aa)"),
-    Line2D([], [], ls="none", marker="o", color="0.3", ms=8, label="Pfam seed, 20-30% identity"),
-    Line2D([], [], ls="none", marker="s", color="0.3", ms=8,
-           label="SCOPe same superfamily, different family, 20-30% identity"),
-    Line2D([], [], ls="none", marker="o", mfc="0.3", mec="0.3", ms=8,
-           label="filled: mean over pairs (bits: mean of per-pair I); line = 95% interval"),
-    Line2D([], [], ls="none", marker="o", mfc="white", mec="0.3", ms=8,
-           label="hollow, bits only: I from the mean Pr(agree) and mean Pr(chance)"),
+    Line2D([], [], color="black", lw=2.5),
+    Patch(color="0.88"),
+    Line2D([], [], color=COLOR[HP], lw=7),
+    Line2D([], [], color=COLOR[P20], lw=7),
+    Line2D([], [], ls="none", marker="o", mfc="0.6", mec="0.3", ms=8),
+    Line2D([], [], ls="none", marker="s", mfc="0.6", mec="0.3", ms=8),
+    pair_of_marks("0.3"),
+    pair_of_marks("white"),
+    Line2D([], [], ls="none", marker=RANDOM_MARK, mfc="0.3", mec="0.3", ms=8),
 ]
-leg_ax.legend(handles=handles, loc="lower left", ncol=2, fontsize=8.5, frameon=False,
-              borderaxespad=0, bbox_to_anchor=(0, -0.45))
+labels_leg = [
+    "estimate from kappa and Swiss-Prot shares",
+    "decision-rule band: estimate ± 3 per 100, or ± 0.03 bits",
+    "hp_thomas_dill2 (H/P)",
+    "protein20 (20 aa)",
+    "circle: Pfam seed, 20-30% identity",
+    "square: SCOPe same superfamily, different family, 20-30% identity",
+    "filled: mean over pairs (bits: mean of per-pair I); vertical line = 95% interval",
+    "hollow, bits only: I from the mean Pr(agree) and mean Pr(chance)",
+    "triangle: chance with each query against a random other pair's target (Pfam)",
+]
+from matplotlib.legend_handler import HandlerTuple
+
+leg_ax.legend(handles, labels_leg, loc="lower left", ncol=2, fontsize=8.5, frameon=False,
+              borderaxespad=0, bbox_to_anchor=(0, -0.55),
+              handler_map={tuple: HandlerTuple(ndivide=None)})
 
 fails = cmp.filter(~pl.col("within_rule") & pl.col("dataset").str.starts_with("Pfam")
                    & pl.col("version").is_in(["measured mean", "mean of per-pair I"]))
@@ -613,9 +686,14 @@ hc.finish_figure(
     title="Measured agreement and evidence at 20-30% identity, against the kappa-based estimates",
     hypothesis=(
         "Converting kappa back to positions per 100 with Swiss-Prot shares gives the same "
-        "numbers as counting them per pair. A point inside the grey band passes."
+        "numbers as counting them per pair. A point inside the grey band passes; closer to the "
+        "black line is better agreement with the estimate."
     ),
-    conclusion=f"Pfam values outside the band: {fail_txt}.",
+    conclusion=(
+        f"Pfam values outside the band: {fail_txt}. In both alphabets, chance from each pair's "
+        "own shares is 0.7 per 100 above chance with a random partner (circle vs triangle); the "
+        "random-partner value is the closer match to the estimate."
+    ),
 )
 """)
 
@@ -626,40 +704,49 @@ md(r"""
 identity; 25 vs 6 for 20 amino acids; I about 0.15 vs 0.26 bits) hold when agreement is
 counted per pair and chance is measured by shuffling?
 
-**Answer.** Yes, all six estimates fall within the decision-rule band. They can be quoted, with
-this notebook as the source.
+**Answer.** The four per-100 numbers hold. The two I values pass the decision rule but cannot
+be rebuilt from those four numbers; quote the measured I instead.
 
 1. At 20-30% identity in Pfam seed pairs (37,085 pairs), 73.9 of 100 aligned positions share an
-   H/P class (95% interval 73.8-73.9); the estimate was 74. Shuffling the target gives 51.4,
-   the same as chance from the pairs' own class shares (51.4); the estimate was 51.
+   H/P class (95% interval 73.8-73.9; estimate 74). Chance from each pair's own class shares is
+   51.4 per 100, and shuffling the target gives 51.4 (estimate 51).
 2. For the 20 amino acids at the same identity, 25.2 of 100 aligned positions are identical
-   (estimate 25). Chance is 6.7 per 100, not 6. The pooled residue shares of the same pairs give
-   6.0, the Swiss-Prot value, so the extra 0.7 comes from the two partners in a pair having more
-   alike compositions than two random sequences. The shuffled value, 6.6, agrees with the
-   per-pair formula.
-3. Evidence per aligned position at 20-30% identity: H/P 0.162 bits, 20 amino acids 0.251 bits
-   (estimates 0.15 and 0.26). Shuffled pairs score 0.006 bits in both alphabets, so the floor from
-   finite alignments is small. Put through the formula once at the bin's mean rates, as the
-   estimate was made, the values are 0.153 and 0.245. The H/P estimate is closer to that version;
-   the 20-letter estimate is 0.009-0.015 bits high because it used chance 6 instead of 6.7.
-4. In the SCOPe pairs from the same superfamily but a different family at 20-30% identity (2,118
-   pairs), H/P agreement is 72.1 per 100 and I is 0.144 bits (20 amino acids: 24.4, 0.239 bits).
-   The estimates hold there too.
-5. One per-pair figure the kappa summary did not show: below 20% identity, H/P carries more
-   evidence per aligned position than the 20 amino acids (Pfam 0.103 vs 0.091 bits; SCOPe same
-   fold, different superfamily 0.033 vs 0.020). At 20% identity and above, 20 amino acids carry
-   more, by 1.5x at 20-30% and 3.5x at 60% and above. Part of the H/P lead at low identity is
-   packing, not ancestry: different-fold SCOPe pairs, which share no ancestor, still agree on
-   56.2 H/P positions per 100 against 50.8 shuffled (186 pairs).
+   (estimate 25). Chance from each pair's own shares is 6.7 per 100. With each query set against
+   a random other pair's target, chance is 6.0, the estimate. A random partner removes whatever
+   makes two homologs' compositions alike, including the residues they share, so the per-pair
+   chance absorbs some of the signal it is compared against. This notebook does not split the
+   0.7 into its causes. For H/P the random-partner chance is 50.7
+   per 100, also 0.7 below the pair's own, and still rounds to the estimate of 51.
+3. Evidence per aligned position at 20-30% identity, mean over pairs: H/P 0.162 bits, 20 amino
+   acids 0.251 bits. Shuffled pairs score 0.006 bits in both alphabets. The estimates (0.15,
+   0.26) are within 0.03 bits, but the formula applied to the estimated rates gives 0.160 for
+   74 vs 51 and 0.270 for 25 vs 6, so the estimates do not follow from their own inputs.
+4. In SCOPe pairs from the same superfamily but a different family at 20-30% identity (2,118
+   pairs), H/P agreement is 72.1 per 100 and I is 0.144 bits (20 amino acids: 24.4 per 100,
+   0.239 bits), also within the band.
+5. A result the kappa summary did not show: in Pfam pairs under 20% identity, H/P carries more
+   evidence per aligned position than the 20 amino acids (0.103 vs 0.091 bits). From 20%
+   identity up, the 20 amino acids carry more: 1.5 times as much at 20-30% and 3.5 times at 60%
+   and above. In SCOPe, different-fold pairs, which SCOPe does not call related, still agree on
+   56.2 H/P positions per 100 against 50.8 shuffled (186 pairs). They were picked for TM-score
+   0.5 or more, so this notebook cannot say whether that excess comes from the structural
+   superposition, shared packing, or a distant common ancestor.
 
-**Limits.** These are aligned positions only. The numbers say nothing about whether an
-alignment can be found; for that see notebook 230 sections 4-6 (exact runs). The SCOPe
-categories pool all identities, so the right column of section 2 mixes relatedness with
-identity. Pfam seed pairs are capped at 6 per family, so a large family counts no more than
-a small one with 4 or more seed members.
+**Limits.**
+* Aligned positions only. Whether an alignment can be found at all is notebook 230 sections 4-6.
+* The SCOPe categories pool all identities; the right column of section 2 mixes relatedness
+  with identity.
+* The decision rule is loose for small numbers: ± 3 per 100 around a chance of 6 lets 3 to 9
+  pass, and ± 0.03 bits is a fifth of 0.15. Read the measured values, not only the pass/fail.
+* Identity bins are notebook 230's (`pl.cut`, closed on the right): a pair at exactly 20% counts
+  in "<20%", one at exactly 30% in "20-30%".
+* Pfam seed pairs are capped at 6 per family, so a large family counts no more than a small one
+  with 4 or more seed members.
 
-**Decision.** Keep quoting 74 vs 51 (H/P) and 25 vs 6.7 (20 amino acids, chance corrected from 6)
-at 20-30% identity, and 0.16 vs 0.25 bits per aligned position, citing this notebook.
+**Decision.** Quote 74 vs 51 aligned positions per 100 in H/P and 25 vs 6 for the 20 amino
+acids, at 20-30% identity in Pfam seed pairs, with chance from a random partner's composition.
+For evidence per aligned position, quote the measured 0.16 bits (H/P) and 0.25 bits (20 amino
+acids), citing this notebook.
 """)
 
 nb = {
