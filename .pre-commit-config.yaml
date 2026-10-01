@@ -1,7 +1,10 @@
 # Checks run on the notebooks being committed. Set up once per clone (it covers every
 # worktree of that clone):
 #
-#   pip install pre-commit && pre-commit install
+#   pip install pre-commit && pre-commit install --allow-missing-config
+#
+# --allow-missing-config keeps the hook from blocking commits on branches that do not have
+# this file yet.
 #
 # To commit anyway, for a notebook that is deliberately half-run:
 #

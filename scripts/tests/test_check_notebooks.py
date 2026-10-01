@@ -24,7 +24,9 @@ def write(tmp_path, cells):
 
 
 def test_clean_notebook_passes(tmp_path):
-    nb = write(tmp_path, [code_cell("x = 14_873", 1), code_cell("fig.savefig('a.png')", 2)])
+    nb = write(
+        tmp_path, [code_cell("x = 14_873", 1), code_cell("fig.savefig('a.png')", 2)]
+    )
     assert check_notebooks.check_notebook(nb) == []
 
 
@@ -45,16 +47,61 @@ def test_each_rule_fires(tmp_path):
     )
     text = "\n".join(check_notebooks.check_notebook(nb))
     assert "not collapsed" in text
-    assert "is a tuple" in text
+    assert "separate numbers" in text
     assert "plt.show()" in text
     assert "KeyError" in text
     assert "queue name" in text
     assert "not run top to bottom" in text
 
 
-def test_comma_inside_a_call_is_not_flagged(tmp_path):
-    nb = write(tmp_path, [code_cell("ax.set_xlim(0, 1)\nsizes = f(1,000)", 1)])
+def test_ordinary_tuples_and_ranges_are_not_flagged(tmp_path):
+    src = "ax.set_xlim(0, 1)\nxs = range(1, 100)\npair = (14, 873)\nlo, hi = 0, 500"
+    nb = write(tmp_path, [code_cell(src, 1)])
     assert check_notebooks.check_notebook(nb) == []
+
+
+def test_comma_integers_outside_an_assignment(tmp_path):
+    # Each of these runs, and each gives the wrong value.
+    for src in [
+        "def f():\n    return 14,873",
+        "x = [1,000]",
+        "ok = n == 1,000",
+        "sizes = f(1,000)",
+        "n = 14, 873  # black adds the space",
+    ]:
+        nb = write(tmp_path, [code_cell(src, 1)])
+        assert "separate numbers" in "\n".join(check_notebooks.check_notebook(nb)), src
+
+
+def test_plt_show_in_a_comment_or_string_is_not_flagged(tmp_path):
+    src = "# never call plt.show() here\nmsg = 'no plt.close() please'"
+    nb = write(tmp_path, [code_cell(src, 1)])
+    assert check_notebooks.check_notebook(nb) == []
+
+
+def test_plt_show_after_a_magic_line_is_flagged(tmp_path):
+    nb = write(tmp_path, [code_cell("%matplotlib inline\nplt.show()", 1)])
+    assert "plt.show()" in "\n".join(check_notebooks.check_notebook(nb))
+
+
+def test_traceback_printed_to_stderr_is_flagged(tmp_path):
+    stderr = {
+        "output_type": "stream",
+        "name": "stderr",
+        "text": ["Traceback (most recent call last):\n", "KeyError: 'x'\n"],
+    }
+    nb = write(tmp_path, [code_cell("a = 1", 1, outputs=[stderr])])
+    assert "traceback" in "\n".join(check_notebooks.check_notebook(nb))
+
+
+def test_secret_in_a_markdown_cell_is_flagged(tmp_path):
+    md = {
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": "Job ran under arn:aws:batch:us-west-2:123456789012:job-queue/x",
+    }
+    nb = write(tmp_path, [md, code_cell("a = 1", 1)])
+    assert "ARN" in "\n".join(check_notebooks.check_notebook(nb))
 
 
 def test_main_exit_status(tmp_path):
