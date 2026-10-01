@@ -28,6 +28,21 @@ from pathlib import Path
 # Used only when a cell cannot be tokenized; otherwise comments and strings are skipped.
 PLT_SHOW_CLOSE = re.compile(r"\bplt\.(show|close)\s*\(")
 
+# A saved output that shows a table: polars' box drawing or its shape line, or an HTML table.
+TABLE_MARKERS = ("shape: (", "┌", "<table")
+
+# A section shows a figure when a cell in it saves one or its output is an image.
+SAVES_FIGURE = re.compile(r"\b(?:savefig|finish_figure)\s*\(")
+IMAGE_MIMES = ("image/png", "image/svg+xml", "image/jpeg")
+
+# A `##` (or deeper) markdown heading starts a section. The `#` title section holds setup
+# and data previews, so it is not checked.
+SECTION_HEADING = re.compile(r"^\s{0,3}(#{2,6})\s+(\S.*)$", re.MULTILINE)
+
+# Numbers two notebooks already shared when this check was added (2026-10-01). Rename one
+# of them rather than adding to this set.
+ALLOWED_SHARED_NUMBERS = {"078"}
+
 # A traceback printed by a try/except or a subprocess is saved as stderr, not as an error.
 TRACEBACK = "Traceback (most recent call last)"
 
@@ -101,6 +116,52 @@ def comma_integers(src):
     return found
 
 
+def output_text(out):
+    """The text an output shows: stream text, text/plain and text/html."""
+    parts = [out.get("text", "")]
+    for mime in ("text/plain", "text/html"):
+        parts.append(out.get("data", {}).get(mime, ""))
+    return "".join("".join(p) if isinstance(p, list) else p for p in parts)
+
+
+def tables_without_figures(cells):
+    """Titles of `##` sections whose saved outputs show a table but no figure.
+
+    PR #46 asked twice for a figure next to a table (notebook 241, sections 1 and 8).
+    """
+    sections = []  # [title, shows a table, shows a figure]
+    for cell in cells:
+        if cell.get("cell_type") == "markdown":
+            heading = SECTION_HEADING.search(cell_source(cell))
+            if heading:
+                sections.append([heading.group(2).strip(), False, False])
+            continue
+        if cell.get("cell_type") != "code" or not sections:
+            continue
+        section = sections[-1]
+        if SAVES_FIGURE.search(cell_source(cell)):
+            section[2] = True
+        for out in cell.get("outputs", []):
+            if any(m in out.get("data", {}) for m in IMAGE_MIMES):
+                section[2] = True
+            if any(m in output_text(out) for m in TABLE_MARKERS):
+                section[1] = True
+    return [title for title, table, figure in sections if table and not figure]
+
+
+def notebooks_sharing_number(path):
+    """Other notebooks in the same folder whose file name starts with the same number."""
+    path = Path(path)
+    m = re.match(r"(\d+)\D", path.name)
+    if not m or m.group(1) in ALLOWED_SHARED_NUMBERS:
+        return []
+    return sorted(
+        p.name
+        for p in path.parent.glob(f"{m.group(1)}*.ipynb")
+        if p.name != path.name and re.match(rf"{m.group(1)}\D", p.name)
+    )
+
+
 def check_notebook(path):
     """Return a list of 'path: cell N: problem' strings, empty if the notebook passes."""
     try:
@@ -167,6 +228,18 @@ def check_notebook(path):
         problems.append(
             f"{path}: code cells were not run top to bottom in a fresh kernel "
             f"(execution counts {compact(counts)}); restart and run all"
+        )
+
+    for title in tables_without_figures(nb.get("cells", [])):
+        problems.append(
+            f"{path}: section '{title[:70]}' shows a table but no figure; add the plot"
+        )
+
+    others = notebooks_sharing_number(path)
+    if others:
+        problems.append(
+            f"{path}: notebook number is also used by {', '.join(others)}; "
+            "take the next free number"
         )
 
     return problems
