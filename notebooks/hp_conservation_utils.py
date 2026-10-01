@@ -16,6 +16,17 @@ And one number read off the whole alignment:
   exactly in that alphabet, which is what an exact-match k-mer search can see.
   ``longest_run_null`` is the same after shuffling the target's residues.
 
+And three numbers from the same shuffles, measured rather than computed from shares:
+
+* ``agree_null``: fraction of the same aligned columns with the same class after the
+  target's residues are shuffled, mean over shuffles.
+* ``evidence``: bits of evidence per aligned column that the pair is related, the
+  Kullback-Leibler divergence between agree/disagree at rate ``agree`` and at rate
+  ``expected`` (see ``bernoulli_kl_bits``).
+* ``evidence_null``: the same for each shuffle, against that shuffle's own ``expected``,
+  mean over shuffles. It is above zero because a finite alignment never hits its chance
+  rate exactly.
+
 Alphabet tables are copied from kmerseek's ``src/rust/alphabets.rs`` (dayhoff6 from
 sourmash), so the classes match what the search engine indexes.
 """
@@ -111,6 +122,22 @@ def longest_true_run(mask: np.ndarray) -> int:
     return int((ends - starts).max())
 
 
+def bernoulli_kl_bits(agree, chance):
+    """Bits of evidence per aligned column: agree*log2(agree/chance) + (1-agree)*log2((1-agree)/(1-chance)).
+
+    `agree` is the measured share of columns with the same class, `chance` the share
+    expected from the two sequences' class compositions. Works on scalars and arrays.
+    Zero when agree == chance; nan when chance is 0 or 1.
+    """
+    a = np.asarray(agree, dtype=float)
+    c = np.asarray(chance, dtype=float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        t1 = np.where(a > 0, a * np.log2(a / c), 0.0)
+        t0 = np.where(a < 1, (1 - a) * np.log2((1 - a) / (1 - c)), 0.0)
+        out = np.where((c > 0) & (c < 1), t1 + t0, np.nan)
+    return out if out.ndim else float(out)
+
+
 def pair_stats(
     qaln: str,
     taln: str,
@@ -146,11 +173,16 @@ def pair_stats(
         expected = float((fq * ft).sum())
         kappa = (agree - expected) / (1 - expected) if expected < 1 else np.nan
         run = longest_true_run(same)
-        null_runs = []
+        null_runs, null_agree, null_evidence = [], [], []
         for ts in shuffles:
             ta_s = ta.copy()
             ta_s[t_res_idx] = tab[ts]
-            null_runs.append(longest_true_run((qa == ta_s) & both))
+            same_s = (qa == ta_s) & both
+            null_runs.append(longest_true_run(same_s))
+            agree_s = same_s.sum() / n
+            ft_s = np.bincount(ta_s[both], minlength=k)[:k] / n
+            null_agree.append(agree_s)
+            null_evidence.append(bernoulli_kl_bits(agree_s, float((fq * ft_s).sum())))
         rows.append(
             {
                 "alphabet": name,
@@ -160,6 +192,9 @@ def pair_stats(
                 "kappa": float(kappa),
                 "longest_run": run,
                 "longest_run_null": float(np.mean(null_runs)),
+                "agree_null": float(np.mean(null_agree)),
+                "evidence": bernoulli_kl_bits(agree, expected),
+                "evidence_null": float(np.mean(null_evidence)),
             }
         )
     return rows
