@@ -1,0 +1,58 @@
+{
+ "kmerseek_pr": 112,
+ "kmerseek_commit": "9878ff8",
+ "Ced9": {
+  "query": "Ced9",
+  "n_combos": 120,
+  "observed_best_rank": 97,
+  "n_targets_at_best": 1825,
+  "null_median": 35.0,
+  "null_p05": 3.0,
+  "null_p95": 150.0,
+  "p_random_at_least_as_good": 0.8543,
+  "alphabet": "gbmr4",
+  "k": 16,
+  "metric": "E-value",
+  "pct_random_as_good": 85
+ },
+ "P66": {
+  "query": "P66",
+  "n_combos": 135,
+  "observed_best_rank": 412,
+  "n_targets_at_best": 3042,
+  "null_median": 43.0,
+  "null_p05": 4.0,
+  "null_p95": 180.0,
+  "p_random_at_least_as_good": 0.9992,
+  "alphabet": "hsdm17",
+  "k": 6,
+  "metric": "enrichment",
+  "pct_random_as_good": 100
+ },
+ "BHF": {
+  "n_arms": 106,
+  "n_arms_lt1": 58,
+  "n_proteins_lt1": 366,
+  "n_proteins_lt001": 17,
+  "lowest": [
+   {
+    "gene": "TPRX1",
+    "E": 3.6057830738238065e-05,
+    "alphabet": "gbmr4",
+    "k": 10
+   },
+   {
+    "gene": "COL1A1",
+    "E": 0.0006472227729529086,
+    "alphabet": "gbmr4",
+    "k": 10
+   },
+   {
+    "gene": "COL16A1",
+    "E": 0.001350720490279497,
+    "alphabet": "gbmr4",
+    "k": 10
+   }
+  ]
+ }
+}

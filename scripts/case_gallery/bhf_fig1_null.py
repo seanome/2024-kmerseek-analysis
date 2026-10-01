@@ -8,7 +8,7 @@ import numpy as np
 from pathlib import Path
 import polars as pl
 ROOT = Path(__file__).resolve().parents[2]
-D = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
+from sources import D241 as D
 FIG1 = ["ZNF292", "RSF1", "TSHZ1", "TSHZ2", "TSHZ3", "RNMT", "SFI1", "TRAPPC10", "NDNF"]
 MET = [("E", "region_evalue", True), ("idf", "region_mean_idf", False), ("tfidf", "region_tfidf", False)]
 reg = pl.read_parquet(D / "regions.parquet", columns=["alphabet", "ksize_arm", "query_name", "gene",

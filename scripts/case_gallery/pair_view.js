@@ -80,19 +80,24 @@ const LK={nb241:'<a href="'+GHR+'/blob/olgabot/alphabet-ranking-three-cases/note
 // ---- the three reference pairs: alphabet and k chosen in the side panel, hits in the main figure ----
 const BH1={q:[160,179],t:[136,155]};
 const MOTIFS={Ced9:[['BH4',80,99],['BH1',160,179],['BH2',213,229]],P66:[],BHF:[]};
+const eFmt=e=>e==null?'no E':e<0.01?e.toExponential(1):e<10?e.toFixed(2):fmt(Math.round(e));
+function bestText(q,partner){const n=NUM241[q];
+  return 'Over all '+n.n_combos+' combinations of alphabet, k and the five ranking statistics of '+LK.nb241+' (E-value, mean IDF, tf-idf, enrichment, Poisson p-value), searched with kmerseek PR #'+NUM241.kmerseek_pr+', '+partner+'\'s best rank is '+fmt(n.observed_best_rank)+' of '+fmt(n.n_targets_at_best)+' human proteins hit ('+n.alphabet+', '+n.metric+', k='+n.k+'). A human protein drawn at random from the same hit lists ranks as well or better in '+n.pct_random_as_good+'% of 20,000 draws ('+LK.nb241s6+').'}
+function bhfLede(){const b=NUM241.BHF;
+  return 'BHF (<i>Botryllus schlosseri</i> histocompatibility factor, 252 aa) has no known human homologue and no annotated domains. With kmerseek PR #'+NUM241.kmerseek_pr+' every region has an E-value. Of the '+b.n_arms+' alphabet and k values that hit any human protein, '+b.n_arms_lt1+' put at least one under E = 1: '+b.n_proteins_lt1+' proteins in all, '+b.n_proteins_lt001+' of them under E = 0.01. If the E-values were right, about one protein per search would fall under E = 1 ('+b.n_arms+' in all) and about one under E = 0.01 across all the searches together. Here they come out too small, so an E-value under 1 is not evidence of a human homologue. The lowest are '+b.lowest.map(x=>x.gene+' '+eFmt(x.E)+' ('+x.alphabet+' k='+x.k+')').join(', ')+'.'}
 const REF={
   Ced9:{title:'Ced9 → human',q:'Ced9',ql:280,partner:'BCL2',qLabel:'C. elegans Ced9',
     lede:'Ced9 (<i>C. elegans</i>, 280 aa) and human BCL2 (239 aa) are known homologues: the same SCOP superfamily, confirmed by structure, under 30% identity. The known shared region is the BH1 motif (UniProt '+LK.up('P41958')+' and '+LK.up('P10415')+'): Ced9 160–179 and BCL2 136–155. It is shaded gold everywhere on this page.',
     band:{q:BH1.q,t:BH1.t,label:'the BH1 motif, the known shared region (Ced9 160–179, BCL2 136–155; UniProt)'},
     found:m=>m.sr.some(g=>g[0]<BH1.q[1]&&g[1]>BH1.q[0]-1&&g[2]<BH1.t[1]&&g[3]>BH1.t[0]-1),
     foundText:'kmerseek\'s search reported a region on BCL2 that overlaps BH1 on both proteins',
-    best:'Over all 102 alphabet, k and ranking-statistic combinations in '+LK.nb241+', BCL2\'s best rank is 213 of 18,064 human proteins hit (polarity4, mean IDF, k=9). A human protein drawn at random from the same hit lists ranks as well or better in 97% of 20,000 draws ('+LK.nb241s6+').'},
+    best:bestText('Ced9','BCL2')},
   P66:{title:'P66 → human',q:'P66',ql:597,partner:'CD47',qLabel:'B. burgdorferi P66',
     lede:'P66 (<i>Borreliella burgdorferi</i>, 597 aa) and human CD47 (323 aa). CD47 is the proposed partner of P66. '+LK.nb241+' lists this as a claim that has not been shown and asks whether any alphabet supports it. There is no known shared region to shade.',
     band:null, found:m=>m.sr.length>0, foundText:'kmerseek\'s search reported a region on CD47',
-    best:'Over all 121 alphabet, k and ranking-statistic combinations in '+LK.nb241+', CD47\'s best rank is 166 of 18,775 human proteins hit (hp_lehninger_hpc3, E-value, k=14). A human protein drawn at random from the same hit lists ranks as well or better in 90% of draws ('+LK.nb241s6+').'},
+    best:bestText('P66','CD47')},
   BHF:{title:'BHF → human',q:'BHF',ql:252,partner:null,qLabel:'Botryllus BHF',
-    lede:'BHF (<i>Botryllus schlosseri</i> histocompatibility factor, 252 aa) has no known human homologue and no annotated domains. 71 alphabet and k values have a Karlin-Altschul fit; 61 of them give some region a finite E-value, and 3 put a human protein just under E = 1 (SCN10A 0.61 at polarity4 k=13, SFI1 0.84 at hp_lehninger_c_nonpolar2 k=28, FXYD5 0.99 at gbmr7 k=8). '+LK.nb241+' reads this as no better than chance.',
+    lede:bhfLede(),
     band:null, found:null, foundText:'some human protein has a region with E-value under 1'},
 };
 const LETTERS={}; const ALPHAS=[]; const PLAN={};
@@ -101,7 +106,6 @@ ALPHAS.sort((x,y)=>LETTERS[x]-LETTERS[y]||ALPHAS.indexOf(x)-ALPHAS.indexOf(y));
 let marginW=330; try{const w=+localStorage.getItem('kmgMarginW');if(w>=200&&w<=700)marginW=w}catch(e){}
 let refSel='Ced9', refArm={Ced9:['hp_lehninger2',17],P66:['hp_lehninger2',17],BHF:['polarity4',13]}, refRow={};
 function armFound(q,a,k){if(q==='BHF'){const r=BHFARMS[a+'|'+k];return r.bestE!=null&&r.bestE<1}return REF[q].found(META241[q+'|'+a+'|'+k])}
-const eFmt=e=>e==null?'no E':e<0.01?e.toExponential(1):e<10?e.toFixed(2):fmt(Math.round(e));
 function classTip(a){const c=PAIRS['Ced9|'+a+'|'+PLAN[a][0].k].cls;return a+', '+Object.keys(c).length+' letters: '+Object.entries(c).map(([k,v])=>k+' = '+v).join(', ')}
 function margin(q){
   const [sa,sk]=refArm[q]; let n=0,tot=0; ALPHAS.forEach(a=>PLAN[a].forEach(({k})=>{tot++;if(armFound(q,a,k))n++}));
@@ -254,9 +258,10 @@ const FIG1=new Set(['ZNF292','RSF1','TSHZ1','TSHZ2','TSHZ3','RNMT','SFI1','TRAPP
 function rankSummary(q){
   const R=REF[q];
   if(q==='BHF'){
-    let h='<h3 class="hh">Do the Figure 1 draft genes come back under mean IDF or tf-idf?</h3><p class="note">Each gene\'s best rank over all 152 alphabet and k values, where it was reached, and how many human proteins that setting hit. The last column of each statistic is the share of 20,000 draws in which a human protein picked at random from the same hit lists, at the same alphabet and k values, ranks as well or better (the null from '+LK.nb241s6+'). Near 1 means the rank is what chance gives.</p><div class="tbl"><table><thead><tr><th rowspan="2">gene</th>'+METS.map(x=>'<th colspan="3">'+x[1]+'</th>').join('')+'</tr><tr>'+METS.map(()=>'<th>best rank</th><th>where (proteins hit)</th><th>random as good</th>').join('')+'</tr></thead><tbody>';
+    let h='<h3 class="hh">Do the Figure 1 draft genes come back under E-value, mean IDF or tf-idf?</h3><p class="note">Each gene\'s best rank over all 152 alphabet and k values, where it was reached, and how many human proteins that setting hit. The last column of each statistic is the share of 20,000 draws in which a human protein picked at random from the same hit lists, at the same alphabet and k values, ranks as well or better (the null from '+LK.nb241s6+'). Near 1 means the rank is what chance gives.</p><div class="tbl"><table><thead><tr><th rowspan="2">gene</th>'+METS.map(x=>'<th colspan="3">'+x[1]+'</th>').join('')+'</tr><tr>'+METS.map(()=>'<th>best rank</th><th>where (proteins hit)</th><th>random as good</th>').join('')+'</tr></thead><tbody>';
     BHFFIG1.forEach(r=>{h+='<tr><td class="g">'+r.gene+'</td>';METS.forEach(([m])=>{h+=r['best_'+m]==null?'<td>–</td><td></td><td></td>':'<td class="num">'+fmt(r['best_'+m])+'</td><td class="w">'+esc(r['at_'+m])+'</td><td class="num">'+Math.round(100*r['p_random_as_good_'+m])+'%</td>'});h+='</tr>'});
-    return h+'</tbody></table></div><p class="note">Every Figure 1 draft gene still reaches a high rank somewhere under mean IDF or tf-idf, and RSF1 and SFI1 reach rank 1. Those best ranks come from high k, where only 10 to 124 human proteins are hit at all, and a random protein from the same lists does as well in 28% to 92% of draws. None of the nine stands out from chance under any of the three statistics.</p>';
+    const ps=[],ones=[];BHFFIG1.forEach(r=>{const at1=[];METS.forEach(([m,l])=>{if(r['p_random_as_good_'+m]!=null)ps.push(r['p_random_as_good_'+m]);if(r['best_'+m]===1)at1.push(l)});if(at1.length)ones.push(r.gene+' ('+at1.join(', ')+')')});
+    return h+'</tbody></table></div><p class="note">Rank 1 is reached by '+(ones.length?ones.join(', '):'no gene')+'. Over all nine genes and all three statistics, a random protein from the same hit lists does as well as the gene\'s best rank in '+Math.round(100*Math.min(...ps))+'% to '+Math.round(100*Math.max(...ps))+'% of draws, so none of the nine stands out from chance.</p>';
   }
   const rows=SUMM241.filter(r=>r.query===q&&r.gene===R.partner);
   let h='<h3 class="hh">Where '+R.partner+' ranks under each statistic</h3><div class="tbl"><table><thead><tr><th>statistic</th><th>alphabet and k values where '+R.partner+' is ranked</th><th>best rank, of the proteins ranked</th><th>where</th><th>best share of the ranked list</th></tr></thead><tbody>';
@@ -264,7 +269,7 @@ function rankSummary(q){
     if(!ok.length){h+='<tr><td>'+l+'</td><td class="num">0</td><td>–</td><td></td><td></td></tr>';return}
     const b=ok.reduce((x,y)=>y['rank_'+m]<x['rank_'+m]?y:x), p=ok.reduce((x,y)=>y['rank_'+m]/y['n_'+m]<x['rank_'+m]/x['n_'+m]?y:x);
     h+='<tr><td>'+l+'</td><td class="num">'+ok.length+' of 152</td><td class="num">'+fmt(b['rank_'+m])+' of '+fmt(b['n_'+m])+'</td><td class="w">'+b.alphabet+' k'+b.k+'</td><td class="num">'+(100*p['rank_'+m]/p['n_'+m]).toFixed(1)+'% ('+p.alphabet+' k'+p.k+')</td></tr>'});
-  return h+'</tbody></table></div><p class="note">"Ranked" counts the proteins with a finite value under that statistic; notebook 241 divides by every protein hit, so its E-value ranks read "of" a larger number. '+R.best+'</p>';
+  return h+'</tbody></table></div><p class="note">"Ranked" counts the proteins with a value under that statistic; with kmerseek PR #'+NUM241.kmerseek_pr+' every protein hit has an E-value, so it is every protein hit. '+R.best+'</p>';
 }
 // draw the page last, after every declaration above
 showTab(location.hash==='#pairs'?'pairs':'cases');

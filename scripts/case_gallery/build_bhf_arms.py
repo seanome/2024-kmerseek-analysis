@@ -1,5 +1,5 @@
 """BHF across notebook 241's ladder: per arm, the human protein with the best E-value
-(or, where the arm has no E-value, the best mean IDF), and kmerseek pair against it."""
+(or, where the arm has no E-value, the best mean IDF; with kmerseek PR #112 every arm has one), and kmerseek pair against it."""
 from pathlib import Path as _P
 import os as _os
 _os.chdir(_P(__file__).resolve().parents[2] / "tables" / "case_gallery")  # reads and writes the JSON tables there
@@ -7,7 +7,8 @@ _os.chdir(_P(__file__).resolve().parents[2] / "tables" / "case_gallery")  # read
 import json, subprocess, polars as pl
 from pathlib import Path
 import sys; sys.path.insert(0, str(_P(__file__).resolve().parent))
-from build_pairs import compact, run_pair, D241, HUMAN, OUT
+from build_pairs import compact, run_pair, HUMAN, OUT
+from sources import D241
 rk=pl.read_csv(D241/"ranks.csv",schema_overrides={"rank":pl.Float64,"n_tied":pl.Float64,"partner_value":pl.Float64}).filter(pl.col("query")=="BHF")
 plan=json.loads((D241/"plan.json").read_text())
 hdr={}

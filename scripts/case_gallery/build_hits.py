@@ -13,7 +13,7 @@ import polars as pl
 
 ROOT = Path(__file__).resolve().parents[2]
 T = ROOT / "tables" / "case_gallery"
-D = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")  # regions.parquet, 260 MB, not in git
+from sources import D241 as D  # regions.parquet, 300 MB, not in git
 HUMAN = Path("/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa")
 TOP = 20
 PARTNER = {"Ced9": "BCL2", "P66": "CD47", "BHF": None}

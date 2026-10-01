@@ -21,7 +21,7 @@ for _q in ["Ced9","P66","BHF"]:
     open(str(ROOT/"reports"/"case_gallery"/("hits241."+_q+".json")),"w").write(json.dumps(clean({k:v for k,v in _h.items() if k.startswith(_q+"|")}),separators=(",",":")))
 L=lambda f: json.dumps(clean(json.load(open(S+f))),separators=(",",":"))
 js=open(str(ROOT/"scripts"/"case_gallery"/"pair_view.js")).read().replace("' '.repeat(w)+'classes'.padStart(5).slice(-5)+' '","'classes'.padEnd(w+6)")
-block="const PAIRS="+L("pairdata.json")+";\nconst META241="+L("meta241.json")+";\nconst BHFARMS="+L("bhf_arms.json")+";\nconst SUMM241="+L("hits241_summary.json")+";\nconst BHFFIG1="+json.dumps(BHFFIG1,separators=(",",":"))+";\nconst OTHER="+L("other_tools.json")+";\n"+js
+block="const PAIRS="+L("pairdata.json")+";\nconst META241="+L("meta241.json")+";\nconst BHFARMS="+L("bhf_arms.json")+";\nconst SUMM241="+L("hits241_summary.json")+";\nconst BHFFIG1="+json.dumps(BHFFIG1,separators=(",",":"))+";\nconst OTHER="+L("other_tools.json")+";\nconst NUM241="+L("num241.json")+";\n"+js
 s=s[:i]+block+s[j:]
 css=""".refgrid{display:grid;grid-template-columns:232px minmax(0,1fr);gap:20px;margin-top:10px;position:relative;z-index:0}
 .margin{border-right:1px solid var(--line);padding-right:14px}
