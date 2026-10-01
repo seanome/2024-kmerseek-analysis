@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: refuse to post an /analysis-review comment that has no Reviewer #2
+"""PreToolUse hook: refuse to post an /analysis-review comment that has no Reviewer 2
 section.
 
 The analysis-review skill (.claude/skills/analysis-review/SKILL.md) asks for a check of the
@@ -22,7 +22,7 @@ import os
 import re
 import sys
 
-SECTION = "Preparing for an Adversarial Reviewer #2: Stress-testing the findings"
+SECTION = "Preparing for an Adversarial Reviewer 2: Stress-testing the findings"
 # At a line start, or at the start of an inline `-f body=...` value.
 REVIEW_HEADING = re.compile(r"(?:^|body=['\"]?)## /analysis-review\b", re.M)
 

@@ -12,7 +12,7 @@ HOOK = (
 NOTE = "> [!NOTE]\n> Written by Claude Code at olgabot's request.\n\n"
 HEAD = NOTE + "## /analysis-review, run 2026-10-01 12:00 UTC\n\n## Verdict\nFine.\n\n"
 CHECKED = (
-    "## Preparing for an Adversarial Reviewer #2: Stress-testing the findings\n"
+    "## Preparing for an Adversarial Reviewer 2: Stress-testing the findings\n"
     "- Headline re-computed: 213 by a second polars query: 213 vs 213.\n"
     "- Not tested: the Sherlock inputs, not reachable from the Mac.\n\n"
 )
@@ -49,7 +49,7 @@ def test_review_with_the_section_is_posted(tmp_path):
 
 def test_review_without_the_section_is_refused(tmp_path):
     assert (
-        'no "## Preparing for an Adversarial Reviewer #2: Stress-testing the findings" section'
+        'no "## Preparing for an Adversarial Reviewer 2: Stress-testing the findings" section'
         in post(tmp_path, HEAD + MARKER)
     )
 
@@ -57,7 +57,7 @@ def test_review_without_the_section_is_refused(tmp_path):
 def test_section_with_no_lines_is_refused(tmp_path):
     body = (
         HEAD
-        + "## Preparing for an Adversarial Reviewer #2: Stress-testing the findings\n\n"
+        + "## Preparing for an Adversarial Reviewer 2: Stress-testing the findings\n\n"
         + MARKER
     )
     assert 'no "- " lines' in post(tmp_path, body)
@@ -66,7 +66,7 @@ def test_section_with_no_lines_is_refused(tmp_path):
 def test_section_without_not_tested_is_refused(tmp_path):
     body = (
         HEAD
-        + "## Preparing for an Adversarial Reviewer #2: Stress-testing the findings\n- Re-ran cell 7.\n\n"
+        + "## Preparing for an Adversarial Reviewer 2: Stress-testing the findings\n- Re-ran cell 7.\n\n"
         + MARKER
     )
     assert 'no "Not tested" line' in post(tmp_path, body)
@@ -75,7 +75,7 @@ def test_section_without_not_tested_is_refused(tmp_path):
 def test_not_tested_in_a_later_section_does_not_count(tmp_path):
     body = (
         HEAD
-        + "## Preparing for an Adversarial Reviewer #2: Stress-testing the findings\n- Re-ran cell 7.\n\n## Other\nNot tested: x\n"
+        + "## Preparing for an Adversarial Reviewer 2: Stress-testing the findings\n- Re-ran cell 7.\n\n## Other\nNot tested: x\n"
     )
     assert 'no "Not tested" line' in post(tmp_path, body)
 

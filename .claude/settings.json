@@ -44,7 +44,7 @@
             "type": "command",
             "command": "/usr/bin/python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/require_review_check.py",
             "timeout": 10,
-            "statusMessage": "Checking an analysis review has its Reviewer #2 section"
+            "statusMessage": "Checking an analysis review has its Reviewer 2 section"
           }
         ]
       }
