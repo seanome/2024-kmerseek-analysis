@@ -127,8 +127,8 @@ def main():
     viz = args.kmerseek_repo / "scripts" / "visualize_search.py"
 
     cases = pl.read_csv(TAB / "244_hero_candidates.csv", infer_schema_length=None)
-    cases = cases.with_row_index("case_id").with_columns(
-        pl.col("case_id").cast(pl.Int64)
+    cases = he.notebook_rows(
+        cases.with_row_index("case_id").with_columns(pl.col("case_id").cast(pl.Int64))
     )
     OUT.mkdir(parents=True, exist_ok=True)
     # The per-page CSVs are hundreds of MB; they stay next to the cut tables, not in git.
