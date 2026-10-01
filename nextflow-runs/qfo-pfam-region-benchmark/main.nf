@@ -544,6 +544,11 @@ params.bpe_tolerance        = 0
 
 // Toggles
 params.skip_kmerseek  = false
+// A run with nothing to score -- the dipeptide-shuffled decoy queries, whose accessions
+// match no truth row -- stops after the searches: no scoreDomainCalls, no hmmscan ceiling,
+// no aggregate, no report. Truth and covariates are still built (cheap, and keyed on the
+// annotations rather than the query FASTA).
+params.skip_scoring   = false
 params.skip_baselines = false
 params.skip_foldseek  = false
 params.skip_folddisco = false
@@ -1791,7 +1796,14 @@ process kmerseekIndex {
     // from both. A RocksDB whose manifest and data files come from different builds is
     // corrupt, and the run reports success. Worse still, the merge writes into an entry a
     // concurrent kmerseekSearch may be reading. A loud failure is the better outcome.
-    errorStrategy { retryOnKill(task) }
+    //
+    // A kill that has used up its retries is ignored, not finished (retryOnKillElseIgnore,
+    // as kmerseekSearch). A killed build moves nothing into the store, so the combo has no
+    // index, its search never runs, the scoring group comes up one short and remainder
+    // releases it; -resume tries the index again. `finish` instead stopped all new
+    // submissions over one infeasible combo: the dark-set 0.4 run lost a night that way on
+    // 2026-09-28 (minus_Chromadorea.gbmr7.k11.s2).
+    errorStrategy { retryOnKillElseIgnore(task) }
     maxRetries 2
 
     input:
@@ -4666,69 +4678,73 @@ workflow {
                  "${sp}: ${n} arms in ${groups_per_species[sp]} tasks"
              }.join(', ')
 
-    scored = scoreDomainCalls(score_grouped)
+    if (params.skip_scoring) {
+        log.info "  scoring : skipped (--skip_scoring); the run ends at the searches"
+    } else {
+        scored = scoreDomainCalls(score_grouped)
 
-    // ---- hmmscan annotation ceiling ----
-    ceiling_metrics = Channel.empty()
-    ceiling_curves  = Channel.empty()
-    // The annotation ceiling is a property of Pfam-A, not of any search arm, so a GPU/CPU
-    // timing run has no use for it and would pay for a whole-proteome hmmscan to learn
-    // nothing new.
-    // Say when the arm is off and why. run_hmmscan defaults to file(pfam_hmm).exists(), so
-    // on a machine where Pfam-A.hmm was never staged it silently evaluates to false and the
-    // ceiling just never appears -- which is exactly what happened on the cluster for every
-    // run of this pipeline, unnoticed, because nothing ever said so. A default computed
-    // from a filesystem check has to announce itself when it turns something off.
-    if (!params.run_hmmscan && !params.gpu_benchmark) {
-        log.warn "hmmscan annotation ceiling DISABLED: no HMM at ${params.pfam_hmm}. " +
-                 "That ceiling is what makes the Pfam numbers interpretable -- Pfam truth " +
-                 "IS hmmscan output, so it measures the most any tool could score and " +
-                 "quantifies the circularity. Stage it with `make sync-pfam`, or pass " +
-                 "--pfam_hmm, or --run_hmmscan false to silence this."
-    }
-    if (params.run_hmmscan && !params.gpu_benchmark) {
-        def pfam_hmm = file(params.pfam_hmm)
-        // hmmpress writes Pfam-A.hmm.{h3m,h3i,h3f,h3p} alongside the .hmm; hmmscan needs them.
-        def pfam_aux = file("${params.pfam_hmm}.h3*")
-        // Checked rather than assumed: the .hmm existing is what switches this arm on, but
-        // hmmscan reads the PRESSED files. With the .hmm alone the arm turns on and then
-        // dies inside the container, hours later, on a database it cannot read.
-        if (pfam_aux.isEmpty()) {
-            error "found ${params.pfam_hmm} but none of its .h3m/.h3i/.h3f/.h3p press " +
-                  "files. hmmscan reads those, not the .hmm text. Run `hmmpress " +
-                  "${params.pfam_hmm}` where the file lives, then re-sync, or pass " +
-                  "--run_hmmscan false."
+        // ---- hmmscan annotation ceiling ----
+        ceiling_metrics = Channel.empty()
+        ceiling_curves  = Channel.empty()
+        // The annotation ceiling is a property of Pfam-A, not of any search arm, so a GPU/CPU
+        // timing run has no use for it and would pay for a whole-proteome hmmscan to learn
+        // nothing new.
+        // Say when the arm is off and why. run_hmmscan defaults to file(pfam_hmm).exists(), so
+        // on a machine where Pfam-A.hmm was never staged it silently evaluates to false and the
+        // ceiling just never appears -- which is exactly what happened on the cluster for every
+        // run of this pipeline, unnoticed, because nothing ever said so. A default computed
+        // from a filesystem check has to announce itself when it turns something off.
+        if (!params.run_hmmscan && !params.gpu_benchmark) {
+            log.warn "hmmscan annotation ceiling DISABLED: no HMM at ${params.pfam_hmm}. " +
+                     "That ceiling is what makes the Pfam numbers interpretable -- Pfam truth " +
+                     "IS hmmscan output, so it measures the most any tool could score and " +
+                     "quantifies the circularity. Stage it with `make sync-pfam`, or pass " +
+                     "--pfam_hmm, or --run_hmmscan false to silence this."
         }
-        hmmscan_out = hmmscanAnnotate(Channel.of(tuple(human_fasta, pfam_hmm, pfam_aux)))
-        // The ceiling is scored against Pfam only: hmmscan IS the Pfam annotation
-        // procedure, so a Swiss-Prot row for it would compare two unrelated label spaces.
-        ceiling     = scoreHmmscanCeiling(
-            hmmscan_out.combine(truth_out.truth).combine(covariates)
+        if (params.run_hmmscan && !params.gpu_benchmark) {
+            def pfam_hmm = file(params.pfam_hmm)
+            // hmmpress writes Pfam-A.hmm.{h3m,h3i,h3f,h3p} alongside the .hmm; hmmscan needs them.
+            def pfam_aux = file("${params.pfam_hmm}.h3*")
+            // Checked rather than assumed: the .hmm existing is what switches this arm on, but
+            // hmmscan reads the PRESSED files. With the .hmm alone the arm turns on and then
+            // dies inside the container, hours later, on a database it cannot read.
+            if (pfam_aux.isEmpty()) {
+                error "found ${params.pfam_hmm} but none of its .h3m/.h3i/.h3f/.h3p press " +
+                      "files. hmmscan reads those, not the .hmm text. Run `hmmpress " +
+                      "${params.pfam_hmm}` where the file lives, then re-sync, or pass " +
+                      "--run_hmmscan false."
+            }
+            hmmscan_out = hmmscanAnnotate(Channel.of(tuple(human_fasta, pfam_hmm, pfam_aux)))
+            // The ceiling is scored against Pfam only: hmmscan IS the Pfam annotation
+            // procedure, so a Swiss-Prot row for it would compare two unrelated label spaces.
+            ceiling     = scoreHmmscanCeiling(
+                hmmscan_out.combine(truth_out.truth).combine(covariates)
+            )
+            ceiling_metrics = ceiling.metrics
+            ceiling_curves  = ceiling.curve
+        }
+
+        agg = aggregateMetrics(
+            scored.metrics.mix(ceiling_metrics).collect(),
+            scored.curve.mix(ceiling_curves).collect(),
         )
-        ceiling_metrics = ceiling.metrics
-        ceiling_curves  = ceiling.curve
-    }
 
-    agg = aggregateMetrics(
-        scored.metrics.mix(ceiling_metrics).collect(),
-        scored.curve.mix(ceiling_curves).collect(),
-    )
+        // The boundary diagnostic, when a tokenizer was named. It reads only the query FASTA
+        // and the Pfam annotations, so it does not wait on a single search -- but its output
+        // has to reach the report, which is why it is a channel rather than a hand-run script
+        // whose JSON someone remembers to copy into the outdir.
+        bpe_ch = params.bpe_tokenizer
+            ? hpBpeBoundary(Channel.of(tuple(file(params.bpe_tokenizer), human_fasta, annotations)))
+            : Channel.value(file("${projectDir}/assets/NO_BPE"))
 
-    // The boundary diagnostic, when a tokenizer was named. It reads only the query FASTA
-    // and the Pfam annotations, so it does not wait on a single search -- but its output
-    // has to reach the report, which is why it is a channel rather than a hand-run script
-    // whose JSON someone remembers to copy into the outdir.
-    bpe_ch = params.bpe_tokenizer
-        ? hpBpeBoundary(Channel.of(tuple(file(params.bpe_tokenizer), human_fasta, annotations)))
-        : Channel.value(file("${projectDir}/assets/NO_BPE"))
-
-    if (!params.skip_multiqc) {
-        // ifEmpty([]) rather than a bare collect(): collect() on an empty channel emits
-        // nothing at all, which would leave buildMultiqcInputs with an input channel that
-        // never fires and drop the whole report on any run without kmerseek timings.
-        multiqcFromMetrics(agg.metrics, agg.curves, human_fasta,
-                           kmerseek_timings.collect().ifEmpty([]), bpe_ch,
-                           kmerseek_spectra.collect().ifEmpty([]))
+        if (!params.skip_multiqc) {
+            // ifEmpty([]) rather than a bare collect(): collect() on an empty channel emits
+            // nothing at all, which would leave buildMultiqcInputs with an input channel that
+            // never fires and drop the whole report on any run without kmerseek timings.
+            multiqcFromMetrics(agg.metrics, agg.curves, human_fasta,
+                               kmerseek_timings.collect().ifEmpty([]), bpe_ch,
+                               kmerseek_spectra.collect().ifEmpty([]))
+        }
     }
 }
 
