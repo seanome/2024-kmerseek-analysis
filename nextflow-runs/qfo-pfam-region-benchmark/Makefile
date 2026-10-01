@@ -2744,3 +2744,57 @@ run-elm-search-all: prefetch-images
 
 reduce-elm-cover-all:
 	@$(MAKE) reduce-elm-cover ELM_SPECIES=$(ELM_ALL_TARGETS) ELM_KMERSEEK_SUBDIR=kmerseek_top$(ELM_TOP_TARGETS)
+
+# ---- --scaled on the mini set (notebook 270) ---------------------------------------------
+# The run-mini target's data, the ELM image (kmerseek 0.4.0-rc5, which has --scaled and
+# extension), and conf/scaled_270.config. Three runs, each its own outdir, because result
+# names do not record whether extension was on:
+#
+#   make mini-decoy-testset                  Sherlock: data/mini-decoy, decoy human queries
+#   make run-mini-scaled-270 S270_RUN=exact  extension off: the exact seed runs
+#   make run-mini-scaled-270 S270_RUN=extend extension on: the calls that get scored
+#   make run-mini-scaled-270 S270_RUN=decoy  extension on, decoy queries, same targets
+#
+# exact and extend can run at the same time: their indexes have different names. decoy reads
+# the indexes extend built (same names, same E-value fit), so start it after extend ends;
+# two heads writing one storeDir entry is the failure noted at kmerseekIndex.
+S270_DIR   ?= data/mini-scaled-270
+S270_RUN   ?= extend
+S270_QFO    = $(if $(filter decoy,$(S270_RUN)),../data/mini-decoy/qfo,../data/mini/qfo)
+S270_EXTEND = $(if $(filter exact,$(S270_RUN)),false,true)
+
+.PHONY: mini-decoy-testset run-mini-scaled-270
+
+mini-decoy-testset:
+	$(call require_cluster)
+	@test -f data/mini/qfo/Eukaryota/UP000005640_9606.fasta || { \
+	  echo "  data/mini is not built. Run: make mini-testset-sherlock"; exit 1; }
+	apptainer exec --bind $$PWD/../..:$$PWD/../.. --pwd $$PWD $(ELM_IMAGE_REMOTE:%=docker://%) \
+	  python3 ../../scripts/make_decoy_queries.py \
+	    --qfo-dir data/mini/qfo --out-dir data/mini-decoy/qfo
+
+run-mini-scaled-270: HEAD_TIME := 4:00:00
+run-mini-scaled-270: HEAD_JOBNAME := nf-head-s270-$(S270_RUN)
+run-mini-scaled-270: HEAD_SESSION := s270-$(S270_RUN)
+run-mini-scaled-270: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE)
+run-mini-scaled-270: prefetch-images
+	$(call require_cluster)
+	@case "$(S270_RUN)" in exact|extend|decoy) ;; *) \
+	  echo "  S270_RUN is exact, extend or decoy, not '$(S270_RUN)'"; exit 1;; esac
+	@test -f $(patsubst ../%,%,$(S270_QFO))/Eukaryota/UP000005640_9606.fasta || { \
+	  echo "  $(S270_QFO) is not staged. Run: make mini-decoy-testset"; exit 1; }
+	mkdir -p run-mini-scaled-270-$(S270_RUN)
+	cd run-mini-scaled-270-$(S270_RUN) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE),mini -c ../conf/scaled_270.config -resume \
+	    --kmerseek_image       $(ELM_IMAGE_REMOTE) \
+	    --kmerseek_extend      $(S270_EXTEND) \
+	    --qfo_dir              $(S270_QFO) \
+	    --annotations          ../data/mini/annotations \
+	    --structures           ../data/mini/structures \
+	    --outdir               ../$(S270_DIR)/$(S270_RUN) \
+	    --kmerseek_index_cache ../$(S270_DIR)/kmerseek_index \
+	    --target_species       $(MINI_TARGETS) \
+	    --hgnc_file            ../data/covariates/hgnc_complete_set.txt \
+	    --swissprot_dat        ../data/uniprot_sprot.dat.gz \
+	    $(NF_ARGS)
