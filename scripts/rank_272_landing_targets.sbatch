@@ -1,10 +1,10 @@
 #!/bin/bash
-# One SLURM task for scripts/rank_245_landing_targets.py (notebook 245, Question 6):
+# One SLURM task for scripts/rank_272_landing_targets.py (notebook 272, Question 6):
 # rank the target of every report-half kmerseek landing call among everything that
 # search hit, reading the midi-plus region tables in place.
 #
-#   cd $SCRATCH/244-hero && sbatch code/scripts/rank_245_landing_targets.sbatch
-#SBATCH --job-name=245-ranks
+#   cd $SCRATCH/244-hero && sbatch code/scripts/rank_272_landing_targets.sbatch
+#SBATCH --job-name=272-ranks
 #SBATCH --account=ayeletv
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=4
@@ -17,7 +17,7 @@ RESULTS=/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-reg
 IMAGE=/scratch/users/olgabot/apptainer-cache/docker.io-olgabot-kmerseek-0.4.0-rc5.img
 export POLARS_MAX_THREADS=${SLURM_CPUS_PER_TASK}
 
-apptainer exec --bind /scratch "$IMAGE" python3 code/scripts/rank_245_landing_targets.py \
+apptainer exec --bind /scratch "$IMAGE" python3 code/scripts/rank_272_landing_targets.py \
     --results "$RESULTS" \
-    --want code/tables/245_landing_targets_to_rank.csv \
-    --out 245_landing_target_ranks.csv
+    --want code/tables/272_landing_targets_to_rank.csv \
+    --out 272_landing_target_ranks.csv

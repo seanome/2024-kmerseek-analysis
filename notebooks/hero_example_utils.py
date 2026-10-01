@@ -1046,3 +1046,144 @@ def case_figure(
 def case_file_stem(r: dict) -> str:
     sym = r["hgnc_symbol"] or r["accession"]
     return f"{r['case_id']:03d}_{sym}_{r['pfam_id']}_{r['species']}"
+
+
+# ---------------------------------------------------------------------------
+# Notebook 272: every report-half feature x species, not only the 183 cases.
+# ---------------------------------------------------------------------------
+#: Reduced alphabets as residue groups, copied from kmerseek src/rust/alphabets.rs (the
+#: hydrophobic/polar ones: the first group is H, the rest of the 20 amino acids are P).
+_AA = "ACDEFGHIKLMNPQRSTVWY"
+HP_ALPHABETS = {
+    name: [h, "".join(a for a in _AA if a not in h)]
+    for name, h in {
+        "hp_thomas_dill2": "ACFILMVWY",
+        "hp_thomas_dill_no_c2": "AFILMVWY",
+        "hp_lehninger2": "AFGILMPVWY",
+        "hp_lehninger_c_nonpolar2": "ACFGILMPVWY",
+        "hp_kyte_doolittle2": "ACFILMV",
+        "hp_pbotc_1st_ed2": "ACFILMPVWY",
+    }.items()
+}
+
+#: The tools of notebook 272, in figure order. kmerseek is the setting chosen per feature
+#: type in notebook 244 (tables/244_chosen_arm_by_type.csv).
+ALIGNER_LABELS = [
+    "phmmer",
+    "MMseqs2",
+    "MMseqs2 iterative",
+    "Foldseek",
+    "ProstT5",
+    "Reseek",
+]
+TOOLS_272 = ["kmerseek", *ALIGNER_LABELS, "Kyte-Doolittle scan"]
+
+
+def closed_iou(start: pl.Expr, end: pl.Expr, fstart: pl.Expr, fend: pl.Expr) -> pl.Expr:
+    """IoU of two 1-based inclusive intervals; 0 when the call is missing.
+
+    One rule for every tool. The landing tables' own best_iou uses the pipeline's
+    overlap_expr, which takes a length as end - start, so aligner calls (1-based) lose a
+    residue and kmerseek calls (0-based start) do not."""
+    inter = pl.min_horizontal(end, fend) - pl.max_horizontal(start, fstart) + 1
+    inter = pl.when(inter > 0).then(inter).otherwise(0)
+    union = (end - start + 1) + (fend - fstart + 1) - inter
+    return pl.when(start.is_null()).then(0.0).otherwise(inter / union)
+
+
+def longest_same_class_run(a: str, b: str, alphabet: str) -> int:
+    """Longest stretch of a gapless pair where both residues fall in the same group."""
+    groups = HP_ALPHABETS[alphabet]
+    cls = {r: i for i, g in enumerate(groups) for r in g}
+    best = cur = 0
+    for x, y in zip(a, b):
+        cur = cur + 1 if cls.get(x, -1) == cls.get(y, -2) else 0
+        best = max(best, cur)
+    return best
+
+
+def report_pairs(
+    landing: pl.DataFrame, instances: pl.DataFrame, chosen: pl.DataFrame
+) -> pl.DataFrame:
+    """One row per (report-half feature of a type with a chosen setting, species).
+
+    Per tool ``t`` in TOOLS_272: ``t|qstart``, ``t|qend`` (its best overlapping call of the
+    feature's type on the human protein, 1-based inclusive, null when none), ``t|target``
+    and ``t|iou`` (closed_iou, 0 when no call). kmerseek also carries its landing call:
+    ``km_landed`` and ``km_land_*`` (1-based inclusive on both proteins). ``reachable``: a
+    call of the feature's type from any of the run's kmerseek settings or the six aligners
+    overlaps the feature, which needs a protein of that species carrying a Swiss-Prot
+    feature of that type.
+    """
+    key = ["accession", "pfam_id", "domain_start", "domain_end"]
+    rep = instances.filter(
+        (pl.col("half") == "report")
+        & pl.col("pfam_id").is_in(chosen["pfam_id"].to_list())
+    )
+    base = rep.join(pl.DataFrame({"species": SPECIES}), how="cross")
+    on = key + ["species"]
+    reach = (
+        landing.filter(pl.col("n_overlapping_calls") > 0)
+        .select(on)
+        .unique()
+        .with_columns(reachable=pl.lit(True))
+    )
+    out = base.join(reach, on=on, how="left").with_columns(
+        pl.col("reachable").fill_null(False)
+    )
+    best = ["best_qstart", "best_qend", "best_target_acc"]
+    km = landing.join(
+        chosen.select("pfam_id", "arm"), on=["pfam_id", "arm"], how="semi"
+    ).select(
+        on
+        + [
+            (pl.col("best_qstart") + 1).alias("kmerseek|qstart"),
+            pl.col("best_qend").alias("kmerseek|qend"),
+            pl.col("best_target_acc").alias("kmerseek|target"),
+            pl.col("landed").alias("km_landed"),
+            (pl.col("land_qstart") + 1).alias("km_land_qstart"),
+            pl.col("land_qend").alias("km_land_qend"),
+            pl.col("land_target_acc").alias("km_land_target"),
+            (pl.col("land_tstart") + 1).alias("km_land_tstart"),
+            pl.col("land_tend").alias("km_land_tend"),
+        ]
+    )
+    out = out.join(km, on=on, how="left").with_columns(
+        pl.col("km_landed").fill_null(False)
+    )
+    for arm, lab in COMPARISON_ARMS.items():
+        a = landing.filter(pl.col("arm") == arm).select(
+            on
+            + [
+                pl.col(c).alias(
+                    f"{lab}|{c.split('_', 1)[1].replace('target_acc', 'target')}"
+                )
+                for c in best
+            ]
+        )
+        out = out.join(a, on=on, how="left")
+    out = out.with_columns(
+        pl.col("kd_qstart").alias("Kyte-Doolittle scan|qstart"),
+        pl.col("kd_qend").alias("Kyte-Doolittle scan|qend"),
+    )
+    out = out.with_columns(
+        [
+            closed_iou(
+                pl.col(f"{t}|qstart"),
+                pl.col(f"{t}|qend"),
+                pl.col("domain_start"),
+                pl.col("domain_end"),
+            ).alias(f"{t}|iou")
+            for t in TOOLS_272
+        ]
+        + [
+            closed_iou(
+                pl.col("km_land_qstart"),
+                pl.col("km_land_qend"),
+                pl.col("domain_start"),
+                pl.col("domain_end"),
+            ).alias("km_land_iou")
+        ]
+    )
+    assert out.height == base.height, (out.height, base.height)
+    return out

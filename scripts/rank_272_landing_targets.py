@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Rank each kmerseek landing call's target among everything that search hit (notebook 245).
+"""Rank each kmerseek landing call's target among everything that search hit (notebook 272).
 
-Input: tables/245_landing_targets_to_rank.csv, one row per (region table, human query,
+Input: tables/272_landing_targets_to_rank.csv, one row per (region table, human query,
 target protein) for every report-half feature where the setting chosen for its type lands.
 For each table, reads the regions of those queries, ranks target proteins per query by the
 run's rule (scripts/kmerseek_run_rank.py) and writes one row per input row with run_rank
 (empty when no region of the target passes the cut) and n_ranked (proteins that pass).
 
-    python3 scripts/rank_245_landing_targets.py --results <midi-plus results/> --out 245_landing_target_ranks.csv
+    python3 scripts/rank_272_landing_targets.py --results <midi-plus results/> --out 272_landing_target_ranks.csv
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--results", type=Path, required=True)
     ap.add_argument(
-        "--want", type=Path, default=ROOT / "tables" / "245_landing_targets_to_rank.csv"
+        "--want", type=Path, default=ROOT / "tables" / "272_landing_targets_to_rank.csv"
     )
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
