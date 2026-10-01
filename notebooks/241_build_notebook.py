@@ -401,12 +401,48 @@ That is what the right panel shows: bars to the left of the red line are fine, b
 touching or crossing it mean the alphabet can never produce an E-value.
 
 **Even where lambda exists for the alphabet, it can come out as zero for a region.**
-This kmerseek build solves lambda from each region's own two spans, and a region whose
-own identity is above C / (1 + C) gets lambda 0, so it has no E-value. With the
-kappa-optimal penalties that limit is 62% identity for hp_lehninger2 (C = 1.51) but only
-12 to 19% for the 12- to 20-class alphabets (C = 0.14 to 0.24). Those alphabets lose
-almost every extended region, and they lose the closest-matching ones first, which are
-exactly the regions a search is for.
+This kmerseek build solves lambda from each region's own two spans. It counts the
+classes in the query span and in the target span. From those counts it takes u: pick one
+random position in each span, and u is the chance the two fall in the same class. A region with u at or above C / (1 + C) gets lambda 0, so
+it has no E-value. With the kappa-optimal penalties that limit is 0.60 for hp_lehninger2
+(C = 1.51) but only 0.12 to 0.19 for the 12- to 20-class alphabets (C = 0.14 to 0.24).
+
+The limit is on u, not on the region's identity. Every one of the 8_295_664 regions in
+this run has identity above C / (1 + C), and 7_240_393 of them have lambda 0. Two
+dayhoff6 k=7 regions (C = 0.41, limit 0.29) with about the same identity show the
+difference. Coordinates are 0-based, end excluded.
+
+Ced9 48-68 against BCL2 58-78: 4 of 20 residues identical, 13 of 20 classes (0.65),
+u = 0.430, lambda 0, no E-value. Both spans are mostly class b.
+
+```
+Ced9  PSPSRQASTRRMSIGESIDG
+      |  ||    |
+BCL2  PAASRDPVARTSPLQTPAAP
+
+Ced9  bbbbdcbbbddebebcbecb
+      ||||||| ||  ||  |  |
+BCL2  bbbbdcbebdbbbecbbbbb
+```
+
+P66 314-329 against CD47 105-120: 3 of 15 residues identical, 10 of 15 classes (0.67),
+u = 0.258, lambda 0.174 (as reported in region_ka_lambda, after kmerseek's database
+correction), E = 37_882.
+
+```
+P66   ISKAANFKKETPSDP
+       |   |   |
+CD47  VSHTGNYTCEVTELT
+
+P66   ebdbbcfddcbbbcb
+      |||||||  | |  |
+CD47  ebdbbcfbacebceb
+```
+
+The 12- to 20-class alphabets lose almost every extended region (88 to 98%). The regions
+that lose their E-value lean toward the closer matches: in every alphabet their median
+identity is the same as or higher than that of the regions that keep one (sdm12: 0.86
+against 0.64).
 
 The two problems have one root: the penalty C is derived from kappa assuming every class
 holds the same share of residues (1 / classes). On this proteome the real chance match
@@ -481,10 +517,11 @@ k=28, FXYD5 0.99 at gbmr7 k=8), which is what 71 independent searches are expect
 produce by chance.
 
 **Two things about the E-value itself, which matter beyond these three proteins.**
-(1) The per-region lambda gives E = inf to every region whose own identity is above
-C / (1 + C); with the kappa penalties that removes 35% of hp_lehninger2 regions and
-88 to 98% for the 12- to 20-class alphabets, and it removes the best-matching regions
-first. (2) The kappa-optimal penalty assumes equal class shares; on this proteome
+(1) The per-region lambda gives E = inf to every region whose u is at or above
+C / (1 + C). u is the chance that one random position from each of the region's two spans
+falls in the same class. With the kappa penalties that removes 35% of hp_lehninger2 regions and
+88 to 98% for the 12- to 20-class alphabets, and the regions it removes have the same or
+a higher median identity than the ones it keeps. (2) The kappa-optimal penalty assumes equal class shares; on this proteome
 gbmr7, hp_lehninger_hpc3 and gbmr4 have a chance match rate high enough that a chance
 position scores at or above zero, so no lambda exists for them at any k. 81 of 152 arms
 ended without a Karlin-Altschul fit; above about 30 bits both curves run out of score
@@ -495,7 +532,7 @@ however many queries are searched.
 all rank the known partner in the hundreds to thousands, because the matched region
 carries 16 to 25 bits against a background that needs 32. Ranking metrics cannot fix a
 seed that is too short; what the gold standard needs is a longer region, which means
-extension or chaining that survives past the identity limit, and a penalty derived
+extension or chaining whose regions keep u below C / (1 + C), and a penalty derived
 from the real class shares so that an E-value exists for it.
 """),
 ]

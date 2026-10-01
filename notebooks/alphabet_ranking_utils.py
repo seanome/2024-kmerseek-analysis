@@ -1314,8 +1314,10 @@ def lambda_zero_figure(
 ) -> pl.DataFrame:
     """Which regions can get an E-value at all.
 
-    Left: the share of regions at each arm that get no E-value, because the region's own
-    identity is above C / (1 + C) and its score scale comes out as zero.
+    Left: the share of regions at each arm that get no E-value, because the region's match
+    probability u is at or above C / (1 + C) and its score scale comes out as zero. u is
+    the chance that one random position of the query span and one random position of the
+    target span fall in the same class, from the two spans' class counts.
 
     Right, one bar per alphabet: the average score of one position of a chance match,
     p - C (1 - p), with the database's chance match probability p and the alphabet's

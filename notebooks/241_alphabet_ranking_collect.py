@@ -320,11 +320,15 @@ def main() -> None:
             sub = df.filter(pl.col("query_name") == q)
             arm[f"n_regions_{q}"] = sub.height
             arm[f"n_targets_{q}"] = sub["target_name"].n_unique()
-        # The per-region lambda is 0, and the E-value inf, for every region whose own
-        # identity is above C / (1 + C). This is the share of regions that lost their
-        # E-value that way; with the database's chance match probability p and the
-        # penalty C, a chance position scores p - C (1 - p): at or above 0 no lambda
-        # exists for any region.
+        # The per-region lambda is 0, so the E-value is inf and region_ka_bits is empty,
+        # when the region's match probability u is at or above C / (1 + C). u is the
+        # chance that one random position of the query span and one random position of
+        # the target span fall in the same class, from the two spans' class counts
+        # (region_ka_lambda in kmerseek's search.rs). It is not the region's identity:
+        # every region in this run has identity above C / (1 + C), but 7_240_393 of
+        # 8_295_664 have lambda 0. This is the share of regions with lambda 0. Separately,
+        # with the database's chance match probability p, a chance position scores
+        # p - C (1 - p) on average; at or above 0, no lambda exists for any region.
         if "region_ka_lambda" in df.columns:
             arm["frac_lambda_zero"] = float((df["region_ka_lambda"] == 0).mean())
         arm.update(
