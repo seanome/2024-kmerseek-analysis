@@ -2774,6 +2774,8 @@ mini-decoy-testset:
 	    --qfo-dir data/mini/qfo --out-dir data/mini-decoy/qfo
 
 run-mini-scaled-270: HEAD_TIME := 4:00:00
+run-mini-scaled-270: HEAD_CPUS := 8
+run-mini-scaled-270: HEAD_MEM := 32G
 run-mini-scaled-270: HEAD_JOBNAME := nf-head-s270-$(S270_RUN)
 run-mini-scaled-270: HEAD_SESSION := s270-$(S270_RUN)
 run-mini-scaled-270: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE)
