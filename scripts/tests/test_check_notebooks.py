@@ -110,3 +110,40 @@ def test_main_exit_status(tmp_path):
     bad = tmp_path / "bad.ipynb"
     bad.write_text(json.dumps({"cells": [code_cell("plt.close()", 1)]}))
     assert check_notebooks.main([str(bad)]) == 1
+
+
+def md_cell(source):
+    return {"cell_type": "markdown", "metadata": {}, "source": source}
+
+
+TABLE = {"output_type": "execute_result", "data": {"text/plain": "shape: (3, 2)\n┌─"}}
+IMAGE = {"output_type": "display_data", "data": {"image/png": "iVBOR"}}
+
+
+def test_section_with_table_and_no_figure_is_flagged(tmp_path):
+    nb = write(
+        tmp_path,
+        [
+            md_cell("# 241: title"),
+            code_cell("df", 1, outputs=[TABLE]),
+            md_cell("## 1. Which arms got an E-value"),
+            code_cell("df", 2, outputs=[TABLE]),
+            md_cell("## 2. Ranks"),
+            code_cell("df", 3, outputs=[TABLE]),
+            code_cell("fig.savefig('a.png')", 4),
+            md_cell("## 3. Shown as an image"),
+            code_cell("df", 5, outputs=[TABLE, IMAGE]),
+        ],
+    )
+    problems = check_notebooks.check_notebook(nb)
+    assert len(problems) == 1
+    assert "'1. Which arms got an E-value' shows a table but no figure" in problems[0]
+
+
+def test_shared_notebook_number_is_flagged(tmp_path):
+    cells = [code_cell("a = 1")]
+    for name in ("241_alphabet_ranking.ipynb", "241_other.ipynb", "242_next.ipynb"):
+        (tmp_path / name).write_text(json.dumps({"cells": cells, "metadata": {}}))
+    text = "\n".join(check_notebooks.check_notebook(str(tmp_path / "241_other.ipynb")))
+    assert "also used by 241_alphabet_ranking.ipynb" in text
+    assert check_notebooks.check_notebook(str(tmp_path / "242_next.ipynb")) == []
