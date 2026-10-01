@@ -66,7 +66,9 @@ def residue_positions(field: str) -> list[int | None]:
 # sits (n-1)*200 before its true position in the full sequence Pfam annotates. Verified
 # directly on AF-A0A087WUL8-F2: auth_seq_id 1..1400, SIFTS xref UniProt 201..1600.
 AF_FRAGMENT_STRIDE = 200
-_AF_FRAGMENT = re.compile(r"-F(\d+)")
+# Matched from the start of the name: TrEMBL accessions can start with F and a digit
+# (F6SXM4), and an unanchored search read AF-F6SXM4-F1.cif as fragment 6.
+_AF_FRAGMENT = re.compile(r"^AF-[A-Z0-9]+-F(\d+)")
 
 
 def accession_and_offset(tid: str) -> tuple[str, int]:
