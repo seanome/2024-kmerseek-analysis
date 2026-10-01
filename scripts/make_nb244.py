@@ -187,6 +187,8 @@ CHOSEN_TBL = (
 )
 CHOSEN = dict(zip(CHOSEN_TBL["pfam_id"], CHOSEN_TBL["arm"]))
 CHOSEN_ALPHABET = dict(zip(CHOSEN_TBL["pfam_id"], CHOSEN_TBL["alphabet"]))
+# Notebook 245 asks its questions with the same setting per type, so the choice is saved.
+CHOSEN_TBL.select("pfam_id", "arm", "alphabet", "k", choose_half_frac="frac", choose_half_n="n").sort("pfam_id").write_csv(TAB / "244_chosen_arm_by_type.csv")
 BEST_ANY = (
     POOLED.filter(pl.col("half") == "choose")
     .with_columns(pl.col("median_iou").fill_null(0.0))

@@ -43,6 +43,7 @@ OUT = ROOT / "figures" / "244_hits"
 SPROT = he.MIDI / "truth_swissprot"
 sys.path.insert(0, str(ROOT / "scripts"))
 from extract_244_case_hits import table_name  # noqa: E402
+from kmerseek_run_rank import ranked_targets  # noqa: E402
 
 
 def accession(col: str) -> pl.Expr:
@@ -88,20 +89,10 @@ def with_residues(rows: pl.DataFrame, species: str) -> pl.DataFrame:
 
 
 def run_rank(rows: pl.DataFrame, target: str) -> int | None:
-    """Rank of ``target`` among target proteins under the run's rule, or None if none of
-    its regions passes the Bonferroni cut."""
-    n_tests = pl.col("region_search_space").cast(pl.Float64) * pl.col("db_n_targets")
-    best = (
-        rows.filter(
-            pl.min_horizontal(pl.col("region_tail_probability") * n_tests, 1.0) < 0.05
-        )
-        .group_by("target_acc")
-        .agg(pl.col("region_enrichment").max())
-        .sort(["region_enrichment", "target_acc"], descending=[True, False])
-        .with_row_index("rank", offset=1)
-    )
-    hit = best.filter(pl.col("target_acc") == target)
-    return hit["rank"][0] if hit.height else None
+    """Rank of ``target`` under the run's rule (kmerseek_run_rank), or None if none of its
+    regions passes the Bonferroni cut."""
+    hit = ranked_targets(rows).filter(pl.col("target_acc") == target).collect()
+    return int(hit["rank"][0]) if hit.height else None
 
 
 def page_rank(csv_path: Path, target: str, viz_dir: Path) -> int | None:

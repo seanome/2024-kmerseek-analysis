@@ -1,0 +1,12 @@
+pfam_id,arm,alphabet,k,choose_half_frac,choose_half_n
+BINDING,kmerseek.sdm12_k6_lcTrue,sdm12,6,0.05423280423280423,756
+COILED,kmerseek.gbmr4_k16_lcTrue,gbmr4,16,0.27380952380952384,504
+DNA_BIND,kmerseek.hp_kyte_doolittle2_k19_lcTrue,hp_kyte_doolittle2,19,0.1919191919191919,99
+DOMAIN,kmerseek.hp_thomas_dill_no_c2_k19_lcTrue,hp_thomas_dill_no_c2,19,0.12778904665314403,4437
+INTRAMEM,kmerseek.mmseqs12_k7_lcTrue,mmseqs12,7,0.2777777777777778,18
+MOTIF,kmerseek.protein20_k5_lcTrue,protein20,5,0.013386880856760375,747
+REGION,kmerseek.hp_thomas_dill2_k19_lcTrue,hp_thomas_dill2,19,0.44911413267408323,7281
+REPEAT,kmerseek.hp_kyte_doolittle2_k19_lcTrue,hp_kyte_doolittle2,19,0.19322152341020266,2862
+SITE,kmerseek.protein20_k5_lcTrue,protein20,5,0.0,216
+TRANSMEM,kmerseek.hp_lehninger_c_nonpolar2_k18_lcTrue,hp_lehninger_c_nonpolar2,18,0.6278447121820616,5229
+ZN_FING,kmerseek.hp_thomas_dill_no_c2_k19_lcTrue,hp_thomas_dill_no_c2,19,0.22063492063492063,630
