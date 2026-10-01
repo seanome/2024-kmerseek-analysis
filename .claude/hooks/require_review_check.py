@@ -11,6 +11,11 @@ A post counts as an analysis review when its body has the heading "## /analysis-
 It is let through only when the body also has the SECTION heading below, at least one
 "- " line under it, and a line that starts with "Not tested" (or "- Not tested").
 Rename the section here and in the skill together.
+
+Two copies: this one, registered in ~/.claude/settings.json so it runs in every repo (a
+review can be posted from a kmerseek session), and the one in 2024-kmerseek-analysis at
+.claude/hooks/require_review_check.py, registered in that repo's settings. Keep them the
+same: diff ~/.claude/hooks/require_review_check.py <repo>/.claude/hooks/require_review_check.py
 """
 import json
 import os
@@ -83,9 +88,9 @@ def main():
         if REVIEW_HEADING.search(body):
             problem = section_problem(body)
             if problem:
-                deny(f"This posts an /analysis-review comment, but {problem}. Run Step 5 of "
-                     ".claude/skills/analysis-review/SKILL.md (the are-you-sure pass on the "
-                     f"review), then add:\n\n## {SECTION}\n- Headline re-computed: ...\n"
+                deny(f"This posts an /analysis-review comment, but {problem}. Run Step 5 of the "
+                     "analysis-review skill (2024-kmerseek-analysis/.claude/skills/analysis-review/"
+                     f"SKILL.md: the are-you-sure pass on the review), then add:\n\n## {SECTION}\n- Headline re-computed: ...\n"
                      "- Outputs current: ...\n- Finding <n>: tried to show it wrong by ...\n"
                      "- Not tested: ...")
 
