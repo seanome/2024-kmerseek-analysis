@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: refuse to post an /analysis-review comment that does not say how the
-review was checked.
+"""PreToolUse hook: refuse to post an /analysis-review comment that has no Reviewer #2
+section.
 
 The analysis-review skill (.claude/skills/analysis-review/SKILL.md) asks for a check of the
 review itself before it is posted: re-compute the headline number, try to show each finding
@@ -17,7 +17,7 @@ import os
 import re
 import sys
 
-SECTION = "How this review was checked"
+SECTION = "Preparing for an Adversarial Reviewer #2: Stress-testing the findings"
 # At a line start, or at the start of an inline `-f body=...` value.
 REVIEW_HEADING = re.compile(r"(?:^|body=['\"]?)## /analysis-review\b", re.M)
 
