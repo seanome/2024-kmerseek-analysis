@@ -2800,3 +2800,84 @@ run-mini-scaled-270: prefetch-images
 	    --hgnc_file            ../data/covariates/hgnc_complete_set.txt \
 	    --swissprot_dat        ../data/uniprot_sprot.dat.gz \
 	    $(NF_ARGS)
+
+# ---- midi-plus under kmerseek 0.4 WITH extension, and its shuffled-query twin (nb 260) ----
+# run-midi-plus-0.4 above leaves --kmerseek_extend at its default, false, and kmerseek 0.4
+# writes region_evalue as inf on every row of an unextended search. Notebook 260 ranks by
+# region_evalue, so it needs this run, not that one.
+#
+#   make midi-plus-decoy-testset                     Sherlock: data/midi-plus-decoy, one
+#                                                    dipeptide shuffle of each of the 998
+#   make run-midi-plus-0.4-extend M04_RUN=real       the 998 human queries
+#   make run-midi-plus-0.4-extend M04_RUN=decoy      the 998 shuffled copies, same targets,
+#                                                    same indexes; kmerseek only, no scoring
+#
+# Three things differ from run-midi-plus-0.4, each for a reason that run would hit:
+#  - Its own outdir. Search result names do not record extension, and
+#    data/midi-plus-0.4/results/kmerseek already holds unextended results (fly protein20 k7)
+#    that storeDir would hand back as if they were extended.
+#  - No midi-plus-testset-sherlock prerequisite. That target rewrites data/midi-plus on every
+#    call; an identical rewrite still gives every input a new mtime, and Nextflow then
+#    re-runs every task that reads one. This target checks the files exist instead.
+#  - The decoy run reads the indexes the real run built (same names, same E-value fit), so
+#    start it after the real run's kmerseekIndex tasks are done: two heads writing one
+#    storeDir entry fail the second one (see kmerseekIndex).
+#
+# M04_TARGETS is passed to Nextflow only; MIDI_PLUS_TARGETS also drives the testset builder,
+# so it is not the variable to narrow for a one-species run.
+M04_RUN     ?= real
+M04_TARGETS ?= $(MIDI_PLUS_TARGETS)
+M04_CONF    ?= ../conf/midi_plus_04_extend.config
+M04_QFO      = $(if $(filter decoy,$(M04_RUN)),../data/midi-plus-decoy/qfo,../data/midi-plus/qfo)
+M04_OUTDIR   = ../data/midi-plus-0.4-extend$(if $(filter decoy,$(M04_RUN)),-decoy,)/results
+# Shuffled queries have no structures, no truth and nothing to score: kmerseek only.
+M04_SKIP     = $(if $(filter decoy,$(M04_RUN)),--skip_baselines true --skip_foldseek true \
+               --skip_folddisco true --skip_reseek true --skip_prostt5 true --skip_hhblits true \
+               --skip_identity true --skip_metapredict true --skip_multiqc true \
+               --skip_scoring true --run_hmmscan false,)
+
+.PHONY: midi-plus-decoy-testset run-midi-plus-0.4-extend
+
+midi-plus-decoy-testset:
+	$(call require_cluster)
+	@test -f data/midi-plus/qfo/Eukaryota/UP000005640_9606.fasta || { \
+	  echo "  data/midi-plus is not built. Run: make midi-plus-testset-sherlock"; exit 1; }
+	apptainer exec --bind $$PWD/../..:$$PWD/../.. --pwd $$PWD $(ALLIDF_IMAGE:%=docker://%) \
+	  python3 ../../scripts/make_decoy_queries.py \
+	    --qfo-dir data/midi-plus/qfo --out-dir data/midi-plus-decoy/qfo
+
+run-midi-plus-0.4-extend: QUERY_SET_LABEL := $(if $(filter decoy,$(M04_RUN)),one dipeptide shuffle of each of the $(MIDI_PLUS_QUERY_SET),$(MIDI_PLUS_QUERY_SET))
+run-midi-plus-0.4-extend: HEAD_JOBNAME := nf-head-m04-$(M04_RUN)
+run-midi-plus-0.4-extend: HEAD_SESSION := m04-$(M04_RUN)
+run-midi-plus-0.4-extend: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE) $(if $(filter decoy,$(M04_RUN)),,$(ALL_CONTAINERS))
+run-midi-plus-0.4-extend: prefetch-images
+	$(call require_cluster)
+	@case "$(M04_RUN)" in real|decoy) ;; *) \
+	  echo "  M04_RUN is real or decoy, not '$(M04_RUN)'"; exit 1;; esac
+	@test -f $(patsubst ../%,%,$(M04_QFO))/Eukaryota/UP000005640_9606.fasta || { \
+	  echo "  $(M04_QFO) is not staged. Run: make $(if $(filter decoy,$(M04_RUN)),midi-plus-decoy-testset,midi-plus-testset-sherlock)"; exit 1; }
+	mkdir -p run-midi-plus-0.4-extend-$(M04_RUN)
+	cd run-midi-plus-0.4-extend-$(M04_RUN) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -c $(M04_CONF) -resume \
+	    --kmerseek_image       $(ALLIDF_IMAGE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image $(ALLIDF_IMAGE) \
+	    --kmerseek_extend      true \
+	    $(M04_SKIP) \
+	    --qfo_dir              $(M04_QFO) \
+	    --annotations          ../data/midi-plus/annotations \
+	    --structures           ../data/midi-plus/structures \
+	    --outdir               $(M04_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache             $(ALLIDF_CACHE) \
+	    --kmerseek_index_cache $(ALLIDF_INDEX) \
+	    --target_species       $(M04_TARGETS) \
+	    --hgnc_file            ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file           ../data/covariates/omega_results.tsv \
+	    $(if $(filter decoy,$(M04_RUN)),,--swissprot_dat ../data/uniprot_sprot.dat.gz) \
+	    --pfamn_dir            ../data/pfamn \
+	    --prostt5_weights      ../data/prostt5/weights \
+	    $(if $(filter decoy,$(M04_RUN)),,$(PFAM_HMM_ARG)) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
