@@ -62,37 +62,37 @@ push-image: build-image
 
 sync-pipeline:
 	git push origin $$(git branch --show-current)
-	ssh $(SHERLOCK_HOST) 'cd $$SCRATCH/kmer-spectra && git pull --ff-only'
+	ssh $(SHERLOCK_HOST) 'cd $$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra && git pull --ff-only'
 
 sync-data:
 	rsync -avz --progress -e ssh --checksum \
 	  $(LOCAL_DATA_DIR)/uniprot_sprot.ushuffle_k2.fasta.gz \
 	  $(LOCAL_DATA_DIR)/uniprot_sprot.ushuffle_k3.fasta.gz \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/data/'
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra/data/'
 
 pull-k2:
 	rsync -avz --progress \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-k2/' \
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra/results-k2/' \
 	  $(LOCAL_RESULTS_ROOT)/kmerseek-kmer-spectra-ushuffle-k2/
 
 pull-k3:
 	rsync -avz --progress \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-k3/' \
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra/results-k3/' \
 	  $(LOCAL_RESULTS_ROOT)/kmerseek-kmer-spectra-ushuffle-k3/
 
 pull-uniref50:
 	rsync -avz --progress \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-uniref50/' \
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra/results-uniref50/' \
 	  $(LOCAL_RESULTS_ROOT)/kmerseek-kmer-spectra-uniref50/
 
 pull-uniref90:
 	rsync -avz --progress \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-uniref90/' \
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra/results-uniref90/' \
 	  $(LOCAL_RESULTS_ROOT)/kmerseek-kmer-spectra-uniref90/
 
 pull-uniref100:
 	rsync -avz --progress \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra/results-uniref100/' \
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra-analysis/nextflow-run/kmer-spectra/results-uniref100/' \
 	  $(LOCAL_RESULTS_ROOT)/kmerseek-kmer-spectra-uniref100/
 
 # Not part of pull-all -- pull these explicitly once their runs actually exist,
