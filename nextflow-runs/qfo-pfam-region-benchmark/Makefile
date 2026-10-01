@@ -2745,62 +2745,105 @@ run-elm-search-all: prefetch-images
 reduce-elm-cover-all:
 	@$(MAKE) reduce-elm-cover ELM_SPECIES=$(ELM_ALL_TARGETS) ELM_KMERSEEK_SUBDIR=kmerseek_top$(ELM_TOP_TARGETS)
 
-# ---- --scaled on the mini set (notebook 270) ---------------------------------------------
-# The run-mini target's data, the ELM image (kmerseek 0.4.0-rc5, which has --scaled and
-# extension), and conf/scaled_270.config. Three runs, each its own outdir, because result
-# names do not record whether extension was on:
+# ---- --scaled on the mini and midi sets (notebook 270) ---------------------------------
+# The ELM image (kmerseek 0.4.0-rc5, which has --scaled and extension). S270_SET picks the
+# query set: mini (200 queries, yeast and E. coli subsets, eight arms, scaled 1/2/5/10,
+# conf/scaled_270.config) or midi (964 chromosome-6 queries, the nine full proteomes, two
+# arms at scaled 1 and 5, conf/scaled_270_midi.config). Each run has its own outdir,
+# because result names do not record whether extension was on:
 #
-#   make mini-decoy-testset                  Sherlock: data/mini-decoy, decoy human queries
-#   make run-mini-scaled-270 S270_RUN=exact  extension off: the exact seed runs
-#   make run-mini-scaled-270 S270_RUN=extend extension on: the calls that get scored
-#   make run-mini-scaled-270 S270_RUN=decoy  extension on, decoy queries, same targets
-#   make run-mini-scaled-270 S270_RUN=cost   extension on, its own empty index store, so
-#                                            every index build and search runs and is
-#                                            traced (the other runs reuse stored indexes)
+#   make decoy-testset-270 S270_SET=midi           Sherlock: data/<set>-decoy, decoy queries
+#   make run-scaled-270 S270_SET=midi S270_RUN=exact   extension off: the exact seed runs
+#   make run-scaled-270 S270_SET=midi S270_RUN=extend  extension on: the calls that get scored
+#   make run-scaled-270 S270_SET=midi S270_RUN=decoy   extension on, decoy queries
+#   make run-scaled-270 S270_SET=mini S270_RUN=cost    mini only: extension on, an empty
+#                                                      index store, every task traced
+#   make reduce-scaled-270 S270_SET=midi S270_RUN=<run>  one Slurm job: score the run into
+#                                                      data/<set>-scaled-270/reduced/<run>
+#   make run-mini-scaled-270, make mini-decoy-testset  the same with S270_SET=mini
 #
 # exact and extend can run at the same time: their indexes have different names. decoy reads
 # the indexes extend built (same names, same E-value fit), so start it after extend ends;
-# two heads writing one storeDir entry is the failure noted at kmerseekIndex.
-S270_DIR   ?= data/mini-scaled-270
+# two heads writing one storeDir entry is the failure noted at kmerseekIndex. On midi the
+# extend run builds every index into a new store, so its trace carries the index cost.
+S270_SET   ?= mini
 S270_RUN   ?= extend
-S270_QFO    = $(if $(filter decoy,$(S270_RUN)),../data/mini-decoy/qfo,../data/mini/qfo)
+S270_DIR    = data/$(S270_SET)-scaled-270
+S270_QFO    = $(if $(filter decoy,$(S270_RUN)),../data/$(S270_SET)-decoy/qfo,../data/$(S270_SET)/qfo)
 S270_EXTEND = $(if $(filter exact,$(S270_RUN)),false,true)
 S270_INDEX  = $(if $(filter cost,$(S270_RUN)),kmerseek_index_cost,kmerseek_index)
+ifeq ($(S270_SET),midi)
+S270_CONF        = scaled_270_midi.config
+S270_PROFILE     = $(PROFILE)
+S270_TARGETS     = $(MIDI_TARGETS)
+S270_HEAD_CPUS   = 24
+S270_HEAD_MEM    = 180G
+S270_HEAD_TIME   = 24:00:00
+else
+S270_CONF        = scaled_270.config
+S270_PROFILE     = $(PROFILE),mini
+S270_TARGETS     = $(MINI_TARGETS)
+S270_HEAD_CPUS   = 8
+S270_HEAD_MEM    = 32G
+S270_HEAD_TIME   = 4:00:00
+endif
 
-.PHONY: mini-decoy-testset run-mini-scaled-270
+.PHONY: decoy-testset-270 mini-decoy-testset run-scaled-270 run-mini-scaled-270 reduce-scaled-270
 
-mini-decoy-testset:
+decoy-testset-270:
 	$(call require_cluster)
-	@test -f data/mini/qfo/Eukaryota/UP000005640_9606.fasta || { \
-	  echo "  data/mini is not built. Run: make mini-testset-sherlock"; exit 1; }
+	@case "$(S270_SET)" in mini|midi) ;; *) echo "  S270_SET is mini or midi"; exit 1;; esac
+	@test -f data/$(S270_SET)/qfo/Eukaryota/UP000005640_9606.fasta || { \
+	  echo "  data/$(S270_SET) is not built. Run: make $(S270_SET)-testset-sherlock"; exit 1; }
 	apptainer exec --bind $$PWD/../..:$$PWD/../.. --pwd $$PWD $(ELM_IMAGE_REMOTE:%=docker://%) \
 	  python3 ../../scripts/make_decoy_queries.py \
-	    --qfo-dir data/mini/qfo --out-dir data/mini-decoy/qfo
+	    --qfo-dir data/$(S270_SET)/qfo --out-dir data/$(S270_SET)-decoy/qfo
 
-run-mini-scaled-270: HEAD_TIME := 4:00:00
-run-mini-scaled-270: HEAD_CPUS := 8
-run-mini-scaled-270: HEAD_MEM := 32G
-run-mini-scaled-270: HEAD_JOBNAME := nf-head-s270-$(S270_RUN)
-run-mini-scaled-270: HEAD_SESSION := s270-$(S270_RUN)
-run-mini-scaled-270: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE)
-run-mini-scaled-270: prefetch-images
+mini-decoy-testset:
+	@$(MAKE) decoy-testset-270 S270_SET=mini
+
+run-mini-scaled-270:
+	@$(MAKE) run-scaled-270 S270_SET=mini S270_RUN=$(S270_RUN)
+
+run-scaled-270: HEAD_TIME = $(S270_HEAD_TIME)
+run-scaled-270: HEAD_CPUS = $(S270_HEAD_CPUS)
+run-scaled-270: HEAD_MEM = $(S270_HEAD_MEM)
+run-scaled-270: HEAD_JOBNAME = nf-head-s270-$(S270_SET)-$(S270_RUN)
+run-scaled-270: HEAD_SESSION = s270-$(S270_SET)-$(S270_RUN)
+run-scaled-270: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE)
+run-scaled-270: prefetch-images
 	$(call require_cluster)
-	@case "$(S270_RUN)" in exact|extend|decoy|cost) ;; *) \
-	  echo "  S270_RUN is exact, extend, decoy or cost, not '$(S270_RUN)'"; exit 1;; esac
+	@case "$(S270_SET):$(S270_RUN)" in mini:exact|mini:extend|mini:decoy|mini:cost|midi:exact|midi:extend|midi:decoy) ;; *) \
+	  echo "  S270_SET is mini or midi; S270_RUN is exact, extend or decoy (cost: mini only)"; exit 1;; esac
 	@test -f $(patsubst ../%,%,$(S270_QFO))/Eukaryota/UP000005640_9606.fasta || { \
-	  echo "  $(S270_QFO) is not staged. Run: make mini-decoy-testset"; exit 1; }
-	mkdir -p run-mini-scaled-270-$(S270_RUN)
-	cd run-mini-scaled-270-$(S270_RUN) && \
+	  echo "  $(S270_QFO) is not staged. Run: make decoy-testset-270 S270_SET=$(S270_SET)"; exit 1; }
+	mkdir -p run-$(S270_SET)-scaled-270-$(S270_RUN)
+	cd run-$(S270_SET)-scaled-270-$(S270_RUN) && \
 	  ml load biology nextflow && \
-	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE),mini -c ../conf/scaled_270.config -resume \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(S270_PROFILE) -c ../conf/$(S270_CONF) -resume \
 	    --kmerseek_image       $(ELM_IMAGE_REMOTE) \
 	    --kmerseek_extend      $(S270_EXTEND) \
 	    --qfo_dir              $(S270_QFO) \
-	    --annotations          ../data/mini/annotations \
-	    --structures           ../data/mini/structures \
+	    --annotations          ../data/$(S270_SET)/annotations \
+	    --structures           ../data/$(S270_SET)/structures \
 	    --outdir               ../$(S270_DIR)/$(S270_RUN) \
 	    --kmerseek_index_cache ../$(S270_DIR)/$(S270_INDEX) \
-	    --target_species       $(MINI_TARGETS) \
+	    --target_species       $(S270_TARGETS) \
 	    --hgnc_file            ../data/covariates/hgnc_complete_set.txt \
 	    --swissprot_dat        ../data/uniprot_sprot.dat.gz \
 	    $(NF_ARGS)
+
+# One Slurm job per run. Memory is an estimate, not a measurement: the largest midi table
+# (arabidopsis, hp_thomas_dill_no_c2 k19, scaled 1) is projected at ~140 M regions, about
+# 15 GB with headers reduced to accessions, plus join copies; 110 GB fits a normal node.
+reduce-scaled-270:
+	$(call require_cluster)
+	@test -d $(S270_DIR)/$(S270_RUN)/kmerseek || { echo "  no $(S270_DIR)/$(S270_RUN)/kmerseek"; exit 1; }
+	mkdir -p $(S270_DIR)/reduced
+	sbatch --account=$(SLURM_ACCOUNT) --partition=hns,normal --time=12:00:00 \
+	  --cpus-per-task=8 --mem=110G --job-name=s270-reduce-$(S270_SET)-$(S270_RUN) \
+	  --output=$(S270_DIR)/reduced/reduce-$(S270_RUN).%j.log \
+	  --wrap "apptainer exec --bind $$PWD/../..:$$PWD/../.. --pwd $$PWD $(ELM_IMAGE_REMOTE:%=docker://%) \
+	    python3 ../../scripts/reduce_scaled_270.py --set-dir $(S270_DIR) --run $(S270_RUN) \
+	      $(if $(filter decoy,$(S270_RUN)),--decoy,) --annotations data/$(S270_SET)/annotations \
+	      --species $(S270_TARGETS)"
