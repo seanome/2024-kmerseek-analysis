@@ -11,7 +11,8 @@ Inputs (data/kmerseek_0.4_vs_0.3_resource/):
                                 its task limit.
 
 Both runs search 2_000-query chunks of one proteome against Swiss-Prot with the query's own
-clade removed, with 8 CPUs per search on Sherlock hns. A 0.4 search is paired with the 0.3
+clade removed, on Sherlock hns. kmerseek had 8 CPUs per search; MMseqs2, phmmer and jackhmmer had 16
+(label high_cpu). A 0.4 search is paired with the 0.3
 search on the same species, chunk, alphabet and k. 0.3 kept every k-mer, which is 0.4's
 scaled 1.
 
@@ -19,6 +20,7 @@ Outputs:
   figures/kmerseek_0.4_vs_0.3_resource_matched.png
   tables/kmerseek_0.4_vs_0.3_resource_matched_summary.csv   median and max per tool
   tables/kmerseek_0.4_vs_0.3_resource_by_alphabet.csv       paired median ratios per alphabet
+  tables/kmerseek_0.4_vs_0.3_resource_paired_overall.csv    paired ratios by scaling, with quartiles
   tables/kmerseek_0.4_index_build_cost.csv                  0.4 index builds by scaling
 
 Run from the repository root:
@@ -90,6 +92,14 @@ def load_tasks():
         realtime_s=pl.col("realtime").map_elements(seconds, return_dtype=pl.Float64),
         rss_gb=pl.col("peak_rss").map_elements(gigabytes, return_dtype=pl.Float64),
         cpu=pl.col("%cpu").str.strip_suffix("%").cast(pl.Float64, strict=False) / 100,
+    ).with_columns(cpu_h=pl.col("realtime_s") * pl.col("cpu") / 3600)
+    # The same search can finish twice under different hashes: a later head of the 0.4 run
+    # re-ran 354 exact searches that had already completed. Count each search once, with
+    # the mean of its runs. The `nextflow log` export has no run name, so "the latest run"
+    # cannot be picked instead.
+    d = d.group_by("ver", "name", "proc", "tag", maintain_order=True).agg(
+        pl.col("realtime_s", "rss_gb", "cpu", "cpu_h").mean(),
+        n_runs=pl.len(),
     )
     return d.with_columns(
         species=pl.col("tag").str.extract(r"^(\w+)\.chunk"),
@@ -102,8 +112,24 @@ def load_tasks():
         .cast(pl.Int32, strict=False)
         .fill_null(1),
         arm=pl.col("tag").str.extract(r"lc\w+\.(.*)$"),
-        cpu_h=pl.col("realtime_s") * pl.col("cpu") / 3600,
     )
+
+
+def paired_ratios():
+    """Paired 0.3 / 0.4 ratios, each as a median with its 25th and 75th percentiles."""
+    exprs = [pl.len().alias("n_pairs")]
+    for name, old, new in (
+        ("speedup", "rt3", "realtime_s"),
+        ("memory_ratio", "rss3", "rss_gb"),
+        ("cpu_time_ratio", "cpu3", "cpu_h"),
+    ):
+        r = pl.col(old) / pl.col(new)
+        exprs += [
+            r.median().alias(f"{name}_median"),
+            r.quantile(0.25, "linear").alias(f"{name}_q25"),
+            r.quantile(0.75, "linear").alias(f"{name}_q75"),
+        ]
+    return exprs
 
 
 def main():
@@ -161,25 +187,30 @@ def main():
 
     by_alphabet = (
         pairs.group_by("alphabet", "scaled")
-        .agg(
-            pl.len().alias("n_pairs"),
-            (pl.col("rt3") / pl.col("realtime_s")).median().alias("speedup_median"),
-            (pl.col("rss3") / pl.col("rss_gb")).median().alias("memory_ratio_median"),
-            (pl.col("cpu3") / pl.col("cpu_h")).median().alias("cpu_time_ratio_median"),
-        )
+        .agg(*paired_ratios())
         .sort("alphabet", "scaled")
     )
-    overall = (
-        pairs.group_by("scaled")
-        .agg(
-            pl.len().alias("n_pairs"),
-            (pl.col("rt3") / pl.col("realtime_s")).median().alias("speedup_median"),
-            (pl.col("rss3") / pl.col("rss_gb")).median().alias("memory_ratio_median"),
-            (pl.col("cpu3") / pl.col("cpu_h")).median().alias("cpu_time_ratio_median"),
-        )
-        .sort("scaled")
-    )
+    overall = pairs.group_by("scaled").agg(*paired_ratios()).sort("scaled")
     print(overall)
+    overall.write_csv(TABLES / "kmerseek_0.4_vs_0.3_resource_paired_overall.csv")
+
+    # Cores in use, as a share of the request: kmerseek asked for 8 CPUs, and MMseqs2,
+    # phmmer and jackhmmer (label high_cpu) for 16 on the sherlock profile.
+    cores = (
+        pl.concat(
+            [
+                pairs.select(
+                    tool=pl.format("kmerseek 0.4 scaled {}", "scaled"), cpu="cpu"
+                ),
+                k03_matched.select(tool=pl.lit("kmerseek 0.3"), cpu="cpu"),
+                others.select(tool="proc", cpu="cpu"),
+            ]
+        )
+        .group_by("tool")
+        .agg(pl.len().alias("n"), pl.col("cpu").median().alias("cores_in_use_median"))
+        .sort("tool")
+    )
+    print(cores)
 
     index = (
         d.filter((pl.col("proc") == "kmerseekIndex") & (pl.col("ver") == "0.4"))
@@ -326,8 +357,9 @@ def main():
     )
     fig.suptitle(
         f"kmerseek 0.4 against 0.3 on the same query chunk, alphabet and k-mer size ({pairs.height:,} matched "
-        "searches, human, worm and yeast vs Swiss-Prot\nwith the query's clade removed, 8 CPUs each on Sherlock). "
-        "A-C also show the other tools on the same chunks. Exact k-mer matches only.",
+        "searches, human, worm and yeast vs Swiss-Prot\nwith the query's clade removed, Sherlock hns). "
+        "A-C also show the other tools on the same chunks. Exact k-mer matches only.\n"
+        "kmerseek had 8 CPUs per search; MMseqs2, phmmer and jackhmmer had 16.",
         fontsize=11,
         y=0.985,
     )
