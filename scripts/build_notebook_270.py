@@ -153,7 +153,9 @@ Truth: the run's Swiss-Prot table (`truth_swissprot/`, the feature key of notebo
 An instance is one human range feature (not a 1-2 residue point feature) on a query,
 counted once per target species. A region matches an instance when its query interval
 overlaps the instance by at least one residue and its target interval overlaps a
-Swiss-Prot feature of the same type on that target protein.
+Swiss-Prot feature of the same type on that target protein. On the target side a point
+feature (1-2 residues, such as BINDING or SITE) counts too; leaving target points out
+changes 1 to 5 instances per arm in the under-30 bin and no share by more than 0.003.
 
 - **reach_seed**: share of instances matched by a region of the exact run, that is, an
   exact run of agreeing residues holding at least one kept k-mer.
@@ -388,9 +390,13 @@ Counting the k-mers in those runs instead, $1 - (1 - 1/s)^{n}$ with $n$ summed o
 runs, matches the measured share to a median of 0.023 (scatter above). The largest gaps are
 on features under 30 residues at scaled 10, where the prediction is higher: 0.554 against
 0.417 measured for hp_kyte_doolittle2. Two things the independence assumption ignores
-could explain it, and neither is measured here. A k-mer that occurs twice is kept or
-dropped in both places at once. Runs that the low-complexity mask splits at scaled 1 are
-read as one run above it.
+could explain it. A k-mer that occurs twice is kept or dropped in both places at once (not
+measured here). And runs differ between the two code paths: with the mask on, a
+low-complexity window splits a run at scaled 1, while the residue walk above scaled 1 runs
+through it. An independent recount found 1.96% of exact regions at scaled 2, 5 and 10
+(45_685 of 2_328_162) longer than the matching scaled-1 region on the same diagonal, mostly
+in repeat-rich queries (filaggrin, NBPF, collagens), and 29 hp_kyte_doolittle2 instances
+matched above scaled 1 but not at scaled 1. Those 29 are outside the denominator here.
 """)
 
 code(r"""
@@ -610,7 +616,7 @@ md(r"""
 
 From the cost run, in which every index (with its E-value fit) and every search ran.
 Time: index plus search, summed over the species, scaled 1 against 5:
-hp_kyte_doolittle2 10.0 s against 5.5 s, protein20 3.7 s against 1.8 s. Each task ran
+hp_kyte_doolittle2 10.0 s against 5.5 s, protein20 (yeast only) 3.7 s against 1.8 s. Each task ran
 inside one 8-CPU allocation, four at a time.
 
 Memory is not measured well here. Most index builds at scaled 5 and 10, and the protein20

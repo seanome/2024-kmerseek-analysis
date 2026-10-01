@@ -17,7 +17,7 @@ Matching a region to a truth instance. An instance is one human Swiss-Prot range
 species. A region matches an instance when (a) it is on the same query protein and its
 query interval overlaps the instance by at least one residue, and (b) its target interval
 overlaps at least one residue of a Swiss-Prot feature of the same type on that target
-protein. Rule (b) is looser than the pipeline's transfer rule (the region covers at least
+protein (a range or a 1-2 residue point feature). Rule (b) is looser than the pipeline's transfer rule (the region covers at least
 half of the target feature): an exact seed of 6-19 residues rarely covers half of a target
 feature, and the same rule has to serve the exact and the extended runs, so that the gap
 between them is extension and not a change of rule.
