@@ -2754,6 +2754,9 @@ reduce-elm-cover-all:
 #   make run-mini-scaled-270 S270_RUN=exact  extension off: the exact seed runs
 #   make run-mini-scaled-270 S270_RUN=extend extension on: the calls that get scored
 #   make run-mini-scaled-270 S270_RUN=decoy  extension on, decoy queries, same targets
+#   make run-mini-scaled-270 S270_RUN=cost   extension on, its own empty index store, so
+#                                            every index build and search runs and is
+#                                            traced (the other runs reuse stored indexes)
 #
 # exact and extend can run at the same time: their indexes have different names. decoy reads
 # the indexes extend built (same names, same E-value fit), so start it after extend ends;
@@ -2762,6 +2765,7 @@ S270_DIR   ?= data/mini-scaled-270
 S270_RUN   ?= extend
 S270_QFO    = $(if $(filter decoy,$(S270_RUN)),../data/mini-decoy/qfo,../data/mini/qfo)
 S270_EXTEND = $(if $(filter exact,$(S270_RUN)),false,true)
+S270_INDEX  = $(if $(filter cost,$(S270_RUN)),kmerseek_index_cost,kmerseek_index)
 
 .PHONY: mini-decoy-testset run-mini-scaled-270
 
@@ -2781,8 +2785,8 @@ run-mini-scaled-270: HEAD_SESSION := s270-$(S270_RUN)
 run-mini-scaled-270: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE)
 run-mini-scaled-270: prefetch-images
 	$(call require_cluster)
-	@case "$(S270_RUN)" in exact|extend|decoy) ;; *) \
-	  echo "  S270_RUN is exact, extend or decoy, not '$(S270_RUN)'"; exit 1;; esac
+	@case "$(S270_RUN)" in exact|extend|decoy|cost) ;; *) \
+	  echo "  S270_RUN is exact, extend, decoy or cost, not '$(S270_RUN)'"; exit 1;; esac
 	@test -f $(patsubst ../%,%,$(S270_QFO))/Eukaryota/UP000005640_9606.fasta || { \
 	  echo "  $(S270_QFO) is not staged. Run: make mini-decoy-testset"; exit 1; }
 	mkdir -p run-mini-scaled-270-$(S270_RUN)
@@ -2795,7 +2799,7 @@ run-mini-scaled-270: prefetch-images
 	    --annotations          ../data/mini/annotations \
 	    --structures           ../data/mini/structures \
 	    --outdir               ../$(S270_DIR)/$(S270_RUN) \
-	    --kmerseek_index_cache ../$(S270_DIR)/kmerseek_index \
+	    --kmerseek_index_cache ../$(S270_DIR)/$(S270_INDEX) \
 	    --target_species       $(MINI_TARGETS) \
 	    --hgnc_file            ../data/covariates/hgnc_complete_set.txt \
 	    --swissprot_dat        ../data/uniprot_sprot.dat.gz \
