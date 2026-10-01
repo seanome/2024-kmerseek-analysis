@@ -1,0 +1,71 @@
+{
+  "ksize": 19,
+  "moltype": "hp_kyte_doolittle2",
+  "classes": {
+    "h": "ACFILMV",
+    "p": "DEGHKNPQRSTWY"
+  },
+  "query": {
+    "name": "O60508 species=human Pre-mRNA-processing factor 17",
+    "sequence": "MSAAIAALAASYGSGSGSESDSDSESSRCPLPAADSLMHLTKSPSSKPSLAVAVDSAPEVAVKEDLETGVHLDPAVKEVQYNPTYETMFAPEFGPENPFRTQQMAAPRNMLSGYAEPAHINDFMFEQQRRTFATYGYALDPSLDNHQVSAKYIGSVEEAEKNQGLTVFETGQKKTEKRKKFKENDASNIDGFLGPWAKYVDEKDVAKPSEEEQKELDEITAKRQKKGKQEEEKPGEEKTILHVKEMYDYQGRSYLHIPQDVGVNLRSTMPPEKCYLPKKQIHVWSGHTKGVSAVRLFPLSGHLLLSCSMDCKIKLWEVYGERRCLRTFIGHSKAVRDICFNTAGTQFLSAAYDRYLKLWDTETGQCISRFTNRKVPYCVKFNPDEDKQNLFVAGMSDKKIVQWDIRSGEIVQEYDRHLGAVNTIVFVDENRRFVSTSDDKSLRVWEWDIPVDFKYIAEPSMHSMPAVTLSPNGKWLACQSMDNQILIFGAQNRFRLNKKKIFKGHMVAGYACQVDFSPDMSYVISGDGNGKLNIWDWKTTKLYSRFKAHDKVCIGAVWHPHETSKVITCGWDGLIKLWD",
+    "encoded": "hphhhhhhhhpppppppppppppppppphphphhpphhphppppppppphhhhhpphpphhhppphppphphpphhpphpppppppphhhpphppppphpppphhhppphhppphpphphpphhhpppppphhpppphhppphpppphphpphpphpphppppphphhpppppppppppphpppphpphpphhppphpphpppphhppppppppphpphphpppppppppppppppppphhphpphpppppppphphppphphphppphpppphphpppphphppppppphphhphhphppphhhphphphphphpphppppphhpphhpppphhpphhhpphppphhphhpppphphppppppphhpphpppphpphhphpppppppphhhhphpppphhppphpppphhpppppphphhpphhhhppppphhppppppphphpppphphphpphhppphpphphhphpppppphhhpphppphhhhphppphphpppphhppphhhpphhphphppphpphhppppppphphppppppphppphphppphhhphhpppppppphhphpppphhphpp"
+  },
+  "target": {
+    "name": "Q9PTR5 species=chicken Lissencephaly-1 homolog",
+    "sequence": "MVLSQRQRDELNRAIADYLRSNGYEEAYSVFKKEAELDVNEELDKKYAGLLEKKWTSVIRLQKKVMELESKLNEAKEEFTSGGPLGQKRDPKEWIPRPPEKYALSGHRSPVTRVIFHPVFSVMVSASEDATIKVWDYETGDFERTLKGHTDSVQDISFDHTGKLLASCSADMTIKLWDFQGFECIRTMHGHDHNVSSVAIMPNGDHIVSASRDKTIKMWEVQTGYCVKTFTGHREWVRMVRPNQDGTLIASCSNDQTVRVWVVATKECKAELREHEHVVECISWAPESSYSTISEATGSETKKSGKPGPFLLSGSRDKTIKMWDISTGMCLMTLVGHDNWVRGVLFHSGGKFILSCADDKTLRVWDFKNKRCMKTLNAHEHFVTSLDFHKTAPYVVTGSVDQTVKVWECR",
+    "encoded": "hhhppppppphpphhhpphppppppphpphhppphphphppphpppphphhpppppphhphppphhphppphpphppphppppphppppppppphppppppphhpppppphpphhhpphhphhhphppphphphppppppphppphpppppphpphphppppphhhphphphphphpphpphphhpphpppppphpphhhhppppphhphppppphphpphpppphhpphpppppphphhppppppphhhphppppphphphhhppphphphppppphhphhpphppppppphpphppppppppppppphhhppppppphphpphppphhhhphhppppphpphhhppppphhhphhpppphphpphpppphhpphphppphhpphphppphpphhppphppphphpphp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 256,
+      "target_pos": 30,
+      "kmer": "hppphphphppphpppphp",
+      "query_kmer": "IPQDVGVNLRSTMPPEKCY",
+      "target_kmer": "FKKEAELDVNEELDKKYAG"
+    },
+    {
+      "query_pos": 257,
+      "target_pos": 31,
+      "kmer": "ppphphphppphpppphph",
+      "query_kmer": "PQDVGVNLRSTMPPEKCYL",
+      "target_kmer": "KKEAELDVNEELDKKYAGL"
+    },
+    {
+      "query_pos": 299,
+      "target_pos": 160,
+      "kmer": "ppphhhphphphphphpph",
+      "query_kmer": "SGHLLLSCSMDCKIKLWEV",
+      "target_kmer": "TGKLLASCSADMTIKLWDF"
+    },
+    {
+      "query_pos": 300,
+      "target_pos": 161,
+      "kmer": "pphhhphphphphphpphp",
+      "query_kmer": "GHLLLSCSMDCKIKLWEVY",
+      "target_kmer": "GKLLASCSADMTIKLWDFQ"
+    },
+    {
+      "query_pos": 301,
+      "target_pos": 162,
+      "kmer": "phhhphphphphphpphpp",
+      "query_kmer": "HLLLSCSMDCKIKLWEVYG",
+      "target_kmer": "KLLASCSADMTIKLWDFQG"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 299,
+      "query_end": 320,
+      "target_start": 160,
+      "target_end": 181,
+      "length": 21
+    },
+    {
+      "query_start": 256,
+      "query_end": 276,
+      "target_start": 30,
+      "target_end": 50,
+      "length": 20
+    }
+  ]
+}

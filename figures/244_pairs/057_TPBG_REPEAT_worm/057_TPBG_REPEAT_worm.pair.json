@@ -1,0 +1,106 @@
+{
+  "ksize": 19,
+  "moltype": "hp_kyte_doolittle2",
+  "classes": {
+    "h": "ACFILMV",
+    "p": "DEGHKNPQRSTWY"
+  },
+  "query": {
+    "name": "Q13641 species=human Trophoblast glycoprotein",
+    "sequence": "MPGGCSRGPAAGDGRLRLARLALVLLGWVSSSSPTSSASSFSSSAPFLASAVSAQPPLPDQCPALCECSEAARTVKCVNRNLTEVPTDLPAYVRNLFLTGNQLAVLPAGAFARRPPLAELAALNLSGSRLDEVRAGAFEHLPSLRQLDLSHNPLADLSPFAFSGSNASVSAPSPLVELILNHIVPPEDERQNRSFEGMVVAALLAGRALQGLRRLELASNHFLYLPRDVLAQLPSLRHLDLSNNSLVSLTYVSFRNLTHLESLHLEDNALKVLHNGTLAELQGLPHIRVFLDNNPWVCDCHMADMVTWLKETEVVQGKDRLTCAYPEKMRNRVLLELNSADLDCDPILPPSLQTSYVFLGIVLALIGAIFLLVLYLNRKGIKKWMHNIRDACRDHMEGYHYRYEINADPRLTNLSSNSDV",
+    "encoded": "hppphpppphhpppphphhphhhhhhpphpppppppphpphppphphhhphhphppphppphphhhphpphhpphphhppphpphppphphphpphhhpppphhhhphphhhpppphhphhhhphpppphpphphphhpphpphpphphpppphhphpphhhpppphphphppphhphhhpphhpppppppppphpphhhhhhhhpphhpphpphphhppphhphppphhhphpphpphphpppphhphpphphpphpphpphphppphhphhpppphhphpphpphphhhppppphhphphhphhpphpppphhppppphphhpppphppphhhphpphphphpphhppphpppphhhphhhhhhphhhhhhhphpppphppphpphpphhppphpppppppphphppphpphppppph"
+  },
+  "target": {
+    "name": "G5EFX6 species=worm Slit homolog 1 protein",
+    "sequence": "MLICFIFILLIPESATCPAECVCVDRTVSCVGQQLTEVPQNIPNDTIRLDLQDNEITKIGPNDFSSLMNLKALQLMDNQIVTIHNQSFSSLVFLQKLRLSRNRIRHLPDNVFQNNLKLTHLDLSENDITVVSDAQLQGPEFLEVLNLDKNHIFCLENNVISSWVSLEVLTLNGNRLTTFEEPSNARFRQLDLFNNPWNCDCRLRWMRKWLEKAEGQNKTVCATPLNLQGSSIEILQDKFMTCSGNRKRRYKKTCETAEICPLPCTCTGTTVDCRDSGLTYVPTNLPPSTTEIRLEQNQISSIPSHSFKNLKNLTRLDLSKNIITEIQPKAFLGLHNLHTLVLYGNNITDLKSDTFEGLGSLQLLLLNANQLTCIRRGTFDHVPKLSMLSLYDNDIKSISEVTFQNLTSLSTLHLAKNPLICDCNLQWLAQINLQKNIETSGARCEQPKRLRKKKFATLPPNKFKCKGSESFVSMYADSCFIDSICPTQCDCYGTTVDCNKRGLNTIPTSIPRFATQLLLSGNNISTVDLNSNIHVLENLEVLDLSNNHITFINDKSFEKLSKLRELRLNDNKLHHFSSMVLDEQSNLEILDLSGNNIQCFSSIFFNKATRIREIKVIGNDLLCDCRILPLMSWLRSNSSHSIDIPPCQQFQYSDNESDKQRCAAFPEETCSDDSNLCPPKCSCLDRVVRCSNKNLTSFPSRIPFDTTELYLDANYINEIPAHDLNRLYSLTKLDLSHNRLISLENNTFSNLTRLSTLIISYNKLRCLQPLAFNGLNALRILSLHGNDISFLPQSAFSNLTSITHIAVGSNSLYCDCNMAWFSKWIKSKFIEAGIARCEYPNTVSNQLLLTAQPYQFTCDSKVPTKLATKCDLCLNSPCKNNAICETTSSRKYTCNCTPGFYGVHCENQIDACYGSPCLNNATCKVAQAGRFNCYCNKGFEGDYCEKNIDDCVNSKCENGGKCVDLINSYRCDCPMEYEGKHCEDKLEYCTKKLNPCENNGKCIPINGSYSCMCSPGFTGNNCETNIDDCKNVECQNGGSCVDGILSYDCLCRPGYAGQYCEIPPMMDMEYQKTDACQQSACGQGECVASQNSSDFTCKCHEGFSGPSCDRQMSVGFKNPGAYLALDPLASDGTITMTLRTTSKIGILLYYGDDHFVSAELYDGRVKLVYYIGNFPASHMYSSVKVNDGLPHRISIRTSERKCFLQIDKNPVQIVENSGKSDQLITKGKEMLYIGGLPIEKSQDAKRRFHVKNSESLKGCISSITINEVPINLQQALENVNTEQSCSATVNFCAGIDCGNGKCTNNALSPKGYMCQCDSHFSGEHCDEKRIKCDKQKFRRHHIENECRSVDRIKIAECNGYCGGEQNCCTAVKKKQRKVKMICKNGTTKISTVHIIRQCQCEPTKSVLSEK",
+    "encoded": "hhhhhhhhhhhppphphphphhhhppphphhppphpphppphpppphphphpppphpphpppphpphhphphhphhppphhphpppphpphhhhpphphpppphpphppphhppphphpphphpppphphhpphphpppphhphhphpppphhhhppphhppphphphhphpppphpphppppphphpphphhppppphphphpphppphpphpppppphhhpphphpppphphhppphhphppppppppppphpphphhphphphpppphphpppphpphppphpppppphphpppphpphpppphpphpphpphphppphhpphppphhhphpphpphhhpppphpphpppphpphpphphhhhphpphphhpppphpphpphphhphpppphpphpphphpphpphpphphhppphhhphphpphhphphppphpppphphppppphpppphhphpppphphppppphhphphpphhhpphhppphphpppphphpppphpphppphpphhpphhhpppphpphphppphphhpphphhphpppphphhpppphpphpphpphphpppphpphpphhhppppphphhphpppphphhpphhhpphpphpphphhppphhhphphhphhpphppppppphphpphpphppppppppppphhhhpppphppppphhppphphhpphhphpppphpphppphphpppphphphpphpphphpphpphpphpphphpppphhphpppphpphpphpphhhpppphphhpphhhpphphhphhphpppphphhppphhpphpphpphhhpppphphphphhphppphppphhphphhphppppphppphhhphpppphphppphppphhpphphhhppphppphhhppppppppphphppphpphphppphphhpppphhpphphphhphpphphphppphpppphppphpphhppphppppphhphhpppphphphpppppphppphpphppphpphppppphhphppppphhhppphpppphppphpphpphphppppphhpphhppphhhpppphppphphpphhphpppppphhppphhpppphhhpppppphphphppphpppphppphphphpppphphhhpphhpppphphphppppphphhhpppppphhphphpppphphhpphpphphpphppphphppphppphphpppppphhhphpppphphhpppppppphhppppphhphpphphppppphppphphppppphpphhpphphpphphphpphhpphppppphphphphhhphphpppphppphhppppphhphppphpppphpppphphpppphpppphppphpphpphphhphppphppppphhphhpppppphphhhpppppphpphphhpphphppppphhppp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 137,
+      "target_pos": 723,
+      "kmer": "hpphpphpphphpppphhp",
+      "query_kmer": "FEHLPSLRQLDLSHNPLAD",
+      "target_kmer": "LNRLYSLTKLDLSHNRLIS"
+    },
+    {
+      "query_pos": 138,
+      "target_pos": 724,
+      "kmer": "pphpphpphphpppphhph",
+      "query_kmer": "EHLPSLRQLDLSHNPLADL",
+      "target_kmer": "NRLYSLTKLDLSHNRLISL"
+    },
+    {
+      "query_pos": 139,
+      "target_pos": 725,
+      "kmer": "phpphpphphpppphhphp",
+      "query_kmer": "HLPSLRQLDLSHNPLADLS",
+      "target_kmer": "RLYSLTKLDLSHNRLISLE"
+    },
+    {
+      "query_pos": 140,
+      "target_pos": 726,
+      "kmer": "hpphpphphpppphhphpp",
+      "query_kmer": "LPSLRQLDLSHNPLADLSP",
+      "target_kmer": "LYSLTKLDLSHNRLISLEN"
+    },
+    {
+      "query_pos": 231,
+      "target_pos": 725,
+      "kmer": "phpphpphphpppphhphp",
+      "query_kmer": "QLPSLRHLDLSNNSLVSLT",
+      "target_kmer": "RLYSLTKLDLSHNRLISLE"
+    },
+    {
+      "query_pos": 232,
+      "target_pos": 726,
+      "kmer": "hpphpphphpppphhphpp",
+      "query_kmer": "LPSLRHLDLSNNSLVSLTY",
+      "target_kmer": "LYSLTKLDLSHNRLISLEN"
+    },
+    {
+      "query_pos": 252,
+      "target_pos": 305,
+      "kmer": "phpphpphpphphppphhp",
+      "query_kmer": "SFRNLTHLESLHLEDNALK",
+      "target_kmer": "SFKNLKNLTRLDLSKNIIT"
+    },
+    {
+      "query_pos": 396,
+      "target_pos": 885,
+      "kmer": "pppppppphphppphpphp",
+      "query_kmer": "EGYHYRYEINADPRLTNLS",
+      "target_kmer": "TTSSRKYTCNCTPGFYGVH"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 137,
+      "query_end": 159,
+      "target_start": 723,
+      "target_end": 745,
+      "length": 22
+    },
+    {
+      "query_start": 231,
+      "query_end": 251,
+      "target_start": 725,
+      "target_end": 745,
+      "length": 20
+    },
+    {
+      "query_start": 252,
+      "query_end": 271,
+      "target_start": 305,
+      "target_end": 324,
+      "length": 19
+    },
+    {
+      "query_start": 396,
+      "query_end": 415,
+      "target_start": 885,
+      "target_end": 904,
+      "length": 19
+    }
+  ]
+}

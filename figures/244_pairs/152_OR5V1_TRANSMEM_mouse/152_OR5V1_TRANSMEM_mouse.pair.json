@@ -1,0 +1,92 @@
+{
+  "ksize": 18,
+  "moltype": "hp_lehninger_c_nonpolar2",
+  "classes": {
+    "h": "ACFGILMPVWY",
+    "p": "DEHKNQRST"
+  },
+  "query": {
+    "name": "Q9UGF6 species=human Olfactory receptor 5V1",
+    "sequence": "MERKNQTAITEFIILGFSNLNELQFLLFTIFFLTYFCTLGGNILIILTTVTDPHLHTPMYYFLGNLAFIDICYTTSNVPQMMVHLLSKKKSISYVGCVVQLFAFVFFVGSECLLLAAMAYDRYIAICNPLRYSVILSKVLCNQLAASCWAAGFLNSVVHTVLTFCLPFCGNNQINYFFCDIPPLLILSCGNTSVNELALLSTGVFIGWTPFLCIVLSYICIISTILRIQSSEGRRKAFSTCASHLAIVFLFYGSAIFTYVRPISTYSLKKDRLVSVLYSVVTPMLNPIIYTLRNKDIKEAVKTIGSKWQPPISSLDSKLTY",
+    "encoded": "hpppppphhpphhhhhhpphpphphhhhphhhhphhhphhhphhhhhpphpphphpphhhhhhhphhhhphhhpppphhphhhphhppppphphhhhhhphhhhhhhhhpphhhhhhhhhpphhhhhphhphphhhpphhhpphhhphhhhhhhpphhpphhphhhhhhhppphphhhhphhhhhhhphhppphpphhhhpphhhhhhphhhhhhhphhhhhpphhphpppphppphhpphhpphhhhhhhhhphhhphhphhpphphpppphhphhhphhphhhphhhhphpppphpphhpphhpphphhhpphppphph"
+  },
+  "target": {
+    "name": "Q8VFT4 species=mouse Olfactory receptor",
+    "sequence": "MEPANDTTVTEFILTGLSQTREVQLVLFVIFLSFYLFILPVNILIICTIRLDSHLSSPMYFLLANLAFLDIWYSSITAPKMLVDFFVERKIISFGGCIAQLFFLHFVGASEMFLLTVMAFDRYAAICRPLHYATIMNRRLCCILVALSWTGGFVHSIIQVALIVRLPFCGPNELDNYFCDITQVVRIACANTFLEEMVMIFSSGLISVVCFIALLMSYAFLLTMLKKHSSSGESTSRAISTCYSHITIVVLMFGPSIYIYARPFDSFSLDKVVSVFHTVIFPLLNPIIYTLRNKEVKAAMRKLVNRYIFCKEK",
+    "encoded": "hphhpppphpphhhphhppppphphhhhhhhhphhhhhhhhphhhhhphphppphpphhhhhhhphhhhphhhpphphhphhhphhhppphhphhhhhhphhhhphhhhpphhhhphhhhpphhhhhphhphhphhppphhhhhhhhphphhhhpphhphhhhhphhhhhhpphpphhhphpphhphhhhpphhpphhhhhpphhhphhhhhhhhhphhhhhphhpppppphppppphhpphhpphphhhhhhhhphhhhhphhpphphpphhphhpphhhhhhphhhhphpppphphhhpphhpphhhhppp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 53,
+      "target_pos": 53,
+      "kmer": "phpphhhhhhhphhhhph",
+      "query_kmer": "HLHTPMYYFLGNLAFIDI",
+      "target_kmer": "HLSSPMYFLLANLAFLDI"
+    },
+    {
+      "query_pos": 54,
+      "target_pos": 54,
+      "kmer": "hpphhhhhhhphhhhphh",
+      "query_kmer": "LHTPMYYFLGNLAFIDIC",
+      "target_kmer": "LSSPMYFLLANLAFLDIW"
+    },
+    {
+      "query_pos": 55,
+      "target_pos": 55,
+      "kmer": "pphhhhhhhphhhhphhh",
+      "query_kmer": "HTPMYYFLGNLAFIDICY",
+      "target_kmer": "SSPMYFLLANLAFLDIWY"
+    },
+    {
+      "query_pos": 56,
+      "target_pos": 56,
+      "kmer": "phhhhhhhphhhhphhhp",
+      "query_kmer": "TPMYYFLGNLAFIDICYT",
+      "target_kmer": "SPMYFLLANLAFLDIWYS"
+    },
+    {
+      "query_pos": 57,
+      "target_pos": 57,
+      "kmer": "hhhhhhhphhhhphhhpp",
+      "query_kmer": "PMYYFLGNLAFIDICYTT",
+      "target_kmer": "PMYFLLANLAFLDIWYSS"
+    },
+    {
+      "query_pos": 79,
+      "target_pos": 10,
+      "kmer": "phhhphhppppphphhhh",
+      "query_kmer": "QMMVHLLSKKKSISYVGC",
+      "target_kmer": "EFILTGLSQTREVQLVLF"
+    },
+    {
+      "query_pos": 80,
+      "target_pos": 11,
+      "kmer": "hhhphhppppphphhhhh",
+      "query_kmer": "MMVHLLSKKKSISYVGCV",
+      "target_kmer": "FILTGLSQTREVQLVLFV"
+    },
+    {
+      "query_pos": 81,
+      "target_pos": 12,
+      "kmer": "hhphhppppphphhhhhh",
+      "query_kmer": "MVHLLSKKKSISYVGCVV",
+      "target_kmer": "ILTGLSQTREVQLVLFVI"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 53,
+      "query_end": 75,
+      "target_start": 53,
+      "target_end": 75,
+      "length": 22
+    },
+    {
+      "query_start": 79,
+      "query_end": 99,
+      "target_start": 10,
+      "target_end": 30,
+      "length": 20
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill_no_c2",
+  "classes": {
+    "h": "AFILMVWY",
+    "p": "CDEGHKNPQRST"
+  },
+  "query": {
+    "name": "O15535 species=human Zinc finger and SCAN domain-containing protein 9",
+    "sequence": "MNTNSKEVLSLGVQVPEAWEELLTMKVEAKSHLQWQESRLKRSNPLAREIFRRHFRQLCYQETPGPREALTRLQELCYQWLRPHVSTKEQILDLLVLEQFLSILPKELQGWVREHCPESGEEAVILLEDLERELDEPQHEMVAHRHRQEVLCKEMVPLAEQTPLTLQSQPKEPQLTCDSAQKCHSIGETDEVTKTEDRELVLRKDCPKIVEPHGKMFNEQTWEVSQQDPSHGEVGEHKDRIERQWGNLLGEGQHKCDECGKSFTQSSGLIRHQRIHTGERPYECNECGKAFSRSSGLFNHRGIHNIQKRYHCKECGKVFSQSAGLIQHQRIHKGEKPYQCSQCSKSYSRRSFLIEHQRSHTGERPHQCIECGKSFNRHCNLIRHQKIHTVAELV",
+    "encoded": "hpppppphhphphphpphhpphhphphphppphphpppphppppphhpphhppphpphphpppppppphhpphpphphphhppphppppphhphhhhpphhphhppphpphhpppppppppphhhhhpphppphpppppphhhpppppphhppphhphhpppphphpppppppphpppphppppphppppphppppppphhhpppppphhppppphhpppphphppppppppphpppppphppphpphhppppppppppppphppppphhpppphpppppphppppppphhppppphhpppphpphppphppppppphhppphphhpppphpppppphpppppppphpppphhhpppppppppppppphppppphppppphhpppphpphhphh"
+  },
+  "target": {
+    "name": "Q7T3H2 species=zebrafish Insulinoma-associated protein 1b",
+    "sequence": "MPKGFLVKRNKKAALVSYRIRTDEDGGPTPECPIAQIALSSPAPSASKPDSILLAFPSAGAEAPVPVHKPVQFGNPEAVYQALYSPTRPVSKDHDRKYFERSLNLGSPISAESFPTPASLTSLDHHLLFAPVDLKIGTSNSNRSGTASGAHAPAIQTGAKRPSADAAERKVSSKSAKKPKAIRKLNFEDEVTTSPVLGLKIKEGPVDLKPRPSSGGTNKPLGEFICQLCKEEYSDPFSLAQHKCSRIVRVEYRCPECEKVFSCPANLASHRRWHKPRVQSAPKQALQPAKPFPEELRAEFPSDRDTPSPGLSESGSEDGLYDCQHCGKRFKRQAYLRKHILGHQALQNQILGEAFRSAESPDAMPSEDRQSPAPLNLSPADCLTCPACGEKLPNRASLERHLRLLHDDAQAFPCKFCPATFYSSPGLTRHINKCHPTENRQVILLQMPVRNAC",
+    "encoded": "hppphhhppppphhhhphphppppppppppppphhphhhppphpphppppphhhhhpphphphphphppphphpppphhhphhhppppphppppppphhppphphppphphpphppphphpphppphhhhphphphpppppppppphpphphphhppphpppphphhppphpppphpppphhpphphppphpppphhphphpppphphpppppppppppphpphhpphpppphppphphhpppppphhphphppppppphhppphphhpppphpppphpphppphhpphpphppphphphpppppppppphpppppppphhpppppppphppphhhppphhppphhppphhpphhpphpppphhpppppppphphphpphpphppphpppphppphphppphphhppphphhppphpphphhpppphppphpppppppppphhhhphphpphp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 70,
+      "target_pos": 144,
+      "kmer": "pphpphphphhppphpppp",
+      "query_kmer": "TRLQELCYQWLRPHVSTKE",
+      "target_kmer": "GTASGAHAPAIQTGAKRPS"
+    },
+    {
+      "query_pos": 306,
+      "target_pos": 86,
+      "kmer": "ppphppppppphhppphph",
+      "query_kmer": "QKRYHCKECGKVFSQSAGL",
+      "target_kmer": "TRPVSKDHDRKYFERSLNL"
+    },
+    {
+      "query_pos": 308,
+      "target_pos": 250,
+      "kmer": "phppppppphhppphphhp",
+      "query_kmer": "RYHCKECGKVFSQSAGLIQ",
+      "target_kmer": "EYRCPECEKVFSCPANLAS"
+    },
+    {
+      "query_pos": 309,
+      "target_pos": 251,
+      "kmer": "hppppppphhppphphhpp",
+      "query_kmer": "YHCKECGKVFSQSAGLIQH",
+      "target_kmer": "YRCPECEKVFSCPANLASH"
+    },
+    {
+      "query_pos": 310,
+      "target_pos": 252,
+      "kmer": "ppppppphhppphphhppp",
+      "query_kmer": "HCKECGKVFSQSAGLIQHQ",
+      "target_kmer": "RCPECEKVFSCPANLASHR"
+    },
+    {
+      "query_pos": 311,
+      "target_pos": 253,
+      "kmer": "pppppphhppphphhpppp",
+      "query_kmer": "CKECGKVFSQSAGLIQHQR",
+      "target_kmer": "CPECEKVFSCPANLASHRR"
+    },
+    {
+      "query_pos": 312,
+      "target_pos": 254,
+      "kmer": "ppppphhppphphhpppph",
+      "query_kmer": "KECGKVFSQSAGLIQHQRI",
+      "target_kmer": "PECEKVFSCPANLASHRRW"
+    },
+    {
+      "query_pos": 313,
+      "target_pos": 255,
+      "kmer": "pppphhppphphhpppphp",
+      "query_kmer": "ECGKVFSQSAGLIQHQRIH",
+      "target_kmer": "ECEKVFSCPANLASHRRWH"
+    },
+    {
+      "query_pos": 314,
+      "target_pos": 256,
+      "kmer": "ppphhppphphhpppphpp",
+      "query_kmer": "CGKVFSQSAGLIQHQRIHK",
+      "target_kmer": "CEKVFSCPANLASHRRWHK"
+    },
+    {
+      "query_pos": 315,
+      "target_pos": 257,
+      "kmer": "pphhppphphhpppphppp",
+      "query_kmer": "GKVFSQSAGLIQHQRIHKG",
+      "target_kmer": "EKVFSCPANLASHRRWHKP"
+    },
+    {
+      "query_pos": 316,
+      "target_pos": 258,
+      "kmer": "phhppphphhpppphpppp",
+      "query_kmer": "KVFSQSAGLIQHQRIHKGE",
+      "target_kmer": "KVFSCPANLASHRRWHKPR"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 308,
+      "query_end": 335,
+      "target_start": 250,
+      "target_end": 277,
+      "length": 27
+    },
+    {
+      "query_start": 70,
+      "query_end": 89,
+      "target_start": 144,
+      "target_end": 163,
+      "length": 19
+    },
+    {
+      "query_start": 306,
+      "query_end": 325,
+      "target_start": 86,
+      "target_end": 105,
+      "length": 19
+    }
+  ]
+}

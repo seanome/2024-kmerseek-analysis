@@ -646,6 +646,8 @@ def candidate_bars(r: dict, other: dict | None) -> list[dict]:
     """
     bars = [
         dict(
+            tool="kmerseek chosen arm",
+            arm=r["chosen_arm"],
             label=f"kmerseek {arm_short(r['chosen_arm'])}, chosen for {r['pfam_id']}",
             category="kmerseek landed",
             iou=r["land_iou"],
@@ -657,17 +659,24 @@ def candidate_bars(r: dict, other: dict | None) -> list[dict]:
         same = other["land_target_acc"] == r["land_target_acc"]
         bars.append(
             dict(
+                tool="kmerseek best other alphabet",
+                arm=other["arm"],
                 label=f"kmerseek {arm_short(other['arm'])}, best other alphabet",
                 category="kmerseek landed",
                 iou=other["land_iou"],
                 human=(other["land_qstart"] + 1, other["land_qend"]),
                 target=(other["land_tstart"] + 1, other["land_tend"]) if same else None,
                 elsewhere=not same,
+                call_target=(
+                    other["land_target_acc"],
+                    (other["land_tstart"] + 1, other["land_tend"]),
+                ),
             )
         )
     for arm in [
         "hmmer3_phmmer.default",
         "mmseqs2_seqseq.s7",
+        "mmseqs2_iterative.s7",
         "foldseek.3di_aa",
         "prostt5.3di_from_seq",
         "reseek.verysensitive",
@@ -675,11 +684,13 @@ def candidate_bars(r: dict, other: dict | None) -> list[dict]:
         lab = COMPARISON_ARMS[arm]
         cat = r[f"{lab}|category"]
         if cat == "no call":
-            bars.append(dict(label=lab, category="no call"))
+            bars.append(dict(tool=lab, arm=arm, label=lab, category="no call"))
             continue
         same = r[f"{lab}|best_target_acc"] == r["land_target_acc"]
         bars.append(
             dict(
+                tool=lab,
+                arm=arm,
                 label=lab,
                 category=cat,
                 iou=r[f"{lab}|best_iou"],
@@ -688,11 +699,17 @@ def candidate_bars(r: dict, other: dict | None) -> list[dict]:
                     (r[f"{lab}|best_tstart"], r[f"{lab}|best_tend"]) if same else None
                 ),
                 elsewhere=not same,
+                call_target=(
+                    r[f"{lab}|best_target_acc"],
+                    (r[f"{lab}|best_tstart"], r[f"{lab}|best_tend"]),
+                ),
             )
         )
     kd = kd_category(r.get("kd_inside"), r.get("kd_best_iou"))
     bars.append(
         dict(
+            tool="Kyte-Doolittle scan",
+            arm="kd_scan",
             label="Kyte-Doolittle scan",
             category=kd,
             iou=r.get("kd_best_iou"),
@@ -720,17 +737,12 @@ def target_side(bars: list[dict]) -> list[dict]:
     return out
 
 
-def draw_candidate(r: dict, other: dict | None, notes: pl.DataFrame, pad: int = 60):
-    """Human protein on top, target protein below, tool rows under each. Returns fig."""
-    import matplotlib.pyplot as plt
-
+def draw_human_panel(ax, r: dict, bars: list[dict], notes: pl.DataFrame, pad: int = 60):
+    """The human half of a candidate figure: the window is the feature +/- ``pad`` aa."""
     hseq = sequences("human", {r["accession"]})[r["accession"]]
-    tseq = sequences(r["species"], {r["land_target_acc"]})[r["land_target_acc"]]
-    bars = candidate_bars(r, other)
-    fig, axes = plt.subplots(2, 1, figsize=(11.5, 9.2), height_ratios=[1.15, 1])
     sym = r.get("hgnc_symbol") or r["accession"]
     draw_protein_panel(
-        axes[0],
+        ax,
         f"human {sym} ({r['accession']})",
         len(hseq),
         max(1, r["domain_start"] - pad),
@@ -740,6 +752,16 @@ def draw_candidate(r: dict, other: dict | None, notes: pl.DataFrame, pad: int = 
         bars,
         "human",
     )
+
+
+def draw_candidate(r: dict, other: dict | None, notes: pl.DataFrame, pad: int = 60):
+    """Human protein on top, target protein below, tool rows under each. Returns fig."""
+    import matplotlib.pyplot as plt
+
+    tseq = sequences(r["species"], {r["land_target_acc"]})[r["land_target_acc"]]
+    bars = candidate_bars(r, other)
+    fig, axes = plt.subplots(2, 1, figsize=(11.5, 10.0), height_ratios=[1.15, 1])
+    draw_human_panel(axes[0], r, bars, notes, pad)
     draw_protein_panel(
         axes[1],
         f"{r['species']} {r['land_target_acc']}",
@@ -771,3 +793,397 @@ def protein_name(species: str, accession: str) -> str:
                 head = line[1:].split(" OS=")[0]
                 return head.split(" ", 1)[1] if " " in head else head
     return ""
+
+
+# ---------------------------------------------------------------------------
+# Cases: one row of tables/244_hero_candidates.csv, with its call coordinates.
+# ---------------------------------------------------------------------------
+CANDIDATES_CSV = (
+    Path(__file__).resolve().parents[1] / "tables" / "244_hero_candidates.csv"
+)
+_KEY = ["accession", "pfam_id", "domain_start", "domain_end"]
+_LAND_COLS = [
+    "land_qstart",
+    "land_qend",
+    "land_target_acc",
+    "land_tstart",
+    "land_tend",
+    "land_t_feat_start",
+    "land_t_feat_end",
+    "land_iou",
+    "land_inside",
+    "land_cover",
+]
+_BEST_COLS = [
+    "n_overlapping_calls",
+    "best_iou",
+    "any_inside_half",
+    "best_inside",
+    "best_qstart",
+    "best_qend",
+    "best_target_acc",
+    "best_tstart",
+    "best_tend",
+]
+#: The nine tool rows of a case, in the order the figure draws them.
+CASE_TOOLS = [
+    "kmerseek chosen arm",
+    "kmerseek best other alphabet",
+    "phmmer",
+    "MMseqs2",
+    "MMseqs2 iterative",
+    "Foldseek",
+    "ProstT5",
+    "Reseek",
+    "Kyte-Doolittle scan",
+]
+
+
+def load_cases(
+    landing: pl.DataFrame | None = None,
+    instances: pl.DataFrame | None = None,
+    csv: Path = CANDIDATES_CSV,
+) -> pl.DataFrame:
+    """Every row of the candidate CSV, joined back to the landing and instance tables.
+
+    ``case_id`` is the CSV row index (0-based). The columns carry the names notebook 244
+    uses internally (``land_*`` for the chosen arm, ``other|land_*`` for the best arm of
+    another alphabet, ``<tool>|best_*`` and ``<tool>|category`` for each comparison tool,
+    ``kd_*`` for the scan), so ``candidate_bars`` and ``draw_candidate`` take a row as is.
+    Each category is recomputed with ``classify_comparison`` and checked against the CSV.
+    """
+    L = load_landing() if landing is None else landing
+    inst = load_instances() if instances is None else instances
+    csv_df = pl.read_csv(csv, infer_schema_length=None)
+    c = csv_df.with_row_index("case_id").select(
+        pl.col("case_id").cast(pl.Int64),
+        pl.col("query").alias("accession"),
+        pl.col("feature_type").alias("pfam_id"),
+        pl.col("feature_start").alias("domain_start"),
+        pl.col("feature_end").alias("domain_end"),
+        "species",
+        "target",
+        pl.col("kmerseek_chosen_arm").alias("chosen_arm"),
+        pl.col("kmerseek_best_other_alphabet_arm").alias("other_arm"),
+        pl.col("kmerseek_iou").alias("csv_kmerseek_iou"),
+        pl.col("kmerseek_other_arm_iou").alias("csv_other_iou"),
+        "n_identical",
+        pl.col("region_length_aa").alias("region_length"),
+        *[
+            pl.col(f"{lab}_category").alias(f"csv|{lab}")
+            for lab in COMPARISON_ARMS.values()
+        ],
+    )
+    on = _KEY + ["species"]
+    chosen = L.filter(pl.col("arm").is_in(c["chosen_arm"].unique().to_list())).select(
+        on + [pl.col("arm").alias("chosen_arm")] + _LAND_COLS
+    )
+    other = L.filter(pl.col("arm").is_in(c["other_arm"].unique().to_list())).select(
+        on
+        + [pl.col("arm").alias("other_arm")]
+        + [pl.col(x).alias(f"other|{x}") for x in _LAND_COLS]
+    )
+    out = c.join(chosen, on=on + ["chosen_arm"], how="left").join(
+        other, on=on + ["other_arm"], how="left"
+    )
+    for arm, lab in COMPARISON_ARMS.items():
+        b = L.filter(pl.col("arm") == arm).select(
+            on + [pl.col(x).alias(f"{lab}|{x}") for x in _BEST_COLS]
+        )
+        out = out.join(b, on=on, how="left").with_columns(
+            classify_comparison(pl.col("land_iou"), prefix=f"{lab}|").alias(
+                f"{lab}|category"
+            )
+        )
+    out = out.join(
+        inst.select(
+            _KEY
+            + [
+                "hgnc_symbol",
+                "note",
+                "feature_length",
+                "feature_label",
+                "kd_landed",
+                "kd_best_iou",
+                "kd_qstart",
+                "kd_qend",
+                "kd_inside",
+                "mean_plddt_region",
+                "disorder_fraction_region",
+            ]
+        ),
+        on=_KEY,
+        how="left",
+    ).sort("case_id")
+    # The CSV was written from these same tables; any difference means they changed.
+    assert out.height == csv_df.height, (out.height, csv_df.height)
+    assert out["land_target_acc"].is_null().sum() == 0, "chosen arm row missing"
+    assert out["other|land_target_acc"].is_null().sum() == 0, "other arm row missing"
+    assert (out["land_target_acc"] == out["target"]).all()
+    assert (out["land_iou"].round(3) == out["csv_kmerseek_iou"]).all()
+    assert (out["other|land_iou"].round(3) == out["csv_other_iou"]).all()
+    for lab in COMPARISON_ARMS.values():
+        bad = out.filter(pl.col(f"{lab}|category") != pl.col(f"csv|{lab}"))
+        assert bad.height == 0, (lab, bad.select("case_id", f"{lab}|category"))
+    return out
+
+
+def case_other(r: dict) -> dict:
+    """The best arm of another alphabet, as the landing-table row ``candidate_bars`` takes."""
+    return {"arm": r["other_arm"], **{x: r[f"other|{x}"] for x in _LAND_COLS}}
+
+
+_OUTCOME = {"kmerseek landed": "lands"}
+
+
+def case_calls(r: dict, target_length: int) -> list[dict]:
+    """One row per tool for one case: the coordinates drawn in its figure, 1-based inclusive.
+
+    ``outcome`` is "best call on another target" when the tool's best call took its target
+    interval from a different protein than kmerseek's chosen arm; the target coordinates then
+    go in ``other_target_*`` and ``target_start``/``target_end`` stay empty.
+    ``outcome_on_human`` is the category on the human protein in every row.
+    """
+    rows = []
+    for b in candidate_bars(r, case_other(r)):
+        cat = b["category"]
+        on_human = _OUTCOME.get(cat, cat)
+        has_call = cat != "no call" and b.get("human") is not None
+        elsewhere = has_call and bool(b.get("elsewhere"))
+        qs, qe = b["human"] if has_call else (None, None)
+        ts, te = b["target"] if has_call and b.get("target") else (None, None)
+        ot, (os_, oe) = b["call_target"] if elsewhere else (None, (None, None))
+        rows.append(
+            {
+                "case_id": r["case_id"],
+                "gene": r["hgnc_symbol"],
+                "query": r["accession"],
+                "feature_type": r["pfam_id"],
+                "feature_start": r["domain_start"],
+                "feature_end": r["domain_end"],
+                "species": r["species"],
+                "target": r["target"],
+                "tool": b["tool"],
+                "arm": b["arm"],
+                "outcome": "best call on another target" if elsewhere else on_human,
+                "outcome_on_human": on_human,
+                "query_start": qs,
+                "query_end": qe,
+                "target_start": ts,
+                "target_end": te,
+                "other_target": ot,
+                "other_target_start": os_,
+                "other_target_end": oe,
+                "iou": round(b["iou"], 3) if has_call else None,
+                "target_protein_length": target_length,
+            }
+        )
+    assert [x["tool"] for x in rows] == CASE_TOOLS, [x["tool"] for x in rows]
+    return rows
+
+
+def case_caption(r: dict, number: int) -> dict:
+    """The TOOLS / hypothesis / conclusion / title stamp of a case figure (finish_figure)."""
+    outcome = "; ".join(
+        f"{lab} {r[f'{lab}|category']}"
+        for lab in [
+            "Foldseek",
+            "ProstT5",
+            "Reseek",
+            "phmmer",
+            "MMseqs2",
+            "MMseqs2 iterative",
+        ]
+    )
+    sym = r["hgnc_symbol"] or r["accession"]
+    plddt = r["mean_plddt_region"]
+    dis = r["disorder_fraction_region"]
+    return dict(
+        tools=(
+            f"kmerseek {arm_short(r['chosen_arm'])} (chosen for {r['pfam_id']} in Stage 0) "
+            f"and {arm_short(r['other_arm'])}; phmmer, MMseqs2, MMseqs2 iterative, Foldseek, "
+            f"ProstT5, Reseek; Kyte-Doolittle scan"
+        ),
+        hypothesis=(
+            f"kmerseek places the human {r['pfam_id']} feature \"{short_note(r['note'])}\" "
+            f"on its {r['species']} counterpart and the structure tools do not."
+        ),
+        conclusion=(
+            f"kmerseek IoU {r['land_iou']:.2f}, {r['n_identical']} of {r['region_length']} "
+            f"residues identical; {outcome}; "
+            f"Kyte-Doolittle scan {'landed' if r['kd_landed'] else 'did not land'}; "
+            f"pLDDT {plddt if plddt is None else round(plddt)}, "
+            f"disorder fraction {dis if dis is None else round(dis, 2)}."
+        ),
+        title=(
+            f"{number}. human {sym} {r['pfam_id']} \"{short_note(r['note'])}\" "
+            f"({r['feature_length']} aa) and {r['species']} {r['land_target_acc']}"
+        ),
+    )
+
+
+def case_figure(
+    r: dict,
+    notes: pl.DataFrame,
+    number: int,
+    path: Path | None = None,
+    dpi: int = 150,
+    pdf: bool = True,
+):
+    """Draw one case (human panel over target panel) with its stamp; save if ``path``.
+
+    ``path`` is the PNG; with ``pdf`` a PDF with the same stem is written next to it.
+    Returns the figure.
+    """
+    fig = draw_candidate(r, case_other(r), notes)
+    if path is not None:
+        mu.finish_figure(fig, path, **case_caption(r, number), layout=False, dpi=dpi)
+        if pdf:
+            fig.savefig(Path(path).with_suffix(".pdf"), bbox_inches="tight")
+    return fig
+
+
+def case_file_stem(r: dict) -> str:
+    sym = r["hgnc_symbol"] or r["accession"]
+    return f"{r['case_id']:03d}_{sym}_{r['pfam_id']}_{r['species']}"
+
+
+# ---------------------------------------------------------------------------
+# Notebook 272: every report-half feature x species, not only the 183 cases.
+# ---------------------------------------------------------------------------
+#: Reduced alphabets as residue groups, copied from kmerseek src/rust/alphabets.rs (the
+#: hydrophobic/polar ones: the first group is H, the rest of the 20 amino acids are P).
+_AA = "ACDEFGHIKLMNPQRSTVWY"
+HP_ALPHABETS = {
+    name: [h, "".join(a for a in _AA if a not in h)]
+    for name, h in {
+        "hp_thomas_dill2": "ACFILMVWY",
+        "hp_thomas_dill_no_c2": "AFILMVWY",
+        "hp_lehninger2": "AFGILMPVWY",
+        "hp_lehninger_c_nonpolar2": "ACFGILMPVWY",
+        "hp_kyte_doolittle2": "ACFILMV",
+        "hp_pbotc_1st_ed2": "ACFILMPVWY",
+    }.items()
+}
+
+#: The tools of notebook 272, in figure order. kmerseek is the setting chosen per feature
+#: type in notebook 244 (tables/244_chosen_arm_by_type.csv).
+ALIGNER_LABELS = [
+    "phmmer",
+    "MMseqs2",
+    "MMseqs2 iterative",
+    "Foldseek",
+    "ProstT5",
+    "Reseek",
+]
+TOOLS_272 = ["kmerseek", *ALIGNER_LABELS, "Kyte-Doolittle scan"]
+
+
+def closed_iou(start: pl.Expr, end: pl.Expr, fstart: pl.Expr, fend: pl.Expr) -> pl.Expr:
+    """IoU of two 1-based inclusive intervals; 0 when the call is missing.
+
+    One rule for every tool. The landing tables' own best_iou uses the pipeline's
+    overlap_expr, which takes a length as end - start, so aligner calls (1-based) lose a
+    residue and kmerseek calls (0-based start) do not."""
+    inter = pl.min_horizontal(end, fend) - pl.max_horizontal(start, fstart) + 1
+    inter = pl.when(inter > 0).then(inter).otherwise(0)
+    union = (end - start + 1) + (fend - fstart + 1) - inter
+    return pl.when(start.is_null()).then(0.0).otherwise(inter / union)
+
+
+def longest_same_class_run(a: str, b: str, alphabet: str) -> int:
+    """Longest stretch of a gapless pair where both residues fall in the same group."""
+    groups = HP_ALPHABETS[alphabet]
+    cls = {r: i for i, g in enumerate(groups) for r in g}
+    best = cur = 0
+    for x, y in zip(a, b):
+        cur = cur + 1 if cls.get(x, -1) == cls.get(y, -2) else 0
+        best = max(best, cur)
+    return best
+
+
+def report_pairs(
+    landing: pl.DataFrame, instances: pl.DataFrame, chosen: pl.DataFrame
+) -> pl.DataFrame:
+    """One row per (report-half feature of a type with a chosen setting, species).
+
+    Per tool ``t`` in TOOLS_272: ``t|qstart``, ``t|qend`` (its best overlapping call of the
+    feature's type on the human protein, 1-based inclusive, null when none), ``t|target``
+    and ``t|iou`` (closed_iou, 0 when no call). kmerseek also carries its landing call:
+    ``km_landed`` and ``km_land_*`` (1-based inclusive on both proteins). ``reachable``: a
+    call of the feature's type from any of the run's kmerseek settings or the six aligners
+    overlaps the feature, which needs a protein of that species carrying a Swiss-Prot
+    feature of that type.
+    """
+    key = ["accession", "pfam_id", "domain_start", "domain_end"]
+    rep = instances.filter(
+        (pl.col("half") == "report")
+        & pl.col("pfam_id").is_in(chosen["pfam_id"].to_list())
+    )
+    base = rep.join(pl.DataFrame({"species": SPECIES}), how="cross")
+    on = key + ["species"]
+    reach = (
+        landing.filter(pl.col("n_overlapping_calls") > 0)
+        .select(on)
+        .unique()
+        .with_columns(reachable=pl.lit(True))
+    )
+    out = base.join(reach, on=on, how="left").with_columns(
+        pl.col("reachable").fill_null(False)
+    )
+    best = ["best_qstart", "best_qend", "best_target_acc"]
+    km = landing.join(
+        chosen.select("pfam_id", "arm"), on=["pfam_id", "arm"], how="semi"
+    ).select(
+        on
+        + [
+            (pl.col("best_qstart") + 1).alias("kmerseek|qstart"),
+            pl.col("best_qend").alias("kmerseek|qend"),
+            pl.col("best_target_acc").alias("kmerseek|target"),
+            pl.col("landed").alias("km_landed"),
+            (pl.col("land_qstart") + 1).alias("km_land_qstart"),
+            pl.col("land_qend").alias("km_land_qend"),
+            pl.col("land_target_acc").alias("km_land_target"),
+            (pl.col("land_tstart") + 1).alias("km_land_tstart"),
+            pl.col("land_tend").alias("km_land_tend"),
+        ]
+    )
+    out = out.join(km, on=on, how="left").with_columns(
+        pl.col("km_landed").fill_null(False)
+    )
+    for arm, lab in COMPARISON_ARMS.items():
+        a = landing.filter(pl.col("arm") == arm).select(
+            on
+            + [
+                pl.col(c).alias(
+                    f"{lab}|{c.split('_', 1)[1].replace('target_acc', 'target')}"
+                )
+                for c in best
+            ]
+        )
+        out = out.join(a, on=on, how="left")
+    out = out.with_columns(
+        pl.col("kd_qstart").alias("Kyte-Doolittle scan|qstart"),
+        pl.col("kd_qend").alias("Kyte-Doolittle scan|qend"),
+    )
+    out = out.with_columns(
+        [
+            closed_iou(
+                pl.col(f"{t}|qstart"),
+                pl.col(f"{t}|qend"),
+                pl.col("domain_start"),
+                pl.col("domain_end"),
+            ).alias(f"{t}|iou")
+            for t in TOOLS_272
+        ]
+        + [
+            closed_iou(
+                pl.col("km_land_qstart"),
+                pl.col("km_land_qend"),
+                pl.col("domain_start"),
+                pl.col("domain_end"),
+            ).alias("km_land_iou")
+        ]
+    )
+    assert out.height == base.height, (out.height, base.height)
+    return out

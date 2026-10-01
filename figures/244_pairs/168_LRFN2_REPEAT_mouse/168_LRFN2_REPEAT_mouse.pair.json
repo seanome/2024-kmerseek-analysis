@@ -1,0 +1,148 @@
+{
+  "ksize": 19,
+  "moltype": "hp_kyte_doolittle2",
+  "classes": {
+    "h": "ACFILMV",
+    "p": "DEGHKNPQRSTWY"
+  },
+  "query": {
+    "name": "Q9ULH4 species=human Leucine-rich repeat and fibronectin type-III domain-containing protein 2",
+    "sequence": "METLLGGLLAFGMAFAVVDACPKYCVCQNLSESLGTLCPSKGLLFVPPDIDRRTVELRLGGNFIIHISRQDFANMTGLVDLTLSRNTISHIQPFSFLDLESLRSLHLDSNRLPSLGEDTLRGLVNLQHLIVNNNQLGGIADEAFEDFLLTLEDLDLSYNNLHGLPWDSVRRMVNLHQLSLDHNLLDHIAEGTFADLQKLARLDLTSNRLQKLPPDPIFARSQASALTATPFAPPLSFSFGGNPLHCNCELLWLRRLERDDDLETCGSPGGLKGRYFWHVREEEFVCEPPLITQHTHKLLVLEGQAATLKCKAIGDPSPLIHWVAPDDRLVGNSSRTAVYDNGTLDIFITTSQDSGAFTCIAANAAGEATAMVEVSIVQLPHLSNSTSRTAPPKSRLSDITGSSKTSRGGGGSGGGEPPKSPPERAVLVSEVTTTSALVKWSVSKSAPRVKMYQLQYNCSDDEVLIYRMIPASNKAFVVNNLVSGTGYDLCVLAMWDDTATTLTATNIVGCAQFFTKADYPQCQSMHSQILGGTMILVIGGIIVATLLVFIVILMVRYKVCNHEAPSKMAAAVSNVYSQTNGAQPPPPSSAPAGAPPQGPPKVVVRNELLDFTASLARASDSSSSSSLGSGEAAGLGRAPWRIPPSAPRPKPSLDRLMGAFASLDLKSQRKEELLDSRTPAGRGAGTSARGHHSDREPLLGPPAARARSLLPLPLEGKAKRSHSFDMGDFAAAAAGGVVPGGYSPPRKVSNIWTKRSLSVNGMLLPFEESDLVGARGTFGSSEWVMESTV",
+    "encoded": "hpphhpphhhhphhhhhhphhppphhhpphppphpphhpppphhhhppphpppphphphppphhhphpppphhphpphhphphpppphpphpphphhphpphpphphpppphpphpppphpphhphpphhhpppphpphhpphhpphhhphpphphpppphpphpppphpphhphpphphppphhpphhppphhphpphhphphpppphpphpppphhhppphphhphpphhpphphphpppphphphphhphpphppppphpphppppphpppphpphpppphhhppphhpppppphhhhppphhphphphhppppphhpphhpppphhpppppphhppppphphhhppppppphhphhhhphhpphphhhphphhphpphppppppphppppphpphppppppppppppppppppppppppphhhhpphpppphhhppphppphpphphpphppphpppphhhpphhphppphhhhpphhpppppphhhhhhpppphpphphpphhphhphhpphpppphpphppphhppphhhhhpphhhhphhhhhhhhhhppphhppphppphhhhhpphpppppphppppppphphphppppppphhhppphhphphphhphpppppppphpppphhphpphppphppphpppppphpphhphhhphphppppppphhppppphppphppphppppppppphhppphhphpphhphphppphppppphphpphhhhhhpphhppppppppphpphppppphphpphhhphpppphhphppphppppphhppph"
+  },
+  "target": {
+    "name": "Q80XU8 species=mouse Leucine-rich repeat and fibronectin type-III domain-containing protein 4",
+    "sequence": "MAPPLLLLLLASGAAACPLPCVCQNLSESLSTLCAHRGLLFVPPNVDRRTVELRLADNFIQALGPPDFRNMTGLVDLTLSRNAITRIGARSFGDLESLRSLHLDGNRLVELGSSSLRGPVNLQHLILSGNQLGRIAPGAFDDFLDSLEDLDVSYNNLRQVPWAGIGSMPALHTLNLDHNLIDALPPGVFAQLSQLSRLDLTSNRLATLAPDPLFSRGRDAEASPSPLVLSFSGNPLHCNCELLWLRRLARPDDLETCASPPTLAGRYFWAVPEGEFSCEPPLIARHTQRLWVLEGQRATLRCRALGDPVPTMHWVGPDDRLVGNSSRAWAFPNGTLEIGVTGAGDAGAYTCIATNPAGEATARVELRVLALPHGGNTSAEGGRPGPSDIAASARTAAEGEGTLESEPAVQVTEVTATSGLVSWGLGRPADPVWMFQIQYNSSEDETLIYRIVPASSHHFLLKHLVPGADYDLCLLALSPAAGPSDLTATRLLGCAHFSTLPATPLCHALQAHVLGGTLTVAVGGVLVAALLVFTVALLVRGRGAGNGRLPLKLSHVQSQTNGGTSPMPKSHPPRSPPPRPQRSCSLDLGDTGGCYGYARRLGGAWARRSHSVHGGLLGAGCRGVGGSAERLEESVV",
+    "encoded": "hhpphhhhhhhpphhhhphphhhpphppphpphhhppphhhhppphpppphphphhpphhphhpppphpphpphhphphppphhpphphpphpphpphpphphpppphhphpppphppphphpphhhpppphpphhpphhpphhpphpphphpppphpphpphphpphphhpphphppphhphhppphhhphpphpphphpppphhphhppphhppppphphpppphhhphpppphphphphhphpphhpppphpphhpppphhppphphhpppphphppphhhppppphphhpppphphphphhppphpphpphppppphhppppphphhpppphphphpphpphphpphhhppphpphphphphphhhhppppppphppppppppphhhphpphhppppphpppphhphpphphppphhppphppphpphphhphppppppppphhpphhphpppphhhpphhpphppphhhhhhpphhpppphphpphhphhphpphphpphhphhphphhppphphhhpphhhhhhhhhphhhhhpppphpppphphphpphpppppppppphpppppppppppppppphphphppppphppphpphpphphppppphppphhphphpphppphpphppphh"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 39,
+      "target_pos": 35,
+      "kmer": "ppphhhhppphpppphphp",
+      "query_kmer": "SKGLLFVPPDIDRRTVELR",
+      "target_kmer": "HRGLLFVPPNVDRRTVELR"
+    },
+    {
+      "query_pos": 40,
+      "target_pos": 36,
+      "kmer": "pphhhhppphpppphphph",
+      "query_kmer": "KGLLFVPPDIDRRTVELRL",
+      "target_kmer": "RGLLFVPPNVDRRTVELRL"
+    },
+    {
+      "query_pos": 98,
+      "target_pos": 143,
+      "kmer": "hpphpphphpppphpphpp",
+      "query_kmer": "LESLRSLHLDSNRLPSLGE",
+      "target_kmer": "LDSLEDLDVSYNNLRQVPW"
+    },
+    {
+      "query_pos": 123,
+      "target_pos": 119,
+      "kmer": "hphpphhhpppphpphhpp",
+      "query_kmer": "VNLQHLIVNNNQLGGIADE",
+      "target_kmer": "VNLQHLILSGNQLGRIAPG"
+    },
+    {
+      "query_pos": 124,
+      "target_pos": 120,
+      "kmer": "phpphhhpppphpphhpph",
+      "query_kmer": "NLQHLIVNNNQLGGIADEA",
+      "target_kmer": "NLQHLILSGNQLGRIAPGA"
+    },
+    {
+      "query_pos": 125,
+      "target_pos": 121,
+      "kmer": "hpphhhpppphpphhpphh",
+      "query_kmer": "LQHLIVNNNQLGGIADEAF",
+      "target_kmer": "LQHLILSGNQLGRIAPGAF"
+    },
+    {
+      "query_pos": 126,
+      "target_pos": 122,
+      "kmer": "pphhhpppphpphhpphhp",
+      "query_kmer": "QHLIVNNNQLGGIADEAFE",
+      "target_kmer": "QHLILSGNQLGRIAPGAFD"
+    },
+    {
+      "query_pos": 127,
+      "target_pos": 123,
+      "kmer": "phhhpppphpphhpphhpp",
+      "query_kmer": "HLIVNNNQLGGIADEAFED",
+      "target_kmer": "HLILSGNQLGRIAPGAFDD"
+    },
+    {
+      "query_pos": 128,
+      "target_pos": 124,
+      "kmer": "hhhpppphpphhpphhpph",
+      "query_kmer": "LIVNNNQLGGIADEAFEDF",
+      "target_kmer": "LILSGNQLGRIAPGAFDDF"
+    },
+    {
+      "query_pos": 129,
+      "target_pos": 125,
+      "kmer": "hhpppphpphhpphhpphh",
+      "query_kmer": "IVNNNQLGGIADEAFEDFL",
+      "target_kmer": "ILSGNQLGRIAPGAFDDFL"
+    },
+    {
+      "query_pos": 236,
+      "target_pos": 228,
+      "kmer": "hphpppphphphphhphpp",
+      "query_kmer": "FSFGGNPLHCNCELLWLRR",
+      "target_kmer": "LSFSGNPLHCNCELLWLRR"
+    },
+    {
+      "query_pos": 237,
+      "target_pos": 229,
+      "kmer": "phpppphphphphhphpph",
+      "query_kmer": "SFGGNPLHCNCELLWLRRL",
+      "target_kmer": "SFSGNPLHCNCELLWLRRL"
+    },
+    {
+      "query_pos": 396,
+      "target_pos": 564,
+      "kmer": "pphpppppppppppppppp",
+      "query_kmer": "SDITGSSKTSRGGGGSGGG",
+      "target_kmer": "SPMPKSHPPRSPPPRPQRS"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 123,
+      "query_end": 148,
+      "target_start": 119,
+      "target_end": 144,
+      "length": 25
+    },
+    {
+      "query_start": 39,
+      "query_end": 59,
+      "target_start": 35,
+      "target_end": 55,
+      "length": 20
+    },
+    {
+      "query_start": 236,
+      "query_end": 256,
+      "target_start": 228,
+      "target_end": 248,
+      "length": 20
+    },
+    {
+      "query_start": 98,
+      "query_end": 117,
+      "target_start": 143,
+      "target_end": 162,
+      "length": 19
+    },
+    {
+      "query_start": 396,
+      "query_end": 415,
+      "target_start": 564,
+      "target_end": 583,
+      "length": 19
+    }
+  ]
+}

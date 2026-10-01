@@ -1,0 +1,116 @@
+{
+  "ksize": 7,
+  "moltype": "mmseqs12",
+  "classes": {
+    "a": "AST",
+    "c": "C",
+    "e": "EQ",
+    "f": "FY",
+    "g": "G",
+    "h": "H",
+    "i": "IV",
+    "k": "KR",
+    "l": "LM",
+    "n": "DN",
+    "p": "P",
+    "w": "W"
+  },
+  "query": {
+    "name": "Q96T55 species=human Potassium channel subfamily K member 16",
+    "sequence": "MPSAGLCSCWGGRVLPLLLAYVCYLLLGATIFQLLERQAEAQSRDQFQLEKLRFLENYTCLDQWAMEQFVQVIMEAWVKGVNPKGNSTNPSNWDFGSSFFFAGTVVTTIGYGNLAPSTEAGQVFCVFYALLGIPLNVIFLNHLGTGLRAHLAAIERWEDRPRRSQVLQVLGLALFLTLGTLVILIFPPMVFSHVEGWSFSEGFYFAFITLSTIGFGDYVVGTDPSKHYISVYRSLAAIWILLGLAWLALILPLGPLLLHRCCQLWLLSLRQGCGAKAAPGRRPRRGSTAARGVQVTPQDFPISKKGLGS",
+    "encoded": "lpaaglcacwggkilplllaficflllgaaifellekeaeaeaknefeleklkflenfaclnewaleefieiileawikginpkgnaanpanwnfgaafffagaiiaaigfgnlapaaeageifciffallgiplniiflnhlgaglkahlaaiekwenkpkkaeileilglalflalgaliilifpplifahiegwafaegfffafialaaigfgnfiiganpakhfiaifkalaaiwillglawlalilplgplllhkccelwllalkegcgakaapgkkpkkgaaaakgieiapenfpiakkglga"
+  },
+  "target": {
+    "name": "P08510 species=fly Potassium voltage-gated channel protein Shaker",
+    "sequence": "MAAVAGLYGLGEDRQHRKKQQQQQQHQKEQLEQKEEQKKIAERKLQLREQQLQRNSLDGYGSLPKLSSQDEEGGAGHGFGGGPQHFEPIPHDHDFCERVVINVSGLRFETQLRTLNQFPDTLLGDPARRLRYFDPLRNEYFFDRSRPSFDAILYYYQSGGRLRRPVNVPLDVFSEEIKFYELGDQAINKFREDEGFIKEEERPLPDNEKQRKVWLLFEYPESSQAARVVAIISVFVILLSIVIFCLETLPEFKHYKVFNTTTNGTKIEEDEVPDITDPFFLIETLCIIWFTFELTVRFLACPNKLNFCRDVMNVIDIIAIIPYFITLATVVAEEEDTLNLPKAPVSPQDKSSNQAMSLAILRVIRLVRVFRIFKLSRHSKGLQILGRTLKASMRELGLLIFFLFIGVVLFSSAVYFAEAGSENSFFKSIPDAFWWAVVTMTTVGYGDMTPVGVWGKIVGSLCAIAGVLTIALPVPVIVSNFNYFYHRETDQEEMQSQNFNHVTSCPYLPGTLGQHMKKSSLSESSSDMMDLDDGVESTPGLTETHPGRSAVAPFLGAQQQQQQPVASSLSMSIDKQLQHPLQQLTQTQLYQQQQQQQQQQQNGFKQQQQQTQQQLQQQQSHTINASAAAATSGSGSSGLTMRHNNALAVSIETDV",
+    "encoded": "laaiaglfglgenkehkkkeeeeeehekeeleekeeekkiaekklelkeeeleknalngfgalpklaaeneeggaghgfgggpehfepiphnhnfcekiiiniaglkfeaelkalnefpnallgnpakklkffnplknefffnkakpafnailfffeaggklkkpiniplnifaeeikffelgneainkfkenegfikeeekplpnnekekkiwllfefpeaaeaakiiaiiaifiillaiiifclealpefkhfkifnaaangakieeneipnianpffliealciiwfafelaikflacpnklnfcknilniiniiaiipffialaaiiaeeenalnlpkapiapenkaanealalailkiiklikifkifklakhakgleilgkalkaalkelgllifflfigiilfaaaiffaeagaenaffkaipnafwwaiialaaigfgnlapigiwgkiigalcaiagilaialpipiiianfnfffhkeaneeeleaenfnhiaacpflpgalgehlkkaalaeaaanllnlnngieaapglaeahpgkaaiapflgaeeeeeepiaaalalainkelehpleelaeaelfeeeeeeeeeeengfkeeeeeaeeeleeeeahainaaaaaaaagagaaglalkhnnalaiaieani"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 106,
+      "target_pos": 440,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "TTVGYGD"
+    },
+    {
+      "query_pos": 107,
+      "target_pos": 441,
+      "kmer": "aigfgnl",
+      "query_kmer": "TIGYGNL",
+      "target_kmer": "TVGYGDM"
+    },
+    {
+      "query_pos": 108,
+      "target_pos": 442,
+      "kmer": "igfgnla",
+      "query_kmer": "IGYGNLA",
+      "target_kmer": "VGYGDMT"
+    },
+    {
+      "query_pos": 109,
+      "target_pos": 443,
+      "kmer": "gfgnlap",
+      "query_kmer": "GYGNLAP",
+      "target_kmer": "GYGDMTP"
+    },
+    {
+      "query_pos": 206,
+      "target_pos": 323,
+      "kmer": "fialaai",
+      "query_kmer": "FITLSTI",
+      "target_kmer": "FITLATV"
+    },
+    {
+      "query_pos": 207,
+      "target_pos": 437,
+      "kmer": "ialaaig",
+      "query_kmer": "ITLSTIG",
+      "target_kmer": "VTMTTVG"
+    },
+    {
+      "query_pos": 208,
+      "target_pos": 438,
+      "kmer": "alaaigf",
+      "query_kmer": "TLSTIGF",
+      "target_kmer": "TMTTVGY"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 439,
+      "kmer": "laaigfg",
+      "query_kmer": "LSTIGFG",
+      "target_kmer": "MTTVGYG"
+    },
+    {
+      "query_pos": 210,
+      "target_pos": 440,
+      "kmer": "aaigfgn",
+      "query_kmer": "STIGFGD",
+      "target_kmer": "TTVGYGD"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 106,
+      "query_end": 116,
+      "target_start": 440,
+      "target_end": 450,
+      "length": 10
+    },
+    {
+      "query_start": 207,
+      "query_end": 217,
+      "target_start": 437,
+      "target_end": 447,
+      "length": 10
+    },
+    {
+      "query_start": 206,
+      "query_end": 213,
+      "target_start": 323,
+      "target_end": 330,
+      "length": 7
+    }
+  ]
+}

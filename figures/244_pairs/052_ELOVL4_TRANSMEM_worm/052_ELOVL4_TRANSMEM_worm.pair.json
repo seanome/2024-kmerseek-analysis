@@ -1,0 +1,85 @@
+{
+  "ksize": 18,
+  "moltype": "hp_lehninger_c_nonpolar2",
+  "classes": {
+    "h": "ACFGILMPVWY",
+    "p": "DEHKNQRST"
+  },
+  "query": {
+    "name": "Q9GZR5 species=human Elongation of very long chain fatty acids protein 4",
+    "sequence": "MGLLDSEPGSVLNVVSTALNDTVEFYRWTWSIADKRVENWPLMQSPWPTLSISTLYLLFVWLGPKWMKDREPFQMRLVLIIYNFGMVLLNLFIFRELFMGSYNAGYSYICQSVDYSNNVHEVRIAAALWWYFVSKGVEYLDTVFFILRKKNNQVSFLHVYHHCTMFTLWWIGIKWVAGGQAFFGAQLNSFIHVIMYSYYGLTAFGPWIQKYLWWKRYLTMLQLIQFHVTIGHTALSLYTDCPFPKWMHWALIAYAISFIFLFLNFYIRTYKEPKKPKAGKTAMNGISANGVSKSEKQLMIENGKKQKNGKAKGD",
+    "encoded": "hhhhppphhphhphhpphhppphphhphphphhppphpphhhhpphhhphphpphhhhhhhhhhphhpppphhphphhhhhhphhhhhhphhhhpphhhhphphhhphhhpphphppphpphphhhhhhhhhhpphhphhpphhhhhpppppphphhphhpphphhphhhhhhphhhhhphhhhhphpphhphhhhphhhhphhhhhhpphhhhpphhphhphhphphphhpphhphhpphhhhphhphhhhhhhhphhhhhhphhhpphpphpphphhpphhphhphphhpppppphhhpphppppphphphp"
+  },
+  "target": {
+    "name": "Q20303 species=worm Elongation of very long chain fatty acids protein 6",
+    "sequence": "MPQGEVSFFEVLTTAPFSHELSKKHIAQTQYAAFWISMAYVVVIFGLKAVMTNRKPFDLTGPLNLWNAGLAIFSTLGSLATTFGLLHEFFSRGFFESYIHIGDFYNGLSGMFTWLFVLSKVAEFGDTLFIILRKKPLMFLHWYHHVLTMNYAFMSFEANLGFNTWITWMNFSVHSIMYGYYMLRSFGVKVPAWIAKNITTMQILQFVITHFILFHVGYLAVTGQSVDSTPGYYWFCLLMEISYVVLFGNFYYQSYIKGGGKKFNAEKKTEKKIE",
+    "encoded": "hhphphphhphhpphhhppphpppphhppphhhhhhphhhhhhhhhhphhhpppphhphphhhphhphhhhhhpphhphhpphhhhpphhpphhhpphhphhphhphhphhhphhhhhpphhphhpphhhhhppphhhhhphhpphhphphhhhphphphhhpphhphhphphpphhhhhhhhpphhhphhhhhhpphpphphhphhhpphhhhphhhhhhphpphppphhhhhhhhhhphphhhhhhphhhpphhphhhpphphppppppphp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 127,
+      "target_pos": 67,
+      "kmer": "hhhhhhpphhphhpphhh",
+      "query_kmer": "LWWYFVSKGVEYLDTVFF",
+      "target_kmer": "AGLAIFSTLGSLATTFGL"
+    },
+    {
+      "query_pos": 128,
+      "target_pos": 68,
+      "kmer": "hhhhhpphhphhpphhhh",
+      "query_kmer": "WWYFVSKGVEYLDTVFFI",
+      "target_kmer": "GLAIFSTLGSLATTFGLL"
+    },
+    {
+      "query_pos": 128,
+      "target_pos": 113,
+      "kmer": "hhhhhpphhphhpphhhh",
+      "query_kmer": "WWYFVSKGVEYLDTVFFI",
+      "target_kmer": "WLFVLSKVAEFGDTLFII"
+    },
+    {
+      "query_pos": 129,
+      "target_pos": 114,
+      "kmer": "hhhhpphhphhpphhhhh",
+      "query_kmer": "WYFVSKGVEYLDTVFFIL",
+      "target_kmer": "LFVLSKVAEFGDTLFIIL"
+    },
+    {
+      "query_pos": 130,
+      "target_pos": 115,
+      "kmer": "hhhpphhphhpphhhhhp",
+      "query_kmer": "YFVSKGVEYLDTVFFILR",
+      "target_kmer": "FVLSKVAEFGDTLFIILR"
+    },
+    {
+      "query_pos": 131,
+      "target_pos": 116,
+      "kmer": "hhpphhphhpphhhhhpp",
+      "query_kmer": "FVSKGVEYLDTVFFILRK",
+      "target_kmer": "VLSKVAEFGDTLFIILRK"
+    },
+    {
+      "query_pos": 132,
+      "target_pos": 117,
+      "kmer": "hpphhphhpphhhhhppp",
+      "query_kmer": "VSKGVEYLDTVFFILRKK",
+      "target_kmer": "LSKVAEFGDTLFIILRKK"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 128,
+      "query_end": 150,
+      "target_start": 113,
+      "target_end": 135,
+      "length": 22
+    },
+    {
+      "query_start": 127,
+      "query_end": 146,
+      "target_start": 67,
+      "target_end": 86,
+      "length": 19
+    }
+  ]
+}

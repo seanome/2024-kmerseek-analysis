@@ -1,0 +1,151 @@
+{
+  "ksize": 7,
+  "moltype": "mmseqs12",
+  "classes": {
+    "a": "AST",
+    "c": "C",
+    "e": "EQ",
+    "f": "FY",
+    "g": "G",
+    "h": "H",
+    "i": "IV",
+    "k": "KR",
+    "l": "LM",
+    "n": "DN",
+    "p": "P",
+    "w": "W"
+  },
+  "query": {
+    "name": "O95279 species=human Potassium channel subfamily K member 5",
+    "sequence": "MVDRGPLLTSAIIFYLAIGAAIFEVLEEPHWKEAKKNYYTQKLHLLKEFPCLGQEGLDKILEVVSDAAGQGVAITGNQTFNNWNWPNAMIFAATVITTIGYGNVAPKTPAGRLFCVFYGLFGVPLCLTWISALGKFFGGRAKRLGQFLTKRGVSLRKAQITCTVIFIVWGVLVHLVIPPFVFMVTEGWNYIEGLYYSFITISTIGFGDFVAGVNPSANYHALYRYFVELWIYLGLAWLSLFVNWKVSMFVEVHKAIKKRRRRRKESFESSPHSRKALQVKGSTASKDVNIFSFLSKKEETYNDLIKQIGKKAMKTSGGGETGPGPGLGPQGGGLPALPPSLVPLVVYSKNRVPTLEEVSQTLRSKGHVSRSPDEEAVARAPEDSSPAPEVFMNQLDRISEECEPWDAQDYHPLIFQDASITFVNTEAGLSDEETSKSSLEDNLAGEESPQQGAEAKAPLNMGEFPSSSESTFTSTESELSVPYEQLMNEYNKANSPKGT",
+    "encoded": "linkgpllaaaiifflaigaaifeileephwkeakknffaeklhllkefpclgeeglnkileiianaagegiaiagneafnnwnwpnalifaaaiiaaigfgniapkapagklfciffglfgiplclawiaalgkffggkakklgeflakkgialkkaeiacaiifiiwgilihliippfifliaegwnfieglffafiaiaaigfgnfiaginpaanfhalfkffielwiflglawlalfinwkialfieihkaikkkkkkkkeafeaaphakkaleikgaaaakninifaflakkeeafnnlikeigkkalkaagggeagpgpglgpeggglpalppalipliifaknkipaleeiaealkakghiakapneeaiakapenaapapeiflnelnkiaeecepwnaenfhplifenaaiafinaeaglaneeaakaalennlageeapeegaeakaplnlgefpaaaeaafaaaeaelaipfeellnefnkanapkga"
+  },
+  "target": {
+    "name": "Q94526 species=fly Open rectifier potassium channel protein 1",
+    "sequence": "MSPNRWILLLIFYISYLMFGAAIYYHIEHGEEKISRAEQRKAQIAINEYLLEELGDKNTTTQDEILQRISDYCDKPVTLPPTYDDTPYTWTFYHAFFFAFTVCSTVGYGNISPTTFAGRMIMIAYSVIGIPVNGILFAGLGEYFGRTFEAIYRRYKKYKMSTDMHYVPPQLGLITTVVIALIPGIALFLLLPSWVFTYFENWPYSISLYYSYVTTTTIGFGDYVPTFGANQPKEFGGWFVVYQIFVIVWFIFSLGYLVMIMTFITRGLQSKKLAYLEQQLSSNLKATQNRIWSGVTKDVGYLRRMLNELYILKVKPVYTDVDIAYTLPRSNSCPDLSMYRVEPAPIPSRKRAFSVCADMVAAQREAGMVHANSDTELSKLDREKTFETAEAYRQTTDLLAKVVNALATVKPPPAEQEDAALYGGYHGFSDSQILASEWSFSTVNEFTSPRRPRARACSDFNLEAPRWQSERPLRSSHNEWTWSGDNQQIQEAFNQRYKGQQRANGAANSTMVHLEPDALEEQLKKQSPGAGRVKKFSMPDGLRRLFPFQKKRPSQDLERKLSVVSVPEGVISQQARSPLDYYSNTVTAASSQSYLRNGRGPPPPFESNGSLASGGGGLTNMGFQMEDGATPPSALGGGAYQRKAAAGKRRRESIYTQNQAPSARRGSMYPPTAHALAQMQMRRGSLATSGSGSAAMAAVAARRGSLFPATASASSLTSAPRRSSIFSVTSEKDMNVLEQTTIADLIRALEVVHTHAVLDEQQQAAAAGGAAGGGGISRGSRKQRKMGNAGLEPPQLPPILSLFAGDQTRTLQAAAANRLYARRSTIVGISPTGGAATAPAARSLLEPPPSYTERAANQSQITAGPSNAPTVQSKFRRRFSVRPTALQIPPGQAPPPGASLMEQSSQTALQRRLSLRPSPLARELSPTSPPGGSGSALPAGAIDESGGTSAQRLLPLPAGTRPSTSSTHSPLSRIVQISQAQRKSSMPSAAATGSSGAPAEK",
+    "encoded": "lapnkwillliffiafllfgaaiffhiehgeekiakaeekkaeiaineflleelgnknaaaeneilekianfcnkpialppafnnapfawaffhafffafaicaaigfgniapaafagkliliafaiigipingilfaglgeffgkafeaifkkfkkfklaanlhfippelgliaaiiialipgialflllpawifaffenwpfaialffafiaaaaigfgnfipafganepkefggwfiifeifiiiwfifalgflililafiakgleakklafleeelaanlkaaenkiwagiaknigflkkllnelfilkikpifaniniafalpkanacpnlalfkiepapipakkkafaicanliaaekeaglihananaelaklnkekafeaaeafkeaanllakiinalaaikpppaeeenaalfggfhgfanaeilaaewafaainefaapkkpkakacanfnleapkweaekplkaahnewawagnneeieeafnekfkgeekangaanaalihlepnaleeelkkeapgagkikkfalpnglkklfpfekkkpaenlekklaiiaipegiiaeeakaplnffanaiaaaaaeaflkngkgppppfeangalaagggglanlgfelengaappaalgggafekkaaagkkkkeaifaeneapaakkgalfppaahalaelelkkgalaaagagaaalaaiaakkgalfpaaaaaaalaaapkkaaifaiaaeknlnileeaaianlikaleiihahailneeeeaaaaggaaggggiakgakkekklgnagleppelppilalfagneakaleaaaanklfakkaaiigiapaggaaaapaakallepppafaekaaneaeiaagpanapaieakfkkkfaikpaaleippgeapppgaalleeaaeaalekklalkpaplakelapaappggagaalpagaineaggaaaekllplpagakpaaaaahaplakiieiaeaekkaalpaaaaagaagapaek"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 96,
+      "target_pos": 103,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "STVGYGN"
+    },
+    {
+      "query_pos": 96,
+      "target_pos": 215,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "TTIGFGD"
+    },
+    {
+      "query_pos": 97,
+      "target_pos": 104,
+      "kmer": "aigfgni",
+      "query_kmer": "TIGYGNV",
+      "target_kmer": "TVGYGNI"
+    },
+    {
+      "query_pos": 98,
+      "target_pos": 105,
+      "kmer": "igfgnia",
+      "query_kmer": "IGYGNVA",
+      "target_kmer": "VGYGNIS"
+    },
+    {
+      "query_pos": 99,
+      "target_pos": 106,
+      "kmer": "gfgniap",
+      "query_kmer": "GYGNVAP",
+      "target_kmer": "GYGNISP"
+    },
+    {
+      "query_pos": 193,
+      "target_pos": 207,
+      "kmer": "lffafia",
+      "query_kmer": "LYYSFIT",
+      "target_kmer": "LYYSYVT"
+    },
+    {
+      "query_pos": 201,
+      "target_pos": 103,
+      "kmer": "aaigfgn",
+      "query_kmer": "STIGFGD",
+      "target_kmer": "STVGYGN"
+    },
+    {
+      "query_pos": 201,
+      "target_pos": 215,
+      "kmer": "aaigfgn",
+      "query_kmer": "STIGFGD",
+      "target_kmer": "TTIGFGD"
+    },
+    {
+      "query_pos": 202,
+      "target_pos": 216,
+      "kmer": "aigfgnf",
+      "query_kmer": "TIGFGDF",
+      "target_kmer": "TIGFGDY"
+    },
+    {
+      "query_pos": 203,
+      "target_pos": 217,
+      "kmer": "igfgnfi",
+      "query_kmer": "IGFGDFV",
+      "target_kmer": "IGFGDYV"
+    },
+    {
+      "query_pos": 453,
+      "target_pos": 573,
+      "kmer": "eakapln",
+      "query_kmer": "EAKAPLN",
+      "target_kmer": "QARSPLD"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 96,
+      "query_end": 106,
+      "target_start": 103,
+      "target_end": 113,
+      "length": 10
+    },
+    {
+      "query_start": 201,
+      "query_end": 210,
+      "target_start": 215,
+      "target_end": 224,
+      "length": 9
+    },
+    {
+      "query_start": 96,
+      "query_end": 103,
+      "target_start": 215,
+      "target_end": 222,
+      "length": 7
+    },
+    {
+      "query_start": 193,
+      "query_end": 200,
+      "target_start": 207,
+      "target_end": 214,
+      "length": 7
+    },
+    {
+      "query_start": 201,
+      "query_end": 208,
+      "target_start": 103,
+      "target_end": 110,
+      "length": 7
+    },
+    {
+      "query_start": 453,
+      "query_end": 460,
+      "target_start": 573,
+      "target_end": 580,
+      "length": 7
+    }
+  ]
+}
