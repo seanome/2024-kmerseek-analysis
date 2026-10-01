@@ -50,6 +50,14 @@ FILE_RE = re.compile(
 
 DECOY_PREFIX = "DECOY_"
 
+# Fixed types for the columns parse_name adds, so a file whose extend_penalty is None (no
+# penalty in its name) still reads together with one where it is a number.
+META_DTYPES = {
+    "species": pl.String, "alphabet": pl.String, "k": pl.Int64,
+    "lowcomp": pl.Boolean, "extend_penalty": pl.Float64, "arm": pl.String,
+    "source_file": pl.String,
+}
+
 
 def parse_name(path: Path) -> dict:
     m = FILE_RE.match(path.name)
@@ -60,13 +68,16 @@ def parse_name(path: Path) -> dict:
     arm = f"{d['alphabet']}_k{k}"
     # Two searches of one alphabet and k at different extension penalties would otherwise
     # share an arm name; the penalty goes in only when the file name carries it.
+    # kmerseek's own `scaled` column records the scaled value; the arm name carries it only
+    # when it is not 1, so two scaled values of one alphabet and k never share an arm.
+    if d["scaled"] and int(d["scaled"]) > 1:
+        arm += f"_s{d['scaled']}"
     if d["c"]:
         arm += f"_ext{d['c']}"
     return {
         "species": d["species"],
         "alphabet": d["alphabet"],
         "k": k,
-        "scaled": int(d["scaled"] or 1),
         "lowcomp": d["lc"] == "true",
         "extend_penalty": float(d["c"]) if d["c"] else None,
         "arm": arm,
@@ -115,7 +126,7 @@ def reduce_file(path: Path, evalue_max: float = EVALUE_MAX) -> tuple[pl.DataFram
     summary["extension_fit_refused"] = fit_refused(path)
     kept = (
         lf.filter(pl.col("region_evalue") < evalue_max)
-        .with_columns(**{k: pl.lit(v) for k, v in meta.items()})
+        .with_columns(**{k: pl.lit(v, dtype=META_DTYPES[k]) for k, v in meta.items()})
         .with_columns(accession=accession_expr())
         .collect()
     )
