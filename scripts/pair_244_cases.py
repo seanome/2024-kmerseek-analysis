@@ -157,6 +157,19 @@ def main():
             (g["query_start"], g["query_end"], g["target_start"], g["target_end"])
             for g in pj["regions"]
         ]
+        # The pair region on the call's diagonal that contains the call, if any.
+        diag = want[2] - want[0]
+        holder = [
+            g
+            for g in pj["regions"]
+            if g["target_start"] - g["query_start"] == diag
+            and g["query_start"] <= want[0]
+            and g["query_end"] >= want[1]
+        ]
+        holder = min(
+            holder, key=lambda g: g["query_end"] - g["query_start"], default=None
+        )
+        png = next(d.glob("*.png"), None)
         rows.append(
             {
                 "case_id": r["case_id"],
@@ -172,6 +185,17 @@ def main():
                 "run_call_query": f"{call['query_start']}-{call['query_end']}",
                 "run_call_target": f"{call['target_start']}-{call['target_end']}",
                 "run_call_is_a_pair_region": want in found,
+                "pair_region_holding_call_query": (
+                    f"{holder['query_start'] + 1}-{holder['query_end']}"
+                    if holder
+                    else None
+                ),
+                "pair_region_holding_call_target": (
+                    f"{holder['target_start'] + 1}-{holder['target_end']}"
+                    if holder
+                    else None
+                ),
+                "png": png.name if png else None,
                 "folder": f"figures/244_pairs/{stem}",
                 "kmerseek": f"{version} ({commit})",
             }

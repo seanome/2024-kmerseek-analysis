@@ -15,7 +15,8 @@ Writes figures/244_hits/<human acc>.<alphabet>.k<k>.<species>.kmerseek_hits.html
 tables/244_case_hits_index.csv, with, per case, where the case's target protein sits:
   * page_rank: its row on the page, which orders proteins by kmerseek's page statistic
     (Benjamini-Hochberg corrected tail probability of the best region). A page shows the
-    top --max-rows proteins (100), or runs down to the case's target if it ranks lower;
+    top --max-rows proteins (100), so a target ranked lower is not on it (on_page);
+    a page that ran down to every target reached 70 MB for one case;
   * run_rank: its rank under the run's own rule (evaluate_domain_calls.load_regions:
     Bonferroni-corrected region tail probability < 0.05, then best region_enrichment).
 
@@ -174,14 +175,6 @@ def main():
             csv_path = work / f"{stem}.csv"
             rows.drop("query_acc", "target_acc").write_csv(csv_path)
             dom = domains_tsv(sp, work / f"swissprot_features.human_{sp}.tsv")
-            # Every case's target gets a row: the page runs down to it if it ranks lower.
-            targets = cases.filter(
-                (pl.col("kmerseek_chosen_arm") == arm)
-                & (pl.col("species") == sp)
-                & (pl.col("query") == q)
-            )["target"].to_list()
-            ranks = [page_rank(csv_path, t, viz.parent) for t in targets]
-            max_rows = max([args.max_rows] + [x for x in ranks if x is not None])
             page_dir = OUT / stem
             subprocess.run(
                 [
@@ -200,7 +193,7 @@ def main():
                     "--kmerseek",
                     binary,
                     "--max-rows",
-                    str(max_rows),
+                    str(args.max_rows),
                 ],
                 check=True,
                 capture_output=True,
@@ -213,7 +206,8 @@ def main():
                 **row,
                 "page": str(page.relative_to(ROOT)),
                 "n_target_proteins": rows["target_acc"].n_unique(),
-                "page_rank": page_rank(csv_path, r["target"], viz.parent),
+                "page_rank": (pr := page_rank(csv_path, r["target"], viz.parent)),
+                "on_page": pr is not None and pr <= args.max_rows,
                 "run_rank": run_rank(rows, r["target"]),
                 "note": None,
             }
