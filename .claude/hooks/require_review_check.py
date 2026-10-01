@@ -34,6 +34,9 @@ FILE_REFS = [
     re.compile(r"--body-file[=\s]+(['\"]?)([^\s'\"]+)\1"),
     re.compile(r"(?:^|\s)-F\s+(['\"]?)([^\s'\"=]+)\1(?=\s|$)"),
     re.compile(r"--input[=\s]+(['\"]?)([^\s'\"]+)\1"),
+    # A body read from stdin (`body=@-`, `--input -`): the file piped or redirected in.
+    re.compile(r"\bcat\s+(['\"]?)([^\s'\"|;&]+)\1\s*\|"),
+    re.compile(r"(?<![<\d])<\s*(['\"]?)([^\s'\"<!|;&]+)\1"),
 ]
 
 

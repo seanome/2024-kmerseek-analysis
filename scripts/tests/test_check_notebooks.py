@@ -60,6 +60,29 @@ def test_ordinary_tuples_and_ranges_are_not_flagged(tmp_path):
     assert check_notebooks.check_notebook(nb) == []
 
 
+def test_array_index_is_not_flagged(tmp_path):
+    nb = write(tmp_path, [code_cell("v = arr[2, 500]\nw = grid[3, 100]", 1)])
+    assert check_notebooks.check_notebook(nb) == []
+
+
+def test_empty_cell_skipped_by_nbconvert_passes(tmp_path):
+    # nbconvert --execute leaves an empty code cell's count null and numbers the rest 1, 2.
+    nb = write(
+        tmp_path, [code_cell("x = 1", 1), code_cell("", None), code_cell("x", 2)]
+    )
+    assert check_notebooks.check_notebook(nb) == []
+
+
+def test_empty_cell_numbered_by_run_all_passes(tmp_path):
+    nb = write(tmp_path, [code_cell("x = 1", 1), code_cell("", 2), code_cell("x", 3)])
+    assert check_notebooks.check_notebook(nb) == []
+
+
+def test_unrun_cell_with_code_still_fails(tmp_path):
+    nb = write(tmp_path, [code_cell("x = 1", 1), code_cell("y = 2", None)])
+    assert "not run top to bottom" in "\n".join(check_notebooks.check_notebook(nb))
+
+
 def test_comma_integers_outside_an_assignment(tmp_path):
     # Each of these runs, and each gives the wrong value.
     for src in [

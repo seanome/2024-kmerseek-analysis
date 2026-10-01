@@ -79,11 +79,17 @@ def comma_integers(src):
         tree = ast.parse(src)
     except SyntaxError:
         return []
+    # `arr[2, 500]` is an index into two axes, not a number written with a comma.
+    indexes = {id(n.slice) for n in ast.walk(tree) if isinstance(n, ast.Subscript)}
     found = []
     for node in ast.walk(tree):
         text = ast.get_source_segment(src, node) or ""
-        if isinstance(node, ast.Tuple) and all(
-            isinstance(e, ast.Constant) and type(e.value) is int for e in node.elts
+        if (
+            isinstance(node, ast.Tuple)
+            and id(node) not in indexes
+            and all(
+                isinstance(e, ast.Constant) and type(e.value) is int for e in node.elts
+            )
         ):
             # A tuple someone meant writes its parentheses or does not split 3 digits.
             if re.fullmatch(r"[1-9]\d{0,2}(?:,\s*\d{3})+", text):
@@ -150,7 +156,13 @@ def check_notebook(path):
     # A notebook saved with no cell run is a template waiting for its data (the
     # scripts/make_nbNNN.py notebooks are committed that way), so it passes. Once any cell
     # has run, all of them must have, in order, from a fresh kernel.
-    counts = [c.get("execution_count") for _, c in code_cells]
+    # nbconvert skips an empty code cell and leaves its count null; Jupyter's Run All
+    # numbers it. Either is a clean run, so an empty cell with no count is left out.
+    counts = [
+        c.get("execution_count")
+        for _, c in code_cells
+        if cell_source(c).strip() or c.get("execution_count") is not None
+    ]
     if any(n is not None for n in counts) and counts != list(range(1, len(counts) + 1)):
         problems.append(
             f"{path}: code cells were not run top to bottom in a fresh kernel "
