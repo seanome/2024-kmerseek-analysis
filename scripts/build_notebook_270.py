@@ -310,6 +310,10 @@ Colour marks the alphabet group: blue for the four 2-letter hydrophobic-polar al
 orange for the three larger reduced alphabets, black for protein20. Marker shape marks the
 alphabet within its group. Solid lines with markers are measured; dashed lines are
 predicted.
+
+The x axis shows the scaled values 1, 2, 5 and 10, with the share of k-mers each keeps
+(all, 1/2, 1/5, 1/10) under the number. The ticks are spaced by ratio, so the step from 1
+to 2 takes as much room as the step from 5 to 10: each halves the share of k-mers kept.
 """)
 
 code(r"""
@@ -318,6 +322,10 @@ def group(a):
     return "protein20" if a == "protein20" else ("hp" if a.startswith("hp_") else "reduced")
 MARK = {"hp_lehninger_c_nonpolar2": "o", "hp_thomas_dill2": "s", "hp_thomas_dill_no_c2": "^",
         "hp_kyte_doolittle2": "D", "gbmr4": "o", "mmseqs12": "s", "sdm12": "^", "protein20": "o"}
+# Ticks are the scaled values themselves, with the share of k-mers kept under each. They are
+# spaced by ratio: 1 to 2 is as far as 5 to 10, since each step keeps half as many k-mers.
+SCALED_TICKS = ["1\n(all)", "2\n(1/2)", "5\n(1/5)", "10\n(1/10)"]
+SCALED_LABEL = "scaled s (share of k-mers kept: 1/s)"
 def arm_label(a):
     return f"{a}, k = {u.ARM_K[a]}"
 def arm_handles(extra=(), arms=None, species_note=None):
@@ -342,9 +350,9 @@ for ax, b in zip(axes, u.LENGTH_BINS):
         ax.plot(t["scaled"], t["pred_formula_medianF"], color=c, lw=1, ls="--", alpha=0.7)
         ax.plot(t["scaled"], t["measured"], color=c, marker=MARK[a], lw=1.6, ms=5)
     ax.set_xscale("log")
-    ax.set_xticks(u.SCALED, [str(s) for s in u.SCALED])
+    ax.set_xticks(u.SCALED, SCALED_TICKS)
     ax.set_title(f"features {b} aa")
-    ax.set_xlabel("scaled (log scale)")
+    ax.set_xlabel(SCALED_LABEL)
     ax.grid(alpha=0.3)
 axes[0].set_ylabel("share of instances seeded at scaled 1\nthat still have a seed")
 extra = [Line2D([], [], color="grey", lw=1.6, label="measured"),
@@ -430,8 +438,8 @@ for ax, b in zip(axes, u.LENGTH_BINS):
         c = GROUP_COLOR[group(a)]
         ax.plot(t["scaled"], t["landed_decoy"], color=c, lw=1, ls=":", marker="x", ms=4)
         ax.plot(t["scaled"], t["landed"], color=c, marker=MARK[a], lw=1.6, ms=5)
-    ax.set_xscale("log"); ax.set_xticks(u.SCALED, [str(s) for s in u.SCALED])
-    ax.set_title(f"features {b} aa"); ax.set_xlabel("scaled (log scale)"); ax.grid(alpha=0.3)
+    ax.set_xscale("log"); ax.set_xticks(u.SCALED, SCALED_TICKS)
+    ax.set_title(f"features {b} aa"); ax.set_xlabel(SCALED_LABEL); ax.grid(alpha=0.3)
 axes[0].set_ylabel("share of instances seeded at scaled 1\nwith a landed extended call")
 extra = [Line2D([], [], color="grey", lw=1.6, label="measured, landed (half of the call inside)"),
          Line2D([], [], color="grey", lw=1, ls=":", marker="x", label="decoy of the same query (chance level)")]
@@ -499,8 +507,8 @@ for ax, b in zip(axes, u.LENGTH_BINS):
         ax.plot(t["scaled"], t["landed"], color=c, marker=MARK[a], lw=1.6, ms=5)
     n1 = L1h.filter((pl.col("length_bin") == b) & (pl.col("scaled") == 1))["n"]
     ax.set_title(f"features {b} aa\ninstances per arm at scaled 1: {n1.min() if n1.len() else 0}-{n1.max() if n1.len() else 0}", fontsize=10)
-    ax.set_xscale("log"); ax.set_xticks(u.SCALED, [str(s) for s in u.SCALED])
-    ax.set_xlabel("scaled (log scale)"); ax.grid(alpha=0.3)
+    ax.set_xscale("log"); ax.set_xticks(u.SCALED, SCALED_TICKS)
+    ax.set_xlabel(SCALED_LABEL); ax.grid(alpha=0.3)
 axes[0].set_ylabel("share of instances seeded at scaled 1\nwith a landed extended call")
 extra = [Line2D([], [], color="grey", lw=1.6, label="measured, landed (half of the call inside)"),
          Line2D([], [], color="grey", lw=1, ls=":", marker="x", label="decoy of the same query (chance level)")]
@@ -533,8 +541,8 @@ for ax, col, name in zip(axes, ["start", "end"], ["start", "end"]):
     for a in EXT_ARMS:
         t = BE_ALL.filter(pl.col("alphabet") == a).sort("scaled")
         ax.plot(t["scaled"], t[col], color=GROUP_COLOR[group(a)], marker=MARK[a], lw=1.4)
-    ax.set_xscale("log"); ax.set_xticks(u.SCALED, [str(s) for s in u.SCALED])
-    ax.set_xlabel("scaled (log scale)"); ax.set_title(f"{name}: |call {name} - feature {name}|"); ax.grid(alpha=0.3)
+    ax.set_xscale("log"); ax.set_xticks(u.SCALED, SCALED_TICKS)
+    ax.set_xlabel(SCALED_LABEL); ax.set_title(f"{name}: |call {name} - feature {name}|"); ax.grid(alpha=0.3)
 axes[0].set_ylabel("median error, residues\n(best landed call, all lengths)")
 fig.legend(handles=arm_handles(arms=EXT_ARMS, species_note=SPN), loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, frameon=False)
 fig.savefig(FIG / "270_boundary_error_vs_scaled.png")
@@ -648,7 +656,7 @@ for ax, b in zip(axes, u.LENGTH_BINS):
         ax.plot(t["peak_gb"] * 1024, t["landed"], color=c, lw=0.7, alpha=0.6)
         ax.scatter(t["peak_gb"] * 1024, t["landed"], color=c, marker=MARK[a],
                    s=[SIZE[x] for x in t["scaled"]], zorder=3)
-    ax.set_xscale("log"); ax.set_title(f"features {b} aa"); ax.set_xlabel("peak memory, MB (log scale)"); ax.grid(alpha=0.3)
+    ax.set_xscale("log"); ax.set_title(f"features {b} aa"); ax.set_xlabel("peak memory, MB"); ax.set_xticks([20, 50, 100, 200, 500], ["20", "50", "100", "200", "500"]); ax.grid(alpha=0.3)
 axes[0].set_ylabel("share of instances seeded at scaled 1\nwith a landed extended call")
 extra = [Line2D([], [], ls="none", marker="o", color="grey", markersize=np.sqrt(SIZE[x]), label=f"scaled {x}")
          for x in u.SCALED]
@@ -687,11 +695,11 @@ for ax, a in zip(axes.flat, EXT_ARMS):
     for r, ls, mk in (("extend", "-", "o"), ("decoy", "--", "x")):
         t = D.filter((pl.col("alphabet") == a) & (pl.col("run") == r)).sort("scaled")
         ax.plot(t["scaled"], t["per_query"], color=GROUP_COLOR[group(a)], ls=ls, marker=mk, lw=1.4)
-    ax.set_xscale("log"); ax.set_xticks(u.SCALED, [str(s) for s in u.SCALED])
+    ax.set_xscale("log"); ax.set_xticks(u.SCALED, SCALED_TICKS)
     ax.set_title(arm_label(a) + (f"\n({SPN[a]})" if a in SPN else ""), fontsize=9); ax.grid(alpha=0.3)
     ax.set_ylim(bottom=0)
 for ax in axes[1]:
-    ax.set_xlabel("scaled (log scale)")
+    ax.set_xlabel(SCALED_LABEL)
 for ax in axes[:, 0]:
     ax.set_ylabel("calls per query, E < 1")
 extra = [Line2D([], [], color="grey", ls="-", marker="o", label="real queries"),
