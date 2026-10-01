@@ -94,3 +94,10 @@ def test_reading_a_comment_back_is_not_checked(tmp_path):
 def test_inline_body_is_checked(tmp_path):
     cmd = "gh api -X POST repos/o/r/issues/1/comments -f body='## /analysis-review, run x'"
     assert "section" in run_hook(cmd, tmp_path)
+
+
+def test_body_piped_in_is_checked(tmp_path):
+    (tmp_path / "review.md").write_text(HEAD + MARKER)
+    stdin_post = POST.format("-")
+    for cmd in (f"cat review.md | {stdin_post}", f"{stdin_post} < review.md"):
+        assert "Reviewer 2" in (run_hook(cmd, tmp_path) or ""), cmd
