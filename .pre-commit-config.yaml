@@ -1,0 +1,9 @@
+# Checks that run on `git commit`. Install once per clone with `pre-commit install`.
+repos:
+  - repo: local
+    hooks:
+      - id: check-notebooks
+        name: notebook checks from PR reviews
+        entry: python3 scripts/check_notebooks.py --staged
+        language: system
+        files: ^notebooks/.*\.ipynb$
