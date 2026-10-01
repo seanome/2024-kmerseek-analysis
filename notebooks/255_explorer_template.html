@@ -1,0 +1,783 @@
+<title>Ranking Metrics Against Pfam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#18202c; --muted:#5a6473; --faint:#8b94a3; --rule:#d8dde4;
+  --length:#c3c9d2; --scored:#4f6480; --unscored:#ffffff; --focus:#0b6bcb;
+  --domain:#3f8f6b; --span:#6c4fb3; --hl:#eef1f6;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --serif:"IBM Plex Serif",Georgia,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#12161c; --surface:#1a2029; --ink:#e7ebf0; --muted:#a3adba; --faint:#7a8494; --rule:#313a46;
+    --length:#4a5361; --scored:#8ea6c6; --unscored:#1a2029; --focus:#6fb0ff;
+    --domain:#5fb88e; --span:#a58ae6; --hl:#232b37;}
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#12161c; --surface:#1a2029; --ink:#e7ebf0; --muted:#a3adba; --faint:#7a8494; --rule:#313a46;
+  --length:#4a5361; --scored:#8ea6c6; --unscored:#1a2029; --focus:#6fb0ff;
+  --domain:#5fb88e; --span:#a58ae6; --hl:#232b37;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.5;}
+.wrap{max-width:1360px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;}
+h1{font-family:var(--serif);font-weight:500;font-size:28px;line-height:1.2;margin:0 0 6px;text-wrap:balance}
+h2{font-size:17px;font-weight:600;margin:0 0 8px;text-wrap:balance}
+h3{font-size:14.5px;font-weight:600;margin:0 0 6px}
+p{margin:0 0 10px;max-width:70ch}
+.lead{color:var(--muted);max-width:80ch}
+.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+a{color:var(--focus)}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px 28px;margin:18px 0 14px}
+.defs div{border-top:1px solid var(--rule);padding-top:8px}
+.defs p{font-size:13.5px}
+table.rules{border-collapse:collapse;font-size:13px;margin:4px 0 8px}
+table.rules td{padding:2px 10px 2px 0;vertical-align:top}
+table.rules td:first-child{white-space:nowrap;font-weight:500}
+.bar{position:relative;z-index:5;background:var(--bg);border-block:1px solid var(--rule);padding-block:10px;margin:10px 0 16px;
+  display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-end}
+@media (min-width:820px){.bar{position:sticky;top:env(safe-area-inset-top,0px)}}
+.ctl{display:flex;flex-direction:column;gap:3px}
+.ctl>span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+select{font:inherit;font-size:13.5px;padding:4px 6px;border:1px solid var(--rule);border-radius:4px;background:var(--surface);color:var(--ink);max-width:100%}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--surface)}
+.seg button{font:inherit;font-size:13px;padding:4px 10px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+button:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;position:relative;z-index:0}
+@media (min-width:1180px){.main{grid-template-columns:minmax(0,1fr) 440px}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.scroll{overflow-x:auto;isolation:isolate}
+.tabs{display:flex;gap:4px;margin-bottom:10px;border-bottom:1px solid var(--rule)}
+.tabs button{font:inherit;font-size:13.5px;padding:6px 12px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:500}
+.caption{font-size:13px;color:var(--muted);max-width:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--muted);align-items:center;margin:4px 0 8px}
+.legend i{display:inline-block;vertical-align:middle;margin-right:6px}
+svg text{fill:var(--ink);font-family:var(--sans)}
+svg .mut{fill:var(--muted)}
+svg .ax{stroke:var(--muted);stroke-width:1}
+svg .grid{stroke:var(--rule);stroke-width:1}
+.cell{cursor:pointer}
+.cell:hover rect.bg{stroke:var(--ink);stroke-width:1}
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--surface);border:1px solid var(--rule);border-radius:5px;
+  padding:7px 9px;font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.15);max-width:300px;line-height:1.4}
+#tip b{font-weight:600}
+.readout{display:grid;grid-template-columns:auto auto auto;gap:2px 14px;font-size:13px;margin-top:10px}
+.readout .h{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+.readout span:nth-child(3n+2),.readout span:nth-child(3n){text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.chk{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center;margin-top:4px}
+.note{margin-top:28px;display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+@media (min-width:1000px){.note{grid-template-columns:minmax(0,62ch) minmax(0,1fr)}}
+.rulesfig{margin:6px 0 4px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:1000px){.rulesfig{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}}
+.sliders{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-size:12.5px;color:var(--muted);margin-top:6px}
+.sliders input{width:100%}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.presets button,.pillbtn{font:inherit;font-size:12.5px;padding:3px 9px;border:1px solid var(--rule);border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer}
+.presets button:hover,.pillbtn:hover{border-color:var(--ink)}
+table.verdict{border-collapse:collapse;width:100%;font-size:13px}
+table.verdict th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:500;text-align:left;padding:4px 6px;border-bottom:1px solid var(--rule)}
+table.verdict td{padding:6px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.verdict tr{cursor:pointer}
+table.verdict tr:hover td{background:var(--bg)}
+table.verdict tr.cur td{background:var(--hl)}
+table.verdict td.v{font-size:15px;font-weight:600;width:1.6em;text-align:center}
+table.verdict .calc{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.rank-head{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;justify-content:space-between}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px 22px;font-size:13px;margin-top:10px}
+.gloss div{padding:4px 0;border-top:1px solid var(--rule)}
+.gloss b{font-weight:600}
+.verdictline{font-size:14.5px;max-width:none;margin:4px 0 8px}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;margin:14px 0 6px}
+.flow .step{flex:1 1 170px;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.4;min-width:0}
+.flow .step .k{display:block;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.flow .step.io{border:1.5px solid var(--ink)}
+.flow .arr{align-self:center;color:var(--muted);font-size:18px;flex:0 0 auto}
+@media (max-width:700px){.flow{flex-direction:column}.flow .arr{transform:rotate(90deg);align-self:center}}
+.preview{border-left:3px solid var(--ink);background:var(--surface);padding:6px 10px;font-size:13.5px;margin:8px 0 0;max-width:none}
+footer{margin-top:30px;border-top:1px solid var(--rule);padding-top:10px;font-size:12.5px;color:var(--muted)}
+footer p{max-width:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<h1>Ranking metrics against human Pfam domains</h1>
+<p class="lead">kmerseek scores every matched region in several ways. This page asks which score puts correct Pfam domain matches at the top of the list, and whether any does better than the length of the matched region alone. <b>Proteins:</b> the <span class="num" id="n-prot">—</span> human query proteins of the midi-plus Pfam benchmark run, each with at least one Pfam domain: <span id="set-line">—</span> Their <span class="num" id="n-dom">—</span> Pfam domains (<span class="num" id="n-fam">—</span> families) are the truth. <b>Search:</b> these proteins were searched against each other (all against all, not against the other species of the midi-plus run), with <span class="num" id="n-alpha">—</span> alphabets at <span class="num" id="n-k">—</span> k-mer sizes each, <span class="num" id="n-pairs">—</span> alphabet-ksize pairs in all. The search was run twice, with two kmerseek builds; the switch in the control bar picks which one the page shows. Notebook 255 scores the results.</p>
+
+<div class="flow" role="img" aria-label="What went in, what was done, and what came out">
+  <div class="step io"><span class="k">Input</span><b><span class="num" id="f-prot">—</span> human proteins</b>, each with a Pfam domain. Their <span class="num" id="f-dom">—</span> Pfam domains are the right answers.</div>
+  <div class="arr" aria-hidden="true">→</div>
+  <div class="step"><span class="k">Search</span>kmerseek searches every protein against all of them, at <span class="num" id="f-pairs">—</span> alphabet-ksize pairs. Twice: with kmerseek 982a055 (notebook 243) and with the preview build 8978e78 (notebook 257).</div>
+  <div class="arr" aria-hidden="true">→</div>
+  <div class="step"><span class="k">Matches</span>Each match is a matched span on each of two proteins. kmerseek gives it a value under each ranking metric (<span id="f-nmet">—</span>).</div>
+  <div class="arr" aria-hidden="true">→</div>
+  <div class="step"><span class="k">Check</span>A match is correct when both spans overlap a domain of the same Pfam family, under one of four overlap rules.</div>
+  <div class="arr" aria-hidden="true">→</div>
+  <div class="step io"><span class="k">Output (this page)</span>For each alphabet-ksize pair, metric and rule: how well the metric puts correct matches first (average precision, ROC AUC), and how that compares with ranking by region length alone.</div>
+</div>
+<p class="preview" id="preview-note" hidden><b>Preview build.</b> kmerseek 8978e78 is the tip of a local branch that has not been reviewed or merged (notebook 257, <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/85">seanome/2024-kmerseek-analysis#85</a>). Its numbers can change before a release.</p>
+
+<div class="defs">
+  <div>
+    <h3>Match and correct match</h3>
+    <p>A match is one pair of matched spans on two proteins, counted once whichever protein was the query. It is correct when both spans overlap a domain of the same Pfam family. "Overlap" has four readings (the <b>overlap rule</b>), and both spans must pass it.</p>
+    <p>The figure below draws the four rules on one protein. Drag the sliders or pick an example to see which rules a span passes.</p>
+    <p><b>Base rate</b>: the share of matches that are correct. A score that knows nothing gets this precision everywhere in the list.</p>
+  </div>
+  <div>
+    <h3>Average precision (AP)</h3>
+    <p>Sort the matches from best score to worst. Each time the list reaches a correct match, take the share of matches so far that are correct (the precision). AP is the average of those shares. 1 means every correct match comes before every wrong one; a score that knows nothing gets the base rate.</p>
+    <h3>ROC AUC</h3>
+    <p>The chance that a randomly picked correct match scores higher than a randomly picked wrong match (ties count half). 0.5 is a coin flip, 1 is perfect. AUC does not depend on how many matches are correct, so it can look good when almost none are. <span id="auc-example">—</span></p>
+  </div>
+  <div>
+    <h3>Compared with region length</h3>
+    <p>Longer matched regions are more often correct, so length alone already sorts matches well. Each metric is judged on the matches it can score, and region length is ranked on those same matches. "Minus length" is the metric's AP or AUC minus length's. Blue cells: the metric puts correct matches higher than length does. Red: lower.</p>
+    <h3>Bits of seed information</h3>
+    <p>The k-mer sizes were chosen so every alphabet gets the same information per k-mer: bits = k × the Shannon entropy of the alphabet's letter frequencies in the human proteome (bits per letter). A 2-letter alphabet at k = 16 and the 20 amino acids at k = 5 both carry about 16 to 21 bits.</p>
+  </div>
+</div>
+
+<section class="panel" id="rules-panel" aria-labelledby="rules-h">
+  <h2 id="rules-h">The four overlap rules, drawn on one protein</h2>
+  <p class="caption">One side of one match. The same test is applied to the query protein and to the target protein, and a match is correct only when both pass. Click a rule to use it everywhere on the page.</p>
+  <div class="rulesfig">
+    <div>
+      <div class="legend">
+        <span><svg width="26" height="10" style="vertical-align:middle;margin-right:6px"><line x1="0" y1="5" x2="26" y2="5" stroke="var(--ink)" stroke-width="1.5"/></svg>protein</span>
+        <span><i style="width:22px;height:12px;background:var(--domain);opacity:.85;border-radius:2px"></i>Pfam domain</span>
+        <span><i style="width:22px;height:7px;background:var(--span)"></i>matched span found by kmerseek</span>
+        <span><svg width="26" height="10" style="vertical-align:middle;margin-right:6px"><path d="M1 2V7H25V2" fill="none" stroke="var(--ink)" stroke-width="1.2"/></svg>overlap (residues in both)</span>
+      </div>
+      <div class="scroll"><svg id="rulesvg" viewBox="0 0 560 150" width="100%" role="img" aria-label="Protein with a Pfam domain and a matched span"></svg></div>
+      <div class="sliders">
+        <span>domain start</span><input type="range" id="ds" min="1" max="300"><span class="num" id="ds-v"></span>
+        <span>domain end</span><input type="range" id="de" min="1" max="300"><span class="num" id="de-v"></span>
+        <span>span start</span><input type="range" id="ss" min="1" max="300"><span class="num" id="ss-v"></span>
+        <span>span end</span><input type="range" id="se" min="1" max="300"><span class="num" id="se-v"></span>
+      </div>
+      <div class="presets" id="presets"></div>
+    </div>
+    <div>
+      <table class="verdict" id="verdict"></table>
+      <p class="caption" style="margin-top:8px">✓ passes, ✗ fails. IoU is intersection over union: the residues in both, divided by the residues in either.</p>
+    </div>
+  </div>
+</section>
+
+<div class="bar" role="group" aria-label="Controls">
+  <div class="ctl"><span>Search</span><div class="seg" id="run"></div></div>
+  <label class="ctl"><span>Overlap rule</span><select id="rule"></select></label>
+  <div class="ctl"><span>Statistic</span><div class="seg" id="stat"><button data-v="ap">average precision</button><button data-v="auc">ROC AUC</button></div></div>
+  <div class="ctl"><span>Show</span><div class="seg" id="show"><button data-v="value">the value</button><button data-v="diff">value minus length</button></div></div>
+  <label class="ctl"><span>Metric (grid)</span><select id="metric"></select></label>
+  <div class="ctl"><span>Columns (grid)</span><div class="seg" id="cols"><button data-v="k">k-mer size</button><button data-v="bits">bits of seed information</button></div></div>
+</div>
+
+<section class="panel" id="rank-panel" aria-labelledby="rank-h" style="margin-bottom:24px;position:relative;z-index:0">
+  <div class="rank-head">
+    <h2 id="rank-h">Which metric ranks correct matches best?</h2>
+    <label class="ctl"><span>Alphabets</span><select id="scope"></select></label>
+  </div>
+  <p class="verdictline" id="rank-verdict">—</p>
+  <div class="legend">
+    <span><svg width="12" height="12" style="vertical-align:middle;margin-right:6px"><circle cx="6" cy="6" r="4" fill="rgb(33,102,172)"/></svg>one alphabet-ksize pair where the metric beats region length</span>
+    <span><svg width="12" height="12" style="vertical-align:middle;margin-right:6px"><circle cx="6" cy="6" r="4" fill="rgb(178,24,43)"/></svg>one where it does worse</span>
+    <span><svg width="12" height="12" style="vertical-align:middle;margin-right:6px"><circle cx="6" cy="6" r="4" fill="none" stroke="var(--muted)" stroke-width="1.3"/></svg>one where it ties length</span>
+    <span><svg width="14" height="16" style="vertical-align:middle;margin-right:6px"><line x1="7" y1="1" x2="7" y2="15" stroke="var(--ink)" stroke-width="2.5"/></svg>median over the pairs</span>
+    <span><svg width="14" height="16" style="vertical-align:middle;margin-right:6px"><line x1="7" y1="1" x2="7" y2="15" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="3 2"/></svg>0 = the same as region length</span>
+  </div>
+  <div class="scroll"><svg id="ranksvg" role="img"></svg></div>
+  <p class="caption" id="rank-caption"></p>
+  <h3 style="margin-top:12px">What each metric measures (from kmerseek's source, <span class="mono">src/rust/search.rs</span>)</h3>
+  <div class="gloss" id="gloss"></div>
+</section>
+
+<div class="main">
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-grid" data-v="grid">Alphabet × k-mer size, one metric</button>
+      <button role="tab" id="tab-median" data-v="median">Alphabet × metric, median over k-mer sizes</button>
+    </div>
+    <div class="legend" id="legend-grid"></div>
+    <div class="scroll"><svg id="grid" role="img"></svg></div>
+    <p class="caption" id="grid-caption"></p>
+  </section>
+  <aside class="panel" id="detail" aria-live="polite">
+    <h2 id="d-title">—</h2>
+    <p class="caption" id="d-sub"></p>
+    <div class="legend">
+      <span><i style="width:22px;height:2.5px;background:var(--ink)"></i><span id="lg-metric">metric</span></span>
+      <span><i style="width:22px;height:9px;background:var(--length)"></i>region length, same matches</span>
+      <span><svg width="22" height="6" style="vertical-align:middle;margin-right:6px"><line x1="0" y1="3" x2="22" y2="3" stroke="var(--muted)" stroke-width="1.3" stroke-dasharray="2 3"/></svg>a score that knows nothing</span>
+    </div>
+    <div class="charts">
+      <div><svg id="pr" viewBox="0 0 250 230" width="100%"></svg></div>
+      <div><svg id="roc" viewBox="0 0 250 230" width="100%"></svg>
+        <label class="chk"><input type="checkbox" id="logfpr"> log scale for the false-positive rate</label></div>
+    </div>
+    <div class="readout" id="readout"></div>
+    <p class="caption" id="d-empty" hidden></p>
+  </aside>
+</div>
+
+<section class="note">
+  <div>
+    <h2 id="ev-h">—</h2>
+    <p id="ev-intro">—</p>
+    <p><span id="ev-lead">—</span> <span id="ev-live">—</span></p>
+    <p><span id="ev-all">—</span></p>
+  </div>
+  <div class="panel">
+    <h3 id="cnt-title">Matches each metric could score</h3>
+    <div class="legend">
+      <span><i style="width:14px;height:10px;background:var(--scored)"></i>matches the metric scores</span>
+      <span><i style="width:14px;height:10px;background:var(--unscored);border:1px solid var(--muted)"></i>matches with no value</span>
+    </div>
+    <div class="scroll"><svg id="counts" width="100%"></svg></div>
+  </div>
+</section>
+
+<footer>
+  <p>Source: notebook 255 and <span class="mono">255_ranking_metrics_per_arm.py</span> on branch <span class="mono">olgabot/ranking-metrics-vs-human-pfam</span> (<a href="https://github.com/seanome/2024-kmerseek-analysis/pull/84">seanome/2024-kmerseek-analysis#84</a>). Grid numbers come from <span class="mono">per_arm_metrics.parquet</span> (kmerseek 982a055, notebook 243 search) and <span class="mono">per_arm_metrics.kmerseek-8978e78.parquet</span> (kmerseek 8978e78, notebook 257 search, scored by <span class="mono">255_ranking_metrics_per_arm.py --regions-dir</span>). Curves are sampled at 100 points by <span class="mono">255_explorer_data.py</span> from the same labelled matches. AP and AUC recomputed from the full curves differ from the table by at most <span id="maxdiff">—</span> in the search shown. The notebook 243 search files do not carry the Poisson score, containment or the two whole-protein scores, so that search shows 7 metrics and the preview search 13. The two builds find different matches (no alphabet-ksize pair has the same number of matches in both), so a cell's change between searches mixes a change in the metric with a change in the matches.</p>
+</footer>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const RUNS = /*DATA*/null;
+let D = RUNS[0].data;
+const $ = s => document.querySelector(s);
+const NS = "http://www.w3.org/2000/svg";
+const fmtN = n => n == null ? "—" : Math.round(n).toLocaleString("en-US");
+const f3 = v => v == null || Number.isNaN(v) ? "—" : v.toFixed(3);
+const f2 = v => v == null || Number.isNaN(v) ? "—" : v.toFixed(2);
+const sgn = (v, d = 3) => v == null || Number.isNaN(v) ? "—" : (v > 0 ? "+" : v < 0 ? "−" : "±") + Math.abs(v).toFixed(d);
+const pct = v => v == null ? "—" : (100 * v < 0.1 && v > 0 ? (100 * v).toFixed(2) : (100 * v).toFixed(1)) + "%";
+
+// ------------------------------------------------------------------ data
+// one table per search; `rows`, `idx` and METRICS follow the search picked in the bar
+const tables = RUNS.map(R => {
+  const C = R.data.columns, rs = R.data.rows.map(r => Object.fromEntries(C.map((c, i) => [c, r[i]])));
+  return {rows: rs, idx: new Map(rs.map(r => [`${r.alphabet}|${r.ksize}|${r.rule}|${r.metric}`, r]))};
+});
+let RI = 0, rows = tables[0].rows, idx = tables[0].idx;
+const alphabets = [...new Set(rows.map(r => r.alphabet))].sort();
+const ks = {}; const bitsOf = {};
+for (const r of rows) { (ks[r.alphabet] ??= new Set()).add(r.ksize); bitsOf[`${r.alphabet}|${r.ksize}`] = r.bits; }
+for (const a in ks) ks[a] = [...ks[a]].sort((x, y) => x - y);
+// the three E-values stay separate: never merged, each its own row and column
+const ORDER = ["E-value", "E-value, extension only", "E-value, exact run", "bit score", "tf-idf", "shared k-mers",
+  "Poisson p-value", "Poisson score", "mean IDF", "enrichment", "containment", "protein enrichment", "protein Poisson p-value"];
+let METRICS = [];
+const otherIdx = () => tables[1 - RI].idx;
+function useRun(i) {
+  RI = i; D = RUNS[i].data; rows = tables[i].rows; idx = tables[i].idx;
+  const have = new Set(rows.map(r => r.metric));
+  METRICS = ORDER.filter(m => have.has(m));
+  if (!METRICS.includes(S.metric)) S.metric = "E-value";
+}
+const RULE_SHORT = {"any overlap": "any overlap", "≥20% of the matched region inside the domain": "≥20% of region",
+  "≥20% of the domain covered by the region": "≥20% of domain", "IoU ≥ 0.2": "IoU ≥ 0.2"};
+const STAT = {ap: "average precision", auc: "ROC AUC"};
+const MISSING_WORD = {"E-value": "no E-value", "bit score": "no bit score", "E-value, extension only": "not extended"};
+
+function decode(b64) {
+  const s = atob(b64), dv = new DataView(new ArrayBuffer(s.length));
+  for (let i = 0; i < s.length; i++) dv.setUint8(i, s.charCodeAt(i));
+  const out = new Float64Array(s.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = dv.getUint16(2 * i, true) / 65535;
+  return out;
+}
+
+// ------------------------------------------------------------------ state
+const S = {rule: "IoU ≥ 0.2", stat: "ap", show: "diff", metric: "E-value", cols: "k", tab: "grid",
+           sel: {alphabet: "hp_lehninger2", k: 24}, logfpr: false, run: RUNS[0].id};
+try { const t = localStorage.getItem("rm255-tab"); if (t === "grid" || t === "median") S.tab = t; } catch (e) {}
+if (location.hash === "#median") S.tab = "median";
+
+const valid = v => v != null && !Number.isNaN(v);
+function cellStat(r) {
+  if (!r) return {v: null, d: null};
+  const v = r[S.stat], L = r["length_" + S.stat];
+  return {v: valid(v) ? v : null, d: valid(v) && valid(L) ? v - L : null, L: valid(L) ? L : null};
+}
+const median = a => { const s = [...a].sort((x, y) => x - y), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null; };
+
+// diverging colour: red (below length) - neutral - blue (above length)
+const RED = [178, 24, 43], MID = [244, 244, 244], BLUE = [33, 102, 172];
+function colour(d, lim) {
+  if (d == null) return null;
+  const t = Math.max(-1, Math.min(1, d / lim)), a = Math.abs(t), end = t > 0 ? BLUE : RED;
+  const c = MID.map((m, i) => Math.round(m + (end[i] - m) * Math.pow(a, 0.8)));
+  return `rgb(${c})`;
+}
+const darkText = (d, lim) => Math.abs(d / lim) < 0.55;
+
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs = {}) { const t = el("text", {x, y, ...attrs}, parent); t.textContent = s; return t; }
+
+// ------------------------------------------------------------------ tooltip
+const tip = $("#tip");
+function showTip(ev, html) { tip.innerHTML = html; tip.hidden = false; moveTip(ev); }
+function moveTip(ev) {
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = Math.max(4, x) + "px"; tip.style.top = Math.max(4, y) + "px";
+}
+const hideTip = () => { tip.hidden = true; };
+
+// ------------------------------------------------------------------ colour legend
+function limFor(tab) {
+  let m = 0;
+  if (tab === "grid") {
+    for (const r of rows) if (r.rule === S.rule && r.metric !== "region length") { const d = cellStat(r).d; if (d != null) m = Math.max(m, Math.abs(d)); }
+  } else for (const g of medians()) if (g.d != null) m = Math.max(m, Math.abs(g.d));
+  return m || 0.01;
+}
+function drawLegend(lim, what) {
+  const box = $("#legend-grid"); box.innerHTML = "";
+  const w = 260, svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("width", w + 20); svg.setAttribute("height", 34);
+  const defs = el("defs", {}, svg), g = el("linearGradient", {id: "lg", x1: 0, x2: 1}, defs);
+  for (let i = 0; i <= 20; i++) { const d = -lim + 2 * lim * i / 20; el("stop", {offset: i / 20, "stop-color": colour(d, lim)}, g); }
+  el("rect", {x: 10, y: 4, width: w, height: 11, fill: "url(#lg)", stroke: "var(--rule)"}, svg);
+  for (const [d, a] of [[-lim, "start"], [0, "middle"], [lim, "end"]]) {
+    const x = 10 + (d + lim) / (2 * lim) * w;
+    el("line", {x1: x, x2: x, y1: 15, y2: 19, class: "ax"}, svg);
+    txt(svg, x, 31, sgn(d, 2), {"text-anchor": a, "font-size": 11, class: "mut"});
+  }
+  const lab = document.createElement("span");
+  lab.innerHTML = `Cell colour: ${what} (${STAT[S.stat]}) minus region length's on the same matches. <b style="color:rgb(${BLUE})">Blue</b>: ranks correct matches higher than length. <b style="color:rgb(${RED})">Red</b>: lower.`;
+  const hatch = document.createElement("span");
+  hatch.innerHTML = `<svg width="18" height="12" style="vertical-align:middle;margin-right:6px"><rect x="0.5" y="0.5" width="17" height="11" fill="url(#hatch)" stroke="var(--rule)"/></svg>no value: the metric scored no match, or no match is correct`;
+  box.append(svg, lab, hatch);
+}
+function hatchDefs(svg) {
+  const defs = el("defs", {}, svg);
+  const p = el("pattern", {id: "hatch", width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)"}, defs);
+  el("rect", {width: 6, height: 6, fill: "var(--surface)"}, p);
+  el("line", {x1: 0, y1: 0, x2: 0, y2: 6, stroke: "var(--faint)", "stroke-width": 1.2}, p);
+}
+
+// ------------------------------------------------------------------ grid tab
+const LABW = 186, CH = 34, TOP = 50;
+function drawGrid() {
+  const svg = $("#grid"); svg.innerHTML = ""; hatchDefs(svg);
+  const lim = limFor("grid"); drawLegend(lim, S.metric);
+  const bitsMode = S.cols === "bits";
+  const CW = 66, B0 = 14, B1 = 57, PX = 20, NK = Math.max(...alphabets.map(a => ks[a].length));
+  const width = LABW + (bitsMode ? (B1 - B0) * PX : NK * CW) + 10;
+  const height = TOP + alphabets.length * CH + 8;
+  svg.setAttribute("width", width); svg.setAttribute("height", height); svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("aria-label", `${S.metric}, ${STAT[S.stat]}, ${S.rule}, one cell per alphabet-ksize pair`);
+  // bits mode: a cell spans its bits +-2, cut at the midpoint to a neighbour closer than that
+  const span = (a, k) => {
+    if (!bitsMode) { const x = LABW + ks[a].indexOf(k) * CW; return [x, CW]; }
+    const b = ks[a].map(q => bitsOf[`${a}|${q}`]), i = ks[a].indexOf(k);
+    const lo = Math.max(b[i] - 2, i > 0 ? (b[i - 1] + b[i]) / 2 : -1e9), hi = Math.min(b[i] + 2, i < b.length - 1 ? (b[i] + b[i + 1]) / 2 : 1e9);
+    return [LABW + (lo - B0) * PX + 1, (hi - lo) * PX];
+  };
+  if (bitsMode) {
+    txt(svg, LABW, 14, "bits of seed information per k-mer (k × bits per letter); cells are centred on their bits, and narrow cells show only k", {"font-size": 12, class: "mut"});
+    for (let b = 16; b <= 56; b += 4) {
+      const x = LABW + (b - B0) * PX;
+      el("line", {x1: x, x2: x, y1: TOP - 10, y2: TOP - 4, class: "ax"}, svg);
+      txt(svg, x, TOP - 14, b, {"text-anchor": "middle", "font-size": 11, class: "mut"});
+    }
+    el("line", {x1: LABW, x2: LABW + (B1 - B0) * PX, y1: TOP - 4, y2: TOP - 4, class: "ax"}, svg);
+  } else {
+    txt(svg, LABW, 14, "each alphabet's k-mer sizes (7 to 10 of them), smallest on the left; k is written in each cell", {"font-size": 12, class: "mut"});
+    txt(svg, LABW, 32, "switch the columns to bits of seed information to line alphabets up by information per k-mer", {"font-size": 11, class: "mut"});
+  }
+  alphabets.forEach((a, i) => {
+    const y = TOP + i * CH;
+    txt(svg, LABW - 10, y + CH / 2 + 4, a, {"text-anchor": "end", "font-size": 12.5, "font-family": "var(--mono)"});
+    for (const k of ks[a]) {
+      const r = idx.get(`${a}|${k}|${S.rule}|${S.metric}`), st = cellStat(r), [x, CWc] = span(a, k), CW = CWc, wide = CW >= 54;
+      const g = el("g", {class: "cell", tabindex: 0, role: "button", "aria-label": `${a} k ${k}`}, svg);
+      const fill = st.d == null ? "url(#hatch)" : colour(st.d, lim);
+      el("rect", {class: "bg", x: x + 1, y: y + 1, width: CW - 4, height: CH - 3, rx: 2, fill, stroke: "var(--rule)", "stroke-width": 0.5}, g);
+      const onDark = st.d != null && !darkText(st.d, lim);
+      const col = st.d == null ? "var(--muted)" : onDark ? "#ffffff" : "#18202c";
+      const main = st.v == null ? (r && r.n_scored === 0 ? (MISSING_WORD[S.metric] || "no value") : "no value") : S.show === "diff" ? sgn(st.d, 2) : f2(st.v);
+      if (wide) txt(g, x + (CW - 2) / 2, y + 15, main, {"text-anchor": "middle", "font-size": st.v == null ? 9.5 : 12, style: `fill:${col}`, "font-family": "var(--mono)"});
+      txt(g, x + (CW - 2) / 2, y + (wide ? 27 : 20), wide ? `k ${k}` : k, {"text-anchor": "middle", "font-size": 9, style: `fill:${col};opacity:.8`});
+      if (S.sel.alphabet === a && S.sel.k === k)
+        el("rect", {x: x, y: y, width: CW - 2, height: CH - 1, rx: 3, fill: "none", stroke: "var(--ink)", "stroke-width": 2.5, "pointer-events": "none"}, svg);
+      const html = () => {
+        if (!r) return `<b>${a}</b>, k = ${k}`;
+        return `<b>${a}</b>, k = ${k} (${f2(r.bits)} bits)<br>${S.metric}, ${RULE_SHORT[S.rule]}<br>` +
+          `${STAT[S.stat]}: <b>${f3(st.v)}</b>; region length: ${f3(st.L)}; difference ${sgn(st.d)}<br>` +
+          `base rate (share of scored matches that are correct): ${pct(r.base_rate)}<br>` +
+          `matches: ${fmtN(r.n_matches)}; scored by ${S.metric}: ${fmtN(r.n_scored)}` + otherLine(a, k);
+      };
+      g.addEventListener("mouseenter", e => showTip(e, html()));
+      g.addEventListener("mousemove", moveTip);
+      g.addEventListener("mouseleave", hideTip);
+      const pick = () => { S.sel = {alphabet: a, k}; drawGrid(); drawRank(); drawDetail(); drawCounts(); };
+      g.addEventListener("click", pick);
+      g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+    }
+  });
+  $("#grid-caption").textContent = `Each cell is one alphabet-ksize pair: its ${STAT[S.stat]} for ${S.metric} under "${RULE_SHORT[S.rule]}"` +
+    (S.show === "diff" ? ", minus region length's on the same matches." : ".") +
+    " Hover for the base rate and the number of matches; click for the precision-recall and ROC curves.";
+}
+
+function otherLine(a, k) {
+  const o = otherIdx().get(`${a}|${k}|${S.rule}|${S.metric}`), name = RUNS[1 - RI].label;
+  if (!o) return `<br><span style="color:var(--muted)">${name}: ${S.metric} not in that search</span>`;
+  const st = cellStat(o);
+  return `<br><span style="color:var(--muted)">${name}: ${STAT[S.stat]} ${f3(st.v)}, minus length ${sgn(st.d)}; ${fmtN(o.n_matches)} matches</span>`;
+}
+
+// ------------------------------------------------------------------ median tab
+function medians() {
+  const out = [];
+  for (const a of alphabets) for (const m of METRICS) {
+    const vs = [], ds = [];
+    for (const k of ks[a]) { const st = cellStat(idx.get(`${a}|${k}|${S.rule}|${m}`)); if (st.v != null) vs.push(st.v); if (st.d != null) ds.push(st.d); }
+    out.push({a, m, v: median(vs), d: median(ds), n: ds.length, up: ds.filter(x => x > 0).length});
+  }
+  return out;
+}
+function drawMedian() {
+  const svg = $("#grid"); svg.innerHTML = ""; hatchDefs(svg);
+  const lim = limFor("median"); drawLegend(lim, "the metric");
+  const CW = 94, width = LABW + METRICS.length * CW + 10, height = TOP + alphabets.length * CH + 8;
+  svg.setAttribute("width", width); svg.setAttribute("height", height); svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("aria-label", `median over k-mer sizes, ${STAT[S.stat]}, ${S.rule}`);
+  txt(svg, LABW, 14, "median over each alphabet's k-mer sizes; n = alphabet-ksize pairs in the median", {"font-size": 12, class: "mut"});
+  METRICS.forEach((m, j) => txt(svg, LABW + j * CW + CW / 2, TOP - 12, m, {"text-anchor": "middle", "font-size": 12, "font-weight": 500}));
+  const M = new Map(medians().map(g => [`${g.a}|${g.m}`, g]));
+  alphabets.forEach((a, i) => {
+    const y = TOP + i * CH;
+    txt(svg, LABW - 10, y + CH / 2 + 4, a, {"text-anchor": "end", "font-size": 12.5, "font-family": "var(--mono)"});
+    METRICS.forEach((m, j) => {
+      const g0 = M.get(`${a}|${m}`), x = LABW + j * CW;
+      const g = el("g", {class: "cell", tabindex: 0, role: "button", "aria-label": `${a} ${m}`}, svg);
+      el("rect", {class: "bg", x: x + 1, y: y + 1, width: CW - 4, height: CH - 3, rx: 2, fill: g0.d == null ? "url(#hatch)" : colour(g0.d, lim), stroke: "var(--rule)", "stroke-width": 0.5}, g);
+      const onDark = g0.d != null && !darkText(g0.d, lim), col = g0.d == null ? "var(--muted)" : onDark ? "#ffffff" : "#18202c";
+      const main = g0.d == null ? (MISSING_WORD[m] || "no value") : S.show === "diff" ? sgn(g0.d, 2) : f2(g0.v);
+      txt(g, x + (CW - 2) / 2, y + 15, main, {"text-anchor": "middle", "font-size": g0.d == null ? 9.5 : 12, style: `fill:${col}`, "font-family": "var(--mono)"});
+      txt(g, x + (CW - 2) / 2, y + 27, `n = ${g0.n}`, {"text-anchor": "middle", "font-size": 9, style: `fill:${col};opacity:.8`});
+      g.addEventListener("mouseenter", e => showTip(e, `<b>${a}</b>, ${m}, ${RULE_SHORT[S.rule]}<br>median ${STAT[S.stat]}: <b>${f3(g0.v)}</b><br>median difference from region length: ${sgn(g0.d)}<br>${g0.up} of ${g0.n} alphabet-ksize pairs above length<br>click to see this alphabet's k-mer sizes for ${m}`));
+      g.addEventListener("mousemove", moveTip); g.addEventListener("mouseleave", hideTip);
+      const pick = () => { S.metric = m; $("#metric").value = m; if (S.sel.alphabet !== a) S.sel = {alphabet: a, k: ks[a][Math.min(3, ks[a].length - 1)]}; setTab("grid"); drawRank(); drawDetail(); drawCounts(); };
+      g.addEventListener("click", pick);
+      g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+    });
+  });
+  $("#grid-caption").textContent = `Each cell is the median over one alphabet's k-mer sizes of ${STAT[S.stat]}` +
+    (S.show === "diff" ? " minus region length's on the same matches" : "") + `, under "${RULE_SHORT[S.rule]}". The colour is always the median difference from length. ` +
+    `For the E-value and bit score, n is below the alphabet's number of k-mer sizes where kmerseek fitted no score scale for any match of an alphabet-ksize pair. Click a cell to open that metric on the first tab.`;
+}
+
+// ------------------------------------------------------------------ curves
+function axes(svg, xl, yl, xt, yt, log) {
+  const P = {l: 38, r: 8, t: 8, b: 40}, W = 250 - P.l - P.r, H = 230 - P.t - P.b;
+  for (const t of xt) {
+    const x = P.l + t.p * W; el("line", {x1: x, x2: x, y1: P.t, y2: P.t + H, class: "grid"}, svg);
+    txt(svg, x, P.t + H + 13, t.s, {"text-anchor": "middle", "font-size": 9.5, class: "mut"});
+  }
+  for (const t of yt) {
+    const y = P.t + H - t * H; el("line", {x1: P.l, x2: P.l + W, y1: y, y2: y, class: "grid"}, svg);
+    txt(svg, P.l - 5, y + 3.5, t.toFixed(1), {"text-anchor": "end", "font-size": 9.5, class: "mut"});
+  }
+  el("rect", {x: P.l, y: P.t, width: W, height: H, fill: "none", class: "ax"}, svg);
+  txt(svg, P.l + W / 2, 228, xl, {"text-anchor": "middle", "font-size": 10.5});
+  const yt2 = txt(svg, 0, 0, yl, {"text-anchor": "middle", "font-size": 10.5, transform: `translate(10 ${P.t + H / 2}) rotate(-90)`});
+  return {P, W, H};
+}
+function path(xs, ys, A, xmap) {
+  let d = "";
+  for (let i = 0; i < xs.length; i++) { const x = A.P.l + xmap(xs[i]) * A.W, y = A.P.t + A.H - ys[i] * A.H; d += (i ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1); }
+  return d;
+}
+function drawDetail() {
+  const {alphabet: a, k} = S.sel, r = idx.get(`${a}|${k}|${S.rule}|${S.metric}`);
+  const cv = D.curves[`${a}|${k}|${S.rule}|${S.metric}`];
+  $("#d-title").textContent = `${a}, k = ${k}`;
+  $("#d-sub").textContent = r ? `${f2(r.bits)} bits per k-mer · ${S.metric} · ${RULE_SHORT[S.rule]} · ${fmtN(r.n_matches)} matches, ${fmtN(r.n_scored)} scored by ${S.metric}` : "";
+  $("#lg-metric").textContent = S.metric;
+  const pr = $("#pr"), roc = $("#roc"); pr.innerHTML = ""; roc.innerHTML = "";
+  const empty = $("#d-empty");
+  if (!cv || !r) {
+    empty.hidden = false;
+    empty.textContent = r && r.n_scored === 0
+      ? (S.metric === "E-value, extension only"
+        ? `No match of ${a} at k = ${k} was extended with a positive lambda, so there is no extension E-value to rank.`
+        : `kmerseek fitted no score scale for any match of ${a} at k = ${k}, so there is no ${S.metric} to rank.`)
+      : `No match of ${a} at k = ${k} scored by ${S.metric} is correct under this rule, so there is no curve.`;
+    $("#readout").innerHTML = "";
+    return;
+  }
+  empty.hidden = true;
+  const R = D.recall_grid, F = D.fpr_grid;
+  // precision-recall
+  let A = axes(pr, "recall (share of correct matches found)", "precision (share correct)", [0, .2, .4, .6, .8, 1].map(p => ({p, s: p.toFixed(1)})), [0, .2, .4, .6, .8, 1]);
+  el("path", {d: path(R, decode(cv.lpr), A, x => x), fill: "none", stroke: "var(--length)", "stroke-width": 7, "stroke-linejoin": "round"}, pr);
+  const yb = A.P.t + A.H - r.base_rate * A.H;
+  el("line", {x1: A.P.l, x2: A.P.l + A.W, y1: yb, y2: yb, stroke: "var(--muted)", "stroke-width": 1.3, "stroke-dasharray": "2 3"}, pr);
+  el("path", {d: path(R, decode(cv.pr), A, x => x), fill: "none", stroke: "var(--ink)", "stroke-width": 2}, pr);
+  // ROC
+  const log = S.logfpr, lo = 1e-5, xm = log ? (x => (Math.log10(Math.max(x, lo)) + 5) / 5) : (x => x);
+  const xt = log ? [-5, -4, -3, -2, -1, 0].map(e => ({p: (e + 5) / 5, s: e === 0 ? "1" : `1e${e}`})) : [0, .2, .4, .6, .8, 1].map(p => ({p, s: p.toFixed(1)}));
+  A = axes(roc, "false-positive rate (share of wrong matches)", "true-positive rate (recall)", xt, [0, .2, .4, .6, .8, 1]);
+  const keep = [...F.keys()].filter(i => !log || F[i] >= lo);
+  const Fx = keep.map(i => F[i]), lroc = decode(cv.lroc), mroc = decode(cv.roc);
+  el("path", {d: path(Fx, keep.map(i => lroc[i]), A, xm), fill: "none", stroke: "var(--length)", "stroke-width": 7, "stroke-linejoin": "round"}, roc);
+  const diag = log ? Fx : [0, 1];
+  el("path", {d: path(diag, diag, A, xm), fill: "none", stroke: "var(--muted)", "stroke-width": 1.3, "stroke-dasharray": "2 3"}, roc);
+  el("path", {d: path(Fx, keep.map(i => mroc[i]), A, xm), fill: "none", stroke: "var(--ink)", "stroke-width": 2}, roc);
+  // readouts
+  const ro = [["", S.metric, "region length"],
+    ["average precision", f3(r.ap), f3(r.length_ap)],
+    ["ROC AUC", f3(r.auc), f3(r.length_auc)],
+    ["base rate", pct(r.base_rate), "same matches"],
+    ["correct / scored", `${fmtN(r.n_correct)} / ${fmtN(r.n_scored)}`, ""],
+    ["top match correct", pct(r.precision_at_1), `random order ${pct(r.precision_at_1_random)}`]];
+  { const o = otherIdx().get(`${a}|${k}|${S.rule}|${S.metric}`);
+    ro.push([`other search: AP`, o ? f3(o.ap) : "not in it", o ? f3(o.length_ap) : ""]); }
+  $("#readout").innerHTML = ro.map((x, i) => x.map(s => `<span class="${i === 0 ? "h" : ""}">${s}</span>`).join("")).join("") +
+    `<span style="grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:4px">"Top match correct": over the ${fmtN(r.n_queries_with_correct)} query proteins with at least one correct match, the share whose best-scored match is correct (ties averaged). The dotted line on the left is the base rate; on the right, the diagonal.</span>`;
+}
+
+// ------------------------------------------------------------------ E-value note
+function drawCounts() {
+  const {alphabet: a, k} = S.sel, svg = $("#counts"); svg.innerHTML = "";
+  $("#cnt-title").textContent = `Matches each metric could score: ${a}, k = ${k}`;
+  const rs = METRICS.map(m => idx.get(`${a}|${k}|${S.rule}|${m}`)).filter(Boolean);
+  const L = 118, W = 250, rh = 24, h = rs.length * rh + 30;
+  svg.setAttribute("viewBox", `0 0 ${L + W + 150} ${h}`); svg.setAttribute("height", h);
+  rs.forEach((r, i) => {
+    const y = 6 + i * rh, f = r.n_scored / r.n_matches;
+    txt(svg, L - 8, y + 13, r.metric, {"text-anchor": "end", "font-size": 12});
+    el("rect", {x: L, y: y + 2, width: W, height: 15, fill: "var(--unscored)", stroke: "var(--muted)", "stroke-width": 0.8}, svg);
+    el("rect", {x: L, y: y + 2, width: W * f, height: 15, fill: "var(--scored)"}, svg);
+    txt(svg, L + W + 8, y + 13, `${pct(f)} of ${fmtN(r.n_matches)}`, {"font-size": 11, "font-family": "var(--mono)", class: "mut"});
+  });
+  const yA = 6 + rs.length * rh + 12;
+  for (const p of [0, .5, 1]) txt(svg, L + p * W, yA + 4, `${p * 100}%`, {"text-anchor": p === 0 ? "start" : p === 1 ? "end" : "middle", "font-size": 10, class: "mut"});
+  txt(svg, L + W + 8, yA + 4, "share of matches", {"font-size": 10, class: "mut"});
+
+  // the E-value that can be missing: the only E-value in the 982a055 search, the extension part in 8978e78
+  const preview = METRICS.includes("E-value, extension only"), EV = preview ? "E-value, extension only" : "E-value";
+  const word = preview ? "no extension E-value" : "no E-value", has = preview ? "an extension E-value" : "an E-value";
+  $("#ev-h").textContent = preview ? "Every match has an E-value; the extension part exists only for some" : "The E-value exists only where kmerseek could fit a score scale";
+  $("#ev-intro").textContent = preview
+    ? "In kmerseek 8978e78 a match's E-value comes from one of two parts. The extension E-value (Karlin-Altschul) exists only when the region was extended and the protein pair has a positive lambda, the scale that says how fast high scores become rare by chance. The exact-run E-value exists for every match. \"E-value\" is the extension E-value where there is one and the exact-run E-value otherwise, so every match has one. The page keeps all three as separate metrics."
+    : "kmerseek turns a region's score into bits and an E-value with a Karlin-Altschul fit: a per-region scale (lambda) that says how fast high scores become rare by chance. When it cannot fit that scale, it writes E = infinity and a bit score of 0. This page treats both as missing, so the E-value and bit score are judged only on the matches they can score, and length is judged on those same matches.";
+  const e = idx.get(`${a}|${k}|${S.rule}|${EV}`);
+  if (!e) return;
+  const nu = e.n_matches - e.n_scored, cu = e.n_correct_all - e.n_correct;
+  $("#ev-lead").textContent = `How often a match with ${word} is correct:`;
+  $("#ev-live").textContent = e.n_scored === 0
+    ? `${a} at k = ${k} has ${word} on any of its ${fmtN(e.n_matches)} matches.`
+    : `for ${a} at k = ${k} under "${RULE_SHORT[S.rule]}", ${fmtN(nu)} of ${fmtN(e.n_matches)} matches have ${word}, and ${fmtN(cu)} of them are correct (${pct(nu ? cu / nu : null)}). Among the ${fmtN(e.n_scored)} matches with ${has}, ${pct(e.base_rate)} are correct.`;
+  let tu = 0, tc = 0, ts = 0, tsc = 0, none = 0;
+  for (const r of rows) if (r.rule === S.rule && r.metric === EV) {
+    if (r.n_scored === 0) { none++; continue; }
+    tu += r.n_matches - r.n_scored; tc += r.n_correct_all - r.n_correct; ts += r.n_scored; tsc += r.n_correct;
+  }
+  const N = alphabets.reduce((s, x) => s + ks[x].length, 0);
+  $("#ev-all").textContent = `Over the ${N - none} alphabet-ksize pairs with ${has} on at least one match, under the same rule: ${fmtN(tc)} of ${fmtN(tu)} matches with ${word} are correct (${pct(tu ? tc / tu : null)}), against ${pct(ts ? tsc / ts : null)} of the ${fmtN(ts)} matches with one. The other ${none} alphabet-ksize pairs have ${word} on any match, which is why the ${EV} column shows gaps.` +
+    (preview ? "" : " In the preview build (switch in the control bar) every match has an E-value.");
+}
+
+// ------------------------------------------------------------------ overlap rules figure
+const RULE_TEXT = {
+  "any overlap": ["span and domain share at least one residue", o => o.ov >= 1, o => `${o.ov} aa in both`],
+  "≥20% of the matched region inside the domain": ["at least 20% of the span lies inside the domain", o => o.ov >= 0.2 * o.rl, o => `${o.ov} / ${o.rl} aa = ${Math.round(100 * o.ov / o.rl)}%`],
+  "≥20% of the domain covered by the region": ["at least 20% of the domain lies inside the span", o => o.ov >= 0.2 * o.dl, o => `${o.ov} / ${o.dl} aa = ${Math.round(100 * o.ov / o.dl)}%`],
+  "IoU ≥ 0.2": ["residues in both / residues in either ≥ 0.2", o => o.ov / (o.rl + o.dl - o.ov) >= 0.2, o => `${o.ov} / ${o.rl + o.dl - o.ov} aa = ${(o.ov / (o.rl + o.dl - o.ov)).toFixed(2)}`],
+};
+const PRESETS = [
+  ["short span inside a long domain", [80, 230, 140, 165]],
+  ["long span around a short domain", [130, 160, 30, 280]],
+  ["span that runs off the domain's end", [80, 230, 200, 290]],
+  ["span next to the domain", [80, 230, 240, 290]],
+  ["span that matches the domain", [80, 230, 85, 225]],
+];
+const R = {ds: 80, de: 230, ss: 140, se: 165, len: 300};
+function drawRules() {
+  for (const k of ["ds", "de", "ss", "se"]) { $("#" + k).value = R[k]; $("#" + k + "-v").textContent = R[k]; }
+  const svg = $("#rulesvg"); svg.innerHTML = "";
+  const L = 20, W = 520, x = p => L + (p - 1) / (R.len - 1) * W, yP = 58, yS = 100;
+  const ds = Math.min(R.ds, R.de), de = Math.max(R.ds, R.de), ss = Math.min(R.ss, R.se), se = Math.max(R.ss, R.se);
+  el("line", {x1: x(1), x2: x(R.len), y1: yP, y2: yP, stroke: "var(--ink)", "stroke-width": 1.5}, svg);
+  el("rect", {x: x(ds), y: yP - 11, width: Math.max(2, x(de) - x(ds)), height: 22, rx: 3, fill: "var(--domain)", opacity: .85}, svg);
+  txt(svg, (x(ds) + x(de)) / 2, yP - 17, `Pfam domain, ${ds}-${de} (${de - ds + 1} aa)`, {"text-anchor": "middle", "font-size": 11});
+  el("rect", {x: x(ss), y: yS, width: Math.max(2, x(se) - x(ss)), height: 9, fill: "var(--span)"}, svg);
+  const lab = `matched span, ${ss}-${se} (${se - ss + 1} aa)`, cx = (x(ss) + x(se)) / 2, lw = lab.length * 6;
+  txt(svg, Math.min(L + W - lw / 2, Math.max(L + lw / 2, cx)), yS + 24, lab, {"text-anchor": "middle", "font-size": 11});
+  const os = Math.max(ss, ds), oe = Math.min(se, de);
+  if (oe >= os) {
+    el("path", {d: `M${x(os)} ${yP + 16}V${yP + 24}H${x(oe)}V${yP + 16}`, fill: "none", stroke: "var(--ink)", "stroke-width": 1.2}, svg);
+    txt(svg, (x(os) + x(oe)) / 2, yP + 36, `overlap ${oe - os + 1} aa`, {"text-anchor": "middle", "font-size": 10.5, class: "mut"});
+  }
+  for (const t of [1, 50, 100, 150, 200, 250, 300]) { el("line", {x1: x(t), x2: x(t), y1: 138, y2: 142, class: "ax"}, svg); txt(svg, x(t), 150, t, {"text-anchor": "middle", "font-size": 9.5, class: "mut"}); }
+  txt(svg, L, 14, "residue position on the protein (aa)", {"font-size": 10.5, class: "mut"});
+  const o = {ov: Math.max(0, oe - os + 1), rl: se - ss + 1, dl: de - ds + 1};
+  $("#verdict").innerHTML = `<tr><th></th><th>rule</th><th>passes when</th><th>here</th></tr>` + D.rules.map(r => {
+    const [when, test, calc] = RULE_TEXT[r], ok = o.ov > 0 && test(o);
+    return `<tr data-r="${r}" class="${r === S.rule ? "cur" : ""}" tabindex="0"><td class="v" aria-label="${ok ? "passes" : "fails"}">${ok ? "✓" : "✗"}</td><td><b>${RULE_SHORT[r]}</b>${r === S.rule ? "<br><span class='calc'>in use</span>" : ""}</td><td>${when}</td><td class="calc">${calc(o)}</td></tr>`;
+  }).join("");
+  $("#verdict").querySelectorAll("tr[data-r]").forEach(tr => {
+    const use = () => { S.rule = tr.dataset.r; ruleSel.value = S.rule; redraw(); };
+    tr.addEventListener("click", use);
+    tr.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); use(); } });
+  });
+}
+
+// ------------------------------------------------------------------ ranking
+const GLOSS_PREVIEW = {
+  "E-value": "The extension E-value where the region was extended and the protein pair has a positive lambda, otherwise the exact-run E-value (kmerseek's region_evalue). Every match has one. Smaller is better.",
+  "E-value, extension only": "Karlin-Altschul E-value of an extended region: K × m × n × e^(−lambda × score), m the query's length and n the database's size. Missing when the region was not extended or the pair has no positive lambda. Smaller is better.",
+  "E-value, exact run": "Expected number of runs at least this long, where both proteins have the same alphabet letter at every position, between unrelated proteins: (1 − Pr(same)) × m × n × Pr(same)^run length, with Pr(same) the chance that two positions share a letter, m the query's length and n the database's residues. Every match has one. Smaller is better.",
+  "bit score": "Karlin-Altschul bit score of an extended region; 0 for a region that was not extended. Bigger is better.",
+};
+const GLOSS = {
+  "E-value": "Expected number of regions scoring this well by chance in the search, from a Karlin-Altschul fit. Smaller is better. Missing where the fit failed.",
+  "bit score": "The region's score rescaled with the same Karlin-Altschul fit, so scores from different searches compare. Bigger is better.",
+  "tf-idf": "Sum over the region's k-mers of how rare each is among the searched proteins: ln(proteins searched / proteins holding the k-mer). Grows with length.",
+  "mean IDF": "tf-idf divided by the number of shared k-mers: how rare one k-mer of the region is on average. Length is divided out.",
+  "shared k-mers": "Number of k-mers in the region shared with the target. When every region is one unbroken run of shared k-mers, this is region length − k + 1 and ranks matches the same way length does (a tie). Where it differs from length, some regions are not single unbroken runs.",
+  "Poisson p-value": "Chance of seeing at least this many shared k-mers if the expected number is the sum of the k-mers' database frequencies. Smaller is better; kmerseek warns it is not calibrated.",
+  "enrichment": "Shared k-mers divided by the number expected by chance (the same expectation as the Poisson p-value).",
+  "Poisson score": "−log10 of the Poisson p-value, so bigger is better. It ranks matches exactly as the Poisson p-value does, and gives the same AP and AUC at every alphabet-ksize pair and rule (checked on all 608). kmerseek calls it a score for ranking, not a calibrated probability.",
+  "containment": "Share of the query protein's k-mers found in the target protein. One value per protein pair, so every match between the same two proteins gets it.",
+  "protein enrichment": "Enrichment for the whole protein pair: the pair's shared k-mers divided by the number expected by chance from the query's k-mers' frequencies in the database. One value per protein pair.",
+  "protein Poisson p-value": "Chance of at least the protein pair's number of shared k-mers, if the expected number is the one protein enrichment divides by. One value per protein pair. Smaller is better.",
+};
+const gloss = m => (METRICS.includes("E-value, extension only") && GLOSS_PREVIEW[m]) || GLOSS[m];
+const TIE = 1e-9;
+function rankData() {
+  const sc = $("#scope").value;
+  return METRICS.map(m => {
+    const pts = [], vals = [];
+    for (const a of alphabets) {
+      if (sc !== "all" && a !== sc) continue;
+      for (const k of ks[a]) { const st = cellStat(idx.get(`${a}|${k}|${S.rule}|${m}`)); if (st.d != null) { pts.push({a, k, d: st.d}); vals.push(st.v); } }
+    }
+    const nAll = alphabets.filter(a => sc === "all" || a === sc).reduce((s, a) => s + ks[a].length, 0);
+    return {m, pts, n: pts.length, nAll, med: median(pts.map(p => p.d)), medv: median(vals), up: pts.filter(p => p.d > TIE).length, tie: pts.filter(p => Math.abs(p.d) <= TIE).length};
+  }).sort((x, y) => (y.med ?? -9) - (x.med ?? -9));
+}
+function drawRank() {
+  const rd = rankData(), svg = $("#ranksvg"); svg.innerHTML = "";
+  const LW = 250, PW = 520, RW = 150, RH = 40, T = 26, width = LW + PW + RW, height = T + rd.length * RH + 34;
+  svg.setAttribute("width", width); svg.setAttribute("height", height); svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  let lim = 0.02; for (const r of rd) for (const p of r.pts) lim = Math.max(lim, Math.abs(p.d));
+  const X = d => LW + (d + lim) / (2 * lim) * PW;
+  const step = lim > 0.4 ? 0.2 : lim > 0.2 ? 0.1 : lim > 0.08 ? 0.05 : 0.02;
+  for (let t = -Math.floor(lim / step) * step; t <= lim + 1e-9; t += step) {
+    el("line", {x1: X(t), x2: X(t), y1: T - 4, y2: T + rd.length * RH, class: "grid"}, svg);
+    txt(svg, X(t), T + rd.length * RH + 14, sgn(Math.abs(t) < 1e-9 ? 0 : t, 2), {"text-anchor": "middle", "font-size": 10, class: "mut"});
+  }
+  el("line", {x1: X(0), x2: X(0), y1: T - 8, y2: T + rd.length * RH, stroke: "var(--muted)", "stroke-width": 1.2, "stroke-dasharray": "3 2"}, svg);
+  txt(svg, X(0), T - 12, "region length", {"text-anchor": "middle", "font-size": 10, class: "mut"});
+  txt(svg, LW + PW / 2, height - 4, `${STAT[S.stat]} minus region length's on the same matches (one dot per alphabet-ksize pair)`, {"text-anchor": "middle", "font-size": 11});
+  txt(svg, LW + PW + 12, T - 12, `median ${S.stat === "ap" ? "AP" : "AUC"}`, {"font-size": 10, class: "mut"});
+  rd.forEach((r, i) => {
+    const y = T + i * RH, cy = y + RH / 2;
+    if (r.m === S.metric) el("rect", {x: 0, y: y + 1, width, height: RH - 2, fill: "var(--hl)"}, svg);
+    const lab = el("g", {class: "cell", tabindex: 0, role: "button", "aria-label": `show ${r.m} in the grid`}, svg);
+    txt(lab, 4, cy - 2, `${i + 1}. ${r.m}`, {"font-size": 13, "font-weight": r.m === S.metric ? 600 : 500});
+    txt(lab, 4, cy + 13, r.n ? `beats length in ${r.up} of ${r.n} pairs` + (r.tie ? `, ties in ${r.tie}` : "") + (r.n < r.nAll ? ` (${r.nAll - r.n} with no value)` : "") : "no value in this scope", {"font-size": 10.5, class: "mut"});
+    const pick = () => { S.metric = r.m; metSel.value = r.m; if (S.tab !== "grid") setTab("grid"); else drawGrid(); drawRank(); drawDetail(); };
+    lab.addEventListener("click", pick);
+    lab.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+    lab.addEventListener("mouseenter", e => showTip(e, `<b>${r.m}</b><br>${gloss(r.m)}<br>click to show it in the grid`));
+    lab.addEventListener("mousemove", moveTip); lab.addEventListener("mouseleave", hideTip);
+    for (const p of r.pts) {
+      let h = 0; for (const c of p.a + p.k) h = (h * 31 + c.charCodeAt(0)) % 997;
+      const jy = cy + (h / 997 - 0.5) * (RH - 14);
+      const sel = p.a === S.sel.alphabet && p.k === S.sel.k && r.m === S.metric;
+      const c = el("circle", {cx: X(p.d), cy: jy, r: sel ? 5 : 3.3, fill: Math.abs(p.d) <= TIE ? "none" : p.d > 0 ? "rgb(33,102,172)" : "rgb(178,24,43)", "fill-opacity": .7, stroke: sel ? "var(--ink)" : Math.abs(p.d) <= TIE ? "var(--muted)" : "none", "stroke-width": sel ? 2 : 1.3, class: "cell"}, svg);
+      c.addEventListener("mouseenter", e => showTip(e, `<b>${p.a}</b>, k = ${p.k}<br>${r.m}: ${sgn(p.d)} ${S.stat === "ap" ? "AP" : "AUC"} against region length<br>click to open its curves`));
+      c.addEventListener("mousemove", moveTip); c.addEventListener("mouseleave", hideTip);
+      c.addEventListener("click", () => { S.metric = r.m; metSel.value = r.m; S.sel = {alphabet: p.a, k: p.k}; if (S.tab !== "grid") setTab("grid"); else drawGrid(); drawRank(); drawDetail(); drawCounts(); });
+    }
+    if (r.med != null) el("line", {x1: X(r.med), x2: X(r.med), y1: cy - 12, y2: cy + 12, stroke: "var(--ink)", "stroke-width": 2.5, "pointer-events": "none"}, svg);
+    txt(svg, LW + PW + 12, cy + 4, r.n ? `${f3(r.medv)}  (${sgn(r.med, 3)})` : "—", {"font-size": 11.5, "font-family": "var(--mono)"});
+  });
+  const top = rd[0], sc = $("#scope").value, where = sc === "all" ? `over the ${top.nAll} alphabet-ksize pairs` : `over ${sc}'s ${top.nAll} k-mer sizes`;
+  const nobeat = rd.filter(r => r.n && r.up === r.n).length === 0;
+  $("#rank-verdict").innerHTML = top.med == null ? "No metric has a value in this scope." :
+    `Under <b>${RULE_SHORT[S.rule]}</b>, judged by <b>${STAT[S.stat]}</b> ${where}: <b>${top.m}</b> ranks first, with a median of ${sgn(top.med)} against region length. It beats length in ${top.up} of the ${top.n} pairs it can score.` +
+    (top.med <= 0.005 ? " So no metric beats length alone by more than 0.005 here." : "") + (nobeat ? " No metric beats length in every pair." : "");
+  $("#rank-caption").textContent = "Metrics are ordered by the median of the difference, best first. Each metric is compared with region length on the matches that metric can score, so the difference is the fair comparison; the raw AP or AUC of two metrics can come from different sets of matches. Click a metric name to show it in the grid below, or a dot to open that pair's curves.";
+}
+
+// ------------------------------------------------------------------ controls
+function seg(id, key, after) {
+  const box = $(id);
+  const sync = () => box.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S[key])));
+  box.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S[key] = b.dataset.v; sync(); after(); });
+  sync();
+}
+function redraw() { (S.tab === "grid" ? drawGrid : drawMedian)(); drawRank(); drawRules(); drawDetail(); drawCounts(); }
+function setTab(t) {
+  S.tab = t; try { localStorage.setItem("rm255-tab", t); } catch (e) {}
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.v === t)));
+  (t === "grid" ? drawGrid : drawMedian)();
+}
+const ruleSel = $("#rule");
+for (const r of D.rules) { const o = document.createElement("option"); o.value = r; o.textContent = RULE_SHORT[r]; ruleSel.appendChild(o); }
+ruleSel.value = S.rule; ruleSel.addEventListener("change", () => { S.rule = ruleSel.value; redraw(); });
+const metSel = $("#metric");
+function fillMetrics() { metSel.innerHTML = ""; for (const m of METRICS) { const o = document.createElement("option"); o.value = m; o.textContent = m; metSel.appendChild(o); } metSel.value = S.metric; }
+metSel.addEventListener("change", () => { S.metric = metSel.value; if (S.tab !== "grid") setTab("grid"); else drawGrid(); drawRank(); drawDetail(); });
+const scopeSel = $("#scope");
+{ const o = document.createElement("option"); o.value = "all"; o.textContent = "all 19 alphabets"; scopeSel.appendChild(o); }
+for (const a of alphabets) { const o = document.createElement("option"); o.value = a; o.textContent = a; scopeSel.appendChild(o); }
+scopeSel.addEventListener("change", drawRank);
+for (const k of ["ds", "de", "ss", "se"]) $("#" + k).addEventListener("input", e => { R[k] = +e.target.value; drawRules(); });
+for (const [name, v] of PRESETS) { const b = document.createElement("button"); b.type = "button"; b.textContent = name; b.addEventListener("click", () => { [R.ds, R.de, R.ss, R.se] = v; drawRules(); }); $("#presets").appendChild(b); }
+function drawGloss() { $("#gloss").innerHTML = METRICS.map(m => `<div><b>${m}</b>: ${gloss(m)}</div>`).join(""); }
+$("#run").innerHTML = RUNS.map(R => `<button data-v="${R.id}">${R.label}</button>`).join("");
+function setRun() {
+  useRun(RUNS.findIndex(R => R.id === S.run)); fillMetrics(); drawGloss(); drawStatic();
+  $("#preview-note").hidden = !RUNS[RI].preview;
+}
+seg("#run", "run", () => { setRun(); redraw(); });
+seg("#stat", "stat", redraw); seg("#show", "show", redraw);
+seg("#cols", "cols", () => { if (S.tab !== "grid") setTab("grid"); else drawGrid(); });
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.v)));
+$("#logfpr").addEventListener("change", e => { S.logfpr = e.target.checked; drawDetail(); });
+
+// ------------------------------------------------------------------ static numbers from the data
+$("#n-alpha").textContent = alphabets.length;
+{ const P = D.protein_set, q = P.query_sets;
+  $("#n-prot").textContent = fmtN(P.n_proteins); $("#n-dom").textContent = fmtN(P.n_domains); $("#n-fam").textContent = fmtN(P.n_families);
+  $("#set-line").textContent = `${fmtN(q.chr6)} genes from all of chromosome 6 (${P.chr6_start_mb} to ${P.chr6_end_mb} Mb; ${P.n_chr6_mhc} of them in the MHC region), plus ${q.kir_lilr + q.cd1_mr1 + q.b2m} immune genes elsewhere: ${q.kir_lilr} KIR and LILR receptors (chromosome 19), CD1A-E and MR1 (${q.cd1_mr1}, chromosome 1) and B2M (chromosome 15).`; }
+{ const n = alphabets.map(a => ks[a].length); $("#n-k").textContent = `${Math.min(...n)} to ${Math.max(...n)}`; }
+$("#n-pairs").textContent = alphabets.reduce((s, x) => s + ks[x].length, 0);
+$("#f-prot").textContent = fmtN(D.protein_set.n_proteins); $("#f-dom").textContent = fmtN(D.protein_set.n_domains);
+$("#f-pairs").textContent = alphabets.reduce((s, x) => s + ks[x].length, 0);
+$("#f-nmet").textContent = RUNS.map(R => `${new Set(R.data.rows.map(r => r[R.data.columns.indexOf("metric")])).size - 1} in the ${R.short} search`).join(", ") + ", each also compared with region length";
+function drawStatic() {
+{ const [m, e] = (D.max_abs_diff || 0).toExponential(0).split("e"); $("#maxdiff").innerHTML = D.max_abs_diff ? `${m} × 10<sup>${e.replace("-", "−")}</sup>` : "0"; }
+{ // AUC caveat: the highest AUC among alphabet-ksize pairs and metrics where under 1% of scored matches are correct
+  const cand = rows.filter(r => r.rule === "IoU ≥ 0.2" && r.metric !== "region length" && valid(r.auc) && valid(r.ap) && r.base_rate < 0.01);
+  cand.sort((x, y) => y.auc - x.auc);
+  const c = cand[0];
+  if (c) $("#auc-example").textContent = `Under IoU ≥ 0.2, ${c.metric} for ${c.alphabet} at k = ${c.ksize} has AUC ${f2(c.auc)}. Only ${pct(c.base_rate)} of its ${fmtN(c.n_scored)} matches are correct, and its average precision is ${f3(c.ap)} (${RUNS[RI].short} search).`;
+}
+}
+setRun();
+setTab(S.tab); drawRank(); drawRules(); drawDetail(); drawCounts();
+</script>
