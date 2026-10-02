@@ -8,7 +8,7 @@ number below is in `tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv`.
 grouped by the number of letters (20; 12 to 18; 4 to 8; 2 to 3), with a small gap between
 groups. The x axis is the seed length k, in letters of that alphabet. Each grey bar runs from
 k_min to k_max and is cut into one cell per k-size the benchmark would run; the number in the
-k-sizes column at the right counts the cells. A dotted line leads from each alphabet name to
+"# k-sizes" column at the right counts the cells. A dotted line leads from each alphabet name to
 the start of its bar.
 The ranges run from 4 k-sizes (protein20, k = 5 to 8) to 23 (gbmr7, k = 13 to 35), 229 in
 total over the 19 alphabets.

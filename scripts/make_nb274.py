@@ -349,8 +349,8 @@ md(r"""
 ### Figure 274: the k-sizes to test per alphabet
 
 How to read it: each row is one alphabet. The grey bar runs from $k_\mathrm{min}$ to
-$k_\mathrm{max}$, one cell per k-size the benchmark would run, and the number at the right counts
-the cells. Magenta marks
+$k_\mathrm{max}$, one cell per k-size the benchmark would run, and the "# k-sizes" column at the
+right counts the cells. Magenta marks
 are about the human proteome at about 100 proteins per seed; the teal and purple dots are about
 one chance match in Swiss-Prot. Only the magenta diamond is measured; the other three marks come
 from Equation 4b. The decision it informs: how many indexes to build per alphabet. The four
@@ -442,7 +442,7 @@ for name in ORDER:
              fontsize=NAME_PT, ha="right", va="center", color=INK, gid="name")
     fig.text(COUNT_RIGHT / FIG_W, inch_to_fig_y(rows_y[name]), f"{r['n_ksizes']}",
              fontsize=TEXT_PT, ha="right", va="center", color=INK, gid="count")
-fig.text(COUNT_RIGHT / FIG_W, inch_to_fig_y(-0.6 * ROW_IN), "k-sizes", fontsize=NOTE_PT,
+fig.text(COUNT_RIGHT / FIG_W, inch_to_fig_y(-0.6 * ROW_IN), "# k-sizes", fontsize=NOTE_PT,
          ha="right", va="bottom", color=MUTED, gid="count_header")
 
 
@@ -499,7 +499,7 @@ for x0, header, items in (
     for i, (kind, label) in enumerate(items):
         right_edges.append((x0, entry(x0, line_y[1 + i], kind, label)))
 cells_right = entry(LEG_LEFT, line_y[3], "cells",
-                    r"one cell per k-size to test, $k_\mathrm{min}$ to $k_\mathrm{max}$; the number at right counts them",
+                    r"one cell per k-size to test, $k_\mathrm{min}$ to $k_\mathrm{max}$; # k-sizes at right counts them",
                     glyph_w=3 * K_IN)
 note = put(LEG_LEFT, line_y[4], r"Bits per letter in Equation 4b: from Swiss-Prot composition; for $k_\mathrm{max}$, "
            "measured in the human proteome", fontsize=LEGEND_NOTE_PT, color=MUTED)
