@@ -1,6 +1,6 @@
 combiner: 'C, consensus vote: n_votes = pairs calling the merged region at region_evalue < emax; called
   when n_votes >= v_min; ranked by n_votes, ties by the corrected best-of-n E-value'
-emax: 10.0
+emax: 1.0
 v_min: 1
 counting: one per cluster
 clusters:
@@ -13,39 +13,41 @@ cluster_rule: complete linkage on 1 - agreement, every two pairs in a cluster ag
 selection: tune split; per (emax, counting) the smallest v_min with shuffled-query calls <= 0.05 x real
   calls, or without shuffled queries tune Swiss-Prot precision >= 0.5 (Pfam when no setting reaches it
   on Swiss-Prot); then the most tune calls, ties to one vote per cluster, then the smaller emax
-rule_used: tune pfam precision >= 0.5 (no shuffled-query calls)
+rule_used: shuffled-query calls <= 0.05 x real calls
 pairs:
 - encoded_hp_pbotc_1st_ed2_k19_ext1.63
 - encoded_hp_pbotc_1st_ed2_k19_ext2
 - hp_pbotc_1st_ed2_k19_ext1.63
 - hp_pbotc_1st_ed2_k19_ext2
 tune:
-  n_called: 891
-  precision_swissprot: 0.408716136631331
-  recall_swissprot: 0.10099857346647646
-  precision_pfam: 0.5499438832772167
-  recall_pfam: 0.3432
-  n_called_on_swissprot_queries: 849
-  n_found_swissprot: 354
-  n_called_on_pfam_queries: 891
-  n_found_pfam: 429
+  n_called: 673
+  n_shuffled_called: 22
+  precision_swissprot: 0.35524256651017216
+  recall_swissprot: 0.07018544935805991
+  precision_pfam: 0.5616641901931649
+  recall_pfam: 0.2712
+  n_called_on_swissprot_queries: 639
+  n_found_swissprot: 246
+  n_called_on_pfam_queries: 673
+  n_found_pfam: 339
 test:
-  n_called: 822
-  precision_swissprot: 0.35868187579214195
-  recall_swissprot: 0.07642099537666576
-  precision_pfam: 0.5425790754257908
-  recall_pfam: 0.319831223628692
-  n_called_on_swissprot_queries: 789
-  n_found_swissprot: 281
-  n_called_on_pfam_queries: 822
-  n_found_pfam: 379
+  n_called: 618
+  n_shuffled_called: 26
+  precision_swissprot: 0.327150084317032
+  recall_swissprot: 0.051944519989121564
+  precision_pfam: 0.5453074433656958
+  recall_pfam: 0.25654008438818565
+  n_called_on_swissprot_queries: 593
+  n_found_swissprot: 191
+  n_called_on_pfam_queries: 618
+  n_found_pfam: 304
 tune_sweep_at_target:
 - emax: 0.1
   counting: every pair
   n_clusters: 1
   v_min: 1
   n_called: 579
-  n_decoy_called: null
+  n_decoy_called: 4
   n_called_on_swissprot_queries: 549
   precision_swissprot: 0.33879781420765026
   n_found_swissprot: 207
@@ -54,13 +56,13 @@ tune_sweep_at_target:
   precision_pfam: 0.5595854922279793
   n_found_pfam: 294
   recall_pfam: 0.2352
-  rule: tune pfam precision >= 0.5 (no shuffled-query calls)
+  rule: shuffled-query calls <= 0.05 x real calls
 - emax: 0.1
   counting: one per cluster
   n_clusters: 1
   v_min: 1
   n_called: 579
-  n_decoy_called: null
+  n_decoy_called: 4
   n_called_on_swissprot_queries: 549
   precision_swissprot: 0.33879781420765026
   n_found_swissprot: 207
@@ -69,13 +71,13 @@ tune_sweep_at_target:
   precision_pfam: 0.5595854922279793
   n_found_pfam: 294
   recall_pfam: 0.2352
-  rule: tune pfam precision >= 0.5 (no shuffled-query calls)
+  rule: shuffled-query calls <= 0.05 x real calls
 - emax: 1.0
   counting: every pair
   n_clusters: 1
   v_min: 1
   n_called: 673
-  n_decoy_called: null
+  n_decoy_called: 22
   n_called_on_swissprot_queries: 639
   precision_swissprot: 0.35524256651017216
   n_found_swissprot: 246
@@ -84,13 +86,13 @@ tune_sweep_at_target:
   precision_pfam: 0.5616641901931649
   n_found_pfam: 339
   recall_pfam: 0.2712
-  rule: tune pfam precision >= 0.5 (no shuffled-query calls)
+  rule: shuffled-query calls <= 0.05 x real calls
 - emax: 1.0
   counting: one per cluster
   n_clusters: 1
   v_min: 1
   n_called: 673
-  n_decoy_called: null
+  n_decoy_called: 22
   n_called_on_swissprot_queries: 639
   precision_swissprot: 0.35524256651017216
   n_found_swissprot: 246
@@ -99,39 +101,9 @@ tune_sweep_at_target:
   precision_pfam: 0.5616641901931649
   n_found_pfam: 339
   recall_pfam: 0.2712
-  rule: tune pfam precision >= 0.5 (no shuffled-query calls)
-- emax: 10.0
-  counting: every pair
-  n_clusters: 1
-  v_min: 1
-  n_called: 891
-  n_decoy_called: null
-  n_called_on_swissprot_queries: 849
-  precision_swissprot: 0.408716136631331
-  n_found_swissprot: 354
-  recall_swissprot: 0.10099857346647646
-  n_called_on_pfam_queries: 891
-  precision_pfam: 0.5499438832772167
-  n_found_pfam: 429
-  recall_pfam: 0.3432
-  rule: tune pfam precision >= 0.5 (no shuffled-query calls)
-- emax: 10.0
-  counting: one per cluster
-  n_clusters: 1
-  v_min: 1
-  n_called: 891
-  n_decoy_called: null
-  n_called_on_swissprot_queries: 849
-  precision_swissprot: 0.408716136631331
-  n_found_swissprot: 354
-  recall_swissprot: 0.10099857346647646
-  n_called_on_pfam_queries: 891
-  precision_pfam: 0.5499438832772167
-  n_found_pfam: 429
-  recall_pfam: 0.3432
-  rule: tune pfam precision >= 0.5 (no shuffled-query calls)
+  rule: shuffled-query calls <= 0.05 x real calls
 input_table: /Users/olga/data/qfo-pfam-region-midi-plus-0.4/260_region_table/region_table.parquet
 input_table_sha256: c936f3884dbbb25fef95a53bc3b459d530fbef798150af8b0df7deb663b074b1
-input_note: 4 pairs, species ['zebrafish']; shuffled-query files absent
+input_note: 4 pairs, species ['zebrafish']; shuffled-query files present
 notebook: notebooks/263_combiner_c_consensus_vote.ipynb
 written: '2026-10-02'

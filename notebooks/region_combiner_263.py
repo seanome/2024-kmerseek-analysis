@@ -229,6 +229,30 @@ def rank_units(per_arm: pl.DataFrame, n_tried: int, emax: float,
     return pl.concat(out)
 
 
+def shuffled_null_calls(regions_glob: str, metric: str = "E-value") -> pl.DataFrame:
+    """Notebook 241's BHF dipeptide-shuffle run (query BHF and 300 shuffles, every pair,
+    the top 10 targets per query, pair and metric) as calls notebook 260's merge reads:
+    one row per region with ``region_evalue``, merged per query and target protein."""
+    return (pl.scan_parquet(regions_glob).filter(pl.col("metric") == metric).collect()
+            .rename({"value": "region_evalue"})
+            .with_columns(accession=pl.col("query_name"), species=pl.col("target_name"),
+                          arm=pl.col("alphabet") + "_k" + pl.col("k").cast(pl.String),
+                          **{c: pl.col(c).cast(pl.Int64) for c in
+                             ("region_start", "region_end", "target_start", "target_end")}))
+
+
+def votes_per_query(calls: pl.DataFrame, emax: float) -> pl.DataFrame:
+    """Per query: the most votes any merged region gets at `emax`, how many merged regions
+    have a vote, and how many have at least 2 and at least 4. Queries with no vote get 0."""
+    m = rt.merge_calls(calls.filter(pl.col("region_evalue") < emax))
+    v = votes(per_arm_best(m), emax)
+    per = v.group_by("accession").agg(
+        max_votes=pl.col("n_votes").max(), n_regions_voted=pl.len(),
+        n_regions_2plus=(pl.col("n_votes") >= 2).sum(), n_regions_4plus=(pl.col("n_votes") >= 4).sum())
+    allq = pl.DataFrame({"accession": calls["accession"].unique().sort()})
+    return allq.join(per, on="accession", how="left").fill_null(0).with_columns(emax=pl.lit(emax))
+
+
 def match_line(q: str, t: str, alphabet: str) -> str:
     """'|' same residue, '+' different residue in the same class of `alphabet`, ' ' other."""
     cls = residue_class(alphabet)

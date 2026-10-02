@@ -81,15 +81,23 @@ md(r"""
 ## Which data this execution reads
 
 Sections 1 to 6 read notebook 260's table. The kmerseek 0.4 midi-plus run with extension
-(`make run-midi-plus-0.4-extend`, [PR #88](https://github.com/seanome/2024-kmerseek-analysis/pull/88)) and its shuffled-query twin (`M04_RUN=decoy`) have
-not run, so, as in notebooks 261 and 262, the table has four pairs, all one alphabet at one
-k: hp_pbotc_1st_ed2 at k=19 against zebrafish, at extension penalties 1.63 and 2, each run
-with the built-in alphabet and with the same two-letter partition given as already-encoded
-sequences (`encoded_`). What that means here:
-- At most 4 votes, from near-copies of one search.
-- No shuffled-query calls, so step 2 falls back to precision, and the shuffled-query lines
-  in the main figure are empty.
-- Every number is zebrafish only.
+(`make run-midi-plus-0.4-extend`, [PR #88](https://github.com/seanome/2024-kmerseek-analysis/pull/88)) has not run, so, as in notebooks 261 and 262,
+the table has four pairs, all one alphabet at one k: hp_pbotc_1st_ed2 at k=19 against
+zebrafish, at extension penalties 1.63 and 2, each run with the built-in alphabet and with
+the same two-letter partition given as already-encoded sequences (`encoded_`). These four
+searches come from the random-alphabet control of
+[PR #76](https://github.com/seanome/2024-kmerseek-analysis/pull/76) (Sherlock, 30 Sept 2026).
+So at most 4 votes, from near-copies of one search, and every number is zebrafish only.
+
+**Shuffled queries.** For this notebook the same four searches were repeated with one
+dipeptide shuffle of each of the 998 human queries (`scripts/run_263_shuffled_queries.sbatch`,
+Sherlock job 46313369, 2 Oct 2026): `make_decoy_queries.py` with seed 270, the same indexes
+and stored E-value fits, the same flags and the same image (kmerseek 0.4.0-rc5). The encoded
+shuffles were made with the encoder after checking it reproduces the real run's encoded
+queries byte for byte. Each search was cut to `region_evalue` < 10 with notebook 260's
+reduce, in `260_region_table/reduced_decoy/`. A shuffled call is a false call by
+construction, so the number of merged regions called on shuffled queries estimates how many
+of the same number on real queries are chance.
 
 The code reads whatever `region_table.parquet` and `reduced_decoy/` hold, so the notebook
 reruns unchanged on the full run.
@@ -251,26 +259,39 @@ def agreement_heatmap(ax, j, arms, cl, z, label_size=None, annotate=True):
 
 SHORT = {a: ("encoded" if a.startswith("encoded_") else "built-in") + ", C " + a.rsplit("_ext", 1)[1] for a in ARMS}
 print("short labels:", SHORT)
-fig, axes = pf.figure(pf.TWO_COLUMN_MM, 70, ncols=3)
-for ax, e, letter in zip(axes, rv.EMAX_GRID, "abc"):
-    j, n, z = AGREE[e]
-    im = agreement_heatmap(ax, j, [SHORT[a] for a in ARMS], {SHORT[a]: c for a, c in CLUSTERS[e].items()}, z)
-    ax.set_title(f"E_max {e:g}")
-    pf.panel_label(ax, letter)
+# Agreement on the shuffled queries' calls, in the same pair order, for comparison.
+AGREE_SHUF = {}
+if decoy_per_arm is not None:
+    d_t = decoy_per_arm.filter(pl.col("split") == "tune")
+    for e in rv.EMAX_GRID:
+        AGREE_SHUF[e] = rv.agreement(d_t, e, ARMS)
+        off = AGREE_SHUF[e][0][~np.eye(len(ARMS), dtype=bool)]
+        print(f"shuffled queries, E_max {e:g}: calls per pair {dict(zip(ARMS, AGREE_SHUF[e][1].tolist()))}; "
+              f"agreement between two pairs {off.min():.3f} to {off.max():.3f}")
+rows_ = 2 if AGREE_SHUF else 1
+fig, axes = pf.figure(pf.TWO_COLUMN_MM, 70 * rows_, ncols=3, nrows=rows_, squeeze=False)
+letters = iter("abcdef")
+for row, (agree, what) in enumerate([(AGREE, "real queries")] + ([(AGREE_SHUF, "shuffled queries")] if AGREE_SHUF else [])):
+    for ax, e in zip(axes[row], rv.EMAX_GRID):
+        j = agree[e][0]
+        im = agreement_heatmap(ax, j, [SHORT[a] for a in ARMS], {SHORT[a]: c for a, c in CLUSTERS[e].items()}, AGREE[e][2])
+        ax.set_title(f"{what}, E_max {e:g} ({int(agree[e][1].sum()):_} calls, 4 pairs summed)")
+        pf.panel_label(ax, next(letters))
 cb = fig.colorbar(im, ax=axes, shrink=0.6, label="agreement: regions both call / regions either calls")
 stem = FIG / "263_vote_pair_agreement_heatmap_zebrafish_tune"
 lo = {e: AGREE[e][0][~np.eye(len(ARMS), dtype=bool)].min() for e in rv.EMAX_GRID}
+hi_s = {e: AGREE_SHUF[e][0][~np.eye(len(ARMS), dtype=bool)].max() for e in AGREE_SHUF}
 notebook_figure(
     fig, stem,
-    tools=mu.tools_text(kmerseek=ARMS, lc=False, note="human queries, zebrafish targets; tune split"),
-    title="Agreement between the 4 pairs (hp_pbotc_1st_ed2, k=19; built-in or encoded alphabet, extension penalty C); a black box is one cluster",
+    tools=mu.tools_text(kmerseek=ARMS, lc=False, note="human queries (real and dipeptide-shuffled), zebrafish targets; tune split"),
+    title="Agreement between the 4 pairs (hp_pbotc_1st_ed2, k=19; built-in or encoded, penalty C); black box = one cluster from real calls",
     hypothesis="Pairs that are near-copies of one search agree on more than 80% of their "
                "regions and fall into one cluster; their votes are one piece of evidence.",
-    conclusion=("Lowest agreement between two pairs: " +
+    conclusion=("Real queries, lowest agreement between two pairs: " +
                 ", ".join(f"E_max {e:g}: {lo[e]:.2f}" for e in rv.EMAX_GRID) +
-                ". Clusters: " + ", ".join(f"E_max {e:g}: {len(set(CLUSTERS[e].values()))}" for e in rv.EMAX_GRID) +
-                ". One vote per cluster therefore allows at most that many votes."),
-
+                (". Shuffled queries, highest: " + ", ".join(f"E_max {e:g}: {hi_s[e]:.2f}" for e in hi_s) +
+                 ". The pairs share real calls and split chance calls, so more votes remove chance calls."
+                 if hi_s else ". No shuffled-query calls.")),
 )
 """),
 md(r"""
@@ -347,6 +368,12 @@ code(r"""
 at = rv.vote_at_target(sw)
 print(at.select("emax", "counting", "v_min", "n_called", "n_decoy_called",
                 "precision_swissprot", "precision_pfam", "rule"))
+for e in rv.EMAX_GRID:
+    for counting in ("every pair", "one per cluster"):
+        if not at.filter((pl.col("emax") == e) & (pl.col("counting") == counting)).height:
+            print(f"E_max {e:g}, {counting}: no v_min meets the rule")
+sw = sw.with_columns(shuffled_share=pl.col("n_decoy_called") / pl.col("n_called"))
+print(sw.select("emax", "counting", "v_min", "n_called", "n_decoy_called", "shuffled_share"))
 for r in at.to_dicts():
     print(f"E_max {r['emax']:g}, {r['counting']}: the vote count to use is v_min = {r['v_min']} "
           f"({r['n_called']:_} tune calls; rule: {r['rule']})")
@@ -368,8 +395,13 @@ for ax, e, letter in zip(axes, rv.EMAX_GRID, "abc"):
     if no_decoy:
         xs = sorted(sw.filter(pl.col("emax") == e)["v_min"].unique().to_list())
         ax.scatter(xs, [0] * len(xs), marker="x", color=pf.GREY, clip_on=False, zorder=4)
-    h = at.filter((pl.col("emax") == e) & (pl.col("counting") == "every pair")).row(0, named=True)
-    ax.annotate(f"v_min = {h['v_min']}", (h["v_min"], h["n_called"]), xytext=(8, -12), textcoords="offset points")
+    hh = at.filter((pl.col("emax") == e) & (pl.col("counting") == "every pair"))
+    if hh.height:
+        h = hh.row(0, named=True)
+        ax.annotate(f"v_min = {h['v_min']}", (h["v_min"], h["n_called"]), xytext=(8, -12), textcoords="offset points")
+    else:
+        ax.text(0.5, 0.5, "no v_min brings shuffled calls\nto 5% of real calls", transform=ax.transAxes,
+                ha="center", va="center")
     ax.set_xticks(range(1, len(ARMS) + 1))
     ax.set_xlabel("v_min: votes a region needs")
     ax.set_title(f"E_max {e:g}")
@@ -490,8 +522,25 @@ for split, nf in (("tune", nf_tune), ("test", nf_test)):
                      **{k: a[k] for k in a if k.startswith(("n_called", "precision_", "n_found_", "recall_"))}))
     s = rb.kmerseek_calls(single_scores.filter(pl.col("split") == split), truth_pairs, nf)
     rows.append(dict(split=split, method="single", **rb.at_threshold(s, "evalue_min", True, THR_SINGLE)))
+def shuffled_calls(split: str) -> dict:
+    # Merged regions on shuffled queries each method calls, by the same rule as on real ones.
+    if decoy_per_arm is None:
+        return {m: None for m in ("C", "B", "A", "single")}
+    d = decoy_per_arm.filter(pl.col("split") == split)
+    v = rv.votes(d, EMAX, CLUSTERS[EMAX])
+    best = d.group_by(rv.KEY).agg(e=pl.col("e").min())
+    n_tried = int(tried.filter(pl.col("species") == "zebrafish")["n_arms_tried"][0])
+    a = (d.filter(pl.col("arm").is_in(PANEL_A) & (pl.col("e") < EMAX_A)).group_by(rv.KEY)
+         .agg(n=pl.col("arm").n_unique()).filter(pl.col("n") == len(PANEL_A)))
+    return {"C": v.filter(pl.col(VOTE_COL) >= VMIN).height,
+            "B": best.filter(n_tried * pl.col("e") <= THR_B).height,
+            "A": a.height,
+            "single": d.filter((pl.col("arm") == SINGLE) & (pl.col("e") <= THR_SINGLE)).height}
+
+shuf = {s_: shuffled_calls(s_) for s_ in ("tune", "test")}
+rows = [dict(r, n_shuffled_called=shuf[r["split"]][r["method"]]) for r in rows]
 report = pl.DataFrame(rows, infer_schema_length=None).select(
-    "split", "method", "n_called", "precision_swissprot", "recall_swissprot", "precision_pfam", "recall_pfam",
+    "split", "method", "n_called", "n_shuffled_called", "precision_swissprot", "recall_swissprot", "precision_pfam", "recall_pfam",
     "n_called_on_swissprot_queries", "n_found_swissprot", "n_called_on_pfam_queries", "n_found_pfam")
 print("\n".join(f"  {k}: {v}" for k, v in NAMES.items()))
 print(report)
@@ -514,7 +563,11 @@ for ax, (c, name), letter in zip(axes, cols, "abcd"):
         ax.annotate(f"{v_test:.3f}", (v_test, yi), xytext=(0, 5), textcoords="offset points", ha="center")
     ax.set_xlabel(name + " (higher is better)")
     ax.set_xlim(0, 1)
-    ax.set_yticks(y, [f"{m if m != 'single' else 'single pair'}\n({rep_test.filter(pl.col('method') == m)['n_called'][0]:_} test calls)" for m in ORDER])
+    def tick(m):
+        r = rep_test.filter(pl.col("method") == m).row(0, named=True)
+        sh = "" if r["n_shuffled_called"] is None else f",\n{r['n_shuffled_called']:_} on shuffled"
+        return f"{m if m != 'single' else 'single pair'}\n({r['n_called']:_} test calls{sh})"
+    ax.set_yticks(y, [tick(m) for m in ORDER])
     for yi in y:
         ax.axhline(yi, color="#DDDDDD", lw=0.3, zorder=0)
     pf.panel_label(ax, letter)
@@ -904,6 +957,82 @@ notebook_figure(
                 "; P66-CD47 loop " +
                 (f"rank {c1['rank_n_votes']} of {c1['of_n_votes']:_} with {c1['votes_n_votes']} votes" if c1['rank_n_votes'] else "no vote") + "."),
 
+)
+"""),
+md(r"""
+### Shuffled BHF: how many votes does a query with no homolog get?
+
+Notebook 241 also searched 300 dipeptide shuffles of BHF (`null_bhf_dipeptide_regions`,
+seed 0): each keeps BHF's first and last residue and the count of every adjacent residue
+pair, so it has BHF's composition and no homolog in the human proteome. The real BHF was
+searched in the same run, with the same 152 pairs and penalties as section 7. That run
+kept the 10 best targets per query, pair and metric, so here BHF and its shuffles are
+both read from it, the same way. For each query: the most votes any of its merged regions
+gets at E_max, and how many merged regions get a vote. If BHF's best region gets more
+votes than most shuffles' best regions, the vote is seeing something the composition
+alone does not give.
+"""),
+code(r"""
+NULL_GLOB = str(CASE_DIR / "null_bhf_dipeptide_regions" / "regions" / "*.parquet")
+null_calls = rv.shuffled_null_calls(NULL_GLOB)
+capped = (null_calls.group_by("accession", "arm").agg(n10=(pl.col("region_evalue") < 10).sum())
+          .filter(pl.col("n10") >= 10))
+print(f"queries: {null_calls['accession'].n_unique()} (BHF and {null_calls['accession'].n_unique() - 1} shuffles); "
+      f"pairs with E-value rows: {null_calls['arm'].n_unique()}")
+print(f"query x pair combinations where all 10 kept targets have E < 10, so more may exist: "
+      f"{capped.height:_} (BHF: {capped.filter(pl.col('accession') == 'BHF').height})")
+nv = pl.concat([rv.votes_per_query(null_calls, e) for e in rv.EMAX_GRID])
+null_summary = []
+for e in rv.EMAX_GRID:
+    d = nv.filter(pl.col("emax") == e)
+    b = d.filter(pl.col("accession") == "BHF").row(0, named=True)
+    sh = d.filter(pl.col("accession") != "BHF")
+    null_summary.append(dict(
+        emax=e, bhf_max_votes=b["max_votes"], bhf_regions_voted=b["n_regions_voted"],
+        shuffles=sh.height,
+        shuffles_max_votes_at_least_bhf=int((sh["max_votes"] >= b["max_votes"]).sum()),
+        share=float((sh["max_votes"] >= b["max_votes"]).mean()),
+        shuffles_median_max_votes=float(sh["max_votes"].median()),
+        shuffles_median_regions_voted=float(sh["n_regions_voted"].median())))
+null_summary = pl.DataFrame(null_summary)
+print(null_summary)
+print(nv.filter(pl.col("accession") != "BHF").group_by("emax", "max_votes").len("shuffles")
+      .sort("emax", "max_votes").pivot(on="emax", index="max_votes", values="shuffles").fill_null(0))
+"""),
+code(r"""
+SHUF_C = pf.GREY
+fig, axes = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=3)
+for ax, e, letter in zip(axes, rv.EMAX_GRID, "abc"):
+    d = nv.filter(pl.col("emax") == e)
+    sh = d.filter(pl.col("accession") != "BHF")["max_votes"].to_numpy()
+    b = d.filter(pl.col("accession") == "BHF")["max_votes"][0]
+    xs = np.arange(0, max(int(sh.max()), b) + 1)
+    ax.bar(xs, [(sh == x).sum() for x in xs], color=SHUF_C, width=0.8)
+    ax.axvline(b, color=REAL_C, lw=1)
+    r = null_summary.filter(pl.col("emax") == e).row(0, named=True)
+    ax.annotate(f"BHF: {b}\n{r['shuffles_max_votes_at_least_bhf']} of {r['shuffles']} shuffles\nreach {b} or more",
+                (b, ax.get_ylim()[1] * 0.95), xytext=(6, 0), textcoords="offset points", va="top",
+                bbox=dict(facecolor="white", edgecolor="none", pad=1))
+    ax.set_xticks(xs)
+    ax.set_xlabel("most votes on any merged region of the query")
+    ax.set_title(f"E_max {e:g}")
+    pf.panel_label(ax, letter)
+axes[0].set_ylabel("shuffled BHF queries (n)")
+fig.legend([plt.Rectangle((0, 0), 1, 1, color=SHUF_C), Line2D([], [], color=REAL_C)],
+           ["300 dipeptide shuffles of BHF", "BHF"], loc="outside upper center", ncol=2)
+stem = FIG / "263_vote_bhf_vs_300_dipeptide_shuffles_human_proteome"
+r10 = null_summary.filter(pl.col("emax") == 10.0).row(0, named=True)
+notebook_figure(
+    fig, stem,
+    tools=mu.tools_text(kmerseek=f"notebook 241's {N_TRIED} alphabet-ksize pairs", lc=False,
+                        note="consensus vote; BHF and 300 dipeptide shuffles of BHF against GENCODE v49 canonical human proteins; 10 best targets per query and pair"),
+    title="Votes on BHF's best region against votes on shuffled BHFs' best regions",
+    hypothesis="BHF's best region gets more votes than the best region of a shuffled BHF, which "
+               "has BHF's composition and no homolog; more votes than the shuffles is the signal.",
+    conclusion=(f"At E_max 10, BHF's best region has {r10['bhf_max_votes']} votes and "
+                f"{r10['shuffles_max_votes_at_least_bhf']} of {r10['shuffles']} shuffles ({r10['share']:.0%}) have a region "
+                f"with at least as many; shuffles have a median of {r10['shuffles_median_regions_voted']:.0f} voted regions, "
+                f"BHF {r10['bhf_regions_voted']}."),
 )
 """),
 md(r"""
