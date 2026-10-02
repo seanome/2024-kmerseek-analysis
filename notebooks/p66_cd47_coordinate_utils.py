@@ -37,15 +37,17 @@ TOOLS = (
     "kmerseek pair (kmerseek-ka-lambda-region, the binary notebook 241 used), "
     "P66 (UniProt H7C7N8, mature chain) against CD47 (UniProt Q08722, GENCODE v49 "
     "canonical protein), every alphabet and k of the notebook 241 sweep that shares "
-    "at least one k-mer; UniProt REST for the features; the 300 length-matched human "
-    "control proteins of PR #44"
+    "at least one k-mer; UniProt REST for the features; PDB 2JJS (Hatherley et al. 2008) "
+    "for the CD47 residues that contact SIRP-alpha, measured at 4 A; Ristow et al. 2015 "
+    "and Defoe and Coburn 2001 for the P66 loop; the 300 length-matched human control "
+    "proteins of PR #44"
 )
 
 P66_OFFSET, CD47_OFFSET = 21, 18
 P66_LEN_UNIPROT, CD47_LEN_UNIPROT = 618, 323
 P66_LOOP = (202, 208)
+P66_PEPTIDE = (203, 209)
 CD47_CONTACT_SPAN = (115, 124)
-CD47_CONTACT_RESIDUES = (115, 117, 118, 120, 121, 122, 124)
 
 # Alphabets grouped by how many classes they have, so the colours run in families
 # instead of cycling. The reader finds an alphabet by its group first.
@@ -75,6 +77,14 @@ NAMED_FILL = "#D9D9D9"       # its fill
 BACKBONE = "#4D4D4D"         # the protein line
 FEATURE_FILL = "#FFFFFF"     # a UniProt feature box
 LINK_ALPHA = 0.75
+
+
+def contact_positions(annotations: pl.DataFrame) -> list[int]:
+    """Every CD47 residue within 4 A of SIRP-alpha in PDB 2JJS, in UniProt numbering."""
+    return sorted((annotations
+                   .filter((pl.col("protein") == "CD47")
+                           & (pl.col("feature_type") == "CONTACT"))
+                   )["start_uniprot"].to_list())
 
 
 def load() -> dict[str, pl.DataFrame]:
@@ -120,9 +130,9 @@ def residue_block(kmers: pl.DataFrame, row: dict) -> str:
         f"{'':<{pad}}{match}",
         f"{cd47_tag:<{pad}}{t}",
         f"{'  classes':<{pad}}{row['kmer_letters']}",
-        f"  {row['n_identical_residues']} of {row['ksize']} residues identical; "
-        f"covers {row['n_cd47_contact_residues_covered']} of the 7 CD47 contact residues "
-        f"and {row['n_p66_loop_residues_covered']} of the 7 P66 loop residues",
+        f"  {row['n_identical_residues']} of {row['ksize']} residues identical; covers "
+        f"{row['n_cd47_contacts_covered_anywhere']} CD47 residues that contact "
+        f"SIRP-alpha and {row['n_p66_loop_residues_covered']} of the 7 P66 loop residues",
         f"  {legend}",
     ])
 
@@ -143,7 +153,7 @@ def best_per_alphabet(kmers: pl.DataFrame) -> pl.DataFrame:
     """For each alphabet, the k-mer that covers the most named residues, breaking ties
     on identical residues and then on k, so the row is the same on every run."""
     return (kmers
-            .with_columns((pl.col("n_cd47_contact_residues_covered")
+            .with_columns((pl.col("n_cd47_contacts_covered_anywhere")
                            + pl.col("n_p66_loop_residues_covered")).alias("n_named_covered"))
             .sort(["n_named_covered", "n_identical_residues", "ksize",
                    "cd47_start_uniprot", "p66_start_uniprot"],
@@ -202,6 +212,8 @@ def figure_map(data: dict[str, pl.DataFrame], path: Path,
     thicker and solid and carries a square at each end, so it is found without reading
     its colour."""
     ann, kmers = data["annotations"], data["kmers"]
+    contacts = contact_positions(ann)
+    in_span = [p for p in contacts if CD47_CONTACT_SPAN[0] <= p <= CD47_CONTACT_SPAN[1]]
     present = [a for _, members in SIZE_GROUPS for a in members
                if a in set(kmers["alphabet"].unique())]
 
@@ -242,10 +254,12 @@ def figure_map(data: dict[str, pl.DataFrame], path: Path,
     for (lo, hi), length, y, y_note, text in (
         (P66_LOOP, P66_LEN_UNIPROT, Y_P66, Y_P66_NOTE,
          "loop required for integrin binding, proposed to bind SIRP-alpha\n"
-         "UniProt 202-208 = mature 181-187 (QENDKDT)"),
+         "UniProt 202-208 = mature 181-187 (QENDKDT); deleting it cuts\n"
+         "integrin binding ~1370-fold (Ristow et al. 2015)"),
         (CD47_CONTACT_SPAN, CD47_LEN_UNIPROT, Y_CD47, Y_CD47_NOTE,
-         "7 of the 9 CD47 residues that contact SIRP-alpha\n"
-         "UniProt 115-124 = mature 97-106"),
+         f"the {len(in_span)} CD47 residues that contact SIRP-alpha in one run,\n"
+         f"UniProt 115-124 = mature 97-106 (of {len(contacts)} contacts in all,\n"
+         "measured at 4 A in PDB 2JJS, Hatherley et al. 2008)"),
     ):
         x0, x1 = fx(lo, length), fx(hi, length)
         ax.add_patch(Rectangle((x0, y - 0.065), max(x1 - x0, 0.005), 0.13,
@@ -254,6 +268,13 @@ def figure_map(data: dict[str, pl.DataFrame], path: Path,
                     xytext=(0.5, y_note), ha="center",
                     va="bottom" if y == Y_P66 else "top", fontsize=8.5, color=NAMED_EDGE,
                     zorder=6, arrowprops=dict(arrowstyle="-", color=NAMED_EDGE, lw=1.0))
+
+    # The contacts outside that run, one triangle each. Black, like the other marks for
+    # residues named in the literature; no alphabet uses black.
+    outside = [p for p in contacts if p not in in_span]
+    ax.scatter([fx(p, CD47_LEN_UNIPROT) for p in outside],
+               [Y_CD47 - 0.075] * len(outside), marker="^", s=26, color=NAMED_EDGE,
+               zorder=6)
 
     # Every shared k-mer: a link from its P66 span to its CD47 span. The ones that
     # touch a named stretch are drawn last, thicker, with a square at each end.
@@ -282,6 +303,10 @@ def figure_map(data: dict[str, pl.DataFrame], path: Path,
 
     handles = [Patch(facecolor=NAMED_FILL, edgecolor=NAMED_EDGE,
                      label="stretch named in the literature"),
+               Line2D([], [], color="none", marker="^", markersize=6,
+                      markerfacecolor=NAMED_EDGE, markeredgecolor=NAMED_EDGE,
+                      label=f"CD47 residue contacting SIRP-alpha, outside that run "
+                            f"({len(outside)} of {len(contacts)})"),
                Patch(facecolor=FEATURE_FILL, edgecolor=BACKBONE, label="UniProt feature"),
                Line2D([], [], color=BACKBONE, lw=1.8, marker="s", markersize=4,
                       label="k-mer touching a named stretch (square ends)"),
@@ -333,20 +358,24 @@ def figure_controls(data: dict[str, pl.DataFrame], path: Path,
         prev = g
         y += 1.0
 
-    fig, axes = plt.subplots(1, 3, figsize=(14.5, 8.4), sharey=True,
-                             gridspec_kw={"width_ratios": [1, 1, 1.1], "wspace": 0.13})
+    fig, axes = plt.subplots(1, 4, figsize=(17.5, 8.4), sharey=True,
+                             gridspec_kw={"width_ratios": [1, 1, 1, 1.1], "wspace": 0.11})
     for ax in axes:
         for yy in ys:
             ax.axhline(yy, color="#E6E6E6", lw=0.7, zorder=0)
         ax.set_yticks(ys)
         ax.set_yticklabels(labels, fontsize=8)
-        ax.invert_yaxis()
+    # The y axis is shared, so inverting it once per panel would undo itself on an even
+    # number of panels. Invert it once.
+    axes[0].invert_yaxis()
 
     for ax, obs_col, exp_col, span in (
         (axes[0], "n_touching_p66_loop", "expected_touching_p66_loop",
          "P66 loop, UniProt 202-208"),
         (axes[1], "n_touching_cd47_contact_span", "expected_touching_cd47_contact_span",
-         "CD47 contact residues, UniProt 115-124"),
+         "8 CD47 contacts in UniProt 115-124"),
+        (axes[2], "n_touching_any_cd47_contact", "expected_touching_any_cd47_contact",
+         "any of the 20 CD47 contacts"),
     ):
         ax.barh(ys, c[exp_col].to_list(), height=0.62, color="#BDBDBD",
                 edgecolor="none", label="expected from chance placement", zorder=1)
@@ -359,11 +388,10 @@ def figure_controls(data: dict[str, pl.DataFrame], path: Path,
         if none:
             ax.scatter([0] * len(none), none, s=42, marker="x", color="#8B1A1A",
                        zorder=4, label="no shared k-mer touches it")
-        ax.set_xlabel(f"k-mers touching the {span}\n(number of k-mers; higher means "
-                      "the k-mers concentrate there)", fontsize=8.5)
+        ax.set_xlabel(f"shared k-mers touching {span}\n(number of k-mers; higher than the\ngrey bar means they concentrate there)", fontsize=8.5)
         ax.legend(loc="lower left", bbox_to_anchor=(0, 1.005), fontsize=8, frameon=False)
 
-    ax = axes[2]
+    ax = axes[3]
     ax.barh(ys, c["cd47_percentile_among_controls"].to_list(), height=0.62,
             color="#2171B5", edgecolor="none", zorder=1,
             label="CD47's place among the 300 control proteins")
@@ -377,6 +405,6 @@ def figure_controls(data: dict[str, pl.DataFrame], path: Path,
                   fontsize=8.5)
     ax.legend(loc="lower left", bbox_to_anchor=(0, 1.005), fontsize=8, frameon=False)
 
-    fig.subplots_adjust(left=0.165, right=0.995, top=0.875, bottom=0.085)
+    fig.subplots_adjust(left=0.135, right=0.995, top=0.865, bottom=0.10)
     finish_figure(fig, path, tools=TOOLS, hypothesis=hypothesis, conclusion=conclusion,
                   header_y=0.995, footer_y=0.005, tight=False)

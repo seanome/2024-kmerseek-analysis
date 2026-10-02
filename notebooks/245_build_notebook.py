@@ -24,14 +24,22 @@ alphabet at one k-mer size) and recorded the count in `pair_P66_shared_kmers`. I
 recorded where those k-mers sit, so one question stayed open: does a shared k-mer land on
 the part of P66 that matters, and on the part of CD47 that binds SIRP-alpha?
 
-**P66** is a surface protein of *Borreliella burgdorferi* (UniProt H7C7N8). A seven-residue
-loop of it is required for binding human integrins, and the same loop has been proposed to
-bind SIRP-alpha, the receptor CD47 binds. The integrin result is measured. The SIRP-alpha
-binding is a proposal, so this notebook calls the stretch "the loop required for integrin
-binding, proposed to bind SIRP-alpha" and never "the SIRP-alpha-binding region of P66".
+**P66** is a surface protein of *Borreliella burgdorferi* (UniProt H7C7N8). Deleting amino
+acids 202-208, or changing the two aspartates at 205 and 207 to alanine, cuts its binding
+to human integrin alpha-v beta-3 by two to three orders of magnitude (Ristow et al. 2015),
+and a synthetic peptide of amino acids 203-209, ENDKDTP, is the only peptide across
+142-384 that competes with whole bacteria for integrin binding, while its scrambled version
+DNEKPDT does not (Defoe and Coburn 2001). The same loop
+has been proposed to bind SIRP-alpha, the receptor CD47 binds. The integrin result is
+measured. The SIRP-alpha binding is a proposal, so this notebook calls the stretch "the
+loop required for integrin binding, proposed to bind SIRP-alpha" and never "the
+SIRP-alpha-binding region of P66".
 
 **CD47** (UniProt Q08722) is the human protein whose extracellular domain binds SIRP-alpha.
-Nine of its residues contact SIRP-alpha; seven of them lie in one stretch.
+Rather than copy a residue list out of a paper, the contact residues here are measured from
+the structure that paper deposited: PDB 2JJS, human CD47 with human SIRP-alpha at 1.85 A
+(Hatherley et al. 2008). 20 CD47 residues have an atom within 4 A of SIRP-alpha. 8 of them
+lie in one run, UniProt 115-124.
 
 ## Two numbering systems
 
@@ -43,17 +51,23 @@ this notebook carries both.
 | P66 | H7C7N8, 618 aa | 1-21 | 22-618, 597 aa | mature = UniProt - 21 |
 | CD47 | Q08722, 323 aa | 1-18 | 19-323, 305 aa | mature = UniProt - 18 |
 
-The published positions are in mature numbering in both papers:
+Which numbering each source uses:
 
-* P66's loop, mature 181-187 with aspartate at 184 and 186, is **UniProt 202-208**,
-  sequence QENDKDT, with aspartate at UniProt 205 and 207.
-* CD47's contact residues Tyr37, Asp46, Glu97, Thr99, Glu100, Thr102, Arg103, Glu104,
-  Glu106 are **UniProt 55, 64, 115, 117, 118, 120, 121, 122, 124**. Seven of the nine lie
-  in UniProt 115-124.
+* **P66: the precursor, the same numbering as the UniProt entry.** Ristow et al. write
+  Del202-208 and D205A, D207A, and UniProt H7C7N8 has aspartate at 205 and at 207, so no
+  offset is applied. Defoe and Coburn's Table 2 lists the same positions with their
+  sequences, 202-8 QENDKDT and 203-9 ENDKDTP, which is what UniProt H7C7N8 has there. In
+  mature numbering that loop is 181-187.
+* **CD47: the mature chain.** PDB 2JJS numbers the mature protein, and its UniProt mapping
+  (PDBe SIFTS) puts author residue 1 at UniProt 19, which is the 18-residue signal peptide.
+  So the contacts at mature 37, 46, 97, 99, 100, 101, 102, 103, 104 and 106 are UniProt 55,
+  64, 115, 117, 118, 119, 120, 121, 122 and 124, and ten more lie at UniProt 19, 24, 45,
+  47, 48, 49, 52, 53, 57 and 67.
 
-`scripts/fetch_p66_cd47_annotations.py` fetches both entries from UniProt, checks the
-lengths (618 and 323) and checks the residue at each named position against the residue the
-name says. It stops with an error if any of them disagrees.
+`scripts/fetch_p66_cd47_annotations.py` fetches both UniProt entries and the structure,
+checks the lengths (618 and 323), checks that the SIFTS offset agrees with the signal
+peptide, and checks that the residue at every contact position in the structure is the
+residue the UniProt sequence has there. It stops with an error if any of them disagrees.
 
 Notebook 241 ran P66 as its 597-residue mature chain and CD47 as the 323-residue GENCODE
 protein, which is the UniProt precursor. So kmerseek's P66 positions are mature numbering
@@ -66,11 +80,31 @@ Every arm of the notebook 241 sweep whose `pair_P66_shared_kmers` is above zero,
 with `kmerseek pair` keeping the per-k-mer output. Then two controls:
 
 1. **Position.** A k-mer has to land somewhere. For each arm, the share of the places a
-   k-mer of that length can sit from which it would touch the named stretch, against how
+   k-mer of that length can sit from which it would touch the named residues, against how
    many actually do, with a binomial test.
 2. **Partner.** The same arms run on P66 against the 300 length-matched human proteins
    PR #44 drew (`analysis/ranking-metrics-p66/random_ladder.csv`, 242 to 404 residues,
    median 322.5 against CD47's 323), to see where CD47's count sits among them.
+
+## Sources
+
+Ristow, Laura C., Mari Bonde, Yi-Pin Lin, Hiromi Sato, Michael Curtis, Erin Wesley, Beth L.
+Hahn, et al. "Integrin binding by *Borrelia burgdorferi* P66 facilitates dissemination but
+is not required for infectivity." *Cellular Microbiology* 17, no. 7 (2015): 1021-36.
+https://doi.org/10.1111/cmi.12418
+
+Defoe, G., and J. Coburn. "Delineation of *Borrelia burgdorferi* p66 sequences required for
+integrin alpha(IIb)beta(3) recognition." *Infection and Immunity* 69, no. 5 (2001): 3455-59.
+https://doi.org/10.1128/IAI.69.5.3455-3459.2001
+
+Hatherley, Deborah, Stephen C. Graham, Jessie Turner, Karl Harlos, David I. Stuart, and
+A. Neil Barclay. "Paired receptor specificity explained by structures of signal regulatory
+proteins alone and complexed with CD47." *Molecular Cell* 31, no. 2 (2008): 266-77.
+https://doi.org/10.1016/j.molcel.2008.05.026 (structure PDB 2JJS)
+
+**Found through PubMed.** The P66 positions were read from the full text of Ristow et al.
+2015; the CD47 contacts were computed from PDB 2JJS rather than read from Hatherley et al.
+2008, whose full text is behind a subscription.
 """),
 code(r"""
 import sys
@@ -105,7 +139,8 @@ md(r"""
 One line per shared k-mer, from its place on P66 to its place on CD47. Both proteins are
 drawn the way InterPro draws a protein: a thin line for the chain with open boxes for the
 UniProt features. The two stretches named in the literature are grey boxes with a black
-outline, and no alphabet uses grey or black. A k-mer that touches one of them is drawn
+outline, and no alphabet uses grey or black. The 12 CD47 contact residues outside that run
+are black triangles under the CD47 line. A k-mer that touches one of the grey boxes is drawn
 thicker with a square at each end, so it can be found without reading its colour.
 """),
 code(r"""
@@ -113,7 +148,12 @@ touch_loop = int(kmers["overlaps_p66_loop"].sum())
 touch_contact = int(kmers["overlaps_cd47_contact_span"].sum())
 reg_loop = int(regions["overlaps_p66_loop"].sum())
 reg_contact = int(regions["overlaps_cd47_contact_span"].sum())
-all_seven = kmers.filter(pl.col("n_cd47_contact_residues_covered") == 7).height
+n_contacts = ann.filter((pl.col("protein") == "CD47")
+                        & (pl.col("feature_type") == "CONTACT")).height
+n_in_span = int(kmers["n_cd47_contact_residues_covered"].max())
+all_in_span = kmers.filter(pl.col("n_cd47_contact_residues_covered") == n_in_span).height
+touch_any = int(kmers["overlaps_any_cd47_contact"].sum())
+reg_any = int(regions["overlaps_any_cd47_contact"].sum())
 arms_touching = (kmers.filter(pl.col("overlaps_cd47_contact_span"))
                  .select("alphabet", "ksize").unique().height)
 
@@ -121,13 +161,17 @@ print(f"of {n_kmers} shared k-mers, {touch_loop} touch P66 UniProt 202-208 "
       f"and {touch_contact} touch CD47 UniProt 115-124")
 print(f"of {n_regions} chained regions, {reg_loop} touch the P66 loop "
       f"and {reg_contact} touch the CD47 contact residues")
-print(f"{all_seven} of the {touch_contact} cover all seven contact residues in the span; "
-      f"they come from {arms_touching} of the {n_arms} arms")
+print(f"{all_in_span} of the {touch_contact} cover all {n_in_span} contact residues in "
+      f"that run; they come from {arms_touching} of the {n_arms} arms")
+print(f"counting all {n_contacts} CD47 residues that contact SIRP-alpha, anywhere in the "
+      f"protein: {touch_any} of {n_kmers} k-mers and {reg_any} of {n_regions} regions "
+      f"touch at least one")
 
 summary = (kmers.group_by("alphabet")
            .agg(pl.len().alias("n_kmers"),
                 pl.col("overlaps_p66_loop").sum().alias("touch_p66_loop"),
-                pl.col("overlaps_cd47_contact_span").sum().alias("touch_cd47_contacts"),
+                pl.col("overlaps_cd47_contact_span").sum().alias("touch_cd47_run"),
+                pl.col("overlaps_any_cd47_contact").sum().alias("touch_any_cd47_contact"),
                 pl.col("n_identical_residues").max().alias("most_identical_residues"))
            .sort("n_kmers", descending=True))
 print(summary)
@@ -176,20 +220,26 @@ places from which it touches a named stretch is what chance gives. Observed agai
 per arm, with a binomial test.
 
 The k-mers within one arm are not independent draws: consecutive positions share k-1
-residues, and the 14 k-mers that touch CD47's contact residues chain into 6 regions. So the
-per-arm tests are optimistic and the pooled test below is read as a direction, not as a
-p-value to defend.
+residues, and the k-mers that touch CD47's contact residues chain into a handful of regions.
+So the per-arm tests are optimistic and the pooled test below is read as a direction, not as
+a p-value to defend.
 """ ),
 code(r"""
 from scipy import stats
 
 exp_loop = float(controls["expected_touching_p66_loop"].sum())
 exp_contact = float(controls["expected_touching_cd47_contact_span"].sum())
-p_pooled_loop = float(stats.binomtest(touch_loop, n_kmers, exp_loop / n_kmers).pvalue)
-p_pooled_contact = float(stats.binomtest(touch_contact, n_kmers, exp_contact / n_kmers).pvalue)
-print(f"P66 loop:    {touch_loop} observed, {exp_loop:.1f} expected, binomial p = {p_pooled_loop:.5f}")
-print(f"CD47 contacts: {touch_contact} observed, {exp_contact:.1f} expected, "
+exp_any = float(controls["expected_touching_any_cd47_contact"].sum())
+pooled = lambda obs, exp: float(stats.binomtest(obs, n_kmers, exp / n_kmers).pvalue)
+p_pooled_loop = pooled(touch_loop, exp_loop)
+p_pooled_contact = pooled(touch_contact, exp_contact)
+p_pooled_any = pooled(touch_any, exp_any)
+print(f"P66 loop, UniProt 202-208:        {touch_loop:3d} observed, {exp_loop:5.1f} expected, "
+      f"binomial p = {p_pooled_loop:.5f}")
+print(f"CD47 contacts in UniProt 115-124: {touch_contact:3d} observed, {exp_contact:5.1f} expected, "
       f"binomial p = {p_pooled_contact:.3f}")
+print(f"any of the {n_contacts} CD47 contacts:        {touch_any:3d} observed, {exp_any:5.1f} expected, "
+      f"binomial p = {p_pooled_any:.5f}")
 
 bonferroni = 0.05 / n_arms
 sig = controls.filter((pl.col("cd47_contact_binomial_p") < 0.05)
@@ -247,14 +297,16 @@ print(f"1. {loop_word} the {n_kmers} shared k-mers, and {reg_loop} of the {n_reg
       f"chained regions, overlap P66 UniProt 202-208 (mature 181-187, QENDKDT), in any "
       f"of the {n_arms} arms.")
 print()
-print(f"2. {touch_contact} shared k-mers touch CD47 UniProt 115-124, against "
-      f"{exp_contact:.1f} expected from chance placement, binomial p = {p_pooled_contact:.2f}. "
-      f"For the P66 loop it is {touch_loop} against {exp_loop:.1f} expected, binomial "
-      f"p = {p_pooled_loop:.5f}, which is fewer than chance rather than more. "
-      f"{all_seven} k-mers cover all seven contact residues, from {arms_touching} arms, "
-      f"and they reach them from P66 UniProt {p66_sources}. Three arms put more k-mers on "
-      f"the CD47 contact residues than chance at p < 0.05 and {n_survive} stays below "
-      f"{bonferroni:.5f}, the threshold after testing every arm.")
+print(f"2. {touch_contact} shared k-mers touch the run of {n_in_span} CD47 contacts at "
+      f"UniProt 115-124, against {exp_contact:.1f} expected from chance placement, binomial "
+      f"p = {p_pooled_contact:.2f}. Counting all {n_contacts} contact residues it is "
+      f"{touch_any} against {exp_any:.1f} expected, binomial p = {p_pooled_any:.4f}, and for "
+      f"the P66 loop {touch_loop} against {exp_loop:.1f} expected, binomial "
+      f"p = {p_pooled_loop:.5f}. All three are at or below chance, none above. "
+      f"{all_in_span} k-mers cover the whole run of {n_in_span}, from {arms_touching} arms, "
+      f"and they reach it from P66 UniProt {p66_sources}. Three arms put more k-mers on the "
+      f"CD47 run than chance at p < 0.05 and {n_survive} stays below {bonferroni:.5f}, the "
+      f"threshold after testing every arm.")
 print()
 top = (controls.filter(pl.col("cd47_percentile_among_controls") >= 95)
        .sort("cd47_percentile_among_controls", descending=True))
@@ -275,9 +327,7 @@ md(r"""
 Answering the three questions in one sentence each, from the tables above:
 
 * **Does any shared k-mer touch P66 202-208 or CD47 115-124?** None of the 326 touches the
-  P66 loop; 14 touch the CD47 contact residues, and they reach them from four other
-  parts of P66 (UniProt 298-314, 447-465, 511-517 and 605-615), not from the loop.
-* **Is that more than chance gives?** No. 14 against 19.1 expected for CD47's contact
+  P66 loop; 14 touch the CD47 contact residues, and * **Is that more than chance gives?** No. 14 against 19.1 expected for CD47's contact
   residues (binomial p = 0.29), and 0 against 8.5 expected for the P66 loop
   (binomial p = 0.00035), which is fewer than chance, not more.
 * **Does CD47 stand out among the 300 length-matched human proteins?** No. Its shared-k-mer
@@ -288,7 +338,7 @@ Files this notebook reads and writes:
 
 | file | what is in it |
 |---|---|
-| `tables/245_p66_cd47_annotations.csv` | both sequences and every UniProt feature, plus the published residues, in both numberings |
+| `tables/245_p66_cd47_annotations.csv` | both sequences, every UniProt feature, the published P66 positions and the 20 measured CD47 contacts, in both numberings |
 | `tables/245_p66_cd47_shared_kmers.csv` | one row per shared k-mer |
 | `tables/245_p66_cd47_regions.csv` | the chained regions kmerseek reports |
 | `tables/245_p66_cd47_controls.csv` | both controls, one row per arm |

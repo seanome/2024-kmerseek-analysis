@@ -61,10 +61,14 @@ CD47_HEADER = (
 P66_OFFSET, CD47_OFFSET = 21, 18
 P66_LEN_MATURE, CD47_LEN_UNIPROT = 597, 323
 
-# The stretches the literature names, in UniProt numbering (see the fetch script).
-P66_LOOP = (202, 208)           # the loop required for integrin binding
-CD47_CONTACT_SPAN = (115, 124)  # the SIRP-alpha contact residues that lie in one span
-CD47_CONTACT_RESIDUES = (115, 117, 118, 120, 121, 122, 124)
+# The stretches the literature names, in UniProt numbering (see the fetch script, which
+# records where each one comes from). Both papers number the P66 precursor, which is the
+# UniProt numbering, so no offset is applied to these.
+P66_LOOP = (202, 208)       # deleted by Ristow et al. 2015; integrin binding drops ~1370x
+P66_PEPTIDE = (203, 209)    # the competing peptide of Defoe and Coburn 2001
+CD47_CONTACT_SPAN = (115, 124)  # the contiguous run of SIRP-alpha contacts
+# The individual CD47 contact residues are measured from PDB 2JJS, not typed in: they are
+# read from the annotations table below.
 
 # PR #44's 300 control proteins run 242 to 404 residues, median 322.5, against CD47's
 # 323: the set is centred on CD47 but the window is wider than a few residues. The list
@@ -86,6 +90,18 @@ def read_fasta(path: Path) -> dict[str, str]:
     if name is not None:
         seqs[name] = "".join(buf)
     return seqs
+
+
+def cd47_contact_positions() -> list[int]:
+    """Every CD47 residue within 4 A of SIRP-alpha in PDB 2JJS, in UniProt numbering,
+    as the fetch script measured them."""
+    ann = pl.read_csv(ANNOTATIONS)
+    pos = (ann.filter((pl.col("protein") == "CD47") & (pl.col("feature_type") == "CONTACT"))
+           ["start_uniprot"].to_list())
+    if not pos:
+        raise SystemExit("no CD47 contact rows in the annotations table; run "
+                         "scripts/fetch_p66_cd47_annotations.py first")
+    return sorted(pos)
 
 
 def check_sequences(p66: str, cd47: str) -> None:
@@ -139,7 +155,8 @@ def feature_at(features: pl.DataFrame, pos: int) -> str:
     return "none"
 
 
-def kmer_rows(arm: dict, pair: dict, features: pl.DataFrame) -> tuple[list[dict], list[dict]]:
+def kmer_rows(arm: dict, pair: dict, features: pl.DataFrame,
+              contacts: list[int]) -> tuple[list[dict], list[dict]]:
     """One row per shared k-mer and one per chained region, in both numberings."""
     a, k, bits = arm["alphabet"], arm["ksize"], arm["bits"]
     qseq, tseq = pair["query"]["sequence"], pair["target"]["sequence"]
@@ -150,7 +167,9 @@ def kmer_rows(arm: dict, pair: dict, features: pl.DataFrame) -> tuple[list[dict]
         cu0, cu1 = sk["target_pos"] + 1, sk["target_pos"] + k
         p66_res, cd47_res = qseq[pm0 - 1:pm1], tseq[cu0 - 1:cu1]
         pu0, pu1 = pm0 + P66_OFFSET, pm1 + P66_OFFSET
-        covered = [p for p in CD47_CONTACT_RESIDUES if cu0 <= p <= cu1]
+        in_span = [p for p in contacts if CD47_CONTACT_SPAN[0] <= p <= CD47_CONTACT_SPAN[1]]
+        covered = [p for p in in_span if cu0 <= p <= cu1]
+        covered_any = [p for p in contacts if cu0 <= p <= cu1]
         kmers.append(dict(
             alphabet=a, ksize=k, bits=bits, kmer_letters=sk["kmer"],
             p66_start_uniprot=pu0, p66_end_uniprot=pu1,
@@ -163,13 +182,18 @@ def kmer_rows(arm: dict, pair: dict, features: pl.DataFrame) -> tuple[list[dict]
             n_p66_loop_residues_covered=overlap((pu0, pu1), P66_LOOP),
             overlaps_cd47_contact_span=overlap((cu0, cu1), CD47_CONTACT_SPAN) > 0,
             n_cd47_contact_residues_covered=len(covered),
+            n_cd47_contacts_covered_anywhere=len(covered_any),
+            overlaps_any_cd47_contact=len(covered_any) > 0,
+            overlaps_p66_peptide=overlap((pu0, pu1), P66_PEPTIDE) > 0,
             cd47_feature_hit=feature_at(features, cu0),
         ))
     for rg in pair["regions"]:
         pm0, pm1 = rg["query_start"] + 1, rg["query_end"]
         cu0, cu1 = rg["target_start"] + 1, rg["target_end"]
         pu0, pu1 = pm0 + P66_OFFSET, pm1 + P66_OFFSET
-        covered = [p for p in CD47_CONTACT_RESIDUES if cu0 <= p <= cu1]
+        in_span = [p for p in contacts if CD47_CONTACT_SPAN[0] <= p <= CD47_CONTACT_SPAN[1]]
+        covered = [p for p in in_span if cu0 <= p <= cu1]
+        covered_any = [p for p in contacts if cu0 <= p <= cu1]
         regions.append(dict(
             alphabet=a, ksize=k, bits=bits, region_length=rg["length"],
             p66_start_uniprot=pu0, p66_end_uniprot=pu1,
@@ -183,6 +207,9 @@ def kmer_rows(arm: dict, pair: dict, features: pl.DataFrame) -> tuple[list[dict]
             n_p66_loop_residues_covered=overlap((pu0, pu1), P66_LOOP),
             overlaps_cd47_contact_span=overlap((cu0, cu1), CD47_CONTACT_SPAN) > 0,
             n_cd47_contact_residues_covered=len(covered),
+            n_cd47_contacts_covered_anywhere=len(covered_any),
+            overlaps_any_cd47_contact=len(covered_any) > 0,
+            overlaps_p66_peptide=overlap((pu0, pu1), P66_PEPTIDE) > 0,
             cd47_feature_hit=feature_at(features, cu0),
         ))
     return kmers, regions
@@ -196,6 +223,17 @@ def chance_rate(seq_len: int, k: int, span: tuple[int, int]) -> float:
     if n_positions <= 0:
         return float("nan")
     touching = sum(1 for s in range(1, n_positions + 1) if overlap((s, s + k - 1), span) > 0)
+    return touching / n_positions
+
+
+def chance_rate_any(seq_len: int, k: int, positions: list[int]) -> float:
+    """Share of the places a k-mer can sit from which it covers at least one of these
+    residues. Scattered positions, so this is not a single span."""
+    n_positions = seq_len - k + 1
+    if n_positions <= 0:
+        return float("nan")
+    touching = sum(1 for s in range(1, n_positions + 1)
+                   if any(s <= p <= s + k - 1 for p in positions))
     return touching / n_positions
 
 
@@ -240,6 +278,11 @@ def main() -> None:
           f"({arms['pair_P66_shared_kmers'].sum()} k-mers in notebook 241)")
 
     features = feature_table()
+    contacts = cd47_contact_positions()
+    n_in_span = sum(1 for p in contacts
+                    if CD47_CONTACT_SPAN[0] <= p <= CD47_CONTACT_SPAN[1])
+    print(f"CD47 contacts SIRP-alpha at {len(contacts)} residues in PDB 2JJS, "
+          f"{n_in_span} of them in UniProt {CD47_CONTACT_SPAN[0]}-{CD47_CONTACT_SPAN[1]}")
 
     # The pair runs against CD47.
     kmer_rows_all, region_rows_all = [], []
@@ -252,7 +295,7 @@ def main() -> None:
             raise SystemExit(
                 f"{tag}: this run found {len(pair['shared_kmers'])} shared k-mers, "
                 f"notebook 241 recorded {arm['pair_P66_shared_kmers']}")
-        k_rows, r_rows = kmer_rows(arm, pair, features)
+        k_rows, r_rows = kmer_rows(arm, pair, features, contacts)
         kmer_rows_all += k_rows
         region_rows_all += r_rows
 
@@ -297,6 +340,11 @@ def main() -> None:
         obs_contact = int(sub["overlaps_cd47_contact_span"].sum())
         p_loop = chance_rate(P66_LEN_MATURE, k, (P66_LOOP[0] - P66_OFFSET, P66_LOOP[1] - P66_OFFSET))
         p_contact = chance_rate(CD47_LEN_UNIPROT, k, CD47_CONTACT_SPAN)
+        obs_any = int(sub["overlaps_any_cd47_contact"].sum())
+        p_any = chance_rate_any(CD47_LEN_UNIPROT, k, contacts)
+        obs_pep = int(sub["overlaps_p66_peptide"].sum())
+        p_pep = chance_rate(P66_LEN_MATURE, k,
+                            (P66_PEPTIDE[0] - P66_OFFSET, P66_PEPTIDE[1] - P66_OFFSET))
         cd47_n = int(arm["pair_P66_shared_kmers"])
         ctrl = counts[tag]
         vals = list(ctrl.values())
@@ -314,6 +362,13 @@ def main() -> None:
             expected_touching_cd47_contact_span=round(n * p_contact, 3),
             cd47_contact_binomial_p=(float(stats.binomtest(obs_contact, n, p_contact).pvalue)
                                      if n else None),
+            n_touching_p66_peptide=obs_pep,
+            expected_touching_p66_peptide=round(n * p_pep, 3),
+            any_cd47_contact_chance_rate=round(p_any, 5),
+            n_touching_any_cd47_contact=obs_any,
+            expected_touching_any_cd47_contact=round(n * p_any, 3),
+            any_cd47_contact_binomial_p=(float(stats.binomtest(obs_any, n, p_any).pvalue)
+                                         if n else None),
             # (b) partner control
             n_control_proteins=len(vals),
             control_median_shared_kmers=float(pl.Series(vals).median()),
