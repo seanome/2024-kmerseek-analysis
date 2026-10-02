@@ -279,6 +279,12 @@ params.landmarks = 'human:P10415:P41958,worm:P41958:P10415,borrelia:H7C7N8:Q0872
 // that run peaked at 1.09-1.49x their first ask, and the 43 that died a second time
 // needed more than 1.5x, so a 1.5x step bought one more queue wait and nothing else.
 params.kmerseek_memory_first_max    = '500 GB'
+// A folder holding first-ask tables the launch measured from earlier runs' logs, written by
+// `make measure-resources` (run by every kmerseek launch target). Read together with the
+// committed copies in assets/; per key the larger first ask wins, so history whose logs
+// have rotated away (.nextflow.log keeps the last ten launches) is not lost. Added
+// 2026-10-02 so a relaunch never asks less than what the run it continues has measured.
+params.kmerseek_measured_dir        = null
 params.kmerseek_memory_max          = '500 GB'
 params.kmerseek_memory_retry_factor = 2.0
 params.kmerseek_search_memory_floor = '24 GB'
@@ -512,13 +518,26 @@ def kmerseekIndexMemory = { String label, int ksize, int scaled, int attempt ->
 // doubling a whole alphabet to spare 1-3% of its searches would send most of them to the
 // big-memory nodes, which queued for hours in this run.
 def searchMemoryMeasured() {
+    measuredMax('kmerseek_search_memory_measured.tsv', { it[0] }, { it[1] as double })
+}
+
+// The rows of one first-ask table, from assets/ and from --kmerseek_measured_dir, header
+// dropped. The tools write a header on every table, so the first line is always skipped.
+def measuredRows(String name) {
+    def dirs = ["${projectDir}/assets"]
+    if (params.kmerseek_measured_dir) dirs << params.kmerseek_measured_dir.toString()
+    dirs.collect { file("${it}/${name}") }.findAll { it.exists() }.collectMany { f ->
+        f.readLines().drop(1).findAll { it.trim() }.collect { it.split('\t') as List }
+    }
+}
+
+// key -> the largest value any of the table's copies gives that key.
+def measuredMax(String name, Closure keyOf, Closure valueOf) {
     def table = [:]
-    def f = file("${projectDir}/assets/kmerseek_search_memory_measured.tsv")
-    if (!f.exists()) return table
-    f.readLines().each { line ->
-        if (line.startsWith('index') || !line.trim()) return
-        def c = line.split('\t')
-        table[c[0]] = c[1] as double
+    measuredRows(name).each { r ->
+        def k = keyOf(r).toString()
+        def v = valueOf(r)
+        table[k] = table.containsKey(k) ? Math.max(table[k], v) : v
     }
     table
 }
@@ -540,8 +559,11 @@ def kmerseekSearchMemory = { Path index_dir, String alphabet, String lowcomp, in
     double first   = Math.max(floorGb, gb)
     if (measured.containsKey(stem)) {
         first = Math.max(first, measured[stem] as double)
-    } else if (measured.keySet().any { indexSetting(it) == indexSetting(stem) }) {
-        first = 2.0d * first
+    } else {
+        // Same alphabet, k and scaled measured on another clade's index: at least twice
+        // the model, and at least the largest ask another clade needed.
+        def others = measured.findAll { k, _v -> indexSetting(k) == indexSetting(stem) }
+        if (others) first = Math.max(2.0d * first, others.values().max() as double)
     }
     memoryLadder(first, attempt)
 }
@@ -552,20 +574,16 @@ def kmerseekSearchMemory = { Path index_dir, String alphabet, String lowcomp, in
 // hsdm17 k5 searches hit the 4 h limit after others on the same index took 3.9 h.
 // Set here, not in nextflow.config: a withName selector would beat this body directive.
 def searchTimeMeasured() {
-    def table = [:]
-    def f = file("${projectDir}/assets/kmerseek_search_time_measured.tsv")
-    if (!f.exists()) return table
-    f.readLines().each { line ->
-        if (line.startsWith('index') || !line.trim()) return
-        def c = line.split('\t')
-        table[c[0]] = c[1] as int
-    }
-    table
+    measuredMax('kmerseek_search_time_measured.tsv', { it[0] }, { it[1] as int })
 }
 
 def kmerseekSearchTime = { Path index_dir, int attempt ->
     String stem = index_dir.name.replaceFirst(/\.kmerseek\.rocksdb$/, '')
-    int first   = Math.max(4, (searchTimeMeasured()[stem] ?: 4) as int)
+    def table   = searchTimeMeasured()
+    // An index with no row of its own takes the longest the same alphabet, k and scaled
+    // needed on another clade.
+    def hours   = table[stem] ?: table.findAll { k, _v -> indexSetting(k) == indexSetting(stem) }.values().max()
+    int first   = Math.max(4, (hours ?: 4) as int)
     "${Math.min(first * (1 << (attempt - 1)), 24)}h".toString()
 }
 
@@ -1315,15 +1333,7 @@ def tableScaled() {
 // alphabet|ksize|scaled -> first ask in GB, from assets/kmerseek_index_memory_measured.tsv
 // (see kmerseekIndexMemory). A function, like kappaTable, so it is in scope in closures.
 def indexMemoryMeasured() {
-    def table = [:]
-    def f = file("${projectDir}/assets/kmerseek_index_memory_measured.tsv")
-    if (!f.exists()) return table
-    f.readLines().each { line ->
-        if (line.startsWith('alphabet') || !line.trim()) return
-        def c = line.split('\t')
-        table["${c[0]}|${c[1]}|${c[2]}".toString()] = c[3] as double
-    }
-    table
+    measuredMax('kmerseek_index_memory_measured.tsv', { "${it[0]}|${it[1]}|${it[2]}" }, { it[3] as double })
 }
 
 // kappa, the copy rate: the fraction of aligned positions in a Pfam pair at 20-30%

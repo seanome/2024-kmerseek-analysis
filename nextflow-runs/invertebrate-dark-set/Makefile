@@ -72,7 +72,10 @@ SHERLOCK_CLONE_DIR := $(SHERLOCK_CLONE)/nextflow-runs/invertebrate-dark-set
 SPECIES ?=
 NF_ARGS ?=
 WITH_KMERSEEK ?=
-KMERSEEK_ARGS := $(if $(WITH_KMERSEEK),--with_kmerseek true,)
+# First-ask tables measured from every earlier run's logs, rewritten at each kmerseek launch
+# by measure-resources and read by main.nf next to the committed copies in assets/.
+MEASURED_DIR   = $(LAUNCH_DIR)/measured
+KMERSEEK_ARGS  = $(if $(WITH_KMERSEEK),--with_kmerseek true --kmerseek_measured_dir $(MEASURED_DIR),)
 MINI_N  ?= 200
 
 # What the driver job, the trace files and (for the ladder) the launch directory are named
@@ -109,7 +112,7 @@ LADDER_HEAD_XMX   ?= 24g
 
 .PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set relaunch-at \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
-        multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
+        measure-resources multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
         lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan \
         run-ladder-0.4-midi-sbatch ladder-0.4-midi-plan calibrate-store-0.4 rescue-indexes-0.4 \
         run-ladder-0.4-sweep-sbatch ladder-0.4-sweep-plan
@@ -220,7 +223,7 @@ NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
 	  --species $(SPECIES) --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
 	  --outdir $(OUTDIR) --reference_cache $(REF_CACHE) $(KMERSEEK_ARGS) $(NF_ARGS)
 
-run-dark-set: check-species check-inputs queue-note
+run-dark-set: check-species check-inputs queue-note $(if $(WITH_KMERSEEK),measure-resources,)
 	$(NF_RUN)
 
 # ---- the report on its own -----------------------------------------------------------
@@ -293,7 +296,7 @@ HEAD_SUBMIT = $(if $(AFTER_RUN),$(if $(AFTER_JOBID),,$(error AFTER_RUN=$(AFTER_R
               HEAD_HINT_STOP="make stop-dark-set RUN=$(RUN)" \
               $(MAKEFILE_DIR)/tools/nf-head
 
-run-dark-set-sbatch: check-species check-inputs queue-note
+run-dark-set-sbatch: check-species check-inputs queue-note $(if $(WITH_KMERSEEK),measure-resources,)
 # A task in CG is NOT an orphan. CG is SLURM's COMPLETING: the job has finished its work
 # and only teardown is left, so it can never write to a storeDir again -- the opposite of
 # the case this guard exists for, which is a task that has not run yet and still could.
@@ -314,6 +317,23 @@ run-dark-set-sbatch: check-species check-inputs queue-note
 	  exit 1; fi
 	@mkdir -p $(LAUNCH_DIR)
 	cd $(LAUNCH_DIR) && $(HEAD_SUBMIT) $(NF_RUN)
+
+# Every first ask the earlier runs measured: index memory, search memory and search time,
+# from all run folders under runs/ that have a .nextflow.log, written to $(MEASURED_DIR).
+# Each kmerseek launch runs this first, so a relaunch never repeats a kill the run it
+# continues already had. Added 2026-10-02, after the midi run was relaunched on tables made
+# two days earlier and 64 searches failed again on asks that run had already outgrown.
+# A failed measurement stops the launch rather than launching on old numbers.
+measure-resources:
+	@mkdir -p $(MEASURED_DIR)
+	@dirs=$$(for d in $(MAKEFILE_DIR)/runs/*/; do ls $$d.nextflow.log* >/dev/null 2>&1 && echo $$d; done); \
+	 if [ -z "$$dirs" ]; then echo "measure-resources: no earlier run logs under runs/; assets/ only"; exit 0; fi; \
+	 t=$(MAKEFILE_DIR)/tools/index-memory-table; \
+	 $(PYTHON) $$t $$dirs > $(MEASURED_DIR)/kmerseek_index_memory_measured.tsv && \
+	 $(PYTHON) $$t --searches $$dirs > $(MEASURED_DIR)/kmerseek_search_memory_measured.tsv && \
+	 $(PYTHON) $$t --searches --times $$dirs > $(MEASURED_DIR)/kmerseek_search_time_measured.tsv || \
+	 { echo "measure-resources failed; not launching on old numbers"; exit 1; }; \
+	 echo "measure-resources: wrote $(MEASURED_DIR)"; wc -l $(MEASURED_DIR)/*.tsv
 
 # Hand a relaunch to SLURM instead of waiting up for it. AT=<time> is anything
 # `sbatch --begin` takes: 23:00, now+2hours, 2026-09-24T06:00. The job wakes then, waits
