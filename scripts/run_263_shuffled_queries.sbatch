@@ -20,13 +20,13 @@
 # Resources, from the real run's trace (qfo_pfam_region.2026-09-30.trace.txt): each search
 # 3-4 min realtime on 4 CPUs, peak RSS 8.7 GB, peak vmem 10.8 GB. Four searches one after
 # another, plus the shuffle, encode and reduce: about 20 min. Asked: 4 CPUs, 24 GB (2x the
-# largest peak vmem), 2 h.
+# largest peak vmem), 1 h.
 #SBATCH --job-name=263-shuffled
 #SBATCH --account=ayeletv
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=24G
-#SBATCH --time=02:00:00
+#SBATCH --time=01:00:00
 #SBATCH --output=logs/%j.log
 
 set -euo pipefail
