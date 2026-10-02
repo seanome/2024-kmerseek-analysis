@@ -1,0 +1,25 @@
+length,disorder,tool,share,n
+11+ aa,disordered,Foldseek,1.0,14
+11+ aa,disordered,MMseqs2,1.0,36
+11+ aa,disordered,jackhmmer,1.0,36
+11+ aa,disordered,"kmerseek, protein20 k = 5",0.9166666666666666,36
+11+ aa,ordered,Foldseek,1.0,11
+11+ aa,ordered,MMseqs2,1.0,19
+11+ aa,ordered,jackhmmer,1.0,19
+11+ aa,ordered,"kmerseek, protein20 k = 5",0.9473684210526315,19
+3-6 aa,disordered,Foldseek,0.9361702127659575,94
+3-6 aa,disordered,MMseqs2,0.9698492462311558,199
+3-6 aa,disordered,jackhmmer,0.9849246231155779,199
+3-6 aa,disordered,"kmerseek, protein20 k = 5",0.7939698492462312,199
+3-6 aa,ordered,Foldseek,0.9705882352941176,34
+3-6 aa,ordered,MMseqs2,0.96875,64
+3-6 aa,ordered,jackhmmer,0.96875,64
+3-6 aa,ordered,"kmerseek, protein20 k = 5",0.796875,64
+7-10 aa,disordered,Foldseek,0.9782608695652174,92
+7-10 aa,disordered,MMseqs2,0.9945652173913043,184
+7-10 aa,disordered,jackhmmer,0.9891304347826086,184
+7-10 aa,disordered,"kmerseek, protein20 k = 5",0.8043478260869565,184
+7-10 aa,ordered,Foldseek,1.0,23
+7-10 aa,ordered,MMseqs2,1.0,38
+7-10 aa,ordered,jackhmmer,1.0,38
+7-10 aa,ordered,"kmerseek, protein20 k = 5",0.8947368421052632,38
