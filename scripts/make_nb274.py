@@ -348,8 +348,9 @@ print(table.select(
 md(r"""
 ### Figure 274: the k-sizes to test per alphabet
 
-How to read it: each row is one alphabet. The grey line runs from $k_\mathrm{min}$ to
-$k_\mathrm{max}$ and each black tick on it is one k-size the benchmark would run. Magenta marks
+How to read it: each row is one alphabet. The grey bar runs from $k_\mathrm{min}$ to
+$k_\mathrm{max}$, one cell per k-size the benchmark would run, and the number at the right counts
+the cells. Magenta marks
 are about the human proteome at about 100 proteins per seed; the teal and purple dots are about
 one chance match in Swiss-Prot. Only the magenta diamond is measured; the other three marks come
 from Equation 4b. The decision it informs: how many indexes to build per alphabet. The four
@@ -370,151 +371,146 @@ assert fm.findfont(SANS, fallback_to_default=False)
 mpl.rcParams.update({
     "font.family": SANS, "font.size": 6, "mathtext.fontset": "custom",
     "mathtext.rm": SANS, "mathtext.it": SANS, "mathtext.bf": f"{SANS}:semibold",
-    "pdf.fonttype": 42, "svg.fonttype": "path", "axes.linewidth": 0.5,
-    "xtick.major.width": 0.5, "xtick.major.size": 2.0, "xtick.labelsize": 6,
+    "pdf.fonttype": 42, "svg.fonttype": "path", "xtick.labelsize": 6,
 })
 
 MAGENTA, TEAL, PURPLE = "#b02a6b", "#0b7d70", "#6f42b5"
-RANGE_GREY, TICK_INK = "#b9c2cc", "#18212b"
-GRID, MUTED, INK = "#e4e7eb", "#6b7480", "#18212b"
+CELL = "#d9d6d1"  # one bar cell per k-size to test
+GRID, GUIDE, MUTED, INK = "#e9e9e9", "#d4d4d4", "#7a8089", "#2b3138"
 MM = 1 / 25.4
 FIG_W = 89 * MM
 NAME_PT, TEXT_PT, NOTE_PT = 5.5, 6.0, 5.5
-ROW_IN = 0.112  # one alphabet row, inches
-GROUP_GAP_IN = 0.10  # space above each letter-count group label
+ROW_IN = 0.118  # one alphabet row, inches
+GROUP_GAP_IN = 0.05  # extra space between letter-count groups (20; 12-18; 4-8; 2-3)
+SIZE_GROUPS = [(20, 20), (12, 18), (4, 8), (2, 3)]
 X_LIM = (0, 40)
-SIZE_GROUPS = [("20 letters", 20, 20), ("12–18 letters", 12, 18), ("4–8 letters", 4, 8),
-               ("2–3 letters", 2, 3)]
-# marker sizes, points
-DIAMOND, RING, DOT, DOT_INSIDE = 3.4, 4.6, 4.2, 2.4
-LINE_W, TICK_W, RING_W = 0.9, 0.45, 0.6
-TICK_HALF = 0.26  # tick half-height, in rows
+CELL_W, CELL_GAP = 4.4, 0.16  # bar height in points; white gap between cells, in letters of k
+DIAMOND, RING, RING_AROUND, DOT, DOT_INSIDE, RING_W = 4.4, 4.8, 6.4, 4.8, 2.6, 0.7  # points
+# RING_AROUND: the ring drawn larger where it falls on the same k as the diamond, so both show
 
-# Vertical layout (inches from the top): legend, then rows with group labels, then the x axis.
-LEGEND_TOP, LEGEND_LINE = 0.04, 0.125
-n_legend_lines = 4
-plot_top = LEGEND_TOP + n_legend_lines * LEGEND_LINE + 0.04
+# Vertical layout, inches from the top: legend, rows, x axis.
+LEGEND_TOP, LEGEND_LINE = 0.03, 0.118
+n_legend_lines = 5
+plot_top = LEGEND_TOP + n_legend_lines * LEGEND_LINE + 0.17
 rows_y: dict[str, float] = {}
-group_label_y: list[tuple[str, float]] = []
 y = 0.0
-for label, lo, hi in SIZE_GROUPS:
+for lo, hi in SIZE_GROUPS:
     y += GROUP_GAP_IN if rows_y else 0.0
-    group_label_y.append((label, y + 0.5 * ROW_IN))
-    y += ROW_IN
     for name in ORDER:
         if lo <= len(classes[name]) <= hi:
             rows_y[name] = y + 0.5 * ROW_IN
             y += ROW_IN
 assert list(rows_y) == ORDER
 rows_h = y
-AXIS_BELOW = 0.27
+AXIS_BELOW = 0.25
 FIG_H = plot_top + rows_h + AXIS_BELOW
-NAME_RIGHT, PLOT_LEFT, PLOT_RIGHT = 0.98, 1.04, FIG_W - 0.43
+NAME_RIGHT, PLOT_LEFT, PLOT_RIGHT, COUNT_RIGHT = 0.98, 1.04, FIG_W - 0.30, FIG_W - 0.06
 
 fig = plt.figure(figsize=(FIG_W, FIG_H))
 ax = fig.add_axes([PLOT_LEFT / FIG_W, AXIS_BELOW / FIG_H, (PLOT_RIGHT - PLOT_LEFT) / FIG_W, rows_h / FIG_H])
 ax.set_xlim(*X_LIM)
 ax.set_ylim(rows_h / ROW_IN, 0)  # y in rows, top = 0
-for s in ("top", "right", "left"):
-    ax.spines[s].set_visible(False)
-ax.spines["bottom"].set_color(MUTED)
-ax.tick_params(axis="x", colors=MUTED, labelcolor=INK, pad=1.5)
+for s in ax.spines.values():
+    s.set_visible(False)
+ax.tick_params(axis="x", length=0, colors=MUTED, labelcolor=INK, pad=2)
 ax.set_yticks([])
 ax.set_xticks(range(X_LIM[0], X_LIM[1] + 1, 10))
-ax.set_xlabel("seed length k (letters)", fontsize=TEXT_PT, labelpad=2, color=INK)
-for x in range(10, X_LIM[1] + 1, 10):
-    ax.axvline(x, color=GRID, lw=0.4, zorder=0)
+ax.set_xlabel("seed length k (letters)", fontsize=TEXT_PT, labelpad=3, color=INK)
+for x in range(X_LIM[0], X_LIM[1] + 1, 10):
+    ax.axvline(x, color=GRID, lw=0.5, zorder=0)
 
-ry = {name: v / ROW_IN for name, v in rows_y.items()}
 inch_to_fig_y = lambda yin: 1 - (plot_top + yin) / FIG_H  # noqa: E731
+n_cells_drawn = 0
 for name in ORDER:
     r = table.row(by_predicate=pl.col("alphabet") == name, named=True)
-    yy = ry[name]
-    ax.axhline(yy, color=GRID, lw=0.3, zorder=0)  # guide from the name to the row
-    ax.plot([r["k_min"], r["k_max"]], [yy, yy], color=RANGE_GREY, lw=LINE_W, solid_capstyle="butt", zorder=1)
+    yy = rows_y[name] / ROW_IN
+    # faint dotted guide from the axis to the start of the bar, so a bar far to the right reads back to its name
+    ax.plot([X_LIM[0], r["k_min"] - 0.5], [yy, yy], color=GUIDE, lw=0.4, ls=(0, (1, 1.5)), zorder=0)
     for k in range(r["k_min"], r["k_max"] + 1):
-        ax.plot([k, k], [yy - TICK_HALF, yy + TICK_HALF], color=TICK_INK, lw=TICK_W, zorder=2)
+        ax.plot([k - 0.5 + CELL_GAP / 2, k + 0.5 - CELL_GAP / 2], [yy, yy], color=CELL, lw=CELL_W,
+                solid_capstyle="butt", zorder=1, gid="cell")
+        n_cells_drawn += 1
     ax.plot(r["k_max"], yy, "o", ms=DOT, mfc=PURPLE, mec="none", zorder=3)
     teal_ms = DOT_INSIDE if r["k_star"] == r["k_max"] else DOT
     ax.plot(r["k_star"], yy, "o", ms=teal_ms, mfc=TEAL, mec="none", zorder=4)
-    ax.plot(r["k_human100"], yy, "o", ms=RING, mfc="white", mec=MAGENTA, mew=RING_W, zorder=5)
+    ring_ms = RING_AROUND if r["k_human100"] == r["k_main"] else RING
+    ax.plot(r["k_human100"], yy, "o", ms=ring_ms, mfc="white", mec=MAGENTA, mew=RING_W, zorder=5)
     ax.plot(r["k_main"], yy, "D", ms=DIAMOND, mfc=MAGENTA, mec="none", zorder=6)
     fig.text(NAME_RIGHT / FIG_W, inch_to_fig_y(rows_y[name]), name, fontproperties=MONO,
-             fontsize=NAME_PT, ha="right", va="center", color=INK)
-    fig.text((PLOT_RIGHT + 0.05) / FIG_W, inch_to_fig_y(rows_y[name]), f"{r['n_ksizes']} k-sizes",
-             fontsize=NOTE_PT, ha="left", va="center", color=MUTED)
-for label, yin in group_label_y:
-    fig.text(NAME_RIGHT / FIG_W, inch_to_fig_y(yin), label, fontsize=NOTE_PT, ha="right",
-             va="center", color=MUTED)
+             fontsize=NAME_PT, ha="right", va="center", color=INK, gid="name")
+    fig.text(COUNT_RIGHT / FIG_W, inch_to_fig_y(rows_y[name]), f"{r['n_ksizes']}",
+             fontsize=TEXT_PT, ha="right", va="center", color=INK, gid="count")
+fig.text(COUNT_RIGHT / FIG_W, inch_to_fig_y(-0.6 * ROW_IN), "k-sizes", fontsize=NOTE_PT,
+         ha="right", va="bottom", color=MUTED, gid="count_header")
 
 
-# Legend above the plot: flowed left to right, each item measured so nothing runs off the page.
+# Legend above the plot, in two columns: the human-proteome marks and the Swiss-Prot marks.
 renderer = fig.canvas.get_renderer()
-LEG_LEFT, LEG_RIGHT, GLYPH_W, GAP_AFTER_GLYPH, GAP_ITEMS = 0.02, FIG_W - 0.02, 0.10, 0.03, 0.10
+LEG_LEFT, COL2_LEFT, GLYPH_W, GAP_AFTER_GLYPH = 0.02, 1.86, 0.10, 0.04
+K_IN = (PLOT_RIGHT - PLOT_LEFT) / (X_LIM[1] - X_LIM[0])  # one letter of k on the x axis, in inches
 
 
 def legend_glyph(x_in: float, y_in: float, kind: str) -> None:
     '''Draw one legend marker centred at (x_in, y_in), inches from the top-left corner.'''
-    fx, fy = x_in / FIG_W, 1 - y_in / FIG_H
+    fy = 1 - y_in / FIG_H
+    if kind == "cells":
+        for i in (-1, 0, 1):
+            cx = x_in + i * K_IN
+            half = (1 - CELL_GAP) * K_IN / 2
+            fig.add_artist(Line2D([(cx - half) / FIG_W, (cx + half) / FIG_W], [fy, fy], color=CELL,
+                                  lw=CELL_W, solid_capstyle="butt", transform=fig.transFigure))
+        return
     style = {
         "diamond": dict(marker="D", ms=DIAMOND, mfc=MAGENTA, mec="none"),
         "ring": dict(marker="o", ms=RING, mfc="white", mec=MAGENTA, mew=RING_W),
         "teal": dict(marker="o", ms=DOT, mfc=TEAL, mec="none"),
         "purple": dict(marker="o", ms=DOT, mfc=PURPLE, mec="none"),
-    }
-    if kind == "ticks":
-        half_w, half_h = 0.06 / FIG_W, (TICK_HALF * ROW_IN) / FIG_H
-        fig.add_artist(Line2D([fx - half_w, fx + half_w], [fy, fy], color=RANGE_GREY, lw=LINE_W,
-                              solid_capstyle="butt", transform=fig.transFigure))
-        for dx in (-0.04, 0.0, 0.04):
-            gx = fx + dx / FIG_W
-            fig.add_artist(Line2D([gx, gx], [fy - half_h, fy + half_h], color=TICK_INK, lw=TICK_W,
-                                  transform=fig.transFigure))
-        return
-    fig.add_artist(Line2D([fx], [fy], ls="none", transform=fig.transFigure, **style[kind]))
+    }[kind]
+    fig.add_artist(Line2D([x_in / FIG_W], [fy], ls="none", transform=fig.transFigure, **style))
 
 
 def text_width_in(t) -> float:
     return t.get_window_extent(renderer).width / fig.dpi
 
 
-def place_line(y_in: float, header: str | None, items: list[tuple[str, str]]) -> float:
-    '''Write one legend line; returns the right edge used, in inches.'''
-    x = LEG_LEFT
-    if header:
-        t = fig.text(x / FIG_W, 1 - y_in / FIG_H, header, fontsize=TEXT_PT, weight="semibold",
-                     ha="left", va="center", color=INK)
-        x += text_width_in(t) + 0.08
-    for kind, label in items:
-        legend_glyph(x + GLYPH_W / 2, y_in, kind)
-        x += GLYPH_W + GAP_AFTER_GLYPH
-        t = fig.text(x / FIG_W, 1 - y_in / FIG_H, label, fontsize=TEXT_PT, ha="left", va="center", color=INK)
-        x += text_width_in(t) + GAP_ITEMS
-    return x - GAP_ITEMS
+def put(x_in: float, y_in: float, s: str, **kw):
+    return fig.text(x_in / FIG_W, 1 - y_in / FIG_H, s, ha="left", va="center", **kw)
 
 
-legend_lines = [
-    ("Human proteome, about 100 proteins per seed:",
+def entry(x_in: float, y_in: float, kind: str, label: str, glyph_w: float = GLYPH_W) -> float:
+    '''Legend glyph plus its label; returns the right edge, in inches.'''
+    legend_glyph(x_in + glyph_w / 2, y_in, kind)
+    t = put(x_in + glyph_w + GAP_AFTER_GLYPH, y_in, label, fontsize=TEXT_PT, color=INK)
+    return x_in + glyph_w + GAP_AFTER_GLYPH + text_width_in(t)
+
+
+line_y = [LEGEND_TOP + (i + 0.5) * LEGEND_LINE for i in range(n_legend_lines)]
+right_edges = []
+for x0, header, items in (
+    (LEG_LEFT, "Human proteome, about 100 proteins per seed",
      [("diamond", r"$k_\mathrm{main}$, measured"), ("ring", "Equation 4b")]),
-    ("Swiss-Prot 2026_03, 1 chance match:",
+    (COL2_LEFT, "Swiss-Prot 2026_03, 1 chance match",
      [("teal", "k*, Equation 4b"), ("purple", r"$k_\mathrm{max}$, Equation 4b")]),
-    (None, [("ticks", r"one k-size to test, from $k_\mathrm{min}$ to $k_\mathrm{max}$ (number of k-sizes at right)")]),
-]
-NOTE = (r"Bits per letter in Equation 4b: from Swiss-Prot composition; "
-        r"for $k_\mathrm{max}$, measured in the human proteome")
-assert len(legend_lines) + 1 == n_legend_lines
-right_edges = [
-    place_line(LEGEND_TOP + (i + 0.5) * LEGEND_LINE, header, items)
-    for i, (header, items) in enumerate(legend_lines)
-]
-note_y = LEGEND_TOP + (len(legend_lines) + 0.5) * LEGEND_LINE
-note = fig.text(LEG_LEFT / FIG_W, 1 - note_y / FIG_H, NOTE, fontsize=NOTE_PT, ha="left", va="center", color=MUTED)
-right_edges.append(LEG_LEFT + text_width_in(note))
-print("legend line right edges, inches:", [round(x, 3) for x in right_edges], f"(figure width {FIG_W:.3f})")
-assert max(right_edges) <= LEG_RIGHT, "a legend line runs off the figure"
+):
+    h = put(x0, line_y[0], header, fontsize=TEXT_PT, weight="semibold", color=INK)
+    right_edges.append((x0, x0 + text_width_in(h)))
+    for i, (kind, label) in enumerate(items):
+        right_edges.append((x0, entry(x0, line_y[1 + i], kind, label)))
+cells_right = entry(LEG_LEFT, line_y[3], "cells",
+                    r"one cell per k-size to test, $k_\mathrm{min}$ to $k_\mathrm{max}$; the number at right counts them",
+                    glyph_w=3 * K_IN)
+note = put(LEG_LEFT, line_y[4], r"Bits per letter in Equation 4b: from Swiss-Prot composition; for $k_\mathrm{max}$, "
+           "measured in the human proteome", fontsize=NOTE_PT, color=MUTED)
+col1_right = max(x for x0, x in right_edges if x0 == LEG_LEFT)
+col2_right = max(x for x0, x in right_edges if x0 == COL2_LEFT)
+layout = {"column 1 ends": col1_right, "column 2 starts": COL2_LEFT, "column 2 ends": col2_right,
+          "cell line ends": cells_right, "note ends": LEG_LEFT + text_width_in(note), "figure width": FIG_W}
+print("legend layout, inches:", {k: round(float(v), 3) for k, v in layout.items()})
+assert col1_right + 0.06 < COL2_LEFT, "legend column 1 runs into column 2"
+assert max(col2_right, cells_right, layout["note ends"]) <= FIG_W - 0.02, "a legend line runs off the figure"
 
 
-# Check that no text leaves the canvas and that the names, plot and counts do not collide.
+# Check that no text leaves the canvas and that names, plot and counts do not collide.
 fig.canvas.draw()
 renderer = fig.canvas.get_renderer()
 fig_box = fig.bbox
@@ -523,16 +519,18 @@ for t in fig.texts:
     bb = t.get_window_extent(renderer)
     assert bb.x0 >= fig_box.x0 - 0.5 and bb.x1 <= fig_box.x1 + 0.5, f"off the canvas: {t.get_text()}"
     assert bb.y0 >= fig_box.y0 - 0.5 and bb.y1 <= fig_box.y1 + 0.5, f"off the canvas: {t.get_text()}"
-    if t.get_text() in ORDER:
+    if t.get_gid() == "name":
         assert bb.x1 < ax_box.x0, f"name runs into the plot: {t.get_text()}"
-    if t.get_text().endswith("k-sizes"):
+    if t.get_gid() == "count":
         assert bb.x0 > ax_box.x1, f"count runs into the plot: {t.get_text()}"
-widest_name = max((t for t in fig.texts if t.get_text() in ORDER), key=lambda t: t.get_window_extent(renderer).width)
+names = [t for t in fig.texts if t.get_gid() == "name"]
+counts = [int(t.get_text()) for t in fig.texts if t.get_gid() == "count"]
+assert counts == table["n_ksizes"].to_list()
+widest_name = max(names, key=lambda t: t.get_window_extent(renderer).width)
 print(f"figure {FIG_W / MM:.1f} x {FIG_H / MM:.1f} mm; widest name {widest_name.get_text()!r} "
       f"ends {(ax_box.x0 - widest_name.get_window_extent(renderer).x1) / fig.dpi * 25.4:.2f} mm before the plot")
-n_ticks_drawn = sum(1 for line in ax.lines if line.get_color() == TICK_INK)
-assert n_ticks_drawn == table["n_ksizes"].sum(), (n_ticks_drawn, table["n_ksizes"].sum())
-print(f"{n_ticks_drawn} ticks drawn = sum of n_ksizes over {len(ORDER)} alphabets")
+assert n_cells_drawn == sum(1 for ln in ax.lines if ln.get_gid() == "cell") == table["n_ksizes"].sum()
+print(f"{n_cells_drawn} bar cells drawn = sum of n_ksizes over {len(ORDER)} alphabets")
 
 for ext, kw in (("pdf", {}), ("svg", {}), ("png", {"dpi": 600})):
     fig.savefig(f"{FIG_STEM}.{ext}", **kw)

@@ -5,9 +5,11 @@ Made by notebook `notebooks/274_ksizes_to_test_per_alphabet_human_swissprot.ipyn
 number below is in `tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv`.
 
 **The k-sizes to test for each kmerseek alphabet, from k_min to k_max.** One row per alphabet,
-grouped by the number of letters (20; 12 to 18; 4 to 8; 2 to 3). The x axis is the seed
-length k, in letters of that alphabet. Each black tick on the grey line is one k-size the
-benchmark would run, and the grey text at the right of a row is how many k-sizes that is.
+grouped by the number of letters (20; 12 to 18; 4 to 8; 2 to 3), with a small gap between
+groups. The x axis is the seed length k, in letters of that alphabet. Each grey bar runs from
+k_min to k_max and is cut into one cell per k-size the benchmark would run; the number in the
+k-sizes column at the right counts the cells. A dotted line leads from each alphabet name to
+the start of its bar.
 The ranges run from 4 k-sizes (protein20, k = 5 to 8) to 23 (gbmr7, k = 13 to 35), 229 in
 total over the 19 alphabets.
 
@@ -36,8 +38,8 @@ lengths counted by kmerseek. The measured value is lower than the composition va
   length at which the average crosses 100 proteins can sit below it.
 - **Magenta ring, Equation 4b for the human proteome.** N = 11,395,293 residues, 100 chance
   matches allowed, B from composition: the same question as the diamond, answered by the
-  formula. Where the ring and the diamond fall on the same k, the diamond sits inside the
-  ring. The low end of the range, k_min, is the smaller of the diamond and the ring.
+  formula. Where the ring and the diamond fall on the same k, the ring is drawn larger and
+  the diamond sits inside it. The low end of the range, k_min, is the smaller of the diamond and the ring.
 - **Teal dot, k\*.** Equation 4b for Swiss-Prot 2026_03 (209,017,843 residues), 1 chance
   match allowed, B from composition.
 - **Purple dot, k_max.** Equation 4b for Swiss-Prot 2026_03, 1 chance match allowed, B
