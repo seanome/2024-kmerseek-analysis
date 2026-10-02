@@ -364,13 +364,14 @@ Size: 89 mm wide, one Nature Biotechnology column. The figure legend is in
 """)
 
 code(r"""
-fm.fontManager.addfont(str(REPO / "fonts" / "FantasqueSansMono-Regular.ttf"))
-MONO = fm.FontProperties(fname=str(REPO / "fonts" / "FantasqueSansMono-Regular.ttf"))
-SANS = "Source Sans 3"
-assert fm.findfont(SANS, fallback_to_default=False)
+# Journal-safe fonts: Arial for text, Courier New for alphabet names (both TrueType, embedded in the PDF).
+SANS, MONO_FAMILY = "Arial", "Courier New"
+for family in (SANS, MONO_FAMILY):
+    assert fm.findfont(family, fallback_to_default=False)
+MONO = fm.FontProperties(family=MONO_FAMILY)
 mpl.rcParams.update({
     "font.family": SANS, "font.size": 6, "mathtext.fontset": "custom",
-    "mathtext.rm": SANS, "mathtext.it": SANS, "mathtext.bf": f"{SANS}:semibold",
+    "mathtext.rm": SANS, "mathtext.it": SANS, "mathtext.bf": f"{SANS}:bold",
     "pdf.fonttype": 42, "svg.fonttype": "path", "xtick.labelsize": 6,
 })
 
@@ -380,6 +381,7 @@ GRID, GUIDE, MUTED, INK = "#e9e9e9", "#d4d4d4", "#7a8089", "#2b3138"
 MM = 1 / 25.4
 FIG_W = 89 * MM
 NAME_PT, TEXT_PT, NOTE_PT = 5.5, 6.0, 5.5
+LEGEND_PT, LEGEND_NOTE_PT = 5.5, 5.0  # Arial runs wide; the legend must fit in 89 mm
 ROW_IN = 0.118  # one alphabet row, inches
 GROUP_GAP_IN = 0.05  # extra space between letter-count groups (20; 12-18; 4-8; 2-3)
 SIZE_GROUPS = [(20, 20), (12, 18), (4, 8), (2, 3)]
@@ -404,7 +406,7 @@ assert list(rows_y) == ORDER
 rows_h = y
 AXIS_BELOW = 0.25
 FIG_H = plot_top + rows_h + AXIS_BELOW
-NAME_RIGHT, PLOT_LEFT, PLOT_RIGHT, COUNT_RIGHT = 0.98, 1.04, FIG_W - 0.30, FIG_W - 0.06
+NAME_RIGHT, PLOT_LEFT, PLOT_RIGHT, COUNT_RIGHT = 1.14, 1.20, FIG_W - 0.30, FIG_W - 0.06
 
 fig = plt.figure(figsize=(FIG_W, FIG_H))
 ax = fig.add_axes([PLOT_LEFT / FIG_W, AXIS_BELOW / FIG_H, (PLOT_RIGHT - PLOT_LEFT) / FIG_W, rows_h / FIG_H])
@@ -480,7 +482,7 @@ def put(x_in: float, y_in: float, s: str, **kw):
 def entry(x_in: float, y_in: float, kind: str, label: str, glyph_w: float = GLYPH_W) -> float:
     '''Legend glyph plus its label; returns the right edge, in inches.'''
     legend_glyph(x_in + glyph_w / 2, y_in, kind)
-    t = put(x_in + glyph_w + GAP_AFTER_GLYPH, y_in, label, fontsize=TEXT_PT, color=INK)
+    t = put(x_in + glyph_w + GAP_AFTER_GLYPH, y_in, label, fontsize=LEGEND_PT, color=INK)
     return x_in + glyph_w + GAP_AFTER_GLYPH + text_width_in(t)
 
 
@@ -492,7 +494,7 @@ for x0, header, items in (
     (COL2_LEFT, "Swiss-Prot 2026_03, 1 chance match",
      [("teal", "k*, Equation 4b"), ("purple", r"$k_\mathrm{max}$, Equation 4b")]),
 ):
-    h = put(x0, line_y[0], header, fontsize=TEXT_PT, weight="semibold", color=INK)
+    h = put(x0, line_y[0], header, fontsize=LEGEND_PT, weight="bold", color=INK)
     right_edges.append((x0, x0 + text_width_in(h)))
     for i, (kind, label) in enumerate(items):
         right_edges.append((x0, entry(x0, line_y[1 + i], kind, label)))
@@ -500,7 +502,7 @@ cells_right = entry(LEG_LEFT, line_y[3], "cells",
                     r"one cell per k-size to test, $k_\mathrm{min}$ to $k_\mathrm{max}$; the number at right counts them",
                     glyph_w=3 * K_IN)
 note = put(LEG_LEFT, line_y[4], r"Bits per letter in Equation 4b: from Swiss-Prot composition; for $k_\mathrm{max}$, "
-           "measured in the human proteome", fontsize=NOTE_PT, color=MUTED)
+           "measured in the human proteome", fontsize=LEGEND_NOTE_PT, color=MUTED)
 col1_right = max(x for x0, x in right_edges if x0 == LEG_LEFT)
 col2_right = max(x for x0, x in right_edges if x0 == COL2_LEFT)
 layout = {"column 1 ends": col1_right, "column 2 starts": COL2_LEFT, "column 2 ends": col2_right,
