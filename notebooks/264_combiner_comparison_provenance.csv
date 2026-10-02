@@ -1,0 +1,57 @@
+row,column,source
+single best pair,calls_per_query,264: n_called / test queries x species (n_called as in the counts table)
+single best pair,precision_swissprot,"notebook 262, cell 13, printed to 6 places; reproduced in 264"
+single best pair,recall_swissprot,"notebook 262, cell 13, printed to 6 places; reproduced in 264"
+single best pair,precision_pfam,"notebook 262, cell 13, printed to 6 places; reproduced in 264"
+single best pair,recall_pfam,"notebook 262, cell 13, printed to 6 places; reproduced in 264"
+single best pair,shuffled_calls_per_query,not computed anywhere: no shuffled-query run (region_table_decoy.parquet absent)
+single best pair,mean_pfam_domains_landed_multidomain,"notebook 262, cell 18 (id cdfad341), printed to 3 places; reproduced in 264"
+single best pair,median_boundary_error_pfam,first computed in 264 (score_spans)
+"A, intersection",calls_per_query,264: n_called / test queries x species (n_called as in the counts table)
+"A, intersection",precision_swissprot,"notebook 261, yaml test; cell 10; reproduced in 264"
+"A, intersection",recall_swissprot,"notebook 261, yaml test; cell 10; reproduced in 264"
+"A, intersection",precision_pfam,"notebook 261, yaml test; cell 10; reproduced in 264"
+"A, intersection",recall_pfam,"notebook 261, yaml test; cell 10; reproduced in 264"
+"A, intersection",shuffled_calls_per_query,not computed anywhere: no shuffled-query run (region_table_decoy.parquet absent)
+"A, intersection",mean_pfam_domains_landed_multidomain,"notebook 261, cell 14 (id 36715c7e), printed to 3 places; reproduced in 264"
+"A, intersection",median_boundary_error_pfam,first computed in 264 (score_spans)
+"B, best of n",calls_per_query,"notebook 262, yaml shuffled_queries[test]; cell 11 (id 2c6c2634); reproduced in 264"
+"B, best of n",precision_swissprot,"notebook 262, yaml test; cell 13; reproduced in 264"
+"B, best of n",recall_swissprot,"notebook 262, yaml test; cell 13; reproduced in 264"
+"B, best of n",precision_pfam,"notebook 262, yaml test; cell 13; reproduced in 264"
+"B, best of n",recall_pfam,"notebook 262, yaml test; cell 13; reproduced in 264"
+"B, best of n",shuffled_calls_per_query,not computed anywhere: no shuffled-query run (region_table_decoy.parquet absent)
+"B, best of n",mean_pfam_domains_landed_multidomain,"notebook 262, cell 18 (id cdfad341), printed to 3 places; reproduced in 264"
+"B, best of n",median_boundary_error_pfam,first computed in 264 (score_spans)
+"C, consensus vote",calls_per_query,264: n_called / test queries x species (n_called as in the counts table)
+"C, consensus vote",precision_swissprot,"notebook 263, yaml test; cell 14; reproduced in 264"
+"C, consensus vote",recall_swissprot,"notebook 263, yaml test; cell 14; reproduced in 264"
+"C, consensus vote",precision_pfam,"notebook 263, yaml test; cell 14; reproduced in 264"
+"C, consensus vote",recall_pfam,"notebook 263, yaml test; cell 14; reproduced in 264"
+"C, consensus vote",shuffled_calls_per_query,not computed anywhere: no shuffled-query run (region_table_decoy.parquet absent)
+"C, consensus vote",mean_pfam_domains_landed_multidomain,"notebook 263, cell 19 (id 2aced0fd), printed to 3 places; reproduced in 264"
+"C, consensus vote",median_boundary_error_pfam,first computed in 264 (score_spans)
+"phmmer, each hit",calls_per_query,264: n_called / test queries x species (n_called as in the counts table)
+"phmmer, each hit",precision_swissprot,first computed in 264 (score_spans)
+"phmmer, each hit",recall_swissprot,first computed in 264 (score_spans)
+"phmmer, each hit",precision_pfam,first computed in 264 (score_spans)
+"phmmer, each hit",recall_pfam,first computed in 264 (score_spans)
+"phmmer, each hit",shuffled_calls_per_query,not computed anywhere: no shuffled-query run (region_table_decoy.parquet absent)
+"phmmer, each hit",mean_pfam_domains_landed_multidomain,"notebook 261, 262, 263, 261 cell 14, 262 cell 18, 263 cell 19, printed to 3 places; reproduced in 264"
+"phmmer, each hit",median_boundary_error_pfam,first computed in 264 (score_spans)
+"phmmer, hits merged",calls_per_query,264: n_called / test queries x species (n_called as in the counts table)
+"phmmer, hits merged",precision_swissprot,first computed in 264 (score_spans)
+"phmmer, hits merged",recall_swissprot,first computed in 264 (score_spans)
+"phmmer, hits merged",precision_pfam,first computed in 264 (score_spans)
+"phmmer, hits merged",recall_pfam,first computed in 264 (score_spans)
+"phmmer, hits merged",shuffled_calls_per_query,not computed anywhere: no shuffled-query run (region_table_decoy.parquet absent)
+"phmmer, hits merged",mean_pfam_domains_landed_multidomain,first computed in 264 (score_spans)
+"phmmer, hits merged",median_boundary_error_pfam,first computed in 264 (score_spans)
+Kyte-Doolittle scan,calls_per_query,264: n_called / test queries x species (n_called as in the counts table)
+Kyte-Doolittle scan,precision_swissprot,"notebook 262, cell 13, printed to 6 places; reproduced in 264"
+Kyte-Doolittle scan,recall_swissprot,"notebook 262, cell 13, printed to 6 places; reproduced in 264"
+Kyte-Doolittle scan,precision_pfam,"notebook 262, cell 13, printed to 6 places; reproduced in 264"
+Kyte-Doolittle scan,recall_pfam,"notebook 262, cell 13, printed to 6 places; reproduced in 264"
+Kyte-Doolittle scan,shuffled_calls_per_query,not computed anywhere: no shuffled-query run (region_table_decoy.parquet absent)
+Kyte-Doolittle scan,mean_pfam_domains_landed_multidomain,first computed in 264 (score_spans)
+Kyte-Doolittle scan,median_boundary_error_pfam,first computed in 264 (score_spans)
