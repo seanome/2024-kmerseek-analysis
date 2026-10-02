@@ -1,9 +1,9 @@
 tool,structure,motifs,on position,missed,"missed, kmerseek on position"
+Reseek,true,268,266,2,0
 jackhmmer,false,540,533,7,0
 MMseqs2,false,540,531,9,0
+Foldseek,true,268,259,9,4
 phmmer,false,540,529,11,0
 HHblits,false,540,528,12,2
 "MMseqs2, iterative",false,540,527,13,2
 Foldseek with ProstT5,true,540,519,21,11
-Reseek,true,535,263,272,214
-Foldseek,true,535,259,276,216

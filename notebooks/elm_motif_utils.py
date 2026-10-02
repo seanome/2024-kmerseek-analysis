@@ -9,6 +9,7 @@ convention of kmerseek's region tables; hero_example_utils.format_alignment prin
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import re
 from pathlib import Path
@@ -230,3 +231,74 @@ def random_query_pvalues(
         p_random_query=pl.Series(ps, dtype=pl.Float64),
         n_null_queries=pl.Series(ns, dtype=pl.Int64),
     )
+
+
+# ---- ELM cover search (notebook 253) -------------------------------------------------
+
+#: Scores from scripts/reduce_elm_cover.py, one folder per target species.
+COVER_DIR = Path(os.environ.get("ELM_COVER_ROOT", ELM_DIR / "cover"))
+#: Reseek rescored by scripts/rescore_elm_reseek_offset.sh, which undoes the position offset
+#: bin/normalize_reseek.awk adds to targets whose accession starts with F and a digit.
+RESEEK_CORRECTED_DIR = Path(os.environ.get("ELM_RESEEK_CORRECTED", ELM_DIR / "cover-reseek-corrected"))
+#: Per ortholog, whether its AlphaFold model matches its QfO sequence
+#: (scripts/elm_ortholog_model_status.py).
+MODEL_STATUS_FILE = Path(os.environ.get("ELM_MODEL_STATUS", ELM_DIR / "elm_ortholog_model_status.tsv"))
+#: Tools that search AlphaFold models: they cannot hit an ortholog with no model, and they
+#: number residues along the model. Foldseek with ProstT5 predicts its structure letters
+#: from the sequence, so it needs no model and is not in this set.
+ALPHAFOLD_MODEL_TOOLS = {"foldseek", "reseek"}
+#: Target species of the ELM cover search, from closest to furthest from human.
+COVER_SPECIES = ["mouse", "chicken", "zebrafish", "ciona", "fly", "worm", "yeast", "arabidopsis"]
+
+
+def load_cover_scores(
+    species: str,
+    projections: pl.DataFrame,
+    model_status: pl.DataFrame,
+    cover_dir: Path = COVER_DIR,
+    reseek_corrected_dir: Path = RESEEK_CORRECTED_DIR,
+) -> tuple[list[dict], pl.DataFrame]:
+    """Summary dicts and instance rows of every search scored against one target species.
+
+    The Reseek files are taken from `reseek_corrected_dir` when it holds them. Each instance
+    row gets the ortholog its motif was projected onto, that ortholog's AlphaFold model
+    status (`ortholog_model`), and `scoreable`: whether this search could have put the
+    motif on position at all. A Foldseek or Reseek row is not scoreable when the human
+    query's model is not its QfO sequence (`query_scoreable`, from reduce_elm_cover.py) or
+    when the motif has a projected position on an ortholog whose model is missing or is not
+    its QfO sequence.
+    """
+    folder = cover_dir / species
+    fixed = reseek_corrected_dir / species
+
+    def pick(name: str) -> Path:
+        alt = fixed / name
+        return alt if name.startswith("reseek.") and alt.exists() else folder / name
+
+    summary_names = sorted(p.name for p in folder.glob("*.summary.json"))
+    summaries = [json.loads(pick(n).read_text()) for n in summary_names]
+    instance_names = sorted(p.name for p in folder.glob("*.instances.parquet"))
+    inst = pl.concat([pl.read_parquet(pick(n)) for n in instance_names], how="diagonal_relaxed")
+    # Searches scored before reduce_elm_cover.py wrote query_scoreable are sequence
+    # searches, where every query is scoreable.
+    if "query_scoreable" not in inst.columns:
+        inst = inst.with_columns(query_scoreable=pl.lit(True))
+    proj = projections.filter(pl.col("species") == species).select("elm_instance", "ortholog")
+    models = model_status.filter(pl.col("species") == species).select(
+        "ortholog", ortholog_model="model"
+    )
+    inst = (
+        inst.with_columns(pl.col("query_scoreable").fill_null(True))
+        .join(proj, on="elm_instance", how="left")
+        .join(models, on="ortholog", how="left")
+        .with_columns(
+            scoreable=pl.col("query_scoreable")
+            & (
+                ~pl.col("arm").is_in(list(ALPHAFOLD_MODEL_TOOLS))
+                | ~pl.col("has_projection")
+                | (pl.col("ortholog_model") == "same").fill_null(False)
+            ),
+            species=pl.lit(species),
+        )
+    )
+    return summaries, inst
