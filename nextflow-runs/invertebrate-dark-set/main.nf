@@ -134,6 +134,20 @@ params.kmerseek_table_arms      = ''
 // 126 GB to over 252 GB. k10 never built; its search load should sit between k11's measured
 // 5_800-7_900 (searchable, about 232 GB median) and k9's 17_000-24_000 (skipped).
 params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12,gbmr7:9,gbmr7:10'
+// The k range each alphabet's sweep pairs must fall in, applied after --kmerseek_sweep_plus
+// and --kmerseek_sweep_minus. Columns alphabet, k_min, k_max. Pairs named in
+// --kmerseek_alphabets are kept whatever their k; a sweep pair outside its range is dropped
+// and listed in the log. `--kmerseek_ksize_ranges false` turns it off (an empty value on the
+// command line reaches Nextflow as true, not as empty).
+//
+// The default is tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv at 24a423e on
+// main (notebook 274), the k_min and k_max columns copied unchanged. k_min is the k at which
+// about 100 human proteins share a seed by chance; k_max is where one chance match is
+// expected in Swiss-Prot, using the bits per letter measured in the human proteome.
+// Added 2026-10-02: in the midi run, 79 of 120 queued searches and 36 of 60 searches that
+// ended failed were below k_min (gbmr7 k11-12, the HP k=15 pairs, sdm12 k6, wwmj5 k8,
+// hp_lehninger_hpc3 k16), and they held most of the 400-500 GB memory asks.
+params.kmerseek_ksize_ranges    = "${projectDir}/assets/kmerseek_ksize_range_per_alphabet.tsv"
 
 // A ceiling on region_evalue, applied in the search's own pipe so the oversized table is
 // never written at all. null turns it off, which is what an image older than 0.4 needs:
@@ -1191,6 +1205,22 @@ def resolveCombos() {
             log.info "  dropped  : ${before - pairs.size()} alphabet x ksize pair(s) by " +
                      "--kmerseek_sweep_minus (${minus.collect { it[0] + ':' + it[1] }.join(', ')})"
         }
+        def ranges = ksizeRanges()
+        if (ranges) {
+            def missing = (pairs*.get(0).unique() - ranges.keySet())
+            if (missing) {
+                error "--kmerseek_ksize_ranges has no row for ${missing.join(', ')}: " +
+                      "${params.kmerseek_ksize_ranges}"
+            }
+            def named = namedPairs()
+            def outside = pairs.findAll { a, k ->
+                !named.any { it[0] == a && it[1] == k } && (k < ranges[a][0] || k > ranges[a][1])
+            }
+            pairs = pairs - outside
+            log.info "  dropped  : ${outside.size()} alphabet x ksize pair(s) outside " +
+                     "--kmerseek_ksize_ranges" +
+                     (outside ? " (${outside.collect { it[0] + ':' + it[1] }.join(', ')})" : '')
+        }
     }
     else {
         pairs = params.kmerseek_alphabets.tokenize(',')*.trim().findAll { it }.collect { spec ->
@@ -1209,6 +1239,29 @@ def resolveCombos() {
     pairs.collectMany { a, k ->
         def sc_for = (narrowed && isTablePair(a, k)) ? narrowed : scaleds
         lcs.collectMany { lc -> sc_for.collect { sc -> [a, k, lc, sc as int] } }
+    }
+}
+
+// --kmerseek_ksize_ranges as alphabet -> [k_min, k_max], or [:] when turned off.
+def ksizeRanges() {
+    def path = params.kmerseek_ksize_ranges?.toString()?.trim()
+    if (!path || path == 'false') return [:]
+    if (path == 'true') error "--kmerseek_ksize_ranges takes a file path, or false to turn it off"
+    def f = file(path)
+    if (!f.exists()) error "--kmerseek_ksize_ranges file not found: ${path}"
+    def lines  = f.readLines().findAll { it.trim() }
+    def header = lines[0].tokenize('\t')
+    def need   = ['alphabet', 'k_min', 'k_max']
+    if (!need.every { it in header }) {
+        error "--kmerseek_ksize_ranges needs tab-separated columns ${need.join(', ')}; " +
+              "${path} has ${header.join(', ')}"
+    }
+    lines.drop(1).collectEntries { line ->
+        def row = [header, line.tokenize('\t')].transpose().collectEntries()
+        def lo  = row.k_min as Integer
+        def hi  = row.k_max as Integer
+        if (lo > hi) error "--kmerseek_ksize_ranges: k_min ${lo} > k_max ${hi} for ${row.alphabet}"
+        [(row.alphabet): [lo, hi]]
     }
 }
 

@@ -399,10 +399,11 @@ run-ladder-sweep:
 # reused and must not be found), its own launch directory (a second head in runs/ladder
 # would refuse to start next to the first), its own driver name, and the 0.4 image. The
 # pairs: protein20 k10 (the exact-k-mer baseline), hp_pbotc_1st_ed2 k19 (the HP alphabet
-# and k the genome-wide ranking chose), hp_thomas_dill2 k23 (the Botryllus arm), and the
-# two HP alphabets at k15, three below the table's HP floor, for a short seed under
-# extension (see V4_SWEEP_PLUS for why not k12). 5 pairs x 4 scaled x 1 mask = 20 indexes per clade, 2 search arms each:
-# ~4_000 searches, the same order as one quarter of the 0.3 ladder.
+# and k the genome-wide ranking chose) and hp_thomas_dill2 k23 (the Botryllus arm).
+# The two HP alphabets at k15 were here until 2026-10-02 and were dropped: k15 is below
+# both alphabets' k_min in notebook 274 (17 and 18), and in the midi run those searches
+# asked for up to 500 GB and still ran out of memory. 3 pairs x 4 scaled x 1 mask = 12
+# indexes per clade, 2 search arms each.
 # Built from qfo-pfam-region-benchmark/Dockerfile with the kmerseek release checkout as
 # context, never from kmerseek's own Dockerfile: that one ships the binary alone, and
 # every python_scoring step (splitQuery first) runs in this image too. rc1 was built the
@@ -410,7 +411,7 @@ run-ladder-sweep:
 V4_IMAGE       ?= docker.io/olgabot/kmerseek:0.4.0-rc5
 V4_OUTDIR      ?= $(SCRATCH_DIR)/invertebrate-dark-set/results-0.4
 V4_LAUNCH_DIR  := $(MAKEFILE_DIR)/runs/ladder-0.4
-V4_ALPHABETS   ?= protein20:10,hp_pbotc_1st_ed2:19,hp_thomas_dill2:23,hp_pbotc_1st_ed2:15,hp_thomas_dill2:15
+V4_ALPHABETS   ?= protein20:10,hp_pbotc_1st_ed2:19,hp_thomas_dill2:23
 V4_SCALED      ?= 1,2,5,10
 V4_EXTENSION   ?= exact,extend
 # Mismatch penalties for the extend arms: 2 (every kmerseek #54 benchmark) and each
@@ -433,21 +434,19 @@ run-ladder-0.4-sbatch:
 	  NF_ARGS="$(V4_NF_ARGS)"
 
 # The whole 0.3 ladder table (every alphabet over its ksize range, 183 pairs) under 0.4,
-# plus the two k=15 HP pairs below the table's k floor of 18, at every scaled level and
-# every arm above. Same run tag, launch dir and results dir as run-ladder-0.4-sbatch, so
+# at every scaled level and every arm above. Same run tag, launch dir and results dir as run-ladder-0.4-sbatch, so
 # it is that run continued with more combos: every index and search already done is a
 # storeDir hit or a cached task. Decided 2026-09-20 to see whether a subsampled index
 # gives the same answer as the full one, across the whole table. Rough size from the
 # measured runs: 6_660 index tasks, 202_000 searches, 250_000+ CPU-hours -- 2.4 days of
 # the entire hns partition, so weeks at a normal share. The head's 7-day walltime will
 # run out before that; relaunch the same target and -resume carries on.
-# k=15, not the k=12 kmerseek #54 measured extension on (2026-09-21): in a two-letter
-# alphabet k=12 is 4_096 possible k-mers over 162 M positions, ~40_000 places per seed,
-# which is the 420 GB index asks and the 39-minute fits; k=15 is 8x less crowded and
-# still three below the table's floor, so it tests a short seed plus extension without
-# the pathological end.
-V4_SWEEP_PLUS ?= hp_pbotc_1st_ed2:15,hp_thomas_dill2:15
-V4_SWEEP_ARGS  = --kmerseek_sweep true --kmerseek_sweep_plus $(V4_SWEEP_PLUS)
+# V4_SWEEP_PLUS held hp_pbotc_1st_ed2:15,hp_thomas_dill2:15 until 2026-10-02 (a short seed
+# under extension, chosen over k=12, whose two-letter seeds sit in ~40_000 places each).
+# Dropped because k15 is below both alphabets' k_min in notebook 274; main.nf's
+# --kmerseek_ksize_ranges would drop them from the table anyway. Empty passes no flag.
+V4_SWEEP_PLUS ?=
+V4_SWEEP_ARGS  = --kmerseek_sweep true $(if $(V4_SWEEP_PLUS),--kmerseek_sweep_plus $(V4_SWEEP_PLUS),)
 run-ladder-0.4-sweep-sbatch:
 	@$(MAKE) run-ladder-0.4-sbatch NF_ARGS="$(V4_SWEEP_ARGS) $(NF_ARGS)"
 
