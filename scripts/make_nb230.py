@@ -201,7 +201,7 @@ hc.finish_figure(
 """)
 
 md(r"""
-## 2b. What kappa means, for all 15 alphabets
+## 2b. What kappa means, for all 19 kmerseek alphabets
 
 Kappa is easier to read once its two parts are shown. Take one Pfam seed pair, as Pfam
 aligned it. Recode both sequences into an alphabet and look at the columns where both have a
@@ -242,8 +242,8 @@ SIZE_GROUPS = [
         "hp_thomas_dill2", "hp_pbotc_1st_ed2", "hp_thomas_dill_no_c2", "hp_lehninger2",
         "hp_lehninger_c_nonpolar2", "hp_kyte_doolittle2", "hp_lehninger_hpc3",
     ]),
-    ("4-8 letters", "#1f77b4", ["gbmr4", "polarity4", "wwmj5", "dayhoff6", "gbmr7"]),
-    ("12-18 letters", "#b07d10", ["sdm12", "uniprot18"]),
+    ("4-8 letters", "#1f77b4", ["gbmr4", "polarity4", "wwmj5", "dayhoff6", "gbmr7", "funcgroups8"]),
+    ("12-18 letters", "#b07d10", ["mmseqs12", "sdm12", "wass14", "hsdm17", "uniprot18"]),
     ("20 letters", "#444444", ["protein20"]),
 ]
 GROUP_OF = {a: (g, c) for g, c, alphs in SIZE_GROUPS for a in alphs}
@@ -279,7 +279,7 @@ for _, _, alphs in SIZE_GROUPS:
         y += 1
     y += 0.8  # blank space between size groups
 fig, axes = plt.subplots(
-    1, len(hc.IDENTITY_LABELS), figsize=(17, 8.2), sharey=True
+    1, len(hc.IDENTITY_LABELS), figsize=(17, 9.6), sharey=True
 )
 for ax, b in zip(axes, hc.IDENTITY_LABELS):
     d = kappa_parts.filter(pl.col("identity_bin") == b)
@@ -343,7 +343,7 @@ hc.finish_figure(
         f"{part('polarity4', '20-30%', 'kappa'):.2f}, below dayhoff6 (6 classes) at {part('dayhoff6', '20-30%', 'kappa'):.2f}, "
         f"and uniprot18 equals protein20. Which letters are merged matters more than how many."
     ),
-    title="Kappa read off as agreement against chance, all 15 alphabets, Pfam seed pairs",
+    title="Kappa read off as agreement against chance, all 19 kmerseek alphabets, Pfam seed pairs",
     header_y=HEADER_Y,
 )
 ''')
@@ -418,7 +418,135 @@ hc.finish_figure(
         f"({gap['mean_identity_pct'][gap['gap'].arg_max()]:.0f}% identity), {gap['gap'][0]:.2f} in the lowest window "
         f"({gap['mean_identity_pct'][0]:.0f}%) and {gap['gap'][-1]:.2f} in the highest ({gap['mean_identity_pct'][-1]:.0f}%)."
     ),
-    title="Kappa against identity, all 15 alphabets, one panel per alphabet size",
+    title="Kappa against identity, all 19 kmerseek alphabets, one panel per alphabet size",
+)
+''')
+
+md(r"""
+## 2c. Which k each alphabet can use, from both sides
+
+Kappa does not choose k by itself, but the two numbers behind it set the two ends of the
+useful range.
+
+* **Lower end: chance.** A short seed matches unrelated proteins by chance. Notebook 274
+  ([PR #101](https://github.com/seanome/2024-kmerseek-analysis/pull/101)) gives, for each
+  alphabet, the shortest k at which a seed is shared by fewer than 100 human proteins
+  ($k_\mathrm{min}$) and the k at which it expects one chance match in all of Swiss-Prot
+  ($k_\mathrm{max}$). Its range comes from database composition only; it does not look at
+  homologs.
+* **Upper end: homologs.** An exact seed of length k finds a pair only if the pair shares an
+  unbroken run of at least k aligned columns in the same class. The higher the agreement, the
+  longer the runs. Here that is measured on the Pfam seed pairs: for every alphabet and k, the
+  share of pairs whose longest run is at least k.
+
+The figure draws that share against k, one panel per alphabet size and one row per identity
+bin. Each line is solid over the k range notebook 274 lists and faint outside it. A seed
+length is usable for remote homologs only where the line is still high inside the solid part.
+
+Decision rule, written before plotting: if at an alphabet's $k_\mathrm{min}$ fewer than 20%
+of the 20-30% identity pairs share a run that long, exact seeds of that alphabet cannot find
+most remote homologs at any k notebook 274 lists, and the k values above the point where the
+share falls below 5% are not worth building an index for.
+""")
+
+code(r'''
+K274 = pl.read_csv("../tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv").select(
+    "alphabet", "k_min", "k_max"
+)
+assert sorted(K274["alphabet"]) == sorted(ALL_ALPHABETS), "notebook 274 and 230 alphabets differ"
+REMOTE_BIN = "20-30%"
+MOST_PAIRS = 0.20  # share of remote pairs an alphabet must reach at its k_min
+FEW_PAIRS = 0.05  # below this share, a longer k is not worth an index
+BINS_K = ["20-30%", "30-40%", "40-60%"]
+KS_ALL = list(range(3, 41))
+
+reach = (
+    pfam.filter(pl.col("identity_bin").is_in(BINS_K))
+    .join(pl.DataFrame({"k": KS_ALL}), how="cross")
+    .group_by("alphabet", "identity_bin", "k")
+    .agg((pl.col("longest_run") >= pl.col("k")).mean().alias("share_reached"), pl.len().alias("n_pairs"))
+    .join(K274, on="alphabet")
+    .with_columns(pl.col("k").is_between(pl.col("k_min"), pl.col("k_max")).alias("in_274_range"))
+    .sort("alphabet", "identity_bin", "k")
+)
+
+fig, axes = plt.subplots(len(BINS_K), len(SIZE_GROUPS), figsize=(17, 10), sharex=True, sharey=True)
+for i, b in enumerate(BINS_K):
+    for j, (g, c, alphs) in enumerate(SIZE_GROUPS):
+        ax = axes[i, j]
+        for n, a in enumerate(alphs):
+            s = reach.filter((pl.col("alphabet") == a) & (pl.col("identity_bin") == b))
+            col = LINE_COLORS[n]
+            ax.plot(s["k"], s["share_reached"], color=col, lw=1, alpha=0.3)
+            si = s.filter(pl.col("in_274_range"))
+            ax.plot(si["k"], si["share_reached"], color=col, lw=2.2, ls=STYLES[n], label=a)
+            ax.scatter(si["k"][0], si["share_reached"][0], color=col, s=22, zorder=3)
+        ax.axhline(MOST_PAIRS, color="0.4", lw=0.8, ls=":")
+        ax.axhline(FEW_PAIRS, color="0.4", lw=0.8, ls="--")
+        ax.set_xlim(3, 40)
+        ax.set_ylim(0, 1)
+        ax.grid(alpha=0.3)
+        if i == 0:
+            ax.set_title(g, fontsize=10.5)
+            ax.legend(fontsize=7.5, loc="upper right")
+        if j == 0:
+            n_b = s["n_pairs"][0]
+            ax.set_ylabel(f"{b} identity ({n_b:_} pairs)\nshare of pairs with a run >= k".replace("_", ","))
+        if i == len(BINS_K) - 1:
+            ax.set_xlabel("seed length k (letters of that alphabet)")
+fig.legend(
+    handles=[
+        Line2D([], [], color="0.3", lw=2.2, label="solid: k values notebook 274 lists (k_min to k_max)"),
+        Line2D([], [], color="0.3", lw=1, alpha=0.3, label="faint: outside that range"),
+        Line2D([], [], marker="o", ls="", color="0.3", label="dot: k_min"),
+        Line2D([], [], color="0.4", lw=0.8, ls=":", label=f"{MOST_PAIRS:.0%} of pairs"),
+        Line2D([], [], color="0.4", lw=0.8, ls="--", label=f"{FEW_PAIRS:.0%} of pairs"),
+    ],
+    loc="lower center",
+    bbox_to_anchor=(0.5, 1.0),
+    ncol=5,
+    fontsize=9,
+    frameon=False,
+)
+
+# Per alphabet: share reached at k_min and the largest k that still reaches FEW_PAIRS of remote pairs.
+remote = reach.filter(pl.col("identity_bin") == REMOTE_BIN)
+k_table = (
+    remote.group_by("alphabet")
+    .agg(
+        pl.col("k_min").first(),
+        pl.col("k_max").first(),
+        pl.col("share_reached").filter(pl.col("k") == pl.col("k_min")).first().round(3).alias("share_at_k_min"),
+        pl.col("k").filter(pl.col("share_reached") >= FEW_PAIRS).max().alias("k_last_5pct"),
+    )
+    .with_columns(pl.col("alphabet").cast(pl.Enum(ALL_ALPHABETS)))
+    .sort("alphabet")
+)
+print(f"Pfam seed pairs at {REMOTE_BIN} identity: share whose longest exact run reaches k_min, and the largest k")
+print(f"still reached by >= {FEW_PAIRS:.0%} of them (k_last_5pct), next to notebook 274's range")
+print(k_table)
+n_most = k_table.filter(pl.col("share_at_k_min") >= MOST_PAIRS).height
+best = k_table.sort("share_at_k_min", descending=True)
+above = k_table["k_last_5pct"] - k_table["k_min"]
+hp = k_table.filter(pl.col("alphabet") == "hp_thomas_dill2").row(0, named=True)
+hc.finish_figure(
+    fig,
+    FIG / "230_seed_length_reach_vs_274_range_all_alphabets_pfam_seed.png",
+    tools=hc.NO_TOOL + "; Pfam-A 38.2 seed alignments; k ranges from notebook 274 (PR #101)",
+    hypothesis=(
+        f"An exact seed of length k finds a pair only if the pair shares an unbroken same-class run of k columns. "
+        f"If an alphabet reaches at least {MOST_PAIRS:.0%} of {REMOTE_BIN} pairs at its k_min, exact seeds can find remote "
+        "homologs inside notebook 274's range. Higher line = more homolog pairs a seed of that length can find."
+    ),
+    conclusion=(
+        f"{n_most} of {k_table.height} alphabets reach {MOST_PAIRS:.0%} of {REMOTE_BIN} pairs at their k_min. Highest: "
+        f"{best['alphabet'][0]} {best['share_at_k_min'][0]:.0%} at k={best['k_min'][0]}; hp_thomas_dill2 "
+        f"{hp['share_at_k_min']:.0%} at k={hp['k_min']}, and no k above {hp['k_last_5pct']} reaches {FEW_PAIRS:.0%} of them "
+        f"(notebook 274 lists up to k={hp['k_max']}). For every alphabet the last k that reaches {FEW_PAIRS:.0%} is "
+        f"{above.min()} to {above.max()} above k_min, so for remote homologs the top of notebook 274's ranges finds almost nothing."
+    ),
+    title="Seed length k against the share of Pfam seed pairs it can find, all 19 kmerseek alphabets",
+    header_y=HEADER_Y,
 )
 ''')
 
@@ -672,6 +800,12 @@ Written from the numbers above; see each figure's footer for the exact values.
    so kappa 0.46; protein20 agrees on 25% where chance is 7%, so kappa 0.20 (section 2b). Kappa
    does not follow the number of classes: polarity4 (4 classes, 0.28) is below dayhoff6 (6, 0.33),
    and uniprot18 equals protein20 at every identity. Which letters are merged matters more than how many.
+1c. Kappa alone does not set k; the run lengths behind it set the top of the useful range
+   (section 2c). At an alphabet's k_min from notebook 274, exact seeds reach 9-17% of 20-30%
+   identity pairs for the seven 2-3 letter alphabets and 10-46% for the others (hsdm17 46% at
+   k=5, gbmr4 29% at k=13, protein20 25% at k=5). For every alphabet the last k that still reaches
+   5% of those pairs is 1 to 5 above k_min (hp_thomas_dill2: k_min 18, last 21, notebook 274 lists
+   up to 36). For remote homologs, test k_min to k_min + 5, not the whole range.
 2. Part of it is packing rather than ancestry. Structurally aligned pairs from different
    folds show HP kappa around 0.1, so roughly a third of the cross-family signal under 20%
    identity would appear between any two well-superposed sequences. That fraction is a
