@@ -1,7 +1,7 @@
 alphabet	ksize	scaled	first_ask_gb	basis
 dayhoff6	8	1	126	largest ask that built, above every killed ask
 gbmr4	13	1	126	largest ask that built, above every killed ask
-gbmr4	21	1	126	twice the largest killed ask
+gbmr4	21	1	126	largest ask that built, above every killed ask
 gbmr7	9	1	500	twice the largest killed ask
 gbmr7	9	2	252	largest ask that built, above every killed ask
 gbmr7	9	5	126	largest ask that built, above every killed ask
@@ -12,11 +12,11 @@ gbmr7	10	5	500	twice the largest killed ask
 gbmr7	10	10	500	twice the largest killed ask
 gbmr7	11	1	500	twice the largest killed ask
 gbmr7	11	2	500	twice the largest killed ask
-gbmr7	12	1	500	twice the largest killed ask
+gbmr7	12	1	500	largest ask that built, above every killed ask
 gbmr7	12	2	126	largest ask that built, above every killed ask
-gbmr7	13	1	252	twice the largest killed ask
+gbmr7	13	1	500	largest ask that built, above every killed ask
 gbmr7	13	2	126	twice the largest killed ask
-gbmr7	14	1	252	twice the largest killed ask
+gbmr7	14	1	252	largest ask that built, above every killed ask
 gbmr7	14	2	126	largest ask that built, above every killed ask
 gbmr7	15	1	126	largest ask that built, above every killed ask
 gbmr7	16	1	126	largest ask that built, above every killed ask

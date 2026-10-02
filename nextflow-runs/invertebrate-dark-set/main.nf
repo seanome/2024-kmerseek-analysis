@@ -546,6 +546,29 @@ def kmerseekSearchMemory = { Path index_dir, String alphabet, String lowcomp, in
     memoryLadder(first, attempt)
 }
 
+// Walltime for a search: 4 h, doubled per attempt, capped at 24 h. An index in
+// assets/kmerseek_search_time_measured.tsv (tools/index-memory-table --searches --times)
+// starts at the table's hours instead and doubles from there. Added 2026-10-02: two human
+// hsdm17 k5 searches hit the 4 h limit after others on the same index took 3.9 h.
+// Set here, not in nextflow.config: a withName selector would beat this body directive.
+def searchTimeMeasured() {
+    def table = [:]
+    def f = file("${projectDir}/assets/kmerseek_search_time_measured.tsv")
+    if (!f.exists()) return table
+    f.readLines().each { line ->
+        if (line.startsWith('index') || !line.trim()) return
+        def c = line.split('\t')
+        table[c[0]] = c[1] as int
+    }
+    table
+}
+
+def kmerseekSearchTime = { Path index_dir, int attempt ->
+    String stem = index_dir.name.replaceFirst(/\.kmerseek\.rocksdb$/, '')
+    int first   = Math.max(4, (searchTimeMeasured()[stem] ?: 4) as int)
+    "${Math.min(first * (1 << (attempt - 1)), 24)}h".toString()
+}
+
 // The reference is keyed by the CLADE REMOVED, not by the species asking for it. Chordata
 // is one file shared by six query species and Metazoa by nine, so a second species costs
 // nothing once the first has built it.
@@ -899,6 +922,7 @@ process kmerseekSearch {
     // (exit 137) and every retry cost a full requeue; the per-combo model asks for what the
     // measured peak needs the first time.
     memory { kmerseekSearchMemory(index_dir, alphabet, lowcomp, task.attempt) }
+    time   { kmerseekSearchTime(index_dir, task.attempt) }
 
     input:
     tuple val(species), val(clade), path(chunk), val(alphabet), val(ksize), val(lowcomp), val(scaled),

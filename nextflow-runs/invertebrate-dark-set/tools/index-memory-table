@@ -29,6 +29,18 @@ A kill is exit 137 or 135 (the cgroup memory killer). Exit "-" is a task the sch
 peak is not used: RocksDB's file pages fill whatever the cgroup allows, so a build that asked
 63 GB reads back a 62.98 GB peak whatever it needed.
 
+With --searches --times it writes assets/kmerseek_search_time_measured.tsv instead: the
+walltime, in whole hours, a search's FIRST attempt asks for, keyed by index the same way.
+
+  a search hit the limit  first ask = 2 x the largest limit hit (exit 140, or "-"), unless a
+                          search with a larger limit finished, then that limit
+  none did                first ask = 1.5 x the longest finished search, rounded up
+  either way              a row only when that is above the default 4 h, capped at 24 h
+
+The finished time is `realtime` in the attempt's .command.trace. Added 2026-10-02: two
+human hsdm17 k5 searches hit the 4 h limit after others on the same index took 3.9 h, so
+their retry waited in the queue again for an 8 h ask.
+
 Python 3.6, standard library only, for Sherlock's login node.
 """
 
@@ -64,6 +76,11 @@ def was_killed(workdir, status):
         return False
 NAME = re.compile(r"^minus_[A-Za-z]+\.(.+)\.k(\d+)(?:\.s(\d+))?\.lc(true|false)$")
 MEM = re.compile(r"^#SBATCH --mem[= ](\d+)([MG]?)")
+WALL = re.compile(r"^#SBATCH -t (?:(\d+)-)?(\d+):(\d+):(\d+)")
+TIMES = "--times" in sys.argv
+WALL_KILLED = {"140", "-"}
+DEFAULT_H = 4
+CAP_H = 24
 KILLED = {"137", "135"}
 CAP_GB = 500
 
@@ -83,6 +100,71 @@ def asked_gb(workdir):
     return None
 
 
+def asked_h(workdir):
+    """The walltime an attempt asked for, in hours, from its #SBATCH -t line."""
+    try:
+        with open(os.path.join(workdir, ".command.run")) as fh:
+            for line in fh:
+                m = WALL.match(line)
+                if m:
+                    d, h, mi, se = (int(x or 0) for x in m.groups())
+                    return d * 24 + h + mi / 60.0 + se / 3600.0
+                if line.startswith("### name"):
+                    return None
+    except OSError:
+        return None
+    return None
+
+
+def ran_h(workdir):
+    """How long a finished attempt ran, in hours, from realtime (ms) in .command.trace."""
+    try:
+        with open(os.path.join(workdir, ".command.trace")) as fh:
+            for line in fh:
+                if line.startswith("realtime="):
+                    return int(line.split("=", 1)[1]) / 3600000.0
+    except (OSError, ValueError):
+        return None
+    return None
+
+
+def times(attempts):
+    longest = defaultdict(float)
+    hit = defaultdict(list)
+    done_limit = defaultdict(float)
+    for wd, (_name, status) in attempts.items():
+        k = search_key(wd)
+        if k is None:
+            continue
+        if status == "0":
+            r = ran_h(wd)
+            if r is not None:
+                longest[k] = max(longest[k], r)
+            a = asked_h(wd)
+            if a is not None:
+                done_limit[k] = max(done_limit[k], a)
+        elif status in WALL_KILLED:
+            a = asked_h(wd)
+            if a is not None:
+                hit[k].append(a)
+    print("index\tfirst_ask_h\tbasis")
+    rows = 0
+    for k in sorted(set(longest) | set(hit)):
+        if hit.get(k):
+            if done_limit.get(k, 0) > max(hit[k]):
+                h, basis = done_limit[k], "largest limit a search finished in, above every limit hit"
+            else:
+                h, basis = 2 * max(hit[k]), "twice the largest limit hit"
+        else:
+            h, basis = 1.5 * longest[k], "1.5 x the longest finished search"
+        h = min(CAP_H, int(-(-h // 1)))
+        if h > DEFAULT_H:
+            print("{}\t{}\t{}".format(k, h, basis))
+            rows += 1
+    sys.stderr.write("{} attempts read, {} indexes with a first ask above {} h\n".format(
+        len(attempts), rows, DEFAULT_H))
+
+
 def main():
     attempts = {}
     for run in [a for a in sys.argv[1:] if not a.startswith("--")]:
@@ -92,6 +174,11 @@ def main():
                     m = DONE.search(line)
                     if m:
                         attempts[m.group(3)] = (m.group(1), m.group(2))
+    if TIMES:
+        if PROCESS != "kmerseekSearch":
+            sys.exit("--times needs --searches")
+        times(attempts)
+        return
     ok = defaultdict(list)
     killed = defaultdict(list)
     for wd, (name, status) in attempts.items():
