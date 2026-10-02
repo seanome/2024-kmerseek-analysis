@@ -1,0 +1,172 @@
+combiner: 'B, best of n: every merged region any pair called, ranked by the best score any pair gave it'
+rank_score: evalue_best_of_n_corrected
+rank_score_definition: n_arms_tried * min over pairs of region_evalue; n_arms_tried = pairs whose search
+  was run on that query and target species
+threshold: 39.895063388068685
+threshold_raw_equivalent_for_4_pairs: 9.973765847017171
+frozen_on_truth_set: pfam
+selection: tune split; loosest threshold with precision >= 0.5 (landed >= 0.5); corrected E-value on Swiss-Prot,
+  or Pfam when no Swiss-Prot threshold reaches 0.5
+pairs:
+- encoded_hp_pbotc_1st_ed2_k19_ext1.63
+- encoded_hp_pbotc_1st_ed2_k19_ext2
+- hp_pbotc_1st_ed2_k19_ext1.63
+- hp_pbotc_1st_ed2_k19_ext2
+n_arms_tried:
+  zebrafish: 4
+  fly: 1
+tune_thresholds_all_scores:
+- method: best of n
+  score: evalue_min
+  truth_set: swissprot
+  max_precision: 0.408716136631331
+  threshold: null
+  n_called: null
+  precision: null
+  recall: null
+- method: encoded_hp_pbotc_1st_ed2_k19_ext2
+  score: evalue_min
+  truth_set: swissprot
+  max_precision: 0.39720812182741116
+  threshold: null
+  n_called: null
+  precision: null
+  recall: null
+- method: best of n
+  score: evalue_min
+  truth_set: pfam
+  max_precision: 0.5673534072900158
+  threshold: 9.973765847017171
+  n_called: 891
+  precision: 0.5499438832772167
+  recall: 0.3432
+- method: encoded_hp_pbotc_1st_ed2_k19_ext2
+  score: evalue_min
+  truth_set: pfam
+  max_precision: 0.5694006309148265
+  threshold: 9.973765847017171
+  n_called: 847
+  precision: 0.5537190082644629
+  recall: 0.3304
+- method: best of n
+  score: evalue_best_of_n_corrected
+  truth_set: swissprot
+  max_precision: 0.408716136631331
+  threshold: null
+  n_called: null
+  precision: null
+  recall: null
+- method: encoded_hp_pbotc_1st_ed2_k19_ext2
+  score: evalue_best_of_n_corrected
+  truth_set: swissprot
+  max_precision: 0.39720812182741116
+  threshold: null
+  n_called: null
+  precision: null
+  recall: null
+- method: best of n
+  score: evalue_best_of_n_corrected
+  truth_set: pfam
+  max_precision: 0.5673534072900158
+  threshold: 39.895063388068685
+  n_called: 891
+  precision: 0.5499438832772167
+  recall: 0.3432
+- method: encoded_hp_pbotc_1st_ed2_k19_ext2
+  score: evalue_best_of_n_corrected
+  truth_set: pfam
+  max_precision: 0.5694006309148265
+  threshold: 9.973765847017171
+  n_called: 847
+  precision: 0.5537190082644629
+  recall: 0.3304
+- method: best of n
+  score: mean_idf_max
+  truth_set: swissprot
+  max_precision: 1.0
+  threshold: 1741.3982745416442
+  n_called: 14
+  precision: 0.5
+  recall: 0.003138373751783167
+- method: encoded_hp_pbotc_1st_ed2_k19_ext1.63
+  score: mean_idf_max
+  truth_set: swissprot
+  max_precision: 1.0
+  threshold: 1778.6875864020444
+  n_called: 12
+  precision: 0.5
+  recall: 0.0025677603423680455
+- method: best of n
+  score: mean_idf_max
+  truth_set: pfam
+  max_precision: 0.5544430538172715
+  threshold: 4.7509442468581256
+  n_called: 891
+  precision: 0.5499438832772167
+  recall: 0.3432
+- method: encoded_hp_pbotc_1st_ed2_k19_ext2
+  score: mean_idf_max
+  truth_set: pfam
+  max_precision: 0.5618279569892473
+  threshold: 4.7509442468581256
+  n_called: 847
+  precision: 0.5537190082644629
+  recall: 0.3304
+- method: Kyte-Doolittle
+  score: kd_score
+  truth_set: swissprot
+  max_precision: 1.0
+  threshold: 1.6000000000000003
+  n_called: 794
+  precision: 0.7827763496143959
+  recall: 0.12410841654778887
+- method: Kyte-Doolittle
+  score: kd_score
+  truth_set: pfam
+  max_precision: 0.68688293370945
+  threshold: 1.6000000000000003
+  n_called: 794
+  precision: 0.6851385390428212
+  recall: 0.1176
+single_pair: encoded_hp_pbotc_1st_ed2_k19_ext2
+single_pair_threshold: 9.973765847017171
+tune:
+  threshold: 39.895063388068685
+  n_called: 891
+  precision_swissprot: 0.408716136631331
+  recall_swissprot: 0.10099857346647646
+  precision_pfam: 0.5499438832772167
+  recall_pfam: 0.3432
+  n_called_on_swissprot_queries: 849
+  n_found_swissprot: 354
+  n_called_on_pfam_queries: 891
+  n_found_pfam: 429
+test:
+  threshold: 39.895063388068685
+  n_called: 822
+  precision_swissprot: 0.35868187579214195
+  recall_swissprot: 0.07642099537666576
+  precision_pfam: 0.5425790754257908
+  recall_pfam: 0.319831223628692
+  n_called_on_swissprot_queries: 789
+  n_found_swissprot: 281
+  n_called_on_pfam_queries: 822
+  n_found_pfam: 379
+shuffled_queries:
+- split: tune
+  queries_x_species: 511
+  real_calls: 891
+  real_calls_per_query: 1.7436399217221135
+  shuffled_calls: null
+  shuffled_calls_per_query: null
+- split: test
+  queries_x_species: 487
+  real_calls: 822
+  real_calls_per_query: 1.6878850102669405
+  shuffled_calls: null
+  shuffled_calls_per_query: null
+input_table: /Users/olga/data/qfo-pfam-region-midi-plus-0.4/260_region_table/region_table.parquet
+input_table_sha256: c936f3884dbbb25fef95a53bc3b459d530fbef798150af8b0df7deb663b074b1
+input_note: 4 pairs, species ['zebrafish']; shuffled-query files absent
+notebook: notebooks/262_combiner_b_best_of_n.ipynb
+written: '2026-10-02'
