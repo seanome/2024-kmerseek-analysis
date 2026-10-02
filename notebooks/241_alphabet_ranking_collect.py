@@ -2,7 +2,7 @@
 """Collect the three-case alphabet sweep into two tidy tables.
 
 Reads what 241_alphabet_ranking_driver.py wrote under
-/Users/olga/data/botryllus/alphabet-ranking-three-cases/ and writes, in the same
+$NB241_DIR (default /Users/olga/data/botryllus/alphabet-ranking-three-cases/) and writes, in the same
 directory:
 
   arms.csv     one row per (alphabet, ksize): bits per seed, whether the Karlin-Altschul
@@ -25,13 +25,15 @@ n_tied says how many share the partner's exact value, so rank 1 with n_tied 40 m
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
 import polars as pl
 
-OUT = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
+# NB241_DIR is set by 241_alphabet_ranking.sbatch on Sherlock.
+OUT = Path(os.environ.get("NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"))
 PARTNER = {"Ced9": "BCL2", "P66": "CD47"}
 QUERIES = ["Ced9", "P66", "BHF"]
 

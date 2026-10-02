@@ -51,7 +51,10 @@ so a rank is over everything, not over a filtered list. The pairwise layer runs
 `kmerseek pair` on Ced9/BCL2 and P66/CD47 with no database at all.
 
 Driver: `241_alphabet_ranking_driver.py`. Collector: `241_alphabet_ranking_collect.py`.
-Figures: `alphabet_ranking_utils.py`. Data: `/Users/olga/data/botryllus/alphabet-ranking-three-cases/`.
+Figures: `alphabet_ranking_utils.py`. The driver and collector run on Sherlock
+(`241_alphabet_ranking.sbatch`, output in `$SCRATCH/241-alphabet-ranking/`). This notebook
+reads only the small tables copied back from there to
+`/Users/olga/data/botryllus/alphabet-ranking-three-cases/`: `arms.csv`, `ranks.csv` and `pair/`.
 """),
 code(r"""
 import sys

@@ -13,6 +13,7 @@ Run with the 2025-kmerseek-analysis env:
     python notebooks/241_bcl2_rank_by_metric.py
 """
 
+import os
 from pathlib import Path
 
 import matplotlib
@@ -24,7 +25,9 @@ import polars as pl  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 from matplotlib.ticker import FixedLocator, NullLocator  # noqa: E402
 
-DATA = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
+# NB241_DIR is set by 241_alphabet_ranking.sbatch on Sherlock; the default is the laptop
+# folder that holds the small tables copied back for this notebook.
+DATA = Path(os.environ.get("NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"))
 FIG = Path(__file__).resolve().parent.parent / "figures"
 METRICS = ["E-value", "Poisson score", "tf-idf", "mean IDF"]
 ARM_COLOR, MARK_COLOR = "#4C72B0", "#C44E52"

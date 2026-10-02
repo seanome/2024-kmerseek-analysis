@@ -34,20 +34,26 @@ import collections
 import concurrent.futures as cf
 import json
 import math
+import os
 import re
 import subprocess
 import sys
 import time
 from pathlib import Path
 
-KMERSEEK = Path("/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek")
-HUMAN = Path("/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa")
-OUT = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
+# Every path can be set from the environment; 241_alphabet_ranking.sbatch sets all four
+# for Sherlock. The defaults are the laptop paths the first run (2026-09-23) used. Its
+# kmerseek was commit 982a055, tagged nb241-kmerseek-982a055 in seanome/kmerseek.
+KMERSEEK = Path(os.environ.get(
+    "NB241_KMERSEEK", "/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek"))
+HUMAN = Path(os.environ.get(
+    "NB241_HUMAN", "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"))
+OUT = Path(os.environ.get("NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"))
 QUERIES = OUT / "queries.fa"
-KAPPA_TSV = Path(
+KAPPA_TSV = Path(os.environ.get(
+    "NB241_KAPPA",
     "/Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/dark-set-v4/"
-    "nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv"
-)
+    "nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv"))
 
 # The full header of each known partner in the human FASTA (kmerseek pair matches the
 # whole header or its first token; these headers have no spaces so the token is the
@@ -270,6 +276,9 @@ def main() -> None:
     ap.add_argument("--plan-only", action="store_true", help="print the ladder and exit")
     args = ap.parse_args()
 
+    # A fresh output folder (a first run on Sherlock) has none of these yet.
+    for d in ("idx", "search", "ka_survival", "pair", "logs"):
+        (OUT / d).mkdir(parents=True, exist_ok=True)
     cnt = residue_counts()
     hbits = bits_per_position(cnt)
     kappa = read_kappa()
