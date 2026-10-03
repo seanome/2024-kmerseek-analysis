@@ -1372,8 +1372,10 @@ def kaQueriesFor(String alphabet, int ksize) {
     double per   = params.kmerseek_ka_queries_bits_per_doubling as double
     int cap      = params.kmerseek_ka_queries_max as int
     if (bits <= base) return nq
-    int n = (int) Math.round(nq * Math.pow(2.0d, (bits - base) / per) / 50.0d) * 50
-    Math.min(cap, n)
+    // Capped while still a double: gbmr7 k=35 (98 bits) gives about 3.4e9, past
+    // Integer.MAX_VALUE, and an int cast first wrapped it to --ka-queries -761938446.
+    double n = nq * Math.pow(2.0d, (bits - base) / per)
+    (int) (Math.round(Math.min(cap as double, n) / 50.0d) * 50)
 }
 
 // C_best for one alphabet, equal class shares. Rounded to two decimals so the same
