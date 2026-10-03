@@ -4,7 +4,7 @@
 #
 #   make settings             rewrite assets/settings_per_alphabet.tsv from its sources
 #   make plan                 print the pairs and searches, submit nothing
-#   make measure-resources    rewrite assets/resources_measured.tsv from every trace here
+#   make measure-resources    write <launch dir>/resources_measured.tsv from every trace here
 #   make stub                 wiring check, no data, no container
 #   make run-sbatch           on Sherlock: the whole run, head job in tmux on a compute node
 #   make watch / make stop    attach to the live table / stop the run cleanly
@@ -45,8 +45,12 @@ HEAD_JOBNAME   ?= nfdrv-scope40-v040
 export NXF_OPTS := -Xms1g -Xmx$(HEAD_XMX)
 
 # -resume, single dash. Never piped through tee: the live task table is the point.
+# The first asks the launch uses, measured from every trace. Written into the launch
+# directory, not over the committed assets/resources_measured.tsv: on 2026-10-03 the
+# rewritten copy in the Sherlock clone blocked `git pull`.
+MEASURED    = $(LAUNCH_DIR)/resources_measured.tsv
 NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
-         --fasta $(FASTA) --outdir $(OUTDIR) $(NF_ARGS)
+         --fasta $(FASTA) --outdir $(OUTDIR) --resources_measured $(MEASURED) $(NF_ARGS)
 
 .PHONY: help settings plan fasta measure-resources stub run run-sbatch watch stop
 
@@ -73,7 +77,8 @@ $(FASTA):
 measure-resources:
 	@traces=$$(ls $(MAKEFILE_DIR)/runs/*/scope40_v040.*.trace.txt $(MAKEFILE_DIR)/assets/traces/*.trace.txt 2>/dev/null); \
 	 test -n "$$traces" || { echo "no trace files found"; exit 1; }; \
-	 $(PYTHON) $(MAKEFILE_DIR)/tools/measure_resources.py $(MAKEFILE_DIR)/assets/resources_measured.tsv $$traces
+	 mkdir -p $(LAUNCH_DIR); \
+	 $(PYTHON) $(MAKEFILE_DIR)/tools/measure_resources.py $(MEASURED) $$traces
 
 stub:
 	mkdir -p $(MAKEFILE_DIR)/runs/stub
