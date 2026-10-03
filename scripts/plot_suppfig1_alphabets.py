@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-"""Supplementary Figure 1: what each of kmerseek's 19 alphabets keeps, and what seed it needs.
+"""Supplementary Figure 1, and the seed-reach figure that goes with it.
 
-One row per alphabet, ordered by letter count, the same rows in every column:
+Supplementary Figure 1: alphabets with fewer letters carry fewer bits per letter, so each
+needs a longer seed. One row per kmerseek alphabet (19), ordered by letter count:
   a  class shares in Swiss-Prot 2026_03, one segment per class, labelled with its residues
   b  bits per letter three ways: log2(n letters); B from Swiss-Prot composition,
      B = -log2(sum of squared class shares); B measured from kmerseek seed counts in the
      human proteome (notebook 250)
-  c  k* = ceil(log2(N) / B), N = standard residues in Swiss-Prot 2026_03, B from composition:
-     the seed length at which one chance match is expected across Swiss-Prot
-  d  Cohen's kappa of the aligned residues' classes at 20-30% identity, mean over pairs,
-     bootstrap 95% interval
-  e  share of those pairs whose longest class-identical run (no gap, same class in both
-     sequences) is at least the alphabet's own k*, Wilson 95% interval
+  c  the k-sizes to test, k_min to k_max (notebook 274), with k* = ceil(log2(N) / B)
 
-Two versions: Pfam-A 38.2 seed pairs (figures/suppfig1.*) and SCOPe 2.08 40% pairs in the
-same superfamily, structurally aligned by USalign (figures/suppfig1_scope.*). Columns a-c are
-the same in both.
+Seed-reach figure (one column): share of Pfam-A 38.2 seed pairs at 20-30% identity whose
+longest run of same-class aligned columns is at least the alphabet's k*, Wilson 95%
+interval. Cohen's kappa and the SCOPe 2.08 same-superfamily version are in the values table
+and the caption, not drawn.
 
 Inputs:
   /Users/olga/data/uniprot/uniprot_sprot.2026_03.fasta.gz   counted once into
@@ -29,8 +26,9 @@ Inputs:
       src/rust/alphabets.rs when a kmerseek checkout is at KMERSEEK
 
 Outputs:
-  figures/suppfig1.{pdf,png,svg}, figures/suppfig1_scope.{pdf,png,svg}
-  figures/suppfig1_caption.md, tables/suppfig1_values.csv
+  figures/suppfig1.{pdf,png,svg}, figures/suppfig1_caption.md
+  figures/seed_reach_at_kstar_pfam_seed_20-30pct.{pdf,png,svg} and its _caption.md
+  tables/suppfig1_values.csv
 
 Run: python scripts/plot_suppfig1_alphabets.py
 """
@@ -72,6 +70,8 @@ KMERSEEK_TAG = "v0.4.0"
 FIG = REPO / "figures"
 VALUES = REPO / "tables/suppfig1_values.csv"
 CAPTION = FIG / "suppfig1_caption.md"
+REACH_STEM = "seed_reach_at_kstar_pfam_seed_20-30pct"
+REACH_CAPTION = FIG / f"{REACH_STEM}_caption.md"
 
 STANDARD = "ACDEFGHIKLMNPQRSTVWY"
 BIN = "20-30%"
@@ -122,18 +122,21 @@ MONO = "Courier New"
 W_MM = pf.TWO_COLUMN_MM
 COLS = {  # left edge, width
     "a": (27.0, 51.0),
-    "b": (82.0, 21.0),
-    "c": (107.0, 27.0),
-    "d": (146.0, 15.5),
-    "e": (166.5, 15.5),
+    "b": (84.0, 42.0),
+    "c": (133.0, 40.0),
 }
-COUNT_X_MM = 3.5  # the "# k-sizes" column, this far right of panel c
+COUNT_X_MM = 7.5  # the "# k-sizes" column ends this far right of panel c
+REACH_COL = (27.0, 52.0)  # the one-column seed-reach figure: left edge, width
 ROW_MM = 4.6
 GROUP_GAP_MM = 4.2
-TOP_MM = 33.5  # legend and column headers
+LEGEND_MM = 10.5  # room for the legend under each column header
+TOP_MM = LEGEND_MM + 9.0  # legend, header, panel letter
+TOP_MM_REACH = LEGEND_MM + 4.5
 BOTTOM_MM = 9.0  # x axes
+B_XMIN = 0.5  # bits axis starts here: the lowest value is 0.71
+KMIN = r"$k_\mathrm{min}$"
+KMAX = r"$k_\mathrm{max}$"
 BAR_MM = 3.0
-HUMAN_DY_MM = 1.2
 
 
 def check(ok: bool, msg: str) -> None:
@@ -393,62 +396,76 @@ def row_positions(
     return ys, labels, y
 
 
-def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
+def _row_labels(ax, ys, names, group_labels, width_mm: float) -> None:
+    """Alphabet names and size-group labels, right-aligned left of `ax`."""
+    for y, text, style in [(y, n, "row") for y, n in zip(ys, names)] + [
+        (y, g, "group") for g, y in group_labels
+    ]:
+        ax.text(
+            -1.2 / width_mm,
+            y,
+            text,
+            transform=ax.get_yaxis_transform(),
+            ha="right",
+            va="center",
+            fontsize=6 if style == "row" else 5.5,
+            style="normal" if style == "row" else "italic",
+            color="black" if style == "row" else GROUP_INK,
+        )
+
+
+def _row_axes(fig, x0_mm, w_mm, w_fig_mm, h_mm, ys, block_mm):
+    a = fig.add_axes(
+        [x0_mm / w_fig_mm, BOTTOM_MM / h_mm, w_mm / w_fig_mm, block_mm / h_mm]
+    )
+    a.set_ylim(block_mm, 0)
+    a.set_yticks(ys)
+    a.set_yticklabels([])
+    a.tick_params(axis="y", length=0)
+    a.spines["left"].set_visible(False)
+    return a
+
+
+def _column_legend(ax, handles, block_mm: float) -> None:
+    """A legend directly under the column header, above the marks it explains."""
+    ax.legend(
+        [h for h, _ in handles],
+        [lab for _, lab in handles],
+        loc="upper left",
+        bbox_to_anchor=(0, 1 + LEGEND_MM / block_mm),
+        bbox_transform=ax.transAxes,
+        frameon=False,
+        fontsize=6,
+        handlelength=1.2,
+        handletextpad=0.5,
+        labelspacing=0.25,
+        borderaxespad=0,
+        borderpad=0,
+    )
+
+
+def _mark(**kw):
+    return Line2D([], [], ls="", **kw)
+
+
+def draw_suppfig1(t: pl.DataFrame, stem: Path) -> None:
+    """Supplementary Figure 1: a class shares, b bits per letter, c seed lengths to test."""
     pf.use_style()
     ys, group_labels, block_mm = row_positions(t)
     h_mm = TOP_MM + block_mm + BOTTOM_MM
     fig = plt.figure(figsize=(W_MM * pf.MM, h_mm * pf.MM))
     fig.set_layout_engine(None)
-
-    def ax_for(key: str):
-        x0, w = COLS[key]
-        a = fig.add_axes([x0 / W_MM, BOTTOM_MM / h_mm, w / W_MM, block_mm / h_mm])
-        a.set_ylim(block_mm, 0)
-        a.set_yticks(ys)
-        a.set_yticklabels([])
-        a.tick_params(axis="y", length=0)
-        a.spines["left"].set_visible(False)
-        return a
-
-    axes = {k: ax_for(k) for k in COLS}
-    names = t["alphabet"].to_list()
-
-    # Row labels and size groups, left of a.
-    ax_a = axes["a"]
-    for y, name in zip(ys, names):
-        ax_a.text(
-            -1.2 / COLS["a"][1],
-            y,
-            name,
-            transform=ax_a.get_yaxis_transform(),
-            ha="right",
-            va="center",
-            fontsize=6,
-        )
-    for text, y in group_labels:
-        ax_a.text(
-            -1.2 / COLS["a"][1],
-            y,
-            text,
-            transform=ax_a.get_yaxis_transform(),
-            ha="right",
-            va="center",
-            fontsize=5.5,
-            style="italic",
-            color=GROUP_INK,
-        )
-
-    # Row guides from each row across b, d, e (7c): every mark reads back to its label.
-    for k in "bde":
+    axes = {k: _row_axes(fig, *COLS[k], W_MM, h_mm, ys, block_mm) for k in COLS}
+    _row_labels(axes["a"], ys, t["alphabet"].to_list(), group_labels, COLS["a"][1])
+    for k in "bc":  # row guides from each row's tick (7c)
         for y in ys:
             axes[k].axhline(y, color=GUIDE, lw=0.3, zorder=0)
 
     # a: class shares.
+    ax_a = axes["a"]
     ax_a.set_xlim(0, 100)
     ax_a.set_xticks([0, 25, 50, 75, 100])
-    ax_a.set_xlabel("Share of Swiss-Prot residues (%)")
-    fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
+    ax_a.set_xlabel("Share of Swiss-Prot 2026_03 residues (%)")
     mm_per_pct = COLS["a"][1] / 100
     char_mm = 5.5 / 72 * 25.4 * 0.6  # Courier New advance is 0.6 em
     out_char_mm = 5 / 72 * 25.4 * 0.6
@@ -478,9 +495,10 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
                 cx = min(
                     max(x + w / 2, prev_right + 0.25 / mm_per_pct + half), 100 - half
                 )
+                shift_mm = abs(cx - (x + w / 2)) * mm_per_pct
                 check(
-                    abs(cx - (x + w / 2)) * mm_per_pct <= 1.5,
-                    f"label {c} in row {y} would sit {abs(cx - (x + w / 2)) * mm_per_pct:.1f} mm from its segment",
+                    shift_mm <= 1.5,
+                    f"label {c} in row {y} would sit {shift_mm:.1f} mm off",
                 )
                 ax_a.text(
                     cx,
@@ -494,79 +512,73 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
                 prev_right = cx + half
             x += w
         check(abs(x - 100) < 1e-3, f"class shares do not sum to 100% in row {y}")
-
-    # b: bits per letter.
-    ax_b = axes["b"]
-    # The human-proteome value sits HUMAN_DY_MM under the row line: in the 2-letter rows the
-    # three values lie within 0.3 bits and would otherwise cover one another.
-    y_h = [y + HUMAN_DY_MM for y in ys]
-    ax_b.hlines(ys, t["bits_swissprot"], t["bits_log2_n"], color=JOIN, lw=1.0, zorder=1)
-    ax_b.hlines(
-        y_h,
-        t["bits_human_seed_counts"],
-        t["bits_swissprot"],
-        color=JOIN,
-        lw=0.6,
-        zorder=1,
+    _column_legend(
+        ax_a,
+        [
+            (
+                Patch(facecolor=BLUE_LIGHT, edgecolor="white"),
+                "one class; the two blues only separate neighbours",
+            )
+        ],
+        block_mm,
     )
+
+    # b: bits per letter, three values on the alphabet's row.
+    ax_b = axes["b"]
+    lo = t.select(
+        pl.min_horizontal("bits_human_seed_counts", "bits_swissprot")
+    ).to_series()
+    ax_b.hlines(ys, lo, t["bits_log2_n"], color=JOIN, lw=1.0, zorder=1)
     ax_b.scatter(
         t["bits_log2_n"],
         ys,
-        s=16,
+        s=14,
         facecolor="white",
         edgecolor=REF_GREY,
         lw=0.8,
         zorder=2,
     )
-    ax_b.scatter(t["bits_swissprot"], ys, s=6, color=PURPLE, lw=0, zorder=3)
+    ax_b.scatter(t["bits_swissprot"], ys, s=4, color=PURPLE, lw=0, zorder=3)
     ax_b.scatter(
         t["bits_human_seed_counts"],
-        y_h,
-        s=9,
+        ys,
+        s=7,
         marker="D",
         facecolor=PURPLE,
         edgecolor="white",
         lw=0.3,
         zorder=4,
     )
-    ax_b.set_xlim(0, 4.5)
-    ax_b.set_xticks([0, 1, 2, 3, 4])
+    ax_b.set_xlim(B_XMIN, 4.5)
+    ax_b.set_xticks([1, 2, 3, 4])
     ax_b.set_xlabel("Bits per letter")
+    _column_legend(
+        ax_b,
+        [
+            (
+                _mark(marker="o", ms=3.8, mfc="white", mec=REF_GREY, mew=0.8),
+                "log2(n letters): all equally common",
+            ),
+            (_mark(marker="o", ms=2.2, color=PURPLE), "from Swiss-Prot composition"),
+            (
+                _mark(marker="D", ms=2.6, mfc=PURPLE, mec="white", mew=0.3),
+                "measured in the human proteome",
+            ),
+            (Line2D([], [], color=JOIN, lw=1.0), "joins the values of one alphabet"),
+        ],
+        block_mm,
+    )
 
-    # c: the k-sizes to test, k_min to k_max, with the four seed lengths that set them.
-    # Where two coincide, the open mark is drawn larger behind the filled one.
+    # c: the k-sizes to test, k_min to k_max, and k*.
     ax_c = axes["c"]
-    for y, lo, hi in zip(ys, t["k_min"], t["k_max"]):
-        for k in range(lo, hi + 1):
+    for y, lo_k, hi_k in zip(ys, t["k_min"], t["k_max"]):
+        for k in range(lo_k, hi_k + 1):
             ax_c.add_patch(
                 Rectangle(
                     (k - 0.42, y - 0.75), 0.84, 1.5, facecolor=CELL_GREY, lw=0, zorder=1
                 )
             )
-    ax_c.scatter(
-        t["k100_predicted"],
-        ys,
-        s=20,
-        marker="D",
-        facecolor="white",
-        edgecolor=PRED_GREY,
-        lw=0.7,
-        zorder=2,
-    )
-    ax_c.scatter(
-        t["k100_measured"],
-        ys,
-        s=8,
-        marker="D",
-        facecolor=PURPLE,
-        edgecolor="white",
-        lw=0.3,
-        zorder=3,
-    )
-    ax_c.scatter(
-        t["k_max"], ys, s=18, facecolor="white", edgecolor=CORAL, lw=0.9, zorder=2
-    )
-    ax_c.scatter(t["kstar"], ys, s=8, color=CORAL, lw=0, zorder=3)
+    ax_c.scatter(t["kstar"], ys, s=9, color=CORAL, lw=0, zorder=3)
     for y, n in zip(ys, t["n_ksizes"]):
         ax_c.text(
             1 + COUNT_X_MM / COLS["c"][1],
@@ -580,174 +592,105 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
     ax_c.set_xlim(0, 40)
     ax_c.set_xticks([0, 10, 20, 30, 40])
     ax_c.set_xlabel("Seed length k (letters)")
-
-    # d: kappa.
-    ax_d = axes["d"]
-    kap, klo, khi = (t[f"{ds}_kappa"], t[f"{ds}_kappa_lo"], t[f"{ds}_kappa_hi"])
-    ax_d.hlines(ys, klo, khi, color=PURPLE, lw=0.8, zorder=2)
-    ax_d.scatter(kap, ys, s=6, color=PURPLE, lw=0, zorder=3)
-    ax_d.set_xlim(0, 0.6)
-    ax_d.set_xticks([0, 0.2, 0.4, 0.6])
-    ax_d.set_xticklabels(["0", "0.2", "0.4", "0.6"])
-    ax_d.set_xlabel("Cohen's κ")
-
-    # e: share of pairs with a run >= k*.
-    ax_e = axes["e"]
-    sh = 100 * t[f"{ds}_share_reach_kstar"]
-    ax_e.hlines(
-        ys,
-        100 * t[f"{ds}_share_lo"],
-        100 * t[f"{ds}_share_hi"],
-        color=PURPLE,
-        lw=0.8,
-        zorder=2,
+    _column_legend(
+        ax_c,
+        [
+            (Patch(facecolor=CELL_GREY), "one k-size to test, " + KMIN + " to " + KMAX),
+            (
+                _mark(marker="o", ms=2.6, color=CORAL),
+                "k*: one chance match in Swiss-Prot",
+            ),
+        ],
+        block_mm,
     )
-    ax_e.scatter(sh, ys, s=6, color=PURPLE, lw=0, zorder=3)
-    e_max = 8
-    check(
-        float((100 * t[f"{ds}_share_hi"]).max()) < e_max - 1.6,
-        "panel e axis too short for its intervals and numbers",
-    )
-    for y, v, hi in zip(ys, sh, 100 * t[f"{ds}_share_hi"]):
-        ax_e.text(
-            hi + 0.25,
-            y,
-            f"{v:.1f}",
-            va="center",
-            ha="left",
-            fontsize=5.5,
-            color="black",
-        )
-    ax_e.set_xlim(0, e_max)
-    ax_e.set_xticks([0, 2, 4, 6, 8])
-    ax_e.set_xlabel("Pairs (%)")
 
-    # Column headers, panel letters.
-    n_pairs = t[f"{ds}_n_pairs"][0]
-    src = (
-        "Pfam-A 38.2 seed alignments"
-        if ds == "pfam"
-        else "SCOPe 2.08 40%, same superfamily"
-    )
     headers = {
-        "a": "Classes; width = share of\nSwiss-Prot 2026_03 residues",
-        "b": "Information\nper letter",
-        "c": "Seed lengths to test,\n$k_\\mathrm{min}$ to $k_\\mathrm{max}$",
-        "d": "Class agreement\nabove chance",
-        "e": "Pairs with a\nrun ≥ k*",
+        "a": "Classes, width = share of residues",
+        "b": "Information per letter",
+        "c": "Seed lengths to test",
     }
-    y_head = (BOTTOM_MM + block_mm + 1.2) / h_mm
-    y_letter = (BOTTOM_MM + block_mm + 6.6) / h_mm
-    for k in axes:
-        x0 = COLS[k][0]
-        fig.text(
-            x0 / W_MM,
-            y_head,
-            headers[k],
-            ha="left",
-            va="bottom",
-            fontsize=6,
-            linespacing=1.1,
-        )
-        fig.text(
-            (1.0 if k == "a" else x0 - 2.5) / W_MM,
-            y_letter,
-            k,
-            fontsize=8,
-            fontweight="bold",
-            ha="left",
-            va="bottom",
-        )
+    _headers(fig, headers, {k: v[0] for k, v in COLS.items()}, block_mm, h_mm, W_MM)
     fig.text(
         (COLS["c"][0] + COLS["c"][1] + COUNT_X_MM) / W_MM,
-        y_head,
-        "#\nk-sizes",
+        (BOTTOM_MM + block_mm + LEGEND_MM + 0.8) / h_mm,
+        "# k-sizes",
         ha="right",
         va="bottom",
         fontsize=6,
-        linespacing=1.1,
     )
-    # Data source for d and e, above their panel letters, with a rule spanning both columns.
-    y_src = (BOTTOM_MM + block_mm + 11.0) / h_mm
-    x_d, x_e_end = COLS["d"][0] / W_MM, (COLS["e"][0] + COLS["e"][1]) / W_MM
-    fig.add_artist(
-        Line2D([x_d, x_e_end], [y_src - 0.5 / h_mm] * 2, color=GROUP_INK, lw=0.4)
-    )
-    fig.text(
-        x_d,
-        y_src,
-        f"{src}\n20–30% identity, n = {n_pairs:,} pairs",
-        fontsize=6,
-        ha="left",
-        va="bottom",
-        color=GROUP_INK,
-        linespacing=1.1,
-    )
-
-    # Legend, above everything (read before the marks).
-    def mark(**kw):
-        return Line2D([], [], ls="", **kw)
-
-    handles = [
-        (
-            Patch(facecolor=BLUE_LIGHT, edgecolor="white"),
-            "class of residues (a); the two blues only separate neighbours",
-        ),
-        (
-            mark(marker="o", ms=4, mfc="white", mec=REF_GREY, mew=0.8),
-            "log2(n letters): bits if all letters were equally common (b)",
-        ),
-        (
-            Line2D([], [], color=JOIN, lw=1.0),
-            "grey line: joins the values of one alphabet (b)",
-        ),
-        (
-            mark(marker="o", ms=2.6, color=PURPLE),
-            "measured: Swiss-Prot composition (b), aligned pairs (d, e)",
-        ),
-        (
-            mark(marker="D", ms=3.2, mfc=PURPLE, mec="white", mew=0.3),
-            "measured in the human proteome: bits (b, just under its row);"
-            "\nk at which a seed is shared by about 100 proteins (c)",
-        ),
-        (
-            mark(marker="D", ms=3.6, mfc="white", mec=PRED_GREY, mew=0.7),
-            "the same k, predicted from Swiss-Prot bits (c)",
-        ),
-        (
-            mark(marker="o", ms=2.6, color=CORAL),
-            "k*: one chance match expected in Swiss-Prot (c)",
-        ),
-        (
-            mark(marker="o", ms=3.6, mfc="white", mec=CORAL, mew=0.9),
-            "$k_\\mathrm{max}$: the same, with bits measured in the human proteome (c)",
-        ),
-        (
-            Patch(facecolor=CELL_GREY),
-            "one square per k-size to test, $k_\\mathrm{min}$ to $k_\\mathrm{max}$; # k-sizes counts them (c)",
-        ),
-        (
-            Line2D([], [], color=PURPLE, lw=0.8),
-            "95% interval: bootstrap (d, narrower than the dot), Wilson (e)",
-        ),
-        (mark(), "run (e): aligned columns in a row, no gap, same class in both"),
-    ]
-    fig.legend(
-        [h for h, _ in handles],
-        [l for _, l in handles],
-        loc="upper left",
-        ncol=2,
-        bbox_to_anchor=(COLS["a"][0] / W_MM - 0.12, 1 - 0.6 / h_mm),
-        frameon=False,
-        fontsize=6,
-        handlelength=1.4,
-        columnspacing=1.5,
-        borderaxespad=0,
-    )
-
     assert_no_text_collisions(fig)
     pf.save(fig, stem)
     print(f"wrote {stem}.pdf/.png/.svg ({W_MM} x {h_mm:.0f} mm)")
+
+
+def _headers(fig, headers, x0s, block_mm, h_mm, w_fig_mm) -> None:
+    """Panel letter, then the column header, then (in the axes) the column legend."""
+    y_head = (BOTTOM_MM + block_mm + LEGEND_MM + 0.8) / h_mm
+    y_letter = (BOTTOM_MM + block_mm + LEGEND_MM + 4.0) / h_mm
+    for k, x0 in x0s.items():
+        fig.text(
+            x0 / w_fig_mm, y_head, headers[k], ha="left", va="bottom", fontsize=6.5
+        )
+        if len(x0s) > 1:
+            fig.text(
+                (1.0 if k == "a" else x0 - 2.5) / w_fig_mm,
+                y_letter,
+                k,
+                fontsize=8,
+                fontweight="bold",
+                ha="left",
+                va="bottom",
+            )
+
+
+def draw_seed_reach(t: pl.DataFrame, stem: Path) -> None:
+    """Share of Pfam seed pairs whose longest same-class run along the alignment is >= k*."""
+    pf.use_style()
+    ys, group_labels, block_mm = row_positions(t)
+    h_mm = TOP_MM_REACH + block_mm + BOTTOM_MM
+    x0, w = REACH_COL
+    fig = plt.figure(figsize=(pf.ONE_COLUMN_MM * pf.MM, h_mm * pf.MM))
+    fig.set_layout_engine(None)
+    ax = _row_axes(fig, x0, w, pf.ONE_COLUMN_MM, h_mm, ys, block_mm)
+    _row_labels(ax, ys, t["alphabet"].to_list(), group_labels, w)
+    for y in ys:
+        ax.axhline(y, color=GUIDE, lw=0.3, zorder=0)
+    sh, lo, hi = (
+        100 * t[c] for c in ("pfam_share_reach_kstar", "pfam_share_lo", "pfam_share_hi")
+    )
+    ax.hlines(ys, lo, hi, color=PURPLE, lw=0.8, zorder=2)
+    ax.scatter(sh, ys, s=7, color=PURPLE, lw=0, zorder=3)
+    x_max = 8
+    check(
+        float(hi.max()) < x_max - 1.2,
+        "axis too short for the intervals and their numbers",
+    )
+    for y, v, h in zip(ys, sh, hi):
+        ax.text(h + 0.2, y, f"{v:.1f}", va="center", ha="left", fontsize=6)
+    ax.set_xlim(0, x_max)
+    ax.set_xticks([0, 2, 4, 6, 8])
+    ax.set_xlabel("Pairs with a run ≥ the alphabet's k* (%)")
+    _column_legend(
+        ax,
+        [
+            (_mark(marker="o", ms=2.6, color=PURPLE), "measured share of pairs"),
+            (Line2D([], [], color=PURPLE, lw=0.8), "Wilson 95% interval"),
+            (_mark(), "run: aligned columns in a row, no gap, same class in both"),
+        ],
+        block_mm,
+    )
+    n = t["pfam_n_pairs"][0]
+    _headers(
+        fig,
+        {"e": f"Pfam-A 38.2 seed pairs, 20–30% identity (n = {n:,})"},
+        {"e": x0},
+        block_mm,
+        h_mm,
+        pf.ONE_COLUMN_MM,
+    )
+    assert_no_text_collisions(fig)
+    pf.save(fig, stem)
+    print(f"wrote {stem}.pdf/.png/.svg ({pf.ONE_COLUMN_MM} x {h_mm:.0f} mm)")
 
 
 def assert_no_text_collisions(fig) -> None:
@@ -776,92 +719,111 @@ def assert_no_text_collisions(fig) -> None:
                 )
 
 
-def write_caption(t: pl.DataFrame, meta: dict) -> None:
-    """Caption and legend text, formatted from the table; each sentence's claim is checked first."""
+def write_captions(t: pl.DataFrame, meta: dict) -> None:
+    """Both captions, formatted from the table; each sentence's claim is checked first."""
     row = {r["alphabet"]: r for r in t.iter_rows(named=True)}
     small = t.filter(pl.col("n_letters") <= 3)
-    pct = lambda x: f"{100 * x:.1f}%"  # noqa: E731
+    two = t.filter(pl.col("n_letters") == 2)
+    reduced = t.filter(pl.col("alphabet") != "protein20")
     pct2 = lambda x: f"{100 * x:.2f}%"  # noqa: E731
-    top = {
-        ds: t.sort(f"{ds}_share_reach_kstar", descending=True).row(0, named=True)
-        for ds in ("pfam", "scope")
-    }
-    x_pfam = top["pfam"]["pfam_share_reach_kstar"]
-    rho = t.select(pl.corr("pfam_kappa", "scope_kappa", method="spearman")).item()
-    rho_e = t.select(
-        pl.corr("pfam_share_reach_kstar", "scope_share_reach_kstar", method="spearman")
-    ).item()
-    rho_nk = t.select(pl.corr("n_letters", "pfam_kappa", method="spearman")).item()
-    rho_nb = t.select(pl.corr("n_letters", "bits_swissprot", method="spearman")).item()
-    rho_nks = t.select(pl.corr("n_letters", "kstar", method="spearman")).item()
+    neg = lambda v: f"{v:.2f}".replace("-", "−")  # noqa: E731
+    spear = lambda a, b: t.select(pl.corr(a, b, method="spearman")).item()  # noqa: E731
 
+    # Supplementary Figure 1 claims.
+    rho_nb, rho_nks = spear("n_letters", "bits_swissprot"), spear("n_letters", "kstar")
+    check(
+        rho_nb > 0 and rho_nks < 0,
+        "letter count does not order bits and k* as the title says",
+    )
     check(
         bool((t["bits_human_seed_counts"] < t["bits_swissprot"]).all()),
-        "human B not below Swiss-Prot B everywhere",
+        "human B not below Swiss-Prot B",
     )
     check(
         bool((t["bits_swissprot"] < t["bits_log2_n"]).all()),
-        "Swiss-Prot B not below log2(n) everywhere",
+        "Swiss-Prot B not below log2(n)",
     )
-    check(
-        rho_nk < 0 and rho_nb > 0 and rho_nks < 0,
-        "letter count does not order kappa, bits and k* as the title says",
-    )
-    check(
-        small["pfam_kappa"].min() > row["protein20"]["pfam_kappa"],
-        "a 2-3 letter alphabet has kappa below protein20",
-    )
-    check(
-        row["gbmr7"]["pfam_kappa"] < row["sdm12"]["pfam_kappa"],
-        "gbmr7 is no longer below sdm12",
-    )
-    for ds in ("pfam", "scope"):
-        check(
-            float(t[f"{ds}_share_reach_kstar"].max()) < 0.06,
-            f"{ds}: an alphabet reaches 6% or more",
-        )
-
-    hp = small.sort("pfam_share_reach_kstar")
-    two = t.filter(pl.col("n_letters") == 2)
-    reduced = t.filter(pl.col("alphabet") != "protein20")
     check(
         int(reduced["kstar"].min()) > row["protein20"]["kstar"],
-        "a reduced alphabet has k* no longer than protein20",
+        "a reduced alphabet has k* <= protein20",
     )
-    # Exceptions to the letter-count trends, named in the caption; stop if they change.
     check(
         row["gbmr7"]["kstar"] > row["gbmr4"]["kstar"], "gbmr7 k* no longer above gbmr4"
     )
     check(
         row["hp_lehninger_hpc3"]["kstar"] < int(two["kstar"].min()),
-        "hp_lehninger_hpc3 k* no longer below every 2-letter alphabet",
+        "hpc3 k* no longer below 2-letter",
     )
-    two_below_gbmr4 = two.filter(pl.col("pfam_kappa") < row["gbmr4"]["pfam_kappa"])
-    check(two_below_gbmr4.height >= 1, "no 2-letter alphabet below gbmr4 in kappa")
-    m1 = t.sort("pfam_share_reach_kstar_minus1", descending=True).row(0, named=True)
-    rho_nk, rho_nb, rho_nks = (
-        f"{v:.2f}".replace("-", "−") for v in (rho_nk, rho_nb, rho_nks)
+    check(
+        float(t["bits_human_seed_counts"].min()) > B_XMIN,
+        "a bits value is left of panel b's axis",
     )
-    text = f"""**Supplementary Figure 1 | Alphabets with fewer letters keep more of each residue's class between related proteins but carry fewer bits per letter, so every reduced alphabet needs a longer seed than the 20 amino acids; at its own seed length, no alphabet reaches more than {pct(x_pfam)} of 20–30% identity pairs.**
+    gbmr7_top = sorted(map(float, row["gbmr7"]["class_shares"].split()))[-1]
+    longest = t.sort("kstar").row(-1, named=True)["alphabet"]
+    most_k = t.sort("n_ksizes").row(-1, named=True)["alphabet"]
 
-One row per kmerseek alphabet (19), grouped by letter count; the rows are in the same order in every column. Classes are those of kmerseek {KMERSEEK_TAG} `src/rust/alphabets.rs` (dayhoff6 is encoded by sourmash). Across the 19 alphabets, fewer letters go with higher κ (Spearman ρ = {rho_nk} between letter count and κ), fewer bits per letter (ρ = {rho_nb}) and a longer k* (ρ = {rho_nks}). These are trends, not a strict order. gbmr7 (7 letters) needs k* = {row["gbmr7"]["kstar"]}, more than gbmr4 (4 letters, {row["gbmr4"]["kstar"]}), because one class holds {sorted(map(float, row["gbmr7"]["class_shares"].split()))[-1] * 100:.0f}% of residues. hp_lehninger_hpc3 (3 letters) needs {row["hp_lehninger_hpc3"]["kstar"]}, less than every 2-letter alphabet ({int(two["kstar"].min())}–{int(two["kstar"].max())}). gbmr4 (κ = {row["gbmr4"]["pfam_kappa"]:.2f}) keeps classes better than {two_below_gbmr4.height} of the {two.height} 2-letter alphabets, and gbmr7 ({row["gbmr7"]["pfam_kappa"]:.2f}) less well than sdm12 ({row["sdm12"]["pfam_kappa"]:.2f}).
+    supp = f"""**Supplementary Figure 1 | Alphabets with fewer letters carry fewer bits per letter, so each needs a longer seed.**
 
-**a**, Classes of each alphabet, labelled with their residues. Segment width is the class's share of the {meta["n_res"]:,} standard residues in UniProtKB/Swiss-Prot release 2026_03. The residues of a class too narrow for its letters are printed just above its segment. The two shades of blue only separate neighbouring classes.
+One row per kmerseek alphabet (19), grouped by letter count; the rows are in the same order in every column. Classes are those of kmerseek {KMERSEEK_TAG} `src/rust/alphabets.rs` (dayhoff6 is encoded by sourmash). Across the 19 alphabets, fewer letters go with fewer bits per letter (Spearman ρ = {neg(rho_nb)} between letter count and bits) and a longer k* (ρ = {neg(rho_nks)}). Every reduced alphabet needs a longer seed than the 20 amino acids. The order is not strict: gbmr7 (7 letters) needs k* = {row["gbmr7"]["kstar"]}, more than gbmr4 (4 letters, {row["gbmr4"]["kstar"]}), because one of its classes holds {100 * gbmr7_top:.0f}% of residues; hp_lehninger_hpc3 (3 letters) needs {row["hp_lehninger_hpc3"]["kstar"]}, less than every 2-letter alphabet ({int(two["kstar"].min())}–{int(two["kstar"].max())}).
 
-**b**, Bits of information in one matching letter. Open grey circle: log2 of the number of letters, the value if all letters were equally common. Filled purple circle: B = −log2(Σ q²), where q is each class's share of Swiss-Prot residues, so Σ q² is the chance that two residues drawn at random fall in the same class. Purple diamond, set just under its row: B measured from kmerseek seed counts in the human proteome. P(k), the mean number of proteins sharing a seed of k letters, falls by a factor 2^B for each added letter, so B = [log2(P(k_small) − 1) − log2(P(k_main) − 1)] / (k_main − k_small) (notebook 250). In all 19 alphabets the human value is below the Swiss-Prot value, and both are below log2 of the letter count. For hp_thomas_dill2 the three values are {row["hp_thomas_dill2"]["bits_log2_n"]:.3f}, {row["hp_thomas_dill2"]["bits_swissprot"]:.3f} and {row["hp_thomas_dill2"]["bits_human_seed_counts"]:.3f} bits.
+**a**, Classes of each alphabet, labelled with their residues. Segment width is the class's share of the {meta["n_res"]:,} standard residues in UniProtKB/Swiss-Prot release 2026_03. The residues of a class too narrow for its letters are printed just above its segment.
 
-**c**, The seed lengths to test for each alphabet, one grey square per k-size from k_min to k_max; the column on the right counts them (notebook 274). Filled purple diamond: the k at which a seed is shared by about 100 human proteins, measured from kmerseek seed counts in the human proteome (QfO 2020_04, UP000005640; notebook 250). The other three marks are k = ⌈(log2 N − log2 m) / B⌉, the shortest seed with at most m chance matches among N residues when one letter carries B bits. Open grey diamond: the same k as the filled diamond, predicted with N = human proteome residues, m = 100 and B from Swiss-Prot composition. k_min is the smaller of the two. Filled coral circle: k*, with N = {meta["n_res"]:,} Swiss-Prot residues, m = 1 and B from Swiss-Prot composition: the seed length at which one match by chance is expected across Swiss-Prot. Open coral circle: k_max, the same with B measured in the human proteome. k* runs from {row["protein20"]["kstar"]} (protein20) to {int(t["kstar"].max())} ({t.sort("kstar").row(-1, named=True)["alphabet"]}). The number of k-sizes runs from {row["protein20"]["n_ksizes"]} (protein20) to {int(t["n_ksizes"].max())} ({t.sort("n_ksizes").row(-1, named=True)["alphabet"]}), and is {int(small["n_ksizes"].min())}–{int(small["n_ksizes"].max())} for the 2–3 letter alphabets.
+**b**, Bits of information in one matching letter, three ways. Open grey circle: log2 of the number of letters, the value if all letters were equally common. Filled purple circle: B = −log2(Σ q²), where q is each class's share of Swiss-Prot residues, so Σ q² is the chance that two residues drawn at random fall in the same class. Purple diamond: B measured from kmerseek seed counts in the human proteome (QfO 2020_04, UP000005640). P(k), the mean number of proteins sharing a seed of k letters, falls by a factor 2^B for each added letter, so B = [log2(P(k_small) − 1) − log2(P(k_main) − 1)] / (k_main − k_small) (notebook 250). In all 19 alphabets the human value is below the Swiss-Prot value, and both are below log2 of the letter count. For hp_thomas_dill2 the three values are {row["hp_thomas_dill2"]["bits_log2_n"]:.3f}, {row["hp_thomas_dill2"]["bits_swissprot"]:.3f} and {row["hp_thomas_dill2"]["bits_human_seed_counts"]:.3f} bits. The axis starts at {B_XMIN} bits.
 
-**d**, Cohen's κ for the classes of aligned residues: (observed agreement − agreement expected from the two sequences' class compositions) / (1 − expected). κ = 0 means no more agreement than chance; higher means the class is kept more often. Pairs from the same Pfam-A 38.2 seed alignment with 20–30% identity over at least {MIN_COLS} aligned columns ({row["protein20"]["pfam_n_pairs"]:,} pairs from {meta["pfam_n_families"]:,} families). Mean over pairs with a bootstrap 95% interval (500 resamples; the interval is narrower than the dot). κ is {row["protein20"]["pfam_kappa"]:.2f} for protein20 and {small["pfam_kappa"].min():.2f}–{small["pfam_kappa"].max():.2f} for the 2–3 letter alphabets.
+**c**, The seed lengths to test for each alphabet, one grey square per k-size from k_min to k_max; the column on the right counts them (notebook 274). Seed lengths come from k = ⌈(log2 N − log2 m) / B⌉, the shortest seed with at most m chance matches among N residues when one letter carries B bits. Coral dot: k*, with N = {meta["n_res"]:,} Swiss-Prot residues, m = 1 and B from Swiss-Prot composition, the seed length at which one match by chance is expected across Swiss-Prot. k_max is the same with B measured in the human proteome. k_min is the k at which a seed is shared by about 100 human proteins: the smaller of the value measured from kmerseek seed counts and the value from the formula with N = human proteome residues and m = 100. k* runs from {row["protein20"]["kstar"]} (protein20) to {int(t["kstar"].max())} ({longest}). The number of k-sizes runs from {row["protein20"]["n_ksizes"]} (protein20) to {int(t["n_ksizes"].max())} ({most_k}), and is {int(small["n_ksizes"].min())}–{int(small["n_ksizes"].max())} for the 2–3 letter alphabets.
 
-**e**, Share of the same pairs whose longest class-identical run is at least the alphabet's own k* (c). A class-identical run is a stretch of consecutive aligned columns with no gap in either sequence and the same class in both: the longest exact seed the two sequences share along their alignment. A seed the two sequences share elsewhere, off the alignment, is not counted. Wilson 95% interval. The highest is {top["pfam"]["alphabet"]}, {pct2(x_pfam)} ({top["pfam"]["pfam_n_reach_kstar"]:,} pairs); protein20 {pct2(row["protein20"]["pfam_share_reach_kstar"])}; the 2–3 letter alphabets {pct2(hp["pfam_share_reach_kstar"][0])} ({hp["alphabet"][0]}) to {pct2(hp["pfam_share_reach_kstar"][-1])} ({hp["alphabet"][-1]}); gbmr7 {pct2(row["gbmr7"]["pfam_share_reach_kstar"])}. The bound depends on rounding k* up to a whole letter: at one letter less (k* − 1) the highest share is {m1["alphabet"]}, {pct2(m1["pfam_share_reach_kstar_minus1"])}.
-
-**Second version (`suppfig1_scope`), a check on the alignment source.** Columns a–c are unchanged. Columns d and e use SCOPe 2.08 domain pairs (40% identity set) in the same superfamily, from the same or a different family, aligned by structure with USalign (TM-score ≥ {MIN_TM} for at least one of the two domains), 20–30% identity over at least {MIN_COLS} columns: {row["protein20"]["scope_n_pairs"]:,} pairs, {meta["scope_n_superfamily_cross_family"]:,} of them from different families. The order of the alphabets is close to the Pfam one (Spearman ρ = {rho:.2f} for κ, {rho_e:.2f} for e). The highest share in e is {top["scope"]["alphabet"]}, {pct2(top["scope"]["scope_share_reach_kstar"])} ({top["scope"]["scope_n_reach_kstar"]} pairs); hp_thomas_dill2 {pct2(row["hp_thomas_dill2"]["scope_share_reach_kstar"])} ({row["hp_thomas_dill2"]["scope_n_reach_kstar"]} pairs). κ for hp_thomas_dill2 is {row["hp_thomas_dill2"]["scope_kappa"]:.2f} and for protein20 {row["protein20"]["scope_kappa"]:.2f}.
-
-All numbers: `tables/suppfig1_values.csv`, written with the figure by `scripts/plot_suppfig1_alphabets.py`.
+All numbers, including both k_min estimates and k_max: `tables/suppfig1_values.csv`, written with the figure by `scripts/plot_suppfig1_alphabets.py`.
 """
-    CAPTION.write_text(text)
-    print(f"wrote {CAPTION}")
+
+    # Seed-reach figure claims.
+    top = {
+        ds: t.sort(f"{ds}_share_reach_kstar", descending=True).row(0, named=True)
+        for ds in ("pfam", "scope")
+    }
+    for ds in ("pfam", "scope"):
+        check(
+            float(t[f"{ds}_share_reach_kstar"].max()) < 0.06,
+            f"{ds}: an alphabet reaches 6% or more",
+        )
+    rho_ke = spear("pfam_kappa", "pfam_share_reach_kstar")
+    check(
+        rho_ke < 0,
+        "kappa and the seed-reach share no longer rank the alphabets in opposite ways",
+    )
+    check(
+        small["pfam_kappa"].min() > row["protein20"]["pfam_kappa"],
+        "a 2-3 letter alphabet has kappa <= protein20",
+    )
+    check(
+        small["pfam_share_reach_kstar"].max()
+        < row["protein20"]["pfam_share_reach_kstar"],
+        "a 2-3 letter alphabet reaches more than protein20",
+    )
+    ratio = t["pfam_share_reach_kstar_minus1"] / t["pfam_share_reach_kstar"]
+    m1 = t.sort("pfam_share_reach_kstar_minus1", descending=True).row(0, named=True)
+    rho_e = spear("pfam_share_reach_kstar", "scope_share_reach_kstar")
+    d_e = (
+        (100 * (t["scope_share_reach_kstar"] - t["pfam_share_reach_kstar"])).abs().max()
+    )
+    check(d_e < 1, "SCOPe and Pfam shares differ by 1 point or more")
+    hp = small.sort("pfam_share_reach_kstar")
+    reach = f"""**Seed reach at k* | At its own seed length k*, no alphabet shares a seed along the alignment in more than {100 * top["pfam"]["pfam_share_reach_kstar"]:.1f}% of Pfam seed pairs at 20–30% identity.**
+
+One row per kmerseek alphabet, in the order of Supplementary Figure 1; k* is from its panel c. Pairs are two sequences from the same Pfam-A 38.2 seed alignment, 20–30% identity over at least {MIN_COLS} aligned columns ({row["protein20"]["pfam_n_pairs"]:,} pairs from {meta["pfam_n_families"]:,} families). A run is a stretch of consecutive aligned columns with no gap in either sequence and the same class in both: an exact seed the two sequences share along their alignment. A seed shared elsewhere, off the alignment, is not counted. Dot: share of pairs whose longest run is at least k*; line: Wilson 95% interval. The highest is {top["pfam"]["alphabet"]}, {pct2(top["pfam"]["pfam_share_reach_kstar"])} ({top["pfam"]["pfam_n_reach_kstar"]:,} pairs); protein20 {pct2(row["protein20"]["pfam_share_reach_kstar"])}; the 2–3 letter alphabets {pct2(hp["pfam_share_reach_kstar"][0])} ({hp["alphabet"][0]}) to {pct2(hp["pfam_share_reach_kstar"][-1])} ({hp["alphabet"][-1]}); gbmr7 {pct2(row["gbmr7"]["pfam_share_reach_kstar"])}.
+
+The share depends on rounding k* up to a whole letter. At one letter less, it is {ratio.min():.1f} to {ratio.max():.1f} times higher, and the highest is {m1["alphabet"]}, {pct2(m1["pfam_share_reach_kstar_minus1"])}.
+
+Cohen's κ for the class of aligned residues ranks the alphabets partly in the opposite order (Spearman ρ = {neg(rho_ke)} against this share): κ is {row["protein20"]["pfam_kappa"]:.2f} for protein20 and {small["pfam_kappa"].min():.2f}–{small["pfam_kappa"].max():.2f} for the 2–3 letter alphabets, which keep classes better but carry fewer bits per letter. κ values are in `tables/suppfig1_values.csv`.
+
+On SCOPe 2.08 (40% set) domain pairs in the same superfamily, aligned by structure with USalign (TM-score ≥ {MIN_TM}, {row["protein20"]["scope_n_pairs"]:,} pairs), the alphabets come out in nearly the same order (Spearman ρ = {rho_e:.2f}), each share moves by at most {d_e:.1f} percentage point, and the highest is {top["scope"]["alphabet"]}, {pct2(top["scope"]["scope_share_reach_kstar"])}.
+"""
+    CAPTION.write_text(supp)
+    REACH_CAPTION.write_text(reach)
+    print(f"wrote {CAPTION} and {REACH_CAPTION}")
+    print(
+        f"kappa vs reach rho {rho_ke:.3f}; k*-1 ratio {ratio.min():.2f}-{ratio.max():.2f}; "
+        f"SCOPe-Pfam kappa diff {(t['scope_kappa'] - t['pfam_kappa']).min():.3f} to {(t['scope_kappa'] - t['pfam_kappa']).max():.3f}"
+    )
 
 
 def main() -> None:
@@ -894,9 +856,9 @@ def main() -> None:
             )
         )
     t.drop("size_group").write_csv(VALUES, float_precision=5)
-    draw(t, meta, "pfam", FIG / "suppfig1")
-    draw(t, meta, "scope", FIG / "suppfig1_scope")
-    write_caption(t, meta)
+    draw_suppfig1(t, FIG / "suppfig1")
+    draw_seed_reach(t, FIG / REACH_STEM)
+    write_captions(t, meta)
 
 
 if __name__ == "__main__":
