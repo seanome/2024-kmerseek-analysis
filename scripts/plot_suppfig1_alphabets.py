@@ -79,14 +79,27 @@ SCOPE_CATEGORIES = ["same_family", "same_superfamily_diff_family"]  # = same sup
 # Values given with the request. The figure is not drawn if the data disagree at the shown
 # precision (sum of squared shares to 3 decimals, kappa to 2), except where a value sits on a
 # rounding boundary between the two Swiss-Prot sources (EXPECTED_S2_TOL).
-EXPECTED_S2 = {"protein20": 0.060, "dayhoff6": 0.231, "gbmr4": 0.408, "polarity4": 0.341, "hp_thomas_dill2": 0.512}
-EXPECTED_S2_TOL = 0.0007  # dayhoff6: 0.2304 from FASTA counts, 0.2305 from the release notes
+EXPECTED_S2 = {
+    "protein20": 0.060,
+    "dayhoff6": 0.231,
+    "gbmr4": 0.408,
+    "polarity4": 0.341,
+    "hp_thomas_dill2": 0.512,
+}
+EXPECTED_S2_TOL = (
+    0.0007  # dayhoff6: 0.2304 from FASTA counts, 0.2305 from the release notes
+)
 EXPECTED_KAPPA = {"protein20": 0.20, "hp_thomas_dill2": 0.46}
 EXPECTED_N_PFAM = 37_085
 
 # Rows: size groups top to bottom, gap between groups; within a group, more letters first,
 # ties alphabetical.
-SIZE_GROUPS = [("20 letters", 20, 20), ("12–18 letters", 12, 18), ("4–8 letters", 4, 8), ("2–3 letters", 2, 3)]
+SIZE_GROUPS = [
+    ("20 letters", 20, 20),
+    ("12–18 letters", 12, 18),
+    ("4–8 letters", 4, 8),
+    ("2–3 letters", 2, 3),
+]
 
 # One meaning per colour, across the paper's figures: purple = a measured value of an
 # alphabet, coral = k*, grey = the log2(n) reference. Blues in a only separate neighbours.
@@ -131,15 +144,22 @@ def alphabets_rs_clusters() -> dict[str, list[str]] | None:
         return None
     src = subprocess.run(
         ["git", "-C", str(KMERSEEK), "show", f"{KMERSEEK_TAG}:src/rust/alphabets.rs"],
-        check=True, capture_output=True, text=True,
+        check=True,
+        capture_output=True,
+        text=True,
     ).stdout
     out: dict[str, list[str]] = {}
-    for name, body in re.findall(r"const (\w+)_CLUSTERS: &\[&str\] =\s*&\[(.*?)\];", src, re.S):
+    for name, body in re.findall(
+        r"const (\w+)_CLUSTERS: &\[&str\] =\s*&\[(.*?)\];", src, re.S
+    ):
         out[name.lower()] = re.findall(r'"([A-Z]+)"', body)
     statics = {
-        "LEHNINGER_HP": "hp_lehninger2", "THOMAS_DILL_HP": "hp_thomas_dill2",
-        "KYTE_DOOLITTLE_HP": "hp_kyte_doolittle2", "THOMAS_DILL_NO_C_HP": "hp_thomas_dill_no_c2",
-        "LEHNINGER_C_NONPOLAR_HP": "hp_lehninger_c_nonpolar2", "LEHNINGER_HPC": "hp_lehninger_hpc3",
+        "LEHNINGER_HP": "hp_lehninger2",
+        "THOMAS_DILL_HP": "hp_thomas_dill2",
+        "KYTE_DOOLITTLE_HP": "hp_kyte_doolittle2",
+        "THOMAS_DILL_NO_C_HP": "hp_thomas_dill_no_c2",
+        "LEHNINGER_C_NONPOLAR_HP": "hp_lehninger_c_nonpolar2",
+        "LEHNINGER_HPC": "hp_lehninger_hpc3",
         "PBOTC_1ST_ED_HP": "hp_pbotc_1st_ed2",
     }
     for static, name in statics.items():
@@ -152,14 +172,20 @@ def alphabets_rs_clusters() -> dict[str, list[str]] | None:
 def check_alphabets() -> str:
     rs = alphabets_rs_clusters()
     for name, cl in hc.ALPHABET_CLUSTERS.items():
-        check("".join(sorted("".join(cl))) == STANDARD, f"{name} does not cover the 20 residues once each: {cl}")
+        check(
+            "".join(sorted("".join(cl))) == STANDARD,
+            f"{name} does not cover the 20 residues once each: {cl}",
+        )
     if rs is None:
         return f"not checked against kmerseek (no checkout at {KMERSEEK})"
     for name, cl in hc.ALPHABET_CLUSTERS.items():
         if name == "dayhoff6":  # encoded by sourmash, not listed in alphabets.rs
             continue
         check(name in rs, f"{name} not found in alphabets.rs {KMERSEEK_TAG}")
-        check(sorted(rs[name]) == sorted(cl), f"{name}: utils {cl} != alphabets.rs {rs[name]}")
+        check(
+            sorted(rs[name]) == sorted(cl),
+            f"{name}: utils {cl} != alphabets.rs {rs[name]}",
+        )
     return f"18 alphabets match kmerseek {KMERSEEK_TAG} src/rust/alphabets.rs; dayhoff6 is sourmash's"
 
 
@@ -172,7 +198,9 @@ def swissprot_counts(recount: bool) -> dict[str, int]:
         rows = [{"residue": r, "count": int(counts[ord(r)])} for r in STANDARD]
         other = int(counts.sum()) - sum(r["count"] for r in rows)
         pl.DataFrame(rows).write_csv(SWISSPROT_COUNTS)
-        print(f"counted {SWISSPROT_FASTA.name}: {other:_} non-standard letters left out")
+        print(
+            f"counted {SWISSPROT_FASTA.name}: {other:_} non-standard letters left out"
+        )
     return dict(pl.read_csv(SWISSPROT_COUNTS).iter_rows())
 
 
@@ -193,10 +221,24 @@ def pair_columns(pairs: pl.DataFrame, kstar: dict[str, int], tag: str) -> pl.Dat
         n = g.height
         k = int((g["longest_run"] >= kstar[a]).sum())
         lo, hi = wilson(k, n)
-        rows.append({"alphabet": a, f"{tag}_n_pairs": n, f"{tag}_n_reach_kstar": k,
-                     f"{tag}_share_reach_kstar": k / n, f"{tag}_share_lo": lo, f"{tag}_share_hi": hi})
-    kap = kap.rename({"n": f"{tag}_n_kappa", "kappa_mean": f"{tag}_kappa",
-                      "kappa_lo": f"{tag}_kappa_lo", "kappa_hi": f"{tag}_kappa_hi"})
+        rows.append(
+            {
+                "alphabet": a,
+                f"{tag}_n_pairs": n,
+                f"{tag}_n_reach_kstar": k,
+                f"{tag}_share_reach_kstar": k / n,
+                f"{tag}_share_lo": lo,
+                f"{tag}_share_hi": hi,
+            }
+        )
+    kap = kap.rename(
+        {
+            "n": f"{tag}_n_kappa",
+            "kappa_mean": f"{tag}_kappa",
+            "kappa_lo": f"{tag}_kappa_lo",
+            "kappa_hi": f"{tag}_kappa_hi",
+        }
+    )
     return pl.DataFrame(rows).join(kap, on="alphabet")
 
 
@@ -205,8 +247,10 @@ def build_table(recount: bool) -> tuple[pl.DataFrame, dict]:
     counts = swissprot_counts(recount)
     n_res = sum(counts.values())
     meta["n_res"] = n_res
-    check(hashlib.sha256(SEED_COUNTS.read_bytes()).hexdigest() == SEED_COUNTS_SHA256,
-          f"{SEED_COUNTS} is not the copy from b5650a2")
+    check(
+        hashlib.sha256(SEED_COUNTS.read_bytes()).hexdigest() == SEED_COUNTS_SHA256,
+        f"{SEED_COUNTS} is not the copy from b5650a2",
+    )
     seeds = {r["alphabet"]: r for r in pl.read_csv(SEED_COUNTS).iter_rows(named=True)}
 
     rows = []
@@ -215,38 +259,65 @@ def build_table(recount: bool) -> tuple[pl.DataFrame, dict]:
         s2 = sum(q * q for q in shares)
         b_sp = -math.log2(s2)
         s = seeds[name]
-        b_human = (math.log2(s["proteins_per_seed_k_small"] - 1) - math.log2(s["proteins_per_seed_k_main"] - 1)) / (
-            s["k_main"] - s["k_small"])
-        rows.append({
-            "alphabet": name, "n_letters": len(cl), "classes": " ".join(cl),
-            "class_shares": " ".join(f"{q:.6f}" for q in shares), "sum_sq_shares": s2,
-            "bits_log2_n": math.log2(len(cl)), "bits_swissprot": b_sp, "bits_human_seed_counts": b_human,
-            "kstar_exact": math.log2(n_res) / b_sp, "kstar": math.ceil(math.log2(n_res) / b_sp),
-        })
+        b_human = (
+            math.log2(s["proteins_per_seed_k_small"] - 1)
+            - math.log2(s["proteins_per_seed_k_main"] - 1)
+        ) / (s["k_main"] - s["k_small"])
+        rows.append(
+            {
+                "alphabet": name,
+                "n_letters": len(cl),
+                "classes": " ".join(cl),
+                "class_shares": " ".join(f"{q:.6f}" for q in shares),
+                "sum_sq_shares": s2,
+                "bits_log2_n": math.log2(len(cl)),
+                "bits_swissprot": b_sp,
+                "bits_human_seed_counts": b_human,
+                "kstar_exact": math.log2(n_res) / b_sp,
+                "kstar": math.ceil(math.log2(n_res) / b_sp),
+            }
+        )
     t = pl.DataFrame(rows)
     kstar = dict(zip(t["alphabet"], t["kstar"]))
 
     pfam = hc.add_identity_bin(pl.read_parquet(PFAM_PAIRS)).filter(
-        (pl.col("identity_bin") == BIN) & (pl.col("n_cols") >= MIN_COLS))
-    scope = hc.add_identity_bin(pl.read_parquet(SCOPE_PAIRS)).filter(
         (pl.col("identity_bin") == BIN) & (pl.col("n_cols") >= MIN_COLS)
-        & (pl.max_horizontal("tm_q", "tm_t") >= MIN_TM) & pl.col("category").is_in(SCOPE_CATEGORIES))
+    )
+    scope = hc.add_identity_bin(pl.read_parquet(SCOPE_PAIRS)).filter(
+        (pl.col("identity_bin") == BIN)
+        & (pl.col("n_cols") >= MIN_COLS)
+        & (pl.max_horizontal("tm_q", "tm_t") >= MIN_TM)
+        & pl.col("category").is_in(SCOPE_CATEGORIES)
+    )
     for d, label in [(pfam, "Pfam"), (scope, "SCOPe")]:
         per = d.group_by("alphabet").len()
-        check(per.height == 19 and per["len"].n_unique() == 1, f"{label}: not one row per pair for all 19 alphabets: {per}")
+        check(
+            per.height == 19 and per["len"].n_unique() == 1,
+            f"{label}: not one row per pair for all 19 alphabets: {per}",
+        )
     meta["pfam_n_families"] = pfam["family"].n_unique()
     meta["scope_n_superfamily_cross_family"] = scope.filter(
-        (pl.col("alphabet") == "protein20") & (pl.col("category") == "same_superfamily_diff_family")).height
-    t = t.join(pair_columns(pfam, kstar, "pfam"), on="alphabet").join(pair_columns(scope, kstar, "scope"), on="alphabet")
+        (pl.col("alphabet") == "protein20")
+        & (pl.col("category") == "same_superfamily_diff_family")
+    ).height
+    t = t.join(pair_columns(pfam, kstar, "pfam"), on="alphabet").join(
+        pair_columns(scope, kstar, "scope"), on="alphabet"
+    )
 
     # Checks against the values given with the request.
     for a, v in EXPECTED_S2.items():
         got = t.filter(pl.col("alphabet") == a)["sum_sq_shares"][0]
-        check(abs(got - v) <= EXPECTED_S2_TOL, f"sum of squared shares {a} = {got:.4f}, expected {v}")
+        check(
+            abs(got - v) <= EXPECTED_S2_TOL,
+            f"sum of squared shares {a} = {got:.4f}, expected {v}",
+        )
     for a, v in EXPECTED_KAPPA.items():
         got = t.filter(pl.col("alphabet") == a)["pfam_kappa"][0]
         check(round(got, 2) == v, f"kappa {a} = {got:.4f}, expected {v}")
-    check(t["pfam_n_pairs"].unique().to_list() == [EXPECTED_N_PFAM], f"Pfam pairs {t['pfam_n_pairs'].unique()}")
+    check(
+        t["pfam_n_pairs"].unique().to_list() == [EXPECTED_N_PFAM],
+        f"Pfam pairs {t['pfam_n_pairs'].unique()}",
+    )
     return order_rows(t), meta
 
 
@@ -254,14 +325,17 @@ def order_rows(t: pl.DataFrame) -> pl.DataFrame:
     group = pl.lit(None, dtype=pl.Int64)
     for i, (_, lo, hi) in enumerate(SIZE_GROUPS):
         group = pl.when(pl.col("n_letters").is_between(lo, hi)).then(i).otherwise(group)
-    return t.with_columns(group.alias("size_group")).sort(["size_group", "n_letters", "alphabet"],
-                                                          descending=[False, True, False])
+    return t.with_columns(group.alias("size_group")).sort(
+        ["size_group", "n_letters", "alphabet"], descending=[False, True, False]
+    )
 
 
 # ---------------------------------------------------------------------------
 # Figure
 # ---------------------------------------------------------------------------
-def row_positions(t: pl.DataFrame) -> tuple[list[float], list[tuple[str, float]], float]:
+def row_positions(
+    t: pl.DataFrame,
+) -> tuple[list[float], list[tuple[str, float]], float]:
     """y (mm from the top of the row block) of each row's centre, and of each group label."""
     ys, labels, y, prev = [], [], 0.0, None
     for g in t["size_group"].to_list():
@@ -297,11 +371,27 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
     # Row labels and size groups, left of a.
     ax_a = axes["a"]
     for y, name in zip(ys, names):
-        ax_a.text(-1.2 / COLS["a"][1], y, name, transform=ax_a.get_yaxis_transform(), ha="right", va="center",
-                  fontsize=6)
+        ax_a.text(
+            -1.2 / COLS["a"][1],
+            y,
+            name,
+            transform=ax_a.get_yaxis_transform(),
+            ha="right",
+            va="center",
+            fontsize=6,
+        )
     for text, y in group_labels:
-        ax_a.text(-1.2 / COLS["a"][1], y, text, transform=ax_a.get_yaxis_transform(), ha="right", va="center",
-                  fontsize=5.5, style="italic", color=GROUP_INK)
+        ax_a.text(
+            -1.2 / COLS["a"][1],
+            y,
+            text,
+            transform=ax_a.get_yaxis_transform(),
+            ha="right",
+            va="center",
+            fontsize=5.5,
+            style="italic",
+            color=GROUP_INK,
+        )
 
     # Row guides from each row across b, d, e (7c): every mark reads back to its label.
     for k in "bde":
@@ -321,17 +411,34 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
         prev_out = None  # 'above' / 'below' of the previous narrow class, to alternate
         for i, (c, q) in enumerate(zip(cls.split(), map(float, shares.split()))):
             w = 100 * q
-            ax_a.add_patch(Rectangle((x, y - BAR_MM / 2), w, BAR_MM, facecolor=BLUE_LIGHT if i % 2 == 0 else BLUE_DARK,
-                                     edgecolor="white", lw=0.4))
+            ax_a.add_patch(
+                Rectangle(
+                    (x, y - BAR_MM / 2),
+                    w,
+                    BAR_MM,
+                    facecolor=BLUE_LIGHT if i % 2 == 0 else BLUE_DARK,
+                    edgecolor="white",
+                    lw=0.4,
+                )
+            )
             need_mm = len(c) * char_mm + 0.3
             if need_mm <= w * mm_per_pct:
-                ax_a.text(x + w / 2, y, c, ha="center", va="center", family=MONO, fontsize=5.5)
+                ax_a.text(
+                    x + w / 2, y, c, ha="center", va="center", family=MONO, fontsize=5.5
+                )
                 prev_out = None
             else:
                 side = "below" if prev_out == "above" else "above"
                 dy = (BAR_MM / 2 + 0.15) * (-1 if side == "above" else 1)
-                ax_a.text(x + w / 2, y + dy, c, ha="center", va="bottom" if side == "above" else "top",
-                          family=MONO, fontsize=5)
+                ax_a.text(
+                    x + w / 2,
+                    y + dy,
+                    c,
+                    ha="center",
+                    va="bottom" if side == "above" else "top",
+                    family=MONO,
+                    fontsize=5,
+                )
                 prev_out = side
             x += w
         check(abs(x - 100) < 1e-3, f"class shares do not sum to 100% in row {y}")
@@ -342,10 +449,34 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
     # three values lie within 0.3 bits and would otherwise cover one another.
     y_h = [y + HUMAN_DY_MM for y in ys]
     ax_b.hlines(ys, t["bits_swissprot"], t["bits_log2_n"], color=JOIN, lw=1.0, zorder=1)
-    ax_b.hlines(y_h, t["bits_human_seed_counts"], t["bits_swissprot"], color=JOIN, lw=0.6, zorder=1)
-    ax_b.scatter(t["bits_log2_n"], ys, s=16, facecolor="white", edgecolor=REF_GREY, lw=0.8, zorder=2)
+    ax_b.hlines(
+        y_h,
+        t["bits_human_seed_counts"],
+        t["bits_swissprot"],
+        color=JOIN,
+        lw=0.6,
+        zorder=1,
+    )
+    ax_b.scatter(
+        t["bits_log2_n"],
+        ys,
+        s=16,
+        facecolor="white",
+        edgecolor=REF_GREY,
+        lw=0.8,
+        zorder=2,
+    )
     ax_b.scatter(t["bits_swissprot"], ys, s=6, color=PURPLE, lw=0, zorder=3)
-    ax_b.scatter(t["bits_human_seed_counts"], y_h, s=9, marker="D", facecolor="white", edgecolor=PURPLE, lw=0.7, zorder=4)
+    ax_b.scatter(
+        t["bits_human_seed_counts"],
+        y_h,
+        s=9,
+        marker="D",
+        facecolor="white",
+        edgecolor=PURPLE,
+        lw=0.7,
+        zorder=4,
+    )
     ax_b.set_xlim(0, 4.5)
     ax_b.set_xticks([0, 1, 2, 3, 4])
     ax_b.set_xlabel("Bits per letter")
@@ -372,19 +503,41 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
     # e: share of pairs with a run >= k*.
     ax_e = axes["e"]
     sh = 100 * t[f"{ds}_share_reach_kstar"]
-    ax_e.hlines(ys, 100 * t[f"{ds}_share_lo"], 100 * t[f"{ds}_share_hi"], color=PURPLE, lw=0.8, zorder=2)
+    ax_e.hlines(
+        ys,
+        100 * t[f"{ds}_share_lo"],
+        100 * t[f"{ds}_share_hi"],
+        color=PURPLE,
+        lw=0.8,
+        zorder=2,
+    )
     ax_e.scatter(sh, ys, s=6, color=PURPLE, lw=0, zorder=3)
     e_max = 8
-    check(float((100 * t[f"{ds}_share_hi"]).max()) < e_max - 1.6, "panel e axis too short for its intervals and numbers")
+    check(
+        float((100 * t[f"{ds}_share_hi"]).max()) < e_max - 1.6,
+        "panel e axis too short for its intervals and numbers",
+    )
     for y, v, hi in zip(ys, sh, 100 * t[f"{ds}_share_hi"]):
-        ax_e.text(hi + 0.25, y, f"{v:.1f}", va="center", ha="left", fontsize=5.5, color="black")
+        ax_e.text(
+            hi + 0.25,
+            y,
+            f"{v:.1f}",
+            va="center",
+            ha="left",
+            fontsize=5.5,
+            color="black",
+        )
     ax_e.set_xlim(0, e_max)
     ax_e.set_xticks([0, 2, 4, 6, 8])
     ax_e.set_xlabel("Pairs (%)")
 
     # Column headers, panel letters.
     n_pairs = t[f"{ds}_n_pairs"][0]
-    src = ("Pfam-A 38.2 seed alignments" if ds == "pfam" else "SCOPe 2.08 40%, same superfamily")
+    src = (
+        "Pfam-A 38.2 seed alignments"
+        if ds == "pfam"
+        else "SCOPe 2.08 40%, same superfamily"
+    )
     headers = {
         "a": "Classes; width = share of\nSwiss-Prot 2026_03 residues",
         "b": "Information\nper letter",
@@ -396,28 +549,80 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
     y_letter = (BOTTOM_MM + block_mm + 6.6) / h_mm
     for k in axes:
         x0 = COLS[k][0]
-        fig.text(x0 / W_MM, y_head, headers[k], ha="left", va="bottom", fontsize=6, linespacing=1.1)
-        fig.text((1.0 if k == "a" else x0 - 2.5) / W_MM, y_letter, k, fontsize=8, fontweight="bold",
-                 ha="left", va="bottom")
+        fig.text(
+            x0 / W_MM,
+            y_head,
+            headers[k],
+            ha="left",
+            va="bottom",
+            fontsize=6,
+            linespacing=1.1,
+        )
+        fig.text(
+            (1.0 if k == "a" else x0 - 2.5) / W_MM,
+            y_letter,
+            k,
+            fontsize=8,
+            fontweight="bold",
+            ha="left",
+            va="bottom",
+        )
     # Data source for d and e, above their panel letters, with a rule spanning both columns.
     y_src = (BOTTOM_MM + block_mm + 11.0) / h_mm
     x_d, x_e_end = COLS["d"][0] / W_MM, (COLS["e"][0] + COLS["e"][1]) / W_MM
-    fig.add_artist(Line2D([x_d, x_e_end], [y_src - 0.5 / h_mm] * 2, color=GROUP_INK, lw=0.4))
-    fig.text(x_d, y_src, f"{src}\n20–30% identity, n = {n_pairs:,} pairs",
-             fontsize=6, ha="left", va="bottom", color=GROUP_INK, linespacing=1.1)
+    fig.add_artist(
+        Line2D([x_d, x_e_end], [y_src - 0.5 / h_mm] * 2, color=GROUP_INK, lw=0.4)
+    )
+    fig.text(
+        x_d,
+        y_src,
+        f"{src}\n20–30% identity, n = {n_pairs:,} pairs",
+        fontsize=6,
+        ha="left",
+        va="bottom",
+        color=GROUP_INK,
+        linespacing=1.1,
+    )
 
     # Legend, above everything (read before the marks).
     handles = [
-        (Patch(facecolor=BLUE_LIGHT, edgecolor="white"), "class of residues (a); light and dark blue only separate neighbouring classes"),
-        (Line2D([], [], ls="", marker="o", ms=4, mfc="white", mec=REF_GREY, mew=0.8), "log2(n letters): bits if every letter were equally common (b)"),
-        (Line2D([], [], ls="", marker="o", ms=2.6, color=PURPLE), "measured: from Swiss-Prot composition (b), from aligned pairs (d, e)"),
-        (Line2D([], [], ls="", marker="D", ms=2.8, mfc="white", mec=PURPLE, mew=0.7), "measured: from kmerseek seed counts in the human proteome (b, set just under its row)"),
-        (Patch(facecolor=CORAL), "k*: seed length at which one chance match is expected in Swiss-Prot (c)"),
-        (Line2D([], [], color=PURPLE, lw=0.8), "95% interval: bootstrap over pairs (d, narrower than the dot), Wilson (e)"),
+        (
+            Patch(facecolor=BLUE_LIGHT, edgecolor="white"),
+            "class of residues (a); light and dark blue only separate neighbouring classes",
+        ),
+        (
+            Line2D([], [], ls="", marker="o", ms=4, mfc="white", mec=REF_GREY, mew=0.8),
+            "log2(n letters): bits if every letter were equally common (b)",
+        ),
+        (
+            Line2D([], [], ls="", marker="o", ms=2.6, color=PURPLE),
+            "measured: from Swiss-Prot composition (b), from aligned pairs (d, e)",
+        ),
+        (
+            Line2D([], [], ls="", marker="D", ms=2.8, mfc="white", mec=PURPLE, mew=0.7),
+            "measured: from kmerseek seed counts in the human proteome (b, set just under its row)",
+        ),
+        (
+            Patch(facecolor=CORAL),
+            "k*: seed length at which one chance match is expected in Swiss-Prot (c)",
+        ),
+        (
+            Line2D([], [], color=PURPLE, lw=0.8),
+            "95% interval: bootstrap over pairs (d, narrower than the dot), Wilson (e)",
+        ),
     ]
-    fig.legend([h for h, _ in handles], [l for _, l in handles], loc="upper left", ncol=2,
-               bbox_to_anchor=(COLS["a"][0] / W_MM - 0.12, 1 - 0.6 / h_mm), frameon=False, fontsize=6,
-               handlelength=1.4, columnspacing=1.5, borderaxespad=0)
+    fig.legend(
+        [h for h, _ in handles],
+        [l for _, l in handles],
+        loc="upper left",
+        ncol=2,
+        bbox_to_anchor=(COLS["a"][0] / W_MM - 0.12, 1 - 0.6 / h_mm),
+        frameon=False,
+        fontsize=6,
+        handlelength=1.4,
+        columnspacing=1.5,
+        borderaxespad=0,
+    )
 
     assert_no_text_collisions(fig)
     pf.save(fig, stem)
@@ -434,14 +639,20 @@ def assert_no_text_collisions(fig) -> None:
         if not t.get_visible() or not t.get_text().strip():
             continue
         bb = t.get_window_extent(r)
-        check(bb.x0 >= fb.x0 - 0.5 and bb.x1 <= fb.x1 + 0.5 and bb.y0 >= fb.y0 - 0.5 and bb.y1 <= fb.y1 + 0.5,
-              f"text leaves the canvas: {t.get_text()!r}")
+        check(
+            bb.x0 >= fb.x0 - 0.5
+            and bb.x1 <= fb.x1 + 0.5
+            and bb.y0 >= fb.y0 - 0.5
+            and bb.y1 <= fb.y1 + 0.5,
+            f"text leaves the canvas: {t.get_text()!r}",
+        )
         boxes.append((t.get_text(), bb.shrunk(0.97, 0.80)))
     for i in range(len(boxes)):
         for j in range(i + 1, len(boxes)):
             if boxes[i][1].overlaps(boxes[j][1]):
-                raise SystemExit(f"STOP: text overlaps: {boxes[i][0]!r} and {boxes[j][0]!r}")
-
+                raise SystemExit(
+                    f"STOP: text overlaps: {boxes[i][0]!r} and {boxes[j][0]!r}"
+                )
 
 
 def write_caption(t: pl.DataFrame, meta: dict) -> None:
@@ -450,24 +661,49 @@ def write_caption(t: pl.DataFrame, meta: dict) -> None:
     small = t.filter(pl.col("n_letters") <= 3)
     pct = lambda x: f"{100 * x:.1f}%"  # noqa: E731
     pct2 = lambda x: f"{100 * x:.2f}%"  # noqa: E731
-    top = {ds: t.sort(f"{ds}_share_reach_kstar", descending=True).row(0, named=True) for ds in ("pfam", "scope")}
+    top = {
+        ds: t.sort(f"{ds}_share_reach_kstar", descending=True).row(0, named=True)
+        for ds in ("pfam", "scope")
+    }
     x_pfam = top["pfam"]["pfam_share_reach_kstar"]
     rho = t.select(pl.corr("pfam_kappa", "scope_kappa", method="spearman")).item()
-    rho_e = t.select(pl.corr("pfam_share_reach_kstar", "scope_share_reach_kstar", method="spearman")).item()
+    rho_e = t.select(
+        pl.corr("pfam_share_reach_kstar", "scope_share_reach_kstar", method="spearman")
+    ).item()
     rho_nk = t.select(pl.corr("n_letters", "pfam_kappa", method="spearman")).item()
     rho_nb = t.select(pl.corr("n_letters", "bits_swissprot", method="spearman")).item()
     rho_nks = t.select(pl.corr("n_letters", "kstar", method="spearman")).item()
 
-    check(bool((t["bits_human_seed_counts"] < t["bits_swissprot"]).all()), "human B not below Swiss-Prot B everywhere")
-    check(bool((t["bits_swissprot"] < t["bits_log2_n"]).all()), "Swiss-Prot B not below log2(n) everywhere")
-    check(rho_nk < 0 and rho_nb > 0 and rho_nks < 0, "letter count does not order kappa, bits and k* as the title says")
-    check(small["pfam_kappa"].min() > row["protein20"]["pfam_kappa"], "a 2-3 letter alphabet has kappa below protein20")
-    check(row["gbmr7"]["pfam_kappa"] < row["sdm12"]["pfam_kappa"], "gbmr7 is no longer below sdm12")
+    check(
+        bool((t["bits_human_seed_counts"] < t["bits_swissprot"]).all()),
+        "human B not below Swiss-Prot B everywhere",
+    )
+    check(
+        bool((t["bits_swissprot"] < t["bits_log2_n"]).all()),
+        "Swiss-Prot B not below log2(n) everywhere",
+    )
+    check(
+        rho_nk < 0 and rho_nb > 0 and rho_nks < 0,
+        "letter count does not order kappa, bits and k* as the title says",
+    )
+    check(
+        small["pfam_kappa"].min() > row["protein20"]["pfam_kappa"],
+        "a 2-3 letter alphabet has kappa below protein20",
+    )
+    check(
+        row["gbmr7"]["pfam_kappa"] < row["sdm12"]["pfam_kappa"],
+        "gbmr7 is no longer below sdm12",
+    )
     for ds in ("pfam", "scope"):
-        check(float(t[f"{ds}_share_reach_kstar"].max()) < 0.06, f"{ds}: an alphabet reaches 6% or more")
+        check(
+            float(t[f"{ds}_share_reach_kstar"].max()) < 0.06,
+            f"{ds}: an alphabet reaches 6% or more",
+        )
 
     hp = small.sort("pfam_share_reach_kstar")
-    rho_nk, rho_nb, rho_nks = (f"{v:.2f}".replace("-", "−") for v in (rho_nk, rho_nb, rho_nks))
+    rho_nk, rho_nb, rho_nks = (
+        f"{v:.2f}".replace("-", "−") for v in (rho_nk, rho_nb, rho_nks)
+    )
     text = f"""**Supplementary Figure 1 | Fewer letters keep more of each residue's class between related proteins but carry fewer bits per letter, so every alphabet needs a longer seed; at its own seed length, no alphabet reaches more than {pct(x_pfam)} of 20–30% identity pairs.**
 
 One row per kmerseek alphabet (19), grouped by letter count; the rows are in the same order in every column. Classes are those of kmerseek {KMERSEEK_TAG} `src/rust/alphabets.rs` (dayhoff6 is encoded by sourmash). Across the 19 alphabets, fewer letters go with higher κ (Spearman ρ = {rho_nk} between letter count and κ), fewer bits per letter (ρ = {rho_nb}) and a longer k* (ρ = {rho_nks}).
@@ -489,18 +725,36 @@ All numbers: `tables/suppfig1_values.csv`, written with the figure by `scripts/p
     CAPTION.write_text(text)
     print(f"wrote {CAPTION}")
 
+
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--recount", action="store_true", help="recount Swiss-Prot residues from the FASTA")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--recount",
+        action="store_true",
+        help="recount Swiss-Prot residues from the FASTA",
+    )
     args = ap.parse_args()
     t, meta = build_table(args.recount)
     print(meta)
     with pl.Config(tbl_rows=25, tbl_cols=20, tbl_width_chars=250):
-        print(t.select("alphabet", "n_letters", pl.col("sum_sq_shares").round(4), pl.col("bits_swissprot").round(3),
-                       pl.col("bits_human_seed_counts").round(3), "kstar", pl.col("pfam_kappa").round(3),
-                       (100 * pl.col("pfam_share_reach_kstar")).round(2).alias("pfam_%"), "pfam_n_reach_kstar",
-                       pl.col("scope_kappa").round(3), (100 * pl.col("scope_share_reach_kstar")).round(2).alias("scope_%"),
-                       "scope_n_reach_kstar"))
+        print(
+            t.select(
+                "alphabet",
+                "n_letters",
+                pl.col("sum_sq_shares").round(4),
+                pl.col("bits_swissprot").round(3),
+                pl.col("bits_human_seed_counts").round(3),
+                "kstar",
+                pl.col("pfam_kappa").round(3),
+                (100 * pl.col("pfam_share_reach_kstar")).round(2).alias("pfam_%"),
+                "pfam_n_reach_kstar",
+                pl.col("scope_kappa").round(3),
+                (100 * pl.col("scope_share_reach_kstar")).round(2).alias("scope_%"),
+                "scope_n_reach_kstar",
+            )
+        )
     t.drop("size_group").write_csv(VALUES, float_precision=5)
     draw(t, meta, "pfam", FIG / "suppfig1")
     draw(t, meta, "scope", FIG / "suppfig1_scope")
