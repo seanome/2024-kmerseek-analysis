@@ -311,3 +311,56 @@ def finish_figure(
         bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
     )
     fig.savefig(path, dpi=dpi, bbox_inches="tight")
+
+
+# ---------------------------------------------------------------------------
+# Exact chance of a long class-identical run, for one pair at a time.
+# ---------------------------------------------------------------------------
+
+
+def aligned_stretches(qaln: str, taln: str) -> np.ndarray:
+    """Lengths of the gap-free stretches of an alignment: runs of columns where both have a residue."""
+    q = TABLES["protein20"][np.frombuffer(qaln.encode(), dtype=np.uint8)]
+    t = TABLES["protein20"][np.frombuffer(taln.encode(), dtype=np.uint8)]
+    d = np.diff(np.concatenate(([0], ((q != GAP) & (t != GAP)).astype(np.int8), [0])))
+    return np.flatnonzero(d == -1) - np.flatnonzero(d == 1)
+
+
+def pr_longest_run_at_least(
+    pr_agree: np.ndarray, stretch_lengths: list[np.ndarray], ks: list[int] | np.ndarray
+) -> np.ndarray:
+    """Pr(longest run of agreeing positions >= k), exactly, for every pair and every k.
+
+    Each pair i is a set of stretches (lengths in ``stretch_lengths[i]``). Every position
+    agrees independently with probability ``pr_agree[i]``; a run cannot cross from one
+    stretch to the next. Pass one stretch per pair to ignore gaps.
+
+    Within one stretch of n positions, Q_n = Pr(no run >= k) follows
+    Q_n = 1 for n < k, Q_k = 1 - p^k, Q_n = Q_(n-1) - (1 - p) p^k Q_(n-k-1) for n > k
+    (the first run of k ends at position n, after a disagreeing position n - k).
+    Stretches are independent, so the pair's Pr(no run >= k) is the product over them.
+
+    Returns an array of shape (len(ks), n_pairs).
+    """
+    p = np.asarray(pr_agree, dtype=float)
+    n_pairs = p.size
+    n_max = max(int(s.max()) for s in stretch_lengths)
+    pair_idx, length, count = [], [], []
+    for i, s in enumerate(stretch_lengths):
+        u, c = np.unique(s, return_counts=True)
+        pair_idx.append(np.full(u.size, i))
+        length.append(u)
+        count.append(c)
+    pair_idx, length, count = (np.concatenate(x) for x in (pair_idx, length, count))
+    out = np.empty((len(ks), n_pairs))
+    for ki, k in enumerate(ks):
+        q = np.ones((n_max + 1, n_pairs))
+        pk = p**k
+        if k <= n_max:
+            q[k] = 1 - pk
+        for n in range(k + 1, n_max + 1):
+            q[n] = q[n - 1] - (1 - p) * pk * q[n - k - 1]
+        log_none = np.zeros(n_pairs)
+        np.add.at(log_none, pair_idx, count * np.log(np.clip(q[length, pair_idx], 1e-300, 1.0)))
+        out[ki] = 1 - np.exp(log_none)
+    return out
