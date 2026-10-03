@@ -77,9 +77,8 @@ params.ka_queries_max               = 3000
 // Measured peak memory and run time per process and pair (tools/measure_resources.py).
 params.resources_measured = "${projectDir}/assets/resources_measured.tsv"
 
-params.max_forks         = 50
-params.submit_rate_limit = '15/1min'
-params.queue_size        = 200
+// max_forks, submit_rate_limit and queue_size are in nextflow.config: the sherlock profile
+// reads them, and the config is parsed before this file.
 
 SETTING_NAMES = ['exact', 'c_min', 'c_min_x1.1', 'c_opt', 'c_max', 'c2']
 
