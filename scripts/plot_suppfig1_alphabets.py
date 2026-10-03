@@ -124,7 +124,7 @@ COLS = {  # left edge, width
 }
 ROW_MM = 4.6
 GROUP_GAP_MM = 4.2
-TOP_MM = 24.5  # legend and column headers
+TOP_MM = 27.5  # legend and column headers
 BOTTOM_MM = 9.0  # x axes
 BAR_MM = 3.0
 HUMAN_DY_MM = 1.2
@@ -220,6 +220,7 @@ def pair_columns(pairs: pl.DataFrame, kstar: dict[str, int], tag: str) -> pl.Dat
         a = a[0]
         n = g.height
         k = int((g["longest_run"] >= kstar[a]).sum())
+        k_minus1 = int((g["longest_run"] >= kstar[a] - 1).sum())
         lo, hi = wilson(k, n)
         rows.append(
             {
@@ -229,6 +230,7 @@ def pair_columns(pairs: pl.DataFrame, kstar: dict[str, int], tag: str) -> pl.Dat
                 f"{tag}_share_reach_kstar": k / n,
                 f"{tag}_share_lo": lo,
                 f"{tag}_share_hi": hi,
+                f"{tag}_share_reach_kstar_minus1": k_minus1 / n,
             }
         )
     kap = kap.rename(
@@ -253,8 +255,11 @@ def build_table(recount: bool) -> tuple[pl.DataFrame, dict]:
     )
     seeds = {r["alphabet"]: r for r in pl.read_csv(SEED_COUNTS).iter_rows(named=True)}
 
+    # Panel a draws the classes in the order alphabets.rs lists them (same sets, checked above).
+    rs = alphabets_rs_clusters() or {}
     rows = []
     for name, cl in hc.ALPHABET_CLUSTERS.items():
+        cl = rs.get(name, cl)
         shares = [sum(counts[r] for r in c) / n_res for c in cl]
         s2 = sum(q * q for q in shares)
         b_sp = -math.log2(s2)
@@ -406,9 +411,10 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
     renderer = fig.canvas.get_renderer()
     mm_per_pct = COLS["a"][1] / 100
     char_mm = 5.5 / 72 * 25.4 * 0.6  # Courier New advance is 0.6 em
+    out_char_mm = 5 / 72 * 25.4 * 0.6
     for y, cls, shares in zip(ys, t["classes"].to_list(), t["class_shares"].to_list()):
         x = 0.0
-        prev_out = None  # 'above' / 'below' of the previous narrow class, to alternate
+        prev_right = -1.0  # right edge (in %) of the last label printed above this bar
         for i, (c, q) in enumerate(zip(cls.split(), map(float, shares.split()))):
             w = 100 * q
             ax_a.add_patch(
@@ -421,25 +427,31 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
                     lw=0.4,
                 )
             )
-            need_mm = len(c) * char_mm + 0.3
-            if need_mm <= w * mm_per_pct:
+            if len(c) * char_mm + 0.3 <= w * mm_per_pct:
                 ax_a.text(
                     x + w / 2, y, c, ha="center", va="center", family=MONO, fontsize=5.5
                 )
-                prev_out = None
             else:
-                side = "below" if prev_out == "above" else "above"
-                dy = (BAR_MM / 2 + 0.15) * (-1 if side == "above" else 1)
+                # Too narrow: print the residues just above the segment, moved right only
+                # as far as needed to clear the previous label above this bar.
+                half = len(c) * out_char_mm / mm_per_pct / 2
+                cx = min(
+                    max(x + w / 2, prev_right + 0.25 / mm_per_pct + half), 100 - half
+                )
+                check(
+                    abs(cx - (x + w / 2)) * mm_per_pct <= 1.5,
+                    f"label {c} in row {y} would sit {abs(cx - (x + w / 2)) * mm_per_pct:.1f} mm from its segment",
+                )
                 ax_a.text(
-                    x + w / 2,
-                    y + dy,
+                    cx,
+                    y - BAR_MM / 2 - 0.15,
                     c,
                     ha="center",
-                    va="bottom" if side == "above" else "top",
+                    va="bottom",
                     family=MONO,
                     fontsize=5,
                 )
-                prev_out = side
+                prev_right = cx + half
             x += w
         check(abs(x - 100) < 1e-3, f"class shares do not sum to 100% in row {y}")
 
@@ -543,7 +555,7 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
         "b": "Information\nper letter",
         "c": "Seed length\nk*",
         "d": "Class agreement\nabove chance",
-        "e": "Pairs with a\nrun ≥ own k*",
+        "e": "Pairs with a\nrun ≥ k*",
     }
     y_head = (BOTTOM_MM + block_mm + 1.2) / h_mm
     y_letter = (BOTTOM_MM + block_mm + 6.6) / h_mm
@@ -599,6 +611,10 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
             "measured: from Swiss-Prot composition (b), from aligned pairs (d, e)",
         ),
         (
+            Line2D([], [], color=JOIN, lw=1.0),
+            "grey line: joins the values of one alphabet (b)",
+        ),
+        (
             Line2D([], [], ls="", marker="D", ms=2.8, mfc="white", mec=PURPLE, mew=0.7),
             "measured: from kmerseek seed counts in the human proteome (b, set just under its row)",
         ),
@@ -609,6 +625,10 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
         (
             Line2D([], [], color=PURPLE, lw=0.8),
             "95% interval: bootstrap over pairs (d, narrower than the dot), Wilson (e)",
+        ),
+        (
+            Line2D([], [], ls=""),
+            "run (e): aligned columns in a row, no gap, residues in the same class",
         ),
     ]
     fig.legend(
@@ -701,22 +721,39 @@ def write_caption(t: pl.DataFrame, meta: dict) -> None:
         )
 
     hp = small.sort("pfam_share_reach_kstar")
+    two = t.filter(pl.col("n_letters") == 2)
+    reduced = t.filter(pl.col("alphabet") != "protein20")
+    check(
+        int(reduced["kstar"].min()) > row["protein20"]["kstar"],
+        "a reduced alphabet has k* no longer than protein20",
+    )
+    # Exceptions to the letter-count trends, named in the caption; stop if they change.
+    check(
+        row["gbmr7"]["kstar"] > row["gbmr4"]["kstar"], "gbmr7 k* no longer above gbmr4"
+    )
+    check(
+        row["hp_lehninger_hpc3"]["kstar"] < int(two["kstar"].min()),
+        "hp_lehninger_hpc3 k* no longer below every 2-letter alphabet",
+    )
+    two_below_gbmr4 = two.filter(pl.col("pfam_kappa") < row["gbmr4"]["pfam_kappa"])
+    check(two_below_gbmr4.height >= 1, "no 2-letter alphabet below gbmr4 in kappa")
+    m1 = t.sort("pfam_share_reach_kstar_minus1", descending=True).row(0, named=True)
     rho_nk, rho_nb, rho_nks = (
         f"{v:.2f}".replace("-", "−") for v in (rho_nk, rho_nb, rho_nks)
     )
-    text = f"""**Supplementary Figure 1 | Fewer letters keep more of each residue's class between related proteins but carry fewer bits per letter, so every alphabet needs a longer seed; at its own seed length, no alphabet reaches more than {pct(x_pfam)} of 20–30% identity pairs.**
+    text = f"""**Supplementary Figure 1 | Alphabets with fewer letters keep more of each residue's class between related proteins but carry fewer bits per letter, so every reduced alphabet needs a longer seed than the 20 amino acids; at its own seed length, no alphabet reaches more than {pct(x_pfam)} of 20–30% identity pairs.**
 
-One row per kmerseek alphabet (19), grouped by letter count; the rows are in the same order in every column. Classes are those of kmerseek {KMERSEEK_TAG} `src/rust/alphabets.rs` (dayhoff6 is encoded by sourmash). Across the 19 alphabets, fewer letters go with higher κ (Spearman ρ = {rho_nk} between letter count and κ), fewer bits per letter (ρ = {rho_nb}) and a longer k* (ρ = {rho_nks}).
+One row per kmerseek alphabet (19), grouped by letter count; the rows are in the same order in every column. Classes are those of kmerseek {KMERSEEK_TAG} `src/rust/alphabets.rs` (dayhoff6 is encoded by sourmash). Across the 19 alphabets, fewer letters go with higher κ (Spearman ρ = {rho_nk} between letter count and κ), fewer bits per letter (ρ = {rho_nb}) and a longer k* (ρ = {rho_nks}). These are trends, not a strict order. gbmr7 (7 letters) needs k* = {row["gbmr7"]["kstar"]}, more than gbmr4 (4 letters, {row["gbmr4"]["kstar"]}), because one class holds {sorted(map(float, row["gbmr7"]["class_shares"].split()))[-1] * 100:.0f}% of residues. hp_lehninger_hpc3 (3 letters) needs {row["hp_lehninger_hpc3"]["kstar"]}, less than every 2-letter alphabet ({int(two["kstar"].min())}–{int(two["kstar"].max())}). gbmr4 (κ = {row["gbmr4"]["pfam_kappa"]:.2f}) keeps classes better than {two_below_gbmr4.height} of the {two.height} 2-letter alphabets, and gbmr7 ({row["gbmr7"]["pfam_kappa"]:.2f}) less well than sdm12 ({row["sdm12"]["pfam_kappa"]:.2f}).
 
-**a**, Classes of each alphabet, labelled with their residues. Segment width is the class's share of the {meta["n_res"]:,} standard residues in UniProtKB/Swiss-Prot release 2026_03. The residues of a class too narrow for its letters are printed above or below its segment. The two shades of blue only separate neighbouring classes.
+**a**, Classes of each alphabet, labelled with their residues. Segment width is the class's share of the {meta["n_res"]:,} standard residues in UniProtKB/Swiss-Prot release 2026_03. The residues of a class too narrow for its letters are printed just above its segment. The two shades of blue only separate neighbouring classes.
 
 **b**, Bits of information in one matching letter. Open grey circle: log2 of the number of letters, the value if all letters were equally common. Filled purple circle: B = −log2(Σ q²), where q is each class's share of Swiss-Prot residues, so Σ q² is the chance that two residues drawn at random fall in the same class. Purple diamond, set just under its row: B measured from kmerseek seed counts in the human proteome. P(k), the mean number of proteins sharing a seed of k letters, falls by a factor 2^B for each added letter, so B = [log2(P(k_small) − 1) − log2(P(k_main) − 1)] / (k_main − k_small) (notebook 250). In all 19 alphabets the human value is below the Swiss-Prot value, and both are below log2 of the letter count. For hp_thomas_dill2 the three values are {row["hp_thomas_dill2"]["bits_log2_n"]:.3f}, {row["hp_thomas_dill2"]["bits_swissprot"]:.3f} and {row["hp_thomas_dill2"]["bits_human_seed_counts"]:.3f} bits.
 
 **c**, k* = ⌈log2 N / B⌉, with N = {meta["n_res"]:,} residues and B from Swiss-Prot composition (b, filled circle): the seed length at which one match by chance is expected across Swiss-Prot. k* runs from {row["protein20"]["kstar"]} (protein20) to {int(t["kstar"].max())} ({t.sort("kstar").row(-1, named=True)["alphabet"]}).
 
-**d**, Cohen's κ for the classes of aligned residues: (observed agreement − agreement expected from the two sequences' class compositions) / (1 − expected). κ = 0 means no more agreement than chance; higher means the class is kept more often. Pairs from the same Pfam-A 38.2 seed alignment with 20–30% identity over at least {MIN_COLS} aligned columns ({row["protein20"]["pfam_n_pairs"]:,} pairs from {meta["pfam_n_families"]:,} families). Mean over pairs with a bootstrap 95% interval (500 resamples; the interval is narrower than the dot). κ is {row["protein20"]["pfam_kappa"]:.2f} for protein20 and {small["pfam_kappa"].min():.2f}–{small["pfam_kappa"].max():.2f} for the 2–3 letter alphabets. gbmr7 ({row["gbmr7"]["pfam_kappa"]:.2f}) is below sdm12 ({row["sdm12"]["pfam_kappa"]:.2f}) although it has fewer letters.
+**d**, Cohen's κ for the classes of aligned residues: (observed agreement − agreement expected from the two sequences' class compositions) / (1 − expected). κ = 0 means no more agreement than chance; higher means the class is kept more often. Pairs from the same Pfam-A 38.2 seed alignment with 20–30% identity over at least {MIN_COLS} aligned columns ({row["protein20"]["pfam_n_pairs"]:,} pairs from {meta["pfam_n_families"]:,} families). Mean over pairs with a bootstrap 95% interval (500 resamples; the interval is narrower than the dot). κ is {row["protein20"]["pfam_kappa"]:.2f} for protein20 and {small["pfam_kappa"].min():.2f}–{small["pfam_kappa"].max():.2f} for the 2–3 letter alphabets.
 
-**e**, Share of the same pairs whose longest class-identical run is at least the alphabet's own k* (c). A class-identical run is a stretch of consecutive aligned columns with no gap in either sequence and the same class in both: the longest exact shared seed the pair has in that alphabet. Wilson 95% interval. The highest is {top["pfam"]["alphabet"]}, {pct2(x_pfam)} ({top["pfam"]["pfam_n_reach_kstar"]:,} pairs); protein20 {pct2(row["protein20"]["pfam_share_reach_kstar"])}; the 2–3 letter alphabets {pct2(hp["pfam_share_reach_kstar"][0])} ({hp["alphabet"][0]}) to {pct2(hp["pfam_share_reach_kstar"][-1])} ({hp["alphabet"][-1]}); gbmr7 {pct2(row["gbmr7"]["pfam_share_reach_kstar"])}.
+**e**, Share of the same pairs whose longest class-identical run is at least the alphabet's own k* (c). A class-identical run is a stretch of consecutive aligned columns with no gap in either sequence and the same class in both: the longest exact seed the two sequences share along their alignment. A seed the two sequences share elsewhere, off the alignment, is not counted. Wilson 95% interval. The highest is {top["pfam"]["alphabet"]}, {pct2(x_pfam)} ({top["pfam"]["pfam_n_reach_kstar"]:,} pairs); protein20 {pct2(row["protein20"]["pfam_share_reach_kstar"])}; the 2–3 letter alphabets {pct2(hp["pfam_share_reach_kstar"][0])} ({hp["alphabet"][0]}) to {pct2(hp["pfam_share_reach_kstar"][-1])} ({hp["alphabet"][-1]}); gbmr7 {pct2(row["gbmr7"]["pfam_share_reach_kstar"])}. The bound depends on rounding k* up to a whole letter: at one letter less (k* − 1) the highest share is {m1["alphabet"]}, {pct2(m1["pfam_share_reach_kstar_minus1"])}.
 
 **Second version (`suppfig1_scope`), a check on the alignment source.** Columns a–c are unchanged. Columns d and e use SCOPe 2.08 domain pairs (40% identity set) in the same superfamily, from the same or a different family, aligned by structure with USalign (TM-score ≥ {MIN_TM} for at least one of the two domains), 20–30% identity over at least {MIN_COLS} columns: {row["protein20"]["scope_n_pairs"]:,} pairs, {meta["scope_n_superfamily_cross_family"]:,} of them from different families. The order of the alphabets is close to the Pfam one (Spearman ρ = {rho:.2f} for κ, {rho_e:.2f} for e). The highest share in e is {top["scope"]["alphabet"]}, {pct2(top["scope"]["scope_share_reach_kstar"])} ({top["scope"]["scope_n_reach_kstar"]} pairs); hp_thomas_dill2 {pct2(row["hp_thomas_dill2"]["scope_share_reach_kstar"])} ({row["hp_thomas_dill2"]["scope_n_reach_kstar"]} pairs). κ for hp_thomas_dill2 is {row["hp_thomas_dill2"]["scope_kappa"]:.2f} and for protein20 {row["protein20"]["scope_kappa"]:.2f}.
 
