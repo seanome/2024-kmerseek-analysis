@@ -1,0 +1,27 @@
+# Fails a pull request that adds a PNG, or a notebook image, still in full colour.
+# The pre-commit hook does this on the laptop; this catches commits made without it
+# (on Sherlock, or before the hook was installed).
+
+name: png-256-colours
+
+on:
+  pull_request:
+    paths: ['**.png', '**.ipynb', 'scripts/shrink_png.py', 'tests/test_shrink_png.py',
+            '.github/workflows/png-256-colours.yml']
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install 'pillow>=10.1' pytest
+      - run: pytest -q tests/test_shrink_png.py
+      - name: PNGs and notebooks changed in this PR are at 256 colours
+        run: |
+          git diff --name-only --diff-filter=AM -z "origin/${{ github.base_ref }}...HEAD" -- '*.png' '*.ipynb' \
+            | xargs -0 -r python scripts/shrink_png.py --check

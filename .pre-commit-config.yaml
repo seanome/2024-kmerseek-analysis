@@ -1,0 +1,11 @@
+# Runs on every `git commit` (pre-commit is already installed in this repo's .git/hooks).
+# If the hook rewrites a file, the commit stops; `git add` the file again and re-commit.
+repos:
+  - repo: local
+    hooks:
+      - id: png-256-colours
+        name: save PNGs and notebook images with 256 colours
+        entry: python scripts/shrink_png.py
+        language: python
+        additional_dependencies: ["pillow>=10.1"]
+        files: '\.(png|ipynb)$'
