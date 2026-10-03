@@ -104,7 +104,15 @@ LADDER_LAUNCH_DIR := $(MAKEFILE_DIR)/runs/ladder
 # chunks; the region benchmark ran a sweep of the same shape at these widths. The head
 # tracks ~17_000 tasks and the Botryllus head reached 11.3 GB on 175, so the JVM gets
 # room; 7 days is the hns walltime ceiling, and a head that dies at the wall resumes.
-LADDER_MAX_FORKS  ?= 150
+#
+# Forks equal to the queue size, so jobs waiting for a big-memory node cannot hold every
+# slot. Raised from 150 on 2026-10-03: 24 h into the midi relaunch, 145 of the 150 slots
+# were searches asking 256-500 GB (gbmr7 k13-14, gbmr4 k13-14, dayhoff6 k8, hsdm17 k5)
+# waiting for one of hns's 15 nodes above 384 GB, which other users held. 6 such
+# searches finished that day, and about 4_200 searches that fit an ordinary node were
+# never submitted. Their asks are not padded: successful searches on those settings
+# peaked at 200-312 GB.
+LADDER_MAX_FORKS  ?= 400
 LADDER_QUEUE_SIZE ?= 400
 LADDER_HEAD_TIME  ?= 7-00:00:00
 LADDER_HEAD_MEM   ?= 32G
