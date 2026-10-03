@@ -1,4 +1,4 @@
-alphabet,n_letters,letter_classes,B_comp,B_human,k_small,k_main,proteins_per_seed_k_small,proteins_per_seed_k_main,k_human100_exact,k_human100,k_star_exact,k_star,k_max_exact,k_max,k_min,n_ksizes,ksizes
+alphabet,n_letters,letter_classes,B_comp,B_human,k_small,k100_measured,proteins_per_seed_k_small,proteins_per_seed_k100,k100_predicted_exact,k100_predicted,k_star_exact,k_star,k_max_exact,k_max,k_min,n_ksizes,ksizes
 protein20,20,A C D E F G H I K L M N P Q R S T V W Y,4.0639,3.6526,4,5,158.2,13.5,4.134,5,6.801,7,7.567,8,5,4,"5,6,7,8"
 uniprot18,18,A R N D C Q EP G HL I K M F S T W Y V,3.8248,3.3842,4,5,337.2,33.2,4.392,5,7.226,8,8.167,9,5,5,"5,6,7,8,9"
 hsdm17,17,A D KE R N T S Q Y F LIV M C W H G P,3.3174,2.9461,4,5,700.0,91.7,5.064,6,8.332,9,9.382,10,5,6,"5,6,7,8,9,10"

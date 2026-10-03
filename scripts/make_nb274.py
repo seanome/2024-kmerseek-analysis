@@ -62,22 +62,24 @@ listed.
   sourmash, so its classes come from `notebooks/hp_conservation_utils.py`.
 
 **Definitions.**
-- $k_\mathrm{main}$: the shortest $k$ at which seeds are shared by fewer than 100 human proteins
-  on average ($P(k) < 100$, each seed weighted by how often it occurs), measured by kmerseek in
-  notebook 250.
+- $k_{100}$: the shortest $k$ at which seeds are shared by fewer than 100 human proteins on
+  average ($P(k) < 100$, each seed weighted by how often it occurs), measured by kmerseek in
+  notebook 250. Notebook 250's table calls this column `k_main`.
 - Bits per letter $B$: how much one matching letter narrows the search. Each extra letter
   divides the number of chance matches by $2^B$.
 - $B_\mathrm{comp}$, bits per letter from composition: $B_\mathrm{comp} = -\log_2 \sum_c q_c^2$,
   where $q_c$ is the share of Swiss-Prot residues in letter class $c$. $\sum_c q_c^2$ is the
   chance that two residues drawn at random fall in the same class.
 - $B_\mathrm{human}$, bits per letter measured in the human proteome, from the two measured seed
-  lengths $k_\mathrm{small} < k_\mathrm{main}$:
-  $B_\mathrm{human} = \dfrac{\log_2(P(k_\mathrm{small}) - 1) - \log_2(P(k_\mathrm{main}) - 1)}{k_\mathrm{main} - k_\mathrm{small}}$
+  lengths $k_\mathrm{small} < k_{100}$:
+  $B_\mathrm{human} = \dfrac{\log_2(P(k_\mathrm{small}) - 1) - \log_2(P(k_{100}) - 1)}{k_{100} - k_\mathrm{small}}$
   (the $-1$ removes the protein the seed came from).
-- Equation 4b of the explainer: the shortest $k$ at which a seed expects at most `allowed`
+- The seed-length formula: the shortest $k$ at which a seed expects at most `allowed`
   chance matches in a database of $N$ residues,
   $k(N, \mathrm{allowed}, B) = \left\lceil \dfrac{\log_2 N - \log_2 \mathrm{allowed}}{B} \right\rceil$.
-- $k_\mathrm{min} = \min(k_\mathrm{main},\ k(N_\mathrm{human}, 100, B_\mathrm{comp}))$, the low end.
+- $k_{100}$ predicted $= k(N_\mathrm{human}, 100, B_\mathrm{comp})$: the formula's answer to the
+  question $k_{100}$ measures.
+- $k_\mathrm{min} = \min(k_{100}\ \text{measured},\ k_{100}\ \text{predicted})$, the low end.
 - $k^* = k(209{,}017{,}843,\ 1,\ B_\mathrm{comp})$: one chance match in Swiss-Prot.
 - $k_\mathrm{max} = k(209{,}017{,}843,\ 1,\ B_\mathrm{human})$, the high end. It is an estimate:
   the formula with a measured input.
@@ -130,7 +132,7 @@ SWISSPROT_PERCENT = {
     "C": 1.38, "I": 5.90, "P": 4.75, "V": 6.85,
 }  # fmt: skip
 
-ALLOWED_HUMAN = 100  # chance matches per seed at the low end, as for k_main
+ALLOWED_HUMAN = 100  # chance matches per seed at the low end, as for k_100
 ALLOWED_SWISSPROT = 1  # chance matches per seed at k* and k_max
 N_HUMAN_EXPLAINER = 11_000_000  # the human proteome size the explainer used
 
@@ -243,21 +245,21 @@ md(r"""
 ## 2. Bits per letter and the k-sizes to test
 
 For each alphabet: $B_\mathrm{comp}$ from the Swiss-Prot composition, $B_\mathrm{human}$ from the
-two measured seed lengths, then Equation 4b three times. The `_exact` columns are the value
+two measured seed lengths, then the seed-length formula three times. The `_exact` columns are the value
 inside the ceiling, so a $k$ that sits just above a whole number is visible.
 `tables/250_two_k_per_alphabet.csv` has no bits-per-letter column, so $B_\mathrm{human}$ is
 computed here from its seed counts.
 """)
 
 code(r"""
-def k_eq4b_exact(n_residues: float, allowed: float, bits_per_letter: float) -> float:
-    '''Equation 4b before rounding up: (log2 N - log2 allowed) / B.'''
+def k_formula_exact(n_residues: float, allowed: float, bits_per_letter: float) -> float:
+    '''The seed-length formula before rounding up: (log2 N - log2 allowed) / B.'''
     return (math.log2(n_residues) - math.log2(allowed)) / bits_per_letter
 
 
-def k_eq4b(n_residues: float, allowed: float, bits_per_letter: float) -> int:
-    '''Equation 4b: the shortest k with at most `allowed` chance matches in N residues.'''
-    return math.ceil(k_eq4b_exact(n_residues, allowed, bits_per_letter))
+def k_formula(n_residues: float, allowed: float, bits_per_letter: float) -> int:
+    '''The shortest k with at most `allowed` chance matches in N residues.'''
+    return math.ceil(k_formula_exact(n_residues, allowed, bits_per_letter))
 
 
 def bits_from_composition(letter_classes: list[str]) -> float:
@@ -267,6 +269,7 @@ def bits_from_composition(letter_classes: list[str]) -> float:
 
 
 def bits_from_human_seed_counts(row: dict) -> float:
+    # Notebook 250's table names k_100 `k_main`.
     drop = math.log2(row["proteins_per_seed_k_small"] - 1) - math.log2(row["proteins_per_seed_k_main"] - 1)
     return drop / (row["k_main"] - row["k_small"])
 
@@ -280,9 +283,9 @@ def ksize_row(name: str, n_human: float) -> dict:
     r = seeds[name]
     b_comp = bits_from_composition(classes[name])
     b_human = bits_from_human_seed_counts(r)
-    k_h100 = k_eq4b(n_human, ALLOWED_HUMAN, b_comp)
-    k_star = k_eq4b(SWISSPROT_RESIDUES, ALLOWED_SWISSPROT, b_comp)
-    k_max = k_eq4b(SWISSPROT_RESIDUES, ALLOWED_SWISSPROT, b_human)
+    k_h100 = k_formula(n_human, ALLOWED_HUMAN, b_comp)
+    k_star = k_formula(SWISSPROT_RESIDUES, ALLOWED_SWISSPROT, b_comp)
+    k_max = k_formula(SWISSPROT_RESIDUES, ALLOWED_SWISSPROT, b_human)
     k_min = min(r["k_main"], k_h100)
     return {
         "alphabet": name,
@@ -291,14 +294,14 @@ def ksize_row(name: str, n_human: float) -> dict:
         "B_comp": round(b_comp, 4),
         "B_human": round(b_human, 4),
         "k_small": r["k_small"],
-        "k_main": r["k_main"],
+        "k100_measured": r["k_main"],
         "proteins_per_seed_k_small": r["proteins_per_seed_k_small"],
-        "proteins_per_seed_k_main": r["proteins_per_seed_k_main"],
-        "k_human100_exact": round(k_eq4b_exact(n_human, ALLOWED_HUMAN, b_comp), 3),
-        "k_human100": k_h100,
-        "k_star_exact": round(k_eq4b_exact(SWISSPROT_RESIDUES, ALLOWED_SWISSPROT, b_comp), 3),
+        "proteins_per_seed_k100": r["proteins_per_seed_k_main"],
+        "k100_predicted_exact": round(k_formula_exact(n_human, ALLOWED_HUMAN, b_comp), 3),
+        "k100_predicted": k_h100,
+        "k_star_exact": round(k_formula_exact(SWISSPROT_RESIDUES, ALLOWED_SWISSPROT, b_comp), 3),
         "k_star": k_star,
-        "k_max_exact": round(k_eq4b_exact(SWISSPROT_RESIDUES, ALLOWED_SWISSPROT, b_human), 3),
+        "k_max_exact": round(k_formula_exact(SWISSPROT_RESIDUES, ALLOWED_SWISSPROT, b_human), 3),
         "k_max": k_max,
         "k_min": k_min,
         "n_ksizes": k_max - k_min + 1,
@@ -306,7 +309,7 @@ def ksize_row(name: str, n_human: float) -> dict:
     }
 
 
-# Columns: k_main, k(N_human, 100, B_comp), k*, k_max, number of k-sizes, with N_human = 11e6.
+# Columns: k_100 measured, k_100 predicted, k*, k_max, number of k-sizes, with N_human = 11e6.
 EXPECTED_EXPLAINER = {
     "protein20": (5, 5, 7, 8, 4), "uniprot18": (5, 5, 8, 9, 5), "hsdm17": (5, 6, 9, 10, 6),
     "wass14": (5, 5, 9, 9, 5), "mmseqs12": (6, 6, 9, 10, 5), "sdm12": (7, 6, 10, 12, 7),
@@ -318,7 +321,7 @@ EXPECTED_EXPLAINER = {
     "hp_thomas_dill2": (19, 18, 29, 36, 19),
 }  # fmt: skip
 assert list(EXPECTED_EXPLAINER) == ORDER
-COMPARED = ["k_main", "k_human100", "k_star", "k_max", "n_ksizes"]
+COMPARED = ["k100_measured", "k100_predicted", "k_star", "k_max", "n_ksizes"]
 explainer = pl.DataFrame([ksize_row(a, N_HUMAN_EXPLAINER) for a in ORDER])
 mismatch = [
     (r["alphabet"], tuple(r[c] for c in COMPARED), EXPECTED_EXPLAINER[r["alphabet"]])
@@ -331,16 +334,16 @@ print(f"With N_human = {N_HUMAN_EXPLAINER:,}: all {len(ORDER)} alphabets reprodu
 
 table = pl.DataFrame([ksize_row(a, N_HUMAN) for a in ORDER])
 changed = table.join(explainer, on="alphabet", suffix="_11M").filter(
-    (pl.col("k_human100") != pl.col("k_human100_11M")) | (pl.col("k_min") != pl.col("k_min_11M"))
+    (pl.col("k100_predicted") != pl.col("k100_predicted_11M")) | (pl.col("k_min") != pl.col("k_min_11M"))
     | (pl.col("n_ksizes") != pl.col("n_ksizes_11M"))
 )
 print(f"\nWith the real N_human = {N_HUMAN:,}, alphabets whose k changes:")
-print(changed.select("alphabet", "k_main", "k_human100_exact_11M", "k_human100_11M", "k_human100_exact",
-                     "k_human100", "k_min_11M", "k_min", "n_ksizes_11M", "n_ksizes"))
+print(changed.select("alphabet", "k100_measured", "k100_predicted_exact_11M", "k100_predicted_11M",
+                     "k100_predicted_exact", "k100_predicted", "k_min_11M", "k_min", "n_ksizes_11M", "n_ksizes"))
 table.write_csv(OUT_TABLE)
 print(f"\nWrote {OUT_TABLE.relative_to(REPO)}; the figure below draws these rows:")
 print(table.select(
-    "alphabet", "n_letters", "B_comp", "B_human", "k_main", "k_human100_exact", "k_human100",
+    "alphabet", "n_letters", "B_comp", "B_human", "k100_measured", "k100_predicted_exact", "k100_predicted",
     "k_star_exact", "k_star", "k_max_exact", "k_max", "k_min", "n_ksizes", "ksizes",
 ))
 """)
@@ -348,12 +351,12 @@ print(table.select(
 md(r"""
 ### Figure 274: the k-sizes to test per alphabet
 
-How to read it: each row is one alphabet. The grey bar runs from $k_\mathrm{min}$ to
+How to read it: each row is one alphabet, grouped by how many letters it has. The grey bar runs from $k_\mathrm{min}$ to
 $k_\mathrm{max}$, one cell per k-size the benchmark would run, and the "# k-sizes" column at the
 right counts the cells. Magenta marks
 are about the human proteome at about 100 proteins per seed; the teal and purple dots are about
-one chance match in Swiss-Prot. Only the magenta diamond is measured; the other three marks come
-from Equation 4b. The decision it informs: how many indexes to build per alphabet. The four
+one chance match in Swiss-Prot. Only the magenta diamond is measured; the other three marks are
+predicted by the seed-length formula. The decision it informs: how many indexes to build per alphabet. The four
 widest ranges, gbmr7 (23 k-sizes), hp_thomas_dill_no_c2 (22), hp_kyte_doolittle2 (21) and
 hp_thomas_dill2 (19), belong to the four alphabets with the fewest bits per letter measured in
 the human proteome (0.71 to 0.80), so each extra letter adds little and $k_\mathrm{max}$ sits
@@ -383,8 +386,11 @@ FIG_W = 89 * MM
 NAME_PT, TEXT_PT, NOTE_PT = 5.5, 6.0, 5.5
 LEGEND_PT, LEGEND_NOTE_PT = 5.5, 5.0  # Arial runs wide; the legend must fit in 89 mm
 ROW_IN = 0.118  # one alphabet row, inches
-GROUP_GAP_IN = 0.05  # extra space between letter-count groups (20; 12-18; 4-8; 2-3)
+GROUP_HEAD_IN = 0.13  # space above each letter-count group for its header line
 SIZE_GROUPS = [(20, 20), (12, 18), (4, 8), (2, 3)]
+GROUP_LABELS = ["20 amino acids (not reduced)", "Reduced to 12\u201318 letters",
+                "Reduced to 4\u20138 letters", "Reduced to 2\u20133 letters"]
+GROUP_PT = 5.5
 X_LIM = (0, 40)
 CELL_W, CELL_GAP = 4.4, 0.16  # bar height in points; white gap between cells, in letters of k
 DIAMOND, RING, RING_AROUND, DOT, DOT_INSIDE, RING_W = 4.4, 4.8, 6.4, 4.8, 2.6, 0.7  # points
@@ -392,12 +398,14 @@ DIAMOND, RING, RING_AROUND, DOT, DOT_INSIDE, RING_W = 4.4, 4.8, 6.4, 4.8, 2.6, 0
 
 # Vertical layout, inches from the top: legend, rows, x axis.
 LEGEND_TOP, LEGEND_LINE = 0.03, 0.118
-n_legend_lines = 5
-plot_top = LEGEND_TOP + n_legend_lines * LEGEND_LINE + 0.17
+n_legend_lines = 6
+plot_top = LEGEND_TOP + n_legend_lines * LEGEND_LINE + 0.08
 rows_y: dict[str, float] = {}
+group_head_y: list[float] = []  # inches below plot_top: the middle of each group's header line
 y = 0.0
 for lo, hi in SIZE_GROUPS:
-    y += GROUP_GAP_IN if rows_y else 0.0
+    y += GROUP_HEAD_IN
+    group_head_y.append(y - 0.5 * GROUP_HEAD_IN)
     for name in ORDER:
         if lo <= len(classes[name]) <= hi:
             rows_y[name] = y + 0.5 * ROW_IN
@@ -435,15 +443,19 @@ for name in ORDER:
     ax.plot(r["k_max"], yy, "o", ms=DOT, mfc=PURPLE, mec="none", zorder=3)
     teal_ms = DOT_INSIDE if r["k_star"] == r["k_max"] else DOT
     ax.plot(r["k_star"], yy, "o", ms=teal_ms, mfc=TEAL, mec="none", zorder=4)
-    ring_ms = RING_AROUND if r["k_human100"] == r["k_main"] else RING
-    ax.plot(r["k_human100"], yy, "o", ms=ring_ms, mfc="white", mec=MAGENTA, mew=RING_W, zorder=5)
-    ax.plot(r["k_main"], yy, "D", ms=DIAMOND, mfc=MAGENTA, mec="none", zorder=6)
+    ring_ms = RING_AROUND if r["k100_predicted"] == r["k100_measured"] else RING
+    ax.plot(r["k100_predicted"], yy, "o", ms=ring_ms, mfc="white", mec=MAGENTA, mew=RING_W, zorder=5)
+    ax.plot(r["k100_measured"], yy, "D", ms=DIAMOND, mfc=MAGENTA, mec="none", zorder=6)
     fig.text(NAME_RIGHT / FIG_W, inch_to_fig_y(rows_y[name]), name, fontproperties=MONO,
              fontsize=NAME_PT, ha="right", va="center", color=INK, gid="name")
     fig.text(COUNT_RIGHT / FIG_W, inch_to_fig_y(rows_y[name]), f"{r['n_ksizes']}",
              fontsize=TEXT_PT, ha="right", va="center", color=INK, gid="count")
-fig.text(COUNT_RIGHT / FIG_W, inch_to_fig_y(-0.6 * ROW_IN), "# k-sizes", fontsize=NOTE_PT,
-         ha="right", va="bottom", color=MUTED, gid="count_header")
+fig.text(COUNT_RIGHT / FIG_W, inch_to_fig_y(group_head_y[0]), "# k-sizes", fontsize=NOTE_PT,
+         ha="right", va="center", color=MUTED, gid="count_header")
+# One header per letter-count group, at the left edge above the group's first name.
+for label, gy in zip(GROUP_LABELS, group_head_y):
+    fig.text(0.02 / FIG_W, inch_to_fig_y(gy), label, fontsize=GROUP_PT, weight="bold",
+             ha="left", va="center", color=INK, gid="group")
 
 
 # Legend above the plot, in two columns: the human-proteome marks and the Swiss-Prot marks.
@@ -490,9 +502,9 @@ line_y = [LEGEND_TOP + (i + 0.5) * LEGEND_LINE for i in range(n_legend_lines)]
 right_edges = []
 for x0, header, items in (
     (LEG_LEFT, "Human proteome, about 100 proteins per seed",
-     [("diamond", r"$k_\mathrm{main}$, measured"), ("ring", "Equation 4b")]),
+     [("diamond", r"$k_{100}$, measured"), ("ring", r"$k_{100}$, predicted")]),
     (COL2_LEFT, "Swiss-Prot 2026_03, 1 chance match",
-     [("teal", "k*, Equation 4b"), ("purple", r"$k_\mathrm{max}$, Equation 4b")]),
+     [("teal", "k*, predicted"), ("purple", r"$k_\mathrm{max}$, predicted")]),
 ):
     h = put(x0, line_y[0], header, fontsize=LEGEND_PT, weight="bold", color=INK)
     right_edges.append((x0, x0 + text_width_in(h)))
@@ -501,12 +513,15 @@ for x0, header, items in (
 cells_right = entry(LEG_LEFT, line_y[3], "cells",
                     r"one cell per k-size to test, $k_\mathrm{min}$ to $k_\mathrm{max}$; # k-sizes at right counts them",
                     glyph_w=3 * K_IN)
-note = put(LEG_LEFT, line_y[4], r"Bits per letter in Equation 4b: from Swiss-Prot composition; for $k_\mathrm{max}$, "
-           "measured in the human proteome", fontsize=LEGEND_NOTE_PT, color=MUTED)
+note = put(LEG_LEFT, line_y[4], r"Predicted: $k = \lceil \log_2(N\,/\,\mathrm{matches})\,/\,B \rceil$, the shortest k with "
+           "at most that many chance matches in N residues", fontsize=LEGEND_NOTE_PT, color=MUTED)
+note2 = put(LEG_LEFT, line_y[5], r"B, bits per letter: from Swiss-Prot composition; for $k_\mathrm{max}$, "
+            "measured in the human proteome", fontsize=LEGEND_NOTE_PT, color=MUTED)
 col1_right = max(x for x0, x in right_edges if x0 == LEG_LEFT)
 col2_right = max(x for x0, x in right_edges if x0 == COL2_LEFT)
 layout = {"column 1 ends": col1_right, "column 2 starts": COL2_LEFT, "column 2 ends": col2_right,
-          "cell line ends": cells_right, "note ends": LEG_LEFT + text_width_in(note), "figure width": FIG_W}
+          "cell line ends": cells_right, "note ends": LEG_LEFT + max(text_width_in(note), text_width_in(note2)),
+          "figure width": FIG_W}
 print("legend layout, inches:", {k: round(float(v), 3) for k, v in layout.items()})
 assert col1_right + 0.06 < COL2_LEFT, "legend column 1 runs into column 2"
 assert max(col2_right, cells_right, layout["note ends"]) <= FIG_W - 0.02, "a legend line runs off the figure"
@@ -525,6 +540,8 @@ for t in fig.texts:
         assert bb.x1 < ax_box.x0, f"name runs into the plot: {t.get_text()}"
     if t.get_gid() == "count":
         assert bb.x0 > ax_box.x1, f"count runs into the plot: {t.get_text()}"
+    if t.get_gid() == "group":
+        assert bb.y0 > ax_box.y0 and bb.y1 < ax_box.y1 + 0.5, f"group header outside the rows: {t.get_text()}"
 names = [t for t in fig.texts if t.get_gid() == "name"]
 counts = [int(t.get_text()) for t in fig.texts if t.get_gid() == "count"]
 assert counts == table["n_ksizes"].to_list()
@@ -543,12 +560,12 @@ md(r"""
 ## Summary and conclusions
 
 - With the explainer's human proteome size of 11 million residues, the code reproduces every
-  $k_\mathrm{main}$, $k(N_\mathrm{human}, 100, B_\mathrm{comp})$, $k^*$, $k_\mathrm{max}$ and
-  k-size count of Figure 12 for all 19 alphabets.
+  measured and predicted $k_{100}$, $k^*$, $k_\mathrm{max}$ and k-size count of Figure 12 for all
+  19 alphabets.
 - The human proteome FASTA kmerseek indexed has 11,395,293 residues in 20,600 proteins. With
-  that count, one alphabet changes: for sdm12, Equation 4b at 100 chance matches gives 6.005
+  that count, one alphabet changes: for sdm12, the predicted $k_{100}$ is 6.005
   letters, which rounds up to 7 instead of 6 (5.987 with 11 million). Its $k_\mathrm{min}$ becomes
-  7, equal to $k_\mathrm{main}$, and its range drops from 7 to 6 k-sizes. The value sits 0.005
+  7, equal to the measured $k_{100}$, and its range drops from 7 to 6 k-sizes. The value sits 0.005
   above a whole number, so it rests on the second decimal of the Swiss-Prot composition.
 - The ranges run from 4 k-sizes (protein20, k = 5 to 8) to 23 (gbmr7, k = 13 to 35). The
   2-letter hydrophobic-polar alphabets need 14 to 22 k-sizes each; hp_lehninger_hpc3 needs 13.
@@ -558,8 +575,8 @@ md(r"""
   (gbmr7: 0.80 against 1.25; hp_kyte_doolittle2: 0.71 against 0.92), so $k_\mathrm{max}$ is at or
   above $k^*$ everywhere, and equal to it only for wass14 (k = 9). The four alphabets with the
   lowest measured value, 0.71 to 0.80 bits per letter, have the four widest ranges.
-- Only $k_\mathrm{main}$ is measured. $k_\mathrm{max}$ is an estimate from a measured input, and
-  $k_\mathrm{main}$ is the longer of the two measured seed lengths, so the true length at which
+- Only $k_{100}$ is measured. $k_\mathrm{max}$ is an estimate from a measured input, and the
+  measured $k_{100}$ is the longer of the two measured seed lengths, so the true length at which
   a seed reaches 100 proteins can sit below it.
 
 Files: `figures/274_ksizes_to_test_per_alphabet_human_swissprot.{pdf,svg,png}`, its legend
