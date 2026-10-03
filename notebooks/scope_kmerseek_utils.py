@@ -1115,6 +1115,7 @@ def eval_tsv_to_rocx(
     score_col: str = "bh",
     ascending: bool = True,
     exclude_gray_zone: bool = True,
+    tie_break: Optional[str] = None,
 ) -> pl.DataFrame:
     """
     Convert a scope_eval DataFrame to TEA .rocx format.
@@ -1152,6 +1153,14 @@ def eval_tsv_to_rocx(
         merely outside the current level.  E.g. for SFAM, first FP = first
         cross-fold hit; same-fold-but-different-sfam hits are ignored when
         detecting the FP boundary.  TP counts (n_same) are unchanged.
+    tie_break : {None, "pessimistic", "optimistic"}, optional
+        Order of hits that tie on ``score_col`` within one query. None (default) leaves
+        it to the sort, which is arbitrary and can move between runs. Whole-query scores
+        tie often: on SCOPe40 protein20 k5 (2026-10-02) the family AUC over the FoldSeek
+        queries ranked by containment is 0.135 with cross-fold hits first in every tie
+        and 0.234 with them last; for query_tfidf, 0.001 and 0.415.
+        "pessimistic" puts cross-fold hits first within a tie, "optimistic" puts them
+        last; the two bound the AUC any tie order could give.
 
     Returns
     -------
@@ -1178,11 +1187,23 @@ def eval_tsv_to_rocx(
         return pl.DataFrame(schema=_ROCX_SCHEMA)
 
     # Sort globally; group_by with maintain_order preserves per-group sort order.
-    df_sorted = df.sort(
-        ["query_domain", score_col],
-        descending=[False, not ascending],
-        nulls_last=True,
-    )
+    if tie_break is None:
+        df_sorted = df.sort(
+            ["query_domain", score_col],
+            descending=[False, not ascending],
+            nulls_last=True,
+        )
+    elif tie_break in ("pessimistic", "optimistic"):
+        # same_fold False is a cross-fold hit, the FP boundary at every level.
+        # Then target_domain, so the order inside a tie is the same in every run.
+        df_sorted = df.sort(
+            ["query_domain", score_col, "same_fold", "target_domain"],
+            descending=[False, not ascending, tie_break == "optimistic", False],
+            nulls_last=True,
+            maintain_order=True,
+        )
+    else:
+        raise ValueError(f"tie_break must be None, 'pessimistic' or 'optimistic', not {tie_break!r}")
 
     # --- Vectorized sensitivity computation --------------------------------
     # Sensitivity-to-first-FP for level L:
