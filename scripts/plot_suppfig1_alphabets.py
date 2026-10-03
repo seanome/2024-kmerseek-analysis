@@ -62,6 +62,9 @@ SWISSPROT_FASTA = Path("/Users/olga/data/uniprot/uniprot_sprot.2026_03.fasta.gz"
 SWISSPROT_COUNTS = REPO / "tables/swissprot_2026_03_residue_counts.csv"
 SEED_COUNTS = REPO / "tables/250_two_k_per_alphabet.csv"
 SEED_COUNTS_SHA256 = "42f90fe66d1731256a41008b02dbb09203fad4643fc468e82707bba4b3989d84"
+# k-sizes to test per alphabet, notebook 274 (PR 101), copied unchanged into PR 100.
+KSIZES = REPO / "tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv"
+KSIZES_SHA256 = "786fb61606ee9994d4a999a8126797edefe4d7092340695898a4fe920d00b6af"
 PFAM_PAIRS = Path("/Users/olga/data/pfam/230_pfam_seed_pair_class_agreement.parquet")
 SCOPE_PAIRS = Path("/Users/olga/data/scope/230_scope40_pair_class_agreement.parquet")
 KMERSEEK = Path("/Users/olga/code/kmerseek")
@@ -108,6 +111,8 @@ CORAL = "#F07A5A"
 REF_GREY = "#8C8C8C"
 JOIN = "#CFCFCF"
 GUIDE = "#E6E6E6"
+CELL_GREY = "#D9D9D9"  # one square per k-size to test
+PRED_GREY = "#595959"  # a seed length predicted from Swiss-Prot bits
 BLUE_LIGHT = "#B9CCF0"
 BLUE_DARK = "#8FAAE0"
 GROUP_INK = "#595959"
@@ -116,15 +121,16 @@ MONO = "Courier New"
 # Layout, mm at printed size (183 mm, two columns).
 W_MM = pf.TWO_COLUMN_MM
 COLS = {  # left edge, width
-    "a": (27.0, 57.0),
-    "b": (89.0, 27.0),
-    "c": (121.0, 14.0),
-    "d": (141.0, 18.0),
-    "e": (164.0, 18.0),
+    "a": (27.0, 51.0),
+    "b": (82.0, 21.0),
+    "c": (107.0, 27.0),
+    "d": (146.0, 15.5),
+    "e": (166.5, 15.5),
 }
+COUNT_X_MM = 3.5  # the "# k-sizes" column, this far right of panel c
 ROW_MM = 4.6
 GROUP_GAP_MM = 4.2
-TOP_MM = 27.5  # legend and column headers
+TOP_MM = 33.5  # legend and column headers
 BOTTOM_MM = 9.0  # x axes
 BAR_MM = 3.0
 HUMAN_DY_MM = 1.2
@@ -284,6 +290,40 @@ def build_table(recount: bool) -> tuple[pl.DataFrame, dict]:
         )
     t = pl.DataFrame(rows)
     kstar = dict(zip(t["alphabet"], t["kstar"]))
+
+    check(
+        hashlib.sha256(KSIZES.read_bytes()).hexdigest() == KSIZES_SHA256,
+        f"{KSIZES} is not the copy from PR 101",
+    )
+    ks = pl.read_csv(KSIZES).select(
+        "alphabet",
+        pl.col("k_main").alias("k100_measured"),
+        pl.col("k_human100").alias("k100_predicted"),
+        pl.col("k_star").alias("kstar_274"),
+        "k_max",
+        "k_min",
+        "n_ksizes",
+    )
+    t = t.join(ks, on="alphabet")
+    check(t.height == 19, "notebook 274 table does not cover the 19 alphabets")
+    check(
+        bool((t["kstar"] == t["kstar_274"]).all()),
+        "k* here (20 standard residues) differs from notebook 274's (all letters)",
+    )
+    check(
+        bool(
+            (
+                t["k_min"]
+                == t.select(
+                    pl.min_horizontal("k100_measured", "k100_predicted")
+                ).to_series()
+            ).all()
+        )
+        and bool((t["n_ksizes"] == t["k_max"] - t["k_min"] + 1).all())
+        and bool((t["k_min"] <= t["kstar"]).all() & (t["kstar"] <= t["k_max"]).all()),
+        "notebook 274's k_min, k_max and # k-sizes do not fit together",
+    )
+    t = t.drop("kstar_274")
 
     pfam = hc.add_identity_bin(pl.read_parquet(PFAM_PAIRS)).filter(
         (pl.col("identity_bin") == BIN) & (pl.col("n_cols") >= MIN_COLS)
@@ -484,23 +524,62 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
         y_h,
         s=9,
         marker="D",
-        facecolor="white",
-        edgecolor=PURPLE,
-        lw=0.7,
+        facecolor=PURPLE,
+        edgecolor="white",
+        lw=0.3,
         zorder=4,
     )
     ax_b.set_xlim(0, 4.5)
     ax_b.set_xticks([0, 1, 2, 3, 4])
     ax_b.set_xlabel("Bits per letter")
 
-    # c: k*.
+    # c: the k-sizes to test, k_min to k_max, with the four seed lengths that set them.
+    # Where two coincide, the open mark is drawn larger behind the filled one.
     ax_c = axes["c"]
-    ax_c.barh(ys, t["kstar"], height=BAR_MM * 0.8, color=CORAL, lw=0)
-    for y, k in zip(ys, t["kstar"]):
-        ax_c.text(k + 0.8, y, str(k), va="center", ha="left", fontsize=6)
-    ax_c.set_xlim(0, 36)
-    ax_c.set_xticks([0, 10, 20, 30])
-    ax_c.set_xlabel("k* (letters)")
+    for y, lo, hi in zip(ys, t["k_min"], t["k_max"]):
+        for k in range(lo, hi + 1):
+            ax_c.add_patch(
+                Rectangle(
+                    (k - 0.42, y - 0.75), 0.84, 1.5, facecolor=CELL_GREY, lw=0, zorder=1
+                )
+            )
+    ax_c.scatter(
+        t["k100_predicted"],
+        ys,
+        s=20,
+        marker="D",
+        facecolor="white",
+        edgecolor=PRED_GREY,
+        lw=0.7,
+        zorder=2,
+    )
+    ax_c.scatter(
+        t["k100_measured"],
+        ys,
+        s=8,
+        marker="D",
+        facecolor=PURPLE,
+        edgecolor="white",
+        lw=0.3,
+        zorder=3,
+    )
+    ax_c.scatter(
+        t["k_max"], ys, s=18, facecolor="white", edgecolor=CORAL, lw=0.9, zorder=2
+    )
+    ax_c.scatter(t["kstar"], ys, s=8, color=CORAL, lw=0, zorder=3)
+    for y, n in zip(ys, t["n_ksizes"]):
+        ax_c.text(
+            1 + COUNT_X_MM / COLS["c"][1],
+            y,
+            str(n),
+            transform=ax_c.get_yaxis_transform(),
+            ha="right",
+            va="center",
+            fontsize=6,
+        )
+    ax_c.set_xlim(0, 40)
+    ax_c.set_xticks([0, 10, 20, 30, 40])
+    ax_c.set_xlabel("Seed length k (letters)")
 
     # d: kappa.
     ax_d = axes["d"]
@@ -553,7 +632,7 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
     headers = {
         "a": "Classes; width = share of\nSwiss-Prot 2026_03 residues",
         "b": "Information\nper letter",
-        "c": "Seed length\nk*",
+        "c": "Seed lengths to test,\n$k_\\mathrm{min}$ to $k_\\mathrm{max}$",
         "d": "Class agreement\nabove chance",
         "e": "Pairs with a\nrun ≥ k*",
     }
@@ -579,6 +658,15 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
             ha="left",
             va="bottom",
         )
+    fig.text(
+        (COLS["c"][0] + COLS["c"][1] + COUNT_X_MM) / W_MM,
+        y_head,
+        "#\nk-sizes",
+        ha="right",
+        va="bottom",
+        fontsize=6,
+        linespacing=1.1,
+    )
     # Data source for d and e, above their panel letters, with a rule spanning both columns.
     y_src = (BOTTOM_MM + block_mm + 11.0) / h_mm
     x_d, x_e_end = COLS["d"][0] / W_MM, (COLS["e"][0] + COLS["e"][1]) / W_MM
@@ -597,39 +685,52 @@ def draw(t: pl.DataFrame, meta: dict, ds: str, stem: Path) -> None:
     )
 
     # Legend, above everything (read before the marks).
+    def mark(**kw):
+        return Line2D([], [], ls="", **kw)
+
     handles = [
         (
             Patch(facecolor=BLUE_LIGHT, edgecolor="white"),
-            "class of residues (a); light and dark blue only separate neighbouring classes",
+            "class of residues (a); the two blues only separate neighbours",
         ),
         (
-            Line2D([], [], ls="", marker="o", ms=4, mfc="white", mec=REF_GREY, mew=0.8),
-            "log2(n letters): bits if every letter were equally common (b)",
-        ),
-        (
-            Line2D([], [], ls="", marker="o", ms=2.6, color=PURPLE),
-            "measured: from Swiss-Prot composition (b), from aligned pairs (d, e)",
+            mark(marker="o", ms=4, mfc="white", mec=REF_GREY, mew=0.8),
+            "log2(n letters): bits if all letters were equally common (b)",
         ),
         (
             Line2D([], [], color=JOIN, lw=1.0),
             "grey line: joins the values of one alphabet (b)",
         ),
         (
-            Line2D([], [], ls="", marker="D", ms=2.8, mfc="white", mec=PURPLE, mew=0.7),
-            "measured: from kmerseek seed counts in the human proteome (b, set just under its row)",
+            mark(marker="o", ms=2.6, color=PURPLE),
+            "measured: Swiss-Prot composition (b), aligned pairs (d, e)",
         ),
         (
-            Patch(facecolor=CORAL),
-            "k*: seed length at which one chance match is expected in Swiss-Prot (c)",
+            mark(marker="D", ms=3.2, mfc=PURPLE, mec="white", mew=0.3),
+            "measured in the human proteome: bits (b, just under its row);"
+            "\nk at which a seed is shared by about 100 proteins (c)",
+        ),
+        (
+            mark(marker="D", ms=3.6, mfc="white", mec=PRED_GREY, mew=0.7),
+            "the same k, predicted from Swiss-Prot bits (c)",
+        ),
+        (
+            mark(marker="o", ms=2.6, color=CORAL),
+            "k*: one chance match expected in Swiss-Prot (c)",
+        ),
+        (
+            mark(marker="o", ms=3.6, mfc="white", mec=CORAL, mew=0.9),
+            "$k_\\mathrm{max}$: the same, with bits measured in the human proteome (c)",
+        ),
+        (
+            Patch(facecolor=CELL_GREY),
+            "one square per k-size to test, $k_\\mathrm{min}$ to $k_\\mathrm{max}$; # k-sizes counts them (c)",
         ),
         (
             Line2D([], [], color=PURPLE, lw=0.8),
-            "95% interval: bootstrap over pairs (d, narrower than the dot), Wilson (e)",
+            "95% interval: bootstrap (d, narrower than the dot), Wilson (e)",
         ),
-        (
-            Line2D([], [], ls=""),
-            "run (e): aligned columns in a row, no gap, residues in the same class",
-        ),
+        (mark(), "run (e): aligned columns in a row, no gap, same class in both"),
     ]
     fig.legend(
         [h for h, _ in handles],
@@ -749,7 +850,7 @@ One row per kmerseek alphabet (19), grouped by letter count; the rows are in the
 
 **b**, Bits of information in one matching letter. Open grey circle: log2 of the number of letters, the value if all letters were equally common. Filled purple circle: B = −log2(Σ q²), where q is each class's share of Swiss-Prot residues, so Σ q² is the chance that two residues drawn at random fall in the same class. Purple diamond, set just under its row: B measured from kmerseek seed counts in the human proteome. P(k), the mean number of proteins sharing a seed of k letters, falls by a factor 2^B for each added letter, so B = [log2(P(k_small) − 1) − log2(P(k_main) − 1)] / (k_main − k_small) (notebook 250). In all 19 alphabets the human value is below the Swiss-Prot value, and both are below log2 of the letter count. For hp_thomas_dill2 the three values are {row["hp_thomas_dill2"]["bits_log2_n"]:.3f}, {row["hp_thomas_dill2"]["bits_swissprot"]:.3f} and {row["hp_thomas_dill2"]["bits_human_seed_counts"]:.3f} bits.
 
-**c**, k* = ⌈log2 N / B⌉, with N = {meta["n_res"]:,} residues and B from Swiss-Prot composition (b, filled circle): the seed length at which one match by chance is expected across Swiss-Prot. k* runs from {row["protein20"]["kstar"]} (protein20) to {int(t["kstar"].max())} ({t.sort("kstar").row(-1, named=True)["alphabet"]}).
+**c**, The seed lengths to test for each alphabet, one grey square per k-size from k_min to k_max; the column on the right counts them (notebook 274). Filled purple diamond: the k at which a seed is shared by about 100 human proteins, measured from kmerseek seed counts in the human proteome (QfO 2020_04, UP000005640; notebook 250). The other three marks are k = ⌈(log2 N − log2 m) / B⌉, the shortest seed with at most m chance matches among N residues when one letter carries B bits. Open grey diamond: the same k as the filled diamond, predicted with N = human proteome residues, m = 100 and B from Swiss-Prot composition. k_min is the smaller of the two. Filled coral circle: k*, with N = {meta["n_res"]:,} Swiss-Prot residues, m = 1 and B from Swiss-Prot composition: the seed length at which one match by chance is expected across Swiss-Prot. Open coral circle: k_max, the same with B measured in the human proteome. k* runs from {row["protein20"]["kstar"]} (protein20) to {int(t["kstar"].max())} ({t.sort("kstar").row(-1, named=True)["alphabet"]}). The number of k-sizes runs from {row["protein20"]["n_ksizes"]} (protein20) to {int(t["n_ksizes"].max())} ({t.sort("n_ksizes").row(-1, named=True)["alphabet"]}), and is {int(small["n_ksizes"].min())}–{int(small["n_ksizes"].max())} for the 2–3 letter alphabets.
 
 **d**, Cohen's κ for the classes of aligned residues: (observed agreement − agreement expected from the two sequences' class compositions) / (1 − expected). κ = 0 means no more agreement than chance; higher means the class is kept more often. Pairs from the same Pfam-A 38.2 seed alignment with 20–30% identity over at least {MIN_COLS} aligned columns ({row["protein20"]["pfam_n_pairs"]:,} pairs from {meta["pfam_n_families"]:,} families). Mean over pairs with a bootstrap 95% interval (500 resamples; the interval is narrower than the dot). κ is {row["protein20"]["pfam_kappa"]:.2f} for protein20 and {small["pfam_kappa"].min():.2f}–{small["pfam_kappa"].max():.2f} for the 2–3 letter alphabets.
 
