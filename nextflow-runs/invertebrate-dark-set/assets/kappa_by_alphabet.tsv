@@ -4,6 +4,7 @@
 # and hsdm17 computed 2026-09-21 with the same code on the same pairs, classes from kmerseek
 # src/rust/alphabets.rs. c_opt = -ln(1 - kappa) / ln(1 + kappa * classes - kappa), the log-odds
 # scoring for a +1/-C scheme with equal class shares (E-value explainer, eq. 2b); xdrop_4c = 4 x c_opt.
+# funcgroups8 added 2026-10-02 by tools/kappa-for-alphabet, which reproduces the five rows it was checked on.
 alphabet	classes	kappa	kappa_lo	kappa_hi	n_pairs	c_opt	xdrop_4c
 hp_thomas_dill2	2	0.4626	0.4616	0.4635	37085	1.63	6.53
 hp_thomas_dill_no_c2	2	0.4541	0.453	0.455	37085	1.62	6.47
@@ -23,3 +24,4 @@ hsdm17	17	0.2441	0.2437	0.2445	37085	0.18	0.7
 wass14	14	0.201	0.2006	0.2014	37085	0.17	0.7
 protein20	20	0.1988	0.1985	0.1992	37085	0.14	0.57
 uniprot18	18	0.1975	0.1972	0.1979	37085	0.15	0.6
+funcgroups8	8	0.2670	0.2665	0.2675	37085	0.29	1.18

@@ -134,10 +134,13 @@ params.kmerseek_table_arms      = ''
 // 126 GB to over 252 GB. k10 never built; its search load should sit between k11's measured
 // 5_800-7_900 (searchable, about 232 GB median) and k9's 17_000-24_000 (skipped).
 params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12,gbmr7:9,gbmr7:10'
-// The k range each alphabet's sweep pairs must fall in, applied after --kmerseek_sweep_plus
-// and --kmerseek_sweep_minus. Columns alphabet, k_min, k_max. Pairs named in
-// --kmerseek_alphabets are kept whatever their k; a sweep pair outside its range is dropped
-// and listed in the log. `--kmerseek_ksize_ranges false` turns it off (an empty value on the
+// The sweep's table: every alphabet in this file, every whole k from its k_min to its
+// k_max, then --kmerseek_sweep_plus and --kmerseek_sweep_minus. A plus pair outside its
+// alphabet's range is dropped and listed in the log. Columns alphabet, k_min, k_max. With
+// --kmerseek_encodings, only the alphabets named there. It replaces the k ranges in
+// ../shared/kmerseek_encodings.nf, which were set before notebook 274 and stop short of it
+// (gbmr7 at k18 where 274 says 35). Since 2026-10-03 this is the whole table, not a cut of
+// the shared one, so the run tests exactly PR 101's k-sizes. `--kmerseek_ksize_ranges false` turns it off (an empty value on the
 // command line reaches Nextflow as true, not as empty).
 //
 // The default is tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv at 24a423e on
@@ -1214,6 +1217,14 @@ def resolveCombos() {
             // outright without also turning --kmerseek_extra_encodings on.
             table = wanted.collect { w -> knownEncodings().find { it[0] == w } }
         }
+        def ranges = ksizeRanges()
+        if (ranges) {
+            def unknown = ranges.keySet() - knownEncodings()*.get(0)
+            if (unknown) error "--kmerseek_ksize_ranges names unknown alphabet(s): ${unknown.join(', ')}"
+            def keep = params.kmerseek_encodings ? table*.get(0) : ranges.keySet() as List
+            table = knownEncodings().findAll { it[0] in keep && ranges.containsKey(it[0]) }
+                        .collect { cli, label, _lo, _hi -> [cli, label, ranges[cli][0], ranges[cli][1]] }
+        }
         pairs = expandEncodings(table).collect { cli, _label, k -> [cli, k] }
         def plus = params.kmerseek_sweep_plus.toString().tokenize(',')*.trim().findAll { it }.collect { spec ->
             def parts = spec.tokenize(':')
@@ -1247,17 +1258,13 @@ def resolveCombos() {
             log.info "  dropped  : ${before - pairs.size()} alphabet x ksize pair(s) by " +
                      "--kmerseek_sweep_minus (${minus.collect { it[0] + ':' + it[1] }.join(', ')})"
         }
-        def ranges = ksizeRanges()
         if (ranges) {
             def missing = (pairs*.get(0).unique() - ranges.keySet())
             if (missing) {
                 error "--kmerseek_ksize_ranges has no row for ${missing.join(', ')}: " +
                       "${params.kmerseek_ksize_ranges}"
             }
-            def named = namedPairs()
-            def outside = pairs.findAll { a, k ->
-                !named.any { it[0] == a && it[1] == k } && (k < ranges[a][0] || k > ranges[a][1])
-            }
+            def outside = pairs.findAll { a, k -> k < ranges[a][0] || k > ranges[a][1] }
             pairs = pairs - outside
             log.info "  dropped  : ${outside.size()} alphabet x ksize pair(s) outside " +
                      "--kmerseek_ksize_ranges" +

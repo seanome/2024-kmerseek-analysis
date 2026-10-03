@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""One row of assets/kappa_by_alphabet.tsv per alphabet named, from analysis notebook 230's
+Pfam seed pair table, using the recipe the asset's header states:
+
+  kappa      mean per-pair Cohen's kappa over Pfam-A seed 38.2 pairs at 20-30% identity
+             (0.2 < seqid_ali <= 0.3, polars' right-closed cut in hp_conservation_utils
+             add_identity_bin) with >= 50 aligned columns
+  kappa_lo/hi  bootstrap 95% CI over pairs, as bootstrap_mean_ci there (500 resamples,
+             seed 0, NaN dropped)
+  c_opt      -ln(1 - kappa) / ln(1 + kappa * classes - kappa), rounded to 2 decimals
+  xdrop_4c   4 x c_opt, from the unrounded c_opt, rounded to 2 decimals
+
+    tools/kappa-for-alphabet <230_pfam_seed_pair_class_agreement.parquet> funcgroups8 [...]
+
+Written 2026-10-02 to add funcgroups8, which had no row, so its `opt` mismatch penalty
+was skipped. Check it reproduces an existing row before trusting a new one.
+"""
+import math
+import re
+import sys
+
+import numpy as np
+import polars as pl
+
+path, names = sys.argv[1], sys.argv[2:]
+pairs = (pl.scan_parquet(path)
+         .filter(pl.col("alphabet").is_in(names), pl.col("n_cols") >= 50,
+                 pl.col("seqid_ali") > 0.2, pl.col("seqid_ali") <= 0.3)
+         .select("alphabet", "kappa").collect())
+print("alphabet\tclasses\tkappa\tkappa_lo\tkappa_hi\tn_pairs\tc_opt\txdrop_4c")
+for name in names:
+    k = pairs.filter(pl.col("alphabet") == name)["kappa"].drop_nulls().to_numpy().astype(float)
+    k = k[~np.isnan(k)]
+    if k.size == 0:
+        sys.exit(f"no pairs for {name}")
+    classes = int(re.search(r"(\d+)$", name).group(1))
+    mean = float(k.mean())
+    boots = k[np.random.default_rng(0).integers(0, k.size, size=(500, k.size))].mean(axis=1)
+    c = -math.log(1 - mean) / math.log(1 + mean * classes - mean)
+    print(f"{name}\t{classes}\t{mean:.4f}\t{np.percentile(boots, 2.5):.4f}\t"
+          f"{np.percentile(boots, 97.5):.4f}\t{k.size}\t{c:.2f}\t{4 * c:.2f}")
