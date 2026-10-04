@@ -2,69 +2,22 @@
  "pfam_release": "Pfam-A 38.2 seed",
  "identity_bin": "20-30%",
  "min_aligned_positions": 50,
+ "alphabet": "hp_thomas_dill2",
  "n_pairs": 37085,
  "n_families": 15276,
- "panel_a": {
-  "human": "P20849",
-  "chicken": "P12106",
-  "alphabet": "hp_thomas_dill_no_c2",
-  "k": 19,
-  "kmerseek_call_arm": "kmerseek.hp_thomas_dill_no_c2_k19_lcTrue",
-  "human_region": [
-   669,
-   700
-  ],
-  "chicken_region": [
-   667,
-   698
-  ],
-  "positions": 32,
-  "identical": 25,
-  "same_class": 32,
-  "n_shared_19mers": 564,
-  "n_joined_regions": 147,
-  "n_19mers_in_call": 14,
-  "swissprot_feature": "Collagen-like 7",
-  "swissprot_feature_range": [
-   655,
-   712
-  ],
-  "human_length": 921,
-  "chicken_length": 920,
-  "nb244_commit": "7affe6a"
+ "fig1a": {
+  "family": "PF01418",
+  "family_id": "HTH_6",
+  "query": "RPIR_ECOLI/14-90",
+  "target": "Y143_HAEIN/5-81",
+  "positions": 77,
+  "identical": 16,
+  "same_class": 56,
+  "longest_run": 12,
+  "bin_median_longest_run": 12.0,
+  "n_candidates": 3
  },
- "panel_b": {
-  "kmerseek_commit": "95a9d3b",
-  "always_h": "AFILMV",
-  "always_p": "DEHKNQRST",
-  "classes": {
-   "hp_kyte_doolittle2": {
-    "H": "ACFILMV",
-    "P": "DEGHKNPQRSTWY"
-   },
-   "hp_lehninger2": {
-    "H": "AFGILMPVWY",
-    "P": "CDEHKNQRST"
-   },
-   "hp_lehninger_c_nonpolar2": {
-    "H": "ACFGILMPVWY",
-    "P": "DEHKNQRST"
-   },
-   "hp_pbotc_1st_ed2": {
-    "H": "ACFILMPVWY",
-    "P": "DEGHKNQRST"
-   },
-   "hp_thomas_dill2": {
-    "H": "ACFILMVWY",
-    "P": "DEGHKNPQRST"
-   },
-   "hp_thomas_dill_no_c2": {
-    "H": "AFILMVWY",
-    "P": "CDEGHKNPQRST"
-   }
-  }
- },
- "panel_c": [
+ "fig1b": [
   {
    "alphabet": "hp_thomas_dill2",
    "identity_bin": "<20%",
@@ -146,8 +99,43 @@
    "kappa_hi": 0.6721986164338595
   }
  ],
- "panel_d": {
+ "fig1b_hp_over_aa_kappa": {
+  "<20%": 3.4159839885347396,
+  "20-30%": 2.3263012156821645,
+  "30-40%": 1.834711004967096,
+  "40-60%": 1.4808026564809142,
+  ">=60%": 1.2029655769927396
+ },
+ "fig1c": {
+  "family": "PF04348",
+  "family_id": "LppC",
+  "query": "LPOA_HAEIN/39-568",
+  "target": "LPOA_VIBCH/41-602",
+  "query_length": 575,
+  "target_length": 603,
+  "seqid_ali": 0.2476007677543186,
+  "run": 20,
+  "query_run_start": 285,
+  "target_run_start": 292,
+  "run_identical": 2,
+  "k_hp": 19,
+  "k_aa": 5,
+  "b_aa": 4.064489060128863,
+  "n_shared_hp_kmers": 7,
+  "n_shared_hp_kmers_on_diagonal": 7,
+  "n_shared_aa_kmers": 2,
+  "n_shared_aa_kmers_on_diagonal": 0,
+  "hp_regions_query": [
+   [
+    280,
+    304
+   ]
+  ],
+  "n_candidates": 20
+ },
+ "fig3_draft": {
   "n_shuffles": 20,
+  "mean_pr_agree": 0.7389107428435149,
   "mean_longest_run_real": 13.00825131454766,
   "median_longest_run_real": 12.0,
   "mean_longest_run_shuffled": 6.327875151678576,
@@ -360,17 +348,5 @@
   "kstar_exact": 28.590277415915335,
   "kstar": 29
  },
- "secondary_structure_lines_in_seed": 0,
- "panel_e": {
-  "family": "PF01418",
-  "family_id": "HTH_6",
-  "query": "RPIR_ECOLI/14-90",
-  "target": "Y143_HAEIN/5-81",
-  "positions": 77,
-  "identical": 16,
-  "same_class": 56,
-  "longest_run": 12,
-  "bin_median_longest_run": 12.0,
-  "n_candidates": 3
- }
+ "secondary_structure_lines_in_seed": 0
 }
