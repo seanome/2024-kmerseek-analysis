@@ -936,7 +936,13 @@ process calibrateStoredIndex {
 process kmerseekSearch {
     tag "${species}.${chunk.simpleName}.${alphabet}.k${ksize}.s${scaled}.lc${lowcomp}.${armName(ext, alphabet)}"
     container params.kmerseek_image
-    publishDir "${params.outdir}/${species}/kmerseek", mode: 'copy', pattern: '*.zst'
+    // A hard link, not a copy: the region files are the run's bulk, and a copy stored each
+    // one twice. On 2026-10-03 the midi run filled the 100 TB $SCRATCH quota with 37 TB in
+    // work/ and 35 TB of published copies of the same files. work/ and --outdir must be on
+    // one filesystem for a hard link; both are on $SCRATCH. A link survives the work folder
+    // being cleaned. On -resume Nextflow does not overwrite a published file that exists, so
+    // copies published before this change are relinked by tools/link-published-to-work.
+    publishDir "${params.outdir}/${species}/kmerseek", mode: 'link', pattern: '*.zst'
     // Sized per combo in the body -- see kmerseekSearchMemory and the note on
     // kmerseekIndex for why there is no label. On 2026-09-13 a flat 64 GB first tier was
     // cgroup-killed on 7 of 23 Botryllus chunks of hp_thomas_dill2 k23 with the mask OFF

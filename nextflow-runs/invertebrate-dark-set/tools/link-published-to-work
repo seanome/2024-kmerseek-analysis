@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""Replace published copies of kmerseek region files with hard links to the work-folder
+file they were copied from, so each file is stored once.
+
+    tools/link-published-to-work <trace.txt> <work dir> <outdir> [--apply]
+
+Without --apply it only reports what it would do. For every kmerseekSearch task in the
+trace that COMPLETED or was CACHED, it finds the task's *.regions.csv.zst in its work
+folder and the file of the same name in <outdir>/<species>/kmerseek/. It relinks the
+published file only when:
+  - the two are different inodes (not already linked),
+  - they have the same size,
+  - their first and last 1 MB are identical.
+Anything else is counted and left alone. The new link is made under a temporary name next
+to the published file and renamed over it, so the published path is never missing.
+
+Added 2026-10-03, after the midi run filled $SCRATCH with 35 TB of published copies of
+files also in work/ (publishDir mode 'copy', now 'link'). Python 3.6, standard library only.
+"""
+import os
+import re
+import sys
+
+trace, workdir, outdir = sys.argv[1:4]
+apply = "--apply" in sys.argv
+NAME = re.compile(r"kmerseekSearch \((\w+)\.")
+CHUNK = 1 << 20
+
+
+def same_ends(a, b, size):
+    with open(a, "rb") as fa, open(b, "rb") as fb:
+        if fa.read(CHUNK) != fb.read(CHUNK):
+            return False
+        if size > CHUNK:
+            fa.seek(-CHUNK, 2)
+            fb.seek(-CHUNK, 2)
+            return fa.read(CHUNK) == fb.read(CHUNK)
+    return True
+
+
+counts = {"linked": 0, "already linked": 0, "no published file": 0, "no work file": 0,
+          "size differs": 0, "content differs": 0}
+freed = 0
+with open(trace) as fh:
+    header = fh.readline().rstrip("\n").split("\t")
+    col = {c: i for i, c in enumerate(header)}
+    for line in fh:
+        f = line.rstrip("\n").split("\t")
+        if "kmerseekSearch" not in f[col["name"]] or f[col["status"]] not in ("COMPLETED", "CACHED"):
+            continue
+        m = NAME.search(f[col["name"]])
+        h = f[col["hash"]]
+        parent = os.path.join(workdir, h[:2])
+        hits = [d for d in os.listdir(parent) if d.startswith(h[3:])] if os.path.isdir(parent) else []
+        wfiles = [os.path.join(parent, hits[0], x) for x in os.listdir(os.path.join(parent, hits[0]))
+                  if x.endswith(".regions.csv.zst")] if hits else []
+        if not wfiles:
+            counts["no work file"] += 1
+            continue
+        for w in wfiles:
+            p = os.path.join(outdir, m.group(1), "kmerseek", os.path.basename(w))
+            if not os.path.exists(p):
+                counts["no published file"] += 1
+                continue
+            sw, sp = os.stat(w), os.stat(p)
+            if sw.st_ino == sp.st_ino:
+                counts["already linked"] += 1
+                continue
+            if sw.st_size != sp.st_size:
+                counts["size differs"] += 1
+                continue
+            if not same_ends(w, p, sw.st_size):
+                counts["content differs"] += 1
+                continue
+            if apply:
+                tmp = p + ".linktmp"
+                if os.path.exists(tmp):
+                    os.remove(tmp)
+                os.link(w, tmp)
+                os.rename(tmp, p)
+            counts["linked"] += 1
+            freed += sp.st_size
+
+verb = "relinked" if apply else "would relink"
+print("{} {} files, {:.2f} TB".format(verb, counts["linked"], freed / 1e12))
+for k, v in counts.items():
+    if k != "linked":
+        print("  {}: {}".format(k, v))
