@@ -152,7 +152,7 @@ C_AA = pf.GREY  # the 20 amino acids (lines, dots, identity ticks)
 C_KSTAR = pf.OKABE_ITO["vermillion"]  # k* (dashed line)
 
 pf.use_style()
-SANS, TITLE, MONO = "Source Sans 3", "Fraunces", "FantasqueSansM Nerd Font Mono"
+SANS, TITLE, MONO = "Arial", "Arial", "Courier New"  # Nature Biotechnology: Arial text, Courier sequences
 mpl.rcParams.update({"font.family": "sans-serif", "font.sans-serif": [SANS],
                      "font.monospace": [MONO], "mathtext.fontset": "dejavusans",
                      "savefig.bbox": "standard"})
@@ -211,7 +211,7 @@ class Canvas:
         return self.ax.text(x, y, s, **kw)
 
     def title(self, x, y, letter, s):
-        self.ax.text(x, y, letter, fontsize=8, fontweight="semibold", va="baseline")
+        self.ax.text(x, y, letter, fontsize=8, fontweight="bold", va="baseline")
         self.ax.text(x + 3.5, y, s, fontsize=7, family=TITLE, va="baseline")
 
     def rect(self, x, y, w, h, **kw):
@@ -821,8 +821,8 @@ AlphaFold, then DSSP).
 md(r"""
 ## 6. Figure 1
 
-183 mm wide (two Nature columns). Fonts: Fraunces for panel titles, Source Sans 3 for text,
-Fantasque Sans Mono for sequences, embedded as TrueType. Colour says which alphabet and shape
+183 mm wide (two Nature columns). Fonts: Arial for text and Courier New for sequences, as Nature
+Biotechnology asks, embedded as TrueType so the text stays editable. Colour says which alphabet and shape
 says what the mark is: amber and blue squares are the H and P classes, purple is `hp_thomas_dill2`,
 grey is the 20 amino acids; a black outline is the longest same-class run. The table compares
 every number in the brief with what was computed; the notebook stops before drawing if any differs.
