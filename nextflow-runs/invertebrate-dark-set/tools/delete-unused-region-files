@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""Delete kmerseek region files from settings the dark-set run no longer uses.
+
+    tools/delete-unused-region-files <ranges.tsv> <kappa.tsv> <dir> [<dir> ...] [--apply]
+
+Walks every <dir> for files named
+    chunk_NNNN.<alphabet>.k<k>.s<scaled>.lc<mask>.<setting>.regions.csv.zst
+and keeps a file only when it belongs to a setting the run uses:
+  - <setting> is extend-c<C> with C the alphabet's c_opt in <kappa.tsv>,
+  - <scaled> is 1 or 10,
+  - <mask> is false,
+  - <k> is inside the alphabet's k_min..k_max in <ranges.tsv> (notebook 274, PR 101).
+Every other region file is deleted: exact matching, the C=2 penalty, scaled 2 and 5, k
+outside the range. Files whose names do not match the pattern are never touched. Without
+--apply it only reports counts and sizes, split by why a file would go.
+
+Bytes freed counts a file only when it is its last link (st_nlink == 1); deleting one name
+of a hard-linked file frees nothing.
+
+Added 2026-10-04, approved by Olga, after $SCRATCH filled at 100 TB. Python 3.6, standard
+library only.
+"""
+import os
+import re
+import sys
+from collections import Counter
+
+args = [a for a in sys.argv[1:] if a != "--apply"]
+apply = "--apply" in sys.argv
+ranges_path, kappa_path, dirs = args[0], args[1], args[2:]
+
+ranges = {}
+with open(ranges_path) as fh:
+    next(fh)
+    for line in fh:
+        a, lo, hi = line.rstrip("\n").split("\t")
+        ranges[a] = (int(lo), int(hi))
+c_opt = {}
+with open(kappa_path) as fh:
+    for line in fh:
+        if line.startswith("#") or line.startswith("alphabet"):
+            continue
+        c = line.rstrip("\n").split("\t")
+        c_opt[c[0]] = c[6]
+
+NAME = re.compile(r"^chunk_\d+\.([a-z0-9_]+)\.k(\d+)\.s(\d+)\.lc(true|false)\.(.+)\.regions\.csv\.zst$")
+
+
+def why_unused(a, k, s, lc, setting):
+    if setting != "extend-c{}".format(c_opt.get(a, "none")):
+        return "exact or other penalty" if setting == "exact" or setting.startswith("extend-c") else "other setting"
+    if s not in (1, 10):
+        return "scaled {}".format(s)
+    if lc != "false":
+        return "mask on"
+    lo, hi = ranges.get(a, (1, 0))
+    if not lo <= k <= hi:
+        return "k outside range"
+    return None
+
+
+n, freed, kept = Counter(), Counter(), 0
+for top in dirs:
+    for root, _subdirs, files in os.walk(top):
+        for f in files:
+            m = NAME.match(f)
+            if not m:
+                continue
+            a, k, s, lc, setting = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4), m.group(5)
+            reason = why_unused(a, k, s, lc, setting)
+            if reason is None:
+                kept += 1
+                continue
+            p = os.path.join(root, f)
+            st = os.lstat(p)
+            n[reason] += 1
+            if st.st_nlink == 1:
+                freed[reason] += st.st_size
+            if apply:
+                os.remove(p)
+
+verb = "deleted" if apply else "would delete"
+print("{} {} files, {:.2f} TB freed; kept {} current-setting files".format(
+    verb, sum(n.values()), sum(freed.values()) / 1e12, kept))
+for r in sorted(n, key=lambda x: -freed[x]):
+    print("  {:24s} {:7d} files  {:6.2f} TB".format(r, n[r], freed[r] / 1e12))
