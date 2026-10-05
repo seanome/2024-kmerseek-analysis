@@ -187,15 +187,24 @@ def first_fit_counts(index_log: Path) -> tuple[int | None, int | None]:
 
 
 def fitted(survival_csv: Path) -> bool | None:
-    """The `fitted` flag from a ka_survival CSV; None when the file is missing or empty."""
+    """The `fitted` flag from a ka_survival CSV; None when the file is missing or empty.
+
+    The build the first run used (nb241-kmerseek-982a055) writes a `fitted` column and
+    refuses some fits. kmerseek main (2c39796) has no `fitted` column and stores every fit,
+    reporting the fitted value as `r_database`; a file with that value counts as fitted.
+    """
     if not survival_csv.exists():
         return None
     with open(survival_csv) as fh:
         header = fh.readline().rstrip("\n").split(",")
         row = fh.readline().rstrip("\n").split(",")
-    if "fitted" not in header or len(row) < len(header):
+    if len(row) < len(header):
         return None
-    return row[header.index("fitted")].strip().lower() == "true"
+    if "fitted" in header:
+        return row[header.index("fitted")].strip().lower() == "true"
+    if "r_database" in header:
+        return row[header.index("r_database")].strip() not in ("", "NaN", "nan", "inf")
+    return None
 
 
 def residue_counts() -> collections.Counter:
