@@ -13,11 +13,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 241: What every alphabet can see, on BCL2/Ced9, P66/CD47 and BHF
 
 Three query proteins, each searched against the same background, the 19_732 canonical
@@ -56,7 +61,7 @@ Figures: `alphabet_ranking_utils.py`. The driver and collector run on Sherlock
 reads only the small tables copied back from there to
 `/Users/olga/data/botryllus/alphabet-ranking-three-cases/`: `arms.csv`, `ranks.csv` and `pair/`.
 """),
-code(r"""
+    code(r"""
 import sys
 from pathlib import Path
 
@@ -79,7 +84,7 @@ print(f"{arms.height} arms over {arms['alphabet'].n_unique()} alphabets; "
       f"{arms.filter(pl.col('searched')).height} searched")
 print(bits.with_columns(pl.col("bits_per_position").round(3)))
 """),
-md(r"""
+    md(r"""
 ## 1. Which arms got an E-value
 
 The Karlin-Altschul fit needs four score bins with 30 regions in both the real and the
@@ -89,7 +94,7 @@ every metric but the E-value. Rows in the figure are grouped by how many letters
 alphabet has. Getting a fit is not the same as being able to give a region an E-value:
 section 10 is about three alphabets that pass this step and still cannot produce one.
 """),
-code(r"""
+    code(r"""
 n_fit = arms.filter(pl.col("fitted") == True).height
 n_ref = arms.filter(pl.col("fitted") == False).height
 n_non = arms.filter(pl.col("fitted").is_null()).height
@@ -112,7 +117,7 @@ fit = au.fit_status_figure(
 print(fit)
 print(f"\n{n_fit} arms fitted, {n_ref} refused after the retry (no E-value), {n_non} not run")
 """),
-md(r"""
+    md(r"""
 ## 2. The pairwise layer: do the two proteins share any exact k-mer at all?
 
 No database. `kmerseek pair` lists every exact k-mer the two proteins share and the
@@ -122,7 +127,7 @@ For Ced9/BCL2 the black ring marks a shared region inside the BH3-binding groove
 one place the two proteins are known to align (Ced9 162-181 against BCL2 138-157 in the
 first hp_lehninger2 k=17 run; the window is drawn wide at 150-195 / 125-170).
 """),
-code(r"""
+    code(r"""
 pair_tbl = au.pair_matrix(
     arms, FIG / "241_pairwise_shared_kmers.png",
     hypothesis="Every alphabet shares at least one exact k-mer with the known partner at low k; the alphabets differ only in how high a k keeps it.",
@@ -136,7 +141,7 @@ pair_tbl = au.pair_matrix(
 )
 print(pair_tbl.filter((pl.col("pair_Ced9_shared_kmers") > 0) | (pl.col("pair_P66_shared_kmers") > 0)))
 """),
-md(r"""
+    md(r"""
 ## 3. The gold standard: where BCL2 ranks when Ced9 is the query
 
 One dot per arm. Colour is BCL2's rank among every human protein with at least one
@@ -146,7 +151,7 @@ arm has no E-value. The number of proteins hit falls with seed information (thou
 bits, a handful at 28), so a rank is only comparable to other ranks at the same arm; the
 table under the figure carries the denominator.
 """),
-code(r"""
+    code(r"""
 gold = au.rank_matrix(
     ranks, arms, "Ced9", "BCL2", FIG / "241_gold_standard_bcl2_rank.png",
     "Gold standard: rank of BCL2 among the human proteins hit when Ced9 is the query, by alphabet, seed information and metric",
@@ -160,12 +165,12 @@ gold = au.rank_matrix(
 )
 print(gold.filter(pl.col("partner_found")).select("alphabet", "ksize", "bits", "metric", "rank", "n_tied", "n_targets", "partner_value", "best_value", "top_gene").sort("alphabet", "ksize", "metric"))
 """),
-md(r"""
+    md(r"""
 ## 4. The reach: where CD47 ranks when P66 is the query
 
 Same layout. CD47 is the proposed partner; nothing here assumes it is right.
 """),
-code(r"""
+    code(r"""
 reach = au.rank_matrix(
     ranks, arms, "P66", "CD47", FIG / "241_reach_cd47_rank.png",
     "The reach: rank of CD47 among the human proteins hit when P66 is the query, by alphabet, seed information and metric",
@@ -179,14 +184,14 @@ reach = au.rank_matrix(
 )
 print(reach.filter(pl.col("partner_found")).select("alphabet", "ksize", "bits", "metric", "rank", "n_tied", "n_targets", "partner_value", "best_value", "top_gene").sort("alphabet", "ksize", "metric"))
 """),
-md(r"""
+    md(r"""
 ## 5. The best any alphabet does, in one picture
 
 For each alphabet, the best rank the partner reaches over every k and every one of the
 five metrics, and which arm and metric got there. This is the one-line answer to "what
 can this alphabet see".
 """),
-code(r"""
+    code(r"""
 best = au.best_rank_figure(
     ranks, FIG / "241_best_rank_per_alphabet.png",
     hypothesis="The best alphabet puts the known partner in the top ten for the gold standard.",
@@ -199,7 +204,7 @@ best = au.best_rank_figure(
 )
 print(best.sort("query", "classes", "alphabet"))
 """),
-md(r"""
+    md(r"""
 ## 6. Is that better than a human protein picked at random?
 
 A rank of 213 out of 18_064 sounds far from random, but it is the *best* of many tries:
@@ -210,7 +215,7 @@ hits has, under chance alone, a rank anywhere in 1 to n with equal probability, 
 drawing one rank per arm and keeping the smallest says what "best of this sweep" is
 worth on its own. 20_000 such draws give the grey range in the figure.
 """),
-code(r"""
+    code(r"""
 null = au.null_rank_figure(
     ranks, FIG / "241_best_rank_vs_random_protein.png",
     hypothesis="The best rank the known partner reaches is better than the best rank a human protein picked at random reaches over the same arms.",
@@ -223,7 +228,7 @@ null = au.null_rank_figure(
 )
 print(null)
 """),
-md(r"""
+    md(r"""
 ### Every metric the search writes, not just the five
 
 Sections 3 to 5 use the five metrics a user would rank on. The search writes six more
@@ -236,7 +241,7 @@ that until this run, returning 0 for every region of an arm with no lambda and s
 putting BCL2 at rank 1 of 18_303 with 18_302 proteins tied. The collector now leaves the
 bit score empty where there is no lambda, the same as the E-value.
 """),
-code(r"""
+    code(r"""
 ms = au.metric_sweep_figure(
     ranks, FIG / "241_every_metric.png",
     hypothesis="One of the eleven metrics puts the known partner in the top 10 of the human proteome.",
@@ -251,7 +256,7 @@ ms = au.metric_sweep_figure(
 )
 print(ms.sort("query", "best_percent"))
 """),
-md(r"""
+    md(r"""
 ## 7. Why: the partner's own E-value against chance
 
 The rank is a symptom. The cause is the amount of evidence in the matched region. Here
@@ -262,7 +267,7 @@ region is the BH3 groove, 19 residues of exact HP match that extension grows to 
 residues with 2 mismatches: a 16 to 18 bit score against a database that needs about
 32 bits for E = 1.
 """),
-code(r"""
+    code(r"""
 pe = au.partner_evalue_figure(
     ranks, arms, FIG / "241_partner_evalue_vs_chance.png",
     hypothesis="Some arm gives the known partner an E-value below 1.",
@@ -279,14 +284,14 @@ pe = au.partner_evalue_figure(
 )
 print(pe.sort("query", "partner_value"))
 """),
-md(r"""
+    md(r"""
 ## 8. The application: what BHF gets
 
 BHF has no known partner, so the two panels show what any alphabet returns: the best
 E-value of any human protein (left; a black ring where it is below 1, with the gene
 named) and how many human proteins have at least one region (right).
 """),
-code(r"""
+    code(r"""
 bhf = au.bhf_matrix(
     ranks, arms, FIG / "241_application_bhf.png",
     hypothesis="Some alphabet gives BHF a human region that beats chance (E < 1).",
@@ -299,7 +304,7 @@ bhf = au.bhf_matrix(
 )
 print(bhf.filter(pl.col("n_targets_BHF") > 0).sort("best_value", nulls_last=True).head(40))
 """),
-md(r"""
+    md(r"""
 ## 9. Cross-check against PR #44's P66 ladder and random-protein control
 
 [PR #44](https://github.com/seanome/2024-kmerseek-analysis/pull/44) (`analysis/ranking-metrics-p66/`)
@@ -314,7 +319,7 @@ human protein hit is the same control with all 19_732 proteins as the sample ins
 of 300. The table joins the two ladders on the k values both ran; every shared count
 should agree exactly, since both call `kmerseek pair` on the same two sequences.
 """),
-code(r"""
+    code(r"""
 import json, subprocess
 
 # PR #44's ladder, read from its branch so nothing is copied by hand.
@@ -385,7 +390,7 @@ au.pr44_crosscheck_figure(
       f"19_732-protein hit list, depending on k and metric. It is above the middle of both sets and in the top of neither.",
 )
 """),
-md(r"""
+    md(r"""
 ## 10. Why so few regions have an E-value
 
 An E-value says how many matches this good the search expects to see by chance. Getting
@@ -454,7 +459,7 @@ hp_lehninger_hpc3 and 0.40 for gbmr4, all far above 1 / classes, which is why th
 sit at or past zero. The fix is to derive C from the measured class shares (p = sum of
 p_i squared) instead.
 """),
-code(r"""
+    code(r"""
 lz = au.lambda_zero_figure(
     arms, FIG / "241_no_evalue_mechanism.png",
     hypothesis="A region has no E-value only because the Karlin-Altschul fit on its index was refused.",
@@ -474,7 +479,7 @@ print(arms.group_by("alphabet").agg(pl.col("frac_lambda_zero").mean().round(2).a
                                     (pl.col("frac_lambda_zero") >= 0.999).sum().alias("arms_with_no_evalue_at_all"),
                                     pl.len().alias("arms")).sort("mean_share_no_evalue", descending=True))
 """),
-md(r"""
+    md(r"""
 ## 11. Conclusions
 
 **No alphabet and no metric puts either known partner near the top of the human
@@ -540,8 +545,18 @@ from the real class shares so that an E-value exists for it.
 """),
 ]
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                                   "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1))
 print("wrote", OUT)

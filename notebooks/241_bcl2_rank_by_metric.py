@@ -27,7 +27,11 @@ from matplotlib.ticker import FixedLocator, NullLocator  # noqa: E402
 
 # NB241_DIR is set by 241_alphabet_ranking.sbatch on Sherlock; the default is the laptop
 # folder that holds the small tables copied back for this notebook.
-DATA = Path(os.environ.get("NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"))
+DATA = Path(
+    os.environ.get(
+        "NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"
+    )
+)
 FIG = Path(__file__).resolve().parent.parent / "figures"
 METRICS = ["E-value", "Poisson score", "tf-idf", "mean IDF"]
 ARM_COLOR, MARK_COLOR = "#4C72B0", "#C44E52"
@@ -53,7 +57,11 @@ table = (
         (pl.col("share") < 0.5).sum().alias("n_arms_top_half"),
         pl.col("n_tied").max().alias("max_tied"),
     )
-    .with_columns(pl.col("metric").replace_strict({m: i for i, m in enumerate(METRICS)}).alias("o"))
+    .with_columns(
+        pl.col("metric")
+        .replace_strict({m: i for i, m in enumerate(METRICS)})
+        .alias("o")
+    )
     .sort("o")
     .drop("o")
 )
@@ -62,7 +70,10 @@ print(table)
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 6.6), sharex=True)
 rng = np.random.default_rng(0)
-jitter = {m: rng.uniform(-0.18, 0.18, found.filter(pl.col("metric") == m).height) for m in METRICS}
+jitter = {
+    m: rng.uniform(-0.18, 0.18, found.filter(pl.col("metric") == m).height)
+    for m in METRICS
+}
 ticks = []
 for i, m in enumerate(METRICS):
     d = found.filter(pl.col("metric") == m)
@@ -80,7 +91,11 @@ for i, m in enumerate(METRICS):
                        edgecolor=MARK_COLOR, lw=1.8, zorder=5)  # fmt: skip
         j = int(np.argmin(d[col].to_numpy()))
         b = d.row(j, named=True)
-        val = f"{b['rank']:,}" if col == "rank" else f"{b['rank']:,} of {b['n_targets']:,}"
+        val = (
+            f"{b['rank']:,}"
+            if col == "rank"
+            else f"{b['rank']:,} of {b['n_targets']:,}"
+        )
         ax.annotate(f"best {val}\n{b['alphabet']} k={b['ksize']}", (x[j], b[col]),
                     xytext=(i, text_y), ha="center", va="bottom", fontsize=8.5,
                     arrowprops=dict(arrowstyle="-", color="grey", lw=0.7))  # fmt: skip
@@ -99,7 +114,9 @@ ax = axes[1]
 ax.axhline(0.5, color="grey", ls="--", lw=1.2, zorder=1)
 ax.set_ylim(1, -0.16)  # room above 0 for the labels, clear of the dots near the top
 ax.yaxis.set_major_locator(FixedLocator([0, 0.2, 0.4, 0.6, 0.8, 1.0]))
-ax.set_ylabel("BCL2's rank divided by the number of proteins that arm hit\n(0 = top, 1 = bottom)")
+ax.set_ylabel(
+    "BCL2's rank divided by the number of proteins that arm hit\n(0 = top, 1 = bottom)"
+)
 ax.set_title("B. Rank as a share of the proteins hit", loc="left", fontweight="bold")
 
 for ax in axes:
@@ -109,12 +126,37 @@ for ax in axes:
     ax.grid(axis="y", color="#ddd", zorder=0)
 
 handles = [
-    Line2D([], [], marker="o", ls="", color=ARM_COLOR, label="one alphabet and k (arm)"),
+    Line2D(
+        [], [], marker="o", ls="", color=ARM_COLOR, label="one alphabet and k (arm)"
+    ),
     Line2D([], [], color="black", lw=2.2, label="median over arms"),
-    Line2D([], [], marker="D", ls="", mfc="white", mec=MARK_COLOR, mew=1.8, label="hp_lehninger2 k=17"),
-    Line2D([], [], color="grey", ls="--", lw=1.2, label="a randomly chosen hit protein, on average (B)"),
+    Line2D(
+        [],
+        [],
+        marker="D",
+        ls="",
+        mfc="white",
+        mec=MARK_COLOR,
+        mew=1.8,
+        label="hp_lehninger2 k=17",
+    ),
+    Line2D(
+        [],
+        [],
+        color="grey",
+        ls="--",
+        lw=1.2,
+        label="a randomly chosen hit protein, on average (B)",
+    ),
 ]
-fig.legend(handles=handles, loc="upper center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 0.925), fontsize=9.5)
+fig.legend(
+    handles=handles,
+    loc="upper center",
+    ncol=4,
+    frameon=False,
+    bbox_to_anchor=(0.5, 0.925),
+    fontsize=9.5,
+)
 fig.suptitle(
     "Under every metric, BCL2 ranks below the typical protein Ced-9 hits in the human proteome",
     fontsize=13, fontweight="bold", y=0.985,

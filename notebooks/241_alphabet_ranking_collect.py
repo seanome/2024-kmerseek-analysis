@@ -13,6 +13,9 @@ directory:
                the best value over all targets, and how many targets tie with the
                partner. For BHF, which has no known partner, the row carries the top
                target instead.
+  top_hits.csv one row per (alphabet, ksize, query, metric, target) for the 20 best
+               targets under that metric: gene, protein length, value, rank and ties.
+               Answers "who is ranked above the partner".
   regions.parquet  every region of every search, with alphabet, ksize, bits and gene
                symbol added, for any figure that wants the raw distribution.
 
@@ -33,7 +36,11 @@ from pathlib import Path
 import polars as pl
 
 # NB241_DIR is set by 241_alphabet_ranking.sbatch on Sherlock.
-OUT = Path(os.environ.get("NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"))
+OUT = Path(
+    os.environ.get(
+        "NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"
+    )
+)
 PARTNER = {"Ced9": "BCL2", "P66": "CD47"}
 QUERIES = ["Ced9", "P66", "BHF"]
 
@@ -76,8 +83,20 @@ def match_probability_from_log(index_log: Path, penalty: float) -> dict:
 
 
 def gene_symbol(target_name: str) -> str:
+    """BCL2 from a GENCODE header (8 fields, symbol 7th); ced-9 from the
+    accession|gene|length headers 241_reciprocal_driver.py writes."""
     parts = target_name.split("|")
-    return parts[6] if len(parts) > 6 else target_name
+    if len(parts) > 6:
+        return parts[6]
+    if len(parts) == 3:
+        return parts[1]
+    return target_name
+
+
+def target_length(target_name: str) -> int | None:
+    """Protein length, the last field of both header layouts above."""
+    last = target_name.rsplit("|", 1)[-1]
+    return int(last) if last.isdigit() else None
 
 
 def read_plan() -> pl.DataFrame:
@@ -166,8 +185,8 @@ def read_pair(tag: str, qname: str) -> dict:
     }
 
 
-def read_search(tag: str) -> pl.DataFrame | None:
-    p = OUT / "search" / f"{tag}.csv"
+def read_search(tag: str, out: Path = OUT) -> pl.DataFrame | None:
+    p = out / "search" / f"{tag}.csv"
     if not p.exists() or p.stat().st_size == 0:
         return None
     df = pl.read_csv(p, infer_schema_length=0)
@@ -205,13 +224,82 @@ def read_search(tag: str) -> pl.DataFrame | None:
     return df
 
 
-def rank_rows(df: pl.DataFrame, alphabet: str, k: int, bits: float) -> list[dict]:
+def per_target(sub: pl.DataFrame, col: str, lower: bool) -> pl.DataFrame:
+    """One row per target: its best region under this metric (lowest E-value, highest
+    IDF, ...). Targets whose best value is null or infinite are dropped."""
+    agg = pl.col(col).min() if lower else pl.col(col).max()
+    return (
+        sub.group_by("target_name", "gene")
+        .agg(agg.alias("v"))
+        .filter(pl.col("v").is_not_null() & pl.col("v").is_finite())
+    )
+
+
+def top_rows(
+    df: pl.DataFrame,
+    alphabet: str,
+    k: int,
+    bits: float,
+    queries: list[str] = QUERIES,
+    partner: dict[str, str] = PARTNER,
+    n: int = 20,
+) -> list[dict]:
+    """The n best targets per query and metric. rank is 1 + the number of targets
+    strictly better, as in rank_rows, so tied targets share a rank and a block of ties
+    at the cut-off is kept whole."""
     rows = []
-    for q in QUERIES:
+    for q in queries:
+        sub = df.filter(pl.col("query_name") == q)
+        if sub.height == 0:
+            continue
+        for col, lower, label in METRICS:
+            if col not in sub.columns:
+                continue
+            per = per_target(sub, col, lower)
+            if per.height == 0:
+                continue
+            per = per.with_columns(
+                pl.col("v")
+                .rank("min", descending=not lower)
+                .cast(pl.Int64)
+                .alias("rank"),
+                (pl.col("v").count().over("v") - 1).alias("n_tied"),
+            ).filter(pl.col("rank") <= n)
+            # Ties are broken by gene for a stable row order, not for the rank.
+            for t, g, v, r, nt in per.sort("rank", "gene").iter_rows():
+                rows.append(
+                    dict(
+                        alphabet=alphabet,
+                        ksize=k,
+                        bits=bits,
+                        query=q,
+                        metric=label,
+                        n_targets=sub["target_name"].n_unique(),
+                        rank=r,
+                        n_tied=int(nt),
+                        gene=g,
+                        target_length=target_length(t),
+                        value=float(v),
+                        is_partner=(g == partner.get(q)),
+                    )
+                )
+    return rows
+
+
+def rank_rows(
+    df: pl.DataFrame,
+    alphabet: str,
+    k: int,
+    bits: float,
+    queries: list[str] = QUERIES,
+    partner_of: dict[str, str] = PARTNER,
+) -> list[dict]:
+    rows = []
+    for q in queries:
         sub = df.filter(pl.col("query_name") == q)
         n_regions = sub.height
         n_targets = sub["target_name"].n_unique() if n_regions else 0
-        partner = PARTNER.get(q)
+        partner = partner_of.get(q)
         for col, lower, label in METRICS:
             if col not in sub.columns or n_regions == 0:
                 rows.append(
@@ -230,16 +318,12 @@ def rank_rows(df: pl.DataFrame, alphabet: str, k: int, bits: float) -> list[dict
                         partner_value=None,
                         best_value=None,
                         top_gene=None,
+                        n_top_tied=None,
                     )
                 )
                 continue
             # A target's score is its best region under this metric.
-            agg = pl.col(col).min() if lower else pl.col(col).max()
-            per = (
-                sub.group_by("target_name", "gene")
-                .agg(agg.alias("v"))
-                .filter(pl.col("v").is_not_null() & pl.col("v").is_finite())
-            )
+            per = per_target(sub, col, lower)
             if per.height == 0:
                 rows.append(
                     dict(
@@ -257,11 +341,16 @@ def rank_rows(df: pl.DataFrame, alphabet: str, k: int, bits: float) -> list[dict
                         partner_value=None,
                         best_value=None,
                         top_gene=None,
+                        n_top_tied=None,
                     )
                 )
                 continue
             best = float(per["v"].min() if lower else per["v"].max())
-            top = per.filter(pl.col("v") == best)["gene"][0]
+            # Several targets can share the best value (64 at hp_lehninger2 k=17 for
+            # P66's Poisson score). Name the alphabetically first so the table is the
+            # same on every run, and say how many share it.
+            tops = per.filter(pl.col("v") == best)["gene"].sort()
+            top, n_top_tied = tops[0], tops.len()
             rec = dict(
                 alphabet=alphabet,
                 ksize=k,
@@ -273,6 +362,7 @@ def rank_rows(df: pl.DataFrame, alphabet: str, k: int, bits: float) -> list[dict
                 partner=partner,
                 best_value=best,
                 top_gene=top,
+                n_top_tied=n_top_tied,
             )
             if partner is None:
                 rec.update(
@@ -298,9 +388,25 @@ def rank_rows(df: pl.DataFrame, alphabet: str, k: int, bits: float) -> list[dict
     return rows
 
 
+TOP_SCHEMA = {
+    "alphabet": pl.Utf8,
+    "ksize": pl.Int64,
+    "bits": pl.Float64,
+    "query": pl.Utf8,
+    "metric": pl.Utf8,
+    "n_targets": pl.Int64,
+    "rank": pl.Int64,
+    "n_tied": pl.Int64,
+    "gene": pl.Utf8,
+    "target_length": pl.Int64,
+    "value": pl.Float64,
+    "is_partner": pl.Boolean,
+}
+
+
 def main() -> None:
     plan = read_plan()
-    arms, ranks, regions = [], [], []
+    arms, ranks, tops, regions = [], [], [], []
     for a, k, bits, c, x in plan.select(
         "alphabet", "ksize", "bits", "penalty", "xdrop"
     ).iter_rows():
@@ -338,6 +444,7 @@ def main() -> None:
         )
         arms.append(arm)
         ranks.extend(rank_rows(df, a, k, bits))
+        tops.extend(top_rows(df, a, k, bits))
         regions.append(
             df.with_columns(
                 pl.lit(a).alias("alphabet"),
@@ -362,8 +469,10 @@ def main() -> None:
         "partner_value": pl.Float64,
         "best_value": pl.Float64,
         "top_gene": pl.Utf8,
+        "n_top_tied": pl.Int64,
     }
     pl.DataFrame(ranks, schema=rank_schema).write_csv(OUT / "ranks.csv")
+    pl.DataFrame(tops, schema=TOP_SCHEMA).write_csv(OUT / "top_hits.csv")
     if regions:
         keep = list(
             dict.fromkeys(

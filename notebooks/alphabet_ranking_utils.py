@@ -35,7 +35,11 @@ from hp_conservation_utils import finish_figure  # noqa: F401  (re-exported)
 
 # NB241_DIR is set by 241_alphabet_ranking.sbatch on Sherlock; the default is the laptop
 # folder that holds the small tables copied back for this notebook.
-DATA = Path(os.environ.get("NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"))
+DATA = Path(
+    os.environ.get(
+        "NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"
+    )
+)
 FIG = Path(__file__).resolve().parent.parent / "figures"
 
 N_HUMAN = 19_732

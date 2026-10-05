@@ -44,16 +44,31 @@ from pathlib import Path
 # Every path can be set from the environment; 241_alphabet_ranking.sbatch sets all four
 # for Sherlock. The defaults are the laptop paths the first run (2026-09-23) used. Its
 # kmerseek was commit 982a055, tagged nb241-kmerseek-982a055 in seanome/kmerseek.
-KMERSEEK = Path(os.environ.get(
-    "NB241_KMERSEEK", "/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek"))
-HUMAN = Path(os.environ.get(
-    "NB241_HUMAN", "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"))
-OUT = Path(os.environ.get("NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"))
+KMERSEEK = Path(
+    os.environ.get(
+        "NB241_KMERSEEK",
+        "/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek",
+    )
+)
+HUMAN = Path(
+    os.environ.get(
+        "NB241_HUMAN",
+        "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa",
+    )
+)
+OUT = Path(
+    os.environ.get(
+        "NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"
+    )
+)
 QUERIES = OUT / "queries.fa"
-KAPPA_TSV = Path(os.environ.get(
-    "NB241_KAPPA",
-    "/Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/dark-set-v4/"
-    "nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv"))
+KAPPA_TSV = Path(
+    os.environ.get(
+        "NB241_KAPPA",
+        "/Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/dark-set-v4/"
+        "nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv",
+    )
+)
 
 # The full header of each known partner in the human FASTA (kmerseek pair matches the
 # whole header or its first token; these headers have no spaces so the token is the
@@ -81,9 +96,61 @@ CLUSTERS: dict[str, list[str]] = {
     "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
     "sdm12": ["A", "D", "KER", "N", "TSQ", "YF", "LIVM", "C", "W", "H", "G", "P"],
     "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
-    "wass14": ["WM", "DI", "P", "C", "AV", "K", "T", "RE", "G", "L", "Y", "SH", "F", "NQ"],
-    "hsdm17": ["A", "D", "KE", "R", "N", "T", "S", "Q", "Y", "F", "LIV", "M", "C", "W", "H", "G", "P"],
-    "uniprot18": ["A", "R", "N", "D", "C", "Q", "EP", "G", "HL", "I", "K", "M", "F", "S", "T", "W", "Y", "V"],
+    "wass14": [
+        "WM",
+        "DI",
+        "P",
+        "C",
+        "AV",
+        "K",
+        "T",
+        "RE",
+        "G",
+        "L",
+        "Y",
+        "SH",
+        "F",
+        "NQ",
+    ],
+    "hsdm17": [
+        "A",
+        "D",
+        "KE",
+        "R",
+        "N",
+        "T",
+        "S",
+        "Q",
+        "Y",
+        "F",
+        "LIV",
+        "M",
+        "C",
+        "W",
+        "H",
+        "G",
+        "P",
+    ],
+    "uniprot18": [
+        "A",
+        "R",
+        "N",
+        "D",
+        "C",
+        "Q",
+        "EP",
+        "G",
+        "HL",
+        "I",
+        "K",
+        "M",
+        "F",
+        "S",
+        "T",
+        "W",
+        "Y",
+        "V",
+    ],
 }
 ALPHABETS = list(CLUSTERS)
 
@@ -105,7 +172,9 @@ RETRY_QUERIES, RETRY_SHUFFLES = 1000, 8
 # No retry when the first fit already had at least this many regions on BOTH curves.
 DENSE_REGIONS = 100_000
 
-_COUNTS = re.compile(r"(\d+) queries gave (\d+) regions and (\d+) shuffled queries gave (\d+) chance regions")
+_COUNTS = re.compile(
+    r"(\d+) queries gave (\d+) regions and (\d+) shuffled queries gave (\d+) chance regions"
+)
 
 
 def first_fit_counts(index_log: Path) -> tuple[int | None, int | None]:
@@ -135,7 +204,9 @@ def residue_counts() -> collections.Counter:
         for line in fh:
             if not line.startswith(">"):
                 cnt.update(line.strip())
-    return collections.Counter({r: n for r, n in cnt.items() if r in "ACDEFGHIKLMNPQRSTVWY"})
+    return collections.Counter(
+        {r: n for r, n in cnt.items() if r in "ACDEFGHIKLMNPQRSTVWY"}
+    )
 
 
 def bits_per_position(cnt: collections.Counter) -> dict[str, float]:
@@ -176,27 +247,82 @@ def run(cmd: list[str], log: Path) -> tuple[int, float]:
     return p.returncode, time.time() - t0
 
 
-def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
+def one_arm(
+    alphabet: str,
+    k: int,
+    c: str,
+    x: str,
+    dry: bool,
+    db: Path | None = None,
+    queries: Path | None = None,
+    out: Path | None = None,
+    pairs: dict[str, str] | None = None,
+    db_label: str = "human",
+) -> dict:
+    """Index `db`, calibrate, search `queries` against it, and run `kmerseek pair` for
+    each (query, target) in `pairs`. The defaults are the forward search of this
+    notebook (three queries against the human proteome, results under OUT);
+    241_reciprocal_driver.py passes its own database, queries and folder."""
+    db = HUMAN if db is None else db
+    queries = QUERIES if queries is None else queries
+    out = OUT if out is None else out
+    pairs = PAIRS if pairs is None else pairs
     tag = f"{alphabet}.k{k}"
-    idx = OUT / "idx" / f"human.{tag}.rocksdb"
-    search_csv = OUT / "search" / f"{tag}.csv"
-    survival = OUT / "ka_survival" / f"{tag}.csv"
-    logs = OUT / "logs"
+    idx = out / "idx" / f"{db_label}.{tag}.rocksdb"
+    search_csv = out / "search" / f"{tag}.csv"
+    survival = out / "ka_survival" / f"{tag}.csv"
+    logs = out / "logs"
     logs.mkdir(exist_ok=True)
     rec = {"alphabet": alphabet, "ksize": k, "penalty": c, "xdrop": x, "tag": tag}
 
     idx_cmd = [
-        str(KMERSEEK), "index", "-i", str(HUMAN), "-o", str(idx), "-k", str(k), "-s", "1",
-        "-a", alphabet, "--remove-low-complexity",
-        "--extend-mismatch-penalty", c, "--extend-xdrop", x,
-        "--ka-queries", "200", "--ka-survival-out", str(survival),
+        str(KMERSEEK),
+        "index",
+        "-i",
+        str(db),
+        "-o",
+        str(idx),
+        "-k",
+        str(k),
+        "-s",
+        "1",
+        "-a",
+        alphabet,
+        "--remove-low-complexity",
+        "--extend-mismatch-penalty",
+        c,
+        "--extend-xdrop",
+        x,
+        "--ka-queries",
+        "200",
+        "--ka-survival-out",
+        str(survival),
     ]
     search_cmd = [
-        str(KMERSEEK), "search", "-q", str(QUERIES), "-t", str(idx), "-k", str(k), "-a", alphabet,
-        "--threshold", "0", "--min-shared-kmers", "1",
-        "--max-query-pvalue", "1", "--min-region-score", "0",
-        "--extend-mismatch-penalty", c, "--extend-xdrop", x,
-        "-o", str(search_csv),
+        str(KMERSEEK),
+        "search",
+        "-q",
+        str(queries),
+        "-t",
+        str(idx),
+        "-k",
+        str(k),
+        "-a",
+        alphabet,
+        "--threshold",
+        "0",
+        "--min-shared-kmers",
+        "1",
+        "--max-query-pvalue",
+        "1",
+        "--min-region-score",
+        "0",
+        "--extend-mismatch-penalty",
+        c,
+        "--extend-xdrop",
+        x,
+        "-o",
+        str(search_csv),
     ]
     if dry:
         print(" ".join(idx_cmd))
@@ -224,17 +350,33 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
     # fix: the score distribution is too narrow to hold four bins above its peak (the
     # low-k arms of the many-class alphabets, gbmr7 k=10: 65 M real, 59 M shuffled).
     # More queries and shuffles multiply that work for the same verdict.
-    if fit is False and real_n is not None and chance_n is not None \
-            and min(real_n, chance_n) >= DENSE_REGIONS:
-        rec["retry_skipped"] = "both curves already dense; too few bins, not too few regions"
+    if (
+        fit is False
+        and real_n is not None
+        and chance_n is not None
+        and min(real_n, chance_n) >= DENSE_REGIONS
+    ):
+        rec["retry_skipped"] = (
+            "both curves already dense; too few bins, not too few regions"
+        )
         fit = False
     elif fit is False:
-        retry_out = OUT / "ka_survival" / f"{tag}.retry.csv"
+        retry_out = out / "ka_survival" / f"{tag}.retry.csv"
         cal_cmd = [
-            str(KMERSEEK), "calibrate", "-t", str(idx),
-            "--extend-mismatch-penalty", c, "--extend-xdrop", x,
-            "--ka-queries", str(RETRY_QUERIES), "--ka-reference-shuffles", str(RETRY_SHUFFLES),
-            "--ka-survival-out", str(retry_out),
+            str(KMERSEEK),
+            "calibrate",
+            "-t",
+            str(idx),
+            "--extend-mismatch-penalty",
+            c,
+            "--extend-xdrop",
+            x,
+            "--ka-queries",
+            str(RETRY_QUERIES),
+            "--ka-reference-shuffles",
+            str(RETRY_SHUFFLES),
+            "--ka-survival-out",
+            str(retry_out),
         ]
         rc, dt = run(cal_cmd, logs / f"{tag}.calibrate.log")
         rec["calibrate_rc"], rec["calibrate_s"] = rc, round(dt, 1)
@@ -243,9 +385,15 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
     if fit is not True:
         # Exact regions only: no extension, so no E-value, but IDF, tf-idf, enrichment
         # and the Poisson score are all still written.
-        search_cmd = [a for a in search_cmd if a not in ("--extend-mismatch-penalty", "--extend-xdrop", c, x)]
+        search_cmd = [
+            a
+            for a in search_cmd
+            if a not in ("--extend-mismatch-penalty", "--extend-xdrop", c, x)
+        ]
         search_cmd += ["--extend-mismatch-penalty", "0"]
-        (OUT / "search" / f"{tag}.nofit").write_text("no Karlin-Altschul fit; searched with exact regions\n")
+        (out / "search" / f"{tag}.nofit").write_text(
+            "no Karlin-Altschul fit; searched with exact regions\n"
+        )
 
     if not search_csv.exists():
         rc, dt = run(search_cmd, logs / f"{tag}.search.log")
@@ -254,14 +402,27 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
         rec["search_rc"], rec["search_s"] = 0, 0.0
 
     # Pairwise layer: no database, just the shared k-mers and regions between the two.
-    for qname, target in PAIRS.items():
-        pj = OUT / "pair" / f"{tag}.{qname}.json"
+    for qname, target in pairs.items():
+        pj = out / "pair" / f"{tag}.{qname}.json"
         if pj.exists():
             continue
         cmd = [
-            str(KMERSEEK), "pair", "-q", str(QUERIES), "--query-name", qname,
-            "-t", str(HUMAN), "--target-name", target, "-k", str(k), "-a", alphabet,
-            "-o", str(pj),
+            str(KMERSEEK),
+            "pair",
+            "-q",
+            str(queries),
+            "--query-name",
+            qname,
+            "-t",
+            str(db),
+            "--target-name",
+            target,
+            "-k",
+            str(k),
+            "-a",
+            alphabet,
+            "-o",
+            str(pj),
         ]
         rc, _ = run(cmd, logs / f"{tag}.pair.{qname}.log")
         rec[f"pair_{qname}_rc"] = rc
@@ -273,7 +434,9 @@ def main() -> None:
     ap.add_argument("--alphabets", default=",".join(ALPHABETS))
     ap.add_argument("--workers", type=int, default=2)
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--plan-only", action="store_true", help="print the ladder and exit")
+    ap.add_argument(
+        "--plan-only", action="store_true", help="print the ladder and exit"
+    )
     args = ap.parse_args()
 
     # A fresh output folder (a first run on Sherlock) has none of these yet.
@@ -289,9 +452,21 @@ def main() -> None:
         c, x = penalty_for(a, kappa)
         for k in ladder(a, hbits[a]):
             plan.append((a, k, c, x))
-    (OUT / "plan.json").write_text(json.dumps(
-        [{"alphabet": a, "ksize": k, "bits": round(k * hbits[a], 2), "penalty": c, "xdrop": x}
-         for a, k, c, x in plan], indent=1))
+    (OUT / "plan.json").write_text(
+        json.dumps(
+            [
+                {
+                    "alphabet": a,
+                    "ksize": k,
+                    "bits": round(k * hbits[a], 2),
+                    "penalty": c,
+                    "xdrop": x,
+                }
+                for a, k, c, x in plan
+            ],
+            indent=1,
+        )
+    )
     (OUT / "bits_per_position.json").write_text(json.dumps(hbits, indent=1))
     print(f"{len(plan)} arms over {len(alphabets)} alphabets", file=sys.stderr)
     if args.plan_only:
@@ -301,7 +476,9 @@ def main() -> None:
 
     results = []
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = {ex.submit(one_arm, a, k, c, x, args.dry_run): (a, k) for a, k, c, x in plan}
+        futs = {
+            ex.submit(one_arm, a, k, c, x, args.dry_run): (a, k) for a, k, c, x in plan
+        }
         for fut in cf.as_completed(futs):
             rec = fut.result()
             results.append(rec)
