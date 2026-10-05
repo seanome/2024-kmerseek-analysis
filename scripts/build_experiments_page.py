@@ -569,7 +569,7 @@ def hero_figure(records):
     for a, b in ((q0, t0), (q1, t1)):
         out.append(f'<line x1="{xq(a):.1f}" y1="{yq + 23}" x2="{xt(b):.1f}" y2="{yt - 23}" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>')
     out.append(f'<line x1="{(xq(q0) + xq(q1)) / 2:.1f}" y1="{yq + 25}" x2="{(xt(t0) + xt(t1)) / 2:.1f}" y2="{yt - 25}" stroke="currentColor" stroke-width="1.5" marker-end="url(#mech-arrow)"/>')
-    T((xq(q1) + 10), (yq + yt) / 2 + 4, f"same {L} positions, no gaps: the label moves across", "start", 11)
+    T((xq(q1) + 10), (yq + yt) / 2 + 4, f"same {L} positions, no gaps", "start", 11)
     for aa in (w0, w1):   # residue numbers at the ends of the drawn window: above the human line, below the chicken one
         T(xq(aa), yq - 8, f"{aa}", "middle", 10)
         T(xt(aa + off), yt + 16, f"{aa + off}", "middle", 10)
@@ -729,10 +729,14 @@ def main():
     print(f"{len(records)} records, {len(claims['claims'])} claims, {len(prs['prs'])} open pull requests; "
           f"{n_changed} of {checked} checked rows changed since read; dates {d}")
     if args.artifact:
-        title = html[html.index("<title>"): html.index("</title>") + len("</title>")]
-        style = html[html.index("<style>"): html.index("</style>") + len("</style>")]
+        # The shelf supplies its own html/head/body, so carry over everything in our <head>
+        # (title, font links, both style blocks) except the charset and viewport tags.
+        head = html[html.index("<head>") + len("<head>"): html.index("</head>")]
+        head = "\n".join(line for line in head.splitlines() if not line.lstrip().startswith("<meta"))
         body = html[html.index("<body>") + len("<body>"): html.index("</body>")]
-        args.artifact.write_text(f"{title}\n{style}\n{body}")
+        for needle in ("<title>", 'id="seanome-fonts"', "--glass:", "fonts.googleapis.com"):
+            assert needle in head, f"artifact copy would lose {needle}"
+        args.artifact.write_text(f"{head.strip()}\n{body}")
         print(f"wrote artifact copy {args.artifact}")
 
 
