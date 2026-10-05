@@ -1,0 +1,3 @@
+task_id	hash	native_id	process	tag	name	status	exit	container	cpus	time	memory	attempt	submit	start	complete	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+-	-	-	searchAndScore	funcgroups8.k7.exact	-	COMPLETED	0	-	-	1h	60 GB	-	-	-	-	-	9m 29s	-	22 GB	-	-	-
+-	-	-	searchAndScore	protein20.k5.exact	-	COMPLETED	0	-	-	1h	60 GB	-	-	-	-	-	16s	-	1.8 GB	-	-	-

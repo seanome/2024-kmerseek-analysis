@@ -1,0 +1,66 @@
+# Written by tools/measure_resources.py from: nextflow-runs/scope40-alphabet-ksize-v040/assets/traces/scope40_v040.2026-10-02-0712.laptop.trace.txt nextflow-runs/scope40-alphabet-ksize-v040/assets/traces/scope40_v040.2026-10-02-0713.laptop.trace.txt nextflow-runs/scope40-alphabet-ksize-v040/assets/traces/scope40_v040.2026-10-02-0714.laptop.trace.txt nextflow-runs/scope40-alphabet-ksize-v040/assets/traces/scope40_v040.2026-10-02-0715.laptop.trace.txt nextflow-runs/scope40-alphabet-ksize-v040/assets/traces/scope40_v040.2026-10-03.laptop-merged-task.trace.txt
+process	alphabet	ksize	peak_gb	realtime_h	evidence
+kmerseekIndex	dayhoff6	8	1.100	0.0208	completed
+kmerseekIndex	dayhoff6	18	0.945	0.0039	completed
+kmerseekIndex	funcgroups8	7	1.400	0.0141	completed
+kmerseekIndex	funcgroups8	14	0.941	0.0021	completed
+kmerseekIndex	gbmr4	13	1.200	0.0225	completed
+kmerseekIndex	gbmr4	28	0.850	0.0038	completed
+kmerseekIndex	gbmr7	13	2.000	0.0622	completed
+kmerseekIndex	hp_kyte_doolittle2	19	0.967	0.0096	completed
+kmerseekIndex	hp_kyte_doolittle2	39	0.845	0.0036	completed
+kmerseekIndex	hp_lehninger2	17	1.000	0.0124	completed
+kmerseekIndex	hp_lehninger2	30	0.584	0.0027	completed
+kmerseekIndex	hp_lehninger_c_nonpolar2	17	1.000	0.0134	completed
+kmerseekIndex	hp_lehninger_c_nonpolar2	31	0.607	0.0034	completed
+kmerseekIndex	hp_lehninger_hpc3	17	1.000	0.0102	completed
+kmerseekIndex	hp_lehninger_hpc3	29	0.910	0.0043	completed
+kmerseekIndex	hp_pbotc_1st_ed2	17	1.000	0.0098	completed
+kmerseekIndex	hp_pbotc_1st_ed2	30	0.605	0.0030	completed
+kmerseekIndex	hp_thomas_dill2	18	0.961	0.0102	completed
+kmerseekIndex	hp_thomas_dill2	36	0.771	0.0028	completed
+kmerseekIndex	hp_thomas_dill_no_c2	18	1.000	0.0103	completed
+kmerseekIndex	hp_thomas_dill_no_c2	39	0.881	0.0033	completed
+kmerseekIndex	hsdm17	5	1.300	0.0311	completed
+kmerseekIndex	hsdm17	10	0.918	0.0040	completed
+kmerseekIndex	mmseqs12	6	1.100	0.0052	completed
+kmerseekIndex	mmseqs12	10	0.851	0.0039	completed
+kmerseekIndex	polarity4	11	1.100	0.0152	completed
+kmerseekIndex	polarity4	25	0.915	0.0039	completed
+kmerseekIndex	protein20	5	1.000	0.0007	completed
+kmerseekIndex	protein20	8	0.687	0.0028	completed
+kmerseekIndex	sdm12	7	1.100	0.0066	completed
+kmerseekIndex	sdm12	12	0.948	0.0042	completed
+kmerseekIndex	uniprot18	5	1.100	0.0101	completed
+kmerseekIndex	uniprot18	9	0.953	0.0045	completed
+kmerseekIndex	wass14	5	1.200	0.0206	completed
+kmerseekIndex	wass14	9	0.742	0.0029	completed
+kmerseekIndex	wwmj5	9	1.000	0.0075	completed
+kmerseekIndex	wwmj5	15	0.706	0.0046	completed
+searchAndScore	dayhoff6	8	8.000	0.0847	memory kill at 4 GB
+searchAndScore	dayhoff6	18	1.300	0.0019	completed
+searchAndScore	funcgroups8	7	22.000	0.1581	completed
+searchAndScore	funcgroups8	14	1.200	0.0015	completed
+searchAndScore	gbmr4	13	3.400	0.0731	completed
+searchAndScore	gbmr4	28	1.200	0.0020	completed
+searchAndScore	hp_kyte_doolittle2	19	8.000	0.0939	memory kill at 4 GB
+searchAndScore	hp_kyte_doolittle2	39	1.000	0.0014	completed
+searchAndScore	hp_lehninger_c_nonpolar2	31	1.200	0.0020	completed
+searchAndScore	hp_lehninger_hpc3	29	1.200	0.0016	completed
+searchAndScore	hp_thomas_dill2	18	2.100	0.0336	completed
+searchAndScore	hsdm17	5	8.000	0.1294	memory kill at 4 GB
+searchAndScore	hsdm17	10	1.100	0.0016	completed
+searchAndScore	mmseqs12	6	4.000	0.0442	completed
+searchAndScore	mmseqs12	10	1.300	0.0017	completed
+searchAndScore	polarity4	11	8.000	0.0634	memory kill at 4 GB
+searchAndScore	polarity4	25	1.200	0.0013	completed
+searchAndScore	protein20	5	1.800	0.0044	completed
+searchAndScore	protein20	8	1.000	0.0014	completed
+searchAndScore	sdm12	7	3.100	0.0153	completed
+searchAndScore	sdm12	12	1.300	0.0015	completed
+searchAndScore	uniprot18	5	3.200	0.0169	completed
+searchAndScore	uniprot18	9	1.300	0.0018	completed
+searchAndScore	wass14	5	8.000	0.0680	memory kill at 4 GB
+searchAndScore	wass14	9	1.300	0.0015	completed
+searchAndScore	wwmj5	9	8.000	0.0411	memory kill at 4 GB
+searchAndScore	wwmj5	15	1.100	0.0018	completed
