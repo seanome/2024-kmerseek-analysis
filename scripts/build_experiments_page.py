@@ -5,15 +5,23 @@ Every number a claim shows is looked up from experiments.json by row id and
 number name; the build stops if a claim names a number that is not there.
 Run from the repo root:
 
-    python scripts/build_experiments_page.py [artifact_copy.html]
+    python scripts/build_experiments_page.py [--site DIR] [--artifact FILE]
 
-With the argument it also writes a body-only copy for the claude.ai artifact
-shelf, which supplies its own html/head/body.
+--site DIR writes the GitHub Pages copy (DIR/index.html and DIR/experiments.html).
+--artifact FILE writes a body-only copy for the claude.ai artifact shelf, which
+supplies its own html/head/body.
+
+The dates on the page come from git: when the page was first committed, when
+data/experiments.json last changed, and when this build ran. With git and the
+branches available, each experiment is also checked against its notebook's
+branch today; a notebook with commits since its numbers were read is marked
+"changed since read".
 """
 
+import argparse
 import datetime
 import json
-import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,64 +37,88 @@ TEMPLATE = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>kmerseek experiments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600&family=Noto+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 <style>
+/* Theme: the kmerseek docs landing page (seanome/kmerseek docs/assets/site.css): its palette,
+   glass panels over the moving water, light and dark. Fonts from the Seanome style guide:
+   Noto Sans for text, Inconsolata for sequences and numbers. Colour carries one meaning
+   only, the verdict badges; everything else is ink. */
 :root {
-  --bg: #ffffff; --ink: #1b1f24; --line: #d5d9de; --row-hover: #f4f6f8; --panel: #f7f8fa;
-  --alive: #1e7b34; --dead: #7a7f86; --bug: #c85a00; --running: #1f5fbf; --notrun: #1b1f24;
-  --chip-on-bg: #1b1f24; --chip-on-ink: #ffffff;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --bg: #F6F7F5; --surface: #FFFFFF; --ink: #1C211F; --hair: #D9DDDA;
+  --glass: rgba(255,255,255,.86); --glass-edge: rgba(20,60,70,.20); --shadow: 0 14px 34px -26px rgba(0,40,50,.75);
+  --row-hover: #EEF1EF;
+  --alive: #1e7b34; --dead: #7a7f86; --bug: #c85a00; --running: #1f5fbf; --notrun: #1C211F;
+  --chip-on-bg: #1C211F; --chip-on-ink: #FFFFFF;
+  --sans: "Noto Sans", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "Inconsolata", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #15181c; --ink: #e8eaed; --line: #3a4048; --row-hover: #1f242a; --panel: #1b1f24;
-    --alive: #3fa55a; --dead: #8d939a; --bug: #e07a1f; --running: #4b8ae6; --notrun: #e8eaed;
-    --chip-on-bg: #e8eaed; --chip-on-ink: #15181c; color-scheme: dark;
+    --bg: #141716; --surface: #1B1F1E; --ink: #E6EAE8; --hair: #2E3432;
+    --glass: rgba(5,22,30,.78); --glass-edge: rgba(170,230,225,.16); --shadow: 0 18px 44px -28px rgba(0,0,0,.85);
+    --row-hover: #232927;
+    --alive: #3fa55a; --dead: #8d939a; --bug: #e07a1f; --running: #4b8ae6; --notrun: #E6EAE8;
+    --chip-on-bg: #E6EAE8; --chip-on-ink: #141716; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #15181c; --ink: #e8eaed; --line: #3a4048; --row-hover: #1f242a; --panel: #1b1f24;
-  --alive: #3fa55a; --dead: #8d939a; --bug: #e07a1f; --running: #4b8ae6; --notrun: #e8eaed;
-  --chip-on-bg: #e8eaed; --chip-on-ink: #15181c; color-scheme: dark;
+  --bg: #141716; --surface: #1B1F1E; --ink: #E6EAE8; --hair: #2E3432;
+  --glass: rgba(5,22,30,.78); --glass-edge: rgba(170,230,225,.16); --shadow: 0 18px 44px -28px rgba(0,0,0,.85);
+  --row-hover: #232927;
+  --alive: #3fa55a; --dead: #8d939a; --bug: #e07a1f; --running: #4b8ae6; --notrun: #E6EAE8;
+  --chip-on-bg: #E6EAE8; --chip-on-ink: #141716; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; overflow-x: hidden; }
-body { background: var(--bg); color: var(--ink); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-main { max-width: 1400px; margin: 0 auto; padding: 16px; }
-h1 { font-size: 1.5rem; margin: 0 0 4px; }
-h2 { font-size: 1.15rem; margin: 32px 0 8px; text-wrap: balance; }
-h3 { font-size: 1rem; margin: 20px 0 6px; }
-p { max-width: 75ch; }
-.lede { margin: 0 0 8px; font-size: 1.02rem; }
-.aside { font-style: italic; }
-nav.toc { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.9rem; margin: 8px 0 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); }
+canvas#water { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+main, footer { position: relative; z-index: 1; }
+main { max-width: 1180px; margin: 0 auto; padding: 48px 16px 24px; display: grid; gap: 18px; }
+.panel { background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 10px; padding: 18px 22px; box-shadow: var(--shadow);
+  backdrop-filter: blur(12px) saturate(1.15); -webkit-backdrop-filter: blur(12px) saturate(1.15); min-width: 0; }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 8px; text-wrap: balance; }
+h2 { font-size: 1.3rem; margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--hair); text-wrap: balance; }
+h3 { font-size: 1.05rem; margin: 18px 0 6px; }
+p { max-width: 72ch; }
+a { color: inherit; }
+.lede { margin: 0 0 8px; font-size: 1.05rem; }
+.meta { margin: 0 0 10px; font-size: .88rem; max-width: 95ch; }
+.tag { display: inline-block; font-size: .72rem; font-style: italic; padding: 0 4px; border: 1px dotted var(--ink); border-radius: 0; white-space: nowrap; margin-left: 4px; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .95rem; margin: 6px 0 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 0 0 8px; }
-.legend span.what { font-style: italic; font-size: 0.85rem; }
+.legend span.what { font-style: italic; font-size: .85rem; }
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 4px;
-  font-size: 0.8rem; font-weight: 600; white-space: nowrap; border: 1.5px solid transparent; color: #fff; }
+  font-size: .8rem; font-weight: 600; white-space: nowrap; border: 1.5px solid transparent; color: #fff; }
 .badge.alive { background: var(--alive); }
 .badge.dead { background: var(--dead); }
 .badge.bug { background: var(--bug); }
 .badge.running { background: var(--running); }
 .badge.not-run { background: transparent; color: var(--notrun); border-color: var(--notrun); }
-pre { font-family: var(--mono); font-size: 0.8rem; line-height: 1.35; margin: 4px 0 8px; padding: 8px; overflow-x: auto;
-  border: 1px solid var(--line); border-radius: 4px; background: var(--bg); white-space: pre; }
-.steps { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin: 10px 0; padding: 0; list-style: none; counter-reset: s; }
-.steps li { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; background: var(--panel); counter-increment: s; }
+code, .val { font-family: var(--mono); font-size: .95em; }
+pre { font-family: var(--mono); font-size: .9rem; line-height: 1.35; margin: 4px 0 8px; padding: 10px 12px; overflow-x: auto;
+  border: 1px solid var(--hair); border-radius: 8px; background: var(--surface); white-space: pre; }
+.steps { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 10px 0; padding: 0; list-style: none; counter-reset: s; }
+.steps li { border: 1px solid var(--hair); border-radius: 8px; padding: 10px 12px; background: var(--surface); counter-increment: s; }
 .steps li::before { content: counter(s) ". "; font-weight: 700; }
-.claimgroup { margin: 18px 0 0; }
-.claim { border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin: 10px 0; background: var(--panel); }
-.claim .cname { font-weight: 700; font-size: 1rem; margin: 0 0 4px; }
-.claim .stmt { margin: 0 0 8px; max-width: 90ch; }
-.claim .cav { margin: 6px 0 0; font-style: italic; max-width: 90ch; }
-.claim .prs { margin: 6px 0 0; font-size: 0.88rem; }
-.ev { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
-.ev td, .ev th { text-align: left; vertical-align: top; padding: 4px 6px; border-top: 1px solid var(--line); }
+.claimgroup { margin: 14px 0 0; }
+.claimgroup h3 { margin-top: 20px; }
+.claim { border: 1px solid var(--hair); border-radius: 8px; padding: 12px 14px; margin: 8px 0; background: var(--surface); }
+.claim .cname { font-weight: 700; margin: 0 0 2px; }
+.claim .stmt { margin: 0 0 6px; max-width: 90ch; }
+.claim .cav { margin: 6px 0 0; font-style: italic; max-width: 90ch; font-size: .92rem; }
+.claim .prs { margin: 6px 0 0; font-size: .9rem; }
+.claim details > summary { cursor: pointer; font-size: .92rem; }
+.claim details[open] > summary { margin-bottom: 6px; }
+.ev { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.ev td, .ev th { text-align: left; vertical-align: top; padding: 4px 6px; border-top: 1px solid var(--hair); }
 .ev th { font-weight: 600; }
 .ev td.v { font-family: var(--mono); white-space: nowrap; }
 .ev td.b { white-space: nowrap; }
-.rowlink { font: inherit; font-family: var(--mono); background: none; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--ink); cursor: pointer; white-space: nowrap; }
+.rowlink { font: inherit; font-family: var(--mono); background: none; border: 1px solid var(--hair); border-radius: 4px; padding: 0 5px; color: var(--ink); cursor: pointer; white-space: nowrap; }
 .rowlink:hover, .rowlink:focus-visible { border-color: var(--ink); }
-details.gloss { border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin: 14px 0; }
+details.gloss { border: 1px solid var(--hair); border-radius: 8px; padding: 8px 12px; margin: 12px 0; background: var(--surface); }
 details.gloss summary { cursor: pointer; font-weight: 600; }
 dl.terms { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 10px 0 4px; }
 dl.terms dt { font-weight: 600; }
@@ -94,19 +126,19 @@ dl.terms dd { margin: 0; max-width: 80ch; }
 @media (max-width: 600px) { dl.terms { grid-template-columns: 1fr; } dl.terms dd { margin-bottom: 6px; } }
 .controls { display: grid; gap: 8px; margin: 12px 0; }
 input[type=search] { width: 100%; max-width: 480px; padding: 8px 10px; font: inherit; color: var(--ink);
-  background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+  background: var(--surface); border: 1px solid var(--hair); border-radius: 8px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.chips .label { font-size: 0.85rem; font-style: italic; margin-right: 4px; }
-.chip { font: inherit; font-size: 0.82rem; padding: 3px 10px; border-radius: 999px; cursor: pointer;
-  background: transparent; color: var(--ink); border: 1px dashed var(--line); }
+.chips .label { font-size: .85rem; font-style: italic; margin-right: 4px; }
+.chip { font: inherit; font-size: .82rem; padding: 3px 10px; border-radius: 999px; cursor: pointer;
+  background: var(--surface); color: var(--ink); border: 1px dashed var(--hair); }
 .chip[aria-pressed="true"] { background: var(--chip-on-bg); color: var(--chip-on-ink); border-style: solid; border-color: var(--chip-on-bg); }
 .chip[aria-pressed="true"]::before { content: "\2713\00a0"; }
-.clear { font: inherit; font-size: 0.82rem; background: none; border: none; color: var(--ink); text-decoration: underline; cursor: pointer; }
-.count { font-size: 0.85rem; font-style: italic; }
-.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; position: relative; z-index: 0; }
-table.main { border-collapse: collapse; width: 100%; min-width: 980px; font-size: 0.86rem; }
-table.main > thead th, table.main > tbody > tr > td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-table.main > thead th { background: var(--bg); }
+.clear { font: inherit; font-size: .85rem; background: none; border: none; color: var(--ink); text-decoration: underline; cursor: pointer; }
+.count { font-size: .85rem; font-style: italic; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 8px; position: relative; z-index: 0; background: var(--surface); isolation: isolate; }
+table.main { border-collapse: collapse; width: 100%; min-width: 980px; font-size: .88rem; }
+table.main > thead th, table.main > tbody > tr > td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--hair); }
+table.main > thead th { background: var(--surface); }
 th button { font: inherit; font-weight: 600; color: var(--ink); background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
 th button .arrow { display: inline-block; width: 1em; }
 tr.row { cursor: pointer; }
@@ -120,26 +152,31 @@ td.result { min-width: 240px; max-width: 340px; overflow-wrap: anywhere; }
 td.date { white-space: nowrap; font-family: var(--mono); }
 .rlist { margin: 0; padding-left: 16px; }
 .rlist li { margin: 0 0 2px; }
-.val { font-family: var(--mono); }
 tr.detail > td { background: var(--row-hover); padding: 12px 14px 16px; }
-.detail h3 { font-size: 0.85rem; margin: 10px 0 4px; }
+.detail h3 { font-size: .9rem; margin: 10px 0 4px; }
 .detail h3:first-child { margin-top: 0; }
-table.inner { border-collapse: collapse; font-size: 0.82rem; }
-table.inner td, table.inner th { text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); padding: 3px 8px; }
-table.prs { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 0.86rem; }
-table.prs td, table.prs th { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+table.inner { border-collapse: collapse; font-size: .84rem; }
+table.inner td, table.inner th { text-align: left; vertical-align: top; border-bottom: 1px solid var(--hair); padding: 3px 8px; }
+table.prs { border-collapse: collapse; width: 100%; min-width: 720px; font-size: .88rem; }
+table.prs td, table.prs th { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--hair); }
 table.prs td.n { font-family: var(--mono); white-space: nowrap; }
-a { color: var(--ink); }
 .muted { font-style: italic; }
-footer { margin: 24px 0; font-size: 0.85rem; font-style: italic; }
+footer { max-width: 1180px; margin: 0 auto; padding: 0 16px 60px; font-size: .9rem; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+footer p { margin: 0; }
+footer .note { background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 8px; padding: 6px 12px; }
+#pause { font: inherit; font-size: .85rem; color: var(--ink); background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+#pause:hover, #pause:focus-visible { border-color: var(--ink); }
 button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-@media (max-width: 700px) { h1 { font-size: 1.25rem; } }
+@media (max-width: 700px) { h1 { font-size: 1.45rem; } main { padding-top: 24px; } .panel { padding: 14px 14px; } }
 </style>
 </head>
 <body>
+<canvas id="water" aria-hidden="true"></canvas>
 <main>
+<section class="panel">
 <h1>kmerseek experiments</h1>
 <p class="lede">What kmerseek can and cannot do, and every experiment behind each answer. Every number on this page is copied from a notebook output or a results file. Open an experiment's row to see the cell or file each number came from.</p>
+<p class="meta">__META__</p>
 <nav class="toc" aria-label="Sections">
   <a href="#what">What kmerseek does</a>
   <a href="#claims">What we can and cannot claim</a>
@@ -147,6 +184,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
   <a href="#prs">Open pull requests</a>
 </nav>
 
+</section>
+<section class="panel">
 <h2 id="what">What kmerseek does</h2>
 <ol class="steps">
   <li>Rewrite every residue of both proteins in a reduced alphabet. The main one has two letters: hydrophobic (H) or polar (P).</li>
@@ -156,8 +195,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 <p>Because the region ends where the shared pattern ends, a call can be as short as the feature it lands on. Below is the pair notebook 244 uses as its main example, as printed there, with each tool's IoU on this feature.</p>
 <div id="hero"></div>
 
+</section>
+<section class="panel">
 <h2 id="claims">What we can and cannot claim</h2>
-<p>Each claim below is one sentence, the numbers behind it, and whether each number argues for it, against it, or sets a limit on it. The row button opens that experiment in the table below.</p>
+<p>Twelve claims, one sentence each. Open a claim's numbers to see each value as the notebook printed it, whether it supports the claim, argues against it or sets a limit, and a button that opens that experiment in the table below.</p>
 <details class="gloss">
   <summary>What IoU, identity, alphabet, k, E-value and the benchmark names mean</summary>
   <dl class="terms">
@@ -178,9 +219,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 </details>
 <div id="claimlist"></div>
 
+</section>
+<section class="panel">
 <h2 id="table">Every experiment</h2>
 <p>One row per notebook or pipeline run. Click a row to see every number with the output line it was copied from.</p>
-<h3>What the verdict colours mean</h3>
+<h3>What the verdict colours and the tag mean</h3>
 <div class="legend" id="legend"></div>
 
 <div class="controls">
@@ -197,6 +240,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 </table>
 </div>
 
+</section>
+<section class="panel">
 <h2 id="prs">Open pull requests</h2>
 <p id="prnote"></p>
 <h3>Analysis repository, seanome/2024-kmerseek-analysis</h3>
@@ -205,8 +250,12 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 <p>These change how kmerseek scores and extends a match. A number on this page changes only when a notebook is rerun on the new build.</p>
 <div class="tablewrap"><table class="prs" id="prs-engine"></table></div>
 
-<footer>Numbers read from notebook outputs on __DATE__.</footer>
+</section>
 </main>
+<footer>
+<p class="note">Numbers read from notebook outputs on __DATE__. __HOSTED__ Source: <a href="https://github.com/seanome/2024-kmerseek-analysis/tree/main/data">data/</a> and <a href="https://github.com/seanome/2024-kmerseek-analysis/blob/main/scripts/build_experiments_page.py">scripts/build_experiments_page.py</a> in github.com/seanome/2024-kmerseek-analysis.</p>
+<button type="button" id="pause" aria-pressed="false">pause the water</button>
+</footer>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -270,7 +319,7 @@ function residueBlock(p) {
   box.innerHTML = STATUS.map(([st, heading]) => {
     const cs = CLAIMS.claims.filter(c => c.status === st);
     if (!cs.length) return "";
-    return `<section class="claimgroup"><h3>${esc(heading)}</h3>` + cs.map(c => {
+    return `<section class="claimgroup"><h3>${esc(heading)} (${cs.length})</h3>` + cs.map(c => {
       const rows = c.evidence.map(e => {
         const r = BYID[e.row];
         const x = r && e.name ? r.result.find(y => y.name === e.name) : null;
@@ -279,7 +328,8 @@ function residueBlock(p) {
       }).join("");
       const prs = (c.open_prs || []).map(n => `<a href="${REPO_URL}/pull/${n}" target="_blank" rel="noopener">#${n}</a>`).join(", ");
       return `<article class="claim" id="claim-${esc(c.id)}"><p class="cname">${esc(c.name)}</p><p class="stmt">${esc(c.statement)}</p>` +
-        `<div class="tablewrap"><table class="ev"><thead><tr><th>number</th><th>value as printed</th><th>bearing on the claim</th><th>experiment</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+        `<details><summary>The ${c.evidence.length} numbers behind this claim, and whether each supports it</summary>` +
+        `<div class="tablewrap"><table class="ev"><thead><tr><th>number</th><th>value as printed</th><th>bearing on the claim</th><th>experiment</th></tr></thead><tbody>${rows}</tbody></table></div></details>` +
         (c.caveats ? `<p class="cav">${esc(c.caveats)}</p>` : "") +
         (prs ? `<p class="prs">Open pull requests that could change this: ${prs}</p>` : "") + `</article>`;
     }).join("") + `</section>`;
@@ -299,7 +349,8 @@ function cmp(a, b) { for (let i = 0; i < 3; i++) { if (a[i] < b[i]) return -1; i
 const state = { sort: "id", dir: 1, q: "", verdicts: new Set(), claims: new Set(), open: new Set() };
 
 document.getElementById("legend").innerHTML = VERDICTS.map(([k]) =>
-  `<span>${badge(k)} <span class="what">${esc(vinfo(k)[3])}</span></span>`).join("");
+  `<span>${badge(k)} <span class="what">${esc(vinfo(k)[3])}</span></span>`).join("") +
+  `<span><span class="tag">changed since read</span> <span class="what">the notebook has commits after its numbers were copied; re-read it before quoting them</span></span>`;
 
 function chip(container, value, label, set) {
   const b = document.createElement("button");
@@ -332,7 +383,7 @@ document.getElementById("clear").addEventListener("click", () => { clearFilters(
 
 function haystack(r) {
   return [r.id, r.title, r.question, r.dataset, tools(r), resultText(r), vinfo(r.verdict)[1], r.claim, r.date,
-    (r.residues || []).map(p => p.pair).join(" "), r.source && r.source.path]
+    (r.residues || []).map(p => p.pair).join(" "), r.source && r.source.path, r.changed_since_read ? "changed since read" : ""]
     .join(" \u0001 ").toLowerCase();
 }
 
@@ -358,6 +409,7 @@ function detail(r) {
     (res ? `<h3>Aligned residues</h3>${res}` : "") +
     `<h3>Why this verdict</h3><p>${esc(r.verdict_basis)}</p>` +
     (claims.length ? `<h3>Claims this experiment is evidence for or against</h3><p>${claims.map(c => `<a href="#claim-${esc(c.id)}">${esc(c.name)}</a>`).join(", ")}</p>` : "") +
+    (r.changed_since_read ? `<h3>Changed since read</h3><p>The numbers above were read at commit <code>${esc(r.source.commit)}</code>. ${esc(r.changed_since_read.ref)} now has commit <code>${esc(r.changed_since_read.commit)}</code> (${esc(r.changed_since_read.date)}) touching this file. Re-read the notebook before quoting these numbers.</p>` : "") +
     `<h3>Source</h3><p>${ghLink(r.source)}${r.source && r.source.commit ? ` at commit <code>${esc(r.source.commit)}</code>` : ""}` +
     `${r.pr ? `, <a href="${REPO_URL}/pull/${esc(r.pr)}" target="_blank" rel="noopener">pull request ${esc(r.pr)}</a>` : ""}</p>` +
     (r.notes ? `<h3>Notes</h3><p>${esc(r.notes)}</p>` : "");
@@ -383,7 +435,7 @@ function render() {
         (!open && r.result.length > 3 ? `<li class="muted">and ${r.result.length - 3} more: click the row to see them</li>` : "") + `</ul>`
       : `<span class="muted">no outputs</span>`;
     return `<tr class="row${open ? " open" : ""}" tabindex="0" aria-expanded="${open}" data-id="${esc(id)}">` +
-      `<td class="id">${esc(id)}</td><td class="title">${esc(r.title)}</td><td class="question">${esc(r.question)}</td>` +
+      `<td class="id">${esc(id)}${r.changed_since_read ? '<br><span class="tag">changed since read</span>' : ""}</td><td class="title">${esc(r.title)}</td><td class="question">${esc(r.question)}</td>` +
       `<td>${esc(r.dataset)}</td><td>${esc(tools(r))}</td><td class="result">${res}</td>` +
       `<td>${badge(r.verdict)}</td><td>${esc(r.claim)}</td><td class="date">${esc(r.date)}</td></tr>` +
       (open ? `<tr class="detail"><td colspan="${COLS.length}"><div class="detail">${detail(r)}</div></td></tr>` : "");
@@ -431,6 +483,9 @@ __CLAIMS__
 <script type="application/json" id="prs-data">
 __PRS__
 </script>
+<script>
+__WATER__
+</script>
 </body>
 </html>
 """
@@ -454,23 +509,100 @@ def embed(obj):
     return json.dumps(obj, ensure_ascii=False, indent=1).replace("</", "<\\/")
 
 
+def git(*args):
+    """Run git in the repo; return stdout, or None if git or the object is missing."""
+    try:
+        out = subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return out.stdout.strip() if out.returncode == 0 and out.stdout.strip() else None
+
+
+def page_dates():
+    added = git("log", "--diff-filter=A", "--format=%cs", "--", "notebooks/experiments.html")
+    return {
+        "first": added.splitlines()[-1] if added else None,
+        "numbers": git("log", "-1", "--format=%cs", "--", "data/experiments.json"),
+        "built": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+    }
+
+
+def mark_changed_since_read(records):
+    """Set r["changed_since_read"] when the file a row was read from differs today.
+
+    Compares the file at the recorded commit with the file on the same branch now
+    (origin first, then a local branch, then origin/main for a merged and deleted
+    branch). Returns how many rows could be checked.
+    """
+    checked = 0
+    for r in records:
+        src = r.get("source") or {}
+        path, commit, branch = src.get("path"), src.get("commit"), src.get("branch") or "main"
+        r.pop("changed_since_read", None)
+        if not path or not commit:
+            continue
+        then = git("rev-parse", f"{commit}:{path}")
+        if then is None:
+            continue
+        for ref in (f"origin/{branch}", branch, "origin/main"):
+            now = git("rev-parse", f"{ref}:{path}")
+            if now is not None:
+                break
+        else:
+            continue
+        checked += 1
+        if now != then:
+            last = git("log", "-1", "--format=%h %cs", ref, "--", path) or "? ?"
+            sha, date = last.split(" ", 1)
+            r["changed_since_read"] = {"ref": ref.removeprefix("origin/"), "commit": sha, "date": date}
+    return checked
+
+
 def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--site", type=Path, help="write the GitHub Pages copy into this directory")
+    ap.add_argument("--artifact", type=Path, help="write a body-only copy for the claude.ai artifact shelf")
+    args = ap.parse_args()
+
     records = json.loads(DATA.read_text())
     claims = json.loads(CLAIMS.read_text())
     prs = json.loads(PRS.read_text())
     check_claims(records, claims)
-    date = datetime.date.fromtimestamp(os.path.getmtime(DATA)).isoformat()
-    html = (TEMPLATE.replace("__DATE__", date).replace("__DATA__", embed(records))
-            .replace("__CLAIMS__", embed(claims)).replace("__PRS__", embed(prs)))
-    PAGE.write_text(html)
-    print(f"wrote {PAGE.relative_to(REPO)}: {len(records)} records, {len(claims['claims'])} claims, "
-          f"{len(prs['prs'])} open pull requests, data dated {date}")
-    if len(sys.argv) > 1:
+    checked = mark_changed_since_read(records)
+    n_changed = sum(1 for r in records if r.get("changed_since_read"))
+    d = page_dates()
+
+    meta = [f"First published {d['first']}." if d["first"] else "",
+            f"Numbers last changed {d['numbers']}." if d["numbers"] else "",
+            f"Page built {d['built']}.",
+            f"Open pull requests as of {prs['fetched']}."]
+    if checked:
+        meta.append(f"{n_changed} of {checked} experiments were read from a notebook that has changed since; "
+                    "they carry the tag \"changed since read\".")
+    hosted = ("This copy is rebuilt every day and whenever the data changes on main, so the dates, the open "
+              "pull requests and the \"changed since read\" tags are current; the numbers change only when "
+              "data/experiments.json does.") if args.site else ""
+    water = (Path(__file__).resolve().parent / "experiments_page_water.js").read_text()
+    html = (TEMPLATE.replace("__WATER__", water).replace("__META__", " ".join(m for m in meta if m))
+            .replace("__DATE__", d["numbers"] or "an unknown date").replace("__HOSTED__", hosted)
+            .replace("__DATA__", embed(records)).replace("__CLAIMS__", embed(claims)).replace("__PRS__", embed(prs)))
+
+    if args.site:
+        args.site.mkdir(parents=True, exist_ok=True)
+        for name in ("index.html", "experiments.html"):
+            (args.site / name).write_text(html)
+        print(f"wrote {args.site}/index.html and experiments.html")
+    else:
+        PAGE.write_text(html)
+        print(f"wrote {PAGE.relative_to(REPO)}")
+    print(f"{len(records)} records, {len(claims['claims'])} claims, {len(prs['prs'])} open pull requests; "
+          f"{n_changed} of {checked} checked rows changed since read; dates {d}")
+    if args.artifact:
         title = html[html.index("<title>"): html.index("</title>") + len("</title>")]
         style = html[html.index("<style>"): html.index("</style>") + len("</style>")]
         body = html[html.index("<body>") + len("<body>"): html.index("</body>")]
-        Path(sys.argv[1]).write_text(f"{title}\n{style}\n{body}")
-        print(f"wrote artifact copy {sys.argv[1]}")
+        args.artifact.write_text(f"{title}\n{style}\n{body}")
+        print(f"wrote artifact copy {args.artifact}")
 
 
 if __name__ == "__main__":

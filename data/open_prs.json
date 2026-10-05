@@ -1,437 +1,525 @@
 {
- "fetched": "2026-09-29",
+ "fetched": "2026-10-05 21:26 UTC",
  "prs": [
   {
-   "branch": "olgabot/244-all-case-figures",
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 109,
+   "title": "Add make running to every pipeline Makefile",
    "draft": true,
+   "branch": "olgabot/make-running-all-pipelines",
+   "updated": "2026-10-04"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 108,
+   "title": "Shared Nature figure style: nature.mplstyle and pubfig.py",
+   "draft": true,
+   "branch": "olgabot/publication-figure-style",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 107,
+   "title": "SCOPe40 family and superfamily sensitivity with kmerseek 0.4: 19 alphabets, k_min to k_max, six settings",
+   "draft": true,
+   "branch": "olgabot/scope40-alphabet-ksize-v040",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 106,
+   "title": "Supplementary Figure 1 (alphabets, bits, k-sizes to test) and seed reach at k*",
+   "draft": true,
+   "branch": "olgabot/suppfig1-alphabets",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 105,
+   "title": "Save PNGs and notebook images with 256 colours",
+   "draft": true,
+   "branch": "olgabot/png-256-colours",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 104,
+   "title": "Notebook 264: the three combiners, the single best pair, phmmer and a Kyte-Doolittle scan on test",
+   "draft": false,
+   "branch": "olgabot/combiner-comparison-264",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 103,
+   "title": "Notebook 263: combiner C, a consensus vote across alphabet-ksize pairs",
+   "draft": false,
+   "branch": "olgabot/combiner-c-consensus-vote",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 102,
+   "title": "Notebook 262: combiner B, best of n alphabet-ksize pairs",
+   "draft": false,
+   "branch": "olgabot/combiner-b-best-of-n",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 101,
+   "title": "274: the k-sizes to test per alphabet, from k_min to k_max (print version of explainer Figure 12)",
+   "draft": false,
+   "branch": "olgabot/ksizes-per-alphabet-274",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 100,
+   "title": "230: kappa and usable k for all 19 kmerseek alphabets",
+   "draft": false,
+   "branch": "olgabot/nb230-kappa-all-alphabets",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 99,
+   "title": "Notebook 273: H/P agreement per 100 aligned positions, counted per pair",
+   "draft": false,
+   "branch": "olgabot/hp-agreement-per-100",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 98,
+   "title": "Notebook 261: combiner A, intersection of a fixed panel of alphabet-ksize pairs",
+   "draft": false,
+   "branch": "olgabot/combiner-a-intersection",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 97,
+   "title": "Experiment inventory and experiments page (5 commits that were only on the laptop's main)",
+   "draft": true,
+   "branch": "olgabot/experiment-inventory",
+   "updated": "2026-10-05"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 96,
+   "title": "245: where the P66/CD47 shared k-mers sit, and whether they touch the SIRP-alpha residues",
+   "draft": false,
+   "branch": "olgabot/p66-cd47-pair-coordinates",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 95,
+   "title": "Figure 1: H/P class kept above chance between related proteins (nb 275)",
+   "draft": true,
+   "branch": "olgabot/fig1-hp-runs",
+   "updated": "2026-10-04"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 94,
+   "title": "check_notebooks: flag a table with no figure, and a shared notebook number",
+   "draft": false,
+   "branch": "olgabot/notebook-checks-figures",
+   "updated": "2026-10-05"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 93,
+   "title": "Nb 271: which kmerseek region score to filter on (mini set, Pfam truth)",
+   "draft": true,
+   "branch": "olgabot/region-filters-271",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 92,
+   "title": "Figure: bits of information per letter for all 19 alphabets",
+   "draft": true,
+   "branch": "olgabot/bits-per-letter-figure",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 91,
+   "title": "Shared figure helpers: header placement, alphabet axis, missing-value mark",
+   "draft": true,
+   "branch": "olgabot/notebook-figure-checks",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 88,
+   "title": "midi-plus 0.4 with extension, and its shuffled-query twin (nb 260)",
+   "draft": true,
+   "branch": "olgabot/midi-plus-0.4-decoy",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 87,
+   "title": "Notebook 270: --scaled 1-10 on the mini set, with decoy queries",
+   "draft": true,
+   "branch": "olgabot/scaled-sweep-270",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 86,
+   "title": "Pfam candidate table: every human Pfam instance, every tool, both directions",
+   "draft": true,
+   "branch": "olgabot/pfam-fair-table",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 85,
+   "title": "257: rerun the 998-protein search with a newer kmerseek (every row gets an E-value)",
+   "draft": true,
+   "branch": "olgabot/pfam998-kmerseek-preview",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 84,
+   "title": "Notebook 255: kmerseek ranking metrics against human Pfam, with region length as the control",
+   "draft": true,
+   "branch": "olgabot/ranking-metrics-vs-human-pfam",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 83,
+   "title": "256: BHF against 300 dipeptide-shuffled copies of itself",
+   "draft": true,
+   "branch": "olgabot/bhf-dipeptide-shuffle-null",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 82,
+   "title": "244: two bonus cases, Ced-9/BCL2 and BHF",
+   "draft": false,
+   "branch": "olgabot/244-bonus-cases",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 81,
+   "title": "Notebook 244: IoU on inclusive intervals, two relabelled rows, landed counts per type, species and tool",
+   "draft": true,
+   "branch": "olgabot/244-landed-by-type",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 80,
+   "title": "Case gallery: reference pairs, other tools, and every shared k-mer",
+   "draft": true,
+   "branch": "olgabot/case-gallery-reference-pairs",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 78,
-   "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Notebook 244: draw all 183 cases and export their call coordinates",
-   "updated": "2026-09-29"
+   "title": "Notebook 244: figures, call coordinates, kmerseek pair and hits pages for all 183 cases",
+   "draft": true,
+   "branch": "olgabot/244-all-case-figures",
+   "updated": "2026-10-01"
   },
   {
-   "branch": "olgabot/hero-244-extension",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 77,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 254: seed extension loses notebook 244's short placements",
+   "draft": true,
+   "branch": "olgabot/hero-244-extension",
    "updated": "2026-09-29"
   },
   {
-   "branch": "olgabot/random-alphabets-A",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 76,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Search ten random 2-letter partitions beside the six H/P alphabets under kmerseek 0.4 (notebook 246, experiment A)",
-   "updated": "2026-09-29"
+   "draft": true,
+   "branch": "olgabot/random-alphabets-A",
+   "updated": "2026-09-30"
   },
   {
-   "branch": "olgabot/delimitation-238-full",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 75,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 238 on the full midi-plus run",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/alphabet-class-shares-figure",
    "draft": true,
-   "n": 74,
-   "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Add a print version of the alphabet class-share figure",
+   "branch": "olgabot/delimitation-238-full",
    "updated": "2026-09-29"
   },
   {
-   "branch": "olgabot/elm-cover-all-species",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 72,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "ELM cover on seven more species: 19 arms chosen on chicken, lists cut to 1_000",
-   "updated": "2026-09-29"
+   "draft": false,
+   "branch": "olgabot/elm-cover-all-species",
+   "updated": "2026-09-30"
   },
   {
-   "branch": "olgabot/kmerseek-top-targets",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 71,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "kmerseek search: keep each query's best N targets, and pin one arm per alphabet",
+   "draft": true,
+   "branch": "olgabot/kmerseek-top-targets",
    "updated": "2026-09-29"
   },
   {
-   "branch": "olgabot/elm-cover-nb253",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 69,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 253: are ELM motifs put on position on the chicken ortholog?",
-   "updated": "2026-09-29"
+   "draft": true,
+   "branch": "olgabot/elm-cover-nb253",
+   "updated": "2026-10-02"
   },
   {
-   "branch": "olgabot/qfo-pfam-region-benchmark",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 68,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "WIP: Swiss-Prot reachability keyed on each protein's Pfam families (probably superseded)",
+   "draft": true,
+   "branch": "olgabot/qfo-pfam-region-benchmark",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/scope40-bcl2-ced9-hp-alphabet-sweep",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 67,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 220: BCL2/Bcl-xL vs Ced9 across all six HP alphabets, k=15-25",
+   "draft": true,
+   "branch": "olgabot/scope40-bcl2-ced9-hp-alphabet-sweep",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/pfam-subdomain-hard",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 66,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Pfam subdomain benchmark: split positive pairs into DIAMOND-hard and DIAMOND-easy",
+   "draft": true,
+   "branch": "olgabot/pfam-subdomain-hard",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/kmer-spectra-nb24-figures",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 65,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 24: k-mer spectra across all alphabets, with nine saved figures",
+   "draft": true,
+   "branch": "olgabot/kmer-spectra-nb24-figures",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/human-mouse-orthologs-sherlock",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 64,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Run the family-AUC, RBH-F1 and leaderboard sweeps on Sherlock",
+   "draft": true,
+   "branch": "olgabot/human-mouse-orthologs-sherlock",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/e3-detection-gap",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 63,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "E3 detection-gap benchmark: notebook 340 and a pipeline for the missing baseline arms",
+   "draft": true,
+   "branch": "olgabot/e3-detection-gap",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/laptop-leftovers-2026-09-28",
-   "draft": true,
-   "n": 62,
    "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Keep three laptop-only figures and pixi.lock; ignore run outputs",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/merge-report-figures-and-cost",
-   "draft": true,
    "n": 61,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Unpushed 2026-09-05 merge of the two QfO report branches (probably superseded by #24)",
+   "draft": true,
+   "branch": "olgabot/merge-report-figures-and-cost",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/prostt5-default-weights",
-   "draft": true,
-   "n": 60,
    "repo": "seanome/2024-kmerseek-analysis",
-   "title": "ProstT5: use data/prostt5/weights by default; fix the offline check",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/identity-join-fix",
-   "draft": true,
    "n": 59,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Give the Swiss-Prot identity axis a Pfam anchor",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/elm-cover-scoring",
    "draft": true,
+   "branch": "olgabot/identity-join-fix",
+   "updated": "2026-09-28"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 58,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Score the ELM cover search: motif cover per arm, placement null, chicken dry run",
+   "draft": true,
+   "branch": "olgabot/elm-cover-scoring",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/dark-set-kmerseek-0.4",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 57,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Dark set with kmerseek 0.4: the midi run, and a failed index no longer stops it",
-   "updated": "2026-09-29"
+   "draft": false,
+   "branch": "olgabot/dark-set-kmerseek-0.4",
+   "updated": "2026-10-05"
   },
   {
-   "branch": "olgabot/notebook-checks",
-   "draft": false,
-   "n": 56,
    "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Check notebooks at commit time and in CI, and add an analysis-review skill",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/deep-twilight-controls",
-   "draft": false,
    "n": 55,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Deep-twilight controls: label transfer on globins, lysozymes and cystatins (nb 252)",
+   "draft": false,
+   "branch": "olgabot/deep-twilight-controls",
    "updated": "2026-09-25"
   },
   {
-   "branch": "olgabot/bits-ceiling-245",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 54,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 245: bits an exact reduced-alphabet seed carries against bits a proteome search needs",
-   "updated": "2026-09-25"
+   "draft": false,
+   "branch": "olgabot/bits-ceiling-245",
+   "updated": "2026-10-05"
   },
   {
-   "branch": "olgabot/disprot-region-transfer",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 53,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "DisProt functional-region transfer benchmark: data, scoring with controls, notebook 251",
+   "draft": false,
+   "branch": "olgabot/disprot-region-transfer",
    "updated": "2026-09-24"
   },
   {
-   "branch": "olgabot/region-kmerseek-extend",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 52,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Region pipeline: ungapped kmerseek extension with an E-value, opened comparator filters",
+   "draft": false,
+   "branch": "olgabot/region-kmerseek-extend",
    "updated": "2026-09-25"
   },
   {
-   "branch": "olgabot/elm-motif-transfer",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 51,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Add the ELM motif benchmark (notebook 250): Stage 0, target labels, seed lengths, provenance",
+   "draft": false,
+   "branch": "olgabot/elm-motif-transfer",
    "updated": "2026-09-25"
   },
   {
-   "branch": "olgabot/kmerseek-0.4-resource-matched",
-   "draft": false,
-   "n": 50,
    "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Compare kmerseek 0.4 and 0.3 compute cost on matched searches",
-   "updated": "2026-09-24"
-  },
-  {
-   "branch": "olgabot/hero-example-244",
-   "draft": false,
    "n": 49,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Add notebook 244: hero example candidates on the Swiss-Prot feature key",
+   "draft": false,
+   "branch": "olgabot/hero-example-244",
    "updated": "2026-09-25"
   },
   {
-   "branch": "olgabot/alphabet-ensemble",
-   "draft": false,
-   "n": 48,
    "repo": "seanome/2024-kmerseek-analysis",
+   "n": 48,
    "title": "242: combining alphabets does not lift BCL2 or CD47; query-side null ready to run",
+   "draft": false,
+   "branch": "olgabot/alphabet-ensemble",
    "updated": "2026-09-24"
   },
   {
-   "branch": "olgabot/dark-set-pfam",
-   "draft": false,
-   "n": 47,
    "repo": "seanome/2024-kmerseek-analysis",
+   "n": 47,
    "title": "Pfam on the dark set: are these real proteins?",
+   "draft": false,
+   "branch": "olgabot/dark-set-pfam",
    "updated": "2026-09-23"
   },
   {
-   "branch": "olgabot/alphabet-ranking-three-cases",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 46,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "241: what every alphabet can see, on BCL2/Ced9, P66/CD47 and BHF",
-   "updated": "2026-09-28"
+   "draft": false,
+   "branch": "olgabot/alphabet-ranking-three-cases",
+   "updated": "2026-10-05"
   },
   {
-   "branch": "olgabot/invertebrate-dark-set",
-   "draft": false,
-   "n": 30,
    "repo": "seanome/2024-kmerseek-analysis",
+   "n": 30,
    "title": "Measure the dark set: what conventional sequence search misses on an invertebrate proteome",
+   "draft": false,
+   "branch": "olgabot/invertebrate-dark-set",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/ka-02-lambda-per-region",
-   "draft": false,
-   "n": 101,
    "repo": "seanome/kmerseek",
-   "title": "Solve the Karlin-Altschul lambda from each region's own spans, not the whole proteins",
-   "updated": "2026-09-29"
+   "n": 136,
+   "title": "Scale the chance count of shared k-mers with the target's size",
+   "draft": true,
+   "branch": "olgabot/length-aware-expected-shared-kmers",
+   "updated": "2026-10-05"
   },
   {
-   "branch": "olgabot/ka-01-reference-shuffles",
-   "draft": false,
-   "n": 100,
    "repo": "seanome/kmerseek",
-   "title": "--ka-reference-shuffles: fill in the chance curve the Karlin-Altschul fit reads against",
-   "updated": "2026-09-29"
+   "n": 135,
+   "title": "Skills: standard amino-acid order; no stacked PR ships a value a later PR fixes",
+   "draft": true,
+   "branch": "olgabot/skill-rules-2026-w40",
+   "updated": "2026-10-04"
   },
   {
-   "branch": "olgabot/ka-00-skip-bin-zero",
-   "draft": false,
-   "n": 99,
    "repo": "seanome/kmerseek",
-   "title": "Bar the x = 0 bin from being the peak of the Karlin-Altschul fit",
-   "updated": "2026-09-29"
+   "n": 134,
+   "title": "Test the run E-value on random sequences and on dipeptide-shuffled decoys",
+   "draft": true,
+   "branch": "olgabot/run-evalue-checks",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/region-idf-per-window",
-   "draft": false,
-   "n": 97,
    "repo": "seanome/kmerseek",
-   "title": "Count each window once in region_tfidf, with the reading the target holds",
-   "updated": "2026-09-29"
+   "n": 133,
+   "title": "Give every row a run E-value, and drop the Poisson E-value",
+   "draft": true,
+   "branch": "olgabot/run-evalue-columns",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/extend-ambiguous-agree",
-   "draft": false,
-   "n": 96,
    "repo": "seanome/kmerseek",
-   "title": "Let extension score an ambiguous residue as agreeing, as the seeds do",
-   "updated": "2026-09-29"
+   "n": 132,
+   "title": "Keep each shared position once when an ambiguous residue is read several ways",
+   "draft": true,
+   "branch": "olgabot/ambiguous-position-dedup",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/pages-jekyll-layout",
-   "draft": false,
-   "n": 95,
    "repo": "seanome/kmerseek",
-   "title": "Render Markdown pages in docs/ with Jekyll, styled like the landing page",
-   "updated": "2026-09-29"
+   "n": 130,
+   "title": "Add the mid-p run E-value, and score the decoy test on other proteins' shuffles",
+   "draft": false,
+   "branch": "olgabot/run-evalue-midp",
+   "updated": "2026-10-01"
   },
   {
-   "branch": "olgabot/extend-10-default-extension",
-   "draft": false,
-   "n": 94,
    "repo": "seanome/kmerseek",
+   "n": 114,
    "title": "Extend matched regions by default when the index holds a fit",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/deterministic-search-output",
    "draft": false,
-   "n": 93,
-   "repo": "seanome/kmerseek",
-   "title": "Write kmerseek search results in the same order on every run",
-   "updated": "2026-09-28"
+   "branch": "olgabot/extend-10-default-extension-v2",
+   "updated": "2026-10-01"
   },
   {
-   "branch": "scratch/extend-plus-scaled",
-   "draft": true,
-   "n": 92,
    "repo": "seanome/kmerseek",
-   "title": "Scratch merge of restore-scaled into extend-mismatch (2026-09-13)",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/pair-extended-seeds",
-   "draft": true,
-   "n": 91,
-   "repo": "seanome/kmerseek",
-   "title": "Draw each grown run's seed inside it, in kmerseek pair and both figures",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/deterministic-ambiguity-codes-unpushed",
-   "draft": true,
-   "n": 90,
-   "repo": "seanome/kmerseek",
-   "title": "Unpushed ambiguity-cap commit from the #39 branch (superseded by #46 and main)",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/extend-without-fit-ka-fixes",
-   "draft": false,
-   "n": 89,
-   "repo": "seanome/kmerseek",
-   "title": "Port the Karlin-Altschul fit fixes (#81, #82) onto the extend stack",
-   "updated": "2026-09-25"
-  },
-  {
-   "branch": "olgabot/extend-without-fit",
-   "draft": false,
-   "n": 88,
-   "repo": "seanome/kmerseek",
+   "n": 113,
    "title": "Extend regions when there is no Karlin-Altschul fit, instead of refusing the search",
-   "updated": "2026-09-25"
+   "draft": false,
+   "branch": "olgabot/extend-without-fit-v2",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/region-evalue",
-   "draft": false,
-   "n": 79,
    "repo": "seanome/kmerseek",
-   "title": "Add region_evalue to every search hit, measured against 2-mer-shuffled decoys",
-   "updated": "2026-09-21"
+   "n": 112,
+   "title": "Give every row a region E-value, and say whether it is the Karlin-Altschul or the run E-value",
+   "draft": false,
+   "branch": "olgabot/run-evalue-v2",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/extend-09-docs",
-   "draft": false,
-   "n": 75,
    "repo": "seanome/kmerseek",
-   "title": "Explain the E-value of an extended region, with the fits on three databases",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-08-chain",
-   "draft": false,
-   "n": 74,
-   "repo": "seanome/kmerseek",
-   "title": "Chain colinear extended regions with Karlin-Altschul sum statistics",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-07-survival-csv",
-   "draft": false,
-   "n": 73,
-   "repo": "seanome/kmerseek",
-   "title": "Write the survival curve a Karlin-Altschul fit was read from, and plot it",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-06-store-fit",
-   "draft": false,
-   "n": 72,
-   "repo": "seanome/kmerseek",
-   "title": "Fit r_database and K when the index is built, and store the fit in it",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-05-fit-before-search",
-   "draft": false,
-   "n": 71,
-   "repo": "seanome/kmerseek",
-   "title": "Fit r_database and K on the target index before a search",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-04-decoys",
-   "draft": false,
-   "n": 70,
-   "repo": "seanome/kmerseek",
-   "title": "Add the decoy sequences a Karlin-Altschul fit is read against",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-03-fit-scores",
-   "draft": false,
-   "n": 69,
-   "repo": "seanome/kmerseek",
-   "title": "Fit a line to the tail of a score survival curve, stopping below the related pairs",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-02-ka-bits",
-   "draft": false,
-   "n": 68,
-   "repo": "seanome/kmerseek",
-   "title": "Score extended regions with Karlin-Altschul bits and an E-value",
-   "updated": "2026-09-29"
+   "n": 91,
+   "title": "Draw each grown run's seed inside it, in kmerseek pair and both figures",
+   "draft": true,
+   "branch": "olgabot/pair-extended-seeds",
+   "updated": "2026-09-28"
   }
  ]
 }

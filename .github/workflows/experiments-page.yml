@@ -1,0 +1,57 @@
+# Builds notebooks/experiments.html from data/*.json and publishes it on GitHub Pages:
+# https://seanome.github.io/2024-kmerseek-analysis/
+# Runs on every change to the page's inputs on main, once a day so the open pull
+# requests and the "changed since read" tags stay current, and by hand.
+name: Experiments page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - data/experiments.json
+      - data/claims.json
+      - scripts/build_experiments_page.py
+      - scripts/fetch_open_prs.py
+      - .github/workflows/experiments-page.yml
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # Every branch, so each experiment can be compared with its notebook's branch today.
+      - run: git fetch --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python scripts/fetch_open_prs.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: python scripts/build_experiments_page.py --site _site
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

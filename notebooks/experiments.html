@@ -4,64 +4,88 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>kmerseek experiments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600&family=Noto+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 <style>
+/* Theme: the kmerseek docs landing page (seanome/kmerseek docs/assets/site.css): its palette,
+   glass panels over the moving water, light and dark. Fonts from the Seanome style guide:
+   Noto Sans for text, Inconsolata for sequences and numbers. Colour carries one meaning
+   only, the verdict badges; everything else is ink. */
 :root {
-  --bg: #ffffff; --ink: #1b1f24; --line: #d5d9de; --row-hover: #f4f6f8; --panel: #f7f8fa;
-  --alive: #1e7b34; --dead: #7a7f86; --bug: #c85a00; --running: #1f5fbf; --notrun: #1b1f24;
-  --chip-on-bg: #1b1f24; --chip-on-ink: #ffffff;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --bg: #F6F7F5; --surface: #FFFFFF; --ink: #1C211F; --hair: #D9DDDA;
+  --glass: rgba(255,255,255,.86); --glass-edge: rgba(20,60,70,.20); --shadow: 0 14px 34px -26px rgba(0,40,50,.75);
+  --row-hover: #EEF1EF;
+  --alive: #1e7b34; --dead: #7a7f86; --bug: #c85a00; --running: #1f5fbf; --notrun: #1C211F;
+  --chip-on-bg: #1C211F; --chip-on-ink: #FFFFFF;
+  --sans: "Noto Sans", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "Inconsolata", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #15181c; --ink: #e8eaed; --line: #3a4048; --row-hover: #1f242a; --panel: #1b1f24;
-    --alive: #3fa55a; --dead: #8d939a; --bug: #e07a1f; --running: #4b8ae6; --notrun: #e8eaed;
-    --chip-on-bg: #e8eaed; --chip-on-ink: #15181c; color-scheme: dark;
+    --bg: #141716; --surface: #1B1F1E; --ink: #E6EAE8; --hair: #2E3432;
+    --glass: rgba(5,22,30,.78); --glass-edge: rgba(170,230,225,.16); --shadow: 0 18px 44px -28px rgba(0,0,0,.85);
+    --row-hover: #232927;
+    --alive: #3fa55a; --dead: #8d939a; --bug: #e07a1f; --running: #4b8ae6; --notrun: #E6EAE8;
+    --chip-on-bg: #E6EAE8; --chip-on-ink: #141716; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #15181c; --ink: #e8eaed; --line: #3a4048; --row-hover: #1f242a; --panel: #1b1f24;
-  --alive: #3fa55a; --dead: #8d939a; --bug: #e07a1f; --running: #4b8ae6; --notrun: #e8eaed;
-  --chip-on-bg: #e8eaed; --chip-on-ink: #15181c; color-scheme: dark;
+  --bg: #141716; --surface: #1B1F1E; --ink: #E6EAE8; --hair: #2E3432;
+  --glass: rgba(5,22,30,.78); --glass-edge: rgba(170,230,225,.16); --shadow: 0 18px 44px -28px rgba(0,0,0,.85);
+  --row-hover: #232927;
+  --alive: #3fa55a; --dead: #8d939a; --bug: #e07a1f; --running: #4b8ae6; --notrun: #E6EAE8;
+  --chip-on-bg: #E6EAE8; --chip-on-ink: #141716; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; overflow-x: hidden; }
-body { background: var(--bg); color: var(--ink); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-main { max-width: 1400px; margin: 0 auto; padding: 16px; }
-h1 { font-size: 1.5rem; margin: 0 0 4px; }
-h2 { font-size: 1.15rem; margin: 32px 0 8px; text-wrap: balance; }
-h3 { font-size: 1rem; margin: 20px 0 6px; }
-p { max-width: 75ch; }
-.lede { margin: 0 0 8px; font-size: 1.02rem; }
-.aside { font-style: italic; }
-nav.toc { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.9rem; margin: 8px 0 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); }
+canvas#water { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+main, footer { position: relative; z-index: 1; }
+main { max-width: 1180px; margin: 0 auto; padding: 48px 16px 24px; display: grid; gap: 18px; }
+.panel { background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 10px; padding: 18px 22px; box-shadow: var(--shadow);
+  backdrop-filter: blur(12px) saturate(1.15); -webkit-backdrop-filter: blur(12px) saturate(1.15); min-width: 0; }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 8px; text-wrap: balance; }
+h2 { font-size: 1.3rem; margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--hair); text-wrap: balance; }
+h3 { font-size: 1.05rem; margin: 18px 0 6px; }
+p { max-width: 72ch; }
+a { color: inherit; }
+.lede { margin: 0 0 8px; font-size: 1.05rem; }
+.meta { margin: 0 0 10px; font-size: .88rem; max-width: 95ch; }
+.tag { display: inline-block; font-size: .72rem; font-style: italic; padding: 0 4px; border: 1px dotted var(--ink); border-radius: 0; white-space: nowrap; margin-left: 4px; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .95rem; margin: 6px 0 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 0 0 8px; }
-.legend span.what { font-style: italic; font-size: 0.85rem; }
+.legend span.what { font-style: italic; font-size: .85rem; }
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 4px;
-  font-size: 0.8rem; font-weight: 600; white-space: nowrap; border: 1.5px solid transparent; color: #fff; }
+  font-size: .8rem; font-weight: 600; white-space: nowrap; border: 1.5px solid transparent; color: #fff; }
 .badge.alive { background: var(--alive); }
 .badge.dead { background: var(--dead); }
 .badge.bug { background: var(--bug); }
 .badge.running { background: var(--running); }
 .badge.not-run { background: transparent; color: var(--notrun); border-color: var(--notrun); }
-pre { font-family: var(--mono); font-size: 0.8rem; line-height: 1.35; margin: 4px 0 8px; padding: 8px; overflow-x: auto;
-  border: 1px solid var(--line); border-radius: 4px; background: var(--bg); white-space: pre; }
-.steps { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin: 10px 0; padding: 0; list-style: none; counter-reset: s; }
-.steps li { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; background: var(--panel); counter-increment: s; }
+code, .val { font-family: var(--mono); font-size: .95em; }
+pre { font-family: var(--mono); font-size: .9rem; line-height: 1.35; margin: 4px 0 8px; padding: 10px 12px; overflow-x: auto;
+  border: 1px solid var(--hair); border-radius: 8px; background: var(--surface); white-space: pre; }
+.steps { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 10px 0; padding: 0; list-style: none; counter-reset: s; }
+.steps li { border: 1px solid var(--hair); border-radius: 8px; padding: 10px 12px; background: var(--surface); counter-increment: s; }
 .steps li::before { content: counter(s) ". "; font-weight: 700; }
-.claimgroup { margin: 18px 0 0; }
-.claim { border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin: 10px 0; background: var(--panel); }
-.claim .cname { font-weight: 700; font-size: 1rem; margin: 0 0 4px; }
-.claim .stmt { margin: 0 0 8px; max-width: 90ch; }
-.claim .cav { margin: 6px 0 0; font-style: italic; max-width: 90ch; }
-.claim .prs { margin: 6px 0 0; font-size: 0.88rem; }
-.ev { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
-.ev td, .ev th { text-align: left; vertical-align: top; padding: 4px 6px; border-top: 1px solid var(--line); }
+.claimgroup { margin: 14px 0 0; }
+.claimgroup h3 { margin-top: 20px; }
+.claim { border: 1px solid var(--hair); border-radius: 8px; padding: 12px 14px; margin: 8px 0; background: var(--surface); }
+.claim .cname { font-weight: 700; margin: 0 0 2px; }
+.claim .stmt { margin: 0 0 6px; max-width: 90ch; }
+.claim .cav { margin: 6px 0 0; font-style: italic; max-width: 90ch; font-size: .92rem; }
+.claim .prs { margin: 6px 0 0; font-size: .9rem; }
+.claim details > summary { cursor: pointer; font-size: .92rem; }
+.claim details[open] > summary { margin-bottom: 6px; }
+.ev { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.ev td, .ev th { text-align: left; vertical-align: top; padding: 4px 6px; border-top: 1px solid var(--hair); }
 .ev th { font-weight: 600; }
 .ev td.v { font-family: var(--mono); white-space: nowrap; }
 .ev td.b { white-space: nowrap; }
-.rowlink { font: inherit; font-family: var(--mono); background: none; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--ink); cursor: pointer; white-space: nowrap; }
+.rowlink { font: inherit; font-family: var(--mono); background: none; border: 1px solid var(--hair); border-radius: 4px; padding: 0 5px; color: var(--ink); cursor: pointer; white-space: nowrap; }
 .rowlink:hover, .rowlink:focus-visible { border-color: var(--ink); }
-details.gloss { border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin: 14px 0; }
+details.gloss { border: 1px solid var(--hair); border-radius: 8px; padding: 8px 12px; margin: 12px 0; background: var(--surface); }
 details.gloss summary { cursor: pointer; font-weight: 600; }
 dl.terms { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 10px 0 4px; }
 dl.terms dt { font-weight: 600; }
@@ -69,19 +93,19 @@ dl.terms dd { margin: 0; max-width: 80ch; }
 @media (max-width: 600px) { dl.terms { grid-template-columns: 1fr; } dl.terms dd { margin-bottom: 6px; } }
 .controls { display: grid; gap: 8px; margin: 12px 0; }
 input[type=search] { width: 100%; max-width: 480px; padding: 8px 10px; font: inherit; color: var(--ink);
-  background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+  background: var(--surface); border: 1px solid var(--hair); border-radius: 8px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.chips .label { font-size: 0.85rem; font-style: italic; margin-right: 4px; }
-.chip { font: inherit; font-size: 0.82rem; padding: 3px 10px; border-radius: 999px; cursor: pointer;
-  background: transparent; color: var(--ink); border: 1px dashed var(--line); }
+.chips .label { font-size: .85rem; font-style: italic; margin-right: 4px; }
+.chip { font: inherit; font-size: .82rem; padding: 3px 10px; border-radius: 999px; cursor: pointer;
+  background: var(--surface); color: var(--ink); border: 1px dashed var(--hair); }
 .chip[aria-pressed="true"] { background: var(--chip-on-bg); color: var(--chip-on-ink); border-style: solid; border-color: var(--chip-on-bg); }
 .chip[aria-pressed="true"]::before { content: "\2713\00a0"; }
-.clear { font: inherit; font-size: 0.82rem; background: none; border: none; color: var(--ink); text-decoration: underline; cursor: pointer; }
-.count { font-size: 0.85rem; font-style: italic; }
-.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; position: relative; z-index: 0; }
-table.main { border-collapse: collapse; width: 100%; min-width: 980px; font-size: 0.86rem; }
-table.main > thead th, table.main > tbody > tr > td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-table.main > thead th { background: var(--bg); }
+.clear { font: inherit; font-size: .85rem; background: none; border: none; color: var(--ink); text-decoration: underline; cursor: pointer; }
+.count { font-size: .85rem; font-style: italic; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 8px; position: relative; z-index: 0; background: var(--surface); isolation: isolate; }
+table.main { border-collapse: collapse; width: 100%; min-width: 980px; font-size: .88rem; }
+table.main > thead th, table.main > tbody > tr > td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--hair); }
+table.main > thead th { background: var(--surface); }
 th button { font: inherit; font-weight: 600; color: var(--ink); background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
 th button .arrow { display: inline-block; width: 1em; }
 tr.row { cursor: pointer; }
@@ -95,26 +119,31 @@ td.result { min-width: 240px; max-width: 340px; overflow-wrap: anywhere; }
 td.date { white-space: nowrap; font-family: var(--mono); }
 .rlist { margin: 0; padding-left: 16px; }
 .rlist li { margin: 0 0 2px; }
-.val { font-family: var(--mono); }
 tr.detail > td { background: var(--row-hover); padding: 12px 14px 16px; }
-.detail h3 { font-size: 0.85rem; margin: 10px 0 4px; }
+.detail h3 { font-size: .9rem; margin: 10px 0 4px; }
 .detail h3:first-child { margin-top: 0; }
-table.inner { border-collapse: collapse; font-size: 0.82rem; }
-table.inner td, table.inner th { text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); padding: 3px 8px; }
-table.prs { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 0.86rem; }
-table.prs td, table.prs th { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+table.inner { border-collapse: collapse; font-size: .84rem; }
+table.inner td, table.inner th { text-align: left; vertical-align: top; border-bottom: 1px solid var(--hair); padding: 3px 8px; }
+table.prs { border-collapse: collapse; width: 100%; min-width: 720px; font-size: .88rem; }
+table.prs td, table.prs th { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--hair); }
 table.prs td.n { font-family: var(--mono); white-space: nowrap; }
-a { color: var(--ink); }
 .muted { font-style: italic; }
-footer { margin: 24px 0; font-size: 0.85rem; font-style: italic; }
+footer { max-width: 1180px; margin: 0 auto; padding: 0 16px 60px; font-size: .9rem; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+footer p { margin: 0; }
+footer .note { background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 8px; padding: 6px 12px; }
+#pause { font: inherit; font-size: .85rem; color: var(--ink); background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+#pause:hover, #pause:focus-visible { border-color: var(--ink); }
 button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-@media (max-width: 700px) { h1 { font-size: 1.25rem; } }
+@media (max-width: 700px) { h1 { font-size: 1.45rem; } main { padding-top: 24px; } .panel { padding: 14px 14px; } }
 </style>
 </head>
 <body>
+<canvas id="water" aria-hidden="true"></canvas>
 <main>
+<section class="panel">
 <h1>kmerseek experiments</h1>
 <p class="lede">What kmerseek can and cannot do, and every experiment behind each answer. Every number on this page is copied from a notebook output or a results file. Open an experiment's row to see the cell or file each number came from.</p>
+<p class="meta">First published 2026-09-29. Numbers last changed 2026-09-29. Page built 2026-10-05 21:29 UTC. Open pull requests as of 2026-10-05 21:26 UTC. 5 of 96 experiments were read from a notebook that has changed since; they carry the tag "changed since read".</p>
 <nav class="toc" aria-label="Sections">
   <a href="#what">What kmerseek does</a>
   <a href="#claims">What we can and cannot claim</a>
@@ -122,6 +151,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
   <a href="#prs">Open pull requests</a>
 </nav>
 
+</section>
+<section class="panel">
 <h2 id="what">What kmerseek does</h2>
 <ol class="steps">
   <li>Rewrite every residue of both proteins in a reduced alphabet. The main one has two letters: hydrophobic (H) or polar (P).</li>
@@ -131,8 +162,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 <p>Because the region ends where the shared pattern ends, a call can be as short as the feature it lands on. Below is the pair notebook 244 uses as its main example, as printed there, with each tool's IoU on this feature.</p>
 <div id="hero"></div>
 
+</section>
+<section class="panel">
 <h2 id="claims">What we can and cannot claim</h2>
-<p>Each claim below is one sentence, the numbers behind it, and whether each number argues for it, against it, or sets a limit on it. The row button opens that experiment in the table below.</p>
+<p>Twelve claims, one sentence each. Open a claim's numbers to see each value as the notebook printed it, whether it supports the claim, argues against it or sets a limit, and a button that opens that experiment in the table below.</p>
 <details class="gloss">
   <summary>What IoU, identity, alphabet, k, E-value and the benchmark names mean</summary>
   <dl class="terms">
@@ -153,9 +186,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 </details>
 <div id="claimlist"></div>
 
+</section>
+<section class="panel">
 <h2 id="table">Every experiment</h2>
 <p>One row per notebook or pipeline run. Click a row to see every number with the output line it was copied from.</p>
-<h3>What the verdict colours mean</h3>
+<h3>What the verdict colours and the tag mean</h3>
 <div class="legend" id="legend"></div>
 
 <div class="controls">
@@ -172,6 +207,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 </table>
 </div>
 
+</section>
+<section class="panel">
 <h2 id="prs">Open pull requests</h2>
 <p id="prnote"></p>
 <h3>Analysis repository, seanome/2024-kmerseek-analysis</h3>
@@ -180,8 +217,12 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 <p>These change how kmerseek scores and extends a match. A number on this page changes only when a notebook is rerun on the new build.</p>
 <div class="tablewrap"><table class="prs" id="prs-engine"></table></div>
 
-<footer>Numbers read from notebook outputs on 2026-09-29.</footer>
+</section>
 </main>
+<footer>
+<p class="note">Numbers read from notebook outputs on 2026-09-29.  Source: <a href="https://github.com/seanome/2024-kmerseek-analysis/tree/main/data">data/</a> and <a href="https://github.com/seanome/2024-kmerseek-analysis/blob/main/scripts/build_experiments_page.py">scripts/build_experiments_page.py</a> in github.com/seanome/2024-kmerseek-analysis.</p>
+<button type="button" id="pause" aria-pressed="false">pause the water</button>
+</footer>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -245,7 +286,7 @@ function residueBlock(p) {
   box.innerHTML = STATUS.map(([st, heading]) => {
     const cs = CLAIMS.claims.filter(c => c.status === st);
     if (!cs.length) return "";
-    return `<section class="claimgroup"><h3>${esc(heading)}</h3>` + cs.map(c => {
+    return `<section class="claimgroup"><h3>${esc(heading)} (${cs.length})</h3>` + cs.map(c => {
       const rows = c.evidence.map(e => {
         const r = BYID[e.row];
         const x = r && e.name ? r.result.find(y => y.name === e.name) : null;
@@ -254,7 +295,8 @@ function residueBlock(p) {
       }).join("");
       const prs = (c.open_prs || []).map(n => `<a href="${REPO_URL}/pull/${n}" target="_blank" rel="noopener">#${n}</a>`).join(", ");
       return `<article class="claim" id="claim-${esc(c.id)}"><p class="cname">${esc(c.name)}</p><p class="stmt">${esc(c.statement)}</p>` +
-        `<div class="tablewrap"><table class="ev"><thead><tr><th>number</th><th>value as printed</th><th>bearing on the claim</th><th>experiment</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+        `<details><summary>The ${c.evidence.length} numbers behind this claim, and whether each supports it</summary>` +
+        `<div class="tablewrap"><table class="ev"><thead><tr><th>number</th><th>value as printed</th><th>bearing on the claim</th><th>experiment</th></tr></thead><tbody>${rows}</tbody></table></div></details>` +
         (c.caveats ? `<p class="cav">${esc(c.caveats)}</p>` : "") +
         (prs ? `<p class="prs">Open pull requests that could change this: ${prs}</p>` : "") + `</article>`;
     }).join("") + `</section>`;
@@ -274,7 +316,8 @@ function cmp(a, b) { for (let i = 0; i < 3; i++) { if (a[i] < b[i]) return -1; i
 const state = { sort: "id", dir: 1, q: "", verdicts: new Set(), claims: new Set(), open: new Set() };
 
 document.getElementById("legend").innerHTML = VERDICTS.map(([k]) =>
-  `<span>${badge(k)} <span class="what">${esc(vinfo(k)[3])}</span></span>`).join("");
+  `<span>${badge(k)} <span class="what">${esc(vinfo(k)[3])}</span></span>`).join("") +
+  `<span><span class="tag">changed since read</span> <span class="what">the notebook has commits after its numbers were copied; re-read it before quoting them</span></span>`;
 
 function chip(container, value, label, set) {
   const b = document.createElement("button");
@@ -307,7 +350,7 @@ document.getElementById("clear").addEventListener("click", () => { clearFilters(
 
 function haystack(r) {
   return [r.id, r.title, r.question, r.dataset, tools(r), resultText(r), vinfo(r.verdict)[1], r.claim, r.date,
-    (r.residues || []).map(p => p.pair).join(" "), r.source && r.source.path]
+    (r.residues || []).map(p => p.pair).join(" "), r.source && r.source.path, r.changed_since_read ? "changed since read" : ""]
     .join(" \u0001 ").toLowerCase();
 }
 
@@ -333,6 +376,7 @@ function detail(r) {
     (res ? `<h3>Aligned residues</h3>${res}` : "") +
     `<h3>Why this verdict</h3><p>${esc(r.verdict_basis)}</p>` +
     (claims.length ? `<h3>Claims this experiment is evidence for or against</h3><p>${claims.map(c => `<a href="#claim-${esc(c.id)}">${esc(c.name)}</a>`).join(", ")}</p>` : "") +
+    (r.changed_since_read ? `<h3>Changed since read</h3><p>The numbers above were read at commit <code>${esc(r.source.commit)}</code>. ${esc(r.changed_since_read.ref)} now has commit <code>${esc(r.changed_since_read.commit)}</code> (${esc(r.changed_since_read.date)}) touching this file. Re-read the notebook before quoting these numbers.</p>` : "") +
     `<h3>Source</h3><p>${ghLink(r.source)}${r.source && r.source.commit ? ` at commit <code>${esc(r.source.commit)}</code>` : ""}` +
     `${r.pr ? `, <a href="${REPO_URL}/pull/${esc(r.pr)}" target="_blank" rel="noopener">pull request ${esc(r.pr)}</a>` : ""}</p>` +
     (r.notes ? `<h3>Notes</h3><p>${esc(r.notes)}</p>` : "");
@@ -358,7 +402,7 @@ function render() {
         (!open && r.result.length > 3 ? `<li class="muted">and ${r.result.length - 3} more: click the row to see them</li>` : "") + `</ul>`
       : `<span class="muted">no outputs</span>`;
     return `<tr class="row${open ? " open" : ""}" tabindex="0" aria-expanded="${open}" data-id="${esc(id)}">` +
-      `<td class="id">${esc(id)}</td><td class="title">${esc(r.title)}</td><td class="question">${esc(r.question)}</td>` +
+      `<td class="id">${esc(id)}${r.changed_since_read ? '<br><span class="tag">changed since read</span>' : ""}</td><td class="title">${esc(r.title)}</td><td class="question">${esc(r.question)}</td>` +
       `<td>${esc(r.dataset)}</td><td>${esc(tools(r))}</td><td class="result">${res}</td>` +
       `<td>${badge(r.verdict)}</td><td>${esc(r.claim)}</td><td class="date">${esc(r.date)}</td></tr>` +
       (open ? `<tr class="detail"><td colspan="${COLS.length}"><div class="detail">${detail(r)}</div></td></tr>` : "");
@@ -5965,7 +6009,12 @@ render();
   },
   "date": "2026-09-23",
   "pr": 46,
-  "notes": "One experiment, renamed: notebooks/241_alphabet_ranking_three_cases.ipynb was added in fca9c70 and renamed to 241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb in e0e3a63; both names are the same notebook. The copy on olgabot/alphabet-ensemble (PR #48, last touched e0e3a63) has identical outputs; only the H1 differs ('on three test cases'). BHF: 3 of 71 arms with an E-value put a human protein just under E = 1 (SCN10A 0.61, SFI1 0.84, FXYD5 0.99), which the notebook reads as chance. No output prints the aligned Ced9/BCL2 residues; notebook 245 does. The markdown also reports region_ka_bits once gave BCL2 rank 1 with 18,302 proteins tied; the collector was fixed before this run."
+  "notes": "One experiment, renamed: notebooks/241_alphabet_ranking_three_cases.ipynb was added in fca9c70 and renamed to 241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb in e0e3a63; both names are the same notebook. The copy on olgabot/alphabet-ensemble (PR #48, last touched e0e3a63) has identical outputs; only the H1 differs ('on three test cases'). BHF: 3 of 71 arms with an E-value put a human protein just under E = 1 (SCN10A 0.61, SFI1 0.84, FXYD5 0.99), which the notebook reads as chance. No output prints the aligned Ced9/BCL2 residues; notebook 245 does. The markdown also reports region_ka_bits once gave BCL2 rank 1 with 18,302 proteins tied; the collector was fixed before this run.",
+  "changed_since_read": {
+   "ref": "olgabot/alphabet-ranking-three-cases",
+   "commit": "41a8b23",
+   "date": "2026-10-05"
+  }
  },
  {
   "id": "242",
@@ -6421,7 +6470,12 @@ render();
   },
   "date": "2026-09-25",
   "pr": 54,
-  "notes": "An argument, not a new search: every input is read from earlier notebooks via scripts/make_245_inputs.py into tables/245_inputs.tsv. I_20 = 0.38 bits per position is a BLOSUM45 table value, and K = 0.018 is copied from Swiss-Prot and not fitted to the human index, so the 25.7-bit threshold is approximate. Companion file 245_bits_ceiling_section.md on the same branch. It also shows notebooks 241 and 242 used '32 bits' for E = 1, which is the seed threshold (31.5), not the region threshold (25.7). gbmr7 and hp_lehninger_hpc3 cannot produce an E-value at any k (cell 15)."
+  "notes": "An argument, not a new search: every input is read from earlier notebooks via scripts/make_245_inputs.py into tables/245_inputs.tsv. I_20 = 0.38 bits per position is a BLOSUM45 table value, and K = 0.018 is copied from Swiss-Prot and not fitted to the human index, so the 25.7-bit threshold is approximate. Companion file 245_bits_ceiling_section.md on the same branch. It also shows notebooks 241 and 242 used '32 bits' for E = 1, which is the seed threshold (31.5), not the region threshold (25.7). gbmr7 and hp_lehninger_hpc3 cannot produce an E-value at any k (cell 15).",
+  "changed_since_read": {
+   "ref": "olgabot/bits-ceiling-245",
+   "commit": "cf34772",
+   "date": "2026-10-05"
+  }
  },
  {
   "id": "246",
@@ -9606,7 +9660,12 @@ render();
   },
   "date": "2026-09-29",
   "pr": 69,
-  "notes": "As printed, kmerseek's best arm (protein20 k=5, scaled 1) puts 81.9% of motifs on position against 96.1-98.7% for the six sequence tools, and places no motif that every comparison tool misses (cell 23); it recovers 216 of Foldseek's 276 misses, all found by sequence tools. The length effect: the list order, and so the cut to 1_000 chicken targets, favours long calls, which can push the ortholog out; scaled 10 gives 2.02 times the on-position share of scaled 1 (cell 17). Commit 18f5b53 on olgabot/kmerseek-top-targets (2026-09-29) keeps the union of the mean-IDF and E-value top N; chicken has not been rescored with it in this notebook. Seven more species are PR 72 (olgabot/elm-cover-all-species). No aligned residues are printed. jackhmmer is listed as HMMER; 'Foldseek with ProstT5' as ProstT5."
+  "notes": "As printed, kmerseek's best arm (protein20 k=5, scaled 1) puts 81.9% of motifs on position against 96.1-98.7% for the six sequence tools, and places no motif that every comparison tool misses (cell 23); it recovers 216 of Foldseek's 276 misses, all found by sequence tools. The length effect: the list order, and so the cut to 1_000 chicken targets, favours long calls, which can push the ortholog out; scaled 10 gives 2.02 times the on-position share of scaled 1 (cell 17). Commit 18f5b53 on olgabot/kmerseek-top-targets (2026-09-29) keeps the union of the mean-IDF and E-value top N; chicken has not been rescored with it in this notebook. Seven more species are PR 72 (olgabot/elm-cover-all-species). No aligned residues are printed. jackhmmer is listed as HMMER; 'Foldseek with ProstT5' as ProstT5.",
+  "changed_since_read": {
+   "ref": "olgabot/elm-cover-nb253",
+   "commit": "f2927b4",
+   "date": "2026-10-02"
+  }
  },
  {
   "id": "254",
@@ -9950,7 +10009,12 @@ render();
   },
   "date": "2026-09-24",
   "pr": 50,
-  "notes": "Title is the PR title (no notebook; the tables come from scripts/kmerseek_0_4_vs_0_3_resource.py). 0.4 is faster than 0.3 and far faster than phmmer and jackhmmer, but at scaled 1 it is still slower than MMseqs2 (0.75 min) and its median memory is 39.8 GB against 2.6 GB for MMseqs2. Only scaled 10 matches MMseqs2 on wall time. 'HMMER' in comparison_tools stands for jackhmmer. Per-alphabet speed-up ratios are in tables/kmerseek_0.4_vs_0.3_resource_by_alphabet.csv on the same branch."
+  "notes": "Title is the PR title (no notebook; the tables come from scripts/kmerseek_0_4_vs_0_3_resource.py). 0.4 is faster than 0.3 and far faster than phmmer and jackhmmer, but at scaled 1 it is still slower than MMseqs2 (0.75 min) and its median memory is 39.8 GB against 2.6 GB for MMseqs2. Only scaled 10 matches MMseqs2 on wall time. 'HMMER' in comparison_tools stands for jackhmmer. Per-alphabet speed-up ratios are in tables/kmerseek_0.4_vs_0.3_resource_by_alphabet.csv on the same branch.",
+  "changed_since_read": {
+   "ref": "olgabot/kmerseek-0.4-resource-matched",
+   "commit": "39a44b1",
+   "date": "2026-10-01"
+  }
  },
  {
   "id": "PR66-pfam-subdomain-hard",
@@ -10086,7 +10150,12 @@ render();
   },
   "date": "2026-09-29",
   "pr": 57,
-  "notes": "Run name from the Makefile: RUN=ladder-0.4-midi, target run-ladder-0.4-midi-sbatch. No trace, CSV, parquet or MultiQC data for this run is in the branch or the main checkout: nextflow-runs/invertebrate-dark-set does not exist in the main checkout, and reports/invertebrate-dark-set/ holds only botryllus_dark_set_multiqc.html dated 2026-09-19, which is before the midi run and from the 0.3 run. figures/darkset_0.4_index_cost_vs_0.3.png (2026-09-20, untracked) is a figure, not a results file. Results live on Sherlock. Commit 754760e: index minus_Chromadorea.gbmr7.k11.s2 ran out of memory at 64, 128 and 258 GB; kmerseekIndex now ends at 'ignore', kmerseekSearch keeps 'finish'. Its commit message says 28_325 searches had finished, but no results file backs that number. jackhmmer is one of the three sequence tools that define the dark set."
+  "notes": "Run name from the Makefile: RUN=ladder-0.4-midi, target run-ladder-0.4-midi-sbatch. No trace, CSV, parquet or MultiQC data for this run is in the branch or the main checkout: nextflow-runs/invertebrate-dark-set does not exist in the main checkout, and reports/invertebrate-dark-set/ holds only botryllus_dark_set_multiqc.html dated 2026-09-19, which is before the midi run and from the 0.3 run. figures/darkset_0.4_index_cost_vs_0.3.png (2026-09-20, untracked) is a figure, not a results file. Results live on Sherlock. Commit 754760e: index minus_Chromadorea.gbmr7.k11.s2 ran out of memory at 64, 128 and 258 GB; kmerseekIndex now ends at 'ignore', kmerseekSearch keeps 'finish'. Its commit message says 28_325 searches had finished, but no results file backs that number. jackhmmer is one of the three sequence tools that define the dark set.",
+  "changed_since_read": {
+   "ref": "olgabot/dark-set-kmerseek-0.4",
+   "commit": "7913404",
+   "date": "2026-10-05"
+  }
  },
  {
   "id": "swissprot-1000-query-timing",
@@ -10708,442 +10777,666 @@ render();
 </script>
 <script type="application/json" id="prs-data">
 {
- "fetched": "2026-09-29",
+ "fetched": "2026-10-05 21:26 UTC",
  "prs": [
   {
-   "branch": "olgabot/244-all-case-figures",
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 109,
+   "title": "Add make running to every pipeline Makefile",
    "draft": true,
+   "branch": "olgabot/make-running-all-pipelines",
+   "updated": "2026-10-04"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 108,
+   "title": "Shared Nature figure style: nature.mplstyle and pubfig.py",
+   "draft": true,
+   "branch": "olgabot/publication-figure-style",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 107,
+   "title": "SCOPe40 family and superfamily sensitivity with kmerseek 0.4: 19 alphabets, k_min to k_max, six settings",
+   "draft": true,
+   "branch": "olgabot/scope40-alphabet-ksize-v040",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 106,
+   "title": "Supplementary Figure 1 (alphabets, bits, k-sizes to test) and seed reach at k*",
+   "draft": true,
+   "branch": "olgabot/suppfig1-alphabets",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 105,
+   "title": "Save PNGs and notebook images with 256 colours",
+   "draft": true,
+   "branch": "olgabot/png-256-colours",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 104,
+   "title": "Notebook 264: the three combiners, the single best pair, phmmer and a Kyte-Doolittle scan on test",
+   "draft": false,
+   "branch": "olgabot/combiner-comparison-264",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 103,
+   "title": "Notebook 263: combiner C, a consensus vote across alphabet-ksize pairs",
+   "draft": false,
+   "branch": "olgabot/combiner-c-consensus-vote",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 102,
+   "title": "Notebook 262: combiner B, best of n alphabet-ksize pairs",
+   "draft": false,
+   "branch": "olgabot/combiner-b-best-of-n",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 101,
+   "title": "274: the k-sizes to test per alphabet, from k_min to k_max (print version of explainer Figure 12)",
+   "draft": false,
+   "branch": "olgabot/ksizes-per-alphabet-274",
+   "updated": "2026-10-03"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 100,
+   "title": "230: kappa and usable k for all 19 kmerseek alphabets",
+   "draft": false,
+   "branch": "olgabot/nb230-kappa-all-alphabets",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 99,
+   "title": "Notebook 273: H/P agreement per 100 aligned positions, counted per pair",
+   "draft": false,
+   "branch": "olgabot/hp-agreement-per-100",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 98,
+   "title": "Notebook 261: combiner A, intersection of a fixed panel of alphabet-ksize pairs",
+   "draft": false,
+   "branch": "olgabot/combiner-a-intersection",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 97,
+   "title": "Experiment inventory and experiments page (5 commits that were only on the laptop's main)",
+   "draft": true,
+   "branch": "olgabot/experiment-inventory",
+   "updated": "2026-10-05"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 96,
+   "title": "245: where the P66/CD47 shared k-mers sit, and whether they touch the SIRP-alpha residues",
+   "draft": false,
+   "branch": "olgabot/p66-cd47-pair-coordinates",
+   "updated": "2026-10-02"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 95,
+   "title": "Figure 1: H/P class kept above chance between related proteins (nb 275)",
+   "draft": true,
+   "branch": "olgabot/fig1-hp-runs",
+   "updated": "2026-10-04"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 94,
+   "title": "check_notebooks: flag a table with no figure, and a shared notebook number",
+   "draft": false,
+   "branch": "olgabot/notebook-checks-figures",
+   "updated": "2026-10-05"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 93,
+   "title": "Nb 271: which kmerseek region score to filter on (mini set, Pfam truth)",
+   "draft": true,
+   "branch": "olgabot/region-filters-271",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 92,
+   "title": "Figure: bits of information per letter for all 19 alphabets",
+   "draft": true,
+   "branch": "olgabot/bits-per-letter-figure",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 91,
+   "title": "Shared figure helpers: header placement, alphabet axis, missing-value mark",
+   "draft": true,
+   "branch": "olgabot/notebook-figure-checks",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 88,
+   "title": "midi-plus 0.4 with extension, and its shuffled-query twin (nb 260)",
+   "draft": true,
+   "branch": "olgabot/midi-plus-0.4-decoy",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 87,
+   "title": "Notebook 270: --scaled 1-10 on the mini set, with decoy queries",
+   "draft": true,
+   "branch": "olgabot/scaled-sweep-270",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 86,
+   "title": "Pfam candidate table: every human Pfam instance, every tool, both directions",
+   "draft": true,
+   "branch": "olgabot/pfam-fair-table",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 85,
+   "title": "257: rerun the 998-protein search with a newer kmerseek (every row gets an E-value)",
+   "draft": true,
+   "branch": "olgabot/pfam998-kmerseek-preview",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 84,
+   "title": "Notebook 255: kmerseek ranking metrics against human Pfam, with region length as the control",
+   "draft": true,
+   "branch": "olgabot/ranking-metrics-vs-human-pfam",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 83,
+   "title": "256: BHF against 300 dipeptide-shuffled copies of itself",
+   "draft": true,
+   "branch": "olgabot/bhf-dipeptide-shuffle-null",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 82,
+   "title": "244: two bonus cases, Ced-9/BCL2 and BHF",
+   "draft": false,
+   "branch": "olgabot/244-bonus-cases",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 81,
+   "title": "Notebook 244: IoU on inclusive intervals, two relabelled rows, landed counts per type, species and tool",
+   "draft": true,
+   "branch": "olgabot/244-landed-by-type",
+   "updated": "2026-09-30"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 80,
+   "title": "Case gallery: reference pairs, other tools, and every shared k-mer",
+   "draft": true,
+   "branch": "olgabot/case-gallery-reference-pairs",
+   "updated": "2026-10-01"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 78,
-   "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Notebook 244: draw all 183 cases and export their call coordinates",
-   "updated": "2026-09-29"
+   "title": "Notebook 244: figures, call coordinates, kmerseek pair and hits pages for all 183 cases",
+   "draft": true,
+   "branch": "olgabot/244-all-case-figures",
+   "updated": "2026-10-01"
   },
   {
-   "branch": "olgabot/hero-244-extension",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 77,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 254: seed extension loses notebook 244's short placements",
+   "draft": true,
+   "branch": "olgabot/hero-244-extension",
    "updated": "2026-09-29"
   },
   {
-   "branch": "olgabot/random-alphabets-A",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 76,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Search ten random 2-letter partitions beside the six H/P alphabets under kmerseek 0.4 (notebook 246, experiment A)",
-   "updated": "2026-09-29"
+   "draft": true,
+   "branch": "olgabot/random-alphabets-A",
+   "updated": "2026-09-30"
   },
   {
-   "branch": "olgabot/delimitation-238-full",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 75,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 238 on the full midi-plus run",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/alphabet-class-shares-figure",
    "draft": true,
-   "n": 74,
-   "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Add a print version of the alphabet class-share figure",
+   "branch": "olgabot/delimitation-238-full",
    "updated": "2026-09-29"
   },
   {
-   "branch": "olgabot/elm-cover-all-species",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 72,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "ELM cover on seven more species: 19 arms chosen on chicken, lists cut to 1_000",
-   "updated": "2026-09-29"
+   "draft": false,
+   "branch": "olgabot/elm-cover-all-species",
+   "updated": "2026-09-30"
   },
   {
-   "branch": "olgabot/kmerseek-top-targets",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 71,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "kmerseek search: keep each query's best N targets, and pin one arm per alphabet",
+   "draft": true,
+   "branch": "olgabot/kmerseek-top-targets",
    "updated": "2026-09-29"
   },
   {
-   "branch": "olgabot/elm-cover-nb253",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 69,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 253: are ELM motifs put on position on the chicken ortholog?",
-   "updated": "2026-09-29"
+   "draft": true,
+   "branch": "olgabot/elm-cover-nb253",
+   "updated": "2026-10-02"
   },
   {
-   "branch": "olgabot/qfo-pfam-region-benchmark",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 68,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "WIP: Swiss-Prot reachability keyed on each protein's Pfam families (probably superseded)",
+   "draft": true,
+   "branch": "olgabot/qfo-pfam-region-benchmark",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/scope40-bcl2-ced9-hp-alphabet-sweep",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 67,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 220: BCL2/Bcl-xL vs Ced9 across all six HP alphabets, k=15-25",
+   "draft": true,
+   "branch": "olgabot/scope40-bcl2-ced9-hp-alphabet-sweep",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/pfam-subdomain-hard",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 66,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Pfam subdomain benchmark: split positive pairs into DIAMOND-hard and DIAMOND-easy",
+   "draft": true,
+   "branch": "olgabot/pfam-subdomain-hard",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/kmer-spectra-nb24-figures",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 65,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 24: k-mer spectra across all alphabets, with nine saved figures",
+   "draft": true,
+   "branch": "olgabot/kmer-spectra-nb24-figures",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/human-mouse-orthologs-sherlock",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 64,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Run the family-AUC, RBH-F1 and leaderboard sweeps on Sherlock",
+   "draft": true,
+   "branch": "olgabot/human-mouse-orthologs-sherlock",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/e3-detection-gap",
-   "draft": true,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 63,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "E3 detection-gap benchmark: notebook 340 and a pipeline for the missing baseline arms",
+   "draft": true,
+   "branch": "olgabot/e3-detection-gap",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/laptop-leftovers-2026-09-28",
-   "draft": true,
-   "n": 62,
    "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Keep three laptop-only figures and pixi.lock; ignore run outputs",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/merge-report-figures-and-cost",
-   "draft": true,
    "n": 61,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Unpushed 2026-09-05 merge of the two QfO report branches (probably superseded by #24)",
+   "draft": true,
+   "branch": "olgabot/merge-report-figures-and-cost",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/prostt5-default-weights",
-   "draft": true,
-   "n": 60,
    "repo": "seanome/2024-kmerseek-analysis",
-   "title": "ProstT5: use data/prostt5/weights by default; fix the offline check",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/identity-join-fix",
-   "draft": true,
    "n": 59,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Give the Swiss-Prot identity axis a Pfam anchor",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/elm-cover-scoring",
    "draft": true,
+   "branch": "olgabot/identity-join-fix",
+   "updated": "2026-09-28"
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 58,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Score the ELM cover search: motif cover per arm, placement null, chicken dry run",
+   "draft": true,
+   "branch": "olgabot/elm-cover-scoring",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/dark-set-kmerseek-0.4",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 57,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Dark set with kmerseek 0.4: the midi run, and a failed index no longer stops it",
-   "updated": "2026-09-29"
+   "draft": false,
+   "branch": "olgabot/dark-set-kmerseek-0.4",
+   "updated": "2026-10-05"
   },
   {
-   "branch": "olgabot/notebook-checks",
-   "draft": false,
-   "n": 56,
    "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Check notebooks at commit time and in CI, and add an analysis-review skill",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/deep-twilight-controls",
-   "draft": false,
    "n": 55,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Deep-twilight controls: label transfer on globins, lysozymes and cystatins (nb 252)",
+   "draft": false,
+   "branch": "olgabot/deep-twilight-controls",
    "updated": "2026-09-25"
   },
   {
-   "branch": "olgabot/bits-ceiling-245",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 54,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Notebook 245: bits an exact reduced-alphabet seed carries against bits a proteome search needs",
-   "updated": "2026-09-25"
+   "draft": false,
+   "branch": "olgabot/bits-ceiling-245",
+   "updated": "2026-10-05"
   },
   {
-   "branch": "olgabot/disprot-region-transfer",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 53,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "DisProt functional-region transfer benchmark: data, scoring with controls, notebook 251",
+   "draft": false,
+   "branch": "olgabot/disprot-region-transfer",
    "updated": "2026-09-24"
   },
   {
-   "branch": "olgabot/region-kmerseek-extend",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 52,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Region pipeline: ungapped kmerseek extension with an E-value, opened comparator filters",
+   "draft": false,
+   "branch": "olgabot/region-kmerseek-extend",
    "updated": "2026-09-25"
   },
   {
-   "branch": "olgabot/elm-motif-transfer",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 51,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Add the ELM motif benchmark (notebook 250): Stage 0, target labels, seed lengths, provenance",
+   "draft": false,
+   "branch": "olgabot/elm-motif-transfer",
    "updated": "2026-09-25"
   },
   {
-   "branch": "olgabot/kmerseek-0.4-resource-matched",
-   "draft": false,
-   "n": 50,
    "repo": "seanome/2024-kmerseek-analysis",
-   "title": "Compare kmerseek 0.4 and 0.3 compute cost on matched searches",
-   "updated": "2026-09-24"
-  },
-  {
-   "branch": "olgabot/hero-example-244",
-   "draft": false,
    "n": 49,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "Add notebook 244: hero example candidates on the Swiss-Prot feature key",
+   "draft": false,
+   "branch": "olgabot/hero-example-244",
    "updated": "2026-09-25"
   },
   {
-   "branch": "olgabot/alphabet-ensemble",
-   "draft": false,
-   "n": 48,
    "repo": "seanome/2024-kmerseek-analysis",
+   "n": 48,
    "title": "242: combining alphabets does not lift BCL2 or CD47; query-side null ready to run",
+   "draft": false,
+   "branch": "olgabot/alphabet-ensemble",
    "updated": "2026-09-24"
   },
   {
-   "branch": "olgabot/dark-set-pfam",
-   "draft": false,
-   "n": 47,
    "repo": "seanome/2024-kmerseek-analysis",
+   "n": 47,
    "title": "Pfam on the dark set: are these real proteins?",
+   "draft": false,
+   "branch": "olgabot/dark-set-pfam",
    "updated": "2026-09-23"
   },
   {
-   "branch": "olgabot/alphabet-ranking-three-cases",
-   "draft": false,
+   "repo": "seanome/2024-kmerseek-analysis",
    "n": 46,
-   "repo": "seanome/2024-kmerseek-analysis",
    "title": "241: what every alphabet can see, on BCL2/Ced9, P66/CD47 and BHF",
-   "updated": "2026-09-28"
+   "draft": false,
+   "branch": "olgabot/alphabet-ranking-three-cases",
+   "updated": "2026-10-05"
   },
   {
-   "branch": "olgabot/invertebrate-dark-set",
-   "draft": false,
-   "n": 30,
    "repo": "seanome/2024-kmerseek-analysis",
+   "n": 30,
    "title": "Measure the dark set: what conventional sequence search misses on an invertebrate proteome",
+   "draft": false,
+   "branch": "olgabot/invertebrate-dark-set",
    "updated": "2026-09-28"
   },
   {
-   "branch": "olgabot/ka-02-lambda-per-region",
-   "draft": false,
-   "n": 101,
    "repo": "seanome/kmerseek",
-   "title": "Solve the Karlin-Altschul lambda from each region's own spans, not the whole proteins",
-   "updated": "2026-09-29"
+   "n": 136,
+   "title": "Scale the chance count of shared k-mers with the target's size",
+   "draft": true,
+   "branch": "olgabot/length-aware-expected-shared-kmers",
+   "updated": "2026-10-05"
   },
   {
-   "branch": "olgabot/ka-01-reference-shuffles",
-   "draft": false,
-   "n": 100,
    "repo": "seanome/kmerseek",
-   "title": "--ka-reference-shuffles: fill in the chance curve the Karlin-Altschul fit reads against",
-   "updated": "2026-09-29"
+   "n": 135,
+   "title": "Skills: standard amino-acid order; no stacked PR ships a value a later PR fixes",
+   "draft": true,
+   "branch": "olgabot/skill-rules-2026-w40",
+   "updated": "2026-10-04"
   },
   {
-   "branch": "olgabot/ka-00-skip-bin-zero",
-   "draft": false,
-   "n": 99,
    "repo": "seanome/kmerseek",
-   "title": "Bar the x = 0 bin from being the peak of the Karlin-Altschul fit",
-   "updated": "2026-09-29"
+   "n": 134,
+   "title": "Test the run E-value on random sequences and on dipeptide-shuffled decoys",
+   "draft": true,
+   "branch": "olgabot/run-evalue-checks",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/region-idf-per-window",
-   "draft": false,
-   "n": 97,
    "repo": "seanome/kmerseek",
-   "title": "Count each window once in region_tfidf, with the reading the target holds",
-   "updated": "2026-09-29"
+   "n": 133,
+   "title": "Give every row a run E-value, and drop the Poisson E-value",
+   "draft": true,
+   "branch": "olgabot/run-evalue-columns",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/extend-ambiguous-agree",
-   "draft": false,
-   "n": 96,
    "repo": "seanome/kmerseek",
-   "title": "Let extension score an ambiguous residue as agreeing, as the seeds do",
-   "updated": "2026-09-29"
+   "n": 132,
+   "title": "Keep each shared position once when an ambiguous residue is read several ways",
+   "draft": true,
+   "branch": "olgabot/ambiguous-position-dedup",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/pages-jekyll-layout",
-   "draft": false,
-   "n": 95,
    "repo": "seanome/kmerseek",
-   "title": "Render Markdown pages in docs/ with Jekyll, styled like the landing page",
-   "updated": "2026-09-29"
+   "n": 130,
+   "title": "Add the mid-p run E-value, and score the decoy test on other proteins' shuffles",
+   "draft": false,
+   "branch": "olgabot/run-evalue-midp",
+   "updated": "2026-10-01"
   },
   {
-   "branch": "olgabot/extend-10-default-extension",
-   "draft": false,
-   "n": 94,
    "repo": "seanome/kmerseek",
+   "n": 114,
    "title": "Extend matched regions by default when the index holds a fit",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/deterministic-search-output",
    "draft": false,
-   "n": 93,
-   "repo": "seanome/kmerseek",
-   "title": "Write kmerseek search results in the same order on every run",
-   "updated": "2026-09-28"
+   "branch": "olgabot/extend-10-default-extension-v2",
+   "updated": "2026-10-01"
   },
   {
-   "branch": "scratch/extend-plus-scaled",
-   "draft": true,
-   "n": 92,
    "repo": "seanome/kmerseek",
-   "title": "Scratch merge of restore-scaled into extend-mismatch (2026-09-13)",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/pair-extended-seeds",
-   "draft": true,
-   "n": 91,
-   "repo": "seanome/kmerseek",
-   "title": "Draw each grown run's seed inside it, in kmerseek pair and both figures",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/deterministic-ambiguity-codes-unpushed",
-   "draft": true,
-   "n": 90,
-   "repo": "seanome/kmerseek",
-   "title": "Unpushed ambiguity-cap commit from the #39 branch (superseded by #46 and main)",
-   "updated": "2026-09-28"
-  },
-  {
-   "branch": "olgabot/extend-without-fit-ka-fixes",
-   "draft": false,
-   "n": 89,
-   "repo": "seanome/kmerseek",
-   "title": "Port the Karlin-Altschul fit fixes (#81, #82) onto the extend stack",
-   "updated": "2026-09-25"
-  },
-  {
-   "branch": "olgabot/extend-without-fit",
-   "draft": false,
-   "n": 88,
-   "repo": "seanome/kmerseek",
+   "n": 113,
    "title": "Extend regions when there is no Karlin-Altschul fit, instead of refusing the search",
-   "updated": "2026-09-25"
+   "draft": false,
+   "branch": "olgabot/extend-without-fit-v2",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/region-evalue",
-   "draft": false,
-   "n": 79,
    "repo": "seanome/kmerseek",
-   "title": "Add region_evalue to every search hit, measured against 2-mer-shuffled decoys",
-   "updated": "2026-09-21"
+   "n": 112,
+   "title": "Give every row a region E-value, and say whether it is the Karlin-Altschul or the run E-value",
+   "draft": false,
+   "branch": "olgabot/run-evalue-v2",
+   "updated": "2026-10-03"
   },
   {
-   "branch": "olgabot/extend-09-docs",
-   "draft": false,
-   "n": 75,
    "repo": "seanome/kmerseek",
-   "title": "Explain the E-value of an extended region, with the fits on three databases",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-08-chain",
-   "draft": false,
-   "n": 74,
-   "repo": "seanome/kmerseek",
-   "title": "Chain colinear extended regions with Karlin-Altschul sum statistics",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-07-survival-csv",
-   "draft": false,
-   "n": 73,
-   "repo": "seanome/kmerseek",
-   "title": "Write the survival curve a Karlin-Altschul fit was read from, and plot it",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-06-store-fit",
-   "draft": false,
-   "n": 72,
-   "repo": "seanome/kmerseek",
-   "title": "Fit r_database and K when the index is built, and store the fit in it",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-05-fit-before-search",
-   "draft": false,
-   "n": 71,
-   "repo": "seanome/kmerseek",
-   "title": "Fit r_database and K on the target index before a search",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-04-decoys",
-   "draft": false,
-   "n": 70,
-   "repo": "seanome/kmerseek",
-   "title": "Add the decoy sequences a Karlin-Altschul fit is read against",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-03-fit-scores",
-   "draft": false,
-   "n": 69,
-   "repo": "seanome/kmerseek",
-   "title": "Fit a line to the tail of a score survival curve, stopping below the related pairs",
-   "updated": "2026-09-29"
-  },
-  {
-   "branch": "olgabot/extend-02-ka-bits",
-   "draft": false,
-   "n": 68,
-   "repo": "seanome/kmerseek",
-   "title": "Score extended regions with Karlin-Altschul bits and an E-value",
-   "updated": "2026-09-29"
+   "n": 91,
+   "title": "Draw each grown run's seed inside it, in kmerseek pair and both figures",
+   "draft": true,
+   "branch": "olgabot/pair-extended-seeds",
+   "updated": "2026-09-28"
   }
  ]
 }
+</script>
+<script>
+/* Copied from seanome/kmerseek docs/assets/water.js at commit 7ef84e7, so this page has the
+   same background as the kmerseek docs landing page (https://seanome.github.io/kmerseek/).
+   scripts/build_experiments_page.py inlines it into the page. */
+/* The background: one full-screen fragment shader, three things at once.
+   Caustic light and rays from the surface (underwater), cells drifting upward with a
+   nucleus (inside a tissue), and a slowly turning double helix (inside the sequence).
+   It follows the light and dark theme, holds still for prefers-reduced-motion, stops
+   when the tab is hidden, and leaves the flat --bg behind it when WebGL is missing. */
+(function () {
+  'use strict';
+  var canvas = document.getElementById('water');
+  var btn = document.getElementById('pause');
+  var gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
+  if (!gl) { canvas.remove(); btn.remove(); return; }
+
+  var VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  var FS = [
+    'precision highp float;',
+    'uniform vec2 u_res;uniform float u_t;uniform vec2 u_mouse;uniform float u_light;',
+    'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+    'float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);',
+    ' return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}',
+    'float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}',
+    // caustics: the iterated-sine pattern, warped by noise so it does not tile
+    'float caustic(vec2 uv,float t){vec2 w=uv+vec2(fbm(uv*3.+t*.05))*.08;vec2 p=mod(w*6.28318*1.1,6.28318)-250.;vec2 i=p;float c=1.;',
+    ' for(int n=0;n<4;n++){float tn=t*(1.-3.5/float(n+1))*.35;i=p+vec2(cos(tn-i.x)+sin(tn+i.y),sin(tn-i.y)+cos(tn+i.x));',
+    '  c+=1./length(vec2(p.x/(sin(i.x+tn)*200.),p.y/(cos(i.y+tn)*200.)));}',
+    ' c/=4.;c=1.17-pow(c,1.4);return clamp(pow(abs(c),8.),0.,1.);}',
+    // one cell: membrane ring, faint body, a nucleus off centre
+    'float cell(vec2 uv,vec2 c,float r,float seed){float d=length(uv-c);',
+    ' float wob=1.+.06*sin(seed*7.+u_t*.7+atan(uv.y-c.y,uv.x-c.x)*3.);d/=wob;',
+    ' float mem=smoothstep(r*.06,0.,abs(d-r))*.9;float body=smoothstep(r,r*.2,d)*.10;',
+    ' vec2 nc=c+r*.28*vec2(cos(seed*5.),sin(seed*3.));float nd=length(uv-nc);float nuc=smoothstep(r*.32,r*.12,nd)*.35;',
+    ' return mem+body+nuc;}',
+    // the double helix seen edge-on: two sine strands, with rungs between them
+    'vec3 helix(vec2 uv,float t){float ang=-.55;mat2 R=mat2(cos(ang),-sin(ang),sin(ang),cos(ang));vec2 q=R*(uv-vec2(.62,.42));',
+    ' float s=q.x*9.+t*.35,w=q.y;float amp=.075;float a=amp*sin(s),b=amp*sin(s+3.14159);',
+    ' float za=cos(s),zb=cos(s+3.14159);',
+    ' float sa=smoothstep(.014,.004,abs(w-a))*(.55+.45*za);float sb=smoothstep(.014,.004,abs(w-b))*(.55+.45*zb);',
+    ' float per=fract(s/1.05);float rung=smoothstep(.05,.02,abs(per-.5)*1.05)*step(min(a,b),w)*step(w,max(a,b))*(.35+.3*abs(za));',
+    ' float fade=smoothstep(.75,.15,abs(q.x))*smoothstep(.34,.1,abs(w));',
+    ' return vec3(sa,sb,rung)*fade;}',
+    'void main(){vec2 res=u_res;vec2 uv=gl_FragCoord.xy/res;float asp=res.x/res.y;vec2 p=vec2(uv.x*asp,uv.y);',
+    ' float t=u_t;p+=(u_mouse-.5)*.03;',
+    ' float depth=smoothstep(0.,1.,uv.y+.1*fbm(p*2.+t*.03));',
+    ' float ca=caustic(p*.9+vec2(0.,t*.02),t);',
+    ' float ray=0.;for(int i=0;i<3;i++){float fi=float(i);float x=p.x*(3.+fi)+fi*1.7+t*(.05+.02*fi)+uv.y*(.6+.3*fi);ray+=pow(max(0.,sin(x)),6.)*(.4-.1*fi);}',
+    ' ray*=smoothstep(.2,1.,uv.y);',
+    ' float cells=0.;for(int i=0;i<9;i++){float fi=float(i);float h1=hash(vec2(fi,1.)),h2=hash(vec2(fi,2.)),h3=hash(vec2(fi,3.));',
+    '  float r=.05+.11*h3;float sp=.012+.02*h1;vec2 c=vec2(h2*asp+.06*sin(t*.3+fi),fract(h1*3.+t*sp)*1.3-.15);',
+    '  cells+=cell(p,c,r,fi)*(.5+.5*h3);}',
+    ' vec3 hx=helix(p,t);float strands=hx.x+hx.y;',
+    // dark water: the marks are light added to a deep background
+    ' vec3 dark=mix(vec3(.012,.07,.10),vec3(.03,.22,.28),depth);',
+    ' dark+=vec3(.10,.42,.44)*ca*(.25+.35*uv.y);',
+    ' dark+=vec3(.35,.75,.75)*ray*.12;',
+    ' dark+=vec3(.42,.86,.82)*cells*.32;',
+    ' dark+=vec3(1.,.62,.42)*strands*.55+vec3(.9,.8,.6)*hx.z*.45;',
+    ' dark*=1.-.35*pow(length(uv-.5),2.2);',
+    // sunlit shallows: the same marks, taken out of a pale background so the text stays readable
+    ' vec3 lite=mix(vec3(.52,.74,.79),vec3(.88,.95,.955),depth*depth);',
+    ' lite+=vec3(.22,.20,.13)*ca*(.30+.40*(1.-uv.y));',
+    ' lite+=vec3(.10,.11,.09)*ray;',
+    ' lite-=vec3(.10,.17,.15)*cells*.75;',
+    ' lite-=vec3(.00,.32,.40)*strands*.55+vec3(.02,.24,.32)*hx.z*.40;',
+    ' vec3 col=mix(dark,lite,u_light);',
+    ' col+=(hash(gl_FragCoord.xy+t)-.5)*.014;',
+    ' gl_FragColor=vec4(col,1.);}'
+  ].join('\n');
+
+  function compile(type, src) {
+    var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(s)); return null; }
+    return s;
+  }
+  var vs = compile(gl.VERTEX_SHADER, VS), fs = compile(gl.FRAGMENT_SHADER, FS);
+  if (!vs || !fs) { canvas.remove(); btn.remove(); return; }
+  var prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  var uRes = gl.getUniformLocation(prog, 'u_res'), uT = gl.getUniformLocation(prog, 'u_t'),
+      uMouse = gl.getUniformLocation(prog, 'u_mouse'), uLight = gl.getUniformLocation(prog, 'u_light');
+
+  function resize() {
+    var d = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.floor(innerWidth * d); canvas.height = Math.floor(innerHeight * d);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (!running) draw(lastT);   // keep the still frame in step with the new size
+  }
+  // 1 in light, 0 in dark: the page's own theme, with the data-theme override the explainers use
+  var darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  function lightNow() {
+    var forced = document.documentElement.getAttribute('data-theme');
+    if (forced === 'dark') return 0; if (forced === 'light') return 1;
+    return darkQuery && darkQuery.matches ? 0 : 1;
+  }
+  var mouse = [0.5, 0.5], target = [0.5, 0.5], reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var running = !reduce, frame = null, t0 = performance.now(), lastT = reduce ? 12 : 0;
+
+  function draw(t) {
+    lastT = t;
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform1f(uT, t);
+    gl.uniform2f(uMouse, mouse[0], mouse[1]);
+    gl.uniform1f(uLight, lightNow());
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  function render(now) {
+    mouse[0] += (target[0] - mouse[0]) * .04; mouse[1] += (target[1] - mouse[1]) * .04;
+    draw((now - t0) / 1000);
+    frame = running && !document.hidden ? requestAnimationFrame(render) : null;
+  }
+  function setRunning(on) {
+    running = on;
+    btn.textContent = on ? 'pause the water' : 'let the water move';
+    btn.setAttribute('aria-pressed', String(!on));
+    if (on && !frame) { t0 = performance.now() - lastT * 1000; frame = requestAnimationFrame(render); }
+    if (!on && frame) { cancelAnimationFrame(frame); frame = null; }
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  window.addEventListener('pointermove', function (e) { target = [e.clientX / innerWidth, 1 - e.clientY / innerHeight]; }, { passive: true });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { cancelAnimationFrame(frame); frame = null; }
+    else if (running && !frame) { t0 = performance.now() - lastT * 1000; frame = requestAnimationFrame(render); }
+  });
+  if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener('change', function () { if (!running) draw(lastT); });
+  btn.addEventListener('click', function () { setRunning(!running); });
+  setRunning(running);
+  if (!running) draw(lastT);
+})();
+
 </script>
 </body>
 </html>
