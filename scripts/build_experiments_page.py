@@ -72,6 +72,7 @@ TEMPLATE = r"""<!doctype html>
   --chip-on-bg: #E6EAE8; --chip-on-ink: #141716; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; overflow-x: hidden; }
 body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); }
 canvas#water { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
@@ -319,7 +320,7 @@ function residueBlock(p) {
         return `<tr><td>${esc(e.say)}</td><td class="v">${esc(v)}</td><td class="b">${esc(BEARING[e.bearing] || e.bearing)}</td><td>${rowButton(e.row)}</td></tr>`;
       }).join("");
       const prs = (c.open_prs || []).map(n => `<a href="${REPO_URL}/pull/${n}" target="_blank" rel="noopener">#${n}</a>`).join(", ");
-      return `<article class="claim" id="claim-${esc(c.id)}"><p class="cname">${esc(c.name)}</p><p class="stmt">${esc(c.statement)}</p>` +
+      return `<article class="claim" id="claim-${esc(c.id)}" data-comment-target><p class="cname">${esc(c.name)} <button type="button" class="rowlink" data-comment-btn hidden title="Opens the claude.ai comment box on this claim">Comment on this claim</button></p><p class="stmt">${esc(c.statement)}</p>` +
         `<details><summary>The ${c.evidence.length} numbers behind this claim, and whether each supports it</summary>` +
         `<div class="tablewrap"><table class="ev"><thead><tr><th>number</th><th>value as printed</th><th>bearing on the claim</th><th>experiment</th></tr></thead><tbody>${rows}</tbody></table></div></details>` +
         (c.caveats ? `<p class="cav">${esc(c.caveats)}</p>` : "") +
@@ -464,6 +465,27 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-open
 })();
 
 render();
+
+// Comments: in the claude.ai viewer, each claim gets a button that opens the shell's own comment box
+// anchored to that claim (declared composer-only: no consent, nothing stored by the page). Elsewhere,
+// such as the GitHub Pages copy, window.claude is absent and the buttons stay hidden.
+(async () => {
+  const c = window.claude && window.claude.use ? await window.claude.use("comments") : null;
+  if (!c) return;
+  const buttons = [...document.querySelectorAll("[data-comment-btn]")];
+  const hideAll = () => buttons.forEach(b => { b.hidden = true; });
+  buttons.forEach(b => {
+    b.hidden = false;
+    b.addEventListener("click", async e => {
+      e.stopPropagation();
+      try { await c.openComposer({ element: b.closest("[data-comment-target]") }); }
+      catch (err) {
+        const code = err && err.code;
+        if (["unavailable", "not_granted", "forbidden", "capability_disabled", "capability_removed"].includes(code)) hideAll();
+      }
+    });
+  });
+})();
 });
 </script>
 <script type="application/json" id="experiments-data">
