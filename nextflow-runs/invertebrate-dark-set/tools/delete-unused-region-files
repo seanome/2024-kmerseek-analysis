@@ -19,6 +19,8 @@ of a hard-linked file frees nothing.
 
 Added 2026-10-04, approved by Olga, after $SCRATCH filled at 100 TB. Python 3.6, standard
 library only.
+
+Sizes are in TiB (2^40 bytes), the unit sh_quota shows; it labels them "TB".
 """
 import os
 import re
@@ -80,7 +82,7 @@ for top in dirs:
                 os.remove(p)
 
 verb = "deleted" if apply else "would delete"
-print("{} {} files, {:.2f} TB freed; kept {} current-setting files".format(
-    verb, sum(n.values()), sum(freed.values()) / 1e12, kept))
+print("{} {} files, {:.2f} TiB freed; kept {} current-setting files".format(
+    verb, sum(n.values()), sum(freed.values()) / 2**40, kept))
 for r in sorted(n, key=lambda x: -freed[x]):
-    print("  {:24s} {:7d} files  {:6.2f} TB".format(r, n[r], freed[r] / 1e12))
+    print("  {:24s} {:7d} files  {:6.2f} TiB".format(r, n[r], freed[r] / 2**40))

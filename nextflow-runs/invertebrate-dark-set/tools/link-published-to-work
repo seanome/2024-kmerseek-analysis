@@ -16,6 +16,8 @@ to the published file and renamed over it, so the published path is never missin
 
 Added 2026-10-03, after the midi run filled $SCRATCH with 35 TB of published copies of
 files also in work/ (publishDir mode 'copy', now 'link'). Python 3.6, standard library only.
+
+Sizes are in TiB (2^40 bytes), the unit sh_quota shows; it labels them "TB".
 """
 import os
 import re
@@ -82,7 +84,7 @@ with open(trace) as fh:
             freed += sp.st_size
 
 verb = "relinked" if apply else "would relink"
-print("{} {} files, {:.2f} TB".format(verb, counts["linked"], freed / 1e12))
+print("{} {} files, {:.2f} TiB".format(verb, counts["linked"], freed / 2**40))
 for k, v in counts.items():
     if k != "linked":
         print("  {}: {}".format(k, v))
