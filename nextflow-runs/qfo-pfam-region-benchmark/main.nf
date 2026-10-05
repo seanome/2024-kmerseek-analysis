@@ -463,7 +463,7 @@ params.reseek_mode = "verysensitive"
 // the paper most has to differentiate from. It still depends on Foldseek and on a target
 // database, which is the differentiation the review points at.
 params.skip_prostt5   = false
-params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip the fetch
+params.prostt5_weights = null   // null = use data/prostt5/weights if present, else fetch
 
 // ProstT5 is a 3B-parameter T5 encoder and Foldseek runs it over each sequence whole, so
 // peak memory scales with the SQUARE of sequence length (self-attention) times the number
@@ -2559,7 +2559,10 @@ process prostt5Weights {
     script:
     """
     set -euo pipefail
-    if ! curl --fail --silent --head --max-time 30 https://foldseek.steineggerlab.workers.dev >/dev/null 2>&1; then
+    # No --fail: the root of this host answers HTTP 404 (checked 2026-09-24), so --fail
+    # would call an online machine offline. Any HTTP answer at all means the host is
+    # reachable; curl exits nonzero only when it cannot connect or times out.
+    if ! curl --silent --head --max-time 30 https://foldseek.steineggerlab.workers.dev >/dev/null 2>&1; then
         echo "no outbound internet from this node -- cannot fetch ProstT5 weights." >&2
         echo "Download them elsewhere and pass --prostt5_weights <dir>." >&2
         exit 1
@@ -4156,7 +4159,12 @@ workflow {
             // cannot work there -- its preflight fails in 30 seconds by design. When a
             // weights path is given it must exist; falling back to the download
             // would just re-fail with a message about the wrong thing.
-            def w = params.prostt5_weights ? file(params.prostt5_weights) : null
+            // With no --prostt5_weights, use the copy `make prostt5-weights` already put in
+            // data/prostt5/weights, so a run does not have to name it. Download only when
+            // that directory is missing or empty.
+            def default_w = file("${projectDir}/data/prostt5/weights")
+            def w = params.prostt5_weights ? file(params.prostt5_weights)
+                  : (default_w.isDirectory() && default_w.list() ? default_w : null)
             if (params.prostt5_weights && !w.exists()) {
                 error """
                 |--prostt5_weights points at ${params.prostt5_weights}, which does not exist.
