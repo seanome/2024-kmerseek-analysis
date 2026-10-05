@@ -13,10 +13,12 @@ a k-mer and the Karlin-Altschul fit come from that proteome, as they would for a
 searching it. The alphabets, k values, mismatch penalties and X-drops are the
 forward run's (plan.json), so every arm has a reverse twin.
 
-Databases, downloaded from the UniProt REST API on the first run (the release and the
-sha256 of each file go into provenance.json):
-  C. elegans       UP000001940, 26_000-odd proteins, CED-9 is P41958
+Databases: UniProt's reference proteome files, one protein per gene, downloaded on the
+first run (the release and the sha256 of each file go into provenance.json):
+  C. elegans       UP000001940, 19_792 proteins in 2026_03, CED-9 is P41958
   B. burgdorferi   UP000001807 (strain B31), 1_291 proteins, P66 is H7C7N8
+Not the REST API's proteome query: for C. elegans it returns 26_629 entries, several
+per gene (hecd-1 eight times), and copies of one gene push the partner down the ranks.
 Headers are rewritten as accession|gene|length so the collector reads the gene the
 same way it reads GENCODE's.
 
@@ -32,7 +34,9 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures as cf
+import gzip
 import hashlib
+import re
 import importlib.util
 import json
 import sys
@@ -52,13 +56,16 @@ def load(name: str, file: str):
 drv = load("nb241_driver", "241_alphabet_ranking_driver.py")
 OUT = drv.OUT / "reciprocal"
 
-# database label -> (UniProt proteome, query gene in the human FASTA, partner gene in
-# the database as UniProt's GN= gives it)
+# database label -> (path under reference_proteomes/, query gene in the human FASTA,
+# partner gene in the database as UniProt's GN= gives it)
 CASES = {
-    "celegans": ("UP000001940", "BCL2", "ced-9"),
-    "bburgdorferi": ("UP000001807", "CD47", "p66"),
+    "celegans": ("Eukaryota/UP000001940/UP000001940_6239.fasta.gz", "BCL2", "ced-9"),
+    "bburgdorferi": ("Bacteria/UP000001807/UP000001807_224326.fasta.gz", "CD47", "p66"),
 }
-UNIPROT = "https://rest.uniprot.org/uniprotkb/stream?query=proteome:{}&format=fasta"
+UNIPROT = (
+    "https://ftp.uniprot.org/pub/databases/uniprot/current_release/"
+    "knowledgebase/reference_proteomes/"
+)
 
 
 def parse_fasta(path: Path):
@@ -91,12 +98,13 @@ def fetch_database(label: str, proteome: str) -> dict:
     """Download the proteome once, rewrite its headers, return its provenance."""
     fa = OUT / f"{label}.fa"
     raw = OUT / f"{label}.uniprot.fa"
-    prov = {"proteome": proteome, "url": UNIPROT.format(proteome)}
+    prov = {"proteome": proteome.split("/")[1], "url": UNIPROT + proteome}
     if not raw.exists():
         with urllib.request.urlopen(prov["url"], timeout=600) as r:
-            body = r.read()
-            prov["uniprot_release"] = r.headers.get("X-UniProt-Release")
-            prov["uniprot_release_date"] = r.headers.get("X-UniProt-Release-Date")
+            body = gzip.decompress(r.read())
+        with urllib.request.urlopen(UNIPROT + "RELEASE.metalink", timeout=60) as r:
+            m = re.search(r"<version>([^<]+)</version>", r.read().decode())
+            prov["uniprot_release"] = m.group(1) if m else None
         if not body.startswith(b">"):
             raise SystemExit(
                 f"241 reciprocal: {proteome} download is not FASTA: {body[:200]!r}"
@@ -142,7 +150,7 @@ def run(args) -> None:
         else {}
     )
     for label in prov:  # keep the release the first download recorded
-        for key in ("uniprot_release", "uniprot_release_date"):
+        for key in ("uniprot_release",):
             if prov[label].get(key) is None and old.get(label, {}).get(key):
                 prov[label][key] = old[label][key]
     (OUT / "provenance.json").write_text(json.dumps(prov, indent=1))
