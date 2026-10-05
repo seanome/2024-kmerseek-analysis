@@ -39,11 +39,12 @@ TEMPLATE = r"""<!doctype html>
 <title>kmerseek experiments</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600&family=Noto+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Source+Sans+3:ital,wght@0,300..800;1,300..800&display=swap">
+<style id="seanome-fonts">__FONTS__</style>
 <style>
 /* Theme: the kmerseek docs landing page (seanome/kmerseek docs/assets/site.css): its palette,
-   glass panels over the moving water, light and dark. Fonts from the Seanome style guide:
-   Noto Sans for text, Inconsolata for sequences and numbers. Colour carries one meaning
+   glass panels over the moving water, light and dark. Fonts are Olga's artifact choices:
+   Fraunces for the page title, Source Sans 3 for text, Fantasque Sans Mono for sequences and numbers. Colour carries one meaning
    only, the verdict badges; everything else is ink. */
 :root {
   --bg: #F6F7F5; --surface: #FFFFFF; --ink: #1C211F; --hair: #D9DDDA;
@@ -51,8 +52,8 @@ TEMPLATE = r"""<!doctype html>
   --row-hover: #EEF1EF;
   --alive: #1e7b34; --dead: #7a7f86; --bug: #c85a00; --running: #1f5fbf; --notrun: #1C211F;
   --chip-on-bg: #1C211F; --chip-on-ink: #FFFFFF;
-  --sans: "Noto Sans", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --mono: "Inconsolata", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Source Sans 3", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "Fantasque Sans Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -78,7 +79,7 @@ main, footer { position: relative; z-index: 1; }
 main { max-width: 1180px; margin: 0 auto; padding: 48px 16px 24px; display: grid; gap: 18px; }
 .panel { background: var(--glass); border: 1px solid var(--glass-edge); border-radius: 10px; padding: 18px 22px; box-shadow: var(--shadow);
   backdrop-filter: blur(12px) saturate(1.15); -webkit-backdrop-filter: blur(12px) saturate(1.15); min-width: 0; }
-h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 8px; text-wrap: balance; }
+h1 { font-family: "Fraunces", Georgia, serif; font-size: 1.9rem; line-height: 1.2; margin: 0 0 8px; text-wrap: balance; }
 h2 { font-size: 1.3rem; margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--hair); text-wrap: balance; }
 h3 { font-size: 1.05rem; margin: 18px 0 6px; }
 p { max-width: 72ch; }
@@ -582,8 +583,10 @@ def main():
     hosted = ("This copy is rebuilt every day and whenever the data changes on main, so the dates, the open "
               "pull requests and the \"changed since read\" tags are current; the numbers change only when "
               "data/experiments.json does.") if args.site else ""
-    water = (Path(__file__).resolve().parent / "experiments_page_water.js").read_text()
-    html = (TEMPLATE.replace("__WATER__", water).replace("__META__", " ".join(m for m in meta if m))
+    here = Path(__file__).resolve().parent
+    water = (here / "experiments_page_water.js").read_text()
+    fonts = (here / "experiments_page_fonts.css").read_text()
+    html = (TEMPLATE.replace("__WATER__", water).replace("__FONTS__", fonts).replace("__META__", " ".join(m for m in meta if m))
             .replace("__DATE__", d["numbers"] or "an unknown date").replace("__HOSTED__", hosted)
             .replace("__DATA__", embed(records)).replace("__CLAIMS__", embed(claims)).replace("__PRS__", embed(prs)))
 
