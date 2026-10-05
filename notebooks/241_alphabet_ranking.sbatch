@@ -47,6 +47,11 @@ export NB241_KMERSEEK=$KMERSEEK_SRC/target/release/kmerseek
 # Only for the collector, which needs polars (1.43 in this image).
 IMG=$SCRATCH/apptainer-cache/docker.io-olgabot-kmerseek-2026-09-13-extend-chain.img
 
+# The three query proteins are in the repo: Ced9 (UniProt P41958), P66 (H7C7N8 residues
+# 22-618, without the signal peptide) and BHF (Bs_proteins.fa, 252 aa).
+mkdir -p "$NB241_DIR"
+[ -s "$NB241_DIR/queries.fa" ] || cat "$REPO/notebooks/241_queries.fa" > "$NB241_DIR/queries.fa"
+
 for f in "$REPO/notebooks/241_alphabet_ranking_driver.py" "$NB241_HUMAN" "$NB241_KAPPA" \
          "$NB241_DIR/queries.fa" "$IMG"; do
     [ -s "$f" ] || { echo "241: missing input $f" >&2; exit 2; }
