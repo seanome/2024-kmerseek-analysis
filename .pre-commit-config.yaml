@@ -1,0 +1,48 @@
+# Checks run on the notebooks being committed. Set up once per clone (it covers every
+# worktree of that clone):
+#
+#   pip install pre-commit && pre-commit install --allow-missing-config
+#
+# --allow-missing-config keeps the hook from blocking commits on branches that do not have
+# this file yet.
+#
+# To commit anyway, for a notebook that is deliberately half-run:
+#
+#   SKIP=check-notebooks git commit ...
+#
+# The Lint workflow runs the same hooks on the notebooks a PR changes.
+
+files: ^notebooks/
+
+repos:
+  - repo: local
+    hooks:
+      - id: check-notebooks
+        name: notebook checks (errors, run order, collapsed cells, plt.show, secrets)
+        entry: python scripts/check_notebooks.py
+        language: python
+        types: [jupyter]
+
+  # Same formatter as the Lint workflow. black skips its pyproject.toml extend-exclude list
+  # for files named on the command line, even with --force-exclude, so the four notebooks
+  # it cannot parse are repeated here. Keep this list in step with pyproject.toml.
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 26.5.1
+    hooks:
+      - id: black-jupyter
+        exclude: |
+          (?x)^notebooks/(
+              004-rewrite-multisearch-parser-to-polars
+            | 007-mem-opt-process-protein-benchmarks-polars
+            | 020-explore-protein-benchmark-polars
+            | 023-compute-sklearn-benchmarks-plot-protein-benchmark
+          )\.ipynb$
+
+  # Only F821, undefined name: a cell that worked because a deleted cell had defined the
+  # variable earlier in the kernel session.
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.9.1
+    hooks:
+      - id: nbqa-ruff-check
+        args: [--select=F821]
+        additional_dependencies: [ruff==0.16.9]
