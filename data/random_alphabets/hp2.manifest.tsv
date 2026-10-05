@@ -1,0 +1,8 @@
+# the six 2-letter H/P alphabets in kmerseek's README table, encoded as A/D (hydrophobic -> A) and run as protein20, like the random partitions
+name	partition_tsv	alphabet
+encoded_hp_lehninger2	encoded_hp_lehninger2.tsv	protein20
+encoded_hp_thomas_dill2	encoded_hp_thomas_dill2.tsv	protein20
+encoded_hp_kyte_doolittle2	encoded_hp_kyte_doolittle2.tsv	protein20
+encoded_hp_thomas_dill_no_c2	encoded_hp_thomas_dill_no_c2.tsv	protein20
+encoded_hp_lehninger_c_nonpolar2	encoded_hp_lehninger_c_nonpolar2.tsv	protein20
+encoded_hp_pbotc_1st_ed2	encoded_hp_pbotc_1st_ed2.tsv	protein20

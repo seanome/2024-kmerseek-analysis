@@ -171,6 +171,33 @@ params.kmerseek_combos    = null
 // sweep nothing and build a report over it.
 params.kmerseek_stored_only = false
 
+// Two-letter partitions that are not kmerseek alphabets, for notebook 246 (experiment A:
+// is the H/P result about hydrophobicity or about any 2-letter alphabet). Read only by
+// `-entry randomAlphabets`; the main workflow ignores every param in this block.
+//
+// One or more manifest TSVs, comma-separated ('#' lines skipped), with columns name,
+// partition_tsv and optionally alphabet. partition_tsv is a residue/class file next to
+// the manifest (see bin/encode_partition.py) or '-' for a kmerseek alphabet used as is.
+// With a partition, query and target FASTAs are rewritten class 1 -> A, class 2 -> D and
+// searched as protein20, which is the same exact k-mer match a built-in 2-letter alphabet
+// with that partition makes. The name is the arm's label in every file name:
+//   human_vs_<species>.<name>.k<k>.lcfalse.extend-c<C>.regions.parquet
+// Mask off only: kmerseek's low-complexity mask would be computed on the A/D string,
+// which is not what it computes for a built-in alphabet.
+//
+// kmerseek 0.4 only. Every search extends its exact k-mer runs through mismatches at
+// each penalty C, chains runs on nearby diagonals, and reports region_evalue from a
+// Karlin-Altschul fit stored in the index, one fit per C. The same settings as the
+// invertebrate dark set: X-drop 4 x C, chains up to 30 residues apart and 10 off the
+// diagonal, 500 fit queries. One C for every arm, so the arms differ only in partition.
+params.extra_encoded_alphabets        = null
+params.extra_encoded_ksizes           = '19'
+params.extra_encoded_penalties        = '1.63,2'
+params.extra_encoded_xdrop_per_penalty = 4
+params.extra_encoded_chain_max_gap    = 30
+params.extra_encoded_chain_max_shift  = 10
+params.extra_encoded_ka_queries       = 500
+
 // Low-complexity k-mer removal. Swept as a toggle when it was an open question -- every
 // alphabet and ksize with and without it, which doubled the search count -- and now fixed
 // OFF, because the sweep answered it: dropping low-complexity k-mers did not move the
@@ -909,6 +936,11 @@ def KMERSEEK_TIMER_SH = '''# GNU date's %N is nanoseconds. BSD date (macOS, when
 // Class count is the trailing number in every encoding name: protein20, gbmr4,
 // hp_lehninger_hpc3, hp_thomas_dill_no_c2.
 def alphabetClasses = { label ->
+    // random2_07 is partition 7 of the 2-class draws (notebook 246): the class count is
+    // the number before the underscore, and 07 read as a class count would size memory for
+    // a 1-letter alphabet.
+    def r = label =~ /^random(\d+)_\d+$/
+    if (r) return (r[0][1] as int)
     def m = label =~ /(\d+)$/
     m ? (m[0][1] as int) : 20
 }
@@ -1880,6 +1912,182 @@ PYEOF
     printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s}\\n' \\
         "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
         "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" >> ${timings}
+    """
+}
+
+process encodeFastaPartition {
+    /*
+     * Rewrite one proteome under one 2-letter partition (bin/encode_partition.py) for
+     * `-entry randomAlphabets`. Stored beside the other per-proteome databases, so the ten
+     * random partitions are encoded once per proteome however often the entry is rerun.
+     * One output file, so storeDir has nothing to trip on.
+     */
+    tag "${label}_${name}"
+    container params.kmerseek_image
+    storeDir "${DB_CACHE}/encoded_fasta"
+    cpus 1
+    memory '2 GB'
+    time '1h'
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple val(label), path(fasta), val(name), path(partition)
+
+    output:
+    path "${label}.${name}.fasta"
+
+    script:
+    """
+    encode_partition.py --partition ${partition} --input ${fasta} --output ${label}.${name}.fasta
+    """
+}
+
+// "1.63" stays "1.63", "2.0" becomes "2": the same string names the stored fit, the
+// file name and the command-line value, because kmerseek looks a fit up by exact penalty
+// and X-drop.
+def penaltyString = { double c ->
+    def sf = String.format('%.2f', c)
+    sf.contains('.') ? sf.replaceAll(/0+$/, '').replaceAll(/\.$/, '') : sf
+}
+def extendPenalties = { ->
+    params.extra_encoded_penalties.toString().tokenize(',')*.trim().findAll { it }
+        .collect { penaltyString(it as double) }.unique()
+}
+def extendXdrop = { String c ->
+    penaltyString((params.extra_encoded_xdrop_per_penalty as double) * (c as double))
+}
+
+// Index memory for an index that carries Karlin-Altschul fits. The fit is a search of
+// --ka-queries target sequences against the index just built, and at 2 letters it, not
+// the build, sets the peak: 44 GB for 2-letter k19 at 500 queries in the dark-set
+// ladder-0.4 run (2026-09-20), falling by half every 2.5 keyspace bits. The dark set's
+// model, 300 x 2^(-(bits - 12) / 2.5) GB at 500 queries, with its 1.4 headroom, and never
+// below what kmerseekIndex asks for the same proteome.
+def kmerseekExtendIndexMemory = { targetBytes, label, ksize, attempt ->
+    double bits = keyspaceBits(label, ksize)
+    double fitGb = 300.0d * Math.pow(2.0d, -(bits - 12.0d) / 2.5d) *
+                   ((params.extra_encoded_ka_queries as double) / 500.0d)
+    def plain = kmerseekIndexMemory(targetBytes, 1)
+    long mb = Math.max(plain.toMega(), (long) (1.4d * fitGb * 1024L))
+    MemoryUnit.of("${mb} MB") * attempt
+}
+
+process kmerseekExtendIndex {
+    /*
+     * kmerseekIndex for `-entry randomAlphabets`, under kmerseek 0.4, with one
+     * Karlin-Altschul fit stored per extension penalty: `kmerseek index` fits the first,
+     * `kmerseek calibrate` adds the rest. The histogram each fit was read from is kept in
+     * the index as ka_survival.C<penalty>.csv, fitted or refused.
+     *
+     * Its own store, <index cache>/ka_fit, so an exact-only index of the same name that
+     * another run builds can never be mistaken for one that has the fits.
+     *
+     * Files read-only after the build, the directory itself left writable so the storeDir
+     * rename still works (see the dark set's kmerseekIndex, 2026-09-17 and 2026-09-19).
+     */
+    tag "${species}_${label}_k${ksize}"
+    container params.kmerseek_image
+    storeDir "${KMERSEEK_INDEX_CACHE}/ka_fit"
+    cpus 8
+    memory { kmerseekExtendIndexMemory(species_fasta.size(), label, ksize, task.attempt) }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize)
+
+    output:
+    path "${species}.${label}.k${ksize}.lcfalse.kmerseek.rocksdb"
+
+    script:
+    def idx  = "${species}.${label}.k${ksize}.lcfalse.kmerseek.rocksdb"
+    def pens = extendPenalties()
+    def nq   = params.extra_encoded_ka_queries
+    def more = pens.drop(1).collect { c ->
+        "kmerseek calibrate --target ${idx} --extend-mismatch-penalty ${c} " +
+        "--extend-xdrop ${extendXdrop(c)} --ka-queries ${nq} " +
+        "--ka-survival-out ${idx}/ka_survival.C${c}.csv 2>&1 | tee -a index.log"
+    }.join('\n    ')
+    """
+    set -euo pipefail
+    kmerseek index \\
+        --alphabet ${cli_flag} --ksize ${ksize} \\
+        --input  ${species_fasta} --output ${idx} \\
+        --extend-mismatch-penalty ${pens[0]} --extend-xdrop ${extendXdrop(pens[0])} \\
+        --ka-queries ${nq} --ka-survival-out ${idx}/ka_survival.C${pens[0]}.csv \\
+        --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | tee index.log
+    ${more}
+    mv index.log ${idx}/
+    chmod -R a-w ${idx}
+    chmod u+w ${idx}
+    """
+}
+
+process kmerseekExtendSearch {
+    /*
+     * kmerseekSearch for `-entry randomAlphabets`, under kmerseek 0.4: the same four
+     * filters, plus extension at one penalty, chaining, and region_evalue from the fit
+     * stored in the index (--ka-queries 0, so a missing fit refuses rather than refits).
+     *
+     * A refused fit is not a no-hit result. The search exits with "no Karlin-Altschul
+     * fit"; this task then exits 3, errorStrategy ignores it, and nothing is stored, so
+     * that arm is absent from scoring rather than present as a zero. The run log names it.
+     */
+    tag "${species}_${label}_k${ksize}_C${penalty}"
+    container params.kmerseek_image
+    storeDir "${params.outdir}/kmerseek"
+    memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
+    errorStrategy { task.exitStatus == 3 ? 'ignore' : retryOnKillElseIgnore(task) }
+    maxRetries 2
+
+    input:
+    tuple val(species), val(cli_flag), val(label), val(ksize), val(penalty),
+          val(target_bytes), path(index_dir), path(human_fasta)
+
+    output:
+    path "human_vs_${species}.${label}.k${ksize}.lcfalse.extend-c${penalty}.regions.parquet"
+
+    script:
+    def slug   = "human_vs_${species}.${label}.k${ksize}.lcfalse.extend-c${penalty}"
+    """
+    set -euo pipefail
+    set +e
+    kmerseek search \\
+        --alphabet ${cli_flag} --ksize ${ksize} \\
+        --query  ${human_fasta} --target ${index_dir} \\
+        --extend-mismatch-penalty ${penalty} --extend-xdrop ${extendXdrop(penalty)} \\
+        --ka-queries 0 \\
+        --chain-max-gap ${params.extra_encoded_chain_max_gap} \\
+        --chain-max-shift ${params.extra_encoded_chain_max_shift} \\
+        --threshold         ${params.threshold} \\
+        --min-shared-kmers  ${params.min_shared_kmers} \\
+        --max-query-pvalue  ${params.max_query_pvalue} \\
+        --min-region-score  ${params.min_region_score} \\
+        2> ${slug}.log \\
+        | zstd -T2 -o ${slug}.regions.csv.zst
+    rc=(\${PIPESTATUS[@]})
+    set -e
+    if [ "\${rc[0]}" -ne 0 ] && grep -q "no Karlin-Altschul fit" ${slug}.log; then
+        grep -m1 "no Karlin-Altschul fit" ${slug}.log >&2
+        exit 3
+    fi
+    # A signal death is a kill, not a result: re-raise it so the retry doubles memory.
+    if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then exit "\${rc[0]}"; fi
+    [ "\${rc[0]}" -eq 0 ] && [ "\${rc[1]}" -eq 0 ] || { cat ${slug}.log >&2; exit 1; }
+
+    if [ -n "\$(zstd -dc ${slug}.regions.csv.zst | head -c 1)" ]; then
+        python3 - << 'PYEOF'
+import polars as pl
+DROP = ["query_md5", "target_md5", "region_subseq", "target_subseq", "moltype_seq"]
+lf = pl.scan_csv("${slug}.regions.csv.zst", ignore_errors=True)
+cols = [c for c in lf.collect_schema().names() if c not in DROP]
+lf.select(cols).sink_parquet("${slug}.regions.parquet", compression="zstd", compression_level=9)
+PYEOF
+    else
+        touch ${slug}.regions.parquet
+    fi
+    rm -f ${slug}.regions.csv.zst
     """
 }
 
@@ -4520,6 +4728,105 @@ workflow {
                            kmerseek_timings.collect().ifEmpty([]), bpe_ch,
                            kmerseek_spectra.collect().ifEmpty([]))
     }
+}
+
+
+// ---------------------------------------------------------------------------
+// `nextflow run main.nf -entry randomAlphabets --extra_encoded_alphabets <manifest>`
+//
+// kmerseek index and search for 2-letter partitions that are not kmerseek alphabets
+// (notebook 246). Searches only: the region tables go to ${outdir}/kmerseek under the same
+// names the main workflow uses, and are scored outside the pipeline
+// (scripts/reduce_swissprot_instance_landing.py), the same way notebook 244 scored the
+// real arms. The same two processes as the main sweep, so memory, retries and storeDir
+// behave the same; a partition's label sizes its memory as a 2-class alphabet (see
+// alphabetClasses).
+// ---------------------------------------------------------------------------
+workflow randomAlphabets {
+    if (!params.extra_encoded_alphabets) {
+        error "-entry randomAlphabets needs --extra_encoded_alphabets <manifest.tsv>"
+    }
+    def ARMS = params.extra_encoded_alphabets.toString().tokenize(',').collectMany { mpath ->
+      def manifest = file(mpath.trim())
+      if (!manifest.exists()) error "no manifest at ${manifest}"
+      def lines  = manifest.readLines().findAll { it.trim() && !it.startsWith('#') }
+      def header = lines[0].split('\t') as List
+      ['name', 'partition_tsv'].each { col ->
+          if (!(col in header)) error "${manifest}: no '${col}' column in ${header}"
+      }
+      lines.drop(1).collect { line ->
+        def row = [header, line.split('\t') as List].transpose().collectEntries()
+        def part = row.partition_tsv == '-' ? null : manifest.parent.resolve(row.partition_tsv)
+        if (part && !part.exists()) error "${manifest}: partition file ${part} does not exist"
+        if (row.name.startsWith('hp_') && part) {
+            error "${row.name}: an encoded partition may not be named hp_*, which names kmerseek's own alphabets"
+        }
+        [name: row.name, partition: part, alphabet: row.alphabet ?: 'protein20']
+      }
+    }
+    def dupNames = ARMS*.name.countBy { it }.findAll { _n, c -> c > 1 }*.key
+    if (dupNames) error "arm names repeated across the manifests: ${dupNames.join(', ')}"
+    def PENALTIES = extendPenalties()
+    def ksizes = params.extra_encoded_ksizes.toString().tokenize(',').collect { it.trim() as int }
+
+    def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
+    def human_label = "human-" + java.security.MessageDigest.getInstance('MD5')
+        .digest(human_fasta.bytes).encodeHex().toString().take(8)
+    def targets = SPECIES.collect { s ->
+        tuple(s.label, file("${params.qfo_dir}/${s.subdir}/${s.proteome}_${s.taxon}.fasta"))
+    }
+    log.info """
+    |  randomAlphabets
+    |  arms    : ${ARMS*.name.join(', ')}
+    |  ksizes  : ${ksizes.join(', ')}, low-complexity mask off
+    |  extend  : C = ${PENALTIES.join(', ')}, X-drop ${PENALTIES.collect { extendXdrop(it) }.join(', ')}, chain gap ${params.extra_encoded_chain_max_gap} / shift ${params.extra_encoded_chain_max_shift}
+    |  image   : ${params.kmerseek_image}
+    |  query   : ${human_fasta} (${human_label})
+    |  targets : ${targets*.get(0).join(', ')}
+    |  indexes : ${ARMS.size()} x ${ksizes.size()} x ${targets.size()} = ${ARMS.size() * ksizes.size() * targets.size()}
+    |  searches: x ${PENALTIES.size()} penalties = ${ARMS.size() * ksizes.size() * targets.size() * PENALTIES.size()}
+    """.stripMargin()
+
+    // Every proteome, human included, under every partition that has one. An arm with no
+    // partition (the built-in alphabet in the laptop control manifest) uses the FASTA as is.
+    def encoded_arms = ARMS.findAll { it.partition }
+    def proteomes = [tuple(human_label, human_fasta)] + targets
+    enc_in = Channel.fromList(proteomes.collectMany { lab, fa ->
+        encoded_arms.collect { a -> tuple(lab, fa, a.name, a.partition) }
+    })
+    encoded = encodeFastaPartition(enc_in).map { f ->
+        def m = (f.name =~ /^(.+?)\.(.+)\.fasta$/)
+        tuple(m[0][1], m[0][2], f)
+    }
+    plain = Channel.fromList(proteomes.collectMany { lab, fa ->
+        ARMS.findAll { !it.partition }.collect { a -> tuple(lab, a.name, fa) }
+    })
+    // (proteome label, arm name, fasta) for every proteome under every arm
+    fastas = encoded.mix(plain)
+
+    def alphabetOf = ARMS.collectEntries { [it.name, it.alphabet] }
+    index_in = fastas
+        .filter { lab, _name, _f -> lab != human_label }
+        .combine(Channel.fromList(ksizes))
+        .map { sp, name, f, k -> tuple(sp, f, alphabetOf[name], name, k) }
+    idx_out = kmerseekExtendIndex(index_in)
+
+    target_bytes = index_in.map { sp, f, _cli, name, k -> tuple("${sp}|${name}|${k}".toString(), f.size()) }
+    query_for = fastas.filter { lab, _n, _f -> lab == human_label }.map { _l, name, f -> tuple(name, f) }
+    search_in = idx_out
+        .map { d ->
+            def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lcfalse\.kmerseek\.rocksdb$/)
+            if (!m) error "cannot parse kmerseek index directory name: ${d.name}"
+            tuple("${m[0][1]}|${m[0][2]}|${m[0][3]}".toString(), m[0][1], m[0][2], m[0][3] as int, d)
+        }
+        .join(target_bytes)
+        .map { _key, sp, name, k, d, bytes -> tuple(name, sp, k, d, bytes) }
+        .combine(query_for, by: 0)
+        .combine(Channel.fromList(PENALTIES))
+        .map { name, sp, k, d, bytes, q, c ->
+            tuple(sp, alphabetOf[name], name, k, c, bytes, d, q)
+        }
+    kmerseekExtendSearch(search_in)
 }
 
 
