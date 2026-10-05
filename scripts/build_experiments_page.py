@@ -100,6 +100,11 @@ nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .95rem; marg
 code, .val { font-family: var(--mono); font-size: .95em; }
 pre { font-family: var(--mono); font-size: .9rem; line-height: 1.35; margin: 4px 0 8px; padding: 10px 12px; overflow-x: auto;
   border: 1px solid var(--hair); border-radius: 8px; background: var(--surface); white-space: pre; }
+figure.mech { margin: 12px 0 0; }
+figure.mech .legend span { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; }
+figure.mech svg.mech { display: block; width: 100%; min-width: 760px; height: auto; color: var(--ink); }
+figure.mech .legend svg { color: var(--ink); flex: none; }
+figure.mech figcaption { font-size: .9rem; max-width: 95ch; margin-top: 6px; }
 .steps { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 10px 0; padding: 0; list-style: none; counter-reset: s; }
 .steps li { border: 1px solid var(--hair); border-radius: 8px; padding: 10px 12px; background: var(--surface); counter-increment: s; }
 .steps li::before { content: counter(s) ". "; font-weight: 700; }
@@ -188,13 +193,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, tr.row:focus-visib
 </section>
 <section class="panel">
 <h2 id="what">What kmerseek does</h2>
-<ol class="steps">
-  <li>Rewrite every residue of both proteins in a reduced alphabet. The main one has two letters: hydrophobic (H) or polar (P).</li>
-  <li>Find a stretch of k letters that is identical in the query and in a target protein. This exact shared stretch is the seed.</li>
-  <li>Report the shared stretch as a region, without gaps, and copy the target's annotated feature onto the matching stretch of the query.</li>
-</ol>
-<p>Because the region ends where the shared pattern ends, a call can be as short as the feature it lands on. Below is the pair notebook 244 uses as its main example, as printed there, with each tool's IoU on this feature.</p>
-<div id="hero"></div>
+<p>kmerseek rewrites each protein in a two-letter alphabet, hydrophobic (H) or polar (P), finds stretches of k letters that two proteins share exactly, joins them into one region without gaps, and moves a feature's label across that region. The region ends where the shared pattern ends, so a call can be as short as the feature it lands on.</p>
+__HERO__
 
 </section>
 <section class="panel">
@@ -304,15 +304,6 @@ function residueBlock(p) {
   return `<p><strong>${esc(p.pair)}</strong>: ${esc(p.identity)}${where}.${p.match_note ? " " + esc(p.match_note) : ""}${p.note ? " " + esc(p.note) : ""}</p><pre>${esc(text)}</pre>`;
 }
 
-// What kmerseek does: the notebook 244 main example.
-(() => {
-  const r = BYID["244"]; if (!r) return;
-  const p = (r.residues || []).find(x => /P12106/.test(x.pair)) || (r.residues || [])[0];
-  if (!p) return;
-  const iou = n => (r.result.find(x => x.name === n) || {}).value;
-  document.getElementById("hero").innerHTML = residueBlock(p) +
-    `<p>kmerseek's call on this feature: ${esc(iou("hero_kmerseek_call"))}. Foldseek: ${esc(iou("hero_foldseek_call_iou"))}. Reseek: ${esc(iou("hero_reseek_call_iou"))}. ${rowButton("244")}</p>`;
-})();
 
 // Claims, grouped by status.
 (() => {
@@ -492,6 +483,121 @@ __WATER__
 """
 
 
+def hero_figure(records):
+    """The mechanism on one real pair, drawn as inline SVG at build time.
+
+    Uses notebook 254's printout of the notebook 244 main example (exact seeds), because it
+    prints the residues and the H/P classes of the same alphabet the call used.
+    """
+    import html as _html
+    import re as _re
+    by_id = {str(r["id"]): r for r in records}
+    r254, r244 = by_id.get("254"), by_id.get("244")
+    if not r254:
+        return ""
+    p = next((x for x in r254.get("residues", []) if x["pair"].startswith("COL9A1") and "exact seeds" in x["pair"]), None)
+    if p is None:
+        return ""
+    feat_name, f0, f1 = _re.search(r"^COL9A1 (.+?) \(\w+ (\d+)-(\d+)\)", p["pair"]).groups()
+    f0, f1 = int(f0), int(f1)
+    alpha, k = _re.search(r"(hp_\w+?)_k(\d+)", p["pair"]).groups()
+    k = int(k)
+    qname, qrange, qres = p["query"].rsplit(" ", 2)
+    tname, trange, tres = p["target"].rsplit(" ", 2)
+    q0, q1 = map(int, qrange.split("-"))
+    t0, t1 = map(int, trange.split("-"))
+    enc = p["encoded"].splitlines()
+    classes_def = _re.search(r"\((H = .+?)\)", enc[0]).group(1)
+    qcls = _re.search(r"\b%d ([HP]+)" % q0, enc[1]).group(1)
+    tcls = _re.search(r"\b%d ([HP]+)" % t0, enc[3]).group(1)
+    L = len(qres)
+    assert len(tres) == len(qcls) == len(tcls) == L
+    seeds = [i for i in range(L - k + 1) if qcls[i:i + k] == tcls[i:i + k]]
+    def iou(name):
+        x = next((y for y in (r244 or {}).get("result", []) if y["name"] == name), None)
+        return x["value"] if x else "not found"
+    e = _html.escape
+
+    W, X0, X1 = 960, 150, 930
+    out = [f'<svg class="mech" viewBox="0 0 {W} 440" role="img" aria-label="Human COL9A1 carries the Swiss-Prot feature {e(feat_name)} at {f0}-{f1}. '
+           f'Residues {q0}-{q1} and chicken P12106 {t0}-{t1} have the same hydrophobic or polar class at all {L} positions, so all '
+           f'{len(seeds)} stretches of {k} letters match exactly; kmerseek joins them into one region and places the label on chicken {t0}-{t1}.">']
+    out.append('<defs><marker id="mech-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
+               '<path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>')
+    T = lambda x, y, t, a="start", size=12, extra="": out.append(
+        f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" text-anchor="{a}" fill="currentColor" {extra}>{e(t)}</text>')
+    # Top: both proteins to scale over a window around the feature (aa = residue number).
+    w0, w1 = f0 - 12, f1 + 12
+    sx = (X1 - X0) / (w1 - w0)
+    xq = lambda aa: X0 + (aa - w0) * sx
+    off = t0 - q0                       # chicken numbering runs this far from human over the region
+    xt = lambda aa: xq(aa - off)
+    yq, yt = 70, 150
+    T(10, yq + 4, "human COL9A1", size=12, extra='font-weight="600"')
+    T(10, yt + 4, "chicken P12106", size=12, extra='font-weight="600"')
+    for y in (yq, yt):
+        out.append(f'<line x1="{X0}" y1="{y}" x2="{X1}" y2="{y}" stroke="currentColor" stroke-width="1.5"/>')
+    out.append(f'<rect x="{xq(f0):.1f}" y="{yq - 10}" width="{xq(f1) - xq(f0):.1f}" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>')
+    T((xq(f0) + xq(f1)) / 2, yq - 16, f"{feat_name}, {f0}-{f1} aa: the Swiss-Prot feature", "middle")
+    out.append(f'<rect x="{xq(q0):.1f}" y="{yq + 14}" width="{xq(q1) - xq(q0):.1f}" height="7" fill="currentColor"/>')
+    T(xq(q0) - 6, yq + 22, f"region {q0}-{q1}", "end", 11)
+    out.append(f'<rect x="{xt(t0):.1f}" y="{yt - 21}" width="{xt(t1) - xt(t0):.1f}" height="7" fill="currentColor"/>')
+    T(xt(t0) - 6, yt - 14, f"region {t0}-{t1}", "end", 11)
+    T((xt(t0) + xt(t1)) / 2, yt + 22, f"label placed here: {feat_name}", "middle")
+    for a, b in ((q0, t0), (q1, t1)):
+        out.append(f'<line x1="{xq(a):.1f}" y1="{yq + 23}" x2="{xt(b):.1f}" y2="{yt - 23}" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>')
+    out.append(f'<line x1="{(xq(q0) + xq(q1)) / 2:.1f}" y1="{yq + 25}" x2="{(xt(t0) + xt(t1)) / 2:.1f}" y2="{yt - 25}" stroke="currentColor" stroke-width="1.5" marker-end="url(#mech-arrow)"/>')
+    T((xq(q1) + 10), (yq + yt) / 2 + 4, f"same {L} positions, no gaps: the label moves across", "start", 11)
+    for aa in (w0, w1):   # residue numbers at the ends of the drawn window: above the human line, below the chicken one
+        T(xq(aa), yq - 8, f"{aa}", "middle", 10)
+        T(xt(aa + off), yt + 16, f"{aa + off}", "middle", 10)
+    # Bottom: the region zoomed to one column per residue.
+    cw = 22
+    zx = lambda i: X0 + 10 + i * cw + cw / 2
+    rows = [(225, f"human residues from {q0}", qres, ""), (247, "H/P classes", qcls, ""), (282, "H/P classes", tcls, ""), (304, f"chicken residues from {t0}", tres, "")]
+    T(10, 206, f"Zoom on {L} positions; {alpha}, k = {k}; {classes_def}", "start", 11, 'font-style="italic"')
+    for y, lab, seq, _ in rows:
+        T(X0 - 8, y, lab, "end", 11)
+        for i, ch in enumerate(seq):
+            T(zx(i), y, ch, "middle", 13, 'style="font-family:var(--mono)"')
+    T(X0 - 8, 266, "same class", "end", 11)
+    for i in range(L):
+        if qcls[i] == tcls[i]:
+            out.append(f'<line x1="{zx(i):.1f}" y1="{254}" x2="{zx(i):.1f}" y2="{270}" stroke="currentColor" stroke-width="1.5"/>')
+    T(zx(L - 1) + cw / 2 + 4, 225, f"{q1}", "start", 10)
+    T(zx(L - 1) + cw / 2 + 4, 304, f"{t1}", "start", 10)
+    # Seeds: first and last shared k-letter stretch, then the region they join into.
+    def bracket(i, y, text):
+        a, b = zx(i) - cw / 2 + 2, zx(i + k - 1) + cw / 2 - 2
+        out.append(f'<path d="M{a:.1f} {y - 6} V{y} H{b:.1f} V{y - 6}" fill="none" stroke="currentColor" stroke-width="1.5"/>')
+        T((a + b) / 2, y + 14, text, "middle", 11)
+    if seeds:
+        bracket(seeds[0], 330, f"first shared {k}-letter seed")
+        if seeds[-1] != seeds[0]:
+            bracket(seeds[-1], 370, f"last of {len(seeds)} shared seeds")
+        a, b = zx(seeds[0]) - cw / 2, zx(seeds[-1] + k - 1) + cw / 2
+        out.append(f'<rect x="{a:.1f}" y="400" width="{b - a:.1f}" height="7" fill="currentColor"/>')
+        T(X0 - 8, 408, "region", "end", 11)
+        T(a, 426, f"the seeds joined into one region: {q0}-{q1} on human, {t0}-{t1} on chicken", "start", 11)
+    out.append("</svg>")
+    legend = ('<div class="legend">'
+              '<span><svg width="28" height="10" aria-hidden="true"><line x1="0" y1="5" x2="28" y2="5" stroke="currentColor" stroke-width="1.5"/></svg>protein</span>'
+              '<span><svg width="28" height="14" aria-hidden="true"><rect x="1" y="1" width="26" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>annotated feature</span>'
+              '<span><svg width="28" height="10" aria-hidden="true"><rect x="0" y="2" width="28" height="6" fill="currentColor"/></svg>kmerseek region</span>'
+              f'<span><svg width="28" height="10" aria-hidden="true"><path d="M1 2V8H27V2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>one shared seed of {k} letters</span>'
+              '<span><svg width="10" height="16" aria-hidden="true"><line x1="5" y1="0" x2="5" y2="16" stroke="currentColor" stroke-width="1.5"/></svg>same H/P class</span>'
+              '</div>')
+    cap = (f"The main example of notebook 244: the human feature {feat_name} placed on chicken P12106. "
+           f"All {L} positions keep their class, so every one of the {len(seeds)} stretches of {k} letters is shared at the same offset; "
+           f"the region is their union and has no gaps. Of the residues themselves, {p['identity'].replace(' identical', '')} are the same amino acid. "
+           f"Boundary overlap with the feature (IoU, the overlap divided by the span both cover): kmerseek {iou('hero_kmerseek_call')}, "
+           f"Foldseek {iou('hero_foldseek_call_iou')}, Reseek {iou('hero_reseek_call_iou')} (notebook 244). "
+           f"Residues and classes as printed in notebook 254, cell {p['source_cell']}.")
+    return (f'<figure class="mech">{legend}<div class="tablewrap" style="background:var(--surface);padding:6px">{"".join(out)}</div>'
+            f'<figcaption>{e(cap)} <button type="button" class="rowlink" data-open="244">nb 244</button> '
+            f'<button type="button" class="rowlink" data-open="254">nb 254</button></figcaption></figure>')
+
+
 def check_claims(records, claims):
     by_id = {str(r["id"]): r for r in records}
     missing = []
@@ -586,7 +692,7 @@ def main():
     here = Path(__file__).resolve().parent
     water = (here / "experiments_page_water.js").read_text()
     fonts = (here / "experiments_page_fonts.css").read_text()
-    html = (TEMPLATE.replace("__WATER__", water).replace("__FONTS__", fonts).replace("__META__", " ".join(m for m in meta if m))
+    html = (TEMPLATE.replace("__HERO__", hero_figure(records)).replace("__WATER__", water).replace("__FONTS__", fonts).replace("__META__", " ".join(m for m in meta if m))
             .replace("__DATE__", d["numbers"] or "an unknown date").replace("__HOSTED__", hosted)
             .replace("__DATA__", embed(records)).replace("__CLAIMS__", embed(claims)).replace("__PRS__", embed(prs)))
 
