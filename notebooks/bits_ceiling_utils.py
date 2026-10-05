@@ -7,7 +7,8 @@ adds is arithmetic on those numbers and the figures.
 Colours carry one meaning each, in every figure of the notebook:
   HAVE (blue)  bits the BCL2/CED-9 pair has, or could have at most
   NEED (red)   bits a search of the database needs before a hit stands out from chance
-Other quantities (conservation, reach, the chance score) are drawn in black and grey.
+Other quantities (reach, the chance score) are drawn in black and grey; the mean longest
+exact run in Figure 3 is green.
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ HAVE = "#2c6fbb"
 NEED = "#c23b22"
 INK = "#222222"
 GREY = "#8c8c8c"
+RUN = "#009E73"  # mean longest exact run (Figure 3), a length, not a bit count
 
 plt.rcParams.update({"font.size": 10, "axes.spines.top": False, "axes.spines.right": False,
                      "savefig.dpi": 200, "savefig.bbox": "tight"})
@@ -154,9 +156,9 @@ def bits_needed_region(K: float, m: float, n: float, E: float = 1.0) -> float:
     return math.log2(K * m * n / E)
 
 
-def bits_needed_seed(m: float, n: float) -> float:
-    """log2(m n): bits an exact seed needs to be expected once by chance in the search."""
-    return math.log2(m * n)
+def bits_needed_seed(m: float, n: float, E: float = 1.0) -> float:
+    """log2(m n / E): bits an exact seed needs to be expected E times by chance in the search."""
+    return math.log2(m * n / E)
 
 
 def seed_bits(k: int, pr_match_unrelated: float) -> float:
@@ -172,16 +174,18 @@ def _legend_top(ax, handles, ncol=2):
 
 def fig_bits_have_vs_need(v: dict, path: Path) -> None:
     """Figure 1: one bar per quantity; blue = what the pair has, red = what is needed."""
-    fig, axes = plt.subplots(2, 1, figsize=(8.6, 4.6), gridspec_kw={"height_ratios": [3, 2],
+    fig, axes = plt.subplots(2, 1, figsize=(8.6, 5.4), gridspec_kw={"height_ratios": [4, 3],
                                                                      "hspace": 0.9})
     panels = [
-        (axes[0], "a  Evidence in the 37-residue BH1 block, against the cost of E = 1",
+        (axes[0], "a  Evidence in the 37-residue BH1 block, against the cost of E = 1 and E = 10",
          [(v["label_ceiling20"], v["bits_block_20"], HAVE),
           (v["label_coin2"], v["bits_block_hp"], HAVE),
-          (v["label_need_region"], v["bits_needed_region"], NEED)]),
-        (axes[1], "b  Rarity of the longest exact seed, against one chance seed per search",
+          (v["label_need_region"], v["bits_needed_region"], NEED),
+          (v["label_need_region_e10"], v["bits_needed_region_e10"], NEED)]),
+        (axes[1], "b  Rarity of the longest exact seed, against chance seeds per search",
          [(v["label_seed_have"], v["seed_bits_bh1"], HAVE),
-          (v["label_need_seed"], v["bits_needed_seed"], NEED)]),
+          (v["label_need_seed"], v["bits_needed_seed"], NEED),
+          (v["label_need_seed_e10"], v["bits_needed_seed_e10"], NEED)]),
     ]
     xmax = max(val for _, _, bars in panels for _, val, _ in bars) * 1.18
     for ax, title, bars in panels:
@@ -226,32 +230,60 @@ def fig_scaling(v: dict, dbs: list[dict], path: Path) -> None:
     plt.show()
 
 
-def fig_conservation_vs_reach(reach: pl.DataFrame, v: dict, path: Path) -> None:
-    """Figure 3: per-position conservation does not depend on k; exact-seed reach does."""
+def fig_conservation_vs_reach(reach: pl.DataFrame, v: dict, pr_match_unrelated: float,
+                              need: dict[float, float], path: Path) -> None:
+    """Figure 3: no exact-seed length k both reaches the pairs and stands out from chance.
+
+    (a) share of pairs that share an exact class-identical run of at least k residues;
+    (b) bits of rarity such a seed carries, against the bits a search needs (one per E in
+    ``need``). Both panels share the k axis, so the reader can look up, at the k where the
+    blue line meets a red one, how many pairs are left in (a).
+    """
     r = reach.filter((pl.col("dataset") == "Pfam") & (pl.col("identity_bin") == "20-30%")
                      & (pl.col("alphabet") == "hp_thomas_dill2")).sort("k")
-    fig, ax = plt.subplots(figsize=(7.6, 4.2))
-    ax.plot(r["k"], r["fraction_of_pairs_reachable"], "-o", color=INK, ms=4,
-            label="share of pairs whose longest exact class-identical run is at least k")
-    ax.axhline(v["kappa_hp_thomas_dill2_pfam_20_30"], color=GREY, ls="--", lw=1.5,
-               label=f"Cohen's κ per aligned position, {v['kappa_hp_thomas_dill2_pfam_20_30']:.3f} "
-                     "(does not depend on k)")
-    ax.axvline(v["longest_run_mean_hp_thomas_dill2_pfam_20_30"], color=GREY, lw=1, ls=":",
-               label=f"mean longest exact run, {v['longest_run_mean_hp_thomas_dill2_pfam_20_30']:.1f} residues")
-    marks = []
+    kappa = v["kappa_hp_thomas_dill2_pfam_20_30"]
+    mean_run = v["longest_run_mean_hp_thomas_dill2_pfam_20_30"]
+    fig, (ax_a, ax_b) = plt.subplots(2, 1, figsize=(7.6, 6.4), sharex=True,
+                                     gridspec_kw={"hspace": 0.35})
+    ks = np.arange(1, 41)
+
+    ax_a.plot(r["k"], r["fraction_of_pairs_reachable"], "-o", color=INK, ms=4,
+              label="share of Pfam pairs (20-30% identity) sharing an exact run of at least k")
+    ax_a.axvline(mean_run, color=RUN, lw=1.2,
+                 label=f"mean longest exact run per pair, {mean_run:.1f} residues")
     for k in (23, 26, 30):
         f = r.filter(pl.col("k") == k)["fraction_of_pairs_reachable"][0]
-        marks.append(f"k = {k}: {100 * f:.1f}% of pairs")
-    ax.text(0.99, 0.30, "\n".join(marks), transform=ax.transAxes, ha="right", va="bottom",
-            fontsize=9, color=INK)
-    ax.set_xlabel("k, exact seed length (residues)")
-    ax.set_ylabel("value (0 to 1)")
-    ax.set_ylim(0, 1.02)
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.02), frameon=False, fontsize=8.5,
-              borderaxespad=0)
-    ax.text(0.99, 0.55, "hp_thomas_dill2\nPfam seed pairs, 20-30% identity\n"
-            "(n = 37,085 pairs, notebook 230)", transform=ax.transAxes, ha="right", fontsize=8.5,
-            color=INK)
+        ax_a.annotate(f"{100 * f:.1f}%", (k, f), xytext=(0, 8), textcoords="offset points",
+                      ha="center", fontsize=8.5, color=INK)
+    ax_a.set_ylabel("share of pairs reached")
+    ax_a.set_ylim(0, 1.05)
+    ax_a.set_title("a  How many homolog pairs an exact seed of length k can find", loc="left",
+                   fontsize=10, pad=4)
+    ax_a.text(0.99, 0.62, f"hp_thomas_dill2, Pfam seed pairs at 20-30% identity\n"
+              f"n = 37,085 pairs (notebook 230)\nCohen's κ per aligned position = {kappa:.3f},\n"
+              "the same at every k", transform=ax_a.transAxes, ha="right", va="bottom",
+              fontsize=8.5, color=INK)
+
+    bits_per_pos = -math.log2(pr_match_unrelated)
+    ax_b.plot(ks, ks * bits_per_pos, color=HAVE, lw=1.6,
+              label=f"rarity of an exact k-residue hp_thomas_dill2 seed, k × {bits_per_pos:.3f} bits")
+    styles = {1.0: "-", 10.0: "--"}
+    for E, bits in need.items():
+        k_cross = bits / bits_per_pos
+        ax_b.axhline(bits, color=NEED, ls=styles.get(E, ":"), lw=1.4,
+                     label=f"needed for {E:g} chance seed{'s' if E != 1 else ''} per search: {bits:.1f} bits, "
+                           f"reached at k = {math.ceil(k_cross)}")
+    ax_b.set_ylabel("bits")
+    ax_b.set_xlabel("k, exact seed length (residues)")
+    ax_b.set_ylim(0, 40)
+    ax_b.set_xlim(0, 40)
+    ax_b.set_title("b  Whether a seed of length k is rare enough to stand out from chance",
+                   loc="left", fontsize=10, pad=4)
+
+    handles = ax_a.get_legend_handles_labels()[0] + ax_b.get_legend_handles_labels()[0]
+    fig.legend(handles=handles, loc="lower left", bbox_to_anchor=(0.11, 0.835), frameon=False,
+               fontsize=8.5, ncol=1, borderaxespad=0)
+    fig.subplots_adjust(top=0.80)
     fig.savefig(path)
     plt.show()
 

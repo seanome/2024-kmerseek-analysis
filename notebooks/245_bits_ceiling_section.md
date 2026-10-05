@@ -120,7 +120,9 @@ bounds the average over true pairs, not every pair. A single pair can beat its e
 value, and BCL2/CED-9 does: its 19-residue exact run in hp_lehninger2 is worth
 $19 \times -\log_2 0.501 = 18.9$ bits of rarity. That is still 12.6 bits short of the 31.5 an
 exact seed needs (Figure 1b). About 6,100 chance matches that rare are expected in one
-search of the human proteome.
+search of the human proteome. Allowing 10 chance hits per search instead of 1 lowers each
+cost by $\log_2 10 = 3.3$ bits, to 22.4 bits for a region and 28.2 for a seed; the block
+and the run are still short of both.
 
 The search agrees. Notebook 241 searched CED-9 against the 19,732 canonical human proteins
 with all 19 alphabets kmerseek supports, at seed lengths chosen to carry 16 to 44 bits.
@@ -148,8 +150,10 @@ consecutive same-class positions. If positions were independent, a given window 
 positions would be all same-class with probability $\Pr(\text{same})^k$, which falls
 exponentially with $k$ while κ does not move. On the same 37,085 Pfam pairs the mean
 longest exact class-identical run is 13.0 residues (6.3 with the target shuffled). Only 3.8%
-of pairs share an exact 23-mer, 1.7% a 26-mer and 0.6% a 30-mer (Figure 3). Shorter seeds
-reach more pairs but carry fewer bits, and Equation (5) then fails by a wider margin.
+of pairs share an exact 23-mer, 1.7% a 26-mer and 0.6% a 30-mer (Figure 3a). Shorter seeds
+reach more pairs but carry fewer bits. At 0.932 bits per residue, an exact hp_thomas_dill2
+seed stands out from chance on the human proteome only at $k \ge 34$, or $k \ge 31$ if 10
+chance seeds per search are allowed (Figure 3b). No $k$ does both.
 
 ## Step 6. What the inequality does not forbid
 
@@ -206,15 +210,18 @@ alphabets carry structure, not sequence.
 
 - **Figure 1** (`245_bits_have_vs_need.png`). Blue: bits the BCL2/CED-9 pair has, or can
   have at most. Red: bits the search needs. (a) The BH1 block at the 20-letter ceiling and
-  under the two-letter copy-rate model, against $E = 1$ for a scored region. (b) The rarity
-  of the longest exact hp_lehninger2 run, against one chance seed per search.
+  under the two-letter copy-rate model, against $E = 1$ and $E = 10$ for a scored region.
+  (b) The rarity of the longest exact hp_lehninger2 run, against 1 and 10 chance seeds per
+  search.
 - **Figure 2** (`245_bits_needed_vs_database_size.png`). Bits needed against database size.
   Red dots: $E = 1$ for a scored region, $\log_2(K \cdot m \cdot n)$, one per database with its
   own $K$. Red dashed line: one chance exact seed per search, $\log_2(m \cdot n)$. Blue lines:
   the BH1 block.
-- **Figure 3** (`245_conservation_vs_reach.png`). Black: share of Pfam pairs at 20–30%
-  identity whose longest exact class-identical run is at least $k$. Grey dashed: κ for the
-  same pairs, which does not depend on $k$.
+- **Figure 3** (`245_conservation_vs_reach.png`). (a) Black: share of Pfam pairs at 20–30%
+  identity whose longest exact class-identical run is at least $k$; green: the mean longest
+  run, 13.0 residues. (b) Blue: bits of rarity of an exact hp_thomas_dill2 seed of length $k$.
+  Red: bits needed for 1 (solid) or 10 (dashed) chance seeds per search of the human
+  proteome. Where blue crosses red in (b), (a) shows how few pairs are left.
 - **Figure 4** (`245_bh1_alignment.png`). The BH1 residues, identity line and class strings
   in two HP alphabets, with the longest class-identical run boxed.
 - **Figure 5** (`245_chance_score_by_alphabet.png`). Expected score of one position between

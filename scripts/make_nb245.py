@@ -176,11 +176,14 @@ m = block["ced9_length"]
 n = v["n_residues_proteome"]
 need_region = bu.bits_needed_region(v["K_proteome"], m, n)
 need_seed = bu.bits_needed_seed(m, n)
+need_region_e10 = bu.bits_needed_region(v["K_proteome"], m, n, E=10)
+need_seed_e10 = bu.bits_needed_seed(m, n, E=10)
 run = block["hp_lehninger2"]["run_length"]
 seed_have = bu.seed_bits(run, pr_unrel["hp_lehninger2"])
 chance_seeds = m * n * pr_unrel["hp_lehninger2"] ** run
 print(f"region, E = 1:  log2(K·m·n) = log2({v['K_proteome']} × {m} × {n:.1e}) = {need_region:.1f} bits")
 print(f"seed:           log2(m·n)   = log2({m} × {n:.1e})           = {need_seed:.1f} bits")
+print(f"E = 10 costs log2(10) = {math.log2(10):.1f} bits less: region {need_region_e10:.1f}, seed {need_seed_e10:.1f}")
 print(f"longest exact hp_lehninger2 run in BH1: {run} residues × -log2({pr_unrel['hp_lehninger2']}) = {seed_have:.1f} bits")
 print(f"  so about {chance_seeds:,.0f} exact {run}-residue class matches are expected by chance per search")
 print(f"  (a model count of seed placements; notebook 241 measured 3,195 human proteins hit at hp_lehninger2 k=19)")
@@ -201,11 +204,14 @@ code(r"""
 vals = {
     "bits_block_20": bits_block_20, "bits_block_hp": bits_block_hp,
     "bits_needed_region": need_region, "seed_bits_bh1": seed_have, "bits_needed_seed": need_seed,
+    "bits_needed_region_e10": need_region_e10, "bits_needed_seed_e10": need_seed_e10,
     "label_ceiling20": f"20-letter ceiling (BLOSUM45 table value): {L} × {I_20:.2f}",
     "label_coin2": f"hp_thomas_dill2 (copy-rate model): {L} × {I_hp_model:.3f}",
     "label_need_region": "E = 1 on one proteome: log$_2$(K·m·n)",
+    "label_need_region_e10": "E = 10 on one proteome: log$_2$(K·m·n / 10)",
     "label_seed_have": f"longest exact run, hp_lehninger2: {run} × {-math.log2(pr_unrel['hp_lehninger2']):.3f}",
-    "label_need_seed": "one chance seed per search: log$_2$(m·n)",
+    "label_need_seed": "1 chance seed per search: log$_2$(m·n)",
+    "label_need_seed_e10": "10 chance seeds per search: log$_2$(m·n / 10)",
 }
 bu.fig_bits_have_vs_need(vals, bu.FIG / "245_bits_have_vs_need.png")
 """)
@@ -237,6 +243,15 @@ all: the share of pairs whose longest class-identical run is at least $k$. If po
 independent, a given window of $k$ positions would be all same-class with probability
 $\Pr(\text{same})^k$, which falls exponentially in $k$ while κ does not move. Notebook 230
 measured both on the same 37,085 Pfam pairs at 20-30% identity.
+
+**What to decide from Figure 3: no seed length works for an exact hp_thomas_dill2 seed.**
+Panel (a) is how many homolog pairs a seed of length $k$ can find; panel (b) is whether
+that seed is rare enough to stand out from chance on the human proteome (Equation 4).
+Read (b) for the smallest $k$ where the blue line crosses a red one, then read (a) at that
+$k$. A seed stands out at $k \ge 34$ (1 chance seed per search) or $k \ge 31$ (10 per
+search), and at $k = 30$ only 0.6% of the pairs share one. At $k = 13$, the mean longest
+run per pair, a seed carries about 12 bits, 19 short. So changing $k$ cannot fix exact HP
+seeds; the fix has to be a seed that allows mismatches, more letters, or a smaller database.
 """)
 
 code(r"""
@@ -252,7 +267,14 @@ print(f"mean longest exact run: {v['longest_run_mean_hp_thomas_dill2_pfam_20_30'
       f"{v['longest_run_mean_hp_thomas_dill2_scope_20_30']:.1f} (SCOPe); "
       f"the same pairs shuffled: {v['longest_run_null_mean_hp_thomas_dill2_pfam_20_30']:.1f}, "
       f"{v['longest_run_null_mean_hp_thomas_dill2_scope_20_30']:.1f}")
-bu.fig_conservation_vs_reach(reach, v, bu.FIG / "245_conservation_vs_reach.png")
+bits_per_pos = -math.log2(pr_unrel["hp_thomas_dill2"])
+for E, bits in ((1, need_seed), (10, need_seed_e10)):
+    k_min = math.ceil(bits / bits_per_pos)
+    print(f"E = {E:>2}: an exact hp_thomas_dill2 seed needs k >= {k_min} "
+          f"({bits:.1f} bits / {bits_per_pos:.3f} bits per residue)")
+bu.fig_conservation_vs_reach(reach, v, pr_unrel["hp_thomas_dill2"],
+                             {1.0: need_seed, 10.0: need_seed_e10},
+                             bu.FIG / "245_conservation_vs_reach.png")
 """)
 
 md(r"""
@@ -291,6 +313,8 @@ md(r"""
    prose of notebooks 241 and 242 called the first one the cost of E = 1.
 5. **Reach, not conservation, is what an exact seed loses.** κ for hp_thomas_dill2 is 0.463,
    but only 3.8% of the same pairs share an exact 23-mer, 1.7% a 26-mer and 0.6% a 30-mer.
+   An exact seed stands out from chance only at $k \ge 34$ ($k \ge 31$ at 10 chance seeds
+   per search), so no $k$ both reaches the pairs and stands out.
 6. **gbmr7 and hp_lehninger_hpc3 cannot give an E-value at any k.** gbmr4 sits at −0.0003,
    just below zero, so its λ exists and is close to 0.
 """)
