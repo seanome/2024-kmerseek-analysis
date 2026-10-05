@@ -39,7 +39,7 @@ dependencies:
   - babel=2.14.0=pyhd8ed1ab_0
   - beautifulsoup4=4.12.3=pyha770c72_0
   - bitstring=3.1.9=pyhd8ed1ab_0
-  - black=24.8.0=py312h7900ff3_1
+  - black=26.5.1=pyh866005b_0
   - bleach=6.1.0=pyhd8ed1ab_0
   - brotli=1.1.0=hb9d3cd8_2
   - brotli-bin=1.1.0=hb9d3cd8_2
@@ -212,6 +212,7 @@ dependencies:
   - python-json-logger=2.0.7=pyhd8ed1ab_0
   - python-tzdata=2024.2=pyhd8ed1ab_0
   - python_abi=3.12=5_cp312
+  - pytokens=0.4.1=py312h5253ce2_2
   - pytz=2024.1=pyhd8ed1ab_0
   - pyyaml=6.0.2=py312h66e93f0_1
   - pyzmq=26.2.0=py312hbf22597_2
