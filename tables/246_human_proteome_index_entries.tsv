@@ -1,0 +1,119 @@
+alphabet	scheme	index_entries	database_residues
+hp_thomas_dill2	exact k=8	11208804	11347201
+hp_thomas_dill2	exact k=8, scaled 2	6300199	11347201
+hp_thomas_dill2	exact k=10	11169295	11347201
+hp_thomas_dill2	exact k=10, scaled 2	5623849	11347201
+hp_thomas_dill2	exact k=12	11129788	11347201
+hp_thomas_dill2	exact k=12, scaled 2	5653266	11347201
+hp_thomas_dill2	exact k=14	11090287	11347201
+hp_thomas_dill2	exact k=14, scaled 2	5704167	11347201
+hp_thomas_dill2	exact k=16	11050791	11347201
+hp_thomas_dill2	exact k=16, scaled 2	5452817	11347201
+hp_thomas_dill2	exact k=18	11011299	11347201
+hp_thomas_dill2	exact k=18, scaled 2	5504463	11347201
+hp_thomas_dill2	exact k=20	10971814	11347201
+hp_thomas_dill2	exact k=20, scaled 2	5453709	11347201
+hp_thomas_dill2	exact k=24	10892859	11347201
+hp_thomas_dill2	exact k=24, scaled 2	5441313	11347201
+hp_thomas_dill2	exact k=28	10813946	11347201
+hp_thomas_dill2	exact k=28, scaled 2	5408576	11347201
+hp_thomas_dill2	exact k=32	10735077	11347201
+hp_thomas_dill2	exact k=32, scaled 2	5365878	11347201
+hp_thomas_dill2	spaced 11011011011011011	11031044	11347201
+hp_thomas_dill2	spaced 11011011011011011, scaled 2	5500150	11347201
+hp_thomas_dill2	spaced 11011011011011011011011	10912595	11347201
+hp_thomas_dill2	spaced 11011011011011011011011, scaled 2	5502747	11347201
+hp_thomas_dill2	spaced 11011011011011011011011011011	10794225	11347201
+hp_thomas_dill2	spaced 11011011011011011011011011011, scaled 2	5418772	11347201
+hp_thomas_dill2	spaced 11011011011011011011011011011011011	10675954	11347201
+hp_thomas_dill2	spaced 11011011011011011011011011011011011, scaled 2	5327161	11347201
+hp_thomas_dill2	spaced 10101010101010101010101	10912595	11347201
+hp_thomas_dill2	spaced 10101010101010101010101, scaled 2	5463035	11347201
+hp_thomas_dill2	spaced 1010101010101010101010101010101	10754791	11347201
+hp_thomas_dill2	spaced 1010101010101010101010101010101, scaled 2	5479603	11347201
+hp_thomas_dill2	spaced 101010101010101010101010101010101010101	10597153	11347201
+hp_thomas_dill2	spaced 101010101010101010101010101010101010101, scaled 2	5277066	11347201
+hp_thomas_dill2	spaced 111010010100110111	11011299	11347201
+hp_thomas_dill2	spaced 111010010100110111, scaled 2	5445885	11347201
+hp_thomas_dill2	chained 2 x k=5 in 40	11268078	11347201
+hp_thomas_dill2	chained 2 x k=5 in 40, scaled 2	6331699	11347201
+hp_thomas_dill2	chained 3 x k=5 in 40	11268078	11347201
+hp_thomas_dill2	chained 3 x k=5 in 40, scaled 2	6331699	11347201
+hp_thomas_dill2	chained 4 x k=5 in 40	11268078	11347201
+hp_thomas_dill2	chained 4 x k=5 in 40, scaled 2	6331699	11347201
+hp_thomas_dill2	chained 2 x k=8 in 40	11208804	11347201
+hp_thomas_dill2	chained 2 x k=8 in 40, scaled 2	5728008	11347201
+hp_thomas_dill2	chained 3 x k=8 in 60	11208804	11347201
+hp_thomas_dill2	chained 3 x k=8 in 60, scaled 2	5728008	11347201
+hp_thomas_dill2	chained 2 x k=12 in 40	11129788	11347201
+hp_thomas_dill2	chained 2 x k=12 in 40, scaled 2	5389095	11347201
+hp_thomas_dill2	chained 2 x k=12 in 60	11129788	11347201
+hp_thomas_dill2	chained 2 x k=12 in 60, scaled 2	5389095	11347201
+hp_thomas_dill2	window 18 of 20	0	11347201
+hp_thomas_dill2	window 16 of 20	0	11347201
+hp_thomas_dill2	window 27 of 30	0	11347201
+hp_thomas_dill2	window 24 of 30	0	11347201
+hp_thomas_dill2	window 36 of 40	0	11347201
+hp_thomas_dill2	window 32 of 40	0	11347201
+hp_thomas_dill2	window 54 of 60	0	11347201
+hp_thomas_dill2	window 48 of 60	0	11347201
+hp_thomas_dill2	extend +1/-2	0	11347201
+hp_lehninger2	exact k=8	11208804	11347201
+hp_lehninger2	exact k=8, scaled 2	6013029	11347201
+hp_lehninger2	exact k=10	11169295	11347201
+hp_lehninger2	exact k=10, scaled 2	5523686	11347201
+hp_lehninger2	exact k=12	11129788	11347201
+hp_lehninger2	exact k=12, scaled 2	5529392	11347201
+hp_lehninger2	exact k=14	11090287	11347201
+hp_lehninger2	exact k=14, scaled 2	5594184	11347201
+hp_lehninger2	exact k=16	11050791	11347201
+hp_lehninger2	exact k=16, scaled 2	5502861	11347201
+hp_lehninger2	exact k=18	11011299	11347201
+hp_lehninger2	exact k=18, scaled 2	5500648	11347201
+hp_lehninger2	exact k=20	10971814	11347201
+hp_lehninger2	exact k=20, scaled 2	5461844	11347201
+hp_lehninger2	exact k=24	10892859	11347201
+hp_lehninger2	exact k=24, scaled 2	5449377	11347201
+hp_lehninger2	exact k=28	10813946	11347201
+hp_lehninger2	exact k=28, scaled 2	5407021	11347201
+hp_lehninger2	exact k=32	10735077	11347201
+hp_lehninger2	exact k=32, scaled 2	5369749	11347201
+hp_lehninger2	spaced 11011011011011011	11031044	11347201
+hp_lehninger2	spaced 11011011011011011, scaled 2	5515508	11347201
+hp_lehninger2	spaced 11011011011011011011011	10912595	11347201
+hp_lehninger2	spaced 11011011011011011011011, scaled 2	5487412	11347201
+hp_lehninger2	spaced 11011011011011011011011011011	10794225	11347201
+hp_lehninger2	spaced 11011011011011011011011011011, scaled 2	5402980	11347201
+hp_lehninger2	spaced 11011011011011011011011011011011011	10675954	11347201
+hp_lehninger2	spaced 11011011011011011011011011011011011, scaled 2	5340527	11347201
+hp_lehninger2	spaced 10101010101010101010101	10912595	11347201
+hp_lehninger2	spaced 10101010101010101010101, scaled 2	5472787	11347201
+hp_lehninger2	spaced 1010101010101010101010101010101	10754791	11347201
+hp_lehninger2	spaced 1010101010101010101010101010101, scaled 2	5418354	11347201
+hp_lehninger2	spaced 101010101010101010101010101010101010101	10597153	11347201
+hp_lehninger2	spaced 101010101010101010101010101010101010101, scaled 2	5295783	11347201
+hp_lehninger2	spaced 111010010100110111	11011299	11347201
+hp_lehninger2	spaced 111010010100110111, scaled 2	5519709	11347201
+hp_lehninger2	chained 2 x k=5 in 40	11268078	11347201
+hp_lehninger2	chained 2 x k=5 in 40, scaled 2	6372361	11347201
+hp_lehninger2	chained 3 x k=5 in 40	11268078	11347201
+hp_lehninger2	chained 3 x k=5 in 40, scaled 2	6372361	11347201
+hp_lehninger2	chained 4 x k=5 in 40	11268078	11347201
+hp_lehninger2	chained 4 x k=5 in 40, scaled 2	6372361	11347201
+hp_lehninger2	chained 2 x k=8 in 40	11208804	11347201
+hp_lehninger2	chained 2 x k=8 in 40, scaled 2	5688134	11347201
+hp_lehninger2	chained 3 x k=8 in 60	11208804	11347201
+hp_lehninger2	chained 3 x k=8 in 60, scaled 2	5688134	11347201
+hp_lehninger2	chained 2 x k=12 in 40	11129788	11347201
+hp_lehninger2	chained 2 x k=12 in 40, scaled 2	5455517	11347201
+hp_lehninger2	chained 2 x k=12 in 60	11129788	11347201
+hp_lehninger2	chained 2 x k=12 in 60, scaled 2	5455517	11347201
+hp_lehninger2	window 18 of 20	0	11347201
+hp_lehninger2	window 16 of 20	0	11347201
+hp_lehninger2	window 27 of 30	0	11347201
+hp_lehninger2	window 24 of 30	0	11347201
+hp_lehninger2	window 36 of 40	0	11347201
+hp_lehninger2	window 32 of 40	0	11347201
+hp_lehninger2	window 54 of 60	0	11347201
+hp_lehninger2	window 48 of 60	0	11347201
+hp_lehninger2	extend +1/-2	0	11347201
