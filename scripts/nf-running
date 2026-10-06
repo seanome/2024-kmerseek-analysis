@@ -1,0 +1,176 @@
+#!/usr/bin/env python3
+"""Every Nextflow run with jobs in the SLURM queue, named, with its head and its tasks.
+
+    scripts/nf-running                  one block per run, then any job that is not part of one
+    scripts/nf-running --jobs DIR       the same, then one row per job of the runs under DIR
+                                        (what `make running` in a pipeline folder shows)
+
+A job belongs to the run whose folder holds its work directory: a task's `squeue %Z` is
+<run>/work/xx/<hash>, and a head's is the run folder it was launched from. So a run is named
+by where it lives (clone, pipeline, run folder), which is the same whether the watch runs
+from that pipeline's folder or any other. The first version of `make running` counted only
+jobs under the folder it ran from and called the rest "elsewhere"; on 2026-09-28 that read
+"0 from this pipeline, 112 elsewhere" while 112 tasks of the dark-set midi run were queued.
+
+A head is a job named nfdrv-<run> (tools/nf-head). A relaunch waiting for a head to exit is
+nfrelaunch-<run>. Tasks whose run has no head in the queue are flagged: nothing will collect
+their results, and a later -resume can collide with them on storeDir.
+
+TIME is squeue's [DD-[HH:]]MM:SS: `4:03` is four minutes, `1-02:19:10` is a day and two hours.
+
+Runs on the login node's bare python3 (3.6 on Sherlock), standard library only.
+"""
+
+import argparse
+import os
+import re
+import subprocess
+import sys
+from collections import Counter, OrderedDict
+
+STATE_WORDS = {"R": "running", "PD": "pending", "CG": "completing"}
+NAME_LINE = re.compile(r"^### name: '(.*)'")
+
+
+def squeue(user):
+    # -r lists every element of a job array: without it a pending range such as
+    # 45717990_[6-19] is one row, and the pending count is 14 short.
+    out = subprocess.run(["squeue", "-u", user, "-h", "-r", "-o", "%i|%t|%M|%r|%Z|%j"],
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if out.returncode != 0:
+        sys.exit("squeue failed: " + out.stderr.strip())
+    jobs = []
+    for line in out.stdout.splitlines():
+        parts = line.split("|", 5)
+        if len(parts) == 6:
+            jobs.append(dict(zip(["id", "state", "time", "reason", "dir", "name"], parts)))
+    return jobs
+
+
+def task_name(job):
+    """Process and tag of a task, from the `### name:` line Nextflow writes into .command.run.
+    Falls back to the SLURM job name (nf-<process>_(<tag>)), which some pipelines truncate."""
+    try:
+        with open(os.path.join(job["dir"], ".command.run")) as fh:
+            for _ in range(40):  # after the #SBATCH lines
+                m = NAME_LINE.match(fh.readline())
+                if m:
+                    name = m.group(1)
+                    process, _, tag = name.partition(" (")
+                    return process, tag[:-1] if tag.endswith(")") else tag
+    except OSError:
+        pass
+    name = job["name"][3:] if job["name"].startswith("nf-") else job["name"]
+    process, _, tag = name.partition("_(")
+    return process, tag.rstrip(")")
+
+
+def classify(job):
+    """(run folder, role) for one job; role is head, relaunch, task or other."""
+    d, name = job["dir"], job["name"]
+    if name.startswith("nfdrv-"):
+        return d.rstrip("/"), "head"
+    if name.startswith("nfrelaunch-"):
+        return "nfrelaunch:" + name[len("nfrelaunch-"):], "relaunch"
+    if "/work/" in d:
+        return d.split("/work/")[0], "task"
+    return None, "other"
+
+
+def describe_run(run_dir):
+    """(clone, pipeline, run) from <clone>/nextflow-runs/<pipeline>/<run...>."""
+    if "/nextflow-runs/" in run_dir:
+        clone, rest = run_dir.split("/nextflow-runs/", 1)
+        pipeline, _, run = rest.partition("/")
+        return clone, pipeline, run or "(the pipeline folder itself)"
+    return os.path.dirname(run_dir), "?", os.path.basename(run_dir)
+
+
+def states(jobs):
+    c = Counter(j["state"] for j in jobs)
+    return ", ".join("{} {}".format(n, STATE_WORDS.get(s, s)) for s, n in
+                     sorted(c.items(), key=lambda kv: ["R", "PD", "CG"].index(kv[0])
+                            if kv[0] in ("R", "PD", "CG") else 9))
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--user", default=os.environ.get("USER", ""))
+    ap.add_argument("--jobs", metavar="DIR", help="also list every job of the runs under DIR")
+    args = ap.parse_args()
+
+    jobs = squeue(args.user)
+    if not jobs:
+        print("no jobs in the queue")
+        return
+    print("{} job(s) in the queue: {}".format(len(jobs), states(jobs)))
+
+    runs = OrderedDict()
+    relaunch = {}
+    other = []
+    for j in jobs:
+        run_dir, role = classify(j)
+        if role == "other":
+            other.append(j)
+        elif role == "relaunch":
+            relaunch[run_dir.split(":", 1)[1]] = j
+        else:
+            runs.setdefault(run_dir, {"head": None, "tasks": []})
+            if role == "head":
+                runs[run_dir]["head"] = j
+            else:
+                runs[run_dir]["tasks"].append(j)
+
+    for i, (run_dir, r) in enumerate(sorted(runs.items()), 1):
+        clone, pipeline, run = describe_run(run_dir)
+        print("\n{}. {}, run {}".format(i, pipeline, run))
+        print("   clone   {}".format(clone))
+        h = r["head"]
+        if h:
+            print("   head    job {}, {} for {}".format(h["id"], STATE_WORDS.get(h["state"], h["state"]), h["time"]))
+        else:
+            print("   head    none in the queue: these tasks are left over from a run that has "
+                  "stopped, and nothing will collect them")
+        waiting = relaunch.pop(os.path.basename(run_dir), None)
+        if waiting:
+            print("   relaunch queued as job {} ({}), waiting to start a new head".format(
+                waiting["id"], STATE_WORDS.get(waiting["state"], waiting["state"])))
+        if r["tasks"]:
+            print("   tasks   {}".format(states(r["tasks"])))
+            by_proc = OrderedDict()
+            for t in r["tasks"]:
+                by_proc.setdefault(task_name(t)[0], []).append(t)
+            for proc, ts in sorted(by_proc.items(), key=lambda kv: -len(kv[1])):
+                print("           {:<32} {}".format(proc, states(ts)))
+            reasons = Counter(t["reason"] for t in r["tasks"] if t["state"] == "PD")
+            if reasons:
+                print("   pending because: " + ", ".join("{} {}".format(k, n) for k, n in reasons.most_common(4)))
+        else:
+            print("   tasks   none in the queue")
+
+    for run, j in relaunch.items():
+        print("\nrelaunch of {} queued as job {} ({})".format(run, j["id"], STATE_WORDS.get(j["state"], j["state"])))
+
+    if other:
+        print("\nNot part of a Nextflow run:")
+        groups = OrderedDict()
+        for j in other:
+            groups.setdefault((j["name"], j["dir"]), []).append(j)
+        for (name, d), js in groups.items():
+            ids = sorted({j["id"].split("_")[0] for j in js})
+            print("   {} (job {}) in {}: {}".format(name, ", ".join(ids), d, states(js)))
+
+    if args.jobs:
+        here = os.path.abspath(args.jobs).rstrip("/") + "/"
+        mine = [j for j in jobs if (j["dir"].rstrip("/") + "/").startswith(here)]
+        print("\nJobs under {}: {}".format(here, len(mine) or "none"))
+        if mine:
+            print("{:<10} {:<4} {:<11} {:<30} {}".format("JOBID", "ST", "TIME", "PROCESS", "TAG"))
+            for j in mine:
+                role = classify(j)[1]
+                proc, tag = ("Nextflow head", j["name"]) if role == "head" else task_name(j)
+                print("{:<10} {:<4} {:<11} {:<30} {}".format(j["id"], j["state"], j["time"], proc, tag))
+
+
+if __name__ == "__main__":
+    main()
