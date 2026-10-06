@@ -38,23 +38,58 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ranking_metrics_utils as rm  # noqa: E402
 
 # The E-value's two parts in the newer kmerseek (257_pfam998_search_kmerseek_preview.py).
-rm.NAME.update({"region_ka_evalue": "E-value, extension only", "region_run_evalue": "E-value, exact run"})
+rm.NAME.update(
+    {
+        "region_ka_evalue": "E-value, extension only",
+        "region_run_evalue": "E-value, exact run",
+    }
+)
 rm.LOWER.update({"region_ka_evalue": True, "region_run_evalue": True})
-COLS = ["region_evalue", "region_ka_evalue", "region_run_evalue", "region_ka_bits", "region_mean_idf",
-        "region_tfidf", "region_enrichment", "region_poisson_score", "region_tail_probability",
-        "region_n_shared_kmers", "containment", "query_enrichment", "query_poisson_pvalue", "region_length"]
-BASE = ["query_name", "target_name", "region_start", "region_end", "target_start", "target_end"]
+COLS = [
+    "region_evalue",
+    "region_ka_evalue",
+    "region_run_evalue",
+    "region_ka_bits",
+    "region_mean_idf",
+    "region_tfidf",
+    "region_enrichment",
+    "region_poisson_score",
+    "region_tail_probability",
+    "region_n_shared_kmers",
+    "containment",
+    "query_enrichment",
+    "query_poisson_pvalue",
+    "region_length",
+]
+BASE = [
+    "query_name",
+    "target_name",
+    "region_start",
+    "region_end",
+    "target_start",
+    "target_end",
+]
 
 
-def precision_at_1(df: pl.DataFrame, s: np.ndarray, rule: str) -> tuple[float, float, int]:
+def precision_at_1(
+    df: pl.DataFrame, s: np.ndarray, rule: str
+) -> tuple[float, float, int]:
     """Over queries with at least one correct match: the chance the top-scored match is
-    correct (ties averaged), for the metric and for a random order of the query's matches."""
-    t = pl.DataFrame({"q": df["query_name"], "s": np.nan_to_num(s, nan=-np.inf), "y": df[rule]})
-    g = (t.with_columns(pl.col("s").max().over("q").alias("m"))
-         .group_by("q").agg(pl.col("y").any().alias("any"),
-                            pl.col("y").filter(pl.col("s") == pl.col("m")).mean().alias("p1"),
-                            pl.col("y").mean().alias("rand"))
-         .filter(pl.col("any")))
+    correct (ties averaged), for the metric and for a random order of the query's matches.
+    """
+    t = pl.DataFrame(
+        {"q": df["query_name"], "s": np.nan_to_num(s, nan=-np.inf), "y": df[rule]}
+    )
+    g = (
+        t.with_columns(pl.col("s").max().over("q").alias("m"))
+        .group_by("q")
+        .agg(
+            pl.col("y").any().alias("any"),
+            pl.col("y").filter(pl.col("s") == pl.col("m")).mean().alias("p1"),
+            pl.col("y").mean().alias("rand"),
+        )
+        .filter(pl.col("any"))
+    )
     return float(g["p1"].mean()), float(g["rand"].mean()), g.height
 
 
@@ -64,7 +99,9 @@ def one_arm(path: Path, truth: pl.DataFrame, bits: dict) -> pl.DataFrame:
     t0 = time.time()
     have = set(pl.read_parquet_schema(path))
     cols = [c for c in COLS if c in have]
-    raw = pl.read_parquet(path, columns=BASE + [c for c in ["region_ka_lambda"] if c in have] + cols)
+    raw = pl.read_parquet(
+        path, columns=BASE + [c for c in ["region_ka_lambda"] if c in have] + cols
+    )
     n_raw = raw.height
     df = rm.independent_matches(rm.label_regions(raw, truth))
     del raw
@@ -75,15 +112,37 @@ def one_arm(path: Path, truth: pl.DataFrame, bits: dict) -> pl.DataFrame:
         for c in cols:
             s = rm.score(df, c)
             ok = np.isfinite(s)
-            p1, p1_rand, nq = precision_at_1(df, s, rule) if ok.any() else (np.nan, np.nan, 0)
-            rows.append(dict(alphabet=alphabet, ksize=int(k), bits=bits.get(tag, np.nan), metric=rm.NAME[c], column=c,
-                             rule=rm.RULE_NAME[rule], n_regions=n_raw, n_matches=df.height, n_scored=int(ok.sum()),
-                             n_correct=int(y[ok].sum()), n_correct_all=int(y.sum()),
-                             base_rate=float(y[ok].mean()) if ok.any() else np.nan,
-                             auc=rm.auc(s[ok], y[ok]), ap=rm.ap(s[ok], y[ok]),
-                             length_auc=rm.auc(L[ok], y[ok]), length_ap=rm.ap(L[ok], y[ok]),
-                             precision_at_1=p1, precision_at_1_random=p1_rand, n_queries_with_correct=nq))
-    print(f"{tag}: {n_raw:_} regions, {df.height:_} matches, {time.time() - t0:.0f} s", file=sys.stderr, flush=True)
+            p1, p1_rand, nq = (
+                precision_at_1(df, s, rule) if ok.any() else (np.nan, np.nan, 0)
+            )
+            rows.append(
+                dict(
+                    alphabet=alphabet,
+                    ksize=int(k),
+                    bits=bits.get(tag, np.nan),
+                    metric=rm.NAME[c],
+                    column=c,
+                    rule=rm.RULE_NAME[rule],
+                    n_regions=n_raw,
+                    n_matches=df.height,
+                    n_scored=int(ok.sum()),
+                    n_correct=int(y[ok].sum()),
+                    n_correct_all=int(y.sum()),
+                    base_rate=float(y[ok].mean()) if ok.any() else np.nan,
+                    auc=rm.auc(s[ok], y[ok]),
+                    ap=rm.ap(s[ok], y[ok]),
+                    length_auc=rm.auc(L[ok], y[ok]),
+                    length_ap=rm.ap(L[ok], y[ok]),
+                    precision_at_1=p1,
+                    precision_at_1_random=p1_rand,
+                    n_queries_with_correct=nq,
+                )
+            )
+    print(
+        f"{tag}: {n_raw:_} regions, {df.height:_} matches, {time.time() - t0:.0f} s",
+        file=sys.stderr,
+        flush=True,
+    )
     return pl.DataFrame(rows)
 
 
@@ -100,7 +159,14 @@ def main() -> None:
     if args.arms:
         paths = [p for p in paths if p.stem in args.arms.split(",")]
     done = pl.read_parquet(args.out) if args.out.exists() else None
-    have = set() if done is None else {f"{a}.k{k}" for a, k in done.select("alphabet", "ksize").unique().iter_rows()}
+    have = (
+        set()
+        if done is None
+        else {
+            f"{a}.k{k}"
+            for a, k in done.select("alphabet", "ksize").unique().iter_rows()
+        }
+    )
     for p in paths:
         if p.stem in have:
             continue

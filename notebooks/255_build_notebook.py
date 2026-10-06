@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Write notebooks/255_ranking_metrics_vs_human_pfam.ipynb; execute it with
     jupyter nbconvert --to notebook --execute --inplace 255_ranking_metrics_vs_human_pfam.ipynb
-from notebooks/. The table per alphabet-ksize pair comes from 255_ranking_metrics_per_arm.py (run it first)."""
+from notebooks/. The table per alphabet-ksize pair comes from 255_ranking_metrics_per_arm.py (run it first).
+"""
 
 import json
 from pathlib import Path
@@ -10,11 +11,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "255_ranking_metrics_vs_human_pfam.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 255: How well does each kmerseek ranking metric sort correct from incorrect Pfam matches?
 
 **Question.** kmerseek 0.4 reports eleven scores for each matched region. Judged against
@@ -62,7 +68,7 @@ on the same matches.
 **Uncertainty.** 95% intervals come from 1_000 resamples of query proteins (all matches of
 a query move together, because they are not independent of each other).
 """),
-code(r"""
+    code(r"""
 import hashlib
 import sys
 from pathlib import Path
@@ -95,14 +101,14 @@ print(f"{df.height:_} matches, {df['query_name'].n_unique():_} query proteins, "
       f"{df['db_n_targets'].unique().to_list()} proteins in the index")
 print(df.select([pl.col(r).sum().alias(rm.RULE_NAME[r]) for r in RULES]).with_columns(pl.lit("correct").alias("")))
 """),
-md(r"""
+    md(r"""
 ## 1. The labels can be rebuilt from the Pfam truth
 
 `label_regions` recomputes the four rules from the region coordinates and the midi-plus
 human domain truth (kmerseek starts are 0-based, ends inclusive). It agrees with every
 stored label. The same function labels the 152 alphabet-ksize pairs in section 7.
 """),
-code(r"""
+    code(r"""
 rebuilt = rm.label_regions(df.drop(RULES))
 check = pl.DataFrame({"rule": [rm.RULE_NAME[r] for r in RULES],
                       "stored correct": [int(df[r].sum()) for r in RULES],
@@ -111,7 +117,7 @@ check = pl.DataFrame({"rule": [rm.RULE_NAME[r] for r in RULES],
 print(check)
 assert check["rows that disagree"].sum() == 0
 """),
-md(r"""
+    md(r"""
 ## 2. What each metric can score, and ties
 
 A metric cannot rank a match that has no value. For 2_005 matches kmerseek found no
@@ -120,7 +126,7 @@ E = inf and a bit score of 0 there. Both are treated as missing, not ranked. The
 Poisson p-values reach 0 (below the smallest number a computer stores) on hundreds of
 matches, and all of those tie at the top.
 """),
-code(r"""
+    code(r"""
 ties = rm.ties_and_missing(df, COLS)
 print(ties)
 assert (ties["n_scored"] + ties["n_null_or_inf"] + ties["n_no_lambda"] == df.height).all()
@@ -135,7 +141,7 @@ print(pl.DataFrame({
     **{f"correct, {rm.RULE_NAME[r]}": [int(df.filter(nolam)[r].sum()), int(df.filter(~nolam)[r].sum())] for r in RULES},
 }))
 """),
-md(r"""
+    md(r"""
 ## 3. ROC AUC and average precision, per labelling rule
 
 Each metric is scored on the matches it can score. For the E-value and bit score that is
@@ -143,7 +149,7 @@ Each metric is scored on the matches it can score. For the E-value and bit score
 base rate differs. `auc_unscored_last` and `ap_unscored_last` put the 2_005 unscored matches
 at the bottom of the list instead, over all 5_649.
 """),
-code(r"""
+    code(r"""
 boot = pl.concat([rm.bootstrap(df, r, COLS, n_boot=N_BOOT) for r in RULES])
 show = ["rule", "metric", "n_scored", "n_correct", "base_rate", "auc", "auc_lo", "auc_hi", "length_auc",
         "ap", "ap_lo", "ap_hi", "length_ap", "auc_unscored_last", "ap_unscored_last"]
@@ -162,7 +168,7 @@ print(f"\nrows where the metric's ROC AUC is above length's with the interval ab
 print(f"rows where the metric's AP is above length's with the interval above 0: {above_ap.height}")
 print(above_ap.select("rule", "metric", "ap_minus_length", "ap_minus_length_lo", "ap_minus_length_hi"))
 """),
-code(r"""
+    code(r"""
 fig, axes = plt.subplots(4, 2, figsize=(12, 17), sharey=True)
 for i, r in enumerate(RULES):
     t = boot.filter(pl.col("rule") == rm.RULE_NAME[r])
@@ -180,7 +186,7 @@ fig.suptitle(f"ROC AUC: {above_auc.height} of {diff.height} metric and rule pair
 fig.tight_layout(rect=(0, 0, 1, 0.95))
 fig.savefig(FIG / "255_auc_ap_by_rule.png", bbox_inches="tight")
 """),
-md(r"""
+    md(r"""
 ## 4. Calls at a cutoff: accuracy, precision, recall, F1, MCC
 
 For every metric the cutoff is the one that gives the highest F1 on these same 5_649
@@ -189,14 +195,14 @@ E-value also gets the two fixed cutoffs E ≤ 1 and E ≤ 0.01. A match a metric
 is never called. Accuracy is high for every metric because 86% of matches are incorrect
 and "call nothing" already scores 0.86 under any overlap.
 """),
-code(r"""
+    code(r"""
 thr = pl.concat([rm.thresholds(df, r, COLS) for r in RULES])
 for r in RULES:
     y = df[r].to_numpy()
     print(f"\nrule: {rm.RULE_NAME[r]}  (calling nothing gives accuracy {1 - y.mean():.3f})")
     print(thr.filter(pl.col("rule") == rm.RULE_NAME[r]).drop("rule"))
 """),
-code(r"""
+    code(r"""
 colmap = {n: c for c, _, n in rm.ALL}
 tt = (thr.with_columns(pl.col("metric").replace_strict(colmap).alias("column"),
                        pl.when(pl.col("cutoff") == "best F1").then(pl.col("metric"))
@@ -222,7 +228,7 @@ fig.tight_layout(rect=(0, 0, 1, 0.95))
 fig.savefig(FIG / "255_f1_mcc_by_rule.png", bbox_inches="tight")
 print(tt.select("rule", "label", "value_at_cutoff", "f1", "length_f1", "mcc", "length_mcc"))
 """),
-md(r"""
+    md(r"""
 ## 5. Ranking within one query protein
 
 A search user reads the list for one query. Here each query's matches are sorted by the
@@ -230,12 +236,12 @@ metric; matches the metric cannot score go last. Only queries with at least one 
 match count. Tied matches are averaged over every order they could come in. "Random order"
 is the same measure with no score at all.
 """),
-code(r"""
+    code(r"""
 pq = pl.concat([rm.per_query(df, r, COLS) for r in RULES])
 for r in RULES:
     print(pq.filter(pl.col("rule") == rm.RULE_NAME[r]))
 """),
-code(r"""
+    code(r"""
 colmap["random order"] = "random"
 pp = pq.filter(pl.col("metric") != "random order").with_columns(pl.col("metric").replace_strict(colmap).alias("column"))
 ref = pq.filter(pl.col("metric").is_in(["random order", "region length"])).pivot(on="metric", index="rule",
@@ -261,7 +267,7 @@ fig.suptitle("Fraction of queries whose top match is correct, best metric vs reg
 fig.tight_layout(rect=(0, 0, 1, 0.95))
 fig.savefig(FIG / "255_per_query_by_rule.png", bbox_inches="tight")
 """),
-md(r"""
+    md(r"""
 ## 6. Within bins of region length
 
 If a metric only repeats length, its lead should shrink once length is held within a
@@ -270,7 +276,7 @@ length still sorts matches inside them (AUC 0.66 to 0.81 in the three longer bin
 shortest bin (24 to 29 aa; k = 24 sets the floor) holds 2 to 10 correct matches, so its
 intervals are wide. The E-value and bit score score fewer matches in every bin.
 """),
-code(r"""
+    code(r"""
 bins = pl.concat([rm.length_bins(df, r, COLS, n_boot=N_BOOT) for r in RULES])
 print(bins.select("rule", "length_bin", "metric", "n_scored", "n_correct", "base_rate", "auc", "auc_lo", "auc_hi",
                   "length_auc", "auc_minus_length", "auc_minus_length_lo", "auc_minus_length_hi", "ap", "length_ap"))
@@ -280,7 +286,7 @@ print("\nbins where a metric's AUC differs from length's (95% interval of the pa
 print(bdiff.select("rule", "length_bin", "metric", "n_correct", "auc", "length_auc", "auc_minus_length",
                    "auc_minus_length_lo", "auc_minus_length_hi").sort("rule", "length_bin", "auc_minus_length"))
 """),
-code(r"""
+    code(r"""
 labs = [b[2] for b in rm.LENGTH_BINS]
 fig, axes = plt.subplots(4, 4, figsize=(17, 17), sharey=True)
 for i, r in enumerate(RULES):
@@ -300,7 +306,7 @@ fig.suptitle(f"Inside a length bin, {n_up} of {n_all} metric, rule and bin combi
 fig.tight_layout(rect=(0, 0, 1, 0.95))
 fig.savefig(FIG / "255_auc_by_length_bin.png", bbox_inches="tight")
 """),
-md(r"""
+    md(r"""
 ## 7. Every alphabet and k (152 alphabet-ksize pairs of the notebook 243 search)
 
 `255_ranking_metrics_per_arm.py` labels every region of every alphabet-ksize pair with the same rules and
@@ -312,7 +318,7 @@ cannot be scored per alphabet-ksize pair. No interval is computed per alphabet-k
 pair have the same E-value (for example both infinite), the kept direction is the one whose
 query name sorts first; the stored 5_649 file broke those ties another way (checked below).
 """),
-code(r"""
+    code(r"""
 # Cross-check: the hp_lehninger2 k=24 alphabet-ksize pair of the notebook 243 search against the stored
 # any-overlap labels of the 11_298 directed hits the 5_649 matches were built from.
 hits = pl.read_parquet(rm.LABELS.parent / "human_pfam_allvall_labeled_hits.parquet")
@@ -338,7 +344,7 @@ assert tie_check.height == kept_other.height
 assert (tie_check["region_evalue"] == tie_check["e_kept"]).all()
 
 """),
-code(r"""
+    code(r"""
 arm = pl.read_parquet(rm.PER_ARM)
 n_arms = arm.select("alphabet", "ksize").unique().height
 print(f"{rm.PER_ARM}: {n_arms} alphabet-ksize pairs")
@@ -366,7 +372,7 @@ print(arm.filter((pl.col("alphabet") == "hp_lehninger2") & (pl.col("ksize") == 2
       .select("rule", "metric", "n_matches", "n_scored", "base_rate", "auc", "length_auc", "ap", "length_ap",
               "precision_at_1", "precision_at_1_random"))
 """),
-code(r"""
+    code(r"""
 show_rules = ["any overlap", "IoU ≥ 0.2"]
 mets = [c for c in ["region_evalue", "region_ka_bits", "region_mean_idf", "region_tfidf", "region_enrichment",
                     "region_tail_probability", "region_n_shared_kmers"]]
@@ -398,7 +404,7 @@ for rule in show_rules:
     print(f"\nROC AUC per alphabet-ksize pair, rule: {rule} (region length column: length over all matches of the alphabet-ksize pair)")
     print(w)
 """),
-md(r"""
+    md(r"""
 ### All 19 alphabets on one page
 
 The figure above asks the reader to pair each coloured dot with the grey dot behind it. This
@@ -410,7 +416,7 @@ of the list is nearly all wrong. Blue: the metric puts correct matches higher th
 alone does. Red: lower. n: the number of alphabet-ksize pairs in the median (the E-value and
 bit score exist only where the index has a Karlin-Altschul fit).
 """),
-code(r"""
+    code(r"""
 gain = rm.gain_over_length(arm, "IoU ≥ 0.2", "ap")
 rm.fig_gain_grid(
     gain, FIG / "255_all_alphabets_ap_gain_over_length.png",
@@ -423,13 +429,13 @@ print("\nalphabets where the metric's median is above length's (of 19):")
 print(gain.group_by("metric").agg((pl.col("median_gain") > 0).sum().alias("alphabets above length"),
                                   pl.col("median_gain").median().round(3).alias("median over alphabets")).sort("metric"))
 """),
-md(r"""
+    md(r"""
 ## 8. Checks
 
 One AUC by hand with scikit-learn on the raw columns, and the count of matches each metric
 scored.
 """),
-code(r"""
+    code(r"""
 y = df["correct_any_overlap"].to_numpy()
 t = boot.filter(pl.col("rule") == "any overlap")
 hand_tfidf = roc_auc_score(y, df["region_tfidf"].to_numpy())
@@ -446,7 +452,7 @@ from scipy.stats import spearmanr
 print(f"Spearman rho, region_tfidf vs region_length over the 5_649 matches: "
       f"{spearmanr(df['region_tfidf'].to_numpy(), df['region_length'].to_numpy()).statistic:.3f}")
 """),
-md(r"""
+    md(r"""
 ## 9. Conclusions
 
 Numbers are for hp_lehninger2 k=24 on the 5_649 matches unless a line says otherwise. The
@@ -504,8 +510,18 @@ alphabet-ksize pair is in `per_arm_metrics.parquet` but not drawn.
 
 for i, c in enumerate(cells):
     c["id"] = f"c{i:02d}"
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                                   "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1))
 print("wrote", OUT)
