@@ -296,3 +296,196 @@ def format_label_window(
             f"{t_name + ' classes':<{w}}{'':>5} {tc}",
         ]
     )
+
+
+# ---- figures for sections 3-5, drawn with the paper style in pubfig.py ----
+
+#: One colour and one marker per family, the same in every section 3-5 figure.
+FAMILY_STYLE = {
+    "globin": dict(color="#0072B2", marker="o"),
+    "lysozyme_lactalbumin": dict(color="#D55E00", marker="s"),
+    "cystatin": dict(color="#009E73", marker="^"),
+}
+FAMILY_NAME = {f: t.replace("/\n", "/ ") for f, t in FAMILY_TITLE.items()}
+KMERSEEK_BEST = "kmerseek, best of 150"
+
+
+def alphabet_size(alphabet: str) -> int:
+    """Letters in a reduced alphabet, read from the number its name ends in."""
+    digits = "".join(ch for ch in reversed(alphabet) if ch.isdigit())[::-1]
+    return int(digits)
+
+
+def alphabet_rows(alphabets) -> list[tuple[float, str]]:
+    """(y position, alphabet) grouped by size, 2-3 / 4-8 / 12-18 / 20, a gap between groups."""
+
+    def group(n):
+        return 0 if n <= 3 else 1 if n <= 8 else 2 if n <= 18 else 3
+
+    order = sorted(set(alphabets), key=lambda a: (alphabet_size(a), a))
+    rows, y, last = [], 0.0, None
+    for a in order:
+        g = group(alphabet_size(a))
+        if last is not None and g != last:
+            y += 0.8
+        rows.append((y, a))
+        y += 1
+        last = g
+    return rows
+
+
+def fig_lowest_identity(lowest: pl.DataFrame, share: pl.DataFrame):
+    """a: lowest identity at which each tool places the label correctly, per family.
+    b: share of the 150 kmerseek alphabet-k combinations right on each labelled pair."""
+    import pubfig as pf
+
+    pf.use_style()
+    fig, (a, b) = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2, width_ratios=[1, 1.25])
+    tools = [TOOL_TITLE[t] for t in BASELINES] + [KMERSEEK_BEST]
+    ypos = {t: i for i, t in enumerate(tools)}
+    offset = {"globin": -0.2, "lysozyme_lactalbumin": 0.0, "cystatin": 0.2}
+    for f in FAMILIES:
+        sub = lowest.filter(pl.col("family") == f)
+        a.scatter(
+            sub["lowest_identity_correct_pct"],
+            [ypos[t] + offset[f] for t in sub["tool"]],
+            s=14,
+            label=FAMILY_NAME[f],
+            **FAMILY_STYLE[f],
+        )
+        s = share.filter(pl.col("family") == f)
+        b.scatter(
+            s["needle_identity_pct"],
+            100 * s["share_of_150_correct"],
+            s=10,
+            alpha=0.75,
+            linewidths=0,
+            **FAMILY_STYLE[f],
+        )
+    a.set_yticks(range(len(tools)), tools)
+    a.invert_yaxis()
+    for y in range(len(tools)):
+        a.axhline(y, color="#dddddd", lw=0.3, zorder=0)
+    a.set_xlim(0, 65)
+    a.set_xlabel("Lowest global identity with the label placed correctly (%)")
+    b.set_xlim(0, 100)
+    b.set_ylim(-3, 103)
+    b.set_xlabel("Global identity of the pair (%)")
+    b.set_ylabel(
+        "kmerseek alphabet-k combinations\nplacing the label correctly (% of 150)"
+    )
+    pf.shared_legend(fig)
+    pf.panel_label(a, "a", dx_pt=-75)
+    pf.panel_label(b, "b", dx_pt=-30)
+    return fig
+
+
+def fig_ka_fit_and_placement(
+    ext: pl.DataFrame, km_calls: pl.DataFrame, placed: pl.DataFrame
+):
+    """a: alphabet-k combinations whose index has a Karlin-Altschul fit, per alphabet.
+    b: kmerseek calls by where their E-value came from.
+    c: chance a correct call is correct by its placement alone, one point per call."""
+    import pubfig as pf
+
+    pf.use_style()
+    fig, (a, b, c) = pf.figure(
+        pf.TWO_COLUMN_MM, 80, ncols=3, width_ratios=[1, 0.45, 1.3]
+    )
+    per = ext.group_by("alphabet").agg(
+        pl.col("has_ka_fit").sum().alias("fit"),
+        (~pl.col("has_ka_fit")).sum().alias("nofit"),
+    )
+    n = {r["alphabet"]: r for r in per.iter_rows(named=True)}
+    rows = alphabet_rows(per["alphabet"])
+    ys = [y for y, _ in rows]
+    fit = [n[al]["fit"] for _, al in rows]
+    nofit = [n[al]["nofit"] for _, al in rows]
+    a.barh(
+        ys, fit, color="#0072B2", height=0.8, label="index has a Karlin-Altschul fit"
+    )
+    a.barh(
+        ys,
+        nofit,
+        left=fit,
+        color="#E69F00",
+        height=0.8,
+        label="no fit: E-value from the run length",
+    )
+    a.set_yticks(ys, [f"{al} ({alphabet_size(al)})" for _, al in rows])
+    a.invert_yaxis()
+    a.set_xlabel("k values searched (n)")
+    a.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
+
+    src = dict(km_calls.group_by("evalue_source").len().iter_rows())
+    b.bar(
+        [0, 1],
+        [src.get("ka", 0), src.get("run", 0)],
+        color=["#0072B2", "#E69F00"],
+        width=0.7,
+    )
+    b.set_xticks([0, 1], ["Karlin-\nAltschul", "run\nlength"])
+    b.set_ylabel("kmerseek calls (n)")
+    b.set_xlabel("E-value source")
+
+    groups = placed.select("family", "label").unique().sort("family", "label").rows()
+    rng = np.random.default_rng(0)
+    for i, (f, lab) in enumerate(groups):
+        v = placed.filter((pl.col("family") == f) & (pl.col("label") == lab))[
+            "placement_null"
+        ]
+        c.scatter(
+            v,
+            i + rng.uniform(-0.3, 0.3, len(v)),
+            s=3,
+            alpha=0.35,
+            linewidths=0,
+            color=FAMILY_STYLE[f]["color"],
+            marker=FAMILY_STYLE[f]["marker"],
+        )
+    c.axvline(0.05, color="#000000", lw=0.6, ls="--", label="chance = 0.05")
+    c.set_yticks(range(len(groups)), [f"{FAMILY_NAME[f]}:\n{lab}" for f, lab in groups])
+    c.invert_yaxis()
+    c.set_xlim(-0.02, 1.02)
+    c.set_xlabel(
+        "Chance of being correct by placement alone\n(1 = call spans the whole target)"
+    )
+    pf.shared_legend(fig, ncol=3)
+    for ax, letter, dx in [(a, "a", -95), (b, "b", -30), (c, "c", -95)]:
+        pf.panel_label(ax, letter, dx_pt=dx)
+    return fig
+
+
+def fig_shared_kmers(pk_long: pl.DataFrame, alphabet: str, k_shown: int):
+    """a: longest identical-class run per pair against identity. b: shared k-mers at k_shown."""
+    import pubfig as pf
+
+    pf.use_style()
+    fig, (a, b) = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2)
+    one_k = pk_long.filter(pl.col("ksize") == k_shown)
+    for f in FAMILIES:
+        s = one_k.filter(pl.col("family") == f)
+        kw = dict(s=10, alpha=0.75, linewidths=0, **FAMILY_STYLE[f])
+        a.scatter(
+            s["needle_identity_pct"],
+            s["longest_identical_class_run"],
+            label=FAMILY_NAME[f],
+            **kw,
+        )
+        b.scatter(s["needle_identity_pct"], s["n_shared_kmers"], **kw)
+    a.axhline(
+        k_shown,
+        color="#000000",
+        lw=0.6,
+        ls="--",
+        label=f"k = {k_shown}: a shorter run shares no k-mer",
+    )
+    for ax in (a, b):
+        ax.set_xlim(0, 100)
+        ax.set_xlabel("Global identity of the pair (%)")
+    a.set_ylabel(f"Longest identical-class run (aa)\n{alphabet}")
+    b.set_ylabel(f"Shared k-mers (n)\n{alphabet}, k = {k_shown}")
+    pf.shared_legend(fig, ncol=4)
+    pf.panel_label(a, "a", dx_pt=-35)
+    pf.panel_label(b, "b", dx_pt=-35)
+    return fig
