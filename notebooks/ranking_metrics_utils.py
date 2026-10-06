@@ -11,9 +11,12 @@ four overlap rules (`RULES`). `label_regions` reproduces the labels stored in
 
 from __future__ import annotations
 
+import contextlib
+
 from pathlib import Path
 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 from scipy.stats import rankdata
@@ -23,7 +26,7 @@ LABELS = Path(
     "/Users/olga/data/botryllus/ranking-metrics/labeled_pairs_overlap_rules.parquet"
 )
 TRUTH = Path(
-    "/Users/olga/data/qfo-pfam-region-midi-plus/truth/human_domain_truth.parquet"
+    "/Users/olga/data/qfo-pfam-region-benchmark/midi-plus/truth/human_domain_truth.parquet"
 )
 PF998 = Path("/Users/olga/data/alphabet-logreg-pfam998")
 PLAN = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases/plan.json")
@@ -700,4 +703,195 @@ def fig_gain_grid(g: pl.DataFrame, path: Path, title: str, stat_label: str):
     ax.tick_params(length=0)
     fig.text(0.01, 0.99, title, fontsize=9.5, va="top")
     fig.savefig(path, dpi=200, bbox_inches="tight")
+    return fig
+
+
+# ------------------------------------------------- figures for sections 1, 2 and 8
+# Drawn with the paper style (pubfig.py) inside a style context, so the other figures
+# of the notebook keep their own settings.
+RULE_SHORT = {
+    "any overlap": "any overlap",
+    "≥20% of the matched region inside the domain": "≥20% of region in domain",
+    "≥20% of the domain covered by the region": "≥20% of domain covered",
+    "IoU ≥ 0.2": "IoU ≥ 0.2",
+}
+NO_VALUE = "#d9d9d9"  # a match the metric gives no value to
+
+
+@contextlib.contextmanager
+def paper_style():
+    """Draw with pubfig's nature.mplstyle, then put back every setting but the fonts.
+
+    The fonts stay (Arial, embedded as TrueType), because a font is looked up when the
+    figure is saved or shown, after this block has ended; restoring them would write the
+    figure in DejaVu Sans. Not plt.style.context: in a Jupyter kernel (matplotlib 3.10,
+    matplotlib-inline) the figures of every later cell stop being shown once it exits.
+    """
+    import pubfig as pf
+
+    keep = {
+        k: v
+        for k, v in mpl.rcParams.items()
+        if k not in ("backend", "backend_fallback", "interactive")
+        and not k.startswith(("font.family", "font.sans-serif", "font.monospace"))
+        and not k.startswith(
+            ("mathtext.", "pdf.fonttype", "ps.fonttype", "svg.fonttype")
+        )
+    }
+    try:
+        mpl.rcParams.update(
+            mpl.rc_params_from_file(pf.STYLE, use_default_template=False)
+        )
+        yield
+    finally:
+        mpl.rcParams.update(keep)
+
+
+CORRECT = "#009E73"
+INCORRECT = "#999999"
+
+
+def fig_labels_rebuilt(check: pl.DataFrame, n_matches: int):
+    """Correct matches per rule: stored label (wide pale bar), rebuilt label (thin bar)."""
+    import pubfig as pf
+
+    with paper_style():
+        fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55)
+        y = np.arange(check.height)
+        ax.barh(
+            y,
+            check["stored correct"],
+            height=0.75,
+            color="#bdd7e7",
+            label="stored label",
+        )
+        ax.barh(
+            y,
+            check["rebuilt correct"],
+            height=0.3,
+            color="#08519c",
+            label="rebuilt by label_regions",
+        )
+        for yi, s, d in zip(y, check["stored correct"], check["rows that disagree"]):
+            ax.text(s + 15, yi, f"{s}, {d} disagree", va="center", fontsize=6)
+        ax.set_yticks(y, [RULE_SHORT[r] for r in check["rule"]])
+        ax.invert_yaxis()
+        ax.set_xlim(0, max(check["stored correct"]) * 1.45)
+        ax.set_xlabel(f"Correct matches (n, of {n_matches:_})")
+        pf.shared_legend(fig)
+    return fig
+
+
+def fig_ties_and_missing(ties: pl.DataFrame, by_lambda: pl.DataFrame):
+    """a: matches each metric scores. b: matches tied at the top score.
+    c: share correct among matches with and without a Karlin-Altschul lambda, per rule.
+    """
+    import pubfig as pf
+
+    with paper_style():
+        fig, (a, b, c) = pf.figure(
+            pf.TWO_COLUMN_MM, 70, ncols=3, width_ratios=[1.2, 0.8, 1]
+        )
+        y = np.arange(ties.height)
+        cols = [COLOR[c_] for c_ in ties["column"]]
+        no_value = ties["n_null_or_inf"] + ties["n_no_lambda"]
+        a.barh(y, ties["n_scored"], color=cols, height=0.75)
+        a.barh(
+            y,
+            no_value,
+            left=ties["n_scored"],
+            color=NO_VALUE,
+            height=0.75,
+            label="no value (no lambda: E = inf, bits = 0)",
+        )
+        a.set_yticks(y, ties["metric"])
+        a.invert_yaxis()
+        a.set_xlabel("Matches (n)")
+        b.scatter(ties["n_tied_at_top"], y, color=cols, s=14, zorder=3)
+        b.set_yticks(y, [])
+        b.invert_yaxis()
+        b.set_xlabel("Matches tied at the\nbest score (n)")
+        for yi in y:
+            b.axhline(yi, color="#dddddd", lw=0.3, zorder=0)
+        ry = np.arange(by_lambda.height)
+        c.scatter(
+            100 * by_lambda["share_correct_no_lambda"],
+            ry,
+            marker="x",
+            color="#000000",
+            s=14,
+            label="no lambda (E = inf)",
+        )
+        c.scatter(
+            100 * by_lambda["share_correct_lambda"],
+            ry,
+            marker="o",
+            facecolor="none",
+            edgecolor="#000000",
+            s=14,
+            label="lambda > 0",
+        )
+        c.set_yticks(ry, [RULE_SHORT[r] for r in by_lambda["rule"]])
+        c.invert_yaxis()
+        c.set_xlim(0, None)
+        c.set_xlabel("Correct matches (%)")
+        for yi in ry:
+            c.axhline(yi, color="#dddddd", lw=0.3, zorder=0)
+        pf.shared_legend(fig, ncol=3)
+        for ax, letter, dx in [(a, "a", -80), (b, "b", -12), (c, "c", -75)]:
+            pf.panel_label(ax, letter, dx_pt=dx)
+    return fig
+
+
+def fig_checks(auc_check: pl.DataFrame, df: pl.DataFrame, rule: str):
+    """a: ROC AUC from scikit-learn against the notebook's table. b: tf-idf against region
+    length for every match, coloured by the label under `rule`."""
+    import pubfig as pf
+
+    with paper_style():
+        fig, (a, b) = pf.figure(pf.TWO_COLUMN_MM, 65, ncols=2, width_ratios=[0.8, 1.2])
+        col = {
+            "tf-idf": "region_tfidf",
+            "E-value (lambda > 0 only)": "region_evalue",
+            "region length": "region_length",
+        }
+        lo = (
+            min(auc_check["sklearn on the raw column"].min(), auc_check["table"].min())
+            - 0.01
+        )
+        a.plot([lo, 1], [lo, 1], color="#000000", lw=0.5, ls="--", label="same value")
+        for m, sk, tb in auc_check.select(
+            "metric", "sklearn on the raw column", "table"
+        ).iter_rows():
+            a.scatter(tb, sk, color=COLOR[col[m]], s=20, zorder=3, label=m)
+        a.set_xlim(lo, 1)
+        a.set_ylim(lo, 1)
+        a.set_aspect("equal")
+        a.set_xlabel("ROC AUC, notebook table")
+        a.set_ylabel("ROC AUC, scikit-learn")
+        y = df[rule].to_numpy()
+        for flag, color, marker, lab in [
+            (False, INCORRECT, "o", "incorrect match"),
+            (True, CORRECT, "^", "correct match"),
+        ]:
+            s = df.filter(pl.col(rule) == flag)
+            b.scatter(
+                s["region_length"],
+                s["region_tfidf"],
+                s=3,
+                alpha=0.4,
+                linewidths=0,
+                color=color,
+                marker=marker,
+                label=f"{lab} ({RULE_NAME[rule]})",
+            )
+        b.set_xscale("log")
+        b.set_yscale("log")
+        for axis in (b.xaxis, b.yaxis):
+            axis.set_major_formatter(mpl.ticker.FuncFormatter(lambda v, _: f"{v:g}"))
+        b.set_xlabel("Region length (aa)")
+        b.set_ylabel("tf-idf")
+        pf.shared_legend(fig, ncol=3)
+        pf.panel_label(a, "a", dx_pt=-35)
+        pf.panel_label(b, "b", dx_pt=-35)
     return fig
