@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - run: pip install 'pillow>=10.1' pytest
+      - run: pip install 'pillow>=10.1' matplotlib pytest
       - run: pytest -q tests/test_shrink_png.py
       - name: PNGs and notebooks changed in this PR are at 256 colours
         run: |

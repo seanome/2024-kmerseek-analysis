@@ -6,10 +6,10 @@ import io
 import json
 from pathlib import Path
 
-import pytest
 from PIL import Image
 
-matplotlib = pytest.importorskip("matplotlib")
+import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
