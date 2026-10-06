@@ -32,8 +32,15 @@ INK = "#222222"
 GREY = "#8c8c8c"
 RUN = "#009E73"  # mean longest exact run (Figure 3), a length, not a bit count
 
-plt.rcParams.update({"font.size": 10, "axes.spines.top": False, "axes.spines.right": False,
-                     "savefig.dpi": 200, "savefig.bbox": "tight"})
+plt.rcParams.update(
+    {
+        "font.size": 10,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "savefig.dpi": 200,
+        "savefig.bbox": "tight",
+    }
+)
 
 # The two hydrophobic/polar partitions used here, copied from kmerseek src/rust/alphabets.rs
 # (LEHNINGER_HP and THOMAS_DILL_HP). Letters listed are the hydrophobic class; every other
@@ -81,20 +88,31 @@ def bh1_block() -> dict:
     """Residues, classes and match lines of the BH1 window, all counted here."""
     s = sequences()
     L = BH1["length"]
-    q = s["BCL2"][BH1["bcl2_start"] - 1: BH1["bcl2_start"] - 1 + L]
-    t = s["CED9"][BH1["ced9_start"] - 1: BH1["ced9_start"] - 1 + L]
-    out = {"bcl2": q, "ced9": t, "length": L,
-           "identity_line": "".join("|" if a == b else " " for a, b in zip(q, t)),
-           "identical": sum(a == b for a, b in zip(q, t)),
-           "ced9_length": len(s["CED9"]), "bcl2_length": len(s["BCL2"])}
+    q = s["BCL2"][BH1["bcl2_start"] - 1 : BH1["bcl2_start"] - 1 + L]
+    t = s["CED9"][BH1["ced9_start"] - 1 : BH1["ced9_start"] - 1 + L]
+    out = {
+        "bcl2": q,
+        "ced9": t,
+        "length": L,
+        "identity_line": "".join("|" if a == b else " " for a, b in zip(q, t)),
+        "identical": sum(a == b for a, b in zip(q, t)),
+        "ced9_length": len(s["CED9"]),
+        "bcl2_length": len(s["BCL2"]),
+    }
     for name, h in HYDROPHOBIC.items():
         cq = "".join("h" if c in h else "p" for c in q)
         ct = "".join("h" if c in h else "p" for c in t)
         line = "".join("|" if a == b else " " for a, b in zip(cq, ct))
         runs = [(m.start(), m.end()) for m in re.finditer(r"\|+", line)]
         a, b = max(runs, key=lambda r: r[1] - r[0])
-        out[name] = {"bcl2": cq, "ced9": ct, "line": line, "same_class": line.count("|"),
-                     "run_start": a, "run_length": b - a}
+        out[name] = {
+            "bcl2": cq,
+            "ced9": ct,
+            "line": line,
+            "same_class": line.count("|"),
+            "run_start": a,
+            "run_length": b - a,
+        }
     return out
 
 
@@ -103,26 +121,35 @@ def print_bh1(block: dict) -> None:
     b0, c0, L = BH1["bcl2_start"], BH1["ced9_start"], block["length"]
     w = 16
     print(f"{'BCL2':<{w}}{b0:>4} {block['bcl2']} {b0 + L - 1}")
-    print(f"{'':<{w}}     {block['identity_line']}   {block['identical']} of {L} identical")
+    print(
+        f"{'':<{w}}     {block['identity_line']}   {block['identical']} of {L} identical"
+    )
     print(f"{'CED-9':<{w}}{c0:>4} {block['ced9']} {c0 + L - 1}")
     for name in HYDROPHOBIC:
         a = block[name]
         s, n = a["run_start"], a["run_length"]
         print()
-        print(f"{name} classes (h = {''.join(sorted(HYDROPHOBIC[name]))}, p = the rest)")
+        print(
+            f"{name} classes (h = {''.join(sorted(HYDROPHOBIC[name]))}, p = the rest)"
+        )
         print(f"{'BCL2':<{w}}{b0:>4} {a['bcl2']} {b0 + L - 1}")
         print(f"{'':<{w}}     {a['line']}   {a['same_class']} of {L} same class")
         print(f"{'CED-9':<{w}}{c0:>4} {a['ced9']} {c0 + L - 1}")
-        print(f"{'':<{w}}     {' ' * s}{'^' * n}   longest class-identical run: {n}, "
-              f"BCL2 {b0 + s}-{b0 + s + n - 1}, CED-9 {c0 + s}-{c0 + s + n - 1}")
+        print(
+            f"{'':<{w}}     {' ' * s}{'^' * n}   longest class-identical run: {n}, "
+            f"BCL2 {b0 + s}-{b0 + s + n - 1}, CED-9 {c0 + s}-{c0 + s + n - 1}"
+        )
 
 
 def usalign_agreement() -> tuple[int, int]:
     """How many BH1 positions the USalign structure alignment puts on the same diagonal."""
     p = pl.read_csv(TABLES / "245_bcl2_ced9_usalign_pairs.tsv", separator="\t")
     off = BH1["ced9_start"] - BH1["bcl2_start"]
-    w = p.filter(pl.col("bcl2_pos").is_between(BH1["bcl2_start"],
-                                               BH1["bcl2_start"] + BH1["length"] - 1))
+    w = p.filter(
+        pl.col("bcl2_pos").is_between(
+            BH1["bcl2_start"], BH1["bcl2_start"] + BH1["length"] - 1
+        )
+    )
     return int((w["ced9_pos"] - w["bcl2_pos"] == off).sum()), BH1["length"]
 
 
@@ -168,24 +195,43 @@ def seed_bits(k: int, pr_match_unrelated: float) -> float:
 
 # ------------------------------------------------------------------ figures ------------
 def _legend_top(ax, handles, ncol=2):
-    ax.legend(handles=handles, loc="lower left", bbox_to_anchor=(0, 1.02), ncol=ncol,
-              frameon=False, fontsize=9, handlelength=1.6, borderaxespad=0)
+    ax.legend(
+        handles=handles,
+        loc="lower left",
+        bbox_to_anchor=(0, 1.02),
+        ncol=ncol,
+        frameon=False,
+        fontsize=9,
+        handlelength=1.6,
+        borderaxespad=0,
+    )
 
 
 def fig_bits_have_vs_need(v: dict, path: Path) -> None:
     """Figure 1: one bar per quantity; blue = what the pair has, red = what is needed."""
-    fig, axes = plt.subplots(2, 1, figsize=(8.6, 5.4), gridspec_kw={"height_ratios": [4, 3],
-                                                                     "hspace": 0.9})
+    fig, axes = plt.subplots(
+        2, 1, figsize=(8.6, 5.4), gridspec_kw={"height_ratios": [4, 3], "hspace": 0.9}
+    )
     panels = [
-        (axes[0], "a  Evidence in the 37-residue BH1 block, against the cost of E = 1 and E = 10",
-         [(v["label_ceiling20"], v["bits_block_20"], HAVE),
-          (v["label_coin2"], v["bits_block_hp"], HAVE),
-          (v["label_need_region"], v["bits_needed_region"], NEED),
-          (v["label_need_region_e10"], v["bits_needed_region_e10"], NEED)]),
-        (axes[1], "b  Rarity of the longest exact seed, against chance seeds per search",
-         [(v["label_seed_have"], v["seed_bits_bh1"], HAVE),
-          (v["label_need_seed"], v["bits_needed_seed"], NEED),
-          (v["label_need_seed_e10"], v["bits_needed_seed_e10"], NEED)]),
+        (
+            axes[0],
+            "a  Evidence in the 37-residue BH1 block, against the cost of E = 1 and E = 10",
+            [
+                (v["label_ceiling20"], v["bits_block_20"], HAVE),
+                (v["label_coin2"], v["bits_block_hp"], HAVE),
+                (v["label_need_region"], v["bits_needed_region"], NEED),
+                (v["label_need_region_e10"], v["bits_needed_region_e10"], NEED),
+            ],
+        ),
+        (
+            axes[1],
+            "b  Rarity of the longest exact seed, against chance seeds per search",
+            [
+                (v["label_seed_have"], v["seed_bits_bh1"], HAVE),
+                (v["label_need_seed"], v["bits_needed_seed"], NEED),
+                (v["label_need_seed_e10"], v["bits_needed_seed_e10"], NEED),
+            ],
+        ),
     ]
     xmax = max(val for _, _, bars in panels for _, val, _ in bars) * 1.18
     for ax, title, bars in panels:
@@ -197,9 +243,19 @@ def fig_bits_have_vs_need(v: dict, path: Path) -> None:
         ax.set_xlim(0, xmax)
         ax.set_title(title, loc="left", fontsize=10, pad=6)
         ax.set_xlabel("bits")
-    fig.legend(handles=[Patch(color=HAVE, label="bits the BCL2/CED-9 pair has, or can have at most"),
-                        Patch(color=NEED, label="bits the human-proteome search needs")],
-               loc="lower left", bbox_to_anchor=(0.01, 0.97), ncol=2, frameon=False, fontsize=9)
+    fig.legend(
+        handles=[
+            Patch(
+                color=HAVE, label="bits the BCL2/CED-9 pair has, or can have at most"
+            ),
+            Patch(color=NEED, label="bits the human-proteome search needs"),
+        ],
+        loc="lower left",
+        bbox_to_anchor=(0.01, 0.97),
+        ncol=2,
+        frameon=False,
+        fontsize=9,
+    )
     fig.savefig(path)
     plt.show()
 
@@ -208,30 +264,69 @@ def fig_scaling(v: dict, dbs: list[dict], path: Path) -> None:
     """Figure 2: bits needed against database size; one extra bit per doubling."""
     fig, ax = plt.subplots(figsize=(7.6, 4.4))
     n = np.logspace(6, 10.3, 50)
-    ax.plot(n, np.log2(v["m"] * n), color=NEED, ls="--", lw=1.6,
-            label=f"one chance exact seed per search, log$_2$(m·n), m = {v['m']:.0f}")
+    ax.plot(
+        n,
+        np.log2(v["m"] * n),
+        color=NEED,
+        ls="--",
+        lw=1.6,
+        label=f"one chance exact seed per search, log$_2$(m·n), m = {v['m']:.0f}",
+    )
     for d in dbs:
         ax.plot(d["n"], d["bits"], "o", color=NEED, ms=7)
-        ax.annotate(d["name"], (d["n"], d["bits"]), xytext=(6, -12), textcoords="offset points",
-                    fontsize=9)
-    ax.plot([], [], "o", color=NEED, label="E = 1 for a scored region, log$_2$(K·m·n), K fitted per database")
-    ax.axhline(v["bits_block_20"], color=HAVE, lw=1.6,
-               label=f"BH1 block, 20-letter ceiling: {v['bits_block_20']:.1f} bits")
-    ax.axhline(v["bits_block_hp"], color=HAVE, lw=1.6, ls=":",
-               label=f"BH1 block, two letters (copy-rate model): {v['bits_block_hp']:.1f} bits")
+        ax.annotate(
+            d["name"],
+            (d["n"], d["bits"]),
+            xytext=(6, -12),
+            textcoords="offset points",
+            fontsize=9,
+        )
+    ax.plot(
+        [],
+        [],
+        "o",
+        color=NEED,
+        label="E = 1 for a scored region, log$_2$(K·m·n), K fitted per database",
+    )
+    ax.axhline(
+        v["bits_block_20"],
+        color=HAVE,
+        lw=1.6,
+        label=f"BH1 block, 20-letter ceiling: {v['bits_block_20']:.1f} bits",
+    )
+    ax.axhline(
+        v["bits_block_hp"],
+        color=HAVE,
+        lw=1.6,
+        ls=":",
+        label=f"BH1 block, two letters (copy-rate model): {v['bits_block_hp']:.1f} bits",
+    )
     ax.set_xscale("log")
     ax.set_xlabel("residues in the database, n (log scale)")
     ax.set_ylabel("bits")
     ax.set_ylim(0, 45)
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles, labels, loc="lower left", bbox_to_anchor=(0, 1.02), frameon=False,
-              fontsize=8.5, ncol=1, borderaxespad=0)
+    ax.legend(
+        handles,
+        labels,
+        loc="lower left",
+        bbox_to_anchor=(0, 1.02),
+        frameon=False,
+        fontsize=8.5,
+        ncol=1,
+        borderaxespad=0,
+    )
     fig.savefig(path)
     plt.show()
 
 
-def fig_conservation_vs_reach(reach: pl.DataFrame, v: dict, pr_match_unrelated: float,
-                              need: dict[float, float], path: Path) -> None:
+def fig_conservation_vs_reach(
+    reach: pl.DataFrame,
+    v: dict,
+    pr_match_unrelated: float,
+    need: dict[float, float],
+    path: Path,
+) -> None:
     """Figure 3: no exact-seed length k both reaches the pairs and stands out from chance.
 
     (a) share of pairs that share an exact class-identical run of at least k residues;
@@ -239,50 +334,104 @@ def fig_conservation_vs_reach(reach: pl.DataFrame, v: dict, pr_match_unrelated: 
     ``need``). Both panels share the k axis, so the reader can look up, at the k where the
     blue line meets a red one, how many pairs are left in (a).
     """
-    r = reach.filter((pl.col("dataset") == "Pfam") & (pl.col("identity_bin") == "20-30%")
-                     & (pl.col("alphabet") == "hp_thomas_dill2")).sort("k")
+    r = reach.filter(
+        (pl.col("dataset") == "Pfam")
+        & (pl.col("identity_bin") == "20-30%")
+        & (pl.col("alphabet") == "hp_thomas_dill2")
+    ).sort("k")
     kappa = v["kappa_hp_thomas_dill2_pfam_20_30"]
     mean_run = v["longest_run_mean_hp_thomas_dill2_pfam_20_30"]
-    fig, (ax_a, ax_b) = plt.subplots(2, 1, figsize=(7.6, 6.4), sharex=True,
-                                     gridspec_kw={"hspace": 0.35})
+    fig, (ax_a, ax_b) = plt.subplots(
+        2, 1, figsize=(7.6, 6.4), sharex=True, gridspec_kw={"hspace": 0.35}
+    )
     ks = np.arange(1, 41)
 
-    ax_a.plot(r["k"], r["fraction_of_pairs_reachable"], "-o", color=INK, ms=4,
-              label="share of Pfam pairs (20-30% identity) sharing an exact run of at least k")
-    ax_a.axvline(mean_run, color=RUN, lw=1.2,
-                 label=f"mean longest exact run per pair, {mean_run:.1f} residues")
+    ax_a.plot(
+        r["k"],
+        r["fraction_of_pairs_reachable"],
+        "-o",
+        color=INK,
+        ms=4,
+        label="share of Pfam pairs (20-30% identity) sharing an exact run of at least k",
+    )
+    ax_a.axvline(
+        mean_run,
+        color=RUN,
+        lw=1.2,
+        label=f"mean longest exact run per pair, {mean_run:.1f} residues",
+    )
     for k in (23, 26, 30):
         f = r.filter(pl.col("k") == k)["fraction_of_pairs_reachable"][0]
-        ax_a.annotate(f"{100 * f:.1f}%", (k, f), xytext=(0, 8), textcoords="offset points",
-                      ha="center", fontsize=8.5, color=INK)
+        ax_a.annotate(
+            f"{100 * f:.1f}%",
+            (k, f),
+            xytext=(0, 8),
+            textcoords="offset points",
+            ha="center",
+            fontsize=8.5,
+            color=INK,
+        )
     ax_a.set_ylabel("share of pairs reached")
     ax_a.set_ylim(0, 1.05)
-    ax_a.set_title("a  How many homolog pairs an exact seed of length k can find", loc="left",
-                   fontsize=10, pad=4)
-    ax_a.text(0.99, 0.62, f"hp_thomas_dill2, Pfam seed pairs at 20-30% identity\n"
-              f"n = 37,085 pairs (notebook 230)\nCohen's κ per aligned position = {kappa:.3f},\n"
-              "the same at every k", transform=ax_a.transAxes, ha="right", va="bottom",
-              fontsize=8.5, color=INK)
+    ax_a.set_title(
+        "a  How many homolog pairs an exact seed of length k can find",
+        loc="left",
+        fontsize=10,
+        pad=4,
+    )
+    ax_a.text(
+        0.99,
+        0.62,
+        f"hp_thomas_dill2, Pfam seed pairs at 20-30% identity\n"
+        f"n = 37,085 pairs (notebook 230)\nCohen's κ per aligned position = {kappa:.3f},\n"
+        "the same at every k",
+        transform=ax_a.transAxes,
+        ha="right",
+        va="bottom",
+        fontsize=8.5,
+        color=INK,
+    )
 
     bits_per_pos = -math.log2(pr_match_unrelated)
-    ax_b.plot(ks, ks * bits_per_pos, color=HAVE, lw=1.6,
-              label=f"rarity of an exact k-residue hp_thomas_dill2 seed, k × {bits_per_pos:.3f} bits")
+    ax_b.plot(
+        ks,
+        ks * bits_per_pos,
+        color=HAVE,
+        lw=1.6,
+        label=f"rarity of an exact k-residue hp_thomas_dill2 seed, k × {bits_per_pos:.3f} bits",
+    )
     styles = {1.0: "-", 10.0: "--"}
     for E, bits in need.items():
         k_cross = bits / bits_per_pos
-        ax_b.axhline(bits, color=NEED, ls=styles.get(E, ":"), lw=1.4,
-                     label=f"needed for {E:g} chance seed{'s' if E != 1 else ''} per search: {bits:.1f} bits, "
-                           f"reached at k = {math.ceil(k_cross)}")
+        ax_b.axhline(
+            bits,
+            color=NEED,
+            ls=styles.get(E, ":"),
+            lw=1.4,
+            label=f"needed for {E:g} chance seed{'s' if E != 1 else ''} per search: {bits:.1f} bits, "
+            f"reached at k = {math.ceil(k_cross)}",
+        )
     ax_b.set_ylabel("bits")
     ax_b.set_xlabel("k, exact seed length (residues)")
     ax_b.set_ylim(0, 40)
     ax_b.set_xlim(0, 40)
-    ax_b.set_title("b  Whether a seed of length k is rare enough to stand out from chance",
-                   loc="left", fontsize=10, pad=4)
+    ax_b.set_title(
+        "b  Whether a seed of length k is rare enough to stand out from chance",
+        loc="left",
+        fontsize=10,
+        pad=4,
+    )
 
     handles = ax_a.get_legend_handles_labels()[0] + ax_b.get_legend_handles_labels()[0]
-    fig.legend(handles=handles, loc="lower left", bbox_to_anchor=(0.11, 0.835), frameon=False,
-               fontsize=8.5, ncol=1, borderaxespad=0)
+    fig.legend(
+        handles=handles,
+        loc="lower left",
+        bbox_to_anchor=(0.11, 0.835),
+        frameon=False,
+        fontsize=8.5,
+        ncol=1,
+        borderaxespad=0,
+    )
     fig.subplots_adjust(top=0.80)
     fig.savefig(path)
     plt.show()
@@ -291,16 +440,20 @@ def fig_conservation_vs_reach(reach: pl.DataFrame, v: dict, pr_match_unrelated: 
 def fig_bh1(block: dict, path: Path) -> None:
     """Figure 4: the BH1 residues, identity line and class strings, longest run boxed."""
     L = block["length"]
-    rows = [("BCL2", BH1["bcl2_start"], block["bcl2"]),
-            ("", None, block["identity_line"]),
-            ("CED-9", BH1["ced9_start"], block["ced9"])]
+    rows = [
+        ("BCL2", BH1["bcl2_start"], block["bcl2"]),
+        ("", None, block["identity_line"]),
+        ("CED-9", BH1["ced9_start"], block["ced9"]),
+    ]
     for name in HYDROPHOBIC:
         a = block[name]
-        rows += [(None, None, None),
-                 (f"{name}", None, None),
-                 ("BCL2", BH1["bcl2_start"], a["bcl2"]),
-                 ("", None, a["line"]),
-                 ("CED-9", BH1["ced9_start"], a["ced9"])]
+        rows += [
+            (None, None, None),
+            (f"{name}", None, None),
+            ("BCL2", BH1["bcl2_start"], a["bcl2"]),
+            ("", None, a["line"]),
+            ("CED-9", BH1["ced9_start"], a["ced9"]),
+        ]
     cw, lh = 0.16, 0.26
     fig = plt.figure(figsize=(cw * (L + 18), lh * (len(rows) + 2)))
     ax = fig.add_axes([0, 0, 1, 1])
@@ -308,12 +461,25 @@ def fig_bh1(block: dict, path: Path) -> None:
     ax.set_ylim(-len(rows) - 1.6, 1.2)
     ax.axis("off")
     x0 = 8
-    ax.text(0, 0.5, f"BH1: BCL2 {BH1['bcl2_start']}-{BH1['bcl2_start'] + L - 1} against CED-9 "
-            f"{BH1['ced9_start']}-{BH1['ced9_start'] + L - 1}, {block['identical']} of {L} residues "
-            "identical", fontsize=10, weight="bold", va="center")
-    ax.text(0, -0.35, "| = same residue (top block) or same class (class blocks).   "
-            "Box = the longest run of consecutive same-class positions.", fontsize=8.5, va="center",
-            color=INK)
+    ax.text(
+        0,
+        0.5,
+        f"BH1: BCL2 {BH1['bcl2_start']}-{BH1['bcl2_start'] + L - 1} against CED-9 "
+        f"{BH1['ced9_start']}-{BH1['ced9_start'] + L - 1}, {block['identical']} of {L} residues "
+        "identical",
+        fontsize=10,
+        weight="bold",
+        va="center",
+    )
+    ax.text(
+        0,
+        -0.35,
+        "| = same residue (top block) or same class (class blocks).   "
+        "Box = the longest run of consecutive same-class positions.",
+        fontsize=8.5,
+        va="center",
+        color=INK,
+    )
     y = -1.3
     run_rows = {}
     current = None
@@ -324,27 +490,69 @@ def fig_bh1(block: dict, path: Path) -> None:
         if s is None:
             current = label
             h = "".join(sorted(HYDROPHOBIC[label]))
-            ax.text(0, y, f"{label} classes: h = {h}, p = the other residues;  "
-                    f"{block[label]['same_class']} of {L} positions same class", fontsize=9,
-                    va="center", style="italic")
+            ax.text(
+                0,
+                y,
+                f"{label} classes: h = {h}, p = the other residues;  "
+                f"{block[label]['same_class']} of {L} positions same class",
+                fontsize=9,
+                va="center",
+                style="italic",
+            )
             y -= 1
             continue
         ax.text(0, y, label, fontsize=9, va="center", family="monospace")
         if start is not None:
-            ax.text(x0 - 0.4, y, str(start), fontsize=9, va="center", ha="right", family="monospace")
-            ax.text(x0 + L + 0.6, y, str(start + L - 1), fontsize=9, va="center", family="monospace")
+            ax.text(
+                x0 - 0.4,
+                y,
+                str(start),
+                fontsize=9,
+                va="center",
+                ha="right",
+                family="monospace",
+            )
+            ax.text(
+                x0 + L + 0.6,
+                y,
+                str(start + L - 1),
+                fontsize=9,
+                va="center",
+                family="monospace",
+            )
             if current:
                 run_rows.setdefault(current, []).append(y)
         for i, c in enumerate(s):
-            ax.text(x0 + i + 0.5, y, c, fontsize=9.5, va="center", ha="center", family="monospace")
+            ax.text(
+                x0 + i + 0.5,
+                y,
+                c,
+                fontsize=9.5,
+                va="center",
+                ha="center",
+                family="monospace",
+            )
         y -= 1
     for name, ys in run_rows.items():
         a = block[name]
-        ax.add_patch(Rectangle((x0 + a["run_start"], min(ys) - 0.5), a["run_length"],
-                               max(ys) - min(ys) + 1, fill=False, ec=HAVE, lw=1.4))
-        ax.text(x0 + a["run_start"] + a["run_length"] + 0.3, min(ys) - 0.9,
-                f"longest class-identical run: {a['run_length']} positions", fontsize=8.5,
-                color=HAVE, va="center")
+        ax.add_patch(
+            Rectangle(
+                (x0 + a["run_start"], min(ys) - 0.5),
+                a["run_length"],
+                max(ys) - min(ys) + 1,
+                fill=False,
+                ec=HAVE,
+                lw=1.4,
+            )
+        )
+        ax.text(
+            x0 + a["run_start"] + a["run_length"] + 0.3,
+            min(ys) - 0.9,
+            f"longest class-identical run: {a['run_length']} positions",
+            fontsize=8.5,
+            color=HAVE,
+            va="center",
+        )
     fig.savefig(path)
     plt.show()
 
@@ -356,10 +564,21 @@ def fig_chance_score(cs: pl.DataFrame, path: Path) -> None:
     y = np.arange(cs.height)
     vals = cs["expected_score_chance_position"].to_numpy()
     at_or_above = vals >= 0
-    ax.barh(y[~at_or_above], vals[~at_or_above], color=GREY, height=0.7,
-            label="below 0: a chance match loses score as it runs, λ exists")
-    ax.barh(y[at_or_above], vals[at_or_above], color=INK, hatch="///", height=0.7,
-            label="at or above 0: no λ at any k, so no E-value")
+    ax.barh(
+        y[~at_or_above],
+        vals[~at_or_above],
+        color=GREY,
+        height=0.7,
+        label="below 0: a chance match loses score as it runs, λ exists",
+    )
+    ax.barh(
+        y[at_or_above],
+        vals[at_or_above],
+        color=INK,
+        hatch="///",
+        height=0.7,
+        label="at or above 0: no λ at any k, so no E-value",
+    )
     ax.axvline(0, color=INK, lw=1)
     for yi, (a, val) in enumerate(zip(cs["alphabet"], vals)):
         lab = f"{val:+.4f}" if abs(val) < 0.01 else f"{val:+.2f}"
@@ -369,10 +588,17 @@ def fig_chance_score(cs: pl.DataFrame, path: Path) -> None:
             lab += " (bar too short to see; just below 0)"
         ax.text(0.02 if val < 0 else val + 0.02, yi, lab, va="center", fontsize=8)
     ax.set_yticks(y, cs["alphabet"].to_list(), fontsize=8.5)
-    ax.set_xlabel("expected score of one position between unrelated sequences,\n"
-                  "Pr(match | unrelated) − C · (1 − Pr(match | unrelated))  (points)")
+    ax.set_xlabel(
+        "expected score of one position between unrelated sequences,\n"
+        "Pr(match | unrelated) − C · (1 − Pr(match | unrelated))  (points)"
+    )
     ax.set_xlim(-0.35, 0.45)
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.02), frameon=False, fontsize=8.5,
-              borderaxespad=0)
+    ax.legend(
+        loc="lower left",
+        bbox_to_anchor=(0, 1.02),
+        frameon=False,
+        fontsize=8.5,
+        borderaxespad=0,
+    )
     fig.savefig(path)
     plt.show()
