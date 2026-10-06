@@ -2663,12 +2663,14 @@ reduce-elm-motif:
 #   make run-elm-search ELM_TARGETS=chicken    Sherlock: the dry run, one target
 #   make run-elm-search                        Sherlock: all nine targets
 #   make reduce-elm-cover                      Sherlock: score it, one SLURM task per 1/20 of the arms
+#   make run-elm-search-all                    Sherlock: the 19 arms chosen on chicken, on the other 7 species
+#   make reduce-elm-cover-all                  Sherlock: score those, one array per species
 ELM_TARGETS      ?=
 ELM_COVER_DIR    ?= data/elm-cover
 ELM_COVER_OUTDIR ?= ../$(ELM_COVER_DIR)/results
 ELM_TARGETS_ARG   = $(if $(ELM_TARGETS),--target_species $(ELM_TARGETS))
 
-.PHONY: elm-cover-inputs run-elm-search reduce-elm-cover
+.PHONY: elm-cover-inputs run-elm-search reduce-elm-cover run-elm-search-all reduce-elm-cover-all
 
 elm-cover-inputs:
 	$(call require_cluster)
@@ -2700,9 +2702,45 @@ run-elm-search: prefetch-images
 # $(ELM_COVER_REDUCE_DIR)/cover/<species>/, one instances parquet and one summary JSON per arm.
 ELM_COVER_REDUCE_DIR ?= $(SCRATCH)/250-elm-cover
 ELM_SPECIES          ?= chicken
+ELM_KMERSEEK_SUBDIR  ?= kmerseek
+comma := ,
 reduce-elm-cover:
 	$(call require_cluster)
 	@test -d $(ELM_COVER_DIR)/results/kmerseek || { echo "  no ELM cover results yet: make run-elm-search first"; exit 1; }
 	mkdir -p $(ELM_COVER_REDUCE_DIR)/logs $(ELM_COVER_REDUCE_DIR)/code
 	cd ../.. && git archive HEAD | tar -x -C $(ELM_COVER_REDUCE_DIR)/code
-	cd $(ELM_COVER_REDUCE_DIR) && ELM_SPECIES=$(ELM_SPECIES) sbatch --export=ALL code/scripts/reduce_elm_cover.sbatch
+	cd $(ELM_COVER_REDUCE_DIR) && for sp in $(subst $(comma), ,$(ELM_SPECIES)); do \
+	  ELM_SPECIES=$$sp ELM_KMERSEEK_SUBDIR=$(ELM_KMERSEEK_SUBDIR) sbatch --export=ALL code/scripts/reduce_elm_cover.sbatch; done
+
+# The other seven target species, with one kmerseek arm per alphabet chosen on chicken
+# (scripts/elm_choose_arms.py -> assets/elm_cover_chosen_arms.tsv) and each query's region
+# table cut to its best $(ELM_TOP_TARGETS) targets inside the search. Chicken is not searched
+# again: its full results are the set the arms were chosen on. E. coli is left out: QfO
+# 2020_04 gives it no OMA group, so it has no 1:1 ortholog to score on.
+ELM_ALL_TARGETS ?= mouse,zebrafish,ciona,fly,worm,yeast,arabidopsis
+ELM_TOP_TARGETS ?= 1000
+ELM_CHOSEN_COMBOS = $(shell awk -F'\t' 'NR > 1 { printf "%s%s:%s:s%s:lc%s", (NR > 2 ? "," : ""), $$1, $$2, $$3, $$4 }' assets/elm_cover_chosen_arms.tsv)
+run-elm-search-all: PREFETCH_CONTAINERS := $(ELM_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-elm-search-all: prefetch-images
+	$(call require_cluster)
+	@test -f $(ELM_COVER_DIR)/qfo/Eukaryota/UP000005640_9606.fasta || { \
+	  echo "  $(ELM_COVER_DIR) is not staged. Run: make elm-cover-inputs"; exit 1; }
+	mkdir -p run-elm-search-all
+	cd run-elm-search-all && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -c ../conf/elm_cover.config -resume \
+	    --kmerseek_image       $(ELM_IMAGE_REMOTE) \
+	    --qfo_dir              ../$(ELM_COVER_DIR)/qfo \
+	    --annotations          ../$(ELM_COVER_DIR)/annotations \
+	    --structures           ../$(ELM_COVER_DIR)/structures \
+	    --outdir               $(ELM_COVER_OUTDIR) \
+	    --db_cache             ../results \
+	    --target_species       $(ELM_ALL_TARGETS) \
+	    --kmerseek_combos      '$(ELM_CHOSEN_COMBOS)' \
+	    --kmerseek_top_targets $(ELM_TOP_TARGETS) \
+	    --hgnc_file            ../data/covariates/hgnc_complete_set.txt \
+	    --prostt5_weights      ../data/prostt5/weights \
+	    $(NF_ARGS)
+
+reduce-elm-cover-all:
+	@$(MAKE) reduce-elm-cover ELM_SPECIES=$(ELM_ALL_TARGETS) ELM_KMERSEEK_SUBDIR=kmerseek_top$(ELM_TOP_TARGETS)
