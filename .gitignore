@@ -199,3 +199,15 @@ results-test/
 # whichever one it opens -- including throwaway merge-resolution checkouts -- so the folder
 # is per-checkout scratch, not shared project config.
 .idea/
+
+# Run outputs that stay on the laptop or Sherlock, never in git (added 2026-09-28).
+# Nextflow's -with-report/-with-timeline/-with-trace named <kind>.<run>.<ext>; the
+# *.report.html rules above only catch <run>.report.html.
+report.*.html
+timeline.*.html
+trace.*.txt
+# MultiQC reports rendered from test data or a PR's local build, copied down for review.
+# A report from a real run (reports/invertebrate-dark-set/) is a result and is tracked.
+/reports/review-*/
+# Scratch output of a local build_multiqc_inputs.py run.
+reg_out/
