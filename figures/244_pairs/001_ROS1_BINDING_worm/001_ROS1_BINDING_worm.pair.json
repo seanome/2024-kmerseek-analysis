@@ -1,0 +1,130 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "P08922 species=human Proto-oncogene tyrosine-protein kinase ROS",
+    "sequence": "MKNIYCLIPKLVNFATLGCLWISVVQCTVLNSCLKSCVTNLGQQLDLGTPHNLSEPCIQGCHFWNSVDQKNCALKCRESCEVGCSSAEGAYEEEVLENADLPTAPFASSIGSHNMTLRWKSANFSGVKYIIQWKYAQLLGSWTYTKTVSRPSYVVKPLHPFTEYIFRVVWIFTAQLQLYSPPSPSYRTHPHGVPETAPLIRNIESSSPDTVEVSWDPPQFPGGPILGYNLRLISKNQKLDAGTQRTSFQFYSTLPNTIYRFSIAAVNEVGEGPEAESSITTSSSAVQQEEQWLFLSRKTSLRKRSLKHLVDEAHCLRLDAIYHNITGISVDVHQQIVYFSEGTLIWAKKAANMSDVSDLRIFYRGSGLISSISIDWLYQRMYFIMDELVCVCDLENCSNIEEITPPSISAPQKIVADSYNGYVFYLLRDGIYRADLPVPSGRCAEAVRIVESCTLKDFAIKPQAKRIIYFNDTAQVFMSTFLDGSASHLILPRIPFADVKSFACENNDFLVTDGKVIFQQDALSFNEFIVGCDLSHIEEFGFGNLVIFGSSSQLHPLPGRPQELSVLFGSHQALVQWKPPALAIGANVILISDIIELFELGPSAWQNWTYEVKVSTQDPPEVTHIFLNISGTMLNVPELQSAMKYKVSVRASSPKRPGPWSEPSVGTTLVPASEPPFIMAVKEDGLWSKPLNSFGPGEFLSSDIGNVSDMDWYNNSLYYSDTKGDVFVWLLNGTDISENYHLPSIAGAGALAFEWLGHFLYWAGKTYVIQRQSVLTGHTDIVTHVKLLVNDMVVDSVGGYLYWTTLYSVESTRLNGESSLVLQTQPWFSGKKVIALTLDLSDGLLYWLVQDSQCIHLYTAVLRGQSTGDTTITEFAAWSTSEISQNALMYYSGRLFWINGFRIITTQEIGQKTSVSVLEPARFNQFTIIQTSLKPLPGNFSFTPKVIPDSVQESSFRIEGNASSFQILWNGPPAVDWGVVFYSVEFSAHSKFLASEQHSLPVFTVEGLEPYALFNLSVTPYTYWGKGPKTSLSLRAPETVPSAPENPRIFILPSGKCCNKNEVVVEFRWNKPKHENGVLTKFEIFYNISNQSITNKTCEDWIAVNVTPSVMSFQLEGMSPRCFIAFQVRAFTSKGPGPYADVVKSTTSEINPFPHLITLLGNKIVFLDMDQNQVVWTFSAERVISAVCYTADNEMGYYAEGDSLFLLHLHNRSSSELFQDSLVFDITVITIDWISRHLYFALKESQNGMQVFDVDLEHKVKYPREVKIHNRNSTIISFSVYPLLSRLYWTEVSNFGYQMFYYSIISHTLHRILQPTATNQQNKRNQCSCNVTEFELSGAMAIDTSNLEKPLIYFAKAQEIWAMDLEGCQCWRVITVPAMLAGKTLVSLTVDGDLIYWIITAKDSTQIYQAKKGNGAIVSQVKALRSRHILAYSSVMQPFPDKAFLSLASDTVEPTILNATNTSLTIRLPLAKTNLTWYGITSPTPTYLVYYAEVNDRKNSSDLKYRILEFQDSIALIEDLQPFSTYMIQIAVKNYYSDPLEHLPPGKEIWGKTKNGVPEAVQLINTTVRSDTSLIISWRESHKPNGPKESVRYQLAISHLALIPETPLRQSEFPNGRLTLLVTRLSGGNIYVLKVLACHSEEMWCTESHPVTVEMFNTPEKPYSLVPENTSLQFNWKAPLNVNLIRFWVELQKWKYNEFYHVKTSCSQGPAYVCNITNLQPYTSYNVRVVVVYKTGENSTSLPESFKTKAGVPNKPGIPKLLEGSKNSIQWEKAEDNGCRITYYILEIRKSTSNNLQNQNLRWKMTFNGSCSSVCTWKSKNLKGIFQFRVVAANNLGFGEYSGISENIILVGDDFWIPETSFILTIIVGIFLVVTIPLTFVWHRRLKNQKSAKEGVTVLINEDKELAELRGLAAGVGLANACYAIHTLPTQEEIENLPAFPREKLTLRLLLGSGAFGEVYEGTAVDILGVGSGEIKVAVKTLKKGSTDQEKIEFLKEAHLMSKFNHPNILKQLGVCLLNEPQYIILELMEGGDLLTYLRKARMATFYGPLLTLVDLVDLCVDISKGCVYLERMHFIHRDLAARNCLVSVKDYTSPRIVKIGDFGLARDIYKNDYYRKRGEGLLPVRWMAPESLMDGIFTTQSDVWSFGILIWEILTLGHQPYPAHSNLDVLNYVQTGGRLEPPRNCPDDLWNLMTQCWAQEPDQRPTFHRIQDQLQLFRNFFLNSIYKSRDEANNSGVINESFEGEDGDVICLNSDDIMPVALMETKNREGLNYMVLATECGQGEEKSEGPLGSQESESCGLRKEEKEPHADKDFCQEKQVAYCPSGKPEGLNYACLTHSGYGDGSD",
+    "encoded": "lknlycllpkllnyatlgclwltlltctllntclktcltnlgttldlgtphnltkpcltgchywntldtkncalkckktcklgcttakgaykkkllknadlptapyattlgthnltlkwktanytglkylltwkyatllgtwtytktltkptyllkplhpytkylykllwlytatltlytpptptykthphglpktapllknlktttpdtlkltwdpptypggpllgynlklltkntkldagttkttytyyttlpntlykytlaalnklgkgpkakttltttttalttkktwlyltkkttlkkktlkhlldkahclkldalyhnltgltldlhttllyytkgtllwakkaanltdltdlklyykgtgllttltldwlytklyylldkllclcdlknctnlkkltpptltaptklladtyngylyyllkdglykadlplptgkcakalkllktctlkdyalkptakkllyyndtatlylttyldgtathlllpklpyadlktyacknndylltdgkllyttdaltynkyllgcdlthlkkygygnlllygttttlhplpgkptkltllygthtalltwkppalalganlllltdllklyklgptawtnwtyklkltttdppklthlylnltgtllnlpklttalkykltlkattpkkpgpwtkptlgttllpatkppyllalkkdglwtkplntygpgkylttdlgnltdldwynntlyytdtkgdlylwllngtdltknyhlptlagagalaykwlghylywagktylltkttlltghtdllthlklllndllldtlggylywttlytlkttklngkttllltttpwytgkkllaltldltdgllywlltdttclhlytallkgtttgdttltkyaawtttklttnallyytgklywlngyklltttklgtkttltllkpakyntytlltttlkplpgnytytpkllpdtltkttyklkgnattytllwngppaldwgllyytlkytahtkylatkthtlplytlkglkpyalynltltpytywgkgpkttltlkapktlptapknpklyllptgkccnknklllkykwnkpkhknglltkyklyynltnttltnktckdwlalnltptlltytlkgltpkcylaytlkayttkgpgpyadllkttttklnpyphlltllgnkllyldldtntllwtytakklltalcytadnklgyyakgdtlyllhlhnktttklytdtllydltlltldwltkhlyyalkkttngltlydldlkhklkypkklklhnknttlltytlyplltklywtkltnygytlyyytllthtlhklltptatnttnkkntctcnltkykltgalaldttnlkkpllyyakatklwaldlkgctcwklltlpallagktlltltldgdllywlltakdtttlytakkgngallttlkalktkhllayttlltpypdkayltlatdtlkptllnatnttltlklplaktnltwyglttptptyllyyaklndkknttdlkykllkytdtlallkdltpyttylltlalknyytdplkhlppgkklwgktknglpkaltllnttlktdttllltwkkthkpngpkktlkytlalthlallpktplkttkypngkltllltkltggnlyllkllachtkklwctkthpltlklyntpkkpytllpknttltynwkaplnlnllkywlkltkwkynkyyhlkttcttgpaylcnltnltpyttynlkllllyktgkntttlpktyktkaglpnkpglpkllkgtkntltwkkakdngckltyyllklkktttnnltntnlkwkltyngtcttlctwktknlkglytykllaannlgygkytgltknllllgddywlpkttylltlllglyllltlpltylwhkklkntktakkgltlllnkdkklaklkglaaglglanacyalhtlpttkklknlpaypkkkltlklllgtgaygklykgtaldllglgtgklklalktlkkgttdtkklkylkkahlltkynhpnllktlglcllnkptylllkllkggdlltylkkaklatyygplltlldlldlcldltkgclylkklhylhkdlaaknclltlkdyttpkllklgdyglakdlykndyykkkgkgllplkwlapktlldglyttttdlwtyglllwklltlghtpypahtnldllnylttggklkppkncpddlwnllttcwatkpdtkptyhkltdtltlyknyylntlyktkdkanntgllnktykgkdgdllclntddllplallktknkkglnylllatkcgtgkkktkgplgttktktcglkkkkkkphadkdyctkktlaycptgkpkglnyaclthtgygdgtd"
+  },
+  "target": {
+    "name": "Q11112 species=worm Putative tyrosine-protein kinase C03B1.5",
+    "sequence": "MQSAQKSKTNGDTSLFLMKDIPQYWSPALKIGSGAFGEVMLVHSDRLDARGEQILHNEFALKVIRFPECDYHKIIREVNTHTLCRHHDNVLFIGSIYCQTFQQGLRVQMCLEYAALSDLSLLASSETFESHVAYICKNLISALIHIHNLGIVHGDLSVKNILMTHEGVVKLSDFGMANTFEQTRKSKNQSILGTPGFIAPEIINLQGYDGKADLWGLGILSLFLLKGENPFKKCTQFDLESYKVSISESFYPDYSNYSTPLQEFMSSLKDYNPEFRSSALHASSQTYLKTSCSQSEILNYYKRLRRTRGMDLPWPEEIHTFSVPVSLE",
+    "encoded": "lttatktktngdttlyllkdlptywtpalklgtgaygkllllhtdkldakgktllhnkyalkllkypkcdyhkllkklnthtlckhhdnllylgtlycttyttglkltlclkyaaltdltllattktykthlaylcknlltallhlhnlgllhgdltlknlllthkgllkltdyglantykttkktknttllgtpgylapkllnltgydgkadlwglglltlyllkgknpykkcttydlktykltltktyypdytnyttpltkylttlkdynpkykttalhattttylkttctttkllnyykklkktkgldlpwpkklhtytlpltlk"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 445,
+      "target_pos": 59,
+      "kmer": "alkllk",
+      "query_kmer": "AVRIVE",
+      "target_kmer": "ALKVIR"
+    },
+    {
+      "query_pos": 1205,
+      "target_pos": 142,
+      "kmer": "llhlhn",
+      "query_kmer": "LLHLHN",
+      "target_kmer": "LIHIHN"
+    },
+    {
+      "query_pos": 1270,
+      "target_pos": 186,
+      "kmer": "knttll",
+      "query_kmer": "RNSTII",
+      "target_kmer": "KNQSIL"
+    },
+    {
+      "query_pos": 1701,
+      "target_pos": 287,
+      "kmer": "lkttct",
+      "query_kmer": "VKTSCS",
+      "target_kmer": "LKTSCS"
+    },
+    {
+      "query_pos": 1702,
+      "target_pos": 288,
+      "kmer": "kttctt",
+      "query_kmer": "KTSCSQ",
+      "target_kmer": "KTSCSQ"
+    },
+    {
+      "query_pos": 1950,
+      "target_pos": 30,
+      "kmer": "lgtgay",
+      "query_kmer": "LGSGAF",
+      "target_kmer": "IGSGAF"
+    },
+    {
+      "query_pos": 1951,
+      "target_pos": 31,
+      "kmer": "gtgayg",
+      "query_kmer": "GSGAFG",
+      "target_kmer": "GSGAFG"
+    },
+    {
+      "query_pos": 1952,
+      "target_pos": 32,
+      "kmer": "tgaygk",
+      "query_kmer": "SGAFGE",
+      "target_kmer": "SGAFGE"
+    },
+    {
+      "query_pos": 1953,
+      "target_pos": 33,
+      "kmer": "gaygkl",
+      "query_kmer": "GAFGEV",
+      "target_kmer": "GAFGEV"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 1950,
+      "query_end": 1959,
+      "target_start": 30,
+      "target_end": 39,
+      "length": 9
+    },
+    {
+      "query_start": 1701,
+      "query_end": 1708,
+      "target_start": 287,
+      "target_end": 294,
+      "length": 7
+    },
+    {
+      "query_start": 445,
+      "query_end": 451,
+      "target_start": 59,
+      "target_end": 65,
+      "length": 6
+    },
+    {
+      "query_start": 1205,
+      "query_end": 1211,
+      "target_start": 142,
+      "target_end": 148,
+      "length": 6
+    },
+    {
+      "query_start": 1270,
+      "query_end": 1276,
+      "target_start": 186,
+      "target_end": 192,
+      "length": 6
+    }
+  ]
+}

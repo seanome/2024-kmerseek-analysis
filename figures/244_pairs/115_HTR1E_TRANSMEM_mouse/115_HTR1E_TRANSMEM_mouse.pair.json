@@ -1,0 +1,92 @@
+{
+  "ksize": 18,
+  "moltype": "hp_lehninger_c_nonpolar2",
+  "classes": {
+    "h": "ACFGILMPVWY",
+    "p": "DEHKNQRST"
+  },
+  "query": {
+    "name": "P28566 species=human 5-hydroxytryptamine receptor 1E",
+    "sequence": "MNITNCTTEASMAIRPKTITEKMLICMTLVVITTLTTLLNLAVIMAIGTTKKLHQPANYLICSLAVTDLLVAVLVMPLSIIYIVMDRWKLGYFLCEVWLSVDMTCCTCSILHLCVIALDRYWAITNAIEYARKRTAKRAALMILTVWTISIFISMPPLFWRSHRRLSPPPSQCTIQHDHVIYTIYSTLGAFYIPLTLILILYYRIYHAAKSLYQKRGSSRHLSNRSTDSQNSFASCKLTQTFCVSDFSTSDPTTEFEKFHASIRIPPFDNDLDHPGERQQISSTRERKAARILGLILGAFILSWLPFFIKELIVGLSIYTVSSEVADFLTWLGYVNSLINPLLYTSFNEDFKLAFKKLIRCREHT",
+    "encoded": "hphpphppphphhhphpphppphhhhhphhhhpphpphhphhhhhhhhpppphpphhphhhhphhhpphhhhhhhhhhphhhhhhpphphhhhhhphhhphphphhphphhphhhhhhpphhhhpphhphhpppphpphhhhhhphhphphhhphhhhhhppppphphhhpphphpppphhhphhpphhhhhhhhphhhhhhhphhphhpphhppphpppphpppppppppphhphphppphhhpphpppphppphpphphphphhhhppphpphhpppphppppppphhphhhhhhhhhhhphhhhhhpphhhhhphhphppphhphhphhhhhpphhphhhhpphppphphhhpphhphpppp"
+  },
+  "target": {
+    "name": "P51436 species=mouse D(4) dopamine receptor",
+    "sequence": "MGNSSATEDGGLLAGRGPESLGTGAGLGGAGAAALVGGVLLIGLVLAGNSLVCVSVASERTLQTPTNYFIVSLAAADLLLAVLVLPLFVYSEVQGGVWLLSPRLCDTLMAMDVMLCTASIFNLCAISVDRFVAVTVPLRYNQQGQCQLLLIAATWLLSAAVASPVVCGLNDVPGRDPAVCCLENRDYVVYSSVCSFFLPCPLMLLLYWATFRGLRRWEAARHTKLHSRAPRRPSGPGPPVSDPTQGPFFPDCPPPLPSLRTSPSDSSRPESELSQRPCSPGCLLADAALPQPPEPSSRRRRGAKITGRERKAMRVLPVVVGAFLVCWTPFFVVHITRALCPACFVSPRLVSAVTWLGYVNSALNPIIYTIFNAEFRSVFRKTLRLRC",
+    "encoded": "hhppphppphhhhhhphhpphhphhhhhhhhhhhhhhhhhhhhhhhhhpphhhhphhpppphpphpphhhhphhhhphhhhhhhhhhhhhpphphhhhhhphphhpphhhhphhhhphphhphhhhphpphhhhphhhphppphphphhhhhhphhhphhhhphhhhhhpphhhpphhhhhhpppphhhhpphhphhhhhhhhhhhhhhphphhpphphhpppphppphhpphphhhhhhpphpphhhhhphhhhhhphppphppppphppphppphhphhhhhhphhhhphhphpppppphhphphpppphhphhhhhhhhhhhhhphhhhhphpphhhhhhhhphphhphhphhhhhpphhphhhhphhphphpphhppphphph"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 79,
+      "target_pos": 84,
+      "kmer": "hhhhhhpphphhhhhhph",
+      "query_kmer": "IIYIVMDRWKLGYFLCEV",
+      "target_kmer": "LPLFVYSEVQGGVWLLSP"
+    },
+    {
+      "query_pos": 284,
+      "target_pos": 307,
+      "kmer": "pppphhphhhhhhhhhhh",
+      "query_kmer": "RERKAARILGLILGAFIL",
+      "target_kmer": "RERKAMRVLPVVVGAFLV"
+    },
+    {
+      "query_pos": 323,
+      "target_pos": 347,
+      "kmer": "phhphhphhhhhpphhph",
+      "query_kmer": "EVADFLTWLGYVNSLINP",
+      "target_kmer": "RLVSAVTWLGYVNSALNP"
+    },
+    {
+      "query_pos": 324,
+      "target_pos": 348,
+      "kmer": "hhphhphhhhhpphhphh",
+      "query_kmer": "VADFLTWLGYVNSLINPL",
+      "target_kmer": "LVSAVTWLGYVNSALNPI"
+    },
+    {
+      "query_pos": 325,
+      "target_pos": 349,
+      "kmer": "hphhphhhhhpphhphhh",
+      "query_kmer": "ADFLTWLGYVNSLINPLL",
+      "target_kmer": "VSAVTWLGYVNSALNPII"
+    },
+    {
+      "query_pos": 326,
+      "target_pos": 350,
+      "kmer": "phhphhhhhpphhphhhh",
+      "query_kmer": "DFLTWLGYVNSLINPLLY",
+      "target_kmer": "SAVTWLGYVNSALNPIIY"
+    },
+    {
+      "query_pos": 327,
+      "target_pos": 351,
+      "kmer": "hhphhhhhpphhphhhhp",
+      "query_kmer": "FLTWLGYVNSLINPLLYT",
+      "target_kmer": "AVTWLGYVNSALNPIIYT"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 323,
+      "query_end": 345,
+      "target_start": 347,
+      "target_end": 369,
+      "length": 22
+    },
+    {
+      "query_start": 79,
+      "query_end": 97,
+      "target_start": 84,
+      "target_end": 102,
+      "length": 18
+    },
+    {
+      "query_start": 284,
+      "query_end": 302,
+      "target_start": 307,
+      "target_end": 325,
+      "length": 18
+    }
+  ]
+}

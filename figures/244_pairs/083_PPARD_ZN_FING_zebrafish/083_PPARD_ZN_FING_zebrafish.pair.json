@@ -1,0 +1,85 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill_no_c2",
+  "classes": {
+    "h": "AFILMVWY",
+    "p": "CDEGHKNPQRST"
+  },
+  "query": {
+    "name": "Q03181 species=human Peroxisome proliferator-activated receptor delta",
+    "sequence": "MEQPQEEAPEVREEEEKEEVAEAEGAPELNGGPQHALPSSSYTDLSRSSSPPSLLDQLQMGCDGASCGSLNMECRVCGDKASGFHYGVHACEGCKGFFRRTIRMKLEYEKCERSCKIQKKNRNKCQYCRFQKCLALGMSHNAIRFGRMPEAEKRKLVAGLTANEGSQYNPQVADLKAFSKHIYNAYLKNFNMTKKKARSILTGKASHTAPFVIHDIETLWQAEKGLVWKQLVNGLPPYKEISVHVFYRCQCTTVETVRELTEFAKSIPSFSSLFLNDQVTLLKYGVHEAIFAMLASIVNKDGLLVANGSGFVTREFLRSLRKPFSDIIEPKFEFAVKFNALELDDSDLALFIAAIILCGDRPGLMNVPRVEAIQDTILRALEFHLQANHPDAQYLFPKLLQKMADLRQLVTEHAQMMQRIKKTETETSLHPLLQEIYKDMY",
+    "encoded": "hpppppphpphpppppppphhphpphpphpppppphhpppphpphpppppppphhpphphpppphpppphphppphpppphpphphphphpppppphhppphphphphpppppppphppppppppphpphppphhhphppphhphpphpphpppphhhphphppppphppphhphphhppphhphhhpphphpppphpphhppphppphphhhpphpphhphppphhhpphhpphpphpphphphhhpppppphpphpphpphhpphpphpphhhppphphhphphpphhhhhhhphhpppphhhhpppphhppphhpphppphpphhppphphhhphphhphpppphhhhhhhhhhpppppphhphpphphhppphhphhphphphpppphphhhpphhpphhphpphhppphphhpphpppppppphpphhpphhpphh"
+  },
+  "target": {
+    "name": "Q06726 species=zebrafish Nuclear receptor subfamily 2 group F member 5",
+    "sequence": "MAMVVNQWQENISADPGSQLQMCSQEPGGTPGTPSGSTPGNDALSGDKIPNVDCMVCGDKSSGKHYGQFTCEGCKSFFKRSVRRNLSYTCRGNRDCPIDQHHRNQCQYCRLKKCLKVGMRREAVQRGRMSNSQSSPGQYLSNGSDPYNGQPYLSGFISLLLRAEPYPTSRYGAQCMQSNNLMGIENICELAARLLFSAVEWAKNIPFFPDLQLMDQVALLRMSWSELFVLNAAQCSMPLHVAPLLAAAGLHASPMSAERVVAFMDHIRVFQEQVEKLKALQVDTAEYSCLKSIVLFTSDAMGLSDVAHVESIQEKSQCALEEYVRNQYPNQPNRFGRLLLRLPSLRIVSSPVIEQLFFVRLVGKTPIETLLRDMLLSGSSYNWPYMPVQRDRPISIHYNENGP",
+    "encoded": "hhhhhpphppphphppppphphpppppppppppppppppppphhpppphpphpphhppppppppphpphppppppphhppphppphphppppppppphppppppppphpphppphphphppphhpppphppppppppphhpppppphpppphhpphhphhhphpphpppphphpphpppphhphpphpphhhphhhphhphhpphphhpphphhpphhhhphphpphhhhphhppphphphhphhhhhphphpphphpphhhhhpphphhppphpphphhphpphphpphpphhhhppphhphpphhphpphpppppphhpphhppphpppppphpphhhphpphphhppphhpphhhhphhpppphpphhpphhhpppphphphhphppppphphphppppp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 108,
+      "target_pos": 89,
+      "kmer": "pppppppphppppppppph",
+      "query_kmer": "EKCERSCKIQKKNRNKCQY",
+      "target_kmer": "CRGNRDCPIDQHHRNQCQY"
+    },
+    {
+      "query_pos": 109,
+      "target_pos": 90,
+      "kmer": "ppppppphppppppppphp",
+      "query_kmer": "KCERSCKIQKKNRNKCQYC",
+      "target_kmer": "RGNRDCPIDQHHRNQCQYC"
+    },
+    {
+      "query_pos": 110,
+      "target_pos": 91,
+      "kmer": "pppppphppppppppphpp",
+      "query_kmer": "CERSCKIQKKNRNKCQYCR",
+      "target_kmer": "GNRDCPIDQHHRNQCQYCR"
+    },
+    {
+      "query_pos": 111,
+      "target_pos": 92,
+      "kmer": "ppppphppppppppphpph",
+      "query_kmer": "ERSCKIQKKNRNKCQYCRF",
+      "target_kmer": "NRDCPIDQHHRNQCQYCRL"
+    },
+    {
+      "query_pos": 112,
+      "target_pos": 93,
+      "kmer": "pppphppppppppphpphp",
+      "query_kmer": "RSCKIQKKNRNKCQYCRFQ",
+      "target_kmer": "RDCPIDQHHRNQCQYCRLK"
+    },
+    {
+      "query_pos": 113,
+      "target_pos": 94,
+      "kmer": "ppphppppppppphpphpp",
+      "query_kmer": "SCKIQKKNRNKCQYCRFQK",
+      "target_kmer": "DCPIDQHHRNQCQYCRLKK"
+    },
+    {
+      "query_pos": 114,
+      "target_pos": 95,
+      "kmer": "pphppppppppphpphppp",
+      "query_kmer": "CKIQKKNRNKCQYCRFQKC",
+      "target_kmer": "CPIDQHHRNQCQYCRLKKC"
+    },
+    {
+      "query_pos": 115,
+      "target_pos": 96,
+      "kmer": "phppppppppphpphppph",
+      "query_kmer": "KIQKKNRNKCQYCRFQKCL",
+      "target_kmer": "PIDQHHRNQCQYCRLKKCL"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 108,
+      "query_end": 134,
+      "target_start": 89,
+      "target_end": 115,
+      "length": 26
+    }
+  ]
+}

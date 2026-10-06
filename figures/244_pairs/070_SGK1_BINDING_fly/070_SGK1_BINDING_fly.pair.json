@@ -1,0 +1,116 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "O00141 species=human Serine/threonine-protein kinase Sgk1",
+    "sequence": "MTVKTEAAKGTLTYSRMRGMVAILIAFMKQRRMGLNDFIQKIANNSYACKHPEVQSILKISQPQEPELMNANPSPPPSPSQQINLGPSSNPHAKPSDFHFLKVIGKGSFGKVLLARHKAEEVFYAVKVLQKKAILKKKEEKHIMSERNVLLKNVKHPFLVGLHFSFQTADKLYFVLDYINGGELFYHLQRERCFLEPRARFYAAEIASALGYLHSLNIVYRDLKPENILLDSQGHIVLTDFGLCKENIEHNSTTSTFCGTPEYLAPEVLHKQPYDRTVDWWCLGAVLYEMLYGLPPFYSRNTAEMYDNILNKPLQLKPNITNSARHLLEGLLQKDRTKRLGAKDDFMEIKSHVFFSLINWDDLINKKITPPFNPNVSGPNDLRHFDPEFTEEPVPNSIGKSPDSVLVTASVKEAAEAFLGFSYAPPTDSFL",
+    "encoded": "ltlktkaakgtltytklkgllalllaylktkklglndyltklanntyackhpklttllklttptkpkllnanptppptptttlnlgpttnphakptdyhylkllgkgtygklllakhkakklyyalklltkkallkkkkkkhlltkknlllknlkhpyllglhytyttadklyylldylnggklyyhltkkkcylkpkakyyaaklatalgylhtlnllykdlkpknllldttghllltdyglckknlkhntttttycgtpkylapkllhktpydktldwwclgallykllyglppyytkntaklydnllnkpltlkpnltntakhllkglltkdktkklgakddylklkthlyytllnwddllnkkltppynpnltgpndlkhydpkytkkplpntlgktpdtllltatlkkaakaylgytyapptdtyl"
+  },
+  "target": {
+    "name": "Q9NI63 species=fly Membrane-associated tyrosine- and threonine-specific cdc2-inhibitory kinase",
+    "sequence": "MEKHHRLPLPELHDDKHRHKQCNGENSNRFRPPKYKTRGYVAVDNNNLNRSQSLGSCSTNSSQIAHAISFRDAGCSDSSTLPSSPVQAELSTLSLSHFEQCFERLAKLGEGSFGEVFQVRDRSDGQLYAVKISKQLFRGEQYRAERLEEVRRYEEFSGHENCIRFIRAWEQYDRLYMQMELCRESLEQYLLRCQRIPEERIWHILLDLLRGLKSLHDRNLIHLDIKLDNVLIGEDDETCKLADFGLVIDVDRANSHHATEGDSRYMAPEILQGHFSKAADIFSLGIAMLELACYMDLPSNGPLWHELRHGILPEEFINKISLELQSVIKSMMKPDPAQRPTAEQLLSHPKLQYLQKKRKSLMNFSMLSRSFRRSRRAVWGRMCNWKTAAFRYLLYFLEVLHLCKPITASQPNINIVPSSPSSKGVPLVPQVEFQLVGSTPIANRDCYASDFLSGEDPLDLSNQGSPNVINSTPLNTNQGKSRLDLLKNNVDSMGRYVHVHDFESPCSALSSAKVLDTSSFRRKKLFVLEYDDE",
+    "encoded": "lkkhhklplpklhddkhkhktcngkntnkykppkyktkgylaldnnnlnktttlgtcttntttlahaltykdagctdtttlpttpltaklttltlthyktcykklaklgkgtygklytlkdktdgtlyalkltktlykgktykakklkklkkykkytghknclkylkawktydklyltlklckktlktyllkctklpkkklwhllldllkglktlhdknllhldlkldnlllgkddktckladygllldldkanthhatkgdtkylapklltghytkaadlytlglallklacyldlptngplwhklkhgllpkkylnkltlklttllktllkpdpatkptaktllthpkltyltkkkktllnytlltktykktkkalwgklcnwktaaykyllyylkllhlckpltattpnlnllpttpttkglpllptlkytllgttplankdcyatdyltgkdpldltntgtpnllnttplntntgktkldllknnldtlgkylhlhdyktpctalttaklldtttykkkklyllkyddk"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 52,
+      "target_pos": 322,
+      "kmer": "klttll",
+      "query_kmer": "EVQSIL",
+      "target_kmer": "ELQSVI"
+    },
+    {
+      "query_pos": 53,
+      "target_pos": 323,
+      "kmer": "lttllk",
+      "query_kmer": "VQSILK",
+      "target_kmer": "LQSVIK"
+    },
+    {
+      "query_pos": 103,
+      "target_pos": 107,
+      "kmer": "lgkgty",
+      "query_kmer": "IGKGSF",
+      "target_kmer": "LGEGSF"
+    },
+    {
+      "query_pos": 104,
+      "target_pos": 108,
+      "kmer": "gkgtyg",
+      "query_kmer": "GKGSFG",
+      "target_kmer": "GEGSFG"
+    },
+    {
+      "query_pos": 105,
+      "target_pos": 109,
+      "kmer": "kgtygk",
+      "query_kmer": "KGSFGK",
+      "target_kmer": "EGSFGE"
+    },
+    {
+      "query_pos": 106,
+      "target_pos": 110,
+      "kmer": "gtygkl",
+      "query_kmer": "GSFGKV",
+      "target_kmer": "GSFGEV"
+    },
+    {
+      "query_pos": 261,
+      "target_pos": 263,
+      "kmer": "kylapk",
+      "query_kmer": "EYLAPE",
+      "target_kmer": "RYMAPE"
+    },
+    {
+      "query_pos": 262,
+      "target_pos": 264,
+      "kmer": "ylapkl",
+      "query_kmer": "YLAPEV",
+      "target_kmer": "YMAPEI"
+    },
+    {
+      "query_pos": 263,
+      "target_pos": 265,
+      "kmer": "lapkll",
+      "query_kmer": "LAPEVL",
+      "target_kmer": "MAPEIL"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 103,
+      "query_end": 112,
+      "target_start": 107,
+      "target_end": 116,
+      "length": 9
+    },
+    {
+      "query_start": 261,
+      "query_end": 269,
+      "target_start": 263,
+      "target_end": 271,
+      "length": 8
+    },
+    {
+      "query_start": 52,
+      "query_end": 59,
+      "target_start": 322,
+      "target_end": 329,
+      "length": 7
+    }
+  ]
+}

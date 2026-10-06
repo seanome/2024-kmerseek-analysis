@@ -1,0 +1,151 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "O00141 species=human Serine/threonine-protein kinase Sgk1",
+    "sequence": "MTVKTEAAKGTLTYSRMRGMVAILIAFMKQRRMGLNDFIQKIANNSYACKHPEVQSILKISQPQEPELMNANPSPPPSPSQQINLGPSSNPHAKPSDFHFLKVIGKGSFGKVLLARHKAEEVFYAVKVLQKKAILKKKEEKHIMSERNVLLKNVKHPFLVGLHFSFQTADKLYFVLDYINGGELFYHLQRERCFLEPRARFYAAEIASALGYLHSLNIVYRDLKPENILLDSQGHIVLTDFGLCKENIEHNSTTSTFCGTPEYLAPEVLHKQPYDRTVDWWCLGAVLYEMLYGLPPFYSRNTAEMYDNILNKPLQLKPNITNSARHLLEGLLQKDRTKRLGAKDDFMEIKSHVFFSLINWDDLINKKITPPFNPNVSGPNDLRHFDPEFTEEPVPNSIGKSPDSVLVTASVKEAAEAFLGFSYAPPTDSFL",
+    "encoded": "ltlktkaakgtltytklkgllalllaylktkklglndyltklanntyackhpklttllklttptkpkllnanptppptptttlnlgpttnphakptdyhylkllgkgtygklllakhkakklyyalklltkkallkkkkkkhlltkknlllknlkhpyllglhytyttadklyylldylnggklyyhltkkkcylkpkakyyaaklatalgylhtlnllykdlkpknllldttghllltdyglckknlkhntttttycgtpkylapkllhktpydktldwwclgallykllyglppyytkntaklydnllnkpltlkpnltntakhllkglltkdktkklgakddylklkthlyytllnwddllnkkltppynpnltgpndlkhydpkytkkplpntlgktpdtllltatlkkaakaylgytyapptdtyl"
+  },
+  "target": {
+    "name": "H2L099 species=worm Germinal center kinase 1",
+    "sequence": "MTTTSSDELPRQADDDSMKWDRIYIQKLDPEVIFTKQERIGRGSFGEVYKGIDNRTGRVVAIKIIDLEQAEDEIEDIQQEIQVLSQCDSQYVTKYFGSFLKGSKLWIIMEYLGGGSALDLTKSGKLDESHIAVILREILKGLEYLHSERKIHRDIKAANVLVSEHGDVKVADFGVAGQLTETVKKRITFVGSPFWMAPELIKQSSYDYKADIWSLGITAIELANGEPPHSDLHPMRVLFLIPKNPPPVLQGSQWSKPFKEFVEMCLNKDPENRPSASTLLKHQFIKRAKKNSILVDLIERAAEYRLRTGVSSDSDLDEDSDGGGGTSKWDYPTVRGPRVSADDDGTVRQRTDRPRAQVDRRSPSGSPGGTIVRGSPQVAAVAEQLRNSSVGSSGYGSGGNSASSQYATSSLPQSHTASSGGATTITLGSPNGSPTSSLARTQSMVSPSGQRSGSAQSWELERGNRPMSERVSSQVSPSKYNQHRTSSSNGVQGGSGGRREYINGSGSGLNGNSSNQNHSEYSDAVRQRGPGGSGGRLDYRESHVPTSSQENLNHGRMYGYGAPPPSREANNVPMPRVKGALDCSLLPAIEHLSRTRHATAALDQLRHVFRDVEDSCPGICNELIEELMQRIAVPQVSQSDLDAAIRRLTTPPS",
+    "encoded": "ltttttdklpktadddtlkwdklyltkldpkllytktkklgkgtygklykgldnktgkllalklldlktakdklkdlttkltllttcdttyltkyygtylkgtklwlllkylgggtaldltktgkldkthlalllkkllkglkylhtkkklhkdlkaanllltkhgdlkladyglagtltktlkkkltylgtpywlapkllktttydykadlwtlgltalklangkpphtdlhplkllyllpknppplltgttwtkpykkylklclnkdpknkptattllkhtylkkakkntllldllkkaakyklktglttdtdldkdtdggggttkwdyptlkgpkltadddgtlktktdkpkatldkktptgtpggtllkgtptlaalaktlknttlgttgygtggntatttyatttlptthtattggattltlgtpngtptttlaktttlltptgtktgtattwklkkgnkpltkkltttltptkynthkttttngltggtggkkkylngtgtglngnttntnhtkytdalktkgpggtggkldykkthlpttttknlnhgklygygappptkkannlplpklkgaldctllpalkhltktkhataaldtlkhlykdlkdtcpglcnkllkklltklalptltttdldaalkklttppt"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 28,
+      "target_pos": 35,
+      "kmer": "ktkklg",
+      "query_kmer": "KQRRMG",
+      "target_kmer": "KQERIG"
+    },
+    {
+      "query_pos": 77,
+      "target_pos": 432,
+      "kmer": "tptttl",
+      "query_kmer": "SPSQQI",
+      "target_kmer": "SPTSSL"
+    },
+    {
+      "query_pos": 103,
+      "target_pos": 39,
+      "kmer": "lgkgty",
+      "query_kmer": "IGKGSF",
+      "target_kmer": "IGRGSF"
+    },
+    {
+      "query_pos": 104,
+      "target_pos": 40,
+      "kmer": "gkgtyg",
+      "query_kmer": "GKGSFG",
+      "target_kmer": "GRGSFG"
+    },
+    {
+      "query_pos": 105,
+      "target_pos": 41,
+      "kmer": "kgtygk",
+      "query_kmer": "KGSFGK",
+      "target_kmer": "RGSFGE"
+    },
+    {
+      "query_pos": 106,
+      "target_pos": 42,
+      "kmer": "gtygkl",
+      "query_kmer": "GSFGKV",
+      "target_kmer": "GSFGEV"
+    },
+    {
+      "query_pos": 218,
+      "target_pos": 607,
+      "kmer": "lykdlk",
+      "query_kmer": "VYRDLK",
+      "target_kmer": "VFRDVE"
+    },
+    {
+      "query_pos": 263,
+      "target_pos": 195,
+      "kmer": "lapkll",
+      "query_kmer": "LAPEVL",
+      "target_kmer": "MAPELI"
+    },
+    {
+      "query_pos": 335,
+      "target_pos": 35,
+      "kmer": "ktkklg",
+      "query_kmer": "RTKRLG",
+      "target_kmer": "KQERIG"
+    },
+    {
+      "query_pos": 410,
+      "target_pos": 297,
+      "kmer": "lkkaak",
+      "query_kmer": "VKEAAE",
+      "target_kmer": "IERAAE"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 103,
+      "query_end": 112,
+      "target_start": 39,
+      "target_end": 48,
+      "length": 9
+    },
+    {
+      "query_start": 28,
+      "query_end": 34,
+      "target_start": 35,
+      "target_end": 41,
+      "length": 6
+    },
+    {
+      "query_start": 77,
+      "query_end": 83,
+      "target_start": 432,
+      "target_end": 438,
+      "length": 6
+    },
+    {
+      "query_start": 218,
+      "query_end": 224,
+      "target_start": 607,
+      "target_end": 613,
+      "length": 6
+    },
+    {
+      "query_start": 263,
+      "query_end": 269,
+      "target_start": 195,
+      "target_end": 201,
+      "length": 6
+    },
+    {
+      "query_start": 335,
+      "query_end": 341,
+      "target_start": 35,
+      "target_end": 41,
+      "length": 6
+    },
+    {
+      "query_start": 410,
+      "query_end": 416,
+      "target_start": 297,
+      "target_end": 303,
+      "length": 6
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "ksize": 7,
+  "moltype": "mmseqs12",
+  "classes": {
+    "a": "AST",
+    "c": "C",
+    "e": "EQ",
+    "f": "FY",
+    "g": "G",
+    "h": "H",
+    "i": "IV",
+    "k": "KR",
+    "l": "LM",
+    "n": "DN",
+    "p": "P",
+    "w": "W"
+  },
+  "query": {
+    "name": "O95279 species=human Potassium channel subfamily K member 5",
+    "sequence": "MVDRGPLLTSAIIFYLAIGAAIFEVLEEPHWKEAKKNYYTQKLHLLKEFPCLGQEGLDKILEVVSDAAGQGVAITGNQTFNNWNWPNAMIFAATVITTIGYGNVAPKTPAGRLFCVFYGLFGVPLCLTWISALGKFFGGRAKRLGQFLTKRGVSLRKAQITCTVIFIVWGVLVHLVIPPFVFMVTEGWNYIEGLYYSFITISTIGFGDFVAGVNPSANYHALYRYFVELWIYLGLAWLSLFVNWKVSMFVEVHKAIKKRRRRRKESFESSPHSRKALQVKGSTASKDVNIFSFLSKKEETYNDLIKQIGKKAMKTSGGGETGPGPGLGPQGGGLPALPPSLVPLVVYSKNRVPTLEEVSQTLRSKGHVSRSPDEEAVARAPEDSSPAPEVFMNQLDRISEECEPWDAQDYHPLIFQDASITFVNTEAGLSDEETSKSSLEDNLAGEESPQQGAEAKAPLNMGEFPSSSESTFTSTESELSVPYEQLMNEYNKANSPKGT",
+    "encoded": "linkgpllaaaiifflaigaaifeileephwkeakknffaeklhllkefpclgeeglnkileiianaagegiaiagneafnnwnwpnalifaaaiiaaigfgniapkapagklfciffglfgiplclawiaalgkffggkakklgeflakkgialkkaeiacaiifiiwgilihliippfifliaegwnfieglffafiaiaaigfgnfiaginpaanfhalfkffielwiflglawlalfinwkialfieihkaikkkkkkkkeafeaaphakkaleikgaaaakninifaflakkeeafnnlikeigkkalkaagggeagpgpglgpeggglpalppalipliifaknkipaleeiaealkakghiakapneeaiakapenaapapeiflnelnkiaeecepwnaenfhplifenaaiafinaeaglaneeaakaalennlageeapeegaeakaplnlgefpaaaeaafaaaeaelaipfeellnefnkanapkga"
+  },
+  "target": {
+    "name": "O17185 species=worm Two pore potassium channel protein sup-9",
+    "sequence": "MKRQNIRTLSLIVCTLTYLLVGAAVFDALETENEILQRKLVQRVREKLKTKYNMSNADYEILEATIVKSVPHKAGYQWKFSGAFYFATTVITTIGYGHSTPMTDAGKVFCMLYALAGIPLGLIMFQSIGERMNTFAAKLLRFIRRAAGKQPIVTSSDLIIFCTGWGGLLIFGGAFMFSSYENWTYFDAVYYCFVTLTTIGFGDYVALQKRGSLQTQPEYVFFSLVFILFGLTVISAAMNLLVLRFLTMNTEDERRDEQEAILAAQGLVRVGDPTADDDFGRLPLSDNVSLASCSCYQLPDEKLRHRHRKHTEPHGGPPTFSGMTTRPKY",
+    "encoded": "lkkenikalaliicalaflligaaifnaleaeneilekkliekikeklkakfnlananfeileaaiikaiphkagfewkfagafffaaaiiaaigfghaaplanagkifcllfalagiplglilfeaigeklnafaakllkfikkaagkepiiaaanliifcagwggllifggaflfaafenwaffnaiffcfialaaigfgnfialekkgaleaepefiffalifilfglaiiaaalnllilkflalnaenekkneeeailaaeglikignpaannnfgklplannialaacacfelpneklkhkhkkhaephggppafaglaakpkf"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 90,
+      "target_pos": 85,
+      "kmer": "faaaiia",
+      "query_kmer": "FAATVIT",
+      "target_kmer": "FATTVIT"
+    },
+    {
+      "query_pos": 91,
+      "target_pos": 86,
+      "kmer": "aaaiiaa",
+      "query_kmer": "AATVITT",
+      "target_kmer": "ATTVITT"
+    },
+    {
+      "query_pos": 92,
+      "target_pos": 87,
+      "kmer": "aaiiaai",
+      "query_kmer": "ATVITTI",
+      "target_kmer": "TTVITTI"
+    },
+    {
+      "query_pos": 93,
+      "target_pos": 88,
+      "kmer": "aiiaaig",
+      "query_kmer": "TVITTIG",
+      "target_kmer": "TVITTIG"
+    },
+    {
+      "query_pos": 94,
+      "target_pos": 89,
+      "kmer": "iiaaigf",
+      "query_kmer": "VITTIGY",
+      "target_kmer": "VITTIGY"
+    },
+    {
+      "query_pos": 95,
+      "target_pos": 90,
+      "kmer": "iaaigfg",
+      "query_kmer": "ITTIGYG",
+      "target_kmer": "ITTIGYG"
+    },
+    {
+      "query_pos": 96,
+      "target_pos": 196,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "TTIGFGD"
+    },
+    {
+      "query_pos": 200,
+      "target_pos": 90,
+      "kmer": "iaaigfg",
+      "query_kmer": "ISTIGFG",
+      "target_kmer": "ITTIGYG"
+    },
+    {
+      "query_pos": 201,
+      "target_pos": 196,
+      "kmer": "aaigfgn",
+      "query_kmer": "STIGFGD",
+      "target_kmer": "TTIGFGD"
+    },
+    {
+      "query_pos": 202,
+      "target_pos": 197,
+      "kmer": "aigfgnf",
+      "query_kmer": "TIGFGDF",
+      "target_kmer": "TIGFGDY"
+    },
+    {
+      "query_pos": 203,
+      "target_pos": 198,
+      "kmer": "igfgnfi",
+      "query_kmer": "IGFGDFV",
+      "target_kmer": "IGFGDYV"
+    },
+    {
+      "query_pos": 204,
+      "target_pos": 199,
+      "kmer": "gfgnfia",
+      "query_kmer": "GFGDFVA",
+      "target_kmer": "GFGDYVA"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 90,
+      "query_end": 102,
+      "target_start": 85,
+      "target_end": 97,
+      "length": 12
+    },
+    {
+      "query_start": 201,
+      "query_end": 211,
+      "target_start": 196,
+      "target_end": 206,
+      "length": 10
+    },
+    {
+      "query_start": 96,
+      "query_end": 103,
+      "target_start": 196,
+      "target_end": 203,
+      "length": 7
+    },
+    {
+      "query_start": 200,
+      "query_end": 207,
+      "target_start": 90,
+      "target_end": 97,
+      "length": 7
+    }
+  ]
+}

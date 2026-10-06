@@ -1,0 +1,123 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "Q16539 species=human Mitogen-activated protein kinase 14",
+    "sequence": "MSQERPTFYRQELNKTIWEVPERYQNLSPVGSGAYGSVCAAFDTKTGLRVAVKKLSRPFQSIIHAKRTYRELRLLKHMKHENVIGLLDVFTPARSLEEFNDVYLVTHLMGADLNNIVKCQKLTDDHVQFLIYQILRGLKYIHSADIIHRDLKPSNLAVNEDCELKILDFGLARHTDDEMTGYVATRWYRAPEIMLNWMHYNQTVDIWSVGCIMAELLTGRTLFPGTDHIDQLKLILRLVGTPGAELLKKISSESARNYIQSLTQMPKMNFANVFIGANPLAVDLLEKMLVLDSDKRITAAQALAHAYFAQYHDPDDEPVADPYDQSFESRDLLIDEWKSLTYDEVISFVPPPLDQEEMES",
+    "encoded": "lttkkptyyktklnktlwklpkkytnltplgtgaygtlcaaydtktglklalkkltkpyttllhakktykklkllkhlkhknllglldlytpaktlkkyndlyllthllgadlnnllkctkltddhltyllytllkglkylhtadllhkdlkptnlalnkdcklklldyglakhtddkltgylatkwykapklllnwlhynttldlwtlgcllaklltgktlypgtdhldtlklllkllgtpgakllkklttktaknylttlttlpklnyanlylganplaldllkklllldtdkkltaatalahayyatyhdpddkpladpydttyktkdllldkwktltydklltylpppldtkklkt"
+  },
+  "target": {
+    "name": "Q8GYF5 species=arabidopsis Wall-associated receptor kinase-like 21",
+    "sequence": "MAETPQPYLIFVFFVFTLTVATQTTGSVKCKTSLLRYPFGFSDGYPIRFNCSEITGEAVIGEFAVQEVTNSNIYVEIPPVCKRNIRKIEQLFRENLAPSKLQNIILVQGCKKQNKSSNCLIRNKFVENRLNLSKCKSPVSCLDGATTTTADVMSLGDVVNGSGCKYWFSSISQSQVSVNLGRLKLDWWLKGSCSNTTCSENADCAKVKLDDGGLGHRCTCREGFSGKAFTVPGGCHRLVYKRKGLHKLVVLGTAGILVGVLVIVVLIATYFFRNKQSASSERASIANRLLCELAGNSSVPFYTYKEIEKATDSFSDKNMLGTGAYGTVYAGEFPNSSCVAIKRLKHKDTTSIDQVVNEIKLLSSVSHPNLVRLLGCCFADGEPFLVYEFMPNGTLYQHLQHERGQPPLSWQLRLAIACQTANAIAHLHSSVNPPIYHRDIKSSNILLDHEFNSKISDFGLSRLGMSTDFEASHISTAPQGTPGYLDPQYHQDFQLSDKSDVYSFGVVLVEIISGFKVIDFTRPYSEVNLASLAVDRIGRGRVVDIIDPCLNKEINPKMFASIHNLAELAFRCLSFHRNMRPTMVEITEDLHRIKLMHYGTESGKFKNRSEIDMKRQQSFPRE",
+    "encoded": "laktptpyllylyylytltlattttgtlkckttllkypygytdgyplkynctkltgkallgkyaltkltntnlylklpplckknlkklktlykknlaptkltnlllltgckktnkttncllknkylknklnltkcktpltcldgattttadlltlgdllngtgckywyttlttttltlnlgklkldwwlkgtctnttctknadcaklklddgglghkctckkgytgkaytlpggchkllykkkglhkllllgtaglllgllllllllatyyyknkttattkkatlankllcklagnttlpyytykklkkatdtytdknllgtgaygtlyagkypnttclalkklkhkdtttldtllnklkllttlthpnllkllgccyadgkpyllykylpngtlythlthkkgtppltwtlklalacttanalahlhttlnpplyhkdlkttnllldhkyntkltdygltklglttdykathlttaptgtpgyldptyhtdytltdktdlytygllllklltgyklldytkpytklnlatlaldklgkgklldlldpclnkklnpklyatlhnlaklaykcltyhknlkptllkltkdlhklkllhygtktgkyknktkldlkktttypkk"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 29,
+      "target_pos": 319,
+      "kmer": "lgtgay",
+      "query_kmer": "VGSGAY",
+      "target_kmer": "LGTGAY"
+    },
+    {
+      "query_pos": 30,
+      "target_pos": 320,
+      "kmer": "gtgayg",
+      "query_kmer": "GSGAYG",
+      "target_kmer": "GTGAYG"
+    },
+    {
+      "query_pos": 31,
+      "target_pos": 321,
+      "kmer": "tgaygt",
+      "query_kmer": "SGAYGS",
+      "target_kmer": "TGAYGT"
+    },
+    {
+      "query_pos": 32,
+      "target_pos": 322,
+      "kmer": "gaygtl",
+      "query_kmer": "GAYGSV",
+      "target_kmer": "GAYGTV"
+    },
+    {
+      "query_pos": 49,
+      "target_pos": 338,
+      "kmer": "lalkkl",
+      "query_kmer": "VAVKKL",
+      "target_kmer": "VAIKRL"
+    },
+    {
+      "query_pos": 67,
+      "target_pos": 302,
+      "kmer": "tykklk",
+      "query_kmer": "TYRELR",
+      "target_kmer": "TYKEIE"
+    },
+    {
+      "query_pos": 233,
+      "target_pos": 506,
+      "kmer": "lllkll",
+      "query_kmer": "LILRLV",
+      "target_kmer": "VLVEII"
+    },
+    {
+      "query_pos": 234,
+      "target_pos": 369,
+      "kmer": "llkllg",
+      "query_kmer": "ILRLVG",
+      "target_kmer": "LVRLLG"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 29,
+      "query_end": 38,
+      "target_start": 319,
+      "target_end": 328,
+      "length": 9
+    },
+    {
+      "query_start": 49,
+      "query_end": 55,
+      "target_start": 338,
+      "target_end": 344,
+      "length": 6
+    },
+    {
+      "query_start": 67,
+      "query_end": 73,
+      "target_start": 302,
+      "target_end": 308,
+      "length": 6
+    },
+    {
+      "query_start": 233,
+      "query_end": 239,
+      "target_start": 506,
+      "target_end": 512,
+      "length": 6
+    },
+    {
+      "query_start": 234,
+      "query_end": 240,
+      "target_start": 369,
+      "target_end": 375,
+      "length": 6
+    }
+  ]
+}

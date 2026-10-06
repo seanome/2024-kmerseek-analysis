@@ -1,0 +1,92 @@
+{
+  "ksize": 19,
+  "moltype": "hp_thomas_dill2",
+  "classes": {
+    "h": "ACFILMVWY",
+    "p": "DEGHKNPQRST"
+  },
+  "query": {
+    "name": "P29966 species=human Myristoylated alanine-rich C-kinase substrate",
+    "sequence": "MGAQFSKTAAKGEAAAERPGEAAVASSPSKANGQENGHVKVNGDASPAAAESGAKEELQANGSAPAADKEEPAAAGSGAASPSAAEKGEPAAAAAPEAGASPVEKEAPAEGEAAEPGSPTAAEGEAASAASSTSSPKAEDGATPSPSNETPKKKKKRFSFKKSFKLSGFSFKKNKKEAGEGGEAEAPAAEGGKDEAAGGAAAAAAEAGAASGEQAAAPGEEAAAGEEGAAGGDPQEAKPQEAAVAPEKPPASDETKAAEEPSKVEEKKAEEAGASAAACEAPSAAGPGAPPEQEAAPAEEPAAAAASSACAAPSQEAQPECSPEAPPAEAAE",
+    "encoded": "hphphppphhppphhhppppphhhhppppphppppppphphppphpphhhppphppphphppphphhppppphhhppphhppphhppppphhhhhpphphpphppphphppphhpppppphhppphhphhppppppphppphppppppppppppppphphppphphpphphpppppphppppphphphhpppppphhpphhhhhhphphhpppphhhpppphhhpppphhpppppphpppphhhhppppphppppphhppppphpppphpphphphhhhphpphhppphppppphhphppphhhhhpphhhhpppphppphppphpphphhp"
+  },
+  "target": {
+    "name": "Q6PD99 species=zebrafish MARCKS-related protein 1-A",
+    "sequence": "MGAQLTKGEATVEGKAVADKANGQENGHVKTNGDVSTKPDGEAVAADGNGTAEVAKDEAPKTEEGDGIEAAPATEAEASKSDGEAAKETKKKKKFSLKNSFKFKGISLKKNKKASEEAAEAVATPTTAEDKPEENGQAATETKEEEPAAETNETPAPEAEAEPKVEEAEPKAEEPAQQTETAPTEETTKSEESPAPVEETTPTESSDPEPAAE",
+    "encoded": "hphphpppphphppphhhpphppppppphppppphppppppphhhhppppphphhppphpppppppphphhphpphphpppppphhpppppppphphppphphpphphppppphppphhphhhpppphppppppppphhpppppppphhpppppphpphphppphpphppphppphppppphpppppppppppphphppppppppppppphhp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 149,
+      "target_pos": 86,
+      "kmer": "pppppppphphppphphpp",
+      "query_kmer": "TPKKKKKRFSFKKSFKLSG",
+      "target_kmer": "KETKKKKKFSLKNSFKFKG"
+    },
+    {
+      "query_pos": 150,
+      "target_pos": 87,
+      "kmer": "ppppppphphppphphpph",
+      "query_kmer": "PKKKKKRFSFKKSFKLSGF",
+      "target_kmer": "ETKKKKKFSLKNSFKFKGI"
+    },
+    {
+      "query_pos": 151,
+      "target_pos": 88,
+      "kmer": "pppppphphppphphpphp",
+      "query_kmer": "KKKKKRFSFKKSFKLSGFS",
+      "target_kmer": "TKKKKKFSLKNSFKFKGIS"
+    },
+    {
+      "query_pos": 152,
+      "target_pos": 89,
+      "kmer": "ppppphphppphphpphph",
+      "query_kmer": "KKKKRFSFKKSFKLSGFSF",
+      "target_kmer": "KKKKKFSLKNSFKFKGISL"
+    },
+    {
+      "query_pos": 153,
+      "target_pos": 90,
+      "kmer": "pppphphppphphpphphp",
+      "query_kmer": "KKKRFSFKKSFKLSGFSFK",
+      "target_kmer": "KKKKFSLKNSFKFKGISLK"
+    },
+    {
+      "query_pos": 154,
+      "target_pos": 91,
+      "kmer": "ppphphppphphpphphpp",
+      "query_kmer": "KKRFSFKKSFKLSGFSFKK",
+      "target_kmer": "KKKFSLKNSFKFKGISLKK"
+    },
+    {
+      "query_pos": 155,
+      "target_pos": 92,
+      "kmer": "pphphppphphpphphppp",
+      "query_kmer": "KRFSFKKSFKLSGFSFKKN",
+      "target_kmer": "KKFSLKNSFKFKGISLKKN"
+    },
+    {
+      "query_pos": 156,
+      "target_pos": 93,
+      "kmer": "phphppphphpphphpppp",
+      "query_kmer": "RFSFKKSFKLSGFSFKKNK",
+      "target_kmer": "KFSLKNSFKFKGISLKKNK"
+    },
+    {
+      "query_pos": 157,
+      "target_pos": 94,
+      "kmer": "hphppphphpphphppppp",
+      "query_kmer": "FSFKKSFKLSGFSFKKNKK",
+      "target_kmer": "FSLKNSFKFKGISLKKNKK"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 149,
+      "query_end": 176,
+      "target_start": 86,
+      "target_end": 113,
+      "length": 27
+    }
+  ]
+}

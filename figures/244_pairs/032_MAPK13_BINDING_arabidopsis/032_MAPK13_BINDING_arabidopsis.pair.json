@@ -1,0 +1,95 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "O15264 species=human Mitogen-activated protein kinase 13",
+    "sequence": "MSLIRKKGFYKQDVNKTAWELPKTYVSPTHVGSGAYGSVCSAIDKRSGEKVAIKKLSRPFQSEIFAKRAYRELLLLKHMQHENVIGLLDVFTPASSLRNFYDFYLVMPFMQTDLQKIMGMEFSEEKIQYLVYQMLKGLKYIHSAGVVHRDLKPGNLAVNEDCELKILDFGLARHADAEMTGYVVTRWYRAPEVILSWMHYNQTVDIWSVGCIMAEMLTGKTLFKGKDYLDQLTQILKVTGVPGTEFVQKLNDKAAKSYIQSLPQTPRKDFTQLFPRASPQAADLLEKMLELDVDKRLTAAQALTHPFFEPFRDPEEETEAQQPFDDSLEHEKLTVDEWKQHIYKEIVNFSPIARKDSRRRSGMKL",
+    "encoded": "ltllkkkgyyktdlnktawklpktyltpthlgtgaygtlctaldkktgkklalkkltkpyttklyakkaykkllllkhlthknllglldlytpattlknyydyylllpylttdltkllglkytkkkltyllytllkglkylhtagllhkdlkpgnlalnkdcklklldyglakhadakltgylltkwykapkllltwlhynttldlwtlgcllaklltgktlykgkdyldtlttllkltglpgtkyltklndkaaktylttlpttpkkdyttlypkatptaadllkkllkldldkkltaatalthpyykpykdpkkktkattpyddtlkhkkltldkwkthlykkllnytplakkdtkkktglkl"
+  },
+  "target": {
+    "name": "Q8GYF5 species=arabidopsis Wall-associated receptor kinase-like 21",
+    "sequence": "MAETPQPYLIFVFFVFTLTVATQTTGSVKCKTSLLRYPFGFSDGYPIRFNCSEITGEAVIGEFAVQEVTNSNIYVEIPPVCKRNIRKIEQLFRENLAPSKLQNIILVQGCKKQNKSSNCLIRNKFVENRLNLSKCKSPVSCLDGATTTTADVMSLGDVVNGSGCKYWFSSISQSQVSVNLGRLKLDWWLKGSCSNTTCSENADCAKVKLDDGGLGHRCTCREGFSGKAFTVPGGCHRLVYKRKGLHKLVVLGTAGILVGVLVIVVLIATYFFRNKQSASSERASIANRLLCELAGNSSVPFYTYKEIEKATDSFSDKNMLGTGAYGTVYAGEFPNSSCVAIKRLKHKDTTSIDQVVNEIKLLSSVSHPNLVRLLGCCFADGEPFLVYEFMPNGTLYQHLQHERGQPPLSWQLRLAIACQTANAIAHLHSSVNPPIYHRDIKSSNILLDHEFNSKISDFGLSRLGMSTDFEASHISTAPQGTPGYLDPQYHQDFQLSDKSDVYSFGVVLVEIISGFKVIDFTRPYSEVNLASLAVDRIGRGRVVDIIDPCLNKEINPKMFASIHNLAELAFRCLSFHRNMRPTMVEITEDLHRIKLMHYGTESGKFKNRSEIDMKRQQSFPRE",
+    "encoded": "laktptpyllylyylytltlattttgtlkckttllkypygytdgyplkynctkltgkallgkyaltkltntnlylklpplckknlkklktlykknlaptkltnlllltgckktnkttncllknkylknklnltkcktpltcldgattttadlltlgdllngtgckywyttlttttltlnlgklkldwwlkgtctnttctknadcaklklddgglghkctckkgytgkaytlpggchkllykkkglhkllllgtaglllgllllllllatyyyknkttattkkatlankllcklagnttlpyytykklkkatdtytdknllgtgaygtlyagkypnttclalkklkhkdtttldtllnklkllttlthpnllkllgccyadgkpyllykylpngtlythlthkkgtppltwtlklalacttanalahlhttlnpplyhkdlkttnllldhkyntkltdygltklglttdykathlttaptgtpgyldptyhtdytltdktdlytygllllklltgyklldytkpytklnlatlaldklgkgklldlldpclnkklnpklyatlhnlaklaykcltyhknlkptllkltkdlhklkllhygtktgkyknktkldlkktttypkk"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 30,
+      "target_pos": 319,
+      "kmer": "lgtgay",
+      "query_kmer": "VGSGAY",
+      "target_kmer": "LGTGAY"
+    },
+    {
+      "query_pos": 31,
+      "target_pos": 320,
+      "kmer": "gtgayg",
+      "query_kmer": "GSGAYG",
+      "target_kmer": "GTGAYG"
+    },
+    {
+      "query_pos": 32,
+      "target_pos": 321,
+      "kmer": "tgaygt",
+      "query_kmer": "SGAYGS",
+      "target_kmer": "TGAYGT"
+    },
+    {
+      "query_pos": 33,
+      "target_pos": 322,
+      "kmer": "gaygtl",
+      "query_kmer": "GAYGSV",
+      "target_kmer": "GAYGTV"
+    },
+    {
+      "query_pos": 50,
+      "target_pos": 338,
+      "kmer": "lalkkl",
+      "query_kmer": "VAIKKL",
+      "target_kmer": "VAIKRL"
+    },
+    {
+      "query_pos": 233,
+      "target_pos": 581,
+      "kmer": "tllklt",
+      "query_kmer": "QILKVT",
+      "target_kmer": "TMVEIT"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 30,
+      "query_end": 39,
+      "target_start": 319,
+      "target_end": 328,
+      "length": 9
+    },
+    {
+      "query_start": 50,
+      "query_end": 56,
+      "target_start": 338,
+      "target_end": 344,
+      "length": 6
+    },
+    {
+      "query_start": 233,
+      "query_end": 239,
+      "target_start": 581,
+      "target_end": 587,
+      "length": 6
+    }
+  ]
+}

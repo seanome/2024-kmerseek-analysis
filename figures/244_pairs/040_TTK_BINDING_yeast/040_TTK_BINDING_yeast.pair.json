@@ -1,0 +1,165 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "P33981 species=human Dual specificity protein kinase TTK",
+    "sequence": "MESEDLSGRELTIDSIMNKVRDIKNKFKNEDLTDELSLNKISADTTDNSGTVNQIMMMANNPEDWLSLLLKLEKNSVPLSDALLNKLIGRYSQAIEALPPDKYGQNESFARIQVRFAELKAIQEPDDARDYFQMARANCKKFAFVHISFAQFELSQGNVKKSKQLLQKAVERGAVPLEMLEIALRNLNLQKKQLLSEEEKKNLSASTVLTAQESFSGSLGHLQNRNNSCDSRGQTTKARFLYGENMPPQDAEIGYRNSLRQTNKTKQSCPFGRVPVNLLNSPDCDVKTDDSVVPCFMKRQTSRSECRDLVVPGSKPSGNDSCELRNLKSVQNSHFKEPLVSDEKSSELIITDSITLKNKTESSLLAKLEETKEYQEPEVPESNQKQWQSKRKSECINQNPAASSNHWQIPELARKVNTEQKHTTFEQPVFSVSKQSPPISTSKWFDPKSICKTPSSNTLDDYMSCFRTPVVKNDFPPACQLSTPYGQPACFQQQQHQILATPLQNLQVLASSSANECISVKGRIYSILKQIGSGGSSKVFQVLNEKKQIYAIKYVNLEEADNQTLDSYRNEIAYLNKLQQHSDKIIRLYDYEITDQYIYMVMECGNIDLNSWLKKKKSIDPWERKSYWKNMLEAVHTIHQHGIVHSDLKPANFLIVDGMLKLIDFGIANQMQPDTTSVVKDSQVGTVNYMPPEAIKDMSSSRENGKSKSKISPKSDVWSLGCILYYMTYGKTPFQQIINQISKLHAIIDPNHEIEFPDIPEKDLQDVLKCCLKRDPKQRISIPELLAHPYVQIQTHPVNQMAKGTTEEMKYVLGQLVGLNSPNSILKAAKTLYEHYSGGESHNSSSSKTFEKKRGKK",
+    "encoded": "lktkdltgkkltldtllnklkdlknkyknkdltdkltlnkltadttdntgtlntllllannpkdwltlllklkkntlpltdallnkllgkyttalkalppdkygtnktyakltlkyaklkaltkpddakdyytlakanckkyaylhltyatyklttgnlkktktlltkalkkgalplkllklalknlnltkktlltkkkkknltattlltatktytgtlghltnknntcdtkgtttkakylygknlpptdaklgykntlkttnktkttcpygklplnllntpdcdlktddtllpcylkktttktkckdlllpgtkptgndtcklknlktltnthykkplltdkkttkllltdtltlknktkttllaklkktkkytkpklpktntktwttkkktkclntnpaattnhwtlpklakklntktkhttyktplytltkttppltttkwydpktlcktpttntlddyltcyktpllkndyppactlttpygtpacytttthtllatpltnltllatttankcltlkgklytllktlgtggttklytllnkkktlyalkylnlkkadnttldtyknklaylnkltthtdkllklydykltdtylylllkcgnldlntwlkkkktldpwkkktywknllkalhtlhthgllhtdlkpanyllldgllklldyglantltpdtttllkdttlgtlnylppkalkdltttkkngktktkltpktdlwtlgcllyyltygktpyttllntltklhalldpnhklkypdlpkkdltdllkcclkkdpktkltlpkllahpyltltthplntlakgttkklkyllgtllglntpntllkaaktlykhytggkthnttttktykkkkgkk"
+  },
+  "target": {
+    "name": "P47116 species=yeast Serine/threonine-protein kinase PTK2/STK2",
+    "sequence": "MAGNGKDKEVDKSPSVSTLKLLGKRLFNSSSHTDNSSLLLSAEQLGNGRSLRKRPTSPSISGSGSGGNSPSSSAGARQRSASLHRRKNNASVGFSNGSVSSHKSSVALQDLIKHNNNPYLNSPSDILGTGTGIASTRDRDRAVLDREKEKERARNKERNTHHAGLPQRSNSMASHHFPNENIVYNPYGISPNHARPDTAFADTLNTNKENDLSFYMHDGNSKIRMLPLPIANPNDFLPEDMKQYSVHLTDNFVFDTDNKPIGSGGSSEVRKVKSSYRQKDVYALKKLNMIYHESPEKFYKRCSKEFIIAKHLSHNVHITNTFYLLKVPTTTYTTRGWGFIMELGVKDLFQLMERTGWKNVPFNEKYCLFKQVAQGIKFCHDNGIAHRDLKPENVLISKEGICKLTDFGISDWYHVIPHDYTSPVKTCQGMIGSPPYTPPEVMYFDAKKHYPEKFQKPYNPLAMDSYALGIMLITMINNIIPFIDSCNTDARFREFEVSYDNFINHQNPHFRDKGCHKPGPGSEYSLARNFKNTDATRIAWRLADPNPATRYTMDDLFNDPFFQQIETCVEPNDDDLVRVPELRKSTSTNDFSENSLDAPHDQEVIHTSNPFLKKETLTSKPRSMLEIAESPSLKQKSKVKDSAKTKTHDVGDEGGNESTKPKQQDKKENLKKDEVKNGDKDKVIEEATTTNVDSILEKPTPTSTKVEDNLSEDDSTMKELKSMLNSTPTTPTHNGPTPLPAKAGTQLDKRMSDLSLKSETPASTKNFSAPNVSSSSNSLRSLGSPSVSSSKKKKVIHHHLDITNSVTNMSSVSAFISR",
+    "encoded": "lagngkdkkldktptlttlkllgkklynttthtdnttllltaktlgngktlkkkpttptltgtgtggntptttagaktktatlhkkknnatlgytngtltthkttlaltdllkhnnnpylntptdllgtgtglattkdkdkalldkkkkkkkaknkkknthhaglptktntlathhypnknllynpygltpnhakpdtayadtlntnkkndltyylhdgntklkllplplanpndylpkdlktytlhltdnylydtdnkplgtggttklkklkttyktkdlyalkklnllyhktpkkyykkctkkyllakhlthnlhltntyyllklptttyttkgwgyllklglkdlytllkktgwknlpynkkyclyktlatglkychdnglahkdlkpknllltkkglckltdygltdwyhllphdyttplktctgllgtppytppkllyydakkhypkkytkpynplaldtyalglllltllnnllpyldtcntdakykkykltydnylnhtnphykdkgchkpgpgtkytlaknykntdatklawkladpnpatkytlddlyndpyyttlktclkpndddllklpklkkttttndytkntldaphdtkllhttnpylkkktlttkpktllklaktptlktktklkdtaktkthdlgdkggnkttkpkttdkkknlkkdklkngdkdkllkkatttnldtllkkptptttklkdnltkddttlkklktllnttpttpthngptplpakagttldkkltdltlktktpattknytapnlttttntlktlgtptltttkkkkllhhhldltntltnlttltayltk"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 296,
+      "target_pos": 581,
+      "kmer": "lkkttt",
+      "query_kmer": "MKRQTS",
+      "target_kmer": "LRKSTS"
+    },
+    {
+      "query_pos": 371,
+      "target_pos": 451,
+      "kmer": "kkytkp",
+      "query_kmer": "KEYQEP",
+      "target_kmer": "EKFQKP"
+    },
+    {
+      "query_pos": 523,
+      "target_pos": 347,
+      "kmer": "lytllk",
+      "query_kmer": "IYSILK",
+      "target_kmer": "LFQLME"
+    },
+    {
+      "query_pos": 527,
+      "target_pos": 778,
+      "kmer": "lktlgt",
+      "query_kmer": "LKQIGS",
+      "target_kmer": "LRSLGS"
+    },
+    {
+      "query_pos": 530,
+      "target_pos": 260,
+      "kmer": "lgtggt",
+      "query_kmer": "IGSGGS",
+      "target_kmer": "IGSGGS"
+    },
+    {
+      "query_pos": 531,
+      "target_pos": 261,
+      "kmer": "gtggtt",
+      "query_kmer": "GSGGSS",
+      "target_kmer": "GSGGSS"
+    },
+    {
+      "query_pos": 532,
+      "target_pos": 262,
+      "kmer": "tggttk",
+      "query_kmer": "SGGSSK",
+      "target_kmer": "SGGSSE"
+    },
+    {
+      "query_pos": 533,
+      "target_pos": 263,
+      "kmer": "ggttkl",
+      "query_kmer": "GGSSKV",
+      "target_kmer": "GGSSEV"
+    },
+    {
+      "query_pos": 697,
+      "target_pos": 786,
+      "kmer": "ltttkk",
+      "query_kmer": "MSSSRE",
+      "target_kmer": "VSSSKK"
+    },
+    {
+      "query_pos": 705,
+      "target_pos": 633,
+      "kmer": "ktktkl",
+      "query_kmer": "KSKSKI",
+      "target_kmer": "KQKSKV"
+    },
+    {
+      "query_pos": 763,
+      "target_pos": 107,
+      "kmer": "ltdllk",
+      "query_kmer": "LQDVLK",
+      "target_kmer": "LQDLIK"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 530,
+      "query_end": 539,
+      "target_start": 260,
+      "target_end": 269,
+      "length": 9
+    },
+    {
+      "query_start": 296,
+      "query_end": 302,
+      "target_start": 581,
+      "target_end": 587,
+      "length": 6
+    },
+    {
+      "query_start": 371,
+      "query_end": 377,
+      "target_start": 451,
+      "target_end": 457,
+      "length": 6
+    },
+    {
+      "query_start": 523,
+      "query_end": 529,
+      "target_start": 347,
+      "target_end": 353,
+      "length": 6
+    },
+    {
+      "query_start": 527,
+      "query_end": 533,
+      "target_start": 778,
+      "target_end": 784,
+      "length": 6
+    },
+    {
+      "query_start": 697,
+      "query_end": 703,
+      "target_start": 786,
+      "target_end": 792,
+      "length": 6
+    },
+    {
+      "query_start": 705,
+      "query_end": 711,
+      "target_start": 633,
+      "target_end": 639,
+      "length": 6
+    },
+    {
+      "query_start": 763,
+      "query_end": 769,
+      "target_start": 107,
+      "target_end": 113,
+      "length": 6
+    }
+  ]
+}

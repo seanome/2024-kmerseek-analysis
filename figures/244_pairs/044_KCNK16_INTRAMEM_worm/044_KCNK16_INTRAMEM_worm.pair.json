@@ -1,0 +1,130 @@
+{
+  "ksize": 7,
+  "moltype": "mmseqs12",
+  "classes": {
+    "a": "AST",
+    "c": "C",
+    "e": "EQ",
+    "f": "FY",
+    "g": "G",
+    "h": "H",
+    "i": "IV",
+    "k": "KR",
+    "l": "LM",
+    "n": "DN",
+    "p": "P",
+    "w": "W"
+  },
+  "query": {
+    "name": "Q96T55 species=human Potassium channel subfamily K member 16",
+    "sequence": "MPSAGLCSCWGGRVLPLLLAYVCYLLLGATIFQLLERQAEAQSRDQFQLEKLRFLENYTCLDQWAMEQFVQVIMEAWVKGVNPKGNSTNPSNWDFGSSFFFAGTVVTTIGYGNLAPSTEAGQVFCVFYALLGIPLNVIFLNHLGTGLRAHLAAIERWEDRPRRSQVLQVLGLALFLTLGTLVILIFPPMVFSHVEGWSFSEGFYFAFITLSTIGFGDYVVGTDPSKHYISVYRSLAAIWILLGLAWLALILPLGPLLLHRCCQLWLLSLRQGCGAKAAPGRRPRRGSTAARGVQVTPQDFPISKKGLGS",
+    "encoded": "lpaaglcacwggkilplllaficflllgaaifellekeaeaeaknefeleklkflenfaclnewaleefieiileawikginpkgnaanpanwnfgaafffagaiiaaigfgnlapaaeageifciffallgiplniiflnhlgaglkahlaaiekwenkpkkaeileilglalflalgaliilifpplifahiegwafaegfffafialaaigfgnfiiganpakhfiaifkalaaiwillglawlalilplgplllhkccelwllalkegcgakaapgkkpkkgaaaakgieiapenfpiakkglga"
+  },
+  "target": {
+    "name": "O17185 species=worm Two pore potassium channel protein sup-9",
+    "sequence": "MKRQNIRTLSLIVCTLTYLLVGAAVFDALETENEILQRKLVQRVREKLKTKYNMSNADYEILEATIVKSVPHKAGYQWKFSGAFYFATTVITTIGYGHSTPMTDAGKVFCMLYALAGIPLGLIMFQSIGERMNTFAAKLLRFIRRAAGKQPIVTSSDLIIFCTGWGGLLIFGGAFMFSSYENWTYFDAVYYCFVTLTTIGFGDYVALQKRGSLQTQPEYVFFSLVFILFGLTVISAAMNLLVLRFLTMNTEDERRDEQEAILAAQGLVRVGDPTADDDFGRLPLSDNVSLASCSCYQLPDEKLRHRHRKHTEPHGGPPTFSGMTTRPKY",
+    "encoded": "lkkenikalaliicalaflligaaifnaleaeneilekkliekikeklkakfnlananfeileaaiikaiphkagfewkfagafffaaaiiaaigfghaaplanagkifcllfalagiplglilfeaigeklnafaakllkfikkaagkepiiaaanliifcagwggllifggaflfaafenwaffnaiffcfialaaigfgnfialekkgaleaepefiffalifilfglaiiaaalnllilkflalnaenekkneeeailaaeglikignpaannnfgklplannialaacacfelpneklkhkhkkhaephggppafaglaakpkf"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 103,
+      "target_pos": 88,
+      "kmer": "aiiaaig",
+      "query_kmer": "TVVTTIG",
+      "target_kmer": "TVITTIG"
+    },
+    {
+      "query_pos": 104,
+      "target_pos": 89,
+      "kmer": "iiaaigf",
+      "query_kmer": "VVTTIGY",
+      "target_kmer": "VITTIGY"
+    },
+    {
+      "query_pos": 105,
+      "target_pos": 90,
+      "kmer": "iaaigfg",
+      "query_kmer": "VTTIGYG",
+      "target_kmer": "ITTIGYG"
+    },
+    {
+      "query_pos": 106,
+      "target_pos": 196,
+      "kmer": "aaigfgn",
+      "query_kmer": "TTIGYGN",
+      "target_kmer": "TTIGFGD"
+    },
+    {
+      "query_pos": 206,
+      "target_pos": 192,
+      "kmer": "fialaai",
+      "query_kmer": "FITLSTI",
+      "target_kmer": "FVTLTTI"
+    },
+    {
+      "query_pos": 207,
+      "target_pos": 193,
+      "kmer": "ialaaig",
+      "query_kmer": "ITLSTIG",
+      "target_kmer": "VTLTTIG"
+    },
+    {
+      "query_pos": 208,
+      "target_pos": 194,
+      "kmer": "alaaigf",
+      "query_kmer": "TLSTIGF",
+      "target_kmer": "TLTTIGF"
+    },
+    {
+      "query_pos": 209,
+      "target_pos": 195,
+      "kmer": "laaigfg",
+      "query_kmer": "LSTIGFG",
+      "target_kmer": "LTTIGFG"
+    },
+    {
+      "query_pos": 210,
+      "target_pos": 196,
+      "kmer": "aaigfgn",
+      "query_kmer": "STIGFGD",
+      "target_kmer": "TTIGFGD"
+    },
+    {
+      "query_pos": 211,
+      "target_pos": 197,
+      "kmer": "aigfgnf",
+      "query_kmer": "TIGFGDY",
+      "target_kmer": "TIGFGDY"
+    },
+    {
+      "query_pos": 212,
+      "target_pos": 198,
+      "kmer": "igfgnfi",
+      "query_kmer": "IGFGDYV",
+      "target_kmer": "IGFGDYV"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 206,
+      "query_end": 219,
+      "target_start": 192,
+      "target_end": 205,
+      "length": 13
+    },
+    {
+      "query_start": 103,
+      "query_end": 112,
+      "target_start": 88,
+      "target_end": 97,
+      "length": 9
+    },
+    {
+      "query_start": 106,
+      "query_end": 113,
+      "target_start": 196,
+      "target_end": 203,
+      "length": 7
+    }
+  ]
+}

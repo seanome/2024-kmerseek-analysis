@@ -1,0 +1,249 @@
+{
+  "ksize": 6,
+  "moltype": "sdm12",
+  "classes": {
+    "a": "A",
+    "c": "C",
+    "d": "D",
+    "g": "G",
+    "h": "H",
+    "k": "EKR",
+    "l": "ILMV",
+    "n": "N",
+    "p": "P",
+    "t": "QST",
+    "w": "W",
+    "y": "FY"
+  },
+  "query": {
+    "name": "Q9Y6R4 species=human Mitogen-activated protein kinase kinase kinase 4",
+    "sequence": "MREAAAALVPPPAFAVTPAAAMEEPPPPPPPPPPPPEPETESEPECCLAARQEGTLGDSACKSPESDLEDFSDETNTENLYGTSPPSTPRQMKRMSTKHQRNNVGRPASRSNLKEKMNAPNQPPHKDTGKTVENVEEYSYKQEKKIRAALRTTERDRKKNVQCSFMLDSVGGSLPKKSIPDVDLNKPYLSLGCSNAKLPVSVPMPIARPARQTSRTDCPADRLKFFETLRLLLKLTSVSKKKDREQRGQENTSGFWLNRSNELIWLELQAWHAGRTINDQDFFLYTARQAIPDIINEILTFKVDYGSFAFVRDRAGFNGTSVEGQCKATPGTKIVGYSTHHEHLQRQRVSFEQVKRIMELLEYIEALYPSLQALQKDYEKYAAKDFQDRVQALCLWLNITKDLNQKLRIMGTVLGIKNLSDIGWPVFEIPSPRPSKGNEPEYEGDDTEGELKELESSTDESEEEQISDPRVPEIRQPIDNSFDIQSRDCISKKLERLESEDDSLGWGAPDWSTEAGFSRHCLTSIYRPFVDKALKQMGLRKLILRLHKLMDGSLQRARIALVKNDRPVEFSEFPDPMWGSDYVQLSRTPPSSEEKCSAVSWEELKAMDLPSFEPAFLVLCRVLLNVIHECLKLRLEQRPAGEPSLLSIKQLVRECKEVLKGGLLMKQYYQFMLQEVLEDLEKPDCNIDAFEEDLHKMLMVYFDYMRSWIQMLQQLPQASHSLKNLLEEEWNFTKEITHYIRGGEAQAGKLFCDIAGMLLKSTGSFLEFGLQESCAEFWTSADDSSASDEIRRSVIEISRALKELFHEARERASKALGFAKMLRKDLEIAAEFRLSAPVRDLLDVLKSKQYVKVQIPGLENLQMFVPDTLAEEKSIILQLLNAAAGKDCSKDSDDVLIDAYLLLTKHGDRARDSEDSWGTWEAQPVKVVPQVETVDTLRSMQVDNLLLVVMQSAHLTIQRKAFQQSIEGLMTLCQEQTSSQPVIAKALQQLKNDALELCNRISNAIDRVDHMFTSEFDAEVDESESVTLQQYYREAMIQGYNFGFEYHKEVVRLMSGEFRQKIGDKYISFARKWMNYVLTKCESGRGTRPRWATQGFDFLQAIEPAFISALPEDDFLSLQALMNECIGHVIGKPHSPVTGLYLAIHRNSPRPMKVPRCHSDPPNPHLIIPTPEGFSTRSMPSDARSHGSPAAAAAAAAAAVAASRPSPSGGDSVLPKSISSAHDTRGSSVPENDRLASIAAELQFRSLSRHSSPTEERDEPAYPRGDSSGSTRRSWELRTLISQSKDTASKLGPIEAIQKSVRLFEEKRYREMRRKNIIGQVCDTPKSYDNVMHVGLRKVTFKWQRGNKIGEGQYGKVYTCISVDTGELMAMKEIRFQPNDHKTIKETADELKIFEGIKHPNLVRYFGVELHREEMYIFMEYCDEGTLEEVSRLGLQEHVIRLYSKQITIAINVLHEHGIVHRDIKGANIFLTSSGLIKLGDFGCSVKLKNNAQTMPGEVNSTLGTAAYMAPEVITRAKGEGHGRAADIWSLGCVVIEMVTGKRPWHEYEHNFQIMYKVGMGHKPPIPERLSPEGKDFLSHCLESDPKMRWTASQLLDHSFVKVCTDEE",
+    "encoded": "lkkaaaallpppayaltpaaalkkppppppppppppkpktktkpkcclaaktkgtlgdtacktpktdlkdytdktntknlygttppttpktlkklttkhtknnlgkpatktnlkkklnapntpphkdtgktlknlkkytyktkkklkaalkttkkdkkknltctylldtlggtlpkktlpdldlnkpyltlgctnaklpltlplplakpaktttktdcpadklkyyktlklllklttltkkkdkktkgtknttgywlnktnkllwlkltawhagktlndtdyylytaktalpdllnklltykldygtyaylkdkagyngttlkgtckatpgtkllgytthhkhltktkltyktlkkllkllkylkalyptltaltkdykkyaakdytdkltalclwlnltkdlntklkllgtllglknltdlgwplyklptpkptkgnkpkykgddtkgklkklktttdktkkktltdpklpklktpldntydlttkdcltkklkklktkddtlgwgapdwttkagytkhclttlykpyldkalktlglkklllklhklldgtltkaklallkndkplkytkypdplwgtdyltltktppttkkkctaltwkklkaldlptykpaylllcklllnllhkclklklktkpagkptlltlktllkkckkllkgglllktyytylltkllkdlkkpdcnldaykkdlhkllllyydylktwltllttlptathtlknllkkkwnytkklthylkggkatagklycdlaglllkttgtylkygltktcakywttaddttatdklkktllkltkalkklyhkakkkatkalgyakllkkdlklaakykltaplkdlldllktktylkltlpglknltlylpdtlakkktllltllnaaagkdctkdtddllldayllltkhgdkakdtkdtwgtwkatplkllptlktldtlktltldnllllllttahltltkkaytttlkglltlctktttttpllakalttlkndalklcnkltnaldkldhlyttkydakldktktltlttyykkalltgynygykyhkkllklltgkyktklgdkyltyakkwlnylltkcktgkgtkpkwattgydyltalkpayltalpkddyltltallnkclghllgkphtpltglylalhkntpkplklpkchtdppnphlllptpkgyttktlptdakthgtpaaaaaaaaaalaatkptptggdtllpktlttahdtkgttlpkndklatlaakltyktltkhttptkkkdkpaypkgdttgttkktwklktlltttkdtatklgplkaltktlklykkkkykklkkknllgtlcdtpktydnllhlglkkltykwtkgnklgkgtygklytcltldtgkllalkklkytpndhktlkktadklklykglkhpnllkyyglklhkkklylylkycdkgtlkkltklgltkhllklytktltlalnllhkhgllhkdlkganlyltttgllklgdygctlklknnattlpgklnttlgtaaylapklltkakgkghgkaadlwtlgclllklltgkkpwhkykhnytllyklglghkpplpkkltpkgkdylthclktdpklkwtattlldhtylklctdkk"
+  },
+  "target": {
+    "name": "P05130 species=fly Protein kinase C, brain isozyme",
+    "sequence": "MSEGSDNNGDPQQQGAEGEAVGENKMKSRLRKGALKKKNVFNVKDHCFIARFFKQPTFCSHCKDFICGYQSGYAWMGFGKQGFQCQVCSYVVHKRCHEYVTFICPGKDKGIDSDSPKTQHNFEPFTYAGPTFCDHCGSLLYGIYHQGLKCSACDMNVHARCKENVPSLCGCDHTERRGRIYLEINVKENLLTVQIKEGRNLIPMDPNGLSDPYVKVKLIPDDKDQSKKKTRTIKACLNPVWNETLTYDLKPEDKDRRILIEVWDWDRTSRNDFMGALSFGISEIIKNPTNGWFKLLTQDEGEYYNVPCADDEQDLLKLKQKPSQKKPMVMRSDTNTHTSSKKDMIRATDFNFIKVLGKGSFGKVLLAERKGSEELYAIKILKKDVIIQDDDVECTMIEKRVLALGEKPPFLVQLHSCFQTMDRLFFVMEYVNGGDLMFQIQQFGKFKEPVAVFYAAEIAAGLFFLHTKGILYRDLKLDNVLLDADGHVKIADFGMCKENIVGDKTTKTFCGTPDYIAPEIILYQPYGKSVDWWAYGVLLYEMLVGQPPFDGEDEEELFAAITDHNVSYPKSLSKEAKEACKGFLTKQPNKRLGCGSSGEEDVRLHPFFRRIDWEKIENREVQPPFKPKIKHRKDVSNFDKQFTSEKTDLTPTDKVFMMNLDQSEFVGFSYMNPEYVFSP",
+    "encoded": "ltkgtdnngdptttgakgkalgknklktklkkgalkkknlynlkdhcylakyyktptycthckdylcgyttgyawlgygktgytctlctyllhkkchkyltylcpgkdkgldtdtpktthnykpytyagptycdhcgtllyglyhtglkctacdlnlhakckknlptlcgcdhtkkkgklylklnlkknlltltlkkgknllpldpngltdpylklkllpddkdttkkktktlkaclnplwnktltydlkpkdkdkklllklwdwdkttkndylgaltygltkllknptngwykllttdkgkyynlpcaddktdllklktkpttkkplllktdtnthtttkkdllkatdynylkllgkgtygklllakkkgtkklyalkllkkdllltdddlkctllkkkllalgkkppylltlhtcyttldklyyllkylnggdllytlttygkykkplalyyaaklaaglyylhtkgllykdlkldnllldadghlkladyglckknllgdkttktycgtpdylapklllytpygktldwwayglllyklllgtppydgkdkkklyaaltdhnltypktltkkakkackgyltktpnkklgcgttgkkdlklhpyykkldwkklknkkltppykpklkhkkdltnydktyttkktdltptdklyllnldttkylgytylnpkylytp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 229,
+      "target_pos": 256,
+      "kmer": "klllkl",
+      "query_kmer": "RLLLKL",
+      "target_kmer": "RILIEV"
+    },
+    {
+      "query_pos": 539,
+      "target_pos": 255,
+      "kmer": "kklllk",
+      "query_kmer": "RKLILR",
+      "target_kmer": "RRILIE"
+    },
+    {
+      "query_pos": 540,
+      "target_pos": 256,
+      "kmer": "klllkl",
+      "query_kmer": "KLILRL",
+      "target_kmer": "RILIEV"
+    },
+    {
+      "query_pos": 632,
+      "target_pos": 315,
+      "kmer": "lklktk",
+      "query_kmer": "LRLEQR",
+      "target_kmer": "LKLKQK"
+    },
+    {
+      "query_pos": 633,
+      "target_pos": 316,
+      "kmer": "klktkp",
+      "query_kmer": "RLEQRP",
+      "target_kmer": "KLKQKP"
+    },
+    {
+      "query_pos": 672,
+      "target_pos": 280,
+      "kmer": "ltkllk",
+      "query_kmer": "LQEVLE",
+      "target_kmer": "ISEIIK"
+    },
+    {
+      "query_pos": 819,
+      "target_pos": 378,
+      "kmer": "kllkkd",
+      "query_kmer": "KMLRKD",
+      "target_kmer": "KILKKD"
+    },
+    {
+      "query_pos": 820,
+      "target_pos": 379,
+      "kmer": "llkkdl",
+      "query_kmer": "MLRKDL",
+      "target_kmer": "ILKKDV"
+    },
+    {
+      "query_pos": 822,
+      "target_pos": 598,
+      "kmer": "kkdlkl",
+      "query_kmer": "RKDLEI",
+      "target_kmer": "EEDVRL"
+    },
+    {
+      "query_pos": 941,
+      "target_pos": 476,
+      "kmer": "ldnlll",
+      "query_kmer": "VDNLLL",
+      "target_kmer": "LDNVLL"
+    },
+    {
+      "query_pos": 955,
+      "target_pos": 570,
+      "kmer": "tltkka",
+      "query_kmer": "TIQRKA",
+      "target_kmer": "SLSKEA"
+    },
+    {
+      "query_pos": 1311,
+      "target_pos": 34,
+      "kmer": "lkkknl",
+      "query_kmer": "MRRKNI",
+      "target_kmer": "LKKKNV"
+    },
+    {
+      "query_pos": 1313,
+      "target_pos": 496,
+      "kmer": "kknllg",
+      "query_kmer": "RKNIIG",
+      "target_kmer": "KENIVG"
+    },
+    {
+      "query_pos": 1348,
+      "target_pos": 355,
+      "kmer": "lgkgty",
+      "query_kmer": "IGEGQY",
+      "target_kmer": "LGKGSF"
+    },
+    {
+      "query_pos": 1349,
+      "target_pos": 356,
+      "kmer": "gkgtyg",
+      "query_kmer": "GEGQYG",
+      "target_kmer": "GKGSFG"
+    },
+    {
+      "query_pos": 1350,
+      "target_pos": 357,
+      "kmer": "kgtygk",
+      "query_kmer": "EGQYGK",
+      "target_kmer": "KGSFGK"
+    },
+    {
+      "query_pos": 1351,
+      "target_pos": 358,
+      "kmer": "gtygkl",
+      "query_kmer": "GQYGKV",
+      "target_kmer": "GSFGKV"
+    },
+    {
+      "query_pos": 1507,
+      "target_pos": 514,
+      "kmer": "ylapkl",
+      "query_kmer": "YMAPEV",
+      "target_kmer": "YIAPEI"
+    },
+    {
+      "query_pos": 1508,
+      "target_pos": 515,
+      "kmer": "lapkll",
+      "query_kmer": "MAPEVI",
+      "target_kmer": "IAPEII"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 1348,
+      "query_end": 1357,
+      "target_start": 355,
+      "target_end": 364,
+      "length": 9
+    },
+    {
+      "query_start": 539,
+      "query_end": 546,
+      "target_start": 255,
+      "target_end": 262,
+      "length": 7
+    },
+    {
+      "query_start": 632,
+      "query_end": 639,
+      "target_start": 315,
+      "target_end": 322,
+      "length": 7
+    },
+    {
+      "query_start": 819,
+      "query_end": 826,
+      "target_start": 378,
+      "target_end": 385,
+      "length": 7
+    },
+    {
+      "query_start": 1507,
+      "query_end": 1514,
+      "target_start": 514,
+      "target_end": 521,
+      "length": 7
+    },
+    {
+      "query_start": 229,
+      "query_end": 235,
+      "target_start": 256,
+      "target_end": 262,
+      "length": 6
+    },
+    {
+      "query_start": 672,
+      "query_end": 678,
+      "target_start": 280,
+      "target_end": 286,
+      "length": 6
+    },
+    {
+      "query_start": 822,
+      "query_end": 828,
+      "target_start": 598,
+      "target_end": 604,
+      "length": 6
+    },
+    {
+      "query_start": 941,
+      "query_end": 947,
+      "target_start": 476,
+      "target_end": 482,
+      "length": 6
+    },
+    {
+      "query_start": 955,
+      "query_end": 961,
+      "target_start": 570,
+      "target_end": 576,
+      "length": 6
+    },
+    {
+      "query_start": 1311,
+      "query_end": 1317,
+      "target_start": 34,
+      "target_end": 40,
+      "length": 6
+    },
+    {
+      "query_start": 1313,
+      "query_end": 1319,
+      "target_start": 496,
+      "target_end": 502,
+      "length": 6
+    }
+  ]
+}
