@@ -3,24 +3,27 @@
 target length? Before and after seanome/kmerseek PR 136.
 
 For one query, the count of k-mers it shares with each human protein is observed; the
-whole-protein chance count E is what kmerseek expects. Sum both over all proteins in a
-length bin (proteins with no shared k-mer add 0 observed). If E is right, observed / E is
-the same in every bin. kmerseek main's E is the same for every target, so the ratio climbs
-with length; PR 136's E scales with the target's k-mer count.
+whole-protein chance count μ is what kmerseek expects (the mean of the Poisson behind its
+p-value, not an E-value). Sum both over all proteins in a length bin (proteins with no
+shared k-mer add 0 observed). If μ is right, observed / μ is the same in every bin.
+kmerseek main's μ is the same for every target, so the ratio climbs with length; PR 136's
+μ scales with the target's k-mer count.
 
 Inputs: the hp_lehninger2 k=17 searches 241_length_scaled_check.py writes
 ($NB241_CHECK_DIR/{main,pr136}/search/hp_lehninger2.k17.csv) and the human FASTA.
 Proteins that share no k-mer with the query are not in the search output, so their PR 136
-E is read off the E of hit proteins with the same k-mer count (np.interp), and their k-mer
+μ is read off the μ of hit proteins with the same k-mer count (np.interp), and their k-mer
 count from their length by a straight-line fit on the hit proteins.
 
 Writes notebooks/241_results/expected_vs_observed_by_length.csv and
-figures/241_expected_vs_observed_by_length.{png,pdf}.
+figures/241_expected_vs_observed_by_length.{png,pdf}. With --plot-only, redraws the
+figure from that CSV without the search outputs.
 """
 
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -30,7 +33,6 @@ from matplotlib.lines import Line2D
 import pubfig as pf
 
 HERE = Path(__file__).resolve().parent
-CHECK = Path(os.environ["NB241_CHECK_DIR"])
 HUMAN = Path(
     os.environ.get(
         "NB241_HUMAN",
@@ -44,7 +46,8 @@ OUT_FIG = HERE.parent / "figures" / "241_expected_vs_observed_by_length"
 
 
 def per_target(build_dir: str) -> pl.DataFrame:
-    d = pl.read_csv(CHECK / build_dir / "search" / f"{TAG}.csv", infer_schema_length=0)
+    check = Path(os.environ["NB241_CHECK_DIR"])
+    d = pl.read_csv(check / build_dir / "search" / f"{TAG}.csv", infer_schema_length=0)
     cols = [
         "n_intersecting_hashes",
         "query_expected_shared_kmers",
@@ -57,7 +60,7 @@ def per_target(build_dir: str) -> pl.DataFrame:
     )
 
 
-def main() -> None:
+def build_table() -> pl.DataFrame:
     headers = [line[1:].strip() for line in open(HUMAN) if line.startswith(">")]
     proteins = pl.DataFrame({"target_name": headers}).with_columns(
         pl.col("target_name").str.split("|").list.get(7).cast(pl.Int64).alias("length")
@@ -132,12 +135,16 @@ def main() -> None:
         )
         rows.append(s.drop("bin"))
         print(
-            f"{query}: main's E = {e_old:.3f} per protein; kmers ~ {slope:.3f} * length "
+            f"{query}: main's μ = {e_old:.3f} per protein; kmers ~ {slope:.3f} * length "
             f"+ {intercept:.1f} (fit on the {h.height:,} proteins hit)"
         )
     table = pl.concat(rows)
     OUT_CSV.parent.mkdir(exist_ok=True)
     table.write_csv(OUT_CSV)
+    return table
+
+
+def plot(table: pl.DataFrame) -> None:
     pl.Config.set_tbl_rows(40)
     pl.Config.set_tbl_width_chars(160)
     print(
@@ -180,9 +187,9 @@ def main() -> None:
             [],
             [],
             color=c["vermillion"],
-            label="kmerseek main: same E for every target",
+            label="kmerseek main: same μ for every target",
         ),
-        Line2D([], [], color=c["blue"], label="PR 136: E scaled by target size"),
+        Line2D([], [], color=c["blue"], label="PR 136: μ scaled by target size"),
         Line2D([], [], ls="", marker="o", color="black", ms=3, label="query Ced9"),
         Line2D([], [], ls="", marker="s", color="black", ms=3, label="query P66"),
     ]
@@ -192,7 +199,16 @@ def main() -> None:
         loc="left",
     )
     pf.save(fig, OUT_FIG, formats=("pdf", "png"))
-    print(f"wrote {OUT_CSV} and {OUT_FIG}.png/.pdf")
+    print(f"wrote {OUT_FIG}.png/.pdf")
+
+
+def main() -> None:
+    # --plot-only redraws from the saved table, for when the search CSVs are gone.
+    if "--plot-only" in sys.argv:
+        plot(pl.read_csv(OUT_CSV))
+    else:
+        plot(build_table())
+        print(f"wrote {OUT_CSV}")
 
 
 if __name__ == "__main__":
