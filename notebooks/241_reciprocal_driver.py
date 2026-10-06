@@ -154,6 +154,9 @@ def run(args) -> None:
             if prov[label].get(key) is None and old.get(label, {}).get(key):
                 prov[label][key] = old[label][key]
     (OUT / "provenance.json").write_text(json.dumps(prov, indent=1))
+    if args.fetch_only:
+        print(json.dumps(prov, indent=1))
+        return
 
     plan = json.loads((drv.OUT / "plan.json").read_text())
     if args.only:
@@ -248,6 +251,12 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=2)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--collect", action="store_true")
+    ap.add_argument(
+        "--fetch-only",
+        action="store_true",
+        help="download the two proteomes and stop (for a login node, if compute nodes "
+        "have no internet)",
+    )
     ap.add_argument(
         "--only",
         default="",

@@ -13,8 +13,9 @@
 # top_hits.csv (the 20 best human proteins for every arm, query and metric) from the
 # search CSVs the forward run left in $NB241_DIR/search.
 #
-# Needs the forward run's outputs (plan.json, search/) and its kmerseek build. Submit
-# from the same clone as 241_alphabet_ranking.sbatch:
+# Needs the forward run's outputs (plan.json, search/), which are in
+# $SCRATCH/241-alphabet-ranking from the first run (2026-09-23). Builds the forward run's
+# kmerseek if it is not there. Submit from the same clone as 241_alphabet_ranking.sbatch:
 #
 #   cd $SCRATCH/241-alphabet-ranking-repo && git pull && sbatch notebooks/241_reciprocal.sbatch
 #
@@ -37,16 +38,26 @@ set -euo pipefail
 REPO=$SLURM_SUBMIT_DIR
 export NB241_DIR=${NB241_DIR:-$SCRATCH/241-alphabet-ranking}
 export NB241_HUMAN=${NB241_HUMAN:-$SCRATCH/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa}
-export NB241_KMERSEEK=$SCRATCH/241-alphabet-ranking-kmerseek/target/release/kmerseek
+# kmerseek commit 982a055 (tag nb241-kmerseek-982a055), the build the forward run used;
+# built here if 241_alphabet_ranking.sbatch has not built it already.
+KMERSEEK_TAG=nb241-kmerseek-982a055
+KMERSEEK_SRC=$SCRATCH/241-alphabet-ranking-kmerseek
+export NB241_KMERSEEK=$KMERSEEK_SRC/target/release/kmerseek
 IMG=$SCRATCH/apptainer-cache/docker.io-olgabot-kmerseek-2026-09-13-extend-chain.img
 
-for f in "$NB241_KMERSEEK" "$NB241_HUMAN" "$NB241_DIR/plan.json" "$IMG"; do
+for f in "$NB241_HUMAN" "$NB241_DIR/plan.json" "$IMG"; do
     [ -s "$f" ] || { echo "241 reciprocal: missing input $f (run 241_alphabet_ranking.sbatch first)" >&2; exit 2; }
 done
 [ -n "$(ls "$NB241_DIR"/search/*.csv 2>/dev/null | head -1)" ] || \
     { echo "241 reciprocal: no forward search CSVs in $NB241_DIR/search" >&2; exit 2; }
 
-module load gcc/14.2.0 python/3.12.1
+module load rust/1.90.0 llvm/17.0.6 cmake/3.31.4 gcc/14.2.0 python/3.12.1
+if [ ! -x "$NB241_KMERSEEK" ]; then
+    [ -d "$KMERSEEK_SRC/.git" ] || \
+        git clone --quiet --depth 1 --branch "$KMERSEEK_TAG" https://github.com/seanome/kmerseek "$KMERSEEK_SRC"
+    export CARGO_HOME=$SCRATCH/.cargo
+    (cd "$KMERSEEK_SRC" && cargo build --release --bin kmerseek)
+fi
 "$NB241_KMERSEEK" --version
 
 cd "$REPO/notebooks"
