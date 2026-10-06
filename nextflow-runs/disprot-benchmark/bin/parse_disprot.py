@@ -5,6 +5,11 @@ parse_disprot.py
 Download and parse the DisProt current release JSON.
 Extracts human proteins (taxon 9606) with their disordered regions.
 
+A disordered region is a DisProt consensus region of the "Structural state" namespace with
+type "D" (disorder): entry["disprot_consensus"]["Structural state"]. entry["regions"] is not
+used, because it holds every annotation term (functions, transitions, binding partners,
+...), not only disorder.
+
 Usage:
     parse_disprot.py [--local PATH] <output_tsv>
 
@@ -21,35 +26,44 @@ import argparse
 import json
 import sys
 import time
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
-DISPROT_API = "https://disprot.org/api/search?release=current&format=json&page_size=2000&page=1"
+DISPROT_API = "https://disprot.org/api/search"
 HUMAN_TAXON = "9606"
+PAGE_SIZE = 500
 
 
-def fetch_disprot_json(url: str) -> dict:
-    """Download DisProt JSON from API, handling pagination."""
+def fetch_disprot_json(url: str = DISPROT_API) -> list[dict]:
+    """Download every human DisProt entry from the API, one page at a time.
+
+    Pages count from 0. The API reports the number of matching entries as payload["size"];
+    the script stops if it did not get exactly that many.
+    """
     all_data = []
-    page = 1
+    page = 0
     while True:
-        paged_url = url.replace("page=1", f"page={page}")
+        query = urllib.parse.urlencode({
+            "release": "current", "format": "json", "ncbi_taxon_id": HUMAN_TAXON,
+            "page_size": PAGE_SIZE, "page": page,
+        })
+        paged_url = f"{url}?{query}"
         print(f"Fetching DisProt page {page}: {paged_url}", file=sys.stderr)
         with urllib.request.urlopen(paged_url, timeout=60) as resp:
             payload = json.loads(resp.read().decode())
 
-        entries = payload.get("data", payload.get("results", []))
-        if not entries:
-            break
+        entries = payload.get("data", [])
         all_data.extend(entries)
-
-        total = payload.get("count", payload.get("total", len(all_data)))
+        total = payload["size"]
         print(f"  Retrieved {len(all_data)} / {total} entries", file=sys.stderr)
-        if len(all_data) >= total:
+        if not entries or len(all_data) >= total:
             break
         page += 1
         time.sleep(0.5)   # be polite to the API
 
+    if len(all_data) != total:
+        sys.exit(f"DisProt API returned {len(all_data)} entries but reports size {total}")
     return all_data
 
 
@@ -72,11 +86,11 @@ def parse_entry(entry: dict) -> dict | None:
 
     protein_len = int(entry.get("length", 0))
 
-    # Collect disordered regions — field name differs across release formats
-    regions_raw = (
-        entry.get("disprot_consensus", {}).get("regions", [])
-        or entry.get("regions", [])
-    )
+    # Consensus disorder: "Structural state" consensus regions of type "D".
+    consensus = entry.get("disprot_consensus", {})
+    if "Structural state" not in consensus:
+        sys.exit(f"{disprot_id}: no disprot_consensus['Structural state'] in the entry")
+    regions_raw = [r for r in consensus["Structural state"] if r.get("type") == "D"]
 
     regions = []
     for r in regions_raw:
@@ -118,9 +132,10 @@ def main():
         print(f"Loading DisProt from local file: {args.local}", file=sys.stderr)
         with open(args.local) as fh:
             payload = json.load(fh)
-        raw_entries = payload if isinstance(payload, list) else (
-            payload.get("data", payload.get("results", []))
-        )
+        raw_entries = payload if isinstance(payload, list) else payload["data"]
+        if isinstance(payload, dict) and "size" in payload and len(raw_entries) != payload["size"]:
+            sys.exit(f"{args.local} holds {len(raw_entries)} entries but reports size "
+                     f"{payload['size']}: one page of a paged download?")
     else:
         raw_entries = fetch_disprot_json(DISPROT_API)
 
