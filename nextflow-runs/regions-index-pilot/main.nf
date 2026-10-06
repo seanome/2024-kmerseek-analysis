@@ -63,7 +63,8 @@ process parseFeatures {
     """
 }
 
-// Reused unchanged from invertebrate-dark-set (olgabot/dark-set-kmerseek-0.4 at 7913404).
+// Reused from invertebrate-dark-set (olgabot/dark-set-kmerseek-0.4 at 7913404), changed only
+// by black formatting.
 process buildWholeReference {
     label 'python'
     publishDir "${params.outdir}/whole_protein_index", mode: 'copy'

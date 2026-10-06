@@ -21,8 +21,9 @@ error rate, never at the same E-value.
   DisProt consensus disorder (`assets/disprot_human_disorder.tsv`).
 - **The whole-protein index:** reviewed Swiss-Prot with every Mammalia entry removed
   (NCBI taxon 40674, read from the OC lineage lines). Built by
-  `bin/build_clade_excluded_reference.py`, copied unchanged from
-  `nextflow-runs/invertebrate-dark-set` on olgabot/dark-set-kmerseek-0.4 (7913404).
+  `bin/build_clade_excluded_reference.py`, copied from
+  `nextflow-runs/invertebrate-dark-set` on olgabot/dark-set-kmerseek-0.4 (7913404) and
+  changed only by `black` formatting.
 - **The regions index:** every feature of the nine types above in those same entries, cut
   out with (k_max − 1) = 18 residues on each side, clipped at the protein ends. Each entry
   is named `accession|feature type|description|start-end`, with the feature's own

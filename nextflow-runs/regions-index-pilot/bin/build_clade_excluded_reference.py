@@ -50,7 +50,9 @@ def stream_records(dat_path: Path):
             elif line.startswith("AC ") and acc is None:
                 acc = line[5:].split(";")[0].strip()
             elif line.startswith("OC "):
-                lineage.extend(t.strip().rstrip(".") for t in line[5:].split(";") if t.strip())
+                lineage.extend(
+                    t.strip().rstrip(".") for t in line[5:].split(";") if t.strip()
+                )
             elif line.startswith("DR   Pfam;"):
                 parts = [p.strip() for p in line[5:].split(";")]
                 if len(parts) > 1:
@@ -61,24 +63,41 @@ def stream_records(dat_path: Path):
                 seq_lines.append(line.strip().replace(" ", ""))
             elif line.startswith("//"):
                 if acc and reviewed:
-                    yield {"accession": acc, "lineage": lineage,
-                           "pfam": pfam, "sequence": "".join(seq_lines)}
-                acc, lineage, pfam, seq_lines, in_seq, reviewed = None, [], [], [], False, False
+                    yield {
+                        "accession": acc,
+                        "lineage": lineage,
+                        "pfam": pfam,
+                        "sequence": "".join(seq_lines),
+                    }
+                acc, lineage, pfam, seq_lines, in_seq, reviewed = (
+                    None,
+                    [],
+                    [],
+                    [],
+                    False,
+                    False,
+                )
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--swissprot-dat", type=Path, required=True)
-    ap.add_argument("--exclude-clade", required=True,
-                    help="clade name as it appears on an OC line, e.g. Bivalvia")
+    ap.add_argument(
+        "--exclude-clade",
+        required=True,
+        help="clade name as it appears on an OC line, e.g. Bivalvia",
+    )
     ap.add_argument("--out-prefix", type=Path, required=True)
     ap.add_argument("--summary-out", type=Path, default=None)
     args = ap.parse_args()
 
     if not args.swissprot_dat.is_file():
-        sys.exit(f"no Swiss-Prot flat file at {args.swissprot_dat}. "
-                 f"Download uniprot_sprot.dat.gz before building the reference.")
+        sys.exit(
+            f"no Swiss-Prot flat file at {args.swissprot_dat}. "
+            f"Download uniprot_sprot.dat.gz before building the reference."
+        )
 
     clade = args.exclude_clade.strip()
     fasta_path = args.out_prefix.with_suffix(".fasta")
@@ -94,7 +113,7 @@ def main() -> None:
             kept += 1
             fa.write(f">{rec['accession']}\n")
             for i in range(0, len(rec["sequence"]), 60):
-                fa.write(rec["sequence"][i:i + 60] + "\n")
+                fa.write(rec["sequence"][i : i + 60] + "\n")
             accfh.write(rec["accession"] + "\n")
             for fam in rec["pfam"]:
                 pfam_rows.append({"accession": rec["accession"], "pfam_id": fam})
@@ -110,20 +129,30 @@ def main() -> None:
             f"Swiss-Prot writes it (e.g. 'Bivalvia', 'Ascidiacea')."
         )
 
-    pl.DataFrame(pfam_rows, schema={"accession": pl.Utf8, "pfam_id": pl.Utf8}).write_parquet(
-        Path(str(args.out_prefix) + "_pfam.parquet"), compression="zstd")
+    pl.DataFrame(
+        pfam_rows, schema={"accession": pl.Utf8, "pfam_id": pl.Utf8}
+    ).write_parquet(Path(str(args.out_prefix) + "_pfam.parquet"), compression="zstd")
 
-    print(f"[reference] excluded={excluded} ({clade}) kept={kept} "
-          f"pfam_annotations={len(pfam_rows)}", file=sys.stderr)
+    print(
+        f"[reference] excluded={excluded} ({clade}) kept={kept} "
+        f"pfam_annotations={len(pfam_rows)}",
+        file=sys.stderr,
+    )
 
     if args.summary_out:
         import json
-        args.summary_out.write_text(json.dumps({
-            "excluded_clade": clade,
-            "entries_excluded": excluded,
-            "entries_kept": kept,
-            "pfam_annotations": len(pfam_rows),
-        }, indent=2))
+
+        args.summary_out.write_text(
+            json.dumps(
+                {
+                    "excluded_clade": clade,
+                    "entries_excluded": excluded,
+                    "entries_kept": kept,
+                    "pfam_annotations": len(pfam_rows),
+                },
+                indent=2,
+            )
+        )
 
 
 if __name__ == "__main__":

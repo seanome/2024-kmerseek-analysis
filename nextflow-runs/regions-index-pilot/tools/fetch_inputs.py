@@ -40,11 +40,14 @@ def get(url: str, params: dict) -> tuple[bytes, dict]:
 
 
 def fetch_chr6(assets: Path) -> None:
-    body, headers = get(UNIPROT, {
-        "query": f"proteome:{PROTEOME} AND reviewed:true",
-        "fields": "accession,gene_primary,xref_proteomes,length",
-        "format": "tsv",
-    })
+    body, headers = get(
+        UNIPROT,
+        {
+            "query": f"proteome:{PROTEOME} AND reviewed:true",
+            "fields": "accession,gene_primary,xref_proteomes,length",
+            "format": "tsv",
+        },
+    )
     release = headers.get("X-UniProt-Release") or headers.get("x-uniprot-release")
     if not release:
         sys.exit("UniProt sent no X-UniProt-Release header; cannot name the file")
@@ -56,15 +59,26 @@ def fetch_chr6(assets: Path) -> None:
         fh.write("accession\tgene\tlength\n")
         for acc, gene, _, length in sorted(keep):
             fh.write(f"{acc}\t{gene}\t{length}\n")
-    print(f"[chr6] release {release}: {len(rows)} reviewed human entries, "
-          f"{len(keep)} on chromosome 6 -> {out}", file=sys.stderr)
+    print(
+        f"[chr6] release {release}: {len(rows)} reviewed human entries, "
+        f"{len(keep)} on chromosome 6 -> {out}",
+        file=sys.stderr,
+    )
 
 
 def fetch_disprot(assets: Path) -> None:
-    entries, page = [], 0   # DisProt pages count from 0
+    entries, page = [], 0  # DisProt pages count from 0
     while True:
-        body, _ = get(DISPROT, {"release": "current", "format": "json",
-                                "ncbi_taxon_id": "9606", "page_size": 500, "page": page})
+        body, _ = get(
+            DISPROT,
+            {
+                "release": "current",
+                "format": "json",
+                "ncbi_taxon_id": "9606",
+                "page_size": 500,
+                "page": page,
+            },
+        )
         payload = json.loads(body)
         data = payload.get("data", [])
         entries.extend(data)
@@ -86,13 +100,17 @@ def fetch_disprot(assets: Path) -> None:
         fh.write("accession\tdisprot_id\tstart\tend\n")
         for row in sorted(rows):
             fh.write("\t".join(map(str, row)) + "\n")
-    print(f"[disprot] {len(entries)} human entries, {len(rows)} consensus disorder regions "
-          f"-> {out}", file=sys.stderr)
+    print(
+        f"[disprot] {len(entries)} human entries, {len(rows)} consensus disorder regions "
+        f"-> {out}",
+        file=sys.stderr,
+    )
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--assets", type=Path, required=True)
     args = ap.parse_args()
     args.assets.mkdir(parents=True, exist_ok=True)

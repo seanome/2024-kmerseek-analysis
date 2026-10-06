@@ -1,0 +1,6 @@
+[bits] target: whole_protein_index needs 2.01 more bits than regions_index (residue ratio 4.04, log2 = 2.01)
+[bits] target_plus_decoy: whole_protein_index needs 2.01 more bits than regions_index (residue ratio 4.04, log2 = 2.01)
+[bits] index=whole_protein_index  residues_counted=target  entries=1015480  residues=175144459  median_query_aa=409  K_borrowed=0.018  bits_needed_E1=30.26  positions_needed_at_0157_assumed=193
+[bits] index=whole_protein_index  residues_counted=target_plus_decoy  entries=1015480  residues=350288918  median_query_aa=409  K_borrowed=0.018  bits_needed_E1=31.26  positions_needed_at_0157_assumed=199
+[bits] index=regions_index  residues_counted=target  entries=1275310  residues=43379517  median_query_aa=409  K_borrowed=0.018  bits_needed_E1=28.25  positions_needed_at_0157_assumed=180
+[bits] index=regions_index  residues_counted=target_plus_decoy  entries=1275310  residues=86759034  median_query_aa=409  K_borrowed=0.018  bits_needed_E1=29.25  positions_needed_at_0157_assumed=186

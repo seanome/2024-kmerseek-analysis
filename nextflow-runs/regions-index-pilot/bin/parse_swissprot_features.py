@@ -31,8 +31,15 @@ from pathlib import Path
 import polars as pl
 
 FEATURE_TYPES = {
-    "DOMAIN", "REGION", "MOTIF", "REPEAT", "ZN_FING", "COMPBIAS", "COILED",
-    "TRANSMEM", "INTRAMEM",
+    "DOMAIN",
+    "REGION",
+    "MOTIF",
+    "REPEAT",
+    "ZN_FING",
+    "COMPBIAS",
+    "COILED",
+    "TRANSMEM",
+    "INTRAMEM",
 }
 EXPERIMENTAL = "ECO:0000269"
 
@@ -70,7 +77,7 @@ def stream(dat_path: Path):
     lineage: list[str] = []
     seq: list[str] = []
     in_seq = False
-    feats: list[tuple[str, str, list[str]]] = []   # (type, location, qualifier lines)
+    feats: list[tuple[str, str, list[str]]] = []  # (type, location, qualifier lines)
 
     with gzip.open(dat_path, "rt") as fh:
         for line in fh:
@@ -80,7 +87,9 @@ def stream(dat_path: Path):
             elif tag == "AC" and acc is None:
                 acc = line[5:].split(";")[0].strip()
             elif tag == "OC":
-                lineage.extend(t.strip().rstrip(".") for t in line[5:].split(";") if t.strip())
+                lineage.extend(
+                    t.strip().rstrip(".") for t in line[5:].split(";") if t.strip()
+                )
             elif tag == "FT":
                 m = FT_START_RE.match(line)
                 if m and line[5] != " ":
@@ -94,12 +103,20 @@ def stream(dat_path: Path):
             elif line.startswith("//"):
                 if acc and reviewed:
                     yield acc, "Mammalia" in lineage, "".join(seq), feats
-                acc, reviewed, lineage, seq, in_seq, feats = None, False, [], [], False, []
+                acc, reviewed, lineage, seq, in_seq, feats = (
+                    None,
+                    False,
+                    [],
+                    [],
+                    False,
+                    [],
+                )
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--swissprot-dat", type=Path, required=True)
     ap.add_argument("--out-prefix", type=Path, required=True)
     args = ap.parse_args()
@@ -123,29 +140,61 @@ def main() -> None:
                 continue
             q = parse_qualifiers(qual_lines)
             eco = ECO_RE.findall(q.get("evidence", ""))
-            feat_rows.append((acc, ftype, start, end, end - start + 1, q.get("note", ""),
-                              ";".join(eco), EXPERIMENTAL in eco, is_mammal))
+            feat_rows.append(
+                (
+                    acc,
+                    ftype,
+                    start,
+                    end,
+                    end - start + 1,
+                    q.get("note", ""),
+                    ";".join(eco),
+                    EXPERIMENTAL in eco,
+                    is_mammal,
+                )
+            )
 
-    feats_df = pl.DataFrame(feat_rows, orient="row", schema={
-        "accession": pl.Utf8, "feature_type": pl.Utf8, "start": pl.Int32, "end": pl.Int32,
-        "length": pl.Int32, "description": pl.Utf8, "evidence": pl.Utf8,
-        "experimental": pl.Boolean, "is_mammal": pl.Boolean,
-    })
-    seqs_df = pl.DataFrame(seq_rows, orient="row", schema={
-        "accession": pl.Utf8, "length": pl.Int32, "is_mammal": pl.Boolean,
-        "sequence": pl.Utf8,
-    })
+    feats_df = pl.DataFrame(
+        feat_rows,
+        orient="row",
+        schema={
+            "accession": pl.Utf8,
+            "feature_type": pl.Utf8,
+            "start": pl.Int32,
+            "end": pl.Int32,
+            "length": pl.Int32,
+            "description": pl.Utf8,
+            "evidence": pl.Utf8,
+            "experimental": pl.Boolean,
+            "is_mammal": pl.Boolean,
+        },
+    )
+    seqs_df = pl.DataFrame(
+        seq_rows,
+        orient="row",
+        schema={
+            "accession": pl.Utf8,
+            "length": pl.Int32,
+            "is_mammal": pl.Boolean,
+            "sequence": pl.Utf8,
+        },
+    )
     if seqs_df["accession"].n_unique() != seqs_df.height:
         sys.exit("duplicate accessions in the flat file; the AC parse is wrong")
 
     feats_df.write_parquet(f"{args.out_prefix}_features.parquet", compression="zstd")
     seqs_df.write_parquet(f"{args.out_prefix}_sequences.parquet", compression="zstd")
 
-    print(f"[features] entries={seqs_df.height} mammal={int(seqs_df['is_mammal'].sum())} "
-          f"features={feats_df.height}", file=sys.stderr)
+    print(
+        f"[features] entries={seqs_df.height} mammal={int(seqs_df['is_mammal'].sum())} "
+        f"features={feats_df.height}",
+        file=sys.stderr,
+    )
     for ftype, n in sorted(feats_df["feature_type"].value_counts().iter_rows()):
-        print(f"[features] {ftype:9s} kept={n:>8} dropped_fuzzy={dropped[ftype]}",
-              file=sys.stderr)
+        print(
+            f"[features] {ftype:9s} kept={n:>8} dropped_fuzzy={dropped[ftype]}",
+            file=sys.stderr,
+        )
 
 
 if __name__ == "__main__":

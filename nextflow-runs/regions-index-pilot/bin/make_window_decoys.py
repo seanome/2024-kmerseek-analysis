@@ -43,15 +43,16 @@ def read_fasta(path: Path):
 def window_shuffle(seq: str, rng: random.Random, window: int) -> str:
     out = []
     for i in range(0, len(seq), window):
-        w = list(seq[i:i + window])
+        w = list(seq[i : i + window])
         rng.shuffle(w)
         out.extend(w)
     return "".join(out)
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--fasta", type=Path, required=True)
     ap.add_argument("--decoy-out", type=Path, required=True)
     ap.add_argument("--combined-out", type=Path, required=True)
@@ -68,7 +69,7 @@ def main() -> None:
         rng = random.Random(int.from_bytes(h[:8], "big"))
         dec = window_shuffle(seq, rng, args.window)
         for i in range(0, len(seq), args.window):
-            if Counter(seq[i:i + args.window]) != Counter(dec[i:i + args.window]):
+            if Counter(seq[i : i + args.window]) != Counter(dec[i : i + args.window]):
                 sys.exit(f"window composition changed in {name} at {i}")
         same += dec == seq
         lines_t.append(f">{name}\n{seq}\n")
@@ -77,14 +78,21 @@ def main() -> None:
 
     decoy_text = "".join(lines_d)
     md5 = hashlib.md5(decoy_text.encode()).hexdigest()
-    if args.decoy_out.exists() and \
-            hashlib.md5(args.decoy_out.read_bytes()).hexdigest() != md5:
-        sys.exit(f"{args.decoy_out} exists with different content; refusing to overwrite")
+    if (
+        args.decoy_out.exists()
+        and hashlib.md5(args.decoy_out.read_bytes()).hexdigest() != md5
+    ):
+        sys.exit(
+            f"{args.decoy_out} exists with different content; refusing to overwrite"
+        )
     args.decoy_out.write_text(decoy_text)
     Path(str(args.decoy_out) + ".md5").write_text(f"{md5}  {args.decoy_out.name}\n")
     args.combined_out.write_text("".join(lines_t) + decoy_text)
-    print(f"[decoys] entries={n} window={args.window} seed={args.seed} "
-          f"decoys_identical_to_source={same} md5={md5}", file=sys.stderr)
+    print(
+        f"[decoys] entries={n} window={args.window} seed={args.seed} "
+        f"decoys_identical_to_source={same} md5={md5}",
+        file=sys.stderr,
+    )
 
 
 if __name__ == "__main__":

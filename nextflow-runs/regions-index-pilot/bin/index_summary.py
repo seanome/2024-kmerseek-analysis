@@ -58,11 +58,17 @@ def lengths(path: Path) -> list[int]:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--queries", type=Path, required=True)
-    ap.add_argument("--index", nargs=2, action="append", metavar=("NAME", "TARGET_DECOY_FASTA"),
-                    required=True)
+    ap.add_argument(
+        "--index",
+        nargs=2,
+        action="append",
+        metavar=("NAME", "TARGET_DECOY_FASTA"),
+        required=True,
+    )
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
 
@@ -72,12 +78,20 @@ def main() -> None:
         n_entries, res_t, res_d = fasta_stats(Path(path))
         for label, n in [("target", res_t), ("target_plus_decoy", res_t + res_d)]:
             bits = math.log2(K_BORROWED * m * n)
-            rows.append({
-                "index": name, "residues_counted": label, "entries": n_entries,
-                "residues": n, "median_query_aa": m, "K_borrowed": K_BORROWED,
-                "bits_needed_E1": round(bits, 2),
-                "positions_needed_at_0157_assumed": round(bits / BITS_PER_POSITION_ASSUMED),
-            })
+            rows.append(
+                {
+                    "index": name,
+                    "residues_counted": label,
+                    "entries": n_entries,
+                    "residues": n,
+                    "median_query_aa": m,
+                    "K_borrowed": K_BORROWED,
+                    "bits_needed_E1": round(bits, 2),
+                    "positions_needed_at_0157_assumed": round(
+                        bits / BITS_PER_POSITION_ASSUMED
+                    ),
+                }
+            )
     by = {(r["index"], r["residues_counted"]): r for r in rows}
     names = [n for n, _ in args.index]
     if len(names) == 2:
@@ -85,8 +99,11 @@ def main() -> None:
         for label in ("target", "target_plus_decoy"):
             d = by[(a, label)]["bits_needed_E1"] - by[(b, label)]["bits_needed_E1"]
             ratio = by[(a, label)]["residues"] / by[(b, label)]["residues"]
-            print(f"[bits] {label}: {a} needs {d:.2f} more bits than {b} "
-                  f"(residue ratio {ratio:.2f}, log2 = {math.log2(ratio):.2f})", file=sys.stderr)
+            print(
+                f"[bits] {label}: {a} needs {d:.2f} more bits than {b} "
+                f"(residue ratio {ratio:.2f}, log2 = {math.log2(ratio):.2f})",
+                file=sys.stderr,
+            )
     args.out.write_text(json.dumps(rows, indent=2))
     for r in rows:
         print("[bits] " + "  ".join(f"{k}={v}" for k, v in r.items()), file=sys.stderr)

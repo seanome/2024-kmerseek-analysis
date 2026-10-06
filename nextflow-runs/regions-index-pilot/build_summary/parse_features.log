@@ -1,0 +1,10 @@
+[features] entries=575748 mammal=68008 features=1427462
+[features] COILED    kept=   22893 dropped_fuzzy=19
+[features] COMPBIAS  kept=  270089 dropped_fuzzy=0
+[features] DOMAIN    kept=  220584 dropped_fuzzy=1099
+[features] INTRAMEM  kept=    3207 dropped_fuzzy=44
+[features] MOTIF     kept=   49814 dropped_fuzzy=40
+[features] REGION    kept=  333040 dropped_fuzzy=443
+[features] REPEAT    kept=  110676 dropped_fuzzy=65
+[features] TRANSMEM  kept=  386167 dropped_fuzzy=214
+[features] ZN_FING   kept=   30992 dropped_fuzzy=80
