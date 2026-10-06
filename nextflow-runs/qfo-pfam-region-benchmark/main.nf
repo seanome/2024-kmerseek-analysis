@@ -49,6 +49,8 @@ nextflow.enable.dsl=2
 // ---------------------------------------------------------------------------
 // Parameters
 // ---------------------------------------------------------------------------
+include { allEncodings; extraEncodings } from '../shared/kmerseek_encodings'
+
 def home = System.getProperty('user.home')
 
 params.qfo_dir       = "${home}/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143"
@@ -184,88 +186,19 @@ if (LC_TOGGLE.isEmpty()) {
     error "--low_complexity_toggle is empty; it needs at least one of true, false"
 }
 
-// [cli_flag, label, kmin, kmax]. In kmerseek v0.4.0 the CLI name and the moltype written
-// into the CSV are the same string, so one column serves both.
+// The matrix itself -- [cli_flag, label, kmin, kmax] rows, the entropy-derived ksize
+// ranges and the reasoning behind every row -- lives in ../shared/kmerseek_encodings.nf,
+// shared with invertebrate-dark-set so the two pipelines cannot sweep different tables.
 //
-// Every alphabet was renamed in PR #43 to state its class count: protein is protein20,
-// dayhoff is dayhoff6, hp_lehninger is hp_lehninger2, hp_lehninger_plus_c is
-// hp_lehninger_c_nonpolar2, hp_shuffled_control is hp_random_control2. Results produced
-// under the old names will not join these labels.
-//
-// Twelve ksizes for the HP family, ten for everything else, from a bit-matched floor. The
-// HP alphabets get the wider range because they are what the paper is testing and the k
-// optimum is least constrained there.
-//
-// The floor uses real entropy, not log2(classes). log2(n) assumes every class is equally
-// likely, which overstates every coarse alphabet. The bits/symbol below come from
-// amino-acid background frequencies grouped as kmerseek groups them
-// (notebooks/ortholog_analysis_utils.entropy_per_symbol). HP carries 0.994 bits/symbol, so
-// its k18 floor is 17.9 bits, and every kmin is round(17.9 / bits). Below that floor a
-// coarse alphabet produces prohibitive output volume.
-//
-// Two entries contradict class count, which is why entropy is measured rather than
-// assumed. hp_lehninger_hpc3 has three classes but 1.128 bits/symbol against HP's 0.994,
-// because cysteine is ~1.4% of residues. gbmr7 carries less information than wwmj5, 1.976
-// against 2.197, despite two more classes, because its classes are unbalanced.
-def ALL_ENCODINGS = [
-    // k=4 dropped: 20^4 = 160_000 keys against ~11.3M proteome k-mers means the entire
-    // keyspace is occupied ~70 times over, so every query 4-mer matches a large share of
-    // the proteome. It OOM-killed its task and the result would be noise either way.
-    ['protein20', 'protein20', 5, 13],                      // 4.176 bits/sym, 9 ksizes
-    ['uniprot18', 'uniprot18', 5, 14],                      // 3.951 bits/sym, 10 ksizes
-    ['hsdm17', 'hsdm17', 5, 14],                            // 3.742 bits/sym, 10 ksizes
-    ['wass14', 'wass14', 5, 14],                            // 3.626 bits/sym, 10 ksizes
-    ['mmseqs12', 'mmseqs12', 5, 14],                        // 3.293 bits/sym, 10 ksizes
-    ['sdm12', 'sdm12', 6, 15],                              // 3.127 bits/sym, 10 ksizes
-    ['dayhoff6', 'dayhoff6', 8, 17],                        // 2.278 bits/sym, 10 ksizes
-    ['wwmj5', 'wwmj5', 8, 17],                              // 2.197 bits/sym, 10 ksizes
-    ['gbmr7', 'gbmr7', 9, 18],                              // 1.976 bits/sym, 10 ksizes
-    ['gbmr4', 'gbmr4', 12, 21],                             // 1.522 bits/sym, 10 ksizes
-    ['hp_lehninger_hpc3', 'hp_lehninger_hpc3', 16, 27],     // 1.128 bits/sym, 12 ksizes
-    ['hp_lehninger2', 'hp_lehninger2', 18, 29],             // 1.000 bits/sym, 12 ksizes
-    ['hp_lehninger_c_nonpolar2', 'hp_lehninger_c_nonpolar2', 18, 29],// 0.999 bits/sym, 12 ksizes
-    ['hp_pbotc_1st_ed2', 'hp_pbotc_1st_ed2', 18, 29],       // 0.994 bits/sym, 12 ksizes
-    ['hp_thomas_dill2', 'hp_thomas_dill2', 19, 30],         // 0.966 bits/sym, 12 ksizes
-    ['hp_thomas_dill_no_c2', 'hp_thomas_dill_no_c2', 19, 30],// 0.951 bits/sym, 12 ksizes
-    ['hp_kyte_doolittle2', 'hp_kyte_doolittle2', 19, 30],   // 0.937 bits/sym, 12 ksizes
-]
-
-// Alphabets that exist in kmerseek but are deliberately NOT in the default sweep.
-//
-// polarity4 and funcgroups8 arrived in kmerseek dd630a8 (2026-08-25), from Rannon &
-// Burstein (2026), which credits funcgroups8 to Jain, Jain & Jain (2014) and polarity4 to
-// Ball, Hill & Scott (2014). The sweep that is running was built from 3fdfd51a
-// (2026-08-24) and its binary does not have them, so they need a newer image.
-//
-// They are here rather than in ALL_ENCODINGS because ALL_ENCODINGS is what a bare
-// `nextflow run` expands, and the in-flight sweep resumes against it. Adding two rows
-// there would silently widen that sweep's matrix by 40 combos the moment anyone
-// `-resume`d it, and every one of those tasks would run under the OLD image and die on an
-// unrecognised --polarity4 flag. Splitting the list means the default matrix is byte-for-
-// byte what it was, so no cached index or search rehashes, and the new alphabets are
-// reachable only by asking for them: --kmerseek_encodings polarity4,funcgroups8.
-//
-// Both ksize ranges come from the same measurement as every row above -- amino-acid
-// background frequencies grouped as kmerseek groups them, kmin = round(17.9 / bits) --
-// and both are cases where class count would have given the wrong answer:
-//
-//   polarity4   GAVLIFWMP / STCYNQ / DE / HKR         1.787 bits/sym, not log2(4) = 2.0
-//   funcgroups8 GVALI / ST / CM / FY / WHP / NQ / DE / KR
-//                                                     2.727 bits/sym, not log2(8) = 3.0
-//
-// polarity4 carries 1.787 against gbmr4's 1.522 at the same four classes, because it puts
-// its split on charge with G and P folded into the hydrophobic class, where gbmr4 keeps G
-// and P each alone and so spends two of its four classes on 12.7% of residues. That 0.265
-// bits/symbol is the difference between k=10 and k=12 at the floor.
-//
-// funcgroups8 lands ABOVE dayhoff6 (2.278) and gbmr7 (1.976), which is what eight
-// reasonably balanced classes buys, and its 6.56 rounds up to 7 rather than down to 6:
-// k=6 would be 16.4 bits, under the 17.9-bit floor, which is the regime that OOM-killed
-// protein20 at k=4.
-def EXTRA_ENCODINGS = [
-    ['polarity4', 'polarity4', 10, 19],                     // 1.787 bits/sym, 10 ksizes
-    ['funcgroups8', 'funcgroups8', 7, 16],                  // 2.727 bits/sym, 10 ksizes
-]
+// ALL_ENCODINGS is what a bare `nextflow run` expands, and the in-flight sweep resumes
+// against it. EXTRA_ENCODINGS (polarity4, funcgroups8) is kept apart because adding two
+// rows to the default would silently widen that sweep's matrix by 40 combos the moment
+// anyone `-resume`d it, and every one of those tasks would run under the OLD image and
+// die on an unrecognised --polarity4 flag. Splitting the list means the default matrix is
+// byte-for-byte what it was, so no cached index or search rehashes, and the new alphabets
+// are reachable only by asking for them: --kmerseek_encodings polarity4,funcgroups8.
+def ALL_ENCODINGS   = allEncodings()
+def EXTRA_ENCODINGS = extraEncodings()
 
 // What --kmerseek_encodings and --kmerseek_combos are allowed to name. The default matrix
 // stays ALL_ENCODINGS; this is only the lookup table.
