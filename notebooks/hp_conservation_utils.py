@@ -17,7 +17,9 @@ And one number read off the whole alignment:
   ``longest_run_null`` is the same after shuffling the target's residues.
 
 Alphabet tables are copied from kmerseek's ``src/rust/alphabets.rs`` (dayhoff6 from
-sourmash), so the classes match what the search engine indexes.
+sourmash), so the classes match what the search engine indexes. hsdm17, wass14, mmseqs12
+and funcgroups8 were added 2026-10-02 from kmerseek v0.4.0, as cached in
+``tables/274_alphabet_classes_kmerseek_v0.4.0.csv``, so all 19 kmerseek alphabets are here.
 """
 
 from __future__ import annotations
@@ -32,6 +34,25 @@ import polars as pl
 # ---------------------------------------------------------------------------
 ALPHABET_CLUSTERS: dict[str, list[str]] = {
     "protein20": list("ACDEFGHIKLMNPQRSTVWY"),
+    "hsdm17": list("ADRNTSQYFMCWHGP") + ["KE", "LIV"],
+    "wass14": [
+        "WM",
+        "DI",
+        "P",
+        "C",
+        "AV",
+        "K",
+        "T",
+        "RE",
+        "G",
+        "L",
+        "Y",
+        "SH",
+        "F",
+        "NQ",
+    ],
+    "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
+    "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
     "uniprot18": [
         "A",
         "R",
