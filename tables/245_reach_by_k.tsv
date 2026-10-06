@@ -1,0 +1,361 @@
+dataset	identity_bin	alphabet	k	fraction_of_pairs_reachable
+Pfam	<20%	dayhoff6	5	0.611
+Pfam	<20%	dayhoff6	7	0.207
+Pfam	<20%	dayhoff6	10	0.032
+Pfam	<20%	dayhoff6	15	0.001
+Pfam	<20%	dayhoff6	19	0.0
+Pfam	<20%	dayhoff6	23	0.0
+Pfam	<20%	dayhoff6	26	0.0
+Pfam	<20%	dayhoff6	30	0.0
+Pfam	<20%	gbmr4	5	0.974
+Pfam	<20%	gbmr4	7	0.784
+Pfam	<20%	gbmr4	10	0.345
+Pfam	<20%	gbmr4	15	0.052
+Pfam	<20%	gbmr4	19	0.01
+Pfam	<20%	gbmr4	23	0.002
+Pfam	<20%	gbmr4	26	0.001
+Pfam	<20%	gbmr4	30	0.0
+Pfam	<20%	hp_pbotc_1st_ed2	5	0.992
+Pfam	<20%	hp_pbotc_1st_ed2	7	0.906
+Pfam	<20%	hp_pbotc_1st_ed2	10	0.538
+Pfam	<20%	hp_pbotc_1st_ed2	15	0.114
+Pfam	<20%	hp_pbotc_1st_ed2	19	0.027
+Pfam	<20%	hp_pbotc_1st_ed2	23	0.006
+Pfam	<20%	hp_pbotc_1st_ed2	26	0.002
+Pfam	<20%	hp_pbotc_1st_ed2	30	0.001
+Pfam	<20%	hp_thomas_dill2	5	0.995
+Pfam	<20%	hp_thomas_dill2	7	0.921
+Pfam	<20%	hp_thomas_dill2	10	0.584
+Pfam	<20%	hp_thomas_dill2	15	0.137
+Pfam	<20%	hp_thomas_dill2	19	0.035
+Pfam	<20%	hp_thomas_dill2	23	0.008
+Pfam	<20%	hp_thomas_dill2	26	0.003
+Pfam	<20%	hp_thomas_dill2	30	0.001
+Pfam	<20%	protein20	5	0.052
+Pfam	<20%	protein20	7	0.004
+Pfam	<20%	protein20	10	0.0
+Pfam	<20%	protein20	15	0.0
+Pfam	<20%	protein20	19	0.0
+Pfam	<20%	protein20	23	0.0
+Pfam	<20%	protein20	26	0.0
+Pfam	<20%	protein20	30	0.0
+Pfam	20-30%	dayhoff6	5	0.861
+Pfam	20-30%	dayhoff6	7	0.499
+Pfam	20-30%	dayhoff6	10	0.145
+Pfam	20-30%	dayhoff6	15	0.015
+Pfam	20-30%	dayhoff6	19	0.003
+Pfam	20-30%	dayhoff6	23	0.001
+Pfam	20-30%	dayhoff6	26	0.0
+Pfam	20-30%	dayhoff6	30	0.0
+Pfam	20-30%	gbmr4	5	0.994
+Pfam	20-30%	gbmr4	7	0.917
+Pfam	20-30%	gbmr4	10	0.6
+Pfam	20-30%	gbmr4	15	0.165
+Pfam	20-30%	gbmr4	19	0.048
+Pfam	20-30%	gbmr4	23	0.014
+Pfam	20-30%	gbmr4	26	0.006
+Pfam	20-30%	gbmr4	30	0.002
+Pfam	20-30%	hp_pbotc_1st_ed2	5	0.998
+Pfam	20-30%	hp_pbotc_1st_ed2	7	0.966
+Pfam	20-30%	hp_pbotc_1st_ed2	10	0.746
+Pfam	20-30%	hp_pbotc_1st_ed2	15	0.274
+Pfam	20-30%	hp_pbotc_1st_ed2	19	0.097
+Pfam	20-30%	hp_pbotc_1st_ed2	23	0.031
+Pfam	20-30%	hp_pbotc_1st_ed2	26	0.014
+Pfam	20-30%	hp_pbotc_1st_ed2	30	0.005
+Pfam	20-30%	hp_thomas_dill2	5	0.999
+Pfam	20-30%	hp_thomas_dill2	7	0.972
+Pfam	20-30%	hp_thomas_dill2	10	0.776
+Pfam	20-30%	hp_thomas_dill2	15	0.307
+Pfam	20-30%	hp_thomas_dill2	19	0.112
+Pfam	20-30%	hp_thomas_dill2	23	0.038
+Pfam	20-30%	hp_thomas_dill2	26	0.017
+Pfam	20-30%	hp_thomas_dill2	30	0.006
+Pfam	20-30%	protein20	5	0.245
+Pfam	20-30%	protein20	7	0.049
+Pfam	20-30%	protein20	10	0.005
+Pfam	20-30%	protein20	15	0.0
+Pfam	20-30%	protein20	19	0.0
+Pfam	20-30%	protein20	23	0.0
+Pfam	20-30%	protein20	26	0.0
+Pfam	20-30%	protein20	30	0.0
+Pfam	30-40%	dayhoff6	5	0.968
+Pfam	30-40%	dayhoff6	7	0.782
+Pfam	30-40%	dayhoff6	10	0.403
+Pfam	30-40%	dayhoff6	15	0.092
+Pfam	30-40%	dayhoff6	19	0.029
+Pfam	30-40%	dayhoff6	23	0.009
+Pfam	30-40%	dayhoff6	26	0.004
+Pfam	30-40%	dayhoff6	30	0.002
+Pfam	30-40%	gbmr4	5	0.999
+Pfam	30-40%	gbmr4	7	0.975
+Pfam	30-40%	gbmr4	10	0.81
+Pfam	30-40%	gbmr4	15	0.382
+Pfam	30-40%	gbmr4	19	0.168
+Pfam	30-40%	gbmr4	23	0.068
+Pfam	30-40%	gbmr4	26	0.035
+Pfam	30-40%	gbmr4	30	0.014
+Pfam	30-40%	hp_pbotc_1st_ed2	5	1.0
+Pfam	30-40%	hp_pbotc_1st_ed2	7	0.988
+Pfam	30-40%	hp_pbotc_1st_ed2	10	0.884
+Pfam	30-40%	hp_pbotc_1st_ed2	15	0.5
+Pfam	30-40%	hp_pbotc_1st_ed2	19	0.252
+Pfam	30-40%	hp_pbotc_1st_ed2	23	0.111
+Pfam	30-40%	hp_pbotc_1st_ed2	26	0.059
+Pfam	30-40%	hp_pbotc_1st_ed2	30	0.026
+Pfam	30-40%	hp_thomas_dill2	5	1.0
+Pfam	30-40%	hp_thomas_dill2	7	0.991
+Pfam	30-40%	hp_thomas_dill2	10	0.899
+Pfam	30-40%	hp_thomas_dill2	15	0.534
+Pfam	30-40%	hp_thomas_dill2	19	0.282
+Pfam	30-40%	hp_thomas_dill2	23	0.131
+Pfam	30-40%	hp_thomas_dill2	26	0.071
+Pfam	30-40%	hp_thomas_dill2	30	0.032
+Pfam	30-40%	protein20	5	0.58
+Pfam	30-40%	protein20	7	0.223
+Pfam	30-40%	protein20	10	0.048
+Pfam	30-40%	protein20	15	0.005
+Pfam	30-40%	protein20	19	0.001
+Pfam	30-40%	protein20	23	0.0
+Pfam	30-40%	protein20	26	0.0
+Pfam	30-40%	protein20	30	0.0
+Pfam	40-60%	dayhoff6	5	0.997
+Pfam	40-60%	dayhoff6	7	0.958
+Pfam	40-60%	dayhoff6	10	0.776
+Pfam	40-60%	dayhoff6	15	0.395
+Pfam	40-60%	dayhoff6	19	0.203
+Pfam	40-60%	dayhoff6	23	0.102
+Pfam	40-60%	dayhoff6	26	0.061
+Pfam	40-60%	dayhoff6	30	0.032
+Pfam	40-60%	gbmr4	5	1.0
+Pfam	40-60%	gbmr4	7	0.996
+Pfam	40-60%	gbmr4	10	0.948
+Pfam	40-60%	gbmr4	15	0.709
+Pfam	40-60%	gbmr4	19	0.477
+Pfam	40-60%	gbmr4	23	0.297
+Pfam	40-60%	gbmr4	26	0.204
+Pfam	40-60%	gbmr4	30	0.12
+Pfam	40-60%	hp_pbotc_1st_ed2	5	1.0
+Pfam	40-60%	hp_pbotc_1st_ed2	7	0.998
+Pfam	40-60%	hp_pbotc_1st_ed2	10	0.97
+Pfam	40-60%	hp_pbotc_1st_ed2	15	0.777
+Pfam	40-60%	hp_pbotc_1st_ed2	19	0.556
+Pfam	40-60%	hp_pbotc_1st_ed2	23	0.366
+Pfam	40-60%	hp_pbotc_1st_ed2	26	0.261
+Pfam	40-60%	hp_pbotc_1st_ed2	30	0.161
+Pfam	40-60%	hp_thomas_dill2	5	1.0
+Pfam	40-60%	hp_thomas_dill2	7	0.999
+Pfam	40-60%	hp_thomas_dill2	10	0.973
+Pfam	40-60%	hp_thomas_dill2	15	0.798
+Pfam	40-60%	hp_thomas_dill2	19	0.585
+Pfam	40-60%	hp_thomas_dill2	23	0.394
+Pfam	40-60%	hp_thomas_dill2	26	0.284
+Pfam	40-60%	hp_thomas_dill2	30	0.18
+Pfam	40-60%	protein20	5	0.901
+Pfam	40-60%	protein20	7	0.628
+Pfam	40-60%	protein20	10	0.285
+Pfam	40-60%	protein20	15	0.066
+Pfam	40-60%	protein20	19	0.024
+Pfam	40-60%	protein20	23	0.01
+Pfam	40-60%	protein20	26	0.005
+Pfam	40-60%	protein20	30	0.003
+Pfam	>=60%	dayhoff6	5	1.0
+Pfam	>=60%	dayhoff6	7	0.999
+Pfam	>=60%	dayhoff6	10	0.983
+Pfam	>=60%	dayhoff6	15	0.86
+Pfam	>=60%	dayhoff6	19	0.701
+Pfam	>=60%	dayhoff6	23	0.539
+Pfam	>=60%	dayhoff6	26	0.434
+Pfam	>=60%	dayhoff6	30	0.322
+Pfam	>=60%	gbmr4	5	1.0
+Pfam	>=60%	gbmr4	7	1.0
+Pfam	>=60%	gbmr4	10	0.996
+Pfam	>=60%	gbmr4	15	0.951
+Pfam	>=60%	gbmr4	19	0.862
+Pfam	>=60%	gbmr4	23	0.737
+Pfam	>=60%	gbmr4	26	0.639
+Pfam	>=60%	gbmr4	30	0.51
+Pfam	>=60%	hp_pbotc_1st_ed2	5	1.0
+Pfam	>=60%	hp_pbotc_1st_ed2	7	1.0
+Pfam	>=60%	hp_pbotc_1st_ed2	10	0.998
+Pfam	>=60%	hp_pbotc_1st_ed2	15	0.968
+Pfam	>=60%	hp_pbotc_1st_ed2	19	0.898
+Pfam	>=60%	hp_pbotc_1st_ed2	23	0.789
+Pfam	>=60%	hp_pbotc_1st_ed2	26	0.694
+Pfam	>=60%	hp_pbotc_1st_ed2	30	0.574
+Pfam	>=60%	hp_thomas_dill2	5	1.0
+Pfam	>=60%	hp_thomas_dill2	7	1.0
+Pfam	>=60%	hp_thomas_dill2	10	0.998
+Pfam	>=60%	hp_thomas_dill2	15	0.971
+Pfam	>=60%	hp_thomas_dill2	19	0.907
+Pfam	>=60%	hp_thomas_dill2	23	0.804
+Pfam	>=60%	hp_thomas_dill2	26	0.714
+Pfam	>=60%	hp_thomas_dill2	30	0.596
+Pfam	>=60%	protein20	5	0.999
+Pfam	>=60%	protein20	7	0.972
+Pfam	>=60%	protein20	10	0.813
+Pfam	>=60%	protein20	15	0.476
+Pfam	>=60%	protein20	19	0.291
+Pfam	>=60%	protein20	23	0.184
+Pfam	>=60%	protein20	26	0.133
+Pfam	>=60%	protein20	30	0.091
+SCOPe cross-family	<20%	dayhoff6	5	0.352
+SCOPe cross-family	<20%	dayhoff6	7	0.088
+SCOPe cross-family	<20%	dayhoff6	10	0.01
+SCOPe cross-family	<20%	dayhoff6	15	0.001
+SCOPe cross-family	<20%	dayhoff6	19	0.0
+SCOPe cross-family	<20%	dayhoff6	23	0.0
+SCOPe cross-family	<20%	dayhoff6	26	0.0
+SCOPe cross-family	<20%	dayhoff6	30	0.0
+SCOPe cross-family	<20%	gbmr4	5	0.877
+SCOPe cross-family	<20%	gbmr4	7	0.518
+SCOPe cross-family	<20%	gbmr4	10	0.124
+SCOPe cross-family	<20%	gbmr4	15	0.008
+SCOPe cross-family	<20%	gbmr4	19	0.001
+SCOPe cross-family	<20%	gbmr4	23	0.0
+SCOPe cross-family	<20%	gbmr4	26	0.0
+SCOPe cross-family	<20%	gbmr4	30	0.0
+SCOPe cross-family	<20%	hp_pbotc_1st_ed2	5	0.961
+SCOPe cross-family	<20%	hp_pbotc_1st_ed2	7	0.727
+SCOPe cross-family	<20%	hp_pbotc_1st_ed2	10	0.286
+SCOPe cross-family	<20%	hp_pbotc_1st_ed2	15	0.031
+SCOPe cross-family	<20%	hp_pbotc_1st_ed2	19	0.004
+SCOPe cross-family	<20%	hp_pbotc_1st_ed2	23	0.001
+SCOPe cross-family	<20%	hp_pbotc_1st_ed2	26	0.0
+SCOPe cross-family	<20%	hp_pbotc_1st_ed2	30	0.0
+SCOPe cross-family	<20%	hp_thomas_dill2	5	0.968
+SCOPe cross-family	<20%	hp_thomas_dill2	7	0.749
+SCOPe cross-family	<20%	hp_thomas_dill2	10	0.309
+SCOPe cross-family	<20%	hp_thomas_dill2	15	0.037
+SCOPe cross-family	<20%	hp_thomas_dill2	19	0.004
+SCOPe cross-family	<20%	hp_thomas_dill2	23	0.001
+SCOPe cross-family	<20%	hp_thomas_dill2	26	0.0
+SCOPe cross-family	<20%	hp_thomas_dill2	30	0.0
+SCOPe cross-family	<20%	protein20	5	0.019
+SCOPe cross-family	<20%	protein20	7	0.001
+SCOPe cross-family	<20%	protein20	10	0.0
+SCOPe cross-family	<20%	protein20	15	0.0
+SCOPe cross-family	<20%	protein20	19	0.0
+SCOPe cross-family	<20%	protein20	23	0.0
+SCOPe cross-family	<20%	protein20	26	0.0
+SCOPe cross-family	<20%	protein20	30	0.0
+SCOPe cross-family	20-30%	dayhoff6	5	0.801
+SCOPe cross-family	20-30%	dayhoff6	7	0.456
+SCOPe cross-family	20-30%	dayhoff6	10	0.101
+SCOPe cross-family	20-30%	dayhoff6	15	0.011
+SCOPe cross-family	20-30%	dayhoff6	19	0.002
+SCOPe cross-family	20-30%	dayhoff6	23	0.0
+SCOPe cross-family	20-30%	dayhoff6	26	0.0
+SCOPe cross-family	20-30%	dayhoff6	30	0.0
+SCOPe cross-family	20-30%	gbmr4	5	0.983
+SCOPe cross-family	20-30%	gbmr4	7	0.88
+SCOPe cross-family	20-30%	gbmr4	10	0.523
+SCOPe cross-family	20-30%	gbmr4	15	0.105
+SCOPe cross-family	20-30%	gbmr4	19	0.025
+SCOPe cross-family	20-30%	gbmr4	23	0.006
+SCOPe cross-family	20-30%	gbmr4	26	0.002
+SCOPe cross-family	20-30%	gbmr4	30	0.0
+SCOPe cross-family	20-30%	hp_pbotc_1st_ed2	5	0.993
+SCOPe cross-family	20-30%	hp_pbotc_1st_ed2	7	0.941
+SCOPe cross-family	20-30%	hp_pbotc_1st_ed2	10	0.684
+SCOPe cross-family	20-30%	hp_pbotc_1st_ed2	15	0.222
+SCOPe cross-family	20-30%	hp_pbotc_1st_ed2	19	0.069
+SCOPe cross-family	20-30%	hp_pbotc_1st_ed2	23	0.018
+SCOPe cross-family	20-30%	hp_pbotc_1st_ed2	26	0.007
+SCOPe cross-family	20-30%	hp_pbotc_1st_ed2	30	0.0
+SCOPe cross-family	20-30%	hp_thomas_dill2	5	0.995
+SCOPe cross-family	20-30%	hp_thomas_dill2	7	0.947
+SCOPe cross-family	20-30%	hp_thomas_dill2	10	0.721
+SCOPe cross-family	20-30%	hp_thomas_dill2	15	0.253
+SCOPe cross-family	20-30%	hp_thomas_dill2	19	0.081
+SCOPe cross-family	20-30%	hp_thomas_dill2	23	0.021
+SCOPe cross-family	20-30%	hp_thomas_dill2	26	0.008
+SCOPe cross-family	20-30%	hp_thomas_dill2	30	0.002
+SCOPe cross-family	20-30%	protein20	5	0.23
+SCOPe cross-family	20-30%	protein20	7	0.034
+SCOPe cross-family	20-30%	protein20	10	0.002
+SCOPe cross-family	20-30%	protein20	15	0.0
+SCOPe cross-family	20-30%	protein20	19	0.0
+SCOPe cross-family	20-30%	protein20	23	0.0
+SCOPe cross-family	20-30%	protein20	26	0.0
+SCOPe cross-family	20-30%	protein20	30	0.0
+SCOPe cross-family	30-40%	dayhoff6	5	0.97
+SCOPe cross-family	30-40%	dayhoff6	7	0.783
+SCOPe cross-family	30-40%	dayhoff6	10	0.371
+SCOPe cross-family	30-40%	dayhoff6	15	0.067
+SCOPe cross-family	30-40%	dayhoff6	19	0.016
+SCOPe cross-family	30-40%	dayhoff6	23	0.003
+SCOPe cross-family	30-40%	dayhoff6	26	0.001
+SCOPe cross-family	30-40%	dayhoff6	30	0.0
+SCOPe cross-family	30-40%	gbmr4	5	0.999
+SCOPe cross-family	30-40%	gbmr4	7	0.981
+SCOPe cross-family	30-40%	gbmr4	10	0.818
+SCOPe cross-family	30-40%	gbmr4	15	0.35
+SCOPe cross-family	30-40%	gbmr4	19	0.129
+SCOPe cross-family	30-40%	gbmr4	23	0.049
+SCOPe cross-family	30-40%	gbmr4	26	0.019
+SCOPe cross-family	30-40%	gbmr4	30	0.004
+SCOPe cross-family	30-40%	hp_pbotc_1st_ed2	5	1.0
+SCOPe cross-family	30-40%	hp_pbotc_1st_ed2	7	0.997
+SCOPe cross-family	30-40%	hp_pbotc_1st_ed2	10	0.908
+SCOPe cross-family	30-40%	hp_pbotc_1st_ed2	15	0.505
+SCOPe cross-family	30-40%	hp_pbotc_1st_ed2	19	0.225
+SCOPe cross-family	30-40%	hp_pbotc_1st_ed2	23	0.087
+SCOPe cross-family	30-40%	hp_pbotc_1st_ed2	26	0.046
+SCOPe cross-family	30-40%	hp_pbotc_1st_ed2	30	0.016
+SCOPe cross-family	30-40%	hp_thomas_dill2	5	1.0
+SCOPe cross-family	30-40%	hp_thomas_dill2	7	0.995
+SCOPe cross-family	30-40%	hp_thomas_dill2	10	0.928
+SCOPe cross-family	30-40%	hp_thomas_dill2	15	0.556
+SCOPe cross-family	30-40%	hp_thomas_dill2	19	0.258
+SCOPe cross-family	30-40%	hp_thomas_dill2	23	0.111
+SCOPe cross-family	30-40%	hp_thomas_dill2	26	0.058
+SCOPe cross-family	30-40%	hp_thomas_dill2	30	0.02
+SCOPe cross-family	30-40%	protein20	5	0.627
+SCOPe cross-family	30-40%	protein20	7	0.204
+SCOPe cross-family	30-40%	protein20	10	0.034
+SCOPe cross-family	30-40%	protein20	15	0.002
+SCOPe cross-family	30-40%	protein20	19	0.0
+SCOPe cross-family	30-40%	protein20	23	0.0
+SCOPe cross-family	30-40%	protein20	26	0.0
+SCOPe cross-family	30-40%	protein20	30	0.0
+SCOPe cross-family	40-60%	dayhoff6	5	0.983
+SCOPe cross-family	40-60%	dayhoff6	7	0.909
+SCOPe cross-family	40-60%	dayhoff6	10	0.562
+SCOPe cross-family	40-60%	dayhoff6	15	0.149
+SCOPe cross-family	40-60%	dayhoff6	19	0.017
+SCOPe cross-family	40-60%	dayhoff6	23	0.008
+SCOPe cross-family	40-60%	dayhoff6	26	0.008
+SCOPe cross-family	40-60%	dayhoff6	30	0.008
+SCOPe cross-family	40-60%	gbmr4	5	1.0
+SCOPe cross-family	40-60%	gbmr4	7	0.992
+SCOPe cross-family	40-60%	gbmr4	10	0.893
+SCOPe cross-family	40-60%	gbmr4	15	0.446
+SCOPe cross-family	40-60%	gbmr4	19	0.248
+SCOPe cross-family	40-60%	gbmr4	23	0.091
+SCOPe cross-family	40-60%	gbmr4	26	0.058
+SCOPe cross-family	40-60%	gbmr4	30	0.017
+SCOPe cross-family	40-60%	hp_pbotc_1st_ed2	5	1.0
+SCOPe cross-family	40-60%	hp_pbotc_1st_ed2	7	0.992
+SCOPe cross-family	40-60%	hp_pbotc_1st_ed2	10	0.95
+SCOPe cross-family	40-60%	hp_pbotc_1st_ed2	15	0.62
+SCOPe cross-family	40-60%	hp_pbotc_1st_ed2	19	0.322
+SCOPe cross-family	40-60%	hp_pbotc_1st_ed2	23	0.14
+SCOPe cross-family	40-60%	hp_pbotc_1st_ed2	26	0.074
+SCOPe cross-family	40-60%	hp_pbotc_1st_ed2	30	0.017
+SCOPe cross-family	40-60%	hp_thomas_dill2	5	1.0
+SCOPe cross-family	40-60%	hp_thomas_dill2	7	1.0
+SCOPe cross-family	40-60%	hp_thomas_dill2	10	0.95
+SCOPe cross-family	40-60%	hp_thomas_dill2	15	0.645
+SCOPe cross-family	40-60%	hp_thomas_dill2	19	0.388
+SCOPe cross-family	40-60%	hp_thomas_dill2	23	0.207
+SCOPe cross-family	40-60%	hp_thomas_dill2	26	0.132
+SCOPe cross-family	40-60%	hp_thomas_dill2	30	0.05
+SCOPe cross-family	40-60%	protein20	5	0.81
+SCOPe cross-family	40-60%	protein20	7	0.421
+SCOPe cross-family	40-60%	protein20	10	0.107
+SCOPe cross-family	40-60%	protein20	15	0.008
+SCOPe cross-family	40-60%	protein20	19	0.008
+SCOPe cross-family	40-60%	protein20	23	0.0
+SCOPe cross-family	40-60%	protein20	26	0.0
+SCOPe cross-family	40-60%	protein20	30	0.0

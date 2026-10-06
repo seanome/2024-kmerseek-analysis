@@ -1,0 +1,30 @@
+quantity	value	unit	kind	source
+kappa_hp_thomas_dill2_pfam_20_30	0.463	none	measured	nb 230 section 2, Pfam seed pairs at 20-30% identity
+kappa_protein20_pfam_20_30	0.199	none	measured	nb 230 section 2, Pfam seed pairs at 20-30% identity
+kappa_hp_thomas_dill2_scope_20_30	0.433	none	measured	nb 230 section 7, SCOPe cross-family pairs at 20-30% identity
+longest_run_mean_hp_thomas_dill2_pfam_20_30	13.0	residues	measured	nb 230 section 4, Pfam pairs at 20-30% identity
+longest_run_null_mean_hp_thomas_dill2_pfam_20_30	6.3	residues	measured	nb 230 section 4, the same Pfam pairs with the target shuffled
+longest_run_mean_hp_thomas_dill2_scope_20_30	12.2	residues	measured	nb 230 section 4, SCOPe cross-family pairs at 20-30% identity
+longest_run_null_mean_hp_thomas_dill2_scope_20_30	6.1	residues	measured	nb 230 section 4, the same SCOPe cross-family pairs with the target shuffled
+recall_seed10_extend_20_30	0.355	fraction of pairs	measured	nb 232 section 2, hp_thomas_dill2, penalty 2, null FPR 0.001 per comparison
+recall_seed10_extend_30_40	0.635	fraction of pairs	measured	nb 232 section 2, hp_thomas_dill2, penalty 2, null FPR 0.001 per comparison
+best_rank_BCL2	213	rank	measured	nb 241 section 6, best rank over every alphabet, k and metric
+n_targets_at_best_BCL2	18064	proteins	measured	nb 241 section 6, human proteins hit at the arm of the best rank
+p_random_protein_as_good_BCL2	0.9743	fraction of 20,000 draws	measured	nb 241 section 6
+best_rank_CD47	166	rank	measured	nb 241 section 6, best rank over every alphabet, k and metric
+n_targets_at_best_CD47	18775	proteins	measured	nb 241 section 6, human proteins hit at the arm of the best rank
+p_random_protein_as_good_CD47	0.90145	fraction of 20,000 draws	measured	nb 241 section 6
+best_evalue_BCL2	1954.636333	E	measured	nb 241 section 7, wwmj5 k=9
+best_evalue_CD47	707.35378	E	measured	nb 241 section 7, hp_lehninger_hpc3 k=14
+class_share_entropy_hp_lehninger2	1.0	bits	measured	nb 241 cell 1, Shannon entropy of class shares on the human proteome
+combined_rank_BCL2_min	7148	rank	measured	nb 242 section 1, five metrics
+combined_rank_BCL2_max	13343	rank	measured	nb 242 section 1, five metrics
+n_residues_scope40	2600000.0	residues	approximate	kmerseek docs Part 1, DB table (SCOPe40)
+K_scope40	0.0227	none	fitted K	kmerseek docs Part 1, DB table (SCOPe40)
+n_residues_swissprot	200000000.0	residues	approximate	kmerseek docs Part 1, DB table (Swiss-Prot)
+K_swissprot	0.018	none	fitted K	kmerseek docs Part 1, DB table (Swiss-Prot)
+n_residues_uniref50	11000000000.0	residues	approximate	kmerseek docs Part 1, DB table (UniRef50)
+K_uniref50	0.0139	none	fitted K	kmerseek docs Part 1, DB table (UniRef50)
+n_residues_proteome	11000000.0	residues	approximate	kmerseek docs Part 1, DB table (one proteome)
+K_proteome	0.018	none	approximate, K borrowed from Swiss-Prot	kmerseek docs Part 1, DB table (one proteome)
+I_20_blosum45	0.38	bits per aligned position	table value	BLOSUM45 relative entropy (Henikoff and Henikoff 1992), as kmerseek docs Part 2 uses it
