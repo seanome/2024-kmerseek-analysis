@@ -35,7 +35,22 @@ import polars as pl
 ALPHABET_CLUSTERS: dict[str, list[str]] = {
     "protein20": list("ACDEFGHIKLMNPQRSTVWY"),
     "hsdm17": list("ADRNTSQYFMCWHGP") + ["KE", "LIV"],
-    "wass14": ["WM", "DI", "P", "C", "AV", "K", "T", "RE", "G", "L", "Y", "SH", "F", "NQ"],
+    "wass14": [
+        "WM",
+        "DI",
+        "P",
+        "C",
+        "AV",
+        "K",
+        "T",
+        "RE",
+        "G",
+        "L",
+        "Y",
+        "SH",
+        "F",
+        "NQ",
+    ],
     "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
     "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
     "uniprot18": [

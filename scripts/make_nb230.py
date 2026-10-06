@@ -8,14 +8,27 @@ cells = []
 
 
 def md(source):
-    cells.append({"cell_type": "markdown", "id": f"md-{len(cells):02d}", "metadata": {},
-                  "source": source.strip().splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "markdown",
+            "id": f"md-{len(cells):02d}",
+            "metadata": {},
+            "source": source.strip().splitlines(keepends=True),
+        }
+    )
 
 
 def code(source):
-    cells.append({"cell_type": "code", "id": f"code-{len(cells):02d}", "execution_count": None,
-                  "metadata": {"jupyter": {"source_hidden": True}}, "outputs": [],
-                  "source": source.strip("\n").splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "code",
+            "id": f"code-{len(cells):02d}",
+            "execution_count": None,
+            "metadata": {"jupyter": {"source_hidden": True}},
+            "outputs": [],
+            "source": source.strip("\n").splitlines(keepends=True),
+        }
+    )
 
 
 md(r"""
@@ -348,7 +361,7 @@ hc.finish_figure(
 )
 ''')
 
-code(r'''
+code(r"""
 STEP = 0.05  # identity window width
 MIN_PAIRS = 200  # windows with fewer pairs are left out: their mean kappa is noisy
 
@@ -420,7 +433,7 @@ hc.finish_figure(
     ),
     title="Kappa against identity, all 19 kmerseek alphabets, one panel per alphabet size",
 )
-''')
+""")
 
 md(r"""
 ## 2c. Which k each alphabet can use, from both sides
@@ -449,7 +462,7 @@ most remote homologs at any k notebook 274 lists, and the k values above the poi
 share falls below 5% are not worth building an index for.
 """)
 
-code(r'''
+code(r"""
 K274 = pl.read_csv("../tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv").select(
     "alphabet", "k_min", "k_max"
 )
@@ -548,7 +561,7 @@ hc.finish_figure(
     title="Seed length k against the share of Pfam seed pairs it can find, all 19 kmerseek alphabets",
     header_y=HEADER_Y,
 )
-''')
+""")
 
 md(r"""
 ## 3. How much of that is homology, and how much is packing?
@@ -831,12 +844,20 @@ Written from the numbers above; see each figure's footer for the exact values.
 nb = {
     "cells": cells,
     "metadata": {
-        "kernelspec": {"display_name": "2025-kmerseek-analysis", "language": "python", "name": "2025-kmerseek-analysis"},
+        "kernelspec": {
+            "display_name": "2025-kmerseek-analysis",
+            "language": "python",
+            "name": "2025-kmerseek-analysis",
+        },
         "language_info": {"name": "python", "version": "3.12"},
     },
     "nbformat": 4,
     "nbformat_minor": 5,
 }
-out = Path(__file__).resolve().parents[1] / "notebooks" / "230_hp_class_conservation_in_aligned_homologs.ipynb"
+out = (
+    Path(__file__).resolve().parents[1]
+    / "notebooks"
+    / "230_hp_class_conservation_in_aligned_homologs.ipynb"
+)
 out.write_text(json.dumps(nb, indent=1))
 print(f"wrote {out} ({len(cells)} cells)")
