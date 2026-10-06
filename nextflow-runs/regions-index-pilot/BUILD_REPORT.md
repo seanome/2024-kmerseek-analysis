@@ -110,12 +110,15 @@ penalty (`opt`, from `assets/kappa_by_alphabet.tsv` there), X-drop = 4 × penalt
 |---|---|---|---|---|---|---|---|
 | 1 | polarity4 | 11 | 10 | off | 0.54 | 2.16 | the dark-set run (given) |
 | 2 (proposed) | hp_pbotc_1st_ed2 | 19 | 1 | off | 1.59 | 6.36 | the designated H/P setting (alphabet ranking, nb 200); on the 0.4 ladder |
-| 3 (proposed) | protein20 | 5 | 1 | off | 0.14 | 0.56 | the 2026-10-01 mini-set decoy run: at 1 false region per 10 shuffled queries, `region_evalue` kept 40% of true regions for protein20 k5, 18% for mmseqs12, 3–7% for H/P alphabets |
+| 3 (added by Olga 2026-10-06) | hp_lehninger2 | 19 | 1 | off | 1.51 | 6.04 | Lehninger's hydrophobic/polar split (sourmash's `aa_to_hp`); k 19 inside its tested range 17-30 |
+| 4 (proposed) | protein20 | 5 | 1 | off | 0.14 | 0.56 | the 2026-10-01 mini-set decoy run: at 1 false region per 10 shuffled queries, `region_evalue` kept 40% of true regions for protein20 k5, 18% for mmseqs12, 3–7% for H/P alphabets |
 
 MMseqs2: `mmseqs search -s 7 --num-iterations 3 -e 10`, as in the dark set's mmseqs2Search,
 same image.
 
 ## Open decisions before any search
+
+Decided 2026-10-06 (see `PREDICTIONS.md`): all-evidence headline, settings 1-4 above.
 
 1. **Go or change the index.** As built, the regions index saves 2.0 bits. Shrinking it
    further means dropping feature types, which changes the question.

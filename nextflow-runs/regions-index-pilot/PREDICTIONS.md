@@ -69,3 +69,12 @@ Whether the headline uses experimental-evidence features only, as designed, or a
 evidence: the experimental set holds 0 disordered features, 6 folded domains and 37
 motifs (`BUILD_REPORT.md`). The choice, and the kmerseek settings, will be recorded here
 in a dated line before any search runs.
+
+**2026-10-06, Olga's decisions, before any search:**
+- The headline uses all evidence. Experimental-evidence features (ECO:0000269) are
+  reported as a secondary split.
+- kmerseek settings, all with the extension at the alphabet's own mismatch penalty,
+  X-drop = 4 × penalty, mask off, and the dark-set search filters:
+  polarity4 k11 scaled 10 (C 0.54); hp_pbotc_1st_ed2 k19 scaled 1 (C 1.59);
+  hp_lehninger2 k19 scaled 1 (C 1.51); protein20 k5 scaled 1 (C 0.14).
+  k_max stays 19, so the regions index as built serves all four.
