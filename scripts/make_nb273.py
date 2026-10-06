@@ -173,7 +173,8 @@ identical over aligned positions, to show what is counted. Line
 by line: the two aligned sequences; `|` where the residues are identical; the same two
 sequences written as H (hydrophobic) and P (polar); `|` where the classes agree; then the
 target after one shuffle of its residues, in H/P, with its agreement line. Positions with a
-gap on either side (`-` or `.`) are not counted.
+gap on either side (`-` or `.`) are not counted. The figure below draws the same lines,
+one row each, with the count for each agreement row at its right.
 """)
 
 code(r"""
@@ -257,6 +258,74 @@ print(
         pl.col("evidence").round(3).alias("I_bits"),
         pl.col("evidence_null").round(3).alias("I_shuffled_bits"),
     )
+)
+""")
+
+code(r"""
+H_COLOR, P_COLOR = "#d08c1e", "#2a9d8f"  # H and P residues; used for nothing else
+AGREE_COLOR = "black"
+h_res = "".join(sorted(hc.ALPHABET_CLUSTERS[HP][0]))
+p_res = "".join(sorted(hc.ALPHABET_CLUSTERS[HP][1]))
+cols = np.arange(1, len(q) + 1)
+rows = [
+    ("identical residue", "agree", id_line, n_id),
+    ("query H/P", "class", qh, None),
+    ("target H/P", "class", th, None),
+    ("same H/P class", "agree", hp_line, n_hp),
+    ("shuffled target H/P", "class", tsh, None),
+    ("same H/P class, shuffled", "agree", sh_line, n_sh),
+]
+fig, ax = plt.subplots(figsize=(12, 3.6))
+for y, (name, kind, line, n) in enumerate(rows):
+    if kind == "class":
+        for x, c in zip(cols, line):
+            if c in "HP":
+                ax.add_patch(plt.Rectangle((x - 0.5, y - 0.35), 1, 0.7, lw=0,
+                                           color=H_COLOR if c == "H" else P_COLOR))
+    else:
+        hit = [x for x, ok, c in zip(cols, both, line) if ok and c == "|"]
+        miss = [x for x, ok, c in zip(cols, both, line) if ok and c != "|"]
+        ax.scatter(hit, [y] * len(hit), marker="s", s=14, color=AGREE_COLOR, lw=0)
+        ax.scatter(miss, [y] * len(miss), marker=".", s=10, color="#9a9a9a", lw=0)
+        ax.text(len(q) + 2, y, f"{n} of {n_al} ({100 * n / n_al:.0f} per 100)",
+                va="center", ha="left", fontsize=9)
+gap = [x for x, ok in zip(cols, both) if not ok]
+for y, (_, kind, _, _) in enumerate(rows):
+    if kind == "agree":
+        ax.scatter(gap, [y] * len(gap), marker="x", s=10, color="#c8c8c8", lw=0.8)
+ax.set_yticks(range(len(rows)), [r[0] for r in rows])
+ax.set_ylim(len(rows) - 0.5, -0.5)
+ax.set_xlim(0.5, len(q) + 0.5)
+ax.set_xlabel("alignment column (gaps included)")
+for side in ("top", "right", "left"):
+    ax.spines[side].set_visible(False)
+ax.tick_params(axis="y", length=0)
+handles = [
+    Patch(color=H_COLOR, label=f"H, hydrophobic: {h_res}"),
+    Patch(color=P_COLOR, label=f"P, polar: {p_res}"),
+    Line2D([], [], ls="", marker="s", ms=5, color=AGREE_COLOR, label="the two residues agree (counted)"),
+    Line2D([], [], ls="", marker=".", ms=6, color="#9a9a9a", label="the two residues differ (counted)"),
+    Line2D([], [], ls="", marker="x", ms=4, color="#c8c8c8", mew=0.8,
+           label="gap in either sequence (not counted)"),
+]
+ax.legend(handles=handles, loc="lower left", bbox_to_anchor=(0, 1.02), ncol=3,
+          fontsize=9, frameon=False, borderaxespad=0)
+print(f"aligned positions counted: {n_al}; gap columns: {len(gap)}; total columns: {len(q)}")
+print(f"identical {n_id}, same H/P class {n_hp}, same H/P class after one shuffle {n_sh}")
+hc.finish_figure(
+    fig,
+    FIG / "273_one_pair_position_by_position_bcl2_pfam_seed.png",
+    tools=f"no kmerseek; Pfam seed alignment, {HP} classes",
+    title=f"One Bcl-2 pair (PF00452), {ex['query']} against {ex['target']}",
+    hypothesis=(
+        "H/P agreement between homologs is above what the same residues give when shuffled. "
+        "More black squares in a row is more agreement."
+    ),
+    conclusion=(
+        f"Of {n_al} aligned positions, {n_id} hold the same residue, {n_hp} the same H/P class, "
+        f"and {n_sh} the same H/P class after the target residues are shuffled "
+        f"(chance from the two sequences' class shares: {100 * chance:.0f} per 100)."
+    ),
 )
 """)
 
