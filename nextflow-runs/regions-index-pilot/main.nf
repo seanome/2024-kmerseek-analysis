@@ -423,7 +423,7 @@ process mmseqsSearch {
         --num-iterations ${params.mmseqs_iterations} -e ${params.mmseqs_evalue} \\
         --threads ${task.cpus} >> mmseqs.${name}.w${window}.log 2>&1
     ${params.mmseqs} convertalis qdb tdb res out.tsv \\
-        --format-output 'query,target,qstart,qend,tstart,tend,evalue,qaln,taln' \\
+        --format-output 'query,qstart,qend,target,tstart,tend,evalue,qaln,taln' \\
         >> mmseqs.${name}.w${window}.log 2>&1
     ${params.mmseqs} version >> mmseqs.${name}.w${window}.log
     { printf 'query\\tqstart\\tqend\\ttarget\\ttstart\\ttend\\tevalue\\tqseq\\ttseq\\n'; cat out.tsv; } \\
@@ -466,16 +466,48 @@ process scoreCalls {
     def kind = label.tokenize('.')[1]
     """
     set -euo pipefail
-    # One header, then every chunk's rows; a #nofit line anywhere marks the whole set.
-    nofit=0
-    for f in calls_*.tsv.gz; do gzip -dc "\$f" | grep -q '^#nofit' && nofit=1 || true; done
-    { gzip -dc \$(ls calls_*.tsv.gz | head -1) | grep -v '^#' | head -1
-      for f in calls_*.tsv.gz; do gzip -dc "\$f" | grep -v '^#' | tail -n +2; done; } > calls.tsv
-    ${py('score_calls.py')} --calls calls.tsv --truth ${truth} --searched ${searched} \\
+    # Scores both landing rules (whole call, aligned piece); see score_calls.py.
+    ${py('score_calls.py')} --calls calls_*.tsv.gz --truth ${truth} --searched ${searched} \\
         --index-kind ${kind} --target-features ${target_features} \\
         --flank \$(( ${params.k_max} - 1 )) --max-decoy-rate ${params.max_decoy_rate} \\
-        --min-landing ${params.min_landing} --label ${label} --prefix ${label} \\
-        \$( [ \$nofit -eq 1 ] && echo --nofit )
+        --min-landing ${params.min_landing} --label ${label} --prefix ${label}
+    """
+}
+
+// Each searched query feature's identity to its closest same-type regions-index entry, from
+// a search outside the compared tools, for the identity split (bin/feature_identity.py).
+process featureFasta {
+    label 'python'
+
+    input:
+    path truth
+    path searched
+
+    output:
+    path 'features.fasta'
+
+    script:
+    """
+    ${py('feature_identity.py')} --truth ${truth} --searched ${searched} --write-fasta features.fasta
+    """
+}
+
+process featureSearch {
+    label 'mmseqs'
+
+    input:
+    path features
+    path regions_fasta
+
+    output:
+    path 'feature_hits.tsv'
+
+    script:
+    """
+    set -euo pipefail
+    ${params.mmseqs} easy-search ${features} ${regions_fasta} feature_hits.tsv tmp \\
+        -s 7.5 --max-seqs 1000 -e 10 --threads ${task.cpus} \\
+        --format-output 'query,target,pident,alnlen,evalue' > feature_search.log 2>&1
     """
 }
 
@@ -487,7 +519,7 @@ process compareIndexes {
     path scored
     path truth
     path searched
-    path regions_fasta
+    path feature_hits
 
     output:
     path '*.tsv'
@@ -495,9 +527,10 @@ process compareIndexes {
 
     script:
     """
-    ${py('compare_indexes.py')} --scored ${scored} --truth ${truth} --queries ${searched} \\
-        --regions-fasta ${regions_fasta} \\
-        --headline-window w${params.decoy_windows.toString().tokenize(',')[0].trim()}
+    ${py('feature_identity.py')} --truth ${truth} --searched ${searched} \\
+        --read-hits ${feature_hits} --out feature_identity.tsv
+    ${py('compare_indexes.py')} --scored ${scored} --truth ${truth} \\
+        --feature-identity feature_identity.tsv
     """
 }
 
@@ -552,6 +585,8 @@ workflow {
         .mix(compositionClassifier.out.calls.map { l, f -> [l, [f]] })
     scoreCalls(calls.combine(build.out.truth).combine(splitQueries.out.searched)
                     .combine(build.out.features))
+    featureFasta(build.out.truth, splitQueries.out.searched)
+    featureSearch(featureFasta.out, build.out.regions)
     compareIndexes(scoreCalls.out.features.mix(scoreCalls.out.threshold).collect(),
-                   build.out.truth, splitQueries.out.searched, build.out.regions)
+                   build.out.truth, splitQueries.out.searched, featureSearch.out)
 }

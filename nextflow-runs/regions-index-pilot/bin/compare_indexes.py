@@ -3,8 +3,7 @@
 the paired tests of PREDICTIONS.md.
 
 Inputs: every <label>.features.parquet and <label>.threshold.json from score_calls.py
-(label = tool.index.wNN.setting), the truth table, and the regions index FASTA (for the
-identity split).
+(label = tool.index.wNN.setting), the truth table, and feature_identity.tsv.
 
 Outputs:
   thresholds.tsv       one row per label: threshold, target and decoy calls at it
@@ -15,8 +14,8 @@ Outputs:
                        neither; recall change; exact two-sided McNemar p
   composition.tsv      kmerseek against the composition-only classifier, regions index,
                        disordered features (prediction 4)
-  identity_bins.tsv    recall per label split by the identity of each query feature to
-                       its best correct regions-index entry
+  identity_bins.tsv    recall per label split by each query feature's identity to its
+                       closest same-type regions-index entry (feature_identity.py)
   feature_calls.parquet every label x feature row, for the notebook
 
 Feature kinds are those of build_query_truth.py; "short" (under 60 aa) overlaps the
@@ -30,71 +29,23 @@ from pathlib import Path
 
 import polars as pl
 
+MC_SCHEMA = {
+    "landing_rule": pl.Utf8,
+    "tool": pl.Utf8,
+    "setting": pl.Utf8,
+    "window": pl.Utf8,
+    "feature_kind": pl.Utf8,
+    "features": pl.Int64,
+    "whole_only": pl.Int64,
+    "regions_only": pl.Int64,
+    "both": pl.Int64,
+    "neither": pl.Int64,
+    "recall_whole": pl.Float64,
+    "recall_regions": pl.Float64,
+    "recall_change_points": pl.Float64,
+    "mcnemar_p": pl.Float64,
+}
 KINDS = ["folded_domain", "short", "disordered", "motif", "composition", "other", "all"]
-
-# BLOSUM62, for the identity split's local alignment (gap open 11, extend 1).
-_B62 = """
-   A  R  N  D  C  Q  E  G  H  I  L  K  M  F  P  S  T  W  Y  V
-A  4 -1 -2 -2  0 -1 -1  0 -2 -1 -1 -1 -1 -2 -1  1  0 -3 -2  0
-R -1  5  0 -2 -3  1  0 -2  0 -3 -2  2 -1 -3 -2 -1 -1 -3 -2 -3
-N -2  0  6  1 -3  0  0  0  1 -3 -3  0 -2 -3 -2  1  0 -4 -2 -3
-D -2 -2  1  6 -3  0  2 -1 -1 -3 -4 -1 -3 -3 -1  0 -1 -4 -3 -3
-C  0 -3 -3 -3  9 -3 -4 -3 -3 -1 -1 -3 -1 -2 -3 -1 -1 -2 -2 -1
-Q -1  1  0  0 -3  5  2 -2  0 -3 -2  1  0 -3 -1  0 -1 -2 -1 -2
-E -1  0  0  2 -4  2  5 -2  0 -3 -3  1 -2 -3 -1  0 -1 -3 -2 -2
-G  0 -2  0 -1 -3 -2 -2  6 -2 -4 -4 -2 -3 -3 -2  0 -2 -2 -3 -3
-H -2  0  1 -1 -3  0  0 -2  8 -3 -3 -1 -2 -1 -2 -1 -2 -2  2 -3
-I -1 -3 -3 -3 -1 -3 -3 -4 -3  4  2 -3  1  0 -3 -2 -1 -3 -1  3
-L -1 -2 -3 -4 -1 -2 -3 -4 -3  2  4 -2  2  0 -3 -2 -1 -2 -1  1
-K -1  2  0 -1 -3  1  1 -2 -1 -3 -2  5 -1 -3 -1  0 -1 -3 -2 -2
-M -1 -1 -2 -3 -1  0 -2 -3 -2  1  2 -1  5  0 -2 -1 -1 -1 -1  1
-F -2 -3 -3 -3 -2 -3 -3 -3 -1  0  0 -3  0  6 -4 -2 -2  1  3 -1
-P -1 -2 -2 -1 -3 -1 -1 -2 -2 -3 -3 -1 -2 -4  7 -1 -1 -4 -3 -2
-S  1 -1  1  0 -1  0  0  0 -1 -2 -2  0 -1 -2 -1  4  1 -3 -2 -2
-T  0 -1  0 -1 -1 -1 -1 -2 -2 -1 -1 -1 -1 -2 -1  1  5 -2 -2  0
-W -3 -3 -4 -4 -2 -2 -3 -2 -2 -3 -2 -3 -1  1 -4 -3 -2 11  2 -3
-Y -2 -2 -2 -3 -2 -1 -2 -3  2 -1 -1 -2 -1  3 -3 -2 -2  2  7 -1
-V  0 -3 -3 -3 -1 -2 -2 -3 -3  3  1 -2  1 -1 -2 -2  0 -3 -1  4
-"""
-_rows = [r.split() for r in _B62.strip().splitlines()]
-_cols = _rows[0]
-B62 = {(r[0], c): int(v) for r in _rows[1:] for c, v in zip(_cols, r[1:])}
-
-
-def local_identity(a: str, b: str, go: int = 11, ge: int = 1) -> float:
-    """Identical positions / aligned columns of the best local alignment (Gotoh)."""
-    n, m = len(a), len(b)
-    if n == 0 or m == 0:
-        return 0.0
-    NEG = -(10**9)
-    H = [[0] * (m + 1) for _ in range(n + 1)]
-    E = [[NEG] * (m + 1) for _ in range(n + 1)]
-    F = [[NEG] * (m + 1) for _ in range(n + 1)]
-    best, bi, bj = 0, 0, 0
-    for i in range(1, n + 1):
-        ai = a[i - 1]
-        for j in range(1, m + 1):
-            E[i][j] = max(E[i][j - 1] - ge, H[i][j - 1] - go)
-            F[i][j] = max(F[i - 1][j] - ge, H[i - 1][j] - go)
-            s = H[i - 1][j - 1] + B62.get((ai, b[j - 1]), -4)
-            h = max(0, s, E[i][j], F[i][j])
-            H[i][j] = h
-            if h > best:
-                best, bi, bj = h, i, j
-    i, j, ident, cols = bi, bj, 0, 0
-    while i > 0 and j > 0 and H[i][j] > 0:
-        h = H[i][j]
-        if h == H[i - 1][j - 1] + B62.get((a[i - 1], b[j - 1]), -4):
-            ident += a[i - 1] == b[j - 1]
-            cols += 1
-            i, j = i - 1, j - 1
-        elif h == E[i][j]:
-            cols += 1
-            j -= 1
-        else:
-            cols += 1
-            i -= 1
-    return ident / cols if cols else 0.0
 
 
 def mcnemar_p(b: int, c: int) -> float:
@@ -114,31 +65,13 @@ def kind_filter(kind: str) -> pl.Expr:
     return pl.col("feature_kind") == kind
 
 
-def read_fasta(path: Path) -> dict[str, str]:
-    out, name, seq = {}, None, []
-    with open(path) as fh:
-        for line in fh:
-            line = line.rstrip("\n")
-            if line.startswith(">"):
-                if name:
-                    out[name] = "".join(seq)
-                name, seq = line[1:].split()[0], []
-            elif line:
-                seq.append(line)
-    if name:
-        out[name] = "".join(seq)
-    return out
-
-
 def main() -> None:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     ap.add_argument("--scored", type=Path, nargs="+", required=True)
     ap.add_argument("--truth", type=Path, required=True)
-    ap.add_argument("--queries", type=Path, required=True)
-    ap.add_argument("--regions-fasta", type=Path, required=True)
-    ap.add_argument("--headline-window", default="w10")
+    ap.add_argument("--feature-identity", type=Path, required=True)
     args = ap.parse_args()
 
     feats = [p for p in args.scored if p.name.endswith(".features.parquet")]
@@ -181,38 +114,25 @@ def main() -> None:
         how="left",
     )
 
-    # Identity split: each feature's best correct regions-index entry, any tool, headline
-    # window, aligned locally against the feature's own residues.
-    qseq = read_fasta(args.queries)
-    rseq = read_fasta(args.regions_fasta)
-    best_r = (
-        fc.filter(
-            (pl.col("index") == "regions")
-            & pl.col("found")
-            & (pl.col("window") == args.headline_window)
-        )
-        .select("truth_id", "accession", "start", "end", "best_target")
-        .unique(["truth_id", "best_target"])
+    # Identity split: each feature's identity to its closest same-type regions-index entry,
+    # from one MMseqs2 search outside the compared tools (feature_identity.py).
+    id_df = pl.read_csv(
+        args.feature_identity,
+        separator="\t",
+        schema_overrides={"truth_id": pl.UInt32, "identity": pl.Float64},
     )
-    ident = {}
-    for tid, acc, s, e, tgt in best_r.iter_rows():
-        v = local_identity(qseq[acc][s - 1 : e], rseq.get(tgt, ""))
-        ident[tid] = max(ident.get(tid, 0.0), v)
-    id_df = pl.DataFrame(
-        {"truth_id": list(ident), "identity": list(ident.values())},
-        schema={"truth_id": pl.UInt32, "identity": pl.Float64},
-    ).with_columns(
-        pl.when(pl.col("identity") < 0.3)
-        .then(pl.lit("<30%"))
-        .when(pl.col("identity") < 0.5)
-        .then(pl.lit("30-50%"))
-        .when(pl.col("identity") < 0.9)
-        .then(pl.lit("50-90%"))
-        .otherwise(pl.lit(">=90%"))
-        .alias("identity_bin")
-    )
-    fc = fc.join(id_df, on="truth_id", how="left").with_columns(
-        pl.col("identity_bin").fill_null("no correct regions-index entry")
+    fc = fc.join(id_df, on="truth_id", how="left")
+    # Both landing rules (score_calls.py): the whole call, as written in PREDICTIONS.md, and
+    # the piece of the call aligned to the target feature, added after the 20-query test.
+    fc = pl.concat(
+        [
+            fc.with_columns(pl.lit("whole call").alias("landing_rule")),
+            fc.with_columns(
+                pl.col("found_aligned").alias("found"),
+                pl.col("found_name_aligned").alias("found_name"),
+                pl.lit("aligned piece").alias("landing_rule"),
+            ),
+        ]
     )
     fc.write_parquet("feature_calls.parquet")
 
@@ -225,7 +145,9 @@ def main() -> None:
             for grp in ["all", "MHC", "histone", "olfactory_receptor"]:
                 gf = pl.lit(True) if grp == "all" else pl.col("gene_group") == grp
                 sub = fc.filter(kind_filter(kind) & evf & gf)
-                agg = sub.group_by("tool", "index", "window", "setting").agg(
+                agg = sub.group_by(
+                    "landing_rule", "tool", "index", "window", "setting"
+                ).agg(
                     pl.len().alias("features"),
                     pl.col("found").sum().alias("found"),
                     pl.col("found_name").sum().alias("found_name"),
@@ -253,9 +175,13 @@ def main() -> None:
     rec.write_csv("recall_by_kind.tsv", separator="\t")
 
     wide = (
-        fc.select("tool", "setting", "window", "index", "truth_id", "found")
+        fc.select(
+            "landing_rule", "tool", "setting", "window", "index", "truth_id", "found"
+        )
         .pivot(
-            on="index", index=["tool", "setting", "window", "truth_id"], values="found"
+            on="index",
+            index=["landing_rule", "tool", "setting", "window", "truth_id"],
+            values="found",
         )
         .join(
             truth.select("truth_id", "feature_kind", "is_short", "experimental"),
@@ -265,8 +191,14 @@ def main() -> None:
     mc = []
     for kind in KINDS:
         sub = wide.filter(kind_filter(kind))
-        for (tool, setting, window), g in sub.group_by("tool", "setting", "window"):
-            if "whole" not in g.columns or "regions" not in g.columns:
+        for (rule, tool, setting, window), g in sub.group_by(
+            "landing_rule", "tool", "setting", "window"
+        ):
+            # A tool run against one index only (the composition classifier) has no pair.
+            if any(
+                c not in g.columns or g[c].null_count() == g.height
+                for c in ("whole", "regions")
+            ):
                 continue
             w, r = g["whole"].fill_null(False), g["regions"].fill_null(False)
             b = int((w & ~r).sum())
@@ -274,6 +206,7 @@ def main() -> None:
             n = g.height
             mc.append(
                 {
+                    "landing_rule": rule,
                     "tool": tool,
                     "setting": setting,
                     "window": window,
@@ -289,21 +222,21 @@ def main() -> None:
                     "mcnemar_p": mcnemar_p(b, c),
                 }
             )
-    pl.DataFrame(mc).sort("feature_kind", "tool", "setting", "window").write_csv(
-        "mcnemar.tsv", separator="\t"
-    )
+    pl.DataFrame(mc, schema=MC_SCHEMA).sort(
+        "feature_kind", "tool", "setting", "window"
+    ).write_csv("mcnemar.tsv", separator="\t")
 
     comp = fc.filter(
         (pl.col("index") == "regions") & (pl.col("feature_kind") == "disordered")
     )
     cl = comp.filter(pl.col("tool") == "composition")
     out = []
-    for (tool, setting, window), g in comp.filter(
+    for (rule, tool, setting, window), g in comp.filter(
         pl.col("tool") == "kmerseek"
-    ).group_by("tool", "setting", "window"):
-        cw = cl.filter(pl.col("window") == window).select(
-            "truth_id", pl.col("found").alias("comp")
-        )
+    ).group_by("landing_rule", "tool", "setting", "window"):
+        cw = cl.filter(
+            (pl.col("window") == window) & (pl.col("landing_rule") == rule)
+        ).select("truth_id", pl.col("found").alias("comp"))
         j = (
             g.select("truth_id", "found")
             .join(cw, on="truth_id", how="left")
@@ -313,6 +246,7 @@ def main() -> None:
         c = int((~j["found"] & j["comp"]).sum())
         out.append(
             {
+                "landing_rule": rule,
                 "setting": setting,
                 "window": window,
                 "features": j.height,
@@ -326,6 +260,7 @@ def main() -> None:
     pl.DataFrame(
         out,
         schema={
+            "landing_rule": pl.Utf8,
             "setting": pl.Utf8,
             "window": pl.Utf8,
             "features": pl.Int64,
@@ -338,7 +273,9 @@ def main() -> None:
     ).write_csv("composition.tsv", separator="\t")
 
     (
-        fc.group_by("tool", "index", "window", "setting", "identity_bin")
+        fc.group_by(
+            "landing_rule", "tool", "index", "window", "setting", "identity_bin"
+        )
         .agg(pl.len().alias("features"), pl.col("found").sum().alias("found"))
         .with_columns((pl.col("found") / pl.col("features")).alias("recall"))
         .sort("identity_bin", "tool", "setting", "window", "index")

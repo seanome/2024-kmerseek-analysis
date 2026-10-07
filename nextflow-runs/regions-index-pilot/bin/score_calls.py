@@ -21,6 +21,14 @@ Rules (PREDICTIONS.md):
 - A call is correct for a query feature when the feature's type is one of the hit's types
   and landing = (call residues inside the feature) / (call length) >= --min-landing.
   Coverage = (feature residues inside the call) / (feature length) is reported.
+- A second landing rule, added 2026-10-07 after the 20-query test and reported next to the
+  first (found_aligned): the call is cut down to the query residues aligned to the target
+  feature's own residues (no flank), and landing is judged on that piece. Without it a long
+  alignment on the whole-protein index spans several domains, lands under half in any one
+  of them, and counts as wrong, while the same alignment on the regions index is confined to
+  one feature by the entry's length. The alignment strings (qseq, tseq; equal length with
+  gaps for MMseqs2, ungapped for kmerseek) give the mapping. The composition classifier has
+  no alignment, so its piece is the whole window.
 - Secondary: a name match, when the hit feature's description (cleaned the way
   extract_regions.py cleans it) equals the query feature's.
 
@@ -32,6 +40,7 @@ Outputs:
 """
 
 import argparse
+import gzip
 import json
 import re
 import sys
@@ -40,6 +49,17 @@ from pathlib import Path
 import polars as pl
 
 WS_RE = re.compile(r"\s+")
+CALL_COLUMNS = [
+    "query",
+    "qstart",
+    "qend",
+    "target",
+    "tstart",
+    "tend",
+    "evalue",
+    "qseq",
+    "tseq",
+]
 
 
 def clean(desc: str | None) -> str:
@@ -73,11 +93,42 @@ def decoy_threshold(calls: pl.DataFrame, max_rate: float) -> dict:
     }
 
 
-def hit_types_regions(calls: pl.DataFrame) -> pl.DataFrame:
+def hit_types_regions(calls: pl.DataFrame, flank: int) -> pl.DataFrame:
+    """The type in the entry name, and the feature's own residues in entry coordinates.
+
+    An entry holds protein residues cut_start..cut_end with cut_start = max(1, start -
+    flank), so the feature sits at (start - cut_start + 1)..(end - cut_start + 1).
+    """
     parts = pl.col("target").str.split("|")
+    se = parts.list.get(3).str.split("-")
+    start = se.list.get(0).cast(pl.Int64)
+    end = se.list.get(1).cast(pl.Int64)
+    cut_start = pl.max_horizontal(pl.lit(1), start - flank)
     return calls.with_columns(
-        parts.list.get(1).alias("hit_type"), parts.list.get(2).alias("hit_desc")
+        parts.list.get(1).alias("hit_type"),
+        parts.list.get(2).alias("hit_desc"),
+        (start - cut_start + 1).alias("feat_tstart"),
+        (end - cut_start + 1).alias("feat_tend"),
     )
+
+
+def aligned_piece(
+    qstart: int, tstart: int, qseq: str, tseq: str, fts: int, fte: int
+) -> tuple[int | None, int | None]:
+    """First and last query residue aligned to target residues fts..fte, or (None, None)."""
+    if len(qseq) != len(tseq):
+        return None, None
+    q, t = qstart - 1, tstart - 1
+    lo = hi = None
+    for a, b in zip(qseq, tseq):
+        if a != "-":
+            q += 1
+        if b != "-":
+            t += 1
+        if a != "-" and b != "-" and fts <= t <= fte:
+            lo = q if lo is None else lo
+            hi = q
+    return lo, hi
 
 
 def hit_types_whole(
@@ -91,6 +142,8 @@ def hit_types_whole(
             pl.col("description").alias("hit_desc_raw"),
             (pl.col("start") - flank).alias("_fs"),
             (pl.col("end") + flank).alias("_fe"),
+            pl.col("start").cast(pl.Int64).alias("feat_tstart"),
+            pl.col("end").cast(pl.Int64).alias("feat_tend"),
         ),
         on="target",
         how="inner",
@@ -106,7 +159,13 @@ def main() -> None:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    ap.add_argument("--calls", type=Path, required=True)
+    ap.add_argument(
+        "--calls",
+        type=Path,
+        nargs="+",
+        required=True,
+        help="one or more call files (one per query chunk), gzipped or not",
+    )
     ap.add_argument("--truth", type=Path, required=True)
     ap.add_argument("--index-kind", choices=["regions", "whole"], required=True)
     ap.add_argument(
@@ -123,20 +182,31 @@ def main() -> None:
         required=True,
         help="the FASTA of the queries searched; truth is limited to these proteins",
     )
-    ap.add_argument(
-        "--nofit",
-        action="store_true",
-        help="the index holds no Karlin-Altschul fit for this setting: no E-values",
-    )
     ap.add_argument("--label", required=True, help="tool.index.window.setting")
     ap.add_argument("--prefix", required=True)
     args = ap.parse_args()
 
-    calls = pl.read_csv(
-        args.calls,
-        separator="\t",
-        schema_overrides={"query": pl.Utf8, "target": pl.Utf8, "evalue": pl.Float64},
-        quote_char=None,
+    # A search whose index holds no Karlin-Altschul fit for its setting writes a #nofit
+    # line and no rows; one such chunk marks the whole set as having no E-values.
+    nofit = False
+    for f in args.calls:
+        with gzip.open(f, "rt") if f.suffix == ".gz" else open(f) as fh:
+            nofit |= fh.readline().startswith("#nofit")
+    calls = pl.concat(
+        [
+            pl.read_csv(
+                f,
+                separator="\t",
+                comment_prefix="#",
+                schema_overrides={
+                    "query": pl.Utf8,
+                    "target": pl.Utf8,
+                    "evalue": pl.Float64,
+                },
+                quote_char=None,
+            ).select(CALL_COLUMNS)
+            for f in args.calls
+        ]
     ).with_columns(pl.col("target").str.starts_with("DECOY_").alias("is_decoy"))
     bad = calls.filter(
         (pl.col("qstart") < 1)
@@ -150,10 +220,10 @@ def main() -> None:
 
     thr = (
         {"threshold": None, "n_target": 0, "n_decoy": 0}
-        if args.nofit
+        if nofit
         else decoy_threshold(calls, args.max_decoy_rate)
     )
-    thr["nofit"] = args.nofit
+    thr["nofit"] = nofit
     thr.update(
         {
             "label": args.label,
@@ -171,9 +241,13 @@ def main() -> None:
         .map_elements(clean, return_dtype=pl.Utf8)
         .alias("desc_clean")
     )
-    real = calls.filter(~pl.col("is_decoy")).with_row_index("call_id")
+    # Only target calls at or below the threshold can find a feature.
+    cut = thr["threshold"] if thr["threshold"] is not None else -1.0
+    real = calls.filter(~pl.col("is_decoy") & (pl.col("evalue") <= cut)).with_row_index(
+        "call_id"
+    )
     if args.index_kind == "regions":
-        typed = hit_types_regions(real)
+        typed = hit_types_regions(real, args.flank)
     else:
         tfeat = pl.read_parquet(args.target_features)
         typed = hit_types_whole(real, tfeat, args.flank)
@@ -191,22 +265,48 @@ def main() -> None:
         on=["query", "hit_type"],
         how="inner",
     )
+    no_alignment = args.label.split(".")[0] == "composition"
+    pieces = [
+        (None, None) if no_alignment else aligned_piece(qs, ts, qa, ta, fs, fe)
+        for qs, ts, qa, ta, fs, fe in pairs.select(
+            "qstart", "tstart", "qseq", "tseq", "feat_tstart", "feat_tend"
+        ).iter_rows()
+    ]
+    pairs = pairs.with_columns(
+        pl.Series("aq_start", [p[0] for p in pieces], dtype=pl.Int64),
+        pl.Series("aq_end", [p[1] for p in pieces], dtype=pl.Int64),
+    )
+    if no_alignment:
+        pairs = pairs.with_columns(
+            pl.col("qstart").cast(pl.Int64).alias("aq_start"),
+            pl.col("qend").cast(pl.Int64).alias("aq_end"),
+        )
     ov = (
         pl.min_horizontal("qend", "fend") - pl.max_horizontal("qstart", "fstart") + 1
+    ).clip(lower_bound=0)
+    ova = (
+        pl.min_horizontal("aq_end", "fend")
+        - pl.max_horizontal("aq_start", "fstart")
+        + 1
     ).clip(lower_bound=0)
     pairs = pairs.with_columns(
         (ov / (pl.col("qend") - pl.col("qstart") + 1)).alias("landing"),
         (ov / (pl.col("fend") - pl.col("fstart") + 1)).alias("coverage"),
+        (ova / (pl.col("aq_end") - pl.col("aq_start") + 1))
+        .fill_null(0.0)
+        .alias("landing_aligned"),
         (pl.col("hit_desc") == pl.col("desc_clean")).alias("name_match"),
-    ).filter(pl.col("landing") >= args.min_landing)
-    pairs = pairs.with_columns(
-        (
-            pl.lit(thr["threshold"] is not None)
-            & (
-                pl.col("evalue")
-                <= (thr["threshold"] if thr["threshold"] is not None else -1.0)
-            )
-        ).alias("passes")
+    )
+    aligned_found = (
+        pairs.filter(pl.col("landing_aligned") >= args.min_landing)
+        .group_by("truth_id")
+        .agg(
+            pl.col("landing_aligned").max().alias("best_landing_aligned"),
+            pl.col("name_match").any().alias("found_name_aligned"),
+        )
+    )
+    pairs = pairs.filter(pl.col("landing") >= args.min_landing).with_columns(
+        pl.lit(True).alias("passes")
     )
 
     best = (
@@ -233,15 +333,19 @@ def main() -> None:
     out = (
         truth.select("truth_id")
         .join(best, on="truth_id", how="left")
+        .join(aligned_found, on="truth_id", how="left")
         .with_columns(
             pl.col("best_landing").is_not_null().alias("found"),
+            pl.col("best_landing_aligned").is_not_null().alias("found_aligned"),
             pl.col("found_name").fill_null(False),
+            pl.col("found_name_aligned").fill_null(False),
             pl.lit(args.label).alias("label"),
         )
         .sort("truth_id")
     )
     out.write_parquet(f"{args.prefix}.features.parquet")
     thr["features_found"] = int(out["found"].sum())
+    thr["features_found_aligned"] = int(out["found_aligned"].sum())
     thr["features_total"] = out.height
     Path(f"{args.prefix}.threshold.json").write_text(json.dumps(thr, indent=2))
     print(json.dumps(thr), file=sys.stderr)

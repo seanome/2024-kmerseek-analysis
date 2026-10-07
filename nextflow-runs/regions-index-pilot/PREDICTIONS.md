@@ -94,3 +94,15 @@ settings are at scaled 1. The decoys stay shuffled within 10-residue windows, an
 result is repeated with decoys shuffled within 20-residue windows as a check. The 10-residue
 result is the headline; the check passes when the 5% thresholds and the recall of each
 feature kind stay within 5 percentage points between the two window sizes.
+
+**2026-10-07, a second landing rule, added after the 20-query local test.** The test had
+scored MMseqs2 and the composition classifier only; no kmerseek result had been seen. On
+the whole-protein index a long MMseqs2 alignment spans several domains, lands under half in
+any one query feature, and counts as wrong under the rule above, while on the regions
+index the same alignment is confined to one feature by the entry's length. On 20 queries
+that rule gave MMseqs2 21 of 100 features with the whole-protein index and 35 with the
+regions index. A second rule cuts each call down to the query residues aligned to the
+target feature's own residues and judges landing on that piece: 62 and 48. The sign of the
+index difference depends on the rule, so both are reported for every result. The rule
+above stays the one these predictions were written for; the choice of headline rule is
+Olga's and will be recorded here before the full run's results are read.
