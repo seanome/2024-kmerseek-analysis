@@ -88,3 +88,9 @@ was rebuilt with 20-residue flanks. Prediction 1's numbers change to: 175_144_45
 so 1.94 bits. The expectation above changes to 1.94 bits, about 12 aligned H/P positions
 at the assumed 0.157 bits each; a hit still needs about 180 positions against the regions
 index. Everything else above is unchanged.
+
+**2026-10-07, still before any search:** polarity4 moves to scaled 1, so all four
+settings are at scaled 1. The decoys stay shuffled within 10-residue windows, and every
+result is repeated with decoys shuffled within 20-residue windows as a check. The 10-residue
+result is the headline; the check passes when the 5% thresholds and the recall of each
+feature kind stay within 5 percentage points between the two window sizes.

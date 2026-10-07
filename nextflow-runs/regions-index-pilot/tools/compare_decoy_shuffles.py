@@ -22,7 +22,7 @@ import numpy as np
 import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bin"))
-from make_window_decoys import window_shuffle  # noqa: E402
+from make_window_decoys import window_shuffle
 
 HYDROPHOBIC = set("AFILMVWC")
 STRETCH = 19
