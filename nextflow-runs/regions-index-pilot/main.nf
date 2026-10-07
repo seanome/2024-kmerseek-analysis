@@ -31,8 +31,10 @@ params.outdir        = null
 params.exclude_clade = 'Mammalia'
 // The largest k-size among the kmerseek settings searched. A regions-index entry carries
 // k_max - 1 residues each side of its feature, so a k-mer of that size can start on the
-// feature's first residue and end on its last. 19 is hp_pbotc_1st_ed2's k (see README).
-params.k_max          = 19
+// feature's first residue and end on its last. 21 is the k of the two H/P settings
+// (hp_pbotc_1st_ed2 and hp_lehninger2), chosen to carry about the same bits per k-mer as
+// protein20 k = 5 (see PREDICTIONS.md).
+params.k_max          = 21
 params.min_cluster_aa = 30
 params.cluster_min_seq_id = 0.5
 params.cluster_coverage   = 0.8

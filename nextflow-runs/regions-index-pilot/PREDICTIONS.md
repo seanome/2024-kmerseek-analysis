@@ -78,3 +78,13 @@ in a dated line before any search runs.
   polarity4 k11 scaled 10 (C 0.54); hp_pbotc_1st_ed2 k19 scaled 1 (C 1.59);
   hp_lehninger2 k19 scaled 1 (C 1.51); protein20 k5 scaled 1 (C 0.14).
   k_max stays 19, so the regions index as built serves all four.
+
+**2026-10-06, later the same day, still before any search:** Olga moved both H/P settings
+from k = 19 to k = 21, to carry about the same bits per k-mer as protein20 k = 5
+(20.9 bits). Settings now: polarity4 k11 scaled 10; hp_pbotc_1st_ed2 k21 scaled 1;
+hp_lehninger2 k21 scaled 1; protein20 k5 scaled 1. k_max became 21 and the regions index
+was rebuilt with 20-residue flanks. Prediction 1's numbers change to: 175_144_459 against
+45_736_962 target residues (350_288_918 against 91_473_924 with decoys), a ratio of 3.83,
+so 1.94 bits. The expectation above changes to 1.94 bits, about 12 aligned H/P positions
+at the assumed 0.157 bits each; a hit still needs about 180 positions against the regions
+index. Everything else above is unchanged.

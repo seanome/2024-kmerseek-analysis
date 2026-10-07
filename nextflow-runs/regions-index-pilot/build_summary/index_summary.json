@@ -22,21 +22,21 @@
   {
     "index": "regions_index",
     "residues_counted": "target",
-    "entries": 1275310,
-    "residues": 43379517,
+    "entries": 1279708,
+    "residues": 45736962,
     "median_query_aa": 409,
     "K_borrowed": 0.018,
-    "bits_needed_E1": 28.25,
+    "bits_needed_E1": 28.33,
     "positions_needed_at_0157_assumed": 180
   },
   {
     "index": "regions_index",
     "residues_counted": "target_plus_decoy",
-    "entries": 1275310,
-    "residues": 86759034,
+    "entries": 1279708,
+    "residues": 91473924,
     "median_query_aa": 409,
     "K_borrowed": 0.018,
-    "bits_needed_E1": 29.25,
-    "positions_needed_at_0157_assumed": 186
+    "bits_needed_E1": 29.33,
+    "positions_needed_at_0157_assumed": 187
   }
 ]

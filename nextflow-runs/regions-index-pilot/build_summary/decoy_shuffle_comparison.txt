@@ -1,0 +1,4 @@
+proteins with a TRANSMEM: 2000; most hydrophobic 19-residue stretch (share of AFILMVWC)
+  real       median 0.79   share >= 0.8: 0.43
+  window10   median 0.79   share >= 0.8: 0.37
+  dipeptide  median 0.74   share >= 0.8: 0.22
