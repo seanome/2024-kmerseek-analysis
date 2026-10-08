@@ -148,3 +148,56 @@ Still open:
    decoys unequal.
 3. **MMseqs2 version.** The local clustering used MMseqs2 18.8cc5c. The pinned container's
    version has not been checked; the Sherlock build may cluster slightly differently.
+
+## 20-query local run (2026-10-07)
+
+`make test-local`: the whole pipeline on 20 queries spread over the accession list (100
+truth features: 14 folded domains, 7 motifs, 1 disordered, 35 composition-driven, 43
+other), every index at full size, on the laptop with kmerseek v0.4.0 (0aed5ca) built from
+source and MMseqs2 18.8cc5c. 57 tasks, 2 h 15 min, 33.3 CPU-hours. Tables in
+`test_20_queries/`. This is a test of the pipeline; the sample is too small for any
+conclusion, and it has one disordered feature.
+
+What the test changed in the pipeline:
+- The composition classifier ties every target with its own decoy (a window-shuffled
+  decoy has the same composition as its source): 929 of 931 windows tied, decoys won 482,
+  and 1 call passed the 5% rule. Ties are broken at random; how to compare kmerseek with
+  composition is an open decision.
+- The landing rule decides which index wins (PREDICTIONS.md, second landing rule).
+- The identity split was circular and now comes from its own MMseqs2 search.
+- The regions index's Karlin-Altschul fit uses 2_500 entries; with 500, protein20 k5 was
+  refused on one decoy window.
+
+Regions-index fits are unstable: for the same setting, the fitted slope differs up to
+tenfold between the two decoy windows (hp_lehninger2 k21: 0.81 with 10-residue decoys,
+0.078 with 20-residue decoys). The 5% decoy threshold ranks calls within one set, so it is
+not affected; the E <= 10_000 filter inside the search keeps very different numbers of
+calls (protein20 k5 on the regions index: 1_754 against 57_907), and prediction 1, a fixed
+1.94-bit shift in E-values, cannot hold with fits that move this much.
+
+## Resources
+
+Measured on the laptop with `/usr/bin/time -l` (Nextflow reports no memory on macOS);
+peak resident memory. Per-task tables in `test_20_queries/index_build_costs.txt` and
+`test_20_queries/search_costs_20_queries.txt`.
+
+| task | largest | which | all 16 together |
+|---|---|---|---|
+| kmerseek index + fit | 31 min, 5.4 CPU-h, 84 GB | polarity4 k11, whole-protein index | 20.1 CPU-h |
+| kmerseek search, 20 queries | 6.2 min, 0.12 CPU-h, 89 GB | polarity4 k11, whole-protein index | 0.50 CPU-h |
+| MMseqs2 search, 20 queries | 23 s, 0.04 CPU-h, 3.6 GB | whole-protein index | 0.11 CPU-h |
+
+Prediction for the full run (975 queries, 10 chunks of 100), each line from the measured
+task above:
+
+| task | count | first ask | expected per task | total CPU-h |
+|---|---|---|---|---|
+| kmerseek index + fit | 16 | 120 GB, 2 h | up to 31 min, 84 GB | 20 |
+| kmerseek search | 160 | 120 GB, 2 h | up to 31 min, 89 GB (5x the 20-query time, an upper bound: much of it is loading the index) | at most 24 |
+| MMseqs2 search | 4 | 32 GB, 3 h | up to 19 min | about 5 |
+| feature-identity search, composition, scoring, comparison | 26 | 16-24 GB, 4 h | minutes | about 2 |
+| **total** | | | | **about 50** |
+
+No task has a history of being killed: these are first measurements, on macOS. Peak memory
+on Linux under a cgroup may read higher, because RocksDB's file pages count there; the
+asks carry 1.4x the measured peaks and stay under a normal-partition node's 125 GB.

@@ -27,10 +27,14 @@ HEAD_SUBMIT = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=
               HEAD_CPUS=2 HEAD_MEM=16G HEAD_SESSION=regions-pilot HEAD_JOBNAME=nfdrv-regions-pilot \
               HEAD_HINT_WATCH="make running" HEAD_HINT_STOP="scancel --name=nfdrv-regions-pilot" \
               $(MAKEFILE_DIR)../../scripts/nf-head
-# First asks per task, from the laptop measurements in BUILD_REPORT.md ("Resources").
+# First asks per task, from the laptop's 20-query run on 2026-10-07 (BUILD_REPORT.md,
+# "Resources"): largest index build 84 GB and 31 min (polarity4 k11, whole-protein index);
+# largest search 89 GB and 6 min for 20 queries, so about 31 min for a chunk of 100;
+# MMseqs2 3.6 GB and 23 s for 20 queries. About 1.4x the measured peaks, held under the 125 GB
+# of a normal-partition node so a task can start on either partition.
 SH_RESOURCES ?= --kmerseek_index_memory_gb 120 --kmerseek_index_hours 2 \
-                --kmerseek_search_memory_gb 100 --kmerseek_search_hours 2 \
-                --mmseqs_memory_gb 64 --mmseqs_hours 8
+                --kmerseek_search_memory_gb 120 --kmerseek_search_hours 2 \
+                --mmseqs_memory_gb 32 --mmseqs_hours 3
 
 ## Re-fetch the chromosome 6 query list and DisProt disorder into assets/ (committed).
 fetch-inputs:
