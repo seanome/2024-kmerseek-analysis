@@ -57,7 +57,14 @@ params.kappa_table       = "${projectDir}/assets/kappa_by_alphabet.tsv"
 params.xdrop_per_penalty = 4
 params.chain_max_gap     = 30
 params.chain_max_shift   = 10
-params.ka_queries        = 500
+// Index entries the Karlin-Altschul fit searches with, per index. 500 whole proteins are about
+// 175_000 residues; regions-index entries are about a fifth as long (mean 71 aa: 45_736_962 residues over
+// 639_854 entries), so the
+// regions index gets 2_500 for about the same residues. With 500, protein20 k5 on the
+// regions index (10-residue decoys) was refused for too few score bins on 2026-10-07, while
+// the same index with 20-residue decoys fitted: a fit at the edge of what 500 entries give.
+params.ka_queries         = 500
+params.ka_queries_regions = 2500
 // The dark set's search filters (olgabot/dark-set-kmerseek-0.4 main.nf, 7913404).
 params.threshold        = 0.0
 params.min_shared_kmers = 2
@@ -343,12 +350,13 @@ process kmerseekIndex {
 
     script:
     def idx = "${name}.w${window}.${slug}.kmerseek.rocksdb"
+    def kq  = name.startsWith('regions') ? params.ka_queries_regions : params.ka_queries
     """
     set -euo pipefail
     ${params.time_cmd} ${params.kmerseek} index --alphabet ${alphabet} --ksize ${ksize} --scaled ${scaled} \\
         --input ${fasta} --output ${idx} \\
         --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} \\
-        --ka-queries ${params.ka_queries} --ka-survival-out ${idx}/ka_survival.C${penalty}.csv \\
+        --ka-queries ${kq} --ka-survival-out ${idx}/ka_survival.C${penalty}.csv \\
         --kmer-stats-out ${idx}/spectrum.csv.gz > ${name}.w${window}.${slug}.index.log 2>&1
     ${params.kmerseek} --version >> ${name}.w${window}.${slug}.index.log
     """
@@ -373,7 +381,11 @@ process kmerseekSearch {
     // found by header name. Names hold no commas (queries are bare accessions; regions-index
     // descriptions had commas replaced), so splitting on commas is safe.
     """
+    # Nextflow runs every task under bash -e, which would stop the script at the failed
+    # pipe before the no-fit check below can read its status (seen 2026-10-07: protein20
+    # k5 on the regions index, a refused fit, failed the run).
     set -uo pipefail
+    set +e
     ${params.time_cmd} ${params.kmerseek} search --alphabet ${alphabet} --ksize ${ksize} \\
         --query ${chunk} --target ${index_dir} \\
         --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} --ka-queries 0 \\
@@ -392,6 +404,7 @@ process kmerseekSearch {
                           \$c["region_evalue"], \$c["region_subseq"], \$c["target_subseq"] }' \\
       | gzip -c > ${chunk.simpleName}.calls.tsv.gz
     status=(\${PIPESTATUS[@]})
+    set -e
     if [ "\${status[0]}" -ne 0 ] && grep -q "no Karlin-Altschul fit" ${chunk.simpleName}.search.log; then
         # The index-time fit was refused, so this setting has no E-value on this index.
         # Recorded as such, never as zero calls: the scorer reads the #nofit line.

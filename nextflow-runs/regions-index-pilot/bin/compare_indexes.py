@@ -87,8 +87,13 @@ def main() -> None:
         "thresholds.tsv", separator="\t"
     )
 
+    # A set whose index holds no Karlin-Altschul fit has no E-values and so no threshold.
+    # It is listed in thresholds.tsv and left out of every recall and test, never counted
+    # as zero recall.
+    nofit = set(thr.filter(pl.col("nofit"))["label"].to_list())
     truth = pl.read_parquet(args.truth)
     fc = pl.concat([pl.read_parquet(p) for p in feats], how="diagonal_relaxed")
+    fc = fc.filter(~pl.col("label").is_in(list(nofit)))
     fc = fc.with_columns(
         pl.col("label")
         .str.split(".")
