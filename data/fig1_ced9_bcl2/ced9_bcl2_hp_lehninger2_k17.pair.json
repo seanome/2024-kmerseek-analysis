@@ -1,0 +1,50 @@
+{
+  "ksize": 17,
+  "moltype": "hp_lehninger2",
+  "classes": {
+    "h": "AFGILMPVWY",
+    "p": "CDEHKNQRST"
+  },
+  "query": {
+    "name": "sp|P41958|CED9_CAEEL Apoptosis regulator ced-9 OS=Caenorhabditis elegans OX=6239 GN=ced-9 PE=1 SV=1",
+    "sequence": "MTRCTADNSLTNPAYRRRTMATGEMKEFLGIKGTEPTDFGINSDAQDLPSPSRQASTRRMSIGESIDGKINDWEEPRLDIEGFVVDYFTHRIRQNGMEWFGAPGLPCGVQPEHEMMRVMGTIFEKKHAENFETFCEQLLAVPRISFSLYQDVVRTVGNAQTDQCPMSYGRLIGLISFGGFVAAKMMESVELQGQVRNLFVYTSLFIKTRIRNNWKEHNRSWDDFMTLGKQMKEDYERAEAEKVGRRKQNRRWSMIGAGVTAGAIGIVGVVVCGRMMFSLK",
+    "encoded": "hpppphppphpphhhpppphhphphpphhhhphpphpphhhppphpphhphppphpppphphhpphphphpphpphphphphhhhphhppphppphhphhhhhhhhphhphppphhphhhphhpppphpphpphppphhhhhphphphhpphhpphhphppppphhphhphhhhhphhhhhhhphhpphphphphpphhhhpphhhppphppphpppppphpphhphhpphppphpphphpphhppppppphphhhhhhphhhhhhhhhhhphphhhphp"
+  },
+  "target": {
+    "name": "sp|P10415|BCL2_HUMAN Apoptosis regulator Bcl-2 OS=Homo sapiens OX=9606 GN=BCL2 PE=1 SV=2",
+    "sequence": "MAHAGRTGYDNREIVMKYIHYKLSQRGYEWDAGDVGAAPPGAAPAPGIFSSQPGHTPHPAASRDPVARTSPLQTPAAPGAAAGPALSPVPPVVHLTLRQAGDDFSRRYRRDFAEMSSQLHLTPFTARGRFATVVEELFRDGVNWGRIVAFFEFGGVMCVESVNREMSPLVDNIALWMTEYLNRHLHTWIQDNGGWDAFVELYGPSMRPLFDFSWLSLKTLLSLALVGACITLGAYLGHK",
+    "encoded": "hhphhpphhpppphhhphhphphppphhphphhphhhhhhhhhhhhhhhppphhpphphhhppphhhppphhpphhhhhhhhhhhhphhhhhhphphpphhpphppphppphhphppphphphhphphphhphhpphhpphhphhphhhhhphhhhhphpphppphphhhpphhhhhpphhppphpphhppphhhphhhphhhhphphhhphphhphpphhphhhhhhphphhhhhhpp"
+  },
+  "shared_kmers": [
+    {
+      "query_pos": 162,
+      "target_pos": 138,
+      "kmer": "pphhphhphhhhhphhh",
+      "query_kmer": "QCPMSYGRLIGLISFGG",
+      "target_kmer": "RDGVNWGRIVAFFEFGG"
+    },
+    {
+      "query_pos": 163,
+      "target_pos": 139,
+      "kmer": "phhphhphhhhhphhhh",
+      "query_kmer": "CPMSYGRLIGLISFGGF",
+      "target_kmer": "DGVNWGRIVAFFEFGGV"
+    },
+    {
+      "query_pos": 164,
+      "target_pos": 140,
+      "kmer": "hhphhphhhhhphhhhh",
+      "query_kmer": "PMSYGRLIGLISFGGFV",
+      "target_kmer": "GVNWGRIVAFFEFGGVM"
+    }
+  ],
+  "regions": [
+    {
+      "query_start": 162,
+      "query_end": 181,
+      "target_start": 138,
+      "target_end": 157,
+      "length": 19
+    }
+  ]
+}

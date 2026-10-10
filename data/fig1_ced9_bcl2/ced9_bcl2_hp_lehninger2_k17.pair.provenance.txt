@@ -1,0 +1,5 @@
+kmerseek_commit: 00395d7432c8099755716108d39362118a4b57b1
+kmerseek_commit_is_origin_main: 00395d7432c8099755716108d39362118a4b57b1
+kmerseek_version: kmerseek 0.3.1
+command: kmerseek pair --query-name sp|P41958|CED9_CAEEL --target-name sp|P10415|BCL2_HUMAN --alphabet hp_lehninger2 --ksize 17
+run_date: 2026-10-10
