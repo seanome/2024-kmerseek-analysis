@@ -1,0 +1,141 @@
+row,alphabet,residue,residue_group,class,class_name,n_borderline_in_h,n_residues_in_h,source
+1,hp_lehninger_c_nonpolar2,A,h in all seven,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,F,h in all seven,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,I,h in all seven,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,L,h in all seven,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,M,h in all seven,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,V,h in all seven,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,C,differs,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,G,differs,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,P,differs,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,W,differs,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,Y,differs,h,hydrophobic,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,D,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,E,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,H,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,K,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,N,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,Q,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,R,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,S,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+1,hp_lehninger_c_nonpolar2,T,p in all seven,p,polar,5,11,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,A,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,F,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,I,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,L,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,M,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,V,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,C,differs,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,G,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,P,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,W,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,Y,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,D,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,E,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,H,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,K,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,N,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,Q,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,R,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,S,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+2,hp_lehninger2,T,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,A,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,F,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,I,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,L,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,M,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,V,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,C,differs,c,cysteine in its own class,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,G,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,P,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,W,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,Y,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,D,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,E,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,H,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,K,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,N,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,Q,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,R,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,S,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+3,hp_lehninger_hpc3,T,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,A,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,F,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,I,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,L,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,M,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,V,h in all seven,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,C,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,G,differs,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,P,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,W,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,Y,differs,h,hydrophobic,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,D,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,E,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,H,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,K,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,N,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,Q,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,R,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,S,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+4,hp_pbotc_1st_ed2,T,p in all seven,p,polar,4,10,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,A,h in all seven,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,F,h in all seven,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,I,h in all seven,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,L,h in all seven,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,M,h in all seven,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,V,h in all seven,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,C,differs,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,G,differs,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,P,differs,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,W,differs,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,Y,differs,h,hydrophobic,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,D,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,E,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,H,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,K,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,N,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,Q,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,R,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,S,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+5,hp_thomas_dill2,T,p in all seven,p,polar,3,9,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,A,h in all seven,h,hydrophobic,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,F,h in all seven,h,hydrophobic,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,I,h in all seven,h,hydrophobic,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,L,h in all seven,h,hydrophobic,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,M,h in all seven,h,hydrophobic,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,V,h in all seven,h,hydrophobic,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,C,differs,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,G,differs,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,P,differs,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,W,differs,h,hydrophobic,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,Y,differs,h,hydrophobic,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,D,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,E,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,H,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,K,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,N,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,Q,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,R,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,S,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+6,hp_thomas_dill_no_c2,T,p in all seven,p,polar,2,8,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,A,h in all seven,h,hydrophobic,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,F,h in all seven,h,hydrophobic,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,I,h in all seven,h,hydrophobic,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,L,h in all seven,h,hydrophobic,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,M,h in all seven,h,hydrophobic,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,V,h in all seven,h,hydrophobic,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,C,differs,h,hydrophobic,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,G,differs,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,P,differs,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,W,differs,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,Y,differs,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,D,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,E,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,H,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,K,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,N,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,Q,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,R,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,S,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
+7,hp_kyte_doolittle2,T,p in all seven,p,polar,1,7,seanome/kmerseek v0.4.0 (0aed5ca) src/rust/alphabets.rs
