@@ -133,7 +133,14 @@ params.kmerseek_table_arms      = ''
 // (median 340-398 GB, x2 past the 500 GB ceiling), after an index build that itself needed
 // 126 GB to over 252 GB. k10 never built; its search load should sit between k11's measured
 // 5_800-7_900 (searchable, about 232 GB median) and k9's 17_000-24_000 (skipped).
-params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12,gbmr7:9,gbmr7:10'
+// dayhoff6 k8, gbmr4 k13, gbmr7 k13, gbmr7 k14 and hsdm17 k5 were added 2026-10-10 because
+// their searches cannot get a node. Their asks are 379-500 GB with 49-64 CPUs; only the 15
+// hns nodes with 1-1.5 TB can take one, and those nodes are shared with the rest of hns.
+// 124 of these searches had waited since 2026-10-05 (Slurm shows "BadConstraints", which is
+// the normal partition, 384 GB at most, saying it cannot run them). The ask is real:
+// gbmr7 k13 on human ran out of memory at 379 GB, and gbmr7 k14 on worm peaked at 224-252
+// GB. Each of the five is its alphabet's k_min, so these alphabets now start one k higher.
+params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12,gbmr7:9,gbmr7:10,dayhoff6:8,gbmr4:13,gbmr7:13,gbmr7:14,hsdm17:5'
 // The sweep's table: every alphabet in this file, every whole k from its k_min to its
 // k_max, then --kmerseek_sweep_plus and --kmerseek_sweep_minus. A plus pair outside its
 // alphabet's range is dropped and listed in the log. Columns alphabet, k_min, k_max. With
