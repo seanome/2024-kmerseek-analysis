@@ -99,6 +99,18 @@ params.kmerseek_encodings       = null
 // unless --kmerseek_sweep or --kmerseek_encodings is on; without a sweep,
 // --kmerseek_alphabets already names every pair outright.
 params.kmerseek_sweep_plus      = ''
+// Run every STEP-th k of each alphabet's sweep range instead of every k: the alphabet's
+// lowest k, lowest + step, and so on, plus its highest k so the range keeps both ends.
+// Pairs in --kmerseek_ksize_keep stay whatever the step. 1 runs every k.
+// Added 2026-10-10 for the midi run, which was 82% done (17_854 of 21_854 searches) with
+// no species' result out yet, because a species' gain step waits for all its searches.
+// Step 2 left 2_323 searches instead of 4_000. A seed at k+1 always contains a seed at k
+// in the same place, so a higher k can only lose regions; the high end of a range shows
+// where reach falls off, and every other k draws that curve. Any k skipped here can be
+// added back later, and every search already run is reused.
+params.kmerseek_ksize_step      = 1
+// The project's designated best setting, kept by --kmerseek_ksize_step whatever the step.
+params.kmerseek_ksize_keep      = 'hp_pbotc_1st_ed2:19'
 // A sweep runs its whole table at every --kmerseek_scaled value and every search arm. These
 // two narrow the TABLE to one setting while the pairs named in --kmerseek_alphabets keep all
 // of them. Empty means no narrowing. Added 2026-09-29: the midi run's table at 4 scaled x 3
@@ -1282,6 +1294,20 @@ def resolveCombos() {
             log.info "  dropped  : ${outside.size()} alphabet x ksize pair(s) outside " +
                      "--kmerseek_ksize_ranges" +
                      (outside ? " (${outside.collect { it[0] + ':' + it[1] }.join(', ')})" : '')
+        }
+        def step = params.kmerseek_ksize_step as Integer
+        if (step < 1) error "--kmerseek_ksize_step takes an integer >= 1, not ${params.kmerseek_ksize_step}"
+        if (step > 1) {
+            def keepPairs = parseSpecs(params.kmerseek_ksize_keep, '--kmerseek_ksize_keep')
+            def lo = pairs.groupBy { it[0] }.collectEntries { a, ps -> [(a): ps*.get(1).min()] }
+            def hi = pairs.groupBy { it[0] }.collectEntries { a, ps -> [(a): ps*.get(1).max()] }
+            def stepped = pairs.findAll { a, k ->
+                (k - lo[a]) % step == 0 || k == hi[a] || keepPairs.any { m -> m[0] == a && m[1] == k }
+            }
+            log.info "  dropped  : ${pairs.size() - stepped.size()} alphabet x ksize pair(s) by " +
+                     "--kmerseek_ksize_step ${step} (kept ${stepped.size()}, " +
+                     "always keeping ${params.kmerseek_ksize_keep ?: 'none'})"
+            pairs = stepped
         }
     }
     else {
