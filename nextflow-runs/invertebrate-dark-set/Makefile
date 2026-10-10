@@ -313,7 +313,7 @@ run-dark-set-sbatch: check-species check-inputs queue-note $(if $(WITH_KMERSEEK)
 # filesystem, and it blocked every relaunch of this pipeline until it cleared.
 	@n=$$(squeue -u $$USER -h -o '%t %j' 2>/dev/null \
 	      | awk '$$1 != "CG" && $$2 ~ /$(TASK_PREFIX_RE)/' | wc -l); \
-	 if [ "$$n" != 0 ] && ! squeue -u $$USER -h -o '%j' 2>/dev/null | grep -q '^nfdrv-'; then \
+	 if [ "$$n" != 0 ] && [ -z "$$(squeue -u $$USER -h -o '%i %j %Z' 2>/dev/null | awk $(OWN_HEAD_AWK))" ]; then \
 	   echo "WARNING: $$n task(s) of this pipeline are in the queue with no driver alive -- orphans of"; \
 	   echo "         a stopped run. An orphaned index build finishing under this run collides on"; \
 	   echo "         storeDir. Cancel them first:  make cancel-orphan-tasks"; exit 1; fi
@@ -650,8 +650,15 @@ rescue-indexes-0.4:
 # is exactly the state a failed stop leaves behind. Cancelling a few hundred jobs takes
 # a minute or two under slurmctld's RPC throttle; that is normal.
 TASK_PREFIX_RE = ^nf-(darkSet|darkReport|calibrateStore)_
+# Which nfdrv- heads are this pipeline's: the ones whose working directory (squeue %Z) is
+# a launch dir of invertebrate-dark-set, in any clone. Every pipeline in the repo names its
+# head nfdrv-<run>, so matching the name alone counted other pipelines' heads as live. On
+# 2026-10-10 the queued SCOPe40 head (nfdrv-scope40-v040, a lower job id than every
+# dark-set task) made this report "273 task(s) above it belong to live driver(s)" and
+# cancel nothing, after the midi head had been stopped. Prints the job ids of own heads.
+OWN_HEAD_AWK = '$$2 ~ /^nfdrv-/ && index($$3, "/nextflow-runs/invertebrate-dark-set") {print $$1}'
 cancel-orphan-tasks:
-	@floor=$$(squeue -u $$USER -h -o "%i %j" | awk '$$2 ~ /^nfdrv-/ {print $$1}' | sort -n | head -1); \
+	@floor=$$(squeue -u $$USER -h -o "%i %j %Z" | awk $(OWN_HEAD_AWK) | sort -n | head -1); \
 	 ids=$$(squeue -u $$USER -h -o "%t %i %j" | awk -v f="$${floor:-999999999999}" '$$1 != "CG" && $$3 ~ /$(TASK_PREFIX_RE)/ && $$2+0 < f+0 {print $$2}'); \
 	 cg=$$(squeue -u $$USER -h -o "%t %j" | awk '$$1 == "CG" && $$2 ~ /$(TASK_PREFIX_RE)/' | wc -l); \
 	 [ "$$cg" != 0 ] && echo "$$cg task(s) are in CG (completing); scancel cannot touch those and they are not orphans"; \
