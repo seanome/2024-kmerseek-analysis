@@ -169,6 +169,10 @@ print(
     f"max |chance - chance_230| = {(chk['expected'] - chk['expected_230']).abs().max():.2e}"
 )
 print(
+    f"Before filters: Pfam {pfam_raw.filter(pl.col('alphabet') == HP).height:_} pairs from "
+    f"{pfam_raw['family'].n_unique():_} families; SCOPe {scope_raw.filter(pl.col('alphabet') == HP).height:_} pairs"
+)
+print(
     f"After filters: Pfam {pfam.filter(pl.col('alphabet') == HP).height:_} pairs, "
     f"SCOPe {scope.filter(pl.col('alphabet') == HP).height:_} pairs"
 )
@@ -513,7 +517,7 @@ hc.finish_figure(
     conclusion=(
         f"At 20-30% identity in Pfam, {hp_a:.0f} of 100 positions agree in H/P against "
         f"{hp_c:.0f} by chance, and {p_a:.0f} of 100 are identical against {p_c:.0f}, chance taken "
-        f"from each pair's own shares (section 3: a random partner gives less). Each "
+        f"from each pair's own shares (section 4: a random partner gives less). Each "
         f"aligned position carries {hp_i:.2f} bits in H/P and {p_i:.2f} bits as 20 amino acids, "
         f"so a 20-letter position is worth more evidence. In SCOPe, real H/P agreement exceeds "
         f"shuffled by {sf_hp:.0f} per 100 for same superfamily, different family, and by "
@@ -523,7 +527,123 @@ hc.finish_figure(
 """)
 
 md(r"""
-## 3. Measured against the kappa-based estimates
+## 3. Under 20% identity, is the H/P lead a property of distant homologs, or of how the pairs were picked?
+
+Section 2 shows H/P giving more evidence per aligned position than the 20 amino acids in Pfam
+pairs under 20% identity, and less at every higher identity. But identity here is the share of
+aligned positions with the same residue, which is the 20 amino acid agreement itself. So the
+"<20%" bin is the pairs where the 20 amino acids agree least, and their I is held down by the
+choice of bin. Three checks:
+
+1. How close identity is to the 20 amino acid agreement, pair by pair.
+2. Whether the Pfam lead under 20% survives resampling whole families (pairs from one family
+   share sequence, so they are not independent draws). 2,000 resamples of families.
+3. The same comparison on a grouping that does not use identity: SCOPe's relationship between
+   the two domains. If H/P leads for homologs at all identities, the lead belongs to distant
+   homologs. If it leads only after keeping the pairs under 20% identity, it comes from picking
+   pairs by low identity.
+
+The figure shows mean I per SCOPe category, both alphabets, for all identities (left) and for
+the pairs under 20% identity only (right). Higher is more evidence.
+""")
+
+code(r"""
+pw = pfam.pivot(
+    on="alphabet",
+    index=["family", "query", "target", "seqid_ali", "identity_bin"],
+    values=["agree", "evidence"],
+)
+same = ((pw["seqid_ali"] - pw[f"agree_{P20}"]).abs() < 1e-9).mean()
+corr = np.corrcoef(pw["seqid_ali"].to_numpy(), pw[f"agree_{P20}"].to_numpy())[0, 1]
+print(
+    f"1. Pfam, {pw.height:_} pairs: identity equals the 20 amino acid agreement exactly for "
+    f"{100 * same:.1f}% of pairs; correlation {corr:.5f}"
+)
+
+lo = pw.filter(pl.col("identity_bin") == "<20%").with_columns(
+    (pl.col(f"evidence_{HP}") - pl.col(f"evidence_{P20}")).alias("d")
+)
+fam = lo.group_by("family").agg(pl.col("d").sum(), pl.len().alias("n")).sort("family")
+d_sum, d_n = fam["d"].to_numpy(), fam["n"].to_numpy()
+rng = np.random.default_rng(SEED)
+boot = []
+for _ in range(2000):
+    i = rng.integers(0, fam.height, fam.height)
+    boot.append(d_sum[i].sum() / d_n[i].sum())
+print(
+    f"2. Pfam under 20% identity, {lo.height:_} pairs from {fam.height:_} families: "
+    f"I(H/P) - I(20 aa) = {lo['d'].mean():.4f} bits, 95% interval resampling families "
+    f"{np.percentile(boot, 2.5):.4f} to {np.percentile(boot, 97.5):.4f}; "
+    f"H/P higher in {100 * (lo['d'] > 0).mean():.1f}% of pairs"
+)
+
+sw = scope.pivot(on="alphabet", index=["query", "target", "category", "identity_bin"], values="evidence")
+
+
+def by_category(df, label):
+    return df.group_by("category").agg(
+        pl.lit(label).alias("pairs used"),
+        pl.len().alias("pairs"),
+        pl.col(HP).mean().round(3).alias("I H/P"),
+        pl.col(P20).mean().round(3).alias("I 20 aa"),
+    )
+
+
+sc_tab = (
+    pl.concat(
+        [
+            by_category(sw, "all identities"),
+            by_category(sw.filter(pl.col("identity_bin") == "<20%"), "under 20% identity"),
+        ]
+    )
+    .with_columns(
+        pl.col("category").cast(pl.Enum(CAT_ORDER)),
+        (pl.col("I H/P") / pl.col("I 20 aa")).round(2).alias("H/P / 20 aa"),
+    )
+    .sort("pairs used", "category")
+)
+print("3. SCOPe 2.08 40% set, mean I per aligned position (bits) by SCOPe relationship")
+print(sc_tab)
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4.2), sharey=True)
+x = np.arange(len(CAT_ORDER))
+for ax, used in zip(axes, ["all identities", "under 20% identity"]):
+    t = sc_tab.filter(pl.col("pairs used") == used).sort("category")
+    for j, (a, col) in enumerate([(HP, "I H/P"), (P20, "I 20 aa")]):
+        ax.bar(x + (j - 0.5) * 0.38, t[col].to_numpy(), width=0.38, color=COLOR[a])
+    ax.set_xticks(
+        x, [f"{CAT_LABEL[c]}\n{n:_} pairs" for c, n in zip(CAT_ORDER, t["pairs"].to_list())], fontsize=9
+    )
+    ax.set_title(f"SCOPe pairs, {used}", loc="left", fontsize=10)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+axes[0].set_ylabel("mean I per aligned position (bits)")
+axes[0].legend(
+    handles=[Patch(color=COLOR[HP], label=f"H/P ({HP})"), Patch(color=COLOR[P20], label="20 amino acids")],
+    loc="lower left", bbox_to_anchor=(0, 1.08), ncol=2, frameon=False, fontsize=9, borderaxespad=0,
+)
+ssf = sc_tab.filter(pl.col("category") == "same_superfamily_diff_family")
+ssf_all = ssf.filter(pl.col("pairs used") == "all identities").row(0, named=True)
+ssf_lo = ssf.filter(pl.col("pairs used") == "under 20% identity").row(0, named=True)
+hc.finish_figure(
+    fig,
+    FIG / "273_scope_relationship_hp_vs_protein20_bits_all_vs_under_20pct.png",
+    tools=f"no kmerseek; SCOPe 2.08 40% set, USalign alignments, {HP} and protein20",
+    title="Evidence per aligned position by SCOPe relationship: all identities vs under 20% identity",
+    hypothesis=(
+        "If H/P keeps more evidence for distant homologs, its bar is taller for homologs "
+        "(same family, same superfamily) at all identities, not only under 20%."
+    ),
+    conclusion=(
+        f"Same superfamily, different family: 20 amino acids {ssf_all['I 20 aa']} vs H/P "
+        f"{ssf_all['I H/P']} bits over all identities; under 20% identity, H/P {ssf_lo['I H/P']} "
+        f"vs {ssf_lo['I 20 aa']}."
+    ),
+)
+""")
+
+md(r"""
+## 4. Measured against the kappa-based estimates
 
 The estimates were made from kappa with Swiss-Prot residue shares, at 20-30% identity. The
 measured values are the Pfam 20-30% bin from section 2, and for comparison the SCOPe pairs
@@ -754,10 +874,10 @@ hc.finish_figure(
 """)
 
 md(r"""
-## 4. One typical pair at each identity, position by position
+## 5. One typical pair at each identity, position by position
 
 Section 1 showed one pair. Here is one pair from each Pfam identity bin, so the numbers in
-sections 2 and 3 can be seen as residues. Each pair is the bin's most typical one, chosen by a
+sections 2 to 4 can be seen as residues. Each pair is the bin's most typical one, chosen by a
 rule fixed before looking at the pairs: among pairs with 80 to 150 aligned positions (short
 enough to read), the pair whose H/P I and 20 amino acid I are both closest to the middle of
 the bin (the smallest sum of the two distances from the 50th percentile, percentiles taken
@@ -913,7 +1033,7 @@ hc.finish_figure(
 """)
 
 md(r"""
-## 5. Summary and conclusions
+## 6. Summary and conclusions
 
 **Question.** Do the kappa-based numbers for H/P agreement (74 vs 51 per 100 at 20-30%
 identity; 25 vs 6 for 20 amino acids; I about 0.15 vs 0.26 bits) hold when agreement is
@@ -939,10 +1059,16 @@ be rebuilt from those four numbers; quote the measured I instead.
 4. In SCOPe pairs from the same superfamily but a different family at 20-30% identity (2,118
    pairs), H/P agreement is 72.1 per 100 and I is 0.144 bits (20 amino acids: 24.4 per 100,
    0.239 bits), also within the band.
-5. A result the kappa summary did not show: in Pfam pairs under 20% identity, H/P carries more
-   evidence per aligned position than the 20 amino acids (0.103 vs 0.091 bits). From 20%
-   identity up, the 20 amino acids carry more: 1.5 times as much at 20-30% and 3.5 times at 60%
-   and above. In SCOPe, different-fold pairs, which SCOPe does not call related, still agree on
+5. A result the kappa summary did not show, with a catch. In Pfam pairs under 20% identity, H/P
+   gives more evidence per aligned position than the 20 amino acids (0.103 vs 0.091 bits), and
+   the lead holds when whole families are resampled (0.0108 to 0.0132 bits, section 3). From 20%
+   identity up, the 20 amino acids give more: 1.5 times as much at 20-30% and 3.5 times at 60%
+   and above. The catch: identity is the 20 amino acid agreement itself (equal for 99.7% of
+   pairs), so the under-20% bin is the pairs where the 20 amino acids agree least. Grouped by
+   SCOPe relationship, which does not use identity, homologs favour the 20 amino acids over all
+   identities (same superfamily, different family: 0.121 vs 0.087 bits; same family: 0.205 vs
+   0.125). Kept to the pairs under 20% identity, the same categories favour H/P (0.056 vs 0.045;
+   0.070 vs 0.062). In SCOPe, different-fold pairs, which SCOPe does not call related, still agree on
    56.2 H/P positions per 100 against 50.8 shuffled (186 pairs). They were picked for TM-score
    0.5 or more, so this notebook cannot say whether that excess comes from the structural
    superposition, shared packing, or a distant common ancestor.
@@ -964,13 +1090,20 @@ be rebuilt from those four numbers; quote the measured I instead.
    20 amino acids, at 20-30% identity in Pfam seed pairs, with chance from a random partner's
    composition. For evidence per aligned position, quote the measured 0.16 bits (H/P) and 0.25
    bits (20 amino acids), citing this notebook.
-2. Whether to argue that H/P keeps more evidence per aligned position. Do not, except for the
-   most distant pairs. H/P has the higher I only in Pfam pairs under 20% identity (0.103 vs
-   0.091 bits, 1.13 times) and in SCOPe pairs from different superfamilies (0.033 vs 0.020 bits)
-   or different folds (0.022 vs 0.014 bits). At 20-30% identity H/P has 0.65 times the I of
-   the 20 amino acids (0.162 vs 0.251), and at 60% and above 0.29 times (0.519 vs 1.796). The
-   paper can say "H/P class is kept: 74 of 100 aligned positions against 51 by chance". It
-   cannot say "H/P keeps more of the signal than the residues do" without "under 20% identity".
+2. Whether to argue that H/P keeps more evidence per aligned position. Not for homologs in
+   general. H/P has the higher I among pairs picked for low identity: Pfam pairs under 20%
+   (0.103 vs 0.091 bits, 1.13 times) and SCOPe homologs under 20% (same superfamily, different
+   family: 0.056 vs 0.045). Picking pairs by low identity holds the 20 amino acid I down,
+   because identity is the 20 amino acid agreement. On a grouping that does not use identity,
+   SCOPe homologs favour the 20 amino acids (0.121 vs 0.087 bits for same superfamily, different
+   family). The SCOPe category where H/P leads at all identities is same fold, different
+   superfamily (0.033 vs 0.020 bits, 1,204 pairs, median identity 8.9%), where SCOPe
+   does not say whether the two domains share an ancestor. Different-fold pairs are not counted
+   here: SCOPe calls them unrelated. At 20-30% identity H/P has 0.65 times the I of the 20 amino
+   acids (0.162 vs 0.251), and at 60% and above 0.29 times (0.519 vs 1.796). The paper can say
+   "H/P class is kept: 74 of 100 aligned positions against 51 by chance". It can say "among pairs
+   under 20% identity, H/P gives 1.13 times the evidence per aligned position" only together with
+   how those pairs were picked.
    All of these are per aligned position, for a method that is given the correct alignment.
    An exact k-mer sees less: notebook 230 found that an H/P 26-mer is shared by 1.7% of 20-30% pairs,
    against 11% for a protein 6-mer of about the same bits.
