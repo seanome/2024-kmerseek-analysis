@@ -53,6 +53,22 @@ params.settings_only = ''
 // Exact alphabet:k pairs, e.g. protein20:5,gbmr7:35. Combined with the three above.
 params.pairs         = ''
 
+// k-sizes below an alphabet's k_min (notebook 277: the best k was k_min for 10 of 19
+// alphabets). k_below more k-sizes under k_min for each alphabet in k_below_alphabets
+// (comma list, empty = every alphabet), never under min_seed_bits bits per k-mer
+// (k x log2 classes). only_below_kmin runs just those added k-sizes.
+params.k_below           = 0
+params.k_below_alphabets = ''
+params.min_seed_bits     = 15
+params.only_below_kmin   = false
+
+// Score each search by sequence identity band too, on these aligned pairs
+// (assets/scope40_pair_identity.tsv.gz, scripts/scope40_pair_identity_asset.py). Empty = off.
+params.pair_identity = ''
+// Where indexes are stored and looked up (storeDir). A new outdir can point this at an
+// earlier run's indexes so they are not built again.
+params.index_dir     = ''
+
 // The build of kmerseek's v0.4.0 tag (0aed5ca), the image the dark-set 0.4 runs use.
 params.kmerseek_image = 'docker.io/olgabot/kmerseek:0.4.0-rc5'
 
@@ -106,12 +122,20 @@ def resolvePairs() {
     if (unknownA) error "--alphabets: not in ${params.settings}: ${unknownA.join(', ')}"
     def unknownS = wantS - SETTING_NAMES
     if (unknownS) error "--settings_only takes ${SETTING_NAMES.join(', ')}, not ${unknownS.join(', ')}"
+    def belowA = csvList(params.k_below_alphabets)
+    def unknownB = belowA - table*.alphabet
+    if (unknownB) error "--k_below_alphabets: not in ${params.settings}: ${unknownB.join(', ')}"
     table.findAll { !wantA || it.alphabet in wantA }.collectMany { row ->
         def settings = SETTING_NAMES.findAll { s -> s == 'exact' || row[s] }
                                     .findAll { s -> !wantS || s in wantS }
                                     .collect { s -> [s, s == 'exact' ? '' : row[s]] }
-        ((row.k_min as int)..(row.k_max as int))
-            .findAll { k -> !wantK || k in wantK }
+        int kMin = row.k_min as int
+        int below = (!belowA || row.alphabet in belowA) ? (params.k_below as int) : 0
+        def added = ((kMin - below)..<kMin).findAll { k ->
+            below > 0 && k > 0 && k * Math.log(alphabetClasses(row.alphabet)) / Math.log(2) >= (params.min_seed_bits as double)
+        }
+        def ks = params.only_below_kmin ? added : added + ((kMin)..(row.k_max as int)).toList()
+        ks.findAll { k -> !wantK || k in wantK }
             .findAll { k -> !wantPairs || "${row.alphabet}:${k}".toString() in wantPairs }
             .collect { k -> [row.alphabet, k, settings] }
     }
@@ -162,9 +186,21 @@ def askFor(String process, String alphabet, int ksize, String what, double floor
     def all = measured().collectEntries { key, rows -> [key, rows.findAll { it.evidence == 'completed' }] }
     def rows = all[process + '|' + alphabet] ?: []
     def below = rows.findAll { (it.ksize as int) <= ksize }
-    double ref = below ? (below.max { it.ksize as int }[what] as double)
-                       : (all.findAll { it.key.startsWith(process + '|') }.values().flatten()
-                             .collect { it[what] as double }.max() ?: 0.0d)
+    def lowest = rows.sort(false) { it.ksize as int }.take(2)
+    double ref
+    if (below) {
+        ref = below.max { it.ksize as int }[what] as double
+    } else if (lowest.size() == 2) {
+        // Under the alphabet's lowest measured k: grow by the factor measured between its two
+        // lowest k-sizes, once per step down (at least 1). On the 2026-10-10 Sherlock run this
+        // factor was 1.5-1.8 for the HP alphabets and 2-8 for the larger ones.
+        double v0 = lowest[0][what] as double, v1 = lowest[1][what] as double
+        double step = v1 > 0 ? Math.max(1.0d, v0 / v1) : 1.0d
+        ref = v0 * Math.pow(step, (lowest[0].ksize as int) - ksize)
+    } else {
+        ref = all.findAll { it.key.startsWith(process + '|') }.values().flatten()
+                 .collect { it[what] as double }.max() ?: 0.0d
+    }
     Math.max(floor, 1.5 * ref) * Math.pow(2, attempt - 1)
 }
 
@@ -198,7 +234,7 @@ process prepareScope {
 process kmerseekIndex {
     tag "${alphabet}.k${ksize}"
     container params.kmerseek_image
-    storeDir "${params.outdir}/indexes"
+    storeDir params.index_dir ?: "${params.outdir}/indexes"
     memory { askFor('kmerseekIndex', alphabet, ksize as int, 'peak_gb', 8, task.attempt) + ' GB' }
     time   { timeFor('kmerseekIndex', alphabet, ksize as int, task.attempt) }
 
@@ -242,17 +278,18 @@ process kmerseekIndex {
 process searchAndScore {
     tag "${alphabet}.k${ksize}.${setting}"
     container params.kmerseek_image
-    publishDir "${params.outdir}/scores", mode: 'copy', pattern: '*.{auc.tsv,log}'
+    publishDir "${params.outdir}/scores", mode: 'copy', pattern: '*.{auc.tsv,bands.tsv,log}'
     publishDir "${params.outdir}/pairs",  mode: 'copy', pattern: '*.pairs.parquet', enabled: params.publish_pairs
     memory { askFor('searchAndScore', alphabet, ksize as int, 'peak_gb', 4, task.attempt) + ' GB' }
     time   { timeFor('searchAndScore', alphabet, ksize as int, task.attempt) }
 
     input:
     tuple val(alphabet), val(ksize), val(setting), val(penalty), path(index), path(fasta),
-          path(domains), path(ref_rocx), path(utils)
+          path(domains), path(ref_rocx), path(utils), path(identity)
 
     output:
     path "${alphabet}.k${ksize}.${setting}.auc.tsv", emit: auc
+    path "${alphabet}.k${ksize}.${setting}.bands.tsv", optional: true, emit: bands
     path "${alphabet}.k${ksize}.${setting}.log",     emit: log
     path "${alphabet}.k${ksize}.${setting}.pairs.parquet", optional: true, emit: pairs
 
@@ -264,7 +301,8 @@ process searchAndScore {
     def keep = params.publish_pairs ? "--pairs-parquet ${slug}.pairs.parquet" : ''
     def score = "score_scope40_setting.py --domains ${domains} --ref-rocx ${ref_rocx} --utils ${utils} " +
                 "--alphabet ${alphabet} --ksize ${ksize} --setting ${setting} --penalty '${penalty}' " +
-                "--out ${slug}.auc.tsv"
+                "--out ${slug}.auc.tsv" +
+                (params.pair_identity ? " --pair-identity ${identity} --bands-out ${slug}.bands.tsv" : '')
     """
     set -euo pipefail
     # Which columns are scores and which way each ranks: one list, in the scoring script.
@@ -292,6 +330,7 @@ process searchAndScore {
     stub:
     """
     printf 'alphabet\\tksize\\tsetting\\n${alphabet}\\t${ksize}\\t${setting}\\n' > ${alphabet}.k${ksize}.${setting}.auc.tsv
+    ${params.pair_identity ? "cp ${alphabet}.k${ksize}.${setting}.auc.tsv ${alphabet}.k${ksize}.${setting}.bands.tsv" : ''}
     echo stub > ${alphabet}.k${ksize}.${setting}.log
     """
 }
@@ -303,13 +342,17 @@ process collectScores {
     input:
     path expected
     path tables
+    path band_tables, stageAs: 'bands/*'
 
     output:
     path 'scope40_v040_auc.tsv'
+    path 'scope40_v040_identity_bands.tsv', optional: true
 
     script:
+    def bands = params.pair_identity ? "collect_scores.py ${expected} scope40_v040_identity_bands.tsv bands/*" : ''
     """
     collect_scores.py ${expected} scope40_v040_auc.tsv ${tables}
+    ${bands}
     """
 }
 
@@ -333,11 +376,13 @@ workflow {
         .combine(fasta)
         .combine(prepared.domains)
         .combine(channel.fromPath(params.ref_rocx, checkIfExists: true))
-        .combine(channel.fromPath(params.scope_utils, checkIfExists: true)))
+        .combine(channel.fromPath(params.scope_utils, checkIfExists: true))
+        // Without --pair_identity the task still needs a path; it is staged and not read.
+        .combine(channel.fromPath(params.pair_identity ?: params.settings, checkIfExists: true)))
 
     // Every search the run was asked for, so collectScores can name any that never scored.
     expected = channel.fromList(pairs.collectMany { a, k, settings -> settings.collect { s, c -> "${a}\t${k}\t${s}\t${c}\n" } })
         .collectFile(name: 'expected_searches.tsv', seed: 'alphabet\tksize\tsetting\tpenalty\n', sort: false)
     // ifEmpty: if every search failed, the table is still written, every row `failed`.
-    collectScores(expected, scored.auc.collect().ifEmpty([]))
+    collectScores(expected, scored.auc.collect().ifEmpty([]), scored.bands.collect().ifEmpty([]))
 }

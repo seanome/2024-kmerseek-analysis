@@ -14,6 +14,11 @@ any other tie order gives an AUC between the two. Each is reported two ways, as 
 notebooks 066 and 075:
   _all  over the queries with at least one same-family hit (n_queries_all)
   _ref  over the 5_713 FoldSeek SCOPe40 queries; one kmerseek returns nothing for scores 0
+With --pair-identity, each score column is also scored on a set of aligned SCOPe40 pairs
+split by sequence identity (assets/scope40_pair_identity.tsv.gz, notebook 230's USalign
+pairs, each in both directions). Per score column, pair class and identity band it writes
+the number of pairs, how many kmerseek reported, and how many it ranked above the query's
+first different-fold hit (a tie counts against kmerseek, as in auc_ref).
 kmerseek writes one row per matched region, so a pair can have several rows. A pair's score
 is its best region's: the smallest value for a probability or a frequency, the largest for
 everything else. Whole-query columns are the same on every row of a pair.
@@ -53,6 +58,48 @@ SCORES = {
     "region_n_chained": False,
 }
 LEVELS = {"FAM": "family", "SFAM": "superfamily", "FOLD": "fold"}
+# Identity bands, as in the identity-axis tables of the midi run: lower edge included.
+BAND_EDGES = [0.0, 0.2, 0.3, 0.4, 0.6]
+BAND_NAMES = ["0-20%", "20-30%", "30-40%", "40-60%", "60-100%"]
+
+
+def read_identity(path, domain):
+    """The identity pairs, bands assigned, restricted to domains in this run's FASTA."""
+    ident = pl.read_csv(path, separator="\t")
+    ident = ident.filter(pl.col("query_domain").is_in(domain.categories.to_list())
+                         & pl.col("target_domain").is_in(domain.categories.to_list()))
+    return ident.with_columns(
+        pl.col("query_domain").cast(domain), pl.col("target_domain").cast(domain),
+        pl.col("seqid_ali").cut(BAND_EDGES[1:], labels=BAND_NAMES, left_closed=True)
+        .cast(pl.Utf8).alias("identity_band"),
+    )
+
+
+def band_rows(df, ident, col, smaller_first):
+    """Per pair class and identity band: pairs, reported, ranked above the first false positive.
+
+    A pair is above the first false positive when its score is finite and strictly better than
+    the best finite score of any different-fold hit of the same query, or the query has no
+    finite different-fold hit. Equal scores count against kmerseek.
+    """
+    better = (lambda a, b: a < b) if smaller_first else (lambda a, b: a > b)
+    s = pl.col(col)
+    fp = (df.filter(~pl.col("same_fold"), s.is_finite())
+          .group_by("query_domain")
+          .agg((s.min() if smaller_first else s.max()).alias("fp_score")))
+    hits = df.select("query_domain", "target_domain", s.alias("score"))
+    j = (ident.join(hits, on=["query_domain", "target_domain"], how="left")
+         .join(fp, on="query_domain", how="left")
+         .with_columns(
+             pl.col("score").is_not_null().alias("reported"),
+             (pl.col("score").is_finite().fill_null(False)
+              & (pl.col("fp_score").is_null() | better(pl.col("score"), pl.col("fp_score"))).fill_null(False))
+             .alias("above_first_fp")))
+    return (j.group_by("category", "identity_band")
+            .agg(pl.len().alias("n_pairs"), pl.col("reported").sum().alias("n_reported"),
+                 pl.col("above_first_fp").sum().alias("n_above_first_fp"),
+                 pl.col("query_domain").n_unique().alias("n_queries"))
+            .sort("category", "identity_band").to_dicts())
 
 
 def load_utils(path):
@@ -87,6 +134,8 @@ def main():
     p.add_argument("--raw-rows", type=int, help="region rows kmerseek wrote before collapsing")
     p.add_argument("--nofit", action="store_true", help="kmerseek refused the search: no fit")
     p.add_argument("--pairs-parquet", help="also write the merged pair table here")
+    p.add_argument("--pair-identity", help="aligned pairs with seqid_ali, to score by identity band")
+    p.add_argument("--bands-out", help="where the identity-band table goes (with --pair-identity)")
     a = p.parse_args()
     if a.print_directions:
         print("column,best")
@@ -99,8 +148,13 @@ def main():
         sys.exit(f"missing arguments: {missing or '--pairs or --nofit'}")
     base = {"alphabet": a.alphabet, "ksize": int(a.ksize), "setting": a.setting, "penalty": a.penalty}
 
-    def write(rows):
+    if bool(a.pair_identity) != bool(a.bands_out):
+        sys.exit("--pair-identity and --bands-out go together")
+
+    def write(rows, band=None):
         pl.DataFrame(rows).write_csv(a.out, separator="\t")
+        if a.bands_out:
+            pl.DataFrame(band if band else [{**rows[0]}]).write_csv(a.bands_out, separator="\t")
 
     if a.nofit:
         write([{**base, "status": "nofit"}])
@@ -161,7 +215,8 @@ def main():
     n_queries_hit = df["query_domain"].n_unique()
     keep = ["query_domain", "target_domain", "q_scop_id"] + [f"same_{l}" for l in levels]
 
-    rows = []
+    ident = read_identity(a.pair_identity, domain) if a.pair_identity else None
+    rows, band = [], []
     for col in cols[2:]:
         info = {**base, "score": col, "smaller_first": SCORES[col], "n_rows": n_rows,
                 "n_pairs": n_pairs, "n_queries_hit": n_queries_hit}
@@ -169,7 +224,11 @@ def main():
         finite = s.filter(s.is_finite()) if s.dtype == pl.Float64 else s.drop_nulls()
         if finite.len() == 0 or finite.n_unique() == 1:
             rows.append({**info, "status": "constant", "n_finite": finite.len()})
+            if ident is not None:
+                band.append({**info, "status": "constant"})
             continue
+        if ident is not None:
+            band += [{**info, "status": "ok", **r} for r in band_rows(df, ident, col, SCORES[col])]
         # A missing or infinite score ranks last (nulls_last in eval_tsv_to_rocx).
         ranked = df.select(keep + [col]).with_columns(
             pl.when(pl.col(col).is_finite()).then(pl.col(col)).otherwise(None).alias(col)
@@ -193,7 +252,7 @@ def main():
                          "auc_ref": auc(r_ref, short), "auc_ref_optimistic": auc(o_ref, short),
                          "n_queries_ref": r_ref.height,
                          "n_ref_with_hits": r_all.filter(pl.col("NAME").is_in(ref)).height})
-    write(rows)
+    write(rows, band)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,10 @@
 #   make stub                 wiring check, no data, no container
 #   make run-sbatch           on Sherlock: the whole run, head job in tmux on a compute node
 #   make watch / make stop    attach to the live table / stop the run cleanly
+#   make run-below-kmin-sbatch  on Sherlock: the 162 searches at k_min-1 and k_min-2, with
+#                               identity bands (notebook 277 follow-up)
+#   make run-identity-sbatch    then every search again with identity bands, same launch dir
+#   make watch-below-kmin / make stop-below-kmin
 SHELL := /bin/bash
 MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 REPO_DIR     := $(abspath $(MAKEFILE_DIR)/../..)
@@ -52,7 +56,36 @@ MEASURED    = $(LAUNCH_DIR)/resources_measured.tsv
 NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
          --fasta $(FASTA) --outdir $(OUTDIR) --resources_measured $(MEASURED) $(NF_ARGS)
 
-.PHONY: help settings plan fasta measure-resources stub run run-sbatch watch stop
+.PHONY: help settings plan fasta measure-resources stub run run-sbatch watch stop \
+        run-below-kmin-sbatch run-identity-sbatch watch-below-kmin stop-below-kmin
+
+# ---- follow-up of notebook 277: k below k_min, and every search split by identity --------
+# The 16 alphabets whose best family or superfamily AUC (region_evalue; jaccard for exact)
+# was at their lowest k in the 2026-10-10 run. Not funcgroups8, gbmr4 or hp_pbotc_1st_ed2:
+# their best k was above k_min.
+BELOW_KMIN_ALPHABETS := dayhoff6,gbmr7,hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_thomas_dill2,hp_thomas_dill_no_c2,hsdm17,mmseqs12,polarity4,protein20,sdm12,uniprot18,wass14,wwmj5
+BELOW_OUTDIR  ?= $(SCOPE_DIR)/results-scope40-alphabet-ksize-v040-below-kmin
+BELOW_LAUNCH  ?= $(MAKEFILE_DIR)/runs/below-kmin
+BELOW_JOBNAME := nfdrv-scope40-lowk
+# Two k-sizes under k_min, none under 15 bits per k-mer; indexes from the first run's
+# folder, so the 229 already built are not built again.
+BELOW_ARGS = --k_below 2 --k_below_alphabets $(BELOW_KMIN_ALPHABETS) --min_seed_bits 15 \
+             --pair_identity $(MAKEFILE_DIR)/assets/scope40_pair_identity.tsv.gz \
+             --index_dir $(OUTDIR)/indexes
+BELOW_VARS = OUTDIR=$(BELOW_OUTDIR) LAUNCH_DIR=$(BELOW_LAUNCH) HEAD_JOBNAME=$(BELOW_JOBNAME) \
+             HEAD_SESSION=scope40lowk
+
+run-below-kmin-sbatch:
+	$(MAKE) run-sbatch $(BELOW_VARS) NF_ARGS="$(BELOW_ARGS) --only_below_kmin true"
+
+run-identity-sbatch:
+	$(MAKE) run-sbatch $(BELOW_VARS) HEAD_TIME=4-00:00:00 NF_ARGS="$(BELOW_ARGS)"
+
+watch-below-kmin:
+	$(MAKE) watch $(BELOW_VARS)
+
+stop-below-kmin:
+	$(MAKE) stop $(BELOW_VARS)
 
 help:
 	@sed -n '1,12p' $(MAKEFILE_DIR)/Makefile
