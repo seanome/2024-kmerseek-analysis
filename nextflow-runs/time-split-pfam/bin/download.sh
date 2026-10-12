@@ -12,6 +12,8 @@ NPARTS=${NPARTS:-6}
 
 fetch() {  # url dest [range]: one connection, resumable, restarts a stalled transfer
     local url=$1 dest=$2 range=${3:-}
+    # A finished small file: some EBI paths refuse a resume request, so do not ask again.
+    [ -z "$range" ] && [ -s "$dest" ] && return 0
     for attempt in 1 2 3 4 5 6 7 8 9 10; do
         curl -fsSL -C - ${range:+-r $range} --speed-limit 50000 --speed-time 60 -o "$dest" "$url" && return 0
         echo "retry $attempt: $url $range" >&2; sleep 20
@@ -19,8 +21,7 @@ fetch() {  # url dest [range]: one connection, resumable, restarts a stalled tra
     echo "FAILED: $url $range" >&2; return 1
 }
 
-fetch_big() {  # url dest: NPARTS byte ranges in parallel (one EBI connection runs ~2 MB/s),
-               # alternating between EBI and the funet mirror for Pfam files.
+fetch_big() {  # url dest: NPARTS byte ranges in parallel, resumable per range.
     local url=$1 dest=$2
     [ -s "$dest" ] && return 0
     local size; size=$(curl -sIL "$url" | tr -d '\r' | awk 'tolower($1)=="content-length:"{n=$2} END{print n}')
@@ -28,8 +29,11 @@ fetch_big() {  # url dest: NPARTS byte ranges in parallel (one EBI connection ru
     for ((i = 0; i < NPARTS; i++)); do
         local a=$(( i * step )) b=$(( (i + 1) * step - 1 ))
         (( b >= size )) && b=$(( size - 1 ))
-        local u=$url
-        (( i % 2 == 1 )) && [[ $url == $PFAM/* ]] && u=$MIRROR/${url#$PFAM/}
+        # Ranges come from the funet mirror (~6 MB/s per connection against ~1.5 from
+        # EBI, measured 2026-10-12); every third attempt falls back to EBI. The md5 check
+        # against EBI's md5_checksums covers both.
+        local u=$url alt=$url
+        [[ $url == $PFAM/* ]] && u=$MIRROR/${url#$PFAM/}
         local want=$(( b - a + 1 ))
         if [ "$(stat -c %s "$dest.part$i" 2>/dev/null || echo 0)" -lt "$want" ]; then
             # A resumed ranged request needs the remaining range, not -C -.
@@ -37,7 +41,8 @@ fetch_big() {  # url dest: NPARTS byte ranges in parallel (one EBI connection ru
             ( for attempt in 1 2 3 4 5 6 7 8 9 10; do
                   have=$(stat -c %s "$dest.part$i" 2>/dev/null || echo 0)
                   (( have >= want )) && exit 0
-                  curl -fsSL -r $(( a + have ))-$b --speed-limit 50000 --speed-time 60 "$u" >> "$dest.part$i" || sleep 20
+                  src=$u; (( attempt % 3 == 0 )) && src=$alt
+                  curl -fsSL -r $(( a + have ))-$b --speed-limit 50000 --speed-time 60 "$src" >> "$dest.part$i" || sleep 20
               done
               have=$(stat -c %s "$dest.part$i"); (( have == want )) ) &
             pids+=($!)
