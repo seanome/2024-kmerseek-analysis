@@ -507,6 +507,14 @@ MIDI_TABLE_ARGS  ?=
 # Every other k of each alphabet's range, plus its highest k (--kmerseek_ksize_step in
 # main.nf). Set 2026-10-10, when the run was 82% done; MIDI_KSIZE_STEP=1 runs every k.
 MIDI_KSIZE_STEP  ?= 2
+# Every E-value cutoff in the midi run is 10, set 2026-10-12 at Olga's request ("E-value
+# < 10 ... for all things with evalues"). --evalue_call 10: a protein is placed, not dark,
+# when phmmer, jackhmmer or mmseqs2 reports any hit for it (they report up to E = 10, the
+# --evalue_report the searches ran at, so no search reruns). --kmerseek_evalue_max: a dark
+# protein counts as reached by kmerseek when one of its regions has E <= 10; 0.01 and
+# 0.0001 stay as extra rows. Only the summary steps rerun. The E <= 0.001 summaries from
+# before are kept in results-0.4/<species>/evalue_call_0.001_2026-10-12/.
+MIDI_EVALUE_ARGS ?= --evalue_call 10 --kmerseek_evalue_max 10,0.01,0.0001
 run-ladder-0.4-midi-sbatch: V4_SCALED := $(MIDI_SCALED)
 run-ladder-0.4-midi-sbatch: V4_EXTENSION := $(MIDI_EXTENSION)
 run-ladder-0.4-midi-sbatch: V4_PENALTY := $(MIDI_PENALTY)
@@ -515,7 +523,7 @@ run-ladder-0.4-midi-sbatch:
 	@$(MAKE) run-dark-set-sbatch SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) RUN=ladder-0.4-midi \
 	  WITH_KMERSEEK=1 LAUNCH_DIR=$(V4_MIDI_LAUNCH_DIR) OUTDIR=$(V4_OUTDIR) \
 	  HEAD_TIME=$(LADDER_HEAD_TIME) HEAD_MEM=$(LADDER_HEAD_MEM) HEAD_XMX=$(LADDER_HEAD_XMX) \
-	  NF_ARGS="$(subst --run_tag ladder-0.4,--run_tag ladder-0.4-midi,$(V4_NF_ARGS)) $(V4_SWEEP_ARGS) $(MIDI_TABLE_ARGS) --kmerseek_ksize_step $(MIDI_KSIZE_STEP)"
+	  NF_ARGS="$(subst --run_tag ladder-0.4,--run_tag ladder-0.4-midi,$(V4_NF_ARGS)) $(V4_SWEEP_ARGS) $(MIDI_TABLE_ARGS) --kmerseek_ksize_step $(MIDI_KSIZE_STEP) $(MIDI_EVALUE_ARGS)"
 
 # Fit every index already in the 0.4 store for the penalties the extend arms use now
 # (the `opt` one by default): after a kappa changes or gains an alphabet, indexes built
@@ -541,7 +549,7 @@ calibrate-store-0.4: check-inputs
 ladder-0.4-midi-plan:
 	@$(MAKE) ladder-0.4-plan SPECIES=$(if $(SPECIES),$(SPECIES),$(MIDI_SPECIES)) V4_SCALED=$(MIDI_SCALED) \
 	  V4_EXTENSION=$(MIDI_EXTENSION) V4_PENALTY=$(MIDI_PENALTY) \
-	  NF_ARGS="$(V4_SWEEP_ARGS) $(MIDI_TABLE_ARGS) --kmerseek_ksize_step $(MIDI_KSIZE_STEP) $(NF_ARGS)"
+	  NF_ARGS="$(V4_SWEEP_ARGS) $(MIDI_TABLE_ARGS) --kmerseek_ksize_step $(MIDI_KSIZE_STEP) $(MIDI_EVALUE_ARGS) $(NF_ARGS)"
 
 ladder-0.4-plan: check-inputs
 	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -preview \
