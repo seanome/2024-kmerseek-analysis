@@ -163,7 +163,15 @@ params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12,gbmr7:9,gbmr7:10
 // searches waited in the midi run while it finished 1-8 searches an hour. 56 of them are
 // retries: funcgroups8 k7 and polarity4 k11 at scaled 1 ran out of memory at 190-205 GB on
 // the first try, while the ones that finished peaked at 154-237 GB.
-params.kmerseek_sweep_minus_after_step = 'funcgroups8:7,polarity4:11,hp_lehninger_c_nonpolar2:17'
+// The other seven were added the same day so every species of the midi run finishes the day
+// it is relaunched. They were the only settings with searches still waiting: 96 searches
+// asking 257-384 GB, which the run was finishing at 1-8 an hour. Each is its alphabet's
+// lowest k after --kmerseek_sweep_minus (mmseqs12 k6, gbmr4 k14, gbmr7 k15, the four HP
+// alphabets at k17-19), so these curves start one step higher. hp_pbotc_1st_ed2 k19, the
+// project's designated best setting, stays.
+params.kmerseek_sweep_minus_after_step = 'funcgroups8:7,polarity4:11,hp_lehninger_c_nonpolar2:17,' +
+    'gbmr4:14,gbmr7:15,mmseqs12:6,hp_thomas_dill_no_c2:18,hp_thomas_dill2:18,' +
+    'hp_kyte_doolittle2:19,hp_pbotc_1st_ed2:17'
 // The sweep's table: every alphabet in this file, every whole k from its k_min to its
 // k_max, then --kmerseek_sweep_plus and --kmerseek_sweep_minus. A plus pair outside its
 // alphabet's range is dropped and listed in the log. Columns alphabet, k_min, k_max. With
