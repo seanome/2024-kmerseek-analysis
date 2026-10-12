@@ -425,41 +425,123 @@ as it is modelled, and it is a fair picture of what a mean pLDDT of 29 looks lik
 """)
 
 md(r"""
-## 6. What kmerseek already says here, and why it fits either way
+## 6. What kmerseek already says here, across every alphabet
 
 This is a negative result and is kept as one.
 [PR 96](https://github.com/seanome/2024-kmerseek-analysis/pull/96),
 [notebook 245](./245_p66_cd47_pair_coordinates.ipynb), mapped every k-mer P66 and CD47
-share onto both sequences: **none of the 326 shared k-mers touches the P66 loop**, against
-8.5 expected from chance placement, which is fewer than chance rather than more. 14 touch
-CD47's contact residues, against 19.1 expected.
+share onto both sequences: **none of the 326 shared k-mers touches the P66 loop**. That
+sweep was not only the two-letter alphabets. It covered **16 alphabets over 27 settings**,
+from `protein20`-adjacent `hsdm17` and `mmseqs12` down through `sdm12`, `funcgroups8`,
+`gbmr7`, `dayhoff6`, `wwmj5`, `polarity4` and `gbmr4` to the HP family. The count is zero
+in every one of them.
 
-There is a plain reason for the zero, and it is visible in the residues themselves. The
-loop is `QENDKDT`. Every one of those seven residues is polar, so in all six of the
-two-letter alphabets kmerseek uses the loop encodes to seven identical class letters. A
-k-mer there carries no pattern at all: it cannot be told from any other polar stretch of
-the same length anywhere in any protein.
+So the question is what the larger alphabets see there, and the answer has two parts.
+
+**Part one: eight alphabets write the loop as one repeated class, not six.** The loop is
+`QENDKDT`, seven polar residues. All six two-letter alphabets write it as one letter, and
+so do `hp_lehninger_hpc3` with 3 classes and `gbmr4` with 4, because `gbmr4` pools
+`ADKERNTSQ` into a single class that swallows all seven residues. In those eight a k-mer on
+the loop carries no pattern at all: it cannot be told from any other polar stretch of the
+same length in any protein.
+
+**Part two: in the eleven alphabets where the loop is a varied string, its k-mers still do
+not exist in CD47.** `polarity4` writes it `BCBCDCB`, `funcgroups8` writes it `FGFGHGB`,
+`protein20` of course keeps all seven residues distinct. A varied string could carry a
+signal, so a class string alone cannot settle it; both proteins have to be encoded and
+looked at. Doing that for all 19 alphabets in the repo's table at every k from 5 to 25:
+at **all 27 settings PR 96 searched, zero k-mers covering the loop occur anywhere in
+CD47**, and in 7 of the 11 varied alphabets none occurs at any k in that range.
+
+**This changes how PR 96's number should be read.** That notebook reported 0 observed
+against 8.5 expected, binomial p = 0.00035, and called it "fewer than chance". The expected
+count assumes a shared k-mer was available to land on the loop by chance. None was. The
+zero is forced by the encoding and by which settings were searched, not evidence that
+something avoids the loop. PR 96 said its pooled test should be read as a direction rather
+than a p-value to defend, and this is why.
+
+A loop k-mer does reach CD47, but only at k of 13 or less and only in the alphabets that
+write the loop as one repeated class, where a run of identical letters matches any polar
+stretch. That is a match without information, and PR 96 searched no setting there.
 
 **What this does and does not support.** Convergent mimicry is the hypothesis that two
-unrelated sequences arrived at the same shape. It predicts exactly this: no sequence signal,
-including no two-letter signal. So the kmerseek zero is consistent with mimicry being real.
-It is equally consistent with mimicry not being real, and on its own it supports neither.
-The three structural comparisons above are what can separate those, and they point the
-other way.
+unrelated sequences arrived at the same shape. It predicts no sequence signal, so a zero
+here is consistent with mimicry being real. It is equally consistent with mimicry not being
+real. On this evidence it supports neither, and after the stronger reading above it supports
+neither even weakly: no alphabet in the sweep could have found anything on this loop. The
+three structural comparisons are what can separate the two, and they point the other way.
 """)
 
 code(r"""
-hp = pl.read_csv(DATA / "08_loop_hp_class_strings.csv")
-print("The loop's residues and the class letter each becomes, per alphabet:")
-print(hp)
-print(f"\nAlphabets writing the loop as a single repeated class letter: "
-      f"{(hp['n_distinct_classes'] == 1).sum()} of {hp.height}")
-show("276g_loop_hp_class_strings")
+reach = pl.read_csv(DATA / "09_loop_kmer_reach_all_alphabets.csv")
+per_alphabet = (
+    reach.group_by("alphabet", "n_classes")
+    .agg(
+        pl.col("loop_class_string").first(),
+        pl.col("n_distinct_classes_in_loop").first(),
+        pl.col("n_covering_kmers_found_in_cd47").sum().alias("found_over_k_5_to_25"),
+    )
+    .sort("n_classes", "alphabet")
+)
+print("The loop in every alphabet. Grid letters are class numbers relabelled")
+print("A, B, C..., not residues; in protein20 that relabelling is one-to-one.")
+print(per_alphabet)
+n_uniform = (per_alphabet["n_distinct_classes_in_loop"] == 1).sum()
+print(f"\nAlphabets writing the loop as one repeated class: "
+      f"{n_uniform} of {per_alphabet.height}")
+print(f"Varied alphabets with no loop k-mer in CD47 at any k from 5 to 25: "
+      f"{per_alphabet.filter((pl.col('n_distinct_classes_in_loop') > 1) & (pl.col('found_over_k_5_to_25') == 0)).height}"
+      f" of {per_alphabet.filter(pl.col('n_distinct_classes_in_loop') > 1).height}")
+reachable = reach.filter(pl.col("n_covering_kmers_found_in_cd47") > 0)
+print(f"Highest k at which any loop k-mer occurs in CD47: {reachable['ksize'].max()}, "
+      f"in {sorted(reachable.filter(pl.col('ksize') == reachable['ksize'].max())['alphabet'].to_list())}")
+show("276g_loop_class_strings_all_alphabets", aspect=1.05)
 """)
 
 md(r"""
-**Figure 276g.** The loop written out in every two-letter alphabet.
-`figures/276g_loop_hp_class_strings.png`.
+**Figure 276g.** The loop written out in every alphabet, smallest to largest.
+`figures/276g_loop_class_strings_all_alphabets.png`. The grid letters are class numbers
+relabelled A, B, C and are not residues; the vermillion row at the top is the real
+sequence.
+""")
+
+code(r"""
+print("Every setting PR 96 searched, and whether a loop k-mer existed to be found:")
+pr96 = [
+    ("dayhoff6", 7), ("funcgroups8", 6), ("funcgroups8", 7), ("gbmr4", 10),
+    ("gbmr7", 8), ("gbmr7", 10), ("hp_kyte_doolittle2", 17), ("hp_lehninger2", 16),
+    ("hp_lehninger2", 17), ("hp_lehninger2", 19), ("hp_lehninger2", 20),
+    ("hp_lehninger_c_nonpolar2", 16), ("hp_lehninger_c_nonpolar2", 20),
+    ("hp_lehninger_hpc3", 14), ("hp_lehninger_hpc3", 18), ("hp_lehninger_hpc3", 21),
+    ("hp_pbotc_1st_ed2", 16), ("hp_thomas_dill2", 17), ("hp_thomas_dill_no_c2", 17),
+    ("hsdm17", 5), ("hsdm17", 6), ("mmseqs12", 5), ("polarity4", 9),
+    ("polarity4", 11), ("sdm12", 5), ("sdm12", 6), ("wwmj5", 7),
+]
+keys = [f"{a}@{k}" for a, k in pr96]
+swept = reach.filter(
+    pl.concat_str([pl.col("alphabet"), pl.col("ksize").cast(pl.Utf8)], separator="@")
+    .is_in(keys)
+)
+print(swept.select("alphabet", "ksize", "n_p66_kmers_covering_loop",
+                   "n_covering_kmers_found_in_cd47").sort("alphabet", "ksize"))
+print(f"\n{swept.height} settings; P66 k-mers covering the loop: "
+      f"{swept['n_p66_kmers_covering_loop'].sum()}; of those, occurring in CD47: "
+      f"{swept['n_covering_kmers_found_in_cd47'].sum()}")
+show("276i_loop_kmer_reach_by_alphabet_and_k", aspect=0.47)
+""")
+
+md(r"""
+**Figure 276i.** Whether any k-mer covering the loop occurs in CD47, for every alphabet and
+k. `figures/276i_loop_kmer_reach_by_alphabet_and_k.png`.
+
+**How to read it.** One cell per alphabet and k. Blue means at least one of P66's
+loop-covering k-mers occurs somewhere in CD47, so a shared k-mer on the loop was possible
+there. Grey means none does, so no search at that setting could have found one whatever the
+biology. A vermillion outline marks one of the 27 settings PR 96 searched.
+
+**What it says.** Every vermillion box sits on a grey cell. The blue region is confined to
+low k in the alphabets that write the loop as one repeated class, and PR 96 searched none of
+it. Its zero is therefore a statement about where it looked, not about the loop.
 """)
 
 md(r"""
@@ -511,10 +593,12 @@ Claim sentences:
   do**: 1.91 Å backbone RMSD against a median of 1.07 Å for 10 other 7-residue P66 loops,
   and in the whole-fold superposition its centre lands 55 Å from the centre of the face,
   off a domain only 45 Å across at its widest.
-* **kmerseek's silence here is expected and carries no weight either way**: none of the 326
-  shared k-mers touches the loop (PR 96), and the loop is seven polar residues that every
-  two-letter alphabet writes as one repeated letter, so no exact k-mer there could carry a
-  signal whether or not the mimicry is real.
+* **kmerseek's silence here is forced, and carries no weight either way**: none of the 326
+  shared k-mers touches the loop across the 16 alphabets and 27 settings PR 96 searched,
+  and at every one of those settings no k-mer covering the loop occurs in CD47 at all. 8 of
+  19 alphabets write the loop's seven polar residues as one repeated class; in the other 11
+  the string varies but its k-mers are absent from CD47 anyway. The zero says where the
+  sweep looked, not whether the mimicry is real.
 
 ### The strongest argument against this result
 

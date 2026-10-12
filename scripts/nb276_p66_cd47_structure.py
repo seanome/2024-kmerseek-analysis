@@ -609,6 +609,97 @@ def hp_class_strings(loop_residues: str) -> pl.DataFrame:
     return pl.DataFrame(rows).sort("alphabet")
 
 
+#: Alphabets kmerseek offers that are not in the repo's hp_conservation_utils table.
+#: Clusters copied from the alphabet table in seanome/kmerseek README.md, which cites
+#: each partition's paper; class order is the order that table numbers them in.
+EXTRA_ALPHABET_CLUSTERS: dict[str, list[str]] = {
+    # Jain, Jain & Jain 2014
+    "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
+    # Steinegger & Soding 2018, the Linclust partition
+    "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
+    # Ieremie et al. 2024
+    "wass14": ["WM", "DI", "P", "C", "AV", "K", "T", "RE", "G", "L", "Y", "SH", "F",
+               "NQ"],
+    # Prlic et al. 2000
+    "hsdm17": ["A", "D", "KE", "R", "N", "T", "S", "Q", "Y", "F", "LIV", "M", "C", "W",
+               "H", "G", "P"],
+}
+
+#: k values swept per alphabet when asking whether any loop k-mer reaches CD47.
+#: 5 is the shortest kmerseek is run at anywhere in this project and 25 is past the
+#: longest k at which P66 and CD47 share anything at all (PR 96 tops out at 21).
+LOOP_REACH_KSIZES = range(5, 26)
+
+
+def all_alphabet_clusters() -> dict[str, list[str]]:
+    """Every alphabet in one table, the repo's own plus the four from the README."""
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "notebooks"))
+    import hp_conservation_utils as hc
+
+    return {**hc.ALPHABET_CLUSTERS, **EXTRA_ALPHABET_CLUSTERS}
+
+
+def loop_kmer_reach(p66_seq: str, cd47_seq: str, loop_span: tuple[int, int]) -> pl.DataFrame:
+    """Does any k-mer covering the P66 loop occur in CD47, in any alphabet at any k?
+
+    This is the question the two-letter class string cannot answer. In a two-letter
+    alphabet the loop is one repeated letter, so nothing there is distinctive; in a
+    larger alphabet it is a varied string, and then the only way to know whether a
+    k-mer there could ever be shared is to encode both proteins and look.
+
+    One row per alphabet and k: how many P66 k-mers cover the loop, how many of
+    those encoded k-mers occur anywhere in CD47, and how distinct the loop's own
+    encoding is.
+    """
+    start, end = loop_span
+
+    def encode(seq, clusters):
+        table = {}
+        for index, cluster in enumerate(clusters):
+            for residue in cluster:
+                table[residue] = index
+        # An unknown residue gets its own class so it can never match anything.
+        return [table.get(r, -1 - i) for i, r in enumerate(seq)]
+
+    rows = []
+    for name, clusters in sorted(all_alphabet_clusters().items()):
+        p66_code = encode(p66_seq, clusters)
+        cd47_code = encode(cd47_seq, clusters)
+        loop_code = tuple(p66_code[start - 1 : end])
+        for k in LOOP_REACH_KSIZES:
+            if k > len(cd47_code):
+                continue
+            cd47_kmers = {
+                tuple(cd47_code[i : i + k]) for i in range(len(cd47_code) - k + 1)
+            }
+            # Every P66 k-mer that covers at least one residue of the loop.
+            first = max(0, start - k)
+            last = min(len(p66_code) - k, end - 1)
+            covering = [
+                tuple(p66_code[i : i + k]) for i in range(first, last + 1)
+            ]
+            rows.append(
+                {
+                    "alphabet": name,
+                    "n_classes": len(clusters),
+                    "ksize": k,
+                    "bits_per_kmer": round(k * float(np.log2(len(clusters))), 2),
+                    "n_p66_kmers_covering_loop": len(covering),
+                    "n_covering_kmers_found_in_cd47": sum(
+                        kmer in cd47_kmers for kmer in covering
+                    ),
+                    "loop_class_string": "".join(
+                        "ABCDEFGHIJKLMNOPQRST"[c] if 0 <= c < 20 else "?"
+                        for c in loop_code
+                    ),
+                    "n_distinct_classes_in_loop": len(set(loop_code)),
+                }
+            )
+    return pl.DataFrame(rows)
+
+
 def contiguous_windows(positions: list[int], length: int, must_touch: set[int]) -> list[list[int]]:
     """Every run of `length` consecutive positions that includes a face residue."""
     available = set(positions)
@@ -825,6 +916,29 @@ def main() -> None:
     uniform = hp.filter(pl.col("n_distinct_classes") == 1)
     print(f"[8] loop {loop['residues']} encodes to one repeated class letter in "
           f"{uniform.height} of {hp.height} two-letter alphabets")
+
+    # --- Step 9: the same question for every other alphabet -------------
+    reach = loop_kmer_reach(
+        p66["sequence"], cd47["sequence"], (loop["full_start"], loop["full_end"])
+    )
+    reach.write_csv(out / "09_loop_kmer_reach_all_alphabets.csv")
+    per_alphabet = reach.group_by("alphabet", "n_classes").agg(
+        pl.col("n_covering_kmers_found_in_cd47").sum().alias("found_over_all_k"),
+        pl.col("n_distinct_classes_in_loop").first(),
+        pl.col("loop_class_string").first(),
+    ).sort("n_classes", "alphabet")
+    print(f"[9] loop k-mers reaching CD47, {reach['alphabet'].n_unique()} alphabets "
+          f"x k {min(LOOP_REACH_KSIZES)}-{max(LOOP_REACH_KSIZES)}: "
+          f"{reach['n_covering_kmers_found_in_cd47'].sum()} in total")
+    print(f"    alphabets where the loop is one repeated class: "
+          f"{(per_alphabet['n_distinct_classes_in_loop'] == 1).sum()} of "
+          f"{per_alphabet.height}")
+    highest = reach.filter(pl.col("n_covering_kmers_found_in_cd47") > 0)
+    if highest.is_empty():
+        print("    no alphabet at any k puts a loop k-mer in CD47")
+    else:
+        print(f"    highest k that still does: "
+              f"{highest['ksize'].max()} ({highest.filter(pl.col('ksize') == highest['ksize'].max())['alphabet'].to_list()})")
 
     print(f"\nWrote {len(list(out.glob('*.csv')))} tables to {out}")
 

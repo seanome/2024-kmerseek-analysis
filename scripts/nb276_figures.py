@@ -452,42 +452,142 @@ def figure_foldseek() -> dict:
     }
 
 
-def figure_hp_classes() -> dict:
-    """The loop's residues and the class letter each one becomes."""
-    import matplotlib.pyplot as plt
+#: Settings PR 96 swept, read off its committed tables/245_p66_cd47_controls.csv.
+#: They decide which cells of the reachability map that PR's result speaks for.
+PR96_SETTINGS = [
+    ("dayhoff6", 7), ("funcgroups8", 6), ("funcgroups8", 7), ("gbmr4", 10),
+    ("gbmr7", 8), ("gbmr7", 10), ("hp_kyte_doolittle2", 17), ("hp_lehninger2", 16),
+    ("hp_lehninger2", 17), ("hp_lehninger2", 19), ("hp_lehninger2", 20),
+    ("hp_lehninger_c_nonpolar2", 16), ("hp_lehninger_c_nonpolar2", 20),
+    ("hp_lehninger_hpc3", 14), ("hp_lehninger_hpc3", 18), ("hp_lehninger_hpc3", 21),
+    ("hp_pbotc_1st_ed2", 16), ("hp_thomas_dill2", 17), ("hp_thomas_dill_no_c2", 17),
+    ("hsdm17", 5), ("hsdm17", 6), ("mmseqs12", 5), ("polarity4", 9),
+    ("polarity4", 11), ("sdm12", 5), ("sdm12", 6), ("wwmj5", 7),
+]
 
-    hp = pl.read_csv(DATA / "08_loop_hp_class_strings.csv")
+
+def figure_loop_class_strings() -> dict:
+    """The loop's residues and the class each becomes, in every alphabet.
+
+    Letters in the grid are class indices relabelled A, B, C..., not residues. In
+    protein20 that relabelling happens to be one-to-one with the residues.
+    """
+    reach = pl.read_csv(DATA / "09_loop_kmer_reach_all_alphabets.csv")
+    per = (
+        reach.group_by("alphabet", "n_classes")
+        .agg(
+            pl.col("loop_class_string").first(),
+            pl.col("n_distinct_classes_in_loop").first(),
+        )
+        .sort("n_classes", "alphabet")
+    )
     start, end = loop_span()
-    residues = hp["residues"][0]
+    residues = pl.read_csv(DATA / "01_loop_numbering.csv")["residues"][0]
     positions = list(range(start, end + 1))
 
-    fig, ax = pubfig.figure(width_mm=pubfig.ONE_COLUMN_MM, height_mm=48)
-    for row_i, row in enumerate(hp.iter_rows(named=True)):
-        for col_i, letter in enumerate(row["class_string"]):
-            # Black for the class letters: vermillion means "the loop in the
-            # claim" everywhere in this figure set, and may not also mean "polar".
-            ax.text(col_i, -row_i, letter, ha="center", va="center", fontsize=6,
+    fig, ax = pubfig.figure(width_mm=pubfig.ONE_COLUMN_MM, height_mm=96)
+    for row_i, row in enumerate(per.iter_rows(named=True)):
+        uniform = row["n_distinct_classes_in_loop"] == 1
+        for col_i, letter in enumerate(row["loop_class_string"]):
+            ax.text(col_i, -row_i, letter, ha="center", va="center", fontsize=5.5,
                     color="black")
-        ax.text(-0.9, -row_i, row["alphabet"], ha="right", va="center", fontsize=5)
+        ax.text(-0.9, -row_i, f"{row['alphabet']} ({row['n_classes']})",
+                ha="right", va="center", fontsize=4.6)
+        ax.text(len(residues) - 0.4, -row_i,
+                "one repeated class" if uniform
+                else f"{row['n_distinct_classes_in_loop']} classes",
+                ha="left", va="center", fontsize=4.4,
+                color=C_LOOP if uniform else C_BG)
     for col_i, (pos, res) in enumerate(zip(positions, residues)):
-        ax.text(col_i, 1.25, res, ha="center", va="center", fontsize=7,
+        ax.text(col_i, 1.3, res, ha="center", va="center", fontsize=7,
                 fontweight="bold", color=C_LOOP)
-        ax.text(col_i, 0.72, str(pos), ha="center", va="center", fontsize=4.5,
+        ax.text(col_i, 0.72, str(pos), ha="center", va="center", fontsize=4.2,
                 color=C_BG, rotation=90)
-    ax.text(-0.9, 1.25, "P66 residue", ha="right", va="center", fontsize=5)
-    ax.set_xlim(-6.5, len(residues) - 0.3)
-    ax.set_ylim(-hp.height + 0.4, 1.9)
+    ax.text(-0.9, 1.3, "P66 residue", ha="right", va="center", fontsize=4.6)
+    ax.set_xlim(-8.2, len(residues) + 4.2)
+    ax.set_ylim(-per.height + 0.4, 2.1)
     ax.axis("off")
     ax.set_title(
-        "Every two-letter alphabet writes this loop as one repeated letter,\n"
-        "so no exact k-mer there can tell it from any other polar stretch",
-        fontsize=5.5, pad=2,
+        "Grid letters are class numbers relabelled A, B, C, not residues.\n"
+        "8 of 19 alphabets write the loop as one repeated class.",
+        fontsize=5.2, pad=2,
     )
-    pubfig.save(fig, FIGDIR / "276g_loop_hp_class_strings")
+    pubfig.save(fig, FIGDIR / "276g_loop_class_strings_all_alphabets")
     return {
         "residues": residues,
-        "n_alphabets": hp.height,
-        "n_uniform": int((hp["n_distinct_classes"] == 1).sum()),
+        "n_alphabets": per.height,
+        "n_uniform": int((per["n_distinct_classes_in_loop"] == 1).sum()),
+        "uniform_alphabets": per.filter(
+            pl.col("n_distinct_classes_in_loop") == 1
+        )["alphabet"].to_list(),
+    }
+
+
+def figure_loop_reach() -> dict:
+    """Whether any k-mer covering the loop occurs in CD47, per alphabet and k.
+
+    This is the question a class string cannot answer on its own: in a larger
+    alphabet the loop is a varied string, and only encoding both proteins shows
+    whether a k-mer there could ever be shared.
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import ListedColormap
+    from matplotlib.patches import Rectangle
+
+    reach = pl.read_csv(DATA / "09_loop_kmer_reach_all_alphabets.csv")
+    order = (
+        reach.group_by("alphabet", "n_classes").len().sort("n_classes", "alphabet")
+    )
+    alphabets = order["alphabet"].to_list()
+    ksizes = sorted(reach["ksize"].unique().to_list())
+    grid = np.zeros((len(alphabets), len(ksizes)))
+    lookup = {
+        (r["alphabet"], r["ksize"]): r["n_covering_kmers_found_in_cd47"]
+        for r in reach.iter_rows(named=True)
+    }
+    for i, a in enumerate(alphabets):
+        for j, k in enumerate(ksizes):
+            grid[i, j] = 1 if lookup.get((a, k), 0) > 0 else 0
+
+    fig, ax = pubfig.figure(width_mm=pubfig.TWO_COLUMN_MM, height_mm=86)
+    ax.imshow(grid, cmap=ListedColormap(["#F2F2F2", C_FACE]), aspect="auto",
+              vmin=0, vmax=1, interpolation="nearest")
+    swept = 0
+    for a, k in PR96_SETTINGS:
+        if a in alphabets and k in ksizes:
+            ax.add_patch(Rectangle((ksizes.index(k) - 0.5, alphabets.index(a) - 0.5),
+                                   1, 1, fill=False, edgecolor=C_LOOP, lw=1.1,
+                                   zorder=3))
+            swept += 1
+    ax.set_yticks(range(len(alphabets)))
+    ax.set_yticklabels(
+        [f"{a} ({order['n_classes'][i]})" for i, a in enumerate(alphabets)],
+        fontsize=5,
+    )
+    ax.set_xticks(range(len(ksizes)))
+    ax.set_xticklabels([str(k) for k in ksizes], fontsize=5)
+    ax.set_xlabel("k-mer size")
+    handles = [
+        plt.Line2D([], [], marker="s", ls="", ms=5, color=C_FACE,
+                   label="at least one k-mer covering the loop occurs in CD47"),
+        plt.Line2D([], [], marker="s", ls="", ms=5, color="#F2F2F2",
+                   markeredgecolor=C_BG, markeredgewidth=0.4,
+                   label="none does"),
+        plt.Line2D([], [], marker="s", ls="", ms=5, markerfacecolor="none",
+                   markeredgecolor=C_LOOP, markeredgewidth=1.1,
+                   label=f"one of the {swept} settings PR 96 searched"),
+    ]
+    fig.legend(handles=handles, loc="outside upper center", ncol=1, fontsize=5)
+    pubfig.save(fig, FIGDIR / "276i_loop_kmer_reach_by_alphabet_and_k")
+    at_swept = sum(lookup.get((a, k), 0) for a, k in PR96_SETTINGS)
+    reachable = reach.filter(pl.col("n_covering_kmers_found_in_cd47") > 0)
+    return {
+        "n_alphabets": len(alphabets),
+        "k_range": f"{min(ksizes)}-{max(ksizes)}",
+        "n_settings_with_any_reach": int(grid.sum()),
+        "highest_k_with_any_reach": int(reachable["ksize"].max()),
+        "loop_kmers_in_cd47_at_pr96_settings": int(at_swept),
+        "n_pr96_settings_marked": swept,
     }
 
 
@@ -506,7 +606,8 @@ def main() -> None:
     print("276h", figure_claim_diagram())
     print("276e", figure_binding_face_map())
     print("276f", figure_foldseek())
-    print("276g", figure_hp_classes())
+    print("276g", figure_loop_class_strings())
+    print("276i", figure_loop_reach())
     print(f"\nFigures in {FIGDIR}")
 
 
