@@ -224,7 +224,7 @@ def compute_pair_table(
 AA20 = "".join(ALPHABET_CLUSTERS["protein20"])
 
 
-def aligned_codes(df: pl.DataFrame, min_cols: int = 0):
+def aligned_codes(df: pl.DataFrame, min_cols: int = 0, return_columns: bool = False):
     """Flatten aligned pairs into one entry per aligned position.
 
     An aligned position is a column where both sequences have one of the 20 standard amino
@@ -232,9 +232,11 @@ def aligned_codes(df: pl.DataFrame, min_cols: int = 0):
     query and target residue codes (0-19, in the order of AA20), the pair index (0..n-1 over
     the kept pairs), the position index within the pair (0, 1, 2, ...), and the row numbers
     of `df` that were kept. Pairs with fewer than `min_cols` aligned positions are dropped.
+    With return_columns=True a sixth array gives each position's column in the gapped
+    alignment, so callers can tell where a gap sat between two aligned positions.
     """
     tab = TABLES["protein20"]
-    qs, ts, ps, js, kept = [], [], [], [], []
+    qs, ts, ps, js, cs, kept = [], [], [], [], [], []
     for i, (qa, ta) in enumerate(zip(df["qaln"], df["taln"])):
         q = tab[np.frombuffer(qa.encode(), np.uint8)]
         t = tab[np.frombuffer(ta.encode(), np.uint8)]
@@ -248,13 +250,16 @@ def aligned_codes(df: pl.DataFrame, min_cols: int = 0):
         ts.append(t[m])
         ps.append(np.full(n, k, np.int64))
         js.append(np.arange(n, dtype=np.int64))
-    return (
+        if return_columns:
+            cs.append(np.flatnonzero(m))
+    out = (
         np.concatenate(qs).astype(np.int64),
         np.concatenate(ts).astype(np.int64),
         np.concatenate(ps),
         np.concatenate(js),
         np.array(kept),
     )
+    return out + (np.concatenate(cs),) if return_columns else out
 
 
 def class_index(alphabet: str) -> np.ndarray:
@@ -330,6 +335,30 @@ def mean_split_evidence(joint: np.ndarray, splits: np.ndarray, chunk: int = 4000
         h_q, h_t = q_share @ s.T, t_share @ s.T
         chance = h_q * h_t + (1 - h_q) * (1 - h_t)
         out[st : st + chunk] = np.nanmean(bernoulli_kl_bits(agree, chance), axis=0)
+    return out
+
+
+def longest_runs(q, t, group, n_groups: int, columns, alphabet: str = "protein20") -> np.ndarray:
+    """Per group, the longest run of adjacent alignment columns whose residues share a class.
+
+    This is the longest k-mer the two sequences share exactly on the alignment's diagonal.
+    `columns` is each position's column in the gapped alignment (aligned_codes with
+    return_columns=True); a gap or a non-standard letter between two positions breaks the run,
+    as in pair_stats. Positions must be in alignment order and each group's positions
+    contiguous in the arrays, as aligned_codes returns them.
+    """
+    cl = class_index(alphabet)
+    same = cl[q] == cl[t]
+    start = np.r_[True, (group[1:] != group[:-1]) | (columns[1:] != columns[:-1] + 1)]
+    idx = np.arange(same.size)
+    # index of the last position that broke a run (a disagreement or a group start)
+    last_break = np.where(~same | start, idx, 0)
+    np.maximum.accumulate(last_break, out=last_break)
+    # run length ending here: positions since the last break, plus the break itself when it
+    # was a group start that agrees
+    run = np.where(same, idx - last_break + (start[last_break] & same[last_break]), 0)
+    out = np.zeros(n_groups, np.int64)
+    np.maximum.at(out, group, run)
     return out
 
 
