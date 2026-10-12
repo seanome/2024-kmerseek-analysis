@@ -217,6 +217,122 @@ def compute_pair_table(
     return pl.DataFrame(out)
 
 
+# ---------------------------------------------------------------------------
+# Many pairs at once: one entry per aligned position, so per-pair and per-half numbers are
+# bincounts instead of a Python loop per pair. Same definitions as pair_stats.
+# ---------------------------------------------------------------------------
+AA20 = "".join(ALPHABET_CLUSTERS["protein20"])
+
+
+def aligned_codes(df: pl.DataFrame, min_cols: int = 0):
+    """Flatten aligned pairs into one entry per aligned position.
+
+    An aligned position is a column where both sequences have one of the 20 standard amino
+    acids (X, B, Z, U and O count as gaps, as in pair_stats). Returns five arrays:
+    query and target residue codes (0-19, in the order of AA20), the pair index (0..n-1 over
+    the kept pairs), the position index within the pair (0, 1, 2, ...), and the row numbers
+    of `df` that were kept. Pairs with fewer than `min_cols` aligned positions are dropped.
+    """
+    tab = TABLES["protein20"]
+    qs, ts, ps, js, kept = [], [], [], [], []
+    for i, (qa, ta) in enumerate(zip(df["qaln"], df["taln"])):
+        q = tab[np.frombuffer(qa.encode(), np.uint8)]
+        t = tab[np.frombuffer(ta.encode(), np.uint8)]
+        m = (q != GAP) & (t != GAP)
+        n = int(m.sum())
+        if n == 0 or n < min_cols:
+            continue
+        k = len(kept)
+        kept.append(i)
+        qs.append(q[m])
+        ts.append(t[m])
+        ps.append(np.full(n, k, np.int64))
+        js.append(np.arange(n, dtype=np.int64))
+    return (
+        np.concatenate(qs).astype(np.int64),
+        np.concatenate(ts).astype(np.int64),
+        np.concatenate(ps),
+        np.concatenate(js),
+        np.array(kept),
+    )
+
+
+def class_index(alphabet: str) -> np.ndarray:
+    """For each protein20 code (order of AA20), its class number in `alphabet`."""
+    return TABLES[alphabet][np.frombuffer(AA20.encode(), np.uint8)].astype(np.int64)
+
+
+def grouped_evidence(q, t, group, n_groups: int, alphabet: str = "protein20"):
+    """Agreement, chance and evidence I for groups of aligned positions.
+
+    `group` gives each aligned position's group (a pair, or one half of a pair). Returns
+    (n, agree, chance, I) per group: n aligned positions; agree, the share in the same class;
+    chance, sum over classes of the group's own query share times its target share; and I,
+    bernoulli_kl_bits(agree, chance). For whole pairs this equals pair_stats.
+    """
+    cl = class_index(alphabet)
+    qc, tc = cl[q], cl[t]
+    k = int(cl.max()) + 1
+    n = np.bincount(group, minlength=n_groups).astype(float)
+    same = np.bincount(group, weights=(qc == tc).astype(float), minlength=n_groups)
+    fq = np.bincount(group * k + qc, minlength=n_groups * k).reshape(n_groups, k)
+    ft = np.bincount(group * k + tc, minlength=n_groups * k).reshape(n_groups, k)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        agree = same / n
+        chance = (fq * ft).sum(1) / n**2
+    return n, agree, chance, bernoulli_kl_bits(agree, chance)
+
+
+def pair_joint_counts(q, t, group, n_groups: int) -> np.ndarray:
+    """Per group, the 20 x 20 counts of (query residue, target residue), flattened to 400."""
+    return (
+        np.bincount(group * 400 + q * 20 + t, minlength=n_groups * 400)
+        .reshape(n_groups, 400)
+        .astype(float)
+    )
+
+
+def two_class_splits(size: int = 9) -> np.ndarray:
+    """Every way to put `size` of the 20 amino acids in one class and the rest in the other.
+
+    Returns a boolean array, one row per split, one column per amino acid (order of AA20);
+    True marks the `size`-letter class. For size 9 there are 167,960 rows.
+    """
+    from itertools import combinations
+
+    idx = np.array(list(combinations(range(20), size)))
+    out = np.zeros((len(idx), 20), bool)
+    out[np.arange(len(idx))[:, None], idx] = True
+    return out
+
+
+def split_name(row: np.ndarray) -> str:
+    """The letters of a split's smaller class, e.g. 'ACFILMVWY'."""
+    return "".join(a for a, s in zip(AA20, row) if s)
+
+
+def mean_split_evidence(joint: np.ndarray, splits: np.ndarray, chunk: int = 4000) -> np.ndarray:
+    """Mean over pairs of I for every two-class split, from pair_joint_counts.
+
+    For one split and one pair, agree is the share of aligned positions whose two residues fall
+    in the same class, and chance is h_query h_target + p_query p_target from that pair's own
+    class shares, as pair_stats computes them for a named two-class alphabet.
+    """
+    n = joint.sum(1)
+    jf = joint / n[:, None]
+    j3 = jf.reshape(-1, 20, 20)
+    q_share, t_share = j3.sum(2), j3.sum(1)
+    out = np.empty(len(splits))
+    for st in range(0, len(splits), chunk):
+        s = splits[st : st + chunk].astype(float)
+        same = (s[:, :, None] == s[:, None, :]).reshape(len(s), 400).astype(float)
+        agree = jf @ same.T
+        h_q, h_t = q_share @ s.T, t_share @ s.T
+        chance = h_q * h_t + (1 - h_q) * (1 - h_t)
+        out[st : st + chunk] = np.nanmean(bernoulli_kl_bits(agree, chance), axis=0)
+    return out
+
+
 def alignment_lines(qaln: str, taln: str, alphabet: str = "hp_thomas_dill2") -> dict:
     """Per-column strings for showing one aligned pair in protein20 and a 2-class alphabet.
 
