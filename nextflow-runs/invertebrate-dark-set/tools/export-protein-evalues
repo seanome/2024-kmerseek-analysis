@@ -152,6 +152,27 @@ def main():
         mixed = unfitted & set(settings)
         if mixed:
             sys.exit("%s: settings both refused and searched: %s" % (species, sorted(mixed)[:3]))
+        # Ten Botryllus FASTA ids hold a comma (">FUN001269_BETA1,3GLUCANBINDING"). kmerseek
+        # quotes such a name in its region CSV and the search step's comma split keeps
+        # '"FUN001269_BETA1', so map a quoted fragment back to the one id it starts.
+        # bin/kmerseek_dark_gain.py does not, and misses these proteins.
+        by_fragment = {}
+        for acc in known:
+            if "," in acc:
+                by_fragment.setdefault('"' + acc.split(",")[0], []).append(acc)
+        n_mapped = 0
+        for d in settings.values():
+            for q in [q for q in d if q not in known]:
+                full = by_fragment.get(q, [])
+                if len(full) != 1:
+                    sys.exit("%s: kmerseek query %s is not in the proteome" % (species, q))
+                ev = d.pop(q)
+                if full[0] not in d or ev < d[full[0]]:
+                    d[full[0]] = ev
+                n_mapped += 1
+        if n_mapped:
+            print("%s: %d kmerseek rows had a quoted id cut at a comma; mapped back to the "
+                  "%d ids with a comma" % (species, n_mapped, sum(len(v) for v in by_fragment.values())))
         n_rows = 0
         path = os.path.join(out_dir, "%s_protein_kmerseek_min_evalue.csv.gz" % species)
         with gzip.open(path, "wt", newline="") as fh:
