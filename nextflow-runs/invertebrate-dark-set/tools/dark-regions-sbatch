@@ -18,7 +18,6 @@ REF=${REF:-/scratch/users/olgabot/invertebrate-dark-set/reference}
 SPROT=${SPROT:-/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/uniprot_sprot.dat.gz}
 TOOL=$(cd "$(dirname "$0")" && pwd)/dark-regions
 declare -A CLADE=([human]=Mammalia [worm]=Chromadorea [yeast]=Saccharomycetes [borrelia]=Spirochaetia [botryllus]=Ascidiacea)
-TRACE=$(ls -t "$LAUNCH"/trace.*.txt | head -1)
 mkdir -p "$OUT/logs"
 for sp in human worm yeast borrelia botryllus; do
     mkdir -p "$OUT/$sp/parts"
@@ -28,8 +27,9 @@ for sp in human worm yeast borrelia botryllus; do
         ls "$RESULTS/$sp/kmerseek/"chunk_*."$st".lcfalse.*.regions.csv.zst >> "$OUT/$sp/files.txt"
     done
     n=$(wc -l < "$OUT/$sp/files.txt")
-    hash=$(awk -F'\t' -v s="$sp" '$3 ~ ("kmerseekDarkGain \\(" s "\\)") {print $2}' "$TRACE")
-    query=$(ls "$LAUNCH"/work/"$hash"*/"$sp".query.fasta)
+    # Every staged copy of a species' query FASTA is the same file; a later relaunch resets
+    # the trace, so find one in work/ rather than through it.
+    query=$(ls "$LAUNCH"/work/*/*/"$sp".query.fasta | head -1)
     arr=$(sbatch --parsable -p hns,normal -A ayeletv -c 1 --mem 4G -t 2:00:00 -J "dr-x-$sp" \
         --array=1-"$n" -o "$OUT/logs/extract-$sp-%a.log" --wrap \
         "f=\$(sed -n \${SLURM_ARRAY_TASK_ID}p $OUT/$sp/files.txt); python3 $TOOL extract \$f $OUT/$sp/dark_ids.txt $MAXE $OUT/$sp/parts/\$(basename \$f .regions.csv.zst).csv.gz")
