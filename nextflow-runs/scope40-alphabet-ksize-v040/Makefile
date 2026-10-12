@@ -10,6 +10,8 @@
 #   make watch / make stop    attach to the live table / stop the run cleanly
 #   make run-below-kmin-sbatch  on Sherlock: the 162 searches at k_min-1 and k_min-2, with
 #                               identity bands (notebook 277 follow-up)
+#   make run-best-k-identity-sbatch  next: identity bands for each alphabet's best k and the
+#                               HP k-sizes, four settings (~150 searches), same launch dir
 #   make run-identity-sbatch    then every search again with identity bands, same launch dir
 #   make watch-below-kmin / make stop-below-kmin
 SHELL := /bin/bash
@@ -57,7 +59,8 @@ NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
          --fasta $(FASTA) --outdir $(OUTDIR) --resources_measured $(MEASURED) $(NF_ARGS)
 
 .PHONY: help settings plan fasta measure-resources stub run run-sbatch watch stop \
-        run-below-kmin-sbatch run-identity-sbatch watch-below-kmin stop-below-kmin
+        run-below-kmin-sbatch run-best-k-identity-sbatch run-identity-sbatch \
+        watch-below-kmin stop-below-kmin
 
 # ---- follow-up of notebook 277: k below k_min, and every search split by identity --------
 # The 16 alphabets whose best family or superfamily AUC (region_evalue; jaccard for exact)
@@ -77,6 +80,15 @@ BELOW_VARS = OUTDIR=$(BELOW_OUTDIR) LAUNCH_DIR=$(BELOW_LAUNCH) HEAD_JOBNAME=$(BE
 
 run-below-kmin-sbatch:
 	$(MAKE) run-sbatch $(BELOW_VARS) NF_ARGS="$(BELOW_ARGS) --only_below_kmin true"
+
+# Each alphabet's best family and superfamily k, and every HP alphabet at k_min to k_min + 2:
+# the output of scripts/scope40_best_k_pairs.py on the first run's table. With exact, c_opt,
+# c_max and C = 2 only: c_min and 1.1 x c_min ranked worst in notebook 277.
+BEST_K_PAIRS := dayhoff6:8,dayhoff6:9,funcgroups8:8,funcgroups8:9,gbmr4:14,gbmr4:15,gbmr7:13,hp_kyte_doolittle2:19,hp_kyte_doolittle2:20,hp_kyte_doolittle2:21,hp_lehninger2:17,hp_lehninger2:18,hp_lehninger2:19,hp_lehninger_c_nonpolar2:17,hp_lehninger_c_nonpolar2:18,hp_lehninger_c_nonpolar2:19,hp_lehninger_hpc3:17,hp_lehninger_hpc3:18,hp_lehninger_hpc3:19,hp_pbotc_1st_ed2:17,hp_pbotc_1st_ed2:18,hp_pbotc_1st_ed2:19,hp_thomas_dill2:18,hp_thomas_dill2:19,hp_thomas_dill2:20,hp_thomas_dill_no_c2:18,hp_thomas_dill_no_c2:19,hp_thomas_dill_no_c2:20,hsdm17:5,hsdm17:6,mmseqs12:6,polarity4:11,polarity4:12,protein20:5,sdm12:7,uniprot18:5,wass14:5,wwmj5:9
+BEST_K_SETTINGS := exact,c_opt,c_max,c2
+
+run-best-k-identity-sbatch:
+	$(MAKE) run-sbatch $(BELOW_VARS) NF_ARGS="$(BELOW_ARGS) --pairs $(BEST_K_PAIRS) --settings_only $(BEST_K_SETTINGS)"
 
 run-identity-sbatch:
 	$(MAKE) run-sbatch $(BELOW_VARS) HEAD_TIME=4-00:00:00 NF_ARGS="$(BELOW_ARGS)"
