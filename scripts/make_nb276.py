@@ -451,7 +451,9 @@ not exist in CD47.** `polarity4` writes it `BCBCDCB`, `funcgroups8` writes it `F
 signal, so a class string alone cannot settle it; both proteins have to be encoded and
 looked at. Doing that for all 19 alphabets in the repo's table at every k from 5 to 25:
 at **all 27 settings PR 96 searched, zero k-mers covering the loop occur anywhere in
-CD47**, and in 7 of the 11 varied alphabets none occurs at any k in that range.
+CD47**, and in 9 of the 11 varied alphabets none occurs at any k in that range. The two
+exceptions are worth naming rather than hiding: `polarity4` has exactly one, and `gbmr7`
+two, all at k = 5, and section 6b prints them residue by residue.
 
 **This changes how PR 96's number should be read.** That notebook reported 0 observed
 against 8.5 expected, binomial p = 0.00035, and called it "fewer than chance". The expected
@@ -542,6 +544,176 @@ biology. A vermillion outline marks one of the 27 settings PR 96 searched.
 **What it says.** Every vermillion box sits on a grey cell. The blue region is confined to
 low k in the alphabets that write the loop as one repeated class, and PR 96 searched none of
 it. Its zero is therefore a statement about where it looked, not about the loop.
+""")
+
+md(r"""
+## 6b. The shared k-mers on the loop, printed out
+
+A count is not enough to judge a match. Every shared k-mer that covers the loop, in every
+alphabet, written as the two spans with their residues. Only three of them are in an
+alphabet where the loop is a varied string, and all three are at k = 5, which is shorter
+than any setting in the project.
+""")
+
+code(r"""
+pairs = pl.read_csv(DATA / "10_loop_kmer_pairs.csv")
+uniform = pl.read_csv(DATA / "09_loop_kmer_reach_all_alphabets.csv").filter(
+    pl.col("n_distinct_classes_in_loop") == 1
+)["alphabet"].unique().to_list()
+varied_pairs = pairs.filter(~pl.col("alphabet").is_in(uniform))
+print(f"{pairs.height} shared k-mers cover the loop in total; "
+      f"{pairs.height - varied_pairs.height} are in the "
+      f"{len(uniform)} alphabets that write it as one repeated class.")
+print(f"\nThe {varied_pairs.height} in an alphabet where the loop is a varied string:")
+print(varied_pairs.select("alphabet", "ksize", "p66_start", "p66_end", "p66_residues",
+                          "cd47_start", "cd47_end", "cd47_residues", "class_string",
+                          "n_identical_residues", "loop_residues_covered"))
+print("\nFor comparison, three from a uniform alphabet at the k where they stop:")
+print(pairs.filter(pl.col("alphabet").is_in(uniform) & (pl.col("ksize") == 13))
+      .select("alphabet", "ksize", "p66_residues", "cd47_residues",
+              "class_string", "n_identical_residues").head(3))
+show("276g_loop_class_strings_all_alphabets", aspect=1.05)
+""")
+
+md(r"""
+**What it says.** In the eight alphabets that write the loop as one repeated class, k-mers
+on the loop match CD47 freely up to k = 13, and the pairs show why that is worthless:
+`DTPYNKTYQG` against `KSTVPTDFSS` is 0 identical residues out of 10. Both are polar runs
+and the alphabet cannot tell them apart.
+
+In the eleven where the loop is a varied string there are exactly three shared k-mers, all
+at k = 5: two in `gbmr7` and one in `polarity4`. `funcgroups8` has none at any k from 5 to
+25. The best of the three, `gbmr7` k = 5, puts P66 `QENDK` against CD47 `MMNDE` with 2
+identical residues and does cover D205. k = 5 in a 7-class alphabet is about 14 bits, well
+below anything this project searches at, and PR 96 swept `gbmr7` at k = 8 and 10.
+""")
+
+md(r"""
+## 6c. Seed-and-extend, which exact k-mers cannot do
+
+Everything above tests exact k-mers, and exact matching has a hard floor: if no k-mer on
+the loop exists in CD47, no amount of searching finds one. Seed-and-extend does not have
+that floor. A seed that lands beside the loop extends across it, and the extension tolerates
+mismatches. So the honest question is whether seed-and-extend reaches the loop, and whether
+what it finds there is better than chance.
+
+`notebooks/seed_extend_utils.py` scores an alignment that already exists (notebook 232).
+P66 and CD47 have no alignment, which is the whole difficulty, so
+`scripts/nb276_seed_extend_loop.py` finds seeds by exact match in the reduced alphabet and
+extends each along its own diagonal with X-drop, scoring +1 for a shared class and
+-penalty otherwise, the same scheme that module uses. 11 alphabets x 4 seed lengths x 3
+penalties = 132 settings. The eight alphabets that write the loop as one repeated class are
+left out: there a seed matches every polar stretch, so covering the loop is guaranteed and
+means nothing.
+
+**The decision rule, before the numbers.** A hit counts only if it clears all four of:
+beats shuffled CD47 after correcting for the 132 settings tried; survives a stricter null
+that keeps CD47's neighbouring-residue frequencies, not only its composition; puts the CD47
+side of the segment on residues that actually touch SIRPalpha; and earns its score on the
+loop rather than on the residues beside it.
+""")
+
+code(r"""
+sweep = pl.read_csv(DATA / "11_seed_extend_loop.csv")
+reach = sweep.filter(pl.col("reaches_loop"))
+overlap = pl.read_csv(DATA / "13_seed_extend_face_overlap.csv")
+follow = pl.read_csv(DATA / "12_seed_extend_followup.csv")
+contrib = pl.read_csv(DATA / "14_seed_extend_loop_contribution.csv")
+
+print(f"{reach.height} of {sweep.height} settings produce a segment covering the loop; "
+      f"{reach.filter(pl.col('covers_both_aspartates')).height} cover both aspartates.")
+print(f"{reach.filter(pl.col('p_value_vs_shuffled_cd47') < 0.05).height} beat shuffled "
+      f"CD47 at an uncorrected p < 0.05, against "
+      f"{0.05 * sweep.height:.1f} expected from {sweep.height} tests by chance alone.")
+print("\nHow often the NULL also produces a loop-covering segment, by penalty:")
+print(reach.group_by("penalty").agg(
+    pl.len().alias("settings_reaching"),
+    pl.col("null_fraction_reaching_loop").mean().round(3).alias("mean_null_reach"),
+    pl.col("score").max().alias("max_score"),
+).sort("penalty"))
+print("\nDoes the CD47 side land on the face? Top of the table by face residues hit:")
+print(overlap.select("alphabet", "seed_length", "penalty", "score", "cd47_span",
+                     "fraction_in_ectodomain", "n_face_residues_touched",
+                     "covers_both_aspartates").head(10))
+""")
+
+md(r"""
+**The big scores are runaway extensions, not matches.** At penalty 0.5 the longest segment
+is 318 residues, the whole of CD47, and `polarity4` scores 46.5 against a null median of
+50.5: below its own chance level. Those are the extension never stopping, not a similarity.
+The settings worth testing are the ones with a modest score and a short segment.
+""")
+
+code(r"""
+print("The four that beat the uncorrected threshold, re-tested with 5_000 shuffles")
+print("of each kind. The Bonferroni threshold for 132 settings is p < 0.00038.")
+print(follow.select("alphabet", "n_classes", "seed_length", "penalty", "score",
+                    "segment_length", "p_composition_null", "p_neighbour_pairs_null",
+                    "survives_bonferroni_both_nulls"))
+print(f"\nSurviving both nulls at the corrected threshold: "
+      f"{follow.filter(pl.col('survives_bonferroni_both_nulls')).height} of {follow.height}")
+show("276k_seed_extend_null_tests", aspect=0.65)
+""")
+
+md(r"""
+**Figure 276k.** Each candidate's p-value against both nulls, with the corrected threshold.
+`figures/276k_seed_extend_null_tests.png`. The `hsdm17` hit lands on p = 0.0004 against the
+composition null and 0.0002 against the stricter one, with the corrected threshold at
+0.00038, so it misses on one null and clears it on the other. The other three are an order
+of magnitude away. Nothing survives both.
+""")
+
+code(r"""
+print("Where each candidate's score actually comes from:")
+print(contrib.select("alphabet", "seed_length", "total_score", "segment_length",
+                     "loop_columns", "loop_score", "loop_score_per_column",
+                     "other_score_per_column", "loop_share_of_score"))
+print("\nWhat sits opposite the loop in each segment:")
+print(contrib.select("alphabet", "p66_loop_residues", "cd47_residues_opposite_loop",
+                     "n_face_residues_opposite_loop"))
+worse = contrib.filter(
+    pl.col("loop_score_per_column") < pl.col("other_score_per_column")
+)
+print(f"\nCandidates where the loop scores worse per column than the rest of its own "
+      f"segment: {worse.height} of {contrib.height}")
+show("276j_seed_extend_best_alignment", aspect=0.24)
+""")
+
+md(r"""
+**Figure 276j.** The strongest candidate written out residue by residue.
+`figures/276j_seed_extend_best_alignment.png`. Vermillion is the P66 loop, blue is a CD47
+residue that touches SIRPalpha, a green bar is an identical residue.
+
+**What it says, and it is the closest thing in this notebook to support for the claim.**
+`hsdm17` with a 4-class seed finds a 36-residue ungapped segment, P66 197-232 against CD47
+109-144, which is 92% inside CD47's ectodomain and covers 9 of the 21 face residues
+(115 and 117-124, the face's longest run). It covers the whole loop including both
+aspartates, and opposite `QENDKDT` sits `CEVTELT`, 5 residues of which touch SIRPalpha.
+`sdm12` independently finds the same segment. Both are acidic stretches, which is what the
+claim is about.
+
+**Why it still is not support.** Four reasons, in order of how much they matter:
+
+1. **The loop is the worst part of the segment.** Splitting the score column by column: the
+   loop contributes 1.0 of `hsdm17`'s 6.0, at 0.143 per column against 0.172 for the rest
+   of the same segment. In `dayhoff6` the loop contributes **-2.0**, so that segment scores
+   well in spite of the loop. In 3 of the 4 candidates the loop scores worse per column than
+   its own flanks. The alignment is carried by `TGN` against `TGN` at the start and
+   `NIL` against `NLL` at the end, both outside the loop.
+2. **Nothing survives its own multiplicity.** 4 of 132 settings beat p < 0.05, against 6.6
+   expected by chance; and at the corrected threshold none clears both nulls.
+3. **Only the most lenient penalty produces any of it.** All four candidates are at penalty
+   0.5, the setting that elsewhere in the same sweep extends through entire proteins.
+4. **The one candidate where the loop is the whole segment misses the face.** `wass14` puts
+   `QENDKDT` against `NENILIV` with a score the loop fully earns, but that stretch of CD47
+   touches no face residue at all.
+
+**What would settle it.** The `hsdm17` segment is a real lead and is worth one dedicated
+test rather than a sweep: fix the alphabet, seed length and penalty in advance, and ask
+whether a segment like it appears for the claimed pair more often than for P66 against a
+set of human proteins matched on length and acidic content. That is a different experiment
+from this notebook, and it is the one that would turn p = 0.0004 at setting 1 of 132 into a
+number worth quoting.
 """)
 
 md(r"""
