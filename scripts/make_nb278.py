@@ -1,4 +1,4 @@
-"""Build notebooks/277_hp_vs_blosum62_evidence_per_position_pfam_seed_scope40.ipynb."""
+"""Build notebooks/278_hp_vs_blosum62_evidence_per_position_pfam_seed_scope40.ipynb."""
 
 import json
 from pathlib import Path
@@ -31,7 +31,7 @@ def code(source):
 
 
 md(r"""
-# 277. Does H/P give more evidence per aligned position than BLOSUM62?
+# 278. Does H/P give more evidence per aligned position than BLOSUM62?
 
 No kmerseek in this notebook.
 [Notebook 273](https://github.com/seanome/2024-kmerseek-analysis/blob/olgabot/hp-agreement-per-100/notebooks/273_hp_agreement_per_100_positions_pfam_seed_scope40.ipynb)
@@ -131,12 +131,12 @@ pl.Config.set_tbl_width_chars(220)
 FIG = Path("../figures")
 PFAM_ALN = Path("/Users/olga/data/pfam/230_pfam_seed_pair_alignments.parquet")
 SCOPE_ALN = Path("/Users/olga/data/scope/230_scope40_pair_alignments.parquet")
-PFAM_OUT = Path("/Users/olga/data/pfam/277_pfam_seed_pair_scores.parquet")
-SCOPE_OUT = Path("/Users/olga/data/scope/277_scope40_pair_scores.parquet")
+PFAM_OUT = Path("/Users/olga/data/pfam/278_pfam_seed_pair_scores.parquet")
+SCOPE_OUT = Path("/Users/olga/data/scope/278_scope40_pair_scores.parquet")
 MIN_COLS = 50  # same filter as notebooks 230 and 273
 MIN_TM = 0.5  # SCOPe only, same as notebooks 230 and 273
 N_BOOT = 1000
-SEED = 277
+SEED = 277  # from when this was notebook 277 (renumbered: PR 107 also took 277); kept so intervals do not move
 HP = "hp_thomas_dill2"
 
 pfam_aln = pl.read_parquet(PFAM_ALN)
@@ -268,7 +268,7 @@ ax.legend(
 )
 hc.finish_figure(
     fig,
-    FIG / "277_hp_log_odds_implied_by_blosum62_and_blosum45.png",
+    FIG / "278_hp_log_odds_implied_by_blosum62_and_blosum45.png",
     tools=f"no kmerseek; BLOSUM62 and BLOSUM45 (Biopython), {HP} classes, Pfam seed background",
     title="The H/P scoring that BLOSUM62 and BLOSUM45 imply",
     hypothesis="Same class should score positive and different classes negative.",
@@ -401,7 +401,7 @@ z_h = sfd.filter(pl.col("scheme") == "H/P from BLOSUM62")["bits per position"][0
 z_a = sfd.filter(pl.col("scheme") == "H/P agreement")["bits per position"][0]
 hc.finish_figure(
     fig,
-    FIG / "277_bits_per_position_hp_vs_blosum62_by_scope_relationship.png",
+    FIG / "278_bits_per_position_hp_vs_blosum62_by_scope_relationship.png",
     tools=f"no kmerseek; SCOPe 2.08 40% set, USalign alignments; BLOSUM62, identity, {HP}",
     title="Evidence per aligned position by SCOPe relationship: H/P against BLOSUM62",
     hypothesis=(
@@ -457,7 +457,7 @@ za = lo_row.filter(pl.col("scheme") == "H/P agreement")["bits per position"][0]
 zh = lo_row.filter(pl.col("scheme") == "H/P from BLOSUM62")["bits per position"][0]
 hc.finish_figure(
     fig,
-    FIG / "277_bits_per_position_hp_vs_blosum62_pfam_seed_by_identity.png",
+    FIG / "278_bits_per_position_hp_vs_blosum62_pfam_seed_by_identity.png",
     tools=f"no kmerseek; Pfam-A 38.2 seed alignments; BLOSUM62, identity, {HP}",
     title="Evidence per aligned position in Pfam seed pairs, by identity",
     hypothesis="Under 20% identity, H/P agreement is ahead of identity (notebook 273). Is it ahead of BLOSUM62?",
@@ -498,8 +498,8 @@ right is better.
 """)
 
 code(r"""
-PFAM_ALL = Path("/Users/olga/data/pfam/277_pfam_seed_pair_scores_all_alphabets.parquet")
-SCOPE_ALL = Path("/Users/olga/data/scope/277_scope40_pair_scores_all_alphabets.parquet")
+PFAM_ALL = Path("/Users/olga/data/pfam/278_pfam_seed_pair_scores_all_alphabets.parquet")
+SCOPE_ALL = Path("/Users/olga/data/scope/278_scope40_pair_scores_all_alphabets.parquet")
 ALPHABETS = sorted(hc.ALPHABET_CLUSTERS, key=lambda a: (hc.SIZES[a], a))
 ALL_SCHEMES = {}
 for a in ALPHABETS:
@@ -611,7 +611,7 @@ n_ahead = int(scope_rule["ahead of BLOSUM62"].sum())
 top = best.row(0, named=True)
 hc.finish_figure(
     fig,
-    FIG / "277_bits_per_position_all_kmerseek_alphabets_vs_blosum62.png",
+    FIG / "278_bits_per_position_all_kmerseek_alphabets_vs_blosum62.png",
     tools="no kmerseek search; all 19 kmerseek alphabet partitions (alphabets.rs), BLOSUM62; SCOPe 2.08 40% USalign and Pfam-A 38.2 seed alignments",
     title="Evidence per aligned position for every kmerseek alphabet, against BLOSUM62",
     hypothesis="If some reduced alphabet keeps more evidence than BLOSUM62, its marks sit right of the dashed line.",
@@ -771,7 +771,7 @@ td = fold.filter(pl.col("alphabet") == HP).row(0, named=True)
 n_lead = int((class_tab.filter(pl.col("comparison") == f"{HP} minus gbmr4")["95% lo"] > 0).sum())
 hc.finish_figure(
     fig,
-    FIG / "277_exact_match_bits_hp_leads_at_fold_level.png",
+    FIG / "278_exact_match_bits_hp_leads_at_fold_level.png",
     tools=f"no kmerseek search; all 19 kmerseek alphabet partitions, agreement (exact-match) scoring; SCOPe 2.08 40% USalign alignments",
     title="Among exact-match alphabets, H/P keeps the most evidence per position at the fold level",
     hypothesis=(
@@ -866,6 +866,6 @@ nb = {
     "nbformat": 4,
     "nbformat_minor": 5,
 }
-out = Path(__file__).resolve().parents[1] / "notebooks" / "277_hp_vs_blosum62_evidence_per_position_pfam_seed_scope40.ipynb"
+out = Path(__file__).resolve().parents[1] / "notebooks" / "278_hp_vs_blosum62_evidence_per_position_pfam_seed_scope40.ipynb"
 out.write_text(json.dumps(nb, indent=1))
 print(f"wrote {out} ({len(cells)} cells)")
