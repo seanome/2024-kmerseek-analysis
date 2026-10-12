@@ -1090,6 +1090,50 @@ process kmerseekSearch {
     """
 }
 
+// kmerseekSearch builds each queries.tsv with an awk that gets two things wrong (checked on
+// the Botryllus midi run, 2026-10-12; details in bin/repair_queries_tsv.py):
+//  - it splits on bare commas, and ten Botryllus ids hold one (FUN001269_BETA1,
+//    3GLUCANBINDING). kmerseek quotes those names, so the awk stored the name cut at the
+//    comma and read region_ka_bits as the E-value.
+//  - it reads region_evalue "inf" as 0, so one inf region makes a query's stored minimum
+//    inf and hides its finite E-values. About 30% of extend lines in every species say inf.
+// This step rebuilds a queries.tsv from its region file. It runs on every queries.tsv with
+// a quoted name or, on an extend arm, an inf value; the rest pass through. It is a step of
+// its own so that kmerseekSearch's script text, and so its cache, stays as it is: fixing
+// the awk there would rerun every search.
+process repairQueriesTsv {
+    tag "${species}.${regions.name - '.regions.csv.zst'}"
+    container params.kmerseek_image
+    cpus 1
+    memory '2 GB'
+    // Measured 2026-10-12 on the laptop: an 18 MB region file (144 MB of CSV, 217_922 rows)
+    // in 0.35 s, so ~50 MB compressed per second. The largest file to repair is 63 GB, about
+    // 21 minutes at that rate. The ask is 20 min plus 2 min per compressed GB, which leaves
+    // room for a node that reads or runs half as fast.
+    time { "${((20 + 2 * Math.ceil(regions.size() / 1e9)) * task.attempt) as int}m" }
+
+    input:
+    tuple val(species), val(alphabet), val(ksize), val(lowcomp), val(scaled), val(ext),
+          path(queries, stageAs: 'in/*'), path(regions), val(landmarks)
+
+    output:
+    tuple val(species), val(alphabet), val(ksize), val(lowcomp), val(scaled), val(ext),
+          path("*.queries.tsv"), val(landmarks)
+
+    script:
+    """
+    set -euo pipefail
+    # The input is staged under in/, so the output, at the top level, cannot overwrite it.
+    repair_queries_tsv.py --queries ${queries} --regions ${regions} \\
+        --max-region-evalue ${params.max_region_evalue} --out \$(basename ${queries})
+    """
+
+    stub:
+    """
+    cat ${queries} > \$(basename ${queries})
+    """
+}
+
 process kmerseekDarkGain {
     tag "${species}"
     label 'python_scoring'
@@ -1716,7 +1760,21 @@ workflow darkSet {
         // Every chunk and every combo of a species reaches the gain step together: a
         // protein counts as rescued only against the whole dark set, and the dark set is
         // proteome-wide. Closed per species by groupKey, as for the hits above.
-        q_lists = ks.queries
+        // The queries.tsv files the search's awk may have got wrong (see repairQueriesTsv):
+        // a line starting with a double quote (a name with a comma), or an inf value on an
+        // extend arm (an inf region that hid finite ones). The region file sits next to the
+        // queries.tsv in the search's work folder. Every other queries.tsv goes on as it is.
+        qsplit = ks.queries.branch { row ->
+            repair: row[6].readLines().drop(1).any { it.startsWith('"') ||
+                        (row[5] != 'exact' && it.endsWith('\tinf')) }
+            clean: true
+        }
+        repaired = repairQueriesTsv(qsplit.repair.map { sp, a, k, lc, sc, ext, f, lm ->
+            tuple(sp, a, k, lc, sc, ext, f,
+                  f.resolveSibling(f.name - '.queries.tsv' + '.regions.csv.zst'), lm) })
+        searched = qsplit.clean.mix(repaired)
+
+        q_lists = searched
             .map { sp, _a, _k, _lc, _sc, _ext, f, _lm -> tuple(sp, f) }
             .combine(n_chunks, by: 0)
             .combine(n_combos, by: 0)
@@ -1728,7 +1786,7 @@ workflow darkSet {
         report_extra = report_extra.mix(gain.flatMap { sp, pq, js -> [tuple(sp, pq), tuple(sp, js)] })
 
         // The landmark rows, grouped exactly as the query lists are (same tasks, same count).
-        lm_lists = ks.queries
+        lm_lists = searched
             .map { sp, _a, _k, _lc, _sc, _ext, _f, lm -> tuple(sp, lm) }
             .combine(n_chunks, by: 0)
             .combine(n_combos, by: 0)

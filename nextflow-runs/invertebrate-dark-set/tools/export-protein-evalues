@@ -152,27 +152,20 @@ def main():
         mixed = unfitted & set(settings)
         if mixed:
             sys.exit("%s: settings both refused and searched: %s" % (species, sorted(mixed)[:3]))
-        # Ten Botryllus FASTA ids hold a comma (">FUN001269_BETA1,3GLUCANBINDING"). kmerseek
-        # quotes such a name in its region CSV and the search step's comma split keeps
-        # '"FUN001269_BETA1', so map a quoted fragment back to the one id it starts.
-        # bin/kmerseek_dark_gain.py does not, and misses these proteins.
-        by_fragment = {}
-        for acc in known:
-            if "," in acc:
-                by_fragment.setdefault('"' + acc.split(",")[0], []).append(acc)
-        n_mapped = 0
+        # Every kmerseek name must be a protein of the proteome. Ten Botryllus FASTA ids
+        # hold a comma (">FUN001269_BETA1,3GLUCANBINDING"); kmerseek quotes such a name in
+        # its region CSV, and the search step's comma split stored '"FUN001269_BETA1' with
+        # region_ka_bits in place of the E-value (every field after the name moves one
+        # place). Neither can be mapped back here: the E-value is wrong too. The pipeline's
+        # repairQueriesTsv step rewrites those queries.tsv files from the region files;
+        # export from a run that has it.
         for d in settings.values():
-            for q in [q for q in d if q not in known]:
-                full = by_fragment.get(q, [])
-                if len(full) != 1:
-                    sys.exit("%s: kmerseek query %s is not in the proteome" % (species, q))
-                ev = d.pop(q)
-                if full[0] not in d or ev < d[full[0]]:
-                    d[full[0]] = ev
-                n_mapped += 1
-        if n_mapped:
-            print("%s: %d kmerseek rows had a quoted id cut at a comma; mapped back to the "
-                  "%d ids with a comma" % (species, n_mapped, sum(len(v) for v in by_fragment.values())))
+            stray = sorted(q for q in d if q not in known)
+            if stray:
+                sys.exit("%s: kmerseek query names not in the proteome, e.g. %s. A name "
+                         "starting with a double quote was cut at a comma by the search "
+                         "step; rerun with -resume so repairQueriesTsv fixes it."
+                         % (species, stray[:3]))
         n_rows = 0
         path = os.path.join(out_dir, "%s_protein_kmerseek_min_evalue.csv.gz" % species)
         with gzip.open(path, "wt", newline="") as fh:

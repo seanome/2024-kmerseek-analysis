@@ -144,6 +144,16 @@ def main() -> None:
                 acc[q] = ev
     if unparsed:
         raise SystemExit(f"could not parse combo from: {', '.join(unparsed[:5])}")
+    # Every name kmerseek reports must be a protein of the proteome. The counts below
+    # intersect sets, so a name that is not one is dropped without a trace: that is how
+    # ten Botryllus ids with a comma ('"FUN001269_BETA1' for FUN001269_BETA1,3GLUCANBINDING)
+    # went uncounted until repairQueriesTsv existed.
+    strays = sorted({q for evalues in combos.values() for q in evalues} - proteome)
+    if strays:
+        raise SystemExit(
+            f"{len(strays)} kmerseek query names are not in {args.query} (e.g. {strays[:5]}). "
+            f"A name starting with a double quote held a comma and was cut by the search "
+            f"step's comma split; check that repairQueriesTsv ran on its queries.tsv.")
     # A fit is a property of the index, so every chunk of an unfitted arm is refused
     # alike; a mix would mean two chunks saw two different indexes.
     mixed = unfitted & set(combos)
