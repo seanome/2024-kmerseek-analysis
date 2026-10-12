@@ -61,6 +61,10 @@ params.k_below           = 0
 params.k_below_alphabets = ''
 params.min_seed_bits     = 15
 params.only_below_kmin   = false
+// Least memory a search asks for when its k is under every k measured for its alphabet: the
+// growth factor there comes from two measurements only. At 17 bits per k-mer the HP
+// searches peaked at 8 GB (Sherlock, 2026-10-10), and protein20 k4 is 17.3 bits.
+params.below_measured_min_gb = 16
 
 // Score each search by sequence identity band too, on these aligned pairs
 // (assets/scope40_pair_identity.tsv.gz, scripts/scope40_pair_identity_asset.py). Empty = off.
@@ -188,6 +192,7 @@ def askFor(String process, String alphabet, int ksize, String what, double floor
     def below = rows.findAll { (it.ksize as int) <= ksize }
     def lowest = rows.sort(false) { it.ksize as int }.take(2)
     double ref
+    boolean extrapolated = false
     if (below) {
         ref = below.max { it.ksize as int }[what] as double
     } else if (lowest.size() == 2) {
@@ -197,10 +202,12 @@ def askFor(String process, String alphabet, int ksize, String what, double floor
         double v0 = lowest[0][what] as double, v1 = lowest[1][what] as double
         double step = v1 > 0 ? Math.max(1.0d, v0 / v1) : 1.0d
         ref = v0 * Math.pow(step, (lowest[0].ksize as int) - ksize)
+        extrapolated = true
     } else {
         ref = all.findAll { it.key.startsWith(process + '|') }.values().flatten()
                  .collect { it[what] as double }.max() ?: 0.0d
     }
+    if (extrapolated && what == 'peak_gb' && process == 'searchAndScore') floor = Math.max(floor, params.below_measured_min_gb as double)
     Math.max(floor, 1.5 * ref) * Math.pow(2, attempt - 1)
 }
 
