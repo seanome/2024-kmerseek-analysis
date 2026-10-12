@@ -324,6 +324,185 @@ def draw_alignment_rows(
     ax.tick_params(axis="y", length=0)
 
 
+PROTEIN20_ORDER = "".join(ALPHABET_CLUSTERS["protein20"])
+
+
+def aligned_codes(qaln: str, taln: str) -> tuple[np.ndarray, np.ndarray]:
+    """protein20 indices (0-19, in PROTEIN20_ORDER) of the columns where neither side has a gap."""
+    tab = TABLES["protein20"]
+    q = tab[np.frombuffer(qaln.encode(), dtype=np.uint8)]
+    t = tab[np.frombuffer(taln.encode(), dtype=np.uint8)]
+    m = (q != GAP) & (t != GAP)
+    return q[m], t[m]
+
+
+def substitution_bits(
+    name: str, background: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """A Biopython substitution matrix as log-odds in bits, with its implied target frequencies.
+
+    lambda solves sum_ab q_a q_b 2^(lambda s_ab) = 1 for the given background q (Altschul 1991),
+    so the target frequencies are p_ab = q_a q_b 2^(lambda s_ab) and the score of a pair in
+    bits is lambda * s_ab = log2(p_ab / (q_a q_b)). Returns (bits 20x20, p 20x20, lambda).
+    """
+    from Bio.Align import substitution_matrices
+    from scipy.optimize import brentq
+
+    m = substitution_matrices.load(name)
+    s = np.array(
+        [[m[a][b] for b in PROTEIN20_ORDER] for a in PROTEIN20_ORDER], dtype=float
+    )
+    qq = np.outer(background, background)
+    lam = brentq(lambda x: (qq * 2 ** (x * s)).sum() - 1, 1e-3, 10)
+    return s * lam, qq * 2 ** (lam * s), float(lam)
+
+
+def class_bits(target: np.ndarray, background: np.ndarray, alphabet: str) -> np.ndarray:
+    """Log-odds in bits for a reduced alphabet, from summing 20x20 target frequencies into its classes.
+
+    Returned as a 20x20 matrix (each residue scored by its class) so it can be used in place
+    of a 20 amino acid matrix.
+    """
+    cls = TABLES[alphabet][np.frombuffer(PROTEIN20_ORDER.encode(), dtype=np.uint8)]
+    k = SIZES[alphabet]
+    p = np.zeros((k, k))
+    np.add.at(p, (cls[:, None], cls[None, :]), target)
+    qc = np.bincount(cls, weights=background, minlength=k)
+    return np.log2(p / np.outer(qc, qc))[np.ix_(cls, cls)]
+
+
+def agreement_bits(alphabet: str) -> np.ndarray:
+    """20x20 scores of 1 where two residues are in the same class of `alphabet`, else 0."""
+    cls = TABLES[alphabet][np.frombuffer(PROTEIN20_ORDER.encode(), dtype=np.uint8)]
+    return (cls[:, None] == cls[None, :]).astype(float)
+
+
+def score_vs_chance(q: np.ndarray, t: np.ndarray, scores: np.ndarray) -> dict:
+    """Mean score per aligned position, and how far it sits from chance for this pair.
+
+    Chance pairs each query residue with a target residue drawn from the target's own aligned
+    composition (and vice versa), so its mean is f_q . S . f_t and its per-position variance
+    f_q . S^2 . f_t - mean^2. ``z_per_position`` = (mean - chance mean) / chance sd: a pair of n
+    aligned positions sits about z_per_position * sqrt(n) standard deviations above chance.
+    """
+    n = q.size
+    fq = np.bincount(q, minlength=20)[:20] / n
+    ft = np.bincount(t, minlength=20)[:20] / n
+    real = float(scores[q, t].mean())
+    mu = float(fq @ scores @ ft)
+    var = float(fq @ (scores**2) @ ft) - mu**2
+    return {
+        "score": real,
+        "chance": mu,
+        "above_chance": real - mu,
+        "z_per_position": (real - mu) / np.sqrt(var) if var > 0 else np.nan,
+    }
+
+
+def large_deviation_bits(
+    m: np.ndarray, values: np.ndarray, weights: np.ndarray, n_iter: int = 100
+) -> np.ndarray:
+    """Bits per aligned position by which a pair's mean score beats chance, one value per row.
+
+    Row i has chance distribution P(score = values[k]) = weights[i, k] and observed mean
+    score m[i]. Returns sup over theta >= 0 of theta*m - log2 sum_k w_k 2^(theta v_k): the rate
+    at which the chance of reaching mean m falls with the number of aligned positions n,
+    P(chance mean >= m) ~ 2^(-n * rate) (Cramer's theorem). For agree/disagree scoring this is
+    exactly ``bernoulli_kl_bits(agree, chance)``. Zero when m is at or below the chance mean.
+    Solved by bisection on theta, all rows at once.
+    """
+    m = np.asarray(m, dtype=float)
+    v = np.asarray(values, dtype=float)[None, :]
+    w = np.asarray(weights, dtype=float)
+
+    def tilted_mean(theta):
+        e = w * np.exp2((theta[:, None]) * (v - v.max()))
+        return (e * v).sum(axis=1) / e.sum(axis=1)
+
+    vmax = np.where(w > 0, v, -np.inf).max(axis=1)
+    mu0 = (w * v).sum(axis=1)
+    above = m > mu0 + 1e-12
+    at_max = m >= vmax - 1e-12
+    target = np.minimum(m, vmax - 1e-9)
+    lo = np.zeros_like(m)
+    hi = np.ones_like(m)
+    for _ in range(60):  # grow the bracket until the tilted mean passes the target
+        short = above & ~at_max & (tilted_mean(hi) < target)
+        if not short.any():
+            break
+        hi = np.where(short, hi * 2, hi)
+    for _ in range(n_iter):
+        mid = (lo + hi) / 2
+        go_up = tilted_mean(mid) < target
+        lo = np.where(go_up, mid, lo)
+        hi = np.where(go_up, hi, mid)
+    theta = (lo + hi) / 2
+    log2_mgf = (
+        np.log2((w * np.exp2(theta[:, None] * (v - v.max()))).sum(axis=1))
+        + theta * v.max()
+    )
+    rate = theta * target - log2_mgf
+    # every position at the top score: the rate is -log2 P(top score)
+    p_top = np.where(np.isclose(v, vmax[:, None]), w, 0.0).sum(axis=1)
+    rate = np.where(at_max, -np.log2(p_top), rate)
+    return np.where(above, rate, 0.0)
+
+
+def score_pairs(
+    qalns, talns, schemes: dict[str, np.ndarray], min_cols: int = 50
+) -> pl.DataFrame:
+    """Score aligned pairs under several 20x20 scorings; one row per (pair, scoring).
+
+    ``row`` is the index of the pair in the input, kept only for pairs with at least
+    `min_cols` aligned positions. Columns per scoring: ``score`` (mean over aligned
+    positions), ``chance`` and ``chance_sd`` (mean and sd per position when each residue is
+    paired with one drawn from the other sequence's aligned composition), ``above_chance``,
+    ``z_per_position`` = above_chance / chance_sd, and ``bits_per_position`` from
+    ``large_deviation_bits``.
+    """
+    rows, fqs, fts, means = [], [], [], {k: [] for k in schemes}
+    for i, (qa, ta) in enumerate(zip(qalns, talns)):
+        q, t = aligned_codes(qa, ta)
+        if q.size < min_cols:
+            continue
+        rows.append((i, q.size))
+        fqs.append(np.bincount(q, minlength=20)[:20] / q.size)
+        fts.append(np.bincount(t, minlength=20)[:20] / t.size)
+        for k, sc in schemes.items():
+            means[k].append(sc[q, t].mean())
+    fq, ft = np.array(fqs), np.array(fts)
+    out = []
+    for k, sc in schemes.items():
+        vals, inv = np.unique(np.round(sc, 9), return_inverse=True)
+        ind = np.zeros((400, vals.size))
+        ind[np.arange(400), inv.ravel()] = 1.0
+        m = np.array(means[k])
+        w = np.empty((fq.shape[0], vals.size))
+        for a in range(0, fq.shape[0], 20_000):  # chunks keep the n x 400 array small
+            b = a + 20_000
+            w[a:b] = (fq[a:b, :, None] * ft[a:b, None, :]).reshape(-1, 400) @ ind
+        mu = w @ vals
+        sd = np.sqrt(np.maximum(w @ vals**2 - mu**2, 0))
+        out.append(
+            pl.DataFrame(
+                {
+                    "row": [r for r, _ in rows],
+                    "n_cols": [n for _, n in rows],
+                    "scheme": k,
+                    "score": m,
+                    "chance": mu,
+                    "chance_sd": sd,
+                    "above_chance": m - mu,
+                    "z_per_position": np.where(
+                        sd > 0, (m - mu) / np.where(sd > 0, sd, 1), np.nan
+                    ),
+                    "bits_per_position": large_deviation_bits(m, vals, w),
+                }
+            )
+        )
+    return pl.concat(out)
+
+
 IDENTITY_BINS = [0.0, 0.2, 0.3, 0.4, 0.6, 1.01]
 IDENTITY_LABELS = ["<20%", "20-30%", "30-40%", "40-60%", ">=60%"]
 
@@ -349,6 +528,36 @@ def bootstrap_mean_ci(
     means = x[idx].mean(axis=1)
     return (
         float(x.mean()),
+        float(np.percentile(means, 2.5)),
+        float(np.percentile(means, 97.5)),
+    )
+
+
+def cluster_bootstrap_mean_ci(
+    x, clusters, n_boot: int = 1000, seed: int = 0
+) -> tuple[float, float, float]:
+    """Mean of `x` with a 95% interval from resampling whole clusters, not single rows.
+
+    Use when rows from one cluster are not independent (pairs from one Pfam family, or
+    pairs that share a SCOPe domain). Each resample draws clusters with replacement and
+    takes the mean over all their rows. NaN values are dropped first.
+    """
+    df = pl.DataFrame({"x": np.asarray(x, dtype=float), "c": list(clusters)}).filter(
+        pl.col("x").is_not_nan()
+    )
+    if df.height == 0:
+        return np.nan, np.nan, np.nan
+    g = (
+        df.group_by("c")
+        .agg(pl.col("x").sum().alias("s"), pl.len().alias("n"))
+        .sort("c")
+    )
+    s, n = g["s"].to_numpy(), g["n"].to_numpy()
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, s.size, size=(n_boot, s.size))
+    means = s[idx].sum(axis=1) / n[idx].sum(axis=1)
+    return (
+        float(df["x"].mean()),
         float(np.percentile(means, 2.5)),
         float(np.percentile(means, 97.5)),
     )
