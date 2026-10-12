@@ -12,5 +12,32 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--check --verbose"
+          # Same version as .pre-commit-config.yaml, so CI and local commits format alike.
+          version: "26.5.1"
           src: "./notebooks"
           jupyter: true
+
+  # The pre-commit hooks, on the notebooks this PR changes, not on all of them: most older
+  # notebooks break at least one rule, and no PR should go red for that. Pull requests
+  # only, because a push has no base to compare against.
+  notebooks:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install pre-commit pytest
+      - name: Tests for the notebook checker
+        run: python -m pytest scripts/tests -v
+      # black already runs over every notebook in the job above.
+      - name: Notebook checks on changed notebooks
+        env:
+          SKIP: black-jupyter
+        run: >
+          pre-commit run --show-diff-on-failure
+          --from-ref ${{ github.event.pull_request.base.sha }}
+          --to-ref ${{ github.event.pull_request.head.sha }}
