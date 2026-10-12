@@ -1,0 +1,237 @@
+#!/usr/bin/env python3
+"""Pull the kmerseek regions on dark proteins out of the run's region files, and score how
+much of each region is low-complexity sequence or a transmembrane helix.
+
+    tools/dark-regions ids <protein_evalues_dir> <species> <tool_cutoff> <out.txt>
+    tools/dark-regions extract <regions.csv.zst> <dark_ids.txt> <max_evalue> <out.csv.gz>
+    tools/dark-regions annotate <parts_dir> <query.fasta> <reference.fasta> \
+        <uniprot_sprot.dat.gz> <out.csv.gz>
+
+ids       the dark proteins of one species: no phmmer, jackhmmer or mmseqs2 hit with
+          E < <tool_cutoff>, read from tools/export-protein-evalues output.
+extract   streams one region file (zstd CSV, one row per region) and keeps the rows whose
+          query is dark and whose region_evalue < <max_evalue>.
+annotate  joins every extracted part of a species, and for each region adds:
+            query_lc, target_lc   share of the region's residues in a low-complexity stretch
+            query_tm, target_tm   share of the region's residues in a predicted
+                                  transmembrane helix
+            target_description    the target's Swiss-Prot DE RecName (or SubName)
+          computed on the FULL query and target sequences, so the windows see the context
+          around a region.
+
+Low complexity: the first pass of SEG (Wootton & Federhen 1993, Computers & Chemistry
+17:149). A 12-residue window whose Shannon entropy is at most 2.2 bits marks its residues;
+any 12-residue window with entropy at most 2.5 bits that overlaps a marked residue is
+marked too. SEG's later step that trims each stretch to its lowest-complexity core is not
+done, so stretches can be a few residues longer than SEG's.
+
+Transmembrane helix: Kyte & Doolittle 1982 (J Mol Biol 157:105): a 19-residue window whose
+mean hydropathy is at least 1.6 marks its residues as a likely membrane-spanning helix.
+
+Region coordinates are 0-based and end-exclusive (region_start, region_end on the query,
+target_start, target_end on the target); annotate checks every region's residues against
+the full sequence and stops if one does not match.
+
+Added 2026-10-12, when Olga asked to drop dark-protein regions that sit in biased sequence
+or helices (notebook 279, PR 120). Python 3.6, standard library only.
+"""
+import csv
+import glob
+import gzip
+import math
+import os
+import subprocess
+import sys
+
+csv.field_size_limit(10 ** 9)
+
+KEEP = ["query_name", "target_name", "ksize", "scaled", "moltype", "region_start", "region_end",
+        "region_subseq", "target_start", "target_end", "target_subseq", "moltype_seq",
+        "region_length", "region_n_mismatches", "region_ka_bits", "region_evalue"]
+
+KD = {"A": 1.8, "R": -4.5, "N": -3.5, "D": -3.5, "C": 2.5, "Q": -3.5, "E": -3.5, "G": -0.4,
+      "H": -3.2, "I": 4.5, "L": 3.8, "K": -3.9, "M": 1.9, "F": 2.8, "P": -1.6, "S": -0.8,
+      "T": -0.7, "W": -0.9, "Y": -1.3, "V": 4.2}
+SEG_WINDOW, SEG_LOCUT, SEG_HICUT = 12, 2.2, 2.5
+TM_WINDOW, TM_CUT = 19, 1.6
+
+
+def read_fasta(path, keep=None):
+    seqs, name, buf = {}, None, []
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rt") as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if name is not None and (keep is None or name in keep):
+                    seqs[name] = "".join(buf)
+                name, buf = line[1:].strip().split()[0], []
+            else:
+                buf.append(line.strip())
+    if name is not None and (keep is None or name in keep):
+        seqs[name] = "".join(buf)
+    return seqs
+
+
+def entropy(counts, n):
+    return -sum(c / n * math.log2(c / n) for c in counts.values() if c)
+
+
+def low_complexity_mask(seq):
+    """SEG first pass: True for residues in a low-complexity stretch."""
+    n = len(seq)
+    mask = [False] * n
+    if n < SEG_WINDOW:
+        return mask
+    ents = []
+    counts = {}
+    for i, a in enumerate(seq):
+        counts[a] = counts.get(a, 0) + 1
+        if i >= SEG_WINDOW:
+            b = seq[i - SEG_WINDOW]
+            counts[b] -= 1
+        if i >= SEG_WINDOW - 1:
+            ents.append(entropy(counts, SEG_WINDOW))
+    for s, e in enumerate(ents):
+        if e <= SEG_LOCUT:
+            for j in range(s, s + SEG_WINDOW):
+                mask[j] = True
+    changed = True
+    while changed:
+        changed = False
+        for s, e in enumerate(ents):
+            if e <= SEG_HICUT and not all(mask[s:s + SEG_WINDOW]) and any(mask[s:s + SEG_WINDOW]):
+                for j in range(s, s + SEG_WINDOW):
+                    mask[j] = True
+                changed = True
+    return mask
+
+
+def helix_mask(seq):
+    """Kyte-Doolittle: True for residues in a 19-residue window of mean hydropathy >= 1.6."""
+    n = len(seq)
+    mask = [False] * n
+    if n < TM_WINDOW:
+        return mask
+    vals = [KD.get(a, 0.0) for a in seq]
+    total = sum(vals[:TM_WINDOW])
+    for s in range(n - TM_WINDOW + 1):
+        if s:
+            total += vals[s + TM_WINDOW - 1] - vals[s - 1]
+        if total / TM_WINDOW >= TM_CUT:
+            for j in range(s, s + TM_WINDOW):
+                mask[j] = True
+    return mask
+
+
+def share(mask, start, end):
+    return round(sum(mask[start:end]) / (end - start), 4) if end > start else 0.0
+
+
+def cmd_ids(evalues_dir, species, cutoff, out):
+    cutoff = float(cutoff)
+    n = 0
+    with gzip.open(os.path.join(evalues_dir, "%s_protein_tool_min_evalue.csv.gz" % species), "rt") as fh, \
+            open(out, "w") as o:
+        for row in csv.DictReader(fh):
+            vals = [float(row[t]) for t in ("phmmer", "jackhmmer", "mmseqs2") if row[t] != ""]
+            if not vals or min(vals) >= cutoff:
+                o.write(row["accession"] + "\n")
+                n += 1
+    print("%s: %d dark proteins (no tool hit with E < %g)" % (species, n, cutoff))
+
+
+def cmd_extract(path, ids_path, max_evalue, out):
+    dark = set(l.strip() for l in open(ids_path) if l.strip())
+    # kmerseek quotes an id that holds a comma ("FUN001269_BETA1,3GLUCANBINDING"), so a line
+    # whose first character is a quote is parsed in full; any other line is kept only when
+    # the text before its first comma is a dark id, before paying for the csv parse.
+    quoted_dark = set(d for d in dark if "," in d)
+    max_evalue = float(max_evalue)
+    proc = subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE, universal_newlines=True)
+    header = next(csv.reader([proc.stdout.readline()]))
+    idx = {k: header.index(k) for k in KEEP}
+    i_ev = idx["region_evalue"]
+    n_in = n_out = 0
+    with gzip.open(out, "wt", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["source_file"] + KEEP)
+        for line in proc.stdout:
+            n_in += 1
+            if line.startswith('"'):
+                if not quoted_dark:
+                    continue
+            elif line.split(",", 1)[0] not in dark:
+                continue
+            row = next(csv.reader([line]))
+            if row[0] in dark and float(row[i_ev]) < max_evalue:
+                w.writerow([os.path.basename(path)] + [row[idx[k]] for k in KEEP])
+                n_out += 1
+    if proc.wait() != 0:
+        sys.exit("zstdcat failed on %s" % path)
+    print("%s: %d regions read, %d kept" % (os.path.basename(path), n_in, n_out))
+
+
+def sprot_descriptions(dat_path, wanted):
+    """accession -> first RecName/SubName Full= of a Swiss-Prot entry, for wanted accessions."""
+    out = {}
+    accs, name = [], None
+    with gzip.open(dat_path, "rt") as fh:
+        for line in fh:
+            if line.startswith("AC   "):
+                accs += [a.strip() for a in line[5:].split(";") if a.strip()]
+            elif line.startswith("DE   ") and name is None and "Full=" in line:
+                name = line.split("Full=", 1)[1].split("{")[0].strip().rstrip(";")
+            elif line.startswith("//"):
+                for a in accs:
+                    if a in wanted:
+                        out[a] = name or ""
+                accs, name = [], None
+    return out
+
+
+def cmd_annotate(parts_dir, query_fasta, reference_fasta, dat_path, out):
+    parts = sorted(glob.glob(os.path.join(parts_dir, "*.csv.gz")))
+    if not parts:
+        sys.exit("no parts in %s" % parts_dir)
+    rows = []
+    for p in parts:
+        with gzip.open(p, "rt", newline="") as fh:
+            rows.extend(csv.DictReader(fh))
+    queries = set(r["query_name"] for r in rows)
+    targets = set(r["target_name"] for r in rows)
+    qseq = read_fasta(query_fasta, queries)
+    tseq = read_fasta(reference_fasta, targets)
+    missing = (queries - set(qseq)) | (targets - set(tseq))
+    if missing:
+        sys.exit("%d ids have no sequence, e.g. %s" % (len(missing), sorted(missing)[:3]))
+    desc = sprot_descriptions(dat_path, targets)
+    qlc = {q: low_complexity_mask(s) for q, s in qseq.items()}
+    qtm = {q: helix_mask(s) for q, s in qseq.items()}
+    tlc = {t: low_complexity_mask(s) for t, s in tseq.items()}
+    ttm = {t: helix_mask(s) for t, s in tseq.items()}
+    with gzip.open(out, "wt", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(KEEP + ["source_file", "query_length", "target_length", "query_lc", "query_tm",
+                           "target_lc", "target_tm", "target_description"])
+        for r in rows:
+            q, t = r["query_name"], r["target_name"]
+            qs, qe = int(r["region_start"]), int(r["region_end"])
+            ts, te = int(r["target_start"]), int(r["target_end"])
+            if qseq[q][qs:qe] != r["region_subseq"] or tseq[t][ts:te] != r["target_subseq"]:
+                sys.exit("coordinates do not match the residues for %s -> %s %d-%d" % (q, t, qs, qe))
+            w.writerow([r[k] for k in KEEP] + [r["source_file"], len(qseq[q]), len(tseq[t]),
+                       share(qlc[q], qs, qe), share(qtm[q], qs, qe),
+                       share(tlc[t], ts, te), share(ttm[t], ts, te), desc.get(t, "")])
+    print("%d regions, %d dark proteins, %d targets, %d target names found"
+          % (len(rows), len(queries), len(targets), sum(1 for t in targets if desc.get(t))))
+
+
+def main():
+    if len(sys.argv) < 2 or sys.argv[1] not in ("ids", "extract", "annotate"):
+        sys.exit(__doc__)
+    cmd, args = sys.argv[1], sys.argv[2:]
+    {"ids": cmd_ids, "extract": cmd_extract, "annotate": cmd_annotate}[cmd](*args)
+
+
+if __name__ == "__main__":
+    main()

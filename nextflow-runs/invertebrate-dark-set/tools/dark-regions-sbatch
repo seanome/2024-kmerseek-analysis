@@ -1,0 +1,40 @@
+#!/bin/bash
+# Submit tools/dark-regions over a finished midi run: one SLURM array task per region file
+# (extract), then one job per species (annotate) that waits for its species' files.
+#
+#   tools/dark-regions-sbatch <launch_dir> <out_dir> "<setting> <setting> ..." [tool_cutoff] [max_evalue]
+#
+# <setting> is <alphabet>.k<k>.s<scaled>, e.g. hp_lehninger2.k17.s1. tool_cutoff (default 1)
+# sets the dark proteins: no phmmer, jackhmmer or mmseqs2 hit with E below it. max_evalue
+# (default 10) keeps regions with region_evalue below it. Reads:
+#   $RESULTS/<species>/kmerseek/chunk_*.<setting>.lcfalse.*.regions.csv.zst
+#   $RESULTS/protein-evalues/   (tools/export-protein-evalues output)
+#   $REF/minus_<clade>/reference.fasta, $SPROT (Swiss-Prot .dat.gz for target names)
+# Added 2026-10-12 (notebook 279, PR 120).
+set -euo pipefail
+LAUNCH=$1; OUT=$2; SETTINGS=$3; CUT=${4:-1}; MAXE=${5:-10}
+RESULTS=${RESULTS:-/scratch/users/olgabot/invertebrate-dark-set/results-0.4}
+REF=${REF:-/scratch/users/olgabot/invertebrate-dark-set/reference}
+SPROT=${SPROT:-/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/uniprot_sprot.dat.gz}
+TOOL=$(cd "$(dirname "$0")" && pwd)/dark-regions
+declare -A CLADE=([human]=Mammalia [worm]=Chromadorea [yeast]=Saccharomycetes [borrelia]=Spirochaetia [botryllus]=Ascidiacea)
+TRACE=$(ls -t "$LAUNCH"/trace.*.txt | head -1)
+mkdir -p "$OUT/logs"
+for sp in human worm yeast borrelia botryllus; do
+    mkdir -p "$OUT/$sp/parts"
+    python3 "$TOOL" ids "$RESULTS/protein-evalues" "$sp" "$CUT" "$OUT/$sp/dark_ids.txt"
+    : > "$OUT/$sp/files.txt"
+    for st in $SETTINGS; do
+        ls "$RESULTS/$sp/kmerseek/"chunk_*."$st".lcfalse.*.regions.csv.zst >> "$OUT/$sp/files.txt"
+    done
+    n=$(wc -l < "$OUT/$sp/files.txt")
+    hash=$(awk -F'\t' -v s="$sp" '$3 ~ ("kmerseekDarkGain \\(" s "\\)") {print $2}' "$TRACE")
+    query=$(ls "$LAUNCH"/work/"$hash"*/"$sp".query.fasta)
+    arr=$(sbatch --parsable -p hns,normal -A ayeletv -c 1 --mem 4G -t 2:00:00 -J "dr-x-$sp" \
+        --array=1-"$n" -o "$OUT/logs/extract-$sp-%a.log" --wrap \
+        "f=\$(sed -n \${SLURM_ARRAY_TASK_ID}p $OUT/$sp/files.txt); python3 $TOOL extract \$f $OUT/$sp/dark_ids.txt $MAXE $OUT/$sp/parts/\$(basename \$f .regions.csv.zst).csv.gz")
+    ann=$(sbatch --parsable -p hns,normal -A ayeletv -c 1 --mem 48G -t 4:00:00 -J "dr-a-$sp" \
+        --dependency=afterok:"$arr" -o "$OUT/logs/annotate-$sp.log" --wrap \
+        "python3 $TOOL annotate $OUT/$sp/parts $query $REF/minus_${CLADE[$sp]}/reference.fasta $SPROT $OUT/${sp}_dark_regions.csv.gz")
+    echo "$sp: $n region files, extract array $arr, annotate $ann"
+done
