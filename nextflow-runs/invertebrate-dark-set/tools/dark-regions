@@ -209,21 +209,43 @@ def cmd_annotate(parts_dir, query_fasta, reference_fasta, dat_path, out):
     qtm = {q: helix_mask(s) for q, s in qseq.items()}
     tlc = {t: low_complexity_mask(s) for t, s in tseq.items()}
     ttm = {t: helix_mask(s) for t, s in tseq.items()}
-    with gzip.open(out, "wt", newline="") as fh:
+    # kmerseek 0.4.0 merges index entries with equal k-mer sets and reports the second name
+    # with the first sequence's target coordinates and residues (kmerseek PR 141). Such a
+    # row is kept: target_coords is "moved" when its residues occur elsewhere in the named
+    # target (the masks are read there), "not_found" when they do not (the masks are
+    # computed on the region's own residues). A query-side mismatch is still an error.
+    n_moved = n_missing = 0
+    tmp = out + ".tmp"
+    with gzip.open(tmp, "wt", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(KEEP + ["source_file", "query_length", "target_length", "query_lc", "query_tm",
-                           "target_lc", "target_tm", "target_description"])
+                           "target_lc", "target_tm", "target_coords", "target_description"])
         for r in rows:
             q, t = r["query_name"], r["target_name"]
             qs, qe = int(r["region_start"]), int(r["region_end"])
             ts, te = int(r["target_start"]), int(r["target_end"])
-            if qseq[q][qs:qe] != r["region_subseq"] or tseq[t][ts:te] != r["target_subseq"]:
-                sys.exit("coordinates do not match the residues for %s -> %s %d-%d" % (q, t, qs, qe))
+            if qseq[q][qs:qe] != r["region_subseq"]:
+                sys.exit("query coordinates do not match the residues for %s %d-%d" % (q, qs, qe))
+            sub = r["target_subseq"]
+            if tseq[t][ts:te] == sub:
+                coords, t_lc, t_tm = "match", share(tlc[t], ts, te), share(ttm[t], ts, te)
+            elif sub in tseq[t]:
+                ts = tseq[t].index(sub)
+                te = ts + len(sub)
+                coords, t_lc, t_tm = "moved", share(tlc[t], ts, te), share(ttm[t], ts, te)
+                n_moved += 1
+            else:
+                coords = "not_found"
+                t_lc = share(low_complexity_mask(sub), 0, len(sub))
+                t_tm = share(helix_mask(sub), 0, len(sub))
+                n_missing += 1
             w.writerow([r[k] for k in KEEP] + [r["source_file"], len(qseq[q]), len(tseq[t]),
-                       share(qlc[q], qs, qe), share(qtm[q], qs, qe),
-                       share(tlc[t], ts, te), share(ttm[t], ts, te), desc.get(t, "")])
-    print("%d regions, %d dark proteins, %d targets, %d target names found"
-          % (len(rows), len(queries), len(targets), sum(1 for t in targets if desc.get(t))))
+                       share(qlc[q], qs, qe), share(qtm[q], qs, qe), t_lc, t_tm, coords, desc.get(t, "")])
+    os.replace(tmp, out)
+    print("%d regions, %d dark proteins, %d targets, %d target names found; target residues "
+          "elsewhere in the target: %d, not in the target: %d"
+          % (len(rows), len(queries), len(targets), sum(1 for t in targets if desc.get(t)),
+             n_moved, n_missing))
 
 
 def main():
