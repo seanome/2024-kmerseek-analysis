@@ -82,3 +82,5 @@ def from_kmerseek(start0: int, end_exclusive: int) -> tuple[int, int]:
 def overlap(a_start: int, a_end: int, b_start: int, b_end: int) -> int:
     """Residues shared by two 1-based inclusive intervals."""
     return max(0, min(a_end, b_end) - max(a_start, b_start) + 1)
+
+SHORT_AA = 60  # "short region": under 60 aa, as the plan defines it
