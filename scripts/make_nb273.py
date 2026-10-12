@@ -206,9 +206,9 @@ def hp_letter(c):
     return cls.get(c.upper(), "-")
 
 
-qh = "".join(hp_letter(c) for c in q)
-th = "".join(hp_letter(c) for c in t)
-both = [hp_letter(a) != "-" and hp_letter(b) != "-" for a, b in zip(q, t)]
+L = hc.alignment_lines(q, t, HP)
+qh, th, both = L["query_class"], L["target_class"], L["aligned"]
+id_line, hp_line = L["identical"], L["same_class"]
 rng = np.random.default_rng(SEED)
 t_list = list(t)
 res_pos = [i for i, c in enumerate(t) if hp_letter(c) != "-"]
@@ -217,10 +217,6 @@ t_shuf = t_list.copy()
 for i, j in zip(res_pos, perm):
     t_shuf[i] = t[j]
 tsh = "".join(hp_letter(c) for c in t_shuf)
-id_line = "".join(
-    "|" if ok and a.upper() == b.upper() else " " for ok, a, b in zip(both, q, t)
-)
-hp_line = "".join("|" if ok and a == b else " " for ok, a, b in zip(both, qh, th))
 sh_line = "".join("|" if ok and a == b else " " for ok, a, b in zip(both, qh, tsh))
 
 n_al = sum(both)
@@ -240,18 +236,18 @@ print(
     f"h_query = {h_q:.2f}, h_target = {h_t:.2f}; Pr(agree by chance) = "
     f"{h_q:.2f} x {h_t:.2f} + {1 - h_q:.2f} x {1 - h_t:.2f} = {chance:.2f} ({100 * chance:.0f} per 100)\n"
 )
-W = 60
-for s in range(0, len(q), W):
-    e = s + W
-    print(f"query            {q[s:e]}")
-    print(f"identical        {id_line[s:e]}")
-    print(f"target           {t[s:e]}")
-    print(f"query H/P        {qh[s:e]}")
-    print(f"same H/P class   {hp_line[s:e]}")
-    print(f"target H/P       {th[s:e]}")
-    print(f"shuffled target  {tsh[s:e]}")
-    print(f"same H/P class   {sh_line[s:e]}")
-    print(f"columns {s + 1}-{min(e, len(q))}\n")
+hc.print_alignment(
+    [
+        ("query", q),
+        ("identical", id_line),
+        ("target", t),
+        ("query H/P", qh),
+        ("same H/P class", hp_line),
+        ("target H/P", th),
+        ("shuffled target", tsh),
+        ("same H/P class", sh_line),
+    ]
+)
 
 row = pfam.filter(
     (pl.col("query") == ex["query"])
@@ -286,30 +282,11 @@ rows = [
     ("same H/P class, shuffled", "agree", sh_line, n_sh),
 ]
 fig, ax = plt.subplots(figsize=(12, 3.6))
-for y, (name, kind, line, n) in enumerate(rows):
-    if kind == "class":
-        for x, c in zip(cols, line):
-            if c in "HP":
-                ax.add_patch(plt.Rectangle((x - 0.5, y - 0.35), 1, 0.7, lw=0,
-                                           color=H_COLOR if c == "H" else P_COLOR))
-    else:
-        hit = [x for x, ok, c in zip(cols, both, line) if ok and c == "|"]
-        miss = [x for x, ok, c in zip(cols, both, line) if ok and c != "|"]
-        ax.scatter(hit, [y] * len(hit), marker="s", s=14, color=AGREE_COLOR, lw=0)
-        ax.scatter(miss, [y] * len(miss), marker=".", s=10, color="#9a9a9a", lw=0)
-        ax.text(len(q) + 2, y, f"{n} of {n_al} ({100 * n / n_al:.0f} per 100)",
-                va="center", ha="left", fontsize=9)
+hc.draw_alignment_rows(
+    ax, [(name, kind, line) for name, kind, line, _ in rows], both, H_COLOR, P_COLOR, AGREE_COLOR
+)
 gap = [x for x, ok in zip(cols, both) if not ok]
-for y, (_, kind, _, _) in enumerate(rows):
-    if kind == "agree":
-        ax.scatter(gap, [y] * len(gap), marker="x", s=10, color="#c8c8c8", lw=0.8)
-ax.set_yticks(range(len(rows)), [r[0] for r in rows])
-ax.set_ylim(len(rows) - 0.5, -0.5)
-ax.set_xlim(0.5, len(q) + 0.5)
 ax.set_xlabel("alignment column (gaps included)")
-for side in ("top", "right", "left"):
-    ax.spines[side].set_visible(False)
-ax.tick_params(axis="y", length=0)
 handles = [
     Patch(color=H_COLOR, label=f"H, hydrophobic: {h_res}"),
     Patch(color=P_COLOR, label=f"P, polar: {p_res}"),
@@ -777,7 +754,166 @@ hc.finish_figure(
 """)
 
 md(r"""
-## 4. Summary and conclusions
+## 4. One typical pair at each identity, position by position
+
+Section 1 showed one pair. Here is one pair from each Pfam identity bin, so the numbers in
+sections 2 and 3 can be seen as residues. Each pair is the bin's most typical one, chosen by a
+rule fixed before looking at the pairs: among pairs with 80 to 150 aligned positions (short
+enough to read), the pair whose H/P I and 20 amino acid I are both closest to the middle of
+the bin (the smallest sum of the two distances from the 50th percentile, percentiles taken
+over all pairs in the bin), one Pfam family per bin.
+
+For each pair the lines are: the two aligned sequences, with `|` where the residues are
+identical (the 20 amino acid count); then the two sequences written as H and P, with `|`
+where the classes agree (the H/P count). Positions with a gap on either side (`-` or `.`) are
+not counted. The table first gives each pair's counts beside the bin's median, so you can see
+how typical it is. The figure draws all five pairs on one column scale.
+""")
+
+code(r"""
+wide = (
+    pfam.pivot(
+        on="alphabet",
+        index=["identity_bin", "family", "family_id", "query", "target", "seqid_ali", "n_cols"],
+        values=["agree", "expected", "evidence"],
+    )
+    .with_columns(
+        (pl.col(f"evidence_{a}").rank() / pl.len()).over("identity_bin").alias(f"pct_{a}")
+        for a in ALPHABETS
+    )
+    .with_columns(
+        ((pl.col(f"pct_{HP}") - 0.5).abs() + (pl.col(f"pct_{P20}") - 0.5).abs()).alias("dist")
+    )
+)
+picked, used = [], set()
+for b in hc.IDENTITY_LABELS:
+    cand = (
+        wide.filter((pl.col("identity_bin") == b) & pl.col("n_cols").is_between(80, 150))
+        .filter(~pl.col("family").is_in(list(used)))
+        .sort(["dist", "family", "query", "target"])
+    )
+    row = cand.row(0, named=True)
+    used.add(row["family"])
+    picked.append(row)
+ex_pairs = pl.DataFrame(picked).with_columns(
+    pl.col("identity_bin").cast(pl.Enum(hc.IDENTITY_LABELS))
+)
+
+med = wide.group_by("identity_bin").agg(
+    pl.len().alias("pairs in bin"),
+    *[(pl.col(f"agree_{a}").median() * 100).round(1).alias(f"median agree {a}") for a in ALPHABETS],
+    *[pl.col(f"evidence_{a}").median().round(3).alias(f"median I {a}") for a in ALPHABETS],
+)
+show = ex_pairs.join(med, on="identity_bin").sort("identity_bin").select(
+    "identity_bin",
+    pl.format("{} ({})", "family", "family_id").alias("Pfam family"),
+    "query",
+    "target",
+    (pl.col("seqid_ali") * 100).round(1).alias("identity %"),
+    pl.col("n_cols").alias("aligned positions"),
+    (pl.col(f"agree_{P20}") * 100).round(1).alias("identical per 100"),
+    f"median agree {P20}",
+    (pl.col(f"agree_{HP}") * 100).round(1).alias("same H/P per 100"),
+    f"median agree {HP}",
+    (pl.col(f"expected_{HP}") * 100).round(1).alias("H/P chance per 100"),
+    pl.col(f"evidence_{P20}").round(3).alias(f"I {P20}"),
+    f"median I {P20}",
+    pl.col(f"evidence_{HP}").round(3).alias(f"I {HP}"),
+    f"median I {HP}",
+    "pairs in bin",
+)
+print("One pair per Pfam identity bin; medians are over all pairs in that bin (>= 50 aligned positions)")
+print(show)
+
+aln_ex = aln.join(ex_pairs.select("family", "query", "target", "identity_bin"), on=["family", "query", "target"])
+ex_lines = {}
+for r in aln_ex.sort("identity_bin").iter_rows(named=True):
+    L = hc.alignment_lines(r["qaln"], r["taln"], HP)
+    ex_lines[r["identity_bin"]] = (r, L)
+    n_al = L["n_aligned"]
+    n_id, n_hp = L["identical"].count("|"), L["same_class"].count("|")
+    print(
+        f"\n=== {r['identity_bin']} identity: {r['family']} ({r['family_id']}), "
+        f"{r['query']} against {r['target']}"
+    )
+    print(
+        f"aligned positions {n_al}; identical {n_id} ({100 * n_id / n_al:.0f} per 100); "
+        f"same H/P class {n_hp} ({100 * n_hp / n_al:.0f} per 100)\n"
+    )
+    hc.print_alignment(
+        [
+            ("query", L["query"]),
+            ("identical", L["identical"]),
+            ("target", L["target"]),
+            ("query H/P", L["query_class"]),
+            ("same H/P class", L["same_class"]),
+            ("target H/P", L["target_class"]),
+        ]
+    )
+""")
+
+code(r"""
+x_max = max(len(L["query"]) for _, L in ex_lines.values())
+fig, axes = plt.subplots(len(ex_lines), 1, figsize=(12, 1.75 * len(ex_lines)), sharex=True)
+for ax, (b, (r, L)) in zip(axes, ex_lines.items()):
+    hc.draw_alignment_rows(
+        ax,
+        [
+            ("identical residue", "agree", L["identical"]),
+            ("query H/P", "class", L["query_class"]),
+            ("target H/P", "class", L["target_class"]),
+            ("same H/P class", "agree", L["same_class"]),
+        ],
+        L["aligned"],
+        H_COLOR,
+        P_COLOR,
+        AGREE_COLOR,
+        x_max=x_max,
+    )
+    ax.set_title(
+        f"{b} identity: {r['family_id']} ({r['family']}), {r['query']} against {r['target']}",
+        loc="left",
+        fontsize=10,
+    )
+axes[-1].set_xlabel("alignment column (gaps included)")
+ex_handles = [
+    Patch(color=H_COLOR, label=f"H, hydrophobic: {h_res}"),
+    Patch(color=P_COLOR, label=f"P, polar: {p_res}"),
+    Line2D([], [], ls="", marker="s", ms=5, color=AGREE_COLOR, label="the two residues agree (counted)"),
+    Line2D([], [], ls="", marker=".", ms=6, color="#9a9a9a", label="the two residues differ (counted)"),
+    Line2D([], [], ls="", marker="x", ms=4, color="#c8c8c8", mew=0.8,
+           label="gap in either sequence (not counted)"),
+]
+axes[0].legend(
+    handles=ex_handles, loc="lower left", bbox_to_anchor=(0, 1.35), ncol=3,
+    fontsize=9, frameon=False, borderaxespad=0,
+)
+counts = {
+    b: (L["identical"].count("|"), L["same_class"].count("|"), L["n_aligned"])
+    for b, (_, L) in ex_lines.items()
+}
+for b, (n_id, n_hp, n_al) in counts.items():
+    print(f"{b}: identical {n_id} of {n_al}, same H/P class {n_hp} of {n_al}")
+lo, hi = counts["<20%"], counts[">=60%"]
+hc.finish_figure(
+    fig,
+    FIG / "273_one_pair_per_identity_bin_hp_and_protein20_pfam_seed.png",
+    tools=f"no kmerseek; Pfam-A 38.2 seed alignments, {HP} classes and protein20",
+    title="One typical Pfam seed pair per identity bin, position by position",
+    hypothesis=(
+        "As identity falls, identical residues thin out faster than same H/P class. "
+        "More black squares in a row is more agreement."
+    ),
+    conclusion=(
+        f"Under 20% identity: {lo[0]} of {lo[2]} positions identical, {lo[1]} of {lo[2]} the same "
+        f"H/P class. At 60% and above: {hi[0]} of {hi[2]} identical, {hi[1]} of {hi[2]} the same "
+        "H/P class."
+    ),
+)
+""")
+
+md(r"""
+## 5. Summary and conclusions
 
 **Question.** Do the kappa-based numbers for H/P agreement (74 vs 51 per 100 at 20-30%
 identity; 25 vs 6 for 20 amino acids; I about 0.15 vs 0.26 bits) hold when agreement is

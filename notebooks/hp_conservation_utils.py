@@ -217,6 +217,113 @@ def compute_pair_table(
     return pl.DataFrame(out)
 
 
+def alignment_lines(qaln: str, taln: str, alphabet: str = "hp_thomas_dill2") -> dict:
+    """Per-column strings for showing one aligned pair in protein20 and a 2-class alphabet.
+
+    ``query_class``/``target_class`` write each residue as H (first class) or P (second
+    class), ``-`` for a gap. ``identical`` and ``same_class`` hold ``|`` where both columns
+    have a residue and they agree. ``aligned`` is True where neither sequence has a gap,
+    the columns ``pair_stats`` counts.
+    """
+    h, p = ALPHABET_CLUSTERS[alphabet]
+    cls = {r: "H" for r in h} | {r: "P" for r in p}
+
+    def letter(c):
+        return cls.get(c.upper(), "-")
+
+    qc = "".join(letter(c) for c in qaln)
+    tc = "".join(letter(c) for c in taln)
+    aligned = [a != "-" and b != "-" for a, b in zip(qc, tc)]
+    identical = "".join(
+        "|" if ok and a.upper() == b.upper() else " "
+        for ok, a, b in zip(aligned, qaln, taln)
+    )
+    same_class = "".join(
+        "|" if ok and a == b else " " for ok, a, b in zip(aligned, qc, tc)
+    )
+    return {
+        "query": qaln,
+        "target": taln,
+        "query_class": qc,
+        "target_class": tc,
+        "aligned": aligned,
+        "identical": identical,
+        "same_class": same_class,
+        "n_aligned": sum(aligned),
+    }
+
+
+def print_alignment(rows: list[tuple[str, str]], width: int = 60) -> None:
+    """Print (label, line) rows in blocks of `width` columns, with the column range."""
+    n = len(rows[0][1])
+    pad = max(len(name) for name, _ in rows) + 2
+    for s in range(0, n, width):
+        for name, line in rows:
+            print(f"{name:<{pad}}{line[s:s + width]}")
+        print(f"columns {s + 1}-{min(s + width, n)}\n")
+
+
+def draw_alignment_rows(
+    ax,
+    rows: list[tuple[str, str, str]],
+    aligned: list[bool],
+    h_color: str,
+    p_color: str,
+    agree_color: str = "black",
+    differ_color: str = "#9a9a9a",
+    gap_color: str = "#c8c8c8",
+    x_max: int | None = None,
+) -> None:
+    """Draw an aligned pair one row per line, one column per alignment column.
+
+    Each row is (label, kind, line). kind "class": a coloured box per H or P residue.
+    kind "agree": a square where the line has ``|``, a dot where an aligned column
+    differs, an x at a gap column, and "n of N (per 100)" at the right.
+    """
+    from matplotlib.patches import Rectangle
+
+    n_col = len(rows[0][2])
+    n_al = sum(aligned)
+    cols = np.arange(1, n_col + 1)
+    gap = [x for x, ok in zip(cols, aligned) if not ok]
+    x_max = x_max or n_col
+    for y, (_, kind, line) in enumerate(rows):
+        if kind == "class":
+            for x, c in zip(cols, line):
+                if c in "HP":
+                    ax.add_patch(
+                        Rectangle(
+                            (x - 0.5, y - 0.35),
+                            1,
+                            0.7,
+                            lw=0,
+                            color=h_color if c == "H" else p_color,
+                        )
+                    )
+        else:
+            hit = [x for x, ok, c in zip(cols, aligned, line) if ok and c == "|"]
+            miss = [x for x, ok, c in zip(cols, aligned, line) if ok and c != "|"]
+            ax.scatter(hit, [y] * len(hit), marker="s", s=14, color=agree_color, lw=0)
+            ax.scatter(
+                miss, [y] * len(miss), marker=".", s=10, color=differ_color, lw=0
+            )
+            ax.scatter(gap, [y] * len(gap), marker="x", s=10, color=gap_color, lw=0.8)
+            ax.text(
+                x_max + 2,
+                y,
+                f"{len(hit)} of {n_al} ({100 * len(hit) / n_al:.0f} per 100)",
+                va="center",
+                ha="left",
+                fontsize=9,
+            )
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows])
+    ax.set_ylim(len(rows) - 0.5, -0.5)
+    ax.set_xlim(0.5, x_max + 0.5)
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+
+
 IDENTITY_BINS = [0.0, 0.2, 0.3, 0.4, 0.6, 1.01]
 IDENTITY_LABELS = ["<20%", "20-30%", "30-40%", "40-60%", ">=60%"]
 
