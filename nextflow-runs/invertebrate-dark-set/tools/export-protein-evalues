@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+"""Write each protein's best E-value from every search, so any cutoff is a filter.
+
+    tools/export-protein-evalues <launch_dir> <out_dir>
+
+Reads a finished run's trace (<launch_dir>/trace.*.txt) to find, per species, the work
+folders of computeDarkSet and kmerseekDarkGain, and reads the files staged there:
+
+  computeDarkSet/hits/*.tsv.gz      phmmer, jackhmmer and mmseqs2 hits, one line per hit:
+                                    query, target, tstart, tend, bits, evalue. The searches
+                                    ran at E <= 10 (--evalue_report), so every hit up to
+                                    E = 10 is there.
+  kmerseekDarkGain/<query fasta>    the species' proteome, every protein searched.
+  kmerseekDarkGain/queries/*.tsv    one file per chunk and kmerseek setting: each protein
+                                    with any region, and its smallest region E-value.
+
+Writes two gzipped CSVs per species into <out_dir>:
+
+  <species>_protein_tool_min_evalue.csv.gz
+      accession, phmmer, jackhmmer, mmseqs2: the smallest hit E-value per tool, empty when
+      the tool reported no hit. Every protein of the proteome has a row.
+  <species>_protein_kmerseek_min_evalue.csv.gz
+      alphabet, ksize, scaled, extension, accession, min_region_evalue: one row per protein
+      with any kmerseek region under that setting. A protein with no row has no region.
+      Settings refused for lack of a Karlin-Altschul fit are listed in
+      <species>_kmerseek_unfitted.csv.
+
+A protein is dark at cutoff T when no tool has a hit with E <= T, and reached by a kmerseek
+setting at cutoff U when its min_region_evalue <= U. Nothing is searched again.
+
+Added 2026-10-12, when Olga asked to compare dark-set results at E < 1 and E < 10 without
+rerunning any search ("just filter results"). The pipeline's own summaries use one cutoff
+each (--evalue_call 1e-3, --kmerseek_evalue_max 0.01,0.0001). Python 3.6, standard library
+only, so it runs with Sherlock's system python3.
+"""
+import csv
+import glob
+import gzip
+import os
+import re
+import sys
+
+# Same pattern as bin/kmerseek_dark_gain.py
+NAME = re.compile(r"^(?P<chunk>[^.]+)\.(?P<alphabet>.+)\.k(?P<ksize>\d+)\.s(?P<scaled>\d+)"
+                  r"\.lc(?P<lc>true|false)\.(?P<ext>exact|extend-c[0-9.]+)\.queries\.tsv$")
+TOOLS = ("phmmer", "jackhmmer", "mmseqs2")
+
+
+def work_dirs(launch_dir, process):
+    """species -> work folder of `process`, from the newest trace in the launch folder."""
+    traces = sorted(glob.glob(os.path.join(launch_dir, "trace.*.txt")), key=os.path.getmtime)
+    if not traces:
+        sys.exit("no trace.*.txt in %s" % launch_dir)
+    found = {}
+    with open(traces[-1]) as fh:
+        header = fh.readline().rstrip("\n").split("\t")
+        i_hash, i_name = header.index("hash"), header.index("name")
+        for line in fh:
+            f = line.rstrip("\n").split("\t")
+            m = re.match(r"^\S*:%s \((\w+)\)$" % process, f[i_name])
+            if m:
+                hits = glob.glob(os.path.join(launch_dir, "work", f[i_hash] + "*"))
+                if len(hits) != 1:
+                    sys.exit("work folder for %s not found once: %s" % (f[i_name], hits))
+                found[m.group(1)] = hits[0]
+    return found
+
+
+def fasta_accessions(path):
+    opener = gzip.open if path.endswith(".gz") else open
+    accs = []
+    with opener(path, "rt") as fh:
+        for line in fh:
+            if line.startswith(">"):
+                accs.append(line[1:].strip().split()[0])
+    return accs
+
+
+def main():
+    if len(sys.argv) != 3:
+        sys.exit(__doc__)
+    launch_dir, out_dir = sys.argv[1], sys.argv[2]
+    os.makedirs(out_dir, exist_ok=True)
+    dark_dirs = work_dirs(launch_dir, "computeDarkSet")
+    gain_dirs = work_dirs(launch_dir, "kmerseekDarkGain")
+    if set(dark_dirs) != set(gain_dirs):
+        sys.exit("species differ: computeDarkSet %s, kmerseekDarkGain %s"
+                 % (sorted(dark_dirs), sorted(gain_dirs)))
+
+    for species in sorted(gain_dirs):
+        gdir = gain_dirs[species]
+        fastas = [p for p in glob.glob(os.path.join(gdir, "*"))
+                  if re.search(r"\.(fa|fasta|faa)(\.gz)?$", p)]
+        if len(fastas) != 1:
+            sys.exit("%s: expected one query FASTA in %s, found %s" % (species, gdir, fastas))
+        proteome = fasta_accessions(fastas[0])
+        known = set(proteome)
+
+        # Tool hits: smallest E-value per protein per tool
+        best = {t: {} for t in TOOLS}
+        hit_files = sorted(glob.glob(os.path.join(dark_dirs[species], "hits", "*.tsv.gz")))
+        for f in hit_files:
+            tool = next((t for t in TOOLS if "." + t + "." in os.path.basename(f)), None)
+            if tool is None:
+                sys.exit("%s: cannot tell the tool from %s" % (species, f))
+            d = best[tool]
+            with gzip.open(f, "rt") as fh:
+                for line in fh:
+                    parts = line.rstrip("\n").split("\t")
+                    if len(parts) < 6:
+                        continue
+                    q, ev = parts[0], float(parts[5])
+                    if q not in d or ev < d[q]:
+                        d[q] = ev
+        stray = set().union(*[set(d) for d in best.values()]) - known
+        if stray:
+            sys.exit("%s: %d hit queries are not in the proteome, e.g. %s"
+                     % (species, len(stray), sorted(stray)[:3]))
+        path = os.path.join(out_dir, "%s_protein_tool_min_evalue.csv.gz" % species)
+        with gzip.open(path, "wt", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["accession"] + list(TOOLS))
+            for acc in proteome:
+                w.writerow([acc] + [repr(best[t][acc]) if acc in best[t] else "" for t in TOOLS])
+
+        # kmerseek: smallest region E-value per protein per setting, across chunks
+        settings = {}
+        unfitted = set()
+        qfiles = sorted(glob.glob(os.path.join(gdir, "queries", "*.queries.tsv")))
+        for f in qfiles:
+            m = NAME.match(os.path.basename(f))
+            if not m:
+                sys.exit("%s: cannot parse %s" % (species, f))
+            key = (m.group("alphabet"), int(m.group("ksize")), int(m.group("scaled")),
+                   m.group("lc"), m.group("ext"))
+            with open(f) as fh:
+                header = fh.readline().rstrip("\n").split("\t")
+                if header and header[0] == "#nofit":
+                    unfitted.add(key)
+                    continue
+                if header[:2] != ["query_name", "min_region_evalue"]:
+                    sys.exit("%s: unexpected header %s" % (f, header))
+                d = settings.setdefault(key, {})
+                for line in fh:
+                    line = line.rstrip("\n")
+                    if not line:
+                        continue
+                    q, e = line.split("\t")
+                    ev = float(e)
+                    if q not in d or ev < d[q]:
+                        d[q] = ev
+        mixed = unfitted & set(settings)
+        if mixed:
+            sys.exit("%s: settings both refused and searched: %s" % (species, sorted(mixed)[:3]))
+        n_rows = 0
+        path = os.path.join(out_dir, "%s_protein_kmerseek_min_evalue.csv.gz" % species)
+        with gzip.open(path, "wt", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["alphabet", "ksize", "scaled", "low_complexity_mask", "extension",
+                        "accession", "min_region_evalue"])
+            for (a, k, sc, lc, ext), d in sorted(settings.items()):
+                for acc in sorted(d):
+                    if acc not in known:
+                        sys.exit("%s: kmerseek query %s is not in the proteome" % (species, acc))
+                    w.writerow([a, k, sc, lc, ext, acc, repr(d[acc])])
+                    n_rows += 1
+        path = os.path.join(out_dir, "%s_kmerseek_unfitted.csv" % species)
+        with open(path, "w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["alphabet", "ksize", "scaled", "low_complexity_mask", "extension"])
+            for row in sorted(unfitted):
+                w.writerow(row)
+        print("%s: %d proteins, %d hit files, %d kmerseek files, %d settings searched, "
+              "%d unfitted, %d kmerseek rows"
+              % (species, len(proteome), len(hit_files), len(qfiles), len(settings),
+                 len(unfitted), n_rows))
+
+
+if __name__ == "__main__":
+    main()
