@@ -153,6 +153,17 @@ params.kmerseek_table_arms      = ''
 // gbmr7 k13 on human ran out of memory at 379 GB, and gbmr7 k14 on worm peaked at 224-252
 // GB. Each of the five is its alphabet's k_min, so these alphabets now start one k higher.
 params.kmerseek_sweep_minus     = 'mmseqs12:5,wass14:5,gbmr4:12,gbmr7:9,gbmr7:10,dayhoff6:8,gbmr4:13,gbmr7:13,gbmr7:14,hsdm17:5'
+// Alphabet:ksize pairs dropped AFTER --kmerseek_ksize_step, same spelling. --kmerseek_sweep_minus
+// runs before the step, and the step counts from each alphabet's lowest k left, so dropping an
+// alphabet's lowest k there moves every other k of that alphabet by one and none of its
+// finished searches are reused. A pair named here leaves the other k's where they were.
+// Added 2026-10-12 for funcgroups8 k7, polarity4 k11 and hp_lehninger_c_nonpolar2 k17, the
+// lowest k of each. Their searches ask 397-489 GB, past the 384 GB the normal partition can
+// give, so only the 15 large-memory hns nodes can run them (Slurm "BadConstraints"); 61 such
+// searches waited in the midi run while it finished 1-8 searches an hour. 56 of them are
+// retries: funcgroups8 k7 and polarity4 k11 at scaled 1 ran out of memory at 190-205 GB on
+// the first try, while the ones that finished peaked at 154-237 GB.
+params.kmerseek_sweep_minus_after_step = 'funcgroups8:7,polarity4:11,hp_lehninger_c_nonpolar2:17'
 // The sweep's table: every alphabet in this file, every whole k from its k_min to its
 // k_max, then --kmerseek_sweep_plus and --kmerseek_sweep_minus. A plus pair outside its
 // alphabet's range is dropped and listed in the log. Columns alphabet, k_min, k_max. With
@@ -1308,6 +1319,15 @@ def resolveCombos() {
                      "--kmerseek_ksize_step ${step} (kept ${stepped.size()}, " +
                      "always keeping ${params.kmerseek_ksize_keep ?: 'none'})"
             pairs = stepped
+        }
+        def minusAfter = parseSpecs(params.kmerseek_sweep_minus_after_step ?: '',
+                                    '--kmerseek_sweep_minus_after_step')
+        if (minusAfter) {
+            def before = pairs.size()
+            pairs = pairs.findAll { a, k -> !minusAfter.any { m -> m[0] == a && m[1] == k } }
+            log.info "  dropped  : ${before - pairs.size()} alphabet x ksize pair(s) by " +
+                     "--kmerseek_sweep_minus_after_step " +
+                     "(${minusAfter.collect { it[0] + ':' + it[1] }.join(', ')})"
         }
     }
     else {
