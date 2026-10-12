@@ -27,6 +27,16 @@ def code(source):
 md(r"""
 # 279. Dark proteins kmerseek puts a region on, at E < 1 and E < 10
 
+> **Undercount in sections 2-6 (found 2026-10-12, after these sections were written).**
+> The per-protein kmerseek E-values come from the run's `queries.tsv` files, which the
+> search step's awk built wrongly: it read a region E-value of "inf" as 0, so a protein with
+> one "inf" region was stored as "inf" even when it had finite E-values (about 30% of
+> extended regions say "inf"). So sections 2-6 count too few reached proteins, dark and
+> placed alike. Section 7 reads the region files themselves and is right; where it recounts
+> section 3's settings it finds more dark proteins reached (545 against 444 in human at
+> E < 1). The files are being repaired in the run (PR 57, commit 0dad375); sections 2-6 will
+> be rebuilt from the repaired files.
+
 **Question.** A protein is *dark* when phmmer, jackhmmer (3 iterations) and mmseqs2 all fail
 to find a hit for it in Swiss-Prot with the query species' own clade removed. For each
 kmerseek alphabet and k-size, what share of the dark proteins does kmerseek put a region on,
@@ -225,7 +235,7 @@ TABLES.mkdir(exist_ok=True)
 reach_all.sort("tool_cutoff", "species", "alphabet", "ksize").write_csv(
     TABLES / f"279_dark_set_kmerseek_reach_scaled{SCALED}_qfo_swissprot.csv")
 
-top = (reach_all.sort("dark_share", descending=True)
+top = (reach_all.sort(["dark_share", "placed_share", "alphabet", "ksize"], descending=[True, True, False, False])
        .group_by("tool_cutoff", "kmerseek_cutoff", "species", maintain_order=True).head(3)
        .sort("tool_cutoff", pl.col("species").replace_strict(order), pl.col("dark_share"), descending=[False, False, True]))
 print("Three settings with the largest dark share, per species and cutoff:")
@@ -272,7 +282,7 @@ each bar.
 
 code(r"""
 best = (reach_all.filter(pl.col("tells_dark_from_placed"))
-        .sort("dark_share", descending=True)
+        .sort(["dark_share", "placed_share", "alphabet", "ksize"], descending=[True, True, False, False])
         .group_by("tool_cutoff", "kmerseek_cutoff", "species", maintain_order=True).head(1))
 grid = pl.DataFrame([{"tool_cutoff": float(t), "kmerseek_cutoff": float(k), "species": s}
                      for t, k in CUTOFF_PAIRS for s in SPECIES])
@@ -493,6 +503,298 @@ pf.save(fig, FIG / f"279_dark_reached_vs_missed_uniprot_features_scaled{SCALED}"
 """)
 
 md(r"""
+## 6. BHF: what phmmer, jackhmmer and kmerseek find on it
+
+BHF (Botryllus histocompatibility factor, FUN008084_FUN008084, 252 residues) is the
+project's flagship allorecognition protein. This section draws, on BHF's own residue
+positions:
+
+* its low-complexity stretches (SEG first pass) and predicted transmembrane helices
+  (Kyte-Doolittle), computed with `notebooks/sequence_masks.py`;
+* every hit phmmer and jackhmmer reported for BHF in the run (Swiss-Prot minus Ascidiacea,
+  reporting cutoff E = 10). The run stored only target coordinates, so phmmer was run again
+  for BHF alone with the same image, reference and cutoff to get the positions on BHF; it
+  returned the same seven hits and E-values. jackhmmer reported the same seven hits:
+  none passed its inclusion cutoff, so it stopped after its first round, which is phmmer.
+  mmseqs2 reported nothing;
+* the kmerseek regions on BHF under hp_lehninger2 k17 (scaled 1, mask off, extended at
+  C = 1.51) with E < 10, the cutoff of this notebook. A region is drawn open when at least
+  half of its BHF residues are in a low-complexity stretch.
+
+Inputs: `/Users/olga/data/invertebrate-dark-set/bhf-view/`, made by
+`scripts/bhf_view_extract.sh`. kmerseek's own per-query view of the same regions
+(`scripts/visualize_hits.py` in the kmerseek repo, top 15 targets by q-value) is
+`figures/279_bhf_kmerseek_visualize_hits_hp_lehninger2_k17.png`.
+""")
+
+code(r"""
+import re
+import shutil
+import subprocess
+
+import sequence_masks as sm
+
+BHF = Path("/Users/olga/data/invertebrate-dark-set/bhf-view")
+BHF_ID = "FUN008084_FUN008084"
+bhf_seq = "".join(l.strip() for l in open(BHF / "bhf.fasta") if not l.startswith(">"))
+names = dict(pl.read_csv(BHF / "target_names.tsv", separator="\t").iter_rows())
+
+# Every phmmer domain hit on BHF: positions on BHF (hmm from/to) and on the target
+dom = []
+for line in open(BHF / "bhf_phmmer.domtbl"):
+    if line.startswith("#"):
+        continue
+    f = line.split()
+    dom.append({"target": f[0], "evalue": float(f[12]), "bits": float(f[13]),
+                "bhf_start": int(f[15]), "bhf_end": int(f[16]), "target_start": int(f[17]), "target_end": int(f[18])})
+dom = pl.DataFrame(dom).with_columns(pl.col("target").replace_strict(names, default="").alias("target_name")).sort("evalue")
+stored = pl.read_csv(BHF / "bhf_tool_hits.tsv", separator="\t", has_header=False,
+                     new_columns=["tool", "query", "target", "tstart", "tend", "bits", "evalue"])
+print("Stored run hits per tool:", dict(stored.group_by("tool").len().iter_rows()))
+same = (set(stored.filter(pl.col("tool") == "phmmer")["target"]) == set(dom["target"])
+        == set(stored.filter(pl.col("tool") == "jackhmmer")["target"]))
+print("phmmer rerun, stored phmmer and stored jackhmmer report the same targets:", same)
+print(dom.select("target", "target_name", "evalue", "bits", "bhf_start", "bhf_end"))
+
+# kmerseek regions on BHF, hp_lehninger2 k17
+kr = pl.read_csv(BHF / "bhf_hp_lehninger2_k17_s1.csv", infer_schema_length=0).with_columns(
+    pl.col("region_start", "region_end", "target_start", "target_end").cast(pl.Int64), pl.col("region_evalue").cast(pl.Float64))
+lc = sm.low_complexity_mask(bhf_seq)
+tm = sm.helix_mask(bhf_seq)
+kr = kr.with_columns(pl.struct("region_start", "region_end").map_elements(
+    lambda r: sum(lc[r["region_start"]:r["region_end"]]) / (r["region_end"] - r["region_start"]), return_dtype=pl.Float64).alias("bhf_lc_share"))
+print(f"kmerseek regions on BHF: {kr.height:_} in all, {kr.filter(pl.col('region_evalue') < 10).height} with E < 10, "
+      f"{kr.filter(pl.col('region_evalue') < 1).height} with E < 1; smallest E = {kr['region_evalue'].min():.3g}")
+kshow = (kr.filter(pl.col("region_evalue") < 10).sort("region_evalue")
+           .with_columns(pl.col("target_name").replace_strict(names, default="").alias("target_description")))
+print(kshow.select("target_name", "target_description", "region_start", "region_end", "region_evalue", pl.col("bhf_lc_share").round(2)))
+print("BHF low-complexity stretches (0-based, end-exclusive):", sm.stretches(lc))
+print("BHF predicted transmembrane helices:", sm.stretches(tm) or "none")
+
+# Residues: phmmer's best hit, from its alignment, and kmerseek's best region
+phmmer_text = open(BHF / "bhf_phmmer.out").read()
+best_phmmer = dom["target"][0]
+block = phmmer_text.split(f">> {best_phmmer}")[1].split("== domain 1")[1].split(">>")[0].splitlines()
+aln = [l for l in block[1:5] if l.strip()]
+print(f"\nphmmer, best hit {best_phmmer} ({names.get(best_phmmer, '')}), E = {dom['evalue'][0]:g}:")
+print("\n".join(aln[:3]))
+b = kshow.row(0, named=True)
+print(f"\nkmerseek hp_lehninger2 k17, best region on BHF, target {b['target_name']} ({b['target_description']}), E = {b['region_evalue']:.3g}:")
+for lab, seq in [(f"BHF {b['region_start'] + 1}-{b['region_end']}", b["region_subseq"]), ("H/P", b["moltype_seq"]),
+                 (f"{b['target_name']} {b['target_start'] + 1}-{b['target_end']}", b["target_subseq"])]:
+    for i in range(0, len(seq), 60):
+        print(f"{lab if i == 0 else '':>20}  {seq[i:i + 60]}")
+
+# kmerseek's own view, made with the kmerseek repo's script, unchanged
+viz = Path("/Users/olga/code/kmerseek/scripts/visualize_hits.py")
+viz_out = BHF / "viz_k17"
+subprocess.run([sys.executable, str(viz), "--csv", str(BHF / "bhf_hp_lehninger2_k17_s1.csv"),
+                "--query-fasta", str(BHF / "bhf.fasta"), "--output-dir", str(viz_out), "--max-hits", "15"], check=True)
+shutil.copy(viz_out / f"{BHF_ID}.hits.png", FIG / "279_bhf_kmerseek_visualize_hits_hp_lehninger2_k17.png")
+
+# The tracks figure
+TRACK_COLOUR = {"phmmer": pf.OKABE_ITO["vermillion"], "jackhmmer": pf.OKABE_ITO["orange"], "kmerseek": pf.OKABE_ITO["blue"]}
+
+
+def lanes(spans):
+    # Stack overlapping (start, end) spans into lanes; returns a lane index per span
+    ends, out = [], []
+    for s, e in spans:
+        for i, last in enumerate(ends):
+            if s >= last + 2:
+                ends[i] = e
+                out.append(i)
+                break
+        else:
+            ends.append(e)
+            out.append(len(ends) - 1)
+    return out
+
+
+rows = []  # (track, start, end, label, filled)
+for s_, e_ in sm.stretches(lc):
+    rows.append(("low complexity", s_, e_, "", True))
+for s_, e_ in sm.stretches(tm):
+    rows.append(("transmembrane helix", s_, e_, "", True))
+for tool_name in ["phmmer", "jackhmmer"]:
+    for r in dom.iter_rows(named=True):
+        rows.append((tool_name, r["bhf_start"] - 1, r["bhf_end"], f"{r['target_name'].split(' (')[0]} {r['target']}, E {r['evalue']:g}", True))
+for r in kshow.iter_rows(named=True):
+    rows.append(("kmerseek", r["region_start"], r["region_end"],
+                 f"{(r['target_description'] or '?').split(' (')[0]} {r['target_name']}, E {r['region_evalue']:.2g}", r["bhf_lc_share"] < 0.5))
+TRACKS = ["low complexity", "transmembrane helix", "phmmer", "jackhmmer", "kmerseek"]
+track_lanes = {}
+y = 0.0
+yticks, ylabels = [], []
+fig, ax = pf.figure(pf.TWO_COLUMN_MM, 120)
+L = len(bhf_seq)
+ax.plot([0, L], [y, y], color="black", lw=1.5)
+yticks.append(y); ylabels.append(f"BHF ({L} aa)")
+y -= 1.2
+for t in TRACKS:
+    sub = [r for r in rows if r[0] == t]
+    # One row per hit (the low-complexity stretches share one row), so no label runs into a box
+    ln = lanes([(r[1], r[2]) for r in sub]) if t in ("low complexity", "transmembrane helix") else list(range(len(sub)))
+    n = max(ln) + 1 if ln else 1
+    yticks.append(y - (n - 1) / 2 * 0.9); ylabels.append({"kmerseek": "kmerseek hp_lehninger2 k17", "low complexity": "low complexity (SEG)",
+                                                      "transmembrane helix": "TM helix (Kyte-Doolittle)"}.get(t, t))
+    if not sub:
+        ax.text(2, y, "none", va="center", fontsize=5)
+    for r, li in zip(sub, ln):
+        yy = y - li * 0.9
+        colour = TRACK_COLOUR.get(t, pf.GREY)
+        ax.add_patch(plt.Rectangle((r[1], yy - 0.3), r[2] - r[1], 0.6, facecolor=colour if r[4] else "white",
+                                   edgecolor=colour, lw=0.8))
+        if r[3]:
+            ax.text(r[2] + 2, yy, r[3], va="center", fontsize=5)
+    y -= n * 0.9 + 0.6
+ax.set_xlim(0, L + 150)
+ax.set_ylim(y, 0.8)
+ax.set_yticks(yticks, ylabels)
+ax.set_xticks(range(0, L + 1, 50))
+ax.set_xlabel("Position on BHF (residue)")
+ax.spines["left"].set_visible(False)
+ax.tick_params(axis="y", length=0)
+ax.spines["bottom"].set_bounds(0, L)
+for lab, kw in [("filled: hit, or region less than half low complexity", dict(facecolor="black", edgecolor="black")),
+                ("open: kmerseek region at least half low complexity", dict(facecolor="white", edgecolor="black"))]:
+    ax.add_patch(plt.Rectangle((0, 0), 0, 0, label=lab, lw=0.8, **kw))
+pf.shared_legend(fig, ncol=2)
+pf.save(fig, FIG / "279_bhf_phmmer_jackhmmer_kmerseek_hp_lehninger2_k17")
+""")
+
+md(r"""
+## 7. Reach after dropping low-complexity and helix regions
+
+Every kmerseek region on a dark protein (no tool hit with E < 1) under the six settings that
+came out best in section 3, with region E < 10, was pulled from the run's region files and
+scored by `tools/dark-regions` (PR 57): the share of its residues, on the query and on the
+target, that sit in a low-complexity stretch (SEG first pass) or a predicted transmembrane
+helix (Kyte-Doolittle), read on the full sequences. A region is **dropped** when at least
+`MAX_MASKED_SHARE` of its residues are low complexity or helix on either side. A dark protein
+is **reached after filtering** when at least one of its regions is kept.
+
+Placed proteins' regions were not extracted, so after filtering there is no placed share to
+compare with; the counts below are dark proteins only. kmerseek 0.4.0 gives some target names
+another sequence's coordinates (kmerseek PR 141); `target_coords` says which rows were moved
+to where their residues really are, or not found in the named target.
+""")
+
+code(r"""
+MAX_MASKED_SHARE = 0.5   # drop a region when at least this share of it is low complexity or helix
+DR = Path("/Users/olga/data/invertebrate-dark-set/results-0.4/dark-regions")
+regions = pl.concat([pl.read_csv(DR / f"{s}_dark_regions.csv.gz", infer_schema_length=0,
+                                 schema_overrides={"query_name": pl.String, "target_name": pl.String})
+                       .with_columns(pl.lit(s).alias("species")) for s in SPECIES])
+num = ["region_start", "region_end", "target_start", "target_end", "ksize", "scaled"]
+regions = regions.with_columns(pl.col(num).cast(pl.Int64),
+                               pl.col("region_evalue", "query_lc", "query_tm", "target_lc", "target_tm").cast(pl.Float64),
+                               pl.col("moltype").alias("alphabet"))
+regions = regions.with_columns(
+    (pl.max_horizontal("query_lc", "query_tm", "target_lc", "target_tm") >= MAX_MASKED_SHARE).alias("dropped"))
+print("Regions per species and how their target coordinates checked out:")
+print(regions.group_by("species", "target_coords").len().pivot(on="target_coords", index="species", values="len")
+      .sort(pl.col("species").replace_strict(order)))
+
+EXTRACTED = set(regions.select("species", "alphabet", "ksize").unique().iter_rows())
+after = []
+for (t, k) in CUTOFF_PAIRS:
+    flags = dark_flags(t).filter(pl.col("dark"))
+    for r in best.filter((pl.col("tool_cutoff") == t) & (pl.col("kmerseek_cutoff") == k) & pl.col("alphabet").is_not_null()).iter_rows(named=True):
+        if (r["species"], r["alphabet"], r["ksize"]) not in EXTRACTED:
+            print(f"not extracted: {r['species']} {r['alphabet']} k{r['ksize']} (best at E < {k:g}); left out of this section")
+            continue
+        g = regions.filter((pl.col("species") == r["species"]) & (pl.col("alphabet") == r["alphabet"]) & (pl.col("ksize") == r["ksize"])
+                           & (pl.col("scaled") == SCALED) & (pl.col("region_evalue") < k)).join(
+            flags.select(pl.col("accession").alias("query_name"), "species"), on=["species", "query_name"])
+        before_n = g["query_name"].n_unique()
+        kept_n = g.filter(~pl.col("dropped"))["query_name"].n_unique()
+        after.append({"tool_cutoff": float(t), "kmerseek_cutoff": float(k), "species": r["species"],
+                      "setting": f"{r['alphabet']} k{r['ksize']}", "dark_proteins": r["dark_proteins"],
+                      "dark_reached": before_n, "dark_reached_after_filter": kept_n})
+after = pl.DataFrame(after).with_columns(
+    (pl.col("dark_reached") / pl.col("dark_proteins")).alias("share_before"),
+    (pl.col("dark_reached_after_filter") / pl.col("dark_proteins")).alias("share_after"))
+check = after.join(best.select("tool_cutoff", "kmerseek_cutoff", "species", pl.col("dark_reached").alias("section3_dark_reached")),
+                   on=["tool_cutoff", "kmerseek_cutoff", "species"])
+print("Dark proteins reached: section 3 (from queries.tsv) against the region files; the region files are right, see the note at the top")
+print(check.select("tool_cutoff", "species", "setting", "section3_dark_reached", "dark_reached"))
+print(after.with_columns(pl.col("share_before", "share_after").round(3)))
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=len(CUTOFF_PAIRS), sharex=True, squeeze=False)
+for c, (t, k) in enumerate(CUTOFF_PAIRS):
+    ax = axs[0][c]
+    d = after.filter((pl.col("tool_cutoff") == t) & (pl.col("kmerseek_cutoff") == k)).sort(pl.col("species").replace_strict(order))
+    ys = list(range(d.height))[::-1]
+    ax.barh([y + 0.2 for y in ys], 100 * d["share_before"], height=0.38, color=pf.OKABE_ITO["sky_blue"], label="all regions")
+    ax.barh([y - 0.2 for y in ys], 100 * d["share_after"], height=0.38, color=pf.OKABE_ITO["blue"],
+            label=f"after dropping regions at least {MAX_MASKED_SHARE:.0%} low complexity or helix")
+    for y, a, n in zip(ys, d["share_after"], d["dark_reached_after_filter"]):
+        ax.text(100 * a + 1, y - 0.2, f"{n:_}", va="center", fontsize=5)
+    ax.set_yticks(ys, [f"{SPECIES_NAME[s]}\n{st}" for s, st in zip(d["species"], d["setting"])])
+    ax.set_xlabel("Dark proteins reached (%)")
+    ax.set_title(f"dark: no tool hit with E < {t:g}\nreached: kmerseek region with E < {k:g}")
+pf.shared_legend(fig, ncol=2)
+pf.save(fig, FIG / f"279_dark_reach_after_lowcomplexity_helix_filter_scaled{SCALED}")
+""")
+
+md(r"""
+## 8. What the filtered regions on *B. schlosseri* dark proteins match
+
+*B. schlosseri* gene models have no names, so each kept region is described by its Swiss-Prot
+target. Terms for immune, histocompatibility, MHC and allorecognition proteins are searched
+in the target names; the list is in the code cell, and a name matches when it contains any
+term (case is ignored). The table lists every kept region whose target name matches, with the
+residues of the best one per target family.
+""")
+
+code(r"""
+# Specific terms only: "antigen" alone matched "Cellular tumor antigen p53" and "Sperm-associated
+# antigen", and "cytokine" matched "Dedicator of cytokinesis", none of them immune proteins.
+IMMUNE_TERMS = ["histocompatib", "MHC", "HLA", "immunoglobulin", "Ig-like", "T-cell receptor",
+                "B-cell receptor", "complement", "Toll-like", "interleukin", "interferon", "lectin",
+                "killer cell", "leukocyte", "cytokine receptor", "chemokine", "tumor necrosis factor",
+                "defensin", "perforin", "granzyme", "allorecogn", "lymphocyte antigen", "macrophage"]
+pattern = "(?i)(" + "|".join(re.escape(x) for x in IMMUNE_TERMS) + ")"
+bot = regions.filter((pl.col("species") == "botryllus") & ~pl.col("dropped"))
+for (t, k) in CUTOFF_PAIRS:
+    flags = dark_flags(t).filter(pl.col("dark") & (pl.col("species") == "botryllus"))
+    b = bot.filter(pl.col("region_evalue") < k).join(flags.select(pl.col("accession").alias("query_name")), on="query_name")
+    b = b.with_columns(pl.col("target_description").str.extract(pattern, 1).str.to_lowercase().alias("immune_term"))
+    imm = b.filter(pl.col("immune_term").is_not_null())
+    print(f"\ndark: no tool hit with E < {t:g}; kmerseek region E < {k:g}; six settings pooled")
+    print(f"  kept regions {b.height:_} on {b['query_name'].n_unique():_} dark proteins; "
+          f"{imm.height:_} regions on {imm['query_name'].n_unique():_} dark proteins match an immune term")
+    print(imm.group_by("immune_term").agg(pl.col("query_name").n_unique().alias("dark_proteins"), pl.len().alias("regions"),
+                                          pl.col("region_evalue").min().alias("smallest_E")).sort("dark_proteins", descending=True))
+    print(imm.sort("region_evalue").unique(["query_name", "target_name"], keep="first", maintain_order=True).head(25)
+          .select("query_name", "alphabet", "ksize", "target_name", "target_description", "region_start", "region_end",
+                  "region_evalue", pl.col("query_lc", "target_lc").round(2)))
+    if (t, k) == CUTOFF_PAIRS[-1]:
+        imm_last = imm
+        terms = imm.group_by("immune_term").agg(pl.col("query_name").n_unique().alias("dark_proteins")).sort("dark_proteins")
+
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 70)
+if terms.height:
+    ax.barh(range(terms.height), terms["dark_proteins"], color=pf.OKABE_ITO["blue"], height=0.6,
+            label="dark B. schlosseri proteins with a kept region on a target named so")
+    ax.set_yticks(range(terms.height), terms["immune_term"])
+ax.set_xlabel("Dark proteins (count)")
+t_last, k_last = CUTOFF_PAIRS[-1]
+ax.set_title(f"dark: no tool hit E < {t_last:g}; region E < {k_last:g}")
+pf.shared_legend(fig, ncol=1)
+pf.save(fig, FIG / f"279_botryllus_dark_immune_target_terms_scaled{SCALED}")
+
+print("\nResidues of the kept region with the smallest E-value per immune term:")
+for r in imm_last.sort("region_evalue").unique("immune_term", keep="first", maintain_order=True).iter_rows(named=True):
+    print(f"\n{r['query_name']} {r['region_start'] + 1}-{r['region_end']}  vs  {r['target_name']} ({r['target_description']}) "
+          f"{r['target_start'] + 1}-{r['target_end']}, {r['alphabet']} k{r['ksize']}, E = {r['region_evalue']:.3g}")
+    for lab, seq in [("B. schlosseri", r["region_subseq"]), ("H/P", r["moltype_seq"]), (r["target_name"], r["target_subseq"])]:
+        for i in range(0, len(seq), 60):
+            print(f"{lab if i == 0 else '':>15}  {seq[i:i + 60]}")
+""")
+
+md(r"""
 # Summary and Conclusions
 
 ## Background
@@ -507,18 +809,21 @@ region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. el
 
 * Loosening the tool cutoff shrinks the human dark set from 3_103 proteins (15.1%) at
   E < 0.001 to 1_696 (8.2%) at E < 1 and 442 (2.1%) at E < 10.
-* At E < 1, the best kmerseek setting reaches 12-26% of dark proteins against 38-73% of
-  placed proteins; hp_lehninger2 k17 is that setting in four of five species.
-* At E < 10, the best settings reach 26-41% of dark proteins against 61-82% of placed
-  proteins, and every one is an H/P (hydrophobic/polar) alphabet.
-* The decision rule is met at both cutoffs: in all five species a setting that reaches
-  placed proteins at least twice as often as dark ones reaches at least 5% of dark proteins.
-* In human, 58.7% of the dark proteins hp_lehninger2 k17 reaches at E < 1 carry a UniProt
-  compositional-bias stretch, against 36.2% of the dark proteins it misses.
-* In *C. elegans*, 48.4% of the dark proteins reached at E < 10 have a transmembrane helix,
-  against 30.8% of those missed; at E < 1 all five top examples are serpentine receptors.
-* So the candidates cannot go to the structure check as they are: the low-complexity mask was
-  off, and in human and worm the reached dark proteins lean towards biased sequence and helices.
+* Counted from the region files, kmerseek's best setting reaches 14-32% of dark proteins at
+  E < 1 (hp_lehninger2 k17 in four of five species).
+* Dropping regions that are at least half low complexity or transmembrane helix leaves
+  8-21% of dark proteins reached at E < 1, and 27-40% at E < 10.
+* Sections 2-6 undercount kmerseek reach for dark and placed proteins alike, because the
+  run's queries.tsv files stored some finite E-values as "inf"; whether the decision rule
+  holds waits for the repaired files.
+* BHF is not dark at E < 1: phmmer and jackhmmer both hit the Vpx protein of simian
+  immunodeficiency virus (P27984) at E = 0.16 on BHF residues 137-190.
+* None of BHF's 11_291 kmerseek regions under hp_lehninger2 k17 has E < 1; the best has
+  E = 2.97, and the strongest-ranked ones sit on BHF's lysine-rich low-complexity stretch.
+* In *B. schlosseri*, 7 of 3_566 dark proteins reached at E < 1 after filtering match a
+  target with an immune name, the best at E = 0.51 (interleukin-11).
+* Under the six settings checked, no *B. schlosseri* dark protein reaches an MHC or
+  histocompatibility target below E = 2.68, and those residues share only the H/P pattern.
 
 ## Analysis Details
 
@@ -582,18 +887,21 @@ region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. el
 
 * Loosening the tool cutoff shrinks the human dark set from 3_103 proteins (15.1%) at
   E < 0.001 to 1_696 (8.2%) at E < 1 and 442 (2.1%) at E < 10.
-* At E < 1, the best kmerseek setting reaches 12-26% of dark proteins against 38-73% of
-  placed proteins; hp_lehninger2 k17 is that setting in four of five species.
-* At E < 10, the best settings reach 26-41% of dark proteins against 61-82% of placed
-  proteins, and every one is an H/P (hydrophobic/polar) alphabet.
-* The decision rule is met at both cutoffs: in all five species a setting that reaches
-  placed proteins at least twice as often as dark ones reaches at least 5% of dark proteins.
-* In human, 58.7% of the dark proteins hp_lehninger2 k17 reaches at E < 1 carry a UniProt
-  compositional-bias stretch, against 36.2% of the dark proteins it misses.
-* In *C. elegans*, 48.4% of the dark proteins reached at E < 10 have a transmembrane helix,
-  against 30.8% of those missed; at E < 1 all five top examples are serpentine receptors.
-* So the candidates cannot go to the structure check as they are: the low-complexity mask was
-  off, and in human and worm the reached dark proteins lean towards biased sequence and helices.
+* Counted from the region files, kmerseek's best setting reaches 14-32% of dark proteins at
+  E < 1 (hp_lehninger2 k17 in four of five species).
+* Dropping regions that are at least half low complexity or transmembrane helix leaves
+  8-21% of dark proteins reached at E < 1, and 27-40% at E < 10.
+* Sections 2-6 undercount kmerseek reach for dark and placed proteins alike, because the
+  run's queries.tsv files stored some finite E-values as "inf"; whether the decision rule
+  holds waits for the repaired files.
+* BHF is not dark at E < 1: phmmer and jackhmmer both hit the Vpx protein of simian
+  immunodeficiency virus (P27984) at E = 0.16 on BHF residues 137-190.
+* None of BHF's 11_291 kmerseek regions under hp_lehninger2 k17 has E < 1; the best has
+  E = 2.97, and the strongest-ranked ones sit on BHF's lysine-rich low-complexity stretch.
+* In *B. schlosseri*, 7 of 3_566 dark proteins reached at E < 1 after filtering match a
+  target with an immune name, the best at E = 0.51 (interleukin-11).
+* Under the six settings checked, no *B. schlosseri* dark protein reaches an MHC or
+  histocompatibility target below E = 2.68, and those residues share only the H/P pattern.
 
 ## Analysis Details
 
