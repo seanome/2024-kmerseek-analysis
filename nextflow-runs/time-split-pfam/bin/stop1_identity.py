@@ -30,6 +30,10 @@ N_EXAMPLES = 5
 HP = {"hp_pbotc_1st_ed2": ("ACFILMPVWY", "DEGHKNQRST")}  # kmerseek src/rust/alphabets.rs
 M8 = ["query", "target", "pident", "aln_len", "mismatch", "gapopen", "qstart", "qend",
       "sstart", "send", "evalue", "bits", "btop"]
+M8_TYPES = {"query": pl.String, "target": pl.String, "pident": pl.Float64,
+            "aln_len": pl.Int64, "mismatch": pl.Int64, "gapopen": pl.Int64,
+            "qstart": pl.Int64, "qend": pl.Int64, "sstart": pl.Int64, "send": pl.Int64,
+            "evalue": pl.Float64, "bits": pl.Float64, "btop": pl.String}
 ID_BINS = [0, 20, 30, 40, 50, 60, 70, 80, 90, 100.01]
 
 
@@ -139,7 +143,7 @@ def collect(qs: Path, work: Path) -> None:
     for f in sorted((work / "m8").glob("*.m8")):
         if f.stat().st_size:
             frames.append(pl.read_csv(f, separator="\t", has_header=False, new_columns=M8,
-                                      comment_prefix="#", schema_overrides={"btop": pl.String})
+                                      comment_prefix="#", schema_overrides=M8_TYPES)
                           .with_columns(i=pl.lit(int(f.stem), dtype=pl.UInt32)))
     hits = pl.concat(frames)
     best = (hits.sort(["i", "bits", "pident", "target"], descending=[False, True, True, False])
