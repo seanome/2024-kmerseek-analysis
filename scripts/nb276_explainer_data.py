@@ -79,7 +79,31 @@ def main() -> None:
     split = pl.read_csv(OUTDIR / "18_hsdm17_loop_vs_flanks_result.csv")
     merges = pl.read_csv(OUTDIR / "30_segment_merges_by_alphabet.csv")
 
+    # Both models' per-residue confidence, so the page can draw them on one axis.
+    # P66's is already tabulated; CD47's is read from its own model the same way.
+    from nb276_p66_cd47_structure import plddt_per_residue
+
+    p66_plddt = pl.read_csv(OUTDIR / "02_p66_plddt.csv")
+    models = pl.read_csv(OUTDIR / "02_alphafold_models.csv")
+    cd47_model = Path(
+        models.filter(pl.col("protein") == "CD47").row(0, named=True)["pdb_path"]
+    )
+    cd47_plddt = plddt_per_residue(cd47_model)
+
     payload = {
+        "plddt": {
+            "p66": [round(v, 1) for v in p66_plddt["plddt"].to_list()],
+            "cd47": [round(v, 1) for v in cd47_plddt["plddt"].to_list()],
+            "p66_mean": round(float(p66_plddt["plddt"].mean()), 1),
+            "cd47_mean": round(float(cd47_plddt["plddt"].mean()), 1),
+            "p66_max": round(float(p66_plddt["plddt"].max()), 1),
+            "cd47_max": round(float(cd47_plddt["plddt"].max()), 1),
+            "p66_above_50": int((p66_plddt["plddt"] >= 50).sum()),
+            "cd47_above_50": int((cd47_plddt["plddt"] >= 50).sum()),
+            "cd47_above_70": int((cd47_plddt["plddt"] >= 70).sum()),
+        },
+        "heldout": pl.read_csv(OUTDIR / "40_heldout_window_test.csv").to_dicts(),
+        "face_runs": pl.read_csv(OUTDIR / "39_cd47_face_runs.csv").to_dicts(),
         "p66": {
             "accession": p66["accession"],
             "length": p66["length"],
