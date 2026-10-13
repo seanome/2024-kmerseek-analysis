@@ -513,7 +513,7 @@ function topGenes(v, k = 3) {
 }
 function drawResult() {
   const s = R.sum, p = M.partners[S.q], v = s.partner_value;
-  html("result", `${p}: ${N(v)} ${ruleWord(S.rule, v)} agree${v === 1 ? "s" : ""}; ${N(s.proteins_with_more)} human proteins have more.`);
+  html("result", `${p}: ${N(v)} ${ruleWord(S.rule, v)} agree${v === 1 ? "s" : ""} on its best spot. ${N(s.proteins_with_more)} other human proteins have a spot where more than ${N(v)} ${ruleWord(S.rule, 2)} agree.`);
   const tops = topGenes(s.proteome_max);
   html("result-sub", `${cutText(M.cuts[S.cut])}, counting ${RULES.find(r => r[0] === S.rule)[1]}, ${popc(S.keep)} of 19 alphabets. ` +
     `${fmt(s.proteins_with_a_call)} of ${fmt(M.n_proteome)} human proteins have any region. ` +
@@ -558,7 +558,7 @@ function buildControls() {
     ca.appendChild(fs);
   }
   const g = D.removal_gap;
-  html("removal-note", `Leaving an alphabet out clears it from each stored spot; a spot that only its region held together is not split, as a fresh count would. Checked against a fresh count for ${g.n_rows} settings (${g.removals.join("; ")}): the partner's count never changed, and the number of proteins with more moved by at most ${N(g.largest_proteins_with_more_gap)}.`);
+  html("removal-note", `Leaving an alphabet out clears it from each stored spot; a spot that only its region held together is not split, as a fresh count would. Checked against a fresh count for ${g.n_rows} settings (${g.removals.join("; ")}): the partner's count never changed, and the number of proteins with a higher count than the partner moved by at most ${N(g.largest_proteins_with_more_gap)}.`);
 }
 function syncControls() {
   QUERIES.forEach(q => $("q-" + q).setAttribute("aria-pressed", S.q === q));
@@ -609,7 +609,7 @@ function drawFig2() {
   const lx = Math.min(W - m.r - 240, px + 70), ly = m.t + 40;
   el("line", {x1: px + 3, y1: py - 8, x2: lx - 4, y2: ly + 6, stroke: "var(--partner)"}, svg);
   el("text", {x: lx, y: ly - 4, "font-size": 14, "font-weight": 600}, svg, `${M.partners[S.q]}: ${v} ${ruleWord(S.rule, v)}`);
-  el("text", {x: lx, y: ly + 14, "font-size": 14}, svg, `${fmt(s.proteins_with_more)} proteins have more`);
+  el("text", {x: lx, y: ly + 14, "font-size": 14}, svg, `${fmt(s.proteins_with_more)} proteins have more than ${v} ${ruleWord(S.rule, 2)}`);
   $("fig2-none").textContent = fmt(M.n_proteome - s.proteins_with_a_call) + " proteins";
   drawList();
 }
@@ -672,7 +672,8 @@ function proteinLine(svg, y0, x0, w, len, name, motifs, spanLo, spanHi) {
   // short stretch on a long protein stays visible; its residue numbers sit under it.
   const a = x(spanLo), b = Math.max(x(spanHi), a + 6), yb = y0 + 11;
   el("path", {d: `M${a} ${yb - 3} L${a} ${yb} L${b} ${yb} L${b} ${yb - 3}`, fill: "none", stroke: "var(--ink)", "stroke-width": 1.5}, svg);
-  el("text", {x: (a + b) / 2, y: yb + 11, "text-anchor": "middle", "font-size": 10, class: "mono"}, svg, `${spanLo + 1}-${spanHi}`);
+  // baseline 15 px below the bracket so the digits (about 8 px tall) clear it by 6 px
+  el("text", {x: (a + b) / 2, y: yb + 15, "text-anchor": "middle", "font-size": 11, class: "mono"}, svg, `${spanLo + 1}-${spanHi}`);
 }
 async function drawFig1() {
   if (!R) return;
@@ -684,7 +685,7 @@ async function drawFig1() {
   if (i < 0) {
     svg.innerHTML = ""; svg.setAttribute("width", 0); svg.setAttribute("height", 0);
     $("fig1-aln").textContent = "";
-    html("fig1-title", `<b>${S.q} against ${gene}</b>: ${R.best[t] === 0 ? "no region at these settings." : `its best spot has ${R.best[t]} ${ruleWord(S.rule, R.best[t])}, and spots one alphabet backs are not stored on this page.`} ${fmt(more)} proteins have more.`);
+    html("fig1-title", `<b>${S.q} against ${gene}</b>: ${R.best[t] === 0 ? "no region at these settings." : `its best spot has ${R.best[t]} ${ruleWord(S.rule, R.best[t])}, and spots one alphabet backs are not stored on this page.`} ${fmt(more)} human proteins have a spot where more than ${R.best[t]} ${ruleWord(S.rule, 2)} agree.`);
     $("fig1-read").textContent = "";
     return;
   }
@@ -694,7 +695,7 @@ async function drawFig1() {
   const c = R.count(m & S.keep);
   html("fig1-title", `<b>${S.q} residues ${qs + 1}-${qe} against human ${gene} residues ${qs + dg + 1}-${qe + dg}</b>. ` +
     `${popc(m)} of 19 alphabets have a region here; ${popc(m & S.keep)} of them are counted, giving ${c} ${ruleWord(S.rule, c)}. ` +
-    `${fmt(more)} human proteins have a spot with more${t === R.partner ? "" : `; ${M.partners[S.q]} has ${R.sum.partner_value}`}.`);
+    `${fmt(more)} human proteins have a spot where more than ${R.best[t]} ${ruleWord(S.rule, 2)} agree${t === R.partner ? "" : `; ${M.partners[S.q]}'s best spot has ${R.sum.partner_value}`}.`);
   svg.innerHTML = "";
   const labW = 205, infoW = 230, plotW = 420, rowH = 17, gapH = 10, top = 150;
   const W = labW + plotW + infoW;
@@ -704,7 +705,7 @@ async function drawFig1() {
   const tseq = await getResidues(t).catch(() => null);
   if (S.sel !== t) return; // the reader picked another protein while residues loaded
   proteinLine(svg, 22, labW, plotW, qseq.length, S.q, (M.motifs.proteins[S.q] || {}).motifs, qs, qe);
-  if (tseq) proteinLine(svg, 68, labW, plotW, tseq.length, gene, (M.motifs.proteins[gene] || {}).motifs, qs + dg, qe + dg);
+  if (tseq) proteinLine(svg, 78, labW, plotW, tseq.length, gene, (M.motifs.proteins[gene] || {}).motifs, qs + dg, qe + dg);
   el("text", {x: labW + plotW + 8, y: 26, "font-size": 11, class: "muted"}, svg, "bracket: the stretch below");
   let y = top, rows = [];
   for (const [gname, a0, a1] of GROUPS) {
@@ -865,7 +866,7 @@ function drawWindowList() {
     $("wlist").appendChild(btn);
   }
   const pb = best.get(R.partner);
-  box.insertAdjacentHTML("beforeend", `<div class="cap">${M.partners[S.q]}: ${pb ? `${pb.c} ${ruleWord(S.rule, pb.c)} in this window (${bitsOf(pb.m).join(", ")}), ${fmt(list.filter(([, b]) => b.c > pb.c).length)} proteins with more.` : "no spot of 2 or more counted alphabets in this window."}</div>`);
+  box.insertAdjacentHTML("beforeend", `<div class="cap">${M.partners[S.q]}: ${pb ? `${pb.c} ${ruleWord(S.rule, pb.c)} in this window (${bitsOf(pb.m).join(", ")}), ${fmt(list.filter(([, b]) => b.c > pb.c).length)} proteins have more than ${pb.c} ${ruleWord(S.rule, 2)} in this window.` : "no spot of 2 or more counted alphabets in this window."}</div>`);
 }
 
 // ---------- Figure 4: identical run against agreement ----------
@@ -1119,9 +1120,9 @@ function fillText() {
   const bh1 = D.family.filter(x => x.gene === "BCL2" && x.in_register.startsWith("Ced9 BH1")).sort((p, q) => p.evalue - q.evalue)[0];
   html("verdict", `the alphabets do agree on BCL2's BH1, but only ${N(a.partner_value)} of them, and ${N(a.proteins_with_more)} human proteins get more alphabets to agree. Agreement mostly measures how many residues are identical, and the alphabets are not independent witnesses. Counting only calls that pass an E-value cut, or counting alphabet families, ranks BCL2 lower still.`);
   html("why-top", `TKT gets ${N(tk.n_alphabets)} alphabets from Ced9 and CD55 gets ${N(cd55.n_alphabets)} from P66: each spot holds an identical run of ${N(tk.longest_identical_run)} and ${N(cd55.longest_identical_run)} residues.`);
-  html("why-bh1", `Ced9 and BCL2 share ${N(c.identical)} of ${N(c.query_res.length)} residues here, with no identical run longer than ${N(c.longest_identical_run)}. The four alphabets are ${c.alphabets.map(x => `<span class="mono">${x.alphabet}</span>`).join(", ")}. hp_lehninger2, hp_lehninger_c_nonpolar2 and hp_lehninger_hpc3 differ only in where they put cysteine (C). Counting the seven H/P alphabets as one, BCL2 has ${N(f.partner_value)} and ${N(f.proteins_with_more)} proteins have more.`);
+  html("why-bh1", `Ced9 and BCL2 share ${N(c.identical)} of ${N(c.query_res.length)} residues here, with no identical run longer than ${N(c.longest_identical_run)}. The four alphabets are ${c.alphabets.map(x => `<span class="mono">${x.alphabet}</span>`).join(", ")}. hp_lehninger2, hp_lehninger_c_nonpolar2 and hp_lehninger_hpc3 differ only in where they put cysteine (C). Counting the seven H/P alphabets as one, BCL2 has ${N(f.partner_value)} families, and ${N(f.proteins_with_more)} human proteins have a spot where more than ${N(f.partner_value)} families agree.`);
   html("why-e", `The best call on BCL2's BH1 is <span class="mono">${bh1.alphabet}</span> at k = ${bh1.k}, E = ${N(fmtE(bh1.evalue))}: about that many regions this good are expected by chance in one search of the human proteome. With every call required to pass E &lt; 10, no human protein gets more than ${N(ev("Ced9", "E < 10", "n_alphabets").proteome_max)} alphabets to agree for Ced9, or ${N(ev("P66", "E < 10", "n_alphabets").proteome_max)} for P66.`);
-  html("test-cut", `This makes BCL2 rank worse, not better. At all regions BCL2 has ${N(a.partner_value)} alphabets (${N(a.proteins_with_more)} proteins with more) or ${N(f.partner_value)} families (${N(f.proteins_with_more)} with more). At E &lt; 100_000 only ${N(e5.partner_value)} alphabet passes (${N(e5.proteins_with_more)} with more), and from E &lt; 1_000 on, none (${N(ev("Ced9", "E < 1000", "n_alphabets").proteins_with_more)} proteins with a call all rank above it).`);
+  html("test-cut", `This makes BCL2 rank worse, not better. At all regions BCL2 has ${N(a.partner_value)} alphabets (${N(a.proteins_with_more)} proteins have more than ${N(a.partner_value)} alphabets agreeing) or ${N(f.partner_value)} families (${N(f.proteins_with_more)} proteins have more than ${N(f.partner_value)} families). At E &lt; 100_000 only ${N(e5.partner_value)} alphabet passes (${N(e5.proteins_with_more)} proteins have more than ${N(e5.partner_value)}), and from E &lt; 1_000 on, none (${N(ev("Ced9", "E < 1000", "n_alphabets").proteins_with_more)} proteins with a call all rank above it).`);
   const ap10 = D.pfam_ap.find(r => r.e_cut === 10), ap1 = D.pfam_ap.find(r => r.e_cut === 1), ap100 = D.pfam_ap.find(r => r.e_cut === 100);
   html("test-pfam", `Here the idea holds, but only once each call passes E &lt; 10. Ranking spots by families agreeing gives an average precision of ${N(ap10.ap_n_families_then_e.toFixed(3))} at E &lt; 10 and ${N(ap1.ap_n_families_then_e.toFixed(3))} at E &lt; 1, against ${N(ap10.ap_lowest_e.toFixed(3))} and ${N(ap1.ap_lowest_e.toFixed(3))} for the lowest E-value alone. At E &lt; 100 it is ${N(ap100.ap_n_families_then_e.toFixed(3))} against ${N(ap100.ap_lowest_e.toFixed(3))}: worse. Ced9 → BCL2 is in the looser regime, where no alphabet passes E &lt; 10 at BH1.`);
   html("test-shuffle", D.shuffle ? "Results are in the tables; drawing them is not done yet." :
