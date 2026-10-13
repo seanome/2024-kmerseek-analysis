@@ -135,20 +135,9 @@ TABLES = Path("../tables")
 TABLES.mkdir(exist_ok=True)
 SOURCE = "botryllus_vs_swissprot_minus_ascidiacea"
 
-CATEGORIES = ["mhc", "mhc_like_nkg2d_ligand", "antigen_presentation", "nk_receptor",
-              "tcr_cd3", "c1_set", "self_nonself_nonvertebrate", "minor_histocompatibility"]
-CATEGORY_NAME = {
-    "mhc": "MHC class I and II",
-    "mhc_like_nkg2d_ligand": "MIC / ULBP (NKG2D ligands)",
-    "antigen_presentation": "Antigen presentation (TAP, B2M, CD74, ERAP)",
-    "nk_receptor": "NK receptors (KIR, LILR, KLR)",
-    "tcr_cd3": "T cell receptor and CD3",
-    "c1_set": "C1-set domain proteins",
-    "self_nonself_nonvertebrate": "Non-vertebrate self/non-self",
-    "minor_histocompatibility": "Minor histocompatibility antigens",
-    "control": "Control (length-matched random)",
-}
-TOOLS = ["phmmer", "jackhmmer", "mmseqs2"]
+import botryllus_mhc_utils as bmu
+from botryllus_mhc_utils import CATEGORIES, CATEGORY_NAME, ORDER, TOOLS
+
 TOOL_STYLE = {  # one colour and one shape per tool, used in every figure
     "kmerseek": dict(color=pf.OKABE_ITO["blue"], marker="o"),
     "phmmer": dict(color=pf.OKABE_ITO["orange"], marker="s"),
@@ -185,15 +174,7 @@ each category with the control at its own lengths.
 """)
 
 code(r"""
-targets = pl.concat([pl.read_csv(DATA / "mhc_targets.tsv", separator="\t"),
-                     pl.read_csv(DATA / "control_targets.tsv", separator="\t")])
-assert targets["accession"].n_unique() == targets.height
-ORDER = CATEGORIES + ["control"]
-# Length deciles of the control, used for the length-matched expectation in section 3.
-DECILE_EDGES = np.quantile(targets.filter(pl.col("category") == "control")["length"], np.linspace(0, 1, 11))[1:-1]
-targets = targets.with_columns(
-    length_decile=pl.col("length").map_elements(lambda x: int(np.searchsorted(DECILE_EDGES, x, side="right")),
-                                                return_dtype=pl.Int64))
+targets = bmu.load_targets(DATA)  # length_decile: the control's length deciles, for section 3
 category_table = (targets.group_by("category")
                   .agg(n_targets=pl.len(), median_length_aa=pl.col("length").median(),
                        q25_length_aa=pl.col("length").quantile(0.25), q75_length_aa=pl.col("length").quantile(0.75))
@@ -238,23 +219,11 @@ can have more than one reason; *kept* is the rest).
 """)
 
 code(r"""
-FLOATS = ["region_evalue", "query_lc", "query_tm", "target_lc", "target_tm", "region_ka_bits"]
-INTS = ["ksize", "region_start", "region_end", "target_start", "target_end", "region_length",
-        "query_length", "target_length"]
-regions_all = (pl.read_csv(DATA / "botryllus_mhc_regions.csv.gz", infer_schema_length=0)
-               .with_columns([pl.col(c).cast(pl.Float64) for c in FLOATS] + [pl.col(c).cast(pl.Int64) for c in INTS])
-               .rename({"moltype": "alphabet"})
-               .join(targets.select("accession", "category"), left_on="target_name", right_on="accession", how="left"))
-assert regions_all["category"].null_count() == 0
+regions_all = bmu.load_regions(DATA, targets, MAX_BIASED_SHARE)
 print(f"{regions_all.height:_} regions with E < 10 from {regions_all['query_name'].n_unique():_} Botryllus proteins, "
       f"{regions_all.select(pl.struct('alphabet', 'ksize').n_unique()).item()} alphabet and k-size pairs, "
       f"on {regions_all['target_name'].n_unique():_} of {targets.height:_} target and control proteins")
 
-regions_all = regions_all.with_columns(
-    low_complexity=pl.max_horizontal("query_lc", "target_lc") >= MAX_BIASED_SHARE,
-    helix=pl.max_horizontal("query_tm", "target_tm") >= MAX_BIASED_SHARE,
-    wrong_target=pl.col("target_coords") == "not_found",
-).with_columns(kept=~(pl.col("low_complexity") | pl.col("helix") | pl.col("wrong_target")))
 
 below = regions_all.filter(pl.col("region_evalue") < E_CUTOFF)
 filter_table = (below.group_by("category")
@@ -303,9 +272,7 @@ homologs of should sit right of 1 for the tools as well as for kmerseek.
 """)
 
 code(r"""
-tool_hits_all = (pl.read_csv(DATA / "tool_hits_on_targets_E10.tsv", separator="\t", has_header=False,
-                             new_columns=["tool", "query_name", "target_name", "tstart", "tend", "bits", "evalue"])
-                 .join(targets.select("accession", "category"), left_on="target_name", right_on="accession"))
+tool_hits_all = bmu.load_tool_hits(DATA, targets)
 print("Tool hits on target and control proteins, E <= 10:",
       dict(tool_hits_all.group_by("tool").len().iter_rows()))
 
@@ -409,15 +376,7 @@ tool_pairs = tool_hits_all.filter(pl.col("evalue") <= TOOL_MISS_E).select("query
 
 
 def links_at(cutoff):
-    # One row per (Botryllus protein, target) link at E < cutoff, with its best region and
-    # whether any tool found the same pair.
-    r = regions.filter(pl.col("region_evalue") < cutoff)
-    best = (r.sort("region_evalue", "alphabet", "ksize", "region_start")
-            .group_by("query_name", "target_name", maintain_order=True)
-            .agg(pl.all().first(), n_regions=pl.len(), n_alphabets=pl.col("alphabet").n_unique(),
-                 n_settings=pl.struct("alphabet", "ksize").n_unique()))
-    return best.join(tool_pairs.with_columns(tool_found=pl.lit(True)), on=["query_name", "target_name"], how="left") \
-               .with_columns(pl.col("tool_found").fill_null(False))
+    return bmu.links_at(regions, tool_pairs, cutoff)
 
 
 decision_rows = []
@@ -484,6 +443,12 @@ Two checks, per link, that do not depend on the E-value:
   The figure shows identity minus chance identity, in percentage points: 0 means no more
   matches than random; real homologs at twilight-zone identity (20-30%) sit about 15-25
   points above.
+* **The same in the alphabet's letters.** kmerseek compares residues in the reduced
+  alphabet of the region (for gbmr4: G, P, CFHILMVWY and ADEKNQRST), so a region can match
+  in letters while the amino acids do not. *Letter identity* is the share of positions with
+  the same letter, with its chance value from the letter compositions. Each alphabet's
+  letter for each amino acid is read off the run's own output, where kmerseek writes the
+  target residues in letters.
 * **How many alphabets find the link.** A region a real homolog leaves behind usually shows
   up in several reduced alphabets; a pattern match in one alphabet's letters does not have
   to.
@@ -493,26 +458,11 @@ Groups: links also found by a tool, and kmerseek-only links, each for the catego
 """)
 
 code(r"""
-def identity_and_chance(a: str, b: str) -> tuple[float, float]:
-    # Identity of two equal-length gapless strings, and the identity expected from their compositions.
-    n = len(a)
-    ident = sum(x == y for x, y in zip(a, b)) / n
-    ca, cb = {}, {}
-    for x in a:
-        ca[x] = ca.get(x, 0) + 1
-    for x in b:
-        cb[x] = cb.get(x, 0) + 1
-    chance = sum(ca[x] * cb.get(x, 0) for x in ca) / (n * n)
-    return ident, chance
+letter_maps = bmu.alphabet_letter_maps(regions_all)  # read off the run's own encoded target residues
 
 
 def with_identity(lk):
-    ic = [identity_and_chance(a, b) if len(a) == len(b) else (None, None)
-          for a, b in zip(lk["region_subseq"], lk["target_subseq"])]
-    return lk.with_columns(identity=pl.Series([x[0] for x in ic], dtype=pl.Float64),
-                           chance_identity=pl.Series([x[1] for x in ic], dtype=pl.Float64)) \
-             .with_columns(identity_above_chance=(pl.col("identity") - pl.col("chance_identity")) * 100,
-                           group=pl.when(pl.col("category") == "control").then(pl.lit("control")).otherwise(pl.lit("categories")))
+    return bmu.with_identity(lk, letter_maps)
 
 
 def identity_summary(lk):
@@ -521,6 +471,7 @@ def identity_summary(lk):
                  lengths_differ_no_identity=pl.col("identity").is_null().sum(),
                  median_identity_pct=pl.col("identity").median() * 100,
                  median_identity_above_chance=pl.col("identity_above_chance").median(),
+                 median_letter_identity_above_chance=pl.col("letter_identity_above_chance").median(),
                  share_above_chance_by_5=(pl.col("identity_above_chance") >= 5).mean(),
                  median_alphabets=pl.col("n_alphabets").median(),
                  share_one_alphabet=(pl.col("n_alphabets") == 1).mean())
@@ -655,8 +606,9 @@ Botryllus gene model (FUN number, with a gene symbol when the annotation gave on
 each link by its E-value and its identity above chance; filled marks are links at least 5
 points above chance identity.
 
-Below the table, the residues of every link: the Botryllus residues (Q), a `|` under each
-identical position, then the target residues (T). The table and the residues are also
+Below the table, the residues of every link, five lines per block: the Botryllus residues
+(Q), the same in the alphabet's letters (Q a), a match line (`|` same amino acid, `:` same
+letter but a different amino acid), the target in letters (T a), and the target residues (T). The table and the residues are also
 written to `tables/`.
 """)
 
@@ -669,7 +621,9 @@ cand_table = cand.select("category", "query_name", "target_name", "target_descri
                          "region_evalue", "region_length", pl.col("query_from"), pl.col("region_end").alias("query_to"),
                          pl.col("target_from"), pl.col("target_end").alias("target_to"),
                          (pl.col("identity") * 100).round(1).alias("identity_pct"),
-                         pl.col("identity_above_chance").round(1), "n_alphabets", "n_settings")
+                         pl.col("identity_above_chance").round(1),
+                         (pl.col("letter_identity") * 100).round(1).alias("letter_identity_pct"),
+                         pl.col("letter_identity_above_chance").round(1), "n_alphabets", "n_settings")
 cand_table.write_csv(TABLES / f"281_kmerseek_only_links_E{E_CUTOFF}_{SOURCE}.csv")
 print(f"{cand_table.height} kmerseek-only links at E < {E_CUTOFF} from "
       f"{cand_table['query_name'].n_unique()} Botryllus proteins to {cand_table['target_name'].n_unique()} targets")
@@ -715,12 +669,10 @@ def residue_block(row) -> str:
             + (f"identity {row['identity'] * 100:.0f}% (chance {row['chance_identity'] * 100:.0f}%)  "
                if row["identity"] is not None else
                f"chained across an insertion or deletion: Q {len(q)} aa, T {len(t)} aa, not aligned position by position  ")
+            + (f"letter identity {row['letter_identity'] * 100:.0f}% (chance {row['chance_letter_identity'] * 100:.0f}%)  "
+               if row["letter_identity"] is not None else "")
             + f"alphabets with a region: {row['n_alphabets']}")
-    lines = [head]
-    same = len(q) == len(t)
-    for i in range(0, max(len(q), len(t)), WIDTH):
-        a, b = q[i:i + WIDTH], t[i:i + WIDTH]
-        lines += ["  Q " + a] + (["    " + "".join("|" if x == y else " " for x, y in zip(a, b))] if same else []) + ["  T " + b]
+    lines = [head] + bmu.residue_lines(q, t, row["query_letters"], row["target_letters"], WIDTH)
     return "\n".join(lines)
 
 
@@ -792,6 +744,9 @@ proteins.
   22% expected from the control (1.41 times, Bonferroni p = 0.02), under the 1.5-fold bar.
 * kmerseek-only links are at chance identity: median 2.7 points above it for the 335 category
   links and 2.9 for the 9_597 control links, against 38 points for links a tool also finds.
+* In the alphabet's own letters, kmerseek-only category links match a median 24 points above
+  chance, and kmerseek-only links to control proteins 28 points: the letter pattern kmerseek
+  scores is as strong on random proteins.
 * 98% of kmerseek-only category links appear in one alphabet only, against 28% of links a tool
   also finds; hp_lehninger_hpc3 and gbmr4 give 73% of them.
 * The strongest kmerseek-only MHC link, Botryllus FUN020551 to the class I F10 alpha chain
@@ -879,6 +834,9 @@ proteins.
   22% expected from the control (1.41 times, Bonferroni p = 0.02), under the 1.5-fold bar.
 * kmerseek-only links are at chance identity: median 2.7 points above it for the 335 category
   links and 2.9 for the 9_597 control links, against 38 points for links a tool also finds.
+* In the alphabet's own letters, kmerseek-only category links match a median 24 points above
+  chance, and kmerseek-only links to control proteins 28 points: the letter pattern kmerseek
+  scores is as strong on random proteins.
 * 98% of kmerseek-only category links appear in one alphabet only, against 28% of links a tool
   also finds; hp_lehninger_hpc3 and gbmr4 give 73% of them.
 * The strongest kmerseek-only MHC link, Botryllus FUN020551 to the class I F10 alpha chain

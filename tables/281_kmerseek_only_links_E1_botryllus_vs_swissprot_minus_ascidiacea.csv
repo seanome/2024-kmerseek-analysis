@@ -1,336 +1,336 @@
-category,query_name,target_name,target_description,alphabet,ksize,region_evalue,region_length,query_from,query_to,target_from,target_to,identity_pct,identity_above_chance,n_alphabets,n_settings
-mhc,FUN020551_FUN020551.2,P15979,"Class I histocompatibility antigen, F10 alpha chain",hp_lehninger_hpc3,17,2.5969456464834936e-7,254,2345,2598,77,330,5.5,0.1,1,2
-mhc,FUN020551_FUN020551.1,P15979,"Class I histocompatibility antigen, F10 alpha chain",hp_lehninger_hpc3,17,3.6537049255867094e-7,254,2345,2598,77,330,5.5,0.1,1,2
-mhc,FUN009004_FUN009004,Q9GKZ0,Hereditary hemochromatosis protein homolog,gbmr4,15,0.00008072660791615993,127,1,127,58,184,13.4,7.3,1,3
-mhc,FUN009004_FUN009004,Q9GL42,Hereditary hemochromatosis protein homolog,gbmr4,15,0.00008100114184326143,127,1,127,58,184,13.4,7.3,1,3
-mhc,FUN009004_FUN009004,Q9GL43,Hereditary hemochromatosis protein homolog,gbmr4,15,0.00009679826636651156,127,1,127,58,184,13.4,7.4,1,3
-mhc,FUN001552_COL4A6,P06339,"H-2 class I histocompatibility antigen, D-37 alpha chain",gbmr4,15,0.000990293174811911,69,1724,1792,44,112,10.1,4.8,1,1
-mhc,FUN020551_FUN020551.1,P14427,"H-2 class I histocompatibility antigen, D-P alpha chain",hp_lehninger_hpc3,17,0.024217225256195397,143,2470,2612,201,343,9.1,3.2,1,4
-mhc,FUN008497_FUN008497,P13750,"Patr class I histocompatibility antigen, B-1 alpha chain",gbmr4,16,0.0284577317097053,48,13,60,71,118,10.4,5.1,1,2
-mhc,FUN008497_FUN008497,Q95IT1,"Patr class I histocompatibility antigen, alpha chain G",gbmr4,16,0.029001614192405264,57,17,73,159,215,5.3,-0.7,1,2
-mhc,FUN018361_SNRPB,Q9QZY5,"T-cell surface glycoprotein CD1e, membrane-associated",gbmr4,15,0.05087138783892352,38,10,47,71,108,13.2,7.5,1,1
-mhc,FUN024956_FUN024956.1,Q5YB65,T-cell surface glycoprotein CD1b,hp_lehninger_hpc3,17,0.0625238505790727,81,3535,3615,223,303,8.6,3.0,1,1
-mhc,FUN020551_FUN020551.2,P14427,"H-2 class I histocompatibility antigen, D-P alpha chain",hp_lehninger_hpc3,17,0.06409660842787082,131,2470,2600,201,331,9.9,4.1,1,4
-mhc,FUN033153_FUN033153,P13753,"BOLA class I histocompatibility antigen, alpha chain BL3-7",protein20,5,0.07738482363892638,36,131,166,149,184,47.2,37.2,3,3
-mhc,FUN018361_SNRPB,P15812,"T-cell surface glycoprotein CD1e, membrane-associated",gbmr4,15,0.08135659869129977,57,10,66,69,125,7.0,1.8,1,1
-mhc,FUN019386_FUN019386.1,Q9QZY6,T-cell surface glycoprotein CD1c3,hp_lehninger_hpc3,22,0.08691846981596486,115,577,691,206,320,7.0,1.0,1,4
-mhc,FUN002272_COL2A1,P14436,"H-2 class II histocompatibility antigen, A-R alpha chain",gbmr4,16,0.08880896326915133,52,160,211,64,115,5.8,-0.3,1,1
-mhc,FUN006870_FUN006870,P14483,"H-2 class II histocompatibility antigen, A beta chain",gbmr4,16,0.10358718529536413,17,335,351,215,231,23.5,15.6,1,2
-mhc,FUN037992_OPRL1,Q61559,IgG receptor FcRn large subunit p51,hp_lehninger2,20,0.1053190307043066,145,47,191,166,310,6.9,1.1,1,6
-mhc,FUN020551_FUN020551.1,P06339,"H-2 class I histocompatibility antigen, D-37 alpha chain",hp_lehninger_hpc3,18,0.1309174521427416,132,2496,2627,226,357,8.3,2.4,1,4
-mhc,FUN008497_FUN008497,P30686,"Patr class I histocompatibility antigen, C alpha chain",gbmr4,15,0.13345752527133636,57,17,73,159,215,5.3,-1.1,1,1
-mhc,FUN001712_FUN001712,P15978,"Class I histocompatibility antigen, Non-RT1.A alpha-1 chain",gbmr4,16,0.13470365318508024,78,544,621,83,160,12.8,6.7,1,4
-mhc,FUN008497_FUN008497,P30515,"Saoe class I histocompatibility antigen, A alpha chain",gbmr4,16,0.15814972008107778,52,22,73,164,215,5.8,-0.9,1,2
-mhc,FUN020551_FUN020551.1,P28067,"HLA class II histocompatibility antigen, DM alpha chain",hp_lehninger_hpc3,18,0.17357309196086065,81,2524,2604,180,260,8.6,2.1,1,2
-mhc,FUN027507_ITGB2,P30377,"Class I histocompatibility antigen, Gogo-A*0401 alpha chain",hp_lehninger_hpc3,25,0.18379881754431943,123,252,374,221,343,6.5,0.8,1,3
-mhc,FUN008497_FUN008497,P30516,"Class I histocompatibility antigen, B alpha chain",gbmr4,15,0.19465697742596808,41,18,58,72,112,14.6,8.2,1,2
-mhc,FUN027507_ITGB2,P30375,"Class I histocompatibility antigen, Gogo-A*0101 alpha chain",hp_lehninger_hpc3,25,0.19657918863318236,123,252,374,221,343,6.5,0.8,1,3
-mhc,FUN019386_FUN019386.2,Q9QZY6,T-cell surface glycoprotein CD1c3,hp_lehninger_hpc3,22,0.2031202467579956,115,537,651,206,320,7.0,1.0,1,4
-mhc,FUN020078_FUN020078,P23043,Antigen-presenting glycoprotein CD1d,gbmr4,14,0.20354720004267568,55,77,131,10,70,,,1,1
-mhc,FUN019386_FUN019386.1,Q9QZY8,T-cell surface glycoprotein CD1c1,hp_lehninger_hpc3,22,0.20460420410443075,115,577,691,206,320,7.8,1.8,1,4
-mhc,FUN020551_FUN020551.2,P28067,"HLA class II histocompatibility antigen, DM alpha chain",hp_lehninger_hpc3,18,0.2071040111151449,80,2524,2603,180,259,10.0,3.4,1,2
-mhc,FUN027507_ITGB2,P30378,"Class I histocompatibility antigen, Gogo-A*0501 alpha chain",hp_lehninger_hpc3,25,0.21024523273190152,123,252,374,221,343,6.5,0.8,1,2
-mhc,FUN020551_FUN020551.2,C1ITJ8,Major histocompatibility complex class I-related gene protein,hp_lehninger_hpc3,18,0.2207255909130142,107,2497,2603,220,326,6.5,0.4,1,2
-mhc,FUN027507_ITGB2,P30376,"Class I histocompatibility antigen, Gogo-A*0201 alpha chain",hp_lehninger_hpc3,25,0.24765507871576548,90,285,374,254,343,4.4,-1.5,1,1
-mhc,FUN020551_FUN020551.1,C1ITJ8,Major histocompatibility complex class I-related gene protein,hp_lehninger_hpc3,18,0.2525231881579877,109,2497,2605,220,328,6.4,0.4,1,2
-mhc,FUN024956_FUN024956.1,Q61559,IgG receptor FcRn large subunit p51,hp_lehninger_hpc3,17,0.279548281092073,93,3019,3111,110,202,3.2,-2.9,1,1
-mhc,FUN036385_FUN036385,P04228,"H-2 class II histocompatibility antigen, A-D alpha chain",hp_lehninger_hpc3,18,0.28962110485171666,100,970,1069,85,184,9.0,2.8,1,2
-mhc,FUN044262_FUN044262,P13753,"BOLA class I histocompatibility antigen, alpha chain BL3-7",protein20,5,0.323092260849237,36,178,213,149,184,47.2,37.2,1,1
-mhc,FUN008497_FUN008497,P01893,"Putative HLA class I histocompatibility antigen, alpha chain H",gbmr4,16,0.3271643275180689,27,22,48,164,190,7.4,-0.7,1,3
-mhc,FUN020551_FUN020551.2,P01896,"H-2 class I histocompatibility antigen, alpha chain",hp_lehninger_hpc3,18,0.3370155217965835,123,2480,2602,18,140,12.2,6.1,1,2
-mhc,FUN008497_FUN008497,P13751,"Patr class I histocompatibility antigen, B-2 alpha chain",gbmr4,15,0.3724413273090807,38,27,64,85,122,7.9,2.6,1,1
-mhc,FUN008497_FUN008497,P16210,"Patr class I histocompatibility antigen, A-5 alpha chain",gbmr4,15,0.3724413273090807,38,27,64,85,122,7.9,2.6,1,1
-mhc,FUN024956_FUN024956.1,P06340,"HLA class II histocompatibility antigen, DO alpha chain",hp_lehninger_hpc3,17,0.3801272796454935,93,3371,3463,157,249,12.9,6.8,1,1
-mhc,FUN020551_FUN020551.1,P01896,"H-2 class I histocompatibility antigen, alpha chain",hp_lehninger_hpc3,18,0.3923346803759191,123,2480,2602,18,140,11.4,5.3,1,2
-mhc,FUN027507_ITGB2,P15979,"Class I histocompatibility antigen, F10 alpha chain",hp_lehninger_hpc3,22,0.39413683056193854,80,303,382,265,344,7.5,1.7,1,2
-mhc,FUN009004_FUN009004,Q9GL41,Hereditary hemochromatosis protein homolog,gbmr4,16,0.405085400349952,44,84,127,141,184,20.5,14.5,1,3
-mhc,FUN019386_FUN019386.2,Q9QZY8,T-cell surface glycoprotein CD1c1,hp_lehninger_hpc3,22,0.4472449956282012,115,537,651,206,320,7.8,1.8,1,2
-mhc,FUN006870_FUN006870,P01902,"H-2 class I histocompatibility antigen, K-D alpha chain",gbmr4,15,0.449764354783028,25,329,353,147,171,0.0,-5.4,1,1
-mhc,FUN020551_FUN020551.2,P06339,"H-2 class I histocompatibility antigen, D-37 alpha chain",hp_lehninger_hpc3,22,0.4684265073711053,105,2496,2600,226,330,10.5,4.2,1,3
-mhc,FUN031618_FUN031618.3,P06342,"H-2 class II histocompatibility antigen, A-Q beta chain",hp_lehninger2,21,0.5340253407958385,116,2,117,27,142,8.6,4.1,1,2
-mhc,FUN027507_ITGB2,Q9QZY7,T-cell surface glycoprotein CD1c2,hp_lehninger_hpc3,17,0.5426927489815929,90,281,370,238,327,10.0,3.8,1,1
-mhc,FUN024956_FUN024956.1,Q9XS72,T-cell surface glycoprotein CD1a,hp_lehninger_hpc3,17,0.5620454429809427,115,3359,3473,225,339,9.6,3.9,1,1
-mhc,FUN001928_AARS1,Q60I18,MHC class I-like protein MILL1,uniprot18,5,0.5719752267239546,43,826,868,201,243,34.9,28.1,1,1
-mhc,FUN031618_FUN031618.2,P06342,"H-2 class II histocompatibility antigen, A-Q beta chain",hp_lehninger2,21,0.591730769742532,119,56,174,24,142,8.4,3.9,1,2
-mhc,FUN008497_FUN008497,Q95IT3,"Patr class I histocompatibility antigen, alpha chain E",gbmr4,15,0.5929815285361021,30,17,46,149,178,10.0,2.0,1,1
-mhc,FUN006375_FUN006375.1,P28078,"Class II histocompatibility antigen, M alpha chain",hp_lehninger2,17,0.6043032281775381,107,884,990,63,169,7.5,1.6,1,1
-mhc,FUN036385_FUN036385,P23150,"H-2 class II histocompatibility antigen, I-E alpha chain",hp_lehninger_hpc3,18,0.6153650012187695,91,979,1069,92,182,8.8,2.4,1,2
-mhc,FUN036385_FUN036385,P01910,"H-2 class II histocompatibility antigen, A-K alpha chain",hp_lehninger_hpc3,18,0.6277395266500135,91,979,1069,94,184,7.7,1.4,1,2
-mhc,FUN038550_FUN038550,P15979,"Class I histocompatibility antigen, F10 alpha chain",gbmr4,17,0.6438282787292967,27,81,107,200,226,11.1,5.8,1,2
-mhc,FUN008497_FUN008497,P55899,IgG receptor FcRn large subunit p51,gbmr4,15,0.6749394716159999,26,26,51,161,186,15.4,8.6,1,1
-mhc,FUN033153_FUN033153,P16211,"Popy Class I histocompatibility antigen, A-1 alpha chain",hsdm17,5,0.685995327149814,45,131,175,146,190,35.6,27.5,1,1
-mhc,FUN008497_FUN008497,Q8SPV9,IgG receptor FcRn large subunit p51,gbmr4,15,0.7070574708438025,26,26,51,161,186,15.4,8.6,1,1
-mhc,FUN029685_FUN029685,P30381,"Class I histocompatibility antigen, Gogo-B*0103 alpha chain",hp_lehninger_hpc3,29,0.8056237255944505,103,198,300,235,337,11.7,5.3,1,1
-mhc,FUN029685_FUN029685,P30379,"Class I histocompatibility antigen, Gogo-B*0101 alpha chain",hp_lehninger_hpc3,29,0.8112006274993256,103,198,300,235,337,11.7,5.3,1,1
-mhc,FUN029685_FUN029685,P30380,"Class I histocompatibility antigen, Gogo-B*0102 alpha chain",hp_lehninger_hpc3,29,0.8112006274993256,103,198,300,235,337,11.7,5.3,1,1
-mhc,FUN028247_FUN028247,P13753,"BOLA class I histocompatibility antigen, alpha chain BL3-7",hp_lehninger_c_nonpolar2,26,0.8658410111571933,137,705,841,203,339,6.6,1.4,1,1
-mhc,FUN020551_FUN020551.2,P11610,Antigen-presenting glycoprotein CD1d2,hp_lehninger_hpc3,18,0.8755068187246315,109,2494,2602,216,324,7.3,1.4,1,1
-mhc,FUN008497_FUN008497,P16212,"Popy class I histocompatibility antigen, alpha chain E",gbmr4,15,0.8760846168746032,30,17,46,146,175,10.0,2.0,1,1
-mhc,FUN008502_CCN2,P13752,"BOLA class I histocompatibility antigen, alpha chain BL3-6",hp_lehninger_hpc3,25,0.9220344351467326,46,1,46,46,91,0.0,-5.2,1,1
-mhc,FUN002272_COL2A1,P55899,IgG receptor FcRn large subunit p51,gbmr4,16,0.9251128510007164,37,256,292,160,196,10.8,5.5,1,1
-mhc,FUN020551_FUN020551.2,P01900,"H-2 class I histocompatibility antigen, D-D alpha chain",hp_lehninger_hpc3,18,0.9277357038478344,89,2512,2600,250,338,10.1,3.8,1,1
-mhc,FUN037992_OPRL1,P13599,IgG receptor FcRn large subunit p51,hp_lehninger2,21,0.9338833533898678,120,47,166,167,286,6.7,1.1,1,2
-mhc,FUN020551_FUN020551.2,P11609,Antigen-presenting glycoprotein CD1d1,hp_lehninger_hpc3,18,0.9392227011550504,109,2494,2602,216,324,7.3,1.4,1,1
-mhc,FUN020551_FUN020551.1,P11610,Antigen-presenting glycoprotein CD1d2,hp_lehninger_hpc3,18,0.9591512915507524,113,2494,2606,216,328,7.1,1.2,1,1
-mhc,FUN020551_FUN020551.2,P01897,"H-2 class I histocompatibility antigen, L-D alpha chain",hp_lehninger_hpc3,18,0.9686715372502399,103,2500,2602,228,330,13.6,7.1,1,1
-mhc,FUN034477_FUN034477,Q9BZM5,UL16-binding protein 2,hp_lehninger_hpc3,17,0.9732909476299796,66,119,184,96,153,,,1,1
-mhc,FUN036385_FUN036385,P04227,"H-2 class II histocompatibility antigen, A-Q alpha chain",hp_lehninger_hpc3,18,0.9902701201024671,91,979,1069,59,149,8.8,2.7,1,1
-antigen_presentation,FUN006870_FUN006870,P36372,Antigen peptide transporter 2,gbmr4,15,0.001898919495926902,27,318,344,630,656,7.4,0.0,1,1
-antigen_presentation,FUN001952_COL6A2.1,P36371,Antigen peptide transporter 2,gbmr4,16,0.5182338901071399,118,58,175,544,661,9.3,3.6,1,2
-antigen_presentation,FUN020551_FUN020551.2,Q03519,Antigen peptide transporter 2,hp_lehninger_hpc3,18,0.5614873302068922,62,2536,2597,108,169,9.7,1.9,1,2
-antigen_presentation,FUN020551_FUN020551.1,Q03519,Antigen peptide transporter 2,hp_lehninger_hpc3,18,0.645327659230575,62,2536,2597,108,169,9.7,1.9,1,2
-antigen_presentation,FUN035571_FUN035571,Q9R233,Tapasin,hp_lehninger_hpc3,17,0.8687535383832605,136,2583,2718,327,462,8.1,2.0,1,1
-antigen_presentation,FUN031704_ZNFX1,O73895,Tapasin,hp_pbotc_1st_ed2,29,0.8918887798924401,79,435,513,285,363,11.4,5.5,1,1
-antigen_presentation,FUN031698_ZNFX1,O73895,Tapasin,hp_pbotc_1st_ed2,29,0.8952448019666154,79,435,513,285,363,11.4,5.6,1,1
-antigen_presentation,FUN003431_PRSS12,Q03518,Antigen peptide transporter 1,hp_kyte_doolittle2,19,0.9892129542260519,184,230,413,462,645,9.2,3.4,1,1
-nk_receptor,FUN001552_COL4A6,O75022,Leukocyte immunoglobulin-like receptor subfamily B member 3,gbmr4,15,0.007486247721619281,71,1691,1761,291,361,9.9,3.9,1,1
-nk_receptor,FUN022908_NCL,P61252,NKG2-D type II integral membrane protein,hp_lehninger_hpc3,19,0.01880428042797171,106,134,239,66,167,,,1,1
-nk_receptor,FUN022908_NCL,Q9MZJ7,NKG2-D type II integral membrane protein,hp_lehninger_hpc3,19,0.01880428042797171,106,134,239,66,167,,,1,1
-nk_receptor,FUN010357_FUN010357,P83555,Killer cell immunoglobulin-like receptor 3DL1,wwmj5,9,0.0280518508124818,75,3081,3155,326,400,12.0,6.9,1,1
-nk_receptor,FUN000620_WDR64,Q95MI1,NKG2-F type II integral membrane protein,hp_lehninger_hpc3,19,0.07405137990403306,74,740,813,3,74,,,1,1
-nk_receptor,FUN006870_FUN006870,Q95MI4,NKG2-E type II integral membrane protein,gbmr4,15,0.0982076644169453,24,326,349,135,158,12.5,5.7,1,1
-nk_receptor,FUN006870_FUN006870,Q07444,NKG2-E type II integral membrane protein,gbmr4,15,0.27312476820300796,19,326,344,135,153,15.8,8.0,1,1
-nk_receptor,FUN005971_FUN005971,O75022,Leukocyte immunoglobulin-like receptor subfamily B member 3,gbmr4,15,0.31565610857867576,50,180,229,549,598,20.0,11.1,1,1
-nk_receptor,FUN027507_ITGB2,P83556,Killer cell immunoglobulin-like receptor 3DL1,hp_lehninger_hpc3,22,0.4597809582415055,91,320,410,315,405,9.9,3.0,1,2
-nk_receptor,FUN009698_FUN009698,Q8MJZ2,Leukocyte immunoglobulin-like receptor subfamily A member 6,hp_lehninger_hpc3,17,0.5127002007037852,105,135,239,356,460,7.6,2.0,1,1
-nk_receptor,FUN004669_CNPY1,Q3UM83,Killer cell lectin-like receptor subfamily G member 2,hp_lehninger_hpc3,29,0.6023164264759581,108,78,185,2,109,7.4,1.9,1,1
-nk_receptor,FUN019918_TF1,O54709,NKG2-D type II integral membrane protein,hp_lehninger_hpc3,29,0.7683201934650012,98,99,196,127,224,10.2,4.4,1,1
-nk_receptor,FUN022299_INE,Q8N423,Leukocyte immunoglobulin-like receptor subfamily B member 2,gbmr4,15,0.8367051084746278,120,498,617,441,556,,,1,1
-tcr_cd3,FUN035573_FUN035573,A0A0J9YX75,T cell receptor beta variable 6-9,hp_lehninger_hpc3,17,0.0070523279662981055,95,761,855,9,103,8.4,2.3,1,1
-tcr_cd3,FUN035573_FUN035573,A0A0K0K1A5,T cell receptor beta variable 6-5,hp_lehninger_hpc3,17,0.007196395190867176,95,761,855,9,103,9.5,3.1,1,1
-tcr_cd3,FUN008497_FUN008497,P27190,DNA primase TraC,gbmr4,15,0.007522095815319299,50,23,72,856,905,4.0,-2.8,1,1
-tcr_cd3,FUN035573_FUN035573,A0A0A0MS04,Probable non-functional T cell receptor beta variable 6-7,hp_lehninger_hpc3,17,0.01961683158621359,95,761,855,9,103,10.5,4.3,1,1
-tcr_cd3,FUN008497_FUN008497,P05704,Methyl-accepting chemotaxis protein III,gbmr4,16,0.0236424212200277,52,26,77,296,347,7.7,0.1,1,2
-tcr_cd3,FUN035573_FUN035573,A0A0J9YXY3,T cell receptor beta variable 6-2,hp_lehninger_hpc3,17,0.02411259617210857,95,761,855,9,103,7.4,1.1,1,1
-tcr_cd3,FUN035573_FUN035573,P0DPF7,T cell receptor beta variable 6-3,hp_lehninger_hpc3,17,0.02411259617210857,95,761,855,9,103,7.4,1.1,1,1
-tcr_cd3,FUN035573_FUN035573,A0A0A6YYG3,T cell receptor beta variable 6-8,hp_lehninger_hpc3,17,0.0333761448094631,85,761,845,9,93,12.9,6.9,1,1
-tcr_cd3,FUN030023_FUN030023,Q98910,T-cell surface glycoprotein CD3 epsilon chain,wwmj5,9,0.050817872250568656,122,51,172,41,165,,,1,1
-tcr_cd3,FUN042913_FUN042913,A0A1I8MUL8,Female-specific protein transformer,hp_lehninger_c_nonpolar2,19,0.07112494289578977,84,101,184,281,364,7.1,1.1,1,3
-tcr_cd3,FUN008497_FUN008497,A0A0B4J262,T cell receptor alpha variable 8-6,gbmr4,16,0.08792534862960118,40,38,77,60,99,10.0,3.3,1,2
-tcr_cd3,FUN002399_SLC6A8.2,A0A1I8MUL8,Female-specific protein transformer,hp_lehninger_hpc3,18,0.11092437301960685,139,96,234,229,367,4.3,-0.8,1,3
-tcr_cd3,FUN008497_FUN008497,Q44362,Conjugal transfer protein TraC,gbmr4,15,0.11207774583191195,65,17,81,26,90,12.3,5.5,1,1
-tcr_cd3,FUN008497_FUN008497,Q44348,Conjugal transfer protein TraC,gbmr4,15,0.12123528180696944,65,17,81,26,90,16.9,10.0,1,1
-tcr_cd3,FUN014989_FUN014989,P27190,DNA primase TraC,hp_pbotc_1st_ed2,21,0.168380677737082,117,76,192,451,567,11.1,5.2,1,5
-tcr_cd3,FUN001552_COL4A6,P0DSE1,M1-specific T cell receptor alpha chain,gbmr4,15,0.1762852490246688,46,1612,1657,146,191,8.7,3.1,1,1
-tcr_cd3,FUN021387_PLEKHF2,A0A0B4J248,T cell receptor alpha variable 1-1,wass14,6,0.20139081941898737,19,23,41,15,33,57.9,47.6,1,1
-tcr_cd3,FUN005988_FUN005988,A0A5B0,T cell receptor beta variable 14,hp_lehninger_hpc3,25,0.24726258737263068,41,43,83,59,99,12.2,6.5,1,1
-tcr_cd3,FUN020734_GALM,Q5R1Q1,T-cell surface glycoprotein CD3 epsilon chain,gbmr4,14,0.33335795434958965,90,114,203,37,136,,,1,1
-tcr_cd3,FUN020640_SLCO4A1,A0A1I8MUL8,Female-specific protein transformer,hp_lehninger2,17,0.35516007303820946,100,87,186,255,354,5.0,0.0,1,2
-tcr_cd3,FUN028124_FUN028124,P27190,DNA primase TraC,hp_pbotc_1st_ed2,21,0.35796961895302193,117,76,192,451,567,11.1,5.0,1,3
-tcr_cd3,FUN001552_COL4A6,P0DTU3,T cell receptor alpha chain MC.7.G5,gbmr4,15,0.393636920002658,46,1612,1657,153,198,8.7,3.1,1,1
-tcr_cd3,FUN006870_FUN006870,P05704,Methyl-accepting chemotaxis protein III,gbmr4,16,0.5155817056783939,27,327,353,405,431,18.5,10.0,1,2
-tcr_cd3,FUN001552_COL4A6,P01848,T cell receptor alpha chain constant,gbmr4,15,0.5438618838187683,46,1612,1657,18,63,8.7,3.1,1,1
-tcr_cd3,FUN003566_A1CF,A0A1I8MUL8,Female-specific protein transformer,polarity4,12,0.5447745014099475,79,337,415,282,360,17.7,9.1,1,1
-tcr_cd3,FUN005971_FUN005971,P22409,Protein Tra,gbmr4,16,0.5624128958004394,73,171,243,4,76,15.1,5.6,1,2
-tcr_cd3,FUN035573_FUN035573,A0A087WT01,T cell receptor alpha variable 27,hp_lehninger_hpc3,17,0.6421816593623338,105,754,858,1,105,11.4,4.8,1,1
-tcr_cd3,FUN009937_CATSPER3,A0A1I8MUL8,Female-specific protein transformer,polarity4,12,0.7084391985518683,72,147,218,281,352,5.6,-0.7,1,1
-tcr_cd3,FUN020557_FUN020557,A0A0A6YYK1,T cell receptor alpha variable 8-1,hp_lehninger_hpc3,17,0.7194949722265391,107,114,220,1,107,7.5,1.7,1,1
-tcr_cd3,FUN035509_FUN035509,A0A087WT03,T cell receptor alpha variable 26-1,wass14,6,0.7641782095827105,25,17,41,75,99,40.0,32.3,1,1
-tcr_cd3,FUN010522_FUN010522,A0A0B4J234,T cell receptor alpha variable 2,hp_lehninger_hpc3,28,0.7796578875356172,31,76,106,13,43,9.7,2.8,1,2
-tcr_cd3,FUN011463_EFCAB7,P22646,T-cell surface glycoprotein CD3 epsilon chain,wass14,6,0.8439457827721872,34,15,48,22,55,41.2,33.5,1,1
-tcr_cd3,FUN019200_FUN019200,A0A589,T cell receptor beta variable 4-3,hp_lehninger_hpc3,25,0.9021885770782532,46,1,46,18,63,10.9,5.2,1,1
-tcr_cd3,FUN017943_ATF3,A0A5A2,T cell receptor beta variable 5-8,hp_thomas_dill2,23,0.9155584609548861,71,145,215,26,98,,,1,1
-tcr_cd3,FUN017459_ANGPTL6,P04437,T cell receptor alpha variable 29/delta variable 5,hp_thomas_dill2,23,0.9693051820435692,82,122,203,20,93,,,1,1
-tcr_cd3,FUN019200_FUN019200,A0A539,T cell receptor beta variable 4-2,hp_lehninger_hpc3,25,0.9707519131149539,46,1,46,18,63,10.9,5.2,1,1
-tcr_cd3,FUN034640_adt-1,A0A075B6R0,T cell receptor gamma variable 2,hp_lehninger_hpc3,17,0.9892127645635549,89,7,95,4,92,10.1,4.5,1,1
-c1_set,FUN034478_FUN034478,Q68D85,Natural cytotoxicity triggering receptor 3 ligand 1,hp_lehninger_hpc3,17,0.24746516117834655,115,566,680,81,195,6.1,0.4,1,1
-self_nonself_nonvertebrate,FUN005971_FUN005971,B2AXJ5,Gasdermin-like protein het-Q1,gbmr4,16,0.0807321114966453,69,177,245,59,127,7.2,-0.2,1,2
-self_nonself_nonvertebrate,FUN009004_FUN009004,P0DW10,Gasdermin-like protein rcd-1-2,gbmr4,16,0.22088745649756308,35,94,128,201,235,14.3,7.7,1,2
-self_nonself_nonvertebrate,FUN019245_ADAMTS3,P17840,S-locus-specific glycoprotein S13,hp_lehninger_hpc3,19,0.39568054445933815,113,4,116,68,187,,,1,1
-self_nonself_nonvertebrate,FUN013875_TMPRSS7,Q54V07,Tiger protein B1,hp_lehninger_hpc3,29,0.6538376390318881,108,169,276,306,413,8.3,2.1,1,1
-self_nonself_nonvertebrate,FUN013994_SSBP3,Q9FMQ4,S-protein homolog 3,gbmr4,17,0.7555607227380867,37,60,96,9,45,5.4,0.7,1,3
-self_nonself_nonvertebrate,FUN028415_FUN028415,P0DW10,Gasdermin-like protein rcd-1-2,hp_lehninger_hpc3,27,0.7805685577587442,84,5,88,94,177,8.3,2.9,1,1
-self_nonself_nonvertebrate,FUN031981_FUN031981,P07761,S-locus-specific glycoprotein S6,wass14,6,0.9278616045312991,14,73,86,128,141,64.3,54.6,1,1
-self_nonself_nonvertebrate,FUN004831_FUN004831,P07761,S-locus-specific glycoprotein S6,hp_lehninger_hpc3,17,0.9672570944579826,44,8,51,87,130,6.8,0.8,1,1
-self_nonself_nonvertebrate,FUN021208_FUN021208,P07761,S-locus-specific glycoprotein S6,wass14,6,0.9745777409622874,14,73,86,128,141,64.3,54.6,1,1
-minor_histocompatibility,FUN008497_FUN008497,Q15642,Cdc42-interacting protein 4,gbmr4,15,0.00011442204840572204,63,16,78,134,196,9.5,3.0,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q5RCJ1,Cdc42-interacting protein 4,gbmr4,15,0.0001177427057949109,63,16,78,134,196,9.5,3.0,1,2
-minor_histocompatibility,FUN032464_FUN032464,Q9QX47,Protein SON,hp_lehninger2,17,0.00014943368146142158,194,122,315,691,884,3.1,-0.7,1,1
-minor_histocompatibility,FUN012676_FUN012676,P51578,P2X purinoceptor 5,gbmr4,15,0.00029044809666399474,37,333,369,202,238,5.4,-0.6,1,5
-minor_histocompatibility,FUN008497_FUN008497,Q8IWZ5,Tripartite motif-containing protein 42,gbmr4,15,0.0003337800566104018,70,6,75,342,411,7.1,0.4,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q9D2H5,Tripartite motif-containing protein 42,gbmr4,15,0.00034116599255514353,70,6,75,342,411,7.1,0.4,1,2
-minor_histocompatibility,FUN020551_FUN020551.2,Q95JC7,Neutral amino acid transporter B(0),hp_lehninger_hpc3,17,0.0011634227913745008,115,2489,2603,178,292,6.1,-0.5,1,1
-minor_histocompatibility,FUN006870_FUN006870,P36161,Nucleoporin NUP133,gbmr4,15,0.0012343953977945713,36,321,356,606,641,13.9,9.0,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q5F4B2,Switch-associated protein 70,gbmr4,15,0.0014315579769579895,55,20,74,357,411,7.3,0.1,1,2
-minor_histocompatibility,FUN006870_FUN006870,Q9VM75,HEAT repeat-containing protein 1 homolog,gbmr4,15,0.0020425212012074095,30,324,353,2061,2090,13.3,5.4,1,4
-minor_histocompatibility,FUN008497_FUN008497,F1M3G7,A-kinase anchor protein 13,gbmr4,15,0.0021858503865100874,60,16,75,488,547,6.7,0.1,1,1
-minor_histocompatibility,FUN012676_FUN012676,P36161,Nucleoporin NUP133,gbmr4,15,0.00271137397784452,57,332,388,332,388,7.0,1.5,1,3
-minor_histocompatibility,FUN008497_FUN008497,Q6A028,Switch-associated protein 70,gbmr4,15,0.003152308027277857,55,20,74,357,411,7.3,-0.1,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q9UH65,Switch-associated protein 70,gbmr4,16,0.00379576482663588,55,20,74,357,411,7.3,0.1,1,2
-minor_histocompatibility,FUN006870_FUN006870,Q7SY48,HEAT repeat-containing protein 1,gbmr4,15,0.005241813543817207,23,319,341,1571,1593,13.0,8.5,1,5
-minor_histocompatibility,FUN008497_FUN008497,Q9HCM1,Retroelement silencing factor 1,gbmr4,15,0.006234627695990185,54,22,75,1389,1442,11.1,3.8,1,2
-minor_histocompatibility,FUN025744_FUN025744,Q9QX47,Protein SON,hp_lehninger2,17,0.008116180076345108,186,69,254,732,917,2.7,-1.3,1,1
-minor_histocompatibility,FUN008497_FUN008497,P79457,Histone demethylase UTY,gbmr4,16,0.008261336523997647,53,25,77,425,477,1.9,-5.2,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q9VCW3,Nuclear pore complex protein Nup133,gbmr4,16,0.01923029854741638,69,20,88,1011,1079,7.2,0.6,1,2
-minor_histocompatibility,FUN005971_FUN005971,O14607,Histone demethylase UTY,gbmr4,16,0.02714055898901966,65,170,234,966,1030,20.0,13.7,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q3KRF1,Sp110 nuclear body protein,gbmr4,15,0.02716694706652562,51,31,81,311,361,9.8,2.3,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q8BVK9,Sp110 nuclear body protein,gbmr4,16,0.028365243265344262,31,20,50,305,335,6.5,-1.9,1,3
-minor_histocompatibility,FUN025743_FUN025743,Q9QX47,Protein SON,hp_lehninger2,17,0.02993623083236206,153,29,181,732,884,2.6,-1.4,1,1
-minor_histocompatibility,FUN008497_FUN008497,Q54ML4,HEAT repeat-containing protein 1 homolog,gbmr4,16,0.036379987305770016,33,19,51,371,403,15.2,7.7,1,2
-minor_histocompatibility,FUN010649_TTPAL,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,19,0.03767464554742584,94,109,202,412,504,,,1,1
-minor_histocompatibility,FUN006870_FUN006870,Q9EQH2,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.04392926840604765,24,323,346,607,630,0.0,-5.2,1,2
-minor_histocompatibility,FUN006870_FUN006870,Q9JJ22,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.04682301776839547,24,323,346,607,630,0.0,-4.9,1,2
-minor_histocompatibility,FUN035530_MUC5B.1,Q12802,A-kinase anchor protein 13,wwmj5,10,0.04880194236088351,73,629,701,1974,2046,8.2,2.8,1,2
-minor_histocompatibility,FUN027605_ANXA11,Q60767,Lymphocyte antigen 75,gbmr4,15,0.05174655934324841,141,497,637,1226,1366,9.9,4.6,1,1
-minor_histocompatibility,FUN008497_FUN008497,Q9HB58,Sp110 nuclear body protein,gbmr4,16,0.05324825706718667,45,4,48,306,350,13.3,6.3,1,2
-minor_histocompatibility,FUN012676_FUN012676,Q60553,Receptor tyrosine-protein kinase erbB-2,gbmr4,15,0.05717082661474335,34,334,367,155,188,8.8,2.9,1,1
-minor_histocompatibility,FUN008497_FUN008497,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,15,0.05844432380735127,30,21,50,467,496,23.3,15.0,1,1
-minor_histocompatibility,FUN008497_FUN008497,Q3TBD2,Rho GTPase-activating protein 45,gbmr4,16,0.059932253600488865,31,21,51,183,213,19.4,11.0,1,2
-minor_histocompatibility,FUN008497_FUN008497,O00507,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,15,0.06331184173841957,30,21,50,469,498,23.3,15.0,1,1
-minor_histocompatibility,FUN022952_FUN022952,Q60767,Lymphocyte antigen 75,hp_lehninger_hpc3,19,0.06662097221004326,131,1,131,276,410,,,1,3
-minor_histocompatibility,FUN001552_COL4A6,Q9H583,HEAT repeat-containing protein 1,gbmr4,16,0.07306345258519742,40,1752,1791,1811,1850,5.0,-0.6,1,3
-minor_histocompatibility,FUN006870_FUN006870,Q8WUM0,Nuclear pore complex protein Nup133,gbmr4,15,0.07604247695371479,23,319,341,978,1000,13.0,3.6,1,1
-minor_histocompatibility,FUN006238_STT3B,Q96HQ0,Zinc finger protein 419,hp_thomas_dill2,18,0.08055863292172122,103,677,779,259,361,12.6,6.5,1,1
-minor_histocompatibility,FUN012676_FUN012676,O00507,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,17,0.09240217260346811,19,333,351,749,767,5.3,-0.6,1,4
-minor_histocompatibility,FUN001552_COL4A6,Q9GM44,HEAT repeat-containing protein 1,gbmr4,16,0.09575053930927106,40,1752,1791,625,664,7.5,1.9,1,3
-minor_histocompatibility,FUN006870_FUN006870,Q8BVK9,Sp110 nuclear body protein,gbmr4,16,0.09645732898792764,33,321,353,291,323,12.1,4.8,1,2
-minor_histocompatibility,FUN034370_TOP3A,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.09805501600293913,200,725,924,1395,1594,8.5,2.0,2,4
-minor_histocompatibility,FUN010086_FUN010086.1,A8MTL9,Serpin-like protein HMSD,hp_lehninger_c_nonpolar2,26,0.10364969351464372,69,97,165,39,114,,,1,2
-minor_histocompatibility,FUN018181_HTR7,A7MB10,Protein RRP5 homolog,hp_kyte_doolittle2,20,0.12150946222238053,188,387,574,1434,1621,5.9,-0.9,1,1
-minor_histocompatibility,FUN006870_FUN006870,Q5XUN4,Lysine-specific demethylase 5D,gbmr4,16,0.12440820875555184,23,327,349,861,883,8.7,0.9,1,2
-minor_histocompatibility,FUN020557_FUN020557,P70424,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,17,0.1330241771767657,140,2357,2496,1022,1161,5.7,-0.7,1,1
-minor_histocompatibility,FUN008497_FUN008497,Q9XBQ0,Serine/threonine-protein kinase pkn3,gbmr4,15,0.13778908492738182,42,25,66,266,307,4.8,-1.9,1,1
-minor_histocompatibility,FUN035530_MUC5B.1,E9Q394,A-kinase anchor protein 13,wwmj5,10,0.15058529644552468,67,635,701,1943,2009,9.0,3.6,1,2
-minor_histocompatibility,FUN026157_TCF7L2,P18583,Protein SON,hp_lehninger2,21,0.15778708009476583,110,357,466,62,171,7.3,1.4,2,13
-minor_histocompatibility,FUN035530_MUC5B.1,F1M3G7,A-kinase anchor protein 13,wwmj5,10,0.163869670277406,67,635,701,1942,2008,9.0,3.6,1,2
-minor_histocompatibility,FUN029050_FUN029050,Q8IYM9,E3 ubiquitin-protein ligase TRIM22,hp_lehninger_c_nonpolar2,26,0.17424320844365296,91,34,124,190,280,12.1,5.8,3,17
-minor_histocompatibility,FUN022083_ZAN,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,hp_lehninger_hpc3,17,0.17579156317935316,125,5,129,1783,1907,4.0,-1.4,1,2
-minor_histocompatibility,FUN012674_COL3A1,Q6P5Z2,Serine/threonine-protein kinase N3,gbmr4,15,0.17609542191430633,44,39,82,660,703,6.8,1.7,1,1
-minor_histocompatibility,FUN001554_COL4A1,Q5SUA5,Unconventional myosin-Ig,gbmr4,15,0.17884820264010381,37,1706,1742,787,823,10.8,4.7,1,1
-minor_histocompatibility,FUN007808_DNAH5,Q9VHB0,Protein Son,hp_pbotc_1st_ed2,29,0.18524360702141654,207,1,207,243,449,8.7,1.4,1,7
-minor_histocompatibility,FUN026836_FUN026836,Q5U3Q6,Cdc42-interacting protein 4 homolog,hp_lehninger_hpc3,29,0.1853229490075452,30,9,38,68,97,6.7,1.2,1,3
-minor_histocompatibility,FUN001554_COL4A1,Q14289,Protein-tyrosine kinase 2-beta,gbmr4,16,0.19231339495889682,24,1738,1761,143,166,8.3,2.1,1,3
-minor_histocompatibility,FUN019434_COLEC11,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,18,0.19538421490945068,93,122,214,326,428,,,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q8CJ53,Cdc42-interacting protein 4,gbmr4,16,0.19606832306986582,34,17,50,167,200,8.8,1.5,1,2
-minor_histocompatibility,FUN009339_MEGF6,Q6BPU5,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,hp_lehninger_hpc3,18,0.20088880151265417,75,1346,1420,280,354,9.3,4.1,1,2
-minor_histocompatibility,FUN009004_FUN009004,Q9JJ22,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.20172568535425794,91,6,96,838,928,7.7,1.5,1,3
-minor_histocompatibility,FUN001554_COL4A1,P70600,Protein-tyrosine kinase 2-beta,gbmr4,16,0.206921313476761,24,1738,1761,143,166,8.3,2.1,1,3
-minor_histocompatibility,FUN001554_COL4A1,Q9QVP9,Protein-tyrosine kinase 2-beta,gbmr4,16,0.21516882988809305,24,1738,1761,143,166,8.3,2.1,1,3
-minor_histocompatibility,FUN024764_COL4A6,Q920P9,Lymphocyte antigen 75,gbmr4,16,0.2215219164060118,38,1349,1386,1271,1308,2.6,-2.1,1,2
-minor_histocompatibility,FUN012674_COL3A1,Q8K045,Serine/threonine-protein kinase N3,gbmr4,15,0.2238662738658438,44,39,82,649,692,6.8,1.4,1,1
-minor_histocompatibility,FUN022567_FUN022567,Q5EA40,"Branched-chain-amino-acid aminotransferase, mitochondrial",hp_lehninger2,20,0.2245721295143109,111,63,173,50,160,10.8,5.4,1,5
-minor_histocompatibility,FUN009004_FUN009004,Q9EQH2,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.23108973748992173,87,6,92,838,924,6.9,0.7,1,3
-minor_histocompatibility,FUN008085_TOP3A.1,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,18,0.23375890319968767,200,419,618,1395,1594,8.5,2.0,1,3
-minor_histocompatibility,FUN022446_EIF5B,Q9VHB0,Protein Son,polarity4,12,0.2358829316079841,91,861,951,680,770,12.1,6.3,1,1
-minor_histocompatibility,FUN002272_COL2A1,P36161,Nucleoporin NUP133,gbmr4,16,0.236819297346031,35,1580,1614,1116,1150,8.6,2.7,1,1
-minor_histocompatibility,FUN008497_FUN008497,P97531,Cdc42-interacting protein 4,gbmr4,16,0.25987954103951166,34,17,50,167,200,8.8,1.5,1,2
-minor_histocompatibility,FUN013386_ADGRL3.3,P79457,Histone demethylase UTY,hp_thomas_dill2,20,0.27294327178325833,169,765,933,398,566,5.9,-0.7,1,2
-minor_histocompatibility,FUN009004_FUN009004,Q9NZ08,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.2766343412012807,87,6,92,849,935,6.9,0.8,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q5DTW7,Retroelement silencing factor 1,gbmr4,15,0.28729396940666485,36,23,58,1174,1209,5.6,-3.1,1,1
-minor_histocompatibility,FUN020011_FUN020011,F1M3G7,A-kinase anchor protein 13,hp_lehninger_hpc3,18,0.2990919150057039,95,157,251,834,928,10.5,5.0,1,2
-minor_histocompatibility,FUN034520_CCKAR.1,A7MB10,Protein RRP5 homolog,hp_thomas_dill2,20,0.3091587802897243,101,243,343,1393,1493,8.9,2.4,3,9
-minor_histocompatibility,FUN028328_FUN028328,Q6NS46,Protein RRP5 homolog,hp_thomas_dill_no_c2,22,0.3135952555883047,186,487,672,1396,1581,2.2,-4.4,1,3
-minor_histocompatibility,FUN032496_FUN032496,Q4PA25,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,hp_pbotc_1st_ed2,18,0.32388272983527916,98,16,113,354,451,11.2,5.5,1,2
-minor_histocompatibility,FUN014852_VASN,Q6NS46,Protein RRP5 homolog,hp_kyte_doolittle2,27,0.3304639656439332,202,693,894,1378,1579,8.4,2.6,1,2
-minor_histocompatibility,FUN008497_FUN008497,Q6DE55,Rho GTPase-activating protein 45,gbmr4,15,0.3333464887360359,28,21,48,173,200,17.9,9.6,1,1
-minor_histocompatibility,FUN020908_TAF13,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,hsdm17,6,0.33831670244581674,54,48,101,1455,1508,27.8,21.6,1,1
-minor_histocompatibility,FUN020557_FUN020557,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,17,0.3465121695581506,121,2374,2494,1037,1157,5.0,-1.4,1,1
-minor_histocompatibility,FUN009297_APLNRB,Q9HB58,Sp110 nuclear body protein,hp_thomas_dill2,20,0.3465874813973775,163,347,509,168,330,11.0,4.2,1,2
-minor_histocompatibility,FUN005522_FUN005522,Q9QX47,Protein SON,hp_thomas_dill2,20,0.3559776800257488,105,68,172,694,798,1.0,-4.4,1,3
-minor_histocompatibility,FUN000773_PHTF2,Q9HB58,Sp110 nuclear body protein,hp_pbotc_1st_ed2,17,0.3816117695685398,214,118,331,128,341,9.3,2.0,1,1
-minor_histocompatibility,FUN001552_COL4A6,Q920P9,Lymphocyte antigen 75,gbmr4,17,0.388020422971134,38,1609,1646,1271,1308,2.6,-2.1,1,3
-minor_histocompatibility,FUN003994_FUN003994,Q92619,Rho GTPase-activating protein 45,hp_lehninger_hpc3,19,0.40175524002421964,95,784,878,323,409,,,1,1
-minor_histocompatibility,FUN013268_TM7SF2,Q6NS46,Protein RRP5 homolog,hp_kyte_doolittle2,20,0.40434977756091744,162,48,209,1407,1568,8.6,1.1,1,2
-minor_histocompatibility,FUN001554_COL4A1,O00507,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,15,0.4083880571194702,30,2,31,1996,2025,10.0,4.6,1,1
-minor_histocompatibility,FUN041442_FUN041442,Q8WUM0,Nuclear pore complex protein Nup133,polarity4,12,0.4147796167930202,69,455,523,570,638,14.5,8.8,1,1
-minor_histocompatibility,FUN040809_FUN040809,P19971,Thymidine phosphorylase,hp_lehninger_hpc3,17,0.42227770541308834,157,711,867,95,251,7.6,2.1,1,1
-minor_histocompatibility,FUN008497_FUN008497,O14604,"Thymosin beta-4, Y-chromosomal",gbmr4,16,0.42857821525491113,31,20,50,9,39,22.6,12.3,1,3
-minor_histocompatibility,FUN030567_FUN030567,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,17,0.433099264725824,139,36,174,1065,1203,10.1,4.9,1,1
-minor_histocompatibility,FUN043500_FUN043500,Q5DTW7,Retroelement silencing factor 1,hp_lehninger_hpc3,18,0.4354180390378747,38,4,41,542,579,10.5,3.6,1,2
-minor_histocompatibility,FUN034179_TM7SF2,Q6NS46,Protein RRP5 homolog,hp_kyte_doolittle2,20,0.4425139447143949,162,48,209,1407,1568,8.6,1.0,1,2
-minor_histocompatibility,FUN024956_FUN024956.1,Q95JC7,Neutral amino acid transporter B(0),hp_lehninger_hpc3,17,0.44866298831267526,74,3531,3604,131,204,10.8,3.7,1,1
-minor_histocompatibility,FUN013456_col6a6,P42557,Reduced folate transporter,wwmj5,9,0.4497680869356476,49,1401,1449,243,291,16.3,10.6,1,1
-minor_histocompatibility,FUN040715_FUN040715.2,Q6R2V0,Serine/threonine-protein kinase WNK1,gbmr4,17,0.46496524154861063,40,144,183,543,582,7.5,1.5,1,3
-minor_histocompatibility,FUN016676_FUN016676,Q6FTG1,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,wass14,6,0.4718083360488653,32,71,102,315,346,37.5,30.1,1,1
-minor_histocompatibility,FUN012366_FUN012366,Q6NS46,Protein RRP5 homolog,hp_thomas_dill_no_c2,22,0.47220376367400946,319,452,770,1283,1601,9.1,2.6,2,3
-minor_histocompatibility,FUN011537_FUN011537,P41440,Reduced folate transporter,gbmr4,20,0.4754819486238916,23,117,139,469,491,21.7,13.4,1,4
-minor_histocompatibility,FUN013451_FUN013451.1,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.4791057519495538,194,907,1100,1408,1601,6.7,-1.2,1,1
-minor_histocompatibility,FUN019809_FUN019809,Q14690,Protein RRP5 homolog,gbmr4,16,0.4797672453382346,31,92,122,1260,1290,12.9,7.6,1,2
-minor_histocompatibility,FUN032908_FUN032908,Q14690,Protein RRP5 homolog,gbmr4,16,0.4797672453382346,31,92,122,1260,1290,12.9,7.6,1,1
-minor_histocompatibility,FUN011537_FUN011537,Q91VE2,P2X purinoceptor 5,gbmr4,15,0.4824104437497087,37,105,141,358,394,13.5,6.9,1,1
-minor_histocompatibility,FUN005522_FUN005522,P18583,Protein SON,hp_thomas_dill2,20,0.48459614802210865,105,68,172,699,803,1.0,-4.5,1,2
-minor_histocompatibility,FUN032433_FUN032433,Q7SY48,HEAT repeat-containing protein 1,protein20,5,0.486216232725963,41,118,158,1574,1614,41.5,34.4,1,1
-minor_histocompatibility,FUN008574_FUN008574,Q8WUM0,Nuclear pore complex protein Nup133,polarity4,12,0.4939158853593184,69,455,523,570,638,14.5,8.8,1,1
-minor_histocompatibility,FUN042130_FUN042130,O19105,Neutral amino acid transporter B(0),hp_lehninger_hpc3,18,0.5044853578619672,74,40,113,452,525,5.4,-0.2,1,3
-minor_histocompatibility,FUN009565_FUN009565,O60449,Lymphocyte antigen 75,hp_lehninger_hpc3,18,0.5142702767116758,66,105,170,5,70,13.6,8.0,1,2
-minor_histocompatibility,FUN040715_FUN040715.2,Q9H4A3,Serine/threonine-protein kinase WNK1,gbmr4,17,0.5156756637313042,40,144,183,545,584,7.5,1.4,1,3
-minor_histocompatibility,FUN012676_FUN012676,F4IGA5,Nuclear pore complex protein NUP133,gbmr4,15,0.5164430646904248,31,326,356,1193,1223,3.2,-2.6,1,1
-minor_histocompatibility,FUN002294_PROBABLE.2,F1M3G7,A-kinase anchor protein 13,hp_thomas_dill2,18,0.5164687870247631,144,614,757,1357,1500,10.4,3.3,1,2
-minor_histocompatibility,FUN007587_FUN007587,Q62240,Lysine-specific demethylase 5D,hp_lehninger2,20,0.5172461595665615,149,1458,1606,769,917,11.4,6.4,1,3
-minor_histocompatibility,FUN040715_FUN040715.2,P83741,Serine/threonine-protein kinase WNK1,gbmr4,17,0.5319810742778155,40,144,183,545,584,7.5,1.5,1,3
-minor_histocompatibility,FUN015230_DHX38,Q6NS46,Protein RRP5 homolog,hp_kyte_doolittle2,27,0.5445549980643808,276,2,277,1323,1598,9.4,2.4,1,2
-minor_histocompatibility,FUN002471_FUN002471,P19971,Thymidine phosphorylase,hp_lehninger_hpc3,27,0.5639709700702795,58,9,66,73,130,10.3,4.5,1,1
-minor_histocompatibility,FUN028728_TNPO3,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,hp_lehninger2,20,0.5755655602050923,144,241,384,1556,1699,10.4,4.5,1,2
-minor_histocompatibility,FUN011363_FUN011363,P70424,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,28,0.5762408926891788,94,363,456,639,732,7.4,1.4,1,3
-minor_histocompatibility,FUN011537_FUN011537,P51578,P2X purinoceptor 5,gbmr4,15,0.585959778423886,37,105,141,358,394,16.2,9.6,1,1
-minor_histocompatibility,FUN011363_FUN011363,P06494,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,28,0.6075268745245339,94,363,456,640,733,7.4,1.5,1,3
-minor_histocompatibility,FUN006870_FUN006870,Q9M439,"Branched-chain-amino-acid aminotransferase 2, chloroplastic",gbmr4,15,0.6238037630195584,16,331,346,24,39,6.2,-1.6,1,1
-minor_histocompatibility,FUN023346_SEMA4E,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.6248753836443478,131,709,839,1392,1522,13.0,6.1,1,2
-minor_histocompatibility,FUN002471_FUN002471,Q99N42,Thymidine phosphorylase,hp_lehninger_hpc3,27,0.6270764024647992,64,3,66,53,116,9.4,4.1,1,1
-minor_histocompatibility,FUN031239_MBL2,Q14289,Protein-tyrosine kinase 2-beta,hp_thomas_dill2,20,0.6375111629879405,134,96,229,332,465,6.7,1.0,1,1
-minor_histocompatibility,FUN002471_FUN002471,Q5FVR2,Thymidine phosphorylase,hp_lehninger_hpc3,27,0.6423205160305925,64,3,66,60,123,7.8,2.7,1,1
-minor_histocompatibility,FUN029616_FUN029616,Q4PA25,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,hp_pbotc_1st_ed2,18,0.6438032200490404,96,16,111,354,449,11.5,5.6,1,2
-minor_histocompatibility,FUN015159_FUN015159.1,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.6459504742701846,215,264,478,1363,1577,7.4,0.8,1,1
-minor_histocompatibility,FUN041016_NHL1,Q6NS46,Protein RRP5 homolog,hp_lehninger_hpc3,25,0.6745098635321212,103,66,168,1519,1621,1.9,-4.4,1,1
-minor_histocompatibility,FUN027887_CCNB1IP1,Q49GP5,Phosphatidylinositol 4-kinase type 2-beta,hp_lehninger_c_nonpolar2,26,0.6758723283184132,108,33,140,151,258,6.5,1.0,1,1
-minor_histocompatibility,FUN040715_FUN040715.2,Q9JIH7,Serine/threonine-protein kinase WNK1,gbmr4,17,0.6804685913610318,40,144,183,545,584,7.5,1.5,1,2
-minor_histocompatibility,FUN000916_FUN000916,Q49GP5,Phosphatidylinositol 4-kinase type 2-beta,hp_lehninger_c_nonpolar2,26,0.6807056459850702,108,34,141,52,159,9.3,3.2,1,2
-minor_histocompatibility,FUN034265_FUN034265,Q49GP5,Phosphatidylinositol 4-kinase type 2-beta,hp_lehninger_c_nonpolar2,26,0.6807056459850702,108,34,141,52,159,10.2,4.1,1,2
-minor_histocompatibility,FUN022136_FUN022136,Q9XBQ0,Serine/threonine-protein kinase pkn3,hp_lehninger_c_nonpolar2,26,0.6960071413765733,63,19,81,312,374,9.5,3.0,1,2
-minor_histocompatibility,FUN018331_FUN018331,O19105,Neutral amino acid transporter B(0),gbmr4,15,0.6986939928654492,32,2,33,196,227,6.2,-0.5,1,1
-minor_histocompatibility,FUN034724_FUN034724,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,17,0.7008059422576188,136,33,168,1062,1197,10.3,5.1,1,1
-minor_histocompatibility,FUN033302_FUN033302,Q6FTG1,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,wass14,6,0.707075276633345,32,105,136,315,346,37.5,30.1,1,1
-minor_histocompatibility,FUN013451_FUN013451.2,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.7106310396329181,194,907,1100,1408,1601,6.7,-1.2,1,1
-minor_histocompatibility,FUN006870_FUN006870,Q12802,A-kinase anchor protein 13,gbmr4,15,0.7267924581707356,35,319,353,2318,2352,5.7,-2.1,1,1
-minor_histocompatibility,FUN019809_FUN019809,Q6NS46,Protein RRP5 homolog,gbmr4,16,0.7281749943050008,30,92,121,1271,1300,13.3,8.4,1,1
-minor_histocompatibility,FUN032908_FUN032908,Q6NS46,Protein RRP5 homolog,gbmr4,16,0.7281749943050008,30,92,121,1271,1300,13.3,8.4,1,1
-minor_histocompatibility,FUN001412_FUN001412,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.7327673022091918,23,302,324,43,65,17.4,9.8,1,1
-minor_histocompatibility,FUN004554_FAIM2,Q6GVM6,ATP-dependent RNA helicase DDX3Y,hp_kyte_doolittle2,20,0.7426631175561695,104,14,117,48,151,3.8,-2.5,1,1
-minor_histocompatibility,FUN037811_FUN037811,P18583,Protein SON,hp_lehninger_c_nonpolar2,22,0.7519107183936724,95,325,419,912,1006,15.8,8.4,1,3
-minor_histocompatibility,FUN004554_FAIM2,Q5RF43,ATP-dependent RNA helicase DDX3Y,hp_kyte_doolittle2,20,0.7551311697054278,104,14,117,48,151,3.8,-2.5,1,1
-minor_histocompatibility,FUN037811_FUN037811,Q9QX47,Protein SON,hp_lehninger_c_nonpolar2,22,0.7695671931664102,95,325,419,907,1001,15.8,8.4,1,3
-minor_histocompatibility,FUN039020_FUN039020,Q9HB58,Sp110 nuclear body protein,hp_lehninger_hpc3,27,0.7879255855975403,29,143,171,179,207,24.1,16.9,1,1
-minor_histocompatibility,FUN025444_DNAJC5,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,20,0.791673132645673,115,4,118,480,594,7.8,2.4,1,1
-minor_histocompatibility,FUN001412_FUN001412,P04626,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.7931053526743472,23,302,324,43,65,17.4,9.8,1,1
-minor_histocompatibility,FUN002272_COL2A1,Q8IWZ5,Tripartite motif-containing protein 42,gbmr4,16,0.8055112596311665,30,247,276,352,381,0.0,-6.6,1,1
-minor_histocompatibility,FUN040734_ITGB1A,Q9D2H5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,22,0.8089357991522402,131,228,358,325,455,7.6,1.6,1,1
-minor_histocompatibility,FUN009553_KANK1.1,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger2,17,0.813932842737186,140,31,170,175,314,6.4,0.8,1,1
-minor_histocompatibility,FUN008497_FUN008497,Q54PW5,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,gbmr4,15,0.8142424271452903,29,9,37,335,363,17.2,10.0,1,1
-minor_histocompatibility,FUN007490_ITGB1A,Q9D2H5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,22,0.8234619070366189,131,228,358,325,455,7.6,1.6,1,1
-minor_histocompatibility,FUN040734_ITGB1A,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,22,0.8271510596954939,141,218,358,315,455,9.2,3.2,1,1
-minor_histocompatibility,FUN001903_ADRB1,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.8273638786623019,181,419,599,1410,1590,6.1,0.5,1,2
-minor_histocompatibility,FUN007490_ITGB1A,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,22,0.8430673854651106,141,218,358,315,455,9.2,3.2,1,1
-minor_histocompatibility,FUN019386_FUN019386.1,Q95JC7,Neutral amino acid transporter B(0),hp_lehninger_hpc3,18,0.8490986538027266,65,634,698,187,251,10.8,4.3,1,1
-minor_histocompatibility,FUN016619_FUN016619.3,P51912,Neutral amino acid transporter B(0),hp_lehninger_hpc3,25,0.8571440908872259,84,242,325,132,215,15.5,8.9,1,1
-minor_histocompatibility,FUN004831_FUN004831,Q4IQ72,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,hp_lehninger_hpc3,19,0.8578595611773158,22,32,53,321,342,13.6,6.2,1,1
-minor_histocompatibility,FUN009151_FUN009151,Q30DN6,Lysine-specific demethylase 5D,hp_lehninger_hpc3,18,0.8678540256280878,56,5,60,1424,1479,1.8,-4.4,1,1
-minor_histocompatibility,FUN005971_FUN005971,Q6DE55,Rho GTPase-activating protein 45,gbmr4,17,0.8700687275014782,63,168,230,387,449,7.9,-0.5,1,1
-minor_histocompatibility,FUN001552_COL4A6,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,sdm12,7,0.8731011509560304,42,1617,1658,822,863,28.6,22.6,1,1
-minor_histocompatibility,FUN018331_FUN018331,Q4R8W8,Neutral amino acid transporter B(0),gbmr4,15,0.8777165011945217,25,2,26,196,220,8.0,1.4,1,1
-minor_histocompatibility,FUN006870_FUN006870,F1M3G7,A-kinase anchor protein 13,gbmr4,15,0.8811781439129913,35,319,353,2265,2299,5.7,-2.8,1,1
-minor_histocompatibility,FUN028852_FUN028852,Q8CBQ5,Phosphatidylinositol 4-kinase type 2-beta,hp_lehninger_hpc3,25,0.8884166282277699,46,523,568,173,218,10.9,3.4,1,1
-minor_histocompatibility,FUN023172_FUN023172,P42557,Reduced folate transporter,hp_kyte_doolittle2,19,0.9012236247106724,99,9,107,196,294,10.1,4.0,1,1
-minor_histocompatibility,FUN018331_FUN018331,Q15758,Neutral amino acid transporter B(0),gbmr4,15,0.902277665007408,25,2,26,195,219,8.0,1.1,1,1
-minor_histocompatibility,FUN002272_COL2A1,Q9D2H5,Tripartite motif-containing protein 42,gbmr4,16,0.9104481527903482,30,247,276,352,381,0.0,-6.6,1,1
-minor_histocompatibility,FUN001412_FUN001412,Q60553,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.9123389859790765,23,302,324,43,65,17.4,9.1,1,1
-minor_histocompatibility,FUN011363_FUN011363,Q60553,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,27,0.9188622915709576,94,363,456,638,731,5.3,-0.7,1,1
-minor_histocompatibility,FUN013450_SCN4A,Q3KRF1,Sp110 nuclear body protein,hp_thomas_dill_no_c2,19,0.9247561914232835,228,552,779,168,395,5.7,-0.5,1,1
-minor_histocompatibility,FUN006870_FUN006870,E9Q394,A-kinase anchor protein 13,gbmr4,15,0.9253350527762265,35,319,353,2281,2315,5.7,-2.5,1,1
-minor_histocompatibility,FUN024956_FUN024956.1,O00507,Ubiquitin carboxyl-terminal hydrolase 9Y,hp_lehninger_hpc3,17,0.9264279092147208,238,3155,3392,1376,1613,9.7,3.7,1,1
-minor_histocompatibility,FUN023893_FUN023893,P42557,Reduced folate transporter,hp_lehninger2,20,0.9307699002231907,93,508,600,152,244,6.5,0.6,1,1
-minor_histocompatibility,FUN006870_FUN006870,Q60767,Lymphocyte antigen 75,sdm12,7,0.9347793206466242,29,324,352,661,689,34.5,26.6,1,1
-minor_histocompatibility,FUN029052_FUN029052.2,Q9HB58,Sp110 nuclear body protein,hp_thomas_dill_no_c2,18,0.9376643466868403,311,1454,1764,207,517,6.8,1.0,1,1
-minor_histocompatibility,FUN009335_TMEFF2,E9Q394,A-kinase anchor protein 13,hp_lehninger_hpc3,28,0.9395612525179848,83,219,301,2252,2334,8.4,2.1,1,1
-minor_histocompatibility,FUN034636_HSPG2,P41438,Reduced folate transporter,hp_lehninger_hpc3,17,0.9437213662578804,45,1,45,445,489,6.7,1.0,1,1
-minor_histocompatibility,FUN001412_FUN001412,P70424,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.9471769264388457,23,302,324,43,65,17.4,9.8,1,1
-minor_histocompatibility,FUN009335_TMEFF2,F1M3G7,A-kinase anchor protein 13,hp_lehninger_hpc3,28,0.9475786397559851,83,219,301,2236,2318,8.4,2.1,1,1
-minor_histocompatibility,FUN020740_FUN020740,Q14213,Interleukin-27 subunit beta,hp_lehninger_hpc3,27,0.9476632133689242,65,80,144,94,158,7.7,2.4,1,1
-minor_histocompatibility,FUN005971_FUN005971,Q54ML4,HEAT repeat-containing protein 1 homolog,gbmr4,16,0.9494397546812274,52,176,227,927,978,15.4,7.4,1,1
-minor_histocompatibility,FUN020551_FUN020551.1,Q60553,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.9506139481823054,67,2561,2627,639,705,7.5,1.0,1,1
-minor_histocompatibility,FUN001554_COL4A1,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,15,0.9575950246844281,30,2,31,1995,2024,10.0,4.6,1,1
-minor_histocompatibility,FUN029612_FUN029612,Q6NS46,Protein RRP5 homolog,hp_thomas_dill_no_c2,19,0.9619836839009686,207,334,540,1315,1521,6.3,0.7,1,1
-minor_histocompatibility,FUN033973_FUN033973,Q6P5Z2,Serine/threonine-protein kinase N3,hp_lehninger_hpc3,22,0.9692155301946356,29,1,29,257,285,17.2,11.3,1,1
-minor_histocompatibility,FUN036745_FUN036745,Q6P5Z2,Serine/threonine-protein kinase N3,hp_lehninger_hpc3,22,0.9692155301946356,29,1,29,257,285,13.8,7.8,1,1
-minor_histocompatibility,FUN037191_CNR4,F1M3G7,A-kinase anchor protein 13,hp_lehninger_hpc3,21,0.9898355224838717,46,25,70,2386,2431,15.2,7.8,1,1
-minor_histocompatibility,FUN002714_FIBRINOGENLIKE,Q9XBQ0,Serine/threonine-protein kinase pkn3,sdm12,7,0.9933122776651473,37,51,87,256,292,29.7,21.5,1,1
-minor_histocompatibility,FUN001412_FUN001412,P06494,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.9972125584115806,23,302,324,43,65,21.7,13.6,1,1
+category,query_name,target_name,target_description,alphabet,ksize,region_evalue,region_length,query_from,query_to,target_from,target_to,identity_pct,identity_above_chance,letter_identity_pct,letter_identity_above_chance,n_alphabets,n_settings
+mhc,FUN020551_FUN020551.2,P15979,"Class I histocompatibility antigen, F10 alpha chain",hp_lehninger_hpc3,17,2.5969456464834936e-7,254,2345,2598,77,330,5.5,0.1,63.4,14.3,1,2
+mhc,FUN020551_FUN020551.1,P15979,"Class I histocompatibility antigen, F10 alpha chain",hp_lehninger_hpc3,17,3.6537049255867094e-7,254,2345,2598,77,330,5.5,0.1,63.4,14.3,1,2
+mhc,FUN009004_FUN009004,Q9GKZ0,Hereditary hemochromatosis protein homolog,gbmr4,15,0.00008072660791615993,127,1,127,58,184,13.4,7.3,63.8,16.2,1,3
+mhc,FUN009004_FUN009004,Q9GL42,Hereditary hemochromatosis protein homolog,gbmr4,15,0.00008100114184326143,127,1,127,58,184,13.4,7.3,63.8,16.2,1,3
+mhc,FUN009004_FUN009004,Q9GL43,Hereditary hemochromatosis protein homolog,gbmr4,15,0.00009679826636651156,127,1,127,58,184,13.4,7.4,63.8,16.2,1,3
+mhc,FUN001552_COL4A6,P06339,"H-2 class I histocompatibility antigen, D-37 alpha chain",gbmr4,15,0.000990293174811911,69,1724,1792,44,112,10.1,4.8,66.7,21.7,1,1
+mhc,FUN020551_FUN020551.1,P14427,"H-2 class I histocompatibility antigen, D-P alpha chain",hp_lehninger_hpc3,17,0.024217225256195397,143,2470,2612,201,343,9.1,3.2,66.4,15.8,1,4
+mhc,FUN008497_FUN008497,P13750,"Patr class I histocompatibility antigen, B-1 alpha chain",gbmr4,16,0.0284577317097053,48,13,60,71,118,10.4,5.1,72.9,22.5,1,2
+mhc,FUN008497_FUN008497,Q95IT1,"Patr class I histocompatibility antigen, alpha chain G",gbmr4,16,0.029001614192405264,57,17,73,159,215,5.3,-0.7,66.7,13.0,1,2
+mhc,FUN018361_SNRPB,Q9QZY5,"T-cell surface glycoprotein CD1e, membrane-associated",gbmr4,15,0.05087138783892352,38,10,47,71,108,13.2,7.5,76.3,33.7,1,1
+mhc,FUN024956_FUN024956.1,Q5YB65,T-cell surface glycoprotein CD1b,hp_lehninger_hpc3,17,0.0625238505790727,81,3535,3615,223,303,8.6,3.0,72.8,23.7,1,1
+mhc,FUN020551_FUN020551.2,P14427,"H-2 class I histocompatibility antigen, D-P alpha chain",hp_lehninger_hpc3,17,0.06409660842787082,131,2470,2600,201,331,9.9,4.1,66.4,15.9,1,4
+mhc,FUN033153_FUN033153,P13753,"BOLA class I histocompatibility antigen, alpha chain BL3-7",protein20,5,0.07738482363892638,36,131,166,149,184,47.2,37.2,47.2,37.2,3,3
+mhc,FUN018361_SNRPB,P15812,"T-cell surface glycoprotein CD1e, membrane-associated",gbmr4,15,0.08135659869129977,57,10,66,69,125,7.0,1.8,63.2,20.4,1,1
+mhc,FUN019386_FUN019386.1,Q9QZY6,T-cell surface glycoprotein CD1c3,hp_lehninger_hpc3,22,0.08691846981596486,115,577,691,206,320,7.0,1.0,72.2,22.1,1,4
+mhc,FUN002272_COL2A1,P14436,"H-2 class II histocompatibility antigen, A-R alpha chain",gbmr4,16,0.08880896326915133,52,160,211,64,115,5.8,-0.3,67.3,26.4,1,1
+mhc,FUN006870_FUN006870,P14483,"H-2 class II histocompatibility antigen, A beta chain",gbmr4,16,0.10358718529536413,17,335,351,215,231,23.5,15.6,100.0,49.1,1,2
+mhc,FUN037992_OPRL1,Q61559,IgG receptor FcRn large subunit p51,hp_lehninger2,20,0.1053190307043066,145,47,191,166,310,6.9,1.1,77.2,27.1,1,6
+mhc,FUN020551_FUN020551.1,P06339,"H-2 class I histocompatibility antigen, D-37 alpha chain",hp_lehninger_hpc3,18,0.1309174521427416,132,2496,2627,226,357,8.3,2.4,67.4,16.7,1,4
+mhc,FUN008497_FUN008497,P30686,"Patr class I histocompatibility antigen, C alpha chain",gbmr4,15,0.13345752527133636,57,17,73,159,215,5.3,-1.1,64.9,8.3,1,1
+mhc,FUN001712_FUN001712,P15978,"Class I histocompatibility antigen, Non-RT1.A alpha-1 chain",gbmr4,16,0.13470365318508024,78,544,621,83,160,12.8,6.7,69.2,25.7,1,4
+mhc,FUN008497_FUN008497,P30515,"Saoe class I histocompatibility antigen, A alpha chain",gbmr4,16,0.15814972008107778,52,22,73,164,215,5.8,-0.9,65.4,12.2,1,2
+mhc,FUN020551_FUN020551.1,P28067,"HLA class II histocompatibility antigen, DM alpha chain",hp_lehninger_hpc3,18,0.17357309196086065,81,2524,2604,180,260,8.6,2.1,69.1,16.5,1,2
+mhc,FUN027507_ITGB2,P30377,"Class I histocompatibility antigen, Gogo-A*0401 alpha chain",hp_lehninger_hpc3,25,0.18379881754431943,123,252,374,221,343,6.5,0.8,65.0,18.1,1,3
+mhc,FUN008497_FUN008497,P30516,"Class I histocompatibility antigen, B alpha chain",gbmr4,15,0.19465697742596808,41,18,58,72,112,14.6,8.2,73.2,17.5,1,2
+mhc,FUN027507_ITGB2,P30375,"Class I histocompatibility antigen, Gogo-A*0101 alpha chain",hp_lehninger_hpc3,25,0.19657918863318236,123,252,374,221,343,6.5,0.8,65.0,18.1,1,3
+mhc,FUN019386_FUN019386.2,Q9QZY6,T-cell surface glycoprotein CD1c3,hp_lehninger_hpc3,22,0.2031202467579956,115,537,651,206,320,7.0,1.0,72.2,22.1,1,4
+mhc,FUN020078_FUN020078,P23043,Antigen-presenting glycoprotein CD1d,gbmr4,14,0.20354720004267568,55,77,131,10,70,,,,,1,1
+mhc,FUN019386_FUN019386.1,Q9QZY8,T-cell surface glycoprotein CD1c1,hp_lehninger_hpc3,22,0.20460420410443075,115,577,691,206,320,7.8,1.8,72.2,22.1,1,4
+mhc,FUN020551_FUN020551.2,P28067,"HLA class II histocompatibility antigen, DM alpha chain",hp_lehninger_hpc3,18,0.2071040111151449,80,2524,2603,180,259,10.0,3.4,68.8,16.4,1,2
+mhc,FUN027507_ITGB2,P30378,"Class I histocompatibility antigen, Gogo-A*0501 alpha chain",hp_lehninger_hpc3,25,0.21024523273190152,123,252,374,221,343,6.5,0.8,65.0,18.2,1,2
+mhc,FUN020551_FUN020551.2,C1ITJ8,Major histocompatibility complex class I-related gene protein,hp_lehninger_hpc3,18,0.2207255909130142,107,2497,2603,220,326,6.5,0.4,68.2,16.8,1,2
+mhc,FUN027507_ITGB2,P30376,"Class I histocompatibility antigen, Gogo-A*0201 alpha chain",hp_lehninger_hpc3,25,0.24765507871576548,90,285,374,254,343,4.4,-1.5,70.0,20.6,1,1
+mhc,FUN020551_FUN020551.1,C1ITJ8,Major histocompatibility complex class I-related gene protein,hp_lehninger_hpc3,18,0.2525231881579877,109,2497,2605,220,328,6.4,0.4,67.9,16.3,1,2
+mhc,FUN024956_FUN024956.1,Q61559,IgG receptor FcRn large subunit p51,hp_lehninger_hpc3,17,0.279548281092073,93,3019,3111,110,202,3.2,-2.9,72.0,23.9,1,1
+mhc,FUN036385_FUN036385,P04228,"H-2 class II histocompatibility antigen, A-D alpha chain",hp_lehninger_hpc3,18,0.28962110485171666,100,970,1069,85,184,9.0,2.8,72.0,23.0,1,2
+mhc,FUN044262_FUN044262,P13753,"BOLA class I histocompatibility antigen, alpha chain BL3-7",protein20,5,0.323092260849237,36,178,213,149,184,47.2,37.2,47.2,37.2,1,1
+mhc,FUN008497_FUN008497,P01893,"Putative HLA class I histocompatibility antigen, alpha chain H",gbmr4,16,0.3271643275180689,27,22,48,164,190,7.4,-0.7,85.2,23.0,1,3
+mhc,FUN020551_FUN020551.2,P01896,"H-2 class I histocompatibility antigen, alpha chain",hp_lehninger_hpc3,18,0.3370155217965835,123,2480,2602,18,140,12.2,6.1,63.4,12.6,1,2
+mhc,FUN008497_FUN008497,P13751,"Patr class I histocompatibility antigen, B-2 alpha chain",gbmr4,15,0.3724413273090807,38,27,64,85,122,7.9,2.6,73.7,19.7,1,1
+mhc,FUN008497_FUN008497,P16210,"Patr class I histocompatibility antigen, A-5 alpha chain",gbmr4,15,0.3724413273090807,38,27,64,85,122,7.9,2.6,73.7,19.7,1,1
+mhc,FUN024956_FUN024956.1,P06340,"HLA class II histocompatibility antigen, DO alpha chain",hp_lehninger_hpc3,17,0.3801272796454935,93,3371,3463,157,249,12.9,6.8,67.7,14.3,1,1
+mhc,FUN020551_FUN020551.1,P01896,"H-2 class I histocompatibility antigen, alpha chain",hp_lehninger_hpc3,18,0.3923346803759191,123,2480,2602,18,140,11.4,5.3,63.4,12.6,1,2
+mhc,FUN027507_ITGB2,P15979,"Class I histocompatibility antigen, F10 alpha chain",hp_lehninger_hpc3,22,0.39413683056193854,80,303,382,265,344,7.5,1.7,71.2,18.7,1,2
+mhc,FUN009004_FUN009004,Q9GL41,Hereditary hemochromatosis protein homolog,gbmr4,16,0.405085400349952,44,84,127,141,184,20.5,14.5,77.3,24.2,1,3
+mhc,FUN019386_FUN019386.2,Q9QZY8,T-cell surface glycoprotein CD1c1,hp_lehninger_hpc3,22,0.4472449956282012,115,537,651,206,320,7.8,1.8,72.2,22.1,1,2
+mhc,FUN006870_FUN006870,P01902,"H-2 class I histocompatibility antigen, K-D alpha chain",gbmr4,15,0.449764354783028,25,329,353,147,171,0.0,-5.4,80.0,21.6,1,1
+mhc,FUN020551_FUN020551.2,P06339,"H-2 class I histocompatibility antigen, D-37 alpha chain",hp_lehninger_hpc3,22,0.4684265073711053,105,2496,2600,226,330,10.5,4.2,68.6,16.6,1,3
+mhc,FUN031618_FUN031618.3,P06342,"H-2 class II histocompatibility antigen, A-Q beta chain",hp_lehninger2,21,0.5340253407958385,116,2,117,27,142,8.6,4.1,79.3,26.5,1,2
+mhc,FUN027507_ITGB2,Q9QZY7,T-cell surface glycoprotein CD1c2,hp_lehninger_hpc3,17,0.5426927489815929,90,281,370,238,327,10.0,3.8,72.2,23.4,1,1
+mhc,FUN024956_FUN024956.1,Q9XS72,T-cell surface glycoprotein CD1a,hp_lehninger_hpc3,17,0.5620454429809427,115,3359,3473,225,339,9.6,3.9,66.1,16.5,1,1
+mhc,FUN001928_AARS1,Q60I18,MHC class I-like protein MILL1,uniprot18,5,0.5719752267239546,43,826,868,201,243,34.9,28.1,44.2,35.5,1,1
+mhc,FUN031618_FUN031618.2,P06342,"H-2 class II histocompatibility antigen, A-Q beta chain",hp_lehninger2,21,0.591730769742532,119,56,174,24,142,8.4,3.9,79.0,25.9,1,2
+mhc,FUN008497_FUN008497,Q95IT3,"Patr class I histocompatibility antigen, alpha chain E",gbmr4,15,0.5929815285361021,30,17,46,149,178,10.0,2.0,80.0,12.0,1,1
+mhc,FUN006375_FUN006375.1,P28078,"Class II histocompatibility antigen, M alpha chain",hp_lehninger2,17,0.6043032281775381,107,884,990,63,169,7.5,1.6,80.4,29.9,1,1
+mhc,FUN036385_FUN036385,P23150,"H-2 class II histocompatibility antigen, I-E alpha chain",hp_lehninger_hpc3,18,0.6153650012187695,91,979,1069,92,182,8.8,2.4,72.5,23.8,1,2
+mhc,FUN036385_FUN036385,P01910,"H-2 class II histocompatibility antigen, A-K alpha chain",hp_lehninger_hpc3,18,0.6277395266500135,91,979,1069,94,184,7.7,1.4,73.6,24.7,1,2
+mhc,FUN038550_FUN038550,P15979,"Class I histocompatibility antigen, F10 alpha chain",gbmr4,17,0.6438282787292967,27,81,107,200,226,11.1,5.8,88.9,50.9,1,2
+mhc,FUN008497_FUN008497,P55899,IgG receptor FcRn large subunit p51,gbmr4,15,0.6749394716159999,26,26,51,161,186,15.4,8.6,80.8,24.4,1,1
+mhc,FUN033153_FUN033153,P16211,"Popy Class I histocompatibility antigen, A-1 alpha chain",hsdm17,5,0.685995327149814,45,131,175,146,190,35.6,27.5,44.4,32.9,1,1
+mhc,FUN008497_FUN008497,Q8SPV9,IgG receptor FcRn large subunit p51,gbmr4,15,0.7070574708438025,26,26,51,161,186,15.4,8.6,80.8,24.4,1,1
+mhc,FUN029685_FUN029685,P30381,"Class I histocompatibility antigen, Gogo-B*0103 alpha chain",hp_lehninger_hpc3,29,0.8056237255944505,103,198,300,235,337,11.7,5.3,73.8,24.5,1,1
+mhc,FUN029685_FUN029685,P30379,"Class I histocompatibility antigen, Gogo-B*0101 alpha chain",hp_lehninger_hpc3,29,0.8112006274993256,103,198,300,235,337,11.7,5.3,73.8,24.5,1,1
+mhc,FUN029685_FUN029685,P30380,"Class I histocompatibility antigen, Gogo-B*0102 alpha chain",hp_lehninger_hpc3,29,0.8112006274993256,103,198,300,235,337,11.7,5.3,73.8,24.5,1,1
+mhc,FUN028247_FUN028247,P13753,"BOLA class I histocompatibility antigen, alpha chain BL3-7",hp_lehninger_c_nonpolar2,26,0.8658410111571933,137,705,841,203,339,6.6,1.4,77.4,27.4,1,1
+mhc,FUN020551_FUN020551.2,P11610,Antigen-presenting glycoprotein CD1d2,hp_lehninger_hpc3,18,0.8755068187246315,109,2494,2602,216,324,7.3,1.4,66.1,14.8,1,1
+mhc,FUN008497_FUN008497,P16212,"Popy class I histocompatibility antigen, alpha chain E",gbmr4,15,0.8760846168746032,30,17,46,146,175,10.0,2.0,80.0,12.0,1,1
+mhc,FUN008502_CCN2,P13752,"BOLA class I histocompatibility antigen, alpha chain BL3-6",hp_lehninger_hpc3,25,0.9220344351467326,46,1,46,46,91,0.0,-5.2,78.3,28.6,1,1
+mhc,FUN002272_COL2A1,P55899,IgG receptor FcRn large subunit p51,gbmr4,16,0.9251128510007164,37,256,292,160,196,10.8,5.5,73.0,29.0,1,1
+mhc,FUN020551_FUN020551.2,P01900,"H-2 class I histocompatibility antigen, D-D alpha chain",hp_lehninger_hpc3,18,0.9277357038478344,89,2512,2600,250,338,10.1,3.8,70.8,20.4,1,1
+mhc,FUN037992_OPRL1,P13599,IgG receptor FcRn large subunit p51,hp_lehninger2,21,0.9338833533898678,120,47,166,167,286,6.7,1.1,78.3,28.5,1,2
+mhc,FUN020551_FUN020551.2,P11609,Antigen-presenting glycoprotein CD1d1,hp_lehninger_hpc3,18,0.9392227011550504,109,2494,2602,216,324,7.3,1.4,65.1,14.0,1,1
+mhc,FUN020551_FUN020551.1,P11610,Antigen-presenting glycoprotein CD1d2,hp_lehninger_hpc3,18,0.9591512915507524,113,2494,2606,216,328,7.1,1.2,65.5,14.3,1,1
+mhc,FUN020551_FUN020551.2,P01897,"H-2 class I histocompatibility antigen, L-D alpha chain",hp_lehninger_hpc3,18,0.9686715372502399,103,2500,2602,228,330,13.6,7.1,65.0,13.0,1,1
+mhc,FUN034477_FUN034477,Q9BZM5,UL16-binding protein 2,hp_lehninger_hpc3,17,0.9732909476299796,66,119,184,96,153,,,,,1,1
+mhc,FUN036385_FUN036385,P04227,"H-2 class II histocompatibility antigen, A-Q alpha chain",hp_lehninger_hpc3,18,0.9902701201024671,91,979,1069,59,149,8.8,2.7,72.5,23.7,1,1
+antigen_presentation,FUN006870_FUN006870,P36372,Antigen peptide transporter 2,gbmr4,15,0.001898919495926902,27,318,344,630,656,7.4,0.0,88.9,30.5,1,1
+antigen_presentation,FUN001952_COL6A2.1,P36371,Antigen peptide transporter 2,gbmr4,16,0.5182338901071399,118,58,175,544,661,9.3,3.6,64.4,20.9,1,2
+antigen_presentation,FUN020551_FUN020551.2,Q03519,Antigen peptide transporter 2,hp_lehninger_hpc3,18,0.5614873302068922,62,2536,2597,108,169,9.7,1.9,75.8,18.9,1,2
+antigen_presentation,FUN020551_FUN020551.1,Q03519,Antigen peptide transporter 2,hp_lehninger_hpc3,18,0.645327659230575,62,2536,2597,108,169,9.7,1.9,75.8,18.9,1,2
+antigen_presentation,FUN035571_FUN035571,Q9R233,Tapasin,hp_lehninger_hpc3,17,0.8687535383832605,136,2583,2718,327,462,8.1,2.0,63.2,14.7,1,1
+antigen_presentation,FUN031704_ZNFX1,O73895,Tapasin,hp_pbotc_1st_ed2,29,0.8918887798924401,79,435,513,285,363,11.4,5.5,87.3,35.1,1,1
+antigen_presentation,FUN031698_ZNFX1,O73895,Tapasin,hp_pbotc_1st_ed2,29,0.8952448019666154,79,435,513,285,363,11.4,5.6,87.3,35.1,1,1
+antigen_presentation,FUN003431_PRSS12,Q03518,Antigen peptide transporter 1,hp_kyte_doolittle2,19,0.9892129542260519,184,230,413,462,645,9.2,3.4,76.1,19.8,1,1
+nk_receptor,FUN001552_COL4A6,O75022,Leukocyte immunoglobulin-like receptor subfamily B member 3,gbmr4,15,0.007486247721619281,71,1691,1761,291,361,9.9,3.9,63.4,25.0,1,1
+nk_receptor,FUN022908_NCL,P61252,NKG2-D type II integral membrane protein,hp_lehninger_hpc3,19,0.01880428042797171,106,134,239,66,167,,,,,1,1
+nk_receptor,FUN022908_NCL,Q9MZJ7,NKG2-D type II integral membrane protein,hp_lehninger_hpc3,19,0.01880428042797171,106,134,239,66,167,,,,,1,1
+nk_receptor,FUN010357_FUN010357,P83555,Killer cell immunoglobulin-like receptor 3DL1,wwmj5,9,0.0280518508124818,75,3081,3155,326,400,12.0,6.9,61.3,33.1,1,1
+nk_receptor,FUN000620_WDR64,Q95MI1,NKG2-F type II integral membrane protein,hp_lehninger_hpc3,19,0.07405137990403306,74,740,813,3,74,,,,,1,1
+nk_receptor,FUN006870_FUN006870,Q95MI4,NKG2-E type II integral membrane protein,gbmr4,15,0.0982076644169453,24,326,349,135,158,12.5,5.7,87.5,27.1,1,1
+nk_receptor,FUN006870_FUN006870,Q07444,NKG2-E type II integral membrane protein,gbmr4,15,0.27312476820300796,19,326,344,135,153,15.8,8.0,94.7,31.0,1,1
+nk_receptor,FUN005971_FUN005971,O75022,Leukocyte immunoglobulin-like receptor subfamily B member 3,gbmr4,15,0.31565610857867576,50,180,229,549,598,20.0,11.1,72.0,12.9,1,1
+nk_receptor,FUN027507_ITGB2,P83556,Killer cell immunoglobulin-like receptor 3DL1,hp_lehninger_hpc3,22,0.4597809582415055,91,320,410,315,405,9.9,3.0,71.4,22.0,1,2
+nk_receptor,FUN009698_FUN009698,Q8MJZ2,Leukocyte immunoglobulin-like receptor subfamily A member 6,hp_lehninger_hpc3,17,0.5127002007037852,105,135,239,356,460,7.6,2.0,67.6,23.0,1,1
+nk_receptor,FUN004669_CNPY1,Q3UM83,Killer cell lectin-like receptor subfamily G member 2,hp_lehninger_hpc3,29,0.6023164264759581,108,78,185,2,109,7.4,1.9,67.6,19.8,1,1
+nk_receptor,FUN019918_TF1,O54709,NKG2-D type II integral membrane protein,hp_lehninger_hpc3,29,0.7683201934650012,98,99,196,127,224,10.2,4.4,69.4,22.7,1,1
+nk_receptor,FUN022299_INE,Q8N423,Leukocyte immunoglobulin-like receptor subfamily B member 2,gbmr4,15,0.8367051084746278,120,498,617,441,556,,,,,1,1
+tcr_cd3,FUN035573_FUN035573,A0A0J9YX75,T cell receptor beta variable 6-9,hp_lehninger_hpc3,17,0.0070523279662981055,95,761,855,9,103,8.4,2.3,76.8,27.3,1,1
+tcr_cd3,FUN035573_FUN035573,A0A0K0K1A5,T cell receptor beta variable 6-5,hp_lehninger_hpc3,17,0.007196395190867176,95,761,855,9,103,9.5,3.1,75.8,26.2,1,1
+tcr_cd3,FUN008497_FUN008497,P27190,DNA primase TraC,gbmr4,15,0.007522095815319299,50,23,72,856,905,4.0,-2.8,76.0,7.6,1,1
+tcr_cd3,FUN035573_FUN035573,A0A0A0MS04,Probable non-functional T cell receptor beta variable 6-7,hp_lehninger_hpc3,17,0.01961683158621359,95,761,855,9,103,10.5,4.3,73.7,24.1,1,1
+tcr_cd3,FUN008497_FUN008497,P05704,Methyl-accepting chemotaxis protein III,gbmr4,16,0.0236424212200277,52,26,77,296,347,7.7,0.1,75.0,10.9,1,2
+tcr_cd3,FUN035573_FUN035573,A0A0J9YXY3,T cell receptor beta variable 6-2,hp_lehninger_hpc3,17,0.02411259617210857,95,761,855,9,103,7.4,1.1,71.6,22.0,1,1
+tcr_cd3,FUN035573_FUN035573,P0DPF7,T cell receptor beta variable 6-3,hp_lehninger_hpc3,17,0.02411259617210857,95,761,855,9,103,7.4,1.1,71.6,22.0,1,1
+tcr_cd3,FUN035573_FUN035573,A0A0A6YYG3,T cell receptor beta variable 6-8,hp_lehninger_hpc3,17,0.0333761448094631,85,761,845,9,93,12.9,6.9,74.1,24.5,1,1
+tcr_cd3,FUN030023_FUN030023,Q98910,T-cell surface glycoprotein CD3 epsilon chain,wwmj5,9,0.050817872250568656,122,51,172,41,165,,,,,1,1
+tcr_cd3,FUN042913_FUN042913,A0A1I8MUL8,Female-specific protein transformer,hp_lehninger_c_nonpolar2,19,0.07112494289578977,84,101,184,281,364,7.1,1.1,81.0,20.7,1,3
+tcr_cd3,FUN008497_FUN008497,A0A0B4J262,T cell receptor alpha variable 8-6,gbmr4,16,0.08792534862960118,40,38,77,60,99,10.0,3.3,72.5,26.2,1,2
+tcr_cd3,FUN002399_SLC6A8.2,A0A1I8MUL8,Female-specific protein transformer,hp_lehninger_hpc3,18,0.11092437301960685,139,96,234,229,367,4.3,-0.8,69.1,21.3,1,3
+tcr_cd3,FUN008497_FUN008497,Q44362,Conjugal transfer protein TraC,gbmr4,15,0.11207774583191195,65,17,81,26,90,12.3,5.5,67.7,16.6,1,1
+tcr_cd3,FUN008497_FUN008497,Q44348,Conjugal transfer protein TraC,gbmr4,15,0.12123528180696944,65,17,81,26,90,16.9,10.0,69.2,17.0,1,1
+tcr_cd3,FUN014989_FUN014989,P27190,DNA primase TraC,hp_pbotc_1st_ed2,21,0.168380677737082,117,76,192,451,567,11.1,5.2,81.2,31.2,1,5
+tcr_cd3,FUN001552_COL4A6,P0DSE1,M1-specific T cell receptor alpha chain,gbmr4,15,0.1762852490246688,46,1612,1657,146,191,8.7,3.1,71.7,24.6,1,1
+tcr_cd3,FUN021387_PLEKHF2,A0A0B4J248,T cell receptor alpha variable 1-1,wass14,6,0.20139081941898737,19,23,41,15,33,57.9,47.6,78.9,64.5,1,1
+tcr_cd3,FUN005988_FUN005988,A0A5B0,T cell receptor beta variable 14,hp_lehninger_hpc3,25,0.24726258737263068,41,43,83,59,99,12.2,6.5,85.4,34.6,1,1
+tcr_cd3,FUN020734_GALM,Q5R1Q1,T-cell surface glycoprotein CD3 epsilon chain,gbmr4,14,0.33335795434958965,90,114,203,37,136,,,,,1,1
+tcr_cd3,FUN020640_SLCO4A1,A0A1I8MUL8,Female-specific protein transformer,hp_lehninger2,17,0.35516007303820946,100,87,186,255,354,5.0,0.0,79.0,27.9,1,2
+tcr_cd3,FUN028124_FUN028124,P27190,DNA primase TraC,hp_pbotc_1st_ed2,21,0.35796961895302193,117,76,192,451,567,11.1,5.0,80.3,30.2,1,3
+tcr_cd3,FUN001552_COL4A6,P0DTU3,T cell receptor alpha chain MC.7.G5,gbmr4,15,0.393636920002658,46,1612,1657,153,198,8.7,3.1,71.7,24.6,1,1
+tcr_cd3,FUN006870_FUN006870,P05704,Methyl-accepting chemotaxis protein III,gbmr4,16,0.5155817056783939,27,327,353,405,431,18.5,10.0,85.2,30.5,1,2
+tcr_cd3,FUN001552_COL4A6,P01848,T cell receptor alpha chain constant,gbmr4,15,0.5438618838187683,46,1612,1657,18,63,8.7,3.1,71.7,24.6,1,1
+tcr_cd3,FUN003566_A1CF,A0A1I8MUL8,Female-specific protein transformer,polarity4,12,0.5447745014099475,79,337,415,282,360,17.7,9.1,72.2,20.5,1,1
+tcr_cd3,FUN005971_FUN005971,P22409,Protein Tra,gbmr4,16,0.5624128958004394,73,171,243,4,76,15.1,5.6,71.2,11.6,1,2
+tcr_cd3,FUN035573_FUN035573,A0A087WT01,T cell receptor alpha variable 27,hp_lehninger_hpc3,17,0.6421816593623338,105,754,858,1,105,11.4,4.8,69.5,20.0,1,1
+tcr_cd3,FUN009937_CATSPER3,A0A1I8MUL8,Female-specific protein transformer,polarity4,12,0.7084391985518683,72,147,218,281,352,5.6,-0.7,68.1,18.7,1,1
+tcr_cd3,FUN020557_FUN020557,A0A0A6YYK1,T cell receptor alpha variable 8-1,hp_lehninger_hpc3,17,0.7194949722265391,107,114,220,1,107,7.5,1.7,70.1,19.3,1,1
+tcr_cd3,FUN035509_FUN035509,A0A087WT03,T cell receptor alpha variable 26-1,wass14,6,0.7641782095827105,25,17,41,75,99,40.0,32.3,60.0,48.5,1,1
+tcr_cd3,FUN010522_FUN010522,A0A0B4J234,T cell receptor alpha variable 2,hp_lehninger_hpc3,28,0.7796578875356172,31,76,106,13,43,9.7,2.8,96.8,46.6,1,2
+tcr_cd3,FUN011463_EFCAB7,P22646,T-cell surface glycoprotein CD3 epsilon chain,wass14,6,0.8439457827721872,34,15,48,22,55,41.2,33.5,52.9,42.2,1,1
+tcr_cd3,FUN019200_FUN019200,A0A589,T cell receptor beta variable 4-3,hp_lehninger_hpc3,25,0.9021885770782532,46,1,46,18,63,10.9,5.2,87.0,40.3,1,1
+tcr_cd3,FUN017943_ATF3,A0A5A2,T cell receptor beta variable 5-8,hp_thomas_dill2,23,0.9155584609548861,71,145,215,26,98,,,,,1,1
+tcr_cd3,FUN017459_ANGPTL6,P04437,T cell receptor alpha variable 29/delta variable 5,hp_thomas_dill2,23,0.9693051820435692,82,122,203,20,93,,,,,1,1
+tcr_cd3,FUN019200_FUN019200,A0A539,T cell receptor beta variable 4-2,hp_lehninger_hpc3,25,0.9707519131149539,46,1,46,18,63,10.9,5.2,87.0,40.3,1,1
+tcr_cd3,FUN034640_adt-1,A0A075B6R0,T cell receptor gamma variable 2,hp_lehninger_hpc3,17,0.9892127645635549,89,7,95,4,92,10.1,4.5,75.3,26.9,1,1
+c1_set,FUN034478_FUN034478,Q68D85,Natural cytotoxicity triggering receptor 3 ligand 1,hp_lehninger_hpc3,17,0.24746516117834655,115,566,680,81,195,6.1,0.4,68.7,20.7,1,1
+self_nonself_nonvertebrate,FUN005971_FUN005971,B2AXJ5,Gasdermin-like protein het-Q1,gbmr4,16,0.0807321114966453,69,177,245,59,127,7.2,-0.2,65.2,14.6,1,2
+self_nonself_nonvertebrate,FUN009004_FUN009004,P0DW10,Gasdermin-like protein rcd-1-2,gbmr4,16,0.22088745649756308,35,94,128,201,235,14.3,7.7,82.9,29.4,1,2
+self_nonself_nonvertebrate,FUN019245_ADAMTS3,P17840,S-locus-specific glycoprotein S13,hp_lehninger_hpc3,19,0.39568054445933815,113,4,116,68,187,,,,,1,1
+self_nonself_nonvertebrate,FUN013875_TMPRSS7,Q54V07,Tiger protein B1,hp_lehninger_hpc3,29,0.6538376390318881,108,169,276,306,413,8.3,2.1,73.1,22.7,1,1
+self_nonself_nonvertebrate,FUN013994_SSBP3,Q9FMQ4,S-protein homolog 3,gbmr4,17,0.7555607227380867,37,60,96,9,45,5.4,0.7,83.8,35.4,1,3
+self_nonself_nonvertebrate,FUN028415_FUN028415,P0DW10,Gasdermin-like protein rcd-1-2,hp_lehninger_hpc3,27,0.7805685577587442,84,5,88,94,177,8.3,2.9,75.0,28.1,1,1
+self_nonself_nonvertebrate,FUN031981_FUN031981,P07761,S-locus-specific glycoprotein S6,wass14,6,0.9278616045312991,14,73,86,128,141,64.3,54.6,85.7,71.4,1,1
+self_nonself_nonvertebrate,FUN004831_FUN004831,P07761,S-locus-specific glycoprotein S6,hp_lehninger_hpc3,17,0.9672570944579826,44,8,51,87,130,6.8,0.8,75.0,28.5,1,1
+self_nonself_nonvertebrate,FUN021208_FUN021208,P07761,S-locus-specific glycoprotein S6,wass14,6,0.9745777409622874,14,73,86,128,141,64.3,54.6,85.7,71.4,1,1
+minor_histocompatibility,FUN008497_FUN008497,Q15642,Cdc42-interacting protein 4,gbmr4,15,0.00011442204840572204,63,16,78,134,196,9.5,3.0,74.6,12.2,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q5RCJ1,Cdc42-interacting protein 4,gbmr4,15,0.0001177427057949109,63,16,78,134,196,9.5,3.0,74.6,12.2,1,2
+minor_histocompatibility,FUN032464_FUN032464,Q9QX47,Protein SON,hp_lehninger2,17,0.00014943368146142158,194,122,315,691,884,3.1,-0.7,78.4,28.3,1,1
+minor_histocompatibility,FUN012676_FUN012676,P51578,P2X purinoceptor 5,gbmr4,15,0.00029044809666399474,37,333,369,202,238,5.4,-0.6,86.5,40.2,1,5
+minor_histocompatibility,FUN008497_FUN008497,Q8IWZ5,Tripartite motif-containing protein 42,gbmr4,15,0.0003337800566104018,70,6,75,342,411,7.1,0.4,68.6,15.5,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q9D2H5,Tripartite motif-containing protein 42,gbmr4,15,0.00034116599255514353,70,6,75,342,411,7.1,0.4,68.6,15.5,1,2
+minor_histocompatibility,FUN020551_FUN020551.2,Q95JC7,Neutral amino acid transporter B(0),hp_lehninger_hpc3,17,0.0011634227913745008,115,2489,2603,178,292,6.1,-0.5,65.2,13.0,1,1
+minor_histocompatibility,FUN006870_FUN006870,P36161,Nucleoporin NUP133,gbmr4,15,0.0012343953977945713,36,321,356,606,641,13.9,9.0,80.6,32.1,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q5F4B2,Switch-associated protein 70,gbmr4,15,0.0014315579769579895,55,20,74,357,411,7.3,0.1,78.2,16.2,1,2
+minor_histocompatibility,FUN006870_FUN006870,Q9VM75,HEAT repeat-containing protein 1 homolog,gbmr4,15,0.0020425212012074095,30,324,353,2061,2090,13.3,5.4,86.7,37.3,1,4
+minor_histocompatibility,FUN008497_FUN008497,F1M3G7,A-kinase anchor protein 13,gbmr4,15,0.0021858503865100874,60,16,75,488,547,6.7,0.1,71.7,14.8,1,1
+minor_histocompatibility,FUN012676_FUN012676,P36161,Nucleoporin NUP133,gbmr4,15,0.00271137397784452,57,332,388,332,388,7.0,1.5,66.7,20.5,1,3
+minor_histocompatibility,FUN008497_FUN008497,Q6A028,Switch-associated protein 70,gbmr4,15,0.003152308027277857,55,20,74,357,411,7.3,-0.1,76.4,13.5,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q9UH65,Switch-associated protein 70,gbmr4,16,0.00379576482663588,55,20,74,357,411,7.3,0.1,76.4,13.5,1,2
+minor_histocompatibility,FUN006870_FUN006870,Q7SY48,HEAT repeat-containing protein 1,gbmr4,15,0.005241813543817207,23,319,341,1571,1593,13.0,8.5,95.7,42.2,1,5
+minor_histocompatibility,FUN008497_FUN008497,Q9HCM1,Retroelement silencing factor 1,gbmr4,15,0.006234627695990185,54,22,75,1389,1442,11.1,3.8,72.2,14.0,1,2
+minor_histocompatibility,FUN025744_FUN025744,Q9QX47,Protein SON,hp_lehninger2,17,0.008116180076345108,186,69,254,732,917,2.7,-1.3,75.8,25.7,1,1
+minor_histocompatibility,FUN008497_FUN008497,P79457,Histone demethylase UTY,gbmr4,16,0.008261336523997647,53,25,77,425,477,1.9,-5.2,71.7,14.7,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q9VCW3,Nuclear pore complex protein Nup133,gbmr4,16,0.01923029854741638,69,20,88,1011,1079,7.2,0.6,63.8,15.0,1,2
+minor_histocompatibility,FUN005971_FUN005971,O14607,Histone demethylase UTY,gbmr4,16,0.02714055898901966,65,170,234,966,1030,20.0,13.7,73.8,15.9,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q3KRF1,Sp110 nuclear body protein,gbmr4,15,0.02716694706652562,51,31,81,311,361,9.8,2.3,68.6,9.2,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q8BVK9,Sp110 nuclear body protein,gbmr4,16,0.028365243265344262,31,20,50,305,335,6.5,-1.9,87.1,15.0,1,3
+minor_histocompatibility,FUN025743_FUN025743,Q9QX47,Protein SON,hp_lehninger2,17,0.02993623083236206,153,29,181,732,884,2.6,-1.4,77.8,27.6,1,1
+minor_histocompatibility,FUN008497_FUN008497,Q54ML4,HEAT repeat-containing protein 1 homolog,gbmr4,16,0.036379987305770016,33,19,51,371,403,15.2,7.7,87.9,30.9,1,2
+minor_histocompatibility,FUN010649_TTPAL,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,19,0.03767464554742584,94,109,202,412,504,,,,,1,1
+minor_histocompatibility,FUN006870_FUN006870,Q9EQH2,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.04392926840604765,24,323,346,607,630,0.0,-5.2,87.5,31.8,1,2
+minor_histocompatibility,FUN006870_FUN006870,Q9JJ22,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.04682301776839547,24,323,346,607,630,0.0,-4.9,87.5,31.8,1,2
+minor_histocompatibility,FUN035530_MUC5B.1,Q12802,A-kinase anchor protein 13,wwmj5,10,0.04880194236088351,73,629,701,1974,2046,8.2,2.8,57.5,28.6,1,2
+minor_histocompatibility,FUN027605_ANXA11,Q60767,Lymphocyte antigen 75,gbmr4,15,0.05174655934324841,141,497,637,1226,1366,9.9,4.6,66.0,20.6,1,1
+minor_histocompatibility,FUN008497_FUN008497,Q9HB58,Sp110 nuclear body protein,gbmr4,16,0.05324825706718667,45,4,48,306,350,13.3,6.3,71.1,16.7,1,2
+minor_histocompatibility,FUN012676_FUN012676,Q60553,Receptor tyrosine-protein kinase erbB-2,gbmr4,15,0.05717082661474335,34,334,367,155,188,8.8,2.9,73.5,27.6,1,1
+minor_histocompatibility,FUN008497_FUN008497,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,15,0.05844432380735127,30,21,50,467,496,23.3,15.0,86.7,26.7,1,1
+minor_histocompatibility,FUN008497_FUN008497,Q3TBD2,Rho GTPase-activating protein 45,gbmr4,16,0.059932253600488865,31,21,51,183,213,19.4,11.0,87.1,29.1,1,2
+minor_histocompatibility,FUN008497_FUN008497,O00507,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,15,0.06331184173841957,30,21,50,469,498,23.3,15.0,86.7,26.7,1,1
+minor_histocompatibility,FUN022952_FUN022952,Q60767,Lymphocyte antigen 75,hp_lehninger_hpc3,19,0.06662097221004326,131,1,131,276,410,,,,,1,3
+minor_histocompatibility,FUN001552_COL4A6,Q9H583,HEAT repeat-containing protein 1,gbmr4,16,0.07306345258519742,40,1752,1791,1811,1850,5.0,-0.6,75.0,29.9,1,3
+minor_histocompatibility,FUN006870_FUN006870,Q8WUM0,Nuclear pore complex protein Nup133,gbmr4,15,0.07604247695371479,23,319,341,978,1000,13.0,3.6,91.3,33.1,1,1
+minor_histocompatibility,FUN006238_STT3B,Q96HQ0,Zinc finger protein 419,hp_thomas_dill2,18,0.08055863292172122,103,677,779,259,361,12.6,6.5,86.4,30.0,1,1
+minor_histocompatibility,FUN012676_FUN012676,O00507,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,17,0.09240217260346811,19,333,351,749,767,5.3,-0.6,100.0,46.5,1,4
+minor_histocompatibility,FUN001552_COL4A6,Q9GM44,HEAT repeat-containing protein 1,gbmr4,16,0.09575053930927106,40,1752,1791,625,664,7.5,1.9,75.0,29.9,1,3
+minor_histocompatibility,FUN006870_FUN006870,Q8BVK9,Sp110 nuclear body protein,gbmr4,16,0.09645732898792764,33,321,353,291,323,12.1,4.8,81.8,20.7,1,2
+minor_histocompatibility,FUN034370_TOP3A,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.09805501600293913,200,725,924,1395,1594,8.5,2.0,78.0,12.4,2,4
+minor_histocompatibility,FUN010086_FUN010086.1,A8MTL9,Serpin-like protein HMSD,hp_lehninger_c_nonpolar2,26,0.10364969351464372,69,97,165,39,114,,,,,1,2
+minor_histocompatibility,FUN018181_HTR7,A7MB10,Protein RRP5 homolog,hp_kyte_doolittle2,20,0.12150946222238053,188,387,574,1434,1621,5.9,-0.9,78.7,11.6,1,1
+minor_histocompatibility,FUN006870_FUN006870,Q5XUN4,Lysine-specific demethylase 5D,gbmr4,16,0.12440820875555184,23,327,349,861,883,8.7,0.9,87.0,30.6,1,2
+minor_histocompatibility,FUN020557_FUN020557,P70424,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,17,0.1330241771767657,140,2357,2496,1022,1161,5.7,-0.7,67.9,19.0,1,1
+minor_histocompatibility,FUN008497_FUN008497,Q9XBQ0,Serine/threonine-protein kinase pkn3,gbmr4,15,0.13778908492738182,42,25,66,266,307,4.8,-1.9,71.4,10.8,1,1
+minor_histocompatibility,FUN035530_MUC5B.1,E9Q394,A-kinase anchor protein 13,wwmj5,10,0.15058529644552468,67,635,701,1943,2009,9.0,3.6,58.2,29.2,1,2
+minor_histocompatibility,FUN026157_TCF7L2,P18583,Protein SON,hp_lehninger2,21,0.15778708009476583,110,357,466,62,171,7.3,1.4,83.6,26.4,2,13
+minor_histocompatibility,FUN035530_MUC5B.1,F1M3G7,A-kinase anchor protein 13,wwmj5,10,0.163869670277406,67,635,701,1942,2008,9.0,3.6,58.2,29.2,1,2
+minor_histocompatibility,FUN029050_FUN029050,Q8IYM9,E3 ubiquitin-protein ligase TRIM22,hp_lehninger_c_nonpolar2,26,0.17424320844365296,91,34,124,190,280,12.1,5.8,84.6,33.3,3,17
+minor_histocompatibility,FUN022083_ZAN,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,hp_lehninger_hpc3,17,0.17579156317935316,125,5,129,1783,1907,4.0,-1.4,66.4,19.5,1,2
+minor_histocompatibility,FUN012674_COL3A1,Q6P5Z2,Serine/threonine-protein kinase N3,gbmr4,15,0.17609542191430633,44,39,82,660,703,6.8,1.7,70.5,28.3,1,1
+minor_histocompatibility,FUN001554_COL4A1,Q5SUA5,Unconventional myosin-Ig,gbmr4,15,0.17884820264010381,37,1706,1742,787,823,10.8,4.7,78.4,35.0,1,1
+minor_histocompatibility,FUN007808_DNAH5,Q9VHB0,Protein Son,hp_pbotc_1st_ed2,29,0.18524360702141654,207,1,207,243,449,8.7,1.4,78.3,13.2,1,7
+minor_histocompatibility,FUN026836_FUN026836,Q5U3Q6,Cdc42-interacting protein 4 homolog,hp_lehninger_hpc3,29,0.1853229490075452,30,9,38,68,97,6.7,1.2,100.0,50.0,1,3
+minor_histocompatibility,FUN001554_COL4A1,Q14289,Protein-tyrosine kinase 2-beta,gbmr4,16,0.19231339495889682,24,1738,1761,143,166,8.3,2.1,95.8,45.1,1,3
+minor_histocompatibility,FUN019434_COLEC11,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,18,0.19538421490945068,93,122,214,326,428,,,,,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q8CJ53,Cdc42-interacting protein 4,gbmr4,16,0.19606832306986582,34,17,50,167,200,8.8,1.5,79.4,13.8,1,2
+minor_histocompatibility,FUN009339_MEGF6,Q6BPU5,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,hp_lehninger_hpc3,18,0.20088880151265417,75,1346,1420,280,354,9.3,4.1,74.7,25.7,1,2
+minor_histocompatibility,FUN009004_FUN009004,Q9JJ22,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.20172568535425794,91,6,96,838,928,7.7,1.5,61.5,14.2,1,3
+minor_histocompatibility,FUN001554_COL4A1,P70600,Protein-tyrosine kinase 2-beta,gbmr4,16,0.206921313476761,24,1738,1761,143,166,8.3,2.1,95.8,45.1,1,3
+minor_histocompatibility,FUN001554_COL4A1,Q9QVP9,Protein-tyrosine kinase 2-beta,gbmr4,16,0.21516882988809305,24,1738,1761,143,166,8.3,2.1,95.8,45.1,1,3
+minor_histocompatibility,FUN024764_COL4A6,Q920P9,Lymphocyte antigen 75,gbmr4,16,0.2215219164060118,38,1349,1386,1271,1308,2.6,-2.1,73.7,26.2,1,2
+minor_histocompatibility,FUN012674_COL3A1,Q8K045,Serine/threonine-protein kinase N3,gbmr4,15,0.2238662738658438,44,39,82,649,692,6.8,1.4,70.5,28.4,1,1
+minor_histocompatibility,FUN022567_FUN022567,Q5EA40,"Branched-chain-amino-acid aminotransferase, mitochondrial",hp_lehninger2,20,0.2245721295143109,111,63,173,50,160,10.8,5.4,80.2,30.2,1,5
+minor_histocompatibility,FUN009004_FUN009004,Q9EQH2,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.23108973748992173,87,6,92,838,924,6.9,0.7,62.1,15.2,1,3
+minor_histocompatibility,FUN008085_TOP3A.1,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,18,0.23375890319968767,200,419,618,1395,1594,8.5,2.0,78.0,12.4,1,3
+minor_histocompatibility,FUN022446_EIF5B,Q9VHB0,Protein Son,polarity4,12,0.2358829316079841,91,861,951,680,770,12.1,6.3,62.6,25.3,1,1
+minor_histocompatibility,FUN002272_COL2A1,P36161,Nucleoporin NUP133,gbmr4,16,0.236819297346031,35,1580,1614,1116,1150,8.6,2.7,85.7,37.7,1,1
+minor_histocompatibility,FUN008497_FUN008497,P97531,Cdc42-interacting protein 4,gbmr4,16,0.25987954103951166,34,17,50,167,200,8.8,1.5,79.4,13.8,1,2
+minor_histocompatibility,FUN013386_ADGRL3.3,P79457,Histone demethylase UTY,hp_thomas_dill2,20,0.27294327178325833,169,765,933,398,566,5.9,-0.7,78.7,14.4,1,2
+minor_histocompatibility,FUN009004_FUN009004,Q9NZ08,Endoplasmic reticulum aminopeptidase 1,gbmr4,16,0.2766343412012807,87,6,92,849,935,6.9,0.8,60.9,14.6,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q5DTW7,Retroelement silencing factor 1,gbmr4,15,0.28729396940666485,36,23,58,1174,1209,5.6,-3.1,75.0,15.2,1,1
+minor_histocompatibility,FUN020011_FUN020011,F1M3G7,A-kinase anchor protein 13,hp_lehninger_hpc3,18,0.2990919150057039,95,157,251,834,928,10.5,5.0,69.5,20.5,1,2
+minor_histocompatibility,FUN034520_CCKAR.1,A7MB10,Protein RRP5 homolog,hp_thomas_dill2,20,0.3091587802897243,101,243,343,1393,1493,8.9,2.4,85.1,15.2,3,9
+minor_histocompatibility,FUN028328_FUN028328,Q6NS46,Protein RRP5 homolog,hp_thomas_dill_no_c2,22,0.3135952555883047,186,487,672,1396,1581,2.2,-4.4,79.0,13.9,1,3
+minor_histocompatibility,FUN032496_FUN032496,Q4PA25,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,hp_pbotc_1st_ed2,18,0.32388272983527916,98,16,113,354,451,11.2,5.5,87.8,36.8,1,2
+minor_histocompatibility,FUN014852_VASN,Q6NS46,Protein RRP5 homolog,hp_kyte_doolittle2,27,0.3304639656439332,202,693,894,1378,1579,8.4,2.6,80.2,10.8,1,2
+minor_histocompatibility,FUN008497_FUN008497,Q6DE55,Rho GTPase-activating protein 45,gbmr4,15,0.3333464887360359,28,21,48,173,200,17.9,9.6,85.7,28.3,1,1
+minor_histocompatibility,FUN020908_TAF13,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,hsdm17,6,0.33831670244581674,54,48,101,1455,1508,27.8,21.6,44.4,32.3,1,1
+minor_histocompatibility,FUN020557_FUN020557,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,17,0.3465121695581506,121,2374,2494,1037,1157,5.0,-1.4,67.8,19.1,1,1
+minor_histocompatibility,FUN009297_APLNRB,Q9HB58,Sp110 nuclear body protein,hp_thomas_dill2,20,0.3465874813973775,163,347,509,168,330,11.0,4.2,78.5,14.0,1,2
+minor_histocompatibility,FUN005522_FUN005522,Q9QX47,Protein SON,hp_thomas_dill2,20,0.3559776800257488,105,68,172,694,798,1.0,-4.4,89.5,38.1,1,3
+minor_histocompatibility,FUN000773_PHTF2,Q9HB58,Sp110 nuclear body protein,hp_pbotc_1st_ed2,17,0.3816117695685398,214,118,331,128,341,9.3,2.0,73.8,18.3,1,1
+minor_histocompatibility,FUN001552_COL4A6,Q920P9,Lymphocyte antigen 75,gbmr4,17,0.388020422971134,38,1609,1646,1271,1308,2.6,-2.1,73.7,26.2,1,3
+minor_histocompatibility,FUN003994_FUN003994,Q92619,Rho GTPase-activating protein 45,hp_lehninger_hpc3,19,0.40175524002421964,95,784,878,323,409,,,,,1,1
+minor_histocompatibility,FUN013268_TM7SF2,Q6NS46,Protein RRP5 homolog,hp_kyte_doolittle2,20,0.40434977756091744,162,48,209,1407,1568,8.6,1.1,80.2,8.9,1,2
+minor_histocompatibility,FUN001554_COL4A1,O00507,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,15,0.4083880571194702,30,2,31,1996,2025,10.0,4.6,83.3,38.7,1,1
+minor_histocompatibility,FUN041442_FUN041442,Q8WUM0,Nuclear pore complex protein Nup133,polarity4,12,0.4147796167930202,69,455,523,570,638,14.5,8.8,69.6,34.3,1,1
+minor_histocompatibility,FUN040809_FUN040809,P19971,Thymidine phosphorylase,hp_lehninger_hpc3,17,0.42227770541308834,157,711,867,95,251,7.6,2.1,60.5,12.9,1,1
+minor_histocompatibility,FUN008497_FUN008497,O14604,"Thymosin beta-4, Y-chromosomal",gbmr4,16,0.42857821525491113,31,20,50,9,39,22.6,12.3,87.1,18.9,1,3
+minor_histocompatibility,FUN030567_FUN030567,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,17,0.433099264725824,139,36,174,1065,1203,10.1,4.9,66.2,22.4,1,1
+minor_histocompatibility,FUN043500_FUN043500,Q5DTW7,Retroelement silencing factor 1,hp_lehninger_hpc3,18,0.4354180390378747,38,4,41,542,579,10.5,3.6,81.6,30.3,1,2
+minor_histocompatibility,FUN034179_TM7SF2,Q6NS46,Protein RRP5 homolog,hp_kyte_doolittle2,20,0.4425139447143949,162,48,209,1407,1568,8.6,1.0,80.2,8.9,1,2
+minor_histocompatibility,FUN024956_FUN024956.1,Q95JC7,Neutral amino acid transporter B(0),hp_lehninger_hpc3,17,0.44866298831267526,74,3531,3604,131,204,10.8,3.7,66.2,13.1,1,1
+minor_histocompatibility,FUN013456_col6a6,P42557,Reduced folate transporter,wwmj5,9,0.4497680869356476,49,1401,1449,243,291,16.3,10.6,63.3,30.7,1,1
+minor_histocompatibility,FUN040715_FUN040715.2,Q6R2V0,Serine/threonine-protein kinase WNK1,gbmr4,17,0.46496524154861063,40,144,183,543,582,7.5,1.5,77.5,23.0,1,3
+minor_histocompatibility,FUN016676_FUN016676,Q6FTG1,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,wass14,6,0.4718083360488653,32,71,102,315,346,37.5,30.1,56.2,44.6,1,1
+minor_histocompatibility,FUN012366_FUN012366,Q6NS46,Protein RRP5 homolog,hp_thomas_dill_no_c2,22,0.47220376367400946,319,452,770,1283,1601,9.1,2.6,74.3,12.2,2,3
+minor_histocompatibility,FUN011537_FUN011537,P41440,Reduced folate transporter,gbmr4,20,0.4754819486238916,23,117,139,469,491,21.7,13.4,95.7,34.4,1,4
+minor_histocompatibility,FUN013451_FUN013451.1,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.4791057519495538,194,907,1100,1408,1601,6.7,-1.2,81.4,7.1,1,1
+minor_histocompatibility,FUN019809_FUN019809,Q14690,Protein RRP5 homolog,gbmr4,16,0.4797672453382346,31,92,122,1260,1290,12.9,7.6,80.6,36.2,1,2
+minor_histocompatibility,FUN032908_FUN032908,Q14690,Protein RRP5 homolog,gbmr4,16,0.4797672453382346,31,92,122,1260,1290,12.9,7.6,80.6,36.2,1,1
+minor_histocompatibility,FUN011537_FUN011537,Q91VE2,P2X purinoceptor 5,gbmr4,15,0.4824104437497087,37,105,141,358,394,13.5,6.9,81.1,31.0,1,1
+minor_histocompatibility,FUN005522_FUN005522,P18583,Protein SON,hp_thomas_dill2,20,0.48459614802210865,105,68,172,699,803,1.0,-4.5,89.5,38.1,1,2
+minor_histocompatibility,FUN032433_FUN032433,Q7SY48,HEAT repeat-containing protein 1,protein20,5,0.486216232725963,41,118,158,1574,1614,41.5,34.4,41.5,34.4,1,1
+minor_histocompatibility,FUN008574_FUN008574,Q8WUM0,Nuclear pore complex protein Nup133,polarity4,12,0.4939158853593184,69,455,523,570,638,14.5,8.8,69.6,34.3,1,1
+minor_histocompatibility,FUN042130_FUN042130,O19105,Neutral amino acid transporter B(0),hp_lehninger_hpc3,18,0.5044853578619672,74,40,113,452,525,5.4,-0.2,68.9,20.3,1,3
+minor_histocompatibility,FUN009565_FUN009565,O60449,Lymphocyte antigen 75,hp_lehninger_hpc3,18,0.5142702767116758,66,105,170,5,70,13.6,8.0,75.8,28.2,1,2
+minor_histocompatibility,FUN040715_FUN040715.2,Q9H4A3,Serine/threonine-protein kinase WNK1,gbmr4,17,0.5156756637313042,40,144,183,545,584,7.5,1.4,77.5,23.0,1,3
+minor_histocompatibility,FUN012676_FUN012676,F4IGA5,Nuclear pore complex protein NUP133,gbmr4,15,0.5164430646904248,31,326,356,1193,1223,3.2,-2.6,77.4,26.7,1,1
+minor_histocompatibility,FUN002294_PROBABLE.2,F1M3G7,A-kinase anchor protein 13,hp_thomas_dill2,18,0.5164687870247631,144,614,757,1357,1500,10.4,3.3,79.9,17.0,1,2
+minor_histocompatibility,FUN007587_FUN007587,Q62240,Lysine-specific demethylase 5D,hp_lehninger2,20,0.5172461595665615,149,1458,1606,769,917,11.4,6.4,77.2,25.3,1,3
+minor_histocompatibility,FUN040715_FUN040715.2,P83741,Serine/threonine-protein kinase WNK1,gbmr4,17,0.5319810742778155,40,144,183,545,584,7.5,1.5,77.5,23.0,1,3
+minor_histocompatibility,FUN015230_DHX38,Q6NS46,Protein RRP5 homolog,hp_kyte_doolittle2,27,0.5445549980643808,276,2,277,1323,1598,9.4,2.4,75.7,7.8,1,2
+minor_histocompatibility,FUN002471_FUN002471,P19971,Thymidine phosphorylase,hp_lehninger_hpc3,27,0.5639709700702795,58,9,66,73,130,10.3,4.5,79.3,31.4,1,1
+minor_histocompatibility,FUN028728_TNPO3,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,hp_lehninger2,20,0.5755655602050923,144,241,384,1556,1699,10.4,4.5,76.4,26.4,1,2
+minor_histocompatibility,FUN011363_FUN011363,P70424,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,28,0.5762408926891788,94,363,456,639,732,7.4,1.4,69.1,20.7,1,3
+minor_histocompatibility,FUN011537_FUN011537,P51578,P2X purinoceptor 5,gbmr4,15,0.585959778423886,37,105,141,358,394,16.2,9.6,81.1,31.0,1,1
+minor_histocompatibility,FUN011363_FUN011363,P06494,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,28,0.6075268745245339,94,363,456,640,733,7.4,1.5,69.1,20.7,1,3
+minor_histocompatibility,FUN006870_FUN006870,Q9M439,"Branched-chain-amino-acid aminotransferase 2, chloroplastic",gbmr4,15,0.6238037630195584,16,331,346,24,39,6.2,-1.6,100.0,30.5,1,1
+minor_histocompatibility,FUN023346_SEMA4E,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.6248753836443478,131,709,839,1392,1522,13.0,6.1,84.7,14.7,1,2
+minor_histocompatibility,FUN002471_FUN002471,Q99N42,Thymidine phosphorylase,hp_lehninger_hpc3,27,0.6270764024647992,64,3,66,53,116,9.4,4.1,76.6,28.5,1,1
+minor_histocompatibility,FUN031239_MBL2,Q14289,Protein-tyrosine kinase 2-beta,hp_thomas_dill2,20,0.6375111629879405,134,96,229,332,465,6.7,1.0,80.6,26.2,1,1
+minor_histocompatibility,FUN002471_FUN002471,Q5FVR2,Thymidine phosphorylase,hp_lehninger_hpc3,27,0.6423205160305925,64,3,66,60,123,7.8,2.7,76.6,28.5,1,1
+minor_histocompatibility,FUN029616_FUN029616,Q4PA25,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,hp_pbotc_1st_ed2,18,0.6438032200490404,96,16,111,354,449,11.5,5.6,87.5,36.2,1,2
+minor_histocompatibility,FUN015159_FUN015159.1,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.6459504742701846,215,264,478,1363,1577,7.4,0.8,76.7,10.9,1,1
+minor_histocompatibility,FUN041016_NHL1,Q6NS46,Protein RRP5 homolog,hp_lehninger_hpc3,25,0.6745098635321212,103,66,168,1519,1621,1.9,-4.4,72.8,24.7,1,1
+minor_histocompatibility,FUN027887_CCNB1IP1,Q49GP5,Phosphatidylinositol 4-kinase type 2-beta,hp_lehninger_c_nonpolar2,26,0.6758723283184132,108,33,140,151,258,6.5,1.0,79.6,29.6,1,1
+minor_histocompatibility,FUN040715_FUN040715.2,Q9JIH7,Serine/threonine-protein kinase WNK1,gbmr4,17,0.6804685913610318,40,144,183,545,584,7.5,1.5,77.5,23.0,1,2
+minor_histocompatibility,FUN000916_FUN000916,Q49GP5,Phosphatidylinositol 4-kinase type 2-beta,hp_lehninger_c_nonpolar2,26,0.6807056459850702,108,34,141,52,159,9.3,3.2,80.6,30.5,1,2
+minor_histocompatibility,FUN034265_FUN034265,Q49GP5,Phosphatidylinositol 4-kinase type 2-beta,hp_lehninger_c_nonpolar2,26,0.6807056459850702,108,34,141,52,159,10.2,4.1,80.6,30.5,1,2
+minor_histocompatibility,FUN022136_FUN022136,Q9XBQ0,Serine/threonine-protein kinase pkn3,hp_lehninger_c_nonpolar2,26,0.6960071413765733,63,19,81,312,374,9.5,3.0,92.1,41.6,1,2
+minor_histocompatibility,FUN018331_FUN018331,O19105,Neutral amino acid transporter B(0),gbmr4,15,0.6986939928654492,32,2,33,196,227,6.2,-0.5,75.0,24.8,1,1
+minor_histocompatibility,FUN034724_FUN034724,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,17,0.7008059422576188,136,33,168,1062,1197,10.3,5.1,64.7,21.6,1,1
+minor_histocompatibility,FUN033302_FUN033302,Q6FTG1,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,wass14,6,0.707075276633345,32,105,136,315,346,37.5,30.1,56.2,44.6,1,1
+minor_histocompatibility,FUN013451_FUN013451.2,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.7106310396329181,194,907,1100,1408,1601,6.7,-1.2,81.4,7.1,1,1
+minor_histocompatibility,FUN006870_FUN006870,Q12802,A-kinase anchor protein 13,gbmr4,15,0.7267924581707356,35,319,353,2318,2352,5.7,-2.1,74.3,19.6,1,1
+minor_histocompatibility,FUN019809_FUN019809,Q6NS46,Protein RRP5 homolog,gbmr4,16,0.7281749943050008,30,92,121,1271,1300,13.3,8.4,80.0,36.0,1,1
+minor_histocompatibility,FUN032908_FUN032908,Q6NS46,Protein RRP5 homolog,gbmr4,16,0.7281749943050008,30,92,121,1271,1300,13.3,8.4,80.0,36.0,1,1
+minor_histocompatibility,FUN001412_FUN001412,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.7327673022091918,23,302,324,43,65,17.4,9.8,91.3,48.4,1,1
+minor_histocompatibility,FUN004554_FAIM2,Q6GVM6,ATP-dependent RNA helicase DDX3Y,hp_kyte_doolittle2,20,0.7426631175561695,104,14,117,48,151,3.8,-2.5,88.5,13.1,1,1
+minor_histocompatibility,FUN037811_FUN037811,P18583,Protein SON,hp_lehninger_c_nonpolar2,22,0.7519107183936724,95,325,419,912,1006,15.8,8.4,86.3,35.8,1,3
+minor_histocompatibility,FUN004554_FAIM2,Q5RF43,ATP-dependent RNA helicase DDX3Y,hp_kyte_doolittle2,20,0.7551311697054278,104,14,117,48,151,3.8,-2.5,88.5,13.1,1,1
+minor_histocompatibility,FUN037811_FUN037811,Q9QX47,Protein SON,hp_lehninger_c_nonpolar2,22,0.7695671931664102,95,325,419,907,1001,15.8,8.4,86.3,35.8,1,3
+minor_histocompatibility,FUN039020_FUN039020,Q9HB58,Sp110 nuclear body protein,hp_lehninger_hpc3,27,0.7879255855975403,29,143,171,179,207,24.1,16.9,100.0,49.9,1,1
+minor_histocompatibility,FUN025444_DNAJC5,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,20,0.791673132645673,115,4,118,480,594,7.8,2.4,67.8,18.1,1,1
+minor_histocompatibility,FUN001412_FUN001412,P04626,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.7931053526743472,23,302,324,43,65,17.4,9.8,91.3,48.4,1,1
+minor_histocompatibility,FUN002272_COL2A1,Q8IWZ5,Tripartite motif-containing protein 42,gbmr4,16,0.8055112596311665,30,247,276,352,381,0.0,-6.6,86.7,30.8,1,1
+minor_histocompatibility,FUN040734_ITGB1A,Q9D2H5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,22,0.8089357991522402,131,228,358,325,455,7.6,1.6,67.9,19.1,1,1
+minor_histocompatibility,FUN009553_KANK1.1,O18735,Receptor tyrosine-protein kinase erbB-2,hp_lehninger2,17,0.813932842737186,140,31,170,175,314,6.4,0.8,77.1,25.3,1,1
+minor_histocompatibility,FUN008497_FUN008497,Q54PW5,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,gbmr4,15,0.8142424271452903,29,9,37,335,363,17.2,10.0,79.3,25.8,1,1
+minor_histocompatibility,FUN007490_ITGB1A,Q9D2H5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,22,0.8234619070366189,131,228,358,325,455,7.6,1.6,67.9,19.1,1,1
+minor_histocompatibility,FUN040734_ITGB1A,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,22,0.8271510596954939,141,218,358,315,455,9.2,3.2,66.0,17.1,1,1
+minor_histocompatibility,FUN001903_ADRB1,Q6NS46,Protein RRP5 homolog,hp_thomas_dill2,20,0.8273638786623019,181,419,599,1410,1590,6.1,0.5,76.2,8.5,1,2
+minor_histocompatibility,FUN007490_ITGB1A,Q8IWZ5,Tripartite motif-containing protein 42,hp_lehninger_hpc3,22,0.8430673854651106,141,218,358,315,455,9.2,3.2,66.0,17.1,1,1
+minor_histocompatibility,FUN019386_FUN019386.1,Q95JC7,Neutral amino acid transporter B(0),hp_lehninger_hpc3,18,0.8490986538027266,65,634,698,187,251,10.8,4.3,78.5,25.2,1,1
+minor_histocompatibility,FUN016619_FUN016619.3,P51912,Neutral amino acid transporter B(0),hp_lehninger_hpc3,25,0.8571440908872259,84,242,325,132,215,15.5,8.9,73.8,23.2,1,1
+minor_histocompatibility,FUN004831_FUN004831,Q4IQ72,2-(3-amino-3-carboxypropyl)histidine synthase subunit 1,hp_lehninger_hpc3,19,0.8578595611773158,22,32,53,321,342,13.6,6.2,95.5,37.2,1,1
+minor_histocompatibility,FUN009151_FUN009151,Q30DN6,Lysine-specific demethylase 5D,hp_lehninger_hpc3,18,0.8678540256280878,56,5,60,1424,1479,1.8,-4.4,76.8,23.1,1,1
+minor_histocompatibility,FUN005971_FUN005971,Q6DE55,Rho GTPase-activating protein 45,gbmr4,17,0.8700687275014782,63,168,230,387,449,7.9,-0.5,69.8,8.8,1,1
+minor_histocompatibility,FUN001552_COL4A6,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,sdm12,7,0.8731011509560304,42,1617,1658,822,863,28.6,22.6,52.4,36.6,1,1
+minor_histocompatibility,FUN018331_FUN018331,Q4R8W8,Neutral amino acid transporter B(0),gbmr4,15,0.8777165011945217,25,2,26,196,220,8.0,1.4,84.0,27.7,1,1
+minor_histocompatibility,FUN006870_FUN006870,F1M3G7,A-kinase anchor protein 13,gbmr4,15,0.8811781439129913,35,319,353,2265,2299,5.7,-2.8,74.3,19.6,1,1
+minor_histocompatibility,FUN028852_FUN028852,Q8CBQ5,Phosphatidylinositol 4-kinase type 2-beta,hp_lehninger_hpc3,25,0.8884166282277699,46,523,568,173,218,10.9,3.4,89.1,38.8,1,1
+minor_histocompatibility,FUN023172_FUN023172,P42557,Reduced folate transporter,hp_kyte_doolittle2,19,0.9012236247106724,99,9,107,196,294,10.1,4.0,82.8,30.6,1,1
+minor_histocompatibility,FUN018331_FUN018331,Q15758,Neutral amino acid transporter B(0),gbmr4,15,0.902277665007408,25,2,26,195,219,8.0,1.1,84.0,27.7,1,1
+minor_histocompatibility,FUN002272_COL2A1,Q9D2H5,Tripartite motif-containing protein 42,gbmr4,16,0.9104481527903482,30,247,276,352,381,0.0,-6.6,86.7,30.8,1,1
+minor_histocompatibility,FUN001412_FUN001412,Q60553,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.9123389859790765,23,302,324,43,65,17.4,9.1,91.3,48.4,1,1
+minor_histocompatibility,FUN011363_FUN011363,Q60553,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,27,0.9188622915709576,94,363,456,638,731,5.3,-0.7,68.1,19.5,1,1
+minor_histocompatibility,FUN013450_SCN4A,Q3KRF1,Sp110 nuclear body protein,hp_thomas_dill_no_c2,19,0.9247561914232835,228,552,779,168,395,5.7,-0.5,75.0,10.5,1,1
+minor_histocompatibility,FUN006870_FUN006870,E9Q394,A-kinase anchor protein 13,gbmr4,15,0.9253350527762265,35,319,353,2281,2315,5.7,-2.5,74.3,19.6,1,1
+minor_histocompatibility,FUN024956_FUN024956.1,O00507,Ubiquitin carboxyl-terminal hydrolase 9Y,hp_lehninger_hpc3,17,0.9264279092147208,238,3155,3392,1376,1613,9.7,3.7,58.8,11.1,1,1
+minor_histocompatibility,FUN023893_FUN023893,P42557,Reduced folate transporter,hp_lehninger2,20,0.9307699002231907,93,508,600,152,244,6.5,0.6,81.7,30.9,1,1
+minor_histocompatibility,FUN006870_FUN006870,Q60767,Lymphocyte antigen 75,sdm12,7,0.9347793206466242,29,324,352,661,689,34.5,26.6,58.6,38.6,1,1
+minor_histocompatibility,FUN029052_FUN029052.2,Q9HB58,Sp110 nuclear body protein,hp_thomas_dill_no_c2,18,0.9376643466868403,311,1454,1764,207,517,6.8,1.0,74.6,8.2,1,1
+minor_histocompatibility,FUN009335_TMEFF2,E9Q394,A-kinase anchor protein 13,hp_lehninger_hpc3,28,0.9395612525179848,83,219,301,2252,2334,8.4,2.1,67.5,17.4,1,1
+minor_histocompatibility,FUN034636_HSPG2,P41438,Reduced folate transporter,hp_lehninger_hpc3,17,0.9437213662578804,45,1,45,445,489,6.7,1.0,77.8,31.0,1,1
+minor_histocompatibility,FUN001412_FUN001412,P70424,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.9471769264388457,23,302,324,43,65,17.4,9.8,91.3,48.4,1,1
+minor_histocompatibility,FUN009335_TMEFF2,F1M3G7,A-kinase anchor protein 13,hp_lehninger_hpc3,28,0.9475786397559851,83,219,301,2236,2318,8.4,2.1,67.5,17.4,1,1
+minor_histocompatibility,FUN020740_FUN020740,Q14213,Interleukin-27 subunit beta,hp_lehninger_hpc3,27,0.9476632133689242,65,80,144,94,158,7.7,2.4,78.5,27.5,1,1
+minor_histocompatibility,FUN005971_FUN005971,Q54ML4,HEAT repeat-containing protein 1 homolog,gbmr4,16,0.9494397546812274,52,176,227,927,978,15.4,7.4,73.1,13.1,1,1
+minor_histocompatibility,FUN020551_FUN020551.1,Q60553,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.9506139481823054,67,2561,2627,639,705,7.5,1.0,73.1,21.6,1,1
+minor_histocompatibility,FUN001554_COL4A1,F8VPU6,Ubiquitin carboxyl-terminal hydrolase 9Y,gbmr4,15,0.9575950246844281,30,2,31,1995,2024,10.0,4.6,80.0,33.8,1,1
+minor_histocompatibility,FUN029612_FUN029612,Q6NS46,Protein RRP5 homolog,hp_thomas_dill_no_c2,19,0.9619836839009686,207,334,540,1315,1521,6.3,0.7,75.4,12.7,1,1
+minor_histocompatibility,FUN033973_FUN033973,Q6P5Z2,Serine/threonine-protein kinase N3,hp_lehninger_hpc3,22,0.9692155301946356,29,1,29,257,285,17.2,11.3,89.7,35.0,1,1
+minor_histocompatibility,FUN036745_FUN036745,Q6P5Z2,Serine/threonine-protein kinase N3,hp_lehninger_hpc3,22,0.9692155301946356,29,1,29,257,285,13.8,7.8,89.7,35.0,1,1
+minor_histocompatibility,FUN037191_CNR4,F1M3G7,A-kinase anchor protein 13,hp_lehninger_hpc3,21,0.9898355224838717,46,25,70,2386,2431,15.2,7.8,82.6,32.2,1,1
+minor_histocompatibility,FUN002714_FIBRINOGENLIKE,Q9XBQ0,Serine/threonine-protein kinase pkn3,sdm12,7,0.9933122776651473,37,51,87,256,292,29.7,21.5,59.5,39.0,1,1
+minor_histocompatibility,FUN001412_FUN001412,P06494,Receptor tyrosine-protein kinase erbB-2,hp_lehninger_hpc3,18,0.9972125584115806,23,302,324,43,65,21.7,13.6,91.3,48.4,1,1
