@@ -1268,6 +1268,373 @@ for name, c in [("Figure 1", caption1), ("Figure 3 draft", caption3), ("Suppleme
 ''')
 
 md(r"""
+## 11. Two other designs for Figure 1, after the review of 2026-10-13
+
+The review called the four-panel figure "too baby bioinformatics for Nature Biotechnology": panel
+a is a tutorial, b and c describe Pfam pairs rather than anything kmerseek does, and d is one
+query. Two other designs are drawn below so they can be compared side by side. Both open with
+the same one-row panel a, the CED-9 / BCL2 result of `kmerseek pair` from section 1.
+
+* **Option 1, the seed-length trade as one result.** For four alphabets, each k is a point: how
+  many human proteins share a seed with a shuffled human query by chance (x), against the share
+  of Pfam seed pairs at 20-30% identity that share a seed (y). The question is whether H/P
+  reaches more homologs per chance hit than the amino-acid alphabets.
+* **Option 2, what kmerseek can do that the other tools cannot.** Domain placement on the QfO
+  Pfam-region benchmark (midi run), split by domain length, disorder and AlphaFold confidence.
+""")
+
+code(r'''
+def draw_strip(cv, ox, oy):
+    """Panel a in one row: the CED-9 / BCL2 region from kmerseek pair, residues and classes, then both proteins."""
+    cv.title(ox, oy + 25, "a", f"kmerseek pair, CED-9 against BCL2, {HP}, k = {K_PAIR}: {len(words)} shared "
+             f"{K_PAIR}-mers on one diagonal join into one {region_len}-residue region")
+    xseq = ox + 13
+    rows = {"q": oy + 19.4, "rm": oy + 16.9, "t": oy + 14.4, "qc": oy + 9.6, "cm": oy + 7.1, "tc": oy + 4.6}
+    for key, name, (s, e), seq in [("q", "CED-9", ced9_r, ced9_reg), ("t", "BCL2", bcl2_r, bcl2_reg)]:
+        cv.text(ox, rows[key], name, fontsize=6)
+        cv.text(xseq - 0.7, rows[key], str(s), family=MONO, fontsize=SEQ_PT, ha="right")
+        cv.text(xseq + region_len * PITCH + 0.5, rows[key], str(e), family=MONO, fontsize=SEQ_PT)
+        residues(cv, xseq, rows[key], seq, PITCH)
+    for key, name, cl in [("qc", "CED-9", ced9_reg_c), ("tc", "BCL2", bcl2_reg_c)]:
+        cv.text(ox, rows[key], name, fontsize=6)
+        class_squares(cv, xseq, rows[key], cl, PITCH)
+    residues(cv, xseq, rows["rm"], match_line(ced9_reg, bcl2_reg), PITCH, color=C_AA, fontweight="bold")
+    residues(cv, xseq, rows["cm"], match_line(ced9_reg_c, bcl2_reg_c), PITCH, color=C_HP, fontweight="bold")
+    cv.text(xseq + region_len * PITCH + 0.8, rows["rm"], f"{pair_identical} of {region_len} identical", fontsize=6)
+    cv.text(xseq + region_len * PITCH + 0.8, rows["cm"], f"{pair_same} of {region_len} same class", fontsize=6)
+    x = ox + 72
+    for name, y, (s, e), bh1 in [("CED-9", oy + 17.5, ced9_r, ced9_bh1), ("BCL2", oy + 7.5, bcl2_r, bcl2_bh1)]:
+        L = LEN[name]
+        sx = lambda r: x + 12 + (r - 1) * 0.14
+        cv.text(x, y, name, fontsize=6)
+        cv.text(sx(1) - 0.6, y, "1", fontsize=5.5, ha="right")
+        cv.line([sx(1), sx(L)], [y, y], color="black", lw=0.8)
+        cv.text(sx(L) + 0.6, y, f"{L} aa", fontsize=5.5)
+        cv.rect(sx(bh1[0]), y - 1.3, sx(bh1[1]) - sx(bh1[0]), 2.6, facecolor="white", edgecolor="black", lw=0.5, zorder=3)
+        cv.text((sx(bh1[0]) + sx(bh1[1])) / 2, y + 2.4, "BH1", fontsize=5.5, ha="center")
+        cv.rect(sx(s), y - 3.4, sx(e) - sx(s), 1.2, facecolor=C_HP, edgecolor="none")
+        cv.text(sx(e) + 1.0, y - 2.8, f"{s}–{e}", fontsize=6)
+    kx = ox + 140
+    cv.rect(kx, oy + 17.0, 3.0, 2.0, facecolor="white", edgecolor="black", lw=0.5)
+    cv.text(kx + 4.0, oy + 18.0, "UniProt BH1 motif", fontsize=6)
+    cv.rect(kx, oy + 13.6, 3.0, 1.2, facecolor=C_HP, edgecolor="none")
+    cv.text(kx + 4.0, oy + 14.2, "region kmerseek reports", fontsize=6)
+
+
+def check_text(fig):
+    """Text boxes inside the canvas and not overlapping each other, measured on the rendered figure."""
+    fig.canvas.draw()
+    rend = fig.canvas.get_renderer()
+    bxs = [(t.get_text(), t.get_window_extent(rend)) for t in fig.findobj(mpl.text.Text)
+           if t.get_visible() and t.get_text().strip()]
+    fb = fig.bbox
+    out = [s for s, b in bxs if b.x0 < fb.x0 - 0.5 or b.x1 > fb.x1 + 0.5 or b.y0 < fb.y0 - 0.5 or b.y1 > fb.y1 + 0.5]
+    ovl = [(bxs[i][0], bxs[j][0]) for i in range(len(bxs)) for j in range(i + 1, len(bxs))
+           if min(bxs[i][1].x1, bxs[j][1].x1) - max(bxs[i][1].x0, bxs[j][1].x0) > 0.5
+           and min(bxs[i][1].y1, bxs[j][1].y1) - max(bxs[i][1].y0, bxs[j][1].y0) > 0.5]
+    print(f"{len(bxs)} text labels; off the canvas: {out}; overlapping pairs: {ovl}")
+    check(not out and not ovl, "text overlaps or leaves the canvas")
+
+
+draw_strip(Canvas(pf.TWO_COLUMN_MM, 30), 0, 2)
+''')
+
+md(r"""
+### 11a. Option 1: the seed-length trade
+
+* **Chance hits (x)**: `scripts/run_275_seed_frontier.py` takes random human proteins as queries
+  (GENCODE v49 canonical, 19,732 proteins, seed 0), shuffles each query's residues (same length
+  and composition) and counts the other human proteins that share at least one exact k-mer with
+  the shuffled query. Every such protein is a chance hit. The mean over queries is plotted. The
+  same count for the unshuffled queries is printed for comparison; it adds the query's real
+  relatives.
+* **Homologs reached (y)**: share of the Pfam seed pairs at 20-30% identity whose longest
+  same-class run (in protein20, identical residues; in dayhoff6, same Dayhoff class) is at least
+  k, from notebook 230's per-pair table. A run of length k is a shared k-mer on the pair's own
+  alignment diagonal.
+* **Filled markers**: the k-mer sizes kmerseek tests for that alphabet (PR 101's table).
+
+The full run is 300 queries on Sherlock (`notebooks/275_seed_frontier.sbatch`). Until its table
+is copied back, the notebook draws the 30-query pilot made on the laptop and says so on the
+figure.
+""")
+
+code(r'''
+FRONTIER = REPO / "tables/275_seed_frontier_hits_per_query.tsv"
+FRONTIER_PILOT = REPO / "tables/275_seed_frontier_hits_per_query.pilot30.tsv"
+frontier_path = FRONTIER if FRONTIER.exists() else FRONTIER_PILOT
+fr = pl.read_csv(frontier_path, separator="\t")
+n_fr_queries = fr["query"].n_unique()
+is_pilot = frontier_path == FRONTIER_PILOT
+FR_ALPHABETS = ["hp_lehninger2", "hp_thomas_dill2", "dayhoff6", "protein20"]
+check(sorted(fr["alphabet"].unique().to_list()) == sorted(FR_ALPHABETS), "frontier table alphabets changed")
+check(fr["n_proteins"].unique().to_list() == [N_HUMAN], "frontier proteome is not 19,732 proteins")
+C_ALPHA = {"hp_lehninger2": C_HP, "hp_thomas_dill2": pf.OKABE_ITO["reddish_purple"],
+           "dayhoff6": pf.OKABE_ITO["bluish_green"], "protein20": C_AA}
+ALPHA_LABEL = {"hp_lehninger2": "hp_lehninger2 (H/P)", "hp_thomas_dill2": "hp_thomas_dill2 (H/P)",
+               "dayhoff6": "dayhoff6 (6 letters)", "protein20": "protein20 (20 letters)"}
+hits = (fr.group_by("alphabet", "k", "query_kind")
+        .agg(mean_hits=pl.col("n_proteins_sharing_seed").mean(), median_hits=pl.col("n_proteins_sharing_seed").median(),
+             frac_queries_any=(pl.col("n_proteins_sharing_seed") > 0).mean())
+        .pivot(on="query_kind", index=["alphabet", "k"], values=["mean_hits", "median_hits", "frac_queries_any"])
+        .sort("alphabet", "k"))
+bin_pairs = pairs_all.filter(pl.col("identity_bin") == BIN)
+reach_rows = []
+for a in FR_ALPHABETS:
+    runs = bin_pairs.filter(pl.col("alphabet") == a)["longest_run"].to_numpy()
+    check(runs.size == n_pairs, f"{a}: {runs.size} pairs at {BIN}, expected {n_pairs}")
+    for k in sorted(fr.filter(pl.col("alphabet") == a)["k"].unique().to_list()):
+        reach_rows.append({"alphabet": a, "k": k, "pfam_reach": float((runs >= k).mean())})
+frontier = hits.join(pl.DataFrame(reach_rows), on=["alphabet", "k"], how="inner")
+krange = {r["alphabet"]: (int(r["k_min"]), int(r["k_max"])) for r in ksizes.filter(pl.col("alphabet").is_in(FR_ALPHABETS)).iter_rows(named=True)}
+check(round(frontier.filter((pl.col("alphabet") == HP) & (pl.col("k") == 12))["pfam_reach"].item(), 3) == 0.473,
+      "Pfam reach at hp_lehninger2 k=12 is not PR 113's 0.473")
+# One chance protein per query: for each alphabet, the smallest k whose mean chance hits is at most 1.
+k_one = {a: frontier.filter((pl.col("alphabet") == a) & (pl.col("mean_hits_shuffled") <= 1))["k"].min() for a in FR_ALPHABETS}
+check(all(v is not None for v in k_one.values()), f"an alphabet never reaches 1 chance protein per query: {k_one}")
+at_one = frontier.filter(pl.struct("alphabet", "k").map_elements(lambda r: k_one[r["alphabet"]] == r["k"], return_dtype=pl.Boolean))
+print(f"{frontier_path.name}: {n_fr_queries} queries{' (pilot)' if is_pilot else ''}; kmerseek k ranges (PR 101): {krange}")
+print(frontier.with_columns(pl.col("^mean.*$", "pfam_reach").round(4)))
+print("\nsmallest k with at most 1 chance protein per query (mean over queries):")
+print(at_one.select("alphabet", "k", pl.col("mean_hits_shuffled").round(3), pl.col("pfam_reach").round(4)))
+
+reach_id = []
+for a in FR_ALPHABETS:
+    for b in hc.IDENTITY_LABELS:
+        runs = pairs_all.filter((pl.col("alphabet") == a) & (pl.col("identity_bin") == b))["longest_run"].to_numpy()
+        reach_id.append({"alphabet": a, "k": k_one[a], "identity_bin": BIN_SHOWN[b], "n_pairs": runs.size,
+                         "pfam_reach": float((runs >= k_one[a]).mean())})
+reach_id = pl.DataFrame(reach_id)
+print(reach_id.pivot(on="identity_bin", index=["alphabet", "k"], values="pfam_reach").with_columns(pl.exclude("alphabet", "k").round(4)))
+
+
+def draw_frontier(cv, ox, oy, w=88, h=52):
+    cv.title(ox, oy + h + 19, "b", "Homologs reached against chance hits, one point per k")
+    cv.text(ox, oy + h + 14.8, f"x: {n_fr_queries} random human proteins, shuffled, against all {N_HUMAN:,}"
+            + (" (pilot)" if is_pilot else ""), fontsize=6)
+    cv.text(ox, oy + h + 12.0, f"y: Pfam-A 38.2 seed pairs at {BIN} identity ({n_pairs:,})", fontsize=6)
+    ax = cv.axes(ox + 12, oy + 10, w, h)
+    for a in FR_ALPHABETS:
+        sub = frontier.filter((pl.col("alphabet") == a) & (pl.col("mean_hits_shuffled") > 0) & (pl.col("pfam_reach") > 0)).sort("k")
+        x, y, kk = sub["mean_hits_shuffled"].to_numpy(), 100 * sub["pfam_reach"].to_numpy(), sub["k"].to_numpy()
+        inside = (kk >= krange[a][0]) & (kk <= krange[a][1])
+        ax.plot(x, y, color=C_ALPHA[a], lw=0.8, zorder=2)
+        ax.scatter(x[inside], y[inside], s=10, color=C_ALPHA[a], zorder=3, linewidths=0)
+        ax.scatter(x[~inside], y[~inside], s=10, facecolor="white", edgecolor=C_ALPHA[a], linewidths=0.6, zorder=3)
+        j = np.flatnonzero(kk == k_one[a])
+        ax.annotate(f"k={k_one[a]}", (x[j[0]], y[j[0]]), (-4, 4), textcoords="offset points", fontsize=5.5,
+                    ha="right", va="bottom", color="black")
+    ax.axvline(1, color="black", lw=0.5, ls=(0, (2, 1.5)), zorder=1)
+    ax.text(1.15, 0.012, "1 chance protein\nper query", fontsize=5.5, va="bottom")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(0.01, 3e4)
+    ax.set_ylim(0.01, 100)
+    ax.set_xticks([0.01, 0.1, 1, 10, 100, 1000, 10000], ["0.01", "0.1", "1", "10", "100", "1,000", "10,000"])
+    ax.set_yticks([0.01, 0.1, 1, 10, 100], ["0.01", "0.1", "1", "10", "100"])
+    ax.minorticks_off()
+    ax.set_xlabel("human proteins sharing a seed with a shuffled query (mean per query)")
+    ax.set_ylabel(f"Pfam pairs at {BIN} identity\nsharing a seed (%)")
+    return ax
+
+
+def draw_reach_by_identity(cv, ox, oy, w=50, h=52):
+    cv.title(ox, oy + h + 19, "c", "At 1 chance protein per query")
+    cv.text(ox, oy + h + 14.8, "k for each alphabet: the smallest with at most", fontsize=6)
+    cv.text(ox, oy + h + 12.0, "1 chance protein per query, mean", fontsize=6)
+    ax = cv.axes(ox + 12, oy + 10, w, h)
+    xs = np.arange(len(hc.IDENTITY_LABELS))
+    for a in FR_ALPHABETS:
+        sub = reach_id.filter(pl.col("alphabet") == a)
+        ax.plot(xs, 100 * sub["pfam_reach"].to_numpy(), color=C_ALPHA[a], marker="o", ms=2.5)
+        ax.text(xs[-1] + 0.15, 100 * sub["pfam_reach"][-1], f"k={k_one[a]}", fontsize=5.5, va="center")
+    n_by_bin = reach_id.filter(pl.col("alphabet") == HP)["n_pairs"].to_list()
+    ax.set_xticks(xs, [f"{BIN_SHOWN[b]}\n{n:,}" for b, n in zip(hc.IDENTITY_LABELS, n_by_bin)])
+    ax.set_xlim(-0.4, len(xs) - 0.1)
+    ax.set_ylim(0, 100)
+    ax.set_xlabel("identity of the pair (top), pairs (below)")
+    ax.set_ylabel("Pfam pairs sharing a seed (%)")
+    return ax
+
+
+cvo1 = Canvas(pf.TWO_COLUMN_MM, 112)
+legend_row(cvo1, [("sq", C_H, "h: hydrophobic"), ("sq", C_P, "p: polar")]
+           + [("ln", C_ALPHA[a], ALPHA_LABEL[a]) for a in FR_ALPHABETS], y=112 - 2.5)
+o1_key_y = 112 - 7.0
+cvo1.ax.scatter([1.5], [o1_key_y], s=10, color="black", linewidths=0)
+cvo1.text(3.5, o1_key_y, "k that kmerseek tests for the alphabet", fontsize=6)
+cvo1.ax.scatter([50.5], [o1_key_y], s=10, facecolor="white", edgecolor="black", linewidths=0.6)
+cvo1.text(52.5, o1_key_y, "other k", fontsize=6)
+draw_strip(cvo1, 0, 76)
+draw_frontier(cvo1, 0, 2)
+draw_reach_by_identity(cvo1, 118, 2)
+O1 = "fig1_option1_seed_frontier_human_proteome_pfam_seed"
+cvo1.fig.savefig(FIG / f"{O1}.pdf")
+save_png(cvo1.fig, FIG / f"{O1}.png")
+check_text(cvo1.fig)
+''')
+
+md(r"""
+### 11b. Option 2: what kmerseek finds that the other tools do not
+
+The QfO Pfam-region benchmark, midi run: 964 human chromosome 6 proteins searched against nine
+proteomes (mouse to *E. coli*); a call is right when it carries the true Pfam family and covers
+the true domain with an overlap over union (IoU) of at least 0.5. Each domain instance counts only
+in a species whose proteome has its family (a reachable instance). The measure is Fmax, the best
+F1 over each tool's score thresholds, so a tool cannot win by calling more; the mean over the nine
+species is drawn, with the range across species as a vertical line. Pfam-A truth, all queries
+(`split = all`), transfers not de-duplicated, as in the disorder and identity tables of
+2026-09-05 and 2026-09-10.
+
+Strata as the pipeline defines them: domain length; the share of the protein predicted
+disordered; the AlphaFold confidence (pLDDT) of the domain. Disorder and pLDDT bins are drawn at
+their middle; length bins at the median length of their domains.
+""")
+
+code(r'''
+MIDI_METRICS = Path("/Users/olga/data/qfo-pfam-region-midi/extract/all_domain_metrics.parquet")
+RUN_O2_QUERIES = json.loads(Path("/Users/olga/data/qfo-pfam-region-midi/midi_testset_summary.json").read_text())["n_queries"]
+check(RUN_O2_QUERIES == 964, f"midi run has {RUN_O2_QUERIES} queries, not 964")
+O2_TOOLS = {"hmmer3_phmmer.default": ("phmmer", pf.OKABE_ITO["blue"], "o"),
+            "hhblits.single_seq": ("HHblits", pf.OKABE_ITO["blue"], "s"),
+            "mmseqs2_seqseq.s7": ("MMseqs2", pf.OKABE_ITO["blue"], "^"),
+            "foldseek.3di_aa": ("Foldseek (structure)", pf.OKABE_ITO["vermillion"], "D")}
+KM_KS = list(range(18, 30))
+KM_ARMS = {f"kmerseek.{HP}_k{k}_lcTrue": k for k in KM_KS}
+mid = (pl.scan_parquet(MIDI_METRICS)
+       .filter((pl.col("truth_set") == "pfam") & (pl.col("split") == "all") & ~pl.col("dedup_transfers")
+               & (pl.col("species") != "all") & pl.col("stratum_axis").is_in(["all", "feature_length_bin", "disorder", "plddt"]))
+       .with_columns(arm=pl.col("tool") + "." + pl.col("variant"))
+       .filter(pl.col("arm").is_in(list(O2_TOOLS) + list(KM_ARMS)))
+       .select("arm", "species", "stratum_axis", "stratum", "fmax", "recall_reachable", "precision",
+               "n_reachable_instances", "median_feature_length")
+       .collect())
+check(mid.group_by("arm", "stratum_axis", "stratum").len()["len"].unique().to_list() == [9], "not 9 species per stratum")
+# The kmerseek line: the hp_lehninger2 k with the highest Fmax over all domains, mean of 9 species,
+# chosen after the fact on this benchmark; every other k is drawn thin.
+km_all = (mid.filter(pl.col("arm").is_in(list(KM_ARMS)) & (pl.col("stratum_axis") == "all"))
+          .group_by("arm").agg(pl.col("fmax").mean()).sort("fmax", "arm", descending=[True, False]))
+K_O2 = KM_ARMS[km_all["arm"][0]]
+print(f"hp_lehninger2 k by Fmax over all domains: " + ", ".join(f"k={KM_ARMS[a]} {f:.3f}" for a, f in km_all.iter_rows()))
+o2 = (mid.group_by("arm", "stratum_axis", "stratum")
+      .agg(fmax=pl.col("fmax").mean(), fmax_lo=pl.col("fmax").min(), fmax_hi=pl.col("fmax").max(),
+           recall=pl.col("recall_reachable").mean(), precision=pl.col("precision").mean(),
+           n_reachable=pl.col("n_reachable_instances").sum(), median_len=pl.col("median_feature_length").mean()))
+O2_AXES = {"feature_length_bin": ["16-30", "31-60", "61-120", "121-250", "251+"],
+           "disorder": ["0.0-0.1", "0.1-0.3", "0.3-0.6", "0.6-1.01"], "plddt": ["50-70", "70-90", "90-100"]}
+O2_X = {"disorder": {"0.0-0.1": 0.05, "0.1-0.3": 0.2, "0.3-0.6": 0.45, "0.6-1.01": 0.8},
+        "plddt": {"50-70": 60, "70-90": 80, "90-100": 95}}
+KM = f"kmerseek.{HP}_k{K_O2}_lcTrue"
+pretty = lambda a: O2_TOOLS[a][0] if a in O2_TOOLS else f"kmerseek {HP} k={KM_ARMS[a]}"
+for axis, strata in O2_AXES.items():
+    t = (o2.filter(pl.col("stratum_axis") == axis).with_columns(tool=pl.col("arm").map_elements(pretty, return_dtype=pl.String))
+         .pivot(on="stratum", index="tool", values="fmax").select(["tool"] + strata))
+    print(f"\nFmax, mean over 9 species, by {axis}:")
+    print(t.filter(~pl.col("tool").str.starts_with("kmerseek") | (pl.col("tool") == pretty(KM))).with_columns(pl.exclude("tool").round(3)))
+n_reach_len = {s: o2.filter((pl.col("arm") == "hmmer3_phmmer.default") & (pl.col("stratum") == s))["n_reachable"].item()
+               for s in O2_AXES["feature_length_bin"]}
+o2_val = lambda arm, axis, s, col="fmax": o2.filter((pl.col("arm") == arm) & (pl.col("stratum_axis") == axis)
+                                                   & (pl.col("stratum") == s))[col].item()
+short = {a: {c: o2_val(a, "feature_length_bin", "16-30", c) for c in ("fmax", "recall", "precision")} for a in [KM] + list(O2_TOOLS)}
+print(f"\n16-30 aa domains ({n_reach_len['16-30']:,} reachable instances over 9 species):")
+for a, v in short.items():
+    print(f"  {pretty(a):<32} Fmax {v['fmax']:.3f}  recall {v['recall']:.3f}  precision {v['precision']:.3f}")
+km_best_short = max(KM_ARMS, key=lambda a: o2_val(a, "feature_length_bin", "16-30"))
+print(f"best hp_lehninger2 k at 16-30 aa by Fmax: k={KM_ARMS[km_best_short]} ({o2_val(km_best_short, 'feature_length_bin', '16-30'):.3f})")
+print("\nmedian domain length per stratum (phmmer rows):")
+print(o2.filter(pl.col("arm") == "hmmer3_phmmer.default").select("stratum_axis", "stratum", "median_len", "n_reachable").sort("stratum_axis", "stratum"))
+
+
+def o2_panel(cv, ox, oy, letter, title, axis, w=41, h=36, xlabel="", log_x=False):
+    cv.title(ox, oy + h + 15, letter, title)
+    ax = cv.axes(ox + 11, oy + 10, w, h)
+    strata = O2_AXES[axis]
+    xpos = lambda s, a: (o2_val(a, axis, s, "median_len") if axis == "feature_length_bin" else O2_X[axis][s])
+    for a in KM_ARMS:
+        if KM_ARMS[a] != K_O2:
+            ax.plot([xpos(s, "hmmer3_phmmer.default") for s in strata], [o2_val(a, axis, s) for s in strata],
+                    color=C_HP, lw=0.4, alpha=0.35, zorder=1)
+    for a in [KM] + list(O2_TOOLS):
+        label, color, marker = (f"kmerseek {HP} k={K_O2}", C_HP, "o") if a == KM else O2_TOOLS[a]
+        xs = np.array([xpos(s, "hmmer3_phmmer.default") for s in strata])
+        ys = np.array([o2_val(a, axis, s) for s in strata])
+        lo = np.array([o2_val(a, axis, s, "fmax_lo") for s in strata])
+        hi = np.array([o2_val(a, axis, s, "fmax_hi") for s in strata])
+        ax.vlines(xs, lo, hi, color=color, lw=0.4, alpha=0.6, zorder=2)
+        ax.plot(xs, ys, color=color, marker=marker, ms=2.6, lw=1.0 if a == KM else 0.8, zorder=3,
+                mfc=color if a == KM or a == "foldseek.3di_aa" else "white", mew=0.6)
+    if log_x:
+        ax.set_xscale("log")
+        ax.set_xticks([20, 50, 100, 200, 400], ["20", "50", "100", "200", "400"])
+        ax.minorticks_off()
+    ax.set_ylim(0, 0.6)
+    ax.set_yticks([0, 0.2, 0.4, 0.6])
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Fmax (mean of 9 species)")
+    return ax
+
+
+cvo2 = Canvas(pf.TWO_COLUMN_MM, 92)
+items = [("ln", C_HP, f"kmerseek {HP} k={K_O2}, best on this benchmark (thin: other k, {KM_KS[0]}-{KM_KS[-1]})")]
+legend_row(cvo2, [("sq", C_H, "h: hydrophobic"), ("sq", C_P, "p: polar")] + items, y=92 - 2.5)
+kx = 0
+for a, (label, color, marker) in O2_TOOLS.items():
+    yk = 92 - 7.0
+    cvo2.line([kx, kx + 4], [yk, yk], color=color, lw=0.8)
+    cvo2.ax.plot([kx + 2], [yk], marker=marker, ms=2.6, color=color, mfc="white" if marker != "D" else color, mew=0.6)
+    cvo2.text(kx + 5, yk, label, fontsize=6)
+    kx += 5 + 1.02 * len(label) + 5
+cvo2.line([kx + 1.5, kx + 1.5], [92 - 8.3, 92 - 5.7], color="black", lw=0.4)
+cvo2.text(kx + 3, 92 - 7.0, "range over the 9 species", fontsize=6)
+draw_strip(cvo2, 0, 56)
+ax_len = o2_panel(cvo2, 0, 2, "b", "By domain length", "feature_length_bin", xlabel="domain length (aa, median of bin)", log_x=True)
+ax_dis = o2_panel(cvo2, 61, 2, "c", "By disorder of the protein", "disorder", xlabel="share of the protein disordered")
+ax_dis.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
+ax_pl = o2_panel(cvo2, 122, 2, "d", "By AlphaFold confidence", "plddt", xlabel="pLDDT of the domain")
+ax_pl.set_xticks([50, 60, 70, 80, 90, 100])
+O2 = "fig1_option2_domain_placement_qfo_pfam_midi"
+cvo2.fig.savefig(FIG / f"{O2}.pdf")
+save_png(cvo2.fig, FIG / f"{O2}.png")
+check_text(cvo2.fig)
+for path in (FIG / f"{O1}.pdf", FIG / f"{O2}.pdf"):
+    fonts = sorted(set(re.findall(rb"/BaseFont /([A-Za-z0-9+_-]+)", path.read_bytes())))
+    print(path.name, "fonts:", [f.decode() for f in fonts], "| TrueType:", b"/FontFile2" in path.read_bytes())
+    check(not any(b"DejaVu" in f for f in fonts), f"a DejaVu fallback font is in {path.name}")
+''')
+
+
+md(r"""
+### 11c. Captions for the two options
+
+Formatted from the variables above, like the Figure 1 caption, and saved next to each figure.
+""")
+
+code(r'''
+f1 = {a: frontier.filter((pl.col("alphabet") == a) & (pl.col("k") == k_one[a])).row(0, named=True) for a in FR_ALPHABETS}
+id_hi = {a: reach_id.filter((pl.col("alphabet") == a) & (pl.col("identity_bin") == ">60%"))["pfam_reach"].item() for a in FR_ALPHABETS}
+lo_max = reach_id.filter(pl.col("identity_bin").is_in(["≤20%", "20-30%"]))["pfam_reach"].max()
+pilot_txt = (f" This draft uses a {n_fr_queries}-query pilot; the 300-query run is on Sherlock." if is_pilot else "")
+order_txt = ", ".join(f"{a} {pct(f1[a]['pfam_reach'])} (k = {k_one[a]})" for a in sorted(FR_ALPHABETS, key=lambda a: -f1[a]["pfam_reach"]))
+captionO1 = f"""**Figure 1, option 1 | At the same number of chance hits, exact amino-acid seeds reach more Pfam pairs at {bin_txt} identity than exact H/P seeds.**
+**a**, `kmerseek pair` on CED-9 (P41958) against BCL2 (P10415), {HP}, k = {K_PAIR}: {len(words)} shared {K_PAIR}-mers on one diagonal join into one region, CED-9 {ced9_r[0]}–{ced9_r[1]} with BCL2 {bcl2_r[0]}–{bcl2_r[1]}, {pair_identical} of {region_len} residues identical and {pair_same} of {region_len} in the same class (h, hydrophobic {H_RES}; p, polar {P_RES}). Purple bars: the region on each protein; white boxes: UniProt BH1 motifs (2026_03).
+**b**, Each point is one k for one alphabet. x: human proteins (GENCODE v49 canonical, {N_HUMAN:,}) that share at least one exact k-mer with a shuffled human protein (same length and composition), mean over {n_fr_queries} random queries; every such protein is a chance hit. y: share of the {n_pairs:,} Pfam-A 38.2 seed pairs at {bin_txt} identity whose alignment holds a run of k aligned positions in the same letter of the alphabet, which is a shared k-mer on the pair's own diagonal. Both axes are spaced by ratio. Filled markers: k values kmerseek tests for that alphabet (PR 101). Points with no chance hit or no pair reached are not drawn. At about 1 chance protein per query (dashed line; the labelled k is the smallest with a mean of at most 1), the share reached is {order_txt}.{pilot_txt}
+**c**, At that k for each alphabet, the share of Pfam pairs sharing a seed by identity (each bin includes its upper edge). At 30% identity or less no alphabet reaches more than {pct(lo_max)} of pairs; above 60% identity protein20 reaches {pct(id_hi['protein20'])} and {HP} {pct(id_hi[HP])}. The Pfam seed alignments are built by profile HMMs from amino-acid similarity, which may favour amino-acid runs over H/P runs.
+"""
+km_s = {c: o2_val(KM, "feature_length_bin", "16-30", c) for c in ("fmax", "recall", "precision")}
+f_len = lambda a, s: o2_val(a, "feature_length_bin", s)
+f_dis = lambda a, s: o2_val(a, "disorder", s)
+f_pl = lambda a, s: o2_val(a, "plddt", s)
+PH, HH, MM, FS = "hmmer3_phmmer.default", "hhblits.single_seq", "mmseqs2_seqseq.s7", "foldseek.3di_aa"
+captionO2 = f"""**Figure 1, option 2 | kmerseek places domains under 30 residues about as well as sequence aligners and three times as well as Foldseek, and falls behind every tool as domains get longer.**
+**a**, as in option 1.
+**b–d**, QfO Pfam-region benchmark, midi run: {RUN_O2_QUERIES} human chromosome 6 proteins searched against 9 proteomes (mouse, chicken, zebrafish, *Ciona*, fly, worm, yeast, *Arabidopsis*, *E. coli*). A call is right when it carries the true Pfam-A family and overlaps the true domain with an intersection over union of at least 0.5; a domain counts only in a proteome that has its family. Fmax is the best F1 over each tool's score thresholds. Lines: mean over the 9 proteomes; vertical lines: range over the proteomes. kmerseek is {HP} with the low-complexity mask, k = {K_O2}, the k with the highest Fmax over all domains on this benchmark, chosen after the fact; thin purple lines are k = {KM_KS[0]}–{KM_KS[-1]}. **b**, By domain length, drawn at the median length of each bin (16–30, 31–60, 61–120, 121–250, ≥251 aa). At 16–30 aa ({n_reach_len['16-30']:,} domain instances over the 9 proteomes), Fmax is {km_s['fmax']:.3f} for kmerseek, {f_len(PH, '16-30'):.3f} phmmer, {f_len(MM, '16-30'):.3f} MMseqs2, {f_len(HH, '16-30'):.3f} HHblits and {f_len(FS, '16-30'):.3f} Foldseek; at ≥251 aa it is {f_len(KM, '251+'):.3f} for kmerseek and {min(f_len(a, '251+') for a in (PH, HH, MM, FS)):.3f}–{max(f_len(a, '251+') for a in (PH, HH, MM, FS)):.3f} for the others. **c**, By the share of the protein predicted disordered: Foldseek falls from {f_dis(FS, '0.0-0.1'):.2f} to {f_dis(FS, '0.6-1.01'):.2f}, phmmer from {f_dis(PH, '0.0-0.1'):.2f} to {f_dis(PH, '0.6-1.01'):.2f}, kmerseek stays at {min(f_dis(KM, s) for s in O2_AXES['disorder']):.2f}–{max(f_dis(KM, s) for s in O2_AXES['disorder']):.2f}. **d**, By the AlphaFold confidence (pLDDT) of the domain: every other tool rises with pLDDT; kmerseek stays at {min(f_pl(KM, s) for s in O2_AXES['plddt']):.2f}–{max(f_pl(KM, s) for s in O2_AXES['plddt']):.2f}. Disorder and pLDDT bins also differ in domain length (median {o2_val(PH, 'disorder', '0.0-0.1', 'median_len'):.0f} aa in the least disordered bin, {o2_val(PH, 'disorder', '0.6-1.01', 'median_len'):.0f} aa in the most; {o2_val(PH, 'plddt', '50-70', 'median_len'):.0f} aa at pLDDT 50–70, {o2_val(PH, 'plddt', '90-100', 'median_len'):.0f} aa at 90–100), so part of c and d is the length effect of b.
+"""
+(FIG / f"{O1}_caption.md").write_text(captionO1)
+(FIG / f"{O2}_caption.md").write_text(captionO2)
+print(captionO1)
+print(captionO2)
+''')
+md(r"""
 ## Summary and conclusions
 
 The numbers below are printed by the cells above and saved in `figures/fig1_values.json`; the
@@ -1289,6 +1656,15 @@ and `figures/fig3_draft_hp_run_length_caption.md` are formatted from the same va
    CED-9; at k = 18, 10.0% and 5,597.
 5. The helix, strand and coil split was not made: the Pfam-A 38.2 seed has no secondary-structure
    lines (section 7).
+6. Option 1 (section 11a, 30-query pilot): at about one chance protein per query, exact seeds reach
+   1.0% of the Pfam pairs at 20-30% identity in protein20 (k = 9), 0.42% in dayhoff6 (k = 18),
+   0.18% in hp_lehninger2 (k = 32) and 0.059% in hp_thomas_dill2 (k = 39). On this measure the
+   H/P alphabets reach fewer homologs per chance hit than the amino-acid alphabets, at every k.
+   The Pfam seed alignments come from amino-acid profile HMMs, which may favour amino-acid runs.
+7. Option 2 (section 11b, midi run): on domains of 16-30 residues kmerseek hp_lehninger2 k = 29
+   has Fmax 0.054, close to phmmer (0.056) and MMseqs2 (0.050), below HHblits (0.074) and three
+   times Foldseek (0.018). On domains of 251 residues or more it has 0.041 against 0.375-0.407.
+   k = 29 was chosen as the best k on the same data.
 """)
 
 nb = {
