@@ -37,7 +37,7 @@ PY=$HOME/venvs/nb283/bin/python
 for f in "$NB241_KMERSEEK" "$NB241_HUMAN" "$NB241_DIR/queries.fa" "$NB241_DIR/null_bhf_dipeptide/arms.json" "$PY"; do
     [ -s "$f" ] || { echo "288: missing input $f" >&2; exit 2; }
 done
-echo "d0774e68fbf8aa38cc4c2bfbfe6280df  $NB241_HUMAN" | md5sum -c -
+echo "e68d27427d1b119d9ca1999803fa20e9  $NB241_HUMAN" | md5sum -c -
 "$NB241_KMERSEEK" --version
 (cd "$REPO" && git log -1 --format='288 code: %h %s')  # Sherlock's git 1.8 has no -C
 

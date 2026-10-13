@@ -47,7 +47,7 @@ Paths come from the environment:
   NB241_KMERSEEK  kmerseek 982a055 binary
   NB241_DIR       notebook 241's run folder: queries.fa, search/, ka_survival/, and
                   null_bhf_dipeptide/arms.json (notebook 256's copy of 241's 152 settings)
-  NB241_HUMAN     GENCODE v49 canonical translations (md5 d0774e68fbf8aa38cc4c2bfbfe6280df)
+  NB241_HUMAN     GENCODE v49 canonical translations (md5 e68d27427d1b119d9ca1999803fa20e9)
 
 Usage: 288_two_step_search.py pairwise|indexes|search|twostep [--workers 8]
 """
