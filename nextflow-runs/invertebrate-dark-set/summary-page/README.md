@@ -45,6 +45,30 @@ All heavy steps ran on Sherlock in jobs; only `dark_summary_data.json` came to t
    writes `dark_set_summary.html` (not committed: it is this JSON plus `template.html`
    and `fonts.css`, 5 MB).
 
+## Panel 4: are the hits right (added 2026-10-13)
+
+Each source's best hit (smallest E-value) per protein is checked against known Pfam
+families: the query's from Pfam's annotation of UniProt
+(`qfo-pfam-region-benchmark/data/annotations/<species>_pfam_domains.parquet`; for
+*Borrelia*, UniProt's Pfam cross-references from
+`tools/dark-set-accuracy query-pfam-uniprot UP000001807`), the target's from the DR Pfam
+lines of its Swiss-Prot entry (`reference/minus_<clade>/reference_pfam.parquet`). Right =
+shared family or Pfam clan (`Pfam-A.clans.tsv.gz`); wrong = target has Pfam families, none
+in the query's clan; targets without Pfam are counted apart. *Botryllus* has no Pfam
+annotation and is left out.
+
+1. kmerseek best target per protein, one array task per region file:
+
+       TOOLS_DIR=<tools dir> sbatch --export=ALL --array=1-N --time=01:15:00 --mem=2G \
+         tools/dark-set-accuracy-sbatch best-targets <file list>
+
+   1.36 GB of region file took 40 s and 14 MB (job 47672502). Job 47672974 ran the best
+   setting per species (26 files, 75 GB).
+
+2. Scoring, all sources and species: `sbatch tools/dark-set-accuracy-sbatch score`
+   (job 47672617 for the sequence tools). Output `accuracy/<species>_accuracy.json`, copied
+   to `summary-page/accuracy/`; `build.py` puts them into the page.
+
 ## Checks
 
 * Every count the pipeline's own gain tables hold (`<species>_kmerseek_dark_gain.parquet`,
