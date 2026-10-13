@@ -118,14 +118,14 @@ score-partial:
 # peaked at 20 GB (sacct, job 47672527).
 MMSEQS_IMG = $(SCRATCH)/apptainer-cache/quay.io-biocontainers-mmseqs2@sha256-3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef.img
 mmseqs-one-round:
-	$(SB) --job-name=280-mmseqs-one-round --cpus-per-task=16 --mem=48G --time=2:00:00 \
+	$(SB) --job-name=280-mmseqs-one-round --cpus-per-task=4 --mem=32G --time=2:00:00 \
 	  --wrap 'set -euo pipefail; R=$(RUN_DIR)/results-pilot; W=$$R/mmseqs2-one-round; command rm -rf $$W; mkdir -p $$W/tmp; \
 	  awk -F"\t" "NR>1 && !(\$$6==\"sample\" && \$$5==\"test\") {print \$$1}" $(RUN_DIR)/inputs/pilot/queries.tsv > $$W/names.txt; \
 	  awk "NR==FNR{k[\$$1]=1; next} /^>/{p=(substr(\$$1,2) in k)} p" $$W/names.txt $(RUN_DIR)/inputs/pilot/queries.fasta > $$W/queries.fasta; \
 	  echo "queries: $$(grep -c ">" $$W/queries.fasta) of $$(wc -l < $$W/names.txt) wanted"; \
 	  M="apptainer exec --bind /scratch $(MMSEQS_IMG) mmseqs"; cd $$W/tmp; \
 	  $$M createdb $$W/queries.fasta qdb > /dev/null; $$M createdb $(RUN_DIR)/inputs/reference/reference.fasta tdb > /dev/null; \
-	  $$M search qdb tdb res tmp -s 7 --num-iterations 1 -e 10.0 --threads 16 > search.log; \
+	  $$M search qdb tdb res tmp -s 7 --num-iterations 1 -e 10.0 --threads 4 > search.log; \
 	  $$M convertalis qdb tdb res out.tsv --format-output "query,target,qstart,qend,tstart,tend,pident,bits,evalue" > /dev/null; \
 	  gzip -c out.tsv > $$W/chunk.mmseqs2.tsv.gz; cd $$W; command rm -rf tmp; \
 	  O=$$R/scores-partial-mmseqs-one-round; command rm -rf $$O; mkdir -p $$O; \
