@@ -361,6 +361,10 @@ def pr_longest_run_at_least(
         for n in range(k + 1, n_max + 1):
             q[n] = q[n - 1] - (1 - p) * pk * q[n - k - 1]
         log_none = np.zeros(n_pairs)
-        np.add.at(log_none, pair_idx, count * np.log(np.clip(q[length, pair_idx], 1e-300, 1.0)))
+        np.add.at(
+            log_none,
+            pair_idx,
+            count * np.log(np.clip(q[length, pair_idx], 1e-300, 1.0)),
+        )
         out[ki] = 1 - np.exp(log_none)
     return out
