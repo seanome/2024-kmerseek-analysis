@@ -1,0 +1,1261 @@
+target,term_id,term_name,tool_label,n_passing,median_iou_passing,n_regions,n_landed,median_iou_landed,frac_landed,frac_passing
+disprot,GO:0001223,transcription coactivator binding,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0001223,transcription coactivator binding,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0001223,transcription coactivator binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0001223,transcription coactivator binding,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0001223,transcription coactivator binding,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0001223,transcription coactivator binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0001223,transcription coactivator binding,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0001933,negative regulation of protein phosphorylation,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0001933,negative regulation of protein phosphorylation,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0001933,negative regulation of protein phosphorylation,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0001933,negative regulation of protein phosphorylation,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0001933,negative regulation of protein phosphorylation,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0001933,negative regulation of protein phosphorylation,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0001933,negative regulation of protein phosphorylation,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0001934,positive regulation of protein phosphorylation,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0001934,positive regulation of protein phosphorylation,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0001934,positive regulation of protein phosphorylation,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0001934,positive regulation of protein phosphorylation,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0001934,positive regulation of protein phosphorylation,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0001934,positive regulation of protein phosphorylation,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0001934,positive regulation of protein phosphorylation,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0002039,p53 binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0002039,p53 binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0002039,p53 binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0002039,p53 binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0002039,p53 binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0002039,p53 binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0002039,p53 binding,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0003676,nucleic acid binding,Foldseek,0,,10,2,0.6805180787911494,0.2,0.0
+disprot,GO:0003676,nucleic acid binding,MMseqs2,0,,10,0,,0.0,0.0
+disprot,GO:0003676,nucleic acid binding,MMseqs2 iterative,0,,10,0,,0.0,0.0
+disprot,GO:0003676,nucleic acid binding,Reseek,0,,10,3,1.0,0.3,0.0
+disprot,GO:0003676,nucleic acid binding,jackhmmer,0,,10,3,0.6422018348623854,0.3,0.0
+disprot,GO:0003676,nucleic acid binding,"kmerseek, arm picked per term",0,,10,0,,0.0,0.0
+disprot,GO:0003676,nucleic acid binding,phmmer,0,,10,4,0.5913711877014629,0.4,0.0
+disprot,GO:0003677,DNA binding,Foldseek,0,,15,1,0.5932203389830508,0.06666666666666667,0.0
+disprot,GO:0003677,DNA binding,MMseqs2,0,,15,0,,0.0,0.0
+disprot,GO:0003677,DNA binding,MMseqs2 iterative,0,,15,0,,0.0,0.0
+disprot,GO:0003677,DNA binding,Reseek,0,,15,3,0.9354838709677419,0.2,0.0
+disprot,GO:0003677,DNA binding,jackhmmer,0,,15,6,0.7515986227250369,0.4,0.0
+disprot,GO:0003677,DNA binding,"kmerseek, arm picked per term",0,,15,1,0.4942528735632184,0.06666666666666667,0.0
+disprot,GO:0003677,DNA binding,phmmer,0,,15,6,0.7192431438639497,0.4,0.0
+disprot,GO:0003713,transcription coactivator activity,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0003713,transcription coactivator activity,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0003713,transcription coactivator activity,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0003713,transcription coactivator activity,Reseek,0,,2,1,0.8785046728971962,0.5,0.0
+disprot,GO:0003713,transcription coactivator activity,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0003713,transcription coactivator activity,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0003713,transcription coactivator activity,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0003723,RNA binding,Foldseek,0,,6,1,0.9158878504672897,0.16666666666666666,0.0
+disprot,GO:0003723,RNA binding,MMseqs2,0,,6,0,,0.0,0.0
+disprot,GO:0003723,RNA binding,MMseqs2 iterative,0,,6,1,0.38317757009345793,0.16666666666666666,0.0
+disprot,GO:0003723,RNA binding,Reseek,0,,6,3,0.8958333333333334,0.5,0.0
+disprot,GO:0003723,RNA binding,jackhmmer,0,,6,1,0.40186915887850466,0.16666666666666666,0.0
+disprot,GO:0003723,RNA binding,"kmerseek, arm picked per term",0,,6,1,0.9906542056074766,0.16666666666666666,0.0
+disprot,GO:0003723,RNA binding,phmmer,0,,6,1,0.40186915887850466,0.16666666666666666,0.0
+disprot,GO:0003727,single-stranded RNA binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0003727,single-stranded RNA binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0003727,single-stranded RNA binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0003727,single-stranded RNA binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0003727,single-stranded RNA binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0003727,single-stranded RNA binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0003727,single-stranded RNA binding,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0003729,mRNA binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0003729,mRNA binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0003729,mRNA binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0003729,mRNA binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0003729,mRNA binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0003729,mRNA binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0003729,mRNA binding,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0004864,protein phosphatase inhibitor activity,Foldseek,0,,3,0,,0.0,0.0
+disprot,GO:0004864,protein phosphatase inhibitor activity,MMseqs2,0,,3,0,,0.0,0.0
+disprot,GO:0004864,protein phosphatase inhibitor activity,MMseqs2 iterative,0,,3,0,,0.0,0.0
+disprot,GO:0004864,protein phosphatase inhibitor activity,Reseek,0,,3,0,,0.0,0.0
+disprot,GO:0004864,protein phosphatase inhibitor activity,jackhmmer,0,,3,0,,0.0,0.0
+disprot,GO:0004864,protein phosphatase inhibitor activity,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+disprot,GO:0004864,protein phosphatase inhibitor activity,phmmer,0,,3,0,,0.0,0.0
+disprot,GO:0005049,nuclear export signal receptor activity,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0005049,nuclear export signal receptor activity,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0005049,nuclear export signal receptor activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0005049,nuclear export signal receptor activity,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0005049,nuclear export signal receptor activity,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0005049,nuclear export signal receptor activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0005049,nuclear export signal receptor activity,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0005161,platelet-derived growth factor receptor binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0005161,platelet-derived growth factor receptor binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0005161,platelet-derived growth factor receptor binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0005161,platelet-derived growth factor receptor binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0005161,platelet-derived growth factor receptor binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0005161,platelet-derived growth factor receptor binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0005161,platelet-derived growth factor receptor binding,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0005506,iron ion binding,Foldseek,0,,3,0,,0.0,0.0
+disprot,GO:0005506,iron ion binding,MMseqs2,0,,3,0,,0.0,0.0
+disprot,GO:0005506,iron ion binding,MMseqs2 iterative,0,,3,0,,0.0,0.0
+disprot,GO:0005506,iron ion binding,Reseek,0,,3,0,,0.0,0.0
+disprot,GO:0005506,iron ion binding,jackhmmer,0,,3,0,,0.0,0.0
+disprot,GO:0005506,iron ion binding,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+disprot,GO:0005506,iron ion binding,phmmer,0,,3,0,,0.0,0.0
+disprot,GO:0005509,calcium ion binding,Foldseek,0,,11,1,0.5382165605095541,0.09090909090909091,0.0
+disprot,GO:0005509,calcium ion binding,MMseqs2,0,,11,0,,0.0,0.0
+disprot,GO:0005509,calcium ion binding,MMseqs2 iterative,0,,11,0,,0.0,0.0
+disprot,GO:0005509,calcium ion binding,Reseek,0,,11,3,0.9591836734693877,0.2727272727272727,0.0
+disprot,GO:0005509,calcium ion binding,jackhmmer,0,,11,2,0.39695945945945943,0.18181818181818182,0.0
+disprot,GO:0005509,calcium ion binding,"kmerseek, arm picked per term",0,,11,1,0.48986486486486486,0.09090909090909091,0.0
+disprot,GO:0005509,calcium ion binding,phmmer,0,,11,2,0.39695945945945943,0.18181818181818182,0.0
+disprot,GO:0005515,protein binding,Foldseek,3,0.92,206,94,0.8973684210526316,0.4563106796116505,0.014563106796116505
+disprot,GO:0005515,protein binding,MMseqs2,0,,206,8,0.6559139784946236,0.038834951456310676,0.0
+disprot,GO:0005515,protein binding,MMseqs2 iterative,0,,206,13,0.5102040816326531,0.06310679611650485,0.0
+disprot,GO:0005515,protein binding,Reseek,2,0.6539961013645224,206,107,0.9411764705882353,0.5194174757281553,0.009708737864077669
+disprot,GO:0005515,protein binding,jackhmmer,2,0.5500483558994198,206,120,0.63577902988731,0.5825242718446602,0.009708737864077669
+disprot,GO:0005515,protein binding,"kmerseek, arm picked per term",1,0.6811594202898551,206,36,0.6019946362722092,0.17475728155339806,0.0048543689320388345
+disprot,GO:0005515,protein binding,phmmer,6,0.6319229065130705,206,124,0.6569728461280591,0.6019417475728155,0.02912621359223301
+disprot,GO:0005516,calmodulin binding,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0005516,calmodulin binding,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0005516,calmodulin binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0005516,calmodulin binding,Reseek,0,,2,1,1.0,0.5,0.0
+disprot,GO:0005516,calmodulin binding,jackhmmer,0,,2,1,0.9162995594713657,0.5,0.0
+disprot,GO:0005516,calmodulin binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0005516,calmodulin binding,phmmer,0,,2,1,0.9162995594713657,0.5,0.0
+disprot,GO:0005654,nucleoplasm,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0005654,nucleoplasm,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0005654,nucleoplasm,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0005654,nucleoplasm,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0005654,nucleoplasm,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0005654,nucleoplasm,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0005654,nucleoplasm,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0008013,beta-catenin binding,Foldseek,0,,3,0,,0.0,0.0
+disprot,GO:0008013,beta-catenin binding,MMseqs2,0,,3,0,,0.0,0.0
+disprot,GO:0008013,beta-catenin binding,MMseqs2 iterative,0,,3,0,,0.0,0.0
+disprot,GO:0008013,beta-catenin binding,Reseek,0,,3,0,,0.0,0.0
+disprot,GO:0008013,beta-catenin binding,jackhmmer,0,,3,0,,0.0,0.0
+disprot,GO:0008013,beta-catenin binding,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+disprot,GO:0008013,beta-catenin binding,phmmer,0,,3,0,,0.0,0.0
+disprot,GO:0008270,zinc ion binding,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0008270,zinc ion binding,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0008270,zinc ion binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0008270,zinc ion binding,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0008270,zinc ion binding,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0008270,zinc ion binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0008270,zinc ion binding,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0008285,negative regulation of cell population proliferation,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0008285,negative regulation of cell population proliferation,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0008285,negative regulation of cell population proliferation,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0008285,negative regulation of cell population proliferation,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0008285,negative regulation of cell population proliferation,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0008285,negative regulation of cell population proliferation,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0008285,negative regulation of cell population proliferation,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0008289,lipid binding,Foldseek,0,,11,5,0.8363636363636363,0.45454545454545453,0.0
+disprot,GO:0008289,lipid binding,MMseqs2,0,,11,0,,0.0,0.0
+disprot,GO:0008289,lipid binding,MMseqs2 iterative,0,,11,0,,0.0,0.0
+disprot,GO:0008289,lipid binding,Reseek,0,,11,6,0.8823103725542749,0.5454545454545454,0.0
+disprot,GO:0008289,lipid binding,jackhmmer,0,,11,2,0.5009920634920635,0.18181818181818182,0.0
+disprot,GO:0008289,lipid binding,"kmerseek, arm picked per term",0,,11,0,,0.0,0.0
+disprot,GO:0008289,lipid binding,phmmer,0,,11,4,0.5009920634920635,0.36363636363636365,0.0
+disprot,GO:0008301,"DNA binding, bending",Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0008301,"DNA binding, bending",MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0008301,"DNA binding, bending",MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0008301,"DNA binding, bending",Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0008301,"DNA binding, bending",jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0008301,"DNA binding, bending","kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0008301,"DNA binding, bending",phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0019843,rRNA binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0019843,rRNA binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0019843,rRNA binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0019843,rRNA binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0019843,rRNA binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0019843,rRNA binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0019843,rRNA binding,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0019902,phosphatase binding,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0019902,phosphatase binding,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0019902,phosphatase binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0019902,phosphatase binding,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0019902,phosphatase binding,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0019902,phosphatase binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0019902,phosphatase binding,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0030246,carbohydrate binding,Foldseek,0,,3,0,,0.0,0.0
+disprot,GO:0030246,carbohydrate binding,MMseqs2,0,,3,0,,0.0,0.0
+disprot,GO:0030246,carbohydrate binding,MMseqs2 iterative,0,,3,0,,0.0,0.0
+disprot,GO:0030246,carbohydrate binding,Reseek,0,,3,0,,0.0,0.0
+disprot,GO:0030246,carbohydrate binding,jackhmmer,0,,3,0,,0.0,0.0
+disprot,GO:0030246,carbohydrate binding,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+disprot,GO:0030246,carbohydrate binding,phmmer,0,,3,0,,0.0,0.0
+disprot,GO:0030308,negative regulation of cell growth,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0030308,negative regulation of cell growth,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0030308,negative regulation of cell growth,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0030308,negative regulation of cell growth,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0030308,negative regulation of cell growth,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0030308,negative regulation of cell growth,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0030308,negative regulation of cell growth,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0030346,protein phosphatase 2B binding,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0030346,protein phosphatase 2B binding,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0030346,protein phosphatase 2B binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0030346,protein phosphatase 2B binding,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0030346,protein phosphatase 2B binding,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0030346,protein phosphatase 2B binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0030346,protein phosphatase 2B binding,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0031491,nucleosome binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0031491,nucleosome binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0031491,nucleosome binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0031491,nucleosome binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0031491,nucleosome binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0031491,nucleosome binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0031491,nucleosome binding,phmmer,0,,1,1,0.40425531914893614,1.0,0.0
+disprot,GO:0031625,ubiquitin protein ligase binding,Foldseek,0,,7,0,,0.0,0.0
+disprot,GO:0031625,ubiquitin protein ligase binding,MMseqs2,0,,7,0,,0.0,0.0
+disprot,GO:0031625,ubiquitin protein ligase binding,MMseqs2 iterative,0,,7,0,,0.0,0.0
+disprot,GO:0031625,ubiquitin protein ligase binding,Reseek,0,,7,0,,0.0,0.0
+disprot,GO:0031625,ubiquitin protein ligase binding,jackhmmer,0,,7,0,,0.0,0.0
+disprot,GO:0031625,ubiquitin protein ligase binding,"kmerseek, arm picked per term",0,,7,0,,0.0,0.0
+disprot,GO:0031625,ubiquitin protein ligase binding,phmmer,0,,7,0,,0.0,0.0
+disprot,GO:0032091,negative regulation of protein binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0032091,negative regulation of protein binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0032091,negative regulation of protein binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0032091,negative regulation of protein binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0032091,negative regulation of protein binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0032091,negative regulation of protein binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0032091,negative regulation of protein binding,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0032879,regulation of localization,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0032879,regulation of localization,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0032879,regulation of localization,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0032879,regulation of localization,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0032879,regulation of localization,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0032879,regulation of localization,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0032879,regulation of localization,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0035145,exon-exon junction complex,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0035145,exon-exon junction complex,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0035145,exon-exon junction complex,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0035145,exon-exon junction complex,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0035145,exon-exon junction complex,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0035145,exon-exon junction complex,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0035145,exon-exon junction complex,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0036094,small molecule binding,Foldseek,0,,6,1,0.8333333333333334,0.16666666666666666,0.0
+disprot,GO:0036094,small molecule binding,MMseqs2,0,,6,0,,0.0,0.0
+disprot,GO:0036094,small molecule binding,MMseqs2 iterative,0,,6,0,,0.0,0.0
+disprot,GO:0036094,small molecule binding,Reseek,0,,6,2,0.9024597936947223,0.3333333333333333,0.0
+disprot,GO:0036094,small molecule binding,jackhmmer,0,,6,1,0.3125,0.16666666666666666,0.0
+disprot,GO:0036094,small molecule binding,"kmerseek, arm picked per term",0,,6,0,,0.0,0.0
+disprot,GO:0036094,small molecule binding,phmmer,0,,6,0,,0.0,0.0
+disprot,GO:0042393,histone binding,Foldseek,0,,3,0,,0.0,0.0
+disprot,GO:0042393,histone binding,MMseqs2,0,,3,0,,0.0,0.0
+disprot,GO:0042393,histone binding,MMseqs2 iterative,0,,3,0,,0.0,0.0
+disprot,GO:0042393,histone binding,Reseek,0,,3,0,,0.0,0.0
+disprot,GO:0042393,histone binding,jackhmmer,0,,3,0,,0.0,0.0
+disprot,GO:0042393,histone binding,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+disprot,GO:0042393,histone binding,phmmer,0,,3,0,,0.0,0.0
+disprot,GO:0042803,protein homodimerization activity,Foldseek,0,,6,0,,0.0,0.0
+disprot,GO:0042803,protein homodimerization activity,MMseqs2,0,,6,0,,0.0,0.0
+disprot,GO:0042803,protein homodimerization activity,MMseqs2 iterative,0,,6,0,,0.0,0.0
+disprot,GO:0042803,protein homodimerization activity,Reseek,0,,6,0,,0.0,0.0
+disprot,GO:0042803,protein homodimerization activity,jackhmmer,0,,6,1,0.5384615384615384,0.16666666666666666,0.0
+disprot,GO:0042803,protein homodimerization activity,"kmerseek, arm picked per term",0,,6,1,0.5256410256410257,0.16666666666666666,0.0
+disprot,GO:0042803,protein homodimerization activity,phmmer,0,,6,1,0.5384615384615384,0.16666666666666666,0.0
+disprot,GO:0042981,regulation of apoptotic process,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0042981,regulation of apoptotic process,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0042981,regulation of apoptotic process,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0042981,regulation of apoptotic process,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0042981,regulation of apoptotic process,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0042981,regulation of apoptotic process,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0042981,regulation of apoptotic process,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0043167,ion binding,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0043167,ion binding,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0043167,ion binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0043167,ion binding,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0043167,ion binding,jackhmmer,0,,2,1,0.3,0.5,0.0
+disprot,GO:0043167,ion binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0043167,ion binding,phmmer,0,,2,1,0.3,0.5,0.0
+disprot,GO:0043232,intracellular non-membrane-bounded organelle,Foldseek,0,,3,0,,0.0,0.0
+disprot,GO:0043232,intracellular non-membrane-bounded organelle,MMseqs2,0,,3,0,,0.0,0.0
+disprot,GO:0043232,intracellular non-membrane-bounded organelle,MMseqs2 iterative,0,,3,0,,0.0,0.0
+disprot,GO:0043232,intracellular non-membrane-bounded organelle,Reseek,0,,3,0,,0.0,0.0
+disprot,GO:0043232,intracellular non-membrane-bounded organelle,jackhmmer,0,,3,0,,0.0,0.0
+disprot,GO:0043232,intracellular non-membrane-bounded organelle,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+disprot,GO:0043232,intracellular non-membrane-bounded organelle,phmmer,0,,3,2,0.4983883786647828,0.6666666666666666,0.0
+disprot,GO:0043484,regulation of RNA splicing,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0043484,regulation of RNA splicing,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0043484,regulation of RNA splicing,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0043484,regulation of RNA splicing,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0043484,regulation of RNA splicing,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0043484,regulation of RNA splicing,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0043484,regulation of RNA splicing,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0044183,protein folding chaperone,Foldseek,0,,5,1,0.5411764705882353,0.2,0.0
+disprot,GO:0044183,protein folding chaperone,MMseqs2,0,,5,0,,0.0,0.0
+disprot,GO:0044183,protein folding chaperone,MMseqs2 iterative,0,,5,0,,0.0,0.0
+disprot,GO:0044183,protein folding chaperone,Reseek,0,,5,3,0.8333333333333334,0.6,0.0
+disprot,GO:0044183,protein folding chaperone,jackhmmer,0,,5,3,0.6352941176470588,0.6,0.0
+disprot,GO:0044183,protein folding chaperone,"kmerseek, arm picked per term",0,,5,1,0.9215686274509803,0.2,0.0
+disprot,GO:0044183,protein folding chaperone,phmmer,0,,5,3,0.7352941176470589,0.6,0.0
+disprot,GO:0045893,"positive regulation of transcription, DNA-templated",Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0045893,"positive regulation of transcription, DNA-templated",MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0045893,"positive regulation of transcription, DNA-templated",MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0045893,"positive regulation of transcription, DNA-templated",Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0045893,"positive regulation of transcription, DNA-templated",jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0045893,"positive regulation of transcription, DNA-templated","kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0045893,"positive regulation of transcription, DNA-templated",phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0046872,metal ion binding,Foldseek,0,,6,0,,0.0,0.0
+disprot,GO:0046872,metal ion binding,MMseqs2,0,,6,0,,0.0,0.0
+disprot,GO:0046872,metal ion binding,MMseqs2 iterative,0,,6,0,,0.0,0.0
+disprot,GO:0046872,metal ion binding,Reseek,0,,6,0,,0.0,0.0
+disprot,GO:0046872,metal ion binding,jackhmmer,0,,6,0,,0.0,0.0
+disprot,GO:0046872,metal ion binding,"kmerseek, arm picked per term",0,,6,0,,0.0,0.0
+disprot,GO:0046872,metal ion binding,phmmer,0,,6,0,,0.0,0.0
+disprot,GO:0046983,protein dimerization activity,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0046983,protein dimerization activity,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0046983,protein dimerization activity,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0046983,protein dimerization activity,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0046983,protein dimerization activity,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0046983,protein dimerization activity,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0046983,protein dimerization activity,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0048273,mitogen-activated protein kinase p38 binding,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0048273,mitogen-activated protein kinase p38 binding,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0048273,mitogen-activated protein kinase p38 binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0048273,mitogen-activated protein kinase p38 binding,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0048273,mitogen-activated protein kinase p38 binding,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0048273,mitogen-activated protein kinase p38 binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0048273,mitogen-activated protein kinase p38 binding,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0051019,mitogen-activated protein kinase binding,Foldseek,0,,7,0,,0.0,0.0
+disprot,GO:0051019,mitogen-activated protein kinase binding,MMseqs2,0,,7,0,,0.0,0.0
+disprot,GO:0051019,mitogen-activated protein kinase binding,MMseqs2 iterative,0,,7,0,,0.0,0.0
+disprot,GO:0051019,mitogen-activated protein kinase binding,Reseek,0,,7,0,,0.0,0.0
+disprot,GO:0051019,mitogen-activated protein kinase binding,jackhmmer,0,,7,0,,0.0,0.0
+disprot,GO:0051019,mitogen-activated protein kinase binding,"kmerseek, arm picked per term",0,,7,0,,0.0,0.0
+disprot,GO:0051019,mitogen-activated protein kinase binding,phmmer,0,,7,0,,0.0,0.0
+disprot,GO:0051168,nuclear export,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0051168,nuclear export,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0051168,nuclear export,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0051168,nuclear export,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0051168,nuclear export,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051168,nuclear export,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0051168,nuclear export,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051170,import into nucleus,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0051170,import into nucleus,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0051170,import into nucleus,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0051170,import into nucleus,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0051170,import into nucleus,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051170,import into nucleus,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0051170,import into nucleus,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051179,localization,Foldseek,0,,12,3,0.40828402366863903,0.25,0.0
+disprot,GO:0051179,localization,MMseqs2,0,,12,0,,0.0,0.0
+disprot,GO:0051179,localization,MMseqs2 iterative,0,,12,0,,0.0,0.0
+disprot,GO:0051179,localization,Reseek,0,,12,4,0.7143121301775148,0.3333333333333333,0.0
+disprot,GO:0051179,localization,jackhmmer,0,,12,2,0.3951708869517089,0.16666666666666666,0.0
+disprot,GO:0051179,localization,"kmerseek, arm picked per term",0,,12,0,,0.0,0.0
+disprot,GO:0051179,localization,phmmer,0,,12,4,0.4139767237593325,0.3333333333333333,0.0
+disprot,GO:0051259,protein complex oligomerization,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0051259,protein complex oligomerization,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0051259,protein complex oligomerization,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0051259,protein complex oligomerization,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0051259,protein complex oligomerization,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051259,protein complex oligomerization,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0051259,protein complex oligomerization,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051260,protein homooligomerization,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0051260,protein homooligomerization,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0051260,protein homooligomerization,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0051260,protein homooligomerization,Reseek,0,,1,1,0.8810572687224669,1.0,0.0
+disprot,GO:0051260,protein homooligomerization,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051260,protein homooligomerization,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0051260,protein homooligomerization,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051721,protein phosphatase 2A binding,Foldseek,0,,9,0,,0.0,0.0
+disprot,GO:0051721,protein phosphatase 2A binding,MMseqs2,0,,9,0,,0.0,0.0
+disprot,GO:0051721,protein phosphatase 2A binding,MMseqs2 iterative,0,,9,0,,0.0,0.0
+disprot,GO:0051721,protein phosphatase 2A binding,Reseek,0,,9,0,,0.0,0.0
+disprot,GO:0051721,protein phosphatase 2A binding,jackhmmer,0,,9,0,,0.0,0.0
+disprot,GO:0051721,protein phosphatase 2A binding,"kmerseek, arm picked per term",0,,9,0,,0.0,0.0
+disprot,GO:0051721,protein phosphatase 2A binding,phmmer,0,,9,0,,0.0,0.0
+disprot,GO:0051726,regulation of cell cycle,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0051726,regulation of cell cycle,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0051726,regulation of cell cycle,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0051726,regulation of cell cycle,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0051726,regulation of cell cycle,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0051726,regulation of cell cycle,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0051726,regulation of cell cycle,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0060090,molecular adaptor activity,Foldseek,1,0.9746835443037974,30,14,0.8189560439560439,0.4666666666666667,0.03333333333333333
+disprot,GO:0060090,molecular adaptor activity,MMseqs2,0,,30,0,,0.0,0.0
+disprot,GO:0060090,molecular adaptor activity,MMseqs2 iterative,0,,30,1,0.656934306569343,0.03333333333333333,0.0
+disprot,GO:0060090,molecular adaptor activity,Reseek,0,,30,17,0.8703703703703703,0.5666666666666667,0.0
+disprot,GO:0060090,molecular adaptor activity,jackhmmer,2,0.8446915351506457,30,17,0.5357142857142857,0.5666666666666667,0.06666666666666667
+disprot,GO:0060090,molecular adaptor activity,"kmerseek, arm picked per term",1,0.975609756097561,30,4,0.5341813776393216,0.13333333333333333,0.03333333333333333
+disprot,GO:0060090,molecular adaptor activity,phmmer,1,0.8658536585365854,30,19,0.45535714285714285,0.6333333333333333,0.03333333333333333
+disprot,GO:0061912,selective autophagy,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0061912,selective autophagy,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0061912,selective autophagy,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0061912,selective autophagy,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0061912,selective autophagy,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0061912,selective autophagy,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0061912,selective autophagy,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0070403,NAD+ binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0070403,NAD+ binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0070403,NAD+ binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0070403,NAD+ binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0070403,NAD+ binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0070403,NAD+ binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0070403,NAD+ binding,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0070557,PCNA-p21 complex,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0070557,PCNA-p21 complex,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0070557,PCNA-p21 complex,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0070557,PCNA-p21 complex,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0070557,PCNA-p21 complex,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0070557,PCNA-p21 complex,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0070557,PCNA-p21 complex,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0071889,14-3-3 protein binding,Foldseek,0,,11,0,,0.0,0.0
+disprot,GO:0071889,14-3-3 protein binding,MMseqs2,0,,11,0,,0.0,0.0
+disprot,GO:0071889,14-3-3 protein binding,MMseqs2 iterative,0,,11,0,,0.0,0.0
+disprot,GO:0071889,14-3-3 protein binding,Reseek,0,,11,0,,0.0,0.0
+disprot,GO:0071889,14-3-3 protein binding,jackhmmer,0,,11,0,,0.0,0.0
+disprot,GO:0071889,14-3-3 protein binding,"kmerseek, arm picked per term",0,,11,0,,0.0,0.0
+disprot,GO:0071889,14-3-3 protein binding,phmmer,0,,11,0,,0.0,0.0
+disprot,GO:0097435,supramolecular fiber organization,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0097435,supramolecular fiber organization,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0097435,supramolecular fiber organization,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0097435,supramolecular fiber organization,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0097435,supramolecular fiber organization,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0097435,supramolecular fiber organization,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0097435,supramolecular fiber organization,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0098772,molecular function regulator,Foldseek,0,,28,5,0.8310344827586207,0.17857142857142858,0.0
+disprot,GO:0098772,molecular function regulator,MMseqs2,0,,28,0,,0.0,0.0
+disprot,GO:0098772,molecular function regulator,MMseqs2 iterative,0,,28,0,,0.0,0.0
+disprot,GO:0098772,molecular function regulator,Reseek,0,,28,5,0.965,0.17857142857142858,0.0
+disprot,GO:0098772,molecular function regulator,jackhmmer,0,,28,6,0.4267213114754098,0.21428571428571427,0.0
+disprot,GO:0098772,molecular function regulator,"kmerseek, arm picked per term",1,0.8823529411764706,28,2,0.8100289296046288,0.07142857142857142,0.03571428571428571
+disprot,GO:0098772,molecular function regulator,phmmer,0,,28,5,0.46,0.17857142857142858,0.0
+disprot,GO:0120283,protein serine/threonine kinase binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0120283,protein serine/threonine kinase binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0120283,protein serine/threonine kinase binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0120283,protein serine/threonine kinase binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0120283,protein serine/threonine kinase binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0120283,protein serine/threonine kinase binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0120283,protein serine/threonine kinase binding,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0140311,protein sequestering activity,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0140311,protein sequestering activity,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0140311,protein sequestering activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0140311,protein sequestering activity,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0140311,protein sequestering activity,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0140311,protein sequestering activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0140311,protein sequestering activity,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0140313,molecular sequestering activity,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0140313,molecular sequestering activity,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0140313,molecular sequestering activity,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0140313,molecular sequestering activity,Reseek,0,,2,1,1.0,0.5,0.0
+disprot,GO:0140313,molecular sequestering activity,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0140313,molecular sequestering activity,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0140313,molecular sequestering activity,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0140314,calcium ion sequestering activity,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:0140314,calcium ion sequestering activity,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:0140314,calcium ion sequestering activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:0140314,calcium ion sequestering activity,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:0140314,calcium ion sequestering activity,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:0140314,calcium ion sequestering activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:0140314,calcium ion sequestering activity,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:0140486,zinc ion sequestering activity,Foldseek,0,,2,0,,0.0,0.0
+disprot,GO:0140486,zinc ion sequestering activity,MMseqs2,0,,2,0,,0.0,0.0
+disprot,GO:0140486,zinc ion sequestering activity,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,GO:0140486,zinc ion sequestering activity,Reseek,0,,2,0,,0.0,0.0
+disprot,GO:0140486,zinc ion sequestering activity,jackhmmer,0,,2,0,,0.0,0.0
+disprot,GO:0140486,zinc ion sequestering activity,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,GO:0140486,zinc ion sequestering activity,phmmer,0,,2,0,,0.0,0.0
+disprot,GO:0140677,molecular function activator activity,Foldseek,0,,12,3,0.6542056074766355,0.25,0.0
+disprot,GO:0140677,molecular function activator activity,MMseqs2,0,,12,0,,0.0,0.0
+disprot,GO:0140677,molecular function activator activity,MMseqs2 iterative,0,,12,0,,0.0,0.0
+disprot,GO:0140677,molecular function activator activity,Reseek,0,,12,3,0.926829268292683,0.25,0.0
+disprot,GO:0140677,molecular function activator activity,jackhmmer,0,,12,1,0.45098039215686275,0.08333333333333333,0.0
+disprot,GO:0140677,molecular function activator activity,"kmerseek, arm picked per term",0,,12,2,0.6171090387374462,0.16666666666666666,0.0
+disprot,GO:0140677,molecular function activator activity,phmmer,0,,12,1,0.8888888888888888,0.08333333333333333,0.0
+disprot,GO:0140678,molecular function inhibitor activity,Foldseek,0,,15,4,0.6242215879605604,0.26666666666666666,0.0
+disprot,GO:0140678,molecular function inhibitor activity,MMseqs2,0,,15,0,,0.0,0.0
+disprot,GO:0140678,molecular function inhibitor activity,MMseqs2 iterative,0,,15,0,,0.0,0.0
+disprot,GO:0140678,molecular function inhibitor activity,Reseek,0,,15,6,0.8275210694565533,0.4,0.0
+disprot,GO:0140678,molecular function inhibitor activity,jackhmmer,0,,15,3,0.5806451612903226,0.2,0.0
+disprot,GO:0140678,molecular function inhibitor activity,"kmerseek, arm picked per term",0,,15,0,,0.0,0.0
+disprot,GO:0140678,molecular function inhibitor activity,phmmer,0,,15,4,0.5125871060039688,0.26666666666666666,0.0
+disprot,GO:0140693,molecular condensate scaffold activity,Foldseek,0,,16,9,0.8223684210526315,0.5625,0.0
+disprot,GO:0140693,molecular condensate scaffold activity,MMseqs2,0,,16,1,0.42685370741482964,0.0625,0.0
+disprot,GO:0140693,molecular condensate scaffold activity,MMseqs2 iterative,0,,16,2,0.3769068919869689,0.125,0.0
+disprot,GO:0140693,molecular condensate scaffold activity,Reseek,0,,16,9,0.8708487084870848,0.5625,0.0
+disprot,GO:0140693,molecular condensate scaffold activity,jackhmmer,0,,16,10,0.6666742245601307,0.625,0.0
+disprot,GO:0140693,molecular condensate scaffold activity,"kmerseek, arm picked per term",0,,16,3,0.6638655462184874,0.1875,0.0
+disprot,GO:0140693,molecular condensate scaffold activity,phmmer,0,,16,10,0.7197031940022593,0.625,0.0
+disprot,GO:1902280,regulation of RNA helicase activity,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:1902280,regulation of RNA helicase activity,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:1902280,regulation of RNA helicase activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:1902280,regulation of RNA helicase activity,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:1902280,regulation of RNA helicase activity,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:1902280,regulation of RNA helicase activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:1902280,regulation of RNA helicase activity,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:1990000,amyloid fibril formation,Foldseek,0,,4,1,0.5855263157894737,0.25,0.0
+disprot,GO:1990000,amyloid fibril formation,MMseqs2,0,,4,0,,0.0,0.0
+disprot,GO:1990000,amyloid fibril formation,MMseqs2 iterative,0,,4,0,,0.0,0.0
+disprot,GO:1990000,amyloid fibril formation,Reseek,0,,4,1,0.9473684210526315,0.25,0.0
+disprot,GO:1990000,amyloid fibril formation,jackhmmer,0,,4,1,0.6513157894736842,0.25,0.0
+disprot,GO:1990000,amyloid fibril formation,"kmerseek, arm picked per term",0,,4,0,,0.0,0.0
+disprot,GO:1990000,amyloid fibril formation,phmmer,0,,4,1,0.7368421052631579,0.25,0.0
+disprot,GO:1990757,ubiquitin ligase activator activity,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:1990757,ubiquitin ligase activator activity,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:1990757,ubiquitin ligase activator activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:1990757,ubiquitin ligase activator activity,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:1990757,ubiquitin ligase activator activity,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:1990757,ubiquitin ligase activator activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:1990757,ubiquitin ligase activator activity,phmmer,0,,1,0,,0.0,0.0
+disprot,GO:1990935,splicing factor binding,Foldseek,0,,1,0,,0.0,0.0
+disprot,GO:1990935,splicing factor binding,MMseqs2,0,,1,0,,0.0,0.0
+disprot,GO:1990935,splicing factor binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,GO:1990935,splicing factor binding,Reseek,0,,1,0,,0.0,0.0
+disprot,GO:1990935,splicing factor binding,jackhmmer,0,,1,0,,0.0,0.0
+disprot,GO:1990935,splicing factor binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,GO:1990935,splicing factor binding,phmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000030,entropic chain,Foldseek,0,,2,0,,0.0,0.0
+disprot,IDPO:0000030,entropic chain,MMseqs2,0,,2,0,,0.0,0.0
+disprot,IDPO:0000030,entropic chain,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,IDPO:0000030,entropic chain,Reseek,0,,2,0,,0.0,0.0
+disprot,IDPO:0000030,entropic chain,jackhmmer,0,,2,1,0.5862068965517241,0.5,0.0
+disprot,IDPO:0000030,entropic chain,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,IDPO:0000030,entropic chain,phmmer,0,,2,1,0.5862068965517241,0.5,0.0
+disprot,IDPO:0000031,flexible C-terminal tail,Foldseek,0,,3,0,,0.0,0.0
+disprot,IDPO:0000031,flexible C-terminal tail,MMseqs2,0,,3,0,,0.0,0.0
+disprot,IDPO:0000031,flexible C-terminal tail,MMseqs2 iterative,0,,3,0,,0.0,0.0
+disprot,IDPO:0000031,flexible C-terminal tail,Reseek,0,,3,1,0.8333333333333334,0.3333333333333333,0.0
+disprot,IDPO:0000031,flexible C-terminal tail,jackhmmer,0,,3,0,,0.0,0.0
+disprot,IDPO:0000031,flexible C-terminal tail,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+disprot,IDPO:0000031,flexible C-terminal tail,phmmer,0,,3,0,,0.0,0.0
+disprot,IDPO:0000032,flexible N-terminal tail,Foldseek,0,,4,0,,0.0,0.0
+disprot,IDPO:0000032,flexible N-terminal tail,MMseqs2,0,,4,0,,0.0,0.0
+disprot,IDPO:0000032,flexible N-terminal tail,MMseqs2 iterative,0,,4,0,,0.0,0.0
+disprot,IDPO:0000032,flexible N-terminal tail,Reseek,0,,4,0,,0.0,0.0
+disprot,IDPO:0000032,flexible N-terminal tail,jackhmmer,0,,4,0,,0.0,0.0
+disprot,IDPO:0000032,flexible N-terminal tail,"kmerseek, arm picked per term",0,,4,0,,0.0,0.0
+disprot,IDPO:0000032,flexible N-terminal tail,phmmer,0,,4,1,0.3137254901960784,0.25,0.0
+disprot,IDPO:0000033,flexible linker,Foldseek,0,,70,12,0.861142009640341,0.17142857142857143,0.0
+disprot,IDPO:0000033,flexible linker,MMseqs2,0,,70,0,,0.0,0.0
+disprot,IDPO:0000033,flexible linker,MMseqs2 iterative,0,,70,0,,0.0,0.0
+disprot,IDPO:0000033,flexible linker,Reseek,1,0.84375,70,7,0.8461538461538461,0.1,0.014285714285714285
+disprot,IDPO:0000033,flexible linker,jackhmmer,0,,70,33,0.7241379310344828,0.4714285714285714,0.0
+disprot,IDPO:0000033,flexible linker,"kmerseek, arm picked per term",1,0.7916666666666666,70,4,0.6733333333333333,0.05714285714285714,0.014285714285714285
+disprot,IDPO:0000033,flexible linker,phmmer,1,0.8360655737704918,70,31,0.7051282051282052,0.44285714285714284,0.014285714285714285
+disprot,IDPO:0000037,molecular recognition display site,Foldseek,0,,4,0,,0.0,0.0
+disprot,IDPO:0000037,molecular recognition display site,MMseqs2,0,,4,0,,0.0,0.0
+disprot,IDPO:0000037,molecular recognition display site,MMseqs2 iterative,0,,4,0,,0.0,0.0
+disprot,IDPO:0000037,molecular recognition display site,Reseek,0,,4,2,0.5448500073887985,0.5,0.0
+disprot,IDPO:0000037,molecular recognition display site,jackhmmer,0,,4,1,0.33613445378151263,0.25,0.0
+disprot,IDPO:0000037,molecular recognition display site,"kmerseek, arm picked per term",0,,4,0,,0.0,0.0
+disprot,IDPO:0000037,molecular recognition display site,phmmer,0,,4,1,0.33613445378151263,0.25,0.0
+disprot,IDPO:0000038,ADP-ribosylation display site,Foldseek,0,,1,0,,0.0,0.0
+disprot,IDPO:0000038,ADP-ribosylation display site,MMseqs2,0,,1,0,,0.0,0.0
+disprot,IDPO:0000038,ADP-ribosylation display site,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,IDPO:0000038,ADP-ribosylation display site,Reseek,0,,1,0,,0.0,0.0
+disprot,IDPO:0000038,ADP-ribosylation display site,jackhmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000038,ADP-ribosylation display site,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,IDPO:0000038,ADP-ribosylation display site,phmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000039,acetylation display site,Foldseek,0,,7,0,,0.0,0.0
+disprot,IDPO:0000039,acetylation display site,MMseqs2,0,,7,0,,0.0,0.0
+disprot,IDPO:0000039,acetylation display site,MMseqs2 iterative,0,,7,0,,0.0,0.0
+disprot,IDPO:0000039,acetylation display site,Reseek,0,,7,0,,0.0,0.0
+disprot,IDPO:0000039,acetylation display site,jackhmmer,0,,7,0,,0.0,0.0
+disprot,IDPO:0000039,acetylation display site,"kmerseek, arm picked per term",0,,7,0,,0.0,0.0
+disprot,IDPO:0000039,acetylation display site,phmmer,0,,7,0,,0.0,0.0
+disprot,IDPO:0000040,fatty acylation display site,Foldseek,0,,1,0,,0.0,0.0
+disprot,IDPO:0000040,fatty acylation display site,MMseqs2,0,,1,0,,0.0,0.0
+disprot,IDPO:0000040,fatty acylation display site,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,IDPO:0000040,fatty acylation display site,Reseek,0,,1,0,,0.0,0.0
+disprot,IDPO:0000040,fatty acylation display site,jackhmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000040,fatty acylation display site,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,IDPO:0000040,fatty acylation display site,phmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000041,glycosylation display site,Foldseek,0,,1,0,,0.0,0.0
+disprot,IDPO:0000041,glycosylation display site,MMseqs2,0,,1,0,,0.0,0.0
+disprot,IDPO:0000041,glycosylation display site,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,IDPO:0000041,glycosylation display site,Reseek,0,,1,0,,0.0,0.0
+disprot,IDPO:0000041,glycosylation display site,jackhmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000041,glycosylation display site,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,IDPO:0000041,glycosylation display site,phmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000042,methylation display site,Foldseek,0,,6,0,,0.0,0.0
+disprot,IDPO:0000042,methylation display site,MMseqs2,0,,6,0,,0.0,0.0
+disprot,IDPO:0000042,methylation display site,MMseqs2 iterative,0,,6,0,,0.0,0.0
+disprot,IDPO:0000042,methylation display site,Reseek,0,,6,0,,0.0,0.0
+disprot,IDPO:0000042,methylation display site,jackhmmer,0,,6,0,,0.0,0.0
+disprot,IDPO:0000042,methylation display site,"kmerseek, arm picked per term",0,,6,0,,0.0,0.0
+disprot,IDPO:0000042,methylation display site,phmmer,0,,6,0,,0.0,0.0
+disprot,IDPO:0000044,palmitoylation display site,Foldseek,0,,2,0,,0.0,0.0
+disprot,IDPO:0000044,palmitoylation display site,MMseqs2,0,,2,0,,0.0,0.0
+disprot,IDPO:0000044,palmitoylation display site,MMseqs2 iterative,0,,2,0,,0.0,0.0
+disprot,IDPO:0000044,palmitoylation display site,Reseek,0,,2,0,,0.0,0.0
+disprot,IDPO:0000044,palmitoylation display site,jackhmmer,0,,2,0,,0.0,0.0
+disprot,IDPO:0000044,palmitoylation display site,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+disprot,IDPO:0000044,palmitoylation display site,phmmer,0,,2,0,,0.0,0.0
+disprot,IDPO:0000045,phosphorylation display site,Foldseek,0,,45,3,0.6006711409395973,0.06666666666666667,0.0
+disprot,IDPO:0000045,phosphorylation display site,MMseqs2,0,,45,0,,0.0,0.0
+disprot,IDPO:0000045,phosphorylation display site,MMseqs2 iterative,0,,45,0,,0.0,0.0
+disprot,IDPO:0000045,phosphorylation display site,Reseek,0,,45,3,0.9444444444444444,0.06666666666666667,0.0
+disprot,IDPO:0000045,phosphorylation display site,jackhmmer,0,,45,1,0.48739495798319327,0.022222222222222223,0.0
+disprot,IDPO:0000045,phosphorylation display site,"kmerseek, arm picked per term",0,,45,0,,0.0,0.0
+disprot,IDPO:0000045,phosphorylation display site,phmmer,0,,45,3,0.48739495798319327,0.06666666666666667,0.0
+disprot,IDPO:0000046,ubiquitination display site,Foldseek,0,,1,0,,0.0,0.0
+disprot,IDPO:0000046,ubiquitination display site,MMseqs2,0,,1,0,,0.0,0.0
+disprot,IDPO:0000046,ubiquitination display site,MMseqs2 iterative,0,,1,0,,0.0,0.0
+disprot,IDPO:0000046,ubiquitination display site,Reseek,0,,1,0,,0.0,0.0
+disprot,IDPO:0000046,ubiquitination display site,jackhmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000046,ubiquitination display site,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+disprot,IDPO:0000046,ubiquitination display site,phmmer,0,,1,0,,0.0,0.0
+disprot,IDPO:0000048,limited proteolysis display site,Foldseek,0,,3,0,,0.0,0.0
+disprot,IDPO:0000048,limited proteolysis display site,MMseqs2,0,,3,0,,0.0,0.0
+disprot,IDPO:0000048,limited proteolysis display site,MMseqs2 iterative,0,,3,0,,0.0,0.0
+disprot,IDPO:0000048,limited proteolysis display site,Reseek,0,,3,2,0.5383620689655172,0.6666666666666666,0.0
+disprot,IDPO:0000048,limited proteolysis display site,jackhmmer,0,,3,0,,0.0,0.0
+disprot,IDPO:0000048,limited proteolysis display site,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+disprot,IDPO:0000048,limited proteolysis display site,phmmer,0,,3,0,,0.0,0.0
+disprot,IDPO:0000059,self-inhibition,Foldseek,0,,9,0,,0.0,0.0
+disprot,IDPO:0000059,self-inhibition,MMseqs2,0,,9,0,,0.0,0.0
+disprot,IDPO:0000059,self-inhibition,MMseqs2 iterative,0,,9,0,,0.0,0.0
+disprot,IDPO:0000059,self-inhibition,Reseek,0,,9,0,,0.0,0.0
+disprot,IDPO:0000059,self-inhibition,jackhmmer,0,,9,0,,0.0,0.0
+disprot,IDPO:0000059,self-inhibition,"kmerseek, arm picked per term",0,,9,0,,0.0,0.0
+disprot,IDPO:0000059,self-inhibition,phmmer,0,,9,0,,0.0,0.0
+disprot,IDPO:0000060,self-assembly,Foldseek,0,,4,0,,0.0,0.0
+disprot,IDPO:0000060,self-assembly,MMseqs2,0,,4,0,,0.0,0.0
+disprot,IDPO:0000060,self-assembly,MMseqs2 iterative,0,,4,0,,0.0,0.0
+disprot,IDPO:0000060,self-assembly,Reseek,0,,4,0,,0.0,0.0
+disprot,IDPO:0000060,self-assembly,jackhmmer,0,,4,0,,0.0,0.0
+disprot,IDPO:0000060,self-assembly,"kmerseek, arm picked per term",0,,4,0,,0.0,0.0
+disprot,IDPO:0000060,self-assembly,phmmer,0,,4,1,0.7,0.25,0.0
+yeast,GO:0001223,transcription coactivator binding,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0001223,transcription coactivator binding,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0001223,transcription coactivator binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0001223,transcription coactivator binding,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0001223,transcription coactivator binding,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0001223,transcription coactivator binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0001223,transcription coactivator binding,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0001933,negative regulation of protein phosphorylation,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0001933,negative regulation of protein phosphorylation,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0001933,negative regulation of protein phosphorylation,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0001933,negative regulation of protein phosphorylation,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0001933,negative regulation of protein phosphorylation,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0001933,negative regulation of protein phosphorylation,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0001933,negative regulation of protein phosphorylation,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0001934,positive regulation of protein phosphorylation,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0001934,positive regulation of protein phosphorylation,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0001934,positive regulation of protein phosphorylation,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0001934,positive regulation of protein phosphorylation,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0001934,positive regulation of protein phosphorylation,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0001934,positive regulation of protein phosphorylation,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0001934,positive regulation of protein phosphorylation,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0002039,p53 binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0002039,p53 binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0002039,p53 binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0002039,p53 binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0002039,p53 binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0002039,p53 binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0002039,p53 binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0003676,nucleic acid binding,Foldseek,0,,10,0,,0.0,0.0
+yeast,GO:0003676,nucleic acid binding,MMseqs2,0,,10,0,,0.0,0.0
+yeast,GO:0003676,nucleic acid binding,MMseqs2 iterative,0,,10,0,,0.0,0.0
+yeast,GO:0003676,nucleic acid binding,Reseek,0,,10,0,,0.0,0.0
+yeast,GO:0003676,nucleic acid binding,jackhmmer,0,,10,0,,0.0,0.0
+yeast,GO:0003676,nucleic acid binding,"kmerseek, arm picked per term",0,,10,0,,0.0,0.0
+yeast,GO:0003676,nucleic acid binding,phmmer,0,,10,0,,0.0,0.0
+yeast,GO:0003677,DNA binding,Foldseek,0,,15,0,,0.0,0.0
+yeast,GO:0003677,DNA binding,MMseqs2,0,,15,0,,0.0,0.0
+yeast,GO:0003677,DNA binding,MMseqs2 iterative,0,,15,0,,0.0,0.0
+yeast,GO:0003677,DNA binding,Reseek,0,,15,0,,0.0,0.0
+yeast,GO:0003677,DNA binding,jackhmmer,0,,15,0,,0.0,0.0
+yeast,GO:0003677,DNA binding,"kmerseek, arm picked per term",0,,15,0,,0.0,0.0
+yeast,GO:0003677,DNA binding,phmmer,0,,15,0,,0.0,0.0
+yeast,GO:0003713,transcription coactivator activity,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0003713,transcription coactivator activity,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0003713,transcription coactivator activity,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0003713,transcription coactivator activity,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0003713,transcription coactivator activity,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0003713,transcription coactivator activity,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0003713,transcription coactivator activity,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0003723,RNA binding,Foldseek,0,,6,1,0.9158878504672897,0.16666666666666666,0.0
+yeast,GO:0003723,RNA binding,MMseqs2,0,,6,0,,0.0,0.0
+yeast,GO:0003723,RNA binding,MMseqs2 iterative,0,,6,0,,0.0,0.0
+yeast,GO:0003723,RNA binding,Reseek,0,,6,1,1.0,0.16666666666666666,0.0
+yeast,GO:0003723,RNA binding,jackhmmer,0,,6,0,,0.0,0.0
+yeast,GO:0003723,RNA binding,"kmerseek, arm picked per term",0,,6,0,,0.0,0.0
+yeast,GO:0003723,RNA binding,phmmer,0,,6,0,,0.0,0.0
+yeast,GO:0003727,single-stranded RNA binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0003727,single-stranded RNA binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0003727,single-stranded RNA binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0003727,single-stranded RNA binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0003727,single-stranded RNA binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0003727,single-stranded RNA binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0003727,single-stranded RNA binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0003729,mRNA binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0003729,mRNA binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0003729,mRNA binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0003729,mRNA binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0003729,mRNA binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0003729,mRNA binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0003729,mRNA binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0004861,cyclin-dependent protein serine/threonine kinase inhibitor activity,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0004864,protein phosphatase inhibitor activity,Foldseek,0,,3,0,,0.0,0.0
+yeast,GO:0004864,protein phosphatase inhibitor activity,MMseqs2,0,,3,0,,0.0,0.0
+yeast,GO:0004864,protein phosphatase inhibitor activity,MMseqs2 iterative,0,,3,0,,0.0,0.0
+yeast,GO:0004864,protein phosphatase inhibitor activity,Reseek,0,,3,0,,0.0,0.0
+yeast,GO:0004864,protein phosphatase inhibitor activity,jackhmmer,0,,3,0,,0.0,0.0
+yeast,GO:0004864,protein phosphatase inhibitor activity,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+yeast,GO:0004864,protein phosphatase inhibitor activity,phmmer,0,,3,0,,0.0,0.0
+yeast,GO:0005049,nuclear export signal receptor activity,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0005049,nuclear export signal receptor activity,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0005049,nuclear export signal receptor activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0005049,nuclear export signal receptor activity,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0005049,nuclear export signal receptor activity,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0005049,nuclear export signal receptor activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0005049,nuclear export signal receptor activity,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0005161,platelet-derived growth factor receptor binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0005161,platelet-derived growth factor receptor binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0005161,platelet-derived growth factor receptor binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0005161,platelet-derived growth factor receptor binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0005161,platelet-derived growth factor receptor binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0005161,platelet-derived growth factor receptor binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0005161,platelet-derived growth factor receptor binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0005506,iron ion binding,Foldseek,0,,3,0,,0.0,0.0
+yeast,GO:0005506,iron ion binding,MMseqs2,0,,3,0,,0.0,0.0
+yeast,GO:0005506,iron ion binding,MMseqs2 iterative,0,,3,0,,0.0,0.0
+yeast,GO:0005506,iron ion binding,Reseek,0,,3,0,,0.0,0.0
+yeast,GO:0005506,iron ion binding,jackhmmer,0,,3,0,,0.0,0.0
+yeast,GO:0005506,iron ion binding,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+yeast,GO:0005506,iron ion binding,phmmer,0,,3,0,,0.0,0.0
+yeast,GO:0005509,calcium ion binding,Foldseek,0,,11,0,,0.0,0.0
+yeast,GO:0005509,calcium ion binding,MMseqs2,0,,11,0,,0.0,0.0
+yeast,GO:0005509,calcium ion binding,MMseqs2 iterative,0,,11,0,,0.0,0.0
+yeast,GO:0005509,calcium ion binding,Reseek,0,,11,0,,0.0,0.0
+yeast,GO:0005509,calcium ion binding,jackhmmer,0,,11,0,,0.0,0.0
+yeast,GO:0005509,calcium ion binding,"kmerseek, arm picked per term",0,,11,0,,0.0,0.0
+yeast,GO:0005509,calcium ion binding,phmmer,0,,11,0,,0.0,0.0
+yeast,GO:0005515,protein binding,Foldseek,0,,206,31,0.7295918367346939,0.15048543689320387,0.0
+yeast,GO:0005515,protein binding,MMseqs2,0,,206,0,,0.0,0.0
+yeast,GO:0005515,protein binding,MMseqs2 iterative,0,,206,0,,0.0,0.0
+yeast,GO:0005515,protein binding,Reseek,0,,206,31,0.9456521739130435,0.15048543689320387,0.0
+yeast,GO:0005515,protein binding,jackhmmer,0,,206,31,0.4044943820224719,0.15048543689320387,0.0
+yeast,GO:0005515,protein binding,"kmerseek, arm picked per term",0,,206,12,0.3512242143821091,0.05825242718446602,0.0
+yeast,GO:0005515,protein binding,phmmer,1,0.9375,206,34,0.43048128342245995,0.1650485436893204,0.0048543689320388345
+yeast,GO:0005516,calmodulin binding,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0005516,calmodulin binding,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0005516,calmodulin binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0005516,calmodulin binding,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0005516,calmodulin binding,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0005516,calmodulin binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0005516,calmodulin binding,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0005654,nucleoplasm,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0005654,nucleoplasm,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0005654,nucleoplasm,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0005654,nucleoplasm,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0005654,nucleoplasm,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0005654,nucleoplasm,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0005654,nucleoplasm,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0008013,beta-catenin binding,Foldseek,0,,3,0,,0.0,0.0
+yeast,GO:0008013,beta-catenin binding,MMseqs2,0,,3,0,,0.0,0.0
+yeast,GO:0008013,beta-catenin binding,MMseqs2 iterative,0,,3,0,,0.0,0.0
+yeast,GO:0008013,beta-catenin binding,Reseek,0,,3,0,,0.0,0.0
+yeast,GO:0008013,beta-catenin binding,jackhmmer,0,,3,0,,0.0,0.0
+yeast,GO:0008013,beta-catenin binding,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+yeast,GO:0008013,beta-catenin binding,phmmer,0,,3,0,,0.0,0.0
+yeast,GO:0008270,zinc ion binding,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0008270,zinc ion binding,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0008270,zinc ion binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0008270,zinc ion binding,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0008270,zinc ion binding,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0008270,zinc ion binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0008270,zinc ion binding,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0008285,negative regulation of cell population proliferation,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0008285,negative regulation of cell population proliferation,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0008285,negative regulation of cell population proliferation,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0008285,negative regulation of cell population proliferation,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0008285,negative regulation of cell population proliferation,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0008285,negative regulation of cell population proliferation,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0008285,negative regulation of cell population proliferation,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0008289,lipid binding,Foldseek,0,,11,1,0.7611940298507462,0.09090909090909091,0.0
+yeast,GO:0008289,lipid binding,MMseqs2,0,,11,0,,0.0,0.0
+yeast,GO:0008289,lipid binding,MMseqs2 iterative,0,,11,0,,0.0,0.0
+yeast,GO:0008289,lipid binding,Reseek,0,,11,0,,0.0,0.0
+yeast,GO:0008289,lipid binding,jackhmmer,0,,11,2,0.5009920634920635,0.18181818181818182,0.0
+yeast,GO:0008289,lipid binding,"kmerseek, arm picked per term",0,,11,0,,0.0,0.0
+yeast,GO:0008289,lipid binding,phmmer,0,,11,2,0.5009920634920635,0.18181818181818182,0.0
+yeast,GO:0008301,"DNA binding, bending",Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0008301,"DNA binding, bending",MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0008301,"DNA binding, bending",MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0008301,"DNA binding, bending",Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0008301,"DNA binding, bending",jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0008301,"DNA binding, bending","kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0008301,"DNA binding, bending",phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0019843,rRNA binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0019843,rRNA binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0019843,rRNA binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0019843,rRNA binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0019843,rRNA binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0019843,rRNA binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0019843,rRNA binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0019902,phosphatase binding,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0019902,phosphatase binding,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0019902,phosphatase binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0019902,phosphatase binding,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0019902,phosphatase binding,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0019902,phosphatase binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0019902,phosphatase binding,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0019914,cyclin-dependent protein kinase activating kinase regulator activity,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0030246,carbohydrate binding,Foldseek,0,,3,0,,0.0,0.0
+yeast,GO:0030246,carbohydrate binding,MMseqs2,0,,3,0,,0.0,0.0
+yeast,GO:0030246,carbohydrate binding,MMseqs2 iterative,0,,3,0,,0.0,0.0
+yeast,GO:0030246,carbohydrate binding,Reseek,0,,3,0,,0.0,0.0
+yeast,GO:0030246,carbohydrate binding,jackhmmer,0,,3,0,,0.0,0.0
+yeast,GO:0030246,carbohydrate binding,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+yeast,GO:0030246,carbohydrate binding,phmmer,0,,3,0,,0.0,0.0
+yeast,GO:0030308,negative regulation of cell growth,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0030308,negative regulation of cell growth,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0030308,negative regulation of cell growth,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0030308,negative regulation of cell growth,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0030308,negative regulation of cell growth,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0030308,negative regulation of cell growth,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0030308,negative regulation of cell growth,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0030346,protein phosphatase 2B binding,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0030346,protein phosphatase 2B binding,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0030346,protein phosphatase 2B binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0030346,protein phosphatase 2B binding,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0030346,protein phosphatase 2B binding,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0030346,protein phosphatase 2B binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0030346,protein phosphatase 2B binding,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0031491,nucleosome binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0031491,nucleosome binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0031491,nucleosome binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0031491,nucleosome binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0031491,nucleosome binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0031491,nucleosome binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0031491,nucleosome binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0031625,ubiquitin protein ligase binding,Foldseek,0,,7,0,,0.0,0.0
+yeast,GO:0031625,ubiquitin protein ligase binding,MMseqs2,0,,7,0,,0.0,0.0
+yeast,GO:0031625,ubiquitin protein ligase binding,MMseqs2 iterative,0,,7,0,,0.0,0.0
+yeast,GO:0031625,ubiquitin protein ligase binding,Reseek,0,,7,0,,0.0,0.0
+yeast,GO:0031625,ubiquitin protein ligase binding,jackhmmer,0,,7,0,,0.0,0.0
+yeast,GO:0031625,ubiquitin protein ligase binding,"kmerseek, arm picked per term",0,,7,0,,0.0,0.0
+yeast,GO:0031625,ubiquitin protein ligase binding,phmmer,0,,7,0,,0.0,0.0
+yeast,GO:0032091,negative regulation of protein binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0032091,negative regulation of protein binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0032091,negative regulation of protein binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0032091,negative regulation of protein binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0032091,negative regulation of protein binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0032091,negative regulation of protein binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0032091,negative regulation of protein binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0032879,regulation of localization,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0032879,regulation of localization,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0032879,regulation of localization,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0032879,regulation of localization,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0032879,regulation of localization,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0032879,regulation of localization,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0032879,regulation of localization,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0035145,exon-exon junction complex,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0035145,exon-exon junction complex,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0035145,exon-exon junction complex,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0035145,exon-exon junction complex,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0035145,exon-exon junction complex,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0035145,exon-exon junction complex,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0035145,exon-exon junction complex,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0036094,small molecule binding,Foldseek,0,,6,0,,0.0,0.0
+yeast,GO:0036094,small molecule binding,MMseqs2,0,,6,0,,0.0,0.0
+yeast,GO:0036094,small molecule binding,MMseqs2 iterative,0,,6,0,,0.0,0.0
+yeast,GO:0036094,small molecule binding,Reseek,0,,6,0,,0.0,0.0
+yeast,GO:0036094,small molecule binding,jackhmmer,0,,6,0,,0.0,0.0
+yeast,GO:0036094,small molecule binding,"kmerseek, arm picked per term",0,,6,0,,0.0,0.0
+yeast,GO:0036094,small molecule binding,phmmer,0,,6,0,,0.0,0.0
+yeast,GO:0042393,histone binding,Foldseek,0,,3,0,,0.0,0.0
+yeast,GO:0042393,histone binding,MMseqs2,0,,3,0,,0.0,0.0
+yeast,GO:0042393,histone binding,MMseqs2 iterative,0,,3,0,,0.0,0.0
+yeast,GO:0042393,histone binding,Reseek,0,,3,0,,0.0,0.0
+yeast,GO:0042393,histone binding,jackhmmer,0,,3,0,,0.0,0.0
+yeast,GO:0042393,histone binding,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+yeast,GO:0042393,histone binding,phmmer,0,,3,0,,0.0,0.0
+yeast,GO:0042803,protein homodimerization activity,Foldseek,0,,6,0,,0.0,0.0
+yeast,GO:0042803,protein homodimerization activity,MMseqs2,0,,6,0,,0.0,0.0
+yeast,GO:0042803,protein homodimerization activity,MMseqs2 iterative,0,,6,0,,0.0,0.0
+yeast,GO:0042803,protein homodimerization activity,Reseek,0,,6,0,,0.0,0.0
+yeast,GO:0042803,protein homodimerization activity,jackhmmer,0,,6,0,,0.0,0.0
+yeast,GO:0042803,protein homodimerization activity,"kmerseek, arm picked per term",0,,6,0,,0.0,0.0
+yeast,GO:0042803,protein homodimerization activity,phmmer,0,,6,0,,0.0,0.0
+yeast,GO:0042981,regulation of apoptotic process,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0042981,regulation of apoptotic process,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0042981,regulation of apoptotic process,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0042981,regulation of apoptotic process,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0042981,regulation of apoptotic process,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0042981,regulation of apoptotic process,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0042981,regulation of apoptotic process,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0043167,ion binding,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0043167,ion binding,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0043167,ion binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0043167,ion binding,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0043167,ion binding,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0043167,ion binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0043167,ion binding,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0043232,intracellular non-membrane-bounded organelle,Foldseek,0,,3,0,,0.0,0.0
+yeast,GO:0043232,intracellular non-membrane-bounded organelle,MMseqs2,0,,3,0,,0.0,0.0
+yeast,GO:0043232,intracellular non-membrane-bounded organelle,MMseqs2 iterative,0,,3,0,,0.0,0.0
+yeast,GO:0043232,intracellular non-membrane-bounded organelle,Reseek,0,,3,0,,0.0,0.0
+yeast,GO:0043232,intracellular non-membrane-bounded organelle,jackhmmer,0,,3,0,,0.0,0.0
+yeast,GO:0043232,intracellular non-membrane-bounded organelle,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+yeast,GO:0043232,intracellular non-membrane-bounded organelle,phmmer,0,,3,0,,0.0,0.0
+yeast,GO:0043484,regulation of RNA splicing,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0043484,regulation of RNA splicing,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0043484,regulation of RNA splicing,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0043484,regulation of RNA splicing,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0043484,regulation of RNA splicing,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0043484,regulation of RNA splicing,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0043484,regulation of RNA splicing,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0044183,protein folding chaperone,Foldseek,0,,5,0,,0.0,0.0
+yeast,GO:0044183,protein folding chaperone,MMseqs2,0,,5,0,,0.0,0.0
+yeast,GO:0044183,protein folding chaperone,MMseqs2 iterative,0,,5,0,,0.0,0.0
+yeast,GO:0044183,protein folding chaperone,Reseek,0,,5,0,,0.0,0.0
+yeast,GO:0044183,protein folding chaperone,jackhmmer,0,,5,1,0.8070175438596491,0.2,0.0
+yeast,GO:0044183,protein folding chaperone,"kmerseek, arm picked per term",0,,5,0,,0.0,0.0
+yeast,GO:0044183,protein folding chaperone,phmmer,0,,5,1,0.7894736842105263,0.2,0.0
+yeast,GO:0045893,"positive regulation of transcription, DNA-templated",Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0045893,"positive regulation of transcription, DNA-templated",MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0045893,"positive regulation of transcription, DNA-templated",MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0045893,"positive regulation of transcription, DNA-templated",Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0045893,"positive regulation of transcription, DNA-templated",jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0045893,"positive regulation of transcription, DNA-templated","kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0045893,"positive regulation of transcription, DNA-templated",phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0046872,metal ion binding,Foldseek,0,,6,0,,0.0,0.0
+yeast,GO:0046872,metal ion binding,MMseqs2,0,,6,0,,0.0,0.0
+yeast,GO:0046872,metal ion binding,MMseqs2 iterative,0,,6,0,,0.0,0.0
+yeast,GO:0046872,metal ion binding,Reseek,0,,6,0,,0.0,0.0
+yeast,GO:0046872,metal ion binding,jackhmmer,0,,6,0,,0.0,0.0
+yeast,GO:0046872,metal ion binding,"kmerseek, arm picked per term",0,,6,0,,0.0,0.0
+yeast,GO:0046872,metal ion binding,phmmer,0,,6,0,,0.0,0.0
+yeast,GO:0046983,protein dimerization activity,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0046983,protein dimerization activity,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0046983,protein dimerization activity,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0046983,protein dimerization activity,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0046983,protein dimerization activity,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0046983,protein dimerization activity,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0046983,protein dimerization activity,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0048273,mitogen-activated protein kinase p38 binding,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0048273,mitogen-activated protein kinase p38 binding,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0048273,mitogen-activated protein kinase p38 binding,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0048273,mitogen-activated protein kinase p38 binding,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0048273,mitogen-activated protein kinase p38 binding,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0048273,mitogen-activated protein kinase p38 binding,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0048273,mitogen-activated protein kinase p38 binding,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0051019,mitogen-activated protein kinase binding,Foldseek,0,,7,0,,0.0,0.0
+yeast,GO:0051019,mitogen-activated protein kinase binding,MMseqs2,0,,7,0,,0.0,0.0
+yeast,GO:0051019,mitogen-activated protein kinase binding,MMseqs2 iterative,0,,7,0,,0.0,0.0
+yeast,GO:0051019,mitogen-activated protein kinase binding,Reseek,0,,7,0,,0.0,0.0
+yeast,GO:0051019,mitogen-activated protein kinase binding,jackhmmer,0,,7,0,,0.0,0.0
+yeast,GO:0051019,mitogen-activated protein kinase binding,"kmerseek, arm picked per term",0,,7,0,,0.0,0.0
+yeast,GO:0051019,mitogen-activated protein kinase binding,phmmer,0,,7,0,,0.0,0.0
+yeast,GO:0051168,nuclear export,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0051168,nuclear export,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0051168,nuclear export,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0051168,nuclear export,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0051168,nuclear export,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051168,nuclear export,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0051168,nuclear export,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051170,import into nucleus,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0051170,import into nucleus,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0051170,import into nucleus,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0051170,import into nucleus,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0051170,import into nucleus,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051170,import into nucleus,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0051170,import into nucleus,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051179,localization,Foldseek,0,,12,1,0.40828402366863903,0.08333333333333333,0.0
+yeast,GO:0051179,localization,MMseqs2,0,,12,0,,0.0,0.0
+yeast,GO:0051179,localization,MMseqs2 iterative,0,,12,0,,0.0,0.0
+yeast,GO:0051179,localization,Reseek,0,,12,0,,0.0,0.0
+yeast,GO:0051179,localization,jackhmmer,0,,12,0,,0.0,0.0
+yeast,GO:0051179,localization,"kmerseek, arm picked per term",0,,12,0,,0.0,0.0
+yeast,GO:0051179,localization,phmmer,0,,12,0,,0.0,0.0
+yeast,GO:0051259,protein complex oligomerization,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0051259,protein complex oligomerization,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0051259,protein complex oligomerization,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0051259,protein complex oligomerization,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0051259,protein complex oligomerization,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051259,protein complex oligomerization,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0051259,protein complex oligomerization,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051260,protein homooligomerization,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0051260,protein homooligomerization,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0051260,protein homooligomerization,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0051260,protein homooligomerization,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0051260,protein homooligomerization,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051260,protein homooligomerization,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0051260,protein homooligomerization,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051721,protein phosphatase 2A binding,Foldseek,0,,9,0,,0.0,0.0
+yeast,GO:0051721,protein phosphatase 2A binding,MMseqs2,0,,9,0,,0.0,0.0
+yeast,GO:0051721,protein phosphatase 2A binding,MMseqs2 iterative,0,,9,0,,0.0,0.0
+yeast,GO:0051721,protein phosphatase 2A binding,Reseek,0,,9,0,,0.0,0.0
+yeast,GO:0051721,protein phosphatase 2A binding,jackhmmer,0,,9,0,,0.0,0.0
+yeast,GO:0051721,protein phosphatase 2A binding,"kmerseek, arm picked per term",0,,9,0,,0.0,0.0
+yeast,GO:0051721,protein phosphatase 2A binding,phmmer,0,,9,0,,0.0,0.0
+yeast,GO:0051726,regulation of cell cycle,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0051726,regulation of cell cycle,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0051726,regulation of cell cycle,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0051726,regulation of cell cycle,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0051726,regulation of cell cycle,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0051726,regulation of cell cycle,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0051726,regulation of cell cycle,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0060090,molecular adaptor activity,Foldseek,0,,30,0,,0.0,0.0
+yeast,GO:0060090,molecular adaptor activity,MMseqs2,0,,30,0,,0.0,0.0
+yeast,GO:0060090,molecular adaptor activity,MMseqs2 iterative,0,,30,0,,0.0,0.0
+yeast,GO:0060090,molecular adaptor activity,Reseek,0,,30,3,0.8389929742388759,0.1,0.0
+yeast,GO:0060090,molecular adaptor activity,jackhmmer,0,,30,2,0.563527397260274,0.06666666666666667,0.0
+yeast,GO:0060090,molecular adaptor activity,"kmerseek, arm picked per term",1,0.975609756097561,30,1,0.975609756097561,0.03333333333333333,0.03333333333333333
+yeast,GO:0060090,molecular adaptor activity,phmmer,0,,30,2,0.6000345343616899,0.06666666666666667,0.0
+yeast,GO:0061912,selective autophagy,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0061912,selective autophagy,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0061912,selective autophagy,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0061912,selective autophagy,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0061912,selective autophagy,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0061912,selective autophagy,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0061912,selective autophagy,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0070403,NAD+ binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0070403,NAD+ binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0070403,NAD+ binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0070403,NAD+ binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0070403,NAD+ binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0070403,NAD+ binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0070403,NAD+ binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0070557,PCNA-p21 complex,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0070557,PCNA-p21 complex,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0070557,PCNA-p21 complex,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0070557,PCNA-p21 complex,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0070557,PCNA-p21 complex,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0070557,PCNA-p21 complex,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0070557,PCNA-p21 complex,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0071889,14-3-3 protein binding,Foldseek,0,,11,0,,0.0,0.0
+yeast,GO:0071889,14-3-3 protein binding,MMseqs2,0,,11,0,,0.0,0.0
+yeast,GO:0071889,14-3-3 protein binding,MMseqs2 iterative,0,,11,0,,0.0,0.0
+yeast,GO:0071889,14-3-3 protein binding,Reseek,0,,11,0,,0.0,0.0
+yeast,GO:0071889,14-3-3 protein binding,jackhmmer,0,,11,0,,0.0,0.0
+yeast,GO:0071889,14-3-3 protein binding,"kmerseek, arm picked per term",0,,11,0,,0.0,0.0
+yeast,GO:0071889,14-3-3 protein binding,phmmer,0,,11,0,,0.0,0.0
+yeast,GO:0097435,supramolecular fiber organization,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0097435,supramolecular fiber organization,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0097435,supramolecular fiber organization,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0097435,supramolecular fiber organization,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0097435,supramolecular fiber organization,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0097435,supramolecular fiber organization,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0097435,supramolecular fiber organization,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0098772,molecular function regulator,Foldseek,0,,28,1,0.9852216748768473,0.03571428571428571,0.0
+yeast,GO:0098772,molecular function regulator,MMseqs2,0,,28,0,,0.0,0.0
+yeast,GO:0098772,molecular function regulator,MMseqs2 iterative,0,,28,0,,0.0,0.0
+yeast,GO:0098772,molecular function regulator,Reseek,0,,28,0,,0.0,0.0
+yeast,GO:0098772,molecular function regulator,jackhmmer,0,,28,0,,0.0,0.0
+yeast,GO:0098772,molecular function regulator,"kmerseek, arm picked per term",0,,28,0,,0.0,0.0
+yeast,GO:0098772,molecular function regulator,phmmer,0,,28,0,,0.0,0.0
+yeast,GO:0120283,protein serine/threonine kinase binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0120283,protein serine/threonine kinase binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0120283,protein serine/threonine kinase binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0120283,protein serine/threonine kinase binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0120283,protein serine/threonine kinase binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0120283,protein serine/threonine kinase binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0120283,protein serine/threonine kinase binding,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0140311,protein sequestering activity,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0140311,protein sequestering activity,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0140311,protein sequestering activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0140311,protein sequestering activity,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0140311,protein sequestering activity,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0140311,protein sequestering activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0140311,protein sequestering activity,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0140313,molecular sequestering activity,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0140313,molecular sequestering activity,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0140313,molecular sequestering activity,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0140313,molecular sequestering activity,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0140313,molecular sequestering activity,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0140313,molecular sequestering activity,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0140313,molecular sequestering activity,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0140314,calcium ion sequestering activity,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:0140314,calcium ion sequestering activity,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:0140314,calcium ion sequestering activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:0140314,calcium ion sequestering activity,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:0140314,calcium ion sequestering activity,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:0140314,calcium ion sequestering activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:0140314,calcium ion sequestering activity,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:0140486,zinc ion sequestering activity,Foldseek,0,,2,0,,0.0,0.0
+yeast,GO:0140486,zinc ion sequestering activity,MMseqs2,0,,2,0,,0.0,0.0
+yeast,GO:0140486,zinc ion sequestering activity,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,GO:0140486,zinc ion sequestering activity,Reseek,0,,2,0,,0.0,0.0
+yeast,GO:0140486,zinc ion sequestering activity,jackhmmer,0,,2,0,,0.0,0.0
+yeast,GO:0140486,zinc ion sequestering activity,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,GO:0140486,zinc ion sequestering activity,phmmer,0,,2,0,,0.0,0.0
+yeast,GO:0140677,molecular function activator activity,Foldseek,0,,12,0,,0.0,0.0
+yeast,GO:0140677,molecular function activator activity,MMseqs2,0,,12,0,,0.0,0.0
+yeast,GO:0140677,molecular function activator activity,MMseqs2 iterative,0,,12,0,,0.0,0.0
+yeast,GO:0140677,molecular function activator activity,Reseek,0,,12,0,,0.0,0.0
+yeast,GO:0140677,molecular function activator activity,jackhmmer,0,,12,0,,0.0,0.0
+yeast,GO:0140677,molecular function activator activity,"kmerseek, arm picked per term",0,,12,0,,0.0,0.0
+yeast,GO:0140677,molecular function activator activity,phmmer,0,,12,0,,0.0,0.0
+yeast,GO:0140678,molecular function inhibitor activity,Foldseek,0,,15,2,0.4934143870314083,0.13333333333333333,0.0
+yeast,GO:0140678,molecular function inhibitor activity,MMseqs2,0,,15,0,,0.0,0.0
+yeast,GO:0140678,molecular function inhibitor activity,MMseqs2 iterative,0,,15,0,,0.0,0.0
+yeast,GO:0140678,molecular function inhibitor activity,Reseek,0,,15,1,0.8378378378378378,0.06666666666666667,0.0
+yeast,GO:0140678,molecular function inhibitor activity,jackhmmer,0,,15,0,,0.0,0.0
+yeast,GO:0140678,molecular function inhibitor activity,"kmerseek, arm picked per term",0,,15,0,,0.0,0.0
+yeast,GO:0140678,molecular function inhibitor activity,phmmer,0,,15,0,,0.0,0.0
+yeast,GO:0140693,molecular condensate scaffold activity,Foldseek,0,,16,0,,0.0,0.0
+yeast,GO:0140693,molecular condensate scaffold activity,MMseqs2,0,,16,1,0.42685370741482964,0.0625,0.0
+yeast,GO:0140693,molecular condensate scaffold activity,MMseqs2 iterative,0,,16,2,0.3860583062964531,0.125,0.0
+yeast,GO:0140693,molecular condensate scaffold activity,Reseek,0,,16,4,0.8608901927528592,0.25,0.0
+yeast,GO:0140693,molecular condensate scaffold activity,jackhmmer,0,,16,1,0.38877755511022044,0.0625,0.0
+yeast,GO:0140693,molecular condensate scaffold activity,"kmerseek, arm picked per term",0,,16,0,,0.0,0.0
+yeast,GO:0140693,molecular condensate scaffold activity,phmmer,0,,16,0,,0.0,0.0
+yeast,GO:1902280,regulation of RNA helicase activity,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:1902280,regulation of RNA helicase activity,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:1902280,regulation of RNA helicase activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:1902280,regulation of RNA helicase activity,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:1902280,regulation of RNA helicase activity,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:1902280,regulation of RNA helicase activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:1902280,regulation of RNA helicase activity,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:1990000,amyloid fibril formation,Foldseek,0,,4,0,,0.0,0.0
+yeast,GO:1990000,amyloid fibril formation,MMseqs2,0,,4,0,,0.0,0.0
+yeast,GO:1990000,amyloid fibril formation,MMseqs2 iterative,0,,4,0,,0.0,0.0
+yeast,GO:1990000,amyloid fibril formation,Reseek,0,,4,0,,0.0,0.0
+yeast,GO:1990000,amyloid fibril formation,jackhmmer,0,,4,0,,0.0,0.0
+yeast,GO:1990000,amyloid fibril formation,"kmerseek, arm picked per term",0,,4,0,,0.0,0.0
+yeast,GO:1990000,amyloid fibril formation,phmmer,0,,4,0,,0.0,0.0
+yeast,GO:1990757,ubiquitin ligase activator activity,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:1990757,ubiquitin ligase activator activity,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:1990757,ubiquitin ligase activator activity,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:1990757,ubiquitin ligase activator activity,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:1990757,ubiquitin ligase activator activity,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:1990757,ubiquitin ligase activator activity,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:1990757,ubiquitin ligase activator activity,phmmer,0,,1,0,,0.0,0.0
+yeast,GO:1990935,splicing factor binding,Foldseek,0,,1,0,,0.0,0.0
+yeast,GO:1990935,splicing factor binding,MMseqs2,0,,1,0,,0.0,0.0
+yeast,GO:1990935,splicing factor binding,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,GO:1990935,splicing factor binding,Reseek,0,,1,0,,0.0,0.0
+yeast,GO:1990935,splicing factor binding,jackhmmer,0,,1,0,,0.0,0.0
+yeast,GO:1990935,splicing factor binding,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,GO:1990935,splicing factor binding,phmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000030,entropic chain,Foldseek,0,,2,0,,0.0,0.0
+yeast,IDPO:0000030,entropic chain,MMseqs2,0,,2,0,,0.0,0.0
+yeast,IDPO:0000030,entropic chain,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,IDPO:0000030,entropic chain,Reseek,0,,2,0,,0.0,0.0
+yeast,IDPO:0000030,entropic chain,jackhmmer,0,,2,0,,0.0,0.0
+yeast,IDPO:0000030,entropic chain,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,IDPO:0000030,entropic chain,phmmer,0,,2,0,,0.0,0.0
+yeast,IDPO:0000031,flexible C-terminal tail,Foldseek,0,,3,0,,0.0,0.0
+yeast,IDPO:0000031,flexible C-terminal tail,MMseqs2,0,,3,0,,0.0,0.0
+yeast,IDPO:0000031,flexible C-terminal tail,MMseqs2 iterative,0,,3,0,,0.0,0.0
+yeast,IDPO:0000031,flexible C-terminal tail,Reseek,0,,3,0,,0.0,0.0
+yeast,IDPO:0000031,flexible C-terminal tail,jackhmmer,0,,3,0,,0.0,0.0
+yeast,IDPO:0000031,flexible C-terminal tail,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+yeast,IDPO:0000031,flexible C-terminal tail,phmmer,0,,3,0,,0.0,0.0
+yeast,IDPO:0000032,flexible N-terminal tail,Foldseek,0,,4,0,,0.0,0.0
+yeast,IDPO:0000032,flexible N-terminal tail,MMseqs2,0,,4,0,,0.0,0.0
+yeast,IDPO:0000032,flexible N-terminal tail,MMseqs2 iterative,0,,4,0,,0.0,0.0
+yeast,IDPO:0000032,flexible N-terminal tail,Reseek,0,,4,0,,0.0,0.0
+yeast,IDPO:0000032,flexible N-terminal tail,jackhmmer,0,,4,0,,0.0,0.0
+yeast,IDPO:0000032,flexible N-terminal tail,"kmerseek, arm picked per term",0,,4,0,,0.0,0.0
+yeast,IDPO:0000032,flexible N-terminal tail,phmmer,0,,4,0,,0.0,0.0
+yeast,IDPO:0000033,flexible linker,Foldseek,0,,70,0,,0.0,0.0
+yeast,IDPO:0000033,flexible linker,MMseqs2,0,,70,0,,0.0,0.0
+yeast,IDPO:0000033,flexible linker,MMseqs2 iterative,0,,70,0,,0.0,0.0
+yeast,IDPO:0000033,flexible linker,Reseek,0,,70,0,,0.0,0.0
+yeast,IDPO:0000033,flexible linker,jackhmmer,0,,70,2,0.7240950538822879,0.02857142857142857,0.0
+yeast,IDPO:0000033,flexible linker,"kmerseek, arm picked per term",0,,70,0,,0.0,0.0
+yeast,IDPO:0000033,flexible linker,phmmer,0,,70,1,0.625,0.014285714285714285,0.0
+yeast,IDPO:0000037,molecular recognition display site,Foldseek,0,,4,0,,0.0,0.0
+yeast,IDPO:0000037,molecular recognition display site,MMseqs2,0,,4,0,,0.0,0.0
+yeast,IDPO:0000037,molecular recognition display site,MMseqs2 iterative,0,,4,0,,0.0,0.0
+yeast,IDPO:0000037,molecular recognition display site,Reseek,0,,4,0,,0.0,0.0
+yeast,IDPO:0000037,molecular recognition display site,jackhmmer,0,,4,0,,0.0,0.0
+yeast,IDPO:0000037,molecular recognition display site,"kmerseek, arm picked per term",0,,4,0,,0.0,0.0
+yeast,IDPO:0000037,molecular recognition display site,phmmer,0,,4,0,,0.0,0.0
+yeast,IDPO:0000038,ADP-ribosylation display site,Foldseek,0,,1,0,,0.0,0.0
+yeast,IDPO:0000038,ADP-ribosylation display site,MMseqs2,0,,1,0,,0.0,0.0
+yeast,IDPO:0000038,ADP-ribosylation display site,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,IDPO:0000038,ADP-ribosylation display site,Reseek,0,,1,0,,0.0,0.0
+yeast,IDPO:0000038,ADP-ribosylation display site,jackhmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000038,ADP-ribosylation display site,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,IDPO:0000038,ADP-ribosylation display site,phmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000039,acetylation display site,Foldseek,0,,7,0,,0.0,0.0
+yeast,IDPO:0000039,acetylation display site,MMseqs2,0,,7,0,,0.0,0.0
+yeast,IDPO:0000039,acetylation display site,MMseqs2 iterative,0,,7,0,,0.0,0.0
+yeast,IDPO:0000039,acetylation display site,Reseek,0,,7,0,,0.0,0.0
+yeast,IDPO:0000039,acetylation display site,jackhmmer,0,,7,0,,0.0,0.0
+yeast,IDPO:0000039,acetylation display site,"kmerseek, arm picked per term",0,,7,0,,0.0,0.0
+yeast,IDPO:0000039,acetylation display site,phmmer,0,,7,0,,0.0,0.0
+yeast,IDPO:0000040,fatty acylation display site,Foldseek,0,,1,0,,0.0,0.0
+yeast,IDPO:0000040,fatty acylation display site,MMseqs2,0,,1,0,,0.0,0.0
+yeast,IDPO:0000040,fatty acylation display site,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,IDPO:0000040,fatty acylation display site,Reseek,0,,1,0,,0.0,0.0
+yeast,IDPO:0000040,fatty acylation display site,jackhmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000040,fatty acylation display site,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,IDPO:0000040,fatty acylation display site,phmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000041,glycosylation display site,Foldseek,0,,1,0,,0.0,0.0
+yeast,IDPO:0000041,glycosylation display site,MMseqs2,0,,1,0,,0.0,0.0
+yeast,IDPO:0000041,glycosylation display site,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,IDPO:0000041,glycosylation display site,Reseek,0,,1,0,,0.0,0.0
+yeast,IDPO:0000041,glycosylation display site,jackhmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000041,glycosylation display site,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,IDPO:0000041,glycosylation display site,phmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000042,methylation display site,Foldseek,0,,6,0,,0.0,0.0
+yeast,IDPO:0000042,methylation display site,MMseqs2,0,,6,0,,0.0,0.0
+yeast,IDPO:0000042,methylation display site,MMseqs2 iterative,0,,6,0,,0.0,0.0
+yeast,IDPO:0000042,methylation display site,Reseek,0,,6,0,,0.0,0.0
+yeast,IDPO:0000042,methylation display site,jackhmmer,0,,6,0,,0.0,0.0
+yeast,IDPO:0000042,methylation display site,"kmerseek, arm picked per term",0,,6,0,,0.0,0.0
+yeast,IDPO:0000042,methylation display site,phmmer,0,,6,0,,0.0,0.0
+yeast,IDPO:0000044,palmitoylation display site,Foldseek,0,,2,0,,0.0,0.0
+yeast,IDPO:0000044,palmitoylation display site,MMseqs2,0,,2,0,,0.0,0.0
+yeast,IDPO:0000044,palmitoylation display site,MMseqs2 iterative,0,,2,0,,0.0,0.0
+yeast,IDPO:0000044,palmitoylation display site,Reseek,0,,2,0,,0.0,0.0
+yeast,IDPO:0000044,palmitoylation display site,jackhmmer,0,,2,0,,0.0,0.0
+yeast,IDPO:0000044,palmitoylation display site,"kmerseek, arm picked per term",0,,2,0,,0.0,0.0
+yeast,IDPO:0000044,palmitoylation display site,phmmer,0,,2,0,,0.0,0.0
+yeast,IDPO:0000045,phosphorylation display site,Foldseek,0,,45,0,,0.0,0.0
+yeast,IDPO:0000045,phosphorylation display site,MMseqs2,0,,45,0,,0.0,0.0
+yeast,IDPO:0000045,phosphorylation display site,MMseqs2 iterative,0,,45,0,,0.0,0.0
+yeast,IDPO:0000045,phosphorylation display site,Reseek,0,,45,2,0.8035832589221419,0.044444444444444446,0.0
+yeast,IDPO:0000045,phosphorylation display site,jackhmmer,0,,45,0,,0.0,0.0
+yeast,IDPO:0000045,phosphorylation display site,"kmerseek, arm picked per term",0,,45,0,,0.0,0.0
+yeast,IDPO:0000045,phosphorylation display site,phmmer,0,,45,0,,0.0,0.0
+yeast,IDPO:0000046,ubiquitination display site,Foldseek,0,,1,0,,0.0,0.0
+yeast,IDPO:0000046,ubiquitination display site,MMseqs2,0,,1,0,,0.0,0.0
+yeast,IDPO:0000046,ubiquitination display site,MMseqs2 iterative,0,,1,0,,0.0,0.0
+yeast,IDPO:0000046,ubiquitination display site,Reseek,0,,1,0,,0.0,0.0
+yeast,IDPO:0000046,ubiquitination display site,jackhmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000046,ubiquitination display site,"kmerseek, arm picked per term",0,,1,0,,0.0,0.0
+yeast,IDPO:0000046,ubiquitination display site,phmmer,0,,1,0,,0.0,0.0
+yeast,IDPO:0000048,limited proteolysis display site,Foldseek,0,,3,0,,0.0,0.0
+yeast,IDPO:0000048,limited proteolysis display site,MMseqs2,0,,3,0,,0.0,0.0
+yeast,IDPO:0000048,limited proteolysis display site,MMseqs2 iterative,0,,3,0,,0.0,0.0
+yeast,IDPO:0000048,limited proteolysis display site,Reseek,0,,3,0,,0.0,0.0
+yeast,IDPO:0000048,limited proteolysis display site,jackhmmer,0,,3,0,,0.0,0.0
+yeast,IDPO:0000048,limited proteolysis display site,"kmerseek, arm picked per term",0,,3,0,,0.0,0.0
+yeast,IDPO:0000048,limited proteolysis display site,phmmer,0,,3,0,,0.0,0.0
+yeast,IDPO:0000059,self-inhibition,Foldseek,0,,9,0,,0.0,0.0
+yeast,IDPO:0000059,self-inhibition,MMseqs2,0,,9,0,,0.0,0.0
+yeast,IDPO:0000059,self-inhibition,MMseqs2 iterative,0,,9,0,,0.0,0.0
+yeast,IDPO:0000059,self-inhibition,Reseek,0,,9,0,,0.0,0.0
+yeast,IDPO:0000059,self-inhibition,jackhmmer,0,,9,0,,0.0,0.0
+yeast,IDPO:0000059,self-inhibition,"kmerseek, arm picked per term",0,,9,0,,0.0,0.0
+yeast,IDPO:0000059,self-inhibition,phmmer,0,,9,0,,0.0,0.0
+yeast,IDPO:0000060,self-assembly,Foldseek,0,,4,0,,0.0,0.0
+yeast,IDPO:0000060,self-assembly,MMseqs2,0,,4,0,,0.0,0.0
+yeast,IDPO:0000060,self-assembly,MMseqs2 iterative,0,,4,0,,0.0,0.0
+yeast,IDPO:0000060,self-assembly,Reseek,0,,4,0,,0.0,0.0
+yeast,IDPO:0000060,self-assembly,jackhmmer,0,,4,0,,0.0,0.0
+yeast,IDPO:0000060,self-assembly,"kmerseek, arm picked per term",0,,4,0,,0.0,0.0
+yeast,IDPO:0000060,self-assembly,phmmer,0,,4,0,,0.0,0.0

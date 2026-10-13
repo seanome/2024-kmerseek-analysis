@@ -263,7 +263,10 @@ def main():
                    help="per species, split evenly between family-sharing and decoy")
     p.add_argument("--structure-cache", type=Path,
                    default=Path.home() / "data/alphafold_structures")
-    p.add_argument("--gene-set", choices=["default", "mhc", "chr6", "chr6_plus"],
+    p.add_argument("--query-accessions", type=Path,
+                   help="--gene-set disprot: one UniProt accession per line, the human "
+                        "proteins to use as queries (scripts/fetch_disprot.py writes it)")
+    p.add_argument("--gene-set", choices=["default", "mhc", "chr6", "chr6_plus", "disprot"],
                    default="default",
                    help="mhc restricts queries to the MHC region genes of notebooks 210-216; "
                         "chr6 takes every HGNC gene on chromosome 6 (the MHC's chromosome), "
@@ -359,6 +362,27 @@ def main():
                     f"chr6_plus dropped {len(chr6_only - query_acc)} chr6 queries; it must "
                     f"be a superset of chr6"
                 )
+    elif args.gene_set == "disprot":
+        # Human proteins with an experimentally supported DisProt functional region.
+        # Taken from the human FASTA, NOT from the Pfam table every other set is cut from:
+        # many disordered proteins have no Pfam domain, and requiring one would quietly
+        # keep only the DisProt proteins that also have a folded domain. Those without one
+        # are searched like the rest; they simply carry no Pfam truth.
+        if not args.query_accessions or not args.query_accessions.exists():
+            raise SystemExit("--gene-set disprot requires --query-accessions")
+        wanted = {l.strip() for l in args.query_accessions.read_text().splitlines()
+                  if l.strip()}
+        sub, name = proteomes["human"]
+        in_fasta = {accession_of(h) for h in read_fasta(args.qfo_dir / sub / f"{name}.fasta")}
+        query_acc = wanted & in_fasta
+        query_buckets = {acc: "disprot" for acc in query_acc}
+        with_pfam = query_acc & set(human["accession"].to_list())
+        print(f"NOTE: disprot query set: {len(query_acc)} of {len(wanted)} listed "
+              f"accessions are in the human proteome; {len(with_pfam)} of them have a "
+              f"positioned Pfam domain, {len(query_acc) - len(with_pfam)} have none")
+        if len(query_acc) < len(wanted):
+            print(f"NOTE: not in the human proteome: "
+                  f"{', '.join(sorted(wanted - in_fasta))}")
     else:
         query_acc = set(pick_queries(human, args.n_queries))
         query_buckets = {acc: "default" for acc in query_acc}
