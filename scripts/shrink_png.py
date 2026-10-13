@@ -10,8 +10,10 @@ An image is left as it is when
   * it already has a 256-colour palette (so running this twice changes nothing),
   * the 256-colour version is not smaller, or
   * the 256-colour version moves the average pixel by more than MAX_MEAN_CHANGE of 255
-    brightness levels. Matplotlib figures move by 1.4 to 2.4; this guard is for
-    photographs and structure renderings, which can lose visible detail.
+    brightness levels. Opaque matplotlib figures move by 0.01 (median 2026-10-13, all
+    336 committed PNGs; at most 0.47); this guard is for photographs and structure
+    renderings, which can lose visible detail. A continuous colour bar does show steps
+    at 256 colours, which this average is too small to catch.
 
 Notebooks are edited as text: only the image itself is replaced, so the rest of the file
 keeps its exact formatting and the diff shows only the images.
@@ -45,7 +47,14 @@ def shrink_png_bytes(data: bytes) -> bytes | None:
         return None
     dpi = im.info.get("dpi")
     rgba = im.convert("RGBA")
-    quantized = rgba.quantize(256, method=Image.Quantize.FASTOCTREE)
+    if rgba.getextrema()[3][0] == 255:
+        # Fully opaque, as every matplotlib figure here is. Median cut on RGB moves the
+        # average pixel about 100x less than fast octree (0.01 vs 1-3.5 on this repo's
+        # figures), but Pillow allows it only without an alpha channel.
+        quantized = rgba.convert("RGB").quantize(
+            256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    else:
+        quantized = rgba.quantize(256, method=Image.Quantize.FASTOCTREE)
     change = ImageStat.Stat(
         ImageChops.difference(rgba, quantized.convert("RGBA")).convert("L")
     ).mean[0]
