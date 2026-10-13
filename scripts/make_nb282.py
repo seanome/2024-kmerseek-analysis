@@ -60,11 +60,13 @@ families can enter the test. Stage 2: the written plan, which waits for Ayelet's
 1. Stage 0. If their supplementary tables rebuild the family fates and the over-80% number,
    Stage 2 reuses their code path. If the tables do not allow it, stop Stage 0 and list what
    is missing; no substitute definition.
-2. Stage 1, the go/no-go for Stage 2. Marlétaz et al. could test 360-370 of their
-   1,094-1,225 single-amphioxus-gene families: about 30% are expressed in every one of the
-   nine tissues in both species, the filter every family must pass. If at least **300**
-   families have exactly one Botryllus gene and two or more human ohnologs, the same 30%
-   would give about 100 testable families, and Stage 2 goes ahead with Botryllus. Below 300,
+2. Stage 1, the go/no-go for Stage 2. Marlétaz et al.'s script tested 360-370 of the
+   1,097-1,215 ohnolog families left after its size filter: 30-34% are expressed in every
+   one of the nine tissues in both species, the filter every family must pass. If at least
+   **330** families have exactly one Botryllus gene and two or more human ohnologs, 30% of
+   them gives about 100 testable families, and Stage 2 goes ahead with Botryllus. The 30%
+   comes from bulk tissue RNA; single-cell detection in about five coarse cell-type groups
+   may pass a different share, so the count is checked again once the data arrive. Below 330,
    Stage 2 starts with Ciona or amphioxus as the stand-in and Botryllus as a check.
 3. Stage 1, tunicate gene loss ([Berná and Alvarez-Valin 2014](https://doi.org/10.1093/gbe/evu122):
    tunicate genomes change fast and have lost genes). Among families with one amphioxus
@@ -108,7 +110,7 @@ ORTHOFINDER_RESULTS = Path(
 ORTHOGROUPS = ORTHOFINDER_RESULTS / "Orthogroups/Orthogroups.tsv"
 HAVE_ORTHOFINDER = ORTHOGROUPS.exists()
 OHNOLOG_CRITERION = "strict"  # main analysis; intermediate and relaxed are shown as checks
-GO_THRESHOLD = 300  # decision rule 2
+GO_THRESHOLD = 330  # decision rule 2
 LOSS_THRESHOLD = 0.25  # decision rule 3
 print("OrthoFinder families:", ORTHOGROUPS, "found" if HAVE_ORTHOFINDER else "NOT FOUND (Sherlock run pending)")
 """)
@@ -218,19 +220,22 @@ own counts; this notebook did not recompute them from expression.
 
 The family fates cannot be rebuilt from the published tables. The classification needs,
 for every gene, its expression in the nine tissues. The script reads four files,
-`Bla_cRPKMs-TissuesC-s-NORM.tab`, `Mmu_...`, `Dre_...` and `Xtr_...`, and none is public:
+`Bla_cRPKMs-TissuesC-s-NORM.tab`, `Mmu_...`, `Dre_...` and `Xtr_...`. None is public, and
+the per-sample tables they were built from are public for amphioxus only:
 
 | Needed | Where looked (2026-10-12) | Found |
 |---|---|---|
-| Normalized cRPKM, 9 tissues, amphioxus | Supplementary Data 1-2, Supplementary Tables, GitLab FunctionalAmphioxus (both projects), amphiencode.github.io/Data | no |
-| Same for mouse, zebrafish, frog | same places | no |
-| Raw cRPKM tables they came from | VastDB downloads (Irimia lab, same cRPKM method) | mouse and zebrafish only; no amphioxus, no frog |
+| The four normalized tables the script reads | Supplementary Data 1-2, Supplementary Tables, GitLab FunctionalAmphioxus (every file in both projects), amphiencode.github.io/Data, Zenodo, figshare | no |
+| Amphioxus per-sample cRPKM, the nine tissues | GEO GSE106430 supplementary files (BL gene IDs, one file per replicate) | yes |
+| Mouse per-sample cRPKM, their nine samples (`Oocyte_M`, `Testis_B12`, ...) | VastDB mm10 expression table (Irimia lab, same cRPKM method) | 1 of 9 (`Skin_a`) |
+| Zebrafish, their nine samples (`Eggs_A`, `Brain_a`, ...) | VastDB danRer10; GEO GSE106430 (embryo stages only) | 5 of 9 (no testis, intestine, liver, brain) |
+| Frog | VastDB (no *Xenopus*) | no |
 | Gene families, ohnolog list, tissue matching, the rule, the code | Datasets 7 and 9, Table 7, SI section 11, the Perl script | yes |
 
-Rebuilding the expression tables would mean re-mapping the raw RNA-seq (GEO GSE106430 for
-amphioxus, plus each vertebrate's SRA runs in Supplementary Dataset 3) with their
-mappability correction. That is a new data set, not their tables, so it is not done here.
-What could be checked from the tables did agree: Dataset 9 holds the 1,509 families the
+With no vertebrate side, the amphioxus tables alone cannot classify a family. Filling the
+vertebrate side would mean re-mapping each vertebrate's raw RNA-seq (the SRA runs in
+Supplementary Dataset 3) with their mappability correction: a new data set, not their
+tables, so it is not done here. What could be checked from the tables did agree: Dataset 9 holds the 1,509 families the
 script starts from, and the rebuilt size filter (1,225 / 1,140 / 1,094) is within 10
 families of the script's (1,215 / 1,142 / 1,097), the gap the missing expression filter
 allows.
@@ -282,8 +287,8 @@ md(r"""
 ## Stage 1b. Gene families with OrthoFinder, and which human copies are ohnologs
 
 **Why OrthoFinder** ([Emms and Kelly 2019](https://doi.org/10.1186/s13059-019-1832-y)):
-it builds families from all-against-all DIAMOND similarity, then splits them with gene
-trees reconciled to the species tree, and it was the most accurate ortholog method on the
+it clusters proteins into families from all-against-all DIAMOND scores and infers a gene
+tree for each family, and it was the most accurate ortholog method on the
 Quest for Orthologs benchmark. Its families hold every copy in every species, which is the
 unit this test needs (one Botryllus gene against all its human copies). kmerseek is not
 used: most tunicate-human pairs are below the sequence identity where kmerseek places
@@ -299,7 +304,7 @@ families there).
 **Which human copies come from the two duplications.** OHNOLOGS v2
 ([Singh and Isambert 2020](https://doi.org/10.1093/nar/gkz909)), human 2R pairs,
 downloaded 2026-10-12 from ohnologs.curie.fr (`~/data/ohnologs_v2/`). Three confidence
-levels: strict (4,258 pairs; the main analysis here), intermediate (5,644) and relaxed
+levels: strict (4,258 pairs, 4,254 once the 4 pairs listed twice are removed; the main analysis here), intermediate (5,644) and relaxed
 (7,358, the number the paper gives for human). A human gene counts as an ohnolog of a
 family only if one of its OHNOLOGS partners is in the same family.
 """)
@@ -309,6 +314,12 @@ ohnolog_pairs = {c: ofu.read_ohnolog_pairs(c) for c in ofu.OHNOLOG_CRITERIA}
 human_ids = {l[1:].strip() for l in open(PROTEOMES / "human.fa") if l.startswith(">")}
 coverage = pl.DataFrame([
     {"criterion": c, "pairs": p.height,
+     "unique_pairs": p.select(
+                pl.min_horizontal("ohno1", "ohno2").alias("a"),
+                pl.max_horizontal("ohno1", "ohno2").alias("b"),
+            )
+            .unique()
+            .height,
      "genes": len(set(p["ohno1"]) | set(p["ohno2"])),
      "genes_in_gencode_v49_canonical": len((set(p["ohno1"]) | set(p["ohno2"])) & human_ids),
      "pairs_with_both_genes": p.filter(pl.col("ohno1").is_in(list(human_ids)) & pl.col("ohno2").is_in(list(human_ids))).height}
@@ -527,8 +538,14 @@ expressed lower ([Qian et al. 2010](https://doi.org/10.1016/j.tig.2010.07.002)),
 lower-expressed gene is detected in fewer cells, so it can look narrowed only because it
 is harder to detect. Control: human genes in one-to-one families (one Botryllus gene, one
 human gene), binned by mean expression. A copy counts as narrowed only if it loses more
-cell types than 95% of the one-to-one genes in its expression bin. Marlétaz et al.'s second
-control is kept too: sum the copies' expression per cell type and call on/off on the sum.
+cell types than 95% of the one-to-one genes in its expression bin. As a check, also sum the
+copies' expression per cell type and call on/off on the sum (Marlétaz et al. did this for
+their Fig. 6a-b histograms, not for the fates).
+
+Each gene gets one on/off call per cell type, and the copies' union is built from those
+same calls. Their Perl script differs here: it rounds a gene's value to two decimals for
+the gene's own calls but not for the family union, so a value just above 5 can be "on" for
+the family and "off" for the gene.
 
 **Prediction.** If Botryllus agrees with amphioxus, most tested families are "one narrows",
 not "split" (Marlétaz et al.: 3.0-3.7 times more often).

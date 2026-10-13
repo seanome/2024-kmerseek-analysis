@@ -9,7 +9,7 @@
 #
 # Notebook 282, Stage 1: gene families for Botryllus, Ciona, amphioxus (Branchiostoma
 # lanceolatum) and human with OrthoFinder 3.1.5, one protein per gene (written by
-# scripts/prepare_282_proteomes.py on the laptop, 54 MB).
+# scripts/prepare_282_proteomes.py on the laptop, 57 MB).
 #
 # First time only, from the laptop (data goes through the data transfer node):
 #
@@ -47,10 +47,11 @@ TREE=$REPO/notebooks/282_species_tree.nwk
 for f in "$IN/botryllus.fa" "$IN/human.fa" "$IN/amphioxus.fa" "$IN/ciona.fa" "$TREE"; do
     [ -s "$f" ] || { echo "282: missing input $f" >&2; exit 2; }
 done
-# OrthoFinder refuses to write into a results folder that already exists.
-[ ! -e "$OUT/Results_282" ] || { echo "282: $OUT/Results_282 exists; move it first" >&2; exit 2; }
+# OrthoFinder 3.1 refuses an -o folder that already exists, prints an error and exits 0,
+# so the folder must not exist before the run and the output is checked after it.
+[ ! -e "$OUT" ] || { echo "282: $OUT exists; move it first" >&2; exit 2; }
 
-mkdir -p "$(dirname "$IMG")" "$OUT"
+mkdir -p "$(dirname "$IMG")"
 [ -s "$IMG" ] || apptainer pull "$IMG" docker://quay.io/biocontainers/orthofinder:3.1.5--hdfd78af_0
 
 # OrthoFinder reads every FASTA in -f; give it a folder with only the four proteomes.
@@ -68,4 +69,7 @@ apptainer exec --bind "$DIR","$REPO" "$IMG" \
 # OrthoFinder 3.1 writes the families rooted at N0 (the chordate ancestor) to
 # Orthogroups/Orthogroups.tsv and leaves no N0.tsv (a 4-species test run, 2026-10-12).
 # N1.tsv holds the families cut at the tunicate + vertebrate ancestor.
-ls -la "$OUT/Results_282/Orthogroups/Orthogroups.tsv" "$OUT/Results_282/Phylogenetic_Hierarchical_Orthogroups/N1.tsv"
+for f in "$OUT/Results_282/Orthogroups/Orthogroups.tsv" "$OUT/Results_282/Phylogenetic_Hierarchical_Orthogroups/N1.tsv"; do
+    [ -s "$f" ] || { echo "282: OrthoFinder wrote no $f; read the log above" >&2; exit 1; }
+done
+ls -la "$OUT/Results_282/Orthogroups/Orthogroups.tsv"
