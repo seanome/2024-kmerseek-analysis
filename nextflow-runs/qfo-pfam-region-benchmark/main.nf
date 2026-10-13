@@ -109,6 +109,10 @@ params.strict_iou = 0.8
 // HHblits background database (UniRef30). Without it hhblits runs single-sequence
 // profiles and lands near phmmer -- see README-sherlock.md for the download.
 params.hhblits_db    = null
+// Leave the HHblits arm out entirely. It is the most expensive sequence arm (555 CPU-hours
+// over nine targets on run-midi-plus) and not every benchmark compares against it; the
+// DisProt run (notebook 251) does not.
+params.skip_hhblits = false
 
 // --- kmerseek alphabet x ksize matrix -------------------------------------
 // Same alphabet set as the kmer-spectra pipeline. HP floor is 18, not 15: a 2-letter
@@ -318,11 +322,47 @@ params.min_shared_kmers = 2
 params.max_query_pvalue = 0.05
 params.min_region_score = 1.3
 
+// --- ungapped extension, kmerseek 0.4 only ---------------------------------
+// Off by default, and every index and search name is unchanged while it is off.
+//
+// On, each exact run of shared k-mers is grown outward through mismatches (+1 per agreeing
+// encoded position, -C per disagreeing one, stop X below the best), with no gaps and no
+// chaining of runs, and each region gets a Karlin-Altschul E-value (`region_evalue`,
+// `region_ka_bits`). Without extension kmerseek 0.4 writes region_evalue as inf on every
+// row, so this is what makes an E-value ranking possible at all.
+//
+// C is the alphabet's own optimum, from its measured copy rate kappa in
+// assets/kappa_by_alphabet.pfam_a_38.2_seed_pairs_20-30pct_identity.tsv (analysis notebook 230; copied from the invertebrate
+// dark-set pipeline, which introduced it): C = -ln(1 - kappa) / ln(1 + kappa x classes -
+// kappa). 1.59 for hp_pbotc_1st_ed2, 0.14 for protein20. X = xdrop_per_penalty x C. An
+// alphabet with no measured kappa (funcgroups8) keeps exact regions and the plan log says so.
+//
+// The E-value's lambda and K are fitted when the index is built, on --kmerseek_ka_queries
+// of the target's own sequences, and stored in the index. Such an index is not the index an
+// unextended run builds, so its name gains `.ka-c<C>`: the two can share one store without
+// one run picking up the other's index. Searches then pass --ka-queries 0, so a search
+// against an index whose fit was refused fails loudly instead of refitting.
+params.kmerseek_extend = false
+params.kmerseek_extend_xdrop_per_penalty = 4
+params.kmerseek_ka_queries = 500
+// More fit queries for a large keyspace: 500 up to 30 bits per seed, doubling every 3 bits
+// above it, capped at 3_000 (the dark-set pipeline's rule, kept identical).
+params.kmerseek_ka_queries_bits_base = 30
+params.kmerseek_ka_queries_bits_per_doubling = 3
+params.kmerseek_ka_queries_max = 3000
+
 // --- baseline tool settings ------------------------------------------------
 params.mmseqs2_sensitivity = 7
 params.mmseqs2_iterations  = 3
 params.jackhmmer_iterations = 3
 params.evalue_report       = 10.0
+// Extra flags for opening the sequence tools' own filters, empty by default. The
+// matched-permissive setting (nextflow-runs/invertebrate-dark-set/MATCHED-PERMISSIVE.md on
+// the dark-set branch) is `--hmmer_extra_flags '--max --domE 1000'` with
+// `--evalue_report 1000`, and `--mmseqs2_extra_flags '--min-ungapped-score 0 --mask 0'` with
+// `--mmseqs2_sensitivity 7.5`; every tool is then compared at list length 1000 in scoring.
+params.hmmer_extra_flags   = ''
+params.mmseqs2_extra_flags = ''
 
 // --- domain-call scoring ---------------------------------------------------
 // A transferred call counts as hitting a true domain instance when the two intervals
@@ -910,6 +950,41 @@ def alphabetClasses = { label ->
 // ones sitting just OUTSIDE it. The trace bears that out -- see kmerseekSearchMemory.
 def keyspaceBits = { label, ksize ->
     ksize * (Math.log(alphabetClasses(label)) / Math.log(2.0d))
+}
+
+// kappa per alphabet, read once. See params.kmerseek_extend.
+def KAPPA = file("${projectDir}/assets/kappa_by_alphabet.pfam_a_38.2_seed_pairs_20-30pct_identity.tsv").readLines()
+    .findAll { it.trim() && !it.startsWith('#') && !it.startsWith('alphabet\t') }
+    .collectEntries { line -> def f = line.split('\t'); [(f[0]): f[2] as double] }
+
+// 2 -> "2", 1.5900 -> "1.59": the one spelling used in index names and on the command line,
+// because kmerseek looks the stored fit up by exact penalty and X-drop.
+def penaltyString = { double c ->
+    def s = String.format('%.2f', c)
+    s.replaceAll(/0+$/, '').replaceAll(/\.$/, '')
+}
+
+// The mismatch penalty C for one alphabet, as a string, or '' when extension is off or the
+// alphabet has no measured kappa.
+def extendPenalty = { label ->
+    if (!params.kmerseek_extend || !KAPPA.containsKey(label)) return ''
+    double kappa = KAPPA[label]
+    int n = alphabetClasses(label)
+    penaltyString(-Math.log(1.0d - kappa) / Math.log(1.0d + kappa * n - kappa))
+}
+
+def extendXdrop = { String c ->
+    penaltyString((params.kmerseek_extend_xdrop_per_penalty as double) * (c as double))
+}
+
+def kaQueries = { label, ksize ->
+    int nq = params.kmerseek_ka_queries as int
+    double bits = keyspaceBits(label, ksize as int)
+    double base = params.kmerseek_ka_queries_bits_base as double
+    if (nq <= 0 || bits <= base) return nq
+    double per = params.kmerseek_ka_queries_bits_per_doubling as double
+    int n = (int) Math.round(nq * Math.pow(2.0d, (bits - base) / per) / 50.0d) * 50
+    Math.min(params.kmerseek_ka_queries_max as int, n)
 }
 
 // Ceiling on a kmerseek search request, before the retry multiplier. Sized for full QfO
@@ -1619,7 +1694,15 @@ process kmerseekIndex {
     // Index sizing only. Building the index does not care which alphabet or ksize it is
     // -- 1_500 measured tasks peaked at 7.00 GB and tracked the proteome alone -- so this
     // must NOT use kmerseekSearchMemory, which would put a search-sized ask on every one.
-    memory { kmerseekIndexMemory(species_fasta.size(), task.attempt) }
+    //
+    // The exception is an index with an extension fit (ka set): the fit searches
+    // --ka-queries of the target's sequences against the index just built, so the task
+    // needs a search's memory as well, and gets the larger of the two.
+    memory {
+        def m = kmerseekIndexMemory(species_fasta.size(), task.attempt)
+        def s = ka ? kmerseekSearchMemory(label, ksize, species_fasta.size(), task.attempt) : m
+        s > m ? s : m
+    }
     // Retries cluster kills only -- the signal range plus the no-exit-code sentinel, see
     // retryOnKill. Do NOT widen this to exit 1 to catch the
     // "Directory not empty" unstage failure -- that was measured on 2026-08-27 and it does
@@ -1641,21 +1724,28 @@ process kmerseekIndex {
     maxRetries 2
 
     input:
+    // ka is the extension penalty C as a string, '' for an index without a fit; see
+    // params.kmerseek_extend.
     tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize),
-          val(lowcomp), val(image)
+          val(lowcomp), val(image), val(ka)
 
     output:
-    path "${species}.${label}.k${ksize}.lc${lowcomp}.kmerseek.rocksdb"
+    path "${species}.${label}.k${ksize}.lc${lowcomp}${ka ? '.ka-c' + ka : ''}.kmerseek.rocksdb"
 
     script:
     def slug      = "${label}.k${ksize}.lc${lowcomp}"
-    def index_dir = "${species}.${slug}.kmerseek.rocksdb"
+    def index_dir = "${species}.${slug}${ka ? '.ka-c' + ka : ''}.kmerseek.rocksdb"
     def spectrum  = "spectrum.${species}.${slug}.csv.gz"
     // The new CLI treats --remove-low-complexity as a presence-only index flag. Search
     // inherits the index setting when the option is omitted, so false emits nothing and
     // true emits the flag without a value.
     def lc_flag   = lowcomp ? "--remove-low-complexity" : ""
     def timing    = "timing.jsonl"
+    // The Karlin-Altschul fit the extended search reads, stored in the index. Its score
+    // histogram goes into the index too, so a refused fit can be looked at afterwards.
+    def ka_flags  = ka ? "--extend-mismatch-penalty ${ka} --extend-xdrop ${extendXdrop(ka)} " +
+                         "--ka-queries ${kaQueries(label, ksize)} " +
+                         "--ka-survival-out ${index_dir}/ka_survival.C${ka}.csv" : ""
     """
     set -euo pipefail
     ${KMERSEEK_TIMER_SH}
@@ -1677,6 +1767,7 @@ process kmerseekIndex {
         --output   ${index_dir} \\
         ${lc_flag} \\
         --kmer-stats-out ${spectrum} \\
+        ${ka_flags} \\
         2>&1 | tee -a index.log
     _cmd_s=\$(_elapsed_s \$_cmd_t0)
 
@@ -1743,7 +1834,7 @@ process kmerseekSearch {
 
     input:
     tuple val(species), val(cli_flag), val(label), val(ksize), val(lowcomp),
-          val(target_bytes), path(index_dir), path(human_fasta), val(image)
+          val(target_bytes), path(index_dir), path(human_fasta), val(image), val(ka)
 
     output:
     path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.regions.parquet",  emit: regions
@@ -1759,6 +1850,10 @@ process kmerseekSearch {
     def spectrum  = "spectrum.${species}.${slug}.csv.gz"
     def timings   = "human_vs_${species}.${slug}.timings.jsonl"
     def lc_flag   = lowcomp ? "--remove-low-complexity" : ""
+    // Ungapped extension with the fit stored in the index; --ka-queries 0 refuses to
+    // search rather than refit when that fit is missing. See params.kmerseek_extend.
+    def ext_flags = ka ? "--extend-mismatch-penalty ${ka} --extend-xdrop ${extendXdrop(ka)} " +
+                         "--ka-queries 0" : ""
     """
     set -euo pipefail
     ${KMERSEEK_TIMER_SH}
@@ -1790,6 +1885,7 @@ process kmerseekSearch {
     # this by also lowering --max-query-pvalue expecting fewer rows; the OR means the
     # looser of the two governs.
     set +e
+    fit_refused=false
     _cmd_t0=\$(_now_ms)
     kmerseek search \\
         --alphabet ${cli_flag} \\
@@ -1801,9 +1897,34 @@ process kmerseekSearch {
         --min-shared-kmers  ${params.min_shared_kmers} \\
         --max-query-pvalue  ${params.max_query_pvalue} \\
         --min-region-score  ${params.min_region_score} \\
+        ${ext_flags} \\
         2>> ${log_file} \\
         | zstd -T2 -o ${out_zst}
     rc=(\${PIPESTATUS[@]})
+
+    # An extended search against an index whose Karlin-Altschul fit was refused at build
+    # time (too few score bins; see the index's ka_survival CSV) exits 1 before searching.
+    # Stored as it stands, that is an empty region file that reads as "found nothing". It
+    # is searched again without the extension instead: exact regions, mean IDF intact,
+    # region_evalue inf, so the arm is present and simply has no E-value ranking. The
+    # refusal is written into the log and the timings record so it can be counted.
+    if [ -n "${ext_flags}" ] && [ "\${rc[0]}" -ne 0 ] && grep -q 'no Karlin-Altschul fit' ${log_file}; then
+        echo "extension fit refused for this index: searching again without extension" | tee -a ${log_file}
+        kmerseek search \\
+            --alphabet ${cli_flag} \\
+            --ksize    ${ksize} \\
+            --query    ${human_fasta} \\
+            --target   ${index_dir} \\
+            ${lc_flag} \\
+            --threshold         ${params.threshold} \\
+            --min-shared-kmers  ${params.min_shared_kmers} \\
+            --max-query-pvalue  ${params.max_query_pvalue} \\
+            --min-region-score  ${params.min_region_score} \\
+            2>> ${log_file} \\
+            | zstd -T2 -f -o ${out_zst}
+        rc=(\${PIPESTATUS[@]})
+        fit_refused=true
+    fi
     _cmd_s=\$(_elapsed_s \$_cmd_t0)
     set -e
 
@@ -1866,9 +1987,9 @@ PYEOF
     # divides this by the query count to get queries/s and puts it on the same axis as
     # foldseek's 17.1 and prostt5's 14.4. command_s is the `kmerseek search` invocation
     # alone, kept for attributing the difference rather than for the headline number.
-    printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s}\\n' \\
+    printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s,"extension_fit_refused":%s}\\n' \\
         "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
-        "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" >> ${timings}
+        "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" "\$fit_refused" >> ${timings}
     """
 }
 
@@ -1907,6 +2028,7 @@ process phmmerSearch {
         -o /dev/stderr \\
         --noali \\
         -E ${params.evalue_report} \\
+        ${params.hmmer_extra_flags} \\
         --cpu ${task.cpus} \\
         ${human_fasta} ${species_fasta} \\
     | grep -v '^#' \\
@@ -1945,6 +2067,7 @@ process jackhmmerSearch {
         -o /dev/stderr \\
         --noali \\
         -E ${params.evalue_report} \\
+        ${params.hmmer_extra_flags} \\
         --cpu ${task.cpus} \\
         ${human_fasta} ${species_fasta} \\
     | grep -v '^#' \\
@@ -2097,6 +2220,7 @@ process mmseqs2Search {
         ${mode_flag} \\
         ${iter_flag} \\
         --max-seqs 1000 \\
+        ${params.mmseqs2_extra_flags} \\
         -e ${params.evalue_report}
 
     # convertalis reads the SAME target database the search used. makepaddedseqdb renumbers
@@ -3976,8 +4100,20 @@ workflow {
                 comboKey(species, label, ksize, lowcomp) in keep
             }
             .map { species, fasta, cli_flag, label, ksize, lowcomp ->
-                tuple(species, fasta, cli_flag, label, ksize, lowcomp, imageFor(cli_flag))
+                tuple(species, fasta, cli_flag, label, ksize, lowcomp, imageFor(cli_flag),
+                      extendPenalty(label))
             }
+        if (params.kmerseek_extend) {
+            def labels = combos.collect { it[1] }.unique()
+            log.info "  extension: ungapped, C per alphabet " +
+                     labels.findAll { extendPenalty(it) }
+                           .collect { "${it} ${extendPenalty(it)}" }.join(', ')
+            def exact = labels.findAll { !extendPenalty(it) }
+            if (exact) {
+                log.info "  extension: no measured kappa, so exact regions and no E-value " +
+                         "for ${exact.join(', ')}"
+            }
+        }
         idx_out = kmerseekIndex(kmerseek_in)
 
         // Rejoin the index to the combo that produced it. kmerseekIndex emits a bare
@@ -3986,21 +4122,22 @@ workflow {
         // joined back against the input channel. That recovers cli_flag and the target
         // FASTA size, neither of which survives in the name, without reparsing either out
         // of a filename that was never meant to carry them.
-        combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp, image ->
+        combo_meta = kmerseek_in.map { species, fasta, cli_flag, label, ksize, lowcomp, image, ka ->
             tuple(comboKey(species, label, ksize, lowcomp),
-                  species, cli_flag, label, ksize, lowcomp, fasta.size(), image)
+                  species, cli_flag, label, ksize, lowcomp, fasta.size(), image, ka)
         }
 
         search_in = idx_out
             .map { d ->
-                def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lc(true|false)\.kmerseek\.rocksdb$/)
+                // The optional .ka-c<C> is the extension fit; see params.kmerseek_extend.
+                def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lc(true|false)(?:\.ka-c[0-9.]+)?\.kmerseek\.rocksdb$/)
                 if (!m) error "cannot parse kmerseek index directory name: ${d.name}"
                 tuple(comboKey(m[0][1], m[0][2], m[0][3], m[0][4]), d)
             }
             .join(combo_meta)
-            .map { _key, d, species, cli_flag, label, ksize, lowcomp, target_bytes, image ->
+            .map { _key, d, species, cli_flag, label, ksize, lowcomp, target_bytes, image, ka ->
                 tuple(species, cli_flag, label, ksize, lowcomp, target_bytes, d, human_fasta,
-                      image)
+                      image, ka)
             }
 
         // Rebuild (species, tool, variant) from the filename. The process emits a bare
@@ -4102,7 +4239,7 @@ workflow {
         // The script used to test `label != "human"` to decide whether to build hhm+cs219,
         // which silently stops meaning anything once the human label carries a digest.
         hhblits_out = Channel.empty()
-        if (!bench_only) {
+        if (!bench_only && !params.skip_hhblits) {
             // Filtered before hhblitsBuildDB, not after: the per-species profile database
             // is a third of this arm's cost, and building one for a target that never gets
             // searched is pure waste.

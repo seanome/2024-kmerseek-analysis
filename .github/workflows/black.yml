@@ -12,5 +12,52 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--check --verbose"
+          # Same version as .pre-commit-config.yaml, so CI and local commits format alike.
+          # Never leave this unpinned: black@stable moved to 26.10 on 2026-10-13 and every
+          # branch without the pin went red on notebooks it had not touched.
+          version: "26.5.1"
           src: "./notebooks"
           jupyter: true
+
+  # The pre-commit hooks, on the notebooks this PR changes, not on all of them: most older
+  # notebooks break at least one rule, and no PR should go red for that. Pull requests
+  # only, because a push has no base to compare against.
+  notebooks:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # A branch cut before the checker existed carries this file (copied on so that it
+      # runs the pinned black) but not the checker itself. Skip there instead of failing
+      # on a missing script; the checks start once the branch merges main.
+      - name: Does this branch have the notebook checker?
+        id: has
+        run: |
+          if [ -f .pre-commit-config.yaml ] && [ -f scripts/check_notebooks.py ]; then
+            echo "checker=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "No notebook checker on this branch yet; merge main to get it. Skipping."
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.has.outputs.checker == 'yes'
+        with:
+          python-version: '3.13'
+      # numpy, polars and numba for the notebook-utility tests that PRs add to
+      # scripts/tests (mismatch_seed_utils, ohnolog_family_utils). numpy and polars match
+      # the 2025-kmerseek-analysis env.
+      - run: pip install pre-commit pytest 'numpy==2.3.5' 'polars==1.34.0' numba
+        if: steps.has.outputs.checker == 'yes'
+      - name: Tests for the notebook checker
+        if: steps.has.outputs.checker == 'yes'
+        run: python -m pytest scripts/tests -v
+      # black already runs over every notebook in the job above.
+      - name: Notebook checks on changed notebooks
+        if: steps.has.outputs.checker == 'yes'
+        env:
+          SKIP: black-jupyter
+        run: >
+          pre-commit run --show-diff-on-failure
+          --from-ref ${{ github.event.pull_request.base.sha }}
+          --to-ref ${{ github.event.pull_request.head.sha }}
