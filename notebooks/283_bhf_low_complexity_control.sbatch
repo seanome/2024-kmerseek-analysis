@@ -47,10 +47,12 @@ export NB256_RUN=${NB256_RUN:-$SCRATCH/241-alphabet-ranking/null_bhf_dipeptide}
 KMERSEEK_TAG=nb241-kmerseek-982a055
 export KMERSEEK_SRC=$SCRATCH/241-alphabet-ranking-kmerseek
 export NB241_KMERSEEK=$KMERSEEK_SRC/target/release/kmerseek
-# The laptop's polars, numpy and matplotlib in a small venv on the python/3.12.1 module
-# (256's search code imports all three). Made once, on a login node:
+# polars 1.34.0 (the laptop's), numpy 2.2.6 and matplotlib 3.10.9 in a small venv on the
+# python/3.12.1 module; 256's search code imports all three. numpy 2.3 has no wheel for
+# Sherlock's glibc 2.17, so the newest with one. Made once, on a login node (2026-10-13):
 #   module load python/3.12.1 && python3 -m venv $HOME/venvs/nb283 && \
-#     $HOME/venvs/nb283/bin/pip install polars==1.34.0 numpy==2.3.5 matplotlib==3.10.8
+#     $HOME/venvs/nb283/bin/pip install --upgrade pip && \
+#     $HOME/venvs/nb283/bin/pip install --only-binary=:all: polars==1.34.0 'numpy<2.4' 'matplotlib<3.11'
 PY=$HOME/venvs/nb283/bin/python
 
 for f in "$NB241_HUMAN" "$NB241_KAPPA" "$NB256_RUN/queries.fa" "$NB256_RUN/arms.json" "$NB256_RUN/../queries.fa" "$PY"; do
