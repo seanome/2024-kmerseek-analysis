@@ -69,6 +69,25 @@ halves are fixed by the first byte of SHA-1(accession): even goes to tune.
   other tool, each at its own matched cutoff) exceed the number expected from its decoys,
   with a 95% interval above zero, on the test half.
 
+**Which kmerseek setting P4 is tested on (Olga, 2026-10-13, before the test half was read).**
+There are 256 kmerseek search settings, so P4 is tested on one setting chosen on the tune
+half only:
+
+1. An instance counts toward P4 when its Pfam type at t1 is Motif, Disordered or Repeat, or
+   its t1 region is under 60 aa.
+2. For each kmerseek setting, at its own matched cutoff (set on the tune half's decoys), count
+   its *unique finds* among the tune half's P4 instances: found by this setting and by none of
+   MMseqs2, phmmer and hmmscan, each at its own matched cutoff.
+3. The number expected by chance is the setting's decoy transfer rate at that cutoff (family
+   transfers per decoy query, tune half) times the number of real tune-half queries that carry
+   a P4 instance.
+4. The chosen setting has the largest unique finds minus expected. Ties go to the lower decoy
+   transfer rate, then to the setting name in alphabetical order.
+5. P4 is read once, on the test half, for that setting alone: unique finds minus the number
+   expected from the test half's decoys. The 95% interval comes from 10,000 bootstrap
+   resamples (seed 280) of the test half's real queries and, independently, of its decoys.
+   P4 holds when the interval's lower end is above zero.
+
 **Kill rule.** If P4 fails on the test half, this is written up as a negative result and
 the test stops. No kmerseek settings are added, no cutoffs changed and "found" is not
 redefined after the test half has been read.
