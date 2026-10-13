@@ -10,8 +10,13 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "261_combiner_a_intersection_panel.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 SUMMARY = r"""
 # Summary and Conclusions
@@ -82,7 +87,7 @@ four residues can land in at half its length.
 """
 
 cells = [
-md(r"""
+    md(r"""
 # 261: combiner A, the intersection of a fixed panel of alphabet-ksize pairs
 
 Input: the table [notebook 260](260_kmerseek_region_table.ipynb) writes, one row per human
@@ -129,7 +134,7 @@ notebook 231 scored on) and Pfam domains.
 The split is by query: `tune` or `test` by the first byte of SHA-1 of the accession
 (notebook 260). A shuffled query goes to its source protein's half.
 """),
-md(r"""
+    md(r"""
 ## Which data this execution reads
 
 The kmerseek 0.4 midi-plus run with extension (`make run-midi-plus-0.4-extend`, PR #88)
@@ -154,7 +159,7 @@ phmmer (HMMER3 single-sequence search) comes from the midi-plus region benchmark
 (1-2 Sept 2026): the same 998 human queries against the zebrafish proteome, per-domain
 hits with their i-Evalue, query span 1-based inclusive.
 """),
-code(r"""
+    code(r"""
 import hashlib
 import sys
 from datetime import date
@@ -204,7 +209,7 @@ print(table.group_by("species", "arm").agg(rows=pl.len(), queries=pl.col("access
 print("merged regions by split:", regions.group_by("split").len().sort("split").to_dicts())
 print("queries by split:", table.unique("accession").group_by("split").len().sort("split").to_dicts())
 """),
-md(r"""
+    md(r"""
 ## Greedy search on the tune split
 
 One row per step of the search, for each E_max. `n_called` is merged regions the panel
@@ -212,7 +217,7 @@ calls on tune queries; `n_decoy_called` is the same panel's calls on the shuffle
 queries (empty until that run exists). `improved` says whether the step raised Swiss-Prot
 precision; `is_stop` marks the panel the search stops at.
 """),
-code(r"""
+    code(r"""
 tune = rc.Scorer(table, truth_pairs, truth, "tune", decoy_table)
 print(f"pairs available: {len(tune.arms)}: {tune.arms}")
 print(f"target species: {tune.species}")
@@ -232,14 +237,14 @@ for a in PANEL:
     print("  ", a)
 print(f"its first pair alone (highest tune Swiss-Prot precision at E_max {EMAX:g}): {SINGLE}")
 """),
-md(r"""
+    md(r"""
 ## Precision and recall as pairs are added
 
 One line per truth set for the frozen E_max: each point is the panel after n pairs, so
 reading left to right along the line is adding pairs. The ringed point is the frozen
 panel. Recall can only fall as n grows; precision can move either way.
 """),
-code(r"""
+    code(r"""
 path = paths.filter(pl.col("emax") == EMAX).sort("n_arms")
 print(path.select("n_arms", "added_arm", "n_called", "precision_swissprot", "recall_swissprot",
                   "precision_pfam", "recall_pfam", "is_stop"))
@@ -285,14 +290,14 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## Calls on real and shuffled queries for each panel
 
 For every panel the search visited on tune, the number of merged regions it calls on real
 queries and on shuffled queries. A shuffled query has no homolog, so its calls estimate
 how many of the real calls are false at the same panel and E_max.
 """),
-code(r"""
+    code(r"""
 print(paths.select("emax", "n_arms", "panel", "n_called", "n_decoy_called"))
 EMAX_COLORS = {0.1: "#2B6CB0", 1.0: "#805AD5", 10.0: "#C05621"}
 MISSING = dict(marker="x", color="#888888", s=40, lw=1.2)
@@ -348,13 +353,13 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## The frozen panel on the test split
 
 The same numbers for the frozen panel on test queries, with its first pair alone at the
 same E_max beside it. Nothing here was chosen on test.
 """),
-code(r"""
+    code(r"""
 test = rc.Scorer(table, truth_pairs, truth, "test", decoy_table)
 rows = [dict(tune.score(PANEL, EMAX), method=f"intersection, n={len(PANEL)}"),
         dict(tune.score([SINGLE], EMAX), method="first pair alone"),
@@ -371,14 +376,14 @@ print("\nfrozen panel, by name:")
 for a in PANEL:
     print(f"  {a}")
 """),
-md(r"""
+    md(r"""
 ## Saving the frozen panel
 
 `261_intersection_panel.yaml` holds the panel's pairs, E_max, the rule that chose it and
 its tune and test numbers, with the input table's checksum, so the comparison notebook can
 reread it and check it reads the same table.
 """),
-code(r"""
+    code(r"""
 def clean(d: dict) -> dict:
     return {k: (None if isinstance(v, float) and v != v else v) for k, v in d.items()}
 
@@ -404,7 +409,7 @@ record = {
 PANEL_YAML.write_text(yaml.safe_dump(record, sort_keys=False, width=100))
 print(PANEL_YAML.read_text())
 """),
-md(r"""
+    md(r"""
 ## Multi-domain queries: how many domains each method lands
 
 For test queries with at least two Pfam domains, the number of those domains each method
@@ -419,7 +424,7 @@ The two kmerseek rows use merged-region extents, which grow when calls chain acr
 domain borders (notebook 260, the plasminogen example); phmmer's hits are not merged. A
 merged region that spans two domains lands in neither.
 """),
-code(r"""
+    code(r"""
 pf_dom = (truth.filter(pl.col("truth_set") == "pfam")
           .unique(subset=rc.FEATURE_KEY)
           .with_columns(split=rt.query_split(pl.col("accession"))))
@@ -470,7 +475,7 @@ cmp = counts.select(
 )
 print(cmp)
 """),
-code(r"""
+    code(r"""
 M_COLORS = {METHODS[0]: "#2B6CB0", METHODS[1]: "#90CDF4", "phmmer": "#718096"}
 M_HATCH = {METHODS[0]: None, METHODS[1]: "//", "phmmer": None}
 xs = np.arange(0, int(dist["n_landed"].max()) + 1)
@@ -509,14 +514,18 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(SUMMARY),
-code('summary_md = r"""\n' + SUMMARY.strip("\n") + '\n"""\nprint(summary_md)'),
+    md(SUMMARY),
+    code('summary_md = r"""\n' + SUMMARY.strip("\n") + '\n"""\nprint(summary_md)'),
 ]
 
 nb = {
     "cells": cells,
     "metadata": {
-        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
         "language_info": {"name": "python"},
     },
     "nbformat": 4,

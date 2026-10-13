@@ -78,7 +78,9 @@ def merged_calls(reduced_dir: Path, table: pl.DataFrame | None = None) -> pl.Dat
         a = m.select(KEY + ["merged_start", "merged_end"]).unique().sort(KEY)
         b = table.select(KEY + ["merged_start", "merged_end"]).unique().sort(KEY)
         if not a.equals(b):
-            raise ValueError(f"re-merge differs from the table: {a.height} vs {b.height} regions")
+            raise ValueError(
+                f"re-merge differs from the table: {a.height} vs {b.height} regions"
+            )
     return m
 
 
@@ -86,24 +88,39 @@ def region_scores(calls: pl.DataFrame, tried: pl.DataFrame) -> pl.DataFrame:
     """One row per merged region: the three ranking scores, the pairs that gave the best
     E-value and the best IDF (all of them when tied), and how many pairs called it."""
     per_arm = calls.group_by(KEY + ["arm"]).agg(
-        e=pl.col("region_evalue").min(), idf=pl.col("region_mean_idf").max())
+        e=pl.col("region_evalue").min(), idf=pl.col("region_mean_idf").max()
+    )
     best = per_arm.group_by(KEY).agg(
         evalue_min=pl.col("e").min(),
         mean_idf_max=pl.col("idf").max(),
         n_arms_fired=pl.len(),
         evalue_min_arms=pl.col("arm").filter(pl.col("e") == pl.col("e").min()).sort(),
-        mean_idf_max_arms=pl.col("arm").filter(pl.col("idf") == pl.col("idf").max()).sort(),
+        mean_idf_max_arms=pl.col("arm")
+        .filter(pl.col("idf") == pl.col("idf").max())
+        .sort(),
     )
-    return (best.join(tried.select("species", "n_arms_tried"), on="species", how="left")
-            .with_columns(evalue_best_of_n_corrected=pl.col("n_arms_tried") * pl.col("evalue_min"))
-            .sort(KEY))
+    return (
+        best.join(tried.select("species", "n_arms_tried"), on="species", how="left")
+        .with_columns(
+            evalue_best_of_n_corrected=pl.col("n_arms_tried") * pl.col("evalue_min")
+        )
+        .sort(KEY)
+    )
 
 
 def attach_truth(scores: pl.DataFrame, table: pl.DataFrame) -> pl.DataFrame:
     """Add split, length, truth flags and the best Swiss-Prot feature from the region table."""
-    cols = KEY + ["split", "merged_start", "merged_end", "merged_length",
-                  "merged_swissprot_feature", "merged_pfam_feature"]
-    cols += [f"merged_{ts}_is_true" for ts in TRUTH_SETS] + [f"query_has_{ts}" for ts in TRUTH_SETS]
+    cols = KEY + [
+        "split",
+        "merged_start",
+        "merged_end",
+        "merged_length",
+        "merged_swissprot_feature",
+        "merged_pfam_feature",
+    ]
+    cols += [f"merged_{ts}_is_true" for ts in TRUTH_SETS] + [
+        f"query_has_{ts}" for ts in TRUTH_SETS
+    ]
     cols = [c for c in cols if c in table.columns]
     return scores.join(table.select(cols).unique(subset=KEY), on=KEY, how="left")
 
@@ -122,46 +139,72 @@ class Calls:
     n_features: dict
 
 
-def kmerseek_calls(regions: pl.DataFrame, truth_pairs: pl.DataFrame,
-                   n_features: dict) -> Calls:
-    r = regions.sort(KEY).with_row_index("rid").with_columns(pl.col("rid").cast(pl.Int64))
+def kmerseek_calls(
+    regions: pl.DataFrame, truth_pairs: pl.DataFrame, n_features: dict
+) -> Calls:
+    r = (
+        regions.sort(KEY)
+        .with_row_index("rid")
+        .with_columns(pl.col("rid").cast(pl.Int64))
+    )
     r = r.rename({f"merged_{ts}_is_true": f"{ts}_is_true" for ts in TRUTH_SETS})
-    landed = (truth_pairs.filter(pl.col("landed") >= rt.LANDED_MIN)
-              .join(r.select(KEY + ["rid"]), on=KEY, how="inner")
-              .select(["rid", "species"] + FEATURE_KEY))
+    landed = (
+        truth_pairs.filter(pl.col("landed") >= rt.LANDED_MIN)
+        .join(r.select(KEY + ["rid"]), on=KEY, how="inner")
+        .select(["rid", "species"] + FEATURE_KEY)
+    )
     return Calls(r, landed, n_features)
 
 
 def n_features(truth: pl.DataFrame, split: str, n_species: int) -> dict:
-    feats = (truth.unique(subset=FEATURE_KEY)
-             .with_columns(split=rt.query_split(pl.col("accession")))
-             .filter(pl.col("split") == split))
-    return {ts: feats.filter(pl.col("truth_set") == ts).height * n_species for ts in TRUTH_SETS}
+    feats = (
+        truth.unique(subset=FEATURE_KEY)
+        .with_columns(split=rt.query_split(pl.col("accession")))
+        .filter(pl.col("split") == split)
+    )
+    return {
+        ts: feats.filter(pl.col("truth_set") == ts).height * n_species
+        for ts in TRUTH_SETS
+    }
 
 
-def kd_calls(seqs: dict[str, str], truth: pl.DataFrame, species: list[str], split: str,
-             n_feat: dict) -> Calls:
+def kd_calls(
+    seqs: dict[str, str],
+    truth: pl.DataFrame,
+    species: list[str],
+    split: str,
+    n_feat: dict,
+) -> Calls:
     """Notebook 231's Kyte-Doolittle scan (19-residue window, mean hydropathy above 1.6)
     as calls on the split's queries. It reads only the query, so the same calls stand for
     every target species, which keeps its recall on the same denominator as kmerseek's.
     Score: the segment's best window mean (higher is better), as ``mean_idf_max`` is."""
     import swissprot_control_utils as sc
 
-    kd = (sc.kd_transmem_calls(seqs)
-          .select(accession="query_acc", start="qstart", end="qend", kd_score="score")
-          .with_columns(split=rt.query_split(pl.col("accession")))
-          .filter(pl.col("split") == split))
-    kd = kd.join(pl.DataFrame({"species": species}), how="cross").sort(
-        "accession", "species", "start").with_row_index("rid").with_columns(pl.col("rid").cast(pl.Int64))
-    pairs = rt.region_truth_pairs(kd.select("rid", "accession", "species", "start", "end"),
-                                  truth, "start", "end")
+    kd = (
+        sc.kd_transmem_calls(seqs)
+        .select(accession="query_acc", start="qstart", end="qend", kd_score="score")
+        .with_columns(split=rt.query_split(pl.col("accession")))
+        .filter(pl.col("split") == split)
+    )
+    kd = (
+        kd.join(pl.DataFrame({"species": species}), how="cross")
+        .sort("accession", "species", "start")
+        .with_row_index("rid")
+        .with_columns(pl.col("rid").cast(pl.Int64))
+    )
+    pairs = rt.region_truth_pairs(
+        kd.select("rid", "accession", "species", "start", "end"), truth, "start", "end"
+    )
     hit = pairs.filter(pl.col("landed") >= rt.LANDED_MIN)
     has = truth.select("accession", "truth_set").unique()
     for ts in TRUTH_SETS:
         true_rid = hit.filter(pl.col("truth_set") == ts)["rid"].unique().implode()
         acc = has.filter(pl.col("truth_set") == ts)["accession"].implode()
-        kd = kd.with_columns(pl.col("rid").is_in(true_rid).alias(f"{ts}_is_true"),
-                             pl.col("accession").is_in(acc).alias(f"query_has_{ts}"))
+        kd = kd.with_columns(
+            pl.col("rid").is_in(true_rid).alias(f"{ts}_is_true"),
+            pl.col("accession").is_in(acc).alias(f"query_has_{ts}"),
+        )
     return Calls(kd, hit.select(["rid", "species"] + FEATURE_KEY), n_feat)
 
 
@@ -182,19 +225,35 @@ def pr_curve(c: Calls, score: str, lower_is_better: bool, ts: str) -> pl.DataFra
     # A feature is found at threshold t when its best-scoring landed call passes t.
     rid_key = dict(zip(r["rid"].to_list(), key.tolist()))
     lf = c.landed.filter(pl.col("truth_set") == ts).with_columns(
-        k=pl.col("rid").replace_strict(rid_key, default=None, return_dtype=pl.Float64))
-    best = (lf.filter(pl.col("k").is_not_null())
-            .group_by(["species"] + FEATURE_KEY).agg(pl.col("k").min())["k"].to_numpy().copy())
+        k=pl.col("rid").replace_strict(rid_key, default=None, return_dtype=pl.Float64)
+    )
+    best = (
+        lf.filter(pl.col("k").is_not_null())
+        .group_by(["species"] + FEATURE_KEY)
+        .agg(pl.col("k").min())["k"]
+        .to_numpy()
+        .copy()
+    )
     best.sort()
     n_found = np.searchsorted(best, k[last], side="right")
     thr = k[last] if lower_is_better else -k[last]
     with np.errstate(invalid="ignore", divide="ignore"):
         prec = np.where(n_on > 0, n_true / np.maximum(n_on, 1), np.nan)
-    return pl.DataFrame({
-        "threshold": thr, "n_called": n_called, "n_called_on_truth": n_on, "n_true": n_true,
-        "precision": prec, "n_found": n_found,
-        "recall": n_found / c.n_features[ts] if c.n_features[ts] else np.full(len(last), np.nan),
-    })
+    return pl.DataFrame(
+        {
+            "threshold": thr,
+            "n_called": n_called,
+            "n_called_on_truth": n_on,
+            "n_true": n_true,
+            "precision": prec,
+            "n_found": n_found,
+            "recall": (
+                n_found / c.n_features[ts]
+                if c.n_features[ts]
+                else np.full(len(last), np.nan)
+            ),
+        }
+    )
 
 
 def average_precision(curve: pl.DataFrame) -> float:
@@ -205,9 +264,12 @@ def average_precision(curve: pl.DataFrame) -> float:
     return float(np.sum(np.diff(rec) * prec))
 
 
-def loosest_threshold(curve: pl.DataFrame, target: float = TARGET_PRECISION) -> dict | None:
+def loosest_threshold(
+    curve: pl.DataFrame, target: float = TARGET_PRECISION
+) -> dict | None:
     """The loosest threshold whose precision is still at least `target`, or None when no
-    threshold reaches it. Rows are ordered strictest first, so the loosest is the last."""
+    threshold reaches it. Rows are ordered strictest first, so the loosest is the last.
+    """
     ok = curve.filter(pl.col("precision") >= target)
     return ok.row(-1, named=True) if ok.height else None
 
@@ -221,26 +283,43 @@ def at_threshold(c: Calls, score: str, lower_is_better: bool, thr: float) -> dic
     for ts in TRUTH_SETS:
         on = sel.filter(pl.col(f"query_has_{ts}"))
         out[f"n_called_on_{ts}_queries"] = on.height
-        out[f"precision_{ts}"] = (on[f"{ts}_is_true"].sum() / on.height) if on.height else float("nan")
-        found = (c.landed.filter((pl.col("truth_set") == ts) & pl.col("rid").is_in(rid))
-                 .unique(subset=["species"] + FEATURE_KEY).height)
+        out[f"precision_{ts}"] = (
+            (on[f"{ts}_is_true"].sum() / on.height) if on.height else float("nan")
+        )
+        found = (
+            c.landed.filter((pl.col("truth_set") == ts) & pl.col("rid").is_in(rid))
+            .unique(subset=["species"] + FEATURE_KEY)
+            .height
+        )
         out[f"n_found_{ts}"] = found
-        out[f"recall_{ts}"] = found / c.n_features[ts] if c.n_features[ts] else float("nan")
+        out[f"recall_{ts}"] = (
+            found / c.n_features[ts] if c.n_features[ts] else float("nan")
+        )
     return out
 
 
-def winner_shares(regions: pl.DataFrame, arms_col: str, by: str, arms: list[str]) -> pl.DataFrame:
+def winner_shares(
+    regions: pl.DataFrame, arms_col: str, by: str, arms: list[str]
+) -> pl.DataFrame:
     """Share of regions in each `by` group where each pair gave the best score. A region
     where k pairs tie for the best gives each 1/k, so every column sums to 1."""
-    long = (regions.select(KEY + [by, arms_col])
-            .with_columns(w=1.0 / pl.col(arms_col).list.len())
-            .explode(arms_col).rename({arms_col: "arm"}))
+    long = (
+        regions.select(KEY + [by, arms_col])
+        .with_columns(w=1.0 / pl.col(arms_col).list.len())
+        .explode(arms_col)
+        .rename({arms_col: "arm"})
+    )
     n = regions.group_by(by).agg(n_regions=pl.len())
-    shares = (long.group_by(by, "arm").agg(pl.col("w").sum())
-              .join(n, on=by).with_columns(share=pl.col("w") / pl.col("n_regions")))
+    shares = (
+        long.group_by(by, "arm")
+        .agg(pl.col("w").sum())
+        .join(n, on=by)
+        .with_columns(share=pl.col("w") / pl.col("n_regions"))
+    )
     grid = pl.DataFrame({"arm": arms}).join(n, how="cross")
-    return (grid.join(shares.select(by, "arm", "share"), on=[by, "arm"], how="left")
-            .with_columns(pl.col("share").fill_null(0.0)))
+    return grid.join(
+        shares.select(by, "arm", "share"), on=[by, "arm"], how="left"
+    ).with_columns(pl.col("share").fill_null(0.0))
 
 
 def load_query_seqs(accessions: list[str]) -> dict[str, str]:

@@ -48,14 +48,20 @@ def per_arm_best(calls: pl.DataFrame, key: list[str] = KEY) -> pl.DataFrame:
     return calls.group_by(key + ["arm"]).agg(e=pl.col("region_evalue").min())
 
 
-def votes(per_arm: pl.DataFrame, emax: float, cluster_of: dict[str, int] | None = None,
-          key: list[str] = KEY) -> pl.DataFrame:
+def votes(
+    per_arm: pl.DataFrame,
+    emax: float,
+    cluster_of: dict[str, int] | None = None,
+    key: list[str] = KEY,
+) -> pl.DataFrame:
     """Per merged region with at least one vote: ``n_votes`` (pairs with E < emax),
     ``n_cluster_votes`` (clusters with at least one such pair; equals n_votes when
     `cluster_of` is None) and the voting pairs, sorted."""
     v = per_arm.filter(pl.col("e") < emax)
     if cluster_of is not None:
-        v = v.with_columns(cluster=pl.col("arm").replace_strict(cluster_of, return_dtype=pl.Int64))
+        v = v.with_columns(
+            cluster=pl.col("arm").replace_strict(cluster_of, return_dtype=pl.Int64)
+        )
     else:
         v = v.with_columns(cluster=pl.col("arm"))
     return v.group_by(key).agg(
@@ -66,8 +72,9 @@ def votes(per_arm: pl.DataFrame, emax: float, cluster_of: dict[str, int] | None 
     )
 
 
-def agreement(per_arm: pl.DataFrame, emax: float, arms: list[str],
-              key: list[str] = KEY) -> tuple[np.ndarray, np.ndarray]:
+def agreement(
+    per_arm: pl.DataFrame, emax: float, arms: list[str], key: list[str] = KEY
+) -> tuple[np.ndarray, np.ndarray]:
     """Pairwise agreement between pairs at `emax`: merged regions both call / merged
     regions either calls (Jaccard). Returns the matrix (arms x arms, 1 on the diagonal for
     a pair with any call, 0 for one with none) and each pair's number of calls."""
@@ -110,16 +117,28 @@ def clusters(j: np.ndarray, arms: list[str], agree_min: float = AGREE_MIN):
 
 def with_votes(c: rb.Calls, v: pl.DataFrame) -> rb.Calls:
     """`c` with n_votes and n_cluster_votes columns (0 for regions with no vote)."""
-    r = (c.regions.drop([x for x in ("n_votes", "n_cluster_votes", "voting_arms", "e_voting_min")
-                         if x in c.regions.columns])
-         .join(v, on=KEY, how="left")
-         .with_columns(pl.col("n_votes", "n_cluster_votes").fill_null(0)))
+    r = (
+        c.regions.drop(
+            [
+                x
+                for x in ("n_votes", "n_cluster_votes", "voting_arms", "e_voting_min")
+                if x in c.regions.columns
+            ]
+        )
+        .join(v, on=KEY, how="left")
+        .with_columns(pl.col("n_votes", "n_cluster_votes").fill_null(0))
+    )
     return rb.Calls(r, c.landed, c.n_features)
 
 
-def sweep(c: rb.Calls, per_arm: pl.DataFrame, decoy_per_arm: pl.DataFrame | None,
-          cluster_by_emax: dict[float, dict[str, int]], n_arms: int,
-          emax_grid=EMAX_GRID) -> pl.DataFrame:
+def sweep(
+    c: rb.Calls,
+    per_arm: pl.DataFrame,
+    decoy_per_arm: pl.DataFrame | None,
+    cluster_by_emax: dict[float, dict[str, int]],
+    n_arms: int,
+    emax_grid=EMAX_GRID,
+) -> pl.DataFrame:
     """Calls, precision and recall (both truth sets) and shuffled-query calls for every
     (E_max, v_min, counting), v_min from 1 to the number of pairs or clusters."""
     rows = []
@@ -127,19 +146,39 @@ def sweep(c: rb.Calls, per_arm: pl.DataFrame, decoy_per_arm: pl.DataFrame | None
         cl = cluster_by_emax[emax]
         cv = with_votes(c, votes(per_arm, emax, cl))
         dv = votes(decoy_per_arm, emax, cl) if decoy_per_arm is not None else None
-        for counting, col, vmax in (("every pair", "n_votes", n_arms),
-                                    ("one per cluster", "n_cluster_votes", len(set(cl.values())))):
+        for counting, col, vmax in (
+            ("every pair", "n_votes", n_arms),
+            ("one per cluster", "n_cluster_votes", len(set(cl.values()))),
+        ):
             for vmin in range(1, vmax + 1):
                 row = rb.at_threshold(cv, col, False, vmin)
-                row.update(emax=emax, v_min=vmin, counting=counting, n_clusters=len(set(cl.values())))
-                row["n_decoy_called"] = (int(dv.filter(pl.col(col) >= vmin).height)
-                                         if dv is not None else None)
+                row.update(
+                    emax=emax,
+                    v_min=vmin,
+                    counting=counting,
+                    n_clusters=len(set(cl.values())),
+                )
+                row["n_decoy_called"] = (
+                    int(dv.filter(pl.col(col) >= vmin).height)
+                    if dv is not None
+                    else None
+                )
                 rows.append(row)
-    return (pl.DataFrame(rows, infer_schema_length=None)
-            .drop("threshold")
-            .select("emax", "counting", "n_clusters", "v_min", "n_called", "n_decoy_called",
-                    pl.exclude("emax", "counting", "n_clusters", "v_min", "n_called",
-                               "n_decoy_called")))
+    return (
+        pl.DataFrame(rows, infer_schema_length=None)
+        .drop("threshold")
+        .select(
+            "emax",
+            "counting",
+            "n_clusters",
+            "v_min",
+            "n_called",
+            "n_decoy_called",
+            pl.exclude(
+                "emax", "counting", "n_clusters", "v_min", "n_called", "n_decoy_called"
+            ),
+        )
+    )
 
 
 def vote_at_target(sw: pl.DataFrame) -> pl.DataFrame:
@@ -153,18 +192,31 @@ def vote_at_target(sw: pl.DataFrame) -> pl.DataFrame:
         ok = sw.filter(pl.col("n_decoy_called") <= DECOY_SHARE_MAX * pl.col("n_called"))
         rule = f"shuffled-query calls <= {DECOY_SHARE_MAX:g} x real calls"
     else:
-        ts = "swissprot" if (sw["precision_swissprot"] >= TARGET_PRECISION).any() else "pfam"
+        ts = (
+            "swissprot"
+            if (sw["precision_swissprot"] >= TARGET_PRECISION).any()
+            else "pfam"
+        )
         ok = sw.filter(pl.col(f"precision_{ts}") >= TARGET_PRECISION)
         rule = f"tune {ts} precision >= {TARGET_PRECISION:g} (no shuffled-query calls)"
-    return (ok.sort("v_min").group_by("emax", "counting", maintain_order=True).first()
-            .with_columns(rule=pl.lit(rule)).sort("emax", "counting"))
+    return (
+        ok.sort("v_min")
+        .group_by("emax", "counting", maintain_order=True)
+        .first()
+        .with_columns(rule=pl.lit(rule))
+        .sort("emax", "counting")
+    )
 
 
 def freeze(at_target: pl.DataFrame) -> dict:
     """Among the (E_max, counting) settings at their target vote count, the one with the
     most real calls; ties to one vote per cluster, then the smaller E_max."""
-    r = at_target.with_columns(_c=(pl.col("counting") == "one per cluster").cast(pl.Int8))
-    best = r.sort(["n_called", "_c", "emax"], descending=[True, True, False]).row(0, named=True)
+    r = at_target.with_columns(
+        _c=(pl.col("counting") == "one per cluster").cast(pl.Int8)
+    )
+    best = r.sort(["n_called", "_c", "emax"], descending=[True, True, False]).row(
+        0, named=True
+    )
     best.pop("_c")
     return best
 
@@ -178,9 +230,41 @@ def freeze(at_target: pl.DataFrame) -> dict:
 EXTRA_CLUSTERS = {
     "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
     "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
-    "wass14": ["WM", "DI", "P", "C", "AV", "K", "T", "RE", "G", "L", "Y", "SH", "F", "NQ"],
-    "hsdm17": ["A", "D", "KE", "R", "N", "T", "S", "Q", "Y", "F", "LIV", "M", "C", "W", "H",
-               "G", "P"],
+    "wass14": [
+        "WM",
+        "DI",
+        "P",
+        "C",
+        "AV",
+        "K",
+        "T",
+        "RE",
+        "G",
+        "L",
+        "Y",
+        "SH",
+        "F",
+        "NQ",
+    ],
+    "hsdm17": [
+        "A",
+        "D",
+        "KE",
+        "R",
+        "N",
+        "T",
+        "S",
+        "Q",
+        "Y",
+        "F",
+        "LIV",
+        "M",
+        "C",
+        "W",
+        "H",
+        "G",
+        "P",
+    ],
 }
 
 
@@ -195,19 +279,31 @@ def case_calls(regions_path: Path, emax_max: float = rt.EVALUE_MAX) -> pl.DataFr
     """Notebook 241's calls with region_evalue < emax_max, as notebook 260's merge reads
     them: ``accession`` = the query, ``species`` = the human target protein's header (so
     calls merge per query and target protein), ``arm`` = <alphabet>_k<k>."""
-    return (pl.scan_parquet(regions_path)
-            .filter(pl.col("region_evalue") < emax_max)
-            .with_columns(
-                accession=pl.col("query_name"),
-                species=pl.col("target_name"),
-                arm=pl.col("alphabet") + "_k" + pl.col("ksize_arm").cast(pl.String),
-                **{c: pl.col(c).cast(pl.Int64) for c in
-                   ("region_start", "region_end", "target_start", "target_end", "region_length")})
-            .collect())
+    return (
+        pl.scan_parquet(regions_path)
+        .filter(pl.col("region_evalue") < emax_max)
+        .with_columns(
+            accession=pl.col("query_name"),
+            species=pl.col("target_name"),
+            arm=pl.col("alphabet") + "_k" + pl.col("ksize_arm").cast(pl.String),
+            **{
+                c: pl.col(c).cast(pl.Int64)
+                for c in (
+                    "region_start",
+                    "region_end",
+                    "target_start",
+                    "target_end",
+                    "region_length",
+                )
+            },
+        )
+        .collect()
+    )
 
 
-def rank_units(per_arm: pl.DataFrame, n_tried: int, emax: float,
-               cluster_of: dict[str, int] | None) -> pl.DataFrame:
+def rank_units(
+    per_arm: pl.DataFrame, n_tried: int, emax: float, cluster_of: dict[str, int] | None
+) -> pl.DataFrame:
     """Every merged region with at least one vote at `emax`, ranked within its query by
     vote count (most first), then corrected E-value = n_tried x lowest E-value of any
     pair (lowest first). ``rank`` is the competition rank (ties share the best rank),
@@ -216,15 +312,24 @@ def rank_units(per_arm: pl.DataFrame, n_tried: int, emax: float,
     best = per_arm.group_by(KEY).agg(evalue_min=pl.col("e").min())
     out = []
     for col in ("n_votes", "n_cluster_votes"):
-        r = (v.join(best, on=KEY)
-             .with_columns(evalue_best_of_n_corrected=n_tried * pl.col("evalue_min"))
-             .sort(["accession", col, "evalue_best_of_n_corrected"],
-                   descending=[False, True, False])
-             .with_columns(_pos=pl.int_range(1, pl.len() + 1).over("accession"))
-             .with_columns(rank=pl.col("_pos").min().over("accession", col, "evalue_best_of_n_corrected"),
-                           n_ranked=pl.len().over("accession"))
-             .with_columns(n_tied=pl.len().over("accession", "rank"))
-             .drop("_pos").with_columns(counting=pl.lit(col), n_votes_counted=pl.col(col)))
+        r = (
+            v.join(best, on=KEY)
+            .with_columns(evalue_best_of_n_corrected=n_tried * pl.col("evalue_min"))
+            .sort(
+                ["accession", col, "evalue_best_of_n_corrected"],
+                descending=[False, True, False],
+            )
+            .with_columns(_pos=pl.int_range(1, pl.len() + 1).over("accession"))
+            .with_columns(
+                rank=pl.col("_pos")
+                .min()
+                .over("accession", col, "evalue_best_of_n_corrected"),
+                n_ranked=pl.len().over("accession"),
+            )
+            .with_columns(n_tied=pl.len().over("accession", "rank"))
+            .drop("_pos")
+            .with_columns(counting=pl.lit(col), n_votes_counted=pl.col(col))
+        )
         out.append(r)
     return pl.concat(out)
 
@@ -233,45 +338,75 @@ def shuffled_null_calls(regions_glob: str, metric: str = "E-value") -> pl.DataFr
     """Notebook 241's BHF dipeptide-shuffle run (query BHF and 300 shuffles, every pair,
     the top 10 targets per query, pair and metric) as calls notebook 260's merge reads:
     one row per region with ``region_evalue``, merged per query and target protein."""
-    return (pl.scan_parquet(regions_glob).filter(pl.col("metric") == metric).collect()
-            .rename({"value": "region_evalue"})
-            .with_columns(accession=pl.col("query_name"), species=pl.col("target_name"),
-                          arm=pl.col("alphabet") + "_k" + pl.col("k").cast(pl.String),
-                          **{c: pl.col(c).cast(pl.Int64) for c in
-                             ("region_start", "region_end", "target_start", "target_end")}))
+    return (
+        pl.scan_parquet(regions_glob)
+        .filter(pl.col("metric") == metric)
+        .collect()
+        .rename({"value": "region_evalue"})
+        .with_columns(
+            accession=pl.col("query_name"),
+            species=pl.col("target_name"),
+            arm=pl.col("alphabet") + "_k" + pl.col("k").cast(pl.String),
+            **{
+                c: pl.col(c).cast(pl.Int64)
+                for c in ("region_start", "region_end", "target_start", "target_end")
+            },
+        )
+    )
 
 
 def votes_per_query(calls: pl.DataFrame, emax: float) -> pl.DataFrame:
     """Per query: the most votes any merged region gets at `emax`, how many merged regions
-    have a vote, and how many have at least 2 and at least 4. Queries with no vote get 0."""
+    have a vote, and how many have at least 2 and at least 4. Queries with no vote get 0.
+    """
     m = rt.merge_calls(calls.filter(pl.col("region_evalue") < emax))
     v = votes(per_arm_best(m), emax)
     per = v.group_by("accession").agg(
-        max_votes=pl.col("n_votes").max(), n_regions_voted=pl.len(),
-        n_regions_2plus=(pl.col("n_votes") >= 2).sum(), n_regions_4plus=(pl.col("n_votes") >= 4).sum())
+        max_votes=pl.col("n_votes").max(),
+        n_regions_voted=pl.len(),
+        n_regions_2plus=(pl.col("n_votes") >= 2).sum(),
+        n_regions_4plus=(pl.col("n_votes") >= 4).sum(),
+    )
     allq = pl.DataFrame({"accession": calls["accession"].unique().sort()})
-    return allq.join(per, on="accession", how="left").fill_null(0).with_columns(emax=pl.lit(emax))
+    return (
+        allq.join(per, on="accession", how="left")
+        .fill_null(0)
+        .with_columns(emax=pl.lit(emax))
+    )
 
 
 def match_line(q: str, t: str, alphabet: str) -> str:
     """'|' same residue, '+' different residue in the same class of `alphabet`, ' ' other."""
     cls = residue_class(alphabet)
-    return "".join("|" if a == b else "+" if cls.get(a, -1) == cls.get(b, -2) else " "
-                   for a, b in zip(q, t))
+    return "".join(
+        "|" if a == b else "+" if cls.get(a, -1) == cls.get(b, -2) else " "
+        for a, b in zip(q, t)
+    )
 
 
-def show_call(query_seq: str, target_seq: str, row: dict, query: str, target: str,
-              width: int = 60) -> str:
+def show_call(
+    query_seq: str, target_seq: str, row: dict, query: str, target: str, width: int = 60
+) -> str:
     """The real residues of one kmerseek call, query over target, 1-based coordinates,
     with a match line. kmerseek coordinates are 0-based end-exclusive and gapless."""
-    qs, qe, ts, te = row["region_start"], row["region_end"], row["target_start"], row["target_end"]
+    qs, qe, ts, te = (
+        row["region_start"],
+        row["region_end"],
+        row["target_start"],
+        row["target_end"],
+    )
     q, t = query_seq[qs:qe], target_seq[ts:te]
     m = match_line(q, t, row["alphabet"])
-    n_mis = sum(residue_class(row["alphabet"]).get(a, -1) != residue_class(row["alphabet"]).get(b, -2)
-                for a, b in zip(q, t))
-    lines = [f"{row['arm']}  E = {row['region_evalue']:.3g}  length {len(q)}  "
-             f"identical {m.count('|')}  same class {m.count('+')}  "
-             f"class mismatches {n_mis} (kmerseek: {row['region_n_mismatches']})"]
+    n_mis = sum(
+        residue_class(row["alphabet"]).get(a, -1)
+        != residue_class(row["alphabet"]).get(b, -2)
+        for a, b in zip(q, t)
+    )
+    lines = [
+        f"{row['arm']}  E = {row['region_evalue']:.3g}  length {len(q)}  "
+        f"identical {m.count('|')}  same class {m.count('+')}  "
+        f"class mismatches {n_mis} (kmerseek: {row['region_n_mismatches']})"
+    ]
     # Encoded strings: one letter per residue class of the alphabet (a = first class, ...).
     cls = residue_class(row["alphabet"])
     qe_ = "".join(chr(ord("a") + cls[a]) if a in cls else "?" for a in q)
@@ -279,11 +414,13 @@ def show_call(query_seq: str, target_seq: str, row: dict, query: str, target: st
     me_ = "".join("|" if a == b else " " for a, b in zip(qe_, te_))
     lab = max(len(query), len(target)) + len(" encoded")
     for i in range(0, len(q), width):
-        qq, tt, mm = q[i:i + width], t[i:i + width], m[i:i + width]
-        lines += [f"{query:<{lab}} {qs + 1 + i:>5} {qq} {qs + i + len(qq):<5}",
-                  f"{'':<{lab}} {'':>5} {mm}",
-                  f"{target:<{lab}} {ts + 1 + i:>5} {tt} {ts + i + len(tt):<5}",
-                  f"{query + ' encoded':<{lab}} {'':>5} {qe_[i:i + width]}",
-                  f"{'':<{lab}} {'':>5} {me_[i:i + width]}",
-                  f"{target + ' encoded':<{lab}} {'':>5} {te_[i:i + width]}"]
+        qq, tt, mm = q[i : i + width], t[i : i + width], m[i : i + width]
+        lines += [
+            f"{query:<{lab}} {qs + 1 + i:>5} {qq} {qs + i + len(qq):<5}",
+            f"{'':<{lab}} {'':>5} {mm}",
+            f"{target:<{lab}} {ts + 1 + i:>5} {tt} {ts + i + len(tt):<5}",
+            f"{query + ' encoded':<{lab}} {'':>5} {qe_[i:i + width]}",
+            f"{'':<{lab}} {'':>5} {me_[i:i + width]}",
+            f"{target + ' encoded':<{lab}} {'':>5} {te_[i:i + width]}",
+        ]
     return "\n".join(lines)

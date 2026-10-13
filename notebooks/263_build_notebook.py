@@ -10,13 +10,22 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "263_combiner_c_consensus_vote.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
-SUMMARY = (HERE / "263_summary.md").read_text() if (HERE / "263_summary.md").exists() else "# Summary and Conclusions\n\n(written after execution)\n"
+SUMMARY = (
+    (HERE / "263_summary.md").read_text()
+    if (HERE / "263_summary.md").exists()
+    else "# Summary and Conclusions\n\n(written after execution)\n"
+)
 
 cells = [
-md(r"""
+    md(r"""
 # 263: combiner C, a consensus vote across alphabet-ksize pairs
 
 Input: the table [notebook 260](260_kmerseek_region_table.ipynb) writes, one row per human
@@ -77,7 +86,7 @@ REGION, TRANSMEM, REPEAT, BINDING and the rest) and Pfam domains.
 The split is by query: `tune` or `test` by the first byte of SHA-1 of the accession
 (notebook 260). A shuffled query goes to its source protein's half.
 """),
-md(r"""
+    md(r"""
 ## Which data this execution reads
 
 Sections 1 to 6 read notebook 260's table. The kmerseek 0.4 midi-plus run with extension
@@ -113,7 +122,7 @@ phmmer (HMMER3 single-sequence search) for the multi-domain section comes from t
 midi-plus region benchmark run (1-2 Sept 2026): the same human queries against the zebrafish
 proteome, per-domain hits with their i-Evalue.
 """),
-code(r"""
+    code(r"""
 import hashlib
 import sys
 from datetime import date
@@ -205,7 +214,7 @@ print(f"combiner A (nb 261): {panel_a['panel']} at E < {panel_a['emax']:g}")
 print(f"combiner B (nb 262): {b_rec['rank_score']} <= {b_rec['threshold']:.4g}; single pair "
       f"{b_rec['single_pair']} at E <= {b_rec['single_pair_threshold']:.4g}")
 """),
-md(r"""
+    md(r"""
 ## 1. Agreement between pairs, and the clusters
 
 For each E_max, on tune queries: the share of merged regions both pairs call, out of the
@@ -214,7 +223,7 @@ regions. Rows and columns are in dendrogram order (complete linkage on 1 - agree
 black box marks each cluster, a set of pairs that all agree on more than 0.8. One vote per
 cluster is counted from these clusters in every later section.
 """),
-code(r"""
+    code(r"""
 tune_keys = scores.filter(pl.col("split") == "tune").select(rv.KEY)
 pa_tune = per_arm.join(tune_keys, on=rv.KEY)
 CLUSTERS, AGREE = {}, {}
@@ -228,7 +237,7 @@ for e in rv.EMAX_GRID:
     print(f"  lowest agreement between two pairs {off.min():.3f}, highest {off.max():.3f}; "
           f"clusters: {len(set(cl.values()))} -> {cl}\n")
 """),
-code(r"""
+    code(r"""
 from scipy.cluster.hierarchy import leaves_list
 
 def agreement_heatmap(ax, j, arms, cl, z, label_size=None, annotate=True):
@@ -294,7 +303,7 @@ notebook_figure(
                  if hi_s else ". No shuffled-query calls.")),
 )
 """),
-md(r"""
+    md(r"""
 ## 2. Calls, precision and recall at every (E_max, v_min) on tune
 
 One row per E_max, way of counting votes, and v_min. `n_called` is merged regions with at
@@ -302,7 +311,7 @@ least v_min votes on tune queries; `n_decoy_called` the same on the shuffled tun
 (empty until that run exists). Counting one vote per cluster stops at the number of
 clusters.
 """),
-code(r"""
+    code(r"""
 nf_tune = rb.n_features(truth, "tune", len(SPECIES))
 nf_test = rb.n_features(truth, "test", len(SPECIES))
 
@@ -316,7 +325,7 @@ print(sw.select("emax", "counting", "v_min", "n_called", "n_decoy_called",
                 "precision_swissprot", "recall_swissprot", "precision_pfam", "recall_pfam",
                 "n_found_swissprot", "n_found_pfam"))
 """),
-code(r"""
+    code(r"""
 EMAX_C = {0.1: pf.OKABE_ITO["orange"], 1.0: pf.OKABE_ITO["reddish_purple"], 10.0: pf.OKABE_ITO["blue"]}
 TS_LS = {"swissprot": "-", "pfam": "--"}
 TS_NAME = {"swissprot": "Swiss-Prot features", "pfam": "Pfam domains"}
@@ -354,7 +363,7 @@ notebook_figure(
 
 )
 """),
-md(r"""
+    md(r"""
 ## 3. Real and shuffled calls by vote count: where to set v_min
 
 One panel per E_max. x is v_min; the two lines are merged regions called on real queries
@@ -364,7 +373,7 @@ that v_min. Without shuffled-query calls the ring is placed by the precision fal
 step 2 instead, and the shuffled line is drawn as grey crosses at zero, meaning no value.
 Solid lines count every pair; dashed lines count one vote per cluster.
 """),
-code(r"""
+    code(r"""
 at = rv.vote_at_target(sw)
 print(at.select("emax", "counting", "v_min", "n_called", "n_decoy_called",
                 "precision_swissprot", "precision_pfam", "rule"))
@@ -433,13 +442,13 @@ notebook_figure(
 
 )
 """),
-md(r"""
+    md(r"""
 ## 4. Every pair or one vote per cluster: the frozen setting
 
 The two ways of counting, each at the vote count section 3 chose, side by side; then the
 frozen setting by the rule in the top cell.
 """),
-code(r"""
+    code(r"""
 cmp = at.pivot(on="counting", index="emax", values=["v_min", "n_called", "precision_swissprot", "precision_pfam"])
 print(cmp)
 frozen = rv.freeze(at)
@@ -491,7 +500,7 @@ notebook_figure(
 
 )
 """),
-md(r"""
+    md(r"""
 ## 5. The frozen setting on test
 
 Combiner C at the frozen setting, beside combiner B at notebook 262's frozen corrected
@@ -499,7 +508,7 @@ E-value, combiner A's frozen panel from notebook 261, and notebook 262's best si
 at its own tune threshold. Filled marks are test (reported), open marks tune. Nothing here
 was chosen on test.
 """),
-code(r"""
+    code(r"""
 PANEL_A, EMAX_A = panel_a["panel"], panel_a["emax"]
 THR_B, SINGLE, THR_SINGLE = b_rec["threshold"], b_rec["single_pair"], b_rec["single_pair_threshold"]
 ONE = tried.with_columns(n_arms_tried=pl.lit(1, pl.UInt32))
@@ -547,7 +556,7 @@ print(report)
 assert report.filter((pl.col("split") == "test") & (pl.col("method") == "B"))["n_called"][0] == b_rec["test"]["n_called"], \
     "combiner B recomputed here differs from notebook 262's yaml"
 """),
-code(r"""
+    code(r"""
 rep_test = report.filter(pl.col("split") == "test")
 ORDER = ["C", "B", "A", "single"]
 cols = [("precision_swissprot", "precision, Swiss-Prot"), ("recall_swissprot", "recall, Swiss-Prot"),
@@ -590,14 +599,14 @@ notebook_figure(
 
 )
 """),
-md(r"""
+    md(r"""
 ## Saving the frozen setting
 
 `263_consensus_vote.yaml` holds E_max, v_min, the way of counting, the clusters, the rule
 that chose them, the tune and test numbers, the shuffled-query counts (null until that run
 exists) and the input table's checksum.
 """),
-code(r"""
+    code(r"""
 def clean(d: dict) -> dict:
     return {k: (None if isinstance(v, float) and v != v else
                 float(v) if isinstance(v, np.floating) else int(v) if isinstance(v, np.integer) else v)
@@ -631,7 +640,7 @@ record = {
 OUT_YAML.write_text(yaml.safe_dump(record, sort_keys=False, width=100))
 print(OUT_YAML.read_text())
 """),
-md(r"""
+    md(r"""
 ## 6. Multi-domain queries: how many domains each method lands
 
 The same question and figure as notebooks 261 and 262: for test queries with at least two
@@ -646,7 +655,7 @@ The kmerseek rows use merged-region extents, which grow when calls chain across 
 borders; phmmer's hits are not merged. A merged region that spans two domains lands in
 neither.
 """),
-code(r"""
+    code(r"""
 pf_dom = (truth.filter(pl.col("truth_set") == "pfam").unique(subset=rc.FEATURE_KEY)
           .with_columns(split=rt.query_split(pl.col("accession"))))
 multi = (pf_dom.filter(pl.col("split") == "test").group_by("accession").agg(n_domains=pl.len())
@@ -690,7 +699,7 @@ mcmp = counts.select(vote_more_than_phmmer=(pl.col("C") > pl.col("phmmer")).sum(
 print(mcmp)
 print(counts.join(queries, on="accession").sort("n_domains", descending=True).head(12))
 """),
-code(r"""
+    code(r"""
 xs = np.arange(0, int(dist["n_landed"].max()) + 1)
 w = 0.8 / len(MD)
 fig, ax = pf.figure(pf.TWO_COLUMN_MM, 62)
@@ -720,7 +729,7 @@ notebook_figure(
 
 )
 """),
-md(r"""
+    md(r"""
 ## 7. Known cases: where Ced9-BCL2, P66-CD47 and BHF fall in the vote ranking
 
 Notebook 241's search: Ced9, P66 and BHF (queries) against 19_732 GENCODE v49 canonical
@@ -746,7 +755,7 @@ A case is ranked when a merged region on its target overlaps its query span. E_m
 at the grid {0.1, 1, 10} and, outside the grid, at 100_000, only to see whether a vote
 would move these pairs if they were let in at all.
 """),
-code(r"""
+    code(r"""
 CASE_DIR = Path.home() / "data" / "botryllus" / "alphabet-ranking-three-cases"
 CASE_REGIONS = CASE_DIR / "regions.parquet"
 GENCODE = Path.home() / "data" / "gencode" / "human" / "v49" / "gencode.v49.pc_translations.canonical.fa"
@@ -798,7 +807,7 @@ for r in pr44.iter_rows(named=True):
 print(f"PR #44 BHF regions: {pr44.height} (distinct target and span); targets found in GENCODE v49 canonical: "
       f"{sum(t in human for t in pr44['target_name'])}")
 """),
-code(r"""
+    code(r"""
 case_calls = rv.case_calls(CASE_REGIONS, LOOSE)
 print(f"notebook 241 calls with E < {LOOSE:_.0f}: {case_calls.height:_}; per query:")
 print(case_calls.group_by("accession").agg(calls=pl.len(), pairs=pl.col("arm").n_unique(),
@@ -819,7 +828,7 @@ for e in CASE_EMAX:
           f"merged regions with a vote {r.filter(pl.col('counting') == 'n_votes').height:_}, "
           f"most votes {r['n_votes'].max()}, most cluster votes {r['n_cluster_votes'].max()}")
 """),
-code(r"""
+    code(r"""
 raw_case = pl.scan_parquet(CASE_REGIONS)
 
 def locate(case: dict, e: float) -> dict:
@@ -864,7 +873,7 @@ print(best_any.filter(pl.col("case").str.starts_with("BHF")).select(
     pl.col("lowest_evalue").min().alias("lowest E any BHF case"), (pl.col("lowest_evalue") < 10).sum().alias("cases with E < 10"),
     pl.col("calls_any_evalue").eq(0).sum().alias("cases with no call at any E")))
 """),
-md(r"""
+    md(r"""
 ### The real residues of the top voting pair's call
 
 For each case, the call of the pair with the lowest E-value inside the matched merged
@@ -877,7 +886,7 @@ class: a is the first class in `rv.residue_class`, b the second), with `|`
 where the classes match. `class mismatches` is checked against kmerseek's own
 `region_n_mismatches`.
 """),
-code(r"""
+    code(r"""
 def top_call(case: dict) -> tuple[dict | None, str]:
     r, m = ranked[LOOSE]
     hit = (m.filter((pl.col("accession") == case["query"]) & (pl.col("species") == case["target"])
@@ -910,7 +919,7 @@ mism = [(k, r["region_n_mismatches"], sum(rv.residue_class(r["alphabet"]).get(a)
         for c in CASES for k, r in shown.items() if k == c["case"]]
 print("class mismatches here vs kmerseek's region_n_mismatches:", mism)
 """),
-code(r"""
+    code(r"""
 grid_cases = loc.select("case").unique(maintain_order=True)["case"].to_list()
 rows_y = {c: i for i, c in enumerate(grid_cases)}
 fig, axes = pf.figure(pf.TWO_COLUMN_MM, min(170, 30 + 2.6 * len(grid_cases)), ncols=2, sharey=True)
@@ -959,7 +968,7 @@ notebook_figure(
 
 )
 """),
-md(r"""
+    md(r"""
 ### Shuffled BHF: how many votes does a query with no homolog get?
 
 Notebook 241 also searched 300 dipeptide shuffles of BHF (`null_bhf_dipeptide_regions`,
@@ -972,7 +981,7 @@ gets at E_max, and how many merged regions get a vote. If BHF's best region gets
 votes than most shuffles' best regions, the vote is seeing something the composition
 alone does not give.
 """),
-code(r"""
+    code(r"""
 NULL_GLOB = str(CASE_DIR / "null_bhf_dipeptide_regions" / "regions" / "*.parquet")
 null_calls = rv.shuffled_null_calls(NULL_GLOB)
 capped = (null_calls.group_by("accession", "arm").agg(n10=(pl.col("region_evalue") < 10).sum())
@@ -999,7 +1008,7 @@ print(null_summary)
 print(nv.filter(pl.col("accession") != "BHF").group_by("emax", "max_votes").len("shuffles")
       .sort("emax", "max_votes").pivot(on="emax", index="max_votes", values="shuffles").fill_null(0))
 """),
-code(r"""
+    code(r"""
 SHUF_C = pf.GREY
 fig, axes = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=3)
 for ax, e, letter in zip(axes, rv.EMAX_GRID, "abc"):
@@ -1035,14 +1044,14 @@ notebook_figure(
                 f"BHF {r10['bhf_regions_voted']}."),
 )
 """),
-md(r"""
+    md(r"""
 ### Agreement between notebook 241's pairs
 
 The same agreement and clusters as section 1, on notebook 241's calls at E_max 10, for the
 pairs with at least one call there. Here the pairs span 19 alphabets, so this is where
 votes from related alphabets could pile up.
 """),
-code(r"""
+    code(r"""
 for e in (10.0, LOOSE):
     j, arms_e, z = CASE_AGREE[e]
     cl = CASE_CLUSTERS[e]
@@ -1070,14 +1079,18 @@ notebook_figure(
 
 )
 """),
-md(SUMMARY),
-code('summary_md = r"""\n' + SUMMARY.strip("\n") + '\n"""\nprint(summary_md)'),
+    md(SUMMARY),
+    code('summary_md = r"""\n' + SUMMARY.strip("\n") + '\n"""\nprint(summary_md)'),
 ]
 
 nb = {
     "cells": cells,
     "metadata": {
-        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
         "language_info": {"name": "python"},
     },
     "nbformat": 4,
