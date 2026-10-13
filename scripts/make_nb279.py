@@ -529,6 +529,12 @@ Inputs: `/Users/olga/data/invertebrate-dark-set/bhf-view/`, made by
 `scripts/bhf_view_extract.sh`. kmerseek's own per-query view of the same regions
 (`scripts/visualize_hits.py` in the kmerseek repo, top 15 targets by q-value) is
 `figures/279_bhf_kmerseek_visualize_hits_hp_lehninger2_k<k>.png`, one per k.
+The same regions as an interactive page, one per k:
+`figures/279_bhf_kmerseek_search_report_hp_lehninger2_k<k>.html`, made with
+`scripts/visualize_search.py` from the branch of kmerseek PR 142 (draft) with
+`--min-runs 1 --max-rows 30`, with the seven phmmer hits (the same as jackhmmer's) drawn
+on BHF and on each target (`--domains bhf_phmmer_jackhmmer_domains.tsv`). The page marks any target not named `sp|` as
+TrEMBL, so it was made from the `.sp.csv` copies, where every target is renamed `sp|ACC|ACC`.
 """)
 
 code(r"""
@@ -683,6 +689,375 @@ for lab, kw in [("filled: hit, or region less than half low complexity", dict(fa
     ax.add_patch(plt.Rectangle((0, 0), 0, 0, label=lab, lw=0.8, **kw))
 pf.shared_legend(fig, ncol=2)
 pf.save(fig, FIG / "279_bhf_phmmer_jackhmmer_kmerseek_hp_lehninger2_k17_k23")
+""")
+
+md(r"""
+### 6b. Does BHF share more H/P k-mers than shuffled BHF at k below 17?
+
+hp_lehninger2's smallest k in the run is 17. Before building indexes at smaller k for one
+protein, a cheaper count: `scripts/bhf_hp_seed_null.py` writes BHF and every protein of the
+run's reference (Swiss-Prot minus Ascidiacea) in hp_lehninger2 (`AFGILMPVWY` hydrophobic,
+h; `CDEHKNQRST` polar, p) and counts, at k = 11 to 16, the reference proteins that share
+exact H/P k-mers with BHF. Shared means the same k-mer anywhere in both proteins, not on one
+diagonal: these are seeds, not regions, and they have no E-value. The same count is made for
+100 copies of BHF with its residues shuffled one at a time (same residue counts, new order;
+seed 0).
+
+Two numbers per k:
+
+* **(a)** how many reference proteins share at least 2 distinct k-mers with the query;
+* **(b)** the most distinct k-mers the query shares with any one protein.
+
+A homolog shows up as one protein sharing many k-mers, so smaller-k indexes are worth
+building for BHF only if BHF beats the copies on (b). (a) can rise when many proteins each
+share a few k-mers with one repeated stretch. Higher than the copies means BHF's residue
+order matters; p = (1 + copies at or above BHF) / 101.
+""")
+
+code(r"""
+import numpy as np
+
+seed = pl.read_csv(BHF / "bhf_hp_lehninger2_seed_null.counts.tsv", separator="\t")
+seed_top = pl.read_csv(BHF / "bhf_hp_lehninger2_seed_null.bhf_top.tsv", separator="\t")
+SEED_KS = sorted(seed["k"].unique())
+assert all(seed.filter(pl.col("k") == k).height == 101 for k in SEED_KS), "expected BHF + 100 copies per k"
+SEED_MEASURES = {"proteins_ge2": "(a) proteins sharing at least 2 k-mers", "max_shared": "(b) most k-mers shared with one protein"}
+rows = []
+for k in SEED_KS:
+    sub = seed.filter(pl.col("k") == k)
+    b = sub.filter(pl.col("query") == "BHF").row(0, named=True)
+    sh = sub.filter(pl.col("query") != "BHF")
+    for m, label in SEED_MEASURES.items():
+        rows.append({"k": k, "measure": label, "BHF": b[m], "copies_median": sh[m].median(),
+                     "copies_5th_pct": sh[m].quantile(0.05, "nearest"), "copies_95th_pct": sh[m].quantile(0.95, "nearest"),
+                     "BHF_vs_median_pct": round(100 * (b[m] / sh[m].median() - 1), 1),
+                     "p": round((1 + (sh[m] >= b[m]).sum()) / (1 + sh.height), 3)})
+seed_tab = pl.DataFrame(rows)
+print("BHF against 100 shuffled copies, exact hp_lehninger2 k-mers shared with Swiss-Prot minus Ascidiacea")
+print(seed_tab)
+seed_tab.write_csv(TABLES / "279_bhf_hp_lehninger2_seed_counts_vs_shuffles_swissprot.csv")
+
+# The proteins BHF shares the most k-mers with, k 13-16 (names from the UniProt cache below, where present)
+feat_tsv = pl.read_csv(BHF / "target_uniprot_features.tsv", separator="\t", infer_schema_length=0).fill_null("")
+uniprot_name = dict(feat_tsv.select("Entry", "Protein names").iter_rows())
+print("\nProteins sharing the most k-mers with BHF (k 13-16), three per k:")
+print(seed_top.filter(pl.col("k") >= 13).group_by("k", maintain_order=True).head(3).with_columns(
+    pl.col("target").replace_strict(uniprot_name, default="").str.slice(0, 50).alias("name")))
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2)
+rng = np.random.default_rng(0)
+for ax, (m, label) in zip(axs, SEED_MEASURES.items()):
+    for k in SEED_KS:
+        sub = seed.filter(pl.col("k") == k)
+        sh = sub.filter(pl.col("query") != "BHF")[m].to_numpy()
+        med = np.median(sh)
+        b = sub.filter(pl.col("query") == "BHF")[m][0]
+        ax.scatter(k + rng.uniform(-0.18, 0.18, len(sh)), 100 * (sh / med - 1), s=5, color=pf.GREY, alpha=0.6, lw=0,
+                   label="shuffled copy of BHF (100 per k)" if k == SEED_KS[0] else None)
+        ax.scatter([k], [100 * (b / med - 1)], marker="D", s=18, color="black", zorder=3, label="BHF" if k == SEED_KS[0] else None)
+    ax.axhline(0, color=pf.GREY, lw=0.5, zorder=0)
+    ax.set_xticks(SEED_KS)
+    ax.set_xlabel("k-mer size (hp_lehninger2)")
+    ax.set_ylabel(label[4:].capitalize() + "\n(% above the copies' median)")
+for ax, letter in zip(axs, "ab"):
+    pf.panel_label(ax, letter)
+pf.shared_legend(fig, ncol=2, title=("Query: BHF and 100 shuffled copies; target: Swiss-Prot minus Ascidiacea. "
+             "Above the grey copies = BHF's residue order adds shared k-mers"), title_fontsize=6)
+pf.save(fig, FIG / "279_bhf_hp_lehninger2_seed_counts_vs_shuffles_k11_k16_swissprot")
+""")
+
+md(r"""
+### 6c. Do BHF's regions survive a low-complexity filter, and do they beat shuffled BHF?
+
+BHF has two low-complexity stretches (SEG first pass, as in section 6): residues 67-98 and
+103-122 (1-based), the lysine-rich part of the protein. A region whose evidence comes from
+there is a composition match, not a homolog. Three ways to call a region low complexity:
+
+* **share of the region**: at least half of the region's BHF residues lie in a stretch (the
+  rule of sections 6 and 7). Extended regions are often 100 residues long, so a region can
+  pass this rule while all its shared k-mers sit inside a stretch, or fail it while none do;
+* **share of the shared k-mers**: at least half of the BHF residues covered by the region's
+  exact shared H/P k-mers lie in a stretch. A region of one piece is gapless, so the k-mers are found by
+  comparing BHF's H/P string with the target's position by position (a region chained from
+  two pieces is matched within the run's chain shift of 10). The number found equals
+  kmerseek's `region_n_shared_kmers` for every region (checked below);
+* **share of the shared k-mers, on both proteins**: as the rule before, and also at least
+  half of the target residues under those k-mers lie in a low-complexity stretch of the
+  target's region (SEG on the target's region residues only, since the run stored no whole
+  target). A run of BHF's ordinary residues can share its H/P pattern with a target's
+  glutamate run, and only this rule sees that. A region is kept only if it passes both sides.
+
+**Chance control.** 100 copies of BHF, each with its residues shuffled so that every
+adjacent residue pair keeps its count (a dipeptide shuffle, Altschul and Erickson 1985, as
+in notebook 256; `data/279_bhf_dipeptide_shuffles.fasta`, seed 279). This keeps lysine runs
+together only in part: the copies have fewer low-complexity residues than BHF (printed
+below), so the rules remove less from them. Each copy gets its own SEG mask. The copies were searched together with BHF's own 2_000-protein query chunk
+against the run's hp_lehninger2 indexes, with the run's image and flags
+(`scripts/279_bhf_shuffle_search.sbatch`, Slurm jobs 47649404, 47649408, 47649416 and
+47649421, 2026-10-13). BHF's own regions in that search must equal the run's (checked below).
+
+**Decision, written before the copies' results were read.** The rule that decides is the
+last one (shared k-mers outside low complexity on both proteins); the others are shown to
+see what each filter removes. At a k, BHF has a candidate only if, under that rule, its
+best region E-value is smaller than that of at least 95 of the 100 copies:
+p = (1 + copies with a best E-value at or below BHF's) / 101 <= 0.05. Lower E is better; a
+copy with no region below E = 10 counts as worse than BHF. Four k-sizes are tested, so one
+p near 0.05 among them is expected by chance.
+""")
+
+code(r"""
+import io
+from collections import Counter
+
+HP_H = set("AFGILMPVWY")  # hp_lehninger2 hydrophobic; the other 10 residues are polar
+
+
+def to_hp(s):
+    return "".join("h" if c in HP_H else "p" for c in s)
+
+
+def read_fasta(path):
+    out, name = {}, None
+    for line in open(path):
+        if line.startswith(">"):
+            name = line[1:].split()[0]
+            out[name] = ""
+        else:
+            out[name] += line.strip()
+    return out
+
+
+copies = read_fasta(Path("../data/279_bhf_dipeptide_shuffles.fasta"))
+pairs = lambda s: Counter(s[i:i + 2] for i in range(len(s) - 1))
+assert len(copies) == 100 and all(pairs(s) == pairs(bhf_seq) and s != bhf_seq for s in copies.values())
+query_seq = {BHF_ID: bhf_seq, **copies}
+query_lc = {q: sm.low_complexity_mask(s) for q, s in query_seq.items()}
+print("Low-complexity residues per query: BHF", sum(query_lc[BHF_ID]), "; copies median",
+      int(np.median([sum(query_lc[q]) for q in copies])), "range", min(sum(query_lc[q]) for q in copies), "-", max(sum(query_lc[q]) for q in copies))
+
+
+CHAIN_MAX_SHIFT = 10  # the run's --chain-max-shift
+
+
+def seed_offsets(r):
+    # (offset on BHF's region, offset on the target's region) of each exact shared H/P k-mer, and
+    # the offsets of every BHF and every target residue they cover. A region of one piece
+    # (region_n_chained = 1) is gapless, so a k-mer sits on the same offset in both. A chained
+    # region joins pieces whose diagonals differ by up to CHAIN_MAX_SHIFT, so its k-mers are
+    # matched within that shift.
+    q, t, k = to_hp(r["region_subseq"]), r["moltype_seq"], r["k"]
+    if r["region_n_chained"] == 1:
+        assert len(q) == len(t)
+        pairs = [(i, i) for i in range(len(q) - k + 1) if q[i:i + k] == t[i:i + k]]
+    else:
+        at = {}
+        for j in range(len(t) - k + 1):
+            at.setdefault(t[j:j + k], []).append(j)
+        pairs = []
+        for i in range(len(q) - k + 1):
+            near = [j for j in at.get(q[i:i + k], []) if abs(j - i) <= CHAIN_MAX_SHIFT]
+            if near:
+                pairs.append((i, min(near, key=lambda j: abs(j - i))))
+    return (pairs, sorted({i + d for i, _ in pairs for d in range(k)}),
+            sorted({j + d for _, j in pairs for d in range(k)}))
+
+
+def annotate(df):
+    extra = []
+    for r in df.iter_rows(named=True):
+        s0, e0, mask = r["region_start"], r["region_end"], query_lc[r["query_name"]]
+        assert query_seq[r["query_name"]][s0:e0] == r["region_subseq"]
+        pairs, qcols, tcols = seed_offsets(r)
+        tmask = sm.low_complexity_mask(r["target_subseq"])
+        extra.append({"n_seeds_found": len(pairs), "region_lc_share": sum(mask[s0:e0]) / (e0 - s0),
+                      "seed_lc_share": sum(mask[s0 + j] for j in qcols) / len(qcols),
+                      "target_seed_lc_share": sum(tmask[j] for j in tcols) / len(tcols),
+                      # residue by residue only where the two strings line up (one piece)
+                      "identical_residues": sum(a == b for a, b in zip(r["region_subseq"], r["target_subseq"]))
+                      if r["region_n_chained"] == 1 else None})
+    return pl.concat([df, pl.DataFrame(extra)], how="horizontal")
+
+
+# The shuffle search, copied from $SCRATCH/279-bhf-shuffle on Sherlock
+SHUF = BHF / "shuffle"
+COLS = ["query_name", "target_name", "region_start", "region_end", "region_subseq", "target_start", "target_end",
+        "target_subseq", "moltype_seq", "region_n_shared_kmers", "region_n_chained", "region_evalue"]
+sr = []
+for k in BHF_KS:
+    raw = subprocess.run(["zstd", "-dc", str(SHUF / f"bhf_shuffles.hp_lehninger2.k{k}.s1.lcfalse.extend-c1.51.regions.csv.zst")],
+                         check=True, capture_output=True).stdout
+    sr.append(pl.read_csv(io.BytesIO(raw), columns=COLS, infer_schema_length=0).with_columns(pl.lit(k).alias("k")))
+sr = pl.concat(sr).with_columns(pl.col("region_start", "region_end", "target_start", "target_end", "region_n_shared_kmers", "region_n_chained").cast(pl.Int64),
+                                pl.col("region_evalue").cast(pl.Float64))
+print("Queries with any region in the shuffle search:", sr.group_by("k").agg(pl.col("query_name").n_unique()).sort("k").rows())
+
+# BHF's regions in this search must be the run's regions
+KEY = ["target_name", "region_start", "region_end", "target_start", "target_end", "region_evalue"]
+for k in BHF_KS:
+    a = kr.filter(pl.col("k") == k).select(KEY).sort(KEY)
+    b = sr.filter((pl.col("k") == k) & (pl.col("query_name") == BHF_ID)).select(KEY).sort(KEY)
+    print(f"k{k}: BHF regions in the run {a.height:_}, in the shuffle search {b.height:_}, identical: {a.equals(b)}")
+    assert a.equals(b)
+
+RULES = ["no filter", "share of the region", "share of the shared k-mers", "shared k-mers, both proteins"]
+ann = annotate(sr.filter(pl.col("region_evalue") < 10))
+assert (ann["n_seeds_found"] == ann["region_n_shared_kmers"]).all(), "seed count differs from kmerseek's"
+print(f"Shared k-mers found = region_n_shared_kmers in all {ann.height} regions with E < 10")
+ann = ann.with_columns(pl.lit(True).alias("no filter"), (pl.col("region_lc_share") < 0.5).alias("share of the region"),
+                       (pl.col("seed_lc_share") < 0.5).alias("share of the shared k-mers"),
+                       ((pl.col("seed_lc_share") < 0.5) & (pl.col("target_seed_lc_share") < 0.5)).alias("shared k-mers, both proteins"))
+
+# Best E-value and number of regions with E < 10, per query, k and rule (no region = null best, 0 regions)
+bhf_grid = pl.DataFrame({"query_name": list(query_seq)}).join(pl.DataFrame({"k": BHF_KS}), how="cross").join(
+    pl.DataFrame({"rule": RULES}), how="cross")
+bhf_per = pl.concat([ann.filter(pl.col(rule)).group_by("query_name", "k").agg(
+    pl.col("region_evalue").min().alias("best_E"), pl.len().alias("n_E_below_10")).with_columns(pl.lit(rule).alias("rule"))
+    for rule in RULES])
+bhf_per = bhf_grid.join(bhf_per, on=["query_name", "k", "rule"], how="left").with_columns(pl.col("n_E_below_10").fill_null(0))
+rows = []
+for (k, rule), g in bhf_per.group_by("k", "rule", maintain_order=True):
+    b = g.filter(pl.col("query_name") == BHF_ID).row(0, named=True)
+    c = g.filter(pl.col("query_name") != BHF_ID)
+    as_good = None if b["best_E"] is None else int((c["best_E"] <= b["best_E"]).sum())
+    rows.append({"k": k, "rule": rule, "BHF_regions_E_below_10": b["n_E_below_10"], "BHF_best_E": b["best_E"],
+                 "copies_with_a_region_E_below_10": int(c["best_E"].is_not_null().sum()),
+                 "copies_best_E_below_1": int((c["best_E"] < 1).sum()),
+                 "copies_best_E_median": c["best_E"].median(),
+                 "copies_at_or_below_BHF_best_E": as_good,
+                 "p": None if as_good is None else round((1 + as_good) / 101, 3)})
+lc_tab = pl.DataFrame(rows).sort("k", pl.col("rule").replace_strict({r: i for i, r in enumerate(RULES)}))
+print(lc_tab)
+lc_tab.write_csv(TABLES / "279_bhf_regions_low_complexity_vs_dipeptide_shuffles_hp_lehninger2_swissprot.csv")
+
+bhf_ann = ann.filter(pl.col("query_name") == BHF_ID).with_columns(
+    pl.col("target_name").replace_strict(uniprot_name, default="").str.slice(0, 45).alias("target_description"))
+print("\nBHF's regions with E < 10, each rule (True = kept):")
+print(bhf_ann.sort("k", "region_evalue").select("k", "target_name", "target_description", "region_start", "region_end",
+      pl.col("region_evalue").round(2), "region_n_shared_kmers", pl.col("region_lc_share").round(2),
+      pl.col("seed_lc_share").round(2), pl.col("target_seed_lc_share").round(2), "identical_residues", *RULES[1:]))
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 70, ncols=4, sharey=True)
+for ax, rule in zip(axs, RULES):
+    for k in BHF_KS:
+        g = bhf_per.filter((pl.col("k") == k) & (pl.col("rule") == rule))
+        c = g.filter((pl.col("query_name") != BHF_ID) & pl.col("best_E").is_not_null())["best_E"].to_numpy()
+        ax.scatter(k + rng.uniform(-0.5, 0.5, len(c)), c, s=6, color=pf.GREY, alpha=0.7, lw=0,
+                   label="shuffled copy of BHF: best region" if k == BHF_KS[0] else None)
+        b = g.filter(pl.col("query_name") == BHF_ID)["best_E"][0]
+        if b is not None:
+            ax.scatter([k], [b], marker="D", s=20, color="black", zorder=3, label="BHF: best region" if k == BHF_KS[0] else None)
+        else:
+            ax.text(k, 0.035, "BHF:\nnone", ha="center", va="bottom", fontsize=5)
+        ax.text(k, 13, f"{len(c)}/100", ha="center", va="bottom", fontsize=5)
+    ax.set_yscale("log")
+    ax.set_ylim(0.03, 22)
+    ax.set_yticks([0.1, 1, 10], ["0.1", "1", "10"])
+    ax.set_xticks(BHF_KS)
+    ax.set_xlabel("k-mer size (hp_lehninger2)")
+    ax.set_title({"no filter": "all regions", "share of the region": "regions under half low complexity",
+                  "share of the shared k-mers": "shared k-mers: under half low\ncomplexity on BHF",
+                  "shared k-mers, both proteins": "shared k-mers: under half low\ncomplexity on both proteins"}[rule], fontsize=6)
+axs[0].set_ylabel("Best region E-value (lower is better)")
+for ax, letter in zip(axs, "abcd"):
+    pf.panel_label(ax, letter)
+pf.shared_legend(fig, ncol=2, title=("kmerseek hp_lehninger2, scaled 1, extended at C = 1.51. Query: BHF and 100 dipeptide-shuffled copies; "
+             "target: Swiss-Prot minus Ascidiacea.\nNumbers above each k: copies with a region E < 10. "
+             "BHF below most grey points = more than chance"), title_fontsize=6)
+pf.save(fig, FIG / "279_bhf_best_region_evalue_vs_dipeptide_shuffles_low_complexity_rules_hp_lehninger2_swissprot")
+""")
+
+md(r"""
+### 6d. Do BHF's regions land on a zinc finger, a membrane anchor or a DNA-binding region?
+
+For every target of BHF's regions (15_207 proteins over k17-k23),
+`scripts/bhf_target_uniprot_features.py` read from UniProt the positions of zinc fingers,
+transmembrane and intramembrane segments, lipid anchors (together: membrane) and DNA-binding
+regions, on 2026-10-13. A region counts as landing on a feature when its target span
+overlaps the feature's residues. If BHF's better regions were real, the features of their
+targets might gather as E falls; a share that stays the same from all regions down to E < 10
+means E does not pick out these features.
+""")
+
+code(r"""
+FEAT_RE = re.compile(r"(ZN_FING|TRANSMEM|INTRAMEM|DNA_BIND|LIPID) [<>?]?(\d+)(?:\.\.[<>?]?(\d+))?")
+FEAT_GROUP = {"ZN_FING": "zinc finger", "TRANSMEM": "membrane", "INTRAMEM": "membrane", "LIPID": "membrane", "DNA_BIND": "DNA binding"}
+FEATS = ["zinc finger", "membrane", "DNA binding"]
+target_feats = {}
+for r in feat_tsv.iter_rows(named=True):
+    spans = []
+    for col in ["Zinc finger", "Transmembrane", "Intramembrane", "DNA binding", "Lipidation"]:
+        for m in FEAT_RE.finditer(r[col]):
+            spans.append((FEAT_GROUP[m.group(1)], int(m.group(2)) - 1, int(m.group(3) or m.group(2))))  # 0-based, end-exclusive
+    target_feats[r["Entry"]] = spans
+missing = set(kr["target_name"]) - set(target_feats)
+assert not missing, f"{len(missing)} targets have no UniProt row"
+kf = kr.with_columns(*[pl.struct("target_name", "target_start", "target_end").map_elements(
+    lambda r, f=f: any(g == f and s < r["target_end"] and e > r["target_start"] for g, s, e in target_feats[r["target_name"]]),
+    return_dtype=pl.Boolean).alias(f) for f in FEATS])
+TIERS = {"all regions": pl.lit(True), "E < 100": pl.col("region_evalue") < 100, "E < 10": pl.col("region_evalue") < 10}
+feat_tab = pl.concat([kf.filter(cond).group_by("k").agg(pl.len().alias("regions"), *[pl.col(f).sum().alias(f"on {f}") for f in FEATS])
+                      .with_columns(pl.lit(t).alias("regions with")) for t, cond in TIERS.items()])
+feat_tab = pl.DataFrame({"k": BHF_KS}).join(pl.DataFrame({"regions with": list(TIERS)}), how="cross").join(
+    feat_tab, on=["k", "regions with"], how="left").fill_null(0).with_columns(
+    *[(100 * pl.col(f"on {f}") / pl.col("regions")).round(1).alias(f"% on {f}") for f in FEATS])
+print(feat_tab)
+feat_tab.write_csv(TABLES / "279_bhf_regions_on_target_zinc_finger_membrane_dna_binding_hp_lehninger2_swissprot.csv")
+print("\nRegions with E < 100 that land on one of the features:")
+print(kf.filter((pl.col("region_evalue") < 100) & pl.any_horizontal(FEATS)).sort("region_evalue").with_columns(
+    pl.col("target_name").replace_strict(uniprot_name, default="").str.slice(0, 45).alias("target_description")).select(
+    "k", "target_name", "target_description", "region_start", "region_end", "target_start", "target_end",
+    pl.col("region_evalue").round(1), *FEATS))
+print("BHF itself: predicted transmembrane helices", sm.stretches(tm) or "none", "; cysteines", bhf_seq.count("C"))
+
+TIER_MARK = {"all regions": ("o", pf.GREY), "E < 100": ("s", pf.OKABE_ITO["blue"]), "E < 10": ("D", "black")}
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 58, ncols=3, sharey=True)
+for ax, f in zip(axs, FEATS):
+    for i, (t, (mk, col)) in enumerate(TIER_MARK.items()):
+        sub = feat_tab.filter((pl.col("regions with") == t) & (pl.col("regions") > 0))
+        ax.scatter(sub["k"] + (i - 1) * 0.35, sub[f"% on {f}"], marker=mk, s=14, color=col,
+                   label=f"{t}" if f == FEATS[0] else None)
+        for kk in feat_tab.filter((pl.col("regions with") == t) & (pl.col("regions") == 0))["k"]:
+            ax.scatter([kk + (i - 1) * 0.35], [0], marker="x", s=10, color=pf.GREY, lw=0.6,
+                       label="no region at this E" if f == FEATS[0] and kk == 23 else None)
+    ax.set_xticks(BHF_KS)
+    ax.set_xlabel("k-mer size (hp_lehninger2)")
+    ax.set_title(f"target region overlaps a {f} feature", fontsize=6)
+axs[0].set_ylabel("BHF regions on the feature (%)")
+for ax, letter in zip(axs, "abc"):
+    pf.panel_label(ax, letter)
+pf.shared_legend(fig, ncol=4, title=("kmerseek hp_lehninger2 regions of BHF on Swiss-Prot minus Ascidiacea; UniProt feature positions, 2026-10-13. "
+             "No rise from grey to black = E does not pick out these features"), title_fontsize=6)
+pf.save(fig, FIG / "279_bhf_regions_on_zinc_finger_membrane_dna_binding_hp_lehninger2_swissprot")
+""")
+
+md(r"""
+### 6e. Residues of every region left
+
+Every BHF region with E < 10 that passes any of the three low-complexity rules of 6c. Five lines per
+region, 60 columns per block: BHF's residues, BHF's H/P string, the target's H/P string,
+the target's residues, and a mark line: `|` where the residues are identical, `^` where the
+column is inside an exact shared H/P k-mer and the residues differ, `!` where both hold.
+""")
+
+code(r"""
+left = bhf_ann.filter(pl.col("share of the region") | pl.col("share of the shared k-mers")).sort("k", "region_evalue")
+print(f"{left.height} regions left, {left['target_name'].n_unique()} targets\n")
+for r in left.iter_rows(named=True):
+    assert r["region_n_chained"] == 1, "the mark line assumes a region of one piece"
+    _, cols, _ = seed_offsets(r)
+    cols = set(cols)
+    q, t = r["region_subseq"], r["target_subseq"]
+    marks = "".join("!" if (a == b and i in cols) else "|" if a == b else "^" if i in cols else " "
+                    for i, (a, b) in enumerate(zip(q, t)))
+    print(f"k{r['k']}  {r['target_name']} {r['target_description']}  E = {r['region_evalue']:.2f}; "
+          f"{r['region_n_shared_kmers']} shared k-mers; {r['identical_residues']} of {len(q)} residues identical; "
+          f"kept by: {', '.join(x for x in RULES[1:] if r[x])}")
+    for i in range(0, len(q), 60):
+        lab_q = f"BHF {r['region_start'] + 1 + i}"
+        lab_t = f"{r['target_name']} {r['target_start'] + 1 + i}"
+        for lab, s in [(lab_q, q), ("BHF H/P", to_hp(q)), ("target H/P", r["moltype_seq"]), (lab_t, t), ("", marks)]:
+            print(f"{lab:>18}  {s[i:i + 60]}")
+        print()
 """)
 
 md(r"""
@@ -916,6 +1291,17 @@ region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. el
   immunodeficiency virus (P27984) at E = 0.16 on BHF residues 137-190.
 * None of BHF's kmerseek regions under hp_lehninger2 k17-k23 has E < 1; the best is
   E = 2.97 at k17, and the strongest-ranked ones sit on BHF's lysine-rich low-complexity stretch.
+* BHF's kmerseek regions are no better than chance: 100 dipeptide-shuffled copies of BHF,
+  searched the same way, reach a median best E-value of 1.56 at k17, below BHF's 2.97, and
+  BHF beats the copies at no k under any low-complexity rule (p = 0.42-0.65).
+* Two BHF regions with E < 10 keep their shared k-mers outside low complexity on both
+  proteins, both at k17: Q69TH6 (E = 2.97, 14 of 108 residues identical) and A0A089QRB9
+  (E = 3.97, 8 of 96).
+* No BHF region with E < 10 lands on a zinc finger, a membrane segment or a DNA-binding region
+  of its target; the closest is a transmembrane segment of Q9UTN1 at E = 12.8.
+* At k = 13-16, BHF shares at least 2 H/P k-mers with 2-9% more Swiss-Prot proteins than its
+  shuffled copies (p = 0.04-0.05), but its best single protein shares fewer k-mers than the
+  copies' median (p = 0.71-0.95), so no index below k17 was built for BHF.
 * In *B. schlosseri*, 7 of 3_566 dark proteins reached at E < 1 after filtering match a
   target with an immune name, the best at E = 0.51 (interleukin-11).
 * Under the six settings checked, no *B. schlosseri* dark protein reaches an MHC or
@@ -938,9 +1324,12 @@ against 22.6%) but less often at E < 10 (11.7% against 17.5%), and *B. burgdorfe
 few dark proteins (53 at E < 10) to read. UniProt features are whole-protein marks; whether a
 kmerseek region sits inside a biased stretch or a helix is not checked here.
 
-Next step: read the region coordinates for the reached dark proteins from the run's region
-files on Sherlock and drop regions that overlap a compositional-bias stretch or a
-transmembrane helix, then recount. That is a filter over existing files, not a new search.
+Sections 7-9 read the region coordinates from the run's region files and drop regions that
+are mostly low complexity or transmembrane helix. Section 6 follows BHF alone: the H/P
+k-mers it shares at k below 17 (6b), three low-complexity rules and a search of 100
+dipeptide-shuffled copies of BHF against the same indexes (6c), UniProt zinc finger,
+membrane and DNA-binding features under its regions' targets (6d), and the residues of the
+regions left (6e). The shuffle search is the only new search in this notebook.
 
 ## Supplementary Information
 
@@ -954,7 +1343,13 @@ transmembrane helix, then recount. That is a filter over existing files, not a n
   and are not drawn.
 - Ten *B. schlosseri* ids contain a comma; the export maps them back to the full id, while
   the pipeline's own gain step misses them.
-- Output table: `tables/279_dark_set_kmerseek_reach_scaled1_qfo_swissprot.csv`.
+- Output tables: `tables/279_dark_set_kmerseek_reach_scaled1_qfo_swissprot.csv`; for BHF,
+  `tables/279_bhf_hp_lehninger2_seed_counts_vs_shuffles_swissprot.csv`,
+  `tables/279_bhf_regions_low_complexity_vs_dipeptide_shuffles_hp_lehninger2_swissprot.csv`
+  and `tables/279_bhf_regions_on_target_zinc_finger_membrane_dna_binding_hp_lehninger2_swissprot.csv`.
+- BHF shuffle search: `scripts/279_bhf_shuffle_search.sbatch`, Slurm jobs 47649404, 47649408,
+  47649416 and 47649421 (2026-10-13, image `olgabot/kmerseek:0.4.0-rc5`); copies in
+  `data/279_bhf_dipeptide_shuffles.fasta` (md5 be46f47e612881a9ba1b21993c6ecc3a).
 
 ## References
 
@@ -964,7 +1359,13 @@ transmembrane helix, then recount. That is a filter over existing files, not a n
   k-size range per alphabet.
 - Notebook 240: Pfam dose-response with transmembrane instances held out.
 - UniProt REST API, compositional bias (MobiDB-lite), repeat and transmembrane features,
-  read 2026-10-12. https://rest.uniprot.org
+  read 2026-10-12; zinc finger, membrane, DNA-binding and lipid features of BHF's targets,
+  read 2026-10-13. https://rest.uniprot.org
+- Altschul SF, Erickson BW (1985). Significance of nucleotide sequence alignments: a method
+  for random sequence permutation that preserves dinucleotide and codon usage. Mol Biol Evol
+  2:526-538. https://doi.org/10.1093/oxfordjournals.molbev.a040370
+- Notebook 256 ([PR 83](https://github.com/seanome/2024-kmerseek-analysis/pull/83)): BHF
+  against 300 dipeptide-shuffled copies, human proteome.
 """)
 
 code(r'''
@@ -995,6 +1396,17 @@ region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. el
   immunodeficiency virus (P27984) at E = 0.16 on BHF residues 137-190.
 * None of BHF's kmerseek regions under hp_lehninger2 k17-k23 has E < 1; the best is
   E = 2.97 at k17, and the strongest-ranked ones sit on BHF's lysine-rich low-complexity stretch.
+* BHF's kmerseek regions are no better than chance: 100 dipeptide-shuffled copies of BHF,
+  searched the same way, reach a median best E-value of 1.56 at k17, below BHF's 2.97, and
+  BHF beats the copies at no k under any low-complexity rule (p = 0.42-0.65).
+* Two BHF regions with E < 10 keep their shared k-mers outside low complexity on both
+  proteins, both at k17: Q69TH6 (E = 2.97, 14 of 108 residues identical) and A0A089QRB9
+  (E = 3.97, 8 of 96).
+* No BHF region with E < 10 lands on a zinc finger, a membrane segment or a DNA-binding region
+  of its target; the closest is a transmembrane segment of Q9UTN1 at E = 12.8.
+* At k = 13-16, BHF shares at least 2 H/P k-mers with 2-9% more Swiss-Prot proteins than its
+  shuffled copies (p = 0.04-0.05), but its best single protein shares fewer k-mers than the
+  copies' median (p = 0.71-0.95), so no index below k17 was built for BHF.
 * In *B. schlosseri*, 7 of 3_566 dark proteins reached at E < 1 after filtering match a
   target with an immune name, the best at E = 0.51 (interleukin-11).
 * Under the six settings checked, no *B. schlosseri* dark protein reaches an MHC or
@@ -1017,9 +1429,12 @@ against 22.6%) but less often at E < 10 (11.7% against 17.5%), and *B. burgdorfe
 few dark proteins (53 at E < 10) to read. UniProt features are whole-protein marks; whether a
 kmerseek region sits inside a biased stretch or a helix is not checked here.
 
-Next step: read the region coordinates for the reached dark proteins from the run's region
-files on Sherlock and drop regions that overlap a compositional-bias stretch or a
-transmembrane helix, then recount. That is a filter over existing files, not a new search.
+Sections 7-9 read the region coordinates from the run's region files and drop regions that
+are mostly low complexity or transmembrane helix. Section 6 follows BHF alone: the H/P
+k-mers it shares at k below 17 (6b), three low-complexity rules and a search of 100
+dipeptide-shuffled copies of BHF against the same indexes (6c), UniProt zinc finger,
+membrane and DNA-binding features under its regions' targets (6d), and the residues of the
+regions left (6e). The shuffle search is the only new search in this notebook.
 
 ## Supplementary Information
 
@@ -1033,7 +1448,13 @@ transmembrane helix, then recount. That is a filter over existing files, not a n
   and are not drawn.
 - Ten *B. schlosseri* ids contain a comma; the export maps them back to the full id, while
   the pipeline's own gain step misses them.
-- Output table: `tables/279_dark_set_kmerseek_reach_scaled1_qfo_swissprot.csv`.
+- Output tables: `tables/279_dark_set_kmerseek_reach_scaled1_qfo_swissprot.csv`; for BHF,
+  `tables/279_bhf_hp_lehninger2_seed_counts_vs_shuffles_swissprot.csv`,
+  `tables/279_bhf_regions_low_complexity_vs_dipeptide_shuffles_hp_lehninger2_swissprot.csv`
+  and `tables/279_bhf_regions_on_target_zinc_finger_membrane_dna_binding_hp_lehninger2_swissprot.csv`.
+- BHF shuffle search: `scripts/279_bhf_shuffle_search.sbatch`, Slurm jobs 47649404, 47649408,
+  47649416 and 47649421 (2026-10-13, image `olgabot/kmerseek:0.4.0-rc5`); copies in
+  `data/279_bhf_dipeptide_shuffles.fasta` (md5 be46f47e612881a9ba1b21993c6ecc3a).
 
 ## References
 
@@ -1043,7 +1464,13 @@ transmembrane helix, then recount. That is a filter over existing files, not a n
   k-size range per alphabet.
 - Notebook 240: Pfam dose-response with transmembrane instances held out.
 - UniProt REST API, compositional bias (MobiDB-lite), repeat and transmembrane features,
-  read 2026-10-12. https://rest.uniprot.org
+  read 2026-10-12; zinc finger, membrane, DNA-binding and lipid features of BHF's targets,
+  read 2026-10-13. https://rest.uniprot.org
+- Altschul SF, Erickson BW (1985). Significance of nucleotide sequence alignments: a method
+  for random sequence permutation that preserves dinucleotide and codon usage. Mol Biol Evol
+  2:526-538. https://doi.org/10.1093/oxfordjournals.molbev.a040370
+- Notebook 256 ([PR 83](https://github.com/seanome/2024-kmerseek-analysis/pull/83)): BHF
+  against 300 dipeptide-shuffled copies, human proteome.
 """
 print(summary_md)
 ''')
