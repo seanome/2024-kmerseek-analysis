@@ -14,6 +14,9 @@
 #                               HP k-sizes, four settings (~150 searches), same launch dir
 #   make run-identity-sbatch    then every search again with identity bands, same launch dir
 #   make watch-below-kmin / make stop-below-kmin
+#   make run-shuffled-sbatch    chance control: the run-best-k-identity searches with each query
+#                               shuffled (dipeptide counts kept), against the real database
+#   make watch-shuffled / make stop-shuffled
 SHELL := /bin/bash
 MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 REPO_DIR     := $(abspath $(MAKEFILE_DIR)/../..)
@@ -60,7 +63,7 @@ NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
 
 .PHONY: help settings plan fasta measure-resources stub run run-sbatch watch stop \
         run-below-kmin-sbatch run-best-k-identity-sbatch run-identity-sbatch \
-        watch-below-kmin stop-below-kmin
+        watch-below-kmin stop-below-kmin run-shuffled-sbatch watch-shuffled stop-shuffled
 
 # ---- follow-up of notebook 277: k below k_min, and every search split by identity --------
 # The 16 alphabets whose best family or superfamily AUC (region_evalue; jaccard for exact)
@@ -92,6 +95,24 @@ run-best-k-identity-sbatch:
 
 run-identity-sbatch:
 	$(MAKE) run-sbatch $(BELOW_VARS) HEAD_TIME=4-00:00:00 NF_ARGS="$(BELOW_ARGS)"
+
+# ---- chance control: shuffled queries ------------------------------------------------------
+# Same pairs and settings as run-best-k-identity-sbatch. SHUFFLE_K=1 keeps residue counts only.
+SHUFFLE_K    ?= 2
+SHUFFLE_SEED ?= 1
+SHUF_VARS = OUTDIR=$(SCOPE_DIR)/results-scope40-alphabet-ksize-v040-shuffled-k$(SHUFFLE_K)-seed$(SHUFFLE_SEED) \
+            LAUNCH_DIR=$(MAKEFILE_DIR)/runs/shuffled-k$(SHUFFLE_K)-seed$(SHUFFLE_SEED) \
+            HEAD_JOBNAME=nfdrv-scope40-shuf HEAD_SESSION=scope40shuf
+
+run-shuffled-sbatch:
+	$(MAKE) run-sbatch $(SHUF_VARS) NF_ARGS="$(BELOW_ARGS) --pairs $(BEST_K_PAIRS) --settings_only $(BEST_K_SETTINGS) \
+	  --shuffle_queries true --shuffle_k $(SHUFFLE_K) --shuffle_seed $(SHUFFLE_SEED)"
+
+watch-shuffled:
+	$(MAKE) watch $(SHUF_VARS)
+
+stop-shuffled:
+	$(MAKE) stop $(SHUF_VARS)
 
 watch-below-kmin:
 	$(MAKE) watch $(BELOW_VARS)

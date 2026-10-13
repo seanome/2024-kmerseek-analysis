@@ -197,6 +197,7 @@ def main():
     p.add_argument("--pair-identity", help="aligned pairs with seqid_ali, to score by identity band")
     p.add_argument("--bands-out", help="where the identity-band table goes (with --pair-identity)")
     p.add_argument("--class-level", action="store_true", help="also score the class level")
+    p.add_argument("--query-set", help="label for shuffled queries, e.g. shuffled_k2_seed1 (a column)")
     a = p.parse_args()
     if a.print_directions:
         print("column,best")
@@ -208,6 +209,8 @@ def main():
     if missing or not (a.nofit or a.pairs):
         sys.exit(f"missing arguments: {missing or '--pairs or --nofit'}")
     base = {"alphabet": a.alphabet, "ksize": int(a.ksize), "setting": a.setting, "penalty": a.penalty}
+    if a.query_set:
+        base["queries"] = a.query_set
 
     if bool(a.pair_identity) != bool(a.bands_out):
         sys.exit("--pair-identity and --bands-out go together")

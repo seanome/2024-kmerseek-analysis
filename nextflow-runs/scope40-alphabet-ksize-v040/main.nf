@@ -73,6 +73,16 @@ params.pair_identity = ''
 // earlier run's indexes so they are not built again.
 params.index_dir     = ''
 
+// Chance control: search shuffled copies of the queries against the real database. Each
+// query is shuffled on its own and keeps its name, so its SCOP labels still apply and every
+// hit it ranks above a false positive is chance. shuffle_k 2 keeps each query's dipeptide
+// counts (and so its residue and H/P composition); 1 keeps residue counts only. The shuffle
+// is the low-complexity null's script (Altschul-Erikson), staged from that pipeline.
+params.shuffle_queries = false
+params.shuffle_k       = 2
+params.shuffle_seed    = 1
+params.shuffle_script  = "${projectDir}/../scope40-lowcomplexity-null/bin/shuffle_fasta.py"
+
 // The build of kmerseek's v0.4.0 tag (0aed5ca), the image the dark-set 0.4 runs use.
 params.kmerseek_image = 'docker.io/olgabot/kmerseek:0.4.0-rc5'
 
@@ -238,6 +248,33 @@ process prepareScope {
     """
 }
 
+process shuffleQueries {
+    publishDir params.outdir, mode: 'copy'
+    container params.kmerseek_image
+
+    input:
+    path fasta
+    path shuffle_script
+
+    output:
+    path "scope40.shuffled_k${params.shuffle_k}_seed${params.shuffle_seed}.fa", emit: fasta
+    path "scope40.shuffled_k${params.shuffle_k}_seed${params.shuffle_seed}.report.tsv", emit: report
+
+    script:
+    def stem = "scope40.shuffled_k${params.shuffle_k}_seed${params.shuffle_seed}"
+    """
+    python3 ${shuffle_script} --input ${fasta} --output ${stem}.fa --seed ${params.shuffle_seed} \
+        --shuffle-k ${params.shuffle_k} --report ${stem}.report.tsv
+    """
+
+    stub:
+    def stem = "scope40.shuffled_k${params.shuffle_k}_seed${params.shuffle_seed}"
+    """
+    cp ${fasta} ${stem}.fa
+    echo stub > ${stem}.report.tsv
+    """
+}
+
 process kmerseekIndex {
     tag "${alphabet}.k${ksize}"
     container params.kmerseek_image
@@ -309,6 +346,7 @@ process searchAndScore {
     def score = "score_scope40_setting.py --domains ${domains} --ref-rocx ${ref_rocx} --utils ${utils} " +
                 "--alphabet ${alphabet} --ksize ${ksize} --setting ${setting} --penalty '${penalty}' " +
                 "--out ${slug}.auc.tsv --class-level" +
+                (params.shuffle_queries ? " --query-set shuffled_k${params.shuffle_k}_seed${params.shuffle_seed}" : '') +
                 (params.pair_identity ? " --pair-identity ${identity} --bands-out ${slug}.bands.tsv" : '')
     """
     set -euo pipefail
@@ -367,7 +405,8 @@ workflow {
     def pairs = resolvePairs()
     if (!pairs) error "no alphabet-ksize pair matches --alphabets/--ksizes/--pairs"
     log.info "SCOPe40 kmerseek 0.4: ${pairs.size()} alphabet-ksize pairs, " +
-             "${pairs.sum { it[2].size() }} searches"
+             "${pairs.sum { it[2].size() }} searches" +
+             (params.shuffle_queries ? ", queries shuffled (k ${params.shuffle_k}, seed ${params.shuffle_seed})" : '')
 
     prepared = prepareScope(channel.fromPath(params.fasta, checkIfExists: true))
     fasta    = prepared.fasta.first()
@@ -377,10 +416,14 @@ workflow {
     }).combine(fasta)
     indexes = kmerseekIndex(index_in)
 
+    // The index is always built from the real sequences; only the queries are shuffled.
+    queries = params.shuffle_queries
+        ? shuffleQueries(fasta, channel.fromPath(params.shuffle_script, checkIfExists: true)).fasta.first()
+        : fasta
     settings_ch = channel.fromList(pairs.collectMany { a, k, settings -> settings.collect { s, c -> [a, k, s, c] } })
     scored = searchAndScore(settings_ch
         .combine(indexes, by: [0, 1])
-        .combine(fasta)
+        .combine(queries)
         .combine(prepared.domains)
         .combine(channel.fromPath(params.ref_rocx, checkIfExists: true))
         .combine(channel.fromPath(params.scope_utils, checkIfExists: true))
