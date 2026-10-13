@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+"""Count dark proteins and kmerseek reach at a grid of E-value cutoffs.
+
+    tools/summarize-evalue-cutoffs <protein-evalues dir> <out_dir> [species ...]
+
+Reads what tools/export-protein-evalues wrote (one folder, five species by default):
+
+  <species>_protein_tool_min_evalue.csv.gz      accession, phmmer, jackhmmer, mmseqs2
+  <species>_protein_kmerseek_min_evalue.csv.gz  alphabet, ksize, scaled, low_complexity_mask,
+                                                extension, accession, min_region_evalue
+
+and writes two small tables into <out_dir>, for notebook 289:
+
+  tool_dark_by_cutoff.csv
+      species, cutoff, n_proteins, n_dark, n_best_exactly_at_cutoff, n_phmmer,
+      n_jackhmmer, n_mmseqs2. A protein is dark at cutoff T when no tool has a hit with
+      E < T; n_<tool> counts the proteins that tool has a hit for with E < T.
+      n_best_exactly_at_cutoff counts the dark proteins whose best tool E-value is exactly
+      T: HMMER prints E-values to two significant figures, so many sit at 1.0 or 10, and
+      the pipeline's own dark set (E <= T) places them.
+  kmerseek_reach_by_cutoff.csv
+      species, alphabet, ksize, scaled, low_complexity_mask, extension, dark_cutoff,
+      group, n_group, region_cutoff, n_reached.
+      group is "dark" (no tool hit with E < dark_cutoff) or "placed" (the rest of the
+      proteome). n_reached counts the proteins of the group whose smallest kmerseek region
+      E-value under that setting is < region_cutoff. region_cutoff "any" counts every
+      protein with any region, including those whose regions all have E = inf.
+
+Every comparison is a strict "<". A setting refused for lack of a Karlin-Altschul fit has
+no rows in the export and so none here. Python 3.6, standard library only, so it runs with
+Sherlock's system python3.
+"""
+import bisect
+import csv
+import gzip
+import math
+import os
+import sys
+
+SPECIES = ("human", "worm", "yeast", "borrelia", "botryllus")
+TOOLS = ("phmmer", "jackhmmer", "mmseqs2")
+# Decades from 1e-10 to 10. 1 and 10 are the two cutoffs notebook 289 compares.
+CUTOFFS = [10.0 ** e for e in range(-10, 2)]
+DARK_CUTOFFS = (1.0, 10.0)
+
+
+def first_cutoff_above(ev):
+    """Index of the first cutoff c with ev < c; len(CUTOFFS) when there is none."""
+    return bisect.bisect_right(CUTOFFS, ev)
+
+
+def main():
+    if len(sys.argv) < 3:
+        sys.exit(__doc__)
+    in_dir, out_dir = sys.argv[1], sys.argv[2]
+    species_list = sys.argv[3:] or SPECIES
+    os.makedirs(out_dir, exist_ok=True)
+    tool_rows, reach_rows = [], []
+
+    for species in species_list:
+        # Smallest E-value of any tool per protein; inf when no tool has a hit.
+        tool_min, per_tool = {}, {t: [] for t in TOOLS}
+        with gzip.open(os.path.join(in_dir, "%s_protein_tool_min_evalue.csv.gz" % species),
+                       "rt") as fh:
+            r = csv.reader(fh)
+            if next(r) != ["accession"] + list(TOOLS):
+                sys.exit("%s: unexpected tool table header" % species)
+            for row in r:
+                vals = [float(v) if v else math.inf for v in row[1:]]
+                tool_min[row[0]] = min(vals)
+                for t, v in zip(TOOLS, vals):
+                    per_tool[t].append(v)
+        n_prot = len(tool_min)
+        for c in CUTOFFS:
+            tool_rows.append([species, repr(c), n_prot,
+                              sum(1 for v in tool_min.values() if not v < c),
+                              sum(1 for v in tool_min.values() if v == c)]
+                             + [sum(1 for v in per_tool[t] if v < c) for t in TOOLS])
+        n_group = {}
+        for t in DARK_CUTOFFS:
+            n_dark = sum(1 for v in tool_min.values() if not v < t)
+            n_group[(t, "dark")], n_group[(t, "placed")] = n_dark, n_prot - n_dark
+
+        # setting -> (dark_cutoff, group) -> histogram over first_cutoff_above
+        hist = {}
+        with gzip.open(os.path.join(in_dir, "%s_protein_kmerseek_min_evalue.csv.gz" % species),
+                       "rt") as fh:
+            r = csv.reader(fh)
+            header = next(r)
+            if header != ["alphabet", "ksize", "scaled", "low_complexity_mask", "extension",
+                          "accession", "min_region_evalue"]:
+                sys.exit("%s: unexpected kmerseek table header %s" % (species, header))
+            for row in r:
+                acc = row[5]
+                if acc not in tool_min:
+                    sys.exit("%s: kmerseek protein %s is not in the tool table" % (species, acc))
+                i = first_cutoff_above(float(row[6]))
+                h = hist.setdefault(tuple(row[:5]), {})
+                for t in DARK_CUTOFFS:
+                    g = "placed" if tool_min[acc] < t else "dark"
+                    counts = h.setdefault((t, g), [0] * (len(CUTOFFS) + 1))
+                    counts[i] += 1
+        for setting in sorted(hist):
+            for t in DARK_CUTOFFS:
+                for g in ("dark", "placed"):
+                    counts = hist[setting].get((t, g), [0] * (len(CUTOFFS) + 1))
+                    base = [species] + list(setting) + [repr(t), g, n_group[(t, g)]]
+                    running = 0
+                    for j, c in enumerate(CUTOFFS):
+                        running += counts[j]
+                        reach_rows.append(base + [repr(c), running])
+                    reach_rows.append(base + ["any", sum(counts)])
+        print("%s: %d proteins, %d settings, dark at E<1: %d, at E<10: %d"
+              % (species, n_prot, len(hist), n_group[(1.0, "dark")], n_group[(10.0, "dark")]))
+
+    with open(os.path.join(out_dir, "tool_dark_by_cutoff.csv"), "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["species", "cutoff", "n_proteins", "n_dark", "n_best_exactly_at_cutoff"] + ["n_" + t for t in TOOLS])
+        w.writerows(tool_rows)
+    with open(os.path.join(out_dir, "kmerseek_reach_by_cutoff.csv"), "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["species", "alphabet", "ksize", "scaled", "low_complexity_mask",
+                    "extension", "dark_cutoff", "group", "n_group", "region_cutoff",
+                    "n_reached"])
+        w.writerows(reach_rows)
+
+
+if __name__ == "__main__":
+    main()
