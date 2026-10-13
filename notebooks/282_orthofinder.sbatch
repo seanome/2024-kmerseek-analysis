@@ -3,7 +3,7 @@
 #SBATCH --account=ayeletv
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=64G
+#SBATCH --mem=16G
 #SBATCH --time=02:00:00
 #SBATCH --output=282-orthofinder-%j.out
 #
@@ -30,9 +30,9 @@
 # the laptop. Peak memory was never measured; 64 GB is a guess with room. After the run,
 # read `sacct -j <jobid> -o JobID,MaxRSS,Elapsed` and shrink both.
 #
-# Measured: job 47647127 (2026-10-13) ran OrthoFinder 3.1.5 on this input in 20 min
-# (Log.txt: 06:28:18 to 06:48:46), so the time ask is now 2 h. Its peak memory (MaxRSS)
-# has not been read yet; 64 GB stays until it is.
+# Measured: job 47647127 (2026-10-13) ran OrthoFinder 3.1.5 on this input in 21 min 49 s
+# (sacct Elapsed) with a peak memory of 4.8 GiB (sacct MaxRSS 5056684K). The asks are now
+# 2 h and 16 GB: about 5x and 3x what it used, room for a larger Botryllus genome.
 #
 # The notebook needs only the family tables. Copy them back with:
 #
