@@ -1,0 +1,2548 @@
+=== MHC class I and II: 76 kmerseek-only links ===
+
+FUN020551_FUN020551.2 2345-2598  vs  P15979 77-330 (Class I histocompatibility antigen, F10 alpha chain)
+  hp_lehninger_hpc3 k=17  E=2.6e-07  254 aa  identity 6% (chance 5%)  alphabets with a region: 1
+  Q NTGFIGNLTHCFENPFRYNVTLLDATTLELETSWMTGIILHISLFDSTSVYSNMACQDEANDTRKISISNTRTIISSLSP
+            |             |                      |             | | |        |       
+  T DQQYWDGQTQIGQGNEQIDRENLGILQRRYNQTGGSHTVQWMYGCDILEGGPIRGYYQMAYDGRDFTAFDKGTMTFTAAV
+  Q GNSYFIEGRRDDNNKMLIAEVVGTGRVASPYMKQVDASNSSIRVTWSKSYMGIAFYTTLRGTGYDIFNEQRAWWSPVRGA
+                                      |                          |              |   
+  T PEAVPTKRKWEEESEPERWKNYLEETCVEWLRRYVEYGKAELGRRERPEVRVWGKEADGILTLSCRAHGFYPRPIVVSWL
+  Q TTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGI
+            |   |                     |                                             
+  T KDGAVRGQDAHSGGIVPNGDGTYHTWVTIDAQPGDGDKYQCRVEHASLPQPGLYSWEPPQPNLVPIVAGVAVAIVAIAIM
+  Q GLVLILAIGLVIAH
+      |           
+  T VGVGFIIYRRHAGK
+
+FUN020551_FUN020551.1 2345-2598  vs  P15979 77-330 (Class I histocompatibility antigen, F10 alpha chain)
+  hp_lehninger_hpc3 k=17  E=3.7e-07  254 aa  identity 6% (chance 5%)  alphabets with a region: 1
+  Q NTGFIGNLTHCFENPFRYNVTLLDATTLELETSWMTGIILHISLFDSTSVYSNMACQDEANDTRKISISNTRTIISSLSP
+            |             |                      |             | | |        |       
+  T DQQYWDGQTQIGQGNEQIDRENLGILQRRYNQTGGSHTVQWMYGCDILEGGPIRGYYQMAYDGRDFTAFDKGTMTFTAAV
+  Q GNSYFIEGRRDDNNKMLIAEVVGTGRVASPYMKQVDASNSSIRVTWSKSYMGIAFYTTLRGTGYDIFNEQRAWWSPVRGA
+                                      |                          |              |   
+  T PEAVPTKRKWEEESEPERWKNYLEETCVEWLRRYVEYGKAELGRRERPEVRVWGKEADGILTLSCRAHGFYPRPIVVSWL
+  Q TTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGI
+            |   |                     |                                             
+  T KDGAVRGQDAHSGGIVPNGDGTYHTWVTIDAQPGDGDKYQCRVEHASLPQPGLYSWEPPQPNLVPIVAGVAVAIVAIAIM
+  Q GLVLILAIGLVIAH
+      |           
+  T VGVGFIIYRRHAGK
+
+FUN009004_FUN009004 1-127  vs  Q9GKZ0 58-184 (Hereditary hemochromatosis protein homolog)
+  gbmr4 k=15  E=8.1e-05  127 aa  identity 13% (chance 6%)  alphabets with a region: 1
+  Q MNADTKQNLALAESRLITEKELQSTRWKSVGFSGKYATLVLAVSVLLCIGGMVFALNTVSKISYLEDRIARMEAALDLSA
+      |                 |  |  |     | |       |                     |               
+  T FVAYNHESRRAESRAQWVLGEAHSQLWLQLSQSLKGWDHMFIVDFWTIMDNHNHSKESHTLQVILGCEVQEDNSTRGFWK
+  Q RTENGNGHIQTDIISKKTESKLRSFLQRELSHEVAKMRTKRSNEQCS
+        |  |                 |   |  || | | |       
+  T YGYDGQDHLEFCPETLDWRAAESRALTTKLEWEVNKIRAKQNRAYLE
+
+FUN009004_FUN009004 1-127  vs  Q9GL42 58-184 (Hereditary hemochromatosis protein homolog)
+  gbmr4 k=15  E=8.1e-05  127 aa  identity 13% (chance 6%)  alphabets with a region: 1
+  Q MNADTKQNLALAESRLITEKELQSTRWKSVGFSGKYATLVLAVSVLLCIGGMVFALNTVSKISYLEDRIARMEAALDLSA
+      |                 |  |  |     | |       |                     |               
+  T FVAYNHESRRAESRAQWVLGEAHSQLWLQLSQSLKGWDHMFIVDFWTIMDNHNHSKESHTLQVILGCEVQEDNSTRGFWK
+  Q RTENGNGHIQTDIISKKTESKLRSFLQRELSHEVAKMRTKRSNEQCS
+        |  |                 |   |  || | | |       
+  T YGYDGQDHLEFCPETLDWRAAESRALTTKLEWEVNKIRAKQNRAYLE
+
+FUN009004_FUN009004 1-127  vs  Q9GL43 58-184 (Hereditary hemochromatosis protein homolog)
+  gbmr4 k=15  E=9.7e-05  127 aa  identity 13% (chance 6%)  alphabets with a region: 1
+  Q MNADTKQNLALAESRLITEKELQSTRWKSVGFSGKYATLVLAVSVLLCIGGMVFALNTVSKISYLEDRIARMEAALDLSA
+      |                 |  |  |     | |       |                     |               
+  T FVAYNHESRRAESRAQWVLGEAHSQLWLQLTQSLKGWDHMFIVDFWTIMDNHNHSKESHTLQVILGCEVQEDNSTRGFWK
+  Q RTENGNGHIQTDIISKKTESKLRSFLQRELSHEVAKMRTKRSNEQCS
+        |  |                 |   |  || | | |       
+  T YGYDGQDHLEFCPETLDWRAAESRALTTKLEWEVNKIRAKQNRAYLE
+
+FUN001552_COL4A6 1724-1792  vs  P06339 44-112 (H-2 class I histocompatibility antigen, D-37 alpha chain)
+  gbmr4 k=15  E=0.00099  69 aa  identity 10% (chance 5%)  alphabets with a region: 1
+  Q FIECNGERGHCFFYNNQFSFWLSTIMEHDQFSTPEKQTLKAGSLRTRISRCQEDLSSFFGFLKASSEDA
+                |                    ||         |         |    |    |    
+  T IVGYVDDTQFVRFDSDAENPRMEPRARWIEQEGPEYWERETWKARDMGRNFRVNLRTLLGYYNQSNDES
+
+FUN020551_FUN020551.1 2470-2612  vs  P14427 201-343 (H-2 class I histocompatibility antigen, D-P alpha chain)
+  hp_lehninger_hpc3 k=17  E=0.024  143 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q WSKSYMGIAFYTTLRGTGYDIFNEQRAWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRF
+                  |  |            |     |                     |            |     |  
+  T LCTDPPKAHVTHHPRSEGKVTLRCWALGFYPADITLTWQLNGEELTQDMELVETRPAGDGTFQKWAALVVPLGKEQNYTC
+  Q SIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIAHVRLMDVYNPYAESY
+                                  |||      | |        |            
+  T HVEHEGLPEPLTLRWEPPPSTDSYMVIVAVLVVLGAVFIIGAVVAFVMMMRRNTGGKGGDYTL
+
+FUN008497_FUN008497 13-60  vs  P13750 71-118 (Patr class I histocompatibility antigen, B-1 alpha chain)
+  gbmr4 k=16  E=0.028  48 aa  identity 10% (chance 5%)  alphabets with a region: 1
+  Q FIGISSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGH
+     |               |         |            |    |  
+  T WIEQEGPEYWDRETRNMKASAQTDRENLRIALRYYNQSEAGSHTWQTM
+
+FUN008497_FUN008497 17-73  vs  Q95IT1 159-215 (Patr class I histocompatibility antigen, alpha chain G)
+  gbmr4 k=16  E=0.029  57 aa  identity 5% (chance 6%)  alphabets with a region: 1
+  Q SSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTI
+                                           |        |      | 
+  T AADTAAQISKRKCEAANAAEQRRAYLEGTCVEWLHRYLENGKEMLQRADPPKTHVTH
+
+FUN018361_SNRPB 10-47  vs  Q9QZY5 71-108 (T-cell surface glycoprotein CD1e, membrane-associated)
+  gbmr4 k=15  E=0.051  38 aa  identity 13% (chance 6%)  alphabets with a region: 1
+  Q NNHINFRMRCILQDGRTFIGTFKAFDKHMNLILVDCDE
+                  |       | |     |   |   
+  T STMGTIQFLKPWSQGDFSKEELKNFEALFRLYFHDFPR
+
+FUN024956_FUN024956.1 3535-3615  vs  Q5YB65 223-303 (T-cell surface glycoprotein CD1b)
+  hp_lehninger_hpc3 k=17  E=0.063  81 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q LCLATTMGLSWIFGYVMLVSEDQTFLTAMSWLFALTNSFQGVFTFYITAIRTGEFRKVYDPVIRRFSTVSVVSTGFSSVD
+     |              |     |        |           |    |                            |  
+  T VCHVSGFCPKPVWVMWMPGEQEQQGTQLGDILPNANWTWYLRATLDVAAGEAAGLSCRVKHSSLEGQDIILYWSNPTSIG
+  Q N
+     
+  T S
+
+FUN020551_FUN020551.2 2470-2600  vs  P14427 201-331 (H-2 class I histocompatibility antigen, D-P alpha chain)
+  hp_lehninger_hpc3 k=17  E=0.064  131 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q WSKSYMGIAFYTTLRGTGYDIFNEQRAWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRF
+                  |  |            |     |                     |            |     |  
+  T LCTDPPKAHVTHHPRSEGKVTLRCWALGFYPADITLTWQLNGEELTQDMELVETRPAGDGTFQKWAALVVPLGKEQNYTC
+  Q SIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIAHVR
+                                  |||      | |        |
+  T HVEHEGLPEPLTLRWEPPPSTDSYMVIVAVLVVLGAVFIIGAVVAFVMMMR
+
+FUN033153_FUN033153 131-166  vs  P13753 149-184 (BOLA class I histocompatibility antigen, alpha chain BL3-7)
+  protein20 k=5  E=0.077  36 aa  identity 47% (chance 10%)  alphabets with a region: 3
+  Q DLKALVENGRKIEAASHSAQLIKTETEAAGAADICR
+    |  || |  |   ||   ||  |   ||||||   |
+  T DYIALNEELRSWTAADTAAQITKRKWEAAGAAETWR
+
+FUN018361_SNRPB 10-66  vs  P15812 69-125 (T-cell surface glycoprotein CD1e, membrane-associated)
+  gbmr4 k=15  E=0.081  57 aa  identity 7% (chance 5%)  alphabets with a region: 1
+  Q NNHINFRMRCILQDGRTFIGTFKAFDKHMNLILVDCDEFRRIRPKKGSTDREEKRTL
+          |       |       |       |                          
+  T TVLGTIRFLKPWSHGNFSKQELKNLQSLFQLYFHSFIQIVQASAGQFQLEYPFEIQI
+
+FUN019386_FUN019386.1 577-691  vs  Q9QZY6 206-320 (T-cell surface glycoprotein CD1c3)
+  hp_lehninger_hpc3 k=22  E=0.087  115 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q QLGWTGKTCEEVVENGCPNPEDSGGGQVPYGVSLEFFCGDGTSLSGPGIVTCLENGTFDHTIPECLGEGYSAQSSESKNT
+                                                 |              |      |            
+  T EVWLSSSPNLKPGRLLLACHVSGFYPKPIWVMWMRGAQEQLETKQGDILPHADGTWYLRVTLDVAAKEAAGLSCRVRHSS
+  Q SPFSSPMIISMLAATGMLITAAGGLVLYIFVFAPW
+                     ||| |    |        
+  T LRDQDIILYWGHGLSVILITFAVIVPLVLLIILVL
+
+FUN002272_COL2A1 160-211  vs  P14436 64-115 (H-2 class II histocompatibility antigen, A-R alpha chain)
+  gbmr4 k=16  E=0.089  52 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q MNQHEWHRVAWSVYNDRVRFYVNCAMVVETNITKSAGPLSAAGKVVLGVPQR
+                    |  |                  |             
+  T LQNIAVVKHNLEILTKRSNFTPAANEAPQATVFPKSPVLLGQPNTLICFVDN
+
+FUN006870_FUN006870 335-351  vs  P14483 215-231 (H-2 class II histocompatibility antigen, A beta chain)
+  gbmr4 k=16  E=0.1  17 aa  identity 24% (chance 8%)  alphabets with a region: 1
+  Q EFARRQKSEMSQYVRGL
+    |      |  |    | 
+  T EWRAQSESAWSKMLSGI
+
+FUN037992_OPRL1 47-191  vs  Q61559 166-310 (IgG receptor FcRn large subunit p51)
+  hp_lehninger2 k=20  E=0.11  145 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q TDACIRSTDLTEMLETEFLGNFDNGSTITSDYDYGTTVAYEVTGEFYELGCQYVVQGPGWFTYLNFMFSAMFLLPLLVMT
+                 |                                   |          |      |            
+  T KQPDAARKESEFLLNSCPERLLGHLERGRRNLEWKEPPSMRLKARPGNSGSSVLTCAAFSFYPPELKFRFLRNGLASGSG
+  Q ICYTLIIVQLRKSQARHYTVTSGSQRQGKKRPRSTAALNAERNFKRVNITCIALVLLFFVCWLPF
+     | |               |  |                               |       |  
+  T NCSTGPNGDGSFHAWSLLEVKRGDEHHYQCQVEHEGLAQPLTVDLDSSARSSVPVVGIVLGLLLV
+
+FUN020551_FUN020551.1 2496-2627  vs  P06339 226-357 (H-2 class I histocompatibility antigen, D-37 alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.13  132 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q AWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANF
+        |     |                     |        |   |     |                            
+  T LGFYPADITLTWQLNGEELTQDMELVETRPAGDGTFQKWAAVVVPLGKEQYYTCHVYHEGLPEPLTLRWEPPPSTVSNMV
+  Q EWWWLVVGIGLVLILAIGLVIAHVRLMDVYNPYAESYRNTFTPTKQHHIHPY
+        |||        |        |                           
+  T IIAVLVVLGAVIILGAVVAFVMKRRRHIGVKGCYAHVLGSKSFQTSDWPQKA
+
+FUN008497_FUN008497 17-73  vs  P30686 159-215 (Patr class I histocompatibility antigen, C alpha chain)
+  gbmr4 k=15  E=0.13  57 aa  identity 5% (chance 6%)  alphabets with a region: 1
+  Q SSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTI
+                |                          |               | 
+  T AADTAAQITQRKWEAAREAEQLRAYLEGKRVESCRRYLENGKETLQRTECPKTHMTH
+
+FUN001712_FUN001712 544-621  vs  P15978 83-160 (Class I histocompatibility antigen, Non-RT1.A alpha-1 chain)
+  gbmr4 k=16  E=0.13  78 aa  identity 13% (chance 6%)  alphabets with a region: 1
+  Q LMKNKDVISSGTNHDIRFETTSTSAVLQLGKGDVVWVRLRQGTVYGHSPSHYSTFSGFSLTLNEEIDSSAITSERADA
+              |   | |              |         |   |   |               |         | |
+  T YWEEQTLVAKGQELDYRVSLRNLLSYYNQSEGGSHTIQRMYGCDVGSDGSLLRGYEQHAYDGRDYIALNEDLKTWAVA
+
+FUN008497_FUN008497 22-73  vs  P30515 164-215 (Saoe class I histocompatibility antigen, A alpha chain)
+  gbmr4 k=16  E=0.16  52 aa  identity 6% (chance 7%)  alphabets with a region: 1
+  Q DRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTI
+           |                          |               | 
+  T AQITQRKWEAANEAERTRAYLEGTCVEWLHRYLENGKETLQRAEPPKTHVTH
+
+FUN020551_FUN020551.1 2524-2604  vs  P28067 180-260 (HLA class II histocompatibility antigen, DM alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.17  81 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q KFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIAHVRLMD
+                                     |                |           |  |  | | |       
+  T DGLSFQAFSYLNFTPEPSDIFSCIVTHEIDRYTAIAYWVPRNALPSDLLENVLCGVAFGLGVLGIIVGIVLIIYFRKPCS
+  Q V
+     
+  T G
+
+FUN027507_ITGB2 252-374  vs  P30377 221-343 (Class I histocompatibility antigen, Gogo-A*0401 alpha chain)
+  hp_lehninger_hpc3 k=25  E=0.18  123 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q KEECPENDFLLFDKVTTLPNCQGTCSASDPGCGICSRYDPTHAHIRCGGTFADGCSYSYDVYWTTDDRYHGFVKIFDTTT
+     |       | |         |                                                          
+  T HEAILRCWALSFYPAEITLTWQRDGEDQTQDTELVETRPAGDGTFQKWAAVVVPSGQEQRYTCHVQHEGLPKPLTLRWEP
+  Q DCPAPINALVIVIPVVIGVVLLGIIALILWKLYTIRRDKRLWD
+         |    |    |                     |     
+  T SSQPTIPIVGIIAGLVLFGAVIAGAVVAAVRWRRKSSDRKGGS
+
+FUN008497_FUN008497 18-58  vs  P30516 72-112 (Class I histocompatibility antigen, B alpha chain)
+  gbmr4 k=15  E=0.19  41 aa  identity 15% (chance 6%)  alphabets with a region: 1
+  Q SLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQ
+                  |  | |              ||  |  
+  T RAQWVEKEGREYWEEETQRAKAFAQTFRVNLQTALGYYNQS
+
+FUN027507_ITGB2 252-374  vs  P30375 221-343 (Class I histocompatibility antigen, Gogo-A*0101 alpha chain)
+  hp_lehninger_hpc3 k=25  E=0.2  123 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q KEECPENDFLLFDKVTTLPNCQGTCSASDPGCGICSRYDPTHAHIRCGGTFADGCSYSYDVYWTTDDRYHGFVKIFDTTT
+     |       | |         |                                                          
+  T HEAILRCWALSFYPAEITLTWQRDGEDQTQDTELVETRPAGDGTFQKWAAVVVPSGQEQRYTCHVQHEGLPEPLTLRWEP
+  Q DCPAPINALVIVIPVVIGVVLLGIIALILWKLYTIRRDKRLWD
+         |    |    |                     |     
+  T SSQPTIPIVGIIAGLVLFGAVIAGAVVAAVRWRRKSSDRKGGS
+
+FUN019386_FUN019386.2 537-651  vs  Q9QZY6 206-320 (T-cell surface glycoprotein CD1c3)
+  hp_lehninger_hpc3 k=22  E=0.2  115 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q QLGWTGKTCEEVVENGCPNPEDSGGGQVPYGVSLEFFCGDGTSLSGPGIVTCLENGTFDHTIPECLGEGYSAQSSESKNT
+                                                 |              |      |            
+  T EVWLSSSPNLKPGRLLLACHVSGFYPKPIWVMWMRGAQEQLETKQGDILPHADGTWYLRVTLDVAAKEAAGLSCRVRHSS
+  Q SPFSSPMIISMLAATGMLITAAGGLVLYIFVFAPW
+                     ||| |    |        
+  T LRDQDIILYWGHGLSVILITFAVIVPLVLLIILVL
+
+FUN020078_FUN020078 77-131  vs  P23043 10-70 (Antigen-presenting glycoprotein CD1d)
+  gbmr4 k=14  E=0.2  55 aa  chained across an insertion or deletion: Q 55 aa, T 61 aa, not aligned position by position  alphabets with a region: 1
+  Q FNLESAKIAEETKDRLITYLGDYKHYLAHIECAPEGWIIRIFTDVKTVSAELLLH
+  T LQISSFVNSSQTRTDCLAWLGELQTHSWSNDSDTIHFLKPWSQGTFNFQQWEQVQNELWVY
+
+FUN019386_FUN019386.1 577-691  vs  Q9QZY8 206-320 (T-cell surface glycoprotein CD1c1)
+  hp_lehninger_hpc3 k=22  E=0.2  115 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q QLGWTGKTCEEVVENGCPNPEDSGGGQVPYGVSLEFFCGDGTSLSGPGIVTCLENGTFDHTIPECLGEGYSAQSSESKNT
+              |                                  |              |      |            
+  T EVWLSSSPNLEPGRLLLACHVSGFYPKPIWVMWMRGAQEQLETKQGDILPHADGTWYLRVTLDVAAREAAGLSCRVRHSS
+  Q SPFSSPMIISMLAATGMLITAAGGLVLYIFVFAPW
+                     ||| |    |        
+  T LRDQDIILYWGHGLSVILITFAVIVPLVLLIVLML
+
+FUN020551_FUN020551.2 2524-2603  vs  P28067 180-259 (HLA class II histocompatibility antigen, DM alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.21  80 aa  identity 10% (chance 7%)  alphabets with a region: 1
+  Q KFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIAHVRLVS
+                                     |                |           |  |  | | |      |
+  T DGLSFQAFSYLNFTPEPSDIFSCIVTHEIDRYTAIAYWVPRNALPSDLLENVLCGVAFGLGVLGIIVGIVLIIYFRKPCS
+
+FUN027507_ITGB2 252-374  vs  P30378 221-343 (Class I histocompatibility antigen, Gogo-A*0501 alpha chain)
+  hp_lehninger_hpc3 k=25  E=0.21  123 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q KEECPENDFLLFDKVTTLPNCQGTCSASDPGCGICSRYDPTHAHIRCGGTFADGCSYSYDVYWTTDDRYHGFVKIFDTTT
+     |       | |         |                                                          
+  T HEATLKCWALSFYPAEITLTWQRDGEDQTQDTELVETRPAGDGTFQKWAAVVVPSGQEQRYTCHVQHEGLPKPLTLRWEP
+  Q DCPAPINALVIVIPVVIGVVLLGIIALILWKLYTIRRDKRLWD
+         |    |    |                     |     
+  T SSQPTIPIVGIIAGLVLFGAVIAGAVVAAVRWRRKSSDRKGGS
+
+FUN020551_FUN020551.2 2497-2603  vs  C1ITJ8 220-326 (Major histocompatibility complex class I-related gene protein)
+  hp_lehninger_hpc3 k=18  E=0.22  107 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q WWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFE
+                                            |   | |      |                          
+  T AYGFYPPEISINWMKNGEEIFQDTDYGGILPSGDGTYQTWVSVELDPQNGDIYSCHVEHGGVHMVLQGFQESETILLVVK
+  Q WWWLVVGIGLVLILAIGLVIAHVRLVS
+         |         |       |   
+  T AVGFIVLAIALAGVGILAWRKRPRGKN
+
+FUN027507_ITGB2 285-374  vs  P30376 254-343 (Class I histocompatibility antigen, Gogo-A*0201 alpha chain)
+  hp_lehninger_hpc3 k=25  E=0.25  90 aa  identity 4% (chance 6%)  alphabets with a region: 1
+  Q ICSRYDPTHAHIRCGGTFADGCSYSYDVYWTTDDRYHGFVKIFDTTTDCPAPINALVIVIPVVIGVVLLGIIALILWKLY
+                                                        |    |    |                 
+  T LVETRPAGDGTFQKWAAVVVPSGQEQRYTCHVQHESLPKPLTLRWEPSSQPTIPIVGIIAGLVLFGAVIAGAVIAAVRWR
+  Q TIRRDKRLWD
+        |     
+  T RKSSDRKGGS
+
+FUN020551_FUN020551.1 2497-2605  vs  C1ITJ8 220-328 (Major histocompatibility complex class I-related gene protein)
+  hp_lehninger_hpc3 k=18  E=0.25  109 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q WWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFE
+                                            |   | |      |                          
+  T AYGFYPPEISINWMKNGEEIFQDTDYGGILPSGDGTYQTWVSVELDPQNGDIYSCHVEHGGVHMVLQGFQESETILLVVK
+  Q WWWLVVGIGLVLILAIGLVIAHVRLMDVY
+         |         |       |     
+  T AVGFIVLAIALAGVGILAWRKRPRGKNKV
+
+FUN024956_FUN024956.1 3019-3111  vs  Q61559 110-202 (IgG receptor FcRn large subunit p51)
+  hp_lehninger_hpc3 k=17  E=0.28  93 aa  identity 3% (chance 6%)  alphabets with a region: 1
+  Q SLRENSYDADTIRVSECKAIETIVNQTYTNTTLETLEFATANVTALNEELVEDVADFLKRISDDDETVFTEKQIVEAAAI
+                                                    | |                             
+  T TYTLQGLLGCELASDNSSVPTAVFALNGEEFMKFNPRIGNWTGEWPETEIVANLWMKQPDAARKESEFLLNSCPERLLGH
+  Q VSHLTEHYVNKSI
+              |  
+  T LERGRRNLEWKEP
+
+FUN036385_FUN036385 970-1069  vs  P04228 85-184 (H-2 class II histocompatibility antigen, A-D alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.29  100 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q PAGYVFSADDETLQFHLITLEKDIHHPPVLTASVIVTKDMKIHSFIKGVPVQPSNYEDLLNASYVQKTSELSNVLARCKS
+           |    |                  | |                          |                   
+  T GGLQNIAAEKHNLGILTKRSNFTPATNEAPQATVFPKSPVLLGQPNTLICFVDNIFPPVINITWLRNSKSVTDGVYETSF
+  Q LSNGDNNFNRMELAISLMEE
+    | | |  |            
+  T LVNRDHSFHKLSYLTFIPSD
+
+FUN044262_FUN044262 178-213  vs  P13753 149-184 (BOLA class I histocompatibility antigen, alpha chain BL3-7)
+  protein20 k=5  E=0.32  36 aa  identity 47% (chance 10%)  alphabets with a region: 1
+  Q DLKALVENGRKIEAASHSAQLIKTETEAAGAADICR
+    |  || |  |   ||   ||  |   ||||||   |
+  T DYIALNEELRSWTAADTAAQITKRKWEAAGAAETWR
+
+FUN008497_FUN008497 22-48  vs  P01893 164-190 (Putative HLA class I histocompatibility antigen, alpha chain H)
+  gbmr4 k=16  E=0.33  27 aa  identity 7% (chance 8%)  alphabets with a region: 1
+  Q DRVRAQDWKTESKQSADKLSKKVEEFA
+           |               |   
+  T AQITKRKWEAARRAEQRRVYLEGEFVE
+
+FUN020551_FUN020551.2 2480-2602  vs  P01896 18-140 (H-2 class I histocompatibility antigen, alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.34  123 aa  identity 12% (chance 6%)  alphabets with a region: 1
+  Q YTTLRGTGYDIFNEQRAWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGT
+          |                |       |    ||               |                          
+  T PPKAHVTHHRRPEGDVTLRCWALGFYPADITLTWQLNGEELTQDMELVETRPAGDGTFQKWASVVVPLGKEQNYTCRVYH
+  Q GQTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIAHVRLV
+        | |     |        |    |    |     | |  |
+  T EGLPEPLTLRWEPPPSTDSYMVIVAVLGVLGAMAIIGAVVAFV
+
+FUN008497_FUN008497 27-64  vs  P13751 85-122 (Patr class I histocompatibility antigen, B-2 alpha chain)
+  gbmr4 k=15  E=0.37  38 aa  identity 8% (chance 5%)  alphabets with a region: 1
+  Q QDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTL
+          ||  |                           
+  T DRETQISKTNAQTYRESLRNLRGYYNQSEAGSHIIQRM
+
+FUN008497_FUN008497 27-64  vs  P16210 85-122 (Patr class I histocompatibility antigen, A-5 alpha chain)
+  gbmr4 k=15  E=0.37  38 aa  identity 8% (chance 5%)  alphabets with a region: 1
+  Q QDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTL
+          ||  |                           
+  T DRETQISKTNAQTYRESLRNLRGYYNQSEAGSHIIQRM
+
+FUN024956_FUN024956.1 3371-3463  vs  P06340 157-249 (HLA class II histocompatibility antigen, DO alpha chain)
+  hp_lehninger_hpc3 k=17  E=0.38  93 aa  identity 13% (chance 6%)  alphabets with a region: 1
+  Q AVALTMFVAGVDSQVNTMQCTIVTALLQYSFLCTWFWTGVYSYTIYRDIVQVMESLGRRFKIQFAAWFAYGVPLIIVLLN
+     || | |    |                    |     |           ||             |              
+  T GVAQTSFYSQPDHLFRKFHYLPFVPSAEDVYDCQVEHWGLDAPLLRHWELQVPIPPPDAMETLVCALGLAIGLVGFLVGT
+  Q AGITLGHIDRNDA
+      |  |       
+  T VLIIMGTYVSSVP
+
+FUN020551_FUN020551.1 2480-2602  vs  P01896 18-140 (H-2 class I histocompatibility antigen, alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.39  123 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q YTTLRGTGYDIFNEQRAWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGT
+          |                |       |    ||               |                          
+  T PPKAHVTHHRRPEGDVTLRCWALGFYPADITLTWQLNGEELTQDMELVETRPAGDGTFQKWASVVVPLGKEQNYTCRVYH
+  Q GQTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIAHVRLM
+        | |     |        |    |    |     | |   
+  T EGLPEPLTLRWEPPPSTDSYMVIVAVLGVLGAMAIIGAVVAFV
+
+FUN027507_ITGB2 303-382  vs  P15979 265-344 (Class I histocompatibility antigen, F10 alpha chain)
+  hp_lehninger_hpc3 k=22  E=0.39  80 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q ADGCSYSYDVYWTTDDRYHGFVKIFDTTTDCPAPINALVIVIPVVIGVVLLGIIALILWKLYTIRRDKRLWDEFEKEKML
+     |      | |                           |    | |                                  
+  T IDAQPGDGDKYQCRVEHASLPQPGLYSWEPPQPNLVPIVAGVAVAIVAIAIMVGVGFIIYRRHAGKKGKGYNIAPGSNPA
+
+FUN009004_FUN009004 84-127  vs  Q9GL41 141-184 (Hereditary hemochromatosis protein homolog)
+  gbmr4 k=16  E=0.41  44 aa  identity 20% (chance 6%)  alphabets with a region: 1
+  Q NGNGHIQTDIISKKTESKLRSFLQRELSHEVAKMRTKRSNEQCS
+     |  |                 |   |  || | | |       
+  T DGQDHLEFCPETLDWRAAESRALTTKLEWEVNKIRAKQNRAYLE
+
+FUN019386_FUN019386.2 537-651  vs  Q9QZY8 206-320 (T-cell surface glycoprotein CD1c1)
+  hp_lehninger_hpc3 k=22  E=0.45  115 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q QLGWTGKTCEEVVENGCPNPEDSGGGQVPYGVSLEFFCGDGTSLSGPGIVTCLENGTFDHTIPECLGEGYSAQSSESKNT
+              |                                  |              |      |            
+  T EVWLSSSPNLEPGRLLLACHVSGFYPKPIWVMWMRGAQEQLETKQGDILPHADGTWYLRVTLDVAAREAAGLSCRVRHSS
+  Q SPFSSPMIISMLAATGMLITAAGGLVLYIFVFAPW
+                     ||| |    |        
+  T LRDQDIILYWGHGLSVILITFAVIVPLVLLIVLML
+
+FUN006870_FUN006870 329-353  vs  P01902 147-171 (H-2 class I histocompatibility antigen, K-D alpha chain)
+  gbmr4 k=15  E=0.45  25 aa  identity 0% (chance 5%)  alphabets with a region: 1
+  Q VRKEMEEFARRQKSEMSQYVRGLST
+                             
+  T LNEDLKTWTAADTAALITRRKWEQA
+
+FUN020551_FUN020551.2 2496-2600  vs  P06339 226-330 (H-2 class I histocompatibility antigen, D-37 alpha chain)
+  hp_lehninger_hpc3 k=22  E=0.47  105 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q AWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANF
+        |     |                     |        |   |     |                            
+  T LGFYPADITLTWQLNGEELTQDMELVETRPAGDGTFQKWAAVVVPLGKEQYYTCHVYHEGLPEPLTLRWEPPPSTVSNMV
+  Q EWWWLVVGIGLVLILAIGLVIAHVR
+        |||        |        |
+  T IIAVLVVLGAVIILGAVVAFVMKRR
+
+FUN031618_FUN031618.3 2-117  vs  P06342 27-142 (H-2 class II histocompatibility antigen, A-Q beta chain)
+  hp_lehninger2 k=21  E=0.53  116 aa  identity 9% (chance 4%)  alphabets with a region: 1
+  Q LIHTKEKPFKCQICDAGFNRKDKLVRHMVTHDPNKKYKCPFRETMKCMKEFNRPDKLKAHIISHNGIKAHQCSFCPKRFT
+                     |       |       |      |                 |                     
+  T GGNSERHFVAQLKGECYFTNGTQRIRSVNRYIYNREEWVRFDSDVGEYRAVTELGRPDAEYWNSQPEILERTRAEVDTVC
+  Q RRNIKLAHEKTHSFKPICGKCGKTFKNQSLLDTHKC
+    | |       |                   |  |  
+  T RHNYEGVETHTSLRRLEQPNVAISLSRTEALNHHNT
+
+FUN027507_ITGB2 281-370  vs  Q9QZY7 238-327 (T-cell surface glycoprotein CD1c2)
+  hp_lehninger_hpc3 k=17  E=0.54  90 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q PGCGICSRYDPTHAHIRCGGTFADGCSYSYDVYWTTDDRYHGFVKIFDTTTDCPAPINALVIVIPVVIGVVLLGIIALIL
+       |           |               |           |                          |      || 
+  T WMRGAQEQLETKQGDILPHADGTWYLRVTLNVVAEEAAGLSCRVRHSSLRDQDIILYWGHGLSVILIALAVIVPLVLLIV
+  Q WKLYTIRRDK
+      |    |  
+  T LVLLCKKRCT
+
+FUN024956_FUN024956.1 3359-3473  vs  Q9XS72 225-339 (T-cell surface glycoprotein CD1a)
+  hp_lehninger_hpc3 k=17  E=0.56  115 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q QMQIVANICICLAVALTMFVAGVDSQVNTMQCTIVTALLQYSFLCTWFWTGVYSYTIYRDIVQVMESLGRRFKIQFAAWF
+             |               |         |  |              |                        | 
+  T HVSGFYPKPIWVMWMRDEQEQPGTQQGDILPNADGTWYLRVTLDVAAGEASGLSCRVKHSSLGGQDIILYWEQHSSVGWI
+  Q AYGVPLIIVLLNAGITLGHIDRNDAGASTSESSYR
+       |    |||                |       
+  T LLAVIVPLVLLTGLAFWHRKHWKHCDPSSALHRLE
+
+FUN001928_AARS1 826-868  vs  Q60I18 201-243 (MHC class I-like protein MILL1)
+  uniprot18 k=5  E=0.57  43 aa  identity 35% (chance 7%)  alphabets with a region: 1
+  Q KKLGDAERAERAESIKKMLQATKEQILENENAPLIVTELDASS
+    ||     || ||   |  |  |    |    | |    ||  |
+  T KKTFWEPRAPRADLVKTFLDDTCPAQLQRHLASLRSEPLDTGS
+
+FUN031618_FUN031618.2 56-174  vs  P06342 24-142 (H-2 class II histocompatibility antigen, A-Q beta chain)
+  hp_lehninger2 k=21  E=0.59  119 aa  identity 8% (chance 4%)  alphabets with a region: 1
+  Q SHMLIHTKEKPFKCQICDAGFNRKDKLVRHMVTHDPNKKYKCPFRETMKCMKEFNRPDKLKAHIISHNGIKAHQCSFCPK
+                        |       |       |      |                 |                  
+  T RTEGGNSERHFVAQLKGECYFTNGTQRIRSVNRYIYNREEWVRFDSDVGEYRAVTELGRPDAEYWNSQPEILERTRAEVD
+  Q RFTRRNIKLAHEKTHSFKPICGKCGKTFKNQSLLDTHKC
+       | |       |                   |  |  
+  T TVCRHNYEGVETHTSLRRLEQPNVAISLSRTEALNHHNT
+
+FUN008497_FUN008497 17-46  vs  Q95IT3 149-178 (Patr class I histocompatibility antigen, alpha chain E)
+  gbmr4 k=15  E=0.59  30 aa  identity 10% (chance 8%)  alphabets with a region: 1
+  Q SSLSIDRVRAQDWKTESKQSADKLSKKVEE
+      |                | |        
+  T EDLRSWTAVDTAAQISERKSNDACEAEHQR
+
+FUN006375_FUN006375.1 884-990  vs  P28078 63-169 (Class II histocompatibility antigen, M alpha chain)
+  hp_lehninger2 k=17  E=0.6  107 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q LNSNNSGEISDEHQSSLPSYRYVPKLCDIQALIEPGVAVCCFCHLPGNHVLGIGDLYGPYRPRADEVLARQASFNEHLKV
+                     |           |           ||      |        |                |  | 
+  T YDEDELFSFDFSQNTRVPRLPDFAEWAQGQGDASAIAFGKSFCEMLMREVSPKLEGQIPVSRGLSVAEVFTLKPLEFGKP
+  Q PGALDNVEAPYAADGSPTVTINRDGGD
+                               
+  T NTLVCFISNLFPPTLTVNWQLHSAPVE
+
+FUN036385_FUN036385 979-1069  vs  P23150 92-182 (H-2 class II histocompatibility antigen, I-E alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.62  91 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q DETLQFHLITLEKDIHHPPVLTASVIVTKDMKIHSFIKGVPVQPSNYEDLLNASYVQKTSELSNVLARCKSLSNGDNNFN
+       |                  | |                          |                   | | |  | 
+  T KYNLEILIKDSNFTPAANEAPQATVFPKSPVLLGQPNTLICFVDNIFPPVINITWLRNSKSVTDGVYETSFLVNRDHSFH
+  Q RMELAISLMEE
+               
+  T KLSYLTFIPSD
+
+FUN036385_FUN036385 979-1069  vs  P01910 94-184 (H-2 class II histocompatibility antigen, A-K alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.63  91 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q DETLQFHLITLEKDIHHPPVLTASVIVTKDMKIHSFIKGVPVQPSNYEDLLNASYVQKTSELSNVLARCKSLSNGDNNFN
+       |                  | |                          |                     | |  | 
+  T KHNLEILTKRSNSTPATNEAPQATVFPKSPVLLGQPNTLICFVDNIFPPVINITWLRNSKSVTDGVYETSFFVNRDYSFH
+  Q RMELAISLMEE
+               
+  T KLSYLTFIPSD
+
+FUN038550_FUN038550 81-107  vs  P15979 200-226 (Class I histocompatibility antigen, F10 alpha chain)
+  gbmr4 k=17  E=0.64  27 aa  identity 11% (chance 5%)  alphabets with a region: 1
+  Q SDVKYAMPLLGNANRGVFKINITSVGI
+              |    |         | 
+  T RRERPEVRVWGKEADGILTLSCRAHGF
+
+FUN008497_FUN008497 26-51  vs  P55899 161-186 (IgG receptor FcRn large subunit p51)
+  gbmr4 k=15  E=0.67  26 aa  identity 15% (chance 7%)  alphabets with a region: 1
+  Q AQDWKTESKQSADKLSKKVEEFAEKV
+     | |    |     |           
+  T SQRWQQQDKAANKELTFLLFSCPHRL
+
+FUN033153_FUN033153 131-175  vs  P16211 146-190 (Popy Class I histocompatibility antigen, A-1 alpha chain)
+  hsdm17 k=5  E=0.69  45 aa  identity 36% (chance 8%)  alphabets with a region: 1
+  Q DLKALVENGRKIEAASHSAQLIKTETEAAGAADICRVKPKQRYHK
+    |  || |  |   ||   ||      ||||||   |         
+  T DYIALNEDLRSWTAADMAAQITQRKWEAAGAAEQDRAYLEGLCVE
+
+FUN008497_FUN008497 26-51  vs  Q8SPV9 161-186 (IgG receptor FcRn large subunit p51)
+  gbmr4 k=15  E=0.71  26 aa  identity 15% (chance 7%)  alphabets with a region: 1
+  Q AQDWKTESKQSADKLSKKVEEFAEKV
+     | |    |     |           
+  T SQRWQQQDKAANKELTFLLFSCPHRL
+
+FUN029685_FUN029685 198-300  vs  P30381 235-337 (Class I histocompatibility antigen, Gogo-B*0103 alpha chain)
+  hp_lehninger_hpc3 k=29  E=0.81  103 aa  identity 12% (chance 6%)  alphabets with a region: 1
+  Q IPIDLFPTEEPTASSNKHLTVATNDISNIPFDIFRSDAKLTSLKPSAAVTSTRHDIVTLQSVDPVEQSDNRLILVIGGLG
+      | |               | |       |                                    |      |    |
+  T AEITLTWQRDGEDQTQDTELVETRPAGDGTFQKWAAVVVPSGEEERYTCHVQHEGLPKPLTLRWEPSSQSTIPIVGIVAG
+  Q LAALLAAIGFAAYKVYSSKISRQ
+    || |      |            
+  T LAVLAVVVIGAVVTAVICRRKSS
+
+FUN029685_FUN029685 198-300  vs  P30379 235-337 (Class I histocompatibility antigen, Gogo-B*0101 alpha chain)
+  hp_lehninger_hpc3 k=29  E=0.81  103 aa  identity 12% (chance 6%)  alphabets with a region: 1
+  Q IPIDLFPTEEPTASSNKHLTVATNDISNIPFDIFRSDAKLTSLKPSAAVTSTRHDIVTLQSVDPVEQSDNRLILVIGGLG
+      | |               | |       |                                    |      |    |
+  T AEITLTWQRDGEDQTQDTELVETRPAGDGTFQKWAAVVVPSGEEERYTCHVQHEGLPKPLTLRWEPSSQSTIPIVGIVAG
+  Q LAALLAAIGFAAYKVYSSKISRQ
+    || |      |            
+  T LAVLAVVVIGAVVTAVICRRKSS
+
+FUN029685_FUN029685 198-300  vs  P30380 235-337 (Class I histocompatibility antigen, Gogo-B*0102 alpha chain)
+  hp_lehninger_hpc3 k=29  E=0.81  103 aa  identity 12% (chance 6%)  alphabets with a region: 1
+  Q IPIDLFPTEEPTASSNKHLTVATNDISNIPFDIFRSDAKLTSLKPSAAVTSTRHDIVTLQSVDPVEQSDNRLILVIGGLG
+      | |               | |       |                                    |      |    |
+  T AEITLTWQRDGEDQTQDTELVETRPAGDGTFQKWAAVVVPSGEEERYTCHVQHEGLPKPLTLRWEPSSQSTIPIVGIVAG
+  Q LAALLAAIGFAAYKVYSSKISRQ
+    || |      |            
+  T LAVLAVVVIGAVVTAVICRRKSS
+
+FUN028247_FUN028247 705-841  vs  P13753 203-339 (BOLA class I histocompatibility antigen, alpha chain BL3-7)
+  hp_lehninger_c_nonpolar2 k=26  E=0.87  137 aa  identity 7% (chance 5%)  alphabets with a region: 1
+  Q NNRVPNSNSLDTVGGESRVYASNKTAEGFKYTVGADQTSSSCVTNPTSRRKRATAESSQNPVSAQNIDLKPNKFYRYYLK
+                            |             |                                         
+  T KDTLLRADPPKAHVTHHSISDREVTLRCWALGFYPEEISLTWQREGEDQTQDMELVETRPSGDGTFQKWAALVVPSGEEQ
+  Q STTPNGTDYYIIQSSEISDMIATNYYAWIAAIVVPLFLIGVAIAFYFWYKKRQKPDK
+      |                            ||    |     |      |     |
+  T RYTCRVQHEGLQEPLTLRWEPPQTSFLIMGIIVGLVLLVVALVAGAVIWRKKRSGEK
+
+FUN020551_FUN020551.2 2494-2602  vs  P11610 216-324 (Antigen-presenting glycoprotein CD1d2)
+  hp_lehninger_hpc3 k=18  E=0.88  109 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q QRAWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPA
+      |                       |                                             |       
+  T SSAHGHLQLVCHVSGFYPKPVWVMWMRGDQEQQGTHRGDFLPNADETWYLQATLDVEAGEEAGLACRVKHSSLGGQDIIL
+  Q NFEWWWLVVGIGLVLILAIGLVIAHVRLV
+            ||      |    |   |   
+  T YWDARQAPVGLIVFIVLIMLVVVGAVVYY
+
+FUN008497_FUN008497 17-46  vs  P16212 146-175 (Popy class I histocompatibility antigen, alpha chain E)
+  gbmr4 k=15  E=0.88  30 aa  identity 10% (chance 8%)  alphabets with a region: 1
+  Q SSLSIDRVRAQDWKTESKQSADKLSKKVEE
+      |                | |        
+  T EDLRSWTAVDTAAQISERKSNDACEAEHQR
+
+FUN008502_CCN2 1-46  vs  P13752 46-91 (BOLA class I histocompatibility antigen, alpha chain BL3-6)
+  hp_lehninger_hpc3 k=25  E=0.92  46 aa  identity 0% (chance 5%)  alphabets with a region: 1
+  Q MNIMHGIYVALLLLGYVRAQLDVDVEPPTEDLLDVGTSRKKTESSK
+                                                  
+  T VGYVDDTQFVQFDSDAPNPRMEPRARWVEQEGPEYWDRNTRNAKGN
+
+FUN002272_COL2A1 256-292  vs  P55899 160-196 (IgG receptor FcRn large subunit p51)
+  gbmr4 k=16  E=0.93  37 aa  identity 11% (chance 5%)  alphabets with a region: 1
+  Q IERAYADEASNDTDDFDSLIIPTNLPGSSGGGRGDSS
+    |                 |             ||   
+  T ISQRWQQQDKAANKELTFLLFSCPHRLREHLERGRGN
+
+FUN020551_FUN020551.2 2512-2600  vs  P01900 250-338 (H-2 class I histocompatibility antigen, D-D alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.93  89 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q DDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGIGLVLILA
+            |        |                                  |    |           | |    |   
+  T QEMELVETRPAGDGTFQKWASVVVPLGKEQKYTCHVEHEGLPEPLTLRWGKEEPPSSTKTNTVIIAVPVVLGAVVILGAV
+  Q IGLVIAHVR
+       |    |
+  T MAFVMKRRR
+
+FUN037992_OPRL1 47-166  vs  P13599 167-286 (IgG receptor FcRn large subunit p51)
+  hp_lehninger2 k=21  E=0.93  120 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q TDACIRSTDLTEMLETEFLGNFDNGSTITSDYDYGTTVAYEVTGEFYELGCQYVVQGPGWFTYLNFMFSAMFLLPLLVMT
+                 |                                   |          |      |            
+  T KQPEAARKESEFLLTSCPERLLGHLERGRQNLEWKEPPSMRLKARPGNSGSSVLTCAAFSFYPPELKFRFLRNGLASGSG
+  Q ICYTLIIVQLRKSQARHYTVTSGSQRQGKKRPRSTAALNA
+     | |               |  |                 
+  T NCSTGPNGDGSFHAWSLLEVKRGDEHHYQCQVEHEGLAQP
+
+FUN020551_FUN020551.2 2494-2602  vs  P11609 216-324 (Antigen-presenting glycoprotein CD1d1)
+  hp_lehninger_hpc3 k=18  E=0.94  109 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q QRAWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPA
+      |                       |                                             |       
+  T SSADGHRQLVCHVSGFYPKPVWVMWMRGDQEQQGTHRGDFLPNADETWYLQATLDVEAGEEAGLACRVKHSSLGGQDIIL
+  Q NFEWWWLVVGIGLVLILAIGLVIAHVRLV
+            ||      |    |   |   
+  T YWDARQAPVGLIVFIVLIMLVVVGAVVYY
+
+FUN020551_FUN020551.1 2494-2606  vs  P11610 216-328 (Antigen-presenting glycoprotein CD1d2)
+  hp_lehninger_hpc3 k=18  E=0.96  113 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q QRAWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPA
+      |                       |                                             |       
+  T SSAHGHLQLVCHVSGFYPKPVWVMWMRGDQEQQGTHRGDFLPNADETWYLQATLDVEAGEEAGLACRVKHSSLGGQDIIL
+  Q NFEWWWLVVGIGLVLILAIGLVIAHVRLMDVYN
+            ||      |    |   |       
+  T YWDARQAPVGLIVFIVLIMLVVVGAVVYYIWRR
+
+FUN020551_FUN020551.2 2500-2602  vs  P01897 228-330 (H-2 class I histocompatibility antigen, L-D alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.97  103 aa  identity 14% (chance 6%)  alphabets with a region: 1
+  Q PVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFEWWW
+       |       |    ||               |                              | |     |       
+  T WALGFYPADITLTWQLNGEELTQDMELVETRPAGDGTFQKWASVVVPLGKEQNYTCRVYHEGLPEPLTLRWEPPPSTDSY
+  Q LVVGIGLVLILAIGLVIAHVRLV
+     |    |    |     | |  |
+  T MVIVAVLGVLGAMAIIGAVVAFV
+
+FUN034477_FUN034477 119-184  vs  Q9BZM5 96-153 (UL16-binding protein 2)
+  hp_lehninger_hpc3 k=17  E=0.97  66 aa  chained across an insertion or deletion: Q 66 aa, T 58 aa, not aligned position by position  alphabets with a region: 1
+  Q NMHDGVKNQACEVCGNEFTLSDGLKAHMNVHAGVKNHKCEICGKEFSKSGSLKAHMDMHAGVKNHK
+  T EVVDILTEQLRDIQLENYTPKEPLTLQARMSCEQKAEGHSSGSWQFSFDGQIFLLFDS
+
+FUN036385_FUN036385 979-1069  vs  P04227 59-149 (H-2 class II histocompatibility antigen, A-Q alpha chain)
+  hp_lehninger_hpc3 k=18  E=0.99  91 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q DETLQFHLITLEKDIHHPPVLTASVIVTKDMKIHSFIKGVPVQPSNYEDLLNASYVQKTSELSNVLARCKSLSNGDNNFN
+       |                  | |                          |                   | | |  | 
+  T KHNLGGWTKRSNFTPATNEAPQATVFPKSPVLLGQPNTLICFVDNIFPPVINITWLRNSKSVTDGVYETSFLVNRDHSFH
+  Q RMELAISLMEE
+               
+  T KLSYLTFIPSD
+
+=== Antigen presentation (TAP, B2M, CD74, ERAP): 8 kmerseek-only links ===
+
+FUN006870_FUN006870 318-344  vs  P36372 630-656 (Antigen peptide transporter 2)
+  gbmr4 k=15  E=0.0019  27 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q LTPSDEHIREIVRKEMEEFARRQKSEM
+    |                         |
+  T LDEATSALDAECEQALQTWRSQEDRTM
+
+FUN001952_COL6A2.1 58-175  vs  P36371 544-661 (Antigen peptide transporter 2)
+  gbmr4 k=16  E=0.52  118 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q TCKCCGEKKLEEKTLCGNDIIVAVDSSACFRDHHRRMKQFLQKMVKEIHGRGDFQFGVNYTRLAIMQFSSTQVFPVSLNA
+         |             |                          |         |     ||  |             
+  T QVVLVGQEPVLFSGSVKDNIAYGLRDCEDAQVMAAAQAACADDFIGEMTNGINTEIGEKGGQLAVGQKQRLAIARALVRN
+  Q FENYQNPPDSRELKDEISEKIEQLEFLGQGAYLHKALD
+                |              |    |  |  
+  T PRVLILDEATSALDAQCEQALQNWRSQGDRTMLVIAHR
+
+FUN020551_FUN020551.2 2536-2597  vs  Q03519 108-169 (Antigen peptide transporter 2)
+  hp_lehninger_hpc3 k=18  E=0.56  62 aa  identity 10% (chance 8%)  alphabets with a region: 1
+  Q LVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIA
+                    |   |      |                ||           |    
+  T AAGLSWSLWAVLSPPGAQEKEQDQVNNKVLMWRLLKLSRPDLPLLVAAFFFLVLAVLGETLI
+
+FUN020551_FUN020551.1 2536-2597  vs  Q03519 108-169 (Antigen peptide transporter 2)
+  hp_lehninger_hpc3 k=18  E=0.65  62 aa  identity 10% (chance 8%)  alphabets with a region: 1
+  Q LVFDALEPGKSYRFSIAASNEAGTGQTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIA
+                    |   |      |                ||           |    
+  T AAGLSWSLWAVLSPPGAQEKEQDQVNNKVLMWRLLKLSRPDLPLLVAAFFFLVLAVLGETLI
+
+FUN035571_FUN035571 2583-2718  vs  Q9R233 327-462 (Tapasin)
+  hp_lehninger_hpc3 k=17  E=0.87  136 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q RLTTTWVTGLTAHMSVNVSHPVRSPAACNDSIKDDARNVTITSAVTYFDGLSPGNAYYVTGWRNDNWETLFRYDFKTGLP
+                                     |                   |  |                |      
+  T EGLEVKWELRGGPGGSSRKVEGKTWLSTIRHHSDGSVSQSGHLQLPPVTAKQHGVHYVCRVYHSSLPASGRSADVTLEVA
+  Q DHDLTSTSTSATCHLIVSLASYIPRITFHLFFTSPRLRTTNTSYEAVDLDFGRSHQ
+         |        |   |          |               |  |   |   
+  T GFSGPSIEDGIGLFLSAFLLLGLLKVLGWLAAYWTIPEVSKEKATAASLTIPRNSK
+
+FUN031704_ZNFX1 435-513  vs  O73895 285-363 (Tapasin)
+  hp_pbotc_1st_ed2 k=29  E=0.89  79 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q GHWFECPNGHVYAIGECGGAVVKSKCPECNEDIGGTSHQLDRTNRVSEQMDGSTRSAYEEDMRTNYIPGAMLADLHRQG
+          |           |              ||          |        | |               |     |
+  T KNLVVAPGTSAELRCHVSGFYPLDVTVTWQRRAGGSGTSQSPRDTVMDSWTSGHRQAADGTYSRTAAARLIPARPQHHG
+
+FUN031698_ZNFX1 435-513  vs  O73895 285-363 (Tapasin)
+  hp_pbotc_1st_ed2 k=29  E=0.9  79 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q GHWFECPNGHVYAIGECGGAVVKSKCPECNEDIGGTSHQLDRTNRVSEQMDGSTRSAYEEDMRTNYIPGAMLADLHQQG
+          |           |              ||          |        | |               |     |
+  T KNLVVAPGTSAELRCHVSGFYPLDVTVTWQRRAGGSGTSQSPRDTVMDSWTSGHRQAADGTYSRTAAARLIPARPQHHG
+
+FUN003431_PRSS12 230-413  vs  Q03518 462-645 (Antigen peptide transporter 1)
+  hp_kyte_doolittle2 k=19  E=0.99  184 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q LDDGTHLENEHQQDMAIERVFQHEEYRDGPSPPHDIALIKLRKVNGSCVETSEYANPACLPNPSVDNFDENAPCVISGWG
+    |               |                    |  |                  |                   |
+  T LSIYPRVQKAVGSSEKIFEYLDRTPRCPPSGLLTPLHLEGLVQFQDVSFAYPNRPDVLVLQGLTFTLRPGEVTALVGPNG
+  Q AQSYDQAISRYPNELQGGKVKIISERNCRTTYGTKLKGGMICAGGDADTCQGDSGGPLACQRDTENRLSPFVVWGITSWG
+          |          |                 |       |              |                  |  
+  T SGKSTVAALLQNLYQPTGGQLLLDGKPLPQYEHRYLHRQVAAVGQEPQVFGRSLQENIAYGLTQKPTMEEITAAAVKSGA
+  Q EQCGLKDKPGVYTKVSEYISWITD
+             |  | | |  |    
+  T HSFISGLPQGYDTEVDEAGSQLSG
+
+=== NK receptors (KIR, LILR, KLR): 13 kmerseek-only links ===
+
+FUN001552_COL4A6 1691-1761  vs  O75022 291-361 (Leukocyte immunoglobulin-like receptor subfamily B member 3)
+  gbmr4 k=15  E=0.0075  71 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q GYSFVMHTAVGADGSGQSLQSPGSCLEDFRATPFIECNGERGHCFFYNNQFSFWLSTIMEHDQFSTPEKQT
+    |       |            |   |               |                   | |       
+  T GGQYRCYGAHNLSSEWSAPSDPLNILMAGQIYDTVSLSAQPGPTVASGENVTLLCQSWWQFDTFLLTKEGA
+
+FUN022908_NCL 134-239  vs  P61252 66-167 (NKG2-D type II integral membrane protein)
+  hp_lehninger_hpc3 k=19  E=0.019  106 aa  chained across an insertion or deletion: Q 106 aa, T 102 aa, not aligned position by position  alphabets with a region: 1
+  Q KGIGFVEFLSAAALDKAMETEDKYELEGRKLLLDYTDSRSRRPGKVLKEKIHADSRTLYVTNVPYNTTKAVVMALFENVK
+  T RFIIMVTIWSAVFLNSLFNQEVQIPLTESYCGPCPKNWICYKNNCYQFFNESKNWYESQASCMSQNASLLKVYSKEDQDL
+  Q EVRLPHVGERGKGIAFVEFGSAVALD
+  T LKLVKSYHWMGLVHIPTNGSWQ
+
+FUN022908_NCL 134-239  vs  Q9MZJ7 66-167 (NKG2-D type II integral membrane protein)
+  hp_lehninger_hpc3 k=19  E=0.019  106 aa  chained across an insertion or deletion: Q 106 aa, T 102 aa, not aligned position by position  alphabets with a region: 1
+  Q KGIGFVEFLSAAALDKAMETEDKYELEGRKLLLDYTDSRSRRPGKVLKEKIHADSRTLYVTNVPYNTTKAVVMALFENVK
+  T RFIIMVTIWSAVFLNSLFNQEVQIPLTESYCGPCPKNWICYKNNCYQFFNESKNWYESQASCMSQNASLLKVYSKEDQDL
+  Q EVRLPHVGERGKGIAFVEFGSAVALD
+  T LKLVKSYHWMGLVHIPTNGSWQ
+
+FUN010357_FUN010357 3081-3155  vs  P83555 326-400 (Killer cell immunoglobulin-like receptor 3DL1)
+  wwmj5 k=9  E=0.028  75 aa  identity 12% (chance 5%)  alphabets with a region: 1
+  Q TGFSGQHCSNPWLFIFIILICFLVLVIMIVVVVILVRRRNRSKAADFWSTEIEHGRGVESRKPRGRGVDNMNFYD
+             |            ||  |                ||     | |           |          
+  T ADTKTNNYKNLHILTGLLVTMVLVVIIIFYSCYFSKQNKSQKQAAASMEQEYEVKNTINTQNFEGQERQEVTYTE
+
+FUN000620_WDR64 740-813  vs  Q95MI1 3-74 (NKG2-F type II integral membrane protein)
+  hp_lehninger_hpc3 k=19  E=0.074  74 aa  chained across an insertion or deletion: Q 74 aa, T 72 aa, not aligned position by position  alphabets with a region: 1
+  Q ENVFELEKAELPSRYDSRERRMKDQLPYRVNAVVGLCHRVYRPDPEELKKRRKLRKKKLQEMEEGIEDDQDRIE
+  T KQRGTYSEVSLAQDPKRQQRKLKGNKSSISGTKQEIFQVELNLQNASSDHQGNDKTYHCKGLLPPPERLTAE
+
+FUN006870_FUN006870 326-349  vs  Q95MI4 135-158 (NKG2-E type II integral membrane protein)
+  gbmr4 k=15  E=0.098  24 aa  identity 12% (chance 7%)  alphabets with a region: 1
+  Q REIVRKEMEEFARRQKSEMSQYVR
+    |          |    |       
+  T RRTWEESLQACASKNSSSLLSIDN
+
+FUN006870_FUN006870 326-344  vs  Q07444 135-153 (NKG2-E type II integral membrane protein)
+  gbmr4 k=15  E=0.27  19 aa  identity 16% (chance 8%)  alphabets with a region: 1
+  Q REIVRKEMEEFARRQKSEM
+    |          |    |  
+  T RRTWEESLQACASKNSSSL
+
+FUN005971_FUN005971 180-229  vs  O75022 549-598 (Leukocyte immunoglobulin-like receptor subfamily B member 3)
+  gbmr4 k=15  E=0.32  50 aa  identity 20% (chance 9%)  alphabets with a region: 1
+  Q SADNRQMADAPAPSGRDSLLDQIRQGTQLKAVSQDESRERAAEEEEDDGL
+    |   | ||  |       |    ||               |        |
+  T SSPRREMASPPSSLSGEFLDTKDRQVEEDRQMDTEAAASEASQDVTYAQL
+
+FUN027507_ITGB2 320-410  vs  P83556 315-405 (Killer cell immunoglobulin-like receptor 3DL1)
+  hp_lehninger_hpc3 k=22  E=0.46  91 aa  identity 10% (chance 7%)  alphabets with a region: 1
+  Q YHGFVKIFDTTTDCPAPINALVIVIPVVIGVVLLGIIALILWKLYTIRRDKRLWDEFEKEKMLSNCTQSENSIFKKVEKT
+         |                 ||   |      |      |   |                                 
+  T AKDNLKNLHIQIGLLVTMVLVIVVIIIIIIIIIIIIYYYYFSKKSSILEQESEVKATINRQDPERQEEHKVTYIEFEQRI
+  Q FVKHTFEAGNE
+    | |        
+  T FNKNLMPPISQ
+
+FUN009698_FUN009698 135-239  vs  Q8MJZ2 356-460 (Leukocyte immunoglobulin-like receptor subfamily A member 6)
+  hp_lehninger_hpc3 k=17  E=0.51  105 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q GGKRYCCDLTATCCSREDRDNETCSNDSQCLRTSSPYCCSKGKCCSIRIIFGQTGINIPNLAVKAVSAVISLIVFVIACV
+      |           |                              |              | |   |   ||        
+  T LTKEGAAHPPLRLRSKYQSQKYQAEFPMNPVTSAHAGTYRCYGSYSSNPHLLSFPSDPLKLMVSGPSGGPSLPPTGPPST
+  Q AYVKYRKAKKRRPVVLDDKATPALL
+                             
+  T PASHAKDYTVENLIRMGMAGLVLVV
+
+FUN004669_CNPY1 78-185  vs  Q3UM83 2-109 (Killer cell lectin-like receptor subfamily G member 2)
+  hp_lehninger_hpc3 k=29  E=0.6  108 aa  identity 7% (chance 5%)  alphabets with a region: 1
+  Q SAGHITDLLESICGGISSDYVKNVESDSGKISLKRMVTHDGKMAGDVDFQALMARAQSSGDRPPDTDSKDIRFICESIIE
+                     |                         |                 |     |        |  |
+  T EPPQVPAEAPQPRASEDSPRPERTGWEEPDAQPQELPEKSPSPALSGSPRVPPLSLGYGAFRRLGSCSRELPSPSPSWAE
+  Q EHEDDFIKYISGNDKDVAYKICTEAGEY
+       |                      | 
+  T QPRDGEAELEPWTASGEPAPASWAPVEL
+
+FUN019918_TF1 99-196  vs  O54709 127-224 (NKG2-D type II integral membrane protein)
+  hp_lehninger_hpc3 k=29  E=0.77  98 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q VVGYEDYGMGDSGYFSLAAVKTENEHITMCTLKNAKSCHTAIGKSAGWNMPMGTLARHHSLSSASIDHFQLYDPFQASCA
+                   |          |                       |          || |     |      |||
+  T YQFFNEEKTWNQSQASCLSQNSSLLKIYSKEEQDFLKLVKSYHWMGLVQIPANGSWQWEDGSSLSYNQLTLVEIPKGSCA
+  Q PGANNARYALKLPPSPPN
+                      
+  T VYGSSFKAYTEDCANLNT
+
+FUN022299_INE 498-617  vs  Q8N423 441-556 (Leukocyte immunoglobulin-like receptor subfamily B member 2)
+  gbmr4 k=15  E=0.84  120 aa  chained across an insertion or deletion: Q 120 aa, T 116 aa, not aligned position by position  alphabets with a region: 1
+  Q SIFNMKPVQYGDYIYPIWAHLFGLFIAILCLIWIPLGMLHELYKNGQGKSGLRSFMKSATPTFISRRVNQRQHTRPESPQ
+  T QPLTPTGSDPQSGLGRHLGVVIGILVAVVLLLLLLLLLFLILRHRRQGKHWTSTQRKADFQHPAGAVGPEPTDRGLQWRS
+  Q EHRKEVDSDANSDQILLTQSEIPRQEGYSHSKQSDTSESP
+  T SPAADAQEENLYAAVKDTQPEDGVEMDTRAAASEAP
+
+=== T cell receptor and CD3: 37 kmerseek-only links ===
+
+FUN035573_FUN035573 761-855  vs  A0A0J9YX75 9-103 (T cell receptor beta variable 6-9)
+  hp_lehninger_hpc3 k=17  E=0.0071  95 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q IIPNLLPGYAYRMLVRENDSGEILLNETRLTGTVSSPDSDINVAYGDSSIGLSWTKLYDGIAYLLSLNSASYNFTKMQNT
+        ||        |       ||      |                   |          |                  
+  T VAFSLLWAGPVNAGVTQTPKFHILKTGQSMTLQCAQDMNHGYLSWYRQDPGMGLRRIHYSVAAGITDKGEVPDGYNVSRS
+  Q TESNWTVNGLQSGSK
+                   
+  T NTEDFPLRLESAAPS
+
+FUN035573_FUN035573 761-855  vs  A0A0K0K1A5 9-103 (T cell receptor beta variable 6-5)
+  hp_lehninger_hpc3 k=17  E=0.0072  95 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q IIPNLLPGYAYRMLVRENDSGEILLNETRLTGTVSSPDSDINVAYGDSSIGLSWTKLYDGIAYLLSLNSASYNFTKMQNT
+        ||        |        |      |                   |                     |       
+  T AALSLLWAGPVNAGVTQTPKFQVLKTGQSMTLQCAQDMNHEYMSWYRQDPGMGLRLIHYSVGAGITDQGEVPNGYNVSRS
+  Q TESNWTVNGLQSGSK
+    |        |     
+  T TTEDFPLRLLSAAPS
+
+FUN008497_FUN008497 23-72  vs  P27190 856-905 (DNA primase TraC)
+  gbmr4 k=15  E=0.0075  50 aa  identity 4% (chance 7%)  alphabets with a region: 1
+  Q RVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTT
+         |                            |               
+  T NATEEDISAAKEARKTAEASAMLNDSDAQRRAAELERQERDRQQAQPQAE
+
+FUN035573_FUN035573 761-855  vs  A0A0A0MS04 9-103 (Probable non-functional T cell receptor beta variable 6-7)
+  hp_lehninger_hpc3 k=17  E=0.02  95 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q IIPNLLPGYAYRMLVRENDSGEILLNETRLTGTVSSPDSDINVAYGDSSIGLSWTKLYDGIAYLLSLNSASYNFTKMQNT
+        ||        |        |      |                   |      |   |  |       |       
+  T VAFSLLWAGPMNAGVTQTPKFHVLKTGQSMTLLCAQDMNHEYMYRYRQDPGKGLRLIYYSVAAALTDKGEVPNGYNVSRS
+  Q TESNWTVNGLQSGSK
+                   
+  T NTEDFPLKLESAAPS
+
+FUN008497_FUN008497 26-77  vs  P05704 296-347 (Methyl-accepting chemotaxis protein III)
+  gbmr4 k=16  E=0.024  52 aa  identity 8% (chance 8%)  alphabets with a region: 1
+  Q AQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPS
+      |        |                |                  |    
+  T NADLSSRTEEQAAAIEQTAASMEQLTATVKQNADNAHHASKLAQEASIKASD
+
+FUN035573_FUN035573 761-855  vs  A0A0J9YXY3 9-103 (T cell receptor beta variable 6-2)
+  hp_lehninger_hpc3 k=17  E=0.024  95 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q IIPNLLPGYAYRMLVRENDSGEILLNETRLTGTVSSPDSDINVAYGDSSIGLSWTKLYDGIAYLLSLNSASYNFTKMQNT
+        ||        |        |      |                   |                             
+  T GAFSLLWAGPVNAGVTQTPKFRVLKTGQSMTLLCAQDMNHEYMYWYRQDPGMGLRLIHYSVGEGTTAKGEVPDGYNVSRL
+  Q TESNWTVNGLQSGSK
+       |           
+  T KKQNFLLGLESAAPS
+
+FUN035573_FUN035573 761-855  vs  P0DPF7 9-103 (T cell receptor beta variable 6-3)
+  hp_lehninger_hpc3 k=17  E=0.024  95 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q IIPNLLPGYAYRMLVRENDSGEILLNETRLTGTVSSPDSDINVAYGDSSIGLSWTKLYDGIAYLLSLNSASYNFTKMQNT
+        ||        |        |      |                   |                             
+  T GAFSLLWAGPVNAGVTQTPKFRVLKTGQSMTLLCAQDMNHEYMYWYRQDPGMGLRLIHYSVGEGTTAKGEVPDGYNVSRL
+  Q TESNWTVNGLQSGSK
+       |           
+  T KKQNFLLGLESAAPS
+
+FUN035573_FUN035573 761-845  vs  A0A0A6YYG3 9-93 (T cell receptor beta variable 6-8)
+  hp_lehninger_hpc3 k=17  E=0.033  85 aa  identity 13% (chance 6%)  alphabets with a region: 1
+  Q IIPNLLPGYAYRMLVRENDSGEILLNETRLTGTVSSPDSDINVAYGDSSIGLSWTKLYDGIAYLLSLNSASYNFTKMQNT
+        ||        |       ||      |                   |      |   |                  
+  T AAFSLLWAGPVNAGVTQTPKFHILKTGQSMTLQCAQDMNHGYMSWYRQDPGMGLRLIYYSAAAGTTDKEVPNGYNVSRLN
+  Q TESNW
+    ||   
+  T TEDFP
+
+FUN030023_FUN030023 51-172  vs  Q98910 41-165 (T-cell surface glycoprotein CD3 epsilon chain)
+  wwmj5 k=9  E=0.051  122 aa  chained across an insertion or deletion: Q 122 aa, T 125 aa, not aligned position by position  alphabets with a region: 1
+  Q IPVSSSSVGEKSIPSVYYNSSMHVDSTRTSVTTANHATNGLDTTRLPDAVPQGLGNSIIIIVSAASLLLLIFVAVVIIMC
+  T CPSSGDDVKWKPDPKMVVNNKYIIQNHDSSPLTVSCTAGDEEHTMYLNAKVCANCEELDTFTVVGIIAADLLITLGVLIL
+  Q IRNGRNKDRNHHASSQLKENEIYEMDGSGKQSSDVTRFNVND
+  T VYYFSKNKKGQSRAAAGSRPRAQKMRRPPPVPNPDYEPIRKGQRD
+
+FUN042913_FUN042913 101-184  vs  A0A1I8MUL8 281-364 (Female-specific protein transformer)
+  hp_lehninger_c_nonpolar2 k=19  E=0.071  84 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q LSAGVYQFTALKDRCLDHCRSPTFQFLAHWRTGFFGGVYMGLHHGAYCVACCWGLMVIGFVGGVMDLLWMGGATLLMTLE
+                     |        |       |        |               |    |               
+  T YQNVLPTLPPALTNYPCHYHVAPMLALPGVQHRPFLPMVASVRHLPPQALYGGLAGAMPFIPMPMTAYRPHLGHRYPPPR
+  Q KLPQ
+        
+  T HKIN
+
+FUN008497_FUN008497 38-77  vs  A0A0B4J262 60-99 (T cell receptor alpha variable 8-6)
+  gbmr4 k=16  E=0.088  40 aa  identity 10% (chance 7%)  alphabets with a region: 1
+  Q DKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPS
+                    |    |                ||
+  T NQGLQLLLKYLSGSTLVESINGFEAEFNKSQTSFHLRKPS
+
+FUN002399_SLC6A8.2 96-234  vs  A0A1I8MUL8 229-367 (Female-specific protein transformer)
+  hp_lehninger_hpc3 k=18  E=0.11  139 aa  identity 4% (chance 5%)  alphabets with a region: 1
+  Q NSFTMPWISCGNEWNTNNCIPIIPESSSENKTLESPLNYSTLDKSYLSTAEFWNNYVLQKTDGIEDLGGFSNWKIVGCFL
+     |                                             |      |                         
+  T TSWKHNPEHRTSRRSRTRSPRGNRSRRRSSTSSNEDDEREYRHRHHRSQERSYQNVLPTLPPALTNYPCHYHVAPMLALP
+  Q MAWVLAYLCIARGIRTSGKVSYVTVLLPYVLMVALFFRGVTLDGAGTGILYFITPKLDR
+           |      |          |                                 
+  T GVQHRPFLPMVASVRHLPPQALYGGLAGAMPFIPMPMTAYRPHLGHRYPPPRHKINKKN
+
+FUN008497_FUN008497 17-81  vs  Q44362 26-90 (Conjugal transfer protein TraC)
+  gbmr4 k=15  E=0.11  65 aa  identity 12% (chance 7%)  alphabets with a region: 1
+  Q SSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPSTAGA
+        | |                |    |  |    |                          ||
+  T EAERIGRIALKAGLGDIEIDEAELQAAFEDVAKRFRGGKGSATGKRQAGDSRTGSEPYATQPTGA
+
+FUN008497_FUN008497 17-81  vs  Q44348 26-90 (Conjugal transfer protein TraC)
+  gbmr4 k=15  E=0.12  65 aa  identity 17% (chance 7%)  alphabets with a region: 1
+  Q SSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPSTAGA
+        | |        |       |    || |    |                 |        ||
+  T EAERIGRIALKAGLGEIDIEESQLQAAFEEVAKRFRGGKGSATGKRQAGESRTGTEPSAALASGA
+
+FUN014989_FUN014989 76-192  vs  P27190 451-567 (DNA primase TraC)
+  hp_pbotc_1st_ed2 k=21  E=0.17  117 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q RQGLQSLVYQPDLKDFIFPKSGLQRSAVILDSMMKMMSESGNDPVKIVIHSSSVGCYFYALMLHQIKNHPETYQIVHDSI
+       |          |           |    |  |                     |  |    |            |  
+  T KEELRAEIASMIVGDELGIGHDPGQHAAYVGSWIKALQDEPLEVFRAAADAEKIHDYVLAFEQKQVQEQDQQQSQAQDEA
+  Q AAQVCDSPVVGTLNEMAYGVGKMLSPKSQSLASLYSR
+     ||         |                 |      
+  T VAQALAVDIAEVLDNPDVSFSHYQAFQGDTLEDALRS
+
+FUN001552_COL4A6 1612-1657  vs  P0DSE1 146-191 (M1-specific T cell receptor alpha chain)
+  gbmr4 k=15  E=0.18  46 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q NTMPFLYCTVNNVCNYASRNDKSFWLATTASIPMMPVEQGIEEYIS
+         |        |     |            |            
+  T DKSVCLFTDFDSQTNVSQSKDSDVYITDKTVLDMRSMDFKSNSAVA
+
+FUN021387_PLEKHF2 23-41  vs  A0A0B4J248 15-33 (T cell receptor alpha variable 1-1)
+  wass14 k=6  E=0.2  19 aa  identity 58% (chance 10%)  alphabets with a region: 1
+  Q GTVGQSLKQPGRVLVGEGV
+    || |||| ||  |   || 
+  T GTAGQSLEQPSEVTAVEGA
+
+FUN005988_FUN005988 43-83  vs  A0A5B0 59-99 (T cell receptor beta variable 14)
+  hp_lehninger_hpc3 k=25  E=0.25  41 aa  identity 12% (chance 6%)  alphabets with a region: 1
+  Q LTIVEEYEDVHELNGDETRPPVTNRYAWETQPVTISSVTAT
+                           ||   |    | |     
+  T GKEIKFLLHFVKESKQDESGMPNNRFLAERTGGTYSTLKVQ
+
+FUN020734_GALM 114-203  vs  Q5R1Q1 37-136 (T-cell surface glycoprotein CD3 epsilon chain)
+  gbmr4 k=14  E=0.33  90 aa  chained across an insertion or deletion: Q 90 aa, T 100 aa, not aligned position by position  alphabets with a region: 1
+  Q DKKMWTVDIEGRDVVMRLTSPHDDQGYPGTLQATARFALNEDELLIQFSATADQDTIVNMTDHSYFNLGGHNNWTTLQDH
+  T ASARYKVSISGTTVVLTCPEDLGSESIKWERNGDLLPNEYGEQLFLDDFSEMENSGYYACYTSNSLEKNYLYLKARVCQN
+  Q QIMINADNVT
+  T CVEVDTMTAVAIVVADVCIT
+
+FUN020640_SLCO4A1 87-186  vs  A0A1I8MUL8 255-354 (Female-specific protein transformer)
+  hp_lehninger2 k=17  E=0.36  100 aa  identity 5% (chance 5%)  alphabets with a region: 1
+  Q SEEESHNYCGNVTEPCNTTNTTNTTNLRTYRYFFFISIAIIGVGANPLYNFAITFIDENVEKGKSGLYNGVYYAFGGFGP
+                 |                                     |                          | 
+  T RRSSTSSNEDDEREYRHRHHRSQERSYQNVLPTLPPALTNYPCHYHVAPMLALPGVQHRPFLPMVASVRHLPPQALYGGL
+  Q ALGYLFGGATLELFTYIGAE
+    |    |              
+  T AGAMPFIPMPMTAYRPHLGH
+
+FUN028124_FUN028124 76-192  vs  P27190 451-567 (DNA primase TraC)
+  hp_pbotc_1st_ed2 k=21  E=0.36  117 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q RQGLQSLVYQADLKDFIFPKSGLQRSAVILDSLMKMMSEGENDHAKIVIHSSSVGCYFYALMLHQMKNHPETYQIVHDSI
+       |          |           |    |  |                     |  |    |            |  
+  T KEELRAEIASMIVGDELGIGHDPGQHAAYVGSWIKALQDEPLEVFRAAADAEKIHDYVLAFEQKQVQEQDQQQSQAQDEA
+  Q AAQVCDSPVVGTLNEMAYGVGKMLSPKSQSLARLYSR
+     ||         |                 |      
+  T VAQALAVDIAEVLDNPDVSFSHYQAFQGDTLEDALRS
+
+FUN001552_COL4A6 1612-1657  vs  P0DTU3 153-198 (T cell receptor alpha chain MC.7.G5)
+  gbmr4 k=15  E=0.39  46 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q NTMPFLYCTVNNVCNYASRNDKSFWLATTASIPMMPVEQGIEEYIS
+         |        |     |            |            
+  T DKSVCLFTDFDSQTNVSQSKDSDVYITDKTVLDMRSMDFKSNSAVA
+
+FUN006870_FUN006870 327-353  vs  P05704 405-431 (Methyl-accepting chemotaxis protein III)
+  gbmr4 k=16  E=0.52  27 aa  identity 19% (chance 9%)  alphabets with a region: 1
+  Q EIVRKEMEEFARRQKSEMSQYVRGLST
+      |  |    | |            | 
+  T AVVASEVRTLASRSAQAAKEIEGLISE
+
+FUN001552_COL4A6 1612-1657  vs  P01848 18-63 (T cell receptor alpha chain constant)
+  gbmr4 k=15  E=0.54  46 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q NTMPFLYCTVNNVCNYASRNDKSFWLATTASIPMMPVEQGIEEYIS
+         |        |     |            |            
+  T DKSVCLFTDFDSQTNVSQSKDSDVYITDKTVLDMRSMDFKSNSAVA
+
+FUN003566_A1CF 337-415  vs  A0A1I8MUL8 282-360 (Female-specific protein transformer)
+  polarity4 k=12  E=0.54  79 aa  identity 18% (chance 9%)  alphabets with a region: 1
+  Q TIAAYQAAYSGPVYYNPYAPPPTLPGMPVTHRIPAGGVIPGRTVHLGGVPQIGAAGVPLGIPGATSGIPSGIRDDVLPK
+                 |   |   | |    | ||     |   |           |   |      |   |        | 
+  T QNVLPTLPPALTNYPCHYHVAPMLALPGVQHRPFLPMVASVRHLPPQALYGGLAGAMPFIPMPMTAYRPHLGHRYPPPR
+
+FUN005971_FUN005971 171-243  vs  P22409 4-76 (Protein Tra)
+  gbmr4 k=16  E=0.56  73 aa  identity 15% (chance 9%)  alphabets with a region: 1
+  Q QIRGGASLKSADNRQMADAPAPSGRDSLLDQIRQGTQLKAVSQDESRERAAEEEEDDGLAGALARALMQREKA
+         |    |          |     | |                  | |             ||     ||
+  T TLAPFAARWDAEADRRMALRTPEHLKALMDAQKGYNSARSTAATAKSQRTAARAASKNPLSTVRRAARTADKA
+
+FUN035573_FUN035573 754-858  vs  A0A087WT01 1-105 (T cell receptor alpha variable 27)
+  hp_lehninger_hpc3 k=17  E=0.64  105 aa  identity 11% (chance 7%)  alphabets with a region: 1
+  Q PITNKETIIPNLLPGYAYRMLVRENDSGEILLNETRLTGTVSSPDSDINVAYGDSSIGLSWTKLYDGIAYLLSLNSASYN
+            |           |               ||    |              |     |                
+  T MVLKFSVSILWIQLAWVSTQLLEQSPQFLSIQEGENLTVYCNSSSVFSSLQWYRQEPGEGPVLLVTVVTGGEVKKLKRLT
+  Q FTKMQNTTESNWTVNGLQSGSKYLF
+    |        |       | |   | 
+  T FQFGDARKDSSLHITAAQTGDTGLY
+
+FUN009937_CATSPER3 147-218  vs  A0A1I8MUL8 281-352 (Female-specific protein transformer)
+  polarity4 k=12  E=0.71  72 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q NESTNWTGAIPILRTLKATRAIRAMRAVSFVRGLQVLLTALFDTMKKSFTNVMLILLFLMFLFAIFGYYLFG
+          |                                |             |             |    
+  T YQNVLPTLPPALTNYPCHYHVAPMLALPGVQHRPFLPMVASVRHLPPQALYGGLAGAMPFIPMPMTAYRPHL
+
+FUN020557_FUN020557 114-220  vs  A0A0A6YYK1 1-107 (T cell receptor alpha variable 8-1)
+  hp_lehninger_hpc3 k=17  E=0.72  107 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q VGQQPTPYAAILFLGSNPRVTQWEIELDYINGTSARSWTTAANTFFGFIATDLVPNTQYNVRARPSQILGQAVDGTGFGD
+          |     |     |               | |     |   |                                 
+  T MLLLLIPVLGMIFALRDARAQSVSQHNHHVILSEAASLELGCNYSYGGTVNLFWYVQYPGQHLQLLLKYFSGDPLVKGIK
+  Q WTNFTTGLLSVFGRVTLLDVPYETNPS
+                       |       
+  T GFEAEFIKSKFSFNLRKPSVQWSDTAE
+
+FUN035509_FUN035509 17-41  vs  A0A087WT03 75-99 (T cell receptor alpha variable 26-1)
+  wass14 k=6  E=0.76  25 aa  identity 40% (chance 8%)  alphabets with a region: 1
+  Q RIGNLFRQRIRKSSTRTLPRVTQRI
+        |     |||||  ||  | | 
+  T EMASLIITEDRKSSTLILPHATLRD
+
+FUN010522_FUN010522 76-106  vs  A0A0B4J234 13-43 (T cell receptor alpha variable 2)
+  hp_lehninger_hpc3 k=28  E=0.78  31 aa  identity 10% (chance 7%)  alphabets with a region: 1
+  Q FQAAQDAPKALSTNRKAVSYDNPGSSNIPPF
+            |               ||     
+  T GLLLNSLWKVAESKDQVFQPSTVASSEGAVV
+
+FUN011463_EFCAB7 15-48  vs  P22646 22-55 (T-cell surface glycoprotein CD3 epsilon chain)
+  wass14 k=6  E=0.84  34 aa  identity 41% (chance 8%)  alphabets with a region: 1
+  Q DDVRNIECKASYLSVSSSLDRPIDSKKYLKKALQ
+    ||  ||| | |    |  |  | ||   ||    
+  T DDAENIEYKVSISGTSVELTCPLDSDENLKWEKN
+
+FUN019200_FUN019200 1-46  vs  A0A589 18-63 (T cell receptor beta variable 4-3)
+  hp_lehninger_hpc3 k=25  E=0.9  46 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q MTSQPLEKSMDNGIAPIESKHDGKCSQKYCRQRYSGITKSVCSQFK
+                       |   || |            |      
+  T PMETGVTQTPRHLVMGMTNKKSLKCEQHLGHNAMYWYKQSAKKPLE
+
+FUN017943_ATF3 145-215  vs  A0A5A2 26-98 (T cell receptor beta variable 5-8)
+  hp_thomas_dill2 k=23  E=0.92  71 aa  chained across an insertion or deletion: Q 71 aa, T 73 aa, not aligned position by position  alphabets with a region: 1
+  Q EESELLEKQNQKLRIDVQRLQGERQRLIYILNLHRPTCIVRSQLFPSYEEQASTTANTQSVTECDENYSIR
+  T SPTHLIKTRGQQATLRCSPISGHTSVYWYQQALGLGLQFLLWYDEGEERNRGNFPPRFSGRQFPNYSSELNVN
+
+FUN017459_ANGPTL6 122-203  vs  P04437 20-93 (T cell receptor alpha variable 29/delta variable 5)
+  hp_thomas_dill2 k=23  E=0.97  82 aa  chained across an insertion or deletion: Q 82 aa, T 74 aa, not aligned position by position  alphabets with a region: 1
+  Q NPTETPNEKPADNPTETVTAKPTENPSENATVFQRRINGGVDFNRNWTDYLKGFGNPEGDFWLGLEELHERTKDGNMELE
+  T NSQQKNDDQQVKQNSPSLSVQEGRISILNCDYTNSMFDYFLWYKKYPAEGPTFLISISSIKDKNEDGRFTVFLN
+  Q IN
+  T 
+
+FUN019200_FUN019200 1-46  vs  A0A539 18-63 (T cell receptor beta variable 4-2)
+  hp_lehninger_hpc3 k=25  E=0.97  46 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q MTSQPLEKSMDNGIAPIESKHDGKCSQKYCRQRYSGITKSVCSQFK
+                       |   || |            |      
+  T PMETGVTQTPRHLVMGMTNKKSLKCEQHLGHNAMYWYKQSAKKPLE
+
+FUN034640_adt-1 7-95  vs  A0A075B6R0 4-92 (T cell receptor gamma variable 2)
+  hp_lehninger_hpc3 k=17  E=0.99  89 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q ALLLAFAISSIEACHHRQATFPPDRFPEEDFRRRRKRGLAGGDDDIIYTIYPTSQPTAVDANPELSRFFTQCMLEKTGSV
+    ||    |  |                                        |      |               ||   | 
+  T ALAVLLAFLSPASQKSSNLEGRTKSVIRQTGSSAEITCDLAEGSNGYIHWYLHQEGKAPQRLQYYDSYNSKVVLESGVSP
+  Q FRSWKSVID
+             
+  T GKYYTYAST
+
+=== C1-set domain proteins: 1 kmerseek-only links ===
+
+FUN034478_FUN034478 566-680  vs  Q68D85 81-195 (Natural cytotoxicity triggering receptor 3 ligand 1)
+  hp_lehninger_hpc3 k=17  E=0.25  115 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q LVTKSLQLVKFPGPVTMVKAENVCKTVDVTGKIATVPETMIERLLARVLKLALQRHKVHLVLLATDYTGAKKHSTRWHSA
+                  |               |                 ||             |                
+  T FFGDHQEAFRPGAIVSPWRLKSGDASLRLPGIQLEEAGEYRCEVVVTPLKAQGTVQLEVVASPASRLLLDQVGMKENEDK
+  Q TVVNTECLLASSIDDNSYQNVIRDCSFPDYQPNAI
+                |                     |
+  T YMCESSGFYPEAINITWEKQTQKFPHPIEISEDVI
+
+=== Non-vertebrate self/non-self: 9 kmerseek-only links ===
+
+FUN005971_FUN005971 177-245  vs  B2AXJ5 59-127 (Gasdermin-like protein het-Q1)
+  gbmr4 k=16  E=0.081  69 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q SLKSADNRQMADAPAPSGRDSLLDQIRQGTQLKAVSQDESRERAAEEEEDDGLAGALARALMQREKAIH
+           |             |                    |           |          |   
+  T RDATPEVRMSVQTELSKSDSTLAKAAPALEGILTLGGGVEASRSQGVSSSLNISGTVKATVFRADKSYM
+
+FUN009004_FUN009004 94-128  vs  P0DW10 201-235 (Gasdermin-like protein rcd-1-2)
+  gbmr4 k=16  E=0.22  35 aa  identity 14% (chance 7%)  alphabets with a region: 1
+  Q ISKKTESKLRSFLQRELSHEVAKMRTKRSNEQCSC
+       ||  |                    |    | 
+  T WDTKTKTKVNAHHTTDFVCAIRLVKIAKSGLRSSW
+
+FUN019245_ADAMTS3 4-116  vs  P17840 68-187 (S-locus-specific glycoprotein S13)
+  hp_lehninger_hpc3 k=19  E=0.4  113 aa  chained across an insertion or deletion: Q 113 aa, T 120 aa, not aligned position by position  alphabets with a region: 1
+  Q QLFVLVLLSEIMLSEVGAVLRLTHEEIVQEFPAYDYIYPIIRDKDGKRVSIHTENQATDRLKRDLTRSRVQSENGNRTYR
+  T RWYLGIWYKKFPYRTYVWVANRDNPLSNDIGTLKISGNNLVLLDHSNKSVWSTNVTRGNERSPVVAELLDNGNFVMRDSN
+  Q YNSDVKPASEQFYLNISAFGQHYAIVLQRKSNL
+  T SNNASQFLWQSFDYPTDTLLPEMKLGYDLKTGLNRFLTSW
+
+FUN013875_TMPRSS7 169-276  vs  Q54V07 306-413 (Tiger protein B1)
+  hp_lehninger_hpc3 k=29  E=0.65  108 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q LGLAGIRGLKIYVGIRKFADKFEAKPYGAEQMHRHPKNKGLTYDIALVKLINAIDVYSKNVGFIPLPNGESTPLDSTCFT
+    ||        |         |                                  |                 |    | 
+  T LGYDIPVTITIDGEYKSNTIKISYDLPLIQSVSQRGNSQIFDVTGVYFSGVKNMTVITGKNMKTDIIQKKTATLEEPGFF
+  Q AGWGLTNPVLFTPSDDLMQVDVQILDNA
+         |                   |  
+  T IESNYTIFIFLPNNTQPGFMNLVVGDGG
+
+FUN013994_SSBP3 60-96  vs  Q9FMQ4 9-45 (S-protein homolog 3)
+  gbmr4 k=17  E=0.76  37 aa  identity 5% (chance 5%)  alphabets with a region: 1
+  Q HSWWCVFWDLYCAAPERRDTCDHSHEAKAFHDYSSTI
+                |        |               
+  T VHVVVIYLLIKIAFSQVKTDFDVNWSTSKMVRITNRL
+
+FUN028415_FUN028415 5-88  vs  P0DW10 94-177 (Gasdermin-like protein rcd-1-2)
+  hp_lehninger_hpc3 k=27  E=0.78  84 aa  identity 8% (chance 5%)  alphabets with a region: 1
+  Q IITCYEIEFDLPSIDAKHAMYCEEHDPTTGIHGGKRVAQFVEHCSHDTNGCWFESRLGLFLCVGGLSGLLIADPAVNTAP
+              |                                             |    ||    |   |        
+  T PGVDVTGSAGLHHTNITSDRWEYDSVVEYAVYPTRQYIDRLLESKEVKQYIQKSKKLLGGWCVYMVTGIMVARGGGRNVV
+  Q SKAQ
+    |   
+  T SEEK
+
+FUN031981_FUN031981 73-86  vs  P07761 128-141 (S-locus-specific glycoprotein S6)
+  wass14 k=6  E=0.93  14 aa  identity 64% (chance 10%)  alphabets with a region: 1
+  Q RLPAVARLSGQGNF
+    ||| || |   |||
+  T RLPVVAELLSNGNF
+
+FUN004831_FUN004831 8-51  vs  P07761 87-130 (S-locus-specific glycoprotein S6)
+  hp_lehninger_hpc3 k=17  E=0.97  44 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q VGQPQAARRLQVCKCSESKQCGCAKKNSSSPATKSLTTVKTSAG
+                                 |     ||       
+  T ANRDNPLSNAIGTLKISGNNLVLLGHTNKSVWSTNLTRGNERLP
+
+FUN021208_FUN021208 73-86  vs  P07761 128-141 (S-locus-specific glycoprotein S6)
+  wass14 k=6  E=0.97  14 aa  identity 64% (chance 10%)  alphabets with a region: 1
+  Q RLPAVARLSGQGNF
+    ||| || |   |||
+  T RLPVVAELLSNGNF
+
+=== Minor histocompatibility antigens: 191 kmerseek-only links ===
+
+FUN008497_FUN008497 16-78  vs  Q15642 134-196 (Cdc42-interacting protein 4)
+  gbmr4 k=15  E=0.00011  63 aa  identity 10% (chance 7%)  alphabets with a region: 1
+  Q ISSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPST
+             |         | |  |          |                      |    
+  T LENSKRKFERDCREAEKAAQTAERLDQDINATKADVEKAKQQAHLRSHMAEESKNEYAAQLQR
+
+FUN008497_FUN008497 16-78  vs  Q5RCJ1 134-196 (Cdc42-interacting protein 4)
+  gbmr4 k=15  E=0.00012  63 aa  identity 10% (chance 7%)  alphabets with a region: 1
+  Q ISSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPST
+             |         | |  |          |                      |    
+  T LENSKRKFERDCREAEKAAQTAERLDQDINATKADVEKAKQQAHLRSHMAEESKNEYAAQLQR
+
+FUN032464_FUN032464 122-315  vs  Q9QX47 691-884 (Protein SON)
+  hp_lehninger2 k=17  E=0.00015  194 aa  identity 3% (chance 4%)  alphabets with a region: 1
+  Q WYDTRLCECLHISIVAEKYTWYDTRLRECLHISIVAEKYTWYDTRLCECLYITIVAEKYTWYHTRLCECLYITIVAEKYT
+       |            |               |                                               
+  T VGETSVTVGVDPLMAQESHMLASNTMETHMLASNTMDSQMLASNTMDSQMLASNTMDSQMLASSTMDSQMLASSTMDSQM
+  Q WYHTRLCECLYITIVAGKYTWYDTRLCECLHISIVAEKYTWYDTRLCECLYITIVAEKYTWYHTRLCECLYITIVAGKYT
+                |                                       |                   |       
+  T LATSTMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQM
+  Q WYDTRLCECLYITIVAEKYTWYHTRLCECLYITI
+                                      
+  T LATSSMDSQMLASGAMDSQMLASGTMDAQMLASG
+
+FUN012676_FUN012676 333-369  vs  P51578 202-238 (P2X purinoceptor 5)
+  gbmr4 k=15  E=0.00029  37 aa  identity 5% (chance 6%)  alphabets with a region: 1
+  Q KVSANSYINRSTQVIHRNIYRATADHPVHVVKKVTLV
+      |                                 |
+  T NFSKANVLETDNKHFLKTCHFSSTNLYCPIFRLGSIV
+
+FUN008497_FUN008497 6-75  vs  Q8IWZ5 342-411 (Tripartite motif-containing protein 42)
+  gbmr4 k=15  E=0.00033  70 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q SALKLIIFIGISSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIAT
+       |         |          |                                      |   |  
+  T AKFKAVRYEIDNDLMEFNILKNSFKADKEAKRKEIRNGFLKLRSILQEKEKIIMEQIENLEVSRQKEIEK
+
+FUN008497_FUN008497 6-75  vs  Q9D2H5 342-411 (Tripartite motif-containing protein 42)
+  gbmr4 k=15  E=0.00034  70 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q SALKLIIFIGISSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIAT
+       |         |          |                                      |   |  
+  T AKFKAVRYEIDNDLMEFNILKSSFKADKEAKRKEVRNGFLKLRAILQEKEKIIMEQIENLEVSRQKEIEK
+
+FUN020551_FUN020551.2 2489-2603  vs  Q95JC7 178-292 (Neutral amino acid transporter B(0))
+  hp_lehninger_hpc3 k=17  E=0.0012  115 aa  identity 6% (chance 7%)  alphabets with a region: 1
+  Q DIFNEQRAWWSPVRGATTYLASLDDINNGRKRSTKKFPIDKKTNGTELVFDALEPGKSYRFSIAASNEAGTGQTKEILVT
+                        |         |         |   | |                                 
+  T EVLDSFLDLVRNIFPSNLVSAAFRSYTTSYKERLFNGTLVKVPTGGEVEGMNILGLVVFAIIFGVALRKLGPEGELLIRF
+  Q TSPPANFEWWWLVVGIGLVLILAIGLVIAHVRLVS
+                             ||        
+  T FNSFNDATMVLVSWIMWYAPVGILFLVAGKIVEME
+
+FUN006870_FUN006870 321-356  vs  P36161 606-641 (Nucleoporin NUP133)
+  gbmr4 k=15  E=0.0012  36 aa  identity 14% (chance 5%)  alphabets with a region: 1
+  Q SDEHIREIVRKEMEEFARRQKSEMSQYVRGLSTPGV
+           |  |        |             | |
+  T QSDVLNDIWEKTLSNYNLTQNEHLTTKTVVINSPDV
+
+FUN008497_FUN008497 20-74  vs  Q5F4B2 357-411 (Switch-associated protein 70)
+  gbmr4 k=15  E=0.0014  55 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q SIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIA
+                        |   ||      |                      
+  T TVRKQLEAAAARAAEEEKKRLQTQVELQDRFSLELEREKMVRQKMEEQVAQKSSE
+
+FUN006870_FUN006870 324-353  vs  Q9VM75 2061-2090 (HEAT repeat-containing protein 1 homolog)
+  gbmr4 k=15  E=0.002  30 aa  identity 13% (chance 8%)  alphabets with a region: 1
+  Q HIREIVRKEMEEFARRQKSEMSQYVRGLST
+     | |    |                  |  
+  T FIAELLEDEHQRVEKNTRTGVQELETILGE
+
+FUN008497_FUN008497 16-75  vs  F1M3G7 488-547 (A-kinase anchor protein 13)
+  gbmr4 k=15  E=0.0022  60 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q ISSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIAT
+           |    |           |                     |             
+  T VGESAKERLENSDISSAEATAVQALREPKQKADVTNHVFAARAAGADAPAEASPAWSPEE
+
+FUN012676_FUN012676 332-388  vs  P36161 332-388 (Nucleoporin NUP133)
+  gbmr4 k=15  E=0.0027  57 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q SKVSANSYINRSTQVIHRNIYRATADHPVHVVKKVTLVPPARLVLLDPKASRDPVAS
+               | |     ||                                    
+  T KIWDSHPLQDESSQLFLSSIYDSSCNETYYILSTIIFDSSSNSFTIFSTYRLNTFME
+
+FUN008497_FUN008497 20-74  vs  Q6A028 357-411 (Switch-associated protein 70)
+  gbmr4 k=15  E=0.0032  55 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q SIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIA
+    |                   |   ||                             
+  T SVRKKLEEAASRAADEEKKRLQTQVELQTRFSTELEREKLIRQQMEEQVAQKSSE
+
+FUN008497_FUN008497 20-74  vs  Q9UH65 357-411 (Switch-associated protein 70)
+  gbmr4 k=16  E=0.0038  55 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q SIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIA
+                        |   ||  |                          
+  T AVRKKLEEAASRAAEEEKKRLQTQVELQARFSTELEREKLIRQQMEEQVAQKSSE
+
+FUN006870_FUN006870 319-341  vs  Q7SY48 1571-1593 (HEAT repeat-containing protein 1)
+  gbmr4 k=15  E=0.0052  23 aa  identity 13% (chance 5%)  alphabets with a region: 1
+  Q TPSDEHIREIVRKEMEEFARRQK
+     |     |    |          
+  T KPTAKFWRALLSKSYDTLDKVNA
+
+FUN008497_FUN008497 22-75  vs  Q9HCM1 1389-1442 (Retroelement silencing factor 1)
+  gbmr4 k=15  E=0.0062  54 aa  identity 11% (chance 7%)  alphabets with a region: 1
+  Q DRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIAT
+               |     ||        |               ||         
+  T KKKHDKQEQKGSVGATFKLGDSLSNPNERAIVKEKMVSNTKSVDTKASSSKFSR
+
+FUN025744_FUN025744 69-254  vs  Q9QX47 732-917 (Protein SON)
+  hp_lehninger2 k=17  E=0.0081  186 aa  identity 3% (chance 4%)  alphabets with a region: 1
+  Q YHTRLCECLYIPMVAEKYTWYHTRLCECLHISLVAEKYTWYHTRLRECLYITMVAEKYTWYHTRLCECLHISLVAEKYTW
+                                   |                   |                            
+  T ASNTMDSQMLASNTMDSQMLASSTMDSQMLASSTMDSQMLATSTMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQML
+  Q YHTRLRECLYITIVAGKYTWYHTRLCECLHISLVAEKYTWYHTRLRECLYITMVAEKYTWYHTRLCECLHISLVAEKYTW
+               |                                                           |        
+  T ATSSMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQMLASGAMDSQMLASGTMDAQMLASGTMDAQML
+  Q YHTRLRECLYITIVAGKYTWYDTRLC
+                     |        
+  T ASSTQDSAMMGSKSPDPYRLAQDPYR
+
+FUN008497_FUN008497 25-77  vs  P79457 425-477 (Histone demethylase UTY)
+  gbmr4 k=16  E=0.0083  53 aa  identity 2% (chance 7%)  alphabets with a region: 1
+  Q RAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPS
+                    |                                    
+  T ELTSRQGAMNTAQQSVSDTWNSVQTASHHSVQQKVYTQCFTAQKLQSFGKDQQ
+
+FUN008497_FUN008497 20-88  vs  Q9VCW3 1011-1079 (Nuclear pore complex protein Nup133)
+  gbmr4 k=16  E=0.019  69 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q SIDRVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPSTAGAGFIAGVV
+                        |   ||        |                             |    
+  T RKKSMLSLAKLAAFAAAESDLTAQVEKINADLTLVEYQSQLGHDVLESFGFDPAEQKVLKAEEIISLYI
+
+FUN005971_FUN005971 170-234  vs  O14607 966-1030 (Histone demethylase UTY)
+  gbmr4 k=16  E=0.027  65 aa  identity 20% (chance 6%)  alphabets with a region: 1
+  Q DQIRGGASLKSADNRQMADAPAPSGRDSLLDQIRQGTQLKAVSQDESRERAAEEEEDDGLAGALA
+       |             |   | |   ||       || |  |  ||           |      
+  T KIWRCESNRSHTTIAKYAQYQASSFQESLREENEKRTQHKDHSDNESTSSENSGRRRKGPFKTIK
+
+FUN008497_FUN008497 31-81  vs  Q3KRF1 311-361 (Sp110 nuclear body protein)
+  gbmr4 k=15  E=0.027  51 aa  identity 10% (chance 8%)  alphabets with a region: 1
+  Q TESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDTTTRTTTIATPSTAGA
+     |                  |  |            |     |        
+  T QEKLKVVGQRTLNQDDSTRNVKVVTRTLRERTRCAQTSSSQEISKEASKPR
+
+FUN008497_FUN008497 20-50  vs  Q8BVK9 305-335 (Sp110 nuclear body protein)
+  gbmr4 k=16  E=0.028  31 aa  identity 6% (chance 8%)  alphabets with a region: 1
+  Q SIDRVRAQDWKTESKQSADKLSKKVEEFAEK
+                         ||        
+  T EVTKTQRTRMRRAQTSNSQEISKEASKTSGR
+
+FUN025743_FUN025743 29-181  vs  Q9QX47 732-884 (Protein SON)
+  hp_lehninger2 k=17  E=0.03  153 aa  identity 3% (chance 4%)  alphabets with a region: 1
+  Q YHTRLCECLYIPMVAEKYTWYHTRLCECLHISLVAEKYTWYHTRLRECLYITMVAEKYTWYHTRLCECLHISLVAEKYTW
+                                   |                   |                            
+  T ASNTMDSQMLASNTMDSQMLASSTMDSQMLASSTMDSQMLATSTMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQML
+  Q YHTRLRECLYITIVAGKYTWYHTRLCECLHISLVAEKYTWYHTRLRECLYITMVAEKYTWYHTRLCECLHISL
+               |                                                           | 
+  T ATSSMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQMLATSSMDSQMLASGAMDSQMLASGTMDAQMLASG
+
+FUN008497_FUN008497 19-51  vs  Q54ML4 371-403 (HEAT repeat-containing protein 1 homolog)
+  gbmr4 k=16  E=0.036  33 aa  identity 15% (chance 7%)  alphabets with a region: 1
+  Q LSIDRVRAQDWKTESKQSADKLSKKVEEFAEKV
+    |           |    | |     |       
+  T LIFNTLTKSYLATTKNSSKDEVDESVINILRSL
+
+FUN010649_TTPAL 109-202  vs  Q8IWZ5 412-504 (Tripartite motif-containing protein 42)
+  hp_lehninger_hpc3 k=19  E=0.038  94 aa  chained across an insertion or deletion: Q 94 aa, T 93 aa, not aligned position by position  alphabets with a region: 1
+  Q LLPLQNARARDGTFVILVRPGHGFTDKKDMLRLFAILVRTLEYLLKNEEFQIFGLTVVEDLANFGLGSALQMSSYGKKFL
+  T YVYVTTMKVNEMDGLIAYSKEALKETGQVAFLQSAKILVDQIEDGIQTTYRPDPQLRLHSINYVPLDFVELSSAIHELFP
+  Q HMLQEAMPIRVKSV
+  T TGPKKVRSSGDSL
+
+FUN006870_FUN006870 323-346  vs  Q9EQH2 607-630 (Endoplasmic reticulum aminopeptidase 1)
+  gbmr4 k=16  E=0.044  24 aa  identity 0% (chance 5%)  alphabets with a region: 1
+  Q EHIREIVRKEMEEFARRQKSEMSQ
+                            
+  T ASLSGLLKEAHTTISSNDRASLIN
+
+FUN006870_FUN006870 323-346  vs  Q9JJ22 607-630 (Endoplasmic reticulum aminopeptidase 1)
+  gbmr4 k=16  E=0.047  24 aa  identity 0% (chance 5%)  alphabets with a region: 1
+  Q EHIREIVRKEMEEFARRQKSEMSQ
+                            
+  T ASLNGLLKEAHTTISSNDRASLIN
+
+FUN035530_MUC5B.1 629-701  vs  Q12802 1974-2046 (A-kinase anchor protein 13)
+  wwmj5 k=10  E=0.049  73 aa  identity 8% (chance 5%)  alphabets with a region: 1
+  Q EQKDCMCEYQNVFYRSGEVTTQGCMECTCAEGRWTCTNMESCFKSCIMSGGTTVMTFDQKIYDSILTNCELLL
+    |                 |                              |      | |            | 
+  T ESWSRIIDSKFLKQQKKDVVKRQEVIYELMQTEFHHVRTLKIMSGVYSQGMMADLLFEQQMVEKLFPCLDELI
+
+FUN027605_ANXA11 497-637  vs  Q60767 1226-1366 (Lymphocyte antigen 75)
+  gbmr4 k=15  E=0.052  141 aa  identity 10% (chance 5%)  alphabets with a region: 1
+  Q KADAKALYEAGEKFWATDEEKFNEIFANRSFPQLRATFDAYKQLCGRSIKTAIDKEFSGDLEDGLRAIVDIAYYLPQFFA
+                            |    |      |    |            |  |       |          |   
+  T NETEEEVRALDTAKCPSPVQSTPWIPFQNSCYNFMITNNRHKTVTPEEVQSTCEKLHSKAHSLSIRNEEENTFVVEQLLY
+  Q RRLRSALDRPGTDDETLIRIVVTRAELDMTLIKQEYKMLTGRTLYKSIREDTKGDYRKMLL
+              |   |           |  |                    |   |      
+  T FNYIASWVMLGITYENNSLMWFDKTALSYTHWRTGRPTVKNGKFLAGLSTDGFWDIQSFNV
+
+FUN008497_FUN008497 4-48  vs  Q9HB58 306-350 (Sp110 nuclear body protein)
+  gbmr4 k=16  E=0.053  45 aa  identity 13% (chance 7%)  alphabets with a region: 1
+  Q MGSALKLIIFIGISSLSIDRVRAQDWKTESKQSADKLSKKVEEFA
+     |   ||           |        |           |     
+  T HGIQKKLKRVDQVPQKKDDSTCNSTVETRAQKARTECARKSRSEE
+
+FUN012676_FUN012676 334-367  vs  Q60553 155-188 (Receptor tyrosine-protein kinase erbB-2)
+  gbmr4 k=15  E=0.057  34 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q VSANSYINRSTQVIHRNIYRATADHPVHVVKKVT
+       |        |      |              
+  T IRGNPQLCYQDTVLWKDVFRKNNQLAPVDIDTNR
+
+FUN008497_FUN008497 21-50  vs  F8VPU6 467-496 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  gbmr4 k=15  E=0.058  30 aa  identity 23% (chance 8%)  alphabets with a region: 1
+  Q IDRVRAQDWKTESKQSADKLSKKVEEFAEK
+            |   ||    ||       || 
+  T LFDCFKASWTNASKKQREKLLELIRRLAED
+
+FUN008497_FUN008497 21-51  vs  Q3TBD2 183-213 (Rho GTPase-activating protein 45)
+  gbmr4 k=16  E=0.06  31 aa  identity 19% (chance 8%)  alphabets with a region: 1
+  Q IDRVRAQDWKTESKQSADKLSKKVEEFAEKV
+    |  | |               |  |  |   
+  T IAKVKAFHYECNNESDKREFEKALETIAVSF
+
+FUN008497_FUN008497 21-50  vs  O00507 469-498 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  gbmr4 k=15  E=0.063  30 aa  identity 23% (chance 8%)  alphabets with a region: 1
+  Q IDRVRAQDWKTESKQSADKLSKKVEEFAEK
+            |   ||    ||       || 
+  T LFDCFKASWTNASKKQREKLLELIRRLAED
+
+FUN022952_FUN022952 1-131  vs  Q60767 276-410 (Lymphocyte antigen 75)
+  hp_lehninger_hpc3 k=19  E=0.067  131 aa  chained across an insertion or deletion: Q 131 aa, T 135 aa, not aligned position by position  alphabets with a region: 1
+  Q MVTLNLRFISISAIQISHIEFIHFYSWHAYALYRHVCIGKVQITSCTQSRSVKYACRDFKLRCNIFLCGSHLDCDDQSES
+  T VWLGLNQLYSARGWEWSDFRPLKFLNWDPGTPVAPVIGGSSCARMDTESGLWQSVSCESQQPYVCKKPLNNTLELPDVWT
+  Q TDYSVLAQFRCLDISIIDGLDQSVSVILDRSFIAADLFDMSHIFSYELALN
+  T YTDTHCHVGWLPNNGFCYLLANESSSWDAAHLKCKAFGADLISMHSLADVEVVVT
+
+FUN001552_COL4A6 1752-1791  vs  Q9H583 1811-1850 (HEAT repeat-containing protein 1)
+  gbmr4 k=16  E=0.073  40 aa  identity 5% (chance 6%)  alphabets with a region: 1
+  Q DQFSTPEKQTLKAGSLRTRISRCQEDLSSFFGFLKASSED
+        |                          |        
+  T KTLATTLAPRVLLPAIKKTYKQIEKNWKNHMGPFMSILQE
+
+FUN006870_FUN006870 319-341  vs  Q8WUM0 978-1000 (Nuclear pore complex protein Nup133)
+  gbmr4 k=15  E=0.076  23 aa  identity 13% (chance 9%)  alphabets with a region: 1
+  Q TPSDEHIREIVRKEMEEFARRQK
+                   || |    
+  T ALASDFSEDMLQEKIEEMAEQER
+
+FUN006238_STT3B 677-779  vs  Q96HQ0 259-361 (Zinc finger protein 419)
+  hp_thomas_dill2 k=18  E=0.081  103 aa  identity 13% (chance 6%)  alphabets with a region: 1
+  Q YRFGDVQLDFRNPAGFDRTRNVEIGNKNIKLKHLEEAYTSEHWLVRIYRVKKPSNRIKLSHPLTHKHYKTKYISKKTKKK
+    |        |   |       |  | |         |      ||              |                    
+  T YGCSNCGKSFSRNAHLIEHQRVHTGEKPFTCSECGKAFRHNSTLVQHHKIHTGVRPYECSECGKLFSFNSSLMKHQRIHT
+  Q KRGFVRVKSIPKVVKGKRDRAKS
+               |    |    | 
+  T GERPYKCSECGKFYSHKSNLIKH
+
+FUN012676_FUN012676 333-351  vs  O00507 749-767 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  gbmr4 k=17  E=0.092  19 aa  identity 5% (chance 6%)  alphabets with a region: 1
+  Q KVSANSYINRSTQVIHRNI
+           |           
+  T NCRERKLIAKRRSYMMDDL
+
+FUN001552_COL4A6 1752-1791  vs  Q9GM44 625-664 (HEAT repeat-containing protein 1)
+  gbmr4 k=16  E=0.096  40 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q DQFSTPEKQTLKAGSLRTRISRCQEDLSSFFGFLKASSED
+        |           |              |        
+  T KTLATTLAPRVLLPAIRKTYKQIEKNWKNHMGPFMSILQE
+
+FUN006870_FUN006870 321-353  vs  Q8BVK9 291-323 (Sp110 nuclear body protein)
+  gbmr4 k=16  E=0.096  33 aa  identity 12% (chance 7%)  alphabets with a region: 1
+  Q SDEHIREIVRKEMEEFARRQKSEMSQYVRGLST
+                  |    |   |       | 
+  T RRTLWKDDSSTNVKEVTKTQRTRMRRAQTSNSQ
+
+FUN034370_TOP3A 725-924  vs  Q6NS46 1395-1594 (Protein RRP5 homolog)
+  hp_thomas_dill2 k=20  E=0.098  200 aa  identity 8% (chance 7%)  alphabets with a region: 2
+  Q WDREQVMCVCGCDEDVSNVLDIRFRAHTASSQPRSNTAPRGGGRPSRGRGSFPASNNRRGSGGGPGFLSRPNGRGGTKRT
+                        |    |       ||  |  |  |                |  |                
+  T VNPMKNLIELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQEL
+  Q FGGQKKKPSTSSSYGSGFSSEFSDRDSTNETPLCQCGTSAVERTVAKEGLNKGRQFYVCSKPRDSQCRFFEWADTPQSSS
+         ||        ||              |           |                                    
+  T VNKRPKKSGAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDE
+  Q TSYPANRGNRNSSRPASSNRGRRKPVTCGLCREEGHTRRS
+        |        |                          
+  T QPHQAKKKKGKKERELEKQKAEKELSRIEEALMDPGRQPE
+
+FUN010086_FUN010086.1 97-165  vs  A8MTL9 39-114 (Serpin-like protein HMSD)
+  hp_lehninger_c_nonpolar2 k=26  E=0.1  69 aa  chained across an insertion or deletion: Q 69 aa, T 76 aa, not aligned position by position  alphabets with a region: 1
+  Q STLFREYLPPLRRTRRKPVLTEMSPVKNSTMNQSAMEAFSLHIDSVSPIDDENRKRRSEASPVDAHESI
+  T HRGFQSLLVAINRTDTEYVLRTANGLFGEKSYDFLTGFTDSCGKFYQATIKQLDFVNDTEKSTTRVNSWVADKTKG
+
+FUN018181_HTR7 387-574  vs  A7MB10 1434-1621 (Protein RRP5 homolog)
+  hp_kyte_doolittle2 k=20  E=0.12  188 aa  identity 6% (chance 7%)  alphabets with a region: 1
+  Q GSSSDLFDINPGPQRRRSSVQTGVTRVRERSEQPSSQNRGDNAVISTSRDDDTCSASPPIAENDSTNNDAQCLIMSSREV
+                        |       |                | |            |                 | 
+  T KEKKKQKQKEKRTGKGQEGAQPPSKDKKEPQKPQAKKLGKRPHPESSSEQEIGNKKQKKAALSEEDDSGVEVYYREGEEA
+  Q NGNFKVKENGDEGGRRKSWCKNLRYSASSLSQSEGSGLIRQPSRDKRRRDDRSKNPEKPAREERYVSRAGRSILSARRKS
+                                                      |                             
+  T EEMSMLPKEKLTRPAEAPRLQLSSGFVWDVGLDTLTPALPPHGDSSDSEEDEKPEQATQKKKSKKERELEKQKAEKELSR
+  Q YRRPFASSKDQRKSSTFLRRNFLVQREK
+              |  |     |  |     
+  T IEEALMDPGRQPESAEDFDRLVLSSPSS
+
+FUN006870_FUN006870 327-349  vs  Q5XUN4 861-883 (Lysine-specific demethylase 5D)
+  gbmr4 k=16  E=0.12  23 aa  identity 9% (chance 8%)  alphabets with a region: 1
+  Q EIVRKEMEEFARRQKSEMSQYVR
+      |    |               
+  T KDVLEQVEAYQDEAREALATLPS
+
+FUN020557_FUN020557 2357-2496  vs  P70424 1022-1161 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=17  E=0.13  140 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q STTLQVATNWISGATIRIDLASSSSVLSTQACQDRDGDFISMPISDQSTIFEDLPPGNSYFLEVIRDDTAEVLFEESNST
+       |       |                        |                             |    |        
+  T EEYLVPQQGFFSPDPALGTGSTAHRRHRSSSARSGGGELTLGLEPSEEEPPRSPLAPSEGAGSDVFDGDLAVGVTKGLQS
+  Q GEVSPPNPSQMHASNSSIGIRWNKEYTGIAFSIAFSGTEYNISQEYNTTGTSYNVTGLDY
+           | |                              |                   
+  T LSPHDLSPLQRYSEDPTLPLPPETDGYVAPLACSPQPEYVNQPEVRPQSPLTPEGPPPPI
+
+FUN008497_FUN008497 25-66  vs  Q9XBQ0 266-307 (Serine/threonine-protein kinase pkn3)
+  gbmr4 k=15  E=0.14  42 aa  identity 5% (chance 7%)  alphabets with a region: 1
+  Q RAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQGHNDTLDT
+               ||                             
+  T ALSKNPADRPASAEAFKAELQAVDKERRRMDSAPRRSANSSA
+
+FUN035530_MUC5B.1 635-701  vs  E9Q394 1943-2009 (A-kinase anchor protein 13)
+  wwmj5 k=10  E=0.15  67 aa  identity 9% (chance 5%)  alphabets with a region: 1
+  Q CEYQNVFYRSGEVTTQGCMECTCAEGRWTCTNMESCFKSCIMSGGTTVMTFDQKIYDSILTNCELLL
+                |                              |  |   | |            | 
+  T VDSKFLKQQKKDVVKRQEVIYELMQTELHHIRTLKIMSDVYSRGMMTDLLFEQQMVEKLFPCLDELI
+
+FUN026157_TCF7L2 357-466  vs  P18583 62-171 (Protein SON)
+  hp_lehninger2 k=21  E=0.16  110 aa  identity 7% (chance 6%)  alphabets with a region: 2
+  Q ARSVSPAMTSSTNGEFPPTVTPSDRNRPDSRPEIKQEYRSSPPASHDQFNGSENSFKSDESPNNNQDPRNRGDNNNNNNN
+                  |           |               |             |                       
+  T VQKIEEVLSGVLDTELRYKPDLKEGSRKSRCVSVQTDPTDEIPTKKSKKHKKHKNKKKKKKKEKEKKYKRQPEESESKTK
+  Q RKERPNFRHENANPLHRQSSAPPGPFRKGN
+         |   |    |   |           
+  T SHDDGNIDLESDSFLKFDSEPSAVALELPT
+
+FUN035530_MUC5B.1 635-701  vs  F1M3G7 1942-2008 (A-kinase anchor protein 13)
+  wwmj5 k=10  E=0.16  67 aa  identity 9% (chance 5%)  alphabets with a region: 1
+  Q CEYQNVFYRSGEVTTQGCMECTCAEGRWTCTNMESCFKSCIMSGGTTVMTFDQKIYDSILTNCELLL
+                |                              |  |   | |            | 
+  T VDSKFLKQQKKDVVKRQEVIYELMQTELHHIRTLKIMSDVYSRGMMTDLLFEQQMVEKLFPCLDELI
+
+FUN029050_FUN029050 34-124  vs  Q8IYM9 190-280 (E3 ubiquitin-protein ligase TRIM22)
+  hp_lehninger_c_nonpolar2 k=26  E=0.17  91 aa  identity 12% (chance 6%)  alphabets with a region: 3
+  Q ARVEVDFEKSGKNRSVQFRKWIWSRDFVAVNQELDSFENSICSFATNAQRRMTLQRVRFVDNIFSYLSTRDNLTVSDANL
+     ||  | |                    |    |              |||     |                |      
+  T MRVILDNEEQRELQKLEEGEVNVLDNLAAATDQLVQQRQDASTLISDLQRRLRGSSVEMLQDVIDVMKRSESWTLKKPKS
+  Q YHNYFNENCNM
+               
+  T VSKKLKSVFRV
+
+FUN022083_ZAN 5-129  vs  F8VPU6 1783-1907 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  hp_lehninger_hpc3 k=17  E=0.18  125 aa  identity 4% (chance 5%)  alphabets with a region: 1
+  Q VTSIVISSLATLVSPTYSSWQLGERYRRIHTVQIVEVELAEICFFQALWSMFNNKKAPTCSSIWNYEPEQTDGDYKWCAE
+    |    |  |                               |                                       
+  T VKRLLIKKLPSVLTIQLKRFDYDWERECAIKFNDYFEFPRELDMEPYTVAGATKLEGDSVNPQTQLIKQNEQSESVIPGS
+  Q KSGKPIPYTRDNAESFPYNCKKTRGCPEGLVREKTRRCDATCAEA
+                                |                
+  T TKYRLVGVLVHSGQANGGHYYSYIIQRNGKDSKRSHWFKFDDGDV
+
+FUN012674_COL3A1 39-82  vs  Q6P5Z2 660-703 (Serine/threonine-protein kinase N3)
+  gbmr4 k=15  E=0.18  44 aa  identity 7% (chance 5%)  alphabets with a region: 1
+  Q ANGEVFRPNPCRVCACVNASLICDDIQCENVACENAFVPDGQCC
+                         |  |    |              
+  T QARFYVACVVLGLQFLHEKKIIYRDLKLDNLLLDAQGFLKIADF
+
+FUN001554_COL4A1 1706-1742  vs  Q5SUA5 787-823 (Unconventional myosin-Ig)
+  gbmr4 k=15  E=0.18  37 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q CNQFANGFSFWLATISQSQMFKKPVPETLKAGDLRTR
+       |              |  |   |           
+  T LQPFQDTCRVLFSRWRARQLVKNIPPSDMIQIKAKVA
+
+FUN007808_DNAH5 1-207  vs  Q9VHB0 243-449 (Protein Son)
+  hp_pbotc_1st_ed2 k=29  E=0.19  207 aa  identity 9% (chance 7%)  alphabets with a region: 1
+  Q MEGNEDSTRGNEDSTRGNASNETESTESQKSDKLSNDSTGNIEHTSVQYISSEDGDEKQNQGDKTIPVIEISGEDETQVQ
+               |         | |                                            |  | |      
+  T PSSHSEKRERHEREKHRDWEREREREKEHERERVRSNNSFYNGQREADRLKGSESASTKSRQEQDLSDISLSDEESYLRE
+  Q TRGEEQADQHDSEMTTEAHINIEKTLVTDDTNMTKSSIEHTHDVHSSCETNEVMEAKVNQPSTELDHGNRDQPNSTTSGT
+             | |                   |                      |            |        |   
+  T KASNGRRRAHNSFYDEKEELSVSPKRNVRESNTRRNRKSRSRSRDLGIDKKRLLEIARRNAINMFKQGTMPGVANMTAEV
+  Q GSSLSNELHDSPKKIADNRCLEVTAVSETSSSSISSSGSSSSSEDSS
+                  | |              |  ||   |       
+  T KDKVLVKMRYGGRTIQDLTDFCKKISNGDGLSDLSSEEESDVDKNGN
+
+FUN026836_FUN026836 9-38  vs  Q5U3Q6 68-97 (Cdc42-interacting protein 4 homolog)
+  hp_lehninger_hpc3 k=29  E=0.19  30 aa  identity 7% (chance 5%)  alphabets with a region: 1
+  Q NTSRGAYQVINTLQKPLPRSKILITTLPID
+              |                 | 
+  T SNHQAFLDILNEMNDYAGQRELIAENMMIN
+
+FUN001554_COL4A1 1738-1761  vs  Q14289 143-166 (Protein-tyrosine kinase 2-beta)
+  gbmr4 k=16  E=0.19  24 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q DLRTRISRCVVCMRSFQDQVVSRV
+     |                    | 
+  T SLKEDRTTLLYFYQQLRNDYMQRY
+
+FUN019434_COLEC11 122-214  vs  Q8IWZ5 326-428 (Tripartite motif-containing protein 42)
+  hp_lehninger_hpc3 k=18  E=0.2  93 aa  chained across an insertion or deletion: Q 93 aa, T 103 aa, not aligned position by position  alphabets with a region: 1
+  Q ARETCKRHGGRLASAGMRGSVMREIISMVGIRRGEYVWIGLSDLAEEGSWVWDDGSTAPVTNWERGQPDNSDNEDCGHLW
+  T LIDACSERAASLFSAIAKFKAVRYEIDNDLMEFNILKNSFKADKEAKRKEIRNGFLKLRSILQEKEKIIMEQIENLEVSR
+  Q KDYTFNDRRCNYG
+  T QKEIEKYVYVTTMKVNEMDGLIA
+
+FUN008497_FUN008497 17-50  vs  Q8CJ53 167-200 (Cdc42-interacting protein 4)
+  gbmr4 k=16  E=0.2  34 aa  identity 9% (chance 7%)  alphabets with a region: 1
+  Q SSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEK
+             |         |          |   
+  T ADVEKAKQQAHLRNHMAEESKNEYAAQLQRFNRD
+
+FUN009339_MEGF6 1346-1420  vs  Q6BPU5 280-354 (2-(3-amino-3-carboxypropyl)histidine synthase subunit 1)
+  hp_lehninger_hpc3 k=18  E=0.2  75 aa  identity 9% (chance 5%)  alphabets with a region: 1
+  Q REGWYGATCSEGDRKPVRLLEEPKKVPVANAAFTSRSRIFSHRAQELRARIRQASARRYSGRSRLNRYYRGRRRY
+     |        |     |      ||      |             |                             
+  T KEYYDQKQMIEVREDAVKIASNAKKIGLILGALGRQGNPVTLNNLETKLSAKGIQVVKIILSEIFPQKLSMFNDI
+
+FUN009004_FUN009004 6-96  vs  Q9JJ22 838-928 (Endoplasmic reticulum aminopeptidase 1)
+  gbmr4 k=16  E=0.2  91 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q KQNLALAESRLITEKELQSTRWKSVGFSGKYATLVLAVSVLLCIGGMVFALNTVSKISYLEDRIARMEAALDLSARTENG
+               |  |             |               |         |        |   |            
+  T AWKFLKENWNKIVQKFELGSSSIAHMVMGTTNQFSTRARLEEVKGFFSSLKKNGSQLRCVQQTIETIEENIRWMDKNFDK
+  Q NGHIQTDIISK
+               
+  T IRLWLQKERQE
+
+FUN001554_COL4A1 1738-1761  vs  P70600 143-166 (Protein-tyrosine kinase 2-beta)
+  gbmr4 k=16  E=0.21  24 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q DLRTRISRCVVCMRSFQDQVVSRV
+     |                    | 
+  T SLKEDRTTLLYFYQQLRNDYMQRY
+
+FUN001554_COL4A1 1738-1761  vs  Q9QVP9 143-166 (Protein-tyrosine kinase 2-beta)
+  gbmr4 k=16  E=0.22  24 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q DLRTRISRCVVCMRSFQDQVVSRV
+     |                    | 
+  T SLKEDRTTLLYFYQQLRNDYMQRY
+
+FUN024764_COL4A6 1349-1386  vs  Q920P9 1271-1308 (Lymphocyte antigen 75)
+  gbmr4 k=16  E=0.22  38 aa  identity 3% (chance 5%)  alphabets with a region: 1
+  Q RMFNTMPFLYCTVNNVCNYASRNDKSFWLATTASIPMM
+                              |           
+  T KEVHSLCQKLHSKAQILSIRNEEENNFVVEQLLYFNYI
+
+FUN012674_COL3A1 39-82  vs  Q8K045 649-692 (Serine/threonine-protein kinase N3)
+  gbmr4 k=15  E=0.22  44 aa  identity 7% (chance 5%)  alphabets with a region: 1
+  Q ANGEVFRPNPCRVCACVNASLICDDIQCENVACENAFVPDGQCC
+                         |  |    |              
+  T QACFYLACVVLGLQFLHEKRIIYRDLKLDNLLLDAQGFLKIADF
+
+FUN022567_FUN022567 63-173  vs  Q5EA40 50-160 (Branched-chain-amino-acid aminotransferase, mitochondrial)
+  hp_lehninger2 k=20  E=0.22  111 aa  identity 11% (chance 5%)  alphabets with a region: 1
+  Q RIETAAVAIKSGYKHVAEEQFQHTMAEARDQLSNARSDSAEALDRLGKICLQVADWAKAITCFEYSYHMRRVIYGLETDH
+             |    |                                   ||     ||           |     |   
+  T DPSQPLLFGKTFTDHMLMVEWNQEKGWGQPRIQPFQNLTLHPACSALHYSLQLFEGMKAFKGGDQRVRLFRPWLNMERML
+  Q CKTLESLIYLGTSWAEYENLHRAIIVFEKAL
+       |             |   |   |     
+  T RSALRLCLPSFDKIELLECIRRLVEVDQDWV
+
+FUN009004_FUN009004 6-92  vs  Q9EQH2 838-924 (Endoplasmic reticulum aminopeptidase 1)
+  gbmr4 k=16  E=0.23  87 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q KQNLALAESRLITEKELQSTRWKSVGFSGKYATLVLAVSVLLCIGGMVFALNTVSKISYLEDRIARMEAALDLSARTENG
+                  |             |               |         |        |   |            
+  T AWKFLRENWNKLVQKFELGSSSIAHMVMGTTDQFSTRARLEEVKGFFSSLKENGSQLRCVQQTIETIEENIRWMDKNFDK
+  Q NGHIQTD
+           
+  T IRLWLQK
+
+FUN008085_TOP3A.1 419-618  vs  Q6NS46 1395-1594 (Protein RRP5 homolog)
+  hp_thomas_dill2 k=18  E=0.23  200 aa  identity 8% (chance 7%)  alphabets with a region: 1
+  Q WDREQVMCVCGCDEDVSNVLDIRFRAHTASSQPRSNTAPRGGGRPSRGRGSFPASNNRRGSGGGPGFLSRPNGRGGTKRT
+                        |    |       ||  |  |  |                |  |                
+  T VNPMKNLIELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQEL
+  Q FGGQKKKPSTSSSYGSGFSSEFSDRDSTNETPLCQCGTSAVERTVAKEGLNKGRQFYVCSKPRDSQCRFFEWADTPQSSS
+         ||        ||              |           |                                    
+  T VNKRPKKSGAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDE
+  Q TSYPANRGNRNSSRPASSNRGRRKPVTCGLCREEGHTRRS
+        |        |                          
+  T QPHQAKKKKGKKERELEKQKAEKELSRIEEALMDPGRQPE
+
+FUN022446_EIF5B 861-951  vs  Q9VHB0 680-770 (Protein Son)
+  polarity4 k=12  E=0.24  91 aa  identity 12% (chance 6%)  alphabets with a region: 1
+  Q GVFVQASTLGSLEALLEFLKTSKIPYAGIGIGPVHKKDIMKASVMLEHDSQLAVILAFDVKVEREAQELADHVGVKIFTA
+               |          |    | |     |                   |  |||         |        |
+  T MKAHELNSGPQLWVRKDQMTSTKPVTGGMGMALLQKMGWKPGEGLGRCKTGSLQPLLLDVKLDKRGLVSRDDLRPPQMRA
+  Q DIIYHLFDSFM
+               
+  T PAAQRRNKNMA
+
+FUN002272_COL2A1 1580-1614  vs  P36161 1116-1150 (Nucleoporin NUP133)
+  gbmr4 k=16  E=0.24  35 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q KFLRLLSIKAQQNFTYDCVDSVGWLDSEGRYDKAL
+                          |    |  |    
+  T EISQVETLNSDNSLEIKLHSTIGSVAKEKNYTINY
+
+FUN008497_FUN008497 17-50  vs  P97531 167-200 (Cdc42-interacting protein 4)
+  gbmr4 k=16  E=0.26  34 aa  identity 9% (chance 7%)  alphabets with a region: 1
+  Q SSLSIDRVRAQDWKTESKQSADKLSKKVEEFAEK
+             |         |          |   
+  T ADVEKAKQQAHLRNHMAEESKNEYAAQLQRFNRD
+
+FUN013386_ADGRL3.3 765-933  vs  P79457 398-566 (Histone demethylase UTY)
+  hp_thomas_dill2 k=20  E=0.27  169 aa  identity 6% (chance 7%)  alphabets with a region: 1
+  Q DFGTGKVPQRDQFGRVIQGEFPGTPKSDTRSFTRNTDDVINNNPTRASWARGQNSRSFRRSLDENFNTKRDSGIGLQRHP
+                    |             |                         |          |            
+  T NLPQSSLQNKTKLLPSIEEAWSLPIPAELTSRQGAMNTAQQSVSDTWNSVQTASHHSVQQKVYTQCFTAQKLQSFGKDQQ
+  Q SLSRRSMDNVLNFDSTRSGQPPRPGTIRSDHPHRLSLDSAPKQRISSSASYRMSPPKQSPNRPRFQPKPVFTPNRGNPKR
+              |   ||         |                                         |            
+  T PPFQTGSTRYLQAASTNDQNQNGNHTLPQNSKGDAQNHFLRIPTSEEQKIINFTKESKDSRSKSLTSKTSRKDRDTSNIC
+  Q KSLSSDSDD
+          |  
+  T VNAKKHSNH
+
+FUN009004_FUN009004 6-92  vs  Q9NZ08 849-935 (Endoplasmic reticulum aminopeptidase 1)
+  gbmr4 k=16  E=0.28  87 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q KQNLALAESRLITEKELQSTRWKSVGFSGKYATLVLAVSVLLCIGGMVFALNTVSKISYLEDRIARMEAALDLSARTENG
+                  |             |               |         |        |   |            
+  T AWQFLRKNWNKLVQKFELGSSSIAHMVMGTTNQFSTRTRLEEVKGFFSSLKENGSQLRCVQQTIETIEENIGWMDKNFDK
+  Q NGHIQTD
+           
+  T IRVWLQS
+
+FUN008497_FUN008497 23-58  vs  Q5DTW7 1174-1209 (Retroelement silencing factor 1)
+  gbmr4 k=15  E=0.29  36 aa  identity 6% (chance 9%)  alphabets with a region: 1
+  Q RVRAQDWKTESKQSADKLSKKVEEFAEKVLGVNNLQ
+                        |              |
+  T EIKKKKYEKQEQNKNAGDTLKLCSILTESNERASVQ
+
+FUN020011_FUN020011 157-251  vs  F1M3G7 834-928 (A-kinase anchor protein 13)
+  hp_lehninger_hpc3 k=18  E=0.3  95 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q TINCREGNQFARGGYPYPPYDRNPEYPYPPTEFQQGYASGRDRYGRYPRQYPGQTSQLPLAPLSQNQGPAQPVTRHPTTS
+    |    |         |               |                                      |      |  
+  T TPSAVELQTSMGNTSPVGVGEQEGSSLTATLEVLSDSLLQSVDKAALVSDSLLPEEGGSIVVPESSTALGQGGKDKATKC
+  Q PRPDLFQSSSRQMRR
+    |       ||   | 
+  T PSVKEDVHSSEMSRE
+
+FUN034520_CCKAR.1 243-343  vs  A7MB10 1393-1493 (Protein RRP5 homolog)
+  hp_thomas_dill2 k=20  E=0.31  101 aa  identity 9% (chance 6%)  alphabets with a region: 3
+  Q MSVAYGCICRKIYSGFDFKPKQETNDGTATPRFHRGGRSPIDSKENHTNNQNKNCQSENSASSHEQCGRSLLKPPDYDRP
+     |                        |  |    |        |                |           ||      
+  T LSLLPDATGKQDVLSAPLGQPPPKQEGRETEAVERNHEGKAKEKKKQKQKEKRTGKGQEGAQPPSKDKKEPQKPQAKKLG
+  Q QSRSDEQPRKTKNTDHDDERL
+         |               
+  T KRPHPESSSEQEIGNKKQKKA
+
+FUN028328_FUN028328 487-672  vs  Q6NS46 1396-1581 (Protein RRP5 homolog)
+  hp_thomas_dill_no_c2 k=22  E=0.31  186 aa  identity 2% (chance 7%)  alphabets with a region: 1
+  Q SHYTHEYTYESDGSGDELDKKIKHVEKKIDKLAVKKYSSSSSSSSSSSSSSSSSDSDSDDDCYKHSRDMRDAGTNTDYNF
+                 |                                                       |          
+  T NPMKNLIELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQELV
+  Q KTLQSRKSFLRKKRKERPEWVKYWPQTPQPRHHHKYPGRREQGSMYAYDYQPPHAAIDEYNYTRAVDIADCKRMKTMMRI
+                                                                                    
+  T NKRPKKSGAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDEQ
+  Q RSDIERQHRHEQQVQNTINAKSRISQ
+                       |    | 
+  T PHQAKKKKGKKERELEKQKAEKELSR
+
+FUN032496_FUN032496 16-113  vs  Q4PA25 354-451 (2-(3-amino-3-carboxypropyl)histidine synthase subunit 1)
+  hp_pbotc_1st_ed2 k=18  E=0.32  98 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q VLIREDITTDEFPKKILQDEQLKKMKEDVQSIFQNGPRSYNITFKNEWDENTRRLFLNKSKGKIQASGLQAICKLPRNTT
+       | |  |  |            |        |                          |    |||            
+  T PAFRYDPYTKRFVRELYDHAEMRRMRGEAVRLAQDSVGGLDLDPETSIVKKNKAVVVDAEKDRVTASGWGVLLGTLGRQG
+  Q EVVCLRAVPTEIDDEIVA
+        |             
+  T SLRVLESLSASLSEHVPP
+
+FUN014852_VASN 693-894  vs  Q6NS46 1378-1579 (Protein RRP5 homolog)
+  hp_kyte_doolittle2 k=27  E=0.33  202 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q NHNDVELATVVHHHHHNHYNAGSLEENKPFSKSSENSPSSTISGSNASSSHKSKASPSKTNNNHSKSSRSSSRSSGVSQP
+              |            | |                            |             |        || 
+  T YNGCLPEGKLVTAKVLRVNPMKNLIELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQR
+  Q DTRQSSIQPYVPSSQNHIQKYDQQNAIPSGYGGYRGHESQPEPKRQPHRQLSQRPQSQHPTDTQPLFTGNNTYYGANDSH
+      |         | |    |                              |  |      |    |              
+  T GGRGKRERQESESEQELVNKRPKKSGAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDS
+  Q LYPMMNAAPSYNLPSSFAQTSHSIFQPIQSPNVLGTSPGDSA
+    | |                                       
+  T LTPALPLREESSDSEDEQPHQAKKKKGKKERELEKQKAEKEL
+
+FUN008497_FUN008497 21-48  vs  Q6DE55 173-200 (Rho GTPase-activating protein 45)
+  gbmr4 k=15  E=0.33  28 aa  identity 18% (chance 8%)  alphabets with a region: 1
+  Q IDRVRAQDWKTESKQSADKLSKKVEEFA
+    |  |                 |  |  |
+  T ISKVKGFHYESSIENDKRDFEKALESMA
+
+FUN020908_TAF13 48-101  vs  F8VPU6 1455-1508 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  hsdm17 k=6  E=0.34  54 aa  identity 28% (chance 6%)  alphabets with a region: 1
+  Q TESAELIEELVIDFITDLSHRALQIGRPGRVQVEDIVYLIQKDARKYARMRDLL
+    |  | |  ||   ||   |   ||  | |              |   |    | 
+  T TGGANLVKELIDYFIFPASKAYLQYMRSGELPIKQAIPVCGSPATINAGFELLV
+
+FUN020557_FUN020557 2374-2494  vs  O18735 1037-1157 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=17  E=0.35  121 aa  identity 5% (chance 6%)  alphabets with a region: 1
+  Q IDLASSSSVLSTQACQDRDGDFISMPISDQSTIFEDLPPGNSYFLEVIRDDTAEVLFEESNSTGEVSPPNPSQMHASNSS
+                       |                             |                  | | |       
+  T GAGGTAHRRHRSSSTRNGGGELTLGLEPSEEEPPKSPLAPSEGAGSDVFDGDLGMGAAKGLQSLPSQDPSPLQRYSEDPT
+  Q IGIRWNKEYTGIAFSIAFSGTEYNISQEYNTTGTSYNVTGL
+                           |                 
+  T VPLPPETDGKVAPLTCSPQPEYVNQPEVWPQPPLALEGPLP
+
+FUN009297_APLNRB 347-509  vs  Q9HB58 168-330 (Sp110 nuclear body protein)
+  hp_thomas_dill2 k=20  E=0.35  163 aa  identity 11% (chance 7%)  alphabets with a region: 1
+  Q GMLPRSNSRISRSDDPQGLMATFETSESKAQKYNTRASTSSKYHMIDRKDHRSIKYAGSGAWNMNLQSEEPRQIRRNRGT
+      |  | |          |            |                        |           | |         
+  T EILSESPSPSDPVLPLPALIQEGRSTSVTNDKLTSKMNAEEDSEEMPSLLTSTVQVASDNLIPQIRDKEDPQEMPHSPLG
+  Q VVSKLEFASHVSPPSGQRSSLSSTDGTRRQRRNSTCLDDGPDANIRDQPSANFDNVPREDINGNDTDPGQSLLHGNEGEY
+            |            |||           |    |                |  |        |          
+  T SMPEIRDNSPEPNDPEEPQEVSSTPSDKKGKKRKRCIWSTPKRRHKKKSLPGGTASSRHGIQKKLKRVDQVPQKKDDSTC
+  Q KSS
+     | 
+  T NST
+
+FUN005522_FUN005522 68-172  vs  Q9QX47 694-798 (Protein SON)
+  hp_thomas_dill2 k=20  E=0.36  105 aa  identity 1% (chance 5%)  alphabets with a region: 1
+  Q STYSLDPPTAWMRVRSRHPRIRYPPTAWMRSRYPPIAWMRSRYPPTAWMRSRYPPTAWMRVRYPPTAWMRIRYPPTAWMR
+                                                                                    
+  T TSVTVGVDPLMAQESHMLASNTMETHMLASNTMDSQMLASNTMDSQMLASNTMDSQMLASSTMDSQMLASSTMDSQMLAT
+  Q VRYPPTAWMRIRYPPTAWMRSRYPP
+                        |    
+  T STMDSQMLATSSMDSQMLATSSMDS
+
+FUN000773_PHTF2 118-331  vs  Q9HB58 128-341 (Sp110 nuclear body protein)
+  hp_pbotc_1st_ed2 k=17  E=0.38  214 aa  identity 9% (chance 7%)  alphabets with a region: 1
+  Q AGEKEFENVSLVEIISPCAVMLLVGSIHCHVVSTNFKLNSRPDSRRAKKKRTLSSALLEPVAGQSQHSTLNLVTSSLNKH
+    |               |                |         |                  | |   |    ||  |  
+  T AEGSSLHTPLALPPPQPPQPSCSPCAPRVSEPGTSSQQSDEILSESPSPSDPVLPLPALIQEGRSTSVTNDKLTSKMNAE
+  Q AKSTEDSTHPDENVPLLDCGECVSRDKLTPEKTPSDDFASTKHPVEEIKTKVHEKRPPANKKRKSSSSTTSSENDAFIGE
+      | |        |                                           |       |              
+  T EDSEEMPSLLTSTVQVASDNLIPQIRDKEDPQEMPHSPLGSMPEIRDNSPEPNDPEEPQEVSSTPSDKKGKKRKRCIWST
+  Q LNADSTSTDTNGKKRSRHDSLYEELNSTSSGCNSTTGSTESDASSSHESTGKGK
+               |   |        |            ||               
+  T PKRRHKKKSLPGGTASSRHGIQKKLKRVDQVPQKKDDSTCNSTVETRAQKARTE
+
+FUN001552_COL4A6 1609-1646  vs  Q920P9 1271-1308 (Lymphocyte antigen 75)
+  gbmr4 k=17  E=0.39  38 aa  identity 3% (chance 5%)  alphabets with a region: 1
+  Q RMFNTMPFLYCTVNNVCNYASRNDKSFWLATTASIPMM
+                              |           
+  T KEVHSLCQKLHSKAQILSIRNEEENNFVVEQLLYFNYI
+
+FUN003994_FUN003994 784-878  vs  Q92619 323-409 (Rho GTPase-activating protein 45)
+  hp_lehninger_hpc3 k=19  E=0.4  95 aa  chained across an insertion or deletion: Q 95 aa, T 87 aa, not aligned position by position  alphabets with a region: 1
+  Q ECTENLNVDIFAYIDKTEPQFWDDRIEFLRNLFQFMVSPSRGYTLRVKITPFGRTVDNNPNVLTTDYNSILDGLVGVTRR
+  T NCRQSVMQEPHMPLLSIYSLALEQDLEFGHSMVQAVGTLQTQTFMQPLTLRRLEHEKRRKEIKEAWHRAQRKLQEAESNL
+  Q ARQPSNSGETLEQVY
+  T RKAKQGY
+
+FUN013268_TM7SF2 48-209  vs  Q6NS46 1407-1568 (Protein RRP5 homolog)
+  hp_kyte_doolittle2 k=20  E=0.4  162 aa  identity 9% (chance 8%)  alphabets with a region: 1
+  Q IQFENISSEALFRPPKKSKSPARRRSRSRSPARSPGRARSQTKALPSRTPRTRTSPSRTTRRSTRSSASTSTSSTEEQPP
+                  |                       |   |  |    |                             
+  T LPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQELVNKRPKKSGAAE
+  Q PSPSRMTITKSQRFDKTDKESKEGYEKVTTRSYQAKITLEKVQDDGMSASSVNRDAISSKLAEAKQTIEKVKDSMKKQHK
+       |          |           | |         |           |                        ||  |
+  T EDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKKKGKK
+  Q YE
+      
+  T ER
+
+FUN001554_COL4A1 2-31  vs  O00507 1996-2025 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  gbmr4 k=15  E=0.41  30 aa  identity 10% (chance 5%)  alphabets with a region: 1
+  Q TLESLCKAWAISVTILAVLPASTEAKGMYY
+               |              | | 
+  T NVKFMHNRLQYSLEYFQFVKKLLTCNGVYL
+
+FUN041442_FUN041442 455-523  vs  Q8WUM0 570-638 (Nuclear pore complex protein Nup133)
+  polarity4 k=12  E=0.41  69 aa  identity 14% (chance 6%)  alphabets with a region: 1
+  Q EESLANDLKIIEQLDIEEKQFQDYASGVIAAAKERNCNTYPLVKAAQSGTGGGRGPNFVGKGGIRPSYP
+        | |    |    |   |                    |          ||   |   |       
+  T DDYPASDPRWAESVPEEAPGFSNTSLIILHQLEDKMKAHSFLMDFIHQVGLFGRLGSFPVRGTPMATRL
+
+FUN040809_FUN040809 711-867  vs  P19971 95-251 (Thymidine phosphorylase)
+  hp_lehninger_hpc3 k=17  E=0.42  157 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q ALTACVRNKILRIFVIKENEYDTFSATIPQITEATHLCIVFSNTNANLRVYINGVDMLQRFSTTAVIPSGGVFIIGQDQD
+                                                                      ||   |        
+  T LAQSGQQLEWPEAWRQQLVDKHSTGGVGDKVSLVLAPALAACGCKVPMISGRGLGHTGGTLDKLESIPGFNVIQSPEQMQ
+  Q GDIIDSSPGIPFHSSDGFYGKMWGFLIWDTDFTENEIIDMYRSRCSCKDGTVLNFDSTNSLIKGSIAANWEDGCDTA
+             |   |              |   |         |  | |    |          |             
+  T VLLDQAGCCIVGQSEQLVPADGILYAARDVTATVDSLPLITASILSKKLVEGLSALVVDVKFGGAAVFPNQEQAREL
+
+FUN008497_FUN008497 20-50  vs  O14604 9-39 (Thymosin beta-4, Y-chromosomal)
+  gbmr4 k=16  E=0.43  31 aa  identity 23% (chance 10%)  alphabets with a region: 1
+  Q SIDRVRAQDWKTESKQSADKLSKKVEEFAEK
+     |        |    |    || |     | 
+  T EIEKFDKSKLKKTETQEKNPLSSKETIEQER
+
+FUN030567_FUN030567 36-174  vs  O18735 1065-1203 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=17  E=0.43  139 aa  identity 10% (chance 5%)  alphabets with a region: 1
+  Q KDTEGGGKLFPQQDYTGRETASYRQELRGVKSKLRAISERVEFLERANQNMTEDLVSLRRASDRNNECRSNVHCGSHQQC
+       |            |             |      |     | |     |  |            |            
+  T SEEEPPKSPLAPSEGAGSDVFDGDLGMGAAKGLQSLPSQDPSPLQRYSEDPTVPLPPETDGKVAPLTCSPQPEYVNQPEV
+  Q HSRQCVCMRGYINIAGACVAGCSTNDDCSRNEICRSRRCECKDGHMLVNGACKELNYLL
+             |         |        |            ||                
+  T WPQPPLALEGPLPPSRPAGATLERPKTLSPKTLSPGKNGVVKDVFAFGSAVENPEYLAP
+
+FUN043500_FUN043500 4-41  vs  Q5DTW7 542-579 (Retroelement silencing factor 1)
+  hp_lehninger_hpc3 k=18  E=0.44  38 aa  identity 11% (chance 7%)  alphabets with a region: 1
+  Q VLSACVAIRTWCLGRVRPVLIPDHRIWSVFGHHVWGVF
+          |            |        |       | 
+  T GTELQIAVVSPLVLSDTNTLPGKDSVPEVLPETLYPVV
+
+FUN034179_TM7SF2 48-209  vs  Q6NS46 1407-1568 (Protein RRP5 homolog)
+  hp_kyte_doolittle2 k=20  E=0.44  162 aa  identity 9% (chance 8%)  alphabets with a region: 1
+  Q IQLENISSEALFRPPKKSKSPARRRSRSRSPARSPGRARSQTKALPSRTPRTRTSPSRTTRRSTRSSASTSTSSTEEQPP
+                  |                       |   |  |    |                             
+  T LPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQELVNKRPKKSGAAE
+  Q PSPSRMTITKSQRFDKTDKESKEGYEKVTTRSYQAKITLEKVQDDGMSASSVNRDAISSKLAEAKQTIEKVKDSMKKQHK
+       |          |           | |         |           |                        ||  |
+  T EDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKKKGKK
+  Q YE
+      
+  T ER
+
+FUN024956_FUN024956.1 3531-3604  vs  Q95JC7 131-204 (Neutral amino acid transporter B(0))
+  hp_lehninger_hpc3 k=17  E=0.45  74 aa  identity 11% (chance 7%)  alphabets with a region: 1
+  Q IVTSLCLATTMGLSWIFGYVMLVSEDQTFLTAMSWLFALTNSFQGVFTFYITAIRTGEFRKVYDPVIRRFSTVS
+          | ||   |       |         |                                 |   |    
+  T WALLFFLVTTLLASALGVGLALALQPGAAFAAINTSVGAPVEEAPSKEVLDSFLDLVRNIFPSNLVSAAFRSYT
+
+FUN013456_col6a6 1401-1449  vs  P42557 243-291 (Reduced folate transporter)
+  wwmj5 k=9  E=0.45  49 aa  identity 16% (chance 6%)  alphabets with a region: 1
+  Q STNPSSTSADLVPPRNFSIIRLQRGSYRLQWMHPRIRHTGYFIRFWWIT
+        |     ||         |     ||          ||        
+  T RVLGSCRNSFLVCMLSELVGNLRQPQLRLWCLWWVFNSAGYYLIVYYVH
+
+FUN040715_FUN040715.2 144-183  vs  Q6R2V0 543-582 (Serine/threonine-protein kinase WNK1)
+  gbmr4 k=17  E=0.46  40 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q INMTLIEQNMDRKMKEALQMITSSSCDGAKLESAFARDHS
+             |    |     |                   
+  T YVCEGDHKTMAKAIKDRVSLIKRKREQRQLVREEQEKRKQ
+
+FUN016676_FUN016676 71-102  vs  Q6FTG1 315-346 (2-(3-amino-3-carboxypropyl)histidine synthase subunit 1)
+  wass14 k=6  E=0.47  32 aa  identity 38% (chance 7%)  alphabets with a region: 1
+  Q DLEKLKEQHYDDYVENLERKVLKQRKNIAKSD
+     |  |  |   | | ||| |  |  |   |  
+  T ILGALGRQGNVDTVRNLEEKLIKAGKTVVKII
+
+FUN012366_FUN012366 452-770  vs  Q6NS46 1283-1601 (Protein RRP5 homolog)
+  hp_thomas_dill_no_c2 k=22  E=0.47  319 aa  identity 9% (chance 7%)  alphabets with a region: 2
+  Q LQQVKSNERFQRFKTRIRESPYFFGGKNEAETMEEGRYAMGNTNVGWSELICERLLQCVTVLLCPFTYIYHYTRDCYGAW
+    |                                |                    ||        |   |        |  
+  T LEDFCPQKIVRCYILSTAHRVLALSLRSSRTNRETKNRIEDPEINSIEDVKEGQLLRGYVKCVLPSSVIIGLGPSVLGLA
+  Q RRGKDAERLDKKNANLREFMPSRGPLTSTSSSDDSSSDEVNVYRKESERKGKNVSFSLGHNRTNENRTKAKSSKEGKSTG
+          |             |     |                   |      |          |    |      |   
+  T KYSHVSECVPPEKELYNGCLPEGKLVTAKVLRVNPMKNLIELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKN
+  Q DKTATGQQKKARERVTPKTDISGRFNSAHPIKIFRDSGQGSSCGGNSERVIYPSCGTSASVRDQSGSDLNRRESQNSEQF
+     |                                               |          |                   
+  T QKRREEKEEPQKSQRGGRGKRERQESESEQELVNKRPKKSGAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPR
+  Q EHPPCAVPMRPCTTTNTRNSREPPSDVHCLPPLPNQRYNRRGLHIESRPGGKIPPPTRSESRSLERPALPPHLAPRMSR
+     |              |                | |     |         |           |  |   |  |    |
+  T LHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKKKGKKERELEKQKAEKELSRIEEALMDPGRQPESADDFDR
+
+FUN011537_FUN011537 117-139  vs  P41440 469-491 (Reduced folate transporter)
+  gbmr4 k=20  E=0.48  23 aa  identity 22% (chance 8%)  alphabets with a region: 1
+  Q DTGYAEEKDEKRDSDLAVARDDY
+      |      ||    | |     
+  T AQGLRSAAEEKAAQALSVQDKGL
+
+FUN013451_FUN013451.1 907-1100  vs  Q6NS46 1408-1601 (Protein RRP5 homolog)
+  hp_thomas_dill2 k=20  E=0.48  194 aa  identity 7% (chance 8%)  alphabets with a region: 1
+  Q NHARPRTQMDNTSDDRSDRKPRVADRTDTSRSDRVPPKRDTGHSRSQDGGSRHRSDRRRSRSSERRSSRSSRDEDDRRRR
+         |                        |       |                  |    ||                
+  T PSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQELVNKRPKKSGAAEE
+  Q RRTPPRRHTDKRSDREPARDIDDFGRDPKQRKYTKAREEKPAGPDENARKTSPGEKLPQADRAGSGSREKPYSREGRRTP
+                 |          |   |               |       |   |                       
+  T DDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKKKGKKE
+  Q EKNMPHSSRPSEKRDSVDVAKKPASNSGIRPERD
+                 |                    
+  T RELEKQKAEKELSRIEEALMDPGRQPESADDFDR
+
+FUN019809_FUN019809 92-122  vs  Q14690 1260-1290 (Protein RRP5 homolog)
+  gbmr4 k=16  E=0.48  31 aa  identity 13% (chance 5%)  alphabets with a region: 1
+  Q VLLMNQQFRQNPVNTVCPHCSQNIITATTSE
+       |       |     |          |  
+  T IFHMSDSYSETPLEDFVPQKVVRCYILSTAD
+
+FUN032908_FUN032908 92-122  vs  Q14690 1260-1290 (Protein RRP5 homolog)
+  gbmr4 k=16  E=0.48  31 aa  identity 13% (chance 5%)  alphabets with a region: 1
+  Q VLLMNQQFRQNPVNTVCPHCSQNIITATTSE
+       |       |     |          |  
+  T IFHMSDSYSETPLEDFVPQKVVRCYILSTAD
+
+FUN011537_FUN011537 105-141  vs  Q91VE2 358-394 (P2X purinoceptor 5)
+  gbmr4 k=15  E=0.48  37 aa  identity 14% (chance 7%)  alphabets with a region: 1
+  Q MPIIQRAPSCYGDTGYAEEKDEKRDSDLAVARDDYNE
+         |    | |         |      |       
+  T LIYLIRKSEFYRDKKFEKVRGQKEEDNVEVEANEMEQ
+
+FUN005522_FUN005522 68-172  vs  P18583 699-803 (Protein SON)
+  hp_thomas_dill2 k=20  E=0.48  105 aa  identity 1% (chance 5%)  alphabets with a region: 1
+  Q STYSLDPPTAWMRVRSRHPRIRYPPTAWMRSRYPPIAWMRSRYPPTAWMRSRYPPTAWMRVRYPPTAWMRIRYPPTAWMR
+                                                                                    
+  T TSVTVGVDPLMAPESHILASNTMETHILASNTMDSQMLASNTMDSQMLASNTMDSQMLASSTMDSQMLATSSMDSQMLAT
+  Q VRYPPTAWMRIRYPPTAWMRSRYPP
+                        |    
+  T SSMDSQMLATSTMDSQMLATSSMDS
+
+FUN032433_FUN032433 118-158  vs  Q7SY48 1574-1614 (HEAT repeat-containing protein 1)
+  protein20 k=5  E=0.49  41 aa  identity 41% (chance 7%)  alphabets with a region: 1
+  Q AVRMRTCSLKKVKTLDKVIASLKKNTLISDMCGEVMSQKFS
+    |   |    |   ||||| | |   | |  | | |  |  |
+  T AKFWRALLSKSYDTLDKVNALLPMDTFITVMRGLVGNQLAS
+
+FUN008574_FUN008574 455-523  vs  Q8WUM0 570-638 (Nuclear pore complex protein Nup133)
+  polarity4 k=12  E=0.49  69 aa  identity 14% (chance 6%)  alphabets with a region: 1
+  Q EESLANDLKIIEQLDIEEKQFQDYASGVIAAAKERNCNTYPLVKAAQSGTGGGRGPNFVGKGGIRPSYP
+        | |    |    |   |                    |          ||   |   |       
+  T DDYPASDPRWAESVPEEAPGFSNTSLIILHQLEDKMKAHSFLMDFIHQVGLFGRLGSFPVRGTPMATRL
+
+FUN042130_FUN042130 40-113  vs  O19105 452-525 (Neutral amino acid transporter B(0))
+  hp_lehninger_hpc3 k=18  E=0.5  74 aa  identity 5% (chance 6%)  alphabets with a region: 1
+  Q STSKNVSNIQEPEILEDETATDYAKRIKQFYKDQFEKETKKKFEDLEIQEYEKKLINRKKELLKKDPNYGTYET
+    |                                     |       |                    |      
+  T SEISLILAVDWLVDRSCTIINVEGDAFGAGLLQHYVDRTEQRGSEPELTQVKSEVPLGSLPAPNEEGNPLLRHS
+
+FUN009565_FUN009565 105-170  vs  O60449 5-70 (Lymphocyte antigen 75)
+  hp_lehninger_hpc3 k=18  E=0.51  66 aa  identity 14% (chance 6%)  alphabets with a region: 1
+  Q GASARSLSTTLPLPPTTRRTTTVKLRPIEIGYSFVQGKEITCPKGIAFVVCPSNPCNVPCDMYPGA
+     |  |     | |            |        | |    | |                      
+  T WATPRRPAGLLMLLFWFFDLAEPSGRAANDPFTIVHGNTGKCIKPVYGWIVADDCDETEDKLWKWV
+
+FUN040715_FUN040715.2 144-183  vs  Q9H4A3 545-584 (Serine/threonine-protein kinase WNK1)
+  gbmr4 k=17  E=0.52  40 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q INMTLIEQNMDRKMKEALQMITSSSCDGAKLESAFARDHS
+             |    |     |                   
+  T YVCEGDHKTMAKAIKDRVSLIKRKREQRQLVREEQEKKKQ
+
+FUN012676_FUN012676 326-356  vs  F4IGA5 1193-1223 (Nuclear pore complex protein NUP133)
+  gbmr4 k=15  E=0.52  31 aa  identity 3% (chance 6%)  alphabets with a region: 1
+  Q RDGSPGSKVSANSYINRSTQVIHRNIYRATA
+                     |             
+  T SEEETLQNLRNTALFQASKRCYGPTRVNTFD
+
+FUN002294_PROBABLE.2 614-757  vs  F1M3G7 1357-1500 (A-kinase anchor protein 13)
+  hp_thomas_dill2 k=18  E=0.52  144 aa  identity 10% (chance 7%)  alphabets with a region: 1
+  Q AQKALRVAHEMESMSSGSKDNLLRNSAKDKSVSVWDHRRNEIRKQNRTMHKIGNDFGDESFGEDSDDDVYVPGQRGGKSG
+           |    |  |                        |        |          |                 | 
+  T IEPCPEAASLLASKQSSECRSFIDVGLGTECATKEGVLQRESGSDSDLFHSPSDEMDSIIFSKPEEEQLLCDTTGSSSST
+  Q KYSETVPSPSKDRSNLLNSTTGTSSPPPNHCQRNYEILERMRKKPPGSKKARDKSSPLVEDAAN
+             |   |      |       ||   |                    |    |    
+  T DDTASLDRHSSHGSDVSLPQTSKLNRSRNHQSSNGFFSHGVDPESREGESEPAGSGEMEEEEMD
+
+FUN007587_FUN007587 1458-1606  vs  Q62240 769-917 (Lysine-specific demethylase 5D)
+  hp_lehninger2 k=20  E=0.52  149 aa  identity 11% (chance 5%)  alphabets with a region: 1
+  Q VKHFAMKSRGSRKATAKPSRSPAQIQPIKRTPRTTRIPNTRFVRGTRKTITSKKPTPCRPPSSWRCRQRATRKPAVTTKT
+        | |            ||           |  | ||        |  |                      |  |   
+  T FDNWANKVQAALEVEDGRKRSFEELRALESEARDRRFPNSELLQRLKKCLTEAEACISQVLGLISNSEDRLQTPQITLTE
+  Q PCRPPNSWRCRQRTTRKPATAKTPCKPPNSWRCRQQRANRKPTVPTKPACTPRNSWKCRRRAAVSPTKA
+                 |       |       |       |                     |         
+  T LQLLLKQMGTLPCTMHQIDEVKDVLQQVESYQIETREALTSLPYSLEILQSLMEKGQQLRVEVPEAHQL
+
+FUN040715_FUN040715.2 144-183  vs  P83741 545-584 (Serine/threonine-protein kinase WNK1)
+  gbmr4 k=17  E=0.53  40 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q INMTLIEQNMDRKMKEALQMITSSSCDGAKLESAFARDHS
+             |    |     |                   
+  T YVCEGDHKTMAKAIKDRVSLIKRKREQRQLVREEQEKRKQ
+
+FUN015230_DHX38 2-277  vs  Q6NS46 1323-1598 (Protein RRP5 homolog)
+  hp_kyte_doolittle2 k=27  E=0.54  276 aa  identity 9% (chance 7%)  alphabets with a region: 1
+  Q EEDDEGIHRLEGIDNTGKTFGLILKKDKHASGEQHVFKKPSLLGLEKLAKEKREEQKEKANAHRDRNYRPARVETPSYTG
+          |                |           |                 |                 ||       
+  T DPEINSIEDVKEGQLLRGYVKCVLPSSVIIGLGPSVLGLAKYSHVSECVPPEKELYNGCLPEGKLVTAKVLRVNPMKNLI
+  Q GVSDSYKERARKREEKHKRDRINVSNDKKRDRDDGHRSSRRESERRDQRYDKTPTRTDRRGIATPSRSGWEEDDSAYGSY
+      |       |                                        |             | |  |         
+  T ELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQELVNKRPKKS
+  Q RSKRSWESPSPAPSRHDKSERSFRPSSSRRPRGTPLPTPVHKYNSWADDRKRLSETPTPSGNRRNVKDKDWEDMEKQADR
+           |      |    |        |         |     |       |         |    |   |        
+  T GAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKK
+  Q DWYMMDEGYDEQNNPFASASEEYVQKREQHMKTQRR
+          |          |  ||              
+  T KGKKERELEKQKAEKELSRIEEALMDPGRQPESADD
+
+FUN002471_FUN002471 9-66  vs  P19971 73-130 (Thymidine phosphorylase)
+  hp_lehninger_hpc3 k=27  E=0.56  58 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q AEPEIGEWRPLEFRNHSYLRRVAGDEMSEWSPEKCDREGEKFRARNLQLCHRFEGFLG
+    |       |       | |                 |                   | 
+  T AMLMAIRLRGMDLEETSVLTQALAQSGQQLEWPEAWRQQLVDKHSTGGVGDKVSLVLA
+
+FUN028728_TNPO3 241-384  vs  F8VPU6 1556-1699 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  hp_lehninger2 k=20  E=0.58  144 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q TLLPPLIMTLANTYKSAPHSCFLYLGSVLVDVYGADRAASELLLQMLESVCPRSFELLNGQDGLVNNPDTVDDLFRLCTR
+         |    |  |            |        |   |             |       |     |    |   |   
+  T KGFVGLKNAGATCYMNSVIQQLYMIPSIRNSILAIDSIWSDTDDDIFKGEKQDSENNVDPRDDVFRYPHQFEDKPTLSKV
+  Q LVEQCASQFLHHKVCPLLLECALVSICLEHRDANMSVTKFLKNLIELNDQNSAASILSTYGEKI
+                         |                        |  |  |           
+  T EDRKEYNIAVLKHLQITFGHLAASQLQYYVPKGFWQQFRLWGEPVNLREQHDALEFFNSLVDSL
+
+FUN011363_FUN011363 363-456  vs  P70424 639-732 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=28  E=0.58  94 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q DTSDADWRKQSGLLAALLPSILFLILIAILAAAIFWWWRKKKKSNSNKVNNIDVTPSKDTNVKQDLITQDNKKNAEKMKQ
+    |                        |  |    |                                    |       | 
+  T DERGCPAEQRASPVTFIIATVVGVLLFLIIVVVIGILIKRRRQKIRKYTMRRLLQETELVEPLTPSGAVPNQAQMRILKE
+  Q KRNKAKKPEKEDIV
+          |       
+  T TELRKLKVLGSGAF
+
+FUN011537_FUN011537 105-141  vs  P51578 358-394 (P2X purinoceptor 5)
+  gbmr4 k=15  E=0.59  37 aa  identity 16% (chance 7%)  alphabets with a region: 1
+  Q MPIIQRAPSCYGDTGYAEEKDEKRDSDLAVARDDYNE
+         |    | |         | |    |       
+  T LIYLIRKSEFYRDKKFEKVRGQKEDANVEVEANEMEQ
+
+FUN011363_FUN011363 363-456  vs  P06494 640-733 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=28  E=0.61  94 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q DTSDADWRKQSGLLAALLPSILFLILIAILAAAIFWWWRKKKKSNSNKVNNIDVTPSKDTNVKQDLITQDNKKNAEKMKQ
+    |                        |  ||                                        |       | 
+  T DERGCPAEQRASPVTFIIATVVGVLLFLILVVVVGILIKRRRQKIRKYTMRRLLQETELVEPLTPSGAMPNQAQMRILKE
+  Q KRNKAKKPEKEDIV
+          |       
+  T TELRKVKVLGSGAF
+
+FUN006870_FUN006870 331-346  vs  Q9M439 24-39 (Branched-chain-amino-acid aminotransferase 2, chloroplastic)
+  gbmr4 k=15  E=0.62  16 aa  identity 6% (chance 8%)  alphabets with a region: 1
+  Q KEMEEFARRQKSEMSQ
+               |    
+  T QTFAKYNAQAASALRE
+
+FUN023346_SEMA4E 709-839  vs  Q6NS46 1392-1522 (Protein RRP5 homolog)
+  hp_thomas_dill2 k=20  E=0.62  131 aa  identity 13% (chance 7%)  alphabets with a region: 1
+  Q ALGASMLTIVVLVALLLQKSQRNCALHRNSESGQHIPDTPDNTHRPRKHRPNTPRSNRPQPKTSNSKPHRQMSSQSETSR
+     |            ||     |        |  |            ||      |     |  |          |   | 
+  T VLRVNPMKNLIELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESE
+  Q SKQFQSKTHRQKSSRSKTSRSKAHESEATQQMTPEYETPQPEKSQSETSSH
+                      |       |           |      |     
+  T QELVNKRPKKSGAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPR
+
+FUN002471_FUN002471 3-66  vs  Q99N42 53-116 (Thymidine phosphorylase)
+  hp_lehninger_hpc3 k=27  E=0.63  64 aa  identity 9% (chance 5%)  alphabets with a region: 1
+  Q KNDFKEAEPEIGEWRPLEFRNHSYLRRVAGDEMSEWSPEKCDREGEKFRARNLQLCHRFEGFLG
+          |               | | |            |                      | 
+  T QDTQIGAMLMAIRLQGMNLEETSVLTRALAESGQQLEWPKAWHQQLVDKHSTGGVGDKVSLVLA
+
+FUN031239_MBL2 96-229  vs  Q14289 332-465 (Protein-tyrosine kinase 2-beta)
+  hp_thomas_dill2 k=20  E=0.64  134 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q DVSQGKFVWIGGSDLFGEGGYEWNDGEDLEWANWHSGQPDDHQDNEDCMHTNFGAKGKWNDRPCEDTSGYVCQIPGTEAS
+                      |                                |  |        |   |     ||     
+  T SIKTSSLAEAENMADLIDGYCRLQGEHQGSLIIHPRKDGEKRNSLPQIPMLNLEARRSHLSESCSIESDIYAEIPDETLR
+  Q PGENRELTVYAGQYATSYFHAKRFCQNRRSRLALLQNDDRLENLVTEFDGSMEY
+                           |                    |         
+  T RPGGPQYGIAREDVVLNRILGEGFFGEVYEGVYTNHKGEKINVAVKTCKKDCTL
+
+FUN002471_FUN002471 3-66  vs  Q5FVR2 60-123 (Thymidine phosphorylase)
+  hp_lehninger_hpc3 k=27  E=0.64  64 aa  identity 8% (chance 5%)  alphabets with a region: 1
+  Q KNDFKEAEPEIGEWRPLEFRNHSYLRRVAGDEMSEWSPEKCDREGEKFRARNLQLCHRFEGFLG
+          |               | |              |                      | 
+  T QDTQIGAMLMAIRLQGMDLEETSVLTQALAESGQQLEWPKAWHQQLVDKHSTGGVGDKVSLVLA
+
+FUN029616_FUN029616 16-111  vs  Q4PA25 354-449 (2-(3-amino-3-carboxypropyl)histidine synthase subunit 1)
+  hp_pbotc_1st_ed2 k=18  E=0.64  96 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q VLIREDITTDEFLKKILQDEQLKEMKEDVQSIFQNGPRSYNITFKNEWDENTRRLFLNKSKGKIQASGLQAICKLPRNTT
+       | |  |  |            |        |                          |    |||            
+  T PAFRYDPYTKRFVRELYDHAEMRRMRGEAVRLAQDSVGGLDLDPETSIVKKNKAVVVDAEKDRVTASGWGVLLGTLGRQG
+  Q EVVCLRAVPTEIDDEI
+        |           
+  T SLRVLESLSASLSEHV
+
+FUN015159_FUN015159.1 264-478  vs  Q6NS46 1363-1577 (Protein RRP5 homolog)
+  hp_thomas_dill2 k=20  E=0.65  215 aa  identity 7% (chance 7%)  alphabets with a region: 1
+  Q DVPNNTGYAKYHQITATQILATNNAGDLSLTKAGGVDVIIAPTKVKDSTNKKTSSEESEIKSKYVNADSVKSETEGRKST
+                       |                   |        |                               
+  T KYSHVSECVPPEKELYNGCLPEGKLVTAKVLRVNPMKNLIELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKN
+  Q NRQQSEHESRRSNLSKKMMNRKSDKMPTDEENRNSSPSYDERSENDRTAPGQFQSLPHMRKDHDTSQKNDTKPSRFSAGK
+         | |            |         |  |  |      | |                                  
+  T QKRREEKEEPQKSQRGGRGKRERQESESEQELVNKRPKKSGAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPR
+  Q AGKTDVANQSGELQNSGDAFSGWEHTQDTKSASLTPRRTKANGDNKSTPSKPKRP
+                |     |    |   |           |               
+  T LHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKKKGKKERELEKQKAEK
+
+FUN041016_NHL1 66-168  vs  Q6NS46 1519-1621 (Protein RRP5 homolog)
+  hp_lehninger_hpc3 k=25  E=0.67  103 aa  identity 2% (chance 6%)  alphabets with a region: 1
+  Q NLTIVKFLDLPTQQRPPRQQCKGCKVGDSDVSKCNHCDESLCRSCIASHTRGLQQDLHHSLTQARRLVPKIAESVSDLRE
+                                                          |     |                   
+  T EVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKKKGKKERELEKQKAEKELSRIEEALMDPGRQPESADD
+  Q RTKKCQENGRHMKRAISQVGLSW
+                           
+  T FDRLVLSSPNSSILWLQYMAFHL
+
+FUN027887_CCNB1IP1 33-140  vs  Q49GP5 151-258 (Phosphatidylinositol 4-kinase type 2-beta)
+  hp_lehninger_c_nonpolar2 k=26  E=0.68  108 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q EDGKAIIENGRICPACSMSLNKKHGIISFEPNPDKAYRSMILLGQRPDIVMDICQKAISGWMYQYSNELQYRELMLQRSE
+      |                           |   |                   |   |                     
+  T SSGSYFVKDPKGKIIGVFKPKSEEPYGHLNPKWTKYFHKVCCPCCFGRGCLIPNQGYLSEAAASLVDQKLGLWIVPKTKV
+  Q RKIADLKQFCEQLETEWQKANKAMKSEL
+       |                 |      
+  T VHLASETFHYNAIDRAKSRGKKYALEKV
+
+FUN040715_FUN040715.2 144-183  vs  Q9JIH7 545-584 (Serine/threonine-protein kinase WNK1)
+  gbmr4 k=17  E=0.68  40 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q INMTLIEQNMDRKMKEALQMITSSSCDGAKLESAFARDHS
+             |    |     |                   
+  T YVCEGDHKTMAKAIKDRVSLIKRKREQRQLVREEQEKRKQ
+
+FUN000916_FUN000916 34-141  vs  Q49GP5 52-159 (Phosphatidylinositol 4-kinase type 2-beta)
+  hp_lehninger_c_nonpolar2 k=26  E=0.68  108 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q VGSSPRDTVTDDGVDGSCKSNKRRAGTLAVAAGRCRWRKYRDGMPANTVNEDVERGIPAGVNKDLHEKTGPESFRGCTCP
+          |                 |  |   ||    |                       |        ||        
+  T AAVRISDSTESVLTELEADGSGEEALLLPGPAGSLSPRAGKEKRTRRNMLSSSSDNLASPGNSSGEFNHFPEDPEFGEII
+  Q DNCKNPAHRCMAMTTADIERGMSAGKNK
+                          |     
+  T QRAEQAIENGVFPERISQGSSGSYFVKD
+
+FUN034265_FUN034265 34-141  vs  Q49GP5 52-159 (Phosphatidylinositol 4-kinase type 2-beta)
+  hp_lehninger_c_nonpolar2 k=26  E=0.68  108 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q VGSSPRDTVTDDGVDGSCKSNKRRAGTLAGAAGRCRWRKYRDGMPANTVNEDVERGIPAGVNKDLHEKTGPESFRGCTCP
+          |                 |  | | ||    |                       |        ||        
+  T AAVRISDSTESVLTELEADGSGEEALLLPGPAGSLSPRAGKEKRTRRNMLSSSSDNLASPGNSSGEFNHFPEDPEFGEII
+  Q DNCKNPAHRCMAMTTADIERGMSAGKNK
+                          |     
+  T QRAEQAIENGVFPERISQGSSGSYFVKD
+
+FUN022136_FUN022136 19-81  vs  Q9XBQ0 312-374 (Serine/threonine-protein kinase pkn3)
+  hp_lehninger_c_nonpolar2 k=26  E=0.7  63 aa  identity 10% (chance 7%)  alphabets with a region: 1
+  Q ALQFDPICIHQRCREPTVLFLPKRVHVDCDGDAGLLPEDLLAPTIEVVECDSTVENQPPHRDI
+                 |  |       |       |       |                  |   
+  T LPRKSAASPQSDVRDATLPGWGNEVTMEATVRALPGVLEPLPANADAMAATRETTDSLVHTQP
+
+FUN018331_FUN018331 2-33  vs  O19105 196-227 (Neutral amino acid transporter B(0))
+  gbmr4 k=15  E=0.7  32 aa  identity 6% (chance 7%)  alphabets with a region: 1
+  Q NDLKEKVADLEAQLSTENTRPQTGRPSESLRR
+    |                |              
+  T NLVSAAFRSYSTSYEEKNFNGTLVKVPVAHEE
+
+FUN034724_FUN034724 33-168  vs  O18735 1062-1197 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=17  E=0.7  136 aa  identity 10% (chance 5%)  alphabets with a region: 1
+  Q VCPKDTEEVGKLFPQQDSTARETASYRQELREVKSKLRAISERVEFLERINQNMTEDLISLRRASDRNNECRSNVHCGSN
+      |   |                          |      |     | |     |  |            |         
+  T LEPSEEEPPKSPLAPSEGAGSDVFDGDLGMGAAKGLQSLPSQDPSPLQRYSEDPTVPLPPETDGKVAPLTCSPQPEYVNQ
+  Q QQCHSRQCVCMRGYINIAGACVAGCSTNDDCSRNEICRSRRCECKDGHMLVNGACK
+                |         |        |            ||          
+  T PEVWPQPPLALEGPLPPSRPAGATLERPKTLSPKTLSPGKNGVVKDVFAFGSAVEN
+
+FUN033302_FUN033302 105-136  vs  Q6FTG1 315-346 (2-(3-amino-3-carboxypropyl)histidine synthase subunit 1)
+  wass14 k=6  E=0.71  32 aa  identity 38% (chance 7%)  alphabets with a region: 1
+  Q DLEKLKEQHYDDYVENLERKVLKQRKNIAKSD
+     |  |  |   | | ||| |  |  |   |  
+  T ILGALGRQGNVDTVRNLEEKLIKAGKTVVKII
+
+FUN013451_FUN013451.2 907-1100  vs  Q6NS46 1408-1601 (Protein RRP5 homolog)
+  hp_thomas_dill2 k=20  E=0.71  194 aa  identity 7% (chance 8%)  alphabets with a region: 1
+  Q NHARPRTQMDNTSDDRSDRKPRVADRTDTSRSDRVPPKRDTGHSRSQDGGSRHRSDRRRSRSSERRSSRSSRDEDDRRRR
+         |                        |       |                  |    ||                
+  T PSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQELVNKRPKKSGAAEE
+  Q RRTPPRRHTDKRSDREPARDIDDFGRDPKQRKYTKAREEKPAGPDENARKTSPGEKLPQADRAGSGSREKPYSREGRRTP
+                 |          |   |               |       |   |                       
+  T DDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKKKGKKE
+  Q EKNMPHSSRPSEKRDSVDVAKKPASNSGIRPERD
+                 |                    
+  T RELEKQKAEKELSRIEEALMDPGRQPESADDFDR
+
+FUN006870_FUN006870 319-353  vs  Q12802 2318-2352 (A-kinase anchor protein 13)
+  gbmr4 k=15  E=0.73  35 aa  identity 6% (chance 8%)  alphabets with a region: 1
+  Q TPSDEHIREIVRKEMEEFARRQKSEMSQYVRGLST
+             |         |               
+  T KEERNSWIQIIQDTINTLNRDEDEGIPSENEEEKK
+
+FUN019809_FUN019809 92-121  vs  Q6NS46 1271-1300 (Protein RRP5 homolog)
+  gbmr4 k=16  E=0.73  30 aa  identity 13% (chance 5%)  alphabets with a region: 1
+  Q VLLMNQQFRQNPVNTVCPHCSQNIITATTS
+               |    ||          | 
+  T MFHLSDSYSEAPLEDFCPQKIVRCYILSTA
+
+FUN032908_FUN032908 92-121  vs  Q6NS46 1271-1300 (Protein RRP5 homolog)
+  gbmr4 k=16  E=0.73  30 aa  identity 13% (chance 5%)  alphabets with a region: 1
+  Q VLLMNQQFRQNPVNTVCPHCSQNIITATTS
+               |    ||          | 
+  T MFHLSDSYSEAPLEDFCPQKIVRCYILSTA
+
+FUN001412_FUN001412 302-324  vs  O18735 43-65 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=18  E=0.73  23 aa  identity 17% (chance 8%)  alphabets with a region: 1
+  Q GNCCDDFVQICTLVQVRVDANLV
+            | |  ||        
+  T LDMLRHLYQGCQVVQGNLELTYL
+
+FUN004554_FAIM2 14-117  vs  Q6GVM6 48-151 (ATP-dependent RNA helicase DDX3Y)
+  hp_kyte_doolittle2 k=20  E=0.74  104 aa  identity 4% (chance 6%)  alphabets with a region: 1
+  Q VDEKGYGGQVNPQYATQYGTETQPLTGTPYPQATGYPPAGGYSQTGYAGYPQSGPPQPQPQPYGYQPQPVASPVYNAPVG
+                                      ||    |    |                                  
+  T ASKGFHDKDSSGWSCSKDKDAYNSFGSRDSRGKPGYFSERGSGSRGRFDDRGRSDYDGIGNRDRPGFGRFERNGHSRWCD
+  Q SGPSESENGGFSTRGTFSDKSVRR
+                            
+  T KSDEDDWSKPLPPSERLEQELFSG
+
+FUN037811_FUN037811 325-419  vs  P18583 912-1006 (Protein SON)
+  hp_lehninger_c_nonpolar2 k=22  E=0.75  95 aa  identity 16% (chance 7%)  alphabets with a region: 1
+  Q SILRGLQSILRGLQSILRGLQRQFRCLQSILRGLQSILRGLQSILRGLQRQFHCLQSILRGLQRQFHCLQSILRGLQSML
+       |  |   |  |   |      |      |  |   |      |             |   |         |     |
+  T DPYRLAQDPYRLAQDPYRLGHDPYRLGHDAYRLGQDPYRLGHDPYRLTPDPYRMSPRPYRIAPRSYRIAPRPYRLAPRPL
+  Q RGLQRQIRCLQSILR
+        |          
+  T MLASRRSMMMSYAAE
+
+FUN004554_FAIM2 14-117  vs  Q5RF43 48-151 (ATP-dependent RNA helicase DDX3Y)
+  hp_kyte_doolittle2 k=20  E=0.76  104 aa  identity 4% (chance 6%)  alphabets with a region: 1
+  Q VDEKGYGGQVNPQYATQYGTETQPLTGTPYPQATGYPPAGGYSQTGYAGYPQSGPPQPQPQPYGYQPQPVASPVYNAPVG
+                                      ||    |    |                                  
+  T ASKGFHDKDSSGWSCSKDKDAYSSFGSRDSRGKSGYFSERGSGSRGRFDDRGRSDYDGIGNRDRPGFGRFERSGHSRWCD
+  Q SGPSESENGGFSTRGTFSDKSVRR
+                            
+  T KSDEDDWSKPLPPSERLEQELFSG
+
+FUN037811_FUN037811 325-419  vs  Q9QX47 907-1001 (Protein SON)
+  hp_lehninger_c_nonpolar2 k=22  E=0.77  95 aa  identity 16% (chance 7%)  alphabets with a region: 1
+  Q SILRGLQSILRGLQSILRGLQRQFRCLQSILRGLQSILRGLQSILRGLQRQFHCLQSILRGLQRQFHCLQSILRGLQSML
+       |  |   |  |   |      |      |  |   |      |             |   |         |     |
+  T DPYRLAQDPYRLAQDPYRLGHDPYRLGHDAYRLGQDPYRLGHDPYRLTPDPYRVSPRPYRIAPRSYRIAPRPYRLAPRPL
+  Q RGLQRQIRCLQSILR
+        |          
+  T MLASRRSMMMSYAAE
+
+FUN039020_FUN039020 143-171  vs  Q9HB58 179-207 (Sp110 nuclear body protein)
+  hp_lehninger_hpc3 k=27  E=0.79  29 aa  identity 24% (chance 7%)  alphabets with a region: 1
+  Q YALAIGYILTSLRRNRVSSHTVTSKPEPE
+      |         |   |     |||   |
+  T PVLPLPALIQEGRSTSVTNDKLTSKMNAE
+
+FUN025444_DNAJC5 4-118  vs  Q8IWZ5 480-594 (Tripartite motif-containing protein 42)
+  hp_lehninger_hpc3 k=20  E=0.79  115 aa  identity 8% (chance 5%)  alphabets with a region: 1
+  Q PQPKGPSNMGEGQPQRKMSRKGESLYQVLGLNKKDANETDIKKAYRKLALKYHPDKNPGNPAATEMFKEINNAHKILQDE
+                    |    | ||                      |                   |            
+  T VELSSAIHELFPTGPKKVRSSGDSLPSPYPVHSETMIARKVTFSTHSLGNQHIYQRSSSMLSFSNTDKKAKVGLEACGRA
+  Q KKREIYDEYGSLGLYIAEQIGEDNVKMYFRLQSPL
+               |  |         |          
+  T QSATPAKPTDGLYTYWSAGADSQSVQNSSSFHNWY
+
+FUN001412_FUN001412 302-324  vs  P04626 43-65 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=18  E=0.79  23 aa  identity 17% (chance 8%)  alphabets with a region: 1
+  Q GNCCDDFVQICTLVQVRVDANLV
+            | |  ||        
+  T LDMLRHLYQGCQVVQGNLELTYL
+
+FUN002272_COL2A1 247-276  vs  Q8IWZ5 352-381 (Tripartite motif-containing protein 42)
+  gbmr4 k=16  E=0.81  30 aa  identity 0% (chance 7%)  alphabets with a region: 1
+  Q SAAASAPAHIERAYADEASNDTDDFDSLII
+                                  
+  T DNDLMEFNILKNSFKADKEAKRKEIRNGFL
+
+FUN040734_ITGB1A 228-358  vs  Q9D2H5 325-455 (Tripartite motif-containing protein 42)
+  hp_lehninger_hpc3 k=22  E=0.81  131 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q KVNKVNHSSNLDSPEGGFDAMMQAIVCTNEIKWRNESTHLLVYVTDAVFHYAGDGKLGGIVAPNDGKCYLDSTGNYYKAN
+                                |     |           |       | |                       
+  T SLIDACSERSAALFSAIAKFKAVRYEIDNDLMEFNILKSSFKADKEAKRKEVRNGFLKLRAILQEKEKIIMEQIENLEVS
+  Q EMDYPSIGHLVEKISANRIQPIFAVTKEVYNTYEKLQDLIPKSTVGELSSD
+                    |      |  ||          |            
+  T RQKEIEKYVYITTMKVNEMDGLIAYSKEALKETGQVAFLQSAKILVDQIEE
+
+FUN009553_KANK1.1 31-170  vs  O18735 175-314 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger2 k=17  E=0.81  140 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q RESDELGEIHPQMTPEGYGLRTPYGTHFNLDFLKYCQNFAGQETVSRSSSGRSSVASMDSRSESSNDMCNSRSSTESTLW
+                          |                    ||      |                          | 
+  T KNNQLALTLIDTNRFSACPPCSPACKDAHCWGASSGDCQSLTRTVCAGGCARCKGPQPTDCCHEQCAAGCTGPKHSDCLA
+  Q ETRRRLDMFRSYRKKKPGHADSKQHFKYKEYHAGNSPGPDTNSNKVAAYESTSPVTKSPP
+                                         |          | ||        
+  T CLHFNHSGICELHCPALVTYNTDTFESMPNPEGRYTFGASCVTSCPYNYLSTDVGSCTLV
+
+FUN008497_FUN008497 9-37  vs  Q54PW5 335-363 (2-(3-amino-3-carboxypropyl)histidine synthase subunit 1)
+  gbmr4 k=15  E=0.81  29 aa  identity 17% (chance 7%)  alphabets with a region: 1
+  Q KLIIFIGISSLSIDRVRAQDWKTESKQSA
+    |               |     | ||   
+  T KVFSLEKYDFQEMYKIRRDAIETASKATK
+
+FUN007490_ITGB1A 228-358  vs  Q9D2H5 325-455 (Tripartite motif-containing protein 42)
+  hp_lehninger_hpc3 k=22  E=0.82  131 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q KVNKVNHSSNLDSPEGGFDAMMQAIVCTNEIKWRNESTHLLVYVTDAVFHYAGDGKLGGIVAPNDGKCYLDSTGNYYKAN
+                                |     |           |       | |                       
+  T SLIDACSERSAALFSAIAKFKAVRYEIDNDLMEFNILKSSFKADKEAKRKEVRNGFLKLRAILQEKEKIIMEQIENLEVS
+  Q EMDYPSIGHLVEKISANRIQPIFAVTKEVYNTYEKLQDLIPKSTVGELSSD
+                    |      |  ||          |            
+  T RQKEIEKYVYITTMKVNEMDGLIAYSKEALKETGQVAFLQSAKILVDQIEE
+
+FUN040734_ITGB1A 218-358  vs  Q8IWZ5 315-455 (Tripartite motif-containing protein 42)
+  hp_lehninger_hpc3 k=22  E=0.83  141 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q LSLEINDFVDKVNKVNHSSNLDSPEGGFDAMMQAIVCTNEIKWRNESTHLLVYVTDAVFHYAGDGKLGGIVAPNDGKCYL
+     |                                    |     |           |       | |             
+  T FSFHNGHDTISLIDACSERAASLFSAIAKFKAVRYEIDNDLMEFNILKNSFKADKEAKRKEIRNGFLKLRSILQEKEKII
+  Q DSTGNYYKANEMDYPSIGHLVEKISANRIQPIFAVTKEVYNTYEKLQDLIPKSTVGELSSD
+                        |     |      |  ||          |           |
+  T MEQIENLEVSRQKEIEKYVYVTTMKVNEMDGLIAYSKEALKETGQVAFLQSAKILVDQIED
+
+FUN001903_ADRB1 419-599  vs  Q6NS46 1410-1590 (Protein RRP5 homolog)
+  hp_thomas_dill2 k=20  E=0.83  181 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q SGGTSRKRSTSKSTISTNLQRNSTTSGRSPNRSPLRNTRFHIGSDDRDYISVRTTDNNNDSDNDVFKKDSNRDTPVDSSP
+      |     |                          |                        |      |            
+  T DTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQELVNKRPKKSGAAEEDD
+  Q RSAGFLDNSFYPLMRNSNTSINATRQKSQDAASLIHNGSNNLNANNSPTVLCGSHDNSQNEKSDNSLPKDMILSNGNLKT
+                              ||     |                             |                
+  T SGVEVYYREGEDEVGEPKLPPRGKQTKSTEVPRLHLSSGFLWDVGLDSLTPALPLREESSDSEDEQPHQAKKKKGKKERE
+  Q NGRHQICTRRSKSPFVTVPEG
+              |         |
+  T LEKQKAEKELSRIEEALMDPG
+
+FUN007490_ITGB1A 218-358  vs  Q8IWZ5 315-455 (Tripartite motif-containing protein 42)
+  hp_lehninger_hpc3 k=22  E=0.84  141 aa  identity 9% (chance 6%)  alphabets with a region: 1
+  Q LSLEINDFVDKVNKVNHSSNLDSPEGGFDAMMQAIVCTNEIKWRNESTHLLVYVTDAVFHYAGDGKLGGIVAPNDGKCYL
+     |                                    |     |           |       | |             
+  T FSFHNGHDTISLIDACSERAASLFSAIAKFKAVRYEIDNDLMEFNILKNSFKADKEAKRKEIRNGFLKLRSILQEKEKII
+  Q DSTGNYYKANEMDYPSIGHLVEKISANRIQPIFAVTKEVYNTYEKLQDLIPKSTVGELSSD
+                        |     |      |  ||          |           |
+  T MEQIENLEVSRQKEIEKYVYVTTMKVNEMDGLIAYSKEALKETGQVAFLQSAKILVDQIED
+
+FUN019386_FUN019386.1 634-698  vs  Q95JC7 187-251 (Neutral amino acid transporter B(0))
+  hp_lehninger_hpc3 k=18  E=0.85  65 aa  identity 11% (chance 6%)  alphabets with a region: 1
+  Q FDHTIPECLGEGYSAQSSESKNTSPFSSPMIISMLAATGMLITAAGGLVLYIFVFAPWNQVTIVP
+         |  |          |     |                   |  |  |             
+  T VRNIFPSNLVSAAFRSYTTSYKERLFNGTLVKVPTGGEVEGMNILGLVVFAIIFGVALRKLGPEG
+
+FUN016619_FUN016619.3 242-325  vs  P51912 132-215 (Neutral amino acid transporter B(0))
+  hp_lehninger_hpc3 k=25  E=0.86  84 aa  identity 15% (chance 7%)  alphabets with a region: 1
+  Q PWLLVTTILLSFAVLLLLAGATYLVLHGKIKKRQQRIADMQEELSKEPKYGYRKNNPHYNISPWEEGPVIPTSYSNVGRA
+       |||| | |     |            |        |                    || |         |       
+  T LFFLVTTLLASALGVGLALALKPGAAVTAITSINDSVVDPCARSAPTKEALDSFLDLVRNIFPSNLVSAAFRSFATSYEP
+  Q TVSQ
+        
+  T KDNS
+
+FUN004831_FUN004831 32-53  vs  Q4IQ72 321-342 (2-(3-amino-3-carboxypropyl)histidine synthase subunit 1)
+  hp_lehninger_hpc3 k=19  E=0.86  22 aa  identity 14% (chance 7%)  alphabets with a region: 1
+  Q KKNSSSPATKSLTTVKTSAGRS
+    |                 |  |
+  T KLTRETYGHEEMQSLRRTAIHS
+
+FUN009151_FUN009151 5-60  vs  Q30DN6 1424-1479 (Lysine-specific demethylase 5D)
+  hp_lehninger_hpc3 k=18  E=0.87  56 aa  identity 2% (chance 6%)  alphabets with a region: 1
+  Q EKGKFGEYGIIDQCEKAKPYRDTKQDHDRKIDSPSETHQYPEGKPATSDPSTAVGR
+                                   |                        
+  T TLLELEKPEHKGSRTRGRALEKRRRRQQQEVDLGMKSKNLVQEELQSKKARNSGNK
+
+FUN005971_FUN005971 168-230  vs  Q6DE55 387-449 (Rho GTPase-activating protein 45)
+  gbmr4 k=17  E=0.87  63 aa  identity 8% (chance 8%)  alphabets with a region: 1
+  Q LLDQIRGGASLKSADNRQMADAPAPSGRDSLLDQIRQGTQLKAVSQDESRERAAEEEEDDGLA
+    |            |                                    |  |        |
+  T LMEAESNLRKARQAYMQRSEEHERALYNATRAEEEQSHSGTRSLDKKRRAEEEAKNRAEEAMA
+
+FUN001552_COL4A6 1617-1658  vs  F8VPU6 822-863 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  sdm12 k=7  E=0.87  42 aa  identity 29% (chance 6%)  alphabets with a region: 1
+  Q LYCTVNNVCNYASRNDKSFWLATTASIPMMPVEQGIEEYISR
+    |       |   |  |  |  |    | |        |||| 
+  T LKASYDTLCVLDSEKDNIFSCARQEAIRMVRILTVLREYISE
+
+FUN018331_FUN018331 2-26  vs  Q4R8W8 196-220 (Neutral amino acid transporter B(0))
+  gbmr4 k=15  E=0.88  25 aa  identity 8% (chance 7%)  alphabets with a region: 1
+  Q NDLKEKVADLEAQLSTENTRPQTGR
+    |                |       
+  T NLVSAAFRSYSTSYEERNITGTRVK
+
+FUN006870_FUN006870 319-353  vs  F1M3G7 2265-2299 (A-kinase anchor protein 13)
+  gbmr4 k=15  E=0.88  35 aa  identity 6% (chance 8%)  alphabets with a region: 1
+  Q TPSDEHIREIVRKEMEEFARRQKSEMSQYVRGLST
+             |         |               
+  T REERNSWIQIIQDTINSLNRDEDEGIPSENEEEKR
+
+FUN028852_FUN028852 523-568  vs  Q8CBQ5 173-218 (Phosphatidylinositol 4-kinase type 2-beta)
+  hp_lehninger_hpc3 k=25  E=0.89  46 aa  identity 11% (chance 7%)  alphabets with a region: 1
+  Q AQLDTVASLVELPTAEPIKAVSNNVAVIVTSDFTATFLSKVTTKWK
+      |                     |   |   |            |
+  T GYLSEAGAYLVDVKLNLGIVPKTKVVWLVSETFNYSAIDRAKSRGK
+
+FUN023172_FUN023172 9-107  vs  P42557 196-294 (Reduced folate transporter)
+  hp_kyte_doolittle2 k=19  E=0.9  99 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q KLKCGRISNWPTWKIQVKGELMANDLWEYVSGDVHNSSRSKNTEDAGTLLRSLDGSMLPAVPEDHHSDPKNSIAYLVVVR
+     |        |                       |              | |   | |                 |    
+  T SLGLSLFLKRPKHSLFFNRSALVHKALPCELDQMHPGPGRPEPGKLERVLGSCRNSFLVCMLSELVGNLRQPQLRLWCLW
+  Q YVARFMNRSTLIYSAACVG
+     |          |      
+  T WVFNSAGYYLIVYYVHVLW
+
+FUN018331_FUN018331 2-26  vs  Q15758 195-219 (Neutral amino acid transporter B(0))
+  gbmr4 k=15  E=0.9  25 aa  identity 8% (chance 7%)  alphabets with a region: 1
+  Q NDLKEKVADLEAQLSTENTRPQTGR
+    |                |       
+  T NLVSAAFRSYSTTYEERNITGTRVK
+
+FUN002272_COL2A1 247-276  vs  Q9D2H5 352-381 (Tripartite motif-containing protein 42)
+  gbmr4 k=16  E=0.91  30 aa  identity 0% (chance 7%)  alphabets with a region: 1
+  Q SAAASAPAHIERAYADEASNDTDDFDSLII
+                                  
+  T DNDLMEFNILKSSFKADKEAKRKEVRNGFL
+
+FUN001412_FUN001412 302-324  vs  Q60553 43-65 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=18  E=0.91  23 aa  identity 17% (chance 8%)  alphabets with a region: 1
+  Q GNCCDDFVQICTLVQVRVDANLV
+            | |  ||        
+  T LDIVRHLYQGCQVVQGNLELTYL
+
+FUN011363_FUN011363 363-456  vs  Q60553 638-731 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=27  E=0.92  94 aa  identity 5% (chance 6%)  alphabets with a region: 1
+  Q DTSDADWRKQSGLLAALLPSILFLILIAILAAAIFWWWRKKKKSNSNKVNNIDVTPSKDTNVKQDLITQDNKKNAEKMKQ
+    |                        |                                            |       | 
+  T DERGCPAEQRASPATSIIATVVGILLFLVIGVVVGILIKRRRQKIRKYTMRRLLQETELVEPLTPSGAMPNQAQMRILKE
+  Q KRNKAKKPEKEDIV
+          |       
+  T TELRKVKVLGSGAF
+
+FUN013450_SCN4A 552-779  vs  Q3KRF1 168-395 (Sp110 nuclear body protein)
+  hp_thomas_dill_no_c2 k=19  E=0.92  228 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q PLARGRSTSLANVFHLTQASGKKRNPNLYDEPTLQVNQNHNIESEDGNNVGTRLRKRGTLTKQPRISEDEELTIEPVTTN
+                   |                          |            |     |                | 
+  T EILDEQPSPSHPAAPLPGYIREGKTTPVSSRDHQRKDKEDSQEMPHHPSGPEAVVKDILTSKTNNRDDSGAQPPGSPGTM
+  Q SAEEENESGKPSHNPESTAKVKFSVPNNSKVHPERLDTLEEDLEDIENPSLCPKCCFCPAENNSSESTSVMEKGQQVAKQ
+         |            |          |                  |         |          |          
+  T HVVQDNSPAPNDPEVPQEAPCTPANKKARKRKSCIWSNSKRRRQKKKPPQHKMMGVASPGPGVQEKLKVVGQRTLNQDDS
+  Q EVDVESQEIDENTNEESQNDEEDKEMDEKIPPRCFPNWCKCSCAKSCCGFPAWTRCRIAVYKVVKHRI
+       |                    |                                           
+  T TRNVKVVTRTLRERTRCAQTSSSQEISKEASKPRARKRPQKRPHTAGRTIHVPEKSKDDAVDFLSPTL
+
+FUN006870_FUN006870 319-353  vs  E9Q394 2281-2315 (A-kinase anchor protein 13)
+  gbmr4 k=15  E=0.93  35 aa  identity 6% (chance 8%)  alphabets with a region: 1
+  Q TPSDEHIREIVRKEMEEFARRQKSEMSQYVRGLST
+             |         |               
+  T REERNSWIQIIQDTINSLNRDEDEGIPSENEEEKK
+
+FUN024956_FUN024956.1 3155-3392  vs  O00507 1376-1613 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  hp_lehninger_hpc3 k=17  E=0.93  238 aa  identity 10% (chance 6%)  alphabets with a region: 1
+  Q DIAEEKNVTAPAEYTFKARFYENKSTTVLTYPMTISIPPKTLTQARALMESPLRIVTVAFRSSALFPSNRTTEWVIATTL
+    |            |             |        |            | |            |               
+  T DYFTLLRHLLNYAYNGNINIPNAEVLLVSEIDWLKRIRDNVKNTGETGVEEPILEGHLGVTKELLAFQTSEKKYHFGCEK
+  Q GNSTDTLESIKLEVPVVIAFSYIKEETGEKRPNSFTKIITELECVFWDFEIKDWSHKGCALQPGLPASCECDHLTNFAIL
+    |      | |                 ||                   ||       ||         |           
+  T GGANLIKELIDDFIFPASKVYLQYLRSGELPAEQAIPVCSSPVTINAGFELLVALAIGCVRNLKQIVDCLTEMYYMGTAI
+  Q VSRSKLNVDVALSLVTYIGSGLSIAGLMLTFIIICLSWNNRRTYQMQIVANICICLAVALTMFVAGVDSQVNTMQCTI
+         |     |  |                     |          |   |                          
+  T TTCEALTEWEYLPPVGPRPPKGFVGLKNAGATCYMNSVIQQLYMIPSIRNSILAIEGTGSDLHDDMFGDEKQDSESNV
+
+FUN023893_FUN023893 508-600  vs  P42557 152-244 (Reduced folate transporter)
+  hp_lehninger2 k=20  E=0.93  93 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q TGCEASVFILAIITVYRLNSVYRPYSKTSTRHVVLIATISWVIALIIATIPLTKSAEDYFVESKWFGNNPIVRTATREEL
+        | |                   |               |        |       |                    
+  T SYSRAAVLLGVFTSSVLGQVLWPLEQKSQNSNMLNYISLGFIIFSLGLSLFLKRPKHSLFFNRSALVHKALPCELDQMHP
+  Q SDFTTRLVAMKNL
+                 
+  T GPGRPEPGKLERV
+
+FUN006870_FUN006870 324-352  vs  Q60767 661-689 (Lymphocyte antigen 75)
+  sdm12 k=7  E=0.93  29 aa  identity 34% (chance 8%)  alphabets with a region: 1
+  Q HIREIVRKEMEEFARRQKSEMSQYVRGLS
+    ||  ||||   | | |            |
+  T HIERIVRKRNWEEAERFCQALGAHLPSFS
+
+FUN029052_FUN029052.2 1454-1764  vs  Q9HB58 207-517 (Sp110 nuclear body protein)
+  hp_thomas_dill_no_c2 k=18  E=0.94  311 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q ENSPCPIHGFWSPWSDYSQCDITCGGGGLQHRNRSCTNPAPQHGGKYCNGGDAWKLEWRQCGNTDCPIHGGWSSWMEAFS
+    |                                     |         |       |  |          |        |
+  T EEDSEEMPSLLTSTVQVASDNLIPQIRDKEDPQEMPHSPLGSMPEIRDNSPEPNDPEEPQEVSSTPSDKKGKKRKRCIWS
+  Q CNTTCGGGSQRRFRYCSNPAPQNGGSDCIGESRDFIECNTEQCPVSGEWQDWSSWSSCTNVCGIANKTRTRVCRTSVTGH
+                    |                      |    |    |                              
+  T TPKRRHKKKSLPGGTASSRHGIQKKLKRVDQVPQKKDDSTCNSTVETRAQKARTECARKSRSEEIIDGTSEMNEGKRSQK
+  Q NCSNSRSMEEVEFQDCIAINPCEDEFHWAPWSFFTECSTTCGTDTLRRRTRQCVWNDSIYQSSRPCLKKESQTLPCGKRP
+      |  |            |                                 |                 |      |  
+  T TPSTPRRVTQGAASPGHGIQEKLQVVDKVTQRKDDSTWNSEVMMRVQKARTKCARKSRLKEKKKEKDICSSSKRRFQKNI
+  Q CPIDGSWSMWKSWSACSVSCGKGERIRVRLCESPRPQYGGMECNGSETGSQSEWQHCDRGTCPKQTYVNSP
+           |              ||                                   |           
+  T HRRGKPKSDTVDFHCSKLPVTCGEAKGILYKKKMKHGSSVKCIRNEDGTWLTPNEFEVEGKGRNAKNWKRN
+
+FUN009335_TMEFF2 219-301  vs  E9Q394 2252-2334 (A-kinase anchor protein 13)
+  hp_lehninger_hpc3 k=28  E=0.94  83 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q SKEPPSHYNQGAEKTCNHGLELLAIFAITLLSVVALLLIVCIYMRKGKNEDNKLWPTSERDETTPLRESGRSDYTYESNA
+                        |     |           |                |     |   |    |         
+  T REVAHEEKGLFLISMGVKDPEMVEVHASSREERNSWIQIIQDTINSLNRDEDEGIPSENEEEKKLLDTKARELKEQLQQK
+  Q TND
+       
+  T DQQ
+
+FUN034636_HSPG2 1-45  vs  P41438 445-489 (Reduced folate transporter)
+  hp_lehninger_hpc3 k=17  E=0.94  45 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q MSCYRFGTVGDTDYFWDLRTISTLATQDILGVSTVSLFYCNDSAN
+        |    |                      |            
+  T LDGLRYCQRGRHQPLAQAQELRSPLETSVQAISLQDGDLRGPQPS
+
+FUN001412_FUN001412 302-324  vs  P70424 43-65 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=18  E=0.95  23 aa  identity 17% (chance 8%)  alphabets with a region: 1
+  Q GNCCDDFVQICTLVQVRVDANLV
+            | |  ||        
+  T LDMLRHLYQGCQVVQGNLELTYL
+
+FUN009335_TMEFF2 219-301  vs  F1M3G7 2236-2318 (A-kinase anchor protein 13)
+  hp_lehninger_hpc3 k=28  E=0.95  83 aa  identity 8% (chance 6%)  alphabets with a region: 1
+  Q SKEPPSHYNQGAEKTCNHGLELLAIFAITLLSVVALLLIVCIYMRKGKNEDNKLWPTSERDETTPLRESGRSDYTYESNA
+                        |     |           |                |     |   |    |         
+  T REVAHEEKGLFLISMGVKDPEMVEVHASSREERNSWIQIIQDTINSLNRDEDEGIPSENEEEKRLLDTKARELKEQLQQK
+  Q TND
+       
+  T DQQ
+
+FUN020740_FUN020740 80-144  vs  Q14213 94-158 (Interleukin-27 subunit beta)
+  hp_lehninger_hpc3 k=27  E=0.95  65 aa  identity 8% (chance 5%)  alphabets with a region: 1
+  Q GHHFNPDDGVNGNDLGDLGVHSTNAAGMLHKDIPDISPLTLESGPFDIRNRGVGIHDASHHGAMI
+       |     |           |          |    |                           
+  T VQLFSMAPYVLNVTAVHPWGSSSSFVPFITEHIIKPDPPEGVRLSPLAERQLQVQWEPPGSWPFP
+
+FUN005971_FUN005971 176-227  vs  Q54ML4 927-978 (HEAT repeat-containing protein 1 homolog)
+  gbmr4 k=16  E=0.95  52 aa  identity 15% (chance 8%)  alphabets with a region: 1
+  Q ASLKSADNRQMADAPAPSGRDSLLDQIRQGTQLKAVSQDESRERAAEEEEDD
+      |                 ||         |    |   |         ||
+  T KFLAQLVQYKNEITMDKTFLDSYFSKVLFNSQISSSSKASSSSDDDDDDDDD
+
+FUN020551_FUN020551.1 2561-2627  vs  Q60553 639-705 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=18  E=0.95  67 aa  identity 7% (chance 6%)  alphabets with a region: 1
+  Q QTKEILVTTSPPANFEWWWLVVGIGLVLILAIGLVIAHVRLMDVYNPYAESYRNTFTPTKQHHIHPY
+               ||       |       |          |                           
+  T ERGCPAEQRASPATSIIATVVGILLFLVIGVVVGILIKRRRQKIRKYTMRRLLQETELVEPLTPSGA
+
+FUN001554_COL4A1 2-31  vs  F8VPU6 1995-2024 (Ubiquitin carboxyl-terminal hydrolase 9Y)
+  gbmr4 k=15  E=0.96  30 aa  identity 10% (chance 5%)  alphabets with a region: 1
+  Q TLESLCKAWAISVTILAVLPASTEAKGMYY
+        |      |                | 
+  T NVQFLHNQMQFSLEYFQFIKKLLTCNAVYL
+
+FUN029612_FUN029612 334-540  vs  Q6NS46 1315-1521 (Protein RRP5 homolog)
+  hp_thomas_dill_no_c2 k=19  E=0.96  207 aa  identity 6% (chance 6%)  alphabets with a region: 1
+  Q TGKDYDLIRIKAALFGDATDDVVHATVVAENADPELISIDEDDTFDKEALKAAKYTTKDSKTKKAGRSSSKKILNNCALT
+                    |          |        |                       |    |     |      | 
+  T RETKNRIEDPEINSIEDVKEGQLLRGYVKCVLPSSVIIGLGPSVLGLAKYSHVSECVPPEKELYNGCLPEGKLVTAKVLR
+  Q ITQCCRNASDQDNTDVDESQQFVPNVHTPRSNQPETDILQNTHGRNSSDQDNADVDASQQDVPNDQSPSSNKPDTDILQN
+                                |                             |                     
+  T VNPMKNLIELSLLPSDTGRPDVFSPAPEPKQEERSGGAEEGQKRKEKNQKRREEKEEPQKSQRGGRGKRERQESESEQEL
+  Q TQAHNGSGQDNTDVDSKQQDVLRRAFSQSAPTNRENPRRNNGSDQLN
+                  ||      |                   |    
+  T VNKRPKKSGAAEEDDSGVEVYYREGEDEVGEPKLPPRGKQTKSTEVP
+
+FUN033973_FUN033973 1-29  vs  Q6P5Z2 257-285 (Serine/threonine-protein kinase N3)
+  hp_lehninger_hpc3 k=22  E=0.97  29 aa  identity 17% (chance 6%)  alphabets with a region: 1
+  Q MKLAGIIFLTLSMSGVRGDYADYYCYVDL
+       |       |   |          | |
+  T LRAAVPGYPQPSGTPVKPTALTGTLQVRL
+
+FUN036745_FUN036745 1-29  vs  Q6P5Z2 257-285 (Serine/threonine-protein kinase N3)
+  hp_lehninger_hpc3 k=22  E=0.97  29 aa  identity 14% (chance 6%)  alphabets with a region: 1
+  Q MKLAGIIFLTLSISGVRGDYADYYCYADL
+       |       |   |            |
+  T LRAAVPGYPQPSGTPVKPTALTGTLQVRL
+
+FUN037191_CNR4 25-70  vs  F1M3G7 2386-2431 (A-kinase anchor protein 13)
+  hp_lehninger_hpc3 k=21  E=0.99  46 aa  identity 15% (chance 7%)  alphabets with a region: 1
+  Q LPLTAGKIAESLGDTQPVLWALAAGFAPPCGIGLLRTKLRERDGID
+    |  | |    |                     |     |    |  
+  T LGGTLGQPISSPVEQEVMAGPISLPRRAETFGGFDCHQLNASKGGE
+
+FUN002714_FIBRINOGENLIKE 51-87  vs  Q9XBQ0 256-292 (Serine/threonine-protein kinase pkn3)
+  sdm12 k=7  E=0.99  37 aa  identity 30% (chance 8%)  alphabets with a region: 1
+  Q QSALRRIVMKELHRVMSDESAFQEAVRKEVEKVLDER
+      |  |     |     |  |  ||   |   |  ||
+  T SPAMERLILRALSKNPADRPASAEAFKAELQAVDKER
+
+FUN001412_FUN001412 302-324  vs  P06494 43-65 (Receptor tyrosine-protein kinase erbB-2)
+  hp_lehninger_hpc3 k=18  E=1  23 aa  identity 22% (chance 8%)  alphabets with a region: 1
+  Q GNCCDDFVQICTLVQVRVDANLV
+            | |  ||       |
+  T LDMLRHLYQGCQVVQGNLELTYV
