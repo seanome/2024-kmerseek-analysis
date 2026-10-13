@@ -379,7 +379,7 @@ process scoreTransfers {
     path common_py
 
     output:
-    path "*"
+    path "*.{csv,parquet}"
 
     script:
     """
