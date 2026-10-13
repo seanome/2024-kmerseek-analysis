@@ -21,6 +21,11 @@ scripts/fasta_lengths.py from the run's botryllus.query.fasta.
 Target species, names, sequences and UniProt-curated domain positions come from
 page_targets_{info.tsv,domains.tsv,seqs.fasta}, written by scripts/swissprot_target_info.py.
 
+Tool hits with positions on both proteins come from tool_hits_both_positions_E10.tsv.gz
+(scripts/281_tool_search_query_positions.sbatch, then scripts/parse_query_position_hits.py),
+a re-run of the three tools that keeps the Botryllus-side position. A tool not yet in that
+table falls back to the dark-set run's hits, which carry the target position only.
+
 Named genes (data/botryllus_named_genes.tsv) are always listed, links or not. Their links to
 any Swiss-Prot protein come from the run itself: tool hits from named_gene_tool_hits_E10.tsv
 (scripts/botryllus_tool_hits_on_targets.py in query mode) and kmerseek's best region per
@@ -91,12 +96,27 @@ def main():
     pair_regions = {(q, t): [[a_index[x["alphabet"]], x["region_start"] + 1, x["region_end"], x["target_start"] + 1,
                               x["target_end"], r3(x["region_evalue"])] for x in rs]
                     for q, t, rs in region_sets.iter_rows()}
-    hit_sets = (tool_hits.filter(pl.col("category") != "control").sort("evalue")
-                .group_by("query_name", "target_name", maintain_order=True)
-                .agg(pl.struct("tool", "tstart", "tend", "evalue").alias("hs")))
+    both = pl.read_csv(DATA / "tool_hits_both_positions_E10.tsv.gz", separator="\t") \
+        .rename({"query": "query_name", "target": "target_name"})
+    rerun_tools = sorted(both["tool"].unique())
+    hit_cols = ["tool", "query_name", "target_name", "tstart", "tend", "bits", "evalue"]
+    # The dark-set run's hits: on the target sets, and every hit of the named genes (BHF).
+    old_only = pl.concat([pl.read_csv(DATA / f, separator="\t", has_header=False, new_columns=hit_cols)
+                          for f in ("tool_hits_on_targets_E10.tsv", "named_gene_tool_hits_E10.tsv")]).unique() \
+        .filter(~pl.col("tool").is_in(rerun_tools)) \
+        .with_columns(qstart=pl.lit(None, dtype=pl.Int64), qend=pl.lit(None, dtype=pl.Int64))
+    cols = ["tool", "query_name", "target_name", "qstart", "qend", "tstart", "tend", "evalue"]
+    all_hits = pl.concat([both.select(cols), old_only.select(cols)], how="vertical_relaxed")
     t_tool = {t: i for i, t in enumerate(bmu.TOOLS)}
-    pair_hits = {(q, t): [[t_tool[x["tool"]], x["tstart"], x["tend"], r3(x["evalue"])] for x in hs]
-                 for q, t, hs in hit_sets.iter_rows()}
+
+    def hit_rows(df):
+        return [[t_tool[x["tool"]], x["tstart"], x["tend"], r3(x["evalue"]), x["qstart"], x["qend"]] for x in df]
+
+    hit_sets = (all_hits.join(targets.filter(pl.col("category") != "control").select("accession"),
+                              left_on="target_name", right_on="accession", how="semi")
+                .sort("evalue").group_by("query_name", "target_name", maintain_order=True)
+                .agg(pl.struct("tool", "tstart", "tend", "evalue", "qstart", "qend").alias("hs")))
+    pair_hits = {(q, t): hit_rows(hs) for q, t, hs in hit_sets.iter_rows()}
     qlen = dict(pl.read_csv(DATA / "botryllus_query_lengths.tsv", separator="\t", has_header=False,
                             new_columns=["name", "length"]).iter_rows())
 
@@ -111,8 +131,7 @@ def main():
     landmarks = json.loads((DATA / "botryllus_landmarks.json").read_text())
 
     # Named genes: every target any tool or kmerseek setting links them to.
-    named_hits = pl.read_csv(DATA / "named_gene_tool_hits_E10.tsv", separator="\t", has_header=False,
-                             new_columns=["tool", "query_name", "target_name", "tstart", "tend", "bits", "evalue"])
+    named_hits = all_hits.filter(pl.col("query_name").is_in(list(named["gene_model"])))
     named_links = {}  # (model, target) -> {"arms": [...], "hits": [...]}
     for model in named["gene_model"]:
         for pair in landmarks["pairs"]:
@@ -174,7 +193,7 @@ def main():
         best = {t: min((h["evalue"] for h in v["hits"] if h["tool"] == t), default=None) for t in bmu.TOOLS}
         regs = [[a_index[x["alphabet"]], int(x["region_start"]) + 1, int(x["region_end"]), int(x["target_start"]) + 1,
                  int(x["target_end"]), r3(float(x["region_evalue"]))] for x in arms]
-        hits = [[t_tool[h["tool"]], h["tstart"], h["tend"], r3(h["evalue"])] for h in sorted(v["hits"], key=lambda h: h["evalue"])]
+        hits = hit_rows(sorted(v["hits"], key=lambda h: h["evalue"]))
         rows.append([g_index[model], t_index[tgt], k] + [r3(best[t]) for t in bmu.TOOLS] + [regs, hits, 1])
 
     decision = pl.read_csv(DECISION)
@@ -187,6 +206,7 @@ def main():
         "categories": bmu.CATEGORIES,
         "category_name": {c: bmu.CATEGORY_NAME[c] for c in bmu.ORDER} | {"other": "Other Swiss-Prot protein"},
         "tools": bmu.TOOLS,
+        "rerun_tools": rerun_tools,
         "genes": genes,
         "gene_length": [qlen[g] for g in genes],
         "named": [[n, m, src, qlen.get(m)] for n, m, src in
@@ -345,7 +365,7 @@ footer p { max-width: 90ch }
       <span><span class="sw" style="background:var(--kmerseek)"></span>best kmerseek region (lowest E), with a band joining its two ends</span>
       <span><span class="sw" style="background:var(--kmerseek-soft)"></span>other kmerseek regions on the pair (hover for alphabet and E)</span>
       <span><span class="sw" style="background:var(--panel);border:1px solid var(--fg)"></span>target domain (UniProt curated)</span>
-      <span><span class="sw" style="background:var(--phmmer)"></span><span class="sw" style="background:var(--jackhmmer)"></span><span class="sw" style="background:var(--mmseqs2)"></span>phmmer, jackhmmer, mmseqs2 hit. All three are drawn on the target: the run kept only target positions for tool hits, not where they fall on the Botryllus protein.</span>
+      <span><span class="sw" style="background:var(--phmmer)"></span><span class="sw" style="background:var(--jackhmmer)"></span><span class="sw" style="background:var(--mmseqs2)"></span>phmmer, jackhmmer, mmseqs2 hit, drawn twice: in the rows above the Botryllus protein at its position there, and in the rows under the target at its position there (hover a box for both). The first run kept only target positions; a re-run that keeps both is filling these in tool by tool.</span>
     </div>
     <div class="table"><table>
       <thead><tr>
@@ -478,8 +498,10 @@ function pairView(L, T) {
   const cut = +state.cut, qlen = D.gene_length[L[0]], tlen = T[3], doms = T[6];
   const regs = L[3 + TOOLS.length].filter(x => x[5] < cut), hits = L[4 + TOOLS.length].filter(x => x[3] < cut);
   if (!regs.length && !hits.length) return "";
-  const W = 760, X0 = 130, span = Math.max(qlen, tlen), sx = v => X0 + (v / span) * (W - X0 - 10);
-  const yQ = 22, yT = 96, yDom = yT + 34, rowH = 14, yTool = i => yDom + 14 + i * rowH, H = yTool(TOOLS.length) + 22;
+  const W = 760, X0 = 150, span = Math.max(qlen, tlen), sx = v => X0 + (v / span) * (W - X0 - 10);
+  const rowH = 14, yQTool = i => 10 + i * rowH, yQ = yQTool(TOOLS.length) + 16;
+  const yT = yQ + 80, yDom = yT + 34, yTool = i => yDom + 14 + i * rowH, H = yTool(TOOLS.length) + 22;
+  const qShort = geneLines(D.genes[L[0]])[0];
   const box = (a, b, y, h, fill, extra = "") => `<rect x="${sx(a - 1)}" y="${y}" width="${Math.max(sx(b) - sx(a - 1), 1.5)}" height="${h}" fill="${fill}" ${extra}/>`;
   const best = regs.reduce((m, x) => (!m || x[5] < m[5]) ? x : m, null);
   let s = `<svg class="pair" viewBox="0 0 ${W} ${H}" role="img" aria-label="Pair view of ${esc(D.genes[L[0]])} and ${esc(T[0])}">`;
@@ -511,11 +533,20 @@ function pairView(L, T) {
   }
   if (!doms.length) s += `<text x="${sx(0) + 4}" y="${yDom + 4}" class="axis">no curated domains</text>`;
   TOOLS.forEach((t, i) => {
+    const y = yQTool(i) + 6, mine = hits.filter(h => h[0] === i);
+    s += `<text x="${X0 - 6}" y="${y + 4}" text-anchor="end" class="axis">${t} on ${esc(qShort)}</text>
+      <line x1="${sx(0)}" y1="${y}" x2="${sx(qlen)}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+    if (!D.rerun_tools.includes(t)) { s += `<text x="${sx(0) + 4}" y="${y + 4}" class="axis">Botryllus positions not available yet (re-run still running)</text>`; return; }
+    for (const h of mine)
+      s += `<g><title>${t}: Botryllus ${h[4]}-${h[5]}, target ${h[1]}-${h[2]}, E=${fmtE(h[3])}</title>${box(h[4], h[5], y - 4, 8, `var(--${t})`)}</g>`;
+    if (!mine.length) s += `<text x="${sx(0) + 4}" y="${y + 4}" class="axis">no hit with E &lt; ${state.cut}</text>`;
+  });
+  TOOLS.forEach((t, i) => {
     const y = yTool(i) + 6;
     s += `<text x="${X0 - 6}" y="${y + 4}" text-anchor="end" class="axis">${t} on ${esc(T[0])}</text>
       <line x1="${sx(0)}" y1="${y}" x2="${sx(tlen)}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
     for (const h of hits.filter(h => h[0] === i))
-      s += `<g><title>${t}, target ${h[1]}-${h[2]}, E=${fmtE(h[3])}</title>${box(h[1], h[2], y - 4, 8, `var(--${t})`)}</g>`;
+      s += `<g><title>${t}: target ${h[1]}-${h[2]}${h[4] != null ? `, Botryllus ${h[4]}-${h[5]}` : ""}, E=${fmtE(h[3])}</title>${box(h[1], h[2], y - 4, 8, `var(--${t})`)}</g>`;
     if (!hits.some(h => h[0] === i)) s += `<text x="${sx(0) + 4}" y="${y + 4}" class="axis">no hit with E &lt; ${state.cut}</text>`;
   });
   const step = [50, 100, 200, 500, 1000, 2000].find(v => span / v <= 8) || 5000;
