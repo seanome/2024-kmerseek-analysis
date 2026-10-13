@@ -1,0 +1,6 @@
+alphabet	ksize	penalty	xdrop	ka_reference_shuffles	source
+hp_kyte_doolittle2	19	1.57	6.28	1	penalty and xdrop: the alphabet's rows of deep-twilight-controls/assets/arms.tsv; shuffles: measure_ka_fit_recovery.py, 2026-09-29
+hp_lehninger_c_nonpolar2	18	1.52	6.08	1	penalty and xdrop: the alphabet's rows of deep-twilight-controls/assets/arms.tsv; shuffles: measure_ka_fit_recovery.py, 2026-09-29
+hp_thomas_dill_no_c2	19	1.62	6.47	1	penalty and xdrop: the alphabet's rows of deep-twilight-controls/assets/arms.tsv; shuffles: measure_ka_fit_recovery.py, 2026-09-29
+mmseqs12	7	0.22	0.89	1	deep-twilight-controls/assets/arms.tsv
+sdm12	6	0.24	0.94	1	deep-twilight-controls/assets/arms.tsv
