@@ -839,13 +839,14 @@ print("Low-complexity residues per query: BHF", sum(query_lc[BHF_ID]), "; copies
 CHAIN_MAX_SHIFT = 10  # the run's --chain-max-shift
 
 
-def seed_offsets(r):
+def seed_offsets(r, encode=None):
     # (offset on BHF's region, offset on the target's region) of each exact shared H/P k-mer, and
     # the offsets of every BHF and every target residue they cover. A region of one piece
     # (region_n_chained = 1) is gapless, so a k-mer sits on the same offset in both. A chained
     # region joins pieces whose diagonals differ by up to CHAIN_MAX_SHIFT, so its k-mers are
-    # matched within that shift.
-    q, t, k = to_hp(r["region_subseq"]), r["moltype_seq"], r["k"]
+    # matched within that shift. `encode` writes BHF's residues in the region's alphabet
+    # (hp_lehninger2 when not given).
+    q, t, k = (encode or to_hp)(r["region_subseq"]), r["moltype_seq"], r["k"]
     if r["region_n_chained"] == 1:
         assert len(q) == len(t)
         pairs = [(i, i) for i in range(len(q) - k + 1) if q[i:i + k] == t[i:i + k]]
@@ -1203,6 +1204,185 @@ pf.save(fig, FIG / "279_bhf_phmmer_alignments_hp_runs_vs_chance_hp_lehninger2_sw
 """)
 
 md(r"""
+### 6h. Every setting, not only hp_lehninger2
+
+Sections 6-6g look at hp_lehninger2 k17-k23 only. The run searched BHF under every alphabet,
+k-mer size and scaled value: 230 kmerseek settings. The run's report lists, for each, the
+best region on BHF (`multiqc_dark_landmark_0_plot.txt`, the "Hero query" table of the
+*B. schlosseri* report). Copied from
+`results-0.4/botryllus/botryllus_dark_set_multiqc_data/` on Sherlock on 2026-10-13.
+
+For every setting whose best region has E < 1, the run's per-task file of BHF's regions
+(`<chunk>.<setting>.landmarks.csv`, every region of BHF, every target) was copied from the
+run's work folder to `bhf-view/landmarks/`, and every region with E < 1 gets the three
+low-complexity rules of 6c. Each alphabet's letters are read from the regions themselves:
+the target's residues sit beside their letters in `moltype_seq`.
+
+**Caution, written before the regions were read.** The chance control of 6c covers
+hp_lehninger2 only. Here the best of about 135 settings with E-values is taken, so a small
+best E-value is expected even with no relative; one setting in a hundred reaching E = 0.01
+is what chance alone gives if the E-values are right. A setting's result counts as a
+candidate only if a region passes rule 3, and even then it needs its own shuffle control.
+""")
+
+code(r"""
+LANDMARK_TABLE = BHF / "multiqc" / "multiqc_dark_landmark_0_plot.txt"
+hero = pl.read_csv(LANDMARK_TABLE, separator="\t", infer_schema_length=0).with_columns(
+    pl.col("evalue").cast(pl.Float64, strict=False))
+km = hero.filter(pl.col("Sample").str.starts_with("kmerseek")).with_columns(
+    pl.col("Sample").str.extract(r"kmerseek (\S+) k\d+").alias("alphabet"),
+    pl.col("Sample").str.extract(r" k(\d+)").cast(pl.Int64).alias("ksize"),
+    pl.col("Sample").str.extract(r"scaled (\d+)").cast(pl.Int64).fill_null(1).alias("scaled"))
+km = km.with_columns(pl.col("alphabet").str.extract(r"(\d+)$").cast(pl.Int64).alias("letters"))
+print(f"kmerseek settings: {km.height}; put a region on BHF: {(km['found'] == 'yes').sum()}; "
+      f"with a best E-value (extend arms): {km['evalue'].is_not_null().sum()}")
+print("Tools:", hero.filter(~pl.col("Sample").str.starts_with("kmerseek")).select("Sample", "found", "evalue", "best_target").rows())
+cut_tab = pl.DataFrame([{"best_E_below": c, "kmerseek_settings": int((km["evalue"] < c).sum())} for c in [0.001, 0.01, 0.1, 1, 10]])
+print(cut_tab)
+print(km.filter(pl.col("evalue") < 1).sort("evalue").select("Sample", "evalue", "best_target", "query_region", "target_region", "n_regions"))
+
+# Every BHF region with E < 1 in those settings, from the run's landmark files
+LANDMARKS = BHF / "landmarks"
+lm = {}
+for f in sorted(LANDMARKS.glob("*.landmarks.csv")):
+    lm[f.name.split(".lcfalse")[0].removeprefix("chunk_0004.")] = pl.read_csv(f, infer_schema_length=0).filter(
+        pl.col("query_name") == BHF_ID).with_columns(
+        pl.col("region_evalue").cast(pl.Float64),
+        pl.col("region_start", "region_end", "target_start", "target_end", "region_n_shared_kmers", "region_n_chained", "ksize").cast(pl.Int64))
+# Each alphabet's letters, learned from every file that uses it (a small file may not show every residue)
+amaps = {}
+for setting, d in lm.items():
+    amap = amaps.setdefault(setting.split(".")[0], {})
+    for r in d.filter(pl.col("region_n_chained") == 1).iter_rows(named=True):
+        for a, letter in zip(r["target_subseq"], r["moltype_seq"]):
+            assert amap.setdefault(a, letter) == letter, f"{setting}: {a} has two letters"
+for name, amap in amaps.items():
+    assert set(bhf_seq) <= set(amap), f"{name}: BHF residues with no letter: {set(bhf_seq) - set(amap)}"
+    print(f"{name}: " + " ".join("".join(sorted(a for a in amap if amap[a] == L)) for L in sorted(set(amap.values()))))
+rows = []
+for setting, d in lm.items():
+    encode = lambda s, m=amaps[setting.split(".")[0]]: "".join(m[c] for c in s)
+    for r in d.filter(pl.col("region_evalue") < 1).rename({"ksize": "k"}).iter_rows(named=True):
+        _, qcols, tcols = seed_offsets(r, encode)
+        s0, e0 = r["region_start"], r["region_end"]
+        tmask = sm.low_complexity_mask(r["target_subseq"])
+        rows.append({"setting": setting, "target": r["target_name"], "E": r["region_evalue"], "start": s0, "end": e0,
+                     "tstart": r["target_start"], "tend": r["target_end"], "shared_kmers": r["region_n_shared_kmers"],
+                     "found_kmers": len(_), "chained": r["region_n_chained"],
+                     "region_lc": sum(lc[s0:e0]) / (e0 - s0), "seed_lc": sum(lc[s0 + j] for j in qcols) / len(qcols),
+                     "target_seed_lc": sum(tmask[j] for j in tcols) / len(tcols),
+                     "identical": sum(a == b for a, b in zip(r["region_subseq"], r["target_subseq"])) if r["region_n_chained"] == 1 else None,
+                     "q": r["region_subseq"], "t": r["target_subseq"], "qenc": encode(r["region_subseq"]), "tenc": r["moltype_seq"],
+                     "qcols": qcols, "k": r["k"]})
+low = pl.DataFrame(rows).with_columns(
+    (pl.col("region_lc") < 0.5).alias(RULES[1]), (pl.col("seed_lc") < 0.5).alias(RULES[2]),
+    ((pl.col("seed_lc") < 0.5) & (pl.col("target_seed_lc") < 0.5)).alias(RULES[3]))
+# Scaled 1 keeps every k-mer, so the count must match; scaled 10 keeps about 1 in 10, so kmerseek
+# counts only the kept ones and the exact matches found here can be more (their columns are used).
+s1 = ~low["setting"].str.contains(r"\.s10")
+assert (low.filter(s1)["found_kmers"] == low.filter(s1)["shared_kmers"]).all(), "scaled 1: count differs from kmerseek's"
+assert (low.filter(~s1)["found_kmers"] >= low.filter(~s1)["shared_kmers"]).all(), "scaled 10: fewer found than kmerseek's"
+print(f"\nShared k-mers found = region_n_shared_kmers in all {s1.sum()} scaled-1 regions with E < 1; "
+      f"at least kmerseek's count in the {(~s1).sum()} scaled-10 regions")
+low_tab = low.group_by("setting").agg(
+    pl.len().alias("regions_E_below_1"), pl.col("E").min().alias("best_E"),
+    *[pl.col(rule).sum().alias(f"kept_{i}") for i, rule in enumerate(RULES[1:], 1)],
+    pl.col("E").filter(pl.col(RULES[3])).min().alias("best_E_kept_by_rule_3")).sort("best_E")
+print(low_tab)
+low_tab.write_csv(TABLES / "279_bhf_all_settings_regions_E_below_1_low_complexity_swissprot.csv")
+print(f"Settings with E < 1 read here: {low_tab.height} of {(km['evalue'] < 1).sum()}")
+""")
+
+code(r"""
+# Residues of every region with E < 1 that rule 3 keeps
+kept3 = low.filter(pl.col(RULES[3])).sort("E")
+print(f"{kept3.height} regions with E < 1 keep their shared k-mers outside low complexity on both proteins\n")
+for r in kept3.iter_rows(named=True):
+    cols = set(r["qcols"])
+    marks = "".join("!" if (a == b and i in cols) else "|" if a == b else "^" if i in cols else " "
+                    for i, (a, b) in enumerate(zip(r["q"], r["t"])))
+    print(f"{r['setting']}  {r['target']} {uniprot_name.get(r['target'], '')[:50]}  E = {r['E']:.2g}; "
+          f"{r['shared_kmers']} shared {r['k']}-mers; {r['identical']} of {len(r['q'])} residues identical")
+    for i in range(0, len(r["q"]), 60):
+        for lab, s in [(f"BHF {r['start'] + 1 + i}", r["q"]), ("BHF letters", r["qenc"]), ("target letters", r["tenc"]),
+                       (f"{r['target']} {r['tstart'] + 1 + i}", r["t"]), ("", marks)]:
+            print(f"{lab:>18}  {s[i:i + 60]}")
+        print()
+dropped = low.filter(~pl.col(RULES[3])).sort("E").unique("setting", keep="first").sort("E")
+print("Best region each setting loses to rule 3, with residues:")
+for r in dropped.iter_rows(named=True):
+    print(f"\n{r['setting']}  {r['target']} {uniprot_name.get(r['target'], '')[:40]}  E = {r['E']:.2g}; shared k-mers in low "
+          f"complexity: BHF {r['seed_lc']:.0%}, target {r['target_seed_lc']:.0%}")
+    print(f"{'BHF ' + str(r['start'] + 1):>18}  {r['q'][:80]}")
+    print(f"{r['target'] + ' ' + str(r['tstart'] + 1):>18}  {r['t'][:80]}")
+
+# Figure: (a) every setting's best E-value by alphabet; (b) the settings with E < 1, before and after rule 3
+alph = (km.filter(pl.col("evalue").is_not_null()).group_by("alphabet").agg(pl.col("letters").first())
+        .sort("letters", "alphabet"))
+order_x, xpos, x, prev = [], {}, 0, None
+for a, n in alph.iter_rows():
+    grp = 0 if n <= 3 else 1 if n <= 8 else 2 if n <= 18 else 3
+    if prev is not None and grp != prev:
+        x += 0.8  # gap between alphabet-size groups
+    xpos[a] = x
+    order_x.append(a)
+    x += 1
+    prev = grp
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 80, ncols=2, gridspec_kw={"width_ratios": [2.2, 1]})
+ax = axs[0]
+SCALED_MARK = {1: ("o", "scaled 1"), 10: ("s", "scaled 10")}
+for sc, (mk, lab) in SCALED_MARK.items():
+    sub = km.filter(pl.col("evalue").is_not_null() & (pl.col("scaled") == sc))
+    jit = np.random.default_rng(sc).uniform(-0.25, 0.25, sub.height)
+    ax.scatter([xpos[a] + j for a, j in zip(sub["alphabet"], jit)], sub["evalue"], marker=mk, s=9,
+               facecolor=pf.OKABE_ITO["blue"] if sc == 1 else "white", edgecolor=pf.OKABE_ITO["blue"], lw=0.6,
+               label=f"kmerseek setting, {lab}: best region")
+ph = hero.filter(pl.col("Sample") == "phmmer (sequence)")["evalue"][0]
+ax.axhline(ph, color=pf.OKABE_ITO["vermillion"], lw=1, label=f"phmmer and jackhmmer best hit (E = {ph:g})")
+ax.axhline(1, color=pf.GREY, lw=0.6, ls="--", label="E = 1")
+ax.set_yscale("log")
+ax.set_xticks([xpos[a] for a in order_x], order_x, rotation=60, ha="right")
+for a in order_x:
+    ax.axvline(xpos[a], color="#e6e6e6", lw=0.3, zorder=0)
+ax.set_ylabel("Best region E-value on BHF (lower is better)")
+ax.set_xlabel("Alphabet, by number of letters (2-3, 4-8, 12-18, 20)")
+ax = axs[1]
+lt = low_tab.sort("best_E", descending=True)
+ys = list(range(lt.height))
+ax.scatter(lt["best_E"], ys, marker="o", s=14, facecolor="white", edgecolor="black", lw=0.8,
+           label="best region E < 1, before the rules")
+kept_e = lt["best_E_kept_by_rule_3"]
+ax.scatter([e for e in kept_e if e is not None], [y for y, e in zip(ys, kept_e) if e is not None], marker="D", s=16,
+           color="black", label="best region kept by rule 3")
+for y, e in zip(ys, kept_e):
+    if e is None:
+        ax.text(1.4, y, "none kept", va="center", fontsize=5)
+ax.set_xscale("log")
+ax.set_xlim(right=8)
+ax.set_yticks(ys, lt["setting"])
+for y in ys:
+    ax.axhline(y, color="#e6e6e6", lw=0.3, zorder=0)
+ax.set_xlabel("Region E-value")
+for a_, letter in zip(axs, "ab"):
+    pf.panel_label(a_, letter)
+pf.shared_legend(fig, ncol=3, title=("BHF in the dark-set run, every kmerseek setting; target Swiss-Prot minus Ascidiacea. "
+                                     "Rule 3: shared k-mers outside low complexity on BHF and on the target"), title_fontsize=6)
+pf.save(fig, FIG / "279_bhf_all_settings_best_evalue_and_low_complexity_swissprot")
+""")
+
+md(r"""
+**What 6h shows.** kmerseek put a region on BHF in 141 of 230 settings, and 10 settings have a
+best region with E < 1, more than hp_lehninger2 alone suggests. The smallest, gbmr4 k16 at
+E = 5.8e-5, and every other region below E = 0.2 fail rule 3: their shared k-mers sit in
+low-complexity stretches. gbmr4 writes K, R, E, D, S, T, N, Q and A as one letter, so BHF's
+lysine run (KTKKKAKKDKRKNK) reads the same as a glutamate run (O36421, EEEEEEEEDDEEEEE), an
+arginine run (P9WIG2, RRQRRQRRQ) or a serine and glutamate stretch (Q9SIH2, SSSESEAE). Three regions
+with E < 1 pass rule 3, at E = 0.22, 0.58 and 0.93, with 8 of 60, 5 of 91 and 2 of 28
+identical residues. Among about 133 settings with E-values, regions near E = 1 are what
+chance gives, so none of them is a candidate without its own shuffle control.
+""")
+
+md(r"""
 ### 6g. Data for the BHF explainer page
 
 The interactive page that explains this section is built by `scripts/make_bhf_explainer.py`
@@ -1250,7 +1430,23 @@ explainer = {
     "protein_p": {"zero": int((prot_p["p"] == 0).sum()), "targets": prot_p.height,
                   "at_or_below_vpx": int((prot_p["p"] <= prot_p.filter(pl.col("target_name") == "P27984")["p"][0]).sum())},
     "features": [{k_: _f(v) for k_, v in d.items()} for d in feat_tab.to_dicts()],
+    "feature_nearest": {f: kf.filter(pl.col(f)).sort("region_evalue").select(
+        "k", pl.col("target_name").alias("target"), pl.col("region_evalue").alias("E")).row(0, named=True)
+        | {"name": uniprot_name.get(kf.filter(pl.col(f)).sort("region_evalue")["target_name"][0], "").split(" (")[0]} for f in FEATS},
     "seed_counts": {"table": seed_tab.to_dicts(), "per_query": seed.select("k", "query", *SEED_MEASURES).to_dicts()},
+    "all_settings": {
+        "best": km.select("Sample", "alphabet", "letters", "ksize", "scaled", "found", pl.col("evalue").alias("E"), "best_target").to_dicts(),
+        "tools_E": hero.filter(pl.col("Sample") == "phmmer (sequence)")["evalue"][0],
+        "low_tab": [{k_: _f(v) for k_, v in d.items()} for d in low_tab.to_dicts()],
+        "kept": [{"setting": r["setting"], "target": r["target"], "name": uniprot_name.get(r["target"], ""), "E": r["E"], "k": r["k"],
+                  "start": r["start"], "end": r["end"], "tstart": r["tstart"], "q": r["q"], "t": r["t"], "seeds": r["qcols"],
+                  "identical": r["identical"], "shared_kmers": r["shared_kmers"]} for r in kept3.iter_rows(named=True)],
+        "dropped": [{"setting": r["setting"], "target": r["target"], "name": uniprot_name.get(r["target"], ""), "E": r["E"],
+                     "start": r["start"], "end": r["end"], "tstart": r["tstart"], "q": r["q"], "t": r["t"],
+                     "seed_lc": r["seed_lc"], "target_seed_lc": r["target_seed_lc"]} for r in dropped.iter_rows(named=True)],
+        "gbmr4_groups": " ".join("".join(sorted(a for a in amaps["gbmr4"] if amaps["gbmr4"][a] == L and a not in "BXZ"))
+                                 for L in sorted(set(amaps["gbmr4"].values())) if any(a not in "BXZ" for a in amaps["gbmr4"] if amaps["gbmr4"][a] == L)),
+    },
 }
 EXPLAINER_JSON = TABLES / "279_bhf_explainer_data.json"
 EXPLAINER_JSON.write_text(json.dumps(explainer, separators=(",", ":")))
@@ -1497,6 +1693,10 @@ region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. el
   (E = 3.97, 8 of 96).
 * No BHF region with E < 10 lands on a zinc finger, a membrane segment or a DNA-binding region
   of its target; the closest is a transmembrane segment of Q9UTN1 at E = 12.8.
+* Over all 230 kmerseek settings, 10 give BHF a region with E < 1, the smallest E = 5.8e-5
+  (gbmr4 k16). Every region below E = 0.2 has its shared k-mers in low complexity, such as
+  BHF's lysine run against a glutamate or arginine run, which gbmr4 writes with one letter;
+  the three that pass the low-complexity rule have E = 0.22-0.93 and 2-8 identical residues.
 * kmerseek does find phmmer's Vpx match, at the same place: BHF 134-177 on Vpx (P27984) 9-52,
   with 10 shared 17-mers at k17, but scores it E = 2_873. H/P gives at most one bit per
   column: phmmer's alignment has 26 unbroken same-class columns, a search this size expects
@@ -1531,7 +1731,8 @@ are mostly low complexity or transmembrane helix. Section 6 follows BHF alone: t
 k-mers it shares at k below 17 (6b), three low-complexity rules and a search of 100
 dipeptide-shuffled copies of BHF against the same indexes (6c), UniProt zinc finger,
 membrane and DNA-binding features under its regions' targets (6d), the residues of the
-regions left (6e), and why phmmer's Vpx match gets a large kmerseek E-value (6f). The shuffle search is the only new search in this notebook.
+regions left (6e), why phmmer's Vpx match gets a large kmerseek E-value (6f), and every other
+kmerseek setting's regions with E < 1 (6h). The shuffle search is the only new search in this notebook.
 
 ## Supplementary Information
 
@@ -1606,6 +1807,10 @@ region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. el
   (E = 3.97, 8 of 96).
 * No BHF region with E < 10 lands on a zinc finger, a membrane segment or a DNA-binding region
   of its target; the closest is a transmembrane segment of Q9UTN1 at E = 12.8.
+* Over all 230 kmerseek settings, 10 give BHF a region with E < 1, the smallest E = 5.8e-5
+  (gbmr4 k16). Every region below E = 0.2 has its shared k-mers in low complexity, such as
+  BHF's lysine run against a glutamate or arginine run, which gbmr4 writes with one letter;
+  the three that pass the low-complexity rule have E = 0.22-0.93 and 2-8 identical residues.
 * kmerseek does find phmmer's Vpx match, at the same place: BHF 134-177 on Vpx (P27984) 9-52,
   with 10 shared 17-mers at k17, but scores it E = 2_873. H/P gives at most one bit per
   column: phmmer's alignment has 26 unbroken same-class columns, a search this size expects
@@ -1640,7 +1845,8 @@ are mostly low complexity or transmembrane helix. Section 6 follows BHF alone: t
 k-mers it shares at k below 17 (6b), three low-complexity rules and a search of 100
 dipeptide-shuffled copies of BHF against the same indexes (6c), UniProt zinc finger,
 membrane and DNA-binding features under its regions' targets (6d), the residues of the
-regions left (6e), and why phmmer's Vpx match gets a large kmerseek E-value (6f). The shuffle search is the only new search in this notebook.
+regions left (6e), why phmmer's Vpx match gets a large kmerseek E-value (6f), and every other
+kmerseek setting's regions with E < 1 (6h). The shuffle search is the only new search in this notebook.
 
 ## Supplementary Information
 

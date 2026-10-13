@@ -68,6 +68,16 @@ table{border-collapse:collapse;font-size:.92rem;width:100%}
 th,td{border-bottom:1px solid var(--hair);padding:6px 8px;text-align:left;vertical-align:top}
 th{font-weight:600;color:var(--muted)}
 td.n{font-family:var(--mono);text-align:right}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{border:1px solid var(--hair);border-radius:10px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;background:var(--surface);min-width:0}
+.card h3{margin:0;font:600 1rem/1.2 var(--text)}
+.bar{display:grid;grid-template-columns:5.4em 1fr;gap:8px 10px;align-items:start;font-size:.86rem}
+.bar .lab{color:var(--muted)}
+.track{position:relative;height:12px;background:var(--chip);border-radius:3px;margin-top:4px}
+.fill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);border-radius:3px;opacity:.78}
+.val{display:block;font:12px/1.5 var(--mono);white-space:nowrap;margin-top:2px}
+.near{font-size:.85rem;color:var(--muted);border-top:1px dashed var(--hair);padding-top:8px}
+.zero{color:var(--ink);font-weight:600}
 .region-row{cursor:pointer}
 .region-row:hover td{background:var(--chip)}
 .chip{display:inline-flex;align-items:center;gap:4px;font-size:.82rem;padding:1px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
@@ -84,7 +94,7 @@ footer{max-width:860px;margin:0 auto;color:var(--muted);font-size:.9rem;display:
   <header style="display:flex;flex-direction:column;gap:12px">
     <div class="step">Notebook 279, section 6 · dark-set run · kmerseek 0.4.0-rc5</div>
     <h1>BHF Deep Dive</h1>
-    <p class="lede">BHF, the <i>Botryllus</i> histocompatibility factor, is a 252-residue tunicate protein. phmmer's best hit for it in Swiss-Prot is a viral protein, Vpx, at a weak E-value of 0.16. kmerseek finds the same place on both proteins, but scores it as chance. Everything else kmerseek reports for BHF, shuffled copies of BHF also get.</p>
+    <p class="lede">BHF, the <i>Botryllus</i> histocompatibility factor, is a 252-residue tunicate protein. phmmer's best hit for it in Swiss-Prot is a viral protein, Vpx, at a weak E-value of 0.16. kmerseek puts regions on BHF in 141 of 230 settings and finds the same Vpx match, but scores it as chance. Its smallest E-values come from BHF's lysine-rich stretch matching other low-complexity runs, and shuffled copies of BHF do as well as BHF.</p>
     <div class="facts" id="facts"></div>
   </header>
 
@@ -176,9 +186,10 @@ footer{max-width:860px;margin:0 auto;color:var(--muted);font-size:.9rem;display:
   <section class="panel" id="feat">
     <div class="step">Step 7 · Function clues</div>
     <h2>Zinc fingers, membrane anchors, DNA binding?</h2>
-    <p>For all 15_207 targets of BHF's regions, UniProt lists where their zinc fingers, transmembrane segments, lipid anchors and DNA-binding regions are. A region counts when its span on the target overlaps one. If BHF's best regions meant something, these shares would grow as E falls. They don't, and none of the regions with E &lt; 10 lands on any of them.</p>
-    <div class="fig"><table id="feattab"></table></div>
-    <p class="muted" id="featnear"></p>
+    <p>For all 15_207 targets of BHF's regions, UniProt lists where their zinc fingers, transmembrane segments, lipid anchors and DNA-binding regions are. A region counts when its span on the target overlaps one. If BHF's better regions meant something, the bars would grow from top to bottom. They don't: no region with E &lt; 10 lands on any of them.</p>
+    <div class="controls" id="kpick-feat"><label>k-mer size</label></div>
+    <div class="cards" id="featcards"></div>
+    <p class="muted">BHF itself has no predicted transmembrane helix and 4 cysteines.</p>
   </section>
 
   <section class="panel" id="smallk">
@@ -194,10 +205,34 @@ footer{max-width:860px;margin:0 auto;color:var(--muted);font-size:.9rem;display:
     <div class="readout" id="skread"></div>
   </section>
 
+  <section class="panel" id="allset">
+    <div class="step">Step 9 · Every alphabet</div>
+    <h2>Other alphabets reach smaller E-values, on the lysine run</h2>
+    <p>Steps 1-8 use one alphabet, hp_lehninger2. The run searched BHF under 230 settings: 17 alphabets, many k-mer sizes, and scaled 1 or 10 (scaled 10 keeps about 1 k-mer in 10). Each dot is one setting's best region on BHF. 10 settings go below E = 1, the best at <span class="num" id="bestall"></span>. Every region below E = 0.2 has its shared k-mers inside low complexity: rule 3 of Step 6 drops it.</p>
+    <div class="legend">
+      <span class="key"><span class="sw" style="background:var(--copy);border-radius:50%"></span>best region, E ≥ 1</span>
+      <span class="key"><span class="sw" style="background:transparent;border:1.5px solid var(--diff);border-radius:50%"></span>E &lt; 1, dropped by rule 3 (low complexity)</span>
+      <span class="key"><span class="sw" style="background:var(--ink);border-radius:50%"></span>E &lt; 1, kept by rule 3</span>
+      <span class="key"><span class="sw" style="background:var(--phmmer);height:3px"></span>phmmer's best hit</span>
+    </div>
+    <div class="fig" id="allfig"></div>
+    <div class="readout" id="allread">Tap a dot to read the setting.</div>
+    <h2 style="font-size:1.15rem">Why gbmr4 wins: four letters, and K looks like E</h2>
+    <p>gbmr4 sorts amino acids into four groups: <span class="num" id="gbgroups"></span>. Lysine, arginine, glutamate and aspartate all share one letter. So BHF's lysine run and a protein's glutamate run, which share almost no residues, become the same string. Switch the view.</p>
+    <div class="controls"><button class="seg" id="gb-aa" aria-pressed="true">amino acids</button><button class="seg" id="gb-enc" aria-pressed="false">gbmr4 letters</button></div>
+    <div class="fig"><div class="aln" id="gbaln"></div></div>
+    <div class="readout" id="gbread"></div>
+    <h2 style="font-size:1.15rem">The three regions that pass rule 3</h2>
+    <p>Each sits near E = 1. Among about 133 settings with E-values, a few regions near E = 1 are what chance gives, so none is a candidate without its own shuffle control.</p>
+    <div class="controls" id="keptpick"></div>
+    <div class="fig"><div class="aln" id="keptaln"></div></div>
+    <div class="readout" id="keptread"></div>
+  </section>
+
   <section class="panel">
     <div class="step">What this means</div>
     <h2>BHF has no relative kmerseek can tell from chance</h2>
-    <p>kmerseek sees the same Vpx match phmmer sees, so the seeds work. But at most 1 bit per column means a run of matching h/p letters must be about 36 long before chance stops explaining it. BHF's best alignment has 26. No tool here finds a convincing relative for BHF in Swiss-Prot minus ascidians: phmmer's best is E = 0.16. A claim that BHF is related to anything has to come from evidence other than these E-values.</p>
+    <p>kmerseek puts many regions on BHF: 141 of 230 settings find something. Under hp_lehninger2 it sees the same Vpx match phmmer sees, but at most 1 bit per column means a run of matching h/p letters must be about 36 long before chance stops explaining it, and BHF's best has 26. Other alphabets reach E-values as small as 0.00006, but only by matching BHF's lysine run to other low-complexity runs. What survives the low-complexity rule sits near E = 1, where chance puts some region in a search this large. No tool here finds a convincing relative for BHF in Swiss-Prot minus ascidians: phmmer's best is E = 0.16. A claim that BHF is related to anything needs evidence other than these E-values.</p>
   </section>
 </main>
 <footer>
@@ -209,7 +244,7 @@ footer{max-width:860px;margin:0 auto;color:var(--muted);font-size:.9rem;display:
 const D = /*__DATA__*/;
 const KS = [17, 19, 21, 23];
 const NS = "http://www.w3.org/2000/svg";
-const fmtE = e => e == null ? "none" : e >= 100 ? Math.round(e).toLocaleString("en-US").replace(/,/g, "_") : e >= 10 ? e.toFixed(1) : e.toFixed(2);
+const fmtE = e => e == null ? "none" : e >= 100 ? Math.round(e).toLocaleString("en-US").replace(/,/g, "_") : e >= 10 ? e.toFixed(1) : e >= 0.01 ? e.toFixed(2) : e.toExponential(1);
 const fmtN = n => Math.round(n).toLocaleString("en-US").replace(/,/g, "_");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const H = new Set(D.bhf.hp_h.split(""));
@@ -433,14 +468,28 @@ function alignment(box, q, t, seeds, qFrom, tFrom, tName) {
   show(0);
 })();
 
-// ---- Step 7: features
+// ---- Step 7: features, one card per feature, three bars per card
 (function feat() {
-  const tab = document.getElementById("feattab"), tiers = ["all regions", "E < 100", "E < 10"];
-  const cell = r => r.regions ? `${r["% on zinc finger"]}% · ${r["% on membrane"]}% · ${r["% on DNA binding"]}%<br><span class="muted">of ${fmtN(r.regions)}</span>` : `<span class="muted">no region</span>`;
-  tab.innerHTML = `<thead><tr><th>k</th>${tiers.map(t => `<th>${t}</th>`).join("")}</tr></thead><tbody>` +
-    KS.map(k => `<tr><td class="num">${k}</td>${tiers.map(t => `<td class="num">${cell(D.features.find(r => r.k === k && r["regions with"] === t))}</td>`).join("")}</tr>`).join("") + "</tbody>";
-  tab.insertAdjacentHTML("beforebegin", `<p class="muted" style="font-size:.88rem">Each cell: share of regions on a zinc finger · membrane segment · DNA-binding region of the target.</p>`);
-  document.getElementById("featnear").textContent = "The closest: a transmembrane segment of Q9UTN1 at E = 12.8, a zinc finger of BYE1 (Q6C0K9) at E = 34.9, and the Nkx-6.1 homeobox at E = 59.4. BHF itself has no predicted transmembrane helix.";
+  let k = 17;
+  const box = document.getElementById("featcards"), tiers = ["all regions", "E < 100", "E < 10"];
+  const FEAT = [["zinc finger", "Zinc finger"], ["membrane", "Membrane anchor"], ["DNA binding", "DNA-binding region"]];
+  const maxPct = Math.max(...D.features.map(r => r["% on zinc finger"] || 0).concat(D.features.map(r => r["% on membrane"] || 0), D.features.map(r => r["% on DNA binding"] || 0)));
+  function draw() {
+    box.innerHTML = FEAT.map(([f, title]) => {
+      const bars = tiers.map(tier => {
+        const r = D.features.find(x => x.k === k && x["regions with"] === tier);
+        if (!r || !r.regions) return `<div class="lab">${tier}</div><div class="muted" style="font-size:.85rem">no region at this E</div>`;
+        const pct = r[`% on ${f}`], n = r[`on ${f}`], w = 100 * pct / maxPct;
+        return `<div class="lab">${tier}</div><div><div class="track" title="${n} of ${r.regions} regions"><div class="fill" style="width:${w}%"></div></div>` +
+          `<span class="val"><span class="${n === 0 ? "zero" : ""}">${pct}%</span> <span class="muted">${fmtN(n)} of ${fmtN(r.regions)}</span></span></div>`;
+      }).join("");
+      const nr = D.feature_nearest[f];
+      return `<div class="card"><h3>${title}</h3><div class="bar">${bars}</div>` +
+        `<div class="near">Closest region on one: ${esc(nr.target)} ${esc(nr.name)}, E = ${fmtE(nr.E)} (k${nr.k})</div></div>`;
+    }).join("");
+  }
+  segButtons(document.getElementById("kpick-feat"), KS, k, v => { k = v; draw(); }, v => `k${v}`);
+  draw();
 })();
 
 // ---- Step 8: small k
@@ -478,5 +527,86 @@ function alignment(box, q, t, seeds, qFrom, tFrom, tName) {
   b.addEventListener("click", () => { m = "max_shared"; b.setAttribute("aria-pressed", "true"); a.setAttribute("aria-pressed", "false"); draw(); });
   draw();
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+})();
+// ---- Step 9: every alphabet
+(function allset() {
+  const A = D.all_settings, fig = document.getElementById("allfig"), read = document.getElementById("allread");
+  const withE = A.best.filter(r => r.E != null);
+  const best = withE.reduce((a, b) => (b.E < a.E ? b : a));
+  document.getElementById("bestall").textContent = `E = ${best.E.toExponential(1)} (${best.alphabet} k${best.ksize})`;
+  const status = new Map(A.low_tab.map(r => [r.setting, r.best_E_kept_by_rule_3 != null]));
+  const key = r => `${r.alphabet}.k${r.ksize}.s${r.scaled}`;
+  const alphs = [...new Map(withE.map(r => [r.alphabet, r.letters])).entries()].sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]));
+  const grp = n => n <= 3 ? 0 : n <= 8 ? 1 : n <= 18 ? 2 : 3;
+  let xi = 0, prev = null; const xpos = {};
+  for (const [a, n] of alphs) { if (prev !== null && grp(n) !== prev) xi += 0.7; xpos[a] = xi++; prev = grp(n); }
+  const W = 820, Hh = 330, x0 = 64, x1 = W - 12, y0 = 14, y1 = Hh - 110;
+  const lmin = Math.log10(Math.min(...withE.map(r => r.E)) / 3), lmax = Math.log10(Math.max(...withE.map(r => r.E)) * 2);
+  const sx = v => x0 + (x1 - x0) * (v + .5) / xi, sy = e => y1 - (y1 - y0) * (Math.log10(e) - lmin) / (lmax - lmin);
+  function jit(i) { const x = Math.sin(i * 91.17) * 43758.5453; return (x - Math.floor(x)) - .5; }
+  function draw() {
+    fig.innerHTML = "";
+    const svg = el("svg", {width: W, height: Hh, viewBox: `0 0 ${W} ${Hh}`, role: "img", "aria-label": "Best region E-value on BHF for every setting"}, fig);
+    for (let e = Math.ceil(lmin); e <= Math.floor(lmax); e += 2) {
+      el("line", {x1: x0, x2: x1, y1: sy(10 ** e), y2: sy(10 ** e), stroke: css("--hair")}, svg);
+      el("text", {x: x0 - 6, y: sy(10 ** e) + 4, "text-anchor": "end", "font-size": 11, class: "mut"}, svg).textContent = e >= 0 ? fmtN(10 ** e) : (10 ** e).toPrecision(1).replace(/^1e/, "1e");
+    }
+    el("line", {x1: x0, x2: x1, y1: sy(1), y2: sy(1), stroke: css("--muted"), "stroke-dasharray": "3 3"}, svg);
+    el("text", {x: x1, y: sy(1) - 4, "text-anchor": "end", "font-size": 11, class: "mut"}, svg).textContent = "E = 1";
+    el("line", {x1: x0, x2: x1, y1: sy(A.tools_E), y2: sy(A.tools_E), stroke: css("--phmmer"), "stroke-width": 1.5}, svg);
+    el("text", {x: 12, y: (y0 + y1) / 2, "font-size": 12, transform: `rotate(-90 12 ${(y0 + y1) / 2})`, "text-anchor": "middle"}, svg).textContent = "best region E-value";
+    for (const [a] of alphs) {
+      el("line", {x1: sx(xpos[a]), x2: sx(xpos[a]), y1: y0, y2: y1, stroke: css("--hair"), "stroke-width": .5}, svg);
+      el("text", {x: sx(xpos[a]), y: y1 + 10, "font-size": 11, transform: `rotate(55 ${sx(xpos[a])} ${y1 + 10})`, class: "mut"}, svg).textContent = a;
+    }
+    withE.forEach((r, i) => {
+      const x = sx(xpos[r.alphabet]) + 16 * jit(i + 1), y = sy(r.E), kept = status.get(key(r));
+      const c = r.E >= 1 ? el("circle", {cx: x, cy: y, r: 3.3, fill: css("--copy"), "fill-opacity": .7}, svg)
+        : kept ? el("circle", {cx: x, cy: y, r: 4.5, fill: css("--ink")}, svg)
+        : el("circle", {cx: x, cy: y, r: 4.5, fill: "none", stroke: css("--diff"), "stroke-width": 2}, svg);
+      c.setAttribute("tabindex", 0); c.style.cursor = "pointer";
+      const msg = `${r.alphabet} k${r.ksize}${r.scaled > 1 ? ` scaled ${r.scaled}` : ""}: best region E = ${fmtE(r.E)} on ${r.best_target}` +
+        (r.E < 1 ? (kept ? ". Its best region passes rule 3." : ". Dropped by rule 3: its shared k-mers sit in low complexity.") : "");
+      c.addEventListener("click", () => read.textContent = msg); c.addEventListener("keydown", ev => { if (ev.key === "Enter") read.textContent = msg; });
+    });
+  }
+  draw();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+
+  // gbmr4: BHF's lysine run against O36421's glutamate run
+  const groups = A.gbmr4_groups.split(" ");
+  document.getElementById("gbgroups").textContent = groups.join(" · ");
+  const gmap = {}; groups.forEach((g, i) => [...g].forEach(c => gmap[c] = "abcd"[i]));
+  const ex = A.dropped.find(r => r.setting.startsWith("gbmr4") && r.target === "O36421") || A.dropped[0];
+  const gb = document.getElementById("gbaln");
+  function showGb(enc) {
+    const q = ex.q, tt = ex.t, f = s => enc ? [...s].map(c => gmap[c] || "?").join("") : s;
+    const fq = f(q), ft = f(tt), W2 = 50;
+    let html = "";
+    for (let a = 0; a < q.length; a += W2) {
+      const idx = [...Array(Math.min(W2, q.length - a)).keys()].map(j => a + j);
+      const cell = (s, other) => idx.map(i => `<span style="${s[i] === other[i] ? "background:color-mix(in srgb,var(--hp) 30%,transparent);border-radius:2px" : ""}">${s[i]}</span>`).join("");
+      html += `<div class="lab">BHF ${ex.start + 1 + a}</div><div class="row">${cell(fq, ft)}</div><div class="lab">${ex.target} ${ex.tstart + 1 + a}</div><div class="row">${cell(ft, fq)}</div>` +
+        (a + W2 < q.length ? `<div style="height:8px"></div><div></div>` : "");
+    }
+    gb.innerHTML = html;
+    const same = [...fq].filter((c, i) => c === ft[i]).length;
+    document.getElementById("gbread").innerHTML = `${ex.setting.replace(".s1", "")}, ${ex.target} ${esc(ex.name.split(" (")[0])}: E = ${fmtE(ex.E)}. ` +
+      `Green marks a column where the two match: <b class="num">${same}</b> of ${q.length} in ${enc ? "gbmr4 letters" : "amino acids"}.`;
+  }
+  const b1 = document.getElementById("gb-aa"), b2 = document.getElementById("gb-enc");
+  b1.addEventListener("click", () => { b1.setAttribute("aria-pressed", "true"); b2.setAttribute("aria-pressed", "false"); showGb(false); });
+  b2.addEventListener("click", () => { b2.setAttribute("aria-pressed", "true"); b1.setAttribute("aria-pressed", "false"); showGb(true); });
+  showGb(false);
+
+  // The three regions kept by rule 3
+  const kbox = document.getElementById("keptaln"), kread = document.getElementById("keptread");
+  segButtons(document.getElementById("keptpick"), A.kept, A.kept[0], r => showKept(r), r => `${r.target}, E ${fmtE(r.E)}`);
+  function showKept(r) {
+    alignment(kbox, r.q, r.t, r.seeds, r.start + 1, r.tstart + 1, r.target);
+    kread.innerHTML = `${r.setting}: ${esc(r.target)} ${esc(r.name.split(" (")[0])}, E = ${fmtE(r.E)}, ${r.shared_kmers} shared ${r.k}-mer${r.shared_kmers > 1 ? "s" : ""}, ` +
+      `${r.identical} of ${r.q.length} residues identical. The colour row uses h/p letters for all three, as in Step 3.`;
+  }
+  showKept(A.kept[0]);
 })();
 </script>
