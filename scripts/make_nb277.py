@@ -56,8 +56,8 @@ family AUCs, not before any result.
 2. *Which mismatch penalty C to run by default.* The setting that gives the best family AUC for
    the most alphabets.
 3. *Whether the k range must go lower.* If the best k sits at the alphabet's k_min for most
-   alphabets, sensitivity is still rising at the bottom of the range, and the sweep has to
-   extend below k_min before any "best k" is quoted.
+   alphabets, sensitivity may still be rising at the bottom of the range, and the sweep has to
+   extend below k_min before any "best k" is quoted. Section 6 runs that test.
 4. *Whether SCOPe40 supports the hydrophobic-polar (HP) alphabets.* If the best HP family AUC
    reaches half of MMseqs2's, SCOPe40 goes in the paper as support for HP; otherwise the HP
    case is made on the domain benchmarks, and SCOPe40 is reported for protein20 and the
@@ -444,9 +444,90 @@ pf.save(fig, FIG_DIR / f"{FIG_STEM}_extension_vs_exact", formats=("pdf", "png"))
 """)
 
 md(r"""
-## 6. Answers to the four decisions
+## 6. Below k_min: the follow-up run
 
-The numbers each decision rests on, from the tables and figures of sections 1-5.
+Section 3 left one question open: for 10 of 19 alphabets the best k was the lowest k run, so
+sensitivity might keep rising at smaller k. A second run on Sherlock (step 1 of the
+[PR 107](https://github.com/seanome/2024-kmerseek-analysis/pull/107) follow-up, head job
+47546661, 2026-10-12, same image and settings) searched k_min − 1 and k_min − 2 for the 16
+alphabets whose best family or superfamily AUC sat at k_min, never under 15 bits per k-mer
+(k × log2 classes). That is 27 alphabet-ksize pairs and 162 searches; all 162 scored.
+funcgroups8, gbmr4 and hp_pbotc_1st_ed2 were left out: their best k was above k_min.
+
+The rule was set before this run: if the best AUC below k_min beats the best at k_min to k_max
+for most alphabets, the sweep's k range moves down; otherwise k_min stands as the lower end and
+section 3's best k-sizes are final.
+
+The figure puts both runs on one row per alphabet: a circle at the best AUC of the first sweep
+(k_min to k_max), a triangle at the best AUC below k_min, each labelled with its k. A triangle to
+the left of its circle means the smaller k-sizes did worse. Hits are ranked as in section 3.
+""")
+
+code(r"""
+BELOW_TSV = Path(os.environ.get(
+    "NB277_BELOW_TSV",
+    Path.home() / "data/scope/results-scope40-alphabet-ksize-v040-below-kmin/scope40_v040_auc.tsv",
+))
+print(BELOW_TSV)
+print("sha256", hashlib.sha256(BELOW_TSV.read_bytes()).hexdigest())
+below_auc = pl.read_csv(BELOW_TSV, separator="\t")
+print(below_auc.group_by("status").len().sort("status"))
+
+
+def best_per_alphabet(d, tag):
+    "Best AUC per alphabet and level, hits ranked by region_evalue (extension) or jaccard (exact)."
+    d = d.filter(pl.col("status") == "ok").filter(
+        (pl.col("setting").is_in(EXTENSION_SETTINGS) & (pl.col("score") == "region_evalue"))
+        | ((pl.col("setting") == "exact") & (pl.col("score") == EXACT_SCORE)))
+    return (d.sort("auc_ref", descending=True).group_by("alphabet", "level").head(1)
+            .select("alphabet", "level", pl.col("ksize").alias(f"k_{tag}"),
+                    pl.col("setting").alias(f"setting_{tag}"), pl.col("auc_ref").alias(f"auc_{tag}")))
+
+
+compare = (best_per_alphabet(below_auc, "below").join(best_per_alphabet(auc, "first"), on=["alphabet", "level"])
+           .join(ks.select("alphabet", "k_min"), on="alphabet")
+           .filter(pl.col("level").is_in(["family", "superfamily", "fold"]))
+           .with_columns((pl.col("auc_below") - pl.col("auc_first")).alias("change"))
+           .sort("level", "alphabet"))
+print("How many alphabets do better below k_min")
+print(compare.group_by("level").agg((pl.col("change") > 0).sum().alias("n_better_below_kmin"),
+                                    pl.len().alias("n_alphabets"), pl.col("change").max().alias("largest_change"),
+                                    pl.col("change").median().alias("median_change")).sort("level"))
+print("Best AUC per alphabet, first sweep (k_min to k_max) and below k_min")
+print(compare.filter(pl.col("level") != "fold").sort("level", "auc_first", descending=[False, True]))
+
+BELOW_COLOUR = {"first": pf.OKABE_ITO["blue"], "below": pf.OKABE_ITO["vermillion"]}
+below_alphabets = [a for a in ALPHABETS if a in set(compare["alphabet"])]
+bpos = alphabet_positions(below_alphabets)
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 85, ncols=2, sharey=True)
+for ax, level in zip(axs, LEVELS):
+    sub = compare.filter(pl.col("level") == level)
+    for r in sub.iter_rows(named=True):
+        y = bpos[r["alphabet"]]
+        ax.plot([r["auc_below"], r["auc_first"]], [y, y], color=pf.GREY, lw=0.5, zorder=1)
+        left_first = r["auc_first"] < r["auc_below"]
+        ax.annotate(f"k{r['k_first']}", (r["auc_first"], y), xytext=(-4 if left_first else 4, 0),
+                    textcoords="offset points", va="center", ha="right" if left_first else "left", fontsize=5)
+        ax.annotate(f"k{r['k_below']}", (r["auc_below"], y), xytext=(4 if left_first else -4, 0),
+                    textcoords="offset points", va="center", ha="left" if left_first else "right", fontsize=5)
+    ax.scatter(sub["auc_first"], [bpos[a] for a in sub["alphabet"]], s=12, marker="o",
+               color=BELOW_COLOUR["first"], zorder=2, label="best at k_min to k_max (first sweep)")
+    ax.scatter(sub["auc_below"], [bpos[a] for a in sub["alphabet"]], s=14, marker="v",
+               color=BELOW_COLOUR["below"], zorder=3, label="best at k_min − 1 or k_min − 2 (follow-up)")
+    alphabet_axis(ax, bpos)
+    ax.set_xlim(0, sub.select(pl.max_horizontal("auc_first", "auc_below")).max().item() * 1.15)
+    ax.set_xlabel(f"{level} sensitivity AUC (5_713 FoldSeek queries)")
+pf.panel_label(axs[0], "a", dx_pt=-95)
+pf.panel_label(axs[1], "b")
+pf.shared_legend(fig, ncol=2, title="kmerseek 0.4.0, hits ranked by region_evalue (extension) or jaccard (exact); "
+                                    "query and target: SCOPe40 (15_177 domains); 16 alphabets")
+pf.save(fig, FIG_DIR / f"{FIG_STEM}_below_kmin", formats=("pdf", "png"))
+""")
+
+md(r"""
+## 7. Answers to the four decisions
+
+The numbers each decision rests on, from the tables and figures of sections 1-6.
 """)
 
 code(r"""
@@ -461,6 +542,9 @@ n_kmin = int(fam_best["best_k_is_k_min"].sum())
 near = fam_best.filter(pl.col("ksize") <= pl.col("k_min") + 1).height
 print(f"3. Best k is the alphabet's k_min for {n_kmin} of {fam_best.height} alphabets; "
       f"k_min or k_min + 1 for {near} of {fam_best.height}")
+for lv, g in compare.group_by("level", maintain_order=True):
+    print(f"3. Below k_min ({lv[0]}): better for {int((g['change'] > 0).sum())} of {g.height} alphabets, "
+          f"largest change {g['change'].max():+.4f}")
 hp_best = fam_best.filter(pl.col("alphabet").str.starts_with("hp_")).sort("auc_ref", descending=True).row(0, named=True)
 mm = TOOL_AUC[("MMseqs2", "family")]
 print(f"4. Best HP family AUC: {hp_best['alphabet']} k{hp_best['ksize']} {hp_best['setting']} = "
@@ -484,12 +568,11 @@ On the same queries FoldSeek reaches 0.817 and MMseqs2 0.403.
    19 alphabets, including every 12-20 letter alphabet. For the 2-3 letter HP alphabets c_max and
    C = 2 differ by at most 0.004. c_min is the worst setting: it is refused on 119 of 229
    alphabet-ksize pairs and never beats exact matching (0 of 110 pairs).
-3. **Extend the k range below k_min for the 12-20 letter alphabets, not for HP.** The best k is
-   the lowest k run for 10 of 19 alphabets, and k_min or k_min + 1 for 17 of 19. For protein20,
-   mmseqs12, sdm12 and uniprot18, AUC falls with every step up in k from k_min (section 3).
-   The HP alphabets peak inside their range, at k 18 or 19 against a k_min of 17 or 18
-   (section 4); two of seven peak at k_min. No best k for the larger alphabets is final until
-   a run goes lower.
+3. **k_min is the peak; the k range does not move down.** The best k was the lowest k run for 10
+   of 19 alphabets, and k_min or k_min + 1 for 17 of 19 (sections 3 and 4). The follow-up run
+   below k_min (section 6) did worse: the best family AUC below k_min is lower for 16 of 16
+   alphabets, superfamily for 14 of 16 (largest gain 0.003) and fold for 15 of 16 (largest gain
+   0.0002). The best k-sizes in section 3 stand.
 4. **SCOPe40 does not support the HP case.** The best HP alphabet, hp_thomas_dill2 at k 19 and
    C = 2, reaches 0.115, under half of MMseqs2 (0.202 would be half). The 12-20 letter
    alphabets reach 0.197 (wass14) to 0.295 (mmseqs12), half to three quarters of MMseqs2. At superfamily level the best kmerseek
