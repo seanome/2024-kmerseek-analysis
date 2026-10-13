@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import os
 import re
 import sys
 import urllib.request
@@ -308,6 +309,10 @@ def main(argv=None) -> int:
 
     pf.use_style()
     mpl.rcParams["savefig.bbox"] = None  # keep the figure exactly 89 mm wide
+    # Same bytes on every run, so a rerun with no change leaves git clean: a fixed date in
+    # the PDF and SVG, and fixed SVG clip-path ids.
+    os.environ["SOURCE_DATE_EPOCH"] = "0"
+    mpl.rcParams["svg.hashsalt"] = "hp_borderline_residues"
     fig, ax = draw(alphabets, order)
     fig.canvas.draw()
     check_layout(fig, ax)
