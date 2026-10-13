@@ -1,0 +1,329 @@
+#!/usr/bin/env python3
+"""Does a kmerseek region (or a sequence-tool hit) land on the Pfam domain the protein has?
+
+    tools/pfam-check domains <Pfam-A.regions.tsv.gz> <Pfam-A.clans.tsv.gz> <out.tsv.gz> <accessions.txt> [...]
+    tools/pfam-check scan <regions.csv.zst> <domains.tsv.gz> <reference.fasta> <out_dir>
+    tools/pfam-check tools <species> <hits_dir> <domains.tsv.gz> <out_dir>
+    tools/pfam-check summarize <protein-evalues dir> <scan_dir> <out_dir> [species ...]
+
+domains    keeps the Pfam-A domains (envelope seq_start..seq_end, 1-based, inclusive) of the
+           accessions listed, with each family's clan, and prints how many accessions have
+           any domain.
+scan       streams one kmerseek region file and scores every region with region_evalue < 10.
+           Writes <out_dir>/<file>.queries.tsv.gz, one row per query with any such region:
+             min_e_any          smallest region E-value
+             min_e_target_ok    smallest E of a region whose TARGET side lands on a domain of
+                                a family the query has (anywhere on the query)
+             min_e_right        smallest E of a region on the right domain: query side on a
+                                domain of family F and target side on a domain of family F
+             min_e_right_clan   the same, with F the Pfam clan (a family with no clan is its
+                                own clan)
+             min_e_chance       min_e_right with the region's target side swapped for that of
+                                a random earlier region of the same file (seeded): what the
+                                rule gives when query and target are unrelated
+             min_e_target_ok_chance  min_e_target_ok after the same swap
+           A region whose target_subseq is not the reference sequence at target_start..
+           target_end (kmerseek 0.4.0 gives an alias target another sequence's coordinates,
+           kmerseek PR 141) keeps its min_e_any but is left out of every domain check; the
+           count is printed.
+tools      the same target-side check for phmmer, jackhmmer and mmseqs2 hits (their tables
+           keep target coordinates only, so only min_e_any, min_e_target_ok and its chance
+           version exist). Writes <out_dir>/<species>.<tool>.queries.tsv.gz.
+summarize  joins the per-file tables per setting and counts, per species, setting, protein
+           group and cutoff, the proteins with a Pfam domain that have a region / a right one.
+
+"Lands on a domain": at least half of the region's residues are inside the domain's
+envelope. kmerseek region coordinates are 0-based and end-exclusive; Pfam's are 1-based
+and inclusive.
+
+Added 2026-10-13, when Olga asked whether kmerseek finds the known domain, on dark proteins
+and on all proteins. Python 3.6, standard library only.
+"""
+import collections
+import csv
+import glob
+import gzip
+import math
+import os
+import random
+import re
+import subprocess
+import sys
+
+csv.field_size_limit(10 ** 9)
+MAX_E = 10.0
+CUTOFFS = (1.0, 10.0)
+CHANCE_BUFFER = 4096
+FIELDS = ["min_e_any", "min_e_target_ok", "min_e_right", "min_e_right_clan", "min_e_chance",
+          "min_e_target_ok_chance"]
+TOOL_FIELDS = ["min_e_any", "min_e_target_ok", "min_e_target_ok_chance"]
+TOOLS = ("phmmer", "jackhmmer", "mmseqs2")
+NAME = re.compile(r"^chunk_\d+\.(?P<alphabet>.+)\.k(?P<ksize>\d+)\.s(?P<scaled>\d+)"
+                  r"\.lc(?P<lc>true|false)\.(?P<ext>exact|extend-c[0-9.]+)\.queries\.tsv\.gz$")
+
+
+def cmd_domains(regions, clans, out, *acc_files):
+    wanted = set()
+    for f in acc_files:
+        with open(f) as fh:
+            wanted.update(l.strip() for l in fh if l.strip())
+    clan_of = {}
+    with gzip.open(clans, "rt") as fh:
+        for line in fh:
+            p = line.rstrip("\n").split("\t")
+            clan_of[p[0]] = p[1] if len(p) > 1 and p[1] else p[0]
+    seen = set()
+    n = 0
+    with gzip.open(regions, "rt") as fh, gzip.open(out, "wt") as fo:
+        header = fh.readline().rstrip("\n").split("\t")
+        i = {k: header.index(k) for k in ("pfamseq_acc", "pfamA_acc", "seq_start", "seq_end")}
+        fo.write("accession\tpfam\tclan\tstart\tend\n")
+        for line in fh:
+            acc = line[:line.index("\t")]
+            if acc not in wanted:
+                continue
+            p = line.rstrip("\n").split("\t")
+            fam = p[i["pfamA_acc"]]
+            fo.write("%s\t%s\t%s\t%s\t%s\n" % (acc, fam, clan_of.get(fam, fam),
+                                               p[i["seq_start"]], p[i["seq_end"]]))
+            seen.add(acc)
+            n += 1
+    print("%d accessions asked for, %d with at least one Pfam-A domain, %d domains"
+          % (len(wanted), len(seen), n))
+
+
+def load_domains(path):
+    doms = collections.defaultdict(list)
+    with gzip.open(path, "rt") as fh:
+        next(fh)
+        for line in fh:
+            acc, fam, clan, s, e = line.rstrip("\n").split("\t")
+            doms[acc].append((fam, clan, int(s), int(e)))
+    return doms
+
+
+def on_domains(doms, start0, end0):
+    """(families, clans) of the domains that hold at least half of residues start0+1..end0."""
+    length = end0 - start0
+    fams, clans = set(), set()
+    if length <= 0:
+        return fams, clans
+    for fam, clan, s, e in doms:
+        overlap = min(end0, e) - max(start0 + 1, s) + 1
+        if overlap > 0 and 2 * overlap >= length:
+            fams.add(fam)
+            clans.add(clan)
+    return fams, clans
+
+
+def update(best, q, field_idx, ev):
+    row = best.get(q)
+    if row is None:
+        row = best[q] = [math.inf] * len(FIELDS)
+    if ev < row[field_idx]:
+        row[field_idx] = ev
+
+
+def write_best(best, fields, out):
+    tmp = out + ".tmp"
+    with gzip.open(tmp, "wt") as fo:
+        fo.write("query\t" + "\t".join(fields) + "\n")
+        for q in sorted(best):
+            fo.write(q + "\t" + "\t".join(repr(v) for v in best[q]) + "\n")
+    os.replace(tmp, out)
+
+
+def read_fasta(path):
+    seqs, name, buf = {}, None, []
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if name is not None:
+                    seqs[name] = "".join(buf)
+                name, buf = line[1:].strip().split()[0], []
+            else:
+                buf.append(line.strip())
+    if name is not None:
+        seqs[name] = "".join(buf)
+    return seqs
+
+
+def cmd_scan(path, domains_path, reference, out_dir):
+    doms = load_domains(domains_path)
+    ref = read_fasta(reference)
+    fam_all = {a: set(d[0] for d in v) for a, v in doms.items()}
+    rng = random.Random(os.path.basename(path))
+    buf = []
+    best = {}
+    proc = subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE, universal_newlines=True)
+    header = next(csv.reader([proc.stdout.readline()]))
+    need = ["query_name", "target_name", "region_start", "region_end", "target_start",
+            "target_end", "region_evalue", "target_subseq"]
+    out = os.path.join(out_dir, os.path.basename(path).replace(".regions.csv.zst", ".queries.tsv.gz"))
+    if any(k not in header for k in need):
+        rest = sum(1 for _ in proc.stdout)
+        proc.wait()
+        if rest:
+            sys.exit("%s: %d rows but columns missing from the header %s" % (path, rest, header))
+        write_best({}, FIELDS, out)
+        print("%s: no regions (search refused)" % os.path.basename(path))
+        return
+    ix = [header.index(k) for k in need]
+    ncol = len(header)
+    n_in = n_kept = n_bad = 0
+    for line in proc.stdout:
+        n_in += 1
+        row = next(csv.reader([line])) if line.startswith('"') else line.rstrip("\n").split(",")
+        if len(row) != ncol:
+            sys.exit("%s: row %d has %d fields, header %d" % (path, n_in, len(row), ncol))
+        q, t, rs, re_, ts, te, ev, tsub = (row[i] for i in ix)
+        ev = float(ev) if ev else math.inf
+        if not ev < MAX_E:
+            continue
+        n_kept += 1
+        rs, re_, ts, te = int(rs), int(re_), int(ts), int(te)
+        update(best, q, 0, ev)
+        if ref.get(t, "")[ts:te] != tsub:
+            n_bad += 1
+            continue
+        qd = doms.get(q)
+        if qd:
+            qf_all = fam_all[q]
+            qf, qc = on_domains(qd, rs, re_)
+            tf, tc = on_domains(doms.get(t, ()), ts, te)
+            if tf & qf_all:
+                update(best, q, 1, ev)
+            if qf & tf:
+                update(best, q, 2, ev)
+            if qc & tc:
+                update(best, q, 3, ev)
+            if buf:
+                ct, cts, cte = buf[rng.randrange(len(buf))]
+                cf, _ = on_domains(doms.get(ct, ()), cts, cte)
+                if qf & cf:
+                    update(best, q, 4, ev)
+                if cf & qf_all:
+                    update(best, q, 5, ev)
+        if len(buf) < CHANCE_BUFFER:
+            buf.append((t, ts, te))
+        else:
+            buf[rng.randrange(CHANCE_BUFFER)] = (t, ts, te)
+    if proc.wait() != 0:
+        sys.exit("zstdcat failed on %s" % path)
+    write_best(best, FIELDS, out)
+    print("%s: %d regions read, %d with E < %g, %d queries, %d target coordinates wrong"
+          % (os.path.basename(path), n_in, n_kept, MAX_E, len(best), n_bad))
+
+
+def cmd_tools(species, hits_dir, domains_path, out_dir):
+    doms = load_domains(domains_path)
+    fam_all = {a: set(d[0] for d in v) for a, v in doms.items()}
+    for tool in TOOLS:
+        files = sorted(glob.glob(os.path.join(hits_dir, "%s.chunk_*.%s.tsv.gz" % (species, tool))))
+        if not files:
+            sys.exit("no %s hit files for %s in %s" % (tool, species, hits_dir))
+        rng = random.Random(species + tool)
+        buf, best, n = [], {}, 0
+        for f in files:
+            with gzip.open(f, "rt") as fh:
+                for line in fh:
+                    p = line.rstrip("\n").split("\t")
+                    if len(p) < 6:
+                        continue
+                    q, t, ts, te, ev = p[0], p[1], int(p[2]), int(p[3]), float(p[5])
+                    if not ev < MAX_E:
+                        continue
+                    n += 1
+                    row = best.setdefault(q, [math.inf] * 3)
+                    row[0] = min(row[0], ev)
+                    if q in fam_all:
+                        # Hit tables are 1-based inclusive; on_domains takes 0-based start.
+                        tf, _ = on_domains(doms.get(t, ()), ts - 1, te)
+                        if tf & fam_all[q]:
+                            row[1] = min(row[1], ev)
+                        if buf:
+                            ct, cts, cte = buf[rng.randrange(len(buf))]
+                            cf, _ = on_domains(doms.get(ct, ()), cts - 1, cte)
+                            if cf & fam_all[q]:
+                                row[2] = min(row[2], ev)
+                    if len(buf) < CHANCE_BUFFER:
+                        buf.append((t, ts, te))
+                    else:
+                        buf[rng.randrange(CHANCE_BUFFER)] = (t, ts, te)
+        write_best(best, TOOL_FIELDS, os.path.join(out_dir, "%s.%s.queries.tsv.gz" % (species, tool)))
+        print("%s %s: %d hits with E < %g, %d queries" % (species, tool, n, MAX_E, len(best)))
+
+
+def read_best(path):
+    out = {}
+    with gzip.open(path, "rt") as fh:
+        cols = next(fh).rstrip("\n").split("\t")[1:]
+        for line in fh:
+            p = line.rstrip("\n").split("\t")
+            out[p[0]] = [float(v) for v in p[1:]]
+    return cols, out
+
+
+def cmd_summarize(evalues_dir, scan_dir, out_dir, *species_list):
+    species_list = species_list or ("human", "worm", "yeast", "borrelia")
+    doms = load_domains(os.path.join(scan_dir, "domains.tsv.gz"))
+    rows = []
+    for sp in species_list:
+        tool_min = {}
+        with gzip.open(os.path.join(evalues_dir, "%s_protein_tool_min_evalue.csv.gz" % sp), "rt") as fh:
+            r = csv.reader(fh)
+            next(r)
+            for row in r:
+                tool_min[row[0]] = min([float(v) for v in row[1:] if v] or [math.inf])
+        with_pfam = set(a for a in tool_min if a in doms)
+        groups = {"all": with_pfam}
+        for c in CUTOFFS:
+            groups["dark_E%g" % c] = set(a for a in with_pfam if not tool_min[a] < c)
+            groups["placed_E%g" % c] = set(a for a in with_pfam if tool_min[a] < c)
+        # kmerseek: union of every chunk file of a setting
+        settings = collections.defaultdict(dict)
+        for f in sorted(glob.glob(os.path.join(scan_dir, sp, "*.queries.tsv.gz"))):
+            m = NAME.match(os.path.basename(f))
+            if not m:
+                sys.exit("cannot parse %s" % f)
+            key = (m["alphabet"], m["ksize"], m["scaled"], m["ext"])
+            cols, best = read_best(f)
+            acc = settings[key]
+            for q, vals in best.items():
+                old = acc.get(q)
+                acc[q] = vals if old is None else [min(a, b) for a, b in zip(old, vals)]
+        sources = [("kmerseek",) + k for k in sorted(settings)]
+        tables = {s: (FIELDS, settings[s[1:]]) for s in sources}
+        for tool in TOOLS:
+            cols, best = read_best(os.path.join(scan_dir, "tools", "%s.%s.queries.tsv.gz" % (sp, tool)))
+            tables[(tool, "", "", "", "")] = (cols, best)
+            sources.append((tool, "", "", "", ""))
+        for src in sources:
+            cols, best = tables[src]
+            for g, members in groups.items():
+                for c in CUTOFFS:
+                    if g != "all" and not g.endswith("E%g" % c):
+                        continue
+                    counts = {f: sum(1 for a in members if a in best and best[a][cols.index(f)] < c)
+                              for f in cols}
+                    rows.append([sp, src[0], src[1], src[2], src[3], src[4], g, repr(c),
+                                 len(members)] + [counts.get(f, "") for f in FIELDS])
+        print("%s: %d proteins, %d with a Pfam domain, %d kmerseek settings"
+              % (sp, len(tool_min), len(with_pfam), len(settings)))
+    with open(os.path.join(out_dir, "pfam_check_summary.csv"), "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["species", "tool", "alphabet", "ksize", "scaled", "extension", "group",
+                    "cutoff", "n_proteins_with_pfam"] + ["n_" + f[len("min_e_"):] for f in FIELDS])
+        w.writerows(rows)
+
+
+def main():
+    cmds = {"domains": cmd_domains, "scan": cmd_scan, "tools": cmd_tools,
+            "summarize": cmd_summarize}
+    if len(sys.argv) < 2 or sys.argv[1] not in cmds:
+        sys.exit(__doc__)
+    cmds[sys.argv[1]](*sys.argv[2:])
+
+
+if __name__ == "__main__":
+    main()
