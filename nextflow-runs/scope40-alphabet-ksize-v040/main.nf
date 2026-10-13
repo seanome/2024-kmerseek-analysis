@@ -79,6 +79,12 @@ params.index_dir     = ''
 // counts (and so its residue and H/P composition); 1 keeps residue counts only. The shuffle
 // is the low-complexity null's script (Altschul-Erikson), staged from that pipeline.
 params.shuffle_queries = false
+// Exact searches, as alphabet:k:setting (e.g. protein20:5:c_max), combined with the subsets
+// above. With combine, these searches keep their pair tables and combineAlphabets scores
+// them together: best of N, rank fusion and the union upper limit (bin/combine_alphabets.py).
+params.searches = ''
+params.combine  = false
+params.combine_memory = '64 GB'
 params.shuffle_k       = 2
 params.shuffle_seed    = 1
 params.shuffle_script  = "${projectDir}/../scope40-lowcomplexity-null/bin/shuffle_fasta.py"
@@ -136,6 +142,7 @@ def resolvePairs() {
     if (unknownA) error "--alphabets: not in ${params.settings}: ${unknownA.join(', ')}"
     def unknownS = wantS - SETTING_NAMES
     if (unknownS) error "--settings_only takes ${SETTING_NAMES.join(', ')}, not ${unknownS.join(', ')}"
+    def wantSearch = csvList(params.searches)
     def belowA = csvList(params.k_below_alphabets)
     def unknownB = belowA - table*.alphabet
     if (unknownB) error "--k_below_alphabets: not in ${params.settings}: ${unknownB.join(', ')}"
@@ -143,6 +150,7 @@ def resolvePairs() {
         def settings = SETTING_NAMES.findAll { s -> s == 'exact' || row[s] }
                                     .findAll { s -> !wantS || s in wantS }
                                     .collect { s -> [s, s == 'exact' ? '' : row[s]] }
+        def keepSearch = { k, s -> !wantSearch || "${row.alphabet}:${k}:${s}".toString() in wantSearch }
         int kMin = row.k_min as int
         int below = (!belowA || row.alphabet in belowA) ? (params.k_below as int) : 0
         def added = ((kMin - below)..<kMin).findAll { k ->
@@ -151,7 +159,8 @@ def resolvePairs() {
         def ks = params.only_below_kmin ? added : added + ((kMin)..(row.k_max as int)).toList()
         ks.findAll { k -> !wantK || k in wantK }
             .findAll { k -> !wantPairs || "${row.alphabet}:${k}".toString() in wantPairs }
-            .collect { k -> [row.alphabet, k, settings] }
+            .collect { k -> [row.alphabet, k, settings.findAll { s, c -> keepSearch(k, s) }] }
+            .findAll { it[2] }
     }
 }
 
@@ -342,7 +351,7 @@ process searchAndScore {
     def ext  = penalty ? "--extend-mismatch-penalty ${penalty} --extend-xdrop ${xdropFor(penalty)} --ka-queries 0 " +
                          "--chain-max-gap ${params.chain_max_gap} --chain-max-shift ${params.chain_max_shift}"
                        : ''
-    def keep = params.publish_pairs ? "--pairs-parquet ${slug}.pairs.parquet" : ''
+    def keep = (params.publish_pairs || params.combine) ? "--pairs-parquet ${slug}.pairs.parquet" : ''
     def score = "score_scope40_setting.py --domains ${domains} --ref-rocx ${ref_rocx} --utils ${utils} " +
                 "--alphabet ${alphabet} --ksize ${ksize} --setting ${setting} --penalty '${penalty}' " +
                 "--out ${slug}.auc.tsv --class-level" +
@@ -377,6 +386,38 @@ process searchAndScore {
     printf 'alphabet\\tksize\\tsetting\\n${alphabet}\\t${ksize}\\t${setting}\\n' > ${alphabet}.k${ksize}.${setting}.auc.tsv
     ${params.pair_identity ? "cp ${alphabet}.k${ksize}.${setting}.auc.tsv ${alphabet}.k${ksize}.${setting}.bands.tsv" : ''}
     echo stub > ${alphabet}.k${ksize}.${setting}.log
+    ${(params.publish_pairs || params.combine) ? "touch ${alphabet}.k${ksize}.${setting}.pairs.parquet" : ''}
+    """
+}
+
+process combineAlphabets {
+    publishDir params.outdir, mode: 'copy'
+    container params.kmerseek_image
+    memory params.combine_memory
+    time '8h'
+
+    input:
+    path pair_tables
+    path domains
+    path ref_rocx
+    path utils
+    path identity
+
+    output:
+    path 'scope40_v040_combined_auc.tsv'
+    path 'scope40_v040_combined_bands.tsv'
+
+    script:
+    def label = params.shuffle_queries ? "--query-set shuffled_k${params.shuffle_k}_seed${params.shuffle_seed}" : ''
+    """
+    combine_alphabets.py --domains ${domains} --ref-rocx ${ref_rocx} --utils ${utils} \
+        --pair-identity ${identity} --out-auc scope40_v040_combined_auc.tsv \
+        --out-bands scope40_v040_combined_bands.tsv ${label} ${pair_tables}
+    """
+
+    stub:
+    """
+    touch scope40_v040_combined_auc.tsv scope40_v040_combined_bands.tsv
     """
 }
 
@@ -404,6 +445,9 @@ process collectScores {
 workflow {
     def pairs = resolvePairs()
     if (!pairs) error "no alphabet-ksize pair matches --alphabets/--ksizes/--pairs"
+    def produced = pairs.collectMany { a, k, settings -> settings.collect { st, c -> "${a}:${k}:${st}".toString() } }
+    def missingSearches = csvList(params.searches) - produced
+    if (missingSearches) error "--searches not in the settings table or k range: ${missingSearches.join(', ')}"
     log.info "SCOPe40 kmerseek 0.4: ${pairs.size()} alphabet-ksize pairs, " +
              "${pairs.sum { it[2].size() }} searches" +
              (params.shuffle_queries ? ", queries shuffled (k ${params.shuffle_k}, seed ${params.shuffle_seed})" : '')
@@ -435,4 +479,12 @@ workflow {
         .collectFile(name: 'expected_searches.tsv', seed: 'alphabet\tksize\tsetting\tpenalty\n', sort: false)
     // ifEmpty: if every search failed, the table is still written, every row `failed`.
     collectScores(expected, scored.auc.collect().ifEmpty([]), scored.bands.collect().ifEmpty([]))
+
+    if (params.combine) {
+        if (!params.pair_identity) error "--combine needs --pair_identity"
+        combineAlphabets(scored.pairs.collect(), prepared.domains,
+                         channel.fromPath(params.ref_rocx, checkIfExists: true),
+                         channel.fromPath(params.scope_utils, checkIfExists: true),
+                         channel.fromPath(params.pair_identity, checkIfExists: true))
+    }
 }

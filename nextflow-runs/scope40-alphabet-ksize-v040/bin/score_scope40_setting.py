@@ -183,6 +183,75 @@ def load_utils(path):
     return mod
 
 
+SCOP_LEVELS = ("class", "fold", "superfamily", "family")
+LABEL_KEEP = ["query_domain", "target_domain", "q_scop_id"] + [f"same_{l}" for l in SCOP_LEVELS]
+
+
+def label_pairs(pairs, dom, domain):
+    """Drop self pairs and add q_scop_id and the four same-level flags (same_class ... same_family)."""
+    # SCOP levels as integer codes; only the four same-level flags are kept per pair.
+    codes = dom.select(
+        pl.col("domain_id").cast(domain),
+        pl.col("scop_id").cast(pl.Categorical),
+        *[pl.col(f"scop_{lvl}").cast(pl.Categorical).to_physical().alias(lvl) for lvl in SCOP_LEVELS],
+    )
+    q = codes.rename({"domain_id": "query_domain", "scop_id": "q_scop_id", **{l: f"q_{l}" for l in SCOP_LEVELS}})
+    t = codes.drop("scop_id").rename({"domain_id": "target_domain", **{l: f"t_{l}" for l in SCOP_LEVELS}})
+    return (
+        pairs.filter(pl.col("query_domain") != pl.col("target_domain"))
+        .join(q, on="query_domain", how="left")
+        .join(t, on="target_domain", how="left")
+        .with_columns([(pl.col(f"q_{l}") == pl.col(f"t_{l}")).alias(f"same_{l}") for l in SCOP_LEVELS])
+        .drop([f"{side}_{l}" for side in "qt" for l in SCOP_LEVELS])
+    )
+
+
+def score_column(df, col, smaller_first, ref, counts, su, class_level, info):
+    """AUC rows (one per level) for ranking the labelled pairs `df` by `col`."""
+    # A missing or infinite score ranks last (nulls_last in eval_tsv_to_rocx).
+    ranked = df.select(LABEL_KEEP + [col]).with_columns(
+        pl.when(pl.col(col).is_finite()).then(pl.col(col)).otherwise(None).alias(col)
+    )
+    rocx = {}
+    for tie in ("pessimistic", "optimistic"):
+        r = su.eval_tsv_to_rocx(ranked, score_col=col, ascending=smaller_first,
+                                exclude_gray_zone=True, tie_break=tie)
+        r = r.with_columns(pl.col("NAME").cast(pl.Utf8), pl.col("SCOP").cast(pl.Utf8))
+        rocx[tie] = (r, su.rocx_restrict(r, ref))
+    r_all, r_ref = rocx["pessimistic"]
+    o_all, o_ref = rocx["optimistic"]
+
+    def auc(r, short):
+        return su.sensitivity_stats(r, short)[2] if r.height else 0.0
+
+    levels = dict(LEVELS)
+    if class_level:
+        levels["CLASS"] = "class"
+        cls = {}
+        for tie, (r, _) in rocx.items():
+            c = class_rocx(ranked, col, smaller_first, tie).join(r.select("NAME"), on="NAME", how="semi")
+            # rocx_restrict gives a query kmerseek missed a CLASS of 0; its count joins back as 0.
+            cr = (su.rocx_restrict(c.select("NAME", pl.lit("").alias("SCOP"), "CLASS"), ref)
+                  .join(c.select("NAME", "CLASSTP"), on="NAME", how="left").fill_null(0.0))
+            cls[tie] = (c, cr)
+    rows = []
+    for short, level in levels.items():
+        if short == "CLASS":
+            (ra, rr), (oa, orr) = cls["pessimistic"], cls["optimistic"]
+        else:
+            ra, rr, oa, orr = r_all, r_ref, o_all, o_ref
+        rows.append({**{k: v for k, v in info.items() if k != "n_finite"}, "status": "ok",
+                     **({"n_finite": info["n_finite"]} if "n_finite" in info else {}), "level": level,
+                     "auc_all": auc(ra, short), "auc_all_optimistic": auc(oa, short),
+                     "n_queries_all": ra.height,
+                     "auc_ref": auc(rr, short), "auc_ref_optimistic": auc(orr, short),
+                     "n_queries_ref": rr.height,
+                     "n_ref_with_hits": r_all.filter(pl.col("NAME").is_in(ref)).height,
+                     "auc_ref_db": auc(with_db(rr, counts, short), f"{short}_db"),
+                     "auc_ref_db_optimistic": auc(with_db(orr, counts, short), f"{short}_db")})
+    return rows
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--print-directions", action="store_true",
@@ -258,26 +327,10 @@ def main():
         write([{**base, "status": "empty", "n_rows": n_rows}])
         return
 
-    # SCOP levels as integer codes; only the four same-level flags are kept per pair.
-    levels = ("class", "fold", "superfamily", "family")
-    codes = dom.select(
-        pl.col("domain_id").cast(domain),
-        pl.col("scop_id").cast(pl.Categorical),
-        *[pl.col(f"scop_{lvl}").cast(pl.Categorical).to_physical().alias(lvl) for lvl in levels],
-    )
-    q = codes.rename({"domain_id": "query_domain", "scop_id": "q_scop_id", **{l: f"q_{l}" for l in levels}})
-    t = codes.drop("scop_id").rename({"domain_id": "target_domain", **{l: f"t_{l}" for l in levels}})
-    df = (
-        pairs.filter(pl.col("query_domain") != pl.col("target_domain"))
-        .join(q, on="query_domain", how="left")
-        .join(t, on="target_domain", how="left")
-        .with_columns([(pl.col(f"q_{l}") == pl.col(f"t_{l}")).alias(f"same_{l}") for l in levels])
-        .drop([f"{side}_{l}" for side in "qt" for l in levels])
-    )
+    df = label_pairs(pairs, dom, domain)
     del pairs
     n_pairs = df.height
     n_queries_hit = df["query_domain"].n_unique()
-    keep = ["query_domain", "target_domain", "q_scop_id"] + [f"same_{l}" for l in levels]
 
     ident = read_identity(a.pair_identity, domain) if a.pair_identity else None
     counts = database_counts(dom)
@@ -294,45 +347,8 @@ def main():
             continue
         if ident is not None:
             band += [{**info, "status": "ok", **r} for r in band_rows(df, ident, col, SCORES[col])]
-        # A missing or infinite score ranks last (nulls_last in eval_tsv_to_rocx).
-        ranked = df.select(keep + [col]).with_columns(
-            pl.when(pl.col(col).is_finite()).then(pl.col(col)).otherwise(None).alias(col)
-        )
-        rocx = {}
-        for tie in ("pessimistic", "optimistic"):
-            r = su.eval_tsv_to_rocx(ranked, score_col=col, ascending=SCORES[col],
-                                    exclude_gray_zone=True, tie_break=tie)
-            r = r.with_columns(pl.col("NAME").cast(pl.Utf8), pl.col("SCOP").cast(pl.Utf8))
-            rocx[tie] = (r, su.rocx_restrict(r, ref))
-        r_all, r_ref = rocx["pessimistic"]
-        o_all, o_ref = rocx["optimistic"]
-
-        def auc(r, short):
-            return su.sensitivity_stats(r, short)[2] if r.height else 0.0
-
-        levels = dict(LEVELS)
-        if a.class_level:
-            levels["CLASS"] = "class"
-            cls = {}
-            for tie, (r, _) in rocx.items():
-                c = class_rocx(ranked, col, SCORES[col], tie).join(r.select("NAME"), on="NAME", how="semi")
-                # rocx_restrict gives a query kmerseek missed a CLASS of 0; its count joins back as 0.
-                cr = (su.rocx_restrict(c.select("NAME", pl.lit("").alias("SCOP"), "CLASS"), ref)
-                      .join(c.select("NAME", "CLASSTP"), on="NAME", how="left").fill_null(0.0))
-                cls[tie] = (c, cr)
-        for short, level in levels.items():
-            if short == "CLASS":
-                (ra, rr), (oa, orr) = cls["pessimistic"], cls["optimistic"]
-            else:
-                ra, rr, oa, orr = r_all, r_ref, o_all, o_ref
-            rows.append({**info, "status": "ok", "n_finite": finite.len(), "level": level,
-                         "auc_all": auc(ra, short), "auc_all_optimistic": auc(oa, short),
-                         "n_queries_all": ra.height,
-                         "auc_ref": auc(rr, short), "auc_ref_optimistic": auc(orr, short),
-                         "n_queries_ref": rr.height,
-                         "n_ref_with_hits": r_all.filter(pl.col("NAME").is_in(ref)).height,
-                         "auc_ref_db": auc(with_db(rr, counts, short), f"{short}_db"),
-                         "auc_ref_db_optimistic": auc(with_db(orr, counts, short), f"{short}_db")})
+        rows += score_column(df, col, SCORES[col], ref, counts, su, a.class_level,
+                             {**info, "n_finite": finite.len()})
     write(rows, band)
 
 

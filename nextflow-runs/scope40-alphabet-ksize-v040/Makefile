@@ -17,6 +17,9 @@
 #   make run-shuffled-sbatch    chance control: the run-best-k-identity searches with each query
 #                               shuffled (dipeptide counts kept), against the real database
 #   make watch-shuffled / make stop-shuffled
+#   make run-combine-sbatch     8 alphabets' best searches, then best of N, rank fusion and the
+#                               union upper limit over them; run-combine-shuffled-sbatch: the
+#                               same on shuffled queries (chance)
 SHELL := /bin/bash
 MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 REPO_DIR     := $(abspath $(MAKEFILE_DIR)/../..)
@@ -63,7 +66,8 @@ NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
 
 .PHONY: help settings plan fasta measure-resources stub run run-sbatch watch stop \
         run-below-kmin-sbatch run-best-k-identity-sbatch run-identity-sbatch \
-        watch-below-kmin stop-below-kmin run-shuffled-sbatch watch-shuffled stop-shuffled
+        watch-below-kmin stop-below-kmin run-shuffled-sbatch watch-shuffled stop-shuffled \
+        run-combine-sbatch run-combine-shuffled-sbatch watch-combine watch-combine-shuffled
 
 # ---- follow-up of notebook 277: k below k_min, and every search split by identity --------
 # The 16 alphabets whose best family or superfamily AUC (region_evalue; jaccard for exact)
@@ -113,6 +117,32 @@ watch-shuffled:
 
 stop-shuffled:
 	$(MAKE) stop $(SHUF_VARS)
+
+# ---- combining alphabets ---------------------------------------------------------------------
+# Each alphabet's best family AUC on FoldSeek's scale (notebook 277 section 7, step 2): the seven
+# best alphabets and the best hydrophobic-polar one. The combined scores are in
+# scope40_v040_combined_auc.tsv; run the shuffled version for the false positives combining adds.
+COMBINE_SEARCHES := hsdm17:5:c_max,mmseqs12:6:c_max,dayhoff6:8:c_max,sdm12:7:c_max,protein20:5:c_max,uniprot18:5:c_max,wwmj5:9:c_max,hp_thomas_dill2:18:c2
+COMBINE_ARGS = --searches $(COMBINE_SEARCHES) --combine true \
+               --pair_identity $(MAKEFILE_DIR)/assets/scope40_pair_identity.tsv.gz --index_dir $(OUTDIR)/indexes
+COMB_VARS = OUTDIR=$(SCOPE_DIR)/results-scope40-alphabet-ksize-v040-combine \
+            LAUNCH_DIR=$(MAKEFILE_DIR)/runs/combine HEAD_JOBNAME=nfdrv-scope40-comb HEAD_SESSION=scope40comb
+COMB_SHUF_VARS = OUTDIR=$(SCOPE_DIR)/results-scope40-alphabet-ksize-v040-combine-shuffled-k$(SHUFFLE_K)-seed$(SHUFFLE_SEED) \
+            LAUNCH_DIR=$(MAKEFILE_DIR)/runs/combine-shuffled-k$(SHUFFLE_K)-seed$(SHUFFLE_SEED) \
+            HEAD_JOBNAME=nfdrv-scope40-combshuf HEAD_SESSION=scope40combshuf
+
+run-combine-sbatch:
+	$(MAKE) run-sbatch $(COMB_VARS) NF_ARGS="$(COMBINE_ARGS)"
+
+run-combine-shuffled-sbatch:
+	$(MAKE) run-sbatch $(COMB_SHUF_VARS) NF_ARGS="$(COMBINE_ARGS) --shuffle_queries true \
+	  --shuffle_k $(SHUFFLE_K) --shuffle_seed $(SHUFFLE_SEED)"
+
+watch-combine:
+	$(MAKE) watch $(COMB_VARS)
+
+watch-combine-shuffled:
+	$(MAKE) watch $(COMB_SHUF_VARS)
 
 watch-below-kmin:
 	$(MAKE) watch $(BELOW_VARS)
