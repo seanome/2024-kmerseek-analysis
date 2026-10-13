@@ -210,11 +210,19 @@ def main() -> None:
           f"{CD47_SEGMENT[0]}-{CD47_SEGMENT[1]}, scored in each alphabet on its own,")
     print(f"against the same {len(picked)} matched human proteins.\n")
     conj = []
+    background_rows = []
     for name in names:
         clusters = all_alphabets[name]
         observed = segment_score(p66_seq, cd47_seq, CD47_SEGMENT[0], clusters, PENALTY)
         nulls = np.array(
             [best_fixed_length_score(p66_seq, s, clusters, PENALTY) for _, s in picked]
+        )
+        # Keep every background score, not only its summary, so a figure can draw
+        # the spread each alphabet's p-value is computed against.
+        background_rows.extend(
+            {"alphabet": name, "n_classes": len(clusters), "gene": gene,
+             "score": float(value)}
+            for (gene, _), value in zip(picked, nulls)
         )
         n_ge = int((nulls >= observed).sum())
         conj.append(
@@ -232,6 +240,9 @@ def main() -> None:
         )
     conjunction = pl.DataFrame(conj).sort("p_value")
     conjunction.write_csv(OUTDIR / "28_segment_corroboration_by_alphabet.csv")
+    pl.DataFrame(background_rows).write_csv(
+        OUTDIR / "29_segment_corroboration_background.csv"
+    )
     print(conjunction)
     n_yes = int(conjunction["corroborates_at_0_05"].sum())
     print(f"\n{n_yes} of {conjunction.height} alphabets independently find this "

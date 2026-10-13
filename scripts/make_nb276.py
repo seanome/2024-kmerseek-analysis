@@ -1027,6 +1027,7 @@ print(f"\n   {corr['corroborates_at_0_05'].sum()} of {corr.height} corroborate a
       f"p < 0.05; {(corr['p_value'] < 0.05 / corr.height).sum()} clear Bonferroni "
       f"({0.05 / corr.height:.4f}).")
 show("276p_why_combining_alphabets_hurts", aspect=0.32)
+show("276q_segment_corroboration_by_alphabet", aspect=0.5)
 """)
 
 md(r"""
@@ -1056,14 +1057,24 @@ resemble each other. 12 of the 19 alphabets here have 8 classes or fewer.
 **Corroboration done as a conjunction works, and it says something useful.** Asking each
 alphabet on its own whether the fixed segment beats its own matched background, **7 of 19
 corroborate at p < 0.05** and 2 clear Bonferroni: `hsdm17` and `sdm12`, both at p = 0.000.
-Every alphabet with 7 or more classes corroborates or comes close; **not one alphabet below
-7 classes does**, and `polarity4` and the HP family sit at p = 0.93 to 1.00, meaning every
-single one of the 437 matched proteins beats CD47 under them.
+The split is by alphabet size and it is sharp: **7 of the 8 alphabets with 7 or more classes
+corroborate, and 0 of the 11 with fewer than 7 do.** `funcgroups8` is the one exception on
+the fine side, at p = 0.57. On the coarse side nothing comes close, p = 0.61 to 1.00, and
+for `polarity4`, `hp_lehninger2`, `hp_lehninger_c_nonpolar2`, `hp_lehninger_hpc3` and
+`hp_pbotc_1st_ed2` the p-value is exactly 1.00: every single one of the 437 matched proteins
+beats CD47 under those alphabets.
+
+**Figure 276q.** The same test, alphabet by alphabet.
+`figures/276q_segment_corroboration_by_alphabet.png`. Panel **a** is in each alphabet's own
+units, because the scores are not comparable between them, and that is the point: in a
+two-letter alphabet CD47 scores 21 and still sits below the background's median of 24,
+while in `hsdm17` it scores 6.0 against a background whose 95th percentile is below 0.
+Panel **b** is the one number per alphabet, with the line drawn where the result puts it.
 
 That is the practical lesson for kmerseek, and it is about method rather than about P66. For
 a 36-residue similarity at 28% identity, the discriminating alphabets are the ones with 12
-to 20 classes; the two- and three-letter alphabets are blind to it, and a panel average
-dominated by them is blind for the same reason. The HP family's case has to rest on
+to 20 classes; every alphabet below 7 classes is blind to it, and a panel average dominated
+by them is blind for the same reason. The HP family's case has to rest on
 something other than segments like this one.
 """)
 
