@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
-"""The MHC-system proteins of the Swiss-Prot reference Botryllus was searched against, and a
-length-matched control set of the same size, for notebook 280.
+"""The MHC and immune-recognition proteins of the Swiss-Prot reference Botryllus was searched
+against, sorted by HGNC gene group, and a length-matched control set of the same size, for
+notebook 281.
 
-    python3 mhc_target_sets.py <reference.fasta> <reference_pfam.parquet> <uniprot_sprot.dat.gz> <out_dir>
+    python3 mhc_target_sets.py <reference.fasta> <reference_pfam.parquet> <uniprot_sprot.dat.gz> <hgnc_dir> <out_dir>
 
-Three tiers of target, each protein in the first tier it qualifies for:
+Categories come from HGNC gene groups (the groups GeneCards shows; downloaded from
+genenames.org into data/hgnc/ on the date in data/hgnc/DOWNLOADED_ON). A Swiss-Prot entry is
+matched by its gene name (GN Name=, upper-cased) against the approved symbols of each group,
+so a mouse or fish orthologue that keeps the human symbol is matched too. Mouse and rat MHC
+genes are named H2-* and RT1-*, not HLA-*, so the MHC category also takes any entry carrying a
+Pfam MHC domain: PF00129, PF00993, PF00969, PF06623, PF16497 (read from InterPro, 2026-10-12).
+Each entry goes to the first category it qualifies for, in this order:
 
-  mhc_domain        carries a Pfam MHC domain: PF00129 (class I alpha 1 and 2), PF00993 (class
-                    II alpha), PF00969 (class II beta), PF06623 (MHC_I C-terminus), PF16497
-                    (MHC-I family). Accessions and names read from InterPro on 2026-10-12.
-  mhc_pathway       named as part of MHC antigen presentation or as an MHC-binding or
-                    self/non-self receptor (the NAME_TERMS below, matched in the Swiss-Prot
-                    RecName, case ignored).
-  ig_c1_set         carries PF07654 (immunoglobulin C1-set), the fold of MHC alpha 3, beta 2
-                    microglobulin and immunoglobulin constant domains; broad, kept apart.
+  mhc                      HGNC 588 Histocompatibility complex, or a Pfam MHC domain
+  mhc_like_nkg2d_ligand    HGNC 4012 MIC family, 4010 RAET1 (ULBP) family
+  minor_histocompatibility HGNC 870 Minor histocompatibility antigens
+  antigen_presentation     TAP1, TAP2, TAPBP, B2M, CD74, ERAP1, ERAP2 by symbol; HGNC has no
+                           antigen-presentation group, and B2M and TAPBP sit only in C1-set
+  nk_receptor              HGNC 620 KIR, 1181 and 1182 LILR, 621 killer cell lectin-like
+  tcr_cd3                  HGNC 371, 372, 374, 375 T cell receptor loci; 3733 CD3
+  c1_set                   HGNC 591 C1-set domain containing: the fold of MHC alpha 3 and
+                           immunoglobulin constant domains, broad, kept last
 
-The control set is the same number of reference proteins as the three tiers together, drawn
-without replacement (seed 0) within each length decile of the reference so the lengths match,
-from proteins in none of the tiers. Writes <out_dir>/mhc_targets.tsv and control_targets.tsv
-(accession, tier, length, description) and all_targets.txt (one accession per line).
-
-Run with the kmerseek image's python (polars, numpy).
+The control set is the same number of reference proteins as all categories together, drawn
+without replacement (seed 0) within each length decile so lengths match, from entries in no
+category. Writes <out_dir>/mhc_targets.tsv and control_targets.tsv (accession, category,
+gene, length, description) and all_targets.txt. Run with the kmerseek image's python.
 """
 
 import gzip
@@ -31,15 +37,16 @@ import numpy as np
 import polars as pl
 
 MHC_PFAM = {"PF00129", "PF00993", "PF00969", "PF06623", "PF16497"}
-C1_SET = "PF07654"
-NAME_TERMS = ["histocompatibility", "HLA class", "MHC class", "beta-2-microglobulin", "tapasin",
-              "antigen peptide transporter", "TAP-binding", "invariant chain",
-              "killer cell immunoglobulin-like receptor", "leukocyte immunoglobulin-like receptor",
-              "NKG2", "natural killer cells antigen CD94", "T-cell surface glycoprotein CD4",
-              "T-cell surface glycoprotein CD8", "T cell receptor", "T-cell receptor",
-              "antigen-presenting glycoprotein CD1", "T-cell surface glycoprotein CD1",
-              "MHC class I polypeptide-related", "UL16-binding", "endoplasmic reticulum aminopeptidase",
-              "zinc-alpha-2-glycoprotein", "hereditary hemochromatosis", "IgG receptor FcRn"]
+CATEGORIES = [
+    ("mhc", [588]),
+    ("mhc_like_nkg2d_ligand", [4012, 4010]),
+    ("minor_histocompatibility", [870]),
+    ("antigen_presentation", []),
+    ("nk_receptor", [620, 1181, 1182, 621]),
+    ("tcr_cd3", [371, 372, 374, 375, 3733]),
+    ("c1_set", [591]),
+]
+ANTIGEN_PRESENTATION = {"TAP1", "TAP2", "TAPBP", "B2M", "CD74", "ERAP1", "ERAP2"}
 
 
 def read_lengths(path):
@@ -57,47 +64,51 @@ def read_lengths(path):
     return lengths
 
 
-def sprot_names(path, wanted):
-    out, accs, name = {}, [], None
+def sprot_names_genes(path, wanted):
+    """accession -> (RecName, GN Name) for the wanted accessions."""
+    out, accs, name, gene = {}, [], None, ""
     with gzip.open(path, "rt") as fh:
         for line in fh:
             if line.startswith("AC   "):
                 accs += [a.strip() for a in line[5:].split(";") if a.strip()]
             elif line.startswith("DE   ") and name is None and "Full=" in line:
                 name = line.split("Full=", 1)[1].split("{")[0].strip().rstrip(";")
+            elif line.startswith("GN   ") and not gene and "Name=" in line:
+                gene = line.split("Name=", 1)[1].split(";")[0].split("{")[0].strip()
             elif line.startswith("//"):
                 for a in accs:
                     if a in wanted:
-                        out[a] = name or ""
-                accs, name = [], None
+                        out[a] = (name or "", gene)
+                accs, name, gene = [], None, ""
     return out
 
 
 def main():
-    ref_fasta, pfam_path, dat_path, out_dir = sys.argv[1:5]
+    ref_fasta, pfam_path, dat_path, hgnc_dir, out_dir = sys.argv[1:6]
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
+    symbols = {}
+    for cat, ids in CATEGORIES:
+        s = set()
+        for gid in ids:
+            g = pl.read_csv(Path(hgnc_dir) / f"hgnc_group_{gid}.tsv", separator="\t", infer_schema_length=0)
+            s |= set(g["Approved symbol"].str.to_uppercase().to_list())
+        symbols[cat] = s
+    symbols["antigen_presentation"] = ANTIGEN_PRESENTATION
+
     lengths = read_lengths(ref_fasta)
-    names = sprot_names(dat_path, set(lengths))
-    pfam = pl.read_parquet(pfam_path)
-    has = pfam.group_by("accession").agg(pl.col("pfam_id"))
-    pf = {a: set(p) for a, p in has.iter_rows()}
-    terms = [t.lower() for t in NAME_TERMS]
+    info = sprot_names_genes(dat_path, set(lengths))
+    pf = {a: set(p) for a, p in pl.read_parquet(pfam_path).group_by("accession").agg(pl.col("pfam_id")).iter_rows()}
     rows = []
     for acc, n in lengths.items():
-        desc = names.get(acc, "")
-        p = pf.get(acc, set())
-        if p & MHC_PFAM:
-            tier = "mhc_domain"
-        elif any(t in desc.lower() for t in terms):
-            tier = "mhc_pathway"
-        elif C1_SET in p:
-            tier = "ig_c1_set"
-        else:
-            continue
-        rows.append({"accession": acc, "tier": tier, "length": n, "description": desc})
+        desc, gene = info.get(acc, ("", ""))
+        g = gene.upper()
+        for cat, _ in CATEGORIES:
+            if g in symbols[cat] or (cat == "mhc" and pf.get(acc, set()) & MHC_PFAM):
+                rows.append({"accession": acc, "category": cat, "gene": gene, "length": n, "description": desc})
+                break
     mhc = pl.DataFrame(rows)
-    print(mhc.group_by("tier").len().sort("tier"))
+    print(mhc.group_by("category").len().sort("category"))
 
     ref = pl.DataFrame({"accession": list(lengths), "length": list(lengths.values())})
     ref = ref.with_columns(pl.col("length").qcut(10, labels=[str(i) for i in range(10)]).alias("decile"))
@@ -105,15 +116,17 @@ def main():
     pool = ref.filter(~pl.col("accession").is_in(mhc["accession"].to_list()))
     rng = np.random.default_rng(0)
     picks = []
-    for decile, k in need.iter_rows():
-        cand = pool.filter(pl.col("decile") == decile)["accession"].to_list()
+    for decile, k in need.sort("decile").iter_rows():
+        cand = sorted(pool.filter(pl.col("decile") == decile)["accession"].to_list())
         picks += list(rng.choice(cand, size=k, replace=False))
     control = ref.filter(pl.col("accession").is_in(picks)).select("accession", "length").with_columns(
-        pl.lit("control").alias("tier"), pl.col("accession").replace_strict(names, default="").alias("description"))
+        pl.lit("control").alias("category"),
+        pl.col("accession").map_elements(lambda a: info.get(a, ("", ""))[1], return_dtype=pl.String).alias("gene"),
+        pl.col("accession").map_elements(lambda a: info.get(a, ("", ""))[0], return_dtype=pl.String).alias("description"))
     mhc.write_csv(out / "mhc_targets.tsv", separator="\t")
-    control.select("accession", "tier", "length", "description").write_csv(out / "control_targets.tsv", separator="\t")
+    control.select("accession", "category", "gene", "length", "description").write_csv(out / "control_targets.tsv", separator="\t")
     (out / "all_targets.txt").write_text("\n".join(mhc["accession"].to_list() + control["accession"].to_list()) + "\n")
-    print(f"mhc tiers {mhc.height}, control {control.height}; median length {mhc['length'].median()} vs {control['length'].median()}")
+    print(f"categories {mhc.height}, control {control.height}; median length {mhc['length'].median()} vs {control['length'].median()}")
 
 
 if __name__ == "__main__":
