@@ -1,0 +1,61 @@
+landing_rule	tool	index	window	setting	identity_bin	features	found	recall
+whole call	kmerseek	regions	w10	protein20_k5_s1	30-50%	17	5	0.29411764705882354
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	30-50%	17	3	0.17647058823529413
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	30-50%	17	7	0.4117647058823529
+whole call	kmerseek	whole	w10	protein20_k5_s1	30-50%	17	6	0.35294117647058826
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	30-50%	17	6	0.35294117647058826
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	30-50%	17	6	0.35294117647058826
+whole call	mmseqs2	regions	w10	mmseqs2	30-50%	17	14	0.8235294117647058
+aligned piece	mmseqs2	regions	w10	mmseqs2	30-50%	17	15	0.8823529411764706
+aligned piece	mmseqs2	whole	w10	mmseqs2	30-50%	17	17	1.0
+whole call	mmseqs2	whole	w10	mmseqs2	30-50%	17	10	0.5882352941176471
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	30-50%	17	13	0.7647058823529411
+whole call	mmseqs2	wholeannot	w10	mmseqs2	30-50%	17	9	0.5294117647058824
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	50-90%	27	15	0.5555555555555556
+whole call	kmerseek	regions	w10	protein20_k5_s1	50-90%	27	16	0.5925925925925926
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	50-90%	27	21	0.7777777777777778
+whole call	kmerseek	whole	w10	protein20_k5_s1	50-90%	27	18	0.6666666666666666
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	50-90%	27	17	0.6296296296296297
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	50-90%	27	17	0.6296296296296297
+aligned piece	mmseqs2	regions	w10	mmseqs2	50-90%	27	20	0.7407407407407407
+whole call	mmseqs2	regions	w10	mmseqs2	50-90%	27	17	0.6296296296296297
+whole call	mmseqs2	whole	w10	mmseqs2	50-90%	27	10	0.37037037037037035
+aligned piece	mmseqs2	whole	w10	mmseqs2	50-90%	27	21	0.7777777777777778
+whole call	mmseqs2	wholeannot	w10	mmseqs2	50-90%	27	9	0.3333333333333333
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	50-90%	27	12	0.4444444444444444
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	<30%	1	0	0.0
+whole call	kmerseek	regions	w10	protein20_k5_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w10	protein20_k5_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	<30%	1	0	0.0
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	<30%	1	0	0.0
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	<30%	1	0	0.0
+whole call	mmseqs2	regions	w10	mmseqs2	<30%	1	1	1.0
+aligned piece	mmseqs2	regions	w10	mmseqs2	<30%	1	1	1.0
+whole call	mmseqs2	whole	w10	mmseqs2	<30%	1	1	1.0
+aligned piece	mmseqs2	whole	w10	mmseqs2	<30%	1	1	1.0
+whole call	mmseqs2	wholeannot	w10	mmseqs2	<30%	1	1	1.0
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	<30%	1	1	1.0
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	>=90%	1	1	1.0
+whole call	kmerseek	regions	w10	protein20_k5_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	>=90%	1	1	1.0
+whole call	kmerseek	whole	w10	protein20_k5_s1	>=90%	1	1	1.0
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	>=90%	1	1	1.0
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	>=90%	1	1	1.0
+aligned piece	mmseqs2	regions	w10	mmseqs2	>=90%	1	1	1.0
+whole call	mmseqs2	regions	w10	mmseqs2	>=90%	1	0	0.0
+whole call	mmseqs2	whole	w10	mmseqs2	>=90%	1	0	0.0
+aligned piece	mmseqs2	whole	w10	mmseqs2	>=90%	1	1	1.0
+whole call	mmseqs2	wholeannot	w10	mmseqs2	>=90%	1	0	0.0
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	>=90%	1	0	0.0
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	no same-type entry found	54	4	0.07407407407407407
+whole call	kmerseek	regions	w10	protein20_k5_s1	no same-type entry found	54	7	0.12962962962962962
+whole call	kmerseek	whole	w10	protein20_k5_s1	no same-type entry found	54	9	0.16666666666666666
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	no same-type entry found	54	18	0.3333333333333333
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	no same-type entry found	54	14	0.25925925925925924
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	no same-type entry found	54	8	0.14814814814814814
+aligned piece	mmseqs2	regions	w10	mmseqs2	no same-type entry found	54	11	0.2037037037037037
+whole call	mmseqs2	regions	w10	mmseqs2	no same-type entry found	54	3	0.05555555555555555
+whole call	mmseqs2	whole	w10	mmseqs2	no same-type entry found	54	0	0.0
+aligned piece	mmseqs2	whole	w10	mmseqs2	no same-type entry found	54	22	0.4074074074074074
+whole call	mmseqs2	wholeannot	w10	mmseqs2	no same-type entry found	54	0	0.0
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	no same-type entry found	54	6	0.1111111111111111

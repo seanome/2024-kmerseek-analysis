@@ -27,9 +27,8 @@
 
 nextflow.enable.dsl = 2
 
-def home = System.getenv('HOME')
 
-params.swissprot_dat = "${home}/data/uniprot/uniprot_sprot.2026_03.dat.gz"
+params.swissprot_dat = "${System.getenv('HOME')}/data/uniprot/uniprot_sprot.2026_03.dat.gz"
 params.chr6_queries  = "${projectDir}/assets/chr6_queries.2026_03.tsv"
 params.disprot       = "${projectDir}/assets/disprot_human_disorder.tsv"
 params.outdir        = null
@@ -272,7 +271,8 @@ process indexSummary {
 def kappaPenalties() {
     def rows = file(params.kappa_table).readLines().findAll { it && !it.startsWith('#') }
     def head = rows[0].split('\t') as List
-    def ia = head.indexOf('alphabet'), ic = head.indexOf('c_opt')
+    def ia = head.indexOf('alphabet')
+    def ic = head.indexOf('c_opt')
     if (ia < 0 || ic < 0) error "${params.kappa_table} has no alphabet or c_opt column"
     rows.drop(1).collectEntries { r -> def f = r.split('\t'); [(f[ia]): f[ic]] }
 }
@@ -472,18 +472,30 @@ process scoreCalls {
           path(searched), path(target_features)
 
     output:
-    path "${label}.features.parquet", emit: features
-    path "${label}.threshold.json", emit: threshold
+    path "*.features.parquet", emit: features
+    path "*.threshold.json", emit: threshold
+    path "*.call_hits.parquet", emit: call_hits, optional: true
 
     script:
-    def kind = label.tokenize('.')[1]
+    def parts = label.tokenize('.')
+    def kind  = parts[1]
+    // Whole-protein calls are scored a second time keeping only calls whose target side
+    // lies in an annotated feature (index label "wholeannot"; Olga, 2026-10-13). The
+    // composition classifier is scored on all its calls, ranked, for the comparison at
+    // kmerseek's call count.
+    def annot = (parts + []).with { it[1] = 'wholeannot'; it.join('.') }
+    def common = "--calls calls_*.tsv.gz --truth ${truth} --searched ${searched} " +
+                 "--target-features ${target_features} --flank \$(( ${params.k_max} - 1 )) " +
+                 "--max-decoy-rate ${params.max_decoy_rate} --min-landing ${params.min_landing}"
+    def first  = parts[0] == 'composition' ? '--all-calls' : ''
+    def second = kind == 'whole'
+        ? "${py('score_calls.py')} ${common} --index-kind whole --annotated-targets-only --label ${annot} --prefix ${annot}"
+        : ''
     """
     set -euo pipefail
-    # Scores both landing rules (whole call, aligned piece); see score_calls.py.
-    ${py('score_calls.py')} --calls calls_*.tsv.gz --truth ${truth} --searched ${searched} \\
-        --index-kind ${kind} --target-features ${target_features} \\
-        --flank \$(( ${params.k_max} - 1 )) --max-decoy-rate ${params.max_decoy_rate} \\
-        --min-landing ${params.min_landing} --label ${label} --prefix ${label}
+    ${py('score_calls.py')} ${common} --index-kind ${kind} --label ${label} --prefix ${label} \\
+        ${first}
+    ${second}
     """
 }
 
@@ -600,6 +612,7 @@ workflow {
                     .combine(build.out.features))
     featureFasta(build.out.truth, splitQueries.out.searched)
     featureSearch(featureFasta.out, build.out.regions)
-    compareIndexes(scoreCalls.out.features.mix(scoreCalls.out.threshold).collect(),
+    compareIndexes(scoreCalls.out.features.mix(scoreCalls.out.threshold)
+                       .mix(scoreCalls.out.call_hits).collect(),
                    build.out.truth, splitQueries.out.searched, featureSearch.out)
 }

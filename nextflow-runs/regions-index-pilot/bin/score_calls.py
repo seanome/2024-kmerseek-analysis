@@ -29,6 +29,15 @@ Rules (PREDICTIONS.md):
   one feature by the entry's length. The alignment strings (qseq, tseq; equal length with
   gaps for MMseqs2, ungapped for kmerseek) give the mapping. The composition classifier has
   no alignment, so its piece is the whole window.
+- --annotated-targets-only (whole-protein index; added 2026-10-13, Olga's "reading 2"):
+  before the threshold, keep only calls whose target side lies inside one target feature
+  widened by --flank, the span a regions-index entry covers. A decoy call is judged by its
+  source protein's features (a window-shuffled decoy keeps its source's coordinates). The
+  index and its E-values are unchanged, so this isolates the effect of searching only
+  annotated targets from the effect of a smaller index.
+- --all-calls (the composition classifier): no threshold; every target call is scored and
+  written with its rank to <prefix>.call_hits.parquet, so the comparison can give the
+  classifier as many calls as kmerseek makes at its 5% threshold.
 - Secondary: a name match, when the hit feature's description (cleaned the way
   extract_regions.py cleans it) equals the query feature's.
 
@@ -37,6 +46,8 @@ Outputs:
                              found_name, best_landing, best_coverage, best_evalue,
                              best_target, best_qstart/qend/tstart/tend, best_qseq, best_tseq
   <prefix>.threshold.json    the threshold and call counts
+  <prefix>.call_hits.parquet with --all-calls: call_id, rank (by score, target calls only),
+                             truth_id found by that call under each landing rule
 """
 
 import argparse
@@ -155,6 +166,26 @@ def hit_types_whole(
     ).drop("_fs", "_fe", "hit_desc_raw")
 
 
+def annotated_targets_only(
+    calls: pl.DataFrame, tfeat: pl.DataFrame, flank: int
+) -> pl.DataFrame:
+    """Calls whose target side lies inside one target feature widened by `flank`."""
+    spans = tfeat.select(
+        pl.col("accession").alias("_src"),
+        (pl.col("start") - flank).alias("_fs"),
+        (pl.col("end") + flank).alias("_fe"),
+    )
+    keep = (
+        calls.with_row_index("_row")
+        .with_columns(pl.col("target").str.replace(r"^DECOY_", "").alias("_src"))
+        .join(spans, on="_src", how="inner")
+        .filter((pl.col("_fs") <= pl.col("tstart")) & (pl.col("tend") <= pl.col("_fe")))
+        .select("_row")
+        .unique()
+    )
+    return calls.with_row_index("_row").join(keep, on="_row", how="semi").drop("_row")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -182,6 +213,8 @@ def main() -> None:
         required=True,
         help="the FASTA of the queries searched; truth is limited to these proteins",
     )
+    ap.add_argument("--annotated-targets-only", action="store_true")
+    ap.add_argument("--all-calls", action="store_true")
     ap.add_argument("--label", required=True, help="tool.index.window.setting")
     ap.add_argument("--prefix", required=True)
     args = ap.parse_args()
@@ -218,6 +251,15 @@ def main() -> None:
             f"{bad.height} calls with bad coordinates or no E-value, e.g. {bad.row(0)}"
         )
 
+    tfeat = pl.read_parquet(args.target_features) if args.target_features else None
+    if args.annotated_targets_only:
+        n_before = calls.height
+        calls = annotated_targets_only(calls, tfeat, args.flank)
+        print(
+            f"[annotated targets only] kept {calls.height} of {n_before} calls",
+            file=sys.stderr,
+        )
+
     thr = (
         {"threshold": None, "n_target": 0, "n_decoy": 0}
         if nofit
@@ -243,13 +285,16 @@ def main() -> None:
     )
     # Only target calls at or below the threshold can find a feature.
     cut = thr["threshold"] if thr["threshold"] is not None else -1.0
-    real = calls.filter(~pl.col("is_decoy") & (pl.col("evalue") <= cut)).with_row_index(
-        "call_id"
+    if args.all_calls:
+        cut = float("inf")
+    real = (
+        calls.filter(~pl.col("is_decoy") & (pl.col("evalue") <= cut))
+        .sort("evalue", "query", "qstart", "target")
+        .with_row_index("call_id")
     )
     if args.index_kind == "regions":
         typed = hit_types_regions(real, args.flank)
     else:
-        tfeat = pl.read_parquet(args.target_features)
         typed = hit_types_whole(real, tfeat, args.flank)
 
     # Pair each typed call with every query feature of the same type on the same protein.
@@ -297,6 +342,21 @@ def main() -> None:
         .alias("landing_aligned"),
         (pl.col("hit_desc") == pl.col("desc_clean")).alias("name_match"),
     )
+    if args.all_calls:
+        # call_id is the rank: target calls sorted by score, best first.
+        hits = pl.concat(
+            [
+                pairs.filter(pl.col("landing") >= args.min_landing)
+                .select("call_id", "truth_id")
+                .with_columns(pl.lit("whole call").alias("landing_rule")),
+                pairs.filter(pl.col("landing_aligned") >= args.min_landing)
+                .select("call_id", "truth_id")
+                .with_columns(pl.lit("aligned piece").alias("landing_rule")),
+            ]
+        ).unique()
+        hits.rename({"call_id": "rank"}).write_parquet(
+            f"{args.prefix}.call_hits.parquet"
+        )
     aligned_found = (
         pairs.filter(pl.col("landing_aligned") >= args.min_landing)
         .group_by("truth_id")

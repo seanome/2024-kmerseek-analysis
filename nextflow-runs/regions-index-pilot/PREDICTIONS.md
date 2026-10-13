@@ -106,3 +106,22 @@ target feature's own residues and judges landing on that piece: 62 and 48. The s
 index difference depends on the rule, so both are reported for every result. The rule
 above stays the one these predictions were written for; the choice of headline rule is
 Olga's and will be recorded here before the full run's results are read.
+
+**2026-10-13, Olga's decisions, before the full run:**
+- The headline landing rule is the aligned piece. The whole-call rule is reported next to
+  it.
+- Prediction 4 compares kmerseek with the composition classifier at the same number of
+  calls: the classifier gets as many target calls as kmerseek makes at its 5% threshold on
+  the regions index (same decoy window), its best-scoring first. A window-shuffled decoy
+  has the same composition as its source, so the classifier cannot be held to the decoy
+  rule itself.
+- Two more readings, both reported:
+  1. One Karlin-Altschul fit, from the whole-protein index, used for both indexes, so the
+     indexes differ only in residue count n. With this, prediction 1 holds by construction.
+     It needs kmerseek to search with another index's fitted slope as well as its K
+     (open: kmerseek v0.4.0 takes only --ka-k), so it is not in this run yet.
+  2. The whole-protein index with only the calls whose target side lies inside an
+     annotated feature (widened by the regions index's flank): same index, same E-values,
+     only annotated targets. Compared with both indexes it splits the regions index's
+     effect into "only annotated targets" and "smaller index". In the tables its index is
+     "wholeannot".
