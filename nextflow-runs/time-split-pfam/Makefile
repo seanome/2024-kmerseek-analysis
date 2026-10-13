@@ -82,11 +82,15 @@ smoke:
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) --settings settings.smoke.tsv \
 	    --inputs $(RUN_DIR)/inputs/smoke --outdir $(RUN_DIR)/results-smoke --run_tag smoke -resume'
 
+# Their searches ask 396-477 GB, more than any hns or normal node has, so they pended with
+# BadConstraints (2026-10-13). The dark-set run drops the same five.
+PILOT_SKIP = funcgroups8:7,gbmr4:13,hsdm17:5,polarity4:11,dayhoff6:8
+
 pilot:
 	cd $(RUN_DIR) && mkdir -p launch-pilot && cd launch-pilot && \
 	  $(HEAD) HEAD_SESSION=nf280pilot HEAD_JOBNAME=nfdrv-280-pilot \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
-	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot --run_tag pilot --queue_size 100 -resume'
+	    --settings $(RUN_DIR)/inputs/settings.tsv --skip_settings $(PILOT_SKIP) --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot --run_tag pilot --queue_size 100 -resume'
 
 # Score the pilot searches that have finished, while the rest still run. Reads what the
 # pilot published to results-pilot/ (kmerseek search outputs and their stats files, MMseqs2,

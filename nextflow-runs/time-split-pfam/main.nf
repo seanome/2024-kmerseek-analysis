@@ -33,6 +33,9 @@ params.hmm_cache       = null
 params.query_chunk_size = 2000  // the dark-set run's, so its measured search times carry over
 params.read_test_half  = false  // true only for the full run (Stop 3)
 params.only_alphabets  = ''     // comma list, for a smaller pilot; empty = every row of settings.tsv
+// Comma list of alphabet:k rows of settings.tsv not to index or search, e.g. 'gbmr4:13'.
+// For settings whose search asks more memory than any hns or normal node has.
+params.skip_settings   = ''
 // Names the reference inside every kmerseek index name. Each reference also needs its own
 // --index_cache and --outdir: storeDir returns any index whose name it already holds, so a
 // second reference under the same tag and cache would be served the first one's indexes.
@@ -418,9 +421,27 @@ workflow {
         .splitFasta(by: params.query_chunk_size as int, file: 'chunk')
         .toSortedList { a, b -> a.name <=> b.name }.flatMap { it }
 
-    settings = Channel.fromPath(params.settings, checkIfExists: true)
+    def skip = params.skip_settings.toString().tokenize(',')*.trim().findAll { it } as Set
+    def settingsLines = file(params.settings, checkIfExists: true).readLines()
+    def header = settingsLines[0].split('\t') as List
+    def ia = header.indexOf('alphabet'), ik = header.indexOf('ksize')
+    def rows = settingsLines.drop(1).findAll { it }
+    def present = rows.collect { def c = it.split('\t'); "${c[ia]}:${c[ik]}".toString() } as Set
+    def unknown = skip - present
+    if (unknown) error "--skip_settings names ${unknown.sort()}, which are not rows of ${params.settings}"
+    def keptRows = rows.findAll {
+        def c = it.split('\t')
+        (!only || c[ia] in only) && !("${c[ia]}:${c[ik]}".toString() in skip)
+    }
+    // scoreTransfers lists every setting in the file it is given, and calls one with no output
+    // failed, so it gets the kept rows only. Rewritten only when they change, so -resume holds.
+    def keptSettings = file("${workflow.workDir}/settings.kept.tsv")
+    def keptText = ([settingsLines[0]] + keptRows).join('\n') + '\n'
+    if (!keptSettings.exists() || keptSettings.text != keptText) keptSettings.text = keptText
+    if (skip) log.info "skip_settings: not indexed or searched: ${skip.sort().join(', ')}"
+
+    settings = Channel.fromPath(keptSettings)
         .splitCsv(header: true, sep: '\t')
-        .filter { !only || it.alphabet in only }
         .map { [it.alphabet, it.ksize as int, it.c_opt] }
 
     indexes = kmerseekIndex(settings, reference)
@@ -452,6 +473,6 @@ workflow {
     scoreTransfers(
         kmerseekSearch.out.transfers.collect(), kmerseekSearch.out.stats.collect(),
         mm.collect(), ph.collect(), params.hmmscan_dir ? hmm : hmm.collect(),
-        inputs, refdir, file(params.settings),
+        inputs, refdir, keptSettings,
         file("${projectDir}/bin/score_transfers.py"), file("${projectDir}/bin/time_split_common.py"))
 }
