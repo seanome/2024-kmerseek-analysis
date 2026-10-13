@@ -10,11 +10,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "258_bhf_zinc_finger_membrane_extracellular.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 258: Do BHF's human matches land on zinc fingers, membrane regions or extracellular parts?
 
 The 2024 Evolgenome talk read BHF's k-mer hits as a zinc-finger DNA-binding region and a
@@ -44,7 +49,7 @@ proteins by identical sequence (`bhf_feature_utils.py`):
 A match lands on a class when at least half of the human region lies inside it. Zinc finger,
 membrane and extracellular are counted outside disordered regions.
 """),
-code(r"""
+    code(r"""
 import sys
 from pathlib import Path
 
@@ -69,14 +74,14 @@ lab = f.label_matches(reg, feats)
 print(f"in a human protein with a UniProt entry: {lab['annotated'].sum():_}")
 bhf = u.bhf_sequence()
 """),
-md(r"""
+    md(r"""
 ## 1. The share of matches on each class, BHF against its copies
 
 For each query: the % of its top-10 matches (over all alphabet-ksize pairs and metrics) whose
 human region lies on each class. p is the share of copies at least as high as BHF,
 (1 + copies at least as high) / 301.
 """),
-code(r"""
+    code(r"""
 shares = f.class_shares(lab)
 test = f.class_test(shares)
 print(test)
@@ -94,7 +99,7 @@ bym = f.class_test(f.class_shares(lab, ["metric"]), ["metric"])
 print(bym.filter(pl.col("measure").is_in(list(f.MEASURE_LABEL))).pivot(on="measure", index="metric", values="p")
          .select(["metric"] + list(f.MEASURE_LABEL)).sort("metric"))
 """),
-md(r"""
+    md(r"""
 Zinc finger and extracellular: BHF is not above its copies. 0.85% of BHF's matches land on
 a zinc finger against a median of 1.21% for the copies (p = 0.80), and 8.61% on an
 extracellular part against 10.24% (p = 0.88). Membrane: 3.01% against 1.58%, above most
@@ -106,13 +111,13 @@ No single ranking metric puts BHF above its copies for any of the three classes 
 the lowest is 0.066 (membrane, protein Poisson p-value). For disordered regions every counting
 metric does (p = 0.010 to 0.030); the E-value does not (p = 0.59).
 """),
-md(r"""
+    md(r"""
 ## 2. Membrane, alphabet by alphabet
 
 The same comparison for the membrane class, one alphabet at a time (all its k-mer sizes and
 metrics together). With 19 alphabets, about one is expected at p ≤ 0.05 by chance.
 """),
-code(r"""
+    code(r"""
 sh_a = f.class_shares(lab, ["alphabet"])
 te_a = f.class_test(sh_a, ["alphabet"])
 mem = te_a.filter(pl.col("measure") == "pct_membrane_ordered").sort("p")
@@ -125,20 +130,20 @@ f.fig_membrane_by_alphabet(
                + ", ".join(f"{r['alphabet']} {r['bhf_pct']}% vs {r['copies_median_pct']}%" for r in mem.filter(pl.col('p') <= 0.05).iter_rows(named=True)) + ".",
 )
 """),
-md(r"""
+    md(r"""
 Two of the 19 alphabets put BHF above its copies on membrane regions: polarity4 (22.5% of
 BHF's matches against a median of 2.96% for the copies, p = 0.013) and gbmr7 (22.2% against
 5.27%, p = 0.040). About one is expected at p ≤ 0.05 by chance. The next alphabet is at
 p = 0.25. The two are examined in section 3.
 """),
-md(r"""
+    md(r"""
 ## 3. Where on BHF the matches come from, and what they match
 
 BHF drawn as a line; each panel counts, for every BHF residue, the top-10 matches on that
 class (outside disordered regions) whose BHF stretch covers the residue. The tables list each
 match once per BHF stretch and human protein, with the residues on both sides.
 """),
-code(r"""
+    code(r"""
 cov = f.fig_where_on_bhf(
     lab, bhf, u.FIG / "258_where_on_bhf.png",
     hypothesis="A real shared feature comes from one BHF stretch matched by one kind of human region.",
@@ -152,13 +157,13 @@ for c in f.MAIN:
     print(t_.select("gene", pl.col("region_start").alias("bhf_from"), pl.col("region_end").alias("bhf_to"),
                     "n_cells", "alphabets", "bhf_residues", "human_residues").head(10))
 """),
-md(r"""
+    md(r"""
 ### What the membrane matches look like in the alphabet that found them
 
 Each residue written as its class number in that alphabet. A match counts every position
 where both sides fall in the same class, so the two strings below are what kmerseek compared.
 """),
-code(r"""
+    code(r"""
 mt = f.with_residues(f.bhf_class_matches(lab, "membrane"), bhf)
 for a in ["gbmr7", "polarity4"]:
     print(f"{a} classes: " + "  ".join(f"{i}={c}" for i, c in enumerate(f.CLUSTERS[a])))
@@ -167,7 +172,7 @@ for a in ["gbmr7", "polarity4"]:
                    "bhf_encoded", "human_encoded", "same_class", "identical", "length").head(6))
     print()
 """),
-md(r"""
+    md(r"""
 **Membrane.** The matches come from BHF's C-terminal third, most of them covering residue 223
 (122 matches). Two alphabets give two different stories:
 
@@ -190,7 +195,7 @@ identical, too short to mean anything on its own.
 **Extracellular.** Spread along BHF; the most matches cover residue 127 (162). With the
 disordered mucin and collagen stretches removed, BHF is below its copies (section 1).
 """),
-md(r"""
+    md(r"""
 ## 4. BHF's own sequence: a membrane-spanning or amphipathic helix?
 
 Independent of kmerseek. A membrane-spanning helix shows as a 19-residue window with a
@@ -199,7 +204,7 @@ helix: one face hydrophobic, one face charged) shows as a high hydrophobic momen
 18-residue helix. The moment is compared with the highest window of 1_000 copies of BHF with
 its residues shuffled.
 """),
-code(r"""
+    code(r"""
 prof = f.helix_profiles(bhf)
 null = f.helix_null(bhf)
 kd_max = prof["kyte_doolittle"].max()
@@ -218,7 +223,7 @@ f.fig_helix_profiles(
     conclusion=f"No window reaches the membrane-spanning cutoff (highest {kd_max:.2f} against 1.6); the highest hydrophobic moment ({mh_max:.2f}) is matched by {p_mh:.0%} of shuffled copies.",
 )
 """),
-md(r"""
+    md(r"""
 No 19-residue window of BHF reaches the Kyte-Doolittle cutoff for a membrane-spanning helix:
 the highest is 0.45 at residues 230-248 (ARSQTAFLNPQGAVSAALV), against 1.6. The strongest
 amphipathic helix, residues 215-232 (IRTVMKATWQSLQAGARS, hydrophobic moment 0.549), is matched
@@ -230,7 +235,7 @@ N-terminal myristoylation site. How BHF reaches the membrane is not shown by its
 alone. Residues 209-220 (KKARKRIRTVMK: 7 of 12 are K or R) and the 230-250 stretch are the two
 candidates a truncation or mutation experiment could test.
 """),
-md(r"""
+    md(r"""
 ## Summary
 
 - **Zinc finger:** no support. BHF's matches land on human zinc fingers less often than its
@@ -257,8 +262,18 @@ to neutral residues, in the lab's HEK293 membrane assay.
 """),
 ]
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                                   "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1))
 print("wrote", OUT)
