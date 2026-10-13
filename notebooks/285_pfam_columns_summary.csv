@@ -1,0 +1,2 @@
+query,model,n_members,column_rule_log10_p,best_column,members_with_evidence_at_best_column,part1_log10_p,rank_vs_part1_groups,n_groups,n_shifts,shifts_as_good_or_better,shifted_median_log10_p,pass_shift_null,pass_top10
+Ced9,PF00452.25 Bcl-2,9,-4.419012715125074,49,6,-7.160471144782861,184,7212,76,0,0.0,true,false
