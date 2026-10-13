@@ -35,32 +35,36 @@ import polars as pl
 
 # ---------------------------------------------------------------------------
 SPECIES_METADATA = {
-    "human":       {"taxon_id": "9606",   "mya": 0},
-    "mouse":       {"taxon_id": "10090",  "mya": 100},
-    "chicken":     {"taxon_id": "9031",   "mya": 300},
-    "zebrafish":   {"taxon_id": "7955",   "mya": 430},
-    "ciona":       {"taxon_id": "7719",   "mya": 550},
-    "fly":         {"taxon_id": "7227",   "mya": 600},
-    "worm":        {"taxon_id": "6239",   "mya": 650},
-    "yeast":       {"taxon_id": "559292", "mya": 900},
-    "arabidopsis": {"taxon_id": "3702",   "mya": 1500},
-    "ecoli":       {"taxon_id": "83333",  "mya": 2000},
+    "human": {"taxon_id": "9606", "mya": 0},
+    "mouse": {"taxon_id": "10090", "mya": 100},
+    "chicken": {"taxon_id": "9031", "mya": 300},
+    "zebrafish": {"taxon_id": "7955", "mya": 430},
+    "ciona": {"taxon_id": "7719", "mya": 550},
+    "fly": {"taxon_id": "7227", "mya": 600},
+    "worm": {"taxon_id": "6239", "mya": 650},
+    "yeast": {"taxon_id": "559292", "mya": 900},
+    "arabidopsis": {"taxon_id": "3702", "mya": 1500},
+    "ecoli": {"taxon_id": "83333", "mya": 2000},
 }
 
-TARGET_POSITIVES      = 20_000
-TARGET_NEGATIVES      = 40_000
-MAX_PAIRS_PER_DOMAIN  = 500
-RANDOM_SEED           = 42
+TARGET_POSITIVES = 20_000
+TARGET_NEGATIVES = 40_000
+MAX_PAIRS_PER_DOMAIN = 500
+RANDOM_SEED = 42
 # ---------------------------------------------------------------------------
 
 
-def load_annotations(annot_dir: Path, species: str) -> tuple[pl.DataFrame, pl.DataFrame]:
+def load_annotations(
+    annot_dir: Path, species: str
+) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Load (domains_df, arch_df) for a species."""
     domains_path = annot_dir / f"{species}_pfam_domains.parquet"
-    arch_path    = annot_dir / f"{species}_architectures.parquet"
+    arch_path = annot_dir / f"{species}_architectures.parquet"
     for p in (domains_path, arch_path):
         if not p.exists():
-            raise FileNotFoundError(f"Missing: {p}  — run build_pfam_architectures.py first")
+            raise FileNotFoundError(
+                f"Missing: {p}  — run build_pfam_architectures.py first"
+            )
     return pl.read_parquet(domains_path), pl.read_parquet(arch_path)
 
 
@@ -69,15 +73,20 @@ def build_lookup(domains_df: pl.DataFrame, arch_df: pl.DataFrame) -> dict:
     pfam_sets = {
         row["accession"]: set(row["pfam_ids"])
         for row in (
-            domains_df
-            .group_by("accession")
+            domains_df.group_by("accession")
             .agg(pl.col("pfam_id").alias("pfam_ids"))
             .iter_rows(named=True)
         )
     }
-    arch_map = {row["accession"]: row["architecture"] for row in arch_df.iter_rows(named=True)}
-    n_dom    = {row["accession"]: row["n_domains"]    for row in arch_df.iter_rows(named=True)}
-    plen     = {row["accession"]: row["protein_length"] for row in arch_df.iter_rows(named=True)}
+    arch_map = {
+        row["accession"]: row["architecture"] for row in arch_df.iter_rows(named=True)
+    }
+    n_dom = {
+        row["accession"]: row["n_domains"] for row in arch_df.iter_rows(named=True)
+    }
+    plen = {
+        row["accession"]: row["protein_length"] for row in arch_df.iter_rows(named=True)
+    }
     return {"pfam_sets": pfam_sets, "arch_map": arch_map, "n_dom": n_dom, "plen": plen}
 
 
@@ -94,12 +103,12 @@ def sample_positives(
       2. Different overall architecture
       3. At least one protein has ≥2 domains
     """
-    h_pfam   = human["pfam_sets"]
-    s_pfam   = species["pfam_sets"]
-    h_arch   = human["arch_map"]
-    s_arch   = species["arch_map"]
-    h_ndom   = human["n_dom"]
-    s_ndom   = species["n_dom"]
+    h_pfam = human["pfam_sets"]
+    s_pfam = species["pfam_sets"]
+    h_arch = human["arch_map"]
+    s_arch = species["arch_map"]
+    h_ndom = human["n_dom"]
+    s_ndom = species["n_dom"]
 
     # Index: pfam_id → species accessions carrying that domain
     pfam_to_species: dict[str, list] = defaultdict(list)
@@ -193,33 +202,37 @@ def build_dataframe(
 
     rows = []
     for h_acc, s_acc, shared_csv, n_shared in positives:
-        rows.append({
-            "human_accession":    h_acc,
-            "species_accession":  s_acc,
-            "label":              True,
-            "shared_pfam_ids":    shared_csv,
-            "n_shared_domains":   n_shared,
-            "human_architecture": h_arch.get(h_acc, ""),
-            "species_architecture": s_arch.get(s_acc, ""),
-            "human_n_domains":    h_ndom.get(h_acc, 0),
-            "species_n_domains":  s_ndom.get(s_acc, 0),
-            "human_protein_length":   h_plen.get(h_acc),
-            "species_protein_length": s_plen.get(s_acc),
-        })
+        rows.append(
+            {
+                "human_accession": h_acc,
+                "species_accession": s_acc,
+                "label": True,
+                "shared_pfam_ids": shared_csv,
+                "n_shared_domains": n_shared,
+                "human_architecture": h_arch.get(h_acc, ""),
+                "species_architecture": s_arch.get(s_acc, ""),
+                "human_n_domains": h_ndom.get(h_acc, 0),
+                "species_n_domains": s_ndom.get(s_acc, 0),
+                "human_protein_length": h_plen.get(h_acc),
+                "species_protein_length": s_plen.get(s_acc),
+            }
+        )
     for h_acc, s_acc in negatives:
-        rows.append({
-            "human_accession":    h_acc,
-            "species_accession":  s_acc,
-            "label":              False,
-            "shared_pfam_ids":    "",
-            "n_shared_domains":   0,
-            "human_architecture": h_arch.get(h_acc, ""),
-            "species_architecture": s_arch.get(s_acc, ""),
-            "human_n_domains":    h_ndom.get(h_acc, 0),
-            "species_n_domains":  s_ndom.get(s_acc, 0),
-            "human_protein_length":   h_plen.get(h_acc),
-            "species_protein_length": s_plen.get(s_acc),
-        })
+        rows.append(
+            {
+                "human_accession": h_acc,
+                "species_accession": s_acc,
+                "label": False,
+                "shared_pfam_ids": "",
+                "n_shared_domains": 0,
+                "human_architecture": h_arch.get(h_acc, ""),
+                "species_architecture": s_arch.get(s_acc, ""),
+                "human_n_domains": h_ndom.get(h_acc, 0),
+                "species_n_domains": s_ndom.get(s_acc, 0),
+                "human_protein_length": h_plen.get(h_acc),
+                "species_protein_length": s_plen.get(s_acc),
+            }
+        )
 
     schema = {
         "human_accession": pl.Utf8,
@@ -241,6 +254,7 @@ def build_dataframe(
 
 # ---------------------------------------------------------------------------
 
+
 def process_pair(species: str, annot_dir: Path, pairs_dir: Path, force: bool = False):
     pairs_dir.mkdir(parents=True, exist_ok=True)
 
@@ -260,12 +274,14 @@ def process_pair(species: str, annot_dir: Path, pairs_dir: Path, force: bool = F
         print(f"  SKIPPING: {e}", file=sys.stderr)
         return
 
-    human   = build_lookup(h_domains, h_arch)
+    human = build_lookup(h_domains, h_arch)
     species_ = build_lookup(s_domains, s_arch)
 
     rng = random.Random(RANDOM_SEED)
 
-    print(f"  Sampling positives (target {TARGET_POSITIVES:,}, cap {MAX_PAIRS_PER_DOMAIN}/domain)...")
+    print(
+        f"  Sampling positives (target {TARGET_POSITIVES:,}, cap {MAX_PAIRS_PER_DOMAIN}/domain)..."
+    )
     positives = sample_positives(human, species_, rng)
     print(f"  Positives: {len(positives):,}")
 
@@ -281,11 +297,11 @@ def process_pair(species: str, annot_dir: Path, pairs_dir: Path, force: bool = F
 
     mya = SPECIES_METADATA[species]["mya"]
     summary = {
-        "species":       species,
-        "mya":           mya,
-        "n_positives":   len(positives),
-        "n_negatives":   len(negatives),
-        "n_total":       len(gt),
+        "species": species,
+        "mya": mya,
+        "n_positives": len(positives),
+        "n_negatives": len(negatives),
+        "n_total": len(gt),
         "positive_rate": round(len(positives) / max(len(gt), 1), 4),
     }
     with open(out_summary, "w") as f:
@@ -295,25 +311,36 @@ def process_pair(species: str, annot_dir: Path, pairs_dir: Path, force: bool = F
 
 # ---------------------------------------------------------------------------
 
+
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument(
-        "--species", nargs="+", default=["all"],
+        "--species",
+        nargs="+",
+        default=["all"],
         help="Species to pair with human. 'all' = all non-human species.",
     )
     parser.add_argument(
-        "--annot-dir", type=Path,
+        "--annot-dir",
+        type=Path,
         default=Path("results/pfam_benchmark/annotations"),
     )
     parser.add_argument(
-        "--pairs-dir", type=Path,
+        "--pairs-dir",
+        type=Path,
         default=Path("results/pfam_benchmark/pairs"),
     )
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
     non_human = [s for s in SPECIES_METADATA if s != "human"]
-    species_list = non_human if args.species == ["all"] else [s for s in args.species if s != "human"]
+    species_list = (
+        non_human
+        if args.species == ["all"]
+        else [s for s in args.species if s != "human"]
+    )
 
     unknown = [s for s in species_list if s not in SPECIES_METADATA]
     if unknown:
