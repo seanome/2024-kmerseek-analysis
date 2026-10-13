@@ -1,0 +1,13 @@
+alphabet,largest_scaled,peak1_gb,time1_s,peak_gb,total_s,memory_saved_mb,time_saved_s,reading
+hp_kyte_doolittle2,,0.53505859375,9.965,,,,,all pairs
+hp_lehninger_c_nonpolar2,,0.27255859375,8.233,,,,,all pairs
+hp_thomas_dill2,,0.33916015625,8.204,,,,,all pairs
+hp_thomas_dill_no_c2,,0.46904296875,6.2,,,,,all pairs
+protein20,,0.1931640625,3.6999999999999997,,,,,all pairs
+sdm12,,0.47666015625,9.834,,,,,all pairs
+hp_kyte_doolittle2,,0.53505859375,9.965,,,,,Pfam-homolog pairs
+hp_lehninger_c_nonpolar2,,0.27255859375,8.233,,,,,Pfam-homolog pairs
+hp_thomas_dill2,,0.33916015625,8.204,,,,,Pfam-homolog pairs
+hp_thomas_dill_no_c2,,0.46904296875,6.2,,,,,Pfam-homolog pairs
+protein20,,0.1931640625,3.6999999999999997,,,,,Pfam-homolog pairs
+sdm12,,0.47666015625,9.834,,,,,Pfam-homolog pairs
