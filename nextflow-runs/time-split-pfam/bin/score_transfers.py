@@ -36,7 +36,8 @@ import polars as pl
 
 LANDING_MIN = 0.5
 DECOY_RATE_MAX = 0.01  # family transfers per decoy query
-CALL_COLS = ["setting", "tool", "query", "qstart", "qend", "pfam_acc", "score", "target"]
+CALL_SCHEMA = {"setting": pl.String, "tool": pl.String, "query": pl.String, "qstart": pl.Int64,
+               "qend": pl.Int64, "pfam_acc": pl.String, "score": pl.Float64, "target": pl.String}
 
 
 def neg_log10(col: str) -> pl.Expr:
@@ -62,7 +63,7 @@ def read_kmerseek(dirpath: Path) -> tuple[pl.DataFrame, list[dict]]:
             pl.lit(setting).alias("setting"), pl.lit("kmerseek").alias("tool"), "query",
             pl.col("qstart").cast(pl.Int64), pl.col("qend").cast(pl.Int64), "pfam_acc",
             score.alias("score"), "target"))
-    return (pl.concat(frames) if frames else pl.DataFrame(schema={c: pl.String for c in CALL_COLS})), checks
+    return (pl.concat(frames) if frames else pl.DataFrame(schema=CALL_SCHEMA)), checks
 
 
 def transfer_by_overlap(hits: pl.DataFrame, domains: pl.DataFrame) -> pl.DataFrame:
@@ -73,12 +74,16 @@ def transfer_by_overlap(hits: pl.DataFrame, domains: pl.DataFrame) -> pl.DataFra
 
 def read_mmseqs(dirpath: Path, domains: pl.DataFrame) -> pl.DataFrame:
     cols = ["query", "target", "qstart", "qend", "tstart", "tend", "pident", "bits", "evalue"]
-    fs = sorted(dirpath.glob("*.mmseqs2.tsv.gz"))
-    hits = pl.concat([pl.read_csv(f, separator="\t", has_header=False, new_columns=cols,
-                                  schema_overrides={"query": pl.String, "target": pl.String})
-                      for f in fs if f.stat().st_size > 20]) if fs else None
+    frames = []
+    for f in sorted(dirpath.glob("*.mmseqs2.tsv.gz")):
+        with gzip.open(f, "rt") as fh:
+            if not fh.read(1):
+                continue  # no hit at all in this chunk
+        frames.append(pl.read_csv(f, separator="\t", has_header=False, new_columns=cols,
+                                  schema_overrides={"query": pl.String, "target": pl.String}))
+    hits = pl.concat(frames) if frames else None
     if hits is None or hits.height == 0:
-        return pl.DataFrame(schema={c: pl.String for c in CALL_COLS})
+        return pl.DataFrame(schema=CALL_SCHEMA)
     t = transfer_by_overlap(hits, domains)
     return t.select(pl.lit("MMseqs2").alias("setting"), pl.lit("MMseqs2").alias("tool"), "query",
                     pl.col("qstart").cast(pl.Int64), pl.col("qend").cast(pl.Int64), "pfam_acc",
@@ -99,7 +104,7 @@ def read_phmmer(dirpath: Path, domains: pl.DataFrame) -> pl.DataFrame:
     # the query is the profile), 18-19 ali from/to (= target positions).
     rows = [r for f in sorted(dirpath.glob("*.domtbl.gz")) for r in read_domtbl(f)]
     if not rows:
-        return pl.DataFrame(schema={c: pl.String for c in CALL_COLS})
+        return pl.DataFrame(schema=CALL_SCHEMA)
     hits = pl.DataFrame({"target": [r[0] for r in rows], "query": [r[3] for r in rows],
                          "ievalue": [float(r[12]) for r in rows],
                          "qstart": [int(r[15]) for r in rows], "qend": [int(r[16]) for r in rows],
@@ -114,7 +119,7 @@ def read_hmmscan(dirpath: Path) -> pl.DataFrame:
     # (query positions; for hmmscan the query is the sequence).
     rows = [r for f in sorted(dirpath.glob("*.domtbl.gz")) for r in read_domtbl(f)]
     if not rows:
-        return pl.DataFrame(schema={c: pl.String for c in CALL_COLS})
+        return pl.DataFrame(schema=CALL_SCHEMA)
     return pl.DataFrame({
         "setting": "hmmscan Pfam 33.1", "tool": "hmmscan", "query": [r[3] for r in rows],
         "qstart": [int(r[17]) for r in rows], "qend": [int(r[18]) for r in rows],
@@ -146,11 +151,19 @@ def main() -> None:
     inst = pl.read_csv(a.inputs / "instances.tsv", separator="\t")
     dom = pl.read_csv(a.reference / "sprot_domains.tsv", separator="\t")
 
+    if not a.read_test_half:
+        # The pilot's sample queries belong to the approved sample, so their test half is
+        # removed here, before any call is joined to it: nothing downstream can read it.
+        hidden = q.filter((pl.col("role") == "sample") & (pl.col("half") == "test"))["query"]
+        q = q.filter(~pl.col("query").is_in(hidden.implode()))
+        inst = inst.filter(~pl.col("query").is_in(hidden.implode()))
+        print(f"test half left unread: {hidden.len()} queries (real and decoy) dropped")
+
     km, checks = read_kmerseek(a.kmerseek)
-    calls = pl.concat([km.with_columns(pl.col("qstart").cast(pl.Int64), pl.col("qend").cast(pl.Int64),
-                                       pl.col("score").cast(pl.Float64)),
-                       read_mmseqs(a.mmseqs2, dom), read_phmmer(a.phmmer, dom), read_hmmscan(a.hmmscan)],
-                      how="vertical_relaxed")
+    parts = [km, read_mmseqs(a.mmseqs2, dom), read_phmmer(a.phmmer, dom), read_hmmscan(a.hmmscan)]
+    calls = pl.concat([p.select([pl.col(c).cast(t) for c, t in CALL_SCHEMA.items()]) for p in parts])
+    if not a.read_test_half:
+        calls = calls.filter(~pl.col("query").is_in(hidden.implode()))
     calls = calls.join(q.select("query", "is_decoy", "half", "role", pl.col("length").alias("query_length")),
                        on="query", how="left")
     unknown = calls.filter(pl.col("is_decoy").is_null())["query"].unique().to_list()
@@ -207,7 +220,7 @@ def main() -> None:
                      "found_test": found_test})
     summ = pl.DataFrame(rows)
     if not a.read_test_half:
-        summ = summ.drop("decoy_transfers_test", "found_test")
+        summ = summ.drop("decoy_transfers_test", "found_test", strict=False)
     else:
         summ = summ.with_columns(
             recall_test=pl.col("found_test") / pl.col("instances_test"),
