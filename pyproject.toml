@@ -29,5 +29,12 @@ extend-exclude = '''
   | 007-mem-opt-process-protein-benchmarks-polars
   | 020-explore-protein-benchmark-polars
   | 023-compute-sklearn-benchmarks-plot-protein-benchmark
+    # The same four under the names they had before the three-digit renumbering, which
+    # this branch predates; plus 22-, whose truncated `sns.catplot(` cell is fixed on main.
+  | 04-rewrite-multisearch-parser-to-polars
+  | 07-mem-opt-process-protein-benchmarks-polars
+  | 20-explore-protein-benchmark-polars
+  | 22-plot-subsampled-sourmash-scores-per-moltype-ksize
+  | 23-compute-sklearn-benchmarks-plot-protein-benchmark
 )\.ipynb$
 '''
