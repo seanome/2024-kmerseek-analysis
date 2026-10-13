@@ -208,6 +208,13 @@ k-mers) no protein is #1 for more than 0.9% of the copy × alphabet-ksize pair c
 md(r"""
 ## Summary
 
+By E-value, BHF's kmerseek hits do no better than shuffled copies of BHF (3 of 61 settings beat 95% of copies; 3.1 expected by chance). Other scores beat the copies more often, but mostly through one lysine-rich low-complexity stretch, BHF 63-105:
+
+```text
+BHF 63-105  ESQEHLDASTKKTKKKAKKDKRKNKPPKKDSETSKPAQTTISR   (15 of 43 residues K or R)
+```
+
+A setting here is one alphabet at one k-mer size, with the search flags of notebook 241.
 How BHF's result changes with the ranking metric, now that every metric has a chance scale:
 
 - **E-value** (61 alphabet-ksize pairs): chance. BHF beats 95% of its copies at 3 alphabet-ksize pairs, 3.1 expected. Its
