@@ -572,7 +572,12 @@ function proteinLine(svg, y0, x0, w, len, name, motifs, spanLo, spanHi) {
     el("rect", {x: x(mo.start - 1), y: y0 - 6, width: Math.max(2, x(mo.end) - x(mo.start - 1)), height: 12, rx: 2, fill: "var(--panel)", stroke: "var(--ink)"}, svg);
     el("text", {x: (x(mo.start - 1) + x(mo.end)) / 2, y: y0 - 9, "text-anchor": "middle", "font-size": 10, class: "muted"}, svg, mo.name);
   }
-  el("rect", {x: x(spanLo), y: y0 + 3, width: Math.max(2, x(spanHi) - x(spanLo)), height: 4, fill: "var(--found)"}, svg);
+  // Where the stretch shown below lies: a bracket under the line, clear of the motif boxes,
+  // in ink (blue is kept for "region reported by an alphabet"). At least 6 px wide so a
+  // short stretch on a long protein stays visible; its residue numbers sit under it.
+  const a = x(spanLo), b = Math.max(x(spanHi), a + 6), yb = y0 + 11;
+  el("path", {d: `M${a} ${yb - 3} L${a} ${yb} L${b} ${yb} L${b} ${yb - 3}`, fill: "none", stroke: "var(--ink)", "stroke-width": 1.5}, svg);
+  el("text", {x: (a + b) / 2, y: yb + 11, "text-anchor": "middle", "font-size": 10, class: "mono"}, svg, `${spanLo + 1}-${spanHi}`);
 }
 async function drawFig1() {
   if (!R) return;
@@ -596,7 +601,7 @@ async function drawFig1() {
     `${popc(m)} of 19 alphabets have a region here; ${popc(m & S.keep)} of them are counted, giving ${c} ${ruleWord(S.rule, c)}. ` +
     `${fmt(more)} human proteins have a spot with more${t === R.partner ? "" : `; ${M.partners[S.q]} has ${R.sum.partner_value}`}.`);
   svg.innerHTML = "";
-  const labW = 205, infoW = 230, plotW = 420, rowH = 17, gapH = 10, top = 122;
+  const labW = 205, infoW = 230, plotW = 420, rowH = 17, gapH = 10, top = 150;
   const W = labW + plotW + infoW;
   const lo = Math.max(0, qs - 6), hi = Math.min(qseq.length, qe + 6);
   const x = p => labW + (p - lo) / (hi - lo) * plotW;
@@ -604,8 +609,8 @@ async function drawFig1() {
   const tseq = await getResidues(t).catch(() => null);
   if (S.sel !== t) return; // the reader picked another protein while residues loaded
   proteinLine(svg, 22, labW, plotW, qseq.length, S.q, (M.motifs.proteins[S.q] || {}).motifs, qs, qe);
-  if (tseq) proteinLine(svg, 52, labW, plotW, tseq.length, gene, (M.motifs.proteins[gene] || {}).motifs, qs + dg, qe + dg);
-  el("text", {x: labW + plotW + 8, y: 26, "font-size": 11, class: "muted"}, svg, "blue mark: this spot");
+  if (tseq) proteinLine(svg, 68, labW, plotW, tseq.length, gene, (M.motifs.proteins[gene] || {}).motifs, qs + dg, qe + dg);
+  el("text", {x: labW + plotW + 8, y: 26, "font-size": 11, class: "muted"}, svg, "bracket: the stretch below");
   let y = top, rows = [];
   for (const [gname, a0, a1] of GROUPS) {
     rows.push({group: gname, y: y + 10}); y += 16;
