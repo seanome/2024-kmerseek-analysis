@@ -1220,6 +1220,99 @@ k-mers highly if they were shared. They are not.
 """)
 
 md(r"""
+## 6l. Is there any setting that puts CD47 first for a P66 query?
+
+Every test so far has been pairwise, with a matched background to say whether a score is
+unusual. That is not what a search tool does. A search tool ranks a database, so the
+question is whether CD47 ever comes out on top of the human proteome for a P66 query under
+any setting at all.
+
+**The search space, and why it is smaller than it looks.** For a query of fixed length in a
+fixed alphabet, match count, enrichment, an ungapped +1/-penalty score and a
+Karlin-Altschul E-value are monotone functions of each other, so they give the same ranking
+and the same ties. `scripts/nb276_metric_equivalence.py` computes all four over the 19_705
+canonical human proteins and compares the rank vectors element by element: identical,
+Spearman 1.0, 0 proteins ordered differently. So four of the five metrics are one metric,
+and only a summed-IDF weighting is genuinely separate. That leaves 19 alphabets x 2 queries
+x 2 metrics = 76 settings.
+
+**The two queries.** The 36-residue segment P66 197-232, and the loop P66 202-208 the claim
+names. The difference between them turns out to be the whole answer.
+
+**And the control that decides whether a hit means anything.** The same 76 settings are run
+for 200 arbitrary human proteins, each taking its best rank over all settings.
+""")
+
+code(r"""
+ranks = pl.read_csv(DATA / "34_cd47_rank_across_settings.csv")
+control = pl.read_csv(DATA / "35_pretend_target_best_ranks.csv")
+equiv = pl.read_csv(DATA / "36_metric_equivalence.csv")
+print("Four metrics, one ranking:")
+print(equiv)
+print(f"\n{ranks.height} settings. CD47's rank, best first:")
+print(ranks.sort("cd47_rank").select("alphabet", "n_classes", "query", "metric",
+                                     "cd47_score", "best_score_in_proteome",
+                                     "cd47_rank", "n_at_rank_1").head(12))
+sole = ranks.filter((pl.col("cd47_rank") == 1) & (pl.col("n_at_rank_1") == 1))
+print(f"\nSettings where CD47 is rank 1 and shares it with nobody: {sole.height}")
+print(sole.select("alphabet", "query", "metric", "cd47_score", "n_at_rank_1"))
+print(f"\nSettings where CD47 is rank 1 but the rank is shared:")
+print(ranks.filter((pl.col("cd47_rank") == 1) & (pl.col("n_at_rank_1") > 1))
+      .select("alphabet", "query", "metric", "n_at_rank_1"))
+nd = ranks.filter(pl.col("n_at_rank_1") <= 100)
+print(f"\nCD47's best rank per query, over the {nd.height} settings that do not tie "
+      f"more than 100 proteins at the top:")
+print(nd.group_by("query").agg(pl.col("cd47_rank").min().alias("best_rank"),
+                               pl.len().alias("n_settings")).sort("query"))
+print(f"\nCONTROL, {control.height} arbitrary human proteins over the same settings:")
+print(f"  reaching rank 1 somewhere: "
+      f"{control.filter(pl.col('best_rank_over_all_settings') == 1).height}")
+print(f"  median best rank: {control['best_rank_over_all_settings'].median()}")
+matched = control.filter(pl.col("length_matched"))
+print(f"  within 10% of CD47's length: "
+      f"{matched.filter(pl.col('best_rank_over_all_settings') == 1).height} of "
+      f"{matched.height} reach rank 1 somewhere")
+show("276t_cd47_rank_across_settings", aspect=0.36)
+""")
+
+md(r"""
+**Figure 276t.** CD47's rank in every setting, and the control.
+`figures/276t_cd47_rank_across_settings.png`. In panel **a** a point at the left edge only
+means something if it is also at the bottom: rank 1 shared with nobody.
+
+**Yes. Exactly one setting of the 76 makes CD47 the single best hit in the human proteome:**
+`hsdm17`, the 36-residue segment, match count. CD47 scores 16 and **no other protein of the
+19_705 reaches it**. That is the strongest statement anywhere in this notebook.
+
+**It is also circular, and that is the end of it.** The segment P66 197-232 is not a stretch
+of P66 chosen on its own merits. It is the window seed-and-extend produced *because* it
+aligns to CD47, in section 6c, and section 6g showed it is one of only two places in P66
+that reach this score against CD47. Asking whether CD47 tops a search for a query that was
+carved out of its own best alignment is not a test of anything. The query already contains
+the answer.
+
+**The non-circular query is the loop, and CD47 never tops it.** P66 202-208 was chosen by
+the paper without reference to CD47. Over the 18 loop settings that do not tie more than 100
+proteins at the top, CD47's best rank is **25 of 19_705**, in `wass14`, where 897 proteins
+share its score. The four loop settings that do put CD47 at rank 1 are `gbmr4` and
+`hp_kyte_doolittle2`, which tie **15_409** and **19_028** proteins there: a 7-residue query
+in a 2- or 4-class alphabet matches almost every protein in the proteome, so rank 1 is
+meaningless.
+
+**And "rank 1 in some setting" is worth nothing as a criterion.** Of 200 arbitrary human
+proteins put through the identical sweep, **197 reach rank 1 in at least one of the 76
+settings**, with a median best rank of 1. Restricted to the 24 that are within 10% of CD47's
+length, 23 of 24 do. Sweeping settings will promote almost any protein to the top of
+something, which is exactly why the earlier sections used a fixed setting and a matched
+background instead of a sweep.
+
+So the answer to the question has three parts, and only the second one is about biology.
+There is one setting where CD47 is the unique best human match for a P66 query; that query
+was defined by its match to CD47; and for the stretch the claim is actually about, no
+setting puts CD47 anywhere near the top without tying most of the proteome with it.
+""")
+
+md(r"""
 ## 7. Citations
 
 Every paper here was looked up with the PubMed tool in this session and the metadata it
@@ -1268,6 +1361,13 @@ Claim sentences:
   do**: 1.91 Å backbone RMSD against a median of 1.07 Å for 10 other 7-residue P66 loops,
   and in the whole-fold superposition its centre lands 55 Å from the centre of the face,
   off a domain only 45 Å across at its widest.
+* **No alphabet, k-size or metric puts CD47 at the top of the human proteome for the loop.**
+  Over 76 settings, CD47's best rank for a P66 202-208 query is 25 of 19_705 once settings
+  that tie more than 100 proteins at the top are excluded, and the settings that do rank it
+  first tie 15_409 or 19_028 proteins there. One setting makes CD47 the unique best hit for
+  the 36-residue segment, `hsdm17` with a match count, but that query was carved out of its
+  own alignment to CD47. The control settles the method: 197 of 200 arbitrary human proteins
+  also reach rank 1 in at least one of the 76 settings.
 * **kmerseek's silence on exact k-mers is forced, and carries no weight either way**: none
   of the 326 shared k-mers touches the loop across the 16 alphabets and 27 settings PR 96
   searched, and at every one of those settings no k-mer covering the loop occurs in CD47 at
