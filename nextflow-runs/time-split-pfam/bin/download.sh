@@ -1,5 +1,5 @@
 #!/bin/bash
-# Download the Pfam 33.1 (t0), Pfam 38.2 (t1) and UniProt 2019_08 Swiss-Prot files
+# Download the Pfam 33.1 (t0, seed alignments included), Pfam 38.2 (t1) and UniProt 2019_08 Swiss-Prot files
 # for the time-split test (notebook 280). Run on sherlock-dtn. Resumable: rerun to finish.
 # Checks each Pfam file against the release's md5_checksums.
 set -uo pipefail
@@ -61,7 +61,8 @@ for rel in Pfam33.1 Pfam38.2; do
     fetch "$PFAM/$rel/md5_checksums" "$DATA/$rel/md5_checksums.remote"
     small="Pfam-A.hmm.dat.gz Pfam-A.clans.tsv.gz Pfam-A.dead.gz relnotes.txt userman.txt Pfam.version.gz"
     big="Pfam-A.regions.tsv.gz"
-    [ "$rel" = Pfam33.1 ] && big="$big pfamseq.gz Pfam-A.regions.uniprot.tsv.gz Pfam-A.hmm.gz"
+    # Pfam-A.seed.gz (145 MB): the t0 seed alignments, the second reference of notebook 280.
+    [ "$rel" = Pfam33.1 ] && big="$big pfamseq.gz Pfam-A.regions.uniprot.tsv.gz Pfam-A.hmm.gz Pfam-A.seed.gz"
     for f in $small; do [ -s "$DATA/$rel/$f" ] || fetch "$PFAM/$rel/$f" "$DATA/$rel/$f"; done
     for f in $big; do fetch_big "$PFAM/$rel/$f" "$DATA/$rel/$f" & done
     wait
