@@ -62,19 +62,19 @@ inputs:
 smoke:
 	cd $(RUN_DIR) && mkdir -p launch-smoke && cd launch-smoke && \
 	  printf 'alphabet\tksize\tc_opt\nhp_pbotc_1st_ed2\t29\t1.59\n' > settings.smoke.tsv && \
-	  $(subst HEAD_TIME=7-00:00:00,HEAD_TIME=8:00:00,$(HEAD)) HEAD_SESSION=nf280smoke HEAD_JOBNAME=280-smoke-head \
+	  $(subst HEAD_TIME=7-00:00:00,HEAD_TIME=8:00:00,$(HEAD)) HEAD_SESSION=nf280smoke HEAD_JOBNAME=nfdrv-280-smoke \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) --settings settings.smoke.tsv \
 	    --inputs $(RUN_DIR)/inputs/smoke --outdir $(RUN_DIR)/results-smoke --run_tag smoke -resume'
 
 pilot:
 	cd $(RUN_DIR) && mkdir -p launch-pilot && cd launch-pilot && \
-	  $(HEAD) HEAD_SESSION=nf280pilot HEAD_JOBNAME=280-pilot-head \
+	  $(HEAD) HEAD_SESSION=nf280pilot HEAD_JOBNAME=nfdrv-280-pilot \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
 	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot --run_tag pilot --queue_size 100 -resume'
 
 full:
 	cd $(RUN_DIR) && mkdir -p launch-full && cd launch-full && \
-	  $(HEAD) HEAD_SESSION=nf280full HEAD_JOBNAME=280-full-head \
+	  $(HEAD) HEAD_SESSION=nf280full HEAD_JOBNAME=nfdrv-280-full \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
 	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/full --outdir $(RUN_DIR)/results-full --run_tag full --read_test_half true -resume'
 
