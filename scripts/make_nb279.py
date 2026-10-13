@@ -1061,6 +1061,148 @@ for r in left.iter_rows(named=True):
 """)
 
 md(r"""
+### 6f. Why kmerseek gives BHF no small E-value
+
+phmmer's best hit on BHF is the Vpx protein of simian immunodeficiency virus (P27984,
+E = 0.16, BHF 137-190). This part asks whether kmerseek finds the same place, and if it does,
+why its E-value for it is large. It reads phmmer's own alignments of BHF to its seven
+targets (`bhf_phmmer.out`), and for each alignment counts the identical residues, the
+columns where both residues are in the same H/P class, and the longest unbroken run of such
+columns. An exact shared H/P 17-mer needs a run of at least 17.
+
+**The arithmetic.** Under H/P, one aligned column can only say "same class" or "different
+class". If a column matches by chance with probability p, a run of L matching columns
+starting at a given pair of positions happens by chance with probability about p^L. A search
+of BHF against the index tries about N = (BHF k-mer positions) x (index k-mers) starting
+pairs, so a run of L is expected by chance about N x p^L times, and a run is unlikely by
+chance (expected count below 1) only when L > log(N) / log(1/p). p comes from the share of
+hydrophobic residues in BHF and in the targets (estimated from the 15_207 targets of BHF's
+regions, `bhf_targets_k17_k23.fasta`, not the whole reference). This ignores kmerseek's
+k-mer weights and its extension through mismatches; it only sets the scale.
+""")
+
+code(r"""
+import math
+
+# phmmer's alignments of BHF, one row per domain: residues on both sides, gaps kept
+phmmer_aln = []
+for block in phmmer_text.split("\n>> ")[1:]:
+    target = block.split()[0]
+    for dblock in block.split("  == domain ")[1:]:
+        q_aln = t_aln = ""
+        q_from = None  # BHF position of the first aligned residue
+        lines = dblock.splitlines()[1:]
+        i = 0
+        while i < len(lines):
+            m = re.match(rf"\s+{BHF_ID}\s+(\d+)\s+(\S+)\s+(\d+)", lines[i])
+            if m:
+                if q_from is None:
+                    q_from = int(m.group(1))
+                q_aln += m.group(2)
+                t_aln += re.match(r"\s+\S+\s+\d+\s+(\S+)\s+\d+", lines[i + 2]).group(1)
+                i += 4
+                continue
+            if lines[i].startswith(">>") or "Internal pipeline" in lines[i]:
+                break
+            i += 1
+        phmmer_aln.append({"target": target, "bhf_from": q_from, "q": q_aln.upper(), "t": t_aln.upper()})
+
+
+def hp_runs(q, t):
+    # per column: 2 identical residue, 1 same H/P class, 0 different class, -1 gap on either side
+    col = [-1 if not (a.isalpha() and b.isalpha()) else 2 if a == b else 1 if (a in HP_H) == (b in HP_H) else 0
+           for a, b in zip(q, t)]
+    run = best = 0
+    for c in col:
+        run = run + 1 if c >= 1 else 0
+        best = max(best, run)
+    return col, best
+
+
+rows = []
+for a in phmmer_aln:
+    a_col, a_best = hp_runs(a["q"], a["t"])
+    n = sum(c >= 0 for c in a_col)
+    rows.append({"target": a["target"], "target_name": uniprot_name.get(a["target"], names.get(a["target"], "")).split(" (")[0][:30],
+                 "aligned_columns": n, "identical_pct": round(100 * sum(c == 2 for c in a_col) / n),
+                 "same_HP_class_pct": round(100 * sum(c >= 1 for c in a_col) / n), "longest_same_HP_run": a_best})
+aln_tab = pl.DataFrame(rows).join(
+    dom.select("target", pl.col("evalue").alias("phmmer_E"), "bhf_start", "bhf_end").unique("target"), on="target", how="left")
+# kmerseek's region on the same targets, per k
+km_on = kr.filter(pl.col("target_name").is_in(aln_tab["target"].to_list())).select(
+    "k", pl.col("target_name").alias("target"), pl.col("region_start").alias("km_bhf_start0"), "region_end",
+    pl.col("region_n_shared_kmers").cast(pl.Int64).alias("shared_kmers"), pl.col("region_evalue").round(0).alias("kmerseek_E"),
+    pl.col("query_poisson_pvalue").cast(pl.Float64).alias("protein_poisson_p"))
+print("phmmer's alignments of BHF, scored column by column (H/P = hp_lehninger2 classes):")
+print(aln_tab.sort("phmmer_E"))
+print("\nkmerseek regions on the same targets (BHF positions 0-based, end-exclusive):")
+print(km_on.sort("target", "k"))
+
+# How long a run of matching H/P columns has to be before chance stops explaining it
+tseqs = read_fasta(BHF / "bhf_targets_k17_k23.fasta")
+f_bhf = sum(c in HP_H for c in bhf_seq) / len(bhf_seq)
+f_ref = sum(sum(c in HP_H for c in s) for s in tseqs.values()) / sum(len(s) for s in tseqs.values())
+p_same = f_bhf * f_ref + (1 - f_bhf) * (1 - f_ref)
+need_rows = []
+for k in BHF_KS:
+    n_index = int(kr.filter(pl.col("k") == k)["db_n_kmers"][0])
+    n_pairs = (len(bhf_seq) - k + 1) * n_index
+    need_rows.append({"k": k, "index_kmers": n_index, "possible_HP_kmers": 2 ** k,
+                      "chance_copies_of_one_kmer": round(n_index / 2 ** k, 1),
+                      "starting_pairs_N": n_pairs, "run_needed_for_chance_below_1": math.ceil(math.log(n_pairs) / -math.log(p_same)),
+                      "chance_runs_of_26": round(n_pairs * p_same ** 26)})
+need = pl.DataFrame(need_rows)
+print(f"\nHydrophobic share: BHF {f_bhf:.3f}, targets {f_ref:.3f}; chance that a column has the same H/P class p = {p_same:.3f}")
+print(need)
+
+# Protein-level Poisson p-value: does it single out Vpx? (BHF's targets, and the copies' best)
+prot_p = kr.filter(pl.col("k") == 17).group_by("target_name").agg(pl.col("query_poisson_pvalue").cast(pl.Float64).min().alias("p")).sort("p")
+print(f"\nk17: BHF targets with protein Poisson p = 0: {(prot_p['p'] == 0).sum():_} of {prot_p.height:_}; "
+      f"targets with p at or below P27984's ({prot_p.filter(pl.col('target_name') == 'P27984')['p'][0]:.1e}): "
+      f"{(prot_p['p'] <= prot_p.filter(pl.col('target_name') == 'P27984')['p'][0]).sum():_}")
+
+# The figure: the Vpx alignment column by column, and every alignment's longest run against what is needed
+COL_STYLE = {2: ("identical residue", "black"), 1: ("same H/P class, different residue", pf.OKABE_ITO["blue"]),
+             0: ("different H/P class", pf.OKABE_ITO["orange"]), -1: ("gap", "white")}
+need17 = need.filter(pl.col("k") == 17)["run_needed_for_chance_below_1"][0]
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 72, nrows=2, gridspec_kw={"height_ratios": [1, 1.6]})
+ax = axs[0]
+vpx = next(a for a in phmmer_aln if a["target"] == "P27984")
+vpx_col, vpx_best = hp_runs(vpx["q"], vpx["t"])
+for x, c in enumerate(vpx_col):
+    lab, colour = COL_STYLE[c]
+    ax.add_patch(plt.Rectangle((x, 0), 0.9, 1, facecolor=colour, edgecolor="black" if c == -1 else colour, lw=0.3))
+    ax.text(x + 0.45, 1.25, vpx["q"][x], ha="center", va="bottom", fontsize=5, family="monospace")
+    ax.text(x + 0.45, -0.25, vpx["t"][x], ha="center", va="top", fontsize=5, family="monospace")
+for c in sorted(set(vpx_col), reverse=True):  # one legend entry per column type present
+    lab, colour = COL_STYLE[c]
+    ax.add_patch(plt.Rectangle((0, 0), 0, 0, facecolor=colour, edgecolor="black" if c == -1 else colour, lw=0.3, label=lab))
+ax.set_xlim(-6, len(vpx_col) + 1)
+ax.set_ylim(-1.4, 2.4)
+ax.text(-0.5, 1.6, f"BHF {vpx['bhf_from']}", ha="right", va="center", fontsize=5)
+ax.text(-0.5, -0.6, "Vpx P27984", ha="right", va="center", fontsize=5)
+ax.axis("off")
+ax.set_title(f"phmmer's best alignment (E = 0.16): the longest unbroken run of same-H/P columns is {vpx_best}", fontsize=6)
+
+ax = axs[1]
+aln_order = aln_tab.sort("longest_same_HP_run")
+ys = range(aln_order.height)
+ax.scatter(aln_order["longest_same_HP_run"], ys, color="black", s=14, zorder=3, label="phmmer alignment: longest same-H/P run")
+ax.axvline(17, color=pf.OKABE_ITO["blue"], lw=1, ls="--", label="k = 17: one shared k-mer needs a run this long")
+ax.axvline(need17, color=pf.OKABE_ITO["vermillion"], lw=1, label=f"run needed before chance stops explaining it ({need17}, at k17)")
+ax.set_yticks(list(ys), [f"{r['target']} {r['target_name']}, phmmer E {r['phmmer_E']:g}" for r in aln_order.iter_rows(named=True)])
+ax.set_xlim(0, need17 + 4)
+ax.set_xlabel("Columns (aligned residue pairs)")
+for y in ys:
+    ax.axhline(y, color="#dddddd", lw=0.3, zorder=0)
+for a_, letter in zip(axs, "ab"):
+    pf.panel_label(a_, letter)
+pf.shared_legend(fig, ncol=3, title="BHF against its seven phmmer hits in Swiss-Prot minus Ascidiacea; H/P = hp_lehninger2. "
+                 "A run left of the red line is expected by chance", title_fontsize=6)
+pf.save(fig, FIG / "279_bhf_phmmer_alignments_hp_runs_vs_chance_hp_lehninger2_swissprot")
+""")
+
+md(r"""
 ## 7. Reach after dropping low-complexity and helix regions
 
 Every kmerseek region on a dark protein (no tool hit with E < 1) under the six settings that
@@ -1299,6 +1441,10 @@ region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. el
   (E = 3.97, 8 of 96).
 * No BHF region with E < 10 lands on a zinc finger, a membrane segment or a DNA-binding region
   of its target; the closest is a transmembrane segment of Q9UTN1 at E = 12.8.
+* kmerseek does find phmmer's Vpx match, at the same place: BHF 134-177 on Vpx (P27984) 9-52,
+  with 10 shared 17-mers at k17, but scores it E = 2_873. H/P gives at most one bit per
+  column: phmmer's alignment has 26 unbroken same-class columns, a search this size expects
+  a run of 26 about 560 times by chance, and only a run of 36 or more would stand out.
 * At k = 13-16, BHF shares at least 2 H/P k-mers with 2-9% more Swiss-Prot proteins than its
   shuffled copies (p = 0.04-0.05), but its best single protein shares fewer k-mers than the
   copies' median (p = 0.71-0.95), so no index below k17 was built for BHF.
@@ -1328,8 +1474,8 @@ Sections 7-9 read the region coordinates from the run's region files and drop re
 are mostly low complexity or transmembrane helix. Section 6 follows BHF alone: the H/P
 k-mers it shares at k below 17 (6b), three low-complexity rules and a search of 100
 dipeptide-shuffled copies of BHF against the same indexes (6c), UniProt zinc finger,
-membrane and DNA-binding features under its regions' targets (6d), and the residues of the
-regions left (6e). The shuffle search is the only new search in this notebook.
+membrane and DNA-binding features under its regions' targets (6d), the residues of the
+regions left (6e), and why phmmer's Vpx match gets a large kmerseek E-value (6f). The shuffle search is the only new search in this notebook.
 
 ## Supplementary Information
 
@@ -1404,6 +1550,10 @@ region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. el
   (E = 3.97, 8 of 96).
 * No BHF region with E < 10 lands on a zinc finger, a membrane segment or a DNA-binding region
   of its target; the closest is a transmembrane segment of Q9UTN1 at E = 12.8.
+* kmerseek does find phmmer's Vpx match, at the same place: BHF 134-177 on Vpx (P27984) 9-52,
+  with 10 shared 17-mers at k17, but scores it E = 2_873. H/P gives at most one bit per
+  column: phmmer's alignment has 26 unbroken same-class columns, a search this size expects
+  a run of 26 about 560 times by chance, and only a run of 36 or more would stand out.
 * At k = 13-16, BHF shares at least 2 H/P k-mers with 2-9% more Swiss-Prot proteins than its
   shuffled copies (p = 0.04-0.05), but its best single protein shares fewer k-mers than the
   copies' median (p = 0.71-0.95), so no index below k17 was built for BHF.
@@ -1433,8 +1583,8 @@ Sections 7-9 read the region coordinates from the run's region files and drop re
 are mostly low complexity or transmembrane helix. Section 6 follows BHF alone: the H/P
 k-mers it shares at k below 17 (6b), three low-complexity rules and a search of 100
 dipeptide-shuffled copies of BHF against the same indexes (6c), UniProt zinc finger,
-membrane and DNA-binding features under its regions' targets (6d), and the residues of the
-regions left (6e). The shuffle search is the only new search in this notebook.
+membrane and DNA-binding features under its regions' targets (6d), the residues of the
+regions left (6e), and why phmmer's Vpx match gets a large kmerseek E-value (6f). The shuffle search is the only new search in this notebook.
 
 ## Supplementary Information
 
