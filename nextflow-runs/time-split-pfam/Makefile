@@ -6,6 +6,7 @@
 #   make inputs          Stop 2/3 search inputs: reference, settings, pilot and full query sets
 #   make smoke           2 queries x 1 alphabet-k through every tool, to check the wiring
 #   make pilot           Stop 2: 200 sample queries + 20 positive controls + decoys, every tool
+#   make score-partial   score the pilot searches finished so far (tune half only)
 #   make full            Stop 3: the 8_329 approved queries + decoys, every tool
 #   make running         what is running on this account
 #
@@ -28,7 +29,7 @@ NF_COMMON = $(MAKEFILE_DIR)/main.nf -profile sherlock \
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs smoke pilot full running
+.PHONY: download stop1 controls inputs smoke pilot score-partial full running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -71,6 +72,18 @@ pilot:
 	  $(HEAD) HEAD_SESSION=nf280pilot HEAD_JOBNAME=nfdrv-280-pilot \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
 	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot --run_tag pilot --queue_size 100 -resume'
+
+# Score the pilot searches that have finished, while the rest still run. Reads what the
+# pilot published to results-pilot/ (kmerseek search outputs and their stats files, MMseqs2,
+# phmmer, hmmscan) and writes results-pilot/scores-partial/. The test half is dropped, as
+# in the pilot's own scoring step. Sizing: the scorer holds one search output at a time;
+# the largest pilot file is 1.1 GB gzipped (~27 million rows).
+score-partial:
+	$(SB) --job-name=280-score-partial --cpus-per-task=4 --mem=64G --time=4:00:00 \
+	  --wrap 'set -e; R=$(RUN_DIR)/results-pilot; O=$$R/scores-partial; command rm -rf $$O; mkdir -p $$O; \
+	  $(PY) $(MAKEFILE_DIR)/bin/score_transfers.py --kmerseek $$R/kmerseek --stats $$R/kmerseek \
+	    --mmseqs2 $$R/mmseqs2 --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
+	    --reference $(RUN_DIR)/inputs/reference --settings $(RUN_DIR)/inputs/settings.tsv --out $$O'
 
 full:
 	cd $(RUN_DIR) && mkdir -p launch-full && cd launch-full && \
