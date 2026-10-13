@@ -1,0 +1,467 @@
+<title>kmerseek Dark Set 0.4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/*__FONTS__*/
+/* Layout: one reading column of panels under a bar of cutoff switches; each panel is one question, figure first, its table folded under it. */
+:root{
+  --bg:#F6F7F5;--surface:#FFFFFF;--ink:#1C211F;--muted:#5E6663;--hair:#D9DDDA;
+  --glass:rgba(255,255,255,.9);--glass-edge:rgba(20,60,70,.20);--shadow:0 14px 34px -26px rgba(0,40,50,.75);
+  --dark:#3B4A6B;--placed:#C9CFCB;
+  --hp:#009E73;--mid:#D55E00;--big:#0072B2;--p20:#1C211F;
+  --heat0:#EAF1F7;--heat1:#08306B;--chip:#EEF1EF;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --text:"Source Sans 3",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"Fantasque Sans Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141716;--surface:#1B1F1E;--ink:#E6EAE8;--muted:#A3ABA7;--hair:#2E3432;
+  --glass:rgba(22,28,30,.92);--glass-edge:rgba(170,230,225,.16);--shadow:0 18px 44px -28px rgba(0,0,0,.85);
+  --dark:#9FB3E0;--placed:#4A524F;
+  --hp:#3CC59A;--mid:#F08A4B;--big:#56B4E9;--p20:#E6EAE8;
+  --heat0:#1E2A33;--heat1:#9ED0F5;--chip:#232927;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141716;--surface:#1B1F1E;--ink:#E6EAE8;--muted:#A3ABA7;--hair:#2E3432;
+  --glass:rgba(22,28,30,.92);--glass-edge:rgba(170,230,225,.16);--shadow:0 18px 44px -28px rgba(0,0,0,.85);
+  --dark:#9FB3E0;--placed:#4A524F;
+  --hp:#3CC59A;--mid:#F08A4B;--big:#56B4E9;--p20:#E6EAE8;
+  --heat0:#1E2A33;--heat1:#9ED0F5;--chip:#232927;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--text);padding-inline:16px;padding-block:32px 64px}
+main{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-family:var(--display);font-weight:650;font-size:clamp(2rem,5vw,2.8rem);line-height:1.1;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:500;font-size:1.45rem;line-height:1.25;margin:0;text-wrap:balance}
+h3{font-size:1rem;margin:0}
+p{margin:0;max-width:72ch}
+.lede{font-size:1.12rem}
+.muted{color:var(--muted)}
+.num,code{font-family:var(--mono);font-variant-numeric:tabular-nums}
+section{position:relative;z-index:0}
+.panel{background:var(--glass);border:1px solid var(--glass-edge);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:14px;min-width:0}
+.step{font:600 .78rem/1.3 var(--text);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.shows{font-size:.9rem;color:var(--muted);border-left:3px solid var(--hair);padding-left:10px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.fact{border-top:2px solid var(--ink);padding-top:8px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.fact b{font:700 1.6rem/1.1 var(--mono)}
+.fact span{color:var(--muted);font-size:.92rem;line-height:1.35}
+.bar{background:var(--bg);border-bottom:1px solid var(--hair);padding:10px 0;display:flex;flex-direction:column;gap:6px;z-index:5}
+@media (min-width:820px){.bar{position:sticky;top:env(safe-area-inset-top,0px)}}
+.controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls .lab{font-size:.88rem;color:var(--muted);margin-right:4px;min-width:13.5em}
+button.seg{font:600 .88rem var(--text);color:var(--ink);background:var(--chip);border:1px solid var(--hair);border-radius:999px;padding:4px 12px;cursor:pointer}
+button.seg[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.seg:focus-visible,select:focus-visible,.cell:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+select{font:600 .9rem var(--text);color:var(--ink);background:var(--chip);border:1px solid var(--hair);border-radius:8px;padding:4px 8px}
+.fig{overflow-x:auto;min-width:0;isolation:isolate}
+.fig svg{display:block;max-width:none}
+.fig svg text{fill:var(--ink);font-family:var(--text)}
+.fig svg .mut{fill:var(--muted)}
+.multi{display:flex;flex-wrap:wrap;gap:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--muted);align-items:center}
+.key{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:12px;border-radius:2px;display:inline-block;border:1px solid transparent}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.readout{font-size:.95rem;background:var(--chip);border-radius:8px;padding:8px 12px;min-height:2.6em}
+.tablewrap{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;font-size:.9rem;width:100%}
+th,td{border-bottom:1px solid var(--hair);padding:5px 8px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted)}
+td.n,th.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+tr.pick td{font-weight:700}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.cols>div{min-width:0;display:flex;flex-direction:column;gap:8px}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+details{font-size:.95rem}
+summary{cursor:pointer;color:var(--muted)}
+ul.caveats{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px;max-width:72ch}
+a{color:inherit}
+footer{max-width:980px;margin:0 auto;color:var(--muted);font-size:.9rem;display:flex;flex-direction:column;gap:6px}
+.cell{cursor:pointer}
+@media (max-width:600px){.panel{padding:16px 14px}body{font-size:16px}.controls .lab{min-width:0;width:100%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <div class="step">Dark-set run ladder-0.4-midi · kmerseek 0.4.0-rc5 · five proteomes · PR 57</div>
+    <h1>kmerseek Dark Set 0.4</h1>
+    <p class="lede">The dark set of a proteome is every protein that phmmer, jackhmmer and MMseqs2 all fail to match to anything in a reference database that leaves out the protein's own clade. This page asks how many such proteins each kmerseek setting puts a region on, and whether that setting also reaches the proteins those tools did match, so that a reach on dark proteins means something.</p>
+    <div class="facts" id="facts"></div>
+  </header>
+
+  <div class="bar" id="bar">
+    <div class="controls" id="c-dark"><span class="lab">Dark: no tool hit with E-value ≤</span></div>
+    <div class="controls" id="c-km"><span class="lab">Reached: kmerseek region with E-value ≤</span></div>
+    <div class="controls" id="c-sc"><span class="lab">kmerseek index keeps</span></div>
+  </div>
+
+  <section class="panel" id="size">
+    <div class="step">1 · How big is the dark set</div>
+    <h2>Dark proteins per species</h2>
+    <p class="shows">Tools: phmmer, jackhmmer and MMseqs2, each searched against the same clade-excluded reference. A protein is dark at a cutoff when none of the three has a hit at or below that E-value. An E-value is the number of hits this good expected by chance in the whole search; lower is better.</p>
+    <div class="legend">
+      <span class="key"><span class="sw" style="background:var(--dark)"></span>dark at the chosen cutoff</span>
+      <span class="key"><span class="sw" style="background:var(--placed)"></span>placed (some tool hit at or below the cutoff)</span>
+      <span class="key"><span class="sw" style="background:transparent;border:1.5px solid var(--dark)"></span>dark at the other cutoffs (outline)</span>
+    </div>
+    <div class="fig" id="sizefig"></div>
+    <details><summary>The numbers behind this figure, and the dark set of each tool alone</summary><div class="tablewrap" id="sizetab"></div></details>
+  </section>
+
+  <section class="panel" id="reach">
+    <div class="step">2 · How kmerseek did</div>
+    <h2>Share of dark and of placed proteins each setting reaches</h2>
+    <p class="shows">Tool: kmerseek 0.4.0-rc5, every alphabet and k-size of the run, extension on (mismatch penalty at each alphabet's optimum), low-complexity mask off. Query: the species' proteome. Target: the same clade-excluded reference. One dot is one alphabet and k-size. A setting tells dark from placed when it reaches at least twice as large a share of placed proteins as of dark ones: above the dashed line. Below it, the setting reaches dark and placed proteins alike, so its dark reach says little.</p>
+    <div class="legend" id="alphalegend"></div>
+    <div class="fig multi" id="scatters"></div>
+    <div class="readout" id="scread">Hover or tap a dot to see the setting and its counts.</div>
+  </section>
+
+  <section class="panel" id="best">
+    <div class="step">2b · Which alphabet did best</div>
+    <h2>Best k-size of each alphabet, per species</h2>
+    <p class="shows">For each alphabet and species, the k-size with the largest share of dark proteins reached among the settings that tell dark from placed. A grey × means no k-size of that alphabet tells dark from placed in that species. The black bar is the mean over the five species (a species with no such setting counts as 0). Higher is better.</p>
+    <div class="legend" id="bestlegend"></div>
+    <div class="fig" id="bestfig"></div>
+    <div class="readout" id="bestread"></div>
+    <details><summary>The numbers behind this figure</summary><div class="tablewrap" id="besttab"></div></details>
+  </section>
+
+  <section class="panel" id="heat">
+    <div class="step">2c · Every setting in one species</div>
+    <h2>Dark share reached by alphabet and k-size</h2>
+    <div class="controls" id="c-heat-sp"><span class="lab">Species</span></div>
+    <p class="shows">Tool: kmerseek, the species chosen above. Colour is the share of dark proteins reached, scaled to this species' range. A ✓ marks a setting that tells dark from placed. A grey × is a setting the search refused: its index stored no fitted E-value statistics (Karlin-Altschul fit) for that penalty. A blank cell was not in the run.</p>
+    <div class="legend" id="heatlegend"></div>
+    <div class="fig" id="heatfig"></div>
+    <div class="readout" id="heatread">Tap a cell to see its counts.</div>
+  </section>
+
+  <section class="panel" id="groups">
+    <div class="step">3 · Gene groups</div>
+    <h2>Which gene groups kmerseek reaches in the dark set</h2>
+    <div class="controls" id="c-g-sp"><span class="lab">Species</span></div>
+    <div class="controls"><span class="lab">kmerseek setting</span><select id="g-set" aria-label="kmerseek setting"></select></div>
+    <p class="shows" id="gshows"></p>
+    <div class="legend">
+      <span class="key"><span class="sw" style="background:var(--dark)"></span>dark, reached by kmerseek</span>
+      <span class="key"><span class="sw" style="background:transparent;border:1.5px solid var(--dark)"></span>dark, not reached</span>
+    </div>
+    <div class="cols">
+      <div><h3>Most dark proteins reached</h3><div class="fig" id="greached"></div></div>
+      <div><h3>Most dark proteins, none reached</h3><div class="fig" id="gmissed"></div></div>
+    </div>
+    <div class="readout" id="gread">Tap a group to list its dark proteins.</div>
+    <details><summary>Every group with at least 3 dark proteins</summary><div class="tablewrap" id="gtab"></div></details>
+  </section>
+
+  <section class="panel" id="caveats">
+    <div class="step">4 · Before reading these numbers as rescues</div>
+    <h2>Caveats</h2>
+    <ul class="caveats">
+      <li><b>The low-complexity mask was off</b> for every setting on this page, so a region can rest on a stretch made of few kinds of residue (for example lysine-rich or serine-rich), which shares k-mers with many unrelated proteins.</li>
+      <li><b>Reached dark proteins lean towards low-complexity sequence in human and towards membrane helices in worm</b> (notebook 279, PR 120): in those species a reached dark protein is more often annotated by UniProt as compositionally biased (human) or as having transmembrane helices (worm) than the dark set as a whole.</li>
+      <li><b>Reach is not correctness.</b> A region on a dark protein says kmerseek found shared k-mers with some target; it does not say the target is a homolog.</li>
+      <li><b>BHF, the <i>Botryllus</i> histocompatibility factor, is not rescued.</b> Its best kmerseek region (hp_lehninger2, k = 17) has E-value 2.97, a chance-level score, while phmmer finds SIV Vpx (P27984) at E-value 0.16. So BHF is placed, not dark, at a cutoff of 1 or 10.</li>
+      <li><b>Refused settings are missing, not zero.</b> <span id="unfit-n"></span> settings per species (both scaled values) have no fitted E-value statistics in their index and were not searched (grey × in 2c).</li>
+      <li><b>Botryllus groups come from protein names.</b> The genome annotation named some proteins after a human gene (FUN000002_NLRC5); those take that human gene's HGNC group. Unnamed proteins have no group.</li>
+    </ul>
+  </section>
+
+  <footer id="foot"></footer>
+</main>
+
+<script>
+const D = /*__DATA__*/;
+const CLASSES = /*__CLASSES__*/;
+const SP = {human:"human", worm:"C. elegans", yeast:"S. cerevisiae", borrelia:"B. burgdorferi", botryllus:"B. schlosseri"};
+const SPI = {human:false, worm:true, yeast:true, borrelia:true, botryllus:true};
+const spName = s => SPI[s] ? `<i>${SP[s]}</i>` : SP[s];
+const SPECIES = D.species.map(s => s.name);
+const fmtE = e => e >= 1 ? String(e) : (e >= 0.001 ? String(e) : e.toExponential(0).replace("e-", "e-"));
+const pct = (x, d=1) => (100*x).toFixed(d) + "%";
+const int = n => n.toLocaleString("en-US");
+const ns = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){const e=document.createElementNS(ns,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent, x, y, s, attrs={}){const t=el("text",Object.assign({x,y},attrs),parent);t.textContent=s;return t;}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+// Alphabet size groups, as in the clear-figures rule: 2-3 letters, 4-8, 12-18, protein20
+function nClasses(a){return CLASSES[a].length;}
+function sizeGroup(a){const n=nClasses(a);return n<=3?0:n<=8?1:n<=18?2:3;}
+const GROUPS = [{name:"2-3 letters (H/P)",col:"--hp"},{name:"4-8 letters",col:"--mid"},{name:"12-18 letters",col:"--big"},{name:"protein20",col:"--p20"}];
+function classTitle(a){return `${a}: ${nClasses(a)} classes ${CLASSES[a].join(" ")}`;}
+const ALPHAS = [...new Set(SPECIES.flatMap(s => D.settings[s].map(r => r.alphabet)))]
+  .sort((a,b)=> sizeGroup(a)-sizeGroup(b) || nClasses(a)-nClasses(b) || a.localeCompare(b));
+
+const state = {t: D.dark_cutoffs.indexOf(1), u: D.kmerseek_cutoffs.indexOf(1), sc: 1, heatSp: "human", gSp: "human", gSet: null};
+try{const s=JSON.parse(localStorage.getItem("darkset-state")||"null");if(s)Object.assign(state,s);}catch(e){}
+function save(){try{localStorage.setItem("darkset-state",JSON.stringify(state));}catch(e){}}
+
+function segs(id, values, label, key, after){
+  const box=document.getElementById(id);
+  values.forEach((v,i)=>{const b=document.createElement("button");b.className="seg";b.type="button";b.textContent=label(v);
+    b.addEventListener("click",()=>{state[key]=(key==="t"||key==="u")?i:v;save();render();});
+    b.dataset.val=(key==="t"||key==="u")?i:v;box.appendChild(b);});
+}
+segs("c-dark", D.dark_cutoffs, fmtE, "t");
+segs("c-km", D.kmerseek_cutoffs, fmtE, "u");
+segs("c-sc", [1,10], v => v===1 ? "every k-mer (scaled 1)" : "1 in 10 k-mers (scaled 10)", "sc");
+segs("c-heat-sp", SPECIES, s => SP[s], "heatSp");
+segs("c-g-sp", SPECIES, s => SP[s], "gSp");
+document.querySelectorAll("#c-heat-sp button, #c-g-sp button").forEach(b=>b.style.fontStyle=SPI[b.dataset.val]?"italic":"normal");
+
+function spInfo(s){return D.species.find(x=>x.name===s);}
+function rowsFor(s){return D.settings[s].filter(r=>r.scaled===state.sc);}
+function shares(s, r){
+  const info=spInfo(s), nd=info.dark[state.t], np=info.proteins-nd;
+  const [dr,pr]=r.reached[state.t][state.u];
+  return {dr, pr, nd, np, ds: nd?dr/nd:0, ps: np?pr/np:0, tells: np>0 && pr/np >= 2*(dr/nd) && dr>0};
+}
+function cutoffText(){return `dark at E ≤ ${fmtE(D.dark_cutoffs[state.t])}, reached at region E ≤ ${fmtE(D.kmerseek_cutoffs[state.u])}, ${state.sc===1?"scaled 1":"scaled 10"}`;}
+
+// ---------- header facts
+function renderFacts(){
+  const f=document.getElementById("facts");f.innerHTML="";
+  const tot=D.species.reduce((a,s)=>a+s.proteins,0), dk=D.species.reduce((a,s)=>a+s.dark[state.t],0);
+  const best=bestTable();
+  const top=best.overall[0];
+  const keys=SPECIES.map(s=>new Set(rowsFor(s).map(r=>r.alphabet+":"+r.ksize)));
+  const shared=[...keys[0]].filter(k=>keys.every(K=>K.has(k)));
+  const common={n:shared.length,tellAll:shared.filter(k=>SPECIES.every(s=>{const r=rowsFor(s).find(r=>r.alphabet+":"+r.ksize===k);return shares(s,r).tells;})).length};
+  const un=SPECIES.map(s=>D.unfitted[s].length);document.getElementById("unfit-n").textContent=`${Math.min(...un)} to ${Math.max(...un)}`;
+  const items=[[int(tot),"proteins in the five proteomes"],[int(dk),`dark at E ≤ ${fmtE(D.dark_cutoffs[state.t])} (${pct(dk/tot)})`],
+    [top?top.alphabet:"none", top?`best alphabet by mean dark share reached (${pct(top.mean)}), among settings that tell dark from placed`:"no setting tells dark from placed"],
+    [`${common.tellAll} of ${common.n}`, `alphabet and k-size settings searched in all five species that tell dark from placed in every one`]];
+  for(const [b,s] of items){const d=document.createElement("div");d.className="fact";d.innerHTML=`<b>${b}</b><span>${s}</span>`;f.appendChild(d);}
+}
+
+// ---------- 1. dark set size
+function renderSize(){
+  const W=Math.max(560, Math.min(940, document.getElementById("sizefig").clientWidth||900)), rowH=46, left=130, right=150, top=26;
+  const svg=el("svg",{width:W,height:top+rowH*SPECIES.length+30,role:"img","aria-label":"dark share per species"});
+  const x=v=>left+(W-left-right)*v;
+  [0,.25,.5,.75,1].forEach(v=>{el("line",{x1:x(v),x2:x(v),y1:top-6,y2:top+rowH*SPECIES.length,stroke:css("--hair")},svg);txt(svg,x(v),top-10,pct(v,0),{"text-anchor":"middle","font-size":11,class:"mut"});});
+  txt(svg,left,top+rowH*SPECIES.length+22,"share of the proteome",{"font-size":12,class:"mut"});
+  D.species.forEach((s,i)=>{
+    const y=top+i*rowH+8, h=24;
+    el("line",{x1:left-6,x2:x(1),y1:y+h/2,y2:y+h/2,stroke:css("--hair")},svg);
+    const t=txt(svg,left-10,y+h/2+5,SP[s.name],{"text-anchor":"end","font-size":14});if(SPI[s.name])t.setAttribute("font-style","italic");
+    const share=s.dark[state.t]/s.proteins;
+    el("rect",{x:x(0),y,width:x(1)-x(0),height:h,fill:css("--placed")},svg);
+    el("rect",{x:x(0),y,width:x(share)-x(0),height:h,fill:css("--dark")},svg);
+    s.dark.forEach((n,j)=>{if(j===state.t)return;el("rect",{x:x(0),y:y+2,width:Math.max(1,x(n/s.proteins)-x(0)),height:h-4,fill:"none",stroke:css("--dark"),"stroke-width":1.5,"stroke-dasharray":j<state.t?"0":"4 2"},svg);});
+    txt(svg,x(1)+8,y+h/2+5,`${int(s.dark[state.t])} of ${int(s.proteins)} (${pct(share)})`,{"font-size":13,class:"num"});
+  });
+  const box=document.getElementById("sizefig");box.innerHTML="";box.appendChild(svg);
+  const tools=["phmmer","jackhmmer","mmseqs2"];
+  let h=`<table><thead><tr><th>species</th><th class="n">proteins</th>${D.dark_cutoffs.map(c=>`<th class="n">dark, E ≤ ${fmtE(c)}</th>`).join("")}${tools.map(t=>`<th class="n">no ${t} hit, E ≤ ${fmtE(D.dark_cutoffs[state.t])}</th>`).join("")}</tr></thead><tbody>`;
+  D.species.forEach(s=>{h+=`<tr><td>${spName(s.name)}</td><td class="n">${int(s.proteins)}</td>${s.dark.map((n,j)=>`<td class="n"${j===state.t?' style="font-weight:700"':""}>${int(n)} (${pct(n/s.proteins)})</td>`).join("")}${tools.map(t=>`<td class="n">${int(s.dark_by_tool[t][state.t])}</td>`).join("")}</tr>`;});
+  document.getElementById("sizetab").innerHTML=h+"</tbody></table><p class='muted'>Dark at a looser cutoff is a subset of dark at a stricter one: a larger E-value cutoff counts more weak hits as matches. Outlines in the figure: solid for stricter cutoffs, dashed for looser ones.</p>";
+}
+
+// ---------- 2. scatter per species
+function renderLegendAlpha(id){
+  const L=document.getElementById(id);L.innerHTML="";
+  GROUPS.forEach(g=>{const k=document.createElement("span");k.className="key";k.innerHTML=`<span class="dot" style="background:var(${g.col})"></span>${g.name}`;L.appendChild(k);});
+  const k1=document.createElement("span");k1.className="key";k1.innerHTML=`<span class="dot" style="background:transparent;border:1.5px solid var(--muted)"></span>hollow: does not tell dark from placed`;L.appendChild(k1);
+  const k2=document.createElement("span");k2.className="key";k2.innerHTML=`<svg width="22" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke="currentColor" stroke-dasharray="4 3"/></svg>placed share = 2 × dark share`;L.appendChild(k2);
+  const k3=document.createElement("span");k3.className="key";k3.innerHTML=`<span class="dot" style="background:transparent;border:2.5px solid var(--ink);width:15px;height:15px"></span>ring: largest dark share that tells dark from placed`;L.appendChild(k3);
+}
+function renderScatters(){
+  const box=document.getElementById("scatters");box.innerHTML="";
+  let xmax=0,ymax=0;
+  SPECIES.forEach(s=>rowsFor(s).forEach(r=>{const q=shares(s,r);xmax=Math.max(xmax,q.ds);ymax=Math.max(ymax,q.ps);}));
+  const nice=v=>{const steps=[.02,.05,.1,.2,.25,.4,.5,.6,.8,1];return steps.find(x=>x>=v*1.05)||1;};
+  xmax=nice(xmax);ymax=nice(ymax);
+  const S=182, m={l:52,b:50,t:24,r:10};
+  SPECIES.forEach(s=>{
+    const svg=el("svg",{width:S+m.l+m.r,height:S+m.t+m.b,role:"img","aria-label":`kmerseek reach in ${SP[s]}`});
+    const X=v=>m.l+S*v/xmax, Y=v=>m.t+S-S*v/ymax;
+    const t=txt(svg,m.l,14,SP[s],{"font-size":14,"font-weight":600});if(SPI[s])t.setAttribute("font-style","italic");
+    for(let i=0;i<=4;i++){const vx=xmax*i/4,vy=ymax*i/4;
+      el("line",{x1:X(vx),x2:X(vx),y1:Y(0),y2:Y(ymax),stroke:css("--hair")},svg);el("line",{x1:X(0),x2:X(xmax),y1:Y(vy),y2:Y(vy),stroke:css("--hair")},svg);
+      if(i%2===0){txt(svg,X(vx),Y(0)+14,pct(vx,0),{"text-anchor":"middle","font-size":10,class:"mut"});txt(svg,X(0)-4,Y(vy)+3,pct(vy,0),{"text-anchor":"end","font-size":10,class:"mut"});}}
+    txt(svg,m.l+S/2,S+m.t+30,"dark share reached",{"text-anchor":"middle","font-size":11,class:"mut"});
+    txt(svg,11,m.t+S/2,"placed share reached",{"text-anchor":"middle","font-size":11,class:"mut",transform:`rotate(-90 11 ${m.t+S/2})`});
+    const x2=Math.min(xmax,ymax/2);
+    el("line",{x1:X(0),y1:Y(0),x2:X(x2),y2:Y(2*x2),stroke:css("--muted"),"stroke-dasharray":"4 3"},svg);
+    const rows=rowsFor(s).map(r=>({r,q:shares(s,r)}));
+    const pick=rows.filter(o=>o.q.tells).sort((a,b)=>b.q.ds-a.q.ds)[0];
+    rows.forEach(({r,q})=>{
+      const col=css(GROUPS[sizeGroup(r.alphabet)].col);
+      const c=el("circle",{cx:X(q.ds),cy:Y(q.ps),r:4,fill:q.tells?col:"none",stroke:col,"stroke-width":1.4,class:"cell",tabindex:0},svg);
+      const tt=el("title",{},c);tt.textContent=`${r.alphabet} k=${r.ksize}`;
+      const show=()=>{document.getElementById("scread").innerHTML=`${spName(s)} · <b>${r.alphabet}</b> k = ${r.ksize}, scaled ${r.scaled} <span class="muted">(${classTitle(r.alphabet)})</span><br>dark reached <span class="num">${int(q.dr)} of ${int(q.nd)} (${pct(q.ds)})</span>, placed reached <span class="num">${int(q.pr)} of ${int(q.np)} (${pct(q.ps)})</span> · ${q.tells?"tells dark from placed":"does not tell dark from placed"} · ${cutoffText()}`;};
+      c.addEventListener("mouseenter",show);c.addEventListener("click",show);c.addEventListener("focus",show);
+    });
+    if(pick)el("circle",{cx:X(pick.q.ds),cy:Y(pick.q.ps),r:8,fill:"none",stroke:css("--ink"),"stroke-width":2},svg);
+    txt(svg,m.l+S/2,S+m.t+46,pick?`ring: ${pick.r.alphabet} k${pick.r.ksize}`:"no setting tells dark from placed",{"text-anchor":"middle","font-size":11,class:"num"});
+    box.appendChild(svg);
+  });
+}
+
+// ---------- 2b. best per alphabet
+function bestTable(){
+  const per={};
+  ALPHAS.forEach(a=>{per[a]={};SPECIES.forEach(s=>{
+    const cands=rowsFor(s).filter(r=>r.alphabet===a).map(r=>({r,q:shares(s,r)}));
+    const ok=cands.filter(o=>o.q.tells).sort((x,y)=>y.q.ds-x.q.ds);
+    per[a][s]= cands.length===0 ? null : (ok[0]||{r:null,q:null});
+  });});
+  const overall=ALPHAS.map(a=>({alphabet:a,mean:SPECIES.reduce((t,s)=>t+((per[a][s]&&per[a][s].q)?per[a][s].q.ds:0),0)/SPECIES.length}))
+    .sort((x,y)=>y.mean-x.mean);
+  return {per,overall};
+}
+function renderBest(){
+  const {per,overall}=bestTable();
+  const L=document.getElementById("bestlegend");
+  L.innerHTML=SPECIES.map((s,i)=>`<span class="key"><svg width="12" height="12">${shapeSvg(i,6,6,css("--dark"))}</svg>${spName(s)}</span>`).join("")+
+    `<span class="key"><svg width="14" height="12"><line x1="7" y1="0" x2="7" y2="12" stroke="${css("--ink")}" stroke-width="3"/></svg>mean of the five</span><span class="key"><span style="color:${css("--muted")}">×</span> no setting tells dark from placed</span>`;
+  const rowH=24, gap=12, left=190, right=40;
+  const W=Math.max(560,Math.min(940,document.getElementById("bestfig").clientWidth||900));
+  let xmax=0;ALPHAS.forEach(a=>SPECIES.forEach(s=>{const o=per[a][s];if(o&&o.q)xmax=Math.max(xmax,o.q.ds);}));
+  xmax=[.02,.05,.1,.2,.25,.3,.4,.5,.6,.8,1].find(v=>v>=xmax*1.05)||1;
+  let y=24;const pos={};let lastG=-1;
+  ALPHAS.forEach(a=>{const g=sizeGroup(a);if(lastG!==-1&&g!==lastG)y+=gap;lastG=g;pos[a]=y;y+=rowH;});
+  const H=y+30, X=v=>left+(W-left-right)*v/xmax;
+  const svg=el("svg",{width:W,height:H,role:"img","aria-label":"best setting per alphabet"});
+  for(let i=0;i<=5;i++){const v=xmax*i/5;el("line",{x1:X(v),x2:X(v),y1:16,y2:H-28,stroke:css("--hair")},svg);txt(svg,X(v),12,pct(v,0),{"text-anchor":"middle","font-size":11,class:"mut"});}
+  txt(svg,left,H-8,"share of dark proteins reached by the alphabet's best k-size (higher is better)",{"font-size":12,class:"mut"});
+  ALPHAS.forEach(a=>{
+    const yy=pos[a]+rowH/2;
+    el("line",{x1:left-4,x2:X(xmax),y1:yy,y2:yy,stroke:css("--hair")},svg);
+    const t=txt(svg,left-10,yy+4,a,{"text-anchor":"end","font-size":12.5,class:"num"});
+    el("title",{},t).textContent=classTitle(a);
+    el("circle",{cx:left-180,cy:yy,r:4,fill:css(GROUPS[sizeGroup(a)].col)},svg);
+    const mean=overall.find(o=>o.alphabet===a).mean;
+    el("line",{x1:X(mean),x2:X(mean),y1:yy-9,y2:yy+9,stroke:css("--ink"),"stroke-width":3},svg);
+    SPECIES.forEach((s,i)=>{const o=per[a][s];const dy=(i-2)*2.6;
+      if(!o)return;
+      if(!o.q){txt(svg,X(0)+4+i*9,yy+4,"×",{"font-size":12,class:"mut"});return;}
+      const g=el("g",{class:"cell",tabindex:0},svg);g.innerHTML=shapeSvg(i,X(o.q.ds),yy+dy,css("--dark"));
+      const show=()=>{document.getElementById("bestread").innerHTML=`<b>${a}</b> in ${spName(s)}: best k = ${o.r.ksize}, dark reached <span class="num">${int(o.q.dr)} of ${int(o.q.nd)} (${pct(o.q.ds)})</span>, placed <span class="num">${pct(o.q.ps)}</span> · ${cutoffText()}`;};
+      g.addEventListener("mouseenter",show);g.addEventListener("click",show);g.addEventListener("focus",show);
+    });
+  });
+  const box=document.getElementById("bestfig");box.innerHTML="";box.appendChild(svg);
+  const top3=overall.slice(0,3).map(o=>`${o.alphabet} (${pct(o.mean)})`).join(", ");
+  const perSp=SPECIES.map(s=>{let b=null;ALPHAS.forEach(a=>{const o=per[a][s];if(o&&o.q&&(!b||o.q.ds>b.q.ds))b={a,...o};});return b?`${spName(s)}: ${b.a} k=${b.r.ksize} (${pct(b.q.ds)})`:`${spName(s)}: none`;}).join("; ");
+  document.getElementById("bestread").innerHTML=`Best overall at these cutoffs: ${top3}. Best per species: ${perSp}.`;
+  let h=`<table><thead><tr><th>alphabet</th><th class="n">classes</th>${SPECIES.map(s=>`<th class="n">${spName(s)}</th>`).join("")}<th class="n">mean</th></tr></thead><tbody>`;
+  overall.forEach(o=>{const a=o.alphabet;h+=`<tr><td class="num" title="${classTitle(a)}">${a}</td><td class="n">${nClasses(a)}</td>${SPECIES.map(s=>{const c=per[a][s];return `<td class="n">${!c?"not run":!c.q?"×":`k${c.r.ksize} · ${pct(c.q.ds)} / ${pct(c.q.ps)}`}</td>`;}).join("")}<td class="n">${pct(o.mean)}</td></tr>`;});
+  document.getElementById("besttab").innerHTML=h+`</tbody></table><p class="muted">Each cell: best k-size · dark share / placed share reached. ${cutoffText()}.</p>`;
+}
+function shapeSvg(i,x,y,c){
+  const r=4.2;
+  switch(i){case 0:return `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`;
+    case 1:return `<rect x="${x-r}" y="${y-r}" width="${2*r}" height="${2*r}" fill="${c}"/>`;
+    case 2:return `<path d="M${x} ${y-r-1}L${x+r+1} ${y+r}L${x-r-1} ${y+r}Z" fill="${c}"/>`;
+    case 3:return `<path d="M${x} ${y-r-1}L${x+r+1} ${y}L${x} ${y+r+1}L${x-r-1} ${y}Z" fill="${c}"/>`;
+    default:return `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${c}" stroke-width="2"/>`;}
+}
+
+// ---------- 2c. heatmap
+function lerpColor(a,b,t){const pa=hex(a),pb=hex(b);return `rgb(${pa.map((v,i)=>Math.round(v+(pb[i]-v)*t)).join(",")})`;}
+function hex(c){c=c.replace("#","");return [0,2,4].map(i=>parseInt(c.slice(i,i+2),16));}
+function renderHeat(){
+  const s=state.heatSp, rows=rowsFor(s), unf=D.unfitted[s].filter(u=>u.scaled===state.sc);
+  const ks=[...new Set(rows.map(r=>r.ksize).concat(unf.map(u=>u.ksize)))].sort((a,b)=>a-b);
+  const kmin=ks[0], kmax=ks[ks.length-1];
+  const cw=24, ch=20, left=190, top=34, gap=10;
+  let y=top;const pos={};let lastG=-1;
+  ALPHAS.forEach(a=>{const g=sizeGroup(a);if(lastG!==-1&&g!==lastG)y+=gap;lastG=g;pos[a]=y;y+=ch;});
+  const W=left+(kmax-kmin+1)*cw+10, H=y+10;
+  const svg=el("svg",{width:W,height:H,role:"img","aria-label":`dark share by alphabet and k in ${SP[s]}`});
+  let vmax=0;rows.forEach(r=>vmax=Math.max(vmax,shares(s,r).ds));vmax=vmax||1;
+  const c0=css("--heat0"), c1=css("--heat1");
+  for(let k=kmin;k<=kmax;k++){if(k%2===kmin%2||k===kmax)txt(svg,left+(k-kmin)*cw+cw/2,top-8,String(k),{"text-anchor":"middle","font-size":11,class:"mut"});}
+  txt(svg,left,12,"k-size",{"font-size":11,class:"mut"});
+  ALPHAS.forEach(a=>{
+    const t=txt(svg,left-10,pos[a]+ch/2+4,a,{"text-anchor":"end","font-size":12,class:"num"});el("title",{},t).textContent=classTitle(a);
+    el("circle",{cx:left-180,cy:pos[a]+ch/2,r:4,fill:css(GROUPS[sizeGroup(a)].col)},svg);
+  });
+  rows.forEach(r=>{
+    const q=shares(s,r), x=left+(r.ksize-kmin)*cw, yy=pos[r.alphabet];
+    const g=el("g",{class:"cell",tabindex:0},svg);
+    el("rect",{x:x+1,y:yy+1,width:cw-2,height:ch-2,rx:2,fill:lerpColor(c0,c1,Math.sqrt(q.ds/vmax))},g);
+    if(q.tells)txt(g,x+cw/2,yy+ch/2+4,"✓",{"text-anchor":"middle","font-size":12,fill:q.ds/vmax>0.35?css("--bg"):css("--ink"),style:`fill:${q.ds/vmax>0.35?css("--bg"):css("--ink")}`});
+    const show=()=>{document.getElementById("heatread").innerHTML=`${spName(s)} · <b>${r.alphabet}</b> k = ${r.ksize} <span class="muted">(${classTitle(r.alphabet)})</span><br>dark reached <span class="num">${int(q.dr)} of ${int(q.nd)} (${pct(q.ds)})</span>, placed reached <span class="num">${int(q.pr)} of ${int(q.np)} (${pct(q.ps)})</span> · ${q.tells?"tells dark from placed":"does not tell dark from placed"} · ${cutoffText()}`;};
+    g.addEventListener("click",show);g.addEventListener("mouseenter",show);g.addEventListener("focus",show);
+  });
+  unf.forEach(u=>{if(pos[u.alphabet]===undefined)return;txt(svg,left+(u.ksize-kmin)*cw+cw/2,pos[u.alphabet]+ch/2+4,"×",{"text-anchor":"middle","font-size":12,class:"mut"});});
+  const box=document.getElementById("heatfig");box.innerHTML="";box.appendChild(svg);
+  const L=document.getElementById("heatlegend");
+  const stops=[0,.25,.5,.75,1].map(t=>`<span class="sw" style="background:${lerpColor(c0,c1,Math.sqrt(t))};width:22px"></span>`).join("");
+  L.innerHTML=`<span class="key">dark share reached: 0% ${stops} ${pct(vmax)}</span><span class="key">✓ tells dark from placed</span><span class="key"><span style="color:var(--muted)">×</span> refused, no fitted E-value statistics</span><span class="key">row dot: alphabet size group (as in 2)</span>`;
+}
+
+// ---------- 3. gene groups
+function renderGroups(){
+  const s=state.gSp, G=D.groups[s];
+  const sel=document.getElementById("g-set");
+  const opts=G.settings.map((x,i)=>`${x.alphabet} k=${x.ksize}`);
+  if(sel.dataset.sp!==s){sel.innerHTML=opts.map((o,i)=>`<option value="${i}">${o}</option>`).join("");sel.dataset.sp=s;
+    let i=G.settings.findIndex(x=>x.alphabet==="hp_lehninger2");if(i<0)i=0;
+    if(state.gSet!==null&&state.gSet<G.settings.length&&state.gSetSp===s)i=state.gSet;sel.value=i;}
+  const si=+sel.value;state.gSet=si;state.gSetSp=s;
+  const T=D.dark_cutoffs[state.t], U=D.kmerseek_cutoffs[state.u];
+  const dark=G.proteins.filter(p=>p.tool_e===null||p.tool_e>T);
+  const reached=p=>p.km[si]!==undefined&&p.km[si]<=U;
+  const withG=dark.filter(p=>p.groups.length);
+  const byG={};
+  dark.forEach(p=>p.groups.forEach(g=>{(byG[g]=byG[g]||{g,dark:[],hit:[]}).dark.push(p);if(reached(p))byG[g].hit.push(p);}));
+  const nReached=dark.filter(reached).length;
+  const set=G.settings[si];
+  document.getElementById("gshows").innerHTML=`Tool: kmerseek ${set.alphabet}, k = ${set.ksize}, scaled 1 (<span class="num">${classTitle(set.alphabet)}</span>). Groups: ${G.kind}. ${spName(s)}: <span class="num">${int(dark.length)}</span> dark proteins at E ≤ ${fmtE(T)}, <span class="num">${int(nReached)}</span> reached at region E ≤ ${fmtE(U)} (${pct(dark.length?nReached/dark.length:0)}). <span class="num">${int(withG.length)}</span> of the dark proteins (${pct(dark.length?withG.length/dark.length:0)}) belong to at least one group; ${int(G.proteome_with_group)} of the whole proteome do. The k-size offered for each alphabet is the one with the largest dark share among settings that tell dark from placed at E ≤ 1 for both cutoffs. Only groups with at least 3 dark proteins are drawn.`;
+  const list=Object.values(byG).filter(o=>o.dark.length>=3);
+  const hitList=list.filter(o=>o.hit.length>0).sort((a,b)=>b.hit.length-a.hit.length||b.hit.length/b.dark.length-a.hit.length/a.dark.length).slice(0,15);
+  const missList=list.filter(o=>o.hit.length===0).sort((a,b)=>b.dark.length-a.dark.length).slice(0,15);
+  drawGroupBars("greached",hitList,G,s,reached,U);
+  drawGroupBars("gmissed",missList,G,s,reached,U);
+  let h=`<table><thead><tr><th>group</th><th class="n">in proteome</th><th class="n">dark</th><th class="n">reached</th><th class="n">share</th></tr></thead><tbody>`;
+  list.sort((a,b)=>b.dark.length-a.dark.length).forEach(o=>{h+=`<tr><td>${esc(G.names[o.g]||o.g)}</td><td class="n">${int(G.size[o.g]||0)}</td><td class="n">${o.dark.length}</td><td class="n">${o.hit.length}</td><td class="n">${pct(o.hit.length/o.dark.length,0)}</td></tr>`;});
+  document.getElementById("gtab").innerHTML=list.length?h+"</tbody></table>":"<p class='muted'>No group has 3 or more dark proteins at these cutoffs.</p>";
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function drawGroupBars(id,list,G,s,reached,U){
+  const box=document.getElementById(id);box.innerHTML="";
+  if(!list.length){box.innerHTML="<p class='muted'>No group at these cutoffs.</p>";return;}
+  const W=Math.max(300,box.clientWidth||440), labW=Math.min(230,W*0.52), barW=W-labW-46, rowH=22;
+  const max=Math.max(...list.map(o=>o.dark.length));
+  const svg=el("svg",{width:W,height:list.length*rowH+24,role:"img"});
+  list.forEach((o,i)=>{
+    const y=i*rowH+4, name=G.names[o.g]||o.g;
+    const maxChars=Math.floor(labW/6.4);
+    const t=txt(svg,labW-6,y+14,name.length>maxChars?name.slice(0,maxChars-1)+"…":name,{"text-anchor":"end","font-size":12});el("title",{},t).textContent=name;
+    const w=barW*o.dark.length/max, wh=barW*o.hit.length/max;
+    const g=el("g",{class:"cell",tabindex:0},svg);
+    el("rect",{x:labW,y:y+3,width:Math.max(w,1),height:rowH-8,fill:"none",stroke:css("--dark"),"stroke-width":1.3},g);
+    if(wh>0)el("rect",{x:labW,y:y+3,width:wh,height:rowH-8,fill:css("--dark")},g);
+    txt(g,labW+w+5,y+14,`${o.hit.length}/${o.dark.length}`,{"font-size":11,class:"num"});
+    const show=()=>{const fmt=p=>`${esc(p.id)}${p.km[+document.getElementById("g-set").value]!==undefined?` (E ${p.km[+document.getElementById("g-set").value]})`:""}`;
+      document.getElementById("gread").innerHTML=`<b>${esc(name)}</b>: ${o.dark.length} dark proteins, ${o.hit.length} reached at region E ≤ ${fmtE(U)}.<br>Reached: ${o.hit.map(fmt).join(", ")||"none"}<br><span class="muted">Not reached: ${o.dark.filter(p=>!reached(p)).map(fmt).join(", ")||"none"}</span>`;};
+    g.addEventListener("click",show);g.addEventListener("mouseenter",show);g.addEventListener("focus",show);
+  });
+  txt(svg,labW,list.length*rowH+20,"dark proteins in the group (filled: reached)",{"font-size":11,class:"mut"});
+  box.appendChild(svg);
+}
+document.getElementById("g-set").addEventListener("change",()=>{save();renderGroups();});
+
+function renderFoot(){
+  document.getElementById("foot").innerHTML=`<div>Data: <code>tools/export-protein-evalues</code> on the repaired queries.tsv files of run ladder-0.4-midi (repair finished 2026-10-12 23:40), then <code>tools/dark-summary-data</code> (commit <code>${esc(D.commit||D.tools_commit||"?")}</code>) and <code>summary-page/build.py</code>, all in <a href="https://github.com/seanome/2024-kmerseek-analysis/tree/olgabot/dark-set-summary-page/nextflow-runs/invertebrate-dark-set">nextflow-runs/invertebrate-dark-set</a>. Gene groups: HGNC complete set (genenames.org) and UniProt keywords, downloaded ${esc(D.gene_groups_downloaded||"?")}. Hover an alphabet name for its residue classes.</div><div>Pipeline: <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/57">PR 57</a>. Low-complexity and helix analysis: <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/120">PR 120</a> (notebook 279).</div>`;
+}
+
+function render(){
+  document.querySelectorAll("#c-dark button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.val===state.t));
+  document.querySelectorAll("#c-km button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.val===state.u));
+  document.querySelectorAll("#c-sc button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.val===state.sc));
+  document.querySelectorAll("#c-heat-sp button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.val===state.heatSp));
+  document.querySelectorAll("#c-g-sp button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.val===state.gSp));
+  renderFacts();renderSize();renderLegendAlpha("alphalegend");renderScatters();renderBest();renderHeat();renderGroups();renderFoot();
+}
+render();
+let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(render,200);});
+</script>
