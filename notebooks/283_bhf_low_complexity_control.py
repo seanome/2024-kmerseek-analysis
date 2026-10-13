@@ -66,12 +66,26 @@ sys.path.insert(0, str(HERE))
 import bhf_low_complexity_utils as lc  # noqa: E402
 
 ENV = os.environ
-OUT = Path(ENV.get("NB283_DIR", Path(ENV.get("SCRATCH", "/tmp")) / "283-bhf-low-complexity"))
+OUT = Path(
+    ENV.get("NB283_DIR", Path(ENV.get("SCRATCH", "/tmp")) / "283-bhf-low-complexity")
+)
 KMERSEEK = Path(ENV.get("NB241_KMERSEEK", str(lc.KMERSEEK)))
-HUMAN = Path(ENV.get("NB241_HUMAN", "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"))
+HUMAN = Path(
+    ENV.get(
+        "NB241_HUMAN",
+        "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa",
+    )
+)
 KAPPA = Path(ENV.get("NB241_KAPPA", HERE / "241_kappa_by_alphabet.tsv"))
-RUN256 = Path(ENV.get("NB256_RUN", "/Users/olga/data/botryllus/alphabet-ranking-three-cases/null_bhf_dipeptide"))
-IDX_RUN = OUT / "indexes"  # the 241 driver's output folder: idx/, search/, logs/, plan.json
+RUN256 = Path(
+    ENV.get(
+        "NB256_RUN",
+        "/Users/olga/data/botryllus/alphabet-ranking-three-cases/null_bhf_dipeptide",
+    )
+)
+IDX_RUN = (
+    OUT / "indexes"
+)  # the 241 driver's output folder: idx/, search/, logs/, plan.json
 
 # md5 of notebook 241's plan.json (152 settings), as listed in PR 83's inputs.
 PLAN_MD5 = "9a77724514ae4e6833e773cd4b0da806"
@@ -91,8 +105,14 @@ EXPECTED_UNION = [(62, 105), (107, 117), (207, 216)]  # 1-based 63-105, 108-117,
 # Settings for the reproduction check: one per alphabet family, a setting without a fit,
 # the two-letter alphabet of 256's NFE2L1 wins, and gbmr4 k18, the one setting where a
 # 256 win and a kmerseek-masked stretch coincide.
-REPRODUCE = [("hp_thomas_dill2", 17), ("gbmr4", 18), ("protein20", 6), ("polarity4", 13),
-             ("uniprot18", 8), ("dayhoff6", 7)]
+REPRODUCE = [
+    ("hp_thomas_dill2", 17),
+    ("gbmr4", 18),
+    ("protein20", 6),
+    ("polarity4", 13),
+    ("uniprot18", 8),
+    ("dayhoff6", 7),
+]
 
 
 def _load(name: str, path: Path):
@@ -163,14 +183,20 @@ def make_queries(null: str, n: int, seed: int) -> list[tuple[str, str]]:
     rng = random.Random(seed)
     if null == "kept":
         ref = seq
-        copies = [lc.stretches_kept(seq, st, rng, m.dipeptide_shuffle) for _ in range(n)]
+        copies = [
+            lc.stretches_kept(seq, st, rng, m.dipeptide_shuffle) for _ in range(n)
+        ]
         for c in copies:
             assert Counter(zip(c, c[1:])) == Counter(zip(seq, seq[1:]))
     elif null == "removed":
         ref = lc.stretches_removed(seq, st)
         copies = [m.dipeptide_shuffle(ref, rng) for _ in range(n)]
         for c in copies:
-            assert Counter(zip(c, c[1:])) == Counter(zip(ref, ref[1:])) and c[0] == ref[0] and c[-1] == ref[-1]
+            assert (
+                Counter(zip(c, c[1:])) == Counter(zip(ref, ref[1:]))
+                and c[0] == ref[0]
+                and c[-1] == ref[-1]
+            )
     else:
         raise ValueError(null)
     qs = [("BHF", ref)] + [(f"{null}{i:03d}", c) for i, c in enumerate(copies)]
@@ -178,10 +204,13 @@ def make_queries(null: str, n: int, seed: int) -> list[tuple[str, str]]:
     return qs
 
 
-def run_chunks(out: Path, qs: list[tuple[str, str]], arms: list[dict], workers: int) -> int:
+def run_chunks(
+    out: Path, qs: list[tuple[str, str]], arms: list[dict], workers: int
+) -> int:
     """Search every chunk of every setting with 256's one_chunk; return the failures."""
     m = mod256()
     from alphabet_ensemble_utils import chunk_tags
+
     m.OUT = out
     for d in ("top", "tmp", "logs", "regions"):
         (out / d).mkdir(parents=True, exist_ok=True)
@@ -191,14 +220,22 @@ def run_chunks(out: Path, qs: list[tuple[str, str]], arms: list[dict], workers: 
     for arm in arms:
         tags = chunk_tags("BHF", arm["alphabet"], arm["k"], arm["bits"], len(qs))
         size = 25 if len(tags) > 1 else len(qs)
-        jobs += [(t, qs[i * size:(i + 1) * size], arm) for i, t in enumerate(tags)]
-    print(f"{out.name}: {len(qs)} queries, {len(jobs)} chunks over {len(arms)} settings", file=sys.stderr, flush=True)
+        jobs += [(t, qs[i * size : (i + 1) * size], arm) for i, t in enumerate(tags)]
+    print(
+        f"{out.name}: {len(qs)} queries, {len(jobs)} chunks over {len(arms)} settings",
+        file=sys.stderr,
+        flush=True,
+    )
     failed = 0
     with cf.ThreadPoolExecutor(max_workers=workers) as ex:
         for msg in ex.map(lambda j: m.one_chunk(*j), jobs):
             failed += "FAILED" in msg
             print(msg, file=sys.stderr, flush=True)
-    print(f"{out.name}: {len(jobs) - failed} of {len(jobs)} chunks ok", file=sys.stderr, flush=True)
+    print(
+        f"{out.name}: {len(jobs) - failed} of {len(jobs)} chunks ok",
+        file=sys.stderr,
+        flush=True,
+    )
     return failed
 
 
@@ -211,13 +248,23 @@ def step_indexes(workers: int) -> None:
     if not q.exists():
         q.write_text((RUN256.parent / "queries.fa").read_text())
     assert md5(q) == QUERIES_MD5, f"{q} is not the queries.fa 241 searched"
-    assert md5(KAPPA) == KAPPA_MD5, f"{KAPPA} is not the kappa table 241 read (md5 {md5(KAPPA)})"
-    drv.KMERSEEK, drv.HUMAN, drv.OUT, drv.QUERIES, drv.KAPPA_TSV = KMERSEEK, HUMAN, IDX_RUN, q, KAPPA
+    assert (
+        md5(KAPPA) == KAPPA_MD5
+    ), f"{KAPPA} is not the kappa table 241 read (md5 {md5(KAPPA)})"
+    drv.KMERSEEK, drv.HUMAN, drv.OUT, drv.QUERIES, drv.KAPPA_TSV = (
+        KMERSEEK,
+        HUMAN,
+        IDX_RUN,
+        q,
+        KAPPA,
+    )
     # Check the settings before spending an hour on indexes.
     sys.argv = ["241_alphabet_ranking_driver.py", "--plan-only"]
     drv.main()
     got = md5(IDX_RUN / "plan.json")
-    assert got == PLAN_MD5, f"plan.json md5 {got}, 241's was {PLAN_MD5}: the settings differ"
+    assert (
+        got == PLAN_MD5
+    ), f"plan.json md5 {got}, 241's was {PLAN_MD5}: the settings differ"
     # 241's driver skips any index folder that has a CURRENT file, and RocksDB writes that
     # file seconds into a build. An index whose build was killed would be reused as if it
     # were whole. runs.jsonl gets a line only when a setting has finished, so delete every
@@ -234,24 +281,43 @@ def step_indexes(workers: int) -> None:
             shutil.rmtree(d)
             tag = d.name.removeprefix("human.").removesuffix(".rocksdb")
             # Its fit and search files may be from the killed run too; redo them with it.
-            for f in [IDX_RUN / "ka_survival" / f"{tag}.csv", IDX_RUN / "ka_survival" / f"{tag}.retry.csv",
-                      IDX_RUN / "search" / f"{tag}.csv", IDX_RUN / "search" / f"{tag}.nofit",
-                      *(IDX_RUN / "pair").glob(f"{tag}.*.json")]:
+            for f in [
+                IDX_RUN / "ka_survival" / f"{tag}.csv",
+                IDX_RUN / "ka_survival" / f"{tag}.retry.csv",
+                IDX_RUN / "search" / f"{tag}.csv",
+                IDX_RUN / "search" / f"{tag}.nofit",
+                *(IDX_RUN / "pair").glob(f"{tag}.*.json"),
+            ]:
                 f.unlink(missing_ok=True)
     sys.argv = ["241_alphabet_ranking_driver.py", "--workers", str(workers)]
     drv.main()
-    nofit_now = {p.name.removesuffix(".nofit") for p in (IDX_RUN / "search").glob("*.nofit")}
+    nofit_now = {
+        p.name.removesuffix(".nofit") for p in (IDX_RUN / "search").glob("*.nofit")
+    }
     nofit_256 = {f"{a['alphabet']}.k{a['k']}" for a in arms256() if a["nofit"]}
     finished = [json.loads(line) for line in open(IDX_RUN / "runs.jsonl")]
-    built = {r["tag"] for r in finished if r.get("index_rc") == 0 and (IDX_RUN / "idx" / f"human.{r['tag']}.rocksdb").exists()}
-    print(f"indexes built: {len(built)} of 152; without a fit: {len(nofit_now)} now, {len(nofit_256)} in 256",
-          file=sys.stderr)
-    assert len(built) == 152, sorted(set(f"{a['alphabet']}.k{a['k']}" for a in arms256()) - built)
-    assert nofit_now == nofit_256, {"only now": sorted(nofit_now - nofit_256), "only 256": sorted(nofit_256 - nofit_now)}
+    built = {
+        r["tag"]
+        for r in finished
+        if r.get("index_rc") == 0
+        and (IDX_RUN / "idx" / f"human.{r['tag']}.rocksdb").exists()
+    }
+    print(
+        f"indexes built: {len(built)} of 152; without a fit: {len(nofit_now)} now, {len(nofit_256)} in 256",
+        file=sys.stderr,
+    )
+    assert len(built) == 152, sorted(
+        set(f"{a['alphabet']}.k{a['k']}" for a in arms256()) - built
+    )
+    assert nofit_now == nofit_256, {
+        "only now": sorted(nofit_now - nofit_256),
+        "only 256": sorted(nofit_256 - nofit_now),
+    }
 
 
 def step_reproduce(workers: int) -> None:
     import polars as pl
+
     arms = [a for a in arms256() if (a["alphabet"], a["k"]) in REPRODUCE]
     assert len(arms) == len(REPRODUCE), arms
     qs = read_fasta(RUN256 / "queries.fa")
@@ -267,12 +333,25 @@ def step_reproduce(workers: int) -> None:
     # two, that the top protein is one of 256's top 10. Top-10 and tie-count differences
     # for these two are counted and reported, not failed.
     from alphabet_ensemble_utils import chunk_tags
-    expected = {f"{t}.parquet" for a in arms for t in chunk_tags("BHF", a["alphabet"], a["k"], a["bits"], len(qs))}
+
+    expected = {
+        f"{t}.parquet"
+        for a in arms
+        for t in chunk_tags("BHF", a["alphabet"], a["k"], a["bits"], len(qs))
+    }
     found = {p.name for p in (out / "top").glob("*.parquet")}
     noisy = ["E-value", "bit score"]
     n_rows, n_swaps, n_tie_diff, bad = 0, 0, 0, []
     if found != expected:
-        bad.append(("tables", "missing", sorted(expected - found), "extra", sorted(found - expected)))
+        bad.append(
+            (
+                "tables",
+                "missing",
+                sorted(expected - found),
+                "extra",
+                sorted(found - expected),
+            )
+        )
     for name in sorted(expected & found):
         key = ["query_name", "metric"]
         old = pl.read_parquet(RUN256 / "top" / name).sort(key)
@@ -282,10 +361,24 @@ def step_reproduce(workers: int) -> None:
             bad.append((name, "different rows", old.height, cur.height))
             continue
         for metric_is_noisy in (False, True):
-            sel = pl.col("metric").is_in(noisy) if metric_is_noisy else ~pl.col("metric").is_in(noisy)
+            sel = (
+                pl.col("metric").is_in(noisy)
+                if metric_is_noisy
+                else ~pl.col("metric").is_in(noisy)
+            )
             o, c = old.filter(sel), cur.filter(sel)
-            cols = ["n_hit"] if metric_is_noisy else \
-                ["top_gene", "n_tied_top", "n_hit", "top10", "talk_best_rank", "top_value"]
+            cols = (
+                ["n_hit"]
+                if metric_is_noisy
+                else [
+                    "top_gene",
+                    "n_tied_top",
+                    "n_hit",
+                    "top10",
+                    "talk_best_rank",
+                    "top_value",
+                ]
+            )
             for col in cols:
                 if o[col].to_list() != c[col].to_list():
                     bad.append((name, "noisy" if metric_is_noisy else "exact", col))
@@ -293,20 +386,41 @@ def step_reproduce(workers: int) -> None:
                 for a, b in zip(o["top_value"].to_list(), c["top_value"].to_list()):
                     if not (a == b or abs(a - b) <= 1e-9 * max(abs(a), abs(b))):
                         bad.append((name, "top_value", a, b))
-                for g, t10_old, t10_new in zip(c["top_gene"].to_list(), o["top10"].to_list(), c["top10"].to_list()):
+                for g, t10_old, t10_new in zip(
+                    c["top_gene"].to_list(), o["top10"].to_list(), c["top10"].to_list()
+                ):
                     if g not in t10_old:
                         bad.append((name, "top gene not in 256's top 10", g, t10_old))
                     n_swaps += t10_old != t10_new
-                n_tie_diff += sum(a != b for a, b in zip(o["n_tied_top"].to_list(), c["n_tied_top"].to_list()))
-    print(f"reproduce: {n_rows} rows compared with 256's; E-value or bit score rows whose top 10 differ: "
-          f"{n_swaps}, whose tie count differs: {n_tie_diff}; real differences: {len(bad)}", file=sys.stderr)
+                n_tie_diff += sum(
+                    a != b
+                    for a, b in zip(
+                        o["n_tied_top"].to_list(), c["n_tied_top"].to_list()
+                    )
+                )
+    print(
+        f"reproduce: {n_rows} rows compared with 256's; E-value or bit score rows whose top 10 differ: "
+        f"{n_swaps}, whose tie count differs: {n_tie_diff}; real differences: {len(bad)}",
+        file=sys.stderr,
+    )
     for b in bad[:20]:
         print("  ", b, file=sys.stderr)
-    (out / "reproduce.json").write_text(json.dumps(
-        {"n_rows": n_rows, "n_top10_differ_evalue_bits": n_swaps, "n_tied_differ_evalue_bits": n_tie_diff,
-         "differ": bad}, indent=1, default=str))
+    (out / "reproduce.json").write_text(
+        json.dumps(
+            {
+                "n_rows": n_rows,
+                "n_top10_differ_evalue_bits": n_swaps,
+                "n_tied_differ_evalue_bits": n_tie_diff,
+                "differ": bad,
+            },
+            indent=1,
+            default=str,
+        )
+    )
     if bad:
-        sys.exit("the rebuilt indexes do not reproduce notebook 256; stop before the new nulls")
+        sys.exit(
+            "the rebuilt indexes do not reproduce notebook 256; stop before the new nulls"
+        )
 
 
 def main() -> None:

@@ -45,13 +45,26 @@ from pathlib import Path
 import polars as pl
 
 KMERSEEK = Path("/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek")
-HUMAN = Path("/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa")
+HUMAN = Path(
+    "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"
+)
 D = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
 OUT = D / "null"
 PARTNERS = ["BCL2", "CD47"]
 # Multi-domain Bcl-2 family members share BCL2's fold; as a random query they would be
 # true homologs of the partner, not a null. CD47 has no paralog in this proteome.
-EXCLUDE = {"BCL2", "BCL2L1", "BCL2L2", "BCL2L10", "BCL2A1", "MCL1", "BAX", "BAK1", "BOK", "CD47"}
+EXCLUDE = {
+    "BCL2",
+    "BCL2L1",
+    "BCL2L2",
+    "BCL2L10",
+    "BCL2A1",
+    "MCL1",
+    "BAX",
+    "BAK1",
+    "BOK",
+    "CD47",
+}
 CASES = {"Ced9": 280, "P66": 597}
 METRICS = {
     "E-value": ("region_evalue", True),
@@ -91,14 +104,27 @@ def arms(which: str = "lowest") -> list[dict]:
         pick = plan.sort("alphabet", "bits")
     elif which == "best":
         best = json.loads((D / "best_k_by_bcl2_mean_idf.json").read_text())
-        pick = plan.filter(pl.struct("alphabet", "ksize").map_elements(
-            lambda r: best[r["alphabet"]] == r["ksize"], return_dtype=pl.Boolean)).sort("bits")
+        pick = plan.filter(
+            pl.struct("alphabet", "ksize").map_elements(
+                lambda r: best[r["alphabet"]] == r["ksize"], return_dtype=pl.Boolean
+            )
+        ).sort("bits")
     else:
         pick = plan.sort("bits").group_by("alphabet").first().sort("bits")
     out = []
-    for a, k, b, c, x in pick.select("alphabet", "ksize", "bits", "penalty", "xdrop").iter_rows():
-        out.append(dict(alphabet=a, k=k, bits=b, penalty=c, xdrop=x,
-                        nofit=(D / "search" / f"{a}.k{k}.nofit").exists()))
+    for a, k, b, c, x in pick.select(
+        "alphabet", "ksize", "bits", "penalty", "xdrop"
+    ).iter_rows():
+        out.append(
+            dict(
+                alphabet=a,
+                k=k,
+                bits=b,
+                penalty=c,
+                xdrop=x,
+                nofit=(D / "search" / f"{a}.k{k}.nofit").exists(),
+            )
+        )
     return out
 
 
@@ -111,8 +137,11 @@ def query_sets(n: int, seed: int = 0) -> dict[str, list[tuple[str, str]]]:
     rng = random.Random(seed)
     sets = {}
     for case, L in CASES.items():
-        pool = sorted(h for h, s in human.items()
-                      if 0.75 * L <= len(s) <= 1.25 * L and h.split("|")[6] not in EXCLUDE)
+        pool = sorted(
+            h
+            for h, s in human.items()
+            if 0.75 * L <= len(s) <= 1.25 * L and h.split("|")[6] not in EXCLUDE
+        )
         pick = rng.sample(pool, n)
         sets[case] = [(case, true[case])] + [(h, human[h]) for h in pick]
     return sets
@@ -122,25 +151,48 @@ def reduce_chunk(csv: Path, case: str, arm: dict) -> pl.DataFrame:
     cols = ["query_name", "target_name"] + [c for c, _ in METRICS.values()]
     if csv.stat().st_size == 0:
         return pl.DataFrame()
-    df = pl.read_csv(csv, columns=cols, infer_schema_length=0).with_columns(
-        [pl.col(c).cast(pl.Float64, strict=False) for c, _ in METRICS.values()]
-    ).with_columns(pl.col("query_name").str.strip_chars(),
-                   pl.col("target_name").str.split("|").list.get(6).alias("gene"))
+    df = (
+        pl.read_csv(csv, columns=cols, infer_schema_length=0)
+        .with_columns(
+            [pl.col(c).cast(pl.Float64, strict=False) for c, _ in METRICS.values()]
+        )
+        .with_columns(
+            pl.col("query_name").str.strip_chars(),
+            pl.col("target_name").str.split("|").list.get(6).alias("gene"),
+        )
+    )
     df = df.filter(pl.col("query_name") != pl.col("target_name"))  # the self-hit
     rows = []
     for label, (col, lower) in METRICS.items():
         best = (pl.col(col).min() if lower else pl.col(col).max()).alias("v")
-        per = (df.filter(pl.col(col).is_not_null() & pl.col(col).is_finite())
-                 .group_by("query_name", "gene").agg(best)
-                 .with_columns(pl.col("v").rank("average", descending=not lower).over("query_name").alias("rank"),
-                               pl.len().over("query_name").alias("n_hit")))
-        hit = per.filter(pl.col("gene").is_in(PARTNERS)).select("query_name", "gene", "rank", "n_hit")
+        per = (
+            df.filter(pl.col(col).is_not_null() & pl.col(col).is_finite())
+            .group_by("query_name", "gene")
+            .agg(best)
+            .with_columns(
+                pl.col("v")
+                .rank("average", descending=not lower)
+                .over("query_name")
+                .alias("rank"),
+                pl.len().over("query_name").alias("n_hit"),
+            )
+        )
+        hit = per.filter(pl.col("gene").is_in(PARTNERS)).select(
+            "query_name", "gene", "rank", "n_hit"
+        )
         nh = per.group_by("query_name").agg(pl.len().alias("n_hit"))
         grid = nh.join(pl.DataFrame({"gene": PARTNERS}), how="cross")
-        rows.append(grid.join(hit.drop("n_hit"), on=["query_name", "gene"], how="left")
-                        .with_columns(pl.lit(label).alias("metric")))
-    return pl.concat(rows).with_columns(pl.lit(case).alias("case"), pl.lit(arm["alphabet"]).alias("alphabet"),
-                                        pl.lit(arm["k"]).alias("k"), pl.lit(arm["bits"]).alias("bits"))
+        rows.append(
+            grid.join(
+                hit.drop("n_hit"), on=["query_name", "gene"], how="left"
+            ).with_columns(pl.lit(label).alias("metric"))
+        )
+    return pl.concat(rows).with_columns(
+        pl.lit(case).alias("case"),
+        pl.lit(arm["alphabet"]).alias("alphabet"),
+        pl.lit(arm["k"]).alias("k"),
+        pl.lit(arm["bits"]).alias("bits"),
+    )
 
 
 def one_chunk(case: str, tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
@@ -151,11 +203,39 @@ def one_chunk(case: str, tag: str, chunk: list[tuple[str, str]], arm: dict) -> s
     csv = OUT / "tmp" / f"{tag}.csv"
     fa.write_text("".join(f">{h}\n{s}\n" for h, s in chunk))
     idx = D / "idx" / f"human.{arm['alphabet']}.k{arm['k']}.rocksdb"
-    pen = ["--extend-mismatch-penalty", "0"] if arm["nofit"] else \
-          ["--extend-mismatch-penalty", str(arm["penalty"]), "--extend-xdrop", str(arm["xdrop"])]
-    cmd = [str(KMERSEEK), "search", "-q", str(fa), "-t", str(idx), "-k", str(arm["k"]), "-a", arm["alphabet"],
-           "--threshold", "0", "--min-shared-kmers", "1", "--max-query-pvalue", "1", "--min-region-score", "0",
-           *pen, "-o", str(csv)]
+    pen = (
+        ["--extend-mismatch-penalty", "0"]
+        if arm["nofit"]
+        else [
+            "--extend-mismatch-penalty",
+            str(arm["penalty"]),
+            "--extend-xdrop",
+            str(arm["xdrop"]),
+        ]
+    )
+    cmd = [
+        str(KMERSEEK),
+        "search",
+        "-q",
+        str(fa),
+        "-t",
+        str(idx),
+        "-k",
+        str(arm["k"]),
+        "-a",
+        arm["alphabet"],
+        "--threshold",
+        "0",
+        "--min-shared-kmers",
+        "1",
+        "--max-query-pvalue",
+        "1",
+        "--min-region-score",
+        "0",
+        *pen,
+        "-o",
+        str(csv),
+    ]
     with open(OUT / "logs" / f"{tag}.log", "w") as log:
         rc = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT).returncode
     if rc != 0:
@@ -171,28 +251,48 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--n", type=int, default=300)
     ap.add_argument("--chunk", type=int, default=25)
-    ap.add_argument("--out", type=Path, default=OUT, help="output folder (a smoke test writes elsewhere)")
-    ap.add_argument("--alphabets", default="", help="comma-separated subset, for a smoke test")
-    ap.add_argument("--arms", choices=["lowest", "best", "all"], default="lowest",
-                    help="which k per alphabet; chunks already searched for an arm are reused")
+    ap.add_argument(
+        "--out",
+        type=Path,
+        default=OUT,
+        help="output folder (a smoke test writes elsewhere)",
+    )
+    ap.add_argument(
+        "--alphabets", default="", help="comma-separated subset, for a smoke test"
+    )
+    ap.add_argument(
+        "--arms",
+        choices=["lowest", "best", "all"],
+        default="lowest",
+        help="which k per alphabet; chunks already searched for an arm are reused",
+    )
     args = ap.parse_args()
     set_out(args.out)
     for d in ("ranks", "tmp", "logs"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
     sets = query_sets(args.n)
-    (OUT / "query_sets.json").write_text(json.dumps({c: [h for h, _ in v] for c, v in sets.items()}, indent=1))
-    A = [a for a in arms(args.arms) if not args.alphabets or a["alphabet"] in args.alphabets.split(",")]
+    (OUT / "query_sets.json").write_text(
+        json.dumps({c: [h for h, _ in v] for c, v in sets.items()}, indent=1)
+    )
+    A = [
+        a
+        for a in arms(args.arms)
+        if not args.alphabets or a["alphabet"] in args.alphabets.split(",")
+    ]
     (OUT / f"arms.{args.arms}.json").write_text(json.dumps(A, indent=1))
     (OUT / "arms.json").write_text(json.dumps(A, indent=1))
     jobs = []
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from alphabet_ensemble_utils import chunk_tags  # the one chunking rule, shared with the analysis
+    from alphabet_ensemble_utils import (
+        chunk_tags,
+    )  # the one chunking rule, shared with the analysis
+
     for arm in A:
         for case, qs in sets.items():
             tags = chunk_tags(case, arm["alphabet"], arm["k"], arm["bits"], len(qs))
             size = args.chunk if len(tags) > 1 else len(qs)
             for i, tag in enumerate(tags):
-                jobs.append((case, tag, qs[i * size:(i + 1) * size], arm))
+                jobs.append((case, tag, qs[i * size : (i + 1) * size], arm))
     print(f"{len(jobs)} chunks over {len(A)} arms", file=sys.stderr, flush=True)
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
         for msg in ex.map(lambda j: one_chunk(*j), jobs):
