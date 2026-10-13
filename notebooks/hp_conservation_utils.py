@@ -316,7 +316,9 @@ def split_name(row: np.ndarray) -> str:
     return "".join(a for a, s in zip(AA20, row) if s)
 
 
-def mean_split_evidence(joint: np.ndarray, splits: np.ndarray, chunk: int = 4000) -> np.ndarray:
+def mean_split_evidence(
+    joint: np.ndarray, splits: np.ndarray, chunk: int = 4000
+) -> np.ndarray:
     """Mean over pairs of I for every two-class split, from pair_joint_counts.
 
     For one split and one pair, agree is the share of aligned positions whose two residues fall
@@ -338,7 +340,9 @@ def mean_split_evidence(joint: np.ndarray, splits: np.ndarray, chunk: int = 4000
     return out
 
 
-def longest_runs(q, t, group, n_groups: int, columns, alphabet: str = "protein20") -> np.ndarray:
+def longest_runs(
+    q, t, group, n_groups: int, columns, alphabet: str = "protein20"
+) -> np.ndarray:
     """Per group, the longest run of adjacent alignment columns whose residues share a class.
 
     This is the longest k-mer the two sequences share exactly on the alignment's diagonal.
