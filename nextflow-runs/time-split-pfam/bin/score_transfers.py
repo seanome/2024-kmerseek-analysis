@@ -33,6 +33,7 @@ import argparse
 import gzip
 import json
 import math
+import resource
 from pathlib import Path
 
 import polars as pl
@@ -49,6 +50,12 @@ CALL_SCHEMA = {
     "score": pl.Float64,
     "target": pl.String,
 }
+
+
+def log_memory(step: str) -> None:
+    """Peak memory so far (Linux ru_maxrss is in KiB), to size the job from the log."""
+    gib = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20
+    print(f"[memory] {step}: peak {gib:.1f} GiB", flush=True)
 
 
 def neg_log10(col: str) -> pl.Expr:
@@ -498,8 +505,13 @@ def main() -> None:
     )
     calls_dir = a.out / "calls"
     calls_dir.mkdir(parents=True, exist_ok=True)
+    # Decoy-family pairs go to disk: at low k a decoy picks up hundreds of families, and
+    # the pilot's pairs did not fit in 64 GB. Each setting's pairs are read back on their
+    # own once its cutoff is known.
+    dec_dir = a.out / "decoy_pairs"
+    dec_dir.mkdir(parents=True, exist_ok=True)
     parts: dict[str, list[pl.DataFrame]] = {
-        k: [] for k in ("pc", "counts", "ic", "dec", "unknown")
+        k: [] for k in ("pc", "counts", "ic", "unknown")
     }
     checks = []
 
@@ -510,13 +522,17 @@ def main() -> None:
         c = c.join(qcols, on="query", how="left")
         c.write_parquet(calls_dir / f"{name}.parquet")
         for k, v in reduce_calls(c, inst).items():
-            parts[k].append(v)
+            if k == "dec":
+                v.write_parquet(dec_dir / f"{name}.parquet")
+            else:
+                parts[k].append(v)
 
     for f in sorted(a.kmerseek.glob("*.transfers.tsv.gz")):
         c, check = read_kmerseek_file(f)
         checks.append(check)
         add(c, f.name.removesuffix(".transfers.tsv.gz"))
         print(f"{f.name}: {check['rows']} rows", flush=True)
+        log_memory(f.name)
     add(read_mmseqs(a.mmseqs2, dom), "MMseqs2")
     add(read_phmmer(a.phmmer, dom), "phmmer")
     add(read_hmmscan(a.hmmscan), "hmmscan")
@@ -534,7 +550,8 @@ def main() -> None:
 
     ic = pl.concat(parts["ic"])
     ic.write_parquet(a.out / "instance_calls.parquet")
-    dec_all = pl.concat(parts["dec"])
+    log_memory("all search outputs read")
+    dec_scan = pl.scan_parquet(dec_dir / "*.parquet")
     counts = pl.concat(parts["counts"]).group_by("setting").sum()
 
     settings = counts["setting"].sort().to_list()
@@ -550,8 +567,13 @@ def main() -> None:
     rows, cutoffs, dec_by_setting = [], {}, {}
     for s in settings:
         cnt = counts.filter(pl.col("setting") == s).row(0, named=True)
-        dec_pairs = dec_all.filter(pl.col("setting") == s).drop("setting")
-        cut = matched_cutoff(dec_pairs.filter(pl.col("half") == "tune"), n_dec["tune"])
+        dec_s = dec_scan.filter(pl.col("setting") == s).drop("setting")
+        cut = matched_cutoff(
+            dec_s.filter(pl.col("half") == "tune").select("score").collect(),
+            n_dec["tune"],
+        )
+        # Everything after the cutoff reads only pairs at or above it.
+        dec_pairs = dec_s.filter(pl.col("score") >= cut).collect()
         cutoffs[s], dec_by_setting[s] = cut, dec_pairs
         dec_test = dec_pairs.filter(
             (pl.col("half") == "test") & (pl.col("score") >= cut)
@@ -598,6 +620,7 @@ def main() -> None:
             decoy_rate_test=pl.col("decoy_transfers_test") / pl.col("decoys_test"),
         )
     summ.write_csv(a.out / "setting_summary.csv")
+    log_memory("setting summary written")
     ctrl_tab = inst.filter(pl.col("role") == "control").join(
         ic.select(
             "setting",
