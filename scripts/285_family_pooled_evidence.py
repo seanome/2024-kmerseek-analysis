@@ -34,6 +34,16 @@ Rule, fixed before any group was scored (this file is committed before it is fir
   groups AND scores better than 95% of the random same-size sets AND better than 95% of
   the shuffled queries. If the shuffle regions do not exist, that part is reported pending.
 
+Added after the first run, reported as post-hoc and not used for the decision:
+  - near-copies counted once: members of a group at least 90% identical both ways
+    (`copy_cluster` in the groups table) are merged; the merged member's p at a residue is
+    the lowest of its copies, and n is the number of merged members. The first run put 14
+    identical histone H4 genes at the top for Ced9, each counted as independent evidence.
+  - each case-group call is marked in register on BH1 when its diagonal (target start minus
+    query start) is within 1 residue of the one that puts Ced9's BH1 on the member's BH1
+    (UniProt motif features, the rule of scripts/284_ced9_bcl2_family_hits.py).
+  - the case group's rank among groups of its own size.
+
 Writes notebooks/285_*.csv (small tables the notebook reads and plots).
 """
 
@@ -53,6 +63,12 @@ DATA = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
 FASTA = Path("/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa")
 GROUPS = NB / "285_paralog_groups_ensembl115.csv"
 CASES = {"Ced9": "BCL2", "P66": "CD47"}
+UNIPROT = Path("/Users/olga/data/uniprot/285")  # <accession>.json, fetched 2026-10-13
+# UniProt accessions of Ced9 and the BCL-2 family members, for their BH1 motif features.
+ACCESSIONS = {"Ced9": "P41958", "BCL2": "P10415", "BCL2L1": "Q07817", "MCL1": "Q07820",
+              "BAK1": "Q16611", "BAX": "Q07812", "BCL2A1": "Q16548", "BCL2L10": "Q9HD36",
+              "BCL2L2": "Q92843", "BOK": "Q9UMX3"}
+REGISTER_SLACK = 1  # residues; the rule of scripts/284_ced9_bcl2_family_hits.py
 N_RANDOM = 1_000
 SEED = 285
 TOP_N = 10  # the decision rule's "top 10 groups"
@@ -103,12 +119,24 @@ class Scorer:
         i = int(np.argmin(lp))
         return float(lp[i]), i
 
-    def score_groups(self, group_id: np.ndarray, sizes: dict[int, int]) -> pl.DataFrame:
-        """Every group's score, vectorised: sum W rows per group, then Fisher per residue."""
-        gids = np.unique(group_id)
-        pos = np.searchsorted(gids, group_id)
+    def score_groups(self, group_id: np.ndarray, sizes: dict[int, int],
+                     copy_cluster: np.ndarray | None = None) -> pl.DataFrame:
+        """Every group's score, vectorised: sum W rows per group, then Fisher per residue.
+
+        With `copy_cluster`, rows of one cluster are merged first (strongest evidence per
+        residue), and `sizes` must count clusters, not proteins.
+        """
+        W, group_of_row = self.W, group_id
+        if copy_cluster is not None:
+            cids, first = np.unique(copy_cluster, return_index=True)
+            cpos = np.searchsorted(cids, copy_cluster)
+            W = np.zeros((len(cids), self.query_len))
+            np.maximum.at(W, cpos, self.W)
+            group_of_row = group_id[first]
+        gids = np.unique(group_of_row)
+        pos = np.searchsorted(gids, group_of_row)
         S = np.zeros((len(gids), self.query_len))
-        np.add.at(S, pos, self.W)
+        np.add.at(S, pos, W)
         n = np.array([sizes[g] for g in gids])
         lp = chi2.logsf(2 * S, 2 * n[:, None]) / np.log(10)
         best = lp.argmin(axis=1)
@@ -154,6 +182,29 @@ def in_position_calls(sc: Scorer, members: pl.DataFrame, residue: int, qseq: str
     return pl.DataFrame(rows)
 
 
+def bh1_offsets(tseqs: dict[str, str], prot: pl.DataFrame, qseq: str) -> dict[str, int]:
+    """Diagonal (target start - query start, 0-based) that puts Ced9's BH1 on each member's
+    BH1. Refuses a member whose UniProt sequence differs from the GENCODE protein."""
+    def bh1(acc: str) -> tuple[int, str]:
+        d = json.loads((UNIPROT / f"{acc}.json").read_text())
+        m = [f for f in d["features"] if f["type"] == "Motif" and f["description"] == "BH1"]
+        return m[0]["location"]["start"]["value"], d["sequence"]["value"]
+
+    q_bh1, q_seq = bh1(ACCESSIONS["Ced9"])
+    assert q_seq == qseq, "Ced9 in queries.fa differs from UniProt P41958"
+    out = {}
+    seq_of = dict(zip(prot["gene"], prot["target_name"]))
+    for gene, acc in ACCESSIONS.items():
+        if gene == "Ced9":
+            continue
+        t_bh1, t_seq = bh1(acc)
+        if t_seq != tseqs[seq_of[gene]]:
+            print(f"{gene}: UniProt {acc} sequence differs from GENCODE; no register check")
+            continue
+        out[gene] = t_bh1 - q_bh1
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--shuffle-regions", type=Path, default=None,
@@ -164,13 +215,16 @@ def main() -> None:
     l_db = int(prot["length"].sum())
     sizes = dict(zip(*prot.group_by("group_id").agg(n=pl.len()).select("group_id", "n")
                      .to_numpy().T))
+    sizes_copies = dict(zip(*prot.group_by("group_id").agg(n=pl.col("copy_cluster").n_unique())
+                            .select("group_id", "n").to_numpy().T))
+    cc = prot["copy_cluster"].to_numpy()
     gid = prot["group_id"].to_numpy()
     queries = read_fasta(DATA / "queries.fa")
     tseqs = read_fasta(FASTA)
     rng = np.random.default_rng(SEED)
     lf = pl.scan_parquet(DATA / "regions.parquet")
 
-    summary, tops, members_out, random_out, residue_track = [], [], [], [], []
+    summary, tops, members_out, random_out, residue_track, posthoc = [], [], [], [], [], []
     for q, partner in CASES.items():
         reg = lf.filter(pl.col("query_name") == q).collect()
         sc = Scorer(reg, len(queries[q]), prot, l_db)
@@ -183,6 +237,16 @@ def main() -> None:
         case = prot.filter(pl.col("gene") == partner).row(0, named=True)
         cg = g.filter(pl.col("group_id") == case["group_id"]).row(0, named=True)
         g_rank, g_tied = rank_of(g["log10_p"].to_numpy(), cg["log10_p"])
+        same = g.filter(pl.col("group_size") == cg["group_size"])
+        same_rank, _ = rank_of(same["log10_p"].to_numpy(), cg["log10_p"])
+        gc = sc.score_groups(gid, sizes_copies, copy_cluster=cc)
+        gc_case = gc.filter(pl.col("group_id") == case["group_id"]).row(0, named=True)
+        gc_rank, gc_tied = rank_of(gc["log10_p"].to_numpy(), gc_case["log10_p"])
+        posthoc.append(gc.join(g.select("group_id", "genes",
+                                        pl.col("group_size").alias("n_proteins"),
+                                        pl.col("log10_p").alias("log10_p_rule")), on="group_id")
+                       .rename({"group_size": "n_after_merging_copies"})
+                       .with_columns(query=pl.lit(q)))
         sp = single.filter(pl.col("gene") == partner).row(0, named=True)
         s_rank, s_tied = rank_of(single["log10_p"].to_numpy(), sp["log10_p"])
         # best protein of the case group alone
@@ -203,6 +267,13 @@ def main() -> None:
         res = int(cg["best_residue"])
         mem = prot.filter(pl.col("group_id") == case["group_id"])
         calls = in_position_calls(sc, mem, res, queries[q], tseqs)
+        if q == "Ced9":
+            off = bh1_offsets(tseqs, prot, queries[q])
+            calls = calls.with_columns(in_register_bh1=pl.struct("gene", "has_call", "target_start0",
+                                                                  "query_start0").map_elements(
+                lambda r: (None if not r["has_call"] or r["gene"] not in off else
+                           abs(r["target_start0"] - r["query_start0"] - off[r["gene"]]) <= REGISTER_SLACK),
+                return_dtype=pl.Boolean))
         members_out.append(calls.with_columns(query=pl.lit(q), residue0=pl.lit(res)))
         for r_i in rows_case:
             residue_track.append(pl.DataFrame({
@@ -223,6 +294,10 @@ def main() -> None:
             "case_group_size": n, "case_group_genes": cg["genes"],
             "case_group_log10_p": cg["log10_p"], "case_group_best_residue0": res,
             "case_group_rank": g_rank, "case_group_n_tied": g_tied,
+            "n_groups_same_size": same.height, "case_group_rank_same_size": same_rank,
+            "posthoc_copies_once_n": gc_case["group_size"],
+            "posthoc_copies_once_log10_p": gc_case["log10_p"],
+            "posthoc_copies_once_rank": gc_rank, "posthoc_copies_once_n_tied": gc_tied,
             "n_groups_with_any_evidence": int((g["log10_p"] < 0).sum()),
             "partner_alone_log10_p": sp["log10_p"], "partner_alone_rank": s_rank,
             "partner_alone_n_tied": s_tied, "n_proteins": prot.height,
@@ -254,10 +329,21 @@ def main() -> None:
             frac = float((v <= s["case_group_log10_p"]).mean())
             s["shuffle_null"] = f"{len(v)} shuffles, {frac:.2f} as good or better"
 
+    motif_rows = []
+    for gene, acc in ACCESSIONS.items():
+        d = json.loads((UNIPROT / f"{acc}.json").read_text())
+        for f in d["features"]:
+            if f["type"] == "Motif":
+                motif_rows.append({"gene": gene, "uniprot": acc, "motif": f["description"],
+                                   "start1": f["location"]["start"]["value"],
+                                   "end1": f["location"]["end"]["value"]})
+    pl.DataFrame(motif_rows).write_csv(NB / "285_bh_motifs_uniprot.csv")
     pl.DataFrame(summary).write_csv(NB / "285_family_pooling_summary.csv")
     pl.concat(tops).write_csv(NB / "285_top_groups.csv")
     pl.concat(members_out, how="diagonal_relaxed").write_csv(NB / "285_case_group_calls.csv")
     pl.concat(random_out).write_csv(NB / "285_random_group_null.csv")
+    pl.concat(posthoc).sort("query", "log10_p", "group_id").with_columns(
+        genes=pl.col("genes").str.slice(0, 120)).write_csv(NB / "285_posthoc_copies_once.csv")
     pl.concat(residue_track).write_csv(NB / "285_case_group_residue_evidence.csv")
 
 

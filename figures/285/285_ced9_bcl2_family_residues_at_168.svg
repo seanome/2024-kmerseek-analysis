@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="515.619677pt" height="314.359835pt" viewBox="0 0 515.619677 314.359835" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-13T07:25:34.069510</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 314.359835 
+L 515.619677 314.359835 
+L 515.619677 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="text_1">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="20.965512" transform="rotate(-0 1.44 20.965512)">Each block: Ced9 (top), identical residues (|), BCL-2 family member (bottom); 1-based coordinates. Bold name: call in register on the member's BH1 (UniProt).</text>
+   </g>
+   <g id="text_2">
+    <text style="font-weight: 700; font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="33.590564" transform="rotate(-0 1.44 33.590564)">BAK1: dayhoff6 k = 11, E = 23.9 (whole database), p = 0.0004 (this protein), 6 of 25 identical</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="41.481222" transform="rotate(-0 1.44 41.481222)">Ced9     163 QCPMSYGRLIGLISFGGFVAAKMME 187</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="48.582813" transform="rotate(-0 1.44 48.582813)">                   ||   |  ||   |     </text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="55.684405" transform="rotate(-0 1.44 55.684405)">BAK1     120 ESGINWGRVVALLGFGYRLALHVYQ 144</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="67.520391" transform="rotate(-0 1.44 67.520391)">BAX: dayhoff6 k = 7, E = 12224.9 (whole database), p = 0.1869 (this protein), 5 of 21 identical</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="75.411048" transform="rotate(-0 1.44 75.411048)">Ced9     168 YGRLIGLISFGGFVAAKMMES 188</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="82.51264" transform="rotate(-0 1.44 82.51264)">              ||   |  |      |    </text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="89.614231" transform="rotate(-0 1.44 89.614231)">BAX      107 WGRVVALFYFASKLVLKALCT 127</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="101.450218" transform="rotate(-0 1.44 101.450218)">BCL2: hp_lehninger2 k = 19, E = 11172.7 (whole database), p = 0.2097 (this protein), 5 of 26 identical</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="109.340875" transform="rotate(-0 1.44 109.340875)">Ced9     163 QCPMSYGRLIGLISFGGFVAAKMMES 188</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="116.442467" transform="rotate(-0 1.44 116.442467)">                   ||      |||         </text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="123.544058" transform="rotate(-0 1.44 123.544058)">BCL2     139 RDGVNWGRIVAFFEFGGVMCVESVNR 164</text>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="135.380044" transform="rotate(-0 1.44 135.380044)">BCL2A1: dayhoff6 k = 7, E = 185.6 (whole database), p = 0.0029 (this protein), 6 of 31 identical</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="143.270702" transform="rotate(-0 1.44 143.270702)">Ced9     156 VGNAQTDQCPMSYGRLIGLISFGGFVAAKMM 186</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="150.372293" transform="rotate(-0 1.44 150.372293)">             |            ||      | |    |  </text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="157.473885" transform="rotate(-0 1.44 157.473885)">BCL2A1    74 VMEKEFEDGIINWGRIVTIFAFEGILIKKLL 104</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="169.309871" transform="rotate(-0 1.44 169.309871)">MCL1: dayhoff6 k = 12, E = 16.7 (whole database), p = 0.0005 (this protein), 10 of 18 identical</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="177.200528" transform="rotate(-0 1.44 177.200528)">Ced9     168 YGRLIGLISFGGFVAAKM 185</text>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="184.30212" transform="rotate(-0 1.44 184.30212)">              ||   ||||| |||   </text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="191.403712" transform="rotate(-0 1.44 191.403712)">MCL1     261 WGRIVTLISFGAFVAKHL 278</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="203.239698" transform="rotate(-0 1.44 203.239698)">BCL2L1: hp_thomas_dill_no_c2 k = 17, E = 479.9 (whole database), p = 0.0098 (this protein), 3 of 26 identical</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="211.130355" transform="rotate(-0 1.44 211.130355)">Ced9     156 VGNAQTDQCPMSYGRLIGLISFGGFV 181</text>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="218.231947" transform="rotate(-0 1.44 218.231947)">             |  |            |         </text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="225.333538" transform="rotate(-0 1.44 225.333538)">BCL2L1    65 VNGATGHSSSLDAREVIPMAAVKQAL 90</text>
+   </g>
+   <g id="text_26">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="237.169524" transform="rotate(-0 1.44 237.169524)">BCL2L10: dayhoff6 k = 7, E = 7315.6 (whole database), p = 0.1232 (this protein), 5 of 17 identical</text>
+   </g>
+   <g id="text_27">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="245.060182" transform="rotate(-0 1.44 245.060182)">Ced9     160 QTDQCPMSYGRLIGLIS 176</text>
+   </g>
+   <g id="text_28">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="252.161773" transform="rotate(-0 1.44 252.161773)">             |         ||  | |</text>
+   </g>
+   <g id="text_29">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="259.263365" transform="rotate(-0 1.44 259.263365)">BCL2L10  130 QEGDVARDCQRLVALLS 146</text>
+   </g>
+   <g id="text_30">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="271.099351" transform="rotate(-0 1.44 271.099351)">BCL2L2: hp_pbotc_1st_ed2 k = 16, E = 2108.5 (whole database), p = 0.0352 (this protein), 4 of 58 identical</text>
+   </g>
+   <g id="text_31">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="278.990008" transform="rotate(-0 1.44 278.990008)">Ced9     129 ENFETFCEQLLAVPRISFSLYQDVVRTVGNAQTDQCPMSYGRLIGLISFGGFVAAKMM 186</text>
+   </g>
+   <g id="text_32">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="286.0916" transform="rotate(-0 1.44 286.0916)">                                                       | |    |  |     </text>
+   </g>
+   <g id="text_33">
+    <text style="font-size: 6px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="293.193192" transform="rotate(-0 1.44 293.193192)">BCL2L2   132 TQLADWIHSSGGWAEFTALYGDGALEEARRLREGNWASVRTVLTGAVALGALVTVGAF 189</text>
+   </g>
+   <g id="text_34">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.44" y="305.029178" transform="rotate(-0 1.44 305.029178)">BOK: no call covers Ced9 residue 168.</text>
+   </g>
+  </g>
+  <g id="text_35">
+   <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="3.627162" y="5.811562" transform="rotate(-0 3.627162 5.811562)">kmerseek, 152 alphabet-ksize settings (19 alphabets), notebook 241's search. Target database: 19_732 GENCODE v49 canonical human proteins. Query Ced9, target the BCL-2 family</text>
+  </g>
+ </g>
+</svg>

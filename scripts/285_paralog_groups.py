@@ -6,6 +6,11 @@ homology type). A group is a connected set of such pairs. Compara builds its par
 from one gene tree per family, so a group is the human genes of one gene tree. Neither Ced9,
 P66, nor any kmerseek result is used. A gene with no paralog is a group of one.
 
+Added after the first scoring run (not part of the rule the test used): `copy_cluster`
+joins members of a group that are at least 90% identical to each other in both directions
+(Ensembl's two %id columns), so that near-copies such as the 14 histone H4 genes can be
+counted once. Notebook 285 reports it as a post-hoc check.
+
 Writes:
   /Users/olga/data/ensembl/115/human_paralogs.tsv      (BioMart download, cached)
   notebooks/285_paralog_groups_ensembl115.csv           (one row per GENCODE v49 canonical protein)
@@ -36,6 +41,7 @@ QUERY = """<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE Query>
 <Attribute name="hsapiens_paralog_perc_id"/>
 </Dataset></Query>"""
 HEADER = "Gene stable ID"
+COPY_IDENTITY = 90.0  # % identity, both directions, for the post-hoc copy clusters
 
 
 def fetch() -> None:
@@ -98,6 +104,15 @@ def main() -> None:
              if a in known and b in known]
     comp = components(nodes, edges)
     prot = prot.with_columns(group_id=pl.Series([comp[g] for g in nodes], dtype=pl.Int64))
+    ident = (pairs.with_columns(pl.col("perc_id").cast(pl.Float64))
+             .group_by(pl.min_horizontal("gene_id", "paralog_id").alias("a"),
+                       pl.max_horizontal("gene_id", "paralog_id").alias("b"))
+             .agg(min_id=pl.col("perc_id").min(), n_rows=pl.len()))
+    # both directions must be listed and both must pass
+    near = ident.filter((pl.col("n_rows") == 2) & (pl.col("min_id") >= COPY_IDENTITY))
+    copies = components(nodes, [(a, b) for a, b in near.select("a", "b").iter_rows()
+                                if a in known and b in known])
+    prot = prot.with_columns(copy_cluster=pl.Series([copies[g] for g in nodes], dtype=pl.Int64))
     size = prot.group_by("group_id").agg(group_size=pl.len())
     prot = prot.join(size, on="group_id").sort("group_id", "gene")
     prot.write_csv(OUT)
@@ -105,6 +120,8 @@ def main() -> None:
           f"pairs inside the canonical set {len(edges):_}")
     print(f"proteins {prot.height:_}, groups {prot['group_id'].n_unique():_}")
     print(size["group_size"].value_counts().sort("group_size").head(10))
+    print(f"pairs >= {COPY_IDENTITY}% both ways: {near.height:_}; copy clusters "
+          f"{prot['copy_cluster'].n_unique():_}")
     print("largest groups:", size.sort("group_size", descending=True)["group_size"].head(5).to_list())
 
 
