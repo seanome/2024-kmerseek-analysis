@@ -12,6 +12,12 @@ phmmer, jackhmmer or mmseqs2 hit on the pair with E <= 10. The page filters thes
 any lower cutoff. The control proteins are left out; the category-level numbers against the
 control come from the notebook's decision table in tables/.
 
+Each link also carries every kept kmerseek region on the pair (best E for each alphabet and
+position) and every tool hit with its target coordinates, for the pair view. The tool hit
+files keep only target coordinates (computeDarkSet's 6-column hits), so tool hits are drawn on
+the target alone. Botryllus protein lengths come from botryllus_query_lengths.tsv, written by
+scripts/fasta_lengths.py from the run's botryllus.query.fasta.
+
 Writes figures/281_botryllus_immune_links_page.html by default. Run with the
 2025-kmerseek-analysis interpreter.
 """
@@ -59,6 +65,26 @@ def main():
              .join(tools.select("query_name", "target_name"), on=["query_name", "target_name"], how="full", coalesce=True))
     pairs = pairs.join(links, on=["query_name", "target_name"], how="left").join(tools, on=["query_name", "target_name"], how="left")
 
+    alphabets = sorted(regions["alphabet"].unique())
+    a_index = {a: i for i, a in enumerate(alphabets)}
+    region_sets = (regions.filter((pl.col("category") != "control") & (pl.col("region_evalue") < LINK_E_MAX))
+                   .group_by("query_name", "target_name", "alphabet", "region_start", "region_end", "target_start", "target_end")
+                   .agg(pl.col("region_evalue").min())
+                   .sort("region_evalue")
+                   .group_by("query_name", "target_name", maintain_order=True)
+                   .agg(pl.struct("alphabet", "region_start", "region_end", "target_start", "target_end", "region_evalue").alias("rs")))
+    pair_regions = {(q, t): [[a_index[x["alphabet"]], x["region_start"] + 1, x["region_end"], x["target_start"] + 1,
+                              x["target_end"], r3(x["region_evalue"])] for x in rs]
+                    for q, t, rs in region_sets.iter_rows()}
+    hit_sets = (tool_hits.filter(pl.col("category") != "control").sort("evalue")
+                .group_by("query_name", "target_name", maintain_order=True)
+                .agg(pl.struct("tool", "tstart", "tend", "evalue").alias("hs")))
+    t_tool = {t: i for i, t in enumerate(bmu.TOOLS)}
+    pair_hits = {(q, t): [[t_tool[x["tool"]], x["tstart"], x["tend"], r3(x["evalue"])] for x in hs]
+                 for q, t, hs in hit_sets.iter_rows()}
+    qlen = dict(pl.read_csv(DATA / "botryllus_query_lengths.tsv", separator="\t", has_header=False,
+                            new_columns=["name", "length"]).iter_rows())
+
     cat_targets = targets.filter(pl.col("category") != "control").sort("accession")
     t_index = {a: i for i, a in enumerate(cat_targets["accession"])}
     # Target names come from the annotate step (Swiss-Prot RecName); fall back to the target table.
@@ -79,7 +105,9 @@ def main():
                  None if r["letter_identity"] is None else round(r["letter_identity"] * 100, 1),
                  None if r["chance_letter_identity"] is None else round(r["chance_letter_identity"] * 100, 1),
                  r["n_alphabets"]]
-        rows.append([g_index[r["query_name"]], t_index[r["target_name"]], k] + [r3(r[t]) for t in bmu.TOOLS])
+        key = (r["query_name"], r["target_name"])
+        rows.append([g_index[r["query_name"]], t_index[r["target_name"]], k] + [r3(r[t]) for t in bmu.TOOLS]
+                    + [pair_regions.get(key, []), pair_hits.get(key, [])])
 
     decision = pl.read_csv(DECISION)
     expected = {f"{c:g}": {row["category"]: [row["n_reached"], row["n_targets"], round(row["expected_share"] * 100, 1),
@@ -92,6 +120,8 @@ def main():
         "category_name": {c: bmu.CATEGORY_NAME[c] for c in bmu.ORDER},
         "tools": bmu.TOOLS,
         "genes": genes,
+        "gene_length": [qlen[g] for g in genes],
+        "alphabet_list": alphabets,
         "targets": [[a, c, desc.get(a, ""), n] for a, c, n in
                     zip(cat_targets["accession"], cat_targets["category"], cat_targets["length"])],
         "links": rows,
@@ -184,6 +214,9 @@ tr.gene[aria-expanded="true"] td { background: var(--soft); border-bottom-color:
 .meta b { color: var(--fg); font-weight: 600 }
 pre.res { font-family: var(--mono); font-size: 13px; line-height: 1.35; margin: 0; overflow-x: auto; background: var(--bg); padding: 8px; border-radius: 6px }
 pre.res .lab { color: var(--muted) } pre.res .let { color: var(--letter) }
+svg.pair { width: 100%; height: auto; display: block; background: var(--bg); border-radius: 6px }
+svg.pair text { font-family: var(--text); font-size: 11px; fill: var(--fg) }
+svg.pair .axis { font-size: 10px; fill: var(--muted) }
 .more { justify-self: start; font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 6px; padding: 6px 14px; cursor: pointer }
 footer { font-size: 13px; color: var(--muted); display: grid; gap: 6px }
 footer p { max-width: 90ch }
@@ -218,18 +251,27 @@ footer p { max-width: 90ch }
     <h2 id="count"></h2>
     <div class="key">
       <span><span class="only">kmerseek only</span> no tool hit on the pair, even at E = 10</span>
+      <span>Each row's E-values are the best over all of that protein's targets, so one target can be kmerseek-only while the protein's other targets have tool hits; open the row to see each target.</span>
       <span>E-values: <span class="ev" style="color:var(--kmerseek)">kmerseek</span>, <span class="ev" style="color:var(--phmmer)">phmmer</span>, <span class="ev" style="color:var(--jackhmmer)">jackhmmer</span>, <span class="ev" style="color:var(--mmseqs2)">mmseqs2</span>; <span class="none">·</span> no hit below the cutoff</span>
+    </div>
+    <div class="key" aria-label="Pair view key">
+      <span><b>Pair view</b> (in each opened row):</span>
+      <span><svg width="26" height="10" aria-hidden="true"><line x1="0" y1="5" x2="26" y2="5" stroke="currentColor" stroke-width="1.5"/></svg>protein, drawn to scale</span>
+      <span><span class="sw" style="background:var(--kmerseek);opacity:.55"></span>kmerseek region, with a band joining its two ends (darker = more alphabets agree)</span>
+      <span><span class="sw" style="background:var(--phmmer)"></span>phmmer</span>
+      <span><span class="sw" style="background:var(--jackhmmer)"></span>jackhmmer</span>
+      <span><span class="sw" style="background:var(--mmseqs2)"></span>mmseqs2 hit, on the target only: the run kept no Botryllus-side position for tool hits</span>
     </div>
     <div class="table"><table>
       <thead><tr>
         <th data-sort="gene">Botryllus protein <span class="arrow"></span></th>
         <th data-sort="n">Targets <span class="arrow"></span></th>
         <th>Categories</th>
-        <th data-sort="kmerseek" style="color:var(--kmerseek)">kmerseek <span class="arrow"></span></th>
+        <th data-sort="kmerseek" style="color:var(--kmerseek)" title="Best E-value over all of this protein's targets">kmerseek best E <span class="arrow"></span></th>
         <th data-sort="phmmer" style="color:var(--phmmer)">phmmer <span class="arrow"></span></th>
         <th data-sort="jackhmmer" style="color:var(--jackhmmer)">jackhmmer <span class="arrow"></span></th>
         <th data-sort="mmseqs2" style="color:var(--mmseqs2)">mmseqs2 <span class="arrow"></span></th>
-        <th data-sort="only">kmerseek-only links <span class="arrow"></span></th>
+        <th data-sort="only">Links only kmerseek finds <span class="arrow"></span></th>
       </tr></thead>
       <tbody id="rows"></tbody>
     </table></div>
@@ -327,8 +369,43 @@ function residues(k) {
   return out.join("\n");
 }
 
+function pairView(L, T) {
+  const cut = +state.cut, qlen = D.gene_length[L[0]], tlen = T[3];
+  const regs = L[3 + TOOLS.length].filter(x => x[5] < cut), hits = L[4 + TOOLS.length].filter(x => x[3] < cut);
+  if (!regs.length && !hits.length) return "";
+  const W = 760, X0 = 110, span = Math.max(qlen, tlen), sx = v => X0 + (v / span) * (W - X0 - 10);
+  const yQ = 22, yT = 92, rowH = 14, yTool = i => yT + 18 + i * rowH, H = yTool(TOOLS.length) + 22;
+  // How many alphabets put a region at the same position: shade by it.
+  const byPos = new Map();
+  for (const x of regs) { const k = x.slice(1, 5).join(","); byPos.set(k, (byPos.get(k) || []).concat([x])); }
+  let s = `<svg class="pair" viewBox="0 0 ${W} ${H}" role="img" aria-label="Pair view of ${esc(D.genes[L[0]])} and ${esc(T[0])}">`;
+  for (const [, xs] of byPos) {
+    const [, qs, qe, ts, te] = xs[0], op = Math.min(0.15 + 0.12 * xs.length, 0.8);
+    const tip = xs.map(x => `${D.alphabet_list[x[0]]} E=${fmtE(x[5])}`).join("; ");
+    s += `<g><title>Botryllus ${qs}-${qe}, target ${ts}-${te}: ${esc(tip)}</title>
+      <polygon points="${sx(qs - 1)},${yQ + 5} ${sx(qe)},${yQ + 5} ${sx(te)},${yT - 5} ${sx(ts - 1)},${yT - 5}" fill="var(--kmerseek)" opacity="${op * 0.45}"/>
+      <rect x="${sx(qs - 1)}" y="${yQ - 5}" width="${Math.max(sx(qe) - sx(qs - 1), 1.5)}" height="10" fill="var(--kmerseek)" opacity="${op}"/>
+      <rect x="${sx(ts - 1)}" y="${yT - 5}" width="${Math.max(sx(te) - sx(ts - 1), 1.5)}" height="10" fill="var(--kmerseek)" opacity="${op}"/></g>`;
+  }
+  s += `<line x1="${sx(0)}" y1="${yQ}" x2="${sx(qlen)}" y2="${yQ}" stroke="var(--fg)" stroke-width="1.5"/>
+    <line x1="${sx(0)}" y1="${yT}" x2="${sx(tlen)}" y2="${yT}" stroke="var(--fg)" stroke-width="1.5"/>
+    <text x="4" y="${yQ + 4}">Botryllus</text><text x="4" y="${yQ + 17}" class="axis">${qlen} aa</text>
+    <text x="4" y="${yT + 4}">${esc(T[0])}</text><text x="4" y="${yT + 17}" class="axis">${tlen} aa</text>`;
+  TOOLS.forEach((t, i) => {
+    const y = yTool(i) + 6;
+    s += `<text x="${X0 - 6}" y="${y + 4}" text-anchor="end" class="axis">${t}</text>
+      <line x1="${sx(0)}" y1="${y}" x2="${sx(tlen)}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+    for (const h of hits.filter(h => h[0] === i))
+      s += `<rect x="${sx(h[1] - 1)}" y="${y - 4}" width="${Math.max(sx(h[2]) - sx(h[1] - 1), 1.5)}" height="8" fill="var(--${t})"><title>${t} target ${h[1]}-${h[2]}, E=${fmtE(h[3])}</title></rect>`;
+    if (!hits.some(h => h[0] === i)) s += `<text x="${sx(0) + 4}" y="${y + 4}" class="axis">no hit with E &lt; ${state.cut}</text>`;
+  });
+  const step = [50, 100, 200, 500, 1000, 2000].find(v => span / v <= 8) || 5000;
+  for (let v = 0; v <= span; v += step) s += `<text x="${sx(v)}" y="${H - 4}" text-anchor="middle" class="axis">${v}</text>`;
+  return s + `</svg>`;
+}
+
 function detail(g) {
-  const items = g.links.slice().sort((a, b) => (a[0][2] ? a[0][2][0] : 99) - (b[0][2] ? b[0][2][0] : 99));
+  const items = g.links.slice().sort((a, b) => (b[1].only - a[1].only) || ((a[0][2] ? a[0][2][0] : 99) - (b[0][2] ? b[0][2][0] : 99)));
   return items.map(([L, ok]) => {
     const T = D.targets[L[1]], k = L[2];
     const tools = TOOLS.map((t, i) => L[3 + i] == null ? "" : `<span>${t} <b class="ev" style="color:var(--${t})">${fmtE(L[3 + i])}</b></span>`).join("");
@@ -345,7 +422,7 @@ function detail(g) {
     }
     return `<div class="link"><h3>${ok.only ? '<span class="only">kmerseek only</span> ' : ""}<a href="https://www.uniprot.org/uniprotkb/${esc(T[0])}/entry" target="_blank" rel="noopener">${esc(T[0])}</a> ${esc(T[2])}
       <span class="tag">${esc(D.category_name[T[1]])}</span> <span class="muted" style="font-weight:400">${T[3]} aa</span></h3>
-      <div class="meta">${kpart}${tools}</div>${res}</div>`;
+      <div class="meta">${kpart}${tools}</div>${pairView(L, T)}${res}</div>`;
   }).join("");
 }
 
@@ -363,7 +440,7 @@ function render() {
     const ev = t => g.best[t] == null ? '<span class="none">·</span>' : `<span class="ev" style="color:var(--${t})">${fmtE(g.best[t])}</span>`;
     const cats = [...g.cats].sort((a, b) => D.categories.indexOf(a) - D.categories.indexOf(b)).map(c => `<span class="tag">${esc(D.category_name[c])}</span>`).join("");
     tr.innerHTML = `<td class="mono">${geneLabel(D.genes[g.gi])}</td><td>${g.links.length}</td><td class="catcell">${cats}</td>
-      <td>${ev("kmerseek")}</td>${TOOLS.map(t => `<td>${ev(t)}</td>`).join("")}<td>${g.only || '<span class="none">0</span>'}</td>`;
+      <td>${ev("kmerseek")}</td>${TOOLS.map(t => `<td>${ev(t)}</td>`).join("")}<td>${g.only ? `${g.only} of ${g.links.length}` : '<span class="none">0</span>'}</td>`;
     const toggle = () => { open ? state.open.delete(g.gi) : state.open.add(g.gi); render(); };
     tr.onclick = toggle; tr.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } };
     body.append(tr);
