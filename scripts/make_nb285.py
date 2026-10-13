@@ -592,6 +592,100 @@ pf.save(fig, FIG / "285_decision_ced9_p66")
 """)
 
 md(r"""
+## 9. The reverse direction: BCL2 → Ced9, and CD47 → P66
+
+Notebook 241 searched Ced9 and P66 as queries against human proteins. The kmerseek 0.4
+invertebrate dark-set run (`nextflow-runs/invertebrate-dark-set`, branch
+`olgabot/dark-set-kmerseek-0.4`, finished 2026-10-12) searched whole proteomes as queries
+against a Pfam-annotated reference with the query's own clade removed (479_677
+proteins for human), at 230 alphabet × k × scaled × extension settings. It kept regions
+with E ≤ 10, plus regions with no E-value fit. It follows three pairs by name:
+human BCL2 → Ced9 (the reverse direction), worm Ced9 → BCL2, and *Borrelia* P66 → CD47.
+**CD47 → P66 was never searched**: P66 is not in the reference.
+
+The E-values here are for a database 24 times as many proteins as notebook 241's
+human proteome, so a missing call means only "no call at E ≤ 10". It does not say where
+the partner would rank. Pooling on the target side cannot be tried in this direction:
+UniProt lists Ced9 as the only *C. elegans* protein in Pfam Bcl-2 (PF00452), and P66 as the
+only *B. burgdorferi* B31 protein in its Pfam family (PF11263), printed below. What can be
+pooled is the query side, which notebook 247
+([PR 117](https://github.com/seanome/2024-kmerseek-analysis/pull/117)) set up and stopped.
+
+Tables: `notebooks/285_dark_set_landmarks.csv` and `285_dark_set_landmark_calls.csv`
+(`scripts/285_dark_set_landmarks.py`).
+""")
+
+code(r"""
+lm = pl.read_csv(NB / "285_dark_set_landmarks.csv", infer_schema_length=0).with_columns(
+    found=pl.col("found") == "true", region_evalue=pl.col("region_evalue").cast(pl.Float64))
+lc = pl.read_csv(NB / "285_dark_set_landmark_calls.csv")
+print(pl.read_csv(NB / "285_dark_set_partner_family_check.csv"))
+counts = lm.group_by("species", "query_name", "target_name").agg(
+    settings=pl.len(), with_a_call=pl.col("found").sum(),
+    with_an_evalue_fit=(pl.col("found") & pl.col("region_evalue").is_finite()).sum()).sort("species")
+print(counts)
+for r in lc.iter_rows(named=True):
+    print(f"\n{r['query']} -> {r['target']}  {r['alphabet']} k={r['k']}  E = {r['region_evalue']} "
+          f"(no E-value fit)  {r['n_identical']} of {len(r['query_residues'])} identical")
+    print(f"  {r['query']:<6}{r['query_start0'] + 1:>4} {r['query_residues']} {r['query_end0']}   "
+          f"{r['query_features'] or 'no UniProt feature'}")
+    m = "".join("|" if a == b else " " for a, b in zip(r["query_residues"], r["target_residues"]))
+    print(f"  {'':<6}{'':>4} {m}")
+    print(f"  {r['target']:<6}{r['target_start0'] + 1:>4} {r['target_residues']} {r['target_end0']}   "
+          f"{r['target_features']}")
+
+fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 62 * pf.MM), layout="constrained")
+gs = fig.add_gridspec(1, 2, width_ratios=[1, 2.6])
+a, b = fig.add_subplot(gs[0]), fig.add_subplot(gs[1])
+order = [("human", "BCL2 → Ced9\n(reverse)"), ("worm", "Ced9 → BCL2"), ("borrelia", "P66 → CD47")]
+for i, (sp, label) in enumerate(order):
+    r = counts.filter(pl.col("species") == sp).row(0, named=True)
+    a.barh(i, r["settings"], color="#EEEEEE", edgecolor=pf.GREY, lw=0.5,
+           label="settings searched" if i == 0 else None)
+    a.barh(i, r["with_a_call"], color=C["blue"], label="settings with a call (E ≤ 10 or no fit)" if i == 0 else None)
+    a.text(r["settings"] + 5, i, f"{r['with_a_call']} of {r['settings']}", va="center")
+a.set_yticks(range(3), [o[1] for o in order]); a.invert_yaxis()
+a.set_xlim(0, 300); a.set_xlabel("Settings (n)")
+a.legend(loc="upper center", bbox_to_anchor=(0.5, 1.32), frameon=False)
+# P66 and CD47 as lines with UniProt features as boxes; calls as bars under each protein.
+prots = {"P66": (618, [("signal peptide", 1, 21, C["orange"])], 1.0),
+         "CD47": (323, [("signal peptide", 1, 18, C["orange"]), ("Ig-like V domain", 19, 127, C["bluish_green"])]
+                  + [("transmembrane helix", s_, e_, C["reddish_purple"]) for s_, e_ in
+                     [(142, 162), (177, 197), (208, 228), (236, 256), (269, 289)]], 0.0)}
+seen = set()
+for name, (length, feats, y) in prots.items():
+    b.plot([1, length], [y, y], color="black", lw=1)
+    for lab, s_, e_, col in feats:
+        b.add_patch(mpl.patches.Rectangle((s_, y - 0.09), e_ - s_ + 1, 0.18, facecolor=col,
+                                          edgecolor="black", lw=0.4,
+                                          label=lab if lab not in seen else None))
+        seen.add(lab)
+    b.text(-10, y, f"{name} ({length} aa)", ha="right", va="center")
+spans = (lc.group_by("query_start0", "query_end0", "target_start0", "target_end0", "alphabet",
+                     maintain_order=True)
+         .agg(ks=pl.col("k").cast(pl.String).str.join(", ")))
+for j, r in enumerate(spans.iter_rows(named=True)):
+    r["k"] = r["ks"]
+    qa, qb = r["query_start0"] + 1, r["query_end0"]
+    ta, tb = r["target_start0"] + 1, r["target_end0"]
+    b.plot([qa, qb], [0.78 - 0.07 * j] * 2, color=C["blue"], lw=2, solid_capstyle="butt",
+           label="kmerseek call (no E-value fit)" if j == 0 else None)
+    b.plot([ta, tb], [-0.22 - 0.07 * j] * 2, color=C["blue"], lw=2, solid_capstyle="butt")
+    b.plot([(qa + qb) / 2, (ta + tb) / 2], [0.78 - 0.07 * j, -0.22 - 0.07 * j], color=C["blue"],
+           lw=0.4, ls=":")
+    b.text(qb + 8, 0.78 - 0.07 * j, f"{r['alphabet']} k = {r['k']}", va="center", size=5)
+b.set_xlim(-120, 760); b.set_ylim(-0.5, 1.3); b.set_xticks([1, 100, 200, 300, 400, 500, 600])
+b.set_yticks([]); b.spines["left"].set_visible(False)
+b.set_xlabel("Residue (1-based)")
+b.legend(loc="upper center", bbox_to_anchor=(0.55, 1.32), ncol=3, frameon=False)
+pf.panel_label(a, "a", dx_pt=-60); pf.panel_label(b, "b")
+fig.supxlabel("kmerseek 0.4 dark-set run, 230 settings, regions with E ≤ 10 kept. Query proteomes: "
+              "human, C. elegans, B. burgdorferi B31; reference: Pfam-annotated proteins minus the "
+              "query's clade. UniProt features.", fontsize=5)
+pf.save(fig, FIG / "285_reverse_direction_dark_set_landmarks")
+""")
+
+md(r"""
 # Summary and Conclusions
 
 ## Background
@@ -613,6 +707,10 @@ group at the same query residue, with the score and pass rule committed before t
   ≥90%-identical copies; counting those copies once moves BCL2's group only to rank 23.
 * Counting only calls in the same Pfam Bcl-2 column on both sides, 6 of 9 members back
   Ced9's BH1 (column 49): p = 10^-4.4, better than all 76 shifted alignments, but rank 184.
+* In the reverse direction, kmerseek reports no BCL2 → Ced9 call at E ≤ 10 in any of 230
+  dark-set settings, nor any Ced9 → BCL2 call; CD47 → P66 was never searched.
+* P66 → CD47's only dark-set calls (3 of 230 settings, none with an E-value fit) pair
+  P66 hydrophobic stretches with CD47 transmembrane helices 1 and 3, not its Ig domain.
 * CD47 has no Ensembl paralog, so pooling cannot help P66 → CD47: its group of one ranks
   2_508 of 7_212, and 34% of random single proteins score as well or better.
 * The dipeptide-shuffled-query null is pending: notebook 283's human indexes, which the

@@ -1,0 +1,4 @@
+query,target,alphabet,k,scaled,extension,region_evalue,query_start0,query_end0,target_start0,target_end0,query_residues,target_residues,n_identical,query_features,target_features
+P66,CD47,hp_lehninger_hpc3,17,1,extend-c0.87,inf,530,558,132,160,AIPIASISTEAYVVPYIGAYILGPSNKL,VVSWFSPNENILIVIFPIFAILLFWGQF,4,"",Transmembrane Helical 142-162
+P66,CD47,hp_lehninger_hpc3,19,1,extend-c0.87,inf,530,558,132,160,AIPIASISTEAYVVPYIGAYILGPSNKL,VVSWFSPNENILIVIFPIFAILLFWGQF,4,"",Transmembrane Helical 142-162
+P66,CD47,polarity4,13,1,extend-c0.54,inf,3,22,204,223,HILYKLIIFLTTSAAIFAA,KNATGLGLIVTSTGILILL,2,Signal 1-21,Transmembrane Helical 208-228
