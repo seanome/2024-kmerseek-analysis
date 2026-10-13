@@ -36,20 +36,20 @@ TMP=$(mktemp -d "$L_SCRATCH/qpos.XXXXXX" 2>/dev/null || mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 case "$TOOL" in
   phmmer)
-    apptainer exec -B /scratch "$HMMER" phmmer --domtblout "$TMP/out" --tblout /dev/null -o /dev/null --noali \
+    apptainer exec -B /scratch -B "$TMP" "$HMMER" phmmer --domtblout "$TMP/out" --tblout /dev/null -o /dev/null --noali \
         -E 10 --cpu "$SLURM_CPUS_PER_TASK" "$Q" "$REF"
     gzip -c "$TMP/out" > "$OUT/phmmer.chunk_${I}.domtblout.gz.tmp" ;;
   jackhmmer)
-    apptainer exec -B /scratch "$HMMER" jackhmmer -N 3 --domtblout "$TMP/out" --tblout /dev/null -o /dev/null --noali \
+    apptainer exec -B /scratch -B "$TMP" "$HMMER" jackhmmer -N 3 --domtblout "$TMP/out" --tblout /dev/null -o /dev/null --noali \
         -E 10 --cpu "$SLURM_CPUS_PER_TASK" "$Q" "$REF"
     gzip -c "$TMP/out" > "$OUT/jackhmmer.chunk_${I}.domtblout.gz.tmp" ;;
   mmseqs2)
     cd "$TMP"
-    apptainer exec -B /scratch "$MMSEQS" mmseqs createdb "$Q" qdb
-    apptainer exec -B /scratch "$MMSEQS" mmseqs createdb "$REF" tdb
-    apptainer exec -B /scratch "$MMSEQS" mmseqs search qdb tdb res tmp -s 7 --num-iterations 3 -e 10 \
+    apptainer exec -B /scratch -B "$TMP" "$MMSEQS" mmseqs createdb "$Q" qdb
+    apptainer exec -B /scratch -B "$TMP" "$MMSEQS" mmseqs createdb "$REF" tdb
+    apptainer exec -B /scratch -B "$TMP" "$MMSEQS" mmseqs search qdb tdb res tmp -s 7 --num-iterations 3 -e 10 \
         --threads "$SLURM_CPUS_PER_TASK"
-    apptainer exec -B /scratch "$MMSEQS" mmseqs convertalis qdb tdb res out.tsv \
+    apptainer exec -B /scratch -B "$TMP" "$MMSEQS" mmseqs convertalis qdb tdb res out.tsv \
         --format-output 'query,target,qstart,qend,tstart,tend,bits,evalue,qlen,tlen'
     gzip -c out.tsv > "$OUT/mmseqs2.chunk_${I}.tsv.gz.tmp" ;;
   *) echo "tool must be phmmer, jackhmmer or mmseqs2" >&2; exit 2 ;;
