@@ -42,10 +42,10 @@ def hp_string(seq: str, alphabet: str = "hp_pbotc_1st_ed2") -> str:
     return "".join("h" if c in h else "p" if c in p else "x" for c in seq)
 
 
-def prepare(qs: Path, work: Path) -> None:
+def prepare(qs: Path, work: Path, n: int = N_SAMPLE, seed: int = SEED) -> None:
     kept = pl.read_parquet(qs / "instances_kept.parquet")
-    rng = random.Random(SEED)
-    idx = sorted(rng.sample(range(kept.height), min(N_SAMPLE, kept.height)))
+    rng = random.Random(seed)
+    idx = sorted(rng.sample(range(kept.height), min(n, kept.height)))
     sample = kept[idx].with_row_index("i")
     seqs = (pl.scan_parquet(qs / "pfamseq_33.1.parquet").select("acc", "seq")
             .join(sample.lazy().select("acc"), on="acc", how="semi").collect())
@@ -137,7 +137,7 @@ def render(r: dict, qa: str, sa: str) -> str:
     return "\n".join(lines)
 
 
-def collect(qs: Path, work: Path) -> None:
+def collect(qs: Path, work: Path, examples: bool = True) -> None:
     sample = pl.read_parquet(work / "sample.parquet")
     frames = []
     for f in sorted((work / "m8").glob("*.m8")):
@@ -175,6 +175,8 @@ def collect(qs: Path, work: Path) -> None:
     print(f"median identity {res['pident'].median():.1f}%, "
           f"share under 30%: {(res['pident'] < 30).mean():.3f}")
 
+    if not examples:
+        return
     # Five examples drawn at random from the 500, rendered as residues.
     rng = random.Random(SEED + 1)
     have = res.filter(pl.col("target").is_not_null())
@@ -202,9 +204,15 @@ def main() -> None:
     ap.add_argument("mode", choices=["prepare", "collect"])
     ap.add_argument("--qs", type=Path, required=True)
     ap.add_argument("--work", type=Path, required=True)
+    ap.add_argument("--n", type=int, default=N_SAMPLE)
+    ap.add_argument("--seed", type=int, default=SEED)
+    ap.add_argument("--no-examples", action="store_true")
     a = ap.parse_args()
     a.work.mkdir(parents=True, exist_ok=True)
-    prepare(a.qs, a.work) if a.mode == "prepare" else collect(a.qs, a.work)
+    if a.mode == "prepare":
+        prepare(a.qs, a.work, a.n, a.seed)
+    else:
+        collect(a.qs, a.work, examples=not a.no_examples)
 
 
 if __name__ == "__main__":
