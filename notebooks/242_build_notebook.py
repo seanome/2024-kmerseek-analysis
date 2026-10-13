@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Write notebooks/242_alphabet_ensemble.ipynb from cell sources, then execute it with
-nbconvert. Numbers in figure conclusions are computed from the tables in the notebook."""
+nbconvert. Numbers in figure conclusions are computed from the tables in the notebook.
+"""
 
 import json
 from pathlib import Path
@@ -9,11 +10,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "242_alphabet_ensemble.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 242: Does combining alphabets lift the partner to the top?
 
 Notebook 241 searched Ced9, P66 and BHF against the 19_732 canonical human proteins with
@@ -39,7 +45,7 @@ geometric mean of the normalised ranks (a rank product). Arms of one alphabet ar
 first, so each alphabet counts once however many k it was run at. Code:
 `alphabet_ensemble_utils.py`. No new search is run for sections 1 to 4.
 """),
-code(r"""
+    code(r"""
 import sys
 from pathlib import Path
 
@@ -63,14 +69,14 @@ for m in ae.METRICS:
 summary = pl.concat(summaries)
 print(f"{len(ae.METRICS)} metrics x 3 queries; each protein scored over the arms where its query has any hit")
 """),
-md(r"""
+    md(r"""
 ## 1. The combined rank puts both partners lower, not higher
 
 Open circle: the partner's best rank at any single arm. Filled square: its rank once all
 19 alphabets are combined. The grey rows are a control: CD47 when Ced9 is the query, a
 pair with no known link.
 """),
-code(r"""
+    code(r"""
 pairs = summary.filter(
     ((pl.col("query") == "Ced9") & (pl.col("partner") == "BCL2"))
     | ((pl.col("query") == "P66") & (pl.col("partner") == "CD47"))
@@ -90,7 +96,7 @@ print(pairs.select("query", "partner", "metric", "best_single_rank", "best_singl
                    "ens_rank_by_arm", "votes_alphabet", "n_alphabets_hit", "pct_by_alphabet_among_peers")
       .sort("query", "partner", "metric", descending=[False, False, False]))
 """),
-md(r"""
+    md(r"""
 ## 2. The same proteins beat the partner in most alphabets
 
 The combination can only help if different proteins beat the partner in different
@@ -100,7 +106,7 @@ partner in exactly j of those alphabets; the line is the count expected if every
 picked its list independently of the others. Picking each alphabet's best k for the
 partner favours the partner, so the overlap measured here is a lower bound.
 """),
-code(r"""
+    code(r"""
 crowd = ae.fig_same_crowd(
     [("Ced9", "BCL2", "mean IDF"), ("P66", "CD47", "mean IDF")], FIG / "242_same_proteins_beat_the_partner.png",
     hypothesis="Different alphabets are beaten by different proteins, so combining them removes the chance hits.",
@@ -121,7 +127,7 @@ overlap = pl.DataFrame(rows).with_columns(
     (pl.col("beat_in_half_or_more") / pl.col("expected_if_independent")).round(1).alias("times_expected"))
 print(overlap)
 """),
-code(r"""
+    code(r"""
 # Redraw with the conclusion computed from the table above.
 b = overlap.filter((pl.col("partner") == "BCL2") & (pl.col("metric") == "mean IDF")).row(0, named=True)
 c = overlap.filter((pl.col("partner") == "CD47") & (pl.col("metric") == "mean IDF")).row(0, named=True)
@@ -135,14 +141,14 @@ ae.fig_same_crowd(
                 f"partners below about that many proteins."),
 );
 """),
-md(r"""
+    md(r"""
 ## 3. What the combined rank rewards instead: length
 
 A protein hit at many arms keeps a good score at each of them, and the proteins hit at the
 most arms are the longest ones. Below, every human protein's combined rank for BHF, the
 query with no known partner, against its length.
 """),
-code(r"""
+    code(r"""
 rho = {}
 for m in ["mean IDF", "E-value"]:
     for q in ae.QUERIES:
@@ -161,7 +167,7 @@ top = ae.fig_length_bias(
 print(top)
 print(pl.DataFrame([dict(metric=m, query=q, spearman=round(v, 2)) for (m, q), v in rho.items()]))
 """),
-md(r"""
+    md(r"""
 ## 4. CD47 ranks high for a query with no known link to it
 
 In section 1, Ced9 ranks CD47 higher than P66 does, and higher than it ranks BCL2. A
@@ -170,7 +176,7 @@ says little about any one query. The count below is measured on the two sequence
 19-residue windows with at least 14 residues from AILMFVW, the length and make-up of a
 membrane-spanning helix.
 """),
-code(r"""
+    code(r"""
 import re
 seqs, name = {}, None
 for line in open(ae.HUMAN_FASTA):
@@ -191,14 +197,14 @@ print(summary.filter(pl.col("partner") == "CD47").select(
     "query", "metric", "best_single_rank", "best_single_arm", "ens_rank_by_alphabet", "pct_by_alphabet_among_peers").sort("query", "metric"))
 print("\nFigure: section 1, grey rows.")
 """),
-md(r"""
+    md(r"""
 ## 5. Only three alphabets: hp_lehninger2, polarity4, funcgroups8
 
 These three are the alphabets in which PR #44 saw CD47 in view for P66. They were picked
 after seeing where the partner appears, which tilts this test in the partner's favour.
 Same combination as section 1, restricted to their arms.
 """),
-code(r"""
+    code(r"""
 SUB = ae.SUBSET3
 subrows = []
 for m in ae.METRICS:
@@ -235,7 +241,7 @@ print(sub.select("query", "partner", "metric", "best_single_rank", "best_single_
 print(crowd3)
 print("BHF, best 8 under the three combined (mean IDF):", bhf3.rows())
 """),
-md(r"""
+    md(r"""
 ## 6. Every subset of 2, 3 and 4 alphabets, each at its best k, ranked by mean IDF
 
 Each alphabet is used at one k: the k where Ced9 ranks BCL2 best under mean IDF (for the
@@ -245,7 +251,7 @@ subset are picked by how well they rank BCL2, so the best subsets here are what 
 optimist would report; the other two panels show whether the same subsets help CD47 and
 the control, and section 7 gives every random query the same two picks.
 """),
-code(r"""
+    code(r"""
 scan = ae.subset_scan("mean IDF", "best")
 scan.write_parquet(ae.DATA / "subset_scan.best_k.mean_idf.parquet")
 best_by_size = scan.sort("Ced9->BCL2").group_by("size").first().sort("size")
@@ -272,7 +278,7 @@ print("\nhow often each alphabet appears in the 50 best subsets for BCL2:", [(a,
 print("\nmedian rank over all subsets of each size:")
 print(scan.group_by("size").agg(pl.col("Ced9->BCL2").median(), pl.col("P66->CD47").median(), pl.col("Ced9->CD47").median()).sort("size"))
 """),
-md(r"""
+    md(r"""
 ## 7. The query-side null: does Ced9 rank BCL2 higher than a random query does?
 
 Sections 1 to 4 compare the partner with the other human proteins for one query. The
@@ -286,7 +292,7 @@ than the best single arm's.
 The search is run by `242_null_queries.py` (about 1.6 billion regions, about 3 hours with
 3 workers); until its output exists this section says so and stops.
 """),
-code(r"""
+    code(r"""
 if not ae.null_available("lowest"):
     done, expected = ae.null_progress("lowest")
     print(f"The null run on each alphabet's lowest-bit arm is not complete ({done} of {expected or 494} chunks). "
@@ -302,7 +308,7 @@ else:
     )
     print(nul)
 """),
-md(r"""
+    md(r"""
 ### 7b. The best subset, against random queries given the same picks
 
 Section 6 picked each alphabet's k and then the subset by how well they rank BCL2. Here
@@ -311,7 +317,7 @@ of the partner, with k either fixed at the k picked for Ced9 or each query's own
 The second rule is the fair one: Ced9's k was picked on its own answer too. This needs
 the null run over all 152 arms (`242_null_queries.py --arms all`).
 """),
-code(r"""
+    code(r"""
 if not ae.null_available("all"):
     done, expected = ae.null_progress("all")
     print(f"The null run over all arms is not complete ({done} of {expected} chunks). "
@@ -328,7 +334,7 @@ else:
         )
         print(tbl)
 """),
-md(r"""
+    md(r"""
 ## 8. Conclusions
 
 **Combining alphabets does not lift either partner.** Under every one of the five metrics
@@ -383,8 +389,18 @@ changes the bits the pair carries, so the E-value stays far above 1.
 """),
 ]
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                                   "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1))
 print("wrote", OUT)
