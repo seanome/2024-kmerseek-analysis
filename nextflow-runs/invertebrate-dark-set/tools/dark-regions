@@ -7,6 +7,7 @@ much of each region is low-complexity sequence or a transmembrane helix.
     tools/dark-regions annotate <parts_dir> <query.fasta> <reference.fasta> \
         <uniprot_sprot.dat.gz> <out.csv.gz>
     tools/dark-regions min-evalue <regions.csv.zst> <out.csv.gz>
+    tools/dark-regions extract-targets <targets.txt> <max_evalue> <out_dir> <regions.csv.zst> [...]
 
 ids       the dark proteins of one species: no phmmer, jackhmmer or mmseqs2 hit with
           E < <tool_cutoff>, read from tools/export-protein-evalues output.
@@ -20,6 +21,9 @@ annotate  joins every extracted part of a species, and for each region adds:
           computed on the FULL query and target sequences, so the windows see the context
           around a region.
 
+extract-targets  like extract, but keeps every query's regions whose TARGET is in
+          <targets.txt> and whose region_evalue < <max_evalue>; one output per input file,
+          <out_dir>/<file name>.csv.gz. Used for notebook 281 (MHC targets).
 min-evalue  streams one region file and writes, for every query with a region, its smallest
           finite region_evalue (rows saying "inf" are skipped; a query whose regions are
           all "inf" is written as inf). This is what queries.tsv was meant to hold; the
@@ -177,6 +181,38 @@ def cmd_extract(path, ids_path, max_evalue, out):
     print("%s: %d regions read, %d kept" % (os.path.basename(path), n_in, n_out))
 
 
+def cmd_extract_targets(targets_path, max_evalue, out_dir, *paths):
+    targets = set(l.strip() for l in open(targets_path) if l.strip())
+    max_evalue = float(max_evalue)
+    for path in paths:
+        out = os.path.join(out_dir, os.path.basename(path).replace(".regions.csv.zst", ".csv.gz"))
+        proc = subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE, universal_newlines=True)
+        header = next(csv.reader([proc.stdout.readline()]))
+        idx = {k: header.index(k) for k in KEEP}
+        i_t, i_ev = idx["target_name"], idx["region_evalue"]
+        n_in = n_out = 0
+        tmp = out + ".tmp"
+        with gzip.open(tmp, "wt", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["source_file"] + KEEP)
+            for line in proc.stdout:
+                n_in += 1
+                if line.startswith('"'):
+                    row = next(csv.reader([line]))
+                else:
+                    t = line.split(",", 3)[2]  # query_name, query_md5, target_name
+                    if t not in targets:
+                        continue
+                    row = next(csv.reader([line]))
+                if row[i_t] in targets and float(row[i_ev]) < max_evalue:
+                    w.writerow([os.path.basename(path)] + [row[idx[k]] for k in KEEP])
+                    n_out += 1
+        if proc.wait() != 0:
+            sys.exit("zstdcat failed on %s" % path)
+        os.replace(tmp, out)
+        print("%s: %d regions read, %d kept" % (os.path.basename(path), n_in, n_out))
+
+
 def cmd_min_evalue(path, out):
     # region_evalue is the second-to-last column (region_n_chained is last), and only the
     # first column can be quoted, so rsplit reads the E-value without a csv parse.
@@ -282,7 +318,8 @@ def cmd_annotate(parts_dir, query_fasta, reference_fasta, dat_path, out):
 
 
 def main():
-    cmds = {"ids": cmd_ids, "extract": cmd_extract, "annotate": cmd_annotate, "min-evalue": cmd_min_evalue}
+    cmds = {"ids": cmd_ids, "extract": cmd_extract, "annotate": cmd_annotate, "min-evalue": cmd_min_evalue,
+            "extract-targets": cmd_extract_targets}
     if len(sys.argv) < 2 or sys.argv[1] not in cmds:
         sys.exit(__doc__)
     cmds[sys.argv[1]](*sys.argv[2:])
