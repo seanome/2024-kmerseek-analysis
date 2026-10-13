@@ -227,8 +227,13 @@ process kmerseekSearch {
     def flags = arm == 'exact' ? '' :
         "--extend-mismatch-penalty ${copt} --extend-xdrop ${xd} --ka-queries 0 " +
         "--chain-max-gap ${params.kmerseek_chain_max_gap} --chain-max-shift ${params.kmerseek_chain_max_shift}"
+    // Nextflow runs this under `#!/bin/bash -ue`, so -e is on: without `set +e` a refused
+    // search stops the script before its exit status is read, and the task fails three
+    // times instead of recording the setting as unfitted (pilot, 2026-10-13: 27 extend
+    // settings, 81 attempts). The dark-set script does the same around its search.
     """
     set -uo pipefail
+    set +e
     kmerseek search --alphabet ${alphabet} --ksize ${ksize} \\
         --query ${chunk} --target ${index_dir} ${flags} \\
         --threshold ${params.threshold} --min-shared-kmers ${params.min_shared_kmers} \\
@@ -238,6 +243,7 @@ process kmerseekSearch {
       | awk -F, -v domains=${domains} -f ${compact_awk} \\
       | gzip -c > ${slug}.transfers.tsv.gz
     status=(\${PIPESTATUS[@]})
+    set -e
     fit=yes
     if [ "\${status[0]}" -ne 0 ]; then
         if grep -q "no Karlin-Altschul fit" ${slug}.log; then

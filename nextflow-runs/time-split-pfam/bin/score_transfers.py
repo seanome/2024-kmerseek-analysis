@@ -244,6 +244,22 @@ def main() -> None:
         print(f"test half left unread: {hidden.len()} queries (real and decoy) dropped")
 
     km, checks = read_kmerseek(a.kmerseek)
+    # Every setting in settings.tsv x {exact, extend}, with what arrived for it: a stats
+    # file says fitted yes/no; no file means every chunk of that search failed.
+    st = pl.read_csv(a.settings, separator="\t") if a.settings.suffix == ".tsv" else None
+    if st is not None and {"alphabet", "ksize"} <= set(st.columns):
+        stats = [pl.read_csv(f, separator="\t", infer_schema_length=0) for f in sorted(a.stats.glob("*.stats.tsv"))]
+        got = (pl.concat(stats).select("alphabet", "ksize", "arm", "chunk", "fitted") if stats
+               else pl.DataFrame(schema={c: pl.String for c in ("alphabet", "ksize", "arm", "chunk", "fitted")}))
+        want = (st.select("alphabet", pl.col("ksize").cast(pl.String))
+                .join(pl.DataFrame({"arm": ["exact", "extend"]}), how="cross"))
+        cover = (want.join(got.group_by("alphabet", "ksize", "arm").agg(
+                     chunks=pl.len(), unfitted_chunks=(pl.col("fitted") == "no").sum()),
+                     on=["alphabet", "ksize", "arm"], how="left")
+                 .with_columns(pl.col("chunks").fill_null(0), pl.col("unfitted_chunks").fill_null(0)))
+        cover.write_csv(a.out / "setting_coverage.csv")
+        print(f"settings with no search output: {cover.filter(pl.col('chunks') == 0).height}; "
+              f"with an unfitted extend search: {cover.filter(pl.col('unfitted_chunks') > 0).height}")
     parts = [km, read_mmseqs(a.mmseqs2, dom), read_phmmer(a.phmmer, dom), read_hmmscan(a.hmmscan)]
     calls = pl.concat([p.select([pl.col(c).cast(t) for c, t in CALL_SCHEMA.items()]) for p in parts])
     if not a.read_test_half:
