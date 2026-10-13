@@ -79,6 +79,11 @@ ul.caveats{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8p
 a{color:inherit}
 footer{max-width:980px;margin:0 auto;color:var(--muted);font-size:.9rem;display:flex;flex-direction:column;gap:6px}
 .cell{cursor:pointer}
+svg.ico{width:1.05em;height:1.05em;vertical-align:-.17em;margin-right:.25em;flex:none}
+.key svg.ico{margin-right:0}
+.key.sp svg.ico{color:var(--dark);width:1.25em;height:1.25em}
+#tip{position:fixed;z-index:20;max-width:min(360px,calc(100vw - 24px));background:var(--surface);color:var(--ink);border:1px solid var(--glass-edge);
+  border-radius:8px;box-shadow:var(--shadow);padding:8px 10px;font-size:.88rem;line-height:1.4;pointer-events:none}
 @media (max-width:600px){.panel{padding:16px 14px}body{font-size:16px}.controls .lab{min-width:0;width:100%}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -171,6 +176,7 @@ footer{max-width:980px;margin:0 auto;color:var(--muted);font-size:.9rem;display:
   </section>
 
   <footer id="foot"></footer>
+  <div id="tip" role="tooltip" hidden></div>
 </main>
 
 <script>
@@ -178,7 +184,11 @@ const D = /*__DATA__*/;
 const CLASSES = /*__CLASSES__*/;
 const SP = {human:"human", worm:"C. elegans", yeast:"S. cerevisiae", borrelia:"B. burgdorferi", botryllus:"B. schlosseri"};
 const SPI = {human:false, worm:true, yeast:true, borrelia:true, botryllus:true};
-const spName = s => SPI[s] ? `<i>${SP[s]}</i>` : SP[s];
+const ICONS = /*__ICONS__*/;
+// Species icon as an SVG path (Material Symbols, viewBox 0 -960 960 960), centred on x, y
+function iconPath(s,x,y,size,color){const k=size/960;return `<path transform="translate(${x-size/2} ${y+size/2}) scale(${k})" d="${ICONS[s]}" fill="${color}"/>`;}
+function iconHtml(s){return `<svg class="ico" viewBox="0 -960 960 960" aria-hidden="true"><path d="${ICONS[s]}" fill="currentColor"/></svg>`;}
+const spName = s => iconHtml(s) + (SPI[s] ? `<i>${SP[s]}</i>` : SP[s]);
 const SPECIES = D.species.map(s => s.name);
 const fmtE = e => e >= 1 ? String(e) : (e >= 0.001 ? String(e) : e.toExponential(0).replace("e-", "e-"));
 const pct = (x, d=1) => (100*x).toFixed(d) + "%";
@@ -186,6 +196,21 @@ const int = n => n.toLocaleString("en-US");
 const ns = "http://www.w3.org/2000/svg";
 function el(tag, attrs, parent){const e=document.createElementNS(ns,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
 function txt(parent, x, y, s, attrs={}){const t=el("text",Object.assign({x,y},attrs),parent);t.textContent=s;return t;}
+// Tooltip next to the mark, with the same text the panel's readout box gets
+const tip=document.getElementById("tip");
+function placeTip(x,y){const r=tip.getBoundingClientRect();let L=x+14,T=y+14;
+  if(L+r.width>innerWidth-8)L=Math.max(8,x-r.width-14);if(T+r.height>innerHeight-8)T=Math.max(8,y-r.height-14);
+  tip.style.left=L+"px";tip.style.top=T+"px";}
+function bindTip(node,show,readoutId){
+  const open=(x,y)=>{show();tip.innerHTML=document.getElementById(readoutId).innerHTML;tip.hidden=false;placeTip(x,y);};
+  node.addEventListener("mouseenter",e=>open(e.clientX,e.clientY));
+  node.addEventListener("mousemove",e=>placeTip(e.clientX,e.clientY));
+  node.addEventListener("mouseleave",()=>{tip.hidden=true;});
+  node.addEventListener("click",e=>open(e.clientX,e.clientY));
+  node.addEventListener("focus",()=>{const b=node.getBoundingClientRect();open(b.right,b.bottom);});
+  node.addEventListener("blur",()=>{tip.hidden=true;});
+}
+window.addEventListener("scroll",()=>{tip.hidden=true;},{passive:true});
 function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
 
 // Alphabet size groups, as in the clear-figures rule: 2-3 letters, 4-8, 12-18, protein20
@@ -211,6 +236,7 @@ segs("c-km", D.kmerseek_cutoffs, fmtE, "u");
 segs("c-sc", [1,10], v => v===1 ? "every k-mer (scaled 1)" : "1 in 10 k-mers (scaled 10)", "sc");
 segs("c-heat-sp", SPECIES, s => SP[s], "heatSp");
 segs("c-g-sp", SPECIES, s => SP[s], "gSp");
+document.querySelectorAll("#c-heat-sp button, #c-g-sp button").forEach(b=>{b.innerHTML=iconHtml(b.dataset.val)+b.textContent;});
 document.querySelectorAll("#c-heat-sp button, #c-g-sp button").forEach(b=>b.style.fontStyle=SPI[b.dataset.val]?"italic":"normal");
 
 function spInfo(s){return D.species.find(x=>x.name===s);}
@@ -248,7 +274,8 @@ function renderSize(){
   D.species.forEach((s,i)=>{
     const y=top+i*rowH+8, h=24;
     el("line",{x1:left-6,x2:x(1),y1:y+h/2,y2:y+h/2,stroke:css("--hair")},svg);
-    const t=txt(svg,left-10,y+h/2+5,SP[s.name],{"text-anchor":"end","font-size":14});if(SPI[s.name])t.setAttribute("font-style","italic");
+    const t=txt(svg,left-28,y+h/2+5,SP[s.name],{"text-anchor":"end","font-size":14});if(SPI[s.name])t.setAttribute("font-style","italic");
+    svg.insertAdjacentHTML("beforeend",iconPath(s.name,left-17,y+h/2,16,css("--ink")));
     const share=s.dark[state.t]/s.proteins;
     el("rect",{x:x(0),y,width:x(1)-x(0),height:h,fill:css("--placed")},svg);
     el("rect",{x:x(0),y,width:x(share)-x(0),height:h,fill:css("--dark")},svg);
@@ -280,7 +307,8 @@ function renderScatters(){
   SPECIES.forEach(s=>{
     const svg=el("svg",{width:S+m.l+m.r,height:S+m.t+m.b,role:"img","aria-label":`kmerseek reach in ${SP[s]}`});
     const X=v=>m.l+S*v/xmax, Y=v=>m.t+S-S*v/ymax;
-    const t=txt(svg,m.l,14,SP[s],{"font-size":14,"font-weight":600});if(SPI[s])t.setAttribute("font-style","italic");
+    svg.insertAdjacentHTML("beforeend",iconPath(s,m.l+8,9,16,css("--ink")));
+    const t=txt(svg,m.l+20,14,SP[s],{"font-size":14,"font-weight":600});if(SPI[s])t.setAttribute("font-style","italic");
     for(let i=0;i<=4;i++){const vx=xmax*i/4,vy=ymax*i/4;
       el("line",{x1:X(vx),x2:X(vx),y1:Y(0),y2:Y(ymax),stroke:css("--hair")},svg);el("line",{x1:X(0),x2:X(xmax),y1:Y(vy),y2:Y(vy),stroke:css("--hair")},svg);
       if(i%2===0){txt(svg,X(vx),Y(0)+14,pct(vx,0),{"text-anchor":"middle","font-size":10,class:"mut"});txt(svg,X(0)-4,Y(vy)+3,pct(vy,0),{"text-anchor":"end","font-size":10,class:"mut"});}}
@@ -293,9 +321,8 @@ function renderScatters(){
     rows.forEach(({r,q})=>{
       const col=css(GROUPS[sizeGroup(r.alphabet)].col);
       const c=el("circle",{cx:X(q.ds),cy:Y(q.ps),r:4,fill:q.tells?col:"none",stroke:col,"stroke-width":1.4,class:"cell",tabindex:0},svg);
-      const tt=el("title",{},c);tt.textContent=`${r.alphabet} k=${r.ksize}`;
       const show=()=>{document.getElementById("scread").innerHTML=`${spName(s)} · <b>${r.alphabet}</b> k = ${r.ksize}, scaled ${r.scaled} <span class="muted">(${classTitle(r.alphabet)})</span><br>dark reached <span class="num">${int(q.dr)} of ${int(q.nd)} (${pct(q.ds)})</span>, placed reached <span class="num">${int(q.pr)} of ${int(q.np)} (${pct(q.ps)})</span> · ${q.tells?"tells dark from placed":"does not tell dark from placed"} · ${cutoffText()}`;};
-      c.addEventListener("mouseenter",show);c.addEventListener("click",show);c.addEventListener("focus",show);
+      bindTip(c,show,"scread");
     });
     if(pick)el("circle",{cx:X(pick.q.ds),cy:Y(pick.q.ps),r:8,fill:"none",stroke:css("--ink"),"stroke-width":2},svg);
     txt(svg,m.l+S/2,S+m.t+46,pick?`ring: ${pick.r.alphabet} k${pick.r.ksize}`:"no setting tells dark from placed",{"text-anchor":"middle","font-size":11,class:"num"});
@@ -318,7 +345,7 @@ function bestTable(){
 function renderBest(){
   const {per,overall}=bestTable();
   const L=document.getElementById("bestlegend");
-  L.innerHTML=SPECIES.map((s,i)=>`<span class="key"><svg width="12" height="12">${shapeSvg(i,6,6,css("--dark"))}</svg>${spName(s)}</span>`).join("")+
+  L.innerHTML=SPECIES.map((s,i)=>`<span class="key sp">${spName(s)}</span>`).join("")+
     `<span class="key"><svg width="14" height="12"><line x1="7" y1="0" x2="7" y2="12" stroke="${css("--ink")}" stroke-width="3"/></svg>mean of the five</span><span class="key"><span style="color:${css("--muted")}">×</span> no setting tells dark from placed</span>`;
   const rowH=24, gap=12, left=190, right=40;
   const W=Math.max(560,Math.min(940,document.getElementById("bestfig").clientWidth||900));
@@ -341,9 +368,9 @@ function renderBest(){
     SPECIES.forEach((s,i)=>{const o=per[a][s];const dy=(i-2)*2.6;
       if(!o)return;
       if(!o.q){txt(svg,X(0)+4+i*9,yy+4,"×",{"font-size":12,class:"mut"});return;}
-      const g=el("g",{class:"cell",tabindex:0},svg);g.innerHTML=shapeSvg(i,X(o.q.ds),yy+dy,css("--dark"));
+      const g=el("g",{class:"cell",tabindex:0},svg);g.innerHTML=`<rect x="${X(o.q.ds)-8}" y="${yy+dy*1.6-8}" width="16" height="16" fill="transparent"/>`+iconPath(s,X(o.q.ds),yy+dy*1.6,15,css("--dark"));
       const show=()=>{document.getElementById("bestread").innerHTML=`<b>${a}</b> in ${spName(s)}: best k = ${o.r.ksize}, dark reached <span class="num">${int(o.q.dr)} of ${int(o.q.nd)} (${pct(o.q.ds)})</span>, placed <span class="num">${pct(o.q.ps)}</span> · ${cutoffText()}`;};
-      g.addEventListener("mouseenter",show);g.addEventListener("click",show);g.addEventListener("focus",show);
+      bindTip(g,show,"bestread");
     });
   });
   const box=document.getElementById("bestfig");box.innerHTML="";box.appendChild(svg);
@@ -353,14 +380,6 @@ function renderBest(){
   let h=`<table><thead><tr><th>alphabet</th><th class="n">classes</th>${SPECIES.map(s=>`<th class="n">${spName(s)}</th>`).join("")}<th class="n">mean</th></tr></thead><tbody>`;
   overall.forEach(o=>{const a=o.alphabet;h+=`<tr><td class="num" title="${classTitle(a)}">${a}</td><td class="n">${nClasses(a)}</td>${SPECIES.map(s=>{const c=per[a][s];return `<td class="n">${!c?"not run":!c.q?"×":`k${c.r.ksize} · ${pct(c.q.ds)} / ${pct(c.q.ps)}`}</td>`;}).join("")}<td class="n">${pct(o.mean)}</td></tr>`;});
   document.getElementById("besttab").innerHTML=h+`</tbody></table><p class="muted">Each cell: best k-size · dark share / placed share reached. ${cutoffText()}.</p>`;
-}
-function shapeSvg(i,x,y,c){
-  const r=4.2;
-  switch(i){case 0:return `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`;
-    case 1:return `<rect x="${x-r}" y="${y-r}" width="${2*r}" height="${2*r}" fill="${c}"/>`;
-    case 2:return `<path d="M${x} ${y-r-1}L${x+r+1} ${y+r}L${x-r-1} ${y+r}Z" fill="${c}"/>`;
-    case 3:return `<path d="M${x} ${y-r-1}L${x+r+1} ${y}L${x} ${y+r+1}L${x-r-1} ${y}Z" fill="${c}"/>`;
-    default:return `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${c}" stroke-width="2"/>`;}
 }
 
 // ---------- 2c. heatmap
@@ -389,7 +408,7 @@ function renderHeat(){
     el("rect",{x:x+1,y:yy+1,width:cw-2,height:ch-2,rx:2,fill:lerpColor(c0,c1,Math.sqrt(q.ds/vmax))},g);
     if(q.tells)txt(g,x+cw/2,yy+ch/2+4,"✓",{"text-anchor":"middle","font-size":12,fill:q.ds/vmax>0.35?css("--bg"):css("--ink"),style:`fill:${q.ds/vmax>0.35?css("--bg"):css("--ink")}`});
     const show=()=>{document.getElementById("heatread").innerHTML=`${spName(s)} · <b>${r.alphabet}</b> k = ${r.ksize} <span class="muted">(${classTitle(r.alphabet)})</span><br>dark reached <span class="num">${int(q.dr)} of ${int(q.nd)} (${pct(q.ds)})</span>, placed reached <span class="num">${int(q.pr)} of ${int(q.np)} (${pct(q.ps)})</span> · ${q.tells?"tells dark from placed":"does not tell dark from placed"} · ${cutoffText()}`;};
-    g.addEventListener("click",show);g.addEventListener("mouseenter",show);g.addEventListener("focus",show);
+    bindTip(g,show,"heatread");
   });
   unf.forEach(u=>{if(pos[u.alphabet]===undefined)return;txt(svg,left+(u.ksize-kmin)*cw+cw/2,pos[u.alphabet]+ch/2+4,"×",{"text-anchor":"middle","font-size":12,class:"mut"});});
   const box=document.getElementById("heatfig");box.innerHTML="";box.appendChild(svg);
@@ -443,7 +462,7 @@ function drawGroupBars(id,list,G,s,reached,U){
     txt(g,labW+w+5,y+14,`${o.hit.length}/${o.dark.length}`,{"font-size":11,class:"num"});
     const show=()=>{const fmt=p=>`${esc(p.id)}${p.km[+document.getElementById("g-set").value]!==undefined?` (E ${p.km[+document.getElementById("g-set").value]})`:""}`;
       document.getElementById("gread").innerHTML=`<b>${esc(name)}</b>: ${o.dark.length} dark proteins, ${o.hit.length} reached at region E ≤ ${fmtE(U)}.<br>Reached: ${o.hit.map(fmt).join(", ")||"none"}<br><span class="muted">Not reached: ${o.dark.filter(p=>!reached(p)).map(fmt).join(", ")||"none"}</span>`;};
-    g.addEventListener("click",show);g.addEventListener("mouseenter",show);g.addEventListener("focus",show);
+    bindTip(g,show,"gread");
   });
   txt(svg,labW,list.length*rowH+20,"dark proteins in the group (filled: reached)",{"font-size":11,class:"mut"});
   box.appendChild(svg);

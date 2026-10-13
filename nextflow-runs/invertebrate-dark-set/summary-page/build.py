@@ -10,6 +10,7 @@ claude.ai artifact. Every number on the page is computed in the page from the JS
 Added 2026-10-13.
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -55,7 +56,17 @@ def main():
         for a, cl in CLASSES.items():
             assert "".join(sorted("".join(cl))) == "ACDEFGHIKLMNPQRSTVWY", a
     page = (HERE / "template.html").read_text()
+    assert page.count("/*__ICONS__*/") == 1
     fonts = (HERE / "fonts.css").read_text()
+    # Species icons: Material Symbols (Apache 2.0), filled, from
+    # github.com/google/material-design-icons symbols/web/<name>/materialsymbolsoutlined
+    icons = {}
+    for f in sorted((HERE / "icons").glob("*.svg")):
+        m = re.search(r' d="([^"]+)"', f.read_text())
+        assert m and 'viewBox="0 -960 960 960"' in f.read_text(), f
+        icons[f.stem.split("_")[0]] = m.group(1)
+    assert set(icons) == set(data["settings"]), (sorted(icons), sorted(data["settings"]))
+    page = page.replace("/*__ICONS__*/", json.dumps(icons))
     for marker in ("/*__DATA__*/", "/*__FONTS__*/", "/*__CLASSES__*/"):
         assert page.count(marker) == 1, f"template must hold {marker} once"
     blob = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
