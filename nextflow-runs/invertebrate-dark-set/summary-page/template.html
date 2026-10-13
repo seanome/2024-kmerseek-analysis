@@ -98,7 +98,7 @@ svg.ico{width:1.05em;height:1.05em;vertical-align:-.17em;margin-right:.25em;flex
 
   <div class="bar" id="bar">
     <div class="controls" id="c-dark"><span class="lab">Dark: no tool hit with E-value ≤</span></div>
-    <div class="controls" id="c-km"><span class="lab">Reached: kmerseek region with E-value ≤</span></div>
+    <div class="controls" id="c-km"><span class="lab">Reached or hit: region or best hit with E-value ≤</span></div>
     <div class="controls" id="c-sc"><span class="lab">kmerseek index keeps</span></div>
   </div>
 
@@ -162,8 +162,20 @@ svg.ico{width:1.05em;height:1.05em;vertical-align:-.17em;margin-right:.25em;flex
     <details><summary>Every group with at least 3 dark proteins</summary><div class="tablewrap" id="gtab"></div></details>
   </section>
 
+  <section class="panel" id="acc">
+    <div class="step">4 · Are the hits right</div>
+    <h2>Best hits checked against known Pfam families</h2>
+    <div class="controls" id="c-acc-sp"><span class="lab">Species</span></div>
+    <p class="shows" id="accshows"></p>
+    <div class="legend" id="acclegend"></div>
+    <div class="fig multi" id="accfig"></div>
+    <div class="readout" id="accread">Hover or tap a mark to see its counts.</div>
+    <details><summary>The numbers behind this figure</summary><div class="tablewrap" id="acctab"></div></details>
+    <details><summary>Dark proteins reached at E ≤ 1, with their best target (first 40 by E-value)</summary><div class="controls"><span class="lab">Source</span><select id="acc-src" aria-label="source"></select></div><div class="tablewrap" id="accex"></div></details>
+  </section>
+
   <section class="panel" id="caveats">
-    <div class="step">4 · Before reading these numbers as rescues</div>
+    <div class="step">5 · Before reading these numbers as rescues</div>
     <h2>Caveats</h2>
     <ul class="caveats">
       <li><b>The low-complexity mask was off</b> for every setting on this page, so a region can rest on a stretch made of few kinds of residue (for example lysine-rich or serine-rich), which shares k-mers with many unrelated proteins.</li>
@@ -221,7 +233,7 @@ function classTitle(a){return `${a}: ${nClasses(a)} classes ${CLASSES[a].join(" 
 const ALPHAS = [...new Set(SPECIES.flatMap(s => D.settings[s].map(r => r.alphabet)))]
   .sort((a,b)=> sizeGroup(a)-sizeGroup(b) || nClasses(a)-nClasses(b) || a.localeCompare(b));
 
-const state = {t: D.dark_cutoffs.indexOf(1), u: D.kmerseek_cutoffs.indexOf(1), sc: 1, heatSp: "human", gSp: "human", gSet: null};
+const state = {t: D.dark_cutoffs.indexOf(1), u: D.kmerseek_cutoffs.indexOf(1), sc: 1, heatSp: "human", gSp: "human", gSet: null, accSp: "human"};
 try{const s=JSON.parse(localStorage.getItem("darkset-state")||"null");if(s)Object.assign(state,s);}catch(e){}
 function save(){try{localStorage.setItem("darkset-state",JSON.stringify(state));}catch(e){}}
 
@@ -236,7 +248,8 @@ segs("c-km", D.kmerseek_cutoffs, fmtE, "u");
 segs("c-sc", [1,10], v => v===1 ? "every k-mer (scaled 1)" : "1 in 10 k-mers (scaled 10)", "sc");
 segs("c-heat-sp", SPECIES, s => SP[s], "heatSp");
 segs("c-g-sp", SPECIES, s => SP[s], "gSp");
-document.querySelectorAll("#c-heat-sp button, #c-g-sp button").forEach(b=>{b.innerHTML=iconHtml(b.dataset.val)+b.textContent;});
+segs("c-acc-sp", SPECIES.filter(s=>(D.accuracy||{})[s]), s => SP[s], "accSp");
+document.querySelectorAll("#c-heat-sp button, #c-g-sp button, #c-acc-sp button").forEach(b=>{b.innerHTML=iconHtml(b.dataset.val)+b.textContent;});
 document.querySelectorAll("#c-heat-sp button, #c-g-sp button").forEach(b=>b.style.fontStyle=SPI[b.dataset.val]?"italic":"normal");
 
 function spInfo(s){return D.species.find(x=>x.name===s);}
@@ -476,6 +489,77 @@ function drawGroupBars(id,list,G,s,reached,U){
 }
 document.getElementById("g-set").addEventListener("change",()=>{save();renderGroups();});
 
+
+// ---------- 4. accuracy against known Pfam families
+const ACC = D.accuracy || {};
+const ACC_SP = SPECIES.filter(s=>ACC[s]);
+const TOOL_MARK = {phmmer:"square", jackhmmer:"diamond", mmseqs2:"triangle"};
+function markSvg(kind,x,y,r,fill,stroke){
+  if(kind==="square")return `<rect x="${x-r}" y="${y-r}" width="${2*r}" height="${2*r}" fill="${fill}" stroke="${stroke}" stroke-width="1.6"/>`;
+  if(kind==="diamond")return `<path d="M${x} ${y-r-1.5}L${x+r+1.5} ${y}L${x} ${y+r+1.5}L${x-r-1.5} ${y}Z" fill="${fill}" stroke="${stroke}" stroke-width="1.6"/>`;
+  if(kind==="triangle")return `<path d="M${x} ${y-r-1.5}L${x+r+1.5} ${y+r}L${x-r-1.5} ${y+r}Z" fill="${fill}" stroke="${stroke}" stroke-width="1.6"/>`;
+  return `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/>`;
+}
+function srcLabel(src){return TOOL_MARK[src]?src.replace("mmseqs2","MMseqs2"):src.replace(/\.k(\d+)\.s1$/," k=$1");}
+function srcAlphabet(src){return src.replace(/\.k\d+\.s\d+$/,"");}
+function accRow(sp,src,setName){
+  const A=ACC[sp], ui=state.u;
+  const row=A.counts[src][setName][ui];
+  const [fam,clan,wrong,unk,cf]=row;
+  const n=A.sets[setName].n, findable=A.sets[setName].findable;
+  const right=fam+clan, judged=right+wrong;
+  return {fam,clan,wrong,unk,hits:right+wrong+unk,n,findable,prec:judged?right/judged:null,recall:findable?cf/findable:null,cf};
+}
+function renderAcc(){
+  const box=document.getElementById("accfig");
+  if(!ACC_SP.length){box.innerHTML="<p class='muted'>No accuracy data in this build.</p>";return;}
+  if(!ACC[state.accSp])state.accSp=ACC_SP[0];
+  const sp=state.accSp, A=ACC[sp], T=D.dark_cutoffs[state.t], U=D.kmerseek_cutoffs[state.u];
+  const km=Object.keys(A.counts).filter(k=>!TOOL_MARK[k]);
+  document.getElementById("accshows").innerHTML=`Query: ${spName(sp)} proteins with a known Pfam family (<span class="num">${int(A.n_known)}</span> of ${int(A.n_proteome)}). Targets: the clade-excluded Swiss-Prot reference, whose entries list their Pfam families. For each tool, and for kmerseek at ${km.length} setting${km.length===1?"":"s"} (the best k-size of each alphabet in this species, scaled 1), the best hit of each protein (smallest E-value, at or below ${fmtE(U)}) is called right when the target shares a Pfam family or clan with the query, and wrong when the target has Pfam families and none shares the query's clan. A target with no Pfam family is left out of the share right. Left: placed proteins (a tool hit at E ≤ ${fmtE(T)}). Right: dark proteins. Up is better: more of the judged best hits are right. Right is better: more of the proteins whose family exists in the reference got a right best hit. Pfam families come from Pfam's own profile models, so this measures agreement with Pfam, not with structure.${sp==="borrelia"?" <i>B. burgdorferi</i> Pfam families are UniProt's cross-references.":""} <i>B. schlosseri</i> has no Pfam annotation, so it is not shown.`;
+  const L=document.getElementById("acclegend");
+  L.innerHTML=Object.keys(TOOL_MARK).map(t=>`<span class="key"><svg width="14" height="14">${markSvg(TOOL_MARK[t],7,7,4.5,css("--ink"),css("--ink"))}</svg>${srcLabel(t)}</span>`).join("")+
+    GROUPS.map(g=>`<span class="key"><span class="dot" style="background:var(${g.col})"></span>kmerseek, ${g.name}</span>`).join("")+
+    `<span class="key"><span class="dot" style="background:transparent;border:1.5px solid var(--muted)"></span>hollow: fewer than 20 judged best hits</span>`;
+  box.innerHTML="";
+  const S=230, m={l:52,b:40,t:44,r:14};
+  [["placed_"+T,"placed"],["dark_"+T,"dark"]].forEach(([setName,label])=>{
+    const svg=el("svg",{width:S+m.l+m.r,height:S+m.t+m.b,role:"img","aria-label":`accuracy on ${label} proteins`});
+    const X=v=>m.l+S*v, Y=v=>m.t+S-S*v;
+    const ns=A.sets[setName];
+    txt(svg,m.l,15,`${label} proteins`,{"font-size":13,"font-weight":600});
+    txt(svg,m.l,31,`${int(ns.n)} with a known family, ${int(ns.findable)} findable`,{"font-size":11.5,class:"mut"});
+    for(let i=0;i<=4;i++){const v=i/4;el("line",{x1:X(v),x2:X(v),y1:Y(0),y2:Y(1),stroke:css("--hair")},svg);el("line",{x1:X(0),x2:X(1),y1:Y(v),y2:Y(v),stroke:css("--hair")},svg);
+      txt(svg,X(v),Y(0)+14,pct(v,0),{"text-anchor":"middle","font-size":10,class:"mut"});txt(svg,X(0)-4,Y(v)+3,pct(v,0),{"text-anchor":"end","font-size":10,class:"mut"});}
+    txt(svg,m.l+S/2,S+m.t+32,"findable proteins with a right best hit",{"text-anchor":"middle","font-size":11,class:"mut"});
+    txt(svg,11,m.t+S/2,"judged best hits that are right",{"text-anchor":"middle","font-size":11,class:"mut",transform:`rotate(-90 11 ${m.t+S/2})`});
+    const order=[...km,...Object.keys(TOOL_MARK)];
+    order.forEach(src=>{
+      const r=accRow(sp,src,setName);
+      if(r.prec===null||r.recall===null)return;
+      const judged=r.fam+r.clan+r.wrong, few=judged<20;
+      const isTool=!!TOOL_MARK[src];
+      const col=isTool?css("--ink"):css(GROUPS[sizeGroup(srcAlphabet(src))].col);
+      const g=el("g",{class:"cell",tabindex:0},svg);
+      g.innerHTML=markSvg(isTool?TOOL_MARK[src]:"circle",X(r.recall),Y(r.prec),isTool?5:4,few?"none":col,col);
+      const show=()=>{document.getElementById("accread").innerHTML=`${spName(sp)}, ${label} proteins · <b>${srcLabel(src)}</b>${isTool?"":` <span class="muted">(${classTitle(srcAlphabet(src))})</span>`}<br>best hit at E ≤ ${fmtE(U)} for <span class="num">${int(r.hits)}</span> of ${int(r.n)}: same family <span class="num">${int(r.fam)}</span>, same clan only <span class="num">${int(r.clan)}</span>, wrong <span class="num">${int(r.wrong)}</span>, target without Pfam <span class="num">${int(r.unk)}</span> · right among judged <span class="num">${pct(r.prec)}</span> · right for <span class="num">${int(r.cf)} of ${int(r.findable)}</span> findable (${pct(r.recall)}) · dark/placed at E ≤ ${fmtE(T)}`;};
+      bindTip(g,show,"accread");
+    });
+    box.appendChild(svg);
+  });
+  // table
+  const srcs=[...Object.keys(TOOL_MARK),...km.sort((a,b)=>sizeGroup(srcAlphabet(a))-sizeGroup(srcAlphabet(b))||a.localeCompare(b))];
+  let h=`<table><thead><tr><th>source</th>${["placed","dark"].map(l=>`<th class="n">${l}: best hits</th><th class="n">family</th><th class="n">clan only</th><th class="n">wrong</th><th class="n">no Pfam</th><th class="n">right among judged</th><th class="n">right / findable</th>`).join("")}</tr></thead><tbody>`;
+  srcs.forEach(src=>{h+=`<tr><td class="num">${srcLabel(src)}</td>`+["placed_"+T,"dark_"+T].map(sn=>{const r=accRow(sp,src,sn);return `<td class="n">${int(r.hits)}</td><td class="n">${int(r.fam)}</td><td class="n">${int(r.clan)}</td><td class="n">${int(r.wrong)}</td><td class="n">${int(r.unk)}</td><td class="n">${r.prec===null?"–":pct(r.prec)}</td><td class="n">${r.recall===null?"–":pct(r.recall)}</td>`;}).join("")+"</tr>";});
+  document.getElementById("acctab").innerHTML=h+`</tbody></table><p class="muted">${spName(sp)}; dark and placed at E ≤ ${fmtE(T)}; best hit at E ≤ ${fmtE(U)}. "Findable": some protein in the reference carries one of the query's Pfam families.</p>`;
+  // examples (fixed at T = 1, U = 1)
+  const sel=document.getElementById("acc-src");
+  if(sel.dataset.sp!==sp){sel.innerHTML=srcs.map(x=>`<option value="${x}">${srcLabel(x)}</option>`).join("");sel.dataset.sp=sp;
+    const pick=srcs.find(x=>x.startsWith("hp_lehninger2"));if(pick)sel.value=pick;}
+  const ex=A.dark_examples[sel.value]||[];
+  document.getElementById("accex").innerHTML=ex.length?`<table><thead><tr><th>query</th><th>query Pfam</th><th>best target</th><th>target Pfam</th><th class="n">E-value</th><th>call</th></tr></thead><tbody>${ex.map(e=>`<tr><td class="num">${esc(e.query)}</td><td class="num">${e.query_pfam.join(" ")}</td><td class="num">${esc(e.target)}</td><td class="num">${e.target_pfam.join(" ")||"none"}</td><td class="n">${e.evalue}</td><td>${e.call==="unknown"?"target without Pfam":e.call==="clan"?"same clan only":e.call==="family"?"same family":"wrong"}</td></tr>`).join("")}</tbody></table><p class="muted">Dark at E ≤ 1, best hit at E ≤ 1, whatever the switches above say.</p>`:"<p class='muted'>No dark protein with a known family has a best hit at E ≤ 1 from this source.</p>";
+}
+document.getElementById("acc-src").addEventListener("change",renderAcc);
 function renderFoot(){
   document.getElementById("foot").innerHTML=`<div>Data: <code>tools/export-protein-evalues</code> on the repaired queries.tsv files of run ladder-0.4-midi (repair finished 2026-10-12 23:40), then <code>tools/dark-summary-data</code> (commit <code>${esc(D.commit||D.tools_commit||"?")}</code>) and <code>summary-page/build.py</code>, all in <a href="https://github.com/seanome/2024-kmerseek-analysis/tree/olgabot/dark-set-summary-page/nextflow-runs/invertebrate-dark-set">nextflow-runs/invertebrate-dark-set</a>. Gene groups: HGNC complete set (genenames.org) and UniProt keywords, downloaded ${esc(D.gene_groups_downloaded||"?")}. Hover an alphabet name for its residue classes.</div><div>Pipeline: <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/57">PR 57</a>. Low-complexity and helix analysis: <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/120">PR 120</a> (notebook 279).</div>`;
 }
@@ -486,7 +570,8 @@ function render(){
   document.querySelectorAll("#c-sc button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.val===state.sc));
   document.querySelectorAll("#c-heat-sp button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.val===state.heatSp));
   document.querySelectorAll("#c-g-sp button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.val===state.gSp));
-  renderFacts();renderSize();renderLegendAlpha("alphalegend");renderScatters();renderBest();renderHeat();renderGroups();renderFoot();
+  document.querySelectorAll("#c-acc-sp button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.val===state.accSp));
+  renderFacts();renderSize();renderLegendAlpha("alphalegend");renderScatters();renderBest();renderHeat();renderGroups();renderAcc();renderFoot();
 }
 render();
 let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(render,200);});

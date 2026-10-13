@@ -50,6 +50,11 @@ def main():
     if not data.get("commit"):
         assert len(sys.argv) == 3, "give the commit tools/dark-summary-data ran from"
         data["tools_commit"] = sys.argv[2]
+    # Panel 4: tools/dark-set-accuracy score output, one JSON per species
+    data["accuracy"] = {}
+    for f in sorted((HERE / "accuracy").glob("*_accuracy.json")):
+        acc = json.loads(f.read_text())
+        data["accuracy"][acc["species"]] = acc
     for sp, rows in data["settings"].items():
         missing = {r["alphabet"] for r in rows} - set(CLASSES)
         assert not missing, f"{sp}: no residue classes for {missing}"
