@@ -686,7 +686,8 @@ residue that touches SIRPalpha, a green bar is an identical residue.
 
 **What it says, and it is the closest thing in this notebook to support for the claim.**
 `hsdm17` with a 4-class seed finds a 36-residue ungapped segment, P66 197-232 against CD47
-109-144, which is 92% inside CD47's ectodomain and covers 9 of the 21 face residues
+109-144, which is 92% inside CD47's extracellular region but only 53% inside the
+immunoglobulin domain itself (section 6m), and covers 9 of the 21 face residues
 (115 and 117-124, the face's longest run). It covers the whole loop including both
 aspartates, and opposite `QENDKDT` sits `CEVTELT`, 5 residues of which touch SIRPalpha.
 `sdm12` finds the same segment, though section 6j shows the two are not independent of each
@@ -817,7 +818,7 @@ evidence for the loop being a CD47 mimic. If anything it is evidence against, be
 convergent functional mimic should be strongest where the function is.
 
 What it might be instead is a question this notebook cannot answer: a 36-residue ungapped
-similarity between a bacterial barrel and an immunoglobulin domain, 92% inside the
+similarity between a bacterial barrel and an immunoglobulin domain, 53% inside the
 ectodomain and overlapping the face's longest run, is worth someone looking at on its own
 terms rather than as support for this claim.
 """)
@@ -1287,7 +1288,9 @@ means something if it is also at the bottom: rank 1 shared with nobody.
 **It is also circular, and that is the end of it.** The segment P66 197-232 is not a stretch
 of P66 chosen on its own merits. It is the window seed-and-extend produced *because* it
 aligns to CD47, in section 6c, and section 6g showed it is one of only two places in P66
-that reach this score against CD47. Asking whether CD47 tops a search for a query that was
+that reach this score against CD47. Section 6m runs the held-out test and settles it: with
+CD47 held out, the data picks P66 159-194 instead, and CD47 ranks 4_696 of 19_705 for that
+window. Asking whether CD47 tops a search for a query that was
 carved out of its own best alignment is not a test of anything. The query already contains
 the answer.
 
@@ -1310,6 +1313,98 @@ So the answer to the question has three parts, and only the second one is about 
 There is one setting where CD47 is the unique best human match for a P66 query; that query
 was defined by its match to CD47; and for the stretch the claim is actually about, no
 setting puts CD47 anywhere near the top without tying most of the proteome with it.
+""")
+
+md(r"""
+## 6m. The held-out test, and what CD47 actually has where the segment lands
+
+Two things were left open. The held-out test, which is the only one that could
+still rescue the rank-1 result. And what CD47's own annotation says about the stretch
+the segment aligns to, which had been carried as residue numbers and never checked
+against the entry.
+
+**The held-out test.**
+
+Hold CD47 out. Score every one of P66's 583 windows of 36 residues against the 437
+matched human proteins that are not CD47, take the window that scores highest, and only
+then ask where CD47 ranks for it. Alphabet `hsdm17`, window 36, match count, all fixed
+in advance, and the script asserts CD47 is absent from the discovery set before it runs.
+""")
+
+code(r"""
+heldout = pl.read_csv(DATA / "40_heldout_window_test.csv")
+print(heldout.select("window", "p66_span", "chosen_using_cd47", "held_out_score",
+                     "cd47_score", "best_score_in_proteome", "cd47_rank",
+                     "n_at_rank_1", "cd47_sole_first"))
+""")
+
+md(r"""
+**The window chosen without CD47 is P66 159-194.** It does not contain the loop and does
+not overlap 197-232 at all. For that window CD47 ranks **4_696 of 19_705**, scoring 10
+where the proteome's best is 15, tied with 6_641 other proteins.
+
+**And P66 197-232 is an ordinary window against everything that is not CD47.** Its
+held-out score is 12, which is the **median** over the 583 windows; 280 of them score
+higher, and nine reach 15. Against CD47 it scores 16, which is the maximum any protein
+reaches for it.
+
+Both halves of that matter, and they point in opposite directions:
+
+* **Discovery is circular, confirmed.** The window cannot be found without CD47. Held out,
+  the data picks a different part of the protein entirely, and CD47 is rank 4_696 for it.
+  Nothing that searches P66 against a database would ever surface this window.
+* **Given the window, the match is specific to CD47.** A window that is merely
+  generically matchable would score well against the held-out set too. This one is median
+  there and maximal on CD47, and section 6d already showed 0 of 437 matched proteins reach
+  its score.
+
+So this is a hypothesis-confirming result and not a hypothesis-generating one. If you
+already suspect CD47, the segment is unusually good. No search would have handed it to you.
+""")
+
+md(r"""
+**What CD47 has where the segment lands.**
+""")
+
+code(r"""
+overlap = pl.read_csv(DATA / "41_cd47_feature_overlap.csv")
+runs = pl.read_csv(DATA / "39_cd47_face_runs.csv")
+print("CD47's SIRPalpha face is 21 residues in 11 runs, not 21 separate sites:")
+print(runs)
+print("\nUniProt features the aligned segment and the face overlap:")
+print(overlap)
+show("276u_cd47_feature_overlay", aspect=0.57)
+""")
+
+md(r"""
+**Figure 276u.** The face and the aligned segment drawn on CD47's own UniProt features.
+`figures/276u_cd47_feature_overlay.png`.
+
+**The face is one face, not 21 sites.** The 21 contact residues fall into **11 runs**, of
+which 8 are single residues. The longest is **117-124**, `TELTREGE`, 8 residues. They span
+21 to 124, so 104 residues of chain hold the 21 that touch, and all 21 are inside the
+immunoglobulin domain. That is the N-terminal end plus loops at one end of the domain,
+which is the convoluted interface the Hatherley paper describes rather than a flat patch.
+
+**A number in section 6c was loose and is corrected here.** The segment was described as
+"92% inside CD47's ectodomain". That is right for the extracellular topological domain,
+19-141, but the **immunoglobulin domain itself ends at 127**. Of the segment's 36 CD47
+columns: **19 are in the Ig-like V-type domain (53%)**, 33 are extracellular, and **3 are
+inside the first transmembrane helix**, which starts at 142. The segment runs off the end
+of the domain and into the membrane.
+
+Two more things sit in it that a mimicry account would have to deal with:
+
+* **An N-linked glycosylation site at CD47 111**, two residues inside the segment. A real
+  glycan there is far larger than a side chain.
+* **The cysteine at CD47 114 is locked in a disulfide to residue 41** — and 114 is the
+  first residue of `CEVTELT`, the stretch sitting opposite the P66 loop. That cysteine is
+  not available to do anything else.
+
+So the part of CD47 opposite the claimed loop is a disulfide-pinned cysteine followed by
+six residues at the far end of the domain, five of which do touch SIRPalpha, immediately
+downstream of a glycosylation site, in a segment that runs out of the domain and into the
+membrane three columns later.
 """)
 
 md(r"""
@@ -1377,7 +1472,8 @@ Claim sentences:
   mimicry is real.
 * **Seed-and-extend finds one real sequence similarity, and it is not the loop.** `hsdm17`
   and `sdm12` both find a 36-residue ungapped segment, P66 197-232 against CD47
-  109-144, 92% inside the ectodomain and covering 9 of the 21 SIRPalpha-face residues.
+  109-144, 53% inside the immunoglobulin domain and 92% extracellular, covering 9 of the
+  21 SIRPalpha-face residues.
   The two are not independent of each other: section 6j shows they accept the same four
   non-identical residue pairs and the segment's signal over chance is carried by one of
   them, `K` against `E`. It
