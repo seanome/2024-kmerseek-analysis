@@ -12,6 +12,7 @@
 #   make hash-check OLD=<commit>   smoke-size run of OLD, then of this checkout with -resume,
 #                        in hashcheck/: every task hash the two share is listed side by side
 #   make seed-pilot      Stop B: the pilot's queries against the seed reference
+#   make plddt           AlphaFold DB models of every real query; mean pLDDT per instance
 #   make running         what is running on this account
 #
 # Code is read from this checkout; data, work dirs and outputs go to RUN_DIR. Nothing is
@@ -41,7 +42,7 @@ NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs smoke pilot score-partial full seed-reference hash-check seed-pilot running
+.PHONY: download stop1 controls inputs smoke pilot score-partial full seed-reference hash-check seed-pilot plddt running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -141,6 +142,18 @@ seed-pilot:
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_SEED) \
 	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot-$(SEED) \
 	    --hmmscan_dir $(RUN_DIR)/results-pilot/hmmscan --run_tag seed-pilot --queue_size 100 -resume'
+
+# Mean pLDDT of each instance's query residues inside its t1 domain, from the query's
+# AlphaFold DB model (one file per accession, fetched by the QfO benchmark's script; 8_349
+# real queries, 4 connections). A model of a different sequence counts as no model.
+plddt:
+	$(SB) --job-name=280-plddt --cpus-per-task=4 --mem=8G --time=12:00:00 \
+	  --wrap 'set -e; P=inputs/plddt; mkdir -p $$P/acc $$P/structures; \
+	  cut -f1 inputs/pilot/queries.tsv inputs/full/queries.tsv | grep -v -e "^DECOY_" -e "^query$$" | sort -u > $$P/acc/timesplit.accessions; \
+	  FLAT_CACHE=$$P/no-cache PARALLEL=4 ALLOW_LARGE_PER_ACCESSION=1 \
+	    bash $(MAKEFILE_DIR)/../qfo-pfam-region-benchmark/bin/fetch_alphafold_structures.sh $$P/structures $$P/acc timesplit; \
+	  $(PY) $(MAKEFILE_DIR)/bin/instance_plddt.py --structures $$P/structures/timesplit \
+	    --inputs inputs/pilot inputs/full --out $$P/instance_plddt.tsv'
 
 ## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes.
 running:
