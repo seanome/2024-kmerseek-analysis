@@ -717,6 +717,162 @@ number worth quoting.
 """)
 
 md(r"""
+## 6d. The prespecified test of the hsdm17 lead
+
+Section 6c left one lead: `hsdm17`, seed 4, penalty 0.5 puts a 36-residue segment across
+the loop and onto 9 residues of CD47's SIRPalpha face at p = 0.0004 against shuffled CD47.
+That number is not quotable, for two reasons. It is the best of 132 tries. And shuffling
+CD47 destroys the protein, so almost any real protein beats that null.
+
+This is the test that makes the lead quotable or kills it. Everything is fixed before it
+runs, and nothing is swept:
+
+| | |
+|---|---|
+| alphabet, seed length, mismatch penalty, X-drop | `hsdm17`, 4, 0.5, 10 |
+| statistic | the score of the best segment whose P66 side covers any of 202-208 |
+| null | real human proteins matched to CD47 on length (within 10%) and on acidic fraction (within 1.5 points of 7.7% D+E), which is what the loop is made of |
+| p | the share of matched proteins scoring at least as high |
+| decision | the lead survives only if p < 0.05 |
+
+A second statistic, also fixed in advance: the share reaching that score with a segment at
+least as long as CD47's 36 residues.
+
+One bug worth recording, because it would have produced the answer the test was looking
+for. GENCODE translation headers put the transcript name in field 5 and the gene symbol in
+field 6. Reading field 5 let CD47's own transcript into the background as `CD47-202`, and
+it came back as the one protein matching CD47's score. Reading field 6, and also dropping
+anything whose sequence is CD47's, removes it.
+""")
+
+code(r"""
+prespec = pl.read_csv(DATA / "16_hsdm17_prespecified_result.csv")
+bg = pl.read_csv(DATA / "15_hsdm17_prespecified_background.csv")
+print(prespec.transpose(include_header=True, column_names=["value"]))
+print(f"\nBackground: {bg.height} matched human proteins, "
+      f"{bg['reaches_loop'].sum()} of which produce a loop-covering segment at all.")
+print(f"  score median {bg['score'].median()}, max {bg['score'].max()}; "
+      f"CD47 is {prespec['observed_score'][0]}")
+print("\nThe strongest matched proteins:")
+print(bg.sort("score", descending=True)
+      .select("gene", "length", "acidic_fraction", "score", "segment_length").head(8))
+show("276l_hsdm17_prespecified_test", aspect=0.34)
+""")
+
+md(r"""
+**Figure 276l panel a** is this result; panel b belongs to the next section.
+
+**The lead survives its prespecified test.** 0 of 437 length- and acid-matched human
+proteins reach CD47's score of 6.0, so p < 1/437 = 0.002, well inside the 0.05 the rule
+asked for. Only 12 of the 437 produce a segment covering the loop at all; the median score
+is 0 and the best is 5.5. On the statistic fixed in advance, CD47 is the single best match
+P66's loop region has among 437 proteins of its own length and acidity.
+
+That is the first thing anywhere in this notebook that points toward the claim rather than
+away from it, and it is worth saying plainly before the next section takes most of it back.
+""")
+
+md(r"""
+## 6e. What that passing test is actually evidence about
+
+The score it passed on is the whole 36-residue segment, and section 6c already showed the
+loop contributes 1.0 of it while scoring worse per column than its own flanks. So the test
+may have passed for the window P66 197-232 rather than for the loop the claim names. The
+way to tell is to split the same background by column.
+
+**These two numbers are post-hoc.** They were computed after seeing the prespecified result
+and are reported as what the result means, not as a second claim.
+""")
+
+code(r"""
+split = pl.read_csv(DATA / "18_hsdm17_loop_vs_flanks_result.csv")
+split_bg = pl.read_csv(DATA / "17_hsdm17_loop_vs_flanks_background.csv")
+reached = split_bg.filter(pl.col("reaches_loop"))
+print(split)
+print(f"\n{reached.height} of {split_bg.height} matched proteins reach the loop.")
+print(f"Loop columns:  CD47 {split.filter(pl.col('statistic') == 'loop columns only')['observed'][0]}, "
+      f"background median {reached['loop_score'].median()}, max {reached['loop_score'].max()}")
+print(f"Flank columns: CD47 {split.filter(pl.col('statistic') == 'flanking columns only')['observed'][0]}, "
+      f"background median {reached['flank_score'].median()}, max {reached['flank_score'].max()}")
+show("276l_hsdm17_prespecified_test", aspect=0.34)
+""")
+
+md(r"""
+**Figure 276l.** The prespecified test and what it is about.
+`figures/276l_hsdm17_prespecified_test.png`. Panel **a**: CD47 against the 437 matched
+proteins on the prespecified statistic. Panel **b**: the same 36 columns split into the
+loop's 7 and the flanking 29, for CD47 and for the 12 matched proteins that also reach the
+loop.
+
+**The passing test is about the flanks, not the loop.** On the 29 flanking columns CD47
+scores 5.0 and no matched protein reaches it, median 1.0. On the loop's own 7 columns CD47
+scores 1.0 against a background median of 3.5 and a maximum of 5.0: **all 12 matched
+proteins that reach the loop beat CD47 there.** CD47 is the lowest of the thirteen on the
+part of the segment the claim is about, and the highest of 438 on the part it is not.
+
+So the honest reading, in one sentence: P66 197-232 has a local similarity to CD47 109-144
+that no length- and acidity-matched human protein matches, and the loop at 202-208 is the
+weakest seven columns of it. That is a real and specific sequence similarity, and it is not
+evidence for the loop being a CD47 mimic. If anything it is evidence against, because a
+convergent functional mimic should be strongest where the function is.
+
+What it might be instead is a question this notebook cannot answer: a 36-residue ungapped
+similarity between a bacterial barrel and an immunoglobulin domain, 92% inside the
+ectodomain and overlapping the face's longest run, is worth someone looking at on its own
+terms rather than as support for this claim.
+""")
+
+md(r"""
+## 6f. Every alphabet in one table
+
+The results above are spread over several tests. This is one row per alphabet, so every
+alphabet can be read at once. The eight that write the loop as one repeated class were left
+out of the 132-setting sweep, because at penalty 0.5 a seed there matches every polar
+stretch and the run does not finish; they are run here at penalties 1.0 and 2.0, where
+extension dies fast enough to be tractable, so the table has no blanks.
+""")
+
+code(r"""
+summary = pl.read_csv(DATA / "20_all_alphabets_summary.csv")
+print("Exact k-mers covering the loop, per alphabet:")
+print(summary.select("alphabet", "n_classes", "loop_class_string",
+                     "n_distinct_classes_in_loop", "loop_kmers_in_cd47",
+                     "highest_k_with_a_loop_kmer", "best_pair_k", "best_pair_p66",
+                     "best_pair_cd47", "best_pair_identities"))
+print("\nSeed-and-extend on the loop, per alphabet:")
+print(summary.select("alphabet", "n_classes", "loop_is_one_repeated_class",
+                     "seed_extend_settings_reaching_loop", "seed_extend_best_score",
+                     "seed_extend_best_p", "max_face_residues_hit"))
+print(f"\nAlphabets with any exact loop k-mer in CD47: "
+      f"{(summary['loop_kmers_in_cd47'] > 0).sum()} of {summary.height}")
+print(f"Alphabets where seed-and-extend reaches the loop at some setting: "
+      f"{(summary['seed_extend_settings_reaching_loop'] > 0).sum()} of {summary.height}")
+show("276m_all_alphabets_summary", aspect=0.56)
+""")
+
+md(r"""
+**Figure 276m.** Every alphabet, exact k-mers on the left and seed-and-extend on the right.
+`figures/276m_all_alphabets_summary.png`. Green is an alphabet that writes the loop as one
+repeated class, blue is one that writes it as a varied string.
+
+**How to read the table.**
+
+* **Exact k-mers reach the loop in 10 of 19 alphabets**, and 8 of those 10 are the ones
+  that cannot tell the loop from any polar stretch. The two that are not are `polarity4`
+  (1 k-mer, k = 5) and `gbmr7` (2, k = 5). `funcgroups8`, `mmseqs12`, `sdm12`, `wass14`,
+  `hsdm17`, `uniprot18`, `protein20`, `wwmj5` and `dayhoff6` have none at any k from 5 to 25.
+* **Seed-and-extend reaches the loop in 16 of 19.** Only `mmseqs12`, `uniprot18` and
+  `protein20` never do, which is what the three largest alphabets should do.
+* **The big scores are the uninformative ones.** The two- and three-class alphabets reach
+  scores of 50 to 61 and sit at p = 0.14 to 0.48 against shuffled CD47: entirely ordinary.
+  `gbmr7` and `polarity4` touch all 21 face residues, with segments of 250 residues and
+  more, which is the extension running through the protein rather than a match.
+* **The only two alphabets that get anywhere near the corrected threshold are `sdm12` and
+  `hsdm17`**, both 12 or more classes, both finding the same 36-residue segment, and
+  section 6e shows what that segment is and is not.
+""")
+
+md(r"""
 ## 7. Citations
 
 Every paper here was looked up with the PubMed tool in this session and the metadata it
@@ -765,12 +921,23 @@ Claim sentences:
   do**: 1.91 Å backbone RMSD against a median of 1.07 Å for 10 other 7-residue P66 loops,
   and in the whole-fold superposition its centre lands 55 Å from the centre of the face,
   off a domain only 45 Å across at its widest.
-* **kmerseek's silence here is forced, and carries no weight either way**: none of the 326
-  shared k-mers touches the loop across the 16 alphabets and 27 settings PR 96 searched,
-  and at every one of those settings no k-mer covering the loop occurs in CD47 at all. 8 of
-  19 alphabets write the loop's seven polar residues as one repeated class; in the other 11
-  the string varies but its k-mers are absent from CD47 anyway. The zero says where the
-  sweep looked, not whether the mimicry is real.
+* **kmerseek's silence on exact k-mers is forced, and carries no weight either way**: none
+  of the 326 shared k-mers touches the loop across the 16 alphabets and 27 settings PR 96
+  searched, and at every one of those settings no k-mer covering the loop occurs in CD47 at
+  all. 8 of 19 alphabets write the loop's seven polar residues as one repeated class; in the
+  other 11 the string varies but its k-mers are almost all absent from CD47 anyway (3
+  k-mers in total, all at k = 5). The zero says where the sweep looked, not whether the
+  mimicry is real.
+* **Seed-and-extend finds one real sequence similarity, and it is not the loop.** `hsdm17`
+  and `sdm12` independently find a 36-residue ungapped segment, P66 197-232 against CD47
+  109-144, 92% inside the ectodomain and covering 9 of the 21 SIRPalpha-face residues. It
+  passes a prespecified test: 0 of 437 human proteins matched to CD47 on length and acidic
+  fraction reach its score, p < 0.002. But splitting the same background by column, CD47
+  scores 5.0 on the 29 flanking columns where no matched protein reaches it, and 1.0 on the
+  loop's 7 columns where **all 12 matched proteins that reach the loop beat it**, median
+  3.5. CD47 is the best of 438 on the part of the segment the claim is not about and the
+  worst of 13 on the part it is. A convergent functional mimic should be strongest where
+  the function is, so this counts mildly against the loop rather than for it.
 
 ### The strongest argument against this result
 
@@ -790,6 +957,11 @@ Three things limit how far that objection goes, and none of them removes it:
    the same bad model, so whatever the model gets wrong, it gets wrong for all of them.
 3. The paper's own figure cites an AlphaFold2 model of P66 for the same loop. If the model
    is too poor to test the claim, it is also too poor to have supported it.
+
+The sequence side adds one thing the structure cannot: the P66 197-232 similarity to CD47
+109-144 is real, specific against a matched background, and strongest 5 to 24 residues away
+from the loop. Whatever it is, it is not the claim, and it would be worth a look on its own
+terms.
 
 The way to settle this is a better structure, not a better analysis: an experimental P66
 structure, or a model built with a deeper alignment than the AlphaFold database entry
