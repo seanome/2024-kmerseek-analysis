@@ -188,6 +188,15 @@ def cmd_extract_targets(targets_path, max_evalue, out_dir, *paths):
         out = os.path.join(out_dir, os.path.basename(path).replace(".regions.csv.zst", ".csv.gz"))
         proc = subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE, universal_newlines=True)
         header = next(csv.reader([proc.stdout.readline()]))
+        if any(k not in header for k in KEEP):
+            # A search refused for lack of a Karlin-Altschul fit writes a 3-column header and
+            # no rows; anything else without the columns is an error.
+            rest = sum(1 for _ in proc.stdout)
+            proc.wait()
+            if rest:
+                sys.exit("%s: %d rows but columns missing from the header %s" % (path, rest, header))
+            print("%s: no regions (search refused), skipped" % os.path.basename(path))
+            continue
         idx = {k: header.index(k) for k in KEEP}
         i_t, i_ev = idx["target_name"], idx["region_evalue"]
         n_in = n_out = 0
