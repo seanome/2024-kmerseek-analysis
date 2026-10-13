@@ -93,3 +93,36 @@ def test_jobs_lists_only_runs_under_the_folder(tmp_path):
 
 def test_empty_queue(tmp_path):
     assert run(tmp_path, []).strip() == "no jobs in the queue"
+
+
+def test_a_task_under_a_heads_launch_folder_goes_with_that_head(tmp_path):
+    # Sherlock, 2026-10-13: the head ran in 280-time-split with `-w hashcheck/work`, and
+    # nf-running reported a head with no tasks plus tasks with no head. Neither path exists
+    # here, so the process name comes from the job name, and no clone is found.
+    launch = "/scratch/users/olgabot/280-time-split"
+    task = launch + "/hashcheck/work/ec/2abc07"
+    old = "/scratch/users/olgabot/old-run/work/aa/11"
+    rows = [f"47683072|R|1:02:03|None|{launch}|nfdrv-280-hashcheck",
+            f"47683476|R|10:00|None|{task}|nf-hashCheck_(pfam33)",
+            f"47690000|PD|0:00|Priority|{old}|nf-kmers"]
+    out = run(tmp_path, rows)
+    assert "\n3. " not in out                            # one live run, one left over
+    live = out.split("run 280-time-split\n")[1].split("\n\n")[0]
+    assert "folder  /scratch/users/olgabot/280-time-split" in live
+    assert "work    hashcheck/work" in live
+    assert "head    job 47683072, running for 1:02:03" in live
+    assert "tasks   1 running" in live and "hashCheck" in live
+    assert "clone   /scratch/users/olgabot\n" not in out
+    assert "run hashcheck" not in out
+    # A task no head can own is still flagged.
+    left = out.split("run old-run\n")[1]
+    assert "head    none in the queue: these tasks are left over" in left
+    assert out.count("left over") == 1
+
+
+def test_a_task_goes_with_the_head_named_after_its_run_folder(tmp_path):
+    rows = [f"1|R|5:00|None|{tmp_path}/launch|nfdrv-hashcheck",
+            f"2|R|1:00|None|{tmp_path}/elsewhere/hashcheck/work/ab/cd|nf-hashCheck_(x)"]
+    out = run(tmp_path, rows)
+    assert "\n2. " not in out and "left over" not in out
+    assert "head    job 1, running" in out and "tasks   1 running" in out

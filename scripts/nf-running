@@ -16,6 +16,15 @@ A head is a job named nfdrv-<run> (tools/nf-head). A relaunch waiting for a head
 nfrelaunch-<run>. Tasks whose run has no head in the queue are flagged: nothing will collect
 their results, and a later -resume can collide with them on storeDir.
 
+A head launched with `-w <subdir>/work` puts its tasks under <launch folder>/<subdir>/work, so
+a task's run folder can sit below its head's launch folder instead of being it. A task goes
+with the head whose launch folder is its run folder; failing that, with the head whose
+nfdrv-<run> name is the run folder's name; failing that, with the head whose launch folder
+holds the run folder (the deepest one, if several do). Only a task no head can own is left
+over. On 2026-10-13 head nfdrv-280-hashcheck ran in $SCRATCH/280-time-split with its tasks in
+280-time-split/hashcheck/work, and the run was reported as a head with no tasks plus tasks
+with no head, which reads as "scancel these".
+
 TIME is squeue's [DD-[HH:]]MM:SS: `4:03` is four minutes, `1-02:19:10` is a day and two hours.
 
 Runs on the login node's bare python3 (3.6 on Sherlock), standard library only.
@@ -77,13 +86,64 @@ def classify(job):
     return None, "other"
 
 
+def owner(run_dir, heads):
+    """Launch folder of the head that owns tasks in `run_dir`, or None. `heads` maps each
+    head's launch folder to its job."""
+    if run_dir in heads:
+        return run_dir
+    base = os.path.basename(run_dir)
+    for launch, h in heads.items():
+        if h["name"].startswith("nfdrv-") and h["name"][len("nfdrv-"):] == base:
+            return launch
+    above = [launch for launch in heads if run_dir.startswith(launch.rstrip("/") + "/")]
+    return max(above, key=len) if above else None
+
+
+def group_jobs(jobs):
+    """(runs, relaunch, other). runs maps a run folder (the head's launch folder, when there
+    is a head) to {"head": job or None, "tasks": [jobs], "work": {task run folders}}."""
+    runs = OrderedDict()
+    relaunch = {}
+    other = []
+    tasks = []
+    for j in jobs:
+        run_dir, role = classify(j)
+        if role == "other":
+            other.append(j)
+        elif role == "relaunch":
+            relaunch[run_dir.split(":", 1)[1]] = j
+        elif role == "head":
+            runs.setdefault(run_dir, {"head": None, "tasks": [], "work": set()})["head"] = j
+        else:
+            tasks.append((run_dir, j))
+    heads = {d: r["head"] for d, r in runs.items()}
+    for run_dir, j in tasks:
+        key = owner(run_dir, heads) or run_dir
+        r = runs.setdefault(key, {"head": None, "tasks": [], "work": set()})
+        r["tasks"].append(j)
+        r["work"].add(run_dir)
+    return runs, relaunch, other
+
+
+def find_clone(d):
+    """The nearest folder at or above `d` holding .git, or None."""
+    while d and d != os.path.dirname(d):
+        if os.path.exists(os.path.join(d, ".git")):
+            return d
+        d = os.path.dirname(d)
+    return None
+
+
 def describe_run(run_dir):
-    """(clone, pipeline, run) from <clone>/nextflow-runs/<pipeline>/<run...>."""
+    """(clone, pipeline, run) from <clone>/nextflow-runs/<pipeline>/<run...>. Outside a
+    nextflow-runs folder the clone is the git clone holding run_dir, or None, and the
+    pipeline is None: a run launched in $SCRATCH/280-time-split has no clone, and its parent
+    folder ($SCRATCH) is not one."""
     if "/nextflow-runs/" in run_dir:
         clone, rest = run_dir.split("/nextflow-runs/", 1)
         pipeline, _, run = rest.partition("/")
         return clone, pipeline, run or "(the pipeline folder itself)"
-    return os.path.dirname(run_dir), "?", os.path.basename(run_dir)
+    return find_clone(run_dir), None, os.path.basename(run_dir)
 
 
 def states(jobs):
@@ -105,33 +165,28 @@ def main():
         return
     print("{} job(s) in the queue: {}".format(len(jobs), states(jobs)))
 
-    runs = OrderedDict()
-    relaunch = {}
-    other = []
-    for j in jobs:
-        run_dir, role = classify(j)
-        if role == "other":
-            other.append(j)
-        elif role == "relaunch":
-            relaunch[run_dir.split(":", 1)[1]] = j
-        else:
-            runs.setdefault(run_dir, {"head": None, "tasks": []})
-            if role == "head":
-                runs[run_dir]["head"] = j
-            else:
-                runs[run_dir]["tasks"].append(j)
+    runs, relaunch, other = group_jobs(jobs)
 
     for i, (run_dir, r) in enumerate(sorted(runs.items()), 1):
         clone, pipeline, run = describe_run(run_dir)
-        print("\n{}. {}, run {}".format(i, pipeline, run))
-        print("   clone   {}".format(clone))
         h = r["head"]
+        print("\n{}. {}run {}".format(i, pipeline + ", " if pipeline else "", run))
+        if pipeline:
+            print("   clone   {}".format(clone))
+        else:
+            print("   folder  {}".format(run_dir))
+            if clone:
+                print("   clone   {}".format(clone))
+        for w in sorted(r["work"] - {run_dir}):
+            print("   work    {}/work".format(os.path.relpath(w, run_dir)))
         if h:
             print("   head    job {}, {} for {}".format(h["id"], STATE_WORDS.get(h["state"], h["state"]), h["time"]))
         else:
             print("   head    none in the queue: these tasks are left over from a run that has "
                   "stopped, and nothing will collect them")
         waiting = relaunch.pop(os.path.basename(run_dir), None)
+        if waiting is None and h and h["name"].startswith("nfdrv-"):
+            waiting = relaunch.pop(h["name"][len("nfdrv-"):], None)
         if waiting:
             print("   relaunch queued as job {} ({}), waiting to start a new head".format(
                 waiting["id"], STATE_WORDS.get(waiting["state"], waiting["state"])))
