@@ -308,7 +308,7 @@ process searchAndScore {
     def keep = params.publish_pairs ? "--pairs-parquet ${slug}.pairs.parquet" : ''
     def score = "score_scope40_setting.py --domains ${domains} --ref-rocx ${ref_rocx} --utils ${utils} " +
                 "--alphabet ${alphabet} --ksize ${ksize} --setting ${setting} --penalty '${penalty}' " +
-                "--out ${slug}.auc.tsv" +
+                "--out ${slug}.auc.tsv --class-level" +
                 (params.pair_identity ? " --pair-identity ${identity} --bands-out ${slug}.bands.tsv" : '')
     """
     set -euo pipefail

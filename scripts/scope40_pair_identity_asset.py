@@ -10,8 +10,8 @@ residues over the columns USalign aligned by structure, so it does not depend on
 alignment.
 
 The sampled pairs are unordered. kmerseek searches in one direction, so each pair is written
-twice, once with each domain as the query. The different-fold pairs are left out: the
-pipeline already treats every different-fold hit as a false positive.
+twice, once with each domain as the query. The different-fold pairs in the same class are
+the class-level true positives (scored against the first different-class hit).
 
 Output: nextflow-runs/scope40-alphabet-ksize-v040/assets/scope40_pair_identity.tsv.gz
   query_domain, target_domain, category, seqid_ali
@@ -29,7 +29,8 @@ REPO = Path(__file__).resolve().parents[1]
 SRC = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / "data/scope/230_scope40_pair_alignments.parquet"
 SRC_SHA256 = "4d99389f11c4dc5340d94cb4320e2c8c0f746f47ffbb623a3b37e633214f6ef7"
 OUT = REPO / "nextflow-runs/scope40-alphabet-ksize-v040/assets/scope40_pair_identity.tsv.gz"
-KEEP = ["same_family", "same_superfamily_diff_family", "same_fold_diff_superfamily"]
+KEEP = ["same_family", "same_superfamily_diff_family", "same_fold_diff_superfamily",
+        "diff_fold_same_class"]
 
 digest = hashlib.sha256(SRC.read_bytes()).hexdigest()
 if digest != SRC_SHA256:

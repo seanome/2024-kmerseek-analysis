@@ -14,6 +14,14 @@ any other tie order gives an AUC between the two. Each is reported two ways, as 
 notebooks 066 and 075:
   _all  over the queries with at least one same-family hit (n_queries_all)
   _ref  over the 5_713 FoldSeek SCOPe40 queries; one kmerseek returns nothing for scores 0
+A query's sensitivity divides by the true positives kmerseek reported for it (as in
+eval_tsv_to_rocx). FoldSeek's .rocx divides by every true positive in the database
+(d1b9ha_: SFAM 0.992366 = 129 / (143 - 13)), so auc_ref_db and auc_ref_db_optimistic divide
+by the database counts too, excluding the query: family members, superfamily members outside
+the family, fold members outside the superfamily, class members outside the fold.
+With --class-level, a fourth level, class: true positive = same SCOP class, different fold;
+false positive = a different class; a same-fold hit is ignored. It has no FoldSeek or MMseqs2
+counterpart (the TEA .rocx files stop at fold).
 With --pair-identity, each score column is also scored on a set of aligned SCOPe40 pairs
 split by sequence identity (assets/scope40_pair_identity.tsv.gz, notebook 230's USalign
 pairs, each in both directions). Per score column, pair class and identity band it writes
@@ -58,6 +66,51 @@ SCORES = {
     "region_n_chained": False,
 }
 LEVELS = {"FAM": "family", "SFAM": "superfamily", "FOLD": "fold"}
+DB_COUNT = {"FAM": "db_family", "SFAM": "db_superfamily", "FOLD": "db_fold", "CLASS": "db_class"}
+
+
+def database_counts(dom):
+    """Per domain: true positives in the database at each level, the query itself left out."""
+    n = {lvl: pl.len().over(f"scop_{lvl}") for lvl in ("family", "superfamily", "fold", "class")}
+    return dom.select(
+        pl.col("domain_id").alias("NAME"),
+        (n["family"] - 1).alias("db_family"),
+        (n["superfamily"] - n["family"]).alias("db_superfamily"),
+        (n["fold"] - n["superfamily"]).alias("db_fold"),
+        (n["class"] - n["fold"]).alias("db_class"),
+    )
+
+
+def class_rocx(ranked, col, smaller_first, tie):
+    """Per query, class-level sensitivity to the first different-class hit.
+
+    TP = same class, different fold; FP = different class; same-fold hits are skipped. Columns
+    follow eval_tsv_to_rocx: CLASS divides by the class TPs kmerseek reported, CLASSTP is the
+    number of TPs ranked above the first FP (all of them when there is no FP).
+    """
+    r = (ranked.filter(~pl.col("same_fold") | ~pl.col("same_class"))
+         .sort(["query_domain", col, "same_class", "target_domain"],
+               descending=[False, not smaller_first, tie == "optimistic", False],
+               nulls_last=True, maintain_order=True))
+    tp = pl.col("same_class") & ~pl.col("same_fold")
+    before = (~pl.col("same_class")).cum_sum() == 0
+    st = r.group_by("query_domain", maintain_order=True).agg(
+        tp.sum().alias("n"), (~pl.col("same_class")).any().alias("has_fp"), (tp & before).sum().alias("tp_bfp"))
+    return st.select(
+        pl.col("query_domain").cast(pl.Utf8).alias("NAME"),
+        pl.when(pl.col("n") == 0).then(0.0).when(~pl.col("has_fp")).then(1.0)
+        .otherwise(pl.col("tp_bfp") / pl.col("n")).alias("CLASS"),
+        pl.col("tp_bfp").cast(pl.Float64).alias("CLASSTP"),
+    )
+
+
+def with_db(r, counts, short):
+    """Add <short>_db: the TPs ranked above the first FP over the database count."""
+    tp = pl.col("CLASSTP") if short == "CLASS" else pl.col(short) * pl.col(f"{short}CNT")
+    return (r.join(counts, on="NAME", how="left")
+            .with_columns(pl.when(pl.col(DB_COUNT[short]) > 0)
+                          .then((tp / pl.col(DB_COUNT[short])).clip(0.0, 1.0)).otherwise(0.0)
+                          .fill_null(0.0).alias(f"{short}_db")))
 # Identity bands, as in the identity-axis tables of the midi run: lower edge included.
 BAND_EDGES = [0.0, 0.2, 0.3, 0.4, 0.6]
 BAND_NAMES = ["0-20%", "20-30%", "30-40%", "40-60%", "60-100%"]
@@ -79,17 +132,24 @@ def band_rows(df, ident, col, smaller_first):
     """Per pair class and identity band: pairs, reported, ranked above the first false positive.
 
     A pair is above the first false positive when its score is finite and strictly better than
-    the best finite score of any different-fold hit of the same query, or the query has no
-    finite different-fold hit. Equal scores count against kmerseek.
+    the best finite score of any false-positive hit of the same query, or the query has none:
+    a different-fold hit, or for a same-class different-fold pair a different-class hit.
+    Equal scores count against kmerseek.
     """
     better = (lambda a, b: a < b) if smaller_first else (lambda a, b: a > b)
     s = pl.col(col)
-    fp = (df.filter(~pl.col("same_fold"), s.is_finite())
-          .group_by("query_domain")
-          .agg((s.min() if smaller_first else s.max()).alias("fp_score")))
+    best = s.min() if smaller_first else s.max()
+    fp = (df.filter(~pl.col("same_fold"), s.is_finite()).group_by("query_domain")
+          .agg(best.alias("fp_fold"))
+          .join(df.filter(~pl.col("same_class"), s.is_finite()).group_by("query_domain")
+                .agg(best.alias("fp_class")), on="query_domain", how="full", coalesce=True))
     hits = df.select("query_domain", "target_domain", s.alias("score"))
     j = (ident.join(hits, on=["query_domain", "target_domain"], how="left")
          .join(fp, on="query_domain", how="left")
+         # Class pairs (different fold) are cross-fold hits themselves: their false positive
+         # is the first hit of a different class.
+         .with_columns(pl.when(pl.col("category") == "diff_fold_same_class").then(pl.col("fp_class"))
+                       .otherwise(pl.col("fp_fold")).alias("fp_score"))
          .with_columns(
              pl.col("score").is_not_null().alias("reported"),
              (pl.col("score").is_finite().fill_null(False)
@@ -136,6 +196,7 @@ def main():
     p.add_argument("--pairs-parquet", help="also write the merged pair table here")
     p.add_argument("--pair-identity", help="aligned pairs with seqid_ali, to score by identity band")
     p.add_argument("--bands-out", help="where the identity-band table goes (with --pair-identity)")
+    p.add_argument("--class-level", action="store_true", help="also score the class level")
     a = p.parse_args()
     if a.print_directions:
         print("column,best")
@@ -216,6 +277,7 @@ def main():
     keep = ["query_domain", "target_domain", "q_scop_id"] + [f"same_{l}" for l in levels]
 
     ident = read_identity(a.pair_identity, domain) if a.pair_identity else None
+    counts = database_counts(dom)
     rows, band = [], []
     for col in cols[2:]:
         info = {**base, "score": col, "smaller_first": SCORES[col], "n_rows": n_rows,
@@ -245,13 +307,29 @@ def main():
         def auc(r, short):
             return su.sensitivity_stats(r, short)[2] if r.height else 0.0
 
-        for short, level in LEVELS.items():
+        levels = dict(LEVELS)
+        if a.class_level:
+            levels["CLASS"] = "class"
+            cls = {}
+            for tie, (r, _) in rocx.items():
+                c = class_rocx(ranked, col, SCORES[col], tie).join(r.select("NAME"), on="NAME", how="semi")
+                # rocx_restrict gives a query kmerseek missed a CLASS of 0; its count joins back as 0.
+                cr = (su.rocx_restrict(c.select("NAME", pl.lit("").alias("SCOP"), "CLASS"), ref)
+                      .join(c.select("NAME", "CLASSTP"), on="NAME", how="left").fill_null(0.0))
+                cls[tie] = (c, cr)
+        for short, level in levels.items():
+            if short == "CLASS":
+                (ra, rr), (oa, orr) = cls["pessimistic"], cls["optimistic"]
+            else:
+                ra, rr, oa, orr = r_all, r_ref, o_all, o_ref
             rows.append({**info, "status": "ok", "n_finite": finite.len(), "level": level,
-                         "auc_all": auc(r_all, short), "auc_all_optimistic": auc(o_all, short),
-                         "n_queries_all": r_all.height,
-                         "auc_ref": auc(r_ref, short), "auc_ref_optimistic": auc(o_ref, short),
-                         "n_queries_ref": r_ref.height,
-                         "n_ref_with_hits": r_all.filter(pl.col("NAME").is_in(ref)).height})
+                         "auc_all": auc(ra, short), "auc_all_optimistic": auc(oa, short),
+                         "n_queries_all": ra.height,
+                         "auc_ref": auc(rr, short), "auc_ref_optimistic": auc(orr, short),
+                         "n_queries_ref": rr.height,
+                         "n_ref_with_hits": r_all.filter(pl.col("NAME").is_in(ref)).height,
+                         "auc_ref_db": auc(with_db(rr, counts, short), f"{short}_db"),
+                         "auc_ref_db_optimistic": auc(with_db(orr, counts, short), f"{short}_db")})
     write(rows, band)
 
 
