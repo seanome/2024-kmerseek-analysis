@@ -112,3 +112,21 @@ def test_opaque_figure_changes_less_than_fast_octree(tmp_path):
 
     octree = before.convert("RGBA").quantize(256, method=Image.Quantize.FASTOCTREE)
     assert change(Image.open(path)) < change(octree) / 2
+
+
+def test_figure_with_colour_bar_is_left_alone(tmp_path):
+    # At 256 colours a continuous colour bar shows steps, so the figure stays as it is.
+    fig, ax = plt.subplots(figsize=(4, 3))
+    mesh = ax.pcolormesh([[i + j for i in range(8)] for j in range(6)], cmap="viridis")
+    fig.colorbar(mesh)
+    path = tmp_path / "heatmap.png"
+    fig.savefig(path, dpi=300)
+    original = path.read_bytes()
+    assert shrink_png.colour_bar_shades(Image.open(path)) >= shrink_png.MIN_COLOUR_BAR_SHADES
+    shrink_png.main([str(path)])
+    assert path.read_bytes() == original
+
+
+def test_line_plot_is_not_a_colour_bar():
+    im = Image.open(io.BytesIO(figure_png(dpi=300)))
+    assert shrink_png.colour_bar_shades(im) < shrink_png.MIN_COLOUR_BAR_SHADES
