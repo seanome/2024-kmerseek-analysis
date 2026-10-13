@@ -689,8 +689,8 @@ residue that touches SIRPalpha, a green bar is an identical residue.
 109-144, which is 92% inside CD47's ectodomain and covers 9 of the 21 face residues
 (115 and 117-124, the face's longest run). It covers the whole loop including both
 aspartates, and opposite `QENDKDT` sits `CEVTELT`, 5 residues of which touch SIRPalpha.
-`sdm12` independently finds the same segment. Both are acidic stretches, which is what the
-claim is about.
+`sdm12` finds the same segment, though section 6j shows the two are not independent of each
+other. Both sides are stretches with charged residues, which is what the claim is about.
 
 **Why it still is not support.** Four reasons, in order of how much they matter:
 
@@ -1079,6 +1079,147 @@ something other than segments like this one.
 """)
 
 md(r"""
+## 6j. Why funcgroups8 fails at 8 classes, and whether the corroboration is independent
+
+`funcgroups8` has 8 classes, more than `dayhoff6` or `gbmr7`, and calls a random pair of
+residues a match only 14.5% of the time, which is rarer than `dayhoff6` at 19%. By both of
+those measures it should do well, and it sits at p = 0.57. Class count is not what decides
+this, and neither is the chance rate on its own. What decides it is whether an alphabet
+happens to merge the particular residue pairs this segment contains.
+""")
+
+code(r"""
+merges = pl.read_csv(DATA / "30_segment_merges_by_alphabet.csv")
+pairs = pl.read_csv(DATA / "31_segment_matched_pairs_by_alphabet.csv")
+print("Matched columns against what chance gives, per alphabet:")
+print(merges.select("alphabet", "n_classes", "chance_a_random_pair_matches",
+                    "columns_called_a_match", "expected_by_chance",
+                    "excess_over_chance", "of_those_non_identical",
+                    "of_those_acidic_against_basic", "p_value",
+                    "corroborates_at_0_05"))
+print("\nThe non-identical pairs each alphabet accepts in this segment:")
+for name in ("funcgroups8", "sdm12", "hsdm17", "protein20", "gbmr7"):
+    sub = pairs.filter((pl.col("alphabet") == name) & ~pl.col("identical"))
+    print(f"  {name:12} {', '.join(sub['pair'].to_list()) or 'none'}")
+sdm12 = set(pairs.filter((pl.col("alphabet") == "sdm12") & ~pl.col("identical"))["pair"])
+hsdm17 = set(pairs.filter((pl.col("alphabet") == "hsdm17") & ~pl.col("identical"))["pair"])
+print(f"\nsdm12 and hsdm17 share {len(sdm12 & hsdm17)} of "
+      f"{len(sdm12 | hsdm17)} non-identical pairs: {', '.join(sorted(sdm12 & hsdm17))}")
+show("276r_which_merges_carry_the_segment", aspect=0.42)
+""")
+
+md(r"""
+**Figure 276r.** What each alphabet gains over chance on this segment, and which merges
+give it. `figures/276r_which_merges_carry_the_segment.png`.
+
+**Why `funcgroups8` fails.** The segment has 10 identical columns. On top of those,
+`funcgroups8` accepts only three non-identical pairs, all of them `I` against `L` or `V`:
+13 matched columns against 5.2 expected. `sdm12` and `hsdm17` accept the same I/L/V pairs
+*and* `K` against `E`, which adds three more columns: 16 against 4.1 and 16 against 2.5.
+So `funcgroups8` fails for the most ordinary reason in biochemistry: it keeps `DE` and `KR`
+in separate classes, as a functional-group alphabet should, and the signal in this segment
+is three columns of a P66 lysine against a CD47 glutamate.
+
+That is also worth saying the other way round. The segment pairs P66's basic residues
+against CD47's acidic ones, which is what section 6g found compositionally: P66 197-232 is
+13.9% K+R and CD47 109-144 is 16.7% D+E. An alphabet only sees that as similarity if it
+merges a basic residue with an acidic one, which is not a thing most alphabets do.
+
+**And the two alphabets that cleared Bonferroni are not independent.** `sdm12` and `hsdm17`
+accept **exactly the same four** non-identical pairs: `I-L`, `I-V`, `L-I` and `K-E`. They
+are the same 16 columns, scored twice. Both come from the same paper, Prlic et al. 2000,
+which is where the `KE` and `KER` merges come from. So "2 of 19 clear Bonferroni" is one
+piece of evidence counted twice, not two.
+
+**There is a second, cleaner line of evidence, and it needs no reduced alphabet at all.**
+`protein20`, `uniprot18` and `wass14` corroborate the segment while accepting **zero**
+non-identical pairs: they are scoring the 10 identical residues alone, against a chance rate
+of 5 to 8%, so 10 identities where about 2 are expected. `protein20` reaches p = 0.005 that
+way. That line does not depend on any alphabet's choices, and it is the one worth carrying
+forward: **the segment has 10 identical residues in 36 columns where chance gives about 2,
+and 435 of 437 matched human proteins do no better.**
+""")
+
+md(r"""
+## 6k. Would an E-value, an enrichment or a TF-IDF weighting see any of this better?
+
+Every score so far counts a matched column as +1 whatever it is. kmerseek's own values do
+not: it ranks by E-value, by enrichment and by summed inverse document frequency, so a rare
+k-mer counts for more than a common one. Three answers, and the third one explains
+everything above it.
+
+**Enrichment is already here under another name.** Observed matched columns against the
+columns chance gives is observed over expected, which is what section 6j prints. For the
+segment it runs from 1.3x in `hp_kyte_doolittle2` to 6.4x in `hsdm17`.
+
+**An E-value would add nothing.** A Karlin-Altschul E-value is a parametric stand-in for a
+null, and this notebook already has the null empirically: 437 real human proteins matched to
+CD47 on length and acidic fraction. Fitting a distribution to approximate a null that has
+been measured can only lose accuracy, and this project has twice refused a KA fit on data
+this thin. So the empirical p-value is used and the E-value is not computed.
+
+**TF-IDF is the one that could have changed the answer, and it cannot, for a reason that
+turns out to be the deepest thing in this notebook.**
+""")
+
+code(r"""
+idf_seg = pl.read_csv(DATA / "32_idf_weighted_segment.csv")
+idf_loop = pl.read_csv(DATA / "33_loop_kmer_idf.csv")
+print("Three metrics on the segment, 5-mers, corpus = 19_705 canonical human proteins:")
+print(idf_seg.select("alphabet", "n_classes", "enrichment_observed_matched_columns",
+                     "enrichment_expected", "enrichment_ratio",
+                     "n_matched_kmers_in_segment", "summed_idf_on_cd47",
+                     "background_max_summed_idf", "unweighted_p_value",
+                     "idf_weighted_p_value"))
+print("\nHow rare the loop's own 5-mers are, and how many are in CD47 at all:")
+print(idf_loop)
+show("276s_idf_weighting", aspect=0.36)
+""")
+
+md(r"""
+**Figure 276s.** What an IDF weighting does. `figures/276s_idf_weighting.png`.
+
+**The segment contains no exactly matching 5-mer, in any alphabet.** Its 10 identities are
+scattered: written as a match-mismatch string, the longest run of consecutive matching
+columns is 3 in `protein20`, 4 in `hsdm17` and `sdm12`, and still only 4 in the two-letter
+`hp_pbotc_1st_ed2` even though 24 of its 36 columns match.
+
+```
+protein20          111000100001000010000010000000100101   10/36, longest run 3
+hsdm17             111000100101000110001010100000101111   16/36, longest run 4
+hp_pbotc_1st_ed2   111010101101001111011011100011101111   24/36, longest run 4
+```
+
+So the summed IDF of the segment's matching 5-mers is **0.00 in all six alphabets tested**,
+against a matched background that slides to any offset and reaches 0.31 to 12.9. The
+IDF-weighted p-value is **1.00 everywhere**, and IDF weighting flips `protein20`, `hsdm17`
+and `sdm12` from corroborating to not.
+
+**Why that is the deepest point here, not a technicality.** IDF reweights a k-mer that exact
+matching already found. It is a ranking metric, not a detecting one. With no matched k-mer
+there is nothing to weight, and no weighting scheme, however clever, can recover a match
+that was never made. The same goes for the E-value and the enrichment: all three are ways of
+scoring hits, and the problem on this pair is that at k of 5 or more there are no hits.
+
+This also explains two things that were left unexplained earlier:
+
+* **Why seed-and-extend worked only at seed length 4.** The longest run of matching columns
+  in the segment is 4. A seed of 5 cannot be placed anywhere in it, which is exactly what
+  the sweep found: `hsdm17` reaches the loop at seed 4 and at no longer seed.
+* **Why PR 96 found nothing, at the deepest level.** Not the loop's composition, not the
+  alphabet, not the k-size schedule. A similarity made of 10 scattered identities with no
+  run longer than 3 or 4 is invisible to exact k-mer matching at any k above 4, in every
+  alphabet, whatever it is weighted by.
+
+**And the loop's k-mers are rare, they are simply not in CD47.** In `protein20` the loop's
+5-mers have a median IDF of 8.79 against a ceiling of 9.89, so they are nearly unique in the
+human proteome; in `hp_pbotc_1st_ed2` the median is 0.02, which is as common as a 5-mer gets.
+Either way, **11 of 11 are absent from CD47** in every alphabet except the two-letter one,
+where all 11 are present and worthless. A rarity-weighted metric would rank the loop's
+k-mers highly if they were shared. They are not.
+""")
+
+md(r"""
 ## 7. Citations
 
 Every paper here was looked up with the PubMed tool in this session and the metadata it
@@ -1135,8 +1276,11 @@ Claim sentences:
   k-mers in total, all at k = 5). The zero says where the sweep looked, not whether the
   mimicry is real.
 * **Seed-and-extend finds one real sequence similarity, and it is not the loop.** `hsdm17`
-  and `sdm12` independently find a 36-residue ungapped segment, P66 197-232 against CD47
-  109-144, 92% inside the ectodomain and covering 9 of the 21 SIRPalpha-face residues. It
+  and `sdm12` both find a 36-residue ungapped segment, P66 197-232 against CD47
+  109-144, 92% inside the ectodomain and covering 9 of the 21 SIRPalpha-face residues.
+  The two are not independent of each other: section 6j shows they accept the same four
+  non-identical residue pairs and the segment's signal over chance is carried by one of
+  them, `K` against `E`. It
   passes a prespecified test: 0 of 437 human proteins matched to CD47 on length and acidic
   fraction reach its score, p < 0.002. But splitting the same background by column, CD47
   scores 5.0 on the 29 flanking columns where no matched protein reaches it, and 1.0 on the
@@ -1167,7 +1311,8 @@ Three things limit how far that objection goes, and none of them removes it:
 The sequence side adds one thing the structure cannot: the P66 197-232 similarity to CD47
 109-144 is real, specific against a matched background (0 of 437 matched human proteins and
 0 of 239 immunoglobulin domains reach it), one of two such regions in P66, corroborated
-independently by 7 of 19 alphabets and by none with fewer than 7 classes, and strongest 5 to
+by 7 of 19 alphabets and by none with fewer than 7 classes, though not by 7 independent
+routes, and strongest 5 to
 24 residues away from the loop. Whatever it is, it is not the claim, and it would be worth a look on its own
 terms.
 
