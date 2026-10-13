@@ -653,9 +653,75 @@ pf.save(fig, FIG_DIR / f"{FIG_STEM}_identity_under_20", formats=("pdf", "png"))
 """)
 
 md(r"""
-## 8. Answers to the four decisions
+## 8. Chance control: the same searches with shuffled queries
 
-The numbers each decision rests on, from the tables and figures of sections 1-7.
+Section 7 found one place where the coarse and HP alphabets lead: same-class pairs in a
+different fold, under 20% identity. Here every query is shuffled on its own, keeping its
+residue and dipeptide counts (so its H/P composition), and searched against the real
+database with the same 148 searches as step 2 (head jobs 47646678 and 47665023, 2026-10-13,
+seed 1, `scope40-lowcomplexity-null/bin/shuffle_fasta.py`). A shuffled query keeps its name and
+SCOP labels, so every pair it ranks above its first false positive is chance.
+
+Decision, written before the run: an alphabet's lead at a level counts only if its real count
+is well above its shuffled count at the same search; a real count close to the shuffled count
+means the hits come from composition, not from the order of residues.
+
+The figure shows, under 20% identity, each alphabet's search with the most real pairs above the
+first false positive (filled) and the same search on shuffled queries (open). That search was
+picked after seeing the real counts, which favours the real side.
+""")
+
+code(r"""
+SHUF_BANDS = Path(os.environ.get(
+    "NB277_SHUFFLED_BANDS",
+    Path.home() / "data/scope/results-scope40-alphabet-ksize-v040-shuffled-k2-seed1/scope40_v040_identity_bands.tsv"))
+print(SHUF_BANDS, "sha256", hashlib.sha256(SHUF_BANDS.read_bytes()).hexdigest())
+shuf_raw = pl.read_csv(SHUF_BANDS, separator="\t", infer_schema_length=None)
+print("queries:", shuf_raw["queries"].unique().to_list())
+shuf = shuf_raw.filter(pl.col("status") == "ok").filter(
+    (pl.col("setting").is_in(EXTENSION_SETTINGS) & (pl.col("score") == "region_evalue"))
+    | ((pl.col("setting") == "exact") & (pl.col("score") == EXACT_SCORE)))
+BAND_KEY = ["alphabet", "ksize", "setting", "category", "identity_band"]
+real_vs_shuf = (bands2.select(BAND_KEY + ["n_pairs", pl.col("n_above_first_fp").alias("above_real"),
+                                          pl.col("n_reported").alias("reported_real")])
+                .join(shuf.select(BAND_KEY + [pl.col("n_above_first_fp").alias("above_shuffled"),
+                                              pl.col("n_reported").alias("reported_shuffled")]),
+                      on=BAND_KEY, how="inner"))
+print(real_vs_shuf.select("alphabet", "ksize", "setting").unique().height, "searches in both runs")
+u20 = real_vs_shuf.filter(pl.col("identity_band") == "0-20%")
+print("Under 20% identity, pairs above the first false positive, summed over all searches")
+print(u20.group_by("category").agg(pl.col("above_real").sum(), pl.col("above_shuffled").sum(),
+                                   pl.col("reported_real").sum(), pl.col("reported_shuffled").sum())
+      .sort("category"))
+pick = u20.sort("above_real", descending=True).group_by("alphabet", "category").head(1)
+print("Each alphabet's search with the most real pairs above the first false positive")
+print(pick.select("category", "alphabet", "ksize", "setting", "n_pairs", "above_real", "above_shuffled")
+      .sort("category", "above_real", descending=[False, True]))
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, ncols=4, sharey=True)
+for ax, cat in zip(axs, CATEGORY_LABEL):
+    sub = pick.filter(pl.col("category") == cat)
+    ys = [pos[a] for a in sub["alphabet"]]
+    for r, y in zip(sub.iter_rows(named=True), ys):
+        ax.plot([r["above_shuffled"], r["above_real"]], [y, y], color=pf.GREY, lw=0.5, zorder=1)
+    ax.scatter(sub["above_real"], ys, s=12, color=pf.OKABE_ITO["blue"], zorder=3, label="real queries")
+    ax.scatter(sub["above_shuffled"], ys, s=12, facecolor="white", edgecolor=pf.OKABE_ITO["vermillion"],
+               lw=0.8, zorder=2, label="shuffled queries (chance), same search")
+    alphabet_axis(ax, pos)
+    ax.set_xlim(0, max(sub["above_real"].max(), sub["above_shuffled"].max()) * 1.15 + 1)
+    ax.set_title(f"{CATEGORY_LABEL[cat]}\n{sub['n_pairs'][0]:_} pairs", fontsize=6, loc="left")
+    ax.set_xlabel("pairs above first false positive")
+for ax, letter in zip(axs, "abcd"):
+    pf.panel_label(ax, letter, dx_pt=-95 if letter == "a" else -12)
+pf.shared_legend(fig, ncol=2, title="kmerseek 0.4.0, SCOPe40 pairs under 20% identity; queries real or "
+                                    "dipeptide-shuffled, target database real (15_177 domains)")
+pf.save(fig, FIG_DIR / f"{FIG_STEM}_shuffled_control_under_20", formats=("pdf", "png"))
+""")
+
+md(r"""
+## 9. Answers to the four decisions
+
+The numbers each decision rests on, from the tables and figures of sections 1-8.
 """)
 
 code(r"""
@@ -689,6 +755,9 @@ for cat in CATEGORY_LABEL:
     top = sub.row(0, named=True)
     hp_top = sub.filter(pl.col("alphabet").str.starts_with("hp_")).row(0, named=True)
     ref = sub.filter(pl.col("alphabet").is_in(["protein20", "mmseqs12", "sdm12"]))
+    shuf_top = pick.filter(pl.col("category") == cat, pl.col("alphabet") == top["alphabet"]).row(0, named=True)
+    print(f"4. Under 20% identity, {CATEGORY_LABEL[cat]}: shuffled queries at {top['alphabet']}'s best search: "
+          f"{shuf_top['above_shuffled']} (real {shuf_top['above_real']})")
     print(f"4. Under 20% identity, {CATEGORY_LABEL[cat]}: best {top['alphabet']} {top['n_above_first_fp']} of "
           f"{top['n_pairs']} pairs; best HP {hp_top['alphabet']} {hp_top['n_above_first_fp']}; "
           + ", ".join(f"{a} {n}" for a, n in ref.sort("alphabet").select("alphabet", "n_above_first_fp").iter_rows()))
@@ -730,11 +799,14 @@ and uses theirs.
    (hsdm17), 0.42% of the 22_410 same-superfamily pairs and 0.11% of the 5_670 same-fold pairs.
    HP is not ahead at family or superfamily. At class level (same class, different fold; 15_946
    pairs) the coarse alphabets lead: polarity4 83 pairs, hp_lehninger_c_nonpolar2 32, against 2
-   to 3 for protein20, mmseqs12 and sdm12. That passes the decision rule of section 7, but it is
-   0.5% of pairs, it has not been compared with chance (shuffled queries), and same-class pairs
-   in different folds are mostly not related by descent: class is set by the mix of helix and
-   strand. *Decision: SCOPe40 does not support the HP case for homology; the class-level signal
-   needs a shuffled-query control before it is a result.*
+   to 3 for protein20, mmseqs12 and sdm12. The shuffled-query control (section 8) removes most of
+   that lead: the same searches on shuffled queries give 52 for polarity4, 18 for
+   hp_lehninger_c_nonpolar2 and 17 for hp_lehninger2 (16 real). Summed over all searches, class
+   pairs are 552 real against 435 shuffled and fold pairs 95 against 73, while family pairs are
+   4_971 against 210 and superfamily pairs 2_717 against 268. Under 20% identity kmerseek finds
+   a few real family and superfamily pairs; at fold and class level it is close to chance, and
+   the coarse alphabets' class lead comes from composition, not residue order. *Decision:
+   SCOPe40 does not support the HP case at any level.*
 6. **Extension helps at c_opt, c_max and C = 2.** It beats exact matching on 140 of 140 pairs at
    c_max, 142 of 151 at C = 2 and 99 of 117 at c_opt (section 5).
 """)
