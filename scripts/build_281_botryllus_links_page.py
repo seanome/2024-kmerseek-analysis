@@ -18,6 +18,9 @@ files keep only target coordinates (computeDarkSet's 6-column hits), so tool hit
 the target alone. Botryllus protein lengths come from botryllus_query_lengths.tsv, written by
 scripts/fasta_lengths.py from the run's botryllus.query.fasta.
 
+Named Botryllus genes the search box knows (BHF and others, mapped to their gene models)
+come from data/botryllus_named_genes.tsv; add a row there to make a name searchable.
+
 Writes figures/281_botryllus_immune_links_page.html by default. Run with the
 2025-kmerseek-analysis interpreter.
 """
@@ -121,6 +124,8 @@ def main():
         "tools": bmu.TOOLS,
         "genes": genes,
         "gene_length": [qlen[g] for g in genes],
+        "named": [[n, m, src, qlen.get(m)] for n, m, src in
+                  pl.read_csv(ROOT / "data" / "botryllus_named_genes.tsv", separator="\t").iter_rows()],
         "alphabet_list": alphabets,
         "targets": [[a, c, desc.get(a, ""), n] for a, c, n in
                     zip(cat_targets["accession"], cat_targets["category"], cat_targets["length"])],
@@ -179,6 +184,7 @@ details.facts ul { margin: 8px 0 0; padding-left: 20px; max-width: 80ch }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg) }
 .ctl { display: flex; gap: 6px; align-items: center; font-size: 14px }
 .ctl > span { color: var(--muted) }
+.named { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 14px; max-width: 90ch }
 input[type=search] { font: inherit; font-size: 14px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--fg); width: 16em; max-width: 100% }
 button:focus-visible, input:focus-visible, summary:focus-visible, .gene:focus-visible { outline: 2px solid var(--kmerseek); outline-offset: 2px }
 .cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px }
@@ -234,7 +240,7 @@ footer p { max-width: 90ch }
   <div class="controls" role="group" aria-label="Filters">
     <div class="ctl"><span>E-value below</span><div class="seg" id="ecut"></div></div>
     <div class="ctl"><span>Found by</span><div class="seg" id="found"></div></div>
-    <div class="ctl"><label for="q" class="muted">Search</label><input id="q" type="search" placeholder="FUN020551, HLA, P15979"></div>
+    <div class="ctl"><label for="q" class="muted">Search</label><input id="q" type="search" placeholder="BHF, ABCB1, FUN020551, HLA, P15979"></div>
   </div>
 
   <section>
@@ -249,6 +255,7 @@ footer p { max-width: 90ch }
 
   <section style="display:grid;gap:8px">
     <h2 id="count"></h2>
+    <p class="named" id="named" hidden></p>
     <div class="key">
       <span><span class="only">kmerseek only</span> no tool hit on the pair, even at E = 10</span>
       <span>Each row's E-values are the best over all of that protein's targets, so one target can be kmerseek-only while the protein's other targets have tool hits; open the row to see each target.</span>
@@ -325,12 +332,18 @@ function linkOK(L) {
   return { kOK, tOK, only, t };
 }
 
+function namedMatch() {
+  const q = state.q.trim().toLowerCase();
+  return q ? D.named.filter(n => n[0].toLowerCase() === q) : [];
+}
+
 function genesNow() {
-  const q = state.q.trim().toLowerCase(), by = new Map();
+  const q = state.q.trim().toLowerCase(), by = new Map(), models = namedMatch().map(n => n[1].toLowerCase());
   for (const L of D.links) {
     const ok = linkOK(L); if (!ok) continue;
     const T = D.targets[L[1]];
-    if (q && !(D.genes[L[0]].toLowerCase().includes(q) || T[0].toLowerCase().includes(q) || T[2].toLowerCase().includes(q))) continue;
+    const gname = D.genes[L[0]].toLowerCase();
+    if (q && !(gname.includes(q) || models.includes(gname) || T[0].toLowerCase().includes(q) || T[2].toLowerCase().includes(q))) continue;
     let g = by.get(L[0]); if (!g) by.set(L[0], g = { gi: L[0], links: [], cats: new Set(), best: { kmerseek: null }, only: 0 });
     g.links.push([L, ok]); g.cats.add(T[1]); if (ok.only) g.only++;
     if (ok.kOK && (g.best.kmerseek == null || L[2][0] < g.best.kmerseek)) g.best.kmerseek = L[2][0];
@@ -433,6 +446,15 @@ function render() {
   const arr = genesNow(), body = document.getElementById("rows"); body.innerHTML = "";
   const nl = arr.reduce((s, g) => s + g.links.length, 0);
   document.getElementById("count").textContent = `${arr.length.toLocaleString()} Botryllus proteins, ${nl.toLocaleString()} links`;
+  const nm = namedMatch(), box = document.getElementById("named");
+  box.hidden = !nm.length;
+  box.innerHTML = nm.map(([name, model, src, len]) => {
+    const gi = D.genes.indexOf(model), shown = arr.some(g => g.gi === gi);
+    const status = gi < 0
+      ? `has <b>no link</b> to any protein in these categories: no kmerseek region with E &lt; 10 that passes the filters, and no phmmer, jackhmmer or mmseqs2 hit with E &le; 10.`
+      : shown ? `is listed below.` : `has links, but none with the current E-value cutoff, tool filter and categories; try E-value below 10 and Found by: Any.`;
+    return `<b>${esc(name)}</b> is gene model <span class="mono">${esc(model)}</span>${len ? ` (${len} aa)` : ""}. It ${status} <span class="muted">${esc(src)}.</span>`;
+  }).join("<br>");
   document.querySelectorAll("th[data-sort]").forEach(th => th.querySelector(".arrow").textContent = th.dataset.sort === state.sort ? (state.asc ? "▲" : "▼") : "");
   for (const g of arr.slice(0, state.shown)) {
     const tr = document.createElement("tr"); tr.className = "gene"; tr.tabIndex = 0; const open = state.open.has(g.gi);
