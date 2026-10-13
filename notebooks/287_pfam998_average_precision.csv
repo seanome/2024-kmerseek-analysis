@@ -1,0 +1,3 @@
+label,n_pairs,n_settings_factor,max_gap,n_correct_chain,n_correct_single,ap_chain,ap_single,n_pairs_chain_e_below_1,n_pairs_single_e_below_1,n_pairs_chain_of_2_or_more,ap_difference
+placement (284 rule),934198,70,200,4060,4178,0.5710196523748439,0.6038350633605238,3999,3891,7653,-0.03281541098567997
+shared Pfam family,934198,70,200,5830,5830,0.5717377169892136,0.5569553531412801,3999,3891,7653,0.014782363847933522
