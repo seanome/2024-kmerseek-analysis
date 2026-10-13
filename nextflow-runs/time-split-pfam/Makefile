@@ -8,6 +8,10 @@
 #   make pilot           Stop 2: 200 sample queries + 20 positive controls + decoys, every tool
 #   make score-partial   score the pilot searches finished so far (tune half only)
 #   make full            Stop 3: the 8_329 approved queries + decoys, every tool
+#   make seed-reference  second reference: Pfam 33.1 seed members, with counts.json
+#   make hash-check OLD=<commit>   smoke-size run of OLD, then of this checkout with -resume,
+#                        in hashcheck/: every task hash the two share is listed side by side
+#   make seed-pilot      Stop B: the pilot's queries against the seed reference
 #   make running         what is running on this account
 #
 # Code is read from this checkout; data, work dirs and outputs go to RUN_DIR. Nothing is
@@ -23,13 +27,21 @@ NF_COMMON = $(MAKEFILE_DIR)/main.nf -profile sherlock \
             --reference_dir $(RUN_DIR)/inputs/reference \
             --pfam_hmm $(RUN_DIR)/data/Pfam33.1/Pfam-A.hmm.gz \
             --index_cache $(RUN_DIR)/kmerseek_index --hmm_cache $(RUN_DIR)/hmm
+# The seed reference: its own reference dir, index tag, index cache and outdirs, so no
+# index or output of the Swiss-Prot runs can be read as a seed one. hmmscan is read from
+# the Swiss-Prot run of the same queries.
+SEED      = pfamseed33_1
+NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
+            --reference_dir $(RUN_DIR)/inputs/reference-$(SEED) --reference_tag $(SEED) \
+            --pfam_hmm $(RUN_DIR)/data/Pfam33.1/Pfam-A.hmm.gz \
+            --index_cache $(RUN_DIR)/kmerseek_index_$(SEED) --hmm_cache $(RUN_DIR)/hmm
 
 # The head runs on hns alone: the normal partition caps a job at 2 days, and with
 # "hns,normal" sbatch refuses a 7-day head (QOSMaxWallDurationPerJobLimit), as the dark set found.
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs smoke pilot score-partial full running
+.PHONY: download stop1 controls inputs smoke pilot score-partial full seed-reference hash-check seed-pilot running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -93,6 +105,42 @@ full:
 	  $(HEAD) HEAD_SESSION=nf280full HEAD_JOBNAME=nfdrv-280-full \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
 	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/full --outdir $(RUN_DIR)/results-full --run_tag full --read_test_half true -resume'
+
+# Seed members of every Pfam 33.1 family, gaps removed, one entry per distinct sequence.
+# A member that is a query, or lies inside one (any queries.fasta of any run, decoys
+# included), is dropped and counted. Sizing: the seed file is 145 MB gzipped, 1.24 million
+# members; the query k-mer index of 16_658 sequences holds about 7 million 20-mers.
+seed-reference:
+	$(SB) --job-name=280-seed-reference --cpus-per-task=2 --mem=32G --time=2:00:00 \
+	  --wrap 'set -e; O=inputs/reference-$(SEED); mkdir -p $$O; \
+	  $(PY) $(MAKEFILE_DIR)/bin/make_search_inputs.py reference-pfam-seed --seed data/Pfam33.1/Pfam-A.seed.gz \
+	    --sprot inputs/reference/reference.fasta \
+	    --queries inputs/smoke/queries.fasta inputs/pilot/queries.fasta inputs/full/queries.fasta --out $$O; \
+	  cat inputs/reference/pfam_clans_t1.tsv > $$O/pfam_clans_t1.tsv'
+
+# Do the Swiss-Prot tasks keep their hashes under this checkout? Runs the smoke set (2
+# queries + decoys, hp_pbotc_1st_ed2 k29, real Swiss-Prot reference) with the code of
+# OLD, then with this checkout's HEAD and -resume, in one launch dir with its own index
+# cache, so nothing of the pilot is read or locked. Checks out OLD in THIS clone for the
+# first run: use it only in a clone no run depends on.
+hash-check:
+	@test -n "$(OLD)" || { echo "make hash-check OLD=<commit>"; exit 1; }
+	cd $(MAKEFILE_DIR) && test -z "$$(git status --porcelain --untracked-files=no)"
+	$(SB) --job-name=nfdrv-280-hashcheck --cpus-per-task=2 --mem=8G --time=6:00:00 --partition=hns \
+	  --wrap 'set -e; ml load biology nextflow; NEW=$$(cd $(MAKEFILE_DIR) && git rev-parse HEAD); \
+	  H=$(RUN_DIR)/hashcheck; mkdir -p $$H; cd $$H; \
+	  printf "alphabet\tksize\tc_opt\nhp_pbotc_1st_ed2\t29\t1.59\n" > settings.tsv; \
+	  ARGS="$(subst --index_cache $(RUN_DIR)/kmerseek_index,--index_cache $(RUN_DIR)/hashcheck/kmerseek_index,$(NF_COMMON)) --settings settings.tsv --inputs $(RUN_DIR)/inputs/smoke --outdir $$H/results"; \
+	  (cd $(MAKEFILE_DIR) && git checkout -q $(OLD)); nextflow run $$ARGS --run_tag old; \
+	  (cd $(MAKEFILE_DIR) && git checkout -q $$NEW); nextflow run $$ARGS --run_tag new -resume; \
+	  echo "old=$(OLD) new=$$NEW"'
+
+seed-pilot:
+	cd $(RUN_DIR) && mkdir -p launch-pilot-$(SEED) && cd launch-pilot-$(SEED) && \
+	  $(HEAD) HEAD_SESSION=nf280seedpilot HEAD_JOBNAME=nfdrv-280-seed-pilot \
+	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_SEED) \
+	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot-$(SEED) \
+	    --hmmscan_dir $(RUN_DIR)/results-pilot/hmmscan --run_tag seed-pilot --queue_size 100 -resume'
 
 ## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes.
 running:

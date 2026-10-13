@@ -4,7 +4,10 @@
 // Queries: proteins with no Pfam-A domain in Pfam 33.1 (t0) that gained one by Pfam 38.2
 // (t1), plus one dipeptide-shuffled decoy each (bin/make_search_inputs.py). Every tool
 // searches Swiss-Prot as of UniProt 2019_08, the t0 reference; bin/score_transfers.py
-// scores the family each hit transfers against the t1 domains.
+// scores the family each hit transfers against the t1 domains. A second reference, the
+// Pfam 33.1 seed members (make_search_inputs.py reference-pfam-seed), runs through the same
+// processes with --reference_tag pfamseed33_1, its own --index_cache and --outdir, and
+// --hmmscan_dir pointing at the first run's hmmscan output.
 //
 // Tools:
 //   kmerseek  every alphabet, each k of its range (every other k when the range has more
@@ -30,6 +33,14 @@ params.hmm_cache       = null
 params.query_chunk_size = 2000  // the dark-set run's, so its measured search times carry over
 params.read_test_half  = false  // true only for the full run (Stop 3)
 params.only_alphabets  = ''     // comma list, for a smaller pilot; empty = every row of settings.tsv
+// Names the reference inside every kmerseek index name. Each reference also needs its own
+// --index_cache and --outdir: storeDir returns any index whose name it already holds, so a
+// second reference under the same tag and cache would be served the first one's indexes.
+params.reference_tag   = 'sprot2019_08'
+// A directory of hmmscan *.hmmscan.domtbl.gz from an earlier run of the same queries.
+// hmmscan does not depend on the reference, so a second reference reads these instead of
+// running hmmscanSearch again. Unset: hmmscan runs, as before.
+params.hmmscan_dir     = null
 
 params.kmerseek_image = 'docker.io/olgabot/kmerseek@sha256:7855826572644933e0c71926102b90174e650c144ae90b3641b760bd9f463afb'  // 0.4.0-rc5
 HMMER  = 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
@@ -180,10 +191,10 @@ process kmerseekIndex {
     path reference
 
     output:
-    tuple val(alphabet), val(ksize), val(copt), path("sprot2019_08.${alphabet}.k${ksize}.kmerseek.rocksdb")
+    tuple val(alphabet), val(ksize), val(copt), path("${params.reference_tag}.${alphabet}.k${ksize}.kmerseek.rocksdb")
 
     script:
-    def idx = "sprot2019_08.${alphabet}.k${ksize}.kmerseek.rocksdb"
+    def idx = "${params.reference_tag}.${alphabet}.k${ksize}.kmerseek.rocksdb"
     def xd  = xdropFor(copt)
     def nq  = kaQueriesFor(alphabet, ksize as int)
     """
@@ -423,11 +434,24 @@ workflow {
 
     mm  = mmseqsSearch(chunks, reference)
     ph  = phmmerSearch(chunks, reference)
-    hmm = hmmscanSearch(chunks, hmmpressPfam(file(params.pfam_hmm, checkIfExists: true)).collect())
+    if (params.hmmscan_dir) {
+        // One file per query chunk, named as hmmscanSearch names it; stop if any is missing.
+        def chunkNames = chunks.map { "${it.simpleName}.hmmscan.domtbl.gz".toString() }.toSortedList()
+        hmm = Channel.fromPath("${params.hmmscan_dir}/*.hmmscan.domtbl.gz", checkIfExists: true)
+            .toSortedList { a, b -> a.name <=> b.name }
+            .map { [it] }.combine(chunkNames.map { [it] })
+            .map { files, want ->
+                def have = files*.name.sort()
+                if (have != want.sort()) error "hmmscan_dir holds ${have}, the query chunks need ${want}"
+                files
+            }
+    } else {
+        hmm = hmmscanSearch(chunks, hmmpressPfam(file(params.pfam_hmm, checkIfExists: true)).collect())
+    }
 
     scoreTransfers(
         kmerseekSearch.out.transfers.collect(), kmerseekSearch.out.stats.collect(),
-        mm.collect(), ph.collect(), hmm.collect(),
+        mm.collect(), ph.collect(), params.hmmscan_dir ? hmm : hmm.collect(),
         inputs, refdir, file(params.settings),
         file("${projectDir}/bin/score_transfers.py"), file("${projectDir}/bin/time_split_common.py"))
 }
