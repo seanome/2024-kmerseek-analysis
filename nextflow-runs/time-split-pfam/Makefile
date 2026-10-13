@@ -68,7 +68,7 @@ pilot:
 	cd $(RUN_DIR) && mkdir -p launch-pilot && cd launch-pilot && \
 	  $(HEAD) HEAD_SESSION=nf280pilot HEAD_JOBNAME=280-pilot-head \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
-	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot --run_tag pilot -resume'
+	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot --run_tag pilot --queue_size 100 -resume'
 
 full:
 	cd $(RUN_DIR) && mkdir -p launch-full && cd launch-full && \
