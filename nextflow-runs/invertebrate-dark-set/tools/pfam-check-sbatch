@@ -1,0 +1,63 @@
+#!/bin/bash
+# Submit tools/pfam-check over a finished midi run: one job that pulls the Pfam domains, one
+# SLURM array task per kmerseek region file (scan), one job per species for the sequence
+# tools' hits, and a summary job that waits for all of them.
+#
+#   tools/pfam-check-sbatch <launch_dir> <out_dir> [species ...]
+#
+# The region files are exactly the ones the run's last kmerseekDarkGain step read: its staged
+# queries/<slug>.queries.tsv names, mapped to $RESULTS/<species>/kmerseek/<slug>.regions.csv.zst.
+# Resources, measured 2026-10-12 on the same files: repairQueriesTsv streamed the largest
+# (63 GB) in under 10 min at 18 MB of memory. scan also loads the reference sequences and
+# the Pfam domains (about 1 GB in Python), so it asks 6 GB and 1 h.
+# Added 2026-10-13 (Olga: "I want to know if kmerseek works, dark or not").
+set -euo pipefail
+LAUNCH=$1; OUT=$2; shift 2
+SPECIES=${*:-human worm yeast borrelia}
+RESULTS=${RESULTS:-/scratch/users/olgabot/invertebrate-dark-set/results-0.4}
+REF=${REF:-/scratch/users/olgabot/invertebrate-dark-set/reference}
+HITS=${HITS:-/scratch/users/olgabot/invertebrate-dark-set/results}
+PFAM=${PFAM:-/scratch/users/olgabot/280-time-split/data/Pfam38.2}
+TOOL=$(cd "$(dirname "$0")" && pwd)/pfam-check
+declare -A CLADE=([human]=Mammalia [worm]=Chromadorea [yeast]=Saccharomycetes [borrelia]=Spirochaetia [botryllus]=Ascidiacea)
+SB="sbatch --parsable -p hns,normal -A ayeletv -c 1"
+mkdir -p "$OUT/logs" "$OUT/tools"
+
+# Accessions whose Pfam domains are needed: every query protein and every reference protein.
+: > "$OUT/accessions.txt"
+for sp in $SPECIES; do
+    zcat "$RESULTS/protein-evalues/${sp}_protein_tool_min_evalue.csv.gz" | tail -n +2 | cut -d, -f1 >> "$OUT/accessions.txt"
+    cat "$REF/minus_${CLADE[$sp]}/reference_accessions.txt" >> "$OUT/accessions.txt"
+done
+sort -u -o "$OUT/accessions.txt" "$OUT/accessions.txt"
+dom=$($SB --mem 4G -t 1:00:00 -J pc-domains -o "$OUT/logs/domains.log" --wrap \
+    "python3 $TOOL domains $PFAM/Pfam-A.regions.tsv.gz $PFAM/Pfam-A.clans.tsv.gz $OUT/domains.tsv.gz $OUT/accessions.txt")
+echo "domains: $dom"
+
+deps=""
+for sp in $SPECIES; do
+    mkdir -p "$OUT/$sp"
+    # The last kmerseekDarkGain line for the species in the launch folder's trace.
+    hash=$(grep -h "kmerseekDarkGain ($sp)" "$LAUNCH"/trace.*.txt | tail -1 | cut -f2)
+    gain=$(ls -d "$LAUNCH"/work/"$hash"*)
+    : > "$OUT/$sp/files.txt"
+    for q in "$gain"/queries/*.queries.tsv; do
+        f="$RESULTS/$sp/kmerseek/$(basename "$q" .queries.tsv).regions.csv.zst"
+        [ -e "$f" ] || { echo "missing $f" >&2; exit 1; }
+        echo "$f" >> "$OUT/$sp/files.txt"
+    done
+    n=$(wc -l < "$OUT/$sp/files.txt")
+    ref="$REF/minus_${CLADE[$sp]}/reference.fasta"
+    arr=$($SB --mem 6G -t 1:00:00 -J "pc-scan-$sp" --dependency=afterok:"$dom" \
+        --array=1-"$n" -o "$OUT/logs/scan-$sp-%a.log" --wrap \
+        "f=\$(sed -n \${SLURM_ARRAY_TASK_ID}p $OUT/$sp/files.txt); python3 $TOOL scan \$f $OUT/domains.tsv.gz $ref $OUT/$sp")
+    tl=$($SB --mem 6G -t 1:00:00 -J "pc-tools-$sp" --dependency=afterok:"$dom" \
+        -o "$OUT/logs/tools-$sp.log" --wrap \
+        "python3 $TOOL tools $sp $HITS/$sp/hits $OUT/domains.tsv.gz $OUT/tools")
+    deps="$deps:$arr:$tl"
+    echo "$sp: gain step $(basename "$gain"), $n region files, scan array $arr, tools $tl"
+done
+sum=$($SB --mem 8G -t 1:00:00 -J pc-summary --dependency=afterok"$deps" \
+    -o "$OUT/logs/summary.log" --wrap \
+    "python3 $TOOL summarize $RESULTS/protein-evalues $OUT $OUT $SPECIES")
+echo "summary: $sum"
