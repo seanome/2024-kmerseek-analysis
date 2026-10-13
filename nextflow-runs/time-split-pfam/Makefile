@@ -60,7 +60,8 @@ inputs:
 smoke:
 	cd $(RUN_DIR) && mkdir -p launch-smoke && cd launch-smoke && \
 	  printf 'alphabet\tksize\tc_opt\nhp_pbotc_1st_ed2\t29\t1.59\n' > settings.smoke.tsv && \
-	  bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) --settings settings.smoke.tsv \
+	  $(subst HEAD_TIME=7-00:00:00,HEAD_TIME=8:00:00,$(HEAD)) HEAD_SESSION=nf280smoke HEAD_JOBNAME=280-smoke-head \
+	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) --settings settings.smoke.tsv \
 	    --inputs $(RUN_DIR)/inputs/smoke --outdir $(RUN_DIR)/results-smoke --run_tag smoke -resume'
 
 pilot:
