@@ -40,6 +40,22 @@ is one. Each tool's score cutoff is set on the *tune* half of the queries so dec
 at most 1 family transfer per 100 decoy queries; recall is reported on the *test* half. The
 halves are fixed by the first byte of SHA-1(accession): even goes to tune.
 
+**Search settings, fixed 2026-10-12 before any search (Olga's choices after Stop 1).**
+
+- kmerseek: all 19 alphabets. Each alphabet's k-sizes run from k_min to k_max of
+  [notebook 274](https://github.com/seanome/2024-kmerseek-analysis/blob/olgabot/ksizes-per-alphabet-274/notebooks/274_ksizes_to_test_per_alphabet_human_swissprot.ipynb) (PR 101)'s table (the one the dark-set run uses);
+  where that range holds more than 5 k-sizes, every other one, starting at k_min. That is
+  128 alphabet-k pairs. Scaled 1, low-complexity mask off. Each index is searched twice:
+  *exact* (shared k-mers only) and *extend* (ungapped extension with mismatch penalty
+  C_opt, the log-odds penalty from the alphabet's copy rate in Pfam seed pairs at 20-30%
+  identity, and X-drop 4 x C_opt). Search filters as the dark-set run: threshold 0,
+  at least 2 shared k-mers, query p-value at most 0.05, region score at least 1.3.
+- Score each cutoff is set on (higher is better): exact `region_poisson_score`; extend
+  -log10(`region_evalue`); MMseqs2, phmmer and hmmscan -log10 of the hit's (domain)
+  E-value.
+- MMseqs2 `-s 7 --num-iterations 3 -e 10`; phmmer `--domE 0.001`; hmmscan with the Pfam
+  33.1 models, `-E 0.001 --domE 0.001`, no `--cut_ga`.
+
 **Predictions, written before any search.**
 
 - **P1.** Most instances sit below 30% identity to the closest t0 Swiss-Prot domain of the

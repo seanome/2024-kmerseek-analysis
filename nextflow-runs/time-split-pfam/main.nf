@@ -28,6 +28,7 @@ params.outdir          = null
 params.index_cache     = null   // storeDir for kmerseek indexes, shared by the pilot and the full run
 params.hmm_cache       = null
 params.query_chunk_size = 2000  // the dark-set run's, so its measured search times carry over
+params.read_test_half  = false  // true only for the full run (Stop 3)
 params.only_alphabets  = ''     // comma list, for a smaller pilot; empty = every row of settings.tsv
 
 params.kmerseek_image = 'docker.io/olgabot/kmerseek@sha256:7855826572644933e0c71926102b90174e650c144ae90b3641b760bd9f463afb'  // 0.4.0-rc5
@@ -360,7 +361,7 @@ process scoreTransfers {
     """
     python3 ${score_py} --kmerseek kmerseek --stats stats --mmseqs2 mmseqs2 --phmmer phmmer \\
         --hmmscan hmmscan --inputs ${inputs_dir} --reference ${reference_dir} \\
-        --settings ${settings} --out .
+        --settings ${settings} --out . ${params.read_test_half ? '--read-test-half' : ''}
     """
 }
 

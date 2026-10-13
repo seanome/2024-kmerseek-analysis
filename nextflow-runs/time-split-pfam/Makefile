@@ -73,7 +73,7 @@ full:
 	cd $(RUN_DIR) && mkdir -p launch-full && cd launch-full && \
 	  $(HEAD) HEAD_SESSION=nf280full HEAD_JOBNAME=280-full-head \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
-	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/full --outdir $(RUN_DIR)/results-full --run_tag full -resume'
+	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/full --outdir $(RUN_DIR)/results-full --run_tag full --read_test_half true -resume'
 
 ## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes.
 running:

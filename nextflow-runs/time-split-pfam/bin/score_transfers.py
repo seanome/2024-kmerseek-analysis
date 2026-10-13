@@ -138,6 +138,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     for a in ("kmerseek", "stats", "mmseqs2", "phmmer", "hmmscan", "inputs", "reference", "settings", "out"):
         ap.add_argument(f"--{a}", type=Path, required=True)
+    ap.add_argument("--read-test-half", action="store_true",
+                    help="compute test-half recall and decoy rate; off for the pilot, whose "
+                         "queries are part of the approved sample")
     a = ap.parse_args()
     q = pl.read_csv(a.inputs / "queries.tsv", separator="\t")
     inst = pl.read_csv(a.inputs / "instances.tsv", separator="\t")
@@ -202,9 +205,13 @@ def main() -> None:
                      "cutoff_tune": cut, "decoy_transfers_test": dec_test, "decoys_test": n_dec["test"],
                      "instances_test": inst_s.filter(pl.col("half") == "test").height,
                      "found_test": found_test})
-    summ = pl.DataFrame(rows).with_columns(
-        recall_test=pl.col("found_test") / pl.col("instances_test"),
-        decoy_rate_test=pl.col("decoy_transfers_test") / pl.col("decoys_test"))
+    summ = pl.DataFrame(rows)
+    if not a.read_test_half:
+        summ = summ.drop("decoy_transfers_test", "found_test")
+    else:
+        summ = summ.with_columns(
+            recall_test=pl.col("found_test") / pl.col("instances_test"),
+            decoy_rate_test=pl.col("decoy_transfers_test") / pl.col("decoys_test"))
     summ.write_csv(a.out / "setting_summary.csv")
     ctrl_tab = (inst.filter(pl.col("role") == "control")
                 .join(ic.select("setting", "query", "pfam_acc", "t1_start", "t1_end", "landing", "coverage", "score"),
