@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+"""How many dark proteins have a known Pfam domain that a kmerseek region could be checked against?
+
+    tools/dark-pfam-coverage <protein-evalues dir> <Pfam-A.regions.tsv.gz> <out.csv> [species ...]
+
+Reads each species' <species>_protein_tool_min_evalue.csv.gz (tools/export-protein-evalues)
+and Pfam's Pfam-A.regions.tsv.gz (one row per Pfam-A domain on a UniProt sequence:
+pfamseq_acc, seq_version, crc64, md5, pfamA_acc, seq_start, seq_end, ...), and writes
+
+    species, cutoff, group, n_proteins, n_with_pfam
+
+group is "dark" (no phmmer, jackhmmer or mmseqs2 hit with E < cutoff), "placed" (the rest)
+or "all". n_with_pfam counts proteins with at least one Pfam-A domain in the file. Only
+species whose accessions are UniProt accessions can match; Botryllus FUN ids never do.
+
+Added 2026-10-13, when Olga asked whether kmerseek's regions on dark proteins land on the
+domain Swiss-Prot/Pfam says is there: this counts how many dark proteins could be checked.
+Python 3.6, standard library only.
+"""
+import csv
+import gzip
+import math
+import os
+import sys
+
+SPECIES = ("human", "worm", "yeast", "borrelia")
+CUTOFFS = (1.0, 10.0)
+
+
+def main():
+    if len(sys.argv) < 4:
+        sys.exit(__doc__)
+    in_dir, regions, out = sys.argv[1], sys.argv[2], sys.argv[3]
+    species_list = sys.argv[4:] or SPECIES
+    best = {}
+    for sp in species_list:
+        d = {}
+        with gzip.open(os.path.join(in_dir, "%s_protein_tool_min_evalue.csv.gz" % sp), "rt") as fh:
+            r = csv.reader(fh)
+            next(r)
+            for row in r:
+                d[row[0]] = min([float(v) for v in row[1:] if v] or [math.inf])
+        best[sp] = d
+    wanted = set().union(*[set(d) for d in best.values()])
+    with_pfam = set()
+    with gzip.open(regions, "rt") as fh:
+        header = fh.readline().rstrip("\n").split("\t")
+        if header[0] != "pfamseq_acc":
+            sys.exit("unexpected header %s" % header)
+        for line in fh:
+            acc = line[:line.index("\t")]
+            if acc in wanted:
+                with_pfam.add(acc)
+    rows = []
+    for sp in species_list:
+        d = best[sp]
+        rows.append([sp, "", "all", len(d), sum(1 for a in d if a in with_pfam)])
+        for c in CUTOFFS:
+            for g in ("dark", "placed"):
+                accs = [a for a, v in d.items() if (v < c) == (g == "placed")]
+                rows.append([sp, repr(c), g, len(accs), sum(1 for a in accs if a in with_pfam)])
+    with open(out, "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["species", "cutoff", "group", "n_proteins", "n_with_pfam"])
+        w.writerows(rows)
+    for row in rows:
+        print(",".join(str(x) for x in row))
+
+
+if __name__ == "__main__":
+    main()
