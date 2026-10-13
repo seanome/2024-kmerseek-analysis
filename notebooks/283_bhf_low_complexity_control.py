@@ -144,6 +144,9 @@ def mod256():
     m = _load("nb256", HERE / "256_bhf_dipeptide_shuffle_null.py")
     m.KMERSEEK = KMERSEEK
     m.D = IDX_RUN
+    # Keep the coordinates of each query's ten best human proteins (regions/), so the
+    # notebook can print the aligned residues of a top hit.
+    m.KEEP_REGIONS = True
     return m
 
 

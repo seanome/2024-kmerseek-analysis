@@ -149,3 +149,153 @@ def stretches_kept(seq: str, keep: list[tuple[int, int]], rng: random.Random, sh
 def stretches_removed(seq: str, keep: list[tuple[int, int]]) -> str:
     """`seq` with every stretch deleted and the pieces between them joined."""
     return "".join(seq[a:b] for a, b in _segments(len(seq), keep))
+
+
+# ---------------------------------------------------------------------------------------
+# Notebook 283: BHF against each of the three sets of copies.
+
+DATA = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
+NULLS = {
+    "null 1: whole protein shuffled (notebook 256)": DATA / "null_bhf_dipeptide",
+    "null 2: stretches kept in place": DATA / "283" / "null_kept",
+    "null 3: stretches removed": DATA / "283" / "null_removed",
+}
+# The same scores PR 83 reported; the bit score ranks exactly as the E-value, and the
+# Poisson p-value as the Poisson score, so each pair is one row.
+SCORES = ["E-value", "tf-idf", "containment", "shared k-mers", "mean IDF", "protein enrichment",
+          "protein Poisson p-value", "Poisson score", "enrichment"]
+ALPHA = 0.05  # BHF "beats 95% of its copies": (1 + copies at least as good) / 301 <= 0.05
+
+
+def run_finished(run: Path) -> tuple[int, int]:
+    """(search tables written, tables expected) for one run folder."""
+    import bhf_shuffle_null_utils as su
+    if not (run / "run.json").exists():
+        return 0, 1
+    before, su.RUN = su.RUN, run
+    try:
+        return su.progress()
+    finally:
+        su.RUN = before
+
+
+def best_score_p_all() -> "pl.DataFrame":
+    """One row per (null, score, setting): BHF's best value against its copies' best
+    values, with p = (1 + copies at least as good) / (1 + copies), from notebook 256's code."""
+    import polars as pl
+    import bhf_shuffle_null_utils as su
+    out, before = [], su.RUN
+    for name, run in NULLS.items():
+        su.RUN = run
+        out.append(su.best_score_p(su.load()).with_columns(pl.lit(name).alias("null")))
+    su.RUN = before
+    return pl.concat(out, how="diagonal").filter(pl.col("metric").is_in(SCORES))
+
+
+def wins_by_null(p: "pl.DataFrame") -> "pl.DataFrame":
+    """Per null and score: settings where BHF has a score, settings where it beats 95% of
+    its copies, the count chance predicts (5%), and the decision line (twice chance)."""
+    import polars as pl
+    return (p.group_by("null", "metric")
+             .agg(pl.len().alias("n_settings"), (pl.col("p") <= ALPHA).sum().alias("n_beats_95pct"))
+             .with_columns((ALPHA * pl.col("n_settings")).round(1).alias("expected_by_chance"),
+                           (2 * ALPHA * pl.col("n_settings")).round(1).alias("twice_chance"),
+                           (100 * pl.col("n_beats_95pct") / pl.col("n_settings")).round(1).alias("pct_settings"))
+             .with_columns(pl.col("metric").replace_strict({m: i for i, m in enumerate(SCORES)}).alias("_s"),
+                           pl.col("null").replace_strict({m: i for i, m in enumerate(NULLS)}).alias("_n"))
+             .sort("_s", "_n").drop("_s", "_n"))
+
+
+def fig_wins_by_null(w: "pl.DataFrame", path_stem: Path, hypothesis: str, conclusion: str):
+    """For each score, the share of settings where BHF beats 95% of its copies, under each
+    null, against the 5% chance predicts and the 10% decision line."""
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+    import pubfig as pf
+    pf.use_style()
+    colours = [pf.OKABE_ITO["blue"], pf.OKABE_ITO["vermillion"], pf.OKABE_ITO["bluish_green"]]
+    shapes = ["o", "s", "^"]
+    fig, ax = pf.figure(pf.TWO_COLUMN_MM, 95)
+    rows = {m: i for i, m in enumerate(SCORES)}
+    for y in rows.values():
+        ax.axhline(y, color="#dddddd", lw=0.3, zorder=0)
+    ax.axvline(100 * ALPHA, color=pf.GREY, lw=1, zorder=1)
+    ax.axvline(200 * ALPHA, color=pf.GREY, lw=1, ls="--", zorder=1)
+    for j, (null, c, s) in enumerate(zip(NULLS, colours, shapes)):
+        d = w.filter(w["null"] == null)
+        ys = [rows[m] + (j - 1) * 0.22 for m in d["metric"]]
+        ax.scatter(d["pct_settings"], ys, color=c, marker=s, s=18, zorder=3, edgecolor="none")
+    ax.set_yticks(list(rows.values()), [f"{m}" + (" (and bit score)" if m == "E-value" else
+                                                 " (and Poisson p-value)" if m == "Poisson score" else "")
+                                         for m in rows])
+    ax.invert_yaxis()
+    ax.set_xlabel("Settings where BHF beats 95% of its 300 copies (% of the settings where BHF has that score)")
+    ax.set_xlim(0, max(30, float(w["pct_settings"].max()) + 3))
+    handles = [Line2D([], [], color=c, marker=s, ls="none", label=n) for n, c, s in zip(NULLS, colours, shapes)]
+    handles += [Line2D([], [], color=pf.GREY, lw=1, label="chance: 5%"),
+                Line2D([], [], color=pf.GREY, lw=1, ls="--", label="decision line: 10% (twice chance)")]
+    fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.01, 1.0), ncol=3, frameon=False)
+    fig.text(0.01, 1.14, "kmerseek 0.4.0 (982a055): BHF and 300 copies per null searched against 19_732 GENCODE v49 "
+             "human proteins at the 152 settings (alphabet, k) of notebook 241.", ha="left", va="top")
+    fig.text(0.01, 1.10, "Hypothesis: " + hypothesis, ha="left", va="top")
+    fig.text(0.01, 1.06, "Conclusion: " + conclusion, ha="left", va="top")
+    fig.subplots_adjust(top=0.80, left=0.24)
+    pf.save(fig, str(path_stem))
+    return fig
+
+
+def fig_stretches(seq: str, rows: list[tuple[str, list[tuple[int, int]]]], path_stem: Path):
+    """BHF as a line with one row per rule, each stretch a box (1-based labels)."""
+    from matplotlib.patches import Rectangle
+    import pubfig as pf
+    pf.use_style()
+    fig, ax = pf.figure(pf.TWO_COLUMN_MM, 14 + 8 * len(rows))
+    for i, (label, iv) in enumerate(rows):
+        ax.plot([1, len(seq)], [i, i], color="black", lw=0.6, zorder=1)
+        for a, b in iv:
+            ax.add_patch(Rectangle((a + 0.5, i - 0.22), b - a, 0.44, color=pf.OKABE_ITO["vermillion"], zorder=2))
+            ax.text((a + b) / 2 + 0.5, i - 0.26, f"{a + 1}-{b}", ha="center", va="bottom")
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows])
+    ax.set_ylim(len(rows) - 0.4, -0.9)
+    ax.set_xlim(0, len(seq) + 1)
+    ax.set_xlabel("BHF residue (1-252)")
+    ax.spines["left"].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    fig.text(0.01, 1.0, "BHF (252 aa) is the black line; each box is a stretch the rule on that row calls "
+             "low-complexity.", ha="left", va="bottom")
+    pf.save(fig, str(path_stem))
+    return fig
+
+
+def class_string(s: str, alphabet: str) -> str:
+    """`s` written in the alphabet's classes: h/p for the two-letter alphabets, otherwise
+    the first residue of each class (as kmerseek's class tables name them)."""
+    t = CLASSES[alphabet]
+    if alphabet.startswith("hp_") and len(set(t.values())) == 2:
+        return "".join("hp"[t[c]] if c in t else "?" for c in s)
+    first = {}
+    for aa, i in sorted(t.items(), key=lambda x: x[1]):
+        first.setdefault(i, aa)
+    return "".join(first[t[c]] if c in t else "?" for c in s)
+
+
+def show_alignment(q: str, qs: int, t: str, ts: int, gene: str, alphabet: str, hp: str = "hp_pbotc_1st_ed2") -> str:
+    """An ungapped kmerseek match as text: BHF and human residues with 1-based
+    coordinates, a match line, "n of m identical", then the class strings of the setting's
+    alphabet and of the paper's H/P alphabet, each with its own class match line."""
+    assert len(q) == len(t), "kmerseek regions are ungapped: both sides have one length"
+    n = len(q)
+    same = sum(a == b for a, b in zip(q, t))
+    lines = [f"BHF   {qs + 1:>5} {q} {qs + n}",
+             f"{'':12}{''.join('|' if a == b else ' ' for a, b in zip(q, t))}",
+             f"{gene:<6}{ts + 1:>5} {t} {ts + n}",
+             f"{same} of {n} residues identical"]
+    for a in dict.fromkeys([alphabet, hp]):
+        if a in RAW_ONLY:
+            continue
+        cq, ct = class_string(q, a), class_string(t, a)
+        lines += [f"{a} classes:", f"BHF   {'':>5} {cq}",
+                  f"{'':12}{''.join('|' if x == y else ' ' for x, y in zip(cq, ct))}",
+                  f"{gene:<6}{'':>5} {ct}",
+                  f"{sum(x == y for x, y in zip(cq, ct))} of {n} classes the same"]
+    return "\n".join(lines)
