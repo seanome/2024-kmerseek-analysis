@@ -23,6 +23,9 @@ Larger outputs (calls/, decoy_pairs/, instance_calls.parquet) stay on Sherlock i
 `unique_finds_tune.csv`; made by `unique_finds_tune_instances.py` with the scorer's own
 functions, and their counts match `unique_finds_tune.csv` for every setting. There are 3:
 LysM 79-119 in A0A2K6L9H6 (35 settings; MMseqs2 calls it at E 1.1e-4, below its cutoff of
-E 1.5e-22) and LRR_1 64-86 and 88-110 in A0A078HBQ0 (4 and 11 settings; no other tool calls
-the protein; the mmseqs12 k9 extend calls are E 1.6 and 17, against that setting's cutoff
-of E 18).
+E 1.5e-22) and LRR_1 64-86 and 88-110 in A0A078HBQ0 (4 and 11 settings; the mmseqs12 k9 extend
+calls are E 1.6 and 17, against that setting's cutoff of E 18). MMseqs2 and phmmer do
+transfer LRR_1 to these repeats (50-201 calls each, best hit P47735 at E 2e-59), but every
+one of their calls is 47 aa or longer, so under half of it lies inside a 23-aa repeat
+(best landing 0.22-0.49) and the landing rule (>= 0.5) does not count it.
+`lrr1_calls_residues.html` draws the two kmerseek calls residue by residue.
