@@ -125,3 +125,20 @@ Olga's and will be recorded here before the full run's results are read.
      only annotated targets. Compared with both indexes it splits the regions index's
      effect into "only annotated targets" and "smaller index". In the tables its index is
      "wholeannot".
+
+**2026-10-13, later, Olga's decisions, before the full run:**
+- Every alphabet with a measured kappa (19), each at the k that carries about the 20.9 bits
+  of a protein20 5-mer (bits per letter from real amino-acid frequencies), kept inside the
+  alphabet's tested k range (notebook 274): hp_lehninger2, hp_lehninger_c_nonpolar2 and
+  hp_pbotc_1st_ed2 at 21; hp_thomas_dill2, hp_thomas_dill_no_c2 and hp_kyte_doolittle2 at
+  22; hp_lehninger_hpc3 19; gbmr4 14; wwmj5 10; dayhoff6 9; funcgroups8 8; sdm12 7;
+  mmseqs12, wass14 and hsdm17 6; uniprot18 and protein20 5. Two exceptions: polarity4 at
+  11, to match the dark set (its bits-matched k is 12), and gbmr7 at 16 (its bits-matched k
+  is below its tested floor of 13, and at 13 the dark set's searches needed 379-500 GB
+  without decoys). All at scaled 1, extension at the alphabet's own mismatch penalty, mask
+  off.
+- k_max becomes 22, so the regions index is rebuilt with 21-residue flanks.
+- The shared-fit reading runs with kmerseek 0.4.1-rc1: v0.4.0 plus `search
+  --ka-r-database` (seanome/kmerseek PR 144, ported onto v0.4.0 on branch
+  olgabot/v0.4.1-ka-r-database). Every setting runs on that image. Its index label is
+  "regionsshared".

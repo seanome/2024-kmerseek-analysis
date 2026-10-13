@@ -201,3 +201,51 @@ task above:
 No task has a history of being killed: these are first measurements, on macOS. Peak memory
 on Linux under a cgroup may read higher, because RocksDB's file pages count there; the
 asks carry 1.4x the measured peaks and stay under a normal-partition node's 125 GB.
+
+## Rebuild at k_max 22, and the 19-setting run (2026-10-13)
+
+The 19 settings (PREDICTIONS.md) reach k = 22, so the regions index was rebuilt with
+21-residue flanks: 640_927 entries and 46_921_644 target residues (the whole-protein index
+is unchanged at 175_144_459), a ratio of 3.73, so 1.90 bits. 497_734 distinct short
+cut-outs; 7_820 clusters mix feature types. Regions-index decoy md5
+1dd147349181efd1df7f3990b0883d5f (10-residue windows).
+
+A local test with two settings (protein20 k5, hp_lehninger2 k21), 20 queries and
+10-residue decoys ran every path (35 tasks): the shared-fit searches report "--ka-k and
+--ka-r-database" with the whole-protein index's K and slope. The regions index's own fit for
+hp_lehninger2 has slope 0.058 (the whole-protein index's is 0.847); its E-values are so
+large that the E <= 10_000 filter keeps 2_525 calls and no 5% threshold exists, against
+60_862 calls and 5 features found with the shared fit.
+
+### Memory for the 19 settings
+
+Index builds ask the first-ask table (`assets/kmerseek_index_first_ask.tsv`), else 120 GB;
+each search asks 1.5 x (36 + 2.34 x sqrt(load)) GB from its own index's k-mer spectrum (the
+dark set's model), at least 24 GB. Both double on a retry, up to 500 GB; a setting whose
+search model asks more than 500 GB is skipped and named in the log. On the laptop the model
+asked 114 GB for the protein20 whole-protein search that peaked at 89 GB.
+
+| setting | index first ask | evidence | search ask |
+|---|---|---|---|
+| hp_lehninger2, hp_lehninger_c_nonpolar2, hp_pbotc_1st_ed2 k21 | 120 GB | laptop: 77-78 GB (whole + decoys) | from spectrum |
+| hp_thomas_dill2, hp_thomas_dill_no_c2 k22 | 120 GB | none at k22 | from spectrum |
+| hp_kyte_doolittle2 k22 | 220 GB | dark set k21 search 218 GB, without decoys | from spectrum |
+| hp_lehninger_hpc3 k19, wwmj5 k10, funcgroups8 k8, sdm12 k7, wass14 k6, uniprot18 k5 | 120 GB | none | from spectrum |
+| gbmr4 k14 | 300 GB | dark set search 304-320 GB | from spectrum |
+| polarity4 k11 | 120 GB | laptop: 84 GB | from spectrum |
+| dayhoff6 k9 | 250 GB | dark set search 245-260 GB | from spectrum |
+| gbmr7 k16 | 210 GB | dark set search 205 GB | from spectrum |
+| mmseqs12 k6 | 270 GB | dark set search 265 GB | from spectrum |
+| hsdm17 k6 | 300 GB | dark set k5 search 394 GB | from spectrum |
+| protein20 k5 | 120 GB | laptop: 81 GB | from spectrum (laptop: model 114, measured 89) |
+
+The dark set's numbers are for Swiss-Prot minus Mammalia without decoys; this index is
+twice as large, so these first asks may still be short for the skewed alphabets. Nine
+settings have no measurement at their k; they run on the default or the model.
+
+Task counts: 76 index builds (19 settings x 2 indexes x 2 decoy windows); 1_140 kmerseek
+searches (19 x 3 searched indexes, counting the shared-fit regions search, x 2 windows x 10
+chunks); 4 MMseqs2 searches. CPU time, scaled from the 4-setting laptop run (20 CPU-hours
+for 16 builds, at most 24 for 160 searches): about 100-200 CPU-hours of builds and at most
+about 170 of searches, so roughly 300 CPU-hours. The skewed alphabets' fits may cost more
+than the laptop's alphabets did.

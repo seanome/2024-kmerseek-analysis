@@ -15,7 +15,8 @@ Outputs:
                        pairs: whole vs regions (the test), whole vs wholeannot (whole-
                        protein index, annotated targets only: the effect of searching only
                        annotated targets), wholeannot vs regions (the effect of the smaller
-                       index alone)
+                       index alone); and regionsshared (the regions index searched
+                       with the whole-protein index's fit) against each of the three
   composition.tsv      kmerseek against the composition-only classifier on the regions
                        index, with the classifier given as many target calls as kmerseek
                        makes at its 5% threshold (prediction 4; Olga, 2026-10-13)
@@ -34,7 +35,14 @@ from pathlib import Path
 
 import polars as pl
 
-PAIRS = [("whole", "regions"), ("whole", "wholeannot"), ("wholeannot", "regions")]
+PAIRS = [
+    ("whole", "regions"),
+    ("whole", "wholeannot"),
+    ("wholeannot", "regions"),
+    ("whole", "regionsshared"),
+    ("regions", "regionsshared"),
+    ("wholeannot", "regionsshared"),
+]
 MC_SCHEMA = {
     "landing_rule": pl.Utf8,
     "tool": pl.Utf8,

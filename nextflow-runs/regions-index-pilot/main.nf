@@ -35,10 +35,9 @@ params.outdir        = null
 params.exclude_clade = 'Mammalia'
 // The largest k-size among the kmerseek settings searched. A regions-index entry carries
 // k_max - 1 residues each side of its feature, so a k-mer of that size can start on the
-// feature's first residue and end on its last. 21 is the k of the two H/P settings
-// (hp_pbotc_1st_ed2 and hp_lehninger2), chosen to carry about the same bits per k-mer as
-// protein20 k = 5 (see PREDICTIONS.md).
-params.k_max          = 21
+// feature's first residue and end on its last. 22 is the largest k among the settings
+// (hp_thomas_dill2, hp_thomas_dill_no_c2 and hp_kyte_doolittle2 at 22; PREDICTIONS.md).
+params.k_max          = 22
 params.min_cluster_aa = 30
 params.cluster_min_seq_id = 0.5
 params.cluster_coverage   = 0.8
@@ -47,11 +46,40 @@ params.cluster_coverage   = 0.8
 params.decoy_windows = '10,20'
 params.decoy_seed    = 20261006
 
-// kmerseek settings, alphabet:k:scaled (Olga, 2026-10-06 and 2026-10-07; PREDICTIONS.md).
+// kmerseek settings, alphabet:k:scaled (Olga, 2026-10-13; PREDICTIONS.md): every alphabet
+// with a measured kappa, at the k that carries about the 20.9 bits of a protein20 5-mer
+// (bits per letter from real amino-acid frequencies), inside the alphabet's tested k range
+// (notebook 274); polarity4 at 11 to match the dark set; gbmr7 at 16, because at its bits-
+// matched k (its range floor, 13) the dark set's searches needed 379-500 GB without decoys.
 // Each searches with extension at its alphabet's own mismatch penalty, c_opt in
 // assets/kappa_by_alphabet.tsv (copied from olgabot/dark-set-kmerseek-0.4), X-drop 4 x C,
 // low-complexity mask off.
-params.kmerseek_settings = 'polarity4:11:1,hp_pbotc_1st_ed2:21:1,hp_lehninger2:21:1,protein20:5:1'
+params.kmerseek_settings = [
+    'hp_lehninger2:21:1', 'hp_lehninger_c_nonpolar2:21:1', 'hp_pbotc_1st_ed2:21:1',
+    'hp_thomas_dill2:22:1', 'hp_thomas_dill_no_c2:22:1', 'hp_kyte_doolittle2:22:1',
+    'hp_lehninger_hpc3:19:1', 'gbmr4:14:1', 'polarity4:11:1', 'wwmj5:10:1', 'dayhoff6:9:1',
+    'gbmr7:16:1', 'funcgroups8:8:1', 'mmseqs12:6:1', 'sdm12:7:1', 'wass14:6:1',
+    'hsdm17:6:1', 'uniprot18:5:1', 'protein20:5:1',
+].join(',')
+// Search the regions index a second time with the whole-protein index's fit (same setting
+// and decoy window), so the two indexes differ only in size n ("regionsshared"; Olga,
+// 2026-10-13). Needs kmerseek with --ka-r-database (0.4.1-rc1).
+params.shared_fit = true
+// Memory. Index builds: assets/kmerseek_index_first_ask.tsv, else the default. Searches:
+// the dark set's model from the index's own k-mer spectrum, headroom x (36 + 2.34 x
+// sqrt(load)) GB, where load = sum(occ^2 x n) / sum(occ x n) over spectrum.csv.gz
+// (olgabot/dark-set-kmerseek-0.4 main.nf, kmerseekSearchMemory), at least the floor.
+// Retries double, up to the largest node.
+params.kmerseek_index_first_ask    = "${projectDir}/assets/kmerseek_index_first_ask.tsv"
+params.kmerseek_index_memory_default_gb = 120
+params.kmerseek_search_memory_base     = 36
+params.kmerseek_search_memory_slope    = 2.34
+params.kmerseek_search_memory_headroom = 1.5
+params.kmerseek_search_memory_floor_gb = 24
+// The largest node: a setting whose search model asks more is skipped and named in the
+// log. Separate from the cap on any one ask, which the laptop profile lowers.
+params.kmerseek_skip_above_gb          = 500
+params.kmerseek_memory_max_gb          = 500
 params.kappa_table       = "${projectDir}/assets/kappa_by_alphabet.tsv"
 params.xdrop_per_penalty = 4
 params.chain_max_gap     = 30
@@ -297,6 +325,61 @@ def kmerseekSettings() {
 // whole_protein_index -> whole, regions_index -> regions: the index part of a label.
 def indexKind(String name) { name.startsWith('whole') ? 'whole' : 'regions' }
 
+def indexFirstAskGb(String alphabet, int ksize) {
+    def rows = file(params.kmerseek_index_first_ask).readLines().findAll { it && !it.startsWith('#') }
+    def head = rows[0].split('\t') as List
+    def hit = rows.drop(1).collect { it.split('\t') }.find {
+        it[head.indexOf('alphabet')] == alphabet && it[head.indexOf('ksize')] as int == ksize
+    }
+    hit ? (hit[head.indexOf('first_ask_gb')] as double) : (params.kmerseek_index_memory_default_gb as double)
+}
+
+// load = sum(occ^2 x n_kmers) / sum(occ x n_kmers): the expected posting-list length hit by
+// a random k-mer of the index. Read in the workflow, where the index path is real; a
+// process directive sees only the staged name.
+def spectrumLoad(Path idx) {
+    def f = idx.resolve('spectrum.csv.gz')
+    if (!f.exists()) error "no spectrum.csv.gz in ${idx}; kmerseekIndex writes one"
+    double num = 0.0d
+    double den = 0.0d
+    new java.util.zip.GZIPInputStream(f.newInputStream()).withReader('UTF-8') { r ->
+        r.eachLine { line ->
+            if (line.startsWith('#') || line.startsWith('moltype')) return
+            def c = line.split(',')
+            double occ = c[2] as double
+            double n = c[3] as double
+            num += occ * occ * n
+            den += occ * n
+        }
+    }
+    den > 0 ? num / den : 0.0d
+}
+
+def searchFirstAskGb(double load) {
+    double gb = (params.kmerseek_search_memory_headroom as double) *
+        ((params.kmerseek_search_memory_base as double) +
+         (params.kmerseek_search_memory_slope as double) * Math.sqrt(load))
+    Math.max(gb, params.kmerseek_search_memory_floor_gb as double)
+}
+
+def memoryAsk(double firstGb, int attempt) {
+    long gb = Math.min(Math.ceil(firstGb * Math.pow(2, attempt - 1)) as long,
+                       params.kmerseek_memory_max_gb as long)
+    "${gb} GB"
+}
+
+// The fit an index stored for `penalty`, read from the survival CSV the build wrote: K and
+// the slope (the lambda scale; r_database in later kmerseek). Null when the fit was refused.
+def storedFit(Path idx, String penalty) {
+    def f = idx.resolve("ka_survival.C${penalty}.csv")
+    if (!f.exists()) return null
+    def lines = f.readLines()
+    def head = lines[0].split(',') as List
+    def row = lines[1].split(',') as List
+    if (head.contains('fitted') && row[head.indexOf('fitted')] != 'true') return null
+    [k: row[head.indexOf('k')], slope: row[head.indexOf('slope')]]
+}
+
 process splitQueries {
     label 'python'
 
@@ -338,6 +421,9 @@ process splitQueries {
 process kmerseekIndex {
     label 'kmerseek_index'
     tag "${name}.w${window}.${slug}"
+    // Body directive, so no withLabel selector in the config may set memory (a selector
+    // beats a body directive).
+    memory { memoryAsk(indexFirstAskGb(alphabet, ksize as int), task.attempt) }
 
     input:
     tuple val(name), val(window), path(fasta), val(alphabet), val(ksize), val(scaled),
@@ -366,12 +452,15 @@ process kmerseekSearch {
     label 'kmerseek_search'
     tag "${name}.w${window}.${slug}.${chunk.simpleName}"
 
+    memory { memoryAsk(mem_gb as double, task.attempt) }
+
     input:
     tuple val(name), val(window), val(alphabet), val(ksize), val(penalty), val(xdrop),
-          val(slug), path(index_dir), path(chunk)
+          val(slug), path(index_dir), val(mem_gb), val(index_label), val(fit_flags),
+          path(chunk)
 
     output:
-    tuple val("kmerseek.${indexKind(name)}.w${window}.${slug}"),
+    tuple val("kmerseek.${index_label}.w${window}.${slug}"),
           path("${chunk.simpleName}.calls.tsv.gz"), emit: calls
     path "${chunk.simpleName}.search.log"
 
@@ -388,7 +477,7 @@ process kmerseekSearch {
     set +e
     ${params.time_cmd} ${params.kmerseek} search --alphabet ${alphabet} --ksize ${ksize} \\
         --query ${chunk} --target ${index_dir} \\
-        --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} --ka-queries 0 \\
+        --extend-mismatch-penalty ${penalty} --extend-xdrop ${xdrop} --ka-queries 0 ${fit_flags} \\
         --chain-max-gap ${params.chain_max_gap} --chain-max-shift ${params.chain_max_shift} \\
         --threshold ${params.threshold} --min-shared-kmers ${params.min_shared_kmers} \\
         --max-query-pvalue ${params.max_query_pvalue} \\
@@ -478,7 +567,7 @@ process scoreCalls {
 
     script:
     def parts = label.tokenize('.')
-    def kind  = parts[1]
+    def kind  = parts[1] == 'regionsshared' ? 'regions' : parts[1]
     // Whole-protein calls are scored a second time keeping only calls whose target side
     // lies in an annotated feature (index label "wholeannot"; Olga, 2026-10-13). The
     // composition classifier is scored on all its calls, ranked, for the comparison at
@@ -488,7 +577,7 @@ process scoreCalls {
                  "--target-features ${target_features} --flank \$(( ${params.k_max} - 1 )) " +
                  "--max-decoy-rate ${params.max_decoy_rate} --min-landing ${params.min_landing}"
     def first  = parts[0] == 'composition' ? '--all-calls' : ''
-    def second = kind == 'whole'
+    def second = parts[1] == 'whole'
         ? "${py('score_calls.py')} ${common} --index-kind whole --annotated-targets-only --label ${annot} --prefix ${annot}"
         : ''
     """
@@ -599,7 +688,28 @@ workflow {
 
     settings = Channel.fromList(kmerseekSettings())
     kmerseekIndex(build.out.combined.combine(settings))
-    kmerseekSearch(kmerseekIndex.out.index.combine(splitQueries.out.chunks.flatten()))
+
+    // Each index with its search memory, from its own k-mer spectrum. A setting whose
+    // search would need more than the largest node is left out and named in the log.
+    sized = kmerseekIndex.out.index
+        .map { n, w, a, k, p, x, s, idx -> [n, w, a, k, p, x, s, idx, searchFirstAskGb(spectrumLoad(idx))] }
+        .filter { row ->
+            def ok = row[8] <= (params.kmerseek_skip_above_gb as double)
+            if (!ok) log.warn "skipping ${row[0]}.w${row[1]}.${row[6]}: its search would need ${Math.round(row[8])} GB"
+            ok
+        }
+    own = sized.map { row -> row + [indexKind(row[0]), ''] }
+    // The regions index searched with the whole-protein index's fit for the same setting
+    // and decoy window. No row when the whole-protein fit was refused.
+    wholeFit = sized.filter { row -> row[0].startsWith('whole') }
+        .map { row -> [[row[1], row[6]], storedFit(row[7], row[4])] }
+        .filter { key, fit -> fit != null }
+    shared = sized.filter { row -> row[0].startsWith('regions') }
+        .map { row -> [[row[1], row[6]], row] }
+        .join(wholeFit)
+        .map { key, row, fit -> row + ['regionsshared', "--ka-k ${fit.k} --ka-r-database ${fit.slope}".toString()] }
+    searches = params.shared_fit ? own.mix(shared) : own
+    kmerseekSearch(searches.combine(splitQueries.out.chunks.flatten()))
 
     mmseqsSearch(build.out.combined.combine(splitQueries.out.searched))
     compositionClassifier(build.out.combined.filter { it[0] == 'regions_index' }
