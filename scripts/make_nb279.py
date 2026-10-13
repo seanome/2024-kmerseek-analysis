@@ -1203,6 +1203,62 @@ pf.save(fig, FIG / "279_bhf_phmmer_alignments_hp_runs_vs_chance_hp_lehninger2_sw
 """)
 
 md(r"""
+### 6g. Data for the BHF explainer page
+
+The interactive page that explains this section is built by `scripts/make_bhf_explainer.py`
+from the JSON this cell writes, so every number on the page is one printed above.
+""")
+
+code(r"""
+import json
+
+
+def _f(x):
+    return None if x is None or (isinstance(x, float) and math.isnan(x)) else x
+
+
+def region_record(r):
+    _, qcols, _ = seed_offsets(r)
+    return {"k": r["k"], "target": r["target_name"], "name": uniprot_name.get(r["target_name"], ""), "E": r["region_evalue"],
+            "start": r["region_start"], "end": r["region_end"], "tstart": r["target_start"], "tend": r["target_end"],
+            "q": r["region_subseq"], "t": r["target_subseq"], "thp": r["moltype_seq"], "seeds": qcols,
+            "shared_kmers": r["region_n_shared_kmers"], "identical": r["identical_residues"],
+            "region_lc": round(r["region_lc_share"], 3), "seed_lc": round(r["seed_lc_share"], 3),
+            "target_seed_lc": round(r["target_seed_lc_share"], 3),
+            "rules": {rule: bool(r[rule]) for rule in RULES[1:]}}
+
+
+explainer = {
+    "bhf": {"id": BHF_ID, "seq": bhf_seq, "lc": [list(x) for x in sm.stretches(lc)], "hp_h": "".join(sorted(HP_H))},
+    "phmmer": [{"target": r["target"], "name": r["target_name"], "E": r["phmmer_E"], "start": r["bhf_start"], "end": r["bhf_end"]}
+               for r in aln_tab.sort("phmmer_E").iter_rows(named=True)],
+    "vpx_alignment": {"bhf_from": vpx["bhf_from"], "q": vpx["q"], "t": vpx["t"], "longest_run": vpx_best},
+    "alignments": aln_tab.sort("phmmer_E").to_dicts(),
+    "kmerseek_on_phmmer_targets": km_on.sort("target", "k").to_dicts(),
+    # kmerseek's own region on Vpx P27984 at each k, residues and shared k-mer columns
+    "vpx_regions": [{"k": r["k"], "start": r["region_start"], "end": r["region_end"], "tstart": r["target_start"],
+                     "tend": r["target_end"], "E": r["region_evalue"], "shared_kmers": int(r["region_n_shared_kmers"]),
+                     "q": r["region_subseq"], "t": r["target_subseq"], "thp": r["moltype_seq"], "seeds": seed_offsets(r)[1]}
+                    for r in kr.filter(pl.col("target_name") == "P27984").with_columns(
+                        pl.col("region_n_chained").cast(pl.Int64)).sort("k").iter_rows(named=True)],
+    "regions_E_below_10": [region_record(r) for r in bhf_ann.sort("k", "region_evalue").iter_rows(named=True)],
+    "region_counts": kr.group_by("k").agg(pl.len().alias("regions"), (pl.col("region_evalue") < 10).sum().alias("E_below_10")).sort("k").to_dicts(),
+    "shuffle": {"rules": RULES, "per_query": [{k_: _f(v) for k_, v in d.items()} for d in bhf_per.with_columns(
+        (pl.col("query_name") == BHF_ID).alias("is_bhf")).drop("query_name").to_dicts()],
+        "summary": [{k_: _f(v) for k_, v in d.items()} for d in lc_tab.to_dicts()]},
+    "chance": {"p_same": p_same, "f_bhf": f_bhf, "f_targets": f_ref, "need": need.to_dicts()},
+    "protein_p": {"zero": int((prot_p["p"] == 0).sum()), "targets": prot_p.height,
+                  "at_or_below_vpx": int((prot_p["p"] <= prot_p.filter(pl.col("target_name") == "P27984")["p"][0]).sum())},
+    "features": [{k_: _f(v) for k_, v in d.items()} for d in feat_tab.to_dicts()],
+    "seed_counts": {"table": seed_tab.to_dicts(), "per_query": seed.select("k", "query", *SEED_MEASURES).to_dicts()},
+}
+EXPLAINER_JSON = TABLES / "279_bhf_explainer_data.json"
+EXPLAINER_JSON.write_text(json.dumps(explainer, separators=(",", ":")))
+print(f"wrote {EXPLAINER_JSON}: {EXPLAINER_JSON.stat().st_size / 1e3:.0f} kB, "
+      f"{len(explainer['regions_E_below_10'])} regions with E < 10, {len(explainer['shuffle']['per_query'])} query x k x rule rows")
+""")
+
+md(r"""
 ## 7. Reach after dropping low-complexity and helix regions
 
 Every kmerseek region on a dark protein (no tool hit with E < 1) under the six settings that
