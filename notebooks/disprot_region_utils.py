@@ -228,7 +228,9 @@ def arm_targets(landing_dir: Path = LANDING_DIR) -> pl.DataFrame:
         stem = f.name[: -len(".regions.parquet")]
         arm, _, target = stem.rpartition(".")
         rows.append(dict(arm=arm, tool=arm.split(".")[0], target=target))
-    return pl.DataFrame(rows, schema=dict(arm=pl.String, tool=pl.String, target=pl.String))
+    return pl.DataFrame(
+        rows, schema=dict(arm=pl.String, tool=pl.String, target=pl.String)
+    )
 
 
 def full_grid(
@@ -248,7 +250,9 @@ def full_grid(
         ints = ["qstart", "qend", "tstart", "tend", "t_feat_start", "t_feat_end"]
         floats = ["rank_score", "iou", "inside", "cover"]
         cols = {
-            f"{p}_{c}": pl.lit(None, dtype=pl.Int64) for p in ("best", "land") for c in ints
+            f"{p}_{c}": pl.lit(None, dtype=pl.Int64)
+            for p in ("best", "land")
+            for c in ints
         }
         cols |= {
             f"{p}_{c}": pl.lit(None, dtype=pl.Float64)
@@ -268,7 +272,9 @@ def full_grid(
             **cols,
         )
     return grid.join(
-        landing.drop("tool"), on=["arm", "target", "label_rule", *REGION_KEY], how="left"
+        landing.drop("tool"),
+        on=["arm", "target", "label_rule", *REGION_KEY],
+        how="left",
     ).with_columns(
         pl.col("landed").fill_null(False),
         pl.col("n_overlapping_calls").fill_null(0),
@@ -281,7 +287,10 @@ def landing_summary(grid: pl.DataFrame, by: list[str]) -> pl.DataFrame:
     if "passes" in grid.columns:
         passing = [
             pl.col("passes").sum().alias("n_passing"),
-            pl.col("land_iou").filter(pl.col("passes")).median().alias("median_iou_passing"),
+            pl.col("land_iou")
+            .filter(pl.col("passes"))
+            .median()
+            .alias("median_iou_passing"),
         ]
     out = (
         grid.group_by(by)
@@ -487,7 +496,10 @@ def random_query_p(
             )
         )
     schema = {
-        **{k: pl.String for k in ("query_acc", "term_id", "arm", "target", "label_rule")},
+        **{
+            k: pl.String
+            for k in ("query_acc", "term_id", "arm", "target", "label_rule")
+        },
         "true_start": pl.Int64,
         "true_end": pl.Int64,
         "case_rank": pl.Int64,
