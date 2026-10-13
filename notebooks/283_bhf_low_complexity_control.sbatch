@@ -40,8 +40,10 @@ set -euo pipefail
 REPO=$SLURM_SUBMIT_DIR
 export NB283_DIR=${NB283_DIR:-$SCRATCH/283-bhf-low-complexity}
 export NB241_HUMAN=${NB241_HUMAN:-$SCRATCH/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa}
-# md5 d0774e68fbf8aa38cc4c2bfbfe6280df, the same file as the laptop copy 241 read.
-export NB241_KAPPA=${NB241_KAPPA:-$SCRATCH/2024-kmerseek-invertebrate-dark-set-0.4/nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv}
+# The kappa table 241 read, committed with this notebook (md5 4c866e34..., checked by the
+# script). The dark-set copy on Sherlock has since gained a funcgroups8 row, which changed 8
+# settings and stopped jobs 47648335 and 47648977 at the plan.json check.
+export NB241_KAPPA=${NB241_KAPPA:-$REPO/notebooks/241_kappa_by_alphabet.tsv}
 # 256's run folder: queries.fa (BHF and its 300 copies), arms.json and top/.
 export NB256_RUN=${NB256_RUN:-$SCRATCH/241-alphabet-ranking/null_bhf_dipeptide}
 KMERSEEK_TAG=nb241-kmerseek-982a055

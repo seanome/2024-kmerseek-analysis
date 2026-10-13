@@ -39,7 +39,8 @@ Paths come from the environment so the same script runs on Sherlock and the lapt
   NB283_DIR        output folder (default $SCRATCH/283-bhf-low-complexity)
   NB241_KMERSEEK   kmerseek 982a055 binary
   NB241_HUMAN      gencode.v49.pc_translations.canonical.fa
-  NB241_KAPPA      the dark-set kappa_by_alphabet.tsv 241 read
+  NB241_KAPPA      the kappa table 241 read (default: notebooks/241_kappa_by_alphabet.tsv,
+                   the dark-set table at c2eaaaaf, before funcgroups8 got a row)
   NB256_RUN        256's null_bhf_dipeptide folder (queries.fa, arms.json, top/)
 
 Usage: 283_bhf_low_complexity_control.py indexes|reproduce|search [--null kept|removed]
@@ -68,12 +69,16 @@ ENV = os.environ
 OUT = Path(ENV.get("NB283_DIR", Path(ENV.get("SCRATCH", "/tmp")) / "283-bhf-low-complexity"))
 KMERSEEK = Path(ENV.get("NB241_KMERSEEK", str(lc.KMERSEEK)))
 HUMAN = Path(ENV.get("NB241_HUMAN", "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"))
-KAPPA = Path(ENV.get("NB241_KAPPA", ""))
+KAPPA = Path(ENV.get("NB241_KAPPA", HERE / "241_kappa_by_alphabet.tsv"))
 RUN256 = Path(ENV.get("NB256_RUN", "/Users/olga/data/botryllus/alphabet-ranking-three-cases/null_bhf_dipeptide"))
 IDX_RUN = OUT / "indexes"  # the 241 driver's output folder: idx/, search/, logs/, plan.json
 
 # md5 of notebook 241's plan.json (152 settings), as listed in PR 83's inputs.
 PLAN_MD5 = "9a77724514ae4e6833e773cd4b0da806"
+# md5 of the kappa table 241 read: the dark-set kappa_by_alphabet.tsv as of commit c2eaaaaf
+# (2026-09-21). The table gained a funcgroups8 row on 2026-10-02 (0b7a8525), which changes
+# 8 funcgroups8 settings from the fallback penalty 2 / X-drop 8 to 0.29 / 1.18.
+KAPPA_MD5 = "4c866e34919ea0590005ba75cf39860a"
 # md5 of the three-protein queries.fa 241 searched (PR 83's inputs).
 QUERIES_MD5 = "fc9ac30a7773b921c086c1684d4b631f"
 
@@ -206,6 +211,7 @@ def step_indexes(workers: int) -> None:
     if not q.exists():
         q.write_text((RUN256.parent / "queries.fa").read_text())
     assert md5(q) == QUERIES_MD5, f"{q} is not the queries.fa 241 searched"
+    assert md5(KAPPA) == KAPPA_MD5, f"{KAPPA} is not the kappa table 241 read (md5 {md5(KAPPA)})"
     drv.KMERSEEK, drv.HUMAN, drv.OUT, drv.QUERIES, drv.KAPPA_TSV = KMERSEEK, HUMAN, IDX_RUN, q, KAPPA
     # Check the settings before spending an hour on indexes.
     sys.argv = ["241_alphabet_ranking_driver.py", "--plan-only"]
