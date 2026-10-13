@@ -1,0 +1,2 @@
+sentinel: no BPE boundary diagnostic was run. See bin/hp_bpe_boundary_diagnostic.py
+and `make bpe-tokenizer`; the report drops that panel rather than failing.

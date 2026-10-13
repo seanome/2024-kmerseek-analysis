@@ -1,0 +1,2521 @@
+# QfO Pfam region/domain-finding benchmark.
+#
+# build/push/sync/fetch/pull targets run on your Mac.
+# run-*/status targets run ON Sherlock (ssh sherlock; cd $SCRATCH/qfo-pfam-region-benchmark).
+# See README-sherlock.md for the full runbook.
+
+SHELL := /bin/bash
+
+# --- Mac-side config -------------------------------------------------------
+# Resolved from the source worktree at build time, not pinned by hand. It is written into
+# the image as provenance (/etc/kmerseek_git_sha) while the build itself COPYs that
+# worktree, so a hand-pinned value silently labels the image with a commit it does not
+# contain. Override on the command line to build a specific commit.
+KMERSEEK_SHA   ?= $(shell git -C $(KMERSEEK_SRC) rev-parse HEAD 2>/dev/null)
+IMAGE_TAG      ?= 2026-08-24-reduced-alphabets
+IMAGE_LOCAL    := kmerseek-region:latest
+IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
+
+# IMAGE_TAG is the single source of truth for which kmerseek image runs, and every Sherlock
+# run target passes --kmerseek_image $(IMAGE_REMOTE) so that stays true.
+#
+# nextflow.config declares its own literal for params.kmerseek_image. That is the right
+# default for a bare `nextflow run` with no Makefile involved, but as a value the run
+# targets INHERITED it was a silent trap: IMAGE_TAG also builds ALL_CONTAINERS, so bumping
+# the tag here made `make prefetch-images` pull and cache the new image, print a cheerful
+# "have <new tag>", and then hand the run the old one from the config. Two strings that
+# have to be edited together, where disagreeing produces results rather than an error, is
+# the shape that gets blamed on the pipeline for a week. So the Makefile always overrides.
+#
+# The local run targets already did this with kmerseek-region:local. This is the same move
+# for the cluster.
+#
+# A SECOND kmerseek image, for the two alphabets the running sweep's binary does not have.
+# polarity4 and funcgroups8 landed in kmerseek dd630a8 (2026-08-25); IMAGE_TAG above was
+# built from 3fdfd51a (2026-08-24), which predates it.
+#
+# The obvious move -- bump IMAGE_TAG and rebuild -- is the one to avoid. The container is
+# part of every kmerseek task's hash, so a new tag re-pulls the image on every node and
+# rehashes the whole matrix, and a sweep sitting on 2507 cached indexes and 1700 cached
+# searches would resume by re-running all of it. A second tag leaves that cache alone: only
+# `run-rannon-burstein` passes it, and only that run's tasks hash against it.
+#
+# Both images are built from the same KMERSEEK_SRC worktree, so this tag is only meaningful
+# once that worktree is at a commit containing dd630a8. `make build-image-rannon-burstein`
+# checks that rather than trusting it.
+RB_IMAGE_TAG    ?= 2026-08-27-rannon-burstein
+RB_IMAGE_REMOTE := docker.io/olgabot/kmerseek:$(RB_IMAGE_TAG)
+# The kmerseek commit that added polarity4 and funcgroups8.
+RB_REQUIRED_SHA ?= dd630a8
+
+METAPREDICT_TAG    ?= 2026-08-27
+METAPREDICT_REMOTE := docker.io/olgabot/metapredict:$(METAPREDICT_TAG)
+FOLDDISCO_TAG    ?= 2026-08-20-noentrypoint
+FOLDDISCO_REMOTE := docker.io/olgabot/folddisco:$(FOLDDISCO_TAG)
+KMERSEEK_SRC   := /Users/olga/code/kmerseek/.claude/worktrees/reduced-alphabets
+
+SHERLOCK_HOST  ?= sherlock
+
+# Multiplex ssh connections. Every rsync and ssh here otherwise opens its own connection
+# and triggers its own two-factor prompt; with ControlMaster the first one authenticates
+# and the rest ride the same socket for ControlPersist. This applies to all targets, not
+# just sync-data -- pull-results and sync-pipeline were equally annoying.
+SSH_MUX  := ssh -o ControlMaster=auto -o ControlPath=$$HOME/.ssh/cm-%r@%h:%p -o ControlPersist=30m
+RSYNC    := rsync -avz --progress -e "$(SSH_MUX)"
+REPO_URL       ?= https://github.com/seanome/2024-kmerseek-analysis.git
+BRANCH         ?= olgabot/midi-plus-all-qfo
+
+# $SCRATCH, never $HOME -- the home quota is small and the work dir is not.
+REMOTE_REPO    := $$SCRATCH/2024-kmerseek-analysis
+# The pipeline directory inside that checkout. Every remote target runs from here: it is
+# both inside the git tree (so `git pull` works) and the directory holding main.nf (so the
+# run targets' `../main.nf` from run/ resolves). Those two roles are why this is the
+# subdirectory and not the repo root.
+REMOTE_DIR     := $(REMOTE_REPO)/nextflow-runs/qfo-pfam-region-benchmark
+
+ANALYSIS_ROOT  := /Users/olga/code/2024-kmerseek-analysis
+ANNOTATIONS    := $(ANALYSIS_ROOT)/results/pfam_benchmark/annotations
+# Pfam-A HMMs for the hmmscan annotation ceiling. main.nf defaults to ~/data/pfam/Pfam-A.hmm
+# on whichever machine it runs, so the cluster needs its own copy -- see sync-pfam.
+PFAM_HMM       ?= /Users/olga/data/pfam/Pfam-A.hmm
+
+# Where sync-pfam puts it on the cluster, and therefore what the run targets pass. These
+# two have to agree: main.nf sets params.run_hmmscan from file(pfam_hmm).exists(), so a
+# path nothing wrote to turns the annotation ceiling off silently. That is what made a
+# successful `make sync-pfam` still produce runs with no hmmscan arm -- the data was there
+# and nothing pointed at it.
+#
+# $$SCRATCH, not $(SCRATCH): the run targets execute ON Sherlock, so this has to reach that
+# shell as a literal $SCRATCH for it to expand. Unquoted for the same reason -- the single
+# quotes sync-pfam wraps its rsync destination in are what keep ssh from expanding it on
+# the Mac, and there is no ssh hop here.
+PFAM_HMM_REMOTE ?= $$SCRATCH/data/pfam/Pfam-A.hmm
+# Same shape as LOCAL_SKIP_ARMS: the whole flag or nothing, so `PFAM_HMM_REMOTE=` runs
+# without --pfam_hmm rather than passing an empty path.
+PFAM_HMM_ARG     = $(if $(PFAM_HMM_REMOTE),--pfam_hmm $(PFAM_HMM_REMOTE))
+
+QFO_DIR        := /Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
+
+# --- QfO release, fetched ON SHERLOCK ---------------------------------------
+#
+# The whole 78-species release, straight from the EBI FTP to $SCRATCH, so the wide run
+# does not depend on 77 proteomes existing on a laptop first. 2.65 GB compressed.
+#
+# 2020_04 AND NOT THE CURRENT RELEASE, which is 2026_02. This is the release every
+# existing cache was built from, and species labels are the only key those caches have:
+# an index named ecoli.dayhoff6.k10.lcfalse.kmerseek.rocksdb says nothing about which
+# release its sequences came from, so newer FASTAs under the same labels would be reused
+# rather than rebuilt. assets/qfo_cache_critical.md5 pins the ten proteomes that decision
+# rests on and qfo-download verifies them after unpacking. EBI keeps old releases under
+# previous_releases/, which is what makes staying on 2020_04 possible at all.
+QFO_RELEASE      ?= QfO_release_2020_04_with_updated_UP000008143
+QFO_RELEASE_DIR  ?= qfo_release-2020_04_with_updated_UP000008143
+QFO_FTP_BASE     ?= https://ftp.ebi.ac.uk/pub/databases/reference_proteomes/previous_releases
+QFO_TARBALL_URL  ?= $(QFO_FTP_BASE)/$(QFO_RELEASE_DIR)/$(QFO_RELEASE).tar.gz
+QFO_TARBALL_SIZE ?= 2648666198
+
+# Outside the repo checkout and outside the pipeline's data/, because it is release data
+# shared by every worktree and every run -- the same reason Pfam-A.hmm lives in
+# $SCRATCH/data/pfam. data/qfo becomes a symlink to it.
+QFO_REMOTE_ROOT  ?= $$SCRATCH/data/quest-for-orthologs
+QFO_REMOTE_DIR   ?= $(QFO_REMOTE_ROOT)/$(QFO_RELEASE)
+
+STRUCT_DIR     := /Users/olga/data/alphafold_proteomes
+ACC_DIR        := /Users/olga/data/alphafold_proteomes/_accessions
+LOCAL_RESULTS  := /Users/olga/data/qfo-pfam-region-benchmark
+MINI_DIR       := /Users/olga/data/qfo-pfam-region-benchmark-mini
+MHC_DIR        := /Users/olga/data/qfo-pfam-region-benchmark-mhc
+
+# Empty means all ten proteomes. Name one to fetch just that, e.g.
+#   make fetch-structures SPECIES_ONE=mouse
+SPECIES_ONE    ?=
+
+# Parallel transfers on the login node. Modest on purpose: shared node, public EBI endpoint.
+FETCH_PARALLEL ?= 4
+
+# Two species and two combos: enough to exercise every stage in minutes.
+# TARGET proteomes. Human is the query and is never listed here.
+MINI_TARGETS ?= yeast,ecoli
+MINI_COMBOS  ?= protein20:10,hp_pbotc_1st_ed2:19
+
+# Midi: every human chr6 gene as the query, FULL proteomes as targets. Real scale on the
+# target side, ~5% of the query load -- 964 proteins carrying 2358 of the 50185 human Pfam
+# domain instances. chr6 because it carries the MHC, so this subsumes the MHC vignette.
+MIDI_TARGETS ?= mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli
+
+# What the query FASTA holds, in words, for the head of the MultiQC report. The metrics
+# carry no record of which gene set built the query FASTA, so the run that knows says it.
+# The midi targets set QUERY_SET_LABEL themselves; a `make multiqc*` on another run's
+# results passes it on the command line, or leaves it empty and the head says "human
+# proteins" with nothing about a subset.
+MIDI_QUERY_SET      := human proteins from chromosome 6, a test subset of the proteome
+MIDI_PLUS_QUERY_SET := human proteins from chromosome 6 plus the MHC's partners on other chromosomes, a test subset of the proteome
+QUERY_SET_LABEL ?=
+QUERY_SET_NF_ARG  = $(if $(QUERY_SET_LABEL),--query_set_label "$(QUERY_SET_LABEL)",)
+
+# midi-plus searches one more target: Botryllus schlosseri, a colonial tunicate at the same
+# 550 MYA node as ciona. It is SEARCHED BUT NOT SCORED -- it has no Pfam annotations, so
+# build_domain_truth.py writes no domain map for it and main.nf's score_in inner-joins it
+# out of scoring. It contributes hits to look at, not metrics.
+#
+# Deliberately NOT added to MIDI_TARGETS. That variable also drives run-midi, which is the
+# nine-species scored run every published number comes from; widening it would change what
+# that run searches for a species that cannot contribute a number.
+MIDI_PLUS_TARGETS ?= $(MIDI_TARGETS),botryllus
+
+# The Botryllus proteome, which is not part of any QfO release. `make stage-botryllus`
+# cleans the download and writes it into the QfO tree; see that target.
+BOTRYLLUS_SRC  ?= $(HOME)/Downloads/botryllus_new_genome_protein.fasta
+BOTRYLLUS_DEST := $(QFO_DIR)/Eukaryota/BOTSCH2026_30301.fasta
+
+# Arms the local smoke tests leave out. The big stuff belongs on Sherlock.
+#
+# ProstT5 is the whole of it right now. prostt5Weights downloads the model over the
+# network, and it has FAILED in every local run there has ever been -- exit 1 in half a
+# second in both run-mhc/qfo_pfam_region.2026-08-24.trace.txt and the 2026-08-26 one, which
+# then aborts everything queued behind it. The Sherlock targets never hit that process
+# because they pass --prostt5_weights ../data/prostt5/weights, downloaded once by
+# `make prostt5-weights` on a login node; the local targets have no such path.
+#
+# Even with weights on hand this would be the wrong place for it. prostt5Db runs a
+# 3B-parameter T5 encoder over every proteome, on a GPU on Sherlock and on nothing at all
+# here, and params.prostt5_memory is 64 GB with a comment in main.nf saying explicitly not
+# to scale it down for a smoke test -- the model sets that floor, not the data set. The
+# local runs exist to check pipeline wiring in minutes.
+#
+# Set to empty to run the arm anyway (expect a multi-GB download and a very long CPU pass):
+#   make run-mhc-local LOCAL_SKIP_ARMS=
+LOCAL_SKIP_ARMS ?= --skip_prostt5 true
+
+PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+
+# Mac-side Nextflow. Pinned to the conda env rather than relying on PATH; on Sherlock the
+# run targets use `ml load biology nextflow` instead. Both words are needed: nextflow
+# lives under the `biology` hierarchy, so `ml load nextflow` resolves only in a shell
+# that already has biology loaded -- it worked interactively and failed from make.
+NEXTFLOW ?= /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow
+
+# That env ships its own JVM under lib/jvm and does not put it on PATH. macOS carries a
+# /usr/bin/java STUB which exists but is not a runtime, so `command -v java` succeeds and
+# nextflow still dies with "Unable to locate a Java Runtime" -- which is what every Mac-side
+# nextflow target did, with an error naming Java rather than the missing JAVA_HOME. Derived
+# from NEXTFLOW so overriding one moves the other, and guarded on the JVM actually being
+# there so this stays inert on Sherlock, where `ml load biology nextflow` supplies both.
+NEXTFLOW_JVM := $(patsubst %/bin/nextflow,%/lib/jvm,$(NEXTFLOW))
+ifneq ($(wildcard $(NEXTFLOW_JVM)/bin/java),)
+export JAVA_HOME := $(NEXTFLOW_JVM)
+endif
+
+# Sherlock compute nodes are amd64; an Apple Silicon build defaults to arm64, which
+# Apptainer refuses to run.
+DOCKER_PLATFORM := linux/amd64
+
+# Where kmerseekIndex stores its target indexes: DB_CACHE in main.nf, which the run
+# targets set to ../results so run-midi and the full run share one set.
+REMOTE_INDEX_DIR ?= results/kmerseek_index
+
+PROFILE := sherlock
+
+# SLURM coordinates for the few things this Makefile submits itself. Nextflow gets its own
+# from the sherlock profile in nextflow.config; these are only for prefetch-images.
+SLURM_ACCOUNT   ?= ayeletv
+SLURM_PARTITION ?= hns
+# mksquashfs sizes its cache off the node's total RAM, not the cgroup it is confined to, so
+# on a login node it happily over-allocates and dies with "Out of memory (cache_alloc)".
+# Converting inside a job with a real allocation is the fix.
+PREFETCH_MEM    ?= 48G
+PREFETCH_TIME   ?= 2:00:00
+
+# --- Where the head process itself runs ------------------------------------
+# As a SLURM job, in a tmux session on a compute node. Not on a login node, and not tied
+# to your terminal. Two separate things forced this, a day apart:
+#
+# The ten-CPU-MINUTE cap. /etc/security/limits.d/sh_login.conf caps every process
+# belonging to @sh_users: `cpu 10`, `as 33554432`, `nofile 256`, `nproc 512`. The `-`
+# column means soft equals hard, so the kernel skips SIGXCPU and sends SIGKILL. The
+# 2026-09-08 all-QfO run was tracking ~31_000 tasks (15_834 kmerseekIndex and 15_177
+# kmerseekSearch), crossed ten CPU-minutes 16.5 hours in, and died at Sep-09 06:01:31 with
+# .nextflow.log stopping mid-line, no OutOfMemoryError in any of its 24 MB, and no shutdown
+# sequence. make reported Error 137. It reads like an out-of-memory kill and is not one.
+# Capping the JVM heap fixes nothing, because the budget is CPU seconds rather than bytes. The four earlier runs in that directory all reached "Execution complete --
+# Goodbye" because they were small enough to stay under ten minutes. Measured rate on a
+# live head: 1.45% of one core, which reaches ten CPU-minutes in about 11 hours.
+#
+# The login node itself. On 2026-09-09 sh03-ln07 rebooted at 15:53 and came back without
+# /scratch mounted, taking with it a 10-day tmux, a running head, and every job that head
+# had submitted -- it got SIGTERM on the way down and cancelled its own queue. Boot times
+# across the eight login nodes are scattered over four months with no cycle, so there is no
+# safe node to pin to; two of them had been up 121 days and one had been up 5 minutes.
+#
+# A batch job is out of reach of both. Nothing of the run is left on a login node.
+#
+# On a compute node those four limits are unlimited, unlimited, 131072 and 12288 (measured
+# on sh04-04n19). Same move as prefetch-images converting images inside a job.
+HEAD_CPUS ?= 2
+HEAD_MEM  ?= 16G
+# SLURM enforces --mem with a cgroup, and a JVM that sizes its heap off the NODE's 191 GB
+# would be killed inside a 16 GB allocation -- the same total-RAM-versus-cgroup mistake
+# noted above for mksquashfs. Pinned rather than left to container detection, with the
+# remainder for metaspace, thread stacks and the off-heap cache DB.
+HEAD_XMX  ?= 12g
+export NXF_OPTS := -Xms1g -Xmx$(HEAD_XMX)
+# `normal`, and not `long`, even for the seven-day head. hns declares
+# AllowQos=normal,high_p,system and carries a partition QOS of `owner` whose MaxWall is 7
+# days. `long` is not on that list -- it is allowed on the public `normal` PARTITION only
+# -- so asking for it here fails at submission with "Invalid qos specification", which is
+# how the first all-QfO launch died.
+#
+# The `normal` QOS's own 2-day MaxWall does not bind on hns; the partition QOS is what
+# applies. Probed with sbatch --test-only: hns + normal + 7 days is accepted and placed at
+# the same moment as the 2-day version, while normal + long + 7 days would not have started
+# for another 3.5 hours. So the condo is both the faster and the simpler answer, and
+# nothing here needs one of the four `long` slots after all.
+HEAD_QOS  ?= normal
+HEAD_TIME ?= 2-00:00:00
+# The tmux session name inside the head job. `make watch` attaches to it.
+HEAD_SESSION ?= qfo
+# The SLURM job name. Every squeue lookup in watch/attach/stop keys on it, so two pipelines
+# submitting heads at once must not share one -- the invertebrate dark set uses
+# nfdrv-<species> for that reason.
+HEAD_JOBNAME ?= nf-head
+
+# scripts/nf-head, shared with the other Sherlock pipelines, writes and submits the job
+# script; see the header there for what it does and why. Deliberately NOT in this
+# pipeline's bin/: Nextflow stages bin/ into every task and counts it in the task hash, so
+# a file added there would invalidate the resume cache for every one of the sweep's
+# completed tasks.
+#
+# Recursive `=`, not `:=`, so the per-target overrides below are in scope when it expands.
+MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
+HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
+              HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
+              HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
+              HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
+              $(MAKEFILE_DIR)/../../scripts/nf-head
+
+# --- MultiQC report --------------------------------------------------------
+# Which run's resource numbers the report describes. Defaults to the newest trace the main
+# run left behind; override for a specific one:
+#   make multiqc TRACE=run/qfo_pfam_region.2026-08-24.trace.txt
+TRACE          ?= $(shell ls -t run/*.trace.txt 2>/dev/null | head -1)
+MULTIQC_OUTDIR ?= ../results
+# Local equivalents, pointed at the MHC smoke run by default.
+TRACE_LOCAL          ?= $(shell ls -t run-mhc/*.trace.txt 2>/dev/null | head -1)
+MULTIQC_OUTDIR_LOCAL ?= $(MHC_DIR)/results
+
+# Both multiqc targets launch nextflow from run-report/, so a relative --outdir is relative
+# to THAT directory and not to this Makefile. The preflight check below has to look in the
+# same place nextflow will, so relative values get resolved through run-report/ and
+# absolute ones are left alone.
+outdir_abs = $(if $(filter /%,$(1)),$(1),$(abspath run-report/$(1)))
+
+MULTIQC_OUTDIR_ABS       := $(call outdir_abs,$(MULTIQC_OUTDIR))
+MULTIQC_OUTDIR_LOCAL_ABS := $(call outdir_abs,$(MULTIQC_OUTDIR_LOCAL))
+
+# The same resolution for any other launch directory. outdir_abs hard-codes run-report/,
+# which is right for the two multiqc targets and wrong for everything else: every run
+# target's paths are written against ITS launch directory, and make's own cwd is the
+# pipeline directory one level up. `--report_outdirs ../data/midi/results` passed through
+# $(abspath) without this correction resolves one directory too high and silently names a
+# path that does not exist.
+#   $(1) launch directory the path was written against
+#   $(2) the path
+rel_to_launch = $(if $(filter /%,$(2)),$(2),$(abspath $(1)/$(2)))
+
+# Every container the pipeline can pull, read straight out of main.nf plus the kmerseek
+# image, so this list cannot drift from what the processes actually declare.
+ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" main.nf | sort -u) \
+                  docker.io/olgabot/kmerseek:$(IMAGE_TAG) $(FOLDDISCO_REMOTE) \
+                  $(METAPREDICT_REMOTE)
+
+# What `prefetch-images` actually pulls. Indirection so a run target that needs an image
+# outside the standard set can add it with a target-specific override, which make also
+# applies to the target's prerequisites -- see run-rannon-burstein. RB_IMAGE_REMOTE is
+# deliberately NOT in ALL_CONTAINERS: that would make every `make run` pull and squashfs a
+# second multi-GB image for arms it never executes.
+PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
+
+.PHONY: run-midi-plus-0.4 run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
+        build-folddisco-image push-folddisco-image \
+        build-metapredict-image push-metapredict-image structure-lists fetch-structures \
+        mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
+        midi-testset-sherlock run-midi fetch-structures-login \
+        midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
+        run-midi-plus-all-qfo queue-empty \
+        watch attach stop \
+        fetch-structures-mac \
+        run-mini run-mini-local pull-mini \
+        stage-botryllus \
+        sync-pipeline sync-data sync-pfam sync-structures pull-results \
+        qfo-download qfo-link qfo-verify-existing \
+        pfam-regions pfam-regions-download pfam-annotations \
+        run run-kmerseek run-baselines rannon-burstein-all status running postmortem kill-jobs clean-cache clean-indexes index-disk \
+        gpu-benchmark gpu-benchmark-report \
+        prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
+        pfamn-download pfamn-truth mcsa-truth help \
+        bpe-tokenizer hp-bpe-diagnostic sherlock-clone test \
+        fetch-structures-login \
+        multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
+        build-image-rannon-burstein push-image-rannon-burstein \
+        run-rannon-burstein multiqc-rannon-burstein \
+        pull-report pull-report-mini pull-report-midi \
+        purge-empty-kmerseek-regions
+
+help:
+	@echo "Mac:"
+	@echo "  build-image           Build the amd64 Kmerseek image for Sherlock"
+	@echo "  build-image-local     Build the native Kmerseek image for local Docker"
+	@echo "  push-image            Push the Kmerseek image to Docker Hub"
+	@echo "  push-image-rannon-burstein"
+	@echo "                        Push a SECOND Kmerseek image carrying polarity4 and"
+	@echo "                        funcgroups8, under its own tag so the running sweep's"
+	@echo "                        cache is untouched"
+	@echo "  push-folddisco-image  Push the FoldDisco image to Docker Hub"
+	@echo "  sync-pipeline         Push the current branch and update Sherlock"
+	@echo "  stage-botryllus       Clean the Botryllus proteome into the QfO tree"
+	@echo "                        (run-midi-plus's 10th, unscored target; then sync-data)"
+	@echo "  sync-data             Copy benchmark inputs to Sherlock"
+	@echo "  sync-structures       Copy AlphaFold structures to Sherlock"
+	@echo "  run-mhc-local         Smoke test: 25 MHC genes vs mouse, ProstT5 arm off"
+	@echo "  run-mini-local        Smoke test: mini set, ProstT5 arm off"
+	@echo "  multiqc-status        Show what the report would be built from"
+	@echo "  multiqc-local         Build the MultiQC report from a local run"
+	@echo "  test                  Run the pipeline tests on the committed fixture (~15 s)"
+	@echo "  bpe-tokenizer         Fetch the ProtBERTa BPE tokenizers from Zenodo (186 KB)"
+	@echo "  hp-bpe-diagnostic     Do ProtBERTa_2 token boundaries land on Pfam domains?"
+	@echo "  pull-report           Fetch the MultiQC report back from Sherlock"
+	@echo ""
+	@echo "  The local runs are wiring smoke tests. Anything that needs a model download,"
+	@echo "  a GPU or real proteomes belongs on Sherlock -- see LOCAL_SKIP_ARMS."
+	@echo ""
+	@echo "Sherlock:"
+	@printf '%s\n' '  prefetch-images       Pull all pinned images into $$SCRATCH cache'
+	@echo "  qfo-download         Fetch the 78-species QfO 2020_04 release to \$$SCRATCH (2.65 GB)"
+	@echo "                       Resumable; verifies the ten cache-critical proteomes"
+	@echo "  qfo-link             Point this checkout's data/qfo at that release"
+	@echo "  pfam-regions         Fetch Pfam-A.regions.tsv.gz (5 GB) and filter to QfO"
+	@echo "  pfam-annotations     Build the Pfam answer key for every species missing one"
+	@echo "  mini-testset-sherlock Build the mini data set"
+	@echo "  run-mini             Run the mini smoke test"
+	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
+	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
+	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
+	@echo "  watch                attach to the running head and see the live table"
+	@echo "  stop                 ask the running head to cancel its tasks and exit"
+	@echo "                       Reuses run-midi-plus's stored searches; replaces its report"
+	@echo "                       Additive to run-midi, its own outdir, target DBs shared."
+	@echo "                       Also searches botryllus, a 10th target that is NOT scored"
+	@echo "                       (no Pfam annotations). Needs 'make stage-botryllus' first"
+	@echo "  fetch-structures     Download AlphaFold structures ON the login node (~36 GB)"
+	@echo "  run-kmerseek         Run only the Kmerseek sweep"
+	@echo "  run-baselines        Run only the baseline tools"
+	@echo "  gpu-benchmark        Time foldseek+mmseqs search on CPU and GPU, one session"
+	@echo "  gpu-benchmark-report Re-read a gpu-benchmark trace into queries/s"
+	@echo "  run                  Run the complete benchmark"
+	@echo "  run-rannon-burstein  polarity4 + funcgroups8 only, midi set, kmerseek only"
+	@echo "  multiqc              Rebuild the MultiQC report from published results"
+	@echo "  multiqc-partial      Report on the arms scored SO FAR, while a run is going"
+	@echo "  multiqc-rannon-burstein"
+	@echo "                       One report over run-midi AND run-rannon-burstein, so the"
+	@echo "                       two new alphabets appear next to every other tool"
+	@echo "  multiqc-status       Show what that report would be built from"
+	@echo "  prostt5-weights      Download ProstT5 weights on a login node"
+	@echo "  status               Show this user's SLURM jobs"
+	@echo "  postmortem           Did the last run end, what killed it, what it said"
+	@echo "                       HISTORY=1 for one line per past run, LOG=.nextflow.log.2 for an older one"
+	@echo "  rannon-burstein-all  Search polarity4/funcgroups8, then build the combined report"
+	@echo "  running              Show the process and tag behind each running job"
+	@echo "  kill-jobs            Cancel every job on the account (confirms first)"
+	@echo ""
+	@echo "Cleanup:"
+	@echo "  clean-image-cache    Remove partial Apptainer pulls"
+	@echo "  clean-cache          Remove all cached Apptainer images"
+	@echo "  purge-empty-kmerseek-regions"
+	@echo "                       Delete zero-byte kmerseek region files (stored OOM kills)"
+	@echo "                       so the next -resume searches those combos again"
+
+
+# --- which machine am I on? -------------------------------------------------
+# Half these targets push data from the Mac to the cluster and half run on the
+# cluster itself. Running one on the wrong side produces a confusing failure --
+# `make sync-data` on Sherlock tries to resolve the host `sherlock` from Sherlock
+# and dies in rsync -- so each target says where it belongs and refuses politely.
+# $SCRATCH is set on Sherlock and unset on the Mac, which is the cheapest reliable
+# discriminator that needs no network.
+ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
+
+MAC_PIPELINE_DIR := /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/midi-plus-all-qfo/nextflow-runs/qfo-pfam-region-benchmark
+
+# The name these two guards quote back at you. Normally the target being built, which is
+# also the target you typed. A helper target that only ever runs as somebody else's
+# prerequisite -- multiqc-preflight -- sets this to the name you actually typed, since
+# being told to ssh over and run an internal target is not advice anyone can follow.
+# Falls back to what was actually TYPED when the guard fires inside a prerequisite. Being
+# told "'prefetch-images' runs on Sherlock" after typing `make run-mini` names an internal
+# target and hides the fact that run-mini-local exists -- which is exactly what happened.
+# GUARD_NAME still wins where a target sets it explicitly.
+GUARD_NAME =
+guard_name = $(strip $(if $(GUARD_NAME),$(GUARD_NAME),\
+             $(if $(filter $@,$(MAKECMDGOALS)),$@,$(firstword $(MAKECMDGOALS)))))
+
+define require_mac
+	@if [ "$(ON_CLUSTER)" = "yes" ]; then \
+	  echo ""; \
+	  echo "  '$(guard_name)' runs on your MAC, not on the cluster."; \
+	  echo "  It moves data from the Mac to $(SHERLOCK_HOST), so it cannot work from here."; \
+	  echo ""; \
+	  echo "  On your Mac:"; \
+	  echo "    cd $(MAC_PIPELINE_DIR)"; \
+	  echo "    make $(guard_name)"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+endef
+
+# The `-local` twin is looked up by grepping this file rather than kept as a list, because
+# a list drifts: `run-mini` sent someone to ssh into Sherlock for a smoke test that
+# `run-mini-local` runs on the Mac in minutes, and no list would have been updated for it.
+define require_cluster
+	@if [ "$(ON_CLUSTER)" != "yes" ]; then \
+	  echo ""; \
+	  echo "  '$(guard_name)' runs ON SHERLOCK, not on your Mac (no \$$SCRATCH here)."; \
+	  echo ""; \
+	  echo "  ssh $(SHERLOCK_HOST)"; \
+	  echo "    cd \$$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark"; \
+	  echo "    make $(guard_name)"; \
+	  if grep -qE "^$(guard_name)-local:" $(firstword $(MAKEFILE_LIST)); then \
+	    echo ""; \
+	    echo "  Or run it here instead -- there is a Mac-side twin:"; \
+	    echo "    make $(guard_name)-local"; \
+	  fi; \
+	  echo ""; \
+	  exit 1; \
+	fi
+endef
+
+# The report reads all_domain_metrics.parquet out of an outdir; it does not compute it.
+# main.nf's `report` entry does say so, but only after nextflow has started, resolved a
+# profile, pulled an image and reached the workflow body -- and only about the parquet
+# path, which does not tell you which run was supposed to have written it. `make
+# multiqc-local` hit this because the MHC smoke run had never finished: prostt5Weights
+# failed, everything behind it aborted, aggregateMetrics never ran. So the same condition is
+# checked here first, in a form that names the run and the command that produces the file.
+#
+#   $(1) outdir to look in, already absolute
+#   $(2) run directory that outdir belongs to
+#   $(3) make target that fills it
+#   $(4) variable to override to point somewhere else
+#   $(5) the target the user typed, spelled out rather than taken from $@, because this
+#        also runs from a preflight prerequisite whose own name would mean nothing to them
+define require_metrics
+	@if [ ! -f "$(1)/all_domain_metrics.parquet" ]; then \
+	  echo ""; \
+	  echo "  '$(5)' has nothing to report on yet."; \
+	  echo ""; \
+	  echo "    run directory:  $(2)"; \
+	  echo "    outdir:         $(1)"; \
+	  echo "    looked for:     $(1)/all_domain_metrics.parquet"; \
+	  echo ""; \
+	  echo "  aggregateMetrics publishes that file at the END of a run, so a run that"; \
+	  echo "  failed partway leaves the outdir looking like this. Produce it with:"; \
+	  echo ""; \
+	  echo "    make $(3)"; \
+	  echo ""; \
+	  echo "  or report on a different run's outdir:"; \
+	  echo ""; \
+	  echo "    make $(5) $(4)=<outdir>"; \
+	  echo ""; \
+	  echo "  'make multiqc-status' shows this without launching anything."; \
+	  echo ""; \
+	  exit 1; \
+	fi
+endef
+
+# What the two multiqc targets would use, without starting nextflow. Reports on whichever
+# side you are on, since the trace and outdir defaults differ between them.
+define report_status
+	@echo ""
+	@echo "  make $(3)"
+	@echo "    trace:   $(if $(1),$(1),NONE FOUND -- pass $(5)=<trace file>)"
+	@echo "    outdir:  $(2)"
+	@if [ -f "$(2)/all_domain_metrics.parquet" ]; then \
+	  echo "    metrics: OK      $(2)/all_domain_metrics.parquet"; \
+	else \
+	  echo "    metrics: MISSING $(2)/all_domain_metrics.parquet"; \
+	  echo "             run 'make $(4)' first"; \
+	fi
+	@if [ -f "$(2)/all_domain_curves.parquet" ]; then \
+	  echo "    curves:  OK      $(2)/all_domain_curves.parquet"; \
+	else \
+	  echo "    curves:  missing -- PR and ROC sections will be skipped"; \
+	fi
+	@echo ""
+endef
+
+multiqc-status:
+ifeq ($(ON_CLUSTER),yes)
+	$(call report_status,$(TRACE),$(MULTIQC_OUTDIR_ABS),multiqc,run,TRACE)
+else
+	$(call report_status,$(TRACE_LOCAL),$(MULTIQC_OUTDIR_LOCAL_ABS),multiqc-local,run-mhc-local,TRACE_LOCAL)
+endif
+
+## ---- Mac side -----------------------------------------------------------
+
+build-image:
+	$(call require_mac)
+	docker build --platform $(DOCKER_PLATFORM) -t $(IMAGE_LOCAL) \
+	  --build-arg GIT_SHA=$(KMERSEEK_SHA) \
+	  -f Dockerfile \
+	  $(KMERSEEK_SRC)
+
+# The image carrying polarity4 and funcgroups8. Same Dockerfile and same source worktree as
+# build-image; the only difference is the tag it gets pushed under, which is the whole point
+# -- see the RB_IMAGE_TAG note at the top.
+#
+# The ancestry check is here rather than left to the run. KMERSEEK_SRC is a live worktree,
+# so nothing stops it sitting on a commit older than dd630a8, and an image built from one
+# would push, prefetch and launch perfectly happily before failing on the first task with
+# "unexpected argument '--polarity4'" -- after the queue wait. `git merge-base
+# --is-ancestor` answers the question in a second here instead.
+build-image-rannon-burstein:
+	$(call require_mac)
+	@if ! git -C $(KMERSEEK_SRC) merge-base --is-ancestor $(RB_REQUIRED_SHA) HEAD; then \
+	  echo ""; \
+	  echo "  $(KMERSEEK_SRC) is at $(KMERSEEK_SHA),"; \
+	  echo "  which does not contain $(RB_REQUIRED_SHA) -- the commit that added polarity4"; \
+	  echo "  and funcgroups8. An image built from it would not have the alphabets."; \
+	  echo ""; \
+	  echo "    git -C $(KMERSEEK_SRC) log --oneline -5"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+	@echo "building $(RB_IMAGE_REMOTE) from kmerseek $(KMERSEEK_SHA)"
+	docker build --platform $(DOCKER_PLATFORM) -t kmerseek-region:rannon-burstein \
+	  --build-arg GIT_SHA=$(KMERSEEK_SHA) \
+	  -f Dockerfile \
+	  $(KMERSEEK_SRC)
+
+push-image-rannon-burstein: build-image-rannon-burstein
+	$(call require_mac)
+	docker tag kmerseek-region:rannon-burstein $(RB_IMAGE_REMOTE)
+	docker push $(RB_IMAGE_REMOTE)
+
+# Native-arch build, for running the mini set on this Mac. The amd64 image above cannot
+# execute here: polars requires AVX2, Apple Silicon emulation does not provide it, and the
+# python steps die with SIGSEGV. Sherlock nodes are real amd64, so only build-image is
+# pushed.
+build-image-local:
+	$(call require_mac)
+	docker build -t kmerseek-region:local \
+	  --build-arg GIT_SHA=$(KMERSEEK_SHA) \
+	  -f Dockerfile \
+	  $(KMERSEEK_SRC)
+
+# folddisco with ENTRYPOINT cleared. The upstream image's entrypoint becomes the SIF
+# runscript under Apptainer and stops Nextflow running /bin/bash, so the task exits 1 with
+# no output whatsoever. Docker does not reproduce it.
+build-metapredict-image:
+	$(call require_mac)
+	docker build --platform $(DOCKER_PLATFORM) -t metapredict:latest \
+	  -f Dockerfile.metapredict .
+
+push-metapredict-image: build-metapredict-image
+	$(call require_mac)
+	docker tag metapredict:latest $(METAPREDICT_REMOTE)
+	docker push $(METAPREDICT_REMOTE)
+
+build-folddisco-image:
+	$(call require_mac)
+	docker build --platform $(DOCKER_PLATFORM) -t folddisco-noentry:latest \
+	  -f Dockerfile.folddisco .
+
+push-folddisco-image: build-folddisco-image
+	$(call require_mac)
+	docker tag folddisco-noentry:latest $(FOLDDISCO_REMOTE)
+	docker push $(FOLDDISCO_REMOTE)
+
+push-image: build-image
+	$(call require_mac)
+	docker tag $(IMAGE_LOCAL) $(IMAGE_REMOTE)
+	docker push $(IMAGE_REMOTE)
+
+# One accession list per species: the proteins the Foldseek arm needs structures for.
+structure-lists:
+	$(call require_mac)
+	$(PYTHON) bin/write_structure_lists.py \
+	  --annotations $(ANNOTATIONS) \
+	  --outdir      $(ACC_DIR)
+
+# Mac-side fetch. Prefer `make fetch-structures`, which downloads on the cluster:
+# pulling ~60 GB to a laptop and pushing it back over ssh is strictly worse than
+# downloading it where it will be used. Kept for wanting the structures locally too.
+#
+# It asks first. This is the one Mac target that commits the laptop to tens of GB over the
+# wire, and the name sits one tab-completion away from `fetch-structures`, which is the
+# cluster one you almost always want. Same read -p shape as clean-indexes. Skip the prompt
+# with `make fetch-structures-mac CONFIRM=yes` when you mean it.
+fetch-structures-mac: structure-lists
+	$(call require_mac)
+	@if [ "$(CONFIRM)" != "yes" ]; then \
+	  echo ""; \
+	  echo "  This downloads ~60 GB of AlphaFold structures to $(STRUCT_DIR) on THIS Mac."; \
+	  echo "  For a Sherlock run you want 'make fetch-structures' instead, which downloads"; \
+	  echo "  them on the login node where they will actually be used."; \
+	  echo ""; \
+	  read -p "  download to this Mac anyway? [y/N] " a; [ "$$a" = y ] || exit 1; \
+	fi
+	bin/fetch_alphafold_structures.sh $(STRUCT_DIR) $(ACC_DIR)
+
+# Everything the cluster needs, in one go. With connection multiplexing these share a
+# single authenticated ssh, so this is one two-factor prompt rather than one per target.
+sync-all: sync-pipeline sync-data
+	@echo "pipeline and data synced. Structures download on the cluster: make fetch-structures"
+
+## ---- mini smoke test ----
+##
+## Builds a few-hundred-protein set whose targets were chosen BECAUSE they share Pfam
+## families with the queries, so real true positives exist. A random subset would share
+## almost nothing, every metric would read 0.0, and a broken scoring path would look
+## exactly like a working one.
+
+mini-testset:
+	$(call require_mac)
+	$(PYTHON) bin/make_mini_testset.py \
+	  --annotations $(ANNOTATIONS) \
+	  --qfo-dir     $(QFO_DIR) \
+	  --outdir      $(MINI_DIR) \
+	  --target_species $(MINI_TARGETS)
+
+# MHC-only set: the 25 genes of notebooks 210-216 against mouse. A vignette and a smoke
+# test, NOT a population statistic -- n=25 across 7 classes must never carry a headline
+# number. Deliberately not size-matched to the default set for that reason.
+mhc-testset:
+	$(call require_mac)
+	$(PYTHON) bin/make_mini_testset.py \
+	  --annotations $(ANNOTATIONS) \
+	  --qfo-dir     $(QFO_DIR) \
+	  --outdir      $(MHC_DIR) \
+	  --target_species mouse \
+	  --gene-set    mhc \
+	  --hgnc        $(HGNC_FILE) \
+	  --n-targets   400
+
+# $(NEXTFLOW), not a bare `nextflow`: the same conda pin every other Mac-side target uses,
+# so this does not depend on which env happens to be active in the shell.
+run-mhc-local:
+	$(call require_mac)
+	mkdir -p run-mhc && cd run-mhc && \
+	  $(NEXTFLOW) run ../main.nf -profile standard,mini -resume \
+	    --kmerseek_image  kmerseek-region:local \
+	    --qfo_dir         $(MHC_DIR)/qfo \
+	    --annotations     $(MHC_DIR)/annotations \
+	    --structures      $(MHC_DIR)/structures \
+	    --outdir          $(MHC_DIR)/results \
+	    $(BPE_NF_ARG) \
+	    --target_species  mouse \
+	    --kmerseek_combos $(MINI_COMBOS) \
+	    --hgnc_file       $(HGNC_FILE) \
+	    --omega_file      $(OMEGA_FILE) \
+	    $(LOCAL_SKIP_ARMS) \
+	    $(NF_ARGS)
+
+# Run it here first (needs build-image-local), before spending Sherlock queue time.
+run-mini-local:
+	$(call require_mac)
+	mkdir -p run-mini && cd run-mini && \
+	  $(NEXTFLOW) run ../main.nf -profile standard,mini -resume \
+	    --kmerseek_image  kmerseek-region:local \
+	    --qfo_dir         $(MINI_DIR)/qfo \
+	    --annotations     $(MINI_DIR)/annotations \
+	    --structures      $(MINI_DIR)/structures \
+	    --outdir          $(MINI_DIR)/results \
+	    $(BPE_NF_ARG) \
+	    --target_species  $(MINI_TARGETS) \
+	    --kmerseek_combos $(MINI_COMBOS) \
+	    --hgnc_file       $(HGNC_FILE) \
+	    --omega_file      $(OMEGA_FILE) \
+	    $(LOCAL_SKIP_ARMS) \
+	    $(NF_ARGS)
+
+# NOT rsynced to Sherlock. The mini set is DERIVED -- subset FASTAs and subset annotation
+# parquets cut from inputs `make sync-data` already put there -- so shipping it would
+# duplicate state that can simply be regenerated. The generator itself is code and travels
+# by git like everything else. Run `make mini-testset-sherlock` on the cluster instead.
+#
+# Structures are the one exception and are handled by `make sync-structures`: they are
+# real input data, not derived, and nothing on Sherlock can synthesise them.
+
+# Same entry point as `make multiqc`, against a local run. Override both for a run other
+# than the MHC smoke test:
+#   make multiqc-local TRACE_LOCAL=run-mini/qfo_pfam_region.<date>.trace.txt \
+#                      MULTIQC_OUTDIR_LOCAL=/Users/olga/data/qfo-pfam-region-benchmark-mini/results
+multiqc-local:
+	$(call require_mac)
+	@if [ -z "$(TRACE_LOCAL)" ]; then \
+	  echo "No trace file under run-mhc/. Pass one explicitly:"; \
+	  echo "  make multiqc-local TRACE_LOCAL=run-mhc/qfo_pfam_region.<date>.trace.txt"; \
+	  exit 1; \
+	fi
+	$(call require_metrics,$(MULTIQC_OUTDIR_LOCAL_ABS),run-mhc,run-mhc-local,MULTIQC_OUTDIR_LOCAL,multiqc-local)
+	@echo "reporting on trace: $(TRACE_LOCAL)"
+	mkdir -p run-report
+	cd run-report && \
+	  $(NEXTFLOW) run ../main.nf -entry report -profile standard \
+	    --kmerseek_image kmerseek-region:local \
+	    --outdir     $(MULTIQC_OUTDIR_LOCAL) \
+	    --report_trace $(abspath $(TRACE_LOCAL)) \
+	    --qfo_dir    $(QFO_DIR) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+# The report is one self-contained HTML plus its exported figures. The figures come down
+# too: the svg is what goes into a paper, and re-exporting it locally would need the whole
+# results tree rather than the 25 MB this pulls.
+## Which run's outdir to pull from, relative to REMOTE_DIR. Every run target writes its
+## MultiQC report to its own --outdir, so the full run's `results` is only one of them:
+##   run       -> results              run-midi  -> data/midi/results
+##   run-mini  -> data/mini/results
+## Use the pull-report-mini / pull-report-midi shorthands rather than passing both vars.
+REMOTE_RESULTS ?= results
+
+pull-report:
+	$(call require_mac)
+	mkdir -p $(LOCAL_RESULTS)
+	$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/qfo_pfam_region_multiqc.html' $(LOCAL_RESULTS)/
+	$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/qfo_pfam_region_multiqc_plots/' \
+	  $(LOCAL_RESULTS)/qfo_pfam_region_multiqc_plots/
+	@# The k-mer spectra, so `make multiqc` can rebuild the spectra section locally. They
+	@# are small (one gzipped CSV per combo) and they are the only place the per-combo
+	@# k-mer occurrence distribution survives -- nothing else in the results tree carries
+	@# it, so a local rebuild without them silently drops the section.
+	@# `|| true`: a run that skipped kmerseek has no spectra directory, and that must not
+	@# fail a pull whose html and figures already came down.
+	-$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/$(REMOTE_RESULTS)/spectra/' \
+	  $(LOCAL_RESULTS)/spectra/ || true
+	@echo; echo "open $(LOCAL_RESULTS)/qfo_pfam_region_multiqc.html"
+
+pull-report-mini:
+	@$(MAKE) pull-report REMOTE_RESULTS=data/mini/results LOCAL_RESULTS=$(MINI_DIR)/results
+
+pull-report-midi:
+	@$(MAKE) pull-report REMOTE_RESULTS=data/midi/results LOCAL_RESULTS=$(LOCAL_RESULTS)/midi
+
+pull-report-midi-plus:
+	@$(MAKE) pull-report REMOTE_RESULTS=data/midi-plus/results LOCAL_RESULTS=$(LOCAL_RESULTS)/midi-plus
+
+pull-mini:
+	$(call require_mac)
+	$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/mini/results/' $(LOCAL_RESULTS)-mini/
+
+# Code moves by git, never rsync: rsync duplicates state outside git history and defeats
+# the point of running this from a worktree.
+# One-time setup: clone the repo onto $SCRATCH and create the data directories the sync
+# targets write into. Safe to re-run; it does not touch an existing checkout's state.
+## A SECOND checkout on Sherlock, so a branch can run without touching the one that
+## already has work in flight. Switching branches in the primary checkout would move
+## main.nf under a running sweep, and Nextflow re-reads it on resume.
+##
+## The inputs are HARD-LINKED, not symlinked and not copied. This is not a micro-
+## optimisation: `ln -s data` would make every relative path the run targets pass
+## (`--qfo_dir ../data/qfo`) resolve through the link to an absolute path under the OTHER
+## checkout, which Apptainer's autoMounts never binds -- the staged input then dangles
+## inside the container. That failure is already documented above the Sherlock run targets.
+## Hard links give a real directory tree at a real path under this clone, share the inode
+## so ~36 GB of structures is not duplicated, and cost nothing.
+##
+## Only the INPUT subdirectories are linked. data/mini, data/midi and data/gpu hold run
+## OUTPUTS, and sharing an inode with another run's published results is how two runs
+## silently overwrite each other.
+SHERLOCK_CLONE ?= $$SCRATCH/2024-kmerseek-$(notdir $(BRANCH))
+SHERLOCK_CLONE_DIR := $(SHERLOCK_CLONE)/nextflow-runs/qfo-pfam-region-benchmark
+SHERLOCK_SHARED_INPUTS := annotations qfo covariates structures prostt5 pfamn protberta
+
+sherlock-clone:
+	$(call require_mac)
+	git push origin $$(git branch --show-current)
+	$(SSH_MUX) $(SHERLOCK_HOST) '\
+	  set -e; \
+	  if [ ! -d $(SHERLOCK_CLONE)/.git ]; then \
+	    git clone --branch $(BRANCH) $(REPO_URL) $(SHERLOCK_CLONE); \
+	  else \
+	    cd $(SHERLOCK_CLONE) && git fetch origin $(BRANCH) \
+	      && git checkout $(BRANCH) && git pull --ff-only; \
+	  fi; \
+	  mkdir -p $(SHERLOCK_CLONE_DIR)/data; \
+	  for d in $(SHERLOCK_SHARED_INPUTS); do \
+	    src=$(REMOTE_DIR)/data/$$d; dst=$(SHERLOCK_CLONE_DIR)/data/$$d; \
+	    [ -e "$$src" ] || continue; \
+	    [ -e "$$dst" ] && { echo "have  $$d"; continue; }; \
+	    cp -al "$$src" "$$dst" 2>/dev/null && echo "link  $$d" \
+	      || { echo "copy  $$d (hard link failed: different filesystem?)"; \
+	           cp -a "$$src" "$$dst"; }; \
+	  done; \
+	  for f in $(REMOTE_DIR)/data/uniprot_sprot.dat.gz; do \
+	    [ -e "$$f" ] && ln -f "$$f" $(SHERLOCK_CLONE_DIR)/data/ 2>/dev/null || true; \
+	  done; \
+	  echo "ready: $(SHERLOCK_CLONE_DIR)"'
+	@echo
+	@echo "inputs hard-linked from $(REMOTE_DIR)/data -- no structures were copied."
+	@echo
+	@echo "Target databases are not duplicated either. Point db_cache at the primary"
+	@echo "checkout so every foldseek / mmseqs / reseek / kmerseek index is built once:"
+	@echo
+	@echo "  ssh $(SHERLOCK_HOST)"
+	@echo "  cd $(SHERLOCK_CLONE_DIR)"
+	@echo "  make bpe-tokenizer"
+	@echo '  make run-mini NF_ARGS="--db_cache $(REMOTE_DIR)/results"'
+
+bootstrap-sherlock:
+	$(call require_mac)
+	$(SSH_MUX) $(SHERLOCK_HOST) '\
+	  set -e; \
+	  if [ ! -d $(REMOTE_REPO)/.git ]; then \
+	    git clone --branch $(BRANCH) $(REPO_URL) $(REMOTE_REPO); \
+	  else \
+	    cd $(REMOTE_REPO) && git fetch origin $(BRANCH) && git checkout $(BRANCH) && git pull --ff-only; \
+	  fi; \
+	  mkdir -p $(REMOTE_DIR)/data/annotations \
+	           $(REMOTE_DIR)/data/qfo \
+	           $(REMOTE_DIR)/data/covariates \
+	           $(REMOTE_DIR)/data/structures; \
+	  echo "ready: $(REMOTE_DIR)"'
+
+## Push from the Mac, then pull on Sherlock over ssh. Costs a two-factor prompt for the
+## ssh hop; if you are already logged in to Sherlock, push here and run `make
+## pull-pipeline` there instead, which does the same pull without the hop.
+sync-pipeline:
+	$(call require_mac)
+	git push origin $$(git branch --show-current)
+	$(SSH_MUX) $(SHERLOCK_HOST) 'cd $(REMOTE_DIR) && git pull --ff-only'
+
+## The Sherlock half of sync-pipeline, run ON SHERLOCK. Same `git pull --ff-only`, minus
+## the ssh from the Mac that makes you re-do two-factor for a command you are already
+## sitting in front of. Assumes the Mac side has pushed; --ff-only so a diverged checkout
+## stops rather than opening a merge in a shell you did not ask to be in.
+#
+## `cd && git`, not `git -C`: Sherlock's login nodes carry a git old enough that -C is not
+## a recognised option, and it fails with a usage dump rather than anything that names the
+## flag. Every git here runs on the cluster, so none of them can use it.
+pull-pipeline:
+	$(call require_cluster)
+	@cd $(REMOTE_REPO) && echo "branch: $$(git rev-parse --abbrev-ref HEAD)"
+	cd $(REMOTE_REPO) && git pull --ff-only
+	@echo
+	@cd $(REMOTE_REPO) && git log --oneline -6
+
+# Data may move by rsync. Annotations are small; proteomes are ~1 GB; structures ~60 GB.
+HGNC_FILE  := /Users/olga/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt
+SPROT_DAT  := /Users/olga/data/uniprot/uniprot_sprot.dat.gz
+OMEGA_FILE := $(ANALYSIS_ROOT)/nextflow-runs/human-mouse-dnds-omega/results/omega_results.tsv
+
+# ONE rsync, so it authenticates once.
+#
+# The four inputs live under different local roots and land in different remote
+# subdirectories, which rsync cannot express in a single invocation. So a staging tree of
+# symlinks is built first, mirroring the remote layout exactly, and that one tree is sent
+# with --copy-links so the real bytes go across rather than the links.
+#
+# Staging costs nothing: symlinks are created, not data, and rsync still transfers only
+# what changed. SSH multiplexing above means the ssh in sync-pipeline reuses this
+# connection too, so a full sync is one authentication rather than five.
+SYNC_STAGE := .sync-staging
+
+## Pfam-A HMMs for the annotation ceiling. Not part of sync-data because it is 4.5 GB and
+## only one arm needs it, but without it that arm silently does not run: params.run_hmmscan
+## defaults to file(pfam_hmm).exists(), which was false on the cluster for every run of this
+## pipeline and said nothing.
+##
+## All five files, not just the .hmm. hmmscan reads the pressed .h3m/.h3i/.h3f/.h3p; the
+## .hmm alone switches the arm on and then fails inside the container on a database it
+## cannot read. main.nf now checks for them up front rather than letting that happen.
+##
+## Running this is the whole of it. The destination below and PFAM_HMM_REMOTE above are the
+## same path, and every run target passes --pfam_hmm $(PFAM_HMM_REMOTE), so the next run
+## picks the arm up with no flag. A sync that still needed a flag afterwards was a sync
+## that looked done and was not.
+sync-pfam:
+	$(call require_mac)
+	@test -f $(PFAM_HMM) || { echo "no $(PFAM_HMM) on this Mac"; exit 1; }
+	@ls $(PFAM_HMM).h3m $(PFAM_HMM).h3i $(PFAM_HMM).h3f $(PFAM_HMM).h3p >/dev/null 2>&1 \
+	  || { echo "$(PFAM_HMM) is not pressed. Run: hmmpress $(PFAM_HMM)"; exit 1; }
+	@du -ch $(PFAM_HMM) $(PFAM_HMM).h3* | tail -1
+	$(SSH_MUX) $(SHERLOCK_HOST) 'mkdir -p $$SCRATCH/data/pfam'
+	$(RSYNC) $(PFAM_HMM) $(PFAM_HMM).h3m $(PFAM_HMM).h3i $(PFAM_HMM).h3f $(PFAM_HMM).h3p \
+	  $(SHERLOCK_HOST):'$$SCRATCH/data/pfam/'
+	@echo
+	@echo 'hmmscan annotation ceiling is now ENABLED for the run targets.'
+	@echo 'They already pass --pfam_hmm $(PFAM_HMM_REMOTE) -- no extra flag needed.'
+	@echo 'Point them elsewhere with PFAM_HMM_REMOTE=<path>, or PFAM_HMM_REMOTE= to run without it.'
+
+## Is data/qfo already the right release? Checked BEFORE downloading anything, because it
+## usually is: sync-data rsyncs the whole QfO directory, not just the nine species the run
+## used, so a checkout that has ever been synced already holds all 78. Verified against
+## Sherlock on 2026-09-03 -- all ten cache-critical checksums matched, and the 2.65 GB
+## download would have been pure waste.
+##
+## Drops a .qfo-have marker for qfo-download to short-circuit on. A marker rather than a
+## make conditional because the answer depends on running md5sum, which cannot happen at
+## parse time.
+qfo-verify-existing:
+	$(call require_cluster)
+	@rm -f .qfo-have
+	@n=$$(ls data/qfo/*/*.fasta 2>/dev/null \
+	      | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l); \
+	 if [ "$$n" -ne 78 ]; then \
+	   echo "data/qfo has $$n canonical proteomes, not 78 -- fetching the release"; \
+	   exit 0; \
+	 fi; \
+	 if (cd data/qfo && grep -v '^#' $(CURDIR)/assets/qfo_cache_critical.md5 \
+	     | md5sum -c --status -); then \
+	   echo "data/qfo already holds all 78 proteomes of $(QFO_RELEASE),"; \
+	   echo "and the ten cache-critical checksums match. Nothing to download."; \
+	   touch .qfo-have; \
+	 else \
+	   echo "data/qfo has 78 proteomes but a cache-critical checksum does NOT match."; \
+	   echo "It is not the release the existing indexes and searches were built from."; \
+	   echo "Refusing to overwrite it -- move it aside first if you mean to replace it."; \
+	   exit 1; \
+	 fi
+
+## Download the QfO release to Sherlock. Run it ON SHERLOCK, on a login node.
+##
+## Idempotent and resumable. curl -C - continues a partial file rather than restarting,
+## and --speed-limit/--speed-time aborts a transfer that has silently stalled instead of
+## hanging for hours -- multi-GB EBI transfers do stall, and a bare background curl gives
+## no sign of it. Re-run it after an abort; it picks up where it stopped.
+##
+## Costs nothing to re-run once complete: a release directory that already holds all 78
+## canonical FASTAs and passes the checksum verification is left alone.
+qfo-download: qfo-verify-existing
+	$(call require_cluster)
+	@test ! -f .qfo-have || { rm -f .qfo-have; exit 0; }
+	@mkdir -p $(QFO_REMOTE_ROOT)
+	@if [ -d "$(QFO_REMOTE_DIR)" ] && [ "$$(ls $(QFO_REMOTE_DIR)/*/*.fasta 2>/dev/null \
+	     | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l)" -eq 78 ]; then \
+	  echo "have $(QFO_REMOTE_DIR) (78 canonical proteomes) -- verifying"; \
+	else \
+	  echo "fetching $(QFO_TARBALL_URL)"; \
+	  curl -L -C - --fail --retry 5 --retry-delay 10 \
+	       --speed-limit 10240 --speed-time 120 \
+	       -o $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz \
+	       $(QFO_TARBALL_URL); \
+	  got=$$(stat -c %s $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz); \
+	  if [ "$$got" != "$(QFO_TARBALL_SIZE)" ]; then \
+	    echo "  tarball is $$got bytes, expected $(QFO_TARBALL_SIZE) -- incomplete."; \
+	    echo "  Re-run 'make qfo-download'; curl -C - resumes it."; exit 1; \
+	  fi; \
+	  echo "unpacking into $(QFO_REMOTE_ROOT)"; \
+	  tar -xzf $(QFO_REMOTE_ROOT)/$(QFO_RELEASE).tar.gz -C $(QFO_REMOTE_ROOT); \
+	fi
+	@n=$$(ls $(QFO_REMOTE_DIR)/*/*.fasta 2>/dev/null \
+	      | grep -v '_additional\.fasta\|_DNA\.fasta' | wc -l); \
+	 if [ "$$n" -ne 78 ]; then \
+	   echo "  $(QFO_REMOTE_DIR) has $$n canonical proteomes, expected 78."; exit 1; \
+	 fi
+	@echo "verifying the ten proteomes existing caches were built from"
+	@cd $(QFO_REMOTE_DIR) && grep -v '^#' $(CURDIR)/assets/qfo_cache_critical.md5 \
+	   | md5sum -c - \
+	   || { echo; \
+	        echo "  A cache-critical proteome does not match assets/qfo_cache_critical.md5."; \
+	        echo "  This release is NOT the one run-midi-plus's indexes and searches were"; \
+	        echo "  built from, and species labels alone cannot tell them apart. Do not"; \
+	        echo "  point a run at it until this is resolved."; echo; exit 1; }
+	@echo
+	@echo "  $(QFO_REMOTE_DIR)"
+	@echo "  78 proteomes, ten checksums verified."
+	@echo
+	@echo "  Point the pipeline at it:"
+	@echo "    make qfo-link"
+	@echo
+
+## Point this checkout's data/qfo at the downloaded release. Separate from qfo-download so
+## a re-download never silently repoints a run's inputs.
+qfo-link:
+	$(call require_cluster)
+	@test -d $(QFO_REMOTE_DIR) || { \
+	  echo "  no $(QFO_REMOTE_DIR) -- run 'make qfo-download' first"; exit 1; }
+	@if [ -e data/qfo ] && [ ! -L data/qfo ]; then \
+	  echo "  data/qfo is a real directory, not a link. Leaving it alone: it may be the"; \
+	  echo "  rsynced copy the current caches were built from. Move it aside first if you"; \
+	  echo "  mean to replace it."; exit 1; \
+	fi
+	@mkdir -p data
+	@ln -sfn $(QFO_REMOTE_DIR) data/qfo
+	@echo "data/qfo -> $$(readlink data/qfo)"
+
+# ---- Botryllus schlosseri, the one proteome that is not from a QfO release ------
+#
+# Cleans the download (repeated names disambiguated, one '.' residue replaced with X --
+# see bin/prepare_botryllus_fasta.py) and writes it INTO the QfO release directory. That
+# location is not a filing choice: main.nf resolves every target FASTA as
+# ${qfo_dir}/${subdir}/${proteome}_${taxon}.fasta, and the botryllus row in
+# assets/qfo_species.tsv is (Eukaryota, BOTSCH2026, 30301), so this is the only path the
+# pipeline can read it from. It also means `make sync-data` carries the file to the cluster
+# with no new rsync -- it already ships $(QFO_DIR) wholesale.
+#
+# Idempotent by CONTENT, not by timestamp. Nextflow hashes an input file by path, size and
+# mtime rather than by content, so rewriting byte-identical bytes is enough to invalidate
+# every task that reads the file directly -- the failure bin/make_mini_testset.py's
+# write_if_changed() docstring records. The converter writes a .tmp and it is moved into
+# place only when the bytes actually differ.
+stage-botryllus:
+	$(call require_mac)
+	@if [ ! -f "$(BOTRYLLUS_SRC)" ]; then \
+	  echo ""; \
+	  echo "  no Botryllus proteome at $(BOTRYLLUS_SRC)"; \
+	  echo "  point BOTRYLLUS_SRC at the downloaded FASTA:"; \
+	  echo "    make stage-botryllus BOTRYLLUS_SRC=/path/to/botryllus_proteins.fasta"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+	@mkdir -p "$(dir $(BOTRYLLUS_DEST))"
+	$(PYTHON) bin/prepare_botryllus_fasta.py \
+	  --in          "$(BOTRYLLUS_SRC)" \
+	  --out         "$(BOTRYLLUS_DEST).tmp" \
+	  --summary-out "$(BOTRYLLUS_DEST).prepare_summary.json"
+	@if [ -f "$(BOTRYLLUS_DEST)" ] && cmp -s "$(BOTRYLLUS_DEST).tmp" "$(BOTRYLLUS_DEST)"; then \
+	  /bin/rm -f "$(BOTRYLLUS_DEST).tmp"; \
+	  echo "  $(BOTRYLLUS_DEST) already up to date; mtime left alone so Nextflow keeps its cache"; \
+	else \
+	  /bin/mv -f "$(BOTRYLLUS_DEST).tmp" "$(BOTRYLLUS_DEST)"; \
+	  echo "  wrote $(BOTRYLLUS_DEST)"; \
+	fi
+	@echo "  now run: make sync-data"
+
+sync-data:
+	$(call require_mac)
+	@rm -rf $(SYNC_STAGE)
+	@mkdir -p $(SYNC_STAGE)/covariates
+	@ln -s $(ANNOTATIONS) $(SYNC_STAGE)/annotations
+	@ln -s $(QFO_DIR)     $(SYNC_STAGE)/qfo
+	@ln -s $(HGNC_FILE)   $(SYNC_STAGE)/covariates/
+	@ln -s $(OMEGA_FILE)  $(SYNC_STAGE)/covariates/
+	@ln -s $(SPROT_DAT)   $(SYNC_STAGE)/
+	$(RSYNC) --copy-links $(SYNC_STAGE)/ \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/'
+	@rm -rf $(SYNC_STAGE)
+
+sync-structures:
+	$(call require_mac)
+	$(RSYNC) --copy-links $(STRUCT_DIR)/ \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/data/structures/' \
+	  --exclude '_archives'
+
+pull-results:
+	$(call require_mac)
+	$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/metrics/' $(LOCAL_RESULTS)/metrics/
+	$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/all_domain_metrics.parquet' $(LOCAL_RESULTS)/
+	$(RSYNC) \
+	  $(SHERLOCK_HOST):'$(REMOTE_DIR)/results/truth/' $(LOCAL_RESULTS)/truth/
+
+
+# Pull every container ONCE, serially, into the Apptainer cache before any pipeline run.
+#
+# Nextflow launches all its pulls concurrently, and Apptainer's OCI blob cache is not
+# concurrency-safe: simultaneous pulls into one cacheDir race and leave a half-written
+# blob, which surfaces as the useless "unexpected end of JSON input". That is what killed
+# hhblitsBuildDB while foldseek, pulling at the same moment, happened to win.
+#
+# Serial pulls also give each image the full timeout rather than five sharing it, and make
+# a genuine registry failure legible instead of hiding behind a race.
+#
+# Nextflow finds a pre-pulled image by an exact filename: the container ref with '/' and
+# the digest ':' turned into '-', plus .img. Names are computed to match.
+prefetch-images:
+	$(call require_cluster)
+	@mkdir -p $${SCRATCH}/apptainer-cache $${SCRATCH}/apptainer-tmp
+	@set -e; \
+	export APPTAINER_CACHEDIR=$${SCRATCH}/apptainer-cache; \
+	export APPTAINER_TMPDIR=$${SCRATCH}/apptainer-tmp; \
+	for ref in $(PREFETCH_CONTAINERS); do \
+	  name=$$(echo "$$ref" | sed -e 's|^docker://||' -e 's|/|-|g' -e 's|:|-|g'); \
+	  out="$${SCRATCH}/apptainer-cache/$${name}.img"; \
+	  if [ -s "$$out" ]; then echo "have  $$name"; continue; fi; \
+	  echo "pull  $$name"; \
+	  rm -f "$$out" "$$out".pulling.* 2>/dev/null || true; \
+	  srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	       --mem=$(PREFETCH_MEM) --time=$(PREFETCH_TIME) --cpus-per-task=4 \
+	       apptainer pull --name "$$out" "docker://$$ref" || \
+	    { echo "FAILED: $$ref"; rm -f "$$out"; exit 1; }; \
+	done; \
+	echo "all containers cached in $${SCRATCH}/apptainer-cache"
+
+# Remove half-written blobs left by a racing or interrupted pull. Run this if a pull fails
+# with "unexpected end of JSON input" -- the partial entry is sticky and the next attempt
+# reuses it.
+clean-image-cache:
+	$(call require_cluster)
+	rm -rf $${SCRATCH}/apptainer-cache/*.pulling.* $${HOME}/.apptainer/cache/blob
+	@echo "cleared partial pulls; re-run 'make prefetch-images'"
+
+
+# Download structures ON the cluster. Sherlock's connection is far faster than pulling
+# ~60 GB to a laptop and pushing it back over ssh, so this is the preferred route and
+# `make sync-structures` becomes unnecessary.
+#
+# The Mac's flat AlphaFold cache buys almost nothing here: 8 of the 10 species come from
+# whole-proteome tarballs that are downloaded in full regardless, and only chicken and
+# ciona (~8.4k structures) are fetched per accession. So starting cold on the cluster costs
+# little more than starting from the cache on the Mac.
+#
+# Blocks in the foreground and streams progress -- run it inside your own tmux, it takes a
+# while. Resumable: re-run after an interruption rather than starting over.
+#
+# Must run where there is outbound internet. On Sherlock that is a login node, which is why
+# this is not submitted through SLURM; it is I/O, not compute.
+# Default to the LOGIN node. fetch-structures-sherlock routes the download through
+# Nextflow, which puts it on a compute node -- and Sherlock compute nodes have no outbound
+# internet, so it fails its own preflight every time. The login node has the fast link, so
+# there is no reason to drag ~36 GB across an rsync from the Mac either: EBI -> Sherlock
+# directly beats EBI -> Mac -> Sherlock on both hops.
+#
+# This blocks in the foreground so you can watch it. The transfers are resumable: proteome
+# archives come over rsync, per-accession fetches use --continue-at with a speed floor, and
+# re-running skips whatever is already on disk. Safe to Ctrl-C and re-run.
+fetch-structures: fetch-structures-login
+
+# Download structures where they will be used.
+# Download as SLURM jobs, one per species. The login-node version was SIGKILLed mid-
+# transfer (exit 137) -- Sherlock enforces limits there and a multi-GB sustained download
+# trips them. Blocks in the foreground so progress is visible; run inside your own tmux.
+fetch-structures-sherlock:
+	$(call require_cluster)
+	@mkdir -p data/structures/_accessions
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/write_structure_lists.py \
+	    --annotations data/annotations \
+	    --outdir      data/structures/_accessions
+	ml load biology nextflow && \
+	  nextflow run main.nf -profile $(PROFILE) -resume \
+	    --fetch_structures true \
+	    --structures  $$PWD/data/structures \
+	    --annotations $$PWD/data/annotations \
+	    --qfo_dir     $$PWD/data/qfo \
+	    $(NF_ARGS)
+
+# Fallback for a cluster whose compute nodes have no outbound internet: run the download
+# on the login node one species at a time, with low parallelism to stay under its limits.
+# Slower and killable, but it needs no route from the batch partition.
+# All ten proteomes unless SPECIES_ONE names one. The accession lists have to exist first:
+# chicken and ciona are not in AFDB's proteome set and are fetched accession by accession,
+# so without the lists those two silently produce nothing. That step was missing here while
+# fetch-structures-sherlock had it, which is why this target looked like it worked and then
+# left two species empty.
+fetch-structures-login:
+	$(call require_cluster)
+	@mkdir -p data/structures/_accessions
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/write_structure_lists.py \
+	    --annotations data/annotations \
+	    --outdir      data/structures/_accessions
+	PARALLEL=$(FETCH_PARALLEL) FLAT_CACHE=data/structures bin/fetch_alphafold_structures.sh \
+	  data/structures data/structures/_accessions $(SPECIES_ONE)
+
+
+# ProstT5 weights, on the login node. Sherlock's COMPUTE nodes have no outbound internet --
+# confirmed by the pipeline's own preflight, which failed in 30 seconds rather than
+# stalling -- so this cannot run as a SLURM job. Login nodes can reach out.
+#
+# ~1-2 GB, once. The run targets pass --prostt5_weights at this path, and the pipeline
+# errors with a pointer here if it is missing rather than trying to download.
+FOLDSEEK_IMG := $(shell sed -n "s|.*container '\(quay.io/biocontainers/foldseek@[^']*\)'.*|\1|p" main.nf | head -1)
+
+# The weights are tied to the foldseek release that downloaded them: after the 9 -> 10 bump
+# createdb refuses them with "Found ProstT5 model weights for previous Foldseek release".
+# FOLDSEEK_IMG is read out of main.nf, so this target always downloads for whatever version
+# the pipeline currently pins -- but `foldseek databases` will not write over an existing
+# directory, so an old one has to be moved aside first. Moved, not deleted: they are a few
+# GB over a slow link, and if the new download fails you still have something that works.
+prostt5-weights:
+	$(call require_cluster)
+	@mkdir -p data/prostt5
+	@if [ -d data/prostt5/weights ]; then \
+	  stamp=$$(date +%Y%m%d-%H%M%S); \
+	  echo "moving existing weights to data/prostt5/weights.old-$$stamp"; \
+	  /bin/mv -f data/prostt5/weights data/prostt5/weights.old-$$stamp; \
+	fi
+	@rm -rf data/prostt5/tmp
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://$(FOLDSEEK_IMG) \
+	  foldseek databases ProstT5 data/prostt5/weights data/prostt5/tmp
+	@rm -rf data/prostt5/tmp
+	@echo "weights at data/prostt5/weights (foldseek $(FOLDSEEK_IMG))"
+	@echo "if that worked, the data/prostt5/weights.old-* directories can be removed"
+
+
+## ---- reduced-alphabet information ceiling ----
+##
+## The BPE boundary diagnostic needs the tokenizers Rannon & Burstein released with
+## ProtBERTa. Zenodo record id, not the DOI string: the DOI resolves through a redirect
+## that the compute nodes cannot follow, and the record id is what the files endpoint keys
+## on. 186 KB, so this is a login-node download and not a job.
+##
+## The checksum is the one Zenodo reports for the record; the target refuses a mismatch
+## rather than handing a truncated archive to the diagnostic, which would silently produce
+## a shorter merge table and therefore longer tokens.
+BPE_ZENODO_RECORD := 18256943
+BPE_TARBALL       := data/protberta/ProtBERTa_tokenizers.tar.gz
+BPE_SHA256        := d594310f524c69f6dbf9d445d049d09cd0370af443a40abf600692bad2c542f6
+BPE_OUT           ?= data/protberta/hp_bpe_boundary.json
+
+# Appended to every launch target, but only once the tarball is actually on disk. Named
+# rather than left to NF_ARGS so that `make bpe-tokenizer` is the whole opt-in: a flag that
+# has to be retyped on every run target is a flag that gets left off the run that matters.
+# Evaluated at launch time via $(wildcard), so downloading the tokenizer between two runs
+# turns the arm on without editing anything.
+#
+# ../data because the run targets launch nextflow from run/, and data/ is gitignored and
+# lives beside main.nf.
+BPE_NF_ARG = $(if $(wildcard $(BPE_TARBALL)),--bpe_tokenizer ../$(BPE_TARBALL),)
+
+# Runs on the Mac or on a login node -- deliberately not guarded by require_cluster, since
+# the diagnostic is meant to be run before any cluster time is committed.
+## Everything downstream of search, on the committed 60-protein fixture. No containers, no
+## QfO download, no cluster: ~15 s. This is what CI runs.
+test:
+	$(PYTHON) -m pytest tests/ -v
+	$(PYTHON) tests/test_dedup_passes.py
+
+bpe-tokenizer:
+	@mkdir -p $(dir $(BPE_TARBALL))
+	@if [ -s "$(BPE_TARBALL)" ]; then echo "have $(BPE_TARBALL)"; else \
+	  curl -fL --retry 3 --retry-delay 5 \
+	    "https://zenodo.org/records/$(BPE_ZENODO_RECORD)/files/ProtBERTa_tokenizers.tar.gz?download=1" \
+	    -o "$(BPE_TARBALL)"; \
+	fi
+	@echo "$(BPE_SHA256)  $(BPE_TARBALL)" | shasum -a 256 -c - || \
+	  { echo "checksum mismatch; delete $(BPE_TARBALL) and re-run"; exit 1; }
+
+# The go/no-go measurement, before any compute is committed. ~30 s on one core at the
+# default --max-proteins; the figure needs matplotlib, which the Mac env has and the
+# pipeline container does not.
+hp-bpe-diagnostic: bpe-tokenizer
+	$(call require_mac)
+	$(PYTHON) bin/hp_bpe_boundary_diagnostic.py \
+	  --fasta       $(QFO_DIR)/Eukaryota/UP000005640_9606.fasta \
+	  --annotations $(ANNOTATIONS) \
+	  --tokenizer   $(BPE_TARBALL) \
+	  --out         $(BPE_OUT) \
+	  --figure      $(BPE_OUT:.json=.png)
+
+# Pfam-N truth: the "Pfam-A HMMs missed these" labels, streamed from EBI and filtered to
+# our accessions. ~17.4 GB crosses the wire and nothing is stored; expect 30-60 min.
+# Login node, because compute nodes here have no outbound internet.
+#
+# curl runs on the HOST and the container only parses stdin. The pipeline image has python
+# and polars but no curl, and adding it there for one step is not worth a rebuild and push.
+# Running curl on the host also keeps its retry and speed-floor behaviour, which matters
+# over 17.4 GB -- and the parser refuses a truncated stream rather than writing a partial
+# truth set, since a missing Pfam-N label reads as "Pfam-N had nothing here".
+PFAMN_RSYNC := rsync://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam35.0/Pfam-N.gz
+PFAMN_GZ   := data/pfamn/Pfam-N.gz
+
+# rsync, not curl. EBI serves this over rsync, which resumes a partial transfer natively --
+# the first attempt piped curl straight into the parser and died 27.8M lines in, and a pipe
+# cannot resume at all. Re-running this costs the remainder, not the whole 17.4 GB.
+# --- Pfam answer key for every QfO species ----------------------------------
+#
+# 68 of the 77 targets have no *_pfam_domains.parquet, and staging fails hard without one:
+# a target with no annotation cannot transfer a single domain call, so unlike a missing
+# structure directory (which the structure arms skip with a NOTE) this is not survivable.
+#
+# The source is Pfam's own bulk regions file, NOT the UniProt REST API. UniProt does not
+# expose Pfam positions -- entry JSON carries no Domain-type features and xref_pfam has no
+# start/end -- which is why the first ten species were rebuilt from Pfam-A.regions.tsv.gz
+# and why their parquets carry domain_ali_start/domain_ali_end that the API route cannot
+# produce. Verified again 2026-09-03: the API returns zero positioned Pfam features even
+# for ciona, whose annotations are 100% positioned on disk.
+#
+# Runs entirely on Sherlock. The 5.05 GB download, the single-pass awk filter and the
+# per-species parquets all happen here; nothing is staged through the Mac.
+PFAM_REGIONS_DIR ?= $$SCRATCH/data/pfam/regions
+# The scripts live at the repo root because notebooks 123 and 125 import them.
+NOTEBOOKS_DIR    ?= ../../notebooks
+
+## Download Pfam-A.regions.tsv.gz and filter it to all 78 QfO proteomes' accessions.
+## ~5 GB, resumable, and free to re-run once the file is complete. The script stops if the
+## file on the FTP is no longer the Pfam 38.2 the existing ten species were built from --
+## annotating half the species from a different release would be a confound in the
+## divergence axis, which is the one thing this benchmark measures.
+## The 5.05 GB download. On the login node and OUTSIDE the container, for two reasons:
+## the kmerseek image has no curl (it is a bioinformatics runtime, not a fetch tool --
+## running the fetcher inside it died with FileNotFoundError: 'curl'), and the login
+## nodes are where outbound HTTP is guaranteed on Sherlock. Nothing here needs python.
+##
+## -C - resumes from the exact byte offset, so an interrupted transfer continues rather
+## than restarting. --speed-limit/--speed-time abort a transfer that has silently stalled
+## instead of hanging for hours; EBI does stall on multi-GB files, and a bare curl gives
+## no sign of it. The loop re-invokes curl until the file reaches its expected size.
+PFAM_REGIONS_URL   ?= https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.regions.tsv.gz
+PFAM_REGIONS_BYTES ?= 5053457363
+PFAM_REGIONS_GZ     = $(PFAM_REGIONS_DIR)/Pfam-A.regions.tsv.gz
+PFAM_DOWNLOAD_TRIES ?= 30
+
+pfam-regions-download:
+	$(call require_cluster)
+	@mkdir -p $(PFAM_REGIONS_DIR)
+	@set -e; \
+	 for i in $$(seq 1 $(PFAM_DOWNLOAD_TRIES)); do \
+	   if [ -f $(PFAM_REGIONS_GZ) ] && \
+	      [ "$$(stat -c %s $(PFAM_REGIONS_GZ))" = "$(PFAM_REGIONS_BYTES)" ]; then \
+	     echo "have $(PFAM_REGIONS_GZ) ($(PFAM_REGIONS_BYTES) bytes)"; exit 0; \
+	   fi; \
+	   echo "attempt $$i/$(PFAM_DOWNLOAD_TRIES): $(PFAM_REGIONS_URL)"; \
+	   curl -L -C - --fail --speed-limit 10240 --speed-time 120 \
+	        -o $(PFAM_REGIONS_GZ) $(PFAM_REGIONS_URL) || true; \
+	 done; \
+	 got=$$(stat -c %s $(PFAM_REGIONS_GZ) 2>/dev/null || echo 0); \
+	 if [ "$$got" != "$(PFAM_REGIONS_BYTES)" ]; then \
+	   echo; echo "  $(PFAM_REGIONS_GZ) is $$got bytes, expected $(PFAM_REGIONS_BYTES)."; \
+	   echo "  Re-run 'make pfam-regions-download'; curl -C - resumes where it stopped."; \
+	   echo "  If the size is stable but wrong, Pfam current_release has moved and the"; \
+	   echo "  existing ten species' annotations no longer match it -- see the note in"; \
+	   echo "  notebooks/fetch_pfam_envelope_coords.py before rebuilding anything."; \
+	   echo; exit 1; \
+	 fi; \
+	 echo "downloaded $(PFAM_REGIONS_GZ) ($$got bytes)"
+
+## Decompress it and filter to all 78 proteomes' accessions. In a SLURM allocation, not on
+## the login node: this streams ~30 GB through gzip and awk against a 1.4M-key hash, which
+## is real single-core work and does not belong on a node everyone shares.
+PFAM_FILTER_MEM  ?= 16G
+PFAM_FILTER_TIME ?= 2:00:00
+
+pfam-regions: pfam-regions-download
+	$(call require_cluster)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	     --mem=$(PFAM_FILTER_MEM) --time=$(PFAM_FILTER_TIME) --cpus-per-task=2 \
+	  apptainer exec \
+	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	    python3 $(NOTEBOOKS_DIR)/fetch_pfam_envelope_coords.py \
+	      --skip-download \
+	      --qfo-dir   data/qfo \
+	      --cache-dir $(PFAM_REGIONS_DIR)
+
+## Write {species}_pfam_domains.parquet, _architectures.parquet and _pfam_summary.json for
+## every registry species that does not already have them.
+##
+## The existing ten are SKIPPED, not rebuilt: process_species returns early when its
+## outputs exist. That is deliberate and load-bearing. Those parquets are the truth set
+## every already-scored arm in data/midi-plus/results was scored against, and rewriting
+## them -- even from the same Pfam release -- would invalidate that scoring. Pass
+## PFAM_FORCE=--force only if you mean to rebuild all 78 and rescore everything.
+PFAM_FORCE ?=
+
+pfam-annotations: pfam-regions
+	$(call require_cluster)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	     --mem=$(PFAM_FILTER_MEM) --time=$(PFAM_FILTER_TIME) --cpus-per-task=2 \
+	  apptainer exec \
+	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	    python3 $(NOTEBOOKS_DIR)/build_pfam_architectures.py \
+	      --species all \
+	      --outdir          data/annotations \
+	      --qfo-dir         data/qfo \
+	      --regions-parquet $(PFAM_REGIONS_DIR)/pfam_regions_qfo.parquet \
+	      $(PFAM_FORCE)
+	@echo
+	@echo "annotated species: $$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null | wc -l) of 78"
+	@echo
+
+pfamn-download:
+	$(call require_cluster)
+	@mkdir -p data/pfamn
+	rsync -P $(PFAMN_RSYNC) $(PFAMN_GZ)
+	@echo "downloaded: $$(du -h $(PFAMN_GZ) | cut -f1)"
+
+# Parse the downloaded file. Separate from the download so a parse failure does not cost
+# the transfer, and re-running is free once the file is on disk.
+pfamn-truth: pfamn-download
+	$(call require_cluster)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/build_pfamn_truth.py \
+	    --source      $(PFAMN_GZ) \
+	    --annotations data/annotations \
+	    --truth-out   data/pfamn/human_pfamn_truth.parquet \
+	    --map-outdir  data/pfamn \
+	    --summary-out data/pfamn/pfamn_summary.json
+	@echo "Pfam-N truth built. $(PFAMN_GZ) can be deleted if disk is tight:"
+	@echo "  rm $(PFAMN_GZ)"
+
+
+## ---- Sherlock side ------------------------------------------------------
+##
+## Launch from run/ so Nextflow's workDir, trace, timeline and report all land in one
+## place. Paths passed to nextflow are relative to run/ on purpose: workDir and launchDir
+## live under the real (non-symlinked) checkout path, and Apptainer's autoMounts binds
+## based on that real tree. A file reached through a $SCRATCH symlink is a second,
+## unrelated absolute path that never gets bound, and the staged input ends up dangling
+## inside the container. Relative paths never cross the symlink boundary.
+##
+## Every run target blocks in the FOREGROUND and streams live output. They do not start
+## tmux themselves -- you run them inside your own tmux session and watch. Never wrap these
+## in `tmux new-session`: a target that detaches into its own session hides the output you
+## are trying to watch, and nesting tmux inside tmux makes the keybindings a fight.
+
+# All run targets already pass -resume. Do NOT write `make run -resume`: make consumes
+# the flag itself and dies with "invalid option -- 'u'" before nextflow is reached.
+#
+# To pass extra flags through to nextflow, use NF_ARGS:
+#   make run NF_ARGS="-with-dag dag.html"
+#   make run NF_ARGS="--skip_folddisco true"
+# NO `| tee` on any nextflow invocation. Nextflow's live display repaints the task table in
+# place; a pipe turns that into thousands of reprinted tables scrolling past. The pretty log
+# is the point -- it is how you watch a 13_000-job run. Nothing is lost by dropping the pipe:
+# Nextflow already writes a full .nextflow.log in the launch dir. And do not "fix" a mangled
+# display with -ansi-log false either -- that removes the display instead of the cause.
+define launch
+	mkdir -p run
+	cd run && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume $(2) $(BPE_NF_ARG) $(NF_ARGS) \
+	    --kmerseek_image $(IMAGE_REMOTE) \
+	    --qfo_dir     ../data/qfo \
+	    --annotations ../data/annotations \
+	    --structures  ../data/structures \
+	    --hgnc_file   ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file  ../data/covariates/omega_results.tsv \
+	    --swissprot_dat ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir      ../data/pfamn          \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    --outdir      ../results
+endef
+
+run: prefetch-images
+	$(call require_cluster)
+	$(call launch,qfo-region,)
+
+# Split arms so the 1017-job kmerseek sweep and the 9-species baselines can be queued
+# and debugged independently.
+run-kmerseek: prefetch-images
+	$(call require_cluster)
+	$(call launch,qfo-kmerseek,--skip_baselines true)
+
+run-baselines: prefetch-images
+	$(call require_cluster)
+	$(call launch,qfo-baselines,--skip_kmerseek true)
+
+# ---- GPU vs CPU for the baseline search arms ------------------------------
+#
+# The paper says kmerseek finds remote homology fast without structure. A reviewer will
+# ask whether the structure and profile baselines were given a GPU before that comparison
+# was drawn. This target is the measurement that answers it.
+#
+# One invocation, both modes. --gpu_benchmark true runs the CPU and GPU arms of
+# foldseekSearch and mmseqs2Search against the SAME databases in the SAME scheduler
+# session, so the per-task comparison needs no cross-run correction, and it drops every
+# other arm: phmmer, jackhmmer, hhblits, reseek and folddisco have no GPU path in the
+# pinned binaries, so running them again would cost hours and measure nothing. It also
+# implies --skip_kmerseek.
+#
+# Its own launch directory. Nextflow truncates its trace as a run starts, so launching
+# this from run/ would destroy the trace `make multiqc` reads.
+#
+# Runs on the midi query set by default: 964 chr6 proteins against full target proteomes.
+# That is real target-side scale, which is what the prefilter cost is driven by, at ~5% of
+# the query load. Point it at the full query set with QUERY_DIR=../data/qfo once the shape
+# of the answer is known.
+GPU_BENCH_DIR     ?= run-gpu-bench
+GPU_BENCH_QFO     ?= ../data/midi/qfo
+GPU_BENCH_ANNOT   ?= ../data/midi/annotations
+GPU_BENCH_STRUCTS ?= ../data/midi/structures
+GPU_BENCH_OUTDIR  ?= ../data/gpu-bench/results
+# Target databases are shared with the full run: they depend on the target proteome alone.
+GPU_BENCH_DBCACHE ?= ../results
+GPU_BENCH_TARGETS ?= $(MIDI_TARGETS)
+GPU_BENCH_TRACE   ?= $(shell ls -t $(GPU_BENCH_DIR)/*.trace.txt 2>/dev/null | head -1)
+
+gpu-benchmark: prefetch-images midi-testset-sherlock
+	$(call require_cluster)
+	mkdir -p $(GPU_BENCH_DIR)
+	cd $(GPU_BENCH_DIR) && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --gpu_benchmark   true \
+	    --qfo_dir         $(GPU_BENCH_QFO) \
+	    --annotations     $(GPU_BENCH_ANNOT) \
+	    --structures      $(GPU_BENCH_STRUCTS) \
+	    --outdir          $(GPU_BENCH_OUTDIR) \
+	    --db_cache        $(GPU_BENCH_DBCACHE) \
+	    --target_species  $(GPU_BENCH_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    $(NF_ARGS)
+	@$(MAKE) --no-print-directory gpu-benchmark-report
+
+# Read the trace back into queries/s per tool per mode. Separate from the run so it can be
+# re-run against an older trace without re-searching anything:
+#   make gpu-benchmark-report GPU_BENCH_TRACE=run-gpu-bench/qfo_pfam_region.<date>.trace.txt
+gpu-benchmark-report:
+	@if [ -z "$(GPU_BENCH_TRACE)" ]; then \
+	  echo "No trace under $(GPU_BENCH_DIR). Run 'make gpu-benchmark' first, or pass one:"; \
+	  echo "  make gpu-benchmark-report GPU_BENCH_TRACE=<path>"; \
+	  exit 1; \
+	fi
+	@echo "reporting on trace: $(GPU_BENCH_TRACE)"
+	mkdir -p $(GPU_BENCH_OUTDIR)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/gpu_search_benchmark.py \
+	    --trace         $(GPU_BENCH_TRACE) \
+	    --queries-fasta $(GPU_BENCH_QFO)/Eukaryota/UP000005640_9606.fasta \
+	    --tasks-out     $(GPU_BENCH_OUTDIR)/gpu_benchmark_tasks.parquet \
+	    --summary-out   $(GPU_BENCH_OUTDIR)/gpu_benchmark_summary.parquet \
+	    --mqc-out       $(GPU_BENCH_OUTDIR)/qfo_gpu_search_mqc.json
+
+# Build the mini set ON Sherlock from the inputs sync-data already staged. Runs inside the
+# same container the pipeline uses, so it needs no cluster python environment of its own.
+mini-testset-sherlock:
+	$(call require_cluster)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations     data/annotations \
+	    --qfo-dir         data/qfo \
+	    --outdir          data/mini \
+	    --target_species  $(MINI_TARGETS) \
+	    --structure-cache data/structures
+
+# ---- midi: chr6 queries, full targets ----
+midi-testset-sherlock:
+	$(call require_cluster)
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations     data/annotations \
+	    --qfo-dir         data/qfo \
+	    --outdir          data/midi \
+	    --gene-set        chr6 \
+	    --full-targets \
+	    --hgnc            data/covariates/hgnc_complete_set.txt \
+	    --target_species  $(MIDI_TARGETS) \
+	    --structure-cache data/structures
+
+# Full sherlock profile, NOT mini: the targets are real proteomes and need real resources.
+# --db_cache points at the full run's outdir so the target-side databases this builds are
+# the ones `make run` will reuse. Results stay in data/midi/results -- same target files,
+# different query set, so the calls and metrics must not land on top of the full run's.
+#
+# A variable rather than a literal because multiqc-rannon-burstein has to name the same
+# directory to read this run's scored arms back. Written relative to run-midi/, like every
+# other path on this target; $(call rel_to_launch,run-midi,...) is what makes it absolute.
+MIDI_OUTDIR ?= ../data/midi/results
+
+# polarity4 and funcgroups8 run inside this same command, on the RB image, WITHOUT that
+# image touching anything else. --kmerseek_image stays IMAGE_REMOTE, so every python-labelled
+# process -- truth building, covariates, scoring, aggregation, all of which take their
+# container from that same param -- keeps its cache. --kmerseek_extra_image is consulted only
+# by the kmerseek index and search tasks whose alphabet is one of the two, which is a
+# per-task container rather than a per-run one.
+#
+# Both images are prefetched because a run now genuinely uses both.
+# ---- human against itself: the all-against-all arm --------------------------------
+#
+# Why it exists: the benchmark's other nine arms are human against another species, and
+# they do not produce enough SHORT correct matches to rank scores on. Measured on
+# 2026-09-23 from a 933-protein human all-against-all, correct matches under 30 aa grow
+# as proteins^2.07, so 933 proteins give 10 of them and a 95% bootstrap band on the AUC
+# of +-0.12 to +-0.19. The registry's 20_600 human proteins are the fix.
+#
+# ALLVALL_IMAGE is not $(IMAGE_REMOTE), deliberately. The columns this arm exists to rank
+# -- region_mean_idf and region_evalue -- arrived in kmerseek 0.4; the default image
+# predates them and writes neither, so the run would finish and rank nothing. Pinned to a
+# tag resolved off Docker Hub on 2026-09-23, not guessed. Re-resolve before a rerun.
+#
+# Its own launch dir and its own outdir, so nothing here can move the nine-species sweep's
+# results or its report. --db_cache IS shared: the index is stored as
+# human.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb, a name no other arm can write, so it
+# lands beside them without collision.
+#
+# One combo by default, the one the scratchpad experiment used. Widen with
+# KMERSEEK_COMBOS= once the arm has run once and the cost is known: the search is
+# 20_600 queries against a 20_600-sequence index, which nothing here has measured yet.
+ALLVALL_IMAGE   ?= docker.io/olgabot/kmerseek:0.4.0-rc5
+ALLVALL_OUTDIR  ?= ../data/allvall/results
+ALLVALL_COMBOS  ?= hp_lehninger2:24
+ALLVALL_LOWCOMP ?= true
+
+run-human-allvall: PREFETCH_CONTAINERS := $(ALLVALL_IMAGE)
+run-human-allvall: prefetch-images
+	$(call require_cluster)
+	mkdir -p run-human-allvall
+	cd run-human-allvall && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --human_all_vs_all \
+	    --target_species      human \
+	    --kmerseek_image      $(ALLVALL_IMAGE) \
+	    --kmerseek_combos     $(ALLVALL_COMBOS) \
+	    --low_complexity_toggle $(ALLVALL_LOWCOMP) \
+	    --outdir              $(ALLVALL_OUTDIR) \
+	    --db_cache            ../results \
+	    --qfo_dir             ../data/qfo \
+	    --annotations         ../data/annotations \
+	    --swissprot_dat       ../data/uniprot_sprot.dat.gz \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+run-midi: QUERY_SET_LABEL := $(MIDI_QUERY_SET)
+run-midi: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi: prefetch-images midi-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi
+	cd run-midi && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --qfo_dir         ../data/midi/qfo \
+	    --annotations     ../data/midi/annotations \
+	    --structures      ../data/midi/structures \
+	    --outdir          $(MIDI_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(MIDI_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus: chr6 PLUS the MHC's off-chromosome partners ----------------
+#
+# The chr6 midi set is defined by cytogenetic location, so it misses the parts of the
+# antigen-presentation system that are not on chromosome 6: B2M (chr15, the class I light
+# chain), CD1A-E and MR1 (chr1, the lipid and metabolite presenters), and the KIR and LILR
+# clusters (chr19, the receptors that read class I). 34 proteins, all of them already in
+# both the QfO human proteome and the Pfam answer key.
+#
+# ADDITIVE, never a replacement. `--gene-set chr6_plus` unions the new buckets onto the
+# chr6 set and raises a hard error if a single chr6 query is lost, because notebook 221
+# measures every "the MHC behaves differently" claim against the 736 non-MHC chr6 genes.
+# make_mini_testset.py also writes annotations/query_sets.tsv, which buildQueryCovariates
+# turns into a `query_set` column, so the original 964 stay reconstructible exactly.
+midi-plus-testset-sherlock:
+	$(call require_cluster)
+	@# `all` has to be tested separately. It selects every non-human registry row, which
+	@# now includes botryllus, but the literal string does not contain "botryllus" -- so a
+	@# findstring test alone passes run-midi-plus-all-qfo straight through the one check
+	@# that exists to catch the missing proteome, and it fails later and further away.
+	@if { [ "$(MIDI_PLUS_TARGETS)" = "all" ] || \
+	      [ -n "$(findstring botryllus,$(MIDI_PLUS_TARGETS))" ]; } && \
+	    [ ! -f data/qfo/Eukaryota/BOTSCH2026_30301.fasta ]; then \
+	  echo ""; \
+	  echo "  botryllus is in MIDI_PLUS_TARGETS but its proteome is not staged:"; \
+	  echo "    data/qfo/Eukaryota/BOTSCH2026_30301.fasta is missing"; \
+	  echo ""; \
+	  echo "  It is not part of the QfO release, so qfo-download does not fetch it."; \
+	  echo "  On your Mac:"; \
+	  echo "    cd $(MAC_PIPELINE_DIR)"; \
+	  echo "    make stage-botryllus && make sync-data"; \
+	  echo ""; \
+	  exit 1; \
+	fi
+	apptainer exec \
+	  --bind $$PWD:$$PWD --pwd $$PWD \
+	  docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	  python3 bin/make_mini_testset.py \
+	    --annotations     data/annotations \
+	    --qfo-dir         data/qfo \
+	    --outdir          data/midi-plus \
+	    --gene-set        chr6_plus \
+	    --full-targets \
+	    --hgnc            data/covariates/hgnc_complete_set.txt \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --structure-cache data/structures
+
+# Its OWN outdir, and that is the whole correctness argument for this target rather than a
+# tidiness preference. kmerseekSearch is on storeDir under ${params.outdir}/kmerseek, and
+# its entry name -- human_vs_<species>.<alphabet>.k<k>.lc<lc>.regions.parquet -- carries NO
+# query-set digest. Pointing this run at data/midi/results would therefore hit 3665 stored
+# results computed from the 964-query FASTA and return them for a 998-query run: the 34 new
+# proteins would silently contribute nothing and read as genuine negatives. That is the
+# exact failure the kmerseekSearch errorStrategy comment already records happening once on
+# this project. The same applies to ${params.outdir}/mmseqs_domain_db and .../spectra.
+#
+# --db_cache still points at ../results, which is where the TARGET-side databases live.
+# Those are safe to share: their storeDir entries are keyed on species alone
+# (mouse_mmdb, ecoli.dayhoff6.k10.lcfalse.kmerseek.rocksdb, ...), so they carry no query
+# dependence at all. The human-side entries in the same cache are keyed by an MD5 of the
+# query FASTA (HUMAN_LABEL, e.g. human-a45f7aae_mmdb), so the new query set gets its own
+# entry beside the old one instead of colliding with it. Verified against the deployed
+# cache, not assumed.
+MIDI_PLUS_OUTDIR ?= ../data/midi-plus/results
+
+# ---- midi-plus under kmerseek 0.4: the run that writes mean IDF and the E-value -------
+#
+# Same 998-protein human query and same ten targets as run-midi-plus. The only thing that
+# changes is the engine, and it changes the columns: region_mean_idf, region_tfidf,
+# region_ka_bits and region_evalue exist in 0.4 and in nothing before it. The midi-plus
+# outputs already on disk carry query_tfidf, region_poisson_score and region_enrichment and
+# none of those four, so no rescoring of them can rank by mean IDF or by an E-value.
+#
+# ITS OWN --db_cache, and that is the whole reason this is a separate target rather than
+# run-midi-plus with a different image. A stored index is named
+# <target>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and the name says nothing about which
+# kmerseek built it. Pointed at ../results, 0.4 would find 17_696 indexes built by 0.3,
+# sitting at exactly the names it wants. 0.4 checks the builder and refuses them, so the
+# arm dies; and a 0.4 build that did land would overwrite an index the older runs still
+# read. Neither is worth risking for the disk it saves.
+#
+# Cost, measured on 2026-09-24 rather than guessed: 10 targets x ~203 combos = ~2_030
+# index builds at a ~380 MB average in the existing store, so about 1 TB, plus the search
+# outputs. The query is 998 proteins, so the searches themselves are small.
+ALLIDF_IMAGE  ?= docker.io/olgabot/kmerseek:0.4.0-rc5
+ALLIDF_OUTDIR ?= ../data/midi-plus-0.4/results
+# db_cache stays on ../results so every OTHER tool's storeDir hits what run-midi-plus
+# already built: Foldseek, MMseqs2, ProstT5, Reseek, Folddisco and HHblits databases, and
+# the phmmer / jackhmmer / mmseqs2 search results. Only kmerseek's index store moves,
+# because only kmerseek has a 0.3-versus-0.4 name collision.
+ALLIDF_CACHE  ?= ../results
+ALLIDF_INDEX  ?= ../results/kmerseek_index_0.4
+
+# Only the kmerseek arm runs. This target exists to produce region_mean_idf and
+# region_evalue, which no other arm writes, and every other arm has already run under
+# run-midi-plus with its outputs in ../results.
+#
+# It is not an optimisation, it is a correction. --db_cache is shared by EVERY tool, not
+# just kmerseek, so pointing it at a fresh directory -- which the kmerseek 0.3/0.4 index
+# name collision forces -- also makes Foldseek, MMseqs2, ProstT5, Reseek, Folddisco and
+# HHblits find an empty store and rebuild databases that have no version conflict at all.
+# Caught 2026-09-24, 23 minutes into a run that had queued 11 hhblitsBuildDB, 11 prostt5Db,
+# 10 foldseekDb, 10 reseekConvert, 9 folddiscoIndex and 8 mmseqsDb jobs. By this
+# Makefile's own measurement HHblits alone is 555 CPU-hours over nine targets plus 55 for
+# the profile databases, against 28 for phmmer and 12 for MMseqs2.
+#
+# skip_baselines covers phmmer, jackhmmer, hhblits and mmseqs2 together. Truth building,
+# domain identity and disorder stay on: they are covariates the scoring reads, and they
+# are cheap next to a structure database.
+# Left EMPTY on purpose. The arms are not skipped by flag any more; their storeDir
+# entries in ../results are simply hit, which costs a task that never executes and keeps
+# their regions available to the scoring beside the kmerseek ones. Set it to
+# `--skip_baselines true --skip_foldseek true ...` for a run that wants none of them.
+ALLIDF_SKIP ?=
+
+run-midi-plus-0.4: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
+run-midi-plus-0.4: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE) $(ALL_CONTAINERS)
+run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi-plus-0.4
+	cd run-midi-plus-0.4 && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(ALLIDF_IMAGE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(ALLIDF_IMAGE) \
+	    $(ALLIDF_SKIP) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(ALLIDF_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache            $(ALLIDF_CACHE) \
+	    --kmerseek_index_cache $(ALLIDF_INDEX) \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+run-midi-plus: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
+run-midi-plus: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus: prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-midi-plus
+	cd run-midi-plus && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(MIDI_PLUS_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(MIDI_PLUS_TARGETS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus across every QfO target -------------------------------------
+#
+# Same 998 queries as run-midi-plus, same alphabets, every QfO target instead of nine.
+# 77 targets, 68 of them new.
+#
+# SHARES run-midi-plus's outdir, and that is the whole point rather than an oversight.
+# kmerseekSearch stores under ${params.outdir}/kmerseek as
+# human_vs_<species>.<alphabet>.k<k>.lc<lc>.regions.parquet, and kmerseekIndex stores under
+# ${db_cache}/kmerseek_index. The query set here is byte-identical to run-midi-plus's -- the
+# same chr6_plus staging, the same 998 proteins -- so those 3654 stored searches and 3654
+# stored indexes are correct for this run and are reused rather than recomputed. That is
+# what the shared outdir buys, and it is only safe BECAUSE the query set is unchanged; this
+# is exactly the reasoning that gave run-midi-plus its own outdir when its query set grew
+# from 964 to 998.
+#
+# The cost of sharing: aggregateMetrics publishes all_domain_metrics.parquet to the outdir,
+# so this run REPLACES run-midi-plus's aggregate and its MultiQC report. Pull that report
+# first if you want to keep it -- `make pull-report-midi-plus`. The replacement is a
+# superset in species, not a different measurement.
+#
+# Structures: the 68 new targets have no AlphaFold models, so foldseek, reseek, folddisco
+# and the structure half of the report skip them on their own -- main.nf filters on
+# has_structs and make_mini_testset prints a NOTE per species. The nine originals keep
+# their structural arms. Nothing needs a flag for this.
+#
+# HHblits runs on every kingdom. It is the most expensive sequence arm, and restricting it
+# to eukaryotes would save ~2_400 CPU-hours -- but it would also leave E. coli as the only
+# bacterium with a profile baseline, which is precisely the comparison the prokaryote
+# question needs. ALLQFO_HHBLITS_KINGDOMS=Eukaryota puts the saving back.
+ALLQFO_OUTDIR ?= $(MIDI_PLUS_OUTDIR)
+ALLQFO_RUN_DIR ?= run-midi-plus-all-qfo
+# Every non-human registry row: the 77 QfO targets plus botryllus.
+ALLQFO_TARGETS ?= all
+
+# Registry species that have no Pfam answer key YET, as opposed to none that can exist.
+# Searched by every sequence arm and by ProstT5, scored by nothing, until the key lands.
+# Empty this as each one gains a data/annotations/<label>_pfam_domains.parquet -- the
+# preflight below fails if a name here already has one, so the list cannot go stale quietly.
+ALLQFO_PENDING_PFAM ?= botryllus
+# Every kingdom, deliberately.
+#
+# This was Eukaryota-only to save the ~2_400 CPU-hours HHblits costs across 30 prokaryotes.
+# That saving is now the wrong trade. The open question is whether E. coli's collapse is an
+# E. coli problem or a prokaryote-wide one, and answering it needs the strongest profile
+# baseline present on the prokaryotes rather than on E. coli alone -- one bacterium with an
+# HHblits point and 22 without is not a comparison, it is a gap with a single dot in it.
+#
+# Set this back to Eukaryota to drop those hours once the prokaryote question is settled.
+ALLQFO_HHBLITS_KINGDOMS ?=
+
+## Refuse to launch while anything that writes THIS pipeline's storeDirs is still queued.
+##
+## Not defensive padding. Nextflow decides "already in the store" when it CREATES a task
+## and never re-checks, so a second writer against the same --db_cache does the full build
+## and then dies on `mv: Directory not empty`. main.nf's workflow.onError names leftover
+## jobs from a previous run as the most likely cause, and this project has hit it three
+## times on three different storeDir outputs. The terminal returning is not the same as the
+## queue draining, which is precisely how it keeps happening.
+##
+## Scoped by work directory, not by user. Counting every job under $USER was the first
+## version and it was wrong in the direction that gets a guard disabled: an unrelated run
+## in another checkout -- the invertebrate dark set, on 2026-09-10 -- blocks a launch it
+## cannot possibly collide with, and the only way past is to ignore the check. A guard
+## people have to route around stops being a guard.
+##
+## `squeue -o %Z` gives each job's work directory in one call. Every job that can reach
+## this pipeline's storeDirs is launched from somewhere under this directory: the nf-head
+## job's work dir is its launch directory, and each task's is under <launch dir>/work. Two
+## run targets here still block each other, which is the case the guard was written for,
+## because run-midi and run-midi-plus-all-qfo share --db_cache ../results.
+queue-empty:
+	$(call require_cluster)
+	@here="$(MAKEFILE_DIR)/"; \
+	 mine=$$(squeue -u $$USER -h -o "%i %Z" 2>/dev/null | awk -v p="$$here" 'index($$2,p)==1'); \
+	 n=$$(printf '%s' "$$mine" | grep -c . ); \
+	 if [ "$$n" -ne 0 ]; then \
+	   echo; \
+	   echo "  $$n job(s) of this pipeline still queued or running:"; \
+	   echo "$$mine" | head -5 | sed 's/^/    /'; \
+	   echo; \
+	   echo "  Launching now would put two writers on the same storeDir under"; \
+	   echo "  $(ALLQFO_OUTDIR) and \$$(db_cache), which fails as"; \
+	   echo "  'mv: cannot move ... Directory not empty' after both have done the work."; \
+	   echo; \
+	   echo "  Wait for them to drain, or stop the run that owns them:"; \
+	   echo "    make running"; \
+	   echo "    make stop"; \
+	   echo; \
+	   exit 1; \
+	 fi; \
+	 other=$$(squeue -u $$USER -h 2>/dev/null | grep -c .); \
+	 if [ "$$other" -ne 0 ]; then \
+	   echo "clear here; $$other job(s) of yours elsewhere, which cannot reach these storeDirs"; \
+	 else \
+	   echo "queue is empty"; \
+	 fi
+
+# The only run whose head has to stay alive for the better part of a week. It gets there on
+# the partition QOS rather than a QOS of its own -- see the note on HEAD_QOS above for why
+# `long` is not usable on hns.
+run-midi-plus-all-qfo: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
+run-midi-plus-all-qfo: HEAD_TIME := 7-00:00:00
+run-midi-plus-all-qfo: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-midi-plus-all-qfo: MIDI_PLUS_TARGETS := all
+run-midi-plus-all-qfo: queue-empty prefetch-images midi-plus-testset-sherlock
+	$(call require_cluster)
+	@# Every registry species must either HAVE an answer key, be recorded as having none
+	@# available, or be listed as pending. A bare count cannot tell those apart, and the
+	@# differences matter: pnodorum's accessions appear zero times in all 129_292_765 rows
+	@# of Pfam-A.regions.tsv.gz, so no amount of re-running produces one, while 68 missing
+	@# keys means pfam-annotations never ran.
+	@# build_pfam_architectures.py writes species_without_pfam.txt for exactly this.
+	@#
+	@# ALLQFO_PENDING_PFAM is the third state, and it is not the same as the second.
+	@# species_without_pfam.txt means "Pfam has nothing for this species, ever". Botryllus
+	@# is not in that category -- it is not in UniProt, so the bulk Pfam-A regions table
+	@# cannot cover it, but an hmmscan answer key is being built and it WILL be scored.
+	@# Filing it under species_without_pfam.txt to get past this check would record a
+	@# permanent fact that is false, and would then have to be un-recorded by hand at
+	@# exactly the moment everyone had forgotten it was there.
+	@reg=$$(tail -n +2 assets/qfo_species.tsv | cut -f1 | sort); \
+	 have=$$(ls data/annotations/*_pfam_domains.parquet 2>/dev/null \
+	         | sed 's|.*/||; s|_pfam_domains.parquet||' | sort); \
+	 none=$$(cat data/annotations/species_without_pfam.txt 2>/dev/null | sort); \
+	 pend=$$(echo "$(ALLQFO_PENDING_PFAM)" | tr ', ' '\n\n' | grep . | sort); \
+	 gap=$$(comm -23 <(echo "$$reg") \
+	                 <(sort -u <(echo "$$have") <(echo "$$none") <(echo "$$pend"))); \
+	 if [ -n "$$gap" ]; then \
+	   echo; \
+	   echo "  No Pfam answer key, and not recorded as unavailable or pending:"; \
+	   echo "$$gap" | sed 's/^/    /'; \
+	   echo; \
+	   echo "  A target with no annotation is searched but never scored, so this is only"; \
+	   echo "  safe when Pfam genuinely has nothing for the species. Run:"; \
+	   echo; \
+	   echo "    make pfam-annotations"; \
+	   echo; exit 1; \
+	 fi; \
+	 for p in $$pend; do \
+	   if echo "$$have" | grep -qx "$$p"; then \
+	     echo; \
+	     echo "  $$p is in ALLQFO_PENDING_PFAM but now HAS an answer key."; \
+	     echo "  It will be scored from this run on. Drop it from ALLQFO_PENDING_PFAM so"; \
+	     echo "  the list keeps meaning something."; \
+	     echo; exit 1; \
+	   fi; \
+	 done; \
+	 if [ -n "$$none" ]; then \
+	   echo "searched but NOT scored (no Pfam data exists for them):"; \
+	   echo "$$none" | sed 's/^/    /'; \
+	 fi; \
+	 if [ -n "$$pend" ]; then \
+	   echo "searched but not scored YET (answer key in progress):"; \
+	   echo "$$pend" | sed 's/^/    /'; \
+	 fi; \
+	 echo "answer key: $$(echo "$$have" | grep -c .) species scored"
+	mkdir -p $(ALLQFO_RUN_DIR)
+	cd $(ALLQFO_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_extra_encodings true \
+	    --kmerseek_extra_image     $(RB_IMAGE_REMOTE) \
+	    --qfo_dir         ../data/midi-plus/qfo \
+	    --annotations     ../data/midi-plus/annotations \
+	    --structures      ../data/midi-plus/structures \
+	    --outdir          $(ALLQFO_OUTDIR) \
+	    $(BPE_NF_ARG) \
+	    --db_cache        ../results \
+	    --target_species  $(ALLQFO_TARGETS) \
+	    $(if $(ALLQFO_HHBLITS_KINGDOMS),--hhblits_kingdoms $(ALLQFO_HHBLITS_KINGDOMS)) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir       ../data/pfamn \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+# ---- polarity4 and funcgroups8 (Rannon & Burstein 2026) --------------------
+#
+# The two alphabets kmerseek gained in dd630a8, on the same midi query set as run-midi so
+# their numbers are comparable to everything that run has already scored. Four things keep
+# this off the main sweep's toes, and all four matter:
+#
+#   --kmerseek_image $(RB_IMAGE_REMOTE)   the only image with the alphabets. Kept out of
+#       IMAGE_TAG so the running sweep's 2507 indexes and 1700 searches do not rehash.
+#   RB_OUTDIR, its own results directory   scoreDomainCalls publishes per-arm parquets and
+#       aggregateMetrics publishes all_domain_metrics.parquet. Sharing run-midi's outdir
+#       would have this run's aggregate, which covers two alphabets and no baselines,
+#       replace the one describing the whole sweep. The combined view comes from
+#       `multiqc-rannon-burstein` below, which reads both directories.
+#   RB_RUN_DIR, its own launch directory   Nextflow truncates its trace as a run starts, so
+#       launching from run-midi/ would destroy the trace `make multiqc` reads. Same reason
+#       gpu-benchmark has run-gpu-bench/.
+#   --skip_baselines true   the baselines are a property of the query set and the target
+#       proteomes, not of the alphabet. run-midi has already scored them; re-running
+#       phmmer, jackhmmer, mmseqs2, foldseek, reseek, folddisco and ProstT5 over nine
+#       proteomes would cost days and produce the same numbers.
+#
+# --run_hmmscan false for the same reason, and for one more. The Pfam annotation ceiling is
+# a property of Pfam-A, so this run would spend hours on a whole-proteome hmmscan to
+# reproduce run-midi's number exactly. It also defaults to ON whenever the Pfam HMM file is
+# present, which it is on Sherlock, so it has to be turned off explicitly. And
+# scoreHmmscanCeiling writes a FIXED filename, hmmscan.direct.all.metrics.parquet, into
+# <outdir>/metrics -- two runs producing it means the same arm in both directories, which
+# the combined report refuses rather than counting twice.
+#
+# --db_cache stays on ../results. The kmerseek index store is keyed by
+# <species>.<label>.k<ksize>.lc<lowcomp>, and polarity4/funcgroups8 are new labels, so
+# these runs add entries beside the existing ones rather than colliding with them.
+#
+# 2 alphabets x 10 ksizes x 2 low-complexity settings x 9 targets = 360 searches, plus the
+# same number of index builds. The ksize ranges are in main.nf's EXTRA_ENCODINGS, derived
+# from measured bits/symbol; --kmerseek_encodings names the alphabets and picks them up.
+RB_RUN_DIR ?= run-rannon-burstein
+RB_OUTDIR  ?= ../data/midi/results-rannon-burstein
+RB_ENCODINGS ?= polarity4,funcgroups8
+
+## One command: search the two Rannon & Burstein alphabets, then build the combined report.
+##
+## Sequential on purpose, not parallel. multiqc-rannon-burstein re-aggregates the per-arm
+## parquets from BOTH outdirs, so it has to see this run's scoring finished; and make -j
+## on these two would race the second against the first's still-writing metrics directory.
+##
+## The two halves stay separately runnable. This wrapper fails at the first, so a search
+## that dies partway does not go on to build a report over half its arms -- and after
+## fixing whatever failed, `make run-rannon-burstein` resumes from storeDir and
+## `make multiqc-rannon-burstein` finishes the job without repeating the search.
+##
+## run-midi must already have completed. Its metrics are the other half of the combined
+## report -- every baseline and all 17 existing alphabets -- and this run deliberately does
+## not recompute them.
+rannon-burstein-all:
+	$(call require_cluster)
+	@test -f $(MIDI_OUTDIR)/all_domain_metrics.parquet \
+	  || { echo; echo "  run-midi has not produced $(MIDI_OUTDIR)/all_domain_metrics.parquet."; \
+	       echo "  The combined report needs it for the baselines and the other 17 alphabets."; \
+	       echo "  Run 'make run-midi' first, or pass MIDI_OUTDIR=<other outdir>."; echo; exit 1; }
+	$(MAKE) run-rannon-burstein
+	$(MAKE) multiqc-rannon-burstein
+	@echo
+	@echo "  Combined report written under $(RB_COMBINED_OUTDIR)."
+	@echo "  Pull it with:  make pull-report REMOTE_RESULTS=$(RB_COMBINED_OUTDIR)"
+
+run-rannon-burstein: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+run-rannon-burstein: prefetch-images midi-testset-sherlock
+	$(call require_cluster)
+	mkdir -p $(RB_RUN_DIR)
+	cd $(RB_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image      $(RB_IMAGE_REMOTE) \
+	    --kmerseek_encodings  $(RB_ENCODINGS) \
+	    --skip_baselines      true \
+	    --run_hmmscan         false \
+	    --qfo_dir             ../data/midi/qfo \
+	    --annotations         ../data/midi/annotations \
+	    --structures          ../data/midi/structures \
+	    --outdir              $(RB_OUTDIR) \
+	    --db_cache            ../results \
+	    --target_species      $(MIDI_TARGETS) \
+	    --hgnc_file           ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file          ../data/covariates/omega_results.tsv \
+	    --swissprot_dat       ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir           ../data/pfamn \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# Same code path as the real run, scoped down. Do this before `make run`.
+# The smoke test takes the same route to the compute node as the real runs -- that is
+# what makes it a smoke test of the launch path and not just of the pipeline.
+run-mini: HEAD_TIME := 4:00:00
+run-mini: prefetch-images mini-testset-sherlock
+	$(call require_cluster)
+	mkdir -p run-mini
+	cd run-mini && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE),mini -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --qfo_dir         ../data/mini/qfo \
+	    --annotations     ../data/mini/annotations \
+	    --structures      ../data/mini/structures \
+	    --outdir          ../data/mini/results \
+    $(BPE_NF_ARG) \
+	    --target_species  $(MINI_TARGETS) \
+	    --kmerseek_combos $(MINI_COMBOS) \
+	    --hgnc_file       ../data/covariates/hgnc_complete_set.txt \
+	    --omega_file      ../data/covariates/omega_results.tsv \
+	    --swissprot_dat   ../data/uniprot_sprot.dat.gz \
+	    --pfamn_dir        ../data/pfamn          \
+	    --prostt5_weights ../data/prostt5/weights \
+	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# Rebuild the one HTML report from results already published, without re-running a single
+# search. This is the normal way to get it after a long sweep: the trace is only complete
+# once the run has ended.
+#
+# Launched from its own directory on purpose. Nextflow truncates its trace file and
+# overwrites its execution report and timeline as a run starts, so a report run launched in
+# run/ would destroy the very numbers it is reading. main.nf refuses outright in that case
+# rather than quietly emitting empty resource sections.
+#
+# multiqc-preflight comes FIRST in the prerequisite list, ahead of prefetch-images. Make
+# builds prerequisites left to right, so the "nothing to report on" check happens before
+# any srun image pull rather than after several minutes of them. Same check the local
+# target does inline; it needs a target of its own here only to get ahead of that pull.
+multiqc-preflight: GUARD_NAME := multiqc
+multiqc-preflight:
+	$(call require_cluster)
+	@if [ -z "$(TRACE)" ]; then \
+	  echo "No trace file under run/. Pass one explicitly:"; \
+	  echo "  make multiqc TRACE=run/qfo_pfam_region.<date>.trace.txt"; \
+	  exit 1; \
+	fi
+	$(call require_metrics,$(MULTIQC_OUTDIR_ABS),run,run,MULTIQC_OUTDIR,multiqc)
+
+#
+# This one needs --kmerseek_image too, which is not obvious: multiqcReport pins its own
+# multiqc container, but buildMultiqcInputs carries `label 'python'`, and the sherlock
+# profile binds that label to params.kmerseek_image. The section-building step is the part
+# that reads the parquets.
+multiqc: multiqc-preflight prefetch-images
+	$(call require_cluster)
+	@echo "reporting on trace: $(TRACE)"
+	mkdir -p run-report
+	cd run-report && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
+	    --kmerseek_image $(IMAGE_REMOTE) \
+	    --outdir     $(MULTIQC_OUTDIR) \
+	    --report_trace $(abspath $(TRACE)) \
+	    --qfo_dir    ../data/qfo \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+# ---- one report over run-midi AND run-rannon-burstein ---------------------
+#
+# The point of running the new alphabets at all is seeing them next to the baselines and
+# the seventeen alphabets run-midi already scored, and neither run's
+# all_domain_metrics.parquet has both. --report_outdirs re-aggregates the per-arm parquets
+# of both -- see the note on that param in main.nf for why the alternatives do not work --
+# and publishes the combined aggregate plus the HTML into RB_COMBINED_OUTDIR, which is a
+# THIRD directory so neither source run's own aggregate is touched.
+#
+# The trace is the one thing that cannot simply be unioned by Nextflow, because the report
+# reads a single file. Concatenating them here is safe: both runs write the field list from
+# nextflow.config's `trace` block, so the headers are identical and only the second file's
+# needs dropping. Without this the resource sections would describe one of the two runs
+# while the accuracy sections described both, which is the kind of mismatch nobody notices
+# in an HTML report.
+#
+# The concatenated file lands in RB_RUN_DIR rather than run/ or run-midi/: those are launch
+# directories with live trace observers, and a report run pointed at a file inside one is
+# how the trace-truncation bug happened in the first place.
+RB_COMBINED_OUTDIR ?= ../data/midi/results-combined
+RB_TRACE           ?= $(shell ls -t $(RB_RUN_DIR)/*.trace.txt 2>/dev/null | head -1)
+MIDI_TRACE         ?= $(shell ls -t run-midi/*.trace.txt 2>/dev/null | head -1)
+RB_COMBINED_TRACE  := $(RB_RUN_DIR)/combined.trace.txt
+
+## An intermediate report, built from the arms scored SO FAR. Meant to be run WHILE
+## `make run-midi` is still going, so a slow arm -- hhblits on the large targets is hours --
+## does not hold up looking at everything else.
+##
+## It reads <MIDI_OUTDIR>/metrics/*.metrics.parquet, which scoreDomainCalls publishes one
+## file at a time as each group finishes. all_domain_metrics.parquet is NOT what it reads:
+## aggregateMetrics writes that once, at the very end, which is the thing being waited on.
+##
+## Three separations, each load-bearing, because two nextflow processes must not share a
+## folder:
+##
+##   its own LAUNCH directory, run-report-partial, so .nextflow/, work/ and the log belong
+##   to it and not to the run in run-midi;
+##
+##   its own OUTDIR, because -entry report refuses an --outdir that is also one of its
+##   sources -- publishing this partial aggregate over the live run's would replace that
+##   run's all_domain_metrics.parquet with a subset, and a subset of the right shape is
+##   exactly what nobody notices;
+##
+##   --report_trace none, because Nextflow truncates any trace file it is itself writing
+##   and the live run owns its trace. Accuracy sections only; the time, CPU and memory
+##   sections come back when the run has finished and `make multiqc` reads its trace.
+##
+## Re-runnable as often as you like. Each run is a fresh snapshot of whatever has been
+## published by then.
+MIDI_PARTIAL_OUTDIR ?= ../data/midi/results-partial
+
+multiqc-partial: QUERY_SET_LABEL := $(MIDI_QUERY_SET)
+multiqc-partial: PREFETCH_CONTAINERS := $(IMAGE_REMOTE) $(ALL_CONTAINERS)
+multiqc-partial: prefetch-images
+	$(call require_cluster)
+	@# find, not `ls <dir>/*.metrics.parquet`. A full sweep publishes over 13_000 of them
+	@# and the shell expands the glob onto the command line, which at ~184 bytes a path is
+	@# 2.4 MB against a 2 MB ARG_MAX. execve then fails with E2BIG, `2>/dev/null` swallows
+	@# "Argument list too long", and the count comes back 0 -- a directory with 13_033 files
+	@# in it reported as empty, which is exactly how this target claimed there was nothing
+	@# to report on.
+	@n=$$(find $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics -name '*.metrics.parquet' 2>/dev/null | wc -l); \
+	 if [ "$$n" -eq 0 ]; then \
+	   echo ""; \
+	   echo "  Nothing scored yet under $(call rel_to_launch,run-midi,$(MIDI_OUTDIR))/metrics."; \
+	   echo ""; \
+	   echo "  scoreDomainCalls publishes one metrics file per arm as it finishes, so that"; \
+	   echo "  directory fills up during a run rather than at the end of one."; \
+	   echo ""; \
+	   echo "  MIDI_OUTDIR is read relative to the run-midi LAUNCH directory, not to where"; \
+	   echo "  you are standing, because that is where run-midi passes it from. So"; \
+	   echo "  'MIDI_OUTDIR=results/' means run-midi/results, which is nothing. Leave it"; \
+	   echo "  unset to report on 'make run-midi':"; \
+	   echo ""; \
+	   echo "    make multiqc-partial"; \
+	   echo "        -> $(call rel_to_launch,run-midi,../data/midi/results)/metrics"; \
+	   echo ""; \
+	   echo "  or give an ABSOLUTE path to report on a different run (the full run's outdir"; \
+	   echo "  is $(abspath ../results), and rel_to_launch passes absolute paths through):"; \
+	   echo ""; \
+	   echo "    make multiqc-partial MIDI_OUTDIR=$(abspath ../results)"; \
+	   echo ""; \
+	   exit 1; \
+	 fi; \
+	 echo "reporting on $$n per-arm metric files -- a snapshot; the run keeps adding to them"
+	mkdir -p run-report-partial
+	cd run-report-partial && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)) \
+	    --outdir          $(MIDI_PARTIAL_OUTDIR) \
+	    --report_trace    none \
+	    --allow_dead_arms true \
+	    --qfo_dir         ../data/midi/qfo \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+	@echo
+	@echo "  Partial report under $(MIDI_PARTIAL_OUTDIR). Pull it to the Mac with:"
+	@echo "    make pull-report REMOTE_RESULTS=$(MIDI_PARTIAL_OUTDIR:../%=%) LOCAL_RESULTS=$(LOCAL_RESULTS)/midi-partial"
+
+multiqc-rannon-burstein: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
+multiqc-rannon-burstein: prefetch-images
+	$(call require_cluster)
+	@for t in "$(MIDI_TRACE)" "$(RB_TRACE)"; do \
+	  if [ -z "$$t" ] || [ ! -f "$$t" ]; then \
+	    echo ""; \
+	    echo "  Missing a trace file."; \
+	    echo "    run-midi:            $(if $(MIDI_TRACE),$(MIDI_TRACE),NONE under run-midi/)"; \
+	    echo "    run-rannon-burstein: $(if $(RB_TRACE),$(RB_TRACE),NONE under $(RB_RUN_DIR)/)"; \
+	    echo ""; \
+	    echo "  Both runs have to have finished. Name them explicitly if the newest file"; \
+	    echo "  under either launch directory is not the one you want:"; \
+	    echo ""; \
+	    echo "    make multiqc-rannon-burstein MIDI_TRACE=<path> RB_TRACE=<path>"; \
+	    echo ""; \
+	    exit 1; \
+	  fi; \
+	done
+	@echo "combining traces: $(MIDI_TRACE) + $(RB_TRACE)"
+	@cp -f $(MIDI_TRACE) $(RB_COMBINED_TRACE)
+	@tail -n +2 $(RB_TRACE) >> $(RB_COMBINED_TRACE)
+	mkdir -p run-report-rannon-burstein
+	cd run-report-rannon-burstein && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -entry report -profile $(PROFILE) \
+	    --kmerseek_image  $(RB_IMAGE_REMOTE) \
+	    --report_outdirs  $(call rel_to_launch,run-midi,$(MIDI_OUTDIR)),$(call rel_to_launch,$(RB_RUN_DIR),$(RB_OUTDIR)) \
+	    --outdir          $(RB_COMBINED_OUTDIR) \
+	    --report_trace    $(abspath $(RB_COMBINED_TRACE)) \
+	    --qfo_dir         ../data/midi/qfo \
+	    $(QUERY_SET_NF_ARG) \
+	    $(NF_ARGS)
+
+## Attach to the head job's tmux and watch the live task table.
+##
+## The socket is /tmp/nf-head-<jobid> on the head's own node, and `srun --jobid` puts you
+## on that node, so nothing has to travel through the filesystem for this to find it.
+##
+## `watch` is read-only, because a stray Ctrl-C in an attached session reaches Nextflow and
+## shuts the run down. Detach with Ctrl-b d and the run carries on. `attach` is the same
+## thing writable, for when typing into it is what you mean -- though `make stop` is the
+## safer way to end a run.
+##
+## Pass JOBID=<id> when more than one head is alive.
+watch:  HEAD_ATTACH := -r
+attach: HEAD_ATTACH :=
+watch attach:
+	$(call require_cluster)
+	@jid="$(JOBID)"; \
+	 if [ -z "$$jid" ]; then \
+	   jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 fi; \
+	 if [ -z "$$jid" ]; then \
+	   pend=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T %r"); \
+	   if [ -n "$$pend" ]; then \
+	     echo "no nf-head is RUNNING yet:"; echo "$$pend" | sed 's/^/    /'; \
+	   else \
+	     echo "no nf-head job. Start one with a run target, or pass JOBID=<id>."; \
+	   fi; \
+	   exit 1; \
+	 fi; \
+	 exec srun --jobid=$$jid --overlap --pty \
+	      tmux -S /tmp/nf-head-$$jid attach $(HEAD_ATTACH) -t $(HEAD_SESSION)
+
+## Ask the run to stop the way Nextflow can handle: Ctrl-C, so it cancels the jobs it has
+## in flight rather than leaving them as orphans for the next launch's queue-empty check to
+## trip over.
+##
+## `scancel --signal=TERM --batch` signals the batch script only and does NOT cancel the
+## job, so the trap in scripts/nf-head gets to do that work and the job ends by itself once
+## Nextflow has finished shutting down. Plain `scancel <jobid>` is the hard version, and it
+## is the one that leaves the orphans.
+stop:
+	$(call require_cluster)
+	@jid="$(JOBID)"; \
+	 if [ -z "$$jid" ]; then \
+	   jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 fi; \
+	 if [ -z "$$jid" ]; then echo "no nf-head job is running"; exit 1; fi; \
+	 scancel --signal=TERM --batch $$jid && \
+	 echo "asked job $$jid to shut down; watch it drain with: make running"
+
+status:
+	$(call require_cluster)
+	squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+
+## What happened to a run, from its .nextflow.log: whether it ended, which task took it
+## down and what that task printed, per-process counts, every failed task with its work
+## dir. This is the question a dead tmux session leaves behind, and the answer used to be
+## grepping a 400 KB log for ERROR and then walking into the work dir. Needs no cluster:
+## it reads the log in this directory and the failed tasks' .command.err, so it works on a
+## pulled-back copy too. JOBNAME=<slurm job name> adds the head jobs from sacct.
+postmortem:
+	@../../scripts/nf-postmortem $(if $(HISTORY),--history,$(if $(JOBNAME),--jobname $(JOBNAME)) $(LOG))
+
+## Every Nextflow run with jobs in the queue, then one row per job of the runs under this
+## pipeline folder. scripts/nf-running does the work; its docstring says how a job is tied
+## to its run.
+##
+## Runs are named by where they live (clone, pipeline, run folder), so the watch reads the
+## same from any pipeline folder. The version before 2026-09-28 counted only jobs under
+## this folder and called the rest "elsewhere": with the dark-set midi run queued it read
+## "0 from this pipeline, 112 elsewhere", and it showed that run's head as "(no
+## .command.run under ladder-0.4-midi)", because a head has no task file.
+##
+## Process and tag come from `### name:` in each task's own .command.run, which Nextflow
+## writes and which carries both. The SLURM job name cannot be used for this pipeline: it
+## truncates to `nf-kmers` for every kmerseek task whatever its alphabet.
+##
+## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes and
+## `1-02:19:10` is a day. PENDING jobs show 0:00.
+running:
+	$(call require_cluster)
+	@python3 ../../scripts/nf-running --jobs "$(MAKEFILE_DIR)"
+
+## Cancel every job on this account, then show what is left.
+##
+## This is part of restarting, not housekeeping. Nextflow does not reliably stop its jobs
+## when it dies: a failed run prints "Finishing pending tasks before exit" and keeps
+## unstaging for minutes, and an interrupted one leaves orphans that no later -resume will
+## ever collect. Those orphans are exactly what produces storeDir "Directory not empty"
+## collisions against the next run, because two writers reach the same store entry. Wait
+## for this to come back empty before relaunching.
+kill-jobs:
+	$(call require_cluster)
+	@squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+	@read -p "cancel ALL of the above? [y/N] " a; [ "$$a" = y ] || exit 1
+	scancel -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+	@sleep 2; squeue -u $$USER --account=$${SLURM_ACCOUNT:-ayeletv}
+
+# Guarded like every other cluster target. Without it, $SCRATCH is empty on the Mac and
+# this expands to `rm -rf /apptainer-cache` -- harmless only because that path happens not
+# to exist.
+clean-cache:
+	$(call require_cluster)
+	rm -rf $$SCRATCH/apptainer-cache
+
+## Drop the cached kmerseek target indexes. They exist so run-midi and the full run share
+## one set of index builds -- roughly 3294 RocksDB directories at a 2.1 GB median write,
+## which is multiple TB on $SCRATCH. Run this only when the LAST run over these target
+## proteomes has finished; anything still to come re-indexes from scratch.
+clean-indexes:
+	$(call require_cluster)
+	@du -sh $(REMOTE_INDEX_DIR) 2>/dev/null || echo "no index cache at $(REMOTE_INDEX_DIR)"
+	@read -p "delete the kmerseek index cache above? [y/N] " a; [ "$$a" = y ] || exit 1
+	/bin/rm -rf $(REMOTE_INDEX_DIR)
+
+REMOTE_FOLDDISCO_DIR ?= results/folddisco_index
+
+## Drop the cached folddisco indexes. Needed once, after the fix that makes folddiscoIndex
+## record ABSOLUTE structure paths: `folddisco query` reopens the target CIF files that the
+## index points at, and every index built before that fix points at a relative path that
+## resolves to nothing outside the task that built it. storeDir skips a rebuild whenever the
+## output directory already exists and does NOT notice that the script changed, so the stale
+## indexes are picked up and every query panics on "Failed to read CIF file" exactly as
+## before. Deleting them is what makes the fix take effect.
+clean-folddisco-index:
+	$(call require_cluster)
+	@du -sh $(REMOTE_FOLDDISCO_DIR) 2>/dev/null || echo "no folddisco index at $(REMOTE_FOLDDISCO_DIR)"
+	@read -p "delete the folddisco indexes above? they rebuild on the next run [y/N] " a; [ "$$a" = y ] || exit 1
+	/bin/rm -rf $(REMOTE_FOLDDISCO_DIR)
+
+## Where kmerseekSearch stores its region tables. Defaults to the outdir run-midi-plus and
+## run-midi-plus-all-qfo share; point it elsewhere for another run's outdir. MIDI_PLUS_OUTDIR
+## is written against the launch directory (`../data/midi-plus/results`), and this target
+## runs from the pipeline directory one level up, so it goes through rel_to_launch like
+## every other outdir read from here. Without that it looked for `../data/...` beside the
+## pipeline and reported no store.
+KMERSEEK_REGIONS_DIR ?= $(call rel_to_launch,run-midi-plus-all-qfo,$(MIDI_PLUS_OUTDIR))/kmerseek
+
+## Delete every zero-byte kmerseek regions parquet so the next -resume searches it again.
+##
+## These files are OOM kills stored as results. Until the fix on kmerseekSearch, a
+## `kmerseek search` killed by the cgroup memory limit exited 137, the shell around it
+## survived, treated the nonzero exit as "found nothing", and wrote an empty parquet into
+## storeDir. storeDir then saw the output present and served it as done on every later
+## run, and scoring read it as recall 0. On the 2026-09-10 run 227 stored region files were
+## zero bytes and 178 of them were exit 137 (mostly gbmr7 k9-12, gbmr4 k12-13, polarity4
+## k10-13). Removing the regions parquet alone is enough: storeDir decides "done" by the
+## declared outputs existing, so a missing regions file makes the task run again under the
+## corrected script, which now re-raises the kill instead of storing it.
+##
+## /bin/rm, not rm: the interactive shell aliases rm to `rm -i`, which hangs a make target.
+purge-empty-kmerseek-regions:
+	$(call require_cluster)
+	@if [ ! -d "$(KMERSEEK_REGIONS_DIR)" ]; then \
+	  echo "no kmerseek store at $(KMERSEEK_REGIONS_DIR)"; exit 1; \
+	fi
+	@n=$$(find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 | wc -l | tr -d ' '); \
+	 echo "$$n zero-byte regions file(s) under $(KMERSEEK_REGIONS_DIR)"; \
+	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 | sort | sed 's/^/  /'; \
+	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 -exec /bin/rm -f {} +; \
+	 echo "deleted $$n; the next -resume runs those searches again"
+
+## How much disk the shared cache is holding, and how much is left. Check this before
+## launching the full sweep. Everything under results/ is shared between run-midi and run:
+## the target databases are identical for both, and the human entries are kept apart by a
+## query-set digest in their names (human-<md5>_mmdb and friends).
+index-disk:
+	$(call require_cluster)
+	@for d in kmerseek_index hhblits_db foldseek_db mmseqs_db prostt5_db reseek_db \
+	          folddisco_index prostt5_weights; do \
+	    printf '%-18s ' "$$d"; (du -sh results/$$d 2>/dev/null | cut -f1) || echo "-"; \
+	  done
+	@echo "--- orphaned pre-digest human entries (safe to delete) ---"
+	@find results -maxdepth 2 \( -name 'human_*' -o -name 'human.bca' \) 2>/dev/null || true
+	@echo "--- quota ---"; lfs quota -h -u $$USER $$SCRATCH 2>/dev/null || df -h $$SCRATCH

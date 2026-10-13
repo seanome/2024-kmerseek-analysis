@@ -1,0 +1,44 @@
+# metapredict in its own image, deliberately NOT in the shared kmerseek image.
+#
+# Two reasons, both learned by trying the other way:
+#
+# 1. metapredict 3.0.1 publishes no cp313 wheel, so pip builds it from the sdist, and it
+#    carries a Cython extension (backend/cython/domain_definition.pyx). The build dies with
+#    "No such file or directory: 'x86_64-linux-gnu-gcc'" on a slim image. A compiler is
+#    needed at build time and is dead weight afterwards.
+#
+# 2. It depends on torch. The default PyPI torch pulls the whole CUDA stack: torch itself
+#    526 MB, plus cudnn 366 MB, cublas 423 MB, nccl 206 MB, cufft 214 MB, cusolver 200 MB,
+#    triton 197 MB, cusparse 145 MB. Roughly 2.5 GB of NVIDIA wheels, in an image that
+#    every kmerseek task and every python-labelled task pulls and that Apptainer converts
+#    to a SIF once per cluster. Paying that so ten short CPU tasks can run is the wrong
+#    trade, and prostt5Db is the only GPU process in this pipeline anyway.
+#
+# The CPU-only torch index is what keeps this image small. Do not drop --index-url:
+# without it pip silently takes the CUDA build again and the image grows by ~2 GB with no
+# error to notice.
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates procps python3 python3-pip python3-dev gcc \
+    && pip3 install --no-cache-dir --break-system-packages \
+        --index-url https://download.pytorch.org/whl/cpu \
+        torch \
+    && pip3 install --no-cache-dir --break-system-packages \
+        'polars==1.43.2' 'pyarrow==25.0.1' 'numpy==2.5.2' \
+        'metapredict==3.0.1' \
+    && apt-get purge -y --auto-remove gcc python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Fail the BUILD rather than the pipeline if the API this project depends on is not there.
+# predict_disorder_fasta's {header: [sequence, scores]} shape is what
+# bin/predict_disorder_metapredict.py unpacks, and a silent change would surface as a
+# column of wrong numbers three processes downstream.
+RUN python3 -c "\
+import metapredict as mp;\
+d = mp.predict_disorder_fasta('/dev/stdin', show_progress_bar=False) if False else None;\
+assert hasattr(mp, 'predict_disorder_fasta'), 'predict_disorder_fasta is gone';\
+import torch;\
+print('metapredict', mp.__version__, '| torch', torch.__version__)"
+
+WORKDIR /data

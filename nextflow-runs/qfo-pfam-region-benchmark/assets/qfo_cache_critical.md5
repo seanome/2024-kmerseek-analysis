@@ -1,0 +1,23 @@
+# MD5s of the ten QfO 2020_04 proteomes that existing caches were built from.
+#
+# Nine targets plus the human query. Every kmerseek index
+# (<label>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb), every stored search
+# (human_vs_<label>...regions.parquet) and every foldseek/mmseqs/reseek/prostt5
+# target database names its species by LABEL only -- no release, no checksum. A
+# different release dropped into place under the same names is not a cache miss,
+# it is a silently wrong cache hit.
+#
+# `make qfo-download` checks these after unpacking. Paths are relative to the
+# release directory. Generated from
+# /Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
+# on 2026-09-03.
+74bf5689099474ca85a96b090c722ece  Eukaryota/UP000005640_9606.fasta
+9eecd7fdc99b09557b5a6c932741b490  Eukaryota/UP000000589_10090.fasta
+fbe451eef76fc5415565685340f401c3  Eukaryota/UP000000539_9031.fasta
+216557fab326e6d36168fe2106512e86  Eukaryota/UP000000437_7955.fasta
+9e94da4d17a315080c4789d4264ba9a3  Eukaryota/UP000008144_7719.fasta
+bae09079cb2c33dcc9f41850a92e3c88  Eukaryota/UP000000803_7227.fasta
+757ebbc9f4a1f3422bb066afae9ea4fb  Eukaryota/UP000001940_6239.fasta
+d8610f9d274e718dfc5c4bee77d26553  Eukaryota/UP000002311_559292.fasta
+b6c1d96a36cbd4c9e6afc7b6c9742312  Eukaryota/UP000006548_3702.fasta
+b78d2fe5de96a9874da0c384ce67a3cf  Bacteria/UP000000625_83333.fasta

@@ -1,0 +1,22 @@
+# nextflow-runs/qfo-dnds-omega/docker/Dockerfile.omega
+#
+# MAFFT for the protein alignment and PAML for pairwise codeml. Biopython does the
+# FASTA parsing, translation and codon back-translation. Nothing here talks to the
+# network: unlike nextflow-runs/human-mouse-dnds-omega, the CDS comes from the QfO
+# release on disk rather than the Ensembl REST API, so `requests` is not needed.
+#
+# Versions are pinned to the same ones the human-mouse pipeline ran with, so any
+# difference between the two pipelines' numbers is down to the inputs and the parser
+# fix rather than a PAML version change.
+FROM continuumio/miniconda3:24.9.2-0
+
+RUN conda install -y -c bioconda -c conda-forge \
+        mafft=7.526 \
+        paml=4.10.10 \
+        biopython=1.84 \
+    && conda clean -afy
+
+# Nextflow execs `/bin/bash .command.run` inside the container, which a custom
+# ENTRYPOINT would swallow. Reset it here; nextflow.config also passes
+# `--entrypoint ""` so the image is safe either way.
+ENTRYPOINT []

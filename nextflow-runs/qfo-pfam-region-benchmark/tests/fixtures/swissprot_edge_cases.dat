@@ -1,0 +1,24 @@
+ID   EDGE1_HUMAN             Reviewed;         300 AA.
+AC   Q0EDGE1;
+FT   TRANSMEM        20..40
+FT                   /note="Helical"
+FT   ACT_SITE        123
+FT                   /note="Proton acceptor"
+FT   BINDING         200..210
+FT   BINDING         250
+FT   DOMAIN          <1..80
+FT   REGION          90..>150
+FT   MOTIF           ?200..210
+FT   SITE            77
+FT   STRAND          5..10
+FT   HELIX           12..18
+SQ   SEQUENCE   300 AA;
+//
+ID   EDGE2_HUMAN             Reviewed;         120 AA.
+AC   Q0EDGE2;
+FT   COILED          10..60
+FT   ZN_FING         70..92
+FT   INTRAMEM        100..112
+FT   DNA_BIND        1..50
+FT   VARIANT         33
+//
