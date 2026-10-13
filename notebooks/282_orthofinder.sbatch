@@ -4,7 +4,7 @@
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G
-#SBATCH --time=12:00:00
+#SBATCH --time=02:00:00
 #SBATCH --output=282-orthofinder-%j.out
 #
 # Notebook 282, Stage 1: gene families for Botryllus, Ciona, amphioxus (Branchiostoma
@@ -29,6 +29,10 @@
 # species add gene trees for more families. 12 h covers Sherlock cores up to 5x slower than
 # the laptop. Peak memory was never measured; 64 GB is a guess with room. After the run,
 # read `sacct -j <jobid> -o JobID,MaxRSS,Elapsed` and shrink both.
+#
+# Measured: job 47647127 (2026-10-13) ran OrthoFinder 3.1.5 on this input in 20 min
+# (Log.txt: 06:28:18 to 06:48:46), so the time ask is now 2 h. Its peak memory (MaxRSS)
+# has not been read yet; 64 GB stays until it is.
 #
 # The notebook needs only the family tables. Copy them back with:
 #

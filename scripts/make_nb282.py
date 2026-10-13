@@ -297,7 +297,9 @@ features well.
 The run (`notebooks/282_orthofinder.sbatch`, OrthoFinder 3.1.5,
 `quay.io/biocontainers/orthofinder:3.1.5--hdfd78af_0`) gets the species tree
 `(amphioxus,(human,(botryllus,ciona)))` (`notebooks/282_species_tree.nwk`) instead of
-inferring one: four species are too few to root a tree reliably. Families are rooted at the
+inferring one: four species are too few to root a tree reliably. It ran as Sherlock job
+47647127 on 2026-10-13 (06:28 to 06:48, from commit 65cd32d) and grouped 94,982 of the
+115,111 genes into 14,383 families with two or more genes. Families are rooted at the
 chordate ancestor (`Orthogroups/Orthogroups.tsv`; OrthoFinder 3.1 writes the root-level
 families there).
 
@@ -425,6 +427,34 @@ if HAVE_ORTHOFINDER:
 """)
 
 md(r"""
+**Reading the figure.** Each square counts families with that many Botryllus genes (rows)
+and human ohnologs (columns); darker is more families. The boxed row is the set Stage 2 can
+test: **860 families** (589 + 198 + 55 + 18) have exactly one Botryllus gene and two or
+more human ohnologs (OHNOLOGS v2 strict). That is well above the 330 of decision rule 2,
+so **Botryllus goes ahead as the stand-in**. 695 of the 860 also have exactly one amphioxus
+gene and 721 exactly one Ciona gene. With the intermediate and relaxed ohnolog lists the
+count rises to 973 and 1,066. The left column (no human ohnologs) holds most families,
+including 5,293 with one Botryllus gene: single-copy human genes or copies OHNOLOGS does
+not list.
+
+Known families in the set, as a check that the grouping is sensible (Botryllus gene name
+from the annotation, then the human ohnologs). The MEF2 family shows one trap: OHNOLOGS
+lists both MEF2B and the read-through gene BORCS8-MEF2B, so that family counts five human
+ohnologs for four MEF2 genes. Stage 2 should drop read-through genes before comparing
+expression.
+""")
+
+code(r"""
+if HAVE_ORTHOFINDER:
+    examples = ["PAX3", "PAX9", "PAX2", "SOX8", "GATA2", "MEF2C", "TBX2", "FOXA1"]
+    shown = out.filter(
+        pl.col("botryllus_genes").str.extract(r"_([^_]+)$").is_in(examples)
+    ).select("family_id", "botryllus_genes", "n_ciona", "n_amphioxus", "human_ohnologs")
+    with pl.Config(fmt_str_lengths=200, tbl_width_chars=250):
+        print(shown)
+""")
+
+md(r"""
 ## Stage 1d. Tunicate gene loss: families Botryllus is missing from
 
 Among families with exactly one amphioxus gene and two or more human ohnologs (the gene
@@ -470,6 +500,17 @@ if HAVE_ORTHOFINDER:
 """)
 
 md(r"""
+**Reading the figure.** Bars count the 1,110 families with one amphioxus gene and two or
+more human ohnologs, by Botryllus copies; colour says whether Ciona has a copy. Botryllus
+has none in **150 (13.5%)**, below the 25% of decision rule 3, so the Stage 2 result will
+not be limited to "genes Botryllus kept". Of the 150, 86 are missing from Ciona too (a
+loss in the tunicate ancestor, or genes both annotations missed) and 64 are missing from
+Botryllus only. 265 families (24%) have two or more Botryllus genes; they cannot enter the
+one-gene test as set up here. The 150 are listed in
+`notebooks/282_families_botryllus0_amphioxus1_human_ohnologs2plus.tsv`.
+""")
+
+md(r"""
 ## Stage 1e. Check the families against Marlétaz et al.'s
 
 For each of their ohnolog families with exactly one amphioxus gene and two or more human
@@ -488,6 +529,14 @@ if HAVE_ORTHOFINDER:
     print(f"{agree.height:_} Marlétaz families (1 amphioxus gene, 2+ human genes); "
           f"{len(hsa_ids & human_ids):_} of their {len(hsa_ids):_} human gene IDs are in GENCODE v49 canonical")
     print(agree_counts)
+    in_v49 = (
+        d9.filter(pl.col("species") == "Hsa")
+        .group_by("family_id")
+        .agg(pl.col("gene_id").is_in(list(human_ids)).sum().alias("n_human_in_v49"))
+    )
+    some = agree.join(in_v49, left_on="marletaz_family", right_on="family_id").filter(pl.col("agreement") == "some")
+    print(f"Of the {some.height:_} 'some' families, {some.filter(pl.col('n_human_with_amphioxus') == pl.col('n_human_in_v49')).height:_} "
+          "have every human copy that is in GENCODE v49 together with the amphioxus gene (the rest of their IDs changed after Ensembl 80)")
     agree.write_csv(TABLE_DIR / "282_orthofinder_vs_marletaz2018_ohnolog_families.tsv", separator="\t")
     fig, ax = pf.figure(pf.ONE_COLUMN_MM, 36)
     vals = [agree_counts.filter(pl.col("agreement") == a)["families"].sum() for a in order_a]
@@ -499,6 +548,18 @@ if HAVE_ORTHOFINDER:
     ax.invert_yaxis()
     ax.set_xlabel("Marlétaz et al. ohnolog families")
     pf.save(fig, FIG_DIR / "282_orthofinder_vs_marletaz2018_ohnolog_families")
+""")
+
+md(r"""
+**Reading the figure.** Of Marlétaz et al.'s 1,237 ohnolog families with one amphioxus gene
+and two or more human genes, our run keeps the amphioxus gene with all their human copies
+in **769 (62%)**, with some of them in 330, and with none in 39. In 45 of the 330 the
+copies left out are ones whose Ensembl 80 ID is gone from GENCODE v49. OrthoFinder left the
+amphioxus gene out of every family in 98 cases, and 1 gene is missing from our amphioxus
+proteome. Their families were built from 11 species with their own clustering and tree
+checks, so full agreement is not expected. The 330 + 39 families show that OrthoFinder
+cuts some ohnolog families apart; a Stage 2 family should be checked against
+`282_orthofinder_vs_marletaz2018_ohnolog_families.tsv` when it is also in their set.
 """)
 
 md(r"""
@@ -566,10 +627,13 @@ md(r"""
   (mouse) and 87.7% (zebrafish) of broadly expressed ohnolog families with a copy that lost
   a tissue, and "one narrows" 3.0-3.7 times more often than "split". Their family filter,
   rebuilt from Datasets 7 and 9, comes within 10 families of the script's.
-- **Stage 1.** Proteomes are prepared (Botryllus 42,745 genes, human 19,732, amphioxus
-  35,956, Ciona 16,678) and OHNOLOGS v2 strict covers 4,881 of its 4,940 human genes in
-  GENCODE v49. The family counts and the go/no-go for Stage 2 wait for the OrthoFinder run
-  on Sherlock (`notebooks/282_orthofinder.sbatch`).
+- **Stage 1.** OrthoFinder grouped the four proteomes into 14,383 families. **860 families
+  have exactly one Botryllus gene and two or more human ohnologs** (OHNOLOGS v2 strict),
+  695 of them with one amphioxus gene too. That passes decision rule 2 (330), so Botryllus
+  is the stand-in for Stage 2. Botryllus has no copy in 150 of the 1,110 families with one
+  amphioxus gene and two or more ohnologs (13.5%, below the 25% of rule 3); 86 of those are
+  missing from Ciona too. Our families keep Marlétaz et al.'s amphioxus gene with all its
+  human copies in 769 of their 1,237 comparable families (62%).
 - **Stage 2.** Plan and rules are written and tested; they wait for the Voskoboynik lab's
   data and the three answers above.
 """)
