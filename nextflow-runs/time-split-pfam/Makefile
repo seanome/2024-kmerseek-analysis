@@ -7,6 +7,7 @@
 #   make smoke           2 queries x 1 alphabet-k through every tool, to check the wiring
 #   make pilot           Stop 2: 200 sample queries + 20 positive controls + decoys, every tool
 #   make score-partial   score the pilot searches finished so far (tune half only)
+#   make mmseqs-one-round   rescore with MMseqs2 run as one round instead of three
 #   make full            Stop 3: the 8_329 approved queries + decoys, every tool
 #   make seed-reference  second reference: Pfam 33.1 seed members, with counts.json
 #   make hash-check OLD=<commit>   smoke-size run of OLD, then of this checkout with -resume,
@@ -44,7 +45,7 @@ NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs smoke pilot score-partial full seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
+.PHONY: download stop1 controls inputs smoke pilot score-partial mmseqs-one-round full seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -106,6 +107,30 @@ score-partial:
 	  --wrap 'set -e; R=$(RUN_DIR)/results-pilot; O=$$R/scores-partial; command rm -rf $$O; mkdir -p $$O; \
 	  $(PY) $(MAKEFILE_DIR)/bin/score_transfers.py --kmerseek $$R/kmerseek --stats $$R/kmerseek \
 	    --mmseqs2 $$R/mmseqs2 --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
+	    --reference $(RUN_DIR)/inputs/reference --settings $(RUN_DIR)/inputs/settings.tsv --out $$O'
+
+# Does MMseqs2's 3-round profile search give shuffled decoys strong hits? One tune decoy
+# (DECOY_A0A2P4ZFP6) reaches E 1e-22, which set MMseqs2's tune cutoff at E 1.5e-22. This
+# searches the pilot queries again with one round, otherwise as mmseqsSearch in main.nf
+# (same image, -s 7, -e 10), and rescores with it in place of the 3-round output. Only
+# the tune half and the positive controls are searched: the sample test half stays unread.
+# Sizing: the pilot's 3-round search of all 440 queries took 47 s and 2.2 GB; the scorer
+# peaked at 20 GB (sacct, job 47672527).
+MMSEQS_IMG = $(SCRATCH)/apptainer-cache/quay.io-biocontainers-mmseqs2@sha256-3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef.img
+mmseqs-one-round:
+	$(SB) --job-name=280-mmseqs-one-round --cpus-per-task=16 --mem=48G --time=2:00:00 \
+	  --wrap 'set -euo pipefail; R=$(RUN_DIR)/results-pilot; W=$$R/mmseqs2-one-round; command rm -rf $$W; mkdir -p $$W/tmp; \
+	  awk -F"\t" "NR>1 && !(\$$6==\"sample\" && \$$5==\"test\") {print \$$1}" $(RUN_DIR)/inputs/pilot/queries.tsv > $$W/names.txt; \
+	  awk "NR==FNR{k[\$$1]=1; next} /^>/{p=(substr(\$$1,2) in k)} p" $$W/names.txt $(RUN_DIR)/inputs/pilot/queries.fasta > $$W/queries.fasta; \
+	  echo "queries: $$(grep -c ">" $$W/queries.fasta) of $$(wc -l < $$W/names.txt) wanted"; \
+	  M="apptainer exec --bind /scratch $(MMSEQS_IMG) mmseqs"; cd $$W/tmp; \
+	  $$M createdb $$W/queries.fasta qdb > /dev/null; $$M createdb $(RUN_DIR)/inputs/reference/reference.fasta tdb > /dev/null; \
+	  $$M search qdb tdb res tmp -s 7 --num-iterations 1 -e 10.0 --threads 16 > search.log; \
+	  $$M convertalis qdb tdb res out.tsv --format-output "query,target,qstart,qend,tstart,tend,pident,bits,evalue" > /dev/null; \
+	  gzip -c out.tsv > $$W/chunk.mmseqs2.tsv.gz; cd $$W; command rm -rf tmp; \
+	  O=$$R/scores-partial-mmseqs-one-round; command rm -rf $$O; mkdir -p $$O; \
+	  $(PY) $(MAKEFILE_DIR)/bin/score_transfers.py --kmerseek $$R/kmerseek --stats $$R/kmerseek \
+	    --mmseqs2 $$W --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
 	    --reference $(RUN_DIR)/inputs/reference --settings $(RUN_DIR)/inputs/settings.tsv --out $$O'
 
 full:
