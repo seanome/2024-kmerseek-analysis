@@ -1,0 +1,449 @@
+{
+ "p66": {
+  "accession": "H7C7N8",
+  "length": 618,
+  "signal_peptide_end": 21,
+  "segment_start": 197,
+  "segment": "TGNRNQENDKDTPYNKTYQGILYGIQATWKPIKNLL",
+  "loop_start": 202,
+  "loop_end": 208,
+  "loop_mature": [
+   181,
+   187
+  ]
+ },
+ "cd47": {
+  "accession": "Q08722",
+  "length": 323,
+  "signal_peptide_end": 18,
+  "segment_start": 109,
+  "segment": "TGNYTCEVTELTREGETIIELKYRVVSWFSPNENIL",
+  "face_positions": [
+   21,
+   24,
+   45,
+   47,
+   48,
+   49,
+   52,
+   53,
+   55,
+   57,
+   64,
+   67,
+   115,
+   117,
+   118,
+   119,
+   120,
+   121,
+   122,
+   123,
+   124
+  ]
+ },
+ "alphabets": [
+  {
+   "name": "hp_kyte_doolittle2",
+   "classes": [
+    "ACFILMV",
+    "DEGHKNPQRSTWY"
+   ],
+   "n_classes": 2,
+   "chance": 0.545,
+   "corroborates": false,
+   "p_value": 0.954233409610984
+  },
+  {
+   "name": "hp_lehninger2",
+   "classes": [
+    "AFGILMPVWY",
+    "CDEHKNQRST"
+   ],
+   "n_classes": 2,
+   "chance": 0.5,
+   "corroborates": false,
+   "p_value": 1.0
+  },
+  {
+   "name": "hp_lehninger_c_nonpolar2",
+   "classes": [
+    "ACFGILMPVWY",
+    "DEHKNQRST"
+   ],
+   "n_classes": 2,
+   "chance": 0.505,
+   "corroborates": false,
+   "p_value": 1.0
+  },
+  {
+   "name": "hp_pbotc_1st_ed2",
+   "classes": [
+    "ACFILMPVWY",
+    "DEGHKNQRST"
+   ],
+   "n_classes": 2,
+   "chance": 0.5,
+   "corroborates": false,
+   "p_value": 1.0
+  },
+  {
+   "name": "hp_thomas_dill2",
+   "classes": [
+    "ACFILMVWY",
+    "DEGHKNPQRST"
+   ],
+   "n_classes": 2,
+   "chance": 0.505,
+   "corroborates": false,
+   "p_value": 0.9794050343249427
+  },
+  {
+   "name": "hp_thomas_dill_no_c2",
+   "classes": [
+    "AFILMVWY",
+    "CDEGHKNPQRST"
+   ],
+   "n_classes": 2,
+   "chance": 0.52,
+   "corroborates": false,
+   "p_value": 0.9336384439359268
+  },
+  {
+   "name": "hp_lehninger_hpc3",
+   "classes": [
+    "AFGILMPVWY",
+    "DEHKNQRST",
+    "C"
+   ],
+   "n_classes": 3,
+   "chance": 0.455,
+   "corroborates": false,
+   "p_value": 1.0
+  },
+  {
+   "name": "gbmr4",
+   "classes": [
+    "ADKERNTSQ",
+    "YFLIVMCWH",
+    "G",
+    "P"
+   ],
+   "n_classes": 4,
+   "chance": 0.41,
+   "corroborates": false,
+   "p_value": 0.7254004576659039
+  },
+  {
+   "name": "polarity4",
+   "classes": [
+    "GAVLIFWMP",
+    "STCYNQ",
+    "DE",
+    "HKR"
+   ],
+   "n_classes": 4,
+   "chance": 0.325,
+   "corroborates": false,
+   "p_value": 1.0
+  },
+  {
+   "name": "wwmj5",
+   "classes": [
+    "CMFILVWY",
+    "ATH",
+    "GP",
+    "DE",
+    "SNQRK"
+   ],
+   "n_classes": 5,
+   "chance": 0.265,
+   "corroborates": false,
+   "p_value": 0.7208237986270023
+  },
+  {
+   "name": "dayhoff6",
+   "classes": [
+    "C",
+    "AGPST",
+    "DENQ",
+    "FWY",
+    "HKR",
+    "ILMV"
+   ],
+   "n_classes": 6,
+   "chance": 0.19,
+   "corroborates": false,
+   "p_value": 0.6132723112128147
+  },
+  {
+   "name": "gbmr7",
+   "classes": [
+    "DN",
+    "AEFIKLMQRVWY",
+    "CH",
+    "T",
+    "S",
+    "G",
+    "P"
+   ],
+   "n_classes": 7,
+   "chance": 0.39,
+   "corroborates": true,
+   "p_value": 0.020594965675057208
+  },
+  {
+   "name": "funcgroups8",
+   "classes": [
+    "GVALI",
+    "ST",
+    "CM",
+    "FY",
+    "WHP",
+    "NQ",
+    "DE",
+    "KR"
+   ],
+   "n_classes": 8,
+   "chance": 0.145,
+   "corroborates": false,
+   "p_value": 0.5697940503432495
+  },
+  {
+   "name": "mmseqs12",
+   "classes": [
+    "AST",
+    "LM",
+    "IV",
+    "KR",
+    "EQ",
+    "ND",
+    "FY",
+    "C",
+    "G",
+    "H",
+    "P",
+    "W"
+   ],
+   "n_classes": 12,
+   "chance": 0.095,
+   "corroborates": true,
+   "p_value": 0.032036613272311214
+  },
+  {
+   "name": "sdm12",
+   "classes": [
+    "A",
+    "D",
+    "KER",
+    "N",
+    "TSQ",
+    "YF",
+    "LIVM",
+    "C",
+    "W",
+    "H",
+    "G",
+    "P"
+   ],
+   "n_classes": 12,
+   "chance": 0.115,
+   "corroborates": true,
+   "p_value": 0.0
+  },
+  {
+   "name": "wass14",
+   "classes": [
+    "WM",
+    "DI",
+    "P",
+    "C",
+    "AV",
+    "K",
+    "T",
+    "RE",
+    "G",
+    "L",
+    "Y",
+    "SH",
+    "F",
+    "NQ"
+   ],
+   "n_classes": 14,
+   "chance": 0.08,
+   "corroborates": true,
+   "p_value": 0.02745995423340961
+  },
+  {
+   "name": "hsdm17",
+   "classes": [
+    "A",
+    "D",
+    "KE",
+    "R",
+    "N",
+    "T",
+    "S",
+    "Q",
+    "Y",
+    "F",
+    "LIV",
+    "M",
+    "C",
+    "W",
+    "H",
+    "G",
+    "P"
+   ],
+   "n_classes": 17,
+   "chance": 0.07,
+   "corroborates": true,
+   "p_value": 0.0
+  },
+  {
+   "name": "uniprot18",
+   "classes": [
+    "A",
+    "R",
+    "N",
+    "D",
+    "C",
+    "Q",
+    "EP",
+    "G",
+    "HL",
+    "I",
+    "K",
+    "M",
+    "F",
+    "S",
+    "T",
+    "W",
+    "Y",
+    "V"
+   ],
+   "n_classes": 18,
+   "chance": 0.06,
+   "corroborates": true,
+   "p_value": 0.011441647597254004
+  },
+  {
+   "name": "protein20",
+   "classes": [
+    "A",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "K",
+    "L",
+    "M",
+    "N",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "V",
+    "W",
+    "Y"
+   ],
+   "n_classes": 20,
+   "chance": 0.05,
+   "corroborates": true,
+   "p_value": 0.004576659038901602
+  }
+ ],
+ "windows": [
+  {
+   "window_length": 7,
+   "best_rank": 1,
+   "alphabet": "gbmr4",
+   "n_at_rank_1": 15409,
+   "p66_span": "202-208"
+  },
+  {
+   "window_length": 11,
+   "best_rank": 880,
+   "alphabet": "wass14",
+   "n_at_rank_1": 1,
+   "p66_span": "200-210"
+  },
+  {
+   "window_length": 15,
+   "best_rank": 120,
+   "alphabet": "hsdm17",
+   "n_at_rank_1": 4,
+   "p66_span": "198-212"
+  },
+  {
+   "window_length": 21,
+   "best_rank": 8,
+   "alphabet": "hsdm17",
+   "n_at_rank_1": 7,
+   "p66_span": "195-215"
+  },
+  {
+   "window_length": 29,
+   "best_rank": 16,
+   "alphabet": "hsdm17",
+   "n_at_rank_1": 1,
+   "p66_span": "191-219"
+  },
+  {
+   "window_length": 35,
+   "best_rank": 42,
+   "alphabet": "hsdm17",
+   "n_at_rank_1": 4,
+   "p66_span": "188-222"
+  },
+  {
+   "window_length": 41,
+   "best_rank": 64,
+   "alphabet": "hsdm17",
+   "n_at_rank_1": 1,
+   "p66_span": "185-225"
+  },
+  {
+   "window_length": 51,
+   "best_rank": 17,
+   "alphabet": "hsdm17",
+   "n_at_rank_1": 1,
+   "p66_span": "180-230"
+  }
+ ],
+ "circular": {
+  "cd47_score": 16,
+  "cd47_rank": 1,
+  "n_at_rank_1": 1
+ },
+ "structure": {
+  "model_mean_plddt": 29.0,
+  "fraction_below_50": 0.9983818770226537,
+  "cd47_model_mean_plddt": 86.31,
+  "tm_score": 0.34233,
+  "tm_aligned": 68,
+  "tm_rmsd": 4.34,
+  "ig_min": 0.50721,
+  "ig_max": 0.70399,
+  "ig_median": 0.613945,
+  "ig_n": 20,
+  "loop_rmsd": 1.9124623873351572,
+  "loop_bg_median": 1.0739773838896576,
+  "loop_bg_best": 0.9419181075648091,
+  "loop_bg_n": 10,
+  "n_face": 21
+ },
+ "prespecified": {
+  "observed": 6.0,
+  "n_background": 437,
+  "n_reaching_loop": 12,
+  "n_ge": 0,
+  "loop_observed": 1.0,
+  "loop_bg_beating": 12,
+  "flank_observed": 5.0
+ }
+}
