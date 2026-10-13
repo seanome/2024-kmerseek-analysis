@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""Spectrum load of a reference at a few kmerseek settings (notebook 280, Stop A sizing).
+
+    spectrum_load.py --fasta <reference.fasta> [--fasta ...] --out <csv>
+
+Spectrum load is sum(occ^2 n) / sum(occ n) over a reference's k-mer spectrum, where n
+k-mers occur occ times each: the dark-set model of kmerseek search memory,
+peak ~ 36 + 2.34 sqrt(load) GB (main.nf, searchFirstGb). kmerseekIndex writes the same
+spectrum as spectrum.csv.gz; a test setting can be checked against it with --check.
+
+Alphabets here are the ones whose residue classes are written out in
+notebooks/ortholog_analysis_utils.py: protein20 (the residues themselves) and
+hp_pbotc_1st_ed2 (h = ACFILMPVWY, p = DEGHKNQRST). A k-mer holding any other letter is
+not counted.
+
+Also writes <out>_lengths.csv: reference, entry length (aa), number of entries.
+"""
+
+from __future__ import annotations
+
+import argparse
+import gzip
+from pathlib import Path
+
+import numpy as np
+
+ALPHABETS = {
+    "protein20": ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L",
+                  "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"],
+    "hp_pbotc_1st_ed2": ["ACFILMPVWY", "DEGHKNQRST"],
+}
+SETTINGS = [("protein20", 5), ("protein20", 8), ("hp_pbotc_1st_ed2", 17), ("hp_pbotc_1st_ed2", 29)]
+
+
+def residues(path: Path) -> np.ndarray:
+    """All sequences as bytes, each followed by one '*' so no k-mer spans two entries."""
+    parts, buf = [], []
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if buf:
+                    parts.append("".join(buf) + "*")
+                buf = []
+            else:
+                buf.append(line.strip())
+    if buf:
+        parts.append("".join(buf) + "*")
+    return np.frombuffer("".join(parts).encode(), dtype=np.uint8)
+
+
+def load(seq: np.ndarray, classes: list[str], k: int) -> tuple[float, int, int]:
+    lut = np.full(256, -1, dtype=np.int64)
+    for i, letters in enumerate(classes):
+        for c in letters:
+            lut[ord(c)] = i
+    x = lut[seq]
+    bad = np.concatenate([[0], np.cumsum(x < 0)])
+    ok = (bad[k:] - bad[:-k]) == 0  # window i..i+k-1 holds no unknown letter
+    base = len(classes)
+    code = np.zeros(len(x) - k + 1, dtype=np.int64)
+    xc = np.where(x < 0, 0, x)
+    for j in range(k):
+        code = code * base + xc[j : len(x) - k + 1 + j]
+    _, occ = np.unique(code[ok], return_counts=True)
+    occ = occ.astype(np.float64)
+    return float((occ**2).sum() / occ.sum()), int(occ.sum()), len(occ)
+
+
+def spectrum_file_load(path: Path) -> float:
+    num = den = 0.0
+    with gzip.open(path, "rt") as fh:
+        for line in fh:
+            if line.startswith("#") or line.startswith("moltype"):
+                continue
+            c = line.rstrip("\n").split(",")
+            occ, n = float(c[2]), float(c[3])
+            num += occ * occ * n
+            den += occ * n
+    return num / den
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--fasta", type=Path, nargs="+", required=True)
+    ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--check", nargs=4, metavar=("FASTA", "ALPHABET", "K", "SPECTRUM_CSV_GZ"),
+                    help="compare this script's load with a kmerseek index's spectrum file")
+    a = ap.parse_args()
+    rows = ["reference,alphabet,ksize,load,kmers,distinct_kmers,predicted_search_gb"]
+    lengths = ["reference,length,entries"]
+    for f in a.fasta:
+        seq = residues(f)
+        ends = np.flatnonzero(seq == ord("*"))
+        n_len = np.bincount(np.diff(np.concatenate([[-1], ends])) - 1)
+        lengths += [f"{f.parent.name},{L},{n}" for L, n in enumerate(n_len) if n]
+        for alph, k in SETTINGS:
+            ld, n, d = load(seq, ALPHABETS[alph], k)
+            rows.append(f"{f.parent.name},{alph},{k},{ld:.2f},{n},{d},{36 + 2.34 * ld ** 0.5:.1f}")
+            print(rows[-1], flush=True)
+    if a.check:
+        f, alph, k, spec = a.check
+        mine = load(residues(Path(f)), ALPHABETS[alph], int(k))[0]
+        theirs = spectrum_file_load(Path(spec))
+        rows.append(f"check {Path(f).parent.name},{alph},{k},{mine:.2f} (this script) vs {theirs:.2f} (kmerseek),,,")
+        print(rows[-1])
+    a.out.write_text("\n".join(rows) + "\n")
+    a.out.with_name(a.out.stem + "_lengths.csv").write_text("\n".join(lengths) + "\n")
+
+
+if __name__ == "__main__":
+    main()

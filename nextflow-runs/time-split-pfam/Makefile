@@ -13,6 +13,7 @@
 #                        in hashcheck/: every task hash the two share is listed side by side
 #   make seed-pilot      Stop B: the pilot's queries against the seed reference
 #   make seed-self-check queries already in a Pfam 33.1 seed, and the instances they cover
+#   make seed-spectrum   k-mer spectrum load of both references at four settings (sizing)
 #   make plddt           AlphaFold DB models of every real query; mean pLDDT per instance
 #   make running         what is running on this account
 #
@@ -43,7 +44,7 @@ NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs smoke pilot score-partial full seed-reference hash-check seed-pilot seed-self-check plddt running
+.PHONY: download stop1 controls inputs smoke pilot score-partial full seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -140,6 +141,15 @@ hash-check:
 seed-self-check:
 	$(SB) --job-name=280-seed-self-check --cpus-per-task=1 --mem=16G --time=1:00:00 \
 	  --wrap '$(PY) $(MAKEFILE_DIR)/bin/seed_self_check.py --run-dir $(RUN_DIR) --out $(RUN_DIR)/inputs/reference-$(SEED)/self_check'
+
+# Spectrum load, the predictor of kmerseek search memory, for Swiss-Prot 2019_08 and the
+# seeds, checked against the hash-check run's kmerseek spectrum (hp_pbotc_1st_ed2 k29).
+# Sizing: four int64 arrays of 200 million residues, about 8 GB at the np.unique peak.
+seed-spectrum:
+	$(SB) --job-name=280-seed-spectrum --cpus-per-task=1 --mem=32G --time=2:00:00 \
+	  --wrap '$(PY) $(MAKEFILE_DIR)/bin/spectrum_load.py --fasta inputs/reference/reference.fasta inputs/reference-$(SEED)/reference.fasta \
+	    --out inputs/reference-$(SEED)/spectrum_load.csv \
+	    --check inputs/reference/reference.fasta hp_pbotc_1st_ed2 29 hashcheck/kmerseek_index/sprot2019_08.hp_pbotc_1st_ed2.k29.kmerseek.rocksdb/spectrum.csv.gz'
 
 seed-pilot:
 	cd $(RUN_DIR) && mkdir -p launch-pilot-$(SEED) && cd launch-pilot-$(SEED) && \

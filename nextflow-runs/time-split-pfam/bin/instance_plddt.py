@@ -87,6 +87,10 @@ def main() -> None:
         tracks[acc] = read_plddt(path)
         status[acc] = "yes"
 
+    if not tracks:
+        # An empty fetch (AlphaFold DB refusing requests, a wrong path) is a failure, not a
+        # measurement that no query has a model.
+        raise SystemExit(f"no usable model under {a.structures} for any of {len(status)} queries")
     rows = []
     for q, fam, s, e in inst.iter_rows():
         t = tracks.get(q)
