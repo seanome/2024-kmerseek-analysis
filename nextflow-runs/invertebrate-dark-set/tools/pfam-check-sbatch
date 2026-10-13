@@ -1,6 +1,6 @@
 #!/bin/bash
 # Submit tools/pfam-check over a finished midi run: one job that pulls the Pfam domains, one
-# SLURM array task per kmerseek region file (scan), one job per species for the sequence
+# SLURM array task per 4 kmerseek region files (scan), one job per species for the sequence
 # tools' hits, and a summary job that waits for all of them.
 #
 #   tools/pfam-check-sbatch <launch_dir> <out_dir> [species ...]
@@ -9,7 +9,9 @@
 # queries/<slug>.queries.tsv names, mapped to $RESULTS/<species>/kmerseek/<slug>.regions.csv.zst.
 # Resources, measured 2026-10-12 on the same files: repairQueriesTsv streamed the largest
 # (63 GB) in under 10 min at 18 MB of memory. scan also loads the reference sequences and
-# the Pfam domains (about 1 GB in Python), so it asks 6 GB and 1 h.
+# the Pfam domains (about 1 GB in Python), so it asks 6 GB. Sherlock refuses an array of
+# 2_530 tasks, so each task scans FILES_PER_TASK (4) files, and asks 2 h.
+# DOMAINS_JOB=<jobid> reuses a domains job already submitted.
 # Added 2026-10-13 (Olga: "I want to know if kmerseek works, dark or not").
 set -euo pipefail
 LAUNCH=$1; OUT=$2; shift 2
@@ -30,8 +32,9 @@ for sp in $SPECIES; do
     cat "$REF/minus_${CLADE[$sp]}/reference_accessions.txt" >> "$OUT/accessions.txt"
 done
 sort -u -o "$OUT/accessions.txt" "$OUT/accessions.txt"
-dom=$($SB --mem 4G -t 1:00:00 -J pc-domains -o "$OUT/logs/domains.log" --wrap \
-    "python3 $TOOL domains $PFAM/Pfam-A.regions.tsv.gz $PFAM/Pfam-A.clans.tsv.gz $OUT/domains.tsv.gz $OUT/accessions.txt")
+FPT=${FILES_PER_TASK:-4}
+dom=${DOMAINS_JOB:-$($SB --mem 4G -t 1:00:00 -J pc-domains -o "$OUT/logs/domains.log" --wrap \
+    "python3 $TOOL domains $PFAM/Pfam-A.regions.tsv.gz $PFAM/Pfam-A.clans.tsv.gz $OUT/domains.tsv.gz $OUT/accessions.txt")}
 echo "domains: $dom"
 
 deps=""
@@ -48,14 +51,15 @@ for sp in $SPECIES; do
     done
     n=$(wc -l < "$OUT/$sp/files.txt")
     ref="$REF/minus_${CLADE[$sp]}/reference.fasta"
-    arr=$($SB --mem 6G -t 1:00:00 -J "pc-scan-$sp" --dependency=afterok:"$dom" \
-        --array=1-"$n" -o "$OUT/logs/scan-$sp-%a.log" --wrap \
-        "f=\$(sed -n \${SLURM_ARRAY_TASK_ID}p $OUT/$sp/files.txt); python3 $TOOL scan \$f $OUT/domains.tsv.gz $ref $OUT/$sp")
+    ntask=$(( (n + FPT - 1) / FPT ))
+    arr=$($SB --mem 6G -t 2:00:00 -J "pc-scan-$sp" --dependency=afterok:"$dom" \
+        --array=1-"$ntask" -o "$OUT/logs/scan-$sp-%a.log" --wrap \
+        "set -e; a=\$(( (SLURM_ARRAY_TASK_ID - 1) * $FPT + 1 )); for f in \$(sed -n \"\${a},\$((a + $FPT - 1))p\" $OUT/$sp/files.txt); do python3 $TOOL scan \$f $OUT/domains.tsv.gz $ref $OUT/$sp; done")
     tl=$($SB --mem 6G -t 1:00:00 -J "pc-tools-$sp" --dependency=afterok:"$dom" \
         -o "$OUT/logs/tools-$sp.log" --wrap \
         "python3 $TOOL tools $sp $HITS/$sp/hits $OUT/domains.tsv.gz $OUT/tools")
     deps="$deps:$arr:$tl"
-    echo "$sp: gain step $(basename "$gain"), $n region files, scan array $arr, tools $tl"
+    echo "$sp: gain step $(basename "$gain"), $n region files in $ntask tasks, scan array $arr, tools $tl"
 done
 sum=$($SB --mem 8G -t 1:00:00 -J pc-summary --dependency=afterok"$deps" \
     -o "$OUT/logs/summary.log" --wrap \
