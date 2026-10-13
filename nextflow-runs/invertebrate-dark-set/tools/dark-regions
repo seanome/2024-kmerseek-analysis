@@ -6,6 +6,7 @@ much of each region is low-complexity sequence or a transmembrane helix.
     tools/dark-regions extract <regions.csv.zst> <dark_ids.txt> <max_evalue> <out.csv.gz>
     tools/dark-regions annotate <parts_dir> <query.fasta> <reference.fasta> \
         <uniprot_sprot.dat.gz> <out.csv.gz>
+    tools/dark-regions min-evalue <regions.csv.zst> <out.csv.gz>
 
 ids       the dark proteins of one species: no phmmer, jackhmmer or mmseqs2 hit with
           E < <tool_cutoff>, read from tools/export-protein-evalues output.
@@ -18,6 +19,11 @@ annotate  joins every extracted part of a species, and for each region adds:
             target_description    the target's Swiss-Prot DE RecName (or SubName)
           computed on the FULL query and target sequences, so the windows see the context
           around a region.
+
+min-evalue  streams one region file and writes, for every query with a region, its smallest
+          finite region_evalue (rows saying "inf" are skipped; a query whose regions are
+          all "inf" is written as inf). This is what queries.tsv was meant to hold; the
+          search step's awk read "inf" as 0 and cut quoted names at their comma.
 
 Low complexity: the first pass of SEG (Wootton & Federhen 1993, Computers & Chemistry
 17:149). A 12-residue window whose Shannon entropy is at most 2.2 bits marks its residues;
@@ -171,6 +177,33 @@ def cmd_extract(path, ids_path, max_evalue, out):
     print("%s: %d regions read, %d kept" % (os.path.basename(path), n_in, n_out))
 
 
+def cmd_min_evalue(path, out):
+    # region_evalue is the second-to-last column (region_n_chained is last), and only the
+    # first column can be quoted, so rsplit reads the E-value without a csv parse.
+    proc = subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE, universal_newlines=True)
+    header = proc.stdout.readline().rstrip("\n").split(",")
+    if header[-2:] != ["region_evalue", "region_n_chained"] or header[0] != "query_name":
+        sys.exit("%s: unexpected columns at the ends of the header" % path)
+    best = {}
+    n = 0
+    for line in proc.stdout:
+        n += 1
+        q = next(csv.reader([line]))[0] if line.startswith('"') else line.split(",", 1)[0]
+        ev = float(line.rsplit(",", 2)[1])
+        if q not in best or ev < best[q]:
+            best[q] = ev
+    if proc.wait() != 0:
+        sys.exit("zstdcat failed on %s" % path)
+    tmp = out + ".tmp"
+    with gzip.open(tmp, "wt", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["source_file", "query_name", "min_region_evalue"])
+        for q in sorted(best):
+            w.writerow([os.path.basename(path), q, repr(best[q])])
+    os.replace(tmp, out)
+    print("%s: %d regions, %d queries" % (os.path.basename(path), n, len(best)))
+
+
 def sprot_descriptions(dat_path, wanted):
     """accession -> first RecName/SubName Full= of a Swiss-Prot entry, for wanted accessions."""
     out = {}
@@ -249,10 +282,10 @@ def cmd_annotate(parts_dir, query_fasta, reference_fasta, dat_path, out):
 
 
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] not in ("ids", "extract", "annotate"):
+    cmds = {"ids": cmd_ids, "extract": cmd_extract, "annotate": cmd_annotate, "min-evalue": cmd_min_evalue}
+    if len(sys.argv) < 2 or sys.argv[1] not in cmds:
         sys.exit(__doc__)
-    cmd, args = sys.argv[1], sys.argv[2:]
-    {"ids": cmd_ids, "extract": cmd_extract, "annotate": cmd_annotate}[cmd](*args)
+    cmds[sys.argv[1]](*sys.argv[2:])
 
 
 if __name__ == "__main__":
