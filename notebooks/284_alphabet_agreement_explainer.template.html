@@ -207,6 +207,7 @@ svg .hit { cursor: pointer; }
 <section id="family">
   <h2>kmerseek does find Ced9's motifs on the BCL-2 family</h2>
   <p>For each of five human BCL-2 family members, the three calls with the lowest E-value from any alphabet and k. A call is <b>in register</b> when it puts Ced9's motif on the same motif of the human protein (its target start minus query start is within 1 residue of the motifs' offset). Click a call to see its residues.</p>
+  <p>Each human protein is slid sideways so that its BH1 motif sits directly under Ced9's BH1. A call in register on BH1 is then an upright band. A slanted band pairs Ced9 and the human protein at a different offset. On BCL2, the slant of the BH4 call shows that Ced9 has about 45 more residues than BCL2 between BH4 and BH1.</p>
   <h3>Figure 5. Ced9's best calls on the human BCL-2 family</h3>
   <div class="panel">
     <div class="legend">
@@ -891,17 +892,21 @@ async function drawFamily() {
   if (FAM.some(g => !FS.seqs[g])) { html("fam-title", "Could not load the human residues."); return; }
   if (FS.sel === null) FS.sel = D.family.indexOf([...D.family].sort((a, b) => a.evalue - b.evalue)[0]);
   const svg = $("fig5-svg"); svg.innerHTML = "";
-  const L = Math.max(M.queries.Ced9.length, ...FAM.map(g => FS.seqs[g].length));
+  // Each human protein is shifted so its BH1 motif sits under Ced9's BH1 (UniProt starts).
+  // A call in register on BH1 is then a vertical band; a slanted band has a different offset.
+  const bh1Start = g => ((M.motifs.proteins[g] || {}).motifs || []).find(mo => mo.name === "BH1")?.start;
+  const OFF = Object.fromEntries(FAM.map(g => [g, bh1Start(g) ? bh1Start("Ced9") - bh1Start(g) : 0]));
+  const lo = Math.min(0, ...FAM.map(g => OFF[g])), hi = Math.max(M.queries.Ced9.length, ...FAM.map(g => OFF[g] + FS.seqs[g].length));
   const x0 = 120, pw = 740, W = x0 + pw + 30, pairH = 112, Ht = 20 + FAM.length * pairH;
-  const x = p => x0 + p / L * pw;
+  const x = p => x0 + (p - lo) / (hi - lo) * pw;
   svg.setAttribute("viewBox", `0 0 ${W} ${Ht}`); svg.setAttribute("width", W); svg.setAttribute("height", Ht);
   svg.setAttribute("aria-label", "Ced9's best calls on five human BCL-2 family members, with UniProt BH motifs");
-  const line = (y, name, len, motifs) => {
-    el("text", {x: x0 - 10, y: y + 4, "text-anchor": "end", "font-size": 12, "font-weight": name === "Ced9" ? 400 : 600}, svg, `${name}, ${len} aa`);
-    el("line", {x1: x(0), x2: x(len), y1: y, y2: y, stroke: "var(--ink)", "stroke-width": 1.5}, svg);
+  const line = (y, name, len, motifs, off = 0) => {
+    el("text", {x: Math.min(x0, x(off)) - 10, y: y + 4, "text-anchor": "end", "font-size": 12, "font-weight": name === "Ced9" ? 400 : 600}, svg, `${name}, ${len} aa`);
+    el("line", {x1: x(off), x2: x(off + len), y1: y, y2: y, stroke: "var(--ink)", "stroke-width": 1.5}, svg);
     for (const mo of motifs) {
-      el("rect", {x: x(mo.start - 1), y: y - 6, width: x(mo.end) - x(mo.start - 1), height: 12, rx: 2, fill: "var(--panel)", stroke: "var(--ink)"}, svg);
-      el("text", {x: (x(mo.start - 1) + x(mo.end)) / 2, y: name === "Ced9" ? y - 9 : y + 18, "text-anchor": "middle", "font-size": 10, class: "muted"}, svg, mo.name);
+      el("rect", {x: x(off + mo.start - 1), y: y - 6, width: x(off + mo.end) - x(off + mo.start - 1), height: 12, rx: 2, fill: "var(--panel)", stroke: "var(--ink)"}, svg);
+      el("text", {x: (x(off + mo.start - 1) + x(off + mo.end)) / 2, y: name === "Ced9" ? y - 9 : y + 18, "text-anchor": "middle", "font-size": 10, class: "muted"}, svg, mo.name);
     }
   };
   FAM.forEach((g, i) => {
@@ -909,7 +914,7 @@ async function drawFamily() {
     D.family.forEach((r, k) => {
       if (r.gene !== g) return;
       const inReg = r.in_register !== "no", sel = k === FS.sel;
-      const poly = el("path", {d: `M${x(r.ced9_start - 1)} ${cy + 7} L${x(r.ced9_end)} ${cy + 7} L${x(r.target_end)} ${ty - 7} L${x(r.target_start - 1)} ${ty - 7} Z`,
+      const poly = el("path", {d: `M${x(r.ced9_start - 1)} ${cy + 7} L${x(r.ced9_end)} ${cy + 7} L${x(OFF[g] + r.target_end)} ${ty - 7} L${x(OFF[g] + r.target_start - 1)} ${ty - 7} Z`,
         fill: inReg ? "var(--found)" : "none", "fill-opacity": inReg ? .3 : 0, stroke: sel ? "var(--ink)" : (inReg ? "var(--found)" : "var(--muted)"),
         "stroke-width": sel ? 2.5 : 1.2, "stroke-dasharray": inReg || sel ? "" : "3 2", class: "hit", tabindex: 0, role: "button",
         "aria-label": `${g}: ${r.alphabet} k${r.k}, E ${fmtE(r.evalue)}`}, svg);
@@ -919,7 +924,7 @@ async function drawFamily() {
       poly.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
     });
     line(cy, "Ced9", M.queries.Ced9.length, M.motifs.proteins.Ced9.motifs);
-    line(ty, g, FS.seqs[g].length, (M.motifs.proteins[g] || {}).motifs || []);
+    line(ty, g, FS.seqs[g].length, (M.motifs.proteins[g] || {}).motifs || [], OFF[g]);
   });
   const box = $("fam-calls"); box.innerHTML = "";
   D.family.forEach((r, k) => {
