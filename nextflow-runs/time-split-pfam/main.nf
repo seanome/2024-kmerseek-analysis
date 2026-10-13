@@ -65,7 +65,7 @@ params.kmerseek_search_memory_base     = 36
 params.kmerseek_search_memory_slope    = 2.34
 params.kmerseek_search_memory_headroom = 1.5
 
-def CLASSES = [protein20: 20, uniprot18: 18, hsdm17: 17, wass14: 14, mmseqs12: 12, sdm12: 12,
+CLASSES = [protein20: 20, uniprot18: 18, hsdm17: 17, wass14: 14, mmseqs12: 12, sdm12: 12,
                funcgroups8: 8, gbmr7: 7, dayhoff6: 6, wwmj5: 5, gbmr4: 4, polarity4: 4,
                hp_lehninger_hpc3: 3]
 def classesOf(String a) { CLASSES.containsKey(a) ? CLASSES[a] : (a.startsWith('hp_') ? 2 : null) }
@@ -80,6 +80,14 @@ def kaQueriesFor(String alphabet, int ksize) {
     (int) (Math.round(Math.min(params.kmerseek_ka_queries_max as double, n) / 50.0d) * 50)
 }
 
+// 4 x 0.15 is 0.6000000000000001 in a double; the fit stored at index time is looked up by
+// the exact X-drop string, so both processes print it the same short way (dark-set
+// penaltyString).
+def xdropFor(copt) {
+    def sf = String.format('%.2f', (params.kmerseek_extend_xdrop_per_penalty as double) * (copt as double))
+    sf.replaceAll(/0+$/, '').replaceAll(/\.$/, '')
+}
+
 def memoryLadder(double firstGb, int attempt) {
     long capMb = MemoryUnit.of(params.kmerseek_memory_max).toMega()
     long askMb = (long) (firstGb * 1024L * Math.pow(params.kmerseek_memory_retry_factor as double, attempt - 1))
@@ -90,12 +98,12 @@ def memoryLadder(double firstGb, int attempt) {
 // assets and runs/ladder-0.4-midi/measured) and searches (alphabet|k -> largest peak RSS and
 // longest run time of a 2_000-query chunk, from the work dirs of ladder-0.4 and
 // ladder-0.4-midi at scaled 1, read 2026-10-12).
-def INDEX_MEASURED = [:]
+INDEX_MEASURED = [:]
 file("${projectDir}/assets/kmerseek_index_memory_measured.tsv").readLines().drop(1).each { l ->
     def c = l.split('\t'); def key = "${c[0]}|${c[1]}|${c[2]}".toString()
     INDEX_MEASURED[key] = Math.max((INDEX_MEASURED[key] ?: 0) as double, c[3] as double)
 }
-def SEARCH_MEASURED = [:]
+SEARCH_MEASURED = [:]
 file("${projectDir}/assets/darkset_search_measured_s1.csv").readLines().drop(1).each { l ->
     def c = l.split(','); SEARCH_MEASURED["${c[0]}|${c[1]}".toString()] = [gb: c[6] as double, h: c[5] as double]
 }
@@ -113,7 +121,7 @@ def kmerseekIndexMemory(String alphabet, int ksize, int attempt) {
 
 // Spectrum load of an index (dark-set spectrumLoad): sum(occ^2 n) / sum(occ n) over its
 // spectrum.csv.gz. Read in the workflow, where the real path is known, and cached by name.
-def SPECTRUM_LOAD = java.util.Collections.synchronizedMap([:])
+SPECTRUM_LOAD = java.util.Collections.synchronizedMap([:])
 def spectrumLoad(Path index_dir) {
     double num = 0.0d, den = 0.0d
     new java.util.zip.GZIPInputStream(index_dir.resolve('spectrum.csv.gz').newInputStream()).withReader('UTF-8') { r ->
@@ -160,7 +168,7 @@ process kmerseekIndex {
 
     script:
     def idx = "sprot2019_08.${alphabet}.k${ksize}.kmerseek.rocksdb"
-    def xd  = (params.kmerseek_extend_xdrop_per_penalty as double) * (copt as double)
+    def xd  = xdropFor(copt)
     def nq  = kaQueriesFor(alphabet, ksize as int)
     """
     set -euo pipefail
@@ -197,7 +205,7 @@ process kmerseekSearch {
 
     script:
     slug = "${alphabet}.k${ksize}.${arm}.${chunk.simpleName}"
-    def xd = (params.kmerseek_extend_xdrop_per_penalty as double) * (copt as double)
+    def xd = xdropFor(copt)
     // --ka-queries 0: the E-value comes from the fit stored at index time for this penalty
     // and X-drop, or the search is refused (handled below).
     def flags = arm == 'exact' ? '' :
