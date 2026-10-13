@@ -5,7 +5,6 @@ k-mers and sequences that match a hashval in the signature file.
 
 Cribbed from https://github.com/dib-lab/sourmash/pull/724/
 """
-
 import argparse
 import csv
 import sys
