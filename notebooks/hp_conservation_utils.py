@@ -22,8 +22,6 @@ sourmash), so the classes match what the search engine indexes.
 
 from __future__ import annotations
 
-import textwrap
-
 import numpy as np
 import polars as pl
 
@@ -247,67 +245,10 @@ def frac_run_at_least(
 
 
 # ---------------------------------------------------------------------------
-# Figure stamping, same convention as mhc_region_utils.finish_figure.
+# Figure finishing: the TOOLS / hypothesis / conclusion stamp lives in figure_utils.
 # ---------------------------------------------------------------------------
 NO_TOOL = "none (no search result: computed from alignments and alphabet tables only)"
 
 
-def finish_figure(
-    fig,
-    path,
-    tools: str,
-    hypothesis: str,
-    conclusion: str,
-    title: str | None = None,
-    *,
-    footer_y: float = -0.01,
-    header_y: float = 1.005,
-    dpi: int = 200,
-    wrap: int | None = None,
-):
-    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`."""
-    try:
-        fig.tight_layout()
-    except Exception:  # noqa: BLE001
-        pass
-    w_in, h_in = fig.get_size_inches()
-    wrap = wrap or max(70, int(w_in * 12))
-    line = lambda pt: pt / 72.0 / h_in * 1.45
-    is_km = "kmerseek" in tools and not tools.startswith("no kmerseek")
-    tool_lines = textwrap.wrap("TOOLS: " + tools, wrap)
-    y = header_y
-    fig.text(
-        0.0,
-        y,
-        "\n".join(tool_lines),
-        ha="left",
-        va="bottom",
-        fontsize=9.5,
-        fontweight="bold",
-        color="#8B1A1A" if is_km else "#1F3B73",
-        bbox=dict(
-            boxstyle="round,pad=0.35",
-            facecolor="#FBEAEA" if is_km else "#E8EEF8",
-            edgecolor="none",
-        ),
-    )
-    y += line(9.5) * len(tool_lines) + line(9.5) * 0.9
-    if title:
-        fig.text(
-            0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold"
-        )
-    foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap(
-        "Conclusion: " + conclusion, wrap
-    )
-    fig.text(
-        0.0,
-        footer_y,
-        "\n".join(foot),
-        ha="left",
-        va="top",
-        fontsize=9,
-        color="#222222",
-        linespacing=1.35,
-        bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
-    )
-    fig.savefig(path, dpi=dpi, bbox_inches="tight")
+# One implementation for every notebook; see figure_utils.finish_figure.
+from figure_utils import finish_figure  # noqa: E402,F401  (re-exported)
