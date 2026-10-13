@@ -1,22 +1,22 @@
-"""Notebook 284, part 4: the spot tables the interactive explainer page filters and sums.
+"""Notebook 284, part 4: the polyglot match tables the interactive explainer page filters and sums.
 
 The page lets the reader pick an E-value cut, a counting rule and which alphabets count, and
 redraws where BCL2 (query Ced9) and CD47 (query P66) land among the human proteins. Every
-count it shows is a sum over the tables written here. The spots come from
-alphabet_agreement_utils.assign_spots, the same code behind every other 284 number, run once
+count it shows is a sum over the tables written here. The polyglot matches come from
+alphabet_agreement_utils.assign_polyglot_matches, the same code behind every other 284 number, run once
 per E-value cut in alphabet_agreement_utils.E_CUTS. So the page never joins regions itself.
 
 For each query and cut, one binary file holds:
-  - every spot that two or more alphabets back: target protein, query start and end,
+  - every polyglot match that two or more alphabets back: target protein, query start and end,
     diagonal, and the set of alphabets as a 19-bit mask (bit order = ALPHABETS below);
-  - for each alphabet in such a spot: its query start and end in the spot, its lowest
+  - for each alphabet in such a polyglot match: its query start and end in the polyglot match, its lowest
     E-value, and the k-sizes that found it (bit k set);
   - for every target protein, the mask of alphabets with any region on it at this cut, so a
-    protein whose spots each have one alphabet is still counted.
-Spots one alphabet backs are not stored one by one; the masks above stand in for them.
+    protein whose polyglot matches each have one alphabet is still counted.
+Polyglot matches one alphabet backs are not stored one by one; the masks above stand in for them.
 
-Removing an alphabet on the page clears its bit. A spot that only that alphabet's region
-joined stays one spot there, whereas a fresh run without the alphabet would split it. The
+Removing an alphabet on the page clears its bit. A polyglot match that only that alphabet's region
+joined stays one polyglot match there, whereas a fresh run without the alphabet would split it. The
 script measures how often that changes a number (see CHECKS in the manifest).
 
 Also written: the human residues (for the aligned-residue view), how many human proteins each
@@ -138,19 +138,19 @@ def counts_from_mask(mask, rule):
 
 def build(regions, q, cut, tindex, kbits):
     d = au.prepare(regions.filter(pl.col("query_name") == q))
-    r = au.assign_spots(d, cut).with_columns(
+    r = au.assign_polyglot_matches(d, cut).with_columns(
         bit=pl.col("alphabet").replace_strict(ALPHABETS, list(range(len(ALPHABETS))), return_dtype=pl.Int64))
     r = r.join(kbits.lazy(), on=["alphabet", "ksize_arm"])
-    pa = (r.group_by(*au.SPOT_KEYS, "bit")
+    pa = (r.group_by(*au.MATCH_KEYS, "bit")
           .agg(a_qs=pl.col("qs").min(), a_qe=pl.col("qe").max(), a_e=pl.col("region_evalue").min(),
                a_k=pl.lit(2, pl.Int64).pow(pl.col("kbit")).unique().sum())
           .collect())
-    sp = (pa.group_by(au.SPOT_KEYS)
+    sp = (pa.group_by(au.MATCH_KEYS)
           .agg(mask=pl.lit(2, pl.Int64).pow(pl.col("bit")).sum(), n=pl.len(),
                qs=pl.col("a_qs").min(), qe=pl.col("a_qe").max()))
-    # the same spots and counts as au.spots, which made the CSVs
-    ref = au.spots(d, cut).select(*au.SPOT_KEYS, "n_alphabets", "n_families", "n_families_identity_as_one", "qs", "qe")
-    chk = sp.join(ref, on=au.SPOT_KEYS, how="full", coalesce=True)
+    # the same polyglot matches and counts as au.polyglot_matches, which made the CSVs
+    ref = au.polyglot_matches(d, cut).select(*au.MATCH_KEYS, "n_alphabets", "n_families", "n_families_identity_as_one", "qs", "qe")
+    chk = sp.join(ref, on=au.MATCH_KEYS, how="full", coalesce=True)
     assert chk.height == ref.height == sp.height, (q, cut)
     for c in au.COUNTS:
         assert (counts_from_mask(chk["mask"].to_numpy(), c) == chk[c].to_numpy()).all(), (q, cut, c)
@@ -161,9 +161,9 @@ def build(regions, q, cut, tindex, kbits):
              .group_by("t").agg(m=pl.lit(2, pl.Int64).pow(pl.col("bit")).unique().sum()))
     umask = np.zeros(len(tindex), np.uint32)
     umask[union["t"].to_numpy()] = union["m"].to_numpy()
-    multi = sp.filter(pl.col("n") >= 2).sort("t", "qs", "diag", "spot").with_row_index("order")
-    # one entry per alphabet in each stored spot, in the spots' order, then by bit
-    ent = pa.join(multi.select(*au.SPOT_KEYS, "order"), on=au.SPOT_KEYS).sort("order", "bit")
+    multi = sp.filter(pl.col("n") >= 2).sort("t", "qs", "diag", "match_id").with_row_index("order")
+    # one entry per alphabet in each stored polyglot match, in the polyglot matches' order, then by bit
+    ent = pa.join(multi.select(*au.MATCH_KEYS, "order"), on=au.MATCH_KEYS).sort("order", "bit")
     assert ent.height == int(multi["n"].sum())
     assert multi.height == 0 or (multi["qe"].max() < 65536 and (multi["qe"] - multi["qs"]).min() > 0)
     arrays = [
@@ -235,7 +235,7 @@ def main():
             grid = np.zeros((len(ALPHABETS), len(queries[q])), np.int32)
             grid[cov["bit"].to_numpy(), cov["pos"].to_numpy()] = cov["len"].to_numpy()
             man["coverage"][q].append(grid.tolist())
-            print(q, cut, n_spots, "spots with 2+ alphabets", n_ent, "entries", len(buf), "bytes", flush=True)
+            print(q, cut, n_spots, "polyglot matches with 2+ alphabets", n_ent, "entries", len(buf), "bytes", flush=True)
     for f in sorted(OUT.iterdir()):
         man["files"].setdefault(f.name, {})
         man["files"][f.name].update(bytes=f.stat().st_size, sha256=hashlib.sha256(f.read_bytes()).hexdigest())

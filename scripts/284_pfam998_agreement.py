@@ -6,12 +6,12 @@ Data: notebook 243's all-against-all search of the 998 Pfam-annotated human prot
 every region kept (/Users/olga/data/alphabet-logreg-pfam998/regions/, 235_895_940 regions).
 Self matches (query = target) are dropped. E-values are for this 998-protein database.
 
-A spot is built as in alphabet_agreement_utils (same diagonal, overlapping query
-stretches). A spot is correct when one Pfam family covers at least 20% of its query
+A polyglot match is built as in alphabet_agreement_utils (same diagonal, overlapping query
+stretches). A polyglot match is correct when one Pfam family covers at least 20% of its query
 stretch and at least 20% of its target stretch (PR 44's rule, as in notebook 243).
 
 For each E-value cut: precision at each agreement count, for the three counts, and the
-average precision of four rankings of all spots: lowest E-value alone, and each count
+average precision of four rankings of all polyglot matches: lowest E-value alone, and each count
 with ties broken by the lowest E-value.
 
 Output: notebooks/284_pfam998_precision_by_agreement.csv, notebooks/284_pfam998_average_precision.csv
@@ -50,7 +50,7 @@ def label(s: pl.DataFrame, truth: pl.DataFrame) -> pl.DataFrame:
 
 
 def average_precision(score: np.ndarray, y: np.ndarray) -> float:
-    """Mean of the precision at each correct spot, spots sorted by score, highest first.
+    """Mean of the precision at each correct polyglot match, polyglot matches sorted by score, highest first.
     Ties are broken by the order given, so callers sort by a tie-breaker first."""
     order = np.argsort(-score, kind="stable")
     yy = y[order]
@@ -67,20 +67,20 @@ def main():
     d = au.prepare(regions)
     prec_rows, ap_rows = [], []
     for cut in CUTS:
-        s = au.spots(d.filter(pl.col("region_evalue") < cut).with_columns(e=pl.col("region_evalue")), None)
-        # lowest E-value per spot (spots() does not keep it); recompute with the same keys
+        s = au.polyglot_matches(d.filter(pl.col("region_evalue") < cut).with_columns(e=pl.col("region_evalue")), None)
+        # lowest E-value per polyglot match (polyglot_matches() does not keep it); recompute with the same keys
         emin = (d.filter(pl.col("region_evalue") < cut)
                 .sort("query_name", "target_name", "diag", "qs")
                 .with_columns(prev_end=pl.col("qe").cum_max().shift(1).over("query_name", "target_name", "diag"))
-                .with_columns(spot=(pl.col("prev_end").is_null() | (pl.col("qs") >= pl.col("prev_end")))
+                .with_columns(match_id=(pl.col("prev_end").is_null() | (pl.col("qs") >= pl.col("prev_end")))
                               .cast(pl.Int32).cum_sum().over("query_name", "target_name", "diag"))
-                .group_by("query_name", "target_name", "diag", "spot").agg(e_min=pl.col("region_evalue").min())
+                .group_by("query_name", "target_name", "diag", "match_id").agg(e_min=pl.col("region_evalue").min())
                 .collect())
-        s = s.join(emin, on=["query_name", "target_name", "diag", "spot"])
+        s = s.join(emin, on=["query_name", "target_name", "diag", "match_id"])
         s = s.with_columns(ts=pl.col("qs") + pl.col("diag"), te=pl.col("qe") + pl.col("diag"))
         s = label(s, truth)
         n, npos = s.height, int(s["correct"].sum())
-        print(f"E < {cut:g}: {n} spots, {npos} correct ({npos / n:.4f})", flush=True)
+        print(f"E < {cut:g}: {n} polyglot matches, {npos} correct ({npos / n:.4f})", flush=True)
         for c in au.COUNTS:
             t = (s.group_by(c).agg(n_spots=pl.len(), n_correct=pl.col("correct").sum())
                  .with_columns(precision=pl.col("n_correct") / pl.col("n_spots")).sort(c)

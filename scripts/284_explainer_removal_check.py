@@ -1,7 +1,7 @@
 """Notebook 284: how far the page's "remove an alphabet" shortcut is from a fresh count.
 
-On the explainer page, removing an alphabet clears its bit in each stored spot. A fresh count
-drops that alphabet's regions first and then joins the rest into spots, so a spot that only
+On the explainer page, removing an alphabet clears its bit in each stored polyglot match. A fresh count
+drops that alphabet's regions first and then joins the rest into polyglot matches, so a polyglot match that only
 the removed alphabet's region held together splits in two. This script makes the fresh count
 with alphabet_agreement_utils for a few removals, so tests/284_explainer_compute.test.mjs can
 compare it with the page's shortcut, and the page can say how big the gap is.
@@ -36,7 +36,7 @@ for q, partner in CASES.items():
         d = au.prepare(pl.scan_parquet(DATA / "regions.parquet")
                        .filter((pl.col("query_name") == q) & ~pl.col("alphabet").is_in(removed)))
         for cut in CUTS:
-            s = au.spots(d, cut)
+            s = au.polyglot_matches(d, cut)
             for c in au.COUNTS:
                 b = au.best_per_target(s, c)
                 p = b.filter(pl.col("gene") == partner)

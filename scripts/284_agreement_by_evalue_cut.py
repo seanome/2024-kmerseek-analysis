@@ -3,7 +3,7 @@ cut, and with alphabet families counted instead of alphabets.
 
 For Ced9 (partner BCL2) and P66 (partner CD47), at each cut in alphabet_agreement_utils.E_CUTS,
 the partner's agreement and the number of human proteins with more, for the three counts
-(alphabets; families with the H/P alphabets as one; families with spots protein20 also calls
+(alphabets; families with the H/P alphabets as one; families with any polyglot match protein20 also calls
 counted as 1). BHF has no known partner, so only the proteome's top value is given.
 
 Input: notebook 241's regions.parquet (see 284_alphabet_agreement.py).
@@ -25,7 +25,7 @@ rows = []
 for q, partner in CASES:
     d = au.prepare(pl.scan_parquet(DATA / "regions.parquet").filter(pl.col("query_name") == q))
     for cut in au.E_CUTS:
-        s = au.spots(d, cut)
+        s = au.polyglot_matches(d, cut)
         for c in au.COUNTS:
             b = au.best_per_target(s, c)
             top = int(b[c].max()) if b.height else 0

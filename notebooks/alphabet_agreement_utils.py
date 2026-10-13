@@ -1,18 +1,20 @@
-"""Count how many kmerseek alphabets report a region at the same spot of a query-target pair.
+"""Count how many kmerseek alphabets call the same polyglot match between a query and a target.
 
 Shared by scripts/284_alphabet_agreement.py (notebook 241's real queries) and
 notebooks/284_shuffle_agreement.py (the same queries, dipeptide-shuffled), so the real and
 shuffled numbers come from one function.
 
-A spot joins regions from different alphabets that sit on the same diagonal (target start
+A polyglot match is one stretch of the query lined up residue for residue with one stretch of
+the target (BLAST calls this a segment pair), read in several alphabets. It joins regions
+from different alphabets that sit on the same diagonal (target start
 minus query start is equal, so the two stretches are in register) and whose query stretches
 overlap. Coordinates are kmerseek's: 0-based, end-exclusive.
 
-Three counts per spot:
+Three counts per polyglot match:
   n_alphabets                 alphabets with a region there (of 19);
   n_families                  the same, with the seven two- and three-letter H/P alphabets
                               counted as one;
-  n_families_identity_as_one  n_families, except that a spot protein20 also calls counts
+  n_families_identity_as_one  n_families, except that a polyglot match protein20 also calls counts
                               as 1: protein20 only matches identical residues, and an
                               identical stretch matches in every alphabet, so the other
                               alphabets add no independent support there.
@@ -49,12 +51,14 @@ def prepare(regions: pl.LazyFrame | pl.DataFrame) -> pl.LazyFrame:
     )
 
 
-SPOT_KEYS = ["query_name", "gene", "target_name", "diag", "spot"]
+MATCH_KEYS = ["query_name", "gene", "target_name", "diag", "match_id"]
 
 
-def assign_spots(d: pl.LazyFrame, e_cut: float | None = None) -> pl.LazyFrame:
-    """Each region with the number of its spot on its (query, target, diagonal). `d` comes
-    from prepare(). Regions with E >= e_cut are dropped first, so a cut can split a spot.
+def assign_polyglot_matches(
+    d: pl.LazyFrame, e_cut: float | None = None
+) -> pl.LazyFrame:
+    """Each region with the id of its polyglot match on its (query, target, diagonal). `d` comes
+    from prepare(). Regions with E >= e_cut are dropped first, so a cut can split a polyglot match.
     """
     if e_cut is not None:
         d = d.filter(pl.col("region_evalue") < e_cut)
@@ -62,17 +66,17 @@ def assign_spots(d: pl.LazyFrame, e_cut: float | None = None) -> pl.LazyFrame:
     d = d.sort(*keys, "qs")
     d = d.with_columns(prev_end=pl.col("qe").cum_max().shift(1).over(keys))
     return d.with_columns(
-        spot=(pl.col("prev_end").is_null() | (pl.col("qs") >= pl.col("prev_end")))
+        match_id=(pl.col("prev_end").is_null() | (pl.col("qs") >= pl.col("prev_end")))
         .cast(pl.Int32)
         .cum_sum()
         .over(keys)
     )
 
 
-def spots(d: pl.LazyFrame, e_cut: float | None = None) -> pl.DataFrame:
-    """One row per spot with its three counts. `d` comes from prepare()."""
-    d = assign_spots(d, e_cut)
-    s = d.group_by(*SPOT_KEYS).agg(
+def polyglot_matches(d: pl.LazyFrame, e_cut: float | None = None) -> pl.DataFrame:
+    """One row per polyglot match with its three counts. `d` comes from prepare()."""
+    d = assign_polyglot_matches(d, e_cut)
+    s = d.group_by(*MATCH_KEYS).agg(
         n_alphabets=pl.col("alphabet").n_unique(),
         n_families=pl.col("family").n_unique(),
         has_protein20=(pl.col("alphabet") == "protein20").any(),
@@ -89,9 +93,12 @@ def spots(d: pl.LazyFrame, e_cut: float | None = None) -> pl.DataFrame:
 
 
 def best_per_target(s: pl.DataFrame, count: str) -> pl.DataFrame:
-    """Each target protein's highest `count` over its spots, one row per (query, target)."""
+    """Each target protein's highest `count` over its polyglot matches, one row per (query, target)."""
     return (
-        s.sort(count, "n_alphabets", descending=True)
+        s.sort(
+            [count, "n_alphabets", "query_name", "target_name", "diag", "qs"],
+            descending=[True, True, False, False, False, False],
+        )
         .group_by("query_name", "gene", "target_name", maintain_order=True)
         .first()
     )

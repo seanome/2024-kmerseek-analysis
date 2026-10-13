@@ -1,9 +1,9 @@
-"""Notebook 241's searches: do different alphabets agree on the same spot of the true partner?
+"""Notebook 241's searches: do different alphabets agree on one polyglot match with the true partner?
 
-A spot is a stretch of query and target on one diagonal (target start - query start is the
+A polyglot match is a stretch of query and target on one diagonal (target start - query start is the
 same, so the two stretches are in register). Two regions from different alphabets that share
-a diagonal and overlap on the query are joined into one spot. For each target protein we keep
-the spot backed by the most alphabets, then ask where BCL2 (query Ced9) and CD47 (query P66)
+a diagonal and overlap on the query are joined into one polyglot match. For each target protein we keep
+the polyglot match backed by the most alphabets, then ask where BCL2 (query Ced9) and CD47 (query P66)
 rank among the 19_693 human proteins.
 
 Input: notebook 241's regions.parquet ($SCRATCH/241-alphabet-ranking/regions.parquet,
@@ -36,13 +36,13 @@ def read_fasta(path, key=lambda h: h):
     return {k: "".join(v) for k, v in seqs.items()}
 
 
-def spots(d):
-    """Join regions on one diagonal whose query stretches overlap; count alphabets per spot."""
+def polyglot_matches(d):
+    """Join regions on one diagonal whose query stretches overlap; count alphabets per polyglot match."""
     d = d.sort("query_name", "target_name", "diag", "qs")
     d = d.with_columns(prev_end=pl.col("qe").cum_max().shift(1).over("query_name", "target_name", "diag"))
-    d = d.with_columns(spot=(pl.col("prev_end").is_null() | (pl.col("qs") >= pl.col("prev_end")))
+    d = d.with_columns(match_id=(pl.col("prev_end").is_null() | (pl.col("qs") >= pl.col("prev_end")))
                        .cast(pl.Int32).cum_sum().over("query_name", "target_name", "diag"))
-    return d.group_by("query_name", "gene", "target_name", "diag", "spot").agg(
+    return d.group_by("query_name", "gene", "target_name", "diag", "match_id").agg(
         n_alphabets=pl.col("alphabet").n_unique(), n_families=pl.col("family").n_unique(),
         n_below_e10=pl.col("alphabet").filter(pl.col("region_evalue") < 10).n_unique(),
         qs=pl.col("qs").min(), qe=pl.col("qe").max())
@@ -56,11 +56,14 @@ def main():
                              family=pl.when(pl.col("alphabet").is_in(HP)).then(pl.lit("H/P"))
                              .otherwise(pl.col("alphabet")))
                .collect())
-    s = spots(regions)
-    best = (s.sort("n_alphabets", "n_families", descending=True)
+    s = polyglot_matches(regions)
+    # Total order, so the polyglot match kept for a target is the same on every run when
+    # several tie on both counts: then the lowest diagonal, then the earliest query start.
+    best = (s.sort(["n_alphabets", "n_families", "query_name", "target_name", "diag", "qs"],
+                   descending=[True, True, False, False, False, False])
             .group_by("query_name", "gene", "target_name", maintain_order=True).first())
     best = best.with_columns(rank=pl.col("n_alphabets").rank("min", descending=True).over("query_name"))
-    best.drop("spot").sort("query_name", "rank", "gene").write_csv(OUT / "284_alphabet_agreement_best_spot_per_target.csv")
+    best.drop("match_id").sort("query_name", "rank", "gene").write_csv(OUT / "284_alphabet_agreement_best_polyglot_match_per_target.csv")
 
     queries = read_fasta(DATA / "queries.fa")
     human = read_fasta(GENCODE, key=lambda h: h.split("|")[0])
@@ -97,8 +100,8 @@ def main():
     print("max alphabets agreeing with E < 10:", data["e10"])
     for q in data["histogram"]:
         c = data["histogram"][q]["counts"]
-        print(q, "targets with a spot backed by >= 4 alphabets:", sum(v for k, v in c.items() if k >= 4))
-    # How identical are the spots that many alphabets agree on? Longest run of identical residues.
+        print(q, "targets with a polyglot match backed by >= 4 alphabets:", sum(v for k, v in c.items() if k >= 4))
+    # How identical are the polyglot matches that many alphabets agree on? Longest run of identical residues.
     data["identity_by_agreement"] = {}
     for q in ["Ced9", "P66"]:
         rows = []

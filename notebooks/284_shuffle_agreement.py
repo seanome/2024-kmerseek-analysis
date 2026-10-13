@@ -10,7 +10,7 @@ real homology. Every region is kept.
 
 Then, for each query and copy, the agreement counts of alphabet_agreement_utils (the same
 code that made the real numbers in scripts/284_*.py), at each E-value cut:
-  - for Ced9 and its copies, the best spot on BCL2; for P66 and its copies, on CD47;
+  - for Ced9 and its copies, the best polyglot match on BCL2; for P66 and its copies, on CD47;
   - the proteome's highest count, and how many proteins reach each count.
 If the real query's agreement on its partner, or its proteome-wide agreement, sits inside
 the spread of its copies, agreement is what chance gives.
@@ -264,7 +264,7 @@ def step_summarise() -> None:
         case = q.split("_shuf")[0]
         d = au.prepare(pl.scan_parquet(files).filter(pl.col("query_name") == q))
         for cut in SUMMARY_CUTS:
-            s = au.spots(d, cut)
+            s = au.polyglot_matches(d, cut)
             label = "all regions" if cut is None else f"E < {cut:g}"
             for c in au.COUNTS:
                 b = au.best_per_target(s, c)
