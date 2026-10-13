@@ -12,7 +12,7 @@ __FONTS__
   --found: #2F6F8F;      /* an alphabet found a region here */
   --ident: #C2761B;      /* identical residues */
   --partner: #3B7A3B;    /* the true partner (BCL2 or CD47) */
-  --rank: #7A4E9C;       /* ranking spots by how many alphabets agree (Pfam test) */
+  --rank: #7A4E9C;       /* ranking polyglot matches by how many alphabets agree (Pfam test) */
   --serif: "Fraunces", Georgia, serif;
   --sans: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
   --mono: "Fantasque Sans Mono", ui-monospace, Menlo, monospace;
@@ -96,7 +96,7 @@ svg .hit { cursor: pointer; }
 
 <section id="rank">
   <h2>Rank BCL2 yourself</h2>
-  <p>A <b>spot</b> joins regions from different alphabets that sit on the same diagonal of the same human protein (the two stretches are in register, so target start minus query start is equal) and overlap on the query. For each human protein the page takes its spot with the most agreement, then counts how many proteins beat the true partner.</p>
+  <p>A <b>polyglot match</b> is one stretch of the query lined up residue for residue with one stretch of the target (BLAST calls this a segment pair), counted by how many alphabets call it. It joins regions from different alphabets that sit on the same diagonal of the same human protein (target start minus query start is equal) and overlap on the query. For each human protein the page takes its polyglot match with the most agreement, then counts how many proteins beat the true partner.</p>
   <div class="panel controls" id="controls">
     <div class="ctl">
       <h3>Query and its true partner</h3>
@@ -105,12 +105,12 @@ svg .hit { cursor: pointer; }
     </div>
     <div class="ctl">
       <h3>E-value cut: <span class="n" id="cut-label"></span></h3>
-      <div class="what">An alphabet counts at a spot only if its own region there has an E-value below the cut. The E-value is how many regions this good one search of the human proteome gives by chance. Spots are rebuilt from the regions that pass.</div>
+      <div class="what">An alphabet counts at a polyglot match only if its own region there has an E-value below the cut. The E-value is how many regions this good one search of the human proteome gives by chance. Polyglot matches are rebuilt from the regions that pass.</div>
       <input type="range" id="ctl-cut" min="0" max="6" step="1" value="0" aria-label="E-value cut">
       <div class="cuts" id="cut-ticks" aria-hidden="true"></div>
     </div>
     <div class="ctl">
-      <h3>What to count at a spot</h3>
+      <h3>What to count at a polyglot match</h3>
       <div class="what">Changes the number each protein is ranked by.</div>
       <div class="seg" id="ctl-rule"></div>
       <div class="what" id="rule-help"></div>
@@ -129,10 +129,10 @@ svg .hit { cursor: pointer; }
     <div class="status" id="status"></div>
   </div>
 
-  <h3>Figure 1. Human proteins by how much agreement their best spot has</h3>
+  <h3>Figure 1. Human proteins by how much agreement their best polyglot match has</h3>
   <div class="panel">
     <div class="legend">
-      <span><svg width="14" height="12" aria-hidden="true"><circle cx="7" cy="6" r="4" fill="var(--ink)"/></svg>human proteins whose best spot has this count (click to list them)</span>
+      <span><svg width="14" height="12" aria-hidden="true"><circle cx="7" cy="6" r="4" fill="var(--ink)"/></svg>human proteins whose best polyglot match has this count (click to list them)</span>
       <span><svg width="14" height="14" aria-hidden="true"><path d="M7 1 L13 7 L7 13 L1 7 Z" fill="var(--partner)"/></svg>the true partner</span>
     </div>
     <div class="cap" id="fig2-title"></div>
@@ -143,14 +143,14 @@ svg .hit { cursor: pointer; }
 </section>
 
 <section id="spot">
-  <h2>Figure 2. One spot, alphabet by alphabet</h2>
-  <p>Each row is one alphabet. A bar spans that alphabet's regions at this spot, at any of the k-sizes notebook 241 ran. Click a protein under Figure 1 or Figure 3, or pick one here:</p>
+  <h2>Figure 2. One polyglot match, alphabet by alphabet</h2>
+  <p>Each row is one alphabet. A bar spans that alphabet's regions at this polyglot match, at any of the k-sizes notebook 241 ran. Click a protein under Figure 1 or Figure 3, or pick one here:</p>
   <div class="seg" id="spot-picks"></div>
   <div class="panel">
     <div class="legend" aria-label="Legend">
       <span><i class="sw" style="background:var(--found)"></i>region, counted</span>
       <span><i class="sw" style="border:1.5px solid var(--found);box-sizing:border-box"></i>region from an alphabet you left out</span>
-      <span><svg width="14" height="10" aria-hidden="true"><circle cx="7" cy="5" r="2" fill="var(--muted)"/></svg>no region at this spot</span>
+      <span><svg width="14" height="10" aria-hidden="true"><circle cx="7" cy="5" r="2" fill="var(--muted)"/></svg>no region at this polyglot match</span>
       <span><i class="sw" style="background:var(--ident);opacity:.35"></i>longest run of identical residues</span>
       <span><svg width="30" height="12" aria-hidden="true"><line x1="0" y1="6" x2="30" y2="6" stroke="var(--ink)" stroke-width="1.5"/><rect x="9" y="1" width="12" height="10" rx="2" fill="none" stroke="var(--ink)"/></svg>protein, with UniProt BH motifs as boxes</span>
     </div>
@@ -164,7 +164,13 @@ svg .hit { cursor: pointer; }
 
 <section id="window">
   <h2>Figure 3. Slide a window along the query</h2>
-  <p>Each row is one alphabet; each column is one query residue. Colour shows how many human proteins that alphabet finds a region on, covering that residue, at the E-value cut chosen above. Drag the box, drag its edges, type its ends, or pick a UniProt motif.</p>
+  <p>kmerseek matches k-mers, not single residues. A k-mer is k residues in a row, written in the alphabet's letters. Where Ced9 and a human protein share a k-mer, kmerseek starts a region, then extends it along both proteins while the letters keep matching, allowing a few mismatches. The region is a stretch of residues on each protein. For example, with hp_lehninger2 at k = 19, Ced9 and BCL2 share one 19-mer:</p>
+  <div class="scroll"><pre class="aln"><span class="lab">Ced9  163  </span>QCPMSYGRLIGLISFGGFV  181
+<span class="lab">           </span>PPHHPHHPHHHHHPHHHHH
+<span class="lab">           </span>|||||||||||||||||||   the same 19 H/P letters
+<span class="lab">           </span>PPHHPHHPHHHHHPHHHHH
+<span class="lab">BCL2  139  </span>RDGVNWGRIVAFFEFGGVM  157</pre></div>
+  <p>The extension grows it to a region of Ced9 163-188 on BCL2 139-164, with 2 mismatches. Figure 3 then counts residues: each row is one alphabet, each column one residue of the query (Ced9 or P66, picked above), and the colour is how many human proteins have a region from that alphabet covering that residue, at the E-value cut chosen above. Drag the box, drag its edges, type its ends, or pick a UniProt motif.</p>
   <div class="row">
     <label>from <input type="number" id="win-start" min="1"></label>
     <label>to <input type="number" id="win-end" min="1"></label>
@@ -172,7 +178,7 @@ svg .hit { cursor: pointer; }
   </div>
   <div class="panel">
     <div class="legend">
-      <span>human proteins with a region on this residue:</span>
+      <span>human proteins with a region covering this query residue:</span>
       <span id="heat-key"></span>
       <span><i class="sw" style="border:2px solid var(--ink);box-sizing:border-box"></i>your window</span>
       <span><svg width="30" height="12" aria-hidden="true"><line x1="0" y1="6" x2="30" y2="6" stroke="var(--ink)" stroke-width="1.5"/><rect x="9" y="1" width="12" height="10" rx="2" fill="none" stroke="var(--ink)"/></svg>query, UniProt BH motifs as boxes</span>
@@ -187,12 +193,12 @@ svg .hit { cursor: pointer; }
 <section id="why">
   <h2>Why agreement does not help here</h2>
   <ol>
-    <li><b>An identical stretch is a match in every alphabet.</b> Grouping residues into classes never splits two identical residues, so every alphabet whose k-mers fit inside an identical stretch reports it. That is why <span id="why-top"></span> The alphabets are not voting independently; they all see the same identical letters. Figure 4 shows this over every spot.</li>
+    <li><b>An identical stretch is a match in every alphabet.</b> Grouping residues into classes never splits two identical residues, so every alphabet whose k-mers fit inside an identical stretch reports it. That is why <span id="why-top"></span> The alphabets are not voting independently; they all see the same identical letters. Figure 4 shows this over every polyglot match.</li>
     <li><b>The alphabets mostly split residues the same way.</b> Almost every alphabet keeps hydrophobic residues apart from charged ones (hover the alphabet names above). So a chance stretch that looks alike in one alphabet looks alike in most of them. Notebook 242 (PR 48) measured how far the alphabets are from independent.</li>
     <li><b>BCL2's BH1 is seen only by coarse alphabets, and three of its four are one alphabet.</b> <span id="why-bh1"></span></li>
     <li><b>No alphabet calls BCL2's BH1 below E = 10.</b> <span id="why-e"></span></li>
   </ol>
-  <h3>Figure 4. The more alphabets agree on a spot, the longer its identical run</h3>
+  <h3>Figure 4. The more alphabets agree on a polyglot match, the longer its identical run</h3>
   <div class="panel">
     <div class="legend">
       <span><svg width="14" height="12" aria-hidden="true"><circle cx="7" cy="6" r="4" fill="var(--ident)"/></svg>median longest run of identical residues (aa)</span>
@@ -207,13 +213,15 @@ svg .hit { cursor: pointer; }
 <section id="family">
   <h2>kmerseek does find Ced9's motifs on the BCL-2 family</h2>
   <p>For each of five human BCL-2 family members, the three calls with the lowest E-value from any alphabet and k. A call is <b>in register</b> when it puts Ced9's motif on the same motif of the human protein (its target start minus query start is within 1 residue of the motifs' offset). Click a call to see its residues.</p>
-  <p>Each human protein is slid sideways so that its BH1 motif sits directly under Ced9's BH1. A call in register on BH1 is then an upright band. A slanted band pairs Ced9 and the human protein at a different offset. On BCL2, the slant of the BH4 call shows that Ced9 has about 45 more residues than BCL2 between BH4 and BH1.</p>
+  <p>Ced9 is drawn once, at the top. Each human protein is slid sideways so that its BH1 motif sits under Ced9's BH1 (the pale column). Under each human protein, one bar per call marks the human stretch the call covers. A filled bar is in register on the same BH motif, so it sits directly under the Ced9 stretch it matches. The selected call also shows its Ced9 stretch and a grey link between the two. On BCL2, the BH4 call's link slants: Ced9 has about 45 more residues than BCL2 between BH4 and BH1.</p>
   <h3>Figure 5. Ced9's best calls on the human BCL-2 family</h3>
   <div class="panel">
     <div class="legend">
       <span><svg width="30" height="12" aria-hidden="true"><line x1="0" y1="6" x2="30" y2="6" stroke="var(--ink)" stroke-width="1.5"/><rect x="9" y="1" width="12" height="10" rx="2" fill="none" stroke="var(--ink)"/></svg>protein, UniProt BH motifs as boxes</span>
-      <span><svg width="26" height="14" aria-hidden="true"><path d="M2 1 L12 1 L24 13 L14 13 Z" fill="var(--found)" fill-opacity=".35" stroke="var(--found)" stroke-width="1.5"/></svg>call in register on the same BH motif</span>
-      <span><svg width="26" height="14" aria-hidden="true"><path d="M2 1 L12 1 L24 13 L14 13 Z" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="3 2"/></svg>call elsewhere</span>
+      <span><svg width="22" height="10" aria-hidden="true"><rect x="1" y="1" width="20" height="7" fill="var(--found)" fill-opacity=".75" stroke="var(--found)"/></svg>call in register on the same BH motif</span>
+      <span><svg width="22" height="10" aria-hidden="true"><rect x="1" y="1" width="20" height="7" fill="var(--panel)" stroke="var(--muted)" stroke-dasharray="3 2"/></svg>call elsewhere</span>
+      <span><svg width="22" height="10" aria-hidden="true"><rect x="1" y="1" width="20" height="7" fill="none" stroke="var(--ink)" stroke-width="2"/></svg>selected call, linked to its Ced9 stretch</span>
+      <span><svg width="14" height="12" aria-hidden="true"><rect x="1" y="0" width="12" height="12" fill="var(--rule)" opacity=".6"/></svg>Ced9's BH1, the line-up column</span>
     </div>
     <div class="scroll"><svg id="fig5-svg" role="img"></svg></div>
     <div class="seg" id="fam-calls"></div>
@@ -250,7 +258,7 @@ svg .hit { cursor: pointer; }
   </ol>
 
   <h3>Figure 7. On Pfam proteins, more agreement means a call is more often right</h3>
-  <p>A spot is right when one Pfam family covers at least 20% of both stretches (PR 44's rule). Self matches are dropped; E-values are for the 998-protein database.</p>
+  <p>A polyglot match is right when one Pfam family covers at least 20% of both stretches (PR 44's rule). Self matches are dropped; E-values are for the 998-protein database.</p>
   <div class="ctl">
     <div class="what">Counting rule for this figure:</div>
     <div class="seg" id="pf-rule"></div>
@@ -262,18 +270,18 @@ svg .hit { cursor: pointer; }
   </div>
   <div class="panel">
     <div class="legend">
-      <span><svg width="30" height="12" aria-hidden="true"><line x1="0" y1="6" x2="30" y2="6" stroke="var(--rank)" stroke-width="2.5"/><circle cx="15" cy="6" r="3.5" fill="var(--rank)"/></svg>share of spots that are right, at the chosen cut</span>
+      <span><svg width="30" height="12" aria-hidden="true"><line x1="0" y1="6" x2="30" y2="6" stroke="var(--rank)" stroke-width="2.5"/><circle cx="15" cy="6" r="3.5" fill="var(--rank)"/></svg>share of polyglot matches that are right, at the chosen cut</span>
       <span><svg width="30" height="12" aria-hidden="true"><line x1="0" y1="6" x2="30" y2="6" stroke="var(--rule)" stroke-width="2"/></svg>the same at the other cuts</span>
-      <span><svg width="30" height="12" aria-hidden="true"><line x1="0" y1="6" x2="30" y2="6" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>share right among all spots at the chosen cut</span>
+      <span><svg width="30" height="12" aria-hidden="true"><line x1="0" y1="6" x2="30" y2="6" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>share right among all polyglot matches at the chosen cut</span>
     </div>
     <svg id="fig5a-svg" role="img" style="width:100%;height:auto"></svg>
-    <div class="cap">Counts reached by fewer than 20 spots are not drawn. Hover a point for its spot count.</div>
+    <div class="cap">Counts reached by fewer than 20 polyglot matches are not drawn. Hover a point for its number of polyglot matches.</div>
     <div class="legend">
-      <span><svg width="14" height="12" aria-hidden="true"><circle cx="7" cy="6" r="4.5" fill="var(--rank)"/></svg>spots ranked by agreement, ties broken by lowest E-value</span>
-      <span><svg width="14" height="12" aria-hidden="true"><rect x="2.5" y="1.5" width="9" height="9" fill="none" stroke="var(--muted)" stroke-width="1.5"/></svg>spots ranked by lowest E-value alone</span>
+      <span><svg width="14" height="12" aria-hidden="true"><circle cx="7" cy="6" r="4.5" fill="var(--rank)"/></svg>polyglot matches ranked by agreement, ties broken by lowest E-value</span>
+      <span><svg width="14" height="12" aria-hidden="true"><rect x="2.5" y="1.5" width="9" height="9" fill="none" stroke="var(--muted)" stroke-width="1.5"/></svg>polyglot matches ranked by lowest E-value alone</span>
     </div>
     <svg id="fig5b-svg" role="img" style="width:100%;height:auto"></svg>
-    <div class="cap">Average precision: the share of right spots above each right spot, averaged; higher is better, and a random order gives the share right among all spots.</div>
+    <div class="cap">Average precision: the share of right polyglot matches above each right polyglot match, averaged; higher is better, and a random order gives the share right among all polyglot matches.</div>
   </div>
   <p id="fig5-read"></p>
 </section>
@@ -293,18 +301,18 @@ svg .hit { cursor: pointer; }
 <section>
   <h2>What the earlier combining PRs tested</h2>
   <div class="scroll"><table>
-    <thead><tr><th>PR, notebook</th><th>What was combined</th><th>Same spot checked?</th></tr></thead>
+    <thead><tr><th>PR, notebook</th><th>What was combined</th><th>Same polyglot match checked?</th></tr></thead>
     <tbody>
       <tr><td><a href="https://github.com/seanome/2024-kmerseek-analysis/pull/48">PR 48</a>, nb 242</td><td>Each protein's rank in all 19 alphabets, multiplied together</td><td>No. A protein hit anywhere in one alphabet and anywhere else in another counted as agreement, which rewards long proteins.</td></tr>
       <tr><td><a href="https://github.com/seanome/2024-kmerseek-analysis/pull/98">PR 98</a>, <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/102">102</a>, <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/103">103</a>, <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/104">104</a>, nb 261-264</td><td>Regions called by all, by any, or by vote</td><td>Yes, but all four searches used one alphabet (hp_pbotc_1st_ed2) with small changes to the extension penalty.</td></tr>
-      <tr><td><a href="https://github.com/seanome/2024-kmerseek-analysis/pull/125">PR 125</a>, nb 284 (this page)</td><td>Regions from the 19 alphabets of nb 241, joined at the same spot</td><td>Yes: same diagonal and overlapping on the query.</td></tr>
+      <tr><td><a href="https://github.com/seanome/2024-kmerseek-analysis/pull/125">PR 125</a>, nb 284 (this page)</td><td>Regions from the 19 alphabets of nb 241, joined at the same polyglot match</td><td>Yes: same diagonal and overlapping on the query.</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section style="gap:8px">
   <h2>Sources</h2>
-  <p class="cap">Regions: notebook 241 (PR 46), <code>regions.parquet</code>, <span class="n" data-n="n_regions"></span> regions for Ced9 and P66. Spots: <code>scripts/284_explainer_data.py</code> with <code>notebooks/alphabet_agreement_utils.py</code>; the page's sums in <code>notebooks/284_explainer_compute.js</code> reproduce every row of <code>notebooks/284_agreement_by_evalue_cut.csv</code> (checked by <code>scripts/tests/284_explainer_compute_check.mjs</code>). Pfam test: <code>scripts/284_pfam998_agreement.py</code> on notebook 243's search. Residue classes: seanome/kmerseek <code>src/rust/alphabets.rs</code> at <span class="mono" data-n="kmerseek_sha"></span>; dayhoff6 from sourmash 0.20.0. BH motifs: UniProt P41958 (Ced9) and P10415 (BCL2), fetched <span class="mono" data-n="motifs_fetched"></span>. Code and tables: <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/125">PR 125</a>.</p>
+  <p class="cap">Regions: notebook 241 (PR 46), <code>regions.parquet</code>, <span class="n" data-n="n_regions"></span> regions for Ced9 and P66. Polyglot matches: <code>scripts/284_explainer_data.py</code> with <code>notebooks/alphabet_agreement_utils.py</code>; the page's sums in <code>notebooks/284_explainer_compute.js</code> reproduce every row of <code>notebooks/284_agreement_by_evalue_cut.csv</code> (checked by <code>scripts/tests/284_explainer_compute_check.mjs</code>). Pfam test: <code>scripts/284_pfam998_agreement.py</code> on notebook 243's search. Residue classes: seanome/kmerseek <code>src/rust/alphabets.rs</code> at <span class="mono" data-n="kmerseek_sha"></span>; dayhoff6 from sourmash 0.20.0. BH motifs: UniProt P41958 (Ced9) and P10415 (BCL2), fetched <span class="mono" data-n="motifs_fetched"></span>. Code and tables: <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/125">PR 125</a>.</p>
 </section>
 </main>
 <div id="tip" hidden></div>
@@ -317,9 +325,9 @@ const M = D.man, AL = M.alphabets, NA = AL.length, ALL = (1 << NA) - 1;
 const HPMASK = (1 << M.hp.length) - 1, P20 = AL.indexOf("protein20");
 const GROUPS = [["2-3 letters", 0, 7], ["4-8 letters", 7, 13], ["12-18 letters", 13, 18], ["20 letters", 18, 19]];
 const RULES = [
-  ["n_alphabets", "alphabets", "Each of the 19 alphabets with a region at the spot counts 1."],
+  ["n_alphabets", "alphabets", "Each of the 19 alphabets with a region at the polyglot match counts 1."],
   ["n_families", "families (H/P as one)", "The seven two- and three-letter H/P alphabets count as 1 together, since they differ only in where they put a few residues."],
-  ["n_families_identity_as_one", "families, protein20 spots as 1", "As families, but a spot protein20 also calls counts 1: protein20 matches only identical residues, and an identical stretch matches in every alphabet, so the others add nothing there."]];
+  ["n_families_identity_as_one", "families, protein20 polyglot matches as 1", "As families, but a polyglot match protein20 also calls counts 1: protein20 matches only identical residues, and an identical stretch matches in every alphabet, so the others add nothing there."]];
 const QUERIES = Object.keys(M.partners);
 const PICKS = {Ced9: ["BCL2", "TKT"], P66: ["CD47", "CD55"]};
 const H = new Set(M.classes.hp_lehninger2[0]);
@@ -396,10 +404,10 @@ async function getResidues(t) {
 // ---------- the ranking ----------
 let R = null; // current {S, best, spot, sum, count}
 async function recompute() {
-  $("status").textContent = `Loading the spots for ${S.q}, ${cutText(M.cuts[S.cut])} (${(M.files[`spots.${S.q}.${S.cut}.bin`].bytes / 1e6).toFixed(1)} MB)…`;
+  $("status").textContent = `Loading the polyglot matches for ${S.q}, ${cutText(M.cuts[S.cut])} (${(M.files[`spots.${S.q}.${S.cut}.bin`].bytes / 1e6).toFixed(1)} MB)…`;
   let T;
   try { T = await getSpots(S.q, S.cut); }
-  catch (err) { $("status").textContent = "Could not load the spot table (" + err.message + "). The rest of the page still works."; return; }
+  catch (err) { $("status").textContent = "Could not load the polyglot match table (" + err.message + "). The rest of the page still works."; return; }
   const count = Agree.makeCounter(S.rule, M.hp.length, P20);
   const {best, spot} = Agree.bestPerTarget(T, count, S.keep);
   const partner = M.genes.indexOf(M.partners[S.q]);
@@ -418,7 +426,7 @@ function topGenes(v, k = 3) {
 }
 function drawResult() {
   const s = R.sum, p = M.partners[S.q], v = s.partner_value;
-  html("result", `${p}: ${N(v)} ${ruleWord(S.rule, v)} agree${v === 1 ? "s" : ""} on its best spot. ${N(s.proteins_with_more)} other human proteins have a spot where more than ${N(v)} ${ruleWord(S.rule, 2)} agree.`);
+  html("result", `${p}: ${N(v)} ${ruleWord(S.rule, v)} agree${v === 1 ? "s" : ""} on its best polyglot match. ${N(s.proteins_with_more)} other human proteins have a polyglot match where more than ${N(v)} ${ruleWord(S.rule, 2)} agree.`);
   const tops = topGenes(s.proteome_max);
   html("result-sub", `${cutText(M.cuts[S.cut])}, counting ${RULES.find(r => r[0] === S.rule)[1]}, ${popc(S.keep)} of 19 alphabets. ` +
     `${fmt(s.proteins_with_a_call)} of ${fmt(M.n_proteome)} human proteins have any region. ` +
@@ -463,7 +471,7 @@ function buildControls() {
     ca.appendChild(fs);
   }
   const g = D.removal_gap;
-  html("removal-note", `Leaving an alphabet out clears it from each stored spot; a spot that only its region held together is not split, as a fresh count would. Checked against a fresh count for ${g.n_rows} settings (${g.removals.join("; ")}): the partner's count never changed, and the number of proteins with a higher count than the partner moved by at most ${N(g.largest_proteins_with_more_gap)}.`);
+  html("removal-note", `Leaving an alphabet out clears it from each stored polyglot match; a polyglot match that only its region held together is not split, as a fresh count would. Checked against a fresh count for ${g.n_rows} settings (${g.removals.join("; ")}): the partner's count never changed, and the number of proteins with a higher count than the partner moved by at most ${N(g.largest_proteins_with_more_gap)}.`);
 }
 function syncControls() {
   QUERIES.forEach(q => $("q-" + q).setAttribute("aria-pressed", S.q === q));
@@ -485,7 +493,7 @@ function drawFig2() {
   const step = [1, 2, 5].map(f => f * 10 ** Math.floor(Math.log10(ymax))).find(st => ymax / st <= 6) || 10 ** Math.ceil(Math.log10(ymax));
   const top = Math.ceil(ymax / step) * step;
   const x = n => m.l + n / xmax * (W - m.l - m.r), y = v => Hh - m.b - v / top * (Hh - m.t - m.b);
-  svg.setAttribute("aria-label", `Human proteins by the count of their best spot, ${S.q} search`);
+  svg.setAttribute("aria-label", `Human proteins by the count of their best polyglot match, ${S.q} search`);
   $("fig2-title").innerHTML = `<b>kmerseek, ${popc(S.keep)} alphabets: ${S.q} against ${fmt(M.n_proteome)} human proteins, ${cutText(M.cuts[S.cut])}, counting ${RULES.find(r => r[0] === S.rule)[1]}</b>`;
   for (let v = 0; v <= top + 1e-9; v += step) {
     el("line", {x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "var(--rule)"}, svg);
@@ -496,7 +504,7 @@ function drawFig2() {
     el("line", {x1: x(n), x2: x(n), y1: y(0), y2: y(0) + 5, stroke: "var(--muted)"}, svg);
     el("text", {x: x(n), y: Hh - m.b + 20, "text-anchor": "middle", "font-size": 13, class: "muted mono"}, svg, n === 0 ? "none" : n);
   }
-  el("text", {x: (m.l + W - m.r) / 2, y: Hh - 6, "text-anchor": "middle", "font-size": 14}, svg, `${ruleWord(S.rule, 2)} agreeing on the protein's best spot`);
+  el("text", {x: (m.l + W - m.r) / 2, y: Hh - 6, "text-anchor": "middle", "font-size": 14}, svg, `${ruleWord(S.rule, 2)} agreeing on the protein's best polyglot match`);
   el("text", {x: 16, y: (m.t + Hh - m.b) / 2, "text-anchor": "middle", "font-size": 14, transform: `rotate(-90 16 ${(m.t + Hh - m.b) / 2})`}, svg, "human proteins");
   for (const [n, v] of entries) {
     const g = el("g", {class: "hit", tabindex: 0, role: "button", "aria-label": `${fmt(v)} proteins with ${n}; list them`}, svg);
@@ -524,7 +532,7 @@ function drawList() {
   const ids = [];
   for (let t = 0; t < R.best.length; t++) if (R.best[t] === S.list) ids.push(t);
   ids.sort((a, b) => M.genes[a] < M.genes[b] ? -1 : 1);
-  box.innerHTML = `<div class="row"><b>${fmt(ids.length)} proteins whose best spot has ${S.list} ${ruleWord(S.rule, S.list)}</b>
+  box.innerHTML = `<div class="row"><b>${fmt(ids.length)} proteins whose best polyglot match has ${S.list} ${ruleWord(S.rule, S.list)}</b>
     <input type="search" id="list-filter" placeholder="filter by gene" aria-label="Filter the list by gene name"></div>
     <div class="plist" id="plist"></div><div class="cap" id="plist-cap"></div>`;
   const render = () => {
@@ -537,13 +545,13 @@ function drawList() {
       b.onclick = () => { S.sel = t; drawFig1(); $("spot").scrollIntoView({behavior: "smooth", block: "start"}); };
       pl.appendChild(b);
     }
-    $("plist-cap").textContent = `Showing ${fmt(shown.length)} of ${fmt(ids.filter(t => !f || M.genes[t].includes(f)).length)}. Click one to open its spot in Figure 2.` +
-      (S.list === 1 && S.rule === "n_alphabets" ? " A spot one alphabet backs is not stored on the page, so these open only if a stored spot reaches the same count." : "");
+    $("plist-cap").textContent = `Showing ${fmt(shown.length)} of ${fmt(ids.filter(t => !f || M.genes[t].includes(f)).length)}. Click one to open its polyglot match in Figure 2.` +
+      (S.list === 1 && S.rule === "n_alphabets" ? " A polyglot match one alphabet backs is not stored on the page, so these open only if a stored polyglot match reaches the same count." : "");
   };
   $("list-filter").oninput = render; render();
 }
 
-// ---------- Figure 2: one spot ----------
+// ---------- Figure 2: one polyglot match ----------
 function longestRun(a, b) {
   let best = [0, 0], run = 0;
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
@@ -590,7 +598,7 @@ async function drawFig1() {
   if (i < 0) {
     svg.innerHTML = ""; svg.setAttribute("width", 0); svg.setAttribute("height", 0);
     $("fig1-aln").textContent = "";
-    html("fig1-title", `<b>${S.q} against ${gene}</b>: ${R.best[t] === 0 ? "no region at these settings." : `its best spot has ${R.best[t]} ${ruleWord(S.rule, R.best[t])}, and spots one alphabet backs are not stored on this page.`} ${fmt(more)} human proteins have a spot where more than ${R.best[t]} ${ruleWord(S.rule, 2)} agree.`);
+    html("fig1-title", `<b>${S.q} against ${gene}</b>: ${R.best[t] === 0 ? "no region at these settings." : `its best polyglot match has ${R.best[t]} ${ruleWord(S.rule, R.best[t])}, and polyglot matches one alphabet backs are not stored on this page.`} ${fmt(more)} human proteins have a polyglot match where more than ${R.best[t]} ${ruleWord(S.rule, 2)} agree.`);
     $("fig1-read").textContent = "";
     return;
   }
@@ -600,13 +608,13 @@ async function drawFig1() {
   const c = R.count(m & S.keep);
   html("fig1-title", `<b>${S.q} residues ${qs + 1}-${qe} against human ${gene} residues ${qs + dg + 1}-${qe + dg}</b>. ` +
     `${popc(m)} of 19 alphabets have a region here; ${popc(m & S.keep)} of them are counted, giving ${c} ${ruleWord(S.rule, c)}. ` +
-    `${fmt(more)} human proteins have a spot where more than ${R.best[t]} ${ruleWord(S.rule, 2)} agree${t === R.partner ? "" : `; ${M.partners[S.q]}'s best spot has ${R.sum.partner_value}`}.`);
+    `${fmt(more)} human proteins have a polyglot match where more than ${R.best[t]} ${ruleWord(S.rule, 2)} agree${t === R.partner ? "" : `; ${M.partners[S.q]}'s best polyglot match has ${R.sum.partner_value}`}.`);
   svg.innerHTML = "";
   const labW = 205, infoW = 230, plotW = 420, rowH = 17, gapH = 10, top = 150;
   const W = labW + plotW + infoW;
   const lo = Math.max(0, qs - 6), hi = Math.min(qseq.length, qe + 6);
   const x = p => labW + (p - lo) / (hi - lo) * plotW;
-  // whole proteins: query and target, the spot marked under each
+  // whole proteins: query and target, the polyglot match marked under each
   const tseq = await getResidues(t).catch(() => null);
   if (S.sel !== t) return; // the reader picked another protein while residues loaded
   proteinLine(svg, 22, labW, plotW, qseq.length, S.q, (M.motifs.proteins[S.q] || {}).motifs, qs, qe);
@@ -761,7 +769,7 @@ function drawWindowList() {
   const list = [...best.entries()].sort((a, b) => b[1].c - a[1].c || (M.genes[a[0]] < M.genes[b[0]] ? -1 : 1));
   const box = $("win-list");
   const top = list.slice(0, 40);
-  box.innerHTML = `<b>Human proteins with a spot in the window that 2 or more counted alphabets back: ${fmt(list.length)}</b>
+  box.innerHTML = `<b>Human proteins with a polyglot match in the window that 2 or more counted alphabets back: ${fmt(list.length)}</b>
     <div class="cap">Sorted by ${RULES.find(r => r[0] === S.rule)[1]}; the first ${top.length} shown. Click one to open it in Figure 2.</div><div class="plist" id="wlist"></div>`;
   for (const [t, b] of top) {
     const btn = document.createElement("button"); btn.type = "button";
@@ -771,7 +779,7 @@ function drawWindowList() {
     $("wlist").appendChild(btn);
   }
   const pb = best.get(R.partner);
-  box.insertAdjacentHTML("beforeend", `<div class="cap">${M.partners[S.q]}: ${pb ? `${pb.c} ${ruleWord(S.rule, pb.c)} in this window (${bitsOf(pb.m).join(", ")}), ${fmt(list.filter(([, b]) => b.c > pb.c).length)} proteins have more than ${pb.c} ${ruleWord(S.rule, 2)} in this window.` : "no spot of 2 or more counted alphabets in this window."}</div>`);
+  box.insertAdjacentHTML("beforeend", `<div class="cap">${M.partners[S.q]}: ${pb ? `${pb.c} ${ruleWord(S.rule, pb.c)} in this window (${bitsOf(pb.m).join(", ")}), ${fmt(list.filter(([, b]) => b.c > pb.c).length)} proteins have more than ${pb.c} ${ruleWord(S.rule, 2)} in this window.` : "no polyglot match of 2 or more counted alphabets in this window."}</div>`);
 }
 
 // ---------- Figure 4: identical run against agreement ----------
@@ -784,13 +792,13 @@ function drawFig4() {
     const rows = D.nb.identity_by_agreement[q].filter(r => r.n_spots >= 20);
     const ymax = Math.max(8, ...rows.map(r => r.q75));
     const x = n => m.l + (n - 1) / 18 * (pw - m.l - m.r), y = v => ph - m.b - v / ymax * (ph - m.t - m.b);
-    el("text", {x: m.l, y: 16, "font-size": 13, "font-weight": 600}, g, `${q} against human, every spot, all regions`);
+    el("text", {x: m.l, y: 16, "font-size": 13, "font-weight": 600}, g, `${q} against human, every polyglot match, all regions`);
     for (let v = 0; v <= ymax; v += 2) {
       el("line", {x1: m.l, x2: pw - m.r, y1: y(v), y2: y(v), stroke: "var(--rule)"}, g);
       el("text", {x: m.l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 11, class: "muted mono"}, g, v);
     }
     for (let n = 1; n <= 19; n += (n < 3 ? 1 : 2)) el("text", {x: x(n), y: ph - m.b + 16, "text-anchor": "middle", "font-size": 11, class: "muted mono"}, g, n);
-    el("text", {x: (m.l + pw - m.r) / 2, y: ph - 8, "text-anchor": "middle", "font-size": 12}, g, "alphabets agreeing on the spot (of 19)");
+    el("text", {x: (m.l + pw - m.r) / 2, y: ph - 8, "text-anchor": "middle", "font-size": 12}, g, "alphabets agreeing on the polyglot match (of 19)");
     el("text", {x: 12, y: (m.t + ph - m.b) / 2, "text-anchor": "middle", "font-size": 12, transform: `rotate(-90 12 ${(m.t + ph - m.b) / 2})`}, g, "identical run (aa)");
     for (const r of rows) {
       el("line", {x1: x(r.n_alphabets), x2: x(r.n_alphabets), y1: y(r.q25), y2: y(r.q75), stroke: "var(--ident)", "stroke-width": 2}, g);
@@ -800,7 +808,7 @@ function drawFig4() {
   const tot = q => D.nb.identity_by_agreement[q].reduce((s, r) => s + r.n_spots, 0);
   const med = (q, n) => (D.nb.identity_by_agreement[q].find(r => r.n_alphabets === n) || {}).median;
   const bcl2 = D.nb.cases.find(c => c.gene === "BCL2");
-  html("fig4-cap", `<b>Figure 4.</b> Every spot from the Ced9 and P66 searches (${N(tot("Ced9"))} and ${N(tot("P66"))} spots), at all regions, counting alphabets. Points are drawn only where at least 20 spots have that many alphabets. For Ced9 the median longest identical run is ${N(med("Ced9", 1))} residue at 1 alphabet, ${N(med("Ced9", 4))} at 4 and ${N(med("Ced9", 10))} at 10. BCL2's BH1 spot has ${N(bcl2.n_alphabets)} alphabets and a longest identical run of ${N(bcl2.longest_identical_run)}.`);
+  html("fig4-cap", `<b>Figure 4.</b> Every polyglot match from the Ced9 and P66 searches (${N(tot("Ced9"))} and ${N(tot("P66"))} polyglot matches), at all regions, counting alphabets. Points are drawn only where at least 20 polyglot matches have that many alphabets. For Ced9 the median longest identical run is ${N(med("Ced9", 1))} residue at 1 alphabet, ${N(med("Ced9", 4))} at 4 and ${N(med("Ced9", 10))} at 10. BCL2's BH1 polyglot match has ${N(bcl2.n_alphabets)} alphabets and a longest identical run of ${N(bcl2.longest_identical_run)}.`);
 }
 
 // ---------- Figure 7: Pfam 998 ----------
@@ -813,7 +821,7 @@ function drawFig5() {
   const svg = $("fig5a-svg"); svg.innerHTML = "";
   const W = 900, Hh = 300, m = {l: 70, r: 120, t: 18, b: 46};
   svg.setAttribute("viewBox", `0 0 ${W} ${Hh}`); svg.style.maxWidth = W + "px";
-  svg.setAttribute("aria-label", "Share of Pfam spots that are right, by agreement");
+  svg.setAttribute("aria-label", "Share of Pfam polyglot matches that are right, by agreement");
   const pts = D.pfam_prec.filter(r => r.count === rule && r.n_spots >= 20);
   const xmax = Math.max(...pts.map(r => r.agreement));
   const x = n => m.l + (n - 1) / (xmax - 1) * (W - m.l - m.r), y = v => Hh - m.b - v * (Hh - m.t - m.b);
@@ -822,23 +830,21 @@ function drawFig5() {
     el("text", {x: m.l - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 13, class: "muted mono"}, svg, Math.round(v * 100) + "%");
   }
   for (let n = 1; n <= xmax; n++) el("text", {x: x(n), y: Hh - m.b + 18, "text-anchor": "middle", "font-size": 12, class: "muted mono"}, svg, n);
-  el("text", {x: (m.l + W - m.r) / 2, y: Hh - 6, "text-anchor": "middle", "font-size": 14}, svg, `${ruleWord(rule, 2)} agreeing on the spot`);
-  el("text", {x: 16, y: (m.t + Hh - m.b) / 2, "text-anchor": "middle", "font-size": 14, transform: `rotate(-90 16 ${(m.t + Hh - m.b) / 2})`}, svg, "spots that are right");
+  el("text", {x: (m.l + W - m.r) / 2, y: Hh - 6, "text-anchor": "middle", "font-size": 14}, svg, `${ruleWord(rule, 2)} agreeing on the polyglot match`);
+  el("text", {x: 16, y: (m.t + Hh - m.b) / 2, "text-anchor": "middle", "font-size": 14, transform: `rotate(-90 16 ${(m.t + Hh - m.b) / 2})`}, svg, "share that are right");
   const line = rs => rs.map((r, k) => `${k ? "L" : "M"}${x(r.agreement)} ${y(r.precision)}`).join(" ");
   for (const c of PF_CUTS) if (c !== cut) {
     const rs = pts.filter(r => r.e_cut === c);
     el("path", {d: line(rs), fill: "none", stroke: "var(--rule)", "stroke-width": 2}, svg);
-    const last = rs[rs.length - 1];
-    if (last) el("text", {x: x(last.agreement) + 6, y: y(last.precision) + 4, "font-size": 11, class: "muted mono"}, svg, "E<" + fmt(c));
   }
   const ap = D.pfam_ap.find(r => r.e_cut === cut);
   el("line", {x1: m.l, x2: W - m.r, y1: y(ap.base_rate), y2: y(ap.base_rate), stroke: "var(--muted)", "stroke-width": 1.5, "stroke-dasharray": "4 3"}, svg);
-  el("text", {x: W - m.r + 6, y: y(ap.base_rate) + 4, "font-size": 11, class: "muted"}, svg, `all spots ${(ap.base_rate * 100).toFixed(1)}%`);
+  el("text", {x: W - m.r + 6, y: y(ap.base_rate) + 4, "font-size": 11, class: "muted"}, svg, `all polyglot matches ${(ap.base_rate * 100).toFixed(1)}%`);
   const rs = pts.filter(r => r.e_cut === cut);
   el("path", {d: line(rs), fill: "none", stroke: "var(--rank)", "stroke-width": 2.5}, svg);
   for (const r of rs) {
     const c = el("circle", {cx: x(r.agreement), cy: y(r.precision), r: 4.5, fill: "var(--rank)"}, svg);
-    el("title", {}, c, `${r.agreement} ${ruleWord(rule, r.agreement)}: ${fmt(r.n_correct)} of ${fmt(r.n_spots)} spots right (${(r.precision * 100).toFixed(1)}%)`);
+    el("title", {}, c, `${r.agreement} ${ruleWord(rule, r.agreement)}: ${fmt(r.n_correct)} of ${fmt(r.n_spots)} polyglot matches right (${(r.precision * 100).toFixed(1)}%)`);
   }
   // B: average precision per cut
   const sb = $("fig5b-svg"); sb.innerHTML = "";
@@ -864,10 +870,10 @@ function drawFig5() {
   });
   const pr = n => rs.find(r => r.agreement === n);
   const shown = [1, 3, 7].filter(pr);
-  const precLine = `At ${N("E < " + fmt(cut))}, ` + shown.map(n => `${N((pr(n).precision * 100).toFixed(1) + "%")} of spots backed by ${n} ${ruleWord(rule, n)} are right (${fmt(pr(n).n_correct)} of ${fmt(pr(n).n_spots)})`).join("; ") + `, against ${N((ap.base_rate * 100).toFixed(1) + "%")} of all spots. `;
+  const precLine = `At ${N("E < " + fmt(cut))}, ` + shown.map(n => `${N((pr(n).precision * 100).toFixed(1) + "%")} of polyglot matches backed by ${n} ${ruleWord(rule, n)} are right (${fmt(pr(n).n_correct)} of ${fmt(pr(n).n_spots)})`).join("; ") + `, against ${N((ap.base_rate * 100).toFixed(1) + "%")} of all polyglot matches. `;
   const wins = PF_CUTS.filter(c => { const r = D.pfam_ap.find(rr => rr.e_cut === c); return r[`ap_${rule}_then_e`] > r.ap_lowest_e; });
   const a = ap[`ap_${rule}_then_e`];
-  html("fig5-read", precLine + `Ranking spots by ${RULES.find(r => r[0] === rule)[1]} gives an average precision of ${N(a.toFixed(3))}, against ${N(ap.ap_lowest_e.toFixed(3))} for the lowest E-value alone: agreement is ${a > ap.ap_lowest_e ? "better" : "worse"}. ` +
+  html("fig5-read", precLine + `Ranking polyglot matches by ${RULES.find(r => r[0] === rule)[1]} gives an average precision of ${N(a.toFixed(3))}, against ${N(ap.ap_lowest_e.toFixed(3))} for the lowest E-value alone: agreement is ${a > ap.ap_lowest_e ? "better" : "worse"}. ` +
     `Counting ${RULES.find(r => r[0] === rule)[1]}, agreement beats the lowest E-value at ${wins.length ? wins.map(c => "E < " + fmt(c)).join(" and ") : "no cut"}, and loses at the looser cuts, where most calls are chance.`);
 }
 function buildFig5Controls() {
@@ -898,40 +904,70 @@ async function drawFamily() {
   if (FAM.some(g => !FS.seqs[g])) { html("fam-title", "Could not load the human residues."); return; }
   if (FS.sel === null) FS.sel = D.family.indexOf([...D.family].sort((a, b) => a.evalue - b.evalue)[0]);
   const svg = $("fig5-svg"); svg.innerHTML = "";
-  // Each human protein is shifted so its BH1 motif sits under Ced9's BH1 (UniProt starts).
-  // A call in register on BH1 is then a vertical band; a slanted band has a different offset.
+  // One stacked alignment: Ced9 on top, each human protein below it, every row slid so its
+  // BH1 motif (UniProt start) sits under Ced9's BH1. A call is a bar under the human protein
+  // at the human stretch it covers; the selected call also gets its Ced9 stretch and a link.
   const bh1Start = g => ((M.motifs.proteins[g] || {}).motifs || []).find(mo => mo.name === "BH1")?.start;
   const OFF = Object.fromEntries(FAM.map(g => [g, bh1Start(g) ? bh1Start("Ced9") - bh1Start(g) : 0]));
+  OFF.Ced9 = 0;
   const lo = Math.min(0, ...FAM.map(g => OFF[g])), hi = Math.max(M.queries.Ced9.length, ...FAM.map(g => OFF[g] + FS.seqs[g].length));
-  const x0 = 120, pw = 740, W = x0 + pw + 30, pairH = 112, Ht = 20 + FAM.length * pairH;
-  const x = p => x0 + (p - lo) / (hi - lo) * pw;
+  const lane = 7, gap = 2, labW = 120, pw = 740, W = labW + pw + 20;
+  // calls per gene, one bar per distinct stretch pair (identical coordinates share a bar)
+  const bars = {};
+  for (const g of FAM) {
+    const seen = new Map();
+    D.family.forEach((r, k) => {
+      if (r.gene !== g) return;
+      const key = [r.ced9_start, r.ced9_end, r.target_start, r.target_end].join(",");
+      if (!seen.has(key)) seen.set(key, []);
+      seen.get(key).push(k);
+    });
+    bars[g] = [...seen.values()];
+  }
+  const rowH = g => 34 + (g === "Ced9" ? lane + gap : bars[g].length * (lane + gap));
+  const rows = ["Ced9", ...FAM];
+  const Y = {}; let yy = 24;
+  for (const g of rows) { Y[g] = yy; yy += rowH(g); }
+  const Ht = yy;
+  const x = p => labW + (p - lo) / (hi - lo) * pw;
   svg.setAttribute("viewBox", `0 0 ${W} ${Ht}`); svg.setAttribute("width", W); svg.setAttribute("height", Ht);
-  svg.setAttribute("aria-label", "Ced9's best calls on five human BCL-2 family members, with UniProt BH motifs");
-  const line = (y, name, len, motifs, off = 0) => {
-    el("text", {x: Math.min(x0, x(off)) - 10, y: y + 4, "text-anchor": "end", "font-size": 12, "font-weight": name === "Ced9" ? 400 : 600}, svg, `${name}, ${len} aa`);
+  svg.setAttribute("aria-label", "Ced9's best calls on five human BCL-2 family members, rows lined up on the BH1 motif");
+  // a pale column through Ced9's BH1, so the line-up is visible
+  const ced9Bh1 = M.motifs.proteins.Ced9.motifs.find(mo => mo.name === "BH1");
+  el("rect", {x: x(ced9Bh1.start - 1), y: 6, width: x(ced9Bh1.end) - x(ced9Bh1.start - 1), height: Ht - 10, fill: "var(--rule)", opacity: .35}, svg);
+  const line = (g, len, motifs) => {
+    const y = Y[g], off = OFF[g];
+    el("text", {x: labW - 10, y: y + 4, "text-anchor": "end", "font-size": 12, "font-weight": g === "Ced9" ? 600 : 400}, svg, `${g}, ${len} aa`);
     el("line", {x1: x(off), x2: x(off + len), y1: y, y2: y, stroke: "var(--ink)", "stroke-width": 1.5}, svg);
     for (const mo of motifs) {
       el("rect", {x: x(off + mo.start - 1), y: y - 6, width: x(off + mo.end) - x(off + mo.start - 1), height: 12, rx: 2, fill: "var(--panel)", stroke: "var(--ink)"}, svg);
-      el("text", {x: (x(off + mo.start - 1) + x(off + mo.end)) / 2, y: name === "Ced9" ? y - 9 : y + 18, "text-anchor": "middle", "font-size": 10, class: "muted"}, svg, mo.name);
+      el("text", {x: (x(off + mo.start - 1) + x(off + mo.end)) / 2, y: y - 9, "text-anchor": "middle", "font-size": 10, class: "muted"}, svg, mo.name);
     }
   };
-  FAM.forEach((g, i) => {
-    const cy = 22 + i * pairH, ty = cy + 62;
-    D.family.forEach((r, k) => {
-      if (r.gene !== g) return;
-      const inReg = r.in_register !== "no", sel = k === FS.sel;
-      const poly = el("path", {d: `M${x(r.ced9_start - 1)} ${cy + 7} L${x(r.ced9_end)} ${cy + 7} L${x(OFF[g] + r.target_end)} ${ty - 7} L${x(OFF[g] + r.target_start - 1)} ${ty - 7} Z`,
-        fill: inReg ? "var(--found)" : "none", "fill-opacity": inReg ? .3 : 0, stroke: sel ? "var(--ink)" : (inReg ? "var(--found)" : "var(--muted)"),
-        "stroke-width": sel ? 2.5 : 1.2, "stroke-dasharray": inReg || sel ? "" : "3 2", class: "hit", tabindex: 0, role: "button",
-        "aria-label": `${g}: ${r.alphabet} k${r.k}, E ${fmtE(r.evalue)}`}, svg);
-      el("title", {}, poly, `${r.alphabet} k${r.k}, E = ${fmtE(r.evalue)}`);
+  line("Ced9", M.queries.Ced9.length, M.motifs.proteins.Ced9.motifs);
+  for (const g of FAM) line(g, FS.seqs[g].length, (M.motifs.proteins[g] || {}).motifs || []);
+  const r0 = D.family[FS.sel];
+  for (const g of FAM) {
+    bars[g].forEach((ks, j) => {
+      const k = ks.includes(FS.sel) ? FS.sel : ks[0], r = D.family[k], sel = ks.includes(FS.sel);
+      const inReg = r.in_register !== "no";
+      const by = Y[g] + 9 + j * (lane + gap);
+      const names = ks.map(i => `${D.family[i].alphabet} k${D.family[i].k}, E = ${fmtE(D.family[i].evalue)}`).join("; ");
+      const bar = el("rect", {x: x(OFF[g] + r.target_start - 1), y: by, width: Math.max(3, x(OFF[g] + r.target_end) - x(OFF[g] + r.target_start - 1)), height: lane,
+        fill: inReg ? "var(--found)" : "var(--panel)", "fill-opacity": inReg ? .75 : 1, stroke: sel ? "var(--ink)" : (inReg ? "var(--found)" : "var(--muted)"),
+        "stroke-width": sel ? 2 : 1, "stroke-dasharray": inReg ? "" : "3 2", class: "hit", tabindex: 0, role: "button", "aria-label": `${g}: ${names}`}, svg);
+      el("title", {}, bar, `Ced9 ${r.ced9_start}-${r.ced9_end} on ${g} ${r.target_start}-${r.target_end}: ${names}`);
       const pick = () => { FS.sel = k; drawFamily(); };
-      poly.addEventListener("click", pick);
-      poly.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+      bar.addEventListener("click", pick);
+      bar.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+      if (sel) {
+        // the selected call's Ced9 stretch, and a link from it to the human stretch
+        const cy = Y.Ced9 + 9, ax0 = x(r.ced9_start - 1), ax1 = x(r.ced9_end), bx0 = x(OFF[g] + r.target_start - 1), bx1 = x(OFF[g] + r.target_end);
+        el("path", {d: `M${ax0} ${cy + lane} L${ax1} ${cy + lane} L${bx1} ${by} L${bx0} ${by} Z`, fill: "var(--ink)", "fill-opacity": .08, stroke: "var(--ink)", "stroke-width": .8}, svg);
+        el("rect", {x: ax0, y: cy, width: ax1 - ax0, height: lane, fill: inReg ? "var(--found)" : "var(--panel)", "fill-opacity": inReg ? .75 : 1, stroke: "var(--ink)", "stroke-width": 2}, svg);
+      }
     });
-    line(cy, "Ced9", M.queries.Ced9.length, M.motifs.proteins.Ced9.motifs);
-    line(ty, g, FS.seqs[g].length, (M.motifs.proteins[g] || {}).motifs || [], OFF[g]);
-  });
+  }
   const box = $("fam-calls"); box.innerHTML = "";
   D.family.forEach((r, k) => {
     const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-pressed", k === FS.sel);
@@ -941,7 +977,7 @@ async function drawFamily() {
   });
   const r = D.family[FS.sel], c = callResidues(r), n = c.q.length;
   html("fam-title", `<b>Ced9 ${r.ced9_start}-${r.ced9_end} on ${r.gene} ${r.target_start}-${r.target_end}</b>, <span class="mono">${r.alphabet}</span> k = ${r.k}, E = ${N(fmtE(r.evalue))}. ` +
-    `${r.in_register === "no" ? "Not in register on a BH motif." : r.in_register + ", in register."} ${N(c.nId)} of ${N(n)} residues identical; ${N(c.nCls)} of ${N(n)} match in ${r.alphabet} classes. ${r.gene} ranks ${N(r.gene_rank_by_lowest_e)} among human proteins by its lowest E-value.`);
+    `${r.in_register === "no" ? "Not in register on a BH motif." : r.in_register + ", in register."} ${(() => { const mn = (r.in_register.match(/Ced9 (BH\d)/) || [])[1], mo = mn && M.motifs.proteins.Ced9.motifs.find(z => z.name === mn); return mo ? `The band is the call itself, so its edges need not match the box: the call covers Ced9 ${r.ced9_start}-${r.ced9_end}, UniProt's ${mn} motif is ${mo.start}-${mo.end}. ` : ""; })()}${N(c.nId)} of ${N(n)} residues identical; ${N(c.nCls)} of ${N(n)} match in ${r.alphabet} classes. ${r.gene} ranks ${N(r.gene_rank_by_lowest_e)} among human proteins by its lowest E-value.`);
   const pad = s => s.padEnd(24), idSpan = (s, o) => [...s].map((ch, k) => ch === o[k] ? `<span class="id">${ch}</span>` : ch).join("");
   const bar = (a, b) => [...a].map((ch, k) => ch === b[k] ? "|" : " ").join("");
   html("fam-aln", `<span class="lab">${pad("residues, identical in colour")}</span>\n` +
@@ -1024,12 +1060,12 @@ function fillText() {
   const c = D.nb.cases.find(x => x.gene === "BCL2"), tk = D.nb.cases.find(x => x.gene === "TKT"), cd55 = D.nb.cases.find(x => x.gene === "CD55");
   const bh1 = D.family.filter(x => x.gene === "BCL2" && x.in_register.startsWith("Ced9 BH1")).sort((p, q) => p.evalue - q.evalue)[0];
   html("verdict", `the alphabets do agree on BCL2's BH1, but only ${N(a.partner_value)} of them, and ${N(a.proteins_with_more)} human proteins get more alphabets to agree. Agreement mostly measures how many residues are identical, and the alphabets are not independent witnesses. Counting only calls that pass an E-value cut, or counting alphabet families, ranks BCL2 lower still.`);
-  html("why-top", `TKT gets ${N(tk.n_alphabets)} alphabets from Ced9 and CD55 gets ${N(cd55.n_alphabets)} from P66: each spot holds an identical run of ${N(tk.longest_identical_run)} and ${N(cd55.longest_identical_run)} residues.`);
-  html("why-bh1", `Ced9 and BCL2 share ${N(c.identical)} of ${N(c.query_res.length)} residues here, with no identical run longer than ${N(c.longest_identical_run)}. The four alphabets are ${c.alphabets.map(x => `<span class="mono">${x.alphabet}</span>`).join(", ")}. hp_lehninger2, hp_lehninger_c_nonpolar2 and hp_lehninger_hpc3 differ only in where they put cysteine (C). Counting the seven H/P alphabets as one, BCL2 has ${N(f.partner_value)} families, and ${N(f.proteins_with_more)} human proteins have a spot where more than ${N(f.partner_value)} families agree.`);
+  html("why-top", `TKT gets ${N(tk.n_alphabets)} alphabets from Ced9 and CD55 gets ${N(cd55.n_alphabets)} from P66: each polyglot match holds an identical run of ${N(tk.longest_identical_run)} and ${N(cd55.longest_identical_run)} residues.`);
+  html("why-bh1", `Ced9 and BCL2 share ${N(c.identical)} of ${N(c.query_res.length)} residues here, with no identical run longer than ${N(c.longest_identical_run)}. The four alphabets are ${c.alphabets.map(x => `<span class="mono">${x.alphabet}</span>`).join(", ")}. hp_lehninger2, hp_lehninger_c_nonpolar2 and hp_lehninger_hpc3 differ only in where they put cysteine (C). Counting the seven H/P alphabets as one, BCL2 has ${N(f.partner_value)} families, and ${N(f.proteins_with_more)} human proteins have a polyglot match where more than ${N(f.partner_value)} families agree.`);
   html("why-e", `The best call on BCL2's BH1 is <span class="mono">${bh1.alphabet}</span> at k = ${bh1.k}, E = ${N(fmtE(bh1.evalue))}: about that many regions this good are expected by chance in one search of the human proteome. With every call required to pass E &lt; 10, no human protein gets more than ${N(ev("Ced9", "E < 10", "n_alphabets").proteome_max)} alphabets to agree for Ced9, or ${N(ev("P66", "E < 10", "n_alphabets").proteome_max)} for P66.`);
   html("test-cut", `This makes BCL2 rank worse, not better. At all regions BCL2 has ${N(a.partner_value)} alphabets (${N(a.proteins_with_more)} proteins have more than ${N(a.partner_value)} alphabets agreeing) or ${N(f.partner_value)} families (${N(f.proteins_with_more)} proteins have more than ${N(f.partner_value)} families). At E &lt; 100_000 only ${N(e5.partner_value)} alphabet passes (${N(e5.proteins_with_more)} proteins have more than ${N(e5.partner_value)}), and from E &lt; 1_000 on, none (${N(ev("Ced9", "E < 1000", "n_alphabets").proteins_with_more)} proteins with a call all rank above it).`);
   const ap10 = D.pfam_ap.find(r => r.e_cut === 10), ap1 = D.pfam_ap.find(r => r.e_cut === 1), ap100 = D.pfam_ap.find(r => r.e_cut === 100);
-  html("test-pfam", `Here the idea holds, but only once each call passes E &lt; 10. Ranking spots by families agreeing gives an average precision of ${N(ap10.ap_n_families_then_e.toFixed(3))} at E &lt; 10 and ${N(ap1.ap_n_families_then_e.toFixed(3))} at E &lt; 1, against ${N(ap10.ap_lowest_e.toFixed(3))} and ${N(ap1.ap_lowest_e.toFixed(3))} for the lowest E-value alone. At E &lt; 100 it is ${N(ap100.ap_n_families_then_e.toFixed(3))} against ${N(ap100.ap_lowest_e.toFixed(3))}: worse. Ced9 → BCL2 is in the looser regime, where no alphabet passes E &lt; 10 at BH1.`);
+  html("test-pfam", `Here the idea holds, but only once each call passes E &lt; 10. Ranking polyglot matches by families agreeing gives an average precision of ${N(ap10.ap_n_families_then_e.toFixed(3))} at E &lt; 10 and ${N(ap1.ap_n_families_then_e.toFixed(3))} at E &lt; 1, against ${N(ap10.ap_lowest_e.toFixed(3))} and ${N(ap1.ap_lowest_e.toFixed(3))} for the lowest E-value alone. At E &lt; 100 it is ${N(ap100.ap_n_families_then_e.toFixed(3))} against ${N(ap100.ap_lowest_e.toFixed(3))}: worse. Ced9 → BCL2 is in the looser regime, where no alphabet passes E &lt; 10 at BH1.`);
   html("test-shuffle", D.shuffle ? "Results are in the tables; drawing them is not done yet." :
     "Pending. <code>notebooks/284_shuffle_agreement.py</code> searches Ced9, P66 and BHF plus 20 dipeptide-shuffled copies of each (same length and residue-pair counts, no homology). It waits on notebook 283's rebuilt human indexes. When its tables exist, the page will draw the shuffled copies as the chance level in Figure 1.");
 }
