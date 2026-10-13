@@ -10,11 +10,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "260_kmerseek_region_table.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 260: one table of kmerseek region calls, merged across alphabet-ksize pairs
 
 This notebook builds one table from kmerseek's region calls on the 998 midi-plus human
@@ -38,7 +43,7 @@ Only calls with `region_evalue` < 10 enter the table. `region_evalue` is kmersee
 Karlin-Altschul E-value: how many regions scoring at least this well a search of this
 database would find by chance.
 """),
-md(r"""
+    md(r"""
 ## Which search outputs this execution reads
 
 The kmerseek 0.4 midi-plus run with extension (`make run-midi-plus-0.4-extend`, PR #88)
@@ -61,7 +66,7 @@ the notebook with `REDUCED_DIR` pointed at the full run's reduced files to rebui
 shuffled-query run (`M04_RUN=decoy`) has not run either, so the comparison of real and
 shuffled queries shows the real side only.
 """),
-code(r"""
+    code(r"""
 import json
 import sys
 from pathlib import Path
@@ -99,7 +104,7 @@ print(f"kept {summary['n_kept'].sum():_} of {summary['n_regions'].sum():_} regio
 print("alphabet-ksize pairs with no E-value at all (every row infinity):",
       summary.filter(~pl.col("has_evalue"))["arm"].to_list())
 """),
-md(r"""
+    md(r"""
 ## Merging calls into regions
 
 Calls are sorted by start on each (query, species). Every pair of calls that overlap by
@@ -108,7 +113,7 @@ a merged region each alphabet-ksize pair keeps one row: its call with the lowest
 `region_evalue` (ties to the highest `region_tfidf`, then the leftmost start, then the
 target name). `n_calls_arm` says how many calls of that pair the region absorbed.
 """),
-code(r"""
+    code(r"""
 def load_calls(d: Path) -> pl.DataFrame | None:
     files = sorted(d.glob("*.kept.parquet")) if d.exists() else []
     return pl.concat([pl.read_parquet(f) for f in files], how="diagonal_relaxed") if files else None
@@ -137,7 +142,7 @@ print(arms_hist.with_columns(fraction=pl.col("n_merged_regions") / regions.heigh
 print("shuffled-query table:", "not built: no shuffled-query run yet" if decoy_table is None
       else f"{decoy_table.height:_} rows")
 """),
-md(r"""
+    md(r"""
 ## Truth
 
 `merged_pfam_*` and `merged_swissprot_*` describe the truth feature with the largest
@@ -151,7 +156,7 @@ A shuffled copy gets its source protein's half. `pfam_split` is the Pfam truth s
 column, which is set per Pfam family (a family is wholly `selection` or wholly
 `heldout`), so it exists only on a region that matched a Pfam domain.
 """),
-code(r"""
+    code(r"""
 q_truth = truth.group_by("accession").agg(
     pfam=(pl.col("truth_set") == "pfam").any(),
     swissprot=(pl.col("truth_set") == "swissprot").any(),
@@ -169,7 +174,7 @@ print(by)
 print("split of the queries in the table:",
       table.unique("accession").group_by("split").len().sort("split").to_dicts())
 """),
-md(r"""
+    md(r"""
 ## Saving the table
 
 The table goes to `260_region_table/region_table.parquet` beside the reduced files, with
@@ -177,7 +182,7 @@ the (merged region x truth feature) pairs in `region_table_truth_pairs.parquet` 
 README listing every column. The same three files are copied to the run directory on
 Sherlock.
 """),
-code(r"""
+    code(r"""
 KMERSEEK_DOC = ("kmerseek output column, as written by the search (kmerseek 0.4.0-rc5); "
                 "meaning from the doc comment in src/rust/search.rs on olgabot/release-0.4.0")
 COLUMNS = {
@@ -276,10 +281,10 @@ print(f"wrote {OUT_DIR / 'region_table.parquet'}: {table.height:_} rows x {table
 print(f"wrote {OUT_DIR / 'region_table_truth_pairs.parquet'}: {truth_pairs.height:_} rows")
 print(f"wrote {OUT_DIR / 'README.md'}: {len(table.columns)} columns described")
 """),
-md(r"""
+    md(r"""
 ## How many alphabet-ksize pairs call each merged region
 """),
-code(r"""
+    code(r"""
 REAL_COLOR, DECOY_COLOR = "#2B6CB0", "#C05621"
 real_h = arms_hist.with_columns(set=pl.lit("real queries"))
 parts = [real_h]
@@ -325,10 +330,10 @@ mu.finish_figure(
                 "chance matches agree."),
 )
 """),
-md(r"""
+    md(r"""
 ## Merged region length against the number of alphabet-ksize pairs
 """),
-code(r"""
+    code(r"""
 len_tab = (regions.group_by("n_arms")
            .agg(n=pl.len(),
                 median_length=pl.col("merged_length").median(),
@@ -363,7 +368,7 @@ mu.finish_figure(
                 f"also hold more calls (median {hi['median_calls']:.0f} against {lo['median_calls']:.0f})."),
 )
 """),
-md(r"""
+    md(r"""
 ## One query drawn out: plasminogen (PLG, P00747)
 
 PLG is 810 aa long with seven Pfam domains from three families: a PAN domain, five kringle
@@ -372,7 +377,7 @@ with at least three Pfam domains from at least two families, at most 1_200 aa, a
 from every alphabet-ksize pair in zebrafish (the cell below counts them), because its
 calls are few enough to draw one by one.
 """),
-code(r"""
+    code(r"""
 ACC = "P00747"
 pf_raw = pl.read_parquet(PFAM_TRUTH)
 dom = pf_raw.group_by("accession").agg(n_dom=pl.len(), n_fam=pl.col("pfam_id").n_unique(),
@@ -509,7 +514,11 @@ mu.finish_figure(
 nb = {
     "cells": cells,
     "metadata": {
-        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
         "language_info": {"name": "python"},
     },
     "nbformat": 4,

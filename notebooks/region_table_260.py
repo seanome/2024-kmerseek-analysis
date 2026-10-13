@@ -53,8 +53,12 @@ DECOY_PREFIX = "DECOY_"
 # Fixed types for the columns parse_name adds, so a file whose extend_penalty is None (no
 # penalty in its name) still reads together with one where it is a number.
 META_DTYPES = {
-    "species": pl.String, "alphabet": pl.String, "k": pl.Int64,
-    "lowcomp": pl.Boolean, "extend_penalty": pl.Float64, "arm": pl.String,
+    "species": pl.String,
+    "alphabet": pl.String,
+    "k": pl.Int64,
+    "lowcomp": pl.Boolean,
+    "extend_penalty": pl.Float64,
+    "arm": pl.String,
     "source_file": pl.String,
 }
 
@@ -103,7 +107,9 @@ def accession_expr() -> pl.Expr:
     return pl.col("query_name").str.split("|").list.get(1)
 
 
-def reduce_file(path: Path, evalue_max: float = EVALUE_MAX) -> tuple[pl.DataFrame, dict]:
+def reduce_file(
+    path: Path, evalue_max: float = EVALUE_MAX
+) -> tuple[pl.DataFrame, dict]:
     meta = parse_name(path)
     lf = pl.scan_parquet(path)
     summary = (
@@ -159,7 +165,9 @@ def _components(n: int, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         lab = new
 
 
-def merge_group(start: np.ndarray, end: np.ndarray, frac: float = OVERLAP_OF_SHORTER) -> np.ndarray:
+def merge_group(
+    start: np.ndarray, end: np.ndarray, frac: float = OVERLAP_OF_SHORTER
+) -> np.ndarray:
     """Merged-region labels for calls on one (query, species), 1-based inclusive.
 
     `start` must be sorted ascending. For call i, every later call j with start_j <= end_i
@@ -200,7 +208,11 @@ def merge_calls(calls: pl.DataFrame, frac: float = OVERLAP_OF_SHORTER) -> pl.Dat
     for (acc, sp), g in calls.group_by(["accession", "species"], maintain_order=True):
         lab = merge_group(g["call_start"].to_numpy(), g["call_end"].to_numpy(), frac)
         parts.append(g.with_columns(merged_region_id=pl.Series(lab, dtype=pl.Int64)))
-    merged = pl.concat(parts) if parts else calls.with_columns(merged_region_id=pl.lit(0, pl.Int64))
+    merged = (
+        pl.concat(parts)
+        if parts
+        else calls.with_columns(merged_region_id=pl.lit(0, pl.Int64))
+    )
     key = ["accession", "species", "merged_region_id"]
     return merged.with_columns(
         merged_start=pl.col("call_start").min().over(key),
@@ -218,8 +230,10 @@ def one_row_per_arm(merged: pl.DataFrame) -> pl.DataFrame:
     key = ["accession", "species", "merged_region_id", "arm"]
     return (
         merged.with_columns(n_calls_arm=pl.len().over(key))
-        .sort(key + ["region_evalue", "region_tfidf", "call_start", "target_name"],
-              descending=[False] * len(key) + [False, True, False, False])
+        .sort(
+            key + ["region_evalue", "region_tfidf", "call_start", "target_name"],
+            descending=[False] * len(key) + [False, True, False, False],
+        )
         .unique(subset=key, keep="first", maintain_order=True)
         .sort(["accession", "species", "merged_region_id", "arm"])
     )
@@ -253,31 +267,37 @@ def load_truth(pfam_path: Path, swissprot_path: Path) -> pl.DataFrame:
     return pl.concat([pf, sp])
 
 
-def region_truth_pairs(regions: pl.DataFrame, truth: pl.DataFrame,
-                       start: str, end: str) -> pl.DataFrame:
+def region_truth_pairs(
+    regions: pl.DataFrame, truth: pl.DataFrame, start: str, end: str
+) -> pl.DataFrame:
     """Every (region, truth feature) on the same query that overlap by >= 1 residue,
-    with landed and coverage. `regions` must carry accession and the two named columns."""
+    with landed and coverage. `regions` must carry accession and the two named columns.
+    """
     j = regions.join(truth, on="accession", how="inner")
-    ov = (pl.min_horizontal(pl.col(end), pl.col("feature_end"))
-          - pl.max_horizontal(pl.col(start), pl.col("feature_start")) + 1)
+    ov = (
+        pl.min_horizontal(pl.col(end), pl.col("feature_end"))
+        - pl.max_horizontal(pl.col(start), pl.col("feature_start"))
+        + 1
+    )
     return (
         j.with_columns(overlap=ov)
         .filter(pl.col("overlap") > 0)
         .with_columns(
             landed=pl.col("overlap") / (pl.col(end) - pl.col(start) + 1),
-            coverage=pl.col("overlap") / (pl.col("feature_end") - pl.col("feature_start") + 1),
+            coverage=pl.col("overlap")
+            / (pl.col("feature_end") - pl.col("feature_start") + 1),
         )
     )
 
 
 def best_truth(pairs: pl.DataFrame, key: list[str], prefix: str) -> pl.DataFrame:
     """Per key and truth set: the feature with the largest landed fraction (ties to the
-    larger coverage, then the feature name), its coverage, and is_true = landed >= 0.5."""
-    best = (
-        pairs.sort(key + ["truth_set", "landed", "coverage", "feature"],
-                   descending=[False] * len(key) + [False, True, True, False])
-        .unique(subset=key + ["truth_set"], keep="first", maintain_order=True)
-    )
+    larger coverage, then the feature name), its coverage, and is_true = landed >= 0.5.
+    """
+    best = pairs.sort(
+        key + ["truth_set", "landed", "coverage", "feature"],
+        descending=[False] * len(key) + [False, True, True, False],
+    ).unique(subset=key + ["truth_set"], keep="first", maintain_order=True)
     out = None
     for ts in ("pfam", "swissprot"):
         b = best.filter(pl.col("truth_set") == ts).select(
@@ -289,7 +309,11 @@ def best_truth(pairs: pl.DataFrame, key: list[str], prefix: str) -> pl.DataFrame
                 pl.col("landed").alias(f"{prefix}{ts}_landed"),
                 pl.col("coverage").alias(f"{prefix}{ts}_coverage"),
             ]
-            + ([pl.col("pfam_split").alias(f"{prefix}pfam_split")] if ts == "pfam" else [])
+            + (
+                [pl.col("pfam_split").alias(f"{prefix}pfam_split")]
+                if ts == "pfam"
+                else []
+            )
         )
         out = b if out is None else out.join(b, on=key, how="full", coalesce=True)
     return out
@@ -306,8 +330,12 @@ def query_split(accession: pl.Expr) -> pl.Expr:
     )
 
 
-def build_table(calls: pl.DataFrame, truth: pl.DataFrame | None,
-                species_mya: dict[str, int], is_decoy: bool) -> tuple[pl.DataFrame, pl.DataFrame]:
+def build_table(
+    calls: pl.DataFrame,
+    truth: pl.DataFrame | None,
+    species_mya: dict[str, int],
+    is_decoy: bool,
+) -> tuple[pl.DataFrame, pl.DataFrame]:
     """The per-arm table and the long (merged region x truth feature) table."""
     merged = one_row_per_arm(merge_calls(calls))
     key = ["accession", "species", "merged_region_id"]
@@ -317,13 +345,31 @@ def build_table(calls: pl.DataFrame, truth: pl.DataFrame | None,
         merged = merged.join(best_truth(reg_pairs, key, "merged_"), on=key, how="left")
         call_key = key + ["arm"]
         call_pairs = region_truth_pairs(
-            merged.select(call_key + ["call_start", "call_end"]), truth, "call_start", "call_end"
+            merged.select(call_key + ["call_start", "call_end"]),
+            truth,
+            "call_start",
+            "call_end",
         )
-        merged = merged.join(best_truth(call_pairs, call_key, "call_").drop("call_pfam_split"),
-                             on=call_key, how="left")
-        long = reg_pairs.select(key + ["merged_start", "merged_end", "truth_set", "feature",
-                                       "feature_start", "feature_end", "pfam_split",
-                                       "overlap", "landed", "coverage"])
+        merged = merged.join(
+            best_truth(call_pairs, call_key, "call_").drop("call_pfam_split"),
+            on=call_key,
+            how="left",
+        )
+        long = reg_pairs.select(
+            key
+            + [
+                "merged_start",
+                "merged_end",
+                "truth_set",
+                "feature",
+                "feature_start",
+                "feature_end",
+                "pfam_split",
+                "overlap",
+                "landed",
+                "coverage",
+            ]
+        )
     else:
         long = pl.DataFrame()
     for ts in ("pfam", "swissprot"):
@@ -335,12 +381,15 @@ def build_table(calls: pl.DataFrame, truth: pl.DataFrame | None,
                 (pl.col(c).fill_null(0.0) >= LANDED_MIN).alias(f"{lvl}_{ts}_is_true")
             )
     has_truth = (
-        truth.select("accession", "truth_set").unique()
-        .group_by("accession").agg(
+        truth.select("accession", "truth_set")
+        .unique()
+        .group_by("accession")
+        .agg(
             query_has_pfam=(pl.col("truth_set") == "pfam").any(),
             query_has_swissprot=(pl.col("truth_set") == "swissprot").any(),
         )
-        if truth is not None else None
+        if truth is not None
+        else None
     )
     if has_truth is not None and not is_decoy:
         merged = merged.join(has_truth, on="accession", how="left").with_columns(
@@ -348,13 +397,16 @@ def build_table(calls: pl.DataFrame, truth: pl.DataFrame | None,
             pl.col("query_has_swissprot").fill_null(False),
         )
     else:
-        merged = merged.with_columns(query_has_pfam=pl.lit(False), query_has_swissprot=pl.lit(False))
+        merged = merged.with_columns(
+            query_has_pfam=pl.lit(False), query_has_swissprot=pl.lit(False)
+        )
     merged = merged.with_columns(
         is_decoy=pl.lit(is_decoy),
         source_accession=pl.col("accession").str.strip_prefix(DECOY_PREFIX),
         split=query_split(pl.col("accession")),
-        species_mya=pl.col("species").replace_strict(species_mya, default=None,
-                                                    return_dtype=pl.Int64),
+        species_mya=pl.col("species").replace_strict(
+            species_mya, default=None, return_dtype=pl.Int64
+        ),
         merged_length=pl.col("merged_end") - pl.col("merged_start") + 1,
         call_length=pl.col("call_end") - pl.col("call_start") + 1,
     )
@@ -369,7 +421,9 @@ def build_table(calls: pl.DataFrame, truth: pl.DataFrame | None,
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = p.add_subparsers(dest="cmd", required=True)
-    r = sub.add_parser("reduce", help="E-value cut of every regions file in a directory")
+    r = sub.add_parser(
+        "reduce", help="E-value cut of every regions file in a directory"
+    )
     r.add_argument("--kmerseek-dir", type=Path, required=True)
     r.add_argument("--out-dir", type=Path, required=True)
     r.add_argument("--evalue-max", type=float, default=EVALUE_MAX)
@@ -379,8 +433,12 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--swissprot-truth", type=Path, required=True)
     b.add_argument("--out-dir", type=Path, required=True)
     b.add_argument("--decoy", action="store_true")
-    b.add_argument("--species-mya", type=str, required=True,
-                   help="JSON object, e.g. '{\"mouse\": 100}'")
+    b.add_argument(
+        "--species-mya",
+        type=str,
+        required=True,
+        help="JSON object, e.g. '{\"mouse\": 100}'",
+    )
     a = p.parse_args(argv)
 
     if a.cmd == "reduce":
@@ -388,10 +446,17 @@ def main(argv: list[str] | None = None) -> int:
         rows = []
         for f in sorted(a.kmerseek_dir.glob("human_vs_*.regions.parquet")):
             kept, summ = reduce_file(f, a.evalue_max)
-            kept.write_parquet(a.out_dir / f.name.replace(".regions.parquet", ".kept.parquet"))
+            kept.write_parquet(
+                a.out_dir / f.name.replace(".regions.parquet", ".kept.parquet")
+            )
             rows.append(summ)
-            print(f"{f.name}: {summ['n_kept']:_} of {summ['n_regions']:_} kept", flush=True)
-        pl.DataFrame(rows, infer_schema_length=None).write_parquet(a.out_dir / "reduce_summary.parquet")
+            print(
+                f"{f.name}: {summ['n_kept']:_} of {summ['n_regions']:_} kept",
+                flush=True,
+            )
+        pl.DataFrame(rows, infer_schema_length=None).write_parquet(
+            a.out_dir / "reduce_summary.parquet"
+        )
         return 0
 
     files = sorted(a.reduced_dir.glob("*.kept.parquet"))
