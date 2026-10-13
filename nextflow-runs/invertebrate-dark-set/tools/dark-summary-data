@@ -154,10 +154,12 @@ def main():
         sys.exit(__doc__)
     ev_dir, gg_dir, out_path = sys.argv[1:]
     hgnc_acc, hgnc_sym, hgnc_names = hgnc_tables(os.path.join(gg_dir, "hgnc_complete_set.txt"))
+    with open(os.path.join(gg_dir, "DOWNLOADED_ON")) as fh:
+        downloaded = fh.readline().split()[-1]
 
     out = {"dark_cutoffs": DARK_CUTOFFS, "kmerseek_cutoffs": KMERSEEK_CUTOFFS,
            "pick_cutoffs": [PICK_T, PICK_U], "species": [], "settings": {}, "unfitted": {},
-           "groups": {}}
+           "groups": {}, "gene_groups_downloaded": downloaded}
     try:
         out["commit"] = subprocess.check_output(
             ["git", "-C", os.path.dirname(os.path.abspath(__file__)), "rev-parse", "--short",
