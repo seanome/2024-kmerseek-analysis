@@ -45,36 +45,58 @@ import polars as pl
 sys.path.insert(0, str(Path(__file__).parent))
 from build_pfam_architectures import SPECIES_METADATA, get_qfo_accessions
 
-PFAM_REGIONS_URL = "https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.regions.tsv.gz"
+PFAM_REGIONS_URL = (
+    "https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.regions.tsv.gz"
+)
 
 
-def download_regions(cache_dir: Path, force: bool = False, max_attempts: int = 30) -> Path:
+def download_regions(
+    cache_dir: Path, force: bool = False, max_attempts: int = 30
+) -> Path:
     dest = cache_dir / "Pfam-A.regions.tsv.gz"
     if force and dest.exists():
         dest.unlink()
     cache_dir.mkdir(parents=True, exist_ok=True)
     print(f"  {PFAM_REGIONS_URL}")
     print(f"  -> {dest}")
-    print("  ~4.7 GB compressed. EBI FTP stalls intermittently on large transfers — each stall")
-    print("  aborts that one curl attempt, but -C - resumes from the exact byte offset, so this")
-    print(f"  loop just re-invokes curl (up to {max_attempts}x) until the file is fully down.")
+    print(
+        "  ~4.7 GB compressed. EBI FTP stalls intermittently on large transfers — each stall"
+    )
+    print(
+        "  aborts that one curl attempt, but -C - resumes from the exact byte offset, so this"
+    )
+    print(
+        f"  loop just re-invokes curl (up to {max_attempts}x) until the file is fully down."
+    )
 
     for attempt in range(1, max_attempts + 1):
         result = subprocess.run(
             [
-                "curl", "-L", "-C", "-",
-                "--speed-limit", "10240", "--speed-time", "60",
-                "-o", str(dest),
+                "curl",
+                "-L",
+                "-C",
+                "-",
+                "--speed-limit",
+                "10240",
+                "--speed-time",
+                "60",
+                "-o",
+                str(dest),
                 PFAM_REGIONS_URL,
             ],
         )
         if result.returncode == 0:
             return dest
         got = dest.stat().st_size / 1e9 if dest.exists() else 0.0
-        print(f"  curl exit {result.returncode} on attempt {attempt}/{max_attempts} "
-              f"({got:.2f} GB so far) — resuming...", file=sys.stderr)
+        print(
+            f"  curl exit {result.returncode} on attempt {attempt}/{max_attempts} "
+            f"({got:.2f} GB so far) — resuming...",
+            file=sys.stderr,
+        )
 
-    raise RuntimeError(f"Failed to download {PFAM_REGIONS_URL} after {max_attempts} attempts")
+    raise RuntimeError(
+        f"Failed to download {PFAM_REGIONS_URL} after {max_attempts} attempts"
+    )
 
 
 def write_accession_list(qfo_dir: Path, out_path: Path) -> set:
@@ -82,13 +104,17 @@ def write_accession_list(qfo_dir: Path, out_path: Path) -> set:
     for species in SPECIES_METADATA:
         accessions |= get_qfo_accessions(species, qfo_dir)
     out_path.write_text("\n".join(sorted(accessions)) + "\n")
-    print(f"  {len(accessions):,} unique QfO canonical accessions across {len(SPECIES_METADATA)} species -> {out_path}")
+    print(
+        f"  {len(accessions):,} unique QfO canonical accessions across {len(SPECIES_METADATA)} species -> {out_path}"
+    )
     return accessions
 
 
 def filter_regions(regions_gz: Path, accessions_txt: Path, out_tsv: Path) -> None:
-    print(f"  Streaming {regions_gz.name} through awk, filtering to the accession list (single pass, no full decompress to disk)...")
-    awk_prog = 'NR==FNR{acc[$1]; next} FNR==1{next} ($1 in acc)'
+    print(
+        f"  Streaming {regions_gz.name} through awk, filtering to the accession list (single pass, no full decompress to disk)..."
+    )
+    awk_prog = "NR==FNR{acc[$1]; next} FNR==1{next} ($1 in acc)"
     cmd = (
         f"gzip -dc {shlex.quote(str(regions_gz))} | "
         f"awk -F'\\t' {shlex.quote(awk_prog)} {shlex.quote(str(accessions_txt))} - "
@@ -99,39 +125,61 @@ def filter_regions(regions_gz: Path, accessions_txt: Path, out_tsv: Path) -> Non
 
 
 def build_parquet(filtered_tsv: Path, out_parquet: Path) -> pl.DataFrame:
-    cols = ["accession", "seq_version", "crc64", "md5", "pfam_id",
-            "seq_start", "seq_end", "ali_start", "ali_end"]
-    df = pl.read_csv(filtered_tsv, separator="\t", has_header=False, new_columns=cols)
-    df = df.select([
+    cols = [
         "accession",
+        "seq_version",
+        "crc64",
+        "md5",
         "pfam_id",
-        pl.col("seq_start").cast(pl.Int32).alias("domain_start"),
-        pl.col("seq_end").cast(pl.Int32).alias("domain_end"),
-        pl.col("ali_start").cast(pl.Int32),
-        pl.col("ali_end").cast(pl.Int32),
-    ])
+        "seq_start",
+        "seq_end",
+        "ali_start",
+        "ali_end",
+    ]
+    df = pl.read_csv(filtered_tsv, separator="\t", has_header=False, new_columns=cols)
+    df = df.select(
+        [
+            "accession",
+            "pfam_id",
+            pl.col("seq_start").cast(pl.Int32).alias("domain_start"),
+            pl.col("seq_end").cast(pl.Int32).alias("domain_end"),
+            pl.col("ali_start").cast(pl.Int32),
+            pl.col("ali_end").cast(pl.Int32),
+        ]
+    )
     df.write_parquet(out_parquet, compression="snappy")
-    print(f"  {len(df):,} domain-instance rows, {df['accession'].n_unique():,} distinct accessions -> {out_parquet}")
+    print(
+        f"  {len(df):,} domain-instance rows, {df['accession'].n_unique():,} distinct accessions -> {out_parquet}"
+    )
     return df
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument(
-        "--qfo-dir", type=Path,
-        default=Path.home() / "data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143",
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "--cache-dir", type=Path,
+        "--qfo-dir",
+        type=Path,
+        default=Path.home()
+        / "data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
         default=Path("results/pfam_benchmark/pfam_release_cache"),
     )
-    parser.add_argument("--force-download", action="store_true", help="Refetch Pfam-A.regions.tsv.gz even if already cached")
+    parser.add_argument(
+        "--force-download",
+        action="store_true",
+        help="Refetch Pfam-A.regions.tsv.gz even if already cached",
+    )
     args = parser.parse_args()
 
     args.cache_dir.mkdir(parents=True, exist_ok=True)
     accessions_txt = args.cache_dir / "qfo10_accessions.txt"
-    filtered_tsv   = args.cache_dir / "pfam_regions_qfo10.tsv"
-    out_parquet    = args.cache_dir / "pfam_regions_qfo10.parquet"
+    filtered_tsv = args.cache_dir / "pfam_regions_qfo10.tsv"
+    out_parquet = args.cache_dir / "pfam_regions_qfo10.parquet"
 
     print("=== Step 1/4: QfO accession list ===")
     write_accession_list(args.qfo_dir, accessions_txt)
@@ -145,14 +193,18 @@ def main():
     print("\n=== Step 4/4: write parquet ===")
     df = build_parquet(filtered_tsv, out_parquet)
 
-    print("\n=== Coverage by species (QfO canonical accessions with >=1 Pfam-A envelope match) ===")
+    print(
+        "\n=== Coverage by species (QfO canonical accessions with >=1 Pfam-A envelope match) ==="
+    )
     for species in SPECIES_METADATA:
         sp_acc = get_qfo_accessions(species, args.qfo_dir)
         covered = df.filter(pl.col("accession").is_in(sp_acc))["accession"].n_unique()
         print(f"  {species:12s} {covered:6,} / {len(sp_acc):6,}")
 
     print(f"\nDone. Next:")
-    print(f"  python build_pfam_architectures.py --species all --regions-parquet {out_parquet}")
+    print(
+        f"  python build_pfam_architectures.py --species all --regions-parquet {out_parquet}"
+    )
 
 
 if __name__ == "__main__":

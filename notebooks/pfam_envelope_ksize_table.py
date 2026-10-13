@@ -32,11 +32,19 @@ def load_envelope_lengths() -> pl.DataFrame:
     frames = []
     for f in sorted(ANNOT_DIR.glob("*_pfam_domains.parquet")):
         species = f.stem.replace("_pfam_domains", "")
-        df = pl.read_parquet(f).filter(pl.col("has_position")).select([
-            pl.lit(species).alias("species"),
-            "pfam_id",
-            (pl.col("domain_end") - pl.col("domain_start") + 1).alias("domain_length"),
-        ])
+        df = (
+            pl.read_parquet(f)
+            .filter(pl.col("has_position"))
+            .select(
+                [
+                    pl.lit(species).alias("species"),
+                    "pfam_id",
+                    (pl.col("domain_end") - pl.col("domain_start") + 1).alias(
+                        "domain_length"
+                    ),
+                ]
+            )
+        )
         frames.append(df)
     return pl.concat(frames)
 
@@ -44,13 +52,18 @@ def load_envelope_lengths() -> pl.DataFrame:
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     lengths = load_envelope_lengths()
-    print(f"Envelope-annotated domain instances: {lengths.height:,} across {lengths['species'].n_unique()} species")
+    print(
+        f"Envelope-annotated domain instances: {lengths.height:,} across {lengths['species'].n_unique()} species"
+    )
 
     lengths.write_parquet(OUT_DIR / "envelope_lengths.parquet", compression="snappy")
 
-    q = lengths.select([
-        pl.col("domain_length").quantile(p).alias(f"p{int(p*100):02d}") for p in QUANTILES
-    ]).row(0, named=True)
+    q = lengths.select(
+        [
+            pl.col("domain_length").quantile(p).alias(f"p{int(p*100):02d}")
+            for p in QUANTILES
+        ]
+    ).row(0, named=True)
 
     print("\n=== Observed Pfam envelope length distribution (all species) ===")
     for p in QUANTILES:
@@ -64,25 +77,35 @@ def main():
         region_length = q[key]
         for k in range(K_MIN, K_MAX + 1):
             n_kmers = region_length - k + 1
-            rows.append({
-                "quantile": key,
-                "region_length": region_length,
-                "k": k,
-                "n_kmers_in_region": n_kmers,
-                "degenerate": n_kmers <= 1,
-            })
+            rows.append(
+                {
+                    "quantile": key,
+                    "region_length": region_length,
+                    "k": k,
+                    "n_kmers_in_region": n_kmers,
+                    "degenerate": n_kmers <= 1,
+                }
+            )
     table = pl.DataFrame(rows)
-    table.write_parquet(OUT_DIR / "region_length_minus_k_plus_1.parquet", compression="snappy")
+    table.write_parquet(
+        OUT_DIR / "region_length_minus_k_plus_1.parquet", compression="snappy"
+    )
 
-    print("\n=== region_length - k + 1, by envelope-length quantile x k (degenerate cells: n_kmers <= 1) ===")
-    pivot = table.pivot(values="n_kmers_in_region", index="k", on="quantile", aggregate_function="first")
+    print(
+        "\n=== region_length - k + 1, by envelope-length quantile x k (degenerate cells: n_kmers <= 1) ==="
+    )
+    pivot = table.pivot(
+        values="n_kmers_in_region", index="k", on="quantile", aggregate_function="first"
+    )
     pivot = pivot.sort("k")
     with pl.Config(tbl_rows=-1, tbl_cols=-1):
         print(pivot)
 
     n_degenerate = table.filter(pl.col("degenerate")).height
     n_total = table.height
-    print(f"\nDegenerate (n_kmers<=1) cells: {n_degenerate}/{n_total} ({100*n_degenerate/n_total:.1f}%)")
+    print(
+        f"\nDegenerate (n_kmers<=1) cells: {n_degenerate}/{n_total} ({100*n_degenerate/n_total:.1f}%)"
+    )
 
     # smallest k that is non-degenerate at each quantile, and largest k still
     # non-degenerate at the low-length tail (p05/p10) -- the practical ceiling
@@ -90,7 +113,9 @@ def main():
         sub = table.filter(pl.col("quantile") == key).sort("k")
         ok = sub.filter(~pl.col("degenerate"))
         max_k_ok = ok["k"].max() if ok.height else None
-        print(f"  at {key} envelope length ({q[key]:.0f} aa): largest non-degenerate k in 6..30 = {max_k_ok}")
+        print(
+            f"  at {key} envelope length ({q[key]:.0f} aa): largest non-degenerate k in 6..30 = {max_k_ok}"
+        )
 
     print(f"\nSaved: {OUT_DIR / 'envelope_lengths.parquet'}")
     print(f"Saved: {OUT_DIR / 'region_length_minus_k_plus_1.parquet'}")

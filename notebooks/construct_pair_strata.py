@@ -54,27 +54,38 @@ DIAMOND_EVALUE = 10.0
 def load_diamond_hits(diamond_gz: Path) -> pl.DataFrame:
     """Best (max bitscore / min evalue) HSP per (human_accession, species_accession)."""
     df = pl.read_csv(
-        diamond_gz, separator="\t", has_header=False,
+        diamond_gz,
+        separator="\t",
+        has_header=False,
         new_columns=["query_raw", "target_raw", "bitscore", "evalue"],
         infer_schema_length=100_000,
     )
-    df = df.with_columns([
-        pl.col("query_raw").map_elements(extract_accession, return_dtype=pl.String).alias("human_accession"),
-        pl.col("target_raw").map_elements(extract_accession, return_dtype=pl.String).alias("species_accession"),
-    ])
-    return (
-        df.group_by(["human_accession", "species_accession"])
-        .agg([
+    df = df.with_columns(
+        [
+            pl.col("query_raw")
+            .map_elements(extract_accession, return_dtype=pl.String)
+            .alias("human_accession"),
+            pl.col("target_raw")
+            .map_elements(extract_accession, return_dtype=pl.String)
+            .alias("species_accession"),
+        ]
+    )
+    return df.group_by(["human_accession", "species_accession"]).agg(
+        [
             pl.col("bitscore").max().alias("diamond_best_bitscore"),
             pl.col("evalue").min().alias("diamond_best_evalue"),
-        ])
+        ]
     )
 
 
 def load_sequences(species: str, qfo_dir: Path) -> dict:
     """accession -> sequence string, from the QfO FASTA."""
     meta = SPECIES_METADATA[species]
-    fasta = qfo_dir / meta["qfo_subdir"] / f"{meta['qfo_proteome']}_{meta['taxon_id']}.fasta"
+    fasta = (
+        qfo_dir
+        / meta["qfo_subdir"]
+        / f"{meta['qfo_proteome']}_{meta['taxon_id']}.fasta"
+    )
     seqs: dict[str, str] = {}
     acc = None
     parts: list[str] = []
@@ -137,6 +148,7 @@ def nw_identity(task: tuple) -> tuple:
 
 # ---------------------------------------------------------------------------
 
+
 def process_species(
     species: str,
     pairs_dir: Path,
@@ -153,10 +165,16 @@ def process_species(
 
     print(f"\n=== {species} ===")
     gt = pl.read_parquet(pairs_dir / f"human_vs_{species}_ground_truth.parquet")
-    pos = gt.filter(pl.col("label")).select([
-        "human_accession", "species_accession", "shared_pfam_ids", "n_shared_domains",
-        "human_protein_length", "species_protein_length",
-    ])
+    pos = gt.filter(pl.col("label")).select(
+        [
+            "human_accession",
+            "species_accession",
+            "shared_pfam_ids",
+            "n_shared_domains",
+            "human_protein_length",
+            "species_protein_length",
+        ]
+    )
     print(f"  positive (shared-domain) pairs: {len(pos):,}")
 
     diamond_gz = diamond_dir / f"human_vs_{species}.diamond.tsv.gz"
@@ -169,7 +187,9 @@ def process_species(
     merged = pos.join(hits, on=["human_accession", "species_accession"], how="left")
     merged = merged.with_columns(
         pl.when(pl.col("diamond_best_evalue").is_not_null())
-        .then(pl.lit("easy")).otherwise(pl.lit("hard")).alias("stratum")
+        .then(pl.lit("easy"))
+        .otherwise(pl.lit("hard"))
+        .alias("stratum")
     )
     n_hard = merged.filter(pl.col("stratum") == "hard").height
     n_easy = merged.filter(pl.col("stratum") == "easy").height
@@ -179,29 +199,44 @@ def process_species(
     h_seqs = load_sequences("human", qfo_dir)
     s_seqs = load_sequences(species, qfo_dir)
     tasks = [
-        (row["human_accession"], row["species_accession"],
-         h_seqs.get(row["human_accession"], ""), s_seqs.get(row["species_accession"], ""))
+        (
+            row["human_accession"],
+            row["species_accession"],
+            h_seqs.get(row["human_accession"], ""),
+            s_seqs.get(row["species_accession"], ""),
+        )
         for row in merged.iter_rows(named=True)
     ]
     n_missing_seq = sum(1 for t in tasks if not t[2] or not t[3])
     if n_missing_seq:
-        print(f"  WARNING: {n_missing_seq} pairs missing a FASTA sequence — nw_identity=null for those", file=sys.stderr)
+        print(
+            f"  WARNING: {n_missing_seq} pairs missing a FASTA sequence — nw_identity=null for those",
+            file=sys.stderr,
+        )
 
-    print(f"  Computing full NW global alignment for {len(tasks):,} pairs ({n_workers} workers)...")
+    print(
+        f"  Computing full NW global alignment for {len(tasks):,} pairs ({n_workers} workers)..."
+    )
     nw_by_pair = {}
     with ProcessPoolExecutor(max_workers=n_workers) as ex:
-        for h_acc, s_acc, identity, score, aln_len in ex.map(nw_identity, tasks, chunksize=50):
+        for h_acc, s_acc, identity, score, aln_len in ex.map(
+            nw_identity, tasks, chunksize=50
+        ):
             nw_by_pair[(h_acc, s_acc)] = (identity, score, aln_len)
 
     identities, scores, aln_lens = [], [], []
     for row in merged.iter_rows(named=True):
         v = nw_by_pair[(row["human_accession"], row["species_accession"])]
-        identities.append(v[0]); scores.append(v[1]); aln_lens.append(v[2])
-    merged = merged.with_columns([
-        pl.Series("nw_identity", identities, dtype=pl.Float64),
-        pl.Series("nw_score", scores, dtype=pl.Float64),
-        pl.Series("nw_alignment_length", aln_lens, dtype=pl.Int32),
-    ])
+        identities.append(v[0])
+        scores.append(v[1])
+        aln_lens.append(v[2])
+    merged = merged.with_columns(
+        [
+            pl.Series("nw_identity", identities, dtype=pl.Float64),
+            pl.Series("nw_score", scores, dtype=pl.Float64),
+            pl.Series("nw_alignment_length", aln_lens, dtype=pl.Int32),
+        ]
+    )
 
     # ---- 20% holdout, stratified by (stratum), seeded ----
     rng = random.Random(RANDOM_SEED)
@@ -226,34 +261,66 @@ def process_species(
         "n_positive_pairs": merged.height,
         "n_hard": n_hard,
         "n_easy": n_easy,
-        "n_hard_holdout": merged.filter((pl.col("stratum") == "hard") & pl.col("is_holdout")).height,
-        "n_easy_holdout": merged.filter((pl.col("stratum") == "easy") & pl.col("is_holdout")).height,
-        "median_nw_identity_hard": merged.filter(pl.col("stratum") == "hard")["nw_identity"].median(),
-        "median_nw_identity_easy": merged.filter(pl.col("stratum") == "easy")["nw_identity"].median(),
+        "n_hard_holdout": merged.filter(
+            (pl.col("stratum") == "hard") & pl.col("is_holdout")
+        ).height,
+        "n_easy_holdout": merged.filter(
+            (pl.col("stratum") == "easy") & pl.col("is_holdout")
+        ).height,
+        "median_nw_identity_hard": merged.filter(pl.col("stratum") == "hard")[
+            "nw_identity"
+        ].median(),
+        "median_nw_identity_easy": merged.filter(pl.col("stratum") == "easy")[
+            "nw_identity"
+        ].median(),
     }
     return summary
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--species", nargs="+", default=["all"])
-    parser.add_argument("--pairs-dir", type=Path, default=Path("results/pfam_benchmark/pairs"))
-    parser.add_argument("--diamond-dir", type=Path, default=Path("results/pfam_benchmark/diamond_fresh"))
-    parser.add_argument(
-        "--qfo-dir", type=Path,
-        default=Path.home() / "data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143",
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--strata-dir", type=Path, default=Path("results/pfam_benchmark/pairs_stratified"))
+    parser.add_argument("--species", nargs="+", default=["all"])
+    parser.add_argument(
+        "--pairs-dir", type=Path, default=Path("results/pfam_benchmark/pairs")
+    )
+    parser.add_argument(
+        "--diamond-dir", type=Path, default=Path("results/pfam_benchmark/diamond_fresh")
+    )
+    parser.add_argument(
+        "--qfo-dir",
+        type=Path,
+        default=Path.home()
+        / "data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143",
+    )
+    parser.add_argument(
+        "--strata-dir",
+        type=Path,
+        default=Path("results/pfam_benchmark/pairs_stratified"),
+    )
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
     non_human = [s for s in SPECIES_METADATA if s != "human"]
-    species_list = non_human if args.species == ["all"] else [s for s in args.species if s != "human"]
+    species_list = (
+        non_human
+        if args.species == ["all"]
+        else [s for s in args.species if s != "human"]
+    )
 
     summaries = []
     for sp in species_list:
-        s = process_species(sp, args.pairs_dir, args.diamond_dir, args.qfo_dir, args.strata_dir, args.workers, force=args.force)
+        s = process_species(
+            sp,
+            args.pairs_dir,
+            args.diamond_dir,
+            args.qfo_dir,
+            args.strata_dir,
+            args.workers,
+            force=args.force,
+        )
         if s:
             summaries.append(s)
 
@@ -264,20 +331,26 @@ def main():
         total_easy_holdout = sum(s["n_easy_holdout"] for s in summaries)
         print(f"\n=== TOTAL across {len(summaries)} species ===")
         print(f"  N_HARD={total_hard:,}  N_EASY={total_easy:,}")
-        print(f"  N_HARD_HOLDOUT={total_hard_holdout:,}  N_EASY_HOLDOUT={total_easy_holdout:,}")
+        print(
+            f"  N_HARD_HOLDOUT={total_hard_holdout:,}  N_EASY_HOLDOUT={total_easy_holdout:,}"
+        )
 
         summary_path = args.strata_dir / "strata_summary.json"
         with open(summary_path, "w") as f:
-            json.dump({
-                "per_species": summaries,
-                "total_n_hard": total_hard,
-                "total_n_easy": total_easy,
-                "total_n_hard_holdout": total_hard_holdout,
-                "total_n_easy_holdout": total_easy_holdout,
-                "holdout_fraction": HOLDOUT_FRACTION,
-                "random_seed": RANDOM_SEED,
-                "diamond_evalue_threshold": DIAMOND_EVALUE,
-            }, f, indent=2)
+            json.dump(
+                {
+                    "per_species": summaries,
+                    "total_n_hard": total_hard,
+                    "total_n_easy": total_easy,
+                    "total_n_hard_holdout": total_hard_holdout,
+                    "total_n_easy_holdout": total_easy_holdout,
+                    "holdout_fraction": HOLDOUT_FRACTION,
+                    "random_seed": RANDOM_SEED,
+                    "diamond_evalue_threshold": DIAMOND_EVALUE,
+                },
+                f,
+                indent=2,
+            )
         print(f"  Saved: {summary_path}")
 
     print("\nDone!")
