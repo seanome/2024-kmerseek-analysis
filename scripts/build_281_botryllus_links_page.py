@@ -382,11 +382,17 @@ function residues(k) {
   return out.join("\n");
 }
 
+function geneLines(g) {
+  // FUN020551_FUN020551.1 -> ["FUN020551.1"]; FUN025982_ABCB1.1 -> ["FUN025982", "ABCB1.1"]
+  const i = g.indexOf("_"), fun = i < 0 ? g : g.slice(0, i), rest = i < 0 ? "" : g.slice(i + 1);
+  return !rest ? [fun] : rest.startsWith(fun) ? [rest] : [fun, rest];
+}
+
 function pairView(L, T) {
   const cut = +state.cut, qlen = D.gene_length[L[0]], tlen = T[3];
   const regs = L[3 + TOOLS.length].filter(x => x[5] < cut), hits = L[4 + TOOLS.length].filter(x => x[3] < cut);
   if (!regs.length && !hits.length) return "";
-  const W = 760, X0 = 110, span = Math.max(qlen, tlen), sx = v => X0 + (v / span) * (W - X0 - 10);
+  const W = 760, X0 = 130, span = Math.max(qlen, tlen), sx = v => X0 + (v / span) * (W - X0 - 10);
   const yQ = 22, yT = 92, rowH = 14, yTool = i => yT + 18 + i * rowH, H = yTool(TOOLS.length) + 22;
   // How many alphabets put a region at the same position: shade by it.
   const byPos = new Map();
@@ -402,7 +408,8 @@ function pairView(L, T) {
   }
   s += `<line x1="${sx(0)}" y1="${yQ}" x2="${sx(qlen)}" y2="${yQ}" stroke="var(--fg)" stroke-width="1.5"/>
     <line x1="${sx(0)}" y1="${yT}" x2="${sx(tlen)}" y2="${yT}" stroke="var(--fg)" stroke-width="1.5"/>
-    <text x="4" y="${yQ + 4}">Botryllus</text><text x="4" y="${yQ + 17}" class="axis">${qlen} aa</text>
+    ${geneLines(D.genes[L[0]]).map((t, i) => `<text x="4" y="${yQ + 4 + 13 * i}"${i ? ' class="axis"' : ""}>${esc(t)}</text>`).join("")}
+    <text x="4" y="${yQ + 4 + 13 * geneLines(D.genes[L[0]]).length}" class="axis">Botryllus, ${qlen} aa</text>
     <text x="4" y="${yT + 4}">${esc(T[0])}</text><text x="4" y="${yT + 17}" class="axis">${tlen} aa</text>`;
   TOOLS.forEach((t, i) => {
     const y = yTool(i) + 6;
