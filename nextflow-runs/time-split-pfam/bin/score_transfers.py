@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import json
 import math
 from pathlib import Path
 
@@ -139,6 +140,89 @@ def matched_cutoff(dec: pl.DataFrame, n_decoys: int) -> float:
     return math.nextafter(s[allowed], math.inf)
 
 
+P4_TYPES = ("Motif", "Disordered", "Repeat")
+SHORT_AA = 60
+INSTANCE_KEY = ["query", "pfam_acc", "t1_start", "t1_end"]
+N_BOOT = 10_000
+BOOT_SEED = 280
+
+
+def is_p4(inst: pl.DataFrame) -> pl.DataFrame:
+    """An instance counts toward P4 when its t1 type is Motif, Disordered or Repeat, or its
+    t1 region is under 60 aa (notebook 280, first cell)."""
+    return inst.with_columns(p4=pl.col("pfam_type").is_in(P4_TYPES) | (pl.col("length") < SHORT_AA))
+
+
+def found_at_cutoff(ic: pl.DataFrame, cutoffs: dict[str, float]) -> pl.DataFrame:
+    """(setting, instance) pairs found at each setting's matched cutoff."""
+    cut = pl.DataFrame({"setting": list(cutoffs), "cutoff": list(cutoffs.values())})
+    return (ic.join(cut, on="setting").filter(pl.col("score") >= pl.col("cutoff"))
+            .select(["setting"] + INSTANCE_KEY).unique())
+
+
+def unique_per_query(found: pl.DataFrame, p4_inst: pl.DataFrame, kmerseek: list[str],
+                     comparators: list[str]) -> pl.DataFrame:
+    """For each kmerseek setting and each query carrying a P4 instance: how many of that
+    query's P4 instances the setting finds and no comparator finds. Zero rows included, so
+    the table can be resampled query by query."""
+    by_comp = found.filter(pl.col("setting").is_in(comparators)).select(INSTANCE_KEY).unique()
+    uniq = (found.filter(pl.col("setting").is_in(kmerseek))
+            .join(p4_inst.select(INSTANCE_KEY), on=INSTANCE_KEY, how="semi")
+            .join(by_comp, on=INSTANCE_KEY, how="anti")
+            .group_by("setting", "query").agg(n_unique=pl.len()))
+    grid = (pl.DataFrame({"setting": kmerseek})
+            .join(p4_inst.select("query").unique(), how="cross"))
+    return (grid.join(uniq, on=["setting", "query"], how="left")
+            .with_columns(pl.col("n_unique").fill_null(0).cast(pl.Int64)))
+
+
+def decoy_transfers_per_query(dec_pairs: dict[str, pl.DataFrame], cutoffs: dict[str, float],
+                              decoys: list[str], half: str) -> pl.DataFrame:
+    """Family transfers (distinct decoy-family pairs) at the matched cutoff, per setting and
+    per decoy query of one half, zeros included."""
+    frames = []
+    for s, d in dec_pairs.items():
+        c = (d.filter((pl.col("half") == half) & (pl.col("score") >= cutoffs[s]))
+             .group_by("query").agg(n_transfers=pl.len()))
+        frames.append(pl.DataFrame({"query": decoys}).join(c, on="query", how="left")
+                      .with_columns(pl.col("n_transfers").fill_null(0).cast(pl.Int64),
+                                    setting=pl.lit(s)))
+    return pl.concat(frames) if frames else pl.DataFrame(
+        schema={"query": pl.String, "n_transfers": pl.Int64, "setting": pl.String})
+
+
+def unique_vs_expected(uq: pl.DataFrame, dt: pl.DataFrame) -> pl.DataFrame:
+    """Per kmerseek setting: unique finds, decoy transfer rate, and the number expected by
+    chance = rate x number of real queries carrying a P4 instance."""
+    u = uq.group_by("setting").agg(unique_finds=pl.col("n_unique").sum(), p4_queries=pl.len())
+    r = dt.group_by("setting").agg(decoy_rate=pl.col("n_transfers").mean())
+    return (u.join(r, on="setting", how="left")
+            .with_columns(expected=pl.col("decoy_rate") * pl.col("p4_queries"))
+            .with_columns(unique_minus_expected=pl.col("unique_finds") - pl.col("expected")))
+
+
+def choose_p4_setting(tune: pl.DataFrame) -> str:
+    """Largest unique finds minus expected; ties to the lower decoy rate, then by name."""
+    return tune.sort(["unique_minus_expected", "decoy_rate", "setting"],
+                     descending=[True, False, False])["setting"][0]
+
+
+def bootstrap_interval(n_unique: list[int], n_transfers: list[int], n_boot: int = N_BOOT,
+                       seed: int = BOOT_SEED) -> tuple[float, float, float]:
+    """Unique finds minus expected, with a 95% interval from resampling the real P4 queries
+    and, independently, the decoys. Returns (point, low, high)."""
+    import numpy as np
+
+    u = np.asarray(n_unique, dtype=float)
+    t = np.asarray(n_transfers, dtype=float)
+    point = u.sum() - t.mean() * len(u)
+    rng = np.random.default_rng(seed)
+    ub = u[rng.integers(0, len(u), size=(n_boot, len(u)))].sum(axis=1)
+    tb = t[rng.integers(0, len(t), size=(n_boot, len(t)))].mean(axis=1) * len(u)
+    low, high = np.percentile(ub - tb, [2.5, 97.5])
+    return float(point), float(low), float(high)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     for a in ("kmerseek", "stats", "mmseqs2", "phmmer", "hmmscan", "inputs", "reference", "settings", "out"):
@@ -197,12 +281,13 @@ def main() -> None:
     n_dec = {h: q.filter(pl.col("is_decoy") & (pl.col("half") == h) & (pl.col("role") == "sample")).height
              for h in ("tune", "test")}
     inst_s = inst.filter(pl.col("role") == "sample").join(q.select("query", "half"), on="query")
-    rows = []
+    rows, cutoffs, dec_by_setting = [], {}, {}
     for s in settings:
         c = calls.filter(pl.col("setting") == s)
         dec_pairs = (c.filter(pl.col("is_decoy") & (pl.col("role") == "sample"))
                      .group_by("query", "pfam_acc", "half").agg(pl.col("score").max()))
         cut = matched_cutoff(dec_pairs.filter(pl.col("half") == "tune"), n_dec["tune"])
+        cutoffs[s], dec_by_setting[s] = cut, dec_pairs
         dec_test = dec_pairs.filter((pl.col("half") == "test") & (pl.col("score") >= cut)).height
         f = ic.filter((pl.col("setting") == s) & (pl.col("score") >= cut))
         found_test = inst_s.filter(pl.col("half") == "test").join(
@@ -230,6 +315,45 @@ def main() -> None:
                 .join(ic.select("setting", "query", "pfam_acc", "t1_start", "t1_end", "landing", "coverage", "score"),
                       on=["query", "pfam_acc", "t1_start", "t1_end"], how="left"))
     ctrl_tab.write_csv(a.out / "controls.csv")
+
+    # Unique finds (P4). The setting is chosen on the tune half; the test half is read only
+    # for that setting, and only with --read-test-half.
+    kmer_settings = [s for s in settings if s.startswith("kmerseek ")]
+    comparators = [s for s in settings if not s.startswith("kmerseek ")]
+    found = found_at_cutoff(ic, cutoffs)
+    p4 = is_p4(inst_s).filter("p4")
+    halves = ("tune", "test") if a.read_test_half else ("tune",)
+    tables = {}
+    for h in halves:
+        decoys = q.filter(pl.col("is_decoy") & (pl.col("half") == h) & (pl.col("role") == "sample"))["query"].to_list()
+        uq = unique_per_query(found, p4.filter(pl.col("half") == h), kmer_settings, comparators)
+        dt = decoy_transfers_per_query({s: dec_by_setting[s] for s in kmer_settings}, cutoffs, decoys, h)
+        tables[h] = (uq, dt)
+    tune = unique_vs_expected(*tables["tune"]).sort("unique_minus_expected", descending=True)
+    tune.write_csv(a.out / "unique_finds_tune.csv")
+    p4_rows = {"comparators": comparators, "kmerseek_settings": len(kmer_settings)}
+    if tune.height:
+        chosen = choose_p4_setting(tune)
+        p4_rows.update(chosen=chosen, **{f"tune_{k}": v for k, v in
+                                         tune.filter(pl.col("setting") == chosen).row(0, named=True).items()
+                                         if k != "setting"})
+        if a.read_test_half:
+            uq, dt = tables["test"]
+            u = uq.filter(pl.col("setting") == chosen)["n_unique"].to_list()
+            t = dt.filter(pl.col("setting") == chosen)["n_transfers"].to_list()
+            point, low, high = bootstrap_interval(u, t)
+            p4_rows.update(test_unique_finds=sum(u), test_p4_queries=len(u),
+                           test_decoy_rate=sum(t) / len(t) if t else None,
+                           test_unique_minus_expected=point, test_ci95_low=low, test_ci95_high=high,
+                           p4_holds=low > 0)
+            (found.filter(pl.col("setting") == chosen)
+             .join(p4.filter(pl.col("half") == "test"), on=INSTANCE_KEY)
+             .join(found.filter(pl.col("setting").is_in(comparators)).select(INSTANCE_KEY).unique(),
+                   on=INSTANCE_KEY, how="anti")
+             .write_csv(a.out / "unique_finds_test_instances.csv"))
+    (a.out / "p4.json").write_text(json.dumps(p4_rows, indent=1, default=str))
+    print(tune.head(10))
+    print(json.dumps(p4_rows, indent=1, default=str))
     with pl.Config(tbl_rows=400, tbl_cols=20, tbl_width_chars=250):
         print(pc)
         print(summ)
