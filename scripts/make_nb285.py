@@ -432,7 +432,124 @@ print(allg.filter(pl.col("query") == "Ced9").sort("log10_p", "group_id").head(10
 """)
 
 md(r"""
-## 7. Verdict
+## 7. Same position as a Pfam Bcl-2 model column
+
+Section 2 counted calls as "at the same position" when they cover the same Ced9 residue,
+even if they land on an unrelated stretch of the member (BCL2L1, BCL2L10 and BCL2L2 in
+section 3). Here Ced9 and the nine members are placed on the Pfam Bcl-2 profile model
+(PF00452.25, 100 columns; hmmsearch, HMMER 3.4), and a call counts at column $c$ only where
+**both** its Ced9 residue and its member residue sit in column $c$. Then the same Fisher score
+per column, over all nine members.
+
+**Rule, committed before this part was run**
+([86403a6](https://github.com/seanome/2024-kmerseek-analysis/commit/86403a6),
+`scripts/285_pfam_column_pooling.py`). Null: the same calls with the member side shifted
+by $d$ columns, $3 \le |d| \le 40$ (76 shifts). $|d| \le 2$ is left out because a call one or
+two columns off can still be the true alignment across an insert. **Pass** if the unshifted
+score beats at least 95% of the shifts, AND the family still ranks in the top 10 when its
+score is compared with every other group's section-4 score. The column rule only removes
+calls, so the family's score can only get weaker than in section 4. The other groups have no
+shared model and keep their section-4 scores.
+
+Using the Pfam model puts in what is already known: Ced9 is a Bcl-2 family member. The model
+here only sets which residues are at the same position. It adds no evidence to the score.
+""")
+
+code(r"""
+hits = pl.read_csv(NB / "285_pfam_columns_hmmsearch_hits.csv")
+pcalls = pl.read_csv(NB / "285_pfam_columns_calls.csv")
+pev = pl.read_csv(NB / "285_pfam_columns_evidence.csv")
+pnull = pl.read_csv(NB / "285_pfam_columns_shift_null.csv")
+psum = pl.read_csv(NB / "285_pfam_columns_summary.csv").row(0, named=True)
+rmap = pl.read_csv(NB / "285_pfam_columns_residue_map.csv")
+print("hmmsearch against Bcl-2 (PF00452.25); E-values are for this 10-sequence search:")
+print(hits.select("protein", "full_evalue", "domain_i_evalue", "domain_score", "hmm_from",
+                  "hmm_to", "ali_from", "ali_to"))
+print("MCL1's second, weak hit (score -2.2, residues 169-189) is kept by --domE 10;")
+print("no Ced9 call on MCL1 touches those residues:",
+      pcalls.filter((pl.col("gene") == "MCL1") & (pl.col("target_start0") < 189)
+                    & (pl.col("target_end0") > 168)).height, "calls")
+for k, v in psum.items():
+    print(f"{k}: {v}")
+
+seq = {p_: "".join(g.sort("residue1")["residue"]) for (p_,), g in rmap.group_by("protein")}
+best = pcalls.sort("neg_ln_p", "alphabet", "k", descending=[True, False, False]).group_by(
+    "gene", maintain_order=True).first().sort("gene")
+print("\nEach member's strongest call that is in the same Pfam column on both sides:")
+for r in best.iter_rows(named=True):
+    qs, ts, n = r["query_start0"], r["target_start0"], r["query_end0"] - r["query_start0"]
+    a, b = seq["Ced9"][qs:qs + n], seq[r["gene"]][ts:ts + n]
+    m = "".join("|" if x == y else " " for x, y in zip(a, b))
+    print(f"\n{r['gene']}  {r['alphabet']} k={r['k']}  E = {r['evalue_database']:.1f} (database), "
+          f"p = {r['p_protein']:.4f}  columns {r['first_column']}-{r['last_column']}  "
+          f"{m.count('|')} of {n} identical")
+    print(f"  {'Ced9':<8}{qs + 1:>4} {a} {qs + n}")
+    print(f"  {'':<12} {m}")
+    print(f"  {r['gene']:<8}{ts + 1:>4} {b} {ts + n}")
+print("\nNo in-column call:", sorted(set(MEMBERS) - set(best["gene"])))
+""".replace("MEMBERS", '["BAK1", "BAX", "BCL2", "BCL2A1", "BCL2L1", "BCL2L10", "BCL2L2", "BOK", "MCL1"]'))
+
+code(r"""
+prots = ["Ced9", "BAK1", "BAX", "BCL2", "BCL2A1", "BCL2L1", "MCL1", "BCL2L10", "BCL2L2", "BOK"]
+grid = np.full((len(prots), 100), "-", dtype=object)
+for i, p_ in enumerate(prots):
+    for r in rmap.filter((pl.col("protein") == p_) & (pl.col("column") > 0)).iter_rows(named=True):
+        grid[i, r["column"] - 1] = r["residue"]
+ev = np.zeros((len(prots), 100))
+for i, p_ in enumerate(prots[1:], start=1):
+    ev[i] = pev[p_].to_numpy()
+ced_bh1 = motifs.filter((pl.col("gene") == "Ced9") & (pl.col("motif") == "BH1")).row(0, named=True)
+bh1_cols = rmap.filter((pl.col("protein") == "Ced9") & pl.col("residue1").is_between(
+    ced_bh1["start1"], ced_bh1["end1"]) & (pl.col("column") > 0))["column"]
+fam = -pev["family_log10_p"].to_numpy()
+print(pl.DataFrame({"column": np.arange(1, 101), "family_minus_log10_p": fam.round(2),
+                    "members_with_call": (ev[1:] > 0).sum(axis=0)}).filter(
+    pl.col("members_with_call") > 0))
+
+fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 118 * pf.MM), layout="constrained")
+gs = fig.add_gridspec(3, 2, height_ratios=[len(prots) + 1.5, 3, 3], width_ratios=[40, 1])
+a1, cax = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])
+a2, a3 = fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[2, 0])
+cmap = mpl.colors.ListedColormap(plt.get_cmap("viridis")(np.linspace(0.25, 1, 256))[::-1])
+cmap.set_bad("white")
+im = a1.imshow(np.ma.masked_where(ev <= 0, ev), aspect="auto", cmap=cmap, interpolation="nearest",
+               extent=(0.5, 100.5, len(prots) - 0.5, -0.5), vmin=0, vmax=float(ev.max()))
+for i in range(len(prots)):
+    for c in range(100):
+        a1.text(c + 1, i, grid[i, c], ha="center", va="center", family="monospace", size=4.5,
+                color="white" if ev[i, c] > 0.6 * ev.max() else "black")
+a1.plot([bh1_cols.min() - 0.5, bh1_cols.max() + 0.5], [-0.9, -0.9], color=C["orange"], lw=2,
+        solid_capstyle="butt", clip_on=False)
+a1.text((bh1_cols.min() + bh1_cols.max()) / 2, -1.2, "Ced9 BH1 (UniProt 160-179)", ha="center",
+        va="bottom")
+a1.set_yticks(range(len(prots)), ["Ced9 (query)"] + prots[1:])
+a1.set_xlim(0.5, 100.5); a1.set_ylim(len(prots) - 0.5, -1.6)
+a1.set_xticks([1, 25, 50, 75, 100])
+a1.set_xlabel("Pfam Bcl-2 model column (PF00452.25); letters are each protein's residue there, - is a deletion")
+fig.colorbar(im, cax=cax, label="−log10 p of the\nmember's in-column call\n(white: none)")
+a2.plot(np.arange(1, 101), fam, color=C["blue"], lw=1, label="family score (Fisher, 9 members)")
+a2.axvspan(bh1_cols.min() - 0.5, bh1_cols.max() + 0.5, color=C["orange"], alpha=0.25, lw=0)
+a2.set_xlim(0.5, 100.5); a2.set_xticks([1, 25, 50, 75, 100]); a2.set_xlabel("Pfam Bcl-2 model column")
+a2.set_ylabel("Family −log10 p")
+a2.legend(loc="upper left", frameon=False)
+sh = pnull.filter(pl.col("shift") != 0)
+a3.scatter(sh["shift"], -sh["log10_p"], s=6, color=pf.GREY, label="member side shifted by d columns")
+a3.scatter([0], [-psum["column_rule_log10_p"]], marker="*", s=60, color=C["vermillion"],
+           edgecolor="black", lw=0.3, label="same column (d = 0)")
+a3.set_xlabel("Shift d (Pfam columns)"); a3.set_ylabel("Family −log10 p")
+a3.legend(loc="upper left", frameon=False)
+for ax, letter in zip([a1, a2, a3], "abc"):
+    pf.panel_label(ax, letter, dx_pt=-42)
+fig.suptitle(TOOL + ". Query Ced9, targets the BCL-2 family, placed on Pfam Bcl-2 columns",
+             fontsize=6, x=0.01, ha="left")
+pf.save(fig, FIG / "285_ced9_bcl2_family_pfam_columns")
+print(f"d = 0: 10^{psum['column_rule_log10_p']:.2f}; {psum['shifts_as_good_or_better']} of "
+      f"{psum['n_shifts']} shifts as good or better; rank vs section-4 scores "
+      f"{psum['rank_vs_part1_groups']} of {psum['n_groups']:_}")
+""")
+
+md(r"""
+## 8. Verdict
 """)
 
 code(r"""
@@ -445,6 +562,10 @@ for r in summary.iter_rows(named=True):
           f"(rank {r['case_group_rank']}); random sets {'pass' if r['pass_random_sets'] else 'FAIL'} "
           f"({r['random_sets_frac_better_or_equal']:.3f} as good or better); shuffles pending. "
           f"Overall: {'cannot pass yet' if ok else 'FAIL'}")
+ps = pl.read_csv(NB / "285_pfam_columns_summary.csv").row(0, named=True)
+print(f"Ced9 -> BCL-2 family on Pfam columns: shifts {'pass' if ps['pass_shift_null'] else 'FAIL'} "
+      f"({ps['shifts_as_good_or_better']} of {ps['n_shifts']} as good or better); top 10 "
+      f"{'pass' if ps['pass_top10'] else 'FAIL'} (rank {ps['rank_vs_part1_groups']})")
 
 checks = ["Top 10 of 7_212 groups", "Better than 95% of\n1_000 random sets",
           "Better than 95% of\n20 shuffled queries"]
@@ -490,6 +611,8 @@ group at the same query residue, with the score and pass rule committed before t
   there, and 5 of the 8 sit in register on the member's own BH1.
 * 35 of the 38 groups above BCL2's have more than 9 members (median 21.5) and 24 hold
   ≥90%-identical copies; counting those copies once moves BCL2's group only to rank 23.
+* Counting only calls in the same Pfam Bcl-2 column on both sides, 6 of 9 members back
+  Ced9's BH1 (column 49): p = 10^-4.4, better than all 76 shifted alignments, but rank 184.
 * CD47 has no Ensembl paralog, so pooling cannot help P66 → CD47: its group of one ranks
   2_508 of 7_212, and 34% of random single proteins score as well or better.
 * The dipeptide-shuffled-query null is pending: notebook 283's human indexes, which the
@@ -517,8 +640,9 @@ why the groups above BCL2's are mostly large: 35 of the 38 have more than 9 memb
   (rule committed in d184330 before the first run), `scripts/make_nb285.py`.
 - Tables: `notebooks/285_*.csv`. Figures: `figures/285/*.{pdf,svg,png}`.
 - Random-set draws: numpy `default_rng(285)`, 1_000 draws per case.
-- Next step if the family view is kept: map each call onto the family's Pfam HMM columns
-  (PF00452, Bcl-2) so that "same position" means the same column on the target side too.
+- Pfam columns (section 7): hmmsearch with `--domE 10 --incdomE 10`, which also kept a
+  weak second MCL1 hit (score -2.2, residues 169-189); no call touches it. The Bcl-2 model's
+  Pfam seed and Ced9's known family membership decide the columns, not kmerseek.
 
 ## References
 

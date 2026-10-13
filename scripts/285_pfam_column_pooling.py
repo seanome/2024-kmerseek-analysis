@@ -100,9 +100,9 @@ def run_hmmsearch(seqs: dict[str, str]) -> tuple[pl.DataFrame, dict[str, np.ndar
     cols = {k: np.zeros(len(v), dtype=np.int64) for k, v in seqs.items()}
     for name, s in aln.items():
         prot, start, _ = re.match(r"(.+)/(\d+)-(\d+)$", name).groups()
+        # Each row spans all model columns (leading '-' are deletions), so counting starts at
+        # column 1 whatever the hit's hmm_from.
         pos, col = int(start) - 1, 0  # 0-based residue index, model column
-        hit = hits.filter((pl.col("protein") == prot) & (pl.col("ali_from") == int(start))).row(0, named=True)
-        col = hit["hmm_from"] - 1
         for ch in s:
             if ch.isupper() or ch == "-":
                 col += 1
@@ -113,6 +113,7 @@ def run_hmmsearch(seqs: dict[str, str]) -> tuple[pl.DataFrame, dict[str, np.ndar
                     cols[prot][pos] = col
                 pos += 1
         assert seqs[prot][int(start) - 1:pos] == re.sub(r"[-.]", "", s).upper()
+        assert col == N_COLUMNS, f"{name}: {col} model columns"
     return hits, cols
 
 
