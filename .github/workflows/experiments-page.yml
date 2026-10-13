@@ -10,6 +10,7 @@ on:
     paths:
       - data/experiments.json
       - data/claims.json
+      - data/paper_map.json
       - scripts/build_experiments_page.py
       - scripts/fetch_open_prs.py
       - .github/workflows/experiments-page.yml

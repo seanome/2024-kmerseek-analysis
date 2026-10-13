@@ -1,21 +1,766 @@
 {
- "fetched": "2026-10-05 21:26 UTC",
+ "fetched": "2026-10-13 17:50 UTC",
  "prs": [
   {
    "repo": "seanome/2024-kmerseek-analysis",
-   "n": 109,
-   "title": "Add make running to every pipeline Makefile",
+   "n": 131,
+   "title": "Notebook 287: sum statistics do not rescue Ced9 → BCL2 or P66 → CD47",
    "draft": true,
-   "branch": "olgabot/make-running-all-pipelines",
-   "updated": "2026-10-04"
+   "branch": "olgabot/sum-statistics-287",
+   "base": "olgabot/alphabet-agreement-explainer",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": 125,
+   "notebooks": [
+    "notebooks/287_sum_statistics_BH4_BH1_chains.ipynb"
+   ],
+   "notebook_ids": [
+    "287"
+   ],
+   "figures": [
+    "figures/287_ced9_bcl2_calls_human_gencode.png",
+    "figures/287_ced9_single_vs_chain_evalue_human_gencode.png",
+    "figures/287_chance_hits_per_search_human_gencode.png",
+    "figures/287_p66_cd47_chain_human_gencode.png",
+    "figures/287_partner_rank_by_score_human_gencode.png",
+    "figures/287_pfam998_precision_by_rank_pfam998.png",
+    "figures/287_pfam998_stretch_by_chain_length_pfam998.png"
+   ],
+   "n_files": 37
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
-   "n": 108,
-   "title": "Shared Nature figure style: nature.mplstyle and pubfig.py",
+   "n": 130,
+   "title": "286: can kmerseek reach BCL2 from Ced9 through a human protein? (scripts ready; waits on 283's indexes)",
    "draft": true,
-   "branch": "olgabot/publication-figure-style",
-   "updated": "2026-10-03"
+   "branch": "olgabot/intermediate-sequence-286",
+   "base": "olgabot/alphabet-agreement-explainer",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": 125,
+   "notebooks": [
+    "notebooks/286_intermediate_sequence_Ced9-BCL2_P66-CD47.ipynb"
+   ],
+   "notebook_ids": [
+    "286"
+   ],
+   "figures": [
+    "figures/286_step1_evalue_by_rank_Ced9_P66_human_gencode.png"
+   ],
+   "n_files": 11
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 129,
+   "title": "288: Ced9 → BCL2 and P66 → CD47 as pairwise questions, and a two-step search",
+   "draft": true,
+   "branch": "olgabot/two-step-search-288",
+   "base": "olgabot/alphabet-agreement-explainer",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": 125,
+   "notebooks": [
+    "notebooks/288_two_step_pairwise_evalue_Ced9-BCL2_P66-CD47.ipynb"
+   ],
+   "notebook_ids": [
+    "288"
+   ],
+   "figures": [
+    "figures/288_evalue_formula_check_gencode_v49.png",
+    "figures/288_pairwise_evalue_predicted_ced9_bcl2_p66_cd47_gencode_v49.png"
+   ],
+   "n_files": 17
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 128,
+   "title": "Notebook 285: pooling kmerseek calls across the BCL-2 family ranks it 39th of 7_212 human groups for Ced9",
+   "draft": true,
+   "branch": "olgabot/family-pooled-evidence-285",
+   "base": "olgabot/alphabet-agreement-explainer",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": 125,
+   "notebooks": [
+    "notebooks/285_family_pooled_evidence_Ced9-BCL2_P66-CD47.ipynb"
+   ],
+   "notebook_ids": [
+    "285"
+   ],
+   "figures": [
+    "figures/285/285_ced9_bcl2_family_evidence_by_residue.png",
+    "figures/285/285_ced9_bcl2_family_pfam_columns.png",
+    "figures/285/285_ced9_bcl2_family_residues_at_168.png",
+    "figures/285/285_decision_ced9_p66.png",
+    "figures/285/285_group_rank_ced9_p66_gencode_v49.png",
+    "figures/285/285_paralog_group_sizes_ensembl115.png",
+    "figures/285/285_posthoc_near_copies_once_ced9_p66.png",
+    "figures/285/285_random_set_null_ced9_p66_gencode_v49.png",
+    "figures/285/285_reverse_direction_dark_set_landmarks.png"
+   ],
+   "n_files": 50
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 127,
+   "title": "Progress summary for readers without the local chats (2026-10-13)",
+   "draft": true,
+   "branch": "olgabot/progress-summary-2026-10-13",
+   "base": "main",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 1
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 126,
+   "title": "Notebook 281: Botryllus links to MHC, histocompatibility and self/non-self proteins",
+   "draft": true,
+   "branch": "olgabot/botryllus-mhc-281",
+   "base": "main",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/281_botryllus_mhc_histocompatibility_self_nonself_kmerseek_vs_tools.ipynb"
+   ],
+   "notebook_ids": [
+    "281"
+   ],
+   "figures": [
+    "figures/281_botryllus_proteins_by_kmerseek_only_links_E1_botryllus_vs_swissprot_minus_ascidiacea.png",
+    "figures/281_kmerseek_only_links_by_alphabet_E1_botryllus_vs_swissprot_minus_ascidiacea.png",
+    "figures/281_kmerseek_only_links_evalue_identity_E1_botryllus_vs_swissprot_minus_ascidiacea.png",
+    "figures/281_kmerseek_only_targets_by_category_vs_control_E10_botryllus_vs_swissprot_minus_ascidiacea.png",
+    "figures/281_kmerseek_only_targets_by_category_vs_control_E1_botryllus_vs_swissprot_minus_ascidiacea.png",
+    "figures/281_link_identity_above_chance_and_alphabets_E1_botryllus_vs_swissprot_minus_ascidiacea.png",
+    "figures/281_regions_dropped_lowcomplexity_helix_wrong_target_botryllus_vs_swissprot_minus_ascidiacea.png",
+    "figures/281_target_lengths_by_category_botryllus_vs_swissprot_minus_ascidiacea.png",
+    "figures/281_targets_reached_by_category_kmerseek_phmmer_jackhmmer_mmseqs2_E1_botryllus_vs_swissprot_minus_ascidiacea.png"
+   ],
+   "n_files": 63
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 125,
+   "title": "Notebook 284: do the 19 alphabets agree on BCL2's region? Only 4 do, and 4_848 proteins get more",
+   "draft": true,
+   "branch": "olgabot/alphabet-agreement-explainer",
+   "base": "main",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 31
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 124,
+   "title": "283: does BHF beat copies that keep its low-complexity stretches? (and the E-value qualifier for 256)",
+   "draft": true,
+   "branch": "olgabot/bhf-low-complexity-control",
+   "base": "olgabot/bhf-dipeptide-shuffle-null",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": 83,
+   "notebooks": [
+    "notebooks/283_bhf_low_complexity_control.ipynb"
+   ],
+   "notebook_ids": [
+    "283"
+   ],
+   "figures": [
+    "figures/283_bhf_low_complexity_stretches_kmerseek_seg.png",
+    "figures/283_copies_identity_to_bhf_three_nulls.png"
+   ],
+   "n_files": 16
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 123,
+   "title": "Figures as 256-colour PNGs: pf.save, shrink_png, and 321 committed PNGs",
+   "draft": true,
+   "branch": "olgabot/pubfig-256-colours",
+   "base": "main",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [
+    "analysis/ranking-metrics-p66/P66_alphabet_specificity.png",
+    "analysis/ranking-metrics-p66/P66_vs_BHF_evalues.png",
+    "analysis/ranking-metrics-p66/bhf_20pct_domain_rule.png",
+    "analysis/ranking-metrics-p66/overlap_rule_comparison.png",
+    "analysis/ranking-metrics-p66/p66_cd47_ladder.png",
+    "analysis/ranking-metrics-p66/ranking_metric_comparison_20pct.png",
+    "analysis/ranking-metrics-p66/threshold_cannot_be_located.png",
+    "data/202_accuracy_vs_plddt_xy_by_alphabet.png",
+    "data/202_metric_leaderboard_by_plddt.png",
+    "data/202_metric_winner_counts_by_plddt.png",
+    "data/202_orthofinder_plddt_flatness_check.png",
+    "data/202_plddt_distribution.png",
+    "figures/066_all_fps_best_metric_sensitivity_curve.png",
+    "figures/066_all_fps_bonf_auc_vs_ksize_fam_sfam_fold.png",
+    "figures/066_all_fps_bonf_auc_vs_ksize_sfam_fam_fold.png",
+    "figures/066_all_fps_bonferroni_collapse.png",
+    "figures/066_all_fps_bonferroni_correct_auc.png",
+    "figures/066_all_fps_k24_k27_sensitivity_comparison.png",
+    "figures/066_all_fps_kmerseek_only_auc_vs_ksize.png",
+    "figures/066_all_fps_metric_category_auc.png",
+    "figures/066_all_fps_precision_recall_curves.png",
+    "figures/066_all_fps_sensitivity_curves_k25.png",
+    "figures/066_all_fps_sfam_auc_vs_ksize.png",
+    "figures/066_all_fps_shared_queries_sensitivity.png",
+    "figures/066_all_fps_tfidf_threshold_auc.png",
+    "figures/066_all_fps_unique_families_by_class.png",
+    "figures/066_best_metric_sensitivity_curve.png",
+    "figures/066_bonf_auc_vs_ksize_sfam_fam_fold.png",
+    "figures/066_excl_gz_best_metric_sensitivity_curve.png",
+    "figures/066_excl_gz_bonf_auc_vs_ksize_fam_sfam_fold.png",
+    "figures/066_excl_gz_bonf_auc_vs_ksize_sfam_fam_fold.png",
+    "figures/066_excl_gz_bonferroni_collapse.png",
+    "figures/066_excl_gz_bonferroni_correct_auc.png",
+    "figures/066_excl_gz_k24_k27_sensitivity_comparison.png",
+    "figures/066_excl_gz_kmerseek_only_auc_vs_ksize.png",
+    "figures/066_excl_gz_metric_category_auc.png",
+    "figures/066_excl_gz_precision_recall_curves.png",
+    "figures/066_excl_gz_sensitivity_curves_k25.png",
+    "figures/066_excl_gz_sfam_auc_vs_ksize.png",
+    "figures/066_excl_gz_shared_queries_sensitivity.png",
+    "figures/066_excl_gz_tfidf_threshold_auc.png",
+    "figures/066_excl_gz_unique_families_by_class.png",
+    "figures/066_k24_k27_sensitivity_comparison.png",
+    "figures/066_kmerseek_only_auc_vs_ksize.png",
+    "figures/066_metric_category_auc.png",
+    "figures/066_pairplot_k24_foldseek.png",
+    "figures/066_pairplot_k27_foldseek.png",
+    "figures/066_precision_recall_curves.png",
+    "figures/066_sfam_auc_vs_ksize.png",
+    "figures/066_shared_queries_sensitivity.png",
+    "figures/067_bcl2_ced9_pvalue_vs_ksize.png",
+    "figures/067_bcl2_hits_by_alpha.png",
+    "figures/067_small_k_sensitivity_by_metric.png",
+    "figures/068_hp_unique_class_distribution.png",
+    "figures/068_pairplot_class.png",
+    "figures/068_pairplot_family.png",
+    "figures/068_pairplot_fold.png",
+    "figures/068_pairplot_superfamily.png",
+    "figures/068_scop_coverage_unique.png",
+    "figures/068_sensitivity_k27.png",
+    "figures/068_sensitivity_k35_k36.png",
+    "figures/068_similarity_by_scop_level.png",
+    "figures/068_unique_families_by_class.png",
+    "figures/068_unique_hits_pairplot.png",
+    "figures/069_bonferroni_collapse.png",
+    "figures/069_bonferroni_correct_auc.png",
+    "figures/069_sensitivity_curves_k25.png",
+    "figures/069_tfidf_threshold_auc.png",
+    "figures/070_kmer_frequency_histogram.png",
+    "figures/070_kmer_rank_frequency.png",
+    "figures/070_kmer_top_bottom_k24.png",
+    "figures/070_kmer_top_bottom_k27.png",
+    "figures/074_covered_vs_uncovered.png",
+    "figures/074_disorder_km_wins_vs_tied.png",
+    "figures/074_foldseek_failure_mode.png",
+    "figures/074_head_to_head_sensitivity.png",
+    "figures/074_km_beats_fs_analysis.png",
+    "figures/074_km_only_analysis.png",
+    "figures/074_lift_across_k.png",
+    "figures/074_per_class_sensitivity.png",
+    "figures/074_per_query_scatter.png",
+    "figures/074_seqid_distribution.png",
+    "figures/075_336_breakdown.png",
+    "figures/075_3method_flowchart.png",
+    "figures/075_3method_pie.png",
+    "figures/075_auc_vs_ksize_own.png",
+    "figures/075_auc_vs_ksize_ref.png",
+    "figures/075_class_enrichment_chisq.png",
+    "figures/075_class_enrichment_omnibus.png",
+    "figures/075_coverage_aware.png",
+    "figures/075_coverage_vs_auc.png",
+    "figures/075_detection_matrix.png",
+    "figures/075_fam_auc_lift.png",
+    "figures/075_h2h_ranking.png",
+    "figures/075_per_class_sensitivity.png",
+    "figures/075_per_class_sensitivity_all.png",
+    "figures/075_precision_recall_best.png",
+    "figures/075_roc_own_queries.png",
+    "figures/075_sensitivity_curves_best.png",
+    "figures/075_top_families.png",
+    "figures/075_tp_fp_validation.png",
+    "figures/075_venn_kmerseek_vs_foldseek.png",
+    "figures/076_336_breakdown.png",
+    "figures/076_3method_flowchart.png",
+    "figures/076_3method_pie.png",
+    "figures/076_class_enrichment_chisq.png",
+    "figures/076_class_enrichment_omnibus.png",
+    "figures/076_covered_vs_uncovered.png",
+    "figures/076_detection_matrix.png",
+    "figures/076_family_size_and_class_auc.png",
+    "figures/076_fs_failure_mode.png",
+    "figures/076_h2h_ranking.png",
+    "figures/076_km_beats_fs.png",
+    "figures/076_per_class_sensitivity.png",
+    "figures/076_per_query_scatter.png",
+    "figures/076_sequence_identity.png",
+    "figures/076_tp_fp_validation.png",
+    "figures/077_coverage_aware.png",
+    "figures/077_disorder_336_vs_background.png",
+    "figures/077_dot0_assignments.png",
+    "figures/077_dot0_sequence_identity.png",
+    "figures/077_precision_recall_best.png",
+    "figures/077_sensitivity_curves_best.png",
+    "figures/077_top_families.png",
+    "figures/078_covered_vs_uncovered.png",
+    "figures/078_disorder.png",
+    "figures/078_family_size_and_class_auc.png",
+    "figures/078_frontier.png",
+    "figures/078_fs_failure_mode.png",
+    "figures/078_km_beats_fs.png",
+    "figures/078_per_class_disorder.png",
+    "figures/078_per_class_identity.png",
+    "figures/078_per_query_scatter.png",
+    "figures/078_sequence_identity.png",
+    "figures/083_class_dist.png",
+    "figures/083_famsize.png",
+    "figures/083_scatter.png",
+    "figures/083_seq_props.png",
+    "figures/085_filter_auc_by_length_quartile.png",
+    "figures/085_hash_floor_operating_curve.png",
+    "figures/085_short_query_single_kmer_noise.png",
+    "figures/086_alpha_invariance.png",
+    "figures/086_fixed_count_drift.png",
+    "figures/086_frequency_knee.png",
+    "figures/086_kmer_complexity_distributions.png",
+    "figures/086_null_validity.png",
+    "figures/086_operating_curves.png",
+    "figures/124_auc_by_correction.png",
+    "figures/124_fp_characterization.png",
+    "figures/124_paralog_contamination.png",
+    "figures/124_score_distributions.png",
+    "figures/126_bonferroni_collapse.png",
+    "figures/126_gbt_feature_importance_ecoli.png",
+    "figures/126_gbt_feature_importance_mouse.png",
+    "figures/126_hit_rate_vs_ksize.png",
+    "figures/126_ksize_window_auc_vs_mya.png",
+    "figures/126_ml_classifier_auc.png",
+    "figures/126_poisson_calibration_qq.png",
+    "figures/126_precision_recall_curves.png",
+    "figures/126_protein_length_stratified_auc.png",
+    "figures/206_close_vs_divergent.png",
+    "figures/206_decile_gap.png",
+    "figures/206_decile_plot.png",
+    "figures/206_family_auc.png",
+    "figures/206_family_metric_leaderboard.png",
+    "figures/206_family_metric_win_counts.png",
+    "figures/206_mhc_metric_leaderboard.png",
+    "figures/206_mhc_metric_win_counts.png",
+    "figures/206_mhc_recap.png",
+    "figures/206_quadrant.png",
+    "figures/206_reconciliation_ledger.png",
+    "figures/207_gene_list_composition.png",
+    "figures/207_omega_distribution.png",
+    "figures/207_omega_partial_regression.png",
+    "figures/207_omega_vs_perc_id.png",
+    "figures/210_effective_n.png",
+    "figures/210_label_policy_comparison.png",
+    "figures/210_prevalence_by_stratum.png",
+    "figures/211_auc_vs_bits.png",
+    "figures/211_auc_vs_ksize_by_policy.png",
+    "figures/211_class_i_recommendation.png",
+    "figures/211_recovery_vs_ksize.png",
+    "figures/212_ard_vs_ig.png",
+    "figures/212_localisation_best_combo.png",
+    "figures/212_pooling_decomposition.png",
+    "figures/212_single_pair_localisation.png",
+    "figures/212_target_side_validation.png",
+    "figures/213_metric_auprc_vs_ksize.png",
+    "figures/213_metric_wins_by_policy.png",
+    "figures/213_protein_baseline.png",
+    "figures/214_ablation_by_policy.png",
+    "figures/214_igsf_negative_controls.png",
+    "figures/214_masked_ablation.png",
+    "figures/215_hp_pbotc19_synteny_recovery.png",
+    "figures/215_kmerseek_vs_orthofinder_synteny.png",
+    "figures/215_mhc_ortholog_dotplot.png",
+    "figures/215_percid_estimator_sensitivity.png",
+    "figures/215_stratum_fanout.png",
+    "figures/215_stratum_percent_identity.png",
+    "figures/215_syntenic_vs_mgi_agreement.png",
+    "figures/216_jaccard_vs_null.png",
+    "figures/216_per_pair_jaccard.png",
+    "figures/216_per_pair_overlay.png",
+    "figures/216_solvent_accessibility_overlay.png",
+    "figures/220_length_caps.png",
+    "figures/220_mhc_domain_architecture.png",
+    "figures/220_mhc_region_map.png",
+    "figures/221_folddisco_metric_control.png",
+    "figures/221_metric_semantics_audit.png",
+    "figures/221_mhc_detection_by_species.png",
+    "figures/221_mhc_detection_by_subregion.png",
+    "figures/221_mhc_kmerseek_sweep.png",
+    "figures/221_mhc_vs_tap_control.png",
+    "figures/221_shortfall_decomposition.png",
+    "figures/222_kmerseek_vs_phmmer_synteny.png",
+    "figures/222_mhc_collinearity.png",
+    "figures/222_mhc_target_chromosome.png",
+    "figures/222_per_gene_target_chromosome.png",
+    "figures/222_placement_summary.png",
+    "figures/222_zebrafish_class_split.png",
+    "figures/223_ablation_pf00129.png",
+    "figures/223_ablation_pf07654.png",
+    "figures/223_boundary_matched.png",
+    "figures/223_boundary_offsets.png",
+    "figures/223_domain_cooccurrence.png",
+    "figures/223_domain_length_ceiling.png",
+    "figures/223_folddisco_control.png",
+    "figures/223_hp_vs_protein20_platform.png",
+    "figures/223_iou_vs_cover.png",
+    "figures/223_offset_vs_ksize.png",
+    "figures/223_summary.png",
+    "figures/223_truth_composition.png",
+    "figures/223_two_conditions.png",
+    "figures/224_called_vs_boundary_matched.png",
+    "figures/224_detection_reachability_matrix.png",
+    "figures/224_gray_zone_census.png",
+    "figures/224_hp_ordering_internal_control.png",
+    "figures/224_iou_threshold_sweep.png",
+    "figures/224_k19_called_not_boundary_matched.png",
+    "figures/224_k19_called_not_delimited.png",
+    "figures/224_scope.png",
+    "figures/224_summary.png",
+    "figures/224_which_overlap_metrics.png",
+    "figures/225_ig_vs_platform_density.png",
+    "figures/225_platform_reach_by_alphabet.png",
+    "figures/225_query_target_paired.png",
+    "figures/225_ratio_by_alphabet.png",
+    "figures/225_recognition_vs_placement.png",
+    "figures/225_recovery_vs_ksize.png",
+    "figures/225_scored_compartments.png",
+    "figures/226_census.png",
+    "figures/226_fmax_vs_census.png",
+    "figures/226_folddisco_gap.png",
+    "figures/226_kmerseek_iou.png",
+    "figures/226_length_fraction.png",
+    "figures/226_mhc_subset_check.png",
+    "figures/226_predicts_recall.png",
+    "figures/226_single_domain_targets.png",
+    "figures/227_called_vs_boundary_matched.png",
+    "figures/227_clean_run_model.png",
+    "figures/227_length_bands.png",
+    "figures/227_length_within_identity.png",
+    "figures/227_recall_by_length.png",
+    "figures/228_botryllus_targets.png",
+    "figures/228_candidate_pfam.png",
+    "figures/228_kmerseek_pattern.png",
+    "figures/228_prediction.png",
+    "figures/228_reference_pattern.png",
+    "figures/230_hp_variant_kappa.png",
+    "figures/230_identity_distributions.png",
+    "figures/230_kappa_by_identity.png",
+    "figures/230_kappa_homology_vs_packing.png",
+    "figures/230_longest_run_by_identity.png",
+    "figures/230_reachable_fraction_vs_bits.png",
+    "figures/230_reachable_fraction_vs_k.png",
+    "figures/231_alphabet_winners_by_subset.png",
+    "figures/231_controls_vs_kmerseek.png",
+    "figures/231_leaderboard_by_subset.png",
+    "figures/231_retention_by_subset.png",
+    "figures/231_tp_share_by_feature_type.png",
+    "figures/232_alphabets_with_extension.png",
+    "figures/232_penalty_sensitivity.png",
+    "figures/232_recall_vs_seed_hp.png",
+    "figures/232_scope_cross_family.png",
+    "figures/232_score_distributions_hp_20_30.png",
+    "figures/233_found_by_whom.png",
+    "figures/233_score_vs_phmmer_evalue.png",
+    "figures/234_hp_retention_vs_blosum.png",
+    "figures/234_kappa_by_pair_type.png",
+    "figures/235_matched_recall_crossfold.png",
+    "figures/235_topk_precision_sensitivity.png",
+    "figures/236_crossover.png",
+    "figures/236_fmax_vs_divergence_pfam.png",
+    "figures/237_primitive_only_survival.png",
+    "figures/237_survivor_periodicity.png",
+    "figures/238_covered_delimited_by_length_fraction.png",
+    "figures/238_iou_given_hit.png",
+    "figures/239_laptop_scale_swissprot.png",
+    "figures/alphabet_class_shares.png",
+    "figures/darkset_0.4_index_cost_vs_0.3.png",
+    "figures/darkset_botryllus_full_proteome.png",
+    "figures/kmerseek_0.4_vs_0.3_resource_matched.png",
+    "figures/midi_plus_gbmr7_store_coverage.png",
+    "figures/qfo_dnds_saturation_by_divergence.png",
+    "figures/qfo_eta_before_after_resource_change.png",
+    "figures/qfo_index_cost_vs_proteome_size.png",
+    "figures/qfo_index_size_by_tool.png",
+    "figures/qfo_midi_plus_overview.png",
+    "figures/qfo_midi_vs_full_task_time.png",
+    "figures/qfo_pipeline_runtime_budget.png",
+    "figures/qfo_queue_wait_by_cores.png",
+    "figures/qfo_target_db_cache_savings.png",
+    "notebooks/24_accuracy_and_negative_space_vs_ksize.png",
+    "notebooks/24_accuracy_vs_negative_space.png",
+    "notebooks/24_diversity_fraction_vs_total_kmers.png",
+    "notebooks/24_hp_degeneracy_ratio_vs_shuffled_control.png",
+    "notebooks/24_hp_space_negative_space.png",
+    "notebooks/24_hp_space_vs_proteome_size_vs_ksize.png",
+    "notebooks/24_mean_degeneracy_vs_ksize_by_alphabet.png",
+    "notebooks/24_occurrence_histogram_k19_hp_family_vs_control.png",
+    "notebooks/24_unique_kmers_vs_ksize_by_alphabet.png"
+   ],
+   "n_files": 327
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 122,
+   "title": "Notebook 282: set up the ohnolog split-or-narrow test with Botryllus (Stages 0-1, Stage 2 plan)",
+   "draft": true,
+   "branch": "olgabot/ohnolog-specialization-282",
+   "base": "main",
+   "created": "2026-10-13",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/282_ohnolog_specialization_botryllus_amphioxus_human.ipynb"
+   ],
+   "notebook_ids": [
+    "282"
+   ],
+   "figures": [
+    "figures/282_families_by_botryllus_copies_and_human_ohnologs_orthofinder_ohnologs_v2.png",
+    "figures/282_marletaz2018_fig6d_fates_from_published_counts.png",
+    "figures/282_ohnologs_v2_human_genes_found_in_gencode_v49.png",
+    "figures/282_orthofinder_vs_marletaz2018_ohnolog_families.png",
+    "figures/282_proteomes_botryllus_ciona_amphioxus_human_genes_kept.png",
+    "figures/282_tunicate_gene_loss_botryllus_ciona_orthofinder_ohnologs_v2.png"
+   ],
+   "n_files": 28
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 121,
+   "title": "nb 280: time-split test, Pfam 33.1 to 38.2 (Stop 1)",
+   "draft": true,
+   "branch": "olgabot/time-split-pfam",
+   "base": "main",
+   "created": "2026-10-12",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/280_time_split_pfam_33_to_38.ipynb"
+   ],
+   "notebook_ids": [
+    "280"
+   ],
+   "figures": [
+    "notebooks/figures_280/time_split_funnel_pfam33-1_to_38-2_sprot2019_08.png",
+    "notebooks/figures_280/time_split_identity_500_instances_sprot2019_08.png"
+   ],
+   "n_files": 36
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 120,
+   "title": "Notebook 279: dark proteins kmerseek reaches at E < 1 and E < 10",
+   "draft": true,
+   "branch": "olgabot/dark-set-reach-279",
+   "base": "main",
+   "created": "2026-10-12",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/279_dark_set_kmerseek_reach_at_E1_E10.ipynb"
+   ],
+   "notebook_ids": [
+    "279"
+   ],
+   "figures": [
+    "figures/279_best_dark_reach_scaled1_qfo_swissprot.png",
+    "figures/279_bhf_best_region_evalue_vs_dipeptide_shuffles_low_complexity_rules_hp_lehninger2_swissprot.png",
+    "figures/279_bhf_hp_lehninger2_seed_counts_vs_shuffles_k11_k16_swissprot.png",
+    "figures/279_bhf_kmerseek_visualize_hits_hp_lehninger2_k17.png",
+    "figures/279_bhf_kmerseek_visualize_hits_hp_lehninger2_k19.png",
+    "figures/279_bhf_kmerseek_visualize_hits_hp_lehninger2_k21.png",
+    "figures/279_bhf_kmerseek_visualize_hits_hp_lehninger2_k23.png",
+    "figures/279_bhf_phmmer_alignments_hp_runs_vs_chance_hp_lehninger2_swissprot.png",
+    "figures/279_bhf_phmmer_jackhmmer_kmerseek_hp_lehninger2_k17_k23.png",
+    "figures/279_bhf_regions_on_zinc_finger_membrane_dna_binding_hp_lehninger2_swissprot.png",
+    "figures/279_botryllus_dark_immune_target_terms_scaled1.png",
+    "figures/279_dark_reach_after_lowcomplexity_helix_filter_scaled1.png",
+    "figures/279_dark_reached_vs_missed_uniprot_features_scaled1.png",
+    "figures/279_dark_share_by_tool_evalue_qfo_swissprot.png",
+    "figures/279_dark_vs_placed_reach_scaled1_qfo_swissprot.png",
+    "figures/279_dark_vs_placed_reach_six_settings_region_files_scaled1.png",
+    "figures/279_example_dark_proteins_kmerseek_vs_tool_evalue_scaled1.png"
+   ],
+   "n_files": 65
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 119,
+   "title": "Notebook 278: no alphabet beats BLOSUM62, but H/P leads exact matching at the fold level",
+   "draft": true,
+   "branch": "olgabot/hp-vs-blosum62-277",
+   "base": "olgabot/hp-agreement-per-100",
+   "created": "2026-10-12",
+   "updated": "2026-10-12",
+   "base_pr": 99,
+   "notebooks": [
+    "notebooks/278_hp_vs_blosum62_evidence_per_position_pfam_seed_scope40.ipynb"
+   ],
+   "notebook_ids": [
+    "278"
+   ],
+   "figures": [
+    "figures/278_bits_per_position_all_kmerseek_alphabets_vs_blosum62.png",
+    "figures/278_bits_per_position_hp_vs_blosum62_by_scope_relationship.png",
+    "figures/278_bits_per_position_hp_vs_blosum62_pfam_seed_by_identity.png",
+    "figures/278_exact_match_bits_hp_leads_at_fold_level.png",
+    "figures/278_hp_log_odds_implied_by_blosum62_and_blosum45.png"
+   ],
+   "n_files": 10
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 118,
+   "title": "276: structure does not support P66 mimicking CD47",
+   "draft": true,
+   "branch": "olgabot/nb276-p66-cd47-structure",
+   "base": "main",
+   "created": "2026-10-11",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/276_p66_cd47_structural_mimicry_test.ipynb"
+   ],
+   "notebook_ids": [
+    "276"
+   ],
+   "figures": [
+    "figures/276a_p66_model_confidence.png",
+    "figures/276b_p66_cd47_superposition.png",
+    "figures/276c_wholefold_tmscore_background.png",
+    "figures/276d_loop_to_face_rmsd_background.png",
+    "figures/276e_cd47_binding_face_map.png",
+    "figures/276f_foldseek_p66_vs_pdb.png",
+    "figures/276g_loop_class_strings_all_alphabets.png",
+    "figures/276h_claim_diagram.png",
+    "figures/276i_loop_kmer_reach_by_alphabet_and_k.png",
+    "figures/276j_seed_extend_best_alignment.png",
+    "figures/276k_seed_extend_null_tests.png",
+    "figures/276l_hsdm17_prespecified_test.png",
+    "figures/276m_all_alphabets_summary.png",
+    "figures/276n_segment_specificity.png",
+    "figures/276o_combined_alphabets.png",
+    "figures/276p_why_combining_alphabets_hurts.png",
+    "figures/276q_segment_corroboration_by_alphabet.png",
+    "figures/276r_which_merges_carry_the_segment.png",
+    "figures/276s_idf_weighting.png",
+    "figures/276t_cd47_rank_across_settings.png",
+    "figures/276u_cd47_feature_overlay.png"
+   ],
+   "n_files": 80
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 117,
+   "title": "Notebook 247: BCL-2 query panel vs CED-9 alone (stopped: 2 non-chordate queries in Swiss-Prot)",
+   "draft": true,
+   "branch": "olgabot/bcl2-query-panel-247",
+   "base": "main",
+   "created": "2026-10-11",
+   "updated": "2026-10-11",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/247_bcl2_family_query_panel_vs_ced9_alone.ipynb"
+   ],
+   "notebook_ids": [
+    "247"
+   ],
+   "figures": [
+    "figures/247_swissprot_bcl2_family_entries_by_group.png"
+   ],
+   "n_files": 7
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 116,
+   "title": "Figure: the seven H/P alphabets differ only on C, G, P, W and Y",
+   "draft": true,
+   "branch": "olgabot/hp-borderline-residues-figure",
+   "base": "main",
+   "created": "2026-10-10",
+   "updated": "2026-10-12",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [
+    "figures/hp_borderline_residues.png"
+   ],
+   "n_files": 6
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 115,
+   "title": "parse_disprot.py: read every DisProt page, and only consensus disorder",
+   "draft": true,
+   "branch": "olgabot/fix-parse-disprot",
+   "base": "main",
+   "created": "2026-10-06",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 3
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 114,
+   "title": "Regions-index pilot: queries, truth, both indexes and decoys (no search yet)",
+   "draft": true,
+   "branch": "olgabot/regions-index-pilot",
+   "base": "main",
+   "created": "2026-10-06",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 51
+  },
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 113,
+   "title": "Notebook 246: seeds that allow mismatches, on CED-9/BCL2 and P66/CD47",
+   "draft": true,
+   "branch": "olgabot/mismatch-seeds-246",
+   "base": "main",
+   "created": "2026-10-06",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/246_mismatch_seeds_BCL2-Ced9_P66-CD47.ipynb"
+   ],
+   "notebook_ids": [
+    "246"
+   ],
+   "figures": [
+    "figures/246_bh1_diagonal_seeds_ced9_bcl2.png",
+    "figures/246_partner_rank_bcl2_cd47_human.png",
+    "figures/246_random_protein_null_human.png",
+    "figures/246_scaled2_index_and_reach_pfam_human.png",
+    "figures/246_seed_reach_vs_chance_pfam_human.png"
+   ],
+   "n_files": 26
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -23,7 +768,27 @@
    "title": "SCOPe40 family and superfamily sensitivity with kmerseek 0.4: 19 alphabets, k_min to k_max, six settings",
    "draft": true,
    "branch": "olgabot/scope40-alphabet-ksize-v040",
-   "updated": "2026-10-03"
+   "base": "main",
+   "created": "2026-10-03",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/277_scope40_kmerseek_0.4_auc_19_alphabets_six_settings.ipynb"
+   ],
+   "notebook_ids": [
+    "277"
+   ],
+   "figures": [
+    "figures/277_scope40_kmerseek_v040_auc_by_score_column.png",
+    "figures/277_scope40_kmerseek_v040_below_kmin.png",
+    "figures/277_scope40_kmerseek_v040_best_per_alphabet.png",
+    "figures/277_scope40_kmerseek_v040_extension_vs_exact.png",
+    "figures/277_scope40_kmerseek_v040_hp_protein20_auc_vs_k.png",
+    "figures/277_scope40_kmerseek_v040_identity_under_20.png",
+    "figures/277_scope40_kmerseek_v040_same_scale_as_foldseek.png",
+    "figures/277_scope40_kmerseek_v040_searches_with_hits.png"
+   ],
+   "n_files": 47
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -31,15 +796,17 @@
    "title": "Supplementary Figure 1 (alphabets, bits, k-sizes to test) and seed reach at k*",
    "draft": true,
    "branch": "olgabot/suppfig1-alphabets",
-   "updated": "2026-10-03"
-  },
-  {
-   "repo": "seanome/2024-kmerseek-analysis",
-   "n": 105,
-   "title": "Save PNGs and notebook images with 256 colours",
-   "draft": true,
-   "branch": "olgabot/png-256-colours",
-   "updated": "2026-10-03"
+   "base": "olgabot/nb230-kappa-all-alphabets",
+   "created": "2026-10-03",
+   "updated": "2026-10-06",
+   "base_pr": 100,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [
+    "figures/seed_reach_at_kstar_pfam_seed_20-30pct.png",
+    "figures/suppfig1.png"
+   ],
+   "n_files": 19
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -47,7 +814,29 @@
    "title": "Notebook 264: the three combiners, the single best pair, phmmer and a Kyte-Doolittle scan on test",
    "draft": false,
    "branch": "olgabot/combiner-comparison-264",
-   "updated": "2026-10-02"
+   "base": "olgabot/combiner-c-consensus-vote",
+   "created": "2026-10-02",
+   "updated": "2026-10-06",
+   "base_pr": 103,
+   "notebooks": [
+    "notebooks/264_combiner_comparison_test_split.ipynb"
+   ],
+   "notebook_ids": [
+    "264"
+   ],
+   "figures": [
+    "figures/264_called_regions_per_method_midi_plus_zebrafish_test.png",
+    "figures/264_called_regions_per_method_midi_plus_zebrafish_test_notebook.png",
+    "figures/264_calls_domains_boundary_per_method_midi_plus_zebrafish_test.png",
+    "figures/264_calls_domains_boundary_per_method_midi_plus_zebrafish_test_notebook.png",
+    "figures/264_domains_landed_merged_vs_unmerged_kmerseek_phmmer_midi_plus_zebrafish_test.png",
+    "figures/264_domains_landed_merged_vs_unmerged_kmerseek_phmmer_midi_plus_zebrafish_test_notebook.png",
+    "figures/264_precision_recall_per_method_swissprot_pfam_midi_plus_zebrafish_test.png",
+    "figures/264_precision_recall_per_method_swissprot_pfam_midi_plus_zebrafish_test_notebook.png",
+    "figures/264_recall_vs_calls_per_query_combiners_vs_single_pair_midi_plus_zebrafish_test.png",
+    "figures/264_recall_vs_calls_per_query_combiners_vs_single_pair_midi_plus_zebrafish_test_notebook.png"
+   ],
+   "n_files": 79
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -55,7 +844,37 @@
    "title": "Notebook 263: combiner C, a consensus vote across alphabet-ksize pairs",
    "draft": false,
    "branch": "olgabot/combiner-c-consensus-vote",
-   "updated": "2026-10-02"
+   "base": "olgabot/combiner-b-best-of-n",
+   "created": "2026-10-02",
+   "updated": "2026-10-06",
+   "base_pr": 102,
+   "notebooks": [
+    "notebooks/263_combiner_c_consensus_vote.ipynb"
+   ],
+   "notebook_ids": [
+    "263"
+   ],
+   "figures": [
+    "figures/263_multidomain_domains_landed_vote_vs_combiners_phmmer_zebrafish_test.png",
+    "figures/263_multidomain_domains_landed_vote_vs_combiners_phmmer_zebrafish_test_notebook.png",
+    "figures/263_vote_bhf_vs_300_dipeptide_shuffles_human_proteome.png",
+    "figures/263_vote_bhf_vs_300_dipeptide_shuffles_human_proteome_notebook.png",
+    "figures/263_vote_every_pair_vs_one_per_cluster_frozen_zebrafish_tune.png",
+    "figures/263_vote_every_pair_vs_one_per_cluster_frozen_zebrafish_tune_notebook.png",
+    "figures/263_vote_frozen_test_vs_combiner_a_b_single_pair_zebrafish.png",
+    "figures/263_vote_frozen_test_vs_combiner_a_b_single_pair_zebrafish_notebook.png",
+    "figures/263_vote_pair_agreement_heatmap_ced9_p66_bhf_human_proteome.png",
+    "figures/263_vote_pair_agreement_heatmap_ced9_p66_bhf_human_proteome_notebook.png",
+    "figures/263_vote_pair_agreement_heatmap_zebrafish_tune.png",
+    "figures/263_vote_pair_agreement_heatmap_zebrafish_tune_notebook.png",
+    "figures/263_vote_precision_recall_by_vmin_swissprot_pfam_zebrafish_tune.png",
+    "figures/263_vote_precision_recall_by_vmin_swissprot_pfam_zebrafish_tune_notebook.png",
+    "figures/263_vote_rank_known_cases_ced9_bcl2_p66_cd47_bhf_human_proteome.png",
+    "figures/263_vote_rank_known_cases_ced9_bcl2_p66_cd47_bhf_human_proteome_notebook.png",
+    "figures/263_vote_real_vs_shuffled_calls_by_vmin_zebrafish_tune.png",
+    "figures/263_vote_real_vs_shuffled_calls_by_vmin_zebrafish_tune_notebook.png"
+   ],
+   "n_files": 81
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -63,7 +882,27 @@
    "title": "Notebook 262: combiner B, best of n alphabet-ksize pairs",
    "draft": false,
    "branch": "olgabot/combiner-b-best-of-n",
-   "updated": "2026-10-02"
+   "base": "olgabot/combiner-a-intersection",
+   "created": "2026-10-02",
+   "updated": "2026-10-06",
+   "base_pr": 98,
+   "notebooks": [
+    "notebooks/262_combiner_b_best_of_n.ipynb"
+   ],
+   "notebook_ids": [
+    "262"
+   ],
+   "figures": [
+    "figures/262_best_of_n_calls_per_query_real_vs_shuffled_zebrafish_tune.png",
+    "figures/262_best_of_n_frozen_threshold_test_vs_single_pair_combiner_a_kyte_doolittle_zebrafish.png",
+    "figures/262_best_of_n_precision_recall_swissprot_pfam_kyte_doolittle_zebrafish_tune.png",
+    "figures/262_best_of_n_raw_vs_corrected_calls_by_cut_zebrafish_tune.png",
+    "figures/262_best_of_n_regions_by_pairs_that_called_them_zebrafish.png",
+    "figures/262_best_of_n_winning_pair_by_region_length_zebrafish.png",
+    "figures/262_best_of_n_winning_pair_by_swissprot_feature_type_zebrafish.png",
+    "figures/262_multidomain_domains_landed_best_of_n_vs_combiner_a_phmmer_zebrafish_test.png"
+   ],
+   "n_files": 40
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -71,7 +910,20 @@
    "title": "274: the k-sizes to test per alphabet, from k_min to k_max (print version of explainer Figure 12)",
    "draft": false,
    "branch": "olgabot/ksizes-per-alphabet-274",
-   "updated": "2026-10-03"
+   "base": "main",
+   "created": "2026-10-02",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/274_ksizes_to_test_per_alphabet_human_swissprot.ipynb"
+   ],
+   "notebook_ids": [
+    "274"
+   ],
+   "figures": [
+    "figures/274_ksizes_to_test_per_alphabet_human_swissprot.png"
+   ],
+   "n_files": 9
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -79,7 +931,22 @@
    "title": "230: kappa and usable k for all 19 kmerseek alphabets",
    "draft": false,
    "branch": "olgabot/nb230-kappa-all-alphabets",
-   "updated": "2026-10-02"
+   "base": "main",
+   "created": "2026-10-02",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/230_hp_class_conservation_in_aligned_homologs.ipynb"
+   ],
+   "notebook_ids": [
+    "230"
+   ],
+   "figures": [
+    "figures/230_kappa_agreement_vs_chance_all_alphabets_pfam_seed.png",
+    "figures/230_kappa_by_fine_identity_all_alphabets_pfam_seed.png",
+    "figures/230_seed_length_reach_vs_274_range_all_alphabets_pfam_seed.png"
+   ],
+   "n_files": 8
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -87,7 +954,26 @@
    "title": "Notebook 273: H/P agreement per 100 aligned positions, counted per pair",
    "draft": false,
    "branch": "olgabot/hp-agreement-per-100",
-   "updated": "2026-10-01"
+   "base": "main",
+   "created": "2026-10-01",
+   "updated": "2026-10-12",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/273_hp_agreement_per_100_positions_pfam_seed_scope40.ipynb"
+   ],
+   "notebook_ids": [
+    "273"
+   ],
+   "figures": [
+    "figures/273_hp_vs_20aa_evidence_ratio_scope_relationship_and_even_odd_positions.png",
+    "figures/273_hp_vs_protein20_agreement_per_100_and_bits_pfam_seed_scope40.png",
+    "figures/273_kept_worth_evidence_seeds_hp_vs_20aa_pfam_seed_le20pct.png",
+    "figures/273_measured_vs_kappa_estimates_pfam_seed_scope40_20_30pct.png",
+    "figures/273_one_pair_per_identity_bin_hp_and_protein20_pfam_seed.png",
+    "figures/273_one_pair_position_by_position_bcl2_pfam_seed.png",
+    "figures/273_scope_relationship_hp_vs_protein20_bits_all_vs_under_20pct.png"
+   ],
+   "n_files": 10
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -95,15 +981,37 @@
    "title": "Notebook 261: combiner A, intersection of a fixed panel of alphabet-ksize pairs",
    "draft": false,
    "branch": "olgabot/combiner-a-intersection",
-   "updated": "2026-10-01"
+   "base": "olgabot/midi-plus-0.4-decoy",
+   "created": "2026-10-01",
+   "updated": "2026-10-06",
+   "base_pr": 88,
+   "notebooks": [
+    "notebooks/261_combiner_a_intersection_panel.ipynb"
+   ],
+   "notebook_ids": [
+    "261"
+   ],
+   "figures": [
+    "figures/261_intersection_precision_recall_by_n_zebrafish_tune.png",
+    "figures/261_intersection_real_vs_shuffled_calls_zebrafish_tune.png",
+    "figures/261_multidomain_domains_landed_intersection_vs_phmmer_zebrafish_test.png"
+   ],
+   "n_files": 31
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
    "n": 97,
-   "title": "Experiment inventory and experiments page (5 commits that were only on the laptop's main)",
-   "draft": true,
+   "title": "Experiment inventory, claims page, and its GitHub Pages site",
+   "draft": false,
    "branch": "olgabot/experiment-inventory",
-   "updated": "2026-10-05"
+   "base": "main",
+   "created": "2026-10-01",
+   "updated": "2026-10-05",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 10
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -111,23 +1019,44 @@
    "title": "245: where the P66/CD47 shared k-mers sit, and whether they touch the SIRP-alpha residues",
    "draft": false,
    "branch": "olgabot/p66-cd47-pair-coordinates",
-   "updated": "2026-10-02"
+   "base": "olgabot/alphabet-ensemble",
+   "created": "2026-10-01",
+   "updated": "2026-10-06",
+   "base_pr": 48,
+   "notebooks": [
+    "notebooks/245_p66_cd47_pair_coordinates.ipynb"
+   ],
+   "notebook_ids": [
+    "245"
+   ],
+   "figures": [
+    "figures/245_p66_cd47_controls.png",
+    "figures/245_p66_cd47_shared_kmer_map.png"
+   ],
+   "n_files": 37
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
    "n": 95,
-   "title": "Figure 1: H/P class kept above chance between related proteins (nb 275)",
-   "draft": true,
-   "branch": "olgabot/fig1-hp-runs",
-   "updated": "2026-10-04"
-  },
-  {
-   "repo": "seanome/2024-kmerseek-analysis",
-   "n": 94,
-   "title": "check_notebooks: flag a table with no figure, and a shared notebook number",
+   "title": "Figure 1: H/P runs and the seed-length trade, hp_lehninger2 (nb 275)",
    "draft": false,
-   "branch": "olgabot/notebook-checks-figures",
-   "updated": "2026-10-05"
+   "branch": "olgabot/fig1-hp-runs",
+   "base": "main",
+   "created": "2026-10-01",
+   "updated": "2026-10-13",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/275_fig1_hp_class_kept_pfam_seed.ipynb"
+   ],
+   "notebook_ids": [
+    "275"
+   ],
+   "figures": [
+    "figures/fig1.png",
+    "figures/fig3_draft_hp_run_length_pfam_a_38.2_seed_20-30pct.png",
+    "figures/figS_fig1_hp_thomas_dill2_pair_and_dotplots.png"
+   ],
+   "n_files": 20
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -135,7 +1064,23 @@
    "title": "Nb 271: which kmerseek region score to filter on (mini set, Pfam truth)",
    "draft": true,
    "branch": "olgabot/region-filters-271",
-   "updated": "2026-10-01"
+   "base": "main",
+   "created": "2026-10-01",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/271_region_filters_evalue_poisson_tfidf_mini_pfam.ipynb"
+   ],
+   "notebook_ids": [
+    "271"
+   ],
+   "figures": [
+    "figures/271_mini_pfam_evalue_calibration_shuffled_queries.png",
+    "figures/271_mini_pfam_regions_per_label.png",
+    "figures/271_mini_pfam_same_family_kept_at_fixed_false_rate.png",
+    "figures/271_mini_pfam_score_distributions_by_label.png"
+   ],
+   "n_files": 11
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -143,7 +1088,16 @@
    "title": "Figure: bits of information per letter for all 19 alphabets",
    "draft": true,
    "branch": "olgabot/bits-per-letter-figure",
-   "updated": "2026-10-01"
+   "base": "olgabot/elm-motif-transfer",
+   "created": "2026-10-01",
+   "updated": "2026-10-06",
+   "base_pr": 51,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [
+    "figures/bits_per_letter_by_alphabet_swissprot_human.png"
+   ],
+   "n_files": 25
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -151,7 +1105,14 @@
    "title": "Shared figure helpers: header placement, alphabet axis, missing-value mark",
    "draft": true,
    "branch": "olgabot/notebook-figure-checks",
-   "updated": "2026-10-01"
+   "base": "main",
+   "created": "2026-10-01",
+   "updated": "2026-10-01",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 3
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -159,7 +1120,22 @@
    "title": "midi-plus 0.4 with extension, and its shuffled-query twin (nb 260)",
    "draft": true,
    "branch": "olgabot/midi-plus-0.4-decoy",
-   "updated": "2026-10-01"
+   "base": "olgabot/scaled-sweep-270",
+   "created": "2026-10-01",
+   "updated": "2026-10-06",
+   "base_pr": 87,
+   "notebooks": [
+    "notebooks/260_kmerseek_region_table.ipynb"
+   ],
+   "notebook_ids": [
+    "260"
+   ],
+   "figures": [
+    "figures/260_PLG_tracks.png",
+    "figures/260_arms_per_merged_region.png",
+    "figures/260_merged_length_vs_arms.png"
+   ],
+   "n_files": 29
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -167,15 +1143,26 @@
    "title": "Notebook 270: --scaled 1-10 on the mini set, with decoy queries",
    "draft": true,
    "branch": "olgabot/scaled-sweep-270",
-   "updated": "2026-10-01"
-  },
-  {
-   "repo": "seanome/2024-kmerseek-analysis",
-   "n": 86,
-   "title": "Pfam candidate table: every human Pfam instance, every tool, both directions",
-   "draft": true,
-   "branch": "olgabot/pfam-fair-table",
-   "updated": "2026-09-30"
+   "base": "olgabot/elm-cover-all-species",
+   "created": "2026-10-01",
+   "updated": "2026-10-06",
+   "base_pr": 72,
+   "notebooks": [
+    "notebooks/270_scaled_short_features.ipynb"
+   ],
+   "notebook_ids": [
+    "270"
+   ],
+   "figures": [
+    "figures/270_boundary_error_vs_scaled.png",
+    "figures/270_calls_per_query_real_and_decoy.png",
+    "figures/270_memory_vs_reach_landed.png",
+    "figures/270_reach_landed_pfam_pairs_vs_scaled.png",
+    "figures/270_reach_landed_vs_scaled.png",
+    "figures/270_reach_seed_measured_vs_run_prediction.png",
+    "figures/270_reach_seed_vs_scaled.png"
+   ],
+   "n_files": 46
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -183,7 +1170,14 @@
    "title": "257: rerun the 998-protein search with a newer kmerseek (every row gets an E-value)",
    "draft": true,
    "branch": "olgabot/pfam998-kmerseek-preview",
-   "updated": "2026-09-30"
+   "base": "olgabot/alphabet-ensemble",
+   "created": "2026-09-30",
+   "updated": "2026-10-06",
+   "base_pr": 48,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 25
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -191,7 +1185,28 @@
    "title": "Notebook 255: kmerseek ranking metrics against human Pfam, with region length as the control",
    "draft": true,
    "branch": "olgabot/ranking-metrics-vs-human-pfam",
-   "updated": "2026-09-30"
+   "base": "main",
+   "created": "2026-09-30",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/255_ranking_metrics_vs_human_pfam.ipynb"
+   ],
+   "notebook_ids": [
+    "255"
+   ],
+   "figures": [
+    "figures/255_all_alphabets_ap_gain_over_length.png",
+    "figures/255_auc_ap_by_rule.png",
+    "figures/255_auc_by_length_bin.png",
+    "figures/255_auc_per_arm.png",
+    "figures/255_checks_auc_and_tfidf_vs_length_human_pfam.png",
+    "figures/255_f1_mcc_by_rule.png",
+    "figures/255_labels_rebuilt_from_pfam_truth_human_pfam.png",
+    "figures/255_per_query_by_rule.png",
+    "figures/255_scored_tied_and_no_lambda_human_pfam.png"
+   ],
+   "n_files": 22
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -199,7 +1214,28 @@
    "title": "256: BHF against 300 dipeptide-shuffled copies of itself",
    "draft": true,
    "branch": "olgabot/bhf-dipeptide-shuffle-null",
-   "updated": "2026-10-01"
+   "base": "olgabot/alphabet-ensemble",
+   "created": "2026-09-30",
+   "updated": "2026-10-13",
+   "base_pr": 48,
+   "notebooks": [
+    "notebooks/256_bhf_dipeptide_shuffle_null.ipynb",
+    "notebooks/258_bhf_zinc_finger_membrane_extracellular.ipynb"
+   ],
+   "notebook_ids": [
+    "256",
+    "258"
+   ],
+   "figures": [
+    "figures/256_best_score_bhf_vs_copies.png",
+    "figures/256_talk_hits_bhf_vs_copies.png",
+    "figures/256_where_bhf_beats_its_copies.png",
+    "figures/258_bhf_helix_profiles.png",
+    "figures/258_classes_bhf_vs_copies.png",
+    "figures/258_membrane_by_alphabet.png",
+    "figures/258_where_on_bhf.png"
+   ],
+   "n_files": 40
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -207,7 +1243,14 @@
    "title": "244: two bonus cases, Ced-9/BCL2 and BHF",
    "draft": false,
    "branch": "olgabot/244-bonus-cases",
-   "updated": "2026-09-30"
+   "base": "olgabot/244-all-case-figures",
+   "created": "2026-09-30",
+   "updated": "2026-10-06",
+   "base_pr": 78,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 399
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -215,7 +1258,254 @@
    "title": "Notebook 244: IoU on inclusive intervals, two relabelled rows, landed counts per type, species and tool",
    "draft": true,
    "branch": "olgabot/244-landed-by-type",
-   "updated": "2026-09-30"
+   "base": "olgabot/244-all-case-figures",
+   "created": "2026-09-30",
+   "updated": "2026-10-06",
+   "base_pr": 78,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [
+    "figures/244_cases/061_PPARD_ZN_FING_fly.png",
+    "figures/244_cases/062_ZNF165_ZN_FING_fly.png",
+    "figures/244_cases/063_PRDM1_ZN_FING_fly.png",
+    "figures/244_cases/064_SLC35B3_TRANSMEM_fly.png",
+    "figures/244_cases/065_KCNK16_INTRAMEM_fly.png",
+    "figures/244_cases/066_KCNK17_INTRAMEM_fly.png",
+    "figures/244_cases/067_KCNK5_INTRAMEM_fly.png",
+    "figures/244_cases/068_ZNF76_ZN_FING_fly.png",
+    "figures/244_cases/069_SGK1_BINDING_fly.png",
+    "figures/244_cases/070_MAP3K5_BINDING_fly.png",
+    "figures/244_cases/071_KCNK17_INTRAMEM_fly.png",
+    "figures/244_cases/072_KCNK16_INTRAMEM_fly.png",
+    "figures/244_cases/073_MAPK13_BINDING_fly.png",
+    "figures/244_cases/074_LATS1_BINDING_fly.png",
+    "figures/244_cases/075_MAP3K4_BINDING_fly.png",
+    "figures/244_cases/076_ZBTB24_ZN_FING_zebrafish.png",
+    "figures/244_cases/077_LRFN2_REPEAT_zebrafish.png",
+    "figures/244_cases/078_STXBP5_REPEAT_zebrafish.png",
+    "figures/244_cases/080_RIPPLY2_REGION_zebrafish.png",
+    "figures/244_cases/081_PAK1IP1_REPEAT_zebrafish.png",
+    "figures/244_cases/082_PPARD_ZN_FING_zebrafish.png",
+    "figures/244_cases/083_PHF10_ZN_FING_zebrafish.png",
+    "figures/244_cases/084_DLL1_DOMAIN_zebrafish.png",
+    "figures/244_cases/085_ZNF165_ZN_FING_zebrafish.png",
+    "figures/244_cases/086_PHACTR1_REPEAT_zebrafish.png",
+    "figures/244_cases/087_EHMT2_REPEAT_zebrafish.png",
+    "figures/244_cases/088_ZSCAN9_ZN_FING_zebrafish.png",
+    "figures/244_cases/089_KCNK16_INTRAMEM_zebrafish.png",
+    "figures/244_cases/090_CDC40_REPEAT_zebrafish.png",
+    "figures/244_cases/091_MAP3K5_BINDING_zebrafish.png",
+    "figures/244_cases/092_MAPK14_BINDING_zebrafish.png",
+    "figures/244_cases/093_MAP3K7_BINDING_zebrafish.png",
+    "figures/244_cases/094_GUCA1A_DOMAIN_chicken.png",
+    "figures/244_cases/095_PAK1IP1_REPEAT_chicken.png",
+    "figures/244_cases/096_SCGN_DOMAIN_chicken.png",
+    "figures/244_cases/097_KCNK16_INTRAMEM_chicken.png",
+    "figures/244_cases/098_GABRR2_TRANSMEM_chicken.png",
+    "figures/244_cases/099_KCNK17_INTRAMEM_chicken.png",
+    "figures/244_cases/100_RREB1_ZN_FING_chicken.png",
+    "figures/244_cases/101_KCNK5_INTRAMEM_chicken.png",
+    "figures/244_cases/102_MAP3K5_BINDING_chicken.png",
+    "figures/244_cases/103_CDC40_REPEAT_chicken.png",
+    "figures/244_cases/104_HTR1B_TRANSMEM_mouse.png",
+    "figures/244_cases/105_SCUBE3_DOMAIN_mouse.png",
+    "figures/244_cases/106_CCR6_TRANSMEM_mouse.png",
+    "figures/244_cases/107_ZKSCAN3_ZN_FING_mouse.png",
+    "figures/244_cases/108_BRPF3_ZN_FING_mouse.png",
+    "figures/244_cases/109_STXBP5_REPEAT_mouse.png",
+    "figures/244_cases/110_ZKSCAN3_ZN_FING_mouse.png",
+    "figures/244_cases/111_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/112_KCNK17_INTRAMEM_mouse.png",
+    "figures/244_cases/113_KCNK5_INTRAMEM_mouse.png",
+    "figures/244_cases/114_HTR1E_TRANSMEM_mouse.png",
+    "figures/244_cases/115_ZNF165_ZN_FING_mouse.png",
+    "figures/244_cases/116_ZSCAN26_ZN_FING_mouse.png",
+    "figures/244_cases/117_ZNF76_ZN_FING_mouse.png",
+    "figures/244_cases/118_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/119_ZSCAN9_ZN_FING_mouse.png",
+    "figures/244_cases/120_ADGRF5_TRANSMEM_mouse.png",
+    "figures/244_cases/121_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/122_ZSCAN9_ZN_FING_mouse.png",
+    "figures/244_cases/123_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/124_ELOVL5_TRANSMEM_mouse.png",
+    "figures/244_cases/125_ZSCAN26_ZN_FING_mouse.png",
+    "figures/244_cases/126_PRDM1_ZN_FING_mouse.png",
+    "figures/244_cases/127_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/128_ZSCAN31_ZN_FING_mouse.png",
+    "figures/244_cases/129_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/130_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/131_ZSCAN12_ZN_FING_mouse.png",
+    "figures/244_cases/132_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/133_CARMIL1_REPEAT_mouse.png",
+    "figures/244_cases/134_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/135_ZSCAN23_ZN_FING_mouse.png",
+    "figures/244_cases/136_ZSCAN16_ZN_FING_mouse.png",
+    "figures/244_cases/137_ZSCAN12_ZN_FING_mouse.png",
+    "figures/244_cases/138_KCNK16_INTRAMEM_mouse.png",
+    "figures/244_cases/139_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/140_TRIM31_ZN_FING_mouse.png",
+    "figures/244_cases/141_ZNF322_ZN_FING_mouse.png",
+    "figures/244_cases/142_KCNK5_INTRAMEM_mouse.png",
+    "figures/244_cases/143_ZSCAN31_ZN_FING_mouse.png",
+    "figures/244_cases/144_ZKSCAN3_ZN_FING_mouse.png",
+    "figures/244_cases/145_ZNF165_ZN_FING_mouse.png",
+    "figures/244_cases/146_DLL1_DOMAIN_mouse.png",
+    "figures/244_cases/147_ZSCAN26_ZN_FING_mouse.png",
+    "figures/244_cases/148_WDR27_REPEAT_mouse.png",
+    "figures/244_cases/149_MYO6_REGION_mouse.png",
+    "figures/244_cases/150_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/151_OR5V1_TRANSMEM_mouse.png",
+    "figures/244_cases/152_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/153_KCNK17_INTRAMEM_mouse.png",
+    "figures/244_cases/154_ZKSCAN3_ZN_FING_mouse.png",
+    "figures/244_cases/155_DLL1_DOMAIN_mouse.png",
+    "figures/244_cases/156_ZSCAN16_ZN_FING_mouse.png",
+    "figures/244_cases/157_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/158_WDR27_REPEAT_mouse.png",
+    "figures/244_cases/159_ZSCAN23_ZN_FING_mouse.png",
+    "figures/244_cases/160_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/161_ZSCAN12_ZN_FING_mouse.png",
+    "figures/244_cases/162_ZSCAN23_ZN_FING_mouse.png",
+    "figures/244_cases/163_AHI1_REPEAT_mouse.png",
+    "figures/244_cases/164_ZNF322_ZN_FING_mouse.png",
+    "figures/244_cases/165_RNF217_ZN_FING_mouse.png",
+    "figures/244_cases/166_PRDM13_ZN_FING_mouse.png",
+    "figures/244_cases/167_LRFN2_REPEAT_mouse.png",
+    "figures/244_cases/168_CRISP2_DOMAIN_mouse.png",
+    "figures/244_cases/169_ZSCAN9_ZN_FING_mouse.png",
+    "figures/244_cases/170_ZNF322_ZN_FING_mouse.png",
+    "figures/244_cases/172_TPBG_REPEAT_mouse.png",
+    "figures/244_cases/173_MAPK13_BINDING_mouse.png",
+    "figures/244_cases/174_ZSCAN31_ZN_FING_mouse.png",
+    "figures/244_cases/175_SGK1_BINDING_mouse.png",
+    "figures/244_cases/176_MAP3K5_BINDING_mouse.png",
+    "figures/244_cases/177_MAP3K7_BINDING_mouse.png",
+    "figures/244_cases/178_MAPK14_BINDING_mouse.png",
+    "figures/244_cases/179_MAP3K4_BINDING_mouse.png",
+    "figures/244_cases/180_GRM4_TRANSMEM_fly.png",
+    "figures/244_cases/181_SLC26A8_TRANSMEM_zebrafish.png",
+    "figures/244_pairs/023_MYB_DNA_BIND_arabidopsis/P10242_vs_Q6R032.hp_kyte_doolittle2.k21.png",
+    "figures/244_pairs/061_PPARD_ZN_FING_fly/Q03181_vs_P16376.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/062_ZNF165_ZN_FING_fly/P49910_vs_Q9VQ56.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/063_PRDM1_ZN_FING_fly/O75626_vs_Q9VLK8.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/064_SLC35B3_TRANSMEM_fly/Q9H1N7_vs_Q9VVD9.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/065_KCNK16_INTRAMEM_fly/Q96T55_vs_P08510.mmseqs12.k7.png",
+    "figures/244_pairs/066_KCNK17_INTRAMEM_fly/Q96T54_vs_P08510.mmseqs12.k7.png",
+    "figures/244_pairs/067_KCNK5_INTRAMEM_fly/O95279_vs_Q94526.mmseqs12.k7.png",
+    "figures/244_pairs/068_ZNF76_ZN_FING_fly/P36508_vs_Q9VQU9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/069_SGK1_BINDING_fly/O00141_vs_Q9NI63.sdm12.k6.png",
+    "figures/244_pairs/070_MAP3K5_BINDING_fly/Q99683_vs_P23572.sdm12.k6.png",
+    "figures/244_pairs/071_KCNK17_INTRAMEM_fly/Q96T54_vs_P08510.mmseqs12.k7.png",
+    "figures/244_pairs/072_KCNK16_INTRAMEM_fly/Q96T55_vs_P08510.mmseqs12.k7.png",
+    "figures/244_pairs/073_MAPK13_BINDING_fly/O15264_vs_O62618.sdm12.k6.png",
+    "figures/244_pairs/074_LATS1_BINDING_fly/O95835_vs_P04412.sdm12.k6.png",
+    "figures/244_pairs/075_MAP3K4_BINDING_fly/Q9Y6R4_vs_P05130.sdm12.k6.png",
+    "figures/244_pairs/076_ZBTB24_ZN_FING_zebrafish/O43167_vs_Q52KB5.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/077_LRFN2_REPEAT_zebrafish/Q9ULH4_vs_Q6PGX3.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/078_STXBP5_REPEAT_zebrafish/Q5T5C0_vs_Q5SQE2.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/080_RIPPLY2_REGION_zebrafish/Q5TAB7_vs_Q2WG79.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/081_PAK1IP1_REPEAT_zebrafish/Q9NWT1_vs_Q6TNS2.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/082_PPARD_ZN_FING_zebrafish/Q03181_vs_Q06726.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/083_PHF10_ZN_FING_zebrafish/Q8WUB8_vs_A9LMC0.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/084_DLL1_DOMAIN_zebrafish/O00548_vs_Q8UWJ4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/085_ZNF165_ZN_FING_zebrafish/P49910_vs_Q25C93.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/086_PHACTR1_REPEAT_zebrafish/Q9C0D0_vs_Q6PEI3.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/087_EHMT2_REPEAT_zebrafish/Q96KQ7_vs_Q502K3.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/088_ZSCAN9_ZN_FING_zebrafish/O15535_vs_Q7T3H2.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/089_KCNK16_INTRAMEM_zebrafish/Q96T55_vs_Q5VSE6.mmseqs12.k7.png",
+    "figures/244_pairs/090_CDC40_REPEAT_zebrafish/O60508_vs_Q7T394.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/091_MAP3K5_BINDING_zebrafish/Q99683_vs_Q32PP3.sdm12.k6.png",
+    "figures/244_pairs/092_MAPK14_BINDING_zebrafish/Q16539_vs_O42376.sdm12.k6.png",
+    "figures/244_pairs/093_MAP3K7_BINDING_zebrafish/O43318_vs_Q9DGE0.sdm12.k6.png",
+    "figures/244_pairs/094_GUCA1A_DOMAIN_chicken/P43080_vs_P79880.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/095_PAK1IP1_REPEAT_chicken/Q9NWT1_vs_Q5ZKU8.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/096_SCGN_DOMAIN_chicken/O76038_vs_P07090.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/097_KCNK16_INTRAMEM_chicken/Q96T55_vs_O73606.mmseqs12.k7.png",
+    "figures/244_pairs/098_GABRR2_TRANSMEM_chicken/P28476_vs_P24045.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/099_KCNK17_INTRAMEM_chicken/Q96T54_vs_O73606.mmseqs12.k7.png",
+    "figures/244_pairs/100_RREB1_ZN_FING_chicken/Q92766_vs_Q90850.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/101_KCNK5_INTRAMEM_chicken/O95279_vs_Q9PT84.mmseqs12.k7.png",
+    "figures/244_pairs/102_MAP3K5_BINDING_chicken/Q99683_vs_P13863.sdm12.k6.png",
+    "figures/244_pairs/103_CDC40_REPEAT_chicken/O60508_vs_Q9PTR5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/104_HTR1B_TRANSMEM_mouse/P28222_vs_P61168.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/105_SCUBE3_DOMAIN_mouse/Q8IX30_vs_Q6NZL8.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/106_CCR6_TRANSMEM_mouse/P51684_vs_O88410.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/107_ZKSCAN3_ZN_FING_mouse/Q9BRR0_vs_Q91VW9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/108_BRPF3_ZN_FING_mouse/Q9ULD4_vs_G5E8P1.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/109_STXBP5_REPEAT_mouse/Q5T5C0_vs_Q5DQR4.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/110_ZKSCAN3_ZN_FING_mouse/Q9BRR0_vs_Q6PGE4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/111_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_Q91VW9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/112_KCNK17_INTRAMEM_mouse/Q96T54_vs_O35111.mmseqs12.k7.png",
+    "figures/244_pairs/113_KCNK5_INTRAMEM_mouse/O95279_vs_O35219.mmseqs12.k7.png",
+    "figures/244_pairs/114_HTR1E_TRANSMEM_mouse/P28566_vs_P51436.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/115_ZNF165_ZN_FING_mouse/P49910_vs_Q0VDQ9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/116_ZSCAN26_ZN_FING_mouse/Q16670_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/117_ZNF76_ZN_FING_mouse/P36508_vs_O70230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/118_ZKSCAN8_ZN_FING_mouse/Q15776_vs_P08042.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/119_ZSCAN9_ZN_FING_mouse/O15535_vs_Q571J5.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/120_ADGRF5_TRANSMEM_mouse/Q8IZF2_vs_Q9D2L6.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/121_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/122_ZSCAN9_ZN_FING_mouse/O15535_vs_P08043.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/123_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q8BGS3.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/124_ELOVL5_TRANSMEM_mouse/Q9NYP7_vs_Q9EQC4.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/125_ZSCAN26_ZN_FING_mouse/Q16670_vs_Q569E7.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/126_PRDM1_ZN_FING_mouse/O75626_vs_P10076.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/127_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q8BI67.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/128_ZSCAN31_ZN_FING_mouse/Q96LW9_vs_A2A935.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/129_ZKSCAN8_ZN_FING_mouse/Q15776_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/130_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_Q6PGE4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/131_ZSCAN12_ZN_FING_mouse/O43309_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/132_ZKSCAN8_ZN_FING_mouse/Q15776_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/133_CARMIL1_REPEAT_mouse/Q5VZK9_vs_Q3UFQ8.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/134_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q07230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/135_ZSCAN23_ZN_FING_mouse/Q3MJ62_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/136_ZSCAN16_ZN_FING_mouse/Q9H4T2_vs_Q7TSH9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/137_ZSCAN12_ZN_FING_mouse/O43309_vs_Q7TSH9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/138_KCNK16_INTRAMEM_mouse/Q96T55_vs_O88454.mmseqs12.k7.png",
+    "figures/244_pairs/139_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/140_TRIM31_ZN_FING_mouse/Q9BZY9_vs_Q99PN3.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/141_ZNF322_ZN_FING_mouse/Q6U7Q0_vs_Q8R0T2.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/142_KCNK5_INTRAMEM_mouse/O95279_vs_Q3LS21.mmseqs12.k7.png",
+    "figures/244_pairs/143_ZSCAN31_ZN_FING_mouse/Q96LW9_vs_P08043.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/144_ZKSCAN3_ZN_FING_mouse/Q9BRR0_vs_P10077.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/145_ZNF165_ZN_FING_mouse/P49910_vs_Q6P9Y7.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/146_DLL1_DOMAIN_mouse/O00548_vs_Q9CQW3.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/147_ZSCAN26_ZN_FING_mouse/Q16670_vs_A2A761.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/148_WDR27_REPEAT_mouse/A2RRH5_vs_Q8C5V5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/149_MYO6_REGION_mouse/Q9UM54_vs_Q64331.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/150_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_P10077.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/151_OR5V1_TRANSMEM_mouse/Q9UGF6_vs_Q8VFT4.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/152_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_Q07230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/153_KCNK17_INTRAMEM_mouse/Q96T54_vs_Q8CFS6.mmseqs12.k7.png",
+    "figures/244_pairs/154_ZKSCAN3_ZN_FING_mouse/Q9BRR0_vs_P10077.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/155_DLL1_DOMAIN_mouse/O00548_vs_Q61483.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/156_ZSCAN16_ZN_FING_mouse/Q9H4T2_vs_Q7TNU6.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/157_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_P10077.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/158_WDR27_REPEAT_mouse/A2RRH5_vs_Q8C5V5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/159_ZSCAN23_ZN_FING_mouse/Q3MJ62_vs_Q6PGE4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/160_ZKSCAN8_ZN_FING_mouse/Q15776_vs_P08043.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/161_ZSCAN12_ZN_FING_mouse/O43309_vs_Q8C827.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/162_ZSCAN23_ZN_FING_mouse/Q3MJ62_vs_Q07230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/163_AHI1_REPEAT_mouse/Q8N157_vs_Q8K3E5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/164_ZNF322_ZN_FING_mouse/Q6U7Q0_vs_Q9ERR8.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/165_RNF217_ZN_FING_mouse/Q8TC41_vs_Q9Z1K6.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/166_PRDM13_ZN_FING_mouse/Q9H4Q3_vs_P10076.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/167_LRFN2_REPEAT_mouse/Q9ULH4_vs_Q80XU8.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/168_CRISP2_DOMAIN_mouse/P16562_vs_P16563.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/169_ZSCAN9_ZN_FING_mouse/O15535_vs_P08043.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/170_ZNF322_ZN_FING_mouse/Q6U7Q0_vs_Q07230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/172_TPBG_REPEAT_mouse/Q13641_vs_Q9Z0L0.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/173_MAPK13_BINDING_mouse/O15264_vs_P05622.sdm12.k6.png",
+    "figures/244_pairs/174_ZSCAN31_ZN_FING_mouse/Q96LW9_vs_Q8BI67.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/175_SGK1_BINDING_mouse/O00141_vs_O08648.sdm12.k6.png",
+    "figures/244_pairs/176_MAP3K5_BINDING_mouse/Q99683_vs_Q8C078.sdm12.k6.png",
+    "figures/244_pairs/177_MAP3K7_BINDING_mouse/O43318_vs_O09110.sdm12.k6.png",
+    "figures/244_pairs/178_MAPK14_BINDING_mouse/Q16539_vs_P05622.sdm12.k6.png",
+    "figures/244_pairs/179_MAP3K4_BINDING_mouse/Q9Y6R4_vs_Q02111.sdm12.k6.png",
+    "figures/244_pairs/180_GRM4_TRANSMEM_fly/Q14833_vs_P91685.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/181_SLC26A8_TRANSMEM_zebrafish/Q96RN1_vs_Q7T2C4.hp_lehninger_c_nonpolar2.k18.png"
+   ],
+   "n_files": 1069
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -223,7 +1513,14 @@
    "title": "Case gallery: reference pairs, other tools, and every shared k-mer",
    "draft": true,
    "branch": "olgabot/case-gallery-reference-pairs",
-   "updated": "2026-10-01"
+   "base": "olgabot/244-all-case-figures",
+   "created": "2026-09-30",
+   "updated": "2026-10-06",
+   "base_pr": 78,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 424
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -231,7 +1528,399 @@
    "title": "Notebook 244: figures, call coordinates, kmerseek pair and hits pages for all 183 cases",
    "draft": true,
    "branch": "olgabot/244-all-case-figures",
-   "updated": "2026-10-01"
+   "base": "olgabot/hero-example-244",
+   "created": "2026-09-29",
+   "updated": "2026-10-06",
+   "base_pr": 49,
+   "notebooks": [
+    "notebooks/272_swissprot_feature_placement_all_tools_report_half.ipynb"
+   ],
+   "notebook_ids": [
+    "272"
+   ],
+   "figures": [
+    "figures/244_cases/000_ROS1_BINDING_yeast.png",
+    "figures/244_cases/001_ROS1_BINDING_worm.png",
+    "figures/244_cases/002_MARCKS_REGION_zebrafish.png",
+    "figures/244_cases/003_COL9A1_DOMAIN_zebrafish.png",
+    "figures/244_cases/004_COL12A1_DOMAIN_zebrafish.png",
+    "figures/244_cases/005_ROS1_BINDING_zebrafish.png",
+    "figures/244_cases/006_COL12A1_DOMAIN_chicken.png",
+    "figures/244_cases/007_COL9A1_DOMAIN_chicken.png",
+    "figures/244_cases/008_COL12A1_DOMAIN_chicken.png",
+    "figures/244_cases/009_PHACTR2_REPEAT_chicken.png",
+    "figures/244_cases/010_ADGRB3_DOMAIN_chicken.png",
+    "figures/244_cases/011_DAAM2_DOMAIN_chicken.png",
+    "figures/244_cases/012_ROS1_BINDING_chicken.png",
+    "figures/244_cases/013_TNFAIP3_ZN_FING_mouse.png",
+    "figures/244_cases/014_CARMIL1_REGION_mouse.png",
+    "figures/244_cases/015_AK9_REGION_mouse.png",
+    "figures/244_cases/016_PHACTR1_REPEAT_mouse.png",
+    "figures/244_cases/017_HIVEP1_REGION_mouse.png",
+    "figures/244_cases/018_RIMS1_REGION_mouse.png",
+    "figures/244_cases/019_ZBTB12_ZN_FING_mouse.png",
+    "figures/244_cases/020_PRRC2A_REPEAT_mouse.png",
+    "figures/244_cases/021_PHACTR2_REPEAT_mouse.png",
+    "figures/244_cases/022_ROS1_BINDING_mouse.png",
+    "figures/244_cases/023_MYB_DNA_BIND_arabidopsis.png",
+    "figures/244_cases/024_ATF6B_REGION_arabidopsis.png",
+    "figures/244_cases/025_EHMT2_REPEAT_arabidopsis.png",
+    "figures/244_cases/026_BRPF3_ZN_FING_arabidopsis.png",
+    "figures/244_cases/027_KCNK17_INTRAMEM_arabidopsis.png",
+    "figures/244_cases/028_KCNK16_INTRAMEM_arabidopsis.png",
+    "figures/244_cases/029_SGK1_BINDING_arabidopsis.png",
+    "figures/244_cases/030_MAP3K7_BINDING_arabidopsis.png",
+    "figures/244_cases/031_MAP3K5_BINDING_arabidopsis.png",
+    "figures/244_cases/032_MAPK13_BINDING_arabidopsis.png",
+    "figures/244_cases/033_MAPK14_BINDING_arabidopsis.png",
+    "figures/244_cases/034_TTK_BINDING_arabidopsis.png",
+    "figures/244_cases/035_MAP3K5_BINDING_yeast.png",
+    "figures/244_cases/036_SGK1_BINDING_yeast.png",
+    "figures/244_cases/037_MAPK13_BINDING_yeast.png",
+    "figures/244_cases/038_MAPK14_BINDING_yeast.png",
+    "figures/244_cases/039_MAP3K7_BINDING_yeast.png",
+    "figures/244_cases/040_TTK_BINDING_yeast.png",
+    "figures/244_cases/041_MAP3K4_BINDING_yeast.png",
+    "figures/244_cases/042_HIVEP1_ZN_FING_worm.png",
+    "figures/244_cases/043_KCNK5_INTRAMEM_worm.png",
+    "figures/244_cases/044_KCNK16_INTRAMEM_worm.png",
+    "figures/244_cases/045_KCNK17_INTRAMEM_worm.png",
+    "figures/244_cases/046_GUCA1A_DOMAIN_worm.png",
+    "figures/244_cases/047_KCNK16_INTRAMEM_worm.png",
+    "figures/244_cases/048_KCNK17_INTRAMEM_worm.png",
+    "figures/244_cases/049_SGK1_BINDING_worm.png",
+    "figures/244_cases/050_ZSCAN16_ZN_FING_worm.png",
+    "figures/244_cases/051_ZSCAN26_ZN_FING_worm.png",
+    "figures/244_cases/052_ELOVL4_TRANSMEM_worm.png",
+    "figures/244_cases/053_MAPK13_BINDING_worm.png",
+    "figures/244_cases/054_BRPF3_ZN_FING_worm.png",
+    "figures/244_cases/055_MAPK14_BINDING_worm.png",
+    "figures/244_cases/056_GUCA1A_DOMAIN_worm.png",
+    "figures/244_cases/057_TPBG_REPEAT_worm.png",
+    "figures/244_cases/058_NFKBIL1_REPEAT_worm.png",
+    "figures/244_cases/059_LATS1_BINDING_worm.png",
+    "figures/244_cases/060_MAP3K7_BINDING_worm.png",
+    "figures/244_cases/061_MYB_DNA_BIND_fly.png",
+    "figures/244_cases/062_PPARD_ZN_FING_fly.png",
+    "figures/244_cases/063_ZNF165_ZN_FING_fly.png",
+    "figures/244_cases/064_PRDM1_ZN_FING_fly.png",
+    "figures/244_cases/065_SLC35B3_TRANSMEM_fly.png",
+    "figures/244_cases/066_KCNK16_INTRAMEM_fly.png",
+    "figures/244_cases/067_KCNK17_INTRAMEM_fly.png",
+    "figures/244_cases/068_KCNK5_INTRAMEM_fly.png",
+    "figures/244_cases/069_ZNF76_ZN_FING_fly.png",
+    "figures/244_cases/070_SGK1_BINDING_fly.png",
+    "figures/244_cases/071_MAP3K5_BINDING_fly.png",
+    "figures/244_cases/072_KCNK17_INTRAMEM_fly.png",
+    "figures/244_cases/073_KCNK16_INTRAMEM_fly.png",
+    "figures/244_cases/074_MAPK13_BINDING_fly.png",
+    "figures/244_cases/075_LATS1_BINDING_fly.png",
+    "figures/244_cases/076_MAP3K4_BINDING_fly.png",
+    "figures/244_cases/077_ZBTB24_ZN_FING_zebrafish.png",
+    "figures/244_cases/078_LRFN2_REPEAT_zebrafish.png",
+    "figures/244_cases/079_STXBP5_REPEAT_zebrafish.png",
+    "figures/244_cases/080_STXBP5_REPEAT_zebrafish.png",
+    "figures/244_cases/081_RIPPLY2_REGION_zebrafish.png",
+    "figures/244_cases/082_PAK1IP1_REPEAT_zebrafish.png",
+    "figures/244_cases/083_PPARD_ZN_FING_zebrafish.png",
+    "figures/244_cases/084_PHF10_ZN_FING_zebrafish.png",
+    "figures/244_cases/085_DLL1_DOMAIN_zebrafish.png",
+    "figures/244_cases/086_ZNF165_ZN_FING_zebrafish.png",
+    "figures/244_cases/087_PHACTR1_REPEAT_zebrafish.png",
+    "figures/244_cases/088_EHMT2_REPEAT_zebrafish.png",
+    "figures/244_cases/089_ZSCAN9_ZN_FING_zebrafish.png",
+    "figures/244_cases/090_KCNK16_INTRAMEM_zebrafish.png",
+    "figures/244_cases/091_CDC40_REPEAT_zebrafish.png",
+    "figures/244_cases/092_MAP3K5_BINDING_zebrafish.png",
+    "figures/244_cases/093_MAPK14_BINDING_zebrafish.png",
+    "figures/244_cases/094_MAP3K7_BINDING_zebrafish.png",
+    "figures/244_cases/095_GUCA1A_DOMAIN_chicken.png",
+    "figures/244_cases/096_PAK1IP1_REPEAT_chicken.png",
+    "figures/244_cases/097_SCGN_DOMAIN_chicken.png",
+    "figures/244_cases/098_KCNK16_INTRAMEM_chicken.png",
+    "figures/244_cases/099_GABRR2_TRANSMEM_chicken.png",
+    "figures/244_cases/100_KCNK17_INTRAMEM_chicken.png",
+    "figures/244_cases/101_RREB1_ZN_FING_chicken.png",
+    "figures/244_cases/102_KCNK5_INTRAMEM_chicken.png",
+    "figures/244_cases/103_MAP3K5_BINDING_chicken.png",
+    "figures/244_cases/104_CDC40_REPEAT_chicken.png",
+    "figures/244_cases/105_HTR1B_TRANSMEM_mouse.png",
+    "figures/244_cases/106_SCUBE3_DOMAIN_mouse.png",
+    "figures/244_cases/107_CCR6_TRANSMEM_mouse.png",
+    "figures/244_cases/108_ZKSCAN3_ZN_FING_mouse.png",
+    "figures/244_cases/109_BRPF3_ZN_FING_mouse.png",
+    "figures/244_cases/110_STXBP5_REPEAT_mouse.png",
+    "figures/244_cases/111_ZKSCAN3_ZN_FING_mouse.png",
+    "figures/244_cases/112_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/113_KCNK17_INTRAMEM_mouse.png",
+    "figures/244_cases/114_KCNK5_INTRAMEM_mouse.png",
+    "figures/244_cases/115_HTR1E_TRANSMEM_mouse.png",
+    "figures/244_cases/116_ZNF165_ZN_FING_mouse.png",
+    "figures/244_cases/117_ZSCAN26_ZN_FING_mouse.png",
+    "figures/244_cases/118_ZNF76_ZN_FING_mouse.png",
+    "figures/244_cases/119_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/120_ZSCAN9_ZN_FING_mouse.png",
+    "figures/244_cases/121_ADGRF5_TRANSMEM_mouse.png",
+    "figures/244_cases/122_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/123_ZSCAN9_ZN_FING_mouse.png",
+    "figures/244_cases/124_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/125_ELOVL5_TRANSMEM_mouse.png",
+    "figures/244_cases/126_ZSCAN26_ZN_FING_mouse.png",
+    "figures/244_cases/127_PRDM1_ZN_FING_mouse.png",
+    "figures/244_cases/128_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/129_ZSCAN31_ZN_FING_mouse.png",
+    "figures/244_cases/130_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/131_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/132_ZSCAN12_ZN_FING_mouse.png",
+    "figures/244_cases/133_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/134_CARMIL1_REPEAT_mouse.png",
+    "figures/244_cases/135_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/136_ZSCAN23_ZN_FING_mouse.png",
+    "figures/244_cases/137_ZSCAN16_ZN_FING_mouse.png",
+    "figures/244_cases/138_ZSCAN12_ZN_FING_mouse.png",
+    "figures/244_cases/139_KCNK16_INTRAMEM_mouse.png",
+    "figures/244_cases/140_ZNF391_ZN_FING_mouse.png",
+    "figures/244_cases/141_TRIM31_ZN_FING_mouse.png",
+    "figures/244_cases/142_ZNF322_ZN_FING_mouse.png",
+    "figures/244_cases/143_KCNK5_INTRAMEM_mouse.png",
+    "figures/244_cases/144_ZSCAN31_ZN_FING_mouse.png",
+    "figures/244_cases/145_ZKSCAN3_ZN_FING_mouse.png",
+    "figures/244_cases/146_ZNF165_ZN_FING_mouse.png",
+    "figures/244_cases/147_DLL1_DOMAIN_mouse.png",
+    "figures/244_cases/148_ZSCAN26_ZN_FING_mouse.png",
+    "figures/244_cases/149_WDR27_REPEAT_mouse.png",
+    "figures/244_cases/150_MYO6_REGION_mouse.png",
+    "figures/244_cases/151_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/152_OR5V1_TRANSMEM_mouse.png",
+    "figures/244_cases/153_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/154_KCNK17_INTRAMEM_mouse.png",
+    "figures/244_cases/155_ZKSCAN3_ZN_FING_mouse.png",
+    "figures/244_cases/156_DLL1_DOMAIN_mouse.png",
+    "figures/244_cases/157_ZSCAN16_ZN_FING_mouse.png",
+    "figures/244_cases/158_ZKSCAN4_ZN_FING_mouse.png",
+    "figures/244_cases/159_WDR27_REPEAT_mouse.png",
+    "figures/244_cases/160_ZSCAN23_ZN_FING_mouse.png",
+    "figures/244_cases/161_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/162_ZSCAN12_ZN_FING_mouse.png",
+    "figures/244_cases/163_ZSCAN23_ZN_FING_mouse.png",
+    "figures/244_cases/164_AHI1_REPEAT_mouse.png",
+    "figures/244_cases/165_ZNF322_ZN_FING_mouse.png",
+    "figures/244_cases/166_RNF217_ZN_FING_mouse.png",
+    "figures/244_cases/167_PRDM13_ZN_FING_mouse.png",
+    "figures/244_cases/168_LRFN2_REPEAT_mouse.png",
+    "figures/244_cases/169_CRISP2_DOMAIN_mouse.png",
+    "figures/244_cases/170_ZSCAN9_ZN_FING_mouse.png",
+    "figures/244_cases/171_ZKSCAN8_ZN_FING_mouse.png",
+    "figures/244_cases/172_ZNF322_ZN_FING_mouse.png",
+    "figures/244_cases/173_TPBG_REPEAT_mouse.png",
+    "figures/244_cases/174_MAPK13_BINDING_mouse.png",
+    "figures/244_cases/175_ZSCAN31_ZN_FING_mouse.png",
+    "figures/244_cases/176_SGK1_BINDING_mouse.png",
+    "figures/244_cases/177_MAP3K5_BINDING_mouse.png",
+    "figures/244_cases/178_MAP3K7_BINDING_mouse.png",
+    "figures/244_cases/179_MAPK14_BINDING_mouse.png",
+    "figures/244_cases/180_MAP3K4_BINDING_mouse.png",
+    "figures/244_cases/181_GRM4_TRANSMEM_fly.png",
+    "figures/244_cases/182_SLC26A8_TRANSMEM_zebrafish.png",
+    "figures/244_cases/contact_sheet_BINDING.png",
+    "figures/244_cases/contact_sheet_DNA_BIND.png",
+    "figures/244_cases/contact_sheet_DOMAIN.png",
+    "figures/244_cases/contact_sheet_INTRAMEM.png",
+    "figures/244_cases/contact_sheet_REGION.png",
+    "figures/244_cases/contact_sheet_REPEAT.png",
+    "figures/244_cases/contact_sheet_TRANSMEM.png",
+    "figures/244_cases/contact_sheet_ZN_FING.png",
+    "figures/244_pairs/000_ROS1_BINDING_yeast/P08922_vs_P38070.sdm12.k6.png",
+    "figures/244_pairs/001_ROS1_BINDING_worm/P08922_vs_Q11112.sdm12.k6.png",
+    "figures/244_pairs/002_MARCKS_REGION_zebrafish/P29966_vs_Q6PD99.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/003_COL9A1_DOMAIN_zebrafish/P20849_vs_Q5U3G1.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/004_COL12A1_DOMAIN_zebrafish/Q99715_vs_A5PN28.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/005_ROS1_BINDING_zebrafish/P08922_vs_Q8JFR5.sdm12.k6.png",
+    "figures/244_pairs/006_COL12A1_DOMAIN_chicken/Q99715_vs_P13944.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/007_COL9A1_DOMAIN_chicken/P20849_vs_P12106.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/008_COL12A1_DOMAIN_chicken/Q99715_vs_P13944.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/009_PHACTR2_REPEAT_chicken/O75167_vs_Q801X6.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/010_ADGRB3_DOMAIN_chicken/O60242_vs_P35440.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/011_DAAM2_DOMAIN_chicken/Q86T65_vs_A0A1D5P556.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/012_ROS1_BINDING_chicken/P08922_vs_Q9PUF6.sdm12.k6.png",
+    "figures/244_pairs/013_TNFAIP3_ZN_FING_mouse/P21580_vs_Q60769.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/014_CARMIL1_REGION_mouse/Q5VZK9_vs_Q6EDY6.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/015_AK9_REGION_mouse/Q5TCS8_vs_G3UYQ4.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/016_PHACTR1_REPEAT_mouse/Q9C0D0_vs_Q8BYK5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/017_HIVEP1_REGION_mouse/P15822_vs_Q03172.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/018_RIMS1_REGION_mouse/Q86UR5_vs_Q9EQZ7.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/019_ZBTB12_ZN_FING_mouse/Q9Y330_vs_E9Q3T6.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/020_PRRC2A_REPEAT_mouse/P48634_vs_Q7TSC1.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/021_PHACTR2_REPEAT_mouse/O75167_vs_Q8BYK5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/022_ROS1_BINDING_mouse/P08922_vs_P26618.sdm12.k6.png",
+    "figures/244_pairs/023_MYB_DNA_BIND_arabidopsis/P10242_vs_Q6R032.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/024_ATF6B_REGION_arabidopsis/Q99941_vs_P42777.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/025_EHMT2_REPEAT_arabidopsis/Q96KQ7_vs_Q38898.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/026_BRPF3_ZN_FING_arabidopsis/Q9ULD4_vs_P0CB22.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/027_KCNK17_INTRAMEM_arabidopsis/Q96T54_vs_P92960.mmseqs12.k7.png",
+    "figures/244_pairs/028_KCNK16_INTRAMEM_arabidopsis/Q96T55_vs_P92960.mmseqs12.k7.png",
+    "figures/244_pairs/029_SGK1_BINDING_arabidopsis/O00141_vs_P25859.sdm12.k6.png",
+    "figures/244_pairs/030_MAP3K7_BINDING_arabidopsis/O43318_vs_Q39202.sdm12.k6.png",
+    "figures/244_pairs/031_MAP3K5_BINDING_arabidopsis/Q99683_vs_P24100.sdm12.k6.png",
+    "figures/244_pairs/032_MAPK13_BINDING_arabidopsis/O15264_vs_Q8GYF5.sdm12.k6.png",
+    "figures/244_pairs/033_MAPK14_BINDING_arabidopsis/Q16539_vs_Q8GYF5.sdm12.k6.png",
+    "figures/244_pairs/034_TTK_BINDING_arabidopsis/P33981_vs_Q84VX4.sdm12.k6.png",
+    "figures/244_pairs/035_MAP3K5_BINDING_yeast/Q99683_vs_P00546.sdm12.k6.png",
+    "figures/244_pairs/036_SGK1_BINDING_yeast/O00141_vs_P06782.sdm12.k6.png",
+    "figures/244_pairs/037_MAPK13_BINDING_yeast/O15264_vs_P15442.sdm12.k6.png",
+    "figures/244_pairs/038_MAPK14_BINDING_yeast/Q16539_vs_P15442.sdm12.k6.png",
+    "figures/244_pairs/039_MAP3K7_BINDING_yeast/O43318_vs_Q03785.sdm12.k6.png",
+    "figures/244_pairs/040_TTK_BINDING_yeast/P33981_vs_P47116.sdm12.k6.png",
+    "figures/244_pairs/041_MAP3K4_BINDING_yeast/Q9Y6R4_vs_P06782.sdm12.k6.png",
+    "figures/244_pairs/042_HIVEP1_ZN_FING_worm/P15822_vs_Q7JM44.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/043_KCNK5_INTRAMEM_worm/O95279_vs_O17185.mmseqs12.k7.png",
+    "figures/244_pairs/044_KCNK16_INTRAMEM_worm/Q96T55_vs_O17185.mmseqs12.k7.png",
+    "figures/244_pairs/045_KCNK17_INTRAMEM_worm/Q96T54_vs_O17185.mmseqs12.k7.png",
+    "figures/244_pairs/046_GUCA1A_DOMAIN_worm/P43080_vs_P36609.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/047_KCNK16_INTRAMEM_worm/Q96T55_vs_Q9XXD1.mmseqs12.k7.png",
+    "figures/244_pairs/048_KCNK17_INTRAMEM_worm/Q96T54_vs_Q9XXD1.mmseqs12.k7.png",
+    "figures/244_pairs/049_SGK1_BINDING_worm/O00141_vs_H2L099.sdm12.k6.png",
+    "figures/244_pairs/050_ZSCAN16_ZN_FING_worm/Q9H4T2_vs_Q9XW26.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/051_ZSCAN26_ZN_FING_worm/Q16670_vs_A0A5E4M3Q4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/052_ELOVL4_TRANSMEM_worm/Q9GZR5_vs_Q20303.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/053_MAPK13_BINDING_worm/O15264_vs_Q8I113.sdm12.k6.png",
+    "figures/244_pairs/054_BRPF3_ZN_FING_worm/Q9ULD4_vs_P34447.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/055_MAPK14_BINDING_worm/Q16539_vs_Q8I113.sdm12.k6.png",
+    "figures/244_pairs/056_GUCA1A_DOMAIN_worm/P43080_vs_G5EBX9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/057_TPBG_REPEAT_worm/Q13641_vs_G5EFX6.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/058_NFKBIL1_REPEAT_worm/Q9UBC1_vs_Q18297.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/059_LATS1_BINDING_worm/O95835_vs_O45797.sdm12.k6.png",
+    "figures/244_pairs/060_MAP3K7_BINDING_worm/O43318_vs_P39745.sdm12.k6.png",
+    "figures/244_pairs/061_MYB_DNA_BIND_fly/P10242_vs_P04197.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/062_PPARD_ZN_FING_fly/Q03181_vs_P16376.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/063_ZNF165_ZN_FING_fly/P49910_vs_Q9VQ56.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/064_PRDM1_ZN_FING_fly/O75626_vs_Q9VLK8.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/065_SLC35B3_TRANSMEM_fly/Q9H1N7_vs_Q9VVD9.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/066_KCNK16_INTRAMEM_fly/Q96T55_vs_P08510.mmseqs12.k7.png",
+    "figures/244_pairs/067_KCNK17_INTRAMEM_fly/Q96T54_vs_P08510.mmseqs12.k7.png",
+    "figures/244_pairs/068_KCNK5_INTRAMEM_fly/O95279_vs_Q94526.mmseqs12.k7.png",
+    "figures/244_pairs/069_ZNF76_ZN_FING_fly/P36508_vs_Q9VQU9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/070_SGK1_BINDING_fly/O00141_vs_Q9NI63.sdm12.k6.png",
+    "figures/244_pairs/071_MAP3K5_BINDING_fly/Q99683_vs_P23572.sdm12.k6.png",
+    "figures/244_pairs/072_KCNK17_INTRAMEM_fly/Q96T54_vs_P08510.mmseqs12.k7.png",
+    "figures/244_pairs/073_KCNK16_INTRAMEM_fly/Q96T55_vs_P08510.mmseqs12.k7.png",
+    "figures/244_pairs/074_MAPK13_BINDING_fly/O15264_vs_O62618.sdm12.k6.png",
+    "figures/244_pairs/075_LATS1_BINDING_fly/O95835_vs_P04412.sdm12.k6.png",
+    "figures/244_pairs/076_MAP3K4_BINDING_fly/Q9Y6R4_vs_P05130.sdm12.k6.png",
+    "figures/244_pairs/077_ZBTB24_ZN_FING_zebrafish/O43167_vs_Q52KB5.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/078_LRFN2_REPEAT_zebrafish/Q9ULH4_vs_Q6PGX3.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/079_STXBP5_REPEAT_zebrafish/Q5T5C0_vs_Q5SQE2.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/080_STXBP5_REPEAT_zebrafish/Q5T5C0_vs_Q5SQE2.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/081_RIPPLY2_REGION_zebrafish/Q5TAB7_vs_Q2WG79.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/082_PAK1IP1_REPEAT_zebrafish/Q9NWT1_vs_Q6TNS2.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/083_PPARD_ZN_FING_zebrafish/Q03181_vs_Q06726.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/084_PHF10_ZN_FING_zebrafish/Q8WUB8_vs_A9LMC0.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/085_DLL1_DOMAIN_zebrafish/O00548_vs_Q8UWJ4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/086_ZNF165_ZN_FING_zebrafish/P49910_vs_Q25C93.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/087_PHACTR1_REPEAT_zebrafish/Q9C0D0_vs_Q6PEI3.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/088_EHMT2_REPEAT_zebrafish/Q96KQ7_vs_Q502K3.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/089_ZSCAN9_ZN_FING_zebrafish/O15535_vs_Q7T3H2.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/090_KCNK16_INTRAMEM_zebrafish/Q96T55_vs_Q5VSE6.mmseqs12.k7.png",
+    "figures/244_pairs/091_CDC40_REPEAT_zebrafish/O60508_vs_Q7T394.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/092_MAP3K5_BINDING_zebrafish/Q99683_vs_Q32PP3.sdm12.k6.png",
+    "figures/244_pairs/093_MAPK14_BINDING_zebrafish/Q16539_vs_O42376.sdm12.k6.png",
+    "figures/244_pairs/094_MAP3K7_BINDING_zebrafish/O43318_vs_Q9DGE0.sdm12.k6.png",
+    "figures/244_pairs/095_GUCA1A_DOMAIN_chicken/P43080_vs_P79880.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/096_PAK1IP1_REPEAT_chicken/Q9NWT1_vs_Q5ZKU8.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/097_SCGN_DOMAIN_chicken/O76038_vs_P07090.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/098_KCNK16_INTRAMEM_chicken/Q96T55_vs_O73606.mmseqs12.k7.png",
+    "figures/244_pairs/099_GABRR2_TRANSMEM_chicken/P28476_vs_P24045.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/100_KCNK17_INTRAMEM_chicken/Q96T54_vs_O73606.mmseqs12.k7.png",
+    "figures/244_pairs/101_RREB1_ZN_FING_chicken/Q92766_vs_Q90850.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/102_KCNK5_INTRAMEM_chicken/O95279_vs_Q9PT84.mmseqs12.k7.png",
+    "figures/244_pairs/103_MAP3K5_BINDING_chicken/Q99683_vs_P13863.sdm12.k6.png",
+    "figures/244_pairs/104_CDC40_REPEAT_chicken/O60508_vs_Q9PTR5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/105_HTR1B_TRANSMEM_mouse/P28222_vs_P61168.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/106_SCUBE3_DOMAIN_mouse/Q8IX30_vs_Q6NZL8.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/107_CCR6_TRANSMEM_mouse/P51684_vs_O88410.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/108_ZKSCAN3_ZN_FING_mouse/Q9BRR0_vs_Q91VW9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/109_BRPF3_ZN_FING_mouse/Q9ULD4_vs_G5E8P1.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/110_STXBP5_REPEAT_mouse/Q5T5C0_vs_Q5DQR4.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/111_ZKSCAN3_ZN_FING_mouse/Q9BRR0_vs_Q6PGE4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/112_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_Q91VW9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/113_KCNK17_INTRAMEM_mouse/Q96T54_vs_O35111.mmseqs12.k7.png",
+    "figures/244_pairs/114_KCNK5_INTRAMEM_mouse/O95279_vs_O35219.mmseqs12.k7.png",
+    "figures/244_pairs/115_HTR1E_TRANSMEM_mouse/P28566_vs_P51436.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/116_ZNF165_ZN_FING_mouse/P49910_vs_Q0VDQ9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/117_ZSCAN26_ZN_FING_mouse/Q16670_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/118_ZNF76_ZN_FING_mouse/P36508_vs_O70230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/119_ZKSCAN8_ZN_FING_mouse/Q15776_vs_P08042.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/120_ZSCAN9_ZN_FING_mouse/O15535_vs_Q571J5.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/121_ADGRF5_TRANSMEM_mouse/Q8IZF2_vs_Q9D2L6.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/122_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/123_ZSCAN9_ZN_FING_mouse/O15535_vs_P08043.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/124_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q8BGS3.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/125_ELOVL5_TRANSMEM_mouse/Q9NYP7_vs_Q9EQC4.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/126_ZSCAN26_ZN_FING_mouse/Q16670_vs_Q569E7.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/127_PRDM1_ZN_FING_mouse/O75626_vs_P10076.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/128_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q8BI67.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/129_ZSCAN31_ZN_FING_mouse/Q96LW9_vs_A2A935.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/130_ZKSCAN8_ZN_FING_mouse/Q15776_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/131_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_Q6PGE4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/132_ZSCAN12_ZN_FING_mouse/O43309_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/133_ZKSCAN8_ZN_FING_mouse/Q15776_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/134_CARMIL1_REPEAT_mouse/Q5VZK9_vs_Q3UFQ8.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/135_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q07230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/136_ZSCAN23_ZN_FING_mouse/Q3MJ62_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/137_ZSCAN16_ZN_FING_mouse/Q9H4T2_vs_Q7TSH9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/138_ZSCAN12_ZN_FING_mouse/O43309_vs_Q7TSH9.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/139_KCNK16_INTRAMEM_mouse/Q96T55_vs_O88454.mmseqs12.k7.png",
+    "figures/244_pairs/140_ZNF391_ZN_FING_mouse/Q9UJN7_vs_Q80W31.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/141_TRIM31_ZN_FING_mouse/Q9BZY9_vs_Q99PN3.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/142_ZNF322_ZN_FING_mouse/Q6U7Q0_vs_Q8R0T2.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/143_KCNK5_INTRAMEM_mouse/O95279_vs_Q3LS21.mmseqs12.k7.png",
+    "figures/244_pairs/144_ZSCAN31_ZN_FING_mouse/Q96LW9_vs_P08043.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/145_ZKSCAN3_ZN_FING_mouse/Q9BRR0_vs_P10077.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/146_ZNF165_ZN_FING_mouse/P49910_vs_Q6P9Y7.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/147_DLL1_DOMAIN_mouse/O00548_vs_Q9CQW3.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/148_ZSCAN26_ZN_FING_mouse/Q16670_vs_A2A761.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/149_WDR27_REPEAT_mouse/A2RRH5_vs_Q8C5V5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/150_MYO6_REGION_mouse/Q9UM54_vs_Q64331.hp_thomas_dill2.k19.png",
+    "figures/244_pairs/151_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_P10077.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/152_OR5V1_TRANSMEM_mouse/Q9UGF6_vs_Q8VFT4.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/153_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_Q07230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/154_KCNK17_INTRAMEM_mouse/Q96T54_vs_Q8CFS6.mmseqs12.k7.png",
+    "figures/244_pairs/155_ZKSCAN3_ZN_FING_mouse/Q9BRR0_vs_P10077.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/156_DLL1_DOMAIN_mouse/O00548_vs_Q61483.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/157_ZSCAN16_ZN_FING_mouse/Q9H4T2_vs_Q7TNU6.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/158_ZKSCAN4_ZN_FING_mouse/Q969J2_vs_P10077.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/159_WDR27_REPEAT_mouse/A2RRH5_vs_Q8C5V5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/160_ZSCAN23_ZN_FING_mouse/Q3MJ62_vs_Q6PGE4.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/161_ZKSCAN8_ZN_FING_mouse/Q15776_vs_P08043.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/162_ZSCAN12_ZN_FING_mouse/O43309_vs_Q8C827.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/163_ZSCAN23_ZN_FING_mouse/Q3MJ62_vs_Q07230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/164_AHI1_REPEAT_mouse/Q8N157_vs_Q8K3E5.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/165_ZNF322_ZN_FING_mouse/Q6U7Q0_vs_Q9ERR8.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/166_RNF217_ZN_FING_mouse/Q8TC41_vs_Q9Z1K6.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/167_PRDM13_ZN_FING_mouse/Q9H4Q3_vs_P10076.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/168_LRFN2_REPEAT_mouse/Q9ULH4_vs_Q80XU8.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/169_CRISP2_DOMAIN_mouse/P16562_vs_P16563.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/170_ZSCAN9_ZN_FING_mouse/O15535_vs_P08043.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/171_ZKSCAN8_ZN_FING_mouse/Q15776_vs_Q8BI99.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/172_ZNF322_ZN_FING_mouse/Q6U7Q0_vs_Q07230.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/173_TPBG_REPEAT_mouse/Q13641_vs_Q9Z0L0.hp_kyte_doolittle2.k19.png",
+    "figures/244_pairs/174_MAPK13_BINDING_mouse/O15264_vs_P05622.sdm12.k6.png",
+    "figures/244_pairs/175_ZSCAN31_ZN_FING_mouse/Q96LW9_vs_Q8BI67.hp_thomas_dill_no_c2.k19.png",
+    "figures/244_pairs/176_SGK1_BINDING_mouse/O00141_vs_O08648.sdm12.k6.png",
+    "figures/244_pairs/177_MAP3K5_BINDING_mouse/Q99683_vs_Q8C078.sdm12.k6.png",
+    "figures/244_pairs/178_MAP3K7_BINDING_mouse/O43318_vs_O09110.sdm12.k6.png",
+    "figures/244_pairs/179_MAPK14_BINDING_mouse/Q16539_vs_P05622.sdm12.k6.png",
+    "figures/244_pairs/180_MAP3K4_BINDING_mouse/Q9Y6R4_vs_Q02111.sdm12.k6.png",
+    "figures/244_pairs/181_GRM4_TRANSMEM_fly/Q14833_vs_P91685.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/244_pairs/182_SLC26A8_TRANSMEM_zebrafish/Q96RN1_vs_Q7T2C4.hp_lehninger_c_nonpolar2.k18.png",
+    "figures/272_swissprot_pairs_per_species.png",
+    "figures/272_swissprot_q1_kmerseek_vs_best_aligner_by_type.png",
+    "figures/272_swissprot_q2_spill_length.png",
+    "figures/272_swissprot_q3_hp_run_vs_iou.png",
+    "figures/272_swissprot_q4_who_calls_per_species.png",
+    "figures/272_swissprot_q5_where_kmerseek_loses.png"
+   ],
+   "n_files": 1110
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -239,7 +1928,22 @@
    "title": "Notebook 254: seed extension loses notebook 244's short placements",
    "draft": true,
    "branch": "olgabot/hero-244-extension",
-   "updated": "2026-09-29"
+   "base": "olgabot/hero-example-244",
+   "created": "2026-09-29",
+   "updated": "2026-10-06",
+   "base_pr": 49,
+   "notebooks": [
+    "notebooks/254_hero_cases_seed_extension.ipynb"
+   ],
+   "notebook_ids": [
+    "254"
+   ],
+   "figures": [
+    "figures/254_build_check.png",
+    "figures/254_col9a1_chicken_calls.png",
+    "figures/254_exact_vs_extended_iou.png"
+   ],
+   "n_files": 26
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -247,7 +1951,14 @@
    "title": "Search ten random 2-letter partitions beside the six H/P alphabets under kmerseek 0.4 (notebook 246, experiment A)",
    "draft": true,
    "branch": "olgabot/random-alphabets-A",
-   "updated": "2026-09-30"
+   "base": "main",
+   "created": "2026-09-29",
+   "updated": "2026-09-30",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 30
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -255,7 +1966,14 @@
    "title": "Notebook 238 on the full midi-plus run",
    "draft": true,
    "branch": "olgabot/delimitation-238-full",
-   "updated": "2026-09-29"
+   "base": "main",
+   "created": "2026-09-29",
+   "updated": "2026-09-29",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 5
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -263,7 +1981,14 @@
    "title": "ELM cover on seven more species: 19 arms chosen on chicken, lists cut to 1_000",
    "draft": false,
    "branch": "olgabot/elm-cover-all-species",
-   "updated": "2026-09-30"
+   "base": "olgabot/kmerseek-top-targets",
+   "created": "2026-09-28",
+   "updated": "2026-10-06",
+   "base_pr": 71,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 29
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -271,7 +1996,14 @@
    "title": "kmerseek search: keep each query's best N targets, and pin one arm per alphabet",
    "draft": true,
    "branch": "olgabot/kmerseek-top-targets",
-   "updated": "2026-09-29"
+   "base": "olgabot/elm-cover-scoring",
+   "created": "2026-09-28",
+   "updated": "2026-10-06",
+   "base_pr": 58,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 23
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -279,15 +2011,34 @@
    "title": "Notebook 253: are ELM motifs put on position on the chicken ortholog?",
    "draft": true,
    "branch": "olgabot/elm-cover-nb253",
-   "updated": "2026-10-02"
-  },
-  {
-   "repo": "seanome/2024-kmerseek-analysis",
-   "n": 68,
-   "title": "WIP: Swiss-Prot reachability keyed on each protein's Pfam families (probably superseded)",
-   "draft": true,
-   "branch": "olgabot/qfo-pfam-region-benchmark",
-   "updated": "2026-09-28"
+   "base": "olgabot/elm-cover-scoring",
+   "created": "2026-09-28",
+   "updated": "2026-10-06",
+   "base_pr": 58,
+   "notebooks": [
+    "notebooks/253_elm_motif_cover_chicken.ipynb"
+   ],
+   "notebook_ids": [
+    "253"
+   ],
+   "figures": [
+    "figures/253_by_length_disorder.png",
+    "figures/253_checks_by_tool.png",
+    "figures/253_kmerseek_scaled1.png",
+    "figures/253_kmerseek_settings_by_species.png",
+    "figures/253_length_check.png",
+    "figures/253_misses_by_tool.png",
+    "figures/253_motif_lengths.png",
+    "figures/253_on_position_by_species.png",
+    "figures/253_only_kmerseek.png",
+    "figures/253_only_kmerseek_by_species.png",
+    "figures/253_ortholog_rank.png",
+    "figures/253_reseek_position_correction.png",
+    "figures/253_scaled_cost.png",
+    "figures/253_seed_length.png",
+    "figures/253_species_tested_motifs.png"
+   ],
+   "n_files": 57
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -295,7 +2046,22 @@
    "title": "Notebook 220: BCL2/Bcl-xL vs Ced9 across all six HP alphabets, k=15-25",
    "draft": true,
    "branch": "olgabot/scope40-bcl2-ced9-hp-alphabet-sweep",
-   "updated": "2026-09-28"
+   "base": "main",
+   "created": "2026-09-28",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/220_scope40_bcl2_ced9_all_hp_alphabets_k15_25.ipynb"
+   ],
+   "notebook_ids": [
+    "220"
+   ],
+   "figures": [
+    "figures/220_bcl2_ced9_direct_shared_kmers_heatmap.png",
+    "figures/220_bcl2_ced9_real_evidence_heatmap.png",
+    "figures/220_bclxl_ced9_direct_shared_kmers_heatmap.png"
+   ],
+   "n_files": 4
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -303,7 +2069,14 @@
    "title": "Pfam subdomain benchmark: split positive pairs into DIAMOND-hard and DIAMOND-easy",
    "draft": true,
    "branch": "olgabot/pfam-subdomain-hard",
-   "updated": "2026-09-28"
+   "base": "main",
+   "created": "2026-09-28",
+   "updated": "2026-09-28",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 7
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -311,7 +2084,28 @@
    "title": "Notebook 24: k-mer spectra across all alphabets, with nine saved figures",
    "draft": true,
    "branch": "olgabot/kmer-spectra-nb24-figures",
-   "updated": "2026-09-28"
+   "base": "main",
+   "created": "2026-09-28",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/24-kmer-frequency-spectra-across-alphabets-ksizes.ipynb"
+   ],
+   "notebook_ids": [
+    "24"
+   ],
+   "figures": [
+    "notebooks/24_hp_space_magnitude_all_alphabets.png",
+    "notebooks/24_hp_space_negative_space_all_alphabets.png",
+    "notebooks/24_occurrence_cdf_all_alphabets_all_ksizes.png",
+    "notebooks/24_occurrence_cdf_k24_hp_family_vs_control.png",
+    "notebooks/24_occurrence_cdf_k25_hp_family_vs_control.png",
+    "notebooks/24_occurrence_pdf_all_alphabets_all_ksizes.png",
+    "notebooks/24_theoretical_minus_observed_vs_ksize.png",
+    "notebooks/24_theoretical_vs_observed_all_alphabets.png",
+    "notebooks/24_theoretical_vs_observed_all_alphabets_bits.png"
+   ],
+   "n_files": 11
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -319,7 +2113,18 @@
    "title": "Run the family-AUC, RBH-F1 and leaderboard sweeps on Sherlock",
    "draft": true,
    "branch": "olgabot/human-mouse-orthologs-sherlock",
-   "updated": "2026-09-28"
+   "base": "main",
+   "created": "2026-09-28",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/206_dnds_hp_alphabet_mechanism.ipynb"
+   ],
+   "notebook_ids": [
+    "206"
+   ],
+   "figures": [],
+   "n_files": 12
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -327,15 +2132,18 @@
    "title": "E3 detection-gap benchmark: notebook 340 and a pipeline for the missing baseline arms",
    "draft": true,
    "branch": "olgabot/e3-detection-gap",
-   "updated": "2026-09-28"
-  },
-  {
-   "repo": "seanome/2024-kmerseek-analysis",
-   "n": 61,
-   "title": "Unpushed 2026-09-05 merge of the two QfO report branches (probably superseded by #24)",
-   "draft": true,
-   "branch": "olgabot/merge-report-figures-and-cost",
-   "updated": "2026-09-28"
+   "base": "main",
+   "created": "2026-09-28",
+   "updated": "2026-09-28",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/340_e3_detection_gap_baselines.ipynb"
+   ],
+   "notebook_ids": [
+    "340"
+   ],
+   "figures": [],
+   "n_files": 7
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -343,7 +2151,14 @@
    "title": "Give the Swiss-Prot identity axis a Pfam anchor",
    "draft": true,
    "branch": "olgabot/identity-join-fix",
-   "updated": "2026-09-28"
+   "base": "main",
+   "created": "2026-09-28",
+   "updated": "2026-09-28",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 4
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -351,7 +2166,14 @@
    "title": "Score the ELM cover search: motif cover per arm, placement null, chicken dry run",
    "draft": true,
    "branch": "olgabot/elm-cover-scoring",
-   "updated": "2026-09-28"
+   "base": "olgabot/elm-motif-transfer",
+   "created": "2026-09-28",
+   "updated": "2026-10-06",
+   "base_pr": 51,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 27
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -359,7 +2181,14 @@
    "title": "Dark set with kmerseek 0.4: the midi run, and a failed index no longer stops it",
    "draft": false,
    "branch": "olgabot/dark-set-kmerseek-0.4",
-   "updated": "2026-10-05"
+   "base": "olgabot/invertebrate-dark-set",
+   "created": "2026-09-28",
+   "updated": "2026-10-13",
+   "base_pr": 30,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 25
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -367,7 +2196,23 @@
    "title": "Deep-twilight controls: label transfer on globins, lysozymes and cystatins (nb 252)",
    "draft": false,
    "branch": "olgabot/deep-twilight-controls",
-   "updated": "2026-09-25"
+   "base": "main",
+   "created": "2026-09-25",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/252_deep_twilight_controls.ipynb"
+   ],
+   "notebook_ids": [
+    "252"
+   ],
+   "figures": [
+    "figures/252_deep_twilight_ka_fit_and_placement.png",
+    "figures/252_deep_twilight_label_transfer.png",
+    "figures/252_deep_twilight_lowest_identity_correct.png",
+    "figures/252_deep_twilight_shared_kmers_hp_pbotc_1st_ed2.png"
+   ],
+   "n_files": 33
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -375,7 +2220,24 @@
    "title": "Notebook 245: bits an exact reduced-alphabet seed carries against bits a proteome search needs",
    "draft": false,
    "branch": "olgabot/bits-ceiling-245",
-   "updated": "2026-10-05"
+   "base": "main",
+   "created": "2026-09-25",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/245_bits_ceiling_exact_seed.ipynb"
+   ],
+   "notebook_ids": [
+    "245"
+   ],
+   "figures": [
+    "figures/245_bh1_alignment.png",
+    "figures/245_bits_have_vs_need.png",
+    "figures/245_bits_needed_vs_database_size.png",
+    "figures/245_chance_score_by_alphabet.png",
+    "figures/245_conservation_vs_reach.png"
+   ],
+   "n_files": 15
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -383,7 +2245,23 @@
    "title": "DisProt functional-region transfer benchmark: data, scoring with controls, notebook 251",
    "draft": false,
    "branch": "olgabot/disprot-region-transfer",
-   "updated": "2026-09-24"
+   "base": "olgabot/region-kmerseek-extend",
+   "created": "2026-09-24",
+   "updated": "2026-10-06",
+   "base_pr": 52,
+   "notebooks": [
+    "notebooks/251_disprot_region_transfer.ipynb"
+   ],
+   "notebook_ids": [
+    "251"
+   ],
+   "figures": [
+    "figures/251_disprot_controls.png",
+    "figures/251_disprot_landing_by_tool.png",
+    "figures/251_disprot_region_covariates.png",
+    "figures/251_disprot_structure_tools_per_region.png"
+   ],
+   "n_files": 23
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -391,7 +2269,14 @@
    "title": "Region pipeline: ungapped kmerseek extension with an E-value, opened comparator filters",
    "draft": false,
    "branch": "olgabot/region-kmerseek-extend",
-   "updated": "2026-09-25"
+   "base": "olgabot/qfo-human-all-vs-all",
+   "created": "2026-09-24",
+   "updated": "2026-09-25",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 2
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -399,7 +2284,39 @@
    "title": "Add the ELM motif benchmark (notebook 250): Stage 0, target labels, seed lengths, provenance",
    "draft": false,
    "branch": "olgabot/elm-motif-transfer",
-   "updated": "2026-09-25"
+   "base": "main",
+   "created": "2026-09-24",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/244_hero_example_candidates.ipynb",
+    "notebooks/250_elm_motif_transfer.ipynb"
+   ],
+   "notebook_ids": [
+    "244",
+    "250"
+   ],
+   "figures": [
+    "figures/244_candidate_01_ROS1_BINDING_yeast.png",
+    "figures/244_candidate_02_COL9A1_DOMAIN_zebrafish.png",
+    "figures/244_candidate_03_COL12A1_DOMAIN_zebrafish.png",
+    "figures/244_candidate_04_COL9A1_DOMAIN_chicken.png",
+    "figures/244_candidate_05_COL12A1_DOMAIN_chicken.png",
+    "figures/244_candidate_06_PHACTR2_REPEAT_chicken.png",
+    "figures/244_candidate_07_ADGRB3_DOMAIN_chicken.png",
+    "figures/244_candidate_08_DAAM2_DOMAIN_chicken.png",
+    "figures/244_candidate_09_MYB_DNA_BIND_arabidopsis.png",
+    "figures/244_candidate_10_EHMT2_REPEAT_arabidopsis.png",
+    "figures/244_candidate_funnel.png",
+    "figures/244_stage0_arm_by_feature_type.png",
+    "figures/250_kappa_penalty_by_species.png",
+    "figures/250_stage0_flank_conservation.png",
+    "figures/250_stage0_longest_hp_run.png",
+    "figures/250_stage0_motif_covariates.png",
+    "figures/250_step4_truth_by_species.png",
+    "figures/250_two_k_per_alphabet.png"
+   ],
+   "n_files": 54
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -407,7 +2324,31 @@
    "title": "Add notebook 244: hero example candidates on the Swiss-Prot feature key",
    "draft": false,
    "branch": "olgabot/hero-example-244",
-   "updated": "2026-09-25"
+   "base": "main",
+   "created": "2026-09-24",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/244_hero_example_candidates.ipynb"
+   ],
+   "notebook_ids": [
+    "244"
+   ],
+   "figures": [
+    "figures/244_candidate_01_ROS1_BINDING_yeast.png",
+    "figures/244_candidate_02_COL9A1_DOMAIN_zebrafish.png",
+    "figures/244_candidate_03_COL12A1_DOMAIN_zebrafish.png",
+    "figures/244_candidate_04_COL9A1_DOMAIN_chicken.png",
+    "figures/244_candidate_05_COL12A1_DOMAIN_chicken.png",
+    "figures/244_candidate_06_PHACTR2_REPEAT_chicken.png",
+    "figures/244_candidate_07_ADGRB3_DOMAIN_chicken.png",
+    "figures/244_candidate_08_DAAM2_DOMAIN_chicken.png",
+    "figures/244_candidate_09_MYB_DNA_BIND_arabidopsis.png",
+    "figures/244_candidate_10_EHMT2_REPEAT_arabidopsis.png",
+    "figures/244_candidate_funnel.png",
+    "figures/244_stage0_arm_by_feature_type.png"
+   ],
+   "n_files": 21
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -415,7 +2356,32 @@
    "title": "242: combining alphabets does not lift BCL2 or CD47; query-side null ready to run",
    "draft": false,
    "branch": "olgabot/alphabet-ensemble",
-   "updated": "2026-09-24"
+   "base": "olgabot/alphabet-ranking-three-cases",
+   "created": "2026-09-23",
+   "updated": "2026-10-06",
+   "base_pr": 46,
+   "notebooks": [
+    "notebooks/242_alphabet_ensemble.ipynb",
+    "notebooks/243_alphabet_logistic_regression.ipynb"
+   ],
+   "notebook_ids": [
+    "242",
+    "243"
+   ],
+   "figures": [
+    "figures/242_best_subset_vs_random_queries.BCL2.png",
+    "figures/242_best_subset_vs_random_queries.CD47.png",
+    "figures/242_combined_rank_rewards_length.png",
+    "figures/242_every_subset_of_alphabets.png",
+    "figures/242_query_side_null.png",
+    "figures/242_same_proteins_beat_the_partner.png",
+    "figures/242_single_arm_vs_combined_rank.png",
+    "figures/242_three_alphabets_only.png",
+    "figures/243_heldout_precision_recall.png",
+    "figures/243_model_coefficients.png",
+    "figures/243_model_on_three_cases.png"
+   ],
+   "n_files": 31
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -423,7 +2389,14 @@
    "title": "Pfam on the dark set: are these real proteins?",
    "draft": false,
    "branch": "olgabot/dark-set-pfam",
-   "updated": "2026-09-23"
+   "base": "olgabot/dark-set-kmerseek-0.4",
+   "created": "2026-09-23",
+   "updated": "2026-09-23",
+   "base_pr": 57,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [],
+   "n_files": 6
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -431,7 +2404,34 @@
    "title": "241: what every alphabet can see, on BCL2/Ced9, P66/CD47 and BHF",
    "draft": false,
    "branch": "olgabot/alphabet-ranking-three-cases",
-   "updated": "2026-10-05"
+   "base": "main",
+   "created": "2026-09-23",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [
+    "notebooks/241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb"
+   ],
+   "notebook_ids": [
+    "241"
+   ],
+   "figures": [
+    "figures/241_application_bhf.png",
+    "figures/241_bcl2_rank_by_metric.png",
+    "figures/241_best_rank_per_alphabet.png",
+    "figures/241_best_rank_vs_random_protein.png",
+    "figures/241_every_metric.png",
+    "figures/241_expected_vs_observed_by_length.png",
+    "figures/241_gold_standard_bcl2_rank.png",
+    "figures/241_length_matched_control.png",
+    "figures/241_length_scaled_ranks_10_settings.png",
+    "figures/241_no_evalue_mechanism.png",
+    "figures/241_pairwise_shared_kmers.png",
+    "figures/241_partner_evalue_vs_chance.png",
+    "figures/241_pr44_crosscheck.png",
+    "figures/241_reach_cd47_rank.png",
+    "figures/241_which_arms_have_an_evalue.png"
+   ],
+   "n_files": 40
   },
   {
    "repo": "seanome/2024-kmerseek-analysis",
@@ -439,23 +2439,67 @@
    "title": "Measure the dark set: what conventional sequence search misses on an invertebrate proteome",
    "draft": false,
    "branch": "olgabot/invertebrate-dark-set",
-   "updated": "2026-09-28"
+   "base": "olgabot/botryllus-run-fixes",
+   "created": "2026-09-10",
+   "updated": "2026-10-06",
+   "base_pr": null,
+   "notebooks": [],
+   "notebook_ids": [],
+   "figures": [
+    "nextflow-runs/invertebrate-dark-set/figures/darkset_botryllus_kmerseek_reach_20260913.png",
+    "nextflow-runs/invertebrate-dark-set/figures/darkset_botryllus_run_20260912.png"
+   ],
+   "n_files": 31
   },
   {
    "repo": "seanome/kmerseek",
-   "n": 136,
-   "title": "Scale the chance count of shared k-mers with the target's size",
+   "n": 144,
+   "title": "search: --ka-r-database, to search with a fit made on another index",
    "draft": true,
-   "branch": "olgabot/length-aware-expected-shared-kmers",
-   "updated": "2026-10-05"
+   "branch": "olgabot/ka-r-database-flag",
+   "base": "main",
+   "created": "2026-10-13",
+   "updated": "2026-10-13"
   },
   {
    "repo": "seanome/kmerseek",
-   "n": 135,
-   "title": "Skills: standard amino-acid order; no stacked PR ships a value a later PR fixes",
+   "n": 143,
+   "title": "Skills: rules from Olga's review comments, Oct 5-11",
    "draft": true,
-   "branch": "olgabot/skill-rules-2026-w40",
-   "updated": "2026-10-04"
+   "branch": "olgabot/skill-rules-w41",
+   "base": "main",
+   "created": "2026-10-13",
+   "updated": "2026-10-13"
+  },
+  {
+   "repo": "seanome/kmerseek",
+   "n": 142,
+   "title": "Search report: draw rows with no run, --min-runs to leave them out, dot plot labels that fit",
+   "draft": true,
+   "branch": "olgabot/hits-page-row-without-runs",
+   "base": "main",
+   "created": "2026-10-13",
+   "updated": "2026-10-13"
+  },
+  {
+   "repo": "seanome/kmerseek",
+   "n": 141,
+   "title": "Key index entries by their sequence, so a target's hits carry its own coordinates",
+   "draft": true,
+   "branch": "olgabot/target-subseq-coords",
+   "base": "olgabot/release-0.4.0",
+   "created": "2026-10-10",
+   "updated": "2026-10-10"
+  },
+  {
+   "repo": "seanome/kmerseek",
+   "n": 137,
+   "title": "Remove two unused ProteomeIndex fields; fail CI on dead_code allows",
+   "draft": false,
+   "branch": "olgabot/remove-dead-index-fields",
+   "base": "main",
+   "created": "2026-10-06",
+   "updated": "2026-10-06"
   },
   {
    "repo": "seanome/kmerseek",
@@ -463,23 +2507,19 @@
    "title": "Test the run E-value on random sequences and on dipeptide-shuffled decoys",
    "draft": true,
    "branch": "olgabot/run-evalue-checks",
+   "base": "olgabot/run-evalue-columns",
+   "created": "2026-10-03",
    "updated": "2026-10-03"
   },
   {
    "repo": "seanome/kmerseek",
    "n": 133,
    "title": "Give every row a run E-value, and drop the Poisson E-value",
-   "draft": true,
+   "draft": false,
    "branch": "olgabot/run-evalue-columns",
-   "updated": "2026-10-03"
-  },
-  {
-   "repo": "seanome/kmerseek",
-   "n": 132,
-   "title": "Keep each shared position once when an ambiguous residue is read several ways",
-   "draft": true,
-   "branch": "olgabot/ambiguous-position-dedup",
-   "updated": "2026-10-03"
+   "base": "olgabot/ambiguous-position-dedup",
+   "created": "2026-10-03",
+   "updated": "2026-10-10"
   },
   {
    "repo": "seanome/kmerseek",
@@ -487,6 +2527,8 @@
    "title": "Add the mid-p run E-value, and score the decoy test on other proteins' shuffles",
    "draft": false,
    "branch": "olgabot/run-evalue-midp",
+   "base": "olgabot/extend-10-default-extension-v2",
+   "created": "2026-10-01",
    "updated": "2026-10-01"
   },
   {
@@ -495,6 +2537,8 @@
    "title": "Extend matched regions by default when the index holds a fit",
    "draft": false,
    "branch": "olgabot/extend-10-default-extension-v2",
+   "base": "olgabot/extend-without-fit-v2",
+   "created": "2026-09-30",
    "updated": "2026-10-01"
   },
   {
@@ -503,6 +2547,8 @@
    "title": "Extend regions when there is no Karlin-Altschul fit, instead of refusing the search",
    "draft": false,
    "branch": "olgabot/extend-without-fit-v2",
+   "base": "olgabot/run-evalue-v2",
+   "created": "2026-09-30",
    "updated": "2026-10-03"
   },
   {
@@ -511,15 +2557,29 @@
    "title": "Give every row a region E-value, and say whether it is the Karlin-Altschul or the run E-value",
    "draft": false,
    "branch": "olgabot/run-evalue-v2",
+   "base": "olgabot/ka-01-reference-shuffles-v2",
+   "created": "2026-09-30",
    "updated": "2026-10-03"
+  }
+ ],
+ "not_open": [
+  {
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 37,
+   "title": "MHC notebooks on midi-plus: tool labels, 'boundary matched', 'inaccessible by transfer', and nb 227 (kmerseek recall vs domain length)",
+   "branch": "olgabot/mhc-midi-plus-tool-labels",
+   "base": "main",
+   "state": "merged",
+   "date": "2026-09-17"
   },
   {
-   "repo": "seanome/kmerseek",
-   "n": 91,
-   "title": "Draw each grown run's seed inside it, in kmerseek pair and both figures",
-   "draft": true,
-   "branch": "olgabot/pair-extended-seeds",
-   "updated": "2026-09-28"
+   "repo": "seanome/2024-kmerseek-analysis",
+   "n": 86,
+   "title": "Pfam candidate table: every human Pfam instance, every tool, both directions",
+   "branch": "olgabot/pfam-fair-table",
+   "base": "olgabot/244-all-case-figures",
+   "state": "merged",
+   "date": "2026-10-06"
   }
  ]
 }
