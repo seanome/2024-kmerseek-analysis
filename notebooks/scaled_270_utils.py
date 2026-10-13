@@ -103,9 +103,17 @@ def load_regions(run: str) -> pl.DataFrame:
         d = pl.read_parquet(
             f,
             columns=[
-                "query_name", "target_name", "region_start", "region_end",
-                "target_start", "target_end", "region_n_shared_kmers",
-                "region_n_mismatches", "region_evalue", "region_mean_idf", "scaled",
+                "query_name",
+                "target_name",
+                "region_start",
+                "region_end",
+                "target_start",
+                "target_end",
+                "region_n_shared_kmers",
+                "region_n_mismatches",
+                "region_evalue",
+                "region_mean_idf",
+                "scaled",
             ],
         )
         parts.append(
@@ -120,25 +128,35 @@ def load_regions(run: str) -> pl.DataFrame:
     # The scaled column kmerseek writes and the one the file name says must agree.
     bad = d.filter(pl.col("scaled") != pl.col("file_scaled")).height
     assert bad == 0, f"{bad} rows whose scaled column disagrees with the file name"
-    return d.drop("file_scaled").with_columns(
-        query_acc=accession("query_name"),
-        target_acc=accession("target_name"),
-        qs=pl.col("region_start") + 1,
-        qe=pl.col("region_end"),
-        ts=pl.col("target_start") + 1,
-        te=pl.col("target_end"),
-    ).with_columns(call_length=pl.col("qe") - pl.col("qs") + 1)
+    return (
+        d.drop("file_scaled")
+        .with_columns(
+            query_acc=accession("query_name"),
+            target_acc=accession("target_name"),
+            qs=pl.col("region_start") + 1,
+            qe=pl.col("region_end"),
+            ts=pl.col("target_start") + 1,
+            te=pl.col("target_end"),
+        )
+        .with_columns(call_length=pl.col("qe") - pl.col("qs") + 1)
+    )
 
 
 def load_instances(run: str = "extend") -> pl.DataFrame:
     """Human Swiss-Prot range instances on the 200 queries, one row per target species."""
-    t = pl.read_parquet(DATA / run / "truth_swissprot" / "human_swissprot_truth.parquet")
-    t = t.filter(~pl.col("is_point")).select(
-        query_acc="accession",
-        ftype="pfam_id",
-        ds="domain_start",
-        de="domain_end",
-    ).unique()
+    t = pl.read_parquet(
+        DATA / run / "truth_swissprot" / "human_swissprot_truth.parquet"
+    )
+    t = (
+        t.filter(~pl.col("is_point"))
+        .select(
+            query_acc="accession",
+            ftype="pfam_id",
+            ds="domain_start",
+            de="domain_end",
+        )
+        .unique()
+    )
     t = t.with_columns(feature_length=pl.col("de") - pl.col("ds") + 1)
     t = t.with_columns(length_bin=length_bin(pl.col("feature_length")))
     return t.join(pl.DataFrame({"species": SPECIES}), how="cross")
@@ -150,7 +168,10 @@ def load_target_features(run: str = "extend") -> pl.DataFrame:
         m = pl.read_parquet(DATA / run / "truth_swissprot" / f"{sp}_domain_map.parquet")
         parts.append(
             m.select(
-                target_acc="accession", ftype="pfam_id", fs="domain_start", fe="domain_end"
+                target_acc="accession",
+                ftype="pfam_id",
+                fs="domain_start",
+                fe="domain_end",
             ).with_columns(species=pl.lit(sp))
         )
     return pl.concat(parts).unique()
@@ -164,12 +185,16 @@ def extension_status(regions: pl.DataFrame) -> pl.DataFrame:
     table has no finite region_evalue and no region with a mismatch, which is how it is
     found here.
     """
-    return regions.group_by(["alphabet", "scaled", "species"]).agg(
-        n_regions=pl.len(),
-        n_finite_evalue=pl.col("region_evalue").is_finite().sum(),
-        n_with_mismatch=(pl.col("region_n_mismatches") > 0).sum(),
-    ).with_columns(
-        extended=(pl.col("n_finite_evalue") > 0) | (pl.col("n_with_mismatch") > 0)
+    return (
+        regions.group_by(["alphabet", "scaled", "species"])
+        .agg(
+            n_regions=pl.len(),
+            n_finite_evalue=pl.col("region_evalue").is_finite().sum(),
+            n_with_mismatch=(pl.col("region_n_mismatches") > 0).sum(),
+        )
+        .with_columns(
+            extended=(pl.col("n_finite_evalue") > 0) | (pl.col("n_with_mismatch") > 0)
+        )
     )
 
 
@@ -191,7 +216,18 @@ def extended_at_every_scaled(*statuses: pl.DataFrame) -> pl.DataFrame:
 # ---------------------------------------------------------------------------
 def typed_regions(regions: pl.DataFrame, target_features: pl.DataFrame) -> pl.DataFrame:
     """Each region once per feature type it touches on the target side (rule b)."""
-    keys = ["species", "alphabet", "k", "scaled", "query_acc", "target_acc", "qs", "qe", "ts", "te"]
+    keys = [
+        "species",
+        "alphabet",
+        "k",
+        "scaled",
+        "query_acc",
+        "target_acc",
+        "qs",
+        "qe",
+        "ts",
+        "te",
+    ]
     touched = (
         regions.select(keys)
         .unique()
@@ -223,7 +259,9 @@ INSTANCE_KEY = ["species", "query_acc", "ftype", "ds", "de"]
 ARM_KEY = ["alphabet", "k", "scaled"]
 
 
-def reached(matches: pl.DataFrame, instances: pl.DataFrame, landed: bool) -> pl.DataFrame:
+def reached(
+    matches: pl.DataFrame, instances: pl.DataFrame, landed: bool
+) -> pl.DataFrame:
     """Every (arm, scaled, instance), with reached True/False.
 
     landed=False: any matching region. landed=True: a matching region with at least half
@@ -247,7 +285,9 @@ def reached(matches: pl.DataFrame, instances: pl.DataFrame, landed: bool) -> pl.
         orient="row",
     ).with_columns(pl.col("k").cast(pl.Int32), pl.col("scaled").cast(pl.Int64))
     full = grid.join(instances, how="cross")
-    best = best.with_columns(pl.col("k").cast(pl.Int32), pl.col("scaled").cast(pl.Int64))
+    best = best.with_columns(
+        pl.col("k").cast(pl.Int32), pl.col("scaled").cast(pl.Int64)
+    )
     return full.join(best, on=ARM_KEY + INSTANCE_KEY, how="left").with_columns(
         reached=pl.col("iou").is_not_null()
     )
@@ -273,7 +313,7 @@ def seed_kmers_at_scaled1(exact_matches: pl.DataFrame) -> pl.DataFrame:
 # ---------------------------------------------------------------------------
 # Cost.
 # ---------------------------------------------------------------------------
-_SIZE = {"B": 1 / 1024 ** 3, "KB": 1 / 1024 ** 2, "MB": 1 / 1024, "GB": 1.0, "TB": 1024.0}
+_SIZE = {"B": 1 / 1024**3, "KB": 1 / 1024**2, "MB": 1 / 1024, "GB": 1.0, "TB": 1024.0}
 _TIME = {"ms": 1e-3, "s": 1.0, "m": 60.0, "h": 3600.0, "d": 86400.0}
 
 
@@ -331,17 +371,24 @@ def load_cost(run: str) -> pl.DataFrame:
 
 def pfam_homolog_pairs() -> pl.DataFrame:
     """(species, query_acc, target_acc) where the human query and the target protein share
-    at least one Pfam family, from the mini set's own Pfam tables (DATA / annotations)."""
-    h = pl.read_parquet(DATA / "annotations" / "human_pfam_domains.parquet").select(
-        query_acc="accession", pfam_id="pfam_id"
-    ).unique()
+    at least one Pfam family, from the mini set's own Pfam tables (DATA / annotations).
+    """
+    h = (
+        pl.read_parquet(DATA / "annotations" / "human_pfam_domains.parquet")
+        .select(query_acc="accession", pfam_id="pfam_id")
+        .unique()
+    )
     parts = []
     for sp in SPECIES:
-        t = pl.read_parquet(DATA / "annotations" / f"{sp}_pfam_domains.parquet").select(
-            target_acc="accession", pfam_id="pfam_id"
-        ).unique()
+        t = (
+            pl.read_parquet(DATA / "annotations" / f"{sp}_pfam_domains.parquet")
+            .select(target_acc="accession", pfam_id="pfam_id")
+            .unique()
+        )
         parts.append(
-            h.join(t, on="pfam_id").select("query_acc", "target_acc").unique()
+            h.join(t, on="pfam_id")
+            .select("query_acc", "target_acc")
+            .unique()
             .with_columns(species=pl.lit(sp))
         )
     return pl.concat(parts).select("species", "query_acc", "target_acc")
