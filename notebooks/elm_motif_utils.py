@@ -239,16 +239,29 @@ def random_query_pvalues(
 COVER_DIR = Path(os.environ.get("ELM_COVER_ROOT", ELM_DIR / "cover"))
 #: Reseek rescored by scripts/rescore_elm_reseek_offset.sh, which undoes the position offset
 #: bin/normalize_reseek.awk adds to targets whose accession starts with F and a digit.
-RESEEK_CORRECTED_DIR = Path(os.environ.get("ELM_RESEEK_CORRECTED", ELM_DIR / "cover-reseek-corrected"))
+RESEEK_CORRECTED_DIR = Path(
+    os.environ.get("ELM_RESEEK_CORRECTED", ELM_DIR / "cover-reseek-corrected")
+)
 #: Per ortholog, whether its AlphaFold model matches its QfO sequence
 #: (scripts/elm_ortholog_model_status.py).
-MODEL_STATUS_FILE = Path(os.environ.get("ELM_MODEL_STATUS", ELM_DIR / "elm_ortholog_model_status.tsv"))
+MODEL_STATUS_FILE = Path(
+    os.environ.get("ELM_MODEL_STATUS", ELM_DIR / "elm_ortholog_model_status.tsv")
+)
 #: Tools that search AlphaFold models: they cannot hit an ortholog with no model, and they
 #: number residues along the model. Foldseek with ProstT5 predicts its structure letters
 #: from the sequence, so it needs no model and is not in this set.
 ALPHAFOLD_MODEL_TOOLS = {"foldseek", "reseek"}
 #: Target species of the ELM cover search, from closest to furthest from human.
-COVER_SPECIES = ["mouse", "chicken", "zebrafish", "ciona", "fly", "worm", "yeast", "arabidopsis"]
+COVER_SPECIES = [
+    "mouse",
+    "chicken",
+    "zebrafish",
+    "ciona",
+    "fly",
+    "worm",
+    "yeast",
+    "arabidopsis",
+]
 
 
 def load_cover_scores(
@@ -278,12 +291,16 @@ def load_cover_scores(
     summary_names = sorted(p.name for p in folder.glob("*.summary.json"))
     summaries = [json.loads(pick(n).read_text()) for n in summary_names]
     instance_names = sorted(p.name for p in folder.glob("*.instances.parquet"))
-    inst = pl.concat([pl.read_parquet(pick(n)) for n in instance_names], how="diagonal_relaxed")
+    inst = pl.concat(
+        [pl.read_parquet(pick(n)) for n in instance_names], how="diagonal_relaxed"
+    )
     # Searches scored before reduce_elm_cover.py wrote query_scoreable are sequence
     # searches, where every query is scoreable.
     if "query_scoreable" not in inst.columns:
         inst = inst.with_columns(query_scoreable=pl.lit(True))
-    proj = projections.filter(pl.col("species") == species).select("elm_instance", "ortholog")
+    proj = projections.filter(pl.col("species") == species).select(
+        "elm_instance", "ortholog"
+    )
     models = model_status.filter(pl.col("species") == species).select(
         "ortholog", ortholog_model="model"
     )
