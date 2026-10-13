@@ -108,6 +108,20 @@ file("${projectDir}/assets/darkset_search_measured_s1.csv").readLines().drop(1).
     def c = l.split(','); SEARCH_MEASURED["${c[0]}|${c[1]}".toString()] = [gb: c[6] as double, h: c[5] as double]
 }
 
+// Searches the dark-set runs saw killed for memory, at scaled 1: index name -> the ask its
+// measure-resources tool set (twice the largest killed ask, or the ask that then finished),
+// kept per alphabet|k as the largest over clades. Mostly each alphabet's lowest k, at
+// 250-500 GB.
+SEARCH_KILLED = [:]
+file("${projectDir}/assets/kmerseek_search_memory_measured.tsv").readLines().drop(1).each { l ->
+    def c = l.split('\t')
+    def m = (c[0] =~ /^minus_[A-Za-z]+\.(\w+)\.k(\d+)\.lc\w+$/)
+    if (m.matches()) {
+        def key = "${m.group(1)}|${m.group(2)}".toString()
+        SEARCH_KILLED[key] = Math.max((SEARCH_KILLED[key] ?: 0) as double, c[1] as double)
+    }
+}
+
 def kmerseekIndexMemory(String alphabet, int ksize, int attempt) {
     double bits = keyspaceBits(alphabet, ksize)
     int nq      = kaQueriesFor(alphabet, ksize)
@@ -138,12 +152,14 @@ def spectrumLoad(Path index_dir) {
 // A search asks 1.5x the largest peak the same alphabet and k reached on a dark-set chunk
 // of the same size; with no measurement, the dark-set spectrum-load model.
 def searchFirstGb(String alphabet, int ksize, String index_name) {
-    def m = SEARCH_MEASURED["${alphabet}|${ksize}".toString()]
+    def key = "${alphabet}|${ksize}".toString()
+    def m = SEARCH_MEASURED[key]
     double floorGb = MemoryUnit.of(params.kmerseek_search_memory_floor).toGiga()
-    if (m) return Math.max(floorGb, 1.5d * m.gb)
+    double killed  = (SEARCH_KILLED[key] ?: 0.0d) as double
+    if (m) return Math.max(Math.max(floorGb, 1.5d * m.gb), killed)
     double load = (SPECTRUM_LOAD[index_name] ?: 0.0d) as double
-    Math.max(floorGb, (params.kmerseek_search_memory_headroom as double) *
-             ((params.kmerseek_search_memory_base as double) + (params.kmerseek_search_memory_slope as double) * Math.sqrt(load)))
+    Math.max(killed, Math.max(floorGb, (params.kmerseek_search_memory_headroom as double) *
+             ((params.kmerseek_search_memory_base as double) + (params.kmerseek_search_memory_slope as double) * Math.sqrt(load))))
 }
 def searchHours(String alphabet, int ksize, int attempt) {
     def m = SEARCH_MEASURED["${alphabet}|${ksize}".toString()]
