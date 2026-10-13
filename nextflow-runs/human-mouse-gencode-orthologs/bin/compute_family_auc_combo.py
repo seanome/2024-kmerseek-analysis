@@ -6,11 +6,14 @@ protein-coding genes (~279 families, `ou.load_hgnc_family_gene_sets`'s default).
 
 Same "sweep moved out of the notebook" pattern as `compute_rbh_f1_combo.py` /
 `compute_metric_leaderboard_combo.py`: one task per combo instead of a sequential in-notebook
-loop, storeDir gives free per-combo resumability. Restricted to the SAME 9-combo scope notebook
-206 section 4 already uses (protein/dayhoff at their established best-k, all 6 HP variants at
-k=30, plus hp-pbotc-1st-ed's own k=19 point) -- that combo list was already a deliberate
-tractability decision in the notebook; scaling family COUNT from 5 to ~279 doesn't change it,
-since `ou.load_families_kmerseek_scores` scans each raw file once regardless of family count.
+loop, storeDir gives free per-combo resumability. Takes one (encoding, ksize) combo per
+invocation -- the caller decides scope. Notebook 206 section 4's plots use a fixed 9/10-combo
+subset (protein/dayhoff at their established best-k, all 6 HP variants at k=30, plus
+hp-pbotc-1st-ed's own k=19 point); section 9's all-HGNC-family generalization instead runs this
+over the full alphabet x ksize sweep (same combo_tuples as computeRbhF1/computeMetricLeaderboard).
+Family COUNT (5 -> ~279) and combo COUNT (9/10 -> ~100) are independent scaling dimensions --
+`ou.load_families_kmerseek_scores` scans each raw file once regardless of family count, so
+neither affects the other's cost.
 
 Usage:
     compute_family_auc_combo.py \\

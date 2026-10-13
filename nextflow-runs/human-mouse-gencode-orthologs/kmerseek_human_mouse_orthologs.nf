@@ -425,6 +425,14 @@ process multiQC {
 
     input:
     path sweep_json
+    // For the overview section's counts: the answer key's size and the two proteomes'.
+    path ortholog_stats
+    path human_fasta
+    path mouse_fasta
+    // The data-flow diagram module every report in the repository shares, staged so the
+    // script finds it through PYTHONPATH whatever the working directory is.
+    path flow_module, stageAs: 'flow_diagram.py'
+    path explainers_module, stageAs: 'metric_explainers.py'
 
     output:
     path "multiqc_report.html"
@@ -432,7 +440,9 @@ process multiQC {
 
     script:
     """
-    make_multiqc_input.py ${sweep_json} mqc_input/
+    export PYTHONPATH="\$PWD\${PYTHONPATH:+:\$PYTHONPATH}"
+    make_multiqc_input.py ${sweep_json} mqc_input/ \\
+        ${ortholog_stats} ${human_fasta} ${mouse_fasta}
 
     /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/multiqc \\
         mqc_input/ \\
@@ -586,16 +596,14 @@ process aggregateMetricLeaderboard {
 }
 
 // ---------------------------------------------------------------------------
-// Notebook 206 section 4's family-anchor AUC sweep, moved out of the notebook the same way
+// Notebook 206 section 4/9's family-anchor AUC sweep, moved out of the notebook the same way
 // notebook 200 §1/§2b were above. Also generalizes it from 5 hand-picked HGNC families
 // (Olfactory receptors, CYP2/CYP3, antiviral restriction factors, sperm/testis) to every HGNC
 // gene_group with >=15 protein-coding genes (~279 families) -- see
-// compute_family_auc_combo.py's docstring. Restricted to the SAME 9-combo scope the notebook
-// already used (protein/dayhoff best-k, 6 HP variants @ k=30, hp-pbotc-1st-ed's extra k=19
-// point) rather than the full alphabet x ksize sweep -- that reduced scope was already a
-// deliberate tractability call in the notebook, unaffected by the family-count generalization
-// since compute_family_auc_combo.py still scans each raw file exactly once regardless of how
-// many families it's scored against.
+// compute_family_auc_combo.py's docstring. Run over the SAME full combo_tuples sweep as
+// computeRbhF1/computeMetricLeaderboard (every alphabet x ksize on disk, not just section 4's
+// fixed 9/10-combo subset) -- compute_family_auc_combo.py scans each raw file exactly once
+// regardless of family count, so the per-combo cost doesn't change; only the combo count does.
 // ---------------------------------------------------------------------------
 
 process computeFamilyAuc {
@@ -716,7 +724,9 @@ workflow {
     agg_out = aggregateResults(summaries)
 
     // MultiQC: single-document summary of the whole encoding x ksize sweep
-    multiQC(agg_out[1])
+    multiQC(agg_out[1], ortholog_stats, file(params.human_fasta), file(params.mouse_fasta),
+            Channel.value(file("${projectDir}/../shared/flow_diagram.py")),
+            Channel.value(file("${projectDir}/../shared/metric_explainers.py")))
 
     eval_outputs[0].subscribe { encoding, ksize, eval_file ->
         println("Completed evaluation: ${encoding} k=${ksize} -> ${eval_file}")
@@ -735,22 +745,11 @@ workflow {
     rbh_f1_csvs = computeRbhF1(combo_tuples)
     aggregateRbhF1(rbh_f1_csvs.collect())
 
-    // Notebook 206 §4's family-anchor AUC sweep -- fixed 9-combo list (protein/dayhoff best-k,
-    // 6 HP variants @ k=30, hp-pbotc-1st-ed's extra k=19 point), NOT the full combo_tuples
-    // sweep above -- see computeFamilyAuc's comment for why that reduced scope carries over
-    // unchanged from the notebook.
-    family_combo_tuples = Channel.of(
-        tuple('protein', 'protein', 15),
-        tuple('dayhoff', 'dayhoff', 20),
-        tuple('hp', 'hp', 30),
-        tuple('hp-lehninger', 'hp_lehninger', 30),
-        tuple('hp-thomas-dill', 'hp_thomas_dill', 30),
-        tuple('hp-kyte-doolittle', 'hp_kyte_doolittle', 30),
-        tuple('hp-thomas-dill-no-c', 'hp_thomas_dill_no_c', 30),
-        tuple('hp-lehninger-plus-c', 'hp_lehninger_plus_c', 30),
-        tuple('hp-pbotc-1st-ed', 'hp_pbotc_1st_ed', 30),
-        tuple('hp-pbotc-1st-ed', 'hp_pbotc_1st_ed', 19),
-    )
-    family_auc_csvs = computeFamilyAuc(family_combo_tuples)
+    // Notebook 206 §9's all-HGNC-family AUC sweep -- same full combo_tuples list as
+    // computeRbhF1/computeMetricLeaderboard above (~100 combos: 78 HP + 11 dayhoff + 11
+    // protein), not the fixed 9/10-combo subset section 4's hand-picked-family plots use.
+    // compute_family_auc_combo.py scans each raw file once regardless of combo count, so this
+    // is the same per-combo cost as the other two sweeps, just ~10x more combos.
+    family_auc_csvs = computeFamilyAuc(combo_tuples)
     aggregateFamilyAuc(family_auc_csvs.collect())
 }

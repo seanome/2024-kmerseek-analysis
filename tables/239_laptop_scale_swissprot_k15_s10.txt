@@ -1,0 +1,22 @@
+575748 sequences, 209017843 residues; 1000 queries
+== index ==
+kmerseek_index	wall_s=17.97	peak_rss_gb=8.12
+kmerseek index size_gb=1.26
+  mmseqs_createdb FAILED (see mm_index.log)
+mmseqs_createdb	wall_s=0.04	peak_rss_gb=0.01
+  mmseqs_createindex FAILED (see mm_createindex.log)
+mmseqs_createindex	wall_s=0.00	peak_rss_gb=0.01
+du: mmdb*: No such file or directory
+mmseqs index size_gb=0.00
+diamond_makedb	wall_s=0.99	peak_rss_gb=0.47
+diamond index size_gb=0.27
+== search (1000 queries) ==
+kmerseek_search	wall_s=436.85	peak_rss_gb=82.68
+  mmseqs_search FAILED (see mm_search.log)
+mmseqs_search	wall_s=0.03	peak_rss_gb=0.01
+diamond_blastp	wall_s=16.62	peak_rss_gb=1.16
+km_search queries_per_s=2.29
+mm_search queries_per_s=33333.33
+dm_search queries_per_s=60.17
+hits: kmerseek 168398083 rows, mmseqs   182803, diamond    22363
+done

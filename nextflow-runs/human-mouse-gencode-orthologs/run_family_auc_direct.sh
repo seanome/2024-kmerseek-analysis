@@ -1,41 +1,59 @@
 #!/bin/bash
-# Runs computeFamilyAuc's 10 combos directly (bypassing Nextflow) so this doesn't drag in
-# searchHumanVsMouse/convertResultsToParquet -- their storeDir cache in params.outdir was
-# emptied out (raw csv.zst deleted), so any `nextflow run -resume` on this .nf file right now
-# would redo the full multi-day kmerseek search sweep for ~all 100 combos. All 10 combos below
-# already have a .parquet (or .csv.gz for bare "hp" k30) on disk, so this reads existing data
-# only -- no search, no Docker, no new raw files.
+# Runs computeFamilyAuc's full alphabet x ksize combo sweep directly (bypassing Nextflow), same
+# reasoning as run_rbh_f1_direct.sh: searchHumanVsMouse's storeDir cache in params.outdir is
+# empty (raw csv.zst deleted), so `nextflow run -resume` on this .nf file would redo the full
+# multi-day kmerseek search sweep just to rebuild the `combo_tuples` channel that now feeds
+# computeFamilyAuc -- even though compute_family_auc_combo.py itself only ever reads existing
+# .parquet/.csv.zst/.csv.gz files, never the search step's output directly.
+#
+# Combo list comes from list_metric_leaderboard_combos.py, the same script the pipeline's
+# listMetricLeaderboardCombos process calls -- it rescans the filesystem, not Nextflow state, so
+# it finds the same ~100 combos here as it would inside the pipeline (78 HP + 11 dayhoff +
+# 11 protein). Notebook 206 section 4's hand-picked-family plots only need the fixed 9/10-combo
+# subset; this full sweep is for section 9's all-HGNC-family generalization.
+#
+# Produces the same 206_family_auc/206_family_auc.<enc>.k<k>.csv per-combo files (storeDir-
+# equivalent, resumable -- rerun this script and it skips anything already done) and the same
+# aggregated 206_family_auc_all_combos.csv notebook 206 section 9 reads.
 set -euo pipefail
 
 OUTDIR=/Users/olga/data/gencode/results-human-mouse-orthologs
 FAMDIR="$OUTDIR/206_family_auc"
+BINDIR=/Users/olga/code/2024-kmerseek-analysis/nextflow-runs/human-mouse-gencode-orthologs/bin
 mkdir -p "$FAMDIR"
-SCRIPT=/Users/olga/code/2024-kmerseek-analysis/nextflow-runs/human-mouse-gencode-orthologs/bin/compute_family_auc_combo.py
 
-run_combo() {
-  dash_enc="$1"; display_enc="$2"; ksize="$3"
-  out="$FAMDIR/206_family_auc.${dash_enc}.k${ksize}.csv"
-  if [ -s "$out" ]; then
-    echo "=== $dash_enc k=$ksize -- already done, skipping ==="
-    return
-  fi
-  echo "=== $dash_enc k=$ksize ==="
-  "$SCRIPT" --dash-encoding "$dash_enc" --display-encoding "$display_enc" --ksize "$ksize" \
-    --data-dir "$OUTDIR" --output "$out"
-}
+echo "=== listing combos from disk (same script the pipeline uses) ==="
+COMBOS_CSV="$FAMDIR/.combos.csv"
+"$BINDIR/list_metric_leaderboard_combos.py" --data-dir "$OUTDIR" --output "$COMBOS_CSV"
 
-run_combo protein protein 15
-run_combo dayhoff dayhoff 20
-run_combo hp hp 30
-run_combo hp-lehninger hp_lehninger 30
-run_combo hp-thomas-dill hp_thomas_dill 30
-run_combo hp-kyte-doolittle hp_kyte_doolittle 30
-run_combo hp-thomas-dill-no-c hp_thomas_dill_no_c 30
-run_combo hp-lehninger-plus-c hp_lehninger_plus_c 30
-run_combo hp-pbotc-1st-ed hp_pbotc_1st_ed 30
-run_combo hp-pbotc-1st-ed hp_pbotc_1st_ed 19
+/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 <<PYEOF
+import csv
+import subprocess
+from pathlib import Path
 
-echo "=== aggregating ==="
+famdir = Path("$FAMDIR")
+script = "$BINDIR/compute_family_auc_combo.py"
+outdir = "$OUTDIR"
+
+with open("$COMBOS_CSV") as f:
+    combos = list(csv.DictReader(f))
+
+print(f"{len(combos)} combos to process", flush=True)
+for i, row in enumerate(combos, 1):
+    dash_enc, disp_enc, k = row["dash_encoding"], row["display_encoding"], row["ksize"]
+    out = famdir / f"206_family_auc.{dash_enc}.k{k}.csv"
+    if out.exists() and out.stat().st_size > 0:
+        print(f"[{i}/{len(combos)}] {dash_enc} k={k} -- already done, skipping", flush=True)
+        continue
+    print(f"[{i}/{len(combos)}] {dash_enc} k={k}", flush=True)
+    subprocess.run([
+        script,
+        "--dash-encoding", dash_enc, "--display-encoding", disp_enc, "--ksize", k,
+        "--data-dir", outdir, "--output", str(out),
+    ], check=True)
+PYEOF
+
+echo "=== aggregating (same logic as aggregateFamilyAuc) ==="
 /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 <<'PYEOF'
 import polars as pl
 from pathlib import Path

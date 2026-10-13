@@ -18,18 +18,33 @@ Outputs (all written to <outdir>/):
   completeness_mqc.yaml         — heatmap: 1=complete, 0=incomplete, per encoding x ksize
   encoding_completion_mqc.tsv   — table: n complete / incomplete per encoding
   summary_table_mqc.tsv         — table: full metrics for every complete combo
-  bh_recall_vs_ksize_mqc.yaml   — linegraph: BH recall vs ksize, one line per encoding
+  bh_kept_vs_ksize_mqc.yaml     — linegraph: ortholog hits kept after BH correction vs ksize, one line per encoding
   bh_precision_vs_ksize_mqc.yaml— linegraph: BH precision vs ksize, one line per encoding
   total_hits_vs_ksize_mqc.yaml  — linegraph: search-space size (total_hits) vs ksize
   multiqc_config.yaml           — section order, titles, colors
 
 Usage:
-    make_multiqc_input.py <kmer_sweep_summary.json> <outdir>
+    make_multiqc_input.py <kmer_sweep_summary.json> <outdir> \\
+        [ortholog_stats.txt] [human.fa] [mouse.fa]
+
+The three optional files feed the overview section's counts (answer-key pairs, query and
+target proteins); without them those numbers print as n/a.
 """
 
 import json
 import sys
 from pathlib import Path
+
+# The data-flow diagram in the overview is drawn by the module every report in this
+# repository shares. Under Nextflow it is staged into the task directory and found through
+# PYTHONPATH; run by hand from bin/, it is found at ../../shared.
+try:
+    import flow_diagram as fd
+    import metric_explainers as mx
+except ImportError:  # pragma: no cover - the by-hand path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared"))
+    import flow_diagram as fd
+    import metric_explainers as mx
 
 ENCODING_COLORS = {
     "hp": "#9C27B0",
@@ -59,6 +74,329 @@ def is_complete(r: dict) -> bool:
     return "mht" in r
 
 
+
+# --- overview: what was done, why, and the data flow -----------------------------------
+
+# The three encoding families, in the colours the curves use for their members. HP has
+# six variants and one colour family; the box names the count rather than each one.
+# What a hit is, what m (the correction's divisor) counts, and what recall is over, for THIS
+# pipeline. The hp-v040 sibling searches with kmerseek 0.4.0's own --min-shared-kmers /
+# --max-pvalue and defines m as every comparison, so its copy of this block differs.
+# Until 2026-09-19 the report described total_hits as "at least 2 shared k-mers and p <= 0.05"
+# and, two sections later, as "pre-filtered to p < 0.001"; neither was what the evaluator
+# counts.
+HITS = {
+    "hit": "a human x mouse protein pair with a Poisson p-value of at most 0.05, the search's "
+           "own cutoff",
+    "m": "every pair the search reported at p \u2264 0.05, counted before the pre-filter",
+    "prefilter": "at least 2 shared k-mers and at least 100x the expected number of shared "
+                 "k-mers (about p below 0.001); the pre-filter is applied before correction so "
+                 "the evaluator fits in memory, and m still counts every reported pair",
+    "recall_over": "ortholog hits kept by the pre-filter",
+}
+
+FAMILIES = [
+    ("hp", "HP alphabets", lambda e: e.startswith("hp"), ENCODING_COLORS["hp"]),
+    ("dayhoff", "Dayhoff", lambda e: e == "dayhoff", ENCODING_COLORS["dayhoff"]),
+    ("protein", "protein, 20 letters", lambda e: e == "protein", ENCODING_COLORS["protein"]),
+]
+
+# Every section id this script writes, in reading order. report_section_order is one
+# scale, so every id is listed. Each file here is its own MultiQC module (no parent_id),
+# and modules sort with the LARGEST order first, so the first id gets the largest number.
+# Reading order: what ran, then recall, precision and cost against k, then the full table
+# of numbers last, since it is the reference the three curves are drawn from.
+SECTION_ORDER = ["overview", "metric_explainers", "sweep_completeness", "encoding_completion",
+                 "bh_kept_vs_ksize_mqc", "bh_precision_vs_ksize_mqc",
+                 "total_hits_vs_ksize_mqc", "summary_table"]
+
+# The column the evaluator calls "recall" is the share of the ortholog hits below alpha
+# that are still called after correction. It is not recall of the search (an ortholog
+# the search never reported is not in the denominator), so the report names it for what
+# it is and never carries the word "recall" with a caveat beside it (renamed 2026-09-20).
+KEPT = "kept after correction"
+KEPT_LONG = "the share of ortholog hits with p below alpha that are still called after correction"
+
+
+def count_fasta(path: str | None) -> int | None:
+    if not path or not Path(path).exists():
+        return None
+    with open(path) as fh:
+        return sum(1 for line in fh if line.startswith(">"))
+
+
+def read_ortholog_stats(path: str | None) -> dict:
+    """The counts parseOrthologMapping wrote, keyed by the words before the colon."""
+    if not path or not Path(path).exists():
+        return {}
+    out = {}
+    for line in Path(path).read_text().splitlines():
+        if ":" in line:
+            k, v = line.split(":", 1)
+            try:
+                out[k.strip()] = int(v.strip())
+            except ValueError:
+                pass
+    return out
+
+
+def overview_facts(results: list[dict], stats: dict, n_human, n_mouse) -> dict:
+    complete = [r for r in results if is_complete(r)]
+    fams = []
+    for fid, name, member, colour in FAMILIES:
+        rows = [r for r in results if member(r["encoding"])]
+        if not rows:
+            continue
+        done = [r for r in rows if is_complete(r)]
+        ks = sorted({r["ksize"] for r in rows})
+        encodings = {}
+        for enc in sorted({r["encoding"] for r in rows}):
+            er = [r for r in rows if r["encoding"] == enc]
+            ed = [r for r in er if is_complete(r)]
+            def best(metric):
+                vals = [(r["mht"]["bh"][metric], r["ksize"]) for r in ed
+                        if r["mht"].get("bh", {}).get(metric) is not None]
+                return max(vals) if vals else None
+            encodings[enc] = {"n_attempted": len(er), "n_complete": len(ed),
+                              "best_kept": best("recall"), "best_precision": best("precision")}
+        fams.append({"id": fid, "name": name, "colour": colour,
+                     "n_encodings": len(encodings), "encodings": encodings,
+                     "k_min": ks[0], "k_max": ks[-1],
+                     "n_attempted": len(rows), "n_complete": len(done)})
+    hits = [r["total_hits"] for r in complete if r.get("total_hits")]
+    return {
+        "n_human": n_human, "n_mouse": n_mouse,
+        "n_attempted": len(results), "n_complete": len(complete), "families": fams,
+        "hits_min": min(hits) if hits else None, "hits_max": max(hits) if hits else None,
+        "pairs": stats.get("Total human-mouse pairs"),
+        "human_with_ortholog": stats.get("Number of human genes with mouse orthologs"),
+        "one_to_one": stats.get("Human genes with exactly one mouse ortholog"),
+    }
+
+
+def overview_flow_spec(f: dict) -> dict:
+    """The sweep as a box-and-arrow spec: query and target meet at a junction and one bus
+    fans out to the encoding families; the answer key enters the metrics box from the
+    side. The bars show combos completed, which describe what ran, not the metrics."""
+    fam_x = {"hp": 20, "dayhoff": 270, "protein": 520}
+    kinds = {fam["id"]: {"color": fam["colour"], "label": fam["name"]} for fam in f["families"]}
+    arms = {}
+    for fam in f["families"]:
+        arms[fam["id"]] = {"x": fam_x[fam["id"]], "y": 200, "w": 220, "h": 66, "icon": "search", "kind": fam["id"],
+                           "title": fam["name"],
+                           "sub": f"{fam['n_encodings']} encoding(s), k {fam['k_min']}–{fam['k_max']}: "
+                                  f"{fam['n_complete']} of {fam['n_attempted']} combos",
+                           "bar": True, "dashed": fam["n_complete"] == 0,
+                           "samples": [fam["id"]] + sorted(fam["encodings"])}
+    nodes = {
+        "q0": {"x": 20, "y": 66, "w": 320, "h": 52, "icon": "genetics",
+               "title": "human GENCODE canonical proteins", "sub": f"{fd.num(f['n_human'])} proteins"},
+        "t0": {"x": 420, "y": 66, "w": 320, "h": 52, "icon": "database",
+               "title": "mouse GENCODE canonical proteins",
+               "sub": f"{fd.num(f['n_mouse'])} proteins, {fd.num(f['n_attempted'])} indexes (one per combo)"},
+        "J1": {"junction": True, "x": 380, "y": 92},
+        **arms,
+        "hits": {"x": 20, "y": 340, "w": 720, "h": 56, "icon": "table_rows",
+                 "title": "hits: pairs with ≥ 2 shared k-mers and Poisson p ≤ 0.05",
+                 "sub": f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])} per combo"},
+        "key": {"x": 20, "y": 450, "w": 340, "h": 60, "icon": "table_rows",
+                "title": "answer key: MGI/JAX ortholog pairs",
+                "sub": f"{fd.num(f['pairs'])} pairs over {fd.num(f['human_with_ortholog'])} human genes"},
+        "metrics": {"x": 20, "y": 580, "w": 720, "h": 56, "icon": "table_rows",
+                    "title": "precision, and ortholog hits kept, after multiple-testing correction (alpha 0.05)",
+                    "sub": "Bonferroni, BH, BY and two-stage BH"},
+        "report": {"x": 20, "y": 680, "w": 720, "h": 44, "icon": "summarize",
+                   "title": "this report: which combos completed, then hits kept, precision and hit count "
+                            "against k, then the full table"},
+    }
+    fam_ids = [fam["id"] for fam in f["families"]]
+    edges = [{"from": "q0", "to": "J1"}, {"from": "t0", "to": "J1"}]
+    for i, fid in enumerate(fam_ids):
+        e = {"from": "J1", "to": fid, "bus": 60}
+        if i == 0:
+            e.update({"label": ["kmerseek search, every human protein against the mouse index,",
+                                f"once per encoding x k: {fd.num(f['n_complete'])} of {fd.num(f['n_attempted'])} combos completed"],
+                      "lx": 392, "ly": 146, "anchor": "start"})
+        edges.append(e)
+    edges += [{"from": fid, "to": "hits"} for fid in fam_ids]
+    edges += [
+        {"from": "hits", "to": "metrics", "label": ["correct every hit's Poisson p over all hits of its combo;",
+                                                    "a hit is an ortholog when its gene pair is in the key"],
+         "lx": 560, "ly": 540},
+        {"from": "key", "to": "metrics"}, {"from": "metrics", "to": "report"},
+    ]
+    return {"height": 740, "kinds": kinds,
+            "barLegend": "bar along the bottom of a family: combos completed (full width = every combo attempted)",
+            "lanes": [[30, 130, "inputs"], [170, 290, "search"], [320, 410, "hits"], [430, 530, "labels"],
+                      [560, 650, "metrics"], [670, 740, "report"]],
+            "headers": [[190, 52, "QUERY: what is searched"], [570, 52, "TARGET: what is searched against"]],
+            "nodes": nodes, "edges": edges}
+
+
+def overview_details(f: dict) -> dict:
+    fam_text = {
+        "hp": "Two-letter hydrophobic/polar alphabets. Low k under a dense alphabet can run out "
+              "of memory, which is why completeness is reported rather than assumed.",
+        "dayhoff": "The six-letter Dayhoff alphabet.",
+        "protein": "The unreduced 20-letter alphabet: the control for what reduction adds or costs.",
+    }
+    d = {
+        "q0": {"title": "human GENCODE canonical proteins", "count": f"{fd.num(f['n_human'])} proteins",
+               "text": "One canonical protein per human protein-coding gene.",
+               "facts": [["proteins", fd.num(f["n_human"])]], "links": [["What was done, and why", "overview"]]},
+        "t0": {"title": "mouse GENCODE canonical proteins", "count": f"{fd.num(f['n_mouse'])} proteins",
+               "text": "One canonical protein per mouse gene, indexed once for every encoding x k "
+                       "combination in the sweep.",
+               "facts": [["proteins", fd.num(f["n_mouse"])],
+                         ["indexes built", f"{fd.num(f['n_attempted'])} (one per combo)"]],
+               "links": [["What was done, and why", "overview"]]},
+        "hits": {"title": "hits", "count": f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])} per combo",
+                 "text": f"A hit is {HITS['hit']}."
+                         + (f" Before correction the evaluator keeps {HITS['prefilter']}."
+                            if HITS["prefilter"] else ""),
+                 "facts": [["hits per combo", f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])}"]],
+                 "links": [["Search space size vs ksize", "total_hits_vs_ksize_mqc"]]},
+        "key": {"title": "answer key: MGI/JAX ortholog pairs", "count": f"{fd.num(f['pairs'])} pairs",
+                "text": "Assigned by people from several lines of evidence, so the key does not "
+                        "depend on any one similarity search.",
+                "facts": [["pairs", fd.num(f["pairs"])], ["human genes covered", fd.num(f["human_with_ortholog"])],
+                          ["with exactly one mouse ortholog", fd.num(f["one_to_one"])]],
+                "links": [["What was done, and why", "overview"]]},
+        "metrics": {"title": "precision, and ortholog hits kept, after correction", "count": "alpha 0.05",
+                    "text": f"Each hit's p-value is corrected over everything that combo reported, four "
+                            f"ways. Precision is the share of corrected hits that are orthologs; "
+                            f"{KEPT} is {KEPT_LONG}. A combo that reports more pairs is not rewarded "
+                            f"for it.",
+                    "facts": [], "links": [["Sweep metrics (complete combos only)", "summary_table"],
+                                           ["Ortholog hits kept after BH correction, vs k", "bh_kept_vs_ksize_mqc"],
+                                           ["BH precision vs ksize", "bh_precision_vs_ksize_mqc"]]},
+        "report": {"title": "this report", "count": "",
+                   "text": "Completion first, then hits kept, precision and hit count against k, one "
+                           "line per encoding, then the full table of numbers.",
+                   "facts": [], "links": [["Sweep completeness", "sweep_completeness"]]},
+    }
+    for fam in f["families"]:
+        d[fam["id"]] = {"title": fam["name"],
+                        "count": f"{fam['n_encodings']} encoding(s), k {fam['k_min']} to {fam['k_max']}",
+                        "text": fam_text[fam["id"]],
+                        "facts": [["combos completed", f"{fam['n_complete']} of {fam['n_attempted']}"]],
+                        "links": [["Sweep completeness", "sweep_completeness"],
+                                  ["Completion by encoding", "encoding_completion"]]}
+    return d
+
+
+def overview_control(f: dict) -> dict | None:
+    """The encoding-family control: for the chosen family, each encoding's completed
+    combos and its best BH kept-after-correction and precision over k."""
+    if not f["families"]:
+        return None
+    options = []
+    bars = {fam["id"]: (fam["n_complete"] / fam["n_attempted"] if fam["n_attempted"] else 0)
+            for fam in f["families"]}
+    for fam in f["families"]:
+        facts = []
+        for enc in fam["encodings"]:
+            e = fam["encodings"][enc]
+            facts.append([f"{enc}: combos completed", f"{e['n_complete']} of {e['n_attempted']}"])
+            if e.get("best_kept") is not None:
+                facts.append([f"{enc}: best BH {KEPT} (k)", f"{e['best_kept'][0]:.3f} (k={e['best_kept'][1]})"])
+            if e.get("best_precision") is not None:
+                facts.append([f"{enc}: best BH precision (k)", f"{e['best_precision'][0]:.3f} (k={e['best_precision'][1]})"])
+        options.append({"id": fam["id"], "label": fam["name"], "bars": bars,
+                        "facts": {fam["id"]: facts},
+                        "links": {fam["id"]: [["Sweep completeness", "sweep_completeness"],
+                                              ["Completion by encoding", "encoding_completion"],
+                                              ["Ortholog hits kept after BH correction, vs k", "bh_kept_vs_ksize_mqc"],
+                                              ["BH precision vs ksize", "bh_precision_vs_ksize_mqc"]]}})
+    return {"label": "Encoding family", "options": options}
+
+
+def write_metric_explainers(out: Path) -> None:
+    """How to read the metrics: the correction step as a picture, and what total_hits is."""
+    hits = (f"<div class='mx'><h5>Search space size (total_hits)</h5><p class='def'>The m the "
+            f"correction divides by: {HITS['m']}. It is also a proxy for what the combo costs in "
+            f"compute and storage. A shorter k or a coarser alphabet reports more pairs.</p></div>")
+    cfg = {
+        "id": "metric_explainers",
+        "section_name": "How to read the metrics",
+        "description": (f"<p>Precision and {KEPT} in the tables below are read after multiple-testing "
+                        f"correction. The example is a toy; the tables carry the numbers.</p>"),
+        "plot_type": "html",
+        "data": mx.bundle(mx.bh(alpha=0.05, m_words=HITS["m"], recall_over=HITS["recall_over"]), hits),
+    }
+    (out / "metric_explainers_mqc.json").write_text(json.dumps(cfg, indent=1))
+
+
+def write_overview(out: Path, results: list[dict], stats: dict, n_human, n_mouse) -> None:
+    f = overview_facts(results, stats, n_human, n_mouse)
+    fam_txt = "; ".join(
+        f"{fam['name']} ({fam['n_encodings']} encoding(s), k {fam['k_min']} to {fam['k_max']}, "
+        f"{fam['n_complete']} of {fam['n_attempted']} combos completed)" for fam in f["families"])
+    steps = [
+        f"<b>Query: human GENCODE canonical proteins.</b> {fd.num(f['n_human'])} proteins, one "
+        f"per protein-coding gene.",
+        f"<b>Target: mouse GENCODE canonical proteins.</b> {fd.num(f['n_mouse'])} proteins, "
+        f"indexed once per encoding and k.",
+        f"<b>Search.</b> kmerseek, every human protein against the mouse index, once per "
+        f"encoding x k: {fam_txt}. A hit is {HITS['hit']}; "
+        f"{fd.num(f['hits_min'])} to {fd.num(f['hits_max'])} hits per combo."
+        + (f" Before scoring, the evaluator keeps {HITS['prefilter']}." if HITS["prefilter"] else ""),
+        f"<b>Answer key: MGI/JAX ortholog pairs.</b> {fd.num(f['pairs'])} human-mouse gene "
+        f"pairs from HOM_MouseHumanSequence.rpt over {fd.num(f['human_with_ortholog'])} human "
+        f"genes, {fd.num(f['one_to_one'])} of them with exactly one mouse ortholog. A hit "
+        f"is an ortholog when its gene pair is in the key.",
+        f"<b>Score.</b> Every hit's Poisson p-value is corrected for multiple testing, "
+        f"four ways (Bonferroni, BH, BY, two-stage BH) at alpha 0.05, with m = {HITS['m']}. "
+        f"Precision is the share of corrected hits that are orthologs. <i>{KEPT.capitalize()}</i> "
+        f"is the share of {HITS['recall_over']} that are still called after correction. It "
+        f"is not recall of the search: an ortholog the search never reported is not in its "
+        f"denominator.",
+        "<b>Report.</b> Which encoding x k combos completed, then hits kept, precision and hit "
+        "count against k, one line per encoding, then the full table of numbers.",
+    ]
+    why = "".join(f"<li>{w}</li>" for w in [
+        "<b>Which alphabet and which k.</b> The same query and target under every encoding "
+        "and k is what says where a reduced alphabet helps and where it costs, on one pair "
+        "of proteomes close enough that most genes have an ortholog to find.",
+        "<b>A curated answer key.</b> MGI/JAX ortholog pairs are assigned by people from "
+        "several lines of evidence, so they do not depend on any one similarity search.",
+        "<b>Corrected p-values rather than a score cutoff</b>, so a combo that reports more "
+        "pairs is not rewarded for reporting more pairs: a hit counts only after correction "
+        "over everything that combo reported.",
+        "<b>Completeness is reported, not assumed.</b> Low-k searches under the dense HP "
+        "alphabets can run out of memory; a combo that did not finish is listed as "
+        "incomplete rather than read as zero.",
+    ])
+    cfg = {
+        "id": "overview",
+        "section_name": "What was done, and why",
+        "description": (
+            "<p>Human GENCODE proteins searched against a mouse GENCODE index by kmerseek "
+            "under every encoding and k, every hit labelled against MGI/JAX ortholog pairs "
+            "and counted after multiple-testing correction. The steps, this run's numbers, "
+            "and the flow of data from the inputs to the sections below.</p>"),
+        "plot_type": "html",
+        "data": (
+            "<h4 style='margin-top:0.4em'>What was done</h4><ol>"
+            + "".join(f"<li>{s}</li>" for s in steps) + "</ol>"
+            "<h4>Why</h4><ul>" + why + "</ul>"
+            "<h4>Data flow</h4>"
+            "<p>Read top to bottom; the label on the left says what kind of thing each row "
+            "holds. A box holds a name and one number; an arrow is the step that makes the "
+            "next box. Family boxes take the colour their encodings have in the curves below, "
+            "and their bars show how many combos completed. Hover a box to see what feeds it; "
+            "click it for what it is, its numbers, and the sections that show it; pick a "
+            "family to see each of its encodings.</p>"
+            + fd.block(dict(overview_flow_spec(f), title="human-mouse ortholog sweep",
+                            details=overview_details(f), control=overview_control(f),
+                            footnote=f"\"{KEPT}\" is measured among the ortholog hits the search "
+                                     f"reported with p below 0.05, not among every MGI pair: it is "
+                                     f"what the correction step keeps, not recall of the search."),
+                       uid="sweep-flow")),
+    }
+    (out / "overview_mqc.json").write_text(json.dumps(cfg, indent=1))
+
+
 def write_completeness_heatmap(path: Path, results: list[dict]) -> None:
     encodings = sorted({r["encoding"] for r in results})
     ksizes = sorted({r["ksize"] for r in results})
@@ -71,7 +409,8 @@ def write_completeness_heatmap(path: Path, results: list[dict]) -> None:
         f"description: 'Which encoding x ksize combinations produced a valid evaluation "
         f"(had a poisson-test p-value column and non-empty search results). "
         f"1 = complete, 0 = present in the sweep summary but incomplete (e.g. empty search "
-        f"results). Blank = no entry at all for that combination.'",
+        f"results). Blank = no entry at all for that combination. "
+        f"<a href=\"#overview\">&uarr; back to the data flow</a>'",
         f"plot_type: 'heatmap'",
         f"pconfig:",
         f"  id: 'sweep_completeness_plot'",
@@ -97,7 +436,8 @@ def write_encoding_completion_table(path: Path, results: list[dict]) -> None:
         f.write("# plot_type: 'table'\n")
         f.write("# section_name: 'Completion by encoding'\n")
         f.write("# description: 'Count of complete vs incomplete evaluations per encoding, "
-                "across all ksizes attempted in this sweep.'\n")
+                "across all ksizes attempted in this sweep. "
+                "<a href=\"#overview\">&uarr; back to the data flow</a>'\n")
         f.write("# pconfig:\n")
         f.write("#   namespace: 'Human-Mouse Ortholog Sweep'\n")
         f.write("Sample\tn_attempted\tn_complete\tn_incomplete\tpct_complete\n")
@@ -115,15 +455,22 @@ def write_summary_table(path: Path, results: list[dict]) -> None:
 
     cols = ["ksize", "n_ortholog", "n_non_ortholog", "total_hits"]
     for m in MHT_METHODS:
-        cols += [f"{m}_precision", f"{m}_recall"]
+        cols += [f"{m}_precision", f"{m}_kept"]
 
     with open(path, "w") as f:
         f.write("# plot_type: 'table'\n")
         f.write("# section_name: 'Sweep metrics (complete combos only)'\n")
-        f.write("# description: 'Multiple-hypothesis-testing precision/recall (alpha=0.05) "
-                "for every encoding x ksize combination that completed evaluation.'\n")
+        f.write(f"# description: 'Precision, and ortholog hits {KEPT} (alpha=0.05), "
+                f"for every encoding x ksize combination that completed evaluation. A _kept "
+                f"column is {KEPT_LONG}; it is not recall of the search. Values to three "
+                f"decimals. <a href=\"#overview\">&uarr; back to the data flow</a>'\n")
         f.write("# pconfig:\n")
         f.write("#   namespace: 'Human-Mouse Ortholog Sweep'\n")
+        f.write("# headers:\n")
+        for m in MHT_METHODS:
+            f.write(f"#   {m}_precision:\n#     format: '{{:,.3f}}'\n#     min: 0\n#     max: 1\n")
+            f.write(f"#   {m}_kept:\n#     title: '{m} kept'\n#     description: '{KEPT_LONG} ({m})'\n"
+                    f"#     format: '{{:,.3f}}'\n#     min: 0\n#     max: 1\n")
         f.write("Sample\t" + "\t".join(cols) + "\n")
         for r in complete:
             sample = f"{r['encoding']}_k{r['ksize']}"
@@ -155,7 +502,7 @@ def write_linegraph(
     lines = [
         f"id: '{path.stem}'",
         f"section_name: '{section_name}'",
-        f"description: '{description}'",
+        f"description: '{description} <a href=\"#overview\">&uarr; back to the data flow</a>'",
         f"plot_type: 'linegraph'",
         f"pconfig:",
         f"  id: '{path.stem}_plot'",
@@ -176,35 +523,133 @@ def write_linegraph(
     path.write_text("\n".join(lines) + "\n")
 
 
-def write_multiqc_config(path: Path, encodings: list[str]) -> None:
+# --- the first screen -------------------------------------------------------------------
+
+def filter_note(results: list[dict]) -> str:
+    """Whether the Poisson filter is filtering anything at this run's setting: the share
+    of the m tests that passed p below alpha, from the evaluator's n_pairs_below_alpha.
+    Empty for a run scored before that count existed."""
+    rows = []
+    for r in results:
+        if not is_complete(r):
+            continue
+        below = r["mht"].get("n_pairs_below_alpha")
+        m = r.get("total_hits")
+        if below is not None and m:
+            rows.append((r["encoding"], r["ksize"], below, m, below / m))
+    if not rows:
+        return ""
+    worst = max(rows, key=lambda t: t[4])
+    alpha = next((r["mht"].get("alpha") for r in results if is_complete(r)
+                  and r["mht"].get("alpha") is not None), 0.05)
+    if worst[4] >= 0.5:
+        return (f"At the search's own cutoff the Poisson filter is not filtering: under "
+                f"<code>{worst[0]}</code> at k={worst[1]}, {fd.num(worst[2])} of the "
+                f"{fd.num(worst[3])} possible pairs ({100 * worst[4]:.0f}%) pass "
+                f"p &le; {alpha:g}. The correction step is what does the filtering there, "
+                f"and every number on this page is read after it.")
+    lo = min(rows, key=lambda t: t[4])
+    return (f"The Poisson filter keeps {100 * lo[4]:.1f}% to {100 * worst[4]:.1f}% of the "
+            f"possible pairs at p &le; {alpha:g}, depending on the encoding and k.")
+
+
+def first_screen_html(f: dict, results: list[dict]) -> str:
+    """What kmerseek is, the question, the answer with its numbers, the caveat, a reading
+    order and the words the sections use. Written here because the answer carries numbers."""
+    best = []
+    for fam in f["families"]:
+        for enc, e in fam["encodings"].items():
+            if e.get("best_kept") is not None and e.get("best_precision") is not None:
+                best.append((enc, e["best_kept"], e["best_precision"]))
+    answer = []
+    if best:
+        top = max(best, key=lambda t: t[1][0])
+        answer.append(f"The encoding that keeps the most ortholog hits after BH correction is "
+                      f"<code>{top[0]}</code> at k={top[1][1]}: {top[1][0]:.3f} {KEPT}, with "
+                      f"precision {top[2][0]:.3f} at its own best k ({top[2][1]}).")
+        lo = min(best, key=lambda t: t[1][0])
+        if lo[0] != top[0]:
+            answer.append(f"The lowest is <code>{lo[0]}</code> at {lo[1][0]:.3f} (k={lo[1][1]}).")
+    if f["n_complete"] < f["n_attempted"]:
+        answer.append(f"{f['n_attempted'] - f['n_complete']} of {f['n_attempted']} combos did not "
+                      f"complete and are listed as incomplete, not read as zero.")
+    fn = filter_note(results)
+    if fn:
+        answer.append(fn)
+    fams = "; ".join(f"{fam['name']}: {fam['n_encodings']} encoding(s), k {fam['k_min']} to "
+                     f"{fam['k_max']}" for fam in f["families"])
+    glossary = "".join(f"<li>{g}</li>" for g in [
+        "<b>Encoding.</b> How the 20 amino acids are grouped before searching: the HP "
+        "alphabets keep two classes, hydrophobic and polar; Dayhoff six; protein all 20. "
+        "<b>k</b> is the length of the run of consecutive classes two proteins must share.",
+        "<b>Combo.</b> One encoding at one k, run over every human protein against the "
+        "mouse index. A combo that ran out of memory is incomplete.",
+        f"<b>Hit.</b> {HITS['hit'][0].upper() + HITS['hit'][1:]}.",
+        "<b>Ortholog hit.</b> A hit whose human and mouse genes are an MGI/JAX ortholog "
+        "pair, the answer key.",
+        f"<b>m.</b> What the correction divides by: {HITS['m']}.",
+        "<b>Correction.</b> Every hit's Poisson p-value is corrected for multiple testing "
+        "four ways (Bonferroni, BH, BY, two-stage BH) at alpha 0.05; a hit is called when "
+        "its corrected p is at or below alpha.",
+        "<b>Precision.</b> The share of called hits that are ortholog hits.",
+        f"<b>{KEPT.capitalize()}.</b> {KEPT_LONG[0].upper() + KEPT_LONG[1:]}. It is not "
+        f"recall of the search: an ortholog the search never reported is not in the "
+        f"denominator. Earlier drafts called this column recall.",
+        "<b>total_hits.</b> The m of that combo, and a proxy for what it costs to run.",
+    ])
+    return (
+        "<p><b>What kmerseek is.</b> A search tool that first groups the 20 amino acids "
+        "into a few classes (two, hydrophobic and polar, in the HP alphabets) and then "
+        "looks for runs of <i>k</i> consecutive classes that two proteins share, instead of "
+        "aligning residues.</p>"
+        f"<p><b>The question this report answers.</b> Which encoding and which k, on one "
+        f"pair of proteomes close enough that most genes have an ortholog to find? "
+        f"{fd.num(f['n_human'])} human proteins are searched against {fd.num(f['n_mouse'])} "
+        f"mouse proteins under every encoding and k ({fams}); every hit is labelled "
+        f"against the MGI/JAX ortholog pairs and counted after multiple-testing "
+        f"correction.</p>"
+        + (f"<p><b>The answer.</b> {' '.join(answer)}</p>" if answer else "")
+        + "<p><b>Read in this order:</b> <a href='#overview'>What was done, and why</a>, "
+          "<a href='#metric_explainers'>How to read the metrics</a>, "
+          "<a href='#sweep_completeness'>which combos completed</a>, "
+          "<a href='#bh_kept_vs_ksize_mqc'>hits kept after correction against k</a>, "
+          "<a href='#bh_precision_vs_ksize_mqc'>precision against k</a>; the "
+          "<a href='#summary_table'>full table</a> is last.</p>"
+          "<h4>Words used on every page</h4><ul>" + glossary + "</ul>")
+
+
+
+def write_multiqc_config(path: Path, encodings: list[str], header: str = "",
+                         intro: str = "") -> None:
     content = """\
 title: "Human-Mouse GENCODE Ortholog K-mer Sweep"
 subtitle: "Kmerseek encoding x ksize sweep — human vs mouse canonical proteins"
-intro_text: >
-  Sweeps kmerseek alphabet encodings (hp variants, dayhoff, protein) across their
-  respective ksize ranges, searching all human GENCODE proteins against a mouse
-  GENCODE index. Ground truth: MGI/JAX human-mouse ortholog gene pairs. Evaluated
-  with Poisson-test multiple-hypothesis correction (Bonferroni, BH, BY, two-stage BH).
+{intro}
 
-report_header_info:
-  - Ground truth: "MGI/JAX HOM_MouseHumanSequence orthologs"
-  - Comparison: "human vs mouse, all canonical GENCODE proteins"
-  - Correction: "Bonferroni / BH / BY / two-stage BH, alpha=0.05"
+{header}
 
 custom_data:
   sweep_completeness:
     colors:
       - ['0', '#E53935']
       - ['1', '#43A047']
-"""
-    path.write_text(content)
+
+report_section_order:
+""" + "\n".join(f"  {sid}: {{ order: {len(SECTION_ORDER) - i} }}"
+                for i, sid in enumerate(SECTION_ORDER)) + "\n"
+    path.write_text(content.replace("{header}", header)
+                    .replace("{intro}", fd.yaml_html("intro_text", intro) if intro else ""))
 
 
-def main(sweep_json: str, outdir: str) -> None:
+def main(sweep_json: str, outdir: str, stats_txt: str | None = None,
+         human_fa: str | None = None, mouse_fa: str | None = None) -> None:
     out = Path(outdir)
     out.mkdir(parents=True, exist_ok=True)
 
     results = load_results(sweep_json)
+    write_overview(out, results, read_ortholog_stats(stats_txt),
+                   count_fasta(human_fa), count_fasta(mouse_fa))
+    write_metric_explainers(out)
     encodings = sorted({r["encoding"] for r in results})
     n_complete = sum(is_complete(r) for r in results)
     print(f"Loaded {len(results)} sweep entries ({n_complete} complete, "
@@ -215,11 +660,13 @@ def main(sweep_json: str, outdir: str) -> None:
     write_summary_table(out / "summary_table_mqc.tsv", results)
 
     write_linegraph(
-        out / "bh_recall_vs_ksize_mqc.yaml", results,
+        out / "bh_kept_vs_ksize_mqc.yaml", results,
         value_fn=lambda r: r["mht"].get("bh", {}).get("recall"),
-        section_name="BH recall vs ksize",
-        description="Recall of BH-corrected significant hits (alpha=0.05) against MGI/JAX orthologs.",
-        ylab="BH recall",
+        section_name="Ortholog hits kept after BH correction, vs k",
+        description=(f"The share of ortholog hits with p below 0.05 that BH correction (alpha 0.05) "
+                     f"still calls, against MGI/JAX orthologs. Not recall of the search: an "
+                     f"ortholog the search never reported is not in the denominator."),
+        ylab=f"ortholog hits {KEPT} (BH)",
     )
     write_linegraph(
         out / "bh_precision_vs_ksize_mqc.yaml", results,
@@ -232,13 +679,24 @@ def main(sweep_json: str, outdir: str) -> None:
         out / "total_hits_vs_ksize_mqc.yaml", results,
         value_fn=lambda r: r.get("total_hits"),
         section_name="Search space size vs ksize",
-        description="Total human-mouse protein pairs tested (pre-filtered to poisson p<0.001 "
-                     "where noted in the underlying summary.txt) — proxy for compute/storage cost.",
+        description=(f"The m each correction divides by: {HITS['m']}. Also a proxy for "
+                     f"compute and storage cost."),
         ylab="total_hits",
         ylog=True,
     )
 
-    write_multiqc_config(out / "multiqc_config.yaml", encodings)
+    f = overview_facts(results, read_ortholog_stats(stats_txt), count_fasta(human_fa), count_fasta(mouse_fa))
+    write_multiqc_config(out / "multiqc_config.yaml", encodings,
+                         intro=first_screen_html(f, results), header=fd.header_yaml([
+        ("Query", f"human GENCODE canonical proteins, {fd.num(f['n_human'])}"),
+        ("Target", f"mouse GENCODE canonical proteins, {fd.num(f['n_mouse'])}, indexed once per encoding and k"),
+        ("Sweep", "; ".join(f"{fam['name']}: {fam['n_encodings']} encoding(s), k {fam['k_min']} to {fam['k_max']}, "
+                            f"{fam['n_complete']} of {fam['n_attempted']} combos completed" for fam in f["families"])),
+        ("Ground truth", f"MGI/JAX HOM_MouseHumanSequence ortholog pairs: {fd.num(f['pairs'])} pairs over "
+                         f"{fd.num(f['human_with_ortholog'])} human genes"),
+        ("Correction", f"Bonferroni, BH, BY and two-stage BH over every hit's Poisson p-value, alpha 0.05, "
+                       f"m = {HITS['m']}"),
+    ]))
 
     print(f"Wrote MultiQC input files to {out}/")
     for f in sorted(out.iterdir()):
@@ -246,7 +704,7 @@ def main(sweep_json: str, outdir: str) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if not 3 <= len(sys.argv) <= 6:
         print(__doc__)
         sys.exit(1)
-    main(sys.argv[1], sys.argv[2])
+    main(*sys.argv[1:])

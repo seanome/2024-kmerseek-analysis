@@ -1,0 +1,239 @@
+# MultiQC settings for the QfO Pfam region benchmark report.
+#
+# The sections themselves are written by bin/build_multiqc_inputs.py as *_mqc.json --
+# machine-generated, one file per plot. This file holds only what a person edits: the
+# title, the order sections appear in, and the report-wide plot settings.
+#
+# Section ids here must match the ids that script writes. See the note above
+# report_section_order for why every id has to be listed rather than only the ones being
+# moved.
+
+title: "QfO Pfam region benchmark"
+subtitle: "Domain finding across Quest-for-Orthologs target proteomes: which stretch of a human protein is a given Pfam domain, and did the tool find it"
+# The first screen (what kmerseek is, the question, the answer with its numbers, the
+# caveats, the reading order, the words) is `intro_text`, and it is WRITTEN BY THE BUILDER
+# into multiqc_in/report_header.yaml, which multiqcReport passes as a later --config. It is
+# not here because the answer carries numbers, and a number typed into this file is stale
+# by the next run. Until 2026-09-19 this file carried a disorder-direction claim from an
+# earlier run that the data of later runs reversed.
+
+report_comment: >
+  Only the Pfam answer key is split in half: the sweep picks kmerseek's alphabet and k on
+  one half and its Pfam accuracy is read on the other, because reporting the winner on the
+  data that chose it is optimistically biased. The Swiss-Prot and Pfam-N keys are not
+  swept and are scored whole. Which kmerseek arm a figure draws depends on that figure's
+  own ranking metric and answer key, so the arm marked &#9733; is drawn in every figure
+  and is the one to follow from section to section. How the report was built, with every
+  file and flag name, is in "Reproducing this report" at the end.
+
+# Not a sequencing run: nothing here is a FASTQ and the sections are plots, not per-sample
+# QC. Turning these off removes UI that would only mislead.
+show_analysis_paths: false
+show_analysis_time: true
+# The top-of-page General Statistics element is off: it cannot be placed below a section,
+# and the reader meets the data flow first. The same table is the section right after it.
+skip_generalstats: true
+
+# Written to multiqc_plots/ as png, svg and pdf. The svg is the one that goes in a figure.
+export_plots: true
+
+# The sweep is 113 alphabet x ksize combos x 2 low-complexity arms. The low-complexity
+# axis is no longer a reporting dimension -- at each alphabet's own best k the filter is
+# worth under 0.001 Fmax everywhere in the sweep -- but both arms are still SCORED, and a
+# leaderboard is already one row per tool. Leave headroom for a run that widens.
+max_table_rows: 2000
+
+# Plotly rather than a flat image, however many series a plot ends up with. These are
+# meant to be explored -- hovering a point to find which alphabet and k it is, is the
+# entire reason the sweep is plotted rather than tabulated.
+plots_force_interactive: true
+plots_flat_numseries: 100000
+
+# Render every plot on load instead of leaving a "Show plot" button behind the resource
+# scatters, which carry one point per task and trip the default limit of 100 immediately.
+plots_defer_loading_numseries: 100000
+# The deprecated spelling of the same limit. The banner warning readers they may need to
+# press "Show plot" is still driven by this one, so both have to be raised.
+num_datasets_plot_limit: 100000
+
+# Sections inside a module are sorted by ascending order value. EVERY section this report
+# can write is listed below, with no gaps in what is covered, and that completeness is the
+# point rather than tidiness.
+#
+# MultiQC gives an UNLISTED section a default position of 10, 20, 30 ... in discovery
+# order, and then sorts the listed and unlisted together on one scale. So a partial list
+# does not layer over the defaults, it competes with them: with ~90 sections the unlisted
+# ones run out past 900, and in the midi-plus report that put the whole ceiling block and
+# every MHC panel AFTER the citations, which were sitting at 310 and were supposed to be
+# last. Nothing was misnumbered -- the numbers were being compared against a scale that
+# had grown underneath them. Listing everything removes the second scale.
+#
+# Consequences of that, worth keeping in mind when editing:
+#   - A new section MUST be added here, or it lands somewhere arbitrary in the middle.
+#   - Order values must be ints; order_modules_and_sections asserts it. There is no
+#     fraction to slot between two neighbours, which is why these are spaced by 10.
+#   - A plot and its table must not share a number: sharing one renders the TABLE first.
+#   - An id listed but not produced is skipped with a debug message, so listing every
+#     truth set (pfam, pfamn, swissprot, mcsa) is safe when a run builds only some.
+#
+# The order is the story, one group per question, in the order a reader needs the
+# answers (rewritten 2026-09-19; before that the cost sections, which are empty in any
+# run without a trace, came fourth, and the recognition-vs-placement pair was split
+# across two modules). Numbers are spaced by 5 within a group and each group starts 200
+# above the last, so a section can be inserted without renumbering the file.
+report_section_order:
+  # MODULES first. The two custom-content modules (the main report, the supplement) sort
+  # among themselves with the LARGEST order first, the reverse of how the sections inside
+  # a module sort. The main module is highest. (The alphabet block was a third module,
+  # qfo_ceiling, until 2026-09-19; it is now a run of sections inside the main module.)
+  qfo_region: { order: 1000 }
+  qfo_region_supp: { order: 800 }
+
+  # 1. Read first: what was done, the arms at a glance, how to read the numbers, what the run concluded.
+  # The explainers come before the at-a-glance table so Fmax is defined before the first
+  # table that uses it (swapped 2026-09-20).
+  qfo_overview: { order: 100 }
+  qfo_metric_explainers: { order: 105 }
+  qfo_general_stats: { order: 110 }
+  qfo_conclusions: { order: 115 }
+  # 2. The answer keys: where the truth comes from, and what a target proteome can supply at all.
+  qfo_truth_provenance: { order: 300 }
+  qfo_truthsets: { order: 305 }
+  qfo_reachability: { order: 310 }
+  qfo_reachability_swissprot: { order: 315 }
+  qfo_reachability_pfamn: { order: 320 }
+  qfo_reachability_mcsa: { order: 325 }
+  qfo_reachability_pfam: { order: 330 }
+  # 3. The comparison, and whether it is fair: leaderboards, threshold-free metrics, then what each arm had to report to get there.
+  qfo_leaderboard_swissprot: { order: 500 }
+  qfo_leaderboard_pfamn: { order: 505 }
+  qfo_leaderboard_mcsa: { order: 510 }
+  qfo_leaderboard_pfam: { order: 515 }
+  qfo_cafa: { order: 520 }
+  qfo_threshold: { order: 525 }
+  qfo_pr_curve: { order: 530 }
+  qfo_recall_at_precision: { order: 535 }
+  qfo_recall_at_precision_table: { order: 540 }
+  qfo_roc_curve: { order: 545 }
+  qfo_call_volume: { order: 550 }
+  qfo_call_volume_table: { order: 555 }
+  qfo_threshold_gain: { order: 560 }
+  qfo_search_space: { order: 565 }
+  qfo_grayzone: { order: 570 }
+  qfo_dedup_bar: { order: 575 }
+  qfo_dedup_table: { order: 580 }
+  # 4. Where a correct call lands.
+  qfo_boundary: { order: 700 }
+  qfo_boundary_dots: { order: 705 }
+  # 5. How far back in time, and how far apart in sequence. The pinned arm is named first because the sections after it mark it.
+  qfo_canonical: { order: 900 }
+  qfo_divergence_annotated: { order: 905 }
+  qfo_divergence: { order: 910 }
+  qfo_identity_pair_mya: { order: 915 }
+  qfo_identity_pair_pident: { order: 920 }
+  qfo_identity: { order: 925 }
+  qfo_identity_no_homolog: { order: 930 }
+  qfo_tool_by_species_swissprot: { order: 935 }
+  qfo_tool_by_species_table_swissprot: { order: 940 }
+  qfo_tool_by_species_pfamn: { order: 945 }
+  qfo_tool_by_species_table_pfamn: { order: 950 }
+  qfo_tool_by_species_mcsa: { order: 955 }
+  qfo_tool_by_species_table_mcsa: { order: 960 }
+  qfo_tool_by_species_pfam: { order: 965 }
+  qfo_tool_by_species_table_pfam: { order: 970 }
+  # 6. Which query proteins: structure confidence, disorder, selection, curated gene sets.
+  qfo_plddt: { order: 1100 }
+  qfo_plddt_regime: { order: 1105 }
+  qfo_plddt_regime_table: { order: 1110 }
+  qfo_plddt_region: { order: 1115 }
+  qfo_disorder: { order: 1120 }
+  qfo_disorder_seq: { order: 1125 }
+  qfo_disorder_target: { order: 1130 }
+  qfo_disorder_region: { order: 1135 }
+  qfo_disorder_scatter: { order: 1140 }
+  qfo_disorder_scatter_table: { order: 1145 }
+  qfo_omega: { order: 1150 }
+  qfo_hgnc: { order: 1155 }
+  qfo_curated_geneset_swissprot: { order: 1160 }
+  qfo_curated_geneset_pfamn: { order: 1165 }
+  qfo_curated_geneset_mcsa: { order: 1170 }
+  qfo_curated_geneset_pfam: { order: 1175 }
+  qfo_curated_mhc_swissprot: { order: 1180 }
+  qfo_curated_mhc_pfamn: { order: 1185 }
+  qfo_curated_mhc_mcsa: { order: 1190 }
+  qfo_curated_mhc_pfam: { order: 1195 }
+  # 7. The kmerseek sweep: alphabet and k, whether a winner is identifiable, what each alphabet keeps out to the furthest proteome.
+  qfo_alphabet: { order: 1300 }
+  qfo_alphabet_lcFalse: { order: 1301 }
+  qfo_alphabet_lcTrue: { order: 1302 }
+  qfo_lowcomplexity: { order: 1305 }
+  qfo_species_winners_swissprot: { order: 1310 }
+  qfo_species_winners_pfamn: { order: 1315 }
+  qfo_species_winners_mcsa: { order: 1320 }
+  qfo_species_winners_pfam: { order: 1325 }
+  qfo_encoding_divergence_swissprot: { order: 1330 }
+  qfo_bits_budget_swissprot: { order: 1335 }
+  qfo_encoding_divergence_pfamn: { order: 1340 }
+  qfo_bits_budget_pfamn: { order: 1345 }
+  qfo_encoding_divergence_mcsa: { order: 1350 }
+  qfo_bits_budget_mcsa: { order: 1355 }
+  qfo_encoding_divergence_pfam: { order: 1360 }
+  qfo_bits_budget_pfam: { order: 1365 }
+  qfo_encoding_divergence_table_swissprot: { order: 1370 }
+  qfo_encoding_divergence_table_pfamn: { order: 1375 }
+  qfo_encoding_divergence_table_mcsa: { order: 1380 }
+  qfo_encoding_divergence_table_pfam: { order: 1385 }
+  qfo_retention_swissprot: { order: 1390 }
+  qfo_retention_table_swissprot: { order: 1395 }
+  qfo_retention_pfamn: { order: 1400 }
+  qfo_retention_table_pfamn: { order: 1405 }
+  qfo_retention_mcsa: { order: 1410 }
+  qfo_retention_table_mcsa: { order: 1415 }
+  qfo_retention_pfam: { order: 1420 }
+  qfo_retention_table_pfam: { order: 1425 }
+  qfo_kmer_spectra: { order: 1430 }
+  qfo_kmer_spectra_table: { order: 1435 }
+  qfo_kmer_spectra_lc: { order: 1440 }
+  # 9. Cost. In a run built without a trace these are absent and "Not in this run" says so.
+  qfo_frontier: { order: 1700 }
+  qfo_timing_coverage: { order: 1705 }
+  qfo_capability: { order: 1710 }
+  qfo_search_cost: { order: 1715 }
+  qfo_search_cost_table: { order: 1720 }
+  qfo_cost_cpu_hours_per_search: { order: 1725 }
+  qfo_cost_queries_per_s: { order: 1730 }
+  qfo_res_cpu: { order: 1735 }
+  qfo_res_walltime: { order: 1740 }
+  qfo_res_throughput: { order: 1745 }
+  qfo_res_memory: { order: 1750 }
+  qfo_res_kmerseek_memory: { order: 1755 }
+  qfo_res_efficiency: { order: 1760 }
+  qfo_res_io: { order: 1765 }
+  qfo_res_status: { order: 1770 }
+  qfo_run_summary: { order: 1780 }
+  # 10. What this run could not draw, how to rebuild it, and the citations.
+  qfo_not_in_run: { order: 1890 }
+  qfo_reproduce: { order: 1895 }
+  qfo_citations: { order: 1900 }
+  # 8. What a coarse alphabet keeps and loses: only kmerseek, cut by feature length,
+  #    feature type, and recognition against placement (averaged over k, then at best k).
+  qfo_ceiling_intro: { order: 1500 }
+  qfo_ceiling_length: { order: 1505 }
+  qfo_ceiling_length_by_k: { order: 1510 }
+  qfo_ceiling_feature_type: { order: 1515 }
+  qfo_ceiling_feature_type_coverage: { order: 1520 }
+  qfo_ceiling_feature_type_point: { order: 1525 }
+  qfo_ceiling_crossover: { order: 1530 }
+  qfo_ceiling_recognition: { order: 1535 }
+  qfo_ceiling_recognition_k: { order: 1540 }
+  qfo_ceiling_cardinality_swissprot: { order: 1545 }
+  qfo_ceiling_cardinality_table_swissprot: { order: 1550 }
+  qfo_ceiling_cardinality_pfamn: { order: 1555 }
+  qfo_ceiling_cardinality_table_pfamn: { order: 1560 }
+  qfo_ceiling_cardinality_mcsa: { order: 1565 }
+  qfo_ceiling_cardinality_table_mcsa: { order: 1570 }
+  qfo_ceiling_cardinality_pfam: { order: 1575 }
+  qfo_ceiling_cardinality_table_pfam: { order: 1580 }
+  qfo_alphabet_dose_response: { order: 1585 }
+  qfo_alphabet_dose_response_table: { order: 1590 }
+  qfo_ceiling_bpe: { order: 1595 }
