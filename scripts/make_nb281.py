@@ -102,6 +102,7 @@ code(r"""
 # The settings. Change and re-run; nothing is searched again.
 E_CUTOFF = 1               # a kmerseek region or tool hit counts when its E-value is below this
 E_CUTOFF_STRICT = 0.01     # second cutoff, shown beside the first in sections 3-4
+E_CUTOFF_LOOSE = 10        # third cutoff: the whole extracted set; section 6 repeats the test at it
 TOOL_MISS_E = 10           # a pair is kmerseek-only when no tool hit on it has E <= this
 MAX_BIASED_SHARE = 0.5     # drop a region when >= this share of it, on either protein, is
                            # low complexity or transmembrane helix
@@ -343,7 +344,7 @@ def compare_with_control(reached, label_col="method"):
 
 
 reach = pl.concat([compare_with_control(reached_targets(c)).with_columns(e_cutoff=pl.lit(float(c)))
-                   for c in (E_CUTOFF, E_CUTOFF_STRICT)])
+                   for c in (E_CUTOFF, E_CUTOFF_STRICT, E_CUTOFF_LOOSE)])
 reach.write_csv(TABLES / f"281_targets_reached_by_category_vs_control_{SOURCE}.csv")
 print(reach.select("e_cutoff", "method", "category", "n_targets", "n_reached", "share", "expected_share", "fold", "p_bonferroni"))
 """)
@@ -420,7 +421,7 @@ def links_at(cutoff):
 
 
 decision_rows = []
-for cutoff in (E_CUTOFF, E_CUTOFF_STRICT):
+for cutoff in (E_CUTOFF, E_CUTOFF_STRICT, E_CUTOFF_LOOSE):
     lk = links_at(cutoff)
     only = lk.filter(~pl.col("tool_found")).select("target_name").unique().with_columns(method=pl.lit("kmerseek-only"))
     cmp = compare_with_control(only).with_columns(e_cutoff=pl.lit(float(cutoff)))
@@ -437,32 +438,36 @@ d1 = decision.filter(pl.col("e_cutoff") == E_CUTOFF)
 passing = d1.filter(pl.col("passes"))["category"].to_list()
 print(f"\nCategories passing the rule at E < {E_CUTOFF}: {passing if passing else 'none'}")
 
-fig, (ax_a, ax_b) = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2, sharey=True)
-y = np.array([ORDER.index(c) for c in d1["category"]])
-ax_a.barh(y, d1["expected_share"] * 100, height=0.6, color="#DDDDDD", label="Expected from control at the same lengths")
-ax_a.scatter(d1["share"] * 100, y, s=14, label="kmerseek-only, observed", **TOOL_STYLE["kmerseek"])
-db = d1.filter(pl.col("category") != "control")
-yb = np.array([ORDER.index(c) for c in db["category"]])
-ax_b.scatter(np.clip(db["fold"].to_numpy(), 0.02, None), yb, s=14, **TOOL_STYLE["kmerseek"])
-ax_b.axvline(1, color="black", ls="--", lw=0.8)
-ax_b.axvline(MIN_FOLD_OVER_CONTROL, color="black", ls=":", lw=0.8)
-for yy, n, k in zip(y, d1["n_targets"], d1["n_reached"]):
-    ax_a.annotate(f"{k}/{n}", (101, yy), va="center", fontsize=5, annotation_clip=False)
-ax_a.set_yticks(range(len(ORDER)), [CATEGORY_NAME[c] for c in ORDER])
-ax_a.invert_yaxis()
-for ax in (ax_a, ax_b):
-    ax.grid(axis="y")
-ax_a.set_xlim(0, 100)
-ax_a.set_xlabel(f"Targets with a kmerseek-only link at E < {E_CUTOFF} (%)")
-ax_a.set_title("Number: targets reached / all targets", loc="right", fontsize=6)
-ax_b.set_xscale("log")
-ax_b.set_xticks(*FOLD_TICKS)
-ax_b.set_xlabel("Fold over control (dashed: 1 = as random; dotted: 1.5 = the rule)")
-pf.panel_label(ax_a, "a")
-pf.panel_label(ax_b, "b")
-legend_on_top(fig, "kmerseek (any of 174 alphabet and k-size pairs, scaled 1); kmerseek-only = no phmmer, jackhmmer or "
-              "mmseqs2 hit at E <= 10 on the pair. Query: Botryllus. Target: Swiss-Prot minus Ascidiacea.")
-pf.save(fig, FIG / f"281_kmerseek_only_targets_by_category_vs_control_E{E_CUTOFF}_{SOURCE}")
+def draw_decision(d, cutoff):
+    fig, (ax_a, ax_b) = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2, sharey=True)
+    y = np.array([ORDER.index(c) for c in d["category"]])
+    ax_a.barh(y, d["expected_share"] * 100, height=0.6, color="#DDDDDD", label="Expected from control at the same lengths")
+    ax_a.scatter(d["share"] * 100, y, s=14, label="kmerseek-only, observed", **TOOL_STYLE["kmerseek"])
+    db = d.filter(pl.col("category") != "control")
+    yb = np.array([ORDER.index(c) for c in db["category"]])
+    ax_b.scatter(np.clip(db["fold"].to_numpy(), 0.02, None), yb, s=14, **TOOL_STYLE["kmerseek"])
+    ax_b.axvline(1, color="black", ls="--", lw=0.8)
+    ax_b.axvline(MIN_FOLD_OVER_CONTROL, color="black", ls=":", lw=0.8)
+    for yy, n, k in zip(y, d["n_targets"], d["n_reached"]):
+        ax_a.annotate(f"{k}/{n}", (101, yy), va="center", fontsize=5, annotation_clip=False)
+    ax_a.set_yticks(range(len(ORDER)), [CATEGORY_NAME[c] for c in ORDER])
+    ax_a.invert_yaxis()
+    for ax in (ax_a, ax_b):
+        ax.grid(axis="y")
+    ax_a.set_xlim(0, 100)
+    ax_a.set_xlabel(f"Targets with a kmerseek-only link at E < {cutoff} (%)")
+    ax_a.set_title("Number: targets reached / all targets", loc="right", fontsize=6)
+    ax_b.set_xscale("log")
+    ax_b.set_xticks(*FOLD_TICKS)
+    ax_b.set_xlabel("Fold over control (dashed: 1 = as random; dotted: 1.5 = the rule)")
+    pf.panel_label(ax_a, "a")
+    pf.panel_label(ax_b, "b")
+    legend_on_top(fig, "kmerseek (any of 174 alphabet and k-size pairs, scaled 1); kmerseek-only = no phmmer, jackhmmer or "
+                  "mmseqs2 hit at E <= 10 on the pair. Query: Botryllus. Target: Swiss-Prot minus Ascidiacea.")
+    pf.save(fig, FIG / f"281_kmerseek_only_targets_by_category_vs_control_E{cutoff}_{SOURCE}")
+
+
+draw_decision(d1, E_CUTOFF)
 """)
 
 md(r"""
@@ -501,17 +506,17 @@ def identity_and_chance(a: str, b: str) -> tuple[float, float]:
     return ident, chance
 
 
-links = links_at(E_CUTOFF)
-ic = [identity_and_chance(a, b) if len(a) == len(b) else (None, None)
-      for a, b in zip(links["region_subseq"], links["target_subseq"])]
-links = links.with_columns(identity=pl.Series([x[0] for x in ic]), chance_identity=pl.Series([x[1] for x in ic])) \
+def with_identity(lk):
+    ic = [identity_and_chance(a, b) if len(a) == len(b) else (None, None)
+          for a, b in zip(lk["region_subseq"], lk["target_subseq"])]
+    return lk.with_columns(identity=pl.Series([x[0] for x in ic], dtype=pl.Float64),
+                           chance_identity=pl.Series([x[1] for x in ic], dtype=pl.Float64)) \
              .with_columns(identity_above_chance=(pl.col("identity") - pl.col("chance_identity")) * 100,
                            group=pl.when(pl.col("category") == "control").then(pl.lit("control")).otherwise(pl.lit("categories")))
-GROUPS = [("categories", True, "Categories, also found by a tool"),
-          ("categories", False, "Categories, kmerseek-only"),
-          ("control", True, "Control, also found by a tool"),
-          ("control", False, "Control, kmerseek-only")]
-summary5 = (links.group_by("group", "tool_found")
+
+
+def identity_summary(lk):
+    return (lk.group_by("group", "tool_found")
             .agg(links=pl.len(),
                  lengths_differ_no_identity=pl.col("identity").is_null().sum(),
                  median_identity_pct=pl.col("identity").median() * 100,
@@ -520,6 +525,14 @@ summary5 = (links.group_by("group", "tool_found")
                  median_alphabets=pl.col("n_alphabets").median(),
                  share_one_alphabet=(pl.col("n_alphabets") == 1).mean())
             .sort("group", "tool_found", descending=[False, True]))
+
+
+links = with_identity(links_at(E_CUTOFF))
+GROUPS = [("categories", True, "Categories, also found by a tool"),
+          ("categories", False, "Categories, kmerseek-only"),
+          ("control", True, "Control, also found by a tool"),
+          ("control", False, "Control, kmerseek-only")]
+summary5 = identity_summary(links)
 print(f"Links at E < {E_CUTOFF} (best region per link):")
 print(summary5)
 
@@ -556,7 +569,36 @@ pf.save(fig, FIG / f"281_link_identity_above_chance_and_alphabets_E{E_CUTOFF}_{S
 """)
 
 md(r"""
-## 6. Which alphabets give the kmerseek-only links
+## 6. The same test at E < 10
+
+E < 10 keeps every region the extraction kept. At this cutoff a link needs only a region
+that chance alone would produce up to 10 times per search, so many more control proteins
+get one too; the length-matched control still sets the bar. The decision rule was written
+for E < 1; this section shows whether a looser cutoff would have changed it. Tool hits
+count up to E = 10 at every cutoff, so a kmerseek-only link means the same thing here.
+
+**A limit of the fold test at this cutoff.** A share cannot pass 100%, so the largest fold a
+category can reach is 1 / expected share. Where the control already reaches more than two
+thirds of the proteins at that length, 1.5-fold is out of reach whatever Botryllus holds
+(for MHC, expected 88%, the most is 1.13). At E < 10 the identity check below is the more
+informative one: do the kmerseek-only links to the categories match better than those to
+the control?
+""")
+
+code(r"""
+d10 = decision.filter(pl.col("e_cutoff") == E_CUTOFF_LOOSE)
+print(d10.select("category", "n_targets", "n_reached", "share", "expected_share", "fold", "p_bonferroni", "passes",
+                 "links", "links_kmerseek_only", "botryllus_proteins_kmerseek_only"))
+passing10 = d10.filter(pl.col("passes"))["category"].to_list()
+print(f"\nCategories passing the rule at E < {E_CUTOFF_LOOSE}: {passing10 if passing10 else 'none'}")
+links10 = with_identity(links_at(E_CUTOFF_LOOSE))
+print(f"\nLinks at E < {E_CUTOFF_LOOSE} (best region per link):")
+print(identity_summary(links10))
+draw_decision(d10, E_CUTOFF_LOOSE)
+""")
+
+md(r"""
+## 7. Which alphabets give the kmerseek-only links
 
 Alphabets are grouped by size (number of residue classes): 2-3, 4-8, 12-18, and the
 20-letter protein alphabet. The share is of all kmerseek-only links (best region per link)
@@ -605,7 +647,7 @@ pf.save(fig, FIG / f"281_kmerseek_only_links_by_alphabet_E{E_CUTOFF}_{SOURCE}")
 """)
 
 md(r"""
-## 7. Every kmerseek-only link to the eight categories, with residues
+## 8. Every kmerseek-only link to the eight categories, with residues
 
 One row per (Botryllus protein, target) link, using its best region. *Query* is the
 Botryllus gene model (FUN number, with a gene symbol when the annotation gave one);
@@ -695,7 +737,7 @@ print(text)
 """)
 
 md(r"""
-## 8. BHF and the Botryllus proteins behind most links
+## 9. BHF and the Botryllus proteins behind most links
 
 BHF (Botryllus histocompatibility factor, gene model FUN008084) is the one Botryllus
 allorecognition gene among the queries. The table lists the Botryllus proteins with the
@@ -758,6 +800,8 @@ proteins.
   reaches 59 after 375 of 521 MHC regions with E < 1 are dropped as low complexity or helix.
 * BHF, the one Botryllus allorecognition gene in the query set, has no kmerseek region on
   any of the 1_652 target and control proteins at E < 10.
+* At E < 10 no category passes either, and kmerseek-only links match the control's: median 3.4
+  points above chance identity for both (5_101 category links, 16_887 control links).
 
 **Decision.** The 335 kmerseek-only links are sent to Ayelet for inspection only, not as leads:
 by the rule written first, they occur at the rate kmerseek gives random proteins of the same
@@ -779,6 +823,11 @@ from this run.
 * Section 4: at the stricter E < 0.01, minor histocompatibility antigens pass (16 of 204
   targets against 3.5% expected, 2.2 times, p = 0.02) from 18 links of 6 Botryllus proteins;
   no recognition category does. The rule was set at E < 1, so this does not change the decision.
+* Section 6: at E < 10 kmerseek-only links reach 184 of 187 MHC targets against 88% expected
+  (1.11 times, p < 0.001), T cell receptor targets 1.30 times and NK receptors 1.16 times. At these
+  expected shares 1.5-fold cannot be reached (most for MHC: 1.13), so the fold test says little
+  here; identity does: 36% of category kmerseek-only links are 5 or more points above chance,
+  as are 37% of control ones.
 * Section 5: links a tool also finds have median identity 45% (38 points above chance) in the
   categories and 46% in the control; kmerseek-only links have 9% in both. The share of
   kmerseek-only links at least 5 points above chance is 31% in the categories and 32% in the
@@ -838,6 +887,8 @@ proteins.
   reaches 59 after 375 of 521 MHC regions with E < 1 are dropped as low complexity or helix.
 * BHF, the one Botryllus allorecognition gene in the query set, has no kmerseek region on
   any of the 1_652 target and control proteins at E < 10.
+* At E < 10 no category passes either, and kmerseek-only links match the control's: median 3.4
+  points above chance identity for both (5_101 category links, 16_887 control links).
 
 **Decision.** The 335 kmerseek-only links are sent to Ayelet for inspection only, not as leads:
 by the rule written first, they occur at the rate kmerseek gives random proteins of the same
@@ -859,6 +910,11 @@ from this run.
 * Section 4: at the stricter E < 0.01, minor histocompatibility antigens pass (16 of 204
   targets against 3.5% expected, 2.2 times, p = 0.02) from 18 links of 6 Botryllus proteins;
   no recognition category does. The rule was set at E < 1, so this does not change the decision.
+* Section 6: at E < 10 kmerseek-only links reach 184 of 187 MHC targets against 88% expected
+  (1.11 times, p < 0.001), T cell receptor targets 1.30 times and NK receptors 1.16 times. At these
+  expected shares 1.5-fold cannot be reached (most for MHC: 1.13), so the fold test says little
+  here; identity does: 36% of category kmerseek-only links are 5 or more points above chance,
+  as are 37% of control ones.
 * Section 5: links a tool also finds have median identity 45% (38 points above chance) in the
   categories and 46% in the control; kmerseek-only links have 9% in both. The share of
   kmerseek-only links at least 5 points above chance is 31% in the categories and 32% in the
