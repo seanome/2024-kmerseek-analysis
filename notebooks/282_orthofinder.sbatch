@@ -13,7 +13,7 @@
 #
 # First time only, from the laptop (data goes through the data transfer node):
 #
-#   rsync -av /Users/olga/data/282-ohnolog-families/proteomes/ sherlock-dtn:/scratch/users/olgabot/282-ohnolog-families/proteomes/
+#   pixi exec rsync -av --mkpath /Users/olga/data/282-ohnolog-families/proteomes/ sherlock-dtn:/scratch/users/olgabot/282-ohnolog-families/proteomes/
 #
 # On Sherlock, from a checkout of this branch:
 #
@@ -32,7 +32,7 @@
 #
 # The notebook needs only the family tables. Copy them back with:
 #
-#   rsync -av sherlock-dtn:/scratch/users/olgabot/282-ohnolog-families/orthofinder/Results_282/{Orthogroups,Phylogenetic_Hierarchical_Orthogroups,Species_Tree,Log.txt,Citation.txt} \
+#   pixi exec rsync -av --mkpath sherlock-dtn:/scratch/users/olgabot/282-ohnolog-families/orthofinder/Results_282/{Orthogroups,Phylogenetic_Hierarchical_Orthogroups,Species_Tree,Log.txt,Citation.txt} \
 #       /Users/olga/data/282-ohnolog-families/orthofinder/Results_282/
 set -euo pipefail
 
