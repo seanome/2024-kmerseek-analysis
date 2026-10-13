@@ -47,11 +47,13 @@ export NB256_RUN=${NB256_RUN:-$SCRATCH/241-alphabet-ranking/null_bhf_dipeptide}
 KMERSEEK_TAG=nb241-kmerseek-982a055
 export KMERSEEK_SRC=$SCRATCH/241-alphabet-ranking-kmerseek
 export NB241_KMERSEEK=$KMERSEEK_SRC/target/release/kmerseek
-# polars 1.34.0, the laptop's version, in a small venv (python/3.12.1 module):
-#   python3 -m venv $HOME/venvs/nb283 && $HOME/venvs/nb283/bin/pip install polars==1.34.0
+# The laptop's polars, numpy and matplotlib in a small venv on the python/3.12.1 module
+# (256's search code imports all three). Made once, on a login node:
+#   module load python/3.12.1 && python3 -m venv $HOME/venvs/nb283 && \
+#     $HOME/venvs/nb283/bin/pip install polars==1.34.0 numpy==2.3.5 matplotlib==3.10.8
 PY=$HOME/venvs/nb283/bin/python
 
-for f in "$NB241_HUMAN" "$NB241_KAPPA" "$NB256_RUN/queries.fa" "$NB256_RUN/arms.json" "$PY"; do
+for f in "$NB241_HUMAN" "$NB241_KAPPA" "$NB256_RUN/queries.fa" "$NB256_RUN/arms.json" "$NB256_RUN/../queries.fa" "$PY"; do
     [ -s "$f" ] || { echo "283: missing input $f" >&2; exit 2; }
 done
 [ "$(ls "$NB256_RUN/top" | wc -l)" -eq 548 ] || { echo "283: $NB256_RUN/top does not hold 256's 548 tables" >&2; exit 2; }
@@ -75,6 +77,8 @@ fi
 [ "${BUILD_ONLY:-0}" = 1 ] && { echo "283: build only, done"; exit 0; }
 
 cd "$REPO/notebooks"
+export MPLBACKEND=Agg
+$PY -c "import polars, numpy, matplotlib"
 $PY 283_bhf_low_complexity_control.py indexes --workers 2
 $PY 283_bhf_low_complexity_control.py reproduce --workers 3
 $PY 283_bhf_low_complexity_control.py search --null kept --workers 3

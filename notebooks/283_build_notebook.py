@@ -28,15 +28,18 @@ notebook 241; there are 152. Each copy kept BHF's count of every adjacent residu
 in 3 of 61 settings; 3.1 expected by chance). Under the other scores BHF beat 95% of its
 copies in more settings than chance predicts (5.3 of 106): tf-idf 27, containment 25,
 shared k-mers 23, mean IDF 19. 100 of the 153 winning (score, setting) pairs took their BHF
-region from residues 63-105:
+region from residues 63-105 (the 153 count the E-value and bit score, and the Poisson score
+and its p-value, separately; each pair ranks the same):
 
 ```text
 BHF 63-105  ESQEHLDASTKKTKKKAKKDKRKNKPPKKDSETSKPAQTTISR   (15 of 43 residues K or R)
 ```
 
-A dipeptide shuffle breaks such a stretch up. So the question is whether BHF still beats
-copies that keep its low-complexity stretches whole, and whether BHF without them beats
-its own shuffles.
+The 100 count any winning region that overlaps 63-105 by one residue or more, and half of
+all 1_076 (score, setting) pairs (542) overlap it too, against 65% of the winning ones. So
+the overlap alone does not show that the stretch causes the wins. A dipeptide shuffle
+breaks such a stretch up. The question is whether BHF still beats copies that keep its
+low-complexity stretches whole, and whether BHF without them beats its own shuffles.
 
 **Decision this informs.** Whether any kmerseek score shows a BHF signal that is not
 low-complexity sequence. If none does, BHF's kmerseek hits are not evidence of homology
@@ -60,7 +63,10 @@ behind notebook 256's wins (section 1).
 
 BHF "beats 95% of its copies" at a setting when (1 + copies whose best human hit scores
 at least as well as BHF's best) / 301 is at most 0.05. By chance that happens in 5% of the
-settings where BHF has the score. More than 5% is a signal; 5% or less is none.
+settings where BHF has the score, and sometimes more: if the settings were independent, 6
+or more of 106 would happen by chance with probability 0.44, and 11 or more (the decision
+line below) with probability 0.017 for one score. Settings of one alphabet see the same
+sequence and are not independent, so the real chance spread is wider.
 
 **Predictions, written before the searches ran (2026-10-13).**
 - If the non-E-value wins come from the stretches, then under null 2 the number of
@@ -72,7 +78,9 @@ settings where BHF has the score. More than 5% is a signal; 5% or less is none.
 **Decision rule, written before the searches ran.** If no score beats null 2 in more than
 twice the settings chance predicts (10%), the verdict is "BHF: no kmerseek signal beyond
 its low-complexity stretches". Otherwise, name the score, the settings and the BHF
-region, and show the aligned residues of the top human hit for each.
+region, and show the aligned residues of the top human hit for each. Null 3 is read
+against the same 10% line: a score above it means BHF without its stretches still beats
+its own shuffles (this sentence added 2026-10-13, also before any search).
 """),
 code(r"""
 import json
@@ -149,9 +157,10 @@ _ = lc.fig_stretches(BHF, rows, FIG / "283_bhf_low_complexity_stretches_kmerseek
 md(r"""
 kmerseek's own mask finds a stretch in BHF at only 9 of the 152 settings, and only 2 of
 notebook 256's 153 winning (score, setting) pairs are at one of them (both gbmr4 k18). So
-kmerseek's mask, which was on during notebook 256's searches, did not remove what BHF's
-wins rest on. SEG calls 70-93 and 109-116 low-complexity, inside 256's region 63-105 but
-shorter. The copies below use the union: 63-105, 108-117 and 208-216, 62 of 252 residues.
+at the settings of 151 of the 153 wins, kmerseek's mask, which was on during notebook
+256's searches, removed nothing from BHF. Whether the wins come from 63-105 is what
+sections 4 and 5 test. SEG calls 70-93 and 109-116 low-complexity, inside 256's region
+63-105 but shorter. The copies below use the union: 63-105, 108-117 and 208-216, 62 of 252 residues.
 """),
 md(r"""
 ## 2. The three sets of copies
@@ -201,18 +210,20 @@ md(r"""
 ## 3. The rebuilt indexes give notebook 256's numbers back
 
 Notebook 241's indexes were deleted from the laptop on 2 October and never copied to
-Sherlock. `283_bhf_low_complexity_control.py indexes` rebuilt all 152 with notebook 241's
+Sherlock. `283_bhf_low_complexity_control.py indexes` rebuilds all 152 with notebook 241's
 own driver (same kmerseek build, human FASTA, flags, Karlin-Altschul fit and retry). Before
-the new copies were searched, 256's own 301 queries were searched again on 6 settings and
-compared with the tables notebook 256 stored.
+the new copies are searched, it searches 256's own 301 queries again on 6 settings and stops
+unless every best value, and every column of the 9 scores other than the E-value and bit
+score, matches the tables notebook 256 stored. The cell below prints that comparison once
+the run is copied back.
 """),
 code(r"""
 rep = lc.DATA / "283" / "reproduce_null1" / "reproduce.json"
 if rep.exists():
     r = json.loads(rep.read_text())
     print(f"rows compared with notebook 256: {r['n_rows']:_}; real differences: {len(r['differ'])}; "
-          f"E-value or bit score top-10 lists with two near-equal proteins in the other order: "
-          f"{r['n_top10_order_swaps_evalue_bits']}")
+          f"E-value or bit score rows whose top 10 differ: {r['n_top10_differ_evalue_bits']}, "
+          f"whose tie count differs: {r['n_tied_differ_evalue_bits']} (near-equal paralogs; see the script)")
 else:
     print("the Sherlock run has not been copied back yet")
 """),

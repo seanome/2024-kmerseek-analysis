@@ -55,6 +55,7 @@ import importlib.util
 import json
 import os
 import random
+import shutil
 import sys
 from collections import Counter
 from pathlib import Path
@@ -206,13 +207,37 @@ def step_indexes(workers: int) -> None:
         q.write_text((RUN256.parent / "queries.fa").read_text())
     assert md5(q) == QUERIES_MD5, f"{q} is not the queries.fa 241 searched"
     drv.KMERSEEK, drv.HUMAN, drv.OUT, drv.QUERIES, drv.KAPPA_TSV = KMERSEEK, HUMAN, IDX_RUN, q, KAPPA
-    sys.argv = ["241_alphabet_ranking_driver.py", "--workers", str(workers)]
+    # Check the settings before spending an hour on indexes.
+    sys.argv = ["241_alphabet_ranking_driver.py", "--plan-only"]
     drv.main()
     got = md5(IDX_RUN / "plan.json")
     assert got == PLAN_MD5, f"plan.json md5 {got}, 241's was {PLAN_MD5}: the settings differ"
+    # 241's driver skips any index folder that has a CURRENT file, and RocksDB writes that
+    # file seconds into a build. An index whose build was killed would be reused as if it
+    # were whole. runs.jsonl gets a line only when a setting has finished, so delete every
+    # index folder without one before resuming.
+    done = set()
+    if (IDX_RUN / "runs.jsonl").exists():
+        for line in open(IDX_RUN / "runs.jsonl"):
+            r = json.loads(line)
+            if r.get("index_rc") == 0:
+                done.add(f"human.{r['tag']}.rocksdb")
+    for d in (IDX_RUN / "idx").glob("*.rocksdb"):
+        if d.name not in done:
+            print(f"removing unfinished index {d.name}", file=sys.stderr)
+            shutil.rmtree(d)
+            tag = d.name.removeprefix("human.").removesuffix(".rocksdb")
+            # Its fit and search files may be from the killed run too; redo them with it.
+            for f in [IDX_RUN / "ka_survival" / f"{tag}.csv", IDX_RUN / "ka_survival" / f"{tag}.retry.csv",
+                      IDX_RUN / "search" / f"{tag}.csv", IDX_RUN / "search" / f"{tag}.nofit",
+                      *(IDX_RUN / "pair").glob(f"{tag}.*.json")]:
+                f.unlink(missing_ok=True)
+    sys.argv = ["241_alphabet_ranking_driver.py", "--workers", str(workers)]
+    drv.main()
     nofit_now = {p.name.removesuffix(".nofit") for p in (IDX_RUN / "search").glob("*.nofit")}
     nofit_256 = {f"{a['alphabet']}.k{a['k']}" for a in arms256() if a["nofit"]}
-    built = {p.name.removeprefix("human.").removesuffix(".rocksdb") for p in (IDX_RUN / "idx").glob("*.rocksdb")}
+    finished = [json.loads(line) for line in open(IDX_RUN / "runs.jsonl")]
+    built = {r["tag"] for r in finished if r.get("index_rc") == 0 and (IDX_RUN / "idx" / f"human.{r['tag']}.rocksdb").exists()}
     print(f"indexes built: {len(built)} of 152; without a fit: {len(nofit_now)} now, {len(nofit_256)} in 256",
           file=sys.stderr)
     assert len(built) == 152, sorted(set(f"{a['alphabet']}.k{a['k']}" for a in arms256()) - built)
@@ -226,39 +251,54 @@ def step_reproduce(workers: int) -> None:
     qs = read_fasta(RUN256 / "queries.fa")
     out = OUT / "reproduce_null1"
     assert run_chunks(out, qs, arms, workers) == 0
-    # The E-value and bit score carry rounding noise of about 1e-14 between runs, so two
-    # paralogs with the same E-value (FRG2, FRG2B, FRG2C) can swap places in the top 10.
-    # For those two scores the best value must agree to 1e-9 and the gene order may differ;
-    # every other score must agree in every column.
+    # The E-value and bit score carry rounding noise of about 1e-14 between runs, even two
+    # runs on the same machine. Paralogs with near-equal E-values (FRG2/FRG2B/FRG2C,
+    # AMY1A/1B/1C/AMY2A/2B) then swap places, change how many proteins count as tied at
+    # the top, and move in and out of 10th place. The stored tables hold no per-protein
+    # values, so such a swap cannot be told from a real change at 10th place. The gate
+    # therefore checks what notebook 283 uses: every score's best value (to 1e-9 for these
+    # two, exactly for the others), every column of the other 9 scores, and, for these
+    # two, that the top protein is one of 256's top 10. Top-10 and tie-count differences
+    # for these two are counted and reported, not failed.
+    from alphabet_ensemble_utils import chunk_tags
+    expected = {f"{t}.parquet" for a in arms for t in chunk_tags("BHF", a["alphabet"], a["k"], a["bits"], len(qs))}
+    found = {p.name for p in (out / "top").glob("*.parquet")}
     noisy = ["E-value", "bit score"]
-    n_rows, n_swaps, bad = 0, 0, []
-    for new in sorted((out / "top").glob("*.parquet")):
+    n_rows, n_swaps, n_tie_diff, bad = 0, 0, 0, []
+    if found != expected:
+        bad.append(("tables", "missing", sorted(expected - found), "extra", sorted(found - expected)))
+    for name in sorted(expected & found):
         key = ["query_name", "metric"]
-        old = pl.read_parquet(RUN256 / "top" / new.name).sort(key)
-        cur = pl.read_parquet(new).sort(key)
+        old = pl.read_parquet(RUN256 / "top" / name).sort(key)
+        cur = pl.read_parquet(out / "top" / name).sort(key)
         n_rows += cur.height
         if old.select(key).to_dicts() != cur.select(key).to_dicts():
-            bad.append((new.name, "different rows", old.height, cur.height))
+            bad.append((name, "different rows", old.height, cur.height))
             continue
         for metric_is_noisy in (False, True):
             sel = pl.col("metric").is_in(noisy) if metric_is_noisy else ~pl.col("metric").is_in(noisy)
             o, c = old.filter(sel), cur.filter(sel)
-            cols = ["n_hit", "talk_best_rank"] if metric_is_noisy else \
+            cols = ["n_hit"] if metric_is_noisy else \
                 ["top_gene", "n_tied_top", "n_hit", "top10", "talk_best_rank", "top_value"]
             for col in cols:
                 if o[col].to_list() != c[col].to_list():
-                    bad.append((new.name, "noisy" if metric_is_noisy else "exact", col))
+                    bad.append((name, "noisy" if metric_is_noisy else "exact", col))
             if metric_is_noisy:
                 for a, b in zip(o["top_value"].to_list(), c["top_value"].to_list()):
                     if not (a == b or abs(a - b) <= 1e-9 * max(abs(a), abs(b))):
-                        bad.append((new.name, "top_value", a, b))
-                n_swaps += sum(x != y for x, y in zip(o["top10"].to_list(), c["top10"].to_list()))
-    print(f"reproduce: {n_rows} rows compared with 256's; {n_swaps} E-value or bit score top-10 lists "
-          f"in a different order; {len(bad)} real differences", file=sys.stderr)
+                        bad.append((name, "top_value", a, b))
+                for g, t10_old, t10_new in zip(c["top_gene"].to_list(), o["top10"].to_list(), c["top10"].to_list()):
+                    if g not in t10_old:
+                        bad.append((name, "top gene not in 256's top 10", g, t10_old))
+                    n_swaps += t10_old != t10_new
+                n_tie_diff += sum(a != b for a, b in zip(o["n_tied_top"].to_list(), c["n_tied_top"].to_list()))
+    print(f"reproduce: {n_rows} rows compared with 256's; E-value or bit score rows whose top 10 differ: "
+          f"{n_swaps}, whose tie count differs: {n_tie_diff}; real differences: {len(bad)}", file=sys.stderr)
     for b in bad[:20]:
         print("  ", b, file=sys.stderr)
     (out / "reproduce.json").write_text(json.dumps(
-        {"n_rows": n_rows, "n_top10_order_swaps_evalue_bits": n_swaps, "differ": bad}, indent=1, default=str))
+        {"n_rows": n_rows, "n_top10_differ_evalue_bits": n_swaps, "n_tied_differ_evalue_bits": n_tie_diff,
+         "differ": bad}, indent=1, default=str))
     if bad:
         sys.exit("the rebuilt indexes do not reproduce notebook 256; stop before the new nulls")
 

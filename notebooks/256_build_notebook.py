@@ -215,6 +215,7 @@ BHF 63-105  ESQEHLDASTKKTKKKAKKDKRKNKPPKKDSETSKPAQTTISR   (15 of 43 residues K o
 ```
 
 A setting here is one alphabet at one k-mer size, with the search flags of notebook 241.
+
 How BHF's result changes with the ranking metric, now that every metric has a chance scale:
 
 - **E-value** (61 alphabet-ksize pairs): chance. BHF beats 95% of its copies at 3 alphabet-ksize pairs, 3.1 expected. Its

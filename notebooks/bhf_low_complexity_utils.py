@@ -85,7 +85,13 @@ CLASSES = alphabet_classes()
 
 
 def masked_windows(seq: str, alphabet: str, k: int) -> list[int]:
-    """0-based start of every k-mer of `seq` that kmerseek's mask drops for this setting."""
+    """0-based start of every k-mer of `seq` that kmerseek's mask drops for this setting.
+
+    Only for the 20 canonical residues in upper case, which is all BHF and its copies hold.
+    kmerseek treats the others differently (lowercase is folded, B/J/Z are expanded into
+    both readings, the index stops at the first `*`), and this copy does not."""
+    if set(seq) - set("ACDEFGHIKLMNPQRSTVWY"):
+        raise ValueError(f"non-canonical residues {sorted(set(seq) - set('ACDEFGHIKLMNPQRSTVWY'))}: not handled")
     table = None if alphabet in RAW_ONLY else CLASSES[alphabet]
     starts = []
     for i in range(len(seq) - k + 1):
