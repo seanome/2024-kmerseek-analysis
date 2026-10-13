@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+"""Download the gene-group tables the dark-set summary page groups proteins by.
+
+    tools/fetch-gene-groups <out_dir>
+
+Writes into <out_dir>:
+
+  hgnc_complete_set.txt          HGNC's full table: symbol, alias and previous symbols,
+                                 uniprot_ids and gene_group (both "|"-separated). Human
+                                 proteins are grouped by gene_group. Botryllus proteins
+                                 whose genome annotation named them after a human gene
+                                 (FUN000002_NLRC5) are grouped by that gene's gene_group.
+  uniprot_keywords_<UP id>.tsv   UniProt keywords of every entry in one reference
+                                 proteome: worm UP000001940, yeast UP000002311, Borrelia
+                                 burgdorferi B31 UP000001807 (the QfO 2020_04 proteomes
+                                 the dark-set run searched). These species have no HGNC.
+  uniprot_keyword_categories.tsv keyword id, name and category ("Technical term" keywords
+                                 such as "Reference proteome" are left out downstream).
+  DOWNLOADED_ON                  date, URL, size and md5 of every file.
+
+The current UniProt release can miss a few accessions of the 2020 proteomes; the page
+counts those as "no group". Added 2026-10-13 for the dark-set summary page (PR 57 stack).
+Python 3.6, standard library only, so it runs on a Sherlock login node (downloads only).
+"""
+import datetime
+import hashlib
+import os
+import sys
+import urllib.request
+
+HGNC = ("https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/"
+        "hgnc_complete_set.txt")
+UNIPROT = ("https://rest.uniprot.org/uniprotkb/stream?query=proteome:{up}"
+           "&format=tsv&fields=accession,keyword,keywordid")
+CATEGORIES = ("https://rest.uniprot.org/keywords/stream?query=*&format=tsv"
+              "&fields=id,name,category")
+PROTEOMES = {"worm": "UP000001940", "yeast": "UP000002311", "borrelia": "UP000001807"}
+
+
+def fetch(url, path):
+    with urllib.request.urlopen(url, timeout=600) as r:
+        data = r.read()
+    # A server outage can come back as an HTML page with status 200
+    if data[:200].lstrip().lower().startswith((b"<!doctype", b"<html")):
+        sys.exit("%s returned HTML, not a table" % url)
+    with open(path, "wb") as fh:
+        fh.write(data)
+    return len(data), hashlib.md5(data).hexdigest()
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.exit(__doc__)
+    out = sys.argv[1]
+    os.makedirs(out, exist_ok=True)
+    jobs = [(HGNC, "hgnc_complete_set.txt"), (CATEGORIES, "uniprot_keyword_categories.tsv")]
+    jobs += [(UNIPROT.format(up=up), "uniprot_keywords_%s.tsv" % up)
+             for up in sorted(PROTEOMES.values())]
+    lines = ["downloaded %s" % datetime.datetime.now().isoformat(timespec="seconds")]
+    for url, name in jobs:
+        size, md5 = fetch(url, os.path.join(out, name))
+        with open(os.path.join(out, name)) as fh:
+            n = sum(1 for _ in fh) - 1
+        lines.append("%s\t%s\t%d bytes\t%d rows\tmd5 %s" % (name, url, size, n, md5))
+        print(lines[-1])
+    with open(os.path.join(out, "DOWNLOADED_ON"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,273 @@
+#!/usr/bin/env python3
+"""Build the data behind the dark-set summary page, at several E-value cutoffs.
+
+    tools/dark-summary-data <protein_evalues_dir> <gene_groups_dir> <out.json>
+
+<protein_evalues_dir> is the output of tools/export-protein-evalues, made AFTER the
+repairQueriesTsv run (2026-10-12 23:40); <gene_groups_dir> is the output of
+tools/fetch-gene-groups.
+
+Definitions, the same as the pipeline's (bin/compute_dark_set.py, bin/kmerseek_dark_gain.py):
+
+  dark at T     no phmmer, jackhmmer or mmseqs2 hit with E <= T. T in DARK_CUTOFFS.
+  placed at T   every other protein of the proteome.
+  reached at U  a kmerseek setting put a region with E <= U on the protein. U in
+                KMERSEEK_CUTOFFS. A setting is one alphabet, k-size and scaled value; all
+                were run with extension (mismatch penalty C = the alphabet's optimum) and
+                the low-complexity mask off.
+  tells dark from placed   placed share reached >= 2 x dark share reached.
+
+Writes one JSON:
+
+  species[]           name, number of proteins, dark and placed counts at each T, how
+                      many proteins were dark for each tool alone.
+  settings[species]   alphabet, ksize, scaled, and reached[t][u] = [dark reached, placed
+                      reached] for each T index t and U index u.
+  unfitted[species]   settings the search refused (no Karlin-Altschul fit in the index).
+  groups[species]     the gene-group panel. kind says what a group is (HGNC gene group,
+                      UniProt keyword). For one setting per alphabet (scaled 1, the k
+                      with the highest dark share among settings that tell dark from
+                      placed at T = 1, U = 1; the highest dark share overall when none
+                      does) it lists every protein dark at the loosest T: its best tool E,
+                      its group ids, and its kmerseek E per listed setting when <= 10.
+
+Added 2026-10-13 for the dark-set summary page. Python 3.6, standard library only, so it
+runs with Sherlock's system python3 inside a job.
+"""
+import csv
+import gzip
+import json
+import math
+import os
+import re
+import subprocess
+import sys
+from collections import defaultdict
+
+DARK_CUTOFFS = [0.001, 1.0, 10.0]
+KMERSEEK_CUTOFFS = [0.0001, 0.001, 0.01, 1.0, 10.0]
+SPECIES = ["human", "worm", "yeast", "borrelia", "botryllus"]
+TOOLS = ("phmmer", "jackhmmer", "mmseqs2")
+KEYWORD_PROTEOME = {"worm": "UP000001940", "yeast": "UP000002311", "borrelia": "UP000001807"}
+# The setting the group panel uses per alphabet is chosen at these cutoffs
+PICK_T, PICK_U = 1.0, 1.0
+
+
+def num(s):
+    return float(s) if s != "" else math.inf
+
+
+def read_tools(path):
+    """accession -> (best E over the three tools, {tool: E})"""
+    out = {}
+    with gzip.open(path, "rt") as fh:
+        r = csv.DictReader(fh)
+        for row in r:
+            ev = {t: num(row[t]) for t in TOOLS}
+            out[row["accession"]] = (min(ev.values()), ev)
+    return out
+
+
+def read_kmerseek(path):
+    """(alphabet, ksize, scaled) -> {accession: min region E}"""
+    out = defaultdict(dict)
+    with gzip.open(path, "rt") as fh:
+        r = csv.DictReader(fh)
+        for row in r:
+            if row["low_complexity_mask"] != "false" or not row["extension"].startswith("extend"):
+                sys.exit("%s: unexpected setting %s" % (path, row))
+            out[(row["alphabet"], int(row["ksize"]), int(row["scaled"]))][row["accession"]] = \
+                float(row["min_region_evalue"])
+    return out
+
+
+def read_unfitted(path):
+    with open(path) as fh:
+        return [{"alphabet": r["alphabet"], "ksize": int(r["ksize"]), "scaled": int(r["scaled"])}
+                for r in csv.DictReader(fh)]
+
+
+def hgnc_tables(path):
+    """uniprot accession -> set of group ids; symbol (upper case) -> set of group ids;
+    group id -> name. Alias and previous symbols map too, unless one of them is some
+    other gene's current symbol."""
+    by_acc, by_sym, by_alias, names = defaultdict(set), defaultdict(set), defaultdict(set), {}
+    with open(path) as fh:
+        r = csv.DictReader(fh, delimiter="\t")
+        for row in r:
+            if row["status"] != "Approved" or not row["gene_group_id"]:
+                continue
+            gids = row["gene_group_id"].split("|")
+            gnames = row["gene_group"].split("|")
+            if len(gids) != len(gnames):
+                sys.exit("HGNC %s: %d group ids, %d names" % (row["symbol"], len(gids), len(gnames)))
+            for g, n in zip(gids, gnames):
+                names["HGNC:" + g] = n.strip('"')
+            gset = {"HGNC:" + g for g in gids}
+            for acc in filter(None, row["uniprot_ids"].split("|")):
+                by_acc[acc] |= gset
+            by_sym[row["symbol"].upper()] |= gset
+            for col in ("alias_symbol", "prev_symbol"):
+                for s in filter(None, row[col].strip('"').split("|")):
+                    by_alias[s.upper()] |= gset
+    for s, g in by_alias.items():
+        if s not in by_sym:
+            by_sym[s] = g
+    return by_acc, by_sym, names
+
+
+BOTRYLLUS_NAME = re.compile(r"^(FUN\d+)_(.+?)(\.\d+)?$")
+
+
+def botryllus_symbol(acc):
+    """FUN000002_NLRC5 -> NLRC5; FUN000001_FUN000001 (no name given) -> None"""
+    m = BOTRYLLUS_NAME.match(acc)
+    if not m or m.group(2) == m.group(1):
+        return None
+    return m.group(2).upper()
+
+
+def keyword_tables(gene_groups_dir, up):
+    cats = {}
+    with open(os.path.join(gene_groups_dir, "uniprot_keyword_categories.tsv")) as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            cats[row["Keyword ID"]] = (row["Name"], row["Category"])
+    by_acc, names = {}, {}
+    with open(os.path.join(gene_groups_dir, "uniprot_keywords_%s.tsv" % up)) as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            ids = [k.strip() for k in row["Keyword ID"].split(";") if k.strip()]
+            keep = set()
+            for k in ids:
+                name, cat = cats.get(k, (None, None))
+                if cat is None:
+                    sys.exit("keyword %s has no category" % k)
+                if cat == "Technical term":
+                    continue
+                names[k] = "%s (%s)" % (name, cat.lower())
+                keep.add(k)
+            by_acc[row["Entry"]] = keep
+    return by_acc, names
+
+
+def main():
+    if len(sys.argv) != 4:
+        sys.exit(__doc__)
+    ev_dir, gg_dir, out_path = sys.argv[1:]
+    hgnc_acc, hgnc_sym, hgnc_names = hgnc_tables(os.path.join(gg_dir, "hgnc_complete_set.txt"))
+
+    out = {"dark_cutoffs": DARK_CUTOFFS, "kmerseek_cutoffs": KMERSEEK_CUTOFFS,
+           "pick_cutoffs": [PICK_T, PICK_U], "species": [], "settings": {}, "unfitted": {},
+           "groups": {}}
+    try:
+        out["commit"] = subprocess.check_output(
+            ["git", "-C", os.path.dirname(os.path.abspath(__file__)), "rev-parse", "--short",
+             "HEAD"], universal_newlines=True).strip()
+    except Exception:
+        out["commit"] = None
+
+    for sp in SPECIES:
+        tools = read_tools(os.path.join(ev_dir, "%s_protein_tool_min_evalue.csv.gz" % sp))
+        km = read_kmerseek(os.path.join(ev_dir, "%s_protein_kmerseek_min_evalue.csv.gz" % sp))
+        out["unfitted"][sp] = read_unfitted(os.path.join(ev_dir, "%s_kmerseek_unfitted.csv" % sp))
+        proteome = list(tools)
+        dark = [{a for a in proteome if tools[a][0] > t} for t in DARK_CUTOFFS]
+        for d_tight, d_loose in zip(dark, dark[1:]):
+            if not d_loose <= d_tight:
+                sys.exit("%s: dark sets are not nested" % sp)
+        out["species"].append({
+            "name": sp, "proteins": len(proteome),
+            "dark": [len(d) for d in dark],
+            # dark for this tool alone: proteins it gives no hit at E <= T
+            "dark_by_tool": {tl: [sum(1 for a in proteome if tools[a][1][tl] > t)
+                                  for t in DARK_CUTOFFS] for tl in TOOLS},
+        })
+
+        rows = []
+        for (alpha, k, sc), evs in sorted(km.items()):
+            stray = set(evs) - set(tools)
+            if stray:
+                sys.exit("%s: kmerseek names not in the proteome, e.g. %s" % (sp, sorted(stray)[:3]))
+            hits = [{a for a, e in evs.items() if e <= u} for u in KMERSEEK_CUTOFFS]
+            reached = []
+            for d in dark:
+                cell = []
+                for hit in hits:
+                    dr = len(hit & d)
+                    cell.append([dr, len(hit) - dr])
+                reached.append(cell)
+            rows.append({"alphabet": alpha, "ksize": k, "scaled": sc, "reached": reached})
+        out["settings"][sp] = rows
+
+        # One setting per alphabet for the group panel
+        ti, ui = DARK_CUTOFFS.index(PICK_T), KMERSEEK_CUTOFFS.index(PICK_U)
+        nd, npl = len(dark[ti]), len(proteome) - len(dark[ti])
+        best = {}
+        for r in rows:
+            if r["scaled"] != 1:
+                continue
+            dr, pr = r["reached"][ti][ui]
+            ds, ps = dr / nd, pr / npl
+            score = (ps >= 2 * ds and dr > 0, ds)
+            if r["alphabet"] not in best or score > best[r["alphabet"]][0]:
+                best[r["alphabet"]] = (score, r["ksize"])
+        picked = sorted((a, k) for a, (_, k) in best.items())
+
+        # Groups
+        if sp == "human":
+            kind = "HGNC gene group"
+            groups_of = {a: hgnc_acc.get(a, set()) for a in proteome}
+            names = hgnc_names
+        elif sp == "botryllus":
+            kind = "HGNC gene group of the human gene the protein is named after"
+            groups_of = {}
+            for a in proteome:
+                s = botryllus_symbol(a)
+                groups_of[a] = hgnc_sym.get(s, set()) if s else set()
+            names = hgnc_names
+        else:
+            kind = "UniProt keyword"
+            by_acc, names = keyword_tables(gg_dir, KEYWORD_PROTEOME[sp])
+            groups_of = {a: by_acc.get(a, set()) for a in proteome}
+        loosest = dark[0]
+        prot = []
+        for a in sorted(loosest):
+            e_km = {}
+            for i, (alpha, k) in enumerate(picked):
+                e = km[(alpha, k, 1)].get(a)
+                if e is not None and e <= 10:
+                    e_km[i] = float("%.3g" % e)
+            prot.append({"id": a, "tool_e": None if math.isinf(tools[a][0])
+                         else float("%.3g" % tools[a][0]),
+                         "groups": sorted(groups_of[a]), "km": e_km})
+        used = sorted({g for p in prot for g in p["groups"]})
+        out["groups"][sp] = {
+            "kind": kind,
+            "settings": [{"alphabet": a, "ksize": k, "scaled": 1} for a, k in picked],
+            "proteome_with_group": sum(1 for a in proteome if groups_of[a]),
+            "names": {g: names[g] for g in used},
+            # proteome-wide size of each group, for context
+            "size": {g: n for g, n in _count(groups_of, used).items()},
+            "proteins": prot,
+        }
+        print("%s: %d proteins, dark %s, %d settings, %d unfitted, %d dark proteins in "
+              "groups of %d, group settings %s"
+              % (sp, len(proteome), [len(d) for d in dark], len(rows),
+                 len(out["unfitted"][sp]), sum(1 for p in prot if p["groups"]), len(used),
+                 picked), file=sys.stderr)
+
+    with open(out_path, "w") as fh:
+        json.dump(out, fh, separators=(",", ":"))
+
+
+def _count(groups_of, used):
+    want = set(used)
+    n = defaultdict(int)
+    for gs in groups_of.values():
+        for g in gs:
+            if g in want:
+                n[g] += 1
+    return n
+
+
+if __name__ == "__main__":
+    main()
