@@ -12,11 +12,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "245_p66_cd47_pair_coordinates.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 245: Where the P66 and CD47 shared k-mers sit, and whether they touch the SIRP-alpha residues
 
 Notebook 241 counted how many k-mers P66 and CD47 share in each arm of its sweep (one
@@ -106,7 +111,7 @@ https://doi.org/10.1016/j.molcel.2008.05.026 (structure PDB 2JJS)
 2015; the CD47 contacts were computed from PDB 2JJS rather than read from Hatherley et al.
 2008, whose full text is behind a subscription.
 """),
-code(r"""
+    code(r"""
 import sys
 from pathlib import Path
 
@@ -133,7 +138,7 @@ print(ann.filter(pl.col("feature_type") == "PUBLISHED")
       .select("protein", "name", "start_uniprot", "end_uniprot",
               "start_mature", "end_mature", "sequence", "source"))
 """),
-md(r"""
+    md(r"""
 ## 1. Where the shared k-mers sit
 
 One line per shared k-mer, from its place on P66 to its place on CD47. Both proteins are
@@ -143,7 +148,7 @@ outline, and no alphabet uses grey or black. The 12 CD47 contact residues outsid
 are black triangles under the CD47 line. A k-mer that touches one of the grey boxes is drawn
 thicker with a square at each end, so it can be found without reading its colour.
 """),
-code(r"""
+    code(r"""
 touch_loop = int(kmers["overlaps_p66_loop"].sum())
 touch_contact = int(kmers["overlaps_cd47_contact_span"].sum())
 reg_loop = int(regions["overlaps_p66_loop"].sum())
@@ -176,7 +181,7 @@ summary = (kmers.group_by("alphabet")
            .sort("n_kmers", descending=True))
 print(summary)
 """),
-code(r"""
+    code(r"""
 pc.figure_map(
     data, pc.FIG / "245_p66_cd47_shared_kmer_map.png",
     hypothesis=("If the shared k-mers say anything about the SIRP-alpha interface, some of "
@@ -197,7 +202,7 @@ print(kmers.filter(pl.col("overlaps_cd47_contact_span"))
               "n_identical_residues", "n_cd47_contact_residues_covered",
               "cd47_feature_hit"))
 """),
-md(r"""
+    md(r"""
 ## 2. The real residues
 
 For each alphabet, the shared k-mer that covers the most named residues, printed as the two
@@ -205,14 +210,14 @@ sequences with a match line, the class letters kmerseek encoded them to, and wha
 letter stands for. kmerseek k-mers are exact matches in the reduced alphabet and carry no
 gaps, so these are ungapped and the two spans are the same length.
 """),
-code(r"""
+    code(r"""
 best = pc.best_per_alphabet(kmers)
 for row in best.sort(["n_cd47_contact_residues_covered", "alphabet"],
                      descending=[True, False]).iter_rows(named=True):
     print(pc.residue_block(kmers, row))
     print()
 """),
-md(r"""
+    md(r"""
 ## 3. Control 1: is that more than chance gives
 
 A k-mer of length k can start at any of (protein length - k + 1) places. The share of those
@@ -223,8 +228,8 @@ The k-mers within one arm are not independent draws: consecutive positions share
 residues, and the k-mers that touch CD47's contact residues chain into a handful of regions.
 So the per-arm tests are optimistic and the pooled test below is read as a direction, not as
 a p-value to defend.
-""" ),
-code(r"""
+"""),
+    code(r"""
 from scipy import stats
 
 exp_loop = float(controls["expected_touching_p66_loop"].sum())
@@ -253,13 +258,13 @@ print(sig.select("alphabet", "ksize", "n_shared_kmers",
 n_survive = sig.filter(pl.col("cd47_contact_binomial_p") < bonferroni).height
 print(f"{n_survive} arm(s) stay below {bonferroni:.5f}")
 """),
-md(r"""
+    md(r"""
 ## 4. Control 2: does CD47 stand out among 300 human proteins of its length
 
 Each arm run on P66 against the 300 human proteins PR #44 drew, and CD47's shared-k-mer
 count placed in that distribution. 50 means an ordinary protein of that length.
 """),
-code(r"""
+    code(r"""
 med_pct = float(controls["cd47_percentile_among_controls"].median())
 n_top = controls.filter(pl.col("cd47_percentile_among_controls") >= 95).height
 n_bottom = controls.filter(pl.col("cd47_percentile_among_controls") <= 50).height
@@ -270,7 +275,7 @@ print(controls.sort("cd47_percentile_among_controls", descending=True)
               "control_max_shared_kmers", "n_control_ge_cd47",
               "cd47_percentile_among_controls"))
 """),
-code(r"""
+    code(r"""
 pc.figure_controls(
     data, pc.FIG / "245_p66_cd47_controls.png",
     hypothesis=("A shared k-mer has to land somewhere, and a human protein of CD47's length "
@@ -285,10 +290,10 @@ pc.figure_controls(
 )
 print("figures/245_p66_cd47_controls.png")
 """),
-md(r"""
+    md(r"""
 ## 5. Conclusions
 """),
-code(r"""
+    code(r"""
 p66_sources = pc.merged_spans(kmers.filter(pl.col("overlaps_cd47_contact_span")),
                               "p66_start_uniprot", "p66_end_uniprot")
 loop_word = "None of" if touch_loop == 0 else f"{touch_loop} of"
@@ -323,7 +328,7 @@ print("4. These tables do not show that P66 mimics CD47. They show where the sha
       "sit: not on the loop that integrin binding needs, and on CD47's contact residues no "
       "more often than a k-mer landing at random would.")
 """),
-md(r"""
+    md(r"""
 Answering the three questions in one sentence each, from the tables above:
 
 * **Does any shared k-mer touch P66 202-208 or CD47 115-124?** None of the 326 touches the
@@ -348,10 +353,18 @@ Files this notebook reads and writes:
 """),
 ]
 
-nb = {"cells": cells,
-      "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python",
-                                  "name": "python3"},
-                   "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1))
 print("wrote", OUT)

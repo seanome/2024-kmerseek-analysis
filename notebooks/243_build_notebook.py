@@ -9,11 +9,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "243_alphabet_logistic_regression.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 243: Does a learned combination of alphabets find domains better than one alphabet?
 
 Notebook 242 combined alphabets by hand (rank products, then the best subset for BCL2) and
@@ -50,7 +55,7 @@ notebook 242).
 hp_lehninger2's own values; that plus all 19 alphabets. Combining alphabets helps only if
 the third beats the second on families the model has not seen.
 """),
-code(r"""
+    code(r"""
 import sys
 from pathlib import Path
 
@@ -99,7 +104,7 @@ print(T.group_by("split", "correct").agg(pl.len().alias("kept"), pl.col("weight"
 train = T.filter(pl.col("split") == "selection")
 test = T.filter(pl.col("split") == "heldout")
 """),
-md(r"""
+    md(r"""
 ## 1. On families it has never seen, does combining alphabets help?
 
 Precision-recall on the held-out families for the three nested models, with three single
@@ -107,7 +112,7 @@ features beside them. Average precision is the area under each curve; chance is 
 of candidates that are correct. The held-out incorrect candidates are a random 3 M, each
 weighted by how many it stands for, so the curves estimate those over every candidate.
 """),
-code(r"""
+    code(r"""
 models, infos, curves = {}, {}, {}
 y = test["correct"].to_numpy()
 w = test["weight"].to_numpy()
@@ -143,7 +148,7 @@ lr.fig_heldout(
 print(ap)
 print({k: {kk: v[kk] for kk in ("C", "n_pos", "n_neg")} for k, v in infos.items()})
 """),
-md(r"""
+    md(r"""
 ## 2. What the full model weighs
 
 Standardised coefficients: how much one standard deviation of each feature moves the
@@ -151,7 +156,7 @@ log-odds that a candidate is correct, with every other feature held fixed. Alpha
 overlap heavily, so a single coefficient is not a clean measure of one alphabet's worth;
 section 1's nested comparison is.
 """),
-code(r"""
+    code(r"""
 m_full = models["+ all 19 alphabets"]
 cf = dict(zip(lr.FEATURES, m_full.named_steps["logisticregression"].coef_[0]))
 order = sorted(cf, key=cf.get, reverse=True)
@@ -165,14 +170,14 @@ coef = lr.fig_coefficients(
 )
 print(top); print(bottom)
 """),
-md(r"""
+    md(r"""
 ## 3. Applied to the three test cases
 
 The model is applied to notebook 241's searches of Ced9, P66 and BHF against the 19_732
 human proteins, pooled into candidates in the same way. A target's score is its best
 candidate's probability. The single features are ranked the same way for comparison.
 """),
-code(r"""
+    code(r"""
 full_model = models["+ all 19 alphabets"]
 rows, tops = [], {}
 for q in ["Ced9", "P66", "BHF"]:
@@ -203,7 +208,7 @@ print(app)
 for q, t in tops.items():
     print(f"\n{q}: the 10 targets the model ranks highest"); print(t)
 """),
-md(r"""
+    md(r"""
 ## 4. Conclusions
 
 1. **On Pfam families the model never saw, combining alphabets helps.** Average
@@ -231,8 +236,18 @@ md(r"""
 """),
 ]
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                                   "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1))
 print("wrote", OUT)
