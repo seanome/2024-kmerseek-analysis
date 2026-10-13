@@ -18,6 +18,17 @@ files keep only target coordinates (computeDarkSet's 6-column hits), so tool hit
 the target alone. Botryllus protein lengths come from botryllus_query_lengths.tsv, written by
 scripts/fasta_lengths.py from the run's botryllus.query.fasta.
 
+Target species, names, sequences and UniProt-curated domain positions come from
+page_targets_{info.tsv,domains.tsv,seqs.fasta}, written by scripts/swissprot_target_info.py.
+
+Named genes (data/botryllus_named_genes.tsv) are always listed, links or not. Their links to
+any Swiss-Prot protein come from the run itself: tool hits from named_gene_tool_hits_E10.tsv
+(scripts/botryllus_tool_hits_on_targets.py in query mode) and kmerseek's best region per
+alphabet and k-size from botryllus_landmarks.json (the run's landmark table, scaled 1).
+Those kmerseek regions were not run through the low-complexity and helix filter and are
+marked so on the page. Their residues are cut from named_genes.fasta (scripts/fasta_lengths.py)
+and page_targets_seqs.fasta.
+
 Named Botryllus genes the search box knows (BHF and others, mapped to their gene models)
 come from data/botryllus_named_genes.tsv; add a row there to make a name searchable.
 
@@ -26,6 +37,7 @@ Writes figures/281_botryllus_immune_links_page.html by default. Run with the
 """
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -88,12 +100,43 @@ def main():
     qlen = dict(pl.read_csv(DATA / "botryllus_query_lengths.tsv", separator="\t", has_header=False,
                             new_columns=["name", "length"]).iter_rows())
 
+    info = pl.read_csv(DATA / "page_targets_info.tsv", separator="\t", quote_char=None)
+    info_by = {r["accession"]: r for r in info.iter_rows(named=True)}
+    domains = {}
+    for a, st, en, nm in pl.read_csv(DATA / "page_targets_domains.tsv", separator="\t", quote_char=None).iter_rows():
+        domains.setdefault(a, []).append([st, en, nm])
+    tseq = read_fasta(DATA / "page_targets_seqs.fasta")
+    named = pl.read_csv(ROOT / "data" / "botryllus_named_genes.tsv", separator="\t")
+    nseq = read_fasta(DATA / "named_genes.fasta")
+    landmarks = json.loads((DATA / "botryllus_landmarks.json").read_text())
+
+    # Named genes: every target any tool or kmerseek setting links them to.
+    named_hits = pl.read_csv(DATA / "named_gene_tool_hits_E10.tsv", separator="\t", has_header=False,
+                             new_columns=["tool", "query_name", "target_name", "tstart", "tend", "bits", "evalue"])
+    named_links = {}  # (model, target) -> {"arms": [...], "hits": [...]}
+    for model in named["gene_model"]:
+        for pair in landmarks["pairs"]:
+            if pair["query"] != model:
+                continue
+            for a in pair["kmerseek_arms"]:
+                if a.get("found") and a["scaled"] == 1 and a.get("region_evalue") is not None \
+                        and math.isfinite(float(a["region_evalue"])):
+                    named_links.setdefault((model, a["best_target"]), {"arms": [], "hits": []})["arms"].append(a)
+        for h in named_hits.filter(pl.col("query_name") == model).iter_rows(named=True):
+            named_links.setdefault((model, h["target_name"]), {"arms": [], "hits": []})["hits"].append(h)
+    other = sorted(set(t for (_, t) in named_links) - set(targets["accession"]))
+    missing = [t for (_, t) in named_links if t not in info_by]
+    if missing:
+        raise SystemExit(f"no Swiss-Prot info for {missing[:5]}")
+
     cat_targets = targets.filter(pl.col("category") != "control").sort("accession")
-    t_index = {a: i for i, a in enumerate(cat_targets["accession"])}
+    target_list = list(cat_targets["accession"]) + other
+    t_index = {a: i for i, a in enumerate(target_list)}
+    t_category = dict(zip(cat_targets["accession"], cat_targets["category"])) | {a: "other" for a in other}
     # Target names come from the annotate step (Swiss-Prot RecName); fall back to the target table.
     desc = dict(zip(cat_targets["accession"], cat_targets["description"]))
     desc.update({a: d for a, d in zip(links["target_name"], links["target_description"]) if d})
-    genes = sorted(pairs["query_name"].unique())
+    genes = sorted(set(pairs["query_name"]) | set(named["gene_model"]))
     g_index = {g: i for i, g in enumerate(genes)}
 
     rows = []
@@ -110,7 +153,29 @@ def main():
                  r["n_alphabets"]]
         key = (r["query_name"], r["target_name"])
         rows.append([g_index[r["query_name"]], t_index[r["target_name"]], k] + [r3(r[t]) for t in bmu.TOOLS]
-                    + [pair_regions.get(key, []), pair_hits.get(key, [])])
+                    + [pair_regions.get(key, []), pair_hits.get(key, []), 0])
+
+    # Named genes' links to any Swiss-Prot protein (kmerseek regions here are unfiltered).
+    for (model, tgt), v in sorted(named_links.items()):
+        arms = sorted(v["arms"], key=lambda a: float(a["region_evalue"]))
+        k = None
+        if arms:
+            a = arms[0]
+            qs, qe, ts, te = (int(a[c]) for c in ("region_start", "region_end", "target_start", "target_end"))
+            q_sub, t_sub = nseq[model][qs:qe], tseq[tgt][ts:te]
+            m = letter_maps[a["alphabet"]]
+            q_let, t_let = bmu.encode(q_sub, m), bmu.encode(t_sub, m)
+            same = len(q_sub) == len(t_sub)
+            ic = bmu.identity_and_chance(q_sub, t_sub) if same else (None, None)
+            lc = bmu.identity_and_chance(q_let, t_let) if same else (None, None)
+            pct = lambda x: None if x is None else round(x * 100, 1)
+            k = [r3(float(a["region_evalue"])), a["alphabet"], a["ksize"], qs + 1, qe, ts + 1, te, q_sub, t_sub,
+                 q_let, t_let, pct(ic[0]), pct(ic[1]), pct(lc[0]), pct(lc[1]), len({x["alphabet"] for x in arms})]
+        best = {t: min((h["evalue"] for h in v["hits"] if h["tool"] == t), default=None) for t in bmu.TOOLS}
+        regs = [[a_index[x["alphabet"]], int(x["region_start"]) + 1, int(x["region_end"]), int(x["target_start"]) + 1,
+                 int(x["target_end"]), r3(float(x["region_evalue"]))] for x in arms]
+        hits = [[t_tool[h["tool"]], h["tstart"], h["tend"], r3(h["evalue"])] for h in sorted(v["hits"], key=lambda h: h["evalue"])]
+        rows.append([g_index[model], t_index[tgt], k] + [r3(best[t]) for t in bmu.TOOLS] + [regs, hits, 1])
 
     decision = pl.read_csv(DECISION)
     expected = {f"{c:g}": {row["category"]: [row["n_reached"], row["n_targets"], round(row["expected_share"] * 100, 1),
@@ -120,27 +185,40 @@ def main():
 
     data = {
         "categories": bmu.CATEGORIES,
-        "category_name": {c: bmu.CATEGORY_NAME[c] for c in bmu.ORDER},
+        "category_name": {c: bmu.CATEGORY_NAME[c] for c in bmu.ORDER} | {"other": "Other Swiss-Prot protein"},
         "tools": bmu.TOOLS,
         "genes": genes,
         "gene_length": [qlen[g] for g in genes],
         "named": [[n, m, src, qlen.get(m)] for n, m, src in
                   pl.read_csv(ROOT / "data" / "botryllus_named_genes.tsv", separator="\t").iter_rows()],
         "alphabet_list": alphabets,
-        "targets": [[a, c, desc.get(a, ""), n] for a, c, n in
-                    zip(cat_targets["accession"], cat_targets["category"], cat_targets["length"])],
+        "targets": [[a, t_category[a], desc.get(a) or info_by[a]["description"] or "", info_by[a]["length"],
+                     info_by[a]["organism"], info_by[a]["entry_name"], domains.get(a, [])] for a in target_list],
         "links": rows,
         "expected": expected,
         "alphabets": {a: {letter: "".join(sorted(aa for aa, l in m.items() if l == letter and aa != "X"))
                           for letter in sorted(set(m.values()))} for a, m in sorted(letter_maps.items())},
         "n_control": int(targets.filter(pl.col("category") == "control").height),
     }
-    payload = json.dumps(data, separators=(",", ":"))
+    payload = json.dumps(data, separators=(",", ":"), allow_nan=False)
     html = TEMPLATE.replace("/*FONTS*/", FONTS.read_text()).replace("__DATA__", payload)
     OUT.write_text(html)
     n_k = sum(1 for r in rows if r[2] is not None)
     print(f"{OUT}: {len(html) / 1e6:.1f} MB; {len(genes):_} Botryllus proteins, {len(rows):_} links "
-          f"({n_k:_} with a kmerseek region), {len(cat_targets):_} targets")
+          f"({n_k:_} with a kmerseek region), {len(target_list):_} targets ({len(other)} outside the categories, "
+          f"from named genes)")
+
+
+def read_fasta(path):
+    seqs, name = {}, None
+    for line in open(path):
+        line = line.strip()
+        if line.startswith(">"):
+            name = line[1:].split()[0]
+            seqs[name] = []
+        elif name:
+            seqs[name].append(line)
+    return {k: "".join(v) for k, v in seqs.items()}
 
 
 TEMPLATE = r"""<title>Botryllus immune links</title>
@@ -151,18 +229,18 @@ TEMPLATE = r"""<title>Botryllus immune links</title>
 /* Layout: one column. The answer first, then filters, then one row per Botryllus protein that opens to its links and residues. */
 :root {
   --bg: #F6F7F5; --panel: #FFFFFF; --fg: #1C211F; --muted: #5B6661; --line: #DCE2DE; --soft: #EDF1EE;
-  --kmerseek: #0072B2; --phmmer: #B86E00; --jackhmmer: #007A5E; --mmseqs2: #A8457F;
+  --kmerseek: #0072B2; --kmerseek-soft: #A9CBE3; --phmmer: #B86E00; --jackhmmer: #007A5E; --mmseqs2: #A8457F;
   --match: #1C211F; --letter: #0072B2;
   --display: "Fraunces", Georgia, serif; --text: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
   --mono: "Fantasque Sans Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #141917; --panel: #1C2320; --fg: #E6ECE8; --muted: #9AA7A0; --line: #2F3A35; --soft: #232B27;
-  --kmerseek: #56B4E9; --phmmer: #E69F00; --jackhmmer: #2BC79A; --mmseqs2: #E08BC0; --match: #E6ECE8; --letter: #56B4E9;
+  --kmerseek: #56B4E9; --kmerseek-soft: #2B4E66; --phmmer: #E69F00; --jackhmmer: #2BC79A; --mmseqs2: #E08BC0; --match: #E6ECE8; --letter: #56B4E9;
   color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #141917; --panel: #1C2320; --fg: #E6ECE8; --muted: #9AA7A0; --line: #2F3A35; --soft: #232B27;
-  --kmerseek: #56B4E9; --phmmer: #E69F00; --jackhmmer: #2BC79A; --mmseqs2: #E08BC0; --match: #E6ECE8; --letter: #56B4E9;
+  --kmerseek: #56B4E9; --kmerseek-soft: #2B4E66; --phmmer: #E69F00; --jackhmmer: #2BC79A; --mmseqs2: #E08BC0; --match: #E6ECE8; --letter: #56B4E9;
   color-scheme: dark }
 * { box-sizing: border-box }
 body { background: var(--bg); color: var(--fg); font-family: var(--text); font-size: 15px; line-height: 1.5; margin: 0 }
@@ -264,10 +342,10 @@ footer p { max-width: 90ch }
     <div class="key" aria-label="Pair view key">
       <span><b>Pair view</b> (in each opened row):</span>
       <span><svg width="26" height="10" aria-hidden="true"><line x1="0" y1="5" x2="26" y2="5" stroke="currentColor" stroke-width="1.5"/></svg>protein, drawn to scale</span>
-      <span><span class="sw" style="background:var(--kmerseek);opacity:.55"></span>kmerseek region, with a band joining its two ends (darker = more alphabets agree)</span>
-      <span><span class="sw" style="background:var(--phmmer)"></span>phmmer</span>
-      <span><span class="sw" style="background:var(--jackhmmer)"></span>jackhmmer</span>
-      <span><span class="sw" style="background:var(--mmseqs2)"></span>mmseqs2 hit, on the target only: the run kept no Botryllus-side position for tool hits</span>
+      <span><span class="sw" style="background:var(--kmerseek)"></span>best kmerseek region (lowest E), with a band joining its two ends</span>
+      <span><span class="sw" style="background:var(--kmerseek-soft)"></span>other kmerseek regions on the pair (hover for alphabet and E)</span>
+      <span><span class="sw" style="background:var(--panel);border:1px solid var(--fg)"></span>target domain (UniProt curated)</span>
+      <span><span class="sw" style="background:var(--phmmer)"></span><span class="sw" style="background:var(--jackhmmer)"></span><span class="sw" style="background:var(--mmseqs2)"></span>phmmer, jackhmmer, mmseqs2 hit. All three are drawn on the target: the run kept only target positions for tool hits, not where they fall on the Botryllus protein.</span>
     </div>
     <div class="table"><table>
       <thead><tr>
@@ -301,7 +379,9 @@ try { const s = JSON.parse(localStorage.getItem("bml") || "{}"); if (CUTS.includ
 const save = () => { try { localStorage.setItem("bml", JSON.stringify({ cut: state.cut, found: state.found })); } catch (e) {} };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const fmtE = e => e == null ? "" : e === 0 ? "0" : e >= 0.01 ? (+e.toPrecision(2)).toString() : e.toExponential(1).replace("e-", "e-");
-const geneLabel = g => { const [fun, rest] = [g.split("_")[0], g.split("_").slice(1).join("_")]; return rest && !rest.startsWith("FUN") ? `${fun} <span class="muted">${esc(rest)}</span>` : esc(g); };
+const namedName = g => (D.named.find(n => n[1] === g) || [])[0];
+const geneLabel = g => namedName(g) ? `<b>${esc(namedName(g))}</b> <span class="muted">${esc(g)}</span>` : geneLabel0(g);
+const geneLabel0 = g => { const [fun, rest] = [g.split("_")[0], g.split("_").slice(1).join("_")]; return rest && !rest.startsWith("FUN") ? `${fun} <span class="muted">${esc(rest)}</span>` : esc(g); };
 
 // Facts: the decision numbers at E < 1.
 (function () {
@@ -325,7 +405,7 @@ function linkOK(L) {
   const kOK = k && k[0] < cut, t = TOOLS.map((_, i) => L[3 + i]), tOK = t.some(e => e != null && e < cut);
   const only = k && kOK && t.every(e => e == null);  // no tool hit at E <= 10
   if (!kOK && !tOK) return null;
-  if (!state.cats.has(D.targets[L[1]][1])) return null;
+  if (D.targets[L[1]][1] !== "other" && !state.cats.has(D.targets[L[1]][1])) return null;
   if (state.found === "only" && !only) return null;
   if (state.found === "both" && !(kOK && tOK)) return null;
   if (state.found === "tools" && !(tOK && !kOK)) return null;
@@ -349,12 +429,18 @@ function genesNow() {
     if (ok.kOK && (g.best.kmerseek == null || L[2][0] < g.best.kmerseek)) g.best.kmerseek = L[2][0];
     TOOLS.forEach((t, i) => { const e = ok.t[i]; if (e != null && e < +state.cut && (g.best[t] == null || e < g.best[t])) g.best[t] = e; });
   }
+  const namedIdx = D.named.map(n => D.genes.indexOf(n[1])).filter(i => i >= 0);
+  for (const gi of namedIdx) {
+    const g = D.genes[gi].toLowerCase(), alias = D.named.find(n => n[1] === D.genes[gi])[0].toLowerCase();
+    if (!by.has(gi) && (!q || g.includes(q) || alias === q)) by.set(gi, { gi, links: [], cats: new Set(), best: { kmerseek: null }, only: 0 });
+  }
   const arr = [...by.values()], s = state.sort, dir = state.asc ? 1 : -1;
   const key = g => s === "gene" ? D.genes[g.gi] : s === "n" ? g.links.length : s === "only" ? g.only : g.best[s];
   arr.sort((a, b) => { const x = key(a), y = key(b);
     if (x == null && y == null) return D.genes[a.gi] < D.genes[b.gi] ? -1 : 1; if (x == null) return 1; if (y == null) return -1;
     return (x < y ? -1 : x > y ? 1 : 0) * dir || (D.genes[a.gi] < D.genes[b.gi] ? -1 : 1); });
-  return arr;
+  const pinned = arr.filter(g => namedIdx.includes(g.gi));
+  return pinned.concat(arr.filter(g => !namedIdx.includes(g.gi)));
 }
 
 function renderCats() {
@@ -389,34 +475,47 @@ function geneLines(g) {
 }
 
 function pairView(L, T) {
-  const cut = +state.cut, qlen = D.gene_length[L[0]], tlen = T[3];
+  const cut = +state.cut, qlen = D.gene_length[L[0]], tlen = T[3], doms = T[6];
   const regs = L[3 + TOOLS.length].filter(x => x[5] < cut), hits = L[4 + TOOLS.length].filter(x => x[3] < cut);
   if (!regs.length && !hits.length) return "";
   const W = 760, X0 = 130, span = Math.max(qlen, tlen), sx = v => X0 + (v / span) * (W - X0 - 10);
-  const yQ = 22, yT = 92, rowH = 14, yTool = i => yT + 18 + i * rowH, H = yTool(TOOLS.length) + 22;
-  // How many alphabets put a region at the same position: shade by it.
-  const byPos = new Map();
-  for (const x of regs) { const k = x.slice(1, 5).join(","); byPos.set(k, (byPos.get(k) || []).concat([x])); }
+  const yQ = 22, yT = 96, yDom = yT + 34, rowH = 14, yTool = i => yDom + 14 + i * rowH, H = yTool(TOOLS.length) + 22;
+  const box = (a, b, y, h, fill, extra = "") => `<rect x="${sx(a - 1)}" y="${y}" width="${Math.max(sx(b) - sx(a - 1), 1.5)}" height="${h}" fill="${fill}" ${extra}/>`;
+  const best = regs.reduce((m, x) => (!m || x[5] < m[5]) ? x : m, null);
   let s = `<svg class="pair" viewBox="0 0 ${W} ${H}" role="img" aria-label="Pair view of ${esc(D.genes[L[0]])} and ${esc(T[0])}">`;
-  for (const [, xs] of byPos) {
-    const [, qs, qe, ts, te] = xs[0], op = Math.min(0.15 + 0.12 * xs.length, 0.8);
-    const tip = xs.map(x => `${D.alphabet_list[x[0]]} E=${fmtE(x[5])}`).join("; ");
-    s += `<g><title>Botryllus ${qs}-${qe}, target ${ts}-${te}: ${esc(tip)}</title>
-      <polygon points="${sx(qs - 1)},${yQ + 5} ${sx(qe)},${yQ + 5} ${sx(te)},${yT - 5} ${sx(ts - 1)},${yT - 5}" fill="var(--kmerseek)" opacity="${op * 0.45}"/>
-      <rect x="${sx(qs - 1)}" y="${yQ - 5}" width="${Math.max(sx(qe) - sx(qs - 1), 1.5)}" height="10" fill="var(--kmerseek)" opacity="${op}"/>
-      <rect x="${sx(ts - 1)}" y="${yT - 5}" width="${Math.max(sx(te) - sx(ts - 1), 1.5)}" height="10" fill="var(--kmerseek)" opacity="${op}"/></g>`;
+  // Other kmerseek regions: one flat light shade, no bands, drawn first so the best region sits on top.
+  for (const x of regs) {
+    if (x === best) continue;
+    const tip = `<title>${D.alphabet_list[x[0]]}: Botryllus ${x[1]}-${x[2]}, target ${x[3]}-${x[4]}, E=${fmtE(x[5])}</title>`;
+    s += `<g>${tip}${box(x[1], x[2], yQ - 4, 8, "var(--kmerseek-soft)")}${box(x[3], x[4], yT - 4, 8, "var(--kmerseek-soft)")}</g>`;
   }
+  if (best) {
+    const [, qs, qe, ts, te] = best;
+    s += `<g><title>Best kmerseek region, ${D.alphabet_list[best[0]]}: Botryllus ${qs}-${qe}, target ${ts}-${te}, E=${fmtE(best[5])}</title>
+      <polygon points="${sx(qs - 1)},${yQ + 5} ${sx(qe)},${yQ + 5} ${sx(te)},${yT - 5} ${sx(ts - 1)},${yT - 5}" fill="var(--kmerseek)" opacity="0.25"/>
+      ${box(qs, qe, yQ - 5, 10, "var(--kmerseek)")}${box(ts, te, yT - 5, 10, "var(--kmerseek)")}</g>`;
+  }
+  const g = geneLines(D.genes[L[0]]), nm = namedName(D.genes[L[0]]);
+  const qLabel = (nm ? [nm] : []).concat(g);
   s += `<line x1="${sx(0)}" y1="${yQ}" x2="${sx(qlen)}" y2="${yQ}" stroke="var(--fg)" stroke-width="1.5"/>
     <line x1="${sx(0)}" y1="${yT}" x2="${sx(tlen)}" y2="${yT}" stroke="var(--fg)" stroke-width="1.5"/>
-    ${geneLines(D.genes[L[0]]).map((t, i) => `<text x="4" y="${yQ + 4 + 13 * i}"${i ? ' class="axis"' : ""}>${esc(t)}</text>`).join("")}
-    <text x="4" y="${yQ + 4 + 13 * geneLines(D.genes[L[0]]).length}" class="axis">Botryllus, ${qlen} aa</text>
-    <text x="4" y="${yT + 4}">${esc(T[0])}</text><text x="4" y="${yT + 17}" class="axis">${tlen} aa</text>`;
+    ${qLabel.map((t, i) => `<text x="4" y="${yQ + 4 + 13 * i}"${i ? ' class="axis"' : ""}>${esc(t)}</text>`).join("")}
+    <text x="4" y="${yQ + 4 + 13 * qLabel.length}" class="axis">Botryllus, ${qlen} aa</text>
+    <text x="4" y="${yT + 4}">${esc(T[0])}</text><text x="4" y="${yT + 17}" class="axis">${esc(T[4].split(" (")[0])}, ${tlen} aa</text>`;
+  // Target domains (UniProt curated): outlined boxes on their own row under the target line.
+  s += `<text x="${X0 - 6}" y="${yDom + 4}" text-anchor="end" class="axis">domains</text>`;
+  for (const d of doms) {
+    const w = sx(d[1]) - sx(d[0] - 1);
+    s += `<g><title>${esc(d[2])}: ${d[0]}-${d[1]}</title><rect x="${sx(d[0] - 1)}" y="${yDom - 5}" width="${Math.max(w, 1.5)}" height="10" fill="var(--panel)" stroke="var(--fg)" stroke-width="0.8" rx="2"/>
+      ${w > d[2].length * 5.2 ? `<text x="${sx(d[0] - 1) + w / 2}" y="${yDom + 3}" text-anchor="middle" style="font-size:8px">${esc(d[2])}</text>` : ""}</g>`;
+  }
+  if (!doms.length) s += `<text x="${sx(0) + 4}" y="${yDom + 4}" class="axis">no curated domains</text>`;
   TOOLS.forEach((t, i) => {
     const y = yTool(i) + 6;
-    s += `<text x="${X0 - 6}" y="${y + 4}" text-anchor="end" class="axis">${t}</text>
+    s += `<text x="${X0 - 6}" y="${y + 4}" text-anchor="end" class="axis">${t} on ${esc(T[0])}</text>
       <line x1="${sx(0)}" y1="${y}" x2="${sx(tlen)}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
     for (const h of hits.filter(h => h[0] === i))
-      s += `<rect x="${sx(h[1] - 1)}" y="${y - 4}" width="${Math.max(sx(h[2]) - sx(h[1] - 1), 1.5)}" height="8" fill="var(--${t})"><title>${t} target ${h[1]}-${h[2]}, E=${fmtE(h[3])}</title></rect>`;
+      s += `<g><title>${t}, target ${h[1]}-${h[2]}, E=${fmtE(h[3])}</title>${box(h[1], h[2], y - 4, 8, `var(--${t})`)}</g>`;
     if (!hits.some(h => h[0] === i)) s += `<text x="${sx(0) + 4}" y="${y + 4}" class="axis">no hit with E &lt; ${state.cut}</text>`;
   });
   const step = [50, 100, 200, 500, 1000, 2000].find(v => span / v <= 8) || 5000;
@@ -424,7 +523,27 @@ function pairView(L, T) {
   return s + `</svg>`;
 }
 
+function domainLine(L, T) {
+  const cut = +state.cut, doms = T[6];
+  const over = (s, e) => doms.filter(d => d[0] <= e && d[1] >= s).map(d => d[2]);
+  const parts = [];
+  const k = L[2];
+  if (k && k[0] < cut) parts.push(`<span><span class="ev" style="color:var(--kmerseek)">kmerseek</span> best region: ${esc(over(k[5], k[6]).join(", ") || "no curated domain")}</span>`);
+  TOOLS.forEach((t, i) => {
+    const hs = L[4 + TOOLS.length].filter(h => h[0] === i && h[3] < cut);
+    if (!hs.length) return;
+    const names = [...new Set(hs.flatMap(h => over(h[1], h[2])))];
+    parts.push(`<span><span class="ev" style="color:var(--${t})">${t}</span> hits: ${esc(names.join(", ") || "no curated domain")}</span>`);
+  });
+  if (!parts.length) return "";
+  return `<div class="meta"><span>Target domains covered (UniProt curated, on ${esc(T[0])}):</span>${parts.join("")}${doms.length ? "" : '<span class="none">this entry lists no curated domains</span>'}</div>`;
+}
+
 function detail(g) {
+  if (!g.links.length) {
+    const n = namedName(D.genes[g.gi]);
+    return `<div class="link"><p>${n ? `<b>${esc(n)}</b> (` : ""}<span class="mono">${esc(D.genes[g.gi])}</span>${n ? ")" : ""}, ${D.gene_length[g.gi]} aa, has no link with E-value below ${state.cut} from kmerseek (any alphabet and k-size) or from phmmer, jackhmmer or mmseqs2, to any Swiss-Prot protein the run reports. Try E-value below 10.</p></div>`;
+  }
   const items = g.links.slice().sort((a, b) => (b[1].only - a[1].only) || ((a[0][2] ? a[0][2][0] : 99) - (b[0][2] ? b[0][2][0] : 99)));
   return items.map(([L, ok]) => {
     const T = D.targets[L[1]], k = L[2];
@@ -440,9 +559,11 @@ function detail(g) {
         <span>alphabets with a region: <b>${k[15]}</b></span>`;
       res = `<pre class="res">${residues(k)}</pre>`;
     }
+    const unf = L[5 + TOOLS.length] ? `<span class="tag" title="These kmerseek regions come from the run's best region per alphabet and k-size for this gene, before the low-complexity and helix filter">kmerseek regions not filtered for low complexity or helix</span>` : "";
     return `<div class="link"><h3>${ok.only ? '<span class="only">kmerseek only</span> ' : ""}<a href="https://www.uniprot.org/uniprotkb/${esc(T[0])}/entry" target="_blank" rel="noopener">${esc(T[0])}</a> ${esc(T[2])}
-      <span class="tag">${esc(D.category_name[T[1]])}</span> <span class="muted" style="font-weight:400">${T[3]} aa</span></h3>
-      <div class="meta">${kpart}${tools}</div>${pairView(L, T)}${res}</div>`;
+      <span class="muted" style="font-weight:400">· <i>${esc(T[4])}</i> · ${esc(T[5])} · ${T[3]} aa</span>
+      <span class="tag">${esc(D.category_name[T[1]])}</span> ${unf}</h3>
+      <div class="meta">${kpart}${tools}</div>${pairView(L, T)}${domainLine(L, T)}${res}</div>`;
   }).join("");
 }
 

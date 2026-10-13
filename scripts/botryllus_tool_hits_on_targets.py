@@ -2,13 +2,17 @@
 """The phmmer, jackhmmer and mmseqs2 hits of every Botryllus protein on the notebook 281
 target proteins, from the invertebrate dark-set run's stored hit files.
 
-    python3 botryllus_tool_hits_on_targets.py <hits_dir> <all_targets.txt> <max_evalue> <out.tsv>
+    python3 botryllus_tool_hits_on_targets.py <hits_dir> <all_targets.txt> <max_evalue> <out.tsv> [target|query]
 
 <hits_dir> holds botryllus.chunk_NNNN.<tool>.tsv.gz, one line per hit: query, target,
 tstart, tend, bits, evalue (what computeDarkSet reads; on Sherlock,
 /scratch/users/olgabot/invertebrate-dark-set/results/botryllus/hits/). The files hold
 domain hits above E = 10 too, so lines with evalue > <max_evalue> are dropped.
 <all_targets.txt> is written by scripts/mhc_target_sets.py.
+
+The optional last argument says which column the id list is matched against: target (the
+default, the notebook's target sets) or query (named Botryllus proteins such as BHF, added
+2026-10-13 for the page).
 
 Writes <out.tsv>, no header: tool, query, target, tstart, tend, bits, evalue.
 
@@ -24,7 +28,10 @@ import sys
 NAME = re.compile(r"^botryllus\.chunk_\d+\.(phmmer|jackhmmer|mmseqs2)\.tsv\.gz$")
 
 
-def main(hits_dir, targets_path, max_evalue, out):
+def main(hits_dir, targets_path, max_evalue, out, field="target"):
+    if field not in ("target", "query"):
+        sys.exit("last argument must be target or query")
+    col = 1 if field == "target" else 0
     targets = set(l.strip() for l in open(targets_path) if l.strip())
     max_evalue = float(max_evalue)
     paths = sorted(glob.glob(os.path.join(hits_dir, "botryllus.chunk_*.tsv.gz")))
@@ -43,7 +50,7 @@ def main(hits_dir, targets_path, max_evalue, out):
                     f = line.rstrip("\n").split("\t")
                     if len(f) != 6:
                         sys.exit("%s: expected 6 columns, got %d" % (path, len(f)))
-                    if f[1] in targets and float(f[5]) <= max_evalue:
+                    if f[col] in targets and float(f[5]) <= max_evalue:
                         fh.write("\t".join([tool] + f) + "\n")
                         counts[tool] = counts.get(tool, 0) + 1
     os.replace(tmp, out)
@@ -51,6 +58,6 @@ def main(hits_dir, targets_path, max_evalue, out):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
+    if len(sys.argv) not in (5, 6):
         sys.exit(__doc__)
     main(*sys.argv[1:])
