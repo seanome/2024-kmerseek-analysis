@@ -107,9 +107,9 @@ svg.ico{width:1.05em;height:1.05em;vertical-align:-.17em;margin-right:.25em;flex
     <h2>Dark proteins per species</h2>
     <p class="shows">Tools: phmmer, jackhmmer and MMseqs2, each searched against the same clade-excluded reference. A protein is dark at a cutoff when none of the three has a hit at or below that E-value. An E-value is the number of hits this good expected by chance in the whole search; lower is better.</p>
     <div class="legend">
-      <span class="key"><span class="sw" style="background:var(--dark)"></span>dark at the chosen cutoff</span>
-      <span class="key"><span class="sw" style="background:var(--placed)"></span>placed (some tool hit at or below the cutoff)</span>
-      <span class="key"><span class="sw" style="background:transparent;border:1.5px solid var(--dark)"></span>dark at the other cutoffs (outline)</span>
+      <span class="key"><span class="dot" style="background:var(--dark)"></span>dark share at the chosen cutoff (count at right)</span>
+      <span class="key"><span class="dot" style="background:transparent;border:2px solid var(--dark)"></span>dark share at the other cutoffs</span>
+      <span class="key">number above a dot: its E-value cutoff</span>
     </div>
     <div class="fig" id="sizefig"></div>
     <details><summary>The numbers behind this figure, and the dark set of each tool alone</summary><div class="tablewrap" id="sizetab"></div></details>
@@ -266,27 +266,34 @@ function renderFacts(){
 
 // ---------- 1. dark set size
 function renderSize(){
-  const W=Math.max(560, Math.min(940, document.getElementById("sizefig").clientWidth||900)), rowH=46, left=130, right=150, top=26;
-  const svg=el("svg",{width:W,height:top+rowH*SPECIES.length+30,role:"img","aria-label":"dark share per species"});
-  const x=v=>left+(W-left-right)*v;
-  [0,.25,.5,.75,1].forEach(v=>{el("line",{x1:x(v),x2:x(v),y1:top-6,y2:top+rowH*SPECIES.length,stroke:css("--hair")},svg);txt(svg,x(v),top-10,pct(v,0),{"text-anchor":"middle","font-size":11,class:"mut"});});
-  txt(svg,left,top+rowH*SPECIES.length+22,"share of the proteome",{"font-size":12,class:"mut"});
+  // One row per species; one dot per dark cutoff, at its share of the proteome, labelled
+  // with the cutoff. The chosen cutoff is the filled dot and its count is written at right.
+  const W=Math.max(560, Math.min(940, document.getElementById("sizefig").clientWidth||900)), rowH=50, left=150, right=170, top=24;
+  const svg=el("svg",{width:W,height:top+rowH*SPECIES.length+30,role:"img","aria-label":"dark share per species at each cutoff"});
+  let vmax=0;D.species.forEach(s=>s.dark.forEach(n=>vmax=Math.max(vmax,n/s.proteins)));
+  vmax=[.1,.2,.25,.4,.5,.6,.75,1].find(v=>v>=vmax*1.05)||1;
+  const x=v=>left+(W-left-right)*v/vmax;
+  for(let i=0;i<=5;i++){const v=vmax*i/5;el("line",{x1:x(v),x2:x(v),y1:top-6,y2:top+rowH*SPECIES.length,stroke:css("--hair")},svg);txt(svg,x(v),top-10,pct(v,0),{"text-anchor":"middle","font-size":11,class:"mut"});}
+  txt(svg,left,top+rowH*SPECIES.length+22,"share of the proteome that is dark (no tool hit at or below the cutoff)",{"font-size":12,class:"mut"});
   D.species.forEach((s,i)=>{
-    const y=top+i*rowH+8, h=24;
-    el("line",{x1:left-6,x2:x(1),y1:y+h/2,y2:y+h/2,stroke:css("--hair")},svg);
-    const t=txt(svg,left-28,y+h/2+5,SP[s.name],{"text-anchor":"end","font-size":14});if(SPI[s.name])t.setAttribute("font-style","italic");
-    svg.insertAdjacentHTML("beforeend",iconPath(s.name,left-17,y+h/2,16,css("--ink")));
-    const share=s.dark[state.t]/s.proteins;
-    el("rect",{x:x(0),y,width:x(1)-x(0),height:h,fill:css("--placed")},svg);
-    el("rect",{x:x(0),y,width:x(share)-x(0),height:h,fill:css("--dark")},svg);
-    s.dark.forEach((n,j)=>{if(j===state.t)return;el("rect",{x:x(0),y:y+2,width:Math.max(1,x(n/s.proteins)-x(0)),height:h-4,fill:"none",stroke:css("--dark"),"stroke-width":1.5,"stroke-dasharray":j<state.t?"0":"4 2"},svg);});
-    txt(svg,x(1)+8,y+h/2+5,`${int(s.dark[state.t])} of ${int(s.proteins)} (${pct(share)})`,{"font-size":13,class:"num"});
+    const yc=top+i*rowH+rowH/2+6;
+    el("line",{x1:left-6,x2:x(vmax),y1:yc,y2:yc,stroke:css("--hair")},svg);
+    const t=txt(svg,left-28,yc+5,SP[s.name],{"text-anchor":"end","font-size":14});if(SPI[s.name])t.setAttribute("font-style","italic");
+    svg.insertAdjacentHTML("beforeend",iconPath(s.name,left-17,yc,16,css("--ink")));
+    const xs=s.dark.map(n=>x(n/s.proteins));
+    el("line",{x1:Math.min(...xs),x2:Math.max(...xs),y1:yc,y2:yc,stroke:css("--dark"),"stroke-width":2},svg);
+    s.dark.forEach((n,j)=>{
+      const on=j===state.t;
+      el("circle",{cx:xs[j],cy:yc,r:on?7:5,fill:on?css("--dark"):css("--bg"),stroke:css("--dark"),"stroke-width":2},svg);
+      txt(svg,xs[j],yc-12,fmtE(D.dark_cutoffs[j]),{"text-anchor":"middle","font-size":11,class:on?"num":"num mut","font-weight":on?700:400});
+    });
+    txt(svg,x(vmax)+10,yc+5,`${int(s.dark[state.t])} of ${int(s.proteins)} (${pct(s.dark[state.t]/s.proteins)})`,{"font-size":13,class:"num"});
   });
   const box=document.getElementById("sizefig");box.innerHTML="";box.appendChild(svg);
   const tools=["phmmer","jackhmmer","mmseqs2"];
   let h=`<table><thead><tr><th>species</th><th class="n">proteins</th>${D.dark_cutoffs.map(c=>`<th class="n">dark, E ≤ ${fmtE(c)}</th>`).join("")}${tools.map(t=>`<th class="n">no ${t} hit, E ≤ ${fmtE(D.dark_cutoffs[state.t])}</th>`).join("")}</tr></thead><tbody>`;
   D.species.forEach(s=>{h+=`<tr><td>${spName(s.name)}</td><td class="n">${int(s.proteins)}</td>${s.dark.map((n,j)=>`<td class="n"${j===state.t?' style="font-weight:700"':""}>${int(n)} (${pct(n/s.proteins)})</td>`).join("")}${tools.map(t=>`<td class="n">${int(s.dark_by_tool[t][state.t])}</td>`).join("")}</tr>`;});
-  document.getElementById("sizetab").innerHTML=h+"</tbody></table><p class='muted'>Dark at a looser cutoff is a subset of dark at a stricter one: a larger E-value cutoff counts more weak hits as matches. Outlines in the figure: solid for stricter cutoffs, dashed for looser ones.</p>";
+  document.getElementById("sizetab").innerHTML=h+"</tbody></table><p class='muted'>Dark at a looser cutoff is a subset of dark at a stricter one: a larger E-value cutoff counts more weak hits as matches.</p>";
 }
 
 // ---------- 2. scatter per species
