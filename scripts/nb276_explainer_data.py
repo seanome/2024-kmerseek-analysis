@@ -110,6 +110,9 @@ def main() -> None:
             "signal_peptide_end": offset,
             "segment_start": P66_SEGMENT[0],
             "segment": p66["sequence"][P66_SEGMENT[0] - 1 : P66_SEGMENT[1]],
+            # The whole sequence, 618 residues, so the page can write out any
+            # window the slider lands on instead of naming its coordinates.
+            "sequence": p66["sequence"],
             "loop_start": LOOP_MATURE_START + offset,
             "loop_end": LOOP_MATURE_END + offset,
             "loop_mature": [LOOP_MATURE_START, LOOP_MATURE_END],
@@ -120,6 +123,7 @@ def main() -> None:
             "signal_peptide_end": cd47["signal_peptide_end"],
             "segment_start": CD47_SEGMENT[0],
             "segment": cd47["sequence"][CD47_SEGMENT[0] - 1 : CD47_SEGMENT[1]],
+            "sequence": cd47["sequence"],
             "face_positions": face["cd47_uniprot_position"].to_list(),
         },
         "alphabets": [

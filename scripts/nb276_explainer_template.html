@@ -203,6 +203,14 @@ svg { max-width: 100%; height: auto; }
   <div class="stat"><div class="k">Best alphabet</div><div class="v" style="font-size:1rem" id="w-alpha"></div><div class="n">of the 19</div></div>
   <div class="stat"><div class="k">Share rank 1</div><div class="v" id="w-tied"></div><div class="n">proteins at the top</div></div>
 </div>
+<h3 style="margin-top:1.2rem">The residues in this window, and where they best match CD47</h3>
+<div class="legend">
+  <span><i class="swatch" style="background:color-mix(in srgb, var(--loop) 40%, transparent)"></i>the loop, P66 202&ndash;208</span>
+  <span><i class="swatch" style="background:var(--match)"></i>column the alphabet calls a match</span>
+  <span><i class="swatch" style="background:color-mix(in srgb, var(--face) 36%, transparent)"></i>CD47 residue touching SIRP&alpha;</span>
+</div>
+<div class="alnscroll"><table class="aln" id="wintable"></table></div>
+<p class="note" id="winmatch"></p>
 <p class="note" id="winnote"></p>
 </div>
 
@@ -441,9 +449,76 @@ function renderAlignment() {
 }
 
 /* ---- the window slider ---- */
+
+/* The best place this window sits on CD47, in the alphabet that ranked it best.
+   Computed here rather than carried, so the residues and the score agree. */
+function bestOnCd47(windowSeq, alphabetName) {
+  const alphabet = DATA.alphabets.find((a) => a.name === alphabetName)
+    || DATA.alphabets[0];
+  const m = classOf(alphabet);
+  const target = DATA.cd47.sequence;
+  let best = {score: -1, start: 1};
+  for (let b = 0; b + windowSeq.length <= target.length; b++) {
+    let score = 0;
+    for (let i = 0; i < windowSeq.length; i++) {
+      const x = windowSeq[i], y = target[b + i];
+      if (x in m && y in m && m[x] === m[y]) score++;
+    }
+    if (score > best.score) best = {score, start: b + 1};
+  }
+  return {...best, alphabet};
+}
+
+function renderWindowSequence(w) {
+  const start = Number(w.p66_span.split("-")[0]);
+  const seq = DATA.p66.sequence.slice(start - 1, start - 1 + w.window_length);
+  const hit = bestOnCd47(seq, w.alphabet);
+  const m = classOf(hit.alphabet);
+  const faceSet = new Set(DATA.cd47.face_positions);
+  const cd47Seq = DATA.cd47.sequence.slice(hit.start - 1, hit.start - 1 + seq.length);
+
+  const cells = (row) => {
+    let out = "";
+    for (let i = 0; i < seq.length; i++) {
+      const p66pos = start + i, cd47pos = hit.start + i;
+      const a = seq[i], b = cd47Seq[i];
+      const same = a in m && b in m && m[a] === m[b];
+      const cls = [];
+      let ch;
+      if (row === "p66") {
+        ch = a; cls.push(same ? "m" : "x");
+        if (p66pos >= DATA.p66.loop_start && p66pos <= DATA.p66.loop_end) cls.push("loopcol");
+      } else if (row === "cd47") {
+        ch = b; cls.push(same ? "m" : "x");
+        if (faceSet.has(cd47pos)) cls.push("facecol");
+      } else {
+        ch = same ? (a === b ? "|" : ":") : " "; cls.push("bar");
+      }
+      out += `<td class="${cls.join(" ")}">${ch === " " ? "&nbsp;" : ch}</td>`;
+    }
+    return out;
+  };
+  q("#wintable").innerHTML =
+    `<tr><td class="lbl">P66 ${start}</td>${cells("p66")}</tr>` +
+    `<tr><td class="lbl"></td>${cells("bar")}</tr>` +
+    `<tr><td class="lbl">CD47 ${hit.start}</td>${cells("cd47")}</tr>`;
+
+  const identical = [...seq].filter((c, i) => c === cd47Seq[i]).length;
+  const faceHit = [...seq].filter((_, i) => faceSet.has(hit.start + i)).length;
+  q("#winmatch").innerHTML =
+    `In <span class="seq">${hit.alphabet.name}</span> this window sits best on CD47 ` +
+    `${hit.start}&ndash;${hit.start + seq.length - 1}, matching ${hit.score} of ` +
+    `${seq.length} columns, ${identical} of them the same residue. ` +
+    `${faceHit === 0 ? "None of that stretch touches SIRP\u03b1."
+      : faceHit + " residue" + (faceHit === 1 ? "" : "s") + " of that stretch touch SIRP\u03b1."} ` +
+    `A bar is <span class="seq">|</span> for an identical residue and ` +
+    `<span class="seq">:</span> for a different one the alphabet puts in the same class.`;
+}
+
 function renderWindow() {
   const i = Number(q("#winslider").value);
   const w = DATA.windows[i];
+  renderWindowSequence(w);
   const degenerate = w.n_at_rank_1 > 100;
   q("#w-rank").textContent = degenerate ? "—" : fmt(w.best_rank);
   q("#w-detail").innerHTML = degenerate
@@ -478,6 +553,12 @@ section("prespecified", () => {
 renderAlphabetChips();
 renderAlignment();
 q("#winslider").max = String(DATA.windows.length - 1);
+// Start on the window that is the same length as the circular one, 35 residues,
+// so the first thing shown is the like-for-like comparison. Set explicitly
+// because the platform restores form values across a republish.
+q("#winslider").value = String(
+  Math.max(0, DATA.windows.findIndex((w) => w.window_length === 35))
+);
 q("#winslider").addEventListener("input", renderWindow);
 renderWindow();
 </script>
