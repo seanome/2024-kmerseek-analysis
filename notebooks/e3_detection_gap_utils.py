@@ -132,7 +132,9 @@ class Arm:
     label: str
     kind: str  # 'tsv_pipe' | 'tsv_bare' | 'kmerseek' | 'foldseek' | 'ceiling'
     path_template: str
-    family: str  # 'sequence-sequence' | 'profile' | 'structure' | 'plm' | 'hp' | 'ceiling'
+    family: (
+        str  # 'sequence-sequence' | 'profile' | 'structure' | 'plm' | 'hp' | 'ceiling'
+    )
     score_is_bitscore: bool = True
     higher_is_better: bool = True
     notes: str = ""
@@ -170,7 +172,9 @@ BASE_ARMS: dict[str, Arm] = {
         label="MMseqs2 (sequence-sequence)",
         kind="tsv_bare",
         path_template=str(
-            TOOLS_RESULTS / "mmseqs2_seqseq" / "human_vs_{species}.mmseqs2_seqseq.tsv.gz"
+            TOOLS_RESULTS
+            / "mmseqs2_seqseq"
+            / "human_vs_{species}.mmseqs2_seqseq.tsv.gz"
         ),
         family="sequence-sequence",
     ),
@@ -578,7 +582,9 @@ def domain_recovery(
     A domain is found by arm M if M calls at least one positive pair that links the
     species protein to a human protein sharing that Pfam family.
     """
-    call_cols = [f"call_{a}" for a in arm_names if f"call_{a}" in pairs_with_calls.columns]
+    call_cols = [
+        f"call_{a}" for a in arm_names if f"call_{a}" in pairs_with_calls.columns
+    ]
     used = [c.removeprefix("call_") for c in call_cols]
 
     positives = (
@@ -596,9 +602,7 @@ def domain_recovery(
     domains = recoverable_domains(species, pairs_with_calls)
     out = domains.join(
         per_protein_family, on=["species_accession", "pfam_id"], how="left"
-    ).with_columns(
-        [pl.col(f"found_{a}").fill_null(False) for a in used]
-    )
+    ).with_columns([pl.col(f"found_{a}").fill_null(False) for a in used])
     return out.with_columns(pl.lit(species).alias("species"))
 
 
@@ -622,9 +626,7 @@ def arm_coverage(domains: pl.DataFrame, arm_names) -> pl.DataFrame:
     return pl.DataFrame(rows).sort("domain_recall", descending=True)
 
 
-def set_difference(
-    domains: pl.DataFrame, hp_arm: str, other_arms
-) -> dict:
+def set_difference(domains: pl.DataFrame, hp_arm: str, other_arms) -> dict:
     """
     The headline number: domains recovered by the HP arm and by no other arm.
 
@@ -686,7 +688,9 @@ def per_arm_hp_overlap(domains: pl.DataFrame, hp_arm: str, other_arms) -> pl.Dat
                 "n_both": n_both,
                 "n_hp_not_other": domains.filter(hp & ~other).height,
                 "n_other_not_hp": domains.filter(~hp & other).height,
-                "frac_of_hp_covered_by_other": (n_both / n_hp) if n_hp else float("nan"),
+                "frac_of_hp_covered_by_other": (
+                    (n_both / n_hp) if n_hp else float("nan")
+                ),
             }
         )
     return pl.DataFrame(rows).sort("frac_of_hp_covered_by_other", descending=True)
@@ -764,7 +768,13 @@ def parse_size(text: str) -> float:
     m = re.match(r"([0-9]*\.?[0-9]+)\s*([KMGT]?B)", text.strip())
     if not m:
         return float("nan")
-    scale = {"B": 1 / 1024**3, "KB": 1 / 1024**2, "MB": 1 / 1024, "GB": 1.0, "TB": 1024.0}
+    scale = {
+        "B": 1 / 1024**3,
+        "KB": 1 / 1024**2,
+        "MB": 1 / 1024,
+        "GB": 1.0,
+        "TB": 1024.0,
+    }
     return float(m.group(1)) * scale[m.group(2)]
 
 
@@ -782,7 +792,19 @@ def load_trace_runtimes() -> pl.DataFrame:
     for source, (directory, pattern) in TRACE_SOURCES.items():
         for path in sorted(directory.glob(pattern)):
             df = pl.read_csv(path, separator="\t", infer_schema_length=0)
-            keep = [c for c in ("process", "tag", "status", "realtime", "%cpu", "peak_rss", "cpus") if c in df.columns]
+            keep = [
+                c
+                for c in (
+                    "process",
+                    "tag",
+                    "status",
+                    "realtime",
+                    "%cpu",
+                    "peak_rss",
+                    "cpus",
+                )
+                if c in df.columns
+            ]
             frames.append(
                 df.select(keep).with_columns(
                     pl.lit(source).alias("source"),
