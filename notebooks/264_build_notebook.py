@@ -10,13 +10,22 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "264_combiner_comparison_test_split.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
-SUMMARY = (HERE / "264_summary.md").read_text() if (HERE / "264_summary.md").exists() else "# Summary and Conclusions\n\n(written after execution)"
+SUMMARY = (
+    (HERE / "264_summary.md").read_text()
+    if (HERE / "264_summary.md").exists()
+    else "# Summary and Conclusions\n\n(written after execution)"
+)
 
 cells = [
-md(r"""
+    md(r"""
 # 264: the three combiners, the single best pair, phmmer and a Kyte-Doolittle scan on the test split
 
 One table and two figures over the **test split only**, from the settings frozen on the tune
@@ -77,7 +86,7 @@ no shuffled-query run exists yet. phmmer (HMMER3 single-sequence search) comes f
 midi-plus region benchmark run (1-2 Sept 2026), the same queries against the same zebrafish
 proteome.
 """),
-code(r"""
+    code(r"""
 import hashlib
 import sys
 from pathlib import Path
@@ -151,7 +160,7 @@ print(f"  C: v_min {Y['C']['v_min']}, E_max {Y['C']['emax']:g}, {Y['C']['countin
 print(f"  Kyte-Doolittle: best window mean >= "
       f"{next(r['threshold'] for r in Y['B']['tune_thresholds_all_scores'] if r['method'] == 'Kyte-Doolittle' and r['truth_set'] == Y['B']['frozen_on_truth_set']):.3g}")
 """),
-md(r"""
+    md(r"""
 ## The called regions of each row
 
 Each row becomes one list of called regions on test queries: accession, target species,
@@ -165,7 +174,7 @@ extents of [notebook 260](260_kmerseek_region_table.ipynb). phmmer is given two 
 
 The figure shows how many regions each row calls and how long they are.
 """),
-code(r"""
+    code(r"""
 def kmerseek_spans(df: pl.DataFrame) -> pl.DataFrame:
     return df.select("accession", "species", start="merged_start", end="merged_end")
 
@@ -285,7 +294,7 @@ notebook_figure(
                          for r in len_tab.to_dicts()) + ".",
 )
 """),
-md(r"""
+    md(r"""
 ## One scoring function for every row
 
 `score_spans` computes every column of the table from a list of called regions, the truth
@@ -293,7 +302,7 @@ features and the denominators. It is the same code for kmerseek, phmmer and the 
 kmerseek rows must give the numbers notebooks 261, 262 and 263 printed; the cell stops if
 any differs by more than the rounding those notebooks printed.
 """),
-code(r"""
+    code(r"""
 pf_dom = (truth.filter(pl.col("truth_set") == "pfam").unique(subset=rc.FEATURE_KEY)
           .with_columns(split=rt.query_split(pl.col("accession"))))
 multi = (pf_dom.filter(pl.col("split") == SPLIT).group_by("accession").agg(n_domains=pl.len())
@@ -381,7 +390,7 @@ print(check.select("row", "column", "printed", "recomputed_here", "matches"))
 assert check["matches"].all(), "a recomputed number differs from what notebooks 261-263 printed"
 print(f"all {check.height} numbers printed by notebooks 261-263 are reproduced by score_spans")
 """),
-md(r"""
+    md(r"""
 ## The table, test split
 
 One row per method, every column as defined at the top. `None` in the shuffled-query column
@@ -389,7 +398,7 @@ means that run has not happened, not zero. The provenance table under it says, f
 number, which notebook and cell printed it first, or that it is first computed here
 (notebook 264, the cell above).
 """),
-code(r"""
+    code(r"""
 COLS = ["row", "calls_per_query", "precision_swissprot", "recall_swissprot", "precision_pfam",
         "recall_pfam", "shuffled_calls_per_query", "mean_pfam_domains_landed_multidomain",
         "median_boundary_error_pfam"]
@@ -468,7 +477,7 @@ notebook_figure(
                 f"{t['phmmer, each hit']['mean_pfam_domains_landed_multidomain']:.2f}. No shuffled-query rate exists for any row."),
 )
 """),
-md(r"""
+    md(r"""
 ## Precision against recall
 
 One point per row, in two panels: Swiss-Prot features and Pfam domains. Up and to the right
@@ -476,7 +485,7 @@ is better. Point size was meant to show the shuffled-query call rate; that run h
 happened, so every point has the same size. B and C call the same 822 regions, so their
 points sit on top of each other: C is the large ring, B the filled point inside it.
 """),
-code(r"""
+    code(r"""
 pr = tab.select("row", "calls_per_query", "precision_swissprot", "recall_swissprot", "precision_pfam", "recall_pfam")
 print(pr.with_columns(pl.selectors.float().round(3)))
 no_decoy = tab["shuffled_calls_per_query"].null_count() == tab.height
@@ -530,7 +539,7 @@ notebook_figure(
                          f"Pfam {r['precision_pfam']:.3f} at {r['recall_pfam']:.3f}" for r in pr.to_dicts()) + ".",
 )
 """),
-md(r"""
+    md(r"""
 ## What an independent check found, computed here
 
 A separate check recomputed every number of the table from the parquet with its own code;
@@ -548,7 +557,7 @@ the same files, so the numbers come from this cell.
 4. The Kyte-Doolittle scan only reports segments above 1.6, so the frozen threshold keeps
    all of them.
 """),
-code(r"""
+    code(r"""
 raw = (calls.with_columns(split=rt.query_split(pl.col("accession"))).filter(pl.col("split") == SPLIT)
        .select("accession", "species", "arm", "region_evalue", start="call_start", end="call_end"))
 print(f"merged regions on test: {test_scores.height}; kept by B: {spans['B, best of n'].height}; "
@@ -618,14 +627,14 @@ notebook_figure(
                 f"{lab['merged (the table)'][2]:.2f}. Counted the same way, phmmer still lands more domains."),
 )
 """),
-md(r"""
+    md(r"""
 ## The decision rule
 
 For each combiner, against the single best pair on test: Pfam recall and calls per query,
 and whether it beats the pair by the rule at the top (at least as good on both, strictly
 better on one).
 """),
-code(r"""
+    code(r"""
 s0 = tab.filter(pl.col("row") == "single best pair").row(0, named=True)
 dec = (tab.filter(pl.col("row").is_in(["A, intersection", "B, best of n", "C, consensus vote"]))
        .select("row", "n_called", "calls_per_query", "recall_pfam", "n_found_pfam")
@@ -666,14 +675,18 @@ notebook_figure(
                                   f"{r['calls_per_query_minus_single']:+.3f}" for r in dec.to_dicts()) + "."),
 )
 """),
-md(SUMMARY),
-code('summary_md = r"""\n' + SUMMARY.strip("\n") + '\n"""\nprint(summary_md)'),
+    md(SUMMARY),
+    code('summary_md = r"""\n' + SUMMARY.strip("\n") + '\n"""\nprint(summary_md)'),
 ]
 
 nb = {
     "cells": cells,
     "metadata": {
-        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
         "language_info": {"name": "python"},
     },
     "nbformat": 4,

@@ -10,8 +10,13 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "262_combiner_b_best_of_n.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 SUMMARY = r"""
 # Summary and Conclusions
@@ -105,7 +110,7 @@ fewer than 10 regions.
 """
 
 cells = [
-md(r"""
+    md(r"""
 # 262: combiner B, best of n alphabet-ksize pairs
 
 Input: the table [notebook 260](260_kmerseek_region_table.ipynb) writes, one row per human
@@ -165,7 +170,7 @@ of it lies inside one feature of the truth set. Two truth sets: Swiss-Prot featu
 The split is by query: `tune` or `test` by the first byte of SHA-1 of the accession
 (notebook 260). A shuffled query goes to its source protein's half.
 """),
-md(r"""
+    md(r"""
 ## Which data this execution reads
 
 The same files as [notebook 261](261_combiner_a_intersection_panel.ipynb). The kmerseek 0.4
@@ -196,7 +201,7 @@ phmmer (HMMER3 single-sequence search): the midi-plus region benchmark run (1-2 
 the same 998 human queries against the zebrafish proteome, per-domain hits with their
 i-Evalue, query span 1-based inclusive.
 """),
-code(r"""
+    code(r"""
 import hashlib
 import sys
 from datetime import date
@@ -291,7 +296,7 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## The scores, raw and corrected, region by region
 
 One row per merged region, with the three scores, which pair gave the best E-value and the
@@ -300,7 +305,7 @@ many were run (`n_arms_tried`). Below, the regions called at a few E-value cuts 
 and by the corrected value: the difference between those two columns is what the
 correction removes.
 """),
-code(r"""
+    code(r"""
 SHOW = ["accession", "species", "merged_region_id", "merged_start", "merged_end", "split",
         "n_arms_fired", "n_arms_tried", "evalue_min", "evalue_best_of_n_corrected",
         "mean_idf_max", "evalue_min_arms", "mean_idf_max_arms"]
@@ -357,7 +362,7 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## Precision and recall on tune, for each score
 
 Each line is one ranking, read from the strictest threshold (left, few calls) to the
@@ -372,7 +377,7 @@ scores. In every panel:
 The dotted line is precision 0.5; the ringed point is the loosest threshold at or above it.
 Average precision (AP) = the sum over thresholds of precision x the recall gained there.
 """),
-code(r"""
+    code(r"""
 nf_tune = rb.n_features(truth, "tune", len(SPECIES))
 nf_test = rb.n_features(truth, "test", len(SPECIES))
 print(f"truth features x {len(SPECIES)} species: tune {nf_tune}, test {nf_test}")
@@ -434,7 +439,7 @@ thr = pl.DataFrame(thresholds, infer_schema_length=None)
 print("\nloosest threshold with tune precision >= 0.5 (null: no threshold reaches 0.5):")
 print(thr)
 """),
-code(r"""
+    code(r"""
 BON_C, ARM_C, KD_C = "#2B6CB0", "#63B3ED", "#DD6B20"
 TS_NAME = {"swissprot": "Swiss-Prot features", "pfam": "Pfam domains"}
 fig, axes = plt.subplots(2, 3, figsize=(15, 8.6), sharey="row")
@@ -498,14 +503,14 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## The frozen threshold
 
 The rule from the top cell: the corrected E-value threshold on Swiss-Prot, or on Pfam when
 no Swiss-Prot threshold reaches precision 0.5. The single pair's threshold is chosen the
 same way on its own curve, for the test comparison.
 """),
-code(r"""
+    code(r"""
 def pick(method: str, sc: str, ts: str):
     r = thr.filter((pl.col("method") == method) & (pl.col("score") == sc) & (pl.col("truth_set") == ts))
     return r.row(0, named=True) if r.height and r["threshold"][0] is not None else None
@@ -528,7 +533,7 @@ print(f"tune regions in the table: {bon_tune.regions.height:_}; the frozen thres
 print(f"single pair {SINGLE}: E-value <= {THR_SINGLE}" + (f", tune calls {single_frozen['n_called']:_}" if single_frozen else ""))
 print(f"Kyte-Doolittle: best window mean >= {THR_KD}" + (f", tune calls {kd_frozen['n_called']:_}" if kd_frozen else ""))
 """),
-md(r"""
+    md(r"""
 ## Shuffled queries: false calls per query at the frozen threshold
 
 Every region on a shuffled query is false. The count of those passing the frozen threshold,
@@ -536,7 +541,7 @@ divided by the shuffled queries searched (times target species), is the false-ca
 per query. The figure draws calls per query against the corrected E-value threshold for
 real tune queries, with the shuffled-query line beside it once that run exists.
 """),
-code(r"""
+    code(r"""
 if DECOY_REDUCED.exists():
     d_calls = rb.merged_calls(DECOY_REDUCED)
     d_tried = rb.arms_tried(pl.read_parquet(DECOY_REDUCED / "reduce_summary.parquet"))
@@ -605,14 +610,14 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## The frozen threshold on test
 
 Best of n at the frozen corrected E-value, beside the single pair at its own tune threshold,
 the Kyte-Doolittle scan at its own, and combiner A's frozen panel from
 `261_intersection_panel.yaml`. Nothing here was chosen on test.
 """),
-code(r"""
+    code(r"""
 panel_a = yaml.safe_load(PANEL_A_YAML.read_text())
 assert panel_a["input_table_sha256"] == sha256(TABLE), "notebook 261 read a different table"
 PANEL_A, EMAX_A = panel_a["panel"], panel_a["emax"]
@@ -636,7 +641,7 @@ report = pl.DataFrame(test_rows, infer_schema_length=None).select(
     "n_called_on_swissprot_queries", "n_found_swissprot", "n_called_on_pfam_queries", "n_found_pfam")
 print(report)
 """),
-code(r"""
+    code(r"""
 rep_test = report.filter(pl.col("split") == "test")
 METHODS = rep_test["method"].to_list()
 M_COLOR = {m: (BON_C if m.startswith("best of") else ARM_C if m.startswith("single") else
@@ -682,14 +687,14 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## Saving the frozen threshold
 
 `262_best_of_n_threshold.yaml` holds the threshold, the rule that chose it, every score's
 tune threshold in both truth sets, the tune and test numbers, the shuffled-query rate
 (null until that run exists) and the input table's checksum.
 """),
-code(r"""
+    code(r"""
 def clean(d: dict) -> dict:
     return {k: (None if isinstance(v, float) and v != v else
                 float(v) if isinstance(v, (np.floating,)) else int(v) if isinstance(v, np.integer) else v)
@@ -723,7 +728,7 @@ record = {
 OUT_YAML.write_text(yaml.safe_dump(record, sort_keys=False, width=100))
 print(OUT_YAML.read_text())
 """),
-md(r"""
+    md(r"""
 ## Multi-domain queries: how many domains each method lands
 
 The same question and figure as [notebook 261](261_combiner_a_intersection_panel.ipynb):
@@ -743,7 +748,7 @@ neither. Best of n uses every merged region, so it can only land as many or more
 than combiner A or one pair at the thresholds frozen here (its regions include theirs); the
 question is how far it gets toward phmmer.
 """),
-code(r"""
+    code(r"""
 pf_dom = (truth.filter(pl.col("truth_set") == "pfam").unique(subset=rc.FEATURE_KEY)
           .with_columns(split=rt.query_split(pl.col("accession"))))
 multi = (pf_dom.filter(pl.col("split") == "test").group_by("accession").agg(n_domains=pl.len())
@@ -788,7 +793,7 @@ print(cmp)
 named_md = counts.join(queries.select("accession", "hgnc_symbol"), on="accession").sort("n_domains", descending=True)
 print(named_md.head(12))
 """),
-code(r"""
+    code(r"""
 MD_COLOR = {MD[0]: BON_C, MD[1]: "#805AD5", "single pair": ARM_C, "phmmer": "#718096"}
 MD_HATCH = {MD[0]: None, MD[1]: None, "single pair": "//", "phmmer": None}
 xs = np.arange(0, int(dist["n_landed"].max()) + 1)
@@ -826,7 +831,7 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## Which pair gives the winning score
 
 For each tune and test merged region, the pair that gave the lowest E-value and the pair
@@ -840,7 +845,7 @@ If one pair won most often for one feature type and another pair for another, pi
 pair per feature type would be worth testing. With four near-copies of one search, a
 column-to-column difference within a few regions is noise.
 """),
-code(r"""
+    code(r"""
 import swissprot_control_utils as scu
 
 NONE = "no Swiss-Prot feature"
@@ -864,7 +869,7 @@ print("\nshare over all regions (tune and test, with and without Swiss-Prot trut
 for k, v in overall.items():
     print(k, v.with_columns(pl.col("share").round(3)).to_dicts())
 """),
-code(r"""
+    code(r"""
 SHORT = {a: a.replace("encoded_", "encoded ").replace("_k19_ext", " k19, penalty ") for a in ARMS}
 fig, axes = plt.subplots(2, 1, figsize=(13, 6.8))
 cmap = plt.cm.Blues
@@ -912,7 +917,7 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(r"""
+    md(r"""
 ## Does the winning pair depend on region length?
 
 The same winners plotted against each merged region's length, one point per region and
@@ -920,7 +925,7 @@ winning pair (a tied region appears on every tied pair's row, at reduced opacity
 short tick on each row is that pair's median winning length. If one pair won on short
 regions and another on long ones, the ticks would sit apart.
 """),
-code(r"""
+    code(r"""
 rng = np.random.default_rng(262)
 fig, axes = plt.subplots(1, 2, figsize=(13, 3.9), sharey=True)
 len_rows = []
@@ -971,14 +976,18 @@ mu.finish_figure(
     layout=False,
 )
 """),
-md(SUMMARY),
-code('summary_md = r"""\n' + SUMMARY.strip("\n") + '\n"""\nprint(summary_md)'),
+    md(SUMMARY),
+    code('summary_md = r"""\n' + SUMMARY.strip("\n") + '\n"""\nprint(summary_md)'),
 ]
 
 nb = {
     "cells": cells,
     "metadata": {
-        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
         "language_info": {"name": "python"},
     },
     "nbformat": 4,

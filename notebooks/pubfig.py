@@ -46,8 +46,14 @@ def panel_label(ax, letter, dx_pt=-18, dy_pt=4):
     """Bold lowercase 8 pt panel letter, a fixed distance up-left of the axes corner."""
     offset = ScaledTranslation(dx_pt / 72, dy_pt / 72, ax.figure.dpi_scale_trans)
     ax.text(
-        0, 1, letter, transform=ax.transAxes + offset,
-        fontsize=8, fontweight="bold", ha="left", va="bottom",
+        0,
+        1,
+        letter,
+        transform=ax.transAxes + offset,
+        fontsize=8,
+        fontweight="bold",
+        ha="left",
+        va="bottom",
     )
 
 
@@ -60,8 +66,11 @@ def shared_legend(fig, ncol=None, **kw):
                 handles[lab] = h
                 labels.append(lab)
     return fig.legend(
-        [handles[lab] for lab in labels], labels, loc="outside upper center",
-        ncol=ncol or len(labels), **kw,
+        [handles[lab] for lab in labels],
+        labels,
+        loc="outside upper center",
+        ncol=ncol or len(labels),
+        **kw,
     )
 
 

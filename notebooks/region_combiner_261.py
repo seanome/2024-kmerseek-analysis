@@ -34,22 +34,34 @@ OBJECTIVE = "precision_swissprot"
 
 def _region_index(table: pl.DataFrame) -> pl.DataFrame:
     """One row per merged region with an integer id, in a fixed order."""
-    return (table.select(KEY + ["split"]).unique(subset=KEY).sort(KEY)
-            .with_row_index("rid").with_columns(pl.col("rid").cast(pl.Int64)))
+    return (
+        table.select(KEY + ["split"])
+        .unique(subset=KEY)
+        .sort(KEY)
+        .with_row_index("rid")
+        .with_columns(pl.col("rid").cast(pl.Int64))
+    )
 
 
-def _arm_sets(table: pl.DataFrame, regions: pl.DataFrame, emax: float) -> dict[str, np.ndarray]:
+def _arm_sets(
+    table: pl.DataFrame, regions: pl.DataFrame, emax: float
+) -> dict[str, np.ndarray]:
     """For each pair, the sorted region ids where it has a call with region_evalue < emax."""
-    passing = (table.filter(pl.col("region_evalue") < emax)
-               .join(regions.select(KEY + ["rid"]), on=KEY, how="inner")
-               .group_by("arm").agg(pl.col("rid").unique().sort()))
+    passing = (
+        table.filter(pl.col("region_evalue") < emax)
+        .join(regions.select(KEY + ["rid"]), on=KEY, how="inner")
+        .group_by("arm")
+        .agg(pl.col("rid").unique().sort())
+    )
     return {a: np.asarray(r, dtype=np.int64) for a, r in passing.iter_rows()}
 
 
 def _intersect(sets: dict[str, np.ndarray], panel: list[str]) -> np.ndarray:
     out = sets.get(panel[0], np.empty(0, np.int64))
     for a in panel[1:]:
-        out = np.intersect1d(out, sets.get(a, np.empty(0, np.int64)), assume_unique=True)
+        out = np.intersect1d(
+            out, sets.get(a, np.empty(0, np.int64)), assume_unique=True
+        )
     return out
 
 
@@ -69,21 +81,31 @@ class Scorer:
         self.regions = _region_index(t)
         self.t = t
         # Per region: is it a true call, and is it on a query that has any feature of that set.
-        reg = t.unique(subset=KEY).join(self.regions.select(KEY + ["rid"]), on=KEY).sort("rid")
+        reg = (
+            t.unique(subset=KEY)
+            .join(self.regions.select(KEY + ["rid"]), on=KEY)
+            .sort("rid")
+        )
         self.is_true = {ts: reg[f"merged_{ts}_is_true"].to_numpy() for ts in TRUTH_SETS}
         self.has_truth = {ts: reg[f"query_has_{ts}"].to_numpy() for ts in TRUTH_SETS}
         # Region -> truth feature it lands >= 0.5 in, for recall.
-        self.landed = (self.truth_pairs.filter(pl.col("landed") >= rt.LANDED_MIN)
-                       .join(self.regions.select(KEY + ["rid"]), on=KEY, how="inner")
-                       .select(["rid", "species"] + FEATURE_KEY))
+        self.landed = (
+            self.truth_pairs.filter(pl.col("landed") >= rt.LANDED_MIN)
+            .join(self.regions.select(KEY + ["rid"]), on=KEY, how="inner")
+            .select(["rid", "species"] + FEATURE_KEY)
+        )
         # Recall denominator: every truth feature on a query of this split, once per target
         # species searched.
         species = t["species"].unique().sort().to_list()
-        feats = (self.truth.unique(subset=FEATURE_KEY)
-                 .with_columns(split=rt.query_split(pl.col("accession")))
-                 .filter(pl.col("split") == self.split))
-        self.n_features = {ts: feats.filter(pl.col("truth_set") == ts).height * len(species)
-                           for ts in TRUTH_SETS}
+        feats = (
+            self.truth.unique(subset=FEATURE_KEY)
+            .with_columns(split=rt.query_split(pl.col("accession")))
+            .filter(pl.col("split") == self.split)
+        )
+        self.n_features = {
+            ts: feats.filter(pl.col("truth_set") == ts).height * len(species)
+            for ts in TRUTH_SETS
+        }
         self.species = species
         if self.decoy_table is not None:
             self.decoy_t = self.decoy_table.filter(pl.col("split") == self.split)
@@ -93,8 +115,11 @@ class Scorer:
     def sets(self, emax: float):
         if emax not in self._cache:
             real = _arm_sets(self.t, self.regions, emax)
-            decoy = (_arm_sets(self.decoy_t, self.decoy_regions, emax)
-                     if self.decoy_table is not None else None)
+            decoy = (
+                _arm_sets(self.decoy_t, self.decoy_regions, emax)
+                if self.decoy_table is not None
+                else None
+            )
             self._cache[emax] = (real, decoy)
         return self._cache[emax]
 
@@ -104,8 +129,13 @@ class Scorer:
     def score(self, panel: list[str], emax: float) -> dict:
         real, decoy = self.sets(emax)
         rid = _intersect(real, panel)
-        row = {"split": self.split, "emax": emax, "n_arms": len(panel),
-               "panel": " + ".join(panel), "n_called": int(len(rid))}
+        row = {
+            "split": self.split,
+            "emax": emax,
+            "n_arms": len(panel),
+            "panel": " + ".join(panel),
+            "n_called": int(len(rid)),
+        }
         hit = self.landed.filter(pl.col("rid").is_in(rid))
         for ts in TRUTH_SETS:
             on = self.has_truth[ts][rid]
@@ -113,12 +143,18 @@ class Scorer:
             n_true = int((self.is_true[ts][rid] & on).sum())
             row[f"n_called_on_{ts}_queries"] = n_on
             row[f"precision_{ts}"] = n_true / n_on if n_on else float("nan")
-            n_found = hit.filter(pl.col("truth_set") == ts).unique(
-                subset=["species"] + FEATURE_KEY).height
+            n_found = (
+                hit.filter(pl.col("truth_set") == ts)
+                .unique(subset=["species"] + FEATURE_KEY)
+                .height
+            )
             row[f"n_found_{ts}"] = n_found
-            row[f"recall_{ts}"] = n_found / self.n_features[ts] if self.n_features[ts] else float("nan")
-        row["n_decoy_called"] = (int(len(_intersect(decoy, panel)))
-                                 if decoy is not None else None)
+            row[f"recall_{ts}"] = (
+                n_found / self.n_features[ts] if self.n_features[ts] else float("nan")
+            )
+        row["n_decoy_called"] = (
+            int(len(_intersect(decoy, panel))) if decoy is not None else None
+        )
         return row
 
 
@@ -143,8 +179,9 @@ def greedy(scorer: Scorer, emax: float, max_n: int = MAX_PANEL) -> pl.DataFrame:
         best = min(cands, key=_rank)
         best["added_arm"] = best["panel"].split(" + ")[-1]
         prev = rows[-1][OBJECTIVE] if rows else None
-        best["improved"] = prev is None or (best[OBJECTIVE] == best[OBJECTIVE]
-                                            and best[OBJECTIVE] > prev)
+        best["improved"] = prev is None or (
+            best[OBJECTIVE] == best[OBJECTIVE] and best[OBJECTIVE] > prev
+        )
         rows.append(best)
         panel = best["panel"].split(" + ")
     path = pl.DataFrame(rows, infer_schema_length=None)
@@ -167,20 +204,30 @@ def load_phmmer(path: Path, species: str) -> pl.DataFrame:
     """phmmer's per-domain hits from the region benchmark: query span 1-based inclusive
     (domtblout hmm from/to, the query being the profile), i-Evalue per domain."""
     cols = ["query", "target", "qstart", "qend", "tstart", "tend", "score", "evalue"]
-    return (pl.read_csv(path, separator="\t", has_header=False, new_columns=cols)
-            .with_columns(accession=pl.col("query").str.split("|").list.get(1),
-                          species=pl.lit(species)))
+    return pl.read_csv(
+        path, separator="\t", has_header=False, new_columns=cols
+    ).with_columns(
+        accession=pl.col("query").str.split("|").list.get(1), species=pl.lit(species)
+    )
 
 
-def domains_landed(spans: pl.DataFrame, domains: pl.DataFrame,
-                   start: str, end: str) -> pl.DataFrame:
+def domains_landed(
+    spans: pl.DataFrame, domains: pl.DataFrame, start: str, end: str
+) -> pl.DataFrame:
     """Per (accession, species): how many of the query's domains at least one span puts at
     least half of itself inside. `domains` has accession, feature, feature_start,
     feature_end; `spans` has accession, species and the two named columns."""
-    pairs = rt.region_truth_pairs(spans.select("accession", "species", start, end),
-                                  domains.select("accession", "feature", "feature_start",
-                                                 "feature_end"),
-                                  start, end)
-    return (pairs.filter(pl.col("landed") >= rt.LANDED_MIN)
-            .unique(subset=["accession", "species", "feature", "feature_start", "feature_end"])
-            .group_by("accession", "species").agg(n_landed=pl.len()))
+    pairs = rt.region_truth_pairs(
+        spans.select("accession", "species", start, end),
+        domains.select("accession", "feature", "feature_start", "feature_end"),
+        start,
+        end,
+    )
+    return (
+        pairs.filter(pl.col("landed") >= rt.LANDED_MIN)
+        .unique(
+            subset=["accession", "species", "feature", "feature_start", "feature_end"]
+        )
+        .group_by("accession", "species")
+        .agg(n_landed=pl.len())
+    )
