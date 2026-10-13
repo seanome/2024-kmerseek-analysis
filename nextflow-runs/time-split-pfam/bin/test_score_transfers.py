@@ -14,6 +14,11 @@ lower decoy rate (both 0), then to the name: hp_pbotc_1st_ed2 k19 extend.
 Test: R3 is a unique find, R4 is not (hmmscan has it); decoy rate 1 transfer / 2 decoys,
 times 2 P4 queries = 1 expected, so unique minus expected = 0 and P4 does not hold.
 In pilot mode (no --read-test-half) no test-half query appears in any output.
+
+Seed reference (Pfam 33.1 seed members as targets, notebook 280's second reference): each
+entry's one domain row spans the whole entry, so a hit anywhere on it transfers that
+family, through compact_kmerseek.awk (kmerseek) and transfer_by_overlap (MMseqs2, phmmer).
+make_search_inputs.py reference-pfam-seed is checked on a two-family Stockholm file.
 """
 
 from __future__ import annotations
@@ -131,7 +136,118 @@ def main() -> None:
             text = f.read_bytes()
             for name in (b"R3", b"R4"):
                 assert name not in text, f"{name} in {f.name}"
+        check_seed_reference(d)
     print("score_transfers.py: all checks passed")
+
+
+SEED_STOCKHOLM = """# STOCKHOLM 1.0
+#=GF ID   fam1
+#=GF AC   PF00001.21
+#=GS A_HUMAN/11-40 AC P11111.2
+#=GS B_MOUSE/5-34 AC P22222.1
+#=GS Q_SELF/1-30 AC QSELF.1
+A_HUMAN/11-40  MKVLAAGIVG..LLAAGCSSHHkkPPEEDDRRW
+B_MOUSE/5-34   MKVLAAGIVG..LLAAGCSSHHKKPPEEDDRRW
+Q_SELF/1-30    MSTNPKPQRK..TKRNTNRRPQDVKFPGGGQ-
+#=GC seq_cons  MKVLAAGIVG..LLAAGCSSHHKKPPEEDDRRW
+//
+# STOCKHOLM 1.0
+#=GF ID   fam2
+#=GF AC   PF00002.9
+#=GS A2_HUMAN/1-31 AC P33333.1
+#=GS IN_Q/3-24 AC P44444.1
+A2_HUMAN/1-31  MKVLAAGIVG--LLAAGCSSHHKKPPEEDDRRW
+IN_Q/3-24      ---AAAWWWYYYCCCDDDEEEFFF.........
+//
+"""
+
+
+def check_seed_reference(d: Path) -> None:
+    sys.path.insert(0, str(HERE))
+    import polars as pl
+    from score_transfers import transfer_by_overlap
+
+    s = d / "seed"
+    s.mkdir()
+    write_gz(s / "Pfam-A.seed.gz", SEED_STOCKHOLM)
+    # QSELF is a query; IN_Q's member lies inside query Q2; the decoy must not count.
+    (s / "queries.fasta").write_text(
+        ">QSELF\nMSTNPKPQRKTKRNTNRRPQDVKFPGGGQ\n"
+        ">Q2\nMMMAAAWWWYYYCCCDDDEEEFFFGG\n>DECOY_Q2\nGGFFFEEEDDDCCCYYYWWWAAAMMM\n"
+    )
+    (s / "sprot.fasta").write_text(">P1\n" + "A" * 400 + "\n")
+    subprocess.run(
+        [
+            sys.executable,
+            str(HERE / "make_search_inputs.py"),
+            "reference-pfam-seed",
+            "--seed",
+            str(s / "Pfam-A.seed.gz"),
+            "--sprot",
+            str(s / "sprot.fasta"),
+            "--queries",
+            str(s / "queries.fasta"),
+            "--out",
+            str(s / "out"),
+        ],
+        check=True,
+        capture_output=True,
+    )
+    fasta = (s / "out/reference.fasta").read_text()
+    seq = "MKVLAAGIVGLLAAGCSSHHKKPPEEDDRRW"
+    # A_HUMAN, B_MOUSE and A2_HUMAN are one sequence (lower case and gaps removed):
+    # one entry, named after the first member, with a row for each family.
+    assert fasta == f">PF00001__P11111_11_40\n{seq}\n", fasta
+    dom = pl.read_csv(s / "out/sprot_domains.tsv", separator="\t")
+    assert dom.rows() == [
+        ("PF00001__P11111_11_40", "PF00001", 1, 31),
+        ("PF00001__P11111_11_40", "PF00002", 1, 31),
+    ], dom
+    c = json.loads((s / "out/counts.json").read_text())
+    assert c["seed_members"] == 5 and c["entries"] == 1, c
+    assert c["members_dropped_accession_is_a_query"] == 1, c
+    assert c["members_dropped_sequence_inside_a_query"] == 1, c
+    assert c["members_sharing_an_entry"] == 2 and c["residues"] == 31, c
+    assert abs(c["bits_saved_log2_ratio"] - 3.6897) < 1e-3, c  # log2(400 / 31)
+
+    # A hit on residues 5-20 of the entry transfers both families, through each path.
+    hits = pl.DataFrame(
+        {
+            "query": ["R1"],
+            "target": ["PF00001__P11111_11_40"],
+            "tstart": [5],
+            "tend": [20],
+        }
+    )
+    assert sorted(transfer_by_overlap(hits, dom)["pfam_acc"]) == ["PF00001", "PF00002"]
+    km = (
+        "query_name,target_name,region_start,region_end,target_start,target_end,"
+        "region_length,region_n_shared_kmers,region_poisson_score,region_tfidf,"
+        "region_mean_idf,region_n_mismatches,region_ka_bits,region_evalue,"
+        "query_poisson_pvalue\n"
+        "R1,PF00001__P11111_11_40,9,25,4,20,16,3,2.5,1,1,0,9,0.01,0.001\n"
+        "R1,OTHER,9,25,4,20,16,3,2.5,1,1,0,9,0.01,0.001\n"
+    )
+    out = subprocess.run(
+        [
+            "awk",
+            "-F,",
+            "-v",
+            f"domains={s / 'out/sprot_domains.tsv'}",
+            "-f",
+            str(HERE / "compact_kmerseek.awk"),
+        ],
+        input=km,
+        text=True,
+        check=True,
+        capture_output=True,
+    ).stdout.splitlines()
+    rows = [r.split("\t") for r in out[1:]]
+    # 0-based start 4, end-exclusive 20 -> residues 5-20; one row per family.
+    assert [(r[3], r[4], r[5], r[6]) for r in rows] == [
+        ("PF00001__P11111_11_40", "5", "20", "PF00001"),
+        ("PF00001__P11111_11_40", "5", "20", "PF00002"),
+    ], out
 
 
 if __name__ == "__main__":
