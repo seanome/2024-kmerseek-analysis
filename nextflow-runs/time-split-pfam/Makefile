@@ -79,9 +79,10 @@ pilot:
 # in the pilot's own scoring step. Sizing: the scorer holds one search output at a time;
 # the largest pilot file is 1.1 GB gzipped (~27 million rows). The first try (64 GB, job
 # 47666740) read all 185 files and was killed holding every decoy-family pair; those now
-# go to disk. The log prints peak memory per step: read it before lowering the ask.
+# go to disk. 100 GB fits a normal node (128,000 MB; 128G does not). The log prints peak
+# memory per step: read it before changing the ask.
 score-partial:
-	$(SB) --job-name=280-score-partial --cpus-per-task=4 --mem=128G --time=4:00:00 \
+	$(SB) --job-name=280-score-partial --cpus-per-task=4 --mem=100G --time=4:00:00 \
 	  --wrap 'set -e; R=$(RUN_DIR)/results-pilot; O=$$R/scores-partial; command rm -rf $$O; mkdir -p $$O; \
 	  $(PY) $(MAKEFILE_DIR)/bin/score_transfers.py --kmerseek $$R/kmerseek --stats $$R/kmerseek \
 	    --mmseqs2 $$R/mmseqs2 --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
