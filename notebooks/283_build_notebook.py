@@ -11,11 +11,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "283_bhf_low_complexity_control.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 283: Do BHF's kmerseek wins come from its low-complexity stretches?
 
 [Notebook 256](256_bhf_dipeptide_shuffle_null.ipynb)
@@ -82,7 +87,7 @@ region, and show the aligned residues of the top human hit for each. Null 3 is r
 against the same 10% line: a score above it means BHF without its stretches still beats
 its own shuffles (this sentence added 2026-10-13, also before any search).
 """),
-code(r"""
+    code(r"""
 import json
 import sys
 from pathlib import Path
@@ -106,7 +111,7 @@ for name, (done, total) in status.items():
     print(f"{name}: {done} of {total} search tables")
 ALL_DONE = all(d == t for d, t in status.values())
 """),
-md(r"""
+    md(r"""
 ## 1. BHF's low-complexity stretches
 
 kmerseek's mask (`--remove-low-complexity`, on for every index of notebooks 241 and 256)
@@ -117,7 +122,7 @@ covered by dropped k-mers, so it depends on the setting. The class tables are re
 kmerseek's `alphabets.rs`, and the count of dropped windows is checked against the count
 the kmerseek binary prints when it indexes BHF alone, at every setting.
 """),
-code(r"""
+    code(r"""
 arms = json.loads((su.RUN / "arms.json").read_text())
 check = [(a["alphabet"], a["k"], *lc.check_against_binary(BHF, a["alphabet"], a["k"])) for a in arms]
 n_agree = sum(here == binary for _, _, here, binary in check)
@@ -154,7 +159,7 @@ rows = [(f"kmerseek mask, {a} k{k}", lc.stretches(BHF, a, k)) for a, k in zip(ma
 rows += [("NCBI SEG", seg), ("notebook 256 winning region", region_256), ("union, used here", union)]
 _ = lc.fig_stretches(BHF, rows, FIG / "283_bhf_low_complexity_stretches_kmerseek_seg")
 """),
-md(r"""
+    md(r"""
 kmerseek's own mask finds a stretch in BHF at only 9 of the 152 settings, and only 2 of
 notebook 256's 153 winning (score, setting) pairs are at one of them (both gbmr4 k18). So
 at the settings of 151 of the 153 wins, kmerseek's mask, which was on during notebook
@@ -162,13 +167,13 @@ at the settings of 151 of the 153 wins, kmerseek's mask, which was on during not
 sections 4 and 5 test. SEG calls 70-93 and 109-116 low-complexity, inside 256's region
 63-105 but shorter. The copies below use the union: 63-105, 108-117 and 208-216, 62 of 252 residues.
 """),
-md(r"""
+    md(r"""
 ## 2. The three sets of copies
 
 Each null-2 copy keeps the 62 stretch residues in place, so it matches BHF at those
 positions by construction. Null-3 copies are shuffles of BHF without its stretches.
 """),
-code(r"""
+    code(r"""
 qs = {name: nb283.read_fasta(run / "queries.fa") if (run / "queries.fa").exists() else None
       for name, run in lc.NULLS.items()}
 if qs["null 2: stretches kept in place"] is None:
@@ -206,7 +211,7 @@ fig.text(0.01, 1.0, "Each dot is one of 300 copies. Null 3 is compared with BHF 
          ha="left", va="bottom")
 pf.save(fig, str(FIG / "283_copies_identity_to_bhf_three_nulls"))
 """),
-md(r"""
+    md(r"""
 ## 3. The rebuilt indexes give notebook 256's numbers back
 
 Notebook 241's indexes were deleted from the laptop on 2 October and never copied to
@@ -217,7 +222,7 @@ unless every best value, and every column of the 9 scores other than the E-value
 score, matches the tables notebook 256 stored. The cell below prints that comparison once
 the run is copied back.
 """),
-code(r"""
+    code(r"""
 rep = lc.DATA / "283" / "reproduce_null1" / "reproduce.json"
 if rep.exists():
     r = json.loads(rep.read_text())
@@ -227,7 +232,7 @@ if rep.exists():
 else:
     print("the Sherlock run has not been copied back yet")
 """),
-md(r"""
+    md(r"""
 ## 4. BHF against each set of copies
 
 For each score, the settings where BHF beats 95% of its copies, as a share of the settings
@@ -235,7 +240,7 @@ where BHF has that score, under each null. The grey line is chance (5%); the das
 the decision line (10%, twice chance). A score whose null-2 point sits right of the dashed
 line has a BHF signal that the stretches do not explain.
 """),
-code(r"""
+    code(r"""
 if ALL_DONE:
     p = lc.best_score_p_all()
     w = lc.wins_by_null(p)
@@ -250,10 +255,10 @@ if ALL_DONE:
 else:
     print("waiting for the Sherlock run:", status)
 """),
-md(r"""
+    md(r"""
 ## 5. The decision rule
 """),
-code(r"""
+    code(r"""
 if ALL_DONE:
     if over.height == 0:
         print("verdict: BHF: no kmerseek signal beyond its low-complexity stretches")
@@ -276,8 +281,18 @@ if ALL_DONE:
 """),
 ]
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                                   "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1))
 print("wrote", OUT)

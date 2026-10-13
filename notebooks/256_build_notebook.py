@@ -10,11 +10,16 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "256_bhf_dipeptide_shuffle_null.ipynb"
 
 md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s.strip("\n")}
-code = lambda s: {"cell_type": "code", "metadata": {"jupyter": {"source_hidden": True}},
-                  "execution_count": None, "outputs": [], "source": s.strip("\n")}
+code = lambda s: {
+    "cell_type": "code",
+    "metadata": {"jupyter": {"source_hidden": True}},
+    "execution_count": None,
+    "outputs": [],
+    "source": s.strip("\n"),
+}
 
 cells = [
-md(r"""
+    md(r"""
 # 256: BHF against 300 shuffled copies of itself
 
 Notebook 241 searched BHF (*Botryllus* histocompatibility factor, 252 aa) against the
@@ -36,7 +41,7 @@ alphabet-ksize pairs. A human protein's score is that of its best region. Every 
 where BHF itself has a score under that metric; a copy that hit nothing there counts as
 finding nothing.
 """),
-code(r"""
+    code(r"""
 import sys
 from pathlib import Path
 
@@ -59,7 +64,7 @@ print(f"{df.height:_} rows; {df['query_name'].n_unique()} queries (BHF + copies)
 print("alphabet-ksize pairs per metric where BHF has a score:")
 print(u.bhf_arms(df).group_by("metric").len().sort("metric"))
 """),
-md(r"""
+    md(r"""
 ## 1. The 2024 talk's hits come back for BHF and not for its copies
 
 The 2024 Evolgenome talk named human proteins as BHF hits at k = 24: ZNF292, RSF1, TSHZ1-3,
@@ -68,7 +73,7 @@ is in BHF's top 10 and compared that with BHF's own hit list in random order. He
 comparison is the same count for each shuffled copy. Ties count at their best rank, for BHF
 and copies alike.
 """),
-code(r"""
+    code(r"""
 talk = u.talk_in_top(df)
 talk_s = u.talk_summary(talk)
 print(talk_s)
@@ -83,7 +88,7 @@ u.fig_talk_top10(
                 f"(p = {ev['p']}). {n_low} of {talk_s.height} metrics have p <= 0.05, but the list was chosen from BHF's own hits."),
 )
 """),
-md(r"""
+    md(r"""
 Under every metric BHF brings the 2024 proteins into its top 10 more often than any but a
 few copies (p = 0.003 to 0.010). Shared k-mers: 31.1% of alphabet-ksize pairs for BHF, 1.9% for the median
 copy. E-value: 6 of 61 alphabet-ksize pairs (9.8%) for BHF, 0% for the median copy.
@@ -95,14 +100,14 @@ is searched again, and not when it is shuffled. What the result does show is nar
 pick each copy's own top list the same way the 2024 list was picked and ask how often it
 comes back at the other alphabet-ksize pairs.
 """),
-md(r"""
+    md(r"""
 ## 2. BHF's best score against its copies' best scores
 
 For each metric and alphabet-ksize pair: the share of copies whose best human hit scores at least as well
 as BHF's best hit, (1 + copies at least as good) / 301. If BHF's best hit is chance, this
 share is spread evenly between 0 and 1, and about 5% of alphabet-ksize pairs fall at or below 0.05.
 """),
-code(r"""
+    code(r"""
 bp = u.best_score_p(df)
 bp_s = u.best_score_summary(bp)
 print(bp_s)
@@ -122,7 +127,7 @@ print(f"\nbest E-value over all 61 alphabet-ksize pairs: BHF {b:.2f}; median cop
       f"copies reaching E < 1 at some alphabet-ksize pair: {(c < 1).sum()} of {c.len()}; "
       f"copies with a best E at least as small as BHF's: {(c <= b).sum()} of {c.len()}")
 """),
-md(r"""
+    md(r"""
 The E-value agrees with chance. BHF beats 95% of its copies at 3 of 61 alphabet-ksize pairs, and 3.1 are
 expected. Over all 61 alphabet-ksize pairs BHF's best E-value is 0.61; the median copy's is 0.39, 291 of 300
 copies reach E < 1 at some alphabet-ksize pair, and 229 have a best E-value at least as small as BHF's.
@@ -131,7 +136,7 @@ The metrics that count shared k-mers do not agree with chance. tf-idf puts BHF a
 its copies at 27 of 106 alphabet-ksize pairs, containment 25, shared k-mers 23 and mean IDF 19, against 5.3
 expected. Enrichment (6) is at chance. Section 3 shows where on BHF these wins come from.
 """),
-md(r"""
+    md(r"""
 ## 3. Where on BHF the wins come from
 
 For each (metric, alphabet-ksize pair) cell, the BHF region that gave BHF its best score, taken from
@@ -139,7 +144,7 @@ notebook 241's region table. The grey band counts, for every BHF residue, the ce
 best region covers it. The purple line counts only the cells where BHF beats 95% of its
 copies.
 """),
-code(r"""
+    code(r"""
 reg = u.bhf_best_regions(bp)
 win = reg.filter(pl.col("beats_95pct"))
 in_blk = lambda d: d.filter((pl.col("start") < 105) & (pl.col("end") > 62)).height
@@ -162,7 +167,7 @@ cov = u.fig_region_coverage(
                 "dipeptide shuffle keeps in count but scatters in place. Its human partners are other polar stretches, e.g. a serine run in NFE2L1."),
 )
 """),
-md(r"""
+    md(r"""
 Two thirds of the winning cells (100 of 153) take their best region from BHF 63-105, which
 holds the lysine-rich stretch KTKKKAKKDKRKNKPPKK. Half of all cells (542 of 1_076) use it
 too, so it is where BHF's best hits sit whatever the metric; it is over-represented among
@@ -184,20 +189,20 @@ then matches BHF better than it matches a copy. That is what "beats its copies" 
 here. A control that keeps each low-complexity stretch of BHF in one piece and shuffles only
 the rest would test for more than that.
 """),
-md(r"""
+    md(r"""
 ## 4. Proteins that come to the top for any sequence like BHF
 
 For BHF's #1 human protein at each alphabet-ksize pair: the share of copies that have the same protein in
 their own top 10 there. And the proteins most often #1 for the copies, next to how often
 each is #1 for BHF.
 """),
-code(r"""
+    code(r"""
 sticky = u.sticky_top_hits(df)
 print(u.sticky_summary(sticky))
 print("\nproteins most often #1 for the copies (share of copy x alphabet-ksize pair cells), with the number of alphabet-ksize pairs where each is #1 for BHF:")
 print(u.top_gene_recurrence(df, 5).filter(pl.col("metric").is_in(["E-value", "mean IDF", "shared k-mers", "containment", "protein Poisson p-value"])))
 """),
-md(r"""
+    md(r"""
 Under containment and protein enrichment, BHF's #1 protein is also in the top 10 of at least
 10% of the copies at 33 of 106 alphabet-ksize pairs; under the protein Poisson p-value at 23. TTN (35_991 aa)
 is the #1 hit in 27.4% of all copy × alphabet-ksize pair cells under containment, and it is BHF's #1 at 19
@@ -205,7 +210,7 @@ alphabet-ksize pairs. These metrics favour very long proteins, so for them BHF's
 of BHF's make-up gets. Under the region-level metrics (E-value, mean IDF, tf-idf, shared
 k-mers) no protein is #1 for more than 0.9% of the copy × alphabet-ksize pair cells.
 """),
-md(r"""
+    md(r"""
 ## Summary
 
 By E-value, BHF's kmerseek hits do no better than shuffled copies of BHF (3 of 61 settings beat 95% of copies; 3.1 expected by chance). Other scores beat the copies more often, but mostly through one lysine-rich low-complexity stretch, BHF 63-105:
@@ -238,8 +243,18 @@ If BHF still beats those copies, the match is more than a lysine block.
 """),
 ]
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                                   "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1))
 print("wrote", OUT)

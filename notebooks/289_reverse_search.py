@@ -79,9 +79,14 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ENV = os.environ
-OUT = Path(ENV.get("NB289_DIR", Path(ENV.get("SCRATCH", "/tmp")) / "289-reverse-search"))
+OUT = Path(
+    ENV.get("NB289_DIR", Path(ENV.get("SCRATCH", "/tmp")) / "289-reverse-search")
+)
 KMERSEEK = Path(
-    ENV.get("NB241_KMERSEEK", "/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek")
+    ENV.get(
+        "NB241_KMERSEEK",
+        "/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek",
+    )
 )
 # UniProt FASTA with each header cut to its first word (so kmerseek's target_name is exactly
 # that word); `prepare` writes them from the downloaded .fasta.gz.
@@ -92,20 +97,30 @@ DOWNLOADED = {
 }
 PROTEOMES = {
     "worm": Path(ENV.get("NB289_WORM", UNIPROT_DIR / "UP000001940_6239.first_word.fa")),
-    "borrelia": Path(ENV.get("NB289_BORRELIA", UNIPROT_DIR / "UP000001807_224326.first_word.fa")),
+    "borrelia": Path(
+        ENV.get("NB289_BORRELIA", UNIPROT_DIR / "UP000001807_224326.first_word.fa")
+    ),
 }
 # md5 of the first-word FASTAs `prepare` wrote (UniProt release 2026_03, downloaded 2026-10-13).
-PROTEOME_MD5 = {"worm": "e4d46f90ab23f2617c506b6e8b8a7740", "borrelia": "7bc24ce4bbb49be12e5040143f7b33ac"}
+PROTEOME_MD5 = {
+    "worm": "e4d46f90ab23f2617c506b6e8b8a7740",
+    "borrelia": "7bc24ce4bbb49be12e5040143f7b33ac",
+}
 QUERIES_MD5 = "2a771adf1fe8db4afd1ef7949dcc7510"
 PARTNER = {"worm": "sp|P41958|CED9_CAEEL", "borrelia": "tr|H7C7N8|H7C7N8_BORBU"}
 FAMILY = ["BAK1", "BAX", "BCL2", "BCL2A1", "BCL2L1", "BCL2L10", "BCL2L2", "BOK", "MCL1"]
 QUERIES_OF = {"worm": FAMILY, "borrelia": ["CD47"]}
 HUMAN = Path(
-    ENV.get("NB241_HUMAN", "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa")
+    ENV.get(
+        "NB241_HUMAN",
+        "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa",
+    )
 )
 QUERIES = HERE / "289_queries.fa"
 PLAN = HERE / "241_plan.json"
-PLAN_MD5 = "9a77724514ae4e6833e773cd4b0da806"  # notebook 241's plan.json, as in notebook 283
+PLAN_MD5 = (
+    "9a77724514ae4e6833e773cd4b0da806"  # notebook 241's plan.json, as in notebook 283
+)
 N_SHUFFLES, SEED = 20, 289
 TOP_N, SHUFFLES_TO_BEAT = 10, 19
 KEEP = [
@@ -156,11 +171,16 @@ def chi2_log10_sf_even(x, n: int):
     h = np.asarray(x, dtype=float) / 2
     k = np.arange(n)
     with np.errstate(divide="ignore"):
-        terms = k[:, None] * np.log(h)[None, :] - np.array([math.lgamma(i + 1) for i in k])[:, None]
+        terms = (
+            k[:, None] * np.log(h)[None, :]
+            - np.array([math.lgamma(i + 1) for i in k])[:, None]
+        )
     terms[0] = 0.0  # the k = 0 term is 1 (also at x = 0, where 0 * log 0 is nan)
     m = terms.max(axis=0)
     # Rounding can leave +1e-17 near x = 0; a log probability is never above 0.
-    return np.minimum((-h + m + np.log(np.exp(terms - m).sum(axis=0))) / math.log(10), 0.0)
+    return np.minimum(
+        (-h + m + np.log(np.exp(terms - m).sum(axis=0))) / math.log(10), 0.0
+    )
 
 
 def variant() -> str:
@@ -207,7 +227,9 @@ def step_prepare() -> None:
         for i in range(N_SHUFFLES):
             s = m256.dipeptide_shuffle(seq, rng)
             assert (
-                Counter(zip(s, s[1:])) == Counter(zip(seq, seq[1:])) and s[0] == seq[0] and s[-1] == seq[-1]
+                Counter(zip(s, s[1:])) == Counter(zip(seq, seq[1:]))
+                and s[0] == seq[0]
+                and s[-1] == seq[-1]
             )
             qs.append((f"{gene}_shuf{i:02d}", s))
     assert len({s for _, s in qs}) == len(qs), "two queries are identical"
@@ -217,7 +239,9 @@ def step_prepare() -> None:
                 fout.write(line.split()[0] + "\n" if line.startswith(">") else line)
     QUERIES.write_text("".join(f">{h}\n{s}\n" for h, s in qs))
     print(f"{QUERIES.name}: {len(qs)} queries, md5 {md5(QUERIES)}")
-    ced9 = read_fasta(Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases/queries.fa"))
+    ced9 = read_fasta(
+        Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases/queries.fa")
+    )
     for sp, f in PROTEOMES.items():
         seqs = read_fasta(f)
         print(
@@ -245,18 +269,28 @@ def step_run(species: str, workers: int, only: list[str] | None) -> None:
     for d in ("search", "logs", "regions"):
         (vdir / d).mkdir(parents=True, exist_ok=True)
     target = PROTEOMES[species]
-    assert md5(target) == PROTEOME_MD5[species], f"{target} is not the proteome prepared on 2026-10-13"
+    assert (
+        md5(target) == PROTEOME_MD5[species]
+    ), f"{target} is not the proteome prepared on 2026-10-13"
     assert md5(QUERIES) == QUERIES_MD5, f"{QUERIES} changed since it was prepared"
     names = set(QUERIES_OF[species])
     q = vdir / "queries.fa"
     allq = read_fasta(QUERIES)
     keep = {h: s for h, s in allq.items() if h.split("_shuf")[0] in names}
     q.write_text("".join(f">{h}\n{s}\n" for h, s in keep.items()))
-    print(f"{species}/{variant()}: {len(keep)} queries, target {target}", file=sys.stderr)
+    print(
+        f"{species}/{variant()}: {len(keep)} queries, target {target}", file=sys.stderr
+    )
 
     # 241's driver, pointed at this proteome and these queries. Its index folders are named
     # human.<alphabet>.k<k>.rocksdb whatever the FASTA; here they sit under <species>/idx.
-    drv.KMERSEEK, drv.HUMAN, drv.OUT, drv.QUERIES, drv.PAIRS = KMERSEEK, target, vdir, q, {}
+    drv.KMERSEEK, drv.HUMAN, drv.OUT, drv.QUERIES, drv.PAIRS = (
+        KMERSEEK,
+        target,
+        vdir,
+        q,
+        {},
+    )
     extra = chain_args()
     if extra:
         run0 = drv.run
@@ -328,9 +362,13 @@ def step_run(species: str, workers: int, only: list[str] | None) -> None:
     }
     want = len(plan(only))
     n_done = len(finished & {f"{a['alphabet']}.k{a['ksize']}" for a in plan(only)})
-    print(f"{species}/{variant()}: {n_done} of {want} settings finished", file=sys.stderr)
+    print(
+        f"{species}/{variant()}: {n_done} of {want} settings finished", file=sys.stderr
+    )
     if n_done != want:
-        sys.exit(f"{want - n_done} settings did not finish; rerun the same command to resume")
+        sys.exit(
+            f"{want - n_done} settings did not finish; rerun the same command to resume"
+        )
 
 
 def step_summarise(species: str, only: list[str] | None) -> None:
@@ -342,7 +380,9 @@ def step_summarise(species: str, only: list[str] | None) -> None:
     sdir.mkdir(exist_ok=True)
     tseqs = read_fasta(PROTEOMES[species])
     qseqs = read_fasta(vdir / "queries.fa")
-    lengths = pl.DataFrame({"target_name": list(tseqs), "L": [len(s) for s in tseqs.values()]})
+    lengths = pl.DataFrame(
+        {"target_name": list(tseqs), "L": [len(s) for s in tseqs.values()]}
+    )
     l_db = int(lengths["L"].sum())
     n_targets = lengths.height
     partner = PARTNER[species]
@@ -354,22 +394,32 @@ def step_summarise(species: str, only: list[str] | None) -> None:
         .join(lengths.lazy(), on="target_name", how="inner")
         # kmerseek writes E = 0 when the E-value underflows (notebook 287); floor it so
         # p stays above 0 and the score finite.
-        .with_columns(x=(pl.col("region_evalue") * pl.col("L") / l_db).clip(lower_bound=1e-300))
+        .with_columns(
+            x=(pl.col("region_evalue") * pl.col("L") / l_db).clip(lower_bound=1e-300)
+        )
         # p = 1 - exp(-x); below 1e-8 that subtraction loses every digit, and p = x there.
-        .with_columns(p=pl.when(pl.col("x") < 1e-8).then(pl.col("x")).otherwise(1 - (-pl.col("x")).exp()))
+        .with_columns(
+            p=pl.when(pl.col("x") < 1e-8)
+            .then(pl.col("x"))
+            .otherwise(1 - (-pl.col("x")).exp())
+        )
         .with_columns(neg_ln_p=-pl.col("p").log())
         .collect()
     )
     # The search space must not depend on the target: log2(E) + bits constant per query and setting.
     space = (
-        calls.filter(pl.col("region_ka_bits").is_not_null() & (pl.col("region_evalue") > 0))
+        calls.filter(
+            pl.col("region_ka_bits").is_not_null() & (pl.col("region_evalue") > 0)
+        )
         .with_columns(c=pl.col("region_evalue").log(2) + pl.col("region_ka_bits"))
         .group_by("query_name", "alphabet", "ksize")
         .agg(sd=pl.col("c").std(), n=pl.len())
         .filter(pl.col("n") > 1)
     )
     space.write_csv(sdir / "289_search_space_check.csv")
-    print(f"search space: largest s.d. of log2(E) + bits within a query and setting: {space['sd'].max()}")
+    print(
+        f"search space: largest s.d. of log2(E) + bits within a query and setting: {space['sd'].max()}"
+    )
 
     # Single queries: each target's best p over every call.
     best = (
@@ -387,7 +437,9 @@ def step_summarise(species: str, only: list[str] | None) -> None:
                 "query": q,
                 "partner_log10_p": pv,
                 "partner_rank": int((b["log10_p"] < pv).sum()) + 1,
-                "partner_n_tied": int((b["log10_p"] == pv).sum()) if v.len() else n_targets - b.height,
+                "partner_n_tied": (
+                    int((b["log10_p"] == pv).sum()) if v.len() else n_targets - b.height
+                ),
                 "n_targets_with_a_call": b.height,
                 "n_targets": n_targets,
             }
@@ -405,14 +457,21 @@ def step_summarise(species: str, only: list[str] | None) -> None:
 
     # The partner's calls from the real queries, with residues. A gapless call has the same
     # length on both sides; a chained call need not, so each side is cut by its own ends.
-    pc = calls.filter((pl.col("target_name") == partner) & ~pl.col("query_name").str.contains("_shuf"))
+    pc = calls.filter(
+        (pl.col("target_name") == partner) & ~pl.col("query_name").str.contains("_shuf")
+    )
     pc = pc.with_columns(
-        query_residues=pl.struct("query_name", "region_start", "region_end").map_elements(
-            lambda r: qseqs[r["query_name"]][int(r["region_start"]) : int(r["region_end"])],
+        query_residues=pl.struct(
+            "query_name", "region_start", "region_end"
+        ).map_elements(
+            lambda r: qseqs[r["query_name"]][
+                int(r["region_start"]) : int(r["region_end"])
+            ],
             return_dtype=pl.String,
         ),
         target_residues=pl.struct("target_start", "target_end").map_elements(
-            lambda r: tseqs[partner][int(r["target_start"]) : int(r["target_end"])], return_dtype=pl.String
+            lambda r: tseqs[partner][int(r["target_start"]) : int(r["target_end"])],
+            return_dtype=pl.String,
         ),
     )
     pc.drop("L", "x", "p").write_csv(sdir / "289_partner_calls.csv")
@@ -420,7 +479,8 @@ def step_summarise(species: str, only: list[str] | None) -> None:
     if species == "worm":
         # Pooled family: per target residue, Fisher over the nine queries.
         sets = {"real": FAMILY} | {
-            f"shuf{i:02d}": [f"{g}_shuf{i:02d}" for g in FAMILY] for i in range(N_SHUFFLES)
+            f"shuf{i:02d}": [f"{g}_shuf{i:02d}" for g in FAMILY]
+            for i in range(N_SHUFFLES)
         }
         pooled_rows, track = [], []
         for name, members in sets.items():
@@ -431,7 +491,8 @@ def step_summarise(species: str, only: list[str] | None) -> None:
                     "target_name",
                     "neg_ln_p",
                     r=pl.int_ranges(
-                        pl.col("target_start").cast(pl.Int64), pl.col("target_end").cast(pl.Int64)
+                        pl.col("target_start").cast(pl.Int64),
+                        pl.col("target_end").cast(pl.Int64),
                     ),
                 )
                 .explode("r")
@@ -457,24 +518,33 @@ def step_summarise(species: str, only: list[str] | None) -> None:
                 {
                     "pool": name,
                     "partner_log10_p": pv,
-                    "partner_best_residue0": int(v["best_residue0"][0]) if v.height else None,
-                    "partner_n_queries_there": int(v["n_queries_there"][0]) if v.height else 0,
+                    "partner_best_residue0": (
+                        int(v["best_residue0"][0]) if v.height else None
+                    ),
+                    "partner_n_queries_there": (
+                        int(v["n_queries_there"][0]) if v.height else 0
+                    ),
                     "partner_rank": int((per_t["log10_p"] < pv).sum()) + 1,
                     "partner_n_tied": (
-                        int((per_t["log10_p"] == pv).sum()) if v.height else n_targets - per_t.height
+                        int((per_t["log10_p"] == pv).sum())
+                        if v.height
+                        else n_targets - per_t.height
                     ),
                     "n_targets": n_targets,
                 }
             )
             if name == "real":
-                per_t.sort("log10_p", "target_name").head(25).write_csv(sdir / "289_pooled_top25.csv")
+                per_t.sort("log10_p", "target_name").head(25).write_csv(
+                    sdir / "289_pooled_top25.csv"
+                )
                 c_p = (
                     c.filter(pl.col("target_name") == partner)
                     .select(
                         "query_name",
                         "neg_ln_p",
                         r=pl.int_ranges(
-                            pl.col("target_start").cast(pl.Int64), pl.col("target_end").cast(pl.Int64)
+                            pl.col("target_start").cast(pl.Int64),
+                            pl.col("target_end").cast(pl.Int64),
                         ),
                     )
                     .explode("r")
@@ -497,7 +567,9 @@ def step_summarise(species: str, only: list[str] | None) -> None:
         }
     else:
         r = single.filter(pl.col("query") == "CD47").row(0, named=True)
-        shuf = single.filter(pl.col("query").str.starts_with("CD47_shuf"))["partner_log10_p"].to_numpy()
+        shuf = single.filter(pl.col("query").str.starts_with("CD47_shuf"))[
+            "partner_log10_p"
+        ].to_numpy()
         verdict = {
             "case": "CD47 -> P66",
             "rank": r["partner_rank"],
@@ -515,7 +587,11 @@ def main() -> None:
     ap.add_argument("step", choices=["prepare", "run", "summarise"])
     ap.add_argument("--species", choices=list(PROTEOMES))
     ap.add_argument("--workers", type=int, default=3)
-    ap.add_argument("--only", default="", help="test run: comma-separated settings, e.g. dayhoff6.k12")
+    ap.add_argument(
+        "--only",
+        default="",
+        help="test run: comma-separated settings, e.g. dayhoff6.k12",
+    )
     args = ap.parse_args()
     only = [x for x in args.only.split(",") if x] or None
     if args.step == "prepare":

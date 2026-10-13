@@ -61,8 +61,18 @@ COORDS = ["region_start", "region_end", "target_start", "target_end"]
 
 # Human proteins named as BHF hits in the 2024 Evolgenome talk (k = 24, orpheum +
 # sourmash, hp alphabet). TSHZ1-3 are paralogs; SFI1 and CETN2 were one hit.
-TALK_GENES = ["ZNF292", "RSF1", "TSHZ1", "TSHZ2", "TSHZ3", "RNMT", "SFI1", "CETN2",
-              "TRAPPC10", "NDNF"]
+TALK_GENES = [
+    "ZNF292",
+    "RSF1",
+    "TSHZ1",
+    "TSHZ2",
+    "TSHZ3",
+    "RNMT",
+    "SFI1",
+    "CETN2",
+    "TRAPPC10",
+    "NDNF",
+]
 
 # The ranking metrics of 241_alphabet_ranking_collect.py: (column, lower is better).
 METRICS = {
@@ -133,32 +143,57 @@ def make_queries(n: int, seed: int) -> list[tuple[str, str]]:
     qs = [(CASE, bhf)]
     for i in range(n):
         s = dipeptide_shuffle(bhf, rng)
-        assert pair_counts(s) == pair_counts(bhf) and s[0] == bhf[0] and s[-1] == bhf[-1]
+        assert (
+            pair_counts(s) == pair_counts(bhf) and s[0] == bhf[0] and s[-1] == bhf[-1]
+        )
         qs.append((f"shuf{i:03d}", s))
     return qs
 
 
 def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
     """One row per (query, metric) for the queries in this chunk that hit anything."""
-    cols = ["query_name", "target_name", "region_ka_lambda"] + [c for c, _ in METRICS.values()] + COORDS
+    cols = (
+        ["query_name", "target_name", "region_ka_lambda"]
+        + [c for c, _ in METRICS.values()]
+        + COORDS
+    )
     if csv.stat().st_size == 0:
         return pl.DataFrame()
-    df = (pl.read_csv(csv, columns=cols, infer_schema_length=0)
-          .with_columns([pl.col(c).cast(pl.Float64, strict=False)
-                         for c in cols if c not in ("query_name", "target_name")])
-          .with_columns(pl.col("query_name").str.strip_chars(),
-                        pl.col("target_name").str.split("|").list.get(6).alias("gene")))
+    df = (
+        pl.read_csv(csv, columns=cols, infer_schema_length=0)
+        .with_columns(
+            [
+                pl.col(c).cast(pl.Float64, strict=False)
+                for c in cols
+                if c not in ("query_name", "target_name")
+            ]
+        )
+        .with_columns(
+            pl.col("query_name").str.strip_chars(),
+            pl.col("target_name").str.split("|").list.get(6).alias("gene"),
+        )
+    )
     # No lambda means no score scale: the E-value is inf and the bit score 0 for every
     # region of the alphabet-ksize pair. Ranking on either would tie the whole proteome (see 241).
-    df = df.with_columns(pl.when(pl.col("region_ka_lambda") > 0).then(pl.col("region_ka_bits"))
-                         .alias("region_ka_bits"))
+    df = df.with_columns(
+        pl.when(pl.col("region_ka_lambda") > 0)
+        .then(pl.col("region_ka_bits"))
+        .alias("region_ka_bits")
+    )
     rows = []
     for label, (col, lower) in METRICS.items():
         best = (pl.col(col).min() if lower else pl.col(col).max()).alias("v")
-        per = (df.filter(pl.col(col).is_not_null() & pl.col(col).is_finite())
-                 .group_by("query_name", "gene").agg(best)
-                 .with_columns(pl.col("v").rank("min", descending=not lower)
-                               .over("query_name").alias("rank")))
+        per = (
+            df.filter(pl.col(col).is_not_null() & pl.col(col).is_finite())
+            .group_by("query_name", "gene")
+            .agg(best)
+            .with_columns(
+                pl.col("v")
+                .rank("min", descending=not lower)
+                .over("query_name")
+                .alias("rank")
+            )
+        )
         if per.height == 0:
             continue
         # Order within a query is fixed by value then gene name, so the ten best are the
@@ -171,47 +206,97 @@ def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
             pl.len().alias("n_hit"),
             pl.col("gene").head(10).alias("top10"),
         )
-        talk = (per.filter(pl.col("gene").is_in(TALK_GENES))
-                   .group_by("query_name").agg(pl.col("rank").min().alias("talk_best_rank")))
-        rows.append(top.join(talk, on="query_name", how="left")
-                       .with_columns(pl.lit(label).alias("metric")))
+        talk = (
+            per.filter(pl.col("gene").is_in(TALK_GENES))
+            .group_by("query_name")
+            .agg(pl.col("rank").min().alias("talk_best_rank"))
+        )
+        rows.append(
+            top.join(talk, on="query_name", how="left").with_columns(
+                pl.lit(label).alias("metric")
+            )
+        )
     if not rows:
         return pl.DataFrame()
     return pl.concat(rows).with_columns(
-        pl.lit(arm["alphabet"]).alias("alphabet"), pl.lit(arm["k"]).alias("k"),
-        pl.lit(arm["bits"]).alias("bits"), pl.lit(arm["nofit"]).alias("nofit"))
+        pl.lit(arm["alphabet"]).alias("alphabet"),
+        pl.lit(arm["k"]).alias("k"),
+        pl.lit(arm["bits"]).alias("bits"),
+        pl.lit(arm["nofit"]).alias("nofit"),
+    )
 
 
 def top_regions(csv: Path, arm: dict) -> pl.DataFrame:
     """With --keep-regions: for each query, alphabet-ksize pair and metric, the best region
     of each of the query's ten best human proteins, with query and target coordinates
     (0-based, end exclusive). Same ranking and tie order as reduce_chunk."""
-    cols = ["query_name", "target_name", "region_ka_lambda"] + [c for c, _ in METRICS.values()] + COORDS
+    cols = (
+        ["query_name", "target_name", "region_ka_lambda"]
+        + [c for c, _ in METRICS.values()]
+        + COORDS
+    )
     if csv.stat().st_size == 0:
         return pl.DataFrame()
-    df = (pl.read_csv(csv, columns=cols, infer_schema_length=0)
-          .with_columns([pl.col(c).cast(pl.Float64, strict=False)
-                         for c in cols if c not in ("query_name", "target_name")])
-          .with_columns([pl.col(c).cast(pl.Int64) for c in COORDS])
-          .with_columns(pl.col("query_name").str.strip_chars(),
-                        pl.col("target_name").str.split("|").list.get(6).alias("gene"))
-          .with_columns(pl.when(pl.col("region_ka_lambda") > 0).then(pl.col("region_ka_bits"))
-                        .alias("region_ka_bits")))
+    df = (
+        pl.read_csv(csv, columns=cols, infer_schema_length=0)
+        .with_columns(
+            [
+                pl.col(c).cast(pl.Float64, strict=False)
+                for c in cols
+                if c not in ("query_name", "target_name")
+            ]
+        )
+        .with_columns([pl.col(c).cast(pl.Int64) for c in COORDS])
+        .with_columns(
+            pl.col("query_name").str.strip_chars(),
+            pl.col("target_name").str.split("|").list.get(6).alias("gene"),
+        )
+        .with_columns(
+            pl.when(pl.col("region_ka_lambda") > 0)
+            .then(pl.col("region_ka_bits"))
+            .alias("region_ka_bits")
+        )
+    )
     out = []
     for label, (col, lower) in METRICS.items():
         v = df.filter(pl.col(col).is_not_null() & pl.col(col).is_finite())
         if v.height == 0:
             continue
-        best = (v.sort("query_name", col, "gene", "region_start", descending=[False, not lower, False, False])
-                 .group_by("query_name", "gene", maintain_order=True).first())
-        best = best.with_columns(pl.col(col).rank("min", descending=not lower).over("query_name").alias("rank"),
-                                 pl.int_range(pl.len()).over("query_name").alias("order"))
-        out.append(best.filter(pl.col("order") < 10)
-                       .select("query_name", "gene", "target_name", *COORDS, "rank", pl.col(col).alias("value"))
-                       .with_columns(pl.lit(label).alias("metric")))
+        best = (
+            v.sort(
+                "query_name",
+                col,
+                "gene",
+                "region_start",
+                descending=[False, not lower, False, False],
+            )
+            .group_by("query_name", "gene", maintain_order=True)
+            .first()
+        )
+        best = best.with_columns(
+            pl.col(col)
+            .rank("min", descending=not lower)
+            .over("query_name")
+            .alias("rank"),
+            pl.int_range(pl.len()).over("query_name").alias("order"),
+        )
+        out.append(
+            best.filter(pl.col("order") < 10)
+            .select(
+                "query_name",
+                "gene",
+                "target_name",
+                *COORDS,
+                "rank",
+                pl.col(col).alias("value"),
+            )
+            .with_columns(pl.lit(label).alias("metric"))
+        )
     if not out:
         return pl.DataFrame()
-    return pl.concat(out).with_columns(pl.lit(arm["alphabet"]).alias("alphabet"), pl.lit(arm["k"]).alias("k"))
+    return pl.concat(out).with_columns(
+        pl.lit(arm["alphabet"]).alias("alphabet"), pl.lit(arm["k"]).alias("k")
+    )
 
 
 def one_chunk(tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
@@ -221,11 +306,39 @@ def one_chunk(tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
     fa, csv = OUT / "tmp" / f"{tag}.fa", OUT / "tmp" / f"{tag}.csv"
     fa.write_text("".join(f">{h}\n{s}\n" for h, s in chunk))
     idx = D / "idx" / f"human.{arm['alphabet']}.k{arm['k']}.rocksdb"
-    pen = (["--extend-mismatch-penalty", "0"] if arm["nofit"] else
-           ["--extend-mismatch-penalty", str(arm["penalty"]), "--extend-xdrop", str(arm["xdrop"])])
-    cmd = [str(KMERSEEK), "search", "-q", str(fa), "-t", str(idx), "-k", str(arm["k"]),
-           "-a", arm["alphabet"], "--threshold", "0", "--min-shared-kmers", "1",
-           "--max-query-pvalue", "1", "--min-region-score", "0", *pen, "-o", str(csv)]
+    pen = (
+        ["--extend-mismatch-penalty", "0"]
+        if arm["nofit"]
+        else [
+            "--extend-mismatch-penalty",
+            str(arm["penalty"]),
+            "--extend-xdrop",
+            str(arm["xdrop"]),
+        ]
+    )
+    cmd = [
+        str(KMERSEEK),
+        "search",
+        "-q",
+        str(fa),
+        "-t",
+        str(idx),
+        "-k",
+        str(arm["k"]),
+        "-a",
+        arm["alphabet"],
+        "--threshold",
+        "0",
+        "--min-shared-kmers",
+        "1",
+        "--max-query-pvalue",
+        "1",
+        "--min-region-score",
+        "0",
+        *pen,
+        "-o",
+        str(csv),
+    ]
     with open(OUT / "logs" / f"{tag}.log", "w") as log:
         rc = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT).returncode
     if rc != 0 or not csv.exists():
@@ -244,10 +357,20 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--n", type=int, default=300)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--out", type=Path, default=OUT, help="output folder (a smoke test writes elsewhere)")
-    ap.add_argument("--alphabets", default="", help="comma-separated subset, for a smoke test")
-    ap.add_argument("--keep-regions", action="store_true",
-                    help="also keep the coordinates of each query's ten best human proteins (regions/)")
+    ap.add_argument(
+        "--out",
+        type=Path,
+        default=OUT,
+        help="output folder (a smoke test writes elsewhere)",
+    )
+    ap.add_argument(
+        "--alphabets", default="", help="comma-separated subset, for a smoke test"
+    )
+    ap.add_argument(
+        "--keep-regions",
+        action="store_true",
+        help="also keep the coordinates of each query's ten best human proteins (regions/)",
+    )
     args = ap.parse_args()
     global KEEP_REGIONS
     OUT, KEEP_REGIONS = args.out, args.keep_regions
@@ -258,21 +381,32 @@ def main() -> None:
     manifest = OUT / "run.json"
     want = {"n": args.n, "seed": args.seed, "keep_regions": args.keep_regions}
     if manifest.exists() and json.loads(manifest.read_text()) != want:
-        sys.exit(f"{OUT} holds a run with {manifest.read_text().strip()}; use another --out")
+        sys.exit(
+            f"{OUT} holds a run with {manifest.read_text().strip()}; use another --out"
+        )
     if not manifest.exists() and any((OUT / "top").glob("*.parquet")):
         sys.exit(f"{OUT}/top holds chunks from an unknown query set; use another --out")
     manifest.write_text(json.dumps(want))
     qs = make_queries(args.n, args.seed)
     (OUT / "queries.fa").write_text("".join(f">{h}\n{s}\n" for h, s in qs))
-    A = [a for a in null242.arms("all")
-         if not args.alphabets or a["alphabet"] in args.alphabets.split(",")]
+    A = [
+        a
+        for a in null242.arms("all")
+        if not args.alphabets or a["alphabet"] in args.alphabets.split(",")
+    ]
     (OUT / "arms.json").write_text(json.dumps(A, indent=1))
     jobs = []
     for arm in A:
         tags = chunk_tags(CASE, arm["alphabet"], arm["k"], arm["bits"], len(qs))
         size = 25 if len(tags) > 1 else len(qs)
-        jobs += [(tag, qs[i * size:(i + 1) * size], arm) for i, tag in enumerate(tags)]
-    print(f"{len(qs)} queries, {len(jobs)} chunks over {len(A)} alphabet-ksize pairs", file=sys.stderr, flush=True)
+        jobs += [
+            (tag, qs[i * size : (i + 1) * size], arm) for i, tag in enumerate(tags)
+        ]
+    print(
+        f"{len(qs)} queries, {len(jobs)} chunks over {len(A)} alphabet-ksize pairs",
+        file=sys.stderr,
+        flush=True,
+    )
     failed = 0
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
         for msg in ex.map(lambda j: one_chunk(*j), jobs):

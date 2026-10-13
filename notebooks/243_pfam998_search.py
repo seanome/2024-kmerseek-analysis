@@ -42,17 +42,38 @@ from pathlib import Path
 import polars as pl
 
 KMERSEEK = Path("/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek")
-TRUTH = Path("/Users/olga/data/qfo-pfam-region-midi-plus/truth/human_domain_truth.parquet")
-PROTEOME = Path("/Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143"
-                "/Eukaryota/UP000005640_9606.fasta")
+TRUTH = Path(
+    "/Users/olga/data/qfo-pfam-region-midi-plus/truth/human_domain_truth.parquet"
+)
+PROTEOME = Path(
+    "/Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143"
+    "/Eukaryota/UP000005640_9606.fasta"
+)
 SWEEP = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
 OUT = Path("/Users/olga/data/alphabet-logreg-pfam998")
-KEEP = ["query_name", "target_name", "region_start", "region_end", "target_start", "target_end",
-        "region_length", "region_n_shared_kmers", "region_n_mismatches", "region_mean_idf",
-        "region_tfidf", "region_enrichment", "region_tail_probability", "region_evalue",
-        "region_ka_bits", "region_ka_lambda", "db_n_targets"]
+KEEP = [
+    "query_name",
+    "target_name",
+    "region_start",
+    "region_end",
+    "target_start",
+    "target_end",
+    "region_length",
+    "region_n_shared_kmers",
+    "region_n_mismatches",
+    "region_mean_idf",
+    "region_tfidf",
+    "region_enrichment",
+    "region_tail_probability",
+    "region_evalue",
+    "region_ka_bits",
+    "region_ka_lambda",
+    "db_n_targets",
+]
 RETRY_QUERIES, RETRY_SHUFFLES, DENSE = 1000, 8, 100_000
-_COUNTS = re.compile(r"(\d+) queries gave (\d+) regions and (\d+) shuffled queries gave (\d+) chance regions")
+_COUNTS = re.compile(
+    r"(\d+) queries gave (\d+) regions and (\d+) shuffled queries gave (\d+) chance regions"
+)
 
 
 def write_fasta(out: Path) -> int:
@@ -60,11 +81,13 @@ def write_fasta(out: Path) -> int:
     want = set(pl.read_parquet(TRUTH)["accession"].to_list())
     kept, name, seq = 0, None, []
     with out.open("w") as fh:
+
         def flush():
             nonlocal kept
             if name and name in want:
                 fh.write(f">{name}\n{''.join(seq)}\n")
                 kept += 1
+
         for line in PROTEOME.open():
             if line.startswith(">"):
                 flush()
@@ -97,7 +120,10 @@ def human_setting(tag: str) -> tuple[bool, float | None]:
     """(extended in the human search, the human fit's K) for one arm."""
     if (SWEEP / "search" / f"{tag}.nofit").exists():
         return False, None
-    for f in (SWEEP / "ka_survival" / f"{tag}.retry.csv", SWEEP / "ka_survival" / f"{tag}.csv"):
+    for f in (
+        SWEEP / "ka_survival" / f"{tag}.retry.csv",
+        SWEEP / "ka_survival" / f"{tag}.csv",
+    ):
         if fitted(f):
             with open(f) as fh:
                 header = fh.readline().rstrip("\n").split(",")
@@ -118,10 +144,41 @@ def one_arm(arm: dict, fa: Path) -> str:
     surv = OUT / "ka_survival" / f"{tag}.csv"
     logs = OUT / "logs"
     shutil.rmtree(idx, ignore_errors=True)
-    fit_args = (["--extend-mismatch-penalty", c, "--extend-xdrop", x, "--ka-queries", "200", "--ka-seed", "1",
-                 "--ka-survival-out", str(surv)] if extend else ["--ka-queries", "0"])
-    rc = run([str(KMERSEEK), "index", "-i", str(fa), "-o", str(idx), "-k", str(k), "-s", "1", "-a", a,
-              "--remove-low-complexity", *fit_args], logs / f"{tag}.index.log")
+    fit_args = (
+        [
+            "--extend-mismatch-penalty",
+            c,
+            "--extend-xdrop",
+            x,
+            "--ka-queries",
+            "200",
+            "--ka-seed",
+            "1",
+            "--ka-survival-out",
+            str(surv),
+        ]
+        if extend
+        else ["--ka-queries", "0"]
+    )
+    rc = run(
+        [
+            str(KMERSEEK),
+            "index",
+            "-i",
+            str(fa),
+            "-o",
+            str(idx),
+            "-k",
+            str(k),
+            "-s",
+            "1",
+            "-a",
+            a,
+            "--remove-low-complexity",
+            *fit_args,
+        ],
+        logs / f"{tag}.index.log",
+    )
     if rc != 0:
         return f"{tag} INDEX FAILED rc={rc}"
     fit = fitted(surv) if extend else None
@@ -130,21 +187,69 @@ def one_arm(arm: dict, fa: Path) -> str:
         dense = m and min(int(m.group(2)), int(m.group(4))) >= DENSE
         if not dense:
             retry = OUT / "ka_survival" / f"{tag}.retry.csv"
-            run([str(KMERSEEK), "calibrate", "-t", str(idx), "--extend-mismatch-penalty", c, "--extend-xdrop", x,
-                 "--ka-queries", str(RETRY_QUERIES), "--ka-reference-shuffles", str(RETRY_SHUFFLES),
-                 "--ka-survival-out", str(retry)], logs / f"{tag}.calibrate.log")
+            run(
+                [
+                    str(KMERSEEK),
+                    "calibrate",
+                    "-t",
+                    str(idx),
+                    "--extend-mismatch-penalty",
+                    c,
+                    "--extend-xdrop",
+                    x,
+                    "--ka-queries",
+                    str(RETRY_QUERIES),
+                    "--ka-reference-shuffles",
+                    str(RETRY_SHUFFLES),
+                    "--ka-survival-out",
+                    str(retry),
+                ],
+                logs / f"{tag}.calibrate.log",
+            )
             fit = fitted(retry)
     if not extend:
         pen = ["--extend-mismatch-penalty", "0"]
     elif fit is True:
         pen = ["--extend-mismatch-penalty", c, "--extend-xdrop", x]
     elif human_k is not None:
-        pen = ["--extend-mismatch-penalty", c, "--extend-xdrop", x, "--ka-k", str(human_k)]
+        pen = [
+            "--extend-mismatch-penalty",
+            c,
+            "--extend-xdrop",
+            x,
+            "--ka-k",
+            str(human_k),
+        ]
     else:
-        return f"{tag} NO FIT: extended in the human search but no fit here and no human K"
-    rc = run([str(KMERSEEK), "search", "-q", str(fa), "-t", str(idx), "-k", str(k), "-a", a,
-              "--threshold", "0", "--min-shared-kmers", "1", "--max-query-pvalue", "1", "--min-region-score", "0",
-              *pen, "-o", str(csv)], logs / f"{tag}.search.log")
+        return (
+            f"{tag} NO FIT: extended in the human search but no fit here and no human K"
+        )
+    rc = run(
+        [
+            str(KMERSEEK),
+            "search",
+            "-q",
+            str(fa),
+            "-t",
+            str(idx),
+            "-k",
+            str(k),
+            "-a",
+            a,
+            "--threshold",
+            "0",
+            "--min-shared-kmers",
+            "1",
+            "--max-query-pvalue",
+            "1",
+            "--min-region-score",
+            "0",
+            *pen,
+            "-o",
+            str(csv),
+        ],
+        logs / f"{tag}.search.log",
+    )
     if rc != 0:
         return f"{tag} SEARCH FAILED rc={rc}"
     if csv.stat().st_size == 0:
@@ -152,12 +257,21 @@ def one_arm(arm: dict, fa: Path) -> str:
     else:
         df = pl.read_csv(csv, columns=KEEP, infer_schema_length=0)
     num = [c_ for c_ in KEEP if c_ not in ("query_name", "target_name")]
-    df = (df.with_columns([pl.col(c_).cast(pl.Float64, strict=False) for c_ in num])
-            .with_columns(pl.col("query_name").str.strip_chars(), pl.col("target_name").str.strip_chars())
-            .filter(pl.col("query_name") != pl.col("target_name"))
-            .with_columns(pl.lit(a).alias("alphabet"), pl.lit(k).alias("ksize"),
-                          pl.lit(arm["bits"]).alias("bits"), pl.lit(extend).alias("extended"),
-                          pl.lit(fit is True).alias("fitted_here")))
+    df = (
+        df.with_columns([pl.col(c_).cast(pl.Float64, strict=False) for c_ in num])
+        .with_columns(
+            pl.col("query_name").str.strip_chars(),
+            pl.col("target_name").str.strip_chars(),
+        )
+        .filter(pl.col("query_name") != pl.col("target_name"))
+        .with_columns(
+            pl.lit(a).alias("alphabet"),
+            pl.lit(k).alias("ksize"),
+            pl.lit(arm["bits"]).alias("bits"),
+            pl.lit(extend).alias("extended"),
+            pl.lit(fit is True).alias("fitted_here"),
+        )
+    )
     df.write_parquet(done)
     csv.unlink(missing_ok=True)
     shutil.rmtree(idx, ignore_errors=True)
@@ -170,7 +284,12 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--alphabets", default="")
     ap.add_argument("--out", type=Path, default=OUT)
-    ap.add_argument("--min-bits", type=float, default=0.0, help="only arms at or above this seed information")
+    ap.add_argument(
+        "--min-bits",
+        type=float,
+        default=0.0,
+        help="only arms at or above this seed information",
+    )
     args = ap.parse_args()
     OUT = args.out
     for d in ("regions", "tmp", "logs", "ka_survival"):
@@ -179,8 +298,12 @@ def main() -> None:
     if not fa.exists():
         print(f"{write_fasta(fa)} proteins written to {fa}", file=sys.stderr)
     plan = json.loads((SWEEP / "plan.json").read_text())
-    arms = [p for p in plan if (not args.alphabets or p["alphabet"] in args.alphabets.split(","))
-            and p["bits"] >= args.min_bits]
+    arms = [
+        p
+        for p in plan
+        if (not args.alphabets or p["alphabet"] in args.alphabets.split(","))
+        and p["bits"] >= args.min_bits
+    ]
     # heaviest (lowest bits) first, so the long arms do not trail at the end
     arms.sort(key=lambda p: p["bits"])
     print(f"{len(arms)} arms", file=sys.stderr, flush=True)
