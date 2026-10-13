@@ -1486,15 +1486,22 @@ species is drawn, with the range across species as a vertical line. Pfam-A truth
 (`split = all`), transfers not de-duplicated, as in the disorder and identity tables of
 2026-09-05 and 2026-09-10.
 
-Strata as the pipeline defines them: domain length; the share of the protein predicted
-disordered; the AlphaFold confidence (pLDDT) of the domain. Disorder and pLDDT bins are drawn at
-their middle; length bins at the median length of their domains.
+Strata as the pipeline defines them (`STRATA` in `evaluate_domain_calls.py`): the domain's
+length; the share of the protein's residues with AlphaFold pLDDT below 50 (`disorder`); the mean
+pLDDT over the whole protein (`plddt`, edges 0/50/70/90/100; the bin below 50 is not scored,
+because it holds fewer proteins than the pipeline's `MIN_STRATUM_PROTEINS`). Both are properties of the protein, not of the domain. Disorder
+and pLDDT bins are drawn at their middle; length bins at the median length of their domains.
 """)
 
 code(r'''
 MIDI_METRICS = Path("/Users/olga/data/qfo-pfam-region-midi/extract/all_domain_metrics.parquet")
 RUN_O2_QUERIES = json.loads(Path("/Users/olga/data/qfo-pfam-region-midi/midi_testset_summary.json").read_text())["n_queries"]
 check(RUN_O2_QUERIES == 964, f"midi run has {RUN_O2_QUERIES} queries, not 964")
+MIN_STRATUM = 30  # MIN_STRATUM_PROTEINS in nextflow-runs/qfo-pfam-region-benchmark/bin/evaluate_domain_calls.py
+check(f"MIN_STRATUM_PROTEINS = {MIN_STRATUM}" in (REPO / "nextflow-runs/qfo-pfam-region-benchmark/bin/evaluate_domain_calls.py").read_text(),
+      "MIN_STRATUM_PROTEINS changed in the pipeline")
+n_low_plddt = pl.read_parquet("/Users/olga/data/qfo-pfam-region-midi/truth/human_query_covariates.parquet").filter(pl.col("mean_plddt") < 50).height
+print(f"midi queries with mean pLDDT < 50: {n_low_plddt} (the pipeline scores a bin from {MIN_STRATUM} proteins)")
 O2_TOOLS = {"hmmer3_phmmer.default": ("phmmer", pf.OKABE_ITO["blue"], "o"),
             "hhblits.single_seq": ("HHblits", pf.OKABE_ITO["blue"], "s"),
             "mmseqs2_seqseq.s7": ("MMseqs2", pf.OKABE_ITO["blue"], "^"),
@@ -1588,9 +1595,10 @@ cvo2.line([kx + 1.5, kx + 1.5], [92 - 8.3, 92 - 5.7], color="black", lw=0.4)
 cvo2.text(kx + 3, 92 - 7.0, "range over the 9 species", fontsize=6)
 draw_strip(cvo2, 0, 56)
 ax_len = o2_panel(cvo2, 0, 2, "b", "By domain length", "feature_length_bin", xlabel="domain length (aa, median of bin)", log_x=True)
-ax_dis = o2_panel(cvo2, 61, 2, "c", "By disorder of the protein", "disorder", xlabel="share of the protein disordered")
+ax_dis = o2_panel(cvo2, 61, 2, "c", "By low-confidence share of the protein", "disorder",
+                  xlabel="share of the protein's residues with pLDDT < 50")
 ax_dis.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
-ax_pl = o2_panel(cvo2, 122, 2, "d", "By AlphaFold confidence", "plddt", xlabel="pLDDT of the domain")
+ax_pl = o2_panel(cvo2, 122, 2, "d", "By AlphaFold confidence of the protein", "plddt", xlabel="mean pLDDT of the protein")
 ax_pl.set_xticks([50, 60, 70, 80, 90, 100])
 O2 = "fig1_option2_domain_placement_qfo_pfam_midi"
 cvo2.fig.savefig(FIG / f"{O2}.pdf")
@@ -1627,7 +1635,7 @@ f_pl = lambda a, s: o2_val(a, "plddt", s)
 PH, HH, MM, FS = "hmmer3_phmmer.default", "hhblits.single_seq", "mmseqs2_seqseq.s7", "foldseek.3di_aa"
 captionO2 = f"""**Figure 1, option 2 | kmerseek places domains under 30 residues about as well as sequence aligners and three times as well as Foldseek, and falls behind every tool as domains get longer.**
 **a**, as in option 1.
-**b–d**, QfO Pfam-region benchmark, midi run: {RUN_O2_QUERIES} human chromosome 6 proteins searched against 9 proteomes (mouse, chicken, zebrafish, *Ciona*, fly, worm, yeast, *Arabidopsis*, *E. coli*). A call is right when it carries the true Pfam-A family and overlaps the true domain with an intersection over union of at least 0.5; a domain counts only in a proteome that has its family. Fmax is the best F1 over each tool's score thresholds. Lines: mean over the 9 proteomes; vertical lines: range over the proteomes. kmerseek is {HP} with the low-complexity mask, k = {K_O2}, the k with the highest Fmax over all domains on this benchmark, chosen after the fact; thin purple lines are k = {KM_KS[0]}–{KM_KS[-1]}. **b**, By domain length, drawn at the median length of each bin (16–30, 31–60, 61–120, 121–250, ≥251 aa). At 16–30 aa ({n_reach_len['16-30']:,} domain instances over the 9 proteomes), Fmax is {km_s['fmax']:.3f} for kmerseek, {f_len(PH, '16-30'):.3f} phmmer, {f_len(MM, '16-30'):.3f} MMseqs2, {f_len(HH, '16-30'):.3f} HHblits and {f_len(FS, '16-30'):.3f} Foldseek; at ≥251 aa it is {f_len(KM, '251+'):.3f} for kmerseek and {min(f_len(a, '251+') for a in (PH, HH, MM, FS)):.3f}–{max(f_len(a, '251+') for a in (PH, HH, MM, FS)):.3f} for the others. **c**, By the share of the protein predicted disordered: Foldseek falls from {f_dis(FS, '0.0-0.1'):.2f} to {f_dis(FS, '0.6-1.01'):.2f}, phmmer from {f_dis(PH, '0.0-0.1'):.2f} to {f_dis(PH, '0.6-1.01'):.2f}, kmerseek stays at {min(f_dis(KM, s) for s in O2_AXES['disorder']):.2f}–{max(f_dis(KM, s) for s in O2_AXES['disorder']):.2f}. **d**, By the AlphaFold confidence (pLDDT) of the domain: every other tool rises with pLDDT; kmerseek stays at {min(f_pl(KM, s) for s in O2_AXES['plddt']):.2f}–{max(f_pl(KM, s) for s in O2_AXES['plddt']):.2f}. Disorder and pLDDT bins also differ in domain length (median {o2_val(PH, 'disorder', '0.0-0.1', 'median_len'):.0f} aa in the least disordered bin, {o2_val(PH, 'disorder', '0.6-1.01', 'median_len'):.0f} aa in the most; {o2_val(PH, 'plddt', '50-70', 'median_len'):.0f} aa at pLDDT 50–70, {o2_val(PH, 'plddt', '90-100', 'median_len'):.0f} aa at 90–100), so part of c and d is the length effect of b.
+**b–d**, QfO Pfam-region benchmark, midi run: {RUN_O2_QUERIES} human chromosome 6 proteins searched against 9 proteomes (mouse, chicken, zebrafish, *Ciona*, fly, worm, yeast, *Arabidopsis*, *E. coli*). A call is right when it carries the true Pfam-A family and overlaps the true domain with an intersection over union of at least 0.5; a domain counts only in a proteome that has its family. Fmax is the best F1 over each tool's score thresholds. Lines: mean over the 9 proteomes; vertical lines: range over the proteomes. kmerseek is {HP} with the low-complexity mask, k = {K_O2}, the k with the highest Fmax over all domains on this benchmark, chosen after the fact; thin purple lines are k = {KM_KS[0]}–{KM_KS[-1]}. **b**, By domain length, drawn at the median length of each bin (16–30, 31–60, 61–120, 121–250, ≥251 aa). At 16–30 aa ({n_reach_len['16-30']:,} domain instances over the 9 proteomes), Fmax is {km_s['fmax']:.3f} for kmerseek, {f_len(PH, '16-30'):.3f} phmmer, {f_len(MM, '16-30'):.3f} MMseqs2, {f_len(HH, '16-30'):.3f} HHblits and {f_len(FS, '16-30'):.3f} Foldseek; at ≥251 aa it is {f_len(KM, '251+'):.3f} for kmerseek and {min(f_len(a, '251+') for a in (PH, HH, MM, FS)):.3f}–{max(f_len(a, '251+') for a in (PH, HH, MM, FS)):.3f} for the others. **c**, By the share of the protein's residues with AlphaFold pLDDT below 50, the pipeline's disorder measure (bins 0–0.1, 0.1–0.3, 0.3–0.6, 0.6–1, drawn at their middles): Foldseek falls from {f_dis(FS, '0.0-0.1'):.2f} to {f_dis(FS, '0.6-1.01'):.2f}, phmmer from {f_dis(PH, '0.0-0.1'):.2f} to {f_dis(PH, '0.6-1.01'):.2f}, kmerseek stays at {min(f_dis(KM, s) for s in O2_AXES['disorder']):.2f}–{max(f_dis(KM, s) for s in O2_AXES['disorder']):.2f}. **d**, By the mean AlphaFold confidence (pLDDT) over the whole protein, in the pipeline's bins 50–70, 70–90 and 90–100, drawn at their middles; the bin below 50 holds {n_low_plddt} proteins, fewer than the {MIN_STRATUM} the pipeline needs to score a bin. Every other tool rises with pLDDT; kmerseek stays at {min(f_pl(KM, s) for s in O2_AXES['plddt']):.2f}–{max(f_pl(KM, s) for s in O2_AXES['plddt']):.2f}. Disorder and pLDDT bins also differ in domain length (median {o2_val(PH, 'disorder', '0.0-0.1', 'median_len'):.0f} aa in the least disordered bin, {o2_val(PH, 'disorder', '0.6-1.01', 'median_len'):.0f} aa in the most; {o2_val(PH, 'plddt', '50-70', 'median_len'):.0f} aa at pLDDT 50–70, {o2_val(PH, 'plddt', '90-100', 'median_len'):.0f} aa at 90–100), so part of c and d is the length effect of b.
 """
 (FIG / f"{O1}_caption.md").write_text(captionO1)
 (FIG / f"{O2}_caption.md").write_text(captionO2)
