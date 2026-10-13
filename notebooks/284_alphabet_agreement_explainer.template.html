@@ -1,0 +1,313 @@
+<title>Do Alphabets Agree on BCL2?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+__FONTS__
+/* Layout: one reading column of about 900 px; figures sit inside it with their legend above. */
+:root {
+  --bg: #F6F7F5; --panel: #FFFFFF; --ink: #1C211F; --muted: #5E6A65; --rule: #D5DBD8;
+  --found: #2F6F8F;      /* an alphabet found a region at this spot */
+  --ident: #C2761B;      /* identical residues (protein20 match) */
+  --partner: #3B7A3B;    /* the true partner (BCL2 or CD47) */
+  --serif: "Fraunces", Georgia, serif;
+  --sans: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --mono: "Fantasque Sans Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #161A19; --panel: #1F2523; --ink: #E7ECEA; --muted: #9AA6A1; --rule: #34403C;
+  --found: #6FB3D6; --ident: #E8A04A; --partner: #7CC47C; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #161A19; --panel: #1F2523; --ink: #E7ECEA; --muted: #9AA6A1; --rule: #34403C;
+  --found: #6FB3D6; --ident: #E8A04A; --partner: #7CC47C; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 17px/1.55 var(--sans); }
+main { max-width: 920px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 22px; }
+h1 { font-family: var(--serif); font-weight: 650; font-size: 2.1rem; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--serif); font-weight: 500; font-size: 1.45rem; margin: 18px 0 0; text-wrap: balance; }
+p, li { max-width: 68ch; margin: 0; }
+ul, ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+a { color: var(--found); }
+code, .mono { font-family: var(--mono); font-size: .92em; }
+.lede { font-size: 1.12rem; }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.cap { font-size: .95rem; color: var(--muted); }
+.cap b { color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .92rem; align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 22px; height: 10px; border-radius: 2px; }
+.scroll { overflow-x: auto; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tabs button { font: 600 .95rem var(--sans); color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tabs button:focus-visible { outline: 2px solid var(--found); outline-offset: 2px; }
+pre.aln { font-family: var(--mono); font-size: 15px; line-height: 1.35; margin: 0; white-space: pre; }
+pre.aln .id { color: var(--ident); font-weight: 700; }
+pre.aln .lab { color: var(--muted); }
+table { border-collapse: collapse; font-size: .95rem; width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 7px 8px; border-top: 1px solid var(--rule); }
+th { font-weight: 600; }
+td.num { font-family: var(--mono); white-space: nowrap; }
+svg text { fill: var(--ink); font-family: var(--sans); }
+svg .muted { fill: var(--muted); }
+svg .mono { font-family: var(--mono); }
+.verdict { border-left: 3px solid var(--ink); padding-left: 12px; }
+</style>
+
+<main>
+<header style="display:grid;gap:10px">
+  <h1>Do the alphabets agree on BCL2?</h1>
+  <p class="lede">You expected this: if Ced9's BH1 stretch is like BCL2's, several alphabets should each find a region there, and that agreement should push BCL2 up the list. Below are the real regions from notebook 241's searches of Ced9 and P66 against the 19_720 canonical human proteins, all 19 alphabets.</p>
+  <p class="lede verdict"><b>Short answer:</b> the alphabets do agree on BCL2's BH1, but only four of them, and thousands of unrelated proteins get more alphabets to agree. Agreement between alphabets mostly measures how many residues are identical, and the alphabets are not independent witnesses. So agreement cannot single out a remote homolog like BCL2.</p>
+</header>
+
+<section style="display:grid;gap:12px">
+  <h2>What the earlier combining PRs tested</h2>
+  <p>None of them tested your idea: different alphabets finding the same stretch of the same protein.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>PR, notebook</th><th>What was combined</th><th>Same spot checked?</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://github.com/seanome/2024-kmerseek-analysis/pull/48">PR 48</a>, nb 242</td><td>Each protein's rank in all 19 alphabets, multiplied together (a rank product)</td><td>No. A protein hit anywhere in alphabet A and anywhere else in alphabet B counted as agreement.</td><td>BCL2 fell from rank 213 to 7_148, CD47 from 166 to 6_952. Long proteins get hit somewhere in every alphabet, so the product rewards length (Spearman 0.71 to 0.84 with length).</td></tr>
+      <tr><td><a href="https://github.com/seanome/2024-kmerseek-analysis/pull/98">PR 98</a>, <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/102">102</a>, <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/103">103</a>, <a href="https://github.com/seanome/2024-kmerseek-analysis/pull/104">104</a>, nb 261-264</td><td>Regions, three ways: called by all, called by any, vote count</td><td>Yes, but all four searches were one alphabet (hp_pbotc_1st_ed2, k = 19, human against zebrafish) with small changes to the extension penalty.</td><td>The four searches call the same regions 85% to 97% of the time, so combining them adds nothing. Different alphabets were never in the table, because the full run had not been done.</td></tr>
+      <tr><td>This page, nb 284 (script)</td><td>Regions from the 19 alphabets of nb 241, joined when they sit at the same spot</td><td>Yes: same diagonal (the two stretches are in register) and overlapping on the query</td><td>Below.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section style="display:grid;gap:12px">
+  <h2>Four real examples</h2>
+  <p>Each row is one alphabet. A bar means that alphabet's search reported a region at this spot, at any of the k-sizes nb 241 ran. Rows are grouped by alphabet size. Pick an example:</p>
+  <div class="tabs" role="group" aria-label="Example" id="tabs"></div>
+  <div class="panel" id="fig1">
+    <div class="legend" aria-label="Legend">
+      <span><i class="sw" style="background:var(--found)"></i>region reported by this alphabet (query positions)</span>
+      <span><i class="sw" style="background:var(--ident);opacity:.35"></i>longest run of identical residues</span>
+      <span><svg width="14" height="10" aria-hidden="true"><circle cx="7" cy="5" r="2" fill="var(--muted)"/></svg>no region at this spot</span>
+      <span>E = lowest E-value over k-sizes; "no fit" = the search could not fit an E-value</span>
+    </div>
+    <div class="cap" id="fig1-title"></div>
+    <div class="scroll"><svg id="fig1-svg" role="img"></svg></div>
+    <div class="scroll"><pre class="aln" id="fig1-aln"></pre></div>
+    <p class="cap" id="fig1-read"></p>
+  </div>
+  <p class="cap"><b>Figure 1.</b> kmerseek 0.4, notebook 241 (PR 46): query Ced9 (<i>C. elegans</i>) or P66 (<i>Borrelia</i>), target the GENCODE v49 canonical human proteome. A spot joins regions from different alphabets on the same diagonal whose query stretches overlap. Coordinates are 1-based, inclusive. The H/P class line uses hp_lehninger2: <code>AFGILMPVWY</code> = H, <code>CDEHKNQRST</code> = P.</p>
+</section>
+
+<section style="display:grid;gap:12px">
+  <h2>Where BCL2 and CD47 land when ranked by agreement</h2>
+  <p>For every human protein, take the spot that the most alphabets agree on. Count proteins by that number.</p>
+  <div class="panel">
+    <div class="legend">
+      <span><svg width="14" height="12" aria-hidden="true"><circle cx="7" cy="6" r="4" fill="var(--found)"/></svg>number of human proteins whose best spot has this many alphabets</span>
+      <span><svg width="14" height="12" aria-hidden="true"><path d="M7 1 L12 6 L7 11 L2 6 Z" fill="var(--partner)"/></svg>the true partner</span>
+    </div>
+    <div class="scroll"><svg id="fig2-svg" role="img"></svg></div>
+    <div class="scroll"><table id="fig2-table"></table></div>
+  </div>
+  <p class="cap"><b>Figure 2.</b> Same searches as Figure 1. The table under the plot gives every count. Further right is more agreement; the true partner should sit at the far right if agreement found homologs. It sits in the crowd at the left.</p>
+  <p id="fig2-read"></p>
+</section>
+
+<section style="display:grid;gap:12px">
+  <h2>Why agreement does not help</h2>
+  <ol>
+    <li><b>An identical stretch is a match in every alphabet.</b> Grouping residues into classes never splits two identical residues, so an identical stretch is identical in all 19 alphabets, and every alphabet whose k-mers fit inside it reports it. That is why TKT gets 18 alphabets from <span class="mono">IGAGVT</span> and CD55 gets all 19 from <span class="mono">KTTTPN</span>. The alphabets are not voting independently; they are all seeing the same identical letters. Figure 3 shows this over every spot.</li>
+    <li><b>The alphabets mostly split residues the same way.</b> Almost every alphabet keeps hydrophobic residues apart from charged ones. So a chance stretch that looks alike in one alphabet looks alike in most of them. Notebook 242 counted this: 1_200 proteins beat BCL2 in at least half of the 13 alphabets that find BCL2, 7.9 times as many as independent alphabets would give.</li>
+    <li><b>BCL2's BH1 is visible only to the coarsest alphabets, and three of its four are one alphabet.</b> Ced9 and BCL2 share 5 of 26 residues here, with no identical run longer than 3. Only two-, three- and five-letter alphabets see it. hp_lehninger2, hp_lehninger_c_nonpolar2 and hp_lehninger_hpc3 differ only in where they put cysteine (C). Counting the seven H/P alphabets as one, BCL2 has 2, and at least 9_744 human proteins have more.</li>
+    <li><b>No alphabet calls any of these spots below E = 10.</b> The best BH1 call is hp_lehninger2 at k = 19, E = 11_173: about 11_173 regions this good are expected by chance in one search of the human proteome. Restricted to calls with E &lt; 10, no human protein gets more than 2 alphabets to agree, for either query. Agreement among calls that are each at chance level is still chance.</li>
+  </ol>
+  <div class="panel">
+    <div class="legend">
+      <span><svg width="14" height="12" aria-hidden="true"><circle cx="7" cy="6" r="4" fill="var(--ident)"/></svg>median longest identical run (residues)</span>
+      <span><svg width="22" height="12" aria-hidden="true"><line x1="11" y1="1" x2="11" y2="11" stroke="var(--ident)" stroke-width="2"/></svg>25th to 75th percentile</span>
+    </div>
+    <div class="scroll"><svg id="fig3-svg" role="img"></svg></div>
+  </div>
+  <p class="cap"><b>Figure 3.</b> Every spot from the Ced9 and P66 searches (about 1.6 million and 3.0 million spots, most backed by one alphabet). Points are drawn only where at least 20 spots have that many alphabets. The more alphabets agree on a spot, the longer its run of identical residues: a median of 1 residue at 1 to 4 alphabets, 5 residues at 10. BCL2's BH1 spot has 4 alphabets and a longest identical run of 3.</p>
+</section>
+
+<section style="display:grid;gap:12px">
+  <h2>What would make agreement mean something</h2>
+  <p>Your idea is sound when the witnesses are independent and each one has some evidence. Here neither holds. These changes would test it fairly; each needs a run, so none of them is done here.</p>
+  <ul>
+    <li><b>Count only calls that pass an E-value cut in their own alphabet</b>, then count alphabets. On these two queries that leaves at most 2 alphabets per protein, so it needs a query where single alphabets already reach E &lt; 10.</li>
+    <li><b>Count alphabet families, not alphabets</b>: the seven H/P alphabets as one, and a stretch protein20 also calls as identity rather than as extra support.</li>
+    <li><b>Compare against shuffled queries.</b> Notebook 263 did this for four copies of one alphabet: real regions were called by all four 85% to 97% of the time, regions on shuffled queries 37% to 56%. The same test across the 19 alphabets would say how much agreement chance alone gives.</li>
+  </ul>
+</section>
+
+<section style="display:grid;gap:8px">
+  <h2>Sources</h2>
+  <p class="cap">Regions: notebook 241 (PR 46), <code>$SCRATCH/241-alphabet-ranking/regions.parquet</code>, 2026-09-23, 8_295_664 regions. Script: <code>scripts/284_alphabet_agreement.py</code>, tables <code>notebooks/284_alphabet_agreement_*.csv</code>. Residue classes: seanome/kmerseek <code>src/rust/alphabets.rs</code> at 00395d7. Numbers about rank products and the 1_200 proteins: notebook 242 (PR 48). Numbers about four-copy agreement: notebook 263 (PR 103).</p>
+</section>
+</main>
+
+<script>
+const DATA = __DATA__;
+const GROUPS = [
+  ["2-3 letters", ["hp_kyte_doolittle2","hp_lehninger2","hp_lehninger_c_nonpolar2","hp_lehninger_hpc3","hp_pbotc_1st_ed2","hp_thomas_dill2","hp_thomas_dill_no_c2"]],
+  ["4-8 letters", ["gbmr4","polarity4","wwmj5","dayhoff6","gbmr7","funcgroups8"]],
+  ["12-18 letters", ["sdm12","mmseqs12","wass14","hsdm17","uniprot18"]],
+  ["20 letters", ["protein20"]]];
+const H = new Set("AFGILMPVWY");
+const fmt = n => n >= 1000 ? Math.round(n).toLocaleString("en-US").replace(/,/g, "_") : (Number.isInteger(n) ? String(n) : n.toFixed(1));
+const ns = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent, text) {
+  const e = document.createElementNS(ns, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function longestRun(a, b) {
+  let best = [0, 0], run = 0;
+  for (let i = 0; i < Math.min(a.length, b.length); i++) {
+    run = a[i] === b[i] ? run + 1 : 0;
+    if (run > best[0]) best = [run, i - run + 1];
+  }
+  return best; // [length, start offset]
+}
+
+function drawFig1(i) {
+  const c = DATA.cases[i];
+  document.querySelectorAll("#tabs button").forEach((b, j) => b.setAttribute("aria-pressed", j === i));
+  const byA = Object.fromEntries(c.alphabets.map(a => [a.alphabet, a]));
+  const [runLen, runOff] = longestRun(c.query_res, c.target_res);
+  document.getElementById("fig1-title").innerHTML =
+    `<b>${c.query} residues ${c.qs + 1}-${c.qe} against human ${c.gene} residues ${c.ts + 1}-${c.te}</b> (${c.why}). ` +
+    `${c.n_alphabets} of 19 alphabets report a region here. ${c.gene} ranks ${fmt(c.rank)} of ${fmt(DATA.histogram[c.query].n_targets)} human proteins by this count.`;
+  const svg = document.getElementById("fig1-svg");
+  svg.innerHTML = "";
+  const labW = 215, infoW = 215, plotW = 400, rowH = 17, gapH = 12, top = 36;
+  const W = labW + plotW + infoW;
+  const lo = c.qs - 6, hi = c.qe + 6;
+  const x = p => labW + (p - lo) / (hi - lo) * plotW;
+  let y = top, rows = [];
+  for (const [gname, alphs] of GROUPS) {
+    rows.push({group: gname, y: y + 10}); y += 16;
+    for (const a of alphs) { rows.push({a, y}); y += rowH; }
+    y += gapH;
+  }
+  const Ht = y + 4;
+  svg.setAttribute("viewBox", `0 0 ${W} ${Ht}`); svg.setAttribute("width", W); svg.setAttribute("height", Ht);
+  svg.setAttribute("aria-label", `Which alphabets report a region at ${c.query} ${c.qs + 1}-${c.qe} against ${c.gene}`);
+  // identical-run band
+  el("rect", {x: x(c.qs + runOff), y: top - 4, width: Math.max(2, x(c.qs + runOff + runLen) - x(c.qs + runOff)), height: Ht - top, fill: "var(--ident)", opacity: .22}, svg);
+  // query ruler: protein line with ticks
+  el("line", {x1: labW, x2: labW + plotW, y1: 18, y2: 18, stroke: "var(--ink)", "stroke-width": 1.5}, svg);
+  el("text", {x: labW - 8, y: 22, "text-anchor": "end", "font-size": 13}, svg, `${c.query} position`);
+  const step = (hi - lo) > 50 ? 10 : 5;
+  for (let p = Math.ceil(lo / step) * step; p <= hi; p += step) {
+    el("line", {x1: x(p), x2: x(p), y1: 14, y2: 22, stroke: "var(--ink)"}, svg);
+    el("text", {x: x(p), y: 10, "text-anchor": "middle", "font-size": 11, class: "muted mono"}, svg, p + 1);
+  }
+  el("text", {x: labW + plotW + 8, y: 22, "font-size": 12, class: "muted"}, svg, "k-sizes; best E");
+  for (const r of rows) {
+    if (r.group) { el("text", {x: 0, y: r.y, "font-size": 12, "font-weight": 600, class: "muted"}, svg, r.group); continue; }
+    const a = byA[r.a], cy = r.y + rowH / 2;
+    el("text", {x: labW - 8, y: cy + 4, "text-anchor": "end", "font-size": 12, class: "mono"}, svg, r.a);
+    el("line", {x1: labW, x2: labW + plotW, y1: cy, y2: cy, stroke: "var(--rule)", "stroke-width": 1}, svg);
+    if (a) {
+      el("rect", {x: x(a.qs), y: cy - 5, width: x(a.qe) - x(a.qs), height: 10, rx: 2, fill: "var(--found)"}, svg);
+      const e = a.best_e == null ? "no fit" : "E = " + fmt(a.best_e);
+      el("text", {x: labW + plotW + 8, y: cy + 4, "font-size": 12, class: "mono"}, svg, `k ${a.ks.join(",")}; ${e}`);
+    } else {
+      el("circle", {cx: labW + plotW / 2, cy, r: 2, fill: "var(--muted)"}, svg);
+    }
+  }
+  // alignment block
+  const q = c.query_res, t = c.target_res;
+  const ml = [...q].map((ch, k) => ch === t[k] ? "|" : " ").join("");
+  const hq = [...q].map(ch => H.has(ch) ? "H" : "P").join(""), ht = [...t].map(ch => H.has(ch) ? "H" : "P").join("");
+  const hm = [...hq].map((ch, k) => ch === ht[k] ? "|" : " ").join("");
+  const pad = s => s.padEnd(22);
+  const idSpan = (s, other) => [...s].map((ch, k) => ch === other[k] ? `<span class="id">${ch}</span>` : ch).join("");
+  const hmCount = [...hm].filter(ch => ch === "|").length;
+  document.getElementById("fig1-aln").innerHTML =
+    `<span class="lab">${pad("residues, identical in colour")}</span>\n` +
+    `<span class="lab">${pad(c.query + " " + (c.qs + 1))}</span>${idSpan(q, t)}  ${c.qe}\n` +
+    `<span class="lab">${pad("")}</span><span class="id">${ml}</span>\n` +
+    `<span class="lab">${pad(c.gene + " " + (c.ts + 1))}</span>${idSpan(t, q)}  ${c.te}\n\n` +
+    `<span class="lab">${pad("hp_lehninger2 classes")}</span>\n` +
+    `<span class="lab">${pad(c.query)}</span>${hq}\n<span class="lab">${pad("")}</span>${hm}\n<span class="lab">${pad(c.gene)}</span>${ht}`;
+  document.getElementById("fig1-read").innerHTML =
+    `${c.identical} of ${q.length} residues identical; the longest identical run is ${runLen} residues (${c.query} ${c.qs + runOff + 1}-${c.qs + runOff + runLen}). ` +
+    `In hp_lehninger2 classes, ${hmCount} of ${q.length} positions match. ` +
+    `Counting the seven H/P alphabets once, ${c.n_families} independent alphabet families agree. ` +
+    (c.n_below_e10 === 0 ? `No alphabet calls this spot below E = 10.` : `${c.n_below_e10} alphabets call it below E = 10.`);
+}
+
+function drawFig2() {
+  const svg = document.getElementById("fig2-svg");
+  const panels = [["Ced9", "BCL2"], ["P66", "CD47"]];
+  const pw = 420, ph = 270, m = {l: 76, r: 14, t: 52, b: 44}, W = pw * 2 + 20;
+  svg.setAttribute("viewBox", `0 0 ${W} ${ph}`); svg.setAttribute("width", W); svg.setAttribute("height", ph);
+  svg.setAttribute("aria-label", "Number of human proteins by how many alphabets agree on their best spot");
+  const reads = [];
+  panels.forEach(([q, partner], pi) => {
+    const g = el("g", {transform: `translate(${pi * (pw + 20)},0)`}, svg);
+    const counts = DATA.histogram[q].counts, ymax = Math.max(...Object.values(counts));
+    const x = n => m.l + (n - 1) / 18 * (pw - m.l - m.r), y = v => ph - m.b - v / ymax * (ph - m.t - m.b);
+    el("text", {x: m.l, y: 16, "font-size": 13, "font-weight": 600}, g, `kmerseek, 19 alphabets: ${q} against human`);
+    for (let v = 0; v <= ymax; v += 2000) {
+      el("line", {x1: m.l, x2: pw - m.r, y1: y(v), y2: y(v), stroke: "var(--rule)"}, g);
+      el("text", {x: m.l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 11, class: "muted mono"}, g, fmt(v));
+    }
+    for (let n = 1; n <= 19; n += (n < 3 ? 1 : 2)) {
+      el("text", {x: x(n), y: ph - m.b + 16, "text-anchor": "middle", "font-size": 11, class: "muted mono"}, g, n);
+    }
+    el("text", {x: (m.l + pw - m.r) / 2, y: ph - 8, "text-anchor": "middle", "font-size": 12}, g, "alphabets agreeing on the protein's best spot (of 19)");
+    el("text", {x: 12, y: (m.t + ph - m.b) / 2, "text-anchor": "middle", "font-size": 12, transform: `rotate(-90 12 ${(m.t + ph - m.b) / 2})`}, g, "human proteins");
+    for (const [n, v] of Object.entries(counts)) {
+      el("line", {x1: x(+n), x2: x(+n), y1: y(0), y2: y(v), stroke: "var(--found)", "stroke-width": 1.5}, g);
+      el("circle", {cx: x(+n), cy: y(v), r: 3.5, fill: "var(--found)"}, g);
+    }
+    const c = DATA.cases.find(cc => cc.query === q && cc.gene === partner);
+    const more = Object.entries(counts).filter(([n]) => +n > c.n_alphabets).reduce((s, [, v]) => s + v, 0);
+    const px = x(c.n_alphabets), py = y(0) + 2;
+    el("path", {d: `M${px} ${py - 7} L${px + 6} ${py} L${px} ${py + 7} L${px - 6} ${py} Z`, fill: "var(--partner)"}, g);
+    const lx = x(11), ly = y(ymax * 0.55);
+    el("line", {x1: px + 4, y1: py - 6, x2: lx - 4, y2: ly + 4, stroke: "var(--partner)", "stroke-width": 1}, g);
+    el("text", {x: lx, y: ly - 8, "font-size": 12, "font-weight": 600}, g, `${partner}: ${c.n_alphabets} alphabets`);
+    el("text", {x: lx, y: ly + 8, "font-size": 12}, g, `${fmt(more)} proteins have more`);
+    reads.push(`${q}: ${partner}'s best spot has ${c.n_alphabets} alphabets; ${fmt(more)} of ${fmt(DATA.histogram[q].n_targets)} human proteins have a spot with more.`);
+  });
+  const ns_ = [...new Set(panels.flatMap(([q]) => Object.keys(DATA.histogram[q].counts).map(Number)))].sort((a, b) => a - b);
+  document.getElementById("fig2-table").innerHTML =
+    `<tr><th>alphabets agreeing</th>${ns_.map(n => `<td class="num">${n}</td>`).join("")}</tr>` +
+    panels.map(([q]) => `<tr><th>proteins, ${q}</th>${ns_.map(n => `<td class="num">${fmt(DATA.histogram[q].counts[n] || 0)}</td>`).join("")}</tr>`).join("");
+  const top = DATA.cases.filter(c => c.why === "most alphabets agree").map(c => `${c.gene} (${c.n_alphabets} for ${c.query})`).join(" and ");
+  document.getElementById("fig2-read").textContent = reads.join(" ") + ` The proteins at the far right are ${top}, shown in Figure 1.`;
+}
+
+function drawFig3() {
+  const svg = document.getElementById("fig3-svg");
+  const pw = 420, ph = 230, m = {l: 60, r: 14, t: 30, b: 44}, W = pw * 2 + 20;
+  svg.setAttribute("viewBox", `0 0 ${W} ${ph}`); svg.setAttribute("width", W); svg.setAttribute("height", ph);
+  svg.setAttribute("aria-label", "Longest identical run against number of alphabets agreeing");
+  ["Ced9", "P66"].forEach((q, pi) => {
+    const g = el("g", {transform: `translate(${pi * (pw + 20)},0)`}, svg);
+    const rows = DATA.identity_by_agreement[q].filter(r => r.n_spots >= 20);
+    const x = n => m.l + (n - 1) / 18 * (pw - m.l - m.r), y = v => ph - m.b - v / 8 * (ph - m.t - m.b);
+    el("text", {x: m.l, y: 14, "font-size": 13, "font-weight": 600}, g, `${q} against human, every spot`);
+    for (let v = 0; v <= 8; v += 2) {
+      el("line", {x1: m.l, x2: pw - m.r, y1: y(v), y2: y(v), stroke: "var(--rule)"}, g);
+      el("text", {x: m.l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 11, class: "muted mono"}, g, v);
+    }
+    for (let n = 1; n <= 19; n += (n < 3 ? 1 : 2)) el("text", {x: x(n), y: ph - m.b + 16, "text-anchor": "middle", "font-size": 11, class: "muted mono"}, g, n);
+    el("text", {x: (m.l + pw - m.r) / 2, y: ph - 8, "text-anchor": "middle", "font-size": 12}, g, "alphabets agreeing on the spot (of 19)");
+    el("text", {x: 12, y: (m.t + ph - m.b) / 2, "text-anchor": "middle", "font-size": 12, transform: `rotate(-90 12 ${(m.t + ph - m.b) / 2})`}, g, "identical run (aa)");
+    for (const r of rows) {
+      el("line", {x1: x(r.n_alphabets), x2: x(r.n_alphabets), y1: y(r.q25), y2: y(r.q75), stroke: "var(--ident)", "stroke-width": 2}, g);
+      el("circle", {cx: x(r.n_alphabets), cy: y(r.median), r: 4, fill: "var(--ident)"}, g);
+    }
+  });
+}
+
+DATA.cases.forEach((c, i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.id = `tab-${i}`;
+  b.textContent = `${c.query} → ${c.gene} (${c.why})`;
+  b.addEventListener("click", () => drawFig1(i));
+  document.getElementById("tabs").appendChild(b);
+});
+drawFig1(0); drawFig2(); drawFig3();
+</script>
