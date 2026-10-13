@@ -1203,7 +1203,9 @@ def eval_tsv_to_rocx(
             maintain_order=True,
         )
     else:
-        raise ValueError(f"tie_break must be None, 'pessimistic' or 'optimistic', not {tie_break!r}")
+        raise ValueError(
+            f"tie_break must be None, 'pessimistic' or 'optimistic', not {tie_break!r}"
+        )
 
     # --- Vectorized sensitivity computation --------------------------------
     # Sensitivity-to-first-FP for level L:
