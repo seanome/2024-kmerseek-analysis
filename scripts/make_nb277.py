@@ -525,9 +525,137 @@ pf.save(fig, FIG_DIR / f"{FIG_STEM}_below_kmin", formats=("pdf", "png"))
 """)
 
 md(r"""
-## 7. Answers to the four decisions
+## 7. Same scale as FoldSeek and MMseqs2, fold and class levels, and identity bands
 
-The numbers each decision rests on, from the tables and figures of sections 1-6.
+**Data.** Step 2 of the [PR 107](https://github.com/seanome/2024-kmerseek-analysis/pull/107)
+follow-up (head job 47604583, 2026-10-12, same image): each alphabet's best family and
+superfamily k from section 3, and every HP alphabet at k_min to k_min + 2, with `exact`,
+`c_opt`, `c_max` and C = 2. 148 searches, all scored. Query set and target database are the
+15_177 SCOPe40 domains, as before.
+
+**Why the scale changes.** Sections 2-6 divide each query's count by the true positives
+kmerseek *reported* for that query. FoldSeek's and MMseqs2's `.rocx` files divide by every
+true positive in the database: for all 5_713 queries, sensitivity × (family size − 1) is a
+whole number. A query where kmerseek reports 2 of its 24 family members, both above the
+first false positive, scores 1.0 on the first scale and 2/24 on the second. Only the second
+compares with the two tools. This section uses it (`auc_ref_db`).
+
+**Two more levels.** Fold: true positive = same fold, different superfamily (as in section
+3). Class: true positive = same SCOP class, different fold; false positive = a different
+class. Neither tool's file has a class level.
+
+**Identity bands.** Notebook 230's USalign pairs of SCOPe40 domains, each scored in both
+directions, split by the share of identical residues over the structure-aligned columns. A
+pair counts when kmerseek ranks it above the query's first false positive: the first
+different-fold hit, or for class pairs the first different-class hit. A tie counts against
+kmerseek.
+
+Decision: if any HP alphabet beats protein20 and the 12-letter alphabets in the under-20%
+band at some level, that level is where SCOPe40 can support the HP case; otherwise SCOPe40
+stays a protein20 result (section 3).
+""")
+
+code(r"""
+STEP2_DIR = Path(os.environ.get(
+    "NB277_STEP2_DIR", Path.home() / "data/scope/results-scope40-alphabet-ksize-v040-best-k-identity"))
+step2 = {}
+for name in ("scope40_v040_auc.tsv", "scope40_v040_identity_bands.tsv"):
+    path = STEP2_DIR / name
+    print(path, "sha256", hashlib.sha256(path.read_bytes()).hexdigest())
+    step2[name] = pl.read_csv(path, separator="\t", infer_schema_length=None)
+s2 = step2["scope40_v040_auc.tsv"]
+print(s2.group_by("status").len().sort("status"))
+ALL_LEVELS = ["family", "superfamily", "fold", "class"]
+ranked2 = s2.filter(pl.col("status") == "ok").filter(
+    (pl.col("setting").is_in(EXTENSION_SETTINGS) & (pl.col("score") == "region_evalue"))
+    | ((pl.col("setting") == "exact") & (pl.col("score") == EXACT_SCORE)))
+best_db = (ranked2.sort("auc_ref_db", descending=True).group_by("alphabet", "level").head(1)
+           .select("alphabet", "level", "ksize", "setting", "auc_ref_db", "auc_ref"))
+print("Best AUC per alphabet on FoldSeek's scale (auc_ref_db) and on the reported-hits scale (auc_ref)")
+with pl.Config(float_precision=5):
+    print(best_db.pivot(on="level", index="alphabet", values="auc_ref_db").select(["alphabet"] + ALL_LEVELS)
+          .sort("family", descending=True))
+for level in ["family", "superfamily", "fold"]:
+    top = best_db.filter(pl.col("level") == level).sort("auc_ref_db", descending=True).row(0, named=True)
+    print(f"{level}: best kmerseek {top['alphabet']} k{top['ksize']} {top['setting']} {top['auc_ref_db']:.4f} "
+          f"(reported-hits scale {top['auc_ref']:.4f}); MMseqs2 {TOOL_AUC[('MMseqs2', level)]:.4f}, "
+          f"FoldSeek {TOOL_AUC[('FoldSeek', level)]:.4f}")
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 100, ncols=2, sharey=True)
+for ax, level in zip(axs, LEVELS):
+    sub = best_db.filter(pl.col("level") == level)
+    ax.scatter(sub["auc_ref"], [pos[a] for a in sub["alphabet"]], s=10, marker="o", facecolor="white",
+               edgecolor=pf.OKABE_ITO["blue"], lw=0.6, zorder=2,
+               label="kmerseek, divided by the true pairs it reported (sections 2-6)")
+    ax.scatter(sub["auc_ref_db"], [pos[a] for a in sub["alphabet"]], s=12, marker="o",
+               color=pf.OKABE_ITO["blue"], zorder=3, label="kmerseek, divided by every true pair (FoldSeek's scale)")
+    for r in sub.iter_rows(named=True):
+        ax.plot([r["auc_ref_db"], r["auc_ref"]], [pos[r["alphabet"]]] * 2, color=pf.GREY, lw=0.5, zorder=1)
+    for tool, st in TOOL_STYLE.items():
+        ax.axvline(TOOL_AUC[(tool, level)], label=f"{tool} (every true pair, same 5_713 queries)", **st)
+    alphabet_axis(ax, pos)
+    ax.set_xlim(0, TOOL_AUC[("FoldSeek", level)] * 1.05)
+    ax.set_xlabel(f"{level} sensitivity AUC (5_713 FoldSeek queries)")
+pf.panel_label(axs[0], "a", dx_pt=-95)
+pf.panel_label(axs[1], "b")
+pf.shared_legend(fig, ncol=2, title="kmerseek 0.4.0 at each alphabet's best k, hits ranked by region_evalue (extension) "
+                                    "or jaccard (exact); query and target: SCOPe40 (15_177 domains)")
+pf.save(fig, FIG_DIR / f"{FIG_STEM}_same_scale_as_foldseek", formats=("pdf", "png"))
+""")
+
+md(r"""
+The next figure shows, for pairs under 20% identity, the share each alphabet ranks above the
+query's first false positive, at its best k and setting for that pair class. One panel per
+pair class; the x axis of each panel is fitted to its own values. The table under it gives the
+counts behind each share, and the same share at every identity band.
+""")
+
+code(r"""
+bands2 = step2["scope40_v040_identity_bands.tsv"].filter(pl.col("status") == "ok").filter(
+    (pl.col("setting").is_in(EXTENSION_SETTINGS) & (pl.col("score") == "region_evalue"))
+    | ((pl.col("setting") == "exact") & (pl.col("score") == EXACT_SCORE))
+).with_columns((pl.col("n_above_first_fp") / pl.col("n_pairs")).alias("share_above_first_fp"))
+best_band = (bands2.sort("share_above_first_fp", descending=True)
+             .group_by("alphabet", "category", "identity_band").head(1))
+CATEGORY_LABEL = {
+    "same_family": "same family",
+    "same_superfamily_diff_family": "same superfamily, different family",
+    "same_fold_diff_superfamily": "same fold, different superfamily",
+    "diff_fold_same_class": "same class, different fold",
+}
+under20 = best_band.filter(pl.col("identity_band") == "0-20%")
+print("Under 20% identity: pairs, reported, ranked above the first false positive (best k and setting per alphabet)")
+with pl.Config(float_precision=5):
+    print(under20.select("category", "alphabet", "ksize", "setting", "n_pairs", "n_reported", "n_above_first_fp",
+                         "share_above_first_fp").sort("category", "share_above_first_fp", descending=[False, True]))
+print("Best share over all alphabets, by pair class and identity band")
+print(best_band.group_by("category", "identity_band").agg(pl.col("share_above_first_fp").max(),
+                                                          pl.col("n_pairs").first()).sort("category", "identity_band"))
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, ncols=4, sharey=True)
+for ax, cat in zip(axs, CATEGORY_LABEL):
+    sub = under20.filter(pl.col("category") == cat)
+    hp = sub["alphabet"].str.starts_with("hp_")
+    ax.scatter(sub.filter(~hp)["share_above_first_fp"] * 100, [pos[a] for a in sub.filter(~hp)["alphabet"]],
+               s=12, color=pf.OKABE_ITO["blue"], label="4-20 letter alphabets")
+    ax.scatter(sub.filter(hp)["share_above_first_fp"] * 100, [pos[a] for a in sub.filter(hp)["alphabet"]],
+               s=14, marker="D", color=pf.OKABE_ITO["vermillion"], label="hydrophobic-polar (HP) alphabets")
+    alphabet_axis(ax, pos)
+    ax.set_xlim(0, sub["share_above_first_fp"].max() * 100 * 1.15)
+    n = sub["n_pairs"][0]
+    ax.set_title(f"{CATEGORY_LABEL[cat]}\n{n:_} pairs", fontsize=6, loc="left")
+    ax.set_xlabel("% above first false positive")
+for ax, letter in zip(axs, "abcd"):
+    pf.panel_label(ax, letter, dx_pt=-95 if letter == "a" else -12)
+pf.shared_legend(fig, ncol=2, title="kmerseek 0.4.0, SCOPe40 pairs under 20% identity (structure-aligned), "
+                                    "best k and setting per alphabet; query and target: SCOPe40")
+pf.save(fig, FIG_DIR / f"{FIG_STEM}_identity_under_20", formats=("pdf", "png"))
+""")
+
+md(r"""
+## 8. Answers to the four decisions
+
+The numbers each decision rests on, from the tables and figures of sections 1-7.
 """)
 
 code(r"""
@@ -550,6 +678,20 @@ mm = TOOL_AUC[("MMseqs2", "family")]
 print(f"4. Best HP family AUC: {hp_best['alphabet']} k{hp_best['ksize']} {hp_best['setting']} = "
       f"{hp_best['auc_ref']:.3f}; MMseqs2 = {mm:.3f}; half of MMseqs2 = {mm / 2:.3f}; "
       f"HP reaches half: {hp_best['auc_ref'] >= mm / 2}")
+db_fam = best_db.filter(pl.col("level") == "family")
+hp_db = db_fam.filter(pl.col("alphabet").str.starts_with("hp_")).sort("auc_ref_db", descending=True).row(0, named=True)
+top_db = db_fam.sort("auc_ref_db", descending=True).row(0, named=True)
+print(f"4. On FoldSeek's scale (section 7): best kmerseek {top_db['alphabet']} k{top_db['ksize']} = "
+      f"{top_db['auc_ref_db']:.3f} ({top_db['auc_ref_db'] / mm:.0%} of MMseqs2); best HP {hp_db['alphabet']} "
+      f"k{hp_db['ksize']} = {hp_db['auc_ref_db']:.3f} ({hp_db['auc_ref_db'] / mm:.0%} of MMseqs2)")
+for cat in CATEGORY_LABEL:
+    sub = under20.filter(pl.col("category") == cat).sort("share_above_first_fp", descending=True)
+    top = sub.row(0, named=True)
+    hp_top = sub.filter(pl.col("alphabet").str.starts_with("hp_")).row(0, named=True)
+    ref = sub.filter(pl.col("alphabet").is_in(["protein20", "mmseqs12", "sdm12"]))
+    print(f"4. Under 20% identity, {CATEGORY_LABEL[cat]}: best {top['alphabet']} {top['n_above_first_fp']} of "
+          f"{top['n_pairs']} pairs; best HP {hp_top['alphabet']} {hp_top['n_above_first_fp']}; "
+          + ", ".join(f"{a} {n}" for a, n in ref.sort("alphabet").select("alphabet", "n_above_first_fp").iter_rows()))
 """)
 
 md(r"""
@@ -557,7 +699,9 @@ md(r"""
 
 Every number is printed by a cell above. AUC is family-level sensitivity over FoldSeek's 5_713
 SCOPe40 queries (0 to 1, higher is better), with a tied score counted against kmerseek.
-On the same queries FoldSeek reaches 0.817 and MMseqs2 0.403.
+On the same queries FoldSeek reaches 0.817 and MMseqs2 0.403. Items 1-3 and 6 compare kmerseek
+searches with each other and use the reported-pairs scale; item 4 compares with the two tools
+and uses theirs.
 
 1. **Rank SCOPe40 hits by `region_evalue`.** It has the highest median family AUC over the 659
    extension searches that returned hits (0.062), and ties do not move it (median gap 0).
@@ -573,12 +717,25 @@ On the same queries FoldSeek reaches 0.817 and MMseqs2 0.403.
    below k_min (section 6) did worse: the best family AUC below k_min is lower for 16 of 16
    alphabets, superfamily for 14 of 16 (largest gain 0.003) and fold for 15 of 16 (largest gain
    0.0002). The best k-sizes in section 3 stand.
-4. **SCOPe40 does not support the HP case.** The best HP alphabet, hp_thomas_dill2 at k 19 and
-   C = 2, reaches 0.115, under half of MMseqs2 (0.202 would be half). The 12-20 letter
-   alphabets reach 0.197 (wass14) to 0.295 (mmseqs12), half to three quarters of MMseqs2. At superfamily level the best kmerseek
-   search, mmseqs12 k 6 c_max, reaches 0.162 against MMseqs2's 0.172. SCOPe40 goes in the paper
-   for protein20 and the 12-20 letter alphabets; the HP argument rests on the domain benchmarks.
-5. **Extension helps at c_opt, c_max and C = 2.** It beats exact matching on 140 of 140 pairs at
+4. **On the scale FoldSeek and MMseqs2 use, kmerseek reaches about a quarter of MMseqs2, and HP
+   less than a tenth.** Sections 2-6 divide by the true pairs kmerseek reported; the two tools'
+   files divide by every true pair in the database (section 7). On that scale the best family
+   AUC is 0.122 (hsdm17 k5, C = c_max), 30% of MMseqs2's 0.403; protein20 reaches 0.077 and the
+   best HP alphabet, hp_thomas_dill2, 0.037 (9%). Superfamily: 0.045 against 0.172. Fold:
+   0.0001 against MMseqs2's 0.0008. An earlier version of this summary compared the
+   reported-pairs scale with the tools and said "half to three quarters of MMseqs2"; that was
+   wrong.
+5. **Under 20% identity kmerseek ranks almost no pair above the first false positive, at any
+   level.** At each alphabet's best k and setting, at most 1.2% of the 12_600 same-family pairs
+   (hsdm17), 0.42% of the 22_410 same-superfamily pairs and 0.11% of the 5_670 same-fold pairs.
+   HP is not ahead at family or superfamily. At class level (same class, different fold; 15_946
+   pairs) the coarse alphabets lead: polarity4 83 pairs, hp_lehninger_c_nonpolar2 32, against 2
+   to 3 for protein20, mmseqs12 and sdm12. That passes the decision rule of section 7, but it is
+   0.5% of pairs, it has not been compared with chance (shuffled queries), and same-class pairs
+   in different folds are mostly not related by descent: class is set by the mix of helix and
+   strand. *Decision: SCOPe40 does not support the HP case for homology; the class-level signal
+   needs a shuffled-query control before it is a result.*
+6. **Extension helps at c_opt, c_max and C = 2.** It beats exact matching on 140 of 140 pairs at
    c_max, 142 of 151 at C = 2 and 99 of 117 at c_opt (section 5).
 """)
 
