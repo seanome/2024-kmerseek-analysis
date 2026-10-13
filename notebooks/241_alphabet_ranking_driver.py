@@ -34,21 +34,40 @@ import collections
 import concurrent.futures as cf
 import json
 import math
+import os
 import re
 import subprocess
 import sys
 import time
 from pathlib import Path
 
-KMERSEEK = Path("/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek")
-HUMAN = Path(
-    "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"
+# Every path can be set from the environment; 241_alphabet_ranking.sbatch sets all four
+# for Sherlock. The defaults are the laptop paths the first run (2026-09-23) used. Its
+# kmerseek was commit 982a055, tagged nb241-kmerseek-982a055 in seanome/kmerseek.
+KMERSEEK = Path(
+    os.environ.get(
+        "NB241_KMERSEEK",
+        "/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek",
+    )
 )
-OUT = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
+HUMAN = Path(
+    os.environ.get(
+        "NB241_HUMAN",
+        "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa",
+    )
+)
+OUT = Path(
+    os.environ.get(
+        "NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"
+    )
+)
 QUERIES = OUT / "queries.fa"
 KAPPA_TSV = Path(
-    "/Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/dark-set-v4/"
-    "nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv"
+    os.environ.get(
+        "NB241_KAPPA",
+        "/Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/dark-set-v4/"
+        "nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv",
+    )
 )
 
 # The full header of each known partner in the human FASTA (kmerseek pair matches the
@@ -168,15 +187,24 @@ def first_fit_counts(index_log: Path) -> tuple[int | None, int | None]:
 
 
 def fitted(survival_csv: Path) -> bool | None:
-    """The `fitted` flag from a ka_survival CSV; None when the file is missing or empty."""
+    """The `fitted` flag from a ka_survival CSV; None when the file is missing or empty.
+
+    The build the first run used (nb241-kmerseek-982a055) writes a `fitted` column and
+    refuses some fits. kmerseek main (2c39796) has no `fitted` column and stores every fit,
+    reporting the fitted value as `r_database`; a file with that value counts as fitted.
+    """
     if not survival_csv.exists():
         return None
     with open(survival_csv) as fh:
         header = fh.readline().rstrip("\n").split(",")
         row = fh.readline().rstrip("\n").split(",")
-    if "fitted" not in header or len(row) < len(header):
+    if len(row) < len(header):
         return None
-    return row[header.index("fitted")].strip().lower() == "true"
+    if "fitted" in header:
+        return row[header.index("fitted")].strip().lower() == "true"
+    if "r_database" in header:
+        return row[header.index("r_database")].strip() not in ("", "NaN", "nan", "inf")
+    return None
 
 
 def residue_counts() -> collections.Counter:
@@ -228,12 +256,31 @@ def run(cmd: list[str], log: Path) -> tuple[int, float]:
     return p.returncode, time.time() - t0
 
 
-def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
+def one_arm(
+    alphabet: str,
+    k: int,
+    c: str,
+    x: str,
+    dry: bool,
+    db: Path | None = None,
+    queries: Path | None = None,
+    out: Path | None = None,
+    pairs: dict[str, str] | None = None,
+    db_label: str = "human",
+) -> dict:
+    """Index `db`, calibrate, search `queries` against it, and run `kmerseek pair` for
+    each (query, target) in `pairs`. The defaults are the forward search of this
+    notebook (three queries against the human proteome, results under OUT);
+    241_reciprocal_driver.py passes its own database, queries and folder."""
+    db = HUMAN if db is None else db
+    queries = QUERIES if queries is None else queries
+    out = OUT if out is None else out
+    pairs = PAIRS if pairs is None else pairs
     tag = f"{alphabet}.k{k}"
-    idx = OUT / "idx" / f"human.{tag}.rocksdb"
-    search_csv = OUT / "search" / f"{tag}.csv"
-    survival = OUT / "ka_survival" / f"{tag}.csv"
-    logs = OUT / "logs"
+    idx = out / "idx" / f"{db_label}.{tag}.rocksdb"
+    search_csv = out / "search" / f"{tag}.csv"
+    survival = out / "ka_survival" / f"{tag}.csv"
+    logs = out / "logs"
     logs.mkdir(exist_ok=True)
     rec = {"alphabet": alphabet, "ksize": k, "penalty": c, "xdrop": x, "tag": tag}
 
@@ -241,7 +288,7 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
         str(KMERSEEK),
         "index",
         "-i",
-        str(HUMAN),
+        str(db),
         "-o",
         str(idx),
         "-k",
@@ -264,7 +311,7 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
         str(KMERSEEK),
         "search",
         "-q",
-        str(QUERIES),
+        str(queries),
         "-t",
         str(idx),
         "-k",
@@ -323,7 +370,7 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
         )
         fit = False
     elif fit is False:
-        retry_out = OUT / "ka_survival" / f"{tag}.retry.csv"
+        retry_out = out / "ka_survival" / f"{tag}.retry.csv"
         cal_cmd = [
             str(KMERSEEK),
             "calibrate",
@@ -353,7 +400,7 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
             if a not in ("--extend-mismatch-penalty", "--extend-xdrop", c, x)
         ]
         search_cmd += ["--extend-mismatch-penalty", "0"]
-        (OUT / "search" / f"{tag}.nofit").write_text(
+        (out / "search" / f"{tag}.nofit").write_text(
             "no Karlin-Altschul fit; searched with exact regions\n"
         )
 
@@ -364,19 +411,19 @@ def one_arm(alphabet: str, k: int, c: str, x: str, dry: bool) -> dict:
         rec["search_rc"], rec["search_s"] = 0, 0.0
 
     # Pairwise layer: no database, just the shared k-mers and regions between the two.
-    for qname, target in PAIRS.items():
-        pj = OUT / "pair" / f"{tag}.{qname}.json"
+    for qname, target in pairs.items():
+        pj = out / "pair" / f"{tag}.{qname}.json"
         if pj.exists():
             continue
         cmd = [
             str(KMERSEEK),
             "pair",
             "-q",
-            str(QUERIES),
+            str(queries),
             "--query-name",
             qname,
             "-t",
-            str(HUMAN),
+            str(db),
             "--target-name",
             target,
             "-k",
@@ -401,6 +448,9 @@ def main() -> None:
     )
     args = ap.parse_args()
 
+    # A fresh output folder (a first run on Sherlock) has none of these yet.
+    for d in ("idx", "search", "ka_survival", "pair", "logs"):
+        (OUT / d).mkdir(parents=True, exist_ok=True)
     cnt = residue_counts()
     hbits = bits_per_position(cnt)
     kappa = read_kappa()
