@@ -3,7 +3,7 @@
 against, sorted by HGNC gene group, and a length-matched control set of the same size, for
 notebook 281.
 
-    python3 mhc_target_sets.py <reference.fasta> <reference_pfam.parquet> <uniprot_sprot.dat.gz> <hgnc_dir> <out_dir>
+    python3 mhc_target_sets.py <reference.fasta> <reference_pfam.parquet> <uniprot_sprot.dat.gz> <hgnc_dir> <self_nonself_dir> <out_dir>
 
 Categories come from HGNC gene groups (the groups GeneCards shows; downloaded from
 genenames.org into data/hgnc/ on the date in data/hgnc/DOWNLOADED_ON). A Swiss-Prot entry is
@@ -19,6 +19,13 @@ Each entry goes to the first category it qualifies for, in this order:
   antigen_presentation     TAP1, TAP2, TAPBP, B2M, CD74, ERAP1, ERAP2 by symbol; HGNC has no
                            antigen-presentation group, and B2M and TAPBP sit only in C1-set
   nk_receptor              HGNC 620 KIR, 1181 and 1182 LILR, 621 killer cell lectin-like
+  self_nonself_nonvertebrate  reviewed UniProt entries mentioning "allorecognition" or
+                           "heterokaryon incompatibility", or with keyword KW-0713
+                           Self-incompatibility (data/uniprot_self_nonself/, downloaded on the
+                           date in DOWNLOADED_ON): fungal het and rcd proteins, Dictyostelium
+                           TgrB1/TgrC1, plant S-locus proteins. Found by text, so a few entries
+                           (ATG8, a mating-type protein) take part rather than recognise. HGNC
+                           covers human genes only, so these systems are not in its groups.
   tcr_cd3                  HGNC 371, 372, 374, 375 T cell receptor loci; 3733 CD3
   c1_set                   HGNC 591 C1-set domain containing: the fold of MHC alpha 3 and
                            immunoglobulin constant domains, broad, kept last
@@ -43,6 +50,7 @@ CATEGORIES = [
     ("minor_histocompatibility", [870]),
     ("antigen_presentation", []),
     ("nk_receptor", [620, 1181, 1182, 621]),
+    ("self_nonself_nonvertebrate", []),
     ("tcr_cd3", [371, 372, 374, 375, 3733]),
     ("c1_set", [591]),
 ]
@@ -84,7 +92,7 @@ def sprot_names_genes(path, wanted):
 
 
 def main():
-    ref_fasta, pfam_path, dat_path, hgnc_dir, out_dir = sys.argv[1:6]
+    ref_fasta, pfam_path, dat_path, hgnc_dir, sns_dir, out_dir = sys.argv[1:7]
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     symbols = {}
@@ -95,6 +103,10 @@ def main():
             s |= set(g["Approved symbol"].str.to_uppercase().to_list())
         symbols[cat] = s
     symbols["antigen_presentation"] = ANTIGEN_PRESENTATION
+    symbols["self_nonself_nonvertebrate"] = set()
+    sns_acc = set()
+    for f in sorted(Path(sns_dir).glob("*.tsv")):
+        sns_acc |= set(pl.read_csv(f, separator="\t", infer_schema_length=0)["Entry"].to_list())
 
     lengths = read_lengths(ref_fasta)
     info = sprot_names_genes(dat_path, set(lengths))
@@ -104,7 +116,8 @@ def main():
         desc, gene = info.get(acc, ("", ""))
         g = gene.upper()
         for cat, _ in CATEGORIES:
-            if g in symbols[cat] or (cat == "mhc" and pf.get(acc, set()) & MHC_PFAM):
+            if (g in symbols[cat] or (cat == "mhc" and pf.get(acc, set()) & MHC_PFAM)
+                    or (cat == "self_nonself_nonvertebrate" and acc in sns_acc)):
                 rows.append({"accession": acc, "category": cat, "gene": gene, "length": n, "description": desc})
                 break
     mhc = pl.DataFrame(rows)
