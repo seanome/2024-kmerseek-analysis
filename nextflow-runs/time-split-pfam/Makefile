@@ -23,7 +23,9 @@ NF_COMMON = $(MAKEFILE_DIR)/main.nf -profile sherlock \
             --pfam_hmm $(RUN_DIR)/data/Pfam33.1/Pfam-A.hmm.gz \
             --index_cache $(RUN_DIR)/kmerseek_index --hmm_cache $(RUN_DIR)/hmm
 
-HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns,normal HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
+# The head runs on hns alone: the normal partition caps a job at 2 days, and with
+# "hns,normal" sbatch refuses a 7-day head (QOSMaxWallDurationPerJobLimit), as the dark set found.
+HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
 .PHONY: download stop1 controls inputs smoke pilot full running
