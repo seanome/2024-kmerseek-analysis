@@ -33,6 +33,7 @@ SPECIES = ["human", "worm", "yeast", "borrelia", "botryllus"]
 PILOT_CHUNK = {"human": "chunk_0000", "worm": "chunk_0000", "yeast": "chunk_0000",
                "borrelia": "chunk_0000", "botryllus": "chunk_0004"}
 POSITIVE_CONTROL = ("hp_pbotc_1st_ed2", "23")
+FIRST = ["botryllus", "worm", "human", "yeast", "borrelia"]
 COLS = ["species", "clade", "chunk", "kind", "alphabet", "ksize", "penalty", "xdrop", "index", "run_regions"]
 
 
@@ -63,7 +64,9 @@ def main(mode, base, stage, img, dry):
     n_search = n_read = 0
     for a, k in SIX_SETTINGS:
         prev = None
-        searches = [t for t in keep if (t["alphabet"], t["ksize"]) == (a, k)]
+        # B. schlosseri and C. elegans first: the verdict needs only those two species.
+        searches = sorted((t for t in keep if (t["alphabet"], t["ksize"]) == (a, k)),
+                          key=lambda t: (FIRST.index(t["species"]), t["chunk"], t["kind"]))
         runfiles = [r for r in reads.values() if (r["alphabet"], r["ksize"]) == (a, k)]
         for part, rows in (("search", searches), ("runfiles", runfiles)):
             if not rows:
