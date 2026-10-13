@@ -12,6 +12,7 @@
 #   make hash-check OLD=<commit>   smoke-size run of OLD, then of this checkout with -resume,
 #                        in hashcheck/: every task hash the two share is listed side by side
 #   make seed-pilot      Stop B: the pilot's queries against the seed reference
+#   make seed-self-check queries already in a Pfam 33.1 seed, and the instances they cover
 #   make plddt           AlphaFold DB models of every real query; mean pLDDT per instance
 #   make running         what is running on this account
 #
@@ -42,7 +43,7 @@ NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs smoke pilot score-partial full seed-reference hash-check seed-pilot plddt running
+.PHONY: download stop1 controls inputs smoke pilot score-partial full seed-reference hash-check seed-pilot seed-self-check plddt running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -135,6 +136,10 @@ hash-check:
 	  (cd $(MAKEFILE_DIR) && git checkout -q $(OLD)); nextflow run $$ARGS --run_tag old; \
 	  (cd $(MAKEFILE_DIR) && git checkout -q $$NEW); nextflow run $$ARGS --run_tag new -resume; \
 	  echo "old=$(OLD) new=$$NEW"'
+
+seed-self-check:
+	$(SB) --job-name=280-seed-self-check --cpus-per-task=1 --mem=16G --time=1:00:00 \
+	  --wrap '$(PY) $(MAKEFILE_DIR)/bin/seed_self_check.py --run-dir $(RUN_DIR) --out $(RUN_DIR)/inputs/reference-$(SEED)/self_check'
 
 seed-pilot:
 	cd $(RUN_DIR) && mkdir -p launch-pilot-$(SEED) && cd launch-pilot-$(SEED) && \
