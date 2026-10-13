@@ -63,65 +63,97 @@ import numpy as np
 import polars as pl
 
 GAP_DECAY_RATE = 0.5  # BLAST_GAP_DECAY_RATE for ungapped search, blast_parameters.h
-MAX_CHAIN = 8  # longest chain considered; BLAST has no cap, we never saw 8 used
+E_FLOOR = 1e-300  # smallest E-value used; kmerseek can report 0 when it underflows
+MAX_CHAIN = 8  # longest chain considered (BLAST has no cap); 40 of 934_198 Pfam 998 pairs reach it
 _LN_FACT = [math.lgamma(r + 1) for r in range(MAX_CHAIN + 2)]
 
 
-def log_sum_p(r: int, s: float) -> float:
-    """ln Prob(r, s): ln of the chance that r unrelated segments' normalised scores, added,
-    reach at least s (Karlin & Altschul 1993). Exact double integral, in log form so a
-    small P does not underflow; above s = r^2 + r - 1 BLAST's large-s form is used, which
-    agrees with the integral to under 1% there (tests/test_sum_statistics_utils.py)."""
-    if r == 1:
-        # Prob = 1 - exp(-e^-s)
-        return math.log(-math.expm1(-math.exp(-s))) if s > -50 else 0.0
-    if s >= r * r + r - 1:
-        return math.log(r) + (r - 1) * math.log(s) - s - 2 * _LN_FACT[r]
-    mean, sd = r * (1 - math.log(r)) - 0.5, math.sqrt(
-        r
-    )  # BLAST's mean and sd of the sum
-    if s <= mean - 4 * sd:
-        return 0.0
-    # outer variable y from s to s + 60 (e^-60 of the integrand's start), inner x from 0 to
-    # max(y/r, 0) + 8, past which exp(-e^(x - y/r)) < e^-2980.
-    y = np.linspace(s, s + 60.0, 3001)
+def _log_sum_p_integral(r: int, s: float, n_y: int = 801, n_x: int = 401) -> float:
+    """ln Prob(r, s) from Karlin & Altschul's double integral (r >= 2), by the trapezoid
+    rule: y from s to s + 50, x from 0 to max(y/r, 0) + 8, past which
+    exp(-e^(x - y/r)) < e^-2980. The factor e^-s is taken out so a small P keeps its digits.
+    """
+    y = np.linspace(s, s + 50.0, n_y)
     hi = np.maximum(y / r, 0.0) + 8.0
-    t = np.linspace(0.0, 1.0, 2001)
-    x = t[None, :] * hi[:, None]
-    with np.errstate(over="ignore", divide="ignore"):
-        log_inner_f = (r - 2) * np.log(np.where(x > 0, x, 1e-300)) - np.exp(
-            x - y[:, None] / r
-        )
-    if r == 2:
-        log_inner_f = -np.exp(x - y[:, None] / r)
-    inner = np.trapezoid(np.exp(log_inner_f), x, axis=1)
-    # integrand e^-(y - s) * inner, factor e^-s taken out
+    x = np.linspace(0.0, 1.0, n_x)[None, :] * hi[:, None]
+    with np.errstate(divide="ignore"):
+        log_x = np.log(x) if r > 2 else np.zeros_like(x)
+    f = np.exp(
+        (r - 2) * np.where(x > 0, log_x, -np.inf if r > 2 else 0.0)
+        - np.exp(x - y[:, None] / r)
+    )
+    inner = np.trapezoid(f, x, axis=1)
     outer = np.trapezoid(np.exp(-(y - s)) * inner, y)
     const = (r - 2) * math.log(r) - _LN_FACT[r - 1] - _LN_FACT[r - 2]
     return min(0.0, const - s + math.log(outer))
 
 
-def chain_evalue(y_sum: float, r: int, n_db: float, n_t: float) -> float:
-    """Database E-value of r calls in the same order on both proteins whose pair-level
-    normalised scores add up to y_sum (BLAST_LargeGapSumE, then the gap-decay factor
-    relative to a single call). For r = 1 this is the call's own E-value."""
+_TABLE_STEP = 0.02
+_TABLE: dict[int, tuple[float, np.ndarray]] = {}
+
+
+def _table(r: int) -> tuple[float, np.ndarray]:
+    """ln Prob(r, s) on a grid of s from BLAST's "certainly 1" bound (mean - 4 sd) to the
+    start of the large-s form (r^2 + r - 1), step 0.02, built on first use."""
+    if r not in _TABLE:
+        lo = (
+            r * (1 - math.log(r)) - 0.5 - 4 * math.sqrt(r)
+        )  # BLAST's mean - 4 sd of the sum
+        hi = r * r + r - 1
+        grid = np.arange(lo, hi + _TABLE_STEP, _TABLE_STEP)
+        _TABLE[r] = (lo, np.array([_log_sum_p_integral(r, s) for s in grid]))
+    return _TABLE[r]
+
+
+def log_sum_p(r: int, s: float) -> float:
+    """ln Prob(r, s): ln of the chance that r unrelated segments' normalised scores, added,
+    reach at least s (Karlin & Altschul 1993, equation 4). r = 1 is the Gumbel tail
+    1 - exp(-e^-s). For r >= 2: 0 (P = 1) below BLAST's bound mean - 4 sd; above
+    s = r^2 + r - 1, BLAST's large-s form r s^(r-1) e^-s / (r!)^2; in between, the double
+    integral read off a table at step 0.02 (checked against BLAST's own tables in
+    tests/test_sum_statistics_utils.py)."""
     if r == 1:
-        return math.exp(-y_sum) * n_db / n_t
+        return math.log(-math.expm1(-math.exp(-s))) if s > -50 else 0.0
+    if s >= r * r + r - 1:
+        return math.log(r) + (r - 1) * math.log(s) - s - 2 * _LN_FACT[r]
+    lo, tab = _table(r)
+    if s <= lo:
+        return 0.0
+    i = (s - lo) / _TABLE_STEP
+    k = min(int(i), len(tab) - 2)
+    a = i - k
+    return float((1 - a) * tab[k] + a * tab[k + 1])
+
+
+def chain_log_evalue(y_sum: float, r: int, n_db: float, n_t: float) -> float:
+    """ln of the database E-value of r calls in the same order on both proteins whose
+    pair-level normalised scores add up to y_sum (BLAST_LargeGapSumE, then the gap-decay
+    factor relative to a single call). In log form so that strong chains do not all
+    underflow to E = 0 and tie. For r = 1 this is ln of the call's own E-value."""
+    if r == 1:
+        return -y_sum + math.log(n_db / n_t)
     lp = log_sum_p(r, y_sum + _LN_FACT[r])
-    p = math.exp(lp)
-    e_pair = -math.log1p(-p) if p < 1 else math.inf
-    return e_pair * n_db / n_t / GAP_DECAY_RATE ** (r - 1)
+    # E_pair = -ln(1 - P); for small P it is P itself
+    log_e_pair = (
+        lp if lp < -20 else math.log(-math.log1p(-math.exp(lp))) if lp < 0 else math.inf
+    )
+    return log_e_pair + math.log(n_db / n_t) - (r - 1) * math.log(GAP_DECAY_RATE)
+
+
+def chain_evalue(y_sum: float, r: int, n_db: float, n_t: float) -> float:
+    """exp(chain_log_evalue): the chain's E-value over the whole database."""
+    return math.exp(chain_log_evalue(y_sum, r, n_db, n_t))
 
 
 @dataclass(frozen=True)
 class ChainRules:
     """What may join a chain. Fixed in notebook 287's first cell before any run.
 
-    max_gap        residues allowed between one call's end and the next call's start, on
-                   each protein separately
-    across_settings  True lets calls from different alphabets and k join one chain
+    max_gap           residues allowed between one call's end and the next call's start, on
+                      each protein separately
+    across_settings   True lets calls from different alphabets and k join one chain
     settings_penalty  ln of the number of settings searched, taken off every call's y
-                   (Bonferroni: the call was the best of that many searches); 0 for none
+                      (Bonferroni: each call was the best of that many searches); 0 for none
     """
 
     max_gap: int = 200
@@ -135,50 +167,62 @@ def add_normalised_score(calls: pl.LazyFrame | pl.DataFrame) -> pl.LazyFrame:
     setting) and n_t (target length)."""
     return (
         calls.lazy()
-        .filter(pl.col("region_evalue").is_finite() & (pl.col("region_evalue") > 0))
+        .filter(pl.col("region_evalue").is_finite())
         .with_columns(
             qs=pl.col("region_start").cast(pl.Int64),
             qe=pl.col("region_end").cast(pl.Int64),
             ts=pl.col("target_start").cast(pl.Int64),
         )
         .with_columns(te=pl.col("ts") + pl.col("qe") - pl.col("qs"))
+        # A difference of logs: n_db / (n_t E) overflows for E near 1e-320. kmerseek
+        # reports E = 0 when exp(-lambda S) underflows (16 calls in the Pfam 998 run), so
+        # E is floored at 1e-300 (E_FLOOR) rather than dropped.
         .with_columns(
-            y=(pl.col("n_db") / (pl.col("n_t") * pl.col("region_evalue"))).log()
+            y=pl.col("n_db").log()
+            - pl.col("n_t").log()
+            - pl.max_horizontal(pl.col("region_evalue"), pl.lit(E_FLOOR)).log()
         )
     )
 
 
 def best_chain(qs, qe, ts, te, y, setting, rules: ChainRules):
-    """Best chain on one pair. Arrays are the pair's calls with y > 0 (y already less the
-    settings penalty is NOT required to be positive; the eligibility filter is the caller's).
-    Returns (r, y_sum, member indices) for every chain length r that has a chain, best
-    sum of y for each r. Calls must start after the previous call ends on both proteins
-    (no overlap), within max_gap on each, and, when not across_settings, share a setting.
-    Dynamic programme over calls in query order: best[j][r] = y_j + max best[i][r-1]."""
+    """Best chain of each length on one pair. Returns (r, sum of y, member indices into
+    the arrays given) for every r up to MAX_CHAIN that has a chain. A call may follow
+    another when it starts after that call ends on both proteins (no overlap), at most
+    max_gap residues later on each, and, unless across_settings, in the same setting.
+    Dynamic programme over calls sorted by query start:
+    best[j, r] = y_j + max over allowed predecessors i of best[i, r - 1]."""
     n = len(qs)
     order = np.lexsort((ts, qs))
     qs, qe, ts, te, y, setting = (a[order] for a in (qs, qe, ts, te, y, setting))
     best = np.full((n, MAX_CHAIN + 1), -np.inf)
     back = np.full((n, MAX_CHAIN + 1), -1, dtype=np.int64)
     best[:, 1] = y
+    # a predecessor ends at or before qs[j], so it started at least its own length earlier;
+    # only calls starting at or after qs[j] - max_gap - longest call can qualify.
+    longest = int((qe - qs).max()) if n else 0
+    first = np.searchsorted(qs, qs - rules.max_gap - longest, side="left")
     for j in range(n):
+        lo = first[j]
+        if lo >= j:
+            continue
         ok = (
-            (qe[:j] <= qs[j])
-            & (te[:j] <= ts[j])
-            & (qs[j] - qe[:j] <= rules.max_gap)
-            & (ts[j] - te[:j] <= rules.max_gap)
+            (qe[lo:j] <= qs[j])
+            & (te[lo:j] <= ts[j])
+            & (qs[j] - qe[lo:j] <= rules.max_gap)
+            & (ts[j] - te[lo:j] <= rules.max_gap)
         )
         if not rules.across_settings:
-            ok &= setting[:j] == setting[j]
-        idx = np.flatnonzero(ok)
+            ok &= setting[lo:j] == setting[j]
+        idx = lo + np.flatnonzero(ok)
         if idx.size == 0:
             continue
-        for r in range(2, MAX_CHAIN + 1):
-            cand = best[idx, r - 1]
-            k = int(np.argmax(cand))
-            if np.isfinite(cand[k]):
-                best[j, r] = y[j] + cand[k]
-                back[j, r] = idx[k]
+        cand = best[idx, 1:MAX_CHAIN]  # chains of length 1..MAX_CHAIN-1 ending at i
+        k = np.argmax(cand, axis=0)
+        top = cand[k, np.arange(cand.shape[1])]
+        fin = np.isfinite(top)
+        best[j, 2:][fin] = y[j] + top[fin]
+        back[j, 2:][fin] = idx[k[fin]]
     out = []
     for r in range(1, MAX_CHAIN + 1):
         j = int(np.argmax(best[:, r]))
@@ -195,44 +239,65 @@ def best_chain(qs, qe, ts, te, y, setting, rules: ChainRules):
 def score_pairs(
     calls: pl.DataFrame, rules: ChainRules, keys=("query_name", "target_name")
 ) -> pl.DataFrame:
-    """One row per query-target pair: the chain with the lowest E-value (chain_e, its
-    length r and members as row numbers of `calls`) and the lowest single-call E-value
-    (single_e), both with the settings penalty applied. `calls` comes from
-    add_normalised_score(), collected, with columns `setting` and `n_db`; only calls with
-    y > 0 (a positive score for this pair in their own setting) are used, as BLAST links
-    only segments above its cutoff and kmerseek's chain_regions only positive ones."""
-    c = calls.with_row_index("row").filter(pl.col("y") > 0)
+    """One row per query-target pair: the chain with the lowest E-value (chain_e and its
+    natural log chain_log_e, which ranks without ties at underflow; its
+    length chain_r and its members as row numbers of `calls`) and the lowest single-call
+    E-value (single_e, single_log_e, its row single_row), both with the settings penalty
+    applied.
+    `calls` comes from add_normalised_score(), collected, with columns `setting` and
+    `n_db`. Only calls with y > 0 (a positive score for this pair in their own setting)
+    are used: BLAST links only segments above its cutoff, and kmerseek's chain_regions
+    only positive ones."""
+    c = calls.with_row_index("row").filter(pl.col("y") > 0).sort(*keys, "qs")
+    if c.height == 0:
+        return pl.DataFrame()
+    pair_id = c.select(pl.struct(*keys).rle_id()).to_series().to_numpy()
+    starts = np.flatnonzero(np.r_[True, pair_id[1:] != pair_id[:-1]])
+    ends = np.r_[starts[1:], len(pair_id)]
+    cols = {
+        k: c[k].to_numpy() for k in ("qs", "qe", "ts", "te", "y", "n_t", "n_db", "row")
+    }
+    setting = c["setting"].to_numpy()
+    key_vals = [c[k].to_numpy() for k in keys]
+    y_all = cols["y"] - rules.settings_penalty
+    log_e_single_all = -y_all + np.log(cols["n_db"] / cols["n_t"])
     rows = []
-    for key, g in c.group_by(list(keys), maintain_order=True):
-        n_t = float(g["n_t"][0])
-        n_db = g["n_db"].to_numpy().astype(float)
-        y = g["y"].to_numpy() - rules.settings_penalty
+    for a, b in zip(starts, ends):
+        sl = slice(a, b)
+        n_t = float(cols["n_t"][a])
+        n_db = cols["n_db"][sl]
         chains = best_chain(
-            g["qs"].to_numpy(),
-            g["qe"].to_numpy(),
-            g["ts"].to_numpy(),
-            g["te"].to_numpy(),
-            y,
-            g["setting"].to_numpy(),
+            cols["qs"][sl],
+            cols["qe"][sl],
+            cols["ts"][sl],
+            cols["te"][sl],
+            y_all[sl],
+            setting[sl],
             rules,
         )
+        if not chains:
+            raise ValueError(
+                f"no chain for pair {[v[a] for v in key_vals]}: y = {y_all[sl]}"
+            )
         best = None
         for r, y_sum, members in chains:
             # the largest database size among the members: settings differ by under 15%
-            e = chain_evalue(y_sum, r, float(n_db[members].max()), n_t)
+            e = chain_log_evalue(y_sum, r, float(n_db[members].max()), n_t)
             if best is None or e < best[0]:
                 best = (e, r, members)
-        single_e = float(np.min(np.exp(-y) * n_db / n_t))
-        rws = g["row"].to_numpy()
+        i_single = int(np.argmin(log_e_single_all[sl]))
+        rws = cols["row"][sl]
         rows.append(
-            dict(zip(keys, key))
+            {k: v[a] for k, v in zip(keys, key_vals)}
             | dict(
-                n_calls=g.height,
-                chain_e=best[0],
+                n_calls=b - a,
+                chain_log_e=best[0],
+                chain_e=math.exp(best[0]),
                 chain_r=best[1],
                 chain_rows=[int(rws[m]) for m in best[2]],
-                single_e=single_e,
-                single_row=int(rws[int(np.argmax(y))]),
+                single_log_e=float(log_e_single_all[a + i_single]),
+                single_e=float(np.exp(log_e_single_all[a + i_single])),
+                single_row=int(rws[i_single]),
             )
         )
     return pl.DataFrame(rows, schema_overrides={"chain_rows": pl.List(pl.Int64)})

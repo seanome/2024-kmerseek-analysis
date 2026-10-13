@@ -70,3 +70,11 @@ def test_best_chain_order_overlap_gap_and_setting():
     assert {r: m for r, _, m in same}[2] == [0, 2]  # both in setting "a"
     tight = ss.best_chain(qs, qe, ts, te, y, st, ss.ChainRules(max_gap=20))
     assert {r: m for r, _, m in tight}[2] == [0, 1]
+
+
+def test_strong_chain_keeps_a_finite_log_evalue():
+    """Two calls at E = 1e-300 each: the chain's E underflows a double, its log must not."""
+    n_db, n_t = 5e5, 400.0
+    y = math.log(n_db / n_t) - math.log(1e-300)
+    log_e = ss.chain_log_evalue(2 * y, 2, n_db, n_t)
+    assert math.isfinite(log_e) and log_e < math.log(1e-300)
