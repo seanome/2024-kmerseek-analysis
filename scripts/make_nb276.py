@@ -873,6 +873,201 @@ repeated class, blue is one that writes it as a varied string.
 """)
 
 md(r"""
+## 6g. What the 36-residue similarity is
+
+The prespecified test said the segment is specific and the column split said the loop is
+its weakest part. Neither says what it is. Four questions, each with its own comparison.
+
+```
+P66 197-232  TGNRNQENDKDTPYNKTYQGILYGIQATWKPIKNLL
+             |||   |    |    |     |       |  | |
+CD47 109-144 TGNYTCEVTELTREGETIIELKYRVVSWFSPNENIL
+```
+
+10 identical of 36, 28%, which is ordinary twilight-zone territory. The anchor is `TGN`
+against `TGN` at the start and `N.L` against `N.L` at the end.
+""")
+
+code(r"""
+char = pl.read_csv(DATA / "24_segment_characterisation.csv")
+comp = pl.read_csv(DATA / "21_segment_composition.csv")
+windows = pl.read_csv(DATA / "23_p66_windows_vs_cd47.csv")
+ig = pl.read_csv(DATA / "22_segment_vs_ig_domains.csv")
+ss = pl.read_csv(DATA / "07_p66_secondary_structure.csv")
+
+print("Composition of the two halves against their own proteins:")
+print(comp.drop("sequence"))
+print("\nSecondary structure, P66 from its own model (mean pLDDT 29, so indicative):")
+seg_ss = ss.filter(pl.col("full_position").is_between(197, 232))
+print("P66 197-232: " + "".join("E" if s == "strand" else "H" if s == "helix" else "-"
+                                for s in seg_ss["secondary_structure"]))
+print("\nSpecificity:")
+print(char.transpose(include_header=True, column_names=["value"]))
+top = windows.filter(pl.col("best_score") == windows["best_score"].max())["p66_start"].to_list()
+runs = []
+for p in sorted(top):
+    if runs and p == runs[-1][-1] + 1:
+        runs[-1].append(p)
+    else:
+        runs.append([p])
+print(f"\n{len(top)} of {windows.height} P66 windows reach the top score, in "
+      f"{len(runs)} distinct regions:")
+for r in runs:
+    print(f"  P66 {r[0]}-{r[-1] + 35}")
+show("276n_segment_specificity", aspect=0.33)
+""")
+
+md(r"""
+**Figure 276n.** The segment's specificity. `figures/276n_segment_specificity.png`.
+
+**1. What they are structurally.** P66 197-232 is strand, coil, strand: 18 residues of
+β-strand and 18 of coil, which is what an extracellular turn between two strands of a
+β-barrel looks like, and the loop sits in the coil. CD47 109-144 is the last two strands
+of the immunoglobulin domain plus the first turn of the transmembrane helix (15 strand, 14
+coil, 7 helix). So both sides are strand-turn-strand, which is the commonest thing in
+either protein, and the P66 side comes from a model whose mean pLDDT is 29.
+
+**2. It is not a compositional artefact, but the two sides are not compositionally alike
+either.** CD47 109-144 is 16.7% acidic against 7.7% for the whole of CD47, so it is a real
+acidic patch. P66 197-232 is 8.3% acidic against 11.2% for the whole of P66, so it is
+slightly *less* acidic than its own protein, and it is basic-leaning at 13.9% K+R. Neither
+side is low-complexity: 14 and 15 distinct residues, longest single-residue run 2.
+
+**3. It is CD47, not immunoglobulins in general.** P66 197-232 scores 6.0 against CD47 and
+**0 of 239** SCOPe b.1.1 immunoglobulin domains reach that, median 0.0, best 5.0. So P66
+197-232 does not simply like the immunoglobulin fold.
+
+**4. Two regions of P66 reach this score against CD47, not one.** Of 583 36-residue
+windows, 82 tie at the top, and those 82 fall into exactly two stretches: **197-264**, the
+one found here, and **517-600**, which no test in this notebook has looked at. Everything
+else in P66 scores 4.5 or less. So the window is one of two, not unique.
+
+Put together: a strand-turn-strand of a bacterial outer-membrane barrel that resembles the
+last strands of CD47's immunoglobulin domain more than 239 other immunoglobulin domains do,
+at 28% identity, with its own loop as the weakest part. That is a specific local similarity
+with no function attached to it by anything measured here.
+""")
+
+md(r"""
+## 6h. Combining alphabets, and why it did worse
+
+The idea is that if one alphabet finds a match, another should corroborate it, so a
+combination should beat either alone. Two combinations were fixed in advance, and only two:
+`polarity4` + `funcgroups8`, and all 19 alphabets. Each was scored by how many of its
+alphabets put the two residues in the same class, mapped to +1 when all agree and -1 when
+none do, with the seed required to match in every alphabet at once.
+
+It did worse, on both, at every seed length.
+""")
+
+code(r"""
+combined = pl.read_csv(DATA / "25_combined_alphabets.csv")
+print(combined.select([c for c in combined.columns
+                       if c not in ("p66_span", "cd47_span", "product_classes")]))
+print(f"\nSettings that never reach the loop: "
+      f"{combined.filter(~pl.col('reaches_loop')).height} of {combined.height}")
+print("Product alphabet sizes:")
+print(combined.group_by("combination", "n_alphabets", "product_classes").len()
+      .sort("n_alphabets"))
+show("276o_combined_alphabets", aspect=0.35)
+""")
+
+md(r"""
+**Figure 276o.** Both combinations against the best single alphabet.
+`figures/276o_combined_alphabets.png`.
+
+**Product seeding fails outright.** Requiring every alphabet in the combination to agree on
+the seed means intersecting them, and the intersection of all 19 has **20 classes over the
+20 residues**: requiring every alphabet to agree is requiring identity. No 4-residue
+identity exists between P66's loop region and CD47, so the loop is never reached. For
+`polarity4` + `funcgroups8` the product has 11 classes, and it is reached no better.
+
+**Coarse seeding reaches the loop and is beaten by the background.** Letting `polarity4`
+propose seeds and the combination score the extension, the best loop-covering segment is 5
+to 7 residues with a score of 1.6 to 3.0, and 47% to 80% of the 437 matched human proteins
+reach it. On the loop's own columns, 427 of 433 matched proteins beat `polarity4` +
+`funcgroups8`. Compare the best single alphabet: `hsdm17` alone, 36 residues, score 6.0,
+beaten by 0 of 437.
+""")
+
+md(r"""
+## 6i. Why averaging hurt, when corroboration should help
+
+The intuition is right and the implementation was wrong. Three measurements say where.
+""")
+
+code(r"""
+coll = pl.read_csv(DATA / "26_alphabet_collision_rates.csv")
+cols = pl.read_csv(DATA / "27_segment_columns_one_vs_average.csv")
+corr = pl.read_csv(DATA / "28_segment_corroboration_by_alphabet.csv")
+
+print("1. How often each alphabet calls a random pair of residues a match:")
+print(coll)
+print(f"   panel mean {coll['chance_two_residues_share_a_class'].mean():.3f}")
+matched = cols.filter(pl.col("hsdm17_column_score") > 0)
+mismatched = cols.filter(pl.col("hsdm17_column_score") < 0)
+print(f"\n2. The segment's 36 columns, scored both ways:")
+print(f"   {matched.height} columns hsdm17 calls a match:    "
+      f"hsdm17 {matched['hsdm17_column_score'].sum():+.1f}, "
+      f"averaged {matched['averaged_column_score'].sum():+.2f}  "
+      f"(mean share agreeing {matched['share_of_19_alphabets_agreeing'].mean():.2f})")
+print(f"   {mismatched.height} columns hsdm17 calls a mismatch: "
+      f"hsdm17 {mismatched['hsdm17_column_score'].sum():+.1f}, "
+      f"averaged {mismatched['averaged_column_score'].sum():+.2f}  "
+      f"(mean share agreeing {mismatched['share_of_19_alphabets_agreeing'].mean():.2f})")
+print(f"   whole segment:                          "
+      f"hsdm17 {cols['hsdm17_column_score'].sum():+.1f}, "
+      f"averaged {cols['averaged_column_score'].sum():+.2f}")
+print("\n3. Each alphabet asked on its own whether the segment beats its own")
+print("   matched background (corroboration as a conjunction, not an average):")
+print(corr.select("alphabet", "n_classes", "segment_score_on_cd47",
+                  "background_median", "n_background_ge", "p_value",
+                  "corroborates_at_0_05"))
+print(f"\n   {corr['corroborates_at_0_05'].sum()} of {corr.height} corroborate at "
+      f"p < 0.05; {(corr['p_value'] < 0.05 / corr.height).sum()} clear Bonferroni "
+      f"({0.05 / corr.height:.4f}).")
+show("276p_why_combining_alphabets_hurts", aspect=0.32)
+""")
+
+md(r"""
+**Figure 276p.** Why averaging hurt, and where corroboration does happen.
+`figures/276p_why_combining_alphabets_hurts.png`.
+
+**The matches were corroborated. The mismatches were corroborated too, and that is what
+killed it.** Of the 36 columns, the 16 that `hsdm17` calls a match are agreed on by 88% of
+the 19 alphabets, so averaging costs them almost nothing: +16.0 becomes +12.3. The 20 that
+`hsdm17` calls a mismatch are agreed on by only 20%, so under the averaged score they are
+worth -12.1 where `hsdm17`, at a mismatch penalty of 0.5, charged only -10.0. The averaged
+scheme charges up to -1 for a mismatch and `hsdm17` charged -0.5, and the segment is 56%
+mismatch, so the whole thing falls from **6.0 to 0.21** and no X-drop extension can build
+it. That is the 5-to-7-residue segments in 6h, in one number.
+
+So averaging did not dilute the signal. It raised the price of the noise. The fix is not to
+abandon combining but to stop tying the mismatch penalty to the agreement scale: score a
+column as the share agreeing minus a penalty chosen independently, the way a substitution
+matrix separates its positive and negative entries.
+
+**And the alphabets do not disagree at random: they disagree because they differ in size.**
+A 2-class alphabet calls 54% of all residue pairs a match and `protein20` calls 5%, with a
+panel mean of 0.30. An unweighted average over alphabets spanning 2 to 20 classes is
+therefore set mostly by how many coarse members the panel has, not by whether the residues
+resemble each other. 12 of the 19 alphabets here have 8 classes or fewer.
+
+**Corroboration done as a conjunction works, and it says something useful.** Asking each
+alphabet on its own whether the fixed segment beats its own matched background, **7 of 19
+corroborate at p < 0.05** and 2 clear Bonferroni: `hsdm17` and `sdm12`, both at p = 0.000.
+Every alphabet with 7 or more classes corroborates or comes close; **not one alphabet below
+7 classes does**, and `polarity4` and the HP family sit at p = 0.93 to 1.00, meaning every
+single one of the 437 matched proteins beats CD47 under them.
+
+That is the practical lesson for kmerseek, and it is about method rather than about P66. For
+a 36-residue similarity at 28% identity, the discriminating alphabets are the ones with 12
+to 20 classes; the two- and three-letter alphabets are blind to it, and a panel average
+dominated by them is blind for the same reason. The HP family's case has to rest on
+something other than segments like this one.
+""")
+
+md(r"""
 ## 7. Citations
 
 Every paper here was looked up with the PubMed tool in this session and the metadata it
@@ -959,8 +1154,10 @@ Three things limit how far that objection goes, and none of them removes it:
    is too poor to test the claim, it is also too poor to have supported it.
 
 The sequence side adds one thing the structure cannot: the P66 197-232 similarity to CD47
-109-144 is real, specific against a matched background, and strongest 5 to 24 residues away
-from the loop. Whatever it is, it is not the claim, and it would be worth a look on its own
+109-144 is real, specific against a matched background (0 of 437 matched human proteins and
+0 of 239 immunoglobulin domains reach it), one of two such regions in P66, corroborated
+independently by 7 of 19 alphabets and by none with fewer than 7 classes, and strongest 5 to
+24 residues away from the loop. Whatever it is, it is not the claim, and it would be worth a look on its own
 terms.
 
 The way to settle this is a better structure, not a better analysis: an experimental P66

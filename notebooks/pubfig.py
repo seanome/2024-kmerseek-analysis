@@ -74,9 +74,35 @@ def shared_legend(fig, ncol=None, **kw):
     )
 
 
-def save(fig, path_stem, formats=("pdf", "svg", "png")):
-    """Vector PDF/SVG for the journal, 450 dpi PNG for notebooks and slides."""
+def save(fig, path_stem, formats=("svg", "png")):
+    """One vector format and one raster: SVG for the journal, PNG for everything else.
+
+    PDF was dropped on 2026-10-13: SVG is already a vector format a journal
+    accepts, so writing both doubled the repository's figure weight for nothing.
+    Pass formats=("pdf",) explicitly if a submission ever asks for PDF.
+
+    Every PNG is written as a 256-colour palette image, the same way
+    scripts/shrink_png.py and the pre-commit hook of the same name do it, so a
+    figure is already in the committable form when it is saved rather than only
+    after a commit is attempted.
+    """
     path_stem = Path(path_stem)
     path_stem.parent.mkdir(parents=True, exist_ok=True)
     for ext in formats:
-        fig.savefig(path_stem.with_suffix(f".{ext}"))
+        out = path_stem.with_suffix(f".{ext}")
+        fig.savefig(out)
+        if ext == "png":
+            _to_256_colours(out)
+
+
+def _to_256_colours(path):
+    """Rewrite a PNG in place as a 256-colour palette image, keeping its dpi."""
+    from PIL import Image
+
+    Image.MAX_IMAGE_PIXELS = None
+    with Image.open(path) as im:
+        if im.mode == "P":
+            return
+        dpi = im.info.get("dpi")
+        quantized = im.convert("RGBA").quantize(256, method=Image.Quantize.FASTOCTREE)
+    quantized.save(path, "PNG", optimize=True, **({"dpi": dpi} if dpi else {}))
