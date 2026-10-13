@@ -11,9 +11,10 @@
 #   STEP=heavy     the 70 human indexes, the proteome search of 202 queries, then step 2.
 #                  sbatch --export=ALL,STEP=heavy -c 16 --mem=128G --time=10:00:00 ...
 #
-# Submit from a clone of olgabot/two-step-search-288:
+# Submit both with notebooks/288_submit.sh, which holds the heavy job until the pairwise
+# one succeeds. From a clone of olgabot/two-step-search-288:
 #   git clone --branch olgabot/two-step-search-288 https://github.com/seanome/2024-kmerseek-analysis $SCRATCH/288-two-step-repo
-#   cd $SCRATCH/288-two-step-repo && sbatch --export=ALL,STEP=pairwise -c 8 --mem=16G --time=01:00:00 notebooks/288_two_step_search.sbatch
+#   cd $SCRATCH/288-two-step-repo && bash notebooks/288_submit.sh
 #
 # Sizing, from notebook 241's runs.jsonl (laptop, 3 queries, the same 70 settings):
 #   indexes  2_091 s of index time with the 200-query fit; here no fit, 2 workers.
