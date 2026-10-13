@@ -49,20 +49,30 @@ def prepare(regions: pl.LazyFrame | pl.DataFrame) -> pl.LazyFrame:
     )
 
 
-def spots(d: pl.LazyFrame, e_cut: float | None = None) -> pl.DataFrame:
-    """One row per spot with its three counts. `d` comes from prepare()."""
+SPOT_KEYS = ["query_name", "gene", "target_name", "diag", "spot"]
+
+
+def assign_spots(d: pl.LazyFrame, e_cut: float | None = None) -> pl.LazyFrame:
+    """Each region with the number of its spot on its (query, target, diagonal). `d` comes
+    from prepare(). Regions with E >= e_cut are dropped first, so a cut can split a spot.
+    """
     if e_cut is not None:
         d = d.filter(pl.col("region_evalue") < e_cut)
     keys = ["query_name", "target_name", "diag"]
     d = d.sort(*keys, "qs")
     d = d.with_columns(prev_end=pl.col("qe").cum_max().shift(1).over(keys))
-    d = d.with_columns(
+    return d.with_columns(
         spot=(pl.col("prev_end").is_null() | (pl.col("qs") >= pl.col("prev_end")))
         .cast(pl.Int32)
         .cum_sum()
         .over(keys)
     )
-    s = d.group_by("query_name", "gene", "target_name", "diag", "spot").agg(
+
+
+def spots(d: pl.LazyFrame, e_cut: float | None = None) -> pl.DataFrame:
+    """One row per spot with its three counts. `d` comes from prepare()."""
+    d = assign_spots(d, e_cut)
+    s = d.group_by(*SPOT_KEYS).agg(
         n_alphabets=pl.col("alphabet").n_unique(),
         n_families=pl.col("family").n_unique(),
         has_protein20=(pl.col("alphabet") == "protein20").any(),
