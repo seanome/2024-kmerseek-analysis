@@ -299,8 +299,10 @@ process mmseqsSearch {
     set -euo pipefail
     mmseqs createdb ${chunk} qdb
     mmseqs createdb ${reference} tdb
-    # --num-iterations 3: the dark-set run's iterative profile search.
-    mmseqs search qdb tdb res tmp -s ${params.mmseqs2_sensitivity} --num-iterations 3 \\
+    # One round (Olga, 2026-10-14). The dark-set run's 3-round profile search gave the
+    # pilot's dipeptide-shuffled decoys hits down to E 1e-22 (84 tune-half decoy hits under
+    # E 1e-5; none with one round), which set MMseqs2's matched cutoff at E 1.5e-22.
+    mmseqs search qdb tdb res tmp -s ${params.mmseqs2_sensitivity} --num-iterations 1 \\
         -e ${params.mmseqs2_evalue} --threads ${task.cpus}
     mmseqs convertalis qdb tdb res out.tsv \\
         --format-output 'query,target,qstart,qend,tstart,tend,pident,bits,evalue'

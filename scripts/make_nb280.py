@@ -33,7 +33,8 @@ function prediction the same way (Zhou et al. 2019, *Genome Biology* 20: 244, ht
 **Scoring, fixed before any search.** A tool *transfers* family F to a query region when a
 hit's interval on the target overlaps a t0 domain of F on that target. An instance is
 *found* when a tool transfers the same family and at least half of the call's residues lie
-inside the t1 domain. Errors are counted on decoys only (one dipeptide-shuffled copy per
+inside the t1 domain. A call's residues are the transferred target domain placed on the
+query through the hit, not the whole hit (changed 2026-10-14, see below). Errors are counted on decoys only (one dipeptide-shuffled copy per
 query, which keeps every adjacent residue pair), because t1 Pfam is not complete: a call
 t1 does not confirm on a real query is not proof of an error, but any transfer to a decoy
 is one. Each tool's score cutoff is set on the *tune* half of the queries so decoys receive
@@ -53,7 +54,7 @@ halves are fixed by the first byte of SHA-1(accession): even goes to tune.
 - Score each cutoff is set on (higher is better): exact `region_poisson_score`; extend
   -log10(`region_evalue`); MMseqs2, phmmer and hmmscan -log10 of the hit's (domain)
   E-value.
-- MMseqs2 `-s 7 --num-iterations 3 -e 10`; phmmer `--domE 0.001`; hmmscan with the Pfam
+- MMseqs2 `-s 7 --num-iterations 1 -e 10` (was 3 rounds; changed 2026-10-14, see below); phmmer `--domE 0.001`; hmmscan with the Pfam
   33.1 models, `-E 0.001 --domE 0.001`, no `--cut_ga`.
 
 **Predictions, written before any search.**
@@ -87,6 +88,22 @@ half only:
    expected from the test half's decoys. The 95% interval comes from 10,000 bootstrap
    resamples (seed 280) of the test half's real queries and, independently, of its decoys.
    P4 holds when the interval's lower end is above zero.
+
+**Two changes after the pilot's tune half, before the test half was read (Olga, 2026-10-14).**
+
+1. *A call is the target domain placed on the query, not the whole hit.* With the whole hit as
+   the call, all 35 kmerseek settings' tune-half unique finds came from three instances
+   (LysM in A0A2K6L9H6; LRR_1 64-86 and 88-110 in A0A078HBQ0) where MMseqs2 and phmmer did
+   transfer the family, but in hits 47 aa or longer, so under half of each hit lay inside the
+   23-41 aa domain. The scorer now takes the part of the target domain the hit covers and
+   places it on the query (exact for gapless kmerseek regions; along the straight line
+   between the hit's ends for gapped MMseqs2 and phmmer hits).
+2. *MMseqs2 runs one round.* Its 3-round profile search gave dipeptide-shuffled tune decoys
+   hits down to E 1e-22, which set its matched cutoff at E 1.5e-22. With one round no tune
+   decoy hit is below E 0.026.
+
+Evidence: PR 121 comments of 2026-10-13 and the tables in
+`nextflow-runs/time-split-pfam/tables/pilot_partial_2026-10-13/`.
 
 **A second reference: the Pfam 33.1 seed sequences (written 2026-10-13, before any search
 against it).** The same queries and decoys are also searched against the seed members of
