@@ -1,0 +1,342 @@
+"""Linked word pairs (strobemers) over an HP alphabet, scored on known alignments (notebook 292).
+
+A linked pair is two short exact words, called anchors, plus the number of residues between
+them, called the gap. Sahlin (2021) calls the construct a strobemer. Here both sequences of
+an aligned pair are encoded in a 2-letter hydrophobic/polar alphabet and a key is shared
+when both anchors match on the alignment's own diagonal (the same rule notebook 232 uses for
+its exact seeds) and the gap rule of the setting holds:
+
+* ``exact``: the query gap and the target gap are equal (the gap is part of the key);
+* ``binned3``: the two gaps fall in the same 3-residue bin (gap // 3 is part of the key);
+* ``none``: the gap is not part of the key; both gaps only have to lie in [0, gap_max].
+
+Two ways to choose which anchor pairs become keys:
+
+* ``all``: every pair of anchors inside the window is a key (many keys per position);
+* ``rand``: one key per position. Each sequence picks, on its own, the second anchor that
+  minimises (h(w1) + h(w2)) mod p over the window (Sahlin 2021's randstrobe rule), so a
+  key is shared only when both sequences pick the same aligned partner.
+
+Each shared key is scored with notebook 232's extension (``seed_extend_utils``): +1 per
+matching column, -penalty per mismatch, a gap column ends a segment. A key's score is the
+best total of at most two non-overlapping gap-free segments that together contain both
+anchors; when both anchors sit in one gap-free stretch that can be the one segment spanning
+both. A pair's score is the best key score, and its key count is the number of shared keys.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+
+from hp_conservation_utils import GAP, TABLES
+from seed_extend_utils import best_segment_containing_runs, column_scores
+
+ALPHABET = "hp_thomas_dill2"
+PENALTY = 2.0
+ANCHOR_LENGTHS = [6, 7, 8, 10]
+GAP_MAXES = [8, 16, 32]
+GAP_BIN = 3
+TREATMENTS = ["exact", "binned3", "none"]
+MODES = ["all", "rand"]
+BASELINE_SEEDS = {"B1": 10, "B2": 8}
+# Randstrobe rule of Sahlin (2021): partner = argmin over the window of (h(w1) + h(w2)) mod p.
+RANDSTROBE_PRIME = 997
+HASH_SEED = 0x5EED
+
+
+def setting_name(mode: str, anchor: int, gap_max: int, treatment: str) -> str:
+    return f"{mode}_a{anchor}_g{gap_max}_{treatment}"
+
+
+ALL_SETTINGS = [
+    (m, a, g, t)
+    for m in MODES
+    for a in ANCHOR_LENGTHS
+    for g in GAP_MAXES
+    for t in TREATMENTS
+]
+
+
+def _mix64(x: np.ndarray) -> np.ndarray:
+    """splitmix64 finaliser: a fixed pseudo-random hash of each word code."""
+    with np.errstate(over="ignore"):
+        x = x.astype(np.uint64) + np.uint64(HASH_SEED) + np.uint64(0x9E3779B97F4A7C15)
+        x = (x ^ (x >> np.uint64(30))) * np.uint64(0xBF58476D1CE4E5B9)
+        x = (x ^ (x >> np.uint64(27))) * np.uint64(0x94D049BB133111EB)
+        return x ^ (x >> np.uint64(31))
+
+
+def word_codes(cls: np.ndarray, a: int) -> tuple[np.ndarray, np.ndarray]:
+    """Integer code of the a-letter HP word starting at each position of a raw (ungapped)
+    class array, and whether the word is valid (no residue outside the two classes)."""
+    n = cls.size
+    if n < a:
+        return np.empty(0, np.int64), np.empty(0, bool)
+    bad = cls == GAP
+    x = np.where(bad, 0, cls).astype(np.int64)
+    w = np.lib.stride_tricks.sliding_window_view(x, a)
+    codes = w @ (np.int64(1) << np.arange(a - 1, -1, -1, dtype=np.int64))
+    ok = ~np.lib.stride_tricks.sliding_window_view(bad, a).any(axis=1)
+    return codes, ok
+
+
+def randstrobe_partner(cls: np.ndarray, a: int, gap_max: int) -> np.ndarray:
+    """For each start i of the first anchor, the start of the second anchor chosen by the
+    randstrobe rule among starts i + a .. i + a + gap_max (-1 if none is valid). Ties go to
+    the leftmost start."""
+    codes, ok = word_codes(cls, a)
+    n = codes.size
+    sel = np.full(cls.size, -1, dtype=np.int64)
+    if n == 0:
+        return sel
+    hp = (_mix64(codes) % np.uint64(RANDSTROBE_PRIME)).astype(np.int64)
+    width = gap_max + 1
+    big = np.int64(1 << 40)
+    pad_h = np.concatenate([hp, np.zeros(a + width, np.int64)])
+    pad_ok = np.concatenate([ok, np.zeros(a + width, bool)])
+    j = np.arange(n)[:, None] + a + np.arange(width)[None, :]
+    score = (hp[:, None] + pad_h[j]) % RANDSTROBE_PRIME
+    score = np.where(pad_ok[j], score, big)
+    best = score.argmin(axis=1)
+    has = score[np.arange(n), best] < big
+    pick = np.where(has & ok, np.arange(n) + a + best, -1)
+    sel[:n] = pick
+    return sel
+
+
+def _key_scores(c1, c2, a, P, left, right, gapcount, max_inner):
+    """Score of each key (anchor columns c1 < c2, both length a); see module docstring."""
+    s1 = a + left[c1] + right[c1 + a]
+    s2 = a + left[c2] + right[c2 + a]
+    out = s1 + s2
+    same = gapcount[c2 + a - 1] == gapcount[c1]
+    if same.any():
+        b1, b2 = c1[same], c2[same]
+        e1 = b1 + a
+        span = P[b2 + a] - P[b1] + left[b1] + right[b2 + a]
+        d = np.arange(max_inner + 1)[None, :]
+        m = np.minimum(e1[:, None] + d, b2[:, None])
+        pm = P[m]
+        lb = np.maximum.accumulate(pm, axis=1) - P[e1][:, None]
+        rb = P[b2][:, None] - np.minimum.accumulate(pm[:, ::-1], axis=1)[:, ::-1]
+        disjoint = (lb + rb).max(axis=1) + 2 * a + left[b1] + right[b2 + a]
+        out[same] = np.maximum(span, disjoint)
+    return out
+
+
+def _residue_maps(aln_bytes: np.ndarray):
+    """Per column: residue index (-1 at '-'); per residue: its column."""
+    isres = aln_bytes != ord("-")
+    pos = np.where(isres, np.cumsum(isres) - 1, -1)
+    col_of = np.flatnonzero(isres)
+    return isres, pos, col_of
+
+
+def score_pair(
+    qaln: str, taln: str, rng: np.random.Generator, n_shuffle: int = 2
+) -> list[dict]:
+    """One row per comparison (the real pair and n_shuffle shuffled targets), with every
+    linked-pair setting's extended score and key count, plus the B1/B2 baselines.
+
+    The shuffles reproduce notebook 232 exactly: the same rng consumed in the same order
+    (hp_thomas_dill2 was the first alphabet 232 scored)."""
+    tab = TABLES[ALPHABET]
+    qb = np.frombuffer(qaln.encode(), dtype=np.uint8)
+    tb = np.frombuffer(taln.encode(), dtype=np.uint8)
+    qa, ta = tab[qb], tab[tb]
+    t_res_idx = np.flatnonzero(ta != GAP)
+    targets = [("real", ta)]
+    for i in range(n_shuffle):
+        ts = ta.copy()
+        ts[t_res_idx] = ta[rng.permutation(t_res_idx)]
+        targets.append((f"null{i}", ts))
+
+    q_isres, qpos, qcol_of = _residue_maps(qb)
+    t_isres, tpos, tcol_of = _residue_maps(tb)
+    q_raw = qa[q_isres]
+    q_sel = {
+        (a, g): randstrobe_partner(q_raw, a, g)
+        for a in ANCHOR_LENGTHS
+        for g in GAP_MAXES
+    }
+
+    rows = []
+    for kind, tt in targets:
+        sc, same = column_scores(qa, tt, PENALTY)
+        both = (qa != GAP) & (tt != GAP)
+        P = np.concatenate(([0.0], np.cumsum(sc)))
+        left = P - np.minimum.accumulate(P)
+        right = np.maximum.accumulate(P[::-1])[::-1] - P
+        gapcount = np.cumsum(~both)
+        row = {"kind": kind}
+        for name, s in BASELINE_SEEDS.items():
+            row[f"{name}_ext"] = best_segment_containing_runs(sc, same, s)
+        t_raw = tt[t_isres]
+        for a in ANCHOR_LENGTHS:
+            if same.size >= a:
+                M = np.flatnonzero(
+                    np.lib.stride_tricks.sliding_window_view(same, a).all(axis=1)
+                )
+            else:
+                M = np.empty(0, np.int64)
+            row[f"seed{a}_count"] = M.size
+            is_anchor = np.zeros(same.size + 1, bool)
+            is_anchor[M] = True
+            Q, T = qpos[M], tpos[M]
+            dq = Q[None, :] - Q[:, None] - a
+            dt = T[None, :] - T[:, None] - a
+            gmax = max(GAP_MAXES)
+            ok = (dq >= 0) & (dt >= 0) & (dq <= gmax) & (dt <= gmax)
+            i1, i2 = np.nonzero(ok)
+            c1, c2 = M[i1], M[i2]
+            kq, kt = dq[i1, i2], dt[i1, i2]
+            sc_all = (
+                _key_scores(c1, c2, a, P, left, right, gapcount, gmax)
+                if c1.size
+                else np.empty(0)
+            )
+            for g in GAP_MAXES:
+                inwin = (kq <= g) & (kt <= g)
+                for tr in TREATMENTS:
+                    keep = inwin & _gap_rule(kq, kt, tr)
+                    nm = setting_name("all", a, g, tr)
+                    row[f"{nm}_ext"] = float(sc_all[keep].max()) if keep.any() else 0.0
+                    row[f"{nm}_count"] = int(keep.sum())
+            # randstrobe: one key per first-anchor position, partner picked per sequence
+            t_sel = {g: randstrobe_partner(t_raw, a, g) for g in GAP_MAXES}
+            for g in GAP_MAXES:
+                rq = q_sel[(a, g)][Q] if M.size else np.empty(0, np.int64)
+                rt = t_sel[g][T] if M.size else np.empty(0, np.int64)
+                valid = (rq >= 0) & (rt >= 0)
+                c2q = np.where(valid, qcol_of[np.clip(rq, 0, None)], -1)
+                c2t = np.where(valid, tcol_of[np.clip(rt, 0, None)], -2)
+                on_diag = valid & (c2q == c2t)
+                on_diag &= is_anchor[np.clip(c2q, 0, same.size)]
+                k1, k2 = M[on_diag], c2q[on_diag]
+                gq = rq[on_diag] - Q[on_diag] - a
+                gt = rt[on_diag] - T[on_diag] - a
+                ks = (
+                    _key_scores(k1, k2, a, P, left, right, gapcount, g)
+                    if k1.size
+                    else np.empty(0)
+                )
+                for tr in TREATMENTS:
+                    keep = _gap_rule(gq, gt, tr)
+                    nm = setting_name("rand", a, g, tr)
+                    row[f"{nm}_ext"] = float(ks[keep].max()) if keep.any() else 0.0
+                    row[f"{nm}_count"] = int(keep.sum())
+        rows.append(row)
+    return rows
+
+
+def _gap_rule(gq: np.ndarray, gt: np.ndarray, treatment: str) -> np.ndarray:
+    if treatment == "exact":
+        return gq == gt
+    if treatment == "binned3":
+        return (gq // GAP_BIN) == (gt // GAP_BIN)
+    return np.ones(gq.shape, bool)
+
+
+# ---------------------------------------------------------------------------
+# Recall at a null false-positive rate, with notebook 232's threshold rule, and a
+# pair-level bootstrap.
+# ---------------------------------------------------------------------------
+
+BINS = ["<20%", "20-30%", "30-40%", "40-60%", ">=60%"]
+
+
+def score_arrays(df, cols: list[str]):
+    """Real scores (pairs x cols), null scores (pairs x n_null x cols) and identity-bin
+    index per pair, from the long table written by scripts/linked_pairs_on_alignments.py
+    (one row per comparison, an ``identity_bin`` column added)."""
+    import polars as pl
+
+    d = df.sort("pair_index", "kind")
+    kinds = d["kind"].unique().sort().to_list()  # null0, null1, real
+    n_null = len(kinds) - 1
+    pairs = d.filter(pl.col("kind") == "real")
+    real = pairs.select(cols).to_numpy().astype(float)
+    null = np.stack(
+        [d.filter(pl.col("kind") == k).select(cols).to_numpy() for k in kinds[:n_null]],
+        axis=1,
+    ).astype(float)
+    bin_idx = np.array([BINS.index(b) for b in pairs["identity_bin"].cast(str)])
+    return real, null, bin_idx, pairs["pair_index"].to_numpy()
+
+
+def threshold_and_recall(real, null, bin_idx, fpr: float = 1e-3):
+    """Notebook 232's rule (seed_extend_utils.recall_at_null_quantile): the threshold is the
+    (1 - fpr) quantile of the pooled null scores, taking the higher of two neighbouring
+    values, and recall is the share of real pairs scoring strictly above it.
+
+    Returns threshold (cols), achieved null rate (cols), recall (bins x cols)."""
+    flat = null.reshape(-1, null.shape[-1])
+    thr = np.quantile(flat, 1 - fpr, axis=0, method="higher")
+    null_rate = (flat > thr).mean(axis=0)
+    above = real > thr
+    rec = np.stack([above[bin_idx == b].mean(axis=0) for b in range(len(BINS))])
+    return thr, null_rate, rec
+
+
+def bootstrap_recall(real, null, bin_idx, fpr=1e-3, n_boot=1000, seed=0):
+    """Resample pairs with replacement (each real pair travels with its own shuffled
+    targets), recompute the threshold and the recall per bin. Returns (n_boot, bins, cols).
+    """
+    rng = np.random.default_rng(seed)
+    n = real.shape[0]
+    out = np.empty((n_boot, len(BINS), real.shape[1]))
+    for i in range(n_boot):
+        idx = rng.integers(0, n, n)
+        _, _, out[i] = threshold_and_recall(real[idx], null[idx], bin_idx[idx], fpr)
+    return out
+
+
+def best_key(qaln: str, taln: str, mode: str, a: int, gap_max: int, treatment: str):
+    """The highest-scoring shared key of one real pair under one setting, for drawing:
+    dict with the two anchor columns, both gaps (in residues) and the key score."""
+    tab = TABLES[ALPHABET]
+    qb = np.frombuffer(qaln.encode(), dtype=np.uint8)
+    tb = np.frombuffer(taln.encode(), dtype=np.uint8)
+    qa, ta = tab[qb], tab[tb]
+    sc, same = column_scores(qa, ta, PENALTY)
+    both = (qa != GAP) & (ta != GAP)
+    P = np.concatenate(([0.0], np.cumsum(sc)))
+    left = P - np.minimum.accumulate(P)
+    right = np.maximum.accumulate(P[::-1])[::-1] - P
+    gapcount = np.cumsum(~both)
+    _, qpos, qcol_of = _residue_maps(qb)
+    t_isres, tpos, tcol_of = _residue_maps(tb)
+    q_isres = qb != ord("-")
+    M = np.flatnonzero(np.lib.stride_tricks.sliding_window_view(same, a).all(axis=1))
+    Q, T = qpos[M], tpos[M]
+    if mode == "all":
+        dq = Q[None, :] - Q[:, None] - a
+        dt = T[None, :] - T[:, None] - a
+        ok = (dq >= 0) & (dt >= 0) & (dq <= gap_max) & (dt <= gap_max)
+        i1, i2 = np.nonzero(ok)
+        c1, c2, gq, gt = M[i1], M[i2], dq[i1, i2], dt[i1, i2]
+    else:
+        rq = randstrobe_partner(qa[q_isres], a, gap_max)[Q]
+        rt = randstrobe_partner(ta[t_isres], a, gap_max)[T]
+        valid = (rq >= 0) & (rt >= 0)
+        c2q = np.where(valid, qcol_of[np.clip(rq, 0, None)], -1)
+        c2t = np.where(valid, tcol_of[np.clip(rt, 0, None)], -2)
+        is_anchor = np.zeros(same.size + 1, bool)
+        is_anchor[M] = True
+        keep = valid & (c2q == c2t) & is_anchor[np.clip(c2q, 0, same.size)]
+        c1, c2 = M[keep], c2q[keep]
+        gq, gt = rq[keep] - Q[keep] - a, rt[keep] - T[keep] - a
+    keep = _gap_rule(gq, gt, treatment)
+    c1, c2, gq, gt = c1[keep], c2[keep], gq[keep], gt[keep]
+    if c1.size == 0:
+        return None
+    s = _key_scores(c1, c2, a, P, left, right, gapcount, gap_max)
+    k = int(np.argmax(s))
+    return {
+        "c1": int(c1[k]),
+        "c2": int(c2[k]),
+        "gap_query": int(gq[k]),
+        "gap_target": int(gt[k]),
+        "score": float(s[k]),
+        "n_keys": int(c1.size),
+    }
