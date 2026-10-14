@@ -1,0 +1,4 @@
+lineage	regex	unit_length	consensus_as_published	source_doi	source
+2 fish, AFGP	(?:AAT){3,}	3	repeating units of (Ala-Ala-Thr)n, with minor sequence variations	10.1046/j.1432-1033.2003.03488.x	Harding, Anderberg & Haymet 2003, Eur J Biochem 270:1381-92 (abstract)
+1 fish, type I AFP	T.{10}T.{10}T	11	11-residue repeat units commencing with threonine (winter flounder HPLC6 subclass)	10.1046/j.1432-1327.1999.00617.x	Harding, Ward & Haymet 1999, Eur J Biochem 264:653-65 (abstract)
+5 insects	[TVIR].T(?:.{12}[TVIR].T){2,}	15	Thr-X-Thr ice-binding motifs spaced 15 residues apart; the first Thr is often Val, Ile or Arg	10.1046/j.1432-1327.2000.01694.x	Doucet et al. 2000, Eur J Biochem 267:6082-8 (abstract); 15-residue repeat also in Tyshenko, Doucet & Walker 2005, Insect Mol Biol 14:319-26, doi 10.1111/j.1365-2583.2005.00562.x
