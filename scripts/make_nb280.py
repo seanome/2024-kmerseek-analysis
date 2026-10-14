@@ -373,7 +373,10 @@ print(f"Arithmetic: log2({C['sprot2019_08_residues']:,} / {C['residues']:,}) = {
 print(f"median entry length {C['entry_length_median']} aa; letters used: {C['letters']}")
 
 LEN = pl.read_csv(SEED / "spectrum_load_lengths.csv")
-LOAD = pl.read_csv(SEED / "spectrum_load.csv").filter(~pl.col("reference").str.starts_with("check"))
+LOAD = (pl.read_csv(SEED / "spectrum_load.csv", infer_schema=False)
+        .filter(~pl.col("reference").str.starts_with("check"))
+        .with_columns(pl.col("ksize").cast(pl.Int64), pl.col("load", "predicted_search_gb").cast(pl.Float64),
+                      pl.col("kmers", "distinct_kmers").cast(pl.Int64)))
 print(LOAD)
 print((SEED / "spectrum_load.csv").read_text().splitlines()[-1])
 COST = pl.read_csv(SEED / "pilot_trace_cost.csv")
@@ -396,11 +399,15 @@ axs[0].xaxis.set_minor_formatter(NullFormatter())
 axs[0].set_xlabel("Entry length (aa)")
 axs[0].set_ylabel("Entries this long or shorter (fraction)")
 w = LOAD.pivot(on="reference", index=["alphabet", "ksize"], values="load")
-lo, hi = 0.8 * min(w["reference"].min(), w["reference-pfamseed33_1"].min()), 1.25 * max(w["reference"].max(), w["reference-pfamseed33_1"].max())
+lo, hi = 0.4 * min(w["reference"].min(), w["reference-pfamseed33_1"].min()), 1.25 * max(w["reference"].max(), w["reference-pfamseed33_1"].max())
 axs[1].plot([lo, hi], [lo, hi], color=pf.GREY, lw=0.5)
 axs[1].scatter(w["reference"], w["reference-pfamseed33_1"], color="black", s=8, zorder=3)
 for a_, k_, x_, y_ in w.select("alphabet", "ksize", "reference", "reference-pfamseed33_1").iter_rows():
-    axs[1].annotate(f"{a_} k{k_}", (x_, y_), xytext=(4, -3), textcoords="offset points")
+    # The two low-load points sit close together: one label above, one below.
+    dy = -9 if (a_, k_) == ("hp_pbotc_1st_ed2", 29) else 3
+    left = x_ > 1000  # the top point's label would leave the panel on the right
+    axs[1].annotate(f"{a_} k{k_}", (x_, y_), xytext=(-5 if left else 5, dy), textcoords="offset points",
+                    ha="right" if left else "left")
 axs[1].set_xscale("log"); axs[1].set_yscale("log")
 axs[1].set_xlim(lo, hi); axs[1].set_ylim(lo, hi)
 for ax_ in (axs[1].xaxis, axs[1].yaxis):
@@ -429,8 +436,8 @@ built from them. They are dropped from the seed reference; the Swiss-Prot refere
 contain them (step 7). Whether to remove them from the scored instances is Olga's call at
 Stop A.
 
-How to read the figure: each point is one Pfam type, at the share of the full sample's
-instances of that type that were seeded at t0; the number beside it is the count. Higher
+How to read the figure (full sample, 9,263 instances): each point is one Pfam type, at the
+share of the sample's instances of that type that were seeded at t0; the number beside it is the count. Higher
 means more of that type was already known at t0.
 """
 
@@ -463,8 +470,7 @@ for yy, p_, n_, d_ in zip(y, t["pct"], t["seeded"], t["instances_in_sample"]):
 ax.set_yticks(y, t["pfam_type"].cast(pl.String))
 ax.set_xlim(0, max(t["pct"]) * 1.6)
 ax.set_xlabel("Instances seeded at t0 (% of the type's sample instances)")
-fig.text(0.02, 0.98, "Full sample (9,263 instances): t1 instances whose query was a Pfam 33.1 seed member of the same family",
-         va="top")
+ax.set_ylim(-0.6, t.height - 0.4)
 pf.save(fig, FIG / "time_split_instances_seeded_at_t0_pfam33-1", formats=("png", "pdf"))
 """
 
