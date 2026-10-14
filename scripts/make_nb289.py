@@ -7,6 +7,7 @@ Reads the two tables in notebooks/data/289_dark_set_evalue_cutoffs/, which
 nextflow-runs/invertebrate-dark-set/tools/summarize-evalue-cutoffs wrote on Sherlock from
 tools/export-protein-evalues' output. Every code cell is collapsed.
 """
+
 from pathlib import Path
 
 import nbformat
@@ -406,8 +407,13 @@ the regions behind the settings that reach dark proteins more often than placed 
 
 nb = nbformat.v4.new_notebook()
 nb["cells"] = cells
-nb["metadata"]["kernelspec"] = {"name": "python3", "display_name": "Python 3", "language": "python"}
+nb["metadata"]["kernelspec"] = {
+    "name": "python3",
+    "display_name": "Python 3",
+    "language": "python",
+}
 ExecutePreprocessor(timeout=600, kernel_name="python3").preprocess(
-    nb, {"metadata": {"path": str(NB.parent)}})
+    nb, {"metadata": {"path": str(NB.parent)}}
+)
 nbformat.write(nb, NB)
 print(f"wrote {NB}")
