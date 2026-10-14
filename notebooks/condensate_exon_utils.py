@@ -105,6 +105,27 @@ def kappa(residues: str) -> float:
     return float("nan") if value < 0 else float(value)
 
 
+# Martin et al. 2020 compute aromatic patterning only for regions with more than 10%
+# aromatic residues; below that "patterning analysis yields values of limited practical
+# interpretability" (supplement, Bioinformatics section).
+OMEGA_ARO_MIN_AROMATIC_FRACTION = 0.10
+
+
+def omega_aro(residues: str) -> float:
+    """Martin et al. 2020 aromatic patterning, Omega_aro, from localCIDER.
+
+    Defined like kappa with two groups, aromatic (F, W, Y) against every other residue:
+    0 when the aromatic residues are evenly spaced, 1 when they are all in one cluster.
+    The supplement says it was computed with localCIDER; `get_kappa_X` with one group is
+    that calculation. NaN when 10% or fewer of the residues are aromatic, the paper's cut.
+    """
+    from localcider.sequenceParameters import SequenceParameters
+
+    if aromatic_fraction(residues) <= OMEGA_ARO_MIN_AROMATIC_FRACTION:
+        return float("nan")
+    return float(SequenceParameters(residues).get_kappa_X(["F", "W", "Y"]))
+
+
 def isoelectric_point(residues: str) -> float:
     """pI by Biopython's ProteinAnalysis (Bjellqvist pK values)."""
     return ProteinAnalysis(residues).isoelectric_point()
@@ -151,6 +172,7 @@ def bulk_scores(residues: str) -> dict[str, float]:
         "n_charged": sum(aa in BASIC or aa in ACIDIC for aa in residues),
         "aromatic_count": aromatic_count(residues),
         "aromatic_fraction": aromatic_fraction(residues),
+        "omega_aro": omega_aro(residues),
         **class_fractions(residues),
         "net_charge_per_residue": net_charge_per_residue(residues),
         "fraction_basic": fraction_basic(residues),

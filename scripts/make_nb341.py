@@ -95,6 +95,7 @@ has been run yet.
 
 code(r"""
 import json
+import random
 import sys
 from pathlib import Path
 
@@ -276,6 +277,65 @@ the gaps between them. C and P, which are hydrophobic in `hp_pbotc_1st_ed2`, are
 """)
 
 md(r"""
+## 2b. Aromatic spacing, Ω_aro, checked on hnRNPA1
+
+**Ω_aro** measures how the aromatic residues (F, W, Y) are spread along a region: near 0 when they
+are evenly spaced, 1 when they sit in one cluster. Martin et al. 2020 define it in their supplement
+(Bioinformatics section) the same way as κ, with aromatic residues as one group and every other
+residue as the second, and compute it with localCIDER. Here it is localCIDER's `get_kappa_X` with
+the group F, W, Y. Like the paper, it is left empty for a region with 10% or fewer aromatic
+residues.
+
+Check: Martin et al. report that the low-complexity domain of hnRNPA1 has aromatic residues more
+evenly spaced than 99.99% of shuffled versions of itself. If the function is right, almost no
+shuffle should score below the real domain.
+""")
+
+code(r"""
+hnrnpa1 = "".join(
+    line.strip() for line in (DATA / "uniprot_P09651.fasta").read_text().splitlines()[1:]
+)
+# hnRNPA1 low-complexity domain, as in Martin et al. 2020
+LCD_START = 186
+LCD_END = 320
+N_SHUFFLES = 10_000
+lcd = hnrnpa1[LCD_START - 1 : LCD_END]
+rng = random.Random(0)
+shuffled_omega = []
+for _ in range(N_SHUFFLES):
+    residues = list(lcd)
+    rng.shuffle(residues)
+    shuffled_omega.append(cu.omega_aro("".join(residues)))
+lcd_omega = cu.omega_aro(lcd)
+n_below = sum(x < lcd_omega for x in shuffled_omega)
+uniprot_release = (DATA / "uniprot_release.txt").read_text().split(":")[1].strip()
+print(
+    f"hnRNPA1 (P09651, UniProt {uniprot_release}) residues {LCD_START}-{LCD_END}: {len(lcd)} aa, "
+    f"{cu.aromatic_count(lcd)} aromatic ({cu.aromatic_fraction(lcd):.1%})"
+)
+print(
+    f"Omega_aro = {lcd_omega:.3f}; {n_below:_} of {N_SHUFFLES:_} shuffles are more evenly spaced; "
+    f"median shuffle {sorted(shuffled_omega)[N_SHUFFLES // 2]:.3f}"
+)
+""")
+
+code(r"""
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 50)
+ax.hist(shuffled_omega, bins=50, color=pf.GREY, label=f"{N_SHUFFLES:_} shuffles of the same residues")
+ax.axvline(lcd_omega, color=pf.OKABE_ITO["vermillion"], lw=1, label=f"hnRNPA1 {LCD_START}-{LCD_END}, as in the protein")
+ax.set_xlabel("Ω_aro (0 = aromatic residues evenly spaced, 1 = one cluster)")
+ax.set_ylabel("Shuffled sequences (n)")
+ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False)
+pf.save(fig, FIGURES / "341_omega_aro_hnrnpa1_lcd_vs_shuffles_uniprot")
+""")
+
+md(r"""
+**How to read it.** Grey bars are shuffles of the same 135 residues; the red line is the real
+domain. The real domain sits at the far left: its aromatic residues are more evenly spaced than in
+almost every shuffle, as Martin et al. found, so the function reproduces their measure.
+""")
+
+md(r"""
 ## 3. BuGZ (ZNF207) exon 9 (step 7, first part)
 
 Song, Botvinnik et al. 2017 named the serine-rich exon 9 of ZNF207 (BuGZ) as an example of motor
@@ -413,9 +473,11 @@ pI is 5.8, so it is acidic, not basic. Skipping it changes the whole protein's
 scores by at most 0.007 in any fraction, and its pI by 0.01: on composition alone, exon 9 does not
 move the protein.
 
-Not yet done for this example: Ψ in sets A and B-long (needs the isoform data), the best kmerseek
-hit against PhaSePro and DisProt (needs the index), and the aromatic-patterning parameter of
-Martin et al. 2020 (needs its definition from their supplement, which could not be read yet).
+Exon 9 has no Ω_aro (section 2b): with one aromatic residue in 31 (3%), it is below the 10%
+aromatic fraction that Martin et al. 2020 require before computing aromatic spacing.
+
+Not yet done for this example: Ψ in sets A and B-long (needs the isoform data) and the best
+kmerseek hit against PhaSePro and DisProt (needs the index).
 """)
 
 md(r"""
@@ -429,6 +491,8 @@ md(r"""
 | κ | localCIDER 0.1.21; reproduces κ = 0.0009 for (EK)25 and 1.0 for E25K25 (Das and Pappu 2013) | | |
 | IUPred | `iupred_string.c` from InterProScan's `bin/mobidb/idrpred/bin/IUPred/src.zip` (sha256 `7caac3c1…`), long mode, compiled with Apple clang | | |
 | pI | Biopython 1.88 `ProteinAnalysis.isoelectric_point` | | |
+| Ω_aro | localCIDER 0.1.21 `get_kappa_X(["F", "W", "Y"])`, as Martin et al. 2020 describe in their supplement | | |
+| hnRNPA1 sequence | UniProt P09651 FASTA | release 2026_03 | 2026-10-14 |
 
 ## References
 

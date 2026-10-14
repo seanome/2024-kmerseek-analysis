@@ -1,14 +1,14 @@
-run_accession	sample_title	instrument_platform	library_strategy	fastq_bytes	submitted_bytes
-SRR23933212	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2422268882	
-SRR23933213	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2692535390	
-SRR23933214	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2681760637	
-SRR23933209	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	6717049193	
-SRR23933211	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	18705574747	
-SRR25656345	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2967709363	
-SRR25656344	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	7532263732	
-SRR25656346	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	1460086948	
-SRR25656347	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2286455882	
-SRR23933208	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	8255451525	
-SRR23933210	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	6360478305	
-SRR23933215	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2705753058	
-SRR25656343	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	5481515400	
+run_accession	sample_title	instrument_platform	library_strategy	fastq_bytes	fastq_ftp	fastq_md5	submitted_ftp	submitted_bytes	submitted_md5
+SRR25656344	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	7532263732	ftp.sra.ebi.ac.uk/vol1/fastq/SRR256/044/SRR25656344/SRR25656344.fastq.gz	074add78fb09277bc8750a168f4b48d4			
+SRR25656346	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	1460086948	ftp.sra.ebi.ac.uk/vol1/fastq/SRR256/046/SRR25656346/SRR25656346_subreads.fastq.gz	55eeeb5b548c0a53fd11b4c0e01e9b56			
+SRR25656347	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2286455882	ftp.sra.ebi.ac.uk/vol1/fastq/SRR256/047/SRR25656347/SRR25656347_subreads.fastq.gz	4b71705c87272e6cb9145d032d9d2f0a			
+SRR23933209	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	6717049193	ftp.sra.ebi.ac.uk/vol1/fastq/SRR239/009/SRR23933209/SRR23933209.fastq.gz	ac804ffc8893d493a14edbfdb74f74f9			
+SRR23933212	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2422268882	ftp.sra.ebi.ac.uk/vol1/fastq/SRR239/012/SRR23933212/SRR23933212_subreads.fastq.gz	60064b86d0718a24c65d9650e8cab101			
+SRR23933213	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2692535390	ftp.sra.ebi.ac.uk/vol1/fastq/SRR239/013/SRR23933213/SRR23933213_subreads.fastq.gz	fd0af1dc85339622834021e897ab9070			
+SRR23933214	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2681760637	ftp.sra.ebi.ac.uk/vol1/fastq/SRR239/014/SRR23933214/SRR23933214_subreads.fastq.gz	79cc434e8059309de826dfd5658c47b4			
+SRR23933211	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	18705574747	ftp.sra.ebi.ac.uk/vol1/fastq/SRR239/011/SRR23933211/SRR23933211.fastq.gz	75aba25a7b89ba4b0003cb83588e5420			
+SRR25656345	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2967709363	ftp.sra.ebi.ac.uk/vol1/fastq/SRR256/045/SRR25656345/SRR25656345_subreads.fastq.gz	69af9dbe3f44bdc2cb45616af44e8aae			
+SRR23933208	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	8255451525	ftp.sra.ebi.ac.uk/vol1/fastq/SRR239/008/SRR23933208/SRR23933208.fastq.gz	a152b4dfa571fe1c92c9b4d8ba0215cf			
+SRR23933210	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	6360478305	ftp.sra.ebi.ac.uk/vol1/fastq/SRR239/010/SRR23933210/SRR23933210.fastq.gz	b1e43cc94d85ee329fe01e4908622dd2			
+SRR23933215	Human sample from Homo sapiens	PACBIO_SMRT	FL-cDNA	2705753058	ftp.sra.ebi.ac.uk/vol1/fastq/SRR239/015/SRR23933215/SRR23933215_subreads.fastq.gz	8c6e01f433dc7ceb99ef8591146c3423			
+SRR25656343	Human sample from Homo sapiens	ILLUMINA	FL-cDNA	5481515400	ftp.sra.ebi.ac.uk/vol1/fastq/SRR256/043/SRR25656343/SRR25656343.fastq.gz	bad9cdf31204bc45852c9b720991ae0e			
