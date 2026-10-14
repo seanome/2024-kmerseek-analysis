@@ -96,7 +96,9 @@ has been run yet.
 code(r"""
 import json
 import random
+import re
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -476,8 +478,104 @@ move the protein.
 Exon 9 has no Ω_aro (section 2b): with one aromatic residue in 31 (3%), it is below the 10%
 aromatic fraction that Martin et al. 2020 require before computing aromatic spacing.
 
-Not yet done for this example: Ψ in sets A and B-long (needs the isoform data) and the best
+Not yet done for this example: Ψ in set B-long (needs the nanopore reads processed) and the best
 kmerseek hit against PhaSePro and DisProt (needs the index).
+""")
+
+md(r"""
+## 3b. Exon 9 in the developing neocortex (set A, Patowary et al. 2024)
+
+Set A is long-read sequencing of the germinal zone (GZ, where progenitors divide) and the cortical
+plate (CP, where neurons settle) of the human neocortex: three donors, four replicates per region.
+Its isoforms (Data S1, `Bulk.gtf`) and per-isoform read counts (Data S2, sheet B) come from Dryad,
+downloaded on 2026-10-14 and matching Dryad's SHA-256 checksums. The ZNF207 lines are cached in
+`data/341_condensate_exons/`.
+
+The GTF is on **GRCh37**, not GRCh38: ZNF207 starts at chr17:30,677,136 there and at 32,350,157 in
+Ensembl 116, and the identifiers carry GENCODE's `_N` lift suffixes. Exon 9 is found by its Ensembl
+exon identifier, ENSE00000360903.
+
+Ψ here is computed from isoform read counts: reads of isoforms that contain exon 9, divided by those
+reads plus reads of isoforms that join exon 8 directly to exon 10.
+""")
+
+code(r"""
+EX9_ID = "ENSE00000360903"
+gtf_exons = defaultdict(set)
+ex9_grch37 = None
+for line in (DATA / "patowary2024_dataS1_bulk_ZNF207.gtf").read_text().splitlines():
+    fields = line.split("\t")
+    if fields[2] != "exon":
+        continue
+    transcript = re.search(r'transcript_id "([^"]+)"', fields[8]).group(1)
+    exon_id = re.search(r'exon_id "([^"]+)"', fields[8]).group(1)
+    gtf_exons[transcript].add((int(fields[3]), int(fields[4])))
+    if exon_id.split(".")[0] == EX9_ID:
+        ex9_grch37 = (int(fields[3]), int(fields[4]))
+including = {t for t, e in gtf_exons.items() if ex9_grch37 in e}
+upstream_end = max(b for t in including for a, b in gtf_exons[t] if b < ex9_grch37[0])
+downstream_start = min(a for t in including for a, b in gtf_exons[t] if a > ex9_grch37[1])
+skipping = {
+    t for t, e in gtf_exons.items()
+    if t not in including and any(b == upstream_end for a, b in e) and any(a == downstream_start for a, b in e)
+}
+print(f"exon 9 on GRCh37: chr17:{ex9_grch37[0]:_}-{ex9_grch37[1]:_} ({ex9_grch37[1] - ex9_grch37[0] + 1} nt)")
+print(f"{len(gtf_exons)} ZNF207 isoforms; {len(including)} include exon 9; {len(skipping)} join exon 8 "
+      f"(ends {upstream_end:_}) to exon 10 (starts {downstream_start:_}): {sorted(skipping)}")
+
+counts = pl.read_csv(DATA / "patowary2024_dataS2B_ZNF207_counts.tsv", separator="\t")
+samples = [c for c in counts.columns if c.endswith(("_GZ", "_CP"))]
+inc_reads = counts.filter(pl.col("transcript_id").is_in(list(including))).select(samples).sum()
+skip_reads = counts.filter(pl.col("transcript_id").is_in(list(skipping))).select(samples).sum()
+psi_a = pl.DataFrame([
+    {"sample": s, "donor": s.split("_")[0], "region": s.split("_")[-1],
+     "reads_including": inc_reads[s][0], "reads_skipping": skip_reads[s][0]}
+    for s in samples
+]).with_columns(psi=pl.col("reads_including") / (pl.col("reads_including") + pl.col("reads_skipping")))
+psi_by_donor = (
+    psi_a.group_by("donor", "region")
+    .agg(pl.col("reads_including").sum(), pl.col("reads_skipping").sum(), median_replicate_psi=pl.col("psi").median())
+    .with_columns(psi_pooled=pl.col("reads_including") / (pl.col("reads_including") + pl.col("reads_skipping")))
+    .sort("donor", "region")
+)
+with pl.Config(tbl_rows=-1):
+    print(psi_by_donor)
+""")
+
+code(r"""
+REGION_STYLE = {
+    "GZ": dict(color=pf.OKABE_ITO["sky_blue"], marker="o", label="germinal zone (progenitors)"),
+    "CP": dict(color=pf.OKABE_ITO["blue"], marker="s", label="cortical plate (neurons)"),
+}
+donors = sorted(psi_a["donor"].unique())
+fig, ax = plt.subplots(figsize=(pf.ONE_COLUMN_MM * pf.MM, 55 * pf.MM))
+for i, donor in enumerate(donors):
+    for j, region in enumerate(["GZ", "CP"]):
+        vals = psi_a.filter((pl.col("donor") == donor) & (pl.col("region") == region))["psi"].to_list()
+        x = i * 3 + j
+        ax.scatter([x] * len(vals), vals, s=12, edgecolor="none", **{k: v for k, v in REGION_STYLE[region].items() if k != "label"})
+    pooled = psi_by_donor.filter(pl.col("donor") == donor).sort("region", descending=True)["psi_pooled"].to_list()
+    ax.plot([i * 3, i * 3 + 1], pooled, color="black", lw=0.5)
+ax.set_xticks([i * 3 + 0.5 for i in range(len(donors))], [f"donor {d}" for d in donors])
+ax.set_xlim(-0.7, len(donors) * 3 - 1.3)
+ax.set_ylabel("Exon 9 Ψ (fraction of reads)")
+handles = [Line2D([], [], ls="", marker=v["marker"], color=v["color"], label=f"{v['label']}, one point per replicate")
+           for v in REGION_STYLE.values()]
+handles.append(Line2D([], [], color="black", lw=0.5, label="joins each donor's pooled Ψ, GZ to CP"))
+fig.legend(handles=handles, loc="upper left", frameon=False, bbox_to_anchor=(0.12, 1.0))
+fig.subplots_adjust(top=0.78, left=0.17, bottom=0.1, right=0.97)
+pf.save(fig, FIGURES / "341_bugz_exon9_psi_gz_vs_cp_patowary2024_grch37")
+""")
+
+md(r"""
+**How to read it.** Each point is one replicate's Ψ; the line joins a donor's pooled Ψ in the
+germinal zone to the cortical plate. Higher means more of ZNF207's transcripts include exon 9.
+
+In all three donors exon 9 is included more in the cortical plate than in the germinal zone. It is
+mostly included in both regions, so the change is in the small fraction that skips it. This is the
+same direction as Song, Botvinnik et al. 2017 (neurons include it more), now seen in full-length
+reads from human tissue instead of short reads from cultured cells. Three donors is too few for a
+test on this one exon; the genome-wide comparison in step 6a is where the direction gets tested.
 """)
 
 md(r"""
@@ -491,6 +589,7 @@ md(r"""
 | κ | localCIDER 0.1.21; reproduces κ = 0.0009 for (EK)25 and 1.0 for E25K25 (Das and Pappu 2013) | | |
 | IUPred | `iupred_string.c` from InterProScan's `bin/mobidb/idrpred/bin/IUPred/src.zip` (sha256 `7caac3c1…`), long mode, compiled with Apple clang | | |
 | pI | Biopython 1.88 `ProteinAnalysis.isoelectric_point` | | |
+| Set A isoforms and counts | Dryad doi:10.5061/dryad.0rxwdbs68 (Patowary et al. 2024), Data S1 `Bulk.gtf` and Data S2 sheet B; ZNF207 lines cached | GRCh37 coordinates | 2026-10-14 |
 | Ω_aro | localCIDER 0.1.21 `get_kappa_X(["F", "W", "Y"])`, as Martin et al. 2020 describe in their supplement | | |
 | hnRNPA1 sequence | UniProt P09651 FASTA | release 2026_03 | 2026-10-14 |
 
