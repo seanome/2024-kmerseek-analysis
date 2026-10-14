@@ -385,7 +385,9 @@ process scoreTransfers {
     container params.kmerseek_image
     publishDir "${params.outdir}/scores", mode: 'copy'
     cpus 4
-    memory '64 GB'
+    // The pilot's three attempts were killed at 64 GB (exit 137, jobs 47815380, 47815901,
+    // 47816673); `make score-partial` on the same searches peaked at 21 GB RSS on 100 GB.
+    memory '100 GB'
     time '8h'
 
     input:
