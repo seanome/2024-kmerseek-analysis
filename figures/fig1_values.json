@@ -1,0 +1,474 @@
+{
+ "pfam_release": "Pfam-A 38.2 seed",
+ "identity_bin": "20-30%",
+ "min_aligned_positions": 50,
+ "alphabet": "hp_lehninger2",
+ "alphabet_classes": {
+  "h": "AFGILMPVWY",
+  "p": "CDEHKNQRST"
+ },
+ "n_pairs": 37085,
+ "n_families": 15276,
+ "fig1a": {
+  "kmerseek_commit": "00395d7432c8099755716108d39362118a4b57b1",
+  "kmerseek_version": "kmerseek 0.3.1",
+  "k": 17,
+  "query": "CED-9 (P41958)",
+  "target": "BCL2 (P10415)",
+  "query_length": 280,
+  "target_length": 239,
+  "n_shared_kmers": 3,
+  "n_regions": 1,
+  "shared_kmers_1based": [
+   {
+    "ced9": 163,
+    "bcl2": 139,
+    "hp": "pphhphhphhhhhphhh"
+   },
+   {
+    "ced9": 164,
+    "bcl2": 140,
+    "hp": "phhphhphhhhhphhhh"
+   },
+   {
+    "ced9": 165,
+    "bcl2": 141,
+    "hp": "hhphhphhhhhphhhhh"
+   }
+  ],
+  "diagonal_offset": 24,
+  "ced9_region": [
+   163,
+   181
+  ],
+  "bcl2_region": [
+   139,
+   157
+  ],
+  "region_length": 19,
+  "identical": 5,
+  "same_class": 19,
+  "ced9_region_residues": "QCPMSYGRLIGLISFGGFV",
+  "bcl2_region_residues": "RDGVNWGRIVAFFEFGGVM",
+  "uniprot_release": "2026_03",
+  "ced9_bh1": [
+   160,
+   179
+  ],
+  "bcl2_bh1": [
+   136,
+   155
+  ],
+  "ced9_region_in_bh1": 17,
+  "bcl2_region_in_bh1": 17
+ },
+ "fig1b": [
+  {
+   "alphabet": "hp_lehninger2",
+   "n_pairs": 16407,
+   "kappa": 0.29400672108353165,
+   "kappa_lo": 0.2925062001836662,
+   "kappa_hi": 0.29566542901037596,
+   "identity_bin": "\u226420%"
+  },
+  {
+   "alphabet": "hp_lehninger2",
+   "n_pairs": 37085,
+   "kappa": 0.3944092374311016,
+   "kappa_lo": 0.3934142543580585,
+   "kappa_hi": 0.3953558174278425,
+   "identity_bin": "20-30%"
+  },
+  {
+   "alphabet": "hp_lehninger2",
+   "n_pairs": 34512,
+   "kappa": 0.4894261114157089,
+   "kappa_lo": 0.48843782700106375,
+   "kappa_hi": 0.49038341433965776,
+   "identity_bin": "30-40%"
+  },
+  {
+   "alphabet": "hp_lehninger2",
+   "n_pairs": 41508,
+   "kappa": 0.6159676534144378,
+   "kappa_lo": 0.6150540108932839,
+   "kappa_hi": 0.6168226940839323,
+   "identity_bin": "40-60%"
+  },
+  {
+   "alphabet": "hp_lehninger2",
+   "n_pairs": 18970,
+   "kappa": 0.7797318943208547,
+   "kappa_lo": 0.778475531579666,
+   "kappa_hi": 0.7809029597708305,
+   "identity_bin": ">60%"
+  },
+  {
+   "alphabet": "protein20",
+   "n_pairs": 16407,
+   "kappa": 0.10651312457068875,
+   "kappa_lo": 0.10606487212691061,
+   "kappa_hi": 0.10700417082150727,
+   "identity_bin": "\u226420%"
+  },
+  {
+   "alphabet": "protein20",
+   "n_pairs": 37085,
+   "kappa": 0.1988372026834201,
+   "kappa_lo": 0.19852046642385235,
+   "kappa_hi": 0.1991963621972617,
+   "identity_bin": "20-30%"
+  },
+  {
+   "alphabet": "protein20",
+   "n_pairs": 34512,
+   "kappa": 0.3006319410111094,
+   "kappa_lo": 0.3002923385805257,
+   "kappa_hi": 0.3009587738311258,
+   "identity_bin": "30-40%"
+  },
+  {
+   "alphabet": "protein20",
+   "n_pairs": 41508,
+   "kappa": 0.44868603642521115,
+   "kappa_lo": 0.4481132779423238,
+   "kappa_hi": 0.44931412705209584,
+   "identity_bin": "40-60%"
+  },
+  {
+   "alphabet": "protein20",
+   "n_pairs": 18970,
+   "kappa": 0.671011824943046,
+   "kappa_lo": 0.6699775617317083,
+   "kappa_hi": 0.6721986164338595,
+   "identity_bin": ">60%"
+  }
+ ],
+ "fig1b_identity_bins": "each bin includes its upper edge: \u226420% is 0-20%, 20-30% is above 20% up to 30%",
+ "fig1b_hp_over_aa_kappa": {
+  "\u226420%": 2.7602863240427284,
+  "20-30%": 1.9835786870280145,
+  "30-40%": 1.6279910570035634,
+  "40-60%": 1.3728255470618147,
+  ">60%": 1.162024073699501
+ },
+ "fig1c": {
+  "n_shuffles": 20,
+  "mean_pr_agree": 0.7042400397083699,
+  "mean_longest_run_real": 11.967399218012673,
+  "median_longest_run_real": 11.0,
+  "mean_longest_run_shuffled": 6.3407644600242685,
+  "first_k_real_above_predicted": 5,
+  "real_over_predicted_k17_to_35": [
+   1.5395459338879571,
+   1.8171028447463475
+  ],
+  "real_over_one_stretch_k17_to_35": [
+   0.7130407454764482,
+   1.0018645121342349
+  ],
+  "share_at_k": {
+   "5": {
+    "real": 0.9970068760954564,
+    "predicted": 0.991554388311819,
+    "predicted_one_stretch": 0.9948251053677107,
+    "shuffled": 0.8377767291357692
+   },
+   "6": {
+    "real": 0.9845220439530807,
+    "predicted": 0.9652509561484229,
+    "predicted_one_stretch": 0.9775236155141066,
+    "shuffled": 0.6206121073210193
+   },
+   "7": {
+    "real": 0.9511662397195632,
+    "predicted": 0.9090568128437195,
+    "predicted_one_stretch": 0.9379156790365506,
+    "shuffled": 0.4008507482809761
+   },
+   "8": {
+    "real": 0.8872589995955238,
+    "predicted": 0.8216060471931234,
+    "predicted_one_stretch": 0.8718137423409776,
+    "shuffled": 0.23532290683564785
+   },
+   "9": {
+    "real": 0.7994337333153566,
+    "predicted": 0.7115852879946328,
+    "predicted_one_stretch": 0.7826278170389755,
+    "shuffled": 0.13031009842254282
+   },
+   "10": {
+    "real": 0.6917621679924498,
+    "predicted": 0.5923251448365314,
+    "predicted_one_stretch": 0.6789875313796312,
+    "shuffled": 0.06990022920318188
+   },
+   "11": {
+    "real": 0.5788324120264258,
+    "predicted": 0.4765896452955043,
+    "predicted_one_stretch": 0.5710413566846176,
+    "shuffled": 0.03725495483349063
+   },
+   "12": {
+    "real": 0.4727517864365646,
+    "predicted": 0.3730547398745806,
+    "predicted_one_stretch": 0.46754165896879263,
+    "shuffled": 0.01985978158285021
+   },
+   "13": {
+    "real": 0.3771605770527167,
+    "predicted": 0.28573939356034633,
+    "predicted_one_stretch": 0.37439491437772043,
+    "shuffled": 0.010509640016179048
+   },
+   "14": {
+    "real": 0.29710125387623026,
+    "predicted": 0.2153735508351281,
+    "predicted_one_stretch": 0.29453083331364266,
+    "shuffled": 0.005719293514898207
+   },
+   "15": {
+    "real": 0.22852905487393824,
+    "predicted": 0.16037793270148895,
+    "predicted_one_stretch": 0.22853588893953405,
+    "shuffled": 0.0030807604152622353
+   },
+   "16": {
+    "real": 0.17535391667790212,
+    "predicted": 0.11846816799832699,
+    "predicted_one_stretch": 0.17550235849047008,
+    "shuffled": 0.0016839692598085477
+   },
+   "17": {
+    "real": 0.1340164486989349,
+    "predicted": 0.08704933431930206,
+    "predicted_one_stretch": 0.13376703843261661,
+    "shuffled": 0.000910071457462586
+   },
+   "18": {
+    "real": 0.10041795874342727,
+    "predicted": 0.06374323050636332,
+    "predicted_one_stretch": 0.10142815378724988,
+    "shuffled": 0.00049346096804638
+   },
+   "19": {
+    "real": 0.07569098018066604,
+    "predicted": 0.04660562106654106,
+    "predicted_one_stretch": 0.07665155709532247,
+    "shuffled": 0.00027369556424430364
+   },
+   "20": {
+    "real": 0.055763785897263045,
+    "predicted": 0.03407720902436246,
+    "predicted_one_stretch": 0.05782053546826007,
+    "shuffled": 0.00016179048132668192
+   },
+   "21": {
+    "real": 0.041040852096534984,
+    "predicted": 0.024933677533142903,
+    "predicted_one_stretch": 0.043586557994656196,
+    "shuffled": 9.43777807738978e-05
+   },
+   "22": {
+    "real": 0.02985034380477282,
+    "predicted": 0.01827338094038733,
+    "predicted_one_stretch": 0.03286502139516401,
+    "shuffled": 4.988539840906027e-05
+   },
+   "23": {
+    "real": 0.022138330861534314,
+    "predicted": 0.01341652034299714,
+    "predicted_one_stretch": 0.02480508166919292,
+    "shuffled": 2.8313334232169344e-05
+   },
+   "24": {
+    "real": 0.01666441957664824,
+    "predicted": 0.0098846795116744,
+    "predicted_one_stretch": 0.018750757160401487,
+    "shuffled": 1.7527302143723876e-05
+   },
+   "25": {
+    "real": 0.012565727383038964,
+    "predicted": 0.007301266913930459,
+    "predicted_one_stretch": 0.0142023751397896,
+    "shuffled": 8.089524066334098e-06
+   },
+   "26": {
+    "real": 0.00943777807738978,
+    "predicted": 0.00541153345080624,
+    "predicted_one_stretch": 0.010782005205770741,
+    "shuffled": 4.044762033167049e-06
+   },
+   "27": {
+    "real": 0.00722664149925846,
+    "predicted": 0.004027847406294702,
+    "predicted_one_stretch": 0.008206550371879194,
+    "shuffled": 2.696508022111366e-06
+   },
+   "28": {
+    "real": 0.005339085883780504,
+    "predicted": 0.003005486293827939,
+    "predicted_one_stretch": 0.006263843402169878,
+    "shuffled": 1.348254011055683e-06
+   },
+   "29": {
+    "real": 0.004017796952945935,
+    "predicted": 0.0022521917469360687,
+    "predicted_one_stretch": 0.0047953647241410656,
+    "shuffled": 1.348254011055683e-06
+   },
+   "30": {
+    "real": 0.0030200889847647296,
+    "predicted": 0.0016958205476078545,
+    "predicted_one_stretch": 0.003682701928836846,
+    "shuffled": 0.0
+   },
+   "31": {
+    "real": 0.0022650667385735474,
+    "predicted": 0.001278962309595542,
+    "predicted_one_stretch": 0.0028374696194753773,
+    "shuffled": 0.0
+   },
+   "32": {
+    "real": 0.0017527302143723878,
+    "predicted": 0.0009645740302701768,
+    "predicted_one_stretch": 0.0021936253203602945,
+    "shuffled": 0.0
+   },
+   "33": {
+    "real": 0.0012134286099501146,
+    "predicted": 0.0007282389257415615,
+    "predicted_one_stretch": 0.0017017661580325414,
+    "shuffled": 0.0
+   },
+   "34": {
+    "real": 0.0009707428879600917,
+    "predicted": 0.0005560374657913163,
+    "predicted_one_stretch": 0.0013248982683463084,
+    "shuffled": 0.0
+   },
+   "35": {
+    "real": 0.0007550222461911824,
+    "predicted": 0.0004258264116030228,
+    "predicted_one_stretch": 0.0010352480040906951,
+    "shuffled": 0.0
+   }
+  }
+ },
+ "fig1d": {
+  "source": "PR 113 tables at d133c2a, exact seeds",
+  "n_pfam_pairs": 37086,
+  "n_human_proteins": 19732,
+  "k_min": 17,
+  "k_max": 30,
+  "ksizes_source": "PR 101 table at 8bfba6c",
+  "by_k": {
+   "8": {
+    "pfam_share_with_seed": 0.8872350752305452,
+    "human_proteins_with_seed": 19731
+   },
+   "10": {
+    "pfam_share_with_seed": 0.6917435150730734,
+    "human_proteins_with_seed": 19723
+   },
+   "12": {
+    "pfam_share_with_seed": 0.4727390389904546,
+    "human_proteins_with_seed": 19647
+   },
+   "14": {
+    "pfam_share_with_seed": 0.29709324273310683,
+    "human_proteins_with_seed": 18326
+   },
+   "16": {
+    "pfam_share_with_seed": 0.17534918837297092,
+    "human_proteins_with_seed": 12691
+   },
+   "18": {
+    "pfam_share_with_seed": 0.1004152510381276,
+    "human_proteins_with_seed": 5597
+   },
+   "20": {
+    "pfam_share_with_seed": 0.05576228226284852,
+    "human_proteins_with_seed": 1750
+   },
+   "24": {
+    "pfam_share_with_seed": 0.01666397023135415,
+    "human_proteins_with_seed": 122
+   },
+   "28": {
+    "pfam_share_with_seed": 0.005338941918783369,
+    "human_proteins_with_seed": 7
+   },
+   "32": {
+    "pfam_share_with_seed": 0.0017526829531359543,
+    "human_proteins_with_seed": 0
+   }
+  }
+ },
+ "kstar": {
+  "swissprot": "2026_03",
+  "hp_lehninger2": {
+   "n_res": 209008777,
+   "n_other": 9066,
+   "h": 0.5279808273314761,
+   "p": 0.4720191726685239,
+   "pr_same": 0.5015658533963078,
+   "b_alpha": 0.9954889620837125,
+   "kstar_exact": 27.764233797800344,
+   "kstar": 28
+  },
+  "hp_thomas_dill2": {
+   "n_res": 209008777,
+   "n_other": 9066,
+   "h": 0.42362720489962963,
+   "p": 0.5763727951003703,
+   "pr_same": 0.5116656076628863,
+   "b_alpha": 0.9667268310952455,
+   "kstar_exact": 28.590277415915335,
+   "kstar": 29
+  }
+ },
+ "supplementary": {
+  "alphabet": "hp_thomas_dill2",
+  "pair": {
+   "family": "PF01418",
+   "family_id": "HTH_6",
+   "query": "RPIR_ECOLI/14-90",
+   "target": "Y143_HAEIN/5-81",
+   "positions": 77,
+   "identical": 16,
+   "same_class": 56,
+   "longest_run": 12,
+   "bin_median_longest_run": 12.0,
+   "n_candidates": 3
+  },
+  "dotplots": {
+   "family": "PF04348",
+   "family_id": "LppC",
+   "query": "LPOA_HAEIN/39-568",
+   "target": "LPOA_VIBCH/41-602",
+   "query_length": 575,
+   "target_length": 603,
+   "seqid_ali": 0.2476007677543186,
+   "run": 20,
+   "run_identical": 2,
+   "k_hp": 19,
+   "k_aa": 5,
+   "b_aa": 4.064489060128863,
+   "n_shared_hp_kmers": 7,
+   "n_shared_aa_kmers": 2,
+   "n_shared_aa_kmers_on_diagonal": 0,
+   "hp_region_query": [
+    280,
+    304
+   ],
+   "hp_region_target": [
+    287,
+    311
+   ],
+   "n_candidates": 20
+  }
+ },
+ "secondary_structure_lines_in_seed": 0
+}
