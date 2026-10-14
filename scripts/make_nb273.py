@@ -1624,10 +1624,10 @@ hc.finish_figure(
         "figures/273_hp_vs_protein20_agreement_per_100_and_bits_pfam_seed_scope40.png."
     ),
     conclusion=(
-        f"In these five pairs, from the ≥60% pair to the <20% pair, identical residues fall from "
-        f"{per100(hi, 'identical')} to {per100(lo, 'identical')} per 100 gap-free columns, and "
-        f"residues both H or both P fall from {per100(hi, 'same_class')} to "
-        f"{per100(lo, 'same_class')} per 100."
+        f"Identity sets the bins, so identical residues fall by construction: from "
+        f"{per100(hi, 'identical')} to {per100(lo, 'identical')} per 100 gap-free columns between "
+        f"the ≥60% pair and the <20% pair. Residues both H or both P fall less in these five pairs, "
+        f"from {per100(hi, 'same_class')} to {per100(lo, 'same_class')} per 100."
     ),
     font_scale=0.62,
     wrap=175,
