@@ -615,9 +615,29 @@ def load_results(data_dir):
         how="diagonal_relaxed",
     )
     keys = ["pair_set", "accession_a", "accession_b"]
+    ident = mm.filter(pl.col("copy") == -1).select(
+        *keys, pl.col("c1_identity").alias("identity")
+    )
+    # N1 was matched to T2 on the identities of the N1 pool run. An MMseqs2 E-value
+    # depends on how many sequences are in the run, so a pair near E = 1e-3 can have an
+    # alignment in one run and none in another; N1's identity is read from the run it was
+    # selected on, so its bins match T2's as built.
+    pool = (
+        mmseqs_calls(pl.read_parquet(d / "mmseqs_n1_pool.parquet"))
+        .filter(pl.col("copy") == -1)
+        .select(
+            "accession_a", "accession_b", pl.col("c1_identity").alias("pool_identity")
+        )
+    )
     ident = (
-        mm.filter(pl.col("copy") == -1)
-        .select(*keys, pl.col("c1_identity").alias("identity"))
+        ident.join(pool, on=["accession_a", "accession_b"], how="left")
+        .with_columns(
+            pl.when(pl.col("pair_set") == "N1")
+            .then(pl.col("pool_identity"))
+            .otherwise(pl.col("identity"))
+            .alias("identity")
+        )
+        .drop("pool_identity")
         .with_columns(identity_bin(pl.col("identity")).alias("identity_bin"))
     )
     chains = (

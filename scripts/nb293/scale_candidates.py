@@ -21,6 +21,7 @@ import argparse
 import subprocess
 import sys
 import time
+from multiprocessing import get_context
 from pathlib import Path
 
 import polars as pl
@@ -30,6 +31,20 @@ import kmer_offset_utils as ku  # noqa: E402
 
 MMSEQS = "/Users/olga/anaconda3/envs/orthofinder/bin/mmseqs"
 COLUMNS = "query,target,fident,alnlen,qstart,qend,tstart,tend,evalue,bits,qlen,tlen"
+
+
+SEQS: dict[str, str] = {}
+SETTING_ARGS: tuple = ()
+
+
+def test_pair(pair: tuple[str, str]) -> dict:
+    a, b = pair
+    alphabet, k, n_block = SETTING_ARGS
+    return {
+        "accession_a": a,
+        "accession_b": b,
+        **ku.offset_test(SEQS[a], SEQS[b], alphabet, k, [n_block])[0],
+    }
 
 
 def run(cmd):
@@ -77,7 +92,7 @@ def main() -> None:
     if not (work / "spdb.dbtype").exists():
         run([MMSEQS, "createdb", args.swissprot, work / "spdb"])
     key = {
-        line.split("\t")[1].split("|")[1]: line.split("\t")[0]
+        line.split("\t")[1]: line.split("\t")[0]  # MMseqs2 stores the UniProt accession
         for line in (work / "spdb.lookup").read_text().splitlines()
     }
     with open(work / "pairs.tsv", "w") as fh:
@@ -123,8 +138,8 @@ def main() -> None:
     )
     aln = (
         aln.with_columns(
-            pl.col("query").str.extract(acc).alias("accession_a"),
-            pl.col("target").str.extract(acc).alias("accession_b"),
+            pl.col("query").alias("accession_a"),
+            pl.col("target").alias("accession_b"),
         )
         .sort("accession_a", "accession_b", "evalue")
         .unique(
@@ -150,17 +165,11 @@ def main() -> None:
     t0 = time.time()
     low = cand.filter(pl.col("c1_coverage_of_shorter") < 0.5)
     seqs = ku.read_fasta(args.swissprot)
-    rows = []
-    for a, b in low.select("accession_a", "accession_b").iter_rows():
-        rows.append(
-            {
-                "accession_a": a,
-                "accession_b": b,
-                **ku.offset_test(
-                    seqs[a], seqs[b], args.alphabet, args.k, [args.n_block]
-                )[0],
-            }
-        )
+    global SEQS, SETTING_ARGS
+    SEQS, SETTING_ARGS = seqs, (args.alphabet, args.k, args.n_block)
+    pairs = list(low.select("accession_a", "accession_b").iter_rows())
+    with get_context("fork").Pool(args.threads) as pool:  # fork: workers inherit SEQS
+        rows = pool.map(test_pair, pairs, chunksize=2_000)
     tested = low.join(
         pl.DataFrame(rows, infer_schema_length=None),
         on=["accession_a", "accession_b"],

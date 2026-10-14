@@ -90,7 +90,8 @@ calls are no better than chance.
 never calls a rearrangement). C2: MMseqs2 with `--alt-ali 2`, the two best alignments; a
 pair is called when they overlap by at most 10 residues in each protein and come in
 opposite orders. C3 (Foldseek with a circular-permutation option) was not run: the installed
-Foldseek 10.941cd33 lists no such option in `foldseek easy-search -h`. PermuStructDB's own
+Foldseek 10.941cd33 lists no such option in `foldseek easy-search -h` (it has `--alt-ali`,
+the structural version of C2, not run here). PermuStructDB's own
 TM-align scores, with and without its circular-permutation mode, stand in for what
 structure sees.
 
@@ -223,9 +224,10 @@ Filters, in order, with the reason for each:
    tags, linkers and residues not seen in the structure; the median coverage of mapped
    chains is 0.75);
 4. along each chain, its SIFTS segments run in the same order as along its UniProt entry.
-   A chain such as 4zf4_B (GFP, UniProt P42212 residues 51-237 then 4-50) is an engineered
-   circular permutation of its own UniProt entry: the permutation is in the construct, not
-   in any UniProt sequence;
+   A chain whose segments are out of order is an engineered construct: mostly a circular
+   permutation of its own UniProt entry, such as 4zf4_B (GFP, UniProt P42212 residues
+   51-237 then 4-50), and in a few cases a fusion of two separate parts (6njh_A, PDE4D
+   380-718 then 326-339). The new order is in the construct, not in any UniProt sequence;
 5. each UniProt sequence is at least as long as the highest position its chain maps to;
 6. the two chains map to different UniProt entries (two chains of one entry give two
    identical UniProt sequences);
@@ -489,9 +491,18 @@ Two stricter sensitivities count a call only when it sits in the right place:
 * T2, *call on the same family*: each block (or alignment) lies at least half on a Pfam
   domain of one family in A and on a domain of the same family in B.
 
-Many T1 UniProt entries hold several copies of a domain (PDZ domains in DLG1, spectrin
-repeats, GATA zinc fingers) while the PDB chain covers one. A call between two different
-copies is a rearrangement of repeats, not the permutation PermuStructDB found.
+Many T1 UniProt entries hold several copies of a domain (PDZ domains in DLG1 to DLG4,
+spectrin repeats) while the PDB chain covers one. A call between two different copies is a
+rearrangement of repeats, not the permutation PermuStructDB found. One more call outside the
+region, BRD4 (O60885) against BRD2 (P25440), pairs two serine- and glutamate-rich stretches
+(`SSSESESSSESSS` with `SSSESSSEESSSESSS`) that the low-complexity filter (a 5-mer seen more
+than 5 times) did not remove.
+
+Two limits of the call rule, found when testing it: a permutation whose two parts share more
+than 10 residues at the junction is missed, and the C2 count with no overlap at all allowed
+(printed below the table) moves by a few pairs when MMseqs2's
+alignment ends move by one or two residues (12 here, 9 with `mmseqs search
+--exhaustive-search`), so only the 10-residue version is used.
 """)
 
 code(r"""
@@ -512,6 +523,9 @@ check((best["alphabet"], best["ksize"], best["n_block"]) == (BEST["alphabet"], B
 ties = eligible.filter(pl.col("t1_sensitivity") == best["t1_sensitivity"])
 print(f"settings tied at the top T1 sensitivity: {ties.height}")
 c2row = table.filter(pl.col("method").str.starts_with("C2")).row(0, named=True)
+t1_mm = mm.filter((pl.col("copy") == -1) & (pl.col("pair_set") == "T1"))
+print(f"C2 on T1: {t1_mm['c2_called'].sum()} of {t1_mm.height} with up to {ku.MAX_OVERLAP} residues of overlap allowed, "
+      f"{t1_mm['c2_called_no_overlap'].sum()} with none")
 c1row = table.filter(pl.col("method").str.starts_with("C1")).row(0, named=True)
 
 
