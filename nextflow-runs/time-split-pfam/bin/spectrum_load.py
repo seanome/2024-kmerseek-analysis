@@ -34,7 +34,10 @@ SETTINGS = [("protein20", 5), ("protein20", 8), ("hp_pbotc_1st_ed2", 17), ("hp_p
 
 
 def residues(path: Path) -> np.ndarray:
-    """All sequences as bytes, each followed by one '*' so no k-mer spans two entries."""
+    """Every distinct sequence once, as bytes, each followed by one '*' so no k-mer spans two
+    entries. Distinct, because the kmerseek 0.4.0 index holds identical sequences as one
+    entry (it merges entries with the same k-mer set; kmerseek PR 141), and its spectrum
+    counts that one entry."""
     parts, buf = [], []
     with open(path) as fh:
         for line in fh:
@@ -46,7 +49,7 @@ def residues(path: Path) -> np.ndarray:
                 buf.append(line.strip())
     if buf:
         parts.append("".join(buf) + "*")
-    return np.frombuffer("".join(parts).encode(), dtype=np.uint8)
+    return np.frombuffer("".join(dict.fromkeys(parts)).encode(), dtype=np.uint8)
 
 
 def load(seq: np.ndarray, classes: list[str], k: int) -> tuple[float, int, int]:
