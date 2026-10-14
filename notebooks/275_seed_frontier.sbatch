@@ -21,6 +21,10 @@
 #
 # Python: Sherlock's python/3.12.1 module with numpy and polars in a venv under
 # $SCRATCH/venvs/nb275, made by the job the first time (pip needs the compute node's internet).
+# Wheels only, at notebook 283's versions: the newest numpy has no wheel for Sherlock and
+# fails to build from source. That left an empty venv on 2026-10-13 (job 47673647), and the
+# next job found its python and ran without numpy (47686608). So the venv is checked by
+# importing both packages, and remade when that fails.
 #
 # Sizing from the laptop pilot (2026-10-13, 30 queries, 101 alphabet and k values, measured
 # with /usr/bin/time -l): 227 s and a peak of 2.1 GB on one core. Index building is a fixed
@@ -42,8 +46,11 @@ export NB275_N_QUERIES=${NB275_N_QUERIES:-300}
 export NB275_OUT=${NB275_OUT:-$SLURM_SUBMIT_DIR/tables/275_seed_frontier_hits_per_query.tsv}
 module load python/3.12.1
 VENV=$SCRATCH/venvs/nb275
-if [ ! -x "$VENV/bin/python" ]; then
+if ! "$VENV/bin/python" -c 'import numpy, polars' 2>/dev/null; then
+    rm -rf "$VENV"
     python3 -m venv "$VENV"
-    "$VENV/bin/pip" install --quiet numpy polars
+    "$VENV/bin/pip" install --quiet --upgrade pip
+    "$VENV/bin/pip" install --quiet --only-binary=:all: polars==1.34.0 'numpy<2.4'
+    "$VENV/bin/python" -c 'import numpy, polars; print("numpy", numpy.__version__, "polars", polars.__version__)'
 fi
 "$VENV/bin/python" scripts/run_275_seed_frontier.py
