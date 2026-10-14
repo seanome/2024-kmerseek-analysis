@@ -1,0 +1,39 @@
+combiner: 'A, intersection: a merged region is called when every pair in the panel calls it at region_evalue
+  < emax'
+panel:
+- encoded_hp_pbotc_1st_ed2_k19_ext1.63
+- encoded_hp_pbotc_1st_ed2_k19_ext2
+emax: 10.0
+single_pair: encoded_hp_pbotc_1st_ed2_k19_ext1.63
+selection: greedy forward selection on the tune split from the single pair with the highest Swiss-Prot
+  precision (landed >= 0.5); stop at the first step that does not raise it, at least 2 pairs; emax from
+  {0.1, 1, 10} by the highest tune precision at the stop
+tune:
+  emax: 10.0
+  n_called: 780
+  n_decoy_called: null
+  n_called_on_swissprot_queries: 741
+  precision_swissprot: 0.38461538461538464
+  n_found_swissprot: 300
+  recall_swissprot: 0.08559201141226819
+  n_called_on_pfam_queries: 780
+  precision_pfam: 0.5615384615384615
+  n_found_pfam: 389
+  recall_pfam: 0.3112
+test:
+  emax: 10.0
+  n_called: 720
+  n_decoy_called: null
+  n_called_on_swissprot_queries: 689
+  precision_swissprot: 0.34107402031930334
+  n_found_swissprot: 230
+  recall_swissprot: 0.06255099265705738
+  n_called_on_pfam_queries: 720
+  precision_pfam: 0.5472222222222223
+  n_found_pfam: 345
+  recall_pfam: 0.2911392405063291
+input_table: /Users/olga/data/qfo-pfam-region-midi-plus-0.4/260_region_table/region_table.parquet
+input_table_sha256: c936f3884dbbb25fef95a53bc3b459d530fbef798150af8b0df7deb663b074b1
+input_note: 4 pairs, species ['zebrafish']; shuffled-query table absent
+notebook: notebooks/261_combiner_a_intersection_panel.ipynb
+written: '2026-10-01'
