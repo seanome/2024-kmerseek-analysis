@@ -39,7 +39,9 @@ KM_HEADER = (
 
 
 def km_row(q, s, e, fam, poisson, evalue):
-    return f"{q}\t{s}\t{e}\tP9\t1\t20\t{fam}\t1\t50\t20\t3\t{poisson}\t1\t1\t0\t10\t{evalue}\t0.01\n"
+    # The exact arm is scored on region_tfidf, so tf-idf carries the same value as the
+    # Poisson score here: the worked-out answers above stay the same.
+    return f"{q}\t{s}\t{e}\tP9\t1\t20\t{fam}\t1\t50\t20\t3\t{poisson}\t{poisson}\t1\t0\t10\t{evalue}\t0.01\n"
 
 
 def write_gz(path: Path, text: str) -> None:
@@ -161,6 +163,11 @@ def main() -> None:
         ), full
         assert full["p4_holds"] is False, full
         assert "R3" in (d / "full/unique_finds_test_instances.csv").read_text()
+        # The exact arm is scored on region_tfidf: protein20 k5 exact finds R1 at tf-idf 5,
+        # above its tune decoy's 2, so it has one unique find. Flat tf-idf would give 0.
+        tune = (d / "full/unique_finds_tune.csv").read_text().splitlines()
+        p20 = [r for r in tune if r.startswith("kmerseek protein20 k5 exact,")]
+        assert p20 and p20[0].split(",")[1] == "1", tune
 
         pilot = run(d, "pilot")
         assert not any(k.startswith("test_") for k in pilot), pilot
