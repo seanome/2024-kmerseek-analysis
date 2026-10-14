@@ -8,14 +8,27 @@ cells = []
 
 
 def md(source):
-    cells.append({"cell_type": "markdown", "id": f"md-{len(cells):02d}", "metadata": {},
-                  "source": source.strip().splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "markdown",
+            "id": f"md-{len(cells):02d}",
+            "metadata": {},
+            "source": source.strip().splitlines(keepends=True),
+        }
+    )
 
 
 def code(source):
-    cells.append({"cell_type": "code", "id": f"code-{len(cells):02d}", "execution_count": None,
-                  "metadata": {"jupyter": {"source_hidden": True}}, "outputs": [],
-                  "source": source.strip("\n").splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "code",
+            "id": f"code-{len(cells):02d}",
+            "execution_count": None,
+            "metadata": {"jupyter": {"source_hidden": True}},
+            "outputs": [],
+            "source": source.strip("\n").splitlines(keepends=True),
+        }
+    )
 
 
 md(r"""
@@ -47,6 +60,33 @@ is higher with no overlap, the notebook names the setting and the margin.
 
 **What decision this informs.** Whether "condensate exons" is a kmerseek use case worth a paper
 section, or an example where composition alone answers the question.
+
+### Second question: a charge-word index
+
+An alphabet is a hypothesis about which difference between residues matters. Every alphabet run in
+this project so far asks about one difference, hydrophobic against polar. A **charge-word index** is
+a kmerseek index of disordered regions written in four letters: positive (K, R), negative (D, E),
+aromatic (F, W, Y), and everything else. In that alphabet an exact k-mer records where the stickers
+and the charges sit relative to each other, so two regions that share k-mers share a sticker spacing.
+
+* **Question.** Which disordered regions share sticker patterns, and do regions that share them also
+  share condensates?
+* **Link to 2017.** Song, Botvinnik et al. 2017 found that motor neurons splice toward protein that
+  is more disordered and more basic. Splitting positive from negative charge is the distinction that
+  result points to, and one that the two-letter H/P alphabets cannot see.
+* **What it has to beat.** κ and net charge per residue (NCPR, (K + R − D − E) / length). Both
+  summarise a region's charge in one number and say nothing about where the charges are. If the
+  k-mers carry information about spacing that matters, they should beat both.
+* **Kill test.** Pairs of proteins that PhaSePro records as forming the same condensate, against
+  decoy pairs matched on κ. If the charge-word score does not separate co-condensing pairs from the
+  κ-matched decoys better than κ and NCPR do (bootstrap 95% CIs overlap), the charge-word index adds
+  nothing and stops.
+
+Not yet in place: this four-letter alphabet is not the one in
+[seanome/kmerseek PR 146](https://github.com/seanome/kmerseek/pull/146), which pools all charged
+residues (`aro_hyd_chg_pol4`) or splits out arginine only (`aro_hyd_arg_chg_pol5`); it needs its own
+alphabet with K and R apart from D and E. Whether PhaSePro records which proteins condense together,
+and in what form, has not been checked yet.
 
 **This version (day 1)** covers three things: which datasets are open (step 0), the alphabet
 (step 2), and the BuGZ exon 9 example with the 2017-style scores (step 7, first part). No ranking
@@ -427,9 +467,23 @@ Clinical and Multi-Omics Data from Induced Pluripotent Cell Lines." *Nature Neur
 226–37. https://doi.org/10.1038/s41593-021-01006-0.
 """)
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "2025-kmerseek-analysis", "language": "python", "name": "2025-kmerseek-analysis"},
-                                    "language_info": {"name": "python"}},
-      "nbformat": 4, "nbformat_minor": 5}
-out = Path(__file__).resolve().parent.parent / "notebooks" / "341_condensate_exons_aro_hyd_chg_pol4_bugz.ipynb"
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "2025-kmerseek-analysis",
+            "language": "python",
+            "name": "2025-kmerseek-analysis",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
+out = (
+    Path(__file__).resolve().parent.parent
+    / "notebooks"
+    / "341_condensate_exons_aro_hyd_chg_pol4_bugz.ipynb"
+)
 out.write_text(json.dumps(nb, indent=1) + "\n")
 print(out)
