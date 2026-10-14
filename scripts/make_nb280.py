@@ -51,7 +51,7 @@ halves are fixed by the first byte of SHA-1(accession): even goes to tune.
   C_opt, the log-odds penalty from the alphabet's copy rate in Pfam seed pairs at 20-30%
   identity, and X-drop 4 x C_opt). Search filters as the dark-set run: threshold 0,
   at least 2 shared k-mers, query p-value at most 0.05, region score at least 1.3.
-- Score each cutoff is set on (higher is better): exact `region_poisson_score`; extend
+- Score each cutoff is set on (higher is better): exact `region_tfidf` (was `region_poisson_score`; changed 2026-10-14, see below); extend
   -log10(`region_evalue`); MMseqs2, phmmer and hmmscan -log10 of the hit's (domain)
   E-value.
 - MMseqs2 `-s 7 --num-iterations 1 -e 10` (was 3 rounds; changed 2026-10-14, see below); phmmer `--domE 0.001`; hmmscan with the Pfam
@@ -89,7 +89,7 @@ half only:
    resamples (seed 280) of the test half's real queries and, independently, of its decoys.
    P4 holds when the interval's lower end is above zero.
 
-**Two changes after the pilot's tune half, before the test half was read (Olga, 2026-10-14).**
+**Three changes after the pilot's tune half, before the test half was read (Olga, 2026-10-14).**
 
 1. *A call is the target domain placed on the query, not the whole hit.* With the whole hit as
    the call, all 35 kmerseek settings' tune-half unique finds came from three instances
@@ -102,7 +102,13 @@ half only:
    hits down to E 1e-22, which set its matched cutoff at E 1.5e-22. With one round no tune
    decoy hit is below E 0.026.
 
-Evidence: PR 121 comments of 2026-10-13 and the tables in
+3. *The exact arm is scored on `region_tfidf`.* kmerseek 0.4.0-rc5 computes the region
+   Poisson tail as 1 - CDF, which is 0 for any p below about 1e-16 and then floored, so every
+   such region scores 307.65 and no score between about 16 and 307 occurs. In 102 of 107 exact
+   settings, two or more tune decoy pairs sat at 307.65, which put the matched cutoff above
+   every possible score. Exact rows carry no E-value (the fit is for extension only).
+
+Evidence: PR 121 comments of 2026-10-13 and 2026-10-14 and the tables in
 `nextflow-runs/time-split-pfam/tables/pilot_partial_2026-10-13/`.
 
 **A second reference: the Pfam 33.1 seed sequences (written 2026-10-13, before any search
