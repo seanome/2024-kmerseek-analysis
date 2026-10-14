@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """First-attempt memory and time for every kmerseek setting, from measured history.
 
+Standard library only and no type hints, so `make plan` runs with any python3 from 3.6 on,
+including the system one on a Sherlock login node.
+
 One kmerseek task here builds the index of all of Swiss-Prot for one setting, fits the
 E-value statistics on it, searches the queries and deletes the index. Its first ask is,
 in this order:
@@ -26,245 +29,171 @@ in this order:
      that run's index tasks (kmerseek_index_build_gb, kmerseek_ka_fit_memory_* in its
      main.nf at ec91da5). Time has no model and takes the floor.
   4. never below --floor-gb and --floor-h.
- Memory is
-capped at --cap-gb, the largest node; a setting whose ask reaches the cap is listed so it
-can be dropped before launch rather than fail on every attempt.
+
+Memory is capped at --cap-gb, the largest node; a setting whose ask reaches the cap is
+listed so it can be dropped before launch rather than fail on every attempt.
 
 Writes resources.tsv (setting_label, memory_gb, time_h, basis) and prints the summary
 table that goes with the launch command.
 """
 
 import argparse
+import csv
 import math
 import re
 import sys
+from collections import Counter, defaultdict
 from pathlib import Path
-
-import polars as pl
 
 MEM_KILLS = {"137", "135"}
 TIME_KILLS = {"140", "-", "", "2147483647"}
+UNITS_GB = {"B": 1e-9, "KB": 1e-6, "MB": 1e-3, "GB": 1.0, "TB": 1e3}
+UNITS_S = {"ms": 1e-3, "s": 1, "m": 60, "h": 3600, "d": 86400}
+DARK_INDEX = re.compile(
+    r"^kmerseekIndex \(minus_[^.]+\.(?P<a>[a-z0-9_]+)\.k(?P<k>\d+)(?:\.s(?P<s>\d+))?\.lc"
+)
 
 
-def gb(x: str | None) -> float | None:
+def read_tsv(path):
+    with open(path, newline="") as fh:
+        return list(csv.DictReader((ln for ln in fh if not ln.startswith("#")), delimiter="\t"))
+
+
+def gb(x):
     if x in (None, "", "-"):
         return None
     v, u = x.split()
-    return float(v) * {"B": 1e-9, "KB": 1e-6, "MB": 1e-3, "GB": 1.0, "TB": 1e3}[u]
+    return float(v) * UNITS_GB[u]
 
 
-def hours(x: str | None) -> float | None:
+def hours(x):
     if x in (None, "", "-"):
         return None
-    tot = 0.0
-    for v, u in re.findall(r"([\d.]+)(ms|s|m|h|d)", x):
-        tot += float(v) * {"ms": 1e-3, "s": 1, "m": 60, "h": 3600, "d": 86400}[u]
-    return tot / 3600
+    return sum(float(v) * UNITS_S[u] for v, u in re.findall(r"([\d.]+)(ms|s|m|h|d)", x)) / 3600
 
 
-def trace_asks(paths: list[Path]) -> pl.DataFrame:
-    rows = []
+def bump(d, key, value):
+    if value is not None and (d.get(key) is None or value > d[key]):
+        d[key] = value
+
+
+def own_asks(paths):
+    mem, tim, failed = {}, {}, 0
     for p in paths:
-        t = pl.read_csv(p, separator="\t", infer_schema_length=0)
-        t = t.filter(pl.col("name").str.starts_with("kmerseekRun"))
-        for r in t.iter_rows(named=True):
-            exit_, status = (r.get("exit") or "").strip(), r.get("status")
-            mem_given, time_given = gb(r.get("memory")), hours(r.get("time"))
-            peak, run = gb(r.get("peak_rss")), hours(r.get("realtime"))
-            mem = tim = None
-            if status == "COMPLETED":
-                mem = 1.25 * peak if peak else None
-                tim = 1.5 * run if run else None
-            elif exit_ in MEM_KILLS and mem_given:
-                mem = 2 * mem_given
-            elif exit_ in TIME_KILLS and time_given:
-                tim = 2 * time_given
-            rows.append(
-                {
-                    "setting_label": r["tag"],
-                    "status": status,
-                    "exit": exit_,
-                    "mem_ask": mem,
-                    "time_ask": tim,
-                    "trace": p.name,
-                }
-            )
-    return pl.DataFrame(
-        rows,
-        schema={
-            "setting_label": pl.Utf8,
-            "status": pl.Utf8,
-            "exit": pl.Utf8,
-            "mem_ask": pl.Float64,
-            "time_ask": pl.Float64,
-            "trace": pl.Utf8,
-        },
-    )
-
-
-def dark_set(measured: Path, traces: list[Path]) -> pl.DataFrame:
-    """alphabet|ksize|scaled -> the dark-set index tasks' largest memory and time asks."""
-    idx = pl.read_csv(measured / "kmerseek_index_memory_measured.tsv", separator="\t")
-    parts = [
-        idx.select(
-            key=pl.format("{}|{}|{}", "alphabet", "ksize", "scaled"),
-            dark_mem=pl.col("first_ask_gb").cast(pl.Float64),
-            dark_time=pl.lit(None, dtype=pl.Float64),
-        )
-    ]
-    pat = re.compile(
-        r"^kmerseekIndex \(minus_[^.]+\.(?P<a>[a-z0-9_]+)\.k(?P<k>\d+)"
-        r"(?:\.s(?P<s>\d+))?\.lc"
-    )
-    for p in traces:
-        t = pl.read_csv(p, separator="\t", infer_schema_length=0).filter(
-            pl.col("status") == "COMPLETED"
-        )
-        rows = []
-        for r in t.iter_rows(named=True):
-            m = pat.match(r["name"] or "")
-            if not m:
+        for r in read_tsv(p):
+            if not (r.get("name") or "").startswith("kmerseekRun"):
                 continue
+            lab, status, exit_ = r["tag"], r.get("status"), (r.get("exit") or "").strip()
+            if status == "COMPLETED":
+                peak, run = gb(r.get("peak_rss")), hours(r.get("realtime"))
+                bump(mem, lab, 1.25 * peak if peak else None)
+                bump(tim, lab, 1.5 * run if run else None)
+                continue
+            failed += 1
+            if exit_ in MEM_KILLS and gb(r.get("memory")):
+                bump(mem, lab, 2 * gb(r["memory"]))
+            elif exit_ in TIME_KILLS and hours(r.get("time")):
+                bump(tim, lab, 2 * hours(r["time"]))
+    return mem, tim, failed
+
+
+def dark_asks(measured, traces):
+    mem, tim = {}, {}
+    for r in read_tsv(measured / "kmerseek_index_memory_measured.tsv"):
+        bump(mem, (r["alphabet"], int(r["ksize"]), int(r["scaled"])), float(r["first_ask_gb"]))
+    for p in traces:
+        n = 0
+        for r in read_tsv(p):
+            m = DARK_INDEX.match(r.get("name") or "")
+            if not m or r.get("status") != "COMPLETED":
+                continue
+            key = (m["a"], int(m["k"]), int(m["s"] or 1))
             peak, run = gb(r.get("peak_rss")), hours(r.get("realtime"))
-            rows.append(
-                {
-                    "key": f"{m['a']}|{m['k']}|{m['s'] or 1}",
-                    "dark_mem": 1.25 * peak if peak else None,
-                    "dark_time": 1.5 * run if run else None,
-                }
-            )
-        print(f"{p}: {len(rows)} finished kmerseekIndex tasks", file=sys.stderr)
-        if rows:
-            parts.append(
-                pl.DataFrame(
-                    rows,
-                    schema={
-                        "key": pl.Utf8,
-                        "dark_mem": pl.Float64,
-                        "dark_time": pl.Float64,
-                    },
-                )
-            )
-    return (
-        pl.concat(parts)
-        .group_by("key")
-        .agg(pl.col("dark_mem").max(), pl.col("dark_time").max())
-    )
+            bump(mem, key, 1.25 * peak if peak else None)
+            bump(tim, key, 1.5 * run if run else None)
+            n += 1
+        print(f"{p}: {n} finished kmerseekIndex tasks", file=sys.stderr)
+    return mem, tim
 
 
-def model_gb(bits: float, scaled: int, ka_queries: int) -> float:
+def model_gb(bits, scaled, ka_queries):
     fit = 300.0 * 2 ** (-(bits - 12.0) / 2.5) * scaled**-0.7 * (ka_queries / 500.0)
     return 1.4 * max(45.0, fit)
 
 
-def main() -> int:
+def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--settings", type=Path, required=True)
     ap.add_argument("--dark-measured", type=Path, required=True)
-    ap.add_argument(
-        "--trace",
-        type=Path,
-        nargs="*",
-        default=[],
-        help="this pipeline's own Nextflow traces",
-    )
-    ap.add_argument(
-        "--dark-trace",
-        type=Path,
-        nargs="*",
-        default=[],
-        help="the dark-set run's Nextflow traces",
-    )
+    ap.add_argument("--trace", type=Path, nargs="*", default=[],
+                    help="this pipeline's own Nextflow traces")
+    ap.add_argument("--dark-trace", type=Path, nargs="*", default=[],
+                    help="the dark-set run's Nextflow traces")
     ap.add_argument("--floor-gb", type=float, default=48)
     ap.add_argument("--floor-h", type=float, default=4)
     ap.add_argument("--cap-gb", type=float, default=500)
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
 
-    s = pl.read_csv(args.settings, separator="\t").with_columns(
-        key=pl.format("{}|{}|{}", "alphabet", "ksize", "scaled"),
-        group=pl.format("{}|{}", "alphabet", "scaled"),
-    )
-    own = trace_asks(args.trace)
-    own_best = own.group_by("setting_label").agg(
-        pl.col("mem_ask").max(), pl.col("time_ask").max()
-    )
-    grp = (
-        own.join(s.select("setting_label", "group"), on="setting_label")
-        .group_by("group")
-        .agg(
-            pl.col("mem_ask").max().alias("grp_mem"),
-            pl.col("time_ask").max().alias("grp_time"),
-        )
-    )
-    dark = dark_set(args.dark_measured, args.dark_trace)
+    settings = read_tsv(args.settings)
+    own_mem, own_tim, n_failed = own_asks(args.trace)
+    dark_mem, dark_tim = dark_asks(args.dark_measured, args.dark_trace)
+    grp_mem, grp_tim = {}, {}
+    for s in settings:
+        g = (s["alphabet"], s["scaled"])
+        bump(grp_mem, g, own_mem.get(s["setting_label"]))
+        bump(grp_tim, g, own_tim.get(s["setting_label"]))
 
-    t = (
-        s.join(own_best, on="setting_label", how="left")
-        .join(grp, on="group", how="left")
-        .join(dark, on="key", how="left")
-    )
-    rows = []
-    for r in t.iter_rows(named=True):
+    def pick(own, others):
+        if own is not None:
+            return "own attempts", own
+        others = [(b, v) for b, v in others if v is not None]
+        return max(others, key=lambda x: x[1]) if others else (None, None)
 
-        def pick(own_v, others):
-            if own_v is not None:
-                return "own attempts", own_v
-            others = [(b, v) for b, v in others if v is not None]
-            return max(others, key=lambda x: x[1]) if others else (None, None)
-
-        mem_b, mem = pick(
-            r["mem_ask"],
-            [
-                ("same alphabet and scaled in this run", r["grp_mem"]),
-                ("dark-set index task", r["dark_mem"]),
-            ],
-        )
+    rows, at_cap = [], []
+    for s in settings:
+        lab, g = s["setting_label"], (s["alphabet"], s["scaled"])
+        key = (s["alphabet"], int(s["ksize"]), int(s["scaled"]))
+        mem_b, mem = pick(own_mem.get(lab), [("same alphabet and scaled in this run", grp_mem.get(g)),
+                                             ("dark-set index task", dark_mem.get(key))])
         if mem_b is None:
-            mem_b, mem = "dark-set model", model_gb(
-                r["keyspace_bits"], r["scaled"], r["ka_queries"]
-            )
-        tim_b, tim = pick(
-            r["time_ask"],
-            [
-                ("same alphabet and scaled in this run", r["grp_time"]),
-                ("dark-set index task", r["dark_time"]),
-            ],
-        )
+            mem_b = "dark-set model"
+            mem = model_gb(float(s["keyspace_bits"]), int(s["scaled"]), int(s["ka_queries"]))
+        tim_b, tim = pick(own_tim.get(lab), [("same alphabet and scaled in this run", grp_tim.get(g)),
+                                             ("dark-set index task", dark_tim.get(key))])
         if tim_b is None:
             tim_b, tim = "floor", 0.0
-        rows.append(
-            {
-                "setting_label": r["setting_label"],
-                "memory_gb": int(min(args.cap_gb, max(args.floor_gb, math.ceil(mem)))),
-                "time_h": int(max(args.floor_h, math.ceil(tim))),
-                "basis": f"memory: {mem_b if mem > args.floor_gb else 'floor'}; "
-                f"time: {tim_b if tim > args.floor_h else 'floor'}",
-                "at_cap": mem >= args.cap_gb,
-            }
-        )
-    out = pl.DataFrame(rows)
-    out.drop("at_cap").write_csv(args.out, separator="\t")
+        rows.append({
+            "setting_label": lab,
+            "memory_gb": int(min(args.cap_gb, max(args.floor_gb, math.ceil(mem)))),
+            "time_h": int(max(args.floor_h, math.ceil(tim))),
+            "basis": f"memory: {mem_b if mem > args.floor_gb else 'floor'}; "
+                     f"time: {tim_b if tim > args.floor_h else 'floor'}",
+        })
+        if mem >= args.cap_gb:
+            at_cap.append(lab)
 
-    n_fail = own.filter(pl.col("status") != "COMPLETED").height
-    print(
-        f"{out.height} settings; {len(args.trace)} own trace file(s), "
-        f"{len(args.dark_trace)} dark-set trace file(s); "
-        f"{n_fail} earlier failed attempt(s) read"
-    )
-    print(
-        out.group_by("basis")
-        .agg(
-            pl.len().alias("n_settings"),
-            pl.col("memory_gb").max().alias("max_gb"),
-            pl.col("time_h").max().alias("max_h"),
-        )
-        .sort("basis")
-    )
-    cap = out.filter(pl.col("at_cap"))
-    if cap.height:
-        print(f"{cap.height} setting(s) at the {args.cap_gb:.0f} GB cap:")
-        print(cap.select("setting_label", "basis"))
+    with open(args.out, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(rows[0]), delimiter="\t")
+        w.writeheader()
+        w.writerows(rows)
+
+    print(f"{len(rows)} settings; {len(args.trace)} own trace file(s), "
+          f"{len(args.dark_trace)} dark-set trace file(s); {n_failed} earlier failed attempt(s) read")
+    print(f"{'n':>4}  {'max GB':>6}  {'max h':>5}  basis")
+    by = defaultdict(list)
+    for r in rows:
+        by[r["basis"]].append(r)
+    for b, rs in sorted(by.items()):
+        print(f"{len(rs):>4}  {max(r['memory_gb'] for r in rs):>6}  "
+              f"{max(r['time_h'] for r in rs):>5}  {b}")
+    asks = Counter(r["memory_gb"] for r in rows)
+    print("first memory asks (GB):",
+          ", ".join(f"{k}: {v}" for k, v in sorted(asks.items())))
+    print(f"sum of first asks: {sum(r['memory_gb'] for r in rows)} GB, "
+          f"{sum(r['time_h'] for r in rows)} task-hours at most")
+    if at_cap:
+        print(f"{len(at_cap)} setting(s) at the {args.cap_gb:.0f} GB cap: {', '.join(at_cap)}")
     return 0
 
 
