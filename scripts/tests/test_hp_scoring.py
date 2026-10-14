@@ -64,7 +64,9 @@ def test_cluster_bootstrap_whole_clusters():
 
 
 def test_cluster_bootstrap_drops_nan():
-    m, _, _ = hc.cluster_bootstrap_mean_ci([1.0, np.nan, 3.0], ["a", "b", "c"], n_boot=50)
+    m, _, _ = hc.cluster_bootstrap_mean_ci(
+        [1.0, np.nan, 3.0], ["a", "b", "c"], n_boot=50
+    )
     assert m == pytest.approx(2.0)
 
 
@@ -86,7 +88,10 @@ def test_large_deviation_bits_all_top_scores():
 
 
 def test_score_pairs_matches_score_vs_chance():
-    s = {"identity": hc.agreement_bits("protein20"), "hp": hc.agreement_bits("hp_thomas_dill2")}
+    s = {
+        "identity": hc.agreement_bits("protein20"),
+        "hp": hc.agreement_bits("hp_thomas_dill2"),
+    }
     qa = "ACDEFGHIKLMNPQRSTVWY" * 3
     ta = "ACDEFGHIKLMNPQRSTVWY"[::-1] * 3
     t = hc.score_pairs([qa], [ta], s, min_cols=10)
@@ -96,3 +101,24 @@ def test_score_pairs_matches_score_vs_chance():
         row = t.filter(pl.col("scheme") == k).row(0, named=True)
         assert row["z_per_position"] == pytest.approx(r["z_per_position"])
         assert row["score"] == pytest.approx(r["score"])
+
+
+def test_cluster_bootstrap_diff_of_means_centres_on_the_difference():
+    rng = np.random.default_rng(0)
+    x1 = rng.normal(1.0, 0.1, 400)
+    x2 = rng.normal(0.4, 0.1, 300)
+    c1 = np.repeat(np.arange(100), 4)
+    c2 = np.repeat(np.arange(100), 3)
+    m, lo, hi = hc.cluster_bootstrap_diff_of_means(x1, c1, x2, c2, n_boot=500, seed=1)
+    assert m == pytest.approx(x1.mean() - x2.mean())
+    assert lo < m < hi
+    assert 0.5 < lo and hi < 0.7
+
+
+def test_cluster_bootstrap_diff_of_means_spans_zero_for_equal_groups():
+    x = np.random.default_rng(2).normal(0.0, 1.0, 600)
+    c = np.repeat(np.arange(150), 4)
+    _, lo, hi = hc.cluster_bootstrap_diff_of_means(
+        x[:300], c[:300], x[300:], c[300:], n_boot=500, seed=3
+    )
+    assert lo < 0 < hi

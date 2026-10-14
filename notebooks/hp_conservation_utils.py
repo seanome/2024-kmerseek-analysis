@@ -584,6 +584,36 @@ def cluster_bootstrap_mean_ci(
     )
 
 
+def cluster_bootstrap_diff_of_means(
+    x1, clusters1, x2, clusters2, n_boot: int = 1000, seed: int = 0
+) -> tuple[float, float, float]:
+    """Mean of `x1` minus mean of `x2`, with a 95% interval resampling clusters in each group.
+
+    The two groups are resampled independently, each by whole clusters, as in
+    `cluster_bootstrap_mean_ci`. Use to ask whether a difference measured in one set of pairs
+    (same fold) is larger than in another (different fold).
+    """
+    rng = np.random.default_rng(seed)
+
+    def resampled_means(x, clusters):
+        df = pl.DataFrame(
+            {"x": np.asarray(x, dtype=float), "c": list(clusters)}
+        ).filter(pl.col("x").is_not_nan())
+        g = (
+            df.group_by("c")
+            .agg(pl.col("x").sum().alias("s"), pl.len().alias("n"))
+            .sort("c")
+        )
+        s, n = g["s"].to_numpy(), g["n"].to_numpy()
+        idx = rng.integers(0, s.size, size=(n_boot, s.size))
+        return float(df["x"].mean()), s[idx].sum(axis=1) / n[idx].sum(axis=1)
+
+    m1, b1 = resampled_means(x1, clusters1)
+    m2, b2 = resampled_means(x2, clusters2)
+    d = b1 - b2
+    return m1 - m2, float(np.percentile(d, 2.5)), float(np.percentile(d, 97.5))
+
+
 def summarise(
     df: pl.DataFrame, by: list[str], value: str, n_boot: int = 500
 ) -> pl.DataFrame:
@@ -642,6 +672,18 @@ def finish_figure(
         fig.tight_layout()
     except Exception:  # noqa: BLE001
         pass
+    # A legend placed above the axes can reach past the top of the figure; start the header
+    # above the highest legend so the two never overlap.
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    legends = [ax.get_legend() for ax in fig.axes if ax.get_legend()] + list(
+        fig.legends
+    )
+    if legends:
+        top = (
+            max(leg.get_window_extent(renderer).y1 for leg in legends) / fig.bbox.height
+        )
+        header_y = max(header_y, top + 0.01)
     w_in, h_in = fig.get_size_inches()
     wrap = wrap or max(70, int(w_in * 12))
     line = lambda pt: pt / 72.0 / h_in * 1.45

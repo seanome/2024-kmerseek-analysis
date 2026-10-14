@@ -282,13 +282,16 @@ hc.finish_figure(
 """)
 
 md(r"""
-## 2. SCOPe pairs by relationship: z per aligned position for each scoring
+## 2. SCOPe pairs by relationship: bits per aligned position for each scoring
 
 Mean bits per aligned position over the pairs in each SCOPe category, with a 95% interval from
-resampling query domains. Left: all identities. Right: only the pairs under 20% identity. Grey
-bars are the 20 amino acids, red bars H/P. Solid bars are substitution scorings (BLOSUM62 and
-the H/P scoring it implies); hatched bars are agreement only (identity, and H/P agreement, as
-in notebook 273). BLOSUM45 and its H/P scoring are in the printed table, not the figure.
+resampling query domains. Left: all identities. Right: only the pairs under 20% identity.
+Grey marks are the 20 amino acids, red marks H/P. Filled marks are substitution scorings
+(BLOSUM62 and the H/P scoring it implies); open marks are agreement only (identity, and H/P
+agreement, as in notebook 273). The top row is bits per aligned position; the bottom row is
+each scoring as a fraction of BLOSUM62 (the dashed line at 1), so the distant pairs, where
+all values are small, can be read. BLOSUM45 and its H/P scoring are in the printed table, not
+the figure.
 Higher is better. The table also gives the aligned positions a pair at that mean needs for a
 one-in-a-million chance of an unrelated pair doing as well, $20/\text{bits}$, and the mean z per
 position.
@@ -364,35 +367,54 @@ d_z = differences(scope, ["category"], "query", "BLOSUM62", "z_per_position")
 print("\nThe same test on z per position (not used for the decision): H/P scorings minus BLOSUM62, all identities")
 print(d_z)
 
-SHOWN = ["identity", "H/P agreement", "BLOSUM62", "H/P from BLOSUM62"]
+SHOWN = ["BLOSUM62", "identity", "H/P from BLOSUM62", "H/P agreement"]
 COLOR = {"20 amino acids": "#444444", "H/P": "#a50f15"}  # notebook 230/273 colours
-HATCH = {"identity": "///", "H/P agreement": "///", "BLOSUM62": None, "H/P from BLOSUM62": None}
-fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
-x = np.arange(len(CAT_ORDER))
-w = 0.2
-for ax, tab, used in [(axes[0], sc_all, "all identities"), (axes[1], sc_lo, "under 20% identity")]:
-    for j, name in enumerate(SHOWN):
-        t = tab.filter(pl.col("scheme") == name).sort("category")
+FILLED = {"BLOSUM62": True, "H/P from BLOSUM62": True, "identity": False, "H/P agreement": False}
+OFFSET = {"BLOSUM62": -0.09, "identity": -0.03, "H/P from BLOSUM62": 0.03, "H/P agreement": 0.09}
+
+
+def plot_scorings(ax, tab, key, ratio=False):
+    # One line per scoring across ordered groups: colour = alphabet, filled or open = scoring.
+    b62 = tab.filter(pl.col("scheme") == "BLOSUM62").sort(key)["bits per position"].to_numpy()
+    x = np.arange(b62.size)
+    if ratio:
+        ax.axhline(1, color="black", ls="--", lw=1)
+    for name in SHOWN:
+        if ratio and name == "BLOSUM62":
+            continue
+        t = tab.filter(pl.col("scheme") == name).sort(key)
         m = t["bits per position"].to_numpy()
-        err = np.vstack([m - t["95% lo"].to_numpy(), t["95% hi"].to_numpy() - m])
-        ax.bar(
-            x + (j - 1.5) * w, m, width=w, yerr=err, capsize=2, ecolor="black",
-            color="white" if HATCH[name] else COLOR[ALPHABET_OF[name]],
-            edgecolor=COLOR[ALPHABET_OF[name]], hatch=HATCH[name], lw=1.0,
-        )
-    npairs = tab.filter(pl.col("scheme") == "BLOSUM62").sort("category")["pairs"].to_list()
-    ax.set_xticks(x, [f"{CAT_LABEL[c]}\n{n:_} pairs" for c, n in zip(CAT_ORDER, npairs)], fontsize=8.5)
-    ax.set_title(f"SCOPe pairs, {used}", loc="left", fontsize=10)
+        col = COLOR[ALPHABET_OF[name]]
+        style = dict(color=col, lw=1, marker="o", ms=5, mec=col, mfc=col if FILLED[name] else "white")
+        if ratio:
+            ax.plot(x + OFFSET[name], m / b62, **style)
+        else:
+            err = np.vstack([m - t["95% lo"].to_numpy(), t["95% hi"].to_numpy() - m])
+            ax.errorbar(x + OFFSET[name], m, yerr=err, elinewidth=0.8, capsize=0, **style)
+    ax.set_ylim(bottom=0)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-axes[0].set_ylabel("mean bits per aligned position\n(higher: fewer positions needed to beat chance)")
+
+
 handles = [
-    Patch(facecolor=COLOR["20 amino acids"], edgecolor=COLOR["20 amino acids"], label="BLOSUM62 (20 amino acids)"),
-    Patch(facecolor=COLOR["H/P"], edgecolor=COLOR["H/P"], label="H/P from BLOSUM62"),
-    Patch(facecolor="white", edgecolor=COLOR["20 amino acids"], hatch="///", label="identity (20 amino acids)"),
-    Patch(facecolor="white", edgecolor=COLOR["H/P"], hatch="///", label="H/P agreement"),
+    Line2D([], [], color=COLOR["20 amino acids"], marker="o", ms=5, label="20 amino acids"),
+    Line2D([], [], color=COLOR["H/P"], marker="o", ms=5, label=f"H/P ({HP})"),
+    Line2D([], [], ls="", marker="o", ms=5, color="black", label="filled: BLOSUM62, or the H/P scoring it implies"),
+    Line2D([], [], ls="", marker="o", ms=5, color="black", mfc="white", label="open: agreement only (identity, H/P agreement)"),
+    Line2D([], [], color="black", ls="--", lw=1, label="BLOSUM62 = 1 (fraction panels)"),
 ]
-axes[0].legend(handles=handles, loc="lower left", bbox_to_anchor=(0, 1.08), ncol=2, frameon=False, fontsize=9, borderaxespad=0)
+fig, axes = plt.subplots(2, 2, figsize=(14, 8))
+for col_i, (tab, used) in enumerate([(sc_all, "all identities"), (sc_lo, "under 20% identity")]):
+    plot_scorings(axes[0, col_i], tab, "category")
+    plot_scorings(axes[1, col_i], tab, "category", ratio=True)
+    axes[0, col_i].set_title(f"SCOPe pairs, {used}", loc="left", fontsize=10)
+    npairs = tab.filter(pl.col("scheme") == "BLOSUM62").sort("category")["pairs"].to_list()
+    axes[1, col_i].set_xticks(range(len(CAT_ORDER)), [f"{CAT_LABEL[c]}\n{n:_} pairs" for c, n in zip(CAT_ORDER, npairs)], fontsize=8.5)
+    axes[0, col_i].set_xticks(range(len(CAT_ORDER)), [""] * len(CAT_ORDER))
+axes[0, 0].set_ylabel("mean bits per aligned position\n(higher: fewer positions needed to beat chance)")
+axes[1, 0].set_ylabel("fraction of BLOSUM62's\nbits per aligned position")
+# kept out of tight_layout so it does not widen the left column; the header goes above it
+axes[0, 0].legend(handles=handles, loc="lower left", bbox_to_anchor=(0, 1.1), ncol=3, frameon=False, fontsize=9, borderaxespad=0).set_in_layout(False)
 d62 = diff_tabs["BLOSUM62"]
 n_ahead = int(d62["H/P ahead"].sum())
 sfd = sc_all.filter(pl.col("category") == "same_fold_diff_superfamily")
@@ -405,8 +427,8 @@ hc.finish_figure(
     tools=f"no kmerseek; SCOPe 2.08 40% set, USalign alignments; BLOSUM62, identity, {HP}",
     title="Evidence per aligned position by SCOPe relationship: H/P against BLOSUM62",
     hypothesis=(
-        "If H/P keeps more evidence than BLOSUM62 for distant pairs, a red bar is taller than the "
-        "solid grey bar for same superfamily or same fold pairs."
+        "If H/P keeps more evidence than BLOSUM62 for distant pairs, a red filled mark sits above the "
+        "dashed line at 1 in the lower panels for same superfamily or same fold pairs."
     ),
     conclusion=(
         f"H/P is ahead of BLOSUM62 in {n_ahead} of {d62.height} comparisons (category x H/P scoring) over all identities. "
@@ -423,6 +445,9 @@ families. Read with the caveat above: identity is the 20 amino acid agreement, s
 lowest bins the 20 amino acid scorings are held down by the choice of bin. In notebook 273
 this is what put H/P agreement ahead of identity under 20%. The question here is whether that
 also puts H/P ahead of BLOSUM62.
+
+The figure uses the marks of section 2. Left: bits per aligned position. Right: each scoring
+as a fraction of BLOSUM62 (dashed line at 1), which makes the under 20% bin readable.
 """)
 
 code(r"""
@@ -433,23 +458,16 @@ pf_diff = differences(pfam, ["identity_bin"], "family", "BLOSUM62")
 print("\nH/P scorings minus BLOSUM62, Pfam, by identity bin")
 print(pf_diff)
 
-fig, ax = plt.subplots(figsize=(10, 4.2))
-x = np.arange(len(hc.IDENTITY_LABELS))
-for j, name in enumerate(SHOWN):
-    t = pf_tab.filter(pl.col("scheme") == name).sort("identity_bin")
-    m = t["bits per position"].to_numpy()
-    err = np.vstack([m - t["95% lo"].to_numpy(), t["95% hi"].to_numpy() - m])
-    ax.bar(
-        x + (j - 1.5) * w, m, width=w, yerr=err, capsize=2, ecolor="black",
-        color="white" if HATCH[name] else COLOR[ALPHABET_OF[name]],
-        edgecolor=COLOR[ALPHABET_OF[name]], hatch=HATCH[name], lw=1.0,
-    )
+fig, axes = plt.subplots(1, 2, figsize=(13, 4.6))
+plot_scorings(axes[0], pf_tab, "identity_bin")
+plot_scorings(axes[1], pf_tab, "identity_bin", ratio=True)
 npairs = pf_tab.filter(pl.col("scheme") == "BLOSUM62").sort("identity_bin")["pairs"].to_list()
-ax.set_xticks(x, [f"{b} identity\n{n:_} pairs" for b, n in zip(hc.IDENTITY_LABELS, npairs)], fontsize=9)
-ax.set_ylabel("mean bits per aligned position")
-for side in ("top", "right"):
-    ax.spines[side].set_visible(False)
-ax.legend(handles=handles, loc="lower left", bbox_to_anchor=(0, 1.04), ncol=4, frameon=False, fontsize=9, borderaxespad=0)
+for ax in axes:
+    ax.set_xticks(range(len(hc.IDENTITY_LABELS)), [f"{b}\n{n:_} pairs" for b, n in zip(hc.IDENTITY_LABELS, npairs)], fontsize=8.5)
+    ax.set_xlabel("identity of the Pfam seed pair")
+axes[0].set_ylabel("mean bits per aligned position")
+axes[1].set_ylabel("fraction of BLOSUM62's\nbits per aligned position")
+axes[0].legend(handles=handles, loc="lower left", bbox_to_anchor=(0, 1.04), ncol=3, frameon=False, fontsize=9, borderaxespad=0).set_in_layout(False)
 lo_row = pf_tab.filter(pl.col("identity_bin") == "<20%")
 zb = lo_row.filter(pl.col("scheme") == "BLOSUM62")["bits per position"][0]
 zi = lo_row.filter(pl.col("scheme") == "identity")["bits per position"][0]
@@ -491,9 +509,10 @@ SCOPe groups, with the 95% interval of the difference above zero (resampling que
 If none does, no kmerseek alphabet keeps more evidence per aligned position than BLOSUM62, and
 the reason to use a reduced alphabet has to be something other than evidence per position.
 
-The figure has one panel per group. Each row is an alphabet, ordered by number of letters. The
-dashed line is BLOSUM62. Filled marks are the "from BLOSUM62" scoring and open marks
-agreement; red marks are the H/P alphabets (2 or 3 letters) and grey marks the others. Further
+The figure has one panel per group. Each row is an alphabet, ordered by number of letters and
+grouped by size (2-3, 4-8, 12-18 letters, then protein20). The dashed line is BLOSUM62. Filled
+marks are the "from BLOSUM62" scoring and open marks agreement. Dark red is `hp_thomas_dill2`,
+the H/P alphabet of sections 2 and 3; pale red the other H/P alphabets; grey the rest. Further
 right is better.
 """)
 
@@ -580,33 +599,51 @@ chk = all_tab.filter(pl.col("alphabet") == "protein20", pl.col("group") == "Pfam
 print("\nCheck against section 3, Pfam under 20%: protein20 agreement = identity, protein20 from BLOSUM62 = BLOSUM62")
 print(chk.select("scoring", "bits per position"))
 
-fig, axes = plt.subplots(1, len(GROUPS), figsize=(15, 6.2), sharey=True)
-ypos = {a: i for i, a in enumerate(ALPHABETS)}
+fig, axes = plt.subplots(1, len(GROUPS), figsize=(15, 6.6), sharey=True)
+HP_RED, HP_RED_PALE, GREY = "#a50f15", "#eba7a7", "#444444"
+
+
+def size_group(n):
+    # Alphabet size groups, as in clear-figures rule 7d: 2-3, 4-8, 12-18 letters, then protein20.
+    return 0 if n <= 3 else 1 if n <= 8 else 2 if n <= 18 else 3
+
+
+ypos, y, prev = {}, 0.0, None
+for a in ALPHABETS:
+    g = size_group(hc.SIZES[a])
+    if prev is not None and g != prev:
+        y += 0.8  # gap between size groups
+    ypos[a], y, prev = y, y + 1, g
 for ax, (gname, _, _) in zip(axes, GROUPS):
+    for yy in ypos.values():
+        ax.axhline(yy, color="#e3e3e3", lw=0.5, zorder=0)  # guide line from each tick
     t = all_tab.filter(pl.col("group") == gname.replace("\n", " "))
     b62 = t.filter(pl.col("alphabet") == "protein20", pl.col("scoring") == "from BLOSUM62")["bits per position"][0]
     ax.axvline(b62, color="black", ls="--", lw=1)
     for r in t.iter_rows(named=True):
-        col = "#a50f15" if r["alphabet"].startswith("hp_") else "#444444"
+        a = r["alphabet"]
+        col = HP_RED if a == HP else HP_RED_PALE if a.startswith("hp_") else GREY
         filled = r["scoring"] == "from BLOSUM62"
-        y = ypos[r["alphabet"]] + (0.15 if filled else -0.15)
-        ax.errorbar(r["bits per position"], y, xerr=[[r["bits per position"] - r["95% lo"]], [r["95% hi"] - r["bits per position"]]],
-                    fmt="o", ms=5, color=col, mfc=col if filled else "white", mec=col, ecolor=col, elinewidth=0.8, capsize=0)
+        yy = ypos[a] + (0.15 if filled else -0.15)
+        ax.errorbar(r["bits per position"], yy, xerr=[[r["bits per position"] - r["95% lo"]], [r["95% hi"] - r["bits per position"]]],
+                    fmt="o", ms=6 if a == HP else 5, color=col, mfc=col if filled else "white", mec=col, ecolor=col,
+                    elinewidth=1.2 if a == HP else 0.8, capsize=0, zorder=4 if a == HP else 3)
     ax.set_title(gname, loc="left", fontsize=9.5)
     ax.set_xlim(left=0)
     ax.set_xlabel("mean bits per aligned position")
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-axes[0].set_yticks(range(len(ALPHABETS)), [f"{a} ({hc.SIZES[a]})" for a in ALPHABETS], fontsize=8.5)
-axes[0].set_ylim(-0.6, len(ALPHABETS) - 0.4)
+axes[0].set_yticks(list(ypos.values()), [f"{a} ({hc.SIZES[a]})" for a in ypos], fontsize=8.5)
+axes[0].set_ylim(-0.6, y - 0.4)
 leg = [
     Line2D([], [], color="black", ls="--", label="BLOSUM62 (protein20 from BLOSUM62)"),
-    Line2D([], [], ls="", marker="o", color="#444444", label="from BLOSUM62, alphabet with 4 or more letters"),
-    Line2D([], [], ls="", marker="o", color="#444444", mfc="white", label="agreement (exact match), 4 or more letters"),
-    Line2D([], [], ls="", marker="o", color="#a50f15", label="from BLOSUM62, H/P alphabet (2-3 letters)"),
-    Line2D([], [], ls="", marker="o", color="#a50f15", mfc="white", label="agreement (exact match), H/P alphabet"),
+    Line2D([], [], ls="", marker="o", color=HP_RED, label=HP),
+    Line2D([], [], ls="", marker="o", color=HP_RED_PALE, label="other H/P alphabets (2-3 letters)"),
+    Line2D([], [], ls="", marker="o", color=GREY, label="alphabets with 4 or more letters"),
+    Line2D([], [], ls="", marker="o", color="black", label="filled: from BLOSUM62"),
+    Line2D([], [], ls="", marker="o", color="black", mfc="white", label="open: agreement (exact match)"),
 ]
-axes[0].legend(handles=leg, loc="lower left", bbox_to_anchor=(0, 1.07), ncol=3, frameon=False, fontsize=8.5, borderaxespad=0)
+axes[0].legend(handles=leg, loc="lower left", bbox_to_anchor=(0, 1.08), ncol=3, frameon=False, fontsize=8.5, borderaxespad=0).set_in_layout(False)
 n_ahead = int(scope_rule["ahead of BLOSUM62"].sum())
 top = best.row(0, named=True)
 hc.finish_figure(
@@ -640,6 +677,12 @@ The right panel checks that the fold-level result is not one kind of protein. It
 same fold, different superfamily pairs by SCOPe class (the query's; in every pair the target
 is in the same class) and shows `hp_thomas_dill2` minus gbmr4 and minus protein20, with 95%
 intervals resampling query domains. Above zero means H/P is ahead.
+
+Two checks are printed under the figure. The first asks whether the lead is specific to pairs
+that share a fold: it compares the lead in same-fold pairs with the lead in different-fold
+pairs, which SCOPe calls unrelated. All of those also pass TM-score 0.5, so they are
+structurally similar. The second repeats the same-fold intervals resampling whole SCOPe folds
+instead of query domains.
 """)
 
 code(r"""
@@ -689,6 +732,35 @@ for cat in ["same_superfamily_diff_family", "same_fold_diff_superfamily", "diff_
                       "difference": round(m, 4), "95% lo": round(lo, 4), "95% hi": round(hi, 4)})
 print("\nAll classes together: exact-match bits per aligned position, 95% interval resampling query domains")
 print(pl.DataFrame(orows))
+
+# Is the lead specific to pairs that share a fold? Compare with different-fold pairs, which SCOPe
+# calls unrelated (all pass TM-score >= 0.5, so they are structurally similar).
+by_cat = {
+    cat: agree.filter(pl.col("category") == cat).pivot(on="alphabet", index=["query", "target"], values="bits_per_position")
+    for cat in ["same_fold_diff_superfamily", "diff_fold_same_class"]
+}
+sf_w, df_w = by_cat["same_fold_diff_superfamily"], by_cat["diff_fold_same_class"]
+drows = []
+for other in ["gbmr4", "protein20"]:
+    m, lo, hi = hc.cluster_bootstrap_diff_of_means(
+        sf_w[HP] - sf_w[other], sf_w["query"], df_w[HP] - df_w[other], df_w["query"], N_BOOT, SEED
+    )
+    drows.append({"comparison": f"{HP} minus {other}",
+                  "same fold": round(float((sf_w[HP] - sf_w[other]).mean()), 4),
+                  "different fold": round(float((df_w[HP] - df_w[other]).mean()), 4),
+                  "same minus different": round(m, 4), "95% lo": round(lo, 4), "95% hi": round(hi, 4)})
+print(f"\nIs the lead larger when the pair shares a fold? Same fold ({sf_w.height:_} pairs) minus different fold ({df_w.height:_} pairs); each group resampled by query domain")
+print(pl.DataFrame(drows))
+
+# The same-fold intervals again, resampling whole SCOPe folds of the query instead of query domains.
+sf_w = sf_w.with_columns(pl.col("query").replace_strict(sccs, default="?").str.split(".").list.slice(0, 2).list.join(".").alias("fold"))
+fold_sizes = sf_w.group_by("fold").len().sort("len", descending=True)
+frows = []
+for other in ["gbmr4", "protein20"]:
+    m, lo, hi = hc.cluster_bootstrap_mean_ci(sf_w[HP] - sf_w[other], sf_w["fold"], N_BOOT, SEED)
+    frows.append({"comparison": f"{HP} minus {other}", "difference": round(m, 4), "95% lo, resampling folds": round(lo, 4), "95% hi, resampling folds": round(hi, 4)})
+print(f"\nSame fold, different superfamily: {sf_w.height:_} pairs from {fold_sizes.height} folds; the five largest folds hold {fold_sizes['len'].head(5).sum() / sf_w.height:.0%} of the pairs")
+print(pl.DataFrame(frows))
 CLASS_NAME = {"a": "all-alpha", "b": "all-beta", "c": "alpha/beta", "d": "alpha+beta", "f": "membrane"}
 print(f"\nSame fold, different superfamily: {wf.height:_} pairs; query and target in the same SCOPe class: {(wf['class'] == wf['target_class']).mean():.0%}")
 crows = []
@@ -823,15 +895,20 @@ found after looking, not tested by a rule written beforehand.
    distant, H/P moves up. At the fold level (same fold, different superfamily),
    `hp_thomas_dill2` ranks first of 19, with 1.78 times protein20's exact-match evidence per
    position, and the top four alphabets are all H/P (section 5). It is ahead of gbmr4, the
-   best alphabet that isn't H/P, by 0.0056 bits (95% interval 0.0036 to 0.0074).
-5. This holds within each SCOPe class: `hp_thomas_dill2` ranks first of 19 in all-alpha,
-   all-beta, alpha/beta, alpha+beta and membrane fold-level pairs. Its lead over gbmr4 has an
-   interval above zero in the first four. The membrane group has 35 pairs and its interval
-   spans zero.
-6. How H/P positions are scored barely matters. In every SCOPe category and in the Pfam bins
+   best alphabet that isn't H/P, by 0.0056 bits (95% interval 0.0036 to 0.0074; 0.0035 to
+   0.0076 resampling the 112 folds instead of query domains).
+5. `hp_thomas_dill2` ranks first of 19 in all five SCOPe classes of fold-level pairs. Its lead
+   over gbmr4 has an interval above zero in all-alpha, all-beta, alpha/beta and alpha+beta.
+   The membrane group has 35 pairs, and both of its intervals span zero.
+6. The lead over gbmr4 is not specific to sharing a fold. In different-fold pairs (186),
+   which SCOPe calls unrelated but which all pass TM-score 0.5, `hp_thomas_dill2` is ahead of
+   gbmr4 by 0.0048 bits, against 0.0056 in same-fold pairs: a difference of 0.0008 (95%
+   interval -0.0026 to 0.0043). The lead over protein20 is larger in same-fold pairs: 0.0143
+   against 0.0086, a difference of 0.0057 (0.0018 to 0.0099).
+7. How H/P positions are scored barely matters. In every SCOPe category and in the Pfam bins
    under 30% identity, H/P from BLOSUM62 is at most 0.003 bits above plain H/P agreement
    (0.011 at 60% identity and above), against gaps of 0.001 to 1.36 bits to BLOSUM62.
-7. The z per position measure agrees on BLOSUM62 (ahead in all 8 comparisons of section 2).
+8. The z per position measure agrees on BLOSUM62 (ahead in all 8 comparisons of section 2).
    It differs from bits on identity against H/P agreement: under 20% identity it ranks
    identity higher (0.408 against 0.355), the opposite of notebook 273. z assumes chance
    scores are spread like a bell curve, which is far off when chance agreement is as low as
@@ -843,25 +920,37 @@ found after looking, not tested by a rule written beforehand.
   26-mers shared by 1.7% of 20-30% Pfam pairs. Whether the fold-level lead turns into more
   fold-level hits needs a kmerseek search (the SCOPe40 sweep in PR 107 has the hits).
 * Same fold, different superfamily pairs share a fold, but SCOPe does not say they share an
-  ancestor. The H/P lead there may be shared packing rather than descent; different-fold
-  pairs, which SCOPe calls unrelated, show it too (notebook 230 made the same point).
+  ancestor. The H/P lead there may be shared packing rather than descent. Different-fold
+  pairs show the same lead over gbmr4 (item 6; notebook 230 made the same point). There are
+  only 186 of them, so this shows no evidence of a fold-specific lead over gbmr4, not that
+  none exists.
 * Section 5 was found by looking at section 4. The per-class split is a check on the same
   pairs, not new data.
 * The residue background is the Pfam seed composition, also used for the SCOPe pairs. The
-  BLOSUM62 scale factor it gives, 0.4595 bits per score unit, matches the published 0.3176 nats.
+  BLOSUM62 scale factor it gives, 0.4595 bits per score unit, is within 0.3% of the published
+  0.3176 nats (0.458 bits).
 * The rule for sections 2 and 3 was written after a pilot on the same data and after
   switching from z to bits; both measures give the same BLOSUM62 verdict.
-* SCOPe intervals resample query domains, not superfamilies.
+* SCOPe intervals resample query domains. For the fold-level lead, resampling whole folds
+  instead gives nearly the same intervals (item 4).
 
 **Decision.**
 1. Notebook 273's 1.13 is not a headline: it holds only against identity scoring. Do not
    write that H/P keeps more evidence per position than the amino acids.
-2. The angle for H/P is exact matching at the fold level. Among the 19 alphabets a k-mer index
-   can use, `hp_thomas_dill2` keeps the most evidence per aligned position for pairs that share
-   only a fold, in every SCOPe class. That fits the paper's story of a structure-free domain
-   finder: H/P sequence carries fold-level signal that exact residue matches lose. Before it
-   goes in the paper, test it on hits: fold-level sensitivity by alphabet in the SCOPe40
-   kmerseek sweep (PR 107), and the same comparison on a second structure set.
+2. The angle for H/P is exact matching of structurally similar pairs. Among the 19 alphabets a
+   k-mer index can use, `hp_thomas_dill2` keeps the most exact-match evidence per aligned
+   position for pairs that share only a fold, in four of five SCOPe classes (membrane, 35
+   pairs, is unresolved). Against protein20 that lead is larger when the pair shares a fold
+   (item 6), which fits the paper's story of a structure-free domain finder: H/P sequence
+   carries fold-level signal that exact residue matches lose. Against gbmr4 it is the same in
+   different-fold pairs, which SCOPe calls unrelated, so it is not evidence of shared
+   ancestry.
+3. Before it goes in the paper, test it on hits, and count different-fold hits as well as
+   same-fold ones. In the SCOPe40 benchmark, same-fold pairs are either left out (the
+   superfamily-level measure) or counted as true positives (FoldSeek's fold-level measure),
+   and different-fold pairs are false positives in both. A lead that is equally present in
+   different-fold pairs adds false positives as fast as fold-level true positives. Run it on the SCOPe40 kmerseek sweep (PR 107) and
+   on a second structure set.
 """)
 
 nb = {
