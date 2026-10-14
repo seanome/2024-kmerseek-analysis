@@ -30,7 +30,11 @@ HMMER_IMG=${HMMER_IMG:?set HMMER_IMG to the run hmmer .img}
 MMSEQS_IMG=${MMSEQS_IMG:?set MMSEQS_IMG to the run mmseqs2 .img}
 N_PLACED=${N_PLACED:-1000}
 FPT=${FILES_PER_TASK:-4}
-TOOL_TIME=${TOOL_TIME:?set TOOL_TIME from the run trace}
+# phmmer and jackhmmer run on chunks of CHUNK proteins. The run's own jackhmmer took up to
+# 3 h 31 min for 2_000 human proteins at 16 CPUs (phmmer up to 54 min, peak 19.4 GB), so a
+# 1_500-protein chunk asks 5 h: that rate scaled to 1_500, plus half.
+CHUNK=${CHUNK:-1500}
+HMMER_TIME=${HMMER_TIME:-5:00:00}
 INTERPRO_URL=https://ftp.ebi.ac.uk/pub/databases/interpro/releases/110.0/protein2ipr.dat.gz
 TOOL=$(cd "$(dirname "$0")" && pwd)/dark-fmax
 clade() { case $1 in human) echo Mammalia;; worm) echo Chromadorea;; yeast) echo Saccharomycetes;;
@@ -68,13 +72,18 @@ for sp in $SPECIES; do
     deps=""
     # tools: the run's flags (main.nf phmmerSearch, jackhmmerSearch, mmseqs2Search), QfO's
     # columns: query, target, qstart, qend, tstart, tend, bits, evalue
-    for t in phmmer jackhmmer; do
-        it=""; [ "$t" = jackhmmer ] && it="-N 3"
-        j=$($SB -c 16 --mem 64G -t "$TOOL_TIME" -J "df-$t-$sp" -o "$OUT/logs/$t-$sp.log" --wrap \
-          "set -euo pipefail; $AX $HMMER_IMG $t $it --domtblout /dev/stdout --tblout /dev/null -o /dev/null --noali -E 10 --cpu 16 $q $ref | grep -v '^#' | awk 'NF >= 22 {print \$4 \"\t\" \$1 \"\t\" \$16 \"\t\" \$17 \"\t\" \$20 \"\t\" \$21 \"\t\" \$14 \"\t\" \$13}' | gzip -c > $OUT/tools/$sp.$t.tsv.gz")
-        deps="$deps:$j"
+    mkdir -p "$OUT/$sp/chunks"
+    awk -v n="$CHUNK" -v d="$OUT/$sp/chunks" '/^>/ {if (i % n == 0) f = sprintf("%s/q%03d.fasta", d, i / n); i++} {print > f}' "$q"
+    for c in "$OUT/$sp"/chunks/q*.fasta; do
+        cn=$(basename "$c" .fasta)
+        for t in phmmer jackhmmer; do
+            it=""; [ "$t" = jackhmmer ] && it="-N 3"
+            j=$($SB -c 16 --mem 64G -t "$HMMER_TIME" -J "df-$t-$sp-$cn" -o "$OUT/logs/$t-$sp-$cn.log" --wrap \
+              "set -euo pipefail; $AX $HMMER_IMG $t $it --domtblout /dev/stdout --tblout /dev/null -o /dev/null --noali -E 10 --cpu 16 $c $ref | grep -v '^#' | awk 'NF >= 22 {print \$4 \"\t\" \$1 \"\t\" \$16 \"\t\" \$17 \"\t\" \$20 \"\t\" \$21 \"\t\" \$14 \"\t\" \$13}' | gzip -c > $OUT/tools/$sp.$t.$cn.tsv.gz")
+            deps="$deps:$j"
+        done
     done
-    j=$($SB -c 16 --mem 64G -t "$TOOL_TIME" -J "df-mmseqs2-$sp" -o "$OUT/logs/mmseqs2-$sp.log" --wrap \
+    j=$($SB -c 16 --mem 64G -t 1:00:00 -J "df-mmseqs2-$sp" -o "$OUT/logs/mmseqs2-$sp.log" --wrap \
       "set -euo pipefail; d=\$(mktemp -d -p $OUT/tools); cd \$d; $AX $MMSEQS_IMG mmseqs createdb $q qdb; $AX $MMSEQS_IMG mmseqs createdb $ref tdb; $AX $MMSEQS_IMG mmseqs search qdb tdb res tmp -s 7 --num-iterations 3 -e 10 --threads 16; $AX $MMSEQS_IMG mmseqs convertalis qdb tdb res out.tsv --format-output 'query,target,qstart,qend,tstart,tend,bits,evalue'; gzip -c out.tsv > $OUT/tools/$sp.mmseqs2.tsv.gz; cd $OUT; rm -rf \$d")
     deps="$deps:$j"
 
@@ -98,6 +107,6 @@ for sp in $SPECIES; do
     # kmerseek ranked by region_enrichment after the Bonferroni filter at 0.05)
     sc=$($SB -c 1 --mem 32G -t 6:00:00 -J "df-score-$sp" --dependency=afterok:"$build$deps" \
       -o "$OUT/logs/score-$sp.log" --wrap \
-      "set -euo pipefail; $AX $KMERSEEK_IMG python3 $TOOL prepare $OUT/$sp/extract $OUT/tools $OUT/$sp/scored $sp; for set in dark_E1 dark_E10 placed; do mkdir -p $OUT/$sp/scored/\$set; cd $OUT/$sp/scored/\$set; $AX $KMERSEEK_IMG python3 $QFO_BIN/evaluate_domain_calls.py --manifest $OUT/$sp/scored/manifest.tsv --species $sp --truth $OUT/tables/${sp}_truth_\$set.parquet --domain-map $OUT/tables/${sp}_domain_map.parquet --min-overlap 0.5 --strict-iou 0.8 --dedup-transfer-modes off,on --truth-set \$set < /dev/null; done")
+      "set -euo pipefail; for t in phmmer jackhmmer; do cat $OUT/tools/$sp.\$t.q*.tsv.gz > $OUT/tools/$sp.\$t.tsv.gz; done; $AX $KMERSEEK_IMG python3 $TOOL prepare $OUT/$sp/extract $OUT/tools $OUT/$sp/scored $sp; for set in dark_E1 dark_E10 placed; do mkdir -p $OUT/$sp/scored/\$set; cd $OUT/$sp/scored/\$set; $AX $KMERSEEK_IMG python3 $QFO_BIN/evaluate_domain_calls.py --manifest $OUT/$sp/scored/manifest.tsv --species $sp --truth $OUT/tables/${sp}_truth_\$set.parquet --domain-map $OUT/tables/${sp}_domain_map.parquet --min-overlap 0.5 --strict-iou 0.8 --dedup-transfer-modes off,on --truth-set \$set < /dev/null; done")
     echo "$sp: $n region files in $ntask extract tasks ($arr), tools$deps, score $sc"
 done
