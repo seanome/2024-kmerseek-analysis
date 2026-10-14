@@ -16,11 +16,20 @@ up to the gap's length. The whole hit's query span is kept as aln_qstart/aln_qen
 whole hit as the call, every unique find came from MMseqs2 and phmmer hits longer than
 twice the domain; the test half had not been read.) Scores are
 oriented so higher is better:
-    kmerseek exact    region_poisson_score
+    kmerseek exact    region_tfidf (see below)
     kmerseek extend   -log10(region_evalue)
     MMseqs2           -log10(evalue)
     phmmer, hmmscan   -log10(domain i-Evalue)
 All coordinates are 1-based with the end included.
+
+The exact arm is scored on region_tfidf, not region_poisson_score (Olga, 2026-10-14, before
+the test half was read). kmerseek 0.4.0-rc5 computes the Poisson tail as 1 - CDF, which is 0
+for any p below about 1e-16 and is then floored at the smallest double, so every such region
+scores 307.65 and no score between about 16 and 307 occurs. In the pilot's tune half, 102 of
+107 exact settings had two or more decoy pairs at 307.65, which put the matched cutoff above
+every possible score. Exact rows carry no E-value (region_evalue is inf: the Karlin-Altschul
+fit is for extension only). region_tfidf, the summed IDF of the region's shared k-mers, has
+no ceiling.
 
 Rules, fixed before any result (notebook 280, first cell):
 - found: a call of the same family whose residues lie at least half inside the t1 domain
@@ -117,7 +126,7 @@ KM_COLUMNS = [
     "dend",
     "pfam_acc",
     "target",
-    "region_poisson_score",
+    "region_tfidf",
     "region_evalue",
 ]
 
@@ -135,7 +144,7 @@ def read_kmerseek_file(f: Path) -> tuple[pl.DataFrame, dict]:
     if df.height == 0 or "region_evalue" not in header:
         return pl.DataFrame(schema=CALL_SCHEMA), check
     score = (
-        pl.col("region_poisson_score").cast(pl.Float64)
+        pl.col("region_tfidf").cast(pl.Float64)
         if arm == "exact"
         else neg_log10("region_evalue")
     )
