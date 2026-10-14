@@ -577,6 +577,17 @@ print("T1, call inside the chains' region:"); print(ident_t1.with_columns(pl.sel
 print("T1, any call:"); print(ident_t1_any.with_columns(pl.selectors.float().round(3)))
 print("T2, call on the same family:"); print(ident_t2.with_columns(pl.selectors.float().round(3)))
 
+cov = mm_real.filter(pl.col("pair_set") == "T1").select("accession_a", "accession_b", "c1_coverage_of_shorter",
+                                                         "c2_called", "c2_called_in_chain_region")
+split = best_rows.filter(pl.col("pair_set") == "T1").join(cov, on=["accession_a", "accession_b"]).with_columns(
+    pl.when(pl.col("c1_coverage_of_shorter") > 0.95).then(pl.lit("one alignment covers > 95% (colinear in UniProt)"))
+    .otherwise(pl.lit("one alignment covers <= 95%")).alias("t1_part"))
+print("T1 split by how much of the shorter protein one MMseqs2 alignment covers:")
+print(split.group_by("t1_part").agg(pl.len(), pl.col("called").sum().alias("kmer_any_call"),
+                                    pl.col("called_in_chain_region").sum().alias("kmer_in_region"),
+                                    pl.col("c2_called").sum().alias("c2_any_call"),
+                                    pl.col("c2_called_in_chain_region").sum().alias("c2_in_region")).sort("t1_part"))
+
 
 def draw_identity(ax, df, df_any, shuffled_rate, n1_kmer, n1_c2, title):
     x = np.arange(df.height)
@@ -601,16 +612,24 @@ def draw_identity(ax, df, df_any, shuffled_rate, n1_kmer, n1_c2, title):
     ax.set_title(title, loc="left")
 
 
+def identity_legend(ax):
+    handles, labels = ax.get_legend_handles_labels()
+    rank = lambda lab: (0 if lab.startswith("k-mer offset test, " + best["alphabet"]) else 1 if lab.startswith("k-mer offset test, any")
+                        else 2 if lab.startswith("C2") else 3 if lab.startswith("C1") else 4)
+    order = sorted(range(len(labels)), key=lambda i: rank(labels[i]))
+    ax.legend([handles[i] for i in order], [labels[i] for i in order], loc="upper left", frameon=False, fontsize=5)
+
+
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 80)
 draw_identity(ax, ident_t1, ident_t1_any, best["shuffled_rate_t1"], best["n1_false_rate"], c2row["n1_false_rate"],
               "T1 circular permutations")
-ax.legend(loc="upper left", frameon=False, fontsize=5)
+identity_legend(ax)
 pf.save(fig, FIG / "293_sensitivity_by_identity_T1_PermuStructDB")
 
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 80)
 draw_identity(ax, ident_t2, None, best["shuffled_rate_t2"], best["n1_false_rate"], c2row["n1_false_rate"],
               "T2 Pfam domain-order swaps, call on the same family")
-ax.legend(loc="upper left", frameon=False, fontsize=5)
+identity_legend(ax)
 pf.save(fig, FIG / "293_sensitivity_by_identity_T2_SwissProt_Pfam38_2")
 """)
 
@@ -748,7 +767,7 @@ def main_figure():
     draw_hero(ax_hist, ax_prot)
     draw_identity(ax_id, ident_t1, ident_t1_any, best["shuffled_rate_t1"], best["n1_false_rate"], c2row["n1_false_rate"],
                   f"T1, {N_T1} circularly permuted pairs with UniProt sequences")
-    ax_id.legend(loc="upper left", frameon=False, fontsize=5)
+    identity_legend(ax_id)
     pf.panel_label(ax_hist, "a")
     pf.panel_label(ax_id, "b")
     return fig
