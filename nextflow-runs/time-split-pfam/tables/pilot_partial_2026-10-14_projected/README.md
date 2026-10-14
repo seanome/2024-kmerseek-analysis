@@ -20,3 +20,12 @@ finished when the pilot stopped (head cancelled 2026-10-13 14:00). Test half unr
 With the domain placed through the hit, every P4 instance a kmerseek setting finds is also
 found by MMseqs2, phmmer or hmmscan. P4's pick (`p4.json`) is then a tie at 0 broken by
 decoy rate and name, so it means nothing.
+
+`kmerseek_only_any_score.csv` (`kmerseek_only_any_score.py`): tune-half instances that some
+kmerseek setting places, at any score, where MMseqs2, phmmer and hmmscan have no landing call
+of that family at any score. There are 16 of 115 tune-half instances; none passes kmerseek's
+own cutoff. 5 are held back by a score ceiling: `region_poisson_score` stops at 307.65
+(-log10 of the smallest normal double, so the p-value underflows), and in 102 of 107 exact
+settings two or more tune decoy pairs reach it, which puts the matched cutoff above the
+ceiling. Those exact settings then find nothing. 3,561 of 4,920 exact best calls and 561,027
+of 5.0 million exact tune decoy pairs sit at the ceiling.

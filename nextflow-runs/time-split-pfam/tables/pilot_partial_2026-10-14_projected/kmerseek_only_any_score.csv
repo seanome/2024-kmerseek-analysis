@@ -1,0 +1,17 @@
+query,pfam_acc,t1_start,t1_end,n_settings,settings,pfam_id,pfam_type,length,kingdom,p4,query_len
+A0A0R2ETI3,PF00746,1243,1285,49,"dayhoff6 k10 exact, dayhoff6 k10 extend, dayhoff6 k12 exact, dayhoff6 k14 exact",Gram_pos_anchor,Motif,43,Bacteria,true,1285
+A0A2T0U7V9,PF00583,26,174,42,"dayhoff6 k10 exact, dayhoff6 k10 extend, funcgroups8 k9 exact, funcgroups8 k9 extend",Acetyltransf_1,Family,149,Bacteria,false,191
+A0A2I4DPX3,PF03372,1,134,41,"dayhoff6 k10 exact, dayhoff6 k10 extend, funcgroups8 k9 exact, funcgroups8 k9 extend",Exo_endo_phos,Domain,134,Eukaryota,false,304
+A0A2K6CUT4,PF15273,100,198,25,"hp_kyte_doolittle2 k23 exact, hp_kyte_doolittle2 k25 exact, hp_kyte_doolittle2 k25 extend, hp_pbotc_1st_ed2 k19 exact",NHS,Disordered,99,Eukaryota,true,1094
+A0A2P5BZC2,PF07734,26,166,22,"gbmr4 k17 extend, hp_lehninger2 k19 exact, hp_lehninger2 k19 extend, hp_lehninger2 k21 exact",FBA_1,Repeat,141,Eukaryota,true,288
+A0A1H8ISR9,PF01547,79,361,19,"hp_kyte_doolittle2 k23 exact, hp_kyte_doolittle2 k25 exact, hp_kyte_doolittle2 k25 extend, hp_kyte_doolittle2 k27 exact",SBP_bac_1,Family,283,Bacteria,false,473
+A0A3S1B3L3,PF09762,22,116,10,"hp_lehninger2 k19 exact, hp_lehninger2 k19 extend, hp_lehninger_c_nonpolar2 k19 exact, hp_lehninger_c_nonpolar2 k19 extend",CCDC93_CC,Coiled-coil,95,Eukaryota,false,376
+M2RDJ0,PF00646,5,36,9,"funcgroups8 k9 exact, funcgroups8 k9 extend, mmseqs12 k7 exact, mmseqs12 k7 extend",F-box,Domain,32,Eukaryota,true,452
+A0A2P6PGK7,PF10344,3,249,8,"hp_lehninger_c_nonpolar2 k19 exact, hp_lehninger_c_nonpolar2 k19 extend, hp_pbotc_1st_ed2 k19 exact, hp_pbotc_1st_ed2 k19 extend",Hobbit,Repeat,247,Eukaryota,true,261
+A0A1I5AVP0,PF02090,5,117,4,"gbmr4 k17 exact, gbmr4 k17 extend, gbmr4 k19 exact, gbmr4 k19 extend",SPAM,Coiled-coil,113,Bacteria,false,118
+E2S7Q4,PF06810,50,209,4,"gbmr4 k17 exact, gbmr4 k17 extend, gbmr7 k17 exact, gbmr7 k17 extend",Phage_scaffold,Coiled-coil,160,Bacteria,false,229
+A2YQU2,PF03478,67,251,3,"funcgroups8 k9 exact, funcgroups8 k9 extend, hp_pbotc_1st_ed2 k19 extend",Beta-prop_KIB1-4,Repeat,185,Eukaryota,true,267
+A0A0D2B2Z4,PF15811,45,105,2,"wass14 k6 exact, wass14 k6 extend",SVIP,Family,61,Eukaryota,false,122
+A0A3N2JZE1,PF03364,10,137,2,"wass14 k6 exact, wass14 k6 extend",Polyketide_cyc,Family,128,Bacteria,false,151
+A0A3S1B3L3,PF09762,280,372,2,"hp_pbotc_1st_ed2 k19 exact, hp_pbotc_1st_ed2 k19 extend",CCDC93_CC,Coiled-coil,93,Eukaryota,false,376
+A0A452FGF3,PF11526,1325,1367,1,gbmr4 k17 extend,Pfc11_Clp1_ID,Domain,43,Eukaryota,true,1512
