@@ -134,11 +134,15 @@ def read_pfam_seed(path: Path):
 def reference_pfam_seed(seed: Path, sprot: Path, query_fastas: list[Path], out: Path) -> None:
     # Every sequence any run searches, decoys included: a seed member must not be one of
     # them or lie inside one.
-    queries: dict[str, str] = {}
+    # Every version of every name: a decoy of the same name differs between query sets (each
+    # set draws its own shuffles), so keying by name would check only the last one read.
+    query_acc, seen = set(), set()
     for f in query_fastas:
-        queries.update(read_fasta(f))
-    query_acc = {q for q in queries if not q.startswith(DECOY_PREFIX)}
-    qseqs = list(queries.values())
+        for name, qs in read_fasta(f).items():
+            if not name.startswith(DECOY_PREFIX):
+                query_acc.add(name)
+            seen.add(qs)
+    qseqs = sorted(seen)
     probe: dict[str, list[int]] = {}
     for i, qs in enumerate(qseqs):
         for j in range(len(qs) - SUBSTRING_PROBE + 1):
@@ -209,7 +213,7 @@ def reference_pfam_seed(seed: Path, sprot: Path, query_fastas: list[Path], out: 
         "entry_length_median": sorted(len(s) for _n, s in entries)[len(entries) // 2],
         "entries_shorter_than_10_aa": sum(len(s) < 10 for _n, s in entries),
         "letters": "".join(letters),
-        "queries_checked": len(queries),
+        "query_sequences_checked": len(qseqs),
         "sprot2019_08_proteins": len(sprot_seqs),
         "sprot2019_08_residues": sprot_res,
         "residue_ratio_sprot_over_seed": sprot_res / seed_res,
