@@ -187,7 +187,7 @@ seed-pilot:
 	cd $(RUN_DIR) && mkdir -p launch-pilot-$(SEED) && cd launch-pilot-$(SEED) && \
 	  $(HEAD) HEAD_SESSION=nf280seedpilot HEAD_JOBNAME=nfdrv-280-seed-pilot \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_SEED) \
-	    --settings $(RUN_DIR)/inputs/settings.tsv --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot-$(SEED) \
+	    --settings $(RUN_DIR)/inputs/settings.tsv --skip_settings $(SKIP_SETTINGS) --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot-$(SEED) \
 	    --hmmscan_dir $(RUN_DIR)/results-pilot/hmmscan --run_tag seed-pilot --queue_size 100 -resume'
 
 # Mean pLDDT of each instance's query residues inside its t1 domain, from the query's
