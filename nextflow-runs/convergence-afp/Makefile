@@ -11,6 +11,7 @@
 #   make plan                    print the memory and time each kmerseek setting will ask
 #   make convergence_afp_pilot   every method, kmerseek on the pilot settings only
 #   make convergence_afp         every method, all 230 kmerseek settings (resumes the pilot)
+#   make convergence_afp_after_pilot   queue convergence_afp to start when the pilot ends cleanly
 #   make running                 what is running
 
 SHELL := /bin/bash
@@ -71,7 +72,8 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               $(REPO_DIR)/scripts/nf-head
 
 .PHONY: help assets test test-foldseek-db stage build-image push-image plan check-inputs \
-        convergence_afp convergence_afp_pilot running watch stop pull
+        convergence_afp convergence_afp_pilot convergence_afp_after_pilot cancel-after-pilot \
+        running watch stop pull
 
 help:
 	@sed -n '1,/^SHELL/p' $(firstword $(MAKEFILE_LIST)) | grep '^#' | sed 's/^# \{0,1\}//'
@@ -157,16 +159,41 @@ plan:
 	  $(if $(OWN_TRACES),--trace $(OWN_TRACES),) \
 	  --floor-gb $(FLOOR_GB) --floor-h $(FLOOR_H) --out $(LAUNCH_DIR)/resources.tsv
 
+# `ml` is a shell function from Lmod, missing in a batch job's shell unless exported; this
+# loads Lmod first when it is absent, the way scripts/nf-head does.
+LOAD_NEXTFLOW = { command -v ml >/dev/null 2>&1 || . /share/software/user/open/lmod/lmod/init/bash; } && ml load biology nextflow
+
 NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
   --swissprot_fasta $(SPROT) --kmerseek_image $(IMAGE) --outdir $(OUTDIR) \
   --resources $(LAUNCH_DIR)/resources.tsv \
   $(if $(wildcard $(PROSTT5)),--prostt5_weights $(PROSTT5),) --run_tag $(RUN)
 
 convergence_afp_pilot: check-inputs plan
-	cd $(LAUNCH_DIR) && ml load biology nextflow && $(HEAD_SUBMIT) $(NF_RUN) --settings pilot $(NF_ARGS)
+	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && $(HEAD_SUBMIT) $(NF_RUN) --settings pilot $(NF_ARGS)
 
 convergence_afp: check-inputs plan
-	cd $(LAUNCH_DIR) && ml load biology nextflow && $(HEAD_SUBMIT) $(NF_RUN) --settings all $(NF_ARGS)
+	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && $(HEAD_SUBMIT) $(NF_RUN) --settings all $(NF_ARGS)
+
+# Queue the full run behind the pilot's driver job. A small job waits for the pilot's head
+# to exit with status 0 (afterok: a pilot that failed or was stopped does not start the full
+# run), then runs `make convergence_afp` here: `make plan` then reads the pilot's trace, and
+# the new head resumes the pilot's launch directory. If the pilot head is cancelled the
+# waiting job is removed too (--kill-on-invalid-dep). Cancel it with `make cancel-after-pilot`.
+PILOT_JOBID ?= $(shell cat $(LAUNCH_DIR)/.nf-head.jobid 2>/dev/null)
+convergence_afp_after_pilot:
+	$(call require_cluster)
+	@test -n "$(PILOT_JOBID)" || { echo "no pilot head job id in $(LAUNCH_DIR)/.nf-head.jobid"; exit 1; }
+	@squeue -h -j $(PILOT_JOBID) -o '%i %j %t' | grep -q nfdrv-$(RUN) || \
+	  { echo "job $(PILOT_JOBID) is not a queued or running nfdrv-$(RUN)"; exit 1; }
+	sbatch --parsable --job-name=nfnext-$(RUN) --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	  --qos=normal --time=01:00:00 --cpus-per-task=1 --mem=4G \
+	  --dependency=afterok:$(PILOT_JOBID) --kill-on-invalid-dep=yes \
+	  --output=$(LAUNCH_DIR)/nfnext.%j.log \
+	  --wrap "cd $(MAKEFILE_DIR) && NF_HEAD_DETACH=1 make convergence_afp"
+	@echo "queued after pilot head $(PILOT_JOBID); check with: squeue -u $$USER -n nfnext-$(RUN)"
+
+cancel-after-pilot:
+	scancel -n nfnext-$(RUN)
 
 running:
 	@python3 $(REPO_DIR)/scripts/nf-running --jobs "$(MAKEFILE_DIR)"
