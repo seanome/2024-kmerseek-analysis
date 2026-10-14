@@ -52,11 +52,12 @@ pairs, at the scale of Swiss-Prot, in three alphabets.
 test find the circular permutations of PermuStructDB and the Pfam domain-order swaps of
 Swiss-Prot? At what identity, and how often does it call colinear pairs?
 
-**Decision rule, written before the results.** The k-mer test is a figure for the paper if,
-on T1, its best setting's sensitivity is at or above that of MMseqs2 with two alignments
-(C2), at a false call rate of 2% or less on colinear pairs (N1), outside the bootstrap 95%
-interval. If C2 matches it, the figure still goes in, with the sentence that MMseqs2 with
-two alignments does the same and the k-mer version is the one that runs on sketches.
+**Decision rule, written before the results.** The k-mer test is a figure for the paper if
+its best setting's sensitivity on T1 is at or above that of MMseqs2 with two alignments (C2),
+outside the bootstrap 95% interval. The best setting must keep its false call rate on
+colinear pairs (N1) at 2% or less. If C2 matches it, the figure still goes in, with the
+sentence that MMseqs2 with two alignments does the same and the k-mer version is the one that
+runs on sketches.
 "Best setting" = the highest T1 sensitivity among settings with an N1 false call rate of 2%
 or less. Higher sensitivity is better; a false call rate near the shuffled rate means the
 calls are no better than chance.
@@ -100,7 +101,7 @@ tables of kmerseek's `protein20`, `dayhoff6` and `hp_lehninger2` (the three alph
 sourmash also sketches), checked against sourmash 4.9.4 in
 `scripts/tests/test_kmer_offset_utils.py`. MMseqs2 18.8cc5c. sourmash 4.9.4 with the
 branchwater plugin. Every table this notebook reads is made by the scripts in
-`scripts/nb293/`; the run order is in section 0.
+`scripts/nb293/`; the run order is listed below.
 """)
 
 code(r"""
@@ -145,7 +146,7 @@ def pct(x):
 """)
 
 md(r"""
-## 0. Data and how each table was made
+**Data, and how each table was made.**
 
 Every download, with the URL, release, date, size and md5. The Pfam regions file is 5 GB;
 it was filtered to Swiss-Prot rows on Sherlock (job 47824511 resubmitted as 47824998,
@@ -234,7 +235,10 @@ Filters, in order, with the reason for each:
 7. one pair per pair of UniProt entries (the chain pair with the highest TM-align score in
    circular-permutation mode is kept).
 
-**T2.** Pfam 38.2 regions on Swiss-Prot 2026_03. Proteins whose Pfam sequence md5 matches the
+**T2.** Pfam 38.2 regions on Swiss-Prot 2026_03. Pfam 38 annotates the sequences of the
+UniProtKB reference proteomes (release 2025_03, Pfam's `relnotes.txt`), so only 317,364 of
+the 575,748 Swiss-Prot proteins have Pfam regions in its files. The others, concanavalin A
+(P02866) among them, cannot enter T2 or N1, and step 6 cannot label them as T2. Proteins whose Pfam sequence md5 matches the
 current Swiss-Prot sequence, with no two Pfam domains overlapping by more than 10 residues
 (nested domains such as PF07687 inside PF01546 have no order), and at least two distinct
 families. Two proteins with the same multiset of families form a T2 pair when their orders
@@ -329,6 +333,7 @@ def draw_sf1():
         y = np.arange(len(vals))[::-1]
         ax.barh(y, vals, color=colour, height=0.6)
         ax.set_xscale("log")
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:,.0f}"))
         ax.set_yticks(y, names)
         for yi, v in zip(y, vals):
             ax.text(v * 1.08, yi, f"{v:,}", va="center", fontsize=6)
@@ -498,11 +503,11 @@ region, BRD4 (O60885) against BRD2 (P25440), pairs two serine- and glutamate-ric
 (`SSSESESSSESSS` with `SSSESSSEESSSESSS`) that the low-complexity filter (a 5-mer seen more
 than 5 times) did not remove.
 
-Two limits of the call rule, found when testing it: a permutation whose two parts share more
-than 10 residues at the junction is missed, and the C2 count with no overlap at all allowed
-(printed below the table) moves by a few pairs when MMseqs2's
-alignment ends move by one or two residues (12 here, 9 with `mmseqs search
---exhaustive-search`), so only the 10-residue version is used.
+Two limits of the call rule were found when testing it. A permutation whose two parts share
+more than 10 residues at the junction is missed. And the C2 count with no overlap allowed
+(printed below the table) is fragile: it moves when MMseqs2's alignment ends move by one or
+two residues (12 here, 9 with `mmseqs search --exhaustive-search`). Only the 10-residue
+version is used.
 """)
 
 code(r"""
@@ -693,7 +698,13 @@ print(f"T1 pairs with both proteins in Swiss-Prot (the most step 6 can find): {n
 code(r"""
 seqs_sp = ku.read_fasta(SWISSPROT)
 arch = pl.read_parquet(DATA / "swissprot_architectures.parquet")
-arch_of = {a: (f, s, e) for a, f, s, e in arch.select("accession", "families_in_order", "domain_starts", "domain_ends").iter_rows()}
+# Every Pfam 38.2 domain on each Swiss-Prot protein (not only the proteins kept for T2).
+regions_all = (pl.read_csv(DATA / "downloads/pfam/Pfam-A.regions.swissprot_2026_03.tsv", separator="\t",
+                           schema_overrides={"pfamseq_acc": pl.Utf8, "pfamA_acc": pl.Utf8})
+               .sort("pfamseq_acc", "seq_start")
+               .group_by("pfamseq_acc", maintain_order=True)
+               .agg("pfamA_acc", "seq_start", "seq_end"))
+arch_of = {a: (f, s, e) for a, f, s, e in regions_all.iter_rows()}
 sp_names = {}
 import gzip
 with gzip.open(SWISSPROT, "rt") as fh:
@@ -704,7 +715,7 @@ with gzip.open(SWISSPROT, "rt") as fh:
 
 def architecture_text(acc):
     if acc not in arch_of:
-        return "no Pfam architecture with >= 2 distinct families (or overlapping domains)"
+        return "no Pfam 38.2 regions (not in the UniProtKB reference proteomes Pfam 38 annotates)"
     f, s, e = arch_of[acc]
     return ", ".join(f"{fam_name.get(x, x)} {a}-{b}" for x, a, b in zip(f, s, e))
 
@@ -725,6 +736,41 @@ for r in top10.iter_rows(named=True):
 """)
 
 code(r"""
+nb = neither.with_columns(
+    pl.min_horizontal(
+        pl.col("accession_a").replace_strict({a: len(x) for a, x in seqs_sp.items()}),
+        pl.col("accession_b").replace_strict({a: len(x) for a, x in seqs_sp.items()}),
+    ).alias("shorter_length"),
+    pl.col("accession_a").replace_strict(sp_names, default="").str.replace(r" OS=.*", "").alias("name_a"),
+)
+print(f"{neither.height} called pairs in neither set: {nb['c1_identity'].is_null().sum()} with no MMseqs2 alignment at E <= 1e-3; "
+      f"median length of the shorter protein {nb['shorter_length'].median():.0f} aa; "
+      f"{(nb['shorter_length'] < 100).sum()} with the shorter protein under 100 aa")
+print("Most common names of protein A among them:")
+print(nb.group_by("name_a").agg(pl.len(), pl.col("shorter_length").median().alias("median_shorter_length"))
+      .sort(["len", "name_a"], descending=[True, False]).head(15))
+
+
+def draw_neither_lengths():
+    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55)
+    has = nb.filter(pl.col("c1_identity").is_not_null())["shorter_length"].to_numpy()
+    none = nb.filter(pl.col("c1_identity").is_null())["shorter_length"].to_numpy()
+    bins = np.logspace(np.log10(5), np.log10(max(nb["shorter_length"].max(), 10) + 1), 30)
+    ax.hist([none, has], bins=bins, stacked=True, color=[pf.GREY, COLOUR["kmer"]],
+            label=[f"no MMseqs2 alignment (n = {len(none)})", f"one MMseqs2 alignment, < 50% coverage (n = {len(has)})"])
+    ax.set_xscale("log")
+    ax.set_xticks([10, 30, 100, 300, 1000], ["10", "30", "100", "300", "1000"])
+    ax.set_xlabel("length of the shorter protein (aa; axis spaced by ratio)")
+    ax.set_ylabel("called pairs in neither T1 nor T2")
+    ax.legend(loc="upper right", frameon=False)
+    return fig
+
+
+fig = draw_neither_lengths()
+pf.save(fig, FIG / f"293_step6_called_pairs_in_neither_by_length_SwissProt_{SETTING}")
+""")
+
+code(r"""
 def draw_sf3():
     n = top10.height
     fig, ax = pf.figure(pf.TWO_COLUMN_MM, max(40, 9 * n + 15))
@@ -738,7 +784,6 @@ def draw_sf3():
             if acc in arch_of:
                 for fam, s, e in zip(*arch_of[acc]):
                     ax.add_patch(plt.Rectangle((s, y - 0.32), e - s + 1, 0.64, facecolor="none", edgecolor=pf.GREY, lw=0.6))
-                    ax.text((s + e) / 2, y + 0.42, fam_name.get(fam, fam), ha="center", va="bottom", fontsize=5, color="#555555")
             for i, t in enumerate(["block1", "block2"]):
                 s, e = r[f"{t}_{side}_start"] + 1, r[f"{t}_{side}_end"]
                 ax.add_patch(plt.Rectangle((s, y - 0.18), e - s + 1, 0.36, color=block_colour[i]))
@@ -750,7 +795,7 @@ def draw_sf3():
     ax.spines["left"].set_visible(False)
     ax.tick_params(axis="y", length=0)
     handles = [plt.Line2D([], [], color="black", lw=0.8, label="protein"),
-               plt.Rectangle((0, 0), 1, 1, facecolor="none", edgecolor=pf.GREY, label="Pfam domain (name above)"),
+               plt.Rectangle((0, 0), 1, 1, facecolor="none", edgecolor=pf.GREY, label="Pfam 38.2 domain (names printed above the figure; Pfam annotates only reference-proteome proteins)"),
                plt.Rectangle((0, 0), 1, 1, color=block_colour[0], label="block 1 (first along A)"),
                plt.Rectangle((0, 0), 1, 1, color=block_colour[1], label="block 2")]
     fig.legend(handles=handles, loc="outside upper center", ncol=4, frameon=False)
@@ -820,7 +865,75 @@ print(ident_t1.with_columns(pl.selectors.float().round(3)))
 md(r"""
 ## 7. Summary and conclusions
 
-Filled from the printed numbers above; see the verdict cell for the sentences built in code.
+**Verdict (decision rule from the top of the notebook): MMseqs2 with two alignments matches the
+k-mer offset test.** On T1, counting only calls inside the region the two PDB chains cover,
+the best k-mer setting (protein20, k = 5, n_block = 5) and C2 call the same 27 of 140 pairs,
+19.3% [12.9%, 25.7%] each. The k-mer test's higher raw rate, 26.4% [19.3%, 33.6%], comes
+from 10 calls outside that region: 9 between different copies of a repeated domain (PDZ
+domains of DLG proteins, spectrin repeats) and 1 between low-complexity serine and glutamate
+stretches of BRD4 and BRD2. The figure goes in with the sentence that MMseqs2 with two
+alignments does the same, and that the k-mer version is the one that runs on sketches.
+
+**Claims the data supports**
+
+* A single MMseqs2 alignment never flags a rearranged pair; on the hero lectin pair it
+  covers 47.3% of the shorter protein.
+* The k-mer offset test finds circular permutations from sequence alone: 27 of 140 T1 pairs
+  at the right place, 27 of the 50 T1 pairs whose UniProt sequences are not colinear (where
+  one alignment covers 95% or less of the shorter protein), with 1 false call in 230
+  colinear N1 pairs, 2 in 369 random N2 pairs, and 0 in 1,400 shuffled copies of T1.
+* MMseqs2 with two alignments calls the same 27 T1 pairs, with no false call on N1, N2 or
+  any shuffled copy.
+* On Pfam domain-order swaps (T2), C2 finds more than the k-mer test: 35 against 12 of 230
+  pairs with both parts on the same Pfam family, and at least as many in every identity bin,
+  including under 30% identity (7 against 4 of 58).
+* Reduced alphabets do not help here. dayhoff6 and hp_lehninger2 reach T1 sensitivity no
+  higher than protein20 inside the 2% false call limit (best: dayhoff6 k = 10, n_block = 5,
+  22.1%; hp_lehninger2 k = 20, n_block = 5, 15.7%). hp_lehninger2 at k = 15, n_block = 3 calls
+  17% of shuffled T1 copies and 54% of shuffled T2 copies: its calls are mostly chance.
+* The sketch route scales: sketching all 575,748 Swiss-Prot proteins took 5 minutes, the
+  index 36 minutes and the all-against-all search 5 minutes (30 GB of memory) on the laptop,
+  giving 11,101,174 candidate pairs; MMseqs2 on all of them took 13 minutes and the offset
+  test on the 586,917 with low single-alignment coverage took 14 seconds.
+
+**Claims the data does not support**
+
+* That the k-mer test finds rearrangements MMseqs2 with two alignments misses. On T1 the
+  call sets inside the chains' region are identical; on T2 C2 finds more.
+* Anything below 30% identity for circular permutations: T1 has no pair under 30% identity
+  and 5 pairs at 30 to 50%, none called by either method.
+* Any new rearranged protein from Swiss-Prot. Of the 853 pairs called at scale, 3 are T1
+  pairs (all concanavalin A, P02866), none is a T2 pair (only proteins with Pfam 38.2 regions
+  can be), and the 850 others are mostly short
+  repetitive peptides: 678 have no MMseqs2 alignment at all, and the shorter protein's median
+  length is 37 aa. The ten strongest are
+  concanavalin A-type lectins of *Canavalia* (the known permutation between a lectin
+  precursor and the mature, ligated lectin) and gingipain and hemagglutinin A repeats of
+  *Porphyromonas gingivalis*. None was checked against a structure (C3 was not run), so none
+  is a finding.
+* That PermuStructDB's 20,801 pairs are a sequence-level truth set: only 140 distinct UniProt
+  pairs remain, and 90 of those are colinear in UniProt (one alignment covers more than 95%
+  of the shorter protein). In those 90 the permutation PermuStructDB found is not in the
+  UniProt sequences.
+
+**Figures**
+
+* Main figure: `figures/293_main_kmer_offset_test_PermuStructDB_T1_protein20_k5_n5.pdf`
+  (a, hero offset histogram and the two proteins; b, T1 sensitivity by identity).
+* SF1, the four sets: `figures/293_sf1_pair_sets_PermuStructDB_SwissProt_Pfam38_2.pdf`.
+* SF2, every setting: `figures/293_sf2_every_setting_T1_T2_vs_N1_PermuStructDB_SwissProt.pdf`;
+  the table with intervals is written to `293_sf2_settings_table.tsv` in the data folder.
+* SF3, the ten strongest step 6 pairs outside T1 and T2:
+  `figures/293_sf3_top10_new_candidates_SwissProt_protein20_k5_n5.pdf`.
+* T2 by identity: `figures/293_sensitivity_by_identity_T2_SwissProt_Pfam38_2.pdf`.
+
+**Next smallest experiment.** Run both tests on the PDB chain sequences themselves (SEQRES)
+for all 20,801 PermuStructDB pairs, instead of UniProt. That keeps the 2,749 pairs dropped
+because a chain is an engineered construct, and the 6,969 pairs whose two chains map to one
+UniProt entry. It asks the one
+question this notebook could not answer: below 30% identity, where two local alignments start
+to fail, does the k-mer offset test still find the blocks? About 20,801
+pairs times 10 shuffled copies, under an hour on the laptop with the scripts here.
 """)
 
 out = (
