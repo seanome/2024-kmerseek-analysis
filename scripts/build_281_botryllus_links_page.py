@@ -21,7 +21,7 @@ scripts/fasta_lengths.py from the run's botryllus.query.fasta.
 Target species, names, sequences and UniProt-curated domain positions come from
 page_targets_{info.tsv,domains.tsv,seqs.fasta}, written by scripts/swissprot_target_info.py.
 
-Tool hits with positions on both proteins come from tool_hits_both_positions_E10.tsv.gz
+Tool hits with positions on both proteins come from tool_hits_both_positions_E10_page_targets.tsv.gz
 (scripts/281_tool_search_query_positions.sbatch, then scripts/parse_query_position_hits.py),
 a re-run of the three tools that keeps the Botryllus-side position. A tool not yet in that
 table falls back to the dark-set run's hits, which carry the target position only.
@@ -96,7 +96,7 @@ def main():
     pair_regions = {(q, t): [[a_index[x["alphabet"]], x["region_start"] + 1, x["region_end"], x["target_start"] + 1,
                               x["target_end"], r3(x["region_evalue"])] for x in rs]
                     for q, t, rs in region_sets.iter_rows()}
-    both = pl.read_csv(DATA / "tool_hits_both_positions_E10.tsv.gz", separator="\t") \
+    both = pl.read_csv(DATA / "tool_hits_both_positions_E10_page_targets.tsv.gz", separator="\t") \
         .rename({"query": "query_name", "target": "target_name"})
     rerun_tools = sorted(both["tool"].unique())
     hit_cols = ["tool", "query_name", "target_name", "tstart", "tend", "bits", "evalue"]
@@ -365,7 +365,7 @@ footer p { max-width: 90ch }
       <span><span class="sw" style="background:var(--kmerseek)"></span>best kmerseek region (lowest E), with a band joining its two ends</span>
       <span><span class="sw" style="background:var(--kmerseek-soft)"></span>other kmerseek regions on the pair (hover for alphabet and E)</span>
       <span><span class="sw" style="background:var(--panel);border:1px solid var(--fg)"></span>target domain (UniProt curated)</span>
-      <span><span class="sw" style="background:var(--phmmer)"></span><span class="sw" style="background:var(--jackhmmer)"></span><span class="sw" style="background:var(--mmseqs2)"></span>phmmer, jackhmmer, mmseqs2 hit, drawn twice: in the rows above the Botryllus protein at its position there, and in the rows under the target at its position there (hover a box for both). The first run kept only target positions; a re-run that keeps both is filling these in tool by tool.</span>
+      <span><span class="sw" style="background:var(--phmmer)"></span><span class="sw" style="background:var(--jackhmmer)"></span><span class="sw" style="background:var(--mmseqs2)"></span>phmmer, jackhmmer, mmseqs2 hit, drawn twice: in the rows above the Botryllus protein at its position there, and in the rows under the target at its position there (hover a box for both). Positions come from a re-run of the three tools that keeps both; it reproduces every hit of the original run.</span>
     </div>
     <div class="table"><table>
       <thead><tr>
