@@ -444,101 +444,131 @@ pf.save(fig, FIG_DIR / f"{FIG_STEM}_extension_vs_exact", formats=("pdf", "png"))
 """)
 
 md(r"""
-## 6. Below k_min: the follow-up run
+## 6. Below k_min, on two scales
 
 Section 3 left one question open: for 10 of 19 alphabets the best k was the lowest k run, so
-sensitivity might keep rising at smaller k. A second run on Sherlock (step 1 of the
-[PR 107](https://github.com/seanome/2024-kmerseek-analysis/pull/107) follow-up, head job
-47546661, 2026-10-12, same image and settings) searched k_min − 1 and k_min − 2 for the 16
-alphabets whose best family or superfamily AUC sat at k_min, never under 15 bits per k-mer
-(k × log2 classes). That is 27 alphabet-ksize pairs and 162 searches; all 162 scored.
-funcgroups8, gbmr4 and hp_pbotc_1st_ed2 were left out: their best k was above k_min.
+sensitivity might keep rising at smaller k. The follow-up run
+([PR 107](https://github.com/seanome/2024-kmerseek-analysis/pull/107), step 3, head job
+47646307, 2026-10-13, same image and settings) searched every alphabet-ksize pair of the first
+sweep again plus k_min − 1 and k_min − 2 for the 16 alphabets whose best family or superfamily
+AUC sat at k_min, never under 15 bits per k-mer (k × log2 classes): 1_520 searches, all
+scored. funcgroups8, gbmr4 and hp_pbotc_1st_ed2 were left out of the lower k-sizes: their best
+k was above k_min. This run also scores the class level and the database scale below, so
+sections 6-8 read it.
 
-The rule was set before this run: if the best AUC below k_min beats the best at k_min to k_max
-for most alphabets, the sweep's k range moves down; otherwise k_min stands as the lower end and
-section 3's best k-sizes are final.
+**Two scales.** Sections 2-5 divide each query's count by the true positives kmerseek
+*reported* for that query (as `eval_tsv_to_rocx` does). FoldSeek's and MMseqs2's `.rocx` files
+divide by every true positive in the database: for all 5_713 queries, sensitivity × (family
+size − 1) is a whole number. A query where kmerseek reports 2 of its 24 family members, both
+above the first false positive, scores 1.0 on the first scale and 2/24 on the second. Only
+the database scale (`auc_ref_db`) compares with the two tools. A smaller k reports more pairs,
+so it can lose on the first scale and win on the second.
 
-The figure puts both runs on one row per alphabet: a circle at the best AUC of the first sweep
-(k_min to k_max), a triangle at the best AUC below k_min, each labelled with its k. A triangle to
-the left of its circle means the smaller k-sizes did worse. Hits are ranked as in section 3.
+The rule was set before the run: if the best AUC below k_min beats the best at k_min to k_max
+for most alphabets, the best k moves down; otherwise section 3's best k-sizes stand.
+
+The figure puts the two k ranges on one row per alphabet: a circle at the best AUC at k_min to
+k_max, a triangle at the best AUC below k_min, each labelled with its k. Top row: the
+reported-hits scale; bottom row: the database scale. A triangle to the right of its circle
+means the smaller k-sizes did better. Hits are ranked as in section 3.
 """)
 
 code(r"""
-BELOW_TSV = Path(os.environ.get(
-    "NB277_BELOW_TSV",
-    Path.home() / "data/scope/results-scope40-alphabet-ksize-v040-below-kmin/scope40_v040_auc.tsv",
-))
-print(BELOW_TSV)
-print("sha256", hashlib.sha256(BELOW_TSV.read_bytes()).hexdigest())
-below_auc = pl.read_csv(BELOW_TSV, separator="\t")
-print(below_auc.group_by("status").len().sort("status"))
+FULL_DIR = Path(os.environ.get(
+    "NB277_FULL_DIR", Path.home() / "data/scope/results-scope40-alphabet-ksize-v040-full-identity"))
+full_tables = {}
+for name in ("scope40_v040_auc.tsv", "scope40_v040_identity_bands.tsv"):
+    path = FULL_DIR / name
+    print(path, "sha256", hashlib.sha256(path.read_bytes()).hexdigest())
+    full_tables[name] = pl.read_csv(path, separator="\t", infer_schema_length=None)
+full = full_tables["scope40_v040_auc.tsv"]
+print(full.select("alphabet", "ksize", "setting").unique().height, "searches")
+print(full.group_by("status").len().sort("status"))
+
+# The reruns of the first sweep's searches report the same pairs (same n_pairs); the AUCs of the
+# two columns ranked by here (region_evalue, jaccard) agree to within 0.0001. The k-mer
+# frequency columns differ in their last digits between runs, which moves some ties.
+KEY = ["alphabet", "ksize", "setting", "score", "level"]
+rerun = (auc.filter(pl.col("status") == "ok").select(KEY + ["auc_ref", "n_pairs"])
+         .join(full.filter(pl.col("status") == "ok").select(KEY + [pl.col("auc_ref").alias("auc_ref_rerun"),
+                                                                    pl.col("n_pairs").alias("n_pairs_rerun")]), on=KEY))
+print("First sweep against its rerun, largest AUC difference per score column (columns that differ):")
+with pl.Config(float_precision=6):
+    print(rerun.with_columns((pl.col("auc_ref") - pl.col("auc_ref_rerun")).abs().alias("diff"))
+      .group_by("score").agg(pl.col("diff").max(), (pl.col("n_pairs") != pl.col("n_pairs_rerun")).sum()
+                             .alias("searches_with_other_pair_counts"))
+      .filter(pl.col("diff") > 0).sort("diff", descending=True))
+
+ranked_full = full.filter(pl.col("status") == "ok").filter(
+    (pl.col("setting").is_in(EXTENSION_SETTINGS) & (pl.col("score") == "region_evalue"))
+    | ((pl.col("setting") == "exact") & (pl.col("score") == EXACT_SCORE))
+).join(ks.select("alphabet", "k_min"), on="alphabet")
+below_alphabets = sorted(set(ranked_full.filter(pl.col("ksize") < pl.col("k_min"))["alphabet"]))
 
 
-def best_per_alphabet(d, tag):
-    "Best AUC per alphabet and level, hits ranked by region_evalue (extension) or jaccard (exact)."
-    d = d.filter(pl.col("status") == "ok").filter(
-        (pl.col("setting").is_in(EXTENSION_SETTINGS) & (pl.col("score") == "region_evalue"))
-        | ((pl.col("setting") == "exact") & (pl.col("score") == EXACT_SCORE)))
-    return (d.sort("auc_ref", descending=True).group_by("alphabet", "level").head(1)
+def best_in_range(d, metric, tag):
+    "Best AUC per alphabet and level on one scale."
+    return (d.sort(metric, descending=True).group_by("alphabet", "level").head(1)
             .select("alphabet", "level", pl.col("ksize").alias(f"k_{tag}"),
-                    pl.col("setting").alias(f"setting_{tag}"), pl.col("auc_ref").alias(f"auc_{tag}")))
+                    pl.col("setting").alias(f"setting_{tag}"), pl.col(metric).alias(f"auc_{tag}")))
 
 
-compare = (best_per_alphabet(below_auc, "below").join(best_per_alphabet(auc, "first"), on=["alphabet", "level"])
-           .join(ks.select("alphabet", "k_min"), on="alphabet")
-           .filter(pl.col("level").is_in(["family", "superfamily", "fold"]))
-           .with_columns((pl.col("auc_below") - pl.col("auc_first")).alias("change"))
-           .sort("level", "alphabet"))
-print("How many alphabets do better below k_min")
-print(compare.group_by("level").agg((pl.col("change") > 0).sum().alias("n_better_below_kmin"),
-                                    pl.len().alias("n_alphabets"), pl.col("change").max().alias("largest_change"),
-                                    pl.col("change").median().alias("median_change")).sort("level"))
-print("Best AUC per alphabet, first sweep (k_min to k_max) and below k_min")
-print(compare.filter(pl.col("level") != "fold").sort("level", "auc_first", descending=[False, True]))
+compare = {}
+for metric in ("auc_ref", "auc_ref_db"):
+    d = ranked_full.filter(pl.col("alphabet").is_in(below_alphabets), pl.col("level").is_in(["family", "superfamily", "fold"]))
+    compare[metric] = (best_in_range(d.filter(pl.col("ksize") < pl.col("k_min")), metric, "below")
+                       .join(best_in_range(d.filter(pl.col("ksize") >= pl.col("k_min")), metric, "first"),
+                             on=["alphabet", "level"])
+                       .with_columns((pl.col("auc_below") - pl.col("auc_first")).alias("change"))
+                       .sort("level", "alphabet"))
+    print(f"{metric}: how many of the {len(below_alphabets)} alphabets do better below k_min")
+    print(compare[metric].group_by("level").agg((pl.col("change") > 0).sum().alias("n_better_below_kmin"),
+                                                pl.len().alias("n_alphabets"),
+                                                pl.col("change").max().alias("largest_change"))
+          .sort("level"))
+print("Best AUC per alphabet on the database scale, k_min to k_max and below k_min")
+with pl.Config(float_precision=4):
+    print(compare["auc_ref_db"].filter(pl.col("level") != "fold").sort("level", "auc_below", descending=[False, True]))
 
 BELOW_COLOUR = {"first": pf.OKABE_ITO["blue"], "below": pf.OKABE_ITO["vermillion"]}
-below_alphabets = [a for a in ALPHABETS if a in set(compare["alphabet"])]
-bpos = alphabet_positions(below_alphabets)
-fig, axs = pf.figure(pf.TWO_COLUMN_MM, 85, ncols=2, sharey=True)
-for ax, level in zip(axs, LEVELS):
-    sub = compare.filter(pl.col("level") == level)
-    for r in sub.iter_rows(named=True):
-        y = bpos[r["alphabet"]]
-        ax.plot([r["auc_below"], r["auc_first"]], [y, y], color=pf.GREY, lw=0.5, zorder=1)
-        left_first = r["auc_first"] < r["auc_below"]
-        ax.annotate(f"k{r['k_first']}", (r["auc_first"], y), xytext=(-4 if left_first else 4, 0),
-                    textcoords="offset points", va="center", ha="right" if left_first else "left", fontsize=5)
-        ax.annotate(f"k{r['k_below']}", (r["auc_below"], y), xytext=(4 if left_first else -4, 0),
-                    textcoords="offset points", va="center", ha="left" if left_first else "right", fontsize=5)
-    ax.scatter(sub["auc_first"], [bpos[a] for a in sub["alphabet"]], s=12, marker="o",
-               color=BELOW_COLOUR["first"], zorder=2, label="best at k_min to k_max (first sweep)")
-    ax.scatter(sub["auc_below"], [bpos[a] for a in sub["alphabet"]], s=14, marker="v",
-               color=BELOW_COLOUR["below"], zorder=3, label="best at k_min − 1 or k_min − 2 (follow-up)")
-    alphabet_axis(ax, bpos)
-    ax.set_xlim(0, sub.select(pl.max_horizontal("auc_first", "auc_below")).max().item() * 1.15)
-    ax.set_xlabel(f"{level} sensitivity AUC (5_713 FoldSeek queries)")
-pf.panel_label(axs[0], "a", dx_pt=-95)
-pf.panel_label(axs[1], "b")
+bpos = alphabet_positions([a for a in ALPHABETS if a in below_alphabets])
+SCALE_LABEL = {"auc_ref": "divided by the true pairs kmerseek reported",
+               "auc_ref_db": "divided by every true pair (FoldSeek's scale)"}
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 150, nrows=2, ncols=2, sharey=True)
+for row, metric in enumerate(("auc_ref", "auc_ref_db")):
+    for col, level in enumerate(LEVELS):
+        ax = axs[row, col]
+        sub = compare[metric].filter(pl.col("level") == level)
+        for r in sub.iter_rows(named=True):
+            y = bpos[r["alphabet"]]
+            ax.plot([r["auc_below"], r["auc_first"]], [y, y], color=pf.GREY, lw=0.5, zorder=1)
+            left_first = r["auc_first"] < r["auc_below"]
+            ax.annotate(f"k{r['k_first']}", (r["auc_first"], y), xytext=(-4 if left_first else 4, 0),
+                        textcoords="offset points", va="center", ha="right" if left_first else "left", fontsize=5)
+            ax.annotate(f"k{r['k_below']}", (r["auc_below"], y), xytext=(4 if left_first else -4, 0),
+                        textcoords="offset points", va="center", ha="left" if left_first else "right", fontsize=5)
+        ax.scatter(sub["auc_first"], [bpos[a] for a in sub["alphabet"]], s=12, marker="o",
+                   color=BELOW_COLOUR["first"], zorder=2, label="best at k_min to k_max")
+        ax.scatter(sub["auc_below"], [bpos[a] for a in sub["alphabet"]], s=14, marker="v",
+                   color=BELOW_COLOUR["below"], zorder=3, label="best at k_min − 1 or k_min − 2")
+        alphabet_axis(ax, bpos)
+        ax.set_xlim(0, sub.select(pl.max_horizontal("auc_first", "auc_below")).max().item() * 1.2)
+        ax.set_xlabel(f"{level} sensitivity AUC")
+        ax.set_title(SCALE_LABEL[metric], fontsize=6, loc="left")
+for ax, letter in zip(axs.flat, "abcd"):
+    pf.panel_label(ax, letter, dx_pt=-95 if letter in "ac" else -12)
 pf.shared_legend(fig, ncol=2, title="kmerseek 0.4.0, hits ranked by region_evalue (extension) or jaccard (exact); "
-                                    "query and target: SCOPe40 (15_177 domains); 16 alphabets")
+                                    "query and target: SCOPe40 (15_177 domains), 5_713 FoldSeek queries; 16 alphabets")
 pf.save(fig, FIG_DIR / f"{FIG_STEM}_below_kmin", formats=("pdf", "png"))
 """)
 
 md(r"""
 ## 7. Same scale as FoldSeek and MMseqs2, fold and class levels, and identity bands
 
-**Data.** Step 2 of the [PR 107](https://github.com/seanome/2024-kmerseek-analysis/pull/107)
-follow-up (head job 47604583, 2026-10-12, same image): each alphabet's best family and
-superfamily k from section 3, and every HP alphabet at k_min to k_min + 2, with `exact`,
-`c_opt`, `c_max` and C = 2. 148 searches, all scored. Query set and target database are the
-15_177 SCOPe40 domains, as before.
-
-**Why the scale changes.** Sections 2-6 divide each query's count by the true positives
-kmerseek *reported* for that query. FoldSeek's and MMseqs2's `.rocx` files divide by every
-true positive in the database: for all 5_713 queries, sensitivity × (family size − 1) is a
-whole number. A query where kmerseek reports 2 of its 24 family members, both above the
-first false positive, scores 1.0 on the first scale and 2/24 on the second. Only the second
-compares with the two tools. This section uses it (`auc_ref_db`).
+**Data.** The 1_520 searches of section 6 (step 3, head job 47646307, 2026-10-13): every
+alphabet at k_min to k_max and, for 16 alphabets, k_min − 1 and k_min − 2. Query set and target
+database are the 15_177 SCOPe40 domains, as before. Every number is on the database scale
+(`auc_ref_db`, section 6), the scale FoldSeek's and MMseqs2's files use.
 
 **Two more levels.** Fold: true positive = same fold, different superfamily (as in section
 3). Class: true positive = same SCOP class, different fold; false positive = a different
@@ -556,15 +586,7 @@ stays a protein20 result (section 3).
 """)
 
 code(r"""
-STEP2_DIR = Path(os.environ.get(
-    "NB277_STEP2_DIR", Path.home() / "data/scope/results-scope40-alphabet-ksize-v040-best-k-identity"))
-step2 = {}
-for name in ("scope40_v040_auc.tsv", "scope40_v040_identity_bands.tsv"):
-    path = STEP2_DIR / name
-    print(path, "sha256", hashlib.sha256(path.read_bytes()).hexdigest())
-    step2[name] = pl.read_csv(path, separator="\t", infer_schema_length=None)
-s2 = step2["scope40_v040_auc.tsv"]
-print(s2.group_by("status").len().sort("status"))
+s2 = full
 ALL_LEVELS = ["family", "superfamily", "fold", "class"]
 ranked2 = s2.filter(pl.col("status") == "ok").filter(
     (pl.col("setting").is_in(EXTENSION_SETTINGS) & (pl.col("score") == "region_evalue"))
@@ -586,7 +608,7 @@ for ax, level in zip(axs, LEVELS):
     sub = best_db.filter(pl.col("level") == level)
     ax.scatter(sub["auc_ref"], [pos[a] for a in sub["alphabet"]], s=10, marker="o", facecolor="white",
                edgecolor=pf.OKABE_ITO["blue"], lw=0.6, zorder=2,
-               label="kmerseek, divided by the true pairs it reported (sections 2-6)")
+               label="kmerseek, divided by the true pairs it reported (sections 2-5)")
     ax.scatter(sub["auc_ref_db"], [pos[a] for a in sub["alphabet"]], s=12, marker="o",
                color=pf.OKABE_ITO["blue"], zorder=3, label="kmerseek, divided by every true pair (FoldSeek's scale)")
     for r in sub.iter_rows(named=True):
@@ -611,7 +633,7 @@ counts behind each share, and the same share at every identity band.
 """)
 
 code(r"""
-bands2 = step2["scope40_v040_identity_bands.tsv"].filter(pl.col("status") == "ok").filter(
+bands2 = full_tables["scope40_v040_identity_bands.tsv"].filter(pl.col("status") == "ok").filter(
     (pl.col("setting").is_in(EXTENSION_SETTINGS) & (pl.col("score") == "region_evalue"))
     | ((pl.col("setting") == "exact") & (pl.col("score") == EXACT_SCORE))
 ).with_columns((pl.col("n_above_first_fp") / pl.col("n_pairs")).alias("share_above_first_fp"))
@@ -658,7 +680,9 @@ md(r"""
 Section 7 found one place where the coarse and HP alphabets lead: same-class pairs in a
 different fold, under 20% identity. Here every query is shuffled on its own, keeping its
 residue and dipeptide counts (so its H/P composition), and searched against the real
-database with the same 148 searches as step 2 (head jobs 47646678 and 47665023, 2026-10-13,
+database with 148 of the searches of section 7: each alphabet's best family and superfamily k
+from section 3 and every HP alphabet at k_min to k_min + 2, with `exact`, `c_opt`, `c_max` and
+C = 2 (head jobs 47646678 and 47665023, 2026-10-13,
 seed 1, `scope40-lowcomplexity-null/bin/shuffle_fasta.py`). A shuffled query keeps its name and
 SCOP labels, so every pair it ranks above its first false positive is chance.
 
@@ -736,9 +760,10 @@ n_kmin = int(fam_best["best_k_is_k_min"].sum())
 near = fam_best.filter(pl.col("ksize") <= pl.col("k_min") + 1).height
 print(f"3. Best k is the alphabet's k_min for {n_kmin} of {fam_best.height} alphabets; "
       f"k_min or k_min + 1 for {near} of {fam_best.height}")
-for lv, g in compare.group_by("level", maintain_order=True):
-    print(f"3. Below k_min ({lv[0]}): better for {int((g['change'] > 0).sum())} of {g.height} alphabets, "
-          f"largest change {g['change'].max():+.4f}")
+for metric, label in (("auc_ref", "reported-pairs scale"), ("auc_ref_db", "database scale")):
+    for lv, g in compare[metric].group_by("level", maintain_order=True):
+        print(f"3. Below k_min, {label} ({lv[0]}): better for {int((g['change'] > 0).sum())} of {g.height} "
+              f"alphabets, largest change {g['change'].max():+.4f}")
 hp_best = fam_best.filter(pl.col("alphabet").str.starts_with("hp_")).sort("auc_ref", descending=True).row(0, named=True)
 mm = TOOL_AUC[("MMseqs2", "family")]
 print(f"4. Best HP family AUC: {hp_best['alphabet']} k{hp_best['ksize']} {hp_best['setting']} = "
@@ -755,9 +780,10 @@ for cat in CATEGORY_LABEL:
     top = sub.row(0, named=True)
     hp_top = sub.filter(pl.col("alphabet").str.starts_with("hp_")).row(0, named=True)
     ref = sub.filter(pl.col("alphabet").is_in(["protein20", "mmseqs12", "sdm12"]))
-    shuf_top = pick.filter(pl.col("category") == cat, pl.col("alphabet") == top["alphabet"]).row(0, named=True)
-    print(f"4. Under 20% identity, {CATEGORY_LABEL[cat]}: shuffled queries at {top['alphabet']}'s best search: "
-          f"{shuf_top['above_shuffled']} (real {shuf_top['above_real']})")
+    shuf_top = pick.filter(pl.col("category") == cat).sort("above_real", descending=True).row(0, named=True)
+    print(f"4. Under 20% identity, {CATEGORY_LABEL[cat]}: of the 146 searches also run on shuffled queries, "
+          f"the most real pairs: {shuf_top['alphabet']} k{shuf_top['ksize']} {shuf_top['setting']}, "
+          f"{shuf_top['above_real']} real, {shuf_top['above_shuffled']} shuffled")
     print(f"4. Under 20% identity, {CATEGORY_LABEL[cat]}: best {top['alphabet']} {top['n_above_first_fp']} of "
           f"{top['n_pairs']} pairs; best HP {hp_top['alphabet']} {hp_top['n_above_first_fp']}; "
           + ", ".join(f"{a} {n}" for a, n in ref.sort("alphabet").select("alphabet", "n_above_first_fp").iter_rows()))
@@ -781,32 +807,35 @@ and uses theirs.
    19 alphabets, including every 12-20 letter alphabet. For the 2-3 letter HP alphabets c_max and
    C = 2 differ by at most 0.004. c_min is the worst setting: it is refused on 119 of 229
    alphabet-ksize pairs and never beats exact matching (0 of 110 pairs).
-3. **k_min is the peak; the k range does not move down.** The best k was the lowest k run for 10
-   of 19 alphabets, and k_min or k_min + 1 for 17 of 19 (sections 3 and 4). The follow-up run
-   below k_min (section 6) did worse: the best family AUC below k_min is lower for 16 of 16
-   alphabets, superfamily for 14 of 16 (largest gain 0.003) and fold for 15 of 16 (largest gain
-   0.0002). The best k-sizes in section 3 stand.
-4. **On the scale FoldSeek and MMseqs2 use, kmerseek reaches about a quarter of MMseqs2, and HP
-   less than a tenth.** Sections 2-6 divide by the true pairs kmerseek reported; the two tools'
-   files divide by every true pair in the database (section 7). On that scale the best family
-   AUC is 0.122 (hsdm17 k5, C = c_max), 30% of MMseqs2's 0.403; protein20 reaches 0.077 and the
-   best HP alphabet, hp_thomas_dill2, 0.037 (9%). Superfamily: 0.045 against 0.172. Fold:
-   0.0001 against MMseqs2's 0.0008. An earlier version of this summary compared the
-   reported-pairs scale with the tools and said "half to three quarters of MMseqs2"; that was
-   wrong.
+3. **On the scale FoldSeek and MMseqs2 use, the best k is below k_min, and may be lower still.**
+   On the reported-pairs scale k_min is the peak: below it, the best family AUC is lower for 16
+   of 16 alphabets. On the database scale (section 6) it is higher for 16 of 16, at family,
+   superfamily and fold level: sdm12 from 0.085 at k7 to 0.148 at k5, protein20 from 0.077 at k5
+   to 0.127 at k4. A smaller k reports many more pairs, so more true pairs land above the first
+   false positive even though each list is noisier. Several of these best k-sizes sit at the
+   15-bit floor of the follow-up run, so the peak on this scale may be lower. Memory rises
+   steeply there (dayhoff6 k6 peaked at 82 GB). *Decision: compare with other tools at k below
+   notebook 274's k_min; going lower needs memory planned search by search.*
+4. **On the scale FoldSeek and MMseqs2 use, kmerseek reaches about a third of MMseqs2, and HP
+   about an eighth.** Best family AUC: 0.149 (hsdm17 k4, C = c_max), 37% of MMseqs2's 0.403;
+   protein20 0.127 (k4, 32%); the best HP alphabet, hp_thomas_dill2, 0.048 (k16, 12%).
+   Superfamily: 0.062 against 0.172. Fold: 0.0003 against MMseqs2's 0.0008. Earlier versions
+   of this summary said "half to three quarters of MMseqs2" (comparing the reported-pairs scale
+   with the tools) and then "about a quarter" (before the run below k_min); both are replaced.
 5. **Under 20% identity kmerseek ranks almost no pair above the first false positive, at any
-   level.** At each alphabet's best k and setting, at most 1.2% of the 12_600 same-family pairs
-   (hsdm17), 0.42% of the 22_410 same-superfamily pairs and 0.11% of the 5_670 same-fold pairs.
-   HP is not ahead at family or superfamily. At class level (same class, different fold; 15_946
-   pairs) the coarse alphabets lead: polarity4 83 pairs, hp_lehninger_c_nonpolar2 32, against 2
-   to 3 for protein20, mmseqs12 and sdm12. The shuffled-query control (section 8) removes most of
-   that lead: the same searches on shuffled queries give 52 for polarity4, 18 for
-   hp_lehninger_c_nonpolar2 and 17 for hp_lehninger2 (16 real). Summed over all searches, class
-   pairs are 552 real against 435 shuffled and fold pairs 95 against 73, while family pairs are
-   4_971 against 210 and superfamily pairs 2_717 against 268. Under 20% identity kmerseek finds
-   a few real family and superfamily pairs; at fold and class level it is close to chance, and
-   the coarse alphabets' class lead comes from composition, not residue order. *Decision:
-   SCOPe40 does not support the HP case at any level.*
+   level.** At each alphabet's best k and setting (section 7), at most 199 of the 12_600
+   same-family pairs (1.6%, sdm12 k5), 129 of the 22_410 same-superfamily pairs (0.58%, mmseqs12
+   k5) and 7 of the 5_670 same-fold pairs (hsdm17). HP is not ahead at family (best 58) or
+   superfamily (best 33). At class level (same class, different fold; 15_946 pairs) the coarse
+   alphabets lead: polarity4 83 pairs, wwmj5 53, hp_lehninger_c_nonpolar2 44, against 5 to 19
+   for protein20, mmseqs12 and sdm12. The shuffled-query control (section 8, on the 146 searches
+   that also ran with shuffled queries) removes most of that lead: polarity4 gives 52 with
+   shuffled queries, hp_lehninger_c_nonpolar2 18 and hp_lehninger2 17 (16 real). Summed over
+   those searches, class pairs are 552 real against 435 shuffled and fold pairs 95 against 73,
+   while family pairs are 4_971 against 210 and superfamily pairs 2_717 against 268. Under 20%
+   identity kmerseek finds a few real family and superfamily pairs; at fold and class level it is
+   close to chance, and the coarse alphabets' class lead comes from composition, not residue
+   order. *Decision: SCOPe40 does not support the HP case at any level.*
 6. **Extension helps at c_opt, c_max and C = 2.** It beats exact matching on 140 of 140 pairs at
    c_max, 142 of 151 at C = 2 and 99 of 117 at c_opt (section 5).
 """)
