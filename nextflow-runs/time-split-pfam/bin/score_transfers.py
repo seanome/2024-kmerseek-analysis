@@ -4,7 +4,17 @@
 Every tool's hits become *calls*: (setting, query, query interval, family, score). A hit
 on a Swiss-Prot 2019_08 protein transfers family F when its target interval overlaps a
 Pfam 33.1 domain of F on that protein (kmerseek rows arrive already joined, by
-compact_kmerseek.awk); an hmmscan hit names its Pfam 33.1 family directly. Scores are
+compact_kmerseek.awk); an hmmscan hit names its Pfam 33.1 family directly.
+
+A transfer's query interval is the part of the target domain the hit covers, placed on
+the query through the hit (`project_domain`), not the whole hit: a 114-aa alignment
+across three 23-aa repeats transfers each repeat to its own 23 residues. Placement is
+exact for kmerseek's gapless regions and read off the straight line between the hit's
+ends for gapped hits (MMseqs2, phmmer), so a gap inside the hit can move a boundary by
+up to the gap's length. The whole hit's query span is kept as aln_qstart/aln_qend.
+(Changed 2026-10-14, Olga's decision after the pilot's tune half showed that, with the
+whole hit as the call, every unique find came from MMseqs2 and phmmer hits longer than
+twice the domain; the test half had not been read.) Scores are
 oriented so higher is better:
     kmerseek exact    region_poisson_score
     kmerseek extend   -log10(region_evalue)
@@ -49,7 +59,34 @@ CALL_SCHEMA = {
     "pfam_acc": pl.String,
     "score": pl.Float64,
     "target": pl.String,
+    "aln_qstart": pl.Int64,
+    "aln_qend": pl.Int64,
 }
+
+
+def project_domain() -> list[pl.Expr]:
+    """Query interval of the target domain [dstart, dend], through a hit that aligns query
+    qstart..qend to target tstart..tend (all 1-based, ends included). The covered part of
+    the domain, [max(tstart, dstart), min(tend, dend)], is placed on the query by the
+    straight line between the hit's ends; for a gapless hit (equal lengths) that line is
+    the exact residue-to-residue map. Returns qstart, qend (projected) and aln_qstart,
+    aln_qend (the whole hit)."""
+    qs, qe, ts, te = (
+        pl.col(c).cast(pl.Int64) for c in ("qstart", "qend", "tstart", "tend")
+    )
+    lo = pl.max_horizontal(ts, pl.col("dstart").cast(pl.Int64))
+    hi = pl.min_horizontal(te, pl.col("dend").cast(pl.Int64))
+    slope = pl.when(te > ts).then((qe - qs) / (te - ts)).otherwise(1.0)
+
+    def place(t: pl.Expr) -> pl.Expr:
+        return (qs + ((t - ts) * slope).round(0)).cast(pl.Int64).clip(qs, qe)
+
+    return [
+        place(lo).alias("qstart"),
+        place(hi).alias("qend"),
+        qs.alias("aln_qstart"),
+        qe.alias("aln_qend"),
+    ]
 
 
 def log_memory(step: str) -> None:
@@ -74,6 +111,10 @@ KM_COLUMNS = [
     "query",
     "qstart",
     "qend",
+    "tstart",
+    "tend",
+    "dstart",
+    "dend",
     "pfam_acc",
     "target",
     "region_poisson_score",
@@ -103,8 +144,7 @@ def read_kmerseek_file(f: Path) -> tuple[pl.DataFrame, dict]:
             pl.lit(setting).alias("setting"),
             pl.lit("kmerseek").alias("tool"),
             "query",
-            pl.col("qstart").cast(pl.Int64),
-            pl.col("qend").cast(pl.Int64),
+            *project_domain(),
             "pfam_acc",
             score.alias("score"),
             "target",
@@ -114,11 +154,12 @@ def read_kmerseek_file(f: Path) -> tuple[pl.DataFrame, dict]:
 
 
 def transfer_by_overlap(hits: pl.DataFrame, domains: pl.DataFrame) -> pl.DataFrame:
-    """Hits with tstart/tend on a Swiss-Prot protein -> one row per overlapped domain."""
+    """Hits with tstart/tend on a Swiss-Prot protein -> one row per overlapped domain,
+    with the domain's target interval as dstart/dend."""
     j = hits.join(domains, left_on="target", right_on="sp_acc", how="inner")
     return j.filter(
         (pl.col("tstart") <= pl.col("sp_end")) & (pl.col("sp_start") <= pl.col("tend"))
-    )
+    ).rename({"sp_start": "dstart", "sp_end": "dend"})
 
 
 def read_mmseqs(dirpath: Path, domains: pl.DataFrame) -> pl.DataFrame:
@@ -155,8 +196,7 @@ def read_mmseqs(dirpath: Path, domains: pl.DataFrame) -> pl.DataFrame:
         pl.lit("MMseqs2").alias("setting"),
         pl.lit("MMseqs2").alias("tool"),
         "query",
-        pl.col("qstart").cast(pl.Int64),
-        pl.col("qend").cast(pl.Int64),
+        *project_domain(),
         "pfam_acc",
         neg_log10("evalue").alias("score"),
         "target",
@@ -194,8 +234,7 @@ def read_phmmer(dirpath: Path, domains: pl.DataFrame) -> pl.DataFrame:
         pl.lit("phmmer").alias("setting"),
         pl.lit("phmmer").alias("tool"),
         "query",
-        "qstart",
-        "qend",
+        *project_domain(),
         "pfam_acc",
         neg_log10("ievalue").alias("score"),
         "target",
@@ -221,7 +260,12 @@ def read_hmmscan(dirpath: Path) -> pl.DataFrame:
             ],
             "target": None,
         }
-    ).with_columns(pl.col("target").cast(pl.String))
+    ).with_columns(
+        pl.col("target").cast(pl.String),
+        # hmmscan places the family on the query itself: the call is the hit.
+        aln_qstart=pl.col("qstart"),
+        aln_qend=pl.col("qend"),
+    )
 
 
 def matched_cutoff(dec: pl.DataFrame, n_decoys: int) -> float:

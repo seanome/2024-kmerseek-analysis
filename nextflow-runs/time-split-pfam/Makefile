@@ -102,11 +102,15 @@ pilot:
 # 47666740) read all 185 files and was killed holding every decoy-family pair; those now
 # go to disk. 100 GB fits a normal node (128,000 MB; 128G does not). The log prints peak
 # memory per step: read it before changing the ask.
+# MMSEQS2_DIR and SCORE_OUT pick the MMseqs2 output and the output folder (both under
+# results-pilot/), e.g. MMSEQS2_DIR=mmseqs2-one-round SCORE_OUT=scores-partial-projected.
+MMSEQS2_DIR ?= mmseqs2
+SCORE_OUT   ?= scores-partial
 score-partial:
 	$(SB) --job-name=280-score-partial --cpus-per-task=4 --mem=100G --time=4:00:00 \
-	  --wrap 'set -e; R=$(RUN_DIR)/results-pilot; O=$$R/scores-partial; command rm -rf $$O; mkdir -p $$O; \
+	  --wrap 'set -e; R=$(RUN_DIR)/results-pilot; O=$$R/$(SCORE_OUT); command rm -rf $$O; mkdir -p $$O; \
 	  $(PY) $(MAKEFILE_DIR)/bin/score_transfers.py --kmerseek $$R/kmerseek --stats $$R/kmerseek \
-	    --mmseqs2 $$R/mmseqs2 --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
+	    --mmseqs2 $$R/$(MMSEQS2_DIR) --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
 	    --reference $(RUN_DIR)/inputs/reference --settings $(RUN_DIR)/inputs/settings.tsv --out $$O'
 
 # Does MMseqs2's 3-round profile search give shuffled decoys strong hits? One tune decoy

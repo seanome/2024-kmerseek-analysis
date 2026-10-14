@@ -116,7 +116,39 @@ def run(d: Path, out: str, *extra: str) -> dict:
     return json.loads((d / out / "p4.json").read_text())
 
 
+def check_projection() -> None:
+    """project_domain places the covered part of the target domain on the query.
+    Rows: (qstart, qend, tstart, tend, dstart, dend) -> expected (qstart, qend).
+    - The pilot's kmerseek call A0A078HBQ0 64-109 vs C0LGQ5 96-141 (gapless), C0LGQ5's
+      LRR_1 at 96-118: the repeat sits at query 64-86.
+    - Same hit, a domain starting before the hit (80-118): only 96-118 is covered -> 64-86.
+    - A domain wholly inside a gapless hit: q 2-115 vs t 246-359, domain 270-292 -> 26-48.
+    - A gapped hit, q 1-100 vs t 1-200, domain 51-100: slope 99/199, so 26-50.
+    - A one-residue target span (tstart == tend) does not divide by zero: -> 7-7."""
+    sys.path.insert(0, str(HERE))
+    import polars as pl
+    from score_transfers import project_domain
+
+    rows = [
+        ((64, 109, 96, 141, 96, 118), (64, 86)),
+        ((64, 109, 96, 141, 80, 118), (64, 86)),
+        ((2, 115, 246, 359, 270, 292), (26, 48)),
+        ((1, 100, 1, 200, 51, 100), (26, 50)),
+        ((7, 7, 30, 30, 1, 50), (7, 7)),
+    ]
+    df = pl.DataFrame(
+        [r for r, _ in rows],
+        schema=["qstart", "qend", "tstart", "tend", "dstart", "dend"],
+        orient="row",
+    )
+    got = df.select(project_domain()).select("qstart", "qend").rows()
+    assert got == [e for _, e in rows], got
+    al = df.select(project_domain()).select("aln_qstart", "aln_qend").rows()
+    assert al == [(r[0], r[1]) for r, _ in rows], al
+
+
 def main() -> None:
+    check_projection()
     with tempfile.TemporaryDirectory() as tmp:
         d = Path(tmp)
         build(d)
