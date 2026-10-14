@@ -492,6 +492,58 @@ pf.save(fig, FIG / "time_split_instances_seeded_at_t0_pfam33-1", formats=("png",
 """
 
 
+PLDDT_MD = r"""## The pLDDT stratum: AlphaFold confidence of each instance's region
+
+For every instance, the mean pLDDT (AlphaFold's per-residue confidence, 0 to 100; below 50
+usually means no fixed structure) of the query's residues inside the t1 domain, read from
+the query's AlphaFold model with `read_plddt()` of the QfO benchmark
+(`bin/instance_plddt.py`). Models are AlphaFold DB version 4, copied from AlphaFold's Google
+Cloud bucket on 2026-10-14 (AlphaFold DB's own file server refused downloads that week).
+7,846 of the 8,349 real queries have a model; a sample of 12 of the other 503 have no
+AlphaFold DB entry at all. A model counts only when its residues are the query's Pfam 33.1
+sequence; otherwise the instance is "no model". The models that the QfO benchmark had
+already downloaded covered 64 of these queries.
+
+How to read the figure: one bar per Pfam type, split into the share of that type's sample
+instances in each pLDDT band, with the count of each band written on it. These bands are
+the strata every recall number and P4's unique finds will be reported in. The expectation
+written before reading (first cell) is that kmerseek's unique finds, if any, sit mostly in
+the below-50 band.
+"""
+
+PLDDT_CODE = r"""
+PL = pl.read_csv("../nextflow-runs/time-split-pfam/tables/plddt/instance_plddt.tsv", separator="\t")
+BANDS = ["< 50", "50-70", ">= 70", "no model"]
+BAND_COLOR = {"< 50": pf.OKABE_ITO["vermillion"], "50-70": pf.OKABE_ITO["orange"],
+              ">= 70": pf.OKABE_ITO["blue"], "no model": pf.GREY}
+print(PL.group_by("model").len().sort("model"))
+s = PL.filter(pl.col("role") == "sample")
+tab = (s.group_by("pfam_type", "plddt_band").len()
+       .pivot(on="plddt_band", index="pfam_type", values="len").fill_null(0)
+       .select("pfam_type", *BANDS)
+       .with_columns(pl.col("pfam_type").cast(pl.Enum(TYPES))).sort("pfam_type"))
+tab = tab.with_columns(total=pl.sum_horizontal(*BANDS))
+print(tab)
+print(f"all sample instances: {s.height:,}; " + ", ".join(f"{b}: {(s['plddt_band'] == b).sum():,}" for b in BANDS))
+
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55)
+y = np.arange(tab.height)[::-1]
+left = np.zeros(tab.height)
+for b in BANDS:
+    frac = (tab[b] / tab["total"]).to_numpy()
+    ax.barh(y, frac, left=left, color=BAND_COLOR[b], label=f"pLDDT {b}" if b != "no model" else "no model")
+    for yy, l_, f_, n_ in zip(y, left, frac, tab[b]):
+        if f_ > 0.06:
+            ax.text(l_ + f_ / 2, yy, f"{n_:,}", ha="center", va="center", color="white")
+    left += frac
+ax.set_yticks(y, [f"{t} ({n:,})" for t, n in zip(tab["pfam_type"].cast(pl.String), tab["total"])])
+ax.set_xlim(0, 1)
+ax.set_xlabel("Share of the type's sample instances")
+fig.legend(loc="outside upper center", ncol=4)
+pf.save(fig, FIG / "time_split_instance_plddt_bands_by_type_afdb_v4", formats=("png", "pdf"))
+"""
+
+
 def main() -> None:
     nb = nbf.v4.new_notebook()
     nb.cells = [nbf.v4.new_markdown_cell(INTRO), nbf.v4.new_code_cell(SETUP.strip()),
@@ -499,7 +551,8 @@ def main() -> None:
                 nbf.v4.new_markdown_cell(IDENT_MD), nbf.v4.new_code_cell(IDENT_CODE.strip()),
                 nbf.v4.new_markdown_cell(EXAMPLES_MD), nbf.v4.new_code_cell(EXAMPLES_CODE.strip()),
                 nbf.v4.new_markdown_cell(SEED_MD), nbf.v4.new_code_cell(SEED_CODE.strip()),
-                nbf.v4.new_markdown_cell(SELF_MD), nbf.v4.new_code_cell(SELF_CODE.strip())]
+                nbf.v4.new_markdown_cell(SELF_MD), nbf.v4.new_code_cell(SELF_CODE.strip()),
+                nbf.v4.new_markdown_cell(PLDDT_MD), nbf.v4.new_code_cell(PLDDT_CODE.strip())]
     for c in nb.cells:
         if c.cell_type == "code":
             c.metadata["jupyter"] = {"source_hidden": True}
