@@ -168,10 +168,22 @@ NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
   --resources $(LAUNCH_DIR)/resources.tsv \
   $(if $(wildcard $(PROSTT5)),--prostt5_weights $(PROSTT5),) --run_tag $(RUN)
 
+# A second driver in the same launch folder cannot run (Nextflow's session lock refuses it)
+# but still overwrites the running driver's .nf-head.* files, which `make watch` and
+# convergence_afp_after_pilot read. So refuse before submitting. Added 2026-10-14, after a
+# second `make convergence_afp` during the pilot did exactly that.
+define refuse_second_driver
+	@j=$$(squeue -u $$USER -h -n nfdrv-$(RUN) -o %i | head -1); if [ -n "$$j" ]; then \
+	  echo "nfdrv-$(RUN) is already queued or running as job $$j; not submitting a second driver."; \
+	  echo "To start the full run when it ends cleanly: make convergence_afp_after_pilot"; exit 1; fi
+endef
+
 convergence_afp_pilot: check-inputs plan
+	$(refuse_second_driver)
 	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && $(HEAD_SUBMIT) $(NF_RUN) --settings pilot $(NF_ARGS)
 
 convergence_afp: check-inputs plan
+	$(refuse_second_driver)
 	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && $(HEAD_SUBMIT) $(NF_RUN) --settings all $(NF_ARGS)
 
 # Queue the full run behind the pilot's driver job. A small job waits for the pilot's head
@@ -179,10 +191,10 @@ convergence_afp: check-inputs plan
 # run), then runs `make convergence_afp` here: `make plan` then reads the pilot's trace, and
 # the new head resumes the pilot's launch directory. If the pilot head is cancelled the
 # waiting job is removed too (--kill-on-invalid-dep). Cancel it with `make cancel-after-pilot`.
-PILOT_JOBID ?= $(shell cat $(LAUNCH_DIR)/.nf-head.jobid 2>/dev/null)
+PILOT_JOBID ?= $(shell squeue -u $$USER -h -n nfdrv-$(RUN) -o %i 2>/dev/null | head -1)
 convergence_afp_after_pilot:
 	$(call require_cluster)
-	@test -n "$(PILOT_JOBID)" || { echo "no pilot head job id in $(LAUNCH_DIR)/.nf-head.jobid"; exit 1; }
+	@test -n "$(PILOT_JOBID)" || { echo "no nfdrv-$(RUN) job in the queue to wait for"; exit 1; }
 	@squeue -h -j $(PILOT_JOBID) -o '%i %j %t' | grep -q nfdrv-$(RUN) || \
 	  { echo "job $(PILOT_JOBID) is not a queued or running nfdrv-$(RUN)"; exit 1; }
 	sbatch --parsable --job-name=nfnext-$(RUN) --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
