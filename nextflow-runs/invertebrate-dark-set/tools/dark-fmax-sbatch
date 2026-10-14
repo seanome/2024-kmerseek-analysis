@@ -1,0 +1,103 @@
+#!/bin/bash
+# Submit tools/dark-fmax over the finished midi run: the QfO region benchmark's metrics
+# (Fmax, IoU, AUPR, ...) for kmerseek and the three sequence tools on dark proteins, with a
+# random sample of placed proteins as the positive control.
+#
+#   tools/dark-fmax-sbatch <launch_dir> <out_dir> <qfo_bin_dir> [species ...]
+#
+# <qfo_bin_dir> holds evaluate_domain_calls.py, cafa_metrics.py and build_swissprot_truth.py
+# from nextflow-runs/qfo-pfam-region-benchmark/bin on main; the scorer imports the other two.
+#
+# Stages, each a SLURM job or array, chained by dependencies:
+#   queries   on the login node: dark (E < 1, E < 10) and placed-sample id lists + FASTA
+#   interpro  download InterPro's protein2ipr.dat.gz (release 110.0, Pfam 38.2) and keep the
+#             Pfam matches of every query and reference protein
+#   tools     phmmer, jackhmmer, mmseqs2 on the query FASTA, with the run's own flags, but
+#             writing query AND target coordinates (QfO's columns)
+#   extract   kmerseek rows of those queries, region_evalue < 10, FILES_PER_TASK files a task
+#   build     truth and domain-map parquets from the Pfam matches
+#   score     per species: one parquet per setting, then evaluate_domain_calls.py for each
+#             query set (dark_E1, dark_E10, placed), QfO's parameters
+# Added 2026-10-13.
+set -euo pipefail
+LAUNCH=$1; OUT=$2; QFO_BIN=$3; shift 3
+SPECIES=${*:-human worm yeast borrelia}
+RESULTS=${RESULTS:-/scratch/users/olgabot/invertebrate-dark-set/results-0.4}
+REF=${REF:-/scratch/users/olgabot/invertebrate-dark-set/reference}
+IMG=${IMG:-/scratch/users/olgabot/apptainer-cache}
+KMERSEEK_IMG=${KMERSEEK_IMG:?set KMERSEEK_IMG to the kmerseek 0.4.0-rc5 .img}
+HMMER_IMG=${HMMER_IMG:?set HMMER_IMG to the run hmmer .img}
+MMSEQS_IMG=${MMSEQS_IMG:?set MMSEQS_IMG to the run mmseqs2 .img}
+N_PLACED=${N_PLACED:-1000}
+FPT=${FILES_PER_TASK:-4}
+TOOL_TIME=${TOOL_TIME:?set TOOL_TIME from the run trace}
+INTERPRO_URL=https://ftp.ebi.ac.uk/pub/databases/interpro/releases/110.0/protein2ipr.dat.gz
+TOOL=$(cd "$(dirname "$0")" && pwd)/dark-fmax
+clade() { case $1 in human) echo Mammalia;; worm) echo Chromadorea;; yeast) echo Saccharomycetes;;
+                    borrelia) echo Spirochaetia;; *) echo "no clade for $1" >&2; exit 1;; esac; }
+SB=${SB:-"sbatch --parsable -p hns,normal -A ayeletv"}
+AX="apptainer exec -B /scratch"
+mkdir -p "$OUT/logs" "$OUT/tools" "$OUT/tables"
+
+# queries: light, on the login node
+: > "$OUT/accessions.txt"
+specs=""
+for sp in $SPECIES; do
+    query=$(ls "$LAUNCH"/work/*/*/"$sp".query.fasta 2>/dev/null | head -1)
+    [ -n "$query" ] || { echo "no $sp.query.fasta under $LAUNCH/work" >&2; exit 1; }
+    python3 "$TOOL" queries "$RESULTS/protein-evalues" "$sp" "$query" "$N_PLACED" "$OUT/$sp"
+    grep '^>' "$query" | cut -c2- | cut -d' ' -f1 >> "$OUT/accessions.txt"
+    cat "$REF/minus_$(clade $sp)/reference_accessions.txt" >> "$OUT/accessions.txt"
+    cp "$query" "$OUT/$sp/proteome.fasta"
+    specs="$specs $sp:$OUT/$sp/proteome.fasta:$REF/minus_$(clade $sp)/reference.fasta:$OUT/$sp"
+done
+sort -u -o "$OUT/accessions.txt" "$OUT/accessions.txt"
+
+# interpro: curl resumes (-C -) and gives up on a stalled transfer instead of hanging
+ipr=$($SB -c 1 --mem 4G -t 8:00:00 -J df-interpro -o "$OUT/logs/interpro.log" --wrap \
+  "set -euo pipefail; cd $OUT; for i in 1 2 3 4 5; do curl -fsS -C - --speed-limit 100000 --speed-time 120 -o protein2ipr.dat.gz $INTERPRO_URL && break; sleep 30; done; gzip -t protein2ipr.dat.gz; zcat protein2ipr.dat.gz | awk -F'\t' 'NR==FNR {w[\$1]; next} (\$1 in w) && \$4 ~ /^PF/ {print \$1 \"\t\" \$4 \"\t\" \$5 \"\t\" \$6}' accessions.txt - | sort -u | gzip > pfam_matches.tsv.gz; echo pfam_matches \$(zcat pfam_matches.tsv.gz | wc -l)")
+echo "interpro: $ipr"
+
+build=$($SB -c 1 --mem 16G -t 1:00:00 -J df-build --dependency=afterok:"$ipr" \
+  -o "$OUT/logs/build.log" --wrap "$AX $KMERSEEK_IMG python3 $TOOL build $OUT/pfam_matches.tsv.gz $OUT/tables $specs")
+echo "build: $build"
+
+for sp in $SPECIES; do
+    ref="$REF/minus_$(clade $sp)/reference.fasta"
+    q="$OUT/$sp/queries.fasta"
+    deps=""
+    # tools: the run's flags (main.nf phmmerSearch, jackhmmerSearch, mmseqs2Search), QfO's
+    # columns: query, target, qstart, qend, tstart, tend, bits, evalue
+    for t in phmmer jackhmmer; do
+        it=""; [ "$t" = jackhmmer ] && it="-N 3"
+        j=$($SB -c 16 --mem 64G -t "$TOOL_TIME" -J "df-$t-$sp" -o "$OUT/logs/$t-$sp.log" --wrap \
+          "set -euo pipefail; $AX $HMMER_IMG $t $it --domtblout /dev/stdout --tblout /dev/null -o /dev/null --noali -E 10 --cpu 16 $q $ref | grep -v '^#' | awk 'NF >= 22 {print \$4 \"\t\" \$1 \"\t\" \$16 \"\t\" \$17 \"\t\" \$20 \"\t\" \$21 \"\t\" \$14 \"\t\" \$13}' | gzip -c > $OUT/tools/$sp.$t.tsv.gz")
+        deps="$deps:$j"
+    done
+    j=$($SB -c 16 --mem 64G -t "$TOOL_TIME" -J "df-mmseqs2-$sp" -o "$OUT/logs/mmseqs2-$sp.log" --wrap \
+      "set -euo pipefail; d=\$(mktemp -d -p $OUT/tools); cd \$d; $AX $MMSEQS_IMG mmseqs createdb $q qdb; $AX $MMSEQS_IMG mmseqs createdb $ref tdb; $AX $MMSEQS_IMG mmseqs search qdb tdb res tmp -s 7 --num-iterations 3 -e 10 --threads 16; $AX $MMSEQS_IMG mmseqs convertalis qdb tdb res out.tsv --format-output 'query,target,qstart,qend,tstart,tend,bits,evalue'; gzip -c out.tsv > $OUT/tools/$sp.mmseqs2.tsv.gz; cd $OUT; rm -rf \$d")
+    deps="$deps:$j"
+
+    # extract: the region files the run's last gain step read
+    hash=$(grep -h "kmerseekDarkGain ($sp)" "$LAUNCH"/trace.*.txt | tail -1 | cut -f2)
+    gain=$(ls -d "$LAUNCH"/work/"$hash"*)
+    mkdir -p "$OUT/$sp/extract"
+    : > "$OUT/$sp/files.txt"
+    for f in "$gain"/queries/*.queries.tsv; do
+        r="$RESULTS/$sp/kmerseek/$(basename "$f" .queries.tsv).regions.csv.zst"
+        [ -e "$r" ] || { echo "missing $r" >&2; exit 1; }
+        echo "$r" >> "$OUT/$sp/files.txt"
+    done
+    n=$(wc -l < "$OUT/$sp/files.txt"); ntask=$(( (n + FPT - 1) / FPT ))
+    arr=$($SB -c 1 --mem 6G -t 2:00:00 -J "df-x-$sp" --array=1-"$ntask" \
+      -o "$OUT/logs/extract-$sp-%a.log" --wrap \
+      "set -e; a=\$(( (SLURM_ARRAY_TASK_ID - 1) * $FPT + 1 )); for f in \$(sed -n \"\${a},\$((a + $FPT - 1))p\" $OUT/$sp/files.txt); do python3 $TOOL extract \$f $OUT/$sp/all_ids.txt $ref $OUT/$sp/extract/\$(basename \$f .regions.csv.zst).csv.gz; done")
+    deps="$deps:$arr"
+
+    # score: QfO's parameters (min_overlap 0.5, strict_iou 0.8, dedup modes off,on,
+    # kmerseek ranked by region_enrichment after the Bonferroni filter at 0.05)
+    sc=$($SB -c 1 --mem 32G -t 6:00:00 -J "df-score-$sp" --dependency=afterok:"$build$deps" \
+      -o "$OUT/logs/score-$sp.log" --wrap \
+      "set -euo pipefail; $AX $KMERSEEK_IMG python3 $TOOL prepare $OUT/$sp/extract $OUT/tools $OUT/$sp/scored $sp; for set in dark_E1 dark_E10 placed; do mkdir -p $OUT/$sp/scored/\$set; cd $OUT/$sp/scored/\$set; $AX $KMERSEEK_IMG python3 $QFO_BIN/evaluate_domain_calls.py --manifest $OUT/$sp/scored/manifest.tsv --species $sp --truth $OUT/tables/${sp}_truth_\$set.parquet --domain-map $OUT/tables/${sp}_domain_map.parquet --min-overlap 0.5 --strict-iou 0.8 --dedup-transfer-modes off,on --truth-set \$set < /dev/null; done")
+    echo "$sp: $n region files in $ntask extract tasks ($arr), tools$deps, score $sc"
+done

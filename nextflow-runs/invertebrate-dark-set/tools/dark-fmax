@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+"""Score kmerseek and the sequence tools on dark proteins with the QfO benchmark's metrics.
+
+    tools/dark-fmax queries <protein-evalues dir> <species> <query.fasta> <n_placed> <out_dir>
+    tools/dark-fmax extract <regions.csv.zst> <ids.txt> <reference.fasta> <out.csv.gz>
+    tools/dark-fmax build <pfam_matches.tsv.gz> <out_dir> <species>:<query.fasta>:<reference.fasta>:<queries_dir> [...]
+    tools/dark-fmax prepare <extract_dir> <tools_dir> <out_dir> <species>
+
+queries   writes the query sets of one species: dark_E1_ids.txt (no phmmer, jackhmmer or
+          mmseqs2 hit with E < 1), dark_E10_ids.txt (none with E < 10), placed_ids.txt
+          (n_placed proteins drawn at random, seed 0, from those with a hit with E < 1, as
+          a positive control), all_ids.txt (their union) and queries.fasta.
+extract   streams one kmerseek region file and keeps the rows whose query is in ids.txt and
+          whose region_evalue < 10, with the columns evaluate_domain_calls.py reads. A row
+          whose target_subseq is not the reference sequence at target_start..target_end
+          (kmerseek 0.4.0 aliases, kmerseek PR 141) is dropped and counted.
+build     (polars) turns Pfam matches (accession, pfam_id, start, end; InterPro's
+          protein2ipr, Pfam rows only) into the scorer's tables, 1-based inclusive like
+          QfO's: <species>_truth_<set>.parquet for each query set (dark_E1, dark_E10,
+          placed) and <species>_domain_map.parquet for the species' Swiss-Prot reference.
+prepare   (polars) joins one setting's extracted chunks into one parquet per setting and
+          writes manifest.tsv (tool, variant, path) with the three sequence tools.
+
+Added 2026-10-13 (Olga: "for the dark set, can we still score Fmax, IoU, all the CAFA
+metrics we used in the QFO one for regions?"). extract and queries are Python 3.6 standard
+library; build and prepare need polars (run them in the kmerseek image).
+"""
+import csv
+import glob
+import gzip
+import math
+import os
+import random
+import re
+import subprocess
+import sys
+
+csv.field_size_limit(10 ** 9)
+MAX_E = 10.0
+KEEP = ["query_name", "query_md5", "target_name", "target_md5", "region_start", "region_end",
+        "target_start", "target_end", "region_enrichment", "region_tail_probability",
+        "region_poisson_score", "region_search_space", "db_n_targets", "region_evalue"]
+NAME = re.compile(r"^(?P<chunk>chunk_\d+)\.(?P<setting>.+)\.csv\.gz$")
+
+
+def read_fasta(path, keep=None):
+    seqs, name, buf = {}, None, []
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if name is not None and (keep is None or name in keep):
+                    seqs[name] = "".join(buf)
+                name, buf = line[1:].strip().split()[0], []
+            else:
+                buf.append(line.strip())
+    if name is not None and (keep is None or name in keep):
+        seqs[name] = "".join(buf)
+    return seqs
+
+
+def cmd_queries(evalues_dir, species, query_fasta, n_placed, out_dir):
+    best = {}
+    with gzip.open(os.path.join(evalues_dir, "%s_protein_tool_min_evalue.csv.gz" % species), "rt") as fh:
+        r = csv.reader(fh)
+        next(r)
+        for row in r:
+            best[row[0]] = min([float(v) for v in row[1:] if v] or [math.inf])
+    dark1 = sorted(a for a, v in best.items() if not v < 1.0)
+    dark10 = sorted(a for a, v in best.items() if not v < 10.0)
+    placed_all = sorted(a for a, v in best.items() if v < 1.0)
+    placed = sorted(random.Random(0).sample(placed_all, min(int(n_placed), len(placed_all))))
+    os.makedirs(out_dir, exist_ok=True)
+    for name, ids in (("dark_E1", dark1), ("dark_E10", dark10), ("placed", placed),
+                      ("all", sorted(set(dark1) | set(placed)))):
+        with open(os.path.join(out_dir, name + "_ids.txt"), "w") as fh:
+            fh.write("".join(a + "\n" for a in ids))
+    seqs = read_fasta(query_fasta, set(dark1) | set(placed))
+    missing = (set(dark1) | set(placed)) - set(seqs)
+    if missing:
+        sys.exit("%s: %d query ids not in %s, e.g. %s" % (species, len(missing), query_fasta,
+                                                          sorted(missing)[:3]))
+    with open(os.path.join(out_dir, "queries.fasta"), "w") as fh:
+        for a in sorted(seqs):
+            fh.write(">%s\n%s\n" % (a, seqs[a]))
+    print("%s: dark E<1 %d, dark E<10 %d, placed sample %d of %d"
+          % (species, len(dark1), len(dark10), len(placed), len(placed_all)))
+
+
+def cmd_extract(path, ids_path, reference, out):
+    ids = set(l.strip() for l in open(ids_path) if l.strip())
+    ref = read_fasta(reference)
+    proc = subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE, universal_newlines=True)
+    header = next(csv.reader([proc.stdout.readline()]))
+    tmp = out + ".tmp"
+    n_in = n_out = n_bad = 0
+    with gzip.open(tmp, "wt", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(KEEP)
+        if any(k not in header for k in KEEP + ["target_subseq"]):
+            rest = sum(1 for _ in proc.stdout)
+            proc.wait()
+            if rest:
+                sys.exit("%s: %d rows but columns missing from the header" % (path, rest))
+        else:
+            ix = [header.index(k) for k in KEEP]
+            i_q, i_ev = header.index("query_name"), header.index("region_evalue")
+            i_t, i_ts, i_te, i_sub = (header.index(k) for k in
+                                      ("target_name", "target_start", "target_end", "target_subseq"))
+            for line in proc.stdout:
+                n_in += 1
+                if line.startswith('"'):
+                    row = next(csv.reader([line]))
+                else:
+                    if line[:line.index(",")] not in ids:
+                        continue
+                    row = line.rstrip("\n").split(",")
+                if row[i_q] not in ids:
+                    continue
+                ev = float(row[i_ev]) if row[i_ev] else math.inf
+                if not ev < MAX_E:
+                    continue
+                if ref.get(row[i_t], "")[int(row[i_ts]):int(row[i_te])] != row[i_sub]:
+                    n_bad += 1
+                    continue
+                w.writerow([row[i] for i in ix])
+                n_out += 1
+            if proc.wait() != 0:
+                sys.exit("zstdcat failed on %s" % path)
+    os.replace(tmp, out)
+    print("%s: %d regions read, %d kept, %d with wrong target coordinates dropped"
+          % (os.path.basename(path), n_in, n_out, n_bad))
+
+
+def cmd_build(matches, out_dir, *species_specs):
+    import polars as pl
+    m = pl.read_csv(matches, separator="\t", has_header=False,
+                    new_columns=["accession", "pfam_id", "domain_start", "domain_end"],
+                    schema_overrides={"domain_start": pl.Int32, "domain_end": pl.Int32}).unique()
+    os.makedirs(out_dir, exist_ok=True)
+    for spec in species_specs:
+        species, qfasta, rfasta, sets_dir = spec.split(":")
+        for name, fasta in (("query", qfasta), ("reference", rfasta)):
+            seqs = read_fasta(fasta)
+            lengths = pl.DataFrame({"accession": list(seqs),
+                                    "protein_length": [len(s) for s in seqs.values()]},
+                                   schema={"accession": pl.String, "protein_length": pl.Int32})
+            dom = (m.join(lengths, on="accession", how="inner")
+                   .select("accession", "pfam_id", "domain_start", "domain_end", "protein_length"))
+            if name == "reference":
+                dom.write_parquet(os.path.join(out_dir, "%s_domain_map.parquet" % species),
+                                  compression="zstd")
+                print("%s reference: %d proteins, %d with a Pfam domain, %d domains"
+                      % (species, lengths.height, dom["accession"].n_unique(), dom.height))
+                continue
+            for qset in ("dark_E1", "dark_E10", "placed"):
+                ids = [l.strip() for l in open(os.path.join(sets_dir, qset + "_ids.txt")) if l.strip()]
+                t = dom.filter(pl.col("accession").is_in(ids))
+                t.write_parquet(os.path.join(out_dir, "%s_truth_%s.parquet" % (species, qset)),
+                                compression="zstd")
+                print("%s %s: %d proteins, %d with a Pfam domain, %d domains"
+                      % (species, qset, len(ids), t["accession"].n_unique(), t.height))
+
+
+def cmd_prepare(extract_dir, tools_dir, out_dir, species):
+    import polars as pl
+    by_setting = {}
+    for f in sorted(glob.glob(os.path.join(extract_dir, "*.csv.gz"))):
+        m = NAME.match(os.path.basename(f))
+        if not m:
+            sys.exit("cannot parse %s" % f)
+        by_setting.setdefault(m["setting"], []).append(f)
+    os.makedirs(out_dir, exist_ok=True)
+    rows = []
+    for setting, files in sorted(by_setting.items()):
+        df = pl.concat([pl.read_csv(f, infer_schema_length=0) for f in files])
+        path = os.path.abspath(os.path.join(out_dir, "%s.%s.parquet" % (species, setting)))
+        df.write_parquet(path)
+        rows.append("kmerseek\t%s\t%s" % (setting, path))
+    for tool in ("phmmer", "jackhmmer", "mmseqs2"):
+        rows.append("%s\tdark_rerun\t%s" % (tool, os.path.abspath(
+            os.path.join(tools_dir, "%s.%s.tsv.gz" % (species, tool)))))
+    with open(os.path.join(out_dir, "manifest.tsv"), "w") as fh:
+        fh.write("\n".join(rows) + "\n")
+    print("%s: %d kmerseek settings, 3 tools" % (species, len(by_setting)))
+
+
+def main():
+    cmds = {"queries": cmd_queries, "extract": cmd_extract, "build": cmd_build,
+            "prepare": cmd_prepare}
+    if len(sys.argv) < 2 or sys.argv[1] not in cmds:
+        sys.exit(__doc__)
+    cmds[sys.argv[1]](*sys.argv[2:])
+
+
+if __name__ == "__main__":
+    main()
