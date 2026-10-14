@@ -13,8 +13,8 @@ residues are the query's sequence: AlphaFold DB models the current UniProt seque
 can differ from the Pfam 33.1 one. Bands: < 50, 50-70, >= 70, and "no model" (no file, or
 a model of a different sequence).
 
-Writes one row per instance: query, pfam_acc, t1_start, t1_end, model (yes / none /
-other sequence), mean_plddt_region, plddt_band.
+Writes one row per instance: query, pfam_acc, t1_start, t1_end, pfam_type, length, role,
+model (yes / none / other sequence), mean_plddt_region, plddt_band.
 """
 
 from __future__ import annotations
@@ -70,7 +70,7 @@ def main() -> None:
         seqs.update(read_fasta(d / "queries.fasta"))
         inst.append(
             pl.read_csv(d / "instances.tsv", separator="\t").select(
-                "query", "pfam_acc", "t1_start", "t1_end"
+                "query", "pfam_acc", "t1_start", "t1_end", "pfam_type", "length", "role"
             )
         )
     inst = pl.concat(inst).unique().sort("query", "t1_start", "pfam_acc")
@@ -92,14 +92,15 @@ def main() -> None:
         # measurement that no query has a model.
         raise SystemExit(f"no usable model under {a.structures} for any of {len(status)} queries")
     rows = []
-    for q, fam, s, e in inst.iter_rows():
+    for q, fam, s, e, typ, length, role in inst.iter_rows():
         t = tracks.get(q)
         v = sum(t[s - 1 : e]) / (e - s + 1) if t else None  # 1-based, end included
-        rows.append((q, fam, s, e, status[q], v, band(v)))
+        rows.append((q, fam, s, e, typ, length, role, status[q], v, band(v)))
     out = pl.DataFrame(
         rows,
         orient="row",
-        schema=["query", "pfam_acc", "t1_start", "t1_end", "model", "mean_plddt_region", "plddt_band"],
+        schema=["query", "pfam_acc", "t1_start", "t1_end", "pfam_type", "length", "role", "model",
+                "mean_plddt_region", "plddt_band"],
     )
     out.write_csv(a.out, separator="\t")
     print(out.group_by("model").len().sort("model"))
