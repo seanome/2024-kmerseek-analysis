@@ -31,7 +31,7 @@ Steps (each resumes where it stopped):
                plan.json is byte-identical to 241's and that the settings without a fit
                are the ones 256 recorded.
   reproduce    search 256's own 301 queries on 6 settings and require the reduced tables
-               to equal 256's stored ones (E-value and bit score to 1e-9 relative; 256's own
+               to equal 256's stored ones (every best value to 1e-9 relative; 256's own
                rerun differed by up to 1.5e-12).
   search kept|removed   the full run of null 2 or null 3.
 
@@ -328,10 +328,12 @@ def step_reproduce(workers: int) -> None:
     # AMY1A/1B/1C/AMY2A/2B) then swap places, change how many proteins count as tied at
     # the top, and move in and out of 10th place. The stored tables hold no per-protein
     # values, so such a swap cannot be told from a real change at 10th place. The gate
-    # therefore checks what notebook 283 uses: every score's best value (to 1e-9 for these
-    # two, exactly for the others), every column of the other 9 scores, and, for these
-    # two, that the top protein is one of 256's top 10. Top-10 and tie-count differences
-    # for these two are counted and reported, not failed.
+    # therefore checks what notebook 283 uses: every score's best value to 1e-9 relative,
+    # every other column of the other 9 scores exactly, and, for these two, that the top
+    # protein is one of 256's top 10. Top-10 and tie-count differences for these two are
+    # counted and reported, not failed. The Poisson score is not exact either: the 283
+    # rebuild on 2026-10-13 gave 8 of its best values 1.8e-15 below 256's (the last binary
+    # digit of a number near 14), with the same top protein and every other column equal.
     from alphabet_ensemble_utils import chunk_tags
 
     expected = {
@@ -341,7 +343,13 @@ def step_reproduce(workers: int) -> None:
     }
     found = {p.name for p in (out / "top").glob("*.parquet")}
     noisy = ["E-value", "bit score"]
-    n_rows, n_swaps, n_tie_diff, bad = 0, 0, 0, []
+
+    def close(a, b) -> bool:
+        if a is None or b is None:
+            return a is b
+        return a == b or abs(a - b) <= 1e-9 * max(abs(a), abs(b))
+
+    n_rows, n_swaps, n_tie_diff, n_rounding, bad = 0, 0, 0, 0, []
     if found != expected:
         bad.append(
             (
@@ -376,16 +384,22 @@ def step_reproduce(workers: int) -> None:
                     "n_hit",
                     "top10",
                     "talk_best_rank",
-                    "top_value",
                 ]
             )
             for col in cols:
                 if o[col].to_list() != c[col].to_list():
                     bad.append((name, "noisy" if metric_is_noisy else "exact", col))
+            for q, m, a, b in zip(
+                o["query_name"].to_list(),
+                o["metric"].to_list(),
+                o["top_value"].to_list(),
+                c["top_value"].to_list(),
+            ):
+                if not close(a, b):
+                    bad.append((name, q, m, "top_value", a, b))
+                elif a != b and not metric_is_noisy:
+                    n_rounding += 1
             if metric_is_noisy:
-                for a, b in zip(o["top_value"].to_list(), c["top_value"].to_list()):
-                    if not (a == b or abs(a - b) <= 1e-9 * max(abs(a), abs(b))):
-                        bad.append((name, "top_value", a, b))
                 for g, t10_old, t10_new in zip(
                     c["top_gene"].to_list(), o["top10"].to_list(), c["top10"].to_list()
                 ):
@@ -400,7 +414,8 @@ def step_reproduce(workers: int) -> None:
                 )
     print(
         f"reproduce: {n_rows} rows compared with 256's; E-value or bit score rows whose top 10 differ: "
-        f"{n_swaps}, whose tie count differs: {n_tie_diff}; real differences: {len(bad)}",
+        f"{n_swaps}, whose tie count differs: {n_tie_diff}; other scores' best values within "
+        f"1e-9 but not equal: {n_rounding}; real differences: {len(bad)}",
         file=sys.stderr,
     )
     for b in bad[:20]:
@@ -411,6 +426,7 @@ def step_reproduce(workers: int) -> None:
                 "n_rows": n_rows,
                 "n_top10_differ_evalue_bits": n_swaps,
                 "n_tied_differ_evalue_bits": n_tie_diff,
+                "n_best_value_rounding_other_scores": n_rounding,
                 "differ": bad,
             },
             indent=1,
