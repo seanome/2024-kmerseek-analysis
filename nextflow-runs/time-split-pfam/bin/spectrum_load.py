@@ -37,7 +37,7 @@ def residues(path: Path) -> np.ndarray:
     """Every distinct sequence once, as bytes, each followed by one '*' so no k-mer spans two
     entries. Distinct, because the kmerseek 0.4.0 index holds identical sequences as one
     entry (it merges entries with the same k-mer set; kmerseek PR 141), and its spectrum
-    counts that one entry."""
+    counts that one entry. load() also merges sequences that are equal in the alphabet."""
     parts, buf = [], []
     with open(path) as fh:
         for line in fh:
@@ -57,7 +57,15 @@ def load(seq: np.ndarray, classes: list[str], k: int) -> tuple[float, int, int]:
     for i, letters in enumerate(classes):
         for c in letters:
             lut[ord(c)] = i
-    x = lut[seq]
+    # Sequences that are the same in this alphabet are one index entry too (the merge is on
+    # the k-mer set, which the alphabet decides), so dedupe the encoded sequences.
+    enc = np.where(lut[seq] < 0, 255, lut[seq]).astype(np.uint8)
+    enc[seq == ord("*")] = 254
+    parts = bytes(enc).split(bytes([254]))
+    enc = np.frombuffer(b"".join(p + bytes([254]) for p in dict.fromkeys(x for x in parts if x)), dtype=np.uint8)
+    x = enc.astype(np.int64)
+    x[x >= 254] = -1
+    seq = np.where(enc == 254, ord("*"), 0).astype(np.uint8)
     bad = np.concatenate([[0], np.cumsum(x < 0)])
     ok = (bad[k:] - bad[:-k]) == 0  # window i..i+k-1 holds no unknown letter
     base = len(classes)
