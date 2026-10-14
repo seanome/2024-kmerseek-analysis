@@ -88,6 +88,58 @@ half only:
    resamples (seed 280) of the test half's real queries and, independently, of its decoys.
    P4 holds when the interval's lower end is above zero.
 
+**A second reference: the Pfam 33.1 seed sequences (written 2026-10-13, before any search
+against it).** The same queries and decoys are also searched against the seed members of
+every Pfam 33.1 family, gaps removed, each entry carrying its family over its whole length.
+kmerseek uses the same `settings.tsv` (exact and extend), MMseqs2 and phmmer the same flags,
+and every tool on every reference gets its own matched cutoff, set on the tune half as
+above. hmmscan is the same run as for Swiss-Prot: it does not depend on the reference. The
+question is whether searching the curated family members themselves lets kmerseek place
+domains it could not place against Swiss-Prot 2019_08, and whether it gains more than
+MMseqs2 and phmmer gain. Two reasons to expect little, to be measured: a smaller database
+lowers the score needed for a given E-value by log2(residues in Swiss-Prot 2019_08 /
+residues in the seeds) bits, but cutoffs here are set at a matched decoy rate, so this
+mostly moves the cutoff, not the ranking; and Pfam builds its models from these same seed
+alignments, so hmmscan with the t0 models is the trained form of what a seed search does
+one sequence at a time.
+
+Before this was written, tune-half scores from 185 of the Swiss-Prot pilot's searches had
+been committed by another session (e39ac0a, `tables/pilot_partial_2026-10-13/`), and Claude,
+writing this cell, read that commit's message: the best kmerseek settings there have 3 tune-half P4 instances found
+by no other tool against 0.5 expected from decoys, from 52 queries carrying a P4 instance.
+Later the same day, before any seed search, the titles of three more such commits were also
+seen: "the 3 instances behind the tune-half unique finds" (2f06f18), "LRR_1 unique finds
+come from the landing rule, not from kmerseek alone" (787bc31) and "MMseqs2 one round
+removes strong decoy hits; unique finds unchanged" (2fe19f1). Their tables were not
+opened. No search against the seeds had run.
+
+- **P5.** On the test half, hmmscan with the t0 models finds more instances than MMseqs2,
+  phmmer and kmerseek searching the t0 seeds, each at its matched cutoff. For kmerseek this
+  is the setting with the highest tune-half recall against the seeds.
+- **P6.** Going from Swiss-Prot 2019_08 to the seeds changes kmerseek's recall by no more
+  than it changes MMseqs2's. Test, on the test half of the full run: for each instance,
+  kmerseek's change (found on seeds minus found on Swiss-Prot: -1, 0 or 1) minus MMseqs2's
+  change. Count the instances where kmerseek's change is larger and where MMseqs2's is
+  larger, and compare the two counts with an exact two-sided binomial test (McNemar's test on
+  these discordant instances). Each tool's own change is also reported with McNemar's test.
+  The kmerseek setting is chosen on the tune half: the one whose change minus MMseqs2's
+  change is largest there. The result that would support searching Pfam sequences:
+  kmerseek's change larger than MMseqs2's, p < 0.05.
+- **P4 with seeds**, secondary. The five steps of P4 above, with kmerseek searching the
+  seeds (one setting chosen on the tune half) and MMseqs2 and phmmer on both references, and
+  hmmscan, as the other tools. It does not replace P4. Two P4-type tests are now read, so
+  its interval is 97.5% (bootstrap percentiles 1.25 and 98.75), and it holds when the lower
+  end is above zero.
+
+**A stratum to report, not a prediction (Olga, 2026-10-13).** Every recall number and P4's
+unique finds are also split by the mean AlphaFold pLDDT of the query's residues inside the
+t1 domain, from the query's AlphaFold DB model: below 50, 50 to 70, 70 or more, and no
+model (none in AlphaFold DB, or a model of a different sequence). pLDDT is AlphaFold's
+per-residue confidence, 0 to 100; below 50 usually means no fixed structure. Expectation,
+written before reading: kmerseek's unique finds, if any, sit mostly below 50, where a
+structure tool has nothing to use and where notebook 244's selected cases were. This has no
+pass mark.
+
 **Kill rule.** If P4 fails on the test half, this is written up as a negative result and
 the test stops. No kmerseek settings are added, no cutoffs changed and "found" is not
 redefined after the test half has been read.
@@ -274,12 +326,157 @@ print((STOP1 / "five_examples.txt").read_text())
 """
 
 
+SEED_MD = r"""## Stop A. A second reference: the Pfam 33.1 seed sequences (built, not yet searched)
+
+`make_search_inputs.py reference-pfam-seed` reads Pfam 33.1 `Pfam-A.seed.gz` (its MD5
+agreed with the release's `md5_checksums`). Each seed member becomes one entry: gap
+characters removed, upper case, named `<family>__<accession>_<start>_<end>`, with one
+domain row that spans the whole entry, so a hit anywhere on it transfers that family.
+Members with the same sequence share one entry, which keeps a row for each family:
+kmerseek 0.4.0 merges index entries with the same k-mers (kmerseek PR 141), so they would
+not be searched apart anyway. A member is dropped when its accession is a query, or when its
+residues lie inside any sequence the searches use (pilot, full and smoke sets, decoys
+included).
+
+The bits a smaller database saves are arithmetic, not a measurement: an E-value is the
+database size times the chance of the score, so dividing the database by R lowers the score
+needed for the same E-value by log2(R) bits.
+
+How to read the figure: panel a compares the two references' entry lengths (a seed entry is
+one domain, a Swiss-Prot entry one protein); the totals in the legend are what sets the
+bits saved. Panel b is the sizing check: spectrum load (how often each k-mer recurs, the
+dark-set predictor of kmerseek search memory) for both references at four settings; points
+above the diagonal mean the seeds need more search memory than Swiss-Prot.
+"""
+
+SEED_CODE = r"""
+SEED = Path("../nextflow-runs/time-split-pfam/tables/seed_reference")
+import json
+C = json.loads((SEED / "counts.json").read_text())
+rows = [
+    ("Pfam 33.1 seed members", C["seed_members"]),
+    ("  dropped: accession is a query", C["members_dropped_accession_is_a_query"]),
+    ("  dropped: residues inside a query", C["members_dropped_sequence_inside_a_query"]),
+    ("  kept", C["members_kept"]),
+    ("entries (distinct sequences)", C["entries"]),
+    ("  kept members sharing an entry with another", C["members_sharing_an_entry"]),
+    ("  entries in more than one family", C["entries_in_more_than_one_family"]),
+    ("families with an entry", C["families_with_an_entry"]),
+    ("seed residues", C["residues"]),
+    ("Swiss-Prot 2019_08 proteins", C["sprot2019_08_proteins"]),
+    ("Swiss-Prot 2019_08 residues", C["sprot2019_08_residues"]),
+]
+print(pl.DataFrame(rows, schema=["count", "n"], orient="row"))
+bits = np.log2(C["sprot2019_08_residues"] / C["residues"])
+print(f"Arithmetic: log2({C['sprot2019_08_residues']:,} / {C['residues']:,}) = {bits:.3f} bits saved, "
+      f"about {bits:.2f} of a letter for a two-letter exact match (1 bit per letter)")
+print(f"median entry length {C['entry_length_median']} aa; letters used: {C['letters']}")
+
+LEN = pl.read_csv(SEED / "spectrum_load_lengths.csv")
+LOAD = pl.read_csv(SEED / "spectrum_load.csv").filter(~pl.col("reference").str.starts_with("check"))
+print(LOAD)
+print((SEED / "spectrum_load.csv").read_text().splitlines()[-1])
+COST = pl.read_csv(SEED / "pilot_trace_cost.csv")
+print("Swiss-Prot pilot so far (trace snapshot 2026-10-13 13:22):")
+print(COST)
+
+REF_NAME = {"reference": "Swiss-Prot 2019_08", "reference-pfamseed33_1": "Pfam 33.1 seeds"}
+REF_COLOR = {"reference": pf.OKABE_ITO["blue"], "reference-pfamseed33_1": pf.OKABE_ITO["vermillion"]}
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2)
+for ref in REF_NAME:
+    t = LEN.filter(pl.col("reference") == ref).sort("length")
+    cum = t["entries"].cum_sum() / t["entries"].sum()
+    res = (t["length"] * t["entries"]).sum()
+    axs[0].step(t["length"], cum, where="post", color=REF_COLOR[ref],
+                label=f"{REF_NAME[ref]}: {t['entries'].sum():,} entries, {res / 1e6:.1f} M residues")
+axs[0].set_xscale("log")
+axs[0].set_xlim(5, 5000)
+axs[0].xaxis.set_major_formatter(FuncFormatter(lambda v, _p: f"{v:g}"))
+axs[0].xaxis.set_minor_formatter(NullFormatter())
+axs[0].set_xlabel("Entry length (aa)")
+axs[0].set_ylabel("Entries this long or shorter (fraction)")
+w = LOAD.pivot(on="reference", index=["alphabet", "ksize"], values="load")
+lo, hi = 0.8 * min(w["reference"].min(), w["reference-pfamseed33_1"].min()), 1.25 * max(w["reference"].max(), w["reference-pfamseed33_1"].max())
+axs[1].plot([lo, hi], [lo, hi], color=pf.GREY, lw=0.5)
+axs[1].scatter(w["reference"], w["reference-pfamseed33_1"], color="black", s=8, zorder=3)
+for a_, k_, x_, y_ in w.select("alphabet", "ksize", "reference", "reference-pfamseed33_1").iter_rows():
+    axs[1].annotate(f"{a_} k{k_}", (x_, y_), xytext=(4, -3), textcoords="offset points")
+axs[1].set_xscale("log"); axs[1].set_yscale("log")
+axs[1].set_xlim(lo, hi); axs[1].set_ylim(lo, hi)
+for ax_ in (axs[1].xaxis, axs[1].yaxis):
+    ax_.set_major_formatter(FuncFormatter(lambda v, _p: f"{v:g}"))
+    ax_.set_minor_formatter(NullFormatter())
+axs[1].set_xlabel("Spectrum load, Swiss-Prot 2019_08")
+axs[1].set_ylabel("Spectrum load, Pfam 33.1 seeds")
+handles, labels = axs[0].get_legend_handles_labels()
+handles.append(plt.Line2D([], [], color=pf.GREY, lw=0.5)); labels.append("b: equal load on both references")
+fig.legend(handles, labels, loc="outside upper center", ncol=3)
+for ax, letter in zip(axs, "ab"):
+    pf.panel_label(ax, letter)
+pf.save(fig, FIG / "time_split_reference_size_sprot2019_08_vs_pfam33-1_seeds", formats=("png", "pdf"))
+"""
+
+SELF_MD = r"""## Stop A. Queries that were already Pfam 33.1 seed members
+
+Expected 0, since every query had no Pfam 33.1 domain. Found: 48 seed members whose
+accession is a query and 30 whose residues lie inside a query (some of the 30 are short,
+4 aa, and lie inside many unrelated queries and decoys). An instance is *seeded at t0* when
+a Pfam 33.1 seed member of the same family is that query's own sequence and overlaps the
+instance: Pfam's curators had placed it in the family's seed alignment, but the t0 regions
+file, which keeps only hits above the family's gathering threshold on the reference
+proteomes, has no row for it. Those instances were known at t0, and hmmscan's t0 model was
+built from them. They are dropped from the seed reference; the Swiss-Prot reference cannot
+contain them (step 7). Whether to remove them from the scored instances is Olga's call at
+Stop A.
+
+How to read the figure: each point is one Pfam type, at the share of the full sample's
+instances of that type that were seeded at t0; the number beside it is the count. Higher
+means more of that type was already known at t0.
+"""
+
+SELF_CODE = r"""
+SI = pl.read_csv(SEED / "seeded_instances.csv")
+key = ["query", "pfam_acc", "t1_start", "t1_end"]
+by = []
+for qs in ("pilot", "full"):
+    u = SI.filter(pl.col("query_set") == qs).unique(key)
+    print(f"{qs}: {u.height} instances seeded at t0 on {u['query'].n_unique()} queries, {u['pfam_acc'].n_unique()} families")
+u = SI.filter(pl.col("query_set") == "full").unique(key)
+t = (SAMPLE.select("pfam_type", "instances_in_sample")
+     .join(u.group_by("pfam_type").len("seeded"), on="pfam_type", how="left")
+     .with_columns(pl.col("seeded").fill_null(0))
+     .with_columns(pct=100 * pl.col("seeded") / pl.col("instances_in_sample"))
+     .with_columns(pl.col("pfam_type").cast(pl.Enum(TYPES))).sort("pfam_type"))
+print(t)
+print(f"P4 instances (Motif, Disordered, Repeat or under 60 aa) among them: "
+      f"{u.filter(pl.col('pfam_type').is_in(['Motif', 'Disordered', 'Repeat']) | (pl.col('length') < 60)).height} of {u.height}")
+with pl.Config(tbl_rows=120, tbl_width_chars=200):
+    print(u.select("query", "pfam_acc", "pfam_type", "t1_start", "t1_end", "member", "on_query_start", "on_query_end").sort("pfam_acc", "query"))
+
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 50)
+y = np.arange(t.height)[::-1]
+for yy in y:
+    ax.axhline(yy, color="#dddddd", lw=0.3, zorder=0)
+ax.scatter(t["pct"], y, color="black", s=10, zorder=3)
+for yy, p_, n_, d_ in zip(y, t["pct"], t["seeded"], t["instances_in_sample"]):
+    ax.annotate(f"{n_} of {d_:,}", (p_, yy), xytext=(5, 0), textcoords="offset points", va="center")
+ax.set_yticks(y, t["pfam_type"].cast(pl.String))
+ax.set_xlim(0, max(t["pct"]) * 1.6)
+ax.set_xlabel("Instances seeded at t0 (% of the type's sample instances)")
+fig.text(0.02, 0.98, "Full sample (9,263 instances): t1 instances whose query was a Pfam 33.1 seed member of the same family",
+         va="top")
+pf.save(fig, FIG / "time_split_instances_seeded_at_t0_pfam33-1", formats=("png", "pdf"))
+"""
+
+
 def main() -> None:
     nb = nbf.v4.new_notebook()
     nb.cells = [nbf.v4.new_markdown_cell(INTRO), nbf.v4.new_code_cell(SETUP.strip()),
                 nbf.v4.new_markdown_cell(FUNNEL_MD), nbf.v4.new_code_cell(FUNNEL_CODE.strip()),
                 nbf.v4.new_markdown_cell(IDENT_MD), nbf.v4.new_code_cell(IDENT_CODE.strip()),
-                nbf.v4.new_markdown_cell(EXAMPLES_MD), nbf.v4.new_code_cell(EXAMPLES_CODE.strip())]
+                nbf.v4.new_markdown_cell(EXAMPLES_MD), nbf.v4.new_code_cell(EXAMPLES_CODE.strip()),
+                nbf.v4.new_markdown_cell(SEED_MD), nbf.v4.new_code_cell(SEED_CODE.strip()),
+                nbf.v4.new_markdown_cell(SELF_MD), nbf.v4.new_code_cell(SELF_CODE.strip())]
     for c in nb.cells:
         if c.cell_type == "code":
             c.metadata["jupyter"] = {"source_hidden": True}
