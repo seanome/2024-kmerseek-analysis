@@ -504,9 +504,13 @@ AlphaFold DB entry at all. A model counts only when its residues are the query's
 sequence; otherwise the instance is "no model". The models that the QfO benchmark had
 already downloaded covered 64 of these queries.
 
-How to read the figure: one bar per Pfam type, split into the share of that type's sample
-instances in each pLDDT band, with the count of each band written on it. These bands are
-the strata every recall number and P4's unique finds will be reported in. The expectation
+How to read the figure: each dot is one sample instance, placed at its own mean pLDDT, in the
+row of its Pfam type (rows spread a little up and down so dots do not cover each other).
+The black tick is the type's median. Instances with no AlphaFold model of the query's
+sequence are grey crosses in the "no model" column. The dashed lines at 50 and 70 mark
+where the reported strata start: the printed table counts each band, and every recall
+number and P4's unique finds are reported in those bands. Results by pLDDT will also be
+drawn against pLDDT itself, not only by band. The expectation
 written before reading (first cell) is that kmerseek's unique finds, if any, sit mostly in
 the below-50 band.
 """
@@ -524,23 +528,42 @@ tab = (s.group_by("pfam_type", "plddt_band").len()
        .with_columns(pl.col("pfam_type").cast(pl.Enum(TYPES))).sort("pfam_type"))
 tab = tab.with_columns(total=pl.sum_horizontal(*BANDS))
 print(tab)
+print(f"lowest mean pLDDT: {s['mean_plddt_region'].min():.1f}")
 print(f"all sample instances: {s.height:,}; " + ", ".join(f"{b}: {(s['plddt_band'] == b).sum():,}" for b in BANDS))
 
-fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55)
-y = np.arange(tab.height)[::-1]
-left = np.zeros(tab.height)
-for b in BANDS:
-    frac = (tab[b] / tab["total"]).to_numpy()
-    ax.barh(y, frac, left=left, color=BAND_COLOR[b], label=f"pLDDT {b}" if b != "no model" else "no model")
-    for yy, l_, f_, n_ in zip(y, left, frac, tab[b]):
-        if f_ > 0.06:
-            ax.text(l_ + f_ / 2, yy, f"{n_:,}", ha="center", va="center", color="white")
-    left += frac
-ax.set_yticks(y, [f"{t} ({n:,})" for t, n in zip(tab["pfam_type"].cast(pl.String), tab["total"])])
-ax.set_xlim(0, 1)
-ax.set_xlabel("Share of the type's sample instances")
-fig.legend(loc="outside upper center", ncol=4)
-pf.save(fig, FIG / "time_split_instance_plddt_bands_by_type_afdb_v4", formats=("png", "pdf"))
+# Every instance at its own pLDDT, one row per Pfam type; the band edges are drawn only to
+# show where the table's strata start. Instances with no model sit in their own column.
+rng = np.random.default_rng(280)
+fig, ax = pf.figure(pf.TWO_COLUMN_MM, 70)
+types = tab["pfam_type"].cast(pl.String).to_list()
+ypos = {t: i for i, t in enumerate(types[::-1])}
+NO_MODEL_X = 13
+for t in types:
+    r = s.filter(pl.col("pfam_type") == t)
+    have = r.filter(pl.col("mean_plddt_region").is_not_null())
+    jit = rng.uniform(-0.3, 0.3, have.height)
+    ax.scatter(have["mean_plddt_region"], ypos[t] + jit, s=1.5, color=pf.OKABE_ITO["blue"],
+               alpha=0.35, linewidths=0, rasterized=True)
+    nm = r.height - have.height
+    ax.scatter([NO_MODEL_X] * nm, ypos[t] + rng.uniform(-0.3, 0.3, nm), s=4, marker="x",
+               color=pf.GREY, linewidths=0.4)
+    ax.annotate(f"{nm:,}", (NO_MODEL_X, ypos[t]), xytext=(6, 0), textcoords="offset points", va="center")
+    med = have["mean_plddt_region"].median()
+    ax.plot([med, med], [ypos[t] - 0.38, ypos[t] + 0.38], color="black", lw=1)
+for edge in (50, 70):
+    ax.axvline(edge, color=pf.OKABE_ITO["vermillion"], lw=0.5, ls="--")
+ax.set_yticks(list(ypos.values()), [f"{t} (n = {n:,})" for t, n in zip(types[::-1], tab["total"].to_list()[::-1])])
+ax.set_xticks([NO_MODEL_X, 20, 30, 40, 50, 60, 70, 80, 90, 100], ["no\nmodel", "20", "30", "40", "50", "60", "70", "80", "90", "100"])
+ax.set_xlim(NO_MODEL_X - 3, 101)
+ax.set_xlabel("Mean pLDDT of the query's residues inside the t1 domain (AlphaFold DB v4)")
+from matplotlib.lines import Line2D
+fig.legend(handles=[
+    Line2D([], [], marker="o", ls="", color=pf.OKABE_ITO["blue"], markersize=3, label="one instance"),
+    Line2D([], [], color="black", lw=1, label="median of the type"),
+    Line2D([], [], marker="x", ls="", color=pf.GREY, markersize=3, label="no AlphaFold model of this sequence"),
+    Line2D([], [], color=pf.OKABE_ITO["vermillion"], lw=0.5, ls="--", label="pLDDT 50 and 70, edges of the reported strata"),
+], loc="outside upper center", ncol=4)
+pf.save(fig, FIG / "time_split_instance_plddt_by_type_afdb_v4", formats=("png", "pdf"))
 """
 
 
