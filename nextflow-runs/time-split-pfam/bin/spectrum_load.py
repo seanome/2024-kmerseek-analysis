@@ -4,7 +4,8 @@
     spectrum_load.py --fasta <reference.fasta> [--fasta ...] --out <csv>
 
 Spectrum load is sum(occ^2 n) / sum(occ n) over a reference's k-mer spectrum, where n
-k-mers occur occ times each: the dark-set model of kmerseek search memory,
+k-mers occur in occ sequences each (a k-mer repeated within one sequence counts once, as
+kmerseek counts it): the dark-set model of kmerseek search memory,
 peak ~ 36 + 2.34 sqrt(load) GB (main.nf, searchFirstGb). kmerseekIndex writes the same
 spectrum as spectrum.csv.gz; a test setting can be checked against it with --check.
 
@@ -61,7 +62,12 @@ def load(seq: np.ndarray, classes: list[str], k: int) -> tuple[float, int, int]:
     xc = np.where(x < 0, 0, x)
     for j in range(k):
         code = code * base + xc[j : len(x) - k + 1 + j]
-    _, occ = np.unique(code[ok], return_counts=True)
+    # kmerseek's spectrum counts the sequences holding a k-mer, not its positions: one
+    # k-mer repeated inside a sequence counts once (spectrum.csv.gz "seqs_per_kmer").
+    seq_id = np.cumsum(seq == ord("*"))[: len(code)]
+    assert code.max() < 2**42 and seq_id.max() < 2**21, "packed key would overflow"
+    pairs = np.unique((code[ok] << 21) | seq_id[ok])
+    _, occ = np.unique(pairs >> 21, return_counts=True)
     occ = occ.astype(np.float64)
     return float((occ**2).sum() / occ.sum()), int(occ.sum()), len(occ)
 

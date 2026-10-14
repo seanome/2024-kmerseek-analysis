@@ -125,7 +125,9 @@ seed-reference:
 # queries + decoys, hp_pbotc_1st_ed2 k29, real Swiss-Prot reference) with the code of
 # OLD, then with this checkout's HEAD and -resume, in one launch dir with its own index
 # cache, so nothing of the pilot is read or locked. Checks out OLD in THIS clone for the
-# first run: use it only in a clone no run depends on.
+# first run: use it only in a clone no run depends on. A failed task still has its hash in
+# the trace, so the old run may fail (its scorer stops on the 2-query smoke set: no decoy
+# pair at all) and the new run still runs.
 hash-check:
 	@test -n "$(OLD)" || { echo "make hash-check OLD=<commit>"; exit 1; }
 	cd $(MAKEFILE_DIR) && test -z "$$(git status --porcelain --untracked-files=no)"
@@ -134,7 +136,7 @@ hash-check:
 	  H=$(RUN_DIR)/hashcheck; mkdir -p $$H; cd $$H; \
 	  printf "alphabet\tksize\tc_opt\nhp_pbotc_1st_ed2\t29\t1.59\n" > settings.tsv; \
 	  ARGS="$(subst --index_cache $(RUN_DIR)/kmerseek_index,--index_cache $(RUN_DIR)/hashcheck/kmerseek_index,$(NF_COMMON)) --settings settings.tsv --inputs $(RUN_DIR)/inputs/smoke --outdir $$H/results"; \
-	  (cd $(MAKEFILE_DIR) && git checkout -q $(OLD)); nextflow run $$ARGS --run_tag old; \
+	  (cd $(MAKEFILE_DIR) && git checkout -q $(OLD)); nextflow run $$ARGS --run_tag old -resume || echo "old run exited $$?"; \
 	  (cd $(MAKEFILE_DIR) && git checkout -q $$NEW); nextflow run $$ARGS --run_tag new -resume; \
 	  echo "old=$(OLD) new=$$NEW"'
 
