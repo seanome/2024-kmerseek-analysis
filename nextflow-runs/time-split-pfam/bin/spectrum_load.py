@@ -52,6 +52,22 @@ def residues(path: Path) -> np.ndarray:
     return np.frombuffer("".join(dict.fromkeys(parts)).encode(), dtype=np.uint8)
 
 
+def entry_lengths(path: Path) -> np.ndarray:
+    """Number of entries of each length (aa), every entry of the file counted."""
+    lens, n = [], None
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if n is not None:
+                    lens.append(n)
+                n = 0
+            else:
+                n += len(line.strip())
+    if n is not None:
+        lens.append(n)
+    return np.bincount(np.asarray(lens))
+
+
 def load(seq: np.ndarray, classes: list[str], k: int) -> tuple[float, int, int]:
     lut = np.full(256, -1, dtype=np.int64)
     for i, letters in enumerate(classes):
@@ -107,8 +123,7 @@ def main() -> None:
     lengths = ["reference,length,entries"]
     for f in a.fasta:
         seq = residues(f)
-        ends = np.flatnonzero(seq == ord("*"))
-        n_len = np.bincount(np.diff(np.concatenate([[-1], ends])) - 1)
+        n_len = entry_lengths(f)
         lengths += [f"{f.parent.name},{L},{n}" for L, n in enumerate(n_len) if n]
         for alph, k in SETTINGS:
             ld, n, d = load(seq, ALPHABETS[alph], k)
