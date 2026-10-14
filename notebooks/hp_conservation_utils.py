@@ -473,6 +473,85 @@ def draw_alignment_rows(
     ax.tick_params(axis="y", length=0)
 
 
+TICK_BASE = 1.55  # every tick rises from here (just above the target strip), in rows
+TICK_TALL = 1.1  # height of the identical-residue tick
+TICK_SHORT = 0.4  # height of the tick for different residues, both H or both P
+TICK_WIDTH = 0.5  # tick width, in alignment columns
+
+
+def draw_hp_pair(
+    ax,
+    lines: dict,
+    h_color: str,
+    p_color: str,
+    gap_color: str,
+    tick_color: str = "black",
+    x_max: int | None = None,
+) -> dict:
+    """Draw one aligned pair as query H/P strip, match line, target H/P strip.
+
+    `lines` comes from `alignment_lines`. Rows: y=0 query, y=1 match line, y=2 target.
+    Match line: ticks rising from one baseline, tall where the residues are identical,
+    short where they differ but are both H or both P, none where one is H and one is P.
+    A column with a gap in either sequence gets one band of `gap_color` across all three
+    rows and no tick.
+    Returns the counts drawn, so a caller can put them in a title.
+    """
+    from matplotlib.patches import Rectangle
+
+    qc, tc = lines["query_class"], lines["target_class"]
+    aligned, identical = lines["aligned"], lines["identical"]
+    n_col = len(qc)
+    x_max = x_max or n_col
+    n_tall = n_short = 0
+    for i in range(n_col):
+        x = i + 1
+        if not aligned[i]:
+            ax.add_patch(
+                Rectangle((x - 0.52, -0.5), 1.04, 3, lw=0, color=gap_color, zorder=0)
+            )
+        for y, c in ((0, qc[i]), (2, tc[i])):
+            if c in "HP":
+                # 1.04 wide so neighbouring boxes overlap and no white seam shows
+                ax.add_patch(
+                    Rectangle(
+                        (x - 0.52, y - 0.35),
+                        1.04,
+                        0.7,
+                        lw=0,
+                        color=h_color if c == "H" else p_color,
+                        zorder=1,
+                    )
+                )
+        if aligned[i] and qc[i] == tc[i]:
+            height = TICK_TALL if identical[i] == "|" else TICK_SHORT
+            n_tall += identical[i] == "|"
+            n_short += identical[i] != "|"
+            ax.add_patch(
+                Rectangle(
+                    (x - TICK_WIDTH / 2, TICK_BASE - height),
+                    TICK_WIDTH,
+                    height,
+                    lw=0,
+                    color=tick_color,
+                    zorder=2,
+                )
+            )
+    ax.set_xlim(0.5, x_max + 0.5)
+    ax.set_ylim(2.5, -0.5)
+    ax.set_yticks([0, 1, 2], ["query H/P", "agreement", "target H/P"])
+    ax.tick_params(axis="y", length=0)
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+    n_al = lines["n_aligned"]
+    return {
+        "gap_free": n_al,
+        "identical": n_tall,
+        "same_class": n_tall + n_short,
+        "gap_columns": n_col - n_al,
+    }
+
+
 IDENTITY_BINS = [0.0, 0.2, 0.3, 0.4, 0.6, 1.01]
 IDENTITY_LABELS = ["<20%", "20-30%", "30-40%", "40-60%", ">=60%"]
 
@@ -555,15 +634,25 @@ def finish_figure(
     header_y: float = 1.005,
     dpi: int = 200,
     wrap: int | None = None,
+    subtitle: str | None = None,
+    font_scale: float = 1.0,
+    footer_box: dict | None = None,
+    tight_layout: bool = True,
 ):
-    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`."""
-    try:
-        fig.tight_layout()
-    except Exception:  # noqa: BLE001
-        pass
+    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`.
+
+    `subtitle` is one line under the title. `font_scale` multiplies every header and footer
+    font size, for figures drawn at their printed size. `footer_box` replaces the default
+    light grey box behind the hypothesis and conclusion.
+    """
+    if tight_layout:
+        try:
+            fig.tight_layout()
+        except Exception:  # noqa: BLE001
+            pass
     w_in, h_in = fig.get_size_inches()
     wrap = wrap or max(70, int(w_in * 12))
-    line = lambda pt: pt / 72.0 / h_in * 1.45
+    line = lambda pt: pt * font_scale / 72.0 / h_in * 1.45
     is_km = "kmerseek" in tools and not tools.startswith("no kmerseek")
     tool_lines = textwrap.wrap("TOOLS: " + tools, wrap)
     y = header_y
@@ -573,7 +662,7 @@ def finish_figure(
         "\n".join(tool_lines),
         ha="left",
         va="bottom",
-        fontsize=9.5,
+        fontsize=9.5 * font_scale,
         fontweight="bold",
         color="#8B1A1A" if is_km else "#1F3B73",
         bbox=dict(
@@ -583,9 +672,18 @@ def finish_figure(
         ),
     )
     y += line(9.5) * len(tool_lines) + line(9.5) * 0.9
+    if subtitle:
+        fig.text(0.5, y, subtitle, ha="center", va="bottom", fontsize=9 * font_scale)
+        y += line(9) * 1.1
     if title:
         fig.text(
-            0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold"
+            0.5,
+            y,
+            title,
+            ha="center",
+            va="bottom",
+            fontsize=12.5 * font_scale,
+            fontweight="bold",
         )
     foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap(
         "Conclusion: " + conclusion, wrap
@@ -596,9 +694,10 @@ def finish_figure(
         "\n".join(foot),
         ha="left",
         va="top",
-        fontsize=9,
+        fontsize=9 * font_scale,
         color="#222222",
         linespacing=1.35,
-        bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
+        bbox=footer_box
+        or dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
     )
     fig.savefig(path, dpi=dpi, bbox_inches="tight")

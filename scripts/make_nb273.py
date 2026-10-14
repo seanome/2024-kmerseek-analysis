@@ -1420,16 +1420,17 @@ md(r"""
 
 Section 1 showed one pair. Here is one pair from each Pfam identity bin, so the numbers in
 sections 2 to 6 can be seen as residues. Each pair is the bin's most typical one, chosen by a
-rule fixed before looking at the pairs: among pairs with 80 to 150 aligned positions (short
+rule fixed before looking at the pairs: among pairs with 80 to 150 gap-free columns (short
 enough to read), the pair whose H/P I and 20 amino acid I are both closest to the middle of
 the bin (the smallest sum of the two distances from the 50th percentile, percentiles taken
 over all pairs in the bin), one Pfam family per bin.
 
-For each pair the lines are: the two aligned sequences, with `|` where the residues are
-identical (the 20 amino acid count); then the two sequences written as H and P, with `|`
-where the classes agree (the H/P count). Positions with a gap on either side (`-` or `.`) are
-not counted. The table first gives each pair's counts beside the bin's median, so you can see
-how typical it is. The figure draws all five pairs on one column scale.
+For each pair the printed lines are: the two aligned sequences, with `|` where the residues
+are identical (the 20 amino acid count); then the two sequences written as H and P, with `|`
+where both residues are H or both are P (the H/P count). Columns with a gap on either side
+(`-` or `.`) are not counted. The table first gives each pair's counts beside the bin's
+median, so you can see how typical it is. The figure draws all five pairs on one column
+scale, highest identity at the top.
 """)
 
 code(r"""
@@ -1475,7 +1476,7 @@ show = ex_pairs.join(med, on="identity_bin").sort("identity_bin").select(
     pl.col("n_cols").alias("aligned positions"),
     (pl.col(f"agree_{P20}") * 100).round(1).alias("identical per 100"),
     f"median agree {P20}",
-    (pl.col(f"agree_{HP}") * 100).round(1).alias("same H/P per 100"),
+    (pl.col(f"agree_{HP}") * 100).round(1).alias("both H or both P per 100"),
     f"median agree {HP}",
     (pl.col(f"expected_{HP}") * 100).round(1).alias("H/P chance per 100"),
     pl.col(f"evidence_{P20}").round(3).alias(f"I {P20}"),
@@ -1499,8 +1500,8 @@ for r in aln_ex.sort("identity_bin").iter_rows(named=True):
         f"{r['query']} against {r['target']}"
     )
     print(
-        f"aligned positions {n_al}; identical {n_id} ({100 * n_id / n_al:.0f} per 100); "
-        f"same H/P class {n_hp} ({100 * n_hp / n_al:.0f} per 100)\n"
+        f"gap-free columns {n_al}; identical {n_id} ({100 * n_id / n_al:.0f} per 100); "
+        f"both H or both P {n_hp} ({100 * n_hp / n_al:.0f} per 100)\n"
     )
     hc.print_alignment(
         [
@@ -1508,70 +1509,133 @@ for r in aln_ex.sort("identity_bin").iter_rows(named=True):
             ("identical", L["identical"]),
             ("target", L["target"]),
             ("query H/P", L["query_class"]),
-            ("same H/P class", L["same_class"]),
+            ("both H or both P", L["same_class"]),
             ("target H/P", L["target_class"]),
         ]
     )
 """)
 
 code(r"""
-x_max = max(len(L["query"]) for _, L in ex_lines.values())
-fig, axes = plt.subplots(len(ex_lines), 1, figsize=(12, 1.75 * len(ex_lines)), sharex=True)
-for ax, (b, (r, L)) in zip(axes, ex_lines.items()):
-    hc.draw_alignment_rows(
-        ax,
-        [
-            ("identical residue", "agree", L["identical"]),
-            ("query H/P", "class", L["query_class"]),
-            ("target H/P", "class", L["target_class"]),
-            ("same H/P class", "agree", L["same_class"]),
-        ],
-        L["aligned"],
-        H_COLOR,
-        P_COLOR,
-        AGREE_COLOR,
-        x_max=x_max,
-    )
-    ax.set_title(
-        f"{b} identity: {r['family_id']} ({r['family']}), {r['query']} against {r['target']}",
-        loc="left",
-        fontsize=10,
-    )
-axes[-1].set_xlabel("alignment column (gaps included)")
-ex_handles = [
-    Patch(color=H_COLOR, label=f"H, hydrophobic: {h_res}"),
-    Patch(color=P_COLOR, label=f"P, polar: {p_res}"),
-    Line2D([], [], ls="", marker="s", ms=5, color=AGREE_COLOR, label="the two residues agree (counted)"),
-    Line2D([], [], ls="", marker=".", ms=6, color="#9a9a9a", label="the two residues differ (counted)"),
-    Line2D([], [], ls="", marker="x", ms=4, color="#c8c8c8", mew=0.8,
-           label="gap in either sequence (not counted)"),
-]
-axes[0].legend(
-    handles=ex_handles, loc="lower left", bbox_to_anchor=(0, 1.35), ncol=3,
-    fontsize=9, frameon=False, borderaxespad=0,
+import pubfig as pf
+from matplotlib.patches import Rectangle
+
+# Drawn at its printed width (180 mm with padding), in the Nature style; the notebook copy is the same
+# figure at 200 dpi, the print copy at 300 dpi. This is the notebook's last figure, so the
+# style is left on.
+pf.use_style()
+GAP_COLOR = "#e4e4e4"  # gap in either sequence; the only grey in the figure
+order = list(reversed(hc.IDENTITY_LABELS))  # >=60% at the top, identity falling down the page
+x_max = max(len(ex_lines[b][1]["query"]) for b in order)
+WIDTH_MM = 179  # plus 1 mm of save padding each side = 180 mm printed
+plt.rcParams["savefig.pad_inches"] = 1 / 25.4  # room for the footer box outline
+
+fig = plt.figure(figsize=(WIDTH_MM * pf.MM, 112 * pf.MM))
+gs = fig.add_gridspec(
+    len(order) + 1, 1, height_ratios=[2.3] + [1] * len(order), hspace=1.0,
+    left=0.085, right=0.995, top=0.995, bottom=0.06,
 )
-counts = {
-    b: (L["identical"].count("|"), L["same_class"].count("|"), L["n_aligned"])
-    for b, (_, L) in ex_lines.items()
-}
-for b, (n_id, n_hp, n_al) in counts.items():
-    print(f"{b}: identical {n_id} of {n_al}, same H/P class {n_hp} of {n_al}")
-lo, hi = counts["<20%"], counts[">=60%"]
+leg = fig.add_subplot(gs[0])
+axes = [fig.add_subplot(gs[i + 1]) for i in range(len(order))]
+for ax in axes[1:]:
+    ax.sharex(axes[0])
+
+drawn = {}
+for ax, b in zip(axes, order):
+    r, L = ex_lines[b]
+    c = hc.draw_hp_pair(ax, L, H_COLOR, P_COLOR, GAP_COLOR, x_max=x_max)
+    drawn[b] = c
+    n = c["gap_free"]
+    ax.set_title(
+        f"{b.replace('>=', '≥')} identity. {r['family_id']} ({r['family']}), "
+        f"{r['query']} against {r['target']}\n"
+        f"{c['identical']} of {n} gap-free columns identical ({100 * c['identical'] / n:.0f} per 100), "
+        f"{c['same_class']} of {n} both H or both P ({100 * c['same_class'] / n:.0f} per 100)",
+        loc="left", pad=2, linespacing=1.3,
+    )
+    if ax is not axes[-1]:
+        ax.tick_params(axis="x", labelbottom=False)
+axes[-1].set_xlabel("alignment column (gap columns included)")
+
+# Legend above the first pair: a sample of each mark at the same size as in the pairs (same
+# column scale, same row height), three columns of two entries.
+leg.set_xlim(0.5, x_max + 0.5)
+leg.set_ylim(6.9, -0.5)
+leg.axis("off")
+def sample(x0, y0, top, bottom, tick=None, gap=False):
+    # one alignment column of a pair: query row at y0, match line at y0+1, target at y0+2
+    if gap:
+        leg.add_patch(Rectangle((x0 - 0.5, y0 - 0.5), 1, 3, lw=0, color=GAP_COLOR, zorder=0))
+    for dy, col in ((0, top), (2, bottom)):
+        if col:
+            leg.add_patch(Rectangle((x0 - 0.5, y0 + dy - 0.35), 1, 0.7, lw=0, color=col, zorder=1))
+    if tick:
+        height = hc.TICK_TALL if tick == "tall" else hc.TICK_SHORT
+        leg.add_patch(Rectangle((x0 - hc.TICK_WIDTH / 2, y0 + hc.TICK_BASE - height), hc.TICK_WIDTH, height,
+                                lw=0, color="black", zorder=2))
+entries = [
+    (dict(top=H_COLOR, bottom=None, single=True),
+     f"H residue, hydrophobic: {h_res}.\nCounted unless its column is a gap"),
+    (dict(top=P_COLOR, bottom=None, single=True),
+     f"P residue, polar: {p_res}.\nCounted unless its column is a gap"),
+    (dict(top=H_COLOR, bottom=H_COLOR, tick="tall"),
+     "Tall tick: identical residues. Counted\nas identical and as both H or both P"),
+    (dict(top=P_COLOR, bottom=P_COLOR, tick="short"),
+     "Short tick: different residues, both H or\nboth P. Counted as both H or both P"),
+    (dict(top=H_COLOR, bottom=P_COLOR),
+     "No tick: one H, one P.\nCounted in the total only"),
+    (dict(top=H_COLOR, bottom=None, gap=True),
+     "Grey band: gap in either sequence.\nNot counted"),
+]
+col_x = [2, 2 + x_max / 3, 2 + 2 * x_max / 3]
+for k, (kw, text) in enumerate(entries):
+    x0, y0 = col_x[k // 2], (k % 2) * 3.7
+    if kw.get("single"):
+        leg.add_patch(Rectangle((x0 - 0.5, y0 + 1 - 0.35), 1, 0.7, lw=0, color=kw["top"]))
+    else:
+        sample(x0, y0, kw["top"], kw["bottom"], kw.get("tick"), kw.get("gap", False))
+    leg.text(x0 + 2, y0 + 1, text, va="center", ha="left", linespacing=1.15)
+
+print("Counts drawn in each title (gap-free columns are the denominator):")
+for b in order:
+    c = drawn[b]
+    print(
+        f"{b}: identical {c['identical']} of {c['gap_free']}, both H or both P "
+        f"{c['same_class']} of {c['gap_free']}, gap columns {c['gap_columns']}"
+    )
+    # the drawn counts must equal the counts the table above was built from
+    r, L = ex_lines[b]
+    assert c["identical"] == L["identical"].count("|") and c["same_class"] == L["same_class"].count("|")
+
+hi, lo = drawn[">=60%"], drawn["<20%"]
+per100 = lambda c, k: round(100 * c[k] / c["gap_free"])
+out = FIG / "273_one_pair_per_identity_bin_hp_and_protein20_pfam_seed.png"
 hc.finish_figure(
     fig,
-    FIG / "273_one_pair_per_identity_bin_hp_and_protein20_pfam_seed.png",
-    tools=f"no kmerseek; Pfam-A 38.2 seed alignments, {HP} classes and protein20",
-    title="One typical Pfam seed pair per identity bin, position by position",
+    out,
+    tools=f"no kmerseek; Pfam-A 38.2 seed alignments, {HP} H/P letters and protein20",
+    title="How H/P agreement is counted: one Pfam seed pair per identity bin, position by position",
+    subtitle=(
+        "Pair shown for each bin: of its pairs with 80 to 150 gap-free columns, the one nearest the "
+        "bin median in both H/P and 20 amino acid bits per position, each from a different Pfam family"
+    ),
     hypothesis=(
-        "As identity falls, identical residues thin out faster than same H/P class. "
-        "More black squares in a row is more agreement."
+        "As identity falls, identical residues drop faster than residues that are both H or both P. "
+        "Five pairs cannot test this; the test over all pairs is "
+        "figures/273_hp_vs_protein20_agreement_per_100_and_bits_pfam_seed_scope40.png."
     ),
     conclusion=(
-        f"Under 20% identity: {lo[0]} of {lo[2]} positions identical, {lo[1]} of {lo[2]} the same "
-        f"H/P class. At 60% and above: {hi[0]} of {hi[2]} identical, {hi[1]} of {hi[2]} the same "
-        "H/P class."
+        f"In these five pairs, from the ≥60% pair to the <20% pair, identical residues fall from "
+        f"{per100(hi, 'identical')} to {per100(lo, 'identical')} per 100 gap-free columns, and "
+        f"residues both H or both P fall from {per100(hi, 'same_class')} to "
+        f"{per100(lo, 'same_class')} per 100."
     ),
+    font_scale=0.62,
+    wrap=175,
+    footer_y=-0.035,
+    footer_box=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor="black", lw=0.5),
+    tight_layout=False,
 )
+fig.savefig(out.with_name(out.stem + "_print.png"), dpi=300, bbox_inches="tight")
 """)
 
 md(r"""
