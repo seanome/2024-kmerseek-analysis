@@ -712,19 +712,24 @@ for c in ["a", "b", "c", "d", "f"]:
 class_tab = pl.DataFrame(crows)
 print(class_tab)
 
+HP_RED, HP_RED_PALE = "#a50f15", "#eba7a7"
 fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13, 5), gridspec_kw={"width_ratios": [1.3, 1]})
 xl = np.arange(len(LEVELS))
 for a in hc.ALPHABET_CLUSTERS:
     if a == "protein20":
         continue
     t = lvl.filter(pl.col("alphabet") == a).sort("category")
-    if a.startswith("hp_"):
-        col, lw, z = "#a50f15", 1.8 if a == HP else 1.0, 3
+    # hp_thomas_dill2 is the only full-strength red and is drawn on top; the other H/P
+    # alphabets are a pale tint of the same red with no dots, so it stands apart from them.
+    if a == HP:
+        col, lw, z, mk = HP_RED, 2.4, 5, "o"
+    elif a.startswith("hp_"):
+        col, lw, z, mk = HP_RED_PALE, 0.9, 3, None
     elif a == "gbmr4":
-        col, lw, z = "black", 1.8, 2
+        col, lw, z, mk = "black", 1.6, 4, "o"
     else:
-        col, lw, z = "#b0b0b0", 0.9, 1
-    ax.plot(xl, t["ratio to protein20"].to_numpy(), color=col, lw=lw, zorder=z, marker="o", ms=3)
+        col, lw, z, mk = "#c8c8c8", 0.9, 1, None
+    ax.plot(xl, t["ratio to protein20"].to_numpy(), color=col, lw=lw, zorder=z, marker=mk, ms=3.5)
     if a in (HP, "gbmr4"):
         ax.text(xl[-1] + 0.08, t["ratio to protein20"][-1], a, va="center", fontsize=8.5, color=col)
 ax.axhline(1, color="black", ls=":", lw=1)
@@ -736,17 +741,19 @@ for side in ("top", "right"):
     ax.spines[side].set_visible(False)
 ax.legend(
     handles=[
-        Line2D([], [], color="#a50f15", lw=1.8, label=f"{HP}"),
-        Line2D([], [], color="#a50f15", lw=1.0, label="other H/P alphabets (2-3 letters)"),
-        Line2D([], [], color="black", lw=1.8, label="gbmr4"),
-        Line2D([], [], color="#b0b0b0", lw=0.9, label="other alphabets (5-18 letters)"),
+        Line2D([], [], color=HP_RED, lw=2.4, marker="o", ms=3.5, label=f"{HP}"),
+        Line2D([], [], color=HP_RED_PALE, lw=0.9, label="other H/P alphabets (2-3 letters)"),
+        Line2D([], [], color="black", lw=1.6, marker="o", ms=3.5, label="gbmr4"),
+        Line2D([], [], color="#c8c8c8", lw=0.9, label="other alphabets (5-18 letters)"),
         Line2D([], [], color="black", ls=":", lw=1, label="protein20 (identity)"),
     ],
     loc="lower left", bbox_to_anchor=(0, 1.02), ncol=2, frameon=False, fontsize=8.5, borderaxespad=0,
 )
 classes = [CLASS_NAME[c] for c in ["a", "b", "c", "d", "f"]]
 yc = np.arange(len(classes))
-for j, (other, col, mk) in enumerate([("gbmr4", "black", "s"), ("protein20", "#444444", "o")]):
+# Both comparisons are hp_thomas_dill2's lead, so both use its red; the marker shape says
+# which alphabet it is compared with.
+for j, (other, col, mk) in enumerate([("gbmr4", HP_RED, "s"), ("protein20", HP_RED, "o")]):
     t = class_tab.filter(pl.col("comparison") == f"{HP} minus {other}")
     m = t["difference"].to_numpy()
     ax2.errorbar(m, yc + (j - 0.5) * 0.3, xerr=[m - t["95% lo"].to_numpy(), t["95% hi"].to_numpy() - m],
@@ -761,8 +768,8 @@ for side in ("top", "right"):
     ax2.spines[side].set_visible(False)
 ax2.legend(
     handles=[
-        Line2D([], [], ls="", marker="s", color="black", label=f"{HP} minus gbmr4"),
-        Line2D([], [], ls="", marker="o", color="#444444", mfc="white", label=f"{HP} minus protein20"),
+        Line2D([], [], ls="", marker="s", color=HP_RED, label=f"{HP} minus gbmr4"),
+        Line2D([], [], ls="", marker="o", color=HP_RED, mfc="white", label=f"{HP} minus protein20"),
     ],
     loc="lower left", bbox_to_anchor=(0, 1.08), ncol=1, frameon=False, fontsize=8.5, borderaxespad=0,
 )
