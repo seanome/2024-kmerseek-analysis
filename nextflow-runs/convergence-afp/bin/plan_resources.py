@@ -21,7 +21,9 @@ in this order:
         minus one clade (about 572_700 sequences, the size of this one). Read from its
         Nextflow traces (--dark-trace: a finished attempt asks 1.25 x its peak memory and
         1.5 x its run time) and from its committed table of raised first asks
-        (--dark-measured). Its search tasks are not used: they searched 2_000 queries at
+        (--dark-measured: the committed copy and any a launch measured). Names may carry
+        a workflow prefix (darkSet:kmerseekIndex). An index served from its store runs
+        no task and has no trace row, so the tables carry most of this history. Its search tasks are not used: they searched 2_000 queries at
         a time, and this run searches 246 short ones.
   3. a setting with no history anywhere asks what the dark-set pipeline's model asks for
      its index task: 1.4 x max(45, 300 x 2^(-(bits - 12) / 2.5) x scaled^-0.7 x
@@ -50,7 +52,7 @@ TIME_KILLS = {"140", "-", "", "2147483647"}
 UNITS_GB = {"B": 1e-9, "KB": 1e-6, "MB": 1e-3, "GB": 1.0, "TB": 1e3}
 UNITS_S = {"ms": 1e-3, "s": 1, "m": 60, "h": 3600, "d": 86400}
 DARK_INDEX = re.compile(
-    r"^kmerseekIndex \(minus_[^.]+\.(?P<a>[a-z0-9_]+)\.k(?P<k>\d+)(?:\.s(?P<s>\d+))?\.lc"
+    r"^(?:\w+:)?kmerseekIndex \(minus_[^.]+\.(?P<a>[a-z0-9_]+)\.k(?P<k>\d+)(?:\.s(?P<s>\d+))?\.lc"
 )
 
 
@@ -97,10 +99,13 @@ def own_asks(paths):
     return mem, tim, failed
 
 
-def dark_asks(measured, traces):
+def dark_asks(measured_dirs, traces):
     mem, tim = {}, {}
-    for r in read_tsv(measured / "kmerseek_index_memory_measured.tsv"):
-        bump(mem, (r["alphabet"], int(r["ksize"]), int(r["scaled"])), float(r["first_ask_gb"]))
+    for d in measured_dirs:
+        rows = read_tsv(d / "kmerseek_index_memory_measured.tsv")
+        for r in rows:
+            bump(mem, (r["alphabet"], int(r["ksize"]), int(r["scaled"])), float(r["first_ask_gb"]))
+        print(f"{d}: {len(rows)} raised index asks", file=sys.stderr)
     for p in traces:
         n = 0
         for r in read_tsv(p):
@@ -124,7 +129,8 @@ def model_gb(bits, scaled, ka_queries):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--settings", type=Path, required=True)
-    ap.add_argument("--dark-measured", type=Path, required=True)
+    ap.add_argument("--dark-measured", type=Path, nargs="+", required=True,
+                    help="folders holding a dark-set kmerseek_index_memory_measured.tsv")
     ap.add_argument("--trace", type=Path, nargs="*", default=[],
                     help="this pipeline's own Nextflow traces")
     ap.add_argument("--dark-trace", type=Path, nargs="*", default=[],

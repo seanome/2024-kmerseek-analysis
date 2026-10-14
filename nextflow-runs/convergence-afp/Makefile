@@ -50,6 +50,8 @@ OUTDIR     ?= $(MAKEFILE_DIR)/results
 # the same E-value fit, on a reference the size of this one. Every clone on $SCRATCH is
 # searched, and the plan prints which traces it read.
 DARK_TRACES ?= $(wildcard $(SHERLOCK_USER_SCRATCH)/2024-kmerseek*/nextflow-runs/invertebrate-dark-set/runs/*/trace*.txt)
+# The tables of raised index asks the dark-set launches measured from their logs.
+DARK_MEASURED ?= $(dir $(wildcard $(SHERLOCK_USER_SCRATCH)/2024-kmerseek*/nextflow-runs/invertebrate-dark-set/runs/*/measured/kmerseek_index_memory_measured.tsv))
 OWN_TRACES  = $(wildcard $(LAUNCH_DIR)/trace*.txt)
 FLOOR_GB   ?= 64
 FLOOR_H    ?= 4
@@ -150,7 +152,7 @@ plan:
 	@echo "this run's traces: $(words $(OWN_TRACES)) file(s)"
 	$(PYTHON) $(MAKEFILE_DIR)/bin/plan_resources.py \
 	  --settings $(MAKEFILE_DIR)/assets/kmerseek_settings.tsv \
-	  --dark-measured $(MAKEFILE_DIR)/assets/dark_set_measured \
+	  --dark-measured $(MAKEFILE_DIR)/assets/dark_set_measured $(DARK_MEASURED) \
 	  $(if $(DARK_TRACES),--dark-trace $(DARK_TRACES),) \
 	  $(if $(OWN_TRACES),--trace $(OWN_TRACES),) \
 	  --floor-gb $(FLOOR_GB) --floor-h $(FLOOR_H) --out $(LAUNCH_DIR)/resources.tsv
