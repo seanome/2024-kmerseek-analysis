@@ -165,10 +165,9 @@ families of Swiss-Prot entries with the keyword "Toxin" that are the best DIAMON
 entry is outside the genus. The brief says to pick the largest. Phospholipase A2
 (PF00068) has the most Swiss-Prot entries (493), but only 8 of the 200_000 reads have
 their best hit in it, too few to measure what share of family reads a rule keeps.
-Conotoxin (PF02950) is next, with 440 entries and 21_270 reads, and it is picked. Two
-tarantula families have more reads (Toxin_12, 22_510; Toxin_20, 7_506) but almost no
-entries outside the tarantulas (10 and 0), so they cannot be tested with the tarantulas held
-out.
+Conotoxin (PF02950) is next, with 440 entries and 21_270 reads, and it is picked. Toxin_12 has
+more reads (22_510) but only 10 entries outside the tarantulas, and Toxin_20 (7_506 reads)
+has none, so neither can be tested with the tarantulas held out.
 
 Three references were built from the Swiss-Prot entries that carry PF02950: (i) all
 genera, (ii) all but *Selenobrachys*, (iii) all but the taxonomic family Theraphosidae
@@ -241,13 +240,15 @@ lab_sub = tr_sub.group_by("label").agg(n_reads=pl.len()).sort("label")
 print(lab_sub)
 orient = (tr.filter(pl.col("label") != "unassigned")
           .with_columns(strand=pl.when(pl.col("qstart") > pl.col("qend")).then(pl.lit("reverse")).otherwise(pl.lit("forward")),
-                        aln_start=pl.min_horizontal("qstart", "qend"))
+                        aln_first_base=pl.min_horizontal("qstart", "qend"))
           .group_by("label", "strand")
           .agg(n_reads=pl.len(), median_read_length=pl.col("read_length").median(),
-               median_alignment_start=pl.col("aln_start").median(),
-               share_alignment_starts_in_first_400=(pl.col("aln_start") <= 400).mean())
+               median_first_aligned_base=pl.col("aln_first_base").median(),
+               share_alignment_overlaps_first_400=(pl.col("aln_first_base") <= 400).mean(),
+               share_protein_start_in_first_400=(pl.col("qstart") <= 400).mean())
           .sort("label", "strand"))
-print("Where the coding alignment starts in the read (DIAMOND, full read):")
+print("Where the DIAMOND alignment of the full read sits (read bases). For reverse-strand reads the")
+print("first aligned base is the protein's C-terminal end; qstart is the protein's N-terminal end.")
 print(orient)
 orient.write_csv(f"{DATA_292}/alignment_start_by_strand.csv")
 moved = tr.join(tr_sub.select("read_id", pl.col("label").alias("label_subfamily")), on="read_id")
@@ -348,15 +349,16 @@ protein out of the cell; it is cut off and is not part of the toxin.
 code(r"""
 src = u.shared_kmer_sources("ii", "protein", 10, 400, cache=f"{DATA_292}/shared_kmers_protein_k10_N400_genus_holdout_{u.PFAM}.csv")
 print(src.head(12))
-print(src.group_by("ref_feature").agg(pl.col("n_family_reads").sum(), pl.col("n_non_family_reads").sum(), n_kmers=pl.len()))
+print(src.group_by("ref_region").agg(pl.col("n_family_reads").sum(), pl.col("n_non_family_reads").sum(), n_kmers=pl.len()))
 fig = u.fig_shared_kmers(src, f"{FIG}/fig_shared_kmers_protein_k10_N400_{u.PFAM}")
 """)
 
 md(r"""
 **Shared k-mers.** For the 12 reference k-mers found in the most reads (protein k = 10,
 genus hold-out, N = 400), the number of family reads (blue) and non-family reads
-(vermillion) whose first 400 bases contain it, in any frame. The marker shape says where
-the k-mer sits in the reference protein named on the left (residue range). The label of a
+(vermillion) whose first 400 bases contain it, in any frame. The marker shape says which part of
+the precursor named on the left (residue range) the k-mer overlaps: the signal peptide, the
+propeptide (and not the signal peptide), or only the mature toxin (Swiss-Prot features). The label of a
 read is the brief's Pfam truth.
 
 An example non-family read with the most common shared k-mer, compared without gaps with

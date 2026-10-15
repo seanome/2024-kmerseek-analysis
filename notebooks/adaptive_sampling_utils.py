@@ -1170,11 +1170,18 @@ def shared_kmer_sources(
             if decide.encode(s, alphabet).find(km) >= 0
         )
         start, end = j + 1, j + k
+        # Every Swiss-Prot feature the k-mer overlaps by at least one residue, N-terminal first.
         f = feats.filter(
             (pl.col("accession") == acc)
-            & (pl.col("start") <= start)
-            & (pl.col("end") >= end)
+            & (pl.col("start") <= end)
+            & (pl.col("end") >= start)
             & (pl.col("feature") != "CHAIN")
+        ).sort("start")
+        overlapped = f["feature"].to_list()
+        region = (
+            "signal peptide"
+            if "SIGNAL" in overlapped
+            else "propeptide" if "PROPEP" in overlapped else "mature toxin"
         )
         rows.append(
             {
@@ -1184,9 +1191,9 @@ def shared_kmer_sources(
                 "reference": acc,
                 "ref_start": start,
                 "ref_end": end,
-                "ref_feature": (
-                    f["feature"][0] if f.height else "mature peptide or chain"
-                ),
+                "ref_features_overlapped": "+".join(overlapped)
+                or "none (mature chain)",
+                "ref_region": region,
             }
         )
     out = pl.DataFrame(rows).sort("n_non_family_reads", descending=True)
@@ -1205,7 +1212,7 @@ def fig_shared_kmers(src: pl.DataFrame, path: str, top: int = 12):
     )
     d = d.reverse()
     fig, ax = pf.figure(pf.TWO_COLUMN_MM * 0.75, 75)
-    feat_marker = {"SIGNAL": "o", "PROPEP": "s", "mature peptide or chain": "^"}
+    feat_marker = {"signal peptide": "o", "propeptide": "s", "mature toxin": "^"}
     ys = range(d.height)
     for y, row in zip(ys, d.iter_rows(named=True)):
         fam_x = max(row["n_family_reads"], 0.5)
@@ -1215,14 +1222,14 @@ def fig_shared_kmers(src: pl.DataFrame, path: str, top: int = 12):
         ax.plot(
             fam_x,
             y,
-            marker=feat_marker[row["ref_feature"]] if row["n_family_reads"] else "x",
+            marker=feat_marker[row["ref_region"]] if row["n_family_reads"] else "x",
             color=pf.OKABE_ITO["blue"],
             linestyle="",
         )
         ax.plot(
             row["n_non_family_reads"],
             y,
-            marker=feat_marker[row["ref_feature"]],
+            marker=feat_marker[row["ref_region"]],
             color=pf.OKABE_ITO["vermillion"],
             linestyle="",
         )
@@ -1263,7 +1270,11 @@ def fig_shared_kmers(src: pl.DataFrame, path: str, top: int = 12):
             color="black",
             marker=m,
             linestyle="",
-            label=f"k-mer in the reference's {'signal peptide' if f == 'SIGNAL' else 'propeptide' if f == 'PROPEP' else f}",
+            label={
+                "signal peptide": "k-mer overlaps the reference's signal peptide",
+                "propeptide": "overlaps the propeptide, not the signal peptide",
+                "mature toxin": "only in the mature toxin",
+            }[f],
         )
         for f, m in feat_marker.items()
     ]
@@ -1312,7 +1323,7 @@ def print_signal_peptide_example(
                 print(
                     f"most common shared k-mer: {top['kmer']} ({top['n_family_reads']:_} family reads, "
                     f"{top['n_non_family_reads']:_} non-family reads); in {top['reference']} residues "
-                    f"{top['ref_start']}-{top['ref_end']}, inside its {top['ref_feature']}"
+                    f"{top['ref_start']}-{top['ref_end']}, overlapping its {top['ref_features_overlapped']}"
                 )
                 print(
                     f"example non-family read {rid}: best Swiss-Prot hit {t['best_hit']} ({t['best_hit_species']}), "

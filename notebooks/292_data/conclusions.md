@@ -14,7 +14,9 @@
    labels. That is the main result, more than any statement about k-mers.
 3. The reason is shared precursor sequence. At protein k = 10 the reference k-mer found in
    the most read starts, IIAGLALLSV, is residues 6-15 of the signal peptide of P0DM66; it
-   is in the first 400 bases of 5_403 family reads and 16_397 non-family reads. Pfam's
+   is in the first 400 bases of 5_403 family reads and 16_397 non-family reads. Summed over
+   all 61 shared k-mers, those overlapping a signal peptide account for 35_537 non-family and
+   5_483 family read matches; those only in the mature toxin, for 22 and 3. Pfam's
    PF02950 match on these tarantula proteins covers the signal peptide and propeptide too
    (B1P1F1 residues 3-74 of 79), so the family label itself rests partly on sequence that
    tarantula toxins of other families share.
@@ -48,12 +50,20 @@
 - Anything about other families, tissues or newer chemistry. One run, one family, R9 flow
   cell, basecaller unknown. 93% of family reads (19_772 of 21_270) have the same best hit,
   so the reads test few distinct genes, and the 95% intervals over reads are too narrow.
-- That the read start is always the 5' end of the transcript. This is PCR cDNA, so about
-  half the reads start with adapter, poly(T) and 3' UTR (the example read in section 9 does).
-  The DIAMOND alignment of the full read still starts within the first 400 bases for 98.7%
-  of forward-strand and 86.2% of reverse-strand family reads (section 3), because these
-  precursors are short (79 to 97 residues for the 8 tarantula entries in the reference) inside reads
-  with a median length of about 740 bases.
+- That the read start shows the same part of the transcript in every read. This is PCR
+  cDNA. Forward-strand reads (9_467 of the 21_270 family reads) start at the 5' end, and the
+  protein's N-terminus, signal peptide included, is in their first 400 bases in 98.7% of
+  them. Reverse-strand reads (11_803) start with adapter, poly(T) and 3' UTR; their first
+  400 bases overlap the coding alignment in 86.2% of them, but from the C-terminal end, and
+  the protein's N-terminus is in the first 400 bases in only 0.16%. The signal-peptide
+  matches therefore come from forward-strand reads, and a rule built on the mature toxin
+  would be tested mostly on reverse-strand reads.
+- That every family/non-family label is right. The truth step keeps one DIAMOND hit per
+  read (`--max-target-seqs 1`), so between paralogs of equal length such as B1P1F1 (has
+  PF02950) and B1P1F2 (no Pfam line, both 79 residues) DIAMOND's choice decides the label,
+  and that choice is not visible in the output.
+- That the pore-time numbers describe a real run. The model charges a read shorter than N
+  the extra 500 bases when it is ejected, although such a read ends before any decision.
 
 **Figures**: F1 `figures/292/f1_sensitivity_by_holdout_N400_PF02950.png`; F2
 `figures/292/f2_by_chunk_genus_holdout_PF02950.png`; shared k-mers
