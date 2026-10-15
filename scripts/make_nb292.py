@@ -43,7 +43,9 @@ frames, encode them in a reduced amino-acid alphabet, and count k-mers shared wi
 reference proteins. For a read from an animal with no genome, can this rule decide "this
 read is from protein family X" when DNA mapping to the nearest relatives cannot?
 
-**Decision rule, written before any result (from the experiment brief).** The sample's
+**Decision rule, written before any result (from the experiment brief,
+[`292_data/experiment_brief.md`](292_data/experiment_brief.md), Olga's task description
+for this notebook).** The sample's
 genus is held out of the reference. Continue the idea if the best k-mer setting keeps at
 least half of the family reads while keeping 5% or fewer of the other reads, and the DNA
 rule keeps under 10% of the family reads. If the DNA rule keeps as many family reads
@@ -60,8 +62,15 @@ the reference proteins it still works.
   (seed 20261014). The basecaller and its version are not stated in the SRA record.
 - Proteins: Swiss-Prot release 2026_03.
 - Target family: Pfam PF02950 (Conotoxin), chosen in section 2.
-- A setting is one combination of alphabet, k and m (the minimum number of chunk k-mers
-  found in the reference for the read to be kept).
+- N is the chunk: the first N bases of a read, which is all the rule sees.
+- The alphabets come from kmerseek, this project's protein search tool: "protein" keeps the
+  20 amino acids; "dayhoff" groups them into 6 classes by chemistry; "hp" keeps 2 classes,
+  hydrophobic and polar (section 4 lists the residues in each class).
+- k is the k-mer length in residues; m is the minimum number of the chunk's k-mers that
+  must also be in the reference for the read to be kept.
+- A setting is one combination of alphabet, k and m.
+- "Genus held out" and "tarantulas held out" name two reference sets (section 2); "family
+  read" always means a read from the protein family PF02950.
 
 The computation is in [`scripts/adaptive/`](../scripts/adaptive/); this notebook reads
 its tables and draws the figures. The decision itself is
@@ -158,7 +167,7 @@ entry is outside the genus. The brief says to pick the largest. Phospholipase A2
 their best hit in it, too few to measure what share of family reads a rule keeps.
 Conotoxin (PF02950) is next, with 440 entries and 21_270 reads, and it is picked. Two
 tarantula families have more reads (Toxin_12, 22_510; Toxin_20, 7_506) but almost no
-entries outside the tarantulas (10 and 0), so they cannot be tested with the family held
+entries outside the tarantulas (10 and 0), so they cannot be tested with the tarantulas held
 out.
 
 Three references were built from the Swiss-Prot entries that carry PF02950: (i) all
@@ -168,6 +177,15 @@ same 440 proteins, and only (ii) and (iii) are scored. Reference (ii) holds 8 ta
 proteins from three other genera. Reference (iii) holds no spider protein at all: 431 cone
 snail proteins and one sea anemone protein. Going from (ii) to (iii) therefore jumps from
 "other genera of the same family" to "another phylum".
+
+Why a tarantula toxin carries a cone snail family. Pfam's own description of PF02950 is
+one line, "Conotoxins are small snail toxins that block ion channels". On the tarantula
+proteins the match covers almost the whole precursor, signal peptide and propeptide
+included: residues 3-74 of 79 on B1P1F1, 2-72 of 87 on B1P1F7 and 2-73 of 79 on P0DM66
+(InterPro API, 2026-10-15). In B1P1F1 the signal peptide is residues 1-19 and the
+propeptide 20-44 (Swiss-Prot). So membership in this family rests partly on the signal
+peptide and propeptide, which section 4 shows are shared with tarantula toxins of other
+families.
 
 For the DNA rule, the coding sequence of each entry was fetched from ENA by the first EMBL
 protein id in its cross-references.
@@ -221,6 +239,17 @@ for x in subfams:
     print("  ", x)
 lab_sub = tr_sub.group_by("label").agg(n_reads=pl.len()).sort("label")
 print(lab_sub)
+orient = (tr.filter(pl.col("label") != "unassigned")
+          .with_columns(strand=pl.when(pl.col("qstart") > pl.col("qend")).then(pl.lit("reverse")).otherwise(pl.lit("forward")),
+                        aln_start=pl.min_horizontal("qstart", "qend"))
+          .group_by("label", "strand")
+          .agg(n_reads=pl.len(), median_read_length=pl.col("read_length").median(),
+               median_alignment_start=pl.col("aln_start").median(),
+               share_alignment_starts_in_first_400=(pl.col("aln_start") <= 400).mean())
+          .sort("label", "strand"))
+print("Where the coding alignment starts in the read (DIAMOND, full read):")
+print(orient)
+orient.write_csv(f"{DATA_292}/alignment_start_by_strand.csv")
 moved = tr.join(tr_sub.select("read_id", pl.col("label").alias("label_subfamily")), on="read_id")
 print(moved.group_by("label", "label_subfamily").len().sort("label", "label_subfamily"))
 lab_sub.write_csv(f"{DATA_292}/truth_label_counts_uniprot_subfamily.csv")
@@ -301,7 +330,7 @@ table, for N = 200, 400 and 800, is
 Enrichment is the family share among kept reads divided by the family share among all
 reads. Pore-time enrichment uses a model, not a measurement (named `pore_time_model` in the
 brief): a kept read costs its full length, and an ejected read costs N bases plus 500 bases
-of lost time. It is the family bases sequenced per base of pore time, divided by the same
+of lost time. The 500 is the brief's number; no measurement or source stands behind it. It is the family bases sequenced per base of pore time, divided by the same
 number with no ejection.
 """)
 
@@ -395,7 +424,8 @@ On the same chunks and the same held-out references:
 
 - **DNA rule**, as readfish does it: minimap2 2.31 `-x map-ont` of the chunk against the
   coding sequences of the reference proteins; keep when the chunk has a primary alignment.
-- **Slow upper bound**: DIAMOND 2.2.8 blastx of the chunk alone against the reference
+- **DIAMOND blastx of the chunk** (the brief calls it the slow upper bound; here it does
+  not separate the classes either, see F1): DIAMOND 2.2.8 blastx of the chunk alone against the reference
   proteins, E-value 1e-3, frameshift-aware (`-F 15`); keep when there is any hit. This is
   what one would do if time did not matter.
 
@@ -436,10 +466,15 @@ fig = u.fig_rules_by_holdout([(f1_rows, f"Pfam truth ({u.PFAM})"), (f1_sub, "Uni
 md(r"""
 **F1.** Share of family reads kept at N = 400 at each hold-out level, for the best k-mer
 setting (picked at the genus hold-out by the rule in section 4 and kept fixed), the DNA rule
-and the slow DIAMOND bound; (a) with the brief's Pfam truth, (b) with the UniProt subfamily
-truth. Bars are 95% Wilson intervals over reads, which are too narrow because
-most family reads come from one transcript. The dashed line in each rule's colour is that
-rule's keep rate on shuffled reads. The false keep on non-family reads is in the legend.
+and DIAMOND blastx of the chunk; (a) with the brief's Pfam truth, (b) with the UniProt subfamily
+truth. Bars are 95% intervals for a proportion (Wilson score interval) over reads, which
+are too narrow because most family reads come from one transcript. The dashed line in each
+rule's colour is that rule's keep rate on shuffled reads; the DNA rule's and DIAMOND's
+dashed lines both sit at the bottom line and overlap (0 and 0.009%). The y axis is spaced by
+ratio, and its bottom line holds zero and anything below 0.01%. The legend gives each rule's
+share of non-family reads kept. DIAMOND on the chunk keeps family and non-family reads at
+similar rates at both hold-outs (62.8% and 56.7% with the genus held out), so with these
+labels no rule, fast or slow, separates the family at the read start.
 """)
 
 md(r"""
@@ -477,11 +512,19 @@ The y axis is spaced by ratio: the step from 0.1% to 1% takes as much room as th
 md(r"""
 ## 9. Example read
 
-The brief asks for one family read kept by the k-mer rule with the family held out (iii)
+The brief asks for one family read kept by the k-mer rule with the tarantulas held out (iii)
 and not kept by the DNA rule. The read is picked by a rule written before looking: among
 family reads kept by the best setting at hold-out (iii) and not by the DNA rule, the one
 with the most chunk k-mers in the reference (ties: lowest read id). If none exists at the
 best setting, the cell says so and shows the same printout at hold-out (ii) instead.
+
+How to read it: the best setting is hp k = 30, a 2-letter code. The read's 30-letter
+hydrophobic/polar pattern matches a cone snail protein, but at the residue level the same
+stretch shares 8 of 59 residues with it. The hp match puts the read's residues 7-41 against
+residues 31-65 of the cone snail protein Q9BPA0; DIAMOND aligns the same part of the read
+to the C-terminal end (residues 62-77) of its tarantula best hit, P0DM66. This is the kind of chance pattern match the shuffled
+copies measure (hp k = 30 keeps 0.06% of shuffled reads), not evidence that the rule found
+the family.
 """)
 
 code(r"""

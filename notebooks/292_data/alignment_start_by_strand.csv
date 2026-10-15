@@ -1,0 +1,5 @@
+label,strand,n_reads,median_read_length,median_alignment_start,share_alignment_starts_in_first_400
+family,forward,9467,747.0,222.0,0.9869018696524771
+family,reverse,11803,737.0,353.0,0.8618995170719309
+non_family,forward,82389,730.0,211.0,0.9832501911662964
+non_family,reverse,78837,728.0,337.0,0.8634397554447785

@@ -2,35 +2,36 @@
 
 **Claims the data supports**
 
-1. In this tarantula venom gland run, no k-mer setting picks out Conotoxin-family (PF02950)
-   reads from the other reads at N = 400. With the genus held out, the rule's best setting
-   (hp k = 30, m = 1, the highest sensitivity at a false keep of 5% or less) keeps 117 of
-   21_270 family reads (0.55%) and 0.41% of non-family reads. Every setting with a false
-   keep of 5% or less keeps under 4% of family reads, at any N (SF2 and the settings table).
-   The decision rule (at least 50% of family reads at a false keep of 5% or less) is not
-   met, and the idea stops here for this sample.
-2. The settings that keep many family reads keep many other toxin reads too. Protein k = 7,
-   m = 2 keeps 39.1% of family reads and 25.0% of non-family reads. It keeps 0.11% of
-   shuffled reads, so the matches are real sequence, not chance. They are not specific to
-   the family.
-3. The shared k-mers are mostly signal peptides. At protein k = 10, the most common
-   reference k-mer, IIAGLALLSV (residues 6-15 of P0DM66, inside its signal peptide), is in
-   the first 400 bases of 5_403 family reads and 16_397 non-family reads. Tarantula toxin
-   precursors from different families start with similar signal peptides, and the start of
-   a forward-strand cDNA read is where the signal peptide is.
-4. The brief's Pfam truth splits one toxin subfamily: B1P1F1 carries PF02950, its paralog
-   B1P1F2 in the same UniProt subfamily does not. With a truth based on UniProt subfamilies
-   instead (69_778 family reads), the conclusion is the same (F1 b).
-5. DNA mapping to the coding sequences of other tarantula genera keeps 28 of 21_270 family
-   reads (0.13%) at N = 400, and none once tarantulas are held out. DNA mapping does fail
-   across genera here, as the background predicted. The translated rule does not do better
-   in a way that matters, because it does not separate the family from the other toxins.
-6. With all tarantula proteins removed from the reference (cone snail and sea anemone
-   proteins only), DNA mapping keeps no family read, and DIAMOND blastx on the 400-base
-   chunk keeps 267 of 21_270 (1.3%) at a false keep of 2.1%. No k-mer setting, at any N,
-   keeps family reads at more than twice its rate on non-family reads, except settings that
-   keep 3 family reads or fewer. Settings that keep many family reads keep even more of the
-   rest (dayhoff k = 10, m = 1, N = 400: 52.5% of family reads, 64.5% of non-family reads).
+1. The decision rule is not met. With the genus held out, the rule's best setting (hp
+   k = 30, m = 1: the highest sensitivity among settings that keep 5% or fewer of
+   non-family reads) keeps 117 of 21_270 family reads (0.55%) and 0.41% of non-family
+   reads. Every setting that keeps 5% or fewer of non-family reads keeps under 4% of family
+   reads, at every N.
+2. In this sample, no rule separates Conotoxin-family (PF02950) reads from the other reads
+   at the read start, the slow comparator included. DIAMOND blastx of the 400-base chunk
+   keeps 62.8% of family reads and 56.7% of non-family reads with the genus held out. The
+   test therefore cannot tell a good fast rule from a bad one with this family and these
+   labels. That is the main result, more than any statement about k-mers.
+3. The reason is shared precursor sequence. At protein k = 10 the reference k-mer found in
+   the most read starts, IIAGLALLSV, is residues 6-15 of the signal peptide of P0DM66; it
+   is in the first 400 bases of 5_403 family reads and 16_397 non-family reads. Pfam's
+   PF02950 match on these tarantula proteins covers the signal peptide and propeptide too
+   (B1P1F1 residues 3-74 of 79), so the family label itself rests partly on sequence that
+   tarantula toxins of other families share.
+4. The labels are unstable. The Pfam truth splits one UniProt subfamily: B1P1F1 carries
+   PF02950, its paralog B1P1F2 does not. Relabelling by UniProt subfamily moves 48_508
+   reads into the family (69_778 in all) and leaves the conclusion unchanged (F1 b).
+5. There is a weak protein-level signal at the genus hold-out: protein k = 9 or 10, m = 1,
+   keeps family reads at about 1.7 times its non-family rate (k = 10: 25.9% against
+   14.9%). Protein k = 7, m = 2 keeps 39.1% against 25.0%. These rates are far above the
+   shuffled rates (0.11% or less), so the matches are real sequence; they are not specific
+   to the family.
+6. With all tarantula proteins removed (cone snail and sea anemone proteins only), the DNA
+   rule keeps no family read and DIAMOND on the chunk keeps 267 of 21_270 (1.3%) at a false
+   keep of 2.1%. No k-mer setting, at any N, keeps family reads at more than twice its
+   non-family rate, except settings that keep 3 family reads or fewer. Settings that keep
+   many family reads keep more of the rest (dayhoff k = 10, m = 1, N = 400: 52.5% against
+   64.5%).
 7. The decision is fast: the median time per read is 0.15 to 0.21 ms in Python, more than
    3_000 times below the 800 ms chunk (SF3).
 
@@ -38,24 +39,35 @@
 
 - That a translated reduced-alphabet rule "reaches where DNA mapping does not". It keeps
   more family reads than DNA mapping only in settings that keep as many unrelated reads.
-- Anything about the genus hold-out as a test of distance: Swiss-Prot has no *Selenobrachys*
-  entry, so the genus hold-out removes nothing, and its reference holds 8 proteins from
-  three other tarantula genera.
+- That DNA mapping fails across genera. minimap2 keeps 0.13% of family reads but 4.6% of
+  non-family reads at N = 400; that pattern points at the labels (paralogs on both sides),
+  and was not looked into further.
+- Anything about distance from the reference. Swiss-Prot has no *Selenobrachys* entry, so
+  the genus hold-out removes nothing; its reference holds 8 proteins from three other
+  tarantula genera.
 - Anything about other families, tissues or newer chemistry. One run, one family, R9 flow
   cell, basecaller unknown. 93% of family reads (19_772 of 21_270) have the same best hit,
   so the reads test few distinct genes, and the 95% intervals over reads are too narrow.
-- Why minimap2 maps 4.6% of non-family reads but 0.13% of family reads to the family's coding
-  sequences at N = 400. This was not looked into.
+- That the read start is always the 5' end of the transcript. This is PCR cDNA, so about
+  half the reads start with adapter, poly(T) and 3' UTR (the example read in section 9 does).
+  The DIAMOND alignment of the full read still starts within the first 400 bases for 98.7%
+  of forward-strand and 86.2% of reverse-strand family reads (section 3), because these
+  precursors are short (79 to 97 residues for the 8 tarantula entries in the reference) inside reads
+  with a median length of about 740 bases.
 
 **Figures**: F1 `figures/292/f1_sensitivity_by_holdout_N400_PF02950.png`; F2
 `figures/292/f2_by_chunk_genus_holdout_PF02950.png`; shared k-mers
 `figures/292/fig_shared_kmers_protein_k10_N400_PF02950.png`; SF1 to SF4 and the family and
 truth figures in `figures/292/`.
 
-**Next smallest experiment**: build the k-mer set from the mature toxin only (drop the
-Swiss-Prot SIGNAL and PROPEP residues of each reference protein) and rescore the same reads
-at N = 400 and 800, genus hold-out. This removes the shared signal peptides that cause the
-false keeps. If no setting then keeps half the family reads at a false keep of 5% or less,
-the read start does not carry enough family-specific sequence for any rule, translated or
-not. Cost: one run of `score_chunks.py` with two new reference files, about one hour on the
-laptop.
+**Next smallest experiment**: before scoring any fast rule, find a target the slow
+comparator can separate. For each candidate family in
+[`292_data/toxin_family_candidates.csv`](292_data/toxin_family_candidates.csv), and for a
+few non-toxin families with many reads, run DIAMOND blastx of the 400-base chunks against
+that family's Swiss-Prot proteins (the step that already ran for PF02950) and keep only
+families where it keeps at least half the family reads at a false keep of 5% or less, with
+family membership checked against UniProt subfamilies as well as Pfam. Then rescore the
+k-mer rule on those families only. Cost: about 10 minutes of DIAMOND per family on the
+laptop; no new download. If no family passes, this sample cannot test the idea, and the
+next step is a different sample, for example a tissue where the target family does not
+share its signal peptide with most other transcripts.

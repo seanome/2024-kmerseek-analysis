@@ -32,7 +32,7 @@ FALSE_KEEP_MAX = 0.05
 # length in bases; an ejected read costs the chunk plus this many bases of lost pore time.
 EJECT_LOST_BASES = 500
 F1_FLOOR = 1e-4  # zero is drawn here on the log axis, with an x
-HOLDOUT_LABEL = {"ii": "genus held out", "iii": "family held out"}
+HOLDOUT_LABEL = {"ii": "genus held out", "iii": "tarantulas held out"}
 ALPHABET_ORDER = ["hp", "dayhoff", "protein"]
 ALPHABET_CLASSES = {"protein": 20, "dayhoff": 6, "hp": 2}
 
@@ -40,12 +40,12 @@ ALPHABET_CLASSES = {"protein": 20, "dayhoff": 6, "hp": 2}
 RULE_COLOUR = {
     "k-mer rule": pf.OKABE_ITO["blue"],
     "DNA rule (minimap2)": pf.OKABE_ITO["vermillion"],
-    "DIAMOND blastx (slow bound)": pf.OKABE_ITO["bluish_green"],
+    "DIAMOND blastx of the chunk": pf.OKABE_ITO["bluish_green"],
 }
 RULE_MARKER = {
     "k-mer rule": "o",
     "DNA rule (minimap2)": "s",
-    "DIAMOND blastx (slow bound)": "^",
+    "DIAMOND blastx of the chunk": "^",
 }
 SHUFFLED_COLOUR = "#999999"
 
@@ -172,7 +172,7 @@ def comparator_table(tr: pl.DataFrame, chunks=(200, 400, 800)) -> pl.DataFrame:
                     "paf",
                 ),
                 (
-                    "DIAMOND blastx (slow bound)",
+                    "DIAMOND blastx of the chunk",
                     f"{DATA}/comparators/N{n}.diamond_{lvl}.tsv",
                     "tsv",
                 ),
@@ -231,7 +231,7 @@ def best_setting(tab: pl.DataFrame, holdout: str = "ii", n: int = 400) -> dict:
     ).row(0, named=True)
 
 
-HOLDOUT_SHORT = {"ii": "genus", "iii": "family"}
+HOLDOUT_SHORT = {"ii": "genus", "iii": "tarantula (Theraphosidae)"}
 
 
 def verdict(holdout: str, n: int, best_row: dict, dna_row: dict, n_family: int) -> str:
@@ -380,7 +380,7 @@ def fig_rules_by_holdout(panels: list[tuple[pl.DataFrame, str]], n: int, path: s
                 + {
                     "k-mer rule": -0.04,
                     "DNA rule (minimap2)": 0.0,
-                    "DIAMOND blastx (slow bound)": 0.04,
+                    "DIAMOND blastx of the chunk": 0.04,
                 }[rule]
             )
             sens = np.array(r["sensitivity"])
@@ -426,7 +426,7 @@ def fig_rules_by_holdout(panels: list[tuple[pl.DataFrame, str]], n: int, path: s
             [0, 1],
             [
                 "genus held out\n(440 proteins; 8 from\nother tarantula genera)",
-                "family held out\n(432 proteins; cone snails\nand one sea anemone)",
+                "tarantulas held out\n(432 proteins; cone snails\nand one sea anemone)",
             ],
         )
         ax.set_xlim(-0.4, 1.4)
@@ -784,15 +784,15 @@ def fig_family_choice(fam: pl.DataFrame, comp: pl.DataFrame, path: str):
     ax.set_xlabel("Proteins in the reference")
     hs = [plt.Rectangle((0, 0), 1, 1, color=v) for v in fam_colour.values()]
     hs += [
-        plt.Rectangle((0, 0), 1, 1, color="black"),
-        plt.Rectangle((0, 0), 1, 1, color="black", alpha=0.45),
+        plt.Rectangle((0, 0), 1, 1, color="#555555"),
+        plt.Rectangle((0, 0), 1, 1, color="#555555", alpha=0.45),
     ]
     labs = [
         "Theraphosidae (tarantulas)",
         "Conidae (cone snails)",
         "Metridiidae (sea anemone)",
-        "upper bar: genus held out (ii)",
-        "lower bar: family held out (iii)",
+        "darker bar: genus held out (ii)",
+        "lighter bar: tarantulas held out (iii)",
     ]
     ax.legend(
         hs, labs, loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False, ncol=1
@@ -808,7 +808,11 @@ def fig_truth(tr: pl.DataFrame, tr_sub: pl.DataFrame, path: str):
     (b) identity of each Pfam-truth family read to its best hit."""
     fig, axs = pf.figure(pf.TWO_COLUMN_MM * 0.7, 55, ncols=2)
     order = ["family", "non_family", "unassigned"]
-    names = {"family": "family", "non_family": "non-family", "unassigned": "no hit"}
+    names = {
+        "family": "family",
+        "non_family": "non-family",
+        "unassigned": "unassigned (no hit)",
+    }
     ax = axs[0]
     top = 0
     for t, marker, fill, lab in [
@@ -857,7 +861,7 @@ def fig_truth(tr: pl.DataFrame, tr_sub: pl.DataFrame, path: str):
 def main_result(
     tab: pl.DataFrame, comp_tab: pl.DataFrame, tr: pl.DataFrame, n: int = 400
 ):
-    """F1 rows (best k-mer setting picked at hold-out ii, fixed; DNA rule; slow bound) at both
+    """F1 rows (best k-mer setting picked at hold-out ii, fixed; DNA rule; DIAMOND on the chunk) at both
     hold-outs, with Wilson intervals and verdict sentences for both hold-outs."""
     best = best_setting(tab, "ii", n)
     k = tab.filter(
@@ -873,7 +877,7 @@ def main_result(
             lambda s: (
                 f"{s['rule']}"
                 + (f", {best['setting']}" if s["rule"] == "k-mer rule" else "")
-                + f"; false keep {fk[(s['rule'], 'ii')]:.1%} (genus), {fk[(s['rule'], 'iii')]:.1%} (family)"
+                + f"; false keep {fk[(s['rule'], 'ii')]:.1%} (genus held out), {fk[(s['rule'], 'iii')]:.1%} (tarantulas held out)"
             ),
             return_dtype=pl.Utf8,
         )
@@ -1041,7 +1045,7 @@ def print_hero(best: dict, tr: pl.DataFrame, n: int = 400) -> None:
         print(f"{i + 1:>5} {chunk[i:i + 80]}")
     off = int(frame[1]) - 1
     print(
-        f"\nframe {frame} translation (residue 1 = chunk base {off + 1} {'of the reverse complement' if frame[0] == '-' else ''}):"
+        f"\nframe {frame} translation (residue 1 starts at read base {len(chunk) - off if frame[0] == '-' else off + 1}{', reading toward base 1 on the reverse strand' if frame[0] == '-' else ''}):"
     )
     for i in range(0, len(prot), 60):
         print(f"{i + 1:>5} {prot[i:i + 60]}")
