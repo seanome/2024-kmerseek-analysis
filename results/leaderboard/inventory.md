@@ -55,7 +55,8 @@ The first three are the most likely to add rows next.
 ## How values were read
 
 - QfO region and dark-set Fmax tables: `split == "all"`, stratum axes all, identity, pLDDT,
-  feature type, feature length bin; metrics fmax, fmax_precision, fmax_recall, auprc,
+  feature type, feature length bin; metrics fmax, fmax_precision, fmax_recall,
+  fmax_threshold (the tool-score cut where fmax is reached), auprc,
   recall_reachable, median_iou_tp, family_fmax; `n_instances` = n_truth_instances.
 - ELM: the summary's counts, and each count over its denominator in the same file.
 - Deep twilight: per (tool, setting, family) the number of correct calls, wrong carries and

@@ -71,6 +71,9 @@ QFO_METRICS = [
     "fmax",
     "fmax_precision",
     "fmax_recall",
+    # The score cut at which fmax is reached (tau in CAFA); its unit is the tool's own
+    # score, so it compares only within one tool and setting.
+    "fmax_threshold",
     "auprc",
     "recall_reachable",
     "median_iou_tp",
