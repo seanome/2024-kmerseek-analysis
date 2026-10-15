@@ -96,6 +96,10 @@ def test_build_compute_keeps_latest_completion_and_skips_cached():
     assert out.height == 1
     row = out.row(0, named=True)
     assert row["cpu_h"] == pytest.approx(1.0)  # 0.5 h x 200 %
+    assert row["n_completed_runs"] == 2
+    assert row["cpu_h_per_1000_queries_min"] == pytest.approx(2.0)
+    assert row["cpu_h_per_1000_queries_max"] == pytest.approx(8.0)  # 1 h x 400 %
+    assert row["gpu_h"] == 0.0 and row["gpu"] == "none"
     assert row["cpu_h_per_1000_queries"] == pytest.approx(2.0)
     assert row["cpu_h_reserved"] == pytest.approx(4.0)  # 0.5 h x 8 cpus
     assert row["provenance"] == "measured" and row["cpu_h_reported"] is None
@@ -118,3 +122,51 @@ def test_coverage_marks_missing_bins_not_run():
     assert "| identity | 20-30% | ■ |" in md
     assert "| identity | 0-20% | □ |" in md
     assert "| feature_length_bin | whole_protein | □ |" in md
+
+
+def test_prostt5_gets_query_3di_gpu_hours():
+    rows = [
+        {
+            "process": "QFO:prostt5Search",
+            "tag": "human_vs_fly",
+            "status": "COMPLETED",
+            "hash": "a",
+            "complete": "2026-09-05 10:00:00.000",
+            "cpus": "16",
+            "realtime": "1m",
+            "%cpu": "100%",
+            "peak_rss": "1 GB",
+            "trace_file": "t",
+        },
+        {
+            "process": "QFO:prostt5Db",
+            "tag": "human-38fdd87d",
+            "status": "COMPLETED",
+            "hash": "b",
+            "complete": "2026-09-01 10:00:00.000",
+            "cpus": "8",
+            "realtime": "36s",
+            "%cpu": "99%",
+            "peak_rss": "2.7 GB",
+            "trace_file": "t",
+        },
+        {
+            "process": "QFO:prostt5Db",
+            "tag": "fly",
+            "status": "COMPLETED",
+            "hash": "c",
+            "complete": "2026-09-01 11:00:00.000",
+            "cpus": "8",
+            "realtime": "1h",
+            "%cpu": "99%",
+            "peak_rss": "2.7 GB",
+            "trace_file": "t",
+        },
+    ]
+    out = blt.build_compute(pl.DataFrame(rows), n_queries=1000)
+    row = out.row(0, named=True)
+    assert row["gpu_h"] == pytest.approx(
+        0.01
+    )  # 36 s on one GPU; the fly build is ignored
+    assert row["gpu_h_per_1000_queries"] == pytest.approx(0.01)
+    assert row["gpu"] == "1 GPU, query 3Di step"

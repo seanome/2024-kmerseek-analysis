@@ -92,7 +92,7 @@ SEARCH_PROCESSES = {
     "prostt5Search": ("prostt5", "3di_from_seq"),
     "hmmscanAnnotate": ("hmmscan", "direct"),
 }
-HARDWARE = "Stanford Sherlock, SLURM partition hns, CPU nodes, no GPU"
+HARDWARE = "Stanford Sherlock, SLURM partition hns; searches on CPU only"
 
 
 def sha256(path: Path) -> str:
@@ -165,15 +165,33 @@ def read_traces(paths: list[Path]) -> pl.DataFrame:
 
 
 def build_compute(traces: pl.DataFrame, n_queries: int) -> pl.DataFrame:
-    """Latest COMPLETED search task per (tool, setting, species), with its cost.
+    """One row per (tool, setting, species): the search task's cost, from the traces.
 
-    A task re-run on a later day (code change, resume after a crash) appears once per run;
-    the newest completion is the one the metrics were scored from. CACHED rows are not
-    counted: they are a reuse of an earlier row, not a second run.
+    Some searches completed more than once (a re-run after a code change or a crash, with
+    a new task hash). The trace does not say which run wrote the calls that were scored,
+    so the newest completion gives the headline numbers and every completed run is kept in
+    the spread: n_completed_runs, cpu_h_per_1000_queries_min/_max, peak_rss_gb_max.
+    CACHED rows are not counted: they reuse an earlier row, they are not a second run.
+
+    GPU: no search used one. ProstT5 also needs its 3Di letters predicted for the query
+    proteins, which ran on one GPU (prostt5Db on the human query set, --gres=gpu:1). That
+    step's run time is counted as gpu_h on every ProstT5 row, since every search needs the
+    queries converted. The same step for each relative's proteome is a one-off per
+    relative and is not counted, like every other tool's database build.
     """
     rows = []
+    gpu_steps = []
     for r in traces.filter(pl.col("status") == "COMPLETED").iter_rows(named=True):
         process = r["process"].split(":")[-1]
+        if process == "prostt5Db" and (r["tag"] or "").startswith("human"):
+            gpu_steps.append(
+                {
+                    "complete": r["complete"],
+                    "gpu_h": duration_seconds(r["realtime"]) / 3600,
+                    "task_hash": r["hash"],
+                }
+            )
+            continue
         key = tool_setting_species(process, r["tag"] or "")
         if key is None:
             continue
@@ -194,19 +212,36 @@ def build_compute(traces: pl.DataFrame, n_queries: int) -> pl.DataFrame:
                 "peak_rss_gb": size_gb(r["peak_rss"]),
             }
         )
-    df = pl.DataFrame(rows)
-    latest = df.sort("complete", descending=True).unique(
-        ["tool", "setting", "species"], keep="first", maintain_order=True
+    keys = ["tool", "setting", "species"]
+    df = pl.DataFrame(rows).with_columns(
+        # CPU time actually used: wall time x average CPU utilisation.
+        (pl.col("realtime_s") * pl.col("cpu_percent") / 100 / 3600).alias("cpu_h")
     )
+    spread = df.group_by(keys).agg(
+        pl.len().alias("n_completed_runs"),
+        (pl.col("cpu_h").min() * 1000 / n_queries).alias("cpu_h_per_1000_queries_min"),
+        (pl.col("cpu_h").max() * 1000 / n_queries).alias("cpu_h_per_1000_queries_max"),
+        pl.col("peak_rss_gb").max().alias("peak_rss_gb_max"),
+    )
+    latest = df.sort("complete", descending=True).unique(
+        keys, keep="first", maintain_order=True
+    )
+    gpu = max(gpu_steps, key=lambda g: g["complete"]) if gpu_steps else None
+    is_prostt5 = pl.col("tool") == "prostt5"
     return (
-        latest.with_columns(
-            # CPU time actually used: wall time x average CPU utilisation.
-            (pl.col("realtime_s") * pl.col("cpu_percent") / 100 / 3600).alias("cpu_h"),
+        latest.join(spread, on=keys, how="left")
+        .with_columns(
             (pl.col("realtime_s") * pl.col("cpus_requested") / 3600).alias(
                 "cpu_h_reserved"
             ),
-            pl.lit(0.0).alias("gpu_h"),
-            pl.lit("none").alias("gpu"),
+            pl.when(is_prostt5 & pl.lit(gpu is not None))
+            .then(pl.lit(gpu["gpu_h"] if gpu else 0.0))
+            .otherwise(0.0)
+            .alias("gpu_h"),
+            pl.when(is_prostt5 & pl.lit(gpu is not None))
+            .then(pl.lit("1 GPU, query 3Di step"))
+            .otherwise(pl.lit("none"))
+            .alias("gpu"),
             pl.lit(n_queries).alias("n_queries"),
             pl.lit("measured").alias("provenance"),
             pl.lit(HARDWARE).alias("hardware"),
@@ -220,8 +255,11 @@ def build_compute(traces: pl.DataFrame, n_queries: int) -> pl.DataFrame:
             (pl.col("cpu_h_reserved") * 1000 / pl.col("n_queries")).alias(
                 "cpu_h_reserved_per_1000_queries"
             ),
+            (pl.col("gpu_h") * 1000 / pl.col("n_queries")).alias(
+                "gpu_h_per_1000_queries"
+            ),
         )
-        .sort("tool", "setting", "species")
+        .sort(keys)
     )
 
 
