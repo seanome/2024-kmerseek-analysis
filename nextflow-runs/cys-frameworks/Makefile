@@ -39,7 +39,39 @@ SHERLOCK_DATA ?= /scratch/users/olgabot/data/cys-frameworks
 SWISSPROT ?= $(DATA)/uniprot_sprot.fasta.gz
 TABLES    := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../../tables/cys_frameworks
 
-.PHONY: help check-kmerseek build-image push-image data sync-data stub pilot run-phylum run-genus running require-sherlock require-cys2-memory
+.PHONY: help check-kmerseek build-image push-image data sync-data stub pilot run-phylum run-genus running require-sherlock require-cys2-memory watch stop
+
+# --- The Nextflow head runs as a SLURM job -------------------------------------------------
+# Sherlock kills any login-node process after ten CPU-minutes, and a login node that
+# reboots takes a foreground head with it. scripts/nf-head (shared with deep-twilight and
+# qfo-pfam-region-benchmark) submits the head as its own job, runs it in tmux on that
+# node, and attaches you read-only to the live task table. Ctrl-b d detaches and leaves
+# it running; `make watch RUN=pilot` attaches again; `make stop RUN=pilot` stops it so it
+# cancels its own task jobs.
+#
+# hns, not normal: hns's partition QOS allows 7 days under `--qos=normal`, and the
+# public normal partition stops at 2 days.
+SLURM_ACCOUNT  ?= ayeletv
+HEAD_PARTITION ?= hns
+HEAD_QOS       ?= normal
+HEAD_CPUS      ?= 2
+HEAD_MEM       ?= 8G
+# The pilot's slowest path is a cys2 task through all three attempts (4 + 8 + 12 h), plus
+# time queued for an hns or bigmem node. The full runs are 3 or more references.
+HEAD_TIME      ?= $(if $(filter pilot,$(MAKECMDGOALS)),2-00:00:00,7-00:00:00)
+export NXF_OPTS := -Xms512m -Xmx6g
+
+# One job name and tmux session per run folder, so watch and stop find the right head
+# when the pilot and a full run are both up.
+RUN          ?= pilot
+HEAD_NAME     = nf-cys-$(1)
+MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
+HEAD_SUBMIT   = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(HEAD_PARTITION) \
+                HEAD_QOS=$(HEAD_QOS) HEAD_TIME=$(HEAD_TIME) \
+                HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
+                HEAD_SESSION=$(call HEAD_NAME,$(1)) HEAD_JOBNAME=$(call HEAD_NAME,$(1)) \
+                HEAD_HINT_WATCH="make watch RUN=$(1)" HEAD_HINT_STOP="make stop RUN=$(1)" \
+                $(MAKEFILE_DIR)/../../scripts/nf-head
 
 # Stops a target that runs kmerseek when it is started anywhere but Sherlock.
 require-sherlock:
@@ -68,6 +100,8 @@ help:
 	@echo "                    ON SHERLOCK: 3 held-out references (one per phylum)"
 	@echo "  make run-genus CYS2_MEMORY_GB=<from the pilot>"
 	@echo "                    ON SHERLOCK: one per genus with >= 20 queries"
+	@echo "  make watch RUN=pilot   ON SHERLOCK: attach to a run's live task table"
+	@echo "  make stop RUN=pilot    ON SHERLOCK: stop a run; it cancels its own jobs"
 	@echo "  make running      ON SHERLOCK: what is in the queue"
 	@echo ""
 
@@ -146,7 +180,7 @@ pilot: require-sherlock
 	mkdir -p pilot
 	cd pilot && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile sherlock -resume \
+	  $(call HEAD_SUBMIT,pilot) nextflow run ../main.nf -profile sherlock -resume \
 	    --pipeline_image $(IMAGE_REMOTE) \
 	    --swissprot_fasta $(SWISSPROT) \
 	    --reference_entries $(DATA)/reference_entries.csv \
@@ -175,7 +209,7 @@ run-phylum: require-sherlock require-cys2-memory
 	mkdir -p run-phylum
 	cd run-phylum && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile sherlock -resume \
+	  $(call HEAD_SUBMIT,run-phylum) nextflow run ../main.nf -profile sherlock -resume \
 	    --pipeline_image $(IMAGE_REMOTE) \
 	    --cys2_memory_gb $(CYS2_MEMORY_GB) \
 	    --swissprot_fasta $(SWISSPROT) \
@@ -187,7 +221,7 @@ run-genus: require-sherlock require-cys2-memory
 	mkdir -p run-genus
 	cd run-genus && \
 	  ml load biology nextflow && \
-	  nextflow run ../main.nf -profile sherlock -resume \
+	  $(call HEAD_SUBMIT,run-genus) nextflow run ../main.nf -profile sherlock -resume \
 	    --pipeline_image $(IMAGE_REMOTE) \
 	    --cys2_memory_gb $(CYS2_MEMORY_GB) \
 	    --swissprot_fasta $(SWISSPROT) \
@@ -195,6 +229,18 @@ run-genus: require-sherlock require-cys2-memory
 	    --level genus \
 	    --genus_min_queries 20 \
 	    --outdir $(CURDIR)/run-genus/results
+
+# The live task table of the head running in RUN's folder (pilot, run-phylum, run-genus).
+watch: require-sherlock
+	@jid=$$(squeue -u $$USER -h -n $(call HEAD_NAME,$(RUN)) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 [ -n "$$jid" ] || { echo "no $(call HEAD_NAME,$(RUN)) job is running"; squeue -u $$USER -h -n $(call HEAD_NAME,$(RUN)); exit 1; }; \
+	 exec srun --jobid=$$jid --overlap --pty tmux -S /tmp/nf-head-$$jid attach -r -t $(call HEAD_NAME,$(RUN))
+
+# Sends the head TERM; nf-head turns that into Ctrl-C, and Nextflow cancels its task jobs.
+stop: require-sherlock
+	@jid=$$(squeue -u $$USER -h -n $(call HEAD_NAME,$(RUN)) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
+	 [ -n "$$jid" ] || { echo "no $(call HEAD_NAME,$(RUN)) job is running"; exit 1; }; \
+	 scancel --signal=TERM --batch $$jid && echo "asked job $$jid to shut down"
 
 # --- What is running --------------------------------------------------------------------
 ## Every Nextflow run with jobs in the SLURM queue, then one row per job of the runs under
