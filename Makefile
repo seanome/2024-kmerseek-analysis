@@ -69,8 +69,10 @@ leaderboard-tables:
 ## Region pile-up figure: the zebrafish Pfam call tables of the same run, the truth tables,
 ## the two FASTA files, and per-residue pLDDT of the human AlphaFold models
 ## (scripts/leaderboard_residue_plddt.py, run on Sherlock with srun; see its docstring).
-## Copied to $(LEADERBOARD_DATA)/pileup/{calls,truth,fasta} on 2026-10-15.
+## Copied to $(PILEUP_DATA)/{calls,truth,fasta} on 2026-10-15.
+## Its own folder, so a change to LEADERBOARD_DATA's default (PR 148) does not move it.
+PILEUP_DATA ?= $(HOME)/data/qfo-pfam-region-benchmark/midi-plus-ladder-2026-09-13/pileup
 leaderboard-pileup:
 	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_pileup.py \
-	  --pileup-dir $(LEADERBOARD_DATA)/pileup --species zebrafish \
+	  --pileup-dir $(PILEUP_DATA) --species zebrafish \
 	  --outdir results/leaderboard/pileup
