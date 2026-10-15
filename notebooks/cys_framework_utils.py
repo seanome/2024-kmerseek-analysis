@@ -495,10 +495,15 @@ def held_out_reference(
 #: peptides of 28 residues or more are searchable. cys2 carries 1 bit per position and
 #: cys_hp3 about 1.58, so the cys2 k-sizes run higher to reach comparable bits per k-mer.
 #:
-#: Low-complexity masking is off everywhere. Under cys2 a stretch with no cysteine is a run
-#: of one letter, so the mask would drop exactly the spacers the framework is made of.
+#: The low-complexity mask (kmerseek --remove-low-complexity) is on for cys2 and off for
+#: cys_hp3. Under cys2 it drops only the k-mer that is one letter throughout: in practice
+#: the one with no cysteine, which is 70-83% of a cys2 reference's k-mers. Every k-mer
+#: holding a cysteine, and so every k-mer that can carry a framework, is kept. Without the
+#: mask, kmerseek's lambda-K fit on 200 reference sequences met about 2-3 x 10^11 seed hits
+#: and was killed at every memory up to 1.4 TB (Sherlock pilot, 2026-10-15). A query of at
+#: least k residues always keeps a k-mer, since every query has 4 or more cysteines.
 SETTINGS = [
-    {"alphabet": "cys2", "ksize": k, "scaled": 1, "extend": False, "mask": False}
+    {"alphabet": "cys2", "ksize": k, "scaled": 1, "extend": False, "mask": True}
     for k in (12, 16, 20, 24, 28)
 ] + [
     {"alphabet": "cys_hp3", "ksize": k, "scaled": 1, "extend": False, "mask": False}

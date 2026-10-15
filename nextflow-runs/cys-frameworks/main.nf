@@ -17,8 +17,9 @@
  * framework.
  *
  * One combination of alphabet, k-size, scaled, extension penalty and mask is a "setting"
- * (assets/settings.csv). Masking is off everywhere: under cys2 a stretch with no cysteine
- * is a run of one letter, so the mask would drop the spacers the framework is made of.
+ * (tables/cys_frameworks/settings.csv). The low-complexity mask is on for cys2 and off for
+ * cys_hp3. Under cys2 it drops only the k-mer with no cysteine in it; every k-mer holding a
+ * cysteine is kept. See SETTINGS in notebooks/cys_framework_utils.py for why.
  *
  * A reference is Swiss-Prot with one clade removed, so no hit can come from the query's
  * own genus (--level genus) or its own phylum (--level phylum). A true positive is a
@@ -62,12 +63,12 @@ params.queries_per_framework = 0      // at most this many queries per framework
 params.pipeline_image = null
 params.hmmer_image    = null
 
-// First-attempt memory, in GB, for a cys2 kmerseek index or search task. Each retry
-// doubles it. 180 is sized for the pilot's reference (27_570 entries: every toxin plus
-// 20_000 other entries); see indexGb below for what was measured. A full
-// reference is about 21 times larger, so the run-* targets in the Makefile make you set it
-// from the pilot's peak_rss rather than inherit this one.
-params.cys2_memory_gb = 180
+// First-attempt memory, in GB, for a cys2 kmerseek index task. Each retry doubles it.
+// 112 is sized for the pilot's reference (27_570 entries: every toxin plus 20_000 other
+// entries); see indexGb below for how. A full reference is about 21 times larger, so the
+// run-* targets in the Makefile make you set it from the pilot's peak_rss rather than
+// inherit this one.
+params.cys2_memory_gb = 112
 
 /*
  * Memory for one kmerseek index task, in GB.
@@ -86,6 +87,12 @@ params.cys2_memory_gb = 180
  *                k-mer made only of non-cysteine letters is 70-83% of the reference's
  *                k-mers (5.3-6.7 million copies), so the 200 fit sequences meet about
  *                2-3 x 10^11 seed hits. No node holds that; more memory is not the fix.
+ *
+ * So cys2 runs with the low-complexity mask, which drops that one k-mer. The masked fit
+ * meets 7.2-7.5 x 10^8 seed hits at every k from 12 to 28 (counted in Python on the pilot
+ * reference, same 200-sequence sample size). cys_hp3 k9 held 4.5 x 10^8 regions in 49.8 GB,
+ * about 110 bytes each, and a fit holds at most one region per seed hit, so masked cys2
+ * should peak at or below about 82 GB. It asks 112 GB, which still fits a normal node.
  * cys_hp3 asks the measured peak with about a third more on top. A full reference is
  * about 21 times the pilot's, so the run-* targets need these remeasured or scaled.
  */
@@ -96,9 +103,10 @@ def indexGb(alphabet, ksize, attempt) {
 }
 
 // Memory for one kmerseek search task, in GB. cys_hp3 searches of the pilot's 59 queries
-// peaked at 0.6-2.7 GB on Sherlock (2026-10-15). No cys2 search has run.
+// peaked at 0.6-2.7 GB on Sherlock (2026-10-15). No cys2 search has run; with the mask the
+// pilot's queries meet 0.8-5.5 x 10^7 seed hits, a tenth of the masked fit, so 16 GB.
 def searchGb(alphabet, attempt) {
-    (alphabet == 'cys2' ? params.cys2_memory_gb : 8) * (1 << (attempt - 1))
+    (alphabet == 'cys2' ? 16 : 8) * (1 << (attempt - 1))
 }
 
 // Sherlock partition that has nodes with this much memory: normal nodes hold about
@@ -179,16 +187,16 @@ process indexReference {
 
     input:
     tuple val(level), val(excluded), path(reference), path(truth), path(queries),
-          path(query_table), val(alphabet), val(ksize), val(moltype), val(scaled)
+          path(query_table), val(alphabet), val(ksize), val(moltype), val(scaled), val(mask)
 
     output:
     tuple val(level), val(excluded), val(alphabet), val(ksize), val(moltype),
           path("index.db"), path(truth), path(queries), path(query_table), emit: index
 
     script:
-    // --remove-low-complexity is a bare flag on this kmerseek, and it is left off on
-    // purpose: under cys2 a stretch holding no cysteine is a run of one letter, so the
-    // mask would drop exactly the spacers a cysteine framework is made of.
+    // --remove-low-complexity is a bare flag on this kmerseek. It is stored in the index,
+    // so the search applies the same mask to the queries without being told.
+    def mask_flag = mask ? '--remove-low-complexity' : ''
     """
     set -uo pipefail
     kmerseek index \\
@@ -196,7 +204,7 @@ process indexReference {
         --output index.db \\
         --ksize ${ksize} \\
         --alphabet ${moltype} \\
-        --scaled ${scaled}
+        --scaled ${scaled} ${mask_flag}
     """
 
     stub:
@@ -384,7 +392,8 @@ workflow {
         .fromPath(params.settings)
         .splitCsv(header: true)
         .map { row ->
-            tuple(row.alphabet, row.ksize as Integer, row.moltype, row.scaled as Integer)
+            tuple(row.alphabet, row.ksize as Integer, row.moltype, row.scaled as Integer,
+                  row.mask == 'true')
         }
 
     indexes = indexReference(references.combine(settings)).index
