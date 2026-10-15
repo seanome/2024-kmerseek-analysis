@@ -15,7 +15,9 @@
 #
 # The Lint workflow runs the same hooks on the notebooks a PR changes.
 
-files: ^notebooks/
+# Each hook names the files it covers. A top-level `files:` would be combined with every
+# hook's own, and the one that was here (^notebooks/) kept the PNG hook from ever seeing
+# figures/, where most PNGs are, so CI caught full-colour figures the hook had skipped.
 
 repos:
   - repo: local
@@ -25,6 +27,7 @@ repos:
         entry: python scripts/check_notebooks.py
         language: python
         types: [jupyter]
+        files: ^notebooks/
       - id: png-256-colours
         name: save PNGs and notebook images with 256 colours
         entry: python scripts/shrink_png.py
@@ -39,6 +42,7 @@ repos:
     rev: 26.5.1
     hooks:
       - id: black-jupyter
+        files: ^notebooks/
         exclude: |
           (?x)^notebooks/(
               004-rewrite-multisearch-parser-to-polars
@@ -53,5 +57,6 @@ repos:
     rev: 1.9.1
     hooks:
       - id: nbqa-ruff-check
+        files: ^notebooks/
         args: [--select=F821]
         additional_dependencies: [ruff==0.16.9]
