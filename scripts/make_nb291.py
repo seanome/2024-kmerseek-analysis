@@ -333,10 +333,12 @@ For each group, the mean I of each alphabet is divided by the mean I of the 20 a
 is the share of resamples in which the alphabet has the highest mean I of all 19.
 
 How to read the figure: one row per alphabet, most classes at the top. A mark right of the
-dashed line keeps more evidence per position than the 20 amino acids for those pairs. Open
-circles are the biased view (pairs picked by the 20 amino acid identity of the same positions
-measured); diamonds and filled circles are the two views without that bias. Vermillion rows are
-the six alphabets with two classes.
+dashed line keeps more evidence per position than the 20 amino acids for those pairs. Read the
+diamonds first: they are the fair test, on top of each row. Filled circles (all identities) are
+the second view without bias. The small grey open circles at the bottom of each row are the
+biased view (pairs picked by the 20 amino acid identity of the same positions measured), drawn
+only to show where notebook 273's 1.13 came from; they are not a result. Vermillion: the six
+alphabets with two classes; blue: the rest.
 """)
 
 code(r"""
@@ -437,10 +439,11 @@ axs += [fig.add_subplot(gs[1, i], sharey=axs[0]) for i in range(1, len(panels))]
 for ax in axs[1:]:
     ax.tick_params(labelleft=False)
 COL = {True: pf.OKABE_ITO["vermillion"], False: pf.OKABE_ITO["blue"]}
-MARK = {  # one shape per way of choosing the pairs
-    "low_same": dict(marker="o", mfc="white", dy=-0.27),
-    "low_half": dict(marker="D", mfc=None, dy=0.0),
-    "all": dict(marker="o", mfc=None, dy=0.27),
+BIASED = pf.GREY
+MARK = {  # one shape per way of choosing the pairs; the fair test sits on top of each row
+    "low_half": dict(marker="D", mfc=None, dy=-0.27, ms=3.2),
+    "all": dict(marker="o", mfc=None, dy=0.0, ms=2.6),
+    "low_same": dict(marker="o", mfc="white", dy=0.27, ms=2.0),  # biased: grey, not read
 }
 y = np.arange(len(ALPHABETS))
 for ax, g in zip(axs, panels):
@@ -452,10 +455,10 @@ for ax, g in zip(axs, panels):
         t = res.filter((pl.col("group") == gname) & (pl.col("mode") == k))
         t = t.with_columns(pl.col("alphabet").replace_strict({a: i for i, a in enumerate(ALPHABETS)}).alias("y"))
         for r in t.iter_rows(named=True):
-            c = COL[r["classes"] == 2]
+            c = BIASED if k == "low_same" else COL[r["classes"] == 2]
             if k != "low_same":
                 ax.plot([r["lo"], r["hi"]], [r["y"] + mk["dy"]] * 2, color=c, lw=0.6)
-            ax.plot(r["ratio_to_20aa"], r["y"] + mk["dy"], marker=mk["marker"], ms=2.6, ls="none",
+            ax.plot(r["ratio_to_20aa"], r["y"] + mk["dy"], marker=mk["marker"], ms=mk["ms"], ls="none",
                     mec=c, mfc=mk["mfc"] or c, mew=0.6)
     ax.set_xscale("log")
     ax.xaxis.set_major_formatter(mpl.ticker.FuncFormatter(lambda v, _: f"{v:g}"))
@@ -468,9 +471,11 @@ for ax, g in zip(axs, panels):
 axs[0].set_yticks(y, [f"{a} ({N_CLASSES[a]})" for a in ALPHABETS])
 axs[0].invert_yaxis()
 handles = [
-    Line2D([], [], marker="o", mfc="white", mec="black", ls="none", label=MODES["low_same"] + " (biased)"),
-    Line2D([], [], marker="D", color="black", ls="-", lw=0.6, label=MODES["low_half"] + ", 95% interval"),
-    Line2D([], [], marker="o", color="black", ls="-", lw=0.6, label=MODES["all"] + ", 95% interval"),
+    Line2D([], [], marker="D", ms=3.2, color="black", ls="-", lw=0.6,
+           label="Read this: " + MODES["low_half"] + ", 95% interval"),
+    Line2D([], [], marker="o", ms=2.6, color="black", ls="-", lw=0.6, label=MODES["all"] + ", 95% interval"),
+    Line2D([], [], marker="o", ms=2.0, mfc="white", mec=BIASED, ls="none",
+           label="Biased, not a result: " + MODES["low_same"]),
     Patch(color=COL[True], label="two classes"),
     Patch(color=COL[False], label="three or more classes (number in brackets)"),
     Line2D([], [], color="black", ls="--", lw=0.5, label="1 = same evidence as the 20 amino acids"),
@@ -497,8 +502,9 @@ stamp(
 
 md(r"""
 **Why the open circles and the diamonds differ.** Olga asked on PR 99 (2026-10-15) why
-`dayhoff6`, `wwmj5` and `gbmr4` look better than the 20 amino acids in the figure. Their open
-circles are right of the line in the Pfam panel; their diamonds are left of it. The table below
+`dayhoff6`, `wwmj5` and `gbmr4` look better than the 20 amino acids in the figure. Their grey
+open circles (the biased view) are right of the line in the Pfam panel; their diamonds are left
+of it. The table below
 gives, for Pfam seed pairs at 20% identity or less, each alphabet's I in both views.
 
 A pair goes in the 20% or less group when few of its positions hold the same residue. In the
@@ -533,10 +539,11 @@ md(r"""
 
 Section 2 used one low-identity group. Here every Pfam identity bin is shown, as the ratio
 I(alphabet) / I(20 aa), in the two ways of grouping. The bins are by the 20 amino acid identity
-of the whole pair (left) or of the half not measured (right). The right panel is the one without
-the picking effect.
+of the half not measured (left) or of the whole pair (right). The left panel is the one without
+the picking effect; the right panel is shown only to explain notebook 273's 1.13.
 
-How to read it: each cell is one alphabet in one identity bin. Teal: more evidence per position
+How to read it: read the left panel; the right one is faded because it is biased. Each cell is
+one alphabet in one identity bin. Teal: more evidence per position
 than the 20 amino acids. Brown: less. White: within 10% of them (0.90 to 1.11). The colour has
 9 steps; the number in the cell is the exact ratio.
 """)
@@ -579,16 +586,20 @@ fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, ncols=2, sharey=True)
 STEPS = np.array([-2, -1.5, -1, -0.5, -0.15, 0.15, 0.5, 1, 1.5, 2])  # log2 of the ratio
 cmap = plt.get_cmap("BrBG", len(STEPS) - 1)
 norm = mpl.colors.BoundaryNorm(STEPS, cmap.N)
-for ax, col, title in zip(axs, ("ratio_same_positions", "ratio_other_half"),
-                          ("grouped and measured on the same positions (biased)",
-                           "grouped on one half, measured on the other")):
+for ax, col, title in zip(axs, ("ratio_other_half", "ratio_same_positions"),
+                          ("Read this: grouped on one half,\nmeasured on the other",
+                           "Biased, not a result: grouped and\nmeasured on the same positions (faded)")):
+    fair = col == "ratio_other_half"
     M = np.array([[bins.filter((pl.col("alphabet") == a) & (pl.col("identity") == b))[col][0]
                    for b in BIN_LABELS] for a in ALPHABETS])
-    im = ax.imshow(np.log2(M).clip(-2, 2), cmap=cmap, norm=norm, aspect="auto")
+    # the biased panel is faded so the eye goes to the fair test first
+    shown = ax.imshow(np.log2(M).clip(-2, 2), cmap=cmap, norm=norm, aspect="auto", alpha=1 if fair else 0.3)
+    if fair:
+        im = shown  # the colour bar is drawn from the unfaded panel
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):
-            ax.text(j, i, f"{M[i, j]:.2f}", ha="center", va="center", fontsize=5,
-                    color="white" if abs(np.log2(M[i, j])) > 1 else "black")
+            ink = ("white" if abs(np.log2(M[i, j])) > 1 else "black") if fair else "#555555"
+            ax.text(j, i, f"{M[i, j]:.2f}", ha="center", va="center", fontsize=5, color=ink)
     ax.set_xticks(range(len(BIN_LABELS)), BIN_LABELS)
     ax.set_xlabel("Identity (20 amino acids) of the positions used for grouping")
     ax.set_title(title)
@@ -604,9 +615,9 @@ stamp(
     fig, FIG / "291_evidence_ratio_by_identity_19_alphabets_pfam_seed.png",
     tools=TOOLS,
     title="Pfam seed pairs: evidence per aligned position against the 20 amino acids, by identity",
-    hypothesis=("Without the picking effect (right), an alphabet that keeps clearly more evidence for "
+    hypothesis=("Without the picking effect (left), an alphabet that keeps clearly more evidence for "
                 "distant homologs (over 1.11 times the 20 amino acids) is teal in the <=20% column."),
-    conclusion=(f"<=20%, right panel: no teal cell; {n_above} of {len(ALPHABETS) - 1} alphabets above 1; best "
+    conclusion=(f"<=20%, left panel: no teal cell; {n_above} of {len(ALPHABETS) - 1} alphabets above 1; best "
                 f"{low.sort('ratio_other_half', descending=True)['alphabet'][0]} "
                 f"({low['ratio_other_half'].max():.2f}x); {HP} "
                 f"{low.filter(pl.col('alphabet') == HP)['ratio_other_half'][0]:.2f}x."),
