@@ -45,10 +45,10 @@
   "residue_plddt.tsv.gz": "d85bc64e5cf2d3a758454c600ebc3d07b4fd33b76e224b40d768805ba5827d1f"
  },
  "outputs": {
-  "regions.parquet": "68f4541fc0bddaed7eb5053970e1cbd405a49ac517917b00eb7b806180581ef1",
-  "calls.parquet": "413c6e4acad44b931d526be3644ad0bd017acb2772833ad2f1a3a77add122d50"
+  "regions.parquet": "e97701d2fcb601babe25c7d5c6c82760ea19e460e9bc1d555fe5f8f69cb4d6d8",
+  "calls.parquet": "41bc1f6db7bf54f00370b11db2ffed61031d90a42895aa1697be26fc449ea958"
  },
  "n_regions": 2435,
- "n_regions_without_plddt": 140,
+ "n_regions_without_plddt": 196,
  "n_calls": 653857
 }

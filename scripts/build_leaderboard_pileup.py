@@ -93,7 +93,30 @@ def region_plddt(regions: pl.DataFrame, residue_plddt: Path) -> pl.DataFrame:
     """Mean pLDDT over each region's residues, from the F1 model of each protein."""
     with gzip.open(residue_plddt, "rt") as fh:
         pr = pl.read_csv(fh, separator="\t", schema_overrides={"plddt": pl.Float64})
-    pr = pr.filter(pl.col("fragment") == 1).select("accession", "residue", "plddt")
+    # A model of a different sequence version must not lend its pLDDT to this one. Proteins
+    # up to 2,700 residues have one AlphaFold model covering the whole sequence, so its
+    # length must equal protein_length; longer proteins only have the first 1,400-residue
+    # piece (F1) here, which must not run past the protein's end. Anything else: no pLDDT.
+    model_len = (
+        pr.filter(pl.col("fragment") == 1)
+        .group_by("accession")
+        .agg(pl.col("residue").max().alias("model_len"))
+    )
+    plen = regions.select("accession", "protein_length").unique()
+    ok = (
+        plen.join(model_len, on="accession", how="inner")
+        .filter(
+            pl.when(pl.col("protein_length") <= 2700)
+            .then(pl.col("model_len") == pl.col("protein_length"))
+            .otherwise(pl.col("model_len") <= pl.col("protein_length"))
+        )
+        .select("accession")
+    )
+    pr = (
+        pr.filter(pl.col("fragment") == 1)
+        .join(ok, on="accession", how="semi")
+        .select("accession", "residue", "plddt")
+    )
     joined = (
         regions.select("row_id", "accession", "true_start", "true_end")
         .join(pr, on="accession", how="inner")
@@ -226,7 +249,7 @@ def main() -> None:
             (pl.col("call_end") >= pl.col("true_start") - FLANK)
             & (pl.col("call_start") <= pl.col("true_end") + FLANK)
         )
-        .group_by("tool", "setting", "row_id", "call_start", "call_end")
+        .group_by("tool", "setting", "row_id", "pfam_id", "call_start", "call_end")
         .agg(pl.col("score").max(), pl.col("is_tp").any(), pl.len().alias("n_copies"))
         .sort("tool", "setting", "row_id", "call_start", "call_end")
     )
