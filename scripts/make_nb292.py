@@ -106,17 +106,20 @@ md(r"""
 The SRA was searched for Oxford Nanopore transcriptome runs released from 2021 on, from a
 venom gland or a tunicate (exact queries in
 [`292_data/sra_queries.txt`](292_data/sra_queries.txt)). A venomous marine animal was
-preferred. The marine venomous animals found are cnidarians sequenced as the whole animal
-or as eggs (the sea anemone *Exaiptasia diaphana*, SRR32136522, 2_157_359 reads, direct
-RNA; the corals *Pocillopora damicornis* and *Platygyra daedalea*; *Nematostella
-vectensis* eggs), not venom glands. A whole cnidarian dilutes its toxins among all other
-transcripts, so a venom-gland run was picked instead. The largest runs in the list are
-honeybee whole bodies and larvae, and the king cobra run is pooled organs. Of the runs whose
-sample record says "venom gland", SRR32537183
-has the most reads (8_425_614). Its kit, SQK-PCS111 (2021), is newer than the
-SQK-DCS109 kit of the only other venom-gland run of similar size, SRR33222190 (the
-tarantula *Pterinochilus murinus*, 3_867_987 reads). Both runs used R9 flow cells. R10
-flow cells, which have a lower error rate, were not found.
+preferred. The sample records of 18 runs were read (second table below): the chosen run,
+the other venom-gland and tarantula runs, the marine cnidarian runs, the king cobra run, and
+every run in the search with more reads than the chosen one. The marine venomous animals
+found were cnidarians sequenced as the whole animal or as eggs (the sea anemone *Exaiptasia
+diaphana*, SRR32136522, 2_157_359 reads; the corals *Pocillopora damicornis* and *Platygyra
+daedalea*; *Nematostella vectensis* eggs), not venom glands. A whole cnidarian dilutes its
+toxins among all other transcripts, so a venom-gland run was picked instead. None of the 10
+runs larger than SRR32537183 is from a venom gland (whole bodies, gut, mixed tissues, body
+wall muscle), and the king cobra run is pooled organs. Of the runs whose record says
+"venom gland", SRR32537183 has the most reads (8_425_614); the other, SRR33222190 (the
+tarantula *Pterinochilus murinus*), has 3_867_987. Their records name kit SQK-PCS111 with an
+R9 flow cell, and kit SQK-DCS109 with flow cell FLO-PRO002, an R9.4.1 cell. Only 5 of the 18
+records name a flow cell, all R9 types; none names an R10 flow cell. Records that do not name
+one were not checked further, so an R10 run among them cannot be ruled out.
 
 Every download is listed in the table below. The SRA file came from NCBI's AWS mirror,
 because ENA served the FASTQ at 160 kB/s.
@@ -128,6 +131,13 @@ runs = pl.concat([pl.read_csv(f"{DATA_292}/sra_runinfo_query1_venom_or_tunicate.
 print(f"{runs.height} distinct runs from the two SRA queries")
 print(runs.with_columns(pl.col("spots").cast(pl.Int64)).sort("spots", descending=True)
       .select("Run", "ReleaseDate", "ScientificName", "spots", "avgLength", "Model", "BioProject", "SampleName").head(12))
+recs = pl.read_csv(f"{DATA_292}/sra_sample_records.csv", infer_schema_length=0)
+print("Sample records read (NCBI SRA XML via EDirect, fetched", recs["fetched"][0] + "):")
+print(recs.select("run", "species", "tissue", "dev_stage", "instrument", "library_kit_in_record",
+                  "flow_cell_in_record", "n_reads"))
+print("records naming a flow cell:", recs.filter(pl.col("flow_cell_in_record").is_not_null()).height, "of", recs.height)
+for r in recs.filter(pl.col("tissue").str.to_lowercase() == "venom gland").iter_rows(named=True):
+    print(r["run"], "design description:", r["design_description"])
 dl = pl.read_csv(f"{DATA_292}/downloads.tsv", separator="\t")
 print(dl)
 """)
@@ -181,8 +191,9 @@ Why a tarantula toxin carries a cone snail family. Pfam's own description of PF0
 one line, "Conotoxins are small snail toxins that block ion channels". On the tarantula
 proteins the match covers almost the whole precursor, signal peptide and propeptide
 included: residues 3-74 of 79 on B1P1F1, 2-72 of 87 on B1P1F7 and 2-73 of 79 on P0DM66
-(InterPro API, 2026-10-15). In B1P1F1 the signal peptide is residues 1-19 and the
-propeptide 20-44 (Swiss-Prot). So membership in this family rests partly on the signal
+(InterPro API, fetched 2026-10-15; all 8 tarantula proteins are in the table below). In
+B1P1F1 the signal peptide is residues 1-19 and the propeptide 20-44 (Swiss-Prot features,
+printed below). So membership in this family rests partly on the signal
 peptide and propeptide, which section 4 shows are shared with tarantula toxins of other
 families.
 
@@ -198,6 +209,12 @@ print(refc)
 refc.write_csv(f"{DATA_292}/reference_counts_{u.PFAM}_sprot_2026_03.csv")
 comp = pl.read_csv(f"{DATA_292}/reference_composition_{u.PFAM}_sprot_2026_03.csv")
 print(comp)
+ipr = pl.read_csv(f"{DATA_292}/interpro_pf02950_matches.csv")
+print("Where PF02950 matches the 8 tarantula proteins in reference (ii) (InterPro API, fetched", ipr["fetched"][0] + "):")
+print(ipr.select("accession", "match_start", "match_end", "protein_length"))
+feats = pl.read_csv(f"{DATA_292}/reference_features_{u.PFAM}_sprot_2026_03.csv")
+print("Swiss-Prot features of those proteins:")
+print(feats.filter(pl.col("accession").is_in(ipr["accession"].to_list())).sort("accession", "start"))
 fig = u.fig_family_choice(fam, comp, f"{FIG}/fig_family_choice_sprot_2026_03")
 """)
 
@@ -217,11 +234,18 @@ read when its best hit carries PF02950 (the Pfam cross-reference in the Swiss-Pr
 a non-family read when its best hit does not, and unassigned when it has no hit.
 
 A second truth from the species' own transcriptome was not possible. GenBank has a
-transcriptome assembly of this same animal (TSA GLNU00000000, isolate RR2-11,
-2_737 contigs), but it carries no protein annotations.
+transcriptome shotgun assembly of this same animal (GLNU00000000, isolate RR2-11; table
+below), but no protein annotations: an Entrez protein search for *Selenobrachys*
+returned only cytochrome c oxidase subunit I fragments (printed below).
 """)
 
 code(r"""
+tsa = pl.read_csv(f"{DATA_292}/tsa_selenobrachys.csv")
+print("Selenobrachys transcriptome assemblies in GenBank (EDirect, fetched", tsa["fetched"][0] + "):")
+print(tsa.select("accession", "title", "created"))
+prot = pl.read_csv(f"{DATA_292}/protein_selenobrachys.csv")
+print("Every Selenobrachys protein record in Entrez:", prot.height)
+print(prot.select("accession", "title", "length"))
 lab = tr.group_by("label").agg(n_reads=pl.len()).sort("label")
 print(lab)
 fam_reads = tr.filter(pl.col("label") == "family")
@@ -395,12 +419,13 @@ at its chance rate. A rate of zero is drawn at the lowest tick.
 md(r"""
 ## 6. Decision time
 
-Time per decision in Python 3.13 on one core of an Apple M4 Max laptop, measured inside
+Time per decision in Python on one core of the laptop described in the cell below, measured inside
 `score_chunks.py` around `decide.decide()` (translation, encoding and set look-ups). The
 reference k-mer set is built once, before any read, and is not timed.
 """)
 
 code(r"""
+print(open(f"{DATA_292}/compute_machine.txt").read())
 times = (u.scores().filter((pl.col("copy") == 0) & (pl.col("holdout") == "ii"))
          .pipe(u.with_requested_chunk).filter(pl.col("chunk_bases_requested") == 400)
          .group_by("alphabet", "k")

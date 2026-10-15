@@ -40,3 +40,4 @@ for N in 200 400 800; do
   for L in ii iii; do "$HERE/run_comparators.sh" "$D/chunks/chunks_N${N}.fasta" "$D/ref/PF02950" "$L" "$D/comparators/N${N}"; done
 done
 "$PY" "$HERE/reference_features.py" "$SPROT_DAT" "$D/ref/PF02950/ref_i.fasta" "$HERE/../../notebooks/292_data/reference_features_PF02950_sprot_2026_03.csv"
+"$PY" "$HERE/fetch_record_facts.py" "$HERE/../../notebooks/292_data"
