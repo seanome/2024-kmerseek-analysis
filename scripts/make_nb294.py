@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate notebooks/292_linked_hp_word_pairs_kill_test_pfam_seed.ipynb."""
+"""Generate notebooks/294_linked_hp_word_pairs_kill_test_pfam_seed.ipynb."""
 
 import json
 from pathlib import Path
@@ -19,12 +19,17 @@ def code(source):
 
 
 md(r"""
-# 292. Two short linked HP words instead of one long one: a kill test on Pfam seed pairs
+# 294. Two short linked HP words instead of one long one: a kill test on Pfam seed pairs
 
-**Result:** not a pass. At 20–30% identity the best linked setting finds 5.6 percentage
-points more true pairs than a single 8-letter seed (paired 95% interval 2.4 to 9.4). The
-rule asked for 10. Its key also matches by chance about 55 times as often. By the rule this
-is neither a pass nor a kill, and the kmerseek index stays as it is.
+**Result:** no. By the rule set before the run the answer was "neither PASS nor KILL",
+because its KILL condition can be read three ways (section 4a). By the sharper rule set
+after that run (section 4b), it is a KILL. At 20–30% identity and exactly FPR 0.001, the
+best linked setting finds 6.7 percentage points more true pairs than a single 8-letter
+seed (95% interval 3.2 to 8.9, families resampled), all of it below the 10 points asked
+for. The same seed plus a second extended segment, with no second exact word (B3), does as
+well (linked minus B3: −1.7, interval −3.0 to 0.5). The gain comes from scoring a second
+segment across an insertion, not from the second word in the key. The kmerseek index
+stays as it is.
 
 **Question.** [Notebook 232](232_mismatch_tolerant_seed_extend.ipynb) found that the longest
 exact run of matching hydrophobic/polar (HP) classes between true homologs at 20–30%
@@ -46,7 +51,7 @@ false-positive rate?
   *Gap*: the number of residues between the end of the first anchor and the start of the
   second, counted in each sequence. *Window*: the largest gap allowed (8, 16 or 32).
 - *Key* (a linked word pair; Sahlin 2021 calls it a strobemer, see
-  [`292_prior_art.md`](292_prior_art.md)): two anchors plus a gap rule. The gap is stored
+  [`294_prior_art.md`](294_prior_art.md)): two anchors plus a gap rule. The gap is stored
   exactly (`exact`: query gap = target gap), stored in 3-residue bins (`binned3`), or not
   stored (`none`: both gaps only have to fit the window, so the key can step over an
   insertion or deletion).
@@ -64,12 +69,16 @@ false-positive rate?
   *Recall*: the share of true pairs above the threshold. Higher recall is better.
 - *B1*: 232's 10-letter seed with extension. *B2*: an 8-letter seed with the same
   extension, so linking is charged against a shorter single seed as well as a longer one.
+  *B3* (added 2026-10-15): B2's seed plus the best second gap-free segment containing any
+  matching column within 32 residues, scored like a linked key, to tell a second exact word
+  apart from a second extended segment.
 - *Linked-pair score*: each shared key is extended with the same step from both anchors.
   A key's score is the best total of at most two non-overlapping gap-free segments that
   together contain both anchors. The pair's score is its best key. The no-extension score
   is the number of shared keys.
-- *Bootstrap interval*: resample the pairs with replacement 1,000 times, each true pair
-  with its own shuffled targets, recompute threshold and recall; the middle 95% of values.
+- *Bootstrap interval*: resample with replacement 1,000 times, each true pair with its own
+  shuffled targets, recompute threshold and recall; the middle 95% of values. Section 4a
+  resamples pairs one by one; section 4b resamples whole Pfam families.
 - *Gate 1*: a check, before anything new, that this code reproduces notebook 232's numbers.
 
 **Data, all from notebook 232**
@@ -95,6 +104,12 @@ other half.
 - KILL: no linked-pair setting beats the better of B1 and B2 in any identity bin outside
   the bootstrap interval.
 - Anything else: report, and do not touch the index.
+
+**Rule set after the first run** (2026-10-15, after section 4a's numbers were seen, because
+the KILL condition above can be read three ways): one paired gain of the chosen setting over
+the better single seed at 20–30% identity, at exactly FPR 0.001, with families resampled.
+PASS if its whole 95% interval is at or above 10 points; KILL if the whole interval is below
+10; unclear otherwise. Section 4b gives it, and says it is not a pre-registered test.
 
 **Decision this informs.** Whether kmerseek's index should store linked HP word pairs
 instead of single k-mers. On a pass the next step would be a one-page design note, not
@@ -129,20 +144,20 @@ pl.Config.set_tbl_cols(20)
 pl.Config.set_tbl_width_chars(220)
 
 FIG = Path("../figures")
-SCORES = Path("/Users/olga/data/pfam/292_linked_pairs_scores.parquet")
-SPECTRUM = Path("/Users/olga/data/pfam/292_linked_pairs_key_spectrum_swissprot.parquet")
+SCORES = Path("/Users/olga/data/pfam/294_linked_pairs_scores.parquet")
+SPECTRUM = Path("/Users/olga/data/pfam/294_linked_pairs_key_spectrum_swissprot.parquet")
 NB232 = Path("/Users/olga/data/pfam/232_seed_extend_scores.parquet")
 ALN = Path("/Users/olga/data/pfam/230_pfam_seed_pair_alignments.parquet")
 FPR = 1e-3
 N_BOOT = 1000
-SPLIT_SEED = 292
+SPLIT_SEED = 292  # kept from the first run, when this notebook was numbered 292; it fixes the halves
 SWISSPROT_PROTEINS = 572_970  # proteins in uniprot_sprot.fasta.gz, counted by the spectrum script
 BINS = lp.BINS
 
 # One colour per meaning, kept across all three figures.
 COLOR = {
     "B1": pf.OKABE_ITO["blue"],  # 232's 10-residue seed
-    "B2": pf.OKABE_ITO["sky_blue"],  # 8-residue seed
+    "B2": pf.OKABE_ITO["sky_blue"],  # 8-residue seed; B3 (same seed + second segment) shares it, open marker
     "linked": pf.OKABE_ITO["vermillion"],  # chosen linked pair, with extension
     "linked_count": pf.OKABE_ITO["orange"],  # chosen linked pair, key count only
     "exact": pf.OKABE_ITO["bluish_green"],  # Fig. 3 gap rules
@@ -165,7 +180,7 @@ print(f"{n_pairs:_} true pairs, {d.height - n_pairs:_} null comparisons")
 print(d.filter(pl.col("kind") == "real").group_by("identity_bin").len().sort("identity_bin"))
 
 LINKED = [lp.setting_name(*s) for s in lp.ALL_SETTINGS]
-COLS = ["B1_ext", "B2_ext", "seed10_count", "seed8_count"] + [f"{s}_ext" for s in LINKED] + [f"{s}_count" for s in LINKED]
+COLS = ["B1_ext", "B2_ext", "B3_ext", "seed10_count", "seed8_count"] + [f"{s}_ext" for s in LINKED] + [f"{s}_count" for s in LINKED]
 """)
 
 md(r"""
@@ -216,7 +231,7 @@ ax.set_ylabel("Recall at FPR 0.001 (%)")
 ax.set_ylim(0, 105)
 ax.legend(loc="lower right", fontsize=5.5)
 hc.finish_figure(
-    fig, FIG / "292_gate1_reproduce_nb232_pfam_seed.png", tools=hc.NO_TOOL,
+    fig, FIG / "294_gate1_reproduce_nb232_pfam_seed.png", tools=hc.NO_TOOL,
     hypothesis="This notebook's code gives notebook 232's seed-10 and seed-8 recall at a null false-positive rate of 0.001.",
     conclusion=(f"All 180,000 scores equal, so every dot sits in its circle. B1 (10-letter seed): " + ", ".join(f"{b} {100 * v:.1f}%" for b, v in zip(BINS, gate1['B1 here']))
                 + ". B2 (8-letter seed): " + ", ".join(f"{b} {100 * v:.1f}%" for b, v in zip(BINS, gate1['B2 here'])) + ". Higher is better."),
@@ -285,7 +300,7 @@ cb.set_label("Recall at 20–30% identity, FPR 0.001 (%), selection half")
 for n, ls_ in [("B1", "-"), ("B2", "--")]:
     cb.ax.axvline(100 * base_sel[n], color="black", lw=0.8, ls=ls_)
 hc.finish_figure(
-    fig, FIG / "292_sweep_recall_20_30_selection_half_pfam_seed.png", tools=hc.NO_TOOL,
+    fig, FIG / "294_sweep_recall_20_30_selection_half_pfam_seed.png", tools=hc.NO_TOOL,
     hypothesis="Some linked HP word pair recovers more 20-30% identity Pfam seed pairs than a single seed at null FPR 0.001.",
     conclusion=(f"Best (outlined): {plain(CHOSEN)}, {100 * sweep['recall_20_30'][0]:.1f}%, vs B1 {100 * base_sel['B1']:.1f}% (solid line on the colour bar) and B2 {100 * base_sel['B2']:.1f}% (dashed) on this half. "
                 f"Best with one key per position: {plain(CHOSEN_RAND)}, {100 * sweep.filter(pl.col('setting') == CHOSEN_RAND)['recall_20_30'][0]:.1f}%. Higher is better."),
@@ -407,7 +422,7 @@ for b in range(nblk):
             ax.annotate("insertion", xy=(col_ - s + 0.5, y0 + 0.5), xytext=(col_ - s + 0.5, y0 + 1.3), ha="center", fontsize=5.5,
                         arrowprops=dict(arrowstyle="->", lw=0.6, color="black"))
 hc.finish_figure(
-    fig, FIG / "292_example_linked_key_pfam_seed_pair.png", tools=hc.NO_TOOL,
+    fig, FIG / "294_example_linked_key_pfam_seed_pair.png", tools=hc.NO_TOOL,
     hypothesis="A key of two short anchors can add a second extended segment across an insertion, which a single seed cannot.",
     conclusion=(f"{E['family']}, {n_ident} of {int(aligned.sum())} aligned residues identical, {int(match.sum())} of {int(aligned.sum())} with the same HP class. "
                 f"B1 finds a seed here (longest shared HP run {run_e - run_s}), but its extension stops at the insertion with score {row_scores[COLS.index('B1_ext')]:.0f}, below the threshold of {thr_rep[COLS.index('B1_ext')]:.0f}. "
@@ -419,11 +434,15 @@ hc.finish_figure(
 md(r"""
 ## 4. The verdict, on the report half
 
-Recall at the 0.001 threshold per identity bin on the half not used for choosing, for B1,
-B2 and the chosen setting with and without extension. Bars are bootstrap 95% intervals
-(1,000 resamples of pairs; each true pair is resampled with its own shuffled targets and
-the threshold is recomputed each time). The verdict line under the figure is computed from
-the same numbers.
+### 4a. The rule set before the run
+
+Recall at the 0.001 threshold (232's rule: strictly above the threshold, so the null rate
+is at or below 0.001), with bootstrap intervals that resample pairs one by one. The KILL
+condition, "no setting beats the better of B1 and B2 outside the bootstrap interval", is
+checked for all 72 settings in three readings: (1) the setting's interval lies wholly above
+both baselines' intervals; (2) the setting's own value lies above them; (3) a paired
+bootstrap of the setting minus the better baseline excludes 0. The readings disagree, which
+is why section 4b restates the rule.
 """)
 
 code(r"""
@@ -467,18 +486,18 @@ cases = (pl.DataFrame(beats_loose, schema=["setting", "identity_bin"], orient="r
          .vstack(pl.DataFrame(beats_paired, schema=["setting", "identity_bin"], orient="row").with_columns(pl.lit("paired gain excludes 0").alias("reading"))))
 print(cases.sort("reading", "setting", "identity_bin"))
 if pass_rule:
-    VERDICT = "PASS"
+    VERDICT_PRE = "PASS"
 elif not (beats_strict or beats_loose or beats_paired):
-    VERDICT = "KILL"
+    VERDICT_PRE = "KILL"
 else:
-    VERDICT = "NEITHER PASS NOR KILL"
+    VERDICT_PRE = "NEITHER PASS NOR KILL"
 diff_boot = boot[:, b2030, jL] - boot[:, b2030, best_base]
 d_lo, d_hi = np.percentile(diff_boot, [2.5, 97.5])
-verdict_line = (f"Verdict: {VERDICT}. At 20-30% identity the chosen setting finds {100 * rec_r[b2030, jL]:.1f}% "
+verdict_pre_line = (f"Rule set before the run: {VERDICT_PRE}. At 20-30% identity the chosen setting finds {100 * rec_r[b2030, jL]:.1f}% "
                 f"[{100 * lo[b2030, jL]:.1f}-{100 * hi[b2030, jL]:.1f}] of true pairs, {base_name} {100 * rec_r[b2030, best_base]:.1f}% "
                 f"[{100 * lo[b2030, best_base]:.1f}-{100 * hi[b2030, best_base]:.1f}]: +{100 * gain:.1f} points, +10 needed. "
                 f"KILL needs no setting to beat the baselines in any bin; {len(beats_paired)} setting-bin cases do by a paired bootstrap. Report, and leave the index as it is.")
-print(verdict_line)
+print(verdict_pre_line)
 print(f"Only the strictest reading (one interval wholly above another) would call it KILL; the other two do not. Not PASS under any reading.")
 print(f"Gain of the chosen setting over {base_name} at 20-30%, paired bootstrap (same resamples): {100 * gain:.1f} points, 95% interval {100 * d_lo:.1f} to {100 * d_hi:.1f}")
 names = list(J)
@@ -493,27 +512,161 @@ for n in ["B2", "linked"]:
     print(f"{n}: " + "; ".join(f"threshold {t:.0f}: recall {100 * (col > t).mean():.1f}%, null rate {(nul > t).mean():.5f}"
                                for t in (thr_r[j] - 1, thr_r[j], thr_r[j] + 1)))
 
-fig, ax = pf.figure(pf.ONE_COLUMN_MM, 72, layout=None)
+# the three readings at 20-30% identity: each score's interval, and the paired gain
+fig, axes = pf.figure(pf.ONE_COLUMN_MM, 50, ncols=2, layout=None, gridspec_kw={"width_ratios": [1.3, 1]})
+ax = axes[0]
+for y, (n, mk, filled) in enumerate([("linked", "D", True), ("B2", "s", True), ("B1", "o", True)]):
+    j = J[n]
+    ax.errorbar(100 * rec_r[b2030, j], y, xerr=[[100 * (rec_r[b2030, j] - lo[b2030, j])], [100 * (hi[b2030, j] - rec_r[b2030, j])]],
+                color=COLOR[n], marker=mk, ms=4, lw=1.2, capsize=2)
+ax.set_yticks(range(3), ["chosen linked pair", "B2: 8-letter seed", "B1: 10-letter seed"], fontsize=5.5)
+ax.set_xlabel("Recall at 20–30% identity (%)\n232's threshold; pairs resampled")
+ax.set_title("Readings 1-2: the intervals overlap", fontsize=6)
+ax = axes[1]
+ax.errorbar(100 * gain, 0, xerr=[[100 * (gain - d_lo)], [100 * (d_hi - gain)]], color=COLOR["linked"], marker="D", ms=4, lw=1.2, capsize=2)
+ax.axvline(0, color="0.6", lw=0.5)
+ax.set_yticks([])
+ax.set_xlim(-2, 12)
+ax.set_xlabel("Paired gain over B2 (points)")
+ax.set_title("Reading 3: the gain excludes 0", fontsize=6)
+hc.finish_figure(
+    fig, FIG / "294_rule_before_run_three_readings_pfam_seed.png", tools=hc.NO_TOOL,
+    hypothesis="The rule set before the run gives one answer.",
+    conclusion=verdict_pre_line,
+    title="Rule set before the run: three readings at 20-30% identity", wrap=70,
+)
+""")
+
+md(r"""
+### 4b. The rule set after the first run (2026-10-15)
+
+This rule was written on 2026-10-15, after the numbers in 4a had been seen, because the
+rule above could be read three ways. Its result is not a pre-registered test; it says
+what the data already collected can and cannot rule out.
+
+- *One number*: the gain in recall at 20–30% identity of the chosen setting over the better
+  single seed (B1 or B2, whichever is higher on this half), from the same resamples
+  (a paired bootstrap).
+- *At exactly FPR 0.001*: scores are whole numbers, so 232's threshold calls fewer than
+  0.1% of null comparisons, by a different amount for each score. Here recall is read off
+  the line between the two thresholds either side of 0.001, which is what breaking ties at
+  random to call exactly 0.1% of the null gives.
+- *Resampled by family*: pairs from one Pfam family share sequence, so the bootstrap draws
+  whole families (with all their pairs and shuffled targets), 1,000 times.
+- *Cut-off*: 10 percentage points, the gain the original rule asked for.
+  PASS if the whole 95% interval is at or above 10. KILL if the whole interval is below
+  10: a gain worth an index change is ruled out. Unclear if it crosses 10: more pairs are
+  needed.
+- *B3 control*: B2's 8-letter seed plus the best second gap-free segment that contains any
+  matching column within 32 residues of the seed, scored as up to two segments exactly like
+  a linked key. If the linked key does no better than B3, the gain comes from scoring a
+  second segment, not from the second exact word.
+
+The recall figure shows every score with family-resampled intervals; the decision figure
+shows the paired gains against the 10-point line.
+""")
+
+code(r"""
+fam_codes = (d.filter(pl.col("kind") == "real").sort("pair_index")
+             .select(pl.col("family").cast(pl.Categorical).to_physical()).to_series().to_numpy())
+assert (np.sort(pidx_all) == pidx_all).all()  # score_arrays sorts by pair_index too
+fam_r = fam_codes[rep]
+NEW = {"B1": "B1_ext", "B2": "B2_ext", "B3": "B3_ext", "linked": f"{CHOSEN}_ext",
+       "linked_count": f"{CHOSEN}_count", "randstrobe": f"{CHOSEN_RAND}_ext"}
+JN = {n: i for i, n in enumerate(NEW)}
+idx_n = [COLS.index(c) for c in NEW.values()]
+rr, nr = real_r[:, idx_n], null_r[:, :, idx_n]
+thr_n, w_n, rec_n = lp.recall_at_exact_fpr(rr, nr, bin_r, FPR)
+boot_n = lp.bootstrap_recall_by_group(rr, nr, bin_r, fam_r, FPR, N_BOOT, seed=2)
+lo_n, hi_n = np.percentile(boot_n, 2.5, axis=0), np.percentile(boot_n, 97.5, axis=0)
+print(f"report half: {rr.shape[0]:_} true pairs in {np.unique(fam_r).size:_} Pfam families "
+      f"(largest family {np.bincount(fam_r).max()} pairs)")
+res_n = pl.DataFrame([
+    {"score": n, "column": NEW[n], "threshold": thr_n[j], "share_of_ties_called": w_n[j], "identity_bin": b,
+     "n_true_pairs": int((bin_r == i).sum()), "recall_exact_fpr": rec_n[i, j], "ci_low": lo_n[i, j], "ci_high": hi_n[i, j]}
+    for n, j in JN.items() for i, b in enumerate(BINS)
+])
+print("Recall at exactly FPR 0.001, family-resampled 95% intervals:")
+print(res_n.with_columns(pl.col("recall_exact_fpr", "ci_low", "ci_high", "share_of_ties_called").round(3)))
+
+DELTA = 0.10
+best_n = "B1" if rec_n[b2030, JN["B1"]] >= rec_n[b2030, JN["B2"]] else "B2"
+def paired(a, b):
+    g = rec_n[b2030, JN[a]] - rec_n[b2030, JN[b]]
+    lo_, hi_ = np.percentile(boot_n[:, b2030, JN[a]] - boot_n[:, b2030, JN[b]], [2.5, 97.5])
+    return g, lo_, hi_
+def call(lo_, hi_):
+    return "PASS" if lo_ >= DELTA else ("KILL" if hi_ < DELTA else "UNCLEAR")
+COMPARE = [("linked", best_n, "chosen linked pair minus the better single seed", True),
+           ("randstrobe", best_n, "randstrobe (one key per position) minus the better single seed", True),
+           ("linked", "B3", "chosen linked pair minus B3 (seed + second segment)", False),
+           ("B3", best_n, "B3 minus the better single seed", False)]
+gains = pl.DataFrame([{"comparison": lab, "gain": g, "ci_low": l, "ci_high": h,
+                       "call_vs_10_points": call(l, h) if decides else ("control: interval excludes 0" if l > 0 or h < 0 else "control: interval includes 0")}
+                      for a_, b_, lab, decides in COMPARE for g, l, h in [paired(a_, b_)]])
+print(f"Paired gains at 20-30% identity, exact FPR 0.001, family-resampled (better single seed here: {best_n}):")
+print(gains.with_columns((pl.col("gain", "ci_low", "ci_high") * 100).round(1)))
+VERDICT = gains["call_vs_10_points"][0]
+g0, l0, h0 = gains.row(0)[1:4]
+gb3, lb3, hb3 = gains.row(2)[1:4]
+verdict_line = (f"Verdict (rule set after the first run): {VERDICT}. At 20-30% identity and exactly FPR 0.001 the chosen setting "
+                f"finds {100 * g0:+.1f} points more true pairs than {best_n} (95% interval {100 * l0:+.1f} to {100 * h0:+.1f}, families resampled); "
+                f"the whole interval is {'below' if h0 < DELTA else 'not below'} the 10-point cut-off. "
+                f"Against B3, the same 8-letter seed plus a second segment with no second exact word, the gain is {100 * gb3:+.1f} ({100 * lb3:+.1f} to {100 * hb3:+.1f}).")
+print(verdict_line)
+
+# recall by identity bin
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 76, layout=None)
 x = np.arange(len(BINS))
-style = {"B1": ("B1: one 10-letter seed + extension", "o", True, "B1"), "B2": ("B2: one 8-letter seed + extension", "s", True, "B2"),
+style = {"B1": ("B1: one 10-letter seed + extension", "o", True, "B1"),
+         "B2": ("B2: one 8-letter seed + extension", "s", True, "B2"),
+         "B3": ("B3: 8-letter seed + a second segment", "s", False, "B2"),
          "linked": ("chosen linked pair + extension", "D", True, "linked"),
          "linked_count": ("chosen linked pair, keys counted, no extension", "D", False, "linked_count"),
          "randstrobe": ("one partner per position (randstrobe) + extension", "^", False, "linked")}
-off = {"B1": -0.2, "B2": -0.1, "linked": 0.0, "linked_count": 0.1, "randstrobe": 0.2}
+off = dict(zip(style, np.linspace(-0.25, 0.25, len(style))))
 for n, (lab, mk, filled, ckey) in style.items():
-    j = J[n]
-    ax.errorbar(x + off[n], 100 * rec_r[:, j], yerr=[100 * (rec_r[:, j] - lo[:, j]), 100 * (hi[:, j] - rec_r[:, j])], color=COLOR[ckey], marker=mk, ms=3,
-                mfc=COLOR[ckey] if filled else "white", lw=0.8, capsize=1.5, label=lab)
+    j = JN[n]
+    ax.errorbar(x + off[n], 100 * rec_n[:, j], yerr=[100 * (rec_n[:, j] - lo_n[:, j]), 100 * (hi_n[:, j] - rec_n[:, j])],
+                color=COLOR[ckey], marker=mk, ms=3, mfc=COLOR[ckey] if filled else "white", lw=0.8, capsize=1.5, label=lab)
 ax.set_xticks(x, BINS)
 ax.set_xlabel("Identity of the aligned pair")
-ax.set_ylabel("Recall at FPR 0.001 (%)\n(bars: 95% bootstrap interval)")
+ax.set_ylabel("Recall at exactly FPR 0.001 (%)\n(bars: 95% interval, families resampled)")
 ax.set_ylim(0, 102)
 ax.legend(loc="upper left", fontsize=4.8, title=f"Chosen: {plain(CHOSEN)}.\nTriangles: the same anchors and gap, one partner per position.", title_fontsize=4.8, alignment="left")
 hc.finish_figure(
-    fig, FIG / "292_recall_by_identity_report_half_pfam_seed.png", tools=hc.NO_TOOL,
-    hypothesis="The chosen linked HP word pair recovers at least 10 points more 20-30% identity Pfam seed pairs than the better single seed, at null FPR 0.001 per comparison.",
-    conclusion=verdict_line + " Higher is better.",
-    title="Report half: recall by identity, HP alphabet, FPR 0.001", wrap=70,
+    fig, FIG / "294_recall_by_identity_report_half_pfam_seed.png", tools=hc.NO_TOOL,
+    hypothesis="The chosen linked HP word pair finds more 20-30% identity Pfam seed pairs than a single seed, at exactly FPR 0.001 per comparison.",
+    conclusion=(f"20-30% identity: chosen {100 * rec_n[b2030, JN['linked']]:.1f}%, B3 {100 * rec_n[b2030, JN['B3']]:.1f}%, "
+                f"B2 {100 * rec_n[b2030, JN['B2']]:.1f}%, B1 {100 * rec_n[b2030, JN['B1']]:.1f}%, randstrobe {100 * rec_n[b2030, JN['randstrobe']]:.1f}%. Higher is better."),
+    title="Report half: recall by identity, HP alphabet, exactly FPR 0.001", wrap=70,
+)
+""")
+
+code(r"""
+# decision figure: paired gains against the 10-point line
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 58, layout=None)
+ys = np.arange(len(COMPARE))[::-1]
+for y, (row, (a_, b_, lab, decides)) in zip(ys, zip(gains.iter_rows(named=True), COMPARE)):
+    col = COLOR["linked"] if a_ != "B3" else COLOR["B2"]
+    mk = {"linked": "D", "randstrobe": "^", "B3": "s"}[a_]
+    filled = a_ == "linked"
+    ax.errorbar(100 * row["gain"], y, xerr=[[100 * (row["gain"] - row["ci_low"])], [100 * (row["ci_high"] - row["gain"])]],
+                color=col, marker=mk, ms=4, mfc=col if filled else "white", lw=1.2, capsize=2)
+    ax.text(-14.5, y + 0.28, f"{lab}: {row['call_vs_10_points']}", fontsize=5, va="bottom")
+ax.axvline(100 * DELTA, color="black", ls="--", lw=0.8)
+ax.axvline(0, color="0.6", lw=0.5)
+ax.text(100 * DELTA + 0.3, ys[0] + 0.75, "10-point cut-off", fontsize=5, va="center")
+ax.set_xlim(-15, 20)
+ax.set_ylim(-0.6, len(COMPARE) - 0.1)
+ax.set_yticks([])
+ax.spines["left"].set_visible(False)
+ax.set_xlabel("Paired gain in recall at 20–30% identity, exactly FPR 0.001 (points)\nbars: 95% interval, families resampled")
+hc.finish_figure(
+    fig, FIG / "294_decision_paired_gain_vs_10_points_pfam_seed.png", tools=hc.NO_TOOL,
+    hypothesis="A linked HP key gains at least 10 points of recall over a single seed (rule set after the first run).",
+    conclusion=verdict_line + " An interval wholly left of the dashed line is a KILL; wholly right, a PASS; across it, unclear.",
+    title="Decision: paired gains against the 10-point cut-off", wrap=75,
 )
 """)
 
@@ -588,7 +741,7 @@ axd["all"].set_ylabel("Expected chance key matches between two\nunrelated 131-re
 axd["rand"].set_yticklabels([])
 fig.text(0.5, -0.02, "Points: measured on Swiss-Prot. Lines: prediction. Each step down the y-axis is ten times fewer chance matches.", ha="center", fontsize=5.5)
 hc.finish_figure(
-    fig, FIG / "292_chance_key_matches_swissprot.png", tools=hc.NO_TOOL,
+    fig, FIG / "294_chance_key_matches_swissprot.png", tools=hc.NO_TOOL,
     title="Chance key matches: HP keys counted on Swiss-Prot",
     hypothesis="A key of two HP anchors of a letters each carries about 2a bits, plus the bits of any stored gap, so it matches by chance about as rarely as one word of that many letters.",
     conclusion=(f"Every key carries fewer bits than predicted (points above their lines); randstrobe keys lose 3 to 5 bits, because the hash rule ties the second anchor to the first. "
@@ -603,12 +756,13 @@ md(r"""
 """)
 
 code(r"""
+print(verdict_pre_line)
 print(verdict_line)
 print()
-print("Report half, recall at null FPR 0.001 (95% bootstrap interval):")
-for n in ["B1", "B2", "linked", "linked_count", "randstrobe"]:
-    j = J[n]
-    print(f"  {n:13s} {SHOW[n]:28s} " + "  ".join(f"{b} {100 * rec_r[i, j]:.1f} [{100 * lo[i, j]:.1f}-{100 * hi[i, j]:.1f}]" for i, b in enumerate(BINS)))
+print("Report half, recall at exactly FPR 0.001 (95% interval, families resampled):")
+for n in NEW:
+    j = JN[n]
+    print(f"  {n:13s} {NEW[n]:28s} " + "  ".join(f"{b} {100 * rec_n[i, j]:.1f} [{100 * lo_n[i, j]:.1f}-{100 * hi_n[i, j]:.1f}]" for i, b in enumerate(BINS)))
 print()
 print(f"False pairs per query at 0.001 per comparison against Swiss-Prot: {FPR * SWISSPROT_PROTEINS:.0f}")
 """)
@@ -620,49 +774,41 @@ matches: lower is better.
 1. **Gate 1 passed.** This notebook's code gives notebook 232's score on all 180,000
    comparisons and its seed-10 recall in every identity bin: 11.9%, 35.5%, 63.5%, 88.2% and
    98.6%.
-2. **Verdict: neither PASS nor KILL; the index stays as it is.** On the report half, the
-   chosen setting (every pair of 6-letter HP anchors up to 32 residues apart, gap not
-   stored) finds 43.5% (95% interval 39.3–47.4) of the 20–30% identity pairs. The 8-letter
-   seed (B2) finds 37.9% (33.7–41.9) and the 10-letter seed (B1) 35.6% (32.3–39.7). The gain
-   over B2 is 5.6 points (paired interval 2.4 to 9.4), short of the 10 points PASS needs.
-   KILL needs no setting to beat the better baseline in any bin. Read strictly (one
-   interval wholly above the other) none does, but a paired bootstrap finds setting–bin
-   cases that do (section 4 table), so KILL does not hold either.
-3. **The cost.** The chosen key matches by chance far more often than a single seed: about
-   3,896 chance key matches between two unrelated 131-residue proteins, against 70 for B2's
-   8-letter word and 18 for B1's 10-letter word (section 5). At database scale that is about
-   55 times B2's chance matches for 5.6 points of recall.
-4. **Where the gain comes from.** The winning setting keeps every anchor pair and stores no
-   gap, so it scores two short exact matches, each extended, that may sit on either side of
-   an insertion. It looks like BLAST's two-hit rule, which needs both hits on one diagonal,
-   loosened to allow an insertion between them. Whether the gain comes from the second
-   anchor or from adding a second extended segment was not separated. Counting shared keys
-   without extension finds 40.5% (37.6–43.7). With one key per position (randstrobe pairs of
-   6-letter anchors up to 32 apart, gap not stored), the version an index can afford, it
-   finds 40.0% (38.6–42.9), 2.2 points above B2 with a paired interval of −1.6 to 7.5: no
-   clear gain.
-5. **Bits, measured on Swiss-Prot.** Every HP key carries fewer bits than one per letter.
+2. **By the rule set before the run: neither PASS nor KILL** (section 4a). The chosen
+   setting (every pair of 6-letter HP anchors up to 32 residues apart, gap not stored)
+   gains 5.6 points over the 8-letter seed at 20–30% identity, short of 10, but the KILL
+   condition holds under only one of its three readings.
+3. **By the rule set after the run: KILL** (section 4b; set on 2026-10-15 after seeing
+   section 4a, so not a pre-registered test). At exactly FPR 0.001 with families
+   resampled, the gain is 6.7 points (95% interval 3.2 to 8.9): a gain of 10 points is
+   ruled out. The one-key-per-position version an index can afford gains 2.4 (−0.7 to 6.4).
+4. **The second exact word adds nothing.** B3, the same 8-letter seed plus the best second
+   segment within 32 residues, finds 47.6% at 20–30% identity against the linked key's
+   45.9% (linked minus B3: −1.7, interval −3.0 to 0.5). B3 gains 8.4 points over the plain
+   8-letter seed (4.0 to 10.9). So what helps is extending into a second segment across an
+   insertion, which needs no change to the index. kmerseek already chains matches across
+   small shifts (`--chain-max-shift`); whether that gives the same gain was not tested here.
+5. **The cost.** The chosen key gives about 3,896 chance key matches between two unrelated
+   131-residue proteins, against 70 for B2's 8-letter word and 18 for B1's 10-letter word
+   (section 5), 55 times B2's.
+6. **Bits, measured on Swiss-Prot.** Every HP key carries fewer bits than one per letter.
    Keys built from every anchor pair fall 0.5 to 1.6 bits short of that prediction.
    Randstrobe keys fall 2.8 to 5.2 bits short, because the hash rule ties the second anchor
-   to the first. The chosen key carries 11.5 bits (12 predicted); the randstrobe key 7.4 bits
-   and about 81 chance key matches, close to B2's 70.
-6. **Not a membrane effect.** The example pair in section 3 looks like a membrane-spanning
-   stretch, but the 709 report-half pairs at 20–30% identity found only by the linked key
-   are no more hydrophobic than the other 6,803 (median 43% of query residues in
-   `ACFILMVWY` in both), and they spread over many families (no family has more than 2).
-7. **Not shown here.** All numbers are per comparison, on each pair's own alignment, against
+   to the first.
+7. **Not a membrane effect.** The 709 report-half pairs at 20–30% identity found only by the
+   linked key are no more hydrophobic than the other 6,803 (median 43% of query residues in
+   `ACFILMVWY` in both), and no family has more than 2 of them.
+8. **Not shown here.** All numbers are per comparison, on each pair's own alignment, against
    a null that shuffles residues. That null breaks local HP patterns such as amphipathic
    helices and membrane runs, which unrelated real proteins keep, so it may be too easy for
-   an HP key; unrelated-family pairs were not tried as a null. A false-positive rate of
-   0.001 per comparison is about 573 false pairs per query against Swiss-Prot's 572,970
-   proteins, so a pass here would have been necessary, not sufficient. Not tested: database
-   false positives, chance key matches off the alignment's diagonal, SCOPe pairs, other
-   alphabets and mismatch scores, a full-alphabet BLAST ceiling on the same pairs, and
-   three anchors (only tried if two passed).
+   an HP key. A false-positive rate of 0.001 per comparison is about 573 false pairs per
+   query against Swiss-Prot's 572,970 proteins. Not tested: database false positives, chance
+   key matches off the alignment's diagonal, SCOPe pairs, other alphabets and mismatch
+   scores, a full-alphabet BLAST ceiling on the same pairs, and three anchors.
 """)
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
                                     "language_info": {"name": "python"}}, "nbformat": 4, "nbformat_minor": 5}
-out = Path(__file__).resolve().parents[1] / "notebooks" / "292_linked_hp_word_pairs_kill_test_pfam_seed.ipynb"
+out = Path(__file__).resolve().parents[1] / "notebooks" / "294_linked_hp_word_pairs_kill_test_pfam_seed.ipynb"
 out.write_text(json.dumps(nb, indent=1) + "\n")
 print(out)

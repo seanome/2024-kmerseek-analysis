@@ -1,9 +1,9 @@
-# Prior art for notebook 292: linked word pairs over a reduced protein alphabet
+# Prior art for notebook 294: linked word pairs over a reduced protein alphabet
 
 Searched 2026-10-14. Question: has anyone published strobemers (two or more short exact
 words linked by a hash rule, Sahlin 2021) over amino-acid or reduced-alphabet protein
 sequences? Answer: no paper or code found. This was the first check (Gate 0) of the task: had
-someone already done it, notebook 292 would have stopped here. No one had, so it runs the test.
+someone already done it, notebook 294 would have stopped here. No one had, so it runs the test.
 
 ## What was searched
 
@@ -91,7 +91,7 @@ https://doi.org/10.1038/nbt.3988
 **Note:** The prefilter looks up similar k-mers and keeps a target when two of them fall on
 one diagonal. Like BLAST, the pairing is done on hits after the lookup.
 
-## What is new in notebook 292
+## What is new in notebook 294
 
 Two short exact words in a 2-letter hydrophobic/polar alphabet, joined into one index key
 with or without the residue count between them, scored on aligned Pfam seed pairs against

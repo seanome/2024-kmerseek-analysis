@@ -1,4 +1,4 @@
-"""Linked word pairs (strobemers) over an HP alphabet, scored on known alignments (notebook 292).
+"""Linked word pairs (strobemers) over an HP alphabet, scored on known alignments (notebook 294).
 
 A linked pair is two short exact words, called anchors, plus the number of residues between
 them, called the gap. Sahlin (2021) calls the construct a strobemer. Here both sequences of
@@ -39,6 +39,8 @@ GAP_BIN = 3
 TREATMENTS = ["exact", "binned3", "none"]
 MODES = ["all", "rand"]
 BASELINE_SEEDS = {"B1": 10, "B2": 8}
+# B3: B2's 8-letter seed plus a second extended segment within this many residues
+B3_SEED, B3_GAP_MAX = 8, 32
 # Randstrobe rule of Sahlin (2021): partner = argmin over the window of (h(w1) + h(w2)) mod p.
 RANDSTROBE_PRIME = 997
 HASH_SEED = 0x5EED
@@ -104,24 +106,63 @@ def randstrobe_partner(cls: np.ndarray, a: int, gap_max: int) -> np.ndarray:
     return sel
 
 
-def _key_scores(c1, c2, a, P, left, right, gapcount, max_inner):
-    """Score of each key (anchor columns c1 < c2, both length a); see module docstring."""
+def _key_scores(c1, c2, a, P, left, right, gapcount, max_inner, a2=None):
+    """Score of each key: a first anchor of length a at column c1 and a second anchor of
+    length a2 (default a) at column c2 >= c1 + a; see module docstring."""
+    a2 = a if a2 is None else a2
     s1 = a + left[c1] + right[c1 + a]
-    s2 = a + left[c2] + right[c2 + a]
+    s2 = a2 + left[c2] + right[c2 + a2]
     out = s1 + s2
-    same = gapcount[c2 + a - 1] == gapcount[c1]
+    same = gapcount[c2 + a2 - 1] == gapcount[c1]
     if same.any():
         b1, b2 = c1[same], c2[same]
         e1 = b1 + a
-        span = P[b2 + a] - P[b1] + left[b1] + right[b2 + a]
+        span = P[b2 + a2] - P[b1] + left[b1] + right[b2 + a2]
         d = np.arange(max_inner + 1)[None, :]
         m = np.minimum(e1[:, None] + d, b2[:, None])
         pm = P[m]
         lb = np.maximum.accumulate(pm, axis=1) - P[e1][:, None]
         rb = P[b2][:, None] - np.minimum.accumulate(pm[:, ::-1], axis=1)[:, ::-1]
-        disjoint = (lb + rb).max(axis=1) + 2 * a + left[b1] + right[b2 + a]
+        disjoint = (lb + rb).max(axis=1) + a + a2 + left[b1] + right[b2 + a2]
         out[same] = np.maximum(span, disjoint)
     return out
+
+
+def seed_plus_second_segment(qpos, tpos, same, seed, gap_max, P, left, right, gapcount):
+    """B3 control: the best total of at most two non-overlapping gap-free segments, one
+    containing an exact seed of `seed` matching columns and the other containing any
+    matching column within `gap_max` residues of the seed (before or after it, in both
+    sequences). This is the linked-pair score with the second anchor shortened to one
+    column, so it separates "a second extended segment" from "a second exact word"."""
+    n = same.size
+    if n < seed:
+        return 0.0
+    S = np.flatnonzero(np.lib.stride_tricks.sliding_window_view(same, seed).all(axis=1))
+    M1 = np.flatnonzero(same)
+    if S.size == 0 or M1.size == 0:
+        return 0.0
+    best = 0.0
+    for c_first, a_first, c_second, a_second in [(S, seed, M1, 1), (M1, 1, S, seed)]:
+        Q1, T1 = qpos[c_first], tpos[c_first]
+        Q2, T2 = qpos[c_second], tpos[c_second]
+        dq = Q2[None, :] - Q1[:, None] - a_first
+        dt = T2[None, :] - T1[:, None] - a_first
+        ok = (dq >= 0) & (dt >= 0) & (dq <= gap_max) & (dt <= gap_max)
+        i1, i2 = np.nonzero(ok)
+        if i1.size:
+            sc = _key_scores(
+                c_first[i1],
+                c_second[i2],
+                a_first,
+                P,
+                left,
+                right,
+                gapcount,
+                gap_max,
+                a2=a_second,
+            )
+            best = max(best, float(sc.max()))
+    return best
 
 
 def _residue_maps(aln_bytes: np.ndarray):
@@ -171,6 +212,9 @@ def score_pair(
         row = {"kind": kind}
         for name, s in BASELINE_SEEDS.items():
             row[f"{name}_ext"] = best_segment_containing_runs(sc, same, s)
+        row["B3_ext"] = seed_plus_second_segment(
+            qpos, tpos, same, B3_SEED, B3_GAP_MAX, P, left, right, gapcount
+        )
         t_raw = tt[t_isres]
         for a in ANCHOR_LENGTHS:
             if same.size >= a:
@@ -340,3 +384,58 @@ def best_key(qaln: str, taln: str, mode: str, a: int, gap_max: int, treatment: s
         "score": float(s[k]),
         "n_keys": int(c1.size),
     }
+
+
+def recall_at_exact_fpr(real, null, bin_idx, fpr: float = 1e-3):
+    """Recall at exactly `fpr`, read off the line between the two thresholds on either side
+    of it. Scores are whole numbers, so "strictly above t" (notebook 232's rule, null rate
+    at or below fpr) and "at or above t" (null rate above fpr) bracket the target; recall is
+    interpolated by where fpr falls between those two null rates. This equals breaking ties
+    at t at random so that exactly fpr of the null is called.
+
+    Returns threshold t (cols), weight of the "at or above" side (cols), recall (bins x cols).
+    """
+    flat = null.reshape(-1, null.shape[-1])
+    thr = np.quantile(flat, 1 - fpr, axis=0, method="higher")
+    f_hi = (flat > thr).mean(axis=0)
+    f_lo = (flat >= thr).mean(axis=0)
+    w = np.where(f_lo > f_hi, (fpr - f_hi) / np.where(f_lo > f_hi, f_lo - f_hi, 1), 0.0)
+    above, at_or_above = real > thr, real >= thr
+    rec = np.stack(
+        [
+            above[bin_idx == b].mean(axis=0)
+            + w
+            * (
+                at_or_above[bin_idx == b].mean(axis=0)
+                - above[bin_idx == b].mean(axis=0)
+            )
+            for b in range(len(BINS))
+        ]
+    )
+    return thr, w, rec
+
+
+def bootstrap_recall_by_group(
+    real, null, bin_idx, groups, fpr=1e-3, n_boot=1000, seed=0, exact=True
+):
+    """Bootstrap that resamples whole groups (Pfam families) with replacement, each true
+    pair travelling with its own shuffled targets, and recomputes threshold and recall.
+    Pairs from one family share sequence, so resampling pairs one by one would make the
+    interval too narrow. Returns (n_boot, bins, cols)."""
+    rng = np.random.default_rng(seed)
+    order = np.argsort(groups, kind="stable")
+    g_sorted = groups[order]
+    starts = np.flatnonzero(np.r_[True, g_sorted[1:] != g_sorted[:-1]])
+    counts = np.diff(np.r_[starts, g_sorted.size])
+    n_groups = starts.size
+    fn = recall_at_exact_fpr if exact else threshold_and_recall
+    out = np.empty((n_boot, len(BINS), real.shape[1]))
+    for i in range(n_boot):
+        g = rng.integers(0, n_groups, n_groups)
+        c = counts[g]
+        offs = np.repeat(starts[g] - np.r_[0, np.cumsum(c)[:-1]], c) + np.arange(
+            c.sum()
+        )
+        idx = order[offs]
+        out[i] = fn(real[idx], null[idx], bin_idx[idx], fpr)[2]
+    return out

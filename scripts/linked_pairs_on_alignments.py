@@ -1,4 +1,4 @@
-"""Score notebook 232's Pfam seed pairs with linked HP word pairs (notebook 292).
+"""Score notebook 232's Pfam seed pairs with linked HP word pairs (notebook 294).
 
 Takes the same 60,000 Pfam seed pairs notebook 232 scored (same filter, same polars sample
 seed, same per-pair rng seed, so the two shuffled targets per pair are 232's), and writes
@@ -12,7 +12,7 @@ one row per comparison (real pair or shuffled target) with:
 
 Usage:
     python scripts/linked_pairs_on_alignments.py \
-        --out /Users/olga/data/pfam/292_linked_pairs_scores.parquet
+        --out /Users/olga/data/pfam/294_linked_pairs_scores.parquet
 """
 
 from __future__ import annotations

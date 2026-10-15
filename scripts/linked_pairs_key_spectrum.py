@@ -1,4 +1,4 @@
-"""Chance match rate of every linked-pair key, measured on Swiss-Prot (notebook 292).
+"""Chance match rate of every linked-pair key, measured on Swiss-Prot (notebook 294).
 
 Encodes every Swiss-Prot protein in hp_thomas_dill2 and counts, for each setting of
 notebooks/linked_pairs_utils.py, how often two keys drawn at random from Swiss-Prot are
@@ -17,8 +17,8 @@ partner, L - 2a + 1 positions), times the share of positions with a valid first 
 Usage:
     python scripts/linked_pairs_key_spectrum.py \
         --fasta /Users/olga/data/uniprot/uniprot_sprot.fasta.gz \
-        --pairs /Users/olga/data/pfam/292_linked_pairs_scores.parquet \
-        --out /Users/olga/data/pfam/292_linked_pairs_key_spectrum_swissprot.parquet
+        --pairs /Users/olga/data/pfam/294_linked_pairs_scores.parquet \
+        --out /Users/olga/data/pfam/294_linked_pairs_key_spectrum_swissprot.parquet
 """
 
 from __future__ import annotations
