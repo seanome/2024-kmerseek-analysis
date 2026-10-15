@@ -61,4 +61,5 @@ leaderboard-tables:
 	  --metrics $(LEADERBOARD_DATA)/all_domain_metrics.parquet \
 	  --summary $(LEADERBOARD_DATA)/midi_testset_summary.json \
 	  --traces $(LEADERBOARD_DATA)/traces/*/qfo_pfam_region.*.trace.txt \
-	  --outdir results/leaderboard
+	  --outdir results/leaderboard \
+	  --metrics-commit a47ea255
