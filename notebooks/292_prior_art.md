@@ -2,7 +2,8 @@
 
 Searched 2026-10-14. Question: has anyone published strobemers (two or more short exact
 words linked by a hash rule, Sahlin 2021) over amino-acid or reduced-alphabet protein
-sequences? Answer: no paper or code found. Gate 0 passes, so notebook 292 runs the test.
+sequences? Answer: no paper or code found. This was the first check (Gate 0) of the task: had
+someone already done it, notebook 292 would have stopped here. No one had, so it runs the test.
 
 ## What was searched
 

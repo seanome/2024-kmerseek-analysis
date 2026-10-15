@@ -9,8 +9,10 @@ notebook 232's 10-mer seed) are measured the same way.
 
 From the rate it also gives the expected number of chance key matches between two unrelated
 sequences of length L (the median domain length of notebook 232's pairs), counting every
-pair of positions, not only one diagonal: L^2 * keys-per-residue^2 * rate. Edge effects at
-the ends of the sequences are ignored, so this slightly overstates the count.
+pair of positions, not only one diagonal: n_keys(L)^2 * rate, where n_keys(L) counts only
+the keys that fit inside L residues (a word of a letters fits L - a + 1 times; an anchor
+pair with gap g fits L - 2a - g + 1 times; a randstrobe key needs room for its nearest
+partner, L - 2a + 1 positions), times the share of positions with a valid first word.
 
 Usage:
     python scripts/linked_pairs_key_spectrum.py \
@@ -106,8 +108,10 @@ def main():
     )
     del c15, ok15
 
+    valid = {}  # share of positions whose a-letter word is valid, per a
     for a in sorted(set(lp.ANCHOR_LENGTHS) | set(lp.BASELINE_SEEDS.values())):
         codes, ok = lp.word_codes(cls, a)
+        valid[a] = ok.sum() / n_res
         rows.append(
             {
                 "mode": "word",
@@ -197,13 +201,25 @@ def main():
                 )
             print(f"  a={a} G={G} done {time.time() - t0:.0f} s", flush=True)
 
-    out = pl.DataFrame(rows).with_columns(
+    out = pl.DataFrame(rows)
+    n_keys = []
+    for r in out.iter_rows(named=True):
+        a, G = r["anchor"], r["gap_max"]
+        if r["mode"] == "word":
+            fits = max(0.0, L - a + 1)
+        elif r["mode"] == "all":
+            fits = sum(max(0.0, L - 2 * a - g + 1) for g in range(G + 1))
+        elif r["mode"] == "rand":
+            fits = max(0.0, L - 2 * a + 1)
+        else:
+            n_keys.append(np.nan)
+            continue
+        n_keys.append(valid[a] * fits)
+    out = out.with_columns(pl.Series("keys_per_sequence", n_keys)).with_columns(
         (-pl.col("rate").log(2)).alias("measured_bits"),
-        (
-            pl.col("median_length").pow(2)
-            * pl.col("keys_per_residue").pow(2)
-            * pl.col("rate")
-        ).alias("expected_chance_matches"),
+        (pl.col("keys_per_sequence").pow(2) * pl.col("rate")).alias(
+            "expected_chance_matches"
+        ),
     )
     out.write_parquet(args.out)
     print(out.filter(pl.col("mode") != "check"))
