@@ -48,7 +48,7 @@ from pathlib import Path
 import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bin"))
-from score_calls import CALL_COLUMNS, aligned_piece, clean  # noqa: E402
+from score_calls import CALL_COLUMNS, CALL_TYPES, aligned_piece, clean  # noqa: E402
 
 TARGET_RE = re.compile(r"--target (\S+)\.kmerseek\.rocksdb")
 MMSEQS_LOG_RE = re.compile(r"mmseqs\.(\S+)\.w(\d+)\.log$")
@@ -117,11 +117,7 @@ def read_calls(files: list[Path]) -> tuple[pl.DataFrame, bool]:
                 separator="\t",
                 comment_prefix="#",
                 quote_char=None,
-                schema_overrides={
-                    "query": pl.Utf8,
-                    "target": pl.Utf8,
-                    "evalue": pl.Float64,
-                },
+                schema_overrides=CALL_TYPES,
             ).select(CALL_COLUMNS)
         )
     calls = pl.concat(frames).with_row_index("call_id")

@@ -73,6 +73,19 @@ CALL_COLUMNS = [
 ]
 
 
+CALL_TYPES = {
+    "query": pl.Utf8,
+    "qstart": pl.Int64,
+    "qend": pl.Int64,
+    "target": pl.Utf8,
+    "tstart": pl.Int64,
+    "tend": pl.Int64,
+    "evalue": pl.Float64,
+    "qseq": pl.Utf8,
+    "tseq": pl.Utf8,
+}
+
+
 def clean(desc: str | None) -> str:
     d = WS_RE.sub("_", (desc or "").strip()).replace("|", "/").replace(",", ";")
     return d or "none"
@@ -231,11 +244,10 @@ def main() -> None:
                 f,
                 separator="\t",
                 comment_prefix="#",
-                schema_overrides={
-                    "query": pl.Utf8,
-                    "target": pl.Utf8,
-                    "evalue": pl.Float64,
-                },
+                # Fixed types: a set with no fit writes only a header, and polars would
+                # read every column of a header-only file as text (2026-10-15: hp_kyte k22
+                # on the whole-protein index stopped the full run this way).
+                schema_overrides=CALL_TYPES,
                 quote_char=None,
             ).select(CALL_COLUMNS)
             for f in args.calls
