@@ -1,0 +1,100 @@
+{
+ "n_queries": 998,
+ "inputs": {
+  "all_domain_metrics.parquet": "8ba266169468d1d4a15a4b2e58022988c7b3cb79381a42d6b25644408d1eda68",
+  "midi_testset_summary.json": "5f2702f88c207a3b9de5b0a52ec7b22f7c7e04cd6af78f78927b3ace875ad079",
+  "traces/run-midi-plus/qfo_pfam_region.2026-09-01.trace.txt": "cc3f8eff45a782df7b9dec3a9d8b3dd5791d8d32ae2f5bc7ff6e46d1d3316c37",
+  "traces/run-midi-plus/qfo_pfam_region.2026-09-03.trace.txt": "33300bb2839457a5cca8c869afe3f80d5e373879ce324d8d755422d192e202c1",
+  "traces/run-midi-plus/qfo_pfam_region.2026-09-05.trace.txt": "58ff66b2a154b3c0a3156cc68f75b797d2a9814d03763b47e3175d30389633f1",
+  "traces/run-midi-plus/qfo_pfam_region.2026-09-11.trace.txt": "d98c3e3b5772926d79b48aa5a49c56d1d02a2d2a60b56a9d253fa06c752a07c2",
+  "traces/run-midi-plus/qfo_pfam_region.2026-09-12.trace.txt": "37f8521179a2426b129cd384459d0c8049238fdc6e818511dfbca0a021ef432e",
+  "traces/run-midi-plus/qfo_pfam_region.2026-09-13.trace.txt": "1e8d5af66b490147b009de751e4a9547dca5fa58f9ad4f4eb9cf344ef3c56743",
+  "traces/run-midi-plus-all-qfo/qfo_pfam_region.2026-09-04.trace.txt": "34d8b4011bfa150569edc64ba63c258de95f788645f8d87dc96735a2f62761d4",
+  "traces/run-midi-plus-all-qfo/qfo_pfam_region.2026-09-05.trace.txt": "189ded3429a4f7375984e6d8a2b83551b38f42c89893227b1d9cfcd0a94f4d1e",
+  "traces/run-midi-plus-all-qfo/qfo_pfam_region.2026-09-08.trace.txt": "9fb06936f615c1fb50d37ffb22890c8c04f791616fcfe5a5b4d9d3423820bf0e",
+  "traces/run-midi-plus-all-qfo/qfo_pfam_region.2026-09-10.trace.txt": "b501a55a806f6627682bba637fb24156bb7e5053b21b3562dce346ddc4da9d4d",
+  "traces/run-midi-plus-all-qfo/qfo_pfam_region.2026-09-13.trace.txt": "a8024e4459fc3e51bc346ee908180a3fa2b80f4f95384a52ff3cfc084663de45"
+ },
+ "outputs": {
+  "results.parquet": "e7856899290c7efdb75b18764ed826388166169d7eecfbd9a9cf312c10c5623c",
+  "compute.parquet": "8a9f80798521537638cd11dda3a2c6561573dd1ca418b7b8c66616d9056c943f",
+  "coverage.md": "a1092eca82d46a8c506ed4f1c549f23280188b2858b7965fc6b859627f9260f8"
+ },
+ "scored_without_compute_row": [
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "arabidopsis"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "btaurus"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "chicken"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "ciona"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "clupus"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "ecoli"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "fly"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "mdomestica"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "mouse"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "ptroglodytes"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "rnorvegicus"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "worm"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "xtropicalis"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "yeast"
+  },
+  {
+   "tool": "kmerseek",
+   "setting": "hp_thomas_dill2_k33_lcFalse",
+   "species": "zebrafish"
+  }
+ ]
+}
