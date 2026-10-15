@@ -63,3 +63,34 @@ The first three are the most likely to add rows next.
 - SCOPe40: `status == "ok"` rows; AUC per SCOPe level; identity bins only where the run
   wrote `identity_bands.tsv`.
 - Dark-set accuracy: counts per judged class at each best-hit E-value cut.
+- `n_instances` is the number of truth instances in that stratum. It is not the
+  denominator of `fmax_recall` or `fmax_precision`: those are averaged over proteins at the
+  best threshold (CAFA style), so `value x n_instances` is not a count of hits.
+- Left out on purpose: the region runs' Swiss-Prot identity bins. Their only bin,
+  "no_homolog", repeats the whole-set numbers (57,148 of 57,148 rows), so the identity
+  step did not run for Swiss-Prot features.
+
+## Adversarial check, 2026-10-15
+
+An agent that had not seen the tables or the builder recomputed ten rows drawn at random
+(seed 20261015) from their `source_path`, on the laptop copies, whose sha256 matched
+Sherlock. Uniform sampling drew nine rows from the 9-species midi run, which holds two
+thirds of the table.
+
+| # | row | verdict | source row (0-based) |
+|---|---|---|---|
+| 1 | midi, kmerseek uniprot18_k6_lcFalse, worm, Pfam-N, pLDDT 90-100, fmax_recall 0.0302 | HOLDS | all_domain_metrics.parquet 411531 |
+| 2 | midi, hp_pbotc_1st_ed2_k29_lcTrue, yeast, Swiss-Prot, DNA_BIND, fmax_precision 0 | HOLDS | 1316927 |
+| 3 | midi, hp_kyte_doolittle2_k26_lcTrue, mouse, Swiss-Prot, ACT_SITE, median_iou_tp 0.0106 | HOLDS | 80917 |
+| 4 | midi, gbmr7_k10_lcTrue, zebrafish, Swiss-Prot, pLDDT 70-90, fmax_recall 0 (no calls) | HOLDS | 1294782 |
+| 5 | midi, hsdm17_k11_lcFalse, arabidopsis, Swiss-Prot, INTRAMEM, fmax_recall 0 (9 instances) | HOLDS | 1324697 |
+| 6 | midi, wass14_k12_lcFalse, chicken, Swiss-Prot, identity no_homolog, fmax_recall 0.0337 | WRONG: value matches, label does not (the whole set). Rows like it are now dropped | 396984 |
+| 7 | midi, gbmr7_k16_lcFalse, fly, Swiss-Prot, length 2-15, fmax_precision 0.0625 | HOLDS | 706713 |
+| 8 | midi, mmseqs12_k14_lcFalse, fly, Swiss-Prot, length 61-120, median_iou_tp 0.653 | HOLDS | 587728 |
+| 9 | midi, wass14_k7_lcTrue, worm, Swiss-Prot, length 2-15, median_iou_tp 0.583 | HOLDS | 356071 |
+| 10 | SCOPe40 below k_min, hp_thomas_dill_no_c2.k22.c_min, 30-40%, same fold, pairs above first FP 0 of 2 | HOLDS | scope40_v040_identity_bands.tsv 230804 |
+
+Every row's key matched exactly one source row, and both commits exist and predate their
+files. Other findings, now fixed: the region query-set text said "964 queries" for every
+truth set (removed). Not fixed: rows 4, 5 and 10 are zeros on strata with no calls or very
+few instances; the site should show `n_instances` beside every value.

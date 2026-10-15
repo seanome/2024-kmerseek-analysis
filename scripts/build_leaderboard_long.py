@@ -396,6 +396,12 @@ def qfo_metrics(
     m = m.filter(
         (pl.col("split") == "all") & pl.col("stratum_axis").is_in(STRATUM_AXES)
     )
+    # The region runs' identity step never matched Swiss-Prot features to a target: their
+    # only identity bin is "no_homolog", and its numbers equal the whole set's (57,148 of
+    # 57,148 rows, checked 2026-10-15). A label that says nothing true is left out.
+    m = m.filter(
+        ~((pl.col("truth_set") == "swissprot") & (pl.col("stratum_axis") == "identity"))
+    )
     metrics = [c for c in QFO_METRICS if c in m.columns]
     truth = truth or QFO_TRUTH
     long = (
@@ -1016,7 +1022,9 @@ def main() -> None:
                 data / rel,
                 rel,
                 exp,
-                f"human Pfam-annotated proteins, {label} set ({n_queries[exp]:,} queries)",
+                # No query count: the proteins scored differ by truth set (midi: 964
+                # Pfam-A, 932 Pfam-N, 899 Swiss-Prot); compute.parquet has n_queries.
+                f"human Pfam-annotated proteins, {label} set",
                 tool_images(traces[exp], mapper("metrics")),
             )
         )
