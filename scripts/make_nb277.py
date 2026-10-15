@@ -743,9 +743,108 @@ pf.save(fig, FIG_DIR / f"{FIG_STEM}_shuffled_control_under_20", formats=("pdf", 
 """)
 
 md(r"""
-## 9. Answers to the four decisions
+## 9. Combining alphabets
 
-The numbers each decision rests on, from the tables and figures of sections 1-8.
+Earlier tests on the Pfam domain benchmark found that no combination of alphabet-ksize pairs beat
+the single best one (notebooks 261-264). Here the question is asked on SCOPe40: do different
+alphabets find different true pairs, so that a combined list finds more than any one search?
+
+**Data.** Eight searches, kept with their pair tables and combined in one step
+(`bin/combine_alphabets.py`; head jobs 47932901 with real queries and 47932904 with the
+dipeptide-shuffled queries of section 8, 2026-10-15): hsdm17 k5, mmseqs12 k6, dayhoff6 k8, sdm12
+k7, protein20 k5, uniprot18 k5 and wwmj5 k9 at `c_max`, and hp_thomas_dill2 k18 at C = 2. These
+were each alphabet's best at k_min or above, chosen before section 6 showed that smaller k does
+better on the database scale.
+
+**Methods**, all scored with the same code as a single search:
+
+- *best of N*: a pair's smallest `region_evalue` over the eight searches;
+- *rank fusion*: the sum over searches of 1 / (60 + the pair's rank in that search's list for
+  the query), reciprocal rank fusion;
+- *union upper limit*: a true pair counts if any search ranks it above that search's own first
+  false positive. No single ranked list gives this; it is the most that combining these eight
+  lists could find before the first false positive, so it has only a database-scale value.
+
+All AUCs here are on the database scale (section 6). A shuffled-query value is the chance level
+of the same method. Decision, written before the run: if the union upper limit is close to the
+best single search, combining cannot help; if it is clearly higher, best of N or rank fusion is
+worth keeping only if it beats the best single search at any k (0.149, hsdm17 k4, section 7) with
+a shuffled-query value near zero.
+""")
+
+code(r"""
+COMBINE_DIRS = {
+    "real": Path(os.environ.get("NB277_COMBINE_DIR",
+                                Path.home() / "data/scope/results-scope40-alphabet-ksize-v040-combine")),
+    "shuffled": Path(os.environ.get("NB277_COMBINE_SHUFFLED_DIR",
+                                    Path.home() / "data/scope/results-scope40-alphabet-ksize-v040-combine-shuffled-k2-seed1")),
+}
+comb = {}
+for queries, d in COMBINE_DIRS.items():
+    for name in ("scope40_v040_combined_auc.tsv", "scope40_v040_combined_bands.tsv"):
+        path = d / name
+        print(queries, path, "sha256", hashlib.sha256(path.read_bytes()).hexdigest())
+        comb[(queries, name)] = pl.read_csv(path, separator="\t", infer_schema_length=None).filter(
+            pl.col("status") == "ok")
+comb_auc = (comb[("real", "scope40_v040_combined_auc.tsv")].select("method", "level", "auc_ref_db")
+            .join(comb[("shuffled", "scope40_v040_combined_auc.tsv")]
+                  .select("method", "level", pl.col("auc_ref_db").alias("auc_ref_db_shuffled")),
+                  on=["method", "level"]))
+best_any_k = {lv: best_db.filter(pl.col("level") == lv).sort("auc_ref_db", descending=True).row(0, named=True)
+              for lv in ALL_LEVELS}
+print("Database-scale AUC, real and shuffled queries")
+with pl.Config(float_precision=5):
+    print(comb_auc.filter(pl.col("level").is_in(["family", "superfamily"]))
+          .pivot(on="level", index="method", values=["auc_ref_db", "auc_ref_db_shuffled"])
+          .sort("auc_ref_db_family", descending=True))
+for lv in ["family", "superfamily"]:
+    r = best_any_k[lv]
+    print(f"{lv}: best single search at any k {r['alphabet']} k{r['ksize']} {r['setting']} {r['auc_ref_db']:.4f}; "
+          f"MMseqs2 {TOOL_AUC[('MMseqs2', lv)]:.4f}")
+comb_bands = (comb[("real", "scope40_v040_combined_bands.tsv")]
+              .select("method", "category", "identity_band", "n_pairs", "n_above_first_fp")
+              .join(comb[("shuffled", "scope40_v040_combined_bands.tsv")]
+                    .select("method", "category", "identity_band",
+                            pl.col("n_above_first_fp").alias("n_above_first_fp_shuffled")),
+                    on=["method", "category", "identity_band"]))
+print("Under 20% identity, pairs above the first false positive: real (shuffled)")
+print(comb_bands.filter(pl.col("identity_band") == "0-20%")
+      .with_columns(pl.format("{} ({})", "n_above_first_fp", "n_above_first_fp_shuffled").alias("real_shuffled"))
+      .pivot(on="category", index="method", values="real_shuffled")
+      .select(["method"] + list(CATEGORY_LABEL)))
+
+METHOD_LABEL = {"union_upper_limit": "union upper limit", "best_of_n": "best of N",
+                "rank_fusion": "rank fusion"}
+order = (comb_auc.filter(pl.col("level") == "family").sort("auc_ref_db", descending=True)["method"].to_list())
+mpos = {m: i for i, m in enumerate(order)}
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 80, ncols=2, sharey=True)
+for ax, level in zip(axs, ["family", "superfamily"]):
+    sub = comb_auc.filter(pl.col("level") == level)
+    ys = [mpos[m] for m in sub["method"]]
+    ax.scatter(sub["auc_ref_db"], ys, s=14, color=pf.OKABE_ITO["blue"], zorder=3, label="real queries")
+    ax.scatter(sub["auc_ref_db_shuffled"], ys, s=14, facecolor="white", edgecolor=pf.OKABE_ITO["vermillion"],
+               lw=0.8, zorder=3, label="shuffled queries (chance)")
+    ax.axvline(best_any_k[level]["auc_ref_db"], color=pf.OKABE_ITO["black"], ls=":", lw=1,
+               label="best single search at any k (hsdm17 k4)")
+    ax.axvline(TOOL_AUC[("MMseqs2", level)], label="MMseqs2 (same 5_713 queries)", **TOOL_STYLE["MMseqs2"])
+    ax.set_yticks(range(len(order)), [METHOD_LABEL.get(m, re.sub(r"^single:(.+)\.k(\d+)\.(.+)$", r"\1 k\2, \3", m))
+                                      for m in order])
+    ax.set_ylim(len(order) - 0.5, -0.5)
+    for y in range(len(order)):
+        ax.axhline(y, color="0.9", lw=0.3, zorder=0)
+    ax.set_xlim(0, TOOL_AUC[("MMseqs2", level)] * 1.1)
+    ax.set_xlabel(f"{level} sensitivity AUC, divided by every true pair")
+pf.panel_label(axs[0], "a", dx_pt=-110)
+pf.panel_label(axs[1], "b")
+pf.shared_legend(fig, ncol=4, title="kmerseek 0.4.0, eight searches combined; query and target: SCOPe40 "
+                                    "(15_177 domains), 5_713 FoldSeek queries")
+pf.save(fig, FIG_DIR / f"{FIG_STEM}_combined_alphabets", formats=("pdf", "png"))
+""")
+
+md(r"""
+## 10. Answers to the four decisions
+
+The numbers each decision rests on, from the tables and figures of sections 1-9.
 """)
 
 code(r"""
@@ -838,6 +937,17 @@ and uses theirs.
    order. *Decision: SCOPe40 does not support the HP case at any level.*
 6. **Extension helps at c_opt, c_max and C = 2.** It beats exact matching on 140 of 140 pairs at
    c_max, 142 of 151 at C = 2 and 99 of 117 at c_opt (section 5).
+7. **Combining alphabets helps on SCOPe40: best of N beats every single search.** Taking each
+   pair's smallest E-value over eight searches (section 9) gives a family AUC of 0.163 and a
+   superfamily AUC of 0.067 on the database scale, against 0.149 and 0.062 for the best single
+   search at any k (hsdm17 k4) and 0.122 and 0.045 for the best of the eight. On shuffled queries
+   best of N stays at 0.00004, so it adds almost no chance pairs. Under 20% identity it ranks 232
+   same-family pairs above the first false positive (shuffled: 0), against 151 for hsdm17 k5.
+   The union upper limit is 0.195 (family), so a better way of merging these lists could find
+   more. Rank fusion (0.105) does worse than the best single search. This differs from the Pfam
+   domain benchmark, where no combination won (notebooks 261-264). These eight searches are at
+   k_min or above; section 6 shows the best single searches are below k_min, so the next test
+   combines those. *Decision: keep best of N; drop rank fusion.*
 """)
 
 
