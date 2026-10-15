@@ -10,7 +10,7 @@
 #              Swiss-Prot minus Mammalia WITHOUT decoys (this index is twice as large), the
 #              search ask that built or twice the largest killed ask; nearest k listed
 alphabet	ksize	first_ask_gb	basis
-polarity4	11	120	laptop: 84 GB
+polarity4	11	240	Sherlock 2026-10-13: whole-protein index killed at 120 GB on both decoy windows (exit 137, 139); the regions index peaked at 80 GB. Twice the killed ask
 protein20	5	120	laptop: 81 GB
 hp_pbotc_1st_ed2	21	120	laptop: 77 GB
 hp_lehninger2	21	120	laptop: 78 GB
