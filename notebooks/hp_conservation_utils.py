@@ -238,6 +238,155 @@ def compute_pair_table(
     return pl.DataFrame(out)
 
 
+# ---------------------------------------------------------------------------
+# Many pairs at once: one entry per aligned position, so per-pair and per-half numbers are
+# bincounts instead of a Python loop per pair. Same definitions as pair_stats.
+# ---------------------------------------------------------------------------
+AA20 = "".join(ALPHABET_CLUSTERS["protein20"])
+
+
+def aligned_codes(df: pl.DataFrame, min_cols: int = 0, return_columns: bool = False):
+    """Flatten aligned pairs into one entry per aligned position.
+
+    An aligned position is a column where both sequences have one of the 20 standard amino
+    acids (X, B, Z, U and O count as gaps, as in pair_stats). Returns five arrays:
+    query and target residue codes (0-19, in the order of AA20), the pair index (0..n-1 over
+    the kept pairs), the position index within the pair (0, 1, 2, ...), and the row numbers
+    of `df` that were kept. Pairs with fewer than `min_cols` aligned positions are dropped.
+    With return_columns=True a sixth array gives each position's column in the gapped
+    alignment, so callers can tell where a gap sat between two aligned positions.
+    """
+    tab = TABLES["protein20"]
+    qs, ts, ps, js, cs, kept = [], [], [], [], [], []
+    for i, (qa, ta) in enumerate(zip(df["qaln"], df["taln"])):
+        q = tab[np.frombuffer(qa.encode(), np.uint8)]
+        t = tab[np.frombuffer(ta.encode(), np.uint8)]
+        m = (q != GAP) & (t != GAP)
+        n = int(m.sum())
+        if n == 0 or n < min_cols:
+            continue
+        k = len(kept)
+        kept.append(i)
+        qs.append(q[m])
+        ts.append(t[m])
+        ps.append(np.full(n, k, np.int64))
+        js.append(np.arange(n, dtype=np.int64))
+        if return_columns:
+            cs.append(np.flatnonzero(m))
+    out = (
+        np.concatenate(qs).astype(np.int64),
+        np.concatenate(ts).astype(np.int64),
+        np.concatenate(ps),
+        np.concatenate(js),
+        np.array(kept),
+    )
+    return out + (np.concatenate(cs),) if return_columns else out
+
+
+def class_index(alphabet: str) -> np.ndarray:
+    """For each protein20 code (order of AA20), its class number in `alphabet`."""
+    return TABLES[alphabet][np.frombuffer(AA20.encode(), np.uint8)].astype(np.int64)
+
+
+def grouped_evidence(q, t, group, n_groups: int, alphabet: str = "protein20"):
+    """Agreement, chance and evidence I for groups of aligned positions.
+
+    `group` gives each aligned position's group (a pair, or one half of a pair). Returns
+    (n, agree, chance, I) per group: n aligned positions; agree, the share in the same class;
+    chance, sum over classes of the group's own query share times its target share; and I,
+    bernoulli_kl_bits(agree, chance). For whole pairs this equals pair_stats.
+    """
+    cl = class_index(alphabet)
+    qc, tc = cl[q], cl[t]
+    k = int(cl.max()) + 1
+    n = np.bincount(group, minlength=n_groups).astype(float)
+    same = np.bincount(group, weights=(qc == tc).astype(float), minlength=n_groups)
+    fq = np.bincount(group * k + qc, minlength=n_groups * k).reshape(n_groups, k)
+    ft = np.bincount(group * k + tc, minlength=n_groups * k).reshape(n_groups, k)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        agree = same / n
+        chance = (fq * ft).sum(1) / n**2
+    return n, agree, chance, bernoulli_kl_bits(agree, chance)
+
+
+def pair_joint_counts(q, t, group, n_groups: int) -> np.ndarray:
+    """Per group, the 20 x 20 counts of (query residue, target residue), flattened to 400."""
+    return (
+        np.bincount(group * 400 + q * 20 + t, minlength=n_groups * 400)
+        .reshape(n_groups, 400)
+        .astype(float)
+    )
+
+
+def two_class_splits(size: int = 9) -> np.ndarray:
+    """Every way to put `size` of the 20 amino acids in one class and the rest in the other.
+
+    Returns a boolean array, one row per split, one column per amino acid (order of AA20);
+    True marks the `size`-letter class. For size 9 there are 167,960 rows.
+    """
+    from itertools import combinations
+
+    idx = np.array(list(combinations(range(20), size)))
+    out = np.zeros((len(idx), 20), bool)
+    out[np.arange(len(idx))[:, None], idx] = True
+    return out
+
+
+def split_name(row: np.ndarray) -> str:
+    """The letters of a split's smaller class, e.g. 'ACFILMVWY'."""
+    return "".join(a for a, s in zip(AA20, row) if s)
+
+
+def mean_split_evidence(
+    joint: np.ndarray, splits: np.ndarray, chunk: int = 4000
+) -> np.ndarray:
+    """Mean over pairs of I for every two-class split, from pair_joint_counts.
+
+    For one split and one pair, agree is the share of aligned positions whose two residues fall
+    in the same class, and chance is h_query h_target + p_query p_target from that pair's own
+    class shares, as pair_stats computes them for a named two-class alphabet.
+    """
+    n = joint.sum(1)
+    jf = joint / n[:, None]
+    j3 = jf.reshape(-1, 20, 20)
+    q_share, t_share = j3.sum(2), j3.sum(1)
+    out = np.empty(len(splits))
+    for st in range(0, len(splits), chunk):
+        s = splits[st : st + chunk].astype(float)
+        same = (s[:, :, None] == s[:, None, :]).reshape(len(s), 400).astype(float)
+        agree = jf @ same.T
+        h_q, h_t = q_share @ s.T, t_share @ s.T
+        chance = h_q * h_t + (1 - h_q) * (1 - h_t)
+        out[st : st + chunk] = np.nanmean(bernoulli_kl_bits(agree, chance), axis=0)
+    return out
+
+
+def longest_runs(
+    q, t, group, n_groups: int, columns, alphabet: str = "protein20"
+) -> np.ndarray:
+    """Per group, the longest run of adjacent alignment columns whose residues share a class.
+
+    This is the longest k-mer the two sequences share exactly on the alignment's diagonal.
+    `columns` is each position's column in the gapped alignment (aligned_codes with
+    return_columns=True); a gap or a non-standard letter between two positions breaks the run,
+    as in pair_stats. Positions must be in alignment order and each group's positions
+    contiguous in the arrays, as aligned_codes returns them.
+    """
+    cl = class_index(alphabet)
+    same = cl[q] == cl[t]
+    start = np.r_[True, (group[1:] != group[:-1]) | (columns[1:] != columns[:-1] + 1)]
+    idx = np.arange(same.size)
+    # index of the last position that broke a run (a disagreement or a group start)
+    last_break = np.where(~same | start, idx, 0)
+    np.maximum.accumulate(last_break, out=last_break)
+    # run length ending here: positions since the last break, plus the break itself when it
+    # was a group start that agrees
+    run = np.where(same, idx - last_break + (start[last_break] & same[last_break]), 0)
+    out = np.zeros(n_groups, np.int64)
+    np.maximum.at(out, group, run)
+    return out
+
+
 def alignment_lines(qaln: str, taln: str, alphabet: str = "hp_thomas_dill2") -> dict:
     """Per-column strings for showing one aligned pair in protein20 and a 2-class alphabet.
 
@@ -343,6 +492,7 @@ def draw_alignment_rows(
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
     ax.tick_params(axis="y", length=0)
+
 
 
 PROTEIN20_ORDER = "".join(ALPHABET_CLUSTERS["protein20"])
@@ -524,6 +674,87 @@ def score_pairs(
     return pl.concat(out)
 
 
+
+TICK_BASE = 1.55  # every tick rises from here (just above the target strip), in rows
+TICK_TALL = 1.1  # height of the identical-residue tick
+TICK_SHORT = 0.4  # height of the tick for different residues, both H or both P
+TICK_WIDTH = 0.5  # tick width, in alignment columns
+
+
+def draw_hp_pair(
+    ax,
+    lines: dict,
+    h_color: str,
+    p_color: str,
+    gap_color: str,
+    tick_color: str = "black",
+    x_max: int | None = None,
+) -> dict:
+    """Draw one aligned pair as query H/P strip, match line, target H/P strip.
+
+    `lines` comes from `alignment_lines`. Rows: y=0 query, y=1 match line, y=2 target.
+    Match line: ticks rising from one baseline, tall where the residues are identical,
+    short where they differ but are both H or both P, none where one is H and one is P.
+    A column with a gap in either sequence gets one band of `gap_color` across all three
+    rows and no tick.
+    Returns the counts drawn, so a caller can put them in a title.
+    """
+    from matplotlib.patches import Rectangle
+
+    qc, tc = lines["query_class"], lines["target_class"]
+    aligned, identical = lines["aligned"], lines["identical"]
+    n_col = len(qc)
+    x_max = x_max or n_col
+    n_tall = n_short = 0
+    for i in range(n_col):
+        x = i + 1
+        if not aligned[i]:
+            ax.add_patch(
+                Rectangle((x - 0.52, -0.5), 1.04, 3, lw=0, color=gap_color, zorder=0)
+            )
+        for y, c in ((0, qc[i]), (2, tc[i])):
+            if c in "HP":
+                # 1.04 wide so neighbouring boxes overlap and no white seam shows
+                ax.add_patch(
+                    Rectangle(
+                        (x - 0.52, y - 0.35),
+                        1.04,
+                        0.7,
+                        lw=0,
+                        color=h_color if c == "H" else p_color,
+                        zorder=1,
+                    )
+                )
+        if aligned[i] and qc[i] == tc[i]:
+            height = TICK_TALL if identical[i] == "|" else TICK_SHORT
+            n_tall += identical[i] == "|"
+            n_short += identical[i] != "|"
+            ax.add_patch(
+                Rectangle(
+                    (x - TICK_WIDTH / 2, TICK_BASE - height),
+                    TICK_WIDTH,
+                    height,
+                    lw=0,
+                    color=tick_color,
+                    zorder=2,
+                )
+            )
+    ax.set_xlim(0.5, x_max + 0.5)
+    ax.set_ylim(2.5, -0.5)
+    ax.set_yticks([0, 1, 2], ["query H/P", "agreement", "target H/P"])
+    ax.tick_params(axis="y", length=0)
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+    n_al = lines["n_aligned"]
+    return {
+        "gap_free": n_al,
+        "identical": n_tall,
+        "same_class": n_tall + n_short,
+        "gap_columns": n_col - n_al,
+    }
+
+
+
 IDENTITY_BINS = [0.0, 0.2, 0.3, 0.4, 0.6, 1.01]
 IDENTITY_LABELS = ["<20%", "20-30%", "30-40%", "40-60%", ">=60%"]
 
@@ -666,9 +897,17 @@ def finish_figure(
     header_y: float = 1.005,
     dpi: int = 200,
     wrap: int | None = None,
+    subtitle: str | None = None,
+    font_scale: float = 1.0,
+    footer_box: dict | None = None,
+    tight_layout: bool = True,
 ):
-    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`."""
-    try:
+    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`.
+
+    `subtitle` is one line under the title. `font_scale` multiplies every header and footer
+    font size, for figures drawn at their printed size. `footer_box` replaces the default
+    light grey box behind the hypothesis and conclusion.
+    """    try:
         fig.tight_layout()
     except Exception:  # noqa: BLE001
         pass
@@ -684,9 +923,10 @@ def finish_figure(
             max(leg.get_window_extent(renderer).y1 for leg in legends) / fig.bbox.height
         )
         header_y = max(header_y, top + 0.01)
+
     w_in, h_in = fig.get_size_inches()
     wrap = wrap or max(70, int(w_in * 12))
-    line = lambda pt: pt / 72.0 / h_in * 1.45
+    line = lambda pt: pt * font_scale / 72.0 / h_in * 1.45
     is_km = "kmerseek" in tools and not tools.startswith("no kmerseek")
     tool_lines = textwrap.wrap("TOOLS: " + tools, wrap)
     y = header_y
@@ -696,7 +936,7 @@ def finish_figure(
         "\n".join(tool_lines),
         ha="left",
         va="bottom",
-        fontsize=9.5,
+        fontsize=9.5 * font_scale,
         fontweight="bold",
         color="#8B1A1A" if is_km else "#1F3B73",
         bbox=dict(
@@ -706,9 +946,18 @@ def finish_figure(
         ),
     )
     y += line(9.5) * len(tool_lines) + line(9.5) * 0.9
+    if subtitle:
+        fig.text(0.5, y, subtitle, ha="center", va="bottom", fontsize=9 * font_scale)
+        y += line(9) * 1.1
     if title:
         fig.text(
-            0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold"
+            0.5,
+            y,
+            title,
+            ha="center",
+            va="bottom",
+            fontsize=12.5 * font_scale,
+            fontweight="bold",
         )
     foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap(
         "Conclusion: " + conclusion, wrap
@@ -719,9 +968,10 @@ def finish_figure(
         "\n".join(foot),
         ha="left",
         va="top",
-        fontsize=9,
+        fontsize=9 * font_scale,
         color="#222222",
         linespacing=1.35,
-        bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
+        bbox=footer_box
+        or dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
     )
     fig.savefig(path, dpi=dpi, bbox_inches="tight")

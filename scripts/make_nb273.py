@@ -109,6 +109,9 @@ SCOPE_ALN = Path("/Users/olga/data/scope/230_scope40_pair_alignments.parquet")
 PFAM_OUT = Path("/Users/olga/data/pfam/273_pfam_seed_pair_agreement_shuffled.parquet")
 SCOPE_OUT = Path("/Users/olga/data/scope/273_scope40_pair_agreement_shuffled.parquet")
 PFAM_230 = Path("/Users/olga/data/pfam/230_pfam_seed_pair_class_agreement.parquet")
+SCOPE_FA = Path("/Users/olga/data/scope/astral-scopedom-seqres-gd-sel-gs-bib-40-2.08.fa")
+SCOPE_SPLITS = Path("/Users/olga/data/scope/273_scope40_two_class_split_evidence.parquet")
+PFAM_SPLITS = Path("/Users/olga/data/pfam/273_pfam_seed_two_class_split_evidence.parquet")
 MIN_COLS = 50  # same filter as notebook 230
 MIN_TM = 0.5  # SCOPe only, same as notebook 230
 N_SHUFFLE = 10
@@ -517,7 +520,7 @@ hc.finish_figure(
     conclusion=(
         f"At 20-30% identity in Pfam, {hp_a:.0f} of 100 positions agree in H/P against "
         f"{hp_c:.0f} by chance, and {p_a:.0f} of 100 are identical against {p_c:.0f}, chance taken "
-        f"from each pair's own shares (section 4: a random partner gives less). Each "
+        f"from each pair's own shares (section 6: a random partner gives less). Each "
         f"aligned position carries {hp_i:.2f} bits in H/P and {p_i:.2f} bits as 20 amino acids, "
         f"so a 20-letter position is worth more evidence. In SCOPe, real H/P agreement exceeds "
         f"shuffled by {sf_hp:.0f} per 100 for same superfamily, different family, and by "
@@ -584,8 +587,8 @@ def by_category(df, label):
     return df.group_by("category").agg(
         pl.lit(label).alias("pairs used"),
         pl.len().alias("pairs"),
-        pl.col(HP).mean().round(3).alias("I H/P"),
-        pl.col(P20).mean().round(3).alias("I 20 aa"),
+        pl.col(HP).mean().alias("I H/P"),
+        pl.col(P20).mean().alias("I 20 aa"),
     )
 
 
@@ -598,7 +601,10 @@ sc_tab = (
     )
     .with_columns(
         pl.col("category").cast(pl.Enum(CAT_ORDER)),
+        # the ratio uses the unrounded means; the means are rounded for display only
         (pl.col("I H/P") / pl.col("I 20 aa")).round(2).alias("H/P / 20 aa"),
+        pl.col("I H/P").round(3),
+        pl.col("I 20 aa").round(3),
     )
     .sort("pairs used", "category")
 )
@@ -643,7 +649,543 @@ hc.finish_figure(
 """)
 
 md(r"""
-## 4. Measured against the kappa-based estimates
+## 4. Two checks on the H/P lead: grouping on half the positions, and every split into two classes
+
+Section 3 found that the H/P lead under 20% identity may come from how the pairs were picked:
+identity is the 20 amino acid agreement, so a low-identity bin holds the pairs where the 20
+amino acids happened to agree least. This section tests that directly, then asks whether
+ACFILMVWY is a special choice of 9 amino acids or one of many that would do as well. Both
+checks were added on 2026-10-12, after the section 2 result had been seen, so neither is a test
+written beforehand.
+
+**4a. Group on half of each pair's positions, measure on the other half.** Each pair's aligned
+positions are numbered in order and split into odd and even. The pair goes into an identity
+bin by the identity of its even positions only. I for both alphabets is then computed on its
+odd positions only, with chance from the odd positions' own class shares. The same is done
+with odd and even swapped, and both directions are pooled. A pair that lands in a low bin
+because its even positions agreed less than usual by chance is measured on positions that
+did not have that bad luck.
+
+Hypothesis: if H/P keeps more evidence than the 20 amino acids for distant homologs, the ratio
+I(H/P) / I(20 aa) stays above 1 in the lowest bins when grouped this way. If the lead came
+from picking, it drops below 1. Two more lines are printed for comparison. The first is the
+ratio when pairs are grouped and measured on the same (whole-pair) positions, as in sections 2
+and 3. The second is the reverse pick: the 11% of pairs with the lowest H/P agreement, where
+the same effect should favour the 20 amino acids. The same even/odd test is also run on the SCOPe pairs at 20%
+identity or less within each SCOPe relationship, because those pairs are aligned by structure
+rather than from sequence.
+
+**4b. Every split of the 20 amino acids into 9 and 11.** There are 167,960 ways to choose 9 of
+the 20 amino acids. For each, mean I over the pairs in a group is computed the same way as for
+H/P, with agreement and chance from each pair's own class shares. If ACFILMVWY keeps more evidence
+because of what hydrophobicity does in a folded protein, it ranks at or near the top. If any
+9 letters would do, it sits in the middle. Groups: the four SCOPe relationships (all pairs,
+aligned by structure), and three random samples of 5,000 Pfam seed pairs (aligned from
+sequence, not structure): 20% identity or less, 20-30%, and all identities. The results are
+cached to `~/data/scope/273_scope40_two_class_split_evidence.parquet` and
+`~/data/pfam/273_pfam_seed_two_class_split_evidence.parquet`.
+
+The figure puts both checks on one scale, the ratio I(H/P) / I(20 aa) on a log axis, where 1
+means equal evidence per aligned position. Left: SCOPe relationship, all pairs measured whole
+(circles), the pairs at 20% identity or less grouped on one half and measured on the other
+(diamonds), and the middle 95% of all 167,960 splits for comparison. Right: Pfam identity bins,
+grouped and measured on the same positions (open circles) against grouped on one half and
+measured on the other (diamonds).
+""")
+
+code(r"""
+# ---- 4a. even/odd positions, Pfam ----
+pf_aln = pl.read_parquet(PFAM_ALN)
+pq, pt, pidx, ppos, pkept, pcol = hc.aligned_codes(pf_aln, MIN_COLS, return_columns=True)
+pf_pairs = pf_aln[pkept].select("family", "query", "target", "seqid_ali")
+n_pf = pf_pairs.height
+
+# whole pairs: must equal the cached per-pair table used in sections 2-3
+_, a20_w, _, I20_w = hc.grouped_evidence(pq, pt, pidx, n_pf, P20)
+_, ahp_w, _, Ihp_w = hc.grouped_evidence(pq, pt, pidx, n_pf, HP)
+cached = pfam.pivot(on="alphabet", index=["family", "query", "target"], values="evidence")
+chk = pf_pairs.with_columns(hp_new=pl.Series(Ihp_w), p20_new=pl.Series(I20_w)).join(
+    cached, on=["family", "query", "target"]
+)
+print(
+    f"Pfam pairs here {n_pf:_}, matched to the section 2 table {chk.height:_}; max |I difference| "
+    f"H/P {(chk['hp_new'] - chk[HP]).abs().max():.1e}, 20 aa {(chk['p20_new'] - chk[P20]).abs().max():.1e}"
+)
+
+g_half = pidx * 2 + ppos % 2
+_, a20_h, _, I20_h = hc.grouped_evidence(pq, pt, g_half, 2 * n_pf, P20)
+_, _, _, Ihp_h = hc.grouped_evidence(pq, pt, g_half, 2 * n_pf, HP)
+a20_h, I20_h, Ihp_h = a20_h.reshape(n_pf, 2), I20_h.reshape(n_pf, 2), Ihp_h.reshape(n_pf, 2)
+fam_codes = pf_pairs["family"].to_numpy()
+
+EDGES = [0.0, 0.10, 0.125, 0.15, 0.175, 0.20, 0.25, 0.30, 0.40, 0.60, 1.0]
+
+
+def in_bin(x, lo, hi):
+    return (x <= hi) if lo == 0 else ((x > lo) & (x <= hi))
+
+
+def other_half(lo, hi):
+    # group on one half, measure on the other, both directions pooled
+    hp, aa, fam = [], [], []
+    for grp, meas in ((0, 1), (1, 0)):
+        m = in_bin(a20_h[:, grp], lo, hi) & ~np.isnan(Ihp_h[:, meas]) & ~np.isnan(I20_h[:, meas])
+        hp.append(Ihp_h[m, meas]); aa.append(I20_h[m, meas]); fam.append(fam_codes[m])
+    return np.concatenate(hp), np.concatenate(aa), np.concatenate(fam)
+
+
+rows = []
+for lo, hi in zip(EDGES[:-1], EDGES[1:]):
+    hp, aa, _ = other_half(lo, hi)
+    w = in_bin(a20_w, lo, hi)
+    rows.append(dict(
+        identity=f"{lo:.1%}-{hi:.1%}" if lo else f"<= {hi:.0%}",
+        lo=lo, hi=hi,
+        pair_halves=hp.size,
+        I_hp_other_half=hp.mean(), I_20aa_other_half=aa.mean(),
+        ratio_other_half=hp.mean() / aa.mean(),
+        whole_pairs=int(w.sum()),
+        ratio_same_positions=np.nanmean(Ihp_w[w]) / np.nanmean(I20_w[w]),
+    ))
+split_tab = pl.DataFrame(rows)
+print("\nPfam seed pairs, I(H/P) / I(20 aa) by identity bin")
+print(split_tab.drop("lo", "hi").with_columns(pl.col(pl.Float64).round(3)))
+
+hp, aa, fam = other_half(0.0, 0.20)
+d_by_fam = pl.DataFrame({"family": fam, "d": hp - aa}).group_by("family").agg(pl.col("d").sum(), pl.len().alias("n"))
+d_sum, d_n = d_by_fam["d"].to_numpy(), d_by_fam["n"].to_numpy()
+rng = np.random.default_rng(SEED)
+boot = []
+for _ in range(2000):
+    i = rng.integers(0, d_by_fam.height, d_by_fam.height)
+    boot.append(d_sum[i].sum() / d_n[i].sum())
+pooled_other = hp.mean() / aa.mean()
+w20 = a20_w <= 0.20
+pooled_same = np.nanmean(Ihp_w[w20]) / np.nanmean(I20_w[w20])
+print(
+    f"\n20% identity or less, pooled: grouped and measured on the same positions {pooled_same:.2f}; "
+    f"grouped on one half, measured on the other {pooled_other:.2f} "
+    f"(I H/P {hp.mean():.3f} vs I 20 aa {aa.mean():.3f} bits, {hp.size:_} pair-halves from "
+    f"{d_by_fam.height:_} families; I(H/P) - I(20 aa) 95% interval resampling families "
+    f"{np.percentile(boot, 2.5):.4f} to {np.percentile(boot, 97.5):.4f} bits)"
+)
+low_hp = ahp_w <= np.quantile(ahp_w, 0.11)
+print(
+    f"Reverse pick: the {low_hp.sum():_} pairs with the lowest 11% of H/P agreement give "
+    f"I(H/P) / I(20 aa) = {np.nanmean(Ihp_w[low_hp]) / np.nanmean(I20_w[low_hp]):.2f}"
+)
+""")
+
+code(r"""
+# ---- 4b. every split into 9 + 11 amino acids ----
+SPLITS = hc.two_class_splits(9)
+HP_ROW = int(np.flatnonzero((SPLITS == (hc.class_index(HP) == 0)).all(1))[0])
+SPLIT_NAMES = [hc.split_name(s) for s in SPLITS]
+
+sc_aln = pl.read_parquet(SCOPE_ALN).filter(pl.max_horizontal("tm_q", "tm_t") >= MIN_TM)
+sq, st_, sidx, spos, skept = hc.aligned_codes(sc_aln, MIN_COLS)
+sc_pairs = sc_aln[skept].select("query", "target", "category")
+n_sc = sc_pairs.height
+_, _, _, I20_sc = hc.grouped_evidence(sq, st_, sidx, n_sc, P20)
+_, _, _, Ihp_sc = hc.grouped_evidence(sq, st_, sidx, n_sc, HP)
+sc_cat = sc_pairs["category"].to_numpy()
+sc_ident = sc_aln[skept]["seqid_ali"].to_numpy()
+
+if SCOPE_SPLITS.exists():
+    sc_split = pl.read_parquet(SCOPE_SPLITS)
+else:
+    J = hc.pair_joint_counts(sq, st_, sidx, n_sc)
+    sc_split = pl.DataFrame({"split": SPLIT_NAMES} | {c: hc.mean_split_evidence(J[sc_cat == c], SPLITS) for c in CAT_ORDER})
+    sc_split.write_parquet(SCOPE_SPLITS)
+
+if PFAM_SPLITS.exists():
+    pf_split = pl.read_parquet(PFAM_SPLITS)
+else:
+    rng = np.random.default_rng(SEED)
+    ident = pf_pairs["seqid_ali"].to_numpy()
+    groups = {"<=20%": ident <= 0.2, "20-30%": (ident > 0.2) & (ident <= 0.3), "all identities": np.ones(n_pf, bool)}
+    cols = {}
+    for name, m in groups.items():
+        pick = np.sort(rng.choice(np.flatnonzero(m), 5_000, replace=False))
+        sel = np.isin(pidx, pick)
+        remap = np.full(n_pf, -1); remap[pick] = np.arange(pick.size)
+        J = hc.pair_joint_counts(pq[sel], pt[sel], remap[pidx[sel]], pick.size)
+        cols[name] = hc.mean_split_evidence(J, SPLITS)
+    pf_split = pl.DataFrame({"split": SPLIT_NAMES} | cols)
+    pf_split.write_parquet(PFAM_SPLITS)
+
+
+def rank_table(tab, groups):
+    out = []
+    for g in groups:
+        v = tab[g].to_numpy()
+        top = np.argsort(-v)[:3]
+        out.append(dict(
+            group=g,
+            rank_of_ACFILMVWY=int((v > v[HP_ROW]).sum()) + 1,
+            I_ACFILMVWY=v[HP_ROW],
+            median_split=float(np.median(v)),
+            best_three=", ".join(f"{SPLIT_NAMES[j]} {v[j]:.4f}" for j in top),
+        ))
+    return pl.DataFrame(out)
+
+
+print(f"Mean I (bits per aligned position) over all {len(SPLITS):_} splits into 9 + 11 amino acids")
+with pl.Config(fmt_str_lengths=100, tbl_width_chars=260):
+    print("SCOPe 2.08 40% set, structure-aligned, by relationship")
+    print(rank_table(sc_split, CAT_ORDER).with_columns(pl.col(pl.Float64).round(4)))
+    print("Pfam-A 38.2 seed, 5,000 sampled pairs per group, aligned from sequence")
+    print(rank_table(pf_split, ["<=20%", "20-30%", "all identities"]).with_columns(pl.col(pl.Float64).round(4)))
+
+# ratio to the 20 amino acids per SCOPe relationship, 95% interval resampling the query's fold
+fold_of = {}
+for line in open(SCOPE_FA):
+    if line.startswith(">"):
+        f = line[1:].split()
+        fold_of[f[0]] = ".".join(f[1].split(".")[:2])
+sc_fold = np.array([fold_of[q] for q in sc_pairs["query"]])
+rng = np.random.default_rng(SEED)
+rel = []
+for i, c in enumerate(CAT_ORDER):
+    m = sc_cat == c
+    u, inv = np.unique(sc_fold[m], return_inverse=True)
+    s_hp, s_20 = np.bincount(inv, weights=Ihp_sc[m]), np.bincount(inv, weights=I20_sc[m])
+    boot = []
+    for _ in range(2000):
+        w = np.bincount(rng.integers(0, u.size, u.size), minlength=u.size)
+        boot.append((w @ s_hp) / (w @ s_20))
+    splits_ratio = sc_split[c].to_numpy() / I20_sc[m].mean()
+    rel.append(dict(
+        category=c, pairs=int(m.sum()), folds=u.size,
+        median_identity=float(np.median(sc_ident[m])),
+        ratio=Ihp_sc[m].mean() / I20_sc[m].mean(),
+        lo=np.percentile(boot, 2.5), hi=np.percentile(boot, 97.5),
+        splits_lo=np.percentile(splits_ratio, 2.5), splits_median=np.median(splits_ratio),
+        splits_hi=np.percentile(splits_ratio, 97.5),
+        splits_at_or_above=int((splits_ratio >= splits_ratio[HP_ROW] - 1e-12).sum()),
+    ))
+rel = pl.DataFrame(rel)
+
+# the even/odd test of 4a on SCOPe pairs at 20% identity or less, within each relationship
+g_sc = sidx * 2 + spos % 2
+_, a20_sh, _, I20_sh = hc.grouped_evidence(sq, st_, g_sc, 2 * n_sc, P20)
+_, _, _, Ihp_sh = hc.grouped_evidence(sq, st_, g_sc, 2 * n_sc, HP)
+a20_sh, I20_sh, Ihp_sh = a20_sh.reshape(n_sc, 2), I20_sh.reshape(n_sc, 2), Ihp_sh.reshape(n_sc, 2)
+low = []
+for c in CAT_ORDER:
+    hp, aa, fo = [], [], []
+    for grp, meas in ((0, 1), (1, 0)):
+        m = (sc_cat == c) & (a20_sh[:, grp] <= 0.20)
+        hp.append(Ihp_sh[m, meas]); aa.append(I20_sh[m, meas]); fo.append(sc_fold[m])
+    hp, aa, fo = map(np.concatenate, (hp, aa, fo))
+    u, inv = np.unique(fo, return_inverse=True)
+    s_hp, s_20 = np.bincount(inv, weights=hp), np.bincount(inv, weights=aa)
+    boot = []
+    for _ in range(2000):
+        w = np.bincount(rng.integers(0, u.size, u.size), minlength=u.size)
+        boot.append((w @ s_hp) / (w @ s_20))
+    low.append(dict(category=c, low_pair_halves=hp.size, low_folds=u.size, low_ratio=hp.mean() / aa.mean(),
+                    low_lo=np.percentile(boot, 2.5), low_hi=np.percentile(boot, 97.5)))
+rel = rel.join(pl.DataFrame(low), on="category", maintain_order="left")
+low_cols = [c for c in rel.columns if c.startswith("low")]
+print("\nSCOPe: I(H/P) / I(20 aa) with a 95% interval resampling the query's SCOPe fold, "
+      "and the same ratio for all splits (middle 95%)")
+print(rel.drop(low_cols).with_columns(pl.col(pl.Float64).round(3)))
+print("\nSCOPe pairs at 20% identity or less, grouped on one half of the positions and measured on the other "
+      "(both directions pooled), 95% interval resampling the query's fold")
+print(rel.select("category", *low_cols).with_columns(pl.col(pl.Float64).round(3)))
+""")
+
+code(r"""
+# ---- figure: both checks on one scale ----
+SPLIT_GREY = "#BBBBBB"
+fig, (axa, axb) = plt.subplots(1, 2, figsize=(18, 6.6), gridspec_kw=dict(width_ratios=[1.05, 1]))
+for ax in (axa, axb):
+    ax.set_yscale("log")
+    ax.set_ylim(0.07, 9)
+    ax.set_yticks([0.1, 0.2, 0.5, 1, 2, 5], ["0.1×", "0.2×", "0.5×", "1×", "2×", "5×"])
+    ax.axhline(1, color="black", lw=1, ls=(0, (4, 3)), zorder=1)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.grid(axis="y", color="#EEEEEE", zorder=0)
+    ax.set_ylabel("evidence per aligned position,\nH/P ÷ 20 amino acids (log scale)", fontsize=11)
+
+BENCH = {"same_family": "homolog", "same_superfamily_diff_family": "homolog",
+         "same_fold_diff_superfamily": "not scored", "diff_fold_same_class": "not related"}
+for i, r in enumerate(rel.iter_rows(named=True)):
+    axa.plot([i + 0.24] * 2, [r["splits_lo"], r["splits_hi"]], color=SPLIT_GREY, lw=7, solid_capstyle="butt", zorder=2)
+    axa.plot([i + 0.17, i + 0.31], [r["splits_median"]] * 2, color="white", lw=1.5, zorder=3)
+    axa.errorbar(i - 0.16, r["ratio"], yerr=[[r["ratio"] - r["lo"]], [r["hi"] - r["ratio"]]], fmt="o",
+                 color=COLOR[HP], ms=9, capsize=4, lw=1.6, zorder=4)
+    rank = "best of\n167,960" if r["splits_at_or_above"] == 1 else f"{r['splits_at_or_above']} splits\nat or above"
+    axa.annotate(f"{r['ratio']:.2f}×\n{rank}", (i - 0.16, r["ratio"]), xytext=(-12, 0), textcoords="offset points",
+                 ha="right", va="center", fontsize=9.5, color=COLOR[HP], fontweight="bold", linespacing=1.1)
+    axa.errorbar(i + 0.02, r["low_ratio"], yerr=[[r["low_ratio"] - r["low_lo"]], [r["low_hi"] - r["low_ratio"]]],
+                 fmt="D", color=COLOR[HP], ms=7, capsize=3, lw=1.3, zorder=4)
+    axa.annotate(f"{r['low_ratio']:.2f}×", (i + 0.02, r["low_lo"]), xytext=(0, -4), textcoords="offset points",
+                 ha="center", va="top", fontsize=9, color=COLOR[HP])
+axa.set_xticks(
+    range(len(CAT_ORDER)),
+    [f"{CAT_LABEL[r['category']]}\n{r['pairs']:,} pairs, {r['folds']} folds\nmedian identity "
+     f"{r['median_identity']:.0%}\nbenchmark: {BENCH[r['category']]}" for r in rel.iter_rows(named=True)],
+    fontsize=9,
+)
+axa.set_xlim(-0.6, 3.6)
+axa.text(-0.55, 1.05, "equal evidence", ha="left", va="bottom", fontsize=9)
+axa.set_title("a   SCOPe pairs, aligned by structure, grouped by SCOPe relationship",
+              loc="left", fontsize=11.5, pad=48)
+axa.legend(handles=[
+    Line2D([], [], marker="o", color=COLOR[HP], ms=8, lw=1.6,
+           label="H/P (H = ACFILMVWY, P = the other 11): all pairs, measured whole; 95% interval resampling folds"),
+    Line2D([], [], marker="D", color=COLOR[HP], ms=6, lw=1.3,
+           label="pairs at 20% identity or less, grouped on one half of the positions, measured on the other"),
+    Line2D([], [], color=SPLIT_GREY, lw=7,
+           label="all 167,960 splits of the 20 amino acids into 9 + 11: middle 95%, white tick at the median"),
+], loc="lower left", bbox_to_anchor=(0, 1.0), fontsize=9, frameon=False, borderaxespad=0)
+
+xb = np.arange(split_tab.height)
+labels_b = [f"≤{r['hi']:.0%}" if r["lo"] == 0 else f"{r['lo']*100:g}–{r['hi']*100:g}%" for r in split_tab.iter_rows(named=True)]
+axb.axvspan(-0.5, 4.5, color="#F3F3F3", zorder=0)
+axb.plot(xb, split_tab["ratio_same_positions"], ls=(0, (5, 3)), color=COLOR[HP], lw=1.3, marker="o",
+         mfc="white", mec=COLOR[HP], ms=7, zorder=3)
+axb.plot(xb, split_tab["ratio_other_half"], ls="-", color=COLOR[HP], lw=1.8, marker="D", ms=6, zorder=4)
+for i in (0, 4):
+    axb.annotate(f"{split_tab['ratio_same_positions'][i]:.2f}×", (i, split_tab["ratio_same_positions"][i]),
+                 xytext=(9, 2), textcoords="offset points", fontsize=9.5, color=COLOR[HP], va="bottom")
+    axb.annotate(f"{split_tab['ratio_other_half'][i]:.2f}×", (i, split_tab["ratio_other_half"][i]),
+                 xytext=(0, -15), textcoords="offset points", fontsize=9.5, color=COLOR[HP], ha="center",
+                 va="top", fontweight="bold")
+axb.text(2.0, 0.14, f"all pairs at 20% identity or less, pooled:\n{pooled_same:.2f}× grouped and "
+         f"measured on the same positions\n{pooled_other:.2f}× grouped on one half, measured on the other",
+         ha="center", va="center", fontsize=9)
+axb.set_xticks(xb, labels_b, fontsize=9.5)
+axb.set_xlim(-0.5, len(xb) - 0.5)
+axb.set_xlabel(f"identity over aligned positions (Pfam-A 38.2 seed pairs, {n_pf:,} pairs)", fontsize=10.5)
+axb.set_title("b   Pfam seed pairs, aligned from sequence, grouped by identity", loc="left",
+              fontsize=11.5, pad=48)
+axb.legend(handles=[
+    Line2D([], [], ls=(0, (5, 3)), color=COLOR[HP], marker="o", mfc="white", mec=COLOR[HP],
+           label="grouped and measured on the same positions (as in sections 2-3)"),
+    Line2D([], [], ls="-", color=COLOR[HP], lw=1.8, marker="D", ms=6,
+           label="grouped on one half of the positions, measured on the other (even/odd, both ways)"),
+], loc="lower left", bbox_to_anchor=(0, 1.0), fontsize=9, frameon=False, borderaxespad=0)
+
+r_sf = rel.filter(pl.col("category") == "same_fold_diff_superfamily").row(0, named=True)
+r_fam = rel.filter(pl.col("category") == "same_family").row(0, named=True)
+r_ssf = rel.filter(pl.col("category") == "same_superfamily_diff_family").row(0, named=True)
+hc.finish_figure(
+    fig,
+    FIG / "273_hp_vs_20aa_evidence_ratio_scope_relationship_and_even_odd_positions.png",
+    tools=f"no kmerseek; SCOPe 2.08 40% set (USalign pairs, TM-score ≥ {MIN_TM}) and Pfam-A 38.2 seed pairs "
+          f"from notebook 230; {HP} and protein20",
+    title="Below 20% identity, H/P keeps more evidence per aligned position than identity in structure alignments, not in sequence alignments",
+    hypothesis="If H/P keeps more evidence than identity for distant relatives, the red mark sits above 1× without "
+               "grouping pairs by identity, and above other two-letter splits.",
+    conclusion=(
+        f"Over all identities, H/P has {r_fam['ratio']:.2f}× the evidence of identity for SCOPe same-family pairs, "
+        f"{r_ssf['ratio']:.2f}× for same-superfamily, different-family pairs and {r_sf['ratio']:.2f}× for same-fold, "
+        f"different-superfamily pairs; of all 167,960 splits into 9 + 11, ACFILMVWY scores highest in every SCOPe group. "
+        f"At 20% identity or less, grouped on one half and measured on the other, H/P leads for SCOPe same-superfamily, "
+        f"different-family pairs ({r_ssf['low_ratio']:.2f}×) but not for Pfam seed pairs ({pooled_other:.2f}×; at most "
+        f"{split_tab['ratio_other_half'].max():.2f}× in any bin), where grouping and measuring on the same positions "
+        f"gave {pooled_same:.2f}×."
+    ),
+    footer_y=-0.035,
+)
+""")
+
+md(r"""
+## 5. Kept, worth, evidence, seeds: four questions asked of the same pairs
+
+Figure 1b of the paper draft reports that, at 20% identity or less, the H/P class is kept 2.8
+times as well as the residue (Cohen's κ, `hp_lehninger2`). Section 4 found that in the same
+Pfam pairs H/P gives less evidence per aligned position than identity. Both can be true,
+because they answer different questions. This section asks four of them of the same pairs:
+
+1. **Is the class kept?** κ = (Pr(agree) − Pr(agree by chance)) / (1 − Pr(agree by chance)),
+   the share of the room above chance that the pair fills.
+2. **What is one agreement worth?** log2(Pr(agree) / Pr(agree by chance)) in bits, from the
+   group's mean rates: how much more often an agreeing position turns up in these pairs than
+   by chance.
+3. **How much evidence per aligned position?** I, as in section 2.
+4. **Can an exact seed find the pair?** The share of pair-halves whose longest run of adjacent
+   alignment columns in the same class (the longest k-mer they share on the alignment's
+   diagonal; a gap breaks the run) reaches k, drawn against the seed's rarity,
+   k × log2(1 / Pr(agree by chance)) bits, with chance from the group's mean. The yellow band
+   is 23-32 bits, where the winning kmerseek settings sit in the QfO report's winner analysis
+   (quoted in notebook 230: median 28 bits per k-mer, interquartile range 23-32). That analysis
+   counts k × log2(number of classes), within 4% of this axis for H/P and 11% for the 20 amino
+   acids.
+
+Pairs are grouped as in section 4a, by the identity of one half of their aligned positions and
+measured on the other half, but the halves here are the first and second half in alignment
+order, because a run needs adjacent positions and the even/odd split of section 4a would break
+every run. The measured halves at 20% identity or less have a median of 61 aligned positions,
+so a run can be at most that long; the code also prints the seed shares for whole pairs.
+
+Hypothesis: if H/P's higher κ means more evidence, H/P also leads on questions 3 and 4.
+""")
+
+code(r"""
+# ---- 5. kept, worth, evidence, seeds (Pfam, contiguous halves) ----
+THREE = [P20, HP, "hp_lehninger2"]
+g_c = pidx * 2 + (ppos >= np.bincount(pidx, minlength=n_pf)[pidx] // 2)
+half_n = np.bincount(g_c, minlength=2 * n_pf).reshape(n_pf, 2)
+Q5 = {}
+for a in THREE:
+    _, ag, ch, I = hc.grouped_evidence(pq, pt, g_c, 2 * n_pf, a)
+    Q5[a] = dict(agree=ag.reshape(n_pf, 2), chance=ch.reshape(n_pf, 2), I=I.reshape(n_pf, 2),
+                 run=hc.longest_runs(pq, pt, g_c, 2 * n_pf, pcol, a).reshape(n_pf, 2))
+ident_c = Q5[P20]["agree"]
+
+
+def measured(a, key, lo, hi):
+    # group on one half, measure on the other, both directions pooled
+    out = []
+    for grp, meas in ((0, 1), (1, 0)):
+        out.append(Q5[a][key][in_bin(ident_c[:, grp], lo, hi), meas])
+    return np.concatenate(out)
+
+
+BINS5 = [(0.0, 0.20, "<= 20%"), (0.20, 0.30, "20-30%"), (0.30, 0.40, "30-40%")]
+rows5 = []
+for lo, hi, lab in BINS5:
+    for a in THREE:
+        ag, ch = measured(a, "agree", lo, hi), measured(a, "chance", lo, hi)
+        # a half whose residues all fall in one class has chance 1: no kappa and no I (nan)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            kap = (ag - ch) / (1 - ch)
+        rows5.append(dict(
+            identity=lab, alphabet=a, pair_halves=ag.size, without_kappa=int(np.isnan(kap).sum()),
+            agree_per_100=100 * ag.mean(), chance_per_100=100 * ch.mean(),
+            kappa=np.nanmean(kap),
+            bits_per_agreement=np.log2(ag.mean() / ch.mean()),
+            I_bits=np.nanmean(measured(a, "I", lo, hi)),
+            median_run=float(np.median(measured(a, "run", lo, hi))),
+        ))
+t5 = pl.DataFrame(rows5)
+measured_len = np.concatenate([half_n[in_bin(ident_c[:, grp], 0.0, 0.20), meas] for grp, meas in ((0, 1), (1, 0))])
+print(f"Pfam seed pairs, grouped on one contiguous half and measured on the other; measured halves at "
+      f"20% identity or less have a median of {np.median(measured_len):.0f} aligned positions")
+print(t5.with_columns(pl.col(pl.Float64).round(3)))
+
+# Figure 1b's reading: whole pairs, grouped by their own identity (seqid_ali, notebook 230's bins)
+whole = []
+for a in THREE:
+    _, ag_w, ch_w, _ = hc.grouped_evidence(pq, pt, pidx, n_pf, a)
+    whole.append(pl.DataFrame({"alphabet": a, "seqid_ali": pf_pairs["seqid_ali"], "kappa": (ag_w - ch_w) / (1 - ch_w)}))
+whole = hc.add_identity_bin(pl.concat(whole)).filter(pl.col("identity_bin") == "<20%")
+kw = dict(whole.group_by("alphabet").agg(pl.col("kappa").mean()).iter_rows())
+k5 = {a: t5.filter((pl.col("identity") == "<= 20%") & (pl.col("alphabet") == a))["kappa"][0] for a in THREE}
+print("\nkappa ratio to the 20 amino acids at 20% identity or less:")
+for a in (HP, "hp_lehninger2"):
+    print(f"  {a}: whole pairs grouped by their own identity {kw[a] / kw[P20]:.2f} "
+          f"({kw[a]:.3f} vs {kw[P20]:.3f}); grouped on one half, measured on the other "
+          f"{k5[a] / k5[P20]:.2f} ({k5[a]:.3f} vs {k5[P20]:.3f})")
+
+# seed reach against seed rarity at 20% identity or less
+KS = np.arange(1, 61)
+reach_rows = []
+for a in THREE:
+    runs = measured(a, "run", 0.0, 0.20)
+    bpl = -np.log2(measured(a, "chance", 0.0, 0.20).mean())
+    frac = np.array([(runs >= k).mean() for k in KS])
+    Q5[a]["reach"] = (KS * bpl, frac)
+    reach_rows.append({"alphabet": a, "bits_per_letter": bpl,
+                       **{f"share_at_{b}_bits_pct": 100 * float(np.interp(b, KS * bpl, frac)) for b in (12, 20, 24, 28)}})
+print("\nShare of pair-halves at 20% identity or less with an exact same-class run of that rarity (%)")
+print(pl.DataFrame(reach_rows).with_columns(pl.col(pl.Float64).round(2)))
+
+# the same on whole pairs grouped by their own identity (seqid_ali <= 0.2), which favours H/P
+w20 = (pf_pairs["seqid_ali"] <= 0.20).to_numpy()
+whole_rows = []
+for a in THREE:
+    _, _, ch_w, _ = hc.grouped_evidence(pq, pt, pidx, n_pf, a)
+    runs_w = hc.longest_runs(pq, pt, pidx, n_pf, pcol, a)[w20]
+    bpl_w = -np.log2(ch_w[w20].mean())
+    frac_w = np.array([(runs_w >= k).mean() for k in KS])
+    whole_rows.append({"alphabet": a, **{f"share_at_{b}_bits_pct": 100 * float(np.interp(b, KS * bpl_w, frac_w)) for b in (20, 24, 28)}})
+print(f"\nWhole pairs grouped by their own identity (seqid_ali <= 20%, {int(w20.sum()):_} pairs), same measure (%)")
+print(pl.DataFrame(whole_rows).with_columns(pl.col(pl.Float64).round(2)))
+""")
+
+code(r"""
+# ---- figure: the four questions, 20% identity or less ----
+le = t5.filter(pl.col("identity") == "<= 20%")
+S5 = {a: le.filter(pl.col("alphabet") == a).row(0, named=True) for a in (P20, HP)}
+order5 = [P20, HP]
+LAB5 = {P20: "20 amino acids (identical residue)", HP: f"H/P ({HP}: ACFILMVWY | rest)"}
+SHORT5 = {P20: "20 amino\nacids", HP: "H/P"}
+fig, axs = plt.subplots(1, 4, figsize=(19, 5.6), gridspec_kw=dict(width_ratios=[1.25, 0.8, 0.8, 1.5]))
+fig.legend(handles=[Patch(color=COLOR[a], label=LAB5[a]) for a in order5], loc="upper left",
+           bbox_to_anchor=(0.0, 1.0), ncol=2, fontsize=10, frameon=False)
+ax = axs[0]
+for i, a in enumerate(order5):
+    s, y = S5[a], 1 - i
+    ax.plot([s["chance_per_100"], 100], [y, y], color=COLOR[a], lw=10, alpha=0.18, solid_capstyle="butt")
+    ax.plot([s["chance_per_100"], s["agree_per_100"]], [y, y], color=COLOR[a], lw=10, solid_capstyle="butt")
+    ax.plot([s["chance_per_100"]] * 2, [y - 0.22, y + 0.22], color="black", lw=1.5)
+    ax.text(s["chance_per_100"], y + 0.27, f"chance {s['chance_per_100']:.0f}", ha="center", va="bottom", fontsize=9)
+    ax.text(s["agree_per_100"], y - 0.27, f"agree {s['agree_per_100']:.0f}", ha="center", va="top", fontsize=9, color=COLOR[a])
+    ax.text(101, y, f"κ = {s['kappa']:.2f}", ha="left", va="center", fontsize=11, color=COLOR[a], fontweight="bold")
+ax.set_yticks([1, 0], ["20 amino acids", "H/P"])
+ax.set_ylim(-0.7, 1.7)
+ax.set_xlim(0, 118)
+ax.set_xticks([0, 20, 40, 60, 80, 100])
+ax.set_xlabel("aligned positions per 100")
+ax.set_title("a  Is the class kept?\n    κ = kept above chance ÷ room above chance", loc="left", fontsize=11)
+ax.legend(handles=[Patch(color=COLOR[P20], label="kept above chance (dark)"),
+                   Patch(color=COLOR[P20], alpha=0.18, label="room above chance (light)"),
+                   Line2D([], [], color="black", lw=1.5, label="chance, from each half's own class shares")],
+          loc="lower left", bbox_to_anchor=(0, 1.13), fontsize=8.5, frameon=False, borderaxespad=0)
+for ax, key, unit, ylab, title, top in [
+    (axs[1], "bits_per_agreement", "bits", "bits per agreeing position,\nlog2(agree ÷ chance)", "b  What is one\n    agreement worth?", 2.1),
+    (axs[2], "I_bits", "bits", "evidence I per aligned position (bits)", "c  Evidence per\n    aligned position", 0.26),
+]:
+    vals = [S5[a][key] for a in order5]
+    ax.bar([0, 1], vals, color=[COLOR[a] for a in order5], width=0.6)
+    for x, v in zip([0, 1], vals):
+        ax.text(x, v + top * 0.02, f"{v:.2f} {unit}" if key == "bits_per_agreement" else f"{v:.3f} {unit}",
+                ha="center", va="bottom", fontsize=10)
+    ax.set_xticks([0, 1], [SHORT5[a] for a in order5])
+    ax.set_ylim(0, top)
+    ax.set_ylabel(ylab)
+    ax.set_title(title, loc="left", fontsize=11)
+ax = axs[3]
+ax.axvspan(23, 32, color="#FFF3C4", zorder=0)
+ax.text(27.5, 0.6, "where the winning\nkmerseek settings sit\n(23-32 bits, notebook 230)", ha="center", va="top", fontsize=8.5)
+for a in order5:
+    bits, frac = Q5[a]["reach"]
+    ax.plot(bits, frac, color=COLOR[a], lw=2, marker="o", ms=3.5)
+    kk = 6 if a == P20 else 25
+    ax.annotate(f"k = {kk}", (bits[kk - 1], frac[kk - 1]), xytext=(6, 4), textcoords="offset points", fontsize=8.5, color=COLOR[a])
+ax.set_yscale("log")
+ax.set_xlim(0, 40)
+ax.set_ylim(1e-4, 1.05)
+ax.set_xlabel("seed rarity: k × log2(1 ÷ chance), bits")
+ax.set_ylabel("share of pair-halves with an exact\nsame-class run of k (log scale)")
+ax.set_title("d  Can an exact seed of the same rarity find the pair?", loc="left", fontsize=11)
+for ax in axs:
+    ax.spines[["top", "right"]].set_visible(False)
+r24 = {a: 100 * float(np.interp(24, *Q5[a]["reach"])) for a in order5}
+hc.finish_figure(
+    fig,
+    FIG / "273_kept_worth_evidence_seeds_hp_vs_20aa_pfam_seed_le20pct.png",
+    tools=f"no kmerseek; Pfam-A 38.2 seed pairs from notebook 230; {HP} and protein20",
+    title="At 20% identity or less, the H/P class is kept more reliably than the residue, but each kept class says less",
+    hypothesis="If H/P's higher κ meant more evidence, H/P would also lead in c and d.",
+    conclusion=(
+        f"Pfam seed pairs at 20% identity or less, grouped on one half of their aligned positions and measured on the other "
+        f"({S5[HP]['pair_halves']:,} pair-halves). κ: H/P {S5[HP]['kappa']:.2f} vs {S5[P20]['kappa']:.2f}. An H/P agreement "
+        f"is worth {S5[HP]['bits_per_agreement']:.2f} bits against {S5[P20]['bits_per_agreement']:.2f}, so I is "
+        f"{S5[HP]['I_bits']:.3f} vs {S5[P20]['I_bits']:.3f} bits per position, and at 24 bits of seed rarity "
+        f"{r24[HP]:.1f}% of pair-halves have an exact H/P run against {r24[P20]:.1f}% with identical residues."
+    ),
+    footer_y=-0.06,
+)
+""")
+
+md(r"""
+## 6. Measured against the kappa-based estimates
 
 The estimates were made from kappa with Swiss-Prot residue shares, at 20-30% identity. The
 measured values are the Pfam 20-30% bin from section 2, and for comparison the SCOPe pairs
@@ -874,20 +1416,21 @@ hc.finish_figure(
 """)
 
 md(r"""
-## 5. One typical pair at each identity, position by position
+## 7. One typical pair at each identity, position by position
 
 Section 1 showed one pair. Here is one pair from each Pfam identity bin, so the numbers in
-sections 2 to 4 can be seen as residues. Each pair is the bin's most typical one, chosen by a
-rule fixed before looking at the pairs: among pairs with 80 to 150 aligned positions (short
+sections 2 to 6 can be seen as residues. Each pair is the bin's most typical one, chosen by a
+rule fixed before looking at the pairs: among pairs with 80 to 150 gap-free columns (short
 enough to read), the pair whose H/P I and 20 amino acid I are both closest to the middle of
 the bin (the smallest sum of the two distances from the 50th percentile, percentiles taken
 over all pairs in the bin), one Pfam family per bin.
 
-For each pair the lines are: the two aligned sequences, with `|` where the residues are
-identical (the 20 amino acid count); then the two sequences written as H and P, with `|`
-where the classes agree (the H/P count). Positions with a gap on either side (`-` or `.`) are
-not counted. The table first gives each pair's counts beside the bin's median, so you can see
-how typical it is. The figure draws all five pairs on one column scale.
+For each pair the printed lines are: the two aligned sequences, with `|` where the residues
+are identical (the 20 amino acid count); then the two sequences written as H and P, with `|`
+where both residues are H or both are P (the H/P count). Columns with a gap on either side
+(`-` or `.`) are not counted. The table first gives each pair's counts beside the bin's
+median, so you can see how typical it is. The figure draws all five pairs on one column
+scale, highest identity at the top.
 """)
 
 code(r"""
@@ -933,7 +1476,7 @@ show = ex_pairs.join(med, on="identity_bin").sort("identity_bin").select(
     pl.col("n_cols").alias("aligned positions"),
     (pl.col(f"agree_{P20}") * 100).round(1).alias("identical per 100"),
     f"median agree {P20}",
-    (pl.col(f"agree_{HP}") * 100).round(1).alias("same H/P per 100"),
+    (pl.col(f"agree_{HP}") * 100).round(1).alias("both H or both P per 100"),
     f"median agree {HP}",
     (pl.col(f"expected_{HP}") * 100).round(1).alias("H/P chance per 100"),
     pl.col(f"evidence_{P20}").round(3).alias(f"I {P20}"),
@@ -957,8 +1500,8 @@ for r in aln_ex.sort("identity_bin").iter_rows(named=True):
         f"{r['query']} against {r['target']}"
     )
     print(
-        f"aligned positions {n_al}; identical {n_id} ({100 * n_id / n_al:.0f} per 100); "
-        f"same H/P class {n_hp} ({100 * n_hp / n_al:.0f} per 100)\n"
+        f"gap-free columns {n_al}; identical {n_id} ({100 * n_id / n_al:.0f} per 100); "
+        f"both H or both P {n_hp} ({100 * n_hp / n_al:.0f} per 100)\n"
     )
     hc.print_alignment(
         [
@@ -966,74 +1509,137 @@ for r in aln_ex.sort("identity_bin").iter_rows(named=True):
             ("identical", L["identical"]),
             ("target", L["target"]),
             ("query H/P", L["query_class"]),
-            ("same H/P class", L["same_class"]),
+            ("both H or both P", L["same_class"]),
             ("target H/P", L["target_class"]),
         ]
     )
 """)
 
 code(r"""
-x_max = max(len(L["query"]) for _, L in ex_lines.values())
-fig, axes = plt.subplots(len(ex_lines), 1, figsize=(12, 1.75 * len(ex_lines)), sharex=True)
-for ax, (b, (r, L)) in zip(axes, ex_lines.items()):
-    hc.draw_alignment_rows(
-        ax,
-        [
-            ("identical residue", "agree", L["identical"]),
-            ("query H/P", "class", L["query_class"]),
-            ("target H/P", "class", L["target_class"]),
-            ("same H/P class", "agree", L["same_class"]),
-        ],
-        L["aligned"],
-        H_COLOR,
-        P_COLOR,
-        AGREE_COLOR,
-        x_max=x_max,
-    )
-    ax.set_title(
-        f"{b} identity: {r['family_id']} ({r['family']}), {r['query']} against {r['target']}",
-        loc="left",
-        fontsize=10,
-    )
-axes[-1].set_xlabel("alignment column (gaps included)")
-ex_handles = [
-    Patch(color=H_COLOR, label=f"H, hydrophobic: {h_res}"),
-    Patch(color=P_COLOR, label=f"P, polar: {p_res}"),
-    Line2D([], [], ls="", marker="s", ms=5, color=AGREE_COLOR, label="the two residues agree (counted)"),
-    Line2D([], [], ls="", marker=".", ms=6, color="#9a9a9a", label="the two residues differ (counted)"),
-    Line2D([], [], ls="", marker="x", ms=4, color="#c8c8c8", mew=0.8,
-           label="gap in either sequence (not counted)"),
-]
-axes[0].legend(
-    handles=ex_handles, loc="lower left", bbox_to_anchor=(0, 1.35), ncol=3,
-    fontsize=9, frameon=False, borderaxespad=0,
+import pubfig as pf
+from matplotlib.patches import Rectangle
+
+# Drawn at its printed width (180 mm with padding), in the Nature style; the notebook copy is the same
+# figure at 200 dpi, the print copy at 300 dpi. This is the notebook's last figure, so the
+# style is left on.
+pf.use_style()
+GAP_COLOR = "#e4e4e4"  # gap in either sequence; the only grey in the figure
+order = list(reversed(hc.IDENTITY_LABELS))  # >=60% at the top, identity falling down the page
+x_max = max(len(ex_lines[b][1]["query"]) for b in order)
+WIDTH_MM = 179  # plus 1 mm of save padding each side = 180 mm printed
+plt.rcParams["savefig.pad_inches"] = 1 / 25.4  # room for the footer box outline
+
+fig = plt.figure(figsize=(WIDTH_MM * pf.MM, 112 * pf.MM))
+gs = fig.add_gridspec(
+    len(order) + 1, 1, height_ratios=[2.3] + [1] * len(order), hspace=1.0,
+    left=0.085, right=0.995, top=0.995, bottom=0.06,
 )
-counts = {
-    b: (L["identical"].count("|"), L["same_class"].count("|"), L["n_aligned"])
-    for b, (_, L) in ex_lines.items()
-}
-for b, (n_id, n_hp, n_al) in counts.items():
-    print(f"{b}: identical {n_id} of {n_al}, same H/P class {n_hp} of {n_al}")
-lo, hi = counts["<20%"], counts[">=60%"]
+leg = fig.add_subplot(gs[0])
+axes = [fig.add_subplot(gs[i + 1]) for i in range(len(order))]
+for ax in axes[1:]:
+    ax.sharex(axes[0])
+
+drawn = {}
+for ax, b in zip(axes, order):
+    r, L = ex_lines[b]
+    c = hc.draw_hp_pair(ax, L, H_COLOR, P_COLOR, GAP_COLOR, x_max=x_max)
+    drawn[b] = c
+    n = c["gap_free"]
+    ax.set_title(
+        f"{b.replace('>=', '≥')} identity. {r['family_id']} ({r['family']}), "
+        f"{r['query']} against {r['target']}\n"
+        f"{c['identical']} of {n} gap-free columns identical ({100 * c['identical'] / n:.0f} per 100), "
+        f"{c['same_class']} of {n} both H or both P ({100 * c['same_class'] / n:.0f} per 100)",
+        loc="left", pad=2, linespacing=1.3,
+    )
+    if ax is not axes[-1]:
+        ax.tick_params(axis="x", labelbottom=False)
+axes[-1].set_xlabel("alignment column (gap columns included)")
+
+# Legend above the first pair: a sample of each mark at the same size as in the pairs (same
+# column scale, same row height), three columns of two entries.
+leg.set_xlim(0.5, x_max + 0.5)
+leg.set_ylim(6.9, -0.5)
+leg.axis("off")
+def sample(x0, y0, top, bottom, tick=None, gap=False):
+    # one alignment column of a pair: query row at y0, match line at y0+1, target at y0+2
+    if gap:
+        leg.add_patch(Rectangle((x0 - 0.5, y0 - 0.5), 1, 3, lw=0, color=GAP_COLOR, zorder=0))
+    for dy, col in ((0, top), (2, bottom)):
+        if col:
+            leg.add_patch(Rectangle((x0 - 0.5, y0 + dy - 0.35), 1, 0.7, lw=0, color=col, zorder=1))
+    if tick:
+        height = hc.TICK_TALL if tick == "tall" else hc.TICK_SHORT
+        leg.add_patch(Rectangle((x0 - hc.TICK_WIDTH / 2, y0 + hc.TICK_BASE - height), hc.TICK_WIDTH, height,
+                                lw=0, color="black", zorder=2))
+entries = [
+    (dict(top=H_COLOR, bottom=None, single=True),
+     f"H residue, hydrophobic: {h_res}.\nCounted unless its column is a gap"),
+    (dict(top=P_COLOR, bottom=None, single=True),
+     f"P residue, polar: {p_res}.\nCounted unless its column is a gap"),
+    (dict(top=H_COLOR, bottom=H_COLOR, tick="tall"),
+     "Tall tick: identical residues. Counted\nas identical and as both H or both P"),
+    (dict(top=P_COLOR, bottom=P_COLOR, tick="short"),
+     "Short tick: different residues, both H or\nboth P. Counted as both H or both P"),
+    (dict(top=H_COLOR, bottom=P_COLOR),
+     "No tick: one H, one P.\nCounted in the total only"),
+    (dict(top=H_COLOR, bottom=None, gap=True),
+     "Grey band: gap in either sequence.\nNot counted"),
+]
+col_x = [2, 2 + x_max / 3, 2 + 2 * x_max / 3]
+for k, (kw, text) in enumerate(entries):
+    x0, y0 = col_x[k // 2], (k % 2) * 3.7
+    if kw.get("single"):
+        leg.add_patch(Rectangle((x0 - 0.5, y0 + 1 - 0.35), 1, 0.7, lw=0, color=kw["top"]))
+    else:
+        sample(x0, y0, kw["top"], kw["bottom"], kw.get("tick"), kw.get("gap", False))
+    leg.text(x0 + 2, y0 + 1, text, va="center", ha="left", linespacing=1.15)
+
+print("Counts drawn in each title (gap-free columns are the denominator):")
+for b in order:
+    c = drawn[b]
+    print(
+        f"{b}: identical {c['identical']} of {c['gap_free']}, both H or both P "
+        f"{c['same_class']} of {c['gap_free']}, gap columns {c['gap_columns']}"
+    )
+    # the drawn counts must equal the counts the table above was built from
+    r, L = ex_lines[b]
+    assert c["identical"] == L["identical"].count("|") and c["same_class"] == L["same_class"].count("|")
+
+hi, lo = drawn[">=60%"], drawn["<20%"]
+per100 = lambda c, k: round(100 * c[k] / c["gap_free"])
+out = FIG / "273_one_pair_per_identity_bin_hp_and_protein20_pfam_seed.png"
 hc.finish_figure(
     fig,
-    FIG / "273_one_pair_per_identity_bin_hp_and_protein20_pfam_seed.png",
-    tools=f"no kmerseek; Pfam-A 38.2 seed alignments, {HP} classes and protein20",
-    title="One typical Pfam seed pair per identity bin, position by position",
+    out,
+    tools=f"no kmerseek; Pfam-A 38.2 seed alignments, {HP} H/P letters and protein20",
+    title="How H/P agreement is counted: one Pfam seed pair per identity bin, position by position",
+    subtitle=(
+        "Pair shown for each bin: of its pairs with 80 to 150 gap-free columns, the one nearest the "
+        "bin median in both H/P and 20 amino acid bits per position, each from a different Pfam family"
+    ),
     hypothesis=(
-        "As identity falls, identical residues thin out faster than same H/P class. "
-        "More black squares in a row is more agreement."
+        "As identity falls, identical residues drop faster than residues that are both H or both P. "
+        "Five pairs cannot test this; the test over all pairs is "
+        "figures/273_hp_vs_protein20_agreement_per_100_and_bits_pfam_seed_scope40.png."
     ),
     conclusion=(
-        f"Under 20% identity: {lo[0]} of {lo[2]} positions identical, {lo[1]} of {lo[2]} the same "
-        f"H/P class. At 60% and above: {hi[0]} of {hi[2]} identical, {hi[1]} of {hi[2]} the same "
-        "H/P class."
+        f"Identity sets the bins, so identical residues fall by construction: from "
+        f"{per100(hi, 'identical')} to {per100(lo, 'identical')} per 100 gap-free columns between "
+        f"the ≥60% pair and the <20% pair. Residues both H or both P fall less in these five pairs, "
+        f"from {per100(hi, 'same_class')} to {per100(lo, 'same_class')} per 100."
     ),
+    font_scale=0.62,
+    wrap=175,
+    footer_y=-0.035,
+    footer_box=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor="black", lw=0.5),
+    tight_layout=False,
 )
+fig.savefig(out.with_name(out.stem + "_print.png"), dpi=300, bbox_inches="tight")
 """)
 
 md(r"""
-## 6. Summary and conclusions
+## 8. Summary and conclusions
 
 **Question.** Do the kappa-based numbers for H/P agreement (74 vs 51 per 100 at 20-30%
 identity; 25 vs 6 for 20 amino acids; I about 0.15 vs 0.26 bits) hold when agreement is
@@ -1059,22 +1665,45 @@ be rebuilt from those four numbers; quote the measured I instead.
 4. In SCOPe pairs from the same superfamily but a different family at 20-30% identity (2,118
    pairs), H/P agreement is 72.1 per 100 and I is 0.144 bits (20 amino acids: 24.4 per 100,
    0.239 bits), also within the band.
-5. A result the kappa summary did not show, with a catch. In Pfam pairs under 20% identity, H/P
-   gives more evidence per aligned position than the 20 amino acids (0.103 vs 0.091 bits), and
-   the lead holds when whole families are resampled (0.0108 to 0.0132 bits, section 3). From 20%
-   identity up, the 20 amino acids give more: 1.5 times as much at 20-30% and 3.5 times at 60%
-   and above. The catch: identity is the 20 amino acid agreement itself (equal for 99.7% of
-   pairs), so the under-20% bin is the pairs where the 20 amino acids agree least. Grouped by
-   SCOPe relationship, which does not use identity, homologs favour the 20 amino acids over all
-   identities (same superfamily, different family: 0.121 vs 0.087 bits; same family: 0.205 vs
-   0.125). Kept to the pairs under 20% identity, the same categories favour H/P (0.056 vs 0.045;
-   0.070 vs 0.062). In SCOPe, different-fold pairs, which SCOPe does not call related, still agree on
-   56.2 H/P positions per 100 against 50.8 shuffled (186 pairs). They were picked for TM-score
-   0.5 or more, so this notebook cannot say whether that excess comes from the structural
-   superposition, shared packing, or a distant common ancestor.
+5. A result the kappa summary did not show, which does not hold up. In Pfam pairs at 20% identity
+   or less, H/P gives more evidence per aligned position than the 20 amino acids (0.103 vs 0.091
+   bits, 1.13 times), and the lead holds when whole families are resampled (section 3). But
+   identity is the 20 amino acid agreement itself (equal for 99.7% of pairs), so that bin holds
+   the pairs where the 20 amino acids happened to agree least. Grouped on half of each pair's
+   positions and measured on the other half, the lead is gone: 0.79 times at 20% or less, and at
+   most 0.91 times in any identity bin (section 4). Picking pairs the other way, by the lowest
+   11% of H/P agreement, gives H/P 0.44 times. Whichever alphabet the pairs are picked by looks
+   worst.
+6. Over all identities, grouped by SCOPe relationship (which does not use identity), homologs
+   favour the 20 amino acids: H/P has 0.61 times their evidence for same-family pairs and 0.72
+   times for same-superfamily, different-family pairs. H/P leads for the pairs SCOPe does not
+   call homologs: same fold, different superfamily, 1.67 times (95% interval 1.50 to 1.88,
+   resampling the query's fold; 1,204 pairs, median identity 9%), and different fold, same
+   class, 1.52 times (186 pairs). Below 20% identity the SCOPe homologs move toward H/P. Grouped
+   on one half and measured on the other, same-superfamily, different-family pairs give H/P 1.07
+   times (95% interval 1.03 to 1.10) and same-family pairs 0.90 times. The Pfam pairs at the same
+   identity, aligned from sequence, give 0.79 times. Every SCOPe pair here has TM-score 0.5 or
+   more and is aligned by structure. So the H/P agreement may come from the superposition placing
+   buried positions on buried positions, from shared packing, or from a common ancestor. This
+   notebook cannot tell these apart, nor whether the SCOPe-Pfam difference comes from how the
+   pairs were aligned or from which pairs are in each set.
+7. Of all 167,960 ways to split the 20 amino acids into a class of 9 and a class of 11,
+   ACFILMVWY gives the most evidence per aligned position in every SCOPe group (section 4b). In
+   three samples of 5,000 Pfam seed pairs, aligned from sequence, it ranks second or third; the
+   best there is CFHILMVWY, which has histidine in place of alanine. The splits that keep the
+   most evidence are the hydrophobic residues, give or take one letter.
+8. The H/P class is kept more reliably than the residue, but each kept class says less
+   (section 5). At 20% identity or less, grouped on one half of the positions and measured on
+   the other, κ is 0.42 for H/P against 0.17 for the 20 amino acids (2.5 times; hp_lehninger2
+   0.36, 2.1 times). One H/P agreement is worth 0.48 bits and one identical residue 1.74 bits,
+   and I is 0.148 against 0.218 bits per position. Exact runs are longer in H/P (median 9 against
+   2 adjacent columns, in measured halves of median 61 positions). But at 24 bits of seed rarity,
+   0.9% of pair-halves have an H/P run that long and 4.5% have an identical-residue run. On whole
+   pairs grouped by their own identity, which favours H/P, the shares are 0.4% and 1.3%.
 
 **Limits.**
-* Aligned positions only. Whether an alignment can be found at all is notebook 230 sections 4-6.
+* Aligned positions only, with the alignment given. Whether an exact k-mer index can reach a pair
+  at all is notebook 230 sections 4-6.
 * The SCOPe categories pool all identities; the right column of section 2 mixes relatedness
   with identity.
 * The decision rule is loose for small numbers: ± 3 per 100 around a chance of 6 lets 3 to 9
@@ -1083,6 +1712,11 @@ be rebuilt from those four numbers; quote the measured I instead.
   in "<20%", one at exactly 30% in "20-30%".
 * Pfam seed pairs are capped at 6 per family, so a large family counts no more than a small one
   with 4 or more seed members.
+* Sections 4a and 5 measure each pair on half its positions, which raises the shuffled floor of
+  I in both alphabets by about the same amount. An equal amount added to both pulls the ratio toward
+  1, so removing the extra floor would lower the 0.79 slightly, not raise it.
+* The SCOPe intervals resample the query's fold only. A different-fold pair has two folds, so
+  the interval for that group is too narrow by an unknown amount.
 
 **Decision.**
 
@@ -1090,23 +1724,27 @@ be rebuilt from those four numbers; quote the measured I instead.
    20 amino acids, at 20-30% identity in Pfam seed pairs, with chance from a random partner's
    composition. For evidence per aligned position, quote the measured 0.16 bits (H/P) and 0.25
    bits (20 amino acids), citing this notebook.
-2. Whether to argue that H/P keeps more evidence per aligned position. Not for homologs in
-   general. H/P has the higher I among pairs picked for low identity: Pfam pairs under 20%
-   (0.103 vs 0.091 bits, 1.13 times) and SCOPe homologs under 20% (same superfamily, different
-   family: 0.056 vs 0.045). Picking pairs by low identity holds the 20 amino acid I down,
-   because identity is the 20 amino acid agreement. On a grouping that does not use identity,
-   SCOPe homologs favour the 20 amino acids (0.121 vs 0.087 bits for same superfamily, different
-   family). The SCOPe category where H/P leads at all identities is same fold, different
-   superfamily (0.033 vs 0.020 bits, 1,204 pairs, median identity 8.9%), where SCOPe
-   does not say whether the two domains share an ancestor. Different-fold pairs are not counted
-   here: SCOPe calls them unrelated. At 20-30% identity H/P has 0.65 times the I of the 20 amino
-   acids (0.162 vs 0.251), and at 60% and above 0.29 times (0.519 vs 1.796). The paper can say
-   "H/P class is kept: 74 of 100 aligned positions against 51 by chance". It can say "among pairs
-   under 20% identity, H/P gives 1.13 times the evidence per aligned position" only together with
-   how those pairs were picked.
+2. Whether to argue that H/P keeps more evidence per aligned position. Not from the "<20%" bin:
+   do not quote "1.13 times under 20% identity". It comes from how the pairs were picked; Pfam
+   pairs grouped on the other half of their positions give 0.79 times, and at most 0.91 times in
+   any bin. With a structural alignment the lead is real below 20% identity, even within a
+   superfamily (SCOPe same superfamily, different family: 1.07 times), and largest at the fold
+   level (1.67 times over all identities). The paper can use two sentences. First, "H/P class is
+   kept: 74 of 100 aligned positions against 51 by chance". Second, "of all 167,960 ways to split
+   the amino acids into 9 and 11, the hydrophobic set keeps the most evidence per aligned
+   position between structure-aligned domains at every SCOPe level". Each needs its condition
+   beside it.
+   The lead over identity holds for pairs aligned by structure, not for Pfam's sequence
+   alignments. At the fold level it is between domains that a homology benchmark either does not
+   score (same fold) or counts as a false positive (different fold).
    All of these are per aligned position, for a method that is given the correct alignment.
    An exact k-mer sees less: notebook 230 found that an H/P 26-mer is shared by 1.7% of 20-30% pairs,
    against 11% for a protein 6-mer of about the same bits.
+3. Figure 1b. Its 2.8 times at 20% identity or less groups pairs by their own identity, so it
+   carries the picking effect of section 3. Grouped that way, this notebook gets 2.76 times for
+   hp_lehninger2; grouped on one half and measured on the other, 2.09 times. Quote the second,
+   or say how the pairs were grouped. "The H/P class is kept" stands; "H/P gives more evidence"
+   does not.
 """)
 
 nb = {
