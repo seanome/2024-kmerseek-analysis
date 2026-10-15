@@ -1,5 +1,7 @@
 {
  "n_queries": 998,
+ "metrics_written_at_commit": "a47ea255",
+ "metrics_commit_note": "HEAD of the Sherlock clone (git reflog) when all_domain_metrics.parquet was written, 2026-09-13 16:14:41 -0700; the scoring tasks it aggregates ran 2026-09-11 to 2026-09-13 under earlier HEADs of that clone.",
  "inputs": {
   "all_domain_metrics.parquet": "8ba266169468d1d4a15a4b2e58022988c7b3cb79381a42d6b25644408d1eda68",
   "midi_testset_summary.json": "5f2702f88c207a3b9de5b0a52ec7b22f7c7e04cd6af78f78927b3ace875ad079",
@@ -17,7 +19,7 @@
  },
  "outputs": {
   "results.parquet": "e7856899290c7efdb75b18764ed826388166169d7eecfbd9a9cf312c10c5623c",
-  "compute.parquet": "9121fe7c65a62dcb05bd175e3a426767dee7576229e35912038298a7b92ef870",
+  "compute.parquet": "411cac8cc8fb4b30e84a1a5319cfe08d7c42044a095307d1723acd52e084eefa",
   "coverage.md": "a1092eca82d46a8c506ed4f1c549f23280188b2858b7965fc6b859627f9260f8"
  },
  "scored_without_compute_row": [

@@ -63,6 +63,7 @@ leaderboard-tables:
 	  --metrics $(LEADERBOARD_DATA)/all_domain_metrics.parquet \
 	  --summary $(LEADERBOARD_DATA)/midi_testset_summary.json \
 	  --traces $(LEADERBOARD_DATA)/traces/*/qfo_pfam_region.*.trace.txt \
+<<<<<<< HEAD
 	  --outdir results/leaderboard
 
 ## Region pile-up figure: the zebrafish Pfam call tables of the same run, the truth tables,
@@ -73,3 +74,7 @@ leaderboard-pileup:
 	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_pileup.py \
 	  --pileup-dir $(LEADERBOARD_DATA)/pileup --species zebrafish \
 	  --outdir results/leaderboard/pileup
+=======
+	  --outdir results/leaderboard \
+	  --metrics-commit a47ea255
+>>>>>>> origin/olgabot/leaderboard-tables

@@ -210,6 +210,8 @@ def build_compute(traces: pl.DataFrame, n_queries: int) -> pl.DataFrame:
                 "realtime_s": realtime,
                 "cpu_percent": cpu_pct,
                 "peak_rss_gb": size_gb(r["peak_rss"]),
+                # The image file the task ran in, as the trace names it (apptainer cache).
+                "container": (r.get("container") or "").rsplit("/", 1)[-1] or None,
             }
         )
     keys = ["tool", "setting", "species"]
@@ -332,6 +334,11 @@ def main() -> None:
     ap.add_argument("--traces", type=Path, nargs="+", required=True)
     ap.add_argument("--summary", type=Path, required=True)
     ap.add_argument("--outdir", type=Path, default=Path("results/leaderboard"))
+    ap.add_argument(
+        "--metrics-commit",
+        default=None,
+        help="HEAD of the Sherlock clone when the metrics file was written",
+    )
     args = ap.parse_args()
 
     n_queries = json.loads(args.summary.read_text())["n_queries"]
@@ -361,6 +368,10 @@ def main() -> None:
     inputs = [p.resolve() for p in inputs]
     provenance = {
         "n_queries": n_queries,
+        "metrics_written_at_commit": args.metrics_commit,
+        "metrics_commit_note": "HEAD of the Sherlock clone (git reflog) when all_domain_metrics.parquet "
+        "was written, 2026-09-13 16:14:41 -0700; the scoring tasks it aggregates ran 2026-09-11 to "
+        "2026-09-13 under earlier HEADs of that clone.",
         "inputs": {os.path.relpath(p, root): sha256(p) for p in inputs},
         "outputs": {
             n: sha256(args.outdir / n)
