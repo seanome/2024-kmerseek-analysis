@@ -142,3 +142,12 @@ Olga's and will be recorded here before the full run's results are read.
   --ka-r-database` (seanome/kmerseek PR 144, ported onto v0.4.0 on branch
   olgabot/v0.4.1-ka-r-database). Every setting runs on that image. Its index label is
   "regionsshared".
+
+**2026-10-15, a second ranking (Olga), before any full-run result was read:** next to the
+E-value ranking, calls are also ranked by feature coverage: the share of the target
+feature's own residues (flanks left out) that the call covers on the target side, then by
+E-value. A whole-protein call is paired with each target feature it covers, so both indexes
+are ranked alike. Same 5% decoy rule (a decoy is paired with its source's features), same
+landing rules. `tools/rescore_feature_coverage.py` runs it after the pipeline, from the run's
+call files, because changing the pipeline's bin/ would rerun every search. The composition
+classifier is not ranked this way: its target span is the whole entry.
