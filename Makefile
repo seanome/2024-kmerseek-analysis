@@ -4,7 +4,7 @@
 SHERLOCK_HOST ?= sherlock
 ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
-.PHONY: help running leaderboard-tables leaderboard-fetch
+.PHONY: help running leaderboard-tables leaderboard-fetch leaderboard-pileup
 
 help:
 	@echo "Sherlock:"
@@ -17,6 +17,8 @@ help:
 	@echo "                      Sherlock into LEADERBOARD_DATA"
 	@echo "  leaderboard-tables  Write results/leaderboard/ (results.parquet, compute.parquet,"
 	@echo "                      coverage.md, provenance.json) from LEADERBOARD_DATA"
+	@echo "  leaderboard-pileup  Write results/leaderboard/pileup/ (regions and calls for the"
+	@echo "                      region pile-up figure) from LEADERBOARD_DATA/pileup"
 	@echo ""
 	@echo "Each pipeline's own targets: make -C nextflow-runs/<pipeline> help"
 
@@ -63,3 +65,14 @@ leaderboard-tables:
 	  --traces $(LEADERBOARD_DATA)/traces/*/qfo_pfam_region.*.trace.txt \
 	  --outdir results/leaderboard \
 	  --metrics-commit a47ea255
+
+## Region pile-up figure: the zebrafish Pfam call tables of the same run, the truth tables,
+## the two FASTA files, and per-residue pLDDT of the human AlphaFold models
+## (scripts/leaderboard_residue_plddt.py, run on Sherlock with srun; see its docstring).
+## Copied to $(PILEUP_DATA)/{calls,truth,fasta} on 2026-10-15.
+## Its own folder, so a change to LEADERBOARD_DATA's default (PR 148) does not move it.
+PILEUP_DATA ?= $(HOME)/data/qfo-pfam-region-benchmark/midi-plus-ladder-2026-09-13/pileup
+leaderboard-pileup:
+	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_pileup.py \
+	  --pileup-dir $(PILEUP_DATA) --species zebrafish \
+	  --outdir results/leaderboard/pileup
