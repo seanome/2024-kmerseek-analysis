@@ -73,9 +73,15 @@ def main():
                 if peak is None:
                     continue
                 cur = best.get(key)
-                if cur is None or peak > cur["peak_gb"]:
+                done, cur_done = evidence == "completed", cur is not None and cur["evidence"] == "completed"
+                # A completed attempt is the measurement; a memory kill or time limit only says
+                # "more than it asked", so it counts only while no attempt of the pair has
+                # completed. (2026-10-15: kills at 16 GB, counted as 32, outranked completed
+                # 24 GB peaks, and since main.nf sizes only from completed rows, mmseqs12 k5 and
+                # uniprot18 k4 fell back to the 16 GB floor and were killed again.)
+                if cur is None or (done and not cur_done) or (done == cur_done and peak > cur["peak_gb"]):
                     best[key] = {"peak_gb": peak, "realtime_h": t or 0.0, "evidence": evidence}
-                else:
+                elif done == cur_done:
                     cur["realtime_h"] = max(cur["realtime_h"], t or 0.0)
     # Merge the two old parts into searchAndScore: larger peak, summed run time.
     # A direct searchAndScore measurement replaces the estimate built from the old parts.
