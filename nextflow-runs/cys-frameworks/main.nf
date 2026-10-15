@@ -64,31 +64,41 @@ params.hmmer_image    = null
 
 // First-attempt memory, in GB, for a cys2 kmerseek index or search task. Each retry
 // doubles it. 180 is sized for the pilot's reference (27_570 entries: every toxin plus
-// 20_000 other entries); see kmerseekGb below for where the number comes from. A full
+// 20_000 other entries); see indexGb below for what was measured. A full
 // reference is about 21 times larger, so the run-* targets in the Makefile make you set it
 // from the pilot's peak_rss rather than inherit this one.
 params.cys2_memory_gb = 180
 
 /*
- * Memory for one kmerseek index or search task, in GB.
+ * Memory for one kmerseek index task, in GB.
  *
  * Most of the memory is not the index itself. `kmerseek index` writes the index in
  * seconds and then fits the Karlin-Altschul lambda and K by searching 200 of the
- * database's own sequences against it (--ka-queries, default 200). Under cys2, where
- * every residue other than cysteine is one letter, almost every k-mer of one sequence is
- * found in almost every other, so that fit holds an enormous number of matching regions.
+ * database's own sequences against it (--ka-queries, default 200). The fit's memory
+ * follows the number of matching regions it holds.
  *
- * Measured on the pilot reference, on the laptop, 2026-10-14 and 2026-10-15:
- *   cys2: four tasks (k12, k16, k20, k24) started at once; within 4 minutes three had
- *                 reached 61-66 GB each and were still in the fit when the laptop froze,
- *                 so 66 GB is a floor, not a peak.
- *   cys_hp3 k13, k15: finished in 1 min 37 s and 1 min 29 s. macOS records no peak
- *                 memory, but the fit counted 27_017_189 regions, so a few GB at most.
- * So cys2 asks 180 GB, the most an hns node holds, and cys_hp3 asks 32 GB. The pilot's
- * trace on Sherlock records peak_rss, which is what sizes the full run.
+ * Measured on Sherlock, pilot reference (27_570 entries), 2026-10-15, peak_rss:
+ *   cys_hp3 k9   49.8 GB  (453_552_601 fit regions; 32 GB was killed, 64 GB finished)
+ *   cys_hp3 k11  11.8 GB
+ *   cys_hp3 k13   4.8 GB  (27_017_189 fit regions)
+ *   cys_hp3 k15   2.8 GB
+ *   cys2 k12-k28 killed in the fit at 180 GB, 360 GB, 720 GB and 1.4 TB. Under cys2 the
+ *                k-mer made only of non-cysteine letters is 70-83% of the reference's
+ *                k-mers (5.3-6.7 million copies), so the 200 fit sequences meet about
+ *                2-3 x 10^11 seed hits. No node holds that; more memory is not the fix.
+ * cys_hp3 asks the measured peak with about a third more on top. A full reference is
+ * about 21 times the pilot's, so the run-* targets need these remeasured or scaled.
  */
-def kmerseekGb(alphabet, attempt) {
-    alphabet == 'cys2' ? params.cys2_memory_gb * (1 << (attempt - 1)) : 32 * attempt
+def indexGb(alphabet, ksize, attempt) {
+    def first = alphabet == 'cys2' ? params.cys2_memory_gb
+              : ksize <= 9 ? 64 : ksize <= 11 ? 16 : 8
+    first * (1 << (attempt - 1))
+}
+
+// Memory for one kmerseek search task, in GB. cys_hp3 searches of the pilot's 59 queries
+// peaked at 0.6-2.7 GB on Sherlock (2026-10-15). No cys2 search has run.
+def searchGb(alphabet, attempt) {
+    (alphabet == 'cys2' ? params.cys2_memory_gb : 8) * (1 << (attempt - 1))
 }
 
 // Sherlock partition that has nodes with this much memory: normal nodes hold about
@@ -161,10 +171,10 @@ process indexReference {
          || task.exitStatus in 128..143) && task.attempt <= 3 ? 'retry' : 'finish'
     }
     maxRetries 3
-    memory { kmerseekGb(alphabet, task.attempt).GB }
-    queue { sherlockQueue(kmerseekGb(alphabet, task.attempt)) }
-    // cys_hp3 took under 2 minutes on the pilot reference. cys2 never finished, so its
-    // time is a guess with room in it.
+    memory { indexGb(alphabet, ksize, task.attempt).GB }
+    queue { sherlockQueue(indexGb(alphabet, ksize, task.attempt)) }
+    // cys_hp3 took 2 min 43 s (k15) to 11 min 37 s (k9) on Sherlock for the pilot
+    // reference. cys2 never finished, so its time is a guess with room in it.
     time { (alphabet == 'cys2' ? 4.h : 1.h) * task.attempt }
 
     input:
@@ -212,10 +222,8 @@ process searchQueries {
          || task.exitStatus in 128..143) && task.attempt <= 3 ? 'retry' : 'ignore'
     }
     maxRetries 3
-    // A search runs the same region extension as the index's lambda-K fit, on the queries
-    // instead of 200 database sequences, so it is sized like the index task.
-    memory { kmerseekGb(alphabet, task.attempt).GB }
-    queue { sherlockQueue(kmerseekGb(alphabet, task.attempt)) }
+    memory { searchGb(alphabet, task.attempt).GB }
+    queue { sherlockQueue(searchGb(alphabet, task.attempt)) }
     time { (alphabet == 'cys2' ? 8.h : 2.h) * task.attempt }
     publishDir "${params.outdir}/kmerseek", mode: 'copy'
 
