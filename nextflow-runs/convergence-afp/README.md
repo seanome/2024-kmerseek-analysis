@@ -28,6 +28,7 @@ entry in reviewed Swiss-Prot) and, for each, 20 draws of two nulls:
 | MMseqs2 | bit score | `-s 7.5`, `-e 1000`, up to 10_000 targets per query |
 | Foldseek | bit score | AFDB Swiss-Prot database; real queries from their AFDB models, every query from ProstT5-predicted 3Di letters |
 | composition scan | distance between residue frequencies | 20 amino acids, and each kmerseek alphabet's classes |
+| hydropathy window scan | best match of the two window profiles, and the distance between their window-value histograms | mean Kyte-Doolittle hydropathy of every window of 9 and of 19 residues (`--window-lengths`) |
 | period scan | cosine distance between spectra | HP autocorrelation at lags 1-30; Eisenberg hydrophobic moment at 80-180 degrees |
 | known motif | residues covered by the published repeat regex | AFGP, type I, spruce budworm only (`assets/known_motifs.tsv`) |
 
