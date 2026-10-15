@@ -65,9 +65,13 @@ from notebook 230's table, so the whole-pair rule below is not a blind test.
   I(alphabet) / I(20 aa) is above 1. The interval comes from resampling Pfam families or the
   query domain's SCOPe fold, 2,000 times.
 * The answer is outcome 1 when `hp_thomas_dill2` beats the 20 amino acids and is first in at
-  least 90% of the resamples, in the Pfam group and in at least 2 of the 4 SCOPe relationships.
-  It is outcome 2 when at least one alphabet beats the 20 amino acids in those groups but
-  outcome 1 fails. Otherwise it is outcome 3.
+  least 90% of the resamples, in the Pfam group and in both SCOPe homolog relationships (same
+  family; same superfamily, different family). It is outcome 2 when at least one alphabet beats
+  the 20 amino acids in those groups but outcome 1 fails. Otherwise it is outcome 3.
+* Changed on 2026-10-15, after the run: the rule first counted any 2 of the 4 SCOPe
+  relationships, so a lead in pairs SCOPe does not call homologs counted as a win. More
+  evidence of relatedness for pairs that are not related is a flaw, not a win, so those two
+  groups no longer count. The outcome is the same either way (section 2 prints both).
 * The groups that count are the ones where the pairs were not picked by the positions
   measured: pairs at 20% identity or less grouped on one half of their positions and measured
   on the other half, and pairs at all identities (no picking by identity).
@@ -259,6 +263,8 @@ CAT_LABEL = {
     "same_fold_diff_superfamily": "SCOPe: same fold,\ndifferent superfamily",
     "diff_fold_same_class": "SCOPe: different fold,\nsame class",
 }
+# SCOPe calls two domains homologs only when they share a superfamily
+SCOPE_HOMOLOGS = ["SCOPe: same family", "SCOPe: same superfamily, different family"]
 MODES = {
     "all": "all identities, whole pairs",
     "low_same": "20% identity or less, grouped and measured on the same positions",
@@ -339,6 +345,11 @@ the second view without bias. The small grey open circles at the bottom of each 
 biased view (pairs picked by the 20 amino acid identity of the same positions measured), drawn
 only to show where notebook 273's 1.13 came from; they are not a result. Vermillion: the six
 alphabets with two classes; blue: the rest.
+
+The first three panels are homologs (Pfam families; SCOPe same family; SCOPe same
+superfamily): right of the line is better. The last two are pairs SCOPe does not call homologs
+(same fold but different superfamily; different fold): right of the line is worse, because it is
+evidence that two proteins are related when they are not.
 """)
 
 code(r"""
@@ -410,13 +421,16 @@ print("Decision rule, per group (only rows where the pairs were not picked by th
 print(rule)
 
 
-def outcome(k):
+def outcome(k, homologs_only=True):
     r = rule.filter(pl.col("pairs_used") == MODES[k])
     pfam = r.filter(pl.col("group") == "Pfam seed").row(0, named=True)
     sc = r.filter(pl.col("group").str.starts_with("SCOPe"))
-    if pfam["hp_outcome1"] and sc["hp_outcome1"].sum() >= 2:
+    if homologs_only:  # a lead in pairs SCOPe does not call homologs is not a win
+        sc = sc.filter(pl.col("group").is_in(SCOPE_HOMOLOGS))
+    need = sc.height if homologs_only else 2
+    if pfam["hp_outcome1"] and sc["hp_outcome1"].sum() >= need:
         return 1
-    if pfam["alphabets_beating_20aa"] > 0 and (sc["alphabets_beating_20aa"] > 0).sum() >= 2:
+    if pfam["alphabets_beating_20aa"] > 0 and (sc["alphabets_beating_20aa"] > 0).sum() >= need:
         return 2
     return 3
 
@@ -424,20 +438,33 @@ def outcome(k):
 OUTCOME = {k: outcome(k) for k in ("low_half", "all")}
 print(f"\nOutcome, 20% identity or less grouped on one half: {OUTCOME['low_half']}; "
       f"all identities, whole pairs: {OUTCOME['all']}")
+print(f"Outcome under the first rule (any 2 of the 4 SCOPe groups): "
+      f"{outcome('low_half', False)} and {outcome('all', False)}")
 """)
 
 code(r"""
 pf.use_style()
 panels = list(GROUPS)
-# the legend gets its own row above the panels, so the figure header cannot cover it
-fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 115 * pf.MM), layout="constrained")
-gs = fig.add_gridspec(2, len(panels), height_ratios=[1, 9])
+homolog = {g: g == "Pfam seed" or g.replace("\n", " ") in SCOPE_HOMOLOGS for g in panels}
+n_hom = sum(homolog.values())
+# the legend gets its own row above the panels, so the figure header cannot cover it; a row of
+# block headers says which panels are homologs; an empty column separates the two blocks
+fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 125 * pf.MM), layout="constrained")
+gs = fig.add_gridspec(3, len(panels) + 1, height_ratios=[1, 0.8, 9],
+                      width_ratios=[1] * n_hom + [0.12] + [1] * (len(panels) - n_hom))
 legend_ax = fig.add_subplot(gs[0, :])
 legend_ax.axis("off")
-axs = [fig.add_subplot(gs[1, 0])]
-axs += [fig.add_subplot(gs[1, i], sharey=axs[0]) for i in range(1, len(panels))]
+cols = list(range(n_hom)) + list(range(n_hom + 1, len(panels) + 1))
+axs = [fig.add_subplot(gs[2, cols[0]])]
+axs += [fig.add_subplot(gs[2, c], sharey=axs[0]) for c in cols[1:]]
 for ax in axs[1:]:
     ax.tick_params(labelleft=False)
+header_ax = fig.add_subplot(gs[1, :])  # empty: keeps a row free for the block headers
+header_ax.axis("off")
+BLOCKS = ((axs[:n_hom], "Homologs:\nright of the line is better\n"
+           "(more evidence that related proteins are related)"),
+          (axs[n_hom:], "Not homologs (SCOPe):\nright of the line is worse\n"
+           "(evidence that unrelated proteins are related)"))
 COL = {True: pf.OKABE_ITO["vermillion"], False: pf.OKABE_ITO["blue"]}
 BIASED = pf.GREY
 MARK = {  # one shape per way of choosing the pairs; the fair test sits on top of each row
@@ -466,8 +493,8 @@ for ax, g in zip(axs, panels):
     lo = res.filter(pl.col("group") == gname)["lo"].min()
     hi = res.filter(pl.col("group") == gname)["hi"].max()
     ax.set_xticks([t for t in (0.1, 0.2, 0.5, 1, 2, 4) if lo * 0.8 <= t <= hi * 1.25])
-    ax.set_title(g)
-    ax.set_xlabel("I(alphabet) / I(20 aa)")
+    ax.set_title(g.replace("SCOPe: ", "SCOPe:\n") if "\n" not in g else g)
+    ax.set_xlabel("I(alphabet) / I(20 aa)\n" + ("higher is better" if homolog[g] else "higher is worse"))
 axs[0].set_yticks(y, [f"{a} ({N_CLASSES[a]})" for a in ALPHABETS])
 axs[0].invert_yaxis()
 handles = [
@@ -481,12 +508,21 @@ handles = [
     Line2D([], [], color="black", ls="--", lw=0.5, label="1 = same evidence as the 20 amino acids"),
 ]
 legend_ax.legend(handles=handles, loc="center", ncol=2, frameon=False)
+# headers go in after the layout is fixed, so their text cannot squeeze the panels
+fig.canvas.draw()
+fig.set_layout_engine("none")
+hy = header_ax.get_position()
+for block, text in BLOCKS:
+    x0, x1 = block[0].get_position().x0, block[-1].get_position().x1
+    fig.add_artist(Line2D([x0, x1], [hy.y0 + 0.1 * hy.height] * 2, color="black", lw=0.6))
+    fig.text((x0 + x1) / 2, hy.y0 + 0.2 * hy.height, text, ha="center", va="bottom", fontweight="bold")
 pf.save(fig, FIG / "291_evidence_ratio_19_alphabets_vs_20aa_pfam_seed_scope40_print", formats=("pdf", "png"))
 
 lh = rule.filter(pl.col("pairs_used") == MODES["low_half"])
 pfr = lh.filter(pl.col("group") == "Pfam seed").row(0, named=True)
 ssf = lh.filter(pl.col("group") == "SCOPe: same superfamily, different family").row(0, named=True)
-hp_first = lh.filter(pl.col("first") == HP)["group"].to_list()
+hp_first_not_hom = lh.filter((pl.col("first") == HP) & pl.col("group").str.starts_with("SCOPe")
+                             & ~pl.col("group").is_in(SCOPE_HOMOLOGS))["group"].to_list()
 stamp(
     fig, FIG / "291_evidence_ratio_19_alphabets_vs_20aa_pfam_seed_scope40.png",
     tools=TOOLS,
@@ -496,7 +532,8 @@ stamp(
     conclusion=(f"Diamonds, 20% identity or less: Pfam first is {pfr['first']} ({pfr['first_ratio']}x), "
                 f"{HP} rank {pfr['hp_rank']} ({pfr['hp_ratio']}x); SCOPe same superfamily first is "
                 f"{ssf['first']} ({ssf['first_ratio']}x), {HP} rank {ssf['hp_rank']}. "
-                f"{HP} is first in: {', '.join(hp_first) or 'no group'}. Outcome {OUTCOME['low_half']}."),
+                f"Outcome {OUTCOME['low_half']}. In pairs SCOPe does not call homologs, {HP} gives the most "
+                f"false evidence of relatedness (first in {len(hp_first_not_hom)} of 2 groups): a flaw, not a lead."),
 )
 """)
 
@@ -636,7 +673,8 @@ alphabet, and how do all 19 alphabets compare?
 more evidence per aligned position than the 20 amino acids: `sdm12`, `hsdm17` and, in Pfam,
 `mmseqs12`, by 1 to 10%. No two-class alphabet does in Pfam, and only `hp_thomas_dill2` does
 among SCOPe same-superfamily pairs. The two-class alphabets lead only for SCOPe pairs that
-SCOPe does not call homologs.
+SCOPe does not call homologs, and there more evidence is a flaw: it says two proteins are
+related when they are not.
 
 1. Pfam seed pairs at 20% identity or less, grouped on one half and measured on the other
    (37,573 pair-halves from 10,921 families): 3 of the 18 alphabets are above the 20 amino
@@ -656,11 +694,12 @@ SCOPe does not call homologs.
    (17,303 pair-halves, 451 folds), four are above 1: `sdm12` 1.104, `hsdm17` 1.081,
    `hp_thomas_dill2` 1.065 (1.027 to 1.105) and `mmseqs12` 1.020. `sdm12` is first in 98.6% of
    resamples. The other five two-class alphabets are at or below 1 (0.72 to 1.00).
-4. SCOPe pairs that are not homologs by SCOPe's definition, at 20% identity or less, grouped on
-   one half: same fold, different superfamily (2,345 pair-halves, 112 folds), `hp_thomas_dill2`
+4. A flaw, not a strength. SCOPe pairs that are not homologs by SCOPe's definition, where every
+   bit of evidence is evidence for a wrong answer, at 20% identity or less, grouped on one half: same fold, different superfamily (2,345 pair-halves, 112 folds), `hp_thomas_dill2`
    is first in every resample at 1.47 times, and 5 of the 9 alphabets above 1 have two classes.
    Different fold, same class (368 pair-halves, 138 folds): the 4 alphabets above 1 all have two
-   classes; `hp_thomas_dill2` is first in 61% of resamples and `hp_kyte_doolittle2` in 37%.
+   classes; `hp_thomas_dill2` is first in 61% of resamples and `hp_kyte_doolittle2` in 37%. So
+   the two-class alphabets are the ones that most make unrelated proteins look related.
 5. Among the two-class alphabets the order barely changes between groups: `hp_thomas_dill2`,
    then `hp_thomas_dill_no_c2` and `hp_pbotc_1st_ed2`, then `hp_kyte_doolittle2`, then the two
    two-class Lehninger alphabets, which put glycine and proline in the hydrophobic class.
@@ -674,10 +713,12 @@ SCOPe does not call homologs.
 
 **What this means for the paper.** Do not write that H/P keeps more evidence per aligned
 position than the 20 amino acids between distant homologs. With the correct alignment given,
-the alphabets that keep more are `sdm12` and `hsdm17`, and only by 2 to 10%. H/P's clear lead
-(1.4 to 1.7 times) is between structure-aligned domains that SCOPe puts in different
-superfamilies or folds. A structural superposition places buried positions on buried positions,
-so this lead may come from packing rather than from a common ancestor (notebook 273, item 6).
+the alphabets that keep more are `sdm12` and `hsdm17`, and only by 2 to 10%. H/P's 1.4 to 1.7
+times lead is between structure-aligned domains that SCOPe puts in different superfamilies or
+folds, which SCOPe does not call homologs. That is a flaw, not a lead: an H/P match there is
+more evidence than a 20 amino acid match that two unrelated proteins are related. A structural
+superposition places buried positions on buried positions, which may be the cause (notebook
+273, item 6). This notebook does not test whether it adds false hits to a kmerseek search.
 
 **Limits.**
 
@@ -686,6 +727,8 @@ so this lead may come from packing rather than from a common ancestor (notebook 
 * The intervals resample Pfam families or the query domain's SCOPe fold only.
 * Neighbouring positions are not independent, so grouping on even positions and measuring on
   odd ones removes most of the picking effect, not necessarily all of it.
+* "Not homologs" is SCOPe's call. Some same-fold, different-superfamily pairs may share an
+  ancestor too distant for SCOPe's curators to accept; this notebook follows SCOPe.
 * The whole-pair numbers for all 19 alphabets had been seen in notebook 230's table before the
   decision rule was written.
 """)
