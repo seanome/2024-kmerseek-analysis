@@ -1,0 +1,23 @@
+# Settings of the SCOPe40 kmerseek 0.4 sweep, written by scripts/scope40_v040_settings.py.
+# k_min..k_max from notebook 274; c_* are mismatch penalties for the extension settings
+# (see the script's docstring for each one). Every alphabet also gets an exact setting.
+alphabet	k_min	k_max	n_ksizes	kappa	s2	c_min	c_min_x1.1	c_opt	c_max	c2
+protein20	5	8	4	0.1988	0.0598	0.064	0.070	0.142	0.211	2.000
+uniprot18	5	9	5	0.1975	0.0706	0.076	0.084	0.149	0.245	2.000
+hsdm17	5	10	6	0.2441	0.1003	0.112	0.123	0.176	0.457	2.000
+wass14	5	9	5	0.201	0.0918	0.101	0.111	0.175	0.297	2.000
+mmseqs12	6	10	5	0.2597	0.1180	0.134	0.147	0.223	0.428	2.000
+sdm12	7	12	6	0.2831	0.1438	0.168	0.185	0.235	0.538	2.000
+funcgroups8	7	14	8		0.2037	0.256	0.281			2.000
+gbmr7	13	35	23	0.2574	0.4213	0.728	0.801	0.319	2.110	2.000
+dayhoff6	8	18	11	0.3304	0.2305	0.299	0.329	0.411	0.757	2.000
+wwmj5	9	15	7	0.3262	0.2379	0.312	0.343	0.473	0.808	2.000
+gbmr4	13	28	16	0.4257	0.4078	0.689	0.758	0.674	1.662	2.000
+polarity4	11	25	15	0.2837	0.3414	0.518	0.570	0.542	1.331	2.000
+hp_lehninger_hpc3	17	29	13	0.397	0.4889	0.957	1.052	0.865	1.666	2.000
+hp_kyte_doolittle2	19	39	21	0.4296	0.5272	1.115	1.227	1.571	2.372	2.000
+hp_lehninger_c_nonpolar2	17	31	15	0.4014	0.5035	1.014	1.116	1.521	1.756	2.000
+hp_lehninger2	17	30	14	0.3944	0.5016	1.006	1.107	1.509	1.661	2.000
+hp_pbotc_1st_ed2	17	30	14	0.4389	0.5017	1.007	1.107	1.588	1.751	2.000
+hp_thomas_dill_no_c2	18	39	22	0.4541	0.5163	1.067	1.174	1.617	2.209	2.000
+hp_thomas_dill2	18	36	19	0.4626	0.5117	1.048	1.153	1.633	2.122	2.000
