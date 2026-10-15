@@ -1,7 +1,10 @@
 # Short disulfide-rich peptides by cysteine framework.
 #
-# `pilot` runs on this Mac and proves the pipeline end to end. Every `run-*` target runs
-# ON SHERLOCK (ssh sherlock; cd $SCRATCH/2024-kmerseek-analysis/nextflow-runs/cys-frameworks).
+# Everything that runs kmerseek runs ON SHERLOCK: `pilot`, `run-phylum`, `run-genus`.
+# (ssh sherlock; cd $SCRATCH/2024-kmerseek-analysis-cys-frameworks/nextflow-runs/cys-frameworks)
+# On the Mac: `build-image`, `push-image`, `data`, `sync-data`, and `stub`, which checks the
+# wiring with empty files and runs no kmerseek. Two pilot runs on the laptop crashed it
+# (2026-10-14 and 2026-10-15): cys2 index tasks pass 60 GB each and four started at once.
 #
 # A pilot's numbers are not the experiment's numbers: its reference holds every toxin but
 # only a sample of everything else, so precision comes out better than it is.
@@ -19,11 +22,6 @@ PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 KMERSEEK_SHA   ?= c39370c4e8d3b1b89cee726945bb0aa1bf90a8a3
 KMERSEEK_SRC   ?= /Users/olga/code/kmerseek-cys-runs
 KMERSEEK_BIN   ?= $(KMERSEEK_SRC)/target/release
-HMMER_BIN      ?= /Users/olga/anaconda3/envs/hmmer/bin
-# The bin/ scripts start with `#!/usr/bin/env python3`, so the environment that has polars
-# goes on PATH for a local run and the container's python3 answers on Sherlock. One
-# mechanism, not two.
-PYTHON_BIN     ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin
 
 # IMAGE_TAG is the one place the image is named. Every run target passes
 # --pipeline_image $(IMAGE_REMOTE), so the tag here is what runs even though
@@ -33,12 +31,28 @@ IMAGE_TAG      ?= 2026-10-15-cys-frameworks-c39370c
 IMAGE_LOCAL    := kmerseek-cys:latest
 IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
 
-# On Sherlock: make DATA=$$SCRATCH/cys-frameworks run-phylum
-DATA      ?= $(HOME)/data/cys-frameworks
+# $SCRATCH is set on Sherlock and not on the Mac, so the same Makefile finds the data in
+# both places. sync-data copies the Mac's copy to the Sherlock one.
+DATA      ?= $(if $(SCRATCH),$(SCRATCH)/data/cys-frameworks,$(HOME)/data/cys-frameworks)
+# sherlock-dtn takes rsync and scp only, so it cannot expand $SCRATCH; this is its value.
+SHERLOCK_DATA ?= /scratch/users/olgabot/data/cys-frameworks
 SWISSPROT ?= $(DATA)/uniprot_sprot.fasta.gz
 TABLES    := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../../tables/cys_frameworks
 
-.PHONY: help check-kmerseek build-image push-image data pilot pilot-docker run-phylum run-genus running
+.PHONY: help check-kmerseek build-image push-image data sync-data stub pilot run-phylum run-genus running require-sherlock require-cys2-memory
+
+# Stops a target that runs kmerseek when it is started anywhere but Sherlock.
+require-sherlock:
+	@if [ -z "$$SCRATCH" ] || [ ! -d "$$SCRATCH" ]; then \
+	  echo ""; \
+	  echo "  This target runs kmerseek, so it runs ON SHERLOCK, not on your Mac."; \
+	  echo ""; \
+	  echo "  ssh sherlock"; \
+	  echo "    cd \$$SCRATCH/2024-kmerseek-analysis-cys-frameworks/nextflow-runs/cys-frameworks"; \
+	  echo "    make $(MAKECMDGOALS)"; \
+	  echo ""; \
+	  exit 1; \
+	fi
 
 help:
 	@echo ""
@@ -46,10 +60,14 @@ help:
 	@echo "  make push-image   build it and push to $(IMAGE_REMOTE)"
 	@echo "  make data         download ConoServer, Swiss-Prot and the NCBI taxonomy, then"
 	@echo "                    build the query, reference and settings tables"
-	@echo "  make pilot        10 queries per framework, one clade, a sampled reference;"
-	@echo "                    runs here, proves the pipeline end to end"
-	@echo "  make run-phylum   ON SHERLOCK: 3 held-out references (one per phylum)"
-	@echo "  make run-genus    ON SHERLOCK: one per genus with >= 20 queries"
+	@echo "  make sync-data    copy Swiss-Prot and reference_entries.csv to Sherlock"
+	@echo "  make stub         check the wiring here with empty files; runs no kmerseek"
+	@echo "  make pilot        ON SHERLOCK: 10 queries per framework, Cnidaria, a sampled"
+	@echo "                    reference; proves the pipeline and measures memory"
+	@echo "  make run-phylum CYS2_MEMORY_GB=<from the pilot>"
+	@echo "                    ON SHERLOCK: 3 held-out references (one per phylum)"
+	@echo "  make run-genus CYS2_MEMORY_GB=<from the pilot>"
+	@echo "                    ON SHERLOCK: one per genus with >= 20 queries"
 	@echo "  make running      ON SHERLOCK: what is in the queue"
 	@echo ""
 
@@ -99,38 +117,79 @@ data:
 	$(PYTHON) $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../../scripts/download_cys_framework_data.py $(DATA)
 	$(PYTHON) $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../../scripts/build_cys_framework_data.py $(DATA) $(TABLES)
 
-pilot: check-kmerseek
+# The two input files, from the Mac to Sherlock's $SCRATCH (188 MB). The mkdir goes
+# through `sherlock`, since sherlock-dtn runs no commands.
+sync-data:
+	@test -f $(SWISSPROT) && test -f $(DATA)/reference_entries.csv || { \
+	  echo "No $(SWISSPROT) or $(DATA)/reference_entries.csv here. Run: make data"; exit 1; }
+	ssh sherlock 'mkdir -p $(SHERLOCK_DATA)'
+	rsync -av --partial $(SWISSPROT) $(DATA)/reference_entries.csv sherlock-dtn:$(SHERLOCK_DATA)/
+
+# Every process has a stub: block that only touches its outputs, so this runs in seconds
+# on the Mac and checks channels and file names. main.nf refuses a real run under
+# `standard`, so this is the only thing `standard` can do.
+stub:
+	mkdir -p stub
+	cd stub && \
+	  NXF_JAVA_HOME=$(NXF_JAVA_HOME) \
+	  $(NF) run ../main.nf -profile standard -stub-run \
+	    --swissprot_fasta $(SWISSPROT) \
+	    --reference_entries $(DATA)/reference_entries.csv \
+	    --level phylum \
+	    --outdir $(CURDIR)/stub/results
+
+# The pilot reference keeps every toxin and 20_000 other entries (27_570 for Cnidaria).
+# Its numbers are not the experiment's; it proves the pipeline end to end on SLURM, and
+# its trace's peak_rss is what sizes CYS2_MEMORY_GB for run-phylum and run-genus.
+# cys2 tasks ask 180 GB on hns first (see kmerseekGb in main.nf), then bigmem.
+pilot: require-sherlock
 	mkdir -p pilot
 	cd pilot && \
-	  PATH="$(KMERSEEK_BIN):$(HMMER_BIN):$(PYTHON_BIN):$$PATH" \
-	  NXF_JAVA_HOME=$(NXF_JAVA_HOME) \
-	  $(NF) run ../main.nf -profile standard -resume \
-	    --swissprot_fasta $(SWISSPROT) \
-	    --level phylum \
-	    --only Cnidaria \
-	    --sample_non_toxins 20000 \
-	    --queries_per_framework 10 \
-	    --outdir $(PWD)/pilot/results
-
-# On Sherlock, nextflow comes from the module and the data from $$SCRATCH, so DATA and NF
-# are overridden there rather than hard-coded to Mac paths.
-run-phylum:
-	mkdir -p run-phylum
-	cd run-phylum && \
 	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile sherlock -resume \
 	    --pipeline_image $(IMAGE_REMOTE) \
 	    --swissprot_fasta $(SWISSPROT) \
 	    --reference_entries $(DATA)/reference_entries.csv \
 	    --level phylum \
+	    --only Cnidaria \
+	    --sample_non_toxins 20000 \
+	    --queries_per_framework 10 \
+	    --outdir $(CURDIR)/pilot/results
+
+# The full runs index Swiss-Prot with one clade removed, about 575_700 entries, 21 times
+# the pilot's reference. How cys2 memory grows with that is not known until the pilot
+# reports peak_rss, so these targets make you set it rather than inherit the pilot's 180.
+CYS2_MEMORY_GB ?=
+require-cys2-memory:
+	@test -n "$(CYS2_MEMORY_GB)" || { \
+	  echo ""; \
+	  echo "  Set CYS2_MEMORY_GB from the pilot's trace first: the largest cys2 peak_rss in"; \
+	  echo "  pilot/cys_frameworks.<date>.trace.txt, scaled to a reference 21 times larger."; \
+	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=700"; \
+	  echo ""; \
+	  exit 1; }
+
+# On Sherlock, nextflow comes from the module and the data from $$SCRATCH, so DATA and NF
+# are overridden there rather than hard-coded to Mac paths.
+run-phylum: require-sherlock require-cys2-memory
+	mkdir -p run-phylum
+	cd run-phylum && \
+	  ml load biology nextflow && \
+	  nextflow run ../main.nf -profile sherlock -resume \
+	    --pipeline_image $(IMAGE_REMOTE) \
+	    --cys2_memory_gb $(CYS2_MEMORY_GB) \
+	    --swissprot_fasta $(SWISSPROT) \
+	    --reference_entries $(DATA)/reference_entries.csv \
+	    --level phylum \
 	    --outdir $(CURDIR)/run-phylum/results
 
-run-genus:
+run-genus: require-sherlock require-cys2-memory
 	mkdir -p run-genus
 	cd run-genus && \
 	  ml load biology nextflow && \
 	  nextflow run ../main.nf -profile sherlock -resume \
 	    --pipeline_image $(IMAGE_REMOTE) \
+	    --cys2_memory_gb $(CYS2_MEMORY_GB) \
 	    --swissprot_fasta $(SWISSPROT) \
 	    --reference_entries $(DATA)/reference_entries.csv \
 	    --level genus \

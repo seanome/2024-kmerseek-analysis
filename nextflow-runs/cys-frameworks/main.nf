@@ -62,6 +62,41 @@ params.queries_per_framework = 0      // at most this many queries per framework
 params.pipeline_image = null
 params.hmmer_image    = null
 
+// First-attempt memory, in GB, for a cys2 kmerseek index or search task. Each retry
+// doubles it. 180 is sized for the pilot's reference (27_570 entries: every toxin plus
+// 20_000 other entries); see kmerseekGb below for where the number comes from. A full
+// reference is about 21 times larger, so the run-* targets in the Makefile make you set it
+// from the pilot's peak_rss rather than inherit this one.
+params.cys2_memory_gb = 180
+
+/*
+ * Memory for one kmerseek index or search task, in GB.
+ *
+ * Most of the memory is not the index itself. `kmerseek index` writes the index in
+ * seconds and then fits the Karlin-Altschul lambda and K by searching 200 of the
+ * database's own sequences against it (--ka-queries, default 200). Under cys2, where
+ * every residue other than cysteine is one letter, almost every k-mer of one sequence is
+ * found in almost every other, so that fit holds an enormous number of matching regions.
+ *
+ * Measured on the pilot reference, on the laptop, 2026-10-14 and 2026-10-15:
+ *   cys2: four tasks (k12, k16, k20, k24) started at once; within 4 minutes three had
+ *                 reached 61-66 GB each and were still in the fit when the laptop froze,
+ *                 so 66 GB is a floor, not a peak.
+ *   cys_hp3 k13, k15: finished in 1 min 37 s and 1 min 29 s. macOS records no peak
+ *                 memory, but the fit counted 27_017_189 regions, so a few GB at most.
+ * So cys2 asks 180 GB, the most an hns node holds, and cys_hp3 asks 32 GB. The pilot's
+ * trace on Sherlock records peak_rss, which is what sizes the full run.
+ */
+def kmerseekGb(alphabet, attempt) {
+    alphabet == 'cys2' ? params.cys2_memory_gb * (1 << (attempt - 1)) : 32 * attempt
+}
+
+// Sherlock partition that has nodes with this much memory: normal nodes hold about
+// 125 GB and hns nodes about 186 GB; past that only bigmem fits.
+def sherlockQueue(gb) {
+    gb > 180 ? 'bigmem' : gb > 120 ? 'hns' : 'hns,normal'
+}
+
 /*
  * Write one held-out reference: Swiss-Prot with `excluded` removed at `level`, plus the
  * list of Toxin-keyword accessions left in it and the queries that belong to it.
@@ -102,6 +137,12 @@ process heldOutReference {
         --sample-non-toxins ${params.sample_non_toxins} \\
         --queries-per-framework ${params.queries_per_framework}
     """
+
+    stub:
+    """
+    touch reference.fasta.gz truth.txt queries.fasta query_table.tsv
+    touch counts.${level}.${excluded}.tsv
+    """
 }
 
 /*
@@ -120,8 +161,11 @@ process indexReference {
          || task.exitStatus in 128..143) && task.attempt <= 3 ? 'retry' : 'finish'
     }
     maxRetries 3
-    memory { 32.GB * task.attempt }
-    time { 6.h * task.attempt }
+    memory { kmerseekGb(alphabet, task.attempt).GB }
+    queue { sherlockQueue(kmerseekGb(alphabet, task.attempt)) }
+    // cys_hp3 took under 2 minutes on the pilot reference. cys2 never finished, so its
+    // time is a guess with room in it.
+    time { (alphabet == 'cys2' ? 4.h : 1.h) * task.attempt }
 
     input:
     tuple val(level), val(excluded), path(reference), path(truth), path(queries),
@@ -144,6 +188,11 @@ process indexReference {
         --alphabet ${moltype} \\
         --scaled ${scaled}
     """
+
+    stub:
+    """
+    mkdir index.db
+    """
 }
 
 /*
@@ -163,8 +212,11 @@ process searchQueries {
          || task.exitStatus in 128..143) && task.attempt <= 3 ? 'retry' : 'ignore'
     }
     maxRetries 3
-    memory { 48.GB * task.attempt }
-    time { 8.h * task.attempt }
+    // A search runs the same region extension as the index's lambda-K fit, on the queries
+    // instead of 200 database sequences, so it is sized like the index task.
+    memory { kmerseekGb(alphabet, task.attempt).GB }
+    queue { sherlockQueue(kmerseekGb(alphabet, task.attempt)) }
+    time { (alphabet == 'cys2' ? 8.h : 2.h) * task.attempt }
     publishDir "${params.outdir}/kmerseek", mode: 'copy'
 
     input:
@@ -185,6 +237,11 @@ process searchQueries {
         --ksize ${ksize} \\
         --alphabet ${moltype} \\
         --output ${stem}.hits.csv
+    """
+
+    stub:
+    """
+    touch ${level}.${excluded}.${alphabet}.k${ksize}.hits.csv
     """
 }
 
@@ -226,6 +283,11 @@ process regexScan {
         --slack ${slack} \\
         --out ${level}.${excluded}.regex.d${slack}.hits.csv
     """
+
+    stub:
+    """
+    touch ${level}.${excluded}.regex.d${slack}.hits.csv
+    """
 }
 
 /*
@@ -262,9 +324,22 @@ process phmmerSearch {
         -o /dev/null \\
         ${queries} reference.fasta
     """
+
+    stub:
+    """
+    touch ${level}.${excluded}.phmmer.tbl
+    """
 }
 
 workflow {
+    // kmerseek runs on Sherlock only. Two pilot runs on the laptop under `standard` crashed
+    // it, since the local executor does not hold a task to its `memory`.
+    if (!workflow.stubRun && !workflow.profile.tokenize(',').contains('sherlock')) {
+        error "Run this with -profile sherlock, on Sherlock. Profile '${workflow.profile}' " +
+              "is for -stub-run only: kmerseek index under cys2 needs more memory than " +
+              "this laptop has."
+    }
+
     if (!params.swissprot_fasta) {
         error "--swissprot_fasta is required (uniprot_sprot.fasta.gz)"
     }
@@ -277,7 +352,10 @@ workflow {
     // reads a notebook's output (the lists are derived from files, not pasted in).
     clades = Channel
         .fromPath(params.queries)
-        .splitCsv(header: true)
+        // quote: '"' so an empty field written as "" reads as empty. Without it the three
+        // Opisthacanthus queries, which have no genus or phylum, became a clade named ""
+        // (two quote marks) and a reference with nothing held out.
+        .splitCsv(header: true, quote: '"')
         // One row per query, counted per clade, so --genus_min_queries can be applied
         // without any list of clades written down anywhere. The 1 is what groupTuple
         // collects: its length is the number of queries in that clade.
