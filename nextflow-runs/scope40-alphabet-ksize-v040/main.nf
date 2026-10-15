@@ -85,6 +85,10 @@ params.shuffle_queries = false
 params.searches = ''
 params.combine  = false
 params.combine_memory = '64 GB'
+// Keep each query's hits only up to its first different-class hit before combining (exact on
+// the database scale; rank fusion and the reported-pairs scale are left out). For searches with
+// tens of millions of pairs.
+params.combine_truncate = false
 params.shuffle_k       = 2
 params.shuffle_seed    = 1
 params.shuffle_script  = "${projectDir}/../scope40-lowcomplexity-null/bin/shuffle_fasta.py"
@@ -408,7 +412,8 @@ process combineAlphabets {
     path 'scope40_v040_combined_bands.tsv'
 
     script:
-    def label = params.shuffle_queries ? "--query-set shuffled_k${params.shuffle_k}_seed${params.shuffle_seed}" : ''
+    def label = (params.shuffle_queries ? "--query-set shuffled_k${params.shuffle_k}_seed${params.shuffle_seed}" : '') +
+                (params.combine_truncate ? ' --truncate' : '')
     """
     combine_alphabets.py --domains ${domains} --ref-rocx ${ref_rocx} --utils ${utils} \
         --pair-identity ${identity} --out-auc scope40_v040_combined_auc.tsv \

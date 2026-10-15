@@ -20,6 +20,9 @@
 #   make run-combine-sbatch     8 alphabets' best searches, then best of N, rank fusion and the
 #                               union upper limit over them; run-combine-shuffled-sbatch: the
 #                               same on shuffled queries (chance)
+#   make run-combine-lowk-sbatch   the same with the eight best searches on FoldSeek's scale
+#                               (below k_min), each query's hits cut at its first different-class
+#                               hit; run-combine-lowk-shuffled-sbatch: on shuffled queries
 SHELL := /bin/bash
 MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 REPO_DIR     := $(abspath $(MAKEFILE_DIR)/../..)
@@ -67,7 +70,8 @@ NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
 .PHONY: help settings plan fasta measure-resources stub run run-sbatch watch stop \
         run-below-kmin-sbatch run-best-k-identity-sbatch run-identity-sbatch \
         watch-below-kmin stop-below-kmin run-shuffled-sbatch watch-shuffled stop-shuffled \
-        run-combine-sbatch run-combine-shuffled-sbatch watch-combine watch-combine-shuffled
+        run-combine-sbatch run-combine-shuffled-sbatch watch-combine watch-combine-shuffled \
+        run-combine-lowk-sbatch run-combine-lowk-shuffled-sbatch watch-combine-lowk watch-combine-lowk-shuffled
 
 # ---- follow-up of notebook 277: k below k_min, and every search split by identity --------
 # The 16 alphabets whose best family or superfamily AUC (region_evalue; jaccard for exact)
@@ -137,6 +141,34 @@ run-combine-sbatch:
 run-combine-shuffled-sbatch:
 	$(MAKE) run-sbatch $(COMB_SHUF_VARS) NF_ARGS="$(COMBINE_ARGS) --shuffle_queries true \
 	  --shuffle_k $(SHUFFLE_K) --shuffle_seed $(SHUFFLE_SEED)"
+
+# The same test with each alphabet's best search on FoldSeek's scale, which is below k_min for
+# all of them (notebook 277 sections 6-7): the seven best alphabets and the best HP one. These
+# report 22 to 132 million pairs each, so the combining step cuts each query's hits at its first
+# different-class hit (combine_truncate) and asks for 128 GB.
+COMBINE_LOWK_SEARCHES := hsdm17:4:c_max,sdm12:5:c_max,mmseqs12:5:c_max,protein20:4:c_max,dayhoff6:6:c_max,uniprot18:4:c_max,wass14:4:c_max,hp_thomas_dill2:16:c2
+COMBINE_LOWK_ARGS = --k_below 2 --k_below_alphabets $(BELOW_KMIN_ALPHABETS) --min_seed_bits 15 \
+                    --searches $(COMBINE_LOWK_SEARCHES) --combine true --combine_truncate true \
+                    --combine_memory '128 GB' \
+                    --pair_identity $(MAKEFILE_DIR)/assets/scope40_pair_identity.tsv.gz --index_dir $(OUTDIR)/indexes
+COMB_LOWK_VARS = OUTDIR=$(SCOPE_DIR)/results-scope40-alphabet-ksize-v040-combine-lowk \
+            LAUNCH_DIR=$(MAKEFILE_DIR)/runs/combine-lowk HEAD_JOBNAME=nfdrv-scope40-comblowk HEAD_SESSION=scope40comblowk
+COMB_LOWK_SHUF_VARS = OUTDIR=$(SCOPE_DIR)/results-scope40-alphabet-ksize-v040-combine-lowk-shuffled-k$(SHUFFLE_K)-seed$(SHUFFLE_SEED) \
+            LAUNCH_DIR=$(MAKEFILE_DIR)/runs/combine-lowk-shuffled-k$(SHUFFLE_K)-seed$(SHUFFLE_SEED) \
+            HEAD_JOBNAME=nfdrv-scope40-comblowkshuf HEAD_SESSION=scope40comblowkshuf
+
+run-combine-lowk-sbatch:
+	$(MAKE) run-sbatch $(COMB_LOWK_VARS) NF_ARGS="$(COMBINE_LOWK_ARGS)"
+
+run-combine-lowk-shuffled-sbatch:
+	$(MAKE) run-sbatch $(COMB_LOWK_SHUF_VARS) NF_ARGS="$(COMBINE_LOWK_ARGS) --shuffle_queries true \
+	  --shuffle_k $(SHUFFLE_K) --shuffle_seed $(SHUFFLE_SEED)"
+
+watch-combine-lowk:
+	$(MAKE) watch $(COMB_LOWK_VARS)
+
+watch-combine-lowk-shuffled:
+	$(MAKE) watch $(COMB_LOWK_SHUF_VARS)
 
 watch-combine:
 	$(MAKE) watch $(COMB_VARS)
