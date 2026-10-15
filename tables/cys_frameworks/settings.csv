@@ -1,0 +1,10 @@
+alphabet,ksize,scaled,extend,mask,moltype,n_queries_searchable,n_queries_dropped
+cys2,12,1,false,false,cys2,5024,100
+cys2,16,1,false,false,cys2,4554,570
+cys2,20,1,false,false,cys2,3957,1167
+cys2,24,1,false,false,cys2,3756,1368
+cys2,28,1,false,false,cys2,3255,1869
+cys_hp3,9,1,false,false,hp_pbotc_1st_ed_hpc3,5124,0
+cys_hp3,11,1,false,false,hp_pbotc_1st_ed_hpc3,5098,26
+cys_hp3,13,1,false,false,hp_pbotc_1st_ed_hpc3,4934,190
+cys_hp3,15,1,false,false,hp_pbotc_1st_ed_hpc3,4741,383
