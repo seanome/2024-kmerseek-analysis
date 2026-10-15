@@ -18,8 +18,8 @@
  *   Foldseek    against the AFDB Swiss-Prot database: real queries from their AFDB
  *               models; every query, real and null, from ProstT5-predicted 3Di letters
  *               (a shuffled sequence has no structure).
- *   scans       composition, period and published-motif ranking, no search
- *               (bin/scans.py).
+ *   scans       composition, hydropathy window, period and published-motif ranking,
+ *               none of which searches (bin/scans.py).
  *
  * In code, a kmerseek setting is called setting_label (other pipelines here call it
  * arm_label); it is the name every kmerseek output file carries.
@@ -40,6 +40,8 @@ params.python          = '/usr/bin/python3'
 params.n_draws  = 20
 params.seed     = 20261014
 params.subset   = 0       // test runs only: truth entries plus this many other entries
+// Window lengths for the hydropathy window scan (bin/scans.py).
+params.window_lengths = '9,19' 
 
 // kmerseek
 params.kmerseek_image    = 'docker.io/olgabot/kmerseek:0.4.0-pr141-3c353d4'
@@ -157,12 +159,16 @@ process scans {
     label 'python_scoring'
     container params.kmerseek_image
     publishDir "${params.outdir}/hits/scans", mode: 'copy'
-    cpus 2
-    memory { "${48 * task.attempt} GB" }
-    time { "${6 * task.attempt}h" }
+    cpus 4
+    memory { "${96 * task.attempt} GB" }
+    time { "${12 * task.attempt}h" }
     errorStrategy { killedByCluster(task) && task.attempt <= 2 ? 'retry' : 'finish' }
 
     input:
+    // The script is a staged input, not read from projectDir: Nextflow hashes a task from
+    // its inputs, so a path interpolated into the script text leaves an edited scan
+    // looking identical and the stored result is served instead of recomputed.
+    path script
     path reference
     path queries
     path draws
@@ -170,16 +176,18 @@ process scans {
     path classes
     path motifs
     path eisenberg
+    path kyte_doolittle
 
     output:
     path 'scans.parquet'
 
     script:
     """
-    ${params.python} ${projectDir}/bin/scans.py \\
+    ${params.python} ${script} \\
         --reference ${reference} --queries ${queries} --draws ${draws} \\
         --truth ${truth_dir}/truth_set.tsv --alphabet-classes ${classes} \\
-        --motifs ${motifs} --eisenberg ${eisenberg} --out scans.parquet
+        --motifs ${motifs} --eisenberg ${eisenberg} --kyte-doolittle ${kyte_doolittle} \\
+        --window-lengths ${params.window_lengths} --out scans.parquet
     """
 }
 
@@ -424,10 +432,12 @@ workflow {
     def motifs    = file("${projectDir}/assets/known_motifs.tsv", checkIfExists: true)
     def classes   = file("${projectDir}/assets/alphabet_classes.tsv", checkIfExists: true)
     def eisenberg = file("${projectDir}/assets/eisenberg_scale.tsv", checkIfExists: true)
+    def kyte_doolittle = file("${projectDir}/assets/kyte_doolittle_scale.tsv", checkIfExists: true)
 
     prep = prepInputs(file(params.swissprot_fasta, checkIfExists: true), truth_dir, motifs, classes)
 
-    scans(prep.reference, prep.queries, prep.draws, truth_dir, classes, motifs, eisenberg)
+    scans(file("${projectDir}/bin/scans.py", checkIfExists: true), prep.reference,
+          prep.queries, prep.draws, truth_dir, classes, motifs, eisenberg, kyte_doolittle)
 
     chunks = prep.queries.splitFasta(by: params.hmmer_chunk_size, file: true)
     hmmer_in = chunks.combine(prep.reference)

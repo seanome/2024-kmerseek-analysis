@@ -17,6 +17,22 @@ Each ranked list orders all reference entries for one query, best first:
                            angle from 80 to 180 degrees in 5-degree steps, |sum_n h_n
                            exp(i n angle)| / N, with h the Eisenberg consensus scale
                            (assets/eisenberg_scale.tsv, copied from Biopython).
+  window_kd_match_w<W>     the hydropathy window scan. Each sequence becomes a profile:
+                           the mean Kyte-Doolittle hydropathy (assets/kyte_doolittle_scale.tsv)
+                           of every window of W residues. The shorter profile is slid
+                           along the longer one, fully inside it, and the score is the
+                           smallest mean squared difference over all offsets, negated so
+                           that larger is better. A sequence shorter than W, which has no
+                           window, is ranked last. One list per --window-lengths value.
+                           The `overlap` column holds how many windows were compared, the
+                           smaller profile's length. It is there because a short target
+                           matches a long query's best stretch easily: a 9-residue entry
+                           is one window at W=9 and reaches a mean squared difference of
+                           0. The notebook reads `overlap` to require a minimum before
+                           taking the scan's recall, and reports the cutoff it used.
+  window_kd_spread_w<W>    the same window scores without their order: cosine distance
+                           between histograms of the window values over fixed bins from
+                           -4.5 to 4.5 (the scale's range) in 0.5 steps.
   motif_regex              for a query whose lineage has a published repeat consensus
                            (assets/known_motifs.tsv): residues covered by matches of the
                            consensus regex, larger is better; entries with no match share
@@ -41,6 +57,12 @@ HP_ALPHABET = "hp_pbotc_1st_ed2"
 LAGS = np.arange(1, 31)
 ANGLES_DEG = np.arange(80, 181, 5)
 AA20 = "ACDEFGHIKLMNPQRSTVWY"
+# Bin edges for window_kd_spread: the Kyte-Doolittle scale runs from -4.5 (arginine) to
+# 4.5 (isoleucine), so a window mean cannot fall outside this range.
+SPREAD_BINS = np.arange(-4.5, 4.51, 0.5)
+# Overlap-save block size for the profile match. One FFT per block, all blocks in one
+# batched call.
+FFT_BLOCK = 1 << 16
 
 
 def read_fasta(path: Path) -> tuple[list[str], list[str]]:
@@ -142,6 +164,153 @@ def cosine_distance(q: np.ndarray, t: np.ndarray) -> np.ndarray:
     return d
 
 
+def window_profiles(c, scale, window):
+    """Mean hydropathy of every window of `window` residues, in concatenated coordinates.
+
+    Position p holds the mean over residues p..p+window-1 when that whole window lies
+    inside one protein, and 0 where it does not. `valid` marks the real windows.
+    """
+    h = lookup(scale)[c.codes]
+    cs = np.concatenate([[0.0], np.cumsum(h)])
+    prof = (cs[window:] - cs[:-window]) / window
+    prof = np.concatenate([prof, np.zeros(window - 1)])
+    valid = c.pos <= (c.lengths[c.protein] - window)
+    prof = np.where(valid, prof, 0.0)
+    return prof, valid
+
+
+def profile_lengths(c, window):
+    """Windows per protein: length - window + 1, or 0 for a protein shorter than window."""
+    return np.maximum(c.lengths - window + 1, 0)
+
+
+def block_fft(signal, kernel_len, block=FFT_BLOCK):
+    """Overlap-save setup: the FFT of every block of `signal`, with its block size.
+
+    Every kernel is zero-padded to `kernel_len`, so the block layout does not depend on
+    the query and these FFTs are computed once and reused for every query. The block size
+    travels with the FFTs, because a correlation done at a different one is wrong.
+    """
+    if block <= kernel_len:
+        raise ValueError(
+            f"block size {block} must exceed the kernel length {kernel_len}"
+        )
+    step = block - kernel_len + 1
+    n_blocks = int(np.ceil(len(signal) / step))
+    padded = np.zeros(step * n_blocks + kernel_len - 1)
+    padded[: len(signal)] = signal
+    blocks = np.lib.stride_tricks.sliding_window_view(padded, block)[::step]
+    return {
+        "fft": np.fft.rfft(blocks, axis=1),
+        "block": block,
+        "kernel_len": kernel_len,
+    }
+
+
+def correlate_saved(plan, kernel, n_out):
+    """sum_j kernel[j] * signal[p+j] for every p, from precomputed block FFTs."""
+    block = plan["block"]
+    if len(kernel) > plan["kernel_len"]:
+        raise ValueError(
+            f"kernel of {len(kernel)} is longer than the {plan['kernel_len']} "
+            "the block FFTs were built for"
+        )
+    k = np.zeros(block)
+    k[: plan["kernel_len"]] = np.r_[kernel, np.zeros(plan["kernel_len"] - len(kernel))][
+        ::-1
+    ]
+    out = np.fft.irfft(plan["fft"] * np.fft.rfft(k), n=block, axis=1)
+    keep = out[:, plan["kernel_len"] - 1 :].reshape(-1)
+    return keep[:n_out]
+
+
+def best_profile_match(tc, qc, scale, window, plan, short_groups):
+    """-min mean squared difference between each target's and the query's profile.
+
+    The shorter profile is slid fully inside the longer one. Targets whose profile is at
+    least as long as the query's go through the precomputed block FFTs; shorter ones are
+    done by sliding the target inside the query, grouped by profile length so each group
+    is one matrix product. A sequence with no window at all scores -inf.
+    """
+    t_prof, t_valid = window_profiles(tc, scale, window)
+    q_prof, q_valid = window_profiles(qc, scale, window)
+    q_len = profile_lengths(qc, window)
+    t_len = profile_lengths(tc, window)
+    n_targets = len(tc.lengths)
+    out = np.full((len(qc.lengths), n_targets), -np.inf)
+    overlap = np.zeros((len(qc.lengths), n_targets), dtype=np.int64)
+    # One cumulative sum of the squared profile, for every query's window sums. Caching a
+    # moving sum per query length instead would hold one array the size of the whole
+    # reference for each of the ~250 distinct query lengths.
+    cs2 = np.concatenate([[0.0], np.cumsum(t_prof**2)])
+    for qi in range(len(qc.lengths)):
+        lp = int(q_len[qi])
+        if lp <= 0:
+            continue
+        q = q_prof[qc.starts[qi] : qc.starts[qi] + lp]
+        q2 = float((q**2).sum())
+
+        # Targets at least as long as the query profile: slide the query inside them.
+        corr = correlate_saved(plan, q, len(t_prof))
+        n_pos = len(t_prof) - lp + 1
+        msd = np.full(len(t_prof), np.inf)
+        if n_pos > 0:
+            msd[:n_pos] = (cs2[lp:] - cs2[:n_pos] + q2 - 2.0 * corr[:n_pos]) / lp
+        start_ok = t_valid
+        end_ok = np.zeros(len(t_prof), dtype=bool)
+        if lp <= len(t_prof):
+            end_ok[: len(t_prof) - lp + 1] = t_valid[lp - 1 :]
+            same = np.zeros(len(t_prof), dtype=bool)
+            same[: len(t_prof) - lp + 1] = (
+                tc.protein[lp - 1 :] == tc.protein[: len(t_prof) - lp + 1]
+            )
+        else:
+            same = np.zeros(len(t_prof), dtype=bool)
+        cand = np.flatnonzero(start_ok & end_ok & same)
+        if len(cand):
+            pid = tc.protein[cand]
+            first = np.flatnonzero(np.r_[True, pid[1:] != pid[:-1]])
+            hit = pid[first]
+            out[qi, hit] = -np.minimum.reduceat(msd[cand], first)
+            overlap[qi, hit] = lp
+
+        # Targets shorter than the query profile: slide each inside the query.
+        for lt, (idx, mat, sq) in short_groups.items():
+            if lt >= lp:
+                continue
+            n_off = lp - lt + 1
+            qwin = np.lib.stride_tricks.sliding_window_view(q, lt)[:n_off]
+            d = sq[:, None] + (qwin**2).sum(axis=1)[None, :] - 2.0 * (mat @ qwin.T)
+            out[qi, idx] = -(d.min(axis=1) / lt)
+            overlap[qi, idx] = lt
+    return out, overlap
+
+
+def short_profile_groups(tc, scale, window, max_len):
+    """Profiles of targets with fewer than max_len windows, grouped by window count."""
+    t_prof, _ = window_profiles(tc, scale, window)
+    t_len = profile_lengths(tc, window)
+    groups = {}
+    wanted = np.flatnonzero((t_len > 0) & (t_len < max_len))
+    for lt in np.unique(t_len[wanted]):
+        idx = wanted[t_len[wanted] == lt]
+        mat = np.stack([t_prof[tc.starts[i] : tc.starts[i] + lt] for i in idx])
+        groups[int(lt)] = (idx, mat, (mat**2).sum(axis=1))
+    return groups
+
+
+def window_spread(c, scale, window):
+    """Histogram of each protein's window values over SPREAD_BINS."""
+    prof, valid = window_profiles(c, scale, window)
+    n_bins = len(SPREAD_BINS) - 1
+    b = np.clip(np.digitize(prof, SPREAD_BINS) - 1, 0, n_bins - 1)
+    keep = valid
+    flat = np.bincount(
+        c.protein[keep] * n_bins + b[keep], minlength=len(c.lengths) * n_bins
+    )
+    return flat.reshape(len(c.lengths), n_bins).astype(float)
+
+
 def ranks_min(score: np.ndarray) -> np.ndarray:
     """Rank 1 = highest score; ties share the best rank of their group."""
     order = np.argsort(-score, kind="stable")
@@ -153,7 +322,9 @@ def ranks_min(score: np.ndarray) -> np.ndarray:
     return r
 
 
-def keep_rows(method, list_name, qid, score, names, truth_idx, top_n, n_total):
+def keep_rows(
+    method, list_name, qid, score, names, truth_idx, top_n, n_total, overlap=None
+):
     r = ranks_min(score)
     keep = np.unique(
         np.concatenate([np.argsort(-score, kind="stable")[:top_n], truth_idx])
@@ -166,6 +337,7 @@ def keep_rows(method, list_name, qid, score, names, truth_idx, top_n, n_total):
         "score": score[keep].tolist(),
         "rank": r[keep].tolist(),
         "n_ranked": [n_total] * len(keep),
+        "overlap": [None] * len(keep) if overlap is None else overlap[keep].tolist(),
     }
 
 
@@ -179,6 +351,17 @@ def main() -> int:
     ap.add_argument("--motifs", type=Path, required=True)
     ap.add_argument(
         "--eisenberg", type=Path, required=True, help="assets/eisenberg_scale.tsv"
+    )
+    ap.add_argument(
+        "--kyte-doolittle",
+        type=Path,
+        required=True,
+        help="assets/kyte_doolittle_scale.tsv",
+    )
+    ap.add_argument(
+        "--window-lengths",
+        default="9,19",
+        help="window lengths for the hydropathy scan, comma separated",
     )
     ap.add_argument("--top-n", type=int, default=2000)
     ap.add_argument("--out", type=Path, required=True)
@@ -205,6 +388,9 @@ def main() -> int:
 
     es = pl.read_csv(args.eisenberg, separator="\t", comment_prefix="#")
     eisenberg = dict(zip(es["residue"], es["hydrophobicity"]))
+
+    kds = pl.read_csv(args.kyte_doolittle, separator="\t", comment_prefix="#")
+    kyte_doolittle = dict(zip(kds["residue"], kds["hydropathy"]))
 
     feats = {"composition_aa20": ({aa: i for i, aa in enumerate(AA20)}, 20)}
     for a in sorted(cls["alphabet"].unique()):
@@ -251,6 +437,49 @@ def main() -> int:
             )
         print(f"{list_name}: done", file=sys.stderr)
 
+    for window in [int(w) for w in args.window_lengths.split(",")]:
+        q_len_max = int(profile_lengths(q, window).max())
+        if q_len_max <= 0:
+            print(f"window {window}: every query is shorter; skipped", file=sys.stderr)
+            continue
+        t_prof, _ = window_profiles(t, kyte_doolittle, window)
+        plan = block_fft(t_prof, q_len_max)
+        groups = short_profile_groups(t, kyte_doolittle, window, q_len_max)
+        match, overlap = best_profile_match(t, q, kyte_doolittle, window, plan, groups)
+        del plan, groups
+        for i, qid in enumerate(qnames):
+            chunks.append(
+                keep_rows(
+                    "window",
+                    f"window_kd_match_w{window}",
+                    qid,
+                    match[i],
+                    names,
+                    truth_idx,
+                    args.top_n,
+                    n_total,
+                    overlap[i],
+                )
+            )
+        del match, overlap
+        ts, qs = window_spread(t, kyte_doolittle, window), window_spread(
+            q, kyte_doolittle, window
+        )
+        for i, qid in enumerate(qnames):
+            chunks.append(
+                keep_rows(
+                    "window",
+                    f"window_kd_spread_w{window}",
+                    qid,
+                    -cosine_distance(qs[i], ts),
+                    names,
+                    truth_idx,
+                    args.top_n,
+                    n_total,
+                )
+            )
+        print(f"window {window}: done", file=sys.stderr)
+
     motifs = pl.read_csv(args.motifs, separator="\t")
     for m in motifs.iter_rows(named=True):
         rx = re.compile(m["regex"])
@@ -276,7 +505,12 @@ def main() -> int:
             file=sys.stderr,
         )
 
-    out = pl.concat([pl.DataFrame(c) for c in chunks])
+    # overlap is only set by the window scan, so its column is all nulls for every other
+    # list; without the override polars gives those frames a Null dtype and refuses the
+    # concat.
+    out = pl.concat(
+        [pl.DataFrame(c, schema_overrides={"overlap": pl.Int64}) for c in chunks]
+    )
     out.write_parquet(args.out, compression="zstd")
     print(
         out.group_by("list_name")
