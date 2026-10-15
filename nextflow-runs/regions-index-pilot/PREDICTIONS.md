@@ -151,3 +151,17 @@ are ranked alike. Same 5% decoy rule (a decoy is paired with its source's featur
 landing rules. `tools/rescore_feature_coverage.py` runs it after the pipeline, from the run's
 call files, because changing the pipeline's bin/ would rerun every search. The composition
 classifier is not ranked this way: its target span is the whole entry.
+
+**2026-10-15, a third index (Olga), before any full-run result was read:** the Pfam index,
+Pfam 38.2's domains on the same non-mammal Swiss-Prot entries (only entries in Pfam's
+sequence set, the UniProt reference proteomes; only rows whose sequence md5 matches the
+Swiss-Prot 2026_03 sequence), cut out with the same flanks, clustered and given decoys the
+way the regions index is. A Pfam family's type gives the entry's feature type: Domain and
+Family -> DOMAIN (ZN_FING for "zf-" families), Repeat -> REPEAT, Motif -> MOTIF,
+Coiled-coil -> COILED, Disordered -> REGION. It is searched with its own fit ("pfam") and
+with the whole-protein index's fit ("pfamshared"). Expectation, written now: Pfam holds few
+families for disordered regions or short motifs, so the Pfam index bears on prediction 3
+(folded domains), not on prediction 2. Limits: Pfam's family models and boundaries were
+built partly from mammalian proteins, so leaving out mammal sequences does not leave out
+mammals from how the domains were defined; and most query DOMAIN features (834 of 1_028)
+were annotated from sequence models like Pfam's.

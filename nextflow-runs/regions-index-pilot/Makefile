@@ -10,7 +10,7 @@ LAUNCH_DIR    ?= $(HOME)/data/regions-index-pilot/launch
 # A kmerseek v0.4.0 (0aed5ca) binary for the local profile; Sherlock uses the image.
 KMERSEEK      ?= kmerseek
 
-.PHONY: fetch-inputs build-local test-local fetch-swissprot-sherlock run-sherlock running
+.PHONY: fetch-inputs build-local test-local fetch-swissprot-sherlock run-sherlock run-sherlock-pfam running
 
 # --- Sherlock --------------------------------------------------------------------------
 # Paths on Sherlock. $(SCRATCH) is purged after 90 days untouched, so the results that matter
@@ -70,6 +70,19 @@ run-sherlock:
 	cd $(SH_LAUNCH_DIR) && ml load biology nextflow && \
 	  $(HEAD_SUBMIT) nextflow run $(MAKEFILE_DIR)main.nf -profile sherlock -resume \
 	    --swissprot_dat $(SH_DAT) --outdir $(SH_OUTDIR) $(SH_RESOURCES)
+
+## The full run plus the Pfam index (Olga, 2026-10-15): Pfam 38.2's domains on the same
+## Swiss-Prot entries. Same launch folder and -resume, so every finished task of the run is
+## reused; only the Pfam index, its searches and the scoring run. Pfam-A.regions.tsv.gz is
+## the 38.2 copy on Sherlock (5_053_457_363 bytes, md5 f22fb1efefd1e52d6d9c64a8f10003ba);
+## the family table is committed (assets/Pfam-A.38.2.hmm.dat.gz).
+SH_PFAM_REGIONS ?= $(SCRATCH)/data/pfam/regions/Pfam-A.regions.tsv.gz
+run-sherlock-pfam:
+	@mkdir -p $(SH_LAUNCH_DIR)
+	cd $(SH_LAUNCH_DIR) && ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run $(MAKEFILE_DIR)main.nf -profile sherlock -resume \
+	    --swissprot_dat $(SH_DAT) --outdir $(SH_OUTDIR) $(SH_RESOURCES) \
+	    --pfam_regions $(SH_PFAM_REGIONS) --pfam_hmm_dat $(MAKEFILE_DIR)assets/Pfam-A.38.2.hmm.dat.gz
 
 ## What is running, from any folder (scripts/nf-running, PR 70).
 running:

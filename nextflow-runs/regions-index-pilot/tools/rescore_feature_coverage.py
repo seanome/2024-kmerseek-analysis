@@ -82,9 +82,13 @@ def sets_from_trace(launch_dir: Path) -> dict[str, list[Path]]:
                 script = (wd / ".command.sh").read_text()
                 m = TARGET_RE.search(script)
                 name, window, slug = m.group(1).split(".", 2)
-                kind = "whole" if name.startswith("whole") else "regions"
-                if kind == "regions" and "--ka-r-database" in script:
-                    kind = "regionsshared"
+                kind = (
+                    "whole"
+                    if name.startswith("whole")
+                    else ("pfam" if name.startswith("pfam") else "regions")
+                )
+                if kind != "whole" and "--ka-r-database" in script:
+                    kind += "shared"
                 label = f"kmerseek.{kind}.{window}.{slug}"
                 out[label].extend(sorted(wd.glob("*.calls.tsv.gz")))
             else:
@@ -92,7 +96,11 @@ def sets_from_trace(launch_dir: Path) -> dict[str, list[Path]]:
                     p for p in wd.glob("mmseqs.*.log") if MMSEQS_LOG_RE.search(p.name)
                 ]
                 name, window = MMSEQS_LOG_RE.search(logs[0].name).groups()
-                kind = "whole" if name.startswith("whole") else "regions"
+                kind = (
+                    "whole"
+                    if name.startswith("whole")
+                    else ("pfam" if name.startswith("pfam") else "regions")
+                )
                 out[f"mmseqs2.{kind}.w{window}.mmseqs2"].append(wd / "calls.tsv.gz")
     return out
 
@@ -200,7 +208,7 @@ def coverage_threshold(pairs: pl.DataFrame, max_rate: float) -> tuple[int, dict]
 
 def score_set(label, files, truth, tfeat, flank, max_rate, min_landing):
     kind = label.split(".")[1]
-    kind = "regions" if kind == "regionsshared" else kind
+    kind = "whole" if kind == "whole" else "regions"
     calls, nofit = read_calls(files)
     pairs = pair_with_target_features(calls, kind, tfeat, flank)
     keep_rank, thr = (-1, {"threshold": None, "n_target": 0, "n_decoy": 0})

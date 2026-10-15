@@ -112,6 +112,9 @@ params.query_chunk_size = 100
 // 0 searches every query. A positive number searches that many, spread evenly over the
 // accession-sorted list, for a test run.
 params.query_limit = 0
+// The Pfam index's inputs; null leaves it out.
+params.pfam_regions = null
+params.pfam_hmm_dat = null
 // A command put in front of each kmerseek and MMseqs2 call to record its peak memory. Empty on
 // Sherlock, where the trace has it; `/usr/bin/time -l` on the laptop (profile local), where
 // Nextflow reports no memory on macOS. Its report goes to the task's log.
@@ -249,6 +252,74 @@ process finishRegionsIndex {
     """
 }
 
+// The Pfam index (Olga, 2026-10-15): Pfam's domains on the whole-protein index's entries,
+// cut out, clustered and given decoys the way the regions index is. Built only when
+// --pfam_regions and --pfam_hmm_dat are given (one Pfam release: Pfam-A.regions.tsv.gz and
+// Pfam-A.hmm.dat.gz). Separate processes, so the regions index's tasks are untouched.
+process extractPfamRegions {
+    label 'python'
+    publishDir "${params.outdir}/pfam_index", mode: 'copy', pattern: '*.{parquet,json}'
+
+    input:
+    path pfam_regions
+    path pfam_hmm_dat
+    path sequences
+    path accessions
+
+    output:
+    path 'regions.parquet', emit: regions
+    path 'regions_long.fasta', emit: long_fasta
+    path 'regions_short.fasta', emit: short_fasta
+    path 'pfam_filter.json'
+
+    script:
+    """
+    ${py('extract_pfam_regions.py')} --pfam-regions ${pfam_regions} --pfam-hmm-dat ${pfam_hmm_dat} \\
+        --sequences ${sequences} --accessions ${accessions} --k-max ${params.k_max} \\
+        --min-cluster-aa ${params.min_cluster_aa} --out-dir .
+    """
+}
+
+process clusterPfamRegions {
+    label 'mmseqs'
+    publishDir "${params.outdir}/pfam_index", mode: 'copy', pattern: '*.log'
+
+    input:
+    path long_fasta
+
+    output:
+    path 'clu_cluster.tsv', emit: tsv
+    path 'cluster.log'
+
+    script:
+    """
+    set -euo pipefail
+    ${params.mmseqs} easy-cluster ${long_fasta} clu tmp \\
+        --min-seq-id ${params.cluster_min_seq_id} -c ${params.cluster_coverage} --cov-mode 0 \\
+        --threads ${task.cpus} > cluster.log 2>&1
+    ${params.mmseqs} version >> cluster.log
+    """
+}
+
+process finishPfamIndex {
+    label 'python'
+    publishDir "${params.outdir}/pfam_index", mode: 'copy'
+
+    input:
+    path regions
+    path cluster_tsv
+
+    output:
+    path 'regions_index.fasta', emit: fasta
+    path 'cluster_members.parquet'
+    path 'cluster_summary.tsv'
+
+    script:
+    """
+    ${py('finish_regions_index.py')} --regions ${regions} --cluster-tsv ${cluster_tsv} --out-dir .
+    """
+}
+
 process makeDecoys {
     label 'python'
     tag "${name}.w${window}"
@@ -323,7 +394,9 @@ def kmerseekSettings() {
 }
 
 // whole_protein_index -> whole, regions_index -> regions: the index part of a label.
-def indexKind(String name) { name.startsWith('whole') ? 'whole' : 'regions' }
+def indexKind(String name) {
+    name.startsWith('whole') ? 'whole' : (name.startsWith('pfam') ? 'pfam' : 'regions')
+}
 
 def indexFirstAskGb(String alphabet, int ksize) {
     def rows = file(params.kmerseek_index_first_ask).readLines().findAll { it && !it.startsWith('#') }
@@ -567,7 +640,8 @@ process scoreCalls {
 
     script:
     def parts = label.tokenize('.')
-    def kind  = parts[1] == 'regionsshared' ? 'regions' : parts[1]
+    // Every index but the whole-protein one names its entries accession|type|desc|start-end.
+    def kind  = parts[1] in ['whole', 'wholeannot'] ? parts[1] : 'regions'
     // Whole-protein calls are scored a second time keeping only calls whose target side
     // lies in an annotated feature (index label "wholeannot"; Olga, 2026-10-13). The
     // composition classifier is scored on all its calls, ranked, for the comparison at
@@ -666,9 +740,18 @@ workflow build {
 
     indexes = buildWholeReference.out.fasta.map { ['whole_protein_index', it] }
         .mix(finishRegionsIndex.out.fasta.map { ['regions_index', it] })
+    if (params.pfam_regions) {
+        if (!params.pfam_hmm_dat) error "--pfam_regions needs --pfam_hmm_dat from the same Pfam release"
+        extractPfamRegions(file(params.pfam_regions, checkIfExists: true),
+                           file(params.pfam_hmm_dat, checkIfExists: true),
+                           parseFeatures.out.sequences, buildWholeReference.out.accessions)
+        clusterPfamRegions(extractPfamRegions.out.long_fasta)
+        finishPfamIndex(extractPfamRegions.out.regions, clusterPfamRegions.out.tsv)
+        indexes = indexes.mix(finishPfamIndex.out.fasta.map { ['pfam_index', it] })
+    }
     makeDecoys(indexes.combine(Channel.fromList(windows)))
-    // The size summary reads the headline window's files.
-    pair = makeDecoys.out.combined.filter { it[1] == windows[0] }
+    // The size summary reads the headline window's files, whole-protein and regions index.
+    pair = makeDecoys.out.combined.filter { it[1] == windows[0] && it[0] != 'pfam_index' }
         .map { n, w, f -> [n, f] }
         .toSortedList { a, b -> b[0] <=> a[0] }
         .map { l -> l.flatten() }
@@ -704,10 +787,10 @@ workflow {
     wholeFit = sized.filter { row -> row[0].startsWith('whole') }
         .map { row -> [[row[1], row[6]], storedFit(row[7], row[4])] }
         .filter { key, fit -> fit != null }
-    shared = sized.filter { row -> row[0].startsWith('regions') }
+    shared = sized.filter { row -> !row[0].startsWith('whole') }
         .map { row -> [[row[1], row[6]], row] }
         .join(wholeFit)
-        .map { key, row, fit -> row + ['regionsshared', "--ka-k ${fit.k} --ka-r-database ${fit.slope}".toString()] }
+        .map { key, row, fit -> row + [indexKind(row[0]) + 'shared', "--ka-k ${fit.k} --ka-r-database ${fit.slope}".toString()] }
     searches = params.shared_fit ? own.mix(shared) : own
     kmerseekSearch(searches.combine(splitQueries.out.chunks.flatten()))
 

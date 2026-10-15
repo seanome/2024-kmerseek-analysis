@@ -42,6 +42,11 @@ PAIRS = [
     ("whole", "regionsshared"),
     ("regions", "regionsshared"),
     ("wholeannot", "regionsshared"),
+    ("whole", "pfam"),
+    ("regions", "pfam"),
+    ("wholeannot", "pfam"),
+    ("whole", "pfamshared"),
+    ("pfam", "pfamshared"),
 ]
 MC_SCHEMA = {
     "landing_rule": pl.Utf8,
