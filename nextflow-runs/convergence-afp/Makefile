@@ -173,7 +173,7 @@ NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
 # convergence_afp_after_pilot read. So refuse before submitting. Added 2026-10-14, after a
 # second `make convergence_afp` during the pilot did exactly that.
 define refuse_second_driver
-	@j=$$(squeue -u $$USER -h -n nfdrv-$(RUN) -o %i | head -1); if [ -n "$$j" ]; then \
+	@j=$$(squeue -u $$USER -h -n nfdrv-$(RUN) -t PENDING,RUNNING,CONFIGURING -o %i | head -1); if [ -n "$$j" ]; then \
 	  echo "nfdrv-$(RUN) is already queued or running as job $$j; not submitting a second driver."; \
 	  echo "To start the full run when it ends cleanly: make convergence_afp_after_pilot"; exit 1; fi
 endef
