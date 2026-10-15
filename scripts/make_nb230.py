@@ -564,6 +564,113 @@ hc.finish_figure(
 """)
 
 md(r"""
+The same result, drawn as the k values each alphabet can use. A seed length k is **usable**
+here when it is inside notebook 274's range (no more than 100 human proteins share a seed
+by chance, and up to one chance match in Swiss-Prot) and at least 5% of the Pfam seed pairs
+in that identity bin share an unbroken same-class run of k or more columns. The thin grey
+line is notebook 274's whole range; the bar is the usable part of it. The bar is dark where
+at least 20% of pairs are within reach and light where 5-20% are. The numbers at the right
+are the usable k values.
+""")
+
+code(r"""
+from matplotlib.colors import to_rgb
+from matplotlib.patches import Patch
+
+
+def tint(hex_colour, f=0.6):
+    # Mix a colour with white; f is the share of white.
+    rgb = np.array(to_rgb(hex_colour))
+    return tuple(rgb + (1 - rgb) * f)
+
+
+usable = (
+    reach.filter(pl.col("in_274_range") & (pl.col("share_reached") >= FEW_PAIRS))
+    .group_by("alphabet", "identity_bin")
+    .agg(
+        pl.col("k").min().alias("k_use_lo"),
+        pl.col("k").max().alias("k_use_hi"),
+        pl.col("k").filter(pl.col("share_reached") >= MOST_PAIRS).max().alias("k_most_hi"),
+    )
+)
+# A run share falls as k grows, so the usable k values are one unbroken stretch from k_min.
+gaps = reach.join(usable, on=["alphabet", "identity_bin"]).filter(
+    pl.col("k").is_between(pl.col("k_use_lo"), pl.col("k_use_hi")) & (pl.col("share_reached") < FEW_PAIRS)
+)
+assert gaps.height == 0, "usable k values are not one stretch"
+assert usable.height == len(ALL_ALPHABETS) * len(BINS_K), "an alphabet has no usable k in some bin"
+
+fig, axes = plt.subplots(1, len(BINS_K), figsize=(17, 8.6), sharey=True)
+for ax, b in zip(axes, BINS_K):
+    u = usable.filter(pl.col("identity_bin") == b).join(K274, on="alphabet")
+    for r in u.iter_rows(named=True):
+        a, yy = r["alphabet"], row_y[r["alphabet"]]
+        col = GROUP_OF[a][1]
+        ax.plot([r["k_min"], r["k_max"]], [yy, yy], color="0.6", lw=1.2, zorder=1)
+        ax.plot([r["k_max"]] * 2, [yy - 0.22, yy + 0.22], color="0.6", lw=1.2, zorder=1)
+        # Each k is drawn as a cell from k - 0.5 to k + 0.5, so a single usable k still shows.
+        lo, hi = r["k_use_lo"] - 0.5, r["k_use_hi"] + 0.5
+        ax.barh(yy, hi - lo, left=lo, height=0.62, color=tint(col), zorder=2)
+        if r["k_most_hi"] is not None:
+            ax.barh(yy, r["k_most_hi"] + 0.5 - lo, left=lo, height=0.62, color=col, zorder=3)
+        k_text = str(r["k_use_lo"]) if r["k_use_lo"] == r["k_use_hi"] else f"{r['k_use_lo']}-{r['k_use_hi']}"
+        ax.text(41.5, yy, k_text, va="center", fontsize=8.5)
+    ax.text(41.5, -0.9, "usable k", fontsize=8.5, fontweight="bold")
+    ax.set_xlim(3, 46)
+    ax.set_xticks(range(5, 41, 5))
+    ax.set_ylim(max(row_y.values()) + 0.7, -1.3)
+    n_b = reach.filter(pl.col("identity_bin") == b)["n_pairs"][0]
+    ax.set_title(f"{b} identity\n{n_b:_} Pfam seed pairs".replace("_", ","), fontsize=10)
+    ax.set_xlabel("seed length k (letters of that alphabet)")
+    ax.grid(axis="x", alpha=0.25)
+    for yy in row_y.values():
+        ax.axhline(yy, color="0.9", lw=0.6, zorder=0)
+axes[0].set_yticks(list(row_y.values()), [alphabet_label(a) for a in row_y], fontsize=8.5)
+
+handles = [
+    Line2D([], [], color="0.6", lw=1.2, label="notebook 274 range: k_min to k_max (tick at k_max)"),
+    Patch(color="0.25", label=f"usable k, at least {MOST_PAIRS:.0%} of pairs reachable"),
+    Patch(color=tint("#404040"), label=f"usable k, {FEW_PAIRS:.0%}-{MOST_PAIRS:.0%} of pairs reachable"),
+] + [Patch(color=c, label=g) for g, c, _ in SIZE_GROUPS]
+fig.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=4, fontsize=9, frameon=False)
+
+wide_k = (
+    usable.with_columns(
+        pl.format("{}-{}", "k_use_lo", "k_use_hi").alias("usable k"),
+        pl.col("alphabet").cast(pl.Enum(ALL_ALPHABETS)),
+    )
+    .pivot(on="identity_bin", index="alphabet", values="usable k")
+    .join(K274.with_columns(pl.col("alphabet").cast(pl.Enum(ALL_ALPHABETS))), on="alphabet")
+    .select("alphabet", *BINS_K, "k_min", "k_max")
+    .sort("alphabet")
+)
+print(f"Usable k: inside notebook 274's range and reaching >= {FEW_PAIRS:.0%} of Pfam seed pairs in that bin")
+print(wide_k)
+rem = usable.filter(pl.col("identity_bin") == REMOTE_BIN).join(K274, on="alphabet")
+n_use = rem["k_use_hi"] - rem["k_use_lo"] + 1
+share_used = (n_use / (rem["k_max"] - rem["k_min"] + 1)).round(2)
+hp_u = rem.filter(pl.col("alphabet") == "hp_thomas_dill2").row(0, named=True)
+pr_u = rem.filter(pl.col("alphabet") == "protein20").row(0, named=True)
+hc.finish_figure(
+    fig,
+    FIG / "230_usable_k_per_alphabet_pfam_seed.png",
+    tools=hc.NO_TOOL + "; Pfam-A 38.2 seed alignments; k ranges from notebook 274 (PR #101)",
+    hypothesis=(
+        f"A seed length is usable when it is inside notebook 274's range and at least {FEW_PAIRS:.0%} of homolog pairs "
+        "share a same-class run that long. A longer bar = more seed lengths worth building an index for."
+    ),
+    conclusion=(
+        f"At {REMOTE_BIN} identity each alphabet has {n_use.min()} to {n_use.max()} usable k values, "
+        f"{share_used.min():.0%} to {share_used.max():.0%} of notebook 274's range: hp_thomas_dill2 k {hp_u['k_use_lo']}-{hp_u['k_use_hi']} "
+        f"of {hp_u['k_min']}-{hp_u['k_max']}, protein20 k {pr_u['k_use_lo']}-{pr_u['k_use_hi']} of {pr_u['k_min']}-{pr_u['k_max']}. "
+        "Closer homologs use more of the range. For remote homologs, build indexes only for the usable k."
+    ),
+    title="Usable seed lengths k per alphabet: inside notebook 274's range and reaching at least 5% of Pfam seed pairs",
+    header_y=HEADER_Y,
+)
+""")
+
+md(r"""
 ## 3. How much of that is homology, and how much is packing?
 
 Two structurally aligned residues can share an HP class because they descend from one
