@@ -496,6 +496,39 @@ stamp(
 """)
 
 md(r"""
+**Why the open circles and the diamonds differ.** Olga asked on PR 99 (2026-10-15) why
+`dayhoff6`, `wwmj5` and `gbmr4` look better than the 20 amino acids in the figure. Their open
+circles are right of the line in the Pfam panel; their diamonds are left of it. The table below
+gives, for Pfam seed pairs at 20% identity or less, each alphabet's I in both views.
+
+A pair goes in the 20% or less group when few of its positions hold the same residue. In the
+biased view those same positions are then measured, so the 20 amino acid I is low partly
+because the pairs were chosen for being low on it. A merged alphabet also counts swaps inside
+one of its classes (for `dayhoff6`, I for V, D for E), which the choice by identity did not look
+at, so its I is pulled down less. Measured on the other half, the 20 amino acid I rises more
+than any merged alphabet's, and the ratio falls.
+""")
+
+code(r"""
+# Pfam seed, 20% identity or less: I in the biased view and on the other half, every alphabet
+both = (
+    res.filter(pl.col("group") == "Pfam seed")
+    .pivot(on="mode", index=["alphabet", "classes"], values=["I_bits", "ratio_to_20aa"])
+    .select(
+        "alphabet", "classes",
+        pl.col("I_bits_low_same").round(4).alias("I_same_positions"),
+        pl.col("I_bits_low_half").round(4).alias("I_other_half"),
+        (pl.col("I_bits_low_half") / pl.col("I_bits_low_same")).round(2).alias("other_half_over_same"),
+        pl.col("ratio_to_20aa_low_same").round(3).alias("ratio_same_positions"),
+        pl.col("ratio_to_20aa_low_half").round(3).alias("ratio_other_half"),
+    )
+    .sort("ratio_other_half", descending=True)
+)
+print("Pfam seed pairs, 20% identity or less. I in bits per aligned position; ratio = I / I(20 aa).")
+print(both)
+""")
+
+md(r"""
 ## 3. Pfam seed pairs by identity bin, every alphabet
 
 Section 2 used one low-identity group. Here every Pfam identity bin is shown, as the ratio
@@ -603,6 +636,9 @@ SCOPe does not call homologs.
    the same Pfam group: `sdm12` 1.24, `dayhoff6` 1.20, `hsdm17` 1.16, `gbmr4` 1.14,
    `hp_thomas_dill2` 1.13 and four more. Picking pairs by their 20 amino acid identity lifts
    every alphabet that merges letters, so notebook 273's 1.13 says nothing specific about H/P.
+   On the other half, the 20 amino acid I rises 1.80 times (0.0908 to 0.1634 bits), `dayhoff6`
+   1.43 times, `wwmj5` 1.40 and `gbmr4` 1.33, so all three end below the 20 amino acids: 0.958,
+   0.879 and 0.841.
 3. SCOPe homologs at 20% identity or less, grouped on one half: in same-family pairs (11,033
    pair-halves, 468 folds), `sdm12` 1.063 and `hsdm17` 1.048 are above 1, and every two-class
    alphabet is below (`hp_thomas_dill2` 0.90). In same-superfamily, different-family pairs
