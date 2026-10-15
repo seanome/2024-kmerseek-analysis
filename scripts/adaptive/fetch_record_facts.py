@@ -110,7 +110,7 @@ for run in SRA_RUNS:
         }
     )
 with open(os.path.join(OUT, "sra_sample_records.csv"), "w", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=list(rows[0]))
+    w = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
     w.writeheader()
     w.writerows(rows)
 
@@ -139,7 +139,7 @@ for acc in TARANTULA_REFS:
                         }
                     )
 with open(os.path.join(OUT, "interpro_pf02950_matches.csv"), "w", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=list(rows[0]))
+    w = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
     w.writeheader()
     w.writerows(rows)
 
@@ -166,7 +166,7 @@ for ds in t.iter("DocumentSummary"):
         }
     )
 with open(os.path.join(OUT, "tsa_selenobrachys.csv"), "w", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=list(rows[0]))
+    w = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
     w.writeheader()
     w.writerows(rows)
 xml = subprocess.run(
@@ -189,7 +189,7 @@ rows = [
     for ds in t.iter("DocumentSummary")
 ]
 with open(os.path.join(OUT, "protein_selenobrachys.csv"), "w", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=list(rows[0]))
+    w = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
     w.writeheader()
     w.writerows(rows)
 print(
