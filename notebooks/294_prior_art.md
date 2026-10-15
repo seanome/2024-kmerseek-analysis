@@ -59,6 +59,17 @@ Dessimoz, F. J. Sedlazeck, N. Glover, and S. Majidian. "When Less Is More: Sketc
 Minimizers in Genomics." *Genome Biology* 25, no. 1 (2024): 270.
 https://doi.org/10.1186/s13059-024-03414-4
 
+Kokot, M., R. Dehghannasiri, T. Baharav, J. Salzman, and S. Deorowicz. "SPLASH2 Provides
+Ultra-Efficient, Scalable, and Unsupervised Discovery on Raw Sequencing Reads." *bioRxiv*
+(2023), version posted July 17, 2023. https://doi.org/10.1101/2023.03.17.533189
+
+**Note:** Added 2026-10-15 (DOI from the preprint PDF Olga shared). SPLASH counts, for each
+DNA anchor k-mer, which target k-mer follows it after a fixed gap, in each sample, and tests
+whether that mix of targets differs between samples (splicing, RNA editing, fusions). The
+anchor + gap + target is the same construct as a linked word pair, but the question is
+different: SPLASH lets the target differ and counts it; notebook 294 needs both words to
+match between two proteins.
+
 ## Protein seeds: reduced alphabets, spaced seeds, two hits on one diagonal
 
 Buchfink, B., C. Xie, and D. H. Huson. "Fast and Sensitive Protein Alignment Using

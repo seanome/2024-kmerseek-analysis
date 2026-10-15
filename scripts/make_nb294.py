@@ -671,6 +671,70 @@ hc.finish_figure(
 """)
 
 md(r"""
+### 4c. Against phmmer and MMseqs2 on the same pairs
+
+[Notebook 233](233_extended_kmerseek_vs_aligners_on_pairs.ipynb) ran phmmer 3.4 (each pair
+on its own, `-Z 20000`, so the E-value is what a proteome-sized database would give) and
+MMseqs2 18 (`-s 7.5`, all 116,176 domain sequences against themselves) on these same 60,000
+Pfam pairs. A pair is found by an aligner at E ≤ 0.01. The HP scores here use 232's threshold
+(null rate at or below 0.001 per comparison). The two kinds of threshold are not the same:
+the aligners' E-values account for a whole database, the HP threshold only for one pair's
+own alignment, so the HP numbers are the more lenient ones. FoldSeek needs structures and
+was not run on these Pfam sequences; its comparison is on SCOPe40 (see the summary).
+""")
+
+code(r"""
+AL = Path("/Users/olga/data/pfam/233_aligner_check/233_aligner_pair_evalues.parquet")
+E_CUT = 0.01
+al = pl.read_parquet(AL).filter(pl.col("dataset") == "pfam").select("query", "target", "phmmer_evalue", "mmseqs_evalue")
+cmp_cols = {"B2": "B2_ext", "B3": "B3_ext", "linked": f"{CHOSEN}_ext", "randstrobe": f"{CHOSEN_RAND}_ext"}
+rep_pairs = d.filter((pl.col("kind") == "real") & pl.col("pair_index").is_in(pidx_all[rep].tolist()))
+thr_c = {n: thr_r[EXT.index(c)] if c in EXT else None for n, c in cmp_cols.items()}
+thr_c["B3"] = thr_n[JN["B3"]]
+found = rep_pairs.join(al, on=["query", "target"], how="left").with_columns(
+    *[(pl.col(c) > thr_c[n]).alias(n) for n, c in cmp_cols.items()],
+    (pl.col("phmmer_evalue") <= E_CUT).fill_null(False).alias("phmmer"),
+    (pl.col("mmseqs_evalue") <= E_CUT).fill_null(False).alias("MMseqs2"),
+).with_columns((pl.col("phmmer") | pl.col("MMseqs2")).alias("phmmer or MMseqs2"))
+SHOWN = ["B2", "B3", "linked", "randstrobe", "phmmer", "MMseqs2"]
+tab_c = found.group_by("identity_bin").agg(pl.len().alias("n_pairs"), *[(100 * pl.col(c).mean()).round(1).alias(c) for c in SHOWN]).sort("identity_bin")
+print(f"report half: {found.height:_} true pairs; aligner rows missing (no hit at E <= 10, counted as not found): "
+      f"phmmer {found['phmmer_evalue'].is_null().sum():_}, MMseqs2 {found['mmseqs_evalue'].is_null().sum():_}")
+print("Share of true pairs found (%), HP scores at 232's threshold, aligners at E <= 0.01:")
+print(tab_c)
+b23 = found.filter(pl.col("identity_bin") == "20-30%")
+only = pl.DataFrame([{"HP score": n, "found": int(b23[n].sum()),
+                      "found by neither phmmer nor MMseqs2": int((b23[n] & ~b23["phmmer or MMseqs2"]).sum()),
+                      "found, MMseqs2 not": int((b23[n] & ~b23["MMseqs2"]).sum())} for n in ["B2", "B3", "linked", "randstrobe"]])
+print(f"20-30% identity, {b23.height:_} pairs:")
+print(only)
+
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 70, layout=None)
+x = np.arange(len(BINS))
+sty = {"B2": (COLOR["B2"], "s", True), "B3": (COLOR["B2"], "s", False), "linked": (COLOR["linked"], "D", True),
+       "randstrobe": (COLOR["linked"], "^", False), "phmmer": ("#555555", "v", True), "MMseqs2": ("#555555", "v", False)}
+lab = {"B2": "B2: 8-letter HP seed", "B3": "B3: HP seed + second segment", "linked": "chosen linked HP pair",
+       "randstrobe": "randstrobe HP pair", "phmmer": "phmmer (E <= 0.01)", "MMseqs2": "MMseqs2 (E <= 0.01)"}
+for n, (col, mk, filled) in sty.items():
+    ax.plot(x, tab_c[n], color=col, marker=mk, ms=3.5, mfc=col if filled else "white", lw=0.8, label=lab[n])
+ax.set_xticks(x, BINS)
+ax.set_xlabel("Identity of the aligned pair")
+ax.set_ylabel("True pairs found (%)")
+ax.set_ylim(0, 102)
+ax.legend(loc="lower right", fontsize=5)
+lk = only.filter(pl.col("HP score") == "linked").row(0, named=True)
+hc.finish_figure(
+    fig, FIG / "294_hp_keys_vs_phmmer_mmseqs2_pfam_seed.png",
+    tools="phmmer 3.4, MMseqs2 18 (notebook 233); HP scores computed from alignments, no search",
+    hypothesis="HP keys find remote Pfam pairs the sequence aligners miss.",
+    conclusion=(f"At 20-30% identity: phmmer {tab_c.filter(pl.col('identity_bin') == '20-30%')['phmmer'][0]:.1f}%, MMseqs2 {tab_c.filter(pl.col('identity_bin') == '20-30%')['MMseqs2'][0]:.1f}%, "
+                f"linked HP pair {tab_c.filter(pl.col('identity_bin') == '20-30%')['linked'][0]:.1f}%, B3 {tab_c.filter(pl.col('identity_bin') == '20-30%')['B3'][0]:.1f}%. "
+                f"Of the {lk['found']:,} pairs the linked key finds there, {lk['found by neither phmmer nor MMseqs2']} are found by neither aligner, even with the HP threshold the more lenient. Higher is better."),
+    title="HP keys against phmmer and MMseqs2, report half, Pfam seed pairs", wrap=75,
+)
+""")
+
+md(r"""
 ## 5. Bits, measured on Swiss-Prot
 
 How often does a key match by chance? For each setting, every key in Swiss-Prot
@@ -788,17 +852,27 @@ matches: lower is better.
    8-letter seed (4.0 to 10.9). So what helps is extending into a second segment across an
    insertion, which needs no change to the index. kmerseek already chains matches across
    small shifts (`--chain-max-shift`); whether that gives the same gain was not tested here.
-5. **The cost.** The chosen key gives about 3,896 chance key matches between two unrelated
+5. **Against phmmer and MMseqs2** (section 4c, notebook 233's runs on the same pairs). At
+   20–30% identity phmmer finds 75.4% and MMseqs2 55.2%, against 43.5% for the linked HP key
+   and 46.2% for B3, with the HP threshold the more lenient of the two kinds. Of the 3,266
+   pairs the linked key finds there, 139 are found by neither aligner. Under 20% identity the
+   HP scores (15.3% linked, 17.1% B3) sit above MMseqs2 (8.4%) but below phmmer (18.8%);
+   that bin is defined by identical residues, which by construction favours an alphabet that
+   ignores them, and the HP threshold is the lenient one. FoldSeek was not run on
+   these sequences. On SCOPe40 (200 queries, 2026-09-13, kmerseek PR 54), the share of a
+   query's same-superfamily relatives found before its first different-fold hit was 0.066
+   for extended HP k-mers, 0.25 for MMseqs2 and 0.65 for FoldSeek.
+6. **The cost.** The chosen key gives about 3,896 chance key matches between two unrelated
    131-residue proteins, against 70 for B2's 8-letter word and 18 for B1's 10-letter word
    (section 5), 55 times B2's.
-6. **Bits, measured on Swiss-Prot.** Every HP key carries fewer bits than one per letter.
+7. **Bits, measured on Swiss-Prot.** Every HP key carries fewer bits than one per letter.
    Keys built from every anchor pair fall 0.5 to 1.6 bits short of that prediction.
    Randstrobe keys fall 2.8 to 5.2 bits short, because the hash rule ties the second anchor
    to the first.
-7. **Not a membrane effect.** The 709 report-half pairs at 20–30% identity found only by the
+8. **Not a membrane effect.** The 709 report-half pairs at 20–30% identity found only by the
    linked key are no more hydrophobic than the other 6,803 (median 43% of query residues in
    `ACFILMVWY` in both), and no family has more than 2 of them.
-8. **Not shown here.** All numbers are per comparison, on each pair's own alignment, against
+9. **Not shown here.** All numbers are per comparison, on each pair's own alignment, against
    a null that shuffles residues. That null breaks local HP patterns such as amphipathic
    helices and membrane runs, which unrelated real proteins keep, so it may be too easy for
    an HP key. A false-positive rate of 0.001 per comparison is about 573 false pairs per
