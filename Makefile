@@ -13,8 +13,8 @@ help:
 	@echo "             are not part of a run"
 	@echo ""
 	@echo "Leaderboard:"
-	@echo "  leaderboard-fetch   Copy the region benchmark's traces and query summary from"
-	@echo "                      Sherlock into LEADERBOARD_DATA"
+	@echo "  leaderboard-fetch   Copy every input provenance.json lists from Sherlock into"
+	@echo "                      LEADERBOARD_DATA (a mirror of /scratch/users/olgabot)"
 	@echo "  leaderboard-tables  Write results/leaderboard/ (results.parquet, compute.parquet,"
 	@echo "                      coverage.md, provenance.json) from LEADERBOARD_DATA"
 	@echo ""
@@ -41,25 +41,26 @@ running:
 ## The protein annotation leaderboard's tables (seanome/protein-function-annotation-leaderboard
 ## copies results/leaderboard/ from a commit of this repo).
 ##
-## Source: the QfO Pfam region benchmark's midi-plus run, 998 human queries against 15 QfO
-## proteomes, finished 2026-09-13 on Sherlock. all_domain_metrics.parquet is the run's own
-## output (sha256 8ba26616...); the traces are both launch folders' trace files, because the
-## run was resumed from run-midi-plus and run-midi-plus-all-qfo.
-LEADERBOARD_DATA ?= $(HOME)/data/qfo-pfam-region-benchmark/midi-plus-ladder-2026-09-13
+## One long table of every finished benchmark output: the QfO region benchmark (mini, midi,
+## midi-plus), ELM cover, the dark set (Pfam Fmax, reach, best-hit accuracy), notebook
+## 241's three cases, the deep-twilight controls, and the SCOPe40 kmerseek 0.4 sweeps.
+## results/leaderboard/inventory.md lists every output found and why some are left out.
+##
+## LEADERBOARD_DATA mirrors /scratch/users/olgabot: a file at $SCRATCH/x/y is read from
+## $(LEADERBOARD_DATA)/x/y. leaderboard-fetch copies exactly the inputs provenance.json
+## lists, over the data transfer node.
+LEADERBOARD_DATA ?= $(HOME)/data/leaderboard-inputs
 LEADERBOARD_PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
-REGION_RUN := /scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark
+SHERLOCK_DTN ?= sherlock-dtn
 
 leaderboard-fetch:
-	mkdir -p $(LEADERBOARD_DATA)/traces/run-midi-plus $(LEADERBOARD_DATA)/traces/run-midi-plus-all-qfo
-	rsync -a "$(SHERLOCK_HOST):$(REGION_RUN)/data/midi-plus/results/all_domain_metrics.parquet" $(LEADERBOARD_DATA)/
-	rsync -a "$(SHERLOCK_HOST):$(REGION_RUN)/data/midi-plus/midi_testset_summary.json" $(LEADERBOARD_DATA)/
-	rsync -a "$(SHERLOCK_HOST):$(REGION_RUN)/run-midi-plus/qfo_pfam_region.2026-09-*.trace.txt" $(LEADERBOARD_DATA)/traces/run-midi-plus/
-	rsync -a "$(SHERLOCK_HOST):$(REGION_RUN)/run-midi-plus-all-qfo/qfo_pfam_region.2026-09-*.trace.txt" $(LEADERBOARD_DATA)/traces/run-midi-plus-all-qfo/
+	mkdir -p $(LEADERBOARD_DATA)
+	$(LEADERBOARD_PYTHON) -c 'import json; [print(p.removeprefix("/scratch/users/olgabot/")) for p in json.load(open("results/leaderboard/provenance.json"))["inputs"]]' \
+	  > $(LEADERBOARD_DATA)/.fetch-list.txt
+	pixi exec rsync -a --files-from=$(LEADERBOARD_DATA)/.fetch-list.txt \
+	  "$(SHERLOCK_DTN):/scratch/users/olgabot/" $(LEADERBOARD_DATA)/
 
 leaderboard-tables:
-	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_tables.py \
-	  --metrics $(LEADERBOARD_DATA)/all_domain_metrics.parquet \
-	  --summary $(LEADERBOARD_DATA)/midi_testset_summary.json \
-	  --traces $(LEADERBOARD_DATA)/traces/*/qfo_pfam_region.*.trace.txt \
-	  --outdir results/leaderboard \
-	  --metrics-commit a47ea255
+	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_long.py \
+	  --data $(LEADERBOARD_DATA) \
+	  --outdir results/leaderboard
