@@ -49,7 +49,7 @@ def test_good_rows_pass(tmp_path):
 @pytest.mark.parametrize(
     "row, words",
     [
-        (f"{Q}\t{T}\t1\t200\t5\t190\t250.5", "7 columns"),
+        (f"{Q}\t{T}\t1\t200\t5\t190\t250.5", "7 columns, expected 8"),
         (f"{Q}\t{T}\t0\t200\t5\t190\t250.5\t1e-60", "1-based"),
         (f"{Q}\t{T}\t200\t1\t5\t190\t250.5\t1e-60", "end comes before its start"),
         (f"{Q}\t{T}\t1.5\t200\t5\t190\t250.5\t1e-60", "not a whole number"),
@@ -72,3 +72,9 @@ def test_end_past_sequence_and_unknown_name_fail(tmp_path):
 def test_empty_file_fails(tmp_path):
     r = run(tmp_path, [])
     assert r.returncode == 1 and "no rows" in r.stderr
+
+
+def test_ninth_column_for_motif_tools(tmp_path):
+    assert run(tmp_path, [f"{Q}\t{T}\t1\t20\t5\t24\t3.5\tNA\t12"]).returncode == 0
+    r = run(tmp_path, [f"{Q}\t{T}\t1\t20\t5\t24\t3.5\tNA\tmany"])
+    assert r.returncode == 1 and "n_matched_residues" in r.stderr

@@ -13,6 +13,7 @@ query and target are the FASTA names as given to the tool (sp|P12345|NAME_SPECIE
 scorer can take the accession from them. Coordinates are 1-based and inclusive, start <= end,
 on the query and target sequences as given. Higher score ranks first. evalue is the tool's
 E-value, or for a tool that reports a probability, 1 - probability; it may be empty ("NA").
+A motif tool may add a 9th column, n_matched_residues (a whole number), which the scorer reads.
 
 Exits 1 and names the first bad rows when a row has the wrong number of columns, a
 coordinate that is not a whole number, a start below 1, an end before its start, an end past
@@ -27,7 +28,7 @@ import math
 import sys
 from pathlib import Path
 
-N_COLS = 8
+N_COLS = (8, 9)
 MAX_SHOWN = 5
 
 
@@ -63,12 +64,17 @@ def check(
             if len(problems) >= MAX_SHOWN:
                 break
             fields = line.rstrip("\n").split("\t")
-            if len(fields) != N_COLS:
+            if len(fields) not in N_COLS:
                 bad(
                     i,
-                    f"{len(fields)} columns, expected {N_COLS}: {line.strip()[:120]!r}",
+                    f"{len(fields)} columns, expected 8 (or 9 for a motif tool): "
+                    f"{line.strip()[:120]!r}",
                 )
                 continue
+            if len(fields) == 9:
+                if not fields[8].isdigit():
+                    bad(i, f"n_matched_residues {fields[8]!r} is not a whole number")
+                fields = fields[:8]
             q, t, *coords, score, evalue = fields
             try:
                 qs, qe, ts, te = (int(x) for x in coords)

@@ -6,12 +6,13 @@ You send one Nextflow module that runs your tool from a container. We run it on 
 Sherlock cluster, on the same queries and relatives as every other tool, and measure its time
 and memory from the Nextflow trace. Every tool's cost is then measured the same way, on the
 same machines. What you get back, and how to dispute a row, is in the site's
-[SUBMIT.md](https://github.com/seanome/protein-function-annotation-leaderboard/blob/main/SUBMIT.md).
+[SUBMIT.md](https://github.com/seanome/protein-function-annotation-leaderboard/blob/olgabot/submission-guide/SUBMIT.md)
+(on its branch until that PR is merged).
 
 ```mermaid
 flowchart LR
   subgraph you["You send (a PR here)"]
-    M["modules/&lt;tool&gt;.nf<br/>container@sha256 digest<br/>exact command"]
+    M["one Nextflow process per tool<br/>container@sha256 digest<br/>exact command"]
   end
   subgraph host["The host runs (Sherlock)"]
     R["one task per relative:<br/>998 human queries vs<br/>one QfO proteome"]
@@ -46,7 +47,8 @@ A module has:
   `curl -s 'https://quay.io/api/v1/repository/biocontainers/<tool>/tag/?specificTag=<tag>'`.
   The image must not set an `ENTRYPOINT`.
 - **The exact command** in the `script:` block, every parameter written out. What is in the
-  block is what runs and what the tool card prints. Parameters you want compared (a fast and a
+  block is what runs. The tool card's command is copied from it by hand into the site's
+  `scripts/tools.py`, so the host checks the two match when adding the card. Parameters you want compared (a fast and a
   sensitive mode, for example) are separate named settings, each a separate run.
 - **The version**, printed by the tool inside the container to a file `<tool>.version` that the
   process emits, so the row's `tool_version` comes from the binary that ran.
@@ -105,6 +107,7 @@ Tab-separated, gzip, no header, one row per hit, these 8 columns in this order:
 | `tstart`, `tend` | Where the hit sits on the target: 1-based, inclusive, start ≤ end |
 | `score` | The tool's score; higher ranks first |
 | `evalue` | E-value; for a tool that reports a probability, 1 − probability; `NA` if neither |
+| `n_matched_residues` | Optional 9th column, for motif tools: how many residues matched (Folddisco writes it) |
 
 A tool that only reports whole proteins, with no coordinates, cannot be scored here: the
 leaderboard scores where on the query a family sits, by the overlap (IoU, intersection over
@@ -148,14 +151,16 @@ date.
    double; the peak is read back with `sacct` afterwards.
 3. Runs it on Sherlock against the 998 human queries and the 15 Quest for Orthologs relatives.
 4. Scores it with `bin/evaluate_domain_calls.py`, exports the long tables
-   (`make leaderboard-tables`, from
-   [PR 148](https://github.com/seanome/2024-kmerseek-analysis/pull/148)), and copies them to the
-   site, where
+   (`make leaderboard-tables`, which is on
+   [PR 148](https://github.com/seanome/2024-kmerseek-analysis/pull/148) and not merged yet), and
+   copies them to the site, where
    `scripts/validate_rows.py --submitted` checks every row has a version, container digest,
    95% interval, `n`, measured cost, hardware and run date.
 
 ## 5. What is not built yet
 
+- No module is in its own file yet: every process is in `main.nf`. The DIAMOND module on
+  `olgabot/annotator-tools` sets the layout for one file per tool.
 - The DIAMOND module itself (branch `olgabot/annotator-tools`) and its first host run.
 - The long-table export does not yet carry the container digest, the tool version or the run
   date into each row, and the scorer does not compute a 95% interval. Until both are added, a
