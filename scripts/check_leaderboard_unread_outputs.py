@@ -9,6 +9,7 @@ checked with `ssh sherlock test -e`.
     python scripts/check_leaderboard_unread_outputs.py > results/leaderboard/unread_outputs_check.txt
 """
 
+import datetime
 import subprocess
 from pathlib import Path
 
@@ -39,8 +40,13 @@ def section(title: str) -> None:
 
 def main() -> None:
     section("1. human_mouse_orthologs (nextflow-runs/human-mouse-gencode-orthologs*)")
-    for name in ("results-human-mouse-orthologs", "results-human-mouse-orthologs-hp-v040"):
-        print(f"laptop ~/data/gencode/{name}: {exists_laptop(HOME / 'data/gencode' / name)}")
+    for name in (
+        "results-human-mouse-orthologs",
+        "results-human-mouse-orthologs-hp-v040",
+    ):
+        print(
+            f"laptop ~/data/gencode/{name}: {exists_laptop(HOME / 'data/gencode' / name)}"
+        )
     for rel in (
         "data/gencode/results-human-mouse-orthologs",
         "data/gencode/results-human-mouse-orthologs-hp-v040",
@@ -78,7 +84,9 @@ def main() -> None:
     print("rows with ROC AUC exactly 0.5, by k:", dict(flat.iter_rows()))
     for sp, k in [("mouse", 24), ("mouse", 10), ("ecoli", 20)]:
         m = pl.read_parquet(PFAM_BENCH / f"merged/human_vs_{sp}.hp.k{k}.merged.parquet")
-        pairs = pl.read_parquet(PFAM_BENCH / f"pairs/human_vs_{sp}_ground_truth.parquet")
+        pairs = pl.read_parquet(
+            PFAM_BENCH / f"pairs/human_vs_{sp}_ground_truth.parquet"
+        )
         n_pos_rows = int(m["label"].sum())
         n_pos_pairs = int(pairs["label"].sum())
         uniq = m.select("human_accession", "species_accession").n_unique()
@@ -88,6 +96,16 @@ def main() -> None:
             f"positive rows {n_pos_rows:,} vs positive pairs in the pair file "
             f"{n_pos_pairs:,}; rows with containment > 0: {hit:,}"
         )
+    no_hit = []
+    for f in sorted((PFAM_BENCH / "merged").glob("human_vs_*.hp.k*.merged.parquet")):
+        k = int(f.name.split(".k")[1].split(".")[0])
+        if k <= 18:
+            m = pl.read_parquet(f, columns=["containment"])
+            no_hit.append(int((m["containment"].fill_null(0) > 0).sum()) == 0)
+    print(
+        f"merged tables at k=10 to 18: {len(no_hit)}, of which with no kmerseek hit "
+        f"(containment > 0 in no row): {sum(no_hit)}"
+    )
     print(
         "laptop ~/data/qfo-pfam-benchmark (raw kmerseek results): "
         + exists_laptop(HOME / "data/qfo-pfam-benchmark")
@@ -100,7 +118,14 @@ def main() -> None:
         empty = [f.name for f in files if f.stat().st_size <= 32]
         print(f"{tool}: {len(files)} hit files, {len(empty)} empty (<= 32 bytes)")
     metrics = sorted((res / "metrics").glob("*.metrics.parquet"))
-    print(f"metrics files: {len(metrics)}")
+    dates = sorted(
+        datetime.date.fromtimestamp(f.stat().st_mtime).isoformat() for f in metrics
+    )
+    print(f"metrics files: {len(metrics)}, written {dates[0]} to {dates[-1]}")
+    per_tool = {}
+    for f in metrics:
+        per_tool[f.name.split(".")[0]] = per_tool.get(f.name.split(".")[0], 0) + 1
+    print("metrics files per tool:", dict(sorted(per_tool.items())))
     for f in metrics:
         m = pl.read_parquet(f)
         if m["auc_roc"].is_nan().any():
@@ -111,7 +136,9 @@ def main() -> None:
     print(f"pairs_stratified hard/easy files: {len(strat)}")
     fresh = sorted((PFAM_BENCH / "diamond_fresh").glob("*.diamond.tsv.gz"))
     print(f"diamond_fresh hit files: {len(fresh)}")
-    print(f"laptop ~/data/e3-detection-gap: {exists_laptop(HOME / 'data/e3-detection-gap')}")
+    print(
+        f"laptop ~/data/e3-detection-gap: {exists_laptop(HOME / 'data/e3-detection-gap')}"
+    )
 
     section("6. DisProt transfer run trace")
     t = HOME / (
@@ -121,7 +148,9 @@ def main() -> None:
     tr = pl.read_csv(t, separator="\t", infer_schema=False)
     print(dict(tr.group_by("status").len().sort("status").iter_rows()))
     step = pl.col("process").str.split(":").list.last()
-    done = tr.filter(pl.col("status") == "COMPLETED").group_by(step).len().sort("process")
+    done = (
+        tr.filter(pl.col("status") == "COMPLETED").group_by(step).len().sort("process")
+    )
     print("completed by step:", dict(done.iter_rows()))
     truth = tr.filter(step.is_in(["buildDomainTruth", "buildSwissprotTruth"]))
     print("truth-building tasks:", truth.select(step, "status").rows())

@@ -22,6 +22,7 @@ was launched, read from that clone's `git log -g` (dark-set Fmax records its own
 | scope40_v040 (nb 277) | `scope/results-scope40-alphabet-ksize-v040/scope40_v040_auc.tsv` | 2026-10-12 | 702de2c | yes. No identity-bin file was written for this run |
 | scope40_v040_below_kmin | `scope/results-scope40-alphabet-ksize-v040-below-kmin/scope40_v040_{auc,identity_bands}.tsv` | 2026-10-13 | 46dfecb | yes |
 | scope40_v040_shuffled_k2_seed1 | `scope/results-scope40-alphabet-ksize-v040-shuffled-k2-seed1/scope40_v040_{auc,identity_bands}.tsv` | 2026-10-13 | 80ec410 | yes: a null control (alphabet letters shuffled), not a tool |
+| pfam_pair_roc (`pfam-benchmark-tools`, added 2026-10-16) | **laptop** `/Users/olga/data/pfam-benchmark-tools/results/metrics/<tool>.<species>.metrics.parquet` (26 of 27 files) | 2026-04-03 to 2026-04-24 | not recorded: a laptop run, and the laptop clone's reflog starts later | partly. MMseqs2 (sequence and 3-iteration profile) on all 9 QfO targets; phmmer on 7 (chicken and fly searched, never scored); DIAMOND on E. coli only (6 of 7 hit files are empty 20-byte gzips, and zebrafish's metrics file is all NaN, so it is left out); HHblits on none (9 empty hit files). A different question from the region runs: see "How values were read" |
 
 ## Found, not used
 
@@ -65,7 +66,19 @@ The pipelines below were listed above as "not read in this pass". Every count an
 | resource benchmark (`vs-other-orthology-tools-resource-benchmark`) | laptop clone `nextflow-runs/vs-other-orthology-tools-resource-benchmark/results/pipeline_trace.txt` | one trace row: `ORTHOFINDER (human_vs_mouse)`, ABORTED, submitted 2026-03-19 06:21 | Stopped before any task finished; nothing measured |
 | scope40_lowcomplexity_null (`scope40-lowcomplexity-null`, notebook 086): pairs above the first false positive, a control beside `scope40_v040_shuffled_k2_seed1` | laptop `~/data/scope/results-lowcomplexity-null` (`params.outdir`) | absent on the laptop and on Sherlock. Memory note `lowcomplexity_null_pipeline` records a finished run there on 2026-07-29 (828 tasks) | The hits are gone. That null shuffles the sequences (the memory note says dipeptide-preserving), while `scope40_v040_shuffled_k2_seed1` shuffles the alphabet's letters; the two are different controls and would need different names even if the hits came back |
 
+| kmerseek on the same Pfam pairs (`qfo-pfam-benchmark`, notebook 123): ROC AUC per species, k and score | laptop clone `results/pfam_benchmark/merged/auc_by_species_ksize_score.parquet` (1,188 rows); the raw searches in `~/data/qfo-pfam-benchmark` are absent | The AUC file is there, but it was computed on a merged table with repeated pairs: mouse at k=24 has 72,649 rows for 59,915 distinct pairs, and 32,208 positive rows where the pair file has 20,000 positive pairs. All 540 rows at k=10 to 18 have ROC AUC exactly 0.5, because the merged tables hold no kmerseek hit there | An AUC over repeated pairs is not the number the other tools' rows give (each pair once). Left out rather than shown beside them; recomputing needs the merge fixed first |
+
 ## How values were read
+
+- Pfam pair benchmark (`pfam_pair_roc`): a different question from every other experiment
+  here. It asks whether a tool ranks a protein pair that shares a Pfam domain above a pair
+  that shares none (pairs from `notebooks/construct_subdomain_pairs.py`: positives share
+  a domain but differ in domain architecture, up to 20,000 positive and 40,000 negative
+  pairs per species). It does not ask where the domain is. Its metric names start with
+  `pair_` (`pair_roc_auc`, `pair_average_precision`, `pair_recall_at_99pct_precision`,
+  `pair_precision_at_50pct_recall`, `pair_n_with_hit`, `pair_n_negatives`) so they never
+  share a name with a region metric. `n_instances` is the number of positive pairs.
+  `pair_n_with_hit` counts pairs of either label that the tool scored above 0.
 
 - QfO region and dark-set Fmax tables: `split == "all"`, stratum axes all, identity, pLDDT,
   feature type, feature length bin; metrics fmax, fmax_precision, fmax_recall,

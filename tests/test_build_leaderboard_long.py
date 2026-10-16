@@ -222,3 +222,58 @@ def test_coverage_counts_an_instance_once_across_settings():
     md = bll.coverage_markdown(pl.DataFrame(rows, schema=bll.SCHEMA))
     line = next(ln for ln in md.splitlines() if ln.startswith("| t |"))
     assert line == "| t |  | 7 |  |  |  |"
+
+
+def test_local_copy_maps_sherlock_and_laptop_paths(tmp_path):
+    assert (
+        bll.local_copy(tmp_path, "/scratch/users/olgabot/a/b.tsv")
+        == tmp_path / "a/b.tsv"
+    )
+    assert (
+        bll.local_copy(tmp_path, "/Users/olga/data/x.parquet")
+        == tmp_path / "laptop/data/x.parquet"
+    )
+    with pytest.raises(ValueError):
+        bll.local_copy(tmp_path, "/tmp/elsewhere.tsv")
+
+
+def write_pair_metrics(path, tool, species, auc, n_found):
+    pl.DataFrame(
+        {
+            "tool": [tool],
+            "species": [species],
+            "auc_roc": [auc],
+            "auc_pr": [auc],
+            "sens_at_99prec": [0.5],
+            "prec_at_50rec": [0.9],
+            "n_positives": [20000],
+            "n_negatives": [40000],
+            "n_found": [n_found],
+        }
+    ).write_parquet(path)
+
+
+def test_pfam_pair_roc_drops_empty_output_and_prefixes_metrics(tmp_path):
+    d = bll.local_copy(tmp_path, bll.PFAM_TOOLS)
+    d.mkdir(parents=True)
+    write_pair_metrics(
+        d / "mmseqs2_seqseq.mouse.metrics.parquet",
+        "mmseqs2_seqseq",
+        "mouse",
+        0.75,
+        10025,
+    )
+    write_pair_metrics(
+        d / "diamond.zebrafish.metrics.parquet", "diamond", "zebrafish", float("nan"), 0
+    )
+    out = bll.pfam_pair_roc(tmp_path)
+    assert set(out["tool"]) == {"mmseqs2_seqseq"}
+    assert all(m.startswith("pair_") for m in out["metric"])
+    assert out.filter(pl.col("metric") == "pair_roc_auc")["value"].to_list() == [0.75]
+    assert out.filter(pl.col("metric") == "pair_n_with_hit")["value"].to_list() == [
+        10025.0
+    ]
+    assert out["n_instances"].unique().to_list() == [20000]
+    assert out["target_db"].unique().to_list() == ["QfO mouse"]
+    assert out["source_commit"].null_count() == out.height
+    assert out.columns == list(bll.SCHEMA)

@@ -12,7 +12,9 @@
 
 --data is a copy of the needed files from Sherlock, laid out exactly as under
 /scratch/users/olgabot (`make leaderboard-fetch` makes it). source_path in both tables is
-the Sherlock path, so a row can be checked against the original file.
+the Sherlock path, so a row can be checked against the original file. The few inputs that
+exist only on Olga's laptop (runs from before compute moved to Sherlock) keep their laptop
+path as source_path and sit under laptop/ in the copy.
 
 Nothing is estimated. A metric the output does not carry has no row; a compute number the
 trace does not carry is null. Strata are only the ones the outputs already hold: target
@@ -29,6 +31,10 @@ from pathlib import Path
 import polars as pl
 
 SCRATCH = "/scratch/users/olgabot"
+# A few outputs exist only on Olga's laptop (runs from before compute moved to Sherlock).
+# Their source_path is the laptop path; the --data copy holds them under laptop/.
+LAPTOP = "/Users/olga"
+PFAM_TOOLS = f"{LAPTOP}/data/pfam-benchmark-tools/results/metrics"
 QFO = "2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark"
 DARK = "invertebrate-dark-set/results-0.4"
 DARK_CLONE = (
@@ -56,6 +62,8 @@ COMMIT = {
     "scope40_v040": "702de2c",
     "scope40_v040_below_kmin": "46dfecb",
     "scope40_v040_shuffled_k2_seed1": "80ec410",
+    # Laptop run whose commit was not recorded (the laptop clone's reflog starts later).
+    "pfam_pair_roc": None,
 }
 
 QFO_TARGET_VERSION = "QfO 2020_04 (UP000008143 updated)"
@@ -121,6 +129,15 @@ COMPUTE_SCHEMA = {
 
 # One name per tool across experiments (the dark set and deep-twilight runs say "phmmer").
 TOOL_NAME = {"phmmer": "hmmer3_phmmer", "jackhmmer": "hmmer3_jackhmmer"}
+
+
+def local_copy(data: Path, source: str) -> Path:
+    """Where the --data copy holds a Sherlock or laptop source path."""
+    if source.startswith(SCRATCH + "/"):
+        return data / Path(source).relative_to(SCRATCH)
+    if source.startswith(LAPTOP + "/"):
+        return data / "laptop" / Path(source).relative_to(LAPTOP)
+    raise ValueError(f"source path outside Sherlock scratch and the laptop: {source}")
 
 
 def sha256(path: Path) -> str:
@@ -829,6 +846,81 @@ def scope40(
     return tidy(pl.concat(frames, how="diagonal"))
 
 
+PAIR_METRICS = {
+    # evaluate_benchmark.py column -> metric name. A pair benchmark asks "is this protein
+    # pair related?", not "where is the domain?", so its metrics carry a pair_ prefix
+    # and never share a name with the region metrics.
+    "auc_roc": "pair_roc_auc",
+    "auc_pr": "pair_average_precision",  # sklearn average_precision_score
+    "sens_at_99prec": "pair_recall_at_99pct_precision",
+    "prec_at_50rec": "pair_precision_at_50pct_recall",
+    "n_found": "pair_n_with_hit",  # pairs of either label with a hit (score > 0)
+    "n_negatives": "pair_n_negatives",
+}
+PAIR_SETTING = {
+    "hmmer3_phmmer": "E<=10",
+    "mmseqs2_seqseq": "s7 E<=10",
+    "mmseqs2_iterative": "s7 3 iterations E<=10",
+    "diamond": "ultra-sensitive E<=10",
+}
+
+
+def pfam_pair_roc(data: Path) -> pl.DataFrame:
+    """pfam-benchmark-tools evaluate_benchmark.py: one metrics.parquet per (tool, species).
+
+    Pairs come from notebooks/construct_subdomain_pairs.py: a positive shares at least one
+    Pfam domain with a different architecture (at least one protein has 2+ domains); a
+    negative shares no Pfam domain. A file whose ROC AUC is NaN is left out whole: the
+    tool's hit file was empty (a 20-byte gzip), which is a search that wrote nothing, not
+    a search that found nothing (DIAMOND on zebrafish).
+    """
+    frames = []
+    for p in sorted(local_copy(data, PFAM_TOOLS).glob("*.metrics.parquet")):
+        m = pl.read_parquet(p).filter(pl.col("auc_roc").is_not_nan())
+        if m.is_empty():
+            continue
+        src = f"{PFAM_TOOLS}/{p.name}"
+        metrics = [c for c in PAIR_METRICS if c in m.columns]
+        long = (
+            m.with_columns(pl.col(c).cast(pl.Float64) for c in metrics)
+            .unpivot(
+                index=["tool", "species", "n_positives"],
+                on=metrics,
+                variable_name="metric",
+                value_name="value",
+            )
+            .filter(pl.col("value").is_not_null() & ~pl.col("value").is_nan())
+        )
+        frames.append(
+            long.select(
+                pl.lit("pfam_pair_roc").alias("experiment"),
+                pl.col("tool").replace(TOOL_NAME),
+                pl.col("tool")
+                .replace_strict(PAIR_SETTING, default="default")
+                .alias("setting"),
+                pl.lit(
+                    "human proteins in sampled Pfam pairs "
+                    "(up to 20,000 positive and 40,000 negative per species)"
+                ).alias("query_set"),
+                ("QfO " + pl.col("species")).alias("target_db"),
+                pl.lit(QFO_TARGET_VERSION).alias("target_db_version"),
+                pl.lit("all").alias("stratum_axis"),
+                pl.lit("all").alias("stratum_bin"),
+                pl.col("metric").replace_strict(PAIR_METRICS),
+                "value",
+                pl.col("n_positives").cast(pl.Int64).alias("n_instances"),
+                pl.lit(
+                    "protein pair shares a Pfam-A domain (positive) or shares none "
+                    "(negative)"
+                ).alias("truth_source"),
+                pl.lit("raw").alias("dedup_or_raw"),
+                pl.lit(src).alias("source_path"),
+                pl.lit(COMMIT["pfam_pair_roc"], dtype=pl.String).alias("source_commit"),
+            )
+        )
+    return tidy(pl.concat(frames)) if frames else tidy(pl.DataFrame())
+
+
 # ---------------------------------------------------------------------------------------
 # Compute readers
 
@@ -1061,6 +1153,24 @@ def main() -> None:
     for exp, rel_dir in SCOPE_EXPERIMENTS.items():
         img = tool_images(traces[exp], scope_task).get("kmerseek")
         parts.append(scope40(data, exp, rel_dir, img))
+    # Same QfO target proteomes as the region runs, so the same divergence from human.
+    mya = dict(
+        pl.concat(parts)
+        .filter(
+            pl.col("experiment").str.starts_with("qfo_region")
+            & pl.col("target_mya_to_human").is_not_null()
+        )
+        .select("target_db", "target_mya_to_human")
+        .unique()
+        .iter_rows()
+    )
+    parts.append(
+        pfam_pair_roc(data).with_columns(
+            pl.col("target_db")
+            .replace_strict(mya, default=None, return_dtype=pl.Float64)
+            .alias("target_mya_to_human")
+        )
+    )
     results = pl.concat(parts, how="vertical").sort(
         "experiment",
         "tool",
@@ -1197,13 +1307,13 @@ def main() -> None:
         {r for r in results["source_path"].unique().to_list()}
         | summaries
         | {
-            s.split(" line ")[0].split(": only")[0]
+            s.split(" line ")[0].split(": ")[0]
             for src in compute["source"].unique().to_list()
             for s in src.split("; ")
         }
     )
     provenance = {
-        "inputs": {p: sha256(data / Path(p).relative_to(SCRATCH)) for p in inputs},
+        "inputs": {p: sha256(local_copy(data, p)) for p in inputs},
         "outputs": {
             n: sha256(args.outdir / n)
             for n in ("results.parquet", "compute.parquet", "coverage.md")

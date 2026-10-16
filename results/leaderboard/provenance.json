@@ -1,5 +1,31 @@
 {
  "inputs": {
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/diamond.ecoli.metrics.parquet": "2670d314d766655e3d3841459eba05db92b2a5aa91187daaa2d159ebaa8efe3e",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/hmmer3_phmmer.arabidopsis.metrics.parquet": "2a59d85b37355cb9afe157a421c6c63a0bdfc9e6d5df00f909c8f2597eed2a63",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/hmmer3_phmmer.ciona.metrics.parquet": "130b3a4f3e9cd51aee9389a865170182352fcda703c7780ea211ee5f6fb7aac1",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/hmmer3_phmmer.ecoli.metrics.parquet": "8e76e627699de58f060586c074b348ef3252bd07c3be0bd6d40cf873a75b1901",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/hmmer3_phmmer.mouse.metrics.parquet": "87443f370fcfee98a5e6e26870350962810179b8881c6d6a9a8c44294ac4a1f3",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/hmmer3_phmmer.worm.metrics.parquet": "d2d70b54a0e9b6292c27c75733b21592546bdfbb7e95314fb0fc274a0a6ab56d",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/hmmer3_phmmer.yeast.metrics.parquet": "fb090e58cf5d6f2bbeab35aa8b9a0cb8617a79d23dfed289923084bac7ac623e",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/hmmer3_phmmer.zebrafish.metrics.parquet": "ae7f340578510daa81ec76d48954aa96487d94d680f1e0744bdbf992d2a22fda",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.arabidopsis.metrics.parquet": "c1c6bd648c18d16b22dc0d95e226061ea5880113415f049d7f502658dc2c1721",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.chicken.metrics.parquet": "1da4b00c8db67332c57805dfa7ce1cdf8e9a20b4684b6a8b53a076f9d729ef0f",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.ciona.metrics.parquet": "cc5ab7ce1bcd24216645c022c9c6a6b59634bed0d76454f92ce587b68fc226d8",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.ecoli.metrics.parquet": "e201c3a3b9bb844a07a685f3c7bf4129d61963d671d6e2a1b762006f660726a1",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.fly.metrics.parquet": "4f8ce602cc4e2681df8a4319d88b9da1ee1bd3d952d2dde8b39bee70ddf25299",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.mouse.metrics.parquet": "f2bdc25d4b897959b6445fa0b3729f2f44cf1bfc623d7fa87cf4fe5d92dda13a",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.worm.metrics.parquet": "87b7c27ac8262735920447750001b3e1c4d851f576ad5d93f6fa55ebd04768ab",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.yeast.metrics.parquet": "babf26eb7a5672fa76b5abeb2d884f4bc69d2197b9cd7eff359e66ba8c68d98d",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_iterative.zebrafish.metrics.parquet": "64d946473c7f2841ee1dbdf4dbae96672da180b548493ae82972f9af2f38ad38",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.arabidopsis.metrics.parquet": "35dcb2e3571d0f3c426c54786e6ed4dd553395d05a1c13ed7f088ce661eac5ea",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.chicken.metrics.parquet": "334e792165c8b7680d4b8b732810f59c8776fef8609cc6ddf6928f68f953bbf4",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.ciona.metrics.parquet": "95912a86b6d96d861f2e3acce822f64ff6c123144d79ecf079b608dd6200146f",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.ecoli.metrics.parquet": "8857ca2f65fe8681d7e4d24bb8fdc91d540a615d6d79fd41bb337200ca2d1735",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.fly.metrics.parquet": "c25f9bb62c909a9c867684675dad5b29f67d0d39fb4c1cb0694c3915f4c69f4e",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.mouse.metrics.parquet": "78e32e935e38aeba598ed34371148f819362572109216dd75cfca7b0cdda165a",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.worm.metrics.parquet": "dc127e8f95a83ce28e7cd0eb22b5f5cfd70fe79db78320d4510ba8b3044c8f1d",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.yeast.metrics.parquet": "da143eab3cd27db091642b62169f2bbd2add4ad6e65dcce25fee5aaa3bcc6e91",
+  "/Users/olga/data/pfam-benchmark-tools/results/metrics/mmseqs2_seqseq.zebrafish.metrics.parquet": "787753eab9af4c394160d83d856001ff5e52f1d1eab8d5acdf69135cf1bfe5c6",
   "/scratch/users/olgabot/2024-kmerseek-analysis-deep-twilight/nextflow-runs/deep-twilight-controls/run/deep_twilight.2026-09-25.trace.txt": "8d4dae2d02609926ae5a8851e63ef068fd0d503a47a415c54edbc8746caf8a99",
   "/scratch/users/olgabot/2024-kmerseek-analysis-deep-twilight/nextflow-runs/deep-twilight-controls/run/results/outcomes.parquet": "12d77dc34b8eb88a164dfc994eee75a13d8f918f01013228822b4435de648458",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/midi_testset_summary.json": "5f2702f88c207a3b9de5b0a52ec7b22f7c7e04cd6af78f78927b3ace875ad079",
@@ -513,8 +539,8 @@
   "/scratch/users/olgabot/scope/results-scope40-alphabet-ksize-v040/scope40_v040_auc.tsv": "c9a30b83d6c0a064b79f629c0fe921d6366d3b14b9d801cb06101077319101af"
  },
  "outputs": {
-  "results.parquet": "50a9ea98f3110eb3fffc4e9bbca2de714278118cc2d89c2dd59ac985b323e752",
+  "results.parquet": "ca6a966bb3ec35a86d47c643e806c28a834a93f98b9990e0956bb5768172361d",
   "compute.parquet": "8a47ba2123c60cbb41b4833c9f96661934369137b72c5d81ef0808c98247e435",
-  "coverage.md": "c10b26730d8dc44b16120bd2f6ee87eb8ed0db3efa40398b339ddac0b0cb7781"
+  "coverage.md": "7a30ac6668ec58b9c5faf0e5bd649ddc3089ca088fbfa76d2db97615077cf420"
  }
 }
