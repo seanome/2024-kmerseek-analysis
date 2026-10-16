@@ -12,6 +12,22 @@
 #       2026-10-13: 1.36 GB of zstd region file in 40 s, so about 34 MB per second.
 #
 # Paths are the 0.4 midi run's. Added 2026-10-13 for the dark-set summary page.
+#
+# Added 2026-10-16 (weak hits, every tool and setting; weak-hits/README.md has the order):
+#
+#   sbatch --array=1-N --time=02:00:00 --mem=2G tools/dark-set-accuracy-sbatch \
+#       best-regions <plan.tsv>
+#       Array task i reads the region files that `dark-set-accuracy plan-regions` gave
+#       task i and writes $ACC/best-regions/<species>/<name>.best.tsv.gz.
+#
+#   sbatch --cpus-per-task=8 --time=02:00:00 --mem=8G tools/dark-set-accuracy-sbatch \
+#       realign <species>
+#       Aligns every query to the best target phmmer, jackhmmer and MMseqs2 gave it, with
+#       phmmer from the run's own HMMER image, to recover the query stretch of each hit.
+#       Writes $ACC/realign/<species>_realign.tsv.gz.
+#
+#   sbatch --time=01:00:00 --mem=16G tools/dark-set-accuracy-sbatch score-bands
+#       Writes $ACC/weak-hits/<species>_weak_hits.{tsv,json} for the four species.
 #SBATCH --job-name=dark-accuracy
 #SBATCH --time=01:00:00
 #SBATCH --mem=24G
@@ -30,7 +46,70 @@ REF=/scratch/users/olgabot/invertebrate-dark-set/reference
 EV=$RESULTS/protein-evalues-repaired
 CLANS=/scratch/users/olgabot/pfam-candidates/Pfam-A.clans.tsv.gz
 
+HMMER_IMG=$SCRATCH/apptainer-cache/quay.io-biocontainers-hmmer@sha256-7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c.img
+
+clade_of() {
+    case "$1" in
+        human) echo Mammalia ;; worm) echo Chromadorea ;; yeast) echo Saccharomycetes ;;
+        borrelia) echo Spirochaetia ;; *) echo "unknown species $1" >&2; exit 2 ;;
+    esac
+}
+
+# computeDarkSet's work folder for a species, from the newest trace (literal match)
+dark_set_dir() {
+    local hash dirs
+    hash=$(awk -F'\t' -v want="computeDarkSet ($1)" '
+        NR == 1 { for (i = 1; i <= NF; i++) h[$i] = i; next }
+        index($h["name"], want) { print $h["hash"] }' "$W/trace.ladder-0.4-midi.txt")
+    dirs=( $W/work/$hash* )
+    if [ -z "$hash" ] || [ ${#dirs[@]} -ne 1 ]; then
+        echo "$1: computeDarkSet work folder not found once (hash '$hash')" >&2; exit 1
+    fi
+    echo "${dirs[0]}"
+}
+
 case "$1" in
+best-regions)
+    /usr/bin/time -f "%e s, %M kB" python3 "$TOOLS/dark-set-accuracy" best-regions "$2" \
+        "$SLURM_ARRAY_TASK_ID" "$ACC/best-regions"
+    ;;
+realign)
+    sp=$2
+    clade=$(clade_of "$sp")
+    dir=$(dark_set_dir "$sp")
+    wd=${L_SCRATCH:-$SCRATCH/tmp}/realign-$sp-${SLURM_JOB_ID:-x}
+    mkdir -p "$wd/out" "$ACC/realign"
+    python3 "$TOOLS/dark-set-accuracy" realign-prepare "$dir/hits" "$dir/$sp.query.fasta" \
+        "$REF/minus_$clade/reference.fasta" "$wd"
+    # --max: no speed filters, so a weak pair is still aligned; -E/--domE 1e9: report every
+    # domain, whatever its E-value against a database of one to three sequences
+    /usr/bin/time -f "%e s, %M kB" apptainer exec -B "$wd" "$HMMER_IMG" sh -c "cd $wd && \
+        xargs -P ${SLURM_CPUS_PER_TASK:-1} -I{} phmmer --max -E 1e9 --domE 1e9 --cpu 1 \
+        --noali -o /dev/null --domtblout out/{}.tbl in/q{}.fa in/t{}.fa < list.txt"
+    n_in=$(wc -l < "$wd/list.txt")
+    n_out=$(ls "$wd/out" | wc -l)
+    [ "$n_in" -eq "$n_out" ] || { echo "$sp: $n_out of $n_in phmmer outputs" >&2; exit 1; }
+    python3 "$TOOLS/dark-set-accuracy" realign-collect "$wd" "$ACC/realign/${sp}_realign.tsv.gz"
+    rm -rf "$wd"
+    ;;
+score-bands)
+    mkdir -p "$ACC/weak-hits"
+    for spec in human:$ANN/human_pfam_domains.parquet: \
+                worm:$ANN/worm_pfam_domains.parquet: \
+                yeast:$ANN/yeast_pfam_domains.parquet: \
+                borrelia:$ACC/query-pfam/borrelia_pfam.tsv:$ACC/query-pfam/borrelia_domains.tsv; do
+        IFS=: read -r sp qpfam qdom <<< "$spec"
+        clade=$(clade_of "$sp")
+        dir=$(dark_set_dir "$sp")
+        apptainer exec "$IMG" python3 "$TOOLS/dark-set-accuracy" score-bands --species "$sp" \
+            --query-pfam "$qpfam" ${qdom:+--query-domains "$qdom"} \
+            --ref-pfam "$REF/minus_$clade/reference_pfam.parquet" --clans "$CLANS" \
+            --ev-dir "$EV" --hits-dir "$dir/hits" \
+            --realign "$ACC/realign/${sp}_realign.tsv.gz" --best-dir "$ACC/best-regions/$sp" \
+            --out-tsv "$ACC/weak-hits/${sp}_weak_hits.tsv" \
+            --out-json "$ACC/weak-hits/${sp}_weak_hits.json"
+    done
+    ;;
 best-targets)
     f=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$2")
     sp=$(basename "$(dirname "$(dirname "$f")")")
