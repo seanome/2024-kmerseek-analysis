@@ -26,8 +26,8 @@ process shortHeaders {
     tag "${name}"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 2.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 2.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
 
@@ -56,8 +56,8 @@ process tmvecSearch {
     queue 'gpu,hns'
     clusterOptions '--account=ayeletv -G 1'
     cpus 8
-    memory { 32.GB * task.attempt }
-    time { 2.h * task.attempt }
+    memory { 32.GB * 2 ** (task.attempt - 1) }
+    time { 2.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/hits/tmvec", mode: 'copy'
@@ -123,8 +123,8 @@ process plmsearchEmbed {
     queue 'gpu,hns'
     clusterOptions '--account=ayeletv -G 1'
     cpus 8
-    memory { 32.GB * task.attempt }
-    time { 2.h * task.attempt }
+    memory { 32.GB * 2 ** (task.attempt - 1) }
+    time { 2.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
 
@@ -157,8 +157,8 @@ process plmsearchSearch {
     queue 'gpu,hns'
     clusterOptions '--account=ayeletv -G 1'
     cpus 8
-    memory { 32.GB * task.attempt }
-    time { 2.h * task.attempt }
+    memory { 32.GB * 2 ** (task.attempt - 1) }
+    time { 2.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/hits/plmsearch", mode: 'copy', pattern: '*.run.txt'
@@ -197,8 +197,8 @@ process embeddingCalls {
     tag "${tool} ${species}"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 8.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 8.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/regions", mode: 'copy'

@@ -24,8 +24,8 @@ process eggnogMapperSearch {
     tag "eggnog_mapper diamond"
     container 'quay.io/biocontainers/eggnog-mapper@sha256:f70babaf681ff4b6b2fc8e8e76754bf989f01dd4910ca91f156c22aa88ea70d3' // 2.1.15--pyhdfd78af_0
     cpus 8
-    memory { 32.GB * task.attempt }
-    time { 4.h * task.attempt }
+    memory { 32.GB * 2 ** (task.attempt - 1) }
+    time { 4.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/hits", mode: 'copy'
@@ -65,8 +65,8 @@ process pfamNameMap {
     tag "pfam names"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 2.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 2.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
 
@@ -91,8 +91,8 @@ process eggnogCalls {
     tag "eggnog_mapper diamond"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 4.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 4.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/regions", mode: 'copy'
