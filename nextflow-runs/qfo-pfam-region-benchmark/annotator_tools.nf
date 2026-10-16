@@ -49,7 +49,9 @@ params.eggnog_data_dir  = null   // emapperdb 5.0.2 (make eggnog-data)
 params.refdb_label      = 'own_models'
 // Which tools run (comma-separated).
 // G3, embedding search against each QfO target proteome of the midi-plus run.
-params.embedding_targets  = 'mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli,botryllus'
+// The nine QfO targets of the midi-plus run that have a domain map in
+// data/midi-plus/results/truth (botryllus has none there; checked 2026-10-16 by -preview).
+params.embedding_targets  = 'mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli'
 params.species_registry   = "${projectDir}/assets/qfo_species.tsv"
 params.qfo_dir            = null   // data/midi-plus/qfo
 params.domain_map_dir     = null   // data/midi-plus/results/truth (<species>_domain_map.parquet)

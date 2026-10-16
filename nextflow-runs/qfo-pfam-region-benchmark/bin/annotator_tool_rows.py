@@ -425,7 +425,7 @@ def pileup_calls(
 ) -> pl.DataFrame:
     """PR 146's load_calls() for a non-kmerseek tool: coordinates kept as they are
     (1-based, end included), plus the target the tool searched, so a tool run against
-    ten proteomes keeps its ten sets of calls apart."""
+    several proteomes keeps each set of calls apart."""
     c = pl.read_parquet(calls_path)
     return c.select(
         pl.lit(tool).alias("tool"),
