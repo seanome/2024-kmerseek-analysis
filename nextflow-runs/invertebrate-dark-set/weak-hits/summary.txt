@@ -1,0 +1,155 @@
+Recount of PR 133's table (dark at E <= 1, all proteins with a known Pfam family)
+  human     dark 1,071 (PR 133 1,071), findable 184 (184), kmerseek hp_lehninger2.k17.s1 right/wrong at E <= 1 0/270 (0/270), phmmer at E 1-10 24/716 (24/716), phmmer best hits at E <= 1 on dark proteins 0 (0): MATCH
+  worm      dark 1,892 (PR 133 1,892), findable 421 (421), kmerseek hp_lehninger_c_nonpolar2.k19.s1 right/wrong at E <= 1 6/397 (6/397), phmmer at E 1-10 59/1371 (59/1371), phmmer best hits at E <= 1 on dark proteins 0 (0): MATCH
+  yeast     dark 342 (PR 133 342), findable 89 (89), kmerseek hp_lehninger2.k17.s1 right/wrong at E <= 1 1/46 (1/46), phmmer at E 1-10 10/263 (10/263), phmmer best hits at E <= 1 on dark proteins 0 (0): MATCH
+  borrelia  dark 165 (PR 133 165), findable 20 (20), kmerseek hp_lehninger_c_nonpolar2.k19.s1 right/wrong at E <= 1 0/13 (0/13), phmmer at E 1-10 1/131 (1/131), phmmer best hits at E <= 1 on dark proteins 0 (0): MATCH
+
+Findable: dark proteins (E <= 1) whose Pfam family is anywhere in the clade-excluded reference
+  human     184 of 1,071 (17%)
+  worm      421 of 1,892 (22%)
+  yeast     89 of 342 (26%)
+  borrelia  20 of 165 (12%)
+
+Sequence tools' query stretch from the phmmer re-alignment (pairs with best E <= 10)
+  human     phmmer    pairs 20,099: a realigned domain overlaps the tool's target stretch 20,099, same target stretch 20,099, none 0
+  human     jackhmmer pairs 20,099: a realigned domain overlaps the tool's target stretch 20,092, same target stretch 7,926, none 7
+  human     mmseqs2   pairs 18,155: a realigned domain overlaps the tool's target stretch 18,146, same target stretch 2,536, none 9
+  worm      phmmer    pairs 18,910: a realigned domain overlaps the tool's target stretch 18,910, same target stretch 18,910, none 0
+  worm      jackhmmer pairs 18,914: a realigned domain overlaps the tool's target stretch 18,907, same target stretch 9,641, none 7
+  worm      mmseqs2   pairs 12,422: a realigned domain overlaps the tool's target stretch 12,399, same target stretch 198, none 23
+  yeast     phmmer    pairs 5,858: a realigned domain overlaps the tool's target stretch 5,858, same target stretch 5,858, none 0
+  yeast     jackhmmer pairs 5,858: a realigned domain overlaps the tool's target stretch 5,857, same target stretch 2,061, none 1
+  yeast     mmseqs2   pairs 4,994: a realigned domain overlaps the tool's target stretch 4,989, same target stretch 232, none 5
+  borrelia  phmmer    pairs 1,235: a realigned domain overlaps the tool's target stretch 1,235, same target stretch 1,235, none 0
+  borrelia  jackhmmer pairs 1,235: a realigned domain overlaps the tool's target stretch 1,235, same target stretch 738, none 0
+  borrelia  mmseqs2   pairs 758: a realigned domain overlaps the tool's target stretch 755, same target stretch 39, none 3
+
+kmerseek setting per species: highest strict precision at E 1-10 on dark tune proteins, among settings with >= 30 judged hits there
+  human     wass14.k6.s1 (of 98 eligible, 167 settings): tune 1/268
+  worm      hp_lehninger_hpc3.k25.s10 (of 97 eligible, 169 settings): tune 2/37
+  yeast     hp_pbotc_1st_ed2.k23.s1 (of 57 eligible, 165 settings): tune 0/102
+  borrelia  uniprot18.k5.s1 (of 13 eligible, 174 settings): tune 0/60
+
+Dark proteins (no sequence-tool hit at E <= 1): precision of the best hit, strict call (loose call), all proteins
+  human     phmmer                                     1 < E ≤ 10      strict 1.5% (11/740; 95% CI 0.8-2.6%); loose 3.2% (24/740; 95% CI 2.2-4.8%)
+  human     jackhmmer (3 rounds)                       1 < E ≤ 10      strict 1.5% (11/740; 95% CI 0.8-2.6%); loose 3.2% (24/740; 95% CI 2.2-4.8%)
+  human     MMseqs2 (-s 7, 3 rounds)                   1 < E ≤ 10      strict 3.3% (5/152; 95% CI 1.4-7.5%); loose 4.6% (7/152; 95% CI 2.2-9.2%)
+  human     kmerseek:wass14.k6.s1                      E ≤ 0.001       strict 0.0% (0/13; 95% CI 0.0-22.8%) (grey: n < 30); loose 0.0% (0/13; 95% CI 0.0-22.8%) (grey: n < 30)
+  human     kmerseek:wass14.k6.s1                      0.001 < E ≤ 1   strict 0.0% (0/133; 95% CI 0.0-2.8%); loose 0.0% (0/133; 95% CI 0.0-2.8%)
+  human     kmerseek:wass14.k6.s1                      1 < E ≤ 10      strict 0.2% (1/560; 95% CI 0.0-1.0%); loose 0.9% (5/560; 95% CI 0.4-2.1%)
+  worm      phmmer                                     1 < E ≤ 10      strict 1.7% (25/1430; 95% CI 1.2-2.6%); loose 4.1% (59/1430; 95% CI 3.2-5.3%)
+  worm      jackhmmer (3 rounds)                       1 < E ≤ 10      strict 1.7% (25/1431; 95% CI 1.2-2.6%); loose 4.1% (59/1431; 95% CI 3.2-5.3%)
+  worm      MMseqs2 (-s 7, 3 rounds)                   1 < E ≤ 10      strict 4.8% (10/208; 95% CI 2.6-8.6%); loose 13.5% (28/208; 95% CI 9.5-18.8%)
+  worm      kmerseek:hp_lehninger_hpc3.k25.s10         0.001 < E ≤ 1   strict 0.0% (0/65; 95% CI 0.0-5.6%); loose 0.0% (0/65; 95% CI 0.0-5.6%)
+  worm      kmerseek:hp_lehninger_hpc3.k25.s10         1 < E ≤ 10      strict 2.7% (2/75; 95% CI 0.7-9.2%); loose 2.7% (2/75; 95% CI 0.7-9.2%)
+  yeast     phmmer                                     1 < E ≤ 10      strict 1.8% (5/273; 95% CI 0.8-4.2%); loose 3.7% (10/273; 95% CI 2.0-6.6%)
+  yeast     jackhmmer (3 rounds)                       1 < E ≤ 10      strict 1.8% (5/273; 95% CI 0.8-4.2%); loose 3.7% (10/273; 95% CI 2.0-6.6%)
+  yeast     MMseqs2 (-s 7, 3 rounds)                   1 < E ≤ 10      strict 3.3% (2/60; 95% CI 0.9-11.4%); loose 5.0% (3/60; 95% CI 1.7-13.7%)
+  yeast     kmerseek:hp_pbotc_1st_ed2.k23.s1           0.001 < E ≤ 1   strict 0.0% (0/31; 95% CI 0.0-11.0%); loose 0.0% (0/31; 95% CI 0.0-11.0%)
+  yeast     kmerseek:hp_pbotc_1st_ed2.k23.s1           1 < E ≤ 10      strict 0.0% (0/208; 95% CI 0.0-1.8%); loose 0.5% (1/208; 95% CI 0.1-2.7%)
+  borrelia  phmmer                                     1 < E ≤ 10      strict 0.8% (1/132; 95% CI 0.1-4.2%); loose 0.8% (1/132; 95% CI 0.1-4.2%)
+  borrelia  jackhmmer (3 rounds)                       1 < E ≤ 10      strict 0.8% (1/132; 95% CI 0.1-4.2%); loose 0.8% (1/132; 95% CI 0.1-4.2%)
+  borrelia  MMseqs2 (-s 7, 3 rounds)                   1 < E ≤ 10      strict 3.4% (1/29; 95% CI 0.6-17.2%) (grey: n < 30); loose 3.4% (1/29; 95% CI 0.6-17.2%) (grey: n < 30)
+  borrelia  kmerseek:uniprot18.k5.s1                   0.001 < E ≤ 1   strict 0.0% (0/7; 95% CI 0.0-35.4%) (grey: n < 30); loose 0.0% (0/7; 95% CI 0.0-35.4%) (grey: n < 30)
+  borrelia  kmerseek:uniprot18.k5.s1                   1 < E ≤ 10      strict 0.0% (0/111; 95% CI 0.0-3.3%); loose 0.0% (0/111; 95% CI 0.0-3.3%)
+
+Placed proteins (a sequence-tool hit at E <= 1): precision of the best hit, strict call (loose call), all proteins
+  human     phmmer                                     E ≤ 0.001       strict 96.4% (16024/16620; 95% CI 96.1-96.7%); loose 99.3% (16505/16620; 95% CI 99.2-99.4%)
+  human     phmmer                                     0.001 < E ≤ 1   strict 20.6% (248/1205; 95% CI 18.4-23.0%); loose 32.5% (392/1205; 95% CI 29.9-35.2%)
+  human     phmmer                                     1 < E ≤ 10      strict 7.7% (3/39; 95% CI 2.7-20.3%); loose 12.8% (5/39; 95% CI 5.6-26.7%)
+  human     jackhmmer (3 rounds)                       E ≤ 0.001       strict 92.1% (15418/16733; 95% CI 91.7-92.5%); loose 99.0% (16574/16733; 95% CI 98.9-99.2%)
+  human     jackhmmer (3 rounds)                       0.001 < E ≤ 1   strict 15.9% (171/1078; 95% CI 13.8-18.2%); loose 26.5% (286/1078; 95% CI 24.0-29.2%)
+  human     jackhmmer (3 rounds)                       1 < E ≤ 10      strict 8.3% (3/36; 95% CI 2.9-21.8%); loose 11.1% (4/36; 95% CI 4.4-25.3%)
+  human     MMseqs2 (-s 7, 3 rounds)                   E ≤ 0.001       strict 94.5% (15680/16601; 95% CI 94.1-94.8%); loose 99.1% (16454/16601; 95% CI 99.0-99.2%)
+  human     MMseqs2 (-s 7, 3 rounds)                   0.001 < E ≤ 1   strict 46.4% (102/220; 95% CI 39.9-53.0%); loose 60.9% (134/220; 95% CI 54.3-67.1%)
+  human     MMseqs2 (-s 7, 3 rounds)                   1 < E ≤ 10      strict 14.1% (43/306; 95% CI 10.6-18.4%); loose 30.7% (94/306; 95% CI 25.8-36.1%)
+  human     kmerseek:wass14.k6.s1                      E ≤ 0.001       strict 94.7% (11940/12603; 95% CI 94.3-95.1%); loose 98.7% (12441/12603; 95% CI 98.5-98.9%)
+  human     kmerseek:wass14.k6.s1                      0.001 < E ≤ 1   strict 55.9% (1007/1801; 95% CI 53.6-58.2%); loose 62.0% (1117/1801; 95% CI 59.8-64.2%)
+  human     kmerseek:wass14.k6.s1                      1 < E ≤ 10      strict 9.1% (209/2290; 95% CI 8.0-10.4%); loose 13.9% (318/2290; 95% CI 12.5-15.4%)
+  worm      phmmer                                     E ≤ 0.001       strict 94.2% (9148/9713; 95% CI 93.7-94.6%); loose 98.6% (9576/9713; 95% CI 98.3-98.8%)
+  worm      phmmer                                     0.001 < E ≤ 1   strict 16.8% (341/2033; 95% CI 15.2-18.5%); loose 30.9% (629/2033; 95% CI 29.0-33.0%)
+  worm      phmmer                                     1 < E ≤ 10      strict 1.7% (1/58; 95% CI 0.3-9.1%); loose 6.9% (4/58; 95% CI 2.7-16.4%)
+  worm      jackhmmer (3 rounds)                       E ≤ 0.001       strict 91.5% (9021/9860; 95% CI 90.9-92.0%); loose 98.1% (9677/9860; 95% CI 97.9-98.4%)
+  worm      jackhmmer (3 rounds)                       0.001 < E ≤ 1   strict 13.6% (257/1886; 95% CI 12.2-15.2%); loose 26.9% (507/1886; 95% CI 24.9-28.9%)
+  worm      jackhmmer (3 rounds)                       1 < E ≤ 10      strict 1.7% (1/58; 95% CI 0.3-9.1%); loose 6.9% (4/58; 95% CI 2.7-16.4%)
+  worm      MMseqs2 (-s 7, 3 rounds)                   E ≤ 0.001       strict 92.0% (8932/9705; 95% CI 91.5-92.6%); loose 98.1% (9523/9705; 95% CI 97.8-98.4%)
+  worm      MMseqs2 (-s 7, 3 rounds)                   0.001 < E ≤ 1   strict 30.9% (64/207; 95% CI 25.0-37.5%); loose 54.1% (112/207; 95% CI 47.3-60.8%)
+  worm      MMseqs2 (-s 7, 3 rounds)                   1 < E ≤ 10      strict 17.3% (82/473; 95% CI 14.2-21.0%); loose 33.6% (159/473; 95% CI 29.5-38.0%)
+  worm      kmerseek:hp_lehninger_hpc3.k25.s10         E ≤ 0.001       strict 92.3% (12/13; 95% CI 66.7-98.6%) (grey: n < 30); loose 100.0% (13/13; 95% CI 77.2-100.0%) (grey: n < 30)
+  worm      kmerseek:hp_lehninger_hpc3.k25.s10         0.001 < E ≤ 1   strict 12.8% (47/366; 95% CI 9.8-16.7%); loose 13.7% (50/366; 95% CI 10.5-17.6%)
+  worm      kmerseek:hp_lehninger_hpc3.k25.s10         1 < E ≤ 10      strict 2.0% (14/697; 95% CI 1.2-3.3%); loose 3.3% (23/697; 95% CI 2.2-4.9%)
+  yeast     phmmer                                     E ≤ 0.001       strict 95.6% (4215/4407; 95% CI 95.0-96.2%); loose 99.0% (4364/4407; 95% CI 98.7-99.3%)
+  yeast     phmmer                                     0.001 < E ≤ 1   strict 23.1% (105/455; 95% CI 19.4-27.2%); loose 26.8% (122/455; 95% CI 22.9-31.1%)
+  yeast     phmmer                                     1 < E ≤ 10      strict 6.2% (1/16; 95% CI 1.1-28.3%) (grey: n < 30); loose 6.2% (1/16; 95% CI 1.1-28.3%) (grey: n < 30)
+  yeast     jackhmmer (3 rounds)                       E ≤ 0.001       strict 93.1% (4167/4477; 95% CI 92.3-93.8%); loose 98.7% (4420/4477; 95% CI 98.4-99.0%)
+  yeast     jackhmmer (3 rounds)                       0.001 < E ≤ 1   strict 17.7% (72/407; 95% CI 14.3-21.7%); loose 20.6% (84/407; 95% CI 17.0-24.8%)
+  yeast     jackhmmer (3 rounds)                       1 < E ≤ 10      strict 6.7% (1/15; 95% CI 1.2-29.8%) (grey: n < 30); loose 6.7% (1/15; 95% CI 1.2-29.8%) (grey: n < 30)
+  yeast     MMseqs2 (-s 7, 3 rounds)                   E ≤ 0.001       strict 92.8% (4107/4425; 95% CI 92.0-93.5%); loose 98.8% (4370/4425; 95% CI 98.4-99.0%)
+  yeast     MMseqs2 (-s 7, 3 rounds)                   0.001 < E ≤ 1   strict 54.1% (40/74; 95% CI 42.8-64.9%); loose 64.9% (48/74; 95% CI 53.5-74.8%)
+  yeast     MMseqs2 (-s 7, 3 rounds)                   1 < E ≤ 10      strict 18.6% (22/118; 95% CI 12.6-26.6%); loose 21.2% (25/118; 95% CI 14.8-29.4%)
+  yeast     kmerseek:hp_pbotc_1st_ed2.k23.s1           E ≤ 0.001       strict 94.3% (1659/1760; 95% CI 93.1-95.3%); loose 97.4% (1715/1760; 95% CI 96.6-98.1%)
+  yeast     kmerseek:hp_pbotc_1st_ed2.k23.s1           0.001 < E ≤ 1   strict 50.2% (457/911; 95% CI 46.9-53.4%); loose 54.7% (498/911; 95% CI 51.4-57.9%)
+  yeast     kmerseek:hp_pbotc_1st_ed2.k23.s1           1 < E ≤ 10      strict 7.8% (134/1719; 95% CI 6.6-9.2%); loose 10.1% (173/1719; 95% CI 8.7-11.6%)
+  borrelia  phmmer                                     E ≤ 0.001       strict 97.9% (615/628; 95% CI 96.5-98.8%); loose 99.2% (623/628; 95% CI 98.1-99.7%)
+  borrelia  phmmer                                     0.001 < E ≤ 1   strict 7.1% (14/197; 95% CI 4.3-11.6%); loose 11.7% (23/197; 95% CI 7.9-16.9%)
+  borrelia  phmmer                                     1 < E ≤ 10      strict 0.0% (0/4; 95% CI 0.0-49.0%) (grey: n < 30); loose 0.0% (0/4; 95% CI 0.0-49.0%) (grey: n < 30)
+  borrelia  jackhmmer (3 rounds)                       E ≤ 0.001       strict 92.1% (594/645; 95% CI 89.8-93.9%); loose 97.5% (629/645; 95% CI 96.0-98.5%)
+  borrelia  jackhmmer (3 rounds)                       0.001 < E ≤ 1   strict 5.8% (11/189; 95% CI 3.3-10.1%); loose 10.1% (19/189; 95% CI 6.5-15.2%)
+  borrelia  jackhmmer (3 rounds)                       1 < E ≤ 10      strict 0.0% (0/2; 95% CI 0.0-65.8%) (grey: n < 30); loose 0.0% (0/2; 95% CI 0.0-65.8%) (grey: n < 30)
+  borrelia  MMseqs2 (-s 7, 3 rounds)                   E ≤ 0.001       strict 93.0% (574/617; 95% CI 90.7-94.8%); loose 98.5% (608/617; 95% CI 97.3-99.2%)
+  borrelia  MMseqs2 (-s 7, 3 rounds)                   0.001 < E ≤ 1   strict 16.7% (3/18; 95% CI 5.8-39.2%) (grey: n < 30); loose 27.8% (5/18; 95% CI 12.5-50.9%) (grey: n < 30)
+  borrelia  MMseqs2 (-s 7, 3 rounds)                   1 < E ≤ 10      strict 3.2% (1/31; 95% CI 0.6-16.2%); loose 9.7% (3/31; 95% CI 3.3-24.9%)
+  borrelia  kmerseek:uniprot18.k5.s1                   E ≤ 0.001       strict 97.2% (377/388; 95% CI 95.0-98.4%); loose 100.0% (388/388; 95% CI 99.0-100.0%)
+  borrelia  kmerseek:uniprot18.k5.s1                   0.001 < E ≤ 1   strict 57.1% (84/147; 95% CI 49.1-64.9%); loose 72.1% (106/147; 95% CI 64.4-78.7%)
+  borrelia  kmerseek:uniprot18.k5.s1                   1 < E ≤ 10      strict 8.7% (22/252; 95% CI 5.8-12.9%); loose 10.7% (27/252; 95% CI 7.5-15.1%)
+
+Leaderboard column: strict precision at E 1-10, dark proteins, test half
+  human     phmmer                                     2.2% (9/401; 95% CI 1.2-4.2%)
+  human     jackhmmer (3 rounds)                       2.2% (9/401; 95% CI 1.2-4.2%)
+  human     MMseqs2 (-s 7, 3 rounds)                   5.9% (5/85; 95% CI 2.5-13.0%)
+  human     kmerseek:wass14.k6.s1                      0.0% (0/292; 95% CI 0.0-1.3%)
+  worm      phmmer                                     1.8% (13/729; 95% CI 1.0-3.0%)
+  worm      jackhmmer (3 rounds)                       1.8% (13/730; 95% CI 1.0-3.0%)
+  worm      MMseqs2 (-s 7, 3 rounds)                   4.2% (4/96; 95% CI 1.6-10.2%)
+  worm      kmerseek:hp_lehninger_hpc3.k25.s10         0.0% (0/38; 95% CI 0.0-9.2%)
+  yeast     phmmer                                     3.0% (4/132; 95% CI 1.2-7.5%)
+  yeast     jackhmmer (3 rounds)                       3.0% (4/132; 95% CI 1.2-7.5%)
+  yeast     MMseqs2 (-s 7, 3 rounds)                   3.2% (1/31; 95% CI 0.6-16.2%)
+  yeast     kmerseek:hp_pbotc_1st_ed2.k23.s1           0.0% (0/106; 95% CI 0.0-3.5%)
+  borrelia  phmmer                                     0.0% (0/65; 95% CI 0.0-5.6%)
+  borrelia  jackhmmer (3 rounds)                       0.0% (0/65; 95% CI 0.0-5.6%)
+  borrelia  MMseqs2 (-s 7, 3 rounds)                   0.0% (0/13; 95% CI 0.0-22.8%) (grey: n < 30)
+  borrelia  kmerseek:uniprot18.k5.s1                   0.0% (0/51; 95% CI 0.0-7.0%)
+
+Predictions (weak-hits/README.md)
+  1. strict right more often than loose in 0 of 11524 rows (equal in 3782)
+  2. human     phmmer    dark E 1-10 strict 1.5% (11/740; 95% CI 0.8-2.6%): holds
+  2. human     jackhmmer dark E 1-10 strict 1.5% (11/740; 95% CI 0.8-2.6%): holds
+  2. human     mmseqs2   dark E 1-10 strict 3.3% (5/152; 95% CI 1.4-7.5%): holds
+  3. human     chosen kmerseek, test half 0.0% (0/292; 95% CI 0.0-1.3%): holds
+  4. human     MMseqs2 placed E <= 0.001 strict 94.5% (15680/16601; 95% CI 94.1-94.8%): holds
+  2. worm      phmmer    dark E 1-10 strict 1.7% (25/1430; 95% CI 1.2-2.6%): holds
+  2. worm      jackhmmer dark E 1-10 strict 1.7% (25/1431; 95% CI 1.2-2.6%): holds
+  2. worm      mmseqs2   dark E 1-10 strict 4.8% (10/208; 95% CI 2.6-8.6%): holds
+  3. worm      chosen kmerseek, test half 0.0% (0/38; 95% CI 0.0-9.2%): holds
+  4. worm      MMseqs2 placed E <= 0.001 strict 92.0% (8932/9705; 95% CI 91.5-92.6%): holds
+  2. yeast     phmmer    dark E 1-10 strict 1.8% (5/273; 95% CI 0.8-4.2%): holds
+  2. yeast     jackhmmer dark E 1-10 strict 1.8% (5/273; 95% CI 0.8-4.2%): holds
+  2. yeast     mmseqs2   dark E 1-10 strict 3.3% (2/60; 95% CI 0.9-11.4%): holds
+  3. yeast     chosen kmerseek, test half 0.0% (0/106; 95% CI 0.0-3.5%): holds
+  4. yeast     MMseqs2 placed E <= 0.001 strict 92.8% (4107/4425; 95% CI 92.0-93.5%): holds
+  2. borrelia  phmmer    dark E 1-10 strict 0.8% (1/132; 95% CI 0.1-4.2%): holds
+  2. borrelia  jackhmmer dark E 1-10 strict 0.8% (1/132; 95% CI 0.1-4.2%): holds
+  2. borrelia  mmseqs2   dark E 1-10 strict 3.4% (1/29; 95% CI 0.6-17.2%) (grey: n < 30): holds
+  3. borrelia  chosen kmerseek, test half 0.0% (0/51; 95% CI 0.0-7.0%): holds
+  4. borrelia  MMseqs2 placed E <= 0.001 strict 93.0% (574/617; 95% CI 90.7-94.8%): holds
+
+Every kmerseek setting, dark proteins, E 1-10, all proteins: strict precision
+  human     167 settings, 113 with >= 30 judged: strict precision median 0.0%, max 1.1%; right 6 of 26005 judged best hits summed over settings
+  worm      169 settings, 115 with >= 30 judged: strict precision median 0.0%, max 2.7%; right 11 of 41534 judged best hits summed over settings
+  yeast     165 settings, 80 with >= 30 judged: strict precision median 0.0%, max 0.0%; right 0 of 7593 judged best hits summed over settings
+  borrelia  174 settings, 44 with >= 30 judged: strict precision median 0.0%, max 0.0%; right 0 of 3075 judged best hits summed over settings
+
+Spot check Q96Q06 (perilipin-4): strict-right in any human source? False
+
+site table: 192 rows, results/leaderboard/weak_hits/weak_hits.parquet

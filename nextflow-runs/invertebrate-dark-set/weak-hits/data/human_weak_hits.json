@@ -1,0 +1,605 @@
+{
+ "species": "human",
+ "bands": [
+  "le_0.001",
+  "0.001_1",
+  "1_10"
+ ],
+ "dark_cutoffs": [
+  0.001,
+  1.0,
+  10.0
+ ],
+ "n_proteome": 20600,
+ "n_known": 19414,
+ "n_findable": 17271,
+ "query_domain_rows_without_position": 0,
+ "realign": {
+  "phmmer": {
+   "pairs": 20099,
+   "same_target_range": 20099,
+   "overlapping_target_range": 20099,
+   "no_overlap": 0
+  },
+  "jackhmmer": {
+   "pairs": 20099,
+   "same_target_range": 7926,
+   "overlapping_target_range": 20092,
+   "no_overlap": 7
+  },
+  "mmseqs2": {
+   "pairs": 18155,
+   "same_target_range": 2536,
+   "overlapping_target_range": 18146,
+   "no_overlap": 9
+  }
+ },
+ "n_sources": 170,
+ "strict_right_dark_1": {
+  "jackhmmer": [
+   {
+    "query": "P32970",
+    "target": "Q9I8D8",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 92,
+    "query_to": 188,
+    "shared_families": [
+     "PF00229"
+    ]
+   },
+   {
+    "query": "Q96HA9",
+    "target": "Q54H86",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 6,
+    "query_to": 155,
+    "shared_families": [
+     "PF05648"
+    ]
+   },
+   {
+    "query": "Q5YKI7",
+    "target": "F6Z5C0",
+    "evalue": 1.4,
+    "band": "1_10",
+    "query_from": 9,
+    "query_to": 79,
+    "shared_families": [
+     "PF14836"
+    ]
+   },
+   {
+    "query": "Q8WWV6",
+    "target": "P03983",
+    "evalue": 1.4,
+    "band": "1_10",
+    "query_from": 71,
+    "query_to": 154,
+    "shared_families": [
+     "PF07686"
+    ]
+   },
+   {
+    "query": "Q9NP97",
+    "target": "Q57759",
+    "evalue": 1.8,
+    "band": "1_10",
+    "query_from": 6,
+    "query_to": 89,
+    "shared_families": [
+     "PF03259"
+    ]
+   },
+   {
+    "query": "A6NI87",
+    "target": "A1KXM5",
+    "evalue": 1.9,
+    "band": "1_10",
+    "query_from": 101,
+    "query_to": 200,
+    "shared_families": [
+     "PF14645"
+    ]
+   },
+   {
+    "query": "P02763",
+    "target": "Q01584",
+    "evalue": 1.9,
+    "band": "1_10",
+    "query_from": 28,
+    "query_to": 159,
+    "shared_families": [
+     "PF00061"
+    ]
+   },
+   {
+    "query": "B7Z8K6",
+    "target": "O42197",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 14,
+    "query_to": 79,
+    "shared_families": [
+     "PF07654"
+    ]
+   },
+   {
+    "query": "Q8TF09",
+    "target": "Q58736",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 6,
+    "query_to": 60,
+    "shared_families": [
+     "PF03259"
+    ]
+   },
+   {
+    "query": "Q9BR11",
+    "target": "Q9SZL7",
+    "evalue": 4.0,
+    "band": "1_10",
+    "query_from": 379,
+    "query_to": 419,
+    "shared_families": [
+     "PF04434"
+    ]
+   },
+   {
+    "query": "P35318",
+    "target": "P10286",
+    "evalue": 4.7,
+    "band": "1_10",
+    "query_from": 100,
+    "query_to": 152,
+    "shared_families": [
+     "PF00214"
+    ]
+   }
+  ],
+  "kmerseek:dayhoff6.k11.s1": [],
+  "kmerseek:dayhoff6.k11.s10": [],
+  "kmerseek:dayhoff6.k9.s1": [],
+  "kmerseek:dayhoff6.k9.s10": [],
+  "kmerseek:funcgroups8.k11.s1": [],
+  "kmerseek:funcgroups8.k11.s10": [],
+  "kmerseek:funcgroups8.k13.s1": [],
+  "kmerseek:funcgroups8.k13.s10": [],
+  "kmerseek:funcgroups8.k14.s1": [],
+  "kmerseek:funcgroups8.k14.s10": [],
+  "kmerseek:funcgroups8.k9.s1": [],
+  "kmerseek:funcgroups8.k9.s10": [],
+  "kmerseek:gbmr4.k16.s1": [],
+  "kmerseek:gbmr4.k16.s10": [],
+  "kmerseek:gbmr4.k18.s1": [],
+  "kmerseek:gbmr4.k18.s10": [],
+  "kmerseek:gbmr4.k20.s1": [],
+  "kmerseek:gbmr4.k20.s10": [],
+  "kmerseek:gbmr4.k22.s1": [],
+  "kmerseek:gbmr4.k22.s10": [],
+  "kmerseek:gbmr4.k24.s1": [],
+  "kmerseek:gbmr4.k24.s10": [],
+  "kmerseek:gbmr4.k26.s1": [],
+  "kmerseek:gbmr7.k17.s1": [],
+  "kmerseek:gbmr7.k19.s1": [],
+  "kmerseek:gbmr7.k21.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k21.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k21.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k23.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k23.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k25.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k25.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k27.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k27.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k29.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k29.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k31.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k31.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k33.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k33.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k35.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k37.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k39.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k39.s10": [],
+  "kmerseek:hp_lehninger2.k17.s1": [],
+  "kmerseek:hp_lehninger2.k17.s10": [],
+  "kmerseek:hp_lehninger2.k19.s1": [],
+  "kmerseek:hp_lehninger2.k19.s10": [],
+  "kmerseek:hp_lehninger2.k21.s1": [],
+  "kmerseek:hp_lehninger2.k21.s10": [],
+  "kmerseek:hp_lehninger2.k23.s1": [],
+  "kmerseek:hp_lehninger2.k23.s10": [],
+  "kmerseek:hp_lehninger2.k25.s1": [],
+  "kmerseek:hp_lehninger2.k25.s10": [],
+  "kmerseek:hp_lehninger2.k27.s1": [],
+  "kmerseek:hp_lehninger2.k27.s10": [],
+  "kmerseek:hp_lehninger2.k29.s1": [],
+  "kmerseek:hp_lehninger2.k29.s10": [],
+  "kmerseek:hp_lehninger2.k30.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k19.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k19.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k21.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k21.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k23.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k23.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k25.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k25.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k27.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k27.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k31.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k31.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k17.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k17.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k19.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k19.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k21.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k21.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k23.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k23.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k25.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k25.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k27.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k29.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k19.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k19.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k21.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k21.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k23.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k23.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k25.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k25.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k27.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k27.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k29.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k30.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k30.s10": [],
+  "kmerseek:hp_thomas_dill2.k20.s1": [],
+  "kmerseek:hp_thomas_dill2.k20.s10": [],
+  "kmerseek:hp_thomas_dill2.k22.s1": [],
+  "kmerseek:hp_thomas_dill2.k22.s10": [],
+  "kmerseek:hp_thomas_dill2.k24.s1": [],
+  "kmerseek:hp_thomas_dill2.k24.s10": [],
+  "kmerseek:hp_thomas_dill2.k26.s10": [],
+  "kmerseek:hp_thomas_dill2.k28.s1": [],
+  "kmerseek:hp_thomas_dill2.k28.s10": [],
+  "kmerseek:hp_thomas_dill2.k30.s10": [],
+  "kmerseek:hp_thomas_dill2.k34.s1": [],
+  "kmerseek:hp_thomas_dill2.k34.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k20.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k22.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k22.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k24.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k24.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k26.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k26.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k28.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k30.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k32.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k38.s1": [],
+  "kmerseek:hsdm17.k6.s1": [
+   {
+    "query": "Q6SJ93",
+    "target": "Q6GI34",
+    "evalue": 2.75,
+    "band": "1_10",
+    "query_from": 648,
+    "query_to": 677,
+    "shared_families": [
+     "PF13365"
+    ]
+   },
+   {
+    "query": "Q9BV97",
+    "target": "P30373",
+    "evalue": 9.88,
+    "band": "1_10",
+    "query_from": 54,
+    "query_to": 76,
+    "shared_families": [
+     "PF00096",
+     "PF01352"
+    ]
+   }
+  ],
+  "kmerseek:hsdm17.k6.s10": [],
+  "kmerseek:hsdm17.k8.s1": [],
+  "kmerseek:hsdm17.k8.s10": [],
+  "kmerseek:mmseqs12.k10.s1": [],
+  "kmerseek:mmseqs12.k8.s1": [],
+  "kmerseek:mmseqs12.k8.s10": [],
+  "kmerseek:polarity4.k13.s1": [],
+  "kmerseek:polarity4.k13.s10": [],
+  "kmerseek:polarity4.k15.s1": [],
+  "kmerseek:polarity4.k15.s10": [],
+  "kmerseek:polarity4.k17.s1": [],
+  "kmerseek:polarity4.k17.s10": [],
+  "kmerseek:polarity4.k19.s1": [],
+  "kmerseek:polarity4.k19.s10": [],
+  "kmerseek:polarity4.k21.s1": [],
+  "kmerseek:polarity4.k21.s10": [],
+  "kmerseek:polarity4.k23.s1": [],
+  "kmerseek:protein20.k5.s1": [
+   {
+    "query": "Q6SJ93",
+    "target": "Q2H334",
+    "evalue": 0.638,
+    "band": "0.001_1",
+    "query_from": 646,
+    "query_to": 668,
+    "shared_families": [
+     "PF13365"
+    ]
+   },
+   {
+    "query": "O60290",
+    "target": "P30373",
+    "evalue": 0.729,
+    "band": "0.001_1",
+    "query_from": 345,
+    "query_to": 371,
+    "shared_families": [
+     "PF01352"
+    ]
+   },
+   {
+    "query": "Q9Y3T6",
+    "target": "Q8MSX1",
+    "evalue": 3.87,
+    "band": "1_10",
+    "query_from": 41,
+    "query_to": 59,
+    "shared_families": [
+     "PF01424"
+    ]
+   }
+  ],
+  "kmerseek:protein20.k5.s10": [],
+  "kmerseek:protein20.k7.s1": [],
+  "kmerseek:protein20.k7.s10": [],
+  "kmerseek:protein20.k8.s1": [],
+  "kmerseek:protein20.k8.s10": [],
+  "kmerseek:sdm12.k11.s1": [],
+  "kmerseek:sdm12.k11.s10": [],
+  "kmerseek:sdm12.k12.s1": [],
+  "kmerseek:sdm12.k12.s10": [],
+  "kmerseek:sdm12.k7.s1": [],
+  "kmerseek:sdm12.k7.s10": [
+   {
+    "query": "Q9BV97",
+    "target": "P30373",
+    "evalue": 3.82,
+    "band": "1_10",
+    "query_from": 49,
+    "query_to": 76,
+    "shared_families": [
+     "PF00096",
+     "PF01352"
+    ]
+   }
+  ],
+  "kmerseek:sdm12.k9.s1": [],
+  "kmerseek:sdm12.k9.s10": [],
+  "kmerseek:uniprot18.k5.s1": [
+   {
+    "query": "Q6SJ93",
+    "target": "Q75D90",
+    "evalue": 5.11,
+    "band": "1_10",
+    "query_from": 646,
+    "query_to": 668,
+    "shared_families": [
+     "PF13365"
+    ]
+   }
+  ],
+  "kmerseek:uniprot18.k5.s10": [],
+  "kmerseek:uniprot18.k7.s1": [],
+  "kmerseek:uniprot18.k7.s10": [],
+  "kmerseek:uniprot18.k9.s1": [],
+  "kmerseek:wass14.k6.s1": [
+   {
+    "query": "Q99706",
+    "target": "Q90773",
+    "evalue": 3.09,
+    "band": "1_10",
+    "query_from": 23,
+    "query_to": 52,
+    "shared_families": [
+     "PF00047"
+    ]
+   }
+  ],
+  "kmerseek:wass14.k6.s10": [],
+  "kmerseek:wass14.k8.s1": [],
+  "kmerseek:wass14.k8.s10": [],
+  "kmerseek:wass14.k9.s10": [],
+  "kmerseek:wwmj5.k11.s1": [],
+  "kmerseek:wwmj5.k11.s10": [],
+  "kmerseek:wwmj5.k13.s1": [],
+  "kmerseek:wwmj5.k15.s1": [],
+  "kmerseek:wwmj5.k9.s1": [],
+  "kmerseek:wwmj5.k9.s10": [],
+  "mmseqs2": [
+   {
+    "query": "Q9HCK1",
+    "target": "P32325",
+    "evalue": 1.05,
+    "band": "1_10",
+    "query_from": 3,
+    "query_to": 45,
+    "shared_families": [
+     "PF07535"
+    ]
+   },
+   {
+    "query": "A6NNH2",
+    "target": "Q8VZ67",
+    "evalue": 1.48,
+    "band": "1_10",
+    "query_from": 33,
+    "query_to": 68,
+    "shared_families": [
+     "PF15288"
+    ]
+   },
+   {
+    "query": "Q6IPM2",
+    "target": "A8IH47",
+    "evalue": 4.29,
+    "band": "1_10",
+    "query_from": 542,
+    "query_to": 570,
+    "shared_families": [
+     "PF00612"
+    ]
+   },
+   {
+    "query": "O60290",
+    "target": "P30373",
+    "evalue": 4.45,
+    "band": "1_10",
+    "query_from": 345,
+    "query_to": 377,
+    "shared_families": [
+     "PF01352"
+    ]
+   },
+   {
+    "query": "O60279",
+    "target": "P07898",
+    "evalue": 8.75,
+    "band": "1_10",
+    "query_from": 53,
+    "query_to": 102,
+    "shared_families": [
+     "PF00193"
+    ]
+   }
+  ],
+  "phmmer": [
+   {
+    "query": "P32970",
+    "target": "Q9I8D8",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 92,
+    "query_to": 188,
+    "shared_families": [
+     "PF00229"
+    ]
+   },
+   {
+    "query": "Q96HA9",
+    "target": "Q54H86",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 6,
+    "query_to": 155,
+    "shared_families": [
+     "PF05648"
+    ]
+   },
+   {
+    "query": "Q5YKI7",
+    "target": "F6Z5C0",
+    "evalue": 1.4,
+    "band": "1_10",
+    "query_from": 9,
+    "query_to": 79,
+    "shared_families": [
+     "PF14836"
+    ]
+   },
+   {
+    "query": "Q8WWV6",
+    "target": "P03983",
+    "evalue": 1.4,
+    "band": "1_10",
+    "query_from": 71,
+    "query_to": 154,
+    "shared_families": [
+     "PF07686"
+    ]
+   },
+   {
+    "query": "Q9NP97",
+    "target": "Q57759",
+    "evalue": 1.8,
+    "band": "1_10",
+    "query_from": 6,
+    "query_to": 89,
+    "shared_families": [
+     "PF03259"
+    ]
+   },
+   {
+    "query": "A6NI87",
+    "target": "A1KXM5",
+    "evalue": 1.9,
+    "band": "1_10",
+    "query_from": 101,
+    "query_to": 200,
+    "shared_families": [
+     "PF14645"
+    ]
+   },
+   {
+    "query": "P02763",
+    "target": "Q01584",
+    "evalue": 1.9,
+    "band": "1_10",
+    "query_from": 28,
+    "query_to": 159,
+    "shared_families": [
+     "PF00061"
+    ]
+   },
+   {
+    "query": "B7Z8K6",
+    "target": "O42197",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 14,
+    "query_to": 79,
+    "shared_families": [
+     "PF07654"
+    ]
+   },
+   {
+    "query": "Q8TF09",
+    "target": "Q58736",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 6,
+    "query_to": 60,
+    "shared_families": [
+     "PF03259"
+    ]
+   },
+   {
+    "query": "Q9BR11",
+    "target": "Q9SZL7",
+    "evalue": 4.0,
+    "band": "1_10",
+    "query_from": 379,
+    "query_to": 419,
+    "shared_families": [
+     "PF04434"
+    ]
+   },
+   {
+    "query": "P35318",
+    "target": "P10286",
+    "evalue": 4.7,
+    "band": "1_10",
+    "query_from": 100,
+    "query_to": 152,
+    "shared_families": [
+     "PF00214"
+    ]
+   }
+  ]
+ }
+}

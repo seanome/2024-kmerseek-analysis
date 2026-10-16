@@ -81,6 +81,32 @@ count of findable dark proteins is reported per species.
 4. On placed proteins at E <= 0.001, MMseqs2 is right (strict) in over 90% of judged
    best hits in every species.
 
-## Steps
+## Steps (run 2026-10-16)
 
-See `tools/dark-set-accuracy` (docstring) and `tools/dark-set-accuracy-sbatch`.
+Tools ran from `git archive` of this branch out of `$SCRATCH/2024-kmerseek-analysis`
+(commit 13749b8 for steps 1-3, 8292a0f for step 4; Sherlock's git 1.8 has no worktrees).
+`A=$SCRATCH/invertebrate-dark-set/results-0.4/accuracy`.
+
+1. Plan, on a login node: `python3 tools/dark-set-accuracy plan-regions
+   /scratch/users/olgabot/invertebrate-dark-set/results-0.4 60 $A/weak_plan_60.tsv`.
+   4,361 region files of fitted settings, 5.22 TB (human 1,837 files of 167 settings,
+   worm 1,690 of 169, yeast 660 of 165, *Borrelia* 174 of 174). Each species also has
+   56-65 settings the run could not fit; they wrote no E-values and are skipped.
+2. Best region per query and file: `sbatch --array=1-60 --time=02:00:00 --mem=2G
+   tools/dark-set-accuracy-sbatch best-regions $A/weak_plan_60.tsv`, job 48132790. First
+   ask from PR 133's job 47672974 (26 files, about 2 min each, 260 MB). 54 tasks finished in
+   43 min to 1 h 40 min. Six tasks held files up to 59.5 GB (hp_lehninger_hpc3 k=17) and
+   were cancelled at 13-38% done; their 151 unread files (377 GB) were re-planned over 24
+   tasks (`weak_plan_rest.tsv`) and read by job 48142858 (`--time=04:00:00`), 2-26 min each.
+   Peak memory of the Python process 15 MB (`/usr/bin/time`); Slurm's MaxRSS of 2 GB in the
+   first array counts the file cache. Read speed 16 MB/s median per file, one CPU.
+3. Query stretch of the sequence tools' best hits: `sbatch --cpus-per-task=8
+   tools/dark-set-accuracy-sbatch realign <species>`, jobs 48133064 (yeast, 4 min, 0.8 GB),
+   48134152 (human, 11 min, 3.6 GB), 48134154 (worm, 13 min, 4.2 GB of a 4 GB ask, finished),
+   48134157 (*Borrelia*, 1 min). *Borrelia* domain positions: `query-domains-interpro`
+   (1,032 proteins, 1,553 domain rows; a second fetch from the laptop gave an identical file).
+4. Scoring: `sbatch --mem=8G tools/dark-set-accuracy-sbatch score-bands`, job 48146170,
+   1 min 36 s, 1.9 GB. Before it, job 48143874 scored only PR 133's 26 region files
+   (`BEST_ROOT`, `OUT`) for the recount. Outputs copied to `weak-hits/data/`.
+5. On the laptop: `python weak-hits/summarize.py` writes `summary.txt`, the figures, and
+   `results/leaderboard/weak_hits/` for the site.

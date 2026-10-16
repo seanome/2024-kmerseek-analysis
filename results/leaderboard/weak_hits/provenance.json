@@ -1,0 +1,41 @@
+{
+ "made_by": "nextflow-runs/invertebrate-dark-set/weak-hits/summarize.py",
+ "rules": "nextflow-runs/invertebrate-dark-set/weak-hits/README.md",
+ "inputs": {
+  "nextflow-runs/invertebrate-dark-set/weak-hits/data/human_weak_hits.tsv": "de15437f2589fbfb50dea91f108b6af0977104d987512d9f48200317a3429c4b",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/data/human_weak_hits.json": "41abf156ab991d01e723fe54d5ae0a8b45a8a5ed63ab346db26c9ad6caff11eb",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/data/worm_weak_hits.tsv": "edf993c8d477f9c380911801980fafc97634a80cbbeb95a68d4bff8c90914ec8",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/data/worm_weak_hits.json": "6b7382db428a8ca4c0dfd9975ba740abbd2c850d773c586773d5087c76f9d2dc",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/data/yeast_weak_hits.tsv": "827a374410c6d7f914c72abc554e9f1919550b08bb74cd843f896874eebe5b81",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/data/yeast_weak_hits.json": "639a4e950b49fd950f5bc381105729ed25c9a405ec561842eb38282c30cdf22d",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/data/borrelia_weak_hits.tsv": "7ce2ce2e31ed6c156a2125bb2529e8d1ab2e2058828e7ca43cd8c96d1aaa6bd2",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/data/borrelia_weak_hits.json": "d4e07971aafeb2f5c64930e1ac026b2f68634c59c3cac51210cec1032e0506b5"
+ },
+ "outputs": {
+  "weak_hits.parquet": "cec1343e6d18f9dc35eb732e606828462899193ccf10249e2fd15a38b8c7a548"
+ },
+ "other_outputs": {
+  "nextflow-runs/invertebrate-dark-set/weak-hits/summary.txt": "0f6f5b9e314be74ea3c5c72d6cfe658ba0e661252e1f712e4c2ae37a86fdccf6",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/weak_hits_all_sources.parquet": "45c56fb6d6431ecf3975da293503aba915cc984ad0f1c589061f3ecd8b61abbe",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.png": "9e644cf374298666ba9ad3866dc3b6a937224656809b82111db1ded20b63cba1",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.pdf": "dd315a8b00112911f4914dddb4ef2bb757a85dbd7a38a229c814aac5304483b9",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.svg": "3fb2ecf5f28d96600d3e8eddeee0957e479de155c67e5115b63bbdf63d5b4367",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_by_band_test_half.png": "cb8af718fcbeaf0e5e072247289358f22d002dcd26d2b31caf7a90cd32725cb7",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_by_band_test_half.pdf": "827992896376c13890e2e1290fb05271c71994de90fe3f2b428aacd992e76940",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_by_band_test_half.svg": "f51fcbb5e77910360b251f2fb9ef4b26851e4fcdf7100a2a01f7f0db6f312d58"
+ },
+ "columns": {
+  "query_set": "dark: no phmmer, jackhmmer or MMseqs2 hit with E <= 1; placed: the rest",
+  "split": "all proteins, or the test half (md5 of the accession odd)",
+  "band": "E-value band of the best hit: le_0.001, 0.001_1, 1_10",
+  "n_judged": "best hits in the band whose target carries a Pfam family",
+  "right_strict": "target shares a Pfam family AND the hit's query stretch overlaps a query domain of that family",
+  "right_loose": "target shares a Pfam family or clan (PR 133's call)"
+ },
+ "chosen_kmerseek_setting": {
+  "human": "kmerseek:wass14.k6.s1",
+  "worm": "kmerseek:hp_lehninger_hpc3.k25.s10",
+  "yeast": "kmerseek:hp_pbotc_1st_ed2.k23.s1",
+  "borrelia": "kmerseek:uniprot18.k5.s1"
+ }
+}

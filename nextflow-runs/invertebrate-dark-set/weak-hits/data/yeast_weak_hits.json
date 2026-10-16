@@ -1,0 +1,343 @@
+{
+ "species": "yeast",
+ "bands": [
+  "le_0.001",
+  "0.001_1",
+  "1_10"
+ ],
+ "dark_cutoffs": [
+  0.001,
+  1.0,
+  10.0
+ ],
+ "n_proteome": 6049,
+ "n_known": 5365,
+ "n_findable": 4721,
+ "query_domain_rows_without_position": 0,
+ "realign": {
+  "phmmer": {
+   "pairs": 5858,
+   "same_target_range": 5858,
+   "overlapping_target_range": 5858,
+   "no_overlap": 0
+  },
+  "jackhmmer": {
+   "pairs": 5858,
+   "same_target_range": 2061,
+   "overlapping_target_range": 5857,
+   "no_overlap": 1
+  },
+  "mmseqs2": {
+   "pairs": 4994,
+   "same_target_range": 232,
+   "overlapping_target_range": 4989,
+   "no_overlap": 5
+  }
+ },
+ "n_sources": 168,
+ "strict_right_dark_1": {
+  "jackhmmer": [
+   {
+    "query": "P38204",
+    "target": "Q10360",
+    "evalue": 1.5,
+    "band": "1_10",
+    "query_from": 63,
+    "query_to": 112,
+    "shared_families": [
+     "PF05234"
+    ]
+   },
+   {
+    "query": "Q06674",
+    "target": "A5DEZ6",
+    "evalue": 2.1,
+    "band": "1_10",
+    "query_from": 239,
+    "query_to": 335,
+    "shared_families": [
+     "PF08732"
+    ]
+   },
+   {
+    "query": "P38899",
+    "target": "Q5D892",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 294,
+    "query_to": 355,
+    "shared_families": [
+     "PF00270"
+    ]
+   },
+   {
+    "query": "P53952",
+    "target": "Q9UUH6",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 121,
+    "query_to": 247,
+    "shared_families": [
+     "PF09428"
+    ]
+   },
+   {
+    "query": "P37261",
+    "target": "Q5XW77",
+    "evalue": 2.8,
+    "band": "1_10",
+    "query_from": 11,
+    "query_to": 84,
+    "shared_families": [
+     "PF00881"
+    ]
+   }
+  ],
+  "kmerseek:dayhoff6.k11.s10": [],
+  "kmerseek:dayhoff6.k13.s1": [],
+  "kmerseek:dayhoff6.k18.s1": [],
+  "kmerseek:dayhoff6.k9.s1": [],
+  "kmerseek:dayhoff6.k9.s10": [],
+  "kmerseek:funcgroups8.k11.s1": [],
+  "kmerseek:funcgroups8.k11.s10": [],
+  "kmerseek:funcgroups8.k13.s1": [],
+  "kmerseek:funcgroups8.k13.s10": [],
+  "kmerseek:funcgroups8.k14.s1": [],
+  "kmerseek:funcgroups8.k9.s1": [],
+  "kmerseek:funcgroups8.k9.s10": [],
+  "kmerseek:gbmr4.k16.s1": [],
+  "kmerseek:gbmr4.k16.s10": [],
+  "kmerseek:gbmr4.k18.s1": [],
+  "kmerseek:gbmr4.k18.s10": [],
+  "kmerseek:gbmr4.k20.s1": [],
+  "kmerseek:gbmr4.k20.s10": [],
+  "kmerseek:gbmr4.k22.s1": [],
+  "kmerseek:gbmr4.k22.s10": [],
+  "kmerseek:gbmr4.k24.s1": [],
+  "kmerseek:gbmr4.k24.s10": [],
+  "kmerseek:gbmr4.k26.s1": [],
+  "kmerseek:gbmr4.k28.s1": [],
+  "kmerseek:gbmr7.k17.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k21.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k21.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k25.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k27.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k27.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k29.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k29.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k31.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k31.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k33.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k35.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k35.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k37.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k39.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k39.s10": [],
+  "kmerseek:hp_lehninger2.k17.s1": [],
+  "kmerseek:hp_lehninger2.k17.s10": [],
+  "kmerseek:hp_lehninger2.k19.s1": [],
+  "kmerseek:hp_lehninger2.k19.s10": [],
+  "kmerseek:hp_lehninger2.k21.s1": [],
+  "kmerseek:hp_lehninger2.k21.s10": [],
+  "kmerseek:hp_lehninger2.k23.s1": [],
+  "kmerseek:hp_lehninger2.k23.s10": [],
+  "kmerseek:hp_lehninger2.k25.s1": [],
+  "kmerseek:hp_lehninger2.k25.s10": [],
+  "kmerseek:hp_lehninger2.k27.s1": [],
+  "kmerseek:hp_lehninger2.k27.s10": [],
+  "kmerseek:hp_lehninger2.k29.s1": [],
+  "kmerseek:hp_lehninger2.k29.s10": [],
+  "kmerseek:hp_lehninger2.k30.s1": [],
+  "kmerseek:hp_lehninger2.k30.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k19.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k19.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k21.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k21.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k23.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k23.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k25.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k25.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k27.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k27.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k29.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k29.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k31.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k31.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k17.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k17.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k19.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k19.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k21.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k21.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k23.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k23.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k25.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k25.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k27.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k29.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k19.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k19.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k21.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k21.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k23.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k23.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k25.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k25.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k27.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k29.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k30.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k30.s10": [],
+  "kmerseek:hp_thomas_dill2.k20.s1": [],
+  "kmerseek:hp_thomas_dill2.k20.s10": [],
+  "kmerseek:hp_thomas_dill2.k22.s1": [],
+  "kmerseek:hp_thomas_dill2.k22.s10": [],
+  "kmerseek:hp_thomas_dill2.k24.s1": [],
+  "kmerseek:hp_thomas_dill2.k24.s10": [],
+  "kmerseek:hp_thomas_dill2.k26.s1": [],
+  "kmerseek:hp_thomas_dill2.k26.s10": [],
+  "kmerseek:hp_thomas_dill2.k28.s10": [],
+  "kmerseek:hp_thomas_dill2.k30.s10": [],
+  "kmerseek:hp_thomas_dill2.k32.s10": [],
+  "kmerseek:hp_thomas_dill2.k34.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k20.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k20.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k22.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k24.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k24.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k26.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k28.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k28.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k30.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k34.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k36.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k39.s10": [],
+  "kmerseek:hsdm17.k6.s1": [],
+  "kmerseek:hsdm17.k6.s10": [],
+  "kmerseek:hsdm17.k8.s1": [],
+  "kmerseek:hsdm17.k8.s10": [],
+  "kmerseek:mmseqs12.k8.s1": [],
+  "kmerseek:mmseqs12.k8.s10": [],
+  "kmerseek:polarity4.k13.s1": [],
+  "kmerseek:polarity4.k13.s10": [],
+  "kmerseek:polarity4.k15.s1": [],
+  "kmerseek:polarity4.k15.s10": [],
+  "kmerseek:polarity4.k17.s1": [],
+  "kmerseek:polarity4.k17.s10": [],
+  "kmerseek:polarity4.k19.s1": [],
+  "kmerseek:polarity4.k19.s10": [],
+  "kmerseek:polarity4.k21.s1": [],
+  "kmerseek:polarity4.k21.s10": [],
+  "kmerseek:polarity4.k23.s1": [],
+  "kmerseek:protein20.k5.s1": [],
+  "kmerseek:protein20.k5.s10": [],
+  "kmerseek:protein20.k7.s1": [],
+  "kmerseek:protein20.k7.s10": [],
+  "kmerseek:protein20.k8.s1": [],
+  "kmerseek:protein20.k8.s10": [],
+  "kmerseek:sdm12.k11.s1": [],
+  "kmerseek:sdm12.k11.s10": [],
+  "kmerseek:sdm12.k12.s1": [],
+  "kmerseek:sdm12.k7.s1": [],
+  "kmerseek:sdm12.k7.s10": [],
+  "kmerseek:sdm12.k9.s1": [],
+  "kmerseek:sdm12.k9.s10": [],
+  "kmerseek:uniprot18.k5.s1": [],
+  "kmerseek:uniprot18.k5.s10": [],
+  "kmerseek:uniprot18.k7.s10": [],
+  "kmerseek:wass14.k6.s1": [],
+  "kmerseek:wass14.k6.s10": [],
+  "kmerseek:wass14.k8.s1": [],
+  "kmerseek:wass14.k8.s10": [],
+  "kmerseek:wass14.k9.s1": [],
+  "kmerseek:wass14.k9.s10": [],
+  "kmerseek:wwmj5.k11.s1": [],
+  "kmerseek:wwmj5.k11.s10": [],
+  "kmerseek:wwmj5.k13.s1": [],
+  "kmerseek:wwmj5.k13.s10": [],
+  "kmerseek:wwmj5.k15.s1": [],
+  "kmerseek:wwmj5.k15.s10": [],
+  "kmerseek:wwmj5.k9.s1": [],
+  "kmerseek:wwmj5.k9.s10": [],
+  "mmseqs2": [
+   {
+    "query": "P38899",
+    "target": "Q5D892",
+    "evalue": 5.57,
+    "band": "1_10",
+    "query_from": 294,
+    "query_to": 355,
+    "shared_families": [
+     "PF00270"
+    ]
+   },
+   {
+    "query": "Q3E7Y5",
+    "target": "Q5D892",
+    "evalue": 6.28,
+    "band": "1_10",
+    "query_from": 358,
+    "query_to": 419,
+    "shared_families": [
+     "PF00270"
+    ]
+   }
+  ],
+  "phmmer": [
+   {
+    "query": "P38204",
+    "target": "Q10360",
+    "evalue": 1.5,
+    "band": "1_10",
+    "query_from": 63,
+    "query_to": 112,
+    "shared_families": [
+     "PF05234"
+    ]
+   },
+   {
+    "query": "Q06674",
+    "target": "A5DEZ6",
+    "evalue": 2.1,
+    "band": "1_10",
+    "query_from": 239,
+    "query_to": 335,
+    "shared_families": [
+     "PF08732"
+    ]
+   },
+   {
+    "query": "P38899",
+    "target": "Q5D892",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 294,
+    "query_to": 355,
+    "shared_families": [
+     "PF00270"
+    ]
+   },
+   {
+    "query": "P53952",
+    "target": "Q9UUH6",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 121,
+    "query_to": 247,
+    "shared_families": [
+     "PF09428"
+    ]
+   },
+   {
+    "query": "P37261",
+    "target": "Q5XW77",
+    "evalue": 2.8,
+    "band": "1_10",
+    "query_from": 11,
+    "query_to": 84,
+    "shared_families": [
+     "PF00881"
+    ]
+   }
+  ]
+ }
+}
