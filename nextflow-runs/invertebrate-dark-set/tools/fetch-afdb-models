@@ -81,7 +81,12 @@ def fetch_one(acc, out_dir, present):
     if body is None:
         return acc, "no_model", API % acc
     entries = json.loads(body.decode())
-    urls = [e["cifUrl"] for e in entries if e.get("uniprotAccession", acc) == acc and e.get("cifUrl")]
+    # Only the accession's own models (AF-<acc>-F<n>-model_v<k>). The API can also list
+    # other entries for an accession, such as AF-0000000005900734-model_v1 for O50745
+    # (2026-10-16), which are not the UniProt model this pipeline searches.
+    urls = [e["cifUrl"] for e in entries
+            if e.get("uniprotAccession", acc) == acc and e.get("cifUrl")
+            and NAME.search(e["cifUrl"]) and ("/AF-%s-F" % acc) in e["cifUrl"]]
     if not urls:
         return acc, "no_model", API % acc
     names = []
