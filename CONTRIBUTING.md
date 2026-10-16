@@ -43,8 +43,9 @@ beside it has the same shape. A module has:
 
 - **A workflow, `<TOOL>_BEST_HIT`,** that takes the reference FASTA, the query FASTA and a list
   of settings, and emits `hits` as `(tool, setting, hits file)` and `run_info`. The entry
-  workflow, `annotator_tools.nf`, includes it next to the other tools; add your tool there and
-  to `params.skip_tools`.
+  workflow, `annotator_tools.nf`, includes it next to the other tools; add your tool there,
+  under the name `--tools` selects it by (`--tools diamond,mmseqs2` is the default, and the
+  Makefile passes `ANNOT_TOOLS` as `--tools`).
 - **A database build in its own process** (`diamondMakedb`), so its cost is counted as a build
   and not as the search.
 - **One search process per setting** (`diamondBestHitSearch`, tag `diamond <setting>`).
@@ -56,12 +57,14 @@ beside it has the same shape. A module has:
   The image must not set an `ENTRYPOINT`.
 - **The exact command**, built once as a string, run, and written to
   `<tool>.<setting>.run.txt` together with the version the binary prints (`diamond version`)
-  and the CPU model. The tool card's command and version are read from that file.
+  and the CPU model. `bin/annotator_tool_rows.py` reads the version from that file into each
+  row's `tool_version`, puts the image into a `container_digest` column, and builds the tool
+  card's command from it.
 - **Resources from measured history**, written in a comment with their source. DIAMOND's
-  module asks 8 cores, `8.GB * task.attempt` and `1.h * task.attempt`, from the throughput
-  benchmark's 17 s and 1.2 GB per 1,000 Swiss-Prot queries. `errorStrategy { retryOnKill(task) }`
-  (from `modules/annotator_common.nf`) retries a task the cluster killed up to twice, so the
-  second attempt has double the memory and time.
+  module asks 8 cores, 8 GB and 1 h, from the throughput benchmark's 17 s and 1.2 GB per
+  1,000 Swiss-Prot queries. `errorStrategy { retryOnKill(task) }` (from
+  `modules/annotator_common.nf`) retries a task the cluster killed up to twice, and memory and
+  time double on each try (`8.GB * 2 ** (task.attempt - 1)`: 8, 16, 32 GB).
 - **A `stub:` block** that copies real output of your tool from
   `tests/fixtures/annotator/` instead of running it. `tests/make_annotator_fixture.sh` shows
   how the DIAMOND and MMseqs2 fixtures were made: 60 human queries against 120 yeast
@@ -75,8 +78,8 @@ process diamondBestHitSearch {
     tag "diamond ${setting}"
     container 'quay.io/biocontainers/diamond@sha256:e02013280712f1295e59339dc6ea162adf8a6bbdd730e73a9c00700c03c3e556' // 2.2.8--he361c42_0
     cpus 8
-    memory { 8.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 8.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/hits", mode: 'copy'
@@ -192,17 +195,16 @@ PR 18 has the site half):
 | `make stub` | 15 tasks, all complete; `annotator-rows-stub` wrote 168 rows, 14 cost rows, 268 pile-up calls, 3 tool cards |
 | `check_tool_hits.py` on the stub hits (real DIAMOND and MMseqs2 output, with both FASTAs) | `diamond_besthit.sensitive` ok (64 rows), `diamond_besthit.ultra-sensitive` ok (78), `mmseqs2_besthit.s7.5` ok (422) |
 | Scorer | ran inside the stub's `scoreAnnotatorTool` |
-| Site row schema | the 168 rows, copied to the site as `tests/fixtures/annotator_stub/`, pass `schema/results_row.json`; `--submitted` refuses them for the interval, peak memory, run date and version, which a stub cannot fill |
+| Site row schema | the 168 rows, copied to the site as `tests/fixtures/annotator_stub/`, pass `schema/results_row.json`; the DIAMOND image reaches `container_digest`; `--submitted` refuses them for the 95% interval, peak memory and run date, which a stub cannot fill (macOS reports no task memory) |
 
-The real run waits on Olga launching `make run-annotator-tools` on Sherlock. It runs DIAMOND
-and MMseqs2 both by default; `NF_ARGS='--skip_tools mmseqs2'` would leave one out. (The
-Makefile has no `ANNOT_TOOLS` variable, so passing one changes nothing.)
+This ran at commit 2be8c6b5, which merges PR 160 at fc5f1d8f. The stub's version is the
+word `stub`; a real run writes what `diamond version` prints.
+
+The real run waits on Olga launching `make run-annotator-tools ANNOT_TOOLS=diamond,mmseqs2` on
+Sherlock (both tools are also the default).
 
 ## 6. What is not built yet
 
-- The rows from `bin/annotator_tool_rows.py` put the image digest in `tool_version`. The
-  site's release table moves it to `container_digest`, so the version the binary printed
-  (in `run.txt`) does not yet reach the row.
 - No row carries a run date, and the scorer does not compute a 95% interval. Until both are
   added, no row passes `validate_rows.py --submitted`.
 - The QfO pipeline's search processes are still all in `main.nf`; only the best-hit tools
