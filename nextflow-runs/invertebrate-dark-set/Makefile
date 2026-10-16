@@ -652,7 +652,7 @@ rescue-indexes-0.4:
 # no head alive every task is an orphan. So this is safe to run beside a live run, which
 # is exactly the state a failed stop leaves behind. Cancelling a few hundred jobs takes
 # a minute or two under slurmctld's RPC throttle; that is normal.
-TASK_PREFIX_RE = ^nf-(darkSet|darkReport|calibrateStore)_
+TASK_PREFIX_RE = ^nf-(darkSet|darkReport|calibrateStore|darkStructure)_
 # Which nfdrv- heads are this pipeline's: the ones whose working directory (squeue %Z) is
 # a launch dir of invertebrate-dark-set, in any clone. Every pipeline in the repo names its
 # head nfdrv-<run>, so matching the name alone counted other pipelines' heads as live. On
@@ -758,3 +758,70 @@ queue-note:
 	  r=$$(squeue -u $$USER -h -t RUNNING 2>/dev/null | wc -l | tr -d ' '); \
 	  echo "queue: $$n job(s) total, $$r running -- this run's tasks queue behind them"; \
 	fi
+
+# ---- Foldseek and ProstT5 on the dark set (-entry darkStructure) ----------------------
+# Added 2026-10-16. Searches every query of the five midi species with Foldseek (AlphaFold DB
+# models; Botryllus has none) and ProstT5 (3Di predicted from sequence on one GPU), real and
+# decoy, against the same clade-excluded references. The sequence tools are not rerun.
+# STRUCTURE-RULES.md holds the decision rules and predictions; tools/dark-structure-score
+# scores the output. Inputs already on Sherlock:
+#   AFDB_SWISSPROT_DB  Foldseek's Alphafold/Swiss-Prot database, built by the convergence-afp
+#                      run (PR 141) with the same Foldseek image, 590_183 entries, all v6.
+#   AFDB_ARCHIVE_DIR   the QfO region benchmark's AlphaFold DB proteome archives (v6).
+#   AFDB_EXTRA_MODELS  per-accession downloads, <dir>/<species>/ (make fetch-afdb-models).
+#   PROSTT5_WEIGHTS    the region benchmark's ProstT5 weights (prostt5-f16.gguf).
+comma := ,
+STRUCTURE_SPECIES   ?= human,worm,yeast,borrelia,botryllus
+STRUCTURE_OUTDIR    ?= $(SCRATCH_DIR)/invertebrate-dark-set/results-structure
+STRUCTURE_LAUNCH    := $(MAKEFILE_DIR)/runs/structure
+AFDB_SWISSPROT_DB   ?= $(SCRATCH_DIR)/2024-kmerseek-convergence-afp/nextflow-runs/convergence-afp/results/db_cache/foldseek/afdb_swissprot
+AFDB_ARCHIVE_DIR    ?= $(PRIMARY_DATA)/structures/_archives
+AFDB_EXTRA_MODELS   ?= $(SCRATCH_DIR)/invertebrate-dark-set/afdb_models
+PROSTT5_WEIGHTS     ?= $(PRIMARY_DATA)/prostt5/weights
+STRUCTURE_NF_ARGS    = --kmerseek_image $(V4_IMAGE) --run_tag structure \
+                       --afdb_swissprot_db $(AFDB_SWISSPROT_DB) --afdb_archive_dir $(AFDB_ARCHIVE_DIR) \
+                       --afdb_extra_models $(AFDB_EXTRA_MODELS) --prostt5_weights $(PROSTT5_WEIGHTS) \
+                       --structure_cache $(STRUCTURE_OUTDIR)/structure_db \
+                       --max_forks $(LADDER_MAX_FORKS) --queue_size $(LADDER_QUEUE_SIZE)
+
+.PHONY: run-structure-sbatch structure-plan structure-resources fetch-afdb-models stub-structure
+
+run-structure-sbatch: check-inputs queue-note
+	@for d in $(AFDB_SWISSPROT_DB) $(AFDB_ARCHIVE_DIR) $(PROSTT5_WEIGHTS); do \
+	  test -e $$d || { echo "missing input: $$d"; exit 1; }; done
+	@$(MAKE) structure-resources
+	@$(MAKE) run-dark-set-sbatch SPECIES=$(STRUCTURE_SPECIES) RUN=structure \
+	  LAUNCH_DIR=$(STRUCTURE_LAUNCH) OUTDIR=$(STRUCTURE_OUTDIR) HEAD_TIME=2-00:00:00 \
+	  NF_ARGS="-entry darkStructure $(STRUCTURE_NF_ARGS) $(NF_ARGS)"
+
+# What the run expands to, with nothing submitted.
+structure-plan: check-inputs
+	$(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -entry darkStructure -preview \
+	  --species $(STRUCTURE_SPECIES) --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
+	  --outdir $(STRUCTURE_OUTDIR) --reference_cache $(REF_CACHE) $(STRUCTURE_NF_ARGS) $(NF_ARGS)
+
+# The predicted memory, time and GPU of every process, from the earlier traces in
+# assets/structure_tools_measured.tsv. Printed before every launch.
+structure-resources:
+	python3 $(MAKEFILE_DIR)/tools/structure-resource-table $(QFO_DIR) $(REF_CACHE) \
+	  $(subst $(comma), ,$(STRUCTURE_SPECIES))
+
+# AlphaFold DB models one accession at a time, for species with no proteome archive
+# (Borrelia B31). Compute nodes have no outbound internet, so this runs where it is typed
+# (a login node), one download at a time with a pause, ~1_300 small files.
+FETCH_SPECIES ?= borrelia
+fetch-afdb-models: check-inputs
+	python3 $(MAKEFILE_DIR)/tools/fetch-afdb-models --registry $(MAKEFILE_DIR)/../../data/species_metadata.json \
+	  --qfo-dir $(QFO_DIR) --out $(AFDB_EXTRA_MODELS) --parallel 1 $(subst $(comma), ,$(FETCH_SPECIES))
+
+# Wiring check: every structure process's stub, on the local executor, no data.
+STUB_DIR ?= $(MAKEFILE_DIR)/runs/stub-structure
+stub-structure: check-inputs
+	@mkdir -p $(STUB_DIR)/afdb $(STUB_DIR)/weights
+	@printf '0\tAF-Q6GZX4-F1-model_v6\t0\n' > $(STUB_DIR)/afdb/db.lookup
+	@touch $(STUB_DIR)/weights/prostt5-f16.gguf
+	cd $(STUB_DIR) && $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile stub -stub-run -entry darkStructure \
+	  --species $(STRUCTURE_SPECIES) --qfo_dir $(QFO_DIR) --swissprot_dat $(SWISSPROT) \
+	  --outdir $(STUB_DIR)/results --reference_cache $(STUB_DIR)/reference \
+	  --afdb_swissprot_db $(STUB_DIR)/afdb --prostt5_weights $(STUB_DIR)/weights \
+	  --structure_cache $(STUB_DIR)/structure_db --run_tag stub-structure

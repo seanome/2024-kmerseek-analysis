@@ -1,0 +1,396 @@
+#!/usr/bin/env python3
+"""Score the Foldseek and ProstT5 run (-entry darkStructure) on the dark set.
+
+    tools/dark-structure-score placement <structure_outdir> <protein_evalues_dir> <out_dir> [species ...]
+    tools/dark-structure-score judge <out_dir> <clans.tsv.gz> <species>:<query_pfam>:<reference_pfam.parquet> [...]
+    tools/dark-structure-score fmax-inputs <out_dir> <dark_fmax_dir> <structure_outdir> [species ...]
+    tools/dark-structure-score bands-inputs <out_dir>
+    tools/dark-structure-score bands-collect <out_dir>
+    tools/dark-structure-score report <out_dir>
+
+Every rule here was written down in STRUCTURE-RULES.md before the run.
+
+placement  For each species and tool (foldseek, prostt5):
+             run      proteins the tool searched: Foldseek, proteins with an AlphaFold DB
+                      model (<species>_afdb_query_coverage.tsv); ProstT5, proteins no longer
+                      than the length cap (not in <species>_prostt5_skipped.tsv). Every other
+                      protein is "not run", never a protein with no hit.
+             cutoff   each decoy query's smallest E-value (none: no hit); the cutoff is the
+                      largest E-value at which at most 5% of the run decoys have a hit. A
+                      protein is placed when its best hit's E-value is at or below it.
+             dark     no phmmer, jackhmmer or MMseqs2 hit with E < 1 (dark_E1) or E < 10
+                      (dark_E10), from <species>_protein_tool_min_evalue.csv.gz, the rule of
+                      tools/dark-fmax and notebook 291.
+           Writes placement_proteins.parquet (one row per protein and tool) and
+           placement_summary.csv (one row per species and tool), and prints it.
+judge      The best hit of every placed protein is called right or wrong against Pfam, with
+           PR 133's rule (tools/dark-set-accuracy on olgabot/dark-set-summary-page):
+             family   the target lists a Pfam family the query has
+             clan     no shared family, a shared Pfam clan
+             wrong    the target has Pfam families and none shares the query's clan
+             unknown  the target lists no Pfam family (not judged)
+             no_query_family  the query has no known Pfam family (not judged)
+           Right = family. Judged = family + clan + wrong. Query families: Pfam's own
+           annotation of UniProt; target families: the target's Swiss-Prot DR Pfam lines.
+           Writes judged_best_hits.parquet and marginal_gain.csv: per species and tool, the
+           dark proteins it places (all of them have no sequence-tool hit at E < 1), right,
+           clan only, wrong, unknown, no query family; the union of the two tools too.
+bands-inputs  Writes each species' and tool's best hits with their query stretch, for
+           `dark-set-accuracy score-bands` (PR 163, branch olgabot/dark-set-weak-hit-accuracy,
+           commit 13749b87), which makes the loose call (shared family or clan) and the strict
+           call (shared family AND the hit's query stretch overlaps a query domain of that
+           family). tools/dark-structure-score-sbatch runs it.
+bands-collect  Sums score-bands' output over E bands for placed dark proteins into
+           strict_judgement.csv.
+fmax-inputs  For evaluate_domain_calls.py (the QfO region benchmark's scorer, the metrics
+           of notebook 291): one hits file per species and tool (real queries only), and the
+           truth tables of tools/dark-fmax (dark_E1, dark_E10, placed: 1_000 random placed
+           proteins per species, seed 0) cut to the proteins the tool ran on, so a protein
+           with no model is left out of the denominator instead of counted as a miss.
+report     Prints the decision table of STRUCTURE-RULES.md (P1, P2) from the files above.
+"""
+import glob
+import gzip
+import json
+import math
+import os
+import sys
+
+TOOLS = ("foldseek", "prostt5")
+SEQ_TOOLS = ("phmmer", "jackhmmer", "mmseqs2")
+DECOY_RATE = 0.05
+MIN_N = 30   # strata with fewer truth instances are shown grey and decide nothing
+DEFAULT_SPECIES = ["human", "worm", "yeast", "borrelia", "botryllus"]
+
+
+def decoy_cutoff(decoy_best, n_run, rate=DECOY_RATE):
+    """Largest E-value at which at most `rate` of the n_run decoys have a hit.
+
+    decoy_best: the smallest E-value of each decoy that has any hit. Decoys with no hit
+    count in n_run and never pass. Returns (cutoff, n_decoys_passing). With no decoy hit
+    at all the cutoff is the search's own reporting limit (math.inf here; every reported
+    hit is at E <= 10). When even the best decoy E-value is shared by more than the
+    allowed number, nothing can be placed and the cutoff is -inf.
+    """
+    allowed = int(math.floor(rate * n_run))
+    vals = sorted(decoy_best)
+    if len(vals) <= allowed:
+        return math.inf, len(vals)
+    # the largest v such that count(vals <= v) <= allowed
+    best, passing = -math.inf, 0
+    i = 0
+    while i < len(vals):
+        j = i
+        while j + 1 < len(vals) and vals[j + 1] == vals[i]:
+            j += 1
+        if j + 1 <= allowed:
+            best, passing = vals[i], j + 1
+            i = j + 1
+        else:
+            break
+    return best, passing
+
+
+def read_hits(paths):
+    """query -> (best target, best E-value, bits, query_from, query_to) from the 8-column
+    TSVs (no header: query, target, qstart, qend, tstart, tend, bits, evalue; 1-based,
+    fragment hits already in protein coordinates)."""
+    best = {}
+    for p in paths:
+        with gzip.open(p, "rt") as fh:
+            for line in fh:
+                f = line.rstrip("\n").split("\t")
+                if len(f) < 8:
+                    continue
+                q, t, ev, bits = f[0], f[1], float(f[7]), float(f[6])
+                b = best.get(q)
+                if b is None or ev < b[1] or (ev == b[1] and bits > b[2]):
+                    best[q] = (t, ev, bits, int(f[2]), int(f[3]))
+    return best
+
+
+def read_tsv(path):
+    with open(path) as fh:
+        head = fh.readline().rstrip("\n").split("\t")
+        return [dict(zip(head, l.rstrip("\n").split("\t"))) for l in fh if l.strip()]
+
+
+def placement(struct_dir, ev_dir, out_dir, *species):
+    import polars as pl
+    species = list(species) or DEFAULT_SPECIES
+    os.makedirs(out_dir, exist_ok=True)
+    rows, summ = [], []
+    for sp in species:
+        d = os.path.join(struct_dir, sp, "structure")
+        tool_e = {}
+        with gzip.open(os.path.join(ev_dir, "%s_protein_tool_min_evalue.csv.gz" % sp), "rt") as fh:
+            head = fh.readline().rstrip("\n").split(",")
+            ix = [head.index(t) for t in SEQ_TOOLS]
+            for line in fh:
+                f = line.rstrip("\n").split(",")
+                tool_e[f[0]] = min(float(f[i]) if f[i] else math.inf for i in ix)
+        proteome = sorted(tool_e)
+        cov = {r["accession"]: r for r in read_tsv(os.path.join(d, "%s_afdb_query_coverage.tsv" % sp))}
+        if set(cov) != set(proteome):
+            sys.exit("%s: coverage lists %d proteins, the E-value table %d" % (sp, len(cov), len(proteome)))
+        skipped = {r["accession"] for r in read_tsv(os.path.join(d, "%s_prostt5_skipped.tsv" % sp))}
+        tsum = json.load(open(os.path.join(d, "%s_afdb_target_summary.json" % sp)))
+        qsum = json.load(open(os.path.join(d, "%s_afdb_query_summary.json" % sp)))
+        for tool in TOOLS:
+            run = ({a for a, r in cov.items() if r["has_model"] == "1"} if tool == "foldseek"
+                   else set(proteome) - skipped)
+            real = read_hits(sorted(glob.glob(os.path.join(d, "%s.chunk_*.%s.tsv.gz" % (sp, tool)))))
+            decoy = read_hits(sorted(glob.glob(os.path.join(d, "%s.chunk_*.%s_decoy.tsv.gz" % (sp, tool)))))
+            stray = (set(real) | set(decoy)) - run
+            if stray:
+                sys.exit("%s %s: %d hit queries are not in the run set, e.g. %s"
+                         % (sp, tool, len(stray), sorted(stray)[:3]))
+            cut, n_pass = decoy_cutoff([decoy[a][1] for a in decoy], len(run))
+            for a in proteome:
+                b = real.get(a)
+                db = decoy.get(a)
+                rows.append(dict(species=sp, tool=tool, accession=a, run=a in run,
+                                 best_target=b[0] if b else None,
+                                 best_evalue=b[1] if b else None,
+                                 best_query_from=b[3] if b else None,
+                                 best_query_to=b[4] if b else None,
+                                 decoy_best_target=db[0] if db else None,
+                                 decoy_best_evalue=db[1] if db else None,
+                                 placed=bool(b) and b[1] <= cut,
+                                 seq_min_evalue=tool_e[a],
+                                 dark_E1=not tool_e[a] < 1.0, dark_E10=not tool_e[a] < 10.0))
+            sp_rows = [r for r in rows if r["species"] == sp and r["tool"] == tool]
+            def n(pred):
+                return sum(1 for r in sp_rows if pred(r))
+            for dark in ("dark_E1", "dark_E10"):
+                n_dark = n(lambda r: r[dark])
+                n_dark_run = n(lambda r: r[dark] and r["run"])
+                n_dark_placed = n(lambda r: r[dark] and r["placed"])
+                summ.append(dict(
+                    species=sp, tool=tool, dark_set=dark, n_proteome=len(proteome),
+                    n_run=len(run), share_run=len(run) / len(proteome),
+                    n_targets=tsum.get("n_reference"), n_targets_with_model=tsum.get("n_with_model"),
+                    share_targets_with_model=tsum.get("share_with_model"),
+                    model_versions=json.dumps(qsum.get("model_versions", {})),
+                    decoy_cutoff_evalue=cut, n_decoys_run=len(run), n_decoys_passing=n_pass,
+                    n_placed=n(lambda r: r["placed"]), n_dark=n_dark, n_dark_run=n_dark_run,
+                    n_dark_placed=n_dark_placed,
+                    share_dark_run_placed=(n_dark_placed / n_dark_run) if n_dark_run else None,
+                    share_dark_placed=(n_dark_placed / n_dark) if n_dark else None))
+    pl.DataFrame(rows).write_parquet(os.path.join(out_dir, "placement_proteins.parquet"))
+    s = pl.DataFrame(summ)
+    s.write_csv(os.path.join(out_dir, "placement_summary.csv"))
+    with pl.Config(tbl_rows=100, tbl_cols=30, tbl_width_chars=250):
+        print(s.select("species", "tool", "dark_set", "n_proteome", "n_run", "share_run",
+                       "share_targets_with_model", "decoy_cutoff_evalue", "n_decoys_passing",
+                       "n_dark", "n_dark_run", "n_dark_placed", "share_dark_run_placed"))
+
+
+def judge_hit(qf, tf, to_clan):
+    """PR 133's call for one best hit: family, clan, wrong, unknown or no_query_family."""
+    if not qf:
+        return "no_query_family"
+    if not tf:
+        return "unknown"
+    if qf & tf:
+        return "family"
+    if {to_clan(p) for p in qf} & {to_clan(p) for p in tf}:
+        return "clan"
+    return "wrong"
+
+
+def judge(out_dir, clans, *specs):
+    import polars as pl
+    clan = {}
+    with gzip.open(clans, "rt") as fh:
+        for line in fh:
+            f = line.rstrip("\n").split("\t")
+            clan[f[0]] = f[1] or f[0]
+    to_clan = lambda p: clan.get(p, p)
+    pp = pl.read_parquet(os.path.join(out_dir, "placement_proteins.parquet"))
+    out, decoy_rows = [], []
+    for spec in specs:
+        sp, qpath, rpath = spec.split(":")
+        qp = (pl.read_parquet(qpath) if qpath.endswith(".parquet")
+              else pl.read_csv(qpath, separator="\t")).select("accession", "pfam_id")
+        qfam, tfam = {}, {}
+        for a, p in qp.iter_rows():
+            qfam.setdefault(a, set()).add(p)
+        for a, p in pl.read_parquet(rpath).select("accession", "pfam_id").iter_rows():
+            tfam.setdefault(a, set()).add(p)
+        sub = pp.filter((pl.col("species") == sp) & pl.col("placed"))
+        for r in sub.iter_rows(named=True):
+            r["call"] = judge_hit(qfam.get(r["accession"], set()), tfam.get(r["best_target"], set()), to_clan)
+            out.append(r)
+        # The decoys' best hits, judged the same way (STRUCTURE-RULES.md, known risk): a
+        # decoy that hits a relative of its own protein is not a chance hit.
+        dsub = pp.filter((pl.col("species") == sp) & pl.col("decoy_best_target").is_not_null())
+        for t in TOOLS:
+            calls = [judge_hit(qfam.get(r["accession"], set()), tfam.get(r["decoy_best_target"], set()), to_clan)
+                     for r in dsub.filter(pl.col("tool") == t).iter_rows(named=True)]
+            c = {k: calls.count(k) for k in ("family", "clan", "wrong", "unknown", "no_query_family")}
+            judged = c["family"] + c["clan"] + c["wrong"]
+            decoy_rows.append(dict(species=sp, tool=t, n_decoys_with_hit=len(calls), **c, n_judged=judged,
+                                   share_family=(c["family"] / judged) if judged else None))
+    pl.DataFrame(decoy_rows).write_csv(os.path.join(out_dir, "decoy_hits_judged.csv"))
+    j = pl.DataFrame(out)
+    j.write_parquet(os.path.join(out_dir, "judged_best_hits.parquet"))
+
+    calls = ["family", "clan", "wrong", "unknown", "no_query_family"]
+    rows = []
+    for (sp,), g in j.filter(pl.col("dark_E1")).group_by(["species"], maintain_order=True):
+        per_tool = {t: g.filter(pl.col("tool") == t) for t in TOOLS}
+        for label, df in list(per_tool.items()) + [("foldseek_or_prostt5", None)]:
+            if df is None:
+                # A protein placed by both tools is judged on Foldseek's best hit.
+                fs = per_tool["foldseek"]
+                ps = per_tool["prostt5"].filter(~pl.col("accession").is_in(fs["accession"].implode()))
+                df = pl.concat([fs, ps])
+            c = {k: df.filter(pl.col("call") == k).height for k in calls}
+            judged = c["family"] + c["clan"] + c["wrong"]
+            rows.append(dict(species=sp, tool=label, n_dark_placed=df.height, **c, n_judged=judged,
+                             share_right=(c["family"] / judged) if judged else None,
+                             grey=judged < MIN_N))
+    m = pl.DataFrame(rows)
+    m.write_csv(os.path.join(out_dir, "marginal_gain.csv"))
+    with pl.Config(tbl_rows=100, tbl_cols=30, tbl_width_chars=250):
+        print(m)
+
+
+def bands_inputs(out_dir):
+    """Hits files for `dark-set-accuracy score-bands` (PR 163, olgabot/dark-set-weak-hit-accuracy).
+
+    Per species and tool, two TSVs (query, target, evalue, query_from, query_to; 1-based
+    inclusive query stretch of the best hit):
+      <sp>.<tool>_placed.tsv  best hits of the proteins placed at the 5% decoy cutoff
+      <sp>.<tool>_any.tsv     best hits of every protein with any hit (E <= 10)
+    """
+    import polars as pl
+    pp = pl.read_parquet(os.path.join(out_dir, "placement_proteins.parquet"))
+    d = os.path.join(out_dir, "bands")
+    os.makedirs(d, exist_ok=True)
+    cols = [pl.col("accession").alias("query"), pl.col("best_target").alias("target"),
+            pl.col("best_evalue").alias("evalue"), pl.col("best_query_from").alias("query_from"),
+            pl.col("best_query_to").alias("query_to")]
+    for (sp, tool), g in pp.group_by(["species", "tool"], maintain_order=True):
+        hit = g.filter(pl.col("best_target").is_not_null())
+        hit.filter(pl.col("placed")).select(cols).write_csv(
+            os.path.join(d, "%s.%s_placed.tsv" % (sp, tool)), separator="\t")
+        hit.select(cols).write_csv(os.path.join(d, "%s.%s_any.tsv" % (sp, tool)), separator="\t")
+        print("%s %s: %d placed, %d with any hit" % (sp, tool, hit.filter(pl.col("placed")).height, hit.height))
+
+
+def bands_collect(out_dir):
+    """Loose and strict calls on placed dark proteins, from score-bands' <sp>_bands.tsv.
+
+    Reads query_set dark_1 (score-bands: smallest sequence-tool E > 1; this tool's dark_E1
+    is E >= 1, which differs only for a protein whose best sequence hit is exactly 1),
+    split "all", sources <tool>_placed, summed over the E bands. loose right = family or
+    clan; strict right = family and the hit's query stretch overlaps a query domain of that
+    family. Judged = family + clan + wrong, as in judge.
+    """
+    import polars as pl
+    fs = sorted(glob.glob(os.path.join(out_dir, "bands", "*_bands.tsv")))
+    if not fs:
+        sys.exit("no *_bands.tsv in %s/bands" % out_dir)
+    t = pl.concat([pl.read_csv(f, separator="\t") for f in fs])
+    t = t.filter((pl.col("query_set") == "dark_1") & (pl.col("split") == "all")
+                 & pl.col("source").str.ends_with("_placed"))
+    s = (t.group_by("species", "source", maintain_order=True)
+          .agg(pl.col("family", "clan", "wrong", "target_without_pfam", "strict_right",
+                      "strict_query_stretch_unknown").sum())
+          .with_columns(pl.col("source").str.replace("_placed$", "").alias("tool"),
+                        (pl.col("family") + pl.col("clan") + pl.col("wrong")).alias("n_judged"))
+          .with_columns((pl.col("family") + pl.col("clan")).alias("loose_right"))
+          .with_columns((pl.col("loose_right") / pl.col("n_judged")).alias("share_loose_right"),
+                        (pl.col("strict_right") / pl.col("n_judged")).alias("share_strict_right"),
+                        (pl.col("n_judged") < MIN_N).alias("grey"))
+          .drop("source"))
+    s.write_csv(os.path.join(out_dir, "strict_judgement.csv"))
+    with pl.Config(tbl_rows=50, tbl_cols=20, tbl_width_chars=220):
+        print(s)
+
+
+def fmax_inputs(out_dir, dark_fmax_dir, struct_dir, *species):
+    import polars as pl
+    species = list(species) or ["human", "worm", "yeast", "borrelia"]
+    pp = pl.read_parquet(os.path.join(out_dir, "placement_proteins.parquet"))
+    for sp in species:
+        d = os.path.join(out_dir, "fmax", sp)
+        os.makedirs(d, exist_ok=True)
+        manifest = []
+        for tool, variant in (("foldseek", "3di_aa"), ("prostt5", "3di_from_seq")):
+            files = sorted(glob.glob(os.path.join(struct_dir, sp, "structure", "%s.chunk_*.%s.tsv.gz" % (sp, tool))))
+            hits = os.path.abspath(os.path.join(d, "%s.%s.tsv.gz" % (sp, tool)))
+            with open(hits, "wb") as w:
+                for f in files:
+                    with open(f, "rb") as r:
+                        w.write(r.read())
+            run = pp.filter((pl.col("species") == sp) & (pl.col("tool") == tool) & pl.col("run"))["accession"]
+            for qset in ("dark_E1", "dark_E10", "placed"):
+                t = pl.read_parquet(os.path.join(dark_fmax_dir, "tables", "%s_truth_%s.parquet" % (sp, qset)))
+                cut = t.filter(pl.col("accession").is_in(run.implode()))
+                cut.write_parquet(os.path.join(d, "%s_truth_%s.%s_run.parquet" % (sp, qset, tool)))
+                print("%s %s %s: %d of %d truth instances on proteins the tool ran on"
+                      % (sp, tool, qset, cut.height, t.height))
+            manifest.append("%s\t%s\t%s" % (tool, variant, hits))
+            with open(os.path.join(d, "manifest.%s.tsv" % tool), "w") as fh:
+                fh.write(manifest[-1] + "\n")
+
+
+def report(out_dir):
+    import polars as pl
+    s = pl.read_csv(os.path.join(out_dir, "placement_summary.csv"))
+    print("P1: Foldseek places under 10% of dark proteins (no sequence-tool hit at E < 1) in each species.")
+    p1 = s.filter((pl.col("tool") == "foldseek") & (pl.col("dark_set") == "dark_E1"))
+    decided = p1.filter(pl.col("n_dark_run") >= MIN_N)
+    with pl.Config(tbl_rows=50, tbl_cols=20, tbl_width_chars=200):
+        print(p1.select("species", "n_dark", "n_dark_run", "n_dark_placed", "share_dark_run_placed", "share_dark_placed"))
+    over = decided.filter(pl.col("share_dark_run_placed") >= 0.10)
+    p1 = "OVERTURNED" if over.height else ("HOLDS" if decided.height else "UNDECIDED")
+    dj = os.path.join(out_dir, "decoy_hits_judged.csv")
+    if p1 == "HOLDS" and os.path.exists(dj):
+        d = pl.read_csv(dj).filter(pl.col("tool") == "foldseek")
+        fam, judged = int(d["family"].sum()), int(d["n_judged"].sum())
+        print("  Foldseek decoy best hits sharing a Pfam family with their protein: %d of %d judged"
+              % (fam, judged))
+        if judged >= MIN_N and fam / judged > 0.2:
+            p1 = "UNRELIABLE (decoys hit relatives; see STRUCTURE-RULES.md, known risk)"
+    print("  species with >= %d dark proteins run: %d; at or over 10%%: %s -> P1 %s"
+          % (MIN_N, decided.height, over["species"].to_list(), p1))
+    mg = os.path.join(out_dir, "marginal_gain.csv")
+    if os.path.exists(mg):
+        m = pl.read_csv(mg).filter(pl.col("tool") == "foldseek")
+        fam, judged = int(m["family"].sum()), int(m["n_judged"].sum())
+        print("P2: Foldseek's best hits on dark proteins are right (same Pfam family) in under 20% of judged cases.")
+        with pl.Config(tbl_rows=50, tbl_cols=20, tbl_width_chars=200):
+            print(m)
+        if judged < MIN_N:
+            verdict = "UNDECIDED (fewer than %d judged)" % MIN_N
+        else:
+            verdict = "OVERTURNED" if fam / judged >= 0.20 else "HOLDS"
+        print("  all species: %d right of %d judged (%.1f%%) -> P2 %s"
+              % (fam, judged, 100.0 * fam / judged if judged else float("nan"), verdict))
+    sj = os.path.join(out_dir, "strict_judgement.csv")
+    if os.path.exists(sj):
+        s2 = pl.read_csv(sj)
+        print("Loose and strict calls (dark-set-accuracy score-bands, PR 163), placed dark proteins:")
+        with pl.Config(tbl_rows=50, tbl_cols=20, tbl_width_chars=220):
+            print(s2.select("species", "tool", "n_judged", "family", "loose_right", "strict_right",
+                            "strict_query_stretch_unknown", "share_loose_right", "share_strict_right", "grey"))
+        f = s2.filter(pl.col("tool") == "foldseek")
+        n, st = int(f["n_judged"].sum()), int(f["strict_right"].sum())
+        print("  Foldseek, all species: strict right %d of %d judged (%.1f%%); P2 is decided on the "
+              "family call above, this is shown beside it" % (st, n, 100.0 * st / n if n else float("nan")))
+
+
+def main():
+    cmds = {"placement": placement, "judge": judge, "fmax-inputs": fmax_inputs, "report": report,
+            "bands-inputs": bands_inputs, "bands-collect": bands_collect}
+    if len(sys.argv) < 2 or sys.argv[1] not in cmds:
+        sys.exit(__doc__)
+    cmds[sys.argv[1]](*sys.argv[2:])
+
+
+if __name__ == "__main__":
+    main()

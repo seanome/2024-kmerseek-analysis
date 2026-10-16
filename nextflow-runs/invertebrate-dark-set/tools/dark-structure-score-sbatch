@@ -1,0 +1,84 @@
+#!/bin/bash
+# Score the finished -entry darkStructure run: placement at the 5% decoy cutoff, best hits
+# judged against Pfam, the marginal-gain table, and notebook 291's metrics (Fmax, family
+# Fmax, IoU, reachable recall) from the QfO region benchmark's scorer.
+#
+#   tools/dark-structure-score-sbatch <structure_outdir> <out_dir>
+#
+# Inputs other than the run's own output, all already on Sherlock:
+#   EV        per-protein sequence-tool E-values after the queries.tsv repair (job 47668732)
+#   DARK_FMAX notebook 291's truth tables and query sets (tools/dark-fmax, 2026-10-14)
+#   QFO_BIN   evaluate_domain_calls.py and cafa_metrics.py, as notebook 291 used them
+#   ANN, ACC, REF, CLANS  the Pfam families PR 133's accuracy panel judged with
+# One job per stage, chained by dependencies, each under 4 h. Added 2026-10-16.
+set -euo pipefail
+STRUCT=$1; OUT=$2
+R04=${R04:-/scratch/users/olgabot/invertebrate-dark-set/results-0.4}
+EV=${EV:-$R04/protein-evalues-repaired}
+DARK_FMAX=${DARK_FMAX:-$R04/dark-fmax-2026-10-14}
+QFO_BIN=${QFO_BIN:-$DARK_FMAX/qfo_bin}
+ANN=${ANN:-/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/annotations}
+ACC=${ACC:-$R04/accuracy}
+REF=${REF:-/scratch/users/olgabot/invertebrate-dark-set/reference}
+CLANS=${CLANS:-/scratch/users/olgabot/pfam-candidates/Pfam-A.clans.tsv.gz}
+IMG=${KMERSEEK_IMG:?set KMERSEEK_IMG to the kmerseek 0.4.0-rc5 .img}
+TOOL=$(cd "$(dirname "$0")" && pwd)/dark-structure-score
+SB=${SB:-"sbatch --parsable -p hns,normal -A ayeletv"}
+AX="apptainer exec -B /scratch $IMG python3"
+mkdir -p "$OUT/logs"
+
+place=$($SB -c 1 --mem 16G -t 1:00:00 -J ds-place -o "$OUT/logs/placement.log" --wrap \
+  "set -euo pipefail; $AX $TOOL placement $STRUCT $EV $OUT human worm yeast borrelia botryllus")
+echo "placement: $place"
+
+# The loose and strict calls come from Prompt C's `dark-set-accuracy score-bands` (PR 163,
+# branch olgabot/dark-set-weak-hit-accuracy), pinned to the commit that added it, read
+# out of git here on the login node so a later change on that branch cannot move it.
+DSA_COMMIT=${DSA_COMMIT:-13749b87}
+# (cd ... && git ...), not git -C: Sherlock's git is 1.8.3, which has no -C.
+(cd "$(dirname "$0")" && git fetch -q origin olgabot/dark-set-weak-hit-accuracy &&
+ git show "$DSA_COMMIT":nextflow-runs/invertebrate-dark-set/tools/dark-set-accuracy) \
+    > "$OUT/dark-set-accuracy.$DSA_COMMIT"
+test -s "$OUT/dark-set-accuracy.$DSA_COMMIT"
+DSA="$OUT/dark-set-accuracy.$DSA_COMMIT"
+bands=""
+for spec in human:Mammalia:$ANN/human_pfam_domains.parquet: \
+            worm:Chromadorea:$ANN/worm_pfam_domains.parquet: \
+            yeast:Saccharomycetes:$ANN/yeast_pfam_domains.parquet: \
+            borrelia:Spirochaetia:$ACC/query-pfam/borrelia_pfam.tsv:$ACC/query-pfam/borrelia_domains.tsv; do
+    IFS=: read -r sp clade qpfam qdom <<< "$spec"
+    src=""
+    for t in foldseek prostt5; do
+        src="$src --source ${t}_placed=$OUT/bands/$sp.${t}_placed.tsv --source ${t}_any=$OUT/bands/$sp.${t}_any.tsv"
+    done
+    bands="$bands $AX $DSA score-bands --species $sp --query-pfam $qpfam ${qdom:+--query-domains $qdom} \
+      --ref-pfam $REF/minus_$clade/reference_pfam.parquet --clans $CLANS --ev-dir $EV $src \
+      --out-tsv $OUT/bands/${sp}_bands.tsv --out-json $OUT/bands/${sp}_bands.json;"
+done
+judge=$($SB -c 1 --mem 16G -t 2:00:00 -J ds-judge --dependency=afterok:"$place" -o "$OUT/logs/judge.log" --wrap \
+  "set -euo pipefail; $AX $TOOL judge $OUT $CLANS \
+     human:$ANN/human_pfam_domains.parquet:$REF/minus_Mammalia/reference_pfam.parquet \
+     worm:$ANN/worm_pfam_domains.parquet:$REF/minus_Chromadorea/reference_pfam.parquet \
+     yeast:$ANN/yeast_pfam_domains.parquet:$REF/minus_Saccharomycetes/reference_pfam.parquet \
+     borrelia:$ACC/query-pfam/borrelia_pfam.tsv:$REF/minus_Spirochaetia/reference_pfam.parquet; \
+     $AX $TOOL bands-inputs $OUT; $bands $AX $TOOL bands-collect $OUT; \
+     $AX $TOOL report $OUT")
+echo "judge, loose and strict calls, report: $judge"
+
+inputs=$($SB -c 1 --mem 16G -t 1:00:00 -J ds-fmax-in --dependency=afterok:"$place" -o "$OUT/logs/fmax-inputs.log" --wrap \
+  "set -euo pipefail; $AX $TOOL fmax-inputs $OUT $DARK_FMAX $STRUCT human worm yeast borrelia")
+echo "fmax inputs: $inputs"
+
+# The scorer with notebook 291's parameters (tools/dark-fmax-sbatch): min_overlap 0.5,
+# strict_iou 0.8, dedup modes off,on.
+for sp in human worm yeast borrelia; do
+  for tool in foldseek prostt5; do
+    j=$($SB -c 1 --mem 32G -t 3:00:00 -J "ds-score-$sp-$tool" --dependency=afterok:"$inputs" \
+      -o "$OUT/logs/score-$sp-$tool.log" --wrap \
+      "set -euo pipefail; d=$OUT/fmax/$sp; for set in dark_E1 dark_E10 placed; do mkdir -p \$d/scored/\$set; cd \$d/scored/\$set; \
+       $AX $QFO_BIN/evaluate_domain_calls.py --manifest \$d/manifest.$tool.tsv --species $sp \
+         --truth \$d/${sp}_truth_\$set.${tool}_run.parquet --domain-map $DARK_FMAX/tables/${sp}_domain_map.parquet \
+         --min-overlap 0.5 --strict-iou 0.8 --dedup-transfer-modes off,on --truth-set \$set < /dev/null; done")
+    echo "score $sp $tool: $j"
+  done
+done
