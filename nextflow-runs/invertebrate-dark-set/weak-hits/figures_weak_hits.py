@@ -22,6 +22,7 @@ COLOR = {"phmmer": pf.OKABE_ITO["blue"], "jackhmmer": pf.OKABE_ITO["orange"],
          "mmseqs2": pf.OKABE_ITO["bluish_green"], "kmerseek": pf.OKABE_ITO["vermillion"]}
 MARKER = {"phmmer": "o", "jackhmmer": "s", "mmseqs2": "D", "kmerseek": "^"}
 FEW = "#cccccc"  # fewer than 30 judged hits
+OTHER = "#f0b48a"  # other kmerseek settings: a light tint of kmerseek's vermillion
 MIN_N = 30
 
 
@@ -66,7 +67,7 @@ def draw(allp, chosen, outdir):
         # every other kmerseek setting with >= 30 judged hits, as small grey dots
         others = k.filter(pl.col("source") != chosen.get(sp, ""))
         ax.plot(100 * others["precision_strict"].to_numpy(), [ys[3] - 0.25] * others.height,
-                "|", color=pf.GREY, ms=4, alpha=0.7, zorder=1)
+                "|", color=OTHER, ms=4, zorder=1)
         for tool, y in zip(TOOLS, ys):
             src = chosen.get(sp) if tool == "kmerseek" else tool
             r = _row(allp, sp, src, "dark_1", "1_10") if src else None
@@ -89,7 +90,7 @@ def draw(allp, chosen, outdir):
         ax.set_xlim(0, xmax * 1.25)
     handles = [Line2D([], [], marker=MARKER[t], color=COLOR[t], lw=1, ms=3.5, label=TOOL_LABEL[t])
                for t in TOOLS]
-    handles += [Line2D([], [], marker="|", color=pf.GREY, lw=0, ms=5,
+    handles += [Line2D([], [], marker="|", color=OTHER, lw=0, ms=5,
                        label="other kmerseek settings (≥ 30 judged)"),
                 Line2D([], [], marker="o", color=FEW, lw=1, ms=3.5, label="fewer than 30 judged"),
                 Line2D([], [], color="black", lw=1, label="line: 95% interval; n = right/judged, test half")]

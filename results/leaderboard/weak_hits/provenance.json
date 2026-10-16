@@ -17,12 +17,12 @@
  "other_outputs": {
   "nextflow-runs/invertebrate-dark-set/weak-hits/summary.txt": "0f6f5b9e314be74ea3c5c72d6cfe658ba0e661252e1f712e4c2ae37a86fdccf6",
   "nextflow-runs/invertebrate-dark-set/weak-hits/weak_hits_all_sources.parquet": "45c56fb6d6431ecf3975da293503aba915cc984ad0f1c589061f3ecd8b61abbe",
-  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.png": "9e644cf374298666ba9ad3866dc3b6a937224656809b82111db1ded20b63cba1",
-  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.pdf": "dd315a8b00112911f4914dddb4ef2bb757a85dbd7a38a229c814aac5304483b9",
-  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.svg": "3fb2ecf5f28d96600d3e8eddeee0957e479de155c67e5115b63bbdf63d5b4367",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.png": "21db66b8a504f71e2015647c1e317a34f5e1aae1d4ba5435d9796bff86ff4136",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.pdf": "be68a503ab5ef5d41c321632e5c6a5c99a4563347690b7fd67aa4ae560ac919b",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_dark_e1_10_test_half.svg": "df59a6409e8ca398052c1c34877c70e747b001a3b28ea08765beae59d7c8be54",
   "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_by_band_test_half.png": "cb8af718fcbeaf0e5e072247289358f22d002dcd26d2b31caf7a90cd32725cb7",
-  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_by_band_test_half.pdf": "827992896376c13890e2e1290fb05271c71994de90fe3f2b428aacd992e76940",
-  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_by_band_test_half.svg": "f51fcbb5e77910360b251f2fb9ef4b26851e4fcdf7100a2a01f7f0db6f312d58"
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_by_band_test_half.pdf": "6ccfcc93650252bc7fde849d23e23db11b03c6243e869f3d4dcb2c683579fac9",
+  "nextflow-runs/invertebrate-dark-set/weak-hits/figures/weak_hits_by_band_test_half.svg": "0bbb4530a68a83e4667d2ba53eeb84d3245f3e2f9efb760810c22358c9c8e073"
  },
  "columns": {
   "query_set": "dark: no phmmer, jackhmmer or MMseqs2 hit with E <= 1; placed: the rest",

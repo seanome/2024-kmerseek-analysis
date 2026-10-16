@@ -81,6 +81,22 @@ count of findable dark proteins is reported per species.
 4. On placed proteins at E <= 0.001, MMseqs2 is right (strict) in over 90% of judged
    best hits in every species.
 
+## Limits found after the results were read (2026-10-16, independent review)
+
+* Prediction 1 cannot fail: the strict call only marks a hit right inside the shared-family
+  branch of the loose call, so strict is never above loose by construction.
+* The kmerseek pick is close to arbitrary. On the tune half the winner led by one right hit
+  of 268 (human) and two of 37 (worm); in yeast and *Borrelia* every eligible setting had 0
+  right, so the most judged hits decided it.
+* phmmer and jackhmmer agree on dark proteins for human, yeast and *Borrelia*, not fully for
+  worm (1,431 judged for jackhmmer, 1,430 for phmmer): the best target differs for 1 of
+  1,322 human and 14 of 4,028 worm dark proteins. Why was not traced.
+* 243 human Pfam domains (worm 13, yeast 1) end past the end of the protein in the
+  annotation table, so Pfam's positions for those proteins seem to come from an older
+  sequence version. The strict call can be off for them; nothing flags it.
+* The phmmer re-alignment matches on the target envelope (env from/to) but takes the query
+  stretch from the alignment (hmm from/to), a slightly narrower span.
+
 ## Steps (run 2026-10-16)
 
 Tools ran from `git archive` of this branch out of `$SCRATCH/2024-kmerseek-analysis`
