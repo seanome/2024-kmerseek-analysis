@@ -1,3 +1,2735 @@
+ID   ICMT_RAT                Reviewed;         284 AA.
+AC   Q9WVM4; G3V7G5;
+DT   20-JUN-2001, integrated into UniProtKB/Swiss-Prot.
+DT   07-OCT-2020, sequence version 2.
+DT   02-SEP-2026, entry version 128.
+DE   RecName: Full=Protein-S-isoprenylcysteine O-methyltransferase;
+DE            EC=2.1.1.100 {ECO:0000250|UniProtKB:O60725};
+DE   AltName: Full=Farnesyl cysteine carboxyl methyltransferase;
+DE            Short=FCMT;
+DE   AltName: Full=Isoprenylcysteine carboxylmethyltransferase;
+DE   AltName: Full=Prenylated protein carboxyl methyltransferase;
+DE            Short=PPMT;
+DE   AltName: Full=Prenylcysteine carboxyl methyltransferase;
+DE            Short=pcCMT;
+GN   Name=Icmt {ECO:0000312|RGD:621618};
+OS   Rattus norvegicus (Rat).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
+OC   Murinae; Rattus.
+OX   NCBI_TaxID=10116;
+RN   [1] {ECO:0000312|Proteomes:UP000002494}
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RC   STRAIN=Brown Norway {ECO:0000312|Proteomes:UP000002494};
+RX   PubMed=15057822; DOI=10.1038/nature02426;
+RA   Gibbs R.A., Weinstock G.M., Metzker M.L., Muzny D.M., Sodergren E.J.,
+RA   Scherer S., Scott G., Steffen D., Worley K.C., Burch P.E., Okwuonu G.,
+RA   Hines S., Lewis L., Deramo C., Delgado O., Dugan-Rocha S., Miner G.,
+RA   Morgan M., Hawes A., Gill R., Holt R.A., Adams M.D., Amanatides P.G.,
+RA   Baden-Tillson H., Barnstead M., Chin S., Evans C.A., Ferriera S.,
+RA   Fosler C., Glodek A., Gu Z., Jennings D., Kraft C.L., Nguyen T.,
+RA   Pfannkoch C.M., Sitter C., Sutton G.G., Venter J.C., Woodage T., Smith D.,
+RA   Lee H.-M., Gustafson E., Cahill P., Kana A., Doucette-Stamm L.,
+RA   Weinstock K., Fechtel K., Weiss R.B., Dunn D.M., Green E.D.,
+RA   Blakesley R.W., Bouffard G.G., De Jong P.J., Osoegawa K., Zhu B., Marra M.,
+RA   Schein J., Bosdet I., Fjell C., Jones S., Krzywinski M., Mathewson C.,
+RA   Siddiqui A., Wye N., McPherson J., Zhao S., Fraser C.M., Shetty J.,
+RA   Shatsman S., Geer K., Chen Y., Abramzon S., Nierman W.C., Havlak P.H.,
+RA   Chen R., Durbin K.J., Egan A., Ren Y., Song X.-Z., Li B., Liu Y., Qin X.,
+RA   Cawley S., Cooney A.J., D'Souza L.M., Martin K., Wu J.Q.,
+RA   Gonzalez-Garay M.L., Jackson A.R., Kalafus K.J., McLeod M.P.,
+RA   Milosavljevic A., Virk D., Volkov A., Wheeler D.A., Zhang Z., Bailey J.A.,
+RA   Eichler E.E., Tuzun E., Birney E., Mongin E., Ureta-Vidal A., Woodwark C.,
+RA   Zdobnov E., Bork P., Suyama M., Torrents D., Alexandersson M., Trask B.J.,
+RA   Young J.M., Huang H., Wang H., Xing H., Daniels S., Gietzen D., Schmidt J.,
+RA   Stevens K., Vitt U., Wingrove J., Camara F., Mar Alba M., Abril J.F.,
+RA   Guigo R., Smit A., Dubchak I., Rubin E.M., Couronne O., Poliakov A.,
+RA   Huebner N., Ganten D., Goesele C., Hummel O., Kreitler T., Lee Y.-A.,
+RA   Monti J., Schulz H., Zimdahl H., Himmelbauer H., Lehrach H., Jacob H.J.,
+RA   Bromberg S., Gullings-Handley J., Jensen-Seaman M.I., Kwitek A.E.,
+RA   Lazar J., Pasko D., Tonellato P.J., Twigger S., Ponting C.P., Duarte J.M.,
+RA   Rice S., Goodstadt L., Beatson S.A., Emes R.D., Winter E.E., Webber C.,
+RA   Brandt P., Nyakatura G., Adetobi M., Chiaromonte F., Elnitski L.,
+RA   Eswara P., Hardison R.C., Hou M., Kolbe D., Makova K., Miller W.,
+RA   Nekrutenko A., Riemer C., Schwartz S., Taylor J., Yang S., Zhang Y.,
+RA   Lindpaintner K., Andrews T.D., Caccamo M., Clamp M., Clarke L., Curwen V.,
+RA   Durbin R.M., Eyras E., Searle S.M., Cooper G.M., Batzoglou S., Brudno M.,
+RA   Sidow A., Stone E.A., Payseur B.A., Bourque G., Lopez-Otin C., Puente X.S.,
+RA   Chakrabarti K., Chatterji S., Dewey C., Pachter L., Bray N., Yap V.B.,
+RA   Caspi A., Tesler G., Pevzner P.A., Haussler D., Roskin K.M., Baertsch R.,
+RA   Clawson H., Furey T.S., Hinrichs A.S., Karolchik D., Kent W.J.,
+RA   Rosenbloom K.R., Trumbower H., Weirauch M., Cooper D.N., Stenson P.D.,
+RA   Ma B., Brent M., Arumugam M., Shteynberg D., Copley R.R., Taylor M.S.,
+RA   Riethman H., Mudunuri U., Peterson J., Guyer M., Felsenfeld A., Old S.,
+RA   Mockrin S., Collins F.S.;
+RT   "Genome sequence of the Brown Norway rat yields insights into mammalian
+RT   evolution.";
+RL   Nature 428:493-521(2004).
+RN   [2] {ECO:0000312|Proteomes:UP000002494}
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RC   STRAIN=Brown Norway {ECO:0000312|EMBL:EDL81231.1};
+RA   Mural R.J., Adams M.D., Myers E.W., Smith H.O., Venter J.C.;
+RL   Submitted (JUL-2005) to the EMBL/GenBank/DDBJ databases.
+RN   [3] {ECO:0000312|EMBL:AAD42926.1}
+RP   NUCLEOTIDE SEQUENCE [MRNA] OF 53-284.
+RC   STRAIN=Sprague-Dawley; TISSUE=Olfactory bulb;
+RA   Otaki J.M., Firestein S.;
+RT   "Molecular cloning of farnesyl cysteine carboxyl methyltransferase gene
+RT   from rat olfactory bulb.";
+RL   Submitted (JUN-1998) to the EMBL/GenBank/DDBJ databases.
+CC   -!- FUNCTION: Catalyzes the post-translational methylation of isoprenylated
+CC       C-terminal cysteine residues. {ECO:0000250|UniProtKB:O60725}.
+CC   -!- CATALYTIC ACTIVITY:
+CC       Reaction=[protein]-C-terminal S-[(2E,6E)-farnesyl]-L-cysteine + S-
+CC         adenosyl-L-methionine = [protein]-C-terminal S-[(2E,6E)-farnesyl]-L-
+CC         cysteine methyl ester + S-adenosyl-L-homocysteine;
+CC         Xref=Rhea:RHEA:21672, Rhea:RHEA-COMP:12125, Rhea:RHEA-COMP:12126,
+CC         ChEBI:CHEBI:57856, ChEBI:CHEBI:59789, ChEBI:CHEBI:90510,
+CC         ChEBI:CHEBI:90511; EC=2.1.1.100;
+CC         Evidence={ECO:0000250|UniProtKB:O60725};
+CC   -!- SUBCELLULAR LOCATION: Endoplasmic reticulum membrane
+CC       {ECO:0000250|UniProtKB:O60725}; Multi-pass membrane protein
+CC       {ECO:0000250|UniProtKB:O60725}.
+CC   -!- SIMILARITY: Belongs to the class VI-like SAM-binding methyltransferase
+CC       superfamily. Isoprenylcysteine carboxyl methyltransferase family.
+CC       {ECO:0000305}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AC135674; -; NOT_ANNOTATED_CDS; Genomic_DNA.
+DR   EMBL; CH473968; EDL81231.1; -; Genomic_DNA.
+DR   EMBL; AF075595; AAD42926.1; -; mRNA.
+DR   RefSeq; NP_579844.2; NM_133310.2.
+DR   AlphaFoldDB; Q9WVM4; -.
+DR   SMR; Q9WVM4; -.
+DR   FunCoup; Q9WVM4; 674.
+DR   STRING; 10116.ENSRNOP00000014625; -.
+DR   BindingDB; Q9WVM4; -.
+DR   ChEMBL; CHEMBL2298; -.
+DR   PhosphoSitePlus; Q9WVM4; -.
+DR   PaxDb; 10116-ENSRNOP00000014625; -.
+DR   Ensembl; ENSRNOT00055027142; ENSRNOP00055021880; ENSRNOG00055015966.
+DR   Ensembl; ENSRNOT00060005985; ENSRNOP00060004406; ENSRNOG00060003637.
+DR   Ensembl; ENSRNOT00065015996; ENSRNOP00065012095; ENSRNOG00065009955.
+DR   GeneID; 170818; -.
+DR   KEGG; rno:170818; -.
+DR   UCSC; RGD:621618; rat.
+DR   AGR; RGD:621618; -.
+DR   CTD; 23463; -.
+DR   RGD; 621618; Icmt.
+DR   eggNOG; KOG2628; Eukaryota.
+DR   HOGENOM; CLU_065200_0_1_1; -.
+DR   InParanoid; Q9WVM4; -.
+DR   OMA; IKREEAY; -.
+DR   OrthoDB; 422086at2759; -.
+DR   PhylomeDB; Q9WVM4; -.
+DR   Reactome; R-RNO-163841; Gamma carboxylation, hypusinylation, hydroxylation, and arylsulfatase activation.
+DR   Reactome; R-RNO-9648002; RAS processing.
+DR   SABIO-RK; Q9WVM4; -.
+DR   PRO; PR:Q9WVM4; -.
+DR   Proteomes; UP000002494; Chromosome 5.
+DR   Bgee; ENSRNOG00000010953; Expressed in testis and 18 other cell types or tissues.
+DR   GO; GO:0005783; C:endoplasmic reticulum; ISO:RGD.
+DR   GO; GO:0005789; C:endoplasmic reticulum membrane; ISS:UniProtKB.
+DR   GO; GO:0008140; F:cAMP response element binding protein binding; ISO:RGD.
+DR   GO; GO:0004671; F:protein C-terminal S-isoprenylcysteine carboxyl O-methyltransferase activity; IMP:RGD.
+DR   GO; GO:0030282; P:bone mineralization; ISO:RGD.
+DR   GO; GO:0006481; P:C-terminal protein methylation; ISO:RGD.
+DR   GO; GO:0080120; P:CAAX-box protein maturation; ISO:RGD.
+DR   GO; GO:0071469; P:cellular response to alkaline pH; IMP:RGD.
+DR   GO; GO:0008340; P:determination of adult lifespan; ISO:RGD.
+DR   GO; GO:0001701; P:in utero embryonic development; ISO:RGD.
+DR   GO; GO:0008104; P:intracellular protein localization; ISO:RGD.
+DR   GO; GO:0001889; P:liver development; ISO:RGD.
+DR   GO; GO:0035264; P:multicellular organism growth; ISO:RGD.
+DR   GO; GO:0050905; P:neuromuscular process; ISO:RGD.
+DR   GO; GO:0018216; P:peptidyl-arginine methylation; IMP:RGD.
+DR   GO; GO:0008284; P:positive regulation of cell population proliferation; ISO:RGD.
+DR   GO; GO:0006479; P:protein methylation; ISO:RGD.
+DR   GO; GO:2000772; P:regulation of cellular senescence; ISO:RGD.
+DR   GO; GO:0032880; P:regulation of protein localization; ISO:RGD.
+DR   GO; GO:0046578; P:regulation of Ras protein signal transduction; ISO:RGD.
+DR   GO; GO:0031929; P:TOR signaling; ISO:RGD.
+DR   FunFam; 1.20.120.1630:FF:000007; Protein-S-isoprenylcysteine O-methyltransferase; 1.
+DR   Gene3D; 1.20.120.1630; -; 1.
+DR   InterPro; IPR007269; ICMT_MeTrfase.
+DR   InterPro; IPR025770; PPMT_MeTrfase.
+DR   PANTHER; PTHR12714; PROTEIN-S ISOPRENYLCYSTEINE O-METHYLTRANSFERASE; 1.
+DR   PANTHER; PTHR12714:SF9; PROTEIN-S-ISOPRENYLCYSTEINE O-METHYLTRANSFERASE; 1.
+DR   Pfam; PF04140; ICMT; 1.
+DR   PROSITE; PS51564; SAM_ICMT; 1.
+PE   2: Evidence at transcript level;
+KW   Endoplasmic reticulum; Membrane; Methyltransferase; Reference proteome;
+KW   S-adenosyl-L-methionine; Transferase; Transmembrane; Transmembrane helix.
+FT   CHAIN           1..284
+FT                   /note="Protein-S-isoprenylcysteine O-methyltransferase"
+FT                   /id="PRO_0000209896"
+FT   TOPO_DOM        1..16
+FT                   /note="Cytoplasmic"
+FT                   /evidence="ECO:0000305"
+FT   TRANSMEM        17..33
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        34..41
+FT                   /note="Lumenal"
+FT                   /evidence="ECO:0000305"
+FT   TRANSMEM        42..59
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        60..69
+FT                   /note="Cytoplasmic"
+FT                   /evidence="ECO:0000305"
+FT   TRANSMEM        70..87
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        88..92
+FT                   /note="Lumenal"
+FT                   /evidence="ECO:0000305"
+FT   TRANSMEM        93..112
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        113..131
+FT                   /note="Cytoplasmic"
+FT                   /evidence="ECO:0000305"
+FT   TRANSMEM        132..149
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        150..154
+FT                   /note="Lumenal"
+FT                   /evidence="ECO:0000305"
+FT   TRANSMEM        155..174
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        175..212
+FT                   /note="Cytoplasmic"
+FT                   /evidence="ECO:0000305"
+FT   TRANSMEM        213..228
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        229
+FT                   /note="Lumenal"
+FT                   /evidence="ECO:0000305"
+FT   TRANSMEM        230..244
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        245..284
+FT                   /note="Cytoplasmic"
+FT                   /evidence="ECO:0000305"
+FT   BINDING         190
+FT                   /ligand="S-adenosyl-L-methionine"
+FT                   /ligand_id="ChEBI:CHEBI:59789"
+FT                   /evidence="ECO:0000250|UniProtKB:D6WJ77"
+FT   BINDING         197..200
+FT                   /ligand="S-adenosyl-L-methionine"
+FT                   /ligand_id="ChEBI:CHEBI:59789"
+FT                   /evidence="ECO:0000250|UniProtKB:D6WJ77"
+FT   BINDING         205
+FT                   /ligand="S-adenosyl-L-methionine"
+FT                   /ligand_id="ChEBI:CHEBI:59789"
+FT                   /evidence="ECO:0000250|UniProtKB:D6WJ77"
+FT   BINDING         210..213
+FT                   /ligand="S-adenosyl-L-methionine"
+FT                   /ligand_id="ChEBI:CHEBI:59789"
+FT                   /evidence="ECO:0000250|UniProtKB:D6WJ77"
+FT   BINDING         247
+FT                   /ligand="substrate"
+FT                   /evidence="ECO:0000250|UniProtKB:D6WJ77"
+FT   BINDING         251
+FT                   /ligand="S-adenosyl-L-methionine"
+FT                   /ligand_id="ChEBI:CHEBI:59789"
+FT                   /evidence="ECO:0000250|UniProtKB:D6WJ77"
+SQ   SEQUENCE   284 AA;  31812 MW;  DCAB6EA1D6EE0827 CRC64;
+     MAGCAARVPP GSEARLSLAT FLLGASVLAL PLLTRAGLQG RTGLALYVAG LNALLLLLYR
+     PPRYQIAIRA CFLGFVFGCG VLLSFSQSSW NHFGWYVCSL SLFHYSEYLV TAVNNPKSLS
+     LDSFLLNHSL EYTVAALSSW IEFTLENIFW PELKQITWLS AAGLLMVIFG ECLRKVAMFT
+     AGSNFNHVVQ SEKSDTHTLV TSGVYAWCRH PSYVGWFYWS IGTQVMLCNP ICGVVYALTV
+     WRFFRDRTEE EEISLIHFFG EEYLDYKKRV PTGLPFIKGV KVGL
+//
+ID   ORCH_CRYCV              Reviewed;         128 AA.
+AC   Q9XYT4;
+DT   02-MAY-2006, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1999, sequence version 1.
+DT   02-SEP-2026, entry version 42.
+DE   RecName: Full=Orchestin;
+DE   Flags: Precursor;
+OS   Cryptorchestia cavimana (Amphipod) (Orchestia cavimana).
+OC   Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Altocrustacea; Communostraca;
+OC   Malacostraca; Eumalacostraca; Peracarida; Amphipoda; Senticaudata;
+OC   Talitrida; Talitroidea; Talitridae; Cryptorchestia.
+OX   NCBI_TaxID=1577145;
+RN   [1] {ECO:0000305, ECO:0000312|EMBL:AAD32571.1}
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA / MRNA], PROTEIN SEQUENCE OF N-TERMINUS,
+RP   PROTEIN SEQUENCE OF 109-119 AND 125-128, TISSUE SPECIFICITY, DEVELOPMENTAL
+RP   STAGE, AND INDUCTION.
+RX   PubMed=11772404; DOI=10.1042/0264-6021:3610327;
+RA   Testeniere O., Hecker A., Le Gurun S., Quennedey B., Graf F., Luquet G.;
+RT   "Characterization and spatiotemporal expression of orchestin, a gene
+RT   encoding an ecdysone-inducible protein from a crustacean organic matrix.";
+RL   Biochem. J. 361:327-335(2002).
+RN   [2] {ECO:0000305}
+RP   PROTEIN SEQUENCE OF 23-35, AND CALCIUM-BINDING.
+RX   PubMed=8620040; DOI=10.1016/0167-4838(95)00266-9;
+RA   Luquet G., Testeniere O., Graf F.;
+RT   "Characterization and N-terminal sequencing of a calcium binding protein
+RT   from the calcareous concretion organic matrix of the terrestrial crustacean
+RT   Orchestia cavimana.";
+RL   Biochim. Biophys. Acta 1293:272-276(1996).
+RN   [3] {ECO:0000305}
+RP   PHOSPHORYLATION, AND CALCIUM-BINDING.
+RX   PubMed=12560077; DOI=10.1016/s0014-5793(02)03856-5;
+RA   Hecker A., Testeniere O., Marin F., Luquet G.;
+RT   "Phosphorylation of serine residues is fundamental for the calcium-binding
+RT   ability of orchestin, a soluble matrix protein from crustacean calcium
+RT   storage structures.";
+RL   FEBS Lett. 535:49-54(2003).
+RN   [4] {ECO:0000305}
+RP   SUBCELLULAR LOCATION, TISSUE SPECIFICITY, DEVELOPMENTAL STAGE, AND
+RP   CALCIUM-BINDING.
+RX   PubMed=15099573; DOI=10.1016/j.jsb.2004.01.009;
+RA   Hecker A., Quennedey B., Testeniere O., Quennedey A., Graf F., Luquet G.;
+RT   "Orchestin, a calcium-binding phosphoprotein, is a matrix component of two
+RT   successive transitory calcified biomineralizations cyclically elaborated by
+RT   a terrestrial crustacean.";
+RL   J. Struct. Biol. 146:310-324(2004).
+CC   -!- FUNCTION: Plays a role in cuticle calcification. May induce
+CC       precipitation of the calcium stored in the posterior caeca as calcium
+CC       carbonate. {ECO:0000269|PubMed:15099573}.
+CC   -!- SUBCELLULAR LOCATION: Secreted {ECO:0000269|PubMed:15099573}.
+CC       Note=During the premolt period, localizes to microvilli-rich apical
+CC       regions and to the subnuclear region. During the postmolt period,
+CC       localizes to the intercellular space, basal region of cells and calcium
+CC       reabsorption spherules.
+CC   -!- TISSUE SPECIFICITY: Posterior caeca epithelium of the gut.
+CC       {ECO:0000269|PubMed:11772404, ECO:0000269|PubMed:15099573}.
+CC   -!- DEVELOPMENTAL STAGE: Expression is detected at the start of the premolt
+CC       period and accumulates during this period from D1'b to D3. After
+CC       ecdysis, expressed in the postmolt period but at much lower levels. Not
+CC       detected in the intermolt period. {ECO:0000269|PubMed:11772404,
+CC       ECO:0000269|PubMed:15099573}.
+CC   -!- INDUCTION: Indirectly by 20-hydroxyecdysone.
+CC       {ECO:0000269|PubMed:11772404}.
+CC   -!- PTM: Phosphorylated on Ser and Tyr residues. Calcium-binding activity
+CC       is dependent on serine phosphorylation but not on tyrosine
+CC       phosphorylation. {ECO:0000269|PubMed:12560077}.
+CC   -!- MISCELLANEOUS: Binds calcium. {ECO:0000269|PubMed:12560077,
+CC       ECO:0000269|PubMed:8620040}.
+CC   -!- CAUTION: N-terminal sequence obtained in PubMed:8620040 was later shown
+CC       to be incomplete at the N-terminus. {ECO:0000305|PubMed:11772404}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AF124526; AAD32571.1; -; Genomic_DNA.
+DR   AlphaFoldDB; Q9XYT4; -.
+DR   SMR; Q9XYT4; -.
+DR   GO; GO:0045178; C:basal part of cell; IDA:UniProtKB.
+DR   GO; GO:0005576; C:extracellular region; IDA:UniProtKB.
+DR   GO; GO:0005902; C:microvillus; IDA:UniProtKB.
+DR   GO; GO:0005509; F:calcium ion binding; IDA:UniProtKB.
+DR   GO; GO:0048589; P:developmental growth; IDA:UniProtKB.
+DR   GO; GO:0006874; P:intracellular calcium ion homeostasis; NAS:UniProtKB.
+DR   GO; GO:0009725; P:response to hormone; IDA:UniProtKB.
+DR   GO; GO:0031215; P:shell calcification; NAS:UniProtKB.
+PE   1: Evidence at protein level;
+KW   Biomineralization; Calcium; Direct protein sequencing; Secreted; Signal.
+FT   SIGNAL          1..20
+FT                   /evidence="ECO:0000269|PubMed:11772404"
+FT   CHAIN           21..128
+FT                   /note="Orchestin"
+FT                   /evidence="ECO:0000269|PubMed:11772404"
+FT                   /id="PRO_0000233934"
+FT   REGION          23..95
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        30..49
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        56..81
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        84..93
+FT                   /note="Acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   CONFLICT        25
+FT                   /note="S -> D (in Ref. 2; AA sequence)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        28
+FT                   /note="S -> E (in Ref. 2; AA sequence)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        30
+FT                   /note="D -> DD (in Ref. 2; AA sequence)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        33
+FT                   /note="L -> R (in Ref. 2; AA sequence)"
+FT                   /evidence="ECO:0000305"
+SQ   SEQUENCE   128 AA;  14578 MW;  92896EFAF797CF70 CRC64;
+     MNKVFIIGVC LFIVSQAVLA VPWDSDESSD ERLSDRSDES REEPRKLVVS DDDSREDSNE
+     SAEVRRRDDS RESEEEPRKL SADTSDEDSD DSQESPLDLF FKTLRDSKIS RAQRAALLKA
+     LLSRYAGY
+//
+ID   SBDS_HUMAN              Reviewed;         250 AA.
+AC   Q9Y3A5; A8K0P4; Q96FX0; Q9NV53;
+DT   30-MAY-2000, integrated into UniProtKB/Swiss-Prot.
+DT   23-JAN-2007, sequence version 4.
+DT   02-SEP-2026, entry version 218.
+DE   RecName: Full=Ribosome maturation protein SBDS;
+DE   AltName: Full=Shwachman-Bodian-Diamond syndrome protein;
+GN   Name=SBDS; ORFNames=CGI-97;
+OS   Homo sapiens (Human).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae;
+OC   Homo.
+OX   NCBI_TaxID=9606;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA], VARIANTS SDS1 LYS-8; GLY-44; GLU-67; SER-87;
+RP   THR-126 AND CYS-169, AND VARIANT THR-212.
+RX   PubMed=12496757; DOI=10.1038/ng1062;
+RA   Boocock G.R.B., Morrison J.A., Popovic M., Richards N., Ellis L.,
+RA   Durie P.R., Rommens J.M.;
+RT   "Mutations in SBDS are associated with Shwachman-Diamond syndrome.";
+RL   Nat. Genet. 33:97-101(2003).
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA].
+RX   PubMed=10810093; DOI=10.1101/gr.10.5.703;
+RA   Lai C.-H., Chou C.-Y., Ch'ang L.-Y., Liu C.-S., Lin W.-C.;
+RT   "Identification of novel human genes evolutionarily conserved in
+RT   Caenorhabditis elegans by comparative proteomics.";
+RL   Genome Res. 10:703-713(2000).
+RN   [3]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA].
+RC   TISSUE=Brain cortex, and Ovarian carcinoma;
+RX   PubMed=14702039; DOI=10.1038/ng1285;
+RA   Ota T., Suzuki Y., Nishikawa T., Otsuki T., Sugiyama T., Irie R.,
+RA   Wakamatsu A., Hayashi K., Sato H., Nagai K., Kimura K., Makita H.,
+RA   Sekine M., Obayashi M., Nishi T., Shibahara T., Tanaka T., Ishii S.,
+RA   Yamamoto J., Saito K., Kawai Y., Isono Y., Nakamura Y., Nagahari K.,
+RA   Murakami K., Yasuda T., Iwayanagi T., Wagatsuma M., Shiratori A., Sudo H.,
+RA   Hosoiri T., Kaku Y., Kodaira H., Kondo H., Sugawara M., Takahashi M.,
+RA   Kanda K., Yokoi T., Furuya T., Kikkawa E., Omura Y., Abe K., Kamihara K.,
+RA   Katsuta N., Sato K., Tanikawa M., Yamazaki M., Ninomiya K., Ishibashi T.,
+RA   Yamashita H., Murakawa K., Fujimori K., Tanai H., Kimata M., Watanabe M.,
+RA   Hiraoka S., Chiba Y., Ishida S., Ono Y., Takiguchi S., Watanabe S.,
+RA   Yosida M., Hotuta T., Kusano J., Kanehori K., Takahashi-Fujii A., Hara H.,
+RA   Tanase T.-O., Nomura Y., Togiya S., Komai F., Hara R., Takeuchi K.,
+RA   Arita M., Imose N., Musashino K., Yuuki H., Oshima A., Sasaki N.,
+RA   Aotsuka S., Yoshikawa Y., Matsunawa H., Ichihara T., Shiohata N., Sano S.,
+RA   Moriya S., Momiyama H., Satoh N., Takami S., Terashima Y., Suzuki O.,
+RA   Nakagawa S., Senoh A., Mizoguchi H., Goto Y., Shimizu F., Wakebe H.,
+RA   Hishigaki H., Watanabe T., Sugiyama A., Takemoto M., Kawakami B.,
+RA   Yamazaki M., Watanabe K., Kumagai A., Itakura S., Fukuzumi Y., Fujimori Y.,
+RA   Komiyama M., Tashiro H., Tanigami A., Fujiwara T., Ono T., Yamada K.,
+RA   Fujii Y., Ozaki K., Hirao M., Ohmori Y., Kawabata A., Hikiji T.,
+RA   Kobatake N., Inagaki H., Ikema Y., Okamoto S., Okitani R., Kawakami T.,
+RA   Noguchi S., Itoh T., Shigeta K., Senba T., Matsumura K., Nakajima Y.,
+RA   Mizuno T., Morinaga M., Sasaki M., Togashi T., Oyama M., Hata H.,
+RA   Watanabe M., Komatsu T., Mizushima-Sugano J., Satoh T., Shirai Y.,
+RA   Takahashi Y., Nakagawa K., Okumura K., Nagase T., Nomura N., Kikuchi H.,
+RA   Masuho Y., Yamashita R., Nakai K., Yada T., Nakamura Y., Ohara O.,
+RA   Isogai T., Sugano S.;
+RT   "Complete sequencing and characterization of 21,243 full-length human
+RT   cDNAs.";
+RL   Nat. Genet. 36:40-45(2004).
+RN   [4]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RA   Mural R.J., Istrail S., Sutton G.G., Florea L., Halpern A.L., Mobarry C.M.,
+RA   Lippert R., Walenz B., Shatkay H., Dew I., Miller J.R., Flanigan M.J.,
+RA   Edwards N.J., Bolanos R., Fasulo D., Halldorsson B.V., Hannenhalli S.,
+RA   Turner R., Yooseph S., Lu F., Nusskern D.R., Shue B.C., Zheng X.H.,
+RA   Zhong F., Delcher A.L., Huson D.H., Kravitz S.A., Mouchard L., Reinert K.,
+RA   Remington K.A., Clark A.G., Waterman M.S., Eichler E.E., Adams M.D.,
+RA   Hunkapiller M.W., Myers E.W., Venter J.C.;
+RL   Submitted (JUL-2005) to the EMBL/GenBank/DDBJ databases.
+RN   [5]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA].
+RC   TISSUE=PNS;
+RX   PubMed=15489334; DOI=10.1101/gr.2596504;
+RG   The MGC Project Team;
+RT   "The status, quality, and expansion of the NIH full-length cDNA project:
+RT   the Mammalian Gene Collection (MGC).";
+RL   Genome Res. 14:2121-2127(2004).
+RN   [6]
+RP   PROTEIN SEQUENCE OF 2-19, CLEAVAGE OF INITIATOR METHIONINE, ACETYLATION AT
+RP   SER-2, AND IDENTIFICATION BY MASS SPECTROMETRY.
+RC   TISSUE=Platelet;
+RA   Bienvenut W.V., Claeys D.;
+RL   Submitted (NOV-2005) to UniProtKB.
+RN   [7]
+RP   SUBCELLULAR LOCATION.
+RX   PubMed=15860664; DOI=10.1182/blood-2005-02-0807;
+RA   Austin K.M., Leary R.J., Shimamura A.;
+RT   "The Shwachman-Diamond SBDS protein localizes to the nucleolus.";
+RL   Blood 106:1253-1258(2005).
+RN   [8]
+RP   INTERACTION WITH NPM1 AND THE 60S RIBOSOMAL SUBUNIT, AND SUBCELLULAR
+RP   LOCATION.
+RX   PubMed=17475909; DOI=10.1182/blood-2007-02-075184;
+RA   Ganapathi K.A., Austin K.M., Lee C.S., Dias A., Malsch M.M., Reed R.,
+RA   Shimamura A.;
+RT   "The human Shwachman-Diamond syndrome protein, SBDS, associates with
+RT   ribosomal RNA.";
+RL   Blood 110:1458-1465(2007).
+RN   [9]
+RP   FUNCTION, AND INTERACTION WITH NIP7.
+RX   PubMed=17643419; DOI=10.1016/j.yexcr.2007.06.024;
+RA   Hesling C., Oliveira C.C., Castilho B.A., Zanchin N.I.;
+RT   "The Shwachman-Bodian-Diamond syndrome associated protein interacts with
+RT   HsNip7 and its down-regulation affects gene expression at the
+RT   transcriptional and translational levels.";
+RL   Exp. Cell Res. 313:4180-4195(2007).
+RN   [10]
+RP   FUNCTION, SUBCELLULAR LOCATION, AND INTERACTION WITH RPA1; PRKDC AND THE
+RP   60S RIBOSOME SUBUNIT.
+RX   PubMed=19602484; DOI=10.1093/hmg/ddp316;
+RA   Ball H.L., Zhang B., Riches J.J., Gandhi R., Li J., Rommens J.M.,
+RA   Myers J.S.;
+RT   "Shwachman-Bodian Diamond syndrome is a multi-functional protein implicated
+RT   in cellular stress responses.";
+RL   Hum. Mol. Genet. 18:3684-3695(2009).
+RN   [11]
+RP   FUNCTION, AND SUBCELLULAR LOCATION.
+RX   PubMed=19759903; DOI=10.1371/journal.pone.0007084;
+RA   Orelio C., Verkuijlen P., Geissler J., van den Berg T.K., Kuijpers T.W.;
+RT   "SBDS expression and localization at the mitotic spindle in human myeloid
+RT   progenitors.";
+RL   PLoS ONE 4:E7084-E7084(2009).
+RN   [12]
+RP   INTERACTION WITH CLN3.
+RX   PubMed=20015955; DOI=10.1093/hmg/ddp560;
+RA   Vitiello S.P., Benedict J.W., Padilla-Lopez S., Pearce D.A.;
+RT   "Interaction between Sdo1p and Btn1p in the Saccharomyces cerevisiae model
+RT   for Batten disease.";
+RL   Hum. Mol. Genet. 19:931-942(2010).
+RN   [13]
+RP   IDENTIFICATION BY MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RX   PubMed=21269460; DOI=10.1186/1752-0509-5-17;
+RA   Burkard T.R., Planyavsky M., Kaupe I., Breitwieser F.P., Buerckstuemmer T.,
+RA   Bennett K.L., Superti-Furga G., Colinge J.;
+RT   "Initial characterization of the human central proteome.";
+RL   BMC Syst. Biol. 5:17-17(2011).
+RN   [14]
+RP   ACETYLATION [LARGE SCALE ANALYSIS] AT SER-2, CLEAVAGE OF INITIATOR
+RP   METHIONINE [LARGE SCALE ANALYSIS], AND IDENTIFICATION BY MASS SPECTROMETRY
+RP   [LARGE SCALE ANALYSIS].
+RX   PubMed=22223895; DOI=10.1074/mcp.m111.015131;
+RA   Bienvenut W.V., Sumpton D., Martinez A., Lilla S., Espagne C., Meinnel T.,
+RA   Giglione C.;
+RT   "Comparative large-scale characterisation of plant vs. mammal proteins
+RT   reveals similar and idiosyncratic N-alpha acetylation features.";
+RL   Mol. Cell. Proteomics 11:M111.015131-M111.015131(2012).
+RN   [15]
+RP   ACETYLATION [LARGE SCALE ANALYSIS] AT SER-2, CLEAVAGE OF INITIATOR
+RP   METHIONINE [LARGE SCALE ANALYSIS], AND IDENTIFICATION BY MASS SPECTROMETRY
+RP   [LARGE SCALE ANALYSIS].
+RX   PubMed=22814378; DOI=10.1073/pnas.1210303109;
+RA   Van Damme P., Lasa M., Polevoda B., Gazquez C., Elosegui-Artola A.,
+RA   Kim D.S., De Juan-Pardo E., Demeyer K., Hole K., Larrea E., Timmerman E.,
+RA   Prieto J., Arnesen T., Sherman F., Gevaert K., Aldabe R.;
+RT   "N-terminal acetylome analyses and functional insights of the N-terminal
+RT   acetyltransferase NatB.";
+RL   Proc. Natl. Acad. Sci. U.S.A. 109:12449-12454(2012).
+RN   [16]
+RP   IDENTIFICATION BY MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RC   TISSUE=Liver;
+RX   PubMed=24275569; DOI=10.1016/j.jprot.2013.11.014;
+RA   Bian Y., Song C., Cheng K., Dong M., Wang F., Huang J., Sun D., Wang L.,
+RA   Ye M., Zou H.;
+RT   "An enzyme assisted RP-RPLC approach for in-depth analysis of human liver
+RT   phosphoproteome.";
+RL   J. Proteomics 96:253-262(2014).
+RN   [17]
+RP   INTERACTION WITH EFL1.
+RX   PubMed=25991726; DOI=10.1074/jbc.m114.626275;
+RA   Garcia-Marquez A., Gijsbers A., de la Mora E., Sanchez-Puig N.;
+RT   "Defective guanine nucleotide exchange in the elongation factor-like 1
+RT   (EFL1) GTPase by mutations in the Shwachman-Diamond syndrome protein.";
+RL   J. Biol. Chem. 290:17669-17678(2015).
+RN   [18]
+RP   IDENTIFICATION BY MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RX   PubMed=25944712; DOI=10.1002/pmic.201400617;
+RA   Vaca Jacome A.S., Rabilloud T., Schaeffer-Reiss C., Rompais M., Ayoub D.,
+RA   Lane L., Bairoch A., Van Dorsselaer A., Carapito C.;
+RT   "N-terminome analysis of the human mitochondrial proteome.";
+RL   Proteomics 15:2519-2524(2015).
+RN   [19]
+RP   STRUCTURE BY NMR, AND RNA-BINDING.
+RX   PubMed=20053358; DOI=10.1016/j.jmb.2009.12.039;
+RA   de Oliveira J.F., Sforca M.L., Blumenschein T.M., Goldfeder M.B.,
+RA   Guimaraes B.G., Oliveira C.C., Zanchin N.I., Zeri A.C.;
+RT   "Structure, dynamics, and RNA interaction analysis of the human SBDS
+RT   protein.";
+RL   J. Mol. Biol. 396:1053-1069(2010).
+RN   [20]
+RP   STRUCTURE BY NMR, FUNCTION, CHARACTERIZATION OF VARIANT SDS1 THR-126, AND
+RP   MUTAGENESIS OF LYS-151.
+RX   PubMed=21536732; DOI=10.1101/gad.623011;
+RA   Finch A.J., Hilcenko C., Basse N., Drynan L.F., Goyenechea B., Menne T.F.,
+RA   Gonzalez Fernandez A., Simpson P., D'Santos C.S., Arends M.J., Donadieu J.,
+RA   Bellanne-Chantelot C., Costanzo M., Boone C., McKenzie A.N., Freund S.M.,
+RA   Warren A.J.;
+RT   "Uncoupling of GTP hydrolysis from eIF6 release on the ribosome causes
+RT   Shwachman-Diamond syndrome.";
+RL   Genes Dev. 25:917-929(2011).
+RN   [21]
+RP   STRUCTURE BY ELECTRON MICROSCOPY (3.30 ANGSTROMS), AND IDENTIFICATION IN A
+RP   COMPLEX WITH SBDS; 60S RIBOSOMAL SUBUNIT AND EFL1.
+RX   PubMed=26479198; DOI=10.1038/nsmb.3112;
+RA   Weis F., Giudice E., Churcher M., Jin L., Hilcenko C., Wong C.C.,
+RA   Traynor D., Kay R.R., Warren A.J.;
+RT   "Mechanism of eIF6 release from the nascent 60S ribosomal subunit.";
+RL   Nat. Struct. Mol. Biol. 22:914-919(2015).
+RN   [22]
+RP   VARIANT SDS1 THR-33.
+RX   PubMed=24898207; DOI=10.1186/1471-2350-15-64;
+RA   Carvalho C.M., Zuccherato L.W., Williams C.L., Neill N.J., Murdock D.R.,
+RA   Bainbridge M., Jhangiani S.N., Muzny D.M., Gibbs R.A., Ip W.,
+RA   Guillerman R.P., Lupski J.R., Bertuch A.A.;
+RT   "Structural variation and missense mutation in SBDS associated with
+RT   Shwachman-Diamond syndrome.";
+RL   BMC Med. Genet. 15:64-64(2014).
+CC   -!- FUNCTION: Required for the assembly of mature ribosomes and ribosome
+CC       biogenesis. Together with EFL1, triggers the GTP-dependent release of
+CC       EIF6 from 60S pre-ribosomes in the cytoplasm, thereby activating
+CC       ribosomes for translation competence by allowing 80S ribosome assembly
+CC       and facilitating EIF6 recycling to the nucleus, where it is required
+CC       for 60S rRNA processing and nuclear export. Required for normal levels
+CC       of protein synthesis. May play a role in cellular stress resistance.
+CC       May play a role in cellular response to DNA damage. May play a role in
+CC       cell proliferation. {ECO:0000269|PubMed:17643419,
+CC       ECO:0000269|PubMed:19602484, ECO:0000269|PubMed:19759903,
+CC       ECO:0000269|PubMed:21536732}.
+CC   -!- SUBUNIT: Associates with the 60S ribosomal subunit. Interacts with
+CC       NPM1, RPA1 and PRKDC. May interact with NIP7 (PubMed:17643419). Found
+CC       in a complex consisting of the 60S ribosomal subunit, SBDS and EFL1
+CC       (PubMed:26479198). Interacts with EFL1 (PubMed:25991726). Interacts
+CC       with CLN3 (PubMed:20015955). {ECO:0000269|PubMed:17475909,
+CC       ECO:0000269|PubMed:17643419, ECO:0000269|PubMed:19602484,
+CC       ECO:0000269|PubMed:20015955, ECO:0000269|PubMed:25991726,
+CC       ECO:0000269|PubMed:26479198}.
+CC   -!- INTERACTION:
+CC       Q9Y3A5; Q96AP0: ACD; NbExp=2; IntAct=EBI-1046471, EBI-717666;
+CC       Q9Y3A5; Q7Z2Z2: EFL1; NbExp=3; IntAct=EBI-1046471, EBI-2870376;
+CC       Q9Y3A5; Q8WZ60: KLHL6; NbExp=3; IntAct=EBI-1046471, EBI-6426464;
+CC   -!- SUBCELLULAR LOCATION: Cytoplasm. Nucleus, nucleolus. Nucleus,
+CC       nucleoplasm. Cytoplasm, cytoskeleton, spindle. Note=Primarily detected
+CC       in the cytoplasm, and at low levels in nucleus and nucleolus
+CC       (PubMed:17475909, PubMed:19602484). Detected in the nucleolus during G1
+CC       and G2 phase of the cell cycle, and diffusely distributed in the
+CC       nucleus during S phase. Detected at the mitotic spindle. Colocalizes
+CC       with the microtubule organizing center during interphase
+CC       (PubMed:19759903). {ECO:0000269|PubMed:19759903}.
+CC   -!- TISSUE SPECIFICITY: Widely expressed.
+CC   -!- DISEASE: Shwachman-Diamond syndrome 1 (SDS1) [MIM:260400]: A form of
+CC       Shwachman-Diamond syndrome, a disorder characterized by hematopoietic
+CC       abnormalities, exocrine pancreatic dysfunction, and skeletal dysplasia.
+CC       Intermittent or chronic neutropenia is the most common hematological
+CC       manifestation, followed by anemia and thrombocytopenia. Some patients
+CC       progress to bone marrow failure, myelodysplastic syndrome and malignant
+CC       transformation, with acute myelogenous leukemia being the most common.
+CC       Exocrine pancreatic dysfunction is generally the first presenting
+CC       symptom in infancy. Short stature and metaphyseal dysplasia are the
+CC       most frequent skeletal manifestations. SDS1 inheritance is autosomal
+CC       recessive. {ECO:0000269|PubMed:12496757, ECO:0000269|PubMed:21536732,
+CC       ECO:0000269|PubMed:24898207}. Note=The disease is caused by variants
+CC       affecting the gene represented in this entry.
+CC   -!- SIMILARITY: Belongs to the SDO1/SBDS family. {ECO:0000305}.
+CC   -!- WEB RESOURCE: Name=SBDSbase; Note=SBDS mutation db;
+CC       URL="https://databases.lovd.nl/shared/genes/SBDS";
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AY169963; AAN77490.1; -; mRNA.
+DR   EMBL; AF151855; AAD34092.1; -; mRNA.
+DR   EMBL; AK001779; BAA91905.1; -; mRNA.
+DR   EMBL; AK289609; BAF82298.1; -; mRNA.
+DR   EMBL; CH471140; EAX07906.1; -; Genomic_DNA.
+DR   EMBL; BC065700; AAH65700.1; -; mRNA.
+DR   CCDS; CCDS5537.1; -.
+DR   RefSeq; NP_057122.2; NM_016038.4.
+DR   PDB; 2KDO; NMR; -; A=1-250.
+DR   PDB; 2L9N; NMR; -; A=1-250.
+DR   PDB; 5AN9; EM; 3.30 A; J=1-250.
+DR   PDB; 5ANB; EM; 4.10 A; J=1-250.
+DR   PDB; 5ANC; EM; 4.20 A; J=1-250.
+DR   PDB; 6QKL; EM; 3.30 A; J=1-250.
+DR   AlphaFoldDB; Q9Y3A5; -.
+DR   BMRB; Q9Y3A5; -.
+DR   EMDB; EMD-3145; -.
+DR   EMDB; EMD-3146; -.
+DR   EMDB; EMD-3147; -.
+DR   SASBDB; Q9Y3A5; -.
+DR   SMR; Q9Y3A5; -.
+DR   BioGRID; 119307; 192.
+DR   FunCoup; Q9Y3A5; 3365.
+DR   IntAct; Q9Y3A5; 910.
+DR   MINT; Q9Y3A5; -.
+DR   NDEx; IQUERY-CP-SBDS; 1 NDEx IQuery Curated Pathway.
+DR   STRING; 9606.ENSP00000246868; -.
+DR   BindingDB; Q9Y3A5; -.
+DR   ChEMBL; CHEMBL6067367; -.
+DR   GlyGen; Q9Y3A5; 1 site, 1 O-linked glycan (1 site).
+DR   iPTMnet; Q9Y3A5; -.
+DR   PhosphoSitePlus; Q9Y3A5; -.
+DR   BioMuta; SBDS; -.
+DR   DMDM; 28380824; -.
+DR   jPOST; Q9Y3A5; -.
+DR   MassIVE; Q9Y3A5; -.
+DR   PaxDb; 9606-ENSP00000246868; -.
+DR   PeptideAtlas; Q9Y3A5; -.
+DR   ProteomicsDB; 85997; -.
+DR   Pumba; Q9Y3A5; -.
+DR   Antibodypedia; 14141; 248 antibodies from 35 providers.
+DR   DNASU; 51119; -.
+DR   Ensembl; ENST00000246868.7; ENSP00000246868.2; ENSG00000126524.13.
+DR   Ensembl; ENST00000697897.1; ENSP00000513469.1; ENSG00000126524.13.
+DR   Ensembl; ENST00000890817.1; ENSP00000560876.1; ENSG00000126524.13.
+DR   GeneID; 51119; -.
+DR   KEGG; hsa:51119; -.
+DR   MANE-Select; ENST00000246868.7; ENSP00000246868.2; NM_016038.4; NP_057122.2.
+DR   UCSC; uc003tvm.2; human.
+DR   AGR; HGNC:19440; -.
+DR   ClinPGx; PA134978742; -.
+DR   CTD; 51119; -.
+DR   DisGeNET; 51119; -.
+DR   GeneCards; SBDS; -.
+DR   GeneReviews; SBDS; -.
+DR   HGNC; HGNC:19440; SBDS.
+DR   HPA; ENSG00000126524; Low tissue specificity.
+DR   MalaCards; SBDS; -.
+DR   MIM; 260400; phenotype.
+DR   MIM; 607444; gene.
+DR   OpenTargets; ENSG00000126524; -.
+DR   Orphanet; 88; Idiopathic aplastic anemia.
+DR   Orphanet; 622934; SBDS-related severe neonatal spondylometaphyseal dysplasia.
+DR   Orphanet; 811; Shwachman-Diamond syndrome.
+DR   VEuPathDB; HostDB:ENSG00000126524; -.
+DR   eggNOG; KOG2917; Eukaryota.
+DR   GeneTree; ENSGT00390000008135; -.
+DR   HOGENOM; CLU_043216_1_1_1; -.
+DR   InParanoid; Q9Y3A5; -.
+DR   OrthoDB; 10253092at2759; -.
+DR   PAN-GO; Q9Y3A5; 0 GO annotations based on evolutionary models.
+DR   PhylomeDB; Q9Y3A5; -.
+DR   PathwayCommons; Q9Y3A5; -.
+DR   SignaLink; Q9Y3A5; -.
+DR   SIGNOR; Q9Y3A5; -.
+DR   Agora; ENSG00000126524; -.
+DR   BioGRID-ORCS; 51119; 771 hits in 1140 CRISPR screens.
+DR   CD-CODE; 91857CE7; Nucleolus.
+DR   ChiTaRS; SBDS; human.
+DR   EvolutionaryTrace; Q9Y3A5; -.
+DR   GeneWiki; SBDS; -.
+DR   GenomeRNAi; 51119; -.
+DR   Pharos; Q9Y3A5; Tbio.
+DR   PRO; PR:Q9Y3A5; -.
+DR   Proteomes; UP000005640; Chromosome 7.
+DR   RNAct; Q9Y3A5; protein.
+DR   Bgee; ENSG00000126524; Expressed in popliteal artery and 104 other cell types or tissues.
+DR   ExpressionAtlas; Q9Y3A5; baseline and differential.
+DR   GO; GO:0005737; C:cytoplasm; IDA:UniProtKB.
+DR   GO; GO:0005829; C:cytosol; IDA:HPA.
+DR   GO; GO:0005730; C:nucleolus; IDA:UniProtKB.
+DR   GO; GO:0005654; C:nucleoplasm; IEA:UniProtKB-SubCell.
+DR   GO; GO:0005634; C:nucleus; IDA:UniProtKB.
+DR   GO; GO:0000922; C:spindle pole; IDA:UniProtKB.
+DR   GO; GO:0008017; F:microtubule binding; IDA:UniProtKB.
+DR   GO; GO:0043022; F:ribosome binding; IDA:UniProtKB.
+DR   GO; GO:0003723; F:RNA binding; HDA:UniProtKB.
+DR   GO; GO:0019843; F:rRNA binding; IDA:UniProtKB.
+DR   GO; GO:0048539; P:bone marrow development; IMP:UniProtKB.
+DR   GO; GO:0030282; P:bone mineralization; IMP:UniProtKB.
+DR   GO; GO:0042256; P:cytosolic ribosome assembly; IDA:UniProtKB.
+DR   GO; GO:0002244; P:hematopoietic progenitor cell differentiation; IMP:UniProtKB.
+DR   GO; GO:0030595; P:leukocyte chemotaxis; IDA:UniProtKB.
+DR   GO; GO:0007052; P:mitotic spindle organization; IDA:UniProtKB.
+DR   GO; GO:0006364; P:rRNA processing; IMP:UniProtKB.
+DR   FunFam; 3.30.70.240:FF:000009; SBDS ribosome maturation factor; 1.
+DR   FunFam; 1.10.10.900:FF:000001; SBDS, ribosome maturation factor; 1.
+DR   FunFam; 3.30.1250.10:FF:000001; SBDS, ribosome maturation factor; 1.
+DR   Gene3D; 3.30.70.240; -; 1.
+DR   Gene3D; 3.30.1250.10; Ribosome maturation protein SBDS, N-terminal domain; 1.
+DR   Gene3D; 1.10.10.900; SBDS protein C-terminal domain, subdomain 1; 1.
+DR   InterPro; IPR018023; Ribosome_mat_SBDS_CS.
+DR   InterPro; IPR036786; Ribosome_mat_SBDS_N_sf.
+DR   InterPro; IPR002140; Sdo1/SBDS.
+DR   InterPro; IPR039100; Sdo1/SBDS-like.
+DR   InterPro; IPR046928; SDO1/SBDS_C.
+DR   InterPro; IPR018978; SDO1/SBDS_central.
+DR   InterPro; IPR037188; Sdo1/SBDS_central_sf.
+DR   InterPro; IPR019783; SDO1/SBDS_N.
+DR   NCBIfam; TIGR00291; RNA_SBDS; 1.
+DR   PANTHER; PTHR10927; RIBOSOME MATURATION PROTEIN SBDS; 1.
+DR   PANTHER; PTHR10927:SF6; RIBOSOME MATURATION PROTEIN SBDS; 1.
+DR   Pfam; PF20268; SBDS_C; 1.
+DR   Pfam; PF09377; SBDS_domain_II; 1.
+DR   Pfam; PF01172; SBDS_N; 1.
+DR   SUPFAM; SSF89895; FYSH domain; 1.
+DR   SUPFAM; SSF109728; Hypothetical protein AF0491, middle domain; 1.
+DR   PROSITE; PS01267; UPF0023; 1.
+DR   PDBsum; 2KDO; -.
+DR   PDBsum; 2L9N; -.
+DR   PDBsum; 5AN9; -.
+DR   PDBsum; 5ANB; -.
+DR   PDBsum; 5ANC; -.
+DR   PDBsum; 6QKL; -.
+PE   1: Evidence at protein level;
+KW   3D-structure; Acetylation; Cytoplasm; Cytoskeleton;
+KW   Direct protein sequencing; Disease variant; Nucleus;
+KW   Proteomics identification; Reference proteome; Ribosome biogenesis.
+FT   INIT_MET        1
+FT                   /note="Removed"
+FT                   /evidence="ECO:0000269|Ref.6, ECO:0007744|PubMed:22223895,
+FT                   ECO:0007744|PubMed:22814378"
+FT   CHAIN           2..250
+FT                   /note="Ribosome maturation protein SBDS"
+FT                   /id="PRO_0000123762"
+FT   MOD_RES         2
+FT                   /note="N-acetylserine"
+FT                   /evidence="ECO:0000269|Ref.6, ECO:0007744|PubMed:22223895,
+FT                   ECO:0007744|PubMed:22814378"
+FT   VARIANT         8
+FT                   /note="N -> K (in SDS1; uncertain significance;
+FT                   dbSNP:rs28942099)"
+FT                   /evidence="ECO:0000269|PubMed:12496757"
+FT                   /id="VAR_015390"
+FT   VARIANT         33
+FT                   /note="K -> T (in SDS1; dbSNP:rs373730800)"
+FT                   /evidence="ECO:0000269|PubMed:24898207"
+FT                   /id="VAR_071673"
+FT   VARIANT         44
+FT                   /note="E -> G (in SDS1; uncertain significance;
+FT                   dbSNP:rs1554341516)"
+FT                   /evidence="ECO:0000269|PubMed:12496757"
+FT                   /id="VAR_015391"
+FT   VARIANT         67
+FT                   /note="K -> E (in SDS1; uncertain significance;
+FT                   dbSNP:rs1554341499)"
+FT                   /evidence="ECO:0000269|PubMed:12496757"
+FT                   /id="VAR_015392"
+FT   VARIANT         87
+FT                   /note="I -> S (in SDS1; uncertain significance;
+FT                   dbSNP:rs1554341363)"
+FT                   /evidence="ECO:0000269|PubMed:12496757"
+FT                   /id="VAR_015393"
+FT   VARIANT         126
+FT                   /note="R -> T (in SDS1; strongly reduced release of EIF6
+FT                   from pre-60S ribosome subunits; dbSNP:rs113993995)"
+FT                   /evidence="ECO:0000269|PubMed:12496757,
+FT                   ECO:0000269|PubMed:21536732"
+FT                   /id="VAR_015394"
+FT   VARIANT         169
+FT                   /note="R -> C (in SDS1; uncertain significance;
+FT                   dbSNP:rs113993996)"
+FT                   /evidence="ECO:0000269|PubMed:12496757"
+FT                   /id="VAR_015395"
+FT   VARIANT         212
+FT                   /note="I -> T (in dbSNP:rs79344818)"
+FT                   /evidence="ECO:0000269|PubMed:12496757"
+FT                   /id="VAR_015396"
+FT   MUTAGEN         151
+FT                   /note="K->N: Strongly reduced release of EIF6 from pre-60S
+FT                   ribosome subunits."
+FT                   /evidence="ECO:0000269|PubMed:21536732"
+FT   CONFLICT        41..43
+FT                   /note="SGV -> RAW (in Ref. 2; AAD34092)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        89
+FT                   /note="T -> A (in Ref. 2; AAD34092)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        105
+FT                   /note="E -> G (in Ref. 2; AAD34092)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        114
+FT                   /note="I -> F (in Ref. 2; AAD34092)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        126
+FT                   /note="R -> G (in Ref. 2; AAD34092)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        143
+FT                   /note="S -> L (in Ref. 2; AAD34092)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        146
+FT                   /note="T -> P (in Ref. 2; AAD34092)"
+FT                   /evidence="ECO:0000305"
+FT   TURN            6..8
+FT                   /evidence="ECO:0007829|PDB:2L9N"
+FT   STRAND          15..21
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          26..31
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   HELIX           35..41
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   HELIX           46..50
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          51..55
+FT                   /evidence="ECO:0007829|PDB:2L9N"
+FT   STRAND          57..59
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   TURN            60..63
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          64..66
+FT                   /evidence="ECO:0007829|PDB:2KDO"
+FT   HELIX           68..75
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   HELIX           80..90
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          91..94
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   HELIX           97..115
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          116..118
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          122..124
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   HELIX           127..129
+FT                   /evidence="ECO:0007829|PDB:2L9N"
+FT   HELIX           130..140
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          146..148
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   HELIX           150..164
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          170..178
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   TURN            180..182
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   HELIX           183..193
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          194..200
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          203..205
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          207..214
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   TURN            215..217
+FT                   /evidence="ECO:0007829|PDB:2L9N"
+FT   HELIX           218..229
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+FT   STRAND          234..248
+FT                   /evidence="ECO:0007829|PDB:5AN9"
+SQ   SEQUENCE   250 AA;  28764 MW;  D35C43003C05F5A7 CRC64;
+     MSIFTPTNQI RLTNVAVVRM KRAGKRFEIA CYKNKVVGWR SGVEKDLDEV LQTHSVFVNV
+     SKGQVAKKED LISAFGTDDQ TEICKQILTK GEVQVSDKER HTQLEQMFRD IATIVADKCV
+     NPETKRPYTV ILIERAMKDI HYSVKTNKST KQQALEVIKQ LKEKMKIERA HMRLRFILPV
+     NEGKKLKEKL KPLIKVIESE DYGQQLEIVC LIDPGCFREI DELIKKETKG KGSLEVLNLK
+     DVEEGDEKFE
+//
+ID   ATG4B_HUMAN             Reviewed;         393 AA.
+AC   Q9Y4P1; B7WNK2; Q53NU4; Q6ZUV8; Q8WYM9; Q96K07; Q96K96; Q96SZ1; Q9Y2F2;
+DT   15-MAR-2005, integrated into UniProtKB/Swiss-Prot.
+DT   18-MAY-2010, sequence version 2.
+DT   02-SEP-2026, entry version 211.
+DE   RecName: Full=Cysteine protease ATG4B {ECO:0000305};
+DE            EC=3.4.22.- {ECO:0000269|PubMed:21177865, ECO:0000269|PubMed:22302004};
+DE   AltName: Full=AUT-like 1 cysteine endopeptidase;
+DE   AltName: Full=Autophagy-related cysteine endopeptidase 1 {ECO:0000303|PubMed:12446702};
+DE            Short=Autophagin-1 {ECO:0000303|PubMed:12446702};
+DE   AltName: Full=Autophagy-related protein 4 homolog B {ECO:0000303|PubMed:15187094};
+DE            Short=HsAPG4B {ECO:0000303|PubMed:29458288};
+DE            Short=hAPG4B {ECO:0000303|PubMed:15187094};
+GN   Name=ATG4B {ECO:0000303|PubMed:15187094, ECO:0000312|HGNC:HGNC:20790};
+GN   Synonyms=APG4B {ECO:0000303|PubMed:15187094}, AUTL1
+GN   {ECO:0000312|HGNC:HGNC:20790}, KIAA0943 {ECO:0000303|PubMed:10231032};
+OS   Homo sapiens (Human).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae;
+OC   Homo.
+OX   NCBI_TaxID=9606;
+RN   [1]
+RP   RETRACTED PAPER.
+RC   TISSUE=Liver;
+RX   PubMed=12446702; DOI=10.1074/jbc.m208247200;
+RA   Marino G., Uria J.A., Puente X.S., Quesada V., Bordallo J., Lopez-Otin C.;
+RT   "Human autophagins, a family of cysteine proteinases potentially implicated
+RT   in cell degradation by autophagy.";
+RL   J. Biol. Chem. 278:3671-3678(2003).
+RN   [2]
+RP   RETRACTION NOTICE OF PUBMED:12446702.
+RX   PubMed=30808002; DOI=10.1074/jbc.w118.007325;
+RA   Marino G., Uria J.A., Puente X.S., Quesada V., Bordallo J., Lopez-Otin C.;
+RL   J. Biol. Chem. 294:1431-1431(2019).
+RN   [3]
+RP   NUCLEOTIDE SEQUENCE [MRNA] (ISOFORM 1), FUNCTION IN GABARAPL2; GABARAP AND
+RP   MAP1LC3A CLEAVAGE, ACTIVE SITE, MUTAGENESIS OF CYS-74, AND VARIANT GLN-354.
+RX   PubMed=15169837; DOI=10.1242/jcs.01131;
+RA   Kabeya Y., Mizushima N., Yamamoto A., Oshitani-Okamoto S., Ohsumi Y.,
+RA   Yoshimori T.;
+RT   "LC3, GABARAP and GATE16 localize to autophagosomal membrane depending on
+RT   form-II formation.";
+RL   J. Cell Sci. 117:2805-2812(2004).
+RN   [4]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA] (ISOFORM 1), AND VARIANT GLN-354.
+RC   TISSUE=Brain;
+RX   PubMed=10231032; DOI=10.1093/dnares/6.1.63;
+RA   Nagase T., Ishikawa K., Suyama M., Kikuno R., Hirosawa M., Miyajima N.,
+RA   Tanaka A., Kotani H., Nomura N., Ohara O.;
+RT   "Prediction of the coding sequences of unidentified human genes. XIII. The
+RT   complete sequences of 100 new cDNA clones from brain which code for large
+RT   proteins in vitro.";
+RL   DNA Res. 6:63-70(1999).
+RN   [5]
+RP   SEQUENCE REVISION.
+RA   Ohara O., Nagase T., Kikuno R.;
+RL   Submitted (AUG-2005) to the EMBL/GenBank/DDBJ databases.
+RN   [6]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA] (ISOFORMS 2; 3; 4 AND 6).
+RC   TISSUE=Embryo, and Placenta;
+RX   PubMed=14702039; DOI=10.1038/ng1285;
+RA   Ota T., Suzuki Y., Nishikawa T., Otsuki T., Sugiyama T., Irie R.,
+RA   Wakamatsu A., Hayashi K., Sato H., Nagai K., Kimura K., Makita H.,
+RA   Sekine M., Obayashi M., Nishi T., Shibahara T., Tanaka T., Ishii S.,
+RA   Yamamoto J., Saito K., Kawai Y., Isono Y., Nakamura Y., Nagahari K.,
+RA   Murakami K., Yasuda T., Iwayanagi T., Wagatsuma M., Shiratori A., Sudo H.,
+RA   Hosoiri T., Kaku Y., Kodaira H., Kondo H., Sugawara M., Takahashi M.,
+RA   Kanda K., Yokoi T., Furuya T., Kikkawa E., Omura Y., Abe K., Kamihara K.,
+RA   Katsuta N., Sato K., Tanikawa M., Yamazaki M., Ninomiya K., Ishibashi T.,
+RA   Yamashita H., Murakawa K., Fujimori K., Tanai H., Kimata M., Watanabe M.,
+RA   Hiraoka S., Chiba Y., Ishida S., Ono Y., Takiguchi S., Watanabe S.,
+RA   Yosida M., Hotuta T., Kusano J., Kanehori K., Takahashi-Fujii A., Hara H.,
+RA   Tanase T.-O., Nomura Y., Togiya S., Komai F., Hara R., Takeuchi K.,
+RA   Arita M., Imose N., Musashino K., Yuuki H., Oshima A., Sasaki N.,
+RA   Aotsuka S., Yoshikawa Y., Matsunawa H., Ichihara T., Shiohata N., Sano S.,
+RA   Moriya S., Momiyama H., Satoh N., Takami S., Terashima Y., Suzuki O.,
+RA   Nakagawa S., Senoh A., Mizoguchi H., Goto Y., Shimizu F., Wakebe H.,
+RA   Hishigaki H., Watanabe T., Sugiyama A., Takemoto M., Kawakami B.,
+RA   Yamazaki M., Watanabe K., Kumagai A., Itakura S., Fukuzumi Y., Fujimori Y.,
+RA   Komiyama M., Tashiro H., Tanigami A., Fujiwara T., Ono T., Yamada K.,
+RA   Fujii Y., Ozaki K., Hirao M., Ohmori Y., Kawabata A., Hikiji T.,
+RA   Kobatake N., Inagaki H., Ikema Y., Okamoto S., Okitani R., Kawakami T.,
+RA   Noguchi S., Itoh T., Shigeta K., Senba T., Matsumura K., Nakajima Y.,
+RA   Mizuno T., Morinaga M., Sasaki M., Togashi T., Oyama M., Hata H.,
+RA   Watanabe M., Komatsu T., Mizushima-Sugano J., Satoh T., Shirai Y.,
+RA   Takahashi Y., Nakagawa K., Okumura K., Nagase T., Nomura N., Kikuchi H.,
+RA   Masuho Y., Yamashita R., Nakai K., Yada T., Nakamura Y., Ohara O.,
+RA   Isogai T., Sugano S.;
+RT   "Complete sequencing and characterization of 21,243 full-length human
+RT   cDNAs.";
+RL   Nat. Genet. 36:40-45(2004).
+RN   [7]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA] (ISOFORM 1), AND VARIANT GLN-354.
+RC   TISSUE=Testis;
+RX   PubMed=17974005; DOI=10.1186/1471-2164-8-399;
+RA   Bechtel S., Rosenfelder H., Duda A., Schmidt C.P., Ernst U.,
+RA   Wellenreuther R., Mehrle A., Schuster C., Bahr A., Bloecker H., Heubner D.,
+RA   Hoerlein A., Michel G., Wedler H., Koehrer K., Ottenwaelder B., Poustka A.,
+RA   Wiemann S., Schupp I.;
+RT   "The full-ORF clone resource of the German cDNA consortium.";
+RL   BMC Genomics 8:399-399(2007).
+RN   [8]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RX   PubMed=15815621; DOI=10.1038/nature03466;
+RA   Hillier L.W., Graves T.A., Fulton R.S., Fulton L.A., Pepin K.H., Minx P.,
+RA   Wagner-McPherson C., Layman D., Wylie K., Sekhon M., Becker M.C.,
+RA   Fewell G.A., Delehaunty K.D., Miner T.L., Nash W.E., Kremitzki C., Oddy L.,
+RA   Du H., Sun H., Bradshaw-Cordum H., Ali J., Carter J., Cordes M., Harris A.,
+RA   Isak A., van Brunt A., Nguyen C., Du F., Courtney L., Kalicki J.,
+RA   Ozersky P., Abbott S., Armstrong J., Belter E.A., Caruso L., Cedroni M.,
+RA   Cotton M., Davidson T., Desai A., Elliott G., Erb T., Fronick C., Gaige T.,
+RA   Haakenson W., Haglund K., Holmes A., Harkins R., Kim K., Kruchowski S.S.,
+RA   Strong C.M., Grewal N., Goyea E., Hou S., Levy A., Martinka S., Mead K.,
+RA   McLellan M.D., Meyer R., Randall-Maher J., Tomlinson C.,
+RA   Dauphin-Kohlberg S., Kozlowicz-Reilly A., Shah N., Swearengen-Shahid S.,
+RA   Snider J., Strong J.T., Thompson J., Yoakum M., Leonard S., Pearman C.,
+RA   Trani L., Radionenko M., Waligorski J.E., Wang C., Rock S.M.,
+RA   Tin-Wollam A.-M., Maupin R., Latreille P., Wendl M.C., Yang S.-P., Pohl C.,
+RA   Wallis J.W., Spieth J., Bieri T.A., Berkowicz N., Nelson J.O., Osborne J.,
+RA   Ding L., Meyer R., Sabo A., Shotland Y., Sinha P., Wohldmann P.E.,
+RA   Cook L.L., Hickenbotham M.T., Eldred J., Williams D., Jones T.A., She X.,
+RA   Ciccarelli F.D., Izaurralde E., Taylor J., Schmutz J., Myers R.M.,
+RA   Cox D.R., Huang X., McPherson J.D., Mardis E.R., Clifton S.W., Warren W.C.,
+RA   Chinwalla A.T., Eddy S.R., Marra M.A., Ovcharenko I., Furey T.S.,
+RA   Miller W., Eichler E.E., Bork P., Suyama M., Torrents D., Waterston R.H.,
+RA   Wilson R.K.;
+RT   "Generation and annotation of the DNA sequences of human chromosomes 2 and
+RT   4.";
+RL   Nature 434:724-731(2005).
+RN   [9]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA] (ISOFORM 1), AND VARIANT GLN-354.
+RC   TISSUE=Placenta;
+RX   PubMed=15489334; DOI=10.1101/gr.2596504;
+RG   The MGC Project Team;
+RT   "The status, quality, and expansion of the NIH full-length cDNA project:
+RT   the Mammalian Gene Collection (MGC).";
+RL   Genome Res. 14:2121-2127(2004).
+RN   [10]
+RP   PROTEIN SEQUENCE OF 1-12; 33-49; 120-137; 185-201 AND 230-244, ACETYLATION
+RP   AT MET-1, AND IDENTIFICATION BY MASS SPECTROMETRY.
+RC   TISSUE=Ovarian carcinoma;
+RA   Bienvenut W.V.;
+RL   Submitted (JAN-2010) to UniProtKB.
+RN   [11]
+RP   FUNCTION, CATALYTIC ACTIVITY, ACTIVE SITE, AND MUTAGENESIS OF CYS-74.
+RX   PubMed=15187094; DOI=10.1074/jbc.m401461200;
+RA   Tanida I., Sou Y.-S., Ezaki J., Minematsu-Ikeguchi N., Ueno T.,
+RA   Kominami E.;
+RT   "HsAtg4B/HsApg4B/autophagin-1 cleaves the carboxyl termini of three human
+RT   Atg8 homologues and delipidates microtubule-associated protein light chain
+RT   3- and GABAA receptor-associated protein-phospholipid conjugates.";
+RL   J. Biol. Chem. 279:36268-36276(2004).
+RN   [12]
+RP   PHOSPHORYLATION [LARGE SCALE ANALYSIS] AT SER-383, AND IDENTIFICATION BY
+RP   MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RC   TISSUE=Cervix carcinoma;
+RX   PubMed=17081983; DOI=10.1016/j.cell.2006.09.026;
+RA   Olsen J.V., Blagoev B., Gnad F., Macek B., Kumar C., Mortensen P., Mann M.;
+RT   "Global, in vivo, and site-specific phosphorylation dynamics in signaling
+RT   networks.";
+RL   Cell 127:635-648(2006).
+RN   [13]
+RP   FUNCTION, ACTIVITY REGULATION, AND MUTAGENESIS OF CYS-78.
+RX   PubMed=17347651; DOI=10.1038/sj.emboj.7601623;
+RA   Scherz-Shouval R., Shvets E., Fass E., Shorer H., Gil L., Elazar Z.;
+RT   "Reactive oxygen species are essential for autophagy and specifically
+RT   regulate the activity of Atg4.";
+RL   EMBO J. 26:1749-1760(2007).
+RN   [14]
+RP   ACETYLATION [LARGE SCALE ANALYSIS] AT MET-1, AND IDENTIFICATION BY MASS
+RP   SPECTROMETRY [LARGE SCALE ANALYSIS].
+RX   PubMed=19413330; DOI=10.1021/ac9004309;
+RA   Gauci S., Helbig A.O., Slijper M., Krijgsveld J., Heck A.J., Mohammed S.;
+RT   "Lys-N and trypsin cover complementary parts of the phosphoproteome in a
+RT   refined SCX-based approach.";
+RL   Anal. Chem. 81:4493-4501(2009).
+RN   [15]
+RP   PHOSPHORYLATION [LARGE SCALE ANALYSIS] AT SER-383, AND IDENTIFICATION BY
+RP   MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RX   PubMed=19369195; DOI=10.1074/mcp.m800588-mcp200;
+RA   Oppermann F.S., Gnad F., Olsen J.V., Hornberger R., Greff Z., Keri G.,
+RA   Mann M., Daub H.;
+RT   "Large-scale proteomics analysis of the human kinome.";
+RL   Mol. Cell. Proteomics 8:1751-1764(2009).
+RN   [16]
+RP   PHOSPHORYLATION [LARGE SCALE ANALYSIS] AT SER-383, AND IDENTIFICATION BY
+RP   MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RC   TISSUE=Leukemic T-cell;
+RX   PubMed=19690332; DOI=10.1126/scisignal.2000007;
+RA   Mayya V., Lundgren D.H., Hwang S.-I., Rezaul K., Wu L., Eng J.K.,
+RA   Rodionov V., Han D.K.;
+RT   "Quantitative phosphoproteomic analysis of T cell receptor signaling
+RT   reveals system-wide modulation of protein-protein interactions.";
+RL   Sci. Signal. 2:RA46-RA46(2009).
+RN   [17]
+RP   FUNCTION, ACTIVE SITE, AND MUTAGENESIS OF CYS-74.
+RX   PubMed=20818167; DOI=10.4161/auto.6.7.13075;
+RA   Shu C.W., Drag M., Bekes M., Zhai D., Salvesen G.S., Reed J.C.;
+RT   "Synthetic substrates for measuring activity of autophagy proteases:
+RT   autophagins (Atg4).";
+RL   Autophagy 6:936-947(2010).
+RN   [18]
+RP   PHOSPHORYLATION [LARGE SCALE ANALYSIS] AT SER-383, AND IDENTIFICATION BY
+RP   MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RC   TISSUE=Cervix carcinoma;
+RX   PubMed=20068231; DOI=10.1126/scisignal.2000475;
+RA   Olsen J.V., Vermeulen M., Santamaria A., Kumar C., Miller M.L.,
+RA   Jensen L.J., Gnad F., Cox J., Jensen T.S., Nigg E.A., Brunak S., Mann M.;
+RT   "Quantitative phosphoproteomics reveals widespread full phosphorylation
+RT   site occupancy during mitosis.";
+RL   Sci. Signal. 3:RA3-RA3(2010).
+RN   [19]
+RP   IDENTIFICATION BY MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RX   PubMed=21269460; DOI=10.1186/1752-0509-5-17;
+RA   Burkard T.R., Planyavsky M., Kaupe I., Breitwieser F.P., Buerckstuemmer T.,
+RA   Bennett K.L., Superti-Furga G., Colinge J.;
+RT   "Initial characterization of the human central proteome.";
+RL   BMC Syst. Biol. 5:17-17(2011).
+RN   [20]
+RP   FUNCTION, BIOPHYSICOCHEMICAL PROPERTIES, AND ACTIVITY REGULATION.
+RX   PubMed=21177865; DOI=10.1074/jbc.m110.199059;
+RA   Li M., Hou Y., Wang J., Chen X., Shao Z.M., Yin X.M.;
+RT   "Kinetics comparisons of mammalian Atg4 homologues indicate selective
+RT   preferences toward diverse Atg8 substrates.";
+RL   J. Biol. Chem. 286:7327-7338(2011).
+RN   [21]
+RP   PHOSPHORYLATION [LARGE SCALE ANALYSIS] AT SER-383, AND IDENTIFICATION BY
+RP   MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RX   PubMed=21406692; DOI=10.1126/scisignal.2001570;
+RA   Rigbolt K.T., Prokhorova T.A., Akimov V., Henningsen J., Johansen P.T.,
+RA   Kratchmarova I., Kassem M., Mann M., Olsen J.V., Blagoev B.;
+RT   "System-wide temporal characterization of the proteome and phosphoproteome
+RT   of human embryonic stem cell differentiation.";
+RL   Sci. Signal. 4:RS3-RS3(2011).
+RN   [22]
+RP   FUNCTION, AND BIOPHYSICOCHEMICAL PROPERTIES.
+RX   PubMed=22302004; DOI=10.4161/auto.18777;
+RA   Li M., Chen X., Ye Q.Z., Vogt A., Yin X.M.;
+RT   "A high-throughput FRET-based assay for determination of Atg4 activity.";
+RL   Autophagy 8:401-412(2012).
+RN   [23]
+RP   ACETYLATION [LARGE SCALE ANALYSIS] AT MET-1, AND IDENTIFICATION BY MASS
+RP   SPECTROMETRY [LARGE SCALE ANALYSIS].
+RX   PubMed=22223895; DOI=10.1074/mcp.m111.015131;
+RA   Bienvenut W.V., Sumpton D., Martinez A., Lilla S., Espagne C., Meinnel T.,
+RA   Giglione C.;
+RT   "Comparative large-scale characterisation of plant vs. mammal proteins
+RT   reveals similar and idiosyncratic N-alpha acetylation features.";
+RL   Mol. Cell. Proteomics 11:M111.015131-M111.015131(2012).
+RN   [24]
+RP   UBIQUITINATION.
+RX   PubMed=23093945; DOI=10.1371/journal.pgen.1003007;
+RA   Kuang E., Okumura C.Y., Sheffy-Levin S., Varsano T., Shu V.C., Qi J.,
+RA   Niesman I.R., Yang H.J., Lopez-Otin C., Yang W.Y., Reed J.C., Broday L.,
+RA   Nizet V., Ronai Z.A.;
+RT   "Regulation of ATG4B stability by RNF5 limits basal levels of autophagy and
+RT   influences susceptibility to bacterial infection.";
+RL   PLoS Genet. 8:e1003007-e1003007(2012).
+RN   [25]
+RP   ACETYLATION [LARGE SCALE ANALYSIS] AT MET-1, AND IDENTIFICATION BY MASS
+RP   SPECTROMETRY [LARGE SCALE ANALYSIS].
+RX   PubMed=22814378; DOI=10.1073/pnas.1210303109;
+RA   Van Damme P., Lasa M., Polevoda B., Gazquez C., Elosegui-Artola A.,
+RA   Kim D.S., De Juan-Pardo E., Demeyer K., Hole K., Larrea E., Timmerman E.,
+RA   Prieto J., Arnesen T., Sherman F., Gevaert K., Aldabe R.;
+RT   "N-terminal acetylome analyses and functional insights of the N-terminal
+RT   acetyltransferase NatB.";
+RL   Proc. Natl. Acad. Sci. U.S.A. 109:12449-12454(2012).
+RN   [26]
+RP   PHOSPHORYLATION [LARGE SCALE ANALYSIS] AT SER-383, AND IDENTIFICATION BY
+RP   MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
+RC   TISSUE=Liver;
+RX   PubMed=24275569; DOI=10.1016/j.jprot.2013.11.014;
+RA   Bian Y., Song C., Cheng K., Dong M., Wang F., Huang J., Sun D., Wang L.,
+RA   Ye M., Zou H.;
+RT   "An enzyme assisted RP-RPLC approach for in-depth analysis of human liver
+RT   phosphoproteome.";
+RL   J. Proteomics 96:253-262(2014).
+RN   [27]
+RP   FUNCTION, ACTIVE SITE, PHOSPHORYLATION AT SER-383 AND SER-392, AND
+RP   MUTAGENESIS OF CYS-74; SER-383 AND SER-392.
+RX   PubMed=26378241; DOI=10.1074/jbc.m115.658088;
+RA   Yang Z., Wilkie-Grantham R.P., Yanagi T., Shu C.W., Matsuzawa S.,
+RA   Reed J.C.;
+RT   "ATG4B (Autophagin-1) phosphorylation modulates autophagy.";
+RL   J. Biol. Chem. 290:26549-26561(2015).
+RN   [28]
+RP   FUNCTION, AND GLYCOSYLATION.
+RX   PubMed=27527864; DOI=10.18632/oncotarget.11083;
+RA   Jo Y.K., Park N.Y., Park S.J., Kim B.G., Shin J.H., Jo D.S., Bae D.J.,
+RA   Suh Y.A., Chang J.H., Lee E.K., Kim S.Y., Kim J.C., Cho D.H.;
+RT   "O-GlcNAcylation of ATG4B positively regulates autophagy by increasing its
+RT   hydroxylase activity.";
+RL   Oncotarget 7:57186-57196(2016).
+RN   [29]
+RP   FUNCTION, S-NITROSYLATION AT CYS-189; CYS-292 AND CYS-301, AND MUTAGENESIS
+RP   OF CYS-189; CYS-292 AND CYS-301.
+RX   PubMed=28633005; DOI=10.1080/15548627.2017.1320467;
+RA   Li Y., Zhang Y., Wang L., Wang P., Xue Y., Li X., Qiao X., Zhang X., Xu T.,
+RA   Liu G., Li P., Chen C.;
+RT   "Autophagy impairment mediated by S-nitrosation of ATG4B leads to
+RT   neurotoxicity in response to hyperglycemia.";
+RL   Autophagy 13:1145-1160(2017).
+RN   [30]
+RP   FUNCTION, PHOSPHORYLATION AT SER-383, AND MUTAGENESIS OF SER-383.
+RX   PubMed=29232556; DOI=10.1016/j.ccell.2017.11.005;
+RA   Huang T., Kim C.K., Alvarez A.A., Pangeni R.P., Wan X., Song X., Shi T.,
+RA   Yang Y., Sastry N., Horbinski C.M., Lu S., Stupp R., Kessler J.A.,
+RA   Nishikawa R., Nakano I., Sulman E.P., Lu X., James C.D., Yin X.M., Hu B.,
+RA   Cheng S.Y.;
+RT   "MST4 phosphorylation of ATG4B regulates autophagic activity,
+RT   tumorigenicity, and radioresistance in glioblastoma.";
+RL   Cancer Cell 32:840-855(2017).
+RN   [31]
+RP   FUNCTION, ACTIVE SITE, PHOSPHORYLATION AT SER-316, AND MUTAGENESIS OF
+RP   CYS-74 AND SER-316.
+RX   PubMed=28821708; DOI=10.1038/s41467-017-00303-2;
+RA   Pengo N., Agrotis A., Prak K., Jones J., Ketteler R.;
+RT   "A reversible phospho-switch mediated by ULK1 regulates the activity of
+RT   autophagy protease ATG4B.";
+RL   Nat. Commun. 8:294-294(2017).
+RN   [32]
+RP   SUBCELLULAR LOCATION, AND PHOSPHORYLATION AT SER-34.
+RX   PubMed=29165041; DOI=10.1080/15548627.2017.1407887;
+RA   Ni Z., He J., Wu Y., Hu C., Dai X., Yan X., Li B., Li X., Xiong H., Li Y.,
+RA   Li S., Xu L., Li Y., Lian J., He F.;
+RT   "AKT-mediated phosphorylation of ATG4B impairs mitochondrial activity and
+RT   enhances the Warburg effect in hepatocellular carcinoma cells.";
+RL   Autophagy 14:685-701(2018).
+RN   [33]
+RP   FUNCTION, CATALYTIC ACTIVITY, AND MUTAGENESIS OF 388-PHE--LEU-391.
+RX   PubMed=29458288; DOI=10.1080/15548627.2018.1437341;
+RA   Kauffman K.J., Yu S., Jin J., Mugo B., Nguyen N., O'Brien A., Nag S.,
+RA   Lystad A.H., Melia T.J.;
+RT   "Delipidation of mammalian Atg8-family proteins by each of the four ATG4
+RT   proteases.";
+RL   Autophagy 14:992-1010(2018).
+RN   [34]
+RP   FUNCTION, PHOSPHORYLATION AT SER-34, ACTIVE SITE, AND MUTAGENESIS OF
+RP   SER-34; CYS-74; SER-121 AND SER-262.
+RX   PubMed=30443548; DOI=10.3389/fcell.2018.00148;
+RA   Pengo N., Prak K., Costa J.R., Luft C., Agrotis A., Freeman J.,
+RA   Gewinner C.A., Chan A.W.E., Selwood D.L., Kriston-Vizi J., Ketteler R.;
+RT   "Identification of kinases and phosphatases that regulate ATG4B activity by
+RT   siRNA and small molecule screening in cells.";
+RL   Front. Cell Dev. Biol. 6:148-148(2018).
+RN   [35]
+RP   FUNCTION, AND ACTIVITY REGULATION.
+RX   PubMed=30076329; DOI=10.1038/s41598-018-29900-x;
+RA   Bosc D., Vezenkov L., Bortnik S., An J., Xu J., Choutka C., Hannigan A.M.,
+RA   Kovacic S., Loo S., Clark P.G.K., Chen G., Guay-Ross R.N., Yang K.,
+RA   Dragowska W.H., Zhang F., Go N.E., Leung A., Honson N.S., Pfeifer T.A.,
+RA   Gleave M., Bally M., Jones S.J., Gorski S.M., Young R.N.;
+RT   "A new quinoline-based chemical probe inhibits the autophagy-related
+RT   cysteine protease ATG4B.";
+RL   Sci. Rep. 8:11653-11653(2018).
+RN   [36]
+RP   FUNCTION.
+RX   PubMed=30661429; DOI=10.1080/15548627.2019.1569925;
+RA   Agrotis A., Pengo N., Burden J.J., Ketteler R.;
+RT   "Redundancy of human ATG4 protease isoforms in autophagy and LC3/GABARAP
+RT   processing revealed in cells.";
+RL   Autophagy 15:976-997(2019).
+RN   [37]
+RP   FUNCTION.
+RX   PubMed=31315929; DOI=10.1074/jbc.ac119.009977;
+RA   Agrotis A., von Chamier L., Oliver H., Kiso K., Singh T., Ketteler R.;
+RT   "Human ATG4 autophagy proteases counteract attachment of ubiquitin-like
+RT   LC3/GABARAP proteins to other cellular proteins.";
+RL   J. Biol. Chem. 294:12610-12621(2019).
+RN   [38]
+RP   DISULFIDE BONDS, AND MUTAGENESIS OF CYS-78; CYS-89; CYS-183; CYS-189;
+RP   CYS-203; CYS-246; CYS-292; CYS-301; CYS-306; CYS-323; CYS-333 AND CYS-361.
+RX   PubMed=31880198; DOI=10.1080/15548627.2019.1709763;
+RA   Zheng X., Yang Z., Gu Q., Xia F., Fu Y., Liu P., Yin X.M., Li M.;
+RT   "The protease activity of human ATG4B is regulated by reversible oxidative
+RT   modification.";
+RL   Autophagy 16:1838-1850(2020).
+RN   [39]
+RP   FUNCTION, AND CATALYTIC ACTIVITY.
+RX   PubMed=32686895; DOI=10.1002/cbic.202000359;
+RA   Yang A., Pantoom S., Wu Y.W.;
+RT   "Distinct mechanisms for processing autophagy protein LC3-PE by RavZ and
+RT   ATG4B.";
+RL   ChemBioChem 21:3377-3382(2020).
+RN   [40]
+RP   INTERACTION WITH PFKP, AND PHOSPHORYLATION AT SER-34.
+RX   PubMed=33607258; DOI=10.1016/j.cellsig.2021.109956;
+RA   Li X., Sun L., Yan G., Yan X.;
+RT   "PFKP facilitates ATG4B phosphorylation during amino acid deprivation-
+RT   induced autophagy.";
+RL   Cell. Signal. 82:109956-109956(2021).
+RN   [41]
+RP   FUNCTION.
+RX   PubMed=33773106; DOI=10.1016/j.molcel.2021.03.001;
+RA   Nguyen T.N., Padman B.S., Zellner S., Khuu G., Uoselis L., Lam W.K.,
+RA   Skulsuppaisarn M., Lindblom R.S.J., Watts E.M., Behrends C., Lazarou M.;
+RT   "ATG4 family proteins drive phagophore growth independently of the
+RT   LC3/GABARAP lipidation system.";
+RL   Mol. Cell 81:2013-2030(2021).
+RN   [42]
+RP   FUNCTION, AND CATALYTIC ACTIVITY.
+RX   PubMed=33909989; DOI=10.1016/j.molcel.2021.03.020;
+RA   Durgan J., Lystad A.H., Sloan K., Carlsson S.R., Wilson M.I., Marcassa E.,
+RA   Ulferts R., Webster J., Lopez-Clavijo A.F., Wakelam M.J., Beale R.,
+RA   Simonsen A., Oxley D., Florey O.;
+RT   "Non-canonical autophagy drives alternative ATG8 conjugation to
+RT   phosphatidylserine.";
+RL   Mol. Cell 81:2031-2040(2021).
+RN   [43]
+RP   X-RAY CRYSTALLOGRAPHY (1.9 ANGSTROMS), ACTIVE SITE, AND MUTAGENESIS OF
+RP   CYS-74; TRP-142; ARG-229; ASP-278 AND HIS-280.
+RX   PubMed=16183633; DOI=10.1074/jbc.m509158200;
+RA   Sugawara K., Suzuki N.N., Fujioka Y., Mizushima N., Ohsumi Y., Inagaki F.;
+RT   "Structural basis for the specificity and catalysis of human Atg4B
+RT   responsible for mammalian autophagy.";
+RL   J. Biol. Chem. 280:40058-40065(2005).
+RN   [44]
+RP   X-RAY CRYSTALLOGRAPHY (2.0 ANGSTROMS), ACTIVE SITE, AND MUTAGENESIS OF
+RP   CYS-74; ASP-278 AND HIS-280.
+RX   PubMed=16325851; DOI=10.1016/j.jmb.2005.11.018;
+RA   Kumanomidou T., Mizushima T., Komatsu M., Suzuki A., Tanida I., Sou Y.-S.,
+RA   Ueno T., Kominami E., Tanaka K., Yamane T.;
+RT   "The crystal structure of human Atg4b, a processing and de-conjugating
+RT   enzyme for autophagosome-forming modifiers.";
+RL   J. Mol. Biol. 355:612-618(2006).
+RN   [45]
+RP   X-RAY CRYSTALLOGRAPHY (1.9 ANGSTROMS) OF 1-353 IN COMPLEX WITH RAT
+RP   MAP1LC3B/LC3, FUNCTION, AND CATALYTIC ACTIVITY.
+RX   PubMed=19322194; DOI=10.1038/emboj.2009.80;
+RA   Satoo K., Noda N.N., Kumeta H., Fujioka Y., Mizushima N., Ohsumi Y.,
+RA   Inagaki F.;
+RT   "The structure of Atg4B-LC3 complex reveals the mechanism of LC3 processing
+RT   and delipidation during autophagy.";
+RL   EMBO J. 28:1341-1350(2009).
+RN   [46] {ECO:0007744|PDB:5LXH, ECO:0007744|PDB:5LXI}
+RP   X-RAY CRYSTALLOGRAPHY (1.44 ANGSTROMS) OF 384-393 IN COMPLEX WITH
+RP   GABARAPL1, FUNCTION, MOTIF, DOMAIN, AND MUTAGENESIS OF SER-383;
+RP   388-PHE--LEU-391 AND SER-392.
+RX   PubMed=28287329; DOI=10.1080/15548627.2017.1287651;
+RA   Skytte Rasmussen M., Mouilleron S., Kumar Shrestha B., Wirth M., Lee R.,
+RA   Bowitz Larsen K., Abudu Princely Y., O'Reilly N., Sjottem E., Tooze S.A.,
+RA   Lamark T., Johansen T.;
+RT   "ATG4B contains a C-terminal LIR motif important for binding and efficient
+RT   cleavage of mammalian orthologs of yeast Atg8.";
+RL   Autophagy 13:834-853(2017).
+CC   -!- FUNCTION: Cysteine protease that plays a key role in autophagy by
+CC       mediating both proteolytic activation and delipidation of ATG8 family
+CC       proteins (PubMed:15169837, PubMed:15187094, PubMed:17347651,
+CC       PubMed:19322194, PubMed:21177865, PubMed:22302004, PubMed:26378241,
+CC       PubMed:27527864, PubMed:28633005, PubMed:28821708, PubMed:29232556,
+CC       PubMed:30076329, PubMed:30443548, PubMed:30661429). Required for
+CC       canonical autophagy (macroautophagy), non-canonical autophagy as well
+CC       as for mitophagy (PubMed:33773106, PubMed:33909989). The protease
+CC       activity is required for proteolytic activation of ATG8 family
+CC       proteins: cleaves the C-terminal amino acid of ATG8 proteins MAP1LC3A,
+CC       MAP1LC3B, MAP1LC3C, GABARAPL1, GABARAPL2 and GABARAP, to reveal a C-
+CC       terminal glycine (PubMed:15169837, PubMed:15187094, PubMed:17347651,
+CC       PubMed:19322194, PubMed:20818167, PubMed:21177865, PubMed:22302004,
+CC       PubMed:27527864, PubMed:28287329, PubMed:28633005, PubMed:29458288,
+CC       PubMed:30661429). Exposure of the glycine at the C-terminus is
+CC       essential for ATG8 proteins conjugation to phosphatidylethanolamine
+CC       (PE) and insertion to membranes, which is necessary for autophagy
+CC       (PubMed:15169837, PubMed:15187094, PubMed:17347651, PubMed:19322194,
+CC       PubMed:21177865, PubMed:22302004). Protease activity is also required
+CC       to counteract formation of high-molecular weight conjugates of ATG8
+CC       proteins (ATG8ylation): acts as a deubiquitinating-like enzyme that
+CC       removes ATG8 conjugated to other proteins, such as ATG3
+CC       (PubMed:31315929, PubMed:33773106). In addition to the protease
+CC       activity, also mediates delipidation of ATG8 family proteins
+CC       (PubMed:15187094, PubMed:19322194, PubMed:28633005, PubMed:29458288,
+CC       PubMed:32686895, PubMed:33909989). Catalyzes delipidation of PE-
+CC       conjugated forms of ATG8 proteins during macroautophagy
+CC       (PubMed:15187094, PubMed:19322194, PubMed:29458288, PubMed:32686895,
+CC       PubMed:33909989). Also involved in non-canonical autophagy, a parallel
+CC       pathway involving conjugation of ATG8 proteins to single membranes at
+CC       endolysosomal compartments, by catalyzing delipidation of ATG8 proteins
+CC       conjugated to phosphatidylserine (PS) (PubMed:33909989). Compared to
+CC       other members of the family (ATG4A, ATG4C or ATG4C), constitutes the
+CC       major protein for proteolytic activation of ATG8 proteins, while it
+CC       displays weaker delipidation activity than other ATG4 paralogs
+CC       (PubMed:29458288, PubMed:30661429). Involved in phagophore growth
+CC       during mitophagy independently of its protease activity and of ATG8
+CC       proteins: acts by regulating ATG9A trafficking to mitochondria and
+CC       promoting phagophore-endoplasmic reticulum contacts during the lipid
+CC       transfer phase of mitophagy (PubMed:33773106).
+CC       {ECO:0000269|PubMed:15169837, ECO:0000269|PubMed:15187094,
+CC       ECO:0000269|PubMed:17347651, ECO:0000269|PubMed:19322194,
+CC       ECO:0000269|PubMed:20818167, ECO:0000269|PubMed:21177865,
+CC       ECO:0000269|PubMed:22302004, ECO:0000269|PubMed:26378241,
+CC       ECO:0000269|PubMed:27527864, ECO:0000269|PubMed:28287329,
+CC       ECO:0000269|PubMed:28633005, ECO:0000269|PubMed:28821708,
+CC       ECO:0000269|PubMed:29232556, ECO:0000269|PubMed:29458288,
+CC       ECO:0000269|PubMed:30076329, ECO:0000269|PubMed:30443548,
+CC       ECO:0000269|PubMed:30661429, ECO:0000269|PubMed:31315929,
+CC       ECO:0000269|PubMed:32686895, ECO:0000269|PubMed:33773106,
+CC       ECO:0000269|PubMed:33909989}.
+CC   -!- CATALYTIC ACTIVITY:
+CC       Reaction=[protein]-C-terminal L-amino acid-glycyl-
+CC         phosphatidylethanolamide + H2O = [protein]-C-terminal L-amino acid-
+CC         glycine + a 1,2-diacyl-sn-glycero-3-phosphoethanolamine;
+CC         Xref=Rhea:RHEA:67548, Rhea:RHEA-COMP:17323, Rhea:RHEA-COMP:17324,
+CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:64612, ChEBI:CHEBI:172940,
+CC         ChEBI:CHEBI:172941; Evidence={ECO:0000269|PubMed:15187094,
+CC         ECO:0000269|PubMed:19322194, ECO:0000269|PubMed:29458288,
+CC         ECO:0000269|PubMed:32686895, ECO:0000269|PubMed:33909989};
+CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:67549;
+CC         Evidence={ECO:0000269|PubMed:15187094, ECO:0000269|PubMed:19322194,
+CC         ECO:0000269|PubMed:29458288, ECO:0000269|PubMed:32686895,
+CC         ECO:0000269|PubMed:33909989};
+CC   -!- CATALYTIC ACTIVITY:
+CC       Reaction=[protein]-C-terminal L-amino acid-glycyl-phosphatidylserine +
+CC         H2O = [protein]-C-terminal L-amino acid-glycine + a 1,2-diacyl-sn-
+CC         glycero-3-phospho-L-serine; Xref=Rhea:RHEA:67576, Rhea:RHEA-
+CC         COMP:17324, Rhea:RHEA-COMP:17326, ChEBI:CHEBI:15377,
+CC         ChEBI:CHEBI:57262, ChEBI:CHEBI:172940, ChEBI:CHEBI:172942;
+CC         Evidence={ECO:0000269|PubMed:33909989};
+CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:67577;
+CC         Evidence={ECO:0000269|PubMed:33909989};
+CC   -!- ACTIVITY REGULATION: Inhibited by N-ethylmaleimide (PubMed:21177865).
+CC       Redox-regulated during autophagy since reducing conditions activate
+CC       ATG4A whereas an oxidizing environment such as the presence of H(2)O(2)
+CC       inhibits its activity (PubMed:17347651). The cysteine protease activity
+CC       compounds is inhibited by styrylquinoline compounds 4-28 and LV-320
+CC       (PubMed:30076329). {ECO:0000269|PubMed:17347651,
+CC       ECO:0000269|PubMed:21177865, ECO:0000269|PubMed:30076329}.
+CC   -!- BIOPHYSICOCHEMICAL PROPERTIES:
+CC       Kinetic parameters:
+CC         KM=5.1 uM for MAP1LC3B {ECO:0000269|PubMed:21177865,
+CC         ECO:0000269|PubMed:22302004};
+CC         KM=5.8 uM for GABARAP {ECO:0000269|PubMed:21177865,
+CC         ECO:0000269|PubMed:22302004};
+CC         KM=4.4 uM for GABARAPL1 {ECO:0000269|PubMed:21177865,
+CC         ECO:0000269|PubMed:22302004};
+CC         KM=6.1 uM for GABARAPL2 {ECO:0000269|PubMed:21177865,
+CC         ECO:0000269|PubMed:22302004};
+CC   -!- SUBUNIT: Interacts with PFKP; promoting phosphorylation of ATG4B at
+CC       Ser-34 (PubMed:33607258). Interacts with GBP7 (By similarity).
+CC       {ECO:0000250|UniProtKB:Q8BGE6, ECO:0000269|PubMed:33607258}.
+CC   -!- INTERACTION:
+CC       Q9Y4P1; O95166: GABARAP; NbExp=9; IntAct=EBI-712014, EBI-712001;
+CC       Q9Y4P1; Q9H0R8: GABARAPL1; NbExp=12; IntAct=EBI-712014, EBI-746969;
+CC       Q9Y4P1; P60520: GABARAPL2; NbExp=12; IntAct=EBI-712014, EBI-720116;
+CC       Q9Y4P1; Q9H492: MAP1LC3A; NbExp=6; IntAct=EBI-712014, EBI-720768;
+CC       Q9Y4P1; Q9GZQ8: MAP1LC3B; NbExp=15; IntAct=EBI-712014, EBI-373144;
+CC       Q9Y4P1; Q9BXW4: MAP1LC3C; NbExp=4; IntAct=EBI-712014, EBI-2603996;
+CC   -!- SUBCELLULAR LOCATION: Cytoplasm {ECO:0000269|PubMed:29165041}.
+CC       Cytoplasm, cytosol {ECO:0000269|PubMed:29165041}. Cytoplasmic vesicle,
+CC       autophagosome {ECO:0000269|PubMed:29165041}. Endoplasmic reticulum
+CC       {ECO:0000269|PubMed:29165041}. Mitochondrion
+CC       {ECO:0000269|PubMed:29165041}. Note=Mainly localizes to the cytoplasm,
+CC       including cytosol (PubMed:29165041). A samll potion localizes to
+CC       mitochondria; phosphorylation at Ser-34 promotes localization to
+CC       mitochondria (PubMed:29165041). {ECO:0000269|PubMed:29165041}.
+CC   -!- ALTERNATIVE PRODUCTS:
+CC       Event=Alternative splicing; Named isoforms=5;
+CC       Name=1;
+CC         IsoId=Q9Y4P1-1; Sequence=Displayed;
+CC       Name=2;
+CC         IsoId=Q9Y4P1-2; Sequence=VSP_013029, VSP_013034;
+CC       Name=3;
+CC         IsoId=Q9Y4P1-3; Sequence=VSP_013028, VSP_013031, VSP_013032;
+CC       Name=4;
+CC         IsoId=Q9Y4P1-4; Sequence=VSP_013028, VSP_013033;
+CC       Name=6;
+CC         IsoId=Q9Y4P1-6; Sequence=VSP_013034;
+CC   -!- DOMAIN: The LIR motif (LC3-interacting region) is required for the
+CC       interaction with ATG8 family proteins MAP1LC3A, MAP1LC3B, MAP1LC3C and
+CC       GABARAPL1 (PubMed:28287329). Required for proteolytic activation and
+CC       delipidation of ATG8 proteins (PubMed:28287329, PubMed:29458288).
+CC       {ECO:0000269|PubMed:28287329, ECO:0000269|PubMed:29458288}.
+CC   -!- PTM: Phosphorylation at Ser-383 and Ser-392 promotes autophagy by
+CC       increasing protein delipidation activity without affecting proteolytic
+CC       activation of ATG8 proteins (PubMed:26378241). Phosphorylation at Ser-
+CC       316 by ULK1 inhibits autophagy by decreasing both proteolytic
+CC       activation and delipidation activities (PubMed:28821708).
+CC       Phosphorylation at Ser-316 is dephosphorylated by protein phosphatase
+CC       2A (PP2A) (PubMed:28821708). Phosphorylation at Ser-34 by AKT2 promotes
+CC       its hydrolase activity, leading to increased proteolytic activation and
+CC       delipidation of ATG8 family proteins (PubMed:30443548). Phosphorylation
+CC       at Ser-34 by AKT1 promotes mitochondrial localization and inhibition of
+CC       the F1F0-ATP synthase activity, leading to elevation of mitochondrial
+CC       reactive oxygen species (ROS) (PubMed:29165041).
+CC       {ECO:0000269|PubMed:26378241, ECO:0000269|PubMed:28821708,
+CC       ECO:0000269|PubMed:29165041, ECO:0000269|PubMed:30443548}.
+CC   -!- PTM: Ubiquitinated by RNF5, leading to its degradation by the
+CC       proteasome. {ECO:0000269|PubMed:23093945}.
+CC   -!- PTM: S-nitrosylation at Cys-189 and Cys-292 in response to high glucose
+CC       decreases both proteolytic activation and delipidation activities.
+CC       {ECO:0000269|PubMed:28633005}.
+CC   -!- PTM: O-glycosylated by OGT, leading to increase protease activity,
+CC       thereby promoting the proteolytic activation of ATG8 family proteins.
+CC       {ECO:0000269|PubMed:27527864}.
+CC   -!- PTM: Forms reversible intrachain disulfide bonds in response to
+CC       oxidative stress (PubMed:31880198). Forms interchain disulfide bonds,
+CC       leading to formation of homooligomers in response to oxidation
+CC       (PubMed:31880198). {ECO:0000269|PubMed:31880198}.
+CC   -!- SIMILARITY: Belongs to the peptidase C54 family. {ECO:0000305}.
+CC   -!- CAUTION: A paper describing ATG4B tissue expression has been retracted,
+CC       due to concerns of image duplication in some of the figures.
+CC       {ECO:0000269|PubMed:12446702, ECO:0000305|PubMed:30808002}.
+CC   -!- SEQUENCE CAUTION:
+CC       Sequence=BAA76787.2; Type=Erroneous initiation; Note=Extended N-terminus.; Evidence={ECO:0000305};
+CC       Sequence=BAC86110.1; Type=Erroneous initiation; Note=Extended N-terminus.; Evidence={ECO:0000305};
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AJ504652; CAD43219.1; -; mRNA.
+DR   EMBL; AB066215; BAB83890.1; -; mRNA.
+DR   EMBL; AB023160; BAA76787.2; ALT_INIT; mRNA.
+DR   EMBL; AK027332; BAB55042.1; -; mRNA.
+DR   EMBL; AK027462; BAB55127.1; -; mRNA.
+DR   EMBL; AK027763; BAB55353.1; -; mRNA.
+DR   EMBL; AK125277; BAC86110.1; ALT_INIT; mRNA.
+DR   EMBL; AL080168; CAB45756.1; -; mRNA.
+DR   EMBL; AC133528; AAY14919.1; -; Genomic_DNA.
+DR   EMBL; BC000719; AAH00719.1; -; mRNA.
+DR   CCDS; CCDS46564.1; -. [Q9Y4P1-1]
+DR   CCDS; CCDS46565.1; -. [Q9Y4P1-6]
+DR   PIR; T12492; T12492.
+DR   RefSeq; NP_037457.3; NM_013325.5. [Q9Y4P1-1]
+DR   RefSeq; NP_847896.1; NM_178326.3. [Q9Y4P1-6]
+DR   PDB; 2CY7; X-ray; 1.90 A; A=1-393.
+DR   PDB; 2D1I; X-ray; 2.00 A; A/B=1-393.
+DR   PDB; 2Z0D; X-ray; 1.90 A; A=1-353.
+DR   PDB; 2Z0E; X-ray; 1.90 A; A=1-353.
+DR   PDB; 2ZZP; X-ray; 2.05 A; A=1-353.
+DR   PDB; 5LXH; X-ray; 1.58 A; E/F/G=384-393.
+DR   PDB; 5LXI; X-ray; 1.44 A; C/E=384-393.
+DR   AlphaFoldDB; Q9Y4P1; -.
+DR   SMR; Q9Y4P1; -.
+DR   BioGRID; 116801; 132.
+DR   FunCoup; Q9Y4P1; 1712.
+DR   IntAct; Q9Y4P1; 112.
+DR   MINT; Q9Y4P1; -.
+DR   NDEx; IQUERY-CP-ATG4B; 3 NDEx IQuery Curated Pathways.
+DR   STRING; 9606.ENSP00000384259; -.
+DR   BindingDB; Q9Y4P1; -.
+DR   ChEMBL; CHEMBL1741221; -.
+DR   MEROPS; C54.003; -.
+DR   TCDB; 9.A.15.2.1; the autophagy-related phagophore-formation transporter (apt) family.
+DR   GlyGen; Q9Y4P1; 12 sites, 1 O-linked glycan (10 sites).
+DR   iPTMnet; Q9Y4P1; -.
+DR   PhosphoSitePlus; Q9Y4P1; -.
+DR   SwissPalm; Q9Y4P1; -.
+DR   BioMuta; ATG4B; -.
+DR   DMDM; 296434400; -.
+DR   jPOST; Q9Y4P1; -.
+DR   MassIVE; Q9Y4P1; -.
+DR   PaxDb; 9606-ENSP00000384259; -.
+DR   PeptideAtlas; Q9Y4P1; -.
+DR   ProteomicsDB; 86230; -. [Q9Y4P1-1]
+DR   ProteomicsDB; 86231; -. [Q9Y4P1-2]
+DR   ProteomicsDB; 86232; -. [Q9Y4P1-3]
+DR   ProteomicsDB; 86233; -. [Q9Y4P1-4]
+DR   ProteomicsDB; 86234; -. [Q9Y4P1-6]
+DR   Pumba; Q9Y4P1; -.
+DR   Antibodypedia; 12105; 696 antibodies from 44 providers.
+DR   DNASU; 23192; -.
+DR   Ensembl; ENST00000402096.5; ENSP00000384661.1; ENSG00000168397.18. [Q9Y4P1-4]
+DR   Ensembl; ENST00000404914.8; ENSP00000384259.3; ENSG00000168397.18. [Q9Y4P1-1]
+DR   Ensembl; ENST00000405546.7; ENSP00000383964.3; ENSG00000168397.18. [Q9Y4P1-6]
+DR   GeneID; 23192; -.
+DR   KEGG; hsa:23192; -.
+DR   MANE-Select; ENST00000404914.8; ENSP00000384259.3; NM_013325.5; NP_037457.3.
+DR   UCSC; uc002wbv.4; human. [Q9Y4P1-1]
+DR   AGR; HGNC:20790; -.
+DR   ClinPGx; PA134898340; -.
+DR   CTD; 23192; -.
+DR   DisGeNET; 23192; -.
+DR   GeneCards; ATG4B; -.
+DR   HGNC; HGNC:20790; ATG4B.
+DR   HPA; ENSG00000168397; Low tissue specificity.
+DR   MIM; 611338; gene.
+DR   OpenTargets; ENSG00000168397; -.
+DR   VEuPathDB; HostDB:ENSG00000168397; -.
+DR   eggNOG; KOG2674; Eukaryota.
+DR   GeneTree; ENSGT00530000063000; -.
+DR   HOGENOM; CLU_021259_0_1_1; -.
+DR   InParanoid; Q9Y4P1; -.
+DR   OMA; PDETFHC; -.
+DR   OrthoDB; 2960936at2759; -.
+DR   PAN-GO; Q9Y4P1; 8 GO annotations based on evolutionary models.
+DR   PhylomeDB; Q9Y4P1; -.
+DR   PathwayCommons; Q9Y4P1; -.
+DR   Reactome; R-HSA-1632852; Macroautophagy.
+DR   SABIO-RK; Q9Y4P1; -.
+DR   SignaLink; Q9Y4P1; -.
+DR   SIGNOR; Q9Y4P1; -.
+DR   Agora; ENSG00000168397; -.
+DR   BioGRID-ORCS; 23192; 18 hits in 1166 CRISPR screens.
+DR   CD-CODE; BE404912; ATG4B condensate.
+DR   ChiTaRS; ATG4B; human.
+DR   EvolutionaryTrace; Q9Y4P1; -.
+DR   GeneWiki; ATG4B; -.
+DR   GenomeRNAi; 23192; -.
+DR   Pharos; Q9Y4P1; Tchem.
+DR   PRO; PR:Q9Y4P1; -.
+DR   Proteomes; UP000005640; Chromosome 2.
+DR   RNAct; Q9Y4P1; protein.
+DR   Bgee; ENSG00000168397; Expressed in right hemisphere of cerebellum and 200 other cell types or tissues.
+DR   ExpressionAtlas; Q9Y4P1; baseline and differential.
+DR   GO; GO:0000421; C:autophagosome membrane; IDA:UniProt.
+DR   GO; GO:0005737; C:cytoplasm; EXP:UniProtKB.
+DR   GO; GO:0005829; C:cytosol; TAS:Reactome.
+DR   GO; GO:0005783; C:endoplasmic reticulum; EXP:UniProtKB.
+DR   GO; GO:0005739; C:mitochondrion; EXP:UniProtKB.
+DR   GO; GO:0004197; F:cysteine-type endopeptidase activity; IDA:UniProt.
+DR   GO; GO:0008234; F:cysteine-type peptidase activity; IDA:UniProtKB.
+DR   GO; GO:0004175; F:endopeptidase activity; IDA:BHF-UCL.
+DR   GO; GO:0019786; F:protein-phosphatidylethanolamide deconjugating activity; IDA:UniProtKB.
+DR   GO; GO:0097110; F:scaffold protein binding; IPI:ARUK-UCL.
+DR   GO; GO:0035973; P:aggrephagy; IBA:GO_Central.
+DR   GO; GO:0000045; P:autophagosome assembly; IDA:UniProt.
+DR   GO; GO:0006914; P:autophagy; IDA:UniProtKB.
+DR   GO; GO:0016236; P:macroautophagy; TAS:Reactome.
+DR   GO; GO:0016237; P:microautophagy; IDA:UniProtKB.
+DR   GO; GO:0000423; P:mitophagy; IMP:UniProtKB.
+DR   GO; GO:0031173; P:otolith mineralization completed early in development; ISS:UniProtKB.
+DR   GO; GO:0034727; P:piecemeal microautophagy of the nucleus; IBA:GO_Central.
+DR   GO; GO:0051697; P:protein delipidation; IDA:UniProtKB.
+DR   GO; GO:0034497; P:protein localization to phagophore assembly site; IMP:UniProtKB.
+DR   GO; GO:0016485; P:protein processing; IBA:GO_Central.
+DR   GO; GO:0006508; P:proteolysis; IDA:UniProtKB.
+DR   DisProt; DP01326; -.
+DR   IDEAL; IID00347; -.
+DR   InterPro; IPR046793; ATG4_LIR.
+DR   InterPro; IPR038765; Papain-like_cys_pep_sf.
+DR   InterPro; IPR005078; Peptidase_C54.
+DR   InterPro; IPR046792; Peptidase_C54_cat.
+DR   PANTHER; PTHR22624; CYSTEINE PROTEASE ATG4; 1.
+DR   PANTHER; PTHR22624:SF39; CYSTEINE PROTEASE ATG4B; 1.
+DR   Pfam; PF20166; ATG4_LIR; 1.
+DR   Pfam; PF03416; Peptidase_C54; 1.
+DR   SUPFAM; SSF54001; Cysteine proteinases; 1.
+DR   PDBsum; 2CY7; -.
+DR   PDBsum; 2D1I; -.
+DR   PDBsum; 2Z0D; -.
+DR   PDBsum; 2Z0E; -.
+DR   PDBsum; 2ZZP; -.
+DR   PDBsum; 5LXH; -.
+DR   PDBsum; 5LXI; -.
+PE   1: Evidence at protein level;
+KW   3D-structure; Acetylation; Alternative splicing; Autophagy; Cytoplasm;
+KW   Cytoplasmic vesicle; Direct protein sequencing; Disulfide bond;
+KW   Endoplasmic reticulum; Glycoprotein; Hydrolase; Isopeptide bond;
+KW   Mitochondrion; Phosphoprotein; Protease; Protein transport;
+KW   Proteomics identification; Reference proteome; S-nitrosylation;
+KW   Thiol protease; Transport; Ubl conjugation; Ubl conjugation pathway.
+FT   CHAIN           1..393
+FT                   /note="Cysteine protease ATG4B"
+FT                   /id="PRO_0000215844"
+FT   MOTIF           388..391
+FT                   /note="LIR"
+FT                   /evidence="ECO:0000269|PubMed:28287329"
+FT   ACT_SITE        74
+FT                   /note="Nucleophile"
+FT                   /evidence="ECO:0000269|PubMed:15169837,
+FT                   ECO:0000269|PubMed:15187094, ECO:0000269|PubMed:16183633,
+FT                   ECO:0000269|PubMed:16325851, ECO:0000269|PubMed:20818167,
+FT                   ECO:0000269|PubMed:26378241, ECO:0000269|PubMed:28821708,
+FT                   ECO:0000269|PubMed:30443548"
+FT   ACT_SITE        278
+FT                   /evidence="ECO:0000255, ECO:0000269|PubMed:16183633,
+FT                   ECO:0000269|PubMed:16325851"
+FT   ACT_SITE        280
+FT                   /evidence="ECO:0000269|PubMed:16183633,
+FT                   ECO:0000269|PubMed:16325851"
+FT   MOD_RES         1
+FT                   /note="N-acetylmethionine"
+FT                   /evidence="ECO:0000269|Ref.10, ECO:0007744|PubMed:19413330,
+FT                   ECO:0007744|PubMed:22223895, ECO:0007744|PubMed:22814378"
+FT   MOD_RES         34
+FT                   /note="Phosphoserine; by PKB/AKT1 and PKB/AKT2"
+FT                   /evidence="ECO:0000269|PubMed:29165041,
+FT                   ECO:0000269|PubMed:30443548, ECO:0000269|PubMed:33607258"
+FT   MOD_RES         189
+FT                   /note="S-nitrosocysteine"
+FT                   /evidence="ECO:0000269|PubMed:28633005"
+FT   MOD_RES         292
+FT                   /note="S-nitrosocysteine"
+FT                   /evidence="ECO:0000269|PubMed:28633005"
+FT   MOD_RES         301
+FT                   /note="S-nitrosocysteine"
+FT                   /evidence="ECO:0000269|PubMed:28633005"
+FT   MOD_RES         316
+FT                   /note="Phosphoserine; by ULK1"
+FT                   /evidence="ECO:0000269|PubMed:28821708"
+FT   MOD_RES         383
+FT                   /note="Phosphoserine; by STK26"
+FT                   /evidence="ECO:0000269|PubMed:26378241,
+FT                   ECO:0000269|PubMed:29232556, ECO:0007744|PubMed:17081983,
+FT                   ECO:0007744|PubMed:19369195, ECO:0007744|PubMed:19690332,
+FT                   ECO:0007744|PubMed:20068231, ECO:0007744|PubMed:21406692,
+FT                   ECO:0007744|PubMed:24275569"
+FT   MOD_RES         392
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000269|PubMed:26378241"
+FT   DISULFID        292..361
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   DISULFID        292
+FT                   /note="Interchain (with C-361)"
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   DISULFID        361
+FT                   /note="Interchain (with C-292)"
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   VAR_SEQ         1..74
+FT                   /note="Missing (in isoform 3 and isoform 4)"
+FT                   /evidence="ECO:0000303|PubMed:14702039"
+FT                   /id="VSP_013028"
+FT   VAR_SEQ         1
+FT                   /note="M -> MAHSVPSDSRTSRRPTTRPHAARGAPRGSRRPGRTPKWRLPRISARA
+FT                   PYRLRRLRRHTYWPPRRPVAASRCWPVGATPLGSVGGRTGKM (in isoform 2)"
+FT                   /evidence="ECO:0000303|PubMed:14702039"
+FT                   /id="VSP_013029"
+FT   VAR_SEQ         321..354
+FT                   /note="FFCKTEDDFNDWCQQVKKLSLLGGALPMFELVEL -> KQGRLVRSLIPWAP
+FT                   RPSSWCAAVLGAAVVMCGTP (in isoform 3)"
+FT                   /evidence="ECO:0000303|PubMed:14702039"
+FT                   /id="VSP_013031"
+FT   VAR_SEQ         355..393
+FT                   /note="Missing (in isoform 3)"
+FT                   /evidence="ECO:0000303|PubMed:14702039"
+FT                   /id="VSP_013032"
+FT   VAR_SEQ         369
+FT                   /note="L -> LGESCQVQVGSLG (in isoform 4)"
+FT                   /evidence="ECO:0000303|PubMed:14702039"
+FT                   /id="VSP_013033"
+FT   VAR_SEQ         370..393
+FT                   /note="DSSDVERLERFFDSEDEDFEILSL -> GESCQVQILLM (in isoform
+FT                   2 and isoform 6)"
+FT                   /evidence="ECO:0000303|PubMed:14702039"
+FT                   /id="VSP_013034"
+FT   VARIANT         354
+FT                   /note="L -> Q (in dbSNP:rs7601000)"
+FT                   /evidence="ECO:0000269|PubMed:10231032,
+FT                   ECO:0000269|PubMed:15169837, ECO:0000269|PubMed:15489334,
+FT                   ECO:0000269|PubMed:17974005"
+FT                   /id="VAR_021486"
+FT   MUTAGEN         34
+FT                   /note="S->A: Decreased phosphorylation by AKT2, leading to
+FT                   reduced proteolytic activation of ATG8 family proteins."
+FT                   /evidence="ECO:0000269|PubMed:30443548"
+FT   MUTAGEN         34
+FT                   /note="S->D: Phospho-mimetic mutant; increased proteolytic
+FT                   activation of ATG8 family proteins."
+FT                   /evidence="ECO:0000269|PubMed:30443548"
+FT   MUTAGEN         74
+FT                   /note="C->S: Complete loss of protease activity."
+FT                   /evidence="ECO:0000269|PubMed:15169837,
+FT                   ECO:0000269|PubMed:15187094, ECO:0000269|PubMed:16183633,
+FT                   ECO:0000269|PubMed:16325851, ECO:0000269|PubMed:20818167,
+FT                   ECO:0000269|PubMed:26378241, ECO:0000269|PubMed:28821708,
+FT                   ECO:0000269|PubMed:30443548"
+FT   MUTAGEN         78
+FT                   /note="C->A: Reduces the redox sensitivity and retains
+FT                   activity in presence of H(2)O(2)."
+FT                   /evidence="ECO:0000269|PubMed:17347651"
+FT   MUTAGEN         78
+FT                   /note="C->S: Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         89
+FT                   /note="C->S: Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         121
+FT                   /note="S->A: Decreased phosphorylation by AKT2; when
+FT                   associated with A-262."
+FT                   /evidence="ECO:0000269|PubMed:30443548"
+FT   MUTAGEN         142
+FT                   /note="W->A: Strongly reduced protease activity."
+FT                   /evidence="ECO:0000269|PubMed:16183633"
+FT   MUTAGEN         183
+FT                   /note="C->S: Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         189
+FT                   /note="C->S: Does not affect S-nitrosylation. Strongly
+FT                   decreased S-nitrosylation, leading to increased hydrolase
+FT                   activity and autophagic flux; when associated with S-292.
+FT                   Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:28633005,
+FT                   ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         203
+FT                   /note="C->S: Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         229
+FT                   /note="R->A: Strongly reduced protease activity."
+FT                   /evidence="ECO:0000269|PubMed:16183633"
+FT   MUTAGEN         246
+FT                   /note="C->S: Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         262
+FT                   /note="S->A: Decreased phosphorylation by AKT2; when
+FT                   associated with A-121."
+FT                   /evidence="ECO:0000269|PubMed:30443548"
+FT   MUTAGEN         278
+FT                   /note="D->A: Complete loss of protease activity."
+FT                   /evidence="ECO:0000269|PubMed:16183633,
+FT                   ECO:0000269|PubMed:16325851"
+FT   MUTAGEN         280
+FT                   /note="H->A: Complete loss of protease activity."
+FT                   /evidence="ECO:0000269|PubMed:16183633,
+FT                   ECO:0000269|PubMed:16325851"
+FT   MUTAGEN         292
+FT                   /note="C->S: Does not affect S-nitrosylation. Strongly
+FT                   decreased S-nitrosylation, leading to increased hydrolase
+FT                   activity and autophagic flux; when associated with S-189.
+FT                   Reduced formation of intrachain and interchain disulfide
+FT                   bonds in response to oxidation. Abolished formation of
+FT                   disulfide bonds, leading to increased autophagy; when
+FT                   associated with S-361."
+FT                   /evidence="ECO:0000269|PubMed:28633005,
+FT                   ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         301
+FT                   /note="C->S: Does not affect S-nitrosylation. Does not
+FT                   affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:28633005,
+FT                   ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         306
+FT                   /note="C->S: Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         316
+FT                   /note="S->A: Abolished phosphorylation by ULK1; promotes
+FT                   hydrolase activity, leading to increased proteolytic
+FT                   activation and delipidation of ATG8 family proteins."
+FT                   /evidence="ECO:0000269|PubMed:28821708"
+FT   MUTAGEN         316
+FT                   /note="S->D: Phospho-mimetic mutant; reduced hydrolase
+FT                   activity, leading to decreased proteolytic activation and
+FT                   delipidation of ATG8 family proteins."
+FT                   /evidence="ECO:0000269|PubMed:28821708"
+FT   MUTAGEN         323
+FT                   /note="C->S: Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         333
+FT                   /note="C->S: Does not affect formation of disulfide bonds."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         361
+FT                   /note="C->S: Reduced formation of intrachain and interchain
+FT                   disulfide bonds in response to oxidation. Abolished
+FT                   formation of disulfide bonds, leading to increased
+FT                   autophagy; when associated with S-292."
+FT                   /evidence="ECO:0000269|PubMed:31880198"
+FT   MUTAGEN         383
+FT                   /note="S->A: Decreased phosphorylation, leading to
+FT                   decreased hydrolase activity and autophagic flux. Does not
+FT                   affect interaction with ATG8 family proteins."
+FT                   /evidence="ECO:0000269|PubMed:26378241,
+FT                   ECO:0000269|PubMed:28287329, ECO:0000269|PubMed:29232556"
+FT   MUTAGEN         383
+FT                   /note="S->E: Phospho-mimetic mutant; does not affect
+FT                   interaction with ATG8 family proteins."
+FT                   /evidence="ECO:0000269|PubMed:28287329"
+FT   MUTAGEN         388..391
+FT                   /note="FEIL->AEIA: In 2mLIR; decreased interaction with
+FT                   ATG8 family proteins MAP1LC3A, MAP1LC3B and MAP1LC3C.
+FT                   Decreased ability to mediate delipidation of ATG8 proteins
+FT                   conjugated to phosphatidylethanolamine (PE)."
+FT                   /evidence="ECO:0000269|PubMed:28287329,
+FT                   ECO:0000269|PubMed:29458288"
+FT   MUTAGEN         392
+FT                   /note="S->A: Decreased phosphorylation, leading to
+FT                   decreased hydrolase activity and autophagic flux. Does not
+FT                   affect interaction with ATG8 family proteins."
+FT                   /evidence="ECO:0000269|PubMed:26378241,
+FT                   ECO:0000269|PubMed:28287329"
+FT   MUTAGEN         392
+FT                   /note="S->E: Phospho-mimetic mutant; slightly increased
+FT                   interaction with ATG8 family proteins."
+FT                   /evidence="ECO:0000269|PubMed:28287329"
+FT   CONFLICT        136
+FT                   /note="Missing (in Ref. 3; BAB83890)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        188
+FT                   /note="P -> L (in Ref. 6; BAB55127)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        247
+FT                   /note="F -> Y (in Ref. 6; BAB55353)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        273
+FT                   /note="E -> G (in Ref. 6; BAB55042)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        312
+FT                   /note="E -> N (in Ref. 3; BAB83890)"
+FT                   /evidence="ECO:0000305"
+FT   HELIX           5..7
+FT                   /evidence="ECO:0007829|PDB:2Z0E"
+FT   HELIX           10..13
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           14..17
+FT                   /evidence="ECO:0007829|PDB:2ZZP"
+FT   HELIX           18..20
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          22..24
+FT                   /evidence="ECO:0007829|PDB:2D1I"
+FT   STRAND          26..28
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          31..33
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   TURN            35..37
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           39..48
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          54..57
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           58..60
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   TURN            61..64
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   TURN            70..72
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           74..91
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          100..102
+FT                   /evidence="ECO:0007829|PDB:2Z0E"
+FT   HELIX           103..105
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           106..113
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          116..118
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           125..133
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   TURN            134..136
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           141..144
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           145..156
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   TURN            160..162
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          165..168
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          173..175
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           176..183
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          184..186
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          222..229
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          232..234
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           237..239
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           240..246
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          252..257
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          264..270
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          273..277
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          281..284
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          290..292
+FT                   /evidence="ECO:0007829|PDB:2D1I"
+FT   HELIX           297..299
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          306..309
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           310..312
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          315..325
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           326..341
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          349..353
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   HELIX           371..376
+FT                   /evidence="ECO:0007829|PDB:2CY7"
+FT   STRAND          388..390
+FT                   /evidence="ECO:0007829|PDB:5LXH"
+SQ   SEQUENCE   393 AA;  44294 MW;  F4ADB3192176E0E5 CRC64;
+     MDAATLTYDT LRFAEFEDFP ETSEPVWILG RKYSIFTEKD EILSDVASRL WFTYRKNFPA
+     IGGTGPTSDT GWGCMLRCGQ MIFAQALVCR HLGRDWRWTQ RKRQPDSYFS VLNAFIDRKD
+     SYYSIHQIAQ MGVGEGKSIG QWYGPNTVAQ VLKKLAVFDT WSSLAVHIAM DNTVVMEEIR
+     RLCRTSVPCA GATAFPADSD RHCNGFPAGA EVTNRPSPWR PLVLLIPLRL GLTDINEAYV
+     ETLKHCFMMP QSLGVIGGKP NSAHYFIGYV GEELIYLDPH TTQPAVEPTD GCFIPDESFH
+     CQHPPCRMSI AELDPSIAVG FFCKTEDDFN DWCQQVKKLS LLGGALPMFE LVELQPSHLA
+     CPDVLNLSLD SSDVERLERF FDSEDEDFEI LSL
+//
+ID   KLK4_HUMAN              Reviewed;         254 AA.
+AC   Q9Y5K2; Q4VB16; Q96RU5; Q9GZL6; Q9UBJ6;
+DT   01-DEC-2000, integrated into UniProtKB/Swiss-Prot.
+DT   11-JAN-2011, sequence version 2.
+DT   02-SEP-2026, entry version 198.
+DE   RecName: Full=Kallikrein-4;
+DE            EC=3.4.21.-;
+DE   AltName: Full=Enamel matrix serine proteinase 1;
+DE   AltName: Full=Kallikrein-like protein 1;
+DE            Short=KLK-L1;
+DE   AltName: Full=Prostase;
+DE   AltName: Full=Serine protease 17;
+DE   Flags: Precursor;
+GN   Name=KLK4; Synonyms=EMSP1, PRSS17, PSTS;
+OS   Homo sapiens (Human).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae;
+OC   Homo.
+OX   NCBI_TaxID=9606;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA / MRNA] (ISOFORM 1).
+RX   PubMed=10077646; DOI=10.1073/pnas.96.6.3114;
+RA   Nelson P.S., Gan L., Ferguson C., Moss P., Gelinas R., Hood L., Wang K.;
+RT   "Molecular cloning and characterization of prostase, an androgen-regulated
+RT   serine protease with prostate-restricted expression.";
+RL   Proc. Natl. Acad. Sci. U.S.A. 96:3114-3119(1999).
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA], AND VARIANT GLN-197.
+RX   PubMed=10485467;
+RA   Yousef G.M., Obiezu C.V., Luo L.-Y., Black M.H., Diamandis E.P.;
+RT   "Prostase/KLK-L1 is a new member of the human kallikrein gene family, is
+RT   expressed in prostate and breast tissues, and is hormonally regulated.";
+RL   Cancer Res. 59:4252-4256(1999).
+RN   [3]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA], AND VARIANT GLN-197.
+RX   PubMed=10438493; DOI=10.1074/jbc.274.33.23210;
+RA   Stephenson S.A., Verity K., Ashworth L.K., Clements J.A.;
+RT   "Localization of a new prostate-specific antigen-related serine protease
+RT   gene, KLK4, is evidence for an expanded human kallikrein gene family
+RT   cluster on chromosome 19q13.3-13.4.";
+RL   J. Biol. Chem. 274:23210-23214(1999).
+RN   [4]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA].
+RX   PubMed=11054574; DOI=10.1016/s0378-1119(00)00382-6;
+RA   Gan L., Lee I., Smith R., Argonza-Barrett R., Lei H., McCuaig J., Moss P.,
+RA   Paeper B., Wang K.;
+RT   "Sequencing and expression analysis of the serine protease gene cluster
+RT   located in chromosome 19q13 region.";
+RL   Gene 257:119-130(2000).
+RN   [5]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA], CHARACTERIZATION, AND VARIANT GLN-197.
+RX   PubMed=10863090; DOI=10.1016/s0378-1119(00)00203-1;
+RA   Hu J.C.-C., Zhang C., Sun X., Yang Y., Cao X., Ryu O., Simmer J.P.;
+RT   "Characterization of the mouse and human PRSS17 genes, their relationship
+RT   to other serine proteases, and the expression of PRSS17 in developing mouse
+RT   incisors.";
+RL   Gene 251:1-8(2000).
+RN   [6]
+RP   NUCLEOTIDE SEQUENCE [MRNA] (ISOFORMS 1 AND 2), VARIANT GLN-197, AND
+RP   ALTERNATIVE SPLICING.
+RC   TISSUE=Prostatic carcinoma;
+RX   PubMed=11506707; DOI=10.1089/104454901750361497;
+RA   Korkmaz K.S., Korkmaz C.G., Pretlow T.G., Saatcioglu F.;
+RT   "Distinctly different gene structure of KLK4/KLK-L1/prostase/ARM1 compared
+RT   with other members of the kallikrein family: intracellular localization,
+RT   alternative cDNA forms, and Regulation by multiple hormones.";
+RL   DNA Cell Biol. 20:435-445(2001).
+RN   [7]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RX   PubMed=15057824; DOI=10.1038/nature02399;
+RA   Grimwood J., Gordon L.A., Olsen A.S., Terry A., Schmutz J., Lamerdin J.E.,
+RA   Hellsten U., Goodstein D., Couronne O., Tran-Gyamfi M., Aerts A.,
+RA   Altherr M., Ashworth L., Bajorek E., Black S., Branscomb E., Caenepeel S.,
+RA   Carrano A.V., Caoile C., Chan Y.M., Christensen M., Cleland C.A.,
+RA   Copeland A., Dalin E., Dehal P., Denys M., Detter J.C., Escobar J.,
+RA   Flowers D., Fotopulos D., Garcia C., Georgescu A.M., Glavina T., Gomez M.,
+RA   Gonzales E., Groza M., Hammon N., Hawkins T., Haydu L., Ho I., Huang W.,
+RA   Israni S., Jett J., Kadner K., Kimball H., Kobayashi A., Larionov V.,
+RA   Leem S.-H., Lopez F., Lou Y., Lowry S., Malfatti S., Martinez D.,
+RA   McCready P.M., Medina C., Morgan J., Nelson K., Nolan M., Ovcharenko I.,
+RA   Pitluck S., Pollard M., Popkie A.P., Predki P., Quan G., Ramirez L.,
+RA   Rash S., Retterer J., Rodriguez A., Rogers S., Salamov A., Salazar A.,
+RA   She X., Smith D., Slezak T., Solovyev V., Thayer N., Tice H., Tsai M.,
+RA   Ustaszewska A., Vo N., Wagner M., Wheeler J., Wu K., Xie G., Yang J.,
+RA   Dubchak I., Furey T.S., DeJong P., Dickson M., Gordon D., Eichler E.E.,
+RA   Pennacchio L.A., Richardson P., Stubbs L., Rokhsar D.S., Myers R.M.,
+RA   Rubin E.M., Lucas S.M.;
+RT   "The DNA sequence and biology of human chromosome 19.";
+RL   Nature 428:529-535(2004).
+RN   [8]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA] (ISOFORM 1), AND VARIANT GLN-197.
+RX   PubMed=15489334; DOI=10.1101/gr.2596504;
+RG   The MGC Project Team;
+RT   "The status, quality, and expansion of the NIH full-length cDNA project:
+RT   the Mammalian Gene Collection (MGC).";
+RL   Genome Res. 14:2121-2127(2004).
+RN   [9]
+RP   NUCLEOTIDE SEQUENCE [MRNA] OF 22-254 (ISOFORM 1), AND VARIANT GLN-197.
+RA   Simmer J.P., Ryu O.H., Qian Q., Zhang C., Cao X., Sun X., Hu C.-C.;
+RT   "Cloning and characterization of a cDNA encoding human EMSP1.";
+RL   (In) Goldberg M. (eds.);
+RL   Chemistry and biology of mineralized tissues, pp.1-1, American Academy of
+RL   Orthopaedic Surgeons, Vittel (2000).
+RN   [10]
+RP   PROTEIN SEQUENCE OF 31-35, X-RAY CRYSTALLOGRAPHY (1.95 ANGSTROMS) OF
+RP   31-253, ACTIVE SITE, ZINC-BINDING SITES, DISULFIDE BONDS, AND VARIANT
+RP   GLN-197.
+RX   PubMed=16950394; DOI=10.1016/j.jmb.2006.08.003;
+RA   Debela M., Magdolen V., Grimminger V., Sommerhoff C., Messerschmidt A.,
+RA   Huber R., Friedrich R., Bode W., Goettig P.;
+RT   "Crystal structures of human tissue kallikrein 4: activity modulation by a
+RT   specific zinc binding site.";
+RL   J. Mol. Biol. 362:1094-1107(2006).
+RN   [11]
+RP   FUNCTION, INVOLVEMENT IN AI2A1, AND VARIANT ALA-22.
+RX   PubMed=15235027; DOI=10.1136/jmg.2003.017657;
+RA   Hart P.S., Hart T.C., Michalec M.D., Ryu O.H., Simmons D., Hong S.,
+RA   Wright J.T.;
+RT   "Mutation in kallikrein 4 causes autosomal recessive hypomaturation
+RT   amelogenesis imperfecta.";
+RL   J. Med. Genet. 41:545-549(2004).
+CC   -!- FUNCTION: Has a major role in enamel formation (PubMed:15235027).
+CC       Required during the maturation stage of tooth development for clearance
+CC       of enamel proteins and normal structural patterning of the crystalline
+CC       matrix (By similarity). {ECO:0000250|UniProtKB:Q9Z0M1,
+CC       ECO:0000269|PubMed:15235027}.
+CC   -!- INTERACTION:
+CC       Q9Y5K2; P20155: SPINK2; NbExp=4; IntAct=EBI-10224152, EBI-10200479;
+CC       Q9Y5K2; Q06418: TYRO3; NbExp=3; IntAct=EBI-10224152, EBI-3951628;
+CC   -!- SUBCELLULAR LOCATION: Secreted.
+CC   -!- ALTERNATIVE PRODUCTS:
+CC       Event=Alternative splicing; Named isoforms=2;
+CC       Name=1;
+CC         IsoId=Q9Y5K2-1; Sequence=Displayed;
+CC       Name=2;
+CC         IsoId=Q9Y5K2-2; Sequence=VSP_056629, VSP_056630;
+CC   -!- TISSUE SPECIFICITY: Expressed in prostate.
+CC   -!- PTM: N-glycosylated. The N-glycan structures are of complex diantennary
+CC       or triantennary type, which may be further modified with up to 2 sialic
+CC       acid residues. {ECO:0000250|UniProtKB:Q9Z0M1}.
+CC   -!- DISEASE: Amelogenesis imperfecta, hypomaturation type, 2A1 (AI2A1)
+CC       [MIM:204700]: A defect of enamel formation. The disorder involves both
+CC       primary and secondary dentitions. The teeth have a shiny agar jelly
+CC       appearance and the enamel is softer than normal. Brown pigment is
+CC       present in middle layers of enamel. {ECO:0000269|PubMed:15235027}.
+CC       Note=The disease is caused by variants affecting the gene represented
+CC       in this entry.
+CC   -!- SIMILARITY: Belongs to the peptidase S1 family. Kallikrein subfamily.
+CC       {ECO:0000255|PROSITE-ProRule:PRU00274}.
+CC   -!- WEB RESOURCE: Name=Atlas of Genetics and Cytogenetics in Oncology and
+CC       Haematology;
+CC       URL="https://atlasgeneticsoncology.org/gene/41084/KLK4";
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AF113140; AAD21580.1; -; mRNA.
+DR   EMBL; AF113141; AAD21581.1; -; Genomic_DNA.
+DR   EMBL; AF135023; AAD26424.2; -; Genomic_DNA.
+DR   EMBL; AF148532; AAD38019.1; -; Genomic_DNA.
+DR   EMBL; AF243527; AAG33357.1; -; Genomic_DNA.
+DR   EMBL; AF228497; AAF70620.1; -; Genomic_DNA.
+DR   EMBL; AF259969; AAF81227.1; -; mRNA.
+DR   EMBL; AF259971; AAK71706.1; -; mRNA.
+DR   EMBL; AC037199; -; NOT_ANNOTATED_CDS; Genomic_DNA.
+DR   EMBL; BC069325; AAH69325.1; -; mRNA.
+DR   EMBL; BC069403; AAH69403.1; -; mRNA.
+DR   EMBL; BC069429; AAH69429.1; -; mRNA.
+DR   EMBL; BC069489; AAH69489.1; -; mRNA.
+DR   EMBL; BC096175; AAH96175.1; -; mRNA.
+DR   EMBL; BC096178; AAH96178.1; -; mRNA.
+DR   EMBL; AF126401; AAG43246.1; -; mRNA.
+DR   CCDS; CCDS12809.1; -. [Q9Y5K2-1]
+DR   RefSeq; NP_001289890.1; NM_001302961.2.
+DR   RefSeq; NP_004908.4; NM_004917.5.
+DR   PDB; 2BDG; X-ray; 1.95 A; A/B=31-253.
+DR   PDB; 2BDH; X-ray; 3.00 A; A/B/C/D=31-253.
+DR   PDB; 2BDI; X-ray; 3.00 A; A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P=31-253.
+DR   PDB; 4K1E; X-ray; 1.30 A; A=31-253.
+DR   PDB; 4K8Y; X-ray; 1.00 A; A=31-253.
+DR   PDB; 4KEL; X-ray; 1.15 A; A=31-253.
+DR   PDB; 4KGA; X-ray; 2.32 A; A/B=31-253.
+DR   PDB; 6KBR; X-ray; 2.00 A; A=1-254.
+DR   PDB; 6NVB; X-ray; 1.64 A; A/B/C/D=31-254.
+DR   PDB; 6O21; X-ray; 1.15 A; A=31-253.
+DR   PDB; 7JOD; X-ray; 1.33 A; E=31-253.
+DR   PDB; 7JOE; X-ray; 2.60 A; E=31-253.
+DR   PDB; 7JOS; X-ray; 2.10 A; A/C/E/G/I/K/M=31-253.
+DR   PDB; 7JOW; X-ray; 1.91 A; E=31-253.
+DR   PDB; 7JQK; X-ray; 1.33 A; E=31-253.
+DR   PDB; 7JQN; X-ray; 1.50 A; E=31-253.
+DR   PDB; 7JQO; X-ray; 1.60 A; E=31-253.
+DR   PDB; 7JQV; X-ray; 2.10 A; E=31-253.
+DR   AlphaFoldDB; Q9Y5K2; -.
+DR   SMR; Q9Y5K2; -.
+DR   BioGRID; 114982; 10.
+DR   FunCoup; Q9Y5K2; 64.
+DR   IntAct; Q9Y5K2; 6.
+DR   NDEx; IQUERY-CP-KLK4; 2 NDEx IQuery Curated Pathways.
+DR   STRING; 9606.ENSP00000326159; -.
+DR   BindingDB; Q9Y5K2; -.
+DR   ChEMBL; CHEMBL4446; -.
+DR   GuidetoPHARMACOLOGY; 2374; -.
+DR   MEROPS; S01.251; -.
+DR   GlyCosmos; Q9Y5K2; 1 site, No reported glycans.
+DR   GlyGen; Q9Y5K2; 1 site.
+DR   PhosphoSitePlus; Q9Y5K2; -.
+DR   BioMuta; KLK4; -.
+DR   DMDM; 317373372; -.
+DR   jPOST; Q9Y5K2; -.
+DR   MassIVE; Q9Y5K2; -.
+DR   PaxDb; 9606-ENSP00000326159; -.
+DR   PeptideAtlas; Q9Y5K2; -.
+DR   Antibodypedia; 18932; 294 antibodies from 36 providers.
+DR   DNASU; 9622; -.
+DR   Ensembl; ENST00000431178.2; ENSP00000399448.2; ENSG00000167749.12. [Q9Y5K2-2]
+DR   GeneID; 9622; -.
+DR   KEGG; hsa:9622; -.
+DR   UCSC; uc002pty.2; human. [Q9Y5K2-1]
+DR   AGR; HGNC:6365; -.
+DR   ClinPGx; PA30154; -.
+DR   CTD; 9622; -.
+DR   DisGeNET; 9622; -.
+DR   GeneCards; KLK4; -.
+DR   HGNC; HGNC:6365; KLK4.
+DR   HPA; ENSG00000167749; Tissue enriched (prostate).
+DR   MalaCards; KLK4; -.
+DR   MIM; 204700; phenotype.
+DR   MIM; 603767; gene.
+DR   OpenTargets; ENSG00000167749; -.
+DR   Orphanet; 100033; Hypomaturation amelogenesis imperfecta.
+DR   VEuPathDB; HostDB:ENSG00000167749; -.
+DR   eggNOG; KOG3627; Eukaryota.
+DR   GeneTree; ENSGT01020000230389; -.
+DR   HOGENOM; CLU_006842_1_7_1; -.
+DR   InParanoid; Q9Y5K2; -.
+DR   OMA; CKFTNWI; -.
+DR   OrthoDB; 6755574at2759; -.
+DR   PAN-GO; Q9Y5K2; 6 GO annotations based on evolutionary models.
+DR   PhylomeDB; Q9Y5K2; -.
+DR   BRENDA; 3.4.21.35; 2681.
+DR   BRENDA; 3.4.21.B12; 2681.
+DR   PathwayCommons; Q9Y5K2; -.
+DR   SignaLink; Q9Y5K2; -.
+DR   SIGNOR; Q9Y5K2; -.
+DR   Agora; ENSG00000167749; -.
+DR   BioGRID-ORCS; 9622; 9 hits in 1146 CRISPR screens.
+DR   ChiTaRS; KLK4; human.
+DR   EvolutionaryTrace; Q9Y5K2; -.
+DR   GeneWiki; KLK4; -.
+DR   GenomeRNAi; 9622; -.
+DR   Pharos; Q9Y5K2; Tchem.
+DR   PRO; PR:Q9Y5K2; -.
+DR   Proteomes; UP000005640; Chromosome 19.
+DR   RNAct; Q9Y5K2; protein.
+DR   Bgee; ENSG00000167749; Expressed in prostate gland and 125 other cell types or tissues.
+DR   ExpressionAtlas; Q9Y5K2; baseline and differential.
+DR   GO; GO:0005576; C:extracellular region; TAS:ProtInc.
+DR   GO; GO:0030141; C:secretory granule; IBA:GO_Central.
+DR   GO; GO:0004252; F:serine-type endopeptidase activity; IBA:GO_Central.
+DR   GO; GO:0008236; F:serine-type peptidase activity; TAS:ProtInc.
+DR   GO; GO:0097186; P:amelogenesis; IMP:UniProtKB.
+DR   GO; GO:0022617; P:extracellular matrix disassembly; IBA:GO_Central.
+DR   GO; GO:0051604; P:protein maturation; IBA:GO_Central.
+DR   GO; GO:0006508; P:proteolysis; NAS:UniProtKB.
+DR   CDD; cd00190; Tryp_SPc; 1.
+DR   FunFam; 2.40.10.10:FF:000091; Kallikrein-4; 1.
+DR   FunFam; 2.40.10.10:FF:000100; Kallikrein-4; 1.
+DR   Gene3D; 2.40.10.10; Trypsin-like serine proteases; 2.
+DR   InterPro; IPR009003; Peptidase_S1_PA.
+DR   InterPro; IPR001314; Peptidase_S1A.
+DR   InterPro; IPR001254; Trypsin_dom.
+DR   InterPro; IPR018114; TRYPSIN_HIS.
+DR   InterPro; IPR033116; TRYPSIN_SER.
+DR   PANTHER; PTHR24271:SF65; KALLIKREIN-4; 1.
+DR   PANTHER; PTHR24271; KALLIKREIN-RELATED; 1.
+DR   Pfam; PF00089; Trypsin; 1.
+DR   PRINTS; PR00722; CHYMOTRYPSIN.
+DR   SMART; SM00020; Tryp_SPc; 1.
+DR   SUPFAM; SSF50494; Trypsin-like serine proteases; 1.
+DR   PROSITE; PS50240; TRYPSIN_DOM; 1.
+DR   PROSITE; PS00134; TRYPSIN_HIS; 1.
+DR   PROSITE; PS00135; TRYPSIN_SER; 1.
+DR   PDBsum; 2BDG; -.
+DR   PDBsum; 2BDH; -.
+DR   PDBsum; 2BDI; -.
+DR   PDBsum; 4K1E; -.
+DR   PDBsum; 4K8Y; -.
+DR   PDBsum; 4KEL; -.
+DR   PDBsum; 4KGA; -.
+DR   PDBsum; 6KBR; -.
+DR   PDBsum; 6NVB; -.
+DR   PDBsum; 6O21; -.
+DR   PDBsum; 7JOD; -.
+DR   PDBsum; 7JOE; -.
+DR   PDBsum; 7JOS; -.
+DR   PDBsum; 7JOW; -.
+DR   PDBsum; 7JQK; -.
+DR   PDBsum; 7JQN; -.
+DR   PDBsum; 7JQO; -.
+DR   PDBsum; 7JQV; -.
+PE   1: Evidence at protein level;
+KW   3D-structure; Alternative splicing; Amelogenesis imperfecta;
+KW   Biomineralization; Direct protein sequencing; Disulfide bond; Glycoprotein;
+KW   Hydrolase; Metal-binding; Protease; Proteomics identification;
+KW   Reference proteome; Secreted; Serine protease; Signal; Zinc; Zymogen.
+FT   SIGNAL          1..26
+FT                   /evidence="ECO:0000255"
+FT   PROPEP          27..30
+FT                   /evidence="ECO:0000305|PubMed:16950394"
+FT                   /id="PRO_0000027937"
+FT   CHAIN           31..254
+FT                   /note="Kallikrein-4"
+FT                   /id="PRO_0000027938"
+FT   DOMAIN          31..252
+FT                   /note="Peptidase S1"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00274"
+FT   ACT_SITE        71
+FT                   /note="Charge relay system"
+FT                   /evidence="ECO:0000269|PubMed:16950394"
+FT   ACT_SITE        116
+FT                   /note="Charge relay system"
+FT                   /evidence="ECO:0000269|PubMed:16950394"
+FT   ACT_SITE        207
+FT                   /note="Charge relay system"
+FT                   /evidence="ECO:0000269|PubMed:16950394"
+FT   BINDING         40
+FT                   /ligand="Zn(2+)"
+FT                   /ligand_id="ChEBI:CHEBI:29105"
+FT                   /evidence="ECO:0000269|PubMed:16950394"
+FT   BINDING         91
+FT                   /ligand="Zn(2+)"
+FT                   /ligand_id="ChEBI:CHEBI:29105"
+FT                   /evidence="ECO:0000269|PubMed:16950394"
+FT   CARBOHYD        169
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+FT   DISULFID        37..167
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00274,
+FT                   ECO:0000269|PubMed:16950394"
+FT   DISULFID        56..72
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00274,
+FT                   ECO:0000269|PubMed:16950394"
+FT   DISULFID        141..241
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00274,
+FT                   ECO:0000269|PubMed:16950394"
+FT   DISULFID        148..213
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00274,
+FT                   ECO:0000269|PubMed:16950394"
+FT   DISULFID        178..192
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00274,
+FT                   ECO:0000269|PubMed:16950394"
+FT   DISULFID        203..228
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00274,
+FT                   ECO:0000269|PubMed:16950394"
+FT   VAR_SEQ         1..49
+FT                   /note="Missing (in isoform 2)"
+FT                   /evidence="ECO:0000303|PubMed:11506707"
+FT                   /id="VSP_056629"
+FT   VAR_SEQ         160..254
+FT                   /note="Missing (in isoform 2)"
+FT                   /evidence="ECO:0000303|PubMed:11506707"
+FT                   /id="VSP_056630"
+FT   VARIANT         22
+FT                   /note="S -> A (in dbSNP:rs1654551)"
+FT                   /evidence="ECO:0000269|PubMed:15235027"
+FT                   /id="VAR_028364"
+FT   VARIANT         159
+FT                   /note="G -> D (in dbSNP:rs34626614)"
+FT                   /id="VAR_033009"
+FT   VARIANT         197
+FT                   /note="H -> Q (in dbSNP:rs2569527)"
+FT                   /evidence="ECO:0000269|PubMed:10438493,
+FT                   ECO:0000269|PubMed:10485467, ECO:0000269|PubMed:10863090,
+FT                   ECO:0000269|PubMed:11506707, ECO:0000269|PubMed:15489334,
+FT                   ECO:0000269|PubMed:16950394, ECO:0000269|Ref.9"
+FT                   /id="VAR_028365"
+FT   STRAND          45..50
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          53..62
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          65..68
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   HELIX           70..72
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          75..82
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          84..86
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   HELIX           88..90
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          95..99
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          101..104
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   TURN            106..109
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          118..121
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   HELIX           125..128
+FT                   /evidence="ECO:0007829|PDB:6O21"
+FT   STRAND          130..132
+FT                   /evidence="ECO:0007829|PDB:7JOD"
+FT   HELIX           141..143
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          147..154
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   HELIX           160..162
+FT                   /evidence="ECO:0007829|PDB:4KEL"
+FT   STRAND          166..172
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   HELIX           175..182
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   TURN            183..185
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          190..193
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          210..213
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          216..227
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   STRAND          235..239
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   HELIX           240..242
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+FT   HELIX           244..252
+FT                   /evidence="ECO:0007829|PDB:4K8Y"
+SQ   SEQUENCE   254 AA;  27032 MW;  9C5E4722AFF70CB8 CRC64;
+     MATAGNPWGW FLGYLILGVA GSLVSGSCSQ IINGEDCSPH SQPWQAALVM ENELFCSGVL
+     VHPQWVLSAA HCFQNSYTIG LGLHSLEADQ EPGSQMVEAS LSVRHPEYNR PLLANDLMLI
+     KLDESVSESD TIRSISIASQ CPTAGNSCLV SGWGLLANGR MPTVLQCVNV SVVSEEVCSK
+     LYDPLYHPSM FCAGGGHDQK DSCNGDSGGP LICNGYLQGL VSFGKAPCGQ VGVPGVYTNL
+     CKFTEWIEKT VQAS
+//
+ID   OC90_MOUSE              Reviewed;         485 AA.
+AC   Q9Z0L3; Q9CZ60; Q9Z225;
+DT   30-MAY-2000, integrated into UniProtKB/Swiss-Prot.
+DT   05-DEC-2001, sequence version 2.
+DT   02-SEP-2026, entry version 180.
+DE   RecName: Full=Otoconin-90;
+DE            Short=Oc90;
+DE   AltName: Full=Otoconin-95 {ECO:0000303|PubMed:9892667};
+DE            Short=Oc95 {ECO:0000303|PubMed:9892667};
+DE   Flags: Precursor;
+GN   Name=Oc90 {ECO:0000312|MGI:MGI:1313269};
+GN   Synonyms=Onc-95 {ECO:0000303|PubMed:9892667}, Pla2ll;
+OS   Mus musculus (Mouse).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
+OC   Murinae; Mus; Mus.
+OX   NCBI_TaxID=10090;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA] (ISOFORMS 1; 2; 3 AND 4), TISSUE SPECIFICITY,
+RP   AND DEVELOPMENTAL STAGE.
+RC   STRAIN=BALB/cJ; TISSUE=Cochlea;
+RX   PubMed=9892667; DOI=10.1073/pnas.96.2.529;
+RA   Verpy E., Leibovici M., Petit C.;
+RT   "Characterization of otoconin-95, the major protein of murine otoconia,
+RT   provides insights into the formation of these inner ear biominerals.";
+RL   Proc. Natl. Acad. Sci. U.S.A. 96:529-534(1999).
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA] (ISOFORM 1).
+RC   STRAIN=C57BL/6J; TISSUE=Embryo;
+RX   PubMed=16141072; DOI=10.1126/science.1112014;
+RA   Carninci P., Kasukawa T., Katayama S., Gough J., Frith M.C., Maeda N.,
+RA   Oyama R., Ravasi T., Lenhard B., Wells C., Kodzius R., Shimokawa K.,
+RA   Bajic V.B., Brenner S.E., Batalov S., Forrest A.R., Zavolan M., Davis M.J.,
+RA   Wilming L.G., Aidinis V., Allen J.E., Ambesi-Impiombato A., Apweiler R.,
+RA   Aturaliya R.N., Bailey T.L., Bansal M., Baxter L., Beisel K.W., Bersano T.,
+RA   Bono H., Chalk A.M., Chiu K.P., Choudhary V., Christoffels A.,
+RA   Clutterbuck D.R., Crowe M.L., Dalla E., Dalrymple B.P., de Bono B.,
+RA   Della Gatta G., di Bernardo D., Down T., Engstrom P., Fagiolini M.,
+RA   Faulkner G., Fletcher C.F., Fukushima T., Furuno M., Futaki S.,
+RA   Gariboldi M., Georgii-Hemming P., Gingeras T.R., Gojobori T., Green R.E.,
+RA   Gustincich S., Harbers M., Hayashi Y., Hensch T.K., Hirokawa N., Hill D.,
+RA   Huminiecki L., Iacono M., Ikeo K., Iwama A., Ishikawa T., Jakt M.,
+RA   Kanapin A., Katoh M., Kawasawa Y., Kelso J., Kitamura H., Kitano H.,
+RA   Kollias G., Krishnan S.P., Kruger A., Kummerfeld S.K., Kurochkin I.V.,
+RA   Lareau L.F., Lazarevic D., Lipovich L., Liu J., Liuni S., McWilliam S.,
+RA   Madan Babu M., Madera M., Marchionni L., Matsuda H., Matsuzawa S., Miki H.,
+RA   Mignone F., Miyake S., Morris K., Mottagui-Tabar S., Mulder N., Nakano N.,
+RA   Nakauchi H., Ng P., Nilsson R., Nishiguchi S., Nishikawa S., Nori F.,
+RA   Ohara O., Okazaki Y., Orlando V., Pang K.C., Pavan W.J., Pavesi G.,
+RA   Pesole G., Petrovsky N., Piazza S., Reed J., Reid J.F., Ring B.Z.,
+RA   Ringwald M., Rost B., Ruan Y., Salzberg S.L., Sandelin A., Schneider C.,
+RA   Schoenbach C., Sekiguchi K., Semple C.A., Seno S., Sessa L., Sheng Y.,
+RA   Shibata Y., Shimada H., Shimada K., Silva D., Sinclair B., Sperling S.,
+RA   Stupka E., Sugiura K., Sultana R., Takenaka Y., Taki K., Tammoja K.,
+RA   Tan S.L., Tang S., Taylor M.S., Tegner J., Teichmann S.A., Ueda H.R.,
+RA   van Nimwegen E., Verardo R., Wei C.L., Yagi K., Yamanishi H.,
+RA   Zabarovsky E., Zhu S., Zimmer A., Hide W., Bult C., Grimmond S.M.,
+RA   Teasdale R.D., Liu E.T., Brusic V., Quackenbush J., Wahlestedt C.,
+RA   Mattick J.S., Hume D.A., Kai C., Sasaki D., Tomaru Y., Fukuda S.,
+RA   Kanamori-Katayama M., Suzuki M., Aoki J., Arakawa T., Iida J., Imamura K.,
+RA   Itoh M., Kato T., Kawaji H., Kawagashira N., Kawashima T., Kojima M.,
+RA   Kondo S., Konno H., Nakano K., Ninomiya N., Nishio T., Okada M., Plessy C.,
+RA   Shibata K., Shiraki T., Suzuki S., Tagami M., Waki K., Watahiki A.,
+RA   Okamura-Oho Y., Suzuki H., Kawai J., Hayashizaki Y.;
+RT   "The transcriptional landscape of the mammalian genome.";
+RL   Science 309:1559-1563(2005).
+RN   [3]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA / MRNA] OF 18-485 (ISOFORM 5), AND PROTEIN
+RP   SEQUENCE OF 18-63.
+RC   STRAIN=C57BL/6J, and Swiss Webster;
+RX   PubMed=9860971; DOI=10.1073/pnas.95.26.15345;
+RA   Wang Y., Kowalski P.E., Thalmann I., Ornitz D.M., Mager D.L., Thalmann R.;
+RT   "Otoconin-90, the mammalian otoconial matrix protein, contains two domains
+RT   of homology to secretory phospholipase A2.";
+RL   Proc. Natl. Acad. Sci. U.S.A. 95:15345-15350(1998).
+RN   [4]
+RP   FUNCTION, AND INTERACTION WITH OTOL1.
+RX   PubMed=17300776; DOI=10.1016/j.ydbio.2007.01.013;
+RA   Zhao X., Yang H., Yamoah E.N., Lundberg Y.W.;
+RT   "Gene targeting reveals the role of Oc90 as the essential organizer of the
+RT   otoconial organic matrix.";
+RL   Dev. Biol. 304:508-524(2007).
+RN   [5]
+RP   INTERACTION WITH OTOL1.
+RX   PubMed=20856818; DOI=10.1371/journal.pone.0012765;
+RA   Deans M.R., Peterson J.M., Wong G.W.;
+RT   "Mammalian Otolin: a multimeric glycoprotein specific to the inner ear that
+RT   interacts with otoconial matrix protein Otoconin-90 and Cerebellin-1.";
+RL   PLoS ONE 5:E12765-E12765(2010).
+RN   [6]
+RP   FUNCTION, DISRUPTION PHENOTYPE, CALCIUM-BINDING, AND INTERACTION WITH
+RP   OTOL1.
+RX   PubMed=21655225; DOI=10.1371/journal.pone.0020498;
+RA   Yang H., Zhao X., Xu Y., Wang L., He Q., Lundberg Y.W.;
+RT   "Matrix recruitment and calcium sequestration for spatial specific otoconia
+RT   development.";
+RL   PLoS ONE 6:E20498-E20498(2011).
+RN   [7]
+RP   FUNCTION, AND CALCIUM-BINDING.
+RX   PubMed=24748133; DOI=10.1371/journal.pone.0095333;
+RA   Moreland K.T., Hong M., Lu W., Rowley C.W., Ornitz D.M., De Yoreo J.J.,
+RA   Thalmann R.;
+RT   "In vitro calcite crystal morphology is modulated by otoconial proteins
+RT   otolin-1 and otoconin-90.";
+RL   PLoS ONE 9:E95333-E95333(2014).
+CC   -!- FUNCTION: Major protein of the otoconia, a calcium carbonate structure
+CC       in the saccule and utricle of the ear (PubMed:17300776). Together with
+CC       OTOL1, acts as a scaffold for otoconia biomineralization: sequesters
+CC       calcium and forms interconnecting fibrils between otoconia that are
+CC       incorporated into the calcium crystal structure (PubMed:21655225,
+CC       PubMed:24748133). Together with OTOL1, modulates calcite crystal
+CC       morphology and growth kinetics (PubMed:24748133). It is unlikely that
+CC       this protein has phospholipase A2 activity (PubMed:17300776).
+CC       {ECO:0000269|PubMed:17300776, ECO:0000269|PubMed:21655225,
+CC       ECO:0000269|PubMed:24748133}.
+CC   -!- SUBUNIT: Interacts with OTOL1. {ECO:0000269|PubMed:17300776,
+CC       ECO:0000269|PubMed:20856818, ECO:0000269|PubMed:21655225}.
+CC   -!- SUBCELLULAR LOCATION: Secreted {ECO:0000250|UniProtKB:P81869}.
+CC   -!- ALTERNATIVE PRODUCTS:
+CC       Event=Alternative splicing; Named isoforms=5;
+CC       Name=1;
+CC         IsoId=Q9Z0L3-1; Sequence=Displayed;
+CC       Name=2;
+CC         IsoId=Q9Z0L3-2; Sequence=VSP_004510;
+CC       Name=3;
+CC         IsoId=Q9Z0L3-3; Sequence=VSP_004511, VSP_004513;
+CC       Name=4;
+CC         IsoId=Q9Z0L3-4; Sequence=VSP_004515;
+CC       Name=5;
+CC         IsoId=Q9Z0L3-5; Sequence=VSP_004512, VSP_004514;
+CC   -!- TISSUE SPECIFICITY: In the embryo, highly expressed in the developing
+CC       otocyst with weak expression in the brain. Also expressed in nonsensory
+CC       epithelia of both the vestibular and cochlear portions of the
+CC       developing inner ear. Not expressed in adult or embryonic macular
+CC       sensory epithelia. {ECO:0000269|PubMed:9892667}.
+CC   -!- DEVELOPMENTAL STAGE: Expressed from embryonic day 9.5.
+CC       {ECO:0000269|PubMed:9892667}.
+CC   -!- DOMAIN: Consists of 3 PA2-type domains.
+CC   -!- DISRUPTION PHENOTYPE: Otoconia show a strongly reduced matrix-calcium.
+CC       {ECO:0000269|PubMed:21655225}.
+CC   -!- SIMILARITY: Belongs to the phospholipase A2 family. {ECO:0000305}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AF093591; AAD08924.1; -; mRNA.
+DR   EMBL; AF091846; AAC99455.1; -; mRNA.
+DR   EMBL; AF091847; AAC99456.1; -; Genomic_DNA.
+DR   EMBL; AK012981; BAB28578.1; -; mRNA.
+DR   CCDS; CCDS27508.1; -. [Q9Z0L3-1]
+DR   RefSeq; NP_001398383.1; NM_001411454.1. [Q9Z0L3-5]
+DR   RefSeq; NP_035083.1; NM_010953.3. [Q9Z0L3-1]
+DR   AlphaFoldDB; Q9Z0L3; -.
+DR   SMR; Q9Z0L3; -.
+DR   BioGRID; 201892; 1.
+DR   FunCoup; Q9Z0L3; 96.
+DR   IntAct; Q9Z0L3; 1.
+DR   STRING; 10090.ENSMUSP00000062865; -.
+DR   GlyCosmos; Q9Z0L3; 4 sites, No reported glycans.
+DR   GlyGen; Q9Z0L3; 4 sites.
+DR   iPTMnet; Q9Z0L3; -.
+DR   PhosphoSitePlus; Q9Z0L3; -.
+DR   PaxDb; 10090-ENSMUSP00000062865; -.
+DR   DNASU; 18256; -.
+DR   Ensembl; ENSMUST00000060522.11; ENSMUSP00000062865.5; ENSMUSG00000015001.18. [Q9Z0L3-1]
+DR   GeneID; 18256; -.
+DR   KEGG; mmu:18256; -.
+DR   UCSC; uc007vzx.2; mouse. [Q9Z0L3-1]
+DR   AGR; MGI:1313269; -.
+DR   CTD; 729330; -.
+DR   MGI; MGI:1313269; Oc90.
+DR   VEuPathDB; HostDB:ENSMUSG00000015001; -.
+DR   eggNOG; KOG4087; Eukaryota.
+DR   GeneTree; ENSGT00940000159042; -.
+DR   InParanoid; Q9Z0L3; -.
+DR   OMA; HCEHLLC; -.
+DR   OrthoDB; 8856917at2759; -.
+DR   PhylomeDB; Q9Z0L3; -.
+DR   BioGRID-ORCS; 18256; 0 hits in 79 CRISPR screens.
+DR   PRO; PR:Q9Z0L3; -.
+DR   Proteomes; UP000000589; Chromosome 15.
+DR   RNAct; Q9Z0L3; protein.
+DR   Bgee; ENSMUSG00000015001; Expressed in vestibular epithelium and 25 other cell types or tissues.
+DR   ExpressionAtlas; Q9Z0L3; baseline and differential.
+DR   GO; GO:0031012; C:extracellular matrix; IDA:MGI.
+DR   GO; GO:0005576; C:extracellular region; ISS:UniProtKB.
+DR   GO; GO:0005509; F:calcium ion binding; IDA:UniProtKB.
+DR   GO; GO:0005543; F:phospholipid binding; IBA:GO_Central.
+DR   GO; GO:0005198; F:structural molecule activity; IDA:MGI.
+DR   GO; GO:0050482; P:arachidonate secretion; IEA:InterPro.
+DR   GO; GO:0016042; P:lipid catabolic process; IEA:InterPro.
+DR   GO; GO:0045299; P:otolith mineralization; IDA:UniProtKB.
+DR   GO; GO:0046470; P:phosphatidylcholine metabolic process; IBA:GO_Central.
+DR   GO; GO:0046471; P:phosphatidylglycerol metabolic process; IBA:GO_Central.
+DR   CDD; cd04707; otoconin_90; 2.
+DR   FunFam; 1.20.90.10:FF:000006; Otoconin-90; 1.
+DR   FunFam; 1.20.90.10:FF:000009; Otoconin-90; 1.
+DR   Gene3D; 1.20.90.10; Phospholipase A2 domain; 2.
+DR   InterPro; IPR041798; Otoconin-90.
+DR   InterPro; IPR001211; PLA2.
+DR   InterPro; IPR016090; PLA2-like_dom.
+DR   InterPro; IPR033112; PLA2_Asp_AS.
+DR   InterPro; IPR033113; PLA2_histidine.
+DR   InterPro; IPR036444; PLipase_A2_dom_sf.
+DR   PANTHER; PTHR11716:SF1; OTOCONIN-90; 1.
+DR   PANTHER; PTHR11716; PHOSPHOLIPASE A2 FAMILY MEMBER; 1.
+DR   Pfam; PF00068; Phospholip_A2_1; 2.
+DR   PRINTS; PR00389; PHPHLIPASEA2.
+DR   SMART; SM00085; PA2c; 2.
+DR   SUPFAM; SSF48619; Phospholipase A2, PLA2; 2.
+DR   PROSITE; PS00119; PA2_ASP; 1.
+DR   PROSITE; PS00118; PA2_HIS; 2.
+PE   1: Evidence at protein level;
+KW   Alternative splicing; Calcium; Direct protein sequencing; Disulfide bond;
+KW   Glycoprotein; Metal-binding; Reference proteome; Repeat; Secreted; Signal.
+FT   SIGNAL          1..17
+FT                   /evidence="ECO:0000269|PubMed:9860971"
+FT   CHAIN           18..485
+FT                   /note="Otoconin-90"
+FT                   /id="PRO_0000022994"
+FT   REGION          75..189
+FT                   /note="Phospholipase A2-like 1"
+FT   REGION          315..371
+FT                   /note="Phospholipase A2-like 2"
+FT   REGION          383..435
+FT                   /note="Phospholipase A2-like 3"
+FT   REGION          444..485
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   CARBOHYD        37
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+FT   CARBOHYD        178
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+FT   CARBOHYD        288
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+FT   CARBOHYD        417
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+FT   DISULFID        84..144
+FT                   /evidence="ECO:0000250"
+FT   DISULFID        98..189
+FT                   /evidence="ECO:0000250"
+FT   DISULFID        100..116
+FT                   /evidence="ECO:0000250"
+FT   DISULFID        115..171
+FT                   /evidence="ECO:0000250"
+FT   DISULFID        122..164
+FT                   /evidence="ECO:0000250"
+FT   DISULFID        131..157
+FT                   /evidence="ECO:0000250"
+FT   DISULFID        151..162
+FT                   /evidence="ECO:0000250"
+FT   VAR_SEQ         208..240
+FT                   /note="Missing (in isoform 3)"
+FT                   /evidence="ECO:0000303|PubMed:9892667"
+FT                   /id="VSP_004511"
+FT   VAR_SEQ         208..224
+FT                   /note="Missing (in isoform 2)"
+FT                   /evidence="ECO:0000303|PubMed:9892667"
+FT                   /id="VSP_004510"
+FT   VAR_SEQ         225..240
+FT                   /note="Missing (in isoform 5)"
+FT                   /evidence="ECO:0000303|PubMed:9860971"
+FT                   /id="VSP_004512"
+FT   VAR_SEQ         241
+FT                   /note="K -> D (in isoform 3)"
+FT                   /evidence="ECO:0000303|PubMed:9892667"
+FT                   /id="VSP_004513"
+FT   VAR_SEQ         241
+FT                   /note="K -> E (in isoform 5)"
+FT                   /evidence="ECO:0000303|PubMed:9860971"
+FT                   /id="VSP_004514"
+FT   VAR_SEQ         297..330
+FT                   /note="Missing (in isoform 4)"
+FT                   /evidence="ECO:0000303|PubMed:9892667"
+FT                   /id="VSP_004515"
+FT   CONFLICT        114
+FT                   /note="I -> S (in Ref. 1; AAD08924)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        297
+FT                   /note="A -> AA (in Ref. 3; AA sequence)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        378
+FT                   /note="Q -> R (in Ref. 1; AAD08924)"
+FT                   /evidence="ECO:0000305"
+SQ   SEQUENCE   485 AA;  52445 MW;  07C21BE695CFE0E8 CRC64;
+     MIMLLMVGML MAPCVGAHAL DTPNPQELPP GLSKNINITF FNGVFKNVES VAEIFDCLGS
+     HFTWLQAVFT NFPLLLQFVN SMRCVTGLCP RDFEDYGCAC RFEMEGMPVD ESDICCFQHR
+     RCYEEAVEMD CLQDPAKLSA DVDCTNKQIT CESEDPCERL LCTCDKAAVE CLAQSGINSS
+     LNFLDASFCL PQTPETTSGK AATLLPRGIP EKPTDTSQIA LSGEVAGEVR ADTLTTLSRT
+     KSVQDLQDTQ ASRTTSSPGS AEIIALAKGT THSAGIKPLR LGVSSVDNGS QEAAGKACDR
+     LAFVHLGDGD SMTAMLQLGE MLFCLTSHCP EEFETYGCYC GREGRGEPRD TLDRCCLSHH
+     CCLEQMRQVG CLHGRRSQSS VVCEDHMAKC VGQSLCEKLL CACDQMAAEC MASAFFNQSL
+     KSPDGAECQG EPVSCEDGML QGTLASSVDS SSEENSEEAP PQMERLRRFL EKPPGPLGAR
+     PLGGK
+//
 ID   PTHY_MOUSE              Reviewed;         115 AA.
 AC   Q9Z0L6;
 DT   18-JUN-2025, integrated into UniProtKB/Swiss-Prot.
@@ -4720,6 +7452,244 @@ SQ   SEQUENCE   297 AA;  31942 MW;  1D03291B50B341FA CRC64;
      TIAAIGVSAL VGHIGLELIG KAVHGLMDSS VDTELLQTAW QIATDTPLVH SIYFLRGRHV
      GEDVQFDIRL RVDPNLRIKD SSMVAEAVRQ RIQDEIPHAR DIRLFVSPAP AAVTVRV
 //
+ID   OSTP_SHEEP              Reviewed;         278 AA.
+AC   Q9XSY9;
+DT   01-DEC-2000, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1999, sequence version 1.
+DT   02-SEP-2026, entry version 91.
+DE   RecName: Full=Osteopontin;
+DE   AltName: Full=Bone sialoprotein 1;
+DE   AltName: Full=Secreted phosphoprotein 1;
+DE            Short=SPP-1;
+DE   Flags: Precursor;
+GN   Name=SPP1; Synonyms=OPN;
+OS   Ovis aries (Sheep).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Laurasiatheria; Artiodactyla; Ruminantia; Pecora; Bovidae;
+OC   Caprinae; Ovis.
+OX   NCBI_TaxID=9940;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RC   TISSUE=Endometrium;
+RX   PubMed=10491620; DOI=10.1095/biolreprod61.4.884;
+RA   Johnson G.A., Spencer T.E., Burghardt R.C., Bazer F.W.;
+RT   "Ovine osteopontin: I. Cloning and expression of messenger ribonucleic acid
+RT   in the uterus during the periimplantation period.";
+RL   Biol. Reprod. 61:884-891(1999).
+CC   -!- FUNCTION: Major non-collagenous bone protein that binds tightly to
+CC       hydroxyapatite. Appears to form an integral part of the mineralized
+CC       matrix. Probably important to cell-matrix interaction.
+CC       {ECO:0000250|UniProtKB:P31096}.
+CC   -!- FUNCTION: Acts as a cytokine involved in enhancing production of
+CC       interferon-gamma and interleukin-12 and reducing production of
+CC       interleukin-10 and is essential in the pathway that leads to type I
+CC       immunity. {ECO:0000250|UniProtKB:P10923}.
+CC   -!- SUBUNIT: Interacts (via N-terminus) with integrin ITGA9:ITGB1.
+CC       {ECO:0000250|UniProtKB:P10923}.
+CC   -!- SUBCELLULAR LOCATION: Secreted {ECO:0000250|UniProtKB:P10451}.
+CC   -!- PTM: Extensively phosphorylated by FAM20C in the extracellular medium
+CC       at multiple sites within the S-x-E/pS motif (By similarity). The
+CC       phosphorylated form inhibits hydroxyapatite crystallization.
+CC       Dephosphorylation via a mechanism involving ALPL/TNAP promotes
+CC       hydroxyapatite crystallization (By similarity).
+CC       {ECO:0000250|UniProtKB:P10451, ECO:0000250|UniProtKB:P10923}.
+CC   -!- PTM: O-glycosylated. {ECO:0000250|UniProtKB:P10451}.
+CC   -!- PTM: Forms covalent cross-links mediated by transglutaminase TGM2,
+CC       between a glutamine and the epsilon-amino group of a lysine residue,
+CC       forming homopolymers and heteropolymers, increasing its collagen
+CC       binding properties. {ECO:0000250|UniProtKB:P31096}.
+CC   -!- SIMILARITY: Belongs to the osteopontin family. {ECO:0000305}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AF152416; AAD38388.1; -; mRNA.
+DR   RefSeq; NP_001009224.1; NM_001009224.1.
+DR   AlphaFoldDB; Q9XSY9; -.
+DR   STRING; 9940.ENSOARP00000002753; -.
+DR   GlyCosmos; Q9XSY9; 4 sites, No reported glycans.
+DR   PaxDb; 9940-ENSOARP00000002753; -.
+DR   GeneID; 443058; -.
+DR   KEGG; oas:443058; -.
+DR   CTD; 6696; -.
+DR   eggNOG; ENOG502S5R4; Eukaryota.
+DR   OrthoDB; 9047304at2759; -.
+DR   Proteomes; UP000809102; Unplaced.
+DR   GO; GO:0005576; C:extracellular region; ISS:UniProtKB.
+DR   GO; GO:0050840; F:extracellular matrix binding; IEA:TreeGrafter.
+DR   GO; GO:0005178; F:integrin binding; ISS:UniProtKB.
+DR   GO; GO:0007155; P:cell adhesion; IEA:InterPro.
+DR   GO; GO:0001649; P:osteoblast differentiation; IEA:TreeGrafter.
+DR   GO; GO:0045780; P:positive regulation of bone resorption; IEA:TreeGrafter.
+DR   InterPro; IPR002038; Osteopontin.
+DR   InterPro; IPR019841; Osteopontin_CS.
+DR   PANTHER; PTHR10607; OSTEOPONTIN; 1.
+DR   PANTHER; PTHR10607:SF1; OSTEOPONTIN; 1.
+DR   Pfam; PF00865; Osteopontin; 1.
+DR   PRINTS; PR00216; OSTEOPONTIN.
+DR   SMART; SM00017; OSTEO; 1.
+DR   PROSITE; PS00884; OSTEOPONTIN; 1.
+PE   2: Evidence at transcript level;
+KW   Biomineralization; Cell adhesion; Cytokine; Glycoprotein; Phosphoprotein;
+KW   Proteoglycan; Reference proteome; Secreted; Sialic acid; Signal.
+FT   SIGNAL          1..16
+FT                   /evidence="ECO:0000250"
+FT   CHAIN           17..278
+FT                   /note="Osteopontin"
+FT                   /id="PRO_0000020326"
+FT   REGION          18..278
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOTIF           152..154
+FT                   /note="Cell attachment site"
+FT   COMPBIAS        49..63
+FT                   /note="Polar residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        71..82
+FT                   /note="Polar residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        83..110
+FT                   /note="Acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        111..122
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        182..196
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        203..235
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        244..271
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOD_RES         24
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         26
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         27
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         60
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         62
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         63
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         66
+FT                   /note="Phosphothreonine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         76
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         78
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         81
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         103
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         112
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         115
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         118
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         121
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         124
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         178
+FT                   /note="Phosphothreonine"
+FT                   /evidence="ECO:0000250|UniProtKB:P31096"
+FT   MOD_RES         183
+FT                   /note="Phosphothreonine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         184
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         188
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         199
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         205
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         208
+FT                   /note="Phosphothreonine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         210
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         228
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         233
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         237
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         240
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         245
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         256
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         267
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         272
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         274
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   MOD_RES         275
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   CARBOHYD        116
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+FT   CARBOHYD        131
+FT                   /note="O-linked (GalNAc...) threonine"
+FT                   /evidence="ECO:0000250"
+FT   CARBOHYD        140
+FT                   /note="O-linked (GalNAc...) threonine"
+FT                   /evidence="ECO:0000250"
+FT   CARBOHYD        145
+FT                   /note="O-linked (GalNAc...) threonine"
+FT                   /evidence="ECO:0000250"
+FT   CARBOHYD        205
+FT                   /note="O-linked (Xyl...) (chondroitin sulfate) serine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+FT   CARBOHYD        272
+FT                   /note="O-linked (Xyl...) (chondroitin sulfate) serine"
+FT                   /evidence="ECO:0000250|UniProtKB:P10451"
+SQ   SEQUENCE   278 AA;  31052 MW;  37D49E1DD1FBFD47 CRC64;
+     MRIAVICFCL LGIASALPVK PTSSGSSEEK QLNNKYPDAV ATWLKPDPSQ KQTFLEPQNS
+     VSSEETDDNK QNTLPSKSNE SPEQTDDLDD DDENSQEVNS DDSDDAETPD DSDHSNESHH
+     SDESDEADFP TDIPTIAVFT PPFPTESTND GRGDSVAYGL KSKSKKFRRS NVESPDATEE
+     DFTSHIESEE MHDAPKKTSQ LTDHSEETNS DELPKELTPK AKEESKHSNR IESQENSKLS
+     QEFHSLEDKL DLDHKSEEDK RLKIRISHEL DSVSSEVN
+//
 ID   MAMX_MAGGM              Reviewed;         269 AA.
 AC   V6F2C2; A4U5C4;
 DT   18-SEP-2019, integrated into UniProtKB/Swiss-Prot.
@@ -5579,6 +8549,182 @@ SQ   SEQUENCE   293 AA;  31446 MW;  7991BC19479A1631 CRC64;
      GAIVSIATNE LMFRYQSCVG RQNNSPAIIA NAWDNRSDAL SSVAVLIGIV AAVVGFPIAD
      RLAAIGVGIL VAKIGIELNI DAINGLMDTS VENDVLVDAY NIAKDSQHVH GVHYIRGRNV
      GEDVHLDINI YVDADLKVFE SDLVADAIRR KIEAEVDHVR DVHVGVTPVR IAA
+//
+ID   AMBN_BOVIN              Reviewed;         392 AA.
+AC   Q9XSX7;
+DT   10-OCT-2002, integrated into UniProtKB/Swiss-Prot.
+DT   10-OCT-2002, sequence version 2.
+DT   02-SEP-2026, entry version 103.
+DE   RecName: Full=Ameloblastin;
+DE   Flags: Precursor;
+GN   Name=AMBN;
+OS   Bos taurus (Bovine).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Laurasiatheria; Artiodactyla; Ruminantia; Pecora; Bovidae;
+OC   Bovinae; Bos.
+OX   NCBI_TaxID=9913;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RC   TISSUE=Tooth enamel;
+RA   Machule D., Li W., DenBesten P.;
+RT   "Bovine enamel ameloblastin sequence.";
+RL   Submitted (JUL-1999) to the EMBL/GenBank/DDBJ databases.
+CC   -!- FUNCTION: Involved in the mineralization and structural organization of
+CC       enamel. {ECO:0000250}.
+CC   -!- SUBCELLULAR LOCATION: Secreted, extracellular space, extracellular
+CC       matrix {ECO:0000250}.
+CC   -!- SIMILARITY: Belongs to the ameloblastin family. {ECO:0000305}.
+CC   -!- SEQUENCE CAUTION:
+CC       Sequence=AAD39833.2; Type=Erroneous initiation; Evidence={ECO:0000305};
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AF157019; AAD39833.2; ALT_INIT; mRNA.
+DR   RefSeq; NP_776413.1; NM_173988.2.
+DR   AlphaFoldDB; Q9XSX7; -.
+DR   SMR; Q9XSX7; -.
+DR   FunCoup; Q9XSX7; 40.
+DR   STRING; 9913.ENSBTAP00000052338; -.
+DR   PaxDb; 9913-ENSBTAP00000052338; -.
+DR   GeneID; 280995; -.
+DR   KEGG; bta:280995; -.
+DR   CTD; 258; -.
+DR   eggNOG; ENOG502QWCP; Eukaryota.
+DR   HOGENOM; CLU_051782_0_0_1; -.
+DR   InParanoid; Q9XSX7; -.
+DR   OrthoDB; 9908655at2759; -.
+DR   Proteomes; UP000009136; Unplaced.
+DR   GO; GO:0008083; F:growth factor activity; IBA:GO_Central.
+DR   GO; GO:0030345; F:structural constituent of tooth enamel; IEA:InterPro.
+DR   GO; GO:0007155; P:cell adhesion; IBA:GO_Central.
+DR   GO; GO:0042475; P:odontogenesis of dentin-containing tooth; IEA:InterPro.
+DR   InterPro; IPR007798; Amelin.
+DR   PANTHER; PTHR14115; AMELOBLASTIN; 1.
+DR   PANTHER; PTHR14115:SF0; AMELOBLASTIN; 1.
+DR   Pfam; PF05111; Amelin; 1.
+DR   SMART; SM00817; Amelin; 1.
+PE   2: Evidence at transcript level;
+KW   Biomineralization; Extracellular matrix; Hydroxylation; Phosphoprotein;
+KW   Reference proteome; Secreted; Signal.
+FT   SIGNAL          1..26
+FT                   /evidence="ECO:0000255"
+FT   CHAIN           27..392
+FT                   /note="Ameloblastin"
+FT                   /id="PRO_0000001191"
+FT   REGION          86..109
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          247..280
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          349..392
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        97..109
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        359..381
+FT                   /note="Polar residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        382..392
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOD_RES         37
+FT                   /note="Hydroxyproline"
+FT                   /evidence="ECO:0000250"
+FT   MOD_RES         43
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:Q28989"
+SQ   SEQUENCE   392 AA;  42239 MW;  E81225479D6F598E CRC64;
+     MPALKIPLFK MKDMILILCL LKMSSAVPAF PQQPGIPGMA SLSLETMRQL GSLQGLNLLS
+     QYSRFGFGKS FNSLWMNGLL PPHSSFPWMR PREHETQQPS LQPQQPGQKP FLQPTVVTSM
+     QNAVQKGVPQ PPIYQGHPPL QQAEGPMVEQ QVAPSEKPPT TELPGMDFAD LQDPPMFPIA
+     HLISRGPMPQ NKPSQLYPGI FYVTYGANQL GGRGDPLAYG AIFPGFGGMR PRLGGMPHNP
+     DMGGDFTLEF DSPVAATKGP EKGEGGAQDS PVPEAHLADP ESPALLSELA PGALEGLLAN
+     PEGNIPNLAR GPAGRSRGFL RGVTPAAADP LMTPGLAEVY ETYGADETTT LGLQEETTVD
+     STATPDTQHT LMPRNKAQQP QIKHDAWHFQ EP
+//
+ID   AMEL_CAVPO              Reviewed;         226 AA.
+AC   Q9Z0K9;
+DT   11-OCT-2004, integrated into UniProtKB/Swiss-Prot.
+DT   01-MAY-1999, sequence version 1.
+DT   10-JUN-2026, entry version 89.
+DE   RecName: Full=Amelogenin;
+DE   Flags: Precursor;
+GN   Name=AMEL;
+OS   Cavia porcellus (Guinea pig).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Glires; Rodentia; Hystricomorpha; Caviidae;
+OC   Cavia.
+OX   NCBI_TaxID=10141;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RA   Cerny R.;
+RT   "Cloning, cDNA sequence, and splicing variants of guinea-pig amelogenin
+RT   mRNA.";
+RL   Submitted (NOV-1998) to the EMBL/GenBank/DDBJ databases.
+CC   -!- FUNCTION: Plays a role in the biomineralization of teeth. Seems to
+CC       regulate the formation of crystallites during the secretory stage of
+CC       tooth enamel development. Thought to play a major role in the
+CC       structural organization and mineralization of developing enamel (By
+CC       similarity). {ECO:0000250}.
+CC   -!- SUBCELLULAR LOCATION: Secreted, extracellular space, extracellular
+CC       matrix {ECO:0000250}.
+CC   -!- SIMILARITY: Belongs to the amelogenin family. {ECO:0000305}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AJ012200; CAA09957.1; -; mRNA.
+DR   RefSeq; NP_001166340.1; NM_001172869.1.
+DR   AlphaFoldDB; Q9Z0K9; -.
+DR   FunCoup; Q9Z0K9; 12.
+DR   STRING; 10141.ENSCPOP00000016676; -.
+DR   GeneID; 100379562; -.
+DR   KEGG; cpoc:100379562; -.
+DR   CTD; 265; -.
+DR   eggNOG; ENOG502S4XP; Eukaryota.
+DR   InParanoid; Q9Z0K9; -.
+DR   OrthoDB; 9030267at2759; -.
+DR   Proteomes; UP000005447; Unassembled WGS sequence.
+DR   GO; GO:0031012; C:extracellular matrix; IEA:InterPro.
+DR   GO; GO:0030345; F:structural constituent of tooth enamel; IEA:TreeGrafter.
+DR   GO; GO:0070166; P:enamel mineralization; IEA:TreeGrafter.
+DR   InterPro; IPR004116; Amelogenin.
+DR   PANTHER; PTHR46794:SF2; AMELOGENIN, X ISOFORM; 1.
+DR   PANTHER; PTHR46794; AMELOGENIN, Y ISOFORM; 1.
+DR   Pfam; PF02948; Amelogenin; 1.
+DR   PRINTS; PR01757; AMELOGENIN.
+DR   SMART; SM00818; Amelogenin; 1.
+PE   2: Evidence at transcript level;
+KW   Biomineralization; Extracellular matrix; Phosphoprotein;
+KW   Reference proteome; Repeat; Secreted; Signal.
+FT   SIGNAL          1..16
+FT                   /evidence="ECO:0000255"
+FT   CHAIN           17..226
+FT                   /note="Amelogenin"
+FT                   /id="PRO_0000001198"
+FT   REGION          86..196
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        88..120
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        137..182
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        183..192
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOD_RES         32
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:P45561"
+SQ   SEQUENCE   226 AA;  25379 MW;  89215B9F1D8AA535 CRC64;
+     MGTWILFACL LGTAFAMPLP PHPGHPGYIN FSYEKSHSNA INIDRTALVL TPLKWYQSMI
+     RQPYPSYGYE SMGGWVHHQV IPVLSQQHPP SHTTLPPHHH IPVGPAQQPV VPQQPLMPVP
+     GHHSMTPNQH HQPNLPPTSQ QPFQQPFPTQ PVQPQHHQPI QPIQPIQPIQ PIQPIQPQSP
+     LHPIQPLPPQ QALPPMFSMQ PIAPLLPDLP LEAWPATDKT KREEVD
 //
 ID   MMS5_MAGGM              Reviewed;          51 AA.
 AC   V6F244;

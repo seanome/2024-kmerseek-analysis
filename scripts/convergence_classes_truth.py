@@ -23,9 +23,13 @@ memory.
 Two rules in the task brief need data UniProt's search does not return, and each is
 resolved here:
 
-  * Class C splits an entry into "acidic or low complexity" and "folded domain" by whether
-    its Pfam domains cover at least half its length. The coordinates come from the InterPro
-    API, one call per entry, cached under raw/interpro/.
+  * Class C calls an entry acidic or low complexity by its composition: an Asp+Glu share
+    of at least DE_MIN, or the same low-complexity measure class D uses. Pfam coverage
+    from the InterPro API (one call per entry, cached under raw/interpro/) then separates
+    the rest into folded-domain and neither. Coverage alone was the brief's rule and it
+    does not mean acidic: it kept 119 vertebrate entries whose median Asp+Glu share is
+    0.12, the same as Swiss-Prot's own 0.1218, among them the transcription factor
+    Forkhead box protein O1, which regulates bone rather than building it.
   * Class D keeps an entry with at least one REPEAT feature or a low-complexity fraction
     of at least 30%. SEG itself is not installed, so low complexity is measured the way
     SEG triggers: the share of residues in 12-residue windows whose Shannon entropy over
@@ -60,6 +64,10 @@ FIELDS = (
 )
 # SEG's defaults (Wootton & Federhen 1993): window 12, trigger complexity K1 = 2.2 bits.
 SEG_WINDOW, SEG_TRIGGER_BITS, LOW_COMPLEXITY_MIN = 12, 2.2, 0.30
+# Asp+Glu share for "acidic". Swiss-Prot 2026_03 averages 0.1218 over its 209_017_843
+# residues (Asp 0.0546, Glu 0.0671), measured from the same FASTA the pipeline searches,
+# so this is a little over 1.6 times the database's own rate.
+DE_MIN = 0.20
 # Accessions per flat-file request; 476 in one URL is refused with HTTP 400.
 FLAT_BATCH = 100
 
@@ -92,8 +100,17 @@ CLASSES = {
         "queries": {
             "keyword": "reviewed:true AND keyword:KW-0091",
             "go_biomineral_tissue": "reviewed:true AND go:0031214",
+            # Neither the keyword nor the GO term reaches one coral or sea-urchin entry,
+            # so each lineage is searched by the names its proteins carry.
+            "name_coral_acid_rich": "reviewed:true AND taxonomy_name:Scleractinia AND "
+            'protein_name:"acid-rich"',
+            "name_urchin_spicule": "reviewed:true AND taxonomy_name:Echinodermata AND "
+            '(protein_name:"spicule matrix" OR gene:sm50 OR gene:sm30)',
         },
-        "trembl": "reviewed:false AND existence:1 AND (keyword:KW-0091 OR go:0031214)",
+        "trembl": "reviewed:false AND existence:1 AND (keyword:KW-0091 OR go:0031214 OR "
+        '(taxonomy_name:Scleractinia AND protein_name:"acid-rich") OR '
+        '(taxonomy_name:Echinodermata AND (protein_name:"spicule matrix" OR gene:sm50 '
+        "OR gene:sm30)))",
     },
     "silk": {
         "prefix": "D",
@@ -400,11 +417,39 @@ def build(cls: str, outdir: Path, raw: Path, refetch: bool) -> dict:
         cov = pfam_coverage(acc, raw)
         t = t.with_columns(
             pfam_coverage=pl.col("Entry").replace_strict(cov, default=0.0),
+            de_share=(
+                pl.col("Sequence").str.count_matches("[DE]") / pl.col("Length")
+            ).round(4),
+            low_complexity_fraction=pl.col("Sequence").map_elements(
+                low_complexity_fraction, return_dtype=pl.Float64
+            ),
         ).with_columns(
-            kind=pl.when(pl.col("pfam_coverage") >= 0.5)
+            kind=pl.when(
+                (pl.col("de_share") >= DE_MIN)
+                | (pl.col("low_complexity_fraction") >= LOW_COMPLEXITY_MIN)
+            )
+            .then(pl.lit("acidic or low complexity"))
+            .when(pl.col("pfam_coverage") >= 0.5)
             .then(pl.lit("folded domain"))
-            .otherwise(pl.lit("acidic or low complexity"))
+            .otherwise(pl.lit("neither"))
         )
+        sweep = pl.DataFrame(
+            [
+                {
+                    "Asp+Glu at least": thr,
+                    "entries": int((t["de_share"] >= thr).sum()),
+                    "Swiss-Prot tier": int(
+                        ((t["de_share"] >= thr) & (t["tier"] == "Swiss-Prot")).sum()
+                    ),
+                }
+                for thr in (0.15, 0.20, 0.25, 0.30)
+            ]
+        )
+        print(
+            "\nclass C, how many entries clear each Asp+Glu share "
+            "(Swiss-Prot averages 0.1218):"
+        )
+        print(sweep)
     elif cls == "silk":
         t = t.with_columns(
             has_repeat_feature=pl.col("Repeat").is_not_null()

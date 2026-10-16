@@ -1,3 +1,781 @@
+ID   AXIN2_MOUSE             Reviewed;         840 AA.
+AC   O88566; Q6PFZ9; Q9QXJ6;
+DT   01-DEC-2000, integrated into UniProtKB/Swiss-Prot.
+DT   27-JUL-2011, sequence version 2.
+DT   02-SEP-2026, entry version 198.
+DE   RecName: Full=Axin-2 {ECO:0000312|MGI:MGI:1270862};
+DE   AltName: Full=Axin-like protein;
+DE            Short=Axil {ECO:0000312|MGI:MGI:1270862};
+DE   AltName: Full=Axis inhibition protein 2;
+DE   AltName: Full=Conductin {ECO:0000312|MGI:MGI:1270862};
+GN   Name=Axin2 {ECO:0000312|MGI:MGI:1270862};
+OS   Mus musculus (Mouse).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
+OC   Murinae; Mus; Mus.
+OX   NCBI_TaxID=10090;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RX   PubMed=9554852; DOI=10.1126/science.280.5363.596;
+RA   Behrens J., Jerchow B.-A., Wuertele M., Grimm J., Asbrand C., Wirtz R.,
+RA   Kuehl M., Wedlich D., Birchmeier W.;
+RT   "Functional interaction of an axin homolog, conductin, with beta-catenin,
+RT   APC, and GSK3beta.";
+RL   Science 280:596-599(1998).
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RA   Zhang T., Fagotto F., Hsu W., Zeng L., Gilbert D., Copeland N.G.,
+RA   Jenkins N.A., Warburton D., Costantini F.;
+RT   "Properties of mouse Axin2 and human AXIN2: chromosomal location,
+RT   expression pattern, interaction with Axin and effects on embryonic axis
+RT   formation.";
+RL   Submitted (NOV-1999) to the EMBL/GenBank/DDBJ databases.
+RN   [3]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RC   STRAIN=C57BL/6J;
+RX   PubMed=19468303; DOI=10.1371/journal.pbio.1000112;
+RA   Church D.M., Goodstadt L., Hillier L.W., Zody M.C., Goldstein S., She X.,
+RA   Bult C.J., Agarwala R., Cherry J.L., DiCuccio M., Hlavina W., Kapustin Y.,
+RA   Meric P., Maglott D., Birtle Z., Marques A.C., Graves T., Zhou S.,
+RA   Teague B., Potamousis K., Churas C., Place M., Herschleb J., Runnheim R.,
+RA   Forrest D., Amos-Landgraf J., Schwartz D.C., Cheng Z., Lindblad-Toh K.,
+RA   Eichler E.E., Ponting C.P.;
+RT   "Lineage-specific biology revealed by a finished genome assembly of the
+RT   mouse.";
+RL   PLoS Biol. 7:E1000112-E1000112(2009).
+RN   [4]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RA   Mural R.J., Adams M.D., Myers E.W., Smith H.O., Venter J.C.;
+RL   Submitted (JUL-2005) to the EMBL/GenBank/DDBJ databases.
+RN   [5]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA].
+RC   STRAIN=C57BL/6J; TISSUE=Brain;
+RX   PubMed=15489334; DOI=10.1101/gr.2596504;
+RG   The MGC Project Team;
+RT   "The status, quality, and expansion of the NIH full-length cDNA project:
+RT   the Mammalian Gene Collection (MGC).";
+RL   Genome Res. 14:2121-2127(2004).
+RN   [6]
+RP   INTERACTION WITH ANKRD6.
+RX   PubMed=12183362; DOI=10.1101/gad.230402;
+RA   Schwarz-Romond T., Asbrand C., Bakkers J., Kuehl M., Schaeffer H.J.,
+RA   Huelsken J., Behrens J., Hammerschmidt M., Birchmeier W.;
+RT   "The ankyrin repeat protein diversin recruits casein kinase Iepsilon to the
+RT   beta-catenin degradation complex and acts in both canonical Wnt and Wnt/JNK
+RT   signaling.";
+RL   Genes Dev. 16:2073-2084(2002).
+RN   [7]
+RP   TISSUE SPECIFICITY.
+RX   PubMed=23562159; DOI=10.1016/j.immuni.2013.01.010;
+RG   Immunological Genome Project Consortium;
+RA   Malhotra N., Narayan K., Cho O.H., Sylvia K.E., Yin C., Melichar H.,
+RA   Rashighi M., Lefebvre V., Harris J.E., Berg L.J., Kang J.;
+RT   "A network of high-mobility group box transcription factors programs innate
+RT   interleukin-17 production.";
+RL   Immunity 38:681-693(2013).
+RN   [8]
+RP   DEVELOPMENTAL STAGE.
+RX   PubMed=27713059; DOI=10.1016/j.ydbio.2016.10.001;
+RA   Jia S., Kwon H.E., Lan Y., Zhou J., Liu H., Jiang R.;
+RT   "Bmp4-Msx1 signaling and Osr2 control tooth organogenesis through
+RT   antagonistic regulation of secreted Wnt antagonists.";
+RL   Dev. Biol. 420:110-119(2016).
+CC   -!- FUNCTION: Inhibitor of the Wnt signaling pathway. Down-regulates beta-
+CC       catenin. Probably facilitate the phosphorylation of beta-catenin and
+CC       APC by GSK3B. {ECO:0000250|UniProtKB:O15169}.
+CC   -!- SUBUNIT: Interacts with glycogen synthase kinase-3 beta (GSK3B) and
+CC       beta-catenin. The interaction between axin and beta-catenin occurs via
+CC       the armadillo repeats contained in beta-catenin. Interacts with SMAD7
+CC       and RNF111 (By similarity). Interacts with ANKRD6 (PubMed:12183362).
+CC       Interacts with SIAH1 (By similarity). Interacts with SIAH2 (By
+CC       similarity). {ECO:0000250|UniProtKB:Q9Y2T1,
+CC       ECO:0000269|PubMed:12183362}.
+CC   -!- INTERACTION:
+CC       O88566; Q8N944: AMER3; Xeno; NbExp=2; IntAct=EBI-7690990, EBI-8869590;
+CC       O88566; Q12834: CDC20; Xeno; NbExp=2; IntAct=EBI-7690990, EBI-367462;
+CC       O88566; Q9BV73: CEP250; Xeno; NbExp=3; IntAct=EBI-7690990, EBI-1053100;
+CC       O88566; Q15583: TGIF1; Xeno; NbExp=3; IntAct=EBI-7690990, EBI-714215;
+CC   -!- SUBCELLULAR LOCATION: Cytoplasm {ECO:0000250|UniProtKB:Q9Y2T1}.
+CC   -!- TISSUE SPECIFICITY: Expressed in Tcf7-positive innate-like T-cells (at
+CC       protein level). {ECO:0000269|PubMed:23562159}.
+CC   -!- DEVELOPMENTAL STAGE: Expressed in the distal tooth bud epithelium
+CC       during the bud stage of mandibular molar tooth development.
+CC       {ECO:0000269|PubMed:27713059}.
+CC   -!- DOMAIN: The tankyrase-binding motif (also named TBD) is required for
+CC       interaction with tankyrase TNKS and TNKS2. {ECO:0000250}.
+CC   -!- PTM: ADP-ribosylated by tankyrase TNKS and TNKS2. Poly-ADP-ribosylated
+CC       protein is recognized by RNF146, followed by ubiquitination and
+CC       subsequent activation of the Wnt signaling pathway.
+CC       {ECO:0000250|UniProtKB:Q9Y2T1}.
+CC   -!- PTM: Ubiquitinated by RNF146 when poly-ADP-ribosylated, leading to its
+CC       degradation and subsequent activation of the Wnt signaling pathway.
+CC       Deubiquitinated by USP34, deubiquitinated downstream of beta-catenin
+CC       stabilization step: deubiquitination is important Wnt signaling to
+CC       positively regulate beta-catenin (CTNBB1)-mediated transcription.
+CC       {ECO:0000250|UniProtKB:Q9Y2T1}.
+CC   -!- PTM: Probably phosphorylated by GSK3B and dephosphorylated by PP2A.
+CC       {ECO:0000250|UniProtKB:O15169}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AF073788; AAC26047.1; -; mRNA.
+DR   EMBL; AF205889; AAF22800.1; -; mRNA.
+DR   EMBL; AL662893; -; NOT_ANNOTATED_CDS; Genomic_DNA.
+DR   EMBL; CH466558; EDL34346.1; -; Genomic_DNA.
+DR   EMBL; BC057338; AAH57338.1; -; mRNA.
+DR   CCDS; CCDS25575.1; -.
+DR   RefSeq; NP_001404340.1; NM_001417411.1.
+DR   RefSeq; NP_001404341.1; NM_001417412.1.
+DR   RefSeq; NP_001404342.1; NM_001417413.1.
+DR   RefSeq; NP_001404343.1; NM_001417414.1.
+DR   RefSeq; NP_056547.3; NM_015732.4.
+DR   RefSeq; XP_006532123.1; XM_006532060.3.
+DR   AlphaFoldDB; O88566; -.
+DR   SMR; O88566; -.
+DR   BioGRID; 198288; 6.
+DR   ComplexPortal; CPX-449; Beta-catenin destruction core complex, Apc-Axin2-Gsk3b variant.
+DR   ComplexPortal; CPX-452; Beta-catenin destruction core complex, Apc2-Axin2-Gsk3b.
+DR   ComplexPortal; CPX-457; Beta-catenin destruction core complex, Apc-Axin2-Gsk3a variant.
+DR   ComplexPortal; CPX-458; Beta-catenin destruction core complex, Apc2-Axin2-Gsk3a variant.
+DR   CORUM; O88566; -.
+DR   DIP; DIP-42640N; -.
+DR   FunCoup; O88566; 1886.
+DR   IntAct; O88566; 10.
+DR   MINT; O88566; -.
+DR   STRING; 10090.ENSMUSP00000051331; -.
+DR   ChEMBL; CHEMBL1255128; -.
+DR   iPTMnet; O88566; -.
+DR   PhosphoSitePlus; O88566; -.
+DR   PaxDb; 10090-ENSMUSP00000051331; -.
+DR   ProteomicsDB; 277234; -.
+DR   Antibodypedia; 31648; 410 antibodies from 42 providers.
+DR   DNASU; 12006; -.
+DR   Ensembl; ENSMUST00000052915.14; ENSMUSP00000051331.8; ENSMUSG00000000142.16.
+DR   GeneID; 12006; -.
+DR   KEGG; mmu:12006; -.
+DR   UCSC; uc007mbu.2; mouse.
+DR   AGR; MGI:1270862; -.
+DR   CTD; 8313; -.
+DR   MGI; MGI:1270862; Axin2.
+DR   VEuPathDB; HostDB:ENSMUSG00000000142; -.
+DR   eggNOG; KOG3589; Eukaryota.
+DR   GeneTree; ENSGT00940000157338; -.
+DR   InParanoid; O88566; -.
+DR   OMA; TEPCLAL; -.
+DR   OrthoDB; 10007451at2759; -.
+DR   PhylomeDB; O88566; -.
+DR   Reactome; R-MMU-201681; TCF dependent signaling in response to WNT.
+DR   Reactome; R-MMU-4641257; Degradation of AXIN.
+DR   Reactome; R-MMU-5689880; Ub-specific processing proteases.
+DR   BioGRID-ORCS; 12006; 1 hit in 114 CRISPR screens.
+DR   PRO; PR:O88566; -.
+DR   Proteomes; UP000000589; Chromosome 11.
+DR   RNAct; O88566; protein.
+DR   Bgee; ENSMUSG00000000142; Expressed in meninx of spinal cord and 301 other cell types or tissues.
+DR   ExpressionAtlas; O88566; baseline and differential.
+DR   GO; GO:0030877; C:beta-catenin destruction complex; IBA:GO_Central.
+DR   GO; GO:0005813; C:centrosome; IDA:BHF-UCL.
+DR   GO; GO:0005737; C:cytoplasm; ISS:UniProtKB.
+DR   GO; GO:0005829; C:cytosol; ISO:GO_Central.
+DR   GO; GO:0005634; C:nucleus; IDA:MGI.
+DR   GO; GO:0005886; C:plasma membrane; IBA:GO_Central.
+DR   GO; GO:0032991; C:protein-containing complex; ISO:GO_Central.
+DR   GO; GO:0008013; F:beta-catenin binding; ISO:GO_Central.
+DR   GO; GO:0019899; F:enzyme binding; ISO:GO_Central.
+DR   GO; GO:0070411; F:I-SMAD binding; IPI:MGI.
+DR   GO; GO:0060090; F:molecular adaptor activity; IBA:GO_Central.
+DR   GO; GO:0019901; F:protein kinase binding; ISO:GO_Central.
+DR   GO; GO:0031625; F:ubiquitin protein ligase binding; IPI:MGI.
+DR   GO; GO:0003180; P:aortic valve morphogenesis; IMP:BHF-UCL.
+DR   GO; GO:0030282; P:bone mineralization; IMP:MGI.
+DR   GO; GO:0060070; P:canonical Wnt signaling pathway; ISO:GO_Central.
+DR   GO; GO:0048468; P:cell development; IBA:GO_Central.
+DR   GO; GO:0008283; P:cell population proliferation; IMP:MGI.
+DR   GO; GO:0003413; P:chondrocyte differentiation involved in endochondral bone morphogenesis; IMP:MGI.
+DR   GO; GO:0009950; P:dorsal/ventral axis specification; ISO:GO_Central.
+DR   GO; GO:0008104; P:intracellular protein localization; ISO:GO_Central.
+DR   GO; GO:0001957; P:intramembranous ossification; IMP:MGI.
+DR   GO; GO:0043570; P:maintenance of DNA repeat elements; ISO:GO_Central.
+DR   GO; GO:0003183; P:mitral valve morphogenesis; IMP:BHF-UCL.
+DR   GO; GO:0048255; P:mRNA stabilization; ISO:GO_Central.
+DR   GO; GO:0090090; P:negative regulation of canonical Wnt signaling pathway; IMP:BHF-UCL.
+DR   GO; GO:0008285; P:negative regulation of cell population proliferation; IMP:MGI.
+DR   GO; GO:0045668; P:negative regulation of osteoblast differentiation; IMP:MGI.
+DR   GO; GO:0030178; P:negative regulation of Wnt signaling pathway; ISO:GO_Central.
+DR   GO; GO:0042476; P:odontogenesis; ISO:GO_Central.
+DR   GO; GO:0010718; P:positive regulation of epithelial to mesenchymal transition; ISO:GO_Central.
+DR   GO; GO:0045600; P:positive regulation of fat cell differentiation; ISO:GO_Central.
+DR   GO; GO:0032436; P:positive regulation of proteasomal ubiquitin-dependent protein catabolic process; IBA:GO_Central.
+DR   GO; GO:0045860; P:positive regulation of protein kinase activity; ISO:GO_Central.
+DR   GO; GO:0043161; P:proteasome-mediated ubiquitin-dependent protein catabolic process; NAS:ComplexPortal.
+DR   GO; GO:0070602; P:regulation of centromeric sister chromatid cohesion; IMP:BHF-UCL.
+DR   GO; GO:0061181; P:regulation of chondrocyte development; IMP:MGI.
+DR   GO; GO:1903053; P:regulation of extracellular matrix organization; IMP:BHF-UCL.
+DR   GO; GO:0032423; P:regulation of mismatch repair; ISO:GO_Central.
+DR   GO; GO:0030111; P:regulation of Wnt signaling pathway; IDA:MGI.
+DR   GO; GO:0003139; P:secondary heart field specification; IGI:MGI.
+DR   GO; GO:0001756; P:somitogenesis; IDA:MGI.
+DR   CDD; cd11582; Axin_TNKS_binding; 1.
+DR   CDD; cd08707; RGS_Axin; 1.
+DR   FunFam; 1.10.167.10:FF:000003; Axin 1; 1.
+DR   FunFam; 1.10.196.10:FF:000002; Axin 1; 1.
+DR   FunFam; 2.40.240.130:FF:000002; Axin 1; 1.
+DR   Gene3D; 1.10.196.10; -; 1.
+DR   Gene3D; 2.40.240.130; -; 1.
+DR   Gene3D; 1.10.167.10; Regulator of G-protein Signalling 4, domain 2; 1.
+DR   InterPro; IPR043581; Axin-like.
+DR   InterPro; IPR014936; Axin_b-cat-bd.
+DR   InterPro; IPR032101; Axin_TNKS-bd.
+DR   InterPro; IPR001158; DIX.
+DR   InterPro; IPR038207; DIX_dom_sf.
+DR   InterPro; IPR016137; RGS.
+DR   InterPro; IPR036305; RGS_sf.
+DR   InterPro; IPR024066; RGS_subdom1/3.
+DR   InterPro; IPR044926; RGS_subdomain_2.
+DR   InterPro; IPR029071; Ubiquitin-like_domsf.
+DR   PANTHER; PTHR46102; AXIN; 1.
+DR   PANTHER; PTHR46102:SF1; AXIN-2; 1.
+DR   Pfam; PF16646; AXIN1_TNKS_BD; 1.
+DR   Pfam; PF08833; Axin_b-cat_bind; 1.
+DR   Pfam; PF00778; DIX; 1.
+DR   Pfam; PF00615; RGS; 1.
+DR   PRINTS; PR01301; RGSPROTEIN.
+DR   SMART; SM00021; DAX; 1.
+DR   SMART; SM00315; RGS; 1.
+DR   SUPFAM; SSF48097; Regulator of G-protein signaling, RGS; 1.
+DR   SUPFAM; SSF54236; Ubiquitin-like; 1.
+DR   PROSITE; PS50841; DIX; 1.
+DR   PROSITE; PS50132; RGS; 1.
+PE   1: Evidence at protein level;
+KW   ADP-ribosylation; Cytoplasm; Phosphoprotein; Reference proteome;
+KW   Tumor suppressor; Ubl conjugation; Wnt signaling pathway.
+FT   CHAIN           1..840
+FT                   /note="Axin-2"
+FT                   /id="PRO_0000220896"
+FT   DOMAIN          81..200
+FT                   /note="RGS"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00171"
+FT   DOMAIN          758..840
+FT                   /note="DIX"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00069"
+FT   REGION          1..75
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          300..363
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          327..413
+FT                   /note="Interaction with GSK3B"
+FT                   /evidence="ECO:0000250"
+FT   REGION          398..435
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          413..478
+FT                   /note="Interaction with beta-catenin"
+FT                   /evidence="ECO:0000250"
+FT   REGION          447..485
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          572..614
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          715..745
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOTIF           21..30
+FT                   /note="Tankyrase-binding motif"
+FT   COMPBIAS        42..55
+FT                   /note="Polar residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        56..69
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        303..318
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        468..478
+FT                   /note="Basic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   CONFLICT        101
+FT                   /note="R -> K (in Ref. 2; AAF22800)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        474
+FT                   /note="H -> Y (in Ref. 2; AAF22800)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        484
+FT                   /note="P -> S (in Ref. 1; AAC26047)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        503
+FT                   /note="F -> S (in Ref. 2; AAF22800)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        603
+FT                   /note="A -> G (in Ref. 1; AAC26047)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        648
+FT                   /note="C -> R (in Ref. 1; AAC26047 and 2; AAF22800)"
+FT                   /evidence="ECO:0000305"
+SQ   SEQUENCE   840 AA;  92906 MW;  53D7D33128879298 CRC64;
+     MSSAVLVTLL PDPSSSFRED APRPPVPGEE GETPPCQPSV GKVQSTKPMP VSSNARRNED
+     GLGEPEGRAS PDSPLTRWTK SLHSLLGDQD GAYLFRTFLE REKCVDTLDF WFACNGFRQM
+     NLKDTKTLRV AKAIYKRYIE NNSVVSKQLK PATKTYIRDG IKKQQIGSVM FDQAQTEIQA
+     VMEENAYQVF LTSDIYLEYV RSGGENTAYM SNGGLGSLKV LCGYLPTLNE EEEWTCADLK
+     CKLSPTVVGL SSKTLRATAS VRSTETAENG FRSFKRSDPV NPYHVGSGYV FAPATSANDS
+     ELSSDALTDD SMSMTDSSVD GVPPYRMGSK KQLQREMHRS VKANGQVSLP HFPRTHRLPK
+     EMTPVEPAAF AAELISRLEK LKLELESRHS LEERLQQIRE DEEKEGSEQA LSSRDGAPVQ
+     HPLALLPSGS YEEDPQTILD DHLSRVLKTP GCQSPGVGRY SPRSRSPDHH HQHHHHQQCH
+     TLLPTGGKLP PVAACPLLGG KSFLTKQTTK HVHHHYIHHH AVPKTKEEIE AEATQRVRCL
+     CPGGTDYYCY SKCKSHPKAP EPLPGEQFCG SRGGTLPKRN AKGTEPGLAL SARDGGMSSA
+     AGAPQLPGEE GDRSQDVWQW MLESERQSKS KPHSAQSIRK SYPLESACAA PGERVSRHHL
+     LGASGHSRSV ARAHPFTQDP AMPPLTPPNT LAQLEEACRR LAEVSKPQKQ RCCVASQQRD
+     RNHSAAGQAG ASPFANPSLA PEDHKEPKKL ASVHALQASE LVVTYFFCGE EIPYRRMLKA
+     QSLTLGHFKE QLSKKGNYRY YFKKASDEFA CGAVFEEIWD DETVLPMYEG RILGKVERID
+//
+ID   IFM5_MOUSE              Reviewed;         134 AA.
+AC   O88728;
+DT   05-OCT-2010, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1998, sequence version 1.
+DT   02-SEP-2026, entry version 130.
+DE   RecName: Full=Interferon-induced transmembrane protein 5;
+DE   AltName: Full=Bone-restricted interferon-induced transmembrane protein-like protein;
+DE            Short=Bril;
+DE   AltName: Full=Dispanin subfamily A member 1;
+DE            Short=DSPA1;
+DE   AltName: Full=Fragilis family member 4;
+GN   Name=Ifitm5; Synonyms=Bril, Fragilis4;
+OS   Mus musculus (Mouse).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
+OC   Murinae; Mus; Mus.
+OX   NCBI_TaxID=10090;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA], AND TISSUE SPECIFICITY.
+RX   PubMed=11106657; DOI=10.1074/jbc.m008354200;
+RA   Baird J., Ryan K., Hayes I.M., Hampson L., Clark C.M., Wootton A.,
+RA   Ansell J., Menzel U., Hole N., Graham G.J.;
+RT   "Differentiating embryonal stem cells are a rich source of haemopoietic
+RT   gene products and suggest erythroid preconditioning of primitive
+RT   haemopoietic stem cells.";
+RL   J. Biol. Chem. 276:9189-9198(2001).
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE [MRNA], FUNCTION, SUBCELLULAR LOCATION, TISSUE
+RP   SPECIFICITY, AND TOPOLOGY.
+RC   STRAIN=C57BL/6J; TISSUE=Osteoblast;
+RX   PubMed=18442316; DOI=10.1359/jbmr.080412;
+RA   Moffatt P., Gaumond M.H., Salois P., Sellin K., Bessette M.C., Godin E.,
+RA   Tambasco de Oliveira P., Atkins G.J., Nanci A., Thomas G.;
+RT   "Bril: a novel bone-specific modulator of mineralization.";
+RL   J. Bone Miner. Res. 23:1497-1508(2008).
+RN   [3]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RA   Mural R.J., Adams M.D., Myers E.W., Smith H.O., Venter J.C.;
+RL   Submitted (JUL-2005) to the EMBL/GenBank/DDBJ databases.
+RN   [4]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA].
+RX   PubMed=15489334; DOI=10.1101/gr.2596504;
+RG   The MGC Project Team;
+RT   "The status, quality, and expansion of the NIH full-length cDNA project:
+RT   the Mammalian Gene Collection (MGC).";
+RL   Genome Res. 14:2121-2127(2004).
+RN   [5]
+RP   INDUCTION.
+RC   STRAIN=129;
+RX   PubMed=12659663; DOI=10.1186/1471-213x-3-1;
+RA   Lange U.C., Saitou M., Western P.S., Barton S.C., Surani M.A.;
+RT   "The fragilis interferon-inducible gene family of transmembrane proteins is
+RT   associated with germ cell specification in mice.";
+RL   BMC Dev. Biol. 3:1-1(2003).
+RN   [6]
+RP   FUNCTION, DISRUPTION PHENOTYPE, DEVELOPMENTAL STAGE, AND INTERACTION WITH
+RP   FKBP11.
+RX   PubMed=20838829; DOI=10.1007/s00774-010-0221-0;
+RA   Hanagata N., Li X., Morita H., Takemura T., Li J., Minowa T.;
+RT   "Characterization of the osteoblast-specific transmembrane protein IFITM5
+RT   and analysis of IFITM5-deficient mice.";
+RL   J. Bone Miner. Metab. 29:279-290(2011).
+RN   [7]
+RP   GENE FAMILY.
+RX   PubMed=22363774; DOI=10.1371/journal.pone.0031961;
+RA   Sallman Almen M., Bringeland N., Fredriksson R., Schioth H.B.;
+RT   "The dispanins: a novel gene family of ancient origin that contains 14
+RT   human members.";
+RL   PLoS ONE 7:E31961-E31961(2012).
+RN   [8]
+RP   FUNCTION, PALMITOYLATION AT CYS-52; CYS-53 AND CYS-86, INTERACTION WITH
+RP   FKBP11, AND MUTAGENESIS OF CYS-52; CYS-53 AND CYS-86.
+RX   PubMed=24058703; DOI=10.1371/journal.pone.0075831;
+RA   Tsukamoto T., Li X., Morita H., Minowa T., Aizawa T., Hanagata N.,
+RA   Demura M.;
+RT   "Role of S-palmitoylation on IFITM5 for the interaction with FKBP11 in
+RT   osteoblast cells.";
+RL   PLoS ONE 8:E75831-E75831(2013).
+RN   [9]
+RP   SUBCELLULAR LOCATION, PALMITOYLATION AT CYS-52; CYS-53 AND CYS-86,
+RP   TOPOLOGY, AND MUTAGENESIS OF SER-42; CYS-52; CYS-53 AND CYS-86.
+RX   PubMed=24715519; DOI=10.1002/jbmr.2243;
+RA   Patoine A., Gaumond M.H., Jaiswal P.K., Fassier F., Rauch F., Moffatt P.;
+RT   "Topological mapping of BRIL reveals a type II orientation and effects of
+RT   osteogenesis imperfecta mutations on its cellular destination.";
+RL   J. Bone Miner. Res. 29:2004-2016(2014).
+CC   -!- FUNCTION: Required for normal bone mineralization.
+CC       {ECO:0000269|PubMed:18442316, ECO:0000269|PubMed:20838829,
+CC       ECO:0000269|PubMed:24058703, ECO:0000269|PubMed:24715519}.
+CC   -!- SUBUNIT: Interacts with FKBP11. {ECO:0000269|PubMed:20838829,
+CC       ECO:0000269|PubMed:24058703}.
+CC   -!- SUBCELLULAR LOCATION: Cell membrane {ECO:0000269|PubMed:18442316,
+CC       ECO:0000269|PubMed:24715519}; Multi-pass membrane protein {ECO:0000255,
+CC       ECO:0000269|PubMed:18442316}.
+CC   -!- TISSUE SPECIFICITY: Detected in embryonic bone (at protein level)
+CC       (PubMed:18442316). Highly expressed in osteoblasts of adults and
+CC       embryos. Expressed in primitive hemopoietic cells.
+CC       {ECO:0000269|PubMed:11106657, ECO:0000269|PubMed:18442316}.
+CC   -!- DEVELOPMENTAL STAGE: In embryos at 16.5 dpf, detected in lumbar and
+CC       thoracic vertebra, the basisphenoid bone, the mandible, the coronal
+CC       suture between the frontal and parietal bones, the maxilla, the nasal
+CC       bone and the palate, as well as in the bone collars of long bones and
+CC       digital bones in hind limbs, and in the primary ossification center.
+CC       {ECO:0000269|PubMed:20838829}.
+CC   -!- INDUCTION: By interferons. {ECO:0000269|PubMed:12659663}.
+CC   -!- PTM: Palmitoylated. {ECO:0000269|PubMed:24058703,
+CC       ECO:0000269|PubMed:24715519}.
+CC   -!- DISRUPTION PHENOTYPE: Embryonic lethality, leading to the birth of only
+CC       7% homozygous mutant pups, instead of the expected 25%. Only two out of
+CC       eight pups were female. Crossing homozygous mice gave rise to about one
+CC       sixth of the normal litter size, and many newborns died within 48 hours
+CC       after birth. Homozygous newborns display no striking phenotype other
+CC       than smaller bones and especially shorter long bones, and this
+CC       phenotype persists into adulthood. The radius, ulna and tibia are
+CC       frequently bent in newborns, but this is no longer the case in young
+CC       adults. {ECO:0000269|PubMed:20838829}.
+CC   -!- MISCELLANEOUS: Membrane topology is controversial. The N-terminus is
+CC       cytoplasmic and the C-terminus extracellular according to
+CC       PubMed:24715519, while both the N-terminus and the C-terminus are
+CC       extracellular according to PubMed:18442316.
+CC   -!- SIMILARITY: Belongs to the CD225/Dispanin family. {ECO:0000305}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AJ009781; CAA08829.1; -; mRNA.
+DR   EMBL; EU380257; ABZ85873.1; -; mRNA.
+DR   EMBL; FJ200451; ACI26732.1; -; mRNA.
+DR   EMBL; CH466531; EDL17974.1; -; Genomic_DNA.
+DR   EMBL; BC103790; AAI03791.1; -; mRNA.
+DR   EMBL; BK001124; DAA01239.1; -; mRNA.
+DR   CCDS; CCDS21993.1; -.
+DR   RefSeq; NP_444318.1; NM_053088.3.
+DR   AlphaFoldDB; O88728; -.
+DR   FunCoup; O88728; 450.
+DR   STRING; 10090.ENSMUSP00000026562; -.
+DR   TCDB; 8.A.58.1.4; the dispanin (dispanin) family.
+DR   GlyGen; O88728; 1 site.
+DR   PhosphoSitePlus; O88728; -.
+DR   SwissPalm; O88728; -.
+DR   PaxDb; 10090-ENSMUSP00000026562; -.
+DR   ProteomicsDB; 266953; -.
+DR   Antibodypedia; 41962; 117 antibodies from 20 providers.
+DR   Ensembl; ENSMUST00000026562.6; ENSMUSP00000026562.5; ENSMUSG00000025489.6.
+DR   GeneID; 73835; -.
+DR   KEGG; mmu:73835; -.
+DR   UCSC; uc009kiy.1; mouse.
+DR   AGR; MGI:1934923; -.
+DR   CTD; 387733; -.
+DR   MGI; MGI:1934923; Ifitm5.
+DR   VEuPathDB; HostDB:ENSMUSG00000025489; -.
+DR   eggNOG; ENOG502RXZM; Eukaryota.
+DR   GeneTree; ENSGT00950000182857; -.
+DR   HOGENOM; CLU_124511_2_0_1; -.
+DR   InParanoid; O88728; -.
+DR   OMA; SYPREDY; -.
+DR   OrthoDB; 9882660at2759; -.
+DR   PhylomeDB; O88728; -.
+DR   BioGRID-ORCS; 73835; 0 hits in 77 CRISPR screens.
+DR   PRO; PR:O88728; -.
+DR   Proteomes; UP000000589; Chromosome 7.
+DR   RNAct; O88728; protein.
+DR   Bgee; ENSMUSG00000025489; Expressed in vault of skull and 68 other cell types or tissues.
+DR   GO; GO:0005829; C:cytosol; ISO:GO_Central.
+DR   GO; GO:0016020; C:membrane; TAS:MGI.
+DR   GO; GO:0005886; C:plasma membrane; IDA:MGI.
+DR   GO; GO:0030282; P:bone mineralization; IMP:UniProtKB.
+DR   GO; GO:0060349; P:bone morphogenesis; IMP:UniProtKB.
+DR   GO; GO:0001701; P:in utero embryonic development; IMP:UniProtKB.
+DR   GO; GO:1901355; P:response to rapamycin; IMP:MGI.
+DR   GO; GO:1901327; P:response to tacrolimus; IMP:MGI.
+DR   GO; GO:0001501; P:skeletal system development; IMP:MGI.
+DR   InterPro; IPR007593; CD225/Dispanin_fam.
+DR   InterPro; IPR051517; IFITM_antiviral_protein.
+DR   PANTHER; PTHR13999; INTERFERON INDUCIBLE TRANSMEMBRANE PROTEIN; 1.
+DR   PANTHER; PTHR13999:SF10; INTERFERON-INDUCED TRANSMEMBRANE PROTEIN 5; 1.
+DR   Pfam; PF04505; CD225; 1.
+PE   1: Evidence at protein level;
+KW   Cell membrane; Developmental protein; Lipoprotein; Membrane;
+KW   Mineral balance; Palmitate; Reference proteome; Transmembrane;
+KW   Transmembrane helix.
+FT   CHAIN           1..134
+FT                   /note="Interferon-induced transmembrane protein 5"
+FT                   /id="PRO_0000397676"
+FT   TOPO_DOM        1..39
+FT                   /note="Extracellular"
+FT                   /evidence="ECO:0000255"
+FT   TRANSMEM        40..60
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        61..88
+FT                   /note="Cytoplasmic"
+FT                   /evidence="ECO:0000255"
+FT   TRANSMEM        89..109
+FT                   /note="Helical"
+FT                   /evidence="ECO:0000255"
+FT   TOPO_DOM        110..134
+FT                   /note="Extracellular"
+FT                   /evidence="ECO:0000255, ECO:0000269|PubMed:18442316,
+FT                   ECO:0000269|PubMed:24715519"
+FT   REGION          1..31
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        1..20
+FT                   /note="Basic and acidic residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   LIPID           52
+FT                   /note="S-palmitoyl cysteine"
+FT                   /evidence="ECO:0000305|PubMed:24058703,
+FT                   ECO:0000305|PubMed:24715519"
+FT   LIPID           53
+FT                   /note="S-palmitoyl cysteine"
+FT                   /evidence="ECO:0000305|PubMed:24058703,
+FT                   ECO:0000305|PubMed:24715519"
+FT   LIPID           86
+FT                   /note="S-palmitoyl cysteine"
+FT                   /evidence="ECO:0000305|PubMed:24058703,
+FT                   ECO:0000305|PubMed:24715519"
+FT   MUTAGEN         42
+FT                   /note="S->L: Abolishes expression at the cell membrane."
+FT                   /evidence="ECO:0000269|PubMed:24715519"
+FT   MUTAGEN         52
+FT                   /note="C->A: Strongly reduces expression at the cell
+FT                   membrane. Reduces palmitoylation; when associated with
+FT                   A-53. Abolishes palmitoylation; when associated with A-53
+FT                   and A-86."
+FT                   /evidence="ECO:0000269|PubMed:24058703,
+FT                   ECO:0000269|PubMed:24715519"
+FT   MUTAGEN         53
+FT                   /note="C->A: Strongly reduces expression at the cell
+FT                   membrane. Reduces palmitoylation; when associated with
+FT                   A-52. Abolishes palmitoylation; when associated with A-52
+FT                   and A-86."
+FT                   /evidence="ECO:0000269|PubMed:24058703,
+FT                   ECO:0000269|PubMed:24715519"
+FT   MUTAGEN         86
+FT                   /note="C->A: No effect on location at the cell membrane.
+FT                   Abolishes palmitoylation; when associated with A-52 and
+FT                   A-53."
+FT                   /evidence="ECO:0000269|PubMed:24058703,
+FT                   ECO:0000269|PubMed:24715519"
+SQ   SEQUENCE   134 AA;  14667 MW;  EED20D259EEDD712 CRC64;
+     MDTSYPREDP RAPSSRKADA AAHTALSMGT PGPTPRDHML WSVFSTMYLN LCCLGFLALV
+     HSVKARDQKM AGNLEAARQY GSKAKCYNIL AAMWTLVPPL LLLGLVVTGA LHLSKLAKDS
+     AAFFSTKFDE EDYN
+//
+ID   KLF10_MOUSE             Reviewed;         479 AA.
+AC   O89091;
+DT   01-DEC-2000, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1998, sequence version 1.
+DT   02-SEP-2026, entry version 187.
+DE   RecName: Full=Krueppel-like factor 10;
+DE   AltName: Full=GDNF-inducible factor;
+DE   AltName: Full=Transcription factor GIF;
+DE            Short=mGIF;
+DE   AltName: Full=Transforming growth factor-beta-inducible early growth response protein 1;
+DE            Short=TGFB-inducible early growth response protein 1;
+DE            Short=TIEG-1;
+GN   Name=Klf10; Synonyms=Gdnfif, Tieg, Tieg1;
+OS   Mus musculus (Mouse).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
+OC   Murinae; Mus; Mus.
+OX   NCBI_TaxID=10090;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA], AND INDUCTION.
+RX   PubMed=9348334; DOI=10.1523/jneurosci.17-22-08657.1997;
+RA   Yajima S., Lammers C.H., Lee S.H., Hara Y., Mizuno K., Mouradian M.M.;
+RT   "Cloning and characterization of murine glial cell-derived neurotrophic
+RT   factor inducible transcription factor (MGIF).";
+RL   J. Neurosci. 17:8657-8666(1997).
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA / MRNA].
+RX   PubMed=9745041; DOI=10.1007/s003359900878;
+RA   Fautsch M.P., Vrabel A., Rickard D., Subramaniam M., Spelsberg T.C.,
+RA   Wieben E.D.;
+RT   "Characterization of the mouse TGFbeta-inducible early gene (TIEG):
+RT   conservation of exon and transcriptional regulatory sequences with evidence
+RT   of additional transcripts.";
+RL   Mamm. Genome 9:838-842(1998).
+RN   [3]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE MRNA].
+RC   STRAIN=129; TISSUE=Mammary gland;
+RX   PubMed=15489334; DOI=10.1101/gr.2596504;
+RG   The MGC Project Team;
+RT   "The status, quality, and expansion of the NIH full-length cDNA project:
+RT   the Mammalian Gene Collection (MGC).";
+RL   Genome Res. 14:2121-2127(2004).
+RN   [4]
+RP   FUNCTION, SUBCELLULAR LOCATION, INDUCTION, AND PHOSPHORYLATION.
+RX   PubMed=20070857; DOI=10.1111/j.1365-2443.2009.01371.x;
+RA   Hirota T., Kon N., Itagaki T., Hoshina N., Okano T., Fukada Y.;
+RT   "Transcriptional repressor TIEG1 regulates Bmal1 gene through GC box and
+RT   controls circadian clockwork.";
+RL   Genes Cells 15:111-121(2010).
+RN   [5]
+RP   FUNCTION, INDUCTION, AND DISRUPTION PHENOTYPE.
+RX   PubMed=20385766; DOI=10.1128/mcb.01141-09;
+RA   Guillaumond F., Grechez-Cassiau A., Subramaniam M., Brangolo S.,
+RA   Peteri-Brunback B., Staels B., Fievet C., Spelsberg T.C., Delaunay F.,
+RA   Teboul M.;
+RT   "Kruppel-like factor KLF10 is a link between the circadian clock and
+RT   metabolism in liver.";
+RL   Mol. Cell. Biol. 30:3059-3070(2010).
+CC   -!- FUNCTION: Transcriptional repressor which binds to the consensus
+CC       sequence 5'-GGTGTG-3'. May play a role in the cell cycle regulation (By
+CC       similarity). Plays a role in the regulation of the circadian clock;
+CC       binds to the GC box sequence in the promoter of the core clock
+CC       component ARTNL/BMAL1 and represses its transcriptional activity.
+CC       Regulates the circadian expression of genes involved in lipogenesis,
+CC       gluconeogenesis, and glycolysis in the liver. Represses the expression
+CC       of PCK2, a rate-limiting step enzyme of gluconeogenesis.
+CC       {ECO:0000250|UniProtKB:Q13118, ECO:0000269|PubMed:20070857,
+CC       ECO:0000269|PubMed:20385766}.
+CC   -!- INTERACTION:
+CC       O89091; Q8C863: Itch; NbExp=4; IntAct=EBI-10949150, EBI-851782;
+CC   -!- SUBCELLULAR LOCATION: Nucleus {ECO:0000269|PubMed:20070857}.
+CC   -!- INDUCTION: By TGF-beta and GDNF. Expressed in a circadian manner in the
+CC       liver with a high at ZT14-18 and a low at ZT2 (at protein level).
+CC       Expressed in a circadian manner in the bone, kidney and skeletal
+CC       muscle. Up-regulated in response to glucose.
+CC       {ECO:0000269|PubMed:20070857, ECO:0000269|PubMed:20385766,
+CC       ECO:0000269|PubMed:9348334}.
+CC   -!- PTM: Ubiquitinated; mediated by SIAH1 and leading to its subsequent
+CC       proteasomal degradation. {ECO:0000250|UniProtKB:Q13118}.
+CC   -!- DISRUPTION PHENOTYPE: Male mice display postprandial and fasting
+CC       hyperglycemia while female mice are normoglycemic but display higher
+CC       plasma triglycerides. {ECO:0000269|PubMed:20385766}.
+CC   -!- SIMILARITY: Belongs to the Sp1 C2H2-type zinc-finger protein family.
+CC       {ECO:0000305}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AF064088; AAC16734.1; -; mRNA.
+DR   EMBL; AF049880; AAC77797.1; -; Genomic_DNA.
+DR   EMBL; AF049879; AAC77796.1; -; mRNA.
+DR   EMBL; BC003316; AAH03316.1; -; mRNA.
+DR   CCDS; CCDS27438.1; -.
+DR   RefSeq; NP_038720.1; NM_013692.4.
+DR   AlphaFoldDB; O89091; -.
+DR   SMR; O89091; -.
+DR   BioGRID; 204195; 4.
+DR   FunCoup; O89091; 1260.
+DR   IntAct; O89091; 1.
+DR   STRING; 10090.ENSMUSP00000073690; -.
+DR   ChEMBL; CHEMBL4523155; -.
+DR   GlyGen; O89091; 1 site.
+DR   iPTMnet; O89091; -.
+DR   PhosphoSitePlus; O89091; -.
+DR   PaxDb; 10090-ENSMUSP00000073690; -.
+DR   PeptideAtlas; O89091; -.
+DR   ProteomicsDB; 263617; -.
+DR   Antibodypedia; 26326; 334 antibodies from 38 providers.
+DR   DNASU; 21847; -.
+DR   Ensembl; ENSMUST00000074043.7; ENSMUSP00000073690.6; ENSMUSG00000037465.11.
+DR   GeneID; 21847; -.
+DR   KEGG; mmu:21847; -.
+DR   UCSC; uc007vnr.2; mouse.
+DR   AGR; MGI:1101353; -.
+DR   CTD; 7071; -.
+DR   MGI; MGI:1101353; Klf10.
+DR   VEuPathDB; HostDB:ENSMUSG00000037465; -.
+DR   eggNOG; KOG1721; Eukaryota.
+DR   GeneTree; ENSGT00940000159405; -.
+DR   HOGENOM; CLU_046370_1_0_1; -.
+DR   InParanoid; O89091; -.
+DR   OMA; KHAEMRP; -.
+DR   OrthoDB; 4748970at2759; -.
+DR   PhylomeDB; O89091; -.
+DR   BioGRID-ORCS; 21847; 6 hits in 78 CRISPR screens.
+DR   PRO; PR:O89091; -.
+DR   Proteomes; UP000000589; Chromosome 15.
+DR   RNAct; O89091; protein.
+DR   Bgee; ENSMUSG00000037465; Expressed in spermatocyte and 247 other cell types or tissues.
+DR   ExpressionAtlas; O89091; baseline and differential.
+DR   GO; GO:0005634; C:nucleus; IDA:UniProtKB.
+DR   GO; GO:0001046; F:core promoter sequence-specific DNA binding; IDA:UniProtKB.
+DR   GO; GO:0003677; F:DNA binding; ISS:MGI.
+DR   GO; GO:0001228; F:DNA-binding transcription activator activity, RNA polymerase II-specific; ISO:GO_Central.
+DR   GO; GO:0000981; F:DNA-binding transcription factor activity, RNA polymerase II-specific; IBA:GO_Central.
+DR   GO; GO:0000978; F:RNA polymerase II cis-regulatory region sequence-specific DNA binding; ISO:GO_Central.
+DR   GO; GO:1990837; F:sequence-specific double-stranded DNA binding; ISO:GO_Central.
+DR   GO; GO:0030282; P:bone mineralization; IMP:MGI.
+DR   GO; GO:0009267; P:cellular response to starvation; IDA:UniProtKB.
+DR   GO; GO:0007623; P:circadian rhythm; IEP:UniProtKB.
+DR   GO; GO:0045892; P:negative regulation of DNA-templated transcription; IDA:UniProtKB.
+DR   GO; GO:0045672; P:positive regulation of osteoclast differentiation; IMP:MGI.
+DR   GO; GO:0045944; P:positive regulation of transcription by RNA polymerase II; ISO:GO_Central.
+DR   GO; GO:0042752; P:regulation of circadian rhythm; ISS:UniProtKB.
+DR   GO; GO:0006355; P:regulation of DNA-templated transcription; IMP:MGI.
+DR   GO; GO:0006357; P:regulation of transcription by RNA polymerase II; IBA:GO_Central.
+DR   GO; GO:0035019; P:somatic stem cell population maintenance; IDA:MGI.
+DR   CDD; cd21572; KLF10_N; 1.
+DR   FunFam; 3.30.160.60:FF:000134; Krueppel-like factor 11; 1.
+DR   FunFam; 3.30.160.60:FF:000018; Krueppel-like factor 15; 1.
+DR   FunFam; 3.30.160.60:FF:000205; Putative Krueppel-like factor 10; 1.
+DR   Gene3D; 3.30.160.60; Classic Zinc Finger; 3.
+DR   InterPro; IPR036236; Znf_C2H2_sf.
+DR   InterPro; IPR013087; Znf_C2H2_type.
+DR   PANTHER; PTHR23235:SF64; KRUEPPEL-LIKE FACTOR 10; 1.
+DR   PANTHER; PTHR23235; KRUEPPEL-LIKE TRANSCRIPTION FACTOR; 1.
+DR   Pfam; PF00096; zf-C2H2; 3.
+DR   SMART; SM00355; ZnF_C2H2; 3.
+DR   SUPFAM; SSF57667; beta-beta-alpha zinc fingers; 2.
+DR   PROSITE; PS00028; ZINC_FINGER_C2H2_1; 3.
+DR   PROSITE; PS50157; ZINC_FINGER_C2H2_2; 3.
+PE   1: Evidence at protein level;
+KW   Biological rhythms; DNA-binding; Metal-binding; Nucleus; Phosphoprotein;
+KW   Reference proteome; Repeat; Repressor; Transcription;
+KW   Transcription regulation; Ubl conjugation; Zinc; Zinc-finger.
+FT   CHAIN           1..479
+FT                   /note="Krueppel-like factor 10"
+FT                   /id="PRO_0000047178"
+FT   ZN_FING         368..392
+FT                   /note="C2H2-type 1"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00042"
+FT   ZN_FING         398..422
+FT                   /note="C2H2-type 2"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00042"
+FT   ZN_FING         428..450
+FT                   /note="C2H2-type 3"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00042"
+FT   REGION          94..145
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        101..114
+FT                   /note="Polar residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOD_RES         183
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:Q13118"
+FT   MOD_RES         248
+FT                   /note="Phosphoserine"
+FT                   /evidence="ECO:0000250|UniProtKB:Q13118"
+SQ   SEQUENCE   479 AA;  51756 MW;  99A5969665962963 CRC64;
+     MLNFGASLQQ ASEGKMELIS EKPREGMHPW DKAEQSDFEA VEALMSMSCD WKSHFKKYLE
+     NRPVTPVSDT SEDDSLLPGT PDLQTVPAFC LTPPYSPSDF EPSQGSNLTA SAPSTGHFKS
+     FSDAAKPPGA TPFKEEEKNP LAAPPLPKAQ ATSVIRHTAD AQLCNHQSCP VKAASILNYQ
+     DNSFRRRTHG NVEATRKNIP CAAVSPNRSK PEPSTVSDGD EKAGAALYDF AVPSSETVIC
+     RSQPAPSSPV QKSVLVSSPT VSTGGVPPLP VICQMVPLPA NNSLVSTVVP STPPSQPPAV
+     CSPVLFMGTQ VPEGTVVFVV PQPVVQSPRP PVVSPSGTRL SPIAPAPGFS PSAARVTPQI
+     DSSRVRSHIC SHPGCGKTYF KSSHLKAHVR THTGEKPFSC SWKGCERRFA RSDELSRHRR
+     THTGEKKFAC PMCDRRFMRS DHLTKHARRH LSAKKLPNWQ MEVSKLNDIA LPPTPASAQ
+//
 ID   CER1_HUMAN              Reviewed;         267 AA.
 AC   O95813; Q6ISJ1; Q6ISJ6; Q6ISQ2; Q6ISS1;
 DT   12-APR-2005, integrated into UniProtKB/Swiss-Prot.
@@ -40745,1922 +41523,6 @@ SQ   SEQUENCE   472 AA;  54182 MW;  67F437B89B4D0DBD CRC64;
      YDILEGYPRK ISDLGFPKEV KRLSAAVHFE NTGKTLFFSE NHVWSYDDVN QTMDKDYPRL
      IEEEFPGIGN KVDAVYEKNG YIYFFNGPIQ FEYSIWSNRI VRVMPTNSIL WC
 //
-ID   CFTR_RAT                Reviewed;        1476 AA.
-AC   P34158; Q2IBD3;
-DT   01-FEB-1994, integrated into UniProtKB/Swiss-Prot.
-DT   12-JUN-2007, sequence version 3.
-DT   02-SEP-2026, entry version 206.
-DE   RecName: Full=Cystic fibrosis transmembrane conductance regulator {ECO:0000305};
-DE            Short=CFTR;
-DE   AltName: Full=ATP-binding cassette sub-family C member 7;
-DE   AltName: Full=Channel conductance-controlling ATPase;
-DE            EC=5.6.1.6 {ECO:0000250|UniProtKB:P13569};
-DE   AltName: Full=cAMP-dependent chloride channel;
-GN   Name=Cftr {ECO:0000312|RGD:2332}; Synonyms=Abcc7;
-OS   Rattus norvegicus (Rat).
-OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
-OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
-OC   Murinae; Rattus.
-OX   NCBI_TaxID=10116;
-RN   [1]
-RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
-RX   PubMed=12917688; DOI=10.1038/nature01858;
-RA   Thomas J.W., Touchman J.W., Blakesley R.W., Bouffard G.G.,
-RA   Beckstrom-Sternberg S.M., Margulies E.H., Blanchette M., Siepel A.C.,
-RA   Thomas P.J., McDowell J.C., Maskeri B., Hansen N.F., Schwartz M.S.,
-RA   Weber R.J., Kent W.J., Karolchik D., Bruen T.C., Bevan R., Cutler D.J.,
-RA   Schwartz S., Elnitski L., Idol J.R., Prasad A.B., Lee-Lin S.-Q.,
-RA   Maduro V.V.B., Summers T.J., Portnoy M.E., Dietrich N.L., Akhter N.,
-RA   Ayele K., Benjamin B., Cariaga K., Brinkley C.P., Brooks S.Y., Granite S.,
-RA   Guan X., Gupta J., Haghighi P., Ho S.-L., Huang M.C., Karlins E.,
-RA   Laric P.L., Legaspi R., Lim M.J., Maduro Q.L., Masiello C.A.,
-RA   Mastrian S.D., McCloskey J.C., Pearson R., Stantripop S., Tiongson E.E.,
-RA   Tran J.T., Tsurgeon C., Vogt J.L., Walker M.A., Wetherby K.D.,
-RA   Wiggins L.S., Young A.C., Zhang L.-H., Osoegawa K., Zhu B., Zhao B.,
-RA   Shu C.L., De Jong P.J., Lawrence C.E., Smit A.F., Chakravarti A.,
-RA   Haussler D., Green P., Miller W., Green E.D.;
-RT   "Comparative analyses of multi-species sequences from targeted genomic
-RT   regions.";
-RL   Nature 424:788-793(2003).
-RN   [2]
-RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA] OF 1-17.
-RX   PubMed=7526924; DOI=10.1093/hmg/3.7.1089;
-RA   Denamur E., Chehab F.F.;
-RT   "Analysis of the mouse and rat CFTR promoter regions.";
-RL   Hum. Mol. Genet. 3:1089-1094(1994).
-RN   [3]
-RP   NUCLEOTIDE SEQUENCE [MRNA] OF 482-988.
-RX   PubMed=1282491; DOI=10.1016/s0888-7543(05)80107-7;
-RA   Trezise A.E., Szpirer C., Buchwald M.;
-RT   "Localization of the gene encoding the cystic fibrosis transmembrane
-RT   conductance regulator (CFTR) in the rat to chromosome 4 and implications
-RT   for the evolution of mammalian chromosomes.";
-RL   Genomics 14:869-874(1992).
-RN   [4]
-RP   INTERACTION WITH GOPC.
-RX   PubMed=11707463; DOI=10.1074/jbc.m110177200;
-RA   Cheng J., Moyer B.D., Milewski M., Loffing J., Ikeda M., Mickle J.E.,
-RA   Cutting G.R., Li M., Stanton B.A., Guggino W.B.;
-RT   "A Golgi-associated PDZ domain protein modulates cystic fibrosis
-RT   transmembrane regulator plasma membrane expression.";
-RL   J. Biol. Chem. 277:3520-3529(2002).
-RN   [5]
-RP   SUBCELLULAR LOCATION, AND TISSUE SPECIFICITY.
-RX   PubMed=12519745; DOI=10.1152/ajpcell.00227.2002;
-RA   Hallows K.R., Kobinger G.P., Wilson J.M., Witters L.A., Foskett J.K.;
-RT   "Physiological modulation of CFTR activity by AMP-activated protein kinase
-RT   in polarized T84 cells.";
-RL   Am. J. Physiol. 284:C1297-C1308(2003).
-RN   [6]
-RP   INTERACTION WITH SHANK2.
-RX   PubMed=14679199; DOI=10.1074/jbc.m312871200;
-RA   Kim J.Y., Han W., Namkung W., Lee J.H., Kim K.H., Shin H., Kim E.,
-RA   Lee M.G.;
-RT   "Inhibitory regulation of cystic fibrosis transmembrane conductance
-RT   regulator anion-transporting activities by Shank2.";
-RL   J. Biol. Chem. 279:10389-10396(2004).
-RN   [7]
-RP   PHOSPHORYLATION [LARGE SCALE ANALYSIS] AT SER-808, AND IDENTIFICATION BY
-RP   MASS SPECTROMETRY [LARGE SCALE ANALYSIS].
-RX   PubMed=22673903; DOI=10.1038/ncomms1871;
-RA   Lundby A., Secher A., Lage K., Nordsborg N.B., Dmytriyev A., Lundby C.,
-RA   Olsen J.V.;
-RT   "Quantitative maps of protein phosphorylation sites across 14 different rat
-RT   organs and tissues.";
-RL   Nat. Commun. 3:876-876(2012).
-RN   [8]
-RP   SUBCELLULAR LOCATION.
-RX   PubMed=29453757; DOI=10.1007/s10735-018-9759-2;
-RA   Sharma S., Hanukoglu A., Hanukoglu I.;
-RT   "Localization of epithelial sodium channel (ENaC) and CFTR in the germinal
-RT   epithelium of the testis, Sertoli cells, and spermatozoa.";
-RL   J. Mol. Histol. 49:195-208(2018).
-RN   [9]
-RP   TISSUE SPECIFICITY.
-RX   PubMed=30659401; DOI=10.1007/s10735-019-09813-3;
-RA   Sharma S., Hanukoglu I.;
-RT   "Mapping the sites of localization of epithelial sodium channel (ENaC) and
-RT   CFTR in segments of the mammalian epididymis.";
-RL   J. Mol. Histol. 50:141-154(2019).
-CC   -!- FUNCTION: Epithelial ion channel that plays an important role in the
-CC       regulation of epithelial ion and water transport and fluid homeostasis.
-CC       Mediates the transport of chloride ions across the cell membrane (By
-CC       similarity). Possesses an intrinsic ATPase activity and utilizes ATP to
-CC       gate its channel; the passive flow of anions through the channel is
-CC       gated by cycles of ATP binding and hydrolysis by the ATP-binding
-CC       domains (By similarity). The ion channel is also permeable to
-CC       HCO(3)(-); selectivity depends on the extracellular chloride
-CC       concentration. Exerts its function also by modulating the activity of
-CC       other ion channels and transporters. Contributes to the regulation of
-CC       the pH and the ion content of the epithelial fluid layer. Modulates the
-CC       activity of the epithelial sodium channel (ENaC) complex, in part by
-CC       regulating the cell surface expression of the ENaC complex. May
-CC       regulate bicarbonate secretion and salvage in epithelial cells by
-CC       regulating the transporter SLC4A7. Can inhibit the chloride channel
-CC       activity of ANO1 (By similarity). Plays a role in the chloride and
-CC       bicarbonate homeostasis during sperm epididymal maturation and
-CC       capacitation (By similarity). {ECO:0000250|UniProtKB:P13569,
-CC       ECO:0000250|UniProtKB:P26361}.
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=ATP + H2O + closed Cl(-) channel = ADP + phosphate + open
-CC         Cl(-) channel.; EC=5.6.1.6; Evidence={ECO:0000250|UniProtKB:P13569};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=chloride(in) = chloride(out); Xref=Rhea:RHEA:29823,
-CC         ChEBI:CHEBI:17996; Evidence={ECO:0000250|UniProtKB:P13569};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=hydrogencarbonate(in) = hydrogencarbonate(out);
-CC         Xref=Rhea:RHEA:28695, ChEBI:CHEBI:17544;
-CC         Evidence={ECO:0000250|UniProtKB:P13569};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=ATP + H2O = ADP + phosphate + H(+); Xref=Rhea:RHEA:13065,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:15378, ChEBI:CHEBI:30616,
-CC         ChEBI:CHEBI:43474, ChEBI:CHEBI:456216;
-CC         Evidence={ECO:0000250|UniProtKB:P13569};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:13066;
-CC         Evidence={ECO:0000250|UniProtKB:P13569};
-CC   -!- SUBUNIT: Monomer; does not require oligomerization for channel
-CC       activity. May form oligomers in the membrane (By similarity). Interacts
-CC       with SLC4A7 through NHERF1 (By similarity). Interacts with SHANK2
-CC       (PubMed:14679199). Interacts with NHERF1 and MYO6. Interacts (via C-
-CC       terminus) with GOPC (via PDZ domain); this promotes CFTR
-CC       internalization and thereby decreases channel activity
-CC       (PubMed:11707463). Interacts with SLC4A7 through NHERF1. Found in a
-CC       complex with MYO5B and RAB11A. Interacts with ANO1. Interacts with
-CC       SLC26A8 (By similarity). Interacts with AHCYL1; the interaction
-CC       increases CFTR activity (By similarity). Interacts with CSE1L (By
-CC       similarity). The core-glycosylated form interacts with GORASP2 (via PDZ
-CC       GRASP-type 1 domain) in respone to ER stress (By similarity). Interacts
-CC       with MARCHF2; the interaction leads to CFTR ubiquitination and
-CC       degradation (By similarity). Interacts with ADGRG2 (By similarity).
-CC       {ECO:0000250|UniProtKB:P13569, ECO:0000250|UniProtKB:P26361,
-CC       ECO:0000269|PubMed:11707463, ECO:0000269|PubMed:14679199}.
-CC   -!- SUBCELLULAR LOCATION: Apical cell membrane
-CC       {ECO:0000250|UniProtKB:P26361}; Multi-pass membrane protein
-CC       {ECO:0000250|UniProtKB:P13569}. Early endosome membrane
-CC       {ECO:0000250|UniProtKB:P13569}; Multi-pass membrane protein
-CC       {ECO:0000250|UniProtKB:P13569}. Cell membrane
-CC       {ECO:0000250|UniProtKB:P26361}; Multi-pass membrane protein
-CC       {ECO:0000250|UniProtKB:P13569}. Recycling endosome membrane
-CC       {ECO:0000250|UniProtKB:P13569}; Multi-pass membrane protein
-CC       {ECO:0000250|UniProtKB:P13569}. Endoplasmic reticulum membrane
-CC       {ECO:0000250|UniProtKB:P13569}; Multi-pass membrane protein
-CC       {ECO:0000250|UniProtKB:P13569}. Nucleus {ECO:0000269|PubMed:29453757}.
-CC       Note=The channel is internalized from the cell surface into an
-CC       endosomal recycling compartment, from where it is recycled to the cell
-CC       membrane (By similarity). In the oviduct and bronchus, detected on the
-CC       apical side of epithelial cells, but not associated with cilia (By
-CC       similarity). In Sertoli cells, a processed product is detected in the
-CC       nucleus (PubMed:29453757). ER stress induces GORASP2-mediated
-CC       unconventional (ER/Golgi-independent) trafficking of core-glycosylated
-CC       CFTR to cell membrane (By similarity). {ECO:0000250|UniProtKB:P13569,
-CC       ECO:0000269|PubMed:29453757}.
-CC   -!- TISSUE SPECIFICITY: Detected in epithelial cells in nasopharynx,
-CC       submandibular gland, pancreas and ileum (at protein level)
-CC       (PubMed:12519745). Expressed in the epididymis (PubMed:30659401). In
-CC       the caput section of the epididymis, expressed uniformly on both the
-CC       luminal and basolateral sides of the ducts and on sperm in the caput
-CC       lumen (at protein level) (PubMed:30659401). In the cauda, detected
-CC       along the luminal border but not continuously and is also expressed on
-CC       the basolateral surface (PubMed:30659401). Within the caudal lumen,
-CC       detected on sperm (PubMed:30659401). {ECO:0000269|PubMed:12519745,
-CC       ECO:0000269|PubMed:30659401}.
-CC   -!- DOMAIN: Binds and hydrolyzes ATP via the two cytoplasmic ABC
-CC       transporter nucleotide-binding domains. The two ATP-binding domains
-CC       interact with each other, forming a head-to-tail dimer. Normal ATPase
-CC       activity requires interaction between the two domains. The first ABC
-CC       transporter nucleotide-binding domain has no ATPase activity by itself.
-CC       {ECO:0000250|UniProtKB:P13569, ECO:0000250|UniProtKB:P26361}.
-CC   -!- DOMAIN: The PDZ-binding motif mediates interactions with GOPC and with
-CC       the SLC4A7, NHERF1/EBP50 complex. {ECO:0000250|UniProtKB:P13569}.
-CC   -!- DOMAIN: The disordered R region mediates channel activation when it is
-CC       phosphorylated, but not in the absence of phosphorylation.
-CC       {ECO:0000250|UniProtKB:P13569}.
-CC   -!- PTM: N-glycosylated. {ECO:0000250|UniProtKB:P13569}.
-CC   -!- PTM: Phosphorylated; cAMP treatment promotes phosphorylation and
-CC       activates the channel. Dephosphorylation decreases the ATPase activity
-CC       (in vitro). Phosphorylation at PKA sites activates the channel.
-CC       Phosphorylation at PKC sites enhances the response to phosphorylation
-CC       by PKA. Phosphorylated by AMPK; this inhibits channel activity.
-CC       {ECO:0000250|UniProtKB:P13569}.
-CC   -!- PTM: Ubiquitinated, leading to its degradation in the lysosome.
-CC       Deubiquitination by USP10 in early endosomes enhances its endocytic
-CC       recycling to the cell membrane. Ubiquitinated by RNF185 during ER
-CC       stress. Ubiquitinated by MARCHF2 (By similarity).
-CC       {ECO:0000250|UniProtKB:P13569}.
-CC   -!- SIMILARITY: Belongs to the ABC transporter superfamily. ABCC family.
-CC       CFTR transporter (TC 3.A.1.202) subfamily. {ECO:0000305}.
-CC   ---------------------------------------------------------------------------
-CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
-CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
-CC   ---------------------------------------------------------------------------
-DR   EMBL; DP000027; AAR16315.1; -; Genomic_DNA.
-DR   EMBL; L26098; AAA73561.1; -; Genomic_DNA.
-DR   EMBL; M89906; AAA40918.1; -; mRNA.
-DR   PIR; I84733; I84733.
-DR   RefSeq; NP_113694.1; NM_031506.1.
-DR   RefSeq; XP_038962935.1; XM_039107007.2.
-DR   AlphaFoldDB; P34158; -.
-DR   SMR; P34158; -.
-DR   BioGRID; 246440; 3.
-DR   FunCoup; P34158; 282.
-DR   IntAct; P34158; 1.
-DR   MINT; P34158; -.
-DR   STRING; 10116.ENSRNOP00000072565; -.
-DR   BindingDB; P34158; -.
-DR   ChEMBL; CHEMBL3992; -.
-DR   GlyCosmos; P34158; 2 sites, No reported glycans.
-DR   GlyGen; P34158; 2 sites.
-DR   iPTMnet; P34158; -.
-DR   PhosphoSitePlus; P34158; -.
-DR   PaxDb; 10116-ENSRNOP00000072565; -.
-DR   GeneID; 24255; -.
-DR   KEGG; rno:24255; -.
-DR   AGR; RGD:2332; -.
-DR   CTD; 1080; -.
-DR   RGD; 2332; Cftr.
-DR   eggNOG; KOG0054; Eukaryota.
-DR   InParanoid; P34158; -.
-DR   OrthoDB; 6500128at2759; -.
-DR   PhylomeDB; P34158; -.
-DR   Reactome; R-RNO-382556; ABC-family protein mediated transport.
-DR   Reactome; R-RNO-5627083; RHO GTPases regulate CFTR trafficking.
-DR   Reactome; R-RNO-5689880; Ub-specific processing proteases.
-DR   Reactome; R-RNO-8856825; Cargo recognition for clathrin-mediated endocytosis.
-DR   Reactome; R-RNO-8856828; Clathrin-mediated endocytosis.
-DR   Reactome; R-RNO-9013406; RHOQ GTPase cycle.
-DR   Reactome; R-RNO-9646399; Aggrephagy.
-DR   PRO; PR:P34158; -.
-DR   Proteomes; UP000002494; Unplaced.
-DR   GO; GO:0016324; C:apical plasma membrane; IDA:RGD.
-DR   GO; GO:0016323; C:basolateral plasma membrane; IDA:RGD.
-DR   GO; GO:0009986; C:cell surface; ISO:RGD.
-DR   GO; GO:0005737; C:cytoplasm; ISO:RGD.
-DR   GO; GO:0005829; C:cytosol; ISO:RGD.
-DR   GO; GO:0030425; C:dendrite; IDA:RGD.
-DR   GO; GO:0005769; C:early endosome; IDA:RGD.
-DR   GO; GO:0031901; C:early endosome membrane; ISS:UniProtKB.
-DR   GO; GO:0005789; C:endoplasmic reticulum membrane; ISS:UniProtKB.
-DR   GO; GO:0016020; C:membrane; ISS:UniProtKB.
-DR   GO; GO:0005902; C:microvillus; IDA:RGD.
-DR   GO; GO:0043025; C:neuronal cell body; IDA:RGD.
-DR   GO; GO:0005634; C:nucleus; IDA:UniProtKB.
-DR   GO; GO:0005886; C:plasma membrane; ISS:UniProtKB.
-DR   GO; GO:0032991; C:protein-containing complex; ISO:RGD.
-DR   GO; GO:0055037; C:recycling endosome; ISO:RGD.
-DR   GO; GO:0055038; C:recycling endosome membrane; ISS:UniProtKB.
-DR   GO; GO:0071889; F:14-3-3 protein binding; ISO:RGD.
-DR   GO; GO:0140359; F:ABC-type transporter activity; IEA:InterPro.
-DR   GO; GO:0005524; F:ATP binding; IEA:InterPro.
-DR   GO; GO:0016887; F:ATP hydrolysis activity; ISS:UniProtKB.
-DR   GO; GO:0015106; F:bicarbonate transmembrane transporter activity; ISS:UniProtKB.
-DR   GO; GO:0005254; F:chloride channel activity; ISS:UniProtKB.
-DR   GO; GO:0019869; F:chloride channel inhibitor activity; ISS:UniProtKB.
-DR   GO; GO:0015108; F:chloride transmembrane transporter activity; ISS:UniProtKB.
-DR   GO; GO:0019899; F:enzyme binding; ISO:RGD.
-DR   GO; GO:0005260; F:intracellularly ATP-gated chloride channel activity; ISS:UniProtKB.
-DR   GO; GO:0030165; F:PDZ domain binding; ISO:RGD.
-DR   GO; GO:0051087; F:protein-folding chaperone binding; ISO:RGD.
-DR   GO; GO:0106138; F:Sec61 translocon complex binding; ISO:RGD.
-DR   GO; GO:0097186; P:amelogenesis; ISO:RGD.
-DR   GO; GO:0015701; P:bicarbonate transport; IMP:RGD.
-DR   GO; GO:0071454; P:cellular response to anoxia; IEP:RGD.
-DR   GO; GO:0071320; P:cellular response to cAMP; ISS:UniProtKB.
-DR   GO; GO:1904322; P:cellular response to forskolin; ISS:UniProtKB.
-DR   GO; GO:0034605; P:cellular response to heat; IEP:RGD.
-DR   GO; GO:0032870; P:cellular response to hormone stimulus; IEP:RGD.
-DR   GO; GO:1902476; P:chloride transmembrane transport; ISS:UniProtKB.
-DR   GO; GO:0006821; P:chloride transport; IMP:RGD.
-DR   GO; GO:0006695; P:cholesterol biosynthetic process; ISO:RGD.
-DR   GO; GO:0030301; P:cholesterol transport; ISO:RGD.
-DR   GO; GO:0070166; P:enamel mineralization; IMP:RGD.
-DR   GO; GO:0051454; P:intracellular pH elevation; ISS:UniProtKB.
-DR   GO; GO:0097421; P:liver regeneration; IEP:RGD.
-DR   GO; GO:0030324; P:lung development; IMP:RGD.
-DR   GO; GO:0060081; P:membrane hyperpolarization; ISS:UniProtKB.
-DR   GO; GO:0050891; P:multicellular organismal-level water homeostasis; ISS:UniProtKB.
-DR   GO; GO:2000077; P:negative regulation of type B pancreatic cell development; IMP:RGD.
-DR   GO; GO:1905460; P:negative regulation of vascular associated smooth muscle cell apoptotic process; IMP:RGD.
-DR   GO; GO:0070175; P:positive regulation of enamel mineralization; ISO:RGD.
-DR   GO; GO:1904446; P:positive regulation of establishment of Sertoli cell barrier; IMP:RGD.
-DR   GO; GO:0033005; P:positive regulation of mast cell activation; IMP:RGD.
-DR   GO; GO:0034097; P:response to cytokine; IEP:RGD.
-DR   GO; GO:0034976; P:response to endoplasmic reticulum stress; ISS:UniProtKB.
-DR   GO; GO:0043627; P:response to estrogen; IEP:RGD.
-DR   GO; GO:0043434; P:response to peptide hormone; IEP:RGD.
-DR   GO; GO:0009410; P:response to xenobiotic stimulus; IMP:RGD.
-DR   GO; GO:0035725; P:sodium ion transmembrane transport; IMP:RGD.
-DR   GO; GO:0048240; P:sperm capacitation; ISS:UniProtKB.
-DR   GO; GO:0030321; P:transepithelial chloride transport; IMP:RGD.
-DR   GO; GO:0035377; P:transepithelial water transport; ISS:UniProtKB.
-DR   GO; GO:0042311; P:vasodilation; IDA:RGD.
-DR   GO; GO:0006833; P:water transport; IMP:RGD.
-DR   CDD; cd03291; ABCC_CFTR1; 1.
-DR   FunFam; 1.20.1560.10:FF:000017; Cystic fibrosis transmembrane conductance regulator; 1.
-DR   FunFam; 1.20.1560.10:FF:000019; Cystic fibrosis transmembrane conductance regulator; 1.
-DR   FunFam; 3.40.50.300:FF:000581; Cystic fibrosis transmembrane conductance regulator; 1.
-DR   FunFam; 3.40.50.300:FF:000591; Cystic fibrosis transmembrane conductance regulator; 1.
-DR   Gene3D; 1.20.1560.10; ABC transporter type 1, transmembrane domain; 2.
-DR   Gene3D; 3.40.50.300; P-loop containing nucleotide triphosphate hydrolases; 2.
-DR   InterPro; IPR003593; AAA+_ATPase.
-DR   InterPro; IPR011527; ABC1_TM_dom.
-DR   InterPro; IPR036640; ABC1_TM_sf.
-DR   InterPro; IPR003439; ABC_transporter-like_ATP-bd.
-DR   InterPro; IPR017871; ABC_transporter-like_CS.
-DR   InterPro; IPR050173; ABC_transporter_C-like.
-DR   InterPro; IPR009147; CFTR/ABCC7.
-DR   InterPro; IPR047082; CFTR1_ATP-bd_dom1.
-DR   InterPro; IPR025837; CFTR_reg_dom.
-DR   InterPro; IPR027417; P-loop_NTPase.
-DR   NCBIfam; TIGR01271; CFTR_protein; 1.
-DR   PANTHER; PTHR24223; ATP-BINDING CASSETTE SUB-FAMILY C; 1.
-DR   PANTHER; PTHR24223:SF19; CYSTIC FIBROSIS TRANSMEMBRANE CONDUCTANCE REGULATOR; 1.
-DR   Pfam; PF00664; ABC_membrane; 2.
-DR   Pfam; PF00005; ABC_tran; 2.
-DR   Pfam; PF14396; CFTR_R; 1.
-DR   PRINTS; PR01851; CYSFIBREGLTR.
-DR   SMART; SM00382; AAA; 2.
-DR   SUPFAM; SSF90123; ABC transporter transmembrane region; 2.
-DR   SUPFAM; SSF52540; P-loop containing nucleoside triphosphate hydrolases; 2.
-DR   PROSITE; PS50929; ABC_TM1F; 2.
-DR   PROSITE; PS00211; ABC_TRANSPORTER_1; 1.
-DR   PROSITE; PS50893; ABC_TRANSPORTER_2; 2.
-PE   1: Evidence at protein level;
-KW   ATP-binding; Cell membrane; Chloride; Chloride channel;
-KW   Endoplasmic reticulum; Endosome; Glycoprotein; Ion channel; Ion transport;
-KW   Isomerase; Lipoprotein; Membrane; Nucleotide-binding; Nucleus; Palmitate;
-KW   Phosphoprotein; Reference proteome; Repeat; Transmembrane;
-KW   Transmembrane helix; Transport; Ubl conjugation.
-FT   CHAIN           1..1476
-FT                   /note="Cystic fibrosis transmembrane conductance regulator"
-FT                   /id="PRO_0000093428"
-FT   TOPO_DOM        1..77
-FT                   /note="Cytoplasmic"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        78..98
-FT                   /note="Helical; Name=1"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        99..122
-FT                   /note="Extracellular"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        123..146
-FT                   /note="Helical; Name=2"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        147..195
-FT                   /note="Cytoplasmic"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        196..216
-FT                   /note="Helical; Name=3"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        217..222
-FT                   /note="Extracellular"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        223..243
-FT                   /note="Helical; Name=4"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        244..298
-FT                   /note="Cytoplasmic"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        299..319
-FT                   /note="Helical; Name=5"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        320..339
-FT                   /note="Extracellular"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        340..358
-FT                   /note="Helical; Name=6"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        359..853
-FT                   /note="Cytoplasmic"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        854..874
-FT                   /note="Helical; Name=7"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        875..913
-FT                   /note="Extracellular"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        914..934
-FT                   /note="Discontinuously helical; Name=8"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        935..985
-FT                   /note="Cytoplasmic"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        986..1006
-FT                   /note="Helical; Name=9"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        1007..1008
-FT                   /note="Extracellular"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        1009..1029
-FT                   /note="Helical; Name=10"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        1030..1090
-FT                   /note="Cytoplasmic"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        1091..1111
-FT                   /note="Helical; Name=11"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        1112..1125
-FT                   /note="Extracellular"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TRANSMEM        1126..1146
-FT                   /note="Helical; Name=12"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   TOPO_DOM        1147..1476
-FT                   /note="Cytoplasmic"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   DOMAIN          81..365
-FT                   /note="ABC transmembrane type-1 1"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00441"
-FT   DOMAIN          412..646
-FT                   /note="ABC transporter 1"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00434"
-FT   DOMAIN          854..1153
-FT                   /note="ABC transmembrane type-1 2"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00441"
-FT   DOMAIN          1208..1439
-FT                   /note="ABC transporter 2"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00434"
-FT   REGION          654..826
-FT                   /note="Disordered R region"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   REGION          1382..1476
-FT                   /note="Interaction with GORASP2"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   REGION          1445..1476
-FT                   /note="Disordered"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   MOTIF           1474..1476
-FT                   /note="PDZ-binding"
-FT                   /evidence="ECO:0000269|PubMed:11707463"
-FT   COMPBIAS        1445..1456
-FT                   /note="Basic residues"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   COMPBIAS        1466..1476
-FT                   /note="Acidic residues"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   BINDING         401
-FT                   /ligand="ATP"
-FT                   /ligand_id="ChEBI:CHEBI:30616"
-FT                   /ligand_label="1"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   BINDING         458..465
-FT                   /ligand="ATP"
-FT                   /ligand_id="ChEBI:CHEBI:30616"
-FT                   /ligand_label="1"
-FT                   /evidence="ECO:0000250|UniProtKB:P26361,
-FT                   ECO:0000255|PROSITE-ProRule:PRU00434"
-FT   BINDING         458..465
-FT                   /ligand="ATP"
-FT                   /ligand_id="ChEBI:CHEBI:30616"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00434"
-FT   BINDING         493
-FT                   /ligand="ATP"
-FT                   /ligand_id="ChEBI:CHEBI:30616"
-FT                   /ligand_label="1"
-FT                   /evidence="ECO:0000250|UniProtKB:P26361"
-FT   BINDING         1215
-FT                   /ligand="ATP"
-FT                   /ligand_id="ChEBI:CHEBI:30616"
-FT                   /ligand_label="2"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   BINDING         1240..1247
-FT                   /ligand="ATP"
-FT                   /ligand_id="ChEBI:CHEBI:30616"
-FT                   /ligand_label="2"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00434"
-FT   BINDING         1240..1247
-FT                   /ligand="ATP"
-FT                   /ligand_id="ChEBI:CHEBI:30616"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00434"
-FT   MOD_RES         549
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         660
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         670
-FT                   /note="Phosphoserine; by PKA"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         684
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         698
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         710
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         715
-FT                   /note="Phosphothreonine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         732
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         763
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         785
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         790
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         808
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0007744|PubMed:22673903"
-FT   MOD_RES         1440
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   MOD_RES         1452
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   LIPID           524
-FT                   /note="S-palmitoyl cysteine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   LIPID           1391
-FT                   /note="S-palmitoyl cysteine"
-FT                   /evidence="ECO:0000250|UniProtKB:P13569"
-FT   CARBOHYD        889
-FT                   /note="N-linked (GlcNAc...) asparagine"
-FT                   /evidence="ECO:0000255"
-FT   CARBOHYD        895
-FT                   /note="N-linked (GlcNAc...) asparagine"
-FT                   /evidence="ECO:0000255"
-FT   CONFLICT        987..988
-FT                   /note="FD -> LT (in Ref. 3; AAA40918)"
-FT                   /evidence="ECO:0000305"
-SQ   SEQUENCE   1476 AA;  167830 MW;  B2B2A25EB5107640 CRC64;
-     MQKSPLEKAS FISKLFFSWT TPILRKGYRH HLELSDIYQA PSSDSADHLS EKLEREWDRE
-     QASKKKPQLI HALRRCFVWR FVFYGVLLYL GEVTKAVQPV LLGRIIASYD PDNTEERSIA
-     IYLGIGLCLL FIVRTLLLHP AIFGLHHIGM QMRIAMFSLI YKKTLKLSSR VLDKISIGQL
-     ISLLSNNLNK FDEGLALAHF IWIAPLQVVL LMGLLWDLLQ FSAFCGLGLL IVLVIFQAIL
-     GKMMVKYRDK RAAKINERLV ITSEVIDNIY SVKAYCWESA MEKIIESLRE EELKMTRRSA
-     YMRFFTSSAF FFSGFFVVFL SVLPYTVING IVLRKIFTTI SFCIVLRMSV TRQFPTAVQI
-     WYDSLGMIRK IQDFLQTQEY KVLEYNLMFT GLVMENVTAF WEEGFQELLE KVQLNNDDRK
-     TSNGENHLSF SHLCLVGNPV LKNINLNIKK GEMLAITGST GAGKTSLLML ILGELEASEG
-     IIKHSGRVSF SSQISWIMPG TIKENIIFGV SYDEYRYKSV VKACQLQEDI TKFAEQDNTV
-     LGEGGVTLSG GQRARISLAR AVYKDADLYL LDSPFGYLDV LTEEQIFESC VCKLMASKTR
-     ILVTSKMEQL KKADKILILH EGSSYFYGTF SELQSLRPDF SSKLMGYDTF DQFTEERRSS
-     ILTETLRRFS VDDASTTWNK AKQSFRQTGE FGEKRKNSIL SSFSSVKKIS IVQKTPLSIE
-     GESDDLQERR LSLVPDSEHG EAALPRSNMI TAGPTFPGRR RQSVLDLMTF TPSSVSSSLQ
-     RTRASIRKIS LAPRISLKEE DIYSRRLSQD STLNITEEIN EEDLKECFFD DMVKIPTVTT
-     WNTYLRYFTL HRGLFAVLIW CVLVFLVEVA ASLFVLWLLK NNPVNGGNNG TKIANTSYVV
-     VITSSSFYYI FYIYVGVADT LLALSLFRGL PLVHTLITAS KILHRKMLHS ILHAPMSTFN
-     KLKAGGILNR FSKDIAILDD FLPLTIFDFI QLLFIVVGAI IVVSALQPYI FLATVPGLAV
-     FILLRAYFLH TSQQLKQLES EGRSPIFTHL VTSLKGLWTL RAFRRQTYFE TLFHKALNLH
-     TANWFMYLAT LRWFQMRIDM IFVLFFIVVT FISILTTGEG EGTTGIILTL AMNIMSTLQW
-     AVNSSIDTDS LMRSVSRVFK FIDIQTEESI CTKIMKELHS EDSPNALVIK NEHVKKCDTW
-     PSGGEMVVKD LTVKYVDDGN AILENISFSI SPGQRVGLLG RTGSGKSTLL SAFLRMLNIK
-     GEIQIDGVSW NSMTLQEWRK AFGVITQKVF IFSGTFRQNL DPNGKWRDEE IWKVADQVGL
-     KSVIEQFPGQ LNFTLVDGGY VLSHGHKQLM CLARSVLSKA KIILLDEPSA NLDPITYQVI
-     RRVLRQAFAG CTVVLCEHRI EAMLDCQRFL VIEQGNVWQY ESLQALLSEK SVFQRALSSS
-     EKMKLFHGRH SSKQKPRTQI TAVKEETEEE VQETRL
-//
-ID   PGH2_RAT                Reviewed;         604 AA.
-AC   P35355; Q64379; Q925V4;
-DT   01-JUN-1994, integrated into UniProtKB/Swiss-Prot.
-DT   01-JUN-1994, sequence version 1.
-DT   02-SEP-2026, entry version 212.
-DE   RecName: Full=Prostaglandin G/H synthase 2;
-DE            EC=1.14.99.1;
-DE   AltName: Full=Cyclooxygenase-2;
-DE            Short=COX-2;
-DE   AltName: Full=PHS II;
-DE   AltName: Full=Prostaglandin H2 synthase 2;
-DE            Short=PGH synthase 2;
-DE            Short=PGHS-2;
-DE   AltName: Full=Prostaglandin-endoperoxide synthase 2;
-DE   Flags: Precursor;
-GN   Name=Ptgs2; Synonyms=Cox-2, Cox2;
-OS   Rattus norvegicus (Rat).
-OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
-OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
-OC   Murinae; Rattus.
-OX   NCBI_TaxID=10116;
-RN   [1]
-RP   NUCLEOTIDE SEQUENCE [MRNA].
-RX   PubMed=7916614; DOI=10.1006/bbrc.1993.2506;
-RA   Kennedy B.P., Chan C.C., Culp S.A., Cromlish W.A.;
-RT   "Cloning and expression of rat prostaglandin endoperoxide synthase
-RT   (cyclooxygenase)-2 cDNA.";
-RL   Biochem. Biophys. Res. Commun. 197:494-500(1993).
-RN   [2]
-RP   NUCLEOTIDE SEQUENCE [MRNA].
-RX   PubMed=8352945; DOI=10.1016/0896-6273(93)90192-t;
-RA   Yamagata K., Andreasson K.I., Kaufmann W.E., Barnes C.A., Worley P.F.;
-RT   "Expression of a mitogen-inducible cyclooxygenase in brain neurons:
-RT   regulation by synaptic activity and glucocorticoids.";
-RL   Neuron 11:371-386(1993).
-RN   [3]
-RP   NUCLEOTIDE SEQUENCE [MRNA].
-RC   STRAIN=Wistar; TISSUE=Intestine;
-RX   PubMed=8203528; DOI=10.1152/ajpgi.1994.266.5.g822;
-RA   Dubois R.N., Tsujii M., Bishop P., Awad J.A., Makita K., Lanahan A.;
-RT   "Cloning and characterization of a growth factor-inducible cyclooxygenase
-RT   gene from rat intestinal epithelial cells.";
-RL   Am. J. Physiol. 266:G822-G827(1994).
-RN   [4]
-RP   NUCLEOTIDE SEQUENCE [MRNA].
-RC   STRAIN=Fischer 344;
-RX   PubMed=8274023; DOI=10.1006/abbi.1993.1601;
-RA   Feng L., Sun W., Xia Y., Tang W.W., Chanmugam P., Soyoola E., Wilson C.B.,
-RA   Hwang D.;
-RT   "Cloning two isoforms of rat cyclooxygenase: differential regulation of
-RT   their expression.";
-RL   Arch. Biochem. Biophys. 307:361-368(1993).
-RN   [5]
-RP   NUCLEOTIDE SEQUENCE [MRNA].
-RX   PubMed=10816563; DOI=10.1074/jbc.m001611200;
-RA   Xu K., Robida A.M., Murphy T.J.;
-RT   "Immediate-early MEK-1-dependent stabilization of rat smooth muscle cell
-RT   cyclooxygenase-2 mRNA by Galpha(q)-coupled receptor signaling.";
-RL   J. Biol. Chem. 275:23012-23019(2000).
-RN   [6]
-RP   PROTEIN SEQUENCE OF 18-43.
-RX   PubMed=1556140; DOI=10.1016/s0021-9258(18)42706-8;
-RA   Sirois J., Richards J.S.;
-RT   "Purification and characterization of a novel, distinct isoform of
-RT   prostaglandin endoperoxide synthase induced by human chorionic gonadotropin
-RT   in granulosa cells of rat preovulatory follicles.";
-RL   J. Biol. Chem. 267:6382-6388(1992).
-RN   [7]
-RP   REVIEW ON FUNCTION; TISSUE SPECIFICITY AND INHIBITION BY NSAIDS.
-RX   PubMed=10966456; DOI=10.1146/annurev.biochem.69.1.145;
-RA   Smith W.L., DeWitt D.L., Garavito R.M.;
-RT   "Cyclooxygenases: structural, cellular, and molecular biology.";
-RL   Annu. Rev. Biochem. 69:145-182(2000).
-RN   [8]
-RP   REVIEW ON FUNCTION; INHIBITION BY ASPIRIN AND INVOLVEMENT IN COLORECTAL
-RP   CANCER.
-RX   PubMed=24605250; DOI=10.4292/wjgpt.v5.i1.40;
-RA   Sostres C., Gargallo C.J., Lanas A.;
-RT   "Aspirin, cyclooxygenase inhibition and colorectal cancer.";
-RL   World J. Gastrointest. Pharmacol. Ther. 5:40-49(2014).
-CC   -!- FUNCTION: Dual cyclooxygenase and peroxidase in the biosynthesis
-CC       pathway of prostanoids, a class of C20 oxylipins mainly derived from
-CC       arachidonate ((5Z,8Z,11Z,14Z)-eicosatetraenoate, AA, C20:4(n-6)), with
-CC       a particular role in the inflammatory response. The cyclooxygenase
-CC       activity oxygenates AA to the hydroperoxy endoperoxide prostaglandin G2
-CC       (PGG2), and the peroxidase activity reduces PGG2 to the hydroxy
-CC       endoperoxide prostaglandin H2 (PGH2), the precursor of all 2-series
-CC       prostaglandins and thromboxanes. This complex transformation is
-CC       initiated by abstraction of hydrogen at carbon 13 (with S-
-CC       stereochemistry), followed by insertion of molecular O2 to form the
-CC       endoperoxide bridge between carbon 9 and 11 that defines
-CC       prostaglandins. The insertion of a second molecule of O2 (bis-oxygenase
-CC       activity) yields a hydroperoxy group in PGG2 that is then reduced to
-CC       PGH2 by two electrons. Similarly catalyzes successive cyclooxygenation
-CC       and peroxidation of dihomo-gamma-linoleate (DGLA, C20:3(n-6)) and
-CC       eicosapentaenoate (EPA, C20:5(n-3)) to corresponding PGH1 and PGH3, the
-CC       precursors of 1- and 3-series prostaglandins. In an alternative pathway
-CC       of prostanoid biosynthesis, converts 2-arachidonoyl lysophospholipids
-CC       to prostanoid lysophospholipids, which are then hydrolyzed by
-CC       intracellular phospholipases to release free prostanoids. Metabolizes
-CC       2-arachidonoyl glycerol yielding the glyceryl ester of PGH2, a process
-CC       that can contribute to pain response. Generates lipid mediators from n-
-CC       3 and n-6 polyunsaturated fatty acids (PUFAs) via a lipoxygenase-type
-CC       mechanism. Oxygenates PUFAs to hydroperoxy compounds and then reduces
-CC       them to corresponding alcohols. Plays a role in the generation of
-CC       resolution phase interaction products (resolvins) during both sterile
-CC       and infectious inflammation. Metabolizes docosahexaenoate (DHA,
-CC       C22:6(n-3)) to 17R-HDHA, a precursor of the D-series resolvins (RvDs).
-CC       As a component of the biosynthetic pathway of E-series resolvins
-CC       (RvEs), converts eicosapentaenoate (EPA, C20:5(n-3)) primarily to 18S-
-CC       HEPE that is further metabolized by ALOX5 and LTA4H to generate 18S-
-CC       RvE1 and 18S-RvE2. In vascular endothelial cells, converts
-CC       docosapentaenoate (DPA, C22:5(n-3)) to 13R-HDPA, a precursor for 13-
-CC       series resolvins (RvTs) shown to activate macrophage phagocytosis
-CC       during bacterial infection. In activated leukocytes, contributes to
-CC       oxygenation of hydroxyeicosatetraenoates (HETE) to diHETES (5,15-diHETE
-CC       and 5,11-diHETE). Can also use linoleate (LA, (9Z,12Z)-
-CC       octadecadienoate, C18:2(n-6)) as substrate and produce
-CC       hydroxyoctadecadienoates (HODEs) in a regio- and stereospecific manner,
-CC       being (9R)-HODE ((9R)-hydroxy-(10E,12Z)-octadecadienoate) and (13S)-
-CC       HODE ((13S)-hydroxy-(9Z,11E)-octadecadienoate) its major products (By
-CC       similarity). During neuroinflammation, plays a role in neuronal
-CC       secretion of specialized preresolving mediators (SPMs) 15R-lipoxin A4
-CC       that regulates phagocytic microglia (By similarity).
-CC       {ECO:0000250|UniProtKB:P35354, ECO:0000250|UniProtKB:P79208,
-CC       ECO:0000250|UniProtKB:Q05769}.
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z)-eicosatetraenoate + AH2 + 2 O2 = prostaglandin
-CC         H2 + A + H2O; Xref=Rhea:RHEA:23728, ChEBI:CHEBI:13193,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:15379, ChEBI:CHEBI:17499,
-CC         ChEBI:CHEBI:32395, ChEBI:CHEBI:57405; EC=1.14.99.1;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:23729;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z)-eicosatetraenoate + 2 O2 = prostaglandin G2;
-CC         Xref=Rhea:RHEA:42596, ChEBI:CHEBI:15379, ChEBI:CHEBI:32395,
-CC         ChEBI:CHEBI:82629; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:42597;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=prostaglandin G2 + AH2 = prostaglandin H2 + A + H2O;
-CC         Xref=Rhea:RHEA:42600, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:57405, ChEBI:CHEBI:82629;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:42601;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z,17Z)-eicosapentaenoate + 2 O2 = prostaglandin
-CC         G3; Xref=Rhea:RHEA:50444, ChEBI:CHEBI:15379, ChEBI:CHEBI:58562,
-CC         ChEBI:CHEBI:133133; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50445;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=prostaglandin G3 + AH2 = prostaglandin H3 + A + H2O;
-CC         Xref=Rhea:RHEA:50448, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:133133, ChEBI:CHEBI:133134;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50449;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(8Z,11Z,14Z)-eicosatrienoate + 2 O2 = prostaglandin G1;
-CC         Xref=Rhea:RHEA:50424, ChEBI:CHEBI:15379, ChEBI:CHEBI:71589,
-CC         ChEBI:CHEBI:133084; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50425;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=prostaglandin G1 + AH2 = prostaglandin H1 + A + H2O;
-CC         Xref=Rhea:RHEA:50432, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:90793, ChEBI:CHEBI:133084;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50433;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-(5Z,8Z,11Z,14Z)-eicosatetraenoyl-sn-glycero-3-
-CC         phosphoethanolamine + 2 O2 = 2-(prostaglandin G2)-sn-glycero-3-
-CC         phosphoethanolamine; Xref=Rhea:RHEA:54204, ChEBI:CHEBI:15379,
-CC         ChEBI:CHEBI:76091, ChEBI:CHEBI:138098;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:54205;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-(prostaglandin G2)-sn-glycero-3-phosphoethanolamine + AH2 =
-CC         2-(prostaglandin H2)-sn-glycero-3-phosphoethanolamine + A + H2O;
-CC         Xref=Rhea:RHEA:54208, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:138098, ChEBI:CHEBI:138099;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:54209;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-(5Z,8Z,11Z,14Z)-eicosatetraenoyl-sn-glycero-3-phosphocholine
-CC         + 2 O2 = 2-(prostaglandin G2)-sn-glycero-3-phosphocholine;
-CC         Xref=Rhea:RHEA:54212, ChEBI:CHEBI:15379, ChEBI:CHEBI:76079,
-CC         ChEBI:CHEBI:138100; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:54213;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-(prostaglandin G2)-sn-glycero-3-phosphocholine + AH2 = 2-
-CC         (prostaglandin H2)-sn-glycero-3-phosphocholine + A + H2O;
-CC         Xref=Rhea:RHEA:54216, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:138100, ChEBI:CHEBI:138101;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:54217;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(15S)-hydroperoxy-(5Z,8Z,11Z,13E)-eicosatetraenoate + AH2 =
-CC         (15S)-hydroxy-(5Z,8Z,11Z,13E)-eicosatetraenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48856, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:57409, ChEBI:CHEBI:57446;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48857;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-(5Z,8Z,11Z,14Z)-eicosatetraenoyl-sn-glycero-3-phosphocholine
-CC         + AH2 + O2 = 2-[(15S)-hydroxy-(5Z,8Z,11Z,13E)-eicosatetraenoyl]-sn-
-CC         glycero-3-phosphocholine + A + H2O; Xref=Rhea:RHEA:53684,
-CC         ChEBI:CHEBI:13193, ChEBI:CHEBI:15377, ChEBI:CHEBI:15379,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:76079, ChEBI:CHEBI:137584;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:53685;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-(5Z,8Z,11Z,14Z)-eicosatetraenoyl-sn-glycero-3-phosphocholine
-CC         + AH2 + O2 = 2-[(15R)-hydroxy-(5Z,8Z,11Z,13E)-eicosatetraenoyl]-sn-
-CC         glycero-3-phosphocholine + A + H2O; Xref=Rhea:RHEA:53680,
-CC         ChEBI:CHEBI:13193, ChEBI:CHEBI:15377, ChEBI:CHEBI:15379,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:76079, ChEBI:CHEBI:137583;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:53681;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-(5Z,8Z,11Z,14Z)-eicosatetraenoyl-sn-glycero-3-phosphocholine
-CC         + AH2 + O2 = 2-[(11R)-hydroxy-(5Z,8Z,12E,14Z)-eicosatetraenoyl]-sn-
-CC         glycero-3-phosphocholine + A + H2O; Xref=Rhea:RHEA:53676,
-CC         ChEBI:CHEBI:13193, ChEBI:CHEBI:15377, ChEBI:CHEBI:15379,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:76079, ChEBI:CHEBI:137582;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:53677;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(9Z,12Z)-octadecadienoate + AH2 + O2 = 9-hydroxy-(10E,12Z)-
-CC         octadecadienoate + A + H2O; Xref=Rhea:RHEA:50864, ChEBI:CHEBI:13193,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:15379, ChEBI:CHEBI:17499,
-CC         ChEBI:CHEBI:30245, ChEBI:CHEBI:133820;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50865;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(9Z,12Z)-octadecadienoate + AH2 + O2 = 13-hydroxy-(9Z,11E)-
-CC         octadecadienoate + A + H2O; Xref=Rhea:RHEA:50860, ChEBI:CHEBI:13193,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:15379, ChEBI:CHEBI:17499,
-CC         ChEBI:CHEBI:30245, ChEBI:CHEBI:133819;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50861;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z)-eicosatetraenoate + AH2 + O2 = (15R)-hydroxy-
-CC         (5Z,8Z,11Z,13E)-eicosatetraenoate + A + H2O; Xref=Rhea:RHEA:50856,
-CC         ChEBI:CHEBI:13193, ChEBI:CHEBI:15377, ChEBI:CHEBI:15379,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:32395, ChEBI:CHEBI:78837;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50857;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z)-eicosatetraenoate + AH2 + O2 = (11R)-hydroxy-
-CC         (5Z,8Z,12E,14Z)-eicosatetraenoate + A + H2O; Xref=Rhea:RHEA:50852,
-CC         ChEBI:CHEBI:13193, ChEBI:CHEBI:15377, ChEBI:CHEBI:15379,
-CC         ChEBI:CHEBI:17499, ChEBI:CHEBI:32395, ChEBI:CHEBI:78836;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50853;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z,17Z)-eicosapentaenoate + AH2 + O2 = (11R)-
-CC         hydroxy-(5Z,8Z,12E,14Z,17Z)-eicosapentaenoate + A + H2O;
-CC         Xref=Rhea:RHEA:50848, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:58562,
-CC         ChEBI:CHEBI:90820; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50849;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z,17Z)-eicosapentaenoate + AH2 + O2 = (18S)-
-CC         hydroxy-(5Z,8Z,11Z,14Z,16E)-eicosapentaenoate + A + H2O;
-CC         Xref=Rhea:RHEA:50200, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:58562,
-CC         ChEBI:CHEBI:132083; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50201;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z,17Z)-eicosapentaenoate + AH2 + O2 = (18R)-
-CC         hydroxy-(5Z,8Z,11Z,14Z,16E)-eicosapentaenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48836, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:58562,
-CC         ChEBI:CHEBI:90818; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48837;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z,17Z)-eicosapentaenoate + AH2 + O2 = (15R)-
-CC         hydroxy-(5Z,8Z,11Z,13E,17Z)-eicosapentaenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48840, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:58562,
-CC         ChEBI:CHEBI:90819; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48841;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z,17Z)-eicosapentaenoate + AH2 + O2 = (15S)-
-CC         hydroxy-(5Z,8Z,11Z,13E,17Z)-eicosapentaenoate + A + H2O;
-CC         Xref=Rhea:RHEA:50196, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:58562,
-CC         ChEBI:CHEBI:132087; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:50197;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(7Z,10Z,13Z,16Z,19Z)-docosapentaenoate + AH2 + O2 = 13R-
-CC         hydroxy-(7Z,10Z,14E,16Z,19Z)-docosapentaenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48852, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:77224,
-CC         ChEBI:CHEBI:90824; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48853;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(4Z,7Z,10Z,13Z,16Z,19Z)-docosahexaenoate + AH2 + O2 = 13-
-CC         hydroxy-(4Z,7Z,10Z,14E,16Z,19Z)-docosahexaenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48820, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:77016,
-CC         ChEBI:CHEBI:90815; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48821;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5S)-hydroxy-(6E,8Z,11Z,14Z)-eicosatetraenoate + AH2 + O2 =
-CC         (5S,15R)-dihydroxy-(6E,8Z,11Z,13E)-eicosatetraenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48812, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:90632,
-CC         ChEBI:CHEBI:90812; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48813;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(4Z,7Z,10Z,13Z,16Z,19Z)-docosahexaenoate + AH2 + O2 = 17R-
-CC         hydroxy-(4Z,7Z,10Z,13Z,15E,19Z)-docosahexaenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48816, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:77016,
-CC         ChEBI:CHEBI:90814; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48817;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5S)-hydroxy-(6E,8Z,11Z,14Z)-eicosatetraenoate + AH2 + O2 =
-CC         (5S,15S)-dihydroxy-(6E,8Z,11Z,13E)-eicosatetraenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48808, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:90632,
-CC         ChEBI:CHEBI:90813; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48809;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5S)-hydroxy-(6E,8Z,11Z,14Z)-eicosatetraenoate + AH2 + O2 =
-CC         (5S,11R)-dihydroxy-(6E,8Z,12E,14Z)-eicosatetraenoate + A + H2O;
-CC         Xref=Rhea:RHEA:48804, ChEBI:CHEBI:13193, ChEBI:CHEBI:15377,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:17499, ChEBI:CHEBI:90632,
-CC         ChEBI:CHEBI:90810; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:48805;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-(5Z,8Z,11Z,14Z-eicosatetraenoyl)-glycerol + 2 O2 = 2-
-CC         glyceryl-prostaglandin G2; Xref=Rhea:RHEA:45288, ChEBI:CHEBI:15379,
-CC         ChEBI:CHEBI:52392, ChEBI:CHEBI:85165;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:45289;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=2-glyceryl-prostaglandin G2 + AH2 = 2-glyceryl-prostaglandin
-CC         H2 + A + H2O; Xref=Rhea:RHEA:45292, ChEBI:CHEBI:13193,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:17499, ChEBI:CHEBI:85165,
-CC         ChEBI:CHEBI:85166; Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:45293;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z)-eicosatetraenoate + O2 = (15R)-hydroperoxy-
-CC         (5Z,8Z,11Z,13E)-eicosatetraenoate; Xref=Rhea:RHEA:42284,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:32395, ChEBI:CHEBI:82626;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:42285;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(5Z,8Z,11Z,14Z)-eicosatetraenoate + O2 = 11R-hydroperoxy-
-CC         (5Z,8Z,12E,14Z)-eicosatetraenoate; Xref=Rhea:RHEA:42280,
-CC         ChEBI:CHEBI:15379, ChEBI:CHEBI:32395, ChEBI:CHEBI:82628;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:42281;
-CC         Evidence={ECO:0000250|UniProtKB:P35354};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(9Z,12Z)-octadecadienoate + AH2 + O2 = (9R)-hydroxy-(10E,12Z)-
-CC         octadecadienoate + A + H2O; Xref=Rhea:RHEA:75447, ChEBI:CHEBI:13193,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:15379, ChEBI:CHEBI:17499,
-CC         ChEBI:CHEBI:30245, ChEBI:CHEBI:77895;
-CC         Evidence={ECO:0000250|UniProtKB:P79208};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:75448;
-CC         Evidence={ECO:0000250|UniProtKB:P79208};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(9Z,12Z)-octadecadienoate + AH2 + O2 = (9S)-hydroxy-(10E,12Z)-
-CC         octadecadienoate + A + H2O; Xref=Rhea:RHEA:75459, ChEBI:CHEBI:13193,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:15379, ChEBI:CHEBI:17499,
-CC         ChEBI:CHEBI:30245, ChEBI:CHEBI:77852;
-CC         Evidence={ECO:0000250|UniProtKB:P79208};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:75460;
-CC         Evidence={ECO:0000250|UniProtKB:P79208};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(9Z,12Z)-octadecadienoate + AH2 + O2 = (13S)-hydroxy-(9Z,11E)-
-CC         octadecadienoate + A + H2O; Xref=Rhea:RHEA:75451, ChEBI:CHEBI:13193,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:15379, ChEBI:CHEBI:17499,
-CC         ChEBI:CHEBI:30245, ChEBI:CHEBI:90850;
-CC         Evidence={ECO:0000250|UniProtKB:P79208};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:75452;
-CC         Evidence={ECO:0000250|UniProtKB:P79208};
-CC   -!- CATALYTIC ACTIVITY:
-CC       Reaction=(9Z,12Z)-octadecadienoate + AH2 + O2 = (13R)-hydroxy-(9Z,11E)-
-CC         octadecadienoate + A + H2O; Xref=Rhea:RHEA:75455, ChEBI:CHEBI:13193,
-CC         ChEBI:CHEBI:15377, ChEBI:CHEBI:15379, ChEBI:CHEBI:17499,
-CC         ChEBI:CHEBI:30245, ChEBI:CHEBI:136655;
-CC         Evidence={ECO:0000250|UniProtKB:P79208};
-CC       PhysiologicalDirection=left-to-right; Xref=Rhea:RHEA:75456;
-CC         Evidence={ECO:0000250|UniProtKB:P79208};
-CC   -!- COFACTOR:
-CC       Name=heme b; Xref=ChEBI:CHEBI:60344;
-CC         Evidence={ECO:0000250|UniProtKB:Q05769};
-CC       Note=Binds 1 heme b (iron(II)-protoporphyrin IX) group per subunit.
-CC       {ECO:0000250|UniProtKB:Q05769};
-CC   -!- PATHWAY: Lipid metabolism; prostaglandin biosynthesis.
-CC       {ECO:0000250|UniProtKB:P35354}.
-CC   -!- SUBUNIT: Homodimer. {ECO:0000250|UniProtKB:Q05769}.
-CC   -!- SUBCELLULAR LOCATION: Microsome membrane
-CC       {ECO:0000250|UniProtKB:P35354}; Peripheral membrane protein
-CC       {ECO:0000250|UniProtKB:P35354}. Endoplasmic reticulum membrane
-CC       {ECO:0000250|UniProtKB:P35354}; Peripheral membrane protein
-CC       {ECO:0000250|UniProtKB:P35354}. Nucleus inner membrane
-CC       {ECO:0000250|UniProtKB:P35354}; Peripheral membrane protein
-CC       {ECO:0000250|UniProtKB:P35354}. Nucleus outer membrane
-CC       {ECO:0000250|UniProtKB:P35354}; Peripheral membrane protein
-CC       {ECO:0000250|UniProtKB:P35354}. Note=Detected on the lumenal side of
-CC       the endoplasmic reticulum and nuclear envelope.
-CC       {ECO:0000250|UniProtKB:P35354}.
-CC   -!- TISSUE SPECIFICITY: Expressed throughout the forebrain in discrete
-CC       populations of neurons and is enriched in the cortex and hippocampus.
-CC   -!- INDUCTION: By cytokines and mitogens.
-CC   -!- PTM: S-nitrosylation by NOS2 (iNOS) activates enzyme activity. S-
-CC       nitrosylation may take place on different Cys residues in addition to
-CC       Cys-526. {ECO:0000250|UniProtKB:P35354}.
-CC   -!- PTM: Acetylated at Ser-565 by SPHK1. During neuroinflammation,
-CC       acetylation by SPHK1 promotes neuronal secretion of specialized
-CC       preresolving mediators (SPMs), especially 15-R-lipoxin A4, which
-CC       results in an increase of phagocytic microglia.
-CC       {ECO:0000250|UniProtKB:Q05769}.
-CC   -!- MISCELLANEOUS: The conversion of arachidonate to prostaglandin H2 is a
-CC       2 step reaction: a cyclooxygenase (COX) reaction which converts
-CC       arachidonate to prostaglandin G2 (PGG2) and a peroxidase reaction in
-CC       which PGG2 is reduced to prostaglandin H2 (PGH2). The cyclooxygenase
-CC       reaction occurs in a hydrophobic channel in the core of the enzyme. The
-CC       peroxidase reaction occurs at a heme-containing active site located
-CC       near the protein surface. The nonsteroidal anti-inflammatory drugs
-CC       (NSAIDs) binding site corresponds to the cyclooxygenase active site.
-CC   -!- MISCELLANEOUS: Conversion of arachidonate to prostaglandin H2 is
-CC       mediated by 2 different isozymes: the constitutive PTGS1 and the
-CC       inducible PTGS2. PTGS1 is expressed constitutively and generally
-CC       produces prostanoids acutely in response to hormonal stimuli to fine-
-CC       tune physiological processes requiring instantaneous, continuous
-CC       regulation (e.g. hemostasis). PTGS2 is inducible and typically produces
-CC       prostanoids that mediate responses to physiological stresses such as
-CC       infection and inflammation.
-CC   -!- MISCELLANEOUS: PTGS1 and PTGS2 are the targets of nonsteroidal anti-
-CC       inflammatory drugs (NSAIDs) including aspirin and ibuprofen. Aspirin is
-CC       able to produce an irreversible inactivation of the enzyme through a
-CC       serine acetylation. Inhibition of the PGHSs with NSAIDs acutely reduces
-CC       inflammation, pain, and fever, and long-term use of these drugs reduces
-CC       fatal thrombotic events, as well as the development of colon cancer and
-CC       Alzheimer's disease. PTGS2 is the principal isozyme responsible for
-CC       production of inflammatory prostaglandins. New generation PTGSs
-CC       inhibitors strive to be selective for PTGS2, to avoid side effects such
-CC       as gastrointestinal complications and ulceration.
-CC   -!- SIMILARITY: Belongs to the prostaglandin G/H synthase family.
-CC       {ECO:0000305}.
-CC   ---------------------------------------------------------------------------
-CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
-CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
-CC   ---------------------------------------------------------------------------
-DR   EMBL; L25925; AAA16477.1; -; mRNA.
-DR   EMBL; U04300; AAA20246.1; -; mRNA.
-DR   EMBL; U03389; AAA03466.1; -; mRNA.
-DR   EMBL; S67722; AAB29401.1; -; mRNA.
-DR   EMBL; AF233596; AAF36986.1; -; mRNA.
-DR   PIR; JC2030; JC2030.
-DR   RefSeq; NP_058928.3; NM_017232.4.
-DR   AlphaFoldDB; P35355; -.
-DR   SMR; P35355; -.
-DR   BioGRID; 248163; 6.
-DR   CORUM; P35355; -.
-DR   FunCoup; P35355; 494.
-DR   IntAct; P35355; 1.
-DR   STRING; 10116.ENSRNOP00000003567; -.
-DR   BindingDB; P35355; -.
-DR   ChEMBL; CHEMBL2977; -.
-DR   DrugCentral; P35355; -.
-DR   PeroxiBase; 3975; RnoPGHS02-A.
-DR   GlyCosmos; P35355; 4 sites, No reported glycans.
-DR   GlyGen; P35355; 4 sites.
-DR   iPTMnet; P35355; -.
-DR   PhosphoSitePlus; P35355; -.
-DR   jPOST; P35355; -.
-DR   PaxDb; 10116-ENSRNOP00000003567; -.
-DR   Ensembl; ENSRNOT00055031581; ENSRNOP00055025514; ENSRNOG00055018563.
-DR   GeneID; 29527; -.
-DR   KEGG; rno:29527; -.
-DR   UCSC; RGD:620349; rat.
-DR   AGR; RGD:620349; -.
-DR   CTD; 5743; -.
-DR   RGD; 620349; Ptgs2.
-DR   eggNOG; KOG2408; Eukaryota.
-DR   HOGENOM; CLU_022428_0_0_1; -.
-DR   InParanoid; P35355; -.
-DR   OMA; MIYPPHI; -.
-DR   OrthoDB; 32045at9989; -.
-DR   PhylomeDB; P35355; -.
-DR   BRENDA; 1.14.99.1; 5301.
-DR   Reactome; R-RNO-2142770; Synthesis of 15-eicosatetraenoic acid derivatives.
-DR   Reactome; R-RNO-2162123; Synthesis of Prostaglandins (PG) and Thromboxanes (TX).
-DR   Reactome; R-RNO-9018677; Biosynthesis of DHA-derived SPMs.
-DR   Reactome; R-RNO-9018679; Biosynthesis of EPA-derived SPMs.
-DR   Reactome; R-RNO-9025094; Biosynthesis of DPAn-3 SPMs.
-DR   Reactome; R-RNO-9027604; Biosynthesis of electrophilic Omega-3 PUFA oxo-derivatives.
-DR   UniPathway; UPA00662; -.
-DR   PRO; PR:P35355; -.
-DR   Proteomes; UP000002494; Chromosome 13.
-DR   Bgee; ENSRNOG00000002525; Expressed in Ammon's horn and 16 other cell types or tissues.
-DR   GO; GO:0005901; C:caveola; IDA:RGD.
-DR   GO; GO:0005737; C:cytoplasm; IDA:UniProtKB.
-DR   GO; GO:0005783; C:endoplasmic reticulum; ISO:RGD.
-DR   GO; GO:0005788; C:endoplasmic reticulum lumen; ISO:RGD.
-DR   GO; GO:0005789; C:endoplasmic reticulum membrane; ISO:RGD.
-DR   GO; GO:0043005; C:neuron projection; ISO:RGD.
-DR   GO; GO:0005637; C:nuclear inner membrane; ISS:UniProtKB.
-DR   GO; GO:0005640; C:nuclear outer membrane; ISS:UniProtKB.
-DR   GO; GO:0032991; C:protein-containing complex; IDA:RGD.
-DR   GO; GO:0045202; C:synapse; IDA:RGD.
-DR   GO; GO:0019899; F:enzyme binding; ISO:RGD.
-DR   GO; GO:0020037; F:heme binding; ISS:UniProtKB.
-DR   GO; GO:0016705; F:oxidoreductase activity, acting on paired donors, with incorporation or reduction of molecular oxygen; ISO:RGD.
-DR   GO; GO:0016701; F:oxidoreductase activity, acting on single donors with incorporation of molecular oxygen; ISO:RGD.
-DR   GO; GO:0004601; F:peroxidase activity; ISO:RGD.
-DR   GO; GO:0004666; F:prostaglandin-endoperoxide synthase activity; IDA:RGD.
-DR   GO; GO:0042803; F:protein homodimerization activity; ISO:RGD.
-DR   GO; GO:0001525; P:angiogenesis; IMP:RGD.
-DR   GO; GO:0030282; P:bone mineralization; IMP:MGI.
-DR   GO; GO:0050873; P:brown fat cell differentiation; ISO:RGD.
-DR   GO; GO:0071318; P:cellular response to ATP; IEP:RGD.
-DR   GO; GO:0071498; P:cellular response to fluid shear stress; ISO:RGD.
-DR   GO; GO:0034605; P:cellular response to heat; IEP:RGD.
-DR   GO; GO:1905375; P:cellular response to homocysteine; IEP:RGD.
-DR   GO; GO:0071456; P:cellular response to hypoxia; ISO:RGD.
-DR   GO; GO:0071284; P:cellular response to lead ion; IEP:RGD.
-DR   GO; GO:0071222; P:cellular response to lipopolysaccharide; IEP:RGD.
-DR   GO; GO:0071260; P:cellular response to mechanical stimulus; IEP:RGD.
-DR   GO; GO:0071471; P:cellular response to non-ionic osmotic stress; ISO:RGD.
-DR   GO; GO:0019371; P:cyclooxygenase pathway; ISS:UniProtKB.
-DR   GO; GO:0046697; P:decidualization; IMP:RGD.
-DR   GO; GO:0007566; P:embryo implantation; IMP:RGD.
-DR   GO; GO:0042633; P:hair cycle; IEP:RGD.
-DR   GO; GO:0007612; P:learning; IMP:RGD.
-DR   GO; GO:0035633; P:maintenance of blood-brain barrier; IMP:RGD.
-DR   GO; GO:0007613; P:memory; IMP:RGD.
-DR   GO; GO:0043066; P:negative regulation of apoptotic process; ISO:RGD.
-DR   GO; GO:0051926; P:negative regulation of calcium ion transport; IMP:RGD.
-DR   GO; GO:0045786; P:negative regulation of cell cycle; IGI:RGD.
-DR   GO; GO:0008285; P:negative regulation of cell population proliferation; IDA:RGD.
-DR   GO; GO:1902219; P:negative regulation of intrinsic apoptotic signaling pathway in response to osmotic stress; ISO:RGD.
-DR   GO; GO:0045986; P:negative regulation of smooth muscle contraction; IMP:RGD.
-DR   GO; GO:0032227; P:negative regulation of synaptic transmission, dopaminergic; IMP:RGD.
-DR   GO; GO:0043065; P:positive regulation of apoptotic process; IMP:RGD.
-DR   GO; GO:0090336; P:positive regulation of brown fat cell differentiation; ISO:RGD.
-DR   GO; GO:0090050; P:positive regulation of cell migration involved in sprouting angiogenesis; IMP:BHF-UCL.
-DR   GO; GO:0008284; P:positive regulation of cell population proliferation; IMP:RGD.
-DR   GO; GO:0031622; P:positive regulation of fever generation; IDA:BHF-UCL.
-DR   GO; GO:0090271; P:positive regulation of fibroblast growth factor production; IMP:BHF-UCL.
-DR   GO; GO:1903296; P:positive regulation of glutamate secretion, neurotransmission; IMP:RGD.
-DR   GO; GO:0110090; P:positive regulation of hippocampal neuron apoptotic process; IMP:RGD.
-DR   GO; GO:0045429; P:positive regulation of nitric oxide biosynthetic process; IMP:BHF-UCL.
-DR   GO; GO:0090362; P:positive regulation of platelet-derived growth factor production; IMP:BHF-UCL.
-DR   GO; GO:0031394; P:positive regulation of prostaglandin biosynthetic process; ISO:RGD.
-DR   GO; GO:0042307; P:positive regulation of protein import into nucleus; IMP:RGD.
-DR   GO; GO:0048661; P:positive regulation of smooth muscle cell proliferation; IMP:RGD.
-DR   GO; GO:0045987; P:positive regulation of smooth muscle contraction; IMP:RGD.
-DR   GO; GO:0031915; P:positive regulation of synaptic plasticity; IMP:RGD.
-DR   GO; GO:0051968; P:positive regulation of synaptic transmission, glutamatergic; IMP:RGD.
-DR   GO; GO:0071636; P:positive regulation of transforming growth factor beta production; IMP:BHF-UCL.
-DR   GO; GO:0010575; P:positive regulation of vascular endothelial growth factor production; IMP:BHF-UCL.
-DR   GO; GO:0045907; P:positive regulation of vasoconstriction; IMP:RGD.
-DR   GO; GO:0001516; P:prostaglandin biosynthetic process; IMP:RGD.
-DR   GO; GO:0032310; P:prostaglandin secretion; ISO:RGD.
-DR   GO; GO:0046457; P:prostanoid biosynthetic process; ISO:RGD.
-DR   GO; GO:0008217; P:regulation of blood pressure; ISS:UniProtKB.
-DR   GO; GO:0042127; P:regulation of cell population proliferation; ISO:RGD.
-DR   GO; GO:0150077; P:regulation of neuroinflammatory response; ISS:UniProtKB.
-DR   GO; GO:1990776; P:response to angiotensin; IEP:RGD.
-DR   GO; GO:0034097; P:response to cytokine; IMP:RGD.
-DR   GO; GO:0032355; P:response to estradiol; IEP:RGD.
-DR   GO; GO:0070542; P:response to fatty acid; IEP:RGD.
-DR   GO; GO:0009750; P:response to fructose; IEP:RGD.
-DR   GO; GO:0051384; P:response to glucocorticoid; IEP:RGD.
-DR   GO; GO:0032496; P:response to lipopolysaccharide; IMP:RGD.
-DR   GO; GO:0010042; P:response to manganese ion; IEP:RGD.
-DR   GO; GO:0009624; P:response to nematode; ISO:RGD.
-DR   GO; GO:0006979; P:response to oxidative stress; IEA:InterPro.
-DR   GO; GO:0010269; P:response to selenium ion; ISO:RGD.
-DR   GO; GO:0034612; P:response to tumor necrosis factor; IEP:RGD.
-DR   GO; GO:0033280; P:response to vitamin D; IEP:RGD.
-DR   GO; GO:0009410; P:response to xenobiotic stimulus; IEP:RGD.
-DR   CDD; cd00054; EGF_CA; 1.
-DR   CDD; cd09816; prostaglandin_endoperoxide_synthase; 1.
-DR   FunFam; 1.10.640.10:FF:000002; Prostaglandin G/H synthase 2; 1.
-DR   FunFam; 2.10.25.10:FF:000235; Prostaglandin G/H synthase 2; 1.
-DR   Gene3D; 1.10.640.10; Haem peroxidase domain superfamily, animal type; 1.
-DR   Gene3D; 2.10.25.10; Laminin; 1.
-DR   InterPro; IPR000742; EGF.
-DR   InterPro; IPR019791; Haem_peroxidase_animal.
-DR   InterPro; IPR010255; Haem_peroxidase_sf.
-DR   InterPro; IPR037120; Haem_peroxidase_sf_animal.
-DR   InterPro; IPR050783; Oxylipin_biosynth_metab.
-DR   PANTHER; PTHR11903; PROSTAGLANDIN G/H SYNTHASE; 1.
-DR   PANTHER; PTHR11903:SF8; PROSTAGLANDIN G_H SYNTHASE 2; 1.
-DR   Pfam; PF03098; An_peroxidase; 2.
-DR   Pfam; PF00008; EGF; 1.
-DR   PRINTS; PR00457; ANPEROXIDASE.
-DR   SUPFAM; SSF57196; EGF/Laminin; 1.
-DR   SUPFAM; SSF48113; Heme-dependent peroxidases; 1.
-DR   PROSITE; PS50026; EGF_3; 1.
-DR   PROSITE; PS50292; PEROXIDASE_3; 1.
-PE   1: Evidence at protein level;
-KW   Acetylation; Dioxygenase; Direct protein sequencing; Disulfide bond;
-KW   Endoplasmic reticulum; Fatty acid biosynthesis; Fatty acid metabolism;
-KW   Glycoprotein; Heme; Iron; Lipid biosynthesis; Lipid metabolism; Membrane;
-KW   Metal-binding; Microsome; Nucleus; Oxidoreductase; Peroxidase;
-KW   Prostaglandin biosynthesis; Prostaglandin metabolism; Reference proteome;
-KW   S-nitrosylation; Signal.
-FT   SIGNAL          1..17
-FT                   /evidence="ECO:0000269|PubMed:1556140"
-FT   CHAIN           18..604
-FT                   /note="Prostaglandin G/H synthase 2"
-FT                   /id="PRO_0000023879"
-FT   DOMAIN          18..55
-FT                   /note="EGF-like"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   ACT_SITE        193
-FT                   /note="Proton acceptor"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00298"
-FT   ACT_SITE        371
-FT                   /note="For cyclooxygenase activity"
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   BINDING         106
-FT                   /ligand="substrate"
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   BINDING         341
-FT                   /ligand="substrate"
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   BINDING         374
-FT                   /ligand="heme b"
-FT                   /ligand_id="ChEBI:CHEBI:60344"
-FT                   /ligand_part="Fe"
-FT                   /ligand_part_id="ChEBI:CHEBI:18248"
-FT                   /note="axial binding residue"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00298"
-FT   SITE            516
-FT                   /note="Aspirin-acetylated serine"
-FT                   /evidence="ECO:0000250|UniProtKB:P35354"
-FT   MOD_RES         526
-FT                   /note="S-nitrosocysteine"
-FT                   /evidence="ECO:0000250|UniProtKB:P35354"
-FT   MOD_RES         565
-FT                   /note="O-acetylserine"
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   CARBOHYD        53
-FT                   /note="N-linked (GlcNAc...) asparagine"
-FT                   /evidence="ECO:0000255"
-FT   CARBOHYD        130
-FT                   /note="N-linked (GlcNAc...) asparagine"
-FT                   /evidence="ECO:0000255"
-FT   CARBOHYD        396
-FT                   /note="N-linked (GlcNAc...) asparagine"
-FT                   /evidence="ECO:0000255"
-FT   CARBOHYD        580
-FT                   /note="N-linked (GlcNAc...) asparagine"
-FT                   /evidence="ECO:0000255"
-FT   DISULFID        21..32
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   DISULFID        22..145
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   DISULFID        26..42
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   DISULFID        44..54
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   DISULFID        555..561
-FT                   /evidence="ECO:0000250|UniProtKB:Q05769"
-FT   CONFLICT        11..13
-FT                   /note="ALA -> CPG (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-FT   CONFLICT        58
-FT                   /note="E -> R (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-FT   CONFLICT        66
-FT                   /note="L -> P (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-FT   CONFLICT        96..98
-FT                   /note="NSI -> IQS (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-FT   CONFLICT        339
-FT                   /note="S -> R (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-FT   CONFLICT        344
-FT                   /note="K -> Q (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-FT   CONFLICT        350
-FT                   /note="E -> D (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-FT   CONFLICT        368
-FT                   /note="N -> K (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-FT   CONFLICT        573
-FT                   /note="P -> A (in Ref. 4 and 5)"
-FT                   /evidence="ECO:0000305"
-SQ   SEQUENCE   604 AA;  69164 MW;  98E418825D98FF0C CRC64;
-     MLFRAVLLCA ALALSHAANP CCSNPCQNRG ECMSIGFDQY KCDCTRTGFY GENCTTPEFL
-     TRIKLLLKPT PNTVHYILTH FKGVWNIVNN IPFLRNSIMR YVLTSRSHLI DSPPTYNVHY
-     GYKSWEAFSN LSYYTRALPP VADDCPTPMG VKGNKELPDS KEVLEKVLLR REFIPDPQGT
-     NMMFAFFAQH FTHQFFKTDQ KRGPGFTRGL GHGVDLNHVY GETLDRQHKL RLFQDGKLKY
-     QVIGGEVYPP TVKDTQVDMI YPPHVPEHLR FAVGQEVFGL VPGLMMYATI WLREHNRVCD
-     ILKQEHPEWD DERLFQTSRL ILIGETIKIV IEDYVQHLSG YHFKLKFDPE LLFNQQFQYQ
-     NRIASEFNTL YHWHPLLPDT FNIEDQEYTF KQFLYNNSIL LEHGLAHFVE SFTRQIAGRV
-     AGGRNVPIAV QAVAKASIDQ SREMKYQSLN EYRKRFSLKP YTSFEELTGE KEMAAELKAL
-     YHDIDAMELY PALLVEKPRP DAIFGETMVE LGAPFSLKGL MGNPICSPQY WKPSTFGGEV
-     GFRIINTASI QSLICNNVKG CPFASFNVQD PQPTKTATIN ASASHSRLDD INPTVLIKRR
-     STEL
-//
-ID   COMP_RAT                Reviewed;         755 AA.
-AC   P35444;
-DT   01-JUN-1994, integrated into UniProtKB/Swiss-Prot.
-DT   01-JUN-1994, sequence version 1.
-DT   02-SEP-2026, entry version 169.
-DE   RecName: Full=Cartilage oligomeric matrix protein {ECO:0000305};
-DE            Short=COMP;
-DE   Flags: Precursor;
-GN   Name=Comp {ECO:0000312|RGD:2378};
-OS   Rattus norvegicus (Rat).
-OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
-OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
-OC   Murinae; Rattus.
-OX   NCBI_TaxID=10116;
-RN   [1]
-RP   NUCLEOTIDE SEQUENCE [MRNA].
-RC   TISSUE=Cartilage;
-RX   PubMed=1429587; DOI=10.1016/s0021-9258(18)41677-8;
-RA   Oldberg A., Antonsson P., Lindblom K., Heinegaard D.;
-RT   "COMP (cartilage oligomeric matrix protein) is structurally related to the
-RT   thrombospondins.";
-RL   J. Biol. Chem. 267:22346-22350(1992).
-RN   [2]
-RP   FUNCTION, TISSUE SPECIFICITY, AND INTERACTION WITH ITGA7.
-RX   PubMed=20019333; DOI=10.1161/circresaha.109.202762;
-RA   Wang L., Zheng J., Du Y., Huang Y., Li J., Liu B., Liu C.J., Zhu Y.,
-RA   Gao Y., Xu Q., Kong W., Wang X.;
-RT   "Cartilage oligomeric matrix protein maintains the contractile phenotype of
-RT   vascular smooth muscle cells by interacting with alpha(7)beta(1)
-RT   integrin.";
-RL   Circ. Res. 106:514-525(2010).
-RN   [3]
-RP   X-RAY CRYSTALLOGRAPHY (2.05 ANGSTROMS) OF 27-72, AND DISULFIDE BONDS.
-RX   PubMed=8864111; DOI=10.1126/science.274.5288.761;
-RA   Malashkevich V.N., Kammerer R.A., Efimov V.P., Schulthess T., Engel J.;
-RT   "The crystal structure of a five-stranded coiled coil in COMP: a prototype
-RT   ion channel?";
-RL   Science 274:761-765(1996).
-CC   -!- FUNCTION: Plays a role in the structural integrity of cartilage via its
-CC       interaction with other extracellular matrix proteins such as the
-CC       collagens and fibronectin. Can mediate the interaction of chondrocytes
-CC       with the cartilage extracellular matrix through interaction with cell
-CC       surface integrin receptors. Could play a role in the pathogenesis of
-CC       osteoarthritis. Potent suppressor of apoptosis in both primary
-CC       chondrocytes and transformed cells. Suppresses apoptosis by blocking
-CC       the activation of caspase-3 and by inducing the IAP family of survival
-CC       proteins (BIRC3, BIRC2, BIRC5 and XIAP) (By similarity). Essential for
-CC       maintaining a vascular smooth muscle cells (VSMCs)
-CC       contractile/differentiated phenotype under physiological and
-CC       pathological stimuli. Maintains this phenotype of VSMCs by interacting
-CC       with ITGA7 (PubMed:20019333). {ECO:0000250|UniProtKB:P49747,
-CC       ECO:0000269|PubMed:20019333}.
-CC   -!- COFACTOR:
-CC       Name=Ca(2+); Xref=ChEBI:CHEBI:29108;
-CC         Evidence={ECO:0000250|UniProtKB:P49747};
-CC       Note=Binds 11-14 calcium ions per subunit.
-CC       {ECO:0000250|UniProtKB:P49747};
-CC   -!- SUBUNIT: Pentamer; disulfide-linked. Exists in a more compact
-CC       conformation in the presence of calcium and shows a more extended
-CC       conformation in the absence of calcium. Interacts with ITGB3, ITGA5 and
-CC       FN1. Binding to FN1 requires the presence of divalent cations (Ca(2+),
-CC       Mg(2+) or Mn(2+)). The greatest amount of binding is seen in the
-CC       presence of Mn(2+). Interacts with MATN1, MATN3, MATN4 and ACAN. Binds
-CC       heparin, heparan sulfate and chondroitin sulfate. EDTA dimishes
-CC       significantly its binding to ACAN and abolishes its binding to MATN3,
-CC       MATN4 and chondroitin sulfate. Interacts with collagen I, II and IX,
-CC       and interaction with these collagens is dependent on the presence of
-CC       zinc ions. Interacts with ADAMTS12 (By similarity). Interacts with
-CC       ITGA7 (PubMed:20019333). {ECO:0000250|UniProtKB:P49747,
-CC       ECO:0000269|PubMed:20019333}.
-CC   -!- SUBCELLULAR LOCATION: Secreted, extracellular space, extracellular
-CC       matrix {ECO:0000250|UniProtKB:P49747}.
-CC   -!- DOMAIN: The cell attachment motif mediates the attachment to
-CC       chondrocytes. It mediates the induction of both the IAP family of
-CC       survival proteins and the antiapoptotic response.
-CC       {ECO:0000250|UniProtKB:P49747}.
-CC   -!- DOMAIN: The TSP C-terminal domain mediates interaction with FN1 and
-CC       ACAN. {ECO:0000250|UniProtKB:P49747}.
-CC   -!- DOMAIN: Each of the eight TSP type-3 repeats binds two calcium ions.
-CC       The TSP C-terminal domain binds three calcium ions.
-CC       {ECO:0000250|UniProtKB:P49747}.
-CC   -!- PTM: Proteolytically cleaved by metalloproteases ADAMTS4 and ADAMTS1
-CC       with ADAMTS4 showing more potent activity.
-CC       {ECO:0000250|UniProtKB:P49747}.
-CC   -!- SIMILARITY: Belongs to the thrombospondin family. {ECO:0000305}.
-CC   ---------------------------------------------------------------------------
-CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
-CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
-CC   ---------------------------------------------------------------------------
-DR   EMBL; X72914; CAA51419.1; -; mRNA.
-DR   PIR; A44315; A44315.
-DR   RefSeq; NP_036966.2; NM_012834.2.
-DR   PDB; 1FBM; X-ray; 2.70 A; A/B/C/D/E=27-72.
-DR   PDB; 1VDF; X-ray; 2.05 A; A/B/C/D/E=28-72.
-DR   PDB; 6SF6; X-ray; 1.90 A; C/D=232-250.
-DR   AlphaFoldDB; P35444; -.
-DR   MDRepo; P35444; -.
-DR   SMR; P35444; -.
-DR   BioGRID; 247343; 2.
-DR   FunCoup; P35444; 333.
-DR   STRING; 10116.ENSRNOP00000067037; -.
-DR   GlyCosmos; P35444; 2 sites, No reported glycans.
-DR   GlyGen; P35444; 2 sites.
-DR   PhosphoSitePlus; P35444; -.
-DR   PaxDb; 10116-ENSRNOP00000067037; -.
-DR   ABCD; P35444; 1 sequenced antibody.
-DR   GeneID; 25304; -.
-DR   KEGG; rno:25304; -.
-DR   AGR; RGD:2378; -.
-DR   CTD; 1311; -.
-DR   RGD; 2378; Comp.
-DR   eggNOG; ENOG502QRK8; Eukaryota.
-DR   InParanoid; P35444; -.
-DR   PhylomeDB; P35444; -.
-DR   Reactome; R-RNO-216083; Integrin cell surface interactions.
-DR   EvolutionaryTrace; P35444; -.
-DR   PRO; PR:P35444; -.
-DR   Proteomes; UP000002494; Unplaced.
-DR   GO; GO:0031012; C:extracellular matrix; IDA:RGD.
-DR   GO; GO:0005576; C:extracellular region; ISS:UniProtKB.
-DR   GO; GO:0032991; C:protein-containing complex; ISO:RGD.
-DR   GO; GO:0036122; F:BMP binding; ISO:RGD.
-DR   GO; GO:0005509; F:calcium ion binding; ISO:RGD.
-DR   GO; GO:0005518; F:collagen binding; ISO:RGD.
-DR   GO; GO:0005201; F:extracellular matrix structural constituent; IDA:RGD.
-DR   GO; GO:0001968; F:fibronectin binding; IDA:RGD.
-DR   GO; GO:0043395; F:heparan sulfate proteoglycan binding; ISO:RGD.
-DR   GO; GO:0008201; F:heparin binding; ISO:RGD.
-DR   GO; GO:0005178; F:integrin binding; ISO:RGD.
-DR   GO; GO:0002020; F:protease binding; ISO:RGD.
-DR   GO; GO:0043394; F:proteoglycan binding; ISO:RGD.
-DR   GO; GO:0005499; F:vitamin D binding; IMP:RGD.
-DR   GO; GO:0006915; P:apoptotic process; ISO:RGD.
-DR   GO; GO:0048844; P:artery morphogenesis; ISO:RGD.
-DR   GO; GO:0007596; P:blood coagulation; ISO:RGD.
-DR   GO; GO:0030509; P:BMP signaling pathway; ISO:RGD.
-DR   GO; GO:0098868; P:bone growth; ISO:RGD.
-DR   GO; GO:0030282; P:bone mineralization; ISO:RGD.
-DR   GO; GO:0060349; P:bone morphogenesis; ISO:RGD.
-DR   GO; GO:0051216; P:cartilage development; ISO:RGD.
-DR   GO; GO:1990079; P:cartilage homeostasis; ISS:UniProtKB.
-DR   GO; GO:0090398; P:cellular senescence; ISO:RGD.
-DR   GO; GO:0002063; P:chondrocyte development; ISO:RGD.
-DR   GO; GO:0035988; P:chondrocyte proliferation; ISO:RGD.
-DR   GO; GO:0030199; P:collagen fibril organization; ISO:RGD.
-DR   GO; GO:0003416; P:endochondral bone growth; ISO:RGD.
-DR   GO; GO:0003417; P:growth plate cartilage development; ISO:RGD.
-DR   GO; GO:0060173; P:limb development; ISO:RGD.
-DR   GO; GO:0035264; P:multicellular organism growth; ISO:RGD.
-DR   GO; GO:0055001; P:muscle cell development; ISO:RGD.
-DR   GO; GO:0050881; P:musculoskeletal movement; ISO:RGD.
-DR   GO; GO:0043066; P:negative regulation of apoptotic process; ISO:RGD.
-DR   GO; GO:1900047; P:negative regulation of hemostasis; ISO:RGD.
-DR   GO; GO:0050905; P:neuromuscular process; ISO:RGD.
-DR   GO; GO:0001503; P:ossification; ISO:RGD.
-DR   GO; GO:0070527; P:platelet aggregation; ISO:RGD.
-DR   GO; GO:1902732; P:positive regulation of chondrocyte proliferation; ISO:RGD.
-DR   GO; GO:0051260; P:protein homooligomerization; ISS:UniProtKB.
-DR   GO; GO:0016485; P:protein processing; ISO:RGD.
-DR   GO; GO:0009306; P:protein secretion; ISO:RGD.
-DR   GO; GO:0030500; P:regulation of bone mineralization; ISO:RGD.
-DR   GO; GO:0010468; P:regulation of gene expression; ISO:RGD.
-DR   GO; GO:0006986; P:response to unfolded protein; ISO:RGD.
-DR   GO; GO:0001501; P:skeletal system development; ISO:RGD.
-DR   GO; GO:0043588; P:skin development; ISO:RGD.
-DR   GO; GO:0035989; P:tendon development; ISO:RGD.
-DR   GO; GO:0097084; P:vascular associated smooth muscle cell development; ISO:RGD.
-DR   GO; GO:0014829; P:vascular associated smooth muscle contraction; ISO:RGD.
-DR   CDD; cd00054; EGF_CA; 2.
-DR   CDD; cd16077; TSP-5cc; 1.
-DR   FunFam; 2.10.25.10:FF:000346; Cartilage oligomeric matrix protein; 1.
-DR   FunFam; 4.10.1080.10:FF:000004; Cartilage oligomeric matrix protein; 1.
-DR   FunFam; 2.10.25.10:FF:000025; Thrombospondin 3; 1.
-DR   FunFam; 2.10.25.10:FF:000027; Thrombospondin 3; 1.
-DR   FunFam; 2.60.120.200:FF:000002; Thrombospondin 3; 1.
-DR   FunFam; 4.10.1080.10:FF:000001; Thrombospondin 3; 1.
-DR   FunFam; 2.10.25.10:FF:000170; thrombospondin-3 isoform X1; 1.
-DR   FunFam; 1.20.5.10:FF:000001; thrombospondin-3 isoform X2; 1.
-DR   Gene3D; 1.20.5.10; -; 1.
-DR   Gene3D; 2.60.120.200; -; 1.
-DR   Gene3D; 2.10.25.10; Laminin; 4.
-DR   Gene3D; 4.10.1080.10; TSP type-3 repeat; 2.
-DR   InterPro; IPR013320; ConA-like_dom_sf.
-DR   InterPro; IPR000742; EGF.
-DR   InterPro; IPR001881; EGF-like_Ca-bd_dom.
-DR   InterPro; IPR018097; EGF_Ca-bd_CS.
-DR   InterPro; IPR009030; Growth_fac_rcpt_cys_sf.
-DR   InterPro; IPR049883; NOTCH1_EGF-like.
-DR   InterPro; IPR003367; Thrombospondin_3-like_rpt.
-DR   InterPro; IPR017897; Thrombospondin_3_rpt.
-DR   InterPro; IPR008859; Thrombospondin_C.
-DR   InterPro; IPR039081; TSP-5_CC.
-DR   InterPro; IPR024665; TSP/COMP_CC.
-DR   InterPro; IPR046970; TSP/COMP_CC_sf.
-DR   InterPro; IPR028974; TSP_type-3_rpt.
-DR   PANTHER; PTHR10199:SF88; CARTILAGE OLIGOMERIC MATRIX PROTEIN; 1.
-DR   PANTHER; PTHR10199; THROMBOSPONDIN; 1.
-DR   Pfam; PF11598; COMP; 1.
-DR   Pfam; PF07645; EGF_CA; 2.
-DR   Pfam; PF02412; TSP_3; 6.
-DR   Pfam; PF05735; TSP_C; 1.
-DR   SMART; SM00181; EGF; 4.
-DR   SMART; SM00179; EGF_CA; 2.
-DR   SUPFAM; SSF58006; Assembly domain of cartilage oligomeric matrix protein; 1.
-DR   SUPFAM; SSF49899; Concanavalin A-like lectins/glucanases; 1.
-DR   SUPFAM; SSF57196; EGF/Laminin; 1.
-DR   SUPFAM; SSF57184; Growth factor receptor domain; 1.
-DR   SUPFAM; SSF103647; TSP type-3 repeat; 3.
-DR   PROSITE; PS01186; EGF_2; 1.
-DR   PROSITE; PS50026; EGF_3; 3.
-DR   PROSITE; PS01187; EGF_CA; 2.
-DR   PROSITE; PS51234; TSP3; 8.
-DR   PROSITE; PS51236; TSP_CTER; 1.
-DR   PDBsum; 1FBM; -.
-DR   PDBsum; 1VDF; -.
-DR   PDBsum; 6SF6; -.
-PE   1: Evidence at protein level;
-KW   3D-structure; Apoptosis; Calcium; Cell adhesion; Disulfide bond;
-KW   EGF-like domain; Extracellular matrix; Glycoprotein; Heparin-binding;
-KW   Phosphoprotein; Reference proteome; Repeat; Secreted; Signal.
-FT   SIGNAL          1..19
-FT                   /evidence="ECO:0000255"
-FT   CHAIN           20..755
-FT                   /note="Cartilage oligomeric matrix protein"
-FT                   /id="PRO_0000035859"
-FT   DOMAIN          85..124
-FT                   /note="EGF-like 1"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DOMAIN          125..177
-FT                   /note="EGF-like 2; calcium-binding"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DOMAIN          178..220
-FT                   /note="EGF-like 3; calcium-binding"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DOMAIN          223..265
-FT                   /note="EGF-like 4"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   REPEAT          266..298
-FT                   /note="TSP type-3 1"
-FT   REPEAT          299..334
-FT                   /note="TSP type-3 2"
-FT   REPEAT          335..357
-FT                   /note="TSP type-3 3"
-FT   REPEAT          358..393
-FT                   /note="TSP type-3 4"
-FT   REPEAT          394..416
-FT                   /note="TSP type-3 5"
-FT   REPEAT          417..454
-FT                   /note="TSP type-3 6"
-FT   REPEAT          455..490
-FT                   /note="TSP type-3 7"
-FT   REPEAT          491..526
-FT                   /note="TSP type-3 8"
-FT   DOMAIN          530..744
-FT                   /note="TSP C-terminal"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00635"
-FT   REGION          21..84
-FT                   /note="COMP N-terminal"
-FT   REGION          295..501
-FT                   /note="Disordered"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   REGION          525..755
-FT                   /note="Mediates cell survival and induction of the IAP
-FT                   family of survival proteins"
-FT                   /evidence="ECO:0000250"
-FT   COMPBIAS        332..344
-FT                   /note="Basic and acidic residues"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   COMPBIAS        350..365
-FT                   /note="Basic and acidic residues"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   COMPBIAS        412..424
-FT                   /note="Basic and acidic residues"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   COMPBIAS        456..465
-FT                   /note="Basic and acidic residues"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   MOD_RES         394
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000250|UniProtKB:Q9R0G6"
-FT   CARBOHYD        119
-FT                   /note="N-linked (GlcNAc...) asparagine"
-FT                   /evidence="ECO:0000255"
-FT   CARBOHYD        740
-FT                   /note="N-linked (GlcNAc...) asparagine"
-FT                   /evidence="ECO:0000255"
-FT   DISULFID        68
-FT                   /note="Interchain (with C-71)"
-FT                   /evidence="ECO:0000269|PubMed:8864111,
-FT                   ECO:0007744|PDB:1FBM, ECO:0007744|PDB:1VDF"
-FT   DISULFID        71
-FT                   /note="Interchain (with C-68)"
-FT                   /evidence="ECO:0000269|PubMed:8864111,
-FT                   ECO:0007744|PDB:1FBM, ECO:0007744|PDB:1VDF"
-FT   DISULFID        89..100
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        94..109
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        112..123
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        129..140
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        134..149
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        152..176
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        182..195
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        189..204
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        207..219
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        227..241
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        235..251
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        253..264
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        280..285
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        290..310
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        326..346
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        349..369
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        385..405
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        408..428
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        446..466
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        482..502
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   DISULFID        518..739
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
-FT   HELIX           30..66
-FT                   /evidence="ECO:0007829|PDB:1VDF"
-FT   TURN            69..71
-FT                   /evidence="ECO:0007829|PDB:1FBM"
-SQ   SEQUENCE   755 AA;  82664 MW;  AB48888FE093C598 CRC64;
-     MSPTACVLVL ALAALRATGQ GQIPLGGDLA PQMLRELQET NAALQDVREL LRHRVKEITF
-     LKNTVMECDA CGMQPARTPG LSVRPVALCA PGSCFPGVVC TETATGARCG PCPPGYTGNG
-     SHCTDVNECN AHPCFPRVRC INTSPGFHCE ACPPGFSGPT HEGVGLTFAK TNKQVCTDIN
-     ECETGQHNCV PNSVCVNTRG SFQCGPCQPG FVGDQRSGCQ RRGQHFCPDG SPSPCHEKAD
-     CILERDGSRS CVCAVGWAGN GLLCGRDTDL DGFPDEKLRC SERQCRKDNC VTVPNSGQED
-     VDRDRIGDAC DPDADGDGVP NEQDNCPLVR NPDQRNSDKD KWGDACDNCR SQKNDDQKDT
-     DRDGQGDACD DDIDGDRIRN VADNCPRVPN FDQSDSDGDG VGDACDNCPQ KDNPDQRDVD
-     HDFVGDACDS DQDQDGDGHQ DSRDNCPTVP NSAQQDSDHD GKGDACDDDD DNDGVPDSRD
-     NCRLVPNPGQ EDNDRDGVGD ACQGDFDADK VIDKIDVCPE NAEVTLTDFR AFQTVVLDPE
-     GDAQIDPNWV VLNQGMEIVQ TMNSDPGLAV GYTAFNGVDF EGTFHVNTAT DDDYAGFIFG
-     YQDSSSFYVV MWKQMEQTYW QANPFRAVAE PGIQLKAVKS STGPGEQLRN ALWHTGDTAS
-     QVRLLWKDPR NVGWKDKTSY RWFLQHRPQV GYIRVRFYEG PELVADSNVV LDTAMRGGRL
-     GVFCFSQENI IWANLRYRCN DTIPEDYERH RLRRA
-//
-ID   PPARA_RAT               Reviewed;         468 AA.
-AC   P37230;
-DT   01-OCT-1994, integrated into UniProtKB/Swiss-Prot.
-DT   01-OCT-1994, sequence version 1.
-DT   02-SEP-2026, entry version 214.
-DE   RecName: Full=Peroxisome proliferator-activated receptor alpha;
-DE            Short=PPAR-alpha;
-DE   AltName: Full=Nuclear receptor subfamily 1 group C member 1;
-GN   Name=Ppara; Synonyms=Nr1c1, Ppar;
-OS   Rattus norvegicus (Rat).
-OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
-OC   Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muroidea; Muridae;
-OC   Murinae; Rattus.
-OX   NCBI_TaxID=10116;
-RN   [1]
-RP   NUCLEOTIDE SEQUENCE [MRNA].
-RX   PubMed=1316614; DOI=10.1073/pnas.89.10.4653;
-RA   Goettlicher M., Widmark E., Li Q., Gustafsson J.-A.;
-RT   "Fatty acids activate a chimera of the clofibric acid-activated receptor
-RT   and the glucocorticoid receptor.";
-RL   Proc. Natl. Acad. Sci. U.S.A. 89:4653-4657(1992).
-RN   [2]
-RP   PHOSPHORYLATION.
-RX   PubMed=8828512; DOI=10.1210/endo.137.10.8828512;
-RA   Shalev A., Siegrist-Kaiser C.A., Yen P.M., Wahli W., Burger A.G.,
-RA   Chin W.W., Meier C.A.;
-RT   "The peroxisome proliferator-activated receptor alpha is a phosphoprotein:
-RT   regulation by insulin.";
-RL   Endocrinology 137:4499-4502(1996).
-RN   [3]
-RP   INTERACTION WITH CITED2.
-RX   PubMed=15051727; DOI=10.1074/jbc.m401489200;
-RA   Tien E.S., Davis J.W., Vanden Heuvel J.P.;
-RT   "Identification of the CREB-binding protein/p300-interacting protein CITED2
-RT   as a peroxisome proliferator-activated receptor alpha coregulator.";
-RL   J. Biol. Chem. 279:24053-24063(2004).
-CC   -!- FUNCTION: Ligand-activated transcription factor. Key regulator of lipid
-CC       metabolism. Activated by the endogenous ligand 1-palmitoyl-2-oleoyl-sn-
-CC       glycerol-3-phosphocholine (16:0/18:1-GPC). Activated by
-CC       oleylethanolamide, a naturally occurring lipid that regulates satiety.
-CC       Receptor for peroxisome proliferators such as hypolipidemic drugs and
-CC       fatty acids. Regulates the peroxisomal beta-oxidation pathway of fatty
-CC       acids. Functions as a transcription activator for the ACOX1 and P450
-CC       genes. Transactivation activity requires heterodimerization with RXRA
-CC       and is antagonized by NR2C2. May be required for the propagation of
-CC       clock information to metabolic pathways regulated by PER2 (By
-CC       similarity). {ECO:0000250}.
-CC   -!- SUBUNIT: Heterodimer; with RXRA. This heterodimerization is required
-CC       for DNA binding and transactivation activity. Interacts with NCOA3
-CC       coactivator (By similarity). Interacts with CITED2; the interaction
-CC       stimulates its transcriptional activity (PubMed:15051727). Also
-CC       interacts with PPARBP in vitro. Interacts with AKAP13, LPIN1, PRDM16
-CC       and coactivator NCOA6. Interacts with ASXL1 and ASXL2. Interacts with
-CC       PER2. Interacts with SIRT1; the interaction seems to be modulated by
-CC       NAD(+) levels (By similarity). Interacts with CRY1 and CRY2 (By
-CC       similarity). In hepatocytes, interacts with PAQR3 and HUWE1; the
-CC       interactions promote PPARA poylubiquitination and HUWE1-mediated
-CC       degradation (By similarity). {ECO:0000250|UniProtKB:P23204,
-CC       ECO:0000250|UniProtKB:Q07869, ECO:0000269|PubMed:15051727}.
-CC   -!- INTERACTION:
-CC       P37230; P62161: Calm3; NbExp=2; IntAct=EBI-15674997, EBI-397530;
-CC   -!- SUBCELLULAR LOCATION: Nucleus.
-CC   -!- TISSUE SPECIFICITY: Expressed predominantly in liver and kidney.
-CC   -!- PTM: Phosphorylated. {ECO:0000269|PubMed:8828512}.
-CC   -!- PTM: Ubiquitinated by E3 ubiquitin-protein ligase HUWE1; leading to
-CC       proteasomal degradation. {ECO:0000250|UniProtKB:P23204}.
-CC   -!- SIMILARITY: Belongs to the nuclear hormone receptor family. NR1
-CC       subfamily. {ECO:0000305}.
-CC   ---------------------------------------------------------------------------
-CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
-CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
-CC   ---------------------------------------------------------------------------
-DR   EMBL; M88592; AAA41918.1; -; mRNA.
-DR   PIR; A45288; A45288.
-DR   RefSeq; NP_037328.1; NM_013196.2.
-DR   RefSeq; XP_038934429.1; XM_039078501.2.
-DR   AlphaFoldDB; P37230; -.
-DR   SMR; P37230; -.
-DR   BioGRID; 247775; 5.
-DR   CORUM; P37230; -.
-DR   DIP; DIP-29529N; -.
-DR   FunCoup; P37230; 409.
-DR   IntAct; P37230; 1.
-DR   STRING; 10116.ENSRNOP00000038651; -.
-DR   BindingDB; P37230; -.
-DR   ChEMBL; CHEMBL2129; -.
-DR   iPTMnet; P37230; -.
-DR   PhosphoSitePlus; P37230; -.
-DR   PaxDb; 10116-ENSRNOP00000038651; -.
-DR   Ensembl; ENSRNOT00000136133.1; ENSRNOP00000112415.1; ENSRNOG00000021463.4.
-DR   Ensembl; ENSRNOT00055055491; ENSRNOP00055045786; ENSRNOG00055032099.
-DR   Ensembl; ENSRNOT00060040199; ENSRNOP00060033175; ENSRNOG00060023253.
-DR   Ensembl; ENSRNOT00065057129; ENSRNOP00065047023; ENSRNOG00065033228.
-DR   GeneID; 25747; -.
-DR   KEGG; rno:25747; -.
-DR   AGR; RGD:3369; -.
-DR   CTD; 5465; -.
-DR   RGD; 3369; Ppara.
-DR   eggNOG; KOG3575; Eukaryota.
-DR   GeneTree; ENSGT00940000157097; -.
-DR   HOGENOM; CLU_007368_4_1_1; -.
-DR   InParanoid; P37230; -.
-DR   OMA; TNHPDNI; -.
-DR   PhylomeDB; P37230; -.
-DR   Reactome; R-RNO-383280; Nuclear Receptor transcription pathway.
-DR   Reactome; R-RNO-400206; Regulation of lipid metabolism by PPARalpha.
-DR   Reactome; R-RNO-4090294; SUMOylation of intracellular receptors.
-DR   Reactome; R-RNO-9707564; Cytoprotection by HMOX1.
-DR   PRO; PR:P37230; -.
-DR   Proteomes; UP000002494; Chromosome 7.
-DR   Bgee; ENSRNOG00000021463; Expressed in liver and 18 other cell types or tissues.
-DR   ExpressionAtlas; P37230; baseline and differential.
-DR   GO; GO:0001650; C:fibrillar center; ISO:RGD.
-DR   GO; GO:0016604; C:nuclear body; ISO:RGD.
-DR   GO; GO:0005634; C:nucleus; ISO:RGD.
-DR   GO; GO:0090575; C:RNA polymerase II transcription regulator complex; IBA:GO_Central.
-DR   GO; GO:0001216; F:DNA-binding transcription activator activity; ISO:RGD.
-DR   GO; GO:0001228; F:DNA-binding transcription activator activity, RNA polymerase II-specific; ISO:RGD.
-DR   GO; GO:0003700; F:DNA-binding transcription factor activity; ISO:RGD.
-DR   GO; GO:0140297; F:DNA-binding transcription factor binding; IPI:RGD.
-DR   GO; GO:0001227; F:DNA-binding transcription repressor activity, RNA polymerase II-specific; ISO:RGD.
-DR   GO; GO:0008289; F:lipid binding; ISS:UniProtKB.
-DR   GO; GO:0097371; F:MDM2/MDM4 family protein binding; IPI:RGD.
-DR   GO; GO:0031435; F:mitogen-activated protein kinase kinase kinase binding; IPI:RGD.
-DR   GO; GO:0051525; F:NFAT protein binding; IPI:RGD.
-DR   GO; GO:0004879; F:nuclear receptor activity; IMP:RGD.
-DR   GO; GO:0003707; F:nuclear steroid receptor activity; ISO:RGD.
-DR   GO; GO:0019902; F:phosphatase binding; IPI:RGD.
-DR   GO; GO:0019904; F:protein domain specific binding; IDA:RGD.
-DR   GO; GO:0044877; F:protein-containing complex binding; IMP:RGD.
-DR   GO; GO:0000978; F:RNA polymerase II cis-regulatory region sequence-specific DNA binding; ISO:RGD.
-DR   GO; GO:0061629; F:RNA polymerase II-specific DNA-binding transcription factor binding; ISO:RGD.
-DR   GO; GO:0043565; F:sequence-specific DNA binding; ISO:RGD.
-DR   GO; GO:0038023; F:signaling receptor activity; ISO:RGD.
-DR   GO; GO:0001223; F:transcription coactivator binding; IPI:RGD.
-DR   GO; GO:0031624; F:ubiquitin conjugating enzyme binding; ISO:RGD.
-DR   GO; GO:0008270; F:zinc ion binding; IEA:InterPro.
-DR   GO; GO:0035095; P:behavioral response to nicotine; IDA:RGD.
-DR   GO; GO:0030154; P:cell differentiation; IBA:GO_Central.
-DR   GO; GO:0071332; P:cellular response to fructose stimulus; IEP:RGD.
-DR   GO; GO:0009267; P:cellular response to starvation; ISO:RGD.
-DR   GO; GO:0032922; P:circadian regulation of gene expression; ISS:UniProtKB.
-DR   GO; GO:0070166; P:enamel mineralization; ISO:RGD.
-DR   GO; GO:0008544; P:epidermis development; ISO:RGD.
-DR   GO; GO:0006635; P:fatty acid beta-oxidation; ISO:RGD.
-DR   GO; GO:0006631; P:fatty acid metabolic process; IMP:RGD.
-DR   GO; GO:0010467; P:gene expression; ISO:RGD.
-DR   GO; GO:0007507; P:heart development; IEP:RGD.
-DR   GO; GO:0009755; P:hormone-mediated signaling pathway; IBA:GO_Central.
-DR   GO; GO:0030522; P:intracellular receptor signaling pathway; IBA:GO_Central.
-DR   GO; GO:0007595; P:lactation; IEP:RGD.
-DR   GO; GO:0006629; P:lipid metabolic process; ISO:RGD.
-DR   GO; GO:0042157; P:lipoprotein metabolic process; IMP:RGD.
-DR   GO; GO:0032099; P:negative regulation of appetite; ISS:UniProtKB.
-DR   GO; GO:0045776; P:negative regulation of blood pressure; IMP:RGD.
-DR   GO; GO:0061052; P:negative regulation of cell growth involved in cardiac muscle cell development; IMP:RGD.
-DR   GO; GO:0010887; P:negative regulation of cholesterol storage; ISO:RGD.
-DR   GO; GO:1900016; P:negative regulation of cytokine production involved in inflammatory response; ISO:RGD.
-DR   GO; GO:0045820; P:negative regulation of glycolytic process; ISO:RGD.
-DR   GO; GO:1903944; P:negative regulation of hepatocyte apoptotic process; ISO:RGD.
-DR   GO; GO:0050728; P:negative regulation of inflammatory response; ISO:RGD.
-DR   GO; GO:1903038; P:negative regulation of leukocyte cell-cell adhesion; ISO:RGD.
-DR   GO; GO:0010745; P:negative regulation of macrophage derived foam cell differentiation; ISO:RGD.
-DR   GO; GO:1902894; P:negative regulation of miRNA transcription; ISO:RGD.
-DR   GO; GO:0051898; P:negative regulation of phosphatidylinositol 3-kinase/protein kinase B signal transduction; ISO:RGD.
-DR   GO; GO:1903427; P:negative regulation of reactive oxygen species biosynthetic process; ISO:RGD.
-DR   GO; GO:0000122; P:negative regulation of transcription by RNA polymerase II; ISO:RGD.
-DR   GO; GO:0030512; P:negative regulation of transforming growth factor beta receptor signaling pathway; ISO:RGD.
-DR   GO; GO:0046209; P:nitric oxide metabolic process; IEP:RGD.
-DR   GO; GO:0035357; P:peroxisome proliferator activated receptor signaling pathway; ISS:UniProtKB.
-DR   GO; GO:2001171; P:positive regulation of ATP biosynthetic process; ISO:RGD.
-DR   GO; GO:0045893; P:positive regulation of DNA-templated transcription; IDA:RGD.
-DR   GO; GO:0045923; P:positive regulation of fatty acid metabolic process; IBA:GO_Central.
-DR   GO; GO:0046321; P:positive regulation of fatty acid oxidation; ISO:RGD.
-DR   GO; GO:0045722; P:positive regulation of gluconeogenesis; ISO:RGD.
-DR   GO; GO:0046889; P:positive regulation of lipid biosynthetic process; ISO:RGD.
-DR   GO; GO:0045944; P:positive regulation of transcription by RNA polymerase II; ISO:RGD.
-DR   GO; GO:0016567; P:protein ubiquitination; ISO:RGD.
-DR   GO; GO:0042752; P:regulation of circadian rhythm; ISS:UniProtKB.
-DR   GO; GO:0006355; P:regulation of DNA-templated transcription; IDA:RGD.
-DR   GO; GO:0019217; P:regulation of fatty acid metabolic process; ISO:RGD.
-DR   GO; GO:0010468; P:regulation of gene expression; ISO:RGD.
-DR   GO; GO:0010565; P:regulation of ketone metabolic process; ISO:RGD.
-DR   GO; GO:0045471; P:response to ethanol; IEP:RGD.
-DR   GO; GO:0070542; P:response to fatty acid; ISO:RGD.
-DR   GO; GO:0009749; P:response to glucose; ISO:RGD.
-DR   GO; GO:0001666; P:response to hypoxia; IDA:HGNC-UCL.
-DR   GO; GO:0032868; P:response to insulin; IMP:RGD.
-DR   GO; GO:0007584; P:response to nutrient; IEP:RGD.
-DR   GO; GO:0042060; P:wound healing; ISO:RGD.
-DR   CDD; cd06965; NR_DBD_Ppar; 1.
-DR   CDD; cd06932; NR_LBD_PPAR; 1.
-DR   FunFam; 1.10.565.10:FF:000013; Peroxisome proliferator-activated receptor delta; 1.
-DR   FunFam; 3.30.50.10:FF:000010; Peroxisome proliferator-activated receptor gamma; 1.
-DR   Gene3D; 3.30.50.10; Erythroid Transcription Factor GATA-1, subunit A; 1.
-DR   Gene3D; 1.10.565.10; Retinoid X Receptor; 1.
-DR   InterPro; IPR003074; 1Cnucl_rcpt.
-DR   InterPro; IPR035500; NHR-like_dom_sf.
-DR   InterPro; IPR000536; Nucl_hrmn_rcpt_lig-bd.
-DR   InterPro; IPR050234; Nuclear_hormone_rcpt_NR1.
-DR   InterPro; IPR001723; Nuclear_hrmn_rcpt.
-DR   InterPro; IPR003076; PPAR-alpha.
-DR   InterPro; IPR001628; Znf_hrmn_rcpt.
-DR   InterPro; IPR013088; Znf_NHR/GATA.
-DR   PANTHER; PTHR24082; NUCLEAR HORMONE RECEPTOR; 1.
-DR   PANTHER; PTHR24082:SF197; PEROXISOME PROLIFERATOR-ACTIVATED RECEPTOR ALPHA; 1.
-DR   Pfam; PF00104; Hormone_recep; 1.
-DR   Pfam; PF00105; zf-C4; 1.
-DR   PRINTS; PR01288; PROXISOMEPAR.
-DR   PRINTS; PR01289; PROXISOMPAAR.
-DR   PRINTS; PR00398; STRDHORMONER.
-DR   PRINTS; PR00047; STROIDFINGER.
-DR   SMART; SM00430; HOLI; 1.
-DR   SMART; SM00399; ZnF_C4; 1.
-DR   SUPFAM; SSF57716; Glucocorticoid receptor-like (DNA-binding domain); 1.
-DR   SUPFAM; SSF48508; Nuclear receptor ligand-binding domain; 1.
-DR   PROSITE; PS51843; NR_LBD; 1.
-DR   PROSITE; PS00031; NUCLEAR_REC_DBD_1; 1.
-DR   PROSITE; PS51030; NUCLEAR_REC_DBD_2; 1.
-PE   1: Evidence at protein level;
-KW   Activator; Biological rhythms; DNA-binding; Lipid-binding; Metal-binding;
-KW   Nucleus; Phosphoprotein; Receptor; Reference proteome; Transcription;
-KW   Transcription regulation; Ubl conjugation; Zinc; Zinc-finger.
-FT   CHAIN           1..468
-FT                   /note="Peroxisome proliferator-activated receptor alpha"
-FT                   /id="PRO_0000053484"
-FT   DOMAIN          239..466
-FT                   /note="NR LBD"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU01189"
-FT   DNA_BIND        99..173
-FT                   /note="Nuclear receptor"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00407"
-FT   ZN_FING         102..122
-FT                   /note="NR C4-type"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00407"
-FT   ZN_FING         139..161
-FT                   /note="NR C4-type"
-FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00407"
-FT   REGION          304..433
-FT                   /note="Required for heterodimerization with RXRA"
-FT                   /evidence="ECO:0000250"
-FT   SITE            433
-FT                   /note="Essential for heterodimerization with RXRA"
-FT                   /evidence="ECO:0000250"
-SQ   SEQUENCE   468 AA;  52377 MW;  2A89E7D715C8DBA9 CRC64;
-     MVDTESPICP LSPLEADDLE SPLSEEFLQE MGNIQEISQS LGEESSGSFS FADYQYLGSC
-     PGSEGSVITD TLSPASSPSS VSCPAVPTST DESPGNALNI ECRICGDKAS GYHYGVHACE
-     GCKGFFRRTI RLKLAYDKCD RSCKIQKKNR NKCQYCRFHK CLSVGMSHNA IRFGRMPRSE
-     KAKLKAEILT CEHDLKDSET ADLKSLAKRI HEAYLKNFNM NKVKARVILA GKTSNNPPFV
-     IHDMETLCMA EKTLVAKMVA NGVENKEAEV RFFHCCQCMS VETVTELTEF AKAIPGFANL
-     DLNDQVTLLK YGVYEAIFTM LSSLMNKDGM LIAYGNGFIT REFLKNLRKP FCDIMEPKFD
-     FAMKFNALEL DDSDISLFVA AIICCGDRPG LLNIGYIEKL QEGIVHVLKL HLQSNHPDDT
-     FLFPKLLQKM VDLRQLVTEH AQLVQVIKKT ESDAALHPLL QEIYRDMY
-//
 ID   PTHY_PIG                Reviewed;         115 AA.
 AC   P01269;
 DT   21-JUL-1986, integrated into UniProtKB/Swiss-Prot.
@@ -44914,6 +43776,88 @@ SQ   SEQUENCE   264 AA;  29162 MW;  CA2F17DB70A92591 CRC64;
      GLWLPKESRE QDSRELAQHQ SVENDSRPRF DSPEVGGGDS KASAGVDSRE SLASRSAVDT
      SNQTLESAED AEDRHSIENN EVTR
 //
+ID   SM30_STRPU              Reviewed;         290 AA.
+AC   P28163;
+DT   01-DEC-1992, integrated into UniProtKB/Swiss-Prot.
+DT   01-DEC-1992, sequence version 1.
+DT   05-FEB-2025, entry version 94.
+DE   RecName: Full=30 kDa spicule matrix protein;
+DE   Flags: Precursor;
+GN   Name=SM30;
+OS   Strongylocentrotus purpuratus (Purple sea urchin).
+OC   Eukaryota; Metazoa; Echinodermata; Eleutherozoa; Echinozoa; Echinoidea;
+OC   Euechinoidea; Echinacea; Camarodonta; Echinidea; Strongylocentrotidae;
+OC   Strongylocentrotus.
+OX   NCBI_TaxID=7668;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RC   TISSUE=Embryo;
+RX   PubMed=1717322; DOI=10.1016/0012-1606(91)90291-a;
+RA   George N.C., Killian C.E., Wilt F.H.;
+RT   "Characterization and expression of a gene encoding a 30.6-kDa
+RT   Strongylocentrotus purpuratus spicule matrix protein.";
+RL   Dev. Biol. 147:334-342(1991).
+CC   -!- FUNCTION: Matrix protein of the sea urchin embryo spicule. The function
+CC       of the matrix proteins is to direct crystal growth in certain
+CC       orientations and inhibit growth in others.
+CC   -!- TISSUE SPECIFICITY: Accumulates exclusively in mineralized tissues.
+CC   -!- DEVELOPMENTAL STAGE: Is increased at middle to late mesenchyme blastula
+CC       stage, level remains high through the 3-day pluteus stage.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; M63840; AAA30070.1; -; mRNA.
+DR   PIR; A43897; A43897.
+DR   RefSeq; NP_999766.1; NM_214601.1.
+DR   AlphaFoldDB; P28163; -.
+DR   SMR; P28163; -.
+DR   STRING; 7668.P28163; -.
+DR   GlyCosmos; P28163; 1 site, No reported glycans.
+DR   EnsemblMetazoa; NM_214601; NP_999766; GeneID_373441.
+DR   GeneID; 373441; -.
+DR   KEGG; spu:373441; -.
+DR   CTD; 373441; -.
+DR   HOGENOM; CLU_960835_0_0_1; -.
+DR   InParanoid; P28163; -.
+DR   OrthoDB; 6369810at2759; -.
+DR   PhylomeDB; P28163; -.
+DR   Proteomes; UP000007110; Unassembled WGS sequence.
+DR   GO; GO:0009897; C:external side of plasma membrane; IBA:GO_Central.
+DR   GO; GO:0030246; F:carbohydrate binding; IBA:GO_Central.
+DR   GO; GO:0038187; F:pattern recognition receptor activity; IBA:GO_Central.
+DR   GO; GO:0006955; P:immune response; IBA:GO_Central.
+DR   Gene3D; 3.10.100.10; Mannose-Binding Protein A, subunit A; 1.
+DR   InterPro; IPR001304; C-type_lectin-like.
+DR   InterPro; IPR016186; C-type_lectin-like/link_sf.
+DR   InterPro; IPR016187; CTDL_fold.
+DR   InterPro; IPR051004; DC-SIGN_domain-containing.
+DR   PANTHER; PTHR22802; C-TYPE LECTIN SUPERFAMILY MEMBER; 1.
+DR   PANTHER; PTHR22802:SF379; CHONDROITIN SULFATE PROTEOGLYCAN 2 ISOFORM X1; 1.
+DR   Pfam; PF00059; Lectin_C; 1.
+DR   SMART; SM00034; CLECT; 1.
+DR   SUPFAM; SSF56436; C-type lectin-like; 1.
+DR   PROSITE; PS50041; C_TYPE_LECTIN_2; 1.
+PE   2: Evidence at transcript level;
+KW   Glycoprotein; Reference proteome; Signal.
+FT   SIGNAL          1..15
+FT                   /evidence="ECO:0000255"
+FT   CHAIN           16..290
+FT                   /note="30 kDa spicule matrix protein"
+FT                   /id="PRO_0000017559"
+FT   DOMAIN          92..162
+FT                   /note="C-type lectin"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00040"
+FT   CARBOHYD        102
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+SQ   SEQUENCE   290 AA;  31806 MW;  E1E3E27E40796DF2 CRC64;
+     MRGFVYVLVC VLALASFSRA QLPGAGGPVL PGGGPTIGPV NPDPTRTEVC AKFWVQEGNS
+     CYLFDSGAFL RQVAASRPVV VNNQDGLFQA AANMYCGQMH PNASLVTVNS LEENNFLYEW
+     AVRMMIEPEP VWIGLHAGPT GQWQWYSGEP VTYTNWERMT PPIAEPGLGA MIFDADIIAQ
+     MFNNQVEITP QWVPEQAIND RHALICEYHP SGMTAAAAAP TNAPTFPPMT TAPPMAATTR
+     GPVMFQNNPR NLVNSLTGGR FGGSLLHEIP RRQRMRPSNY RKNPYFGIQP
+//
 ID   OSTK_BOVIN              Reviewed;         277 AA.
 AC   P31098;
 DT   01-JUL-1993, integrated into UniProtKB/Swiss-Prot.
@@ -45238,70 +44182,6 @@ SQ   SEQUENCE   300 AA;  33026 MW;  C853E8EBDE156BE6 CRC64;
      GGDNGEEGDQ ESVTEAQGTT VAGEQDNGGA KTTTSPNGGL EPTPPPQDIS GTTLPPSGKT
      TTPEYEGEYE QTGAHEYDNG YEIYESENGE PRGDSYRAYE DEYSYYKGRS YNSYGGHDYY
 //
-ID   HIS1_MACFA              Reviewed;          38 AA.
-AC   P34084;
-DT   01-FEB-1994, integrated into UniProtKB/Swiss-Prot.
-DT   01-FEB-1994, sequence version 1.
-DT   02-SEP-2026, entry version 61.
-DE   RecName: Full=Histatin-1;
-GN   Name=HTN1;
-OS   Macaca fascicularis (Crab-eating macaque) (Cynomolgus monkey).
-OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
-OC   Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini;
-OC   Cercopithecidae; Cercopithecinae; Macaca.
-OX   NCBI_TaxID=9541;
-RN   [1]
-RP   PROTEIN SEQUENCE, AND PHOSPHORYLATION AT SER-2.
-RC   TISSUE=Parotid gland;
-RX   PubMed=2229609; DOI=10.1177/00220345900690110301;
-RA   Xu T., Telser E., Troxler R.F., Oppenheim F.G.;
-RT   "Primary structure and anticandidal activity of the major histatin from
-RT   parotid secretion of the subhuman primate, Macaca fascicularis.";
-RL   J. Dent. Res. 69:1717-1723(1990).
-CC   -!- FUNCTION: Histatins (Hsts) are cationic and histidine-rich secreted
-CC       peptides mainly synthesized by saliva glands of humans and higher
-CC       primates (By similarity). Hsts are considered to be major precursors of
-CC       the protective proteinaceous structure on tooth surfaces (enamel
-CC       pellicle). {ECO:0000250|UniProtKB:P15515}.
-CC   -!- SUBCELLULAR LOCATION: Secreted.
-CC   -!- SIMILARITY: Belongs to the histatin/statherin family. {ECO:0000305}.
-CC   ---------------------------------------------------------------------------
-CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
-CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
-CC   ---------------------------------------------------------------------------
-DR   PIR; A60736; A60736.
-DR   AlphaFoldDB; P34084; -.
-DR   iPTMnet; P34084; -.
-DR   Proteomes; UP000233100; Unplaced.
-DR   GO; GO:0005783; C:endoplasmic reticulum; ISS:UniProtKB.
-DR   GO; GO:0005576; C:extracellular region; IEA:UniProtKB-SubCell.
-DR   GO; GO:0005739; C:mitochondrion; ISS:UniProtKB.
-DR   GO; GO:0022409; P:positive regulation of cell-cell adhesion; ISS:UniProtKB.
-DR   GO; GO:0009893; P:positive regulation of metabolic process; ISS:UniProtKB.
-DR   GO; GO:1900026; P:positive regulation of substrate adhesion-dependent cell spreading; ISS:UniProtKB.
-DR   GO; GO:0035470; P:positive regulation of vascular wound healing; ISS:UniProtKB.
-DR   GO; GO:0090303; P:positive regulation of wound healing; ISS:UniProtKB.
-DR   GO; GO:1903691; P:positive regulation of wound healing, spreading of epidermal cells; ISS:UniProtKB.
-DR   InterPro; IPR030773; Histatin/statherin.
-DR   Pfam; PF30867; Hst1; 1.
-PE   1: Evidence at protein level;
-KW   Antibiotic; Antimicrobial; Biomineralization; Direct protein sequencing;
-KW   Fungicide; Phosphoprotein; Reference proteome; Secreted.
-FT   PEPTIDE         1..38
-FT                   /note="Histatin-1"
-FT                   /id="PRO_0000044777"
-FT   REGION          1..38
-FT                   /note="Disordered"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   COMPBIAS        8..30
-FT                   /note="Basic residues"
-FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
-FT   MOD_RES         2
-FT                   /note="Phosphoserine"
-FT                   /evidence="ECO:0000269|PubMed:2229609"
-SQ   SEQUENCE   38 AA;  4803 MW;  CBE4B381932FB63C CRC64;
-     DSHEERHHGR HGHHKYGRKF HEKHHSHRGY RSNYLYDN
-//
 ID   TUFT1_PIG               Reviewed;         188 AA.
 AC   O97557;
 DT   02-AUG-2002, integrated into UniProtKB/Swiss-Prot.
@@ -45512,6 +44392,108 @@ SQ   SEQUENCE   121 AA;  13609 MW;  A796D2F278D9C136 CRC64;
      LHHQIIPVLS QHQTPTHALQ SHHHIPVMAT QQPTQPPQPM MPMPGQHSVT PTQHHQSNLP
      QPGQQPFQPQ FPQKPTHRPI QPQAPVHPMP PMPQPQLPPM FPLQPLPPLL PDLPLEPWPA
      S
+//
+ID   SM50_STRPU              Reviewed;         445 AA.
+AC   P11994;
+DT   01-OCT-1989, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1995, sequence version 2.
+DT   28-JAN-2026, entry version 97.
+DE   RecName: Full=50 kDa spicule matrix protein;
+DE   Flags: Precursor;
+GN   Name=SM50;
+OS   Strongylocentrotus purpuratus (Purple sea urchin).
+OC   Eukaryota; Metazoa; Echinodermata; Eleutherozoa; Echinozoa; Echinoidea;
+OC   Euechinoidea; Echinacea; Camarodonta; Echinidea; Strongylocentrotidae;
+OC   Strongylocentrotus.
+OX   NCBI_TaxID=7668;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA].
+RX   PubMed=3030858; DOI=10.1016/0012-1606(87)90254-5;
+RA   Sucov H.M., Benson S.C., Robinson J.J., Britten R.J., Wilt F.H.,
+RA   Davidson E.H.;
+RT   "A lineage-specific gene encoding a major matrix protein of the sea urchin
+RT   embryo spicule. II. Structure of the gene and derived sequence of the
+RT   protein.";
+RL   Dev. Biol. 120:507-519(1987).
+RN   [2]
+RP   SEQUENCE REVISION.
+RX   PubMed=2019323; DOI=10.1016/0012-1606(91)90226-s;
+RA   Katoh-Fukui Y., Noce T., Ueda T., Fujiwara Y., Hashimoto N.,
+RA   Higashinakagawa T., Killian C.E., Livingston B.T., Wilt F.H., Benson S.C.,
+RA   Sucov H.M., Davidson E.H.;
+RT   "The corrected structure of the SM50 spicule matrix protein of
+RT   Strongylocentrotus purpuratus.";
+RL   Dev. Biol. 145:201-202(1991).
+CC   -!- FUNCTION: Major matrix protein of the sea urchin embryo spicule. The
+CC       function of the matrix proteins is to direct crystal growth in certain
+CC       orientations and inhibit growth in others.
+CC   -!- TISSUE SPECIFICITY: Expressed specifically in the micromere/primary
+CC       mesenchyme cells (PMC) lineage.
+CC   -!- DEVELOPMENTAL STAGE: Detected at hatching blastula, it remains at a
+CC       certain level from the mesenchyme blastula to the pluteus stages.
+CC   -!- DOMAIN: The repetitive domain may provide a calcite binding matrix.
+CC   -!- SIMILARITY: Belongs to the SM50 family. {ECO:0000305}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; M16231; AAA30071.1; -; Genomic_DNA.
+DR   EMBL; M16230; AAA30071.1; JOINED; Genomic_DNA.
+DR   PIR; A27263; A27263.
+DR   AlphaFoldDB; P11994; -.
+DR   STRING; 7668.P11994; -.
+DR   eggNOG; KOG3544; Eukaryota.
+DR   HOGENOM; CLU_674973_0_0_1; -.
+DR   InParanoid; P11994; -.
+DR   Proteomes; UP000007110; Unassembled WGS sequence.
+DR   Gene3D; 3.10.100.10; Mannose-Binding Protein A, subunit A; 1.
+DR   InterPro; IPR001304; C-type_lectin-like.
+DR   InterPro; IPR016186; C-type_lectin-like/link_sf.
+DR   InterPro; IPR016187; CTDL_fold.
+DR   InterPro; IPR009765; Pericardin-like_rpt.
+DR   InterPro; IPR052890; SM50_spicule_matrix.
+DR   PANTHER; PTHR36148:SF3; 50 KDA SPICULE MATRIX PROTEIN; 1.
+DR   PANTHER; PTHR36148; 50 KDA SPICULE MATRIX PROTEIN-RELATED; 1.
+DR   Pfam; PF07054; Pericardin_rpt; 4.
+DR   SMART; SM00034; CLECT; 1.
+DR   SUPFAM; SSF56436; C-type lectin-like; 1.
+DR   PROSITE; PS50041; C_TYPE_LECTIN_2; 1.
+PE   2: Evidence at transcript level;
+KW   Reference proteome; Repeat; Signal.
+FT   SIGNAL          1..15
+FT   CHAIN           16..445
+FT                   /note="50 kDa spicule matrix protein"
+FT                   /id="PRO_0000017561"
+FT   DOMAIN          29..159
+FT                   /note="C-type lectin"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00040"
+FT   REGION          118..178
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          210..445
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        210..299
+FT                   /note="Gly residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        309..321
+FT                   /note="Polar residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        324..408
+FT                   /note="Gly residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        414..428
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+SQ   SEQUENCE   445 AA;  46262 MW;  10D08FDE088E639A CRC64;
+     MKGVLFIVAS LIAFATGQDC PAYYVRSQSG QSCYRYFNMR VPYRMASEFC EMVTPCGNGP
+     AKMGALASVS SPQENMEIYQ LVAGFSQDNQ MENEVWLGWN SQSPFFWEDG TPAYPNGFAA
+     FSSSPASPPR PGMPPTRSWP VNPQNPMSGP PGRAPVMKRQ NPPVRPGQGG RQIPQGVGPQ
+     WEAVEVTAMR AFVCEVPAGR NIPIGQQPGM GQGGFGNQQP GMGGRQPGFG NQPGMGGRQP
+     GFGNQPGMGG RQPGWGNQPG VGGRQPGMGG QQPGWGNQPG VGGRQPGMGG QPGVGGRQPG
+     FGNQPGMVDN NQAWWTTTRL GNQPGVGGRQ PGMGGQPGVG GRQPGVGGRQ PGFGNQPGVG
+     GRQPGMGGQQ PGMGGQPGVG GRQPGMGGRQ PGFGNQPGVG GRQPGMGGQQ PNNPNNPNPN
+     NPNNPNNPNP RFNRPRMLQE ADALA
 //
 ID   AMEL_RABIT              Reviewed;          29 AA.
 AC   P12761;
