@@ -808,11 +808,11 @@ structure-resources:
 
 # AlphaFold DB models one accession at a time, for species with no proteome archive
 # (Borrelia B31). Compute nodes have no outbound internet, so this runs where it is typed
-# (a login node), two downloads at a time, ~1_300 small files.
+# (a login node), one download at a time with a pause, ~1_300 small files.
 FETCH_SPECIES ?= borrelia
 fetch-afdb-models: check-inputs
 	python3 $(MAKEFILE_DIR)/tools/fetch-afdb-models --registry $(MAKEFILE_DIR)/../../data/species_metadata.json \
-	  --qfo-dir $(QFO_DIR) --out $(AFDB_EXTRA_MODELS) --parallel 2 $(subst $(comma), ,$(FETCH_SPECIES))
+	  --qfo-dir $(QFO_DIR) --out $(AFDB_EXTRA_MODELS) --parallel 1 $(subst $(comma), ,$(FETCH_SPECIES))
 
 # Wiring check: every structure process's stub, on the local executor, no data.
 STUB_DIR ?= $(MAKEFILE_DIR)/runs/stub-structure

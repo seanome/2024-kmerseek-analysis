@@ -2,7 +2,7 @@
 """Download AlphaFold DB models one accession at a time, for -entry darkStructure.
 
     tools/fetch-afdb-models --registry data/species_metadata.json --qfo-dir <QfO dir> \
-        --out <dir> [--parallel 2] species [species ...]
+        --out <dir> [--parallel 1] species [species ...]
 
 For each species, reads the query proteome named in the registry (staged_fasta, or the QfO
 <subdir>/<proteome>_<taxon>.fasta), takes the UniProt accession of every record (the same
@@ -14,7 +14,7 @@ one. Each model is written to <out>/<species>/AF-<acc>-F<n>-model_v<k>.cif, and
 
 For species with no AlphaFold DB proteome archive (Borrelia burgdorferi B31,
 UP000001807). Sherlock compute nodes have no outbound internet, so run it on a login node,
-two requests at a time. Python 3.6 standard library only.
+one request at a time with a pause (the API answers 429 to faster use). Python 3.6 standard library only.
 """
 import argparse
 import concurrent.futures
@@ -42,8 +42,17 @@ def accessions(path):
     return out
 
 
-def get(url, tries=5):
+DELAY = 0.5   # seconds between requests of one worker
+
+
+def get(url, tries=8):
+    """The body, None on 404. HTTP 429 (too many requests) waits Retry-After or longer.
+
+    The AlphaFold DB API answered 429 after ~100 requests at two at a time with no pause
+    (2026-10-16), so every request waits DELAY first and a 429 backs off.
+    """
     for i in range(tries):
+        time.sleep(DELAY)
         try:
             with urllib.request.urlopen(url, timeout=60) as r:
                 return r.read()
@@ -52,10 +61,17 @@ def get(url, tries=5):
                 return None
             if i == tries - 1:
                 raise
+            wait = 30 * (i + 1)
+            if e.code == 429:
+                try:
+                    wait = max(wait, int(e.headers.get("Retry-After", "0")))
+                except ValueError:
+                    pass
+            time.sleep(wait)
         except (urllib.error.URLError, OSError):
             if i == tries - 1:
                 raise
-        time.sleep(5 * (i + 1))
+            time.sleep(10 * (i + 1))
 
 
 def fetch_one(acc, out_dir, present):
@@ -90,7 +106,7 @@ def main():
     ap.add_argument("--registry", required=True)
     ap.add_argument("--qfo-dir", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--parallel", type=int, default=2)
+    ap.add_argument("--parallel", type=int, default=1)
     ap.add_argument("species", nargs="+")
     args = ap.parse_args()
     reg = json.load(open(args.registry))
