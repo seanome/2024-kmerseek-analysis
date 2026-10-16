@@ -671,6 +671,152 @@ hc.finish_figure(
 """)
 
 md(r"""
+### Why gbmr7 can use so few k
+
+gbmr7 has the widest range in notebook 274 among the 4-8 letter alphabets (k 13-35) and
+the shortest bar (k 13-14 at 20-30% identity). Its groups are
+`DN | AEFIKLMQRVWY | CH | T | S | G | P`: one group of 12 amino acids and six small ones.
+gbmr4, with the same $k_\mathrm{min}$ of 13, has `ADKERNTSQ | YFLIVMCWH | G | P`.
+
+Two things follow from gbmr7's grouping, and both are checked here on the 20-30% identity
+Pfam seed pairs:
+
+* **Seeds must be long.** If one group holds most residues, most letters are the same and
+  a short seed matches unrelated proteins by chance. Measured: the share of residues in
+  each alphabet's largest group.
+* **Homologs agree less often.** If the small groups separate amino acids that often
+  replace each other in homologs (S and T, D and E), those columns become mismatches and
+  the same-class runs between homologs get shorter. Measured: for every pair of different
+  amino acids aligned across from each other, whether gbmr7 and gbmr4 put the two in the
+  same group.
+""")
+
+code(r"""
+ALN = "/Users/olga/data/pfam/230_pfam_seed_pair_alignments.parquet"
+remote_pairs = pfam.filter((pl.col("alphabet") == "gbmr7") & (pl.col("identity_bin") == REMOTE_BIN)).select(
+    "family", "query", "target"
+)
+remote_aln = pl.read_parquet(ALN, columns=["family", "query", "target", "qaln", "taln"]).join(
+    remote_pairs, on=["family", "query", "target"]
+)
+assert remote_aln.height == remote_pairs.height, "a pair is missing from the alignments file"
+subs = hc.substitution_counts(remote_aln["qaln"], remote_aln["taln"])
+AA = hc.ALPHABET_CLUSTERS["protein20"]
+n_columns = int(subs.sum())
+n_mismatch = n_columns - int(np.trace(subs))
+residue_share = (subs.sum(0) + subs.sum(1)) / (2 * n_columns)
+COMPARE = ["gbmr4", "gbmr7"]
+group_idx = {a: np.array([hc.TABLES[a][ord(r)] for r in AA]) for a in COMPARE}
+same_group = {a: group_idx[a][:, None] == group_idx[a][None, :] for a in COMPARE}
+
+# Pooled over columns, so it differs slightly from the per-pair mean in section 2b.
+pooled = pl.DataFrame(
+    {
+        "alphabet": COMPARE,
+        "agreement (pooled columns)": [round(float(subs[same_group[a]].sum() / n_columns), 3) for a in COMPARE],
+        "largest group": [max(hc.ALPHABET_CLUSTERS[a], key=len) for a in COMPARE],
+        "share of residues in it": [
+            round(float(residue_share[group_idx[a] == np.bincount(group_idx[a]).argmax()].sum()), 3) for a in COMPARE
+        ],
+    }
+)
+print(f"{remote_aln.height:_} Pfam seed pairs at {REMOTE_BIN} identity, {n_columns:_} aligned columns, {n_mismatch:_} mismatched".replace("_", ","))
+print(pooled)
+
+swaps = pl.DataFrame(
+    [
+        {
+            "swap": f"{AA[i]}↔{AA[j]}",
+            "share_of_mismatches": (subs[i, j] + subs[j, i]) / n_mismatch,
+            "gbmr4_same": bool(same_group["gbmr4"][i, j]),
+            "gbmr7_same": bool(same_group["gbmr7"][i, j]),
+        }
+        for i in range(20)
+        for j in range(i + 1, 20)
+    ]
+).sort("share_of_mismatches", descending=True)
+CATS = {  # (gbmr4 same group, gbmr7 same group): label, marker, face colour, edge colour
+    (True, True): ("same group in both", "o", "0.25", "0.25"),
+    (True, False): ("split by gbmr7 only", "s", "#d55e00", "#d55e00"),
+    (False, True): ("split by gbmr4 only", "D", "#0072b2", "#0072b2"),
+    (False, False): ("split by both", "o", "white", "0.45"),
+}
+by_cat = swaps.group_by("gbmr4_same", "gbmr7_same").agg(pl.col("share_of_mismatches").sum().round(3)).sort(
+    "share_of_mismatches", descending=True
+)
+print("Share of mismatched columns, by whether each alphabet keeps the two amino acids in one group")
+print(by_cat)
+cat_share = {(r["gbmr4_same"], r["gbmr7_same"]): r["share_of_mismatches"] for r in by_cat.iter_rows(named=True)}
+
+N_TOP = 25
+top = swaps.head(N_TOP)
+fig, (ax_c, ax_s) = plt.subplots(1, 2, figsize=(15, 7.5), gridspec_kw={"width_ratios": [1, 1.1]})
+
+# Left: each alphabet's groups as one bar split by share of residues; the largest group dark.
+for yy, a in enumerate(COMPARE):
+    groups = sorted(hc.ALPHABET_CLUSTERS[a], key=lambda g: -residue_share[[AA.index(r) for r in g]].sum())
+    left = 0.0
+    for n, g in enumerate(groups):
+        w = float(residue_share[[AA.index(r) for r in g]].sum())
+        ax_c.barh(yy, w, left=left, height=0.7, color="0.3" if n == 0 else "0.8", edgecolor="white", lw=2)
+        txt = g if w * 70 >= len(g) else ""  # skip a label wider than its segment
+        ax_c.text(left + w / 2, yy - 0.05, txt, ha="center", va="center", fontsize=8,
+                  color="white" if n == 0 else "black", family="monospace")
+        if w >= 0.08:
+            ax_c.text(left + w / 2, yy + 0.22, f"{w:.0%}", ha="center", va="center", fontsize=8,
+                      color="white" if n == 0 else "black")
+        left += w
+ax_c.set_yticks(range(len(COMPARE)), [f"{a}\n({len(hc.ALPHABET_CLUSTERS[a])} groups)" for a in COMPARE])
+ax_c.set_ylim(len(COMPARE) - 0.3, -0.7)
+ax_c.set_xlim(0, 1)
+ax_c.set_xticks([0, 0.25, 0.5, 0.75, 1], ["0%", "25%", "50%", "75%", "100%"])
+ax_c.set_xlabel("share of aligned residues in each group")
+ax_c.set_title("A. How residues fall into groups\n(one bar per alphabet, split by group)", fontsize=10)
+
+# Right: the most common swaps, marked by which alphabet splits them.
+for yy, r in enumerate(top.iter_rows(named=True)):
+    lab, mk, fc, ec = CATS[(r["gbmr4_same"], r["gbmr7_same"])]
+    ax_s.scatter(100 * r["share_of_mismatches"], yy, marker=mk, s=45, facecolor=fc, edgecolor=ec, lw=1.2, zorder=3)
+ax_s.set_yticks(range(N_TOP), top["swap"].to_list(), family="monospace")
+ax_s.set_ylim(N_TOP - 0.5, -0.5)
+ax_s.set_xlim(0, None)
+ax_s.grid(alpha=0.3)
+ax_s.set_xlabel(f"% of all {n_mismatch:_} mismatched columns".replace("_", ","))
+ax_s.set_title(f"B. The {N_TOP} most common amino-acid swaps\nbetween {REMOTE_BIN} identity Pfam seed pairs", fontsize=10)
+
+handles = [
+    Patch(color="0.3", label="largest group"),
+    Patch(color="0.8", label="other groups"),
+] + [
+    Line2D([], [], marker=mk, ls="", mfc=fc, mec=ec, ms=7, label=f"{lab} ({100 * cat_share[key]:.0f}% of all mismatches)")
+    for key, (lab, mk, fc, ec) in CATS.items()
+]
+fig.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, fontsize=9, frameon=False)
+
+ag = dict(zip(pooled["alphabet"], pooled["agreement (pooled columns)"]))
+big = dict(zip(pooled["alphabet"], pooled["share of residues in it"]))
+top_split7 = top.filter(pl.col("gbmr4_same") & ~pl.col("gbmr7_same")).head(4)
+hc.finish_figure(
+    fig,
+    FIG / "230_gbmr7_vs_gbmr4_groups_and_swaps_pfam_seed.png",
+    tools=hc.NO_TOOL + f"; Pfam-A 38.2 seed alignments, {REMOTE_BIN} identity",
+    hypothesis=(
+        "gbmr7 can use few k because its one large group makes short seeds match by chance, and its small groups split "
+        "swaps that homologs make often. More swaps kept in one group = longer same-class runs between homologs = better."
+    ),
+    conclusion=(
+        f"gbmr7's largest group holds {big['gbmr7']:.0%} of residues (gbmr4's: {big['gbmr4']:.0%}). gbmr7 splits "
+        f"{100 * cat_share[(True, False)]:.0f}% of mismatched columns that gbmr4 keeps together, among them "
+        + ", ".join(f"{s} ({100 * v:.1f}%)" for s, v in zip(top_split7["swap"], top_split7["share_of_mismatches"]))
+        + f"; gbmr4 splits {100 * cat_share[(False, True)]:.0f}% that gbmr7 keeps. Agreement over all columns: "
+        f"gbmr7 {ag['gbmr7']:.3f}, gbmr4 {ag['gbmr4']:.3f}. So gbmr7 needs seeds as long as gbmr4's but its runs between homologs are shorter."
+    ),
+    title="gbmr7 against gbmr4: how residues fall into groups, and which common swaps each alphabet splits",
+    header_y=HEADER_Y,
+)
+""")
+
+md(r"""
 ## 3. How much of that is homology, and how much is packing?
 
 Two structurally aligned residues can share an HP class because they descend from one
@@ -926,6 +1072,11 @@ Written from the numbers above; see each figure's footer for the exact values.
    k=5, gbmr4 29% at k=13, protein20 25% at k=5). For every alphabet the last k that still reaches
    5% of those pairs is 1 to 5 above k_min (hp_thomas_dill2: k_min 18, last 21, notebook 274 lists
    up to 36). For remote homologs, test k_min to k_min + 5, not the whole range.
+1d. gbmr7 has the fewest usable k of the 4-8 letter alphabets (13-14 of 13-35 at 20-30%
+   identity) because its grouping costs it twice. One group of 12 amino acids holds 64% of
+   residues, so seeds must be as long as gbmr4's (both k_min 13). Its small groups split 25% of
+   mismatched columns that gbmr4 keeps in one group (D-E, A-S, S-T, A-T among the most common),
+   while gbmr4 splits 14% that gbmr7 keeps. Agreement over all columns is 0.586 against 0.667.
 2. Part of it is packing rather than ancestry. Structurally aligned pairs from different
    folds show HP kappa around 0.1, so roughly a third of the cross-family signal under 20%
    identity would appear between any two well-superposed sequences. That fraction is a

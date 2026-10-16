@@ -207,6 +207,23 @@ IDENTITY_BINS = [0.0, 0.2, 0.3, 0.4, 0.6, 1.01]
 IDENTITY_LABELS = ["<20%", "20-30%", "30-40%", "40-60%", ">=60%"]
 
 
+def substitution_counts(qalns, talns) -> np.ndarray:
+    """20 x 20 counts of aligned residue pairs, query residue by target residue.
+
+    Rows and columns follow ALPHABET_CLUSTERS["protein20"]. Lower-case (insert) residues
+    count as their upper-case residue, the same columns pair_stats counts; a column with a
+    gap or a non-standard residue on either side is skipped.
+    """
+    prot = TABLES["protein20"]
+    counts = np.zeros(400, dtype=np.int64)
+    for qaln, taln in zip(qalns, talns):
+        qc = prot[np.frombuffer(qaln.encode(), dtype=np.uint8)]
+        tc = prot[np.frombuffer(taln.encode(), dtype=np.uint8)]
+        both = (qc != GAP) & (tc != GAP)
+        counts += np.bincount(qc[both].astype(np.int64) * 20 + tc[both], minlength=400)
+    return counts.reshape(20, 20)
+
+
 def add_identity_bin(df: pl.DataFrame, col: str = "seqid_ali") -> pl.DataFrame:
     return df.with_columns(
         pl.col(col)
