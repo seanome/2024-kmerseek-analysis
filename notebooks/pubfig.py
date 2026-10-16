@@ -29,6 +29,10 @@ OKABE_ITO = {
 }
 GREY = "#999999"  # for "everything else" / context marks
 
+#: More distinct colours than this in a PNG means a continuous colour bar, which
+#: is left at full colour because quantising it puts visible steps in the bar.
+CONTINUOUS_COLOUR_THRESHOLD = 3_000
+
 
 def use_style():
     plt.style.use(STYLE)
@@ -74,9 +78,48 @@ def shared_legend(fig, ncol=None, **kw):
     )
 
 
-def save(fig, path_stem, formats=("pdf", "svg", "png")):
-    """Vector PDF/SVG for the journal, 450 dpi PNG for notebooks and slides."""
+def save(fig, path_stem, formats=("svg", "png")):
+    """One vector format and one raster: SVG for the journal, PNG for everything else.
+
+    PDF was dropped on 2026-10-13: SVG is already a vector format a journal
+    accepts, so writing both doubled the repository's figure weight for nothing.
+    Pass formats=("pdf",) explicitly if a submission ever asks for PDF.
+
+    Every PNG is written as a 256-colour palette image, the same way
+    scripts/shrink_png.py and the pre-commit hook of the same name do it, so a
+    figure is already in the committable form when it is saved rather than only
+    after a commit is attempted.
+    """
     path_stem = Path(path_stem)
     path_stem.parent.mkdir(parents=True, exist_ok=True)
     for ext in formats:
-        fig.savefig(path_stem.with_suffix(f".{ext}"))
+        out = path_stem.with_suffix(f".{ext}")
+        fig.savefig(out)
+        if ext == "png":
+            to_256_colours(out)
+
+
+def to_256_colours(path, max_colours=256):
+    """Rewrite a PNG in place as a 256-colour palette image, keeping its dpi.
+
+    Public so a PNG saved some other way can be converted with the same call.
+    A figure with a continuous colour bar is left alone: 256 colours put visible
+    steps in the bar, which is worse than the file size it saves. The bar is
+    detected by counting distinct colours, since a continuous map puts far more
+    in the image than a categorical figure ever does.
+    """
+    from PIL import Image
+
+    Image.MAX_IMAGE_PIXELS = None
+    with Image.open(path) as im:
+        if im.mode == "P":
+            return False
+        colours = im.getcolors(maxcolors=1 << 24)
+        if colours is not None and len(colours) > CONTINUOUS_COLOUR_THRESHOLD:
+            return False
+        dpi = im.info.get("dpi")
+        quantized = im.convert("RGBA").quantize(
+            max_colours, method=Image.Quantize.FASTOCTREE
+        )
+    quantized.save(path, "PNG", optimize=True, **({"dpi": dpi} if dpi else {}))
+    return True
