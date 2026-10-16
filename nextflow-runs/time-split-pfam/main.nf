@@ -13,7 +13,7 @@
 //   kmerseek  every alphabet, each k of its range (every other k when the range has more
 //             than 5), scaled 1, mask off; two search settings per index: exact, and
 //             extend with the alphabet's C_opt and X-drop 4 x C_opt
-//   MMseqs2   -s 7 --num-iterations 3, as the dark-set run
+//   MMseqs2   -s 7, one round (the dark-set run uses 3; changed 2026-10-14)
 //   phmmer    --domE 0.001
 //   hmmscan   Pfam 33.1 models, -E 0.001 --domE 0.001, no gathering thresholds
 //

@@ -84,7 +84,11 @@ def build(d: Path) -> None:
         + km_row("R3", 12, 40, "PF1", 3, "1e-4")
         + km_row("R4", 6, 38, "PF3", 3, "1e-3")
         + km_row("DECOY_R1", 1, 20, "PF9", 3, "10")
-        + km_row("DECOY_R3", 1, 20, "PF9", 3, "1e-6"),
+        + km_row("DECOY_R3", 1, 20, "PF9", 3, "1e-6")
+        # Weaker second calls of a pair already called: they change no answer above, but
+        # read one row at a time they fall in other batches, which must not count twice.
+        + km_row("DECOY_R3", 30, 50, "PF9", 3, "1")
+        + km_row("R1", 14, 30, "PF1", 3, "1e-2"),
     )
     write_gz(
         d / "kmerseek/protein20.k5.exact.chunk.transfers.tsv.gz",
@@ -168,6 +172,20 @@ def main() -> None:
         tune = (d / "full/unique_finds_tune.csv").read_text().splitlines()
         p20 = [r for r in tune if r.startswith("kmerseek protein20 k5 exact,")]
         assert p20 and p20[0].split(",")[1] == "1", tune
+
+        # Reading kmerseek outputs one row at a time gives the same outputs as reading
+        # each file whole (a query's calls then span many batches).
+        run(d, "full_b1", "--read-test-half", "--batch-rows", "1")
+        for f in sorted((d / "full").glob("*.[cj]s*")):
+            assert (d / "full_b1" / f.name).read_bytes() == f.read_bytes(), f.name
+        import polars as pl
+
+        a_ic = pl.read_parquet(d / "full/instance_calls.parquet")
+        b_ic = pl.read_parquet(d / "full_b1/instance_calls.parquet")
+        assert a_ic.sort(a_ic.columns).equals(b_ic.sort(b_ic.columns))
+        for f in sorted((d / "full/calls").glob("*.parquet")):
+            a_c, b_c = pl.read_parquet(f), pl.read_parquet(d / "full_b1/calls" / f.name)
+            assert a_c.equals(b_c), f.name
 
         pilot = run(d, "pilot")
         assert not any(k.startswith("test_") for k in pilot), pilot

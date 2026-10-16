@@ -50,12 +50,15 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import io
+import itertools
 import json
 import math
 import resource
 from pathlib import Path
 
 import polars as pl
+import pyarrow.parquet as pq
 
 LANDING_MIN = 0.5
 DECOY_RATE_MAX = 0.01  # family transfers per decoy query
@@ -131,35 +134,53 @@ KM_COLUMNS = [
 ]
 
 
-def read_kmerseek_file(f: Path) -> tuple[pl.DataFrame, dict]:
-    """One kmerseek search output (one setting, one query chunk) as calls. Only the columns
-    scored are read: a pilot file holds up to ~27 million rows."""
+# Rows of a kmerseek output read at once. The pilot's largest file (gbmr7 k13 exact, 228
+# million rows) took the scorer to an 89 GiB peak when read whole (job of the pilot's
+# scoreTransfers, 2026-10-15); a full-run chunk holds 2,000 queries, not 440, so wass14 k5
+# alone would be about 510 million rows. 10 million rows peak at a few GiB.
+BATCH_ROWS = 10_000_000
+
+
+def iter_kmerseek_file(f: Path, batch_rows: int = BATCH_ROWS):
+    """One kmerseek search output (one setting, one query chunk) as calls, in batches of at
+    most `batch_rows` rows. Only the columns scored are read. Yields (calls, check) where
+    check is this file's {file, rows, columns} once the file is done (None before)."""
     alphabet, k, arm = f.name.split(".")[0], f.name.split(".")[1], f.name.split(".")[2]
     setting = f"kmerseek {alphabet} {k} {arm}"
-    with gzip.open(f, "rt") as fh:
-        header = fh.readline().rstrip("\n").split("\t")
-    cols = KM_COLUMNS if set(KM_COLUMNS) <= set(header) else None
-    df = pl.read_csv(f, separator="\t", infer_schema_length=0, columns=cols)
-    check = {"file": f.name, "rows": df.height, "columns": ",".join(header)}
-    if df.height == 0 or "region_evalue" not in header:
-        return pl.DataFrame(schema=CALL_SCHEMA), check
     score = (
         pl.col("region_tfidf").cast(pl.Float64)
         if arm == "exact"
         else neg_log10("region_evalue")
     )
-    return (
-        df.select(
-            pl.lit(setting).alias("setting"),
-            pl.lit("kmerseek").alias("tool"),
-            "query",
-            *project_domain(),
-            "pfam_acc",
-            score.alias("score"),
-            "target",
-        ),
-        check,
-    )
+    rows = 0
+    with gzip.open(f, "rb") as fh:
+        header_line = fh.readline()
+        header = header_line.decode().rstrip("\n").split("\t")
+        cols = KM_COLUMNS if set(KM_COLUMNS) <= set(header) else None
+        while True:
+            lines = list(itertools.islice(fh, batch_rows))
+            if not lines:
+                break
+            rows += len(lines)
+            if "region_evalue" not in header:
+                continue  # unscorable; counted in rows and reported in kmerseek_files.csv
+            df = pl.read_csv(
+                io.BytesIO(header_line + b"".join(lines)),
+                separator="\t",
+                infer_schema_length=0,
+                columns=cols,
+            )
+            del lines
+            yield df.select(
+                pl.lit(setting).alias("setting"),
+                pl.lit("kmerseek").alias("tool"),
+                "query",
+                *project_domain(),
+                "pfam_acc",
+                score.alias("score"),
+                "target",
+            ), None
+    yield None, {"file": f.name, "rows": rows, "columns": ",".join(header)}
 
 
 def transfer_by_overlap(hits: pl.DataFrame, domains: pl.DataFrame) -> pl.DataFrame:
@@ -333,15 +354,10 @@ def reduce_calls(c: pl.DataFrame, inst: pl.DataFrame) -> dict[str, pl.DataFrame]
             end_past_query=(pl.col("qend") > pl.col("query_length")).sum(),
             start_after_end=(pl.col("qstart") > pl.col("qend")).sum(),
         ),
-        "counts": c.group_by("setting").agg(
-            n_calls=pl.len(),
-            real_queries_with_call=pl.col("query")
-            .filter(~pl.col("is_decoy"))
-            .n_unique(),
-            decoy_queries_with_call=pl.col("query")
-            .filter(pl.col("is_decoy"))
-            .n_unique(),
-        ),
+        # Call counts add up across batches; queries with a call are kept as a set, since
+        # one query's calls can fall in two batches of the same file.
+        "counts": c.group_by("setting").agg(n_calls=pl.len()),
+        "qset": c.select("setting", "query", "is_decoy").unique(),
         "ic": best_instance_calls(c.filter(~pl.col("is_decoy")), inst),
         "dec": (
             c.filter(pl.col("is_decoy") & (pl.col("role") == "sample"))
@@ -498,6 +514,12 @@ def main() -> None:
         help="compute test-half recall and decoy rate; off for the pilot, whose "
         "queries are part of the approved sample",
     )
+    ap.add_argument(
+        "--batch-rows",
+        type=int,
+        default=BATCH_ROWS,
+        help="kmerseek output rows read at once",
+    )
     a = ap.parse_args()
     q = pl.read_csv(a.inputs / "queries.tsv", separator="\t")
     inst = pl.read_csv(a.inputs / "instances.tsv", separator="\t")
@@ -564,31 +586,49 @@ def main() -> None:
     dec_dir = a.out / "decoy_pairs"
     dec_dir.mkdir(parents=True, exist_ok=True)
     parts: dict[str, list[pl.DataFrame]] = {
-        k: [] for k in ("pc", "counts", "ic", "unknown")
+        k: [] for k in ("pc", "counts", "qset", "ic", "unknown")
     }
     checks = []
 
-    def add(c: pl.DataFrame, name: str) -> None:
-        c = c.select([pl.col(k).cast(t) for k, t in CALL_SCHEMA.items()])
-        if not a.read_test_half:
-            c = c.filter(~pl.col("query").is_in(hidden.implode()))
-        c = c.join(qcols, on="query", how="left")
-        c.write_parquet(calls_dir / f"{name}.parquet")
-        for k, v in reduce_calls(c, inst).items():
-            if k == "dec":
-                v.write_parquet(dec_dir / f"{name}.parquet")
-            else:
-                parts[k].append(v)
+    def add(batches, name: str) -> None:
+        """Calls of one search output, given as one frame or as batches of it: written to
+        calls/<name>.parquet and decoy_pairs/<name>.<i>.parquet, reductions kept."""
+        writer = None
+        for i, c in enumerate(batches):
+            c = c.select([pl.col(k).cast(t) for k, t in CALL_SCHEMA.items()])
+            if not a.read_test_half:
+                c = c.filter(~pl.col("query").is_in(hidden.implode()))
+            c = c.join(qcols, on="query", how="left")
+            t = c.to_arrow()
+            if writer is None:
+                writer = pq.ParquetWriter(calls_dir / f"{name}.parquet", t.schema)
+            writer.write_table(t)
+            del t
+            for k, v in reduce_calls(c, inst).items():
+                if k == "dec":
+                    v.write_parquet(dec_dir / f"{name}.{i:04d}.parquet")
+                else:
+                    parts[k].append(v)
+        if writer is not None:
+            writer.close()
 
     for f in sorted(a.kmerseek.glob("*.transfers.tsv.gz")):
-        c, check = read_kmerseek_file(f)
-        checks.append(check)
-        add(c, f.name.removesuffix(".transfers.tsv.gz"))
-        print(f"{f.name}: {check['rows']} rows", flush=True)
+        checks_f = []
+
+        def calls_of(f=f, out=checks_f):
+            for c, check in iter_kmerseek_file(f, a.batch_rows):
+                if check is not None:
+                    out.append(check)
+                else:
+                    yield c
+
+        add(calls_of(), f.name.removesuffix(".transfers.tsv.gz"))
+        checks.extend(checks_f)
+        print(f"{f.name}: {checks_f[0]['rows']} rows", flush=True)
         log_memory(f.name)
-    add(read_mmseqs(a.mmseqs2, dom), "MMseqs2")
-    add(read_phmmer(a.phmmer, dom), "phmmer")
-    add(read_hmmscan(a.hmmscan), "hmmscan")
+    add([read_mmseqs(a.mmseqs2, dom)], "MMseqs2")
+    add([read_phmmer(a.phmmer, dom)], "phmmer")
+    add([read_hmmscan(a.hmmscan)], "hmmscan")
 
     pc = pl.concat(parts["pc"]).group_by("setting").sum().sort("setting")
     pc.write_csv(a.out / "parse_checks.csv")
@@ -601,11 +641,40 @@ def main() -> None:
             f"WARNING: {len(unknown)} query names in calls are not in queries.tsv, e.g. {unknown[:5]}"
         )
 
-    ic = pl.concat(parts["ic"])
+    # Best call per instance across batches: the same order and tie rule as
+    # best_instance_calls, so batching does not change which call is kept.
+    ic = (
+        pl.concat(parts["ic"])
+        .sort(
+            ["score", "qstart", "qend"],
+            descending=[True, False, False],
+            maintain_order=True,
+        )
+        .unique(INSTANCE_KEY_COLS, keep="first", maintain_order=True)
+    )
     ic.write_parquet(a.out / "instance_calls.parquet")
     log_memory("all search outputs read")
     dec_scan = pl.scan_parquet(dec_dir / "*.parquet")
-    counts = pl.concat(parts["counts"]).group_by("setting").sum()
+    counts = (
+        pl.concat(parts["counts"])
+        .group_by("setting")
+        .sum()
+        .join(
+            pl.concat(parts["qset"])
+            .unique()
+            .group_by("setting")
+            .agg(
+                real_queries_with_call=pl.col("query")
+                .filter(~pl.col("is_decoy"))
+                .n_unique(),
+                decoy_queries_with_call=pl.col("query")
+                .filter(pl.col("is_decoy"))
+                .n_unique(),
+            ),
+            on="setting",
+            how="left",
+        )
+    )
 
     settings = counts["setting"].sort().to_list()
     n_dec = {
@@ -620,7 +689,12 @@ def main() -> None:
     rows, cutoffs, dec_by_setting = [], {}, {}
     for s in settings:
         cnt = counts.filter(pl.col("setting") == s).row(0, named=True)
-        dec_s = dec_scan.filter(pl.col("setting") == s).drop("setting")
+        # One row per decoy-family pair: a pair can come from two batches of one file.
+        dec_s = (
+            dec_scan.filter(pl.col("setting") == s)
+            .group_by("query", "pfam_acc", "half")
+            .agg(pl.col("score").max())
+        )
         cut = matched_cutoff(
             dec_s.filter(pl.col("half") == "tune").select("score").collect(),
             n_dec["tune"],

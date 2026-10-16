@@ -25,8 +25,10 @@ half is read:
 - Every row carries n_instances. A stratum under 30 instances is kept; the site greys it.
 
 --half test reads the test half and is meant to run once, on the full run's scores: it
-refuses a scores dir made without --read-test-half, and it writes TEST_HALF_READ in --out
-and refuses to run again where that file exists. --half tune runs on the pilot's scores (no
+refuses a scores dir made without --read-test-half, appends each read to TEST_HALF_READ in
+the scores dir (before reading, so a crashed read counts), and refuses a second read unless
+--reread-reason is given, which goes into that log. The scorer itself (scoreTransfers,
+--read_test_half true) also reads the test half; it reruns only if its inputs change. --half tune runs on the pilot's scores (no
 test half there), to test this script; its rows are not results.
 
 Compute rows: one per (tool, setting, step) from the run's Nextflow trace, every row:
@@ -291,22 +293,33 @@ def main() -> None:
     ap.add_argument("--commit", required=True)
     ap.add_argument("--half", choices=("test", "tune"), required=True)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument(
+        "--reread-reason",
+        help="read the test half again, e.g. after a crash; the reason is appended to "
+        "the scores dir's TEST_HALF_READ log and must be reported with the rows",
+    )
     a = ap.parse_args()
 
     summ = pl.read_csv(a.scores / "setting_summary.csv")
     a.out.mkdir(parents=True, exist_ok=True)
-    marker = a.out / "TEST_HALF_READ"
+    # The log sits beside the scores, not in --out, so a second --out cannot skip it. Every
+    # read is appended, a failed one too: a run that stops after reading still read.
+    marker = a.scores / "TEST_HALF_READ"
     if a.half == "test":
         if "found_test" not in summ.columns:
             raise SystemExit("scores were made without --read-test-half")
-        if marker.exists():
+        if marker.exists() and not a.reread_reason:
             raise SystemExit(
-                f"{marker} exists: the test half has been read once already"
+                f"{marker} exists: the test half has been read already:\n"
+                f"{marker.read_text()}Pass --reread-reason to read it again."
             )
-        marker.write_text(
-            f"read {dt.datetime.now().isoformat(timespec='seconds')} "
-            f"from {a.scores} at commit {a.commit}\n"
-        )
+        with marker.open("a") as fh:
+            fh.write(
+                f"read {dt.datetime.now().isoformat(timespec='seconds')} "
+                f"into {a.out} at commit {a.commit}"
+                + (f"; again because: {a.reread_reason}" if a.reread_reason else "")
+                + "\n"
+            )
 
     q = pl.read_csv(a.inputs / "queries.tsv", separator="\t")
     inst = pl.read_csv(a.inputs / "instances.tsv", separator="\t")
@@ -329,7 +342,18 @@ def main() -> None:
     if missing:
         raise SystemExit(f"no cutoff for aligner(s) {missing}")
 
-    settings = sorted(cutoffs)
+    # A kmerseek setting of --settings with no call at all is missing from
+    # setting_summary.csv; it still gets its rows, at recall 0, so it does not vanish.
+    st = pl.read_csv(a.settings, separator="\t")
+    expected = {
+        f"kmerseek {al} k{k} {arm}"
+        for al, k in st.select("alphabet", "ksize").iter_rows()
+        for arm in ("exact", "extend")
+    }
+    no_calls = sorted(expected - set(cutoffs))
+    if no_calls:
+        print(f"settings with no call, reported at recall 0: {no_calls}")
+    settings = sorted(set(cutoffs) | expected)
     rows = recall_rows(inst_h, found, settings)
     # The scorer's own count of found test instances must match this one.
     if a.half == "test":
