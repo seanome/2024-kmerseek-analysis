@@ -17,7 +17,8 @@ the Sherlock path, so a row can be checked against the original file.
 Nothing is estimated. A metric the output does not carry has no row; a compute number the
 trace does not carry is null. Strata are only the ones the outputs already hold: target
 species (and its divergence from human), identity bin, Swiss-Prot feature type, feature
-length bin, pLDDT bin.
+length bin, pLDDT bin, and the query-side strata of QUERY_STRATUM_AXES where a run was
+scored with them.
 """
 
 import argparse
@@ -80,6 +81,20 @@ QFO_METRICS = [
     "family_fmax",
 ]
 STRATUM_AXES = ["all", "identity", "plddt", "feature_type", "feature_length_bin"]
+# Strata an annotator can compute from their own proteome, with no truth label
+# (results/leaderboard/query_strata/RULES.md). They exist only in a QfO region run scored
+# with the query-strata covariates (main.nf --query_covariates); other runs have no rows.
+QUERY_STRATUM_AXES = [
+    "nearest_identity",
+    "membrane",
+    "low_complexity",
+    "protein_length",
+    "region_length",
+    "family_superkingdoms",
+    "family_phyla",
+    "busco",
+]
+STRATUM_AXES += QUERY_STRATUM_AXES
 
 SCHEMA = {
     "experiment": pl.String,
@@ -906,6 +921,7 @@ COVERAGE_AXES = [
     "plddt",
     "feature_type",
     "feature_length_bin",
+    *QUERY_STRATUM_AXES,
 ]
 
 
@@ -960,7 +976,11 @@ def coverage_markdown(results: pl.DataFrame) -> str:
         "summed over experiments, query sets, target databases and truth sources. A blank",
         "square means nothing was run. An instance scored under many settings counts once.",
         "Axes are only the strata the outputs carry: whole set per target species, sequence",
-        "identity bin, AlphaFold pLDDT bin, Swiss-Prot feature type, feature length bin.",
+        "identity bin, AlphaFold pLDDT bin, Swiss-Prot feature type, feature length bin, and",
+        "the query-side strata of results/leaderboard/query_strata/RULES.md (identity to the",
+        "nearest protein in the target, membrane class, SEG low complexity, protein length,",
+        "region length, Pfam family breadth in superkingdoms and phyla, BUSCO status). A",
+        "query-side axis with no numbers has not been scored yet.",
         "",
         *grid(tools, COVERAGE_AXES, cell, "tool \\ axis"),
         "",
