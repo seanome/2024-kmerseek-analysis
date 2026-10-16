@@ -1762,19 +1762,28 @@ def family_figure(
     w_in, h_in = 183 * pf.MM, 120 * pf.MM
     fig = plt.figure(figsize=(w_in, h_in))
     band_in = len(handles) * 6 * 1.6 / 72 + 0.03
-    gs = fig.add_gridspec(
-        3,
+    # Two levels of spacing: the legend band sits right on top of the panels, while the
+    # panels keep room between them for panel a's x label and the b, c titles.
+    top_in = 0.995 * h_in
+    outer = fig.add_gridspec(
         2,
-        height_ratios=[band_in, 2.3, 1.45],
-        width_ratios=[1.0, 0.8],
+        1,
+        height_ratios=[band_in, h_in - band_in - 0.45],
         left=1.45 / w_in,
         right=0.99,
         top=0.995,
         bottom=0.45 / h_in,
-        hspace=0.32,
+        hspace=0.18 / (top_in / 2),
+    )
+    gs = outer[1].subgridspec(
+        2,
+        2,
+        height_ratios=[2.3, 1.45],
+        width_ratios=[1.0, 0.8],
+        hspace=0.55,
         wspace=0.12,
     )
-    lax = fig.add_subplot(gs[0, :])
+    lax = fig.add_subplot(outer[0])
     lax.axis("off")
     lax.legend(
         handles=handles,
@@ -1785,7 +1794,7 @@ def family_figure(
         handletextpad=0.4,
         labelspacing=0.35,
     )
-    ax = fig.add_subplot(gs[1, :])
+    ax = fig.add_subplot(gs[0, :])
     ax.axvspan(1, 10, color="#f0dcae", zorder=1)
     for i, row in enumerate(family_best.iter_rows(named=True)):
         ax.axhline(i, color=GUIDE, lw=0.5, zorder=0)
@@ -1813,8 +1822,8 @@ def family_figure(
         fontweight="bold",
     )
 
-    ax_b = fig.add_subplot(gs[2, 0])
-    ax_c = fig.add_subplot(gs[2, 1])
+    ax_b = fig.add_subplot(gs[1, 0])
+    ax_c = fig.add_subplot(gs[1, 1])
     for ax_, on, xlabel, labels, text_x, panel_title in (
         (
             ax_b,
