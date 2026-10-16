@@ -674,21 +674,16 @@ md(r"""
 ### Why gbmr7 can use so few k
 
 gbmr7 has the widest range in notebook 274 among the 4-8 letter alphabets (k 13-35) and
-the shortest bar (k 13-14 at 20-30% identity). Its groups are
-`DN | AEFIKLMQRVWY | CH | T | S | G | P`: one group of 12 amino acids and six small ones.
-gbmr4, with the same $k_\mathrm{min}$ of 13, has `ADKERNTSQ | YFLIVMCWH | G | P`.
+the shortest bar (k 13-14 at 20-30% identity). gbmr4 has the same $k_\mathrm{min}$ of 13 and
+6 usable k. The figure compares the two on the 20-30% identity Pfam seed pairs.
 
-Two things follow from gbmr7's grouping, and both are checked here on the 20-30% identity
-Pfam seed pairs:
-
-* **Seeds must be long.** If one group holds most residues, most letters are the same and
-  a short seed matches unrelated proteins by chance. Measured: the share of residues in
-  each alphabet's largest group.
-* **Homologs agree less often.** If the small groups separate amino acids that often
-  replace each other in homologs (S and T, D and E), those columns become mismatches and
-  the same-class runs between homologs get shorter. Measured: for every pair of different
-  amino acids aligned across from each other, whether gbmr7 and gbmr4 put the two in the
-  same group.
+How to read it. Each square is one pair of different amino acids, coloured by how often
+homologs put the two across from each other compared with chance (the product of the two
+amino acids' frequencies): red more often, blue less often. Each black box is one letter of
+the alphabet. Columns inside a box keep the seed going; columns outside break it. A good
+alphabet has red inside its boxes and blue outside. The bars above show how much of the
+protein each letter covers. Panel C shows how often a homolog column stays in one letter,
+against two random residues.
 """)
 
 code(r"""
@@ -700,119 +695,155 @@ remote_aln = pl.read_parquet(ALN, columns=["family", "query", "target", "qaln", 
     remote_pairs, on=["family", "query", "target"]
 )
 assert remote_aln.height == remote_pairs.height, "a pair is missing from the alignments file"
+print(f"{remote_aln.height:_} Pfam seed pairs at {REMOTE_BIN} identity".replace("_", ","))
 subs = hc.substitution_counts(remote_aln["qaln"], remote_aln["taln"])
 AA = hc.ALPHABET_CLUSTERS["protein20"]
-n_columns = int(subs.sum())
-n_mismatch = n_columns - int(np.trace(subs))
-residue_share = (subs.sum(0) + subs.sum(1)) / (2 * n_columns)
-COMPARE = ["gbmr4", "gbmr7"]
-group_idx = {a: np.array([hc.TABLES[a][ord(r)] for r in AA]) for a in COMPARE}
-same_group = {a: group_idx[a][:, None] == group_idx[a][None, :] for a in COMPARE}
+from matplotlib.patches import Rectangle
 
-# Pooled over columns, so it differs slightly from the per-pair mean in section 2b.
-pooled = pl.DataFrame(
-    {
-        "alphabet": COMPARE,
-        "agreement (pooled columns)": [round(float(subs[same_group[a]].sum() / n_columns), 3) for a in COMPARE],
-        "largest group": [max(hc.ALPHABET_CLUSTERS[a], key=len) for a in COMPARE],
-        "share of residues in it": [
-            round(float(residue_share[group_idx[a] == np.bincount(group_idx[a]).argmax()].sum()), 3) for a in COMPARE
-        ],
-    }
-)
-print(f"{remote_aln.height:_} Pfam seed pairs at {REMOTE_BIN} identity, {n_columns:_} aligned columns, {n_mismatch:_} mismatched".replace("_", ","))
-print(pooled)
-
-swaps = pl.DataFrame(
-    [
-        {
-            "swap": f"{AA[i]}↔{AA[j]}",
-            "share_of_mismatches": (subs[i, j] + subs[j, i]) / n_mismatch,
-            "gbmr4_same": bool(same_group["gbmr4"][i, j]),
-            "gbmr7_same": bool(same_group["gbmr7"][i, j]),
-        }
-        for i in range(20)
-        for j in range(i + 1, 20)
-    ]
-).sort("share_of_mismatches", descending=True)
-CATS = {  # (gbmr4 same group, gbmr7 same group): label, marker, face colour, edge colour
-    (True, True): ("same group in both", "o", "0.25", "0.25"),
-    (True, False): ("split by gbmr7 only", "s", "#d55e00", "#d55e00"),
-    (False, True): ("split by gbmr4 only", "D", "#0072b2", "#0072b2"),
-    (False, False): ("split by both", "o", "white", "0.45"),
+# Within-group order puts amino acids that swap often next to each other; groups go largest first.
+WITHIN = {
+    "gbmr4": ["SATNDEQKR", "CVILMFYWH", "G", "P"],
+    "gbmr7": ["AEQKRMLIVFYW", "DN", "S", "G", "T", "P", "CH"],
 }
-by_cat = swaps.group_by("gbmr4_same", "gbmr7_same").agg(pl.col("share_of_mismatches").sum().round(3)).sort(
-    "share_of_mismatches", descending=True
+COMPARE = list(WITHIN)
+for a in COMPARE:
+    assert sorted(map(sorted, WITHIN[a])) == sorted(map(sorted, hc.ALPHABET_CLUSTERS[a])), a
+n_columns = int(subs.sum())
+sym = subs + subs.T  # swaps counted in both directions
+p_res = sym.sum(1) / sym.sum()  # share of aligned residues that are each amino acid
+obs = sym / sym.sum()
+log_ratio = np.log2(obs / np.outer(p_res, p_res))  # > 0: homologs swap the pair more often than chance
+
+summary = []
+for a in COMPARE:
+    gid = np.array([hc.TABLES[a][ord(r)] for r in AA])
+    same = gid[:, None] == gid[None, :]
+    p_group = np.bincount(gid, weights=p_res)
+    off = ~np.eye(20, dtype=bool)
+    summary.append(
+        {
+            "alphabet": a,
+            "homolog columns, same group": float(obs[same].sum()),
+            "random residue pairs, same group": float((p_group**2).sum()),
+            "swaps (different amino acids) kept in one group": float(obs[same & off].sum() / obs[off].sum()),
+            "largest group, share of residues": float(p_group.max()),
+        }
+    )
+summary = pl.DataFrame(summary)
+print(f"{n_columns:_} aligned columns at {REMOTE_BIN} identity".replace("_", ","))
+print(summary.with_columns(pl.exclude("alphabet").round(3)))
+
+# Inside gbmr7's largest group: the charged/polar half against the hydrophobic/aromatic half.
+POLAR_HALF, HYDRO_HALF = "AEQKR", "MLIVFYW"
+pi, hj = [AA.index(r) for r in POLAR_HALF], [AA.index(r) for r in HYDRO_HALF]
+cross_ratio = float(obs[np.ix_(pi, hj)].sum() / np.outer(p_res[pi], p_res[hj]).sum())
+print(f"gbmr7 largest group: {POLAR_HALF} x {HYDRO_HALF} swaps happen {cross_ratio:.2f} times as often as chance")
+split_pairs = [("D", "E"), ("S", "T"), ("A", "S"), ("A", "T"), ("D", "N")]
+print("observed / chance for pairs named in the text:", {f"{x}-{y}": round(float(2 ** log_ratio[AA.index(x), AA.index(y)]), 2) for x, y in split_pairs})
+
+fig = plt.figure(figsize=(17, 8.6))
+top_g_axes = []
+# Margins set here: tight_layout refuses this figure (the colour bar axes), so it keeps them.
+outer = fig.add_gridspec(2, 1, height_ratios=[0.04, 1], hspace=0.13, top=0.965, bottom=0.07, left=0.06, right=0.99)
+gs_key = outer[0].subgridspec(1, 3, width_ratios=[1, 1, 0.8], wspace=0.25)
+gs = outer[1].subgridspec(3, 3, width_ratios=[1, 1, 0.8], height_ratios=[0.3, 0.22, 1], hspace=0.12, wspace=0.25)
+cmap = plt.get_cmap("RdBu_r").copy()
+cmap.set_bad("0.85")
+VMAX = 2.0
+for col, a in enumerate(COMPARE):
+    order = [r for g in WITHIN[a] for r in g]
+    idx = [AA.index(r) for r in order]
+    m = log_ratio[np.ix_(idx, idx)].copy()
+    np.fill_diagonal(m, np.nan)
+    ax = fig.add_subplot(gs[2, col])
+    im = ax.imshow(m, cmap=cmap, vmin=-VMAX, vmax=VMAX, aspect="auto")
+    ax.set_xticks(range(20), order, family="monospace", fontsize=9)
+    ax.set_yticks(range(20), order, family="monospace", fontsize=9)
+    ax.tick_params(length=0)
+    top_r = fig.add_subplot(gs[1, col], sharex=ax)
+    top_g = fig.add_subplot(gs[0, col], sharex=ax)
+    top_g_axes.append(top_g)
+    top_r.bar(range(20), 100 * p_res[idx], color="0.55", width=0.8)
+    top_r.set_ylim(0, 12)
+    top_r.set_yticks([0, 5, 10])
+    top_r.set_ylabel("each amino\nacid, %", fontsize=8.5)
+    top_g.set_ylim(0, 80)
+    top_g.set_yticks([0, 25, 50, 75])
+    top_g.set_ylabel("each group,\n% of residues", fontsize=8.5)
+    for t in (top_r, top_g):
+        t.tick_params(labelbottom=False, labelsize=8, length=2)
+        t.spines[["top", "right"]].set_visible(False)
+    top_g.set_title(f"{'AB'[col]}. {a}: {len(WITHIN[a])} groups (letters), each a black box", fontsize=10.5, loc="left")
+    start = 0
+    for g in WITHIN[a]:
+        n = len(g)
+        ax.add_patch(Rectangle((start - 0.5, start - 0.5), n, n, fill=False, ec="black", lw=2.2))
+        share = 100 * p_res[[AA.index(r) for r in g]].sum()
+        top_g.bar(start + n / 2 - 0.5, share, width=n - 0.15, color="0.3")
+        top_g.text(start + n / 2 - 0.5, share + 2, f"{share:.0f}", ha="center", va="bottom", fontsize=8)
+        if start:
+            top_r.axvline(start - 0.5, color="black", lw=0.8)
+        start += n
+
+# Right: share of columns in the same group, homologs against random residue pairs.
+ax_d = fig.add_subplot(gs[1:, 2])
+use = usable.filter(pl.col("identity_bin") == REMOTE_BIN)
+for yy, r in enumerate(summary.iter_rows(named=True)):
+    lo, hi = r["random residue pairs, same group"], r["homolog columns, same group"]
+    ax_d.plot([lo, hi], [yy, yy], color="#1f77b4", lw=4, solid_capstyle="butt", zorder=2)
+    ax_d.scatter(lo, yy, s=55, facecolor="white", edgecolor="0.45", lw=1.4, zorder=3)
+    ax_d.scatter(hi, yy, s=55, color="#1f77b4", zorder=4)
+    ax_d.text(lo, yy - 0.12, f"{lo:.0%}", ha="center", fontsize=9, color="0.35")
+    ax_d.text(hi, yy - 0.12, f"{hi:.0%}", ha="center", fontsize=9, color="#1f77b4")
+    u = use.filter(pl.col("alphabet") == r["alphabet"]).row(0, named=True)
+    n_u = u["k_use_hi"] - u["k_use_lo"] + 1
+    ax_d.text(0.305, yy + 0.25, f"usable k {u['k_use_lo']}-{u['k_use_hi']} ({n_u} values)", fontsize=9)
+ax_d.set_yticks(range(len(COMPARE)), COMPARE, fontsize=10)
+ax_d.set_ylim(len(COMPARE) - 0.5, -0.5)
+ax_d.set_xlim(0.3, 0.75)
+ax_d.set_xticks([0.3, 0.4, 0.5, 0.6, 0.7], ["30%", "40%", "50%", "60%", "70%"])
+ax_d.set_xlabel(f"aligned columns in the same group\n({REMOTE_BIN} identity Pfam seed pairs)")
+ax_d.grid(axis="x", alpha=0.3)
+ax_d.set_title("C. How often a homolog column stays in one group,\nagainst two random residues", fontsize=10.5, loc="left")
+
+cax = fig.add_subplot(gs_key[0, 0])
+cb = fig.colorbar(im, cax=cax, orientation="horizontal", ticks=[-2, -1, 0, 1, 2])
+cb.ax.set_xticklabels(["1/4", "1/2", "same", "2x", "4x"], fontsize=8.5)
+cb.ax.set_title("colour: how often homologs swap these two amino acids, against chance", fontsize=9, loc="left")
+leg_ax = fig.add_subplot(gs_key[0, 1:])
+leg_ax.axis("off")
+leg_ax.legend(
+    handles=[
+        Patch(facecolor="white", edgecolor="black", lw=2, label="one letter of the alphabet (a group)"),
+        Patch(color="0.85", label="same amino acid (no swap)"),
+        Line2D([], [], marker="o", ls="", mfc="white", mec="0.45", ms=8, label="random residue pairs (chance)"),
+        Line2D([], [], marker="o", ls="", color="#1f77b4", ms=8, label="homolog columns"),
+    ],
+    loc="center left",
+    ncol=2,
+    fontsize=9,
+    frameon=False,
 )
-print("Share of mismatched columns, by whether each alphabet keeps the two amino acids in one group")
-print(by_cat)
-cat_share = {(r["gbmr4_same"], r["gbmr7_same"]): r["share_of_mismatches"] for r in by_cat.iter_rows(named=True)}
 
-N_TOP = 25
-top = swaps.head(N_TOP)
-fig, (ax_c, ax_s) = plt.subplots(1, 2, figsize=(15, 7.5), gridspec_kw={"width_ratios": [1, 1.1]})
-
-# Left: each alphabet's groups as one bar split by share of residues; the largest group dark.
-for yy, a in enumerate(COMPARE):
-    groups = sorted(hc.ALPHABET_CLUSTERS[a], key=lambda g: -residue_share[[AA.index(r) for r in g]].sum())
-    left = 0.0
-    for n, g in enumerate(groups):
-        w = float(residue_share[[AA.index(r) for r in g]].sum())
-        ax_c.barh(yy, w, left=left, height=0.7, color="0.3" if n == 0 else "0.8", edgecolor="white", lw=2)
-        txt = g if w * 70 >= len(g) else ""  # skip a label wider than its segment
-        ax_c.text(left + w / 2, yy - 0.05, txt, ha="center", va="center", fontsize=8,
-                  color="white" if n == 0 else "black", family="monospace")
-        if w >= 0.08:
-            ax_c.text(left + w / 2, yy + 0.22, f"{w:.0%}", ha="center", va="center", fontsize=8,
-                      color="white" if n == 0 else "black")
-        left += w
-ax_c.set_yticks(range(len(COMPARE)), [f"{a}\n({len(hc.ALPHABET_CLUSTERS[a])} groups)" for a in COMPARE])
-ax_c.set_ylim(len(COMPARE) - 0.3, -0.7)
-ax_c.set_xlim(0, 1)
-ax_c.set_xticks([0, 0.25, 0.5, 0.75, 1], ["0%", "25%", "50%", "75%", "100%"])
-ax_c.set_xlabel("share of aligned residues in each group")
-ax_c.set_title("A. How residues fall into groups\n(one bar per alphabet, split by group)", fontsize=10)
-
-# Right: the most common swaps, marked by which alphabet splits them.
-for yy, r in enumerate(top.iter_rows(named=True)):
-    lab, mk, fc, ec = CATS[(r["gbmr4_same"], r["gbmr7_same"])]
-    ax_s.scatter(100 * r["share_of_mismatches"], yy, marker=mk, s=45, facecolor=fc, edgecolor=ec, lw=1.2, zorder=3)
-ax_s.set_yticks(range(N_TOP), top["swap"].to_list(), family="monospace")
-ax_s.set_ylim(N_TOP - 0.5, -0.5)
-ax_s.set_xlim(0, None)
-ax_s.grid(alpha=0.3)
-ax_s.set_xlabel(f"% of all {n_mismatch:_} mismatched columns".replace("_", ","))
-ax_s.set_title(f"B. The {N_TOP} most common amino-acid swaps\nbetween {REMOTE_BIN} identity Pfam seed pairs", fontsize=10)
-
-handles = [
-    Patch(color="0.3", label="largest group"),
-    Patch(color="0.8", label="other groups"),
-] + [
-    Line2D([], [], marker=mk, ls="", mfc=fc, mec=ec, ms=7, label=f"{lab} ({100 * cat_share[key]:.0f}% of all mismatches)")
-    for key, (lab, mk, fc, ec) in CATS.items()
-]
-fig.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, fontsize=9, frameon=False)
-
-ag = dict(zip(pooled["alphabet"], pooled["agreement (pooled columns)"]))
-big = dict(zip(pooled["alphabet"], pooled["share of residues in it"]))
-top_split7 = top.filter(pl.col("gbmr4_same") & ~pl.col("gbmr7_same")).head(4)
+sm = {r["alphabet"]: r for r in summary.iter_rows(named=True)}
 hc.finish_figure(
     fig,
-    FIG / "230_gbmr7_vs_gbmr4_groups_and_swaps_pfam_seed.png",
+    FIG / "230_gbmr7_vs_gbmr4_swaps_inside_groups_pfam_seed.png",
     tools=hc.NO_TOOL + f"; Pfam-A 38.2 seed alignments, {REMOTE_BIN} identity",
     hypothesis=(
-        "gbmr7 can use few k because its one large group makes short seeds match by chance, and its small groups split "
-        "swaps that homologs make often. More swaps kept in one group = longer same-class runs between homologs = better."
+        "An alphabet finds remote homologs with exact seeds when its letters hold the amino acids that homologs swap "
+        "(red inside the boxes) and separate the ones they do not (blue outside). Higher gain in C = longer runs = better."
     ),
     conclusion=(
-        f"gbmr7's largest group holds {big['gbmr7']:.0%} of residues (gbmr4's: {big['gbmr4']:.0%}). gbmr7 splits "
-        f"{100 * cat_share[(True, False)]:.0f}% of mismatched columns that gbmr4 keeps together, among them "
-        + ", ".join(f"{s} ({100 * v:.1f}%)" for s, v in zip(top_split7["swap"], top_split7["share_of_mismatches"]))
-        + f"; gbmr4 splits {100 * cat_share[(False, True)]:.0f}% that gbmr7 keeps. Agreement over all columns: "
-        f"gbmr7 {ag['gbmr7']:.3f}, gbmr4 {ag['gbmr4']:.3f}. So gbmr7 needs seeds as long as gbmr4's but its runs between homologs are shorter."
+        f"gbmr7's largest letter holds {sm['gbmr7']['largest group, share of residues']:.0%} of residues and joins "
+        f"{POLAR_HALF} with {HYDRO_HALF}, which homologs swap {cross_ratio:.2f} times as often as chance; it splits D-E "
+        f"({2 ** log_ratio[AA.index('D'), AA.index('E')]:.1f}x) and S-T ({2 ** log_ratio[AA.index('S'), AA.index('T')]:.1f}x). "
+        f"Homolog columns stay in one letter {sm['gbmr7']['homolog columns, same group']:.0%} of the time against "
+        f"{sm['gbmr7']['random residue pairs, same group']:.0%} by chance; gbmr4: "
+        f"{sm['gbmr4']['homolog columns, same group']:.0%} against {sm['gbmr4']['random residue pairs, same group']:.0%}."
     ),
-    title="gbmr7 against gbmr4: how residues fall into groups, and which common swaps each alphabet splits",
-    header_y=HEADER_Y,
+    title="Why gbmr7 has so few usable seed lengths: which amino-acid swaps fall inside its letters, against gbmr4",
+    header_y=1.005,
 )
 """)
 
@@ -1073,10 +1104,10 @@ Written from the numbers above; see each figure's footer for the exact values.
    5% of those pairs is 1 to 5 above k_min (hp_thomas_dill2: k_min 18, last 21, notebook 274 lists
    up to 36). For remote homologs, test k_min to k_min + 5, not the whole range.
 1d. gbmr7 has the fewest usable k of the 4-8 letter alphabets (13-14 of 13-35 at 20-30%
-   identity) because its grouping costs it twice. One group of 12 amino acids holds 64% of
-   residues, so seeds must be as long as gbmr4's (both k_min 13). Its small groups split 25% of
-   mismatched columns that gbmr4 keeps in one group (D-E, A-S, S-T, A-T among the most common),
-   while gbmr4 splits 14% that gbmr7 keeps. Agreement over all columns is 0.586 against 0.667.
+   identity) because its letters do not follow which amino acids homologs swap. Its largest
+   letter holds 64% of residues and joins AEQKR with MLIVFYW, which homologs swap 0.52 times
+   as often as chance, while D-E (1.9x) and S-T (1.6x) fall in different letters. Homolog
+   columns stay in one letter 59% of the time against 44% by chance (gbmr4: 67% against 42%).
 2. Part of it is packing rather than ancestry. Structurally aligned pairs from different
    folds show HP kappa around 0.1, so roughly a third of the cross-family signal under 20%
    identity would appear between any two well-superposed sequences. That fraction is a
