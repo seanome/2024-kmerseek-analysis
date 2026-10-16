@@ -543,9 +543,9 @@ with pl.Config(tbl_rows=-1):
 """)
 
 code(r"""
-REGION_STYLE = {
-    "GZ": dict(color=pf.OKABE_ITO["sky_blue"], marker="o", label="germinal zone (progenitors)"),
-    "CP": dict(color=pf.OKABE_ITO["blue"], marker="s", label="cortical plate (neurons)"),
+REGION_STYLE = {  # green means neurons / cortical plate in every figure of this notebook
+    "GZ": dict(color="black", marker="o", label="germinal zone (progenitors)"),
+    "CP": dict(color=pf.OKABE_ITO["bluish_green"], marker="s", label="cortical plate (neurons)"),
 }
 donors = sorted(psi_a["donor"].unique())
 fig, ax = plt.subplots(figsize=(pf.ONE_COLUMN_MM * pf.MM, 55 * pf.MM))
@@ -579,6 +579,123 @@ test on this one exon; the genome-wide comparison in step 6a is where the direct
 """)
 
 md(r"""
+## 4. Step 1 for set A: every exon that one isoform includes and another skips
+
+`scripts/build_341_exon_table.py` (run on Sherlock by `notebooks/341_exon_table_setA.sbatch`) looked
+at every pair of set A isoforms of the same gene that differ by one internal exon. A pair counts
+when the two isoforms share every intron except the two around the exon, which the skipping isoform
+replaces with one intron joining the neighbouring exons. Both proteins are read from the isoforms:
+each isoform's mRNA is assembled from the GRCh37 genome (GENCODE release 33), and its protein is its
+longest ORF, since the Dryad files carry no ORF predictions. One row per exon event (an exon with its
+two neighbours); Ψ comes from the read counts of every isoform that includes or skips the exon there.
+Tests in `tests/test_condensate_exon_pairs.py` check the method on ZNF207.
+
+**Which exons count as changing, fixed before any condensate score was computed.** An exon is
+*changing* when all of these hold: it keeps the reading frame; the skipping protein is the including
+protein with exactly the exon's residues removed; it has at least 10 reads (including plus skipping)
+in each of the six donor-and-region pools; all three donors move in the same direction from germinal
+zone to cortical plate; and the mean change in Ψ over donors is at least 0.1.
+""")
+
+code(r"""
+MIN_READS = 10  # reads per donor-and-region pool
+MIN_DELTA_PSI = 0.1  # mean over donors, cortical plate minus germinal zone
+DONORS = ["209", "334", "336"]
+events_a = pl.read_parquet(DATA / "341_setA_exon_events.parquet")
+read_cols = [f"reads_{r}_{d}" for r in ("GZ", "CP") for d in DONORS]
+assert events_a.select(pl.col(read_cols).null_count()).sum_horizontal()[0] == 0
+same_direction = (pl.col("n_donors_cp_higher") == len(DONORS)) | (pl.col("n_donors_cp_lower") == len(DONORS))
+steps = [
+    ("one-exon events (exon with its two neighbours)", pl.lit(True)),
+    ("exon lies inside the including isoform's ORF", pl.col("exon_in_orf")),
+    ("exon length a multiple of 3 (keeps the frame)", pl.col("frame_preserving")),
+    ("proteins differ only by the exon's residues", pl.col("orf_otherwise_identical")),
+    (f"at least {MIN_READS} reads in each donor and region", pl.min_horizontal(read_cols) >= MIN_READS),
+    ("all three donors change in the same direction", same_direction),
+    (f"mean change in Ψ at least {MIN_DELTA_PSI}", pl.col("delta_psi_cp_minus_gz").abs() >= MIN_DELTA_PSI),
+]
+kept, funnel = events_a, []
+for label, condition in steps:
+    kept = kept.filter(condition)
+    funnel.append({"filter": label, "exon_events": kept.height, "genes": kept["gene_id"].n_unique()})
+funnel = pl.DataFrame(funnel)
+changing_a = kept.with_columns(
+    direction=pl.when(pl.col("delta_psi_cp_minus_gz") > 0).then(pl.lit("more in neurons")).otherwise(pl.lit("less in neurons"))
+)
+with pl.Config(tbl_rows=-1, fmt_str_lengths=60):
+    print(funnel)
+    print(changing_a.group_by("direction").agg(exon_events=pl.len(), median_delta_psi=pl.col("delta_psi_cp_minus_gz").median()))
+# Why frame-preserving exons inside the ORF fail the protein check: where the two proteins differ.
+def where_proteins_differ(inc, skip, first, last):
+    if skip is None:
+        return "skipping isoform has no ORF"
+    before_same = inc[: first - 1] == skip[: first - 1]
+    after_same = skip.endswith(inc[last:]) if last < len(inc) else True
+    if before_same and after_same:
+        return "same on both sides, differ at the join"
+    if after_same:
+        return "differ only before the exon (the ORFs start at different ATGs)"
+    if before_same:
+        return "differ only after the exon"
+    return "differ both before and after the exon"
+
+
+failed = events_a.filter(pl.col("exon_in_orf") & pl.col("frame_preserving") & ~pl.col("orf_otherwise_identical"))
+failure_reasons = pl.DataFrame(
+    {"where": [where_proteins_differ(*r) for r in failed.select(
+        "protein_including", "protein_skipping", "exon_first_residue", "exon_last_residue").iter_rows()]}
+).group_by("where").agg(exon_events=pl.len()).sort("exon_events", descending=True)
+with pl.Config(fmt_str_lengths=70):
+    print(f"{failed.height:_} frame-preserving exons inside the ORF fail the protein check:")
+    print(failure_reasons)
+print(
+    "ZNF207 exon 9 in the table:",
+    events_a.filter((pl.col("gene_name") == "ZNF207") & (pl.col("exon_first_residue") == 277))
+    .select("exon_first_residue", "exon_last_residue", "delta_psi_cp_minus_gz", "n_donors_cp_higher")
+    .rows(),
+)
+""")
+
+code(r"""
+DIRECTION_COLOUR = {"more in neurons": pf.OKABE_ITO["bluish_green"], "less in neurons": "black"}
+fig, ax = plt.subplots(figsize=(pf.TWO_COLUMN_MM * pf.MM, 62 * pf.MM))
+n_steps = funnel.height
+for i, (label, n) in enumerate(zip(funnel["filter"], funnel["exon_events"])):
+    y = n_steps - 1 - i
+    if i < n_steps - 1:
+        ax.barh(y, n, color=pf.GREY, height=0.7)
+    else:
+        left = 0
+        for direction in ["more in neurons", "less in neurons"]:
+            m = changing_a.filter(pl.col("direction") == direction).height
+            ax.barh(y, m, left=left, color=DIRECTION_COLOUR[direction], height=0.7)
+            left += m
+    label = f"{n:_}"
+    if i == n_steps - 1:
+        n_more = changing_a.filter(pl.col("direction") == "more in neurons").height
+        label += f": {n_more:_} more, {n - n_more:_} less in neurons"
+    ax.text(n + 300, y, label, va="center")
+ax.set_yticks(range(n_steps), funnel["filter"].to_list()[::-1])
+ax.set_xlabel("Exon events in set A (n), each filter applied after the ones above it")
+ax.set_xlim(0, funnel["exon_events"][0] * 1.12)
+handles = [mpatches.Patch(color=pf.GREY, label="exon events passing every filter down to this row")]
+handles += [mpatches.Patch(color=c, label=f"changing exons included {d}") for d, c in DIRECTION_COLOUR.items()]
+fig.legend(handles=handles, loc="upper left", ncol=3, frameon=False, bbox_to_anchor=(0.02, 1.0))
+fig.subplots_adjust(top=0.9, left=0.38, bottom=0.14, right=0.97)
+pf.save(fig, FIGURES / "341_sf2_setA_exon_events_by_filter_patowary2024")
+""")
+
+md(r"""
+**How to read it.** Each bar is the number of exon events left after the filter on its row and every
+filter above it. The bottom bar is the changing exons, split by direction: green are included more
+in the cortical plate (neurons), black less. These rows are all **read protein**: both proteins come
+from isoforms seen in long reads. The largest drop is the second row: about half of the events have
+the exon outside the protein-coding part of the including isoform (an untranslated exon, or a gene
+that makes no protein). Few exons that are inside the ORF and keep the frame fail the protein check;
+the table printed above says where their two proteins differ.
+""")
+
+md(r"""
 ## Data sources
 
 | What | Source | Version | Fetched |
@@ -589,6 +706,7 @@ md(r"""
 | κ | localCIDER 0.1.21; reproduces κ = 0.0009 for (EK)25 and 1.0 for E25K25 (Das and Pappu 2013) | | |
 | IUPred | `iupred_string.c` from InterProScan's `bin/mobidb/idrpred/bin/IUPred/src.zip` (sha256 `7caac3c1…`), long mode, compiled with Apple clang | | |
 | pI | Biopython 1.88 `ProteinAnalysis.isoelectric_point` | | |
+| Set A exon table | `scripts/build_341_exon_table.py` on Sherlock via `notebooks/341_exon_table_setA.sbatch`, GENCODE release 33 GRCh37 primary assembly (md5 c9f86b60…); stored as `341_setA_exon_events.parquet` | commit a06fb04 | 2026-10-15 |
 | Set A isoforms and counts | Dryad doi:10.5061/dryad.0rxwdbs68 (Patowary et al. 2024), Data S1 `Bulk.gtf` and Data S2 sheet B; ZNF207 lines cached | GRCh37 coordinates | 2026-10-14 |
 | Ω_aro | localCIDER 0.1.21 `get_kappa_X(["F", "W", "Y"])`, as Martin et al. 2020 describe in their supplement | | |
 | hnRNPA1 sequence | UniProt P09651 FASTA | release 2026_03 | 2026-10-14 |
