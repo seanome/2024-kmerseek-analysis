@@ -238,6 +238,7 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import polars as pl
 
 sys.path.insert(0, str(Path.cwd()))
@@ -411,6 +412,306 @@ for i, (label, text) in enumerate(rows):
 save_figure(fig, FIGURES / "342_znf207_exon9_residues_by_alphabet_ensembl116")
 """)
 
+
+# ---------------------------------------------------------------------------------------
+# Stop 1: the exon table, the outcome classes and the halves.
+# ---------------------------------------------------------------------------------------
+md(r"""
+## 1. The exon table, the outcome classes and the tune and test halves
+
+The event table is notebook 341's (Slurm job 47934291; code a06fb04). It already holds the read
+counts of every replicate, so this section does not run anything on Sherlock: it applies rule 1
+to the table. Genes are split into halves first (rule 2), from the gene list alone.
+
+Ψ is recomputed here from the replicate counts and checked against the table's own Ψ columns. An
+exon "codes for" exon_nt / 3 residues, the number of codons it adds.
+""")
+
+code(r"""
+events = pl.read_parquet(EVENTS_PATH)
+DONORS = ["209", "334", "336"]
+REGIONS = ["GZ", "CP"]  # germinal zone (progenitors), cortical plate (neurons)
+REPLICATES = ["1", "2", "3", "4"]
+MIN_READS = 20
+CHANGE = 0.10
+NO_CHANGE = 0.05
+MIN_AA = 10
+MAX_AA = 150
+
+# Rule 2: split genes before anything about the exons is computed.
+genes = sorted(events["gene_id"].unique().to_list())
+order = np.random.default_rng(SEED).permutation(len(genes))
+tune_genes = {genes[i] for i in order[: len(genes) // 2]}
+events = events.with_columns(
+    pl.when(pl.col("gene_id").is_in(tune_genes)).then(pl.lit("tune")).otherwise(pl.lit("test")).alias("half")
+)
+print(f"{len(genes)} genes: {len(tune_genes)} tune, {len(genes) - len(tune_genes)} test (seed {SEED})")
+
+# Rule 1: Psi per donor per region, reads summed over the four replicates.
+psi_cols = []
+for d in DONORS:
+    for r in REGIONS:
+        inc = pl.sum_horizontal([pl.col(f"inc_{d}_{rep}_{r}") for rep in REPLICATES])
+        skip = pl.sum_horizontal([pl.col(f"skip_{d}_{rep}_{r}") for rep in REPLICATES])
+        psi_cols += [(inc + skip).alias(f"depth_{r}_{d}"), (inc / (inc + skip)).alias(f"psi342_{r}_{d}")]
+events = events.with_columns(psi_cols).with_columns(
+    [(pl.col(f"psi342_CP_{d}") - pl.col(f"psi342_GZ_{d}")).alias(f"dpsi_{d}") for d in DONORS]
+)
+for d in DONORS:
+    for r in REGIONS:
+        both = events.filter(pl.col(f"psi_{r}_{d}").is_not_null())
+        assert (both[f"psi342_{r}_{d}"] - both[f"psi_{r}_{d}"]).abs().max() < 1e-12, (r, d)
+        assert (both[f"depth_{r}_{d}"] == both[f"reads_{r}_{d}"]).all(), (r, d)
+print("Psi and read depth recomputed from the replicate counts equal the table's columns.")
+
+dpsi = [pl.col(f"dpsi_{d}") for d in DONORS]
+events = events.with_columns(
+    (pl.col("exon_nt") // 3).alias("exon_codons"),
+    pl.min_horizontal(dpsi).alias("dpsi_min"),
+    pl.max_horizontal(dpsi).alias("dpsi_max"),
+    pl.all_horizontal([pl.col(f"depth_{r}_{d}") >= MIN_READS for d in DONORS for r in REGIONS]).alias("depth_ok"),
+)
+events = events.with_columns(
+    pl.when(pl.col("dpsi_min") > CHANGE).then(pl.lit("included more in neurons"))
+    .when(pl.col("dpsi_max") < -CHANGE).then(pl.lit("skipped more in neurons"))
+    .when((pl.col("dpsi_min") > -NO_CHANGE) & (pl.col("dpsi_max") < NO_CHANGE)).then(pl.lit("unchanged"))
+    .otherwise(pl.lit("left out")).alias("outcome")
+)
+""")
+
+code(r"""
+# The funnel: each step keeps the events that passed every step above it.
+steps = [
+    ("one-exon events in set A", pl.lit(True)),
+    ("exon inside the including ORF", pl.col("exon_in_orf")),
+    ("exon keeps the frame", pl.col("frame_preserving")),
+    ("proteins differ only by the exon", pl.col("orf_otherwise_identical")),
+    (f"exon adds {MIN_AA}-{MAX_AA} residues", pl.col("exon_codons").is_between(MIN_AA, MAX_AA)),
+    (f"at least {MIN_READS} reads per donor and region", pl.col("depth_ok")),
+]
+keep = pl.lit(True)
+funnel_rows = []
+for label, cond in steps:
+    keep = keep & cond.fill_null(False)
+    sub = events.filter(keep)
+    funnel_rows.append({"step": label, "events": sub.height, "genes": sub["gene_id"].n_unique()})
+exons = events.filter(keep)
+funnel = pl.DataFrame(funnel_rows)
+funnel = funnel.with_columns((pl.col("events").shift(1) - pl.col("events")).alias("removed at this step"))
+print(funnel)
+
+OUTCOMES = ["included more in neurons", "skipped more in neurons", "unchanged", "left out"]
+class_counts = (
+    exons.group_by("outcome", "half").agg(pl.len().alias("exons"), pl.col("gene_id").n_unique().alias("genes"))
+    .pivot(on="half", index="outcome", values=["exons", "genes"])
+    .with_columns(pl.col("outcome").replace_strict({o: i for i, o in enumerate(OUTCOMES)}).alias("_o"))
+    .sort("_o").drop("_o")
+    .select("outcome", "exons_tune", "exons_test", "genes_tune", "genes_test")
+)
+class_counts = class_counts.with_columns((pl.col("exons_tune") + pl.col("exons_test")).alias("exons_total"))
+print(class_counts)
+for outcome in OUTCOMES[:2]:
+    n_tune = class_counts.filter(pl.col("outcome") == outcome)["exons_tune"].item()
+    if n_tune < 100:
+        print(f"POWER: '{outcome}' has {n_tune} exons on the tune half, under the 100 rule 4 asks for.")
+""")
+
+code(r"""
+# a: the funnel; b: exons per outcome class and half.
+COLOURS = {
+    "included more in neurons": pf.OKABE_ITO["bluish_green"],
+    "skipped more in neurons": pf.OKABE_ITO["vermillion"],
+    "unchanged": pf.OKABE_ITO["blue"],
+    "left out": pf.GREY,
+}
+fig, (ax_a, ax_b) = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=2, width_ratios=[1.15, 1])
+y = np.arange(funnel.height)[::-1]
+ax_a.barh(y, funnel["events"], color=pf.GREY, height=0.6)
+for yi, n in zip(y, funnel["events"]):
+    ax_a.text(n, yi, f" {n:,}", va="center", ha="left")
+ax_a.set_yticks(y, funnel["step"])
+ax_a.set_xlabel("exon events (n)")
+ax_a.set_xlim(0, funnel["events"].max() * 1.25)
+
+yb = np.arange(len(OUTCOMES))[::-1]
+offset = 0.2
+for half, dy, fill in [("tune", offset, True), ("test", -offset, False)]:
+    values = class_counts[f"exons_{half}"].to_list()
+    colours = [COLOURS[o] for o in class_counts["outcome"]]
+    ax_b.barh(yb + dy, values, height=0.36, color=colours if fill else "white", edgecolor=colours, lw=1)
+    for yi, n in zip(yb + dy, values):
+        ax_b.text(n, yi, f" {n:,}", va="center", ha="left")
+ax_b.set_yticks(yb, class_counts["outcome"])
+ax_b.set_xlabel(f"exons (n), after the {MIN_READS}-read rule")
+ax_b.set_xlim(0, class_counts["exons_tune"].max() * 1.3)
+from matplotlib.patches import Patch
+
+ax_b.legend(handles=[Patch(facecolor="black", edgecolor="black", label="tune half (filled)"),
+                     Patch(facecolor="white", edgecolor="black", label="test half (open)")],
+            loc="lower right", frameon=False)
+pf.panel_label(ax_a, "a")
+pf.panel_label(ax_b, "b")
+save_figure(fig, FIGURES / "342_setA_exon_funnel_and_classes_patowary2024")
+""")
+
+code(r"""
+# Each exon by its smallest and largest change in Psi across the three donors. The rule's three
+# classes are the regions inside the dashed lines. ZNF207 exon 9 is the black square.
+hero = events.filter((pl.col("gene_name") == HERO_GENE) & (pl.col("exon_residues") == HERO_RESIDUES))
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 80)
+for outcome in ["left out", "unchanged", "skipped more in neurons", "included more in neurons"]:
+    sub = exons.filter(pl.col("outcome") == outcome)
+    ax.scatter(sub["dpsi_min"], sub["dpsi_max"], s=3, color=COLOURS[outcome], lw=0,
+               alpha=0.5 if outcome == "left out" else 0.8, label=f"{outcome} ({sub.height:,})", rasterized=True)
+ax.scatter(hero["dpsi_min"], hero["dpsi_max"], s=14, marker="s", facecolor="none", edgecolor="black", lw=0.8,
+           label="ZNF207 exon 9", zorder=5)
+for v in (CHANGE, -CHANGE):
+    ax.axvline(v, color="black", lw=0.4, ls="--")
+    ax.axhline(v, color="black", lw=0.4, ls="--")
+ax.plot([-NO_CHANGE, NO_CHANGE, NO_CHANGE, -NO_CHANGE, -NO_CHANGE],
+        [-NO_CHANGE, -NO_CHANGE, NO_CHANGE, NO_CHANGE, -NO_CHANGE], color="black", lw=0.4, ls="--")
+ax.set_xlabel("smallest ΔΨ of the three donors\n(cortical plate minus germinal zone)")
+ax.set_ylabel("largest ΔΨ of the three donors")
+ax.legend(loc="upper left", bbox_to_anchor=(0, 1.2), ncol=2, frameon=False, markerscale=2)
+save_figure(fig, FIGURES / "342_setA_delta_psi_min_max_by_class_patowary2024")
+print(exons.group_by("outcome").agg(pl.len(), pl.col("dpsi_min").median().round(3).alias("median smallest dPsi"),
+                                    pl.col("dpsi_max").median().round(3).alias("median largest dPsi")).sort("outcome"))
+""")
+
+code(r"""
+# ZNF207 exon 9 under rule 1.
+cols = ["gene_name", "including_isoform", "skipping_isoform", "exon_first_residue", "exon_last_residue", "half",
+        *[f"psi342_{r}_{d}" for d in DONORS for r in REGIONS], *[f"dpsi_{d}" for d in DONORS], "outcome"]
+print(hero.select(cols).with_columns(pl.col(pl.Float64).round(3)).transpose(include_header=True, column_names=["value"]))
+""")
+
+md(r"""
+### Three events checked by hand
+
+ZNF207 exon 9, and in the tune half the "included more in neurons" and the "skipped more in
+neurons" exon with the most reads. For each: the exon's lines in `Bulk.gtf` for both isoforms, the
+genome sequence of the exon from Ensembl's GRCh37 server translated in the frame that gives the
+table's residues, and the two proteins at the join.
+""")
+
+code(r"""
+import json
+import re
+import urllib.request
+
+DATA_342 = REPO / "data" / "342_exon_function"
+DATA_342.mkdir(parents=True, exist_ok=True)
+CODON = {a + b + c: aa for (a, b, c), aa in zip(
+    [(x, y, z) for x in "TCAG" for y in "TCAG" for z in "TCAG"],
+    "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG")}
+
+
+def grch37_sequence(chrom, start, end, strand):
+    # Genome sequence, 1-based inclusive, on the exon's strand, from Ensembl's GRCh37 REST
+    # server; cached under data/342_exon_function/.
+    s = 1 if strand == "+" else -1
+    path = DATA_342 / f"ensembl_grch37_{chrom}_{start}_{end}_{s}.txt"
+    if not path.exists():
+        url = (f"https://grch37.rest.ensembl.org/sequence/region/human/"
+               f"{chrom.removeprefix('chr')}:{start}..{end}:{s}?content-type=text/plain")
+        with urllib.request.urlopen(url, timeout=60) as response:
+            text = response.read().decode().strip()
+        assert re.fullmatch("[ACGTN]+", text), text[:200]
+        path.write_text(text + "\n")
+    return path.read_text().strip()
+
+
+best = {o: exons.filter((pl.col("outcome") == o) & (pl.col("half") == "tune"))
+        .sort(pl.col("reads_including_total") + pl.col("reads_skipping_total"), descending=True).head(1)
+        for o in OUTCOMES[:2]}
+checks = pl.concat([hero, *best.values()])
+wanted = set(checks["including_isoform"]) | set(checks["skipping_isoform"])
+gtf_exons = {t: [] for t in wanted}
+with open(DRYAD / "Bulk.gtf") as fh:
+    for line in fh:
+        f = line.split("\t", 8)
+        if len(f) > 8 and f[2] == "exon":
+            t = re.search(r'transcript_id "([^"]+)"', f[8]).group(1)
+            if t in gtf_exons:
+                gtf_exons[t].append((int(f[3]), int(f[4])))
+
+for row in checks.iter_rows(named=True):
+    start, end = row["exon_start"], row["exon_end"]
+    inc_exons, skip_exons = sorted(gtf_exons[row["including_isoform"]]), sorted(gtf_exons[row["skipping_isoform"]])
+    print(f"{row['gene_name']} ({row['outcome']}, {row['half']} half), {row['chrom']}:{start:,}-{end:,} "
+          f"({row['strand']} strand, GRCh37), {row['exon_nt']} nt")
+    print(f"  including isoform {row['including_isoform']}: exon in Bulk.gtf: {(start, end) in inc_exons}")
+    joined = any(
+        a[1] == row["upstream_exon_end"] and b[0] == row["downstream_exon_start"]
+        for a, b in zip(skip_exons, skip_exons[1:])
+    )
+    print(f"  skipping isoform {row['skipping_isoform']}: exon in Bulk.gtf: {(start, end) in skip_exons}; "
+          f"joins {row['upstream_exon_end']:,} straight to {row['downstream_exon_start']:,}: {joined}")
+    nt = grch37_sequence(row["chrom"], start, end, row["strand"])
+    residues = row["exon_residues"]
+    phase0 = len(residues) == row["exon_nt"] // 3
+    frames = {f: "".join(CODON.get(nt[i : i + 3], "X") for i in range(f, len(nt) - 2, 3)) for f in range(3)}
+    inner = residues if phase0 else residues[1:-1]
+    hit = [f for f, p in frames.items() if inner in p]
+    print(f"  exon starts in phase {'0' if phase0 else '1 or 2'}; genome translation matches in frame {hit}")
+    print(f"  genome, {len(nt)} nt:     {nt}")
+    print(f"  translated, frame {hit[0]}:  {frames[hit[0]]}")
+    print(f"  table's exon residues: {residues}")
+    first, last = row["exon_first_residue"], row["exon_last_residue"]
+    print(f"  including protein, residues {first - 5}-{last + 5}:  "
+          f"{row['protein_including'][first - 6 : first - 1].lower()}{residues}{row['protein_including'][last : last + 5].lower()}")
+    print(f"  skipping protein, residues {first - 5}-{first + 4}:     "
+          f"{row['protein_skipping'][first - 6 : first + 4]}")
+    print(f"  Psi GZ/CP by donor: " + ", ".join(
+        f"{d} {row[f'psi342_GZ_{d}']:.2f}/{row[f'psi342_CP_{d}']:.2f}" for d in DONORS) + "\n")
+""")
+
+code(r"""
+# Write the exon table for Stops 2-4: one row per event that passed the funnel, with 20 residues of
+# flank on each side from the including protein.
+FLANK = 20
+exon_table = exons.with_columns(
+    pl.struct("protein_including", "exon_first_residue").map_elements(
+        lambda r: r["protein_including"][max(0, r["exon_first_residue"] - 1 - FLANK) : r["exon_first_residue"] - 1],
+        return_dtype=pl.String).alias("flank_before"),
+    pl.struct("protein_including", "exon_last_residue").map_elements(
+        lambda r: r["protein_including"][r["exon_last_residue"] : r["exon_last_residue"] + FLANK],
+        return_dtype=pl.String).alias("flank_after"),
+    (pl.col("exon_residues").str.len_chars() == pl.col("exon_codons")).alias("starts_in_phase_0"),
+    pl.lit("GRCh37").alias("genome_build"),
+).select(
+    "gene_id", "gene_name", "including_isoform", "skipping_isoform", "genome_build", "chrom", "strand",
+    "exon_start", "exon_end", "exon_nt", "starts_in_phase_0", "exon_first_residue", "exon_last_residue", "exon_residues",
+    "flank_before", "flank_after",
+    *[f"depth_{r}_{d}" for d in DONORS for r in REGIONS], *[f"psi342_{r}_{d}" for d in DONORS for r in REGIONS],
+    *[f"dpsi_{d}" for d in DONORS], "outcome", "half",
+).rename({f"psi342_{r}_{d}": f"psi_{r}_{d}" for d in DONORS for r in REGIONS})
+out = TABLES / "342_setA_exon_table_patowary2024_grch37.tsv"
+exon_table.write_csv(out, separator="\t")
+print(f"{exon_table.height} rows -> {out.relative_to(REPO)} (md5 {md5(out)})")
+print("exons per outcome in the written table:", dict(exon_table["outcome"].value_counts(sort=True).iter_rows()))
+""")
+
+md(r"""
+### What Stop 1 shows
+
+* Of 30_548 one-exon events in 8_890 genes, 4_513 exons in 2_781 genes pass every filter. The
+  largest losses are exons outside the ORF (15_806) and exons that shift the frame (7_242). The
+  20-read rule removes 2_059 of the 6_572 exons left before it.
+* Under rule 1: 203 exons are included more in neurons (111 tune, 92 test), 96 are skipped more
+  in neurons (48 tune, 48 test), 3_245 are unchanged (1_673 tune, 1_572 test), and 969 are left out.
+* The "skipped more in neurons" class has 48 exons on the tune half, under the 100 that rule 4
+  asks for. Its test can still be run, but a gain of 0.02 is unlikely to be resolved; the
+  "included more in neurons" comparison (111 tune exons) is the one with the power.
+* ZNF207 exon 9 is left out: its ΔΨ is 0.036, 0.063 and 0.059 in the three donors, above 0 in all
+  three but under 0.10, and above 0.05 in two.
+* The three hand-checked exons (ZNF207, GTF2I, HNRNPM) are in the including isoform's exons in
+  `Bulk.gtf` and absent from the skipping isoform, which joins the two neighbouring exons. Their
+  genome sequence (Ensembl GRCh37) translates to the table's residues, and the skipping protein is
+  the including one without them.
+
+Stop 2 (kinds 1 to 3 and the positive control) does not start until Olga has seen these counts.
+""")
 
 nb = {
     "cells": cells,
