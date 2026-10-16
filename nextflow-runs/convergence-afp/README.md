@@ -32,10 +32,11 @@ entry in reviewed Swiss-Prot) and, for each, 20 draws of two nulls:
 | period scan | cosine distance between spectra | HP autocorrelation at lags 1-30; Eisenberg hydrophobic moment at 80-180 degrees |
 | known motif | residues covered by the published repeat regex | AFGP, type I, spruce budworm only (`assets/known_motifs.tsv`) |
 
-The window scan records how many windows each comparison used, in the `overlap` column.
-A target shorter than the query matches its best stretch easily: a 9-residue entry is one
-window at W=9 and reaches a perfect match. The notebook requires a minimum overlap before
-reading the scan's recall, and states the cutoff.
+The window scan's match score favours a short target, which matches a long query's best
+stretch over very few windows: a 9-residue entry is one window at W=9 and reaches a
+perfect match. So it emits one list per minimum overlap (0, 10, 20 and 50 windows), named
+`window_kd_match_w<W>_ov<cutoff>`, with the cutoff applied before the top rows are kept.
+The scoring step takes the best of them, which is the scan's best shot.
 
 There are no synthetic decoys. Methods are compared at each one's first false positive:
 the score of the first Swiss-Prot entry that is not in the truth set, with the query's own

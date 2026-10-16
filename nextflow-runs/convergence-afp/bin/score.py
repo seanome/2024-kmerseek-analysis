@@ -12,7 +12,11 @@ score, and a scan by minus its distance.
 For one query and one ranked list:
 
   threshold       the score of the first false positive: the best-scoring Swiss-Prot entry
-                  that is not in the truth set at all.
+                  that is not in the truth set at all. A list with no false positive in it
+                  has no threshold, so its recall is left empty and `no_false_positive` is
+                  true. A scan's rows are the top ones plus every truth entry, so an empty
+                  threshold there means the scan reported too few entries to see one, not
+                  that the method made no mistake.
   recall          cross-lineage truth entries scoring strictly better than the threshold,
                   over every cross-lineage truth entry there is. A hit on the query's own
                   lineage is left out of both, as is the query's own entry.
@@ -46,10 +50,10 @@ import numpy as np
 import polars as pl
 
 HP_ALPHABET = "hp_pbotc_1st_ed2"
-# The window scan's match lists favour a short target, which matches a long query's best
-# stretch over very few windows. Every cutoff is scored, and the notebook says which it
-# read. 0 keeps every comparison.
-OVERLAP_CUTOFFS = [0, 10, 20, 50]
+# The window scan applies its own minimum-overlap cutoffs in bin/scans.py, before it keeps
+# the top rows, and emits one list per cutoff. Filtering here instead left a list of
+# nothing but truth entries and so no false positive to set the threshold.
+OVERLAP_CUTOFFS = [0]
 # Lineage 6, plants, has no reviewed entry, so the odd half is 1, 3, 5, 7 and the even
 # half is 2 and 4. The brief fixes this split before any run.
 IN_SAMPLE = ["1 fish, type I AFP", "3 fish, type II AFP", "5 insects", "7 bacteria"]
@@ -85,8 +89,9 @@ def score_one(
 
     fp = np.flatnonzero(~is_truth)
     if len(fp) == 0:
-        # Nothing but truth entries in the list, so no false positive bounds it.
-        threshold = -np.inf
+        # No false positive in the list, so nothing bounds the hits: recall is left empty
+        # rather than counting every entry as found.
+        threshold = None
         above = np.ones(len(scores), dtype=bool)
     else:
         threshold = scores[fp[0]]
@@ -96,10 +101,11 @@ def score_one(
     # hurt; the positives are the cross-lineage truth entries.
     keep = ~is_own
     return {
-        "threshold": float(threshold),
+        "threshold": None if threshold is None else float(threshold),
+        "no_false_positive": threshold is None,
         "n_hits": int(above.sum()),
         "n_found": n_found,
-        "recall": n_found / n_cross if n_cross else float("nan"),
+        "recall": (None if threshold is None or not n_cross else n_found / n_cross),
         "auprc": average_precision(is_cross[keep], n_cross),
         "n_ranked_kept": int(len(scores)),
         "n_found_at_real_threshold": (
@@ -297,7 +303,9 @@ def decide(metrics, outdir):
 
     # 1. Choose the setting with the highest mean recall over the in-sample lineages.
     in_s = (
-        ks.filter(pl.col("query_lineage").is_in(IN_SAMPLE))
+        ks.filter(
+            pl.col("query_lineage").is_in(IN_SAMPLE) & pl.col("recall").is_not_null()
+        )
         .group_by("setting_label")
         .agg(
             pl.col("recall").mean().alias("mean_recall"),
@@ -326,7 +334,11 @@ def decide(metrics, outdir):
         k = ks.filter(
             (pl.col("setting_label") == chosen) & (pl.col("query_lineage") == lineage)
         )
-        k_recall = float(k["recall"][0]) if k.height else float("nan")
+        k_recall = (
+            float(k["recall"][0])
+            if k.height and k["recall"][0] is not None
+            else float("nan")
+        )
         brief_best, brief_which = best_other(["composition", "period"], lineage)
         all_best, all_which = best_other(
             ["composition", "period", "window", "motif"], lineage

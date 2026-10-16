@@ -24,12 +24,14 @@ Each ranked list orders all reference entries for one query, best first:
                            smallest mean squared difference over all offsets, negated so
                            that larger is better. A sequence shorter than W, which has no
                            window, is ranked last. One list per --window-lengths value.
-                           The `overlap` column holds how many windows were compared, the
-                           smaller profile's length. It is there because a short target
-                           matches a long query's best stretch easily: a 9-residue entry
-                           is one window at W=9 and reaches a mean squared difference of
-                           0. The notebook reads `overlap` to require a minimum before
-                           taking the scan's recall, and reports the cutoff it used.
+                           One list per minimum overlap in OVERLAP_CUTOFFS, named
+                           window_kd_match_w<W>_ov<cutoff>: a comparison that used fewer
+                           windows than the cutoff is dropped before ranking. A short
+                           target matches a long query's best stretch easily, since a
+                           9-residue entry is one window at W=9 and reaches a mean squared
+                           difference of 0, and the cutoff is how the scan is given its
+                           best shot. The `overlap` column holds how many windows each
+                           comparison used.
   window_kd_spread_w<W>    the same window scores without their order: cosine distance
                            between histograms of the window values over fixed bins from
                            -4.5 to 4.5 (the scale's range) in 0.5 steps.
@@ -60,6 +62,12 @@ AA20 = "ACDEFGHIKLMNPQRSTVWY"
 # Bin edges for window_kd_spread: the Kyte-Doolittle scale runs from -4.5 (arginine) to
 # 4.5 (isoleucine), so a window mean cannot fall outside this range.
 SPREAD_BINS = np.arange(-4.5, 4.51, 0.5)
+# The match lists are emitted once per minimum overlap, because a short target matches a
+# long query's best stretch over very few windows. The cutoff is applied BEFORE the top
+# rows are kept, so each list is ranked among the comparisons it allows. Applied
+# afterwards it emptied the list of everything but the truth entries, which are always
+# kept, and left no false positive to compare against.
+OVERLAP_CUTOFFS = [0, 10, 20, 50]
 # Overlap-save block size for the profile match. One FFT per block, all blocks in one
 # batched call.
 FFT_BLOCK = 1 << 16
@@ -447,20 +455,24 @@ def main() -> int:
         groups = short_profile_groups(t, kyte_doolittle, window, q_len_max)
         match, overlap = best_profile_match(t, q, kyte_doolittle, window, plan, groups)
         del plan, groups
-        for i, qid in enumerate(qnames):
-            chunks.append(
-                keep_rows(
-                    "window",
-                    f"window_kd_match_w{window}",
-                    qid,
-                    match[i],
-                    names,
-                    truth_idx,
-                    args.top_n,
-                    n_total,
-                    overlap[i],
+        for cut in OVERLAP_CUTOFFS:
+            for i, qid in enumerate(qnames):
+                # A comparison below the cutoff is pushed to the bottom rather than
+                # removed, so the kept rows are the best of what the cutoff allows.
+                scored = np.where(overlap[i] >= max(cut, 1), match[i], -np.inf)
+                chunks.append(
+                    keep_rows(
+                        "window",
+                        f"window_kd_match_w{window}_ov{cut}",
+                        qid,
+                        scored,
+                        names,
+                        truth_idx,
+                        args.top_n,
+                        n_total,
+                        overlap[i],
+                    )
                 )
-            )
         del match, overlap
         ts, qs = window_spread(t, kyte_doolittle, window), window_spread(
             q, kyte_doolittle, window
