@@ -35,8 +35,8 @@ params.mmseqs_sensitivity = 7.5
 // The pipeline's transfer rule: a hit must cover half of a target domain to transfer it.
 params.min_overlap = 0.5
 params.strict_iou  = 0.8
-// Leave a tool out (comma-separated: diamond, mmseqs2).
-params.skip_tools = ''
+// Which tools run (comma-separated).
+params.tools = 'diamond,mmseqs2'
 
 // After the params, not before: a module reads params when it is included, so a param
 // set below an include is undefined inside it (the stub run caught --min-overlap null).
@@ -63,16 +63,18 @@ workflow {
     if (hmm_aux.size() != 4) {
         error "expected 4 hmmpress files beside ${params.pfam_hmm}, found ${hmm_aux.size()}"
     }
-    skip = params.skip_tools.tokenize(',')
+    tools = params.tools.tokenize(',')
+    def unknown = tools - ['diamond', 'mmseqs2']
+    if (unknown) error "unknown --tools: ${unknown}"
 
     ref = cladeExcludedReference(dat, params.exclude_clade)
 
     hits = Channel.empty()
-    if (!('diamond' in skip)) {
+    if ('diamond' in tools) {
         hits = hits.mix(DIAMOND_BEST_HIT(ref.fasta, queries,
                                          params.diamond_settings.tokenize(',')).hits)
     }
-    if (!('mmseqs2' in skip)) {
+    if ('mmseqs2' in tools) {
         hits = hits.mix(MMSEQS_BEST_HIT(ref.fasta, queries, params.mmseqs_sensitivity).hits)
     }
 
