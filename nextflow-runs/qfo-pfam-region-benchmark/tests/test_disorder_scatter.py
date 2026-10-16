@@ -89,7 +89,7 @@ def test_the_y_axis_never_claims_to_be_per_protein(tmp_path):
     assert plot["pconfig"]["ylab"] == "Fmax over the proteins in the cut"
     desc = plot["description"]
     assert "One dot is one cut of the query set, not one protein." in desc
-    assert "population statistic" in desc
+    assert "statistic of a set of proteins" in desc
     # And the point names must say which cut, not pretend to name a protein.
     a_point = next(iter(plot["data"].values()))[0]
     assert "@ disorder" in a_point["name"]
@@ -120,7 +120,7 @@ def test_a_tree_without_the_fine_axis_falls_back_and_says_so(tmp_path):
     plot = written(tmp_path, m)["qfo_disorder_scatter"]
     assert plot["plot_type"] == "scatter"
     assert len({p["x"] for s in plot["data"].values() for p in s}) == 4
-    assert "no <code>disorder_fine</code> rows" in plot["description"]
+    assert "no fine-grid rows" in plot["description"]
 
 
 def test_a_tree_without_stratum_value_mean_uses_midpoints_and_says_so(tmp_path):
@@ -130,7 +130,7 @@ def test_a_tree_without_stratum_value_mean_uses_midpoints_and_says_so(tmp_path):
     assert xs == sorted(round((lo + hi) / 2, 4)
                         for lo, hi in zip(FINE[:-1], FINE[1:]))
     assert plot["pconfig"]["xlab"] == "disorder (cut midpoint)"
-    assert "scored before <code>stratum_value_mean</code> existed" in plot["description"]
+    assert "scored before the mean disorder of each cut was recorded" in plot["description"]
 
 
 def test_a_partly_rescored_tree_draws_midpoints_throughout(tmp_path):

@@ -322,6 +322,17 @@ params.min_region_score = 1.3
 params.mmseqs2_sensitivity = 7
 params.mmseqs2_iterations  = 3
 params.jackhmmer_iterations = 3
+
+// Walltime for phmmer and jackhmmer, from what they measured, so the first attempt is long
+// enough. Runtime is proportional to the target proteome's size and to the number of human
+// queries: hours = rate x target FASTA MB x queries / 1_000, times the headroom, at the
+// 8 cores the Sherlock profile gives them. The rates are the largest measured on the ELM
+// cover runs of 2026-09-25 to -30 (1_303 queries, 8 targets each): jackhmmer 0.41-0.69,
+// phmmer 0.14-0.33 hours per MB per 1_000 queries. Added 2026-09-30, after jackhmmer on
+// zebrafish (17.6 MB) hit the flat 12 h limit at 11 h 59 min and had to run again; this
+// rule gives it 24 h (predicted 13-16 h). The Sherlock profile reads task.ext.hours.
+params.hmmer_hours_per_mb_per_1k_queries = 'phmmer:0.33,jackhmmer:0.69'
+params.hmmer_time_headroom               = 1.5
 params.evalue_report       = 10.0
 
 // --- domain-call scoring ---------------------------------------------------
@@ -336,8 +347,10 @@ params.min_overlap = 0.5
 // time/CPU/memory, in the sections built by bin/build_multiqc_inputs.py.
 //
 // The frontier and the curve sections need ONE truth set, since a number averaged across
-// Pfam and Swiss-Prot has no interpretation. Default is whichever of them is present,
-// preferring Swiss-Prot because Pfam is circular with the profile baselines.
+// Pfam and Swiss-Prot has no interpretation. Default is Pfam when present (since
+// 2026-09-19; Swiss-Prot before that): every proteome carries a full Pfam map, whereas
+// Swiss-Prot coverage follows curation depth and ranks Ciona by its 23 reviewed proteins.
+// Pfam's circularity with the profile baselines is measured by the hmmscan ceiling.
 params.skip_multiqc = false
 params.multiqc_primary_truth = null
 params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
@@ -350,6 +363,12 @@ params.multiqc_config = "${projectDir}/assets/multiqc_config.yaml"
 params.multiqc_max_tools    = 20
 params.multiqc_max_lines    = 12
 params.multiqc_top_kmerseek = 5
+// What the query FASTA holds, in words, for the head of the report: "human proteins from
+// chromosome 6, a test subset". The metrics carry no record of which gene set built the
+// query FASTA (a chromosome-6 subset and the whole proteome look the same in the parquet),
+// so the run that knows says it here. Null means the head says "human proteins" and
+// nothing about a subset. The Makefile's midi targets set it.
+params.query_set_label = null
 
 // One report covering SEVERAL runs' outdirs. Comma-separated, `-entry report` only.
 //
@@ -444,7 +463,7 @@ params.reseek_mode = "verysensitive"
 // the paper most has to differentiate from. It still depends on Foldseek and on a target
 // database, which is the differentiation the review points at.
 params.skip_prostt5   = false
-params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip the fetch
+params.prostt5_weights = null   // null = use data/prostt5/weights if present, else fetch
 
 // ProstT5 is a 3B-parameter T5 encoder and Foldseek runs it over each sequence whole, so
 // peak memory scales with the SQUARE of sequence length (self-attention) times the number
@@ -468,6 +487,19 @@ params.prostt5_weights = null   // set to a pre-downloaded weights dir to skip t
 // folddisco database once and the full run reuses it, instead of paying for ProstT5
 // inference over nine proteomes twice.
 params.db_cache = null
+// Where kmerseek's index store lives, when it must NOT be the one beside every other
+// tool's. Defaults to ${DB_CACHE}/kmerseek_index, so a run that does not set it behaves
+// exactly as before.
+//
+// It exists because a kmerseek index is named
+// <target>.<alphabet>.k<k>.lc<lc>.kmerseek.rocksdb and the name says nothing about which
+// kmerseek built it. Running 0.4 against a store built by 0.3 means 0.4 finds indexes at
+// the names it wants, checks the builder, and refuses them. The obvious workaround --
+// point --db_cache somewhere fresh -- is wrong, and cost a run on 2026-09-24: db_cache is
+// shared by Foldseek, MMseqs2, ProstT5, Reseek, Folddisco and HHblits too, so a fresh one
+// makes all of them miss stores that were already built and rebuild databases that have
+// no version conflict. Separating the one store that does have a conflict is the fix.
+params.kmerseek_index_cache = null
 
 params.prostt5_max_len = 6000
 
@@ -602,6 +634,29 @@ if (!HUMAN) {
 }
 def KNOWN_TARGETS = REGISTRY.findAll { it.label != 'human' }
 
+// Human against itself: the all-against-all run.
+//
+// Every other arm asks "did the tool find titin's Ig domain in a MOUSE protein". This one
+// asks it of another HUMAN protein, which is the only way to get a large number of SHORT
+// correct matches: the question "where does k-mer rarity stop beating the E-value" is a
+// question about matches under ~40 aa, and nine cross-species targets do not supply
+// enough of them to answer it. Measured on 2026-09-23 from a 933-protein all-against-all:
+// correct matches under 30 aa grow as proteins^2.07 (all-against-all gives N^2 pairs), so
+// 933 proteins yield 10 and the 95% bootstrap band on the AUC is +-0.12 to +-0.19 -- too
+// wide to separate two curves 0.11 apart. The registry's 20_600 human proteins put that
+// band near +-0.01.
+//
+// Off by default, and human stays out of `--target_species all`, for the reason
+// DEFAULT_TARGET_LABELS gives about the 77-row registry: nothing a bare `nextflow run` or
+// an in-flight -resume expands to may widen because this file was pulled. Asking for it
+// takes both --human_all_vs_all and naming human in --target_species.
+//
+// The query-side warning on kmerseekIndex does NOT apply here. It rejects making human the
+// target of a SPECIES query, which moves the scored interval onto the species protein.
+// Here both sides are human and the scored interval is a human domain instance either way,
+// which is what the benchmark's unit has always been.
+params.human_all_vs_all = false
+
 // The nine the benchmark has always run, in divergence order, and still the default.
 //
 // NOT "every row in the registry". The registry now holds all 77 QfO targets, and making
@@ -631,7 +686,9 @@ else if (requested.toString().trim().toLowerCase() == 'all') {
 }
 else {
     def wanted = requested.tokenize(',')*.trim().findAll { it }
-    def unknown = wanted - KNOWN_TARGETS*.label
+    // Human is targetable only when the flag says so, and never through 'all' above.
+    def targetable = params.human_all_vs_all ? KNOWN_TARGETS + [HUMAN] : KNOWN_TARGETS
+    def unknown = wanted - targetable*.label
     // Named-but-unknown is an error, not a silent drop. `--target_species mouse,mosue`
     // otherwise runs one species and reports nine.
     if (unknown) {
@@ -639,11 +696,13 @@ else {
               "Known targets are the ${KNOWN_TARGETS.size()} non-human rows of " +
               "${params.species_registry}; '--target_species all' selects them all. " +
               (unknown.contains('human')
-                 ? "human is the QUERY and is never a target."
+                 ? "human is the QUERY. To search it against itself as well, pass " +
+                   "--human_all_vs_all and name human in --target_species; see the " +
+                   "note on params.human_all_vs_all."
                  : "")
     }
     // Ordered as the user asked, so a hand-written subset reads back the way it was typed.
-    SPECIES = wanted.collect { l -> KNOWN_TARGETS.find { it.label == l } }
+    SPECIES = wanted.collect { l -> targetable.find { it.label == l } }
 }
 
 if (SPECIES.isEmpty()) {
@@ -702,6 +761,7 @@ def HHBLITS_SPECIES = HHBLITS_KINGDOMS == null
 // flags 47 of the 184 alphabet x ksize combos, including every low-ksize case in the
 // non-HP alphabets that a name-based rule cannot see.
 def DB_CACHE = params.db_cache ?: params.outdir
+def KMERSEEK_INDEX_CACHE = params.kmerseek_index_cache ?: "${DB_CACHE}/kmerseek_index"
 
 // Three runs have now died on the same unstage failure, on three different directory
 // outputs under storeDir (foldseekDb, prostt5Db, kmerseekIndex), and each time it had to
@@ -1565,7 +1625,7 @@ process kmerseekIndex {
     // beats a process directive, so a `container = params.kmerseek_image` there would
     // silently put every task back on one image and this line would never be consulted.
     container { image }
-    storeDir "${DB_CACHE}/kmerseek_index"
+    storeDir KMERSEEK_INDEX_CACHE
 
     // Index sizing only. Building the index does not care which alphabet or ksize it is
     // -- 1_500 measured tasks peaked at 7.00 GB and tracked the proteome alone -- so this
@@ -1830,8 +1890,20 @@ PYEOF
 // domain gets transferred, the query interval is what gets scored.
 // ===========================================================================
 
+// Target FASTA size (MB) by species label, and the query count, filled where pair_ch is
+// built (the real paths are known there; a staged path inside a directive is not openable).
+def HMMER_SIZES = java.util.Collections.synchronizedMap([:])
+def hmmerHours = { String tool, String species ->
+    def rates = params.hmmer_hours_per_mb_per_1k_queries.toString().tokenize(',')
+        .collectEntries { def kv = it.trim().tokenize(':'); [(kv[0]): kv[1] as double] }
+    double mb = (HMMER_SIZES[species] ?: 0) as double
+    double nq = (HMMER_SIZES['__queries__'] ?: 1000) as double
+    (params.hmmer_time_headroom as double) * (rates[tool] ?: 0.0d) * mb * nq / 1000.0d
+}
+
 process phmmerSearch {
     tag "human_vs_${species}"
+    ext hours: { hmmerHours('phmmer', species) }
     container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_phmmer", mode: 'copy', pattern: '*.tsv.gz'
@@ -1868,6 +1940,7 @@ process phmmerSearch {
 
 process jackhmmerSearch {
     tag "human_vs_${species}"
+    ext hours: { hmmerHours('jackhmmer', species) }
     container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     label 'high_cpu'
     publishDir "${params.outdir}/regions/hmmer3_jackhmmer", mode: 'copy', pattern: '*.tsv.gz'
@@ -2486,7 +2559,10 @@ process prostt5Weights {
     script:
     """
     set -euo pipefail
-    if ! curl --fail --silent --head --max-time 30 https://foldseek.steineggerlab.workers.dev >/dev/null 2>&1; then
+    # No --fail: the root of this host answers HTTP 404 (checked 2026-09-24), so --fail
+    # would call an online machine offline. Any HTTP answer at all means the host is
+    # reachable; curl exits nonzero only when it cannot connect or times out.
+    if ! curl --silent --head --max-time 30 https://foldseek.steineggerlab.workers.dev >/dev/null 2>&1; then
         echo "no outbound internet from this node -- cannot fetch ProstT5 weights." >&2
         echo "Download them elsewhere and pass --prostt5_weights <dir>." >&2
         exit 1
@@ -3365,6 +3441,11 @@ process buildMultiqcInputs {
 
     input:
     tuple path(metrics), path(curves), path(trace), path(human_fasta), path(bpe)
+    // The data-flow diagram module every report in the repository shares. Staged rather
+    // than imported from ../shared by path: under Apptainer only staged paths are bound
+    // into the container, and the report script finds it through PYTHONPATH below.
+    path flow_module, stageAs: 'flow_diagram.py'
+    path explainers_module, stageAs: 'metric_explainers.py'
     path kmerseek_timings, stageAs: 'kmerseek_timings/*'
     // stageAs with a bare `*`, so every file keeps its own name. That is not cosmetic:
     // spectrum.<species>.<alphabet>.k<ksize>.lc<true|false>.csv.gz carries the species and
@@ -3378,6 +3459,9 @@ process buildMultiqcInputs {
     script:
     def primary = params.multiqc_primary_truth
         ? "--primary-truth ${params.multiqc_primary_truth}" : ""
+    // Quoted: the label is a phrase with spaces and an apostrophe is possible.
+    def query_set = params.query_set_label
+        ? "--query-set \"${params.query_set_label.replace('"', '\\"')}\"" : ""
     // The BPE panel is a side measurement no search produced, so its absence is normal.
     // The sentinel keeps this process's input signature fixed either way.
     def bpe_arg = bpe.name == 'NO_BPE' ? "" : "--bpe-boundary ${bpe}"
@@ -3397,6 +3481,7 @@ process buildMultiqcInputs {
     // being passed does not make the spectra a required input.
     """
     set -euo pipefail
+    export PYTHONPATH="\$PWD\${PYTHONPATH:+:\$PYTHONPATH}"
     n_queries=\$(grep -c '^>' ${human_fasta} || true)
 
     build_multiqc_inputs.py \\
@@ -3409,7 +3494,7 @@ process buildMultiqcInputs {
         --max-tools    ${params.multiqc_max_tools} \\
         --max-lines    ${params.multiqc_max_lines} \\
         --top-kmerseek ${params.multiqc_top_kmerseek} \\
-        --outdir       multiqc_in ${primary} ${bpe_arg}
+        --outdir       multiqc_in ${primary} ${bpe_arg} ${query_set}
     """
 }
 
@@ -3451,8 +3536,11 @@ process multiqcReport {
     set -euo pipefail
     export MPLCONFIGDIR=\$PWD/.mplconfig
 
+    # report_header.yaml is the run-in-six-lines block under the title, written by
+    # build_multiqc_inputs.py from the metrics; a later --config adds to the earlier one.
     multiqc ${sections} \\
         --config ${mqc_config} \\
+        \$( [ -f ${sections}/report_header.yaml ] && echo --config ${sections}/report_header.yaml ) \\
         --filename qfo_pfam_region_multiqc.html \\
         --outdir . \\
         --no-version-check \\
@@ -3874,7 +3962,7 @@ workflow {
         // "yeast and ecoli, so where does human_vs_ecoli come from" is a real confusion
         // this line exists to prevent.
         log.info """
-        |  query   : human (UP000005640_9606) -- always, and never listed as a target
+        |  query   : human (UP000005640_9606) -- always${SPECIES*.label.contains('human') ? ', and searched against itself as well' : ', and never listed as a target'}
         |  targets : ${SPECIES*.label.join(', ')}
         |  alphabet: ${combos.collect { it[1] }.unique().join(', ')}
         |  combos  : ${combos.size()} (alphabet x ksize x low-complexity on/off)
@@ -3981,7 +4069,11 @@ workflow {
         // binaries. See the note on params.gpu_benchmark.
         def bench_only = params.gpu_benchmark
 
-        pair_ch = species_ch.map { species, fasta -> tuple(species, fasta, human_fasta) }
+        HMMER_SIZES['__queries__'] = human_fasta.countFasta()
+        pair_ch = species_ch.map { species, fasta ->
+            HMMER_SIZES[species] = fasta.size() / 1.0e6d
+            tuple(species, fasta, human_fasta)
+        }
 
         phmmer_out    = bench_only ? Channel.empty() : phmmerSearch(pair_ch)
         jackhmmer_out = bench_only ? Channel.empty() : jackhmmerSearch(pair_ch)
@@ -4067,7 +4159,12 @@ workflow {
             // cannot work there -- its preflight fails in 30 seconds by design. When a
             // weights path is given it must exist; falling back to the download
             // would just re-fail with a message about the wrong thing.
-            def w = params.prostt5_weights ? file(params.prostt5_weights) : null
+            // With no --prostt5_weights, use the copy `make prostt5-weights` already put in
+            // data/prostt5/weights, so a run does not have to name it. Download only when
+            // that directory is missing or empty.
+            def default_w = file("${projectDir}/data/prostt5/weights")
+            def w = params.prostt5_weights ? file(params.prostt5_weights)
+                  : (default_w.isDirectory() && default_w.list() ? default_w : null)
             if (params.prostt5_weights && !w.exists()) {
                 error """
                 |--prostt5_weights points at ${params.prostt5_weights}, which does not exist.
@@ -4454,7 +4551,9 @@ workflow multiqcFromMetrics {
         // resolveTrace() runs when this fires, which is after aggregateMetrics finished.
         .map { m, c, b -> tuple(m, c, resolveTrace(), file(human_fasta), b) }
 
-    sections = buildMultiqcInputs(mqc_in, kmerseek_timings, kmerseek_spectra).sections
+    flow_module = Channel.value(file("${projectDir}/../shared/flow_diagram.py"))
+    explainers  = Channel.value(file("${projectDir}/../shared/metric_explainers.py"))
+    sections = buildMultiqcInputs(mqc_in, flow_module, explainers, kmerseek_timings, kmerseek_spectra).sections
     multiqcReport(sections.combine(Channel.of(file(params.multiqc_config))))
 }
 

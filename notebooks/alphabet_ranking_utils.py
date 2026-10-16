@@ -270,7 +270,7 @@ def fit_status_figure(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS,
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -386,7 +386,7 @@ def rank_matrix(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS,
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -504,7 +504,7 @@ def best_rank_figure(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS,
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -644,7 +644,7 @@ def null_rank_figure(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS,
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -755,7 +755,7 @@ def metric_sweep_figure(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS,
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -890,7 +890,7 @@ def bhf_matrix(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS,
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -983,7 +983,7 @@ def pair_matrix(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS.replace("index + search + pair", "pair (no database)"),
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -1097,7 +1097,7 @@ def partner_evalue_figure(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS,
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -1307,7 +1307,7 @@ def pr44_crosscheck_figure(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS.replace("index + search + pair", "pair (no database) and search"),
         hypothesis=hypothesis,
         conclusion=conclusion,
@@ -1433,7 +1433,7 @@ def lambda_zero_figure(
     finish_figure(
         fig,
         path,
-        tight=False,
+        tight_layout=False,
         tools=TOOLS,
         hypothesis=hypothesis,
         conclusion=conclusion,
