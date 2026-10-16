@@ -2534,6 +2534,10 @@ index-disk:
 #   Swiss-Prot  $SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
 #   Pfam-A      $(PFAM_HMM_REMOTE) (Pfam 38, pressed)
 ANNOT_RUN    ?= run-annotator-tools
+# Which tools run. Start with the ones whose data and images are in place, e.g.
+#   make run-annotator-tools ANNOT_TOOLS=diamond,mmseqs2
+# and add the others later: -resume keeps what finished.
+ANNOT_TOOLS  ?= diamond,mmseqs2,interproscan,eggnog,tmvec,plmsearch
 ANNOT_OUTDIR ?= ../data/annotator-tools/results
 ANNOT_SPROT  ?= $$SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
 # G2 data, downloaded once by `make interproscan-data` and `make eggnog-data`.
@@ -2589,11 +2593,14 @@ eggnog-data:
 # Every image the annotator modules name, plus the kmerseek image their python steps use.
 # Pulled before launch by prefetch-images: the head job's node cannot pull them itself.
 ANNOT_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" modules/*.nf | sort -u) \
-                    docker.io/olgabot/kmerseek:$(IMAGE_TAG) $(TMVEC_IMAGE) $(PLMSEARCH_IMAGE)
+                    docker.io/olgabot/kmerseek:$(IMAGE_TAG) \
+                    $(if $(findstring tmvec,$(ANNOT_TOOLS)),$(TMVEC_IMAGE)) \
+                    $(if $(findstring plmsearch,$(ANNOT_TOOLS)),$(PLMSEARCH_IMAGE))
 
 run-annotator-tools: GUARD_NAME := run-annotator-tools
 run-annotator-tools: HEAD_TIME := 12:00:00
 run-annotator-tools: HEAD_JOBNAME := nf-head-annotator
+run-annotator-tools: HEAD_SESSION := annotator
 run-annotator-tools: PREFETCH_CONTAINERS := $(ANNOT_CONTAINERS)
 run-annotator-tools: prefetch-images
 	$(call require_cluster)
@@ -2604,7 +2611,8 @@ run-annotator-tools: prefetch-images
 	    $(ANNOT_INPUTS) \
 	    --pfam_hmm $(PFAM_HMM_REMOTE) \
 	    --outdir $(ANNOT_OUTDIR) \
-	    --trace_file annotator_tools.trace.txt \
+	    --trace_file annotator_tools.$$(date +%Y%m%d-%H%M%S).trace.txt \
+	    --tools $(ANNOT_TOOLS) \
 	    $(NF_ARGS)
 
 # Rows, cost rows, pile-up calls and tool cards from the finished run (light: reads a few
@@ -2613,7 +2621,7 @@ run-annotator-tools: prefetch-images
 annotator-rows:
 	python3 bin/annotator_tool_rows.py \
 	  --results data/annotator-tools/results \
-	  --trace $(ANNOT_RUN)/annotator_tools.trace.txt \
+	  --trace $(ANNOT_RUN)/annotator_tools.*.trace.txt \
 	  --source-root $$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/annotator-tools/results \
 	  --source-commit $$(git rev-parse --short HEAD) \
 	  --out data/annotator-tools/leaderboard

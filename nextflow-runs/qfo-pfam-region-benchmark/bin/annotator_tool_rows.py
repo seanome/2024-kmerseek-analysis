@@ -545,7 +545,9 @@ def main() -> None:
     ap.add_argument(
         "--results", type=Path, required=True, help="annotator_tools.nf --outdir"
     )
-    ap.add_argument("--trace", type=Path, default=None)
+    # Every trace of the run: each launch (-resume) writes its own, and a task that
+    # finished in an earlier launch appears only as CACHED in the later ones.
+    ap.add_argument("--trace", type=Path, nargs="*", default=None)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--experiment", default="annotator_tools_midi_plus")
     ap.add_argument("--query-set", default="midi-plus")
@@ -563,7 +565,11 @@ def main() -> None:
     metric_files = sorted((a.results / "metrics").glob("pfam.*.metrics.parquet"))
     if not metric_files:
         raise SystemExit(f"no metrics under {a.results / 'metrics'}")
-    trace = read_trace(a.trace) if a.trace else None
+    trace = (
+        pl.concat([read_trace(t) for t in a.trace], how="diagonal_relaxed")
+        if a.trace
+        else None
+    )
     images = {}
     if trace is not None and "container" in trace.columns:
         for tool, info in TOOL_INFO.items():
@@ -616,7 +622,9 @@ def main() -> None:
     for tool, setting in cards:
         settings.setdefault(tool, []).append(setting)
     compute = (
-        compute_rows(trace, a.experiment, n_queries, str(a.trace), settings)
+        compute_rows(
+            trace, a.experiment, n_queries, "; ".join(map(str, a.trace)), settings
+        )
         if trace is not None
         else pl.DataFrame(schema=COMPUTE_SCHEMA)
     )
