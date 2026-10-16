@@ -78,3 +78,17 @@ def test_ninth_column_for_motif_tools(tmp_path):
     assert run(tmp_path, [f"{Q}\t{T}\t1\t20\t5\t24\t3.5\tNA\t12"]).returncode == 0
     r = run(tmp_path, [f"{Q}\t{T}\t1\t20\t5\t24\t3.5\tNA\tmany"])
     assert r.returncode == 1 and "n_matched_residues" in r.stderr
+
+
+def test_best_hit_table_with_alignments(tmp_path):
+    good = f"{Q}\t{T}\t3\t7\t10\t15\t30.1\t1e-5\t60.0\tMK-LAV\tMKQL-VV"
+    # qaln has 5 residues (3-7) but taln has 6 (10-15) and 7 characters: unequal lengths
+    assert run(tmp_path, [good]).returncode == 1
+    good = f"{Q}\t{T}\t3\t7\t10\t15\t30.1\t1e-5\t60.0\tMK-LAV\tMKQLVV"
+    r = run(tmp_path, [good])
+    assert r.returncode == 0, r.stderr
+    off = f"{Q}\t{T}\t3\t8\t10\t15\t30.1\t1e-5\t60.0\tMK-LAV\tMKQLVV"
+    r = run(tmp_path, [off])
+    assert r.returncode == 1 and "do not match the intervals" in r.stderr
+    r = run(tmp_path, [good.replace("60.0", "160.0")])
+    assert r.returncode == 1 and "outside 0-100" in r.stderr
