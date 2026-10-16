@@ -77,3 +77,9 @@ A bin with fewer than 30 truth instances is shown grey on the site.
   not changed here.
 - No query is a fragmented BUSCO gene (0 of 998; the human proteome has 30 fragmented
   BUSCO genes of 11,834) and none is a beta-barrel. Those bins exist but hold nothing.
+- 2026-10-16, adversarial check: segmasker writes overlapping intervals for 162 of the 998
+  queries (A1A5C7: 51-63 and 63-77). The first build summed interval lengths and counted
+  shared residues twice (378 / 475 / 145 queries under 5% / 5-20% / over 20%); residues are
+  now counted once, as the rule says (379 / 480 / 139).
+- MMseqs2 prints `fident` to three decimals, so identity is known to 0.1%: a protein at
+  29.95% is written 0.300 and lands in 30-50%. The bins are read from what MMseqs2 prints.

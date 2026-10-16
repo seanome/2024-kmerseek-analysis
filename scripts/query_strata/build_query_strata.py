@@ -125,17 +125,22 @@ def length_bin(n: int) -> str:
 
 
 def read_seg(path: Path) -> dict[str, int]:
-    """segmasker -outfmt interval: '>header' then 'start - end' lines, 0-based inclusive."""
-    masked: dict[str, int] = {}
+    """segmasker -outfmt interval: '>header' then 'start - end' lines, 0-based inclusive.
+
+    Residues masked, each counted once. segmasker writes overlapping intervals (A1A5C7:
+    51-63 and 63-77; 162 of the 998 queries have some), so summing interval lengths
+    counts the shared residues twice; the union of the intervals is taken instead.
+    """
+    masked: dict[str, set[int]] = {}
     cur = None
     for line in path.read_text().splitlines():
         if line.startswith(">"):
             cur = accession(line[1:].split()[0])
-            masked[cur] = 0
+            masked[cur] = set()
         elif line.strip():
             a, b = (int(x) for x in line.split("-"))
-            masked[cur] += b - a + 1
-    return masked
+            masked[cur].update(range(a, b + 1))
+    return {k: len(v) for k, v in masked.items()}
 
 
 def read_deeptmhmm(path: Path) -> dict[str, str]:

@@ -6,9 +6,9 @@
 |---|---|---:|---:|---|
 | membrane | alpha-helical TM | 288 | 288 | yes |
 | membrane | neither | 710 | 710 | yes |
-| low_complexity | 5-20% | 475 | 475 | yes |
-| low_complexity | <5% | 378 | 378 | yes |
-| low_complexity | >20% | 145 | 145 | yes |
+| low_complexity | 5-20% | 480 | 480 | yes |
+| low_complexity | <5% | 379 | 379 | yes |
+| low_complexity | >20% | 139 | 139 | yes |
 | protein_length | 100-300 | 269 | 269 | yes |
 | protein_length | 300-1000 | 587 | 587 | yes |
 | protein_length | <100 | 31 | 31 | yes |

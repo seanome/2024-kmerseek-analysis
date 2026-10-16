@@ -172,14 +172,27 @@ def main():
     lengths = fasta_lengths(d / "deeptmhmm/queries.fasta")
     accs = sorted(lengths)
 
-    masked = defaultdict(int)
+    # Merge overlapping intervals (segmasker writes some), then add up their lengths.
+    ivals = defaultdict(list)
     cur = None
     for line in open(d / "seg/queries.seg.intervals"):
         if line.startswith(">"):
             cur = acc_of(line[1:].split()[0])
         elif line.strip():
             a, b = line.split("-")
-            masked[cur] += int(b) - int(a) + 1
+            ivals[cur].append((int(a), int(b)))
+    masked = defaultdict(int)
+    for k, iv in ivals.items():
+        lo, hi = None, None
+        for a, b in sorted(iv):
+            if hi is None or a > hi + 1:
+                if hi is not None:
+                    masked[k] += hi - lo + 1
+                lo, hi = a, b
+            else:
+                hi = max(hi, b)
+        if hi is not None:
+            masked[k] += hi - lo + 1
     dtm = {}
     for line in open(d / "deeptmhmm/predicted_topologies.3line"):
         if line.startswith(">"):

@@ -32,4 +32,4 @@ hmmscan --cut_ga --domtblout query.domtbl Pfam-A.hmm "$QUERY"
 #    full_table.tsv (Complete or Duplicated = complete; Fragmented only = fragmented).
 #    BUSCO 6.1.0 from quay.io/biocontainers/busco@sha256:acf4e2f5bf6eb5c195b4165b4261e233974df5b23795319e2e4185569c9c903c
 busco --download primates_odb12 --download_path busco_downloads
-busco -i "$PROTEOME" -m proteins -l primates_odb12 -c 8 -o busco_out --offline --download_path busco_downloads
+busco -i "$PROTEOME" -m proteins -l primates_odb12 -c 8 -o busco_out --offline --download_path busco_downloads -f

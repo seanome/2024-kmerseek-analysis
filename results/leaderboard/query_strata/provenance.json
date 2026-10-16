@@ -20,10 +20,10 @@
   "busco": "BUSCO 6.1.0"
  },
  "outputs": {
-  "query_strata.tsv": "3e9623749c0adbbbd5071224f0e79226df389d293d97ba1b4138b8791260cf9f",
+  "query_strata.tsv": "90cac50229e65df8bda83a26dd256e28e6461b4aa9655391cfaf7ab3d1954024",
   "query_nearest_hits.tsv": "d4ceb1e7a762820fea492cc3a01c810293cf910d2e9a9c51d131a111e3a3862b",
   "pfam_family_breadth.tsv": "d00615fb330a8e94999f8aff55fd398c2185c9dc7f7cf6490ff8ff6f537d077f",
   "busco_summary.json": "16475186c75d9e4bab2dfe060d77f39127a93be7f3590fb16adc2474b07f9736",
-  "human_query_covariates.strata.parquet": "cb92229077c9c650ef4520e6ad8c34487d6dc5eba2d7137131c0ebdeea921e42"
+  "human_query_covariates.strata.parquet": "e73428d6f1661ffd200bd560171c92414f377afd69fce75e92abea218c0b1501"
  }
 }
