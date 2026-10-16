@@ -1419,7 +1419,10 @@ def main() -> None:
                 COMPUTE_SCHEMA,
             ),
         ]
-    ).sort("experiment", "tool", "setting", "step")
+    )
+    # source ends the sort key: nb 241's runs.jsonl has several runs of one setting, and
+    # without it their order changed when rows were added elsewhere in the table.
+    compute = compute.sort("experiment", "tool", "setting", "step", "source")
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     results.write_parquet(args.outdir / "results.parquet", statistics=False)
