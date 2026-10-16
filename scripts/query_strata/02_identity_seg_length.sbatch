@@ -19,9 +19,12 @@ set -euo pipefail
 source /scratch/users/olgabot/leaderboard-query-strata/repo/scripts/query_strata/paths.sh
 OUT=$WD/out/identity
 mkdir -p "$OUT" "$WD/out/seg" "$WD/out/length"
-TMP=${L_SCRATCH:-$WD/tmp}/mmseqs-tmp
+LOCAL=${L_SCRATCH:-$WD/tmp}
+TMP=$LOCAL/mmseqs-tmp
 mkdir -p "$TMP"
-B="--bind $WD --bind $QFO_PIPE"
+# The node-local scratch must be bound too: job 48132996 failed with "Cannot create
+# temporary directory /lscratch/..." because apptainer did not see it.
+B="--bind $WD --bind $QFO_PIPE --bind $LOCAL"
 
 apptainer exec $B "$MMSEQS_IMG" mmseqs version | tee "$OUT/mmseqs_version.txt"
 
