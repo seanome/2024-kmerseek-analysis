@@ -623,11 +623,18 @@ def null_rank_figure(
             label="middle 90% of the best rank of a random human protein, 20_000 draws",
         ),
         Line2D([], [], marker="s", ls="", ms=4.5, color="#f0dcae", label="the top 10"),
+        Line2D(
+            [],
+            [],
+            ls="",
+            label=f"right column: % of random draws as good or better; "
+            f"beating chance needs {BEATS_CHANCE_PERCENT}% or less",
+        ),
     ]
-    fig, (ax,) = _figure_with_legend_row(1, (183, 60), handles)
+    fig, (ax,) = _figure_with_legend_row(1, (183, 62), handles)
     ax.axvspan(0.7, 10, color="#f0dcae", zorder=1)
-    _null_panel(ax, list(nulls.iter_rows(named=True)), labels=True)
-    ax.set_xlim(0.7, 3e4)
+    _null_panel(ax, list(nulls.iter_rows(named=True)), labels=True, text_x=1e5)
+    ax.set_xlim(0.7, 1e5)
     ax.set_xticks([1, 10, 100, 1000, 10_000])
     ax.set_xticklabels(["1", "10", "100", "1_000", "10_000"])
     ax.set_xlabel(
@@ -1670,12 +1677,14 @@ def best_of_many_nulls(
     }
 
 
-NULL_KINDS = (("uniform", "uniform null"), ("real", "real-protein null"))
+NULL_KINDS = (("uniform", "uniform null"), ("real", "real proteins"))
+BEATS_CHANCE_PERCENT = 5  # the decision rule: random as good in at most 5% of draws
 
 
-def _null_panel(ax, rows: list[dict], labels: bool) -> None:
-    """Grey bar = middle 90% of a null, dot = the observed best; two nulls per set,
-    the share of draws at least as good written to the right."""
+def _null_panel(ax, rows: list[dict], labels: bool, text_x: float) -> None:
+    """Grey bar = middle 90% of a null, dot = the observed best; two nulls per set.
+    The share of random draws as good as the observed best is written at `text_x`, in
+    one column, so it never runs into a bar."""
     ticks = []
     for i, r in enumerate(rows):
         for j, (kind, name) in enumerate(NULL_KINDS):
@@ -1690,17 +1699,20 @@ def _null_panel(ax, rows: list[dict], labels: bool) -> None:
                 zorder=2,
             )
             ax.scatter(r["observed_best"], y, s=MARK_S, color=RANK_RAMP(0.25), zorder=4)
-            ax.text(
-                max(hi, r["observed_best"]) * 1.5,
-                y,
-                f"{100 * r[f'{kind}_p_at_least_as_good']:.1f}%",
-                va="center",
-            )
+            p = 100 * r[f"{kind}_p_at_least_as_good"]
+            ax.text(text_x, y, f"{p:.1f}%", va="center", ha="right")
             ticks.append((y, f"{r['set']}, {name}"))
             ax.axhline(y, color=GUIDE, lw=0.5, zorder=0)
     ax.set_yticks([y for y, _ in ticks])
     ax.set_yticklabels([t for _, t in ticks] if labels else [])
-    ax.set_ylim(2.6 * len(rows) - 1.1, -0.8)
+    ax.set_ylim(2.6 * len(rows) - 1.1, -1.3)
+    ax.text(
+        text_x,
+        -1.0,
+        f"random as good\n(≤{BEATS_CHANCE_PERCENT}% beats chance)",
+        va="center",
+        ha="right",
+    )
     ax.set_xscale("log")
 
 
@@ -1708,13 +1720,15 @@ def family_figure(
     family_best: pl.DataFrame,
     nulls: pl.DataFrame,
     path: Path,
+    title: str,
     hypothesis: str,
     conclusion: str,
 ) -> None:
     """a: the best rank each BCL2-family protein reaches when Ced9 is the query.
-    b, c: the best rank (b) and best percent of the hit list (c) of BCL2 alone and of
-    the whole family, against the uniform and the real-protein null; the number right
-    of each bar is the share of null draws as good as or better than the observed."""
+    b, c: the best rank (b) and the best percent of the hit list (c) of BCL2 alone and
+    of the whole family, against the uniform and the real-protein null. The column of
+    numbers on the right of b and c is the share of random draws as good as the
+    observed best; beating chance needs 5% or less."""
     handles = [
         Line2D(
             [],
@@ -1723,7 +1737,7 @@ def family_figure(
             ls="",
             ms=4,
             color=RANK_RAMP(0.25),
-            label="observed best over every setting and the five metrics",
+            label="observed: the best over every setting and the five metrics",
         ),
         Line2D(
             [], [], marker="s", ls="", ms=4.5, color="#f0dcae", label="a: the top 10"
@@ -1735,14 +1749,43 @@ def family_figure(
             ls="",
             ms=4.5,
             color="#d0d0d0",
-            label="b, c: middle 90% of the same best for as many random human proteins, "
-            "20_000 draws; number = % of draws as good or better",
+            label="b, c: middle 90% of the same best for as many random human proteins (20_000 draws)",
+        ),
+        Line2D(
+            [],
+            [],
+            ls="",
+            label=f"b, c, right column: % of random draws as good or better; "
+            f"beating chance needs {BEATS_CHANCE_PERCENT}% or less",
         ),
     ]
-    fig, axes = _figure_with_legend_row(
-        3, (183, 75), handles, sharey=False, width_ratios=[1.1, 1.0, 0.75], wspace=1.0
+    w_in, h_in = 183 * pf.MM, 120 * pf.MM
+    fig = plt.figure(figsize=(w_in, h_in))
+    band_in = len(handles) * 6 * 1.6 / 72 + 0.03
+    gs = fig.add_gridspec(
+        3,
+        2,
+        height_ratios=[band_in, 2.3, 1.45],
+        width_ratios=[1.0, 0.8],
+        left=1.45 / w_in,
+        right=0.99,
+        top=0.995,
+        bottom=0.45 / h_in,
+        hspace=0.32,
+        wspace=0.12,
     )
-    ax = axes[0]
+    lax = fig.add_subplot(gs[0, :])
+    lax.axis("off")
+    lax.legend(
+        handles=handles,
+        loc="upper left",
+        frameon=False,
+        borderaxespad=0,
+        borderpad=0,
+        handletextpad=0.4,
+        labelspacing=0.35,
+    )
+    ax = fig.add_subplot(gs[1, :])
     ax.axvspan(1, 10, color="#f0dcae", zorder=1)
     for i, row in enumerate(family_best.iter_rows(named=True)):
         ax.axhline(i, color=GUIDE, lw=0.5, zorder=0)
@@ -1753,42 +1796,67 @@ def family_figure(
         ax.text(
             row["rank"] * 1.4,
             i,
-            f"{row['rank']:_} of {row['n_finite']:_}, {row['alphabet']} k={row['ksize']}",
+            f"{row['rank']:_} of {row['n_finite']:_}  ({row['alphabet']} k={row['ksize']}, {row['metric']})",
             va="center",
         )
     ax.set_yticks(range(family_best.height))
     ax.set_yticklabels(family_best["gene"])
     ax.set_ylim(family_best.height - 0.4, -0.7)
     ax.set_xscale("log")
-    ax.set_xlim(1, 2e5)
+    ax.set_xlim(0.8, 3e5)
     ax.set_xticks([1, 10, 100, 1000])
     ax.set_xticklabels(["1", "10", "100", "1_000"])
-    ax.set_xlabel("best rank, Ced9 query (1 = best)")
-    for ax, on, xlabel, labels in (
-        (axes[1], "rank", "best rank over the sweep (1 = best)", True),
-        (axes[2], "percent", "best rank / proteins ranked (%)", False),
+    ax.set_xlabel("best rank among the human proteins ranked, Ced9 query (1 = best)")
+    ax.set_title(
+        f"a  every human protein with the Bcl-2 domain ({BCL2_PFAM})",
+        loc="left",
+        fontweight="bold",
+    )
+
+    ax_b = fig.add_subplot(gs[2, 0])
+    ax_c = fig.add_subplot(gs[2, 1])
+    for ax_, on, xlabel, labels, text_x, panel_title in (
+        (
+            ax_b,
+            "rank",
+            "best rank over the sweep (1 = best)",
+            True,
+            3e5,
+            "b  best rank, against random proteins",
+        ),
+        (
+            ax_c,
+            "percent",
+            "best rank / proteins ranked (%)",
+            False,
+            3e3,
+            "c  best % of the list, against random proteins",
+        ),
     ):
         _null_panel(
-            ax, [r for r in nulls.iter_rows(named=True) if r["on"] == on], labels
+            ax_,
+            [r for r in nulls.iter_rows(named=True) if r["on"] == on],
+            labels,
+            text_x,
         )
-        ax.set_xlabel(xlabel)
-    axes[1].set_xlim(0.7, 2e4)
-    axes[1].set_xticks([1, 10, 100, 1000])
-    axes[1].set_xticklabels(["1", "10", "100", "1_000"])
-    axes[2].set_xlim(3e-3, 400)
-    axes[2].set_xticks([0.01, 0.1, 1, 10])
-    axes[2].set_xticklabels(["0.01", "0.1", "1", "10"])
-    for ax_, letter in zip(axes, "abc"):
-        pf.panel_label(ax_, letter)
+        ax_.set_xlabel(xlabel)
+        ax_.set_title(panel_title, loc="left", fontweight="bold")
+    ax_b.set_xlim(0.7, 3e5)
+    ax_b.set_xticks([1, 10, 100, 1000])
+    ax_b.set_xticklabels(["1", "10", "100", "1_000"])
+    ax_c.set_xlim(3e-3, 3e3)
+    ax_c.set_xticks([0.01, 0.1, 1, 10])
+    ax_c.set_xticklabels(["0.01", "0.1", "1", "10"])
     _finish(
         fig,
         path,
         tight_layout=False,
         tools=TOOLS,
+        title=title,
         hypothesis=hypothesis,
         conclusion=conclusion,
         header_y=1.01,
-        footer_y=-0.03,
+        footer_y=-0.02,
     )
 
 

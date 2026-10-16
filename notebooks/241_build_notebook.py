@@ -255,6 +255,8 @@ print(fam_nulls.select("set", "on", "n_member_combos", "observed_best",
 fr = {(r["set"].split()[0], r["on"]): r for r in fam_nulls.iter_rows(named=True)}
 au.family_figure(
     fam_best, fam_nulls, FIG / "241_bcl2_family_rank.png",
+    title=("Bcl-2-domain proteins reach the top 10 at single settings, "
+           "but random human proteins do as well over the whole sweep"),
     hypothesis=(f"Some human protein with the Bcl-2 domain ({au.BCL2_PFAM}) reaches the top 10 when Ced9 is the query, "
                 "and the family's best rank over the sweep beats random human proteins in at least 95% of draws."),
     conclusion=(

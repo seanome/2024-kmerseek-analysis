@@ -40,12 +40,14 @@ export NB241_HUMAN=${NB241_HUMAN:-$SCRATCH/data/gencode/human/v49/gencode.v49.pc
 # Byte-identical (sha256 ecfb72b4...) to the laptop copy the first run read.
 export NB241_KAPPA=${NB241_KAPPA:-$SCRATCH/2024-kmerseek-invertebrate-dark-set-0.4/nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv}
 # kmerseek commit 982a055, the build the first run used. It is on no branch, so it is
-# kept on GitHub as this tag. It is from before seanome/kmerseek PR 136 (target-length
-# scaling of the whole-protein metrics). To re-run on another build, pass a tag or branch
-# that has both PR 136 and the per-region lambda, and a new output folder:
-#   KMERSEEK_TAG=<ref> NB241_DIR=$SCRATCH/241-alphabet-ranking-pr136 sbatch notebooks/241_alphabet_ranking.sbatch
-KMERSEEK_TAG=${KMERSEEK_TAG:-nb241-kmerseek-982a055}
-KMERSEEK_SRC=$SCRATCH/241-alphabet-ranking-kmerseek-$KMERSEEK_TAG
+# kept on GitHub as this tag. That build solves lambda per region (seanome/kmerseek
+# PR 101), which was closed unmerged on 2026-09-30, and it is from before PR 136
+# (target-length scaling of the whole-protein metrics). kmerseek main has PR 136 and the
+# whole-protein lambda. To re-run on another build, pass a tag, branch or commit and a
+# new output folder, e.g. main at 00395d7:
+#   KMERSEEK_REF=00395d7 NB241_DIR=$SCRATCH/241-alphabet-ranking-main-00395d7 sbatch notebooks/241_alphabet_ranking.sbatch
+KMERSEEK_REF=${KMERSEEK_REF:-nb241-kmerseek-982a055}
+KMERSEEK_SRC=$SCRATCH/241-alphabet-ranking-kmerseek-$KMERSEEK_REF
 export NB241_KMERSEEK=$KMERSEEK_SRC/target/release/kmerseek
 # Only for the collector, which needs polars (1.43 in this image).
 IMG=$SCRATCH/apptainer-cache/docker.io-olgabot-kmerseek-2026-09-13-extend-chain.img
@@ -63,10 +65,20 @@ done
 # rust for the build, llvm for RocksDB's bindings, gcc for RocksDB's C++ and for
 # libstdc++ when kmerseek runs, python for the driver (standard library only).
 module load rust/1.90.0 llvm/17.0.6 cmake/3.31.4 gcc/14.2.0 python/3.12.1
+# The llvm module puts LLVM's libc++ headers on CPATH, and g++ then compiles RocksDB
+# against libc++'s stdlib.h ("'abort' has not been declared in 'std'"); both 241 jobs of
+# 2026-10-06 failed this way. Keep only gcc's headers, and give bindgen libclang directly
+# (the fix from 283_bhf_low_complexity_control.sbatch).
+LLVM_ROOT=/share/software/user/open/llvm/17.0.6
+CPATH=$(printf '%s' "${CPATH:-}" | tr ':' '\n' | { grep -v "^$LLVM_ROOT" || true; } | paste -sd: -)
+export CPATH LIBCLANG_PATH=$LLVM_ROOT/lib CC=gcc CXX=g++
 
 if [ ! -x "$NB241_KMERSEEK" ]; then
+    # A full clone, so KMERSEEK_REF can be a commit as well as a tag or branch
+    # (Sherlock's git 1.8.3 cannot clone a commit with --branch, and has no `git -C`).
     [ -d "$KMERSEEK_SRC/.git" ] || \
-        git clone --quiet --depth 1 --branch "$KMERSEEK_TAG" https://github.com/seanome/kmerseek "$KMERSEEK_SRC"
+        git clone --quiet https://github.com/seanome/kmerseek "$KMERSEEK_SRC"
+    (cd "$KMERSEEK_SRC" && git checkout --quiet "$KMERSEEK_REF")
     export CARGO_HOME=$SCRATCH/.cargo
     (cd "$KMERSEEK_SRC" && cargo build --release --bin kmerseek)
 fi
