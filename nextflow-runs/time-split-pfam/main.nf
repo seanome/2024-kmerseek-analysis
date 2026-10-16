@@ -181,6 +181,13 @@ def searchHours(String alphabet, int ksize, int attempt) {
     "${Math.min(first * (1 << (attempt - 1)), 24)}h".toString()
 }
 
+// splitFasta numbers its chunk files from 1 in file order: chunk.<n>.<ext>.
+def chunkNumber(f) {
+    def m = (f.name =~ /^chunk\.(\d+)(\..*)?$/)
+    if (!m.matches()) error "query chunk ${f.name} is not named chunk.<n>"
+    m.group(1) as int
+}
+
 process kmerseekIndex {
     tag "${alphabet}.k${ksize}"
     storeDir params.index_cache
@@ -214,10 +221,17 @@ process kmerseekIndex {
     chmod -R a-w ${idx}
     chmod u+w ${idx}
     """
+
+    stub:
+    def idx = "${params.reference_tag}.${alphabet}.k${ksize}.kmerseek.rocksdb"
+    """
+    mkdir -p ${idx}
+    printf 'moltype,ksize,occurrences,n_kmers\\n${alphabet},${ksize},1,10\\n' | gzip -c > ${idx}/spectrum.csv.gz
+    """
 }
 
 process kmerseekSearch {
-    tag "${alphabet}.k${ksize}.${arm}.${chunk.simpleName}"
+    tag "${alphabet}.k${ksize}.${arm}.${chunk_id}"
     container params.kmerseek_image
     publishDir "${params.outdir}/kmerseek", mode: 'copy'
     cpus 8
@@ -225,7 +239,7 @@ process kmerseekSearch {
     time   { searchHours(alphabet, ksize as int, task.attempt) }
 
     input:
-    tuple val(alphabet), val(ksize), val(copt), path(index_dir), val(arm), path(chunk)
+    tuple val(alphabet), val(ksize), val(copt), path(index_dir), val(arm), val(chunk_id), path(chunk)
     path domains
     path compact_awk
 
@@ -234,7 +248,7 @@ process kmerseekSearch {
     path "${slug}.stats.tsv", emit: stats
 
     script:
-    slug = "${alphabet}.k${ksize}.${arm}.${chunk.simpleName}"
+    slug = "${alphabet}.k${ksize}.${arm}.${chunk_id}"
     def xd = xdropFor(copt)
     // --ka-queries 0: the E-value comes from the fit stored at index time for this penalty
     // and X-drop, or the search is refused (handled below).
@@ -274,13 +288,21 @@ process kmerseekSearch {
     sleep 1  # let the wc in the process substitution finish writing
     rows=\$(zcat ${slug}.transfers.tsv.gz | tail -n +2 | wc -l)
     printf 'alphabet\\tksize\\tarm\\tchunk\\tc_opt\\tfitted\\traw_rows\\ttransfer_rows\\tbytes\\n' > ${slug}.stats.tsv
-    printf '%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' ${alphabet} ${ksize} ${arm} ${chunk.simpleName} ${copt} \$fit \\
+    printf '%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' ${alphabet} ${ksize} ${arm} ${chunk_id} ${copt} \$fit \\
         "\$(cat raw_rows.txt 2>/dev/null || echo NA)" \$rows \$(stat -c %s ${slug}.transfers.tsv.gz) >> ${slug}.stats.tsv
+    """
+
+    stub:
+    slug = "${alphabet}.k${ksize}.${arm}.${chunk_id}"
+    """
+    printf 'query\\tqstart\\tqend\\ttarget\\ttstart\\ttend\\tpfam_acc\\n' | gzip -c > ${slug}.transfers.tsv.gz
+    printf 'alphabet\\tksize\\tarm\\tchunk\\tc_opt\\tfitted\\traw_rows\\ttransfer_rows\\tbytes\\n' > ${slug}.stats.tsv
+    printf '%s\\t%s\\t%s\\t%s\\t%s\\tyes\\t0\\t0\\t0\\n' ${alphabet} ${ksize} ${arm} ${chunk_id} ${copt} >> ${slug}.stats.tsv
     """
 }
 
 process mmseqsSearch {
-    tag "${chunk.simpleName}"
+    tag "${chunk_id}"
     container MMSEQS
     publishDir "${params.outdir}/mmseqs2", mode: 'copy'
     cpus 16
@@ -288,11 +310,11 @@ process mmseqsSearch {
     time { "${Math.min(8 * task.attempt, 48)}h" }
 
     input:
-    path chunk
+    tuple val(chunk_id), path(chunk)
     path reference
 
     output:
-    path "${chunk.simpleName}.mmseqs2.tsv.gz"
+    path "${chunk_id}.mmseqs2.tsv.gz"
 
     script:
     """
@@ -306,12 +328,17 @@ process mmseqsSearch {
         -e ${params.mmseqs2_evalue} --threads ${task.cpus}
     mmseqs convertalis qdb tdb res out.tsv \\
         --format-output 'query,target,qstart,qend,tstart,tend,pident,bits,evalue'
-    gzip -c out.tsv > ${chunk.simpleName}.mmseqs2.tsv.gz
+    gzip -c out.tsv > ${chunk_id}.mmseqs2.tsv.gz
+    """
+
+    stub:
+    """
+    grep '^>' ${chunk} | gzip -c > ${chunk_id}.mmseqs2.tsv.gz
     """
 }
 
 process phmmerSearch {
-    tag "${chunk.simpleName}"
+    tag "${chunk_id}"
     container HMMER
     publishDir "${params.outdir}/phmmer", mode: 'copy'
     cpus 8
@@ -319,17 +346,22 @@ process phmmerSearch {
     time { "${Math.min(12 * task.attempt, 48)}h" }
 
     input:
-    path chunk
+    tuple val(chunk_id), path(chunk)
     path reference
 
     output:
-    path "${chunk.simpleName}.phmmer.domtbl.gz"
+    path "${chunk_id}.phmmer.domtbl.gz"
 
     script:
     """
     set -euo pipefail
     phmmer --cpu ${task.cpus} --noali -o /dev/null --domtblout out.domtbl --domE 0.001 ${chunk} ${reference}
-    gzip -c out.domtbl > ${chunk.simpleName}.phmmer.domtbl.gz
+    gzip -c out.domtbl > ${chunk_id}.phmmer.domtbl.gz
+    """
+
+    stub:
+    """
+    grep '^>' ${chunk} | gzip -c > ${chunk_id}.phmmer.domtbl.gz
     """
 }
 
@@ -352,10 +384,15 @@ process hmmpressPfam {
     gzip -dc ${hmm_gz} > Pfam33.1-A.hmm
     hmmpress Pfam33.1-A.hmm
     """
+
+    stub:
+    """
+    touch Pfam33.1-A.hmm Pfam33.1-A.hmm.h3f Pfam33.1-A.hmm.h3i Pfam33.1-A.hmm.h3m Pfam33.1-A.hmm.h3p
+    """
 }
 
 process hmmscanSearch {
-    tag "${chunk.simpleName}"
+    tag "${chunk_id}"
     container HMMER
     publishDir "${params.outdir}/hmmscan", mode: 'copy'
     cpus 8
@@ -363,11 +400,11 @@ process hmmscanSearch {
     time { "${Math.min(12 * task.attempt, 48)}h" }
 
     input:
-    path chunk
+    tuple val(chunk_id), path(chunk)
     path hmm_files
 
     output:
-    path "${chunk.simpleName}.hmmscan.domtbl.gz"
+    path "${chunk_id}.hmmscan.domtbl.gz"
 
     script:
     // No --cut_ga: the question is whether Pfam's own t0 model saw the domain and only the
@@ -377,7 +414,12 @@ process hmmscanSearch {
     set -euo pipefail
     hmmscan --cpu ${task.cpus} --noali -o /dev/null --domtblout out.domtbl -E 0.001 --domE 0.001 \\
         Pfam33.1-A.hmm ${chunk}
-    gzip -c out.domtbl > ${chunk.simpleName}.hmmscan.domtbl.gz
+    gzip -c out.domtbl > ${chunk_id}.hmmscan.domtbl.gz
+    """
+
+    stub:
+    """
+    grep '^>' ${chunk} | gzip -c > ${chunk_id}.hmmscan.domtbl.gz
     """
 }
 
@@ -412,6 +454,12 @@ process scoreTransfers {
         --hmmscan hmmscan --inputs ${inputs_dir} --reference ${reference_dir} \\
         --settings ${settings} --out . ${params.read_test_half ? '--read-test-half' : ''}
     """
+
+    stub:
+    """
+    ls kmerseek stats mmseqs2 phmmer hmmscan > staged.csv
+    mkdir -p calls
+    """
 }
 
 workflow {
@@ -421,9 +469,15 @@ workflow {
     def domains   = file("${refdir}/sprot_domains.tsv", checkIfExists: true)
     def only = params.only_alphabets.toString().tokenize(',')*.trim().findAll { it }
 
+    // Each chunk carries its own id, chunk001, chunk002, ... in query-file order, and every
+    // output is named by it. splitFasta names its files chunk.1.fasta, chunk.2.fasta, ...,
+    // whose simpleName is "chunk" for all of them: the full run's 9 chunks would overwrite
+    // each other in publishDir and collide when staged into scoreTransfers.
     chunks = Channel.fromPath("${inputs}/queries.fasta", checkIfExists: true)
         .splitFasta(by: params.query_chunk_size as int, file: 'chunk')
-        .toSortedList { a, b -> a.name <=> b.name }.flatMap { it }
+        .toSortedList { a, b -> chunkNumber(a) <=> chunkNumber(b) }
+        .flatMap { it }
+        .map { f -> [String.format('chunk%03d', chunkNumber(f)), f] }
 
     def skip = params.skip_settings.toString().tokenize(',')*.trim().findAll { it } as Set
     def settingsLines = file(params.settings, checkIfExists: true).readLines()
@@ -454,14 +508,14 @@ workflow {
     searches = indexes
         .combine(Channel.of('exact', 'extend'))
         .combine(chunks)
-        .map { a, k, c, idx, arm, ch -> [a, k, c, idx, arm, ch] }
+        .map { a, k, c, idx, arm, cid, ch -> [a, k, c, idx, arm, cid, ch] }
     kmerseekSearch(searches, domains, file("${projectDir}/bin/compact_kmerseek.awk"))
 
     mm  = mmseqsSearch(chunks, reference)
     ph  = phmmerSearch(chunks, reference)
     if (params.hmmscan_dir) {
         // One file per query chunk, named as hmmscanSearch names it; stop if any is missing.
-        def chunkNames = chunks.map { "${it.simpleName}.hmmscan.domtbl.gz".toString() }.toSortedList()
+        def chunkNames = chunks.map { cid, f -> "${cid}.hmmscan.domtbl.gz".toString() }.toSortedList()
         hmm = Channel.fromPath("${params.hmmscan_dir}/*.hmmscan.domtbl.gz", checkIfExists: true)
             .toSortedList { a, b -> a.name <=> b.name }
             .map { [it] }.combine(chunkNames.map { [it] })

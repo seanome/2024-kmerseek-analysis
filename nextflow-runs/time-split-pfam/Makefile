@@ -45,7 +45,7 @@ NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs smoke pilot score-partial mmseqs-one-round full seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
+.PHONY: download stop1 controls inputs stub smoke pilot score-partial mmseqs-one-round full seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -74,6 +74,24 @@ inputs:
 	  $(PY) $$B/bin/make_search_inputs.py queries --qs query_set --sample query_set/proposed_sample_queries.csv --n-pilot 200 --controls controls_identity/identity_sample.csv --n-controls 20 --out inputs/pilot; \
 	  $(PY) $$B/bin/make_search_inputs.py queries --qs query_set --sample query_set/proposed_sample_queries.csv --out inputs/full; \
 	  $(PY) $$B/bin/make_search_inputs.py queries --qs query_set --sample query_set/proposed_sample_queries.csv --n-pilot 2 --out inputs/smoke'
+
+# Laptop wiring check with -stub (no search runs): 4 queries in chunks of 2, so two chunks,
+# two settings. Passes when every output is named by its chunk (chunk001, chunk002) and
+# scoreTransfers is staged one file per setting, arm and chunk. Writes only to STUB_DIR.
+NEXTFLOW ?= nextflow
+STUB_DIR ?= $(MAKEFILE_DIR)/stub-test
+stub:
+	command rm -rf $(STUB_DIR) && mkdir -p $(STUB_DIR)/inputs $(STUB_DIR)/reference
+	printf '>Q1\nMKVLAAGIVG\n>Q2\nMSTNPKPQRK\n>DECOY_Q1\nMKAVLGAIVG\n>DECOY_Q2\nMSNTPKQPRK\n' > $(STUB_DIR)/inputs/queries.fasta
+	printf '>P1\nMKVLAAGIVGAAA\n' > $(STUB_DIR)/reference/reference.fasta
+	printf 'sp_acc\tpfam_acc\tsp_start\tsp_end\nP1\tPF00001\t1\t10\n' > $(STUB_DIR)/reference/sprot_domains.tsv
+	printf 'alphabet\tksize\tc_opt\nprotein20\t7\t0.14\nhp_pbotc_1st_ed2\t29\t1.59\ngbmr4\t13\t0.67\n' > $(STUB_DIR)/settings.tsv
+	touch $(STUB_DIR)/Pfam-A.hmm.gz
+	cd $(STUB_DIR) && $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -stub -profile stub \
+	  --inputs $(STUB_DIR)/inputs --reference_dir $(STUB_DIR)/reference --settings $(STUB_DIR)/settings.tsv \
+	  --skip_settings gbmr4:13 --pfam_hmm $(STUB_DIR)/Pfam-A.hmm.gz --query_chunk_size 2 \
+	  --index_cache $(STUB_DIR)/index --hmm_cache $(STUB_DIR)/hmm --outdir $(STUB_DIR)/results --run_tag stub
+	python3 $(MAKEFILE_DIR)/bin/check_stub.py $(STUB_DIR)/results
 
 # Wiring check: two sample queries and their decoys, one cheap alphabet-k.
 smoke:
