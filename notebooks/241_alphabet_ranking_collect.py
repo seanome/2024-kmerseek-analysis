@@ -227,11 +227,16 @@ def read_search(tag: str, out: Path = OUT) -> pl.DataFrame | None:
     # every region of the arm. Ranking on that ties the whole proteome at 0 and hands
     # rank 1 to whichever target sorts first: gbmr7 k=10 put BCL2 at rank 1 with 18_302
     # targets tied. Same trap as query_tfidf. Null it out so those arms produce no rank.
-    if {"region_ka_bits", "region_ka_lambda"} <= set(df.columns):
+    # kmerseek main has no per-region lambda column (seanome/kmerseek PR 101 was closed),
+    # so there a region has a scale exactly when its E-value is finite.
+    if "region_ka_bits" in df.columns:
+        has_scale = (
+            pl.col("region_ka_lambda") > 0
+            if "region_ka_lambda" in df.columns
+            else pl.col("region_evalue").is_finite()
+        )
         df = df.with_columns(
-            pl.when(pl.col("region_ka_lambda") > 0)
-            .then(pl.col("region_ka_bits"))
-            .alias("region_ka_bits")
+            pl.when(has_scale).then(pl.col("region_ka_bits")).alias("region_ka_bits")
         )
     return df
 
