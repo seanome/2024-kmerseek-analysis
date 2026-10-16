@@ -4,13 +4,17 @@
 SHERLOCK_HOST ?= sherlock
 ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
-.PHONY: help running
+.PHONY: help running leaderboard-alphabets
 
 help:
 	@echo "Sherlock:"
 	@echo "  running    Every Nextflow run in the SLURM queue, from any pipeline: clone,"
 	@echo "             run folder, head job, tasks by process and state, and jobs that"
 	@echo "             are not part of a run"
+	@echo ""
+	@echo "Leaderboard:"
+	@echo "  leaderboard-alphabets  Write results/leaderboard/alphabets/ (the alphabet page's"
+	@echo "                         tables) from notebooks 230 and 291 and PR 116's CSV"
 	@echo ""
 	@echo "Each pipeline's own targets: make -C nextflow-runs/<pipeline> help"
 
@@ -31,3 +35,11 @@ running:
 	  exit 1; \
 	fi
 	@python3 $$SCRATCH/nf-running
+
+## The leaderboard site's alphabet page (seanome/protein-function-annotation-leaderboard copies
+## results/leaderboard/alphabets/ from a commit of this repo). Reads notebook 291's stored
+## table and the per-pair tables of notebook 230 from ~/data (about 100 MB), so it runs on the
+## laptop in about 20 s; see scripts/build_leaderboard_alphabets.py.
+LEADERBOARD_PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+leaderboard-alphabets:
+	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_alphabets.py --outdir results/leaderboard/alphabets

@@ -1,0 +1,59 @@
+{
+ "script": "scripts/build_leaderboard_alphabets.py",
+ "sources": {
+  "evidence": {
+   "path": "notebooks/291_evidence_per_position_19_alphabets_pfam_seed_scope40.ipynb",
+   "commit": "69904c613c339a34754cc5f475e22de76f3a41e4",
+   "commit_date": "2026-10-15T06:44:34-07:00",
+   "pr": "https://github.com/seanome/2024-kmerseek-analysis/pull/99",
+   "table": "~/data/pfam/291_evidence_ratio_19_alphabets_pfam_seed_scope40.parquet"
+  },
+  "kappa": {
+   "path": "notebooks/230_hp_class_conservation_in_aligned_homologs.ipynb",
+   "commit": "591d5de87126788142da75518d6b22e94b745dc4",
+   "commit_date": "2026-10-15T09:19:29-07:00",
+   "pr": "https://github.com/seanome/2024-kmerseek-analysis/pull/100",
+   "section": "2b, kappa_parts"
+  },
+  "usable_k": {
+   "path": "notebooks/230_hp_class_conservation_in_aligned_homologs.ipynb",
+   "commit": "591d5de87126788142da75518d6b22e94b745dc4",
+   "commit_date": "2026-10-15T09:19:29-07:00",
+   "pr": "https://github.com/seanome/2024-kmerseek-analysis/pull/100",
+   "section": "2c, usable"
+  },
+  "k_range": {
+   "path": "tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv",
+   "commit": "66fa6f50b91f2c33b727563b51656bf82475b604",
+   "commit_date": "2026-10-02T06:50:53-07:00",
+   "pr": "https://github.com/seanome/2024-kmerseek-analysis/pull/101"
+  },
+  "hp_classes": {
+   "path": "tables/hp_borderline_residues.csv",
+   "commit": "c04b638df58e382c176dc3128bdddb4e07323079",
+   "commit_date": "2026-10-10T11:32:51-07:00",
+   "pr": "https://github.com/seanome/2024-kmerseek-analysis/pull/116"
+  },
+  "classes": {
+   "path": "notebooks/hp_conservation_utils.py",
+   "commit": "a4022f3908fc54840704c7f760f25f6c8fe7cde6",
+   "commit_date": "2026-10-15T10:51:52-07:00"
+  }
+ },
+ "inputs_sha256": {
+  "~/data/pfam/230_pfam_seed_pair_alignments.parquet": "d7a47ffae9976371e005301cff2ac601f7a8ffd14aec96bbb3fbcdf297f9b7b8",
+  "~/data/scope/230_scope40_pair_alignments.parquet": "4d99389f11c4dc5340d94cb4320e2c8c0f746f47ffbb623a3b37e633214f6ef7",
+  "~/data/pfam/230_pfam_seed_pair_class_agreement.parquet": "3ac88c8cc77b20bd1e1dd3d4130bc4595422f69d2b76769317d770859468fde4",
+  "~/data/scope/astral-scopedom-seqres-gd-sel-gs-bib-40-2.08.fa": "e6d3213b38225f617966686809fa5531f0de6a7d00d01692477476a1493ab037",
+  "~/data/pfam/291_evidence_ratio_19_alphabets_pfam_seed_scope40.parquet": "e224d1f7b9f65fc4abe72b8143a2a6146b8ea914c0c4c731e98ef7df09830c3e",
+  "tables/274_ksizes_to_test_per_alphabet_human_swissprot.csv": "786fb61606ee9994d4a999a8126797edefe4d7092340695898a4fe920d00b6af",
+  "tables/hp_borderline_residues.csv": "a9ee91d6c88db8e4343bd337de297626106720c4c7bf9a36d1194099ffdf0a38"
+ },
+ "outputs_sha256": {
+  "classes.parquet": "ba64bbfba0c5804f0e6181dfc95a93444e3e6dd8ef1cf6a6f40deef041a3285a",
+  "evidence.parquet": "947b79a951cde9015f7e1de8eab40964e82990d8de34617eb604f2ec8714c49e",
+  "kappa.parquet": "fc07558b430578a41afc7bb03c632a7f777ba6ff4383f7de326f9aeec5ba83b7",
+  "usable_k.parquet": "7c5a1b4e7d20c0194ac4c0113ecbef888ee77117cee44b07a5573e0ec10f1659",
+  "k_reach.parquet": "1f96063abf11db04948837c2e5783d733659b7e1629077a492ba5a9d6f2ed4c2"
+ }
+}
