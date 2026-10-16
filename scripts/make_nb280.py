@@ -111,6 +111,25 @@ half only:
 Evidence: PR 121 comments of 2026-10-13 and 2026-10-14 and the tables in
 `nextflow-runs/time-split-pfam/tables/pilot_partial_2026-10-13/`.
 
+**The full run as a leaderboard dataset (Olga's prompt of 2026-10-16; written before the
+test half is read).** The leaderboard needs one row per tool and setting, not a sweep.
+
+1. *One kmerseek alphabet-k pair per alphabet.* For each alphabet, the k whose extend search
+   found the most tune-half pilot instances at its matched cutoff; ties go to more P4
+   instances, then to the larger k. That index is searched twice, extend and exact (exact on
+   `region_tfidf`): 19 pairs, 38 settings, none of them one of the five settings the pilot
+   skipped (`bin/choose_leaderboard_settings.py`, `assets/leaderboard_settings.tsv`). Seen
+   before the rule was written: the per-setting found counts of 186 pilot settings (9ee53bd).
+2. *Every tool is scored on the test half, once.* Recall per tool and setting on all
+   test-half instances, per Pfam type at t1 and per length bin, each reported twice: on all
+   truth, and on the truth that neither MMseqs2 nor phmmer found at its matched cutoff
+   (`bin/leaderboard_rows.py`). hmmscan is not counted as an aligner: it searches Pfam
+   33.1's own models. The rows go to the leaderboard's long table as experiment
+   `time_split_pfam33_38`. `leaderboard_rows.py --half test` writes `TEST_HALF_READ` and
+   refuses to run again.
+3. *P4 is read as written above*, with its setting chosen on the tune half among the 38
+   settings the full run searches, not among the pilot's 246.
+
 **A second reference: the Pfam 33.1 seed sequences (written 2026-10-13, before any search
 against it).** The same queries and decoys are also searched against the seed members of
 every Pfam 33.1 family, gaps removed, each entry carrying its family over its whole length.
