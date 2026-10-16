@@ -221,7 +221,11 @@ image digest.
 **Own-gene hits.** Index entries from the query's own gene (same gene symbol in UniProt's gene
 name field) are removed before kind 4 features are computed. Mammals are already out of the
 index, so what this removes is the same gene in other animals. The section that asks how much of
-the kind 4 signal is a self-hit counts those removed hits.
+the kind 4 signal is a self-hit counts those removed hits. Olga confirmed this on 2026-10-16, before any search had
+run: model 4 sees only hits to other genes, and the hits the filter removes are counted, with
+their scores, in a separate section. Matching on gene symbol misses a same-gene target whose name
+differs (a fish paralog named `znf207b`, for example); that section also reports how many hits go
+to targets whose name starts with the query's gene symbol.
 
 ### Order of work
 
@@ -925,8 +929,38 @@ md(r"""
 * **Alphabet check.** The median aromatic share of tune-half exons is 6.7%, above 5%. The four
   kmerseek settings of Stop 3 stay as listed.
 
-Stop 3 runs kmerseek on Sherlock and waits on the open items in the PR (the kmerseek build, the
-E-value fit for the two new alphabets, and the own-gene filter).
+Stop 3 runs kmerseek on Sherlock (section 3).
+""")
+
+md(r"""
+## 3. Kind 4: the queries for kmerseek (search not yet run)
+
+`scripts/342_make_queries.py` writes one query per exon: the exon with 20 residues of flank on each
+side, from the including protein. Each query has one decoy, a dipeptide-shuffled copy
+(`nextflow-runs/shared/decoys.py`, PR 138; seed 342) named `DECOY_<event id>`. A decoy keeps the
+query's residues, its first and last residue and its count of every residue pair, so it has the
+same composition but no real match. All 4_513 exons are searched, in both halves and all classes.
+
+**Not yet run.** The prompt asks for a kmerseek build that holds the two new alphabets
+(seanome/kmerseek PR 146) and the fix for entries with equal k-mer sets (PR 141). PR 141 is based
+on `release-0.4.0` and does not apply to `main`, where the same entries are dropped rather than
+mislabelled. The search waits on that fix being ported to `main`.
+""")
+
+code(r"""
+queries = pl.read_csv(TABLES / "342_setA_exon_queries.tsv", separator="\t")
+fasta_path = TABLES / "342_setA_exon_queries_with_decoys.fasta"
+assert (TABLES / "342_setA_exon_queries_with_decoys.fasta.md5").read_text().split()[0] == md5(fasta_path)
+n_records = sum(line.startswith(">") for line in open(fasta_path))
+print(f"{fasta_path.name}: {n_records} records ({queries.height} exons, {n_records - queries.height} decoys), "
+      f"md5 {md5(fasta_path)}")
+print(queries.select(pl.col("query_length").min().alias("shortest (aa)"), pl.col("query_length").median().alias("median"),
+                     pl.col("query_length").max().alias("longest")))
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 45)
+ax.hist(queries["query_length"], bins=np.arange(30, 200, 5), color=pf.GREY)
+ax.set_xlabel("query length (aa): exon plus up to 20 residues on each side")
+ax.set_ylabel("exon queries (n)")
+save_figure(fig, FIGURES / "342_setA_exon_query_lengths_patowary2024")
 """)
 
 nb = {
