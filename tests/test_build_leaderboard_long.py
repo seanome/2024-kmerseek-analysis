@@ -279,6 +279,39 @@ def test_pfam_pair_roc_drops_empty_output_and_prefixes_metrics(tmp_path):
     assert out.columns == list(bll.SCHEMA)
 
 
+def write_spectrum(path, total, unique, k):
+    import gzip
+
+    with gzip.open(path, "wt") as fh:
+        fh.write(
+            f"# total_kmers={total} unique_kmers={unique} mean_seqs_per_kmer=2.5 "
+            f"median_seqs_per_kmer=1.0 moltype=hp ksize={k}\nmoltype,ksize\n"
+        )
+
+
+def test_kmer_spectra_reads_header_and_checks_k(tmp_path):
+    d = bll.local_copy(tmp_path, bll.SPECTRA_SPROT)
+    d.mkdir(parents=True)
+    write_spectrum(d / "sprot.hp.k15.spectrum.csv.gz", 100, 7, 15)
+    k2 = tmp_path / bll.SPECTRA / "results-k2"
+    k2.mkdir(parents=True)
+    write_spectrum(k2 / "k2.hp.k16.spectrum.csv.gz", 90, 6, 16)
+    (k2 / "k2.hp.k16.index.log").write_text("kmerseek 0.3.1\nOutput database: x\n")
+    out = bll.kmer_spectra(tmp_path)
+    assert out.height == 2
+    row = out.filter(pl.col("ksize") == 16).row(0, named=True)
+    assert row["total_kmers"] == 90 and row["unique_kmers"] == 6
+    assert row["kmerseek_version"] == "kmerseek 0.3.1"
+    assert row["source_commit"] == bll.COMMIT["kmer_spectra_shuffled"]
+    assert row["source_path"].startswith("/scratch/users/olgabot/")
+    sprot = out.filter(pl.col("ksize") == 15).row(0, named=True)
+    assert sprot["sequences"] == "Swiss-Prot" and sprot["kmerseek_version"] is None
+    # A file named k17 whose header says k=18 is refused, not read.
+    write_spectrum(k2 / "k2.hp.k17.spectrum.csv.gz", 1, 1, 18)
+    with pytest.raises(ValueError):
+        bll.kmer_spectra(tmp_path)
+
+
 def test_disprot_counts_reads_trace_statuses():
     t = pl.DataFrame({"status": ["COMPLETED"] * 3 + ["ABORTED"] * 2 + ["FAILED"]})
     assert bll.disprot_counts(t) == "3 tasks COMPLETED, 2 tasks ABORTED, 1 task FAILED"

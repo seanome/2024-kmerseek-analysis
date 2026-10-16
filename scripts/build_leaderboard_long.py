@@ -6,6 +6,8 @@
     results/leaderboard/compute.parquet  one row per (experiment, tool, setting, step), from
                                          Nextflow traces and run logs; run_complete is
                                          False for a run that stopped part way
+    results/leaderboard/kmer_spectra.parquet  methods table: k-mers per alphabet and k in
+                                         Swiss-Prot and two shuffled copies (index size)
     results/leaderboard/coverage.md      tool x stratum axis: instances measured
     results/leaderboard/inventory.md     every output found, with date, commit, and whether
                                          it was used and why not
@@ -24,6 +26,7 @@ length bin, pLDDT bin.
 """
 
 import argparse
+import gzip
 import hashlib
 import json
 import re
@@ -36,6 +39,8 @@ SCRATCH = "/scratch/users/olgabot"
 # Their source_path is the laptop path; the --data copy holds them under laptop/.
 LAPTOP = "/Users/olga"
 PFAM_TOOLS = f"{LAPTOP}/data/pfam-benchmark-tools/results/metrics"
+SPECTRA = "kmer-spectra-analysis/nextflow-runs/kmer-spectra"
+SPECTRA_SPROT = f"{LAPTOP}/data/kmerseek-kmer-spectra"
 DISPROT_RUN = (
     "2024-kmerseek-disprot-region-transfer/nextflow-runs/qfo-pfam-region-benchmark/"
     "run-disprot"
@@ -69,8 +74,13 @@ COMMIT = {
     "scope40_v040_shuffled_k2_seed1": "80ec410",
     # Stopped run: the clone's only HEAD reflog entry is its clone at this commit.
     "disprot_region_transfer": "aeb08b7",
-    # Laptop run whose commit was not recorded (the laptop clone's reflog starts later).
+    # kmer-spectra-analysis clone HEAD from 2026-08-20 10:59, before the run that wrote
+    # results-k2/ and results-k3/ (files dated 2026-08-20 15:39 to 16:49).
+    "kmer_spectra_shuffled": "ffc7087",
+    # Laptop runs whose commit was not recorded (the laptop clone's reflog starts
+    # later): pfam_pair_roc (2026-04), kmer_spectra_swissprot (2026-08-11).
     "pfam_pair_roc": None,
+    "kmer_spectra_swissprot": None,
 }
 
 QFO_TARGET_VERSION = "QfO 2020_04 (UP000008143 updated)"
@@ -931,6 +941,86 @@ def pfam_pair_roc(data: Path) -> pl.DataFrame:
     return tidy(pl.concat(frames)) if frames else tidy(pl.DataFrame())
 
 
+_SPECTRUM_HEAD = re.compile(
+    r"# total_kmers=(\d+) unique_kmers=(\d+) mean_seqs_per_kmer=([\d.]+) "
+    r"median_seqs_per_kmer=([\d.]+) moltype=(\S+) ksize=(\d+)"
+)
+SPECTRA_DATASETS = {
+    # file prefix -> (sequences indexed, experiment key for COMMIT)
+    "sprot": ("Swiss-Prot", "kmer_spectra_swissprot"),
+    "k2": (
+        "Swiss-Prot, each sequence shuffled keeping its 2-mer counts (Python ushuffle, k=2)",
+        "kmer_spectra_shuffled",
+    ),
+    "k3": (
+        "Swiss-Prot, each sequence shuffled keeping its 3-mer counts (Python ushuffle, k=3)",
+        "kmer_spectra_shuffled",
+    ),
+}
+
+
+def kmer_spectra(data: Path) -> pl.DataFrame:
+    """Index size per alphabet and k: the '#' header line of each
+    kmerseek index --kmer-stats-out spectrum file, and kmerseek's version from the
+    index log beside it where one was kept. A methods table, not tool results."""
+    sources = [
+        (f"{SPECTRA_SPROT}/{p.name}", p)
+        for p in sorted(local_copy(data, SPECTRA_SPROT).glob("*.spectrum.csv.gz"))
+    ]
+    for sub in ("results-k2", "results-k3"):
+        rel = f"{SPECTRA}/{sub}"
+        sources += [
+            (f"{SCRATCH}/{rel}/{p.name}", p)
+            for p in sorted((data / rel).glob("*.spectrum.csv.gz"))
+        ]
+    rows = []
+    for src, p in sources:
+        with gzip.open(p, "rt") as fh:
+            head = fh.readline().strip()
+        m = _SPECTRUM_HEAD.fullmatch(head)
+        if not m:
+            raise ValueError(f"{p}: unreadable header {head!r}")
+        total, unique, mean, median, moltype, k = m.groups()
+        prefix, alphabet, kname = p.name.removesuffix(".spectrum.csv.gz").split(".")
+        if kname != f"k{k}":
+            raise ValueError(f"{p}: file name says {kname}, header says k={k}")
+        log = p.with_name(p.name.replace(".spectrum.csv.gz", ".index.log"))
+        version = None
+        if log.exists():
+            first = log.read_text().splitlines()[0]
+            version = first if first.startswith("kmerseek ") else None
+        sequences, key = SPECTRA_DATASETS[prefix]
+        rows.append(
+            {
+                "sequences": sequences,
+                "alphabet": alphabet,
+                "moltype_in_file": moltype,
+                "ksize": int(k),
+                "total_kmers": int(total),
+                "unique_kmers": int(unique),
+                "mean_seqs_per_kmer": float(mean),
+                "median_seqs_per_kmer": float(median),
+                "kmerseek_version": version,
+                "source_path": src,
+                "source_commit": COMMIT[key],
+            }
+        )
+    schema = {
+        "sequences": pl.String,
+        "alphabet": pl.String,
+        "moltype_in_file": pl.String,
+        "ksize": pl.Int64,
+        "total_kmers": pl.Int64,
+        "unique_kmers": pl.Int64,
+        "mean_seqs_per_kmer": pl.Float64,
+        "median_seqs_per_kmer": pl.Float64,
+        "kmerseek_version": pl.String,
+        "source_path": pl.String,
+        "source_commit": pl.String,
+    }
+    return frame(rows, schema).sort("sequences", "alphabet", "ksize")
+
+
 # ---------------------------------------------------------------------------------------
 # Compute readers
 
@@ -1335,6 +1425,8 @@ def main() -> None:
     results.write_parquet(args.outdir / "results.parquet", statistics=False)
     compute.write_parquet(args.outdir / "compute.parquet", statistics=False)
     (args.outdir / "coverage.md").write_text(coverage_markdown(results))
+    spectra = kmer_spectra(data)
+    spectra.write_parquet(args.outdir / "kmer_spectra.parquet", statistics=False)
 
     summaries = {
         f"{SCRATCH}/{QFO}/data/{name}_testset_summary.json"
@@ -1348,12 +1440,18 @@ def main() -> None:
             for src in compute["source"].unique().to_list()
             for s in src.split("; ")
         }
+        | set(spectra["source_path"].to_list())
     )
     provenance = {
         "inputs": {p: sha256(local_copy(data, p)) for p in inputs},
         "outputs": {
             n: sha256(args.outdir / n)
-            for n in ("results.parquet", "compute.parquet", "coverage.md")
+            for n in (
+                "results.parquet",
+                "compute.parquet",
+                "coverage.md",
+                "kmer_spectra.parquet",
+            )
         },
     }
     (args.outdir / "provenance.json").write_text(
@@ -1362,6 +1460,7 @@ def main() -> None:
     print(results.group_by("experiment").len().sort("experiment"))
     print(f"results.parquet  {results.height:>9,} rows")
     print(f"compute.parquet  {compute.height:>9,} rows")
+    print(f"kmer_spectra.parquet {spectra.height:>5,} rows")
 
 
 if __name__ == "__main__":

@@ -53,11 +53,35 @@ list and their output was not opened here, so whether each is complete is not st
 `human-mouse-dnds-omega`, `qfo-dnds-omega`, `proteome-interproscan`, `proteome-unifire`.
 The first three are the most likely to add rows next.
 
+The second pass (2026-10-16, below) looked for `pfam-benchmark-tools`,
+`qfo-pfam-benchmark`, `human-mouse-gencode-orthologs*`, `kmer-spectra`,
+`scope40-lowcomplexity-null`, `throughput-benchmark` and
+`vs-other-orthology-tools-resource-benchmark`. Still not read: `scope40-benchmark-aws`,
+`qfo-hp-alphabet-sweep`, `scope40-foldseek-pdb`, `disprot-benchmark`,
+`human-mouse-dnds-omega`, `qfo-dnds-omega`, `proteome-interproscan`, `proteome-unifire`.
+
 ## Used in compute.parquet only
 
 | experiment | output | written | commit | complete? |
 |---|---|---|---|---|
 | disprot_region_transfer (nb 251, added 2026-10-16) | `2024-kmerseek-disprot-region-transfer/nextflow-runs/qfo-pfam-region-benchmark/run-disprot/qfo_pfam_region.2026-09-29.trace.txt`; head job 45883960, cancelled 2026-09-29 14:30 | 2026-09-29 | aeb08b7 (the clone's only HEAD reflog entry) | **no**. The trace holds 1,353 tasks: 716 COMPLETED (679 kmerseek index builds, 22 kmerseek searches, 9 jackhmmer searches, 6 database builds), 636 ABORTED, 1 FAILED. PR 148 counted 3,460 more that never started; that number is not in the trace and was not re-checked. The 246 compute rows carry `run_complete = false`: they are the cost of the tasks that finished, not of the experiment |
+
+## Methods table: kmer_spectra.parquet
+
+Not tool results: the number of k-mers kmerseek indexes for each alphabet and k, the
+input to the memory tables. One row per (sequences, alphabet, k), read from the `#`
+header line of each `kmerseek index --kmer-stats-out` spectrum file (`total_kmers`,
+`unique_kmers`, mean and median sequences per k-mer). `kmerseek_version` is the first
+line of the index log beside the file, where one was kept.
+
+| sequences | output | written | commit | complete? |
+|---|---|---|---|---|
+| Swiss-Prot | **laptop** `/Users/olga/data/kmerseek-kmer-spectra/sprot.<alphabet>.k<k>.spectrum.csv.gz` (134 files) | 2026-08-11 | not recorded (laptop run; `sweep.log` beside the files has no commit or version) | yes for what was swept: protein k=5 to 15, Dayhoff k=10 to 20, seven H/P alphabets k=15 to 30 |
+| Swiss-Prot shuffled keeping each sequence's 2-mer counts, and 3-mer counts (Python ushuffle) | `kmer-spectra-analysis/nextflow-runs/kmer-spectra/results-k2/` and `results-k3/` (112 files each) | 2026-08-20 | ffc7087 (clone HEAD from 10:59 that day, before the files were written) | yes: seven H/P alphabets, k=15 to 30; kmerseek 0.3.1. Peak RSS is not joined: the run that wrote these files left no trace rows after 09:54, and the earlier traces' rows belong to other attempts |
+
+`results-ushuffle-k2/` and `results-ushuffle-k3/` beside them are an earlier run of the
+same datasets under the file prefix `sprot.`; they are not read, so no row is counted
+twice.
 
 ## Second pass, 2026-10-16: outputs looked for and not read
 
