@@ -19,10 +19,16 @@ directory:
   regions.parquet  every region of every search, with alphabet, ksize, bits and gene
                symbol added, for any figure that wants the raw distribution.
 
+`--from-regions` rebuilds ranks.csv and top_hits.csv from regions.parquet alone, without
+the per-search CSVs (which stay on Sherlock). arms.csv is left as it is.
+
 A target is one human protein. Its score under a metric is its best region (lowest
 E-value, highest IDF, and so on). Rank is 1 + the number of targets strictly better;
 n_tied says how many share the partner's exact value, so rank 1 with n_tied 40 means
-"tied for first with 39 others", not "found".
+"tied for first with 39 others", not "found". n_targets counts every target with a
+region; n_finite counts the targets with a finite value under that metric, which is
+the denominator of the rank (a target with no E-value is not ranked last, it is not
+ranked).
 """
 
 from __future__ import annotations
@@ -60,6 +66,12 @@ METRICS = [
     ("query_enrichment", False, "protein enrichment"),
     ("query_poisson_pvalue", True, "protein Poisson p-value"),
 ]
+
+# These three are computed once per (query, target) protein pair, not per region. The
+# run that wrote regions.parquet used kmerseek 982a055, from before seanome/kmerseek
+# PR 136 (merged 2026-10-06), which scales the chance count of shared k-mers with the
+# target's length. Their values change after PR 136.
+WHOLE_PROTEIN_METRICS = ["containment", "protein enrichment", "protein Poisson p-value"]
 
 # The gold-standard homologous window, in 0-based coordinates as kmerseek pair
 # reports them: Ced9 162-181 against BCL2 138-157 (the BH3-binding groove; the
@@ -258,6 +270,7 @@ def top_rows(
             per = per_target(sub, col, lower)
             if per.height == 0:
                 continue
+            per_height = per.height
             per = per.with_columns(
                 pl.col("v")
                 .rank("min", descending=not lower)
@@ -275,6 +288,7 @@ def top_rows(
                         query=q,
                         metric=label,
                         n_targets=sub["target_name"].n_unique(),
+                        n_finite=per_height,
                         rank=r,
                         n_tied=int(nt),
                         gene=g,
@@ -319,6 +333,7 @@ def rank_rows(
                         best_value=None,
                         top_gene=None,
                         n_top_tied=None,
+                        n_finite=0,
                     )
                 )
                 continue
@@ -342,6 +357,7 @@ def rank_rows(
                         best_value=None,
                         top_gene=None,
                         n_top_tied=None,
+                        n_finite=0,
                     )
                 )
                 continue
@@ -363,6 +379,7 @@ def rank_rows(
                 best_value=best,
                 top_gene=top,
                 n_top_tied=n_top_tied,
+                n_finite=per.height,
             )
             if partner is None:
                 rec.update(
@@ -395,6 +412,7 @@ TOP_SCHEMA = {
     "query": pl.Utf8,
     "metric": pl.Utf8,
     "n_targets": pl.Int64,
+    "n_finite": pl.Int64,
     "rank": pl.Int64,
     "n_tied": pl.Int64,
     "gene": pl.Utf8,
@@ -454,24 +472,7 @@ def main() -> None:
         )
 
     pl.DataFrame(arms, infer_schema_length=None).write_csv(OUT / "arms.csv")
-    rank_schema = {
-        "alphabet": pl.Utf8,
-        "ksize": pl.Int64,
-        "bits": pl.Float64,
-        "query": pl.Utf8,
-        "metric": pl.Utf8,
-        "n_regions": pl.Int64,
-        "n_targets": pl.Int64,
-        "partner": pl.Utf8,
-        "partner_found": pl.Boolean,
-        "rank": pl.Int64,
-        "n_tied": pl.Int64,
-        "partner_value": pl.Float64,
-        "best_value": pl.Float64,
-        "top_gene": pl.Utf8,
-        "n_top_tied": pl.Int64,
-    }
-    pl.DataFrame(ranks, schema=rank_schema).write_csv(OUT / "ranks.csv")
+    pl.DataFrame(ranks, schema=RANK_SCHEMA).write_csv(OUT / "ranks.csv")
     pl.DataFrame(tops, schema=TOP_SCHEMA).write_csv(OUT / "top_hits.csv")
     if regions:
         keep = list(
@@ -505,5 +506,46 @@ def main() -> None:
     )
 
 
+def main_from_regions() -> None:
+    """ranks.csv and top_hits.csv again, from regions.parquet and plan.json only.
+
+    For a collector change that does not need the raw searches, such as the n_top_tied
+    and n_finite columns. regions.parquet already has region_ka_bits emptied where the
+    region has no lambda (read_search), so the result is what main() would write.
+    """
+    plan = read_plan()
+    regions = pl.read_parquet(OUT / "regions.parquet")
+    ranks, tops = [], []
+    for a, k, bits in plan.select("alphabet", "ksize", "bits").iter_rows():
+        df = regions.filter((pl.col("alphabet") == a) & (pl.col("ksize_arm") == k))
+        if df.height == 0:
+            continue
+        ranks.extend(rank_rows(df, a, k, bits))
+        tops.extend(top_rows(df, a, k, bits))
+    pl.DataFrame(ranks, schema=RANK_SCHEMA).write_csv(OUT / "ranks.csv")
+    pl.DataFrame(tops, schema=TOP_SCHEMA).write_csv(OUT / "top_hits.csv")
+    print(f"rank rows: {len(ranks)}  top-hit rows: {len(tops)}", file=sys.stderr)
+
+
+RANK_SCHEMA = {
+    "alphabet": pl.Utf8,
+    "ksize": pl.Int64,
+    "bits": pl.Float64,
+    "query": pl.Utf8,
+    "metric": pl.Utf8,
+    "n_regions": pl.Int64,
+    "n_targets": pl.Int64,
+    "partner": pl.Utf8,
+    "partner_found": pl.Boolean,
+    "rank": pl.Int64,
+    "n_tied": pl.Int64,
+    "partner_value": pl.Float64,
+    "best_value": pl.Float64,
+    "top_gene": pl.Utf8,
+    "n_top_tied": pl.Int64,
+    "n_finite": pl.Int64,
+}
+
+
 if __name__ == "__main__":
-    main()
+    main_from_regions() if "--from-regions" in sys.argv[1:] else main()

@@ -40,9 +40,12 @@ export NB241_HUMAN=${NB241_HUMAN:-$SCRATCH/data/gencode/human/v49/gencode.v49.pc
 # Byte-identical (sha256 ecfb72b4...) to the laptop copy the first run read.
 export NB241_KAPPA=${NB241_KAPPA:-$SCRATCH/2024-kmerseek-invertebrate-dark-set-0.4/nextflow-runs/invertebrate-dark-set/assets/kappa_by_alphabet.tsv}
 # kmerseek commit 982a055, the build the first run used. It is on no branch, so it is
-# kept on GitHub as this tag.
-KMERSEEK_TAG=nb241-kmerseek-982a055
-KMERSEEK_SRC=$SCRATCH/241-alphabet-ranking-kmerseek
+# kept on GitHub as this tag. It is from before seanome/kmerseek PR 136 (target-length
+# scaling of the whole-protein metrics). To re-run on another build, pass a tag or branch
+# that has both PR 136 and the per-region lambda, and a new output folder:
+#   KMERSEEK_TAG=<ref> NB241_DIR=$SCRATCH/241-alphabet-ranking-pr136 sbatch notebooks/241_alphabet_ranking.sbatch
+KMERSEEK_TAG=${KMERSEEK_TAG:-nb241-kmerseek-982a055}
+KMERSEEK_SRC=$SCRATCH/241-alphabet-ranking-kmerseek-$KMERSEEK_TAG
 export NB241_KMERSEEK=$KMERSEEK_SRC/target/release/kmerseek
 # Only for the collector, which needs polars (1.43 in this image).
 IMG=$SCRATCH/apptainer-cache/docker.io-olgabot-kmerseek-2026-09-13-extend-chain.img
