@@ -66,6 +66,13 @@ params.pfam_hmm      = "${home}/data/pfam/Pfam-A.hmm"
 params.hgnc_file  = "${home}/data/gencode/results-human-mouse-orthologs/hgnc_complete_set.txt"
 params.omega_file = "${projectDir}/../human-mouse-dnds-omega/results/omega_results.tsv"
 params.mobidb_cache = null   // optional curated disorder; pLDDT<50 proxy is always computed
+// Query-side strata an annotator can compute from their own proteome (identity to the
+// nearest protein in each target, DeepTMHMM class, SEG fraction, length, BUSCO status, Pfam
+// family breadth). A covariates parquet that is this run's own human_query_covariates.parquet
+// plus those columns, written by scripts/query_strata/build_query_strata.py and committed
+// at results/leaderboard/query_strata/human_query_covariates.strata.parquet. When set, the
+// scoring steps read it in place of buildQueryCovariates' output; null scores as before.
+params.query_covariates = null
 // Sequence-based disorder, on by default: it costs one short CPU task over the query FASTA
 // and gives an axis that does not share pLDDT's MSA-depth confound.
 params.skip_metapredict = false
@@ -3621,7 +3628,9 @@ workflow {
               query_sets_file)
     }
     cov_out    = buildQueryCovariates(cov_in)
-    covariates = cov_out.covariates
+    covariates = params.query_covariates
+        ? Channel.value(file(params.query_covariates, checkIfExists: true))
+        : cov_out.covariates
 
     // The region-level twins of the two protein-level disorder axes. Published for the
     // report to read; nothing downstream stages them, so they add no task dependencies.

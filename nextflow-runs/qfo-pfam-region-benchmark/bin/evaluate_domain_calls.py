@@ -139,7 +139,11 @@ MIN_STRATUM_PROTEINS = 30
 # accident. ACT_SITE and DNA_BIND are small in every proteome that will ever be measured,
 # and dropping them would delete the short-feature end of the very gradient being tested.
 # Every row reports its own n_stratum_proteins and n_truth_instances either way.
-UNFLOORED_AXES = ("mhc", "geneset", "identity", "feature_length_bin", "feature_type")
+UNFLOORED_AXES = ("mhc", "geneset", "identity", "feature_length_bin", "feature_type",
+                  # The query-side strata of attach_query_strata: fixed bins an annotator
+                  # computes for their own proteome, so a small bin is a result, not noise.
+                  "nearest_identity", "membrane", "low_complexity", "protein_length",
+                  "region_length", "family_superkingdoms", "family_phyla", "busco")
 
 # Axes whose covariate varies WITHIN a protein, so its stratum mean must be taken over
 # domain instances rather than over proteins. See stratum_value_mean.
@@ -1291,6 +1295,91 @@ def attach_feature_type(truth: pl.DataFrame) -> pl.DataFrame:
     return truth.with_columns(pl.col("pfam_id").alias("stratum_feature_type"))
 
 
+def _bin(col: pl.Expr, cuts: list[tuple[pl.Expr, str]]) -> pl.Expr:
+    """First matching (condition, label); null when the value is null or nothing matches."""
+    expr = pl.when(col.is_null()).then(pl.lit(None, dtype=pl.String))
+    for cond, label in cuts:
+        expr = expr.when(cond).then(pl.lit(label))
+    return expr.otherwise(pl.lit(None, dtype=pl.String))
+
+
+# Labels and edges of the query-side strata. Written in
+# results/leaderboard/query_strata/RULES.md before any value was computed; that file is the
+# reference, and tests/test_query_strata.py checks every edge below against it.
+DEEPTMHMM_CLASS = {"TM": "alpha-helical TM", "SP+TM": "alpha-helical TM",
+                   "BETA": "beta-barrel", "SP": "neither", "GLOB": "neither"}
+
+
+def query_strata_exprs(species: str) -> dict[str, tuple[str, pl.Expr]]:
+    """axis -> (covariate column it reads, binning expression), protein-level axes only."""
+    ident = f"nearest_identity_{species}"
+    i, f, n = pl.col(ident), pl.col("seg_fraction"), pl.col("length_aa")
+    return {
+        # Every query was searched, so a null identity means no hit at E < 1e-3.
+        "nearest_identity": (ident, pl.when(i.is_null()).then(pl.lit("no hit")).otherwise(
+            _bin(i, [(i < 30, "<30%"), (i < 50, "30-50%"), (i < 90, "50-90%"),
+                     (i <= 100, ">=90%")]))),
+        "membrane": ("deeptmhmm_type",
+                     pl.col("deeptmhmm_type").replace_strict(DEEPTMHMM_CLASS, default=None)),
+        "low_complexity": ("seg_fraction",
+                           _bin(f, [(f < 0.05, "<5%"), (f <= 0.20, "5-20%"), (f <= 1, ">20%")])),
+        "protein_length": ("length_aa", _bin(n, [(n < 100, "<100"), (n < 300, "100-300"),
+                                                 (n <= 1000, "300-1000"), (n > 1000, ">1000")])),
+        "busco": ("busco_status", pl.col("busco_status")),
+    }
+
+
+def attach_query_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
+                        species: str) -> pl.DataFrame:
+    """Add the query-side strata: what an annotator can compute from their own proteome.
+
+    Protein-level axes come from columns scripts/query_strata/build_query_strata.py adds to
+    the covariates table (identity to the nearest protein in THIS run's target proteome,
+    DeepTMHMM class, SEG fraction, length, BUSCO status). Region-level axes come from the
+    truth row itself (its length) and from the covariates' per-protein list of Pfam family
+    breadths, joined on (accession, pfam_id). An axis whose source column is absent is
+    absent from the output, so a run without the strata table scores exactly as before.
+    """
+    out = truth
+    cov = covariates
+    have = set(cov.columns) if cov is not None else set()
+    exprs = []
+    for axis, (col, expr) in query_strata_exprs(species).items():
+        if col in have:
+            exprs.append(expr.alias(f"stratum_{axis}"))
+    if exprs:
+        cov_bins = cov.select(pl.col("accession"), *exprs)
+        out = out.join(cov_bins, on="accession", how="left")
+    if "length_aa" in have:
+        # The region axis rides only with the strata table, so a run without it keeps
+        # exactly its old set of axes. Truth coordinates are 1-based and inclusive.
+        rl = pl.col("domain_end") - pl.col("domain_start") + 1
+        out = out.with_columns(
+            _bin(rl, [(rl < 30, "<30"), (rl <= 100, "30-100"), (rl > 100, ">100")])
+            .alias("stratum_region_length"))
+    if "pfam_family_breadth" in have:
+        fb = (cov.select("accession", "pfam_family_breadth")
+              .explode("pfam_family_breadth").drop_nulls("pfam_family_breadth")
+              .unnest("pfam_family_breadth")
+              .unique(subset=["accession", "pfam_id"]))
+        sk, ph = pl.col("n_superkingdoms"), pl.col("n_phyla")
+        fb = fb.select(
+            "accession", "pfam_id",
+            pl.when(sk.is_null() | (sk == 0)).then(pl.lit("not found"))
+            .otherwise(sk.cast(pl.String)).alias("stratum_family_superkingdoms"),
+            pl.when(ph.is_null() | (ph == 0)).then(pl.lit("not found"))
+            .otherwise(_bin(ph, [(ph == 1, "1"), (ph <= 5, "2-5"), (ph <= 20, "6-20"),
+                                 (ph > 20, ">20")])).alias("stratum_family_phyla"),
+        )
+        # Swiss-Prot features carry an FT type in pfam_id, never a Pfam accession, so they
+        # match nothing here and stay null: these two axes exist for the Pfam truth sets only.
+        is_pfam = pl.col("pfam_id").str.starts_with("PF")
+        out = out.join(fb, on=["accession", "pfam_id"], how="left").with_columns(
+            pl.when(is_pfam).then(pl.col(c).fill_null("not found")).otherwise(None).alias(c)
+            for c in ("stratum_family_superkingdoms", "stratum_family_phyla"))
+    return out
+
+
 def attach_target_disorder(truth: pl.DataFrame,
                            target_disorder: pl.DataFrame | None) -> pl.DataFrame:
     """Bin each human instance by the disorder of the TARGET it could best transfer from.
@@ -1998,6 +2087,7 @@ def main():
     })
     truth = attach_feature_length(truth)
     truth = attach_feature_type(truth)
+    truth = attach_query_strata(truth, covariates, args.species)
 
     target_disorder = None
     if (args.target_disorder and args.target_disorder.exists()
