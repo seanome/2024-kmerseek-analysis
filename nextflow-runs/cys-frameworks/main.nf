@@ -70,6 +70,21 @@ params.hmmer_image    = null
 // inherit this one.
 params.cys2_memory_gb = 112
 
+// What a cys_hp3 index task's memory is multiplied by, for a reference larger than the
+// pilot's. The cys_hp3 asks below are the pilot's measured peaks; the fit's memory follows
+// how many seed hits 200 fit sequences meet, which grows with the reference's residue
+// count, so a reference 25 times the pilot's needs about 25 times the memory. Left at 1 the
+// asks are pilot-sized, and the run-* targets in the Makefile make you set it, the same way
+// they make you set cys2_memory_gb.
+params.cys_hp3_memory_scale = 1
+
+// Settings to leave out of this run, as 'alphabet:ksize', comma-separated. Empty runs all
+// of settings.csv. This is the lever for getting results sooner when one setting is what
+// the run is waiting on: on a full reference cys_hp3 k9 asks about 1.6 TB, which only
+// three of Sherlock's thirteen bigmem nodes can take, while every other setting fits a
+// node there are many of. `--drop_settings cys_hp3:9` runs the other eight.
+params.drop_settings = ''
+
 /*
  * Memory for one kmerseek index task, in GB.
  *
@@ -97,8 +112,9 @@ params.cys2_memory_gb = 112
  * about 21 times the pilot's, so the run-* targets need these remeasured or scaled.
  */
 def indexGb(alphabet, ksize, attempt) {
-    def first = alphabet == 'cys2' ? params.cys2_memory_gb
-              : ksize <= 9 ? 64 : ksize <= 11 ? 16 : 8
+    def first = alphabet == 'cys2'
+              ? params.cys2_memory_gb
+              : (ksize <= 9 ? 64 : ksize <= 11 ? 16 : 8) * params.cys_hp3_memory_scale
     first * (1 << (attempt - 1))
 }
 
@@ -388,13 +404,20 @@ workflow {
     references = heldOutReference(clades, queries, reference_entries, swissprot, utils)
         .reference
 
+    dropped = params.drop_settings
+        ? params.drop_settings.split(',').collect { it.trim() }.findAll { it }
+        : []
     settings = Channel
         .fromPath(params.settings)
         .splitCsv(header: true)
+        .filter { row -> !dropped.contains("${row.alphabet}:${row.ksize}".toString()) }
         .map { row ->
             tuple(row.alphabet, row.ksize as Integer, row.moltype, row.scaled as Integer,
                   row.mask == 'true')
         }
+    if (dropped) {
+        log.info "leaving out ${dropped.size()} setting(s): ${dropped.join(', ')}"
+    }
 
     indexes = indexReference(references.combine(settings)).index
     kmerseek_hits = searchQueries(indexes).hits
