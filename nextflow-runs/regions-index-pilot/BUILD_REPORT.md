@@ -249,3 +249,53 @@ chunks); 4 MMseqs2 searches. CPU time, scaled from the 4-setting laptop run (20 
 for 16 builds, at most 24 for 160 searches): about 100-200 CPU-hours of builds and at most
 about 170 of searches, so roughly 300 CPU-hours. The skewed alphabets' fits may cost more
 than the laptop's alphabets did.
+
+## scoreCalls memory (2026-10-16)
+
+The full run stopped on 2026-10-15 at 22:18 with every index and search done and 117 of
+the 159 scoring tasks (scoreCalls) left. 19 of them had been killed for memory: they ran
+under the flat 24 GB ask that every Python task gets, and a retry asks the same 24 GB, so
+it could not succeed. The task that stopped the run is a different bug, fixed in aa9a81e
+(a call file with only a header was read as text).
+
+scoreCalls reads every call of one label into memory, so its peak memory grows with the
+size of that label's call files. For each label, the gzipped call files of its
+10 query chunks (from the search work folders on Sherlock) were summed and set against the peak
+memory in the trace of the 27 scoring tasks that finished.
+
+- **Whole-protein index:** peak = 6 GB + 32 GB per GB of calls. It needs more because
+  each call is joined with every feature of its target protein. The slope is set by the
+  killed tasks: 0.58 GB of calls needed more than 24 GB.
+- **Regions, shared-fit and Pfam indexes:** peak = 1 GB + 18 GB per GB of calls.
+- **First ask:** 1.25 x that peak, at least 8 GB. Doubled on each retry, at most 950 GB
+  (Sherlock's hns partition has 12 nodes with 1 TB and 3 with 1.5 TB). Walltime is 1 h +
+  0.2 h per GB of calls, rounded up; the slowest finished task took 9.7 minutes per GB.
+- After 3 attempts a task is ignored rather than stopping the run. compareIndexes then
+  compares the labels that finished, and a later `-resume` scores only the missing ones.
+
+![scoreCalls memory against call-file size](build_summary/score_calls_memory.png)
+
+Check against the finished tasks: no first ask is below its measured peak, and the
+closest is 1.36 x the peak. Every killed task now asks for more than 24 GB on its first
+attempt. The asks were tested on Sherlock with a stand-in scoreCalls process given the
+real call files: 20 GB for whole.w10.sdm12, 31 GB for regions.w20.hp_thomas_dill2, 9 GB
+for mmseqs2.whole.w10, 373 GB for regions.w10.polarity4, each doubled on a retry.
+
+What is not known: the measured inputs go up to 1.5 GB of calls. The 8 largest labels
+have 6.9 to 27 GB, so their asks are a straight-line extrapolation. They are the
+polarity4 k11 and gbmr4 k14 searches (and whole-protein gbmr7 k16). The two
+whole-protein polarity4 labels (26 and 27 GB of calls) would need about 1,090 GB by the
+fit, more than the 950 GB cap, so they may fail all three attempts.
+
+| first ask | labels not yet scored |
+|---|--:|
+| 8 GB | 44 |
+| 9-32 GB | 35 |
+| 33-128 GB | 22 |
+| 129-256 GB | 3 |
+| 257-512 GB | 4 |
+| 513-950 GB | 4 |
+
+Per label: `build_summary/score_calls_memory.tsv` (first and second ask, walltime) from
+`build_summary/score_calls_measured.tsv`, by `python tools/score_calls_memory.py`, which
+reads its constants from `nextflow.config`.

@@ -1,0 +1,160 @@
+label	in_bytes	status	exit	peak_gb	realtime
+composition.regions.w10.composition	4258995	COMPLETED	0	0.01083984375	1.1s
+composition.regions.w20.composition	4260972	COMPLETED	0	0.01005859375	1.2s
+kmerseek.pfam.w10.dayhoff6_k9_s1	446970910	NOT_SUBMITTED			
+kmerseek.pfam.w10.funcgroups8_k8_s1	933280043	NOT_SUBMITTED			
+kmerseek.pfam.w10.gbmr4_k14_s1	3326842248	NOT_SUBMITTED			
+kmerseek.pfam.w10.gbmr7_k16_s1	710	NOT_SUBMITTED			
+kmerseek.pfam.w10.hp_kyte_doolittle2_k22_s1	710	NOT_SUBMITTED			
+kmerseek.pfam.w10.hp_lehninger2_k21_s1	211377468	NOT_SUBMITTED			
+kmerseek.pfam.w10.hp_lehninger_c_nonpolar2_k21_s1	227878398	NOT_SUBMITTED			
+kmerseek.pfam.w10.hp_lehninger_hpc3_k19_s1	671640722	ABORTED	-		-
+kmerseek.pfam.w10.hp_pbotc_1st_ed2_k21_s1	203867053	COMPLETED	0	1.4	3.9s
+kmerseek.pfam.w10.hp_thomas_dill2_k22_s1	193570154	COMPLETED	0	1.6	3.8s
+kmerseek.pfam.w10.hp_thomas_dill_no_c2_k22_s1	215692248	ABORTED	-		-
+kmerseek.pfam.w10.hsdm17_k6_s1	137256952	NOT_SUBMITTED			
+kmerseek.pfam.w10.mmseqs12_k6_s1	292095874	NOT_SUBMITTED			
+kmerseek.pfam.w10.polarity4_k11_s1	5341530062	NOT_SUBMITTED			
+kmerseek.pfam.w10.protein20_k5_s1	91481287	NOT_SUBMITTED			
+kmerseek.pfam.w10.sdm12_k7_s1	196247321	ABORTED	-		-
+kmerseek.pfam.w10.uniprot18_k5_s1	156792798	ABORTED	-		-
+kmerseek.pfam.w10.wass14_k6_s1	80187346	NOT_SUBMITTED			
+kmerseek.pfam.w10.wwmj5_k10_s1	167737641	SUBMITTED	-		-
+kmerseek.pfam.w20.dayhoff6_k9_s1	405634939	ABORTED	-		-
+kmerseek.pfam.w20.funcgroups8_k8_s1	862773837	ABORTED	-		-
+kmerseek.pfam.w20.gbmr4_k14_s1	3436918119	ABORTED	-		-
+kmerseek.pfam.w20.gbmr7_k16_s1	710	ABORTED	-		-
+kmerseek.pfam.w20.hp_kyte_doolittle2_k22_s1	285840310	ABORTED	-		-
+kmerseek.pfam.w20.hp_lehninger2_k21_s1	226301473	COMPLETED	0	1.6	4.3s
+kmerseek.pfam.w20.hp_lehninger_c_nonpolar2_k21_s1	244963814	ABORTED	-		-
+kmerseek.pfam.w20.hp_lehninger_hpc3_k19_s1	665047171	ABORTED	-		-
+kmerseek.pfam.w20.hp_pbotc_1st_ed2_k21_s1	214117609	ABORTED	-		-
+kmerseek.pfam.w20.hp_thomas_dill2_k22_s1	178244287	ABORTED	-		-
+kmerseek.pfam.w20.hp_thomas_dill_no_c2_k22_s1	227490838	ABORTED	-		-
+kmerseek.pfam.w20.hsdm17_k6_s1	137502159	NOT_SUBMITTED			
+kmerseek.pfam.w20.mmseqs12_k6_s1	282975993	ABORTED	-		-
+kmerseek.pfam.w20.polarity4_k11_s1	5225881494	ABORTED	-		-
+kmerseek.pfam.w20.protein20_k5_s1	91244727	ABORTED	-		-
+kmerseek.pfam.w20.sdm12_k7_s1	187955519	ABORTED	-		-
+kmerseek.pfam.w20.uniprot18_k5_s1	153543178	ABORTED	-		-
+kmerseek.pfam.w20.wass14_k6_s1	83382884	ABORTED	-		-
+kmerseek.pfam.w20.wwmj5_k10_s1	173139370	ABORTED	-		-
+kmerseek.regions.w10.dayhoff6_k9_s1	2996293470	FAILED	135		39.8s
+kmerseek.regions.w10.funcgroups8_k8_s1	2163584806	ABORTED	-		-
+kmerseek.regions.w10.gbmr4_k14_s1	7998106453	FAILED	137		60s
+kmerseek.regions.w10.gbmr7_k16_s1	2123615738	FAILED	137		59.8s
+kmerseek.regions.w10.hp_kyte_doolittle2_k22_s1	3306220808	ABORTED	-		-
+kmerseek.regions.w10.hp_lehninger2_k21_s1	37946621	COMPLETED	0	0.85390625	3.1s
+kmerseek.regions.w10.hp_lehninger_c_nonpolar2_k21_s1	544243201	ABORTED	-		-
+kmerseek.regions.w10.hp_lehninger_hpc3_k19_s1	1473946928	ABORTED	-		-
+kmerseek.regions.w10.hp_pbotc_1st_ed2_k21_s1	551042452	ABORTED	-		-
+kmerseek.regions.w10.hp_thomas_dill2_k22_s1	1747059770	FAILED	137		50s
+kmerseek.regions.w10.hp_thomas_dill_no_c2_k22_s1	2505172556	FAILED	137		35s
+kmerseek.regions.w10.hsdm17_k6_s1	16800122	COMPLETED	0	0.01005859375	1.2s
+kmerseek.regions.w10.mmseqs12_k6_s1	416154753	COMPLETED	0	8.1	10.6s
+kmerseek.regions.w10.polarity4_k11_s1	16508358721	FAILED	137		40s
+kmerseek.regions.w10.protein20_k5_s1	104421914	ABORTED	-		-
+kmerseek.regions.w10.sdm12_k7_s1	91407921	ABORTED	-		-
+kmerseek.regions.w10.uniprot18_k5_s1	79901313	ABORTED	-		-
+kmerseek.regions.w10.wass14_k6_s1	5165702	ABORTED	-		-
+kmerseek.regions.w10.wwmj5_k10_s1	99143658	ABORTED	-		-
+kmerseek.regions.w20.dayhoff6_k9_s1	2878454986	ABORTED	-		-
+kmerseek.regions.w20.funcgroups8_k8_s1	2111092012	ABORTED	-		-
+kmerseek.regions.w20.gbmr4_k14_s1	7724249523	FAILED	137		35s
+kmerseek.regions.w20.gbmr7_k16_s1	2070192487	FAILED	137		1m 10s
+kmerseek.regions.w20.hp_kyte_doolittle2_k22_s1	3253557330	ABORTED	-		-
+kmerseek.regions.w20.hp_lehninger2_k21_s1	758836019	ABORTED	-		-
+kmerseek.regions.w20.hp_lehninger_c_nonpolar2_k21_s1	522366039	ABORTED	-		-
+kmerseek.regions.w20.hp_lehninger_hpc3_k19_s1	1478539973	COMPLETED	0	11.9	18.8s
+kmerseek.regions.w20.hp_pbotc_1st_ed2_k21_s1	567064699	ABORTED	-		-
+kmerseek.regions.w20.hp_thomas_dill2_k22_s1	1278858939	COMPLETED	0	20.8	40.6s
+kmerseek.regions.w20.hp_thomas_dill_no_c2_k22_s1	1802443111	ABORTED	-		-
+kmerseek.regions.w20.hsdm17_k6_s1	24658595	COMPLETED	0	0.49150390625	3.1s
+kmerseek.regions.w20.mmseqs12_k6_s1	403996045	ABORTED	-		-
+kmerseek.regions.w20.polarity4_k11_s1	16405769990	ABORTED	-		-
+kmerseek.regions.w20.protein20_k5_s1	129256418	ABORTED	-		-
+kmerseek.regions.w20.sdm12_k7_s1	106514240	ABORTED	-		-
+kmerseek.regions.w20.uniprot18_k5_s1	710	ABORTED	-		-
+kmerseek.regions.w20.wass14_k6_s1	710	FAILED	1		3ms
+kmerseek.regions.w20.wwmj5_k10_s1	120162468	ABORTED	-		-
+kmerseek.regionsshared.w10.dayhoff6_k9_s1	3250208065	FAILED	137		1m 10s
+kmerseek.regionsshared.w10.funcgroups8_k8_s1	2151274101	ABORTED	-		-
+kmerseek.regionsshared.w10.gbmr4_k14_s1	7741685675	FAILED	137		60s
+kmerseek.regionsshared.w10.gbmr7_k16_s1	2123577703	ABORTED	-		-
+kmerseek.regionsshared.w10.hp_lehninger2_k21_s1	367201470	ABORTED	-		-
+kmerseek.regionsshared.w10.hp_lehninger_c_nonpolar2_k21_s1	406328059	ABORTED	-		-
+kmerseek.regionsshared.w10.hp_lehninger_hpc3_k19_s1	1474541123	COMPLETED	0	13.8	39.7s
+kmerseek.regionsshared.w10.hp_pbotc_1st_ed2_k21_s1	407179420	ABORTED	-		-
+kmerseek.regionsshared.w10.hp_thomas_dill2_k22_s1	1188815807	ABORTED	-		-
+kmerseek.regionsshared.w10.hp_thomas_dill_no_c2_k22_s1	1704284802	ABORTED	-		-
+kmerseek.regionsshared.w10.hsdm17_k6_s1	165981886	COMPLETED	0	2.0	4.5s
+kmerseek.regionsshared.w10.mmseqs12_k6_s1	640534836	ABORTED	-		-
+kmerseek.regionsshared.w10.polarity4_k11_s1	16571452434	ABORTED	-		-
+kmerseek.regionsshared.w10.protein20_k5_s1	130016539	ABORTED	-		-
+kmerseek.regionsshared.w10.sdm12_k7_s1	275586115	COMPLETED	0	3.1	13.1s
+kmerseek.regionsshared.w10.uniprot18_k5_s1	163931200	ABORTED	-		-
+kmerseek.regionsshared.w10.wass14_k6_s1	120385627	ABORTED	-		-
+kmerseek.regionsshared.w10.wwmj5_k10_s1	270549216	ABORTED	-		-
+kmerseek.regionsshared.w20.dayhoff6_k9_s1	3194233747	ABORTED	-		-
+kmerseek.regionsshared.w20.funcgroups8_k8_s1	2197971701	ABORTED	-		-
+kmerseek.regionsshared.w20.gbmr4_k14_s1	7684509584	ABORTED	-		-
+kmerseek.regionsshared.w20.gbmr7_k16_s1	2070172608	ABORTED	-		-
+kmerseek.regionsshared.w20.hp_kyte_doolittle2_k22_s1	3193642643	FAILED	137		1m
+kmerseek.regionsshared.w20.hp_lehninger2_k21_s1	374046898	ABORTED	-		-
+kmerseek.regionsshared.w20.hp_lehninger_c_nonpolar2_k21_s1	407137580	ABORTED	-		-
+kmerseek.regionsshared.w20.hp_lehninger_hpc3_k19_s1	1478602505	ABORTED	-		-
+kmerseek.regionsshared.w20.hp_pbotc_1st_ed2_k21_s1	421333329	ABORTED	-		-
+kmerseek.regionsshared.w20.hp_thomas_dill2_k22_s1	1162562634	ABORTED	-		-
+kmerseek.regionsshared.w20.hp_thomas_dill_no_c2_k22_s1	1647893308	ABORTED	-		-
+kmerseek.regionsshared.w20.hsdm17_k6_s1	167404375	ABORTED	-		-
+kmerseek.regionsshared.w20.mmseqs12_k6_s1	608735611	COMPLETED	0	9.8	33.2s
+kmerseek.regionsshared.w20.polarity4_k11_s1	16535009456	ABORTED	-		-
+kmerseek.regionsshared.w20.protein20_k5_s1	125841834	ABORTED	-		-
+kmerseek.regionsshared.w20.sdm12_k7_s1	263094976	ABORTED	-		-
+kmerseek.regionsshared.w20.uniprot18_k5_s1	170617380	ABORTED	-		-
+kmerseek.regionsshared.w20.wass14_k6_s1	120060444	COMPLETED	0	1.4	4.8s
+kmerseek.regionsshared.w20.wwmj5_k10_s1	267457632	ABORTED	-		-
+kmerseek.whole.w10.dayhoff6_k9_s1	1582742464	FAILED	137		2m
+kmerseek.whole.w10.funcgroups8_k8_s1	3272531104	FAILED	137		1m 35s
+kmerseek.whole.w10.gbmr4_k14_s1	18107891663	ABORTED	-		-
+kmerseek.whole.w10.gbmr7_k16_s1	6887917189	ABORTED	-		-
+kmerseek.whole.w10.hp_kyte_doolittle2_k22_s1	710	ABORTED	-		-
+kmerseek.whole.w10.hp_lehninger2_k21_s1	461861208	ABORTED	-		-
+kmerseek.whole.w10.hp_lehninger_c_nonpolar2_k21_s1	490482710	ABORTED	-		-
+kmerseek.whole.w10.hp_lehninger_hpc3_k19_s1	4170496277	ABORTED	-		-
+kmerseek.whole.w10.hp_pbotc_1st_ed2_k21_s1	498629507	COMPLETED	0	18.7	28.5s
+kmerseek.whole.w10.hp_thomas_dill2_k22_s1	640507685	FAILED	137		35s
+kmerseek.whole.w10.hp_thomas_dill_no_c2_k22_s1	763011536	FAILED	137		1m 5s
+kmerseek.whole.w10.hsdm17_k6_s1	215199882	ABORTED	-		-
+kmerseek.whole.w10.mmseqs12_k6_s1	581238276	FAILED	137		2m 15s
+kmerseek.whole.w10.polarity4_k11_s1	27142997903	NOT_SUBMITTED			
+kmerseek.whole.w10.protein20_k5_s1	178560623	ABORTED	-		-
+kmerseek.whole.w10.sdm12_k7_s1	291257930	COMPLETED	0	13.2	2m 49s
+kmerseek.whole.w10.uniprot18_k5_s1	186648916	ABORTED	-		-
+kmerseek.whole.w10.wass14_k6_s1	168944794	ABORTED	-		-
+kmerseek.whole.w10.wwmj5_k10_s1	296427104	ABORTED	-		-
+kmerseek.whole.w20.dayhoff6_k9_s1	1619462101	ABORTED	-		-
+kmerseek.whole.w20.funcgroups8_k8_s1	3285325245	ABORTED	-		-
+kmerseek.whole.w20.gbmr4_k14_s1	18183190469	ABORTED	-		-
+kmerseek.whole.w20.gbmr7_k16_s1	6819681437	FAILED	137		40s
+kmerseek.whole.w20.hp_kyte_doolittle2_k22_s1	1284860292	ABORTED	-		-
+kmerseek.whole.w20.hp_lehninger2_k21_s1	439742607	COMPLETED	0	11.7	36.5s
+kmerseek.whole.w20.hp_lehninger_c_nonpolar2_k21_s1	489514623	COMPLETED	0	10.8	43.5s
+kmerseek.whole.w20.hp_lehninger_hpc3_k19_s1	4118637800	FAILED	137		1m 30s
+kmerseek.whole.w20.hp_pbotc_1st_ed2_k21_s1	466326551	COMPLETED	0	17.3	50.8s
+kmerseek.whole.w20.hp_thomas_dill2_k22_s1	638872696	ABORTED	-		-
+kmerseek.whole.w20.hp_thomas_dill_no_c2_k22_s1	705868169	FAILED	137		35s
+kmerseek.whole.w20.hsdm17_k6_s1	234472183	ABORTED	-		-
+kmerseek.whole.w20.mmseqs12_k6_s1	515400260	ABORTED	-		-
+kmerseek.whole.w20.polarity4_k11_s1	26413513405	NOT_SUBMITTED			
+kmerseek.whole.w20.protein20_k5_s1	178457081	ABORTED	-		-
+kmerseek.whole.w20.sdm12_k7_s1	267218656	ABORTED	-		-
+kmerseek.whole.w20.uniprot18_k5_s1	219924090	ABORTED	-		-
+kmerseek.whole.w20.wass14_k6_s1	183977907	ABORTED	-		-
+kmerseek.whole.w20.wwmj5_k10_s1	296922959	ABORTED	-		-
+mmseqs2.pfam.w10.mmseqs2	8464634	COMPLETED	0	0.2876953125	4.9s
+mmseqs2.pfam.w20.mmseqs2	8462376	COMPLETED	0	0.2857421875	4.8s
+mmseqs2.regions.w10.mmseqs2	6861490	COMPLETED	0	0.33369140625	6s
+mmseqs2.regions.w20.mmseqs2	6850791	COMPLETED	0	0.32861328125	5.9s
+mmseqs2.whole.w10.mmseqs2	12811467	COMPLETED	0	2.1	1m 19s
+mmseqs2.whole.w20.mmseqs2	12804213	COMPLETED	0	2.1	1m 19s

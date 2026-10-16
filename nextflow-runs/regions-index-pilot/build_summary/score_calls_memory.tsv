@@ -1,0 +1,160 @@
+label	index	calls_gb	measured_peak_gb	first_ask_gb	second_ask_gb	first_time_h	at_cap
+kmerseek.pfam.w10.gbmr7_k16_s1	pfam	0.0	not run	8	16	2	false
+kmerseek.pfam.w10.hp_kyte_doolittle2_k22_s1	pfam	0.0	not run	8	16	2	false
+kmerseek.pfam.w20.gbmr7_k16_s1	pfam	0.0	not run	8	16	2	false
+mmseqs2.pfam.w20.mmseqs2	pfam	0.008	0.29	8	16	2	false
+mmseqs2.pfam.w10.mmseqs2	pfam	0.008	0.29	8	16	2	false
+kmerseek.pfam.w10.wass14_k6_s1	pfam	0.08	not run	8	16	2	false
+kmerseek.pfam.w20.wass14_k6_s1	pfam	0.083	not run	8	16	2	false
+kmerseek.pfam.w20.protein20_k5_s1	pfam	0.091	not run	8	16	2	false
+kmerseek.pfam.w10.protein20_k5_s1	pfam	0.091	not run	8	16	2	false
+kmerseek.pfam.w10.hsdm17_k6_s1	pfam	0.137	not run	8	16	2	false
+kmerseek.pfam.w20.hsdm17_k6_s1	pfam	0.138	not run	8	16	2	false
+kmerseek.pfam.w20.uniprot18_k5_s1	pfam	0.154	not run	8	16	2	false
+kmerseek.pfam.w10.uniprot18_k5_s1	pfam	0.157	not run	8	16	2	false
+kmerseek.pfam.w10.wwmj5_k10_s1	pfam	0.168	not run	8	16	2	false
+kmerseek.pfam.w20.wwmj5_k10_s1	pfam	0.173	not run	8	16	2	false
+kmerseek.pfam.w20.hp_thomas_dill2_k22_s1	pfam	0.178	not run	8	16	2	false
+kmerseek.pfam.w20.sdm12_k7_s1	pfam	0.188	not run	8	16	2	false
+kmerseek.pfam.w10.hp_thomas_dill2_k22_s1	pfam	0.194	1.6	8	16	2	false
+kmerseek.pfam.w10.sdm12_k7_s1	pfam	0.196	not run	8	16	2	false
+kmerseek.pfam.w10.hp_pbotc_1st_ed2_k21_s1	pfam	0.204	1.4	8	16	2	false
+kmerseek.pfam.w10.hp_lehninger2_k21_s1	pfam	0.211	not run	8	16	2	false
+kmerseek.pfam.w20.hp_pbotc_1st_ed2_k21_s1	pfam	0.214	not run	8	16	2	false
+kmerseek.pfam.w10.hp_thomas_dill_no_c2_k22_s1	pfam	0.216	not run	8	16	2	false
+kmerseek.pfam.w20.hp_lehninger2_k21_s1	pfam	0.226	1.6	8	16	2	false
+kmerseek.pfam.w20.hp_thomas_dill_no_c2_k22_s1	pfam	0.227	not run	8	16	2	false
+kmerseek.pfam.w10.hp_lehninger_c_nonpolar2_k21_s1	pfam	0.228	not run	8	16	2	false
+kmerseek.pfam.w20.hp_lehninger_c_nonpolar2_k21_s1	pfam	0.245	not run	8	16	2	false
+kmerseek.pfam.w20.mmseqs12_k6_s1	pfam	0.283	not run	8	16	2	false
+kmerseek.pfam.w20.hp_kyte_doolittle2_k22_s1	pfam	0.286	not run	8	16	2	false
+kmerseek.pfam.w10.mmseqs12_k6_s1	pfam	0.292	not run	8	16	2	false
+kmerseek.pfam.w20.dayhoff6_k9_s1	pfam	0.406	not run	11	22	2	false
+kmerseek.pfam.w10.dayhoff6_k9_s1	pfam	0.447	not run	12	24	2	false
+kmerseek.pfam.w20.hp_lehninger_hpc3_k19_s1	pfam	0.665	not run	17	34	2	false
+kmerseek.pfam.w10.hp_lehninger_hpc3_k19_s1	pfam	0.672	not run	17	34	2	false
+kmerseek.pfam.w20.funcgroups8_k8_s1	pfam	0.863	not run	21	42	2	false
+kmerseek.pfam.w10.funcgroups8_k8_s1	pfam	0.933	not run	23	46	2	false
+kmerseek.pfam.w10.gbmr4_k14_s1	pfam	3.327	not run	77	154	2	false
+kmerseek.pfam.w20.gbmr4_k14_s1	pfam	3.437	not run	79	158	2	false
+kmerseek.pfam.w20.polarity4_k11_s1	pfam	5.226	not run	119	238	3	false
+kmerseek.pfam.w10.polarity4_k11_s1	pfam	5.342	not run	122	244	3	false
+kmerseek.regions.w20.wass14_k6_s1	regions	0.0	text-column bug	8	16	2	false
+kmerseek.regions.w20.uniprot18_k5_s1	regions	0.0	not run	8	16	2	false
+composition.regions.w10.composition	regions	0.004	0.01	8	16	2	false
+composition.regions.w20.composition	regions	0.004	0.01	8	16	2	false
+kmerseek.regions.w10.wass14_k6_s1	regions	0.005	not run	8	16	2	false
+mmseqs2.regions.w20.mmseqs2	regions	0.007	0.33	8	16	2	false
+mmseqs2.regions.w10.mmseqs2	regions	0.007	0.33	8	16	2	false
+kmerseek.regions.w10.hsdm17_k6_s1	regions	0.017	0.01	8	16	2	false
+kmerseek.regions.w20.hsdm17_k6_s1	regions	0.025	0.49	8	16	2	false
+kmerseek.regions.w10.hp_lehninger2_k21_s1	regions	0.038	0.85	8	16	2	false
+kmerseek.regions.w10.uniprot18_k5_s1	regions	0.08	not run	8	16	2	false
+kmerseek.regions.w10.sdm12_k7_s1	regions	0.091	not run	8	16	2	false
+kmerseek.regions.w10.wwmj5_k10_s1	regions	0.099	not run	8	16	2	false
+kmerseek.regions.w10.protein20_k5_s1	regions	0.104	not run	8	16	2	false
+kmerseek.regions.w20.sdm12_k7_s1	regions	0.107	not run	8	16	2	false
+kmerseek.regions.w20.wwmj5_k10_s1	regions	0.12	not run	8	16	2	false
+kmerseek.regions.w20.protein20_k5_s1	regions	0.129	not run	8	16	2	false
+kmerseek.regions.w20.mmseqs12_k6_s1	regions	0.404	not run	11	22	2	false
+kmerseek.regions.w10.mmseqs12_k6_s1	regions	0.416	8.1	11	22	2	false
+kmerseek.regions.w20.hp_lehninger_c_nonpolar2_k21_s1	regions	0.522	not run	14	28	2	false
+kmerseek.regions.w10.hp_lehninger_c_nonpolar2_k21_s1	regions	0.544	not run	14	28	2	false
+kmerseek.regions.w10.hp_pbotc_1st_ed2_k21_s1	regions	0.551	not run	14	28	2	false
+kmerseek.regions.w20.hp_pbotc_1st_ed2_k21_s1	regions	0.567	not run	15	30	2	false
+kmerseek.regions.w20.hp_lehninger2_k21_s1	regions	0.759	not run	19	38	2	false
+kmerseek.regions.w20.hp_thomas_dill2_k22_s1	regions	1.279	20.8	31	62	2	false
+kmerseek.regions.w10.hp_lehninger_hpc3_k19_s1	regions	1.474	not run	35	70	2	false
+kmerseek.regions.w20.hp_lehninger_hpc3_k19_s1	regions	1.479	11.9	35	70	2	false
+kmerseek.regions.w10.hp_thomas_dill2_k22_s1	regions	1.747	killed at 24	41	82	2	false
+kmerseek.regions.w20.hp_thomas_dill_no_c2_k22_s1	regions	1.802	not run	42	84	2	false
+kmerseek.regions.w20.gbmr7_k16_s1	regions	2.07	killed at 24	48	96	2	false
+kmerseek.regions.w20.funcgroups8_k8_s1	regions	2.111	not run	49	98	2	false
+kmerseek.regions.w10.gbmr7_k16_s1	regions	2.124	killed at 24	50	100	2	false
+kmerseek.regions.w10.funcgroups8_k8_s1	regions	2.164	not run	50	100	2	false
+kmerseek.regions.w10.hp_thomas_dill_no_c2_k22_s1	regions	2.505	killed at 24	58	116	2	false
+kmerseek.regions.w20.dayhoff6_k9_s1	regions	2.878	not run	67	134	2	false
+kmerseek.regions.w10.dayhoff6_k9_s1	regions	2.996	killed at 24	69	138	2	false
+kmerseek.regions.w20.hp_kyte_doolittle2_k22_s1	regions	3.254	not run	75	150	2	false
+kmerseek.regions.w10.hp_kyte_doolittle2_k22_s1	regions	3.306	not run	76	152	2	false
+kmerseek.regions.w20.gbmr4_k14_s1	regions	7.724	killed at 24	176	352	3	false
+kmerseek.regions.w10.gbmr4_k14_s1	regions	7.998	killed at 24	182	364	3	false
+kmerseek.regions.w20.polarity4_k11_s1	regions	16.406	not run	371	742	5	false
+kmerseek.regions.w10.polarity4_k11_s1	regions	16.508	killed at 24	373	746	5	false
+kmerseek.regionsshared.w20.wass14_k6_s1	regionsshared	0.12	1.4	8	16	2	false
+kmerseek.regionsshared.w10.wass14_k6_s1	regionsshared	0.12	not run	8	16	2	false
+kmerseek.regionsshared.w20.protein20_k5_s1	regionsshared	0.126	not run	8	16	2	false
+kmerseek.regionsshared.w10.protein20_k5_s1	regionsshared	0.13	not run	8	16	2	false
+kmerseek.regionsshared.w10.uniprot18_k5_s1	regionsshared	0.164	not run	8	16	2	false
+kmerseek.regionsshared.w10.hsdm17_k6_s1	regionsshared	0.166	2.0	8	16	2	false
+kmerseek.regionsshared.w20.hsdm17_k6_s1	regionsshared	0.167	not run	8	16	2	false
+kmerseek.regionsshared.w20.uniprot18_k5_s1	regionsshared	0.171	not run	8	16	2	false
+kmerseek.regionsshared.w20.sdm12_k7_s1	regionsshared	0.263	not run	8	16	2	false
+kmerseek.regionsshared.w20.wwmj5_k10_s1	regionsshared	0.267	not run	8	16	2	false
+kmerseek.regionsshared.w10.wwmj5_k10_s1	regionsshared	0.271	not run	8	16	2	false
+kmerseek.regionsshared.w10.sdm12_k7_s1	regionsshared	0.276	3.1	8	16	2	false
+kmerseek.regionsshared.w10.hp_lehninger2_k21_s1	regionsshared	0.367	not run	10	20	2	false
+kmerseek.regionsshared.w20.hp_lehninger2_k21_s1	regionsshared	0.374	not run	10	20	2	false
+kmerseek.regionsshared.w10.hp_lehninger_c_nonpolar2_k21_s1	regionsshared	0.406	not run	11	22	2	false
+kmerseek.regionsshared.w20.hp_lehninger_c_nonpolar2_k21_s1	regionsshared	0.407	not run	11	22	2	false
+kmerseek.regionsshared.w10.hp_pbotc_1st_ed2_k21_s1	regionsshared	0.407	not run	11	22	2	false
+kmerseek.regionsshared.w20.hp_pbotc_1st_ed2_k21_s1	regionsshared	0.421	not run	11	22	2	false
+kmerseek.regionsshared.w20.mmseqs12_k6_s1	regionsshared	0.609	9.8	15	30	2	false
+kmerseek.regionsshared.w10.mmseqs12_k6_s1	regionsshared	0.641	not run	16	32	2	false
+kmerseek.regionsshared.w20.hp_thomas_dill2_k22_s1	regionsshared	1.163	not run	28	56	2	false
+kmerseek.regionsshared.w10.hp_thomas_dill2_k22_s1	regionsshared	1.189	not run	28	56	2	false
+kmerseek.regionsshared.w10.hp_lehninger_hpc3_k19_s1	regionsshared	1.475	13.8	35	70	2	false
+kmerseek.regionsshared.w20.hp_lehninger_hpc3_k19_s1	regionsshared	1.479	not run	35	70	2	false
+kmerseek.regionsshared.w20.hp_thomas_dill_no_c2_k22_s1	regionsshared	1.648	not run	39	78	2	false
+kmerseek.regionsshared.w10.hp_thomas_dill_no_c2_k22_s1	regionsshared	1.704	not run	40	80	2	false
+kmerseek.regionsshared.w20.gbmr7_k16_s1	regionsshared	2.07	not run	48	96	2	false
+kmerseek.regionsshared.w10.gbmr7_k16_s1	regionsshared	2.124	not run	50	100	2	false
+kmerseek.regionsshared.w10.funcgroups8_k8_s1	regionsshared	2.151	not run	50	100	2	false
+kmerseek.regionsshared.w20.funcgroups8_k8_s1	regionsshared	2.198	not run	51	102	2	false
+kmerseek.regionsshared.w20.hp_kyte_doolittle2_k22_s1	regionsshared	3.194	killed at 24	74	148	2	false
+kmerseek.regionsshared.w20.dayhoff6_k9_s1	regionsshared	3.194	not run	74	148	2	false
+kmerseek.regionsshared.w10.dayhoff6_k9_s1	regionsshared	3.25	killed at 24	75	150	2	false
+kmerseek.regionsshared.w20.gbmr4_k14_s1	regionsshared	7.685	not run	175	350	3	false
+kmerseek.regionsshared.w10.gbmr4_k14_s1	regionsshared	7.742	killed at 24	176	352	3	false
+kmerseek.regionsshared.w20.polarity4_k11_s1	regionsshared	16.535	not run	374	748	5	false
+kmerseek.regionsshared.w10.polarity4_k11_s1	regionsshared	16.571	not run	375	750	5	false
+kmerseek.whole.w10.hp_kyte_doolittle2_k22_s1	whole	0.0	not run	8	16	2	false
+mmseqs2.whole.w20.mmseqs2	whole	0.013	2.1	9	18	2	false
+mmseqs2.whole.w10.mmseqs2	whole	0.013	2.1	9	18	2	false
+kmerseek.whole.w10.wass14_k6_s1	whole	0.169	not run	15	30	2	false
+kmerseek.whole.w20.protein20_k5_s1	whole	0.178	not run	15	30	2	false
+kmerseek.whole.w10.protein20_k5_s1	whole	0.179	not run	15	30	2	false
+kmerseek.whole.w20.wass14_k6_s1	whole	0.184	not run	15	30	2	false
+kmerseek.whole.w10.uniprot18_k5_s1	whole	0.187	not run	15	30	2	false
+kmerseek.whole.w10.hsdm17_k6_s1	whole	0.215	not run	17	34	2	false
+kmerseek.whole.w20.uniprot18_k5_s1	whole	0.22	not run	17	34	2	false
+kmerseek.whole.w20.hsdm17_k6_s1	whole	0.234	not run	17	34	2	false
+kmerseek.whole.w20.sdm12_k7_s1	whole	0.267	not run	19	38	2	false
+kmerseek.whole.w10.sdm12_k7_s1	whole	0.291	13.2	20	40	2	false
+kmerseek.whole.w10.wwmj5_k10_s1	whole	0.296	not run	20	40	2	false
+kmerseek.whole.w20.wwmj5_k10_s1	whole	0.297	not run	20	40	2	false
+kmerseek.whole.w20.hp_lehninger2_k21_s1	whole	0.44	11.7	26	52	2	false
+kmerseek.whole.w10.hp_lehninger2_k21_s1	whole	0.462	not run	26	52	2	false
+kmerseek.whole.w20.hp_pbotc_1st_ed2_k21_s1	whole	0.466	17.3	27	54	2	false
+kmerseek.whole.w20.hp_lehninger_c_nonpolar2_k21_s1	whole	0.49	10.8	28	56	2	false
+kmerseek.whole.w10.hp_lehninger_c_nonpolar2_k21_s1	whole	0.49	not run	28	56	2	false
+kmerseek.whole.w10.hp_pbotc_1st_ed2_k21_s1	whole	0.499	18.7	28	56	2	false
+kmerseek.whole.w20.mmseqs12_k6_s1	whole	0.515	not run	29	58	2	false
+kmerseek.whole.w10.mmseqs12_k6_s1	whole	0.581	killed at 24	31	62	2	false
+kmerseek.whole.w20.hp_thomas_dill2_k22_s1	whole	0.639	not run	34	68	2	false
+kmerseek.whole.w10.hp_thomas_dill2_k22_s1	whole	0.641	killed at 24	34	68	2	false
+kmerseek.whole.w20.hp_thomas_dill_no_c2_k22_s1	whole	0.706	killed at 24	36	72	2	false
+kmerseek.whole.w10.hp_thomas_dill_no_c2_k22_s1	whole	0.763	killed at 24	39	78	2	false
+kmerseek.whole.w20.hp_kyte_doolittle2_k22_s1	whole	1.285	not run	59	118	2	false
+kmerseek.whole.w10.dayhoff6_k9_s1	whole	1.583	killed at 24	71	142	2	false
+kmerseek.whole.w20.dayhoff6_k9_s1	whole	1.619	not run	73	146	2	false
+kmerseek.whole.w10.funcgroups8_k8_s1	whole	3.273	killed at 24	139	278	2	false
+kmerseek.whole.w20.funcgroups8_k8_s1	whole	3.285	not run	139	278	2	false
+kmerseek.whole.w20.hp_lehninger_hpc3_k19_s1	whole	4.119	killed at 24	173	346	2	false
+kmerseek.whole.w10.hp_lehninger_hpc3_k19_s1	whole	4.17	not run	175	350	2	false
+kmerseek.whole.w20.gbmr7_k16_s1	whole	6.82	killed at 24	281	562	3	false
+kmerseek.whole.w10.gbmr7_k16_s1	whole	6.888	not run	284	568	3	false
+kmerseek.whole.w10.gbmr4_k14_s1	whole	18.108	not run	732	950	5	false
+kmerseek.whole.w20.gbmr4_k14_s1	whole	18.183	not run	735	950	5	false
+kmerseek.whole.w20.polarity4_k11_s1	whole	26.414	not run	950	950	7	true
+kmerseek.whole.w10.polarity4_k11_s1	whole	27.143	not run	950	950	7	true
