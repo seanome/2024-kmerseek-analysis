@@ -403,7 +403,8 @@ def test_card_marks_small_strata_grey_and_missing_coordinates_not_applicable(
     )
     assert c["scores_split_all"]["grey"] is True
     assert c["scores_split_all"]["median_iou_tp"] == "not applicable"
-    assert isinstance(c["scores_split_all"]["fmax"], float)
+    assert c["scores_split_all"]["fmax"] == "not applicable"
+    assert isinstance(c["scores_split_all"]["family_fmax"], float)
 
 
 def test_schema_matches_pr148_when_present():

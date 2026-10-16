@@ -1,0 +1,14 @@
+{
+ "tool": "interproscan",
+ "setting": "all_members",
+ "n_queries": 60,
+ "n_queries_with_any_match": 60,
+ "n_queries_with_pfam_match": 60,
+ "n_calls": 2436,
+ "n_pfam_matches_without_evalue": 0,
+ "matches_per_member_database": {
+  "Gene3D": 2436,
+  "Pfam": 2436
+ },
+ "queries_not_in_fasta": []
+}

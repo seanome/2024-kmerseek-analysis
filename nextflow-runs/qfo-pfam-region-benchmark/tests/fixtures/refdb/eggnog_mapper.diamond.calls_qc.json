@@ -1,0 +1,13 @@
+{
+ "tool": "eggnog_mapper",
+ "setting": "diamond",
+ "n_queries": 60,
+ "n_queries_annotated": 60,
+ "n_queries_with_pfam": 60,
+ "n_calls": 295,
+ "call_interval": "whole query (1..length): PFAMs carries no coordinates",
+ "n_family_names_not_in_pfam_hmm": 1,
+ "family_names_not_in_pfam_hmm": {
+  "NotAPfamName": 1
+ }
+}

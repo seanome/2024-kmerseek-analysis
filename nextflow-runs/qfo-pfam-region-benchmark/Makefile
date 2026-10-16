@@ -2536,12 +2536,27 @@ index-disk:
 ANNOT_RUN    ?= run-annotator-tools
 ANNOT_OUTDIR ?= ../data/annotator-tools/results
 ANNOT_SPROT  ?= $$SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
+# G2 data, downloaded once by `make interproscan-data` and `make eggnog-data`.
+ANNOT_IPS    ?= $$SCRATCH/data/interproscan/interproscan-5.78-109.0
+ANNOT_EGGNOG ?= $$SCRATCH/data/eggnog/emapperdb-5.0.2
 ANNOT_INPUTS  = --queries    ../data/midi-plus/qfo/Eukaryota/UP000005640_9606.fasta \
                 --truth      ../data/midi-plus/results/truth/human_domain_truth.parquet \
                 --covariates ../data/midi-plus/results/truth/human_query_covariates.parquet \
-                --swissprot_dat $(ANNOT_SPROT)
+                --swissprot_dat $(ANNOT_SPROT) \
+                --interproscan_dir $(ANNOT_IPS) \
+                --eggnog_data_dir  $(ANNOT_EGGNOG)
 
-.PHONY: stub run-annotator-tools annotator-rows annotator-rows-stub
+.PHONY: stub run-annotator-tools annotator-rows annotator-rows-stub interproscan-data eggnog-data
+
+# Each submits one sbatch job (4 h or less) that downloads into $SCRATCH/data and is
+# safe to resubmit: a finished file is skipped and a partial one is continued.
+interproscan-data:
+	$(call require_cluster)
+	sbatch assets/download_interproscan_data.sbatch
+
+eggnog-data:
+	$(call require_cluster)
+	sbatch assets/download_eggnog_data.sbatch
 
 # Every image the annotator modules name, plus the kmerseek image their python steps use.
 # Pulled before launch by prefetch-images: the head job's node cannot pull them itself.
@@ -2579,7 +2594,7 @@ annotator-rows:
 # tool output committed under tests/fixtures/annotator (60 human queries against 120
 # yeast proteins, made by tests/make_annotator_fixture.sh). No container, no search.
 stub:
-	mkdir -p stub/pfam
+	mkdir -p stub/pfam stub/interproscan/data stub/eggnog
 	touch stub/pfam/Pfam-A.hmm stub/pfam/Pfam-A.hmm.h3f stub/pfam/Pfam-A.hmm.h3i \
 	      stub/pfam/Pfam-A.hmm.h3m stub/pfam/Pfam-A.hmm.h3p
 	@# One CPU per task: the stub copies files, and the laptop has fewer cores than the
@@ -2593,6 +2608,8 @@ stub:
 	    --covariates    ../tests/fixtures/annotations/yeast_pfam_domains.parquet \
 	    --swissprot_dat ../tests/fixtures/uniprot_sprot_fixture.dat \
 	    --pfam_hmm      pfam/Pfam-A.hmm \
+	    --interproscan_dir interproscan \
+	    --eggnog_data_dir  eggnog \
 	    --outdir        $(CURDIR)/stub/results \
 	    --trace_file    annotator_tools.trace.txt
 	$(MAKE) annotator-rows-stub
