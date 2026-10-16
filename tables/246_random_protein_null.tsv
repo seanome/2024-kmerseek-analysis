@@ -1,0 +1,5 @@
+query	partner	alphabet	n_schemes	partner_best_rank_any_scheme	random_protein_median_best_rank	p_random_protein_at_least_as_good	n_draws
+CED-9	BCL2	hp_thomas_dill2	59	3788.0	772.0	0.8522	20000
+CED-9	BCL2	hp_lehninger2	59	551.0	587.0	0.48985	20000
+P66	CD47	hp_thomas_dill2	59	2578.0	1264.0	0.69495	20000
+P66	CD47	hp_lehninger2	59	472.0	733.0	0.40855	20000
