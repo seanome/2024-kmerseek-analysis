@@ -23,6 +23,9 @@
  *
  * In code, a kmerseek setting is called setting_label (other pipelines here call it
  * arm_label); it is the name every kmerseek output file carries.
+ *
+ * `-entry score` (make score) turns the published ranked lists into the small tables the
+ * notebook reads: metrics.tsv, grid.tsv, verdict.json and hits_residues.md.
  */
 
 nextflow.enable.dsl = 2
@@ -425,6 +428,50 @@ process kmerseekRun {
     printf 'setting_label\\tstatus\\n${lab}\\tsearched\\n' > ${lab}.status.tsv
     rm -rf idx regions.csv
     """
+}
+
+// Scoring reads the published hits rather than taking them from the search channels, so
+// it is its own entry: `-entry score` turns the ranked lists into the notebook's tables
+// without the searches having to be in the same run. The hits directory is a staged input,
+// not a path pasted into the script, so the container sees it and an edited script
+// changes the task hash.
+process scoreLists {
+    label 'python_scoring'
+    container params.kmerseek_image
+    publishDir "${params.outdir}", mode: 'copy'
+    cpus 2
+    memory { "${32 * task.attempt} GB" }
+    time { "${4 * task.attempt}h" }
+    errorStrategy { killedByCluster(task) && task.attempt <= 2 ? 'retry' : 'finish' }
+
+    input:
+    path script
+    path hits
+    path truth_dir
+    path draws
+    path classes
+
+    output:
+    path 'scored'
+
+    script:
+    """
+    ${params.python} ${script} \\
+        --hits ${hits} --truth ${truth_dir}/truth_set.tsv \\
+        --queries ${truth_dir}/queries.tsv --draws ${draws} \\
+        --alphabet-classes ${classes} --outdir scored
+    """
+}
+
+workflow score {
+    def truth_dir = file(params.truth_dir, checkIfExists: true)
+    scoreLists(
+        file("${projectDir}/bin/score.py", checkIfExists: true),
+        file("${params.outdir}/hits", checkIfExists: true, type: 'dir'),
+        truth_dir,
+        file("${params.outdir}/inputs/draws.tsv", checkIfExists: true),
+        file("${projectDir}/assets/alphabet_classes.tsv", checkIfExists: true),
+    )
 }
 
 workflow {

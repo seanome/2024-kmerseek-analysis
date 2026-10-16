@@ -12,6 +12,7 @@
 #   make convergence_afp_pilot   every method, kmerseek on the pilot settings only
 #   make convergence_afp         every method, all 230 kmerseek settings (resumes the pilot)
 #   make convergence_afp_after_pilot   queue convergence_afp to start when the pilot ends cleanly
+#   make score                   turn the ranked lists into the notebook's tables
 #   make running                 what is running
 
 SHELL := /bin/bash
@@ -73,6 +74,7 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
 
 .PHONY: help assets test test-foldseek-db stage build-image push-image plan check-inputs \
         convergence_afp convergence_afp_pilot convergence_afp_after_pilot cancel-after-pilot \
+        score pull-scored \
         running watch stop pull
 
 help:
@@ -206,6 +208,20 @@ convergence_afp_after_pilot:
 
 cancel-after-pilot:
 	scancel -n nfnext-$(RUN)
+
+# Scoring only: reads the published hits, writes results/scored. Minutes, one small job,
+# so it runs in the foreground rather than through a driver job.
+score: check-inputs
+	$(call require_cluster)
+	@mkdir -p $(LAUNCH_DIR)
+	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && \
+	  $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -entry score -resume \
+	    --kmerseek_image $(IMAGE) --outdir $(OUTDIR) --run_tag $(RUN)-score $(NF_ARGS)
+
+# The scored tables back to the Mac for the notebook: a few MB, not the 1.2 GB of hits.
+pull-scored:
+	mkdir -p $(HOME)/data/convergence-afp
+	rsync -av sherlock-dtn:$(SHERLOCK_DIR)/results/scored $(HOME)/data/convergence-afp/
 
 running:
 	@python3 $(REPO_DIR)/scripts/nf-running --jobs "$(MAKEFILE_DIR)"
