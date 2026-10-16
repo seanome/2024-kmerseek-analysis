@@ -26,6 +26,11 @@ For one query and one ranked list:
   auprc           average precision over the whole list, cross-lineage truth as the
                   positives. A positive the method never reported counts as not retrieved.
 
+A query a list never reported is still scored, as a row of zeros. Such a query found
+nothing, which is a result; leaving it out instead took the median of the draws that
+happened to hit something. On the first run jackhmmer's bacterial query had 9 null B rows
+of 20, all finding 5 entries, so its median read 5 when 11 draws had found nothing.
+
 A null draw is scored twice: at its own first false positive, and at the score its real
 query's first false positive sat at (`n_found_at_real_threshold`). The second is what the
 null comparison reads. Judged at its own threshold a scrambled query almost always has a
@@ -244,8 +249,31 @@ def main() -> int:
                 lin,
                 n_cross_of[lin],
             )["threshold"]
-        for qid, g in groups.items():
+        for qid in q_lineage:
             lin = q_lineage[qid]
+            if qid not in groups:
+                rows.append(
+                    {
+                        "method": method,
+                        "setting_label": setting,
+                        "overlap_min": cut,
+                        "query_id": qid,
+                        "accession": q_acc[qid],
+                        "query_lineage": lin,
+                        "kind": q_kind[qid],
+                        "n_cross_truth": n_cross_of[lin],
+                        "threshold": None,
+                        "no_false_positive": True,
+                        "n_hits": 0,
+                        "n_found": 0,
+                        "recall": 0.0,
+                        "auprc": 0.0,
+                        "n_ranked_kept": 0,
+                        "n_found_at_real_threshold": 0,
+                    }
+                )
+                continue
+            g = groups[qid]
             m = score_one(
                 g["target"].to_list(),
                 g["score"].to_list(),
