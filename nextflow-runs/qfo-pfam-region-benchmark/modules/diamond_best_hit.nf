@@ -20,8 +20,8 @@ process diamondMakedb {
     tag "diamond makedb"
     container 'quay.io/biocontainers/diamond@sha256:e02013280712f1295e59339dc6ea162adf8a6bbdd730e73a9c00700c03c3e556' // 2.2.8--he361c42_0
     cpus 4
-    memory { 8.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 8.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
 
@@ -46,8 +46,8 @@ process diamondBestHitSearch {
     tag "diamond ${setting}"
     container 'quay.io/biocontainers/diamond@sha256:e02013280712f1295e59339dc6ea162adf8a6bbdd730e73a9c00700c03c3e556' // 2.2.8--he361c42_0
     cpus 8
-    memory { 8.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 8.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/hits", mode: 'copy'

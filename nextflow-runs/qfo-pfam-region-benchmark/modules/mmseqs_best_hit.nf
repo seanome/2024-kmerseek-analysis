@@ -18,8 +18,8 @@ process mmseqsBestHitDb {
     tag "mmseqs createdb ${name}"
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     cpus 2
-    memory { 8.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 8.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
 
@@ -45,8 +45,8 @@ process mmseqsBestHitSearch {
     tag "mmseqs2 ${setting}"
     container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     cpus 16
-    memory { 16.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 16.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/hits", mode: 'copy'
