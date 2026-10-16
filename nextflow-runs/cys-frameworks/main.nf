@@ -70,13 +70,15 @@ params.hmmer_image    = null
 // inherit this one.
 params.cys2_memory_gb = 112
 
-// What a cys_hp3 index task's memory is multiplied by, for a reference larger than the
-// pilot's. The cys_hp3 asks below are the pilot's measured peaks; the fit's memory follows
-// how many seed hits 200 fit sequences meet, which grows with the reference's residue
-// count, so a reference 25 times the pilot's needs about 25 times the memory. Left at 1 the
-// asks are pilot-sized, and the run-* targets in the Makefile make you set it, the same way
-// they make you set cys2_memory_gb.
-params.cys_hp3_memory_scale = 1
+// How many times larger this run's reference is than the pilot's, which every memory ask
+// below the cys2 one is multiplied by.
+//
+// The pilot's reference is 27_570 entries and 8_358_903 residues; a full one is about
+// 575_700 entries and 209_017_843 residues, so 25. Both an index's Karlin-Altschul fit and
+// a search hold matching regions, and the number of those follows how many seed hits the
+// sequences meet, which grows with the reference's residue count. Left at 1 the asks are
+// pilot-sized, and the run-* targets in the Makefile make you set it.
+params.reference_scale = 1
 
 // Settings to leave out of this run, as 'alphabet:ksize', comma-separated. Empty runs all
 // of settings.csv. This is the lever for getting results sooner when one setting is what
@@ -114,15 +116,39 @@ params.drop_settings = ''
 def indexGb(alphabet, ksize, attempt) {
     def first = alphabet == 'cys2'
               ? params.cys2_memory_gb
-              : (ksize <= 9 ? 64 : ksize <= 11 ? 16 : 8) * params.cys_hp3_memory_scale
-    first * (1 << (attempt - 1))
+              : (ksize <= 9 ? 64 : ksize <= 11 ? 16 : 8) * params.reference_scale
+    bigmemFloor(first * (1 << (attempt - 1)))
 }
 
-// Memory for one kmerseek search task, in GB. cys_hp3 searches of the pilot's 59 queries
-// peaked at 0.6-2.7 GB on Sherlock (2026-10-15). No cys2 search has run; with the mask the
-// pilot's queries meet 0.8-5.5 x 10^7 seed hits, a tenth of the masked fit, so 16 GB.
+// Memory for one kmerseek search task, in GB.
+//
+// A search holds the query's matching regions, so its memory follows how many seed hits the
+// queries meet, which grows with the reference the same way an index's fit does.
+//
+// Measured on Sherlock over the pilot's 27_570-entry reference, 2026-10-15, peak_rss: every
+// search of the pilot's 59 queries peaked between 0.46 GB (cys2 k28) and 3.1 GB (cys2 k12),
+// cys_hp3 between 0.85 and 2.7 GB. So 4 GB per reference-multiple covers the largest of them
+// with room on top, and the two alphabets are not sized apart, because their peaks overlap.
+//
+// 4 rather than the index's 8 or 16 on purpose: this is scaled from a measured peak, not
+// from an ask that already carried headroom. Scaling the ask instead put every search at
+// 400 GB, which routes to bigmem, and bigmem has 13 nodes to hns's 95 -- an over-ask that
+// serialises 27 searches behind a handful of nodes costs more wall-clock than it saves.
 def searchGb(alphabet, attempt) {
-    (alphabet == 'cys2' ? 16 : 8) * (1 << (attempt - 1))
+    bigmemFloor(4 * params.reference_scale * (1 << (attempt - 1)))
+}
+
+// The least memory Sherlock's bigmem partition accepts. It refuses anything smaller with
+// "ERROR: memory request too low, job not submitted", so an ask between what hns can hold
+// and this floor is refused by sbatch rather than queued: on 2026-10-16 a cys_hp3 k13 index
+// asking 200 GB was routed to bigmem and rejected. A refused submission is not an exit
+// status, so the errorStrategy never saw it, the task went straight to FAILED, and
+// indexReference ends at `finish`, which stopped the run from submitting anything new.
+BIGMEM_MIN_GB = 256
+
+// Raise an ask that lands on bigmem to bigmem's floor, so the partition and the ask agree.
+def bigmemFloor(gb) {
+    gb > 180 && gb < BIGMEM_MIN_GB ? BIGMEM_MIN_GB : gb
 }
 
 // Sherlock partition that has nodes with this much memory: normal nodes hold about

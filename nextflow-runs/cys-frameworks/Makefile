@@ -52,7 +52,7 @@ TABLES    := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../../tables/cys_fr
 # hns, not normal: hns's partition QOS allows 7 days under `--qos=normal`, and the
 # public normal partition stops at 2 days.
 # Extra arguments for nextflow, appended to every run target, e.g.
-#   make run-phylum CYS2_MEMORY_GB=700 CYS_HP3_SCALE=25 NF_ARGS='--drop_settings cys_hp3:9'
+#   make run-phylum CYS2_MEMORY_GB=700 REFERENCE_SCALE=25 NF_ARGS='--drop_settings cys_hp3:9'
 NF_ARGS ?=
 
 SLURM_ACCOUNT  ?= ayeletv
@@ -211,15 +211,15 @@ require-cys2-memory:
 	  echo "  Set CYS2_MEMORY_GB from the pilot's trace first: the largest cys2 peak_rss in"; \
 	  echo "  pilot/cys_frameworks.<date>.trace.txt, scaled to a reference 25 times larger."; \
 	  echo "  Measured 2026-10-15: largest cys2 peak 27.1 GB (k16), so 27.1 x 25 = 700."; \
-	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=700 CYS_HP3_SCALE=25"; \
+	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=700 REFERENCE_SCALE=25"; \
 	  echo ""; \
 	  exit 1; }
-	@test -n "$(CYS_HP3_SCALE)" || { \
+	@test -n "$(REFERENCE_SCALE)" || { \
 	  echo ""; \
-	  echo "  Set CYS_HP3_SCALE too: the full reference's residues over the pilot's,"; \
+	  echo "  Set REFERENCE_SCALE too: the full reference's residues over the pilot's,"; \
 	  echo "  209_017_843 / 8_358_903 = 25. Without it cys_hp3 k9 asks 64 GB for a task"; \
 	  echo "  that needs about 1.2 TB, and a killed index stops the run."; \
-	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=700 CYS_HP3_SCALE=25"; \
+	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=700 REFERENCE_SCALE=25"; \
 	  echo ""; \
 	  exit 1; }
 
@@ -232,7 +232,7 @@ run-phylum: require-sherlock require-cys2-memory
 	  $(call HEAD_SUBMIT,run-phylum) nextflow run ../main.nf -profile sherlock -resume \
 	    --pipeline_image $(IMAGE_REMOTE) \
 	    --cys2_memory_gb $(CYS2_MEMORY_GB) \
-	    --cys_hp3_memory_scale $(CYS_HP3_SCALE) \
+	    --reference_scale $(REFERENCE_SCALE) \
 	    --swissprot_fasta $(SWISSPROT) \
 	    --reference_entries $(DATA)/reference_entries.csv \
 	    --level phylum \
@@ -246,7 +246,7 @@ run-genus: require-sherlock require-cys2-memory
 	  $(call HEAD_SUBMIT,run-genus) nextflow run ../main.nf -profile sherlock -resume \
 	    --pipeline_image $(IMAGE_REMOTE) \
 	    --cys2_memory_gb $(CYS2_MEMORY_GB) \
-	    --cys_hp3_memory_scale $(CYS_HP3_SCALE) \
+	    --reference_scale $(REFERENCE_SCALE) \
 	    --swissprot_fasta $(SWISSPROT) \
 	    --reference_entries $(DATA)/reference_entries.csv \
 	    --level genus \
