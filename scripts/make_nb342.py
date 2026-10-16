@@ -710,7 +710,223 @@ md(r"""
   genome sequence (Ensembl GRCh37) translates to the table's residues, and the skipping protein is
   the including one without them.
 
-Stop 2 (kinds 1 to 3 and the positive control) does not start until Olga has seen these counts.
+Olga saw these counts on 2026-10-16 and said to go ahead with Stop 2.
+""")
+
+
+# ---------------------------------------------------------------------------------------
+# Stop 2: labels of kinds 1 to 3, the positive control and the alphabet check.
+# ---------------------------------------------------------------------------------------
+md(r"""
+## 2. Labels of kinds 1 to 3, and the positive control
+
+`scripts/342_exon_labels_kinds_1_3.py` computes every label below for each of the 4_513 exons,
+and the same for its context: the 20 residues before the exon plus the 20 after it, from the
+including protein. No k-mer search is used.
+
+* **Kind 1.** hmmscan (HMMER 3.4) against Pfam-A 38.2 with `--domE 0.001`, on the whole including
+  protein. Domain extent is the envelope (the stretch HMMER assigns to the domain). Values: the
+  fraction of exon residues inside any domain; the family covering the most exon residues; whether
+  the exon starts or ends inside a domain.
+* **Kind 2.** ELM class regexes (the classes file, not the instances), matched on the whole
+  protein. A match counts for the exon if it overlaps the exon and lies within 5 residues of it.
+  UniProt MOD_RES sites (modified residues) of the gene's reviewed human entry, placed on the
+  including protein where the 11 residues around the site occur exactly once.
+* **Kind 3.** IUPred long mean (run on the whole protein, averaged over the residues); κ;
+  Ω_aro (only above 10% aromatic residues, else missing); NCPR (net charge per residue) and FCR
+  (fraction of charged residues), both from localCIDER 0.1.21; the share of each
+  `aro_hyd_chg_pol4` class; the fraction of residues SEG marks as low complexity (segmasker,
+  BLAST+ 2.16.0, defaults, run on the whole protein); length.
+
+Ω_aro uses notebook 341's `condensate_exon_utils.omega_aro`, which needs more than 10% aromatic
+residues, as Martin et al. 2020 write. The prompt for this notebook said "at least 10%". The two
+differ only for an exon with exactly 10% aromatic residues.
+""")
+
+code(r"""
+LABELS_PATH = TABLES / "342_setA_exon_labels_kinds1to3.tsv"
+labels = pl.read_csv(LABELS_PATH, separator="\t", infer_schema_length=None)
+provenance = pl.read_csv(TABLES / "342_setA_exon_labels_kinds1to3.provenance.tsv", separator="\t",
+                         has_header=False, new_columns=["input or tool", "version or checksum"])
+assert provenance.filter(pl.col("input or tool") == "labels md5")["version or checksum"].item() == md5(LABELS_PATH)
+assert labels.height == exon_table.height
+print(provenance)
+
+coverage = pl.DataFrame({
+    "label": [
+        "exon has residues in a Pfam domain",
+        "exon has an ELM match",
+        "gene has a reviewed UniProt entry",
+        "exon has a placed MOD_RES site",
+        "exon has an Ω_aro value (over 10% aromatic)",
+        "exon has a κ value (any charged residue)",
+        "exon has SEG low-complexity residues",
+    ],
+    "exons": [
+        labels.filter(pl.col("k1_domain_fraction_exon") > 0).height,
+        labels.filter(pl.col("k2_elm_count_exon") > 0).height,
+        labels.filter(pl.col("k2_mod_res_gene_has_entry")).height,
+        labels.filter(pl.col("k2_mod_res_count_exon") > 0).height,
+        labels.filter(pl.col("k3_omega_aro_exon").is_not_nan()).height,
+        labels.filter(pl.col("k3_kappa_exon").is_not_nan()).height,
+        labels.filter(pl.col("k3_seg_fraction_exon") > 0).height,
+    ],
+}).with_columns((pl.col("exons") / labels.height).round(3).alias("share of 4_513"))
+print(coverage)
+sites = labels.unique("gene_name").select(pl.col("k2_mod_res_sites_seen").sum(), pl.col("k2_mod_res_sites_placed").sum())
+# Share of the 4_513 exons that carry each label.
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 45)
+y = np.arange(coverage.height)[::-1]
+ax.barh(y, coverage["share of 4_513"], color=pf.GREY, height=0.6)
+for yi, share, n in zip(y, coverage["share of 4_513"], coverage["exons"]):
+    ax.text(share, yi, f" {n:,}", va="center", ha="left")
+ax.set_yticks(y, coverage["label"])
+ax.set_xlim(0, 1.15)
+ax.set_xlabel("share of the 4,513 set A exons")
+save_figure(fig, FIGURES / "342_setA_label_coverage_kinds1to3_patowary2024")
+print(f"MOD_RES sites in the matched UniProt entries: {sites.item(0, 0)}; placed on an including protein: "
+      f"{sites.item(0, 1)} (counted once per gene)")
+""")
+
+code(r"""
+# ZNF207 exon 9's labels.
+hero_labels = labels.filter((pl.col("gene_name") == HERO_GENE) & (pl.col("exon_first_residue") == HERO_FIRST))
+print(hero_labels.select(pl.exclude("event_id")).transpose(include_header=True, column_names=["value"]))
+""")
+
+md(r"""
+### The positive control (rule 3, prediction P1)
+
+On the tune half: the mean IUPred score of exons in the two changed classes together, minus that
+of unchanged exons. The 95% interval comes from 10_000 resamples of genes (all exons of a drawn gene
+come along). The control holds if the whole interval is above 0.
+""")
+
+code(r"""
+N_BOOT = 10_000
+CHANGED = ["included more in neurons", "skipped more in neurons"]
+
+
+def gene_bootstrap_mean_difference(df, value, group_a, group_b, n_boot=N_BOOT, seed=SEED):
+    # Mean of `value` in group_a minus group_b, and its gene-resampled bootstrap values.
+    # group_a / group_b are boolean expressions; each gene is drawn with replacement and
+    # brings all its exons.
+    per_gene = df.group_by("gene_name").agg(
+        pl.col(value).filter(group_a).sum().alias("sum_a"), group_a.sum().alias("n_a"),
+        pl.col(value).filter(group_b).sum().alias("sum_b"), group_b.sum().alias("n_b"),
+    ).sort("gene_name")
+    arr = per_gene.select("sum_a", "n_a", "sum_b", "n_b").to_numpy().astype(float)
+    observed = arr[:, 0].sum() / arr[:, 1].sum() - arr[:, 2].sum() / arr[:, 3].sum()
+    rng = np.random.default_rng(seed)
+    draws = rng.multinomial(len(per_gene), np.full(len(per_gene), 1 / len(per_gene)), size=n_boot)
+    totals = draws @ arr
+    boot = totals[:, 0] / totals[:, 1] - totals[:, 2] / totals[:, 3]
+    return observed, boot, len(per_gene)
+
+
+tune = labels.filter((pl.col("half") == "tune") & (pl.col("outcome") != "left out"))
+is_changed = pl.col("outcome").is_in(CHANGED)
+diff, boot, n_genes = gene_bootstrap_mean_difference(tune, "k3_iupred_mean_exon", is_changed, ~is_changed)
+lo, hi = np.percentile(boot, [2.5, 97.5])
+P1_HOLDS = lo > 0
+print(tune.group_by("outcome").agg(pl.len().alias("exons"), pl.col("gene_name").n_unique().alias("genes"),
+                                  pl.col("k3_iupred_mean_exon").mean().round(3).alias("mean IUPred"),
+                                  pl.col("k3_iupred_mean_exon").median().round(3).alias("median IUPred")).sort("outcome"))
+print(f"\nchanged minus unchanged, mean IUPred: {diff:+.3f} (95% interval {lo:+.3f} to {hi:+.3f}; "
+      f"{N_BOOT:_} resamples of {n_genes} tune genes)")
+print("P1 / rule 3:", "HOLDS" if P1_HOLDS else "FAILS: the notebook stops here")
+for o in CHANGED:
+    d, b, _ = gene_bootstrap_mean_difference(tune, "k3_iupred_mean_exon", pl.col("outcome") == o,
+                                             pl.col("outcome") == "unchanged")
+    print(f"  {o} minus unchanged: {d:+.3f} ({np.percentile(b, 2.5):+.3f} to {np.percentile(b, 97.5):+.3f})")
+""")
+
+code(r"""
+# IUPred mean per exon, by outcome class, tune half. Each dot is one exon; the black bar is the class mean.
+ORDER = ["included more in neurons", "skipped more in neurons", "unchanged"]
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 70)
+rng_jitter = np.random.default_rng(SEED)
+for i, outcome in enumerate(ORDER):
+    vals = tune.filter(pl.col("outcome") == outcome)["k3_iupred_mean_exon"].to_numpy()
+    x = i + rng_jitter.uniform(-0.3, 0.3, vals.size)
+    ax.scatter(x, vals, s=3, lw=0, color=COLOURS[outcome], alpha=0.35 if outcome == "unchanged" else 0.8,
+               rasterized=True)
+    ax.plot([i - 0.35, i + 0.35], [vals.mean()] * 2, color="black", lw=1.5)
+    ax.text(i + 0.38, vals.mean(), f"{vals.mean():.2f}", va="center", ha="left")
+ax.axhline(0.5, color=pf.GREY, lw=0.4, ls=":")
+ax.set_xticks(range(len(ORDER)), [f"{o.replace(' in ', chr(10) + 'in ')}\n(n = {tune.filter(pl.col('outcome') == o).height:,})" for o in ORDER])
+ax.set_ylabel("IUPred long, mean over the exon\n(above 0.5 read as disordered)")
+ax.set_ylim(0, 1)
+ax.set_xlim(-0.6, len(ORDER) - 0.2)
+ax.set_title(f"Tune half. Changed minus unchanged: {diff:+.3f} (95% interval {lo:+.3f} to {hi:+.3f})", loc="left")
+save_figure(fig, FIGURES / "342_setA_iupred_by_outcome_tune_half_patowary2024")
+""")
+
+md(r"""
+### Alphabet check for Stop 3
+
+The share of each `aro_hyd_chg_pol4` class in every exon of the tune half. If the median aromatic
+share is below 5%, `aro_hyd_chg_pol4` k-mers on most exons are almost all polar and other
+hydrophobic letters, so a search in that alphabet alone would see little of the aromatic residues.
+The four settings of Stop 3 stay as listed whatever this shows; no alphabet is added for this
+notebook.
+""")
+
+code(r"""
+POL4_CLASSES = [("aromatic", "FWY"), ("other_hydrophobic", "AILMV"), ("charged", "DEKR"), ("polar", "SNQTGCPH")]
+tune_all = labels.filter(pl.col("half") == "tune")
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 45, ncols=4, sharey=True)
+medians = {}
+for ax, (name, residues) in zip(axs, POL4_CLASSES):
+    vals = tune_all[f"k3_pol4_frac_{name}_exon"].to_numpy()
+    medians[name] = float(np.median(vals))
+    ax.hist(vals, bins=np.linspace(0, 1, 41), color=pf.GREY)
+    ax.axvline(medians[name], color="black", lw=1)
+    ax.text(0.3, ax.get_ylim()[1] * 0.95, f"median (solid line) {medians[name]:.3f}", ha="left", va="top")
+    ax.set_xlabel(f"share of exon residues\n{name.replace('_', ' ')} ({residues})")
+axs[0].axvline(0.05, color="black", lw=0.6, ls="--")
+axs[0].text(0.3, axs[0].get_ylim()[1] * 0.6, "dashed line: 5%", ha="left")
+axs[0].set_ylabel(f"exons in the tune half (n = {tune_all.height:,})")
+save_figure(fig, FIGURES / "342_setA_aro_hyd_chg_pol4_class_shares_tune_half_patowary2024")
+print({k: round(v, 3) for k, v in medians.items()})
+ARO_MEDIAN_BELOW_5 = medians["aromatic"] < 0.05
+print("median aromatic share below 5%:", ARO_MEDIAN_BELOW_5)
+""")
+
+code(r"""
+# Numbers quoted in the Stop 2 summary below.
+elm_per_residue = (labels["k2_elm_count_exon"] / labels["k3_length_aa_exon"]).median()
+print(f"median ELM class matches per exon residue: {elm_per_residue:.2f}")
+import gzip
+
+with gzip.open(TABLES / "342_setA_including_proteins.pfam38.2.domE0.001.domtbl.gz", "rt") as fh:
+    domain_rows = [line.split()[3] for line in fh if not line.startswith("#")]
+print(f"Pfam domains at i-E <= 0.001: {len(domain_rows)} on {len(set(domain_rows))} of "
+      f"{labels.height} exons' {exon_table['including_isoform'].n_unique()} including proteins")
+""")
+
+md(r"""
+### What Stop 2 shows
+
+* **P1 holds.** On the tune half, exons that neurons include or skip more than progenitors have a
+  mean IUPred score 0.182 higher than unchanged exons (95% interval +0.144 to +0.219, 10_000
+  resamples of 1_181 genes). Both changed classes clear 0 on their own: +0.186 for included more,
+  +0.174 for skipped more. This matches Buljan et al. 2012: exons whose use changes between cell
+  types are more disordered. The exon table and the outcome rule pass the check, so the notebook
+  goes on.
+* **Label coverage.** 71% of exons have residues in a Pfam domain, 13% have a placed UniProt
+  modified residue, 27% have more than 10% aromatic residues (so an Ω_aro value), and 23% have
+  residues SEG marks as low complexity.
+* **ELM class matches are nearly everywhere** (99.8% of exons; a median of 0.43 matches per exon
+  residue), because a class regex is short and loose. The ELM count is close to a length measure.
+  It stays in model 3 as rule 4 lists it, next to length.
+* **ZNF207 exon 9** has no Pfam domain, no UniProt modified residue (UniProt lists none for
+  O43670), IUPred mean 0.78 and 65% of its residues marked low complexity by SEG.
+* **Alphabet check.** The median aromatic share of tune-half exons is 6.7%, above 5%. The four
+  kmerseek settings of Stop 3 stay as listed.
+
+Stop 3 runs kmerseek on Sherlock and waits on the open items in the PR (the kmerseek build, the
+E-value fit for the two new alphabets, and the own-gene filter).
 """)
 
 nb = {
