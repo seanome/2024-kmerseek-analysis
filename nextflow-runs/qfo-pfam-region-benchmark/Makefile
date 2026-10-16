@@ -2619,7 +2619,10 @@ run-annotator-tools: prefetch-images
 # parquet files). Run on Sherlock in the pipeline folder, then copy results/leaderboard/
 # annotator_tools back with the leaderboard fetch.
 annotator-rows:
-	python3 bin/annotator_tool_rows.py \
+	$(call require_cluster)
+	apptainer exec --bind $$SCRATCH:$$SCRATCH \
+	  $$SCRATCH/apptainer-cache/docker.io-olgabot-kmerseek-$(IMAGE_TAG).img \
+	  python3 bin/annotator_tool_rows.py \
 	  --results data/annotator-tools/results \
 	  --trace $(ANNOT_RUN)/annotator_tools.*.trace.txt \
 	  --source-root $$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/annotator-tools/results \
