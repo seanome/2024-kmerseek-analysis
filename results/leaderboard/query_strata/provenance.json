@@ -1,0 +1,29 @@
+{
+ "inputs": {
+  "/scratch/users/olgabot/leaderboard-query-strata/out/identity/best_hits.tsv": "8f9da32d7d4863c308e3e727e0e5379c423cd631aeed6fb83aa99c9e584f713f",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/identity/mmseqs_version.txt": "779e18642967a7070b5467e55ef427e9a48311b25a328d75632b598e3f4845a4",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/seg/queries.seg.intervals": "6342b0439f5c492f361900864a620cca0c2a89a78f452f228789a8e49eec0c20",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/seg/segmasker_version.txt": "66cd757183ae121a8cf02fdc70856ea918d6996b3389ec454c0da0b0cb4848e1",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/length/queries.length.tsv": "5cfdce1dc5ac0e3ae4586384aeb021d9bccd22106afa1c6876d4dc429760b4ce",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/deeptmhmm/predicted_topologies.3line": "2c7f4bf92db2c7e7d5e1d93fd55a375d09afae9ebec35a09409f41ebc4fbe3be",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/busco/busco_human/run_primates_odb12/full_table.tsv": "8c1474de753a55611e5afd743d5ac1927ebb1b586c69fc22b50b2f82a7cc30fb",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/busco/busco_human/short_summary.specific.primates_odb12.busco_human.json": "6db265bb4422096b8149843513fb35fd60ca97f86960786f58a0158370dc5da2",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/busco/busco_version.txt": "e082d14ef71e0ef48a8f8ae9b9fd915b10d245070ad4c358b2a1e27bdea7f787",
+  "/scratch/users/olgabot/leaderboard-query-strata/out/pfam_breadth/pfam_family_breadth.tsv": "d00615fb330a8e94999f8aff55fd398c2185c9dc7f7cf6490ff8ff6f537d077f",
+  "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results/truth/human_query_covariates.parquet": "0426136476103ee0e818c81fe4a18f99899044262870717dac8738ffb3cd8ef0",
+  "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results/truth/human_domain_truth.parquet": "b963d8865daab9c0a1b527398aef0da9d1e3b32efd1d612c20e95914d7b69e5d",
+  "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/pfamn/human_pfamn_truth.parquet": "e87ccc387209e7199252572c4da18bb914be967a44faaef9760dab1f3756b741"
+ },
+ "tools": {
+  "mmseqs2": "18.8cc5c",
+  "segmasker": "segmasker: 1.0.0",
+  "busco": "BUSCO 6.1.0"
+ },
+ "outputs": {
+  "query_strata.tsv": "3e9623749c0adbbbd5071224f0e79226df389d293d97ba1b4138b8791260cf9f",
+  "query_nearest_hits.tsv": "d4ceb1e7a762820fea492cc3a01c810293cf910d2e9a9c51d131a111e3a3862b",
+  "pfam_family_breadth.tsv": "d00615fb330a8e94999f8aff55fd398c2185c9dc7f7cf6490ff8ff6f537d077f",
+  "busco_summary.json": "16475186c75d9e4bab2dfe060d77f39127a93be7f3590fb16adc2474b07f9736",
+  "human_query_covariates.strata.parquet": "cb92229077c9c650ef4520e6ad8c34487d6dc5eba2d7137131c0ebdeea921e42"
+ }
+}
