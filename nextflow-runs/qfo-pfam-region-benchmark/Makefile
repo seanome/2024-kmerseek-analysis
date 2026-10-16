@@ -2543,10 +2543,16 @@ ANNOT_INPUTS  = --queries    ../data/midi-plus/qfo/Eukaryota/UP000005640_9606.fa
 
 .PHONY: stub run-annotator-tools annotator-rows annotator-rows-stub
 
+# Every image the annotator modules name, plus the kmerseek image their python steps use.
+# Pulled before launch by prefetch-images: the head job's node cannot pull them itself.
+ANNOT_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" modules/*.nf | sort -u) \
+                    docker.io/olgabot/kmerseek:$(IMAGE_TAG)
+
 run-annotator-tools: GUARD_NAME := run-annotator-tools
 run-annotator-tools: HEAD_TIME := 12:00:00
 run-annotator-tools: HEAD_JOBNAME := nf-head-annotator
-run-annotator-tools:
+run-annotator-tools: PREFETCH_CONTAINERS := $(ANNOT_CONTAINERS)
+run-annotator-tools: prefetch-images
 	$(call require_cluster)
 	mkdir -p $(ANNOT_RUN)
 	cd $(ANNOT_RUN) && \
