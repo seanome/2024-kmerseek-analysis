@@ -2519,3 +2519,82 @@ index-disk:
 	@echo "--- orphaned pre-digest human entries (safe to delete) ---"
 	@find results -maxdepth 2 \( -name 'human_*' -o -name 'human.bca' \) 2>/dev/null || true
 	@echo "--- quota ---"; lfs quota -h -u $$USER $$SCRATCH 2>/dev/null || df -h $$SCRATCH
+
+# ---- Annotator tools as leaderboard rows (annotator_tools.nf) -------------------------
+#
+# G1: best-hit transfer with DIAMOND (--sensitive, --ultra-sensitive) and MMseqs2
+# (-s 7.5, one round) against Swiss-Prot 2026_03 minus Mammalia, on the 998 midi-plus
+# queries, scored against the midi-plus Pfam truth. Its own launch folder and outdir, so
+# nothing it writes touches the main run's results.
+#
+# Inputs on Sherlock (paths relative to the launch folder):
+#   queries     data/midi-plus/qfo/Eukaryota/UP000005640_9606.fasta (998 proteins)
+#   truth       data/midi-plus/results/truth/human_domain_truth.parquet
+#   covariates  data/midi-plus/results/truth/human_query_covariates.parquet
+#   Swiss-Prot  $SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
+#   Pfam-A      $(PFAM_HMM_REMOTE) (Pfam 38, pressed)
+ANNOT_RUN    ?= run-annotator-tools
+ANNOT_OUTDIR ?= ../data/annotator-tools/results
+ANNOT_SPROT  ?= $$SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
+ANNOT_INPUTS  = --queries    ../data/midi-plus/qfo/Eukaryota/UP000005640_9606.fasta \
+                --truth      ../data/midi-plus/results/truth/human_domain_truth.parquet \
+                --covariates ../data/midi-plus/results/truth/human_query_covariates.parquet \
+                --swissprot_dat $(ANNOT_SPROT)
+
+.PHONY: stub run-annotator-tools annotator-rows annotator-rows-stub
+
+run-annotator-tools: GUARD_NAME := run-annotator-tools
+run-annotator-tools: HEAD_TIME := 12:00:00
+run-annotator-tools: HEAD_JOBNAME := nf-head-annotator
+run-annotator-tools:
+	$(call require_cluster)
+	mkdir -p $(ANNOT_RUN)
+	cd $(ANNOT_RUN) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../annotator_tools.nf -profile $(PROFILE) -resume \
+	    $(ANNOT_INPUTS) \
+	    --pfam_hmm $(PFAM_HMM_REMOTE) \
+	    --outdir $(ANNOT_OUTDIR) \
+	    --trace_file annotator_tools.trace.txt \
+	    $(NF_ARGS)
+
+# Rows, cost rows, pile-up calls and tool cards from the finished run (light: reads a few
+# parquet files). Run on Sherlock in the pipeline folder, then copy results/leaderboard/
+# annotator_tools back with the leaderboard fetch.
+annotator-rows:
+	python3 bin/annotator_tool_rows.py \
+	  --results data/annotator-tools/results \
+	  --trace $(ANNOT_RUN)/annotator_tools.trace.txt \
+	  --source-root $$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/annotator-tools/results \
+	  --source-commit $$(git rev-parse --short HEAD) \
+	  --out data/annotator-tools/leaderboard
+
+# Wiring check on the laptop: every process runs its stub block, which copies the real
+# tool output committed under tests/fixtures/annotator (60 human queries against 120
+# yeast proteins, made by tests/make_annotator_fixture.sh). No container, no search.
+stub:
+	mkdir -p stub/pfam
+	touch stub/pfam/Pfam-A.hmm stub/pfam/Pfam-A.hmm.h3f stub/pfam/Pfam-A.hmm.h3i \
+	      stub/pfam/Pfam-A.hmm.h3m stub/pfam/Pfam-A.hmm.h3p
+	@# One CPU per task: the stub copies files, and the laptop has fewer cores than the
+	@# Sherlock asks (16 for MMseqs2), which Nextflow refuses to schedule locally.
+	printf 'process { withName: ".*" { cpus = 1 } }\n' > stub/stub.config
+	cd stub && \
+	  $(NEXTFLOW) run ../annotator_tools.nf -profile standard -stub-run -without-docker \
+	    -c stub.config \
+	    --queries       ../tests/fixtures/qfo/human.fasta \
+	    --truth         ../tests/fixtures/annotations/human_pfam_domains.parquet \
+	    --covariates    ../tests/fixtures/annotations/yeast_pfam_domains.parquet \
+	    --swissprot_dat ../tests/fixtures/uniprot_sprot_fixture.dat \
+	    --pfam_hmm      pfam/Pfam-A.hmm \
+	    --outdir        $(CURDIR)/stub/results \
+	    --trace_file    annotator_tools.trace.txt
+	$(MAKE) annotator-rows-stub
+
+annotator-rows-stub:
+	$(PYTHON) bin/annotator_tool_rows.py \
+	  --results stub/results \
+	  --trace stub/annotator_tools.trace.txt \
+	  --source-root stub/results \
+	  --source-commit $$(git rev-parse --short HEAD) \
+	  --out stub/leaderboard
