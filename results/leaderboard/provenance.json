@@ -51,6 +51,7 @@
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/run-mini/qfo_pfam_region.2026-08-24.trace.txt": "79808fde4700441e30e0ac9aa4ff46beb74ced85a59ddf1fb7164705fb7142a8",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/run-mini/qfo_pfam_region.2026-08-25.trace.txt": "361dae752ed156e611e6b01215e2f60c1e275e28894c3dfc9739138b86dcbe34",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/run-mini/qfo_pfam_region.2026-09-09.trace.txt": "75cf9ea0afc2b0e263af043b66a792946c33d1412460b6a38149710b58cbfc42",
+  "/scratch/users/olgabot/2024-kmerseek-disprot-region-transfer/nextflow-runs/qfo-pfam-region-benchmark/run-disprot/qfo_pfam_region.2026-09-29.trace.txt": "4c4f9d43cd963858f0e22100f6d3acf4cbcd9ad4f018c571bd880552a945b3a4",
   "/scratch/users/olgabot/2024-kmerseek-invertebrate-dark-set-0.4/nextflow-runs/invertebrate-dark-set/runs/ladder-0.4-midi/trace.ladder-0.4-midi.txt": "aba305259fe1c39e1ce868947dd525fad1e479421ac5acd866890447963e25be",
   "/scratch/users/olgabot/2024-kmerseek-scope40-v040/nextflow-runs/scope40-alphabet-ksize-v040/runs/below-kmin/scope40_v040.2026-10-12-1336.trace.txt": "e4ecf52b55ad01314b1024c4ac8e14e6016088646f841e04bfafa2343b3f56b0",
   "/scratch/users/olgabot/2024-kmerseek-scope40-v040/nextflow-runs/scope40-alphabet-ksize-v040/runs/below-kmin/scope40_v040.2026-10-12-2037.trace.txt": "2af913638380add3732f0a0031244cd708df01ad018c62cdf8604eb79fc86ce4",
@@ -540,7 +541,7 @@
  },
  "outputs": {
   "results.parquet": "ca6a966bb3ec35a86d47c643e806c28a834a93f98b9990e0956bb5768172361d",
-  "compute.parquet": "8a47ba2123c60cbb41b4833c9f96661934369137b72c5d81ef0808c98247e435",
+  "compute.parquet": "74f169f4950bd37ba5e03c9d990769fa862787338625647ddff188f14339b4ae",
   "coverage.md": "7a30ac6668ec58b9c5faf0e5bd649ddc3089ca088fbfa76d2db97615077cf420"
  }
 }

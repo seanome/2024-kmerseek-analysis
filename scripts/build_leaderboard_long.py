@@ -4,7 +4,8 @@
     results/leaderboard/results.parquet  one row per (experiment, tool, setting, query set,
                                          target database, stratum, metric)
     results/leaderboard/compute.parquet  one row per (experiment, tool, setting, step), from
-                                         Nextflow traces and run logs
+                                         Nextflow traces and run logs; run_complete is
+                                         False for a run that stopped part way
     results/leaderboard/coverage.md      tool x stratum axis: instances measured
     results/leaderboard/inventory.md     every output found, with date, commit, and whether
                                          it was used and why not
@@ -35,6 +36,10 @@ SCRATCH = "/scratch/users/olgabot"
 # Their source_path is the laptop path; the --data copy holds them under laptop/.
 LAPTOP = "/Users/olga"
 PFAM_TOOLS = f"{LAPTOP}/data/pfam-benchmark-tools/results/metrics"
+DISPROT_RUN = (
+    "2024-kmerseek-disprot-region-transfer/nextflow-runs/qfo-pfam-region-benchmark/"
+    "run-disprot"
+)
 QFO = "2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark"
 DARK = "invertebrate-dark-set/results-0.4"
 DARK_CLONE = (
@@ -62,6 +67,8 @@ COMMIT = {
     "scope40_v040": "702de2c",
     "scope40_v040_below_kmin": "46dfecb",
     "scope40_v040_shuffled_k2_seed1": "80ec410",
+    # Stopped run: the clone's only HEAD reflog entry is its clone at this commit.
+    "disprot_region_transfer": "aeb08b7",
     # Laptop run whose commit was not recorded (the laptop clone's reflog starts later).
     "pfam_pair_roc": None,
 }
@@ -125,6 +132,9 @@ COMPUTE_SCHEMA = {
     "n_queries": pl.Int64,
     "n_targets": pl.Int64,
     "source": pl.String,
+    # False for a run that stopped before it finished: its rows are the tasks that did
+    # finish, not the cost of the whole experiment.
+    "run_complete": pl.Boolean,
 }
 
 # One name per tool across experiments (the dark set and deep-twilight runs say "phmmer").
@@ -981,6 +991,14 @@ def scope_task(step: str, tag: str):
     return None
 
 
+def disprot_counts(traces: pl.DataFrame) -> str:
+    """'716 tasks COMPLETED, 636 ABORTED, 1 FAILED' from a stopped run's trace."""
+    counts = traces.group_by("status").len().sort("len", descending=True)
+    return ", ".join(
+        f"{n:,} {'task' if n == 1 else 'tasks'} {s}" for s, n in counts.iter_rows()
+    )
+
+
 def dark_task(step: str, tag: str):
     if step == "kmerseekSearch":
         m = re.fullmatch(r"(\w+)\.chunk_\d+\.(.+)", tag or "")
@@ -1248,7 +1266,25 @@ def main() -> None:
             for e, t in scored_tools
         )
     ]
-    compute = frame(compute_rows + dark_rows, COMPUTE_SCHEMA)
+    # The DisProt transfer run stopped on 2026-09-29 before any truth set was built, so
+    # nothing was scored; its finished tasks are kept as cost, marked incomplete.
+    disprot_trace = read_traces(data, [DISPROT_RUN])
+    disprot_rows = [
+        r
+        | {
+            "source": f"{r['source']}: run stopped, {disprot_counts(disprot_trace)}",
+            "run_complete": False,
+        }
+        for r in summarise_tasks(
+            trace_tasks(disprot_trace, mapper("metrics")),
+            "disprot_region_transfer",
+            None,
+        )
+    ]
+    compute = frame(
+        [r | {"run_complete": True} for r in compute_rows + dark_rows] + disprot_rows,
+        COMPUTE_SCHEMA,
+    )
     # The dark-set run's last trace holds only CACHED rows (its start truncated the earlier
     # heads' traces), so its searches have a row with every number null.
     dark_trace = (
@@ -1286,6 +1322,7 @@ def main() -> None:
                         "n_queries": None,
                         "n_targets": None,
                         "source": f"{dark_trace}: only CACHED rows, no measured run",
+                        "run_complete": True,
                     }
                     for s in missing_dark
                 ],

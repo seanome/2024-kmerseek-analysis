@@ -277,3 +277,8 @@ def test_pfam_pair_roc_drops_empty_output_and_prefixes_metrics(tmp_path):
     assert out["target_db"].unique().to_list() == ["QfO mouse"]
     assert out["source_commit"].null_count() == out.height
     assert out.columns == list(bll.SCHEMA)
+
+
+def test_disprot_counts_reads_trace_statuses():
+    t = pl.DataFrame({"status": ["COMPLETED"] * 3 + ["ABORTED"] * 2 + ["FAILED"]})
+    assert bll.disprot_counts(t) == "3 tasks COMPLETED, 2 tasks ABORTED, 1 task FAILED"

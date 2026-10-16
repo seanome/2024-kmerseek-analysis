@@ -34,7 +34,7 @@ was launched, read from that clone's `git log -g` (dark-set Fmax records its own
 | nb 242, 243 (PR 48) | 2026-09-23/24 | done | Combinations of nb 241's searches (ensemble ranks, logistic regression); no table of per-tool results in a file |
 | nb 244 (PR 49) | 2026-09-25 | done | Picks hero cases from the midi-plus calls; a selection, not a measurement |
 | nb 250 (PR 51) | 2026-09-25 | done | No search: H/P run lengths on aligned orthologs around ELM motifs |
-| nb 251, DisProt region transfer (`2024-kmerseek-disprot-region-transfer/.../run-disprot`) | 2026-09-29 | **stopped**: 716 tasks done, 636 aborted, 3,460 never started; no metrics written | No metrics file. The yeast dry run's numbers live only in the notebook |
+| nb 251, DisProt region transfer (`2024-kmerseek-disprot-region-transfer/.../run-disprot`) | 2026-09-29 | **stopped**: 716 tasks done, 636 aborted, 1 failed, 3,460 never started; no metrics written | No metrics file, and none can be made from what finished: both truth-building tasks (`buildDomainTruth`, `buildSwissprotTruth`) were aborted, so no search has anything to be scored against. Since 2026-10-16 its 716 finished tasks are in `compute.parquet` as `disprot_region_transfer`, `run_complete = false` (see below). The yeast dry run's numbers live only in the notebook |
 | nb 279 / protein E-values (`invertebrate-dark-set/results-0.4/protein-evalues-repaired/`) | 2026-10-13 | done | Per-protein E-values, the input to the dark-set reach that `dark_set_gain` already holds |
 | Time-split test, nb 280 (`280-time-split/results-pilot/scores-partial/setting_summary.csv`) | 2026-10-13 | **pilot, tune half only** | The test half is held out on purpose until the setting is chosen; the full run has not been launched |
 | midi-plus 0.4 (`.../data/midi-plus-0.4`) | 2026-09-24 | **stopped after 33 min** | One region file, no metrics (memory note `midi_plus_0_4_never_ran`) |
@@ -52,6 +52,12 @@ list and their output was not opened here, so whether each is complete is not st
 `disprot-benchmark`, `throughput-benchmark`, `vs-other-orthology-tools-resource-benchmark`,
 `human-mouse-dnds-omega`, `qfo-dnds-omega`, `proteome-interproscan`, `proteome-unifire`.
 The first three are the most likely to add rows next.
+
+## Used in compute.parquet only
+
+| experiment | output | written | commit | complete? |
+|---|---|---|---|---|
+| disprot_region_transfer (nb 251, added 2026-10-16) | `2024-kmerseek-disprot-region-transfer/nextflow-runs/qfo-pfam-region-benchmark/run-disprot/qfo_pfam_region.2026-09-29.trace.txt`; head job 45883960, cancelled 2026-09-29 14:30 | 2026-09-29 | aeb08b7 (the clone's only HEAD reflog entry) | **no**. The trace holds 1,353 tasks: 716 COMPLETED (679 kmerseek index builds, 22 kmerseek searches, 9 jackhmmer searches, 6 database builds), 636 ABORTED, 1 FAILED. PR 148 counted 3,460 more that never started; that number is not in the trace and was not re-checked. The 246 compute rows carry `run_complete = false`: they are the cost of the tasks that finished, not of the experiment |
 
 ## Second pass, 2026-10-16: outputs looked for and not read
 
