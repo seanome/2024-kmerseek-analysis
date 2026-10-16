@@ -1,0 +1,48 @@
+
+## 1. human_mouse_orthologs (nextflow-runs/human-mouse-gencode-orthologs*)
+
+laptop ~/data/gencode/results-human-mouse-orthologs: absent
+laptop ~/data/gencode/results-human-mouse-orthologs-hp-v040: absent
+sherlock $SCRATCH/data/gencode/results-human-mouse-orthologs: absent
+sherlock $SCRATCH/data/gencode/results-human-mouse-orthologs-hp-v040: absent
+traces left in the laptop clone: 7
+
+## 2. throughput-benchmark and vs-other-orthology-tools-resource-benchmark
+
+laptop ~/data/scope/results-throughput-benchmark: absent
+vs-other trace rows: 1
+   ORTHOFINDER (human_vs_mouse) | ABORTED | 2026-03-19 06:21:45.992
+
+## 3. scope40-lowcomplexity-null (notebook 086)
+
+laptop ~/data/scope/results-lowcomplexity-null: absent
+sherlock $SCRATCH/data/scope/results-lowcomplexity-null: absent
+
+## 4. qfo-pfam-benchmark kmerseek pair AUC (notebook 123)
+
+auc_by_species_ksize_score.parquet rows: 1188
+rows with ROC AUC exactly 0.5, by k: {10: 108, 12: 108, 14: 108, 16: 108, 18: 108, 28: 2, 32: 4, 36: 4, 40: 12}
+mouse k24: merged rows 72,649, distinct pairs 59,915, positive rows 32,208 vs positive pairs in the pair file 20,000; rows with containment > 0: 14,308
+mouse k10: merged rows 60,000, distinct pairs 59,915, positive rows 20,000 vs positive pairs in the pair file 20,000; rows with containment > 0: 0
+ecoli k20: merged rows 50,579, distinct pairs 49,327, positive rows 10,304 vs positive pairs in the pair file 9,803; rows with containment > 0: 3,279
+laptop ~/data/qfo-pfam-benchmark (raw kmerseek results): absent
+
+## 4b. pfam-benchmark-tools hit files
+
+diamond: 7 hit files, 6 empty (<= 32 bytes)
+hhblits: 9 hit files, 9 empty (<= 32 bytes)
+hmmer3_phmmer: 9 hit files, 0 empty (<= 32 bytes)
+metrics files: 27
+  NaN ROC AUC: diamond.zebrafish.metrics.parquet (n_found 0)
+
+## 5. Pfam subdomain DIAMOND-hard/easy split (PR 66) and E3 (notebook 340)
+
+pairs_stratified hard/easy files: 9
+diamond_fresh hit files: 9
+laptop ~/data/e3-detection-gap: absent
+
+## 6. DisProt transfer run trace
+
+{'ABORTED': 636, 'COMPLETED': 716, 'FAILED': 1}
+completed by step: {'foldseekDb': 2, 'jackhmmerSearch': 9, 'kmerseekIndex': 679, 'kmerseekSearch': 22, 'mmseqsDb': 2, 'reseekConvert': 2}
+truth-building tasks: [('buildSwissprotTruth', 'ABORTED'), ('buildDomainTruth', 'ABORTED')]

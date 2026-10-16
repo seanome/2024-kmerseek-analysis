@@ -52,6 +52,16 @@ list and their output was not opened here, so whether each is complete is not st
 `human-mouse-dnds-omega`, `qfo-dnds-omega`, `proteome-interproscan`, `proteome-unifire`.
 The first three are the most likely to add rows next.
 
+## Second pass, 2026-10-16: outputs looked for and not read
+
+The pipelines below were listed above as "not read in this pass". Every count and
+"absent" here is printed by `scripts/check_leaderboard_unread_outputs.py`; its output is
+`unread_outputs_check.txt` in this folder.
+
+| experiment | where the output should be | what is there | why no rows |
+|---|---|---|---|
+| human_mouse_orthologs (`human-mouse-gencode-orthologs` and its `-hp-v040` copy, PR 64): family AUC and RBH-F1 per tool | laptop `~/data/gencode/results-human-mouse-orthologs{,-hp-v040}` (the pipelines' `OUTDIR`) | absent on the laptop and on Sherlock. Memory note `mac_disk_cleanup_2026_09_13` says the 2026-09-13 sweep kept them; they were removed later. 7 Nextflow traces remain in the laptop clone | The aggregated tables (`200_rbh_f1_all_combos.csv`, `206_family_auc_all_combos.csv`) are gone. PR 64's Sherlock version of the sweep was never run (no output on Sherlock). Rebuilding needs the kmerseek searches again |
+
 ## How values were read
 
 - QfO region and dark-set Fmax tables: `split == "all"`, stratum axes all, identity, pLDDT,
