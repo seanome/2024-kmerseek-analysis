@@ -52,6 +52,7 @@ Outputs:
 
 import argparse
 import gzip
+import io
 import json
 import re
 import sys
@@ -91,29 +92,37 @@ def clean(desc: str | None) -> str:
     return d or "none"
 
 
-def decoy_threshold(calls: pl.DataFrame, max_rate: float) -> dict:
-    """Largest E-value E with (decoys <= E) / (targets <= E) <= max_rate."""
-    if calls.height == 0:
+def decoy_threshold(target_ev: pl.Series, decoy_ev: pl.Series, max_rate: float) -> dict:
+    """Largest E-value E with (decoys <= E) / (targets <= E) <= max_rate.
+
+    Takes only the E-values of the target calls and of the decoy calls. Both are sorted,
+    and the counts at or below each E-value are found by binary search.
+    """
+    if target_ev.len() + decoy_ev.len() == 0:
         return {"threshold": None, "n_target": 0, "n_decoy": 0}
-    g = (
-        calls.group_by("evalue")
-        .agg(
-            pl.col("is_decoy").sum().alias("d"),
-            (~pl.col("is_decoy")).sum().alias("t"),
+    t, d = target_ev.sort(), decoy_ev.sort()
+    best = None
+    # Every E-value a call has is a candidate threshold, decoy or target.
+    for e in (t, d):
+        g = pl.DataFrame(
+            {
+                "evalue": e,
+                "ct": t.search_sorted(e, side="right"),
+                "cd": d.search_sorted(e, side="right"),
+            }
         )
-        .sort("evalue")
-        .with_columns(
-            pl.col("d").cum_sum().alias("cd"), pl.col("t").cum_sum().alias("ct")
-        )
-    )
-    ok = g.filter((pl.col("ct") > 0) & (pl.col("cd") <= max_rate * pl.col("ct")))
-    if ok.height == 0:
+        ok = g.filter((pl.col("ct") > 0) & (pl.col("cd") <= max_rate * pl.col("ct")))
+        if ok.height:
+            row = ok.tail(1).row(0, named=True)
+            if best is None or row["evalue"] > best["evalue"]:
+                best = row
+        del g, ok
+    if best is None:
         return {"threshold": None, "n_target": 0, "n_decoy": 0}
-    row = ok.sort("evalue").tail(1).row(0, named=True)
     return {
-        "threshold": float(row["evalue"]),
-        "n_target": int(row["ct"]),
-        "n_decoy": int(row["cd"]),
+        "threshold": float(best["evalue"]),
+        "n_target": int(best["ct"]),
+        "n_decoy": int(best["cd"]),
     }
 
 
@@ -199,6 +208,61 @@ def annotated_targets_only(
     return calls.with_row_index("_row").join(keep, on="_row", how="semi").drop("_row")
 
 
+# Uncompressed bytes of call text parsed at a time. A label's calls run to 27 GB gzipped,
+# about 100 GB of text, and all but a few thousand of them are dropped after the threshold
+# is counted, so the files are read in pieces rather than whole (2026-10-16: reading them
+# whole needed 18-32 GB of memory per GB of gzipped calls).
+CHUNK_BYTES = 1 << 28
+
+
+def read_calls(path: Path):
+    """Yield the calls of one file as DataFrames of about CHUNK_BYTES of text each.
+
+    Each piece ends at a line break and is parsed exactly as the whole file used to be,
+    with the file's header line put in front of every piece after the first.
+    """
+
+    def parse(text: bytes) -> pl.DataFrame:
+        return (
+            pl.read_csv(
+                io.BytesIO(text),
+                separator="\t",
+                comment_prefix="#",
+                # Fixed types: a set with no fit writes only a header, and polars would
+                # read every column of a header-only file as text (2026-10-15: hp_kyte k22
+                # on the whole-protein index stopped the full run this way).
+                schema_overrides=CALL_TYPES,
+                quote_char=None,
+            )
+            .select(CALL_COLUMNS)
+            .with_columns(pl.col("target").str.starts_with("DECOY_").alias("is_decoy"))
+        )
+
+    header = None
+    rest = b""
+    with gzip.open(path, "rb") if path.suffix == ".gz" else open(path, "rb") as fh:
+        while True:
+            block = fh.read(CHUNK_BYTES)
+            text = rest + block
+            if block:
+                end = text.rfind(b"\n") + 1
+                if end == 0:
+                    rest = text
+                    continue
+                text, rest = text[:end], text[end:]
+            if header is None:
+                start = 0  # the header is the first line that is not a comment
+                while text.startswith(b"#", start):
+                    start = text.find(b"\n", start) + 1 or len(text)
+                end = text.find(b"\n", start) + 1 or len(text)
+                header = text[start:end]
+                yield parse(text)
+            elif text:
+                yield parse(header + text)
+            if not block:
+                return
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -238,54 +302,53 @@ def main() -> None:
     for f in args.calls:
         with gzip.open(f, "rt") if f.suffix == ".gz" else open(f) as fh:
             nofit |= fh.readline().startswith("#nofit")
-    calls = pl.concat(
-        [
-            pl.read_csv(
-                f,
-                separator="\t",
-                comment_prefix="#",
-                # Fixed types: a set with no fit writes only a header, and polars would
-                # read every column of a header-only file as text (2026-10-15: hp_kyte k22
-                # on the whole-protein index stopped the full run this way).
-                schema_overrides=CALL_TYPES,
-                quote_char=None,
-            ).select(CALL_COLUMNS)
-            for f in args.calls
-        ]
-    ).with_columns(pl.col("target").str.starts_with("DECOY_").alias("is_decoy"))
-    bad = calls.filter(
-        (pl.col("qstart") < 1)
-        | (pl.col("qend") < pl.col("qstart"))
-        | pl.col("evalue").is_null()
-    )
-    if bad.height:
-        sys.exit(
-            f"{bad.height} calls with bad coordinates or no E-value, e.g. {bad.row(0)}"
-        )
 
     tfeat = pl.read_parquet(args.target_features) if args.target_features else None
+
+    # First pass: check each call and keep only its E-value, apart for target and decoy
+    # calls: 8 bytes a call, where holding whole calls took 18-32 GB per GB of call files.
+    target_ev, decoy_ev, n_bad, first_bad, n_before = [], [], 0, None, 0
+    for f in args.calls:
+        for piece in read_calls(f):
+            bad = piece.filter(
+                (pl.col("qstart") < 1)
+                | (pl.col("qend") < pl.col("qstart"))
+                | pl.col("evalue").is_null()
+            )
+            if bad.height and first_bad is None:
+                first_bad = bad.row(0)
+            n_bad += bad.height
+            n_before += piece.height
+            if args.annotated_targets_only:
+                piece = annotated_targets_only(piece, tfeat, args.flank)
+            target_ev.append(piece.filter(~pl.col("is_decoy"))["evalue"])
+            decoy_ev.append(piece.filter(pl.col("is_decoy"))["evalue"])
+    if n_bad:
+        sys.exit(f"{n_bad} calls with bad coordinates or no E-value, e.g. {first_bad}")
+    target_ev = pl.concat([pl.Series("evalue", [], pl.Float64)] + target_ev)
+    decoy_ev = pl.concat([pl.Series("evalue", [], pl.Float64)] + decoy_ev)
+    n_calls, n_decoy = target_ev.len() + decoy_ev.len(), decoy_ev.len()
     if args.annotated_targets_only:
-        n_before = calls.height
-        calls = annotated_targets_only(calls, tfeat, args.flank)
         print(
-            f"[annotated targets only] kept {calls.height} of {n_before} calls",
+            f"[annotated targets only] kept {n_calls} of {n_before} calls",
             file=sys.stderr,
         )
 
     thr = (
         {"threshold": None, "n_target": 0, "n_decoy": 0}
         if nofit
-        else decoy_threshold(calls, args.max_decoy_rate)
+        else decoy_threshold(target_ev, decoy_ev, args.max_decoy_rate)
     )
     thr["nofit"] = nofit
     thr.update(
         {
             "label": args.label,
-            "calls_total": calls.height,
-            "decoy_calls_total": int(calls["is_decoy"].sum()),
+            "calls_total": n_calls,
+            "decoy_calls_total": n_decoy,
             "max_decoy_rate": args.max_decoy_rate,
         }
     )
+    del target_ev, decoy_ev
 
     with open(args.searched) as fh:
         searched = [ln[1:].split()[0] for ln in fh if ln.startswith(">")]
@@ -299,8 +362,20 @@ def main() -> None:
     cut = thr["threshold"] if thr["threshold"] is not None else -1.0
     if args.all_calls:
         cut = float("inf")
+    # Second pass: keep only those calls, in file order as before. The annotated-targets
+    # rule is judged per call, so applying it after the E-value cut keeps the same calls.
+    keep = ~pl.col("is_decoy") & (pl.col("evalue") <= cut)
+
+    def kept_calls(piece: pl.DataFrame) -> pl.DataFrame:
+        if args.annotated_targets_only:
+            return annotated_targets_only(piece, tfeat, args.flank)
+        return piece
+
     real = (
-        calls.filter(~pl.col("is_decoy") & (pl.col("evalue") <= cut))
+        pl.concat(
+            [pl.DataFrame(schema={**CALL_TYPES, "is_decoy": pl.Boolean})]
+            + [kept_calls(p.filter(keep)) for f in args.calls for p in read_calls(f)]
+        )
         .sort("evalue", "query", "qstart", "target")
         .with_row_index("call_id")
     )

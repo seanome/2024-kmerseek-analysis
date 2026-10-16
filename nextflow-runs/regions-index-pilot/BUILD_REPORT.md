@@ -258,44 +258,66 @@ under the flat 24 GB ask that every Python task gets, and a retry asks the same 
 it could not succeed. The task that stopped the run is a different bug, fixed in aa9a81e
 (a call file with only a header was read as text).
 
-scoreCalls reads every call of one label into memory, so its peak memory grows with the
-size of that label's call files. For each label, the gzipped call files of its
-10 query chunks (from the search work folders on Sherlock) were summed and set against the peak
-memory in the trace of the 27 scoring tasks that finished.
+`bin/score_calls.py` read every call of a label into memory, alignment strings included,
+before keeping the few it needed. Its peak was about 18 GB per GB of gzipped calls, and 32
+GB per GB on the whole-protein index, where the second run (annotated targets only) joins
+every call with the features of its target protein. A label keeps very few calls: 230 of
+56 million for regions hp_thomas_dill2 k22, 8,644 of 11 million for whole-protein
+hp_pbotc_1st_ed2 k21. Fitted to the 27 tasks that finished, the 8 largest labels (6.9 to
+27 GB of calls) would have needed 280 to 1,090 GB, and the two whole-protein polarity4 k11
+labels more than the 950 GB that the largest nodes allow.
 
-- **Whole-protein index:** peak = 6 GB + 32 GB per GB of calls. It needs more because
-  each call is joined with every feature of its target protein. The slope is set by the
-  killed tasks: 0.58 GB of calls needed more than 24 GB.
-- **Regions, shared-fit and Pfam indexes:** peak = 1 GB + 18 GB per GB of calls.
-- **First ask:** 1.25 x that peak, at least 8 GB. Doubled on each retry, at most 950 GB
-  (Sherlock's hns partition has 12 nodes with 1 TB and 3 with 1.5 TB). Walltime is 1 h +
-  0.2 h per GB of calls, rounded up; the slowest finished task took 9.7 minutes per GB.
-- After 3 attempts a task is ignored rather than stopping the run. compareIndexes then
-  compares the labels that finished, and a later `-resume` scores only the missing ones.
+The script now reads each call file in pieces of 256 MB of text, in two passes:
+
+1. Check every call and keep only its E-value, apart for target and decoy calls (8 bytes a
+   call). The 5% decoy threshold is found from those two sorted lists.
+2. Read the files again and keep only the target calls at or below the threshold, in the
+   same order as before. Everything after that is unchanged.
+
+**Same outputs.** On Sherlock, the old and the new script were run on the same call files
+of three finished labels: whole-protein hp_pbotc_1st_ed2 k21 w10 (both runs of that task),
+regions hp_thomas_dill2 k22 w20, and the composition classifier (which writes
+`call_hits.parquet`). All 9 output files are the same as the old script's and as the full
+run's own outputs. `call_hits.parquet` is compared after sorting its rows: the old script
+writes it after `.unique()`, so its row order changes from run to run.
+
+**Memory, before and after**, peak resident memory on a Sherlock compute node (the larger
+of Python's own count and the SLURM step's), SLURM jobs 48116363 and 48119285:
+
+| label | calls (GB, gzipped) | old script | new script |
+|---|--:|--:|--:|
+| whole-protein hp_pbotc_1st_ed2 k21 w10 (task: 2 runs) | 0.50 | 19.0 GB | 4.4 GB |
+| regions hp_thomas_dill2 k22 w20 | 1.28 | 21.0 GB | 3.8 GB |
+| whole-protein gbmr7 k16 w20 (task: 2 runs) | 6.82 | killed at 24 GB | 11.2 GB |
+| regions polarity4 k11 w10 | 16.5 | killed at 24 GB | 27.3 GB |
+| whole-protein polarity4 k11 w10 (task: 2 runs) | 27.1 | killed at 24 GB | 40.1 GB |
+
+What is left grows with the number of calls (1.2 billion for the largest label), because
+every E-value is held, then joined and sorted. The new script is slower: 2.2 minutes
+instead of 38 seconds for the regions label, and 1.7 hours for the largest task (both
+runs). It decompresses each file twice, in one thread.
+
+**New asks.** Peak = 4 GB + 1.5 GB per GB of calls on the whole-protein index, 2 GB + 1.6
+GB per GB on the others. The first ask is 1.25 times that, at least 8 GB; the smallest
+first ask is 1.32 times its measured peak. The largest first ask is now 56 GB (it was 950),
+and the sum over all 159 labels is 1,647 GB. The measured labels include the largest, so no
+ask is extrapolated past the data. Walltime is unchanged (1 h + 0.2 h per GB of calls); the
+slowest measured task used a quarter of its ask.
+
+These asks fit only the new script. `bin/` is read when a task starts, and the asks when a
+run is launched, so pull both together before relaunching. Tasks that already finished stay
+cached: a change in `bin/` does not change a task's hash.
 
 ![scoreCalls memory against call-file size](build_summary/score_calls_memory.png)
 
-Check against the finished tasks: no first ask is below its measured peak, and the
-closest is 1.36 x the peak. Every killed task now asks for more than 24 GB on its first
-attempt. The asks were tested on Sherlock with a stand-in scoreCalls process given the
-real call files: 20 GB for whole.w10.sdm12, 31 GB for regions.w20.hp_thomas_dill2, 9 GB
-for mmseqs2.whole.w10, 373 GB for regions.w10.polarity4, each doubled on a retry.
-
-What is not known: the measured inputs go up to 1.5 GB of calls. The 8 largest labels
-have 6.9 to 27 GB, so their asks are a straight-line extrapolation. They are the
-polarity4 k11 and gbmr4 k14 searches (and whole-protein gbmr7 k16). The two
-whole-protein polarity4 labels (26 and 27 GB of calls) would need about 1,090 GB by the
-fit, more than the 950 GB cap, so they may fail all three attempts.
-
-| first ask | labels not yet scored |
+| first ask | labels |
 |---|--:|
-| 8 GB | 44 |
-| 9-32 GB | 35 |
-| 33-128 GB | 22 |
-| 129-256 GB | 3 |
-| 257-512 GB | 4 |
-| 513-950 GB | 4 |
+| 8 GB | 129 |
+| 9-18 GB | 21 |
+| 19-40 GB | 7 |
+| 55-56 GB | 2 |
 
 Per label: `build_summary/score_calls_memory.tsv` (first and second ask, walltime) from
-`build_summary/score_calls_measured.tsv`, by `python tools/score_calls_memory.py`, which
-reads its constants from `nextflow.config`.
+`build_summary/score_calls_measured.tsv` (the full run, old script) and
+`build_summary/score_calls_streaming_measured.tsv` (old and new script, measured as above),
+by `python tools/score_calls_memory.py`, which reads its constants from `nextflow.config`.
