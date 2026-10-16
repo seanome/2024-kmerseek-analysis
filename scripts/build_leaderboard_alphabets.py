@@ -26,7 +26,8 @@ Four tables, one per question a builder of a reduced-alphabet prefilter asks:
 ``provenance.json`` records the sha256 of every input and output, and the commit of each
 notebook and table the numbers come from.
 
-Usage (from the repo root; reads about 100 MB of parquet from ~/data, peak memory about 3 GB):
+Usage (from the repo root; reads about 100 MB of parquet from ~/data). Measured on the laptop
+with /usr/bin/time -l on 2026-10-16: 17-23 s, maximum resident set size 3.75 GB.
     python scripts/build_leaderboard_alphabets.py --outdir results/leaderboard/alphabets
 """
 

@@ -39,7 +39,8 @@ running:
 ## The leaderboard site's alphabet page (seanome/protein-function-annotation-leaderboard copies
 ## results/leaderboard/alphabets/ from a commit of this repo). Reads notebook 291's stored
 ## table and the per-pair tables of notebook 230 from ~/data (about 100 MB), so it runs on the
-## laptop in about 20 s; see scripts/build_leaderboard_alphabets.py.
+## laptop in about 20 s with a peak of 3.75 GB resident (measured 2026-10-16 with
+## /usr/bin/time -l); see scripts/build_leaderboard_alphabets.py.
 LEADERBOARD_PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 leaderboard-alphabets:
 	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_alphabets.py --outdir results/leaderboard/alphabets
