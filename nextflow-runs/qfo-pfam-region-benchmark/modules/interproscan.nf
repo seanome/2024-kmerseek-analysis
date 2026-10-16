@@ -24,8 +24,8 @@ process interproscanSearch {
     container 'docker.io/interpro/interproscan@sha256:dc58b7c147fbbf00c2dd4f5ced42121fc1e8841fcbc7cc2c484380248ff76d11' // 5.78-109.0
     containerOptions "--bind ${params.interproscan_dir}/data:/opt/interproscan/data"
     cpus 16
-    memory { 32.GB * task.attempt }
-    time { 8.h * task.attempt }
+    memory { 32.GB * 2 ** (task.attempt - 1) }
+    time { 8.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/hits", mode: 'copy'
@@ -50,7 +50,7 @@ process interproscanSearch {
         echo "command: ${cmd}"
         echo "version: \$(/opt/interproscan/interproscan.sh --version 2>&1 | grep -m1 -i version)"
         echo "cpu_model: \$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ *//')"
-        echo "database_size: \$(du -sh ${params.interproscan_dir}/data | cut -f1)"
+        echo "database_size: \$(du -sh /opt/interproscan/data | cut -f1)"
     } > interproscan.all_members.run.txt
     """
 
@@ -65,8 +65,8 @@ process interproscanCalls {
     tag "interproscan all_members"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 4.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 4.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/regions", mode: 'copy'

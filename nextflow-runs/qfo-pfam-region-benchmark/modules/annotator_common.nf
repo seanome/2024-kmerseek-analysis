@@ -10,7 +10,7 @@
  * Resources are set on each process, and no process carries a label: the config's
  * `python` label would replace them with its own (24 GB, 12 h on sherlock). The python
  * steps name the kmerseek image directly, the image the main run's scoring uses. Memory and time double on each retry; only a kill by the
- * cluster is retried (killedByCluster, the same test main.nf uses).
+ * cluster is retried (killedByCluster, the same test main.nf uses): x1, x2, x4.
  */
 
 def killedByCluster(task) {
@@ -34,8 +34,8 @@ process cladeExcludedReference {
     tag "swissprot minus ${clade}"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 4.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 4.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/reference", mode: 'copy', pattern: '*.json'
@@ -70,8 +70,8 @@ process hitTargets {
     tag "best-hit proteins"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 4.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 4.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
 
@@ -109,8 +109,8 @@ process hmmscanHitTargets {
     tag "hmmscan best-hit proteins"
     container 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
     cpus 8
-    memory { 4.GB * task.attempt }
-    time { 2.h * task.attempt }
+    memory { 4.GB * 2 ** (task.attempt - 1) }
+    time { 2.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/hit_targets", mode: 'copy'
@@ -133,7 +133,7 @@ process hmmscanHitTargets {
         --cut_ga \\
         --cpu ${task.cpus} \\
         ${pfam_hmm} ${targets} \\
-    | grep -v '^#' \\
+    | { grep -v '^#' || true; } \\
     | awk 'NF >= 22 {print \$4 "\\t" \$2 "\\t" \$20 "\\t" \$21 "\\t" \$14 "\\t" \$13}' \\
     | gzip -nc > hit_target_domains.tsv.gz
     """
@@ -148,8 +148,8 @@ process placeBestHitDomains {
     tag "${tool} ${setting}"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 4.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 4.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/regions", mode: 'copy'
@@ -197,8 +197,8 @@ process scoreAnnotatorTool {
     tag "${tool} ${setting}"
     container "${params.kmerseek_image}"
     cpus 1
-    memory { 8.GB * task.attempt }
-    time { 1.h * task.attempt }
+    memory { 8.GB * 2 ** (task.attempt - 1) }
+    time { 1.h * 2 ** (task.attempt - 1) }
     errorStrategy { retryOnKill(task) }
     maxRetries 2
     publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'

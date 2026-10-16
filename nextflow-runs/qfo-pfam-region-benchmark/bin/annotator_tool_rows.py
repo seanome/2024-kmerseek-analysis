@@ -53,6 +53,9 @@ SCHEMA = {
     "source_path": pl.String,
     "source_commit": pl.String,
 }
+# The rows add one column to PR 148's schema: the image the tool ran in. tool_version is
+# the version the tool itself printed (its run.txt), not the image.
+ROW_SCHEMA = {**SCHEMA, "container_digest": pl.String}
 COMPUTE_SCHEMA = {
     "experiment": pl.String,
     "tool": pl.String,
@@ -289,8 +292,25 @@ def target_db_version(tool: str, a) -> str:
     return TOOL_INFO[tool].get("target_db_version", a.target_db_version)
 
 
+def run_version(results: Path, tool: str, setting: str, species: str) -> str | None:
+    """The `version:` line of the search task's run.txt, wherever the tool's module
+    publishes it (hits/<tool>.<setting>.run.txt or hits/<tool>/<tool>.<target>.run.txt).
+    """
+    for p in (
+        results / "hits" / f"{tool}.{setting}.run.txt",
+        results / "hits" / tool / f"{tool}.{species}.run.txt",
+    ):
+        if p.exists():
+            return read_run_info(p).get("version")
+    return None
+
+
 def metric_rows(
-    m: pl.DataFrame, a: argparse.Namespace, images: dict, rel: str
+    m: pl.DataFrame,
+    a: argparse.Namespace,
+    images: dict,
+    rel: str,
+    version: str | None = None,
 ) -> pl.DataFrame:
     m = m.filter(
         (pl.col("split") == "all") & pl.col("stratum_axis").is_in(STRATUM_AXES)
@@ -314,9 +334,10 @@ def metric_rows(
     return tidy(
         long.with_columns(
             pl.lit(a.experiment).alias("experiment"),
+            pl.lit(version, dtype=pl.String).alias("tool_version"),
             pl.col("tool")
             .replace_strict(images, default=None, return_dtype=pl.String)
-            .alias("tool_version"),
+            .alias("container_digest"),
             pl.col("variant").alias("setting"),
             pl.lit(a.query_set).alias("query_set"),
             pl.lit(target_db(m["tool"][0], a)).alias("target_db"),
@@ -333,7 +354,7 @@ def metric_rows(
             pl.lit(f"{a.source_root}/{rel}").alias("source_path"),
             pl.lit(a.source_commit).alias("source_commit"),
         ),
-        SCHEMA,
+        ROW_SCHEMA,
     )
 
 
@@ -486,7 +507,8 @@ def main() -> None:
         if tool not in TOOL_INFO:
             raise SystemExit(f"{f.name}: tool {tool!r} has no TOOL_INFO entry")
         rel = f.relative_to(a.results).as_posix()
-        frames.append(metric_rows(m, a, images, rel))
+        version = run_version(a.results, tool, setting, m["species"][0])
+        frames.append(metric_rows(m, a, images, rel, version))
         calls = a.results / "calls" / f.name.replace(".metrics.", ".calls.")
         if TOOL_INFO[tool]["has_query_coordinates"] and calls.exists():
             pile.append(pileup_calls(calls, tool, setting))

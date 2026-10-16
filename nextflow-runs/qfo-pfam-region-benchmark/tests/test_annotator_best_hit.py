@@ -326,7 +326,9 @@ def test_rows_cost_pileup_and_cards(tmp_path):
     )
 
     rows = pl.read_parquet(out / "rows.parquet")
-    assert rows.schema == pl.Schema(atr.SCHEMA)
+    assert rows.schema == pl.Schema(atr.ROW_SCHEMA)
+    assert set(rows["tool_version"].drop_nulls()) == {"1.0"}
+    assert rows["container_digest"].null_count() < rows.height
     assert set(rows["tool"]) == {"diamond_besthit", "mmseqs2_besthit"}
     assert rows["n_instances"].null_count() == 0
     # Row values are the metrics file's own numbers.

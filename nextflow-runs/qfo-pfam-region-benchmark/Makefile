@@ -2534,6 +2534,9 @@ index-disk:
 #   Swiss-Prot  $SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
 #   Pfam-A      $(PFAM_HMM_REMOTE) (Pfam 38, pressed)
 ANNOT_RUN    ?= run-annotator-tools
+# Which tools run, e.g. `make run-annotator-tools ANNOT_TOOLS=diamond`; -resume keeps what
+# finished.
+ANNOT_TOOLS  ?= diamond,mmseqs2,interproscan,eggnog
 ANNOT_OUTDIR ?= ../data/annotator-tools/results
 ANNOT_SPROT  ?= $$SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
 # G2 data, downloaded once by `make interproscan-data` and `make eggnog-data`.
@@ -2577,6 +2580,7 @@ run-annotator-tools: prefetch-images
 	    --pfam_hmm $(PFAM_HMM_REMOTE) \
 	    --outdir $(ANNOT_OUTDIR) \
 	    --trace_file annotator_tools.trace.txt \
+	    --tools $(ANNOT_TOOLS) \
 	    $(NF_ARGS)
 
 # Rows, cost rows, pile-up calls and tool cards from the finished run (light: reads a few
