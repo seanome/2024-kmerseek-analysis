@@ -1,0 +1,15 @@
+# seed	20260929
+# draws rejected, within 3 residues of an H/P alphabet	0
+# draws rejected, repeating an accepted partition	0
+# kd_mean: mean Kyte-Doolittle hydropathy of the class. For comparison, the six H/P alphabets have +1.48 to +3.07 in the hydrophobic class and -3.01 to -2.22 in the polar one
+name	partition_tsv	class1	class2	kd_mean_class1	kd_mean_class2	residues_from_nearest_hp	nearest_hp
+random2_01	random2_01.tsv	ACDKMNQSWY	EFGHILPRTV	-1.12	0.14	8	hp_lehninger2
+random2_02	random2_02.tsv	AEKLMNQSWY	CDFGHIPRTV	-0.99	0.01	8	hp_thomas_dill_no_c2
+random2_03	random2_03.tsv	CDEFIKNPST	AGHLMQRVWY	-0.77	-0.21	6	hp_lehninger2
+random2_04	random2_04.tsv	EHKMNPQSTV	ACDFGILRWY	-1.46	0.48	5	hp_lehninger_c_nonpolar2
+random2_05	random2_05.tsv	DEGHIKMPSY	ACFLNQRTVW	-1.18	0.20	7	hp_kyte_doolittle2
+random2_06	random2_06.tsv	ADEGHLMPRV	CFIKNQSTWY	-0.50	-0.48	8	hp_lehninger2
+random2_07	random2_07.tsv	EFLMNPQSTW	ACDGHIKRVY	-0.60	-0.38	9	hp_kyte_doolittle2
+random2_08	random2_08.tsv	CDEIKNPRTV	AFGHLMQSWY	-1.00	0.02	6	hp_lehninger2
+random2_09	random2_09.tsv	CHIKLMPQTY	ADEFGNRSVW	-0.15	-0.83	8	hp_pbotc_1st_ed2
+random2_10	random2_10.tsv	AGKLNPQRTV	CDEFHIMSWY	-0.83	-0.15	7	hp_thomas_dill2
