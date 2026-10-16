@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""Small hand-built cases for the weak-hit subcommands of tools/dark-set-accuracy.
+
+    python3 tools/test-dark-set-accuracy        (needs polars and zstd; exits 1 on a failure)
+
+Each case is written so that one wrong rule changes one count. Added 2026-10-16.
+"""
+import csv
+import gzip
+import importlib.machinery
+import importlib.util
+import os
+import subprocess
+import sys
+import tempfile
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+loader = importlib.machinery.SourceFileLoader("dsa", os.path.join(HERE, "dark-set-accuracy"))
+spec = importlib.util.spec_from_loader("dsa", loader)
+dsa = importlib.util.module_from_spec(spec)
+loader.exec_module(dsa)
+
+FAILS = []
+
+
+def check(what, got, want):
+    if got != want:
+        FAILS.append("%s: got %r, want %r" % (what, got, want))
+
+
+def gz(path, text):
+    with gzip.open(path, "wt") as fh:
+        fh.write(text)
+
+
+def main():
+    d = tempfile.mkdtemp()
+
+    # band edges: 0.001 is in the first band, 1 in the second, 10 in the third, 10.5 none
+    check("band 0", dsa.band_of(0.0), 0)
+    check("band 0.001", dsa.band_of(0.001), 0)
+    check("band 0.0011", dsa.band_of(0.0011), 1)
+    check("band 1", dsa.band_of(1.0), 1)
+    check("band 10", dsa.band_of(10.0), 2)
+    check("band 10.5", dsa.band_of(10.5), None)
+
+    # best-regions: smallest finite E, first row on a tie, inf skipped, 0-based -> 1-based
+    header = ["query_name", "target_name", "region_evalue", "region_start", "region_end",
+              "target_start", "target_end", "other"]
+    rows = [["Q1", "T9", "inf", "0", "5", "0", "5", "x"],
+            ["Q1", "T1", "2.5", "10", "20", "30", "40", "x"],
+            ["Q1", "T2", "2.5", "50", "60", "70", "80", "x"],   # tie: first row (T1) stays
+            ["Q2", "T3", "0.5", "0", "9", "100", "109", "a,b"],  # quoted field
+            ["Q3", "T4", "", "0", "9", "0", "9", "x"]]           # no E-value: Q3 absent
+    csvp = os.path.join(d, "chunk_0000.hp_x2.k17.s1.lcfalse.extend-c1.51.regions.csv")
+    with open(csvp, "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(header)
+        w.writerows(rows)
+    subprocess.check_call(["zstd", "-q", "-f", csvp, "-o", csvp + ".zst"])
+    plan = os.path.join(d, "plan.tsv")
+    with open(plan, "w") as fh:
+        fh.write("task\tspecies\tbytes\tpath\n1\thuman\t100\t%s.zst\n" % csvp)
+    best_root = os.path.join(d, "best")
+    dsa.best_regions(plan, 1, best_root)
+    bf = os.path.join(best_root, "human", "chunk_0000.hp_x2.k17.s1.lcfalse.extend-c1.51.best.tsv.gz")
+    got = [l.rstrip("\n").split("\t") for l in gzip.open(bf, "rt")][1:]
+    check("best-regions rows", got, [["Q1", "T1", "2.5", "11", "20", "31", "40"],
+                                     ["Q2", "T3", "0.5", "1", "9", "101", "109"]])
+
+    # score-bands on a hand-built species
+    qp = os.path.join(d, "qpfam.tsv")
+    with open(qp, "w") as fh:
+        fh.write("accession\tpfam_id\tdomain_start\tdomain_end\n")
+        fh.write("Q1\tPF1\t15\t25\n")   # kmerseek stretch 11-20 overlaps 15-25: strict right
+        fh.write("Q2\tPF1\t10\t30\n")   # kmerseek stretch 1-9 ends before 10: loose only
+        fh.write("Q4\tPF2\t1\t50\n")    # clan match only
+        fh.write("Q5\tPF1\t1\t50\n")    # wrong
+        fh.write("Q6\tPF1\t1\t50\n")    # target without Pfam
+        fh.write("Q7\tPF1\t20\t30\n")   # boundary: stretch 1-20 touches 20: strict right
+    import polars as pl
+    pl.DataFrame({"accession": ["T1", "T3", "T5", "T6", "T7", "T8"],
+                  "pfam_id": ["PF1", "PF1", "PF3", "PF9", "PF1", "PF1"]}).write_parquet(
+        os.path.join(d, "ref.parquet"))
+    gz(os.path.join(d, "clans.tsv.gz"), "PF2\tCL1\nPF3\tCL1\nPF1\t\nPF9\t\n")
+    ev = os.path.join(d, "ev")
+    os.makedirs(ev)
+    # all six dark at T = 1 (tool E > 1) except Q7, placed (E 0.5)
+    gz(os.path.join(ev, "toy_protein_tool_min_evalue.csv.gz"),
+       "accession,phmmer,jackhmmer,mmseqs2\nQ1,5,,\nQ2,,,\nQ4,3,,\nQ5,,,\nQ6,,,\nQ7,0.5,,\n")
+    hits = os.path.join(d, "hits")
+    os.makedirs(hits)
+    # phmmer best hits: Q1 -> T1 at E 5 (target 31-40), Q4 -> T5 at E 3, Q7 -> T8 at 0.5
+    gz(os.path.join(hits, "toy.chunk_0000.phmmer.tsv.gz"),
+       "Q1\tT1\t31\t40\t20\t5\nQ1\tT6\t1\t9\t10\t8\nQ4\tT5\t1\t9\t10\t3\nQ7\tT8\t5\t24\t30\t0.5\n")
+    for t in ("jackhmmer", "mmseqs2"):
+        gz(os.path.join(hits, "toy.chunk_0000.%s.tsv.gz" % t), "Q1\tT1\t31\t40\t20\t5\n")
+    # realigned domains: Q1/T1 query 16-24 on target 31-40 (same range); Q7/T8 two domains,
+    # the one overlapping the tool's target range 5-24 is query 1-20
+    realign = os.path.join(d, "realign.tsv.gz")
+    gz(realign, "query\ttarget\tquery_from\tquery_to\ttarget_from\ttarget_to\tdomain_evalue\n"
+       "Q1\tT1\t16\t24\t31\t40\t5\nQ7\tT8\t1\t20\t5\t24\t0.5\nQ7\tT8\t40\t49\t60\t69\t0.1\n")
+    # kmerseek best regions (Q1 from the file above; add Q5 wrong, Q6 no Pfam)
+    gz(os.path.join(best_root, "human", "chunk_0001.hp_x2.k17.s1.lcfalse.extend-c1.51.best.tsv.gz"),
+       "query\ttarget\tevalue\tquery_from\tquery_to\ttarget_from\ttarget_to\n"
+       "Q5\tT6\t0.0001\t1\t9\t1\t9\nQ6\tT9\t7\t1\t9\t1\t9\n")
+    ext = os.path.join(d, "foldseek.tsv")
+    with open(ext, "w") as fh:
+        fh.write("query\ttarget\tevalue\nQ2\tT3\t9\nQ2\tT6\t20\n")
+    out_tsv, out_json = os.path.join(d, "o.tsv"), os.path.join(d, "o.json")
+    dsa.score_bands(["--species", "toy", "--query-pfam", qp, "--ref-pfam",
+                     os.path.join(d, "ref.parquet"), "--clans", os.path.join(d, "clans.tsv.gz"),
+                     "--ev-dir", ev, "--hits-dir", hits, "--realign", realign, "--best-dir",
+                     os.path.join(best_root, "human"), "--source", "foldseek=" + ext,
+                     "--out-tsv", out_tsv, "--out-json", out_json])
+    t = pl.read_csv(out_tsv, separator="\t").filter(pl.col("split") == "all")
+
+    def row(src, qset, band):
+        r = t.filter((pl.col("source") == src) & (pl.col("query_set") == qset)
+                     & (pl.col("band") == band))
+        assert r.height == 1, (src, qset, band, r.height)
+        return r.row(0, named=True)
+
+    r = row("phmmer", "dark_1", "1_10")  # Q1 family strict, Q4 clan
+    check("phmmer dark_1 1-10", (r["family"], r["clan"], r["wrong"], r["strict_right"],
+                                 r["n_best_hit_in_band"], r["n_proteins"]), (1, 1, 0, 1, 2, 5))
+    r = row("phmmer", "placed_1", "0.001_1")  # Q7 strict through the overlapping domain
+    check("phmmer placed_1 0.001-1", (r["family"], r["strict_right"]), (1, 1))
+    k = "kmerseek:hp_x2.k17.s1"
+    r = row(k, "dark_1", "1_10")  # Q1 strict (11-20 vs 15-25), Q6 target without Pfam
+    check("kmerseek dark_1 1-10", (r["family"], r["strict_right"], r["target_without_pfam"]),
+          (1, 1, 1))
+    r = row(k, "dark_1", "0.001_1")  # Q2: family, stretch 1-9 misses 10-30
+    check("kmerseek dark_1 0.001-1", (r["family"], r["strict_right"]), (1, 0))
+    r = row(k, "dark_1", "le_0.001")  # Q5 wrong
+    check("kmerseek dark_1 <=0.001", (r["wrong"], r["family"]), (1, 0))
+    r = row("foldseek", "dark_1", "1_10")  # no positions: strict unknown, not counted right
+    check("foldseek dark_1 1-10", (r["family"], r["strict_right"],
+                                   r["strict_query_stretch_unknown"]), (1, 0, 1))
+    import json
+    js = json.load(open(out_json))
+    check("realign phmmer", js["realign"]["phmmer"],
+          {"pairs": 3, "same_target_range": 2, "overlapping_target_range": 2, "no_overlap": 1})
+    tt = pl.read_csv(out_tsv, separator="\t")
+    a = tt.filter((pl.col("split") == "all")).select("n_proteins").sum().item()
+    b = tt.filter((pl.col("split") != "all")).select("n_proteins").sum().item()
+    check("tune + test = all", a, b)
+    if FAILS:
+        print("\n".join(FAILS))
+        sys.exit(1)
+    print("all checks pass (%s)" % d)
+
+
+if __name__ == "__main__":
+    main()

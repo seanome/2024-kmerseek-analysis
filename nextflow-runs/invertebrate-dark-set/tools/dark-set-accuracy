@@ -28,6 +28,31 @@ score          needs polars (run it in the kmerseek image). For every query with
                queries with a known family, and the dark and placed ones at each dark
                cutoff T (dark = no phmmer, jackhmmer or MMseqs2 hit with E <= T).
 
+Added 2026-10-16 (weak hits, every tool and setting; rules in weak-hits/README.md):
+
+    tools/dark-set-accuracy plan-regions <results-0.4> <n_tasks> <plan.tsv>
+    tools/dark-set-accuracy best-regions <plan.tsv> <task> <out_root>
+    tools/dark-set-accuracy query-domains-interpro <accession table> <out.tsv>
+    tools/dark-set-accuracy realign-prepare <hits_dir> <query.fasta> <reference.fasta> <dir>
+    tools/dark-set-accuracy realign-collect <dir> <out.tsv.gz>
+    tools/dark-set-accuracy score-bands --species S --query-pfam P --ref-pfam R --clans C \
+        --ev-dir E [--hits-dir H --realign A] [--best-dir B] [--source NAME=FILE ...] \
+        --out-tsv T --out-json J
+
+plan-regions   lists the region files of every fitted kmerseek setting of the midi run and
+               spreads them over n array tasks by size.
+best-regions   like best-targets, for the files of one task, and also keeps the query and
+               target stretch of the best region (1-based, inclusive).
+query-domains-interpro  Pfam domain positions from the InterPro API (Borrelia).
+realign-*      the hits files keep only target positions, so each sequence tool's best
+               target is aligned to its query again with phmmer (inside the run's HMMER
+               image) to read the query stretch; see tools/dark-set-accuracy-sbatch.
+score-bands    judges every source's best hit in three E bands (<= 0.001, 0.001-1, 1-10),
+               loose (PR 133's family-or-clan call) and strict (shared family AND the hit's
+               query stretch overlaps a query domain of that family), for dark and placed
+               proteins at T = 0.001, 1, 10, on all proteins and on a fixed tune/test split.
+               --source takes any other tool's hits (Foldseek, ProstT5).
+
 Known families: query Pfam domains from Pfam's own annotation of UniProt
 (qfo-pfam-region-benchmark/data/annotations/<species>_pfam_domains.parquet, built from
 Pfam-A.regions); target families from the DR Pfam lines of the target's Swiss-Prot entry
@@ -228,6 +253,515 @@ def score(species, query_pfam, ref_pfam, clans, ev_dir, hits_dir, bt_dir, out):
               % (src, f, cl, w, u))
 
 
+# ---------------------------------------------------------------------------------------
+# Weak-hit accuracy for every tool and every kmerseek setting (added 2026-10-16, Prompt C
+# of "Claude Code prompts for a complete annotation leaderboard"). The functions above are
+# PR 133's and are left as they were; the ones below extend them to every region file of
+# the midi run, split each best hit into E-value bands, and add a stricter call that
+# checks positions on the query. Rules: weak-hits/README.md, written before any result
+# was read.
+# ---------------------------------------------------------------------------------------
+
+SPECIES = ("human", "worm", "yeast", "borrelia")
+# Best-hit E-value bands: (name, lower bound exclusive, upper bound inclusive)
+BANDS = (("le_0.001", -1.0, 0.001), ("0.001_1", 0.001, 1.0), ("1_10", 1.0, 10.0))
+REGION_FILE = re.compile(
+    r"^chunk_\d+\.(?P<alphabet>.+?)\.k(?P<k>\d+)\.s(?P<s>\d+)\.lc(?P<lc>true|false)\."
+    r"(?P<ext>extend-c[0-9.]+)\.regions\.csv\.zst$")
+BEST_FILE = re.compile(
+    r"^chunk_\d+\.(?P<setting>.+?\.k\d+\.s\d+)\.lc\w+\.extend-c[0-9.]+\.best\.tsv\.gz$")
+
+
+def band_of(e):
+    """Index into BANDS of a best-hit E-value, or None above 10."""
+    for i, (_, lo, hi) in enumerate(BANDS):
+        if lo < e <= hi:
+            return i
+    return None
+
+
+def is_tune(accession):
+    """Fixed tune/test split: tune when the md5 of the accession is even."""
+    import hashlib
+    return int(hashlib.md5(accession.encode()).hexdigest(), 16) % 2 == 0
+
+
+def plan_regions(results, n_tasks, out):
+    """Every region file of a fitted kmerseek setting, spread over n_tasks by size.
+
+    A setting counts when the run's own gain table (<species>_kmerseek_dark_gain.json,
+    by_combo) lists it. Settings in unfitted_arms have no Karlin-Altschul fit, so their
+    searches wrote no E-values, and they are skipped and counted.
+    """
+    n_tasks = int(n_tasks)
+    files = []
+    for sp in SPECIES:
+        gain = json.load(open(os.path.join(results, sp, "%s_kmerseek_dark_gain.json" % sp)))
+        key = lambda r: (r["alphabet"], int(r["ksize"]), int(r["scaled"]), r["extension"],
+                         bool(r["low_complexity_mask"]))
+        fitted = {key(r) for r in gain["by_combo"]}
+        unfitted = {key(r) for r in gain["unfitted_arms"]}
+        kdir = os.path.join(results, sp, "kmerseek")
+        n_unf = n_other = 0
+        found = set()
+        for f in sorted(os.listdir(kdir)):
+            m = REGION_FILE.match(f)
+            if not m:
+                continue
+            k = (m.group("alphabet"), int(m.group("k")), int(m.group("s")), m.group("ext"),
+                 m.group("lc") == "true")
+            if k in fitted:
+                p = os.path.join(kdir, f)
+                files.append((os.stat(p).st_size, sp, p))
+                found.add(k)
+            elif k in unfitted:
+                n_unf += 1
+            else:
+                n_other += 1
+        print("%s: %d fitted settings (%d with region files), %d unfitted; files kept %d, "
+              "unfitted %d, not in this run %d" % (sp, len(fitted), len(found), len(unfitted),
+                                                   sum(1 for x in files if x[1] == sp), n_unf,
+                                                   n_other))
+        if found != fitted:
+            sys.exit("%s: fitted settings without a region file: %s"
+                     % (sp, sorted(fitted - found)[:5]))
+    load = [0] * n_tasks
+    rows = []
+    for size, sp, p in sorted(files, reverse=True):
+        t = load.index(min(load))
+        load[t] += size
+        rows.append((t + 1, sp, size, p))
+    with open(out, "w") as fh:
+        fh.write("task\tspecies\tbytes\tpath\n")
+        for r in sorted(rows):
+            fh.write("%d\t%s\t%d\t%s\n" % r)
+    print("%d files, %.2f TB, %d tasks of %.1f-%.1f GB"
+          % (len(files), sum(x[0] for x in files) / 1e12, n_tasks, min(load) / 1e9,
+             max(load) / 1e9))
+
+
+def best_regions_one(regions, out):
+    """For every query of one region file: its region with the smallest finite region E.
+
+    Ties keep the first row in file order, as best-targets does. Coordinates are written
+    1-based and inclusive (kmerseek's region_start/target_start are 0-based, end-exclusive).
+    """
+    proc = subprocess.Popen(["zstd", "-dc", regions], stdout=subprocess.PIPE,
+                            universal_newlines=True, bufsize=1 << 20)
+    header = next(csv.reader([proc.stdout.readline()]))
+    cols = ("query_name", "target_name", "region_evalue", "region_start", "region_end",
+            "target_start", "target_end")
+    idx = [header.index(c) for c in cols]
+    iq, it, ie, rs, re_, ts, te = idx
+    width = len(header)
+    best = {}
+    for line in proc.stdout:
+        f = next(csv.reader([line])) if '"' in line else line.rstrip("\n").split(",")
+        if len(f) != width:
+            sys.exit("%s: a row has %d fields, the header %d" % (regions, len(f), width))
+        e = f[ie]
+        if e in ("", "inf", "nan"):
+            continue
+        ev = float(e)
+        if math.isinf(ev) or math.isnan(ev):
+            continue
+        b = best.get(f[iq])
+        if b is None or ev < b[1]:
+            best[f[iq]] = (f[it], ev, int(f[rs]) + 1, int(f[re_]), int(f[ts]) + 1, int(f[te]))
+    if proc.wait() != 0:
+        sys.exit("zstd failed on %s" % regions)
+    tmp = out + ".part"
+    with gzip.open(tmp, "wt") as fh:
+        fh.write("query\ttarget\tevalue\tquery_from\tquery_to\ttarget_from\ttarget_to\n")
+        for q in sorted(best):
+            t, ev, a, b, c, d = best[q]
+            fh.write("%s\t%s\t%r\t%d\t%d\t%d\t%d\n" % (q, t, ev, a, b, c, d))
+    os.rename(tmp, out)
+    return len(best)
+
+
+def best_regions(plan, task, out_root):
+    import time
+    task = str(task)
+    with open(plan) as fh:
+        next(fh)
+        mine = [l.rstrip("\n").split("\t") for l in fh if l.split("\t", 1)[0] == task]
+    t_all = time.time()
+    for _, sp, size, path in mine:
+        d = os.path.join(out_root, sp)
+        if not os.path.isdir(d):
+            os.makedirs(d, exist_ok=True)
+        out = os.path.join(d, os.path.basename(path).replace(".regions.csv.zst", ".best.tsv.gz"))
+        if os.path.exists(out) and os.path.getsize(out) > 0:
+            print("already done: %s" % out)
+            continue
+        t0 = time.time()
+        n = best_regions_one(path, out)
+        dt = time.time() - t0
+        print("%s\t%s\t%d queries\t%.1f GB\t%.0f s\t%.0f MB/s"
+              % (sp, os.path.basename(path), n, int(size) / 1e9, dt, int(size) / 1e6 / max(dt, 1e-9)))
+    print("task %s: %d files in %.0f s" % (task, len(mine), time.time() - t_all))
+
+
+def query_domains_interpro(accessions_tsv, out):
+    """Pfam domain positions of each accession in a (accession, pfam_id) table, from the
+    InterPro API (one call per protein). Used for Borrelia, which has no positions in
+    qfo-pfam-region-benchmark/data/annotations. Writes accession, pfam_id, domain_start,
+    domain_end (1-based, inclusive), one row per fragment."""
+    import time
+    accs = sorted({l.split("\t")[0] for l in open(accessions_tsv).read().splitlines()[1:]})
+    rows = []
+    for i, a in enumerate(accs):
+        url = "https://www.ebi.ac.uk/interpro/api/entry/pfam/protein/uniprot/%s/" % a
+        for attempt in range(5):
+            try:
+                with urllib.request.urlopen(url, timeout=120) as r:
+                    body = r.read().decode()
+                break
+            except Exception as err:  # retried: the API rate-limits bursts
+                if attempt == 4:
+                    sys.exit("%s: %s" % (url, err))
+                time.sleep(5 * (attempt + 1))
+        if not body.strip():  # InterPro answers 204 with no body for a protein without Pfam
+            continue
+        for res in json.loads(body)["results"]:
+            pf = res["metadata"]["accession"]
+            for prot in res["proteins"]:
+                for loc in prot["entry_protein_locations"]:
+                    for fr in loc["fragments"]:
+                        rows.append((a, pf, int(fr["start"]), int(fr["end"])))
+        if i % 100 == 0:
+            print("%d of %d" % (i, len(accs)), flush=True)
+    with open(out, "w") as fh:
+        fh.write("accession\tpfam_id\tdomain_start\tdomain_end\n")
+        for r in rows:
+            fh.write("%s\t%s\t%d\t%d\n" % r)
+    print("%d proteins, %d domain rows; https://www.ebi.ac.uk/interpro/api/entry/pfam/protein/"
+          "uniprot/<accession>/" % (len(accs), len(rows)))
+
+
+def read_tool_hits(hits_dir, tool):
+    """query -> (target, E, target_from, target_to): the best (smallest E) domain row of
+    one sequence tool, ties kept in sorted-file, file order, as score() does."""
+    d = {}
+    for f in sorted(os.listdir(hits_dir)):
+        if "." + tool + "." not in f:
+            continue
+        with gzip.open(os.path.join(hits_dir, f), "rt") as fh:
+            for line in fh:
+                p = line.rstrip("\n").split("\t")
+                if len(p) < 6:
+                    continue
+                ev = float(p[5])
+                if p[0] not in d or ev < d[p[0]][1]:
+                    d[p[0]] = (p[1], ev, int(p[2]), int(p[3]))
+    return d
+
+
+def read_fasta(path, keep=None):
+    seqs = {}
+    name, buf = None, []
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if name is not None and (keep is None or name in keep):
+                    seqs[name] = "".join(buf)
+                name, buf = line[1:].split()[0], []
+            else:
+                buf.append(line.strip())
+    if name is not None and (keep is None or name in keep):
+        seqs[name] = "".join(buf)
+    return seqs
+
+
+def realign_prepare(hits_dir, query_fasta, ref_fasta, workdir):
+    """Write one query FASTA and one target FASTA per query for phmmer, for every pair
+    (query, best target) of phmmer, jackhmmer and MMseqs2 with best E <= 10.
+
+    The hits files keep target coordinates only (the pipeline's awk dropped phmmer's
+    query columns, and MMseqs2 was asked for tstart,tend), so the query side of each hit
+    is recovered by aligning the query to its best target again with phmmer.
+    """
+    pairs = {}
+    for tool in TOOLS:
+        for q, (t, ev, _, _) in read_tool_hits(hits_dir, tool).items():
+            if ev <= 10:
+                pairs.setdefault(q, set()).add(t)
+    targets = set().union(*pairs.values())
+    qs = read_fasta(query_fasta, set(pairs))
+    ts = read_fasta(ref_fasta, targets)
+    missing = (set(pairs) - set(qs)) | (targets - set(ts))
+    if missing:
+        sys.exit("%d names not found in the FASTA files, e.g. %s" % (len(missing),
+                                                                     sorted(missing)[:3]))
+    os.makedirs(os.path.join(workdir, "in"), exist_ok=True)
+    with open(os.path.join(workdir, "list.txt"), "w") as lst:
+        for i, q in enumerate(sorted(pairs)):
+            with open(os.path.join(workdir, "in", "q%06d.fa" % i), "w") as fh:
+                fh.write(">%s\n%s\n" % (q, qs[q]))
+            with open(os.path.join(workdir, "in", "t%06d.fa" % i), "w") as fh:
+                for t in sorted(pairs[q]):
+                    fh.write(">%s\n%s\n" % (t, ts[t]))
+            lst.write("%06d\n" % i)
+    print("%d queries, %d pairs, %d targets" % (len(pairs), sum(map(len, pairs.values())),
+                                                len(targets)))
+
+
+def realign_collect(workdir, out):
+    """Every domain phmmer reported for every pair: query, target, query_from, query_to,
+    target_from, target_to (1-based, inclusive: hmm from/to and env from/to), domain
+    i-Evalue."""
+    n = 0
+    with gzip.open(out + ".part", "wt") as o:
+        o.write("query\ttarget\tquery_from\tquery_to\ttarget_from\ttarget_to\tdomain_evalue\n")
+        for f in sorted(os.listdir(os.path.join(workdir, "out"))):
+            for line in open(os.path.join(workdir, "out", f)):
+                if line.startswith("#"):
+                    continue
+                p = line.split()
+                if len(p) < 22:
+                    continue
+                o.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (p[3], p[0], p[15], p[16], p[19], p[20],
+                                                          p[12]))
+                n += 1
+    os.rename(out + ".part", out)
+    print("%d domain rows" % n)
+
+
+def wilson(k, n, z=1.959964):
+    if n == 0:
+        return (float("nan"), float("nan"))
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return (max(0.0, c - h), min(1.0, c + h))
+
+
+def score_bands(argv):
+    """Judge each source's best hit per protein, in E-value bands, two ways.
+
+    loose  (PR 133's call) right = the target shares a Pfam family or clan with the query.
+    strict right = the target shares a Pfam family with the query AND the hit's stretch of
+           the query overlaps (by at least one residue) a Pfam domain of that shared family
+           on the query.
+    Both share one denominator, the judged hits: targets that carry any Pfam family.
+    """
+    import argparse
+    import polars as pl
+
+    ap = argparse.ArgumentParser(prog="dark-set-accuracy score-bands")
+    ap.add_argument("--species", required=True)
+    ap.add_argument("--query-pfam", required=True,
+                    help="query families: parquet (accession, pfam_id, ...) or TSV")
+    ap.add_argument("--query-domains", default=None,
+                    help="query domain positions (accession, pfam_id, domain_start, "
+                         "domain_end, 1-based inclusive); default: --query-pfam")
+    ap.add_argument("--ref-pfam", required=True)
+    ap.add_argument("--clans", required=True)
+    ap.add_argument("--ev-dir", required=True)
+    ap.add_argument("--hits-dir", default=None, help="phmmer/jackhmmer/MMseqs2 hits")
+    ap.add_argument("--realign", default=None, help="realign-collect output for --hits-dir")
+    ap.add_argument("--best-dir", default=None, help="kmerseek best-regions outputs")
+    ap.add_argument("--source", action="append", default=[], metavar="NAME=FILE",
+                    help="another tool's hits: TSV with query, target, evalue and optional "
+                         "query_from, query_to (1-based inclusive). The smallest E per query "
+                         "is its best hit. Repeatable.")
+    ap.add_argument("--out-tsv", required=True)
+    ap.add_argument("--out-json", required=True)
+    a = ap.parse_args(argv)
+    sp = a.species
+
+    clan = {}
+    with gzip.open(a.clans, "rt") as fh:
+        for line in fh:
+            f = line.rstrip("\n").split("\t")
+            clan[f[0]] = f[1] or f[0]
+    to_clan = lambda p: clan.get(p, p)
+
+    def read_table(p):
+        return pl.read_parquet(p) if p.endswith(".parquet") else pl.read_csv(
+            p, separator="\t", infer_schema_length=0)
+
+    qp = read_table(a.query_pfam)
+    qfam = {}
+    for acc, p in qp.select("accession", "pfam_id").iter_rows():
+        qfam.setdefault(acc, set()).add(p)
+    qd = read_table(a.query_domains or a.query_pfam)
+    for c in ("accession", "pfam_id", "domain_start", "domain_end"):
+        if c not in qd.columns:
+            sys.exit("%s has no column %s" % (a.query_domains or a.query_pfam, c))
+    qdom = {}
+    n_dom_no_pos = 0
+    for acc, p, s, e in qd.select("accession", "pfam_id", "domain_start",
+                                  "domain_end").iter_rows():
+        if s is None or e is None:
+            n_dom_no_pos += 1
+            continue
+        qdom.setdefault(acc, []).append((p, int(s), int(e)))
+    tfam = {}
+    for acc, p in pl.read_parquet(a.ref_pfam).select("accession", "pfam_id").iter_rows():
+        tfam.setdefault(acc, set()).add(p)
+    ref_families = set().union(*tfam.values())
+
+    tool_e = {}
+    with gzip.open(os.path.join(a.ev_dir, "%s_protein_tool_min_evalue.csv.gz" % sp), "rt") as fh:
+        for row in csv.DictReader(fh):
+            tool_e[row["accession"]] = min(float(row[t]) if row[t] else math.inf
+                                           for t in TOOLS)
+    known = sorted(set(qfam) & set(tool_e))
+    findable = {q for q in known if qfam[q] & ref_families}
+
+    # Each source: query -> (target, E, query_from or None, query_to or None)
+    sources = {}
+    realign_stats = {}
+    if a.hits_dir:
+        dom = {}
+        if a.realign:
+            with gzip.open(a.realign, "rt") as fh:
+                next(fh)
+                for line in fh:
+                    q, t, qf, qt, tf, tt, de = line.rstrip("\n").split("\t")
+                    dom.setdefault((q, t), []).append((int(qf), int(qt), int(tf), int(tt),
+                                                       float(de)))
+        for tool in TOOLS:
+            d = {}
+            st = {"pairs": 0, "same_target_range": 0, "overlapping_target_range": 0,
+                  "no_overlap": 0}
+            for q, (t, ev, tf, tt) in read_tool_hits(a.hits_dir, tool).items():
+                qf = qt = None
+                if ev <= 10 and a.realign:
+                    st["pairs"] += 1
+                    best = None
+                    for (rqf, rqt, rtf, rtt, de) in dom.get((q, t), ()):
+                        ov = min(tt, rtt) - max(tf, rtf) + 1
+                        if ov > 0 and (best is None or (ov, -de) > best[0]):
+                            best = ((ov, -de), rqf, rqt, rtf, rtt)
+                    if best is None:
+                        st["no_overlap"] += 1
+                    else:
+                        qf, qt = best[1], best[2]
+                        st["overlapping_target_range"] += 1
+                        if (best[3], best[4]) == (tf, tt):
+                            st["same_target_range"] += 1
+                d[q] = (t, ev, qf, qt)
+            sources[tool] = d
+            realign_stats[tool] = st
+    if a.best_dir:
+        for f in sorted(os.listdir(a.best_dir)):
+            m = BEST_FILE.match(f)
+            if not m:
+                continue
+            d = sources.setdefault("kmerseek:" + m.group("setting"), {})
+            with gzip.open(os.path.join(a.best_dir, f), "rt") as fh:
+                head = next(fh).rstrip("\n").split("\t")
+                has_pos = "query_from" in head
+                for line in fh:
+                    p = line.rstrip("\n").split("\t")
+                    ev = float(p[2])
+                    if p[0] not in d or ev < d[p[0]][1]:
+                        d[p[0]] = (p[1], ev, int(p[3]) if has_pos else None,
+                                   int(p[4]) if has_pos else None)
+    for spec in a.source:
+        name, path = spec.split("=", 1)
+        t = pl.read_csv(path, separator="\t", infer_schema_length=0)
+        has_pos = "query_from" in t.columns
+        d = {}
+        cols = ["query", "target", "evalue"] + (["query_from", "query_to"] if has_pos else [])
+        for row in t.select(cols).iter_rows():
+            ev = float(row[2])
+            if row[0] not in d or ev < d[row[0]][1]:
+                d[row[0]] = (row[1], ev, int(row[3]) if has_pos else None,
+                             int(row[4]) if has_pos else None)
+        sources[name] = d
+
+    def call(q, t, qf, qt):
+        """(loose call, strict right: True/False, None when the query stretch is unknown)"""
+        tf = tfam.get(t)
+        if not tf:
+            return "unknown", False
+        shared = qfam[q] & tf
+        if shared:
+            if qf is None:
+                return "family", None
+            ok = any(p in shared and max(s, qf) <= min(e, qt) for p, s, e in qdom.get(q, ()))
+            return "family", ok
+        if {to_clan(p) for p in qfam[q]} & {to_clan(p) for p in tf}:
+            return "clan", False
+        return "wrong", False
+
+    sets = {}
+    for T in DARK_CUTOFFS:
+        sets["dark_%g" % T] = [q for q in known if tool_e[q] > T]
+        sets["placed_%g" % T] = [q for q in known if tool_e[q] <= T]
+    sets["all"] = known
+    tune = {q for q in known if is_tune(q)}
+    dark1 = set(sets["dark_1"])
+    rows = []
+    strict_cases = {}
+    for src in sorted(sources):
+        d = sources[src]
+        judged = {}
+        for q in known:
+            h = d.get(q)
+            if h is None:
+                continue
+            b = band_of(h[1])
+            if b is None:
+                continue
+            judged[q] = (b,) + call(q, h[0], h[2], h[3])
+        for sname, qs in sets.items():
+            for split in ("all", "tune", "test"):
+                sub = [q for q in qs if split == "all" or (q in tune) == (split == "tune")]
+                n_set = len(sub)
+                n_find = sum(1 for q in sub if q in findable)
+                c = [[0] * 8 for _ in BANDS]  # family clan wrong unknown strict strict_na hits findable_hits
+                for q in sub:
+                    v = judged.get(q)
+                    if v is None:
+                        continue
+                    b, lc, sr = v
+                    r = c[b]
+                    r[("family", "clan", "wrong", "unknown").index(lc)] += 1
+                    if sr is True:
+                        r[4] += 1
+                    elif sr is None:
+                        r[5] += 1
+                    r[6] += 1
+                    if q in findable:
+                        r[7] += 1
+                for i, (bname, _, _) in enumerate(BANDS):
+                    fam, cl, w, u, s, sna, nh, nfh = c[i]
+                    rows.append((sp, src, sname, split, bname, n_set, n_find, nh, nfh, fam, cl,
+                                 w, u, s, sna))
+        strict_cases[src] = sorted(
+            [{"query": q, "target": d[q][0], "evalue": float("%.3g" % d[q][1]),
+              "band": BANDS[v[0]][0], "query_from": d[q][2], "query_to": d[q][3],
+              "shared_families": sorted(qfam[q] & tfam.get(d[q][0], set()))}
+             for q, v in judged.items() if v[2] is True and q in dark1],
+            key=lambda x: x["evalue"])
+    cols = ["species", "source", "query_set", "split", "band", "n_proteins", "n_findable",
+            "n_best_hit_in_band", "n_findable_best_hit_in_band", "family", "clan", "wrong",
+            "target_without_pfam", "strict_right", "strict_query_stretch_unknown"]
+    with open(a.out_tsv, "w") as fh:
+        fh.write("\t".join(cols) + "\n")
+        for r in rows:
+            fh.write("\t".join(map(str, r)) + "\n")
+    summary = {
+        "species": sp, "bands": [b[0] for b in BANDS], "dark_cutoffs": DARK_CUTOFFS,
+        "n_proteome": len(tool_e), "n_known": len(known), "n_findable": len(findable),
+        "query_domain_rows_without_position": n_dom_no_pos,
+        "realign": realign_stats, "n_sources": len(sources),
+        "strict_right_dark_1": strict_cases,
+    }
+    with open(a.out_json, "w") as fh:
+        json.dump(summary, fh, indent=1)
+    print("%s: %d proteins, %d with a known family, %d findable; %d sources; %d rows"
+          % (sp, len(tool_e), len(known), len(findable), len(sources), len(rows)))
+    for tool, st in realign_stats.items():
+        print("  realign %s: %s" % (tool, st))
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
@@ -238,6 +772,18 @@ def main():
         query_pfam_uniprot(*args)
     elif cmd == "score" and len(args) == 8:
         score(*args)
+    elif cmd == "plan-regions" and len(args) == 3:
+        plan_regions(*args)
+    elif cmd == "best-regions" and len(args) == 3:
+        best_regions(*args)
+    elif cmd == "query-domains-interpro" and len(args) == 2:
+        query_domains_interpro(*args)
+    elif cmd == "realign-prepare" and len(args) == 4:
+        realign_prepare(*args)
+    elif cmd == "realign-collect" and len(args) == 2:
+        realign_collect(*args)
+    elif cmd == "score-bands":
+        score_bands(args)
     else:
         sys.exit(__doc__)
 
