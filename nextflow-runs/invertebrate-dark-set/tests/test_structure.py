@@ -133,6 +133,62 @@ def test_afdb_query_models_keeps_highest_version_and_fragments(tmp_path):
     assert (s["n_queries"], s["n_with_model"], s["model_versions"]) == (3, 2, {"v6": 2})
 
 
+def _gz(path, lines):
+    with gzip.open(path, "wt") as fh:
+        fh.write("".join(l + "\n" for l in lines))
+
+
+def test_placement_judge_report_end_to_end(tmp_path, capsys):
+    """Three human proteins: P10415 dark with a model, Q07817 placed by the sequence tools,
+    Q8WZ42 dark with no model. 40 decoys would be needed for one to pass at 5%, so with
+    3 run proteins no decoy may hit and the cutoff is set by the one decoy hit."""
+    import polars as pl
+    sd = tmp_path / "struct" / "human" / "structure"
+    sd.mkdir(parents=True)
+    (sd / "human_afdb_query_coverage.tsv").write_text(
+        "accession\tlength\thas_model\tn_fragments\tmodel_version\tsource\n"
+        "P10415\t239\t1\t1\tv6\ta\nQ07817\t233\t1\t1\tv6\ta\nQ8WZ42\t34350\t0\t0\t\tnone\n")
+    (sd / "human_prostt5_skipped.tsv").write_text("accession\tlength\nQ8WZ42\t34350\n")
+    (sd / "human_afdb_target_summary.json").write_text('{"n_reference": 10, "n_with_model": 9, "share_with_model": 0.9}')
+    (sd / "human_afdb_query_summary.json").write_text('{"model_versions": {"v6": 2}}')
+    _gz(sd / "human.chunk_0000.foldseek.tsv.gz",
+        ["P10415\tP49950\t1\t200\t1\t200\t300\t1e-30", "Q07817\tP10415\t1\t200\t1\t200\t300\t1e-50"])
+    _gz(sd / "human.chunk_0000.foldseek_decoy.tsv.gz", ["P10415\tP00001\t1\t20\t1\t20\t20\t0.5"])
+    _gz(sd / "human.chunk_0000.prostt5.tsv.gz", ["P10415\tP00001\t1\t50\t1\t50\t30\t1.0"])
+    _gz(sd / "human.chunk_0000.prostt5_decoy.tsv.gz", [])
+    ev = tmp_path / "ev"
+    ev.mkdir()
+    _gz(ev / "human_protein_tool_min_evalue.csv.gz",
+        ["accession,phmmer,jackhmmer,mmseqs2", "P10415,5.0,,", "Q07817,1e-80,1e-90,1e-70", "Q8WZ42,,,"])
+    out = tmp_path / "out"
+    score.placement(str(tmp_path / "struct"), str(ev), str(out), "human")
+    pp = pl.read_parquet(out / "placement_proteins.parquet")
+    fs = {r["accession"]: r for r in pp.filter(pl.col("tool") == "foldseek").iter_rows(named=True)}
+    # 3 run decoys allow 0 to pass; the one decoy hit (E 0.5) sets the cutoff below 0.5
+    assert fs["P10415"]["placed"] is False and fs["Q07817"]["placed"] is False
+    assert fs["Q8WZ42"]["run"] is False
+    s = pl.read_csv(out / "placement_summary.csv")
+    row = s.filter((pl.col("tool") == "foldseek") & (pl.col("dark_set") == "dark_E1")).row(0, named=True)
+    assert (row["n_dark"], row["n_dark_run"], row["n_dark_placed"]) == (2, 1, 0)
+    ps = {r["accession"]: r for r in pp.filter(pl.col("tool") == "prostt5").iter_rows(named=True)}
+    # no ProstT5 decoy hit: every reported hit passes
+    assert ps["P10415"]["placed"] is True and ps["Q8WZ42"]["run"] is False
+    clans = tmp_path / "clans.tsv.gz"
+    _gz(clans, ["PF00452\tCL0581\tBcl-2"])
+    qp = tmp_path / "q.tsv"
+    qp.write_text("accession\tpfam_id\nP10415\tPF00452\nQ07817\tPF00452\n")
+    rp = tmp_path / "r.parquet"
+    pl.DataFrame({"accession": ["P00001", "P49950"], "pfam_id": ["PF00069", "PF00452"]}).write_parquet(rp)
+    score.judge(str(out), str(clans), "human:%s:%s" % (qp, rp))
+    m = pl.read_csv(out / "marginal_gain.csv")
+    pr = m.filter(pl.col("tool") == "prostt5").row(0, named=True)
+    assert (pr["n_dark_placed"], pr["wrong"], pr["family"]) == (1, 1, 0)
+    d = pl.read_csv(out / "decoy_hits_judged.csv")
+    assert d.filter(pl.col("tool") == "foldseek")["wrong"].to_list() == [1]
+    score.report(str(out))
+    assert "P1 UNDECIDED" in capsys.readouterr().out
+
+
 def test_read_hits_keeps_smallest_evalue(tmp_path):
     p = tmp_path / "h.tsv.gz"
     with gzip.open(p, "wt") as fh:

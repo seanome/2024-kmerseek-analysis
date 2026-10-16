@@ -139,9 +139,12 @@ def placement(struct_dir, ev_dir, out_dir, *species):
             cut, n_pass = decoy_cutoff([decoy[a][1] for a in decoy], len(run))
             for a in proteome:
                 b = real.get(a)
+                db = decoy.get(a)
                 rows.append(dict(species=sp, tool=tool, accession=a, run=a in run,
                                  best_target=b[0] if b else None,
                                  best_evalue=b[1] if b else None,
+                                 decoy_best_target=db[0] if db else None,
+                                 decoy_best_evalue=db[1] if db else None,
                                  placed=bool(b) and b[1] <= cut,
                                  seq_min_evalue=tool_e[a],
                                  dark_E1=not tool_e[a] < 1.0, dark_E10=not tool_e[a] < 10.0))
@@ -194,7 +197,7 @@ def judge(out_dir, clans, *specs):
             clan[f[0]] = f[1] or f[0]
     to_clan = lambda p: clan.get(p, p)
     pp = pl.read_parquet(os.path.join(out_dir, "placement_proteins.parquet"))
-    out = []
+    out, decoy_rows = [], []
     for spec in specs:
         sp, qpath, rpath = spec.split(":")
         qp = (pl.read_parquet(qpath) if qpath.endswith(".parquet")
@@ -208,6 +211,17 @@ def judge(out_dir, clans, *specs):
         for r in sub.iter_rows(named=True):
             r["call"] = judge_hit(qfam.get(r["accession"], set()), tfam.get(r["best_target"], set()), to_clan)
             out.append(r)
+        # The decoys' best hits, judged the same way (STRUCTURE-RULES.md, known risk): a
+        # decoy that hits a relative of its own protein is not a chance hit.
+        dsub = pp.filter((pl.col("species") == sp) & pl.col("decoy_best_target").is_not_null())
+        for t in TOOLS:
+            calls = [judge_hit(qfam.get(r["accession"], set()), tfam.get(r["decoy_best_target"], set()), to_clan)
+                     for r in dsub.filter(pl.col("tool") == t).iter_rows(named=True)]
+            c = {k: calls.count(k) for k in ("family", "clan", "wrong", "unknown", "no_query_family")}
+            judged = c["family"] + c["clan"] + c["wrong"]
+            decoy_rows.append(dict(species=sp, tool=t, n_decoys_with_hit=len(calls), **c, n_judged=judged,
+                                   share_family=(c["family"] / judged) if judged else None))
+    pl.DataFrame(decoy_rows).write_csv(os.path.join(out_dir, "decoy_hits_judged.csv"))
     j = pl.DataFrame(out)
     j.write_parquet(os.path.join(out_dir, "judged_best_hits.parquet"))
 
@@ -268,9 +282,17 @@ def report(out_dir):
     with pl.Config(tbl_rows=50, tbl_cols=20, tbl_width_chars=200):
         print(p1.select("species", "n_dark", "n_dark_run", "n_dark_placed", "share_dark_run_placed", "share_dark_placed"))
     over = decided.filter(pl.col("share_dark_run_placed") >= 0.10)
+    p1 = "OVERTURNED" if over.height else ("HOLDS" if decided.height else "UNDECIDED")
+    dj = os.path.join(out_dir, "decoy_hits_judged.csv")
+    if p1 == "HOLDS" and os.path.exists(dj):
+        d = pl.read_csv(dj).filter(pl.col("tool") == "foldseek")
+        fam, judged = int(d["family"].sum()), int(d["n_judged"].sum())
+        print("  Foldseek decoy best hits sharing a Pfam family with their protein: %d of %d judged"
+              % (fam, judged))
+        if judged >= MIN_N and fam / judged > 0.2:
+            p1 = "UNRELIABLE (decoys hit relatives; see STRUCTURE-RULES.md, known risk)"
     print("  species with >= %d dark proteins run: %d; at or over 10%%: %s -> P1 %s"
-          % (MIN_N, decided.height, over["species"].to_list(),
-             "OVERTURNED" if over.height else ("HOLDS" if decided.height else "UNDECIDED")))
+          % (MIN_N, decided.height, over["species"].to_list(), p1))
     mg = os.path.join(out_dir, "marginal_gain.csv")
     if os.path.exists(mg):
         m = pl.read_csv(mg).filter(pl.col("tool") == "foldseek")
