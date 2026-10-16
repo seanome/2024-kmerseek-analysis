@@ -197,6 +197,25 @@ def main() -> int:
         lin: truth.height - n_truth_in.get(lin, 0) for lin in set(q_lineage.values())
     }
 
+    if args.afdb_accessions:
+        modelled = set(args.afdb_accessions.read_text().split())
+        cov = (
+            truth.with_columns(has_afdb_model=pl.col("Entry").is_in(list(modelled)))
+            .group_by("lineage")
+            .agg(
+                pl.len().alias("n_truth"),
+                pl.col("has_afdb_model").sum().alias("n_with_model"),
+            )
+            .with_columns(n_without_model=pl.col("n_truth") - pl.col("n_with_model"))
+            .sort("lineage")
+        )
+        cov.write_csv(args.outdir / "afdb_coverage.tsv", separator="\t")
+        print(
+            f"AFDB models: {len(modelled)} accessions; "
+            f"{int(cov['n_without_model'].sum())} of {truth.height} truth entries have none",
+            file=sys.stderr,
+        )
+
     sources = list(
         lists_from_scans(args.hits / "scans" / "scans.parquet", OVERLAP_CUTOFFS)
     )
