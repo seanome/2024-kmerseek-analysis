@@ -38,6 +38,8 @@ Written to --outdir:
   grid.tsv          counts per method, setting, query lineage and target lineage
   verdict.json      the decision rule's three numbers, in sample and held out
   hits_residues.md  the residues of every cross-lineage kmerseek hit above threshold
+  afdb_coverage.tsv truth entries per lineage with and without an AlphaFold model, which
+                    is what Foldseek on structures can and cannot reach
 """
 
 import argparse
@@ -173,6 +175,11 @@ def main() -> int:
     ap.add_argument("--queries", type=Path, required=True)
     ap.add_argument("--draws", type=Path, required=True)
     ap.add_argument("--alphabet-classes", type=Path, required=True)
+    ap.add_argument(
+        "--afdb-accessions",
+        type=Path,
+        help="accessions.txt from the Foldseek AFDB database: one accession per model",
+    )
     ap.add_argument("--max-hit-rows", type=int, default=400)
     ap.add_argument("--outdir", type=Path, required=True)
     args = ap.parse_args()

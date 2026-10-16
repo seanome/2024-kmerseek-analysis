@@ -450,16 +450,18 @@ process scoreLists {
     path truth_dir
     path draws
     path classes
+    path afdb
 
     output:
     path 'scored'
 
     script:
+    def afdb_flag = afdb.name == 'NO_AFDB' ? '' : "--afdb-accessions ${afdb}"
     """
     ${params.python} ${script} \\
         --hits ${hits} --truth ${truth_dir}/truth_set.tsv \\
         --queries ${truth_dir}/queries.tsv --draws ${draws} \\
-        --alphabet-classes ${classes} --outdir scored
+        --alphabet-classes ${classes} ${afdb_flag} --outdir scored
     """
 }
 
@@ -471,6 +473,11 @@ workflow score {
         truth_dir,
         file("${params.outdir}/inputs/draws.tsv", checkIfExists: true),
         file("${projectDir}/assets/alphabet_classes.tsv", checkIfExists: true),
+        // The Foldseek database's accession list, when that database was built here. The
+        // placeholder keeps the input present for a run that skipped Foldseek.
+        file("${params.db_cache}/foldseek/afdb_swissprot/accessions.txt").exists()
+            ? file("${params.db_cache}/foldseek/afdb_swissprot/accessions.txt")
+            : file("${projectDir}/assets/NO_AFDB"),
     )
 }
 
