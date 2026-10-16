@@ -51,7 +51,9 @@ for f in sorted(glob.glob(f"{src}/*.metrics.parquet")):
         a, b = j[c], j[c + "_new"]
         eq = (a == b) | (a.is_null() & b.is_null())
         if a.dtype.is_float():
-            eq = eq | (a.is_nan() & b.is_nan())
+            # Job 48149563: 250 of 32,076 float cells moved by at most 5.7e-14 (sums in
+            # another order), so floats are equal within 1e-12 of their size.
+            eq = eq | (a.is_nan() & b.is_nan()) | ((a - b).abs() <= 1e-12 * (a.abs() + 1))
         same &= bool(eq.fill_null(False).all())
     added = new.filter(pl.col("stratum_axis").is_in(new_axes))
     whole = new.filter((pl.col("stratum_axis") == "all")).select("split", pl.col("n_truth_instances").alias("w"))

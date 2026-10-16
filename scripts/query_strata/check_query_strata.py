@@ -85,6 +85,77 @@ def ident_bin(x):
     return "<30%" if x < 30 else "30-50%" if x < 50 else "50-90%" if x < 90 else ">=90%"
 
 
+def long_table_check(results: Path) -> tuple[int, list[str]]:
+    """For every row group and query-side axis, n_instances summed over the bins must equal
+    the whole-set row. Returns (mismatches, lines of the report)."""
+    lines, bad = [], 0
+    if not results.exists():
+        return 0, ["results.parquet not found."]
+    r = pl.read_parquet(results)
+    q = r.filter(pl.col("stratum_axis").is_in(QUERY_AXES))
+    if q.height == 0:
+        return 0, [
+            "results.parquet has no query-side rows yet: the midi-plus run has "
+            "not been rescored with the strata covariates."
+        ]
+    key = [
+        "experiment",
+        "tool",
+        "setting",
+        "query_set",
+        "target_db",
+        "truth_source",
+        "dedup_or_raw",
+        "metric",
+    ]
+    whole = r.filter(pl.col("stratum_axis") == "all").select(
+        *key, pl.col("n_instances").alias("whole")
+    )
+    sums = (
+        q.group_by(*key, "stratum_axis")
+        .agg(pl.col("n_instances").sum().alias("sum"))
+        .filter(
+            ~pl.col("stratum_axis").is_in(list(FAMILY_AXES))
+            | pl.col("truth_source").is_in(list(PFAM_TRUTH))
+        )
+        .join(whole, on=key, how="left")
+    )
+    # Pfam-N's answer key in the QfO region runs is every human Pfam-N region
+    # (44,315 on 18,724 proteins), not only the queries'. A protein-level bin
+    # holds queries only, so on Pfam-N those bins cannot add up to the whole
+    # set; they are listed apart and must at least agree with each other.
+    pfamn_protein = (pl.col("truth_source") == "Pfam-N domain instances") & pl.col(
+        "stratum_axis"
+    ).is_in(
+        [
+            "nearest_identity",
+            "membrane",
+            "low_complexity",
+            "protein_length",
+            "busco",
+        ]
+    )
+    apart = sums.filter(pfamn_protein)
+    sums = sums.filter(~pfamn_protein)
+    wrong = sums.filter(pl.col("sum") != pl.col("whole"))
+    bad += wrong.height
+    spread = (
+        apart.group_by(key)
+        .agg(pl.col("sum").n_unique().alias("k"))
+        .filter(pl.col("k") > 1)
+    )
+    bad += spread.height
+    lines.append(
+        f"Pfam-N protein-level axes, checked apart: {apart.height:,} pairs; "
+        f"{spread.height:,} row groups whose axes disagree with each other."
+    )
+    lines.append(
+        f"{sums.height:,} (row group, axis) pairs checked; "
+        f"{wrong.height:,} do not add up."
+    )
+    return bad, lines
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--data", type=Path, required=True)
@@ -189,45 +260,9 @@ def main():
         )
 
     lines.append("\n## Long table: bins add up to the whole set\n")
-    if args.results.exists():
-        r = pl.read_parquet(args.results)
-        q = r.filter(pl.col("stratum_axis").is_in(QUERY_AXES))
-        if q.height == 0:
-            lines.append(
-                "results.parquet has no query-side rows yet: the midi-plus run has "
-                "not been rescored with the strata covariates."
-            )
-        else:
-            key = [
-                "experiment",
-                "tool",
-                "setting",
-                "query_set",
-                "target_db",
-                "truth_source",
-                "dedup_or_raw",
-                "metric",
-            ]
-            whole = r.filter(pl.col("stratum_axis") == "all").select(
-                *key, pl.col("n_instances").alias("whole")
-            )
-            sums = (
-                q.group_by(*key, "stratum_axis")
-                .agg(pl.col("n_instances").sum().alias("sum"))
-                .filter(
-                    ~pl.col("stratum_axis").is_in(list(FAMILY_AXES))
-                    | pl.col("truth_source").is_in(list(PFAM_TRUTH))
-                )
-                .join(whole, on=key, how="left")
-            )
-            wrong = sums.filter(pl.col("sum") != pl.col("whole"))
-            bad += wrong.height
-            lines.append(
-                f"{sums.height:,} (row group, axis) pairs checked; "
-                f"{wrong.height:,} do not add up."
-            )
-    else:
-        lines.append("results.parquet not found.")
+    n_bad, more = long_table_check(args.results)
+    bad += n_bad
+    lines += more
 
     lines.append(f"\nMismatches: {bad}.")
     (args.strata / "checks.md").write_text(
