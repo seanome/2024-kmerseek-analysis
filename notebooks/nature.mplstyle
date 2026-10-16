@@ -64,7 +64,8 @@ axes.axisbelow:     True
 
 # Okabe-Ito palette, the one Nature's guide lists (black moved last).
 axes.prop_cycle:    cycler('color', ['0072B2', 'D55E00', '009E73', 'CC79A7', 'E69F00', '56B4E9', 'F0E442', '000000'])
-image.cmap:         viridis
+# Seanome style guide; registered by `import seaborn`, which pubfig.use_style() does.
+image.cmap:         mako
 
 legend.frameon:     False
 legend.borderaxespad: 0.3

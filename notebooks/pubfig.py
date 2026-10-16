@@ -31,6 +31,8 @@ GREY = "#999999"  # for "everything else" / context marks
 
 
 def use_style():
+    import seaborn  # noqa: F401  registers mako and crest, the style's colour maps
+
     plt.style.use(STYLE)
 
 
