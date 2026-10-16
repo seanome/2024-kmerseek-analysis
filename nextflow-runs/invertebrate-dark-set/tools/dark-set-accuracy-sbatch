@@ -93,7 +93,11 @@ realign)
     rm -rf "$wd"
     ;;
 score-bands)
-    mkdir -p "$ACC/weak-hits"
+    # BEST_ROOT and OUT override the inputs and output folder (used for the early recount
+    # of PR 133 on its 26 region files only)
+    BEST_ROOT=${BEST_ROOT:-$ACC/best-regions}
+    OUT=${OUT:-$ACC/weak-hits}
+    mkdir -p "$OUT"
     for spec in human:$ANN/human_pfam_domains.parquet: \
                 worm:$ANN/worm_pfam_domains.parquet: \
                 yeast:$ANN/yeast_pfam_domains.parquet: \
@@ -105,9 +109,9 @@ score-bands)
             --query-pfam "$qpfam" ${qdom:+--query-domains "$qdom"} \
             --ref-pfam "$REF/minus_$clade/reference_pfam.parquet" --clans "$CLANS" \
             --ev-dir "$EV" --hits-dir "$dir/hits" \
-            --realign "$ACC/realign/${sp}_realign.tsv.gz" --best-dir "$ACC/best-regions/$sp" \
-            --out-tsv "$ACC/weak-hits/${sp}_weak_hits.tsv" \
-            --out-json "$ACC/weak-hits/${sp}_weak_hits.json"
+            --realign "$ACC/realign/${sp}_realign.tsv.gz" --best-dir "$BEST_ROOT/$sp" \
+            --out-tsv "$OUT/${sp}_weak_hits.tsv" \
+            --out-json "$OUT/${sp}_weak_hits.json"
     done
     ;;
 best-targets)
