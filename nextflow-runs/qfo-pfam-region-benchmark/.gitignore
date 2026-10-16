@@ -20,3 +20,6 @@ run-mini/
 
 # Marker dropped by qfo-verify-existing for qfo-download to short-circuit on.
 .qfo-have
+
+# make stub writes here.
+stub/
