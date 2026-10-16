@@ -153,3 +153,31 @@ Every row's key matched exactly one source row, and both commits exist and preda
 files. Other findings, now fixed: the region query-set text said "964 queries" for every
 truth set (removed). Not fixed: rows 4, 5 and 10 are zeros on strata with no calls or very
 few instances; the site should show `n_instances` beside every value.
+
+## Adversarial check of the second pass, 2026-10-16
+
+An agent that had not seen the work recomputed ten rows of the new outputs drawn at random
+(seed 20261016) and seven claims of this inventory, with its own code. All 17 hold.
+
+| # | row or claim | verdict | deciding number |
+|---|---|---|---|
+| 1 | pfam_pair_roc, MMseqs2 profile, yeast, pair_n_with_hit | HOLDS | 9,449 (also recomputed from the raw hits); n = 20,000 |
+| 2 | pfam_pair_roc, phmmer, arabidopsis, pair_average_precision | HOLDS | 0.6660 |
+| 3 | pfam_pair_roc, phmmer, ciona, pair_roc_auc | HOLDS | 0.7933, the same when rebuilt from the raw hits and the 60,000 pairs |
+| 4 | pfam_pair_roc, MMseqs2 sequence, ciona, recall at 99% precision | HOLDS | 0.45875 |
+| 5 | pfam_pair_roc, MMseqs2 profile, E. coli, pair_n_negatives | HOLDS | 40,000; n = 9,803 positive pairs |
+| 6 | kmer_spectra, 2-mer shuffled, hp_thomas_dill, k=17 | HOLDS | 197,041,686 total, 187,519 distinct, recomputed from the histogram; kmerseek 0.3.1 |
+| 7 | kmer_spectra, Swiss-Prot, hp, k=18 | HOLDS | 166,249,163 total, 310,440 distinct |
+| 8 | kmer_spectra, Swiss-Prot, hp_kyte_doolittle, k=28 | HOLDS | 160,611,182 total, 61,198,019 distinct |
+| 9 | compute, DisProt, mmseqs12 k=12 search | HOLDS | 2 tasks, 41.2 s + 48.9 s = 90.1 s, peak 1.8 GB |
+| 10 | compute, DisProt, dayhoff6 k=16 index | HOLDS | 6 tasks, 140.8 s, peak 4.1 GB |
+| 11 | DisProt trace counts and run_complete flags | HOLDS | 716 / 636 / 1 of 1,353; 246 rows false, summing to 716 tasks |
+| 12 | six output folders absent, no surviving copy | HOLDS | 0 copies on the laptop or on Sherlock |
+| 13 | resource benchmark trace | HOLDS | 1 task row, ORTHOFINDER, ABORTED |
+| 14 | kmerseek pair AUC table repeats pairs | HOLDS | 72,649 rows, 59,915 pairs, 32,208 positive rows; 540 rows at k=10 to 18 all 0.5 |
+| 15 | pfam-benchmark-tools file counts | HOLDS | 27 metrics files; DIAMOND 6 of 7 and HHblits 9 of 9 hit files empty; 156 rows |
+| 16 | PR 148's rows unchanged | HOLDS | results 4,386,981 rows and compute 5,864 rows, anti-join 0 both ways |
+| 17 | spectrum file dates and Sherlock commit | HOLDS | 224 files dated 2026-08-20 15:39 to 16:49; ffc7087 at 10:59, no later reflog entry |
+
+Checked loosely: rows 1-5 compare the six metrics of each listed tool and species, not all
+156 rows; only one index log was opened for row 6.
