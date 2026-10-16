@@ -61,6 +61,8 @@ The pipelines below were listed above as "not read in this pass". Every count an
 | experiment | where the output should be | what is there | why no rows |
 |---|---|---|---|
 | human_mouse_orthologs (`human-mouse-gencode-orthologs` and its `-hp-v040` copy, PR 64): family AUC and RBH-F1 per tool | laptop `~/data/gencode/results-human-mouse-orthologs{,-hp-v040}` (the pipelines' `OUTDIR`) | absent on the laptop and on Sherlock. Memory note `mac_disk_cleanup_2026_09_13` says the 2026-09-13 sweep kept them; they were removed later. 7 Nextflow traces remain in the laptop clone | The aggregated tables (`200_rbh_f1_all_combos.csv`, `206_family_auc_all_combos.csv`) are gone. PR 64's Sherlock version of the sweep was never run (no output on Sherlock). Rebuilding needs the kmerseek searches again |
+| throughput (`throughput-benchmark`): wall time, CPU and peak RSS per tool and query count | laptop `~/data/scope/results-throughput-benchmark/throughput_benchmark.tsv` (`params.outdir`) | absent. Notebook 078's committed output prints "Throughput benchmark not yet run" and uses a placeholder queries-per-second for kmerseek | Never run, so there is no compute row to read and no hardware to name |
+| resource benchmark (`vs-other-orthology-tools-resource-benchmark`) | laptop clone `nextflow-runs/vs-other-orthology-tools-resource-benchmark/results/pipeline_trace.txt` | one trace row: `ORTHOFINDER (human_vs_mouse)`, ABORTED, submitted 2026-03-19 06:21 | Stopped before any task finished; nothing measured |
 
 ## How values were read
 
