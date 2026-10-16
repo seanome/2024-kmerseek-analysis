@@ -57,8 +57,8 @@ process foldseekTargetDb {
             split(substr(\$2, 1, RLENGTH), p, "-")
             if (!(p[2] in ref)) next
             print \$1 > (out "/ids.txt")
-            if (!(p[2] in has)) { has[p[2]] = substr(p[4], 7); n_has++ }
-            ver[substr(p[4], 7)]++
+            if (!(p[2] in has)) { has[p[2]] = substr(p[4], 8); n_has++ }
+            ver[substr(p[4], 8)]++
         }
         END {
             print "accession\\thas_model\\tmodel_version" > (out "/coverage.tsv")
