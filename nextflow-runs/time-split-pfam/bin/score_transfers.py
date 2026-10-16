@@ -748,19 +748,23 @@ def main() -> None:
         )
     summ.write_csv(a.out / "setting_summary.csv")
     log_memory("setting summary written")
-    ctrl_tab = inst.filter(pl.col("role") == "control").join(
-        ic.select(
-            "setting",
-            "query",
-            "pfam_acc",
-            "t1_start",
-            "t1_end",
-            "landing",
-            "coverage",
-            "score",
-        ),
-        on=["query", "pfam_acc", "t1_start", "t1_end"],
-        how="left",
+    ctrl_tab = (
+        inst.filter(pl.col("role") == "control")
+        .join(
+            ic.select(
+                "setting",
+                "query",
+                "pfam_acc",
+                "t1_start",
+                "t1_end",
+                "landing",
+                "coverage",
+                "score",
+            ),
+            on=["query", "pfam_acc", "t1_start", "t1_end"],
+            how="left",
+        )
+        .sort(["query", "pfam_acc", "t1_start", "t1_end", "setting"], nulls_last=True)
     )
     ctrl_tab.write_csv(a.out / "controls.csv")
 
@@ -783,8 +787,9 @@ def main() -> None:
             {s: dec_by_setting[s] for s in kmer_settings}, cutoffs, decoys, h
         )
         tables[h] = (uq, dt)
+    # Ties sorted by name, so the file does not depend on the order calls were read.
     tune = unique_vs_expected(*tables["tune"]).sort(
-        "unique_minus_expected", descending=True
+        ["unique_minus_expected", "setting"], descending=[True, False]
     )
     tune.write_csv(a.out / "unique_finds_tune.csv")
     p4_rows = {"comparators": comparators, "kmerseek_settings": len(kmer_settings)}
