@@ -6,7 +6,7 @@ import io
 import json
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageChops, ImageStat
 
 import matplotlib
 
@@ -95,3 +95,38 @@ def test_notebook_only_images_change(tmp_path):
     assert Image.open(io.BytesIO(base64.b64decode(new_png))).mode == "P"
     # Everything except the image is byte-for-byte the same.
     assert new_text.replace(json.dumps(new_png), json.dumps(png)) == text
+
+
+def test_opaque_figure_changes_less_than_fast_octree(tmp_path):
+    # An opaque figure gets median cut. On this figure's 13_626 colours it moves the
+    # average pixel by 0.78 of 255, against 2.26 for fast octree, the earlier method.
+    path = tmp_path / "fig.png"
+    original = figure_png()
+    path.write_bytes(original)
+    shrink_png.main([str(path)])
+    before = Image.open(io.BytesIO(original)).convert("RGB")
+
+    def change(quantized):
+        diff = ImageChops.difference(before, quantized.convert("RGB")).convert("L")
+        return ImageStat.Stat(diff).mean[0]
+
+    octree = before.convert("RGBA").quantize(256, method=Image.Quantize.FASTOCTREE)
+    assert change(Image.open(path)) < change(octree) / 2
+
+
+def test_figure_with_colour_bar_is_left_alone(tmp_path):
+    # At 256 colours a continuous colour bar shows steps, so the figure stays as it is.
+    fig, ax = plt.subplots(figsize=(4, 3))
+    mesh = ax.pcolormesh([[i + j for i in range(8)] for j in range(6)], cmap="viridis")
+    fig.colorbar(mesh)
+    path = tmp_path / "heatmap.png"
+    fig.savefig(path, dpi=300)
+    original = path.read_bytes()
+    assert shrink_png.colour_bar_shades(Image.open(path)) >= shrink_png.MIN_COLOUR_BAR_SHADES
+    shrink_png.main([str(path)])
+    assert path.read_bytes() == original
+
+
+def test_line_plot_is_not_a_colour_bar():
+    im = Image.open(io.BytesIO(figure_png(dpi=300)))
+    assert shrink_png.colour_bar_shades(im) < shrink_png.MIN_COLOUR_BAR_SHADES

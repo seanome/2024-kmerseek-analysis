@@ -8,10 +8,14 @@ notebook-244 case figure from 300 KB to 95 KB, with no difference visible at 3x 
 
 An image is left as it is when
   * it already has a 256-colour palette (so running this twice changes nothing),
-  * the 256-colour version is not smaller, or
+  * the 256-colour version is not smaller,
+  * it has a continuous colour bar (a heatmap's legend): at 256 colours the bar shows
+    visible steps, so it stays in full colour (Olga, 2026-10-13), or
   * the 256-colour version moves the average pixel by more than MAX_MEAN_CHANGE of 255
-    brightness levels. Matplotlib figures move by 1.4 to 2.4; this guard is for
-    photographs and structure renderings, which can lose visible detail.
+    brightness levels. Opaque matplotlib figures move by 0.01 (median 2026-10-13, all
+    336 committed PNGs; at most 0.47); this guard is for photographs and structure
+    renderings, which can lose visible detail. A colour bar's steps cover too few
+    pixels to move this average, which is why colour bars have their own test.
 
 Notebooks are edited as text: only the image itself is replaced, so the rest of the file
 keeps its exact formatting and the diff shows only the images.
@@ -30,12 +34,43 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageChops, ImageStat
 
 # Tall figures (one row per residue) exceed Pillow's 89-megapixel bomb guard.
 Image.MAX_IMAGE_PIXELS = None
 
 MAX_MEAN_CHANGE = 4.0
+
+# A matplotlib colour bar has 256 shades. On the 336 PNGs committed 2026-10-13, the 15
+# with a colour bar had 251-256 shades in one run (see colour_bar_shades) and every
+# other figure at most 29.
+MIN_COLOUR_BAR_SHADES = 100
+
+
+def colour_bar_shades(rgb: Image.Image, max_step: int = 12, width: int = 8) -> int:
+    """Most shades in one straight run of pixels that looks like a colour bar.
+
+    In the run each pixel is at most `max_step` levels from the one before it, and is
+    exactly the colour of the next `width` pixels across the run, as in a bar that is
+    filled across its width. Counts the changes of colour along the run. The soft edge
+    of a curve or a marker fails the second condition, so line and scatter plots score
+    near 0.
+    """
+    a = np.asarray(rgb.convert("RGB")).astype(np.int16)
+    best = 0
+    for arr in (a, a.transpose(1, 0, 2)):  # bars running down, then across
+        step = np.abs(np.diff(arr, axis=0)).max(axis=2)
+        in_bar = step <= max_step
+        for k in range(1, width + 1):
+            same = np.zeros_like(in_bar)
+            same[:, :-k] = (arr[1:, :-k] == arr[1:, k:]).all(axis=2)
+            in_bar &= same
+        shades = np.zeros(in_bar.shape[1], dtype=np.int32)
+        for row_in_bar, row_step in zip(in_bar, step):
+            shades = np.where(row_in_bar, shades + (row_step > 0), 0)
+            best = max(best, int(shades.max()))
+    return best
 
 
 def shrink_png_bytes(data: bytes) -> bytes | None:
@@ -45,7 +80,16 @@ def shrink_png_bytes(data: bytes) -> bytes | None:
         return None
     dpi = im.info.get("dpi")
     rgba = im.convert("RGBA")
-    quantized = rgba.quantize(256, method=Image.Quantize.FASTOCTREE)
+    if colour_bar_shades(rgba) >= MIN_COLOUR_BAR_SHADES:
+        return None
+    if rgba.getextrema()[3][0] == 255:
+        # Fully opaque, as every matplotlib figure here is. Median cut on RGB moves the
+        # average pixel about 100x less than fast octree (0.01 vs 1-3.5 on this repo's
+        # figures), but Pillow allows it only without an alpha channel.
+        quantized = rgba.convert("RGB").quantize(
+            256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    else:
+        quantized = rgba.quantize(256, method=Image.Quantize.FASTOCTREE)
     change = ImageStat.Stat(
         ImageChops.difference(rgba, quantized.convert("RGBA")).convert("L")
     ).mean[0]
