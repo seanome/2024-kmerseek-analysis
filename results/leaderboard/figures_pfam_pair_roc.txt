@@ -1,0 +1,34 @@
+shape: (26, 5)
+┌───────────────────┬─────────────────┬─────────────────────┬──────────┬─────────────┐
+│ tool              ┆ target_db       ┆ target_mya_to_human ┆ value    ┆ n_instances │
+│ ---               ┆ ---             ┆ ---                 ┆ ---      ┆ ---         │
+│ str               ┆ str             ┆ f64                 ┆ f64      ┆ i64         │
+╞═══════════════════╪═════════════════╪═════════════════════╪══════════╪═════════════╡
+│ diamond           ┆ QfO ecoli       ┆ 2000.0              ┆ 0.702409 ┆ 9803        │
+│ hmmer3_phmmer     ┆ QfO mouse       ┆ 100.0               ┆ 0.708123 ┆ 20000       │
+│ hmmer3_phmmer     ┆ QfO zebrafish   ┆ 430.0               ┆ 0.709365 ┆ 20000       │
+│ hmmer3_phmmer     ┆ QfO ciona       ┆ 550.0               ┆ 0.793301 ┆ 20000       │
+│ hmmer3_phmmer     ┆ QfO worm        ┆ 650.0               ┆ 0.765722 ┆ 20000       │
+│ hmmer3_phmmer     ┆ QfO yeast       ┆ 900.0               ┆ 0.73692  ┆ 20000       │
+│ hmmer3_phmmer     ┆ QfO arabidopsis ┆ 1500.0              ┆ 0.74972  ┆ 20000       │
+│ hmmer3_phmmer     ┆ QfO ecoli       ┆ 2000.0              ┆ 0.688097 ┆ 9803        │
+│ mmseqs2_iterative ┆ QfO mouse       ┆ 100.0               ┆ 0.840227 ┆ 20000       │
+│ mmseqs2_iterative ┆ QfO chicken     ┆ 300.0               ┆ 0.844253 ┆ 20000       │
+│ mmseqs2_iterative ┆ QfO zebrafish   ┆ 430.0               ┆ 0.841457 ┆ 20000       │
+│ mmseqs2_iterative ┆ QfO ciona       ┆ 550.0               ┆ 0.815729 ┆ 20000       │
+│ mmseqs2_iterative ┆ QfO fly         ┆ 600.0               ┆ 0.809123 ┆ 20000       │
+│ mmseqs2_iterative ┆ QfO worm        ┆ 650.0               ┆ 0.791378 ┆ 20000       │
+│ mmseqs2_iterative ┆ QfO yeast       ┆ 900.0               ┆ 0.735791 ┆ 20000       │
+│ mmseqs2_iterative ┆ QfO arabidopsis ┆ 1500.0              ┆ 0.766976 ┆ 20000       │
+│ mmseqs2_iterative ┆ QfO ecoli       ┆ 2000.0              ┆ 0.692521 ┆ 9803        │
+│ mmseqs2_seqseq    ┆ QfO mouse       ┆ 100.0               ┆ 0.750289 ┆ 20000       │
+│ mmseqs2_seqseq    ┆ QfO chicken     ┆ 300.0               ┆ 0.741217 ┆ 20000       │
+│ mmseqs2_seqseq    ┆ QfO zebrafish   ┆ 430.0               ┆ 0.742729 ┆ 20000       │
+│ mmseqs2_seqseq    ┆ QfO ciona       ┆ 550.0               ┆ 0.729244 ┆ 20000       │
+│ mmseqs2_seqseq    ┆ QfO fly         ┆ 600.0               ┆ 0.718231 ┆ 20000       │
+│ mmseqs2_seqseq    ┆ QfO worm        ┆ 650.0               ┆ 0.703921 ┆ 20000       │
+│ mmseqs2_seqseq    ┆ QfO yeast       ┆ 900.0               ┆ 0.67588  ┆ 20000       │
+│ mmseqs2_seqseq    ┆ QfO arabidopsis ┆ 1500.0              ┆ 0.673821 ┆ 20000       │
+│ mmseqs2_seqseq    ┆ QfO ecoli       ┆ 2000.0              ┆ 0.633112 ┆ 9803        │
+└───────────────────┴─────────────────┴─────────────────────┴──────────┴─────────────┘
+wrote /Users/olga/code/2024-kmerseek-analysis/.claude/worktrees/agent-a5da323da019c29d5/results/leaderboard/figures/pfam_pair_roc_by_divergence.png
