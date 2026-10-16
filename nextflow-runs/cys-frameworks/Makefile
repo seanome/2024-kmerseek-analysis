@@ -51,6 +51,10 @@ TABLES    := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../../tables/cys_fr
 #
 # hns, not normal: hns's partition QOS allows 7 days under `--qos=normal`, and the
 # public normal partition stops at 2 days.
+# Extra arguments for nextflow, appended to every run target, e.g.
+#   make run-phylum CYS2_MEMORY_GB=700 CYS_HP3_SCALE=25 NF_ARGS='--drop_settings cys_hp3:9'
+NF_ARGS ?=
+
 SLURM_ACCOUNT  ?= ayeletv
 HEAD_PARTITION ?= hns
 HEAD_QOS       ?= normal
@@ -188,7 +192,8 @@ pilot: require-sherlock
 	    --only Cnidaria \
 	    --sample_non_toxins 20000 \
 	    --queries_per_framework 10 \
-	    --outdir $(CURDIR)/pilot/results
+	    --outdir $(CURDIR)/pilot/results \
+	    $(NF_ARGS)
 
 # The full runs index Swiss-Prot with one clade removed, about 575_700 entries, 21 times
 # the pilot's reference. How cys2 memory grows with that is not known until the pilot
@@ -231,7 +236,8 @@ run-phylum: require-sherlock require-cys2-memory
 	    --swissprot_fasta $(SWISSPROT) \
 	    --reference_entries $(DATA)/reference_entries.csv \
 	    --level phylum \
-	    --outdir $(CURDIR)/run-phylum/results
+	    --outdir $(CURDIR)/run-phylum/results \
+	    $(NF_ARGS)
 
 run-genus: require-sherlock require-cys2-memory
 	mkdir -p run-genus
@@ -245,7 +251,8 @@ run-genus: require-sherlock require-cys2-memory
 	    --reference_entries $(DATA)/reference_entries.csv \
 	    --level genus \
 	    --genus_min_queries 20 \
-	    --outdir $(CURDIR)/run-genus/results
+	    --outdir $(CURDIR)/run-genus/results \
+	    $(NF_ARGS)
 
 # The live task table of the head running in RUN's folder (pilot, run-phylum, run-genus).
 watch: require-sherlock
