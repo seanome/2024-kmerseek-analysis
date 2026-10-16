@@ -74,7 +74,19 @@ process foldseekTargetDb {
     # createsubdb in Foldseek 10 cuts the amino-acid, 3Di, C-alpha and header databases
     # together. The keys stay the database's own, so the lookup is cut to the same keys.
     foldseek createsubdb \$out/ids.txt afdb/db \$out/db --subdb-mode 0
-    awk -F'\\t' 'NR == FNR { k[\$1]; next } \$1 in k' \$out/ids.txt afdb/db.lookup > \$out/db.lookup
+    # createsubdb leaves some files (db.lookup among them) as symlinks into the shared
+    # source database. Writing through one would overwrite the source: a redirect onto the
+    # db.lookup link emptied the shared lookup in a test. So every link is replaced by a
+    # real copy, and the lookup is written to a new file, before anything is written here.
+    for f in \$out/*; do
+        if [ -L "\$f" ]; then src=\$(readlink -f "\$f"); command rm -f "\$f"; cat "\$src" > "\$f"; fi
+    done
+    awk -F'\\t' 'NR == FNR { k[\$1]; next } \$1 in k' \$out/ids.txt afdb/db.lookup > \$out/db.lookup.cut
+    command rm -f \$out/db.lookup
+    mv \$out/db.lookup.cut \$out/db.lookup
+    test \$(wc -l < \$out/db.lookup) -eq \$(wc -l < \$out/ids.txt) || { echo "cut lookup and ids differ" >&2; exit 1; }
+    test \$(wc -l < afdb/db.lookup) -gt \$(wc -l < \$out/db.lookup) || { echo "source lookup looks emptied" >&2; exit 1; }
+    test -z "\$(find \$out -type l)" || { echo "links into the source database remain" >&2; exit 1; }
     cp afdb/db.version \$out/afdb_db.version 2>/dev/null || true
     for s in '' _ss _ca _h; do test -e \$out/db\${s}.dbtype || { echo "createsubdb wrote no db\${s}" >&2; exit 1; }; done
     cat \$out/summary.json >&2

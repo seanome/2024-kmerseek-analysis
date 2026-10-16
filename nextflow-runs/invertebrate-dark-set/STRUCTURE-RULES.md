@@ -92,3 +92,13 @@ The task said placement should use "the same decoy-matched cutoff rule the pipel
 for sequence tools". This pipeline has none: a sequence tool places a protein at a fixed
 E-value (`--evalue_call`, 0.001 in the run; E < 1 in notebook 291). The decoy rule above is
 applied to Foldseek and ProstT5 only, and the sequence tools keep their E-value cutoffs.
+
+## Known risk, found before the run (2026-10-16)
+
+The Foldseek decoy keeps runs of adjacent (amino acid, 3Di) pairs, so it keeps some real
+signal: in a five-structure test, a decoy of 1fmc chain A hit 1fmc chains A and B at E 1e-4
+and 3e-3. A decoy that hits a distant relative of its own protein makes the 5% cutoff
+stricter than a chance-hit rate would, which lowers Foldseek's placed count and makes P1
+easier to hold. After the run, the decoys' best hits are judged against Pfam like the real
+ones; if more than 1 in 5 judged decoy hits share a family with the protein, P1 is reported
+as unreliable rather than as holding.
