@@ -1,0 +1,21 @@
+{
+ "seed_members": 1240873,
+ "members_dropped_accession_is_a_query": 48,
+ "members_dropped_sequence_inside_a_query": 30,
+ "members_dropped_empty": 0,
+ "members_kept": 1240795,
+ "entries": 1239872,
+ "members_sharing_an_entry": 923,
+ "entries_in_more_than_one_family": 2,
+ "families_in_seed_file": 18259,
+ "families_with_an_entry": 18259,
+ "residues": 192919769,
+ "entry_length_median": 119,
+ "entries_shorter_than_10_aa": 110,
+ "letters": "ABCDEFGHIKLMNOPQRSTUVWXYZ",
+ "queries_checked": 16698,
+ "sprot2019_08_proteins": 560823,
+ "sprot2019_08_residues": 201585439,
+ "residue_ratio_sprot_over_seed": 1.044918517396732,
+ "bits_saved_log2_ratio": 0.06339044553010233
+}

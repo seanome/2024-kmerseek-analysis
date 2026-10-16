@@ -1,0 +1,15 @@
+step,what,n,note
+1,sequences in Pfam 33.1 pfamseq,47079205,""
+1,MD5 check: proteins checked,1000,""
+1,MD5 check: disagree,0,(not found in pfamseq: 0)
+2a,no t0 row by accession,11711101,""
+2,no t0 row by accession or by MD5,11711072,(dropped 29 whose identical sequence has a t0 domain)
+3,same sequence has a Pfam-A domain at t1,1269023,(1_239_800 distinct sequences)
+3b,"still in 2025_03 reference proteomes, still no domain",8083707,""
+3c,left the reference proteomes (cannot be checked),2358342,""
+3,"instances (query, family, t1 start, t1 end)",1494716,""
+ref,Swiss-Prot 2019_08 entries,560823,""
+ref,t0 Pfam domains on Swiss-Prot 2019_08 proteins,886840,"(530_692 proteins, 14_485 families; 0 proteins dropped: their 33.1 MD5 differs from the 2019_08 sequence)"
+4,instances whose family existed at t0,304439,(created after t0: 1_190_277)
+5,and the family has a t0 Swiss-Prot domain,281593,(92.5% of step 4)
+7,and the query is not a Swiss-Prot 2019_08 sequence,280374,"(263_544 queries, 6_077 families)"
