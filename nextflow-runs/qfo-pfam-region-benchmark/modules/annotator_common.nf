@@ -194,7 +194,7 @@ process scoreAnnotatorTool {
      * the clade-excluded Swiss-Prot for the best-hit tools, its own models for the
      * reference-database tools.
      */
-    tag "${tool} ${setting}"
+    tag "${tool} ${setting} ${species}"
     container "${params.kmerseek_image}"
     cpus 1
     memory { 8.GB * task.attempt }

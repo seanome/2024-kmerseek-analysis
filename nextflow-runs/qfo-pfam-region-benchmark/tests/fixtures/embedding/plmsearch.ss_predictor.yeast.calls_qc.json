@@ -1,0 +1,10 @@
+{
+ "tool": "plmsearch",
+ "setting": "ss_predictor",
+ "species": "yeast",
+ "n_queries": 60,
+ "n_queries_with_hit": 42,
+ "n_queries_with_call": 42,
+ "n_calls": 103,
+ "call_interval": "whole query (1..length): PLMSearch reports no alignment"
+}

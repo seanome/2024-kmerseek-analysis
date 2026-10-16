@@ -19,6 +19,10 @@
  * (default DIAMOND search) annotate the queries against their own databases, which
  * contain human. Their rows are "graded on their own models", as hmmscan's is.
  *
+ * G3, embedding search: TM-Vec (with DeepBLAST's structural alignment) and PLMSearch,
+ * the queries against each QfO target proteome; best hit's Pfam domains from the
+ * target's domain map. GPU tasks.
+ *
  * Launch: `make run-annotator-tools` (Sherlock); `make stub` checks the wiring on a
  * laptop. Rows and cards: `make annotator-rows` after the run.
  */
@@ -44,7 +48,22 @@ params.interproscan_dir = null   // unpacked interproscan-5.78-109.0 (make inter
 params.eggnog_data_dir  = null   // emapperdb 5.0.2 (make eggnog-data)
 params.refdb_label      = 'own_models'
 // Which tools run (comma-separated).
-params.tools = 'diamond,mmseqs2,interproscan,eggnog'
+// G3, embedding search against each QfO target proteome of the midi-plus run.
+params.embedding_targets  = 'mouse,chicken,zebrafish,ciona,fly,worm,yeast,arabidopsis,ecoli,botryllus'
+params.species_registry   = "${projectDir}/assets/qfo_species.tsv"
+params.qfo_dir            = null   // data/midi-plus/qfo
+params.domain_map_dir     = null   // data/midi-plus/results/truth (<species>_domain_map.parquet)
+params.tmvec_image        = null   // built from Dockerfile.tmvec
+params.tmvec_model        = null   // TM-Vec checkpoint (.ckpt)
+params.tmvec_config       = null   // its params .json
+params.prott5_dir         = null   // ProtT5-XL-UniRef50 weights folder
+params.deepblast_model    = null   // DeepBLAST checkpoint; null = no alignment, no positions
+params.plmsearch_image    = null   // built from Dockerfile.plmsearch
+params.plmsearch_model_dir = null  // plmsearch_data/model (plmsearch.sav, esm/)
+params.tmvec_setting      = params.deepblast_model ? 'cath_deepblast' : 'cath'
+params.plmsearch_setting  = 'ss_predictor'
+// Which tools run (comma-separated).
+params.tools = 'diamond,mmseqs2,interproscan,eggnog,tmvec,plmsearch'
 
 // After the params, not before: a module reads params when it is included, so a param
 // set below an include is undefined inside it (the stub run caught --min-overlap null).
@@ -54,6 +73,7 @@ include { DIAMOND_BEST_HIT } from './modules/diamond_best_hit'
 include { MMSEQS_BEST_HIT }  from './modules/mmseqs_best_hit'
 include { INTERPROSCAN }     from './modules/interproscan'
 include { EGGNOG_MAPPER }    from './modules/eggnog_mapper'
+include { shortHeaders; TMVEC; PLMSEARCH } from './modules/embedding_search'
 
 def required(name) {
     if (params[name] == null) {
@@ -74,12 +94,12 @@ workflow {
         error "expected 4 hmmpress files beside ${params.pfam_hmm}, found ${hmm_aux.size()}"
     }
     tools = params.tools.tokenize(',')
-    def unknown = tools - ['diamond', 'mmseqs2', 'interproscan', 'eggnog']
+    def unknown = tools - ['diamond', 'mmseqs2', 'interproscan', 'eggnog', 'tmvec', 'plmsearch']
     if (unknown) error "unknown --tools: ${unknown}"
 
-    ref = cladeExcludedReference(dat, params.exclude_clade)
-
     hits = Channel.empty()
+    def best_hit_tools = tools.intersect(['diamond', 'mmseqs2'])
+    ref = best_hit_tools ? cladeExcludedReference(dat, params.exclude_clade) : null
     if ('diamond' in tools) {
         hits = hits.mix(DIAMOND_BEST_HIT(ref.fasta, queries,
                                          params.diamond_settings.tokenize(',')).hits)
@@ -88,12 +108,14 @@ workflow {
         hits = hits.mix(MMSEQS_BEST_HIT(ref.fasta, queries, params.mmseqs_sensitivity).hits)
     }
 
-    targets = hitTargets(hits.map { it[2] }.collect(), ref.fasta)
-    domains = hmmscanHitTargets(targets.map { [it, hmm, hmm_aux] })
-
-    placed = placeBestHitDomains(hits.combine(domains).combine(queries))
-    regions = placed.regions
-        .map { tool, setting, r -> [tool, setting, params.species_label, r] }
+    regions = Channel.empty()
+    if (best_hit_tools) {
+        targets = hitTargets(hits.map { it[2] }.collect(), ref.fasta)
+        domains = hmmscanHitTargets(targets.map { [it, hmm, hmm_aux] })
+        placed = placeBestHitDomains(hits.combine(domains).combine(queries))
+        regions = placed.regions
+            .map { tool, setting, r -> [tool, setting, params.species_label, r] }
+    }
 
     // Reference-database tools: their calls are already on the query, from their own
     // models, so there is no reference, no best hit and no placement step.
@@ -107,6 +129,43 @@ workflow {
         def edir = required('eggnog_data_dir')
         regions = regions.mix(EGGNOG_MAPPER(queries, Channel.value(edir), Channel.value(hmm)).regions
             .map { tool, setting, r -> [tool, setting, params.refdb_label, r] })
+    }
+
+    // Embedding search: one task per target proteome; the species is the row's target.
+    def emb_tools = tools.intersect(['tmvec', 'plmsearch'])
+    if (emb_tools) {
+        def species = params.embedding_targets.tokenize(',')
+        def registry = file(params.species_registry).readLines().drop(1)
+            .collect { it.split('\t') }
+            .collectEntries { [(it[0]): it] }
+        def target_rows = species.collect { sp ->
+            def r = registry[sp]
+            if (r == null) error "${sp} is not in ${params.species_registry}"
+            def fasta = file("${required('qfo_dir')}/${r[3]}/${r[2]}_${r[1]}.fasta", checkIfExists: true)
+            def map = file("${required('domain_map_dir')}/${sp}_domain_map.parquet", checkIfExists: true)
+            [sp, fasta, map]
+        }
+        shorts = shortHeaders(
+            Channel.fromList(target_rows.collect { [it[0], it[1]] })
+                .mix(queries.map { ['query', it] })
+        )
+        q_short = shorts.filter { it[0] == 'query' }.map { it[1] }
+        maps = Channel.fromList(target_rows.collect { [it[0], it[2]] })
+        t_short = shorts.filter { it[0] != 'query' }.combine(maps, by: 0)
+
+        if ('tmvec' in emb_tools) {
+            if (params.tmvec_image == null) error "--tmvec_image is required for tmvec (build Dockerfile.tmvec)"
+            def models = Channel.value([
+                required('tmvec_model'), required('tmvec_config'), required('prott5_dir'),
+                params.deepblast_model ? required('deepblast_model')
+                                       : file("${projectDir}/assets/NO_DEEPBLAST")])
+            regions = regions.mix(TMVEC(t_short, q_short, models).regions)
+        }
+        if ('plmsearch' in emb_tools) {
+            if (params.plmsearch_image == null) error "--plmsearch_image is required for plmsearch (build Dockerfile.plmsearch)"
+            regions = regions.mix(PLMSEARCH(t_short, q_short,
+                                             Channel.value(required('plmsearch_model_dir'))).regions)
+        }
     }
 
     scoreAnnotatorTool(regions.combine(truth).combine(covariates))

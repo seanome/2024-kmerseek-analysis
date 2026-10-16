@@ -2539,14 +2539,42 @@ ANNOT_SPROT  ?= $$SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
 # G2 data, downloaded once by `make interproscan-data` and `make eggnog-data`.
 ANNOT_IPS    ?= $$SCRATCH/data/interproscan/interproscan-5.78-109.0
 ANNOT_EGGNOG ?= $$SCRATCH/data/eggnog/emapperdb-5.0.2
+# G3 models and images. The images are built from Dockerfile.tmvec and Dockerfile.plmsearch
+# by `make push-embedding-images` (on the Mac); weights by `make embedding-models` plus the
+# TM-Vec and DeepBLAST checkpoints placed by hand (see assets/download_embedding_models.sbatch).
+EMB_MODELS     ?= $$SCRATCH/data/embedding-models
+EMB_DATE       ?= 2026-10-16
+TMVEC_IMAGE    ?= docker.io/olgabot/tmvec:$(EMB_DATE)
+PLMSEARCH_IMAGE ?= docker.io/olgabot/plmsearch:$(EMB_DATE)
+ANNOT_G3_INPUTS = --qfo_dir ../data/midi-plus/qfo \
+                  --domain_map_dir ../data/midi-plus/results/truth \
+                  --tmvec_image $(TMVEC_IMAGE) \
+                  --tmvec_model $(EMB_MODELS)/tmvec/tm_vec_cath_model.ckpt \
+                  --tmvec_config $(EMB_MODELS)/tmvec/tm_vec_cath_model_params.json \
+                  --deepblast_model $(EMB_MODELS)/tmvec/deepblast.ckpt \
+                  --prott5_dir $(EMB_MODELS)/prott5/prot_t5_xl_uniref50 \
+                  --plmsearch_image $(PLMSEARCH_IMAGE) \
+                  --plmsearch_model_dir $(EMB_MODELS)/plmsearch/plmsearch_data/model
 ANNOT_INPUTS  = --queries    ../data/midi-plus/qfo/Eukaryota/UP000005640_9606.fasta \
                 --truth      ../data/midi-plus/results/truth/human_domain_truth.parquet \
                 --covariates ../data/midi-plus/results/truth/human_query_covariates.parquet \
                 --swissprot_dat $(ANNOT_SPROT) \
                 --interproscan_dir $(ANNOT_IPS) \
-                --eggnog_data_dir  $(ANNOT_EGGNOG)
+                --eggnog_data_dir  $(ANNOT_EGGNOG) \
+                $(ANNOT_G3_INPUTS)
 
-.PHONY: stub run-annotator-tools annotator-rows annotator-rows-stub interproscan-data eggnog-data
+.PHONY: stub run-annotator-tools annotator-rows annotator-rows-stub interproscan-data eggnog-data \
+        embedding-models push-embedding-images
+
+embedding-models:
+	$(call require_cluster)
+	sbatch assets/download_embedding_models.sbatch
+
+# On the Mac (Docker). linux/amd64 for Sherlock. The Dockerfiles run each tool's --help
+# at build time, so a broken install fails the build rather than the run.
+push-embedding-images:
+	docker buildx build --platform $(DOCKER_PLATFORM) -f Dockerfile.tmvec -t $(TMVEC_IMAGE) --push .
+	docker buildx build --platform $(DOCKER_PLATFORM) -f Dockerfile.plmsearch -t $(PLMSEARCH_IMAGE) --push .
 
 # Each submits one sbatch job (4 h or less) that downloads into $SCRATCH/data and is
 # safe to resubmit: a finished file is skipped and a partial one is continued.
@@ -2561,7 +2589,7 @@ eggnog-data:
 # Every image the annotator modules name, plus the kmerseek image their python steps use.
 # Pulled before launch by prefetch-images: the head job's node cannot pull them itself.
 ANNOT_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" modules/*.nf | sort -u) \
-                    docker.io/olgabot/kmerseek:$(IMAGE_TAG)
+                    docker.io/olgabot/kmerseek:$(IMAGE_TAG) $(TMVEC_IMAGE) $(PLMSEARCH_IMAGE)
 
 run-annotator-tools: GUARD_NAME := run-annotator-tools
 run-annotator-tools: HEAD_TIME := 12:00:00
@@ -2594,7 +2622,12 @@ annotator-rows:
 # tool output committed under tests/fixtures/annotator (60 human queries against 120
 # yeast proteins, made by tests/make_annotator_fixture.sh). No container, no search.
 stub:
-	mkdir -p stub/pfam stub/interproscan/data stub/eggnog
+	mkdir -p stub/pfam stub/interproscan/data stub/eggnog stub/models stub/qfo/Eukaryota stub/maps
+	@# G3 against one target, yeast, laid out as the registry names it.
+	ln -sf $(CURDIR)/tests/fixtures/qfo/yeast.fasta stub/qfo/Eukaryota/UP000002311_559292.fasta
+	ln -sf $(CURDIR)/tests/fixtures/annotations/yeast_pfam_domains.parquet stub/maps/yeast_domain_map.parquet
+	touch stub/models/tmvec.ckpt stub/models/tmvec.json stub/models/deepblast.ckpt
+	mkdir -p stub/models/prott5 stub/models/plmsearch
 	touch stub/pfam/Pfam-A.hmm stub/pfam/Pfam-A.hmm.h3f stub/pfam/Pfam-A.hmm.h3i \
 	      stub/pfam/Pfam-A.hmm.h3m stub/pfam/Pfam-A.hmm.h3p
 	@# One CPU per task: the stub copies files, and the laptop has fewer cores than the
@@ -2610,6 +2643,10 @@ stub:
 	    --pfam_hmm      pfam/Pfam-A.hmm \
 	    --interproscan_dir interproscan \
 	    --eggnog_data_dir  eggnog \
+	    --embedding_targets yeast --qfo_dir qfo --domain_map_dir maps \
+	    --tmvec_image stub --tmvec_model models/tmvec.ckpt --tmvec_config models/tmvec.json \
+	    --prott5_dir models/prott5 --deepblast_model models/deepblast.ckpt \
+	    --plmsearch_image stub --plmsearch_model_dir models/plmsearch \
 	    --outdir        $(CURDIR)/stub/results \
 	    --trace_file    annotator_tools.trace.txt
 	$(MAKE) annotator-rows-stub

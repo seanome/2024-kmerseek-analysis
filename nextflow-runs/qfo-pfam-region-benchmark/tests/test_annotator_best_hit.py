@@ -361,7 +361,9 @@ def test_rows_cost_pileup_and_cards(tmp_path):
         "call_end",
         "score",
         "is_tp",
+        "target",
     ]
+    assert set(pile["target"]) == {"Swiss-Prot minus Mammalia"}
 
     c = json.loads((out / "cards" / "diamond_besthit.sensitive.json").read_text())
     assert c["container"] == "quay.io/biocontainers/diamond@sha256:x"
