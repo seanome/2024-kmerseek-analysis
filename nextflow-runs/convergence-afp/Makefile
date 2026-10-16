@@ -12,6 +12,7 @@
 #   make convergence_afp_pilot   every method, kmerseek on the pilot settings only
 #   make convergence_afp         every method, all 230 kmerseek settings (resumes the pilot)
 #   make convergence_afp_after_pilot   queue convergence_afp to start when the pilot ends cleanly
+#   make convergence_afp_and_score  one job: the searches, then the scoring
 #   make score                   turn the ranked lists into the notebook's tables
 #   make running                 what is running
 
@@ -74,7 +75,7 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
 
 .PHONY: help assets test test-foldseek-db stage build-image push-image plan check-inputs \
         convergence_afp convergence_afp_pilot convergence_afp_after_pilot cancel-after-pilot \
-        score pull-scored \
+        score pull-scored convergence_afp_and_score \
         running watch stop pull
 
 help:
@@ -209,14 +210,24 @@ convergence_afp_after_pilot:
 cancel-after-pilot:
 	scancel -n nfnext-$(RUN)
 
+NF_SCORE = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -entry score -resume \
+  --kmerseek_image $(IMAGE) --outdir $(OUTDIR) --run_tag $(RUN)-score
+
 # Scoring only: reads the published hits, writes results/scored. Minutes, one small job,
 # so it runs in the foreground rather than through a driver job.
 score: check-inputs
 	$(call require_cluster)
 	@mkdir -p $(LAUNCH_DIR)
-	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && \
-	  $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -entry score -resume \
-	    --kmerseek_image $(IMAGE) --outdir $(OUTDIR) --run_tag $(RUN)-score $(NF_ARGS)
+	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && $(NF_SCORE) $(NF_ARGS)
+
+# One driver job that runs the searches and then the scoring, so there is nothing to
+# submit by hand in between. tools/run-and-score splits the two command lines and stops
+# before scoring if the searches fail. Everything already searched is a cache hit, so
+# after a change to the scans or the scoring this costs only what actually changed.
+convergence_afp_and_score: check-inputs plan
+	$(refuse_second_driver)
+	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && $(HEAD_SUBMIT) \
+	  $(MAKEFILE_DIR)/tools/run-and-score $(NF_RUN) --settings all $(NF_ARGS) -- $(NF_SCORE)
 
 # The scored tables back to the Mac for the notebook: a few MB, not the 1.2 GB of hits.
 pull-scored:
