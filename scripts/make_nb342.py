@@ -941,10 +941,23 @@ side, from the including protein. Each query has one decoy, a dipeptide-shuffled
 query's residues, its first and last residue and its count of every residue pair, so it has the
 same composition but no real match. All 4_513 exons are searched, in both halves and all classes.
 
-**Not yet run.** The prompt asks for a kmerseek build that holds the two new alphabets
-(seanome/kmerseek PR 146) and the fix for entries with equal k-mer sets (PR 141). PR 141 is based
-on `release-0.4.0` and does not apply to `main`, where the same entries are dropped rather than
-mislabelled. The search waits on that fix being ported to `main`.
+**Not yet run.** The search runs on Sherlock with `scripts/342_stop3_submit.sh`, which submits one
+job per step of `scripts/342_stop3.sbatch`:
+
+1. Build kmerseek from the tag `nb342-kmerseek-9ce5865` of seanome/kmerseek: `main` 00395d7 plus
+   PR 146 (the two new alphabets), PR 144 (`--ka-r-database`) and PR 152 (index entries keyed by
+   their sequence, the port of PR 141's fix to `main`). All 341 kmerseek tests pass on that commit.
+2. Rebuild PR 114's 10-residue-window decoys of both indexes with its script and seed. Each decoy
+   file must match the md5 PR 114 published, so the indexes hold the same decoys.
+3. Build 8 indexes: the regions index and the whole-protein index for each of the 4 settings. The
+   whole-protein index is built only for its E-value fit.
+4. Search the regions index with the queries in 10 chunks per setting, using the whole-protein
+   index's fit. Keep regions with E ≤ 10.
+5. Score with `scripts/342_kind4_features.py`: the own-gene filter, the decoy-matched cutoff of
+   each setting on the tune half, and the kind 4 features per exon.
+
+Each job's memory and time come from the measured peaks in PR 114's Sherlock traces (table below).
+The two new alphabets have no history; they borrow polarity4 k11's, the closest measured alphabet.
 """)
 
 code(r"""
@@ -961,6 +974,8 @@ ax.hist(queries["query_length"], bins=np.arange(30, 200, 5), color=pf.GREY)
 ax.set_xlabel("query length (aa): exon plus up to 20 residues on each side")
 ax.set_ylabel("exon queries (n)")
 save_figure(fig, FIGURES / "342_setA_exon_query_lengths_patowary2024")
+print(pl.read_csv(TABLES / "342_stop3_resources.tsv", separator="\t", comment_prefix="#")
+      .select("step", "alphabet", "k", "index", "mem_gb", "hours", "measured_peak_gb", "measured_time"))
 """)
 
 nb = {
