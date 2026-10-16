@@ -102,3 +102,14 @@ stricter than a chance-hit rate would, which lowers Foldseek's placed count and 
 easier to hold. After the run, the decoys' best hits are judged against Pfam like the real
 ones; if more than 1 in 5 judged decoy hits share a family with the protein, P1 is reported
 as unreliable rather than as holding.
+
+## Strict judgement wired in (2026-10-16, still before the run)
+
+Rule 3 said the stricter judgement of the weak-hit accuracy work would be used beside PR
+133's if pushed before scoring. It was pushed (PR 163, commit 13749b87), so scoring now also
+runs its `dark-set-accuracy score-bands` on each tool's best hits, with the hit's query
+stretch: loose right = a shared Pfam family or clan; strict right = a shared family and the
+hit's query stretch overlaps a query domain of that family. P2 is still decided on the
+family call written above; the loose and strict shares are printed beside it. score-bands'
+dark set is "best sequence-tool E > 1", which differs from dark_E1 (E >= 1) only for a
+protein whose best sequence hit is exactly 1.

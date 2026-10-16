@@ -31,14 +31,39 @@ place=$($SB -c 1 --mem 16G -t 1:00:00 -J ds-place -o "$OUT/logs/placement.log" -
   "set -euo pipefail; $AX $TOOL placement $STRUCT $EV $OUT human worm yeast borrelia botryllus")
 echo "placement: $place"
 
-judge=$($SB -c 1 --mem 16G -t 1:00:00 -J ds-judge --dependency=afterok:"$place" -o "$OUT/logs/judge.log" --wrap \
+# The loose and strict calls come from Prompt C's `dark-set-accuracy score-bands` (PR 163,
+# branch olgabot/dark-set-weak-hit-accuracy), pinned to the commit that added it, read
+# out of git here on the login node so a later change on that branch cannot move it.
+DSA_COMMIT=${DSA_COMMIT:-13749b87}
+# (cd ... && git ...), not git -C: Sherlock's git is 1.8.3, which has no -C.
+(cd "$(dirname "$0")" && git fetch -q origin olgabot/dark-set-weak-hit-accuracy &&
+ git show "$DSA_COMMIT":nextflow-runs/invertebrate-dark-set/tools/dark-set-accuracy) \
+    > "$OUT/dark-set-accuracy.$DSA_COMMIT"
+test -s "$OUT/dark-set-accuracy.$DSA_COMMIT"
+DSA="$OUT/dark-set-accuracy.$DSA_COMMIT"
+bands=""
+for spec in human:Mammalia:$ANN/human_pfam_domains.parquet: \
+            worm:Chromadorea:$ANN/worm_pfam_domains.parquet: \
+            yeast:Saccharomycetes:$ANN/yeast_pfam_domains.parquet: \
+            borrelia:Spirochaetia:$ACC/query-pfam/borrelia_pfam.tsv:$ACC/query-pfam/borrelia_domains.tsv; do
+    IFS=: read -r sp clade qpfam qdom <<< "$spec"
+    src=""
+    for t in foldseek prostt5; do
+        src="$src --source ${t}_placed=$OUT/bands/$sp.${t}_placed.tsv --source ${t}_any=$OUT/bands/$sp.${t}_any.tsv"
+    done
+    bands="$bands $AX $DSA score-bands --species $sp --query-pfam $qpfam ${qdom:+--query-domains $qdom} \
+      --ref-pfam $REF/minus_$clade/reference_pfam.parquet --clans $CLANS --ev-dir $EV $src \
+      --out-tsv $OUT/bands/${sp}_bands.tsv --out-json $OUT/bands/${sp}_bands.json;"
+done
+judge=$($SB -c 1 --mem 16G -t 2:00:00 -J ds-judge --dependency=afterok:"$place" -o "$OUT/logs/judge.log" --wrap \
   "set -euo pipefail; $AX $TOOL judge $OUT $CLANS \
      human:$ANN/human_pfam_domains.parquet:$REF/minus_Mammalia/reference_pfam.parquet \
      worm:$ANN/worm_pfam_domains.parquet:$REF/minus_Chromadorea/reference_pfam.parquet \
      yeast:$ANN/yeast_pfam_domains.parquet:$REF/minus_Saccharomycetes/reference_pfam.parquet \
      borrelia:$ACC/query-pfam/borrelia_pfam.tsv:$REF/minus_Spirochaetia/reference_pfam.parquet; \
+     $AX $TOOL bands-inputs $OUT; $bands $AX $TOOL bands-collect $OUT; \
      $AX $TOOL report $OUT")
-echo "judge + report: $judge"
+echo "judge, loose and strict calls, report: $judge"
 
 inputs=$($SB -c 1 --mem 16G -t 1:00:00 -J ds-fmax-in --dependency=afterok:"$place" -o "$OUT/logs/fmax-inputs.log" --wrap \
   "set -euo pipefail; $AX $TOOL fmax-inputs $OUT $DARK_FMAX $STRUCT human worm yeast borrelia")

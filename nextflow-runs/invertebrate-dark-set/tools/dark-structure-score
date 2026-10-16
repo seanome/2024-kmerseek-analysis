@@ -4,6 +4,8 @@
     tools/dark-structure-score placement <structure_outdir> <protein_evalues_dir> <out_dir> [species ...]
     tools/dark-structure-score judge <out_dir> <clans.tsv.gz> <species>:<query_pfam>:<reference_pfam.parquet> [...]
     tools/dark-structure-score fmax-inputs <out_dir> <dark_fmax_dir> <structure_outdir> [species ...]
+    tools/dark-structure-score bands-inputs <out_dir>
+    tools/dark-structure-score bands-collect <out_dir>
     tools/dark-structure-score report <out_dir>
 
 Every rule here was written down in STRUCTURE-RULES.md before the run.
@@ -33,8 +35,13 @@ judge      The best hit of every placed protein is called right or wrong against
            Writes judged_best_hits.parquet and marginal_gain.csv: per species and tool, the
            dark proteins it places (all of them have no sequence-tool hit at E < 1), right,
            clan only, wrong, unknown, no query family; the union of the two tools too.
-           The stricter judgement of the weak-hit accuracy work (branch
-           olgabot/dark-set-weak-hit-accuracy) replaces this one when it is pushed.
+bands-inputs  Writes each species' and tool's best hits with their query stretch, for
+           `dark-set-accuracy score-bands` (PR 163, branch olgabot/dark-set-weak-hit-accuracy,
+           commit 13749b87), which makes the loose call (shared family or clan) and the strict
+           call (shared family AND the hit's query stretch overlaps a query domain of that
+           family). tools/dark-structure-score-sbatch runs it.
+bands-collect  Sums score-bands' output over E bands for placed dark proteins into
+           strict_judgement.csv.
 fmax-inputs  For evaluate_domain_calls.py (the QfO region benchmark's scorer, the metrics
            of notebook 291): one hits file per species and tool (real queries only), and the
            truth tables of tools/dark-fmax (dark_E1, dark_E10, placed: 1_000 random placed
@@ -85,7 +92,9 @@ def decoy_cutoff(decoy_best, n_run, rate=DECOY_RATE):
 
 
 def read_hits(paths):
-    """query -> (best target, best E-value, bits) from 8-column TSVs (no header)."""
+    """query -> (best target, best E-value, bits, query_from, query_to) from the 8-column
+    TSVs (no header: query, target, qstart, qend, tstart, tend, bits, evalue; 1-based,
+    fragment hits already in protein coordinates)."""
     best = {}
     for p in paths:
         with gzip.open(p, "rt") as fh:
@@ -96,7 +105,7 @@ def read_hits(paths):
                 q, t, ev, bits = f[0], f[1], float(f[7]), float(f[6])
                 b = best.get(q)
                 if b is None or ev < b[1] or (ev == b[1] and bits > b[2]):
-                    best[q] = (t, ev, bits)
+                    best[q] = (t, ev, bits, int(f[2]), int(f[3]))
     return best
 
 
@@ -143,6 +152,8 @@ def placement(struct_dir, ev_dir, out_dir, *species):
                 rows.append(dict(species=sp, tool=tool, accession=a, run=a in run,
                                  best_target=b[0] if b else None,
                                  best_evalue=b[1] if b else None,
+                                 best_query_from=b[3] if b else None,
+                                 best_query_to=b[4] if b else None,
                                  decoy_best_target=db[0] if db else None,
                                  decoy_best_evalue=db[1] if db else None,
                                  placed=bool(b) and b[1] <= cut,
@@ -246,6 +257,60 @@ def judge(out_dir, clans, *specs):
         print(m)
 
 
+def bands_inputs(out_dir):
+    """Hits files for `dark-set-accuracy score-bands` (PR 163, olgabot/dark-set-weak-hit-accuracy).
+
+    Per species and tool, two TSVs (query, target, evalue, query_from, query_to; 1-based
+    inclusive query stretch of the best hit):
+      <sp>.<tool>_placed.tsv  best hits of the proteins placed at the 5% decoy cutoff
+      <sp>.<tool>_any.tsv     best hits of every protein with any hit (E <= 10)
+    """
+    import polars as pl
+    pp = pl.read_parquet(os.path.join(out_dir, "placement_proteins.parquet"))
+    d = os.path.join(out_dir, "bands")
+    os.makedirs(d, exist_ok=True)
+    cols = [pl.col("accession").alias("query"), pl.col("best_target").alias("target"),
+            pl.col("best_evalue").alias("evalue"), pl.col("best_query_from").alias("query_from"),
+            pl.col("best_query_to").alias("query_to")]
+    for (sp, tool), g in pp.group_by(["species", "tool"], maintain_order=True):
+        hit = g.filter(pl.col("best_target").is_not_null())
+        hit.filter(pl.col("placed")).select(cols).write_csv(
+            os.path.join(d, "%s.%s_placed.tsv" % (sp, tool)), separator="\t")
+        hit.select(cols).write_csv(os.path.join(d, "%s.%s_any.tsv" % (sp, tool)), separator="\t")
+        print("%s %s: %d placed, %d with any hit" % (sp, tool, hit.filter(pl.col("placed")).height, hit.height))
+
+
+def bands_collect(out_dir):
+    """Loose and strict calls on placed dark proteins, from score-bands' <sp>_bands.tsv.
+
+    Reads query_set dark_1 (score-bands: smallest sequence-tool E > 1; this tool's dark_E1
+    is E >= 1, which differs only for a protein whose best sequence hit is exactly 1),
+    split "all", sources <tool>_placed, summed over the E bands. loose right = family or
+    clan; strict right = family and the hit's query stretch overlaps a query domain of that
+    family. Judged = family + clan + wrong, as in judge.
+    """
+    import polars as pl
+    fs = sorted(glob.glob(os.path.join(out_dir, "bands", "*_bands.tsv")))
+    if not fs:
+        sys.exit("no *_bands.tsv in %s/bands" % out_dir)
+    t = pl.concat([pl.read_csv(f, separator="\t") for f in fs])
+    t = t.filter((pl.col("query_set") == "dark_1") & (pl.col("split") == "all")
+                 & pl.col("source").str.ends_with("_placed"))
+    s = (t.group_by("species", "source", maintain_order=True)
+          .agg(pl.col("family", "clan", "wrong", "target_without_pfam", "strict_right",
+                      "strict_query_stretch_unknown").sum())
+          .with_columns(pl.col("source").str.replace("_placed$", "").alias("tool"),
+                        (pl.col("family") + pl.col("clan") + pl.col("wrong")).alias("n_judged"))
+          .with_columns((pl.col("family") + pl.col("clan")).alias("loose_right"))
+          .with_columns((pl.col("loose_right") / pl.col("n_judged")).alias("share_loose_right"),
+                        (pl.col("strict_right") / pl.col("n_judged")).alias("share_strict_right"),
+                        (pl.col("n_judged") < MIN_N).alias("grey"))
+          .drop("source"))
+    s.write_csv(os.path.join(out_dir, "strict_judgement.csv"))
+    with pl.Config(tbl_rows=50, tbl_cols=20, tbl_width_chars=220):
+        print(s)
+
+
 def fmax_inputs(out_dir, dark_fmax_dir, struct_dir, *species):
     import polars as pl
     species = list(species) or ["human", "worm", "yeast", "borrelia"]
@@ -306,10 +371,22 @@ def report(out_dir):
             verdict = "OVERTURNED" if fam / judged >= 0.20 else "HOLDS"
         print("  all species: %d right of %d judged (%.1f%%) -> P2 %s"
               % (fam, judged, 100.0 * fam / judged if judged else float("nan"), verdict))
+    sj = os.path.join(out_dir, "strict_judgement.csv")
+    if os.path.exists(sj):
+        s2 = pl.read_csv(sj)
+        print("Loose and strict calls (dark-set-accuracy score-bands, PR 163), placed dark proteins:")
+        with pl.Config(tbl_rows=50, tbl_cols=20, tbl_width_chars=220):
+            print(s2.select("species", "tool", "n_judged", "family", "loose_right", "strict_right",
+                            "strict_query_stretch_unknown", "share_loose_right", "share_strict_right", "grey"))
+        f = s2.filter(pl.col("tool") == "foldseek")
+        n, st = int(f["n_judged"].sum()), int(f["strict_right"].sum())
+        print("  Foldseek, all species: strict right %d of %d judged (%.1f%%); P2 is decided on the "
+              "family call above, this is shown beside it" % (st, n, 100.0 * st / n if n else float("nan")))
 
 
 def main():
-    cmds = {"placement": placement, "judge": judge, "fmax-inputs": fmax_inputs, "report": report}
+    cmds = {"placement": placement, "judge": judge, "fmax-inputs": fmax_inputs, "report": report,
+            "bands-inputs": bands_inputs, "bands-collect": bands_collect}
     if len(sys.argv) < 2 or sys.argv[1] not in cmds:
         sys.exit(__doc__)
     cmds[sys.argv[1]](*sys.argv[2:])

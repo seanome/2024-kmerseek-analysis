@@ -185,8 +185,51 @@ def test_placement_judge_report_end_to_end(tmp_path, capsys):
     assert (pr["n_dark_placed"], pr["wrong"], pr["family"]) == (1, 1, 0)
     d = pl.read_csv(out / "decoy_hits_judged.csv")
     assert d.filter(pl.col("tool") == "foldseek")["wrong"].to_list() == [1]
+    # Loose and strict calls with Prompt C's score-bands (PR 163, pinned commit 13749b87).
+    # P10415's only domain is PF00452 at 10-80. ProstT5's best hit (P00001) has another
+    # family: loose and strict wrong.
+    score.bands_inputs(str(out))
+    placed = (out / "bands" / "human.prostt5_placed.tsv").read_text().splitlines()
+    assert placed == ["query\ttarget\tevalue\tquery_from\tquery_to", "P10415\tP00001\t1.0\t1\t50"]
+    dsa = _dark_set_accuracy(tmp_path)
+    qd = tmp_path / "qd.tsv"
+    qd.write_text("accession\tpfam_id\tdomain_start\tdomain_end\nP10415\tPF00452\t10\t80\n"
+                  "Q07817\tPF00452\t90\t160\n")
+    # A Foldseek source with two placed dark hits to a PF00452 target: one overlapping the
+    # domain (strict right), one outside it (family right, strict wrong).
+    fsrc = tmp_path / "fs.tsv"
+    fsrc.write_text("query\ttarget\tevalue\tquery_from\tquery_to\nP10415\tP49950\t1e-30\t5\t20\n")
+    fsrc2 = tmp_path / "fs2.tsv"
+    fsrc2.write_text("query\ttarget\tevalue\tquery_from\tquery_to\nP10415\tP49950\t1e-30\t100\t200\n")
+    (out / "bands").mkdir(exist_ok=True)
+    subprocess.run([sys.executable, str(dsa), "score-bands", "--species", "human",
+                    "--query-pfam", str(qp), "--query-domains", str(qd), "--ref-pfam", str(rp),
+                    "--clans", str(clans), "--ev-dir", str(ev),
+                    "--source", "prostt5_placed=%s" % (out / "bands" / "human.prostt5_placed.tsv"),
+                    "--source", "foldseek_placed=%s" % fsrc,
+                    "--source", "foldseek2_placed=%s" % fsrc2,
+                    "--out-tsv", str(out / "bands" / "human_bands.tsv"),
+                    "--out-json", str(out / "bands" / "human_bands.json")], check=True)
+    score.bands_collect(str(out))
+    sj = {r["tool"]: r for r in pl.read_csv(out / "strict_judgement.csv").iter_rows(named=True)}
+    assert (sj["prostt5"]["n_judged"], sj["prostt5"]["loose_right"], sj["prostt5"]["strict_right"]) == (1, 0, 0)
+    assert (sj["foldseek"]["family"], sj["foldseek"]["strict_right"]) == (1, 1)
+    assert (sj["foldseek2"]["family"], sj["foldseek2"]["strict_right"]) == (1, 0)
     score.report(str(out))
-    assert "P1 UNDECIDED" in capsys.readouterr().out
+    text = capsys.readouterr().out
+    assert "P1 UNDECIDED" in text and "strict right 1 of 1 judged" in text
+
+
+def _dark_set_accuracy(tmp_path):
+    """Prompt C's tools/dark-set-accuracy at the pinned commit, read out of git."""
+    import pytest
+    out = tmp_path / "dark-set-accuracy"
+    r = subprocess.run(["git", "show", "13749b87:nextflow-runs/invertebrate-dark-set/tools/dark-set-accuracy"],
+                       cwd=PIPE, capture_output=True)
+    if r.returncode != 0:
+        pytest.skip("commit 13749b87 not fetched: git fetch origin olgabot/dark-set-weak-hit-accuracy")
+    out.write_bytes(r.stdout)
+    return out
 
 
 def test_read_hits_keeps_smallest_evalue(tmp_path):
@@ -196,4 +239,4 @@ def test_read_hits_keeps_smallest_evalue(tmp_path):
         fh.write("P10415\tP0DUM1\t1\t50\t1\t50\t40\t1e-3\n")
         fh.write("Q8WZ42\tP11532\t5\t90\t5\t90\t60\t2.0\n")
     best = score.read_hits([str(p)])
-    assert best == {"P10415": ("Q07817", 1e-40, 300.0), "Q8WZ42": ("P11532", 2.0, 60.0)}
+    assert best == {"P10415": ("Q07817", 1e-40, 300.0, 1, 200), "Q8WZ42": ("P11532", 2.0, 60.0, 5, 90)}
