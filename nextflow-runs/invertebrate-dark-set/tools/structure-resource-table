@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""Predict memory, time and GPU for -entry darkStructure from earlier traces.
+
+    tools/structure-resource-table <qfo_dir> <reference_dir> [species ...]
+
+Reads assets/structure_tools_measured.tsv (trace rows of the QfO region benchmark,
+$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/<trace>, and of
+the convergence-afp run, $SCRATCH/2024-kmerseek-convergence-afp/nextflow-runs/convergence-afp/<trace>),
+counts each species' queries and residues from its proteome under <qfo_dir>, and each
+clade-excluded reference's entries from <reference_dir>/minus_<clade>/summary.json. Prints
+one row per process: the measured row it scales from, the prediction, and the ask.
+
+How each prediction is made (the task's rule: scale by query count, and double the time):
+  foldseekSearch, prostt5Search  seconds per (query x target) of the slowest QfO task, using
+      the smaller target count for that task, times 2_000 queries (one chunk) times the
+      reference's entries. For ProstT5 the convergence-afp run searched the whole
+      AlphaFold DB Swiss-Prot database, so its seconds per query is a second estimate; the
+      larger of the two is used. Every reference entry is counted as having a model, which
+      can only make the Foldseek prediction larger.
+  prostt5Db  seconds per residue of the slowest whole-proteome ProstT5 task, times the
+      species' residues; one task for the real proteome, one for its decoys.
+  memory  the largest measured peak, with room for a bigger query set: 16 GB for every
+      Foldseek step (largest peak 2.9 GB).
+The ask is 2x the prediction, rounded up to 30 minutes, at least 1 hour; a retry doubles it.
+Nothing here is a measurement of this run; the "measured" columns are earlier runs.
+"""
+import csv
+import json
+import math
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+MEASURED = os.path.join(HERE, "..", "assets", "structure_tools_measured.tsv")
+REGISTRY = os.path.join(HERE, "..", "..", "..", "data", "species_metadata.json")
+CHUNK = 2000
+
+
+def fasta_stats(path):
+    n = r = 0
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                n += 1
+            else:
+                r += len(line.strip())
+    return n, r
+
+
+def ask_minutes(pred_s):
+    m = 2 * pred_s / 60.0
+    return max(60, int(math.ceil(m / 30.0)) * 30)
+
+
+def main():
+    if len(sys.argv) < 3:
+        sys.exit(__doc__)
+    qfo_dir, ref_dir = sys.argv[1], sys.argv[2]
+    species = sys.argv[3:] or ["human", "worm", "yeast", "borrelia", "botryllus"]
+    reg = json.load(open(REGISTRY))
+    rows = list(csv.DictReader(open(MEASURED), delimiter="\t"))
+
+    sp_stats = {}
+    for sp in species:
+        row = reg[sp]
+        if row.get("staged_fasta"):
+            path = os.path.join(qfo_dir, row["staged_fasta"])
+        else:
+            path = os.path.join(qfo_dir, row["qfo_subdir"], "%s_%s.fasta" % (row["qfo_proteome"], row["taxon_id"]))
+        n, r = fasta_stats(path)
+        clade = row["annotate_clade"]
+        ref = json.load(open(os.path.join(ref_dir, "minus_%s" % clade, "summary.json")))
+        sp_stats[sp] = dict(n=n, residues=r, clade=clade, n_ref=ref["entries_kept"],
+                            chunks=int(math.ceil(n / float(CHUNK))))
+
+    def worst(process, per):
+        cand = [r for r in rows if r["process"] == process and per(r) is not None]
+        return max(cand, key=per), max(per(r) for r in cand)
+
+    per_pair = lambda r: (float(r["realtime_s"]) / (int(r["n_queries"]) * int(r["n_targets_low"]))
+                          if r["n_targets_low"] and r["run"] != "convergence-afp" else None)
+    per_query_full = lambda r: (float(r["realtime_s"]) / int(r["n_queries"])
+                                if r["run"] == "convergence-afp" and int(r["n_queries"]) >= 100 else None)
+    per_res = lambda r: float(r["realtime_s"]) / int(r["n_residues"]) if r["n_residues"] else None
+
+    fs_row, fs_rate = worst("foldseekSearch", per_pair)
+    ps_row, ps_rate = worst("prostt5Search", per_pair)
+    pc_row, pc_rate = worst("prostt5Search", per_query_full)
+    pd_row, pd_rate = worst("prostt5Db", per_res)
+    peak = max(float(r["peak_rss_gb"]) for r in rows)
+
+    print("Measured rows used (assets/structure_tools_measured.tsv):")
+    for name, r, rate, unit in (("foldseekSearch", fs_row, fs_rate, "s per query x target"),
+                                ("prostt5Search", ps_row, ps_rate, "s per query x target"),
+                                ("prostt5Search", pc_row, pc_rate, "s per query, whole Swiss-Prot"),
+                                ("prostt5Db", pd_row, pd_rate, "s per residue, 1 GPU")):
+        print("  %-15s %s job %s (%s): %s s, peak %s GB -> %.3g %s"
+              % (name, r["run"], r["job_id"], r["task"], r["realtime_s"], r["peak_rss_gb"], rate, unit))
+    print("  largest measured peak of any Foldseek step: %.1f GB" % peak)
+    print()
+    print("| species | queries | chunks | reference entries | Foldseek s/chunk (predicted) | ProstT5 search s/chunk (predicted) | ProstT5 3Di GPU min, real + decoy (predicted) |")
+    print("|---|---:|---:|---:|---:|---:|---:|")
+    tot = dict(fs=0.0, ps=0.0, gpu=0.0, fs_tasks=0, ps_tasks=0)
+    worst_fs = worst_ps = worst_gpu = 0.0
+    for sp in species:
+        s = sp_stats[sp]
+        q = min(CHUNK, s["n"])
+        fs = fs_rate * q * s["n_ref"]
+        ps = max(ps_rate * q * s["n_ref"], pc_rate * q)
+        gpu = 2 * pd_rate * s["residues"]
+        has_models = sp != "botryllus"
+        print("| %s | %d | %d | %d | %s | %.0f | %.0f |" % (
+            sp, s["n"], s["chunks"], s["n_ref"], ("%.0f" % fs) if has_models else "not run (no models)",
+            ps, gpu / 60))
+        if has_models:
+            tot["fs"] += 2 * fs_rate * s["n"] * s["n_ref"]
+            tot["fs_tasks"] += 2 * s["chunks"]
+            worst_fs = max(worst_fs, fs)
+        tot["ps"] += 2 * max(ps_rate * s["n"] * s["n_ref"], pc_rate * s["n"])
+        tot["ps_tasks"] += 2 * s["chunks"]
+        tot["gpu"] += gpu
+        worst_gpu = max(worst_gpu, gpu / 2)
+        worst_ps = max(worst_ps, ps)
+    print()
+    print("Asks (2x the slowest predicted task, rounded up to 30 min; a retry doubles them):")
+    print("  foldseekSearch  16 CPU, 16 GB, %d min  (slowest chunk predicted %.0f min)" % (ask_minutes(worst_fs), worst_fs / 60))
+    print("  prostt5Search   16 CPU, 16 GB, %d min  (slowest chunk predicted %.0f min)" % (ask_minutes(worst_ps), worst_ps / 60))
+    print("  prostt5Db       8 CPU, 1 GPU, 16 GB, %d min  (slowest task predicted %.0f min)" % (ask_minutes(worst_gpu), worst_gpu / 60))
+    print()
+    print("Totals predicted, real + decoy: Foldseek %d tasks, %.0f CPU-hours at 16 CPU; "
+          "ProstT5 search %d tasks, %.0f CPU-hours; ProstT5 3Di %.1f GPU-hours."
+          % (tot["fs_tasks"], tot["fs"] * 16 / 3600, tot["ps_tasks"], tot["ps"] * 16 / 3600, tot["gpu"] / 3600))
+
+
+if __name__ == "__main__":
+    main()

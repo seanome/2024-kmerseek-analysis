@@ -1,0 +1,14 @@
+process	run	trace	job_id	task	n_queries	n_targets_low	n_targets_high	n_residues	cpus	realtime_s	peak_rss_gb	note
+foldseekSearch	qfo-region midi-plus	run-midi-plus/qfo_pfam_region.2026-09-01.trace.txt	41609672	human_vs_zebrafish	998	12336	26290		16	67	1.5	slowest QfO Foldseek task per query and target; targets = zebrafish accession list (low) or structure folder (high)
+foldseekSearch	qfo-region midi-plus-all-qfo	run-midi-plus-all-qfo/qfo_pfam_region.2026-09-05.trace.txt	42140666	human_vs_mouse	998	20707	21452		16	45	1.5
+foldseekSearch	qfo-region midi-plus	run-midi-plus/qfo_pfam_region.2026-09-01.trace.txt	41609762	human_vs_worm	998	14015	19700		16	37	1.4
+foldseekSearch	qfo-region midi-plus	run-midi-plus/qfo_pfam_region.2026-09-01.trace.txt	41609814	human_vs_yeast	998	5365	6055		16	25	1.4
+foldseekSearch	convergence-afp	runs/convergence-afp/trace.convergence-afp.txt	hash 22/67c919	structure	6	590183	590183		16	13	2.3	the only Foldseek search against the whole AlphaFold DB Swiss-Prot database; 6 queries, so time is mostly setup
+prostt5Search	qfo-region midi-plus-all-qfo	run-midi-plus-all-qfo/qfo_pfam_region.2026-09-08.trace.txt	42505868	human_vs_chicken	998	18116	18116		16	38	1.5	slowest QfO ProstT5 search per query and target
+prostt5Search	qfo-region midi-plus	run-midi-plus/qfo_pfam_region.2026-09-01.trace.txt	41609925	human_vs_zebrafish	998	25698	25698		16	38	1.5
+prostt5Search	qfo-region midi-plus-all-qfo	run-midi-plus-all-qfo/qfo_pfam_region.2026-09-08.trace.txt	42506232	human_vs_olatipes	998	23617	23617		16	37	1.5
+prostt5Search	convergence-afp	runs/convergence-afp/trace.convergence-afp.txt	hash 19/1f670d	prostt5	246	590183	590183		16	42	2.6	ProstT5 queries against the whole AlphaFold DB Swiss-Prot database
+prostt5Db	qfo-region midi-plus-all-qfo	run-midi-plus-all-qfo/qfo_pfam_region.2026-09-08.trace.txt	42503753	bfloridae	28542			13248087	8	1554	2.7	1 GPU (--gres=gpu:1, model not recorded); slowest per residue
+prostt5Db	qfo-region midi-plus-all-qfo	run-midi-plus-all-qfo/qfo_pfam_region.2026-09-08.trace.txt	42503805	btaurus	23845			12288559	8	1180	2.9	1 GPU
+prostt5Db	qfo-region midi-plus	run-midi-plus/qfo_pfam_region.2026-09-01.trace.txt	41567311	human-38fdd87d	998				8	69	2.7	1 GPU; the 998-query step cited in the task
+foldseekDb	qfo-region midi-plus-all-qfo	run-midi-plus-all-qfo/qfo_pfam_region.2026-09-05.trace.txt	42140536	osativa					16	77	0.66	createdb over one proteome's models
