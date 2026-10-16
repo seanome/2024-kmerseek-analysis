@@ -163,21 +163,38 @@ def spectrumLoad(Path index_dir) {
     den > 0 ? num / den : 0.0d
 }
 
+// Searches of this pipeline's own pilot: one chunk of 440 queries against the same Swiss-Prot
+// 2019_08 indexes (tables/pilot_trace/pilot_trace_launch-pilot_2026-10-15.tsv, bin/pilot_search_measured.py):
+// alphabet|k|arm -> peak RSS (GiB) and run time (min). The full run's first ask is at least
+// 1.5x the pilot's peak, and its time 1.5x the pilot's run time scaled to the chunk's
+// queries. Memory is not scaled by queries: at hp_pbotc_1st_ed2 k29 the peak went from
+// 12.9 GB with 4 queries (smoke) to 18.6 GB with 440 (pilot), so the index dominates.
+PILOT_MEASURED = [:]
+file("${projectDir}/assets/pilot_search_measured.csv").readLines().drop(1).each { l ->
+    def c = l.split(',')
+    PILOT_MEASURED["${c[0]}|${c[1]}|${c[2]}".toString()] = [gb: c[3] as double, min: c[4] as double, queries: c[5] as double]
+}
+
 // A search asks 1.5x the largest peak the same alphabet and k reached on a dark-set chunk
-// of the same size; with no measurement, the dark-set spectrum-load model.
-def searchFirstGb(String alphabet, int ksize, String index_name) {
+// of the same size; with no measurement, the dark-set spectrum-load model. Either way, at
+// least 1.5x the pilot's own peak for that alphabet, k and arm.
+def searchFirstGb(String alphabet, int ksize, String arm, String index_name) {
     def key = "${alphabet}|${ksize}".toString()
     def m = SEARCH_MEASURED[key]
+    def p = PILOT_MEASURED["${key}|${arm}".toString()]
+    double pilotGb = p ? 1.5d * p.gb : 0.0d
     double floorGb = MemoryUnit.of(params.kmerseek_search_memory_floor).toGiga()
     double killed  = (SEARCH_KILLED[key] ?: 0.0d) as double
-    if (m) return Math.max(Math.max(floorGb, 1.5d * m.gb), killed)
+    if (m) return Math.max(pilotGb, Math.max(Math.max(floorGb, 1.5d * m.gb), killed))
     double load = (SPECTRUM_LOAD[index_name] ?: 0.0d) as double
-    Math.max(killed, Math.max(floorGb, (params.kmerseek_search_memory_headroom as double) *
-             ((params.kmerseek_search_memory_base as double) + (params.kmerseek_search_memory_slope as double) * Math.sqrt(load))))
+    Math.max(pilotGb, Math.max(killed, Math.max(floorGb, (params.kmerseek_search_memory_headroom as double) *
+             ((params.kmerseek_search_memory_base as double) + (params.kmerseek_search_memory_slope as double) * Math.sqrt(load)))))
 }
-def searchHours(String alphabet, int ksize, int attempt) {
+def searchHours(String alphabet, int ksize, String arm, int attempt) {
     def m = SEARCH_MEASURED["${alphabet}|${ksize}".toString()]
+    def p = PILOT_MEASURED["${alphabet}|${ksize}|${arm}".toString()]
     int first = m ? Math.max(2, (int) Math.ceil(1.5d * m.h)) : 4
+    if (p) first = Math.max(first, (int) Math.ceil(1.5d * p.min / 60.0d * (params.query_chunk_size as double) / p.queries))
     "${Math.min(first * (1 << (attempt - 1)), 24)}h".toString()
 }
 
@@ -235,8 +252,8 @@ process kmerseekSearch {
     container params.kmerseek_image
     publishDir "${params.outdir}/kmerseek", mode: 'copy'
     cpus 8
-    memory { memoryLadder(searchFirstGb(alphabet, ksize as int, index_dir.name), task.attempt) }
-    time   { searchHours(alphabet, ksize as int, task.attempt) }
+    memory { memoryLadder(searchFirstGb(alphabet, ksize as int, arm, index_dir.name), task.attempt) }
+    time   { searchHours(alphabet, ksize as int, arm, task.attempt) }
 
     input:
     tuple val(alphabet), val(ksize), val(copt), path(index_dir), val(arm), val(chunk_id), path(chunk)

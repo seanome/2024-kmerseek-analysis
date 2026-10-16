@@ -8,7 +8,9 @@
 #   make pilot           Stop 2: 200 sample queries + 20 positive controls + decoys, every tool
 #   make score-partial   score the pilot searches finished so far (tune half only)
 #   make mmseqs-one-round   rescore with MMseqs2 run as one round instead of three
-#   make full            Stop 3: the 8_329 approved queries + decoys, every tool
+#   make full            Stop 3: the 8_329 approved queries + decoys, every tool, 38 kmerseek settings
+#   make choose-settings the 19 alphabet-k pairs of the full run, from the pilot tune half
+#   make stub            laptop wiring check with -stub, two query chunks
 #   make seed-reference  second reference: Pfam 33.1 seed members, with counts.json
 #   make hash-check OLD=<commit>   smoke-size run of OLD, then of this checkout with -resume,
 #                        in hashcheck/: every task hash the two share is listed side by side
@@ -45,7 +47,7 @@ NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs stub smoke pilot score-partial mmseqs-one-round full seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
+.PHONY: download stop1 controls inputs stub smoke pilot score-partial mmseqs-one-round full choose-settings seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -85,7 +87,7 @@ stub:
 	printf '>Q1\nMKVLAAGIVG\n>Q2\nMSTNPKPQRK\n>DECOY_Q1\nMKAVLGAIVG\n>DECOY_Q2\nMSNTPKQPRK\n' > $(STUB_DIR)/inputs/queries.fasta
 	printf '>P1\nMKVLAAGIVGAAA\n' > $(STUB_DIR)/reference/reference.fasta
 	printf 'sp_acc\tpfam_acc\tsp_start\tsp_end\nP1\tPF00001\t1\t10\n' > $(STUB_DIR)/reference/sprot_domains.tsv
-	printf 'alphabet\tksize\tc_opt\nprotein20\t7\t0.14\nhp_pbotc_1st_ed2\t29\t1.59\ngbmr4\t13\t0.67\n' > $(STUB_DIR)/settings.tsv
+	printf 'alphabet\tksize\tc_opt\nprotein20\t7\t0.14\nhp_pbotc_1st_ed2\t29\t1.59\nwass14\t5\t0.17\ngbmr4\t13\t0.67\n' > $(STUB_DIR)/settings.tsv
 	touch $(STUB_DIR)/Pfam-A.hmm.gz
 	cd $(STUB_DIR) && $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -stub -profile stub \
 	  --inputs $(STUB_DIR)/inputs --reference_dir $(STUB_DIR)/reference --settings $(STUB_DIR)/settings.tsv \
@@ -155,11 +157,25 @@ mmseqs-one-round:
 	    --mmseqs2 $$W --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
 	    --reference $(RUN_DIR)/inputs/reference --settings $(RUN_DIR)/inputs/settings.tsv --out $$O'
 
+# The full run searches one alphabet-k pair per alphabet, extend and exact: 19 pairs, 38
+# kmerseek settings (assets/leaderboard_settings.tsv, from `make choose-settings` on the
+# pilot's tune half). None of the five SKIP_SETTINGS is in it: they were never searched in
+# the pilot, so choose_leaderboard_settings.py cannot pick them. All 19 indexes are already
+# in the index cache, so the full run builds none.
+LEADERBOARD_SETTINGS = $(MAKEFILE_DIR)/assets/leaderboard_settings.tsv
 full:
 	cd $(RUN_DIR) && mkdir -p launch-full && cd launch-full && \
 	  $(HEAD) HEAD_SESSION=nf280full HEAD_JOBNAME=nfdrv-280-full \
 	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
-	    --settings $(RUN_DIR)/inputs/settings.tsv --skip_settings $(SKIP_SETTINGS) --inputs $(RUN_DIR)/inputs/full --outdir $(RUN_DIR)/results-full --run_tag full --read_test_half true -resume'
+	    --settings $(LEADERBOARD_SETTINGS) --inputs $(RUN_DIR)/inputs/full --outdir $(RUN_DIR)/results-full --run_tag full --read_test_half true -resume'
+
+# Re-derive assets/leaderboard_settings.tsv from the pilot's scores (tune half only; the
+# pilot scorer never read the test half). Writes to RUN_DIR/leaderboard-settings; copy the
+# two files into assets/ and tables/leaderboard_settings/ by hand if they ever change.
+choose-settings:
+	$(SB) --job-name=280-choose-settings --cpus-per-task=1 --mem=8G --time=0:30:00 \
+	  --wrap '$(PY) $(MAKEFILE_DIR)/bin/choose_leaderboard_settings.py --scores results-pilot/scores \
+	    --inputs inputs/pilot --settings inputs/settings.tsv --skip $(SKIP_SETTINGS) --out leaderboard-settings'
 
 # Seed members of every Pfam 33.1 family, gaps removed, one entry per distinct sequence.
 # A member that is a query, or lies inside one (any queries.fasta of any run, decoys
