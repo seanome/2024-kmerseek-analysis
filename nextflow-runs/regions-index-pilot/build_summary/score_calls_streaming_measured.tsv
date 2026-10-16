@@ -1,0 +1,14 @@
+task_label	run_label	script	in_bytes	python_peak_gib	slurm_maxrss_gib	peak_gib	wall_s	slurm_step
+kmerseek.whole.w10.hp_pbotc_1st_ed2_k21_s1	kmerseek.whole.w10.hp_pbotc_1st_ed2_k21_s1	new	498629507	2.06	2.69	2.69	33	48116363.0
+kmerseek.whole.w10.hp_pbotc_1st_ed2_k21_s1	kmerseek.wholeannot.w10.hp_pbotc_1st_ed2_k21_s1	new	498629507	4.263	4.38	4.38	35	48116363.1
+kmerseek.regions.w20.hp_thomas_dill2_k22_s1	kmerseek.regions.w20.hp_thomas_dill2_k22_s1	new	1278858939	2.501	3.79	3.79	134	48116363.2
+composition.regions.w10.composition	composition.regions.w10.composition	new	4258995	0.251	0.389	0.389	2	48116363.3
+kmerseek.whole.w10.hp_pbotc_1st_ed2_k21_s1	kmerseek.whole.w10.hp_pbotc_1st_ed2_k21_s1	old	498629507	4.603	4.788	4.788	24	48116363.4
+kmerseek.whole.w10.hp_pbotc_1st_ed2_k21_s1	kmerseek.wholeannot.w10.hp_pbotc_1st_ed2_k21_s1	old	498629507	18.784	19.014	19.014	23	48116363.5
+kmerseek.regions.w20.hp_thomas_dill2_k22_s1	kmerseek.regions.w20.hp_thomas_dill2_k22_s1	old	1278858939	20.909	21.042	21.042	38	48116363.6
+composition.regions.w10.composition	composition.regions.w10.composition	old	4258995	0.224	0.364	0.364	1	48116363.7
+kmerseek.whole.w20.gbmr7_k16_s1	kmerseek.whole.w20.gbmr7_k16_s1	new	6819681437	8.595	11.239	11.239	829	48116363.8
+kmerseek.whole.w20.gbmr7_k16_s1	kmerseek.wholeannot.w20.gbmr7_k16_s1	new	6819681437	3.989	7.121	7.121	527	48119285.0
+kmerseek.regions.w10.polarity4_k11_s1	kmerseek.regions.w10.polarity4_k11_s1	new	16508358721	24.353	27.278	27.278	1864	48116363.9
+kmerseek.whole.w10.polarity4_k11_s1	kmerseek.whole.w10.polarity4_k11_s1	new	27142997903	37.298	40.118	40.118	2520	48116363.10
+kmerseek.whole.w10.polarity4_k11_s1	kmerseek.wholeannot.w10.polarity4_k11_s1	new	27142997903	19.293	20.389	20.389	3591	48116363.11
