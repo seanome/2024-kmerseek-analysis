@@ -41,6 +41,7 @@ def read_speclist(path: Path) -> pl.DataFrame:
 def read_phylum(nodes: Path, rankedlineage: Path) -> pl.DataFrame:
     """taxid -> phylum name. rankedlineage.dmp lists a node's ANCESTORS by rank, so a node
     that is itself a phylum has an empty phylum field; nodes.dmp gives its rank."""
+
     def dmp(path, cols):
         out = []
         with open(path) as fh:
@@ -50,25 +51,40 @@ def read_phylum(nodes: Path, rankedlineage: Path) -> pl.DataFrame:
                 f = [x.strip() for x in line.rstrip("\n").split("\t|")]
                 out.append(tuple(f[i] for i in cols))
         return out
+
     # rankedlineage.dmp: tax_id, tax_name, species, genus, family, order, class, phylum, ...
-    rl = pl.DataFrame(dmp(rankedlineage, [0, 1, 7]),
-                      schema=["taxid", "tax_name", "phylum"], orient="row")
+    rl = pl.DataFrame(
+        dmp(rankedlineage, [0, 1, 7]),
+        schema=["taxid", "tax_name", "phylum"],
+        orient="row",
+    )
     nd = pl.DataFrame(dmp(nodes, [0, 2]), schema=["taxid", "rank"], orient="row")
     df = rl.join(nd, on="taxid", how="left").with_columns(
         pl.col("taxid").cast(pl.Int64),
-        pl.when(pl.col("rank") == "phylum").then(pl.col("tax_name"))
-        .when(pl.col("phylum") != "").then(pl.col("phylum"))
-        .otherwise(None).alias("phylum"),
+        pl.when(pl.col("rank") == "phylum")
+        .then(pl.col("tax_name"))
+        .when(pl.col("phylum") != "")
+        .then(pl.col("phylum"))
+        .otherwise(None)
+        .alias("phylum"),
     )
     return df.select("taxid", "phylum")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--regions", type=Path, required=True,
-                    help="pfamseq_acc<TAB>pfamA_acc, no header")
-    ap.add_argument("--mnemonics", type=Path, required=True,
-                    help="pfamseq_acc<TAB>mnemonic, no header")
+    ap.add_argument(
+        "--regions",
+        type=Path,
+        required=True,
+        help="pfamseq_acc<TAB>pfamA_acc, no header",
+    )
+    ap.add_argument(
+        "--mnemonics",
+        type=Path,
+        required=True,
+        help="pfamseq_acc<TAB>mnemonic, no header",
+    )
     ap.add_argument("--speclist", type=Path, required=True)
     ap.add_argument("--nodes", type=Path, required=True)
     ap.add_argument("--rankedlineage", type=Path, required=True)
@@ -82,18 +98,21 @@ def main() -> None:
     for taxid, want in [(9606, "Chordata"), (83333, "Pseudomonadota")]:
         got = phylum.filter(pl.col("taxid") == taxid)["phylum"].to_list()
         if got and got != [want]:
-            raise SystemExit(f"rankedlineage.dmp layout changed: taxid {taxid} -> {got}")
+            raise SystemExit(
+                f"rankedlineage.dmp layout changed: taxid {taxid} -> {got}"
+            )
     taxa = spec.join(phylum, on="taxid", how="left")
-    print(f"speclist codes: {spec.height:,}; with a phylum: "
-          f"{taxa['phylum'].is_not_null().sum():,}")
+    print(
+        f"speclist codes: {spec.height:,}; with a phylum: "
+        f"{taxa['phylum'].is_not_null().sum():,}"
+    )
 
     opts = dict(separator="\t", has_header=False, quote_char=None)
     regions = pl.scan_csv(args.regions, new_columns=["acc", "pfam_id"], **opts)
     mnem = pl.scan_csv(args.mnemonics, new_columns=["acc", "mnemonic"], **opts)
     seq_family = regions.unique()
-    joined = (
-        seq_family.join(mnem, on="acc", how="left")
-        .join(taxa.lazy(), on="mnemonic", how="left")
+    joined = seq_family.join(mnem, on="acc", how="left").join(
+        taxa.lazy(), on="mnemonic", how="left"
     )
     out = (
         joined.group_by("pfam_id")
@@ -101,12 +120,17 @@ def main() -> None:
             pl.len().alias("n_sequences"),
             pl.col("mnemonic").is_null().sum().alias("n_seq_not_in_pfamseq"),
             pl.col("kingdom").is_null().sum().alias("n_seq_no_kingdom"),
-            pl.col("kingdom").filter(pl.col("kingdom").is_in(["A", "B", "E"]))
-            .unique().sort().str.join("").alias("superkingdoms"),
+            pl.col("kingdom")
+            .filter(pl.col("kingdom").is_in(["A", "B", "E"]))
+            .unique()
+            .sort()
+            .str.join("")
+            .alias("superkingdoms"),
             (pl.col("kingdom") == "V").sum().alias("n_seq_virus"),
             pl.col("phylum").drop_nulls().n_unique().alias("n_phyla"),
             (pl.col("kingdom").is_not_null() & pl.col("phylum").is_null())
-            .sum().alias("n_seq_no_phylum"),
+            .sum()
+            .alias("n_seq_no_phylum"),
         )
         .with_columns(pl.col("superkingdoms").str.len_chars().alias("n_superkingdoms"))
         .sort("pfam_id")
