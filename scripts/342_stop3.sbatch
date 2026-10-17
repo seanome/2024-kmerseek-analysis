@@ -45,6 +45,10 @@ SEARCH_OPTS="--threshold 0.0 --min-shared-kmers 2 --max-query-pvalue 0.05 --min-
 MAX_EVALUE=10
 mkdir -p "$WORK"
 module load python/3.12.1
+# kmerseek is built with gcc 14.2.0 (STEP=build) and needs its libstdc++ (CXXABI_1.3.15), but
+# python/3.12.1 puts gcc 12.4.0's first on LD_LIBRARY_PATH; run kmerseek with gcc 14.2.0's.
+GCC14_LIB=/share/software/user/open/gcc/14.2.0/lib64
+kmerseek() { LD_LIBRARY_PATH=$GCC14_LIB${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} "$KMERSEEK" "$@"; }
 
 penalty() {  # c_opt and xdrop_4c of an alphabet, from the tables committed in Stop 0
     awk -F'\t' -v a="$1" '!/^#/ && $1 == a { print $7, $8 }' \
@@ -92,12 +96,12 @@ index)
     idx=$WORK/indexes/$INDEX.w$DECOY_WINDOW.${ALPHABET}_k${KSIZE}_s1.kmerseek.rocksdb
     [ -f "$idx/DONE" ] && { echo "342: $idx done already"; exit 0; }
     rm -rf "$idx" && mkdir -p "$(dirname "$idx")"
-    "$KMERSEEK" index --alphabet "$ALPHABET" --ksize "$KSIZE" --scaled 1 \
+    kmerseek index --alphabet "$ALPHABET" --ksize "$KSIZE" --scaled 1 \
         --input "$WORK/fasta/$name.w$DECOY_WINDOW.target_decoy.fasta" --output "$idx" \
         --extend-mismatch-penalty "$C" --extend-xdrop "$X" \
         --ka-queries $kq --ka-survival-out "$idx/ka_survival.C$C.csv" \
         --kmer-stats-out "$idx/spectrum.csv.gz"
-    "$KMERSEEK" --version > "$idx/DONE"
+    kmerseek --version > "$idx/DONE"
     ;;
 search)
     : "${ALPHABET:?}" "${KSIZE:?}" "${SLURM_ARRAY_TASK_ID:?}"
@@ -121,7 +125,7 @@ search)
     # kmerseek writes regions 0-based and end-exclusive; the call file is 1-based and
     # inclusive (start + 1, end as written), as PR 114's call files.
     set +e
-    "$KMERSEEK" search --alphabet "$ALPHABET" --ksize "$KSIZE" --query "$q" --target "$regions" \
+    kmerseek search --alphabet "$ALPHABET" --ksize "$KSIZE" --query "$q" --target "$regions" \
         --extend-mismatch-penalty "$C" --extend-xdrop "$X" --ka-queries 0 \
         --ka-k "$KA_K" --ka-r-database "$KA_R" $SEARCH_OPTS 2> "${out%.tsv.gz}.log" \
       | awk -F, -v OFS='\t' -v max=$MAX_EVALUE '
