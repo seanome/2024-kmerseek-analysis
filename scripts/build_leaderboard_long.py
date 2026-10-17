@@ -24,6 +24,7 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 
 import polars as pl
@@ -379,6 +380,41 @@ def tool_images(traces: pl.DataFrame, mapper) -> dict[str, str]:
 # Results readers
 
 
+def drop_unrestricted_truth(m: pl.DataFrame, rel: str) -> pl.DataFrame:
+    """Drop a truth set whose answer key covers proteins the run never searched.
+
+    Pfam-N (and M-CSA) truth is built once from every human Pfam protein. Runs scored
+    before restrictTruthToQueries existed (main.nf) used it whole: 44,315 Pfam-N regions
+    on 18,724 proteins, where midi-plus searched 998 proteins carrying 2,218 of them. Their
+    recall and Fmax are divided by regions no tool was asked to find, so those rows are
+    left out until the run is rescored.
+
+    The Pfam-A truth is built inside the run from the query proteins, so its whole-set
+    protein count is the query count. Any other truth set scored on more proteins than
+    that was not restricted.
+    """
+    if "n_stratum_proteins" not in m.columns:
+        return m
+    whole = m.filter(pl.col("stratum_axis") == "all")
+    n_query = whole.filter(pl.col("truth_set") == "pfam")["n_stratum_proteins"].max()
+    if n_query is None:
+        return m
+    bad = (
+        whole.filter(pl.col("n_stratum_proteins") > n_query)["truth_set"]
+        .unique()
+        .sort()
+        .to_list()
+    )
+    for ts in bad:
+        n = whole.filter(pl.col("truth_set") == ts)["n_stratum_proteins"].max()
+        print(
+            f"  {rel}: {ts} rows dropped, scored on {n:,} proteins but the run searched "
+            f"{n_query:,} (rescore with restrictTruthToQueries)",
+            file=sys.stderr,
+        )
+    return m.filter(~pl.col("truth_set").is_in(bad))
+
+
 def qfo_metrics(
     path: Path,
     rel: str,
@@ -399,6 +435,7 @@ def qfo_metrics(
     m = m.filter(
         (pl.col("split") == "all") & pl.col("stratum_axis").is_in(STRATUM_AXES)
     )
+    m = drop_unrestricted_truth(m, rel)
     # The region runs' identity step never matched Swiss-Prot features to a target: their
     # only identity bin is "no_homolog", and its numbers equal the whole set's (57,148 of
     # 57,148 rows, checked 2026-10-15). A label that says nothing true is left out.
