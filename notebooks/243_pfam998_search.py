@@ -43,7 +43,7 @@ import polars as pl
 
 KMERSEEK = Path("/Users/olga/code/kmerseek-ka-lambda-region/target/release/kmerseek")
 TRUTH = Path(
-    "/Users/olga/data/qfo-pfam-region-midi-plus/truth/human_domain_truth.parquet"
+    "/Users/olga/data/qfo-pfam-region-benchmark/midi-plus/truth/human_domain_truth.parquet"
 )
 PROTEOME = Path(
     "/Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143"

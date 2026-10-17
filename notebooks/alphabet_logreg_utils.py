@@ -30,8 +30,10 @@ import numpy as np
 import polars as pl
 
 PF998 = Path("/Users/olga/data/alphabet-logreg-pfam998")
+# Moved here from qfo-pfam-region-midi-plus/truth/ on 2026-10-02 (same file; notebook 255
+# rebuilds all its labels from it with no disagreement).
 TRUTH = Path(
-    "/Users/olga/data/qfo-pfam-region-midi-plus/truth/human_domain_truth.parquet"
+    "/Users/olga/data/qfo-pfam-region-benchmark/midi-plus/truth/human_domain_truth.parquet"
 )
 SWEEP = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
 HUMAN = Path(

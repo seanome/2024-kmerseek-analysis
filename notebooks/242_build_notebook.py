@@ -195,7 +195,32 @@ print(pl.DataFrame(rows))
 print()
 print(summary.filter(pl.col("partner") == "CD47").select(
     "query", "metric", "best_single_rank", "best_single_arm", "ens_rank_by_alphabet", "pct_by_alphabet_among_peers").sort("query", "metric"))
-print("\nFigure: section 1, grey rows.")
+print("\nFigure: section 1, grey rows, and the hydrophobic windows below.")
+"""),
+    code(r"""
+# The windows counted above, drawn along each protein: for every start position, how many of
+# the next 19 residues are A, I, L, M, F, V or W. Drawn with the paper style (pubfig).
+import pubfig as pf
+
+pf.use_style()
+W, CUT = 19, 14
+fig, axs = pf.figure(pf.ONE_COLUMN_MM, 70, nrows=2, sharex=True, sharey=True)
+over = {}
+for ax, letter, g in zip(axs, "ab", ["BCL2", "CD47"]):
+    s = seqs[g]
+    counts = np.array([sum(c in "AILMFVW" for c in s[i : i + W]) for i in range(len(s) - W + 1)])
+    x = np.arange(1, len(counts) + 1)
+    over[g] = int((counts >= CUT).sum())
+    ax.plot(x, counts, color=pf.OKABE_ITO["blue"], label=f"A, I, L, M, F, V or W residues in the {W} residues from here")
+    ax.axhline(CUT, color=pf.OKABE_ITO["vermillion"], linestyle="--", label=f"{CUT} of {W}: as hydrophobic as a membrane-spanning helix")
+    ax.text(0.01, 0.97, f"{g}, {len(s)} aa: {over[g]} windows at {CUT} or more", transform=ax.transAxes, va="top")
+    ax.set_ylim(0, W)
+    ax.set_ylabel("Hydrophobic residues\nin window")
+    pf.panel_label(ax, letter)
+axs[-1].set_xlabel("Window start (residue)")
+pf.shared_legend(fig, ncol=1)
+pf.save(fig, FIG / "242_cd47_bcl2_membrane_helix_windows", formats=("pdf", "png"))
+print(pl.DataFrame({"protein": list(over), "windows_19_with_14_or_more": list(over.values())}))
 """),
     md(r"""
 ## 5. Only three alphabets: hp_lehninger2, polarity4, funcgroups8
@@ -347,17 +372,22 @@ CD47 about 3_900, 3.7 times. The alphabets are functions of the same two sequenc
 the proteins that beat the partner in one mostly beat it in the others.
 
 **What a rank product rewards is length.** Across the three queries and two metrics tested
-the combined rank correlates with protein length at Spearman 0.71 to 0.84, and the top of
-BHF's combined list is TTN, MUC16, OBSCN and other giant proteins. A combination that
+the combined rank correlates with protein length at Spearman 0.71 to 0.84. The eight
+proteins at the top of BHF's combined list are MUC16 (14_507 aa), ZC3H13, RSF1, ZNF608,
+SRRM2, FLG, TTN (35_991 aa) and PCLO, all longer than 1_400 aa; the 20 best-ranked have a
+median length of 2_365 aa, against 427 aa for all human proteins. A combination that
 treats "not hit here" as a bottom rank favours proteins that are hit everywhere.
 
 **CD47 is a sticky target.** Ced9, with no known link to CD47, ranks it 21st at its best
-single arm and 744th combined (Poisson p-value), above where P66 puts it and above where
-Ced9 puts BCL2. CD47 has 33 membrane-helix-like hydrophobic windows, BCL2 none. A high rank
+single arm (funcgroups8 k=15, mean IDF and enrichment) and 744th combined under the
+Poisson p-value, above where P66 puts it and above where Ced9 puts BCL2. CD47 has 33 membrane-helix-like hydrophobic windows, BCL2 none. A high rank
 of CD47 for P66 is weak evidence for a P66-CD47 link, and section 7 confirms it on 300
 random human proteins of P66's length: their best single arm under mean IDF puts CD47 at a
-median rank of 906, P66's at 2_704 (p = 0.82). Only P66's E-value arm puts CD47 higher than
-most random queries do (166 against a median of 1_978, p = 0.047), one of 10 comparisons.
+median rank of 906, P66's at 2_704 (p = 0.82). Over the 10 comparisons in section 7 (five
+metrics, best single arm and combined), P66 ranks CD47 above the median random query in 8,
+but only one p-value is below 0.05: P66's best E-value rank, 166 against a median of 1_978
+(p = 0.047). If the 10 tests were independent, at least one p below 0.05 would turn up by
+chance 40% of the time (1 - 0.95^10).
 
 **Three alphabets instead of 19 does not change that.** Combining only hp_lehninger2,
 polarity4 and funcgroups8 (section 5) puts BCL2 at 3_561 and CD47 at 3_916 at best, better

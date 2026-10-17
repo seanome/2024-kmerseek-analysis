@@ -81,18 +81,29 @@ print(f"{len(done)} of {len(plan)} arms searched on the 998 proteins"
 
 # Every arm must have been searched the way the same arm was searched against the human
 # proteome (extended or exact); otherwise a feature means different things in training and
-# when the model is applied.
-spec = __import__("importlib.util").util.spec_from_file_location("s243", "243_pfam998_search.py")
-s243 = __import__("importlib.util").util.module_from_spec(spec); spec.loader.exec_module(s243)
-bad = []
+# when the model is applied. The human setting is read from arms.csv: `fitted` is true
+# exactly for the arms whose human regions carry mismatches, i.e. were extended (checked
+# 2026-10-17 on all 119 arms with regions). The marker files the old check read
+# (search/*.nofit, ka_survival/) were deleted with the 241 indexes.
+human_extended = {
+    f"{a}.k{k}": bool(x)
+    for a, k, x in pl.read_csv(lr.SWEEP / "arms.csv").select("alphabet", "ksize", "fitted").iter_rows()
+}
+# Known, not yet fixed: a stale .nofit marker sent this arm's 998-protein search down the
+# exact path in September, while its human search was extended. Its features in training
+# (exact) and in section 3 (extended) differ; re-searching it needs Sherlock.
+KNOWN_MISMATCH = {"hp_lehninger_hpc3.k21"}
+bad, known = [], []
 for f in sorted((lr.PF998 / "regions").glob("*.parquet")):
     d = pl.read_parquet(f, columns=None).head(1)
     if "extended" not in d.columns:
         bad.append((f.stem, "searched before the settings were matched"))
-    elif d.height and bool(d["extended"][0]) != s243.human_setting(f.stem)[0]:
-        bad.append((f.stem, "extended here" if d["extended"][0] else "exact here"))
+    elif d.height and bool(d["extended"][0]) != human_extended[f.stem]:
+        (known if f.stem in KNOWN_MISMATCH else bad).append(
+            (f.stem, "extended here" if d["extended"][0] else "exact here, extended in the human search"))
 assert not bad, f"arms searched differently from the human search, rerun them: {bad}"
-print("every searched arm matches its human search setting (extended or exact)")
+print(f"{len(human_extended) - len(known)} of {len(human_extended)} arms match their human search setting (extended or exact)")
+print(f"known mismatch, kept in the model: {known}")
 
 T = lr.training_table()
 counts = pl.read_csv(lr.PF998 / "candidate_counts.csv", schema_overrides={"split": pl.Utf8})
@@ -170,6 +181,22 @@ coef = lr.fig_coefficients(
 )
 print(top); print(bottom)
 """),
+    code(r"""
+# Numbers the conclusions quote that the tables above do not show: precision once 10% of the
+# held-out correct candidates are found (the best precision at recall >= 0.1, read off the
+# curves of section 1), against chance; and the weights of the two membrane-helix-like
+# window features in the full model.
+chance = float((w * y).sum() / w.sum())
+print(f"chance: {chance:.5f} of held-out candidates are correct (weighted)")
+print(pl.DataFrame({
+    "ranker": list(curves),
+    "precision_at_10pct_recall": [round(float(v[1][v[0] >= 0.10].max()), 4) for v in curves.values()],
+}).with_columns((pl.col("precision_at_10pct_recall") / chance).round(1).alias("times_chance")))
+print(pl.DataFrame({
+    "feature": [lr.feature_label(f) for f in ("hydrophobic_windows_query", "hydrophobic_windows_target")],
+    "coefficient": [round(float(cf[f]), 3) for f in ("hydrophobic_windows_query", "hydrophobic_windows_target")],
+}))
+"""),
     md(r"""
 ## 3. Applied to the three test cases
 
@@ -215,9 +242,12 @@ for q, t in tops.items():
    precision is 0.046 with all 19 alphabets, 0.029 with hp_lehninger2 alone and 0.011 with
    length and hydrophobic make-up alone; chance is 0.0009. The other 18 alphabets add a
    factor of 1.6.
-2. **The gain is at the very top of the list only.** With half the kept matches correct,
-   the full model finds 3.5% of the correct matches and the hp_lehninger2 model 2.2%. By 10%
-   recall every ranker is close to chance.
+2. **The gain is largest at the top of the list.** With half the kept matches correct,
+   the full model finds 3.5% of the correct matches and the hp_lehninger2 model 2.2%. Once
+   10% of the correct matches are found, the full model's precision is 0.037: 40 times
+   chance (0.00093), but 26 of every 27 matches it keeps are wrong. At that point the
+   hp_lehninger2 model (0.022) does no better than length and hydrophobic make-up alone
+   (0.024), and the hp_lehninger2 bit score alone is at chance (0.0009).
 3. **The largest weights are on protein length, not on any alphabet.** The query's and
    the target's length weigh -0.71 and -0.70 per standard deviation: a match between two
    short proteins is more often a shared Pfam family. The largest alphabet weights are on
@@ -228,11 +258,16 @@ for q, t in tops.items():
    2_969 for P66. The four highest-ranked proteins for Ced9 are olfactory receptors (OR4F3,
    OR4F16, OR4F21, OR4F29), each matched over a stretch with 8 membrane-helix-like windows;
    the membrane pull that notebook 242 found is still there, although the windows are
-   a feature (their weights are about +0.02).
+   a feature (their weights are +0.029 on the query side and +0.019 on the target side).
 5. **Together with notebook 242.** A random human protein of Ced9's length ranks BCL2 as
    well as Ced9 does in about one case in five, even with the best alphabets and k picked
    for each query. The trained model does no better. The limit is in what each arm sees for
    this pair, not in how the arms are combined.
+6. **One alphabet-ksize pair was searched differently in training.** hp_lehninger_hpc3 at
+   k=21 was searched without extension on the 998 proteins but with extension against the
+   human proteome, so its features mean different things in sections 1-2 and in section 3
+   (the check in the first code cell names it). It is one of 152 pairs and stays in the
+   model until it is re-searched.
 """),
 ]
 
