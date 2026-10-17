@@ -381,3 +381,163 @@ def test_best_stretch_and_full_sum_match_brute_force():
     assert np.allclose(got, want_best)
     full = lp.joint_counts(codes, comp, 200) @ score
     assert np.allclose(full, want_full)
+
+
+# ---------------------------------------------------------------------------
+# Section 4f
+# ---------------------------------------------------------------------------
+
+
+def test_place_in_gaps_keeps_gaps_and_x_columns():
+    taln = "AD-X-DDA--"
+    assert lp.place_in_gaps(taln, "ADDDA") == taln  # its own scored residues back
+    assert lp.place_in_gaps(taln, "WKKLL") == "WK-X-KLL--"
+    try:
+        lp.place_in_gaps(taln, "ADD")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a wrong residue count must be refused")
+
+
+def test_draw_unrelated_other_clan_long_enough():
+    rng = np.random.default_rng(0)
+    clans = np.array(["CL1", "CL2", "CL1", "CL2", "CL3"])
+    lens = np.array([5, 10, 20, 30, 40])
+    for _ in range(500):
+        L = int(rng.integers(1, 41))
+        j, off = lp.draw_unrelated(rng, L, "CL2", clans, lens)
+        assert clans[j] != "CL2" and lens[j] >= L and 0 <= off <= lens[j] - L
+    assert lp.draw_unrelated(rng, 41, "CL2", clans, lens) == (None, "longer than any candidate")
+    clans2 = np.array(["CL1", "CL1", "CL1", "CL2", "CL2"])
+    assert lp.draw_unrelated(rng, 25, "CL2", clans2, lens, max_tries=5) == (
+        None, "no other-clan candidate long enough")
+    # the fallback after max_tries still finds the one other-clan candidate
+    clans3 = np.array(["CL2", "CL2", "CL2", "CL2", "CL1"])
+    hits = {lp.draw_unrelated(rng, 1, "CL2", clans3, lens, max_tries=0)[0] for _ in range(20)}
+    assert hits == {4}
+
+
+def test_pfam_clans_reads_ac_and_cl(tmp_path):
+    f = tmp_path / "seed"
+    f.write_text("# STOCKHOLM 1.0\n#=GF ID   a\n#=GF AC   PF00001.5\n#=GF CL   CL0192\n//\n"
+                 "# STOCKHOLM 1.0\n#=GF ID   b\n#=GF AC   PF00002.1\n//\n")
+    assert lp.pfam_clans(f) == {"PF00001": "CL0192", "PF00002": "PF00002"}
+
+
+def test_shuffled_target_rows_are_score_pairs_shuffles():
+    rng = np.random.default_rng(3)
+    qa, ta = _random_gapped_pair(rng, 80, flip=0.2)
+    q = _to_alignment(qa)
+    t = "".join(c if i % 17 else ("X" if c != "-" else c) for i, c in enumerate(_to_alignment(ta)))
+    stored = lp.score_pair(q, t, np.random.default_rng(42), n_shuffle=2)
+    rows = lp.shuffled_target_rows(t, 42, 2)
+    for k, row in enumerate(rows):
+        assert [i for i, c in enumerate(row) if c in "-X"] == [i for i, c in enumerate(t) if c in "-X"]
+        (r,) = lp.score_pair(q, row, np.random.default_rng(0), n_shuffle=0)
+        for col in ["B1_ext", "B2_ext", "B3_ext", "all_a6_g32_none_ext", "rand_a6_g32_none_ext"]:
+            assert r[col] == stored[k + 1][col]
+
+
+def test_recall_at_exact_fpr_skips_nan_null_scores():
+    rng = np.random.default_rng(5)
+    real = rng.integers(0, 30, (400, 2)).astype(float)
+    null = rng.integers(0, 25, (400, 2, 2)).astype(float)
+    bins = rng.integers(0, len(lp.BINS), 400)
+    nan_null = null.copy()
+    nan_null[:7, 1, :] = np.nan
+    thr, w, rec = lp.recall_at_exact_fpr(real, nan_null, bins, 0.01)
+    flat = null.reshape(-1, 2)
+    keep = ~np.isnan(nan_null.reshape(-1, 2)[:, 0])
+    # the same rule on the remaining null scores, by hand
+    for c in range(2):
+        v = np.sort(flat[keep, c])
+        t = np.quantile(v, 0.99, method="higher")
+        assert thr[c] == t
+        f_hi, f_lo = (v > t).mean(), (v >= t).mean()
+        assert np.isclose(w[c], (0.01 - f_hi) / (f_lo - f_hi) if f_lo > f_hi else 0.0)
+    # and no NaN gives what it gave before
+    a = lp.recall_at_exact_fpr(real, null, bins, 0.01)
+    flat2 = null.reshape(-1, 2)
+    assert np.array_equal(a[0], np.quantile(flat2, 0.99, axis=0, method="higher"))
+
+
+def _fake_kmerseek_csv(path, rows):
+    """rows: (query, target, evalue, n_chained); every other column filled with a
+    placeholder, in kmerseek v0.4.0's order."""
+    with open(path, "w") as fh:
+        fh.write(",".join(lp.KMERSEEK_040_CSV_COLUMNS) + "\n")
+        for q, t, e, ch in rows:
+            vals = {c: "1" for c in lp.KMERSEEK_040_CSV_COLUMNS}
+            vals.update(query_name=q, target_name=t, region_evalue=e, region_n_chained=str(ch),
+                        moltype="hp_thomas_dill2", region_subseq="ACDA", target_subseq="ACDA",
+                        moltype_seq="hphh", remove_low_complexity="false")
+            fh.write(",".join(vals[c] for c in lp.KMERSEEK_040_CSV_COLUMNS) + "\n")
+
+
+def test_read_kmerseek_best_evalue_and_cutoff(tmp_path):
+    import polars as pl
+
+    real = tmp_path / "real.csv"
+    _fake_kmerseek_csv(real, [("q1", "t1", "0.5", 1), ("q1", "t1", "1.5e-3", 2), ("q2", "t2", "3.0", 1),
+                              ("q1", "t2", "0.0001", 1), ("q3", "t9", "0.1", 1)])
+    best = lp.read_kmerseek_best_evalue(real)
+    got = {(r["query_name"], r["target_name"]): (r["region_evalue"], r["region_n_chained"]) for r in best.iter_rows(named=True)}
+    assert got == {("q1", "t1"): (1.5e-3, 2), ("q2", "t2"): (3.0, 1), ("q1", "t2"): (1e-4, 1), ("q3", "t9"): (0.1, 1)}
+    bad = tmp_path / "bad.csv"
+    bad.write_text("query_name,target_name,region_evalue\nq,t,1\n")
+    try:
+        lp.read_kmerseek_best_evalue(bad)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a header in another layout must be refused")
+
+
+def test_evalue_cutoff_recall_matches_brute_force():
+    rng = np.random.default_rng(9)
+    n_pairs, n_targets = 60, 50
+    query_of = rng.integers(0, 45, n_pairs)  # some pairs share a query
+    share = np.bincount(query_of)[query_of]
+    own = np.where(rng.random(n_pairs) < 0.1, np.inf, rng.exponential(1.0, n_pairs))
+    # every query's null row against every target; report only E <= 3
+    full = {q: rng.exponential(30.0, n_targets) for q in np.unique(query_of)}
+    for fpr in (0.01, 0.02, 0.05):
+        for mult in (None, rng.integers(0, 3, n_pairs)):
+            m = np.ones(n_pairs) if mult is None else mult
+            # brute force over distinct queries, each weighted by its draws / share
+            wq = {q: (m[query_of == q] / share[query_of == q]).sum() for q in full}
+            vals = np.concatenate([full[q] for q in full])
+            wts = np.concatenate([np.full(n_targets, wq[q]) for q in full])
+            n_null = sum(wq.values()) * n_targets
+            cands = [v for v in np.unique(vals) if wts[vals <= v].sum() <= fpr * n_null]
+            want_cut = max(cands) if cands else None
+            np_, ne_ = [], []
+            for p in range(n_pairs):  # per pair, its query's reported row
+                r = full[query_of[p]]
+                r = r[r <= 3]
+                np_ += [p] * r.size
+                ne_ += list(r)
+            o = np.argsort(ne_, kind="stable")
+            cut, ach, rec = lp.evalue_cutoff_recall(own, np.array(np_)[o], np.array(ne_)[o], share, n_targets, fpr, mult)
+            if want_cut is None:
+                assert ach == 0.0 and cut < vals.min()
+            else:
+                assert cut == want_cut and np.isclose(ach, wts[vals <= cut].sum() / n_null)
+            assert np.isclose(rec, (m * (own <= cut)).sum() / m.sum())
+
+
+def test_evalue_cutoff_refuses_when_reported_rows_run_out():
+    try:
+        lp.evalue_cutoff_recall(np.array([0.1]), np.array([0]), np.array([0.5]), np.array([1]), 10_000, 0.01)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("must refuse: the cutoff could lie among unreported rows")
+
+
+def test_group_multiplicities_draw_whole_groups():
+    groups = np.array(["a", "a", "b", "c", "c", "c"])
+    for m in lp.group_multiplicities(groups, 50, 1):
+        assert m[0] == m[1] and m[3] == m[4] == m[5]
+        assert sum(m[[0, 2, 3]]) == 3  # three groups drawn, each item counted by its group

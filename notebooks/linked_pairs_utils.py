@@ -511,12 +511,22 @@ def recall_at_exact_fpr(real, null, bin_idx, fpr: float = 1e-3):
     interpolated by where fpr falls between those two null rates. This equals breaking ties
     at t at random so that exactly fpr of the null is called.
 
+    A NaN null score (a null target that could not be built, section 4f) is left out: the
+    threshold and the null rates are taken over the remaining null comparisons. Without
+    NaNs the result is the same as before this rule was added.
+
     Returns threshold t (cols), weight of the "at or above" side (cols), recall (bins x cols).
     """
     flat = null.reshape(-1, null.shape[-1])
-    thr = np.quantile(flat, 1 - fpr, axis=0, method="higher")
-    f_hi = (flat > thr).mean(axis=0)
-    f_lo = (flat >= thr).mean(axis=0)
+    if np.isnan(flat).any():
+        n_valid = (~np.isnan(flat)).sum(axis=0)
+        thr = np.nanquantile(flat, 1 - fpr, axis=0, method="higher")
+        f_hi = (flat > thr).sum(axis=0) / n_valid
+        f_lo = (flat >= thr).sum(axis=0) / n_valid
+    else:
+        thr = np.quantile(flat, 1 - fpr, axis=0, method="higher")
+        f_hi = (flat > thr).mean(axis=0)
+        f_lo = (flat >= thr).mean(axis=0)
     w = np.where(f_lo > f_hi, (fpr - f_hi) / np.where(f_lo > f_hi, f_lo - f_hi, 1), 0.0)
     above, at_or_above = real > thr, real >= thr
     rec = np.stack(
@@ -656,3 +666,219 @@ def best_stretch_scores(
     out = np.zeros(n_comp)
     out[best["comp"].to_numpy()] = np.maximum(best["best"].to_numpy(), 0.0)
     return out
+
+
+# ---------------------------------------------------------------------------
+# Section 4f: a null that keeps local HP patterns (an unrelated real protein), and the
+# report half used for kmerseek's own chaining.
+# ---------------------------------------------------------------------------
+
+SPLIT_SEED = 292  # the seed of the selection/report split, kept from the first run
+
+
+def select_half_ids(pair_index: np.ndarray, seed: int = SPLIT_SEED) -> np.ndarray:
+    """Pair indices of the selection half, as notebook 294's section 2 draws them: a
+    permutation of the unique pair indices with default_rng(seed), first half, sorted.
+    Every other pair is in the report half."""
+    perm = np.random.default_rng(seed).permutation(np.unique(pair_index))
+    return np.sort(perm[: perm.size // 2])
+
+
+def pfam_clans(seed_path) -> dict[str, str]:
+    """Pfam family accession (no version, e.g. ``PF00244``) -> its clan (``CL0020``),
+    read from the ``#=GF AC`` and ``#=GF CL`` lines of Pfam-A.seed(.gz). A family with no
+    clan counts as its own clan, so its value is its own accession."""
+    import gzip
+
+    opener = gzip.open if str(seed_path).endswith(".gz") else open
+    out: dict[str, str] = {}
+    acc = clan = None
+    with opener(seed_path, "rb") as fh:
+        for line in fh:
+            if line.startswith(b"#=GF AC"):
+                acc = line.split()[2].decode().split(".")[0]
+            elif line.startswith(b"#=GF CL"):
+                clan = line.split()[2].decode()
+            elif line.startswith(b"//"):
+                if acc is not None:
+                    out[acc] = clan or acc
+                acc = clan = None
+    return out
+
+
+def unrelated_candidates(aln_df, clans: dict[str, str]):
+    """Every distinct seed sequence of the alignment table (query and target rows, gaps
+    stripped), with its family's clan, sorted by length then name so draws are
+    reproducible. Returns (names, sequences, clans, lengths) as numpy arrays."""
+    import polars as pl
+
+    rows = pl.concat(
+        [
+            aln_df.select("family", pl.col(n).alias("name"), pl.col(a).alias("aln"))
+            for n, a in [("query", "qaln"), ("target", "taln")]
+        ]
+    )
+    cand = (
+        rows.unique(["family", "name"])
+        .with_columns(pl.col("aln").str.replace_all("-", "", literal=True).alias("seq"))
+        .with_columns(
+            pl.col("seq").str.len_bytes().alias("length"),
+            pl.col("family").replace_strict(clans).alias("clan"),
+        )
+        .sort("length", "name", "family")
+    )
+    return (
+        cand["name"].to_numpy(),
+        cand["seq"].to_numpy(),
+        cand["clan"].to_numpy(),
+        cand["length"].to_numpy(),
+    )
+
+
+def draw_unrelated(
+    rng: np.random.Generator,
+    length: int,
+    clan: str,
+    cand_clans: np.ndarray,
+    cand_lengths: np.ndarray,
+    max_tries: int = 10_000,
+):
+    """Pick a candidate from another clan at least ``length`` residues long, uniformly
+    among those, and a uniform start offset into it. Returns (candidate index, offset), or
+    (None, reason) when no candidate qualifies: ``"longer than any candidate"`` or
+    ``"no other-clan candidate long enough"``. cand_lengths must be sorted ascending."""
+    start = int(np.searchsorted(cand_lengths, length, side="left"))
+    n = cand_lengths.size
+    if start == n:
+        return None, "longer than any candidate"
+    for _ in range(max_tries):
+        j = int(rng.integers(start, n))
+        if cand_clans[j] != clan:
+            return j, int(rng.integers(0, cand_lengths[j] - length + 1))
+    other = np.flatnonzero(cand_clans[start:] != clan)
+    if other.size == 0:
+        return None, "no other-clan candidate long enough"
+    j = start + int(other[rng.integers(0, other.size)])
+    return j, int(rng.integers(0, cand_lengths[j] - length + 1))
+
+
+def place_in_gaps(taln: str, residues: str) -> str:
+    """The target's alignment row with its scored residues replaced, in order, by
+    ``residues`` (as many letters as the row has columns with an H or P residue). Gap
+    columns, and columns holding X or another letter outside the two classes (which
+    score_pair treats as a gap), stay put, so the new row has the true target's gaps."""
+    row = np.frombuffer(taln.encode(), dtype=np.uint8).copy()
+    res = np.flatnonzero(TABLES[ALPHABET][row] != GAP)
+    new = np.frombuffer(residues.encode(), dtype=np.uint8)
+    if new.size != res.size:
+        raise ValueError(f"{new.size} residues for {res.size} residue columns")
+    row[res] = new
+    return row.tobytes().decode()
+
+
+def shuffled_target_rows(taln: str, seed: int, n_shuffle: int = 2) -> list[str]:
+    """Notebook 232's shuffled targets as residue rows: the same permutations that
+    score_pair applies to the target's HP classes (default_rng(seed), drawn in the same
+    order), applied to its residues instead. Gaps stay put."""
+    rng = np.random.default_rng(seed)
+    tb = np.frombuffer(taln.encode(), dtype=np.uint8)
+    t_res_idx = np.flatnonzero(TABLES[ALPHABET][tb] != GAP)
+    out = []
+    for _ in range(n_shuffle):
+        ts = tb.copy()
+        ts[t_res_idx] = tb[rng.permutation(t_res_idx)]
+        out.append(ts.tobytes().decode())
+    return out
+
+
+# kmerseek v0.4.0 `search` CSV columns, in order: the fields of SearchResultCsv in
+# src/rust/search.rs at tag v0.4.0 (serde writes the field names as the header).
+KMERSEEK_040_CSV_COLUMNS = [
+    "query_name", "query_md5", "target_name", "target_md5", "containment",
+    "n_intersecting_hashes", "ksize", "scaled", "moltype", "remove_low_complexity",
+    "jaccard", "max_containment", "average_abund", "median_abund", "std_abund",
+    "containment_target_in_query", "f_weighted_target_in_query", "query_tfidf",
+    "mean_matched_kmer_freq", "sum_matched_kmer_freq", "query_expected_shared_kmers",
+    "query_enrichment", "joint_kmer_freq", "query_poisson_pvalue", "region_search_space",
+    "db_n_targets", "db_n_kmers", "run_n_queries", "region_start", "region_end",
+    "region_subseq", "target_start", "target_end", "target_subseq", "moltype_seq",
+    "region_length", "region_n_shared_kmers", "region_expected_shared_kmers",
+    "region_poisson_score", "region_tail_probability", "region_enrichment", "region_tfidf",
+    "region_mean_idf", "region_n_mismatches", "region_ka_bits", "region_evalue",
+    "region_n_chained",
+]  # fmt: skip
+
+
+def read_kmerseek_best_evalue(path):
+    """Best (smallest) region_evalue per (query_name, target_name) in a kmerseek search CSV
+    (gzipped or not), with the number of regions chained into that best row. Checks the
+    header against kmerseek v0.4.0's column layout."""
+    import gzip
+
+    import polars as pl
+
+    opener = gzip.open if str(path).endswith(".gz") else open
+    with opener(path, "rt") as fh:
+        header = fh.readline().rstrip("\n").split(",")
+    if header != KMERSEEK_040_CSV_COLUMNS:
+        raise ValueError(f"{path}: header is not kmerseek v0.4.0's search layout")
+    d = pl.read_csv(
+        path,
+        columns=["query_name", "target_name", "region_evalue", "region_n_chained"],
+        schema_overrides={"region_evalue": pl.Float64, "region_n_chained": pl.Int64},
+    )
+    return (
+        d.sort("query_name", "target_name", "region_evalue", "region_n_chained")
+        .group_by("query_name", "target_name", maintain_order=True)
+        .first()
+    )
+
+
+def evalue_cutoff_recall(
+    own_e, null_pair, null_e, share, n_targets, fpr=1e-3, mult=None
+):
+    """Recall at a database-scale false-positive rate, from E-values.
+
+    own_e (pairs): each pair's best E-value of its query against its own target (inf if
+    the search reported no row). null_pair, null_e: one entry per reported (pair, shuffled
+    target) comparison, the pair being the one whose query was searched, sorted by null_e
+    ascending. share (pairs): the number of pairs with that pair's query, so a query
+    searched once counts once. A null comparison not reported counts as not passing; there
+    are n_targets null comparisons per query.
+
+    The cutoff is the largest null E-value at which the weighted share of null comparisons
+    with E at or below it is at most fpr. A pair is found when its own E is at or below the
+    cutoff. mult (pairs): bootstrap multiplicity of each pair, default 1.
+
+    Raises ValueError when every reported null comparison fits under fpr, because the
+    unreported ones (above the run's E filter) could then hold the cutoff.
+
+    Returns cutoff, achieved false-positive rate, recall."""
+    own_e = np.asarray(own_e, float)
+    m = np.ones(own_e.size) if mult is None else np.asarray(mult, float)
+    per_query = m / np.asarray(share, float)
+    n_null = per_query.sum() * n_targets
+    cw = np.cumsum(per_query[null_pair])
+    last = np.r_[null_e[1:] != null_e[:-1], True]  # last entry of each distinct E-value
+    ok = np.flatnonzero(last & (cw <= fpr * n_null))
+    if ok.size and ok[-1] == null_e.size - 1:
+        raise ValueError(
+            "the reported null comparisons run out before the false-positive rate is reached"
+        )
+    if ok.size:
+        cutoff, achieved = float(null_e[ok[-1]]), float(cw[ok[-1]] / n_null)
+    else:  # even the smallest null E-value is too frequent: only E below it passes
+        cutoff, achieved = float(np.nextafter(null_e[0], -np.inf)), 0.0
+    recall = float((m * (own_e <= cutoff)).sum() / m.sum())
+    return cutoff, achieved, recall
+
+
+def group_multiplicities(groups, n_boot, seed):
+    """Yield, n_boot times, how often each item is drawn when whole groups are resampled
+    with replacement (the family bootstrap of section 4b, as counts per item)."""
+    groups = np.asarray(groups)
+    codes, inv = np.unique(groups, return_inverse=True)
+    rng = np.random.default_rng(seed)
+    for _ in range(n_boot):
+        g = rng.integers(0, codes.size, codes.size)
+        yield np.bincount(g, minlength=codes.size)[inv]

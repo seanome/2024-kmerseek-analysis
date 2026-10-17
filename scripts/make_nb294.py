@@ -37,6 +37,11 @@ carry an exact 8-letter HP match, and scoring each whole alignment with a 2×2 H
 matrix finds 85.4% of pairs, against 47.6% for B3. Given each pair's alignment, most of
 the missing pairs carry a seed and need their score added up across gaps; more seeds alone
 cannot add 10 points.
+Section 4f (added 2026-10-17) repeats 4b against a second null, built from unrelated real
+proteins of another Pfam clan: every recall rises (B2 +8.4 points, the linked pair +10.8),
+so the shuffled null is the stricter one; against the new null the linked pair's gain over
+B2 is +9.1 (6.6 to 11.2), unclear rather than KILL, and still no larger than B3's. The test
+of kmerseek's own chaining (part 2) waits on a Sherlock job.
 
 **Question.** [Notebook 232](232_mismatch_tolerant_seed_extend.ipynb) found that the longest
 exact run of matching hydrophobic/polar (HP) classes between true homologs at 20–30%
@@ -125,8 +130,9 @@ code.
 Code: [`linked_pairs_utils.py`](linked_pairs_utils.py) (scoring, tested against brute force
 in `tests/test_linked_pairs_utils.py`); scores from
 `scripts/linked_pairs_on_alignments.py`; Swiss-Prot key rates from
-`scripts/linked_pairs_key_spectrum.py`. No kmerseek run; everything is Python on the
-laptop.
+`scripts/linked_pairs_key_spectrum.py`. Sections 1 to 4f part 1 run no kmerseek; they
+are Python on the laptop. Section 4f part 2 runs kmerseek on Sherlock
+(`scripts/294_kmerseek_chaining.sbatch`).
 """)
 
 code(r"""
@@ -1494,6 +1500,386 @@ gapped extension), not the index.
 """)
 
 md(r"""
+### 4f. A null that keeps local HP patterns, and kmerseek's own chaining (added 2026-10-17)
+
+Two things the earlier sections left untested.
+
+**Part 1, an unrelated-protein null.** Every null in sections 4a to 4e shuffles the target's
+residues along its alignment row. A shuffle keeps the target's composition and gap columns
+but breaks up runs of hydrophobic residues and alternating H/P patterns (membrane
+stretches, amphipathic helices), which unrelated real proteins keep. If HP keys score such
+patterns, the shuffled null is too easy for them.
+
+The second null keeps those patterns. For each true pair, two null targets are built:
+
+- take a Pfam seed sequence from a family in a *different Pfam clan* (a clan is Pfam's
+  group of families with a shared origin; a family in no clan counts as its own clan),
+  from the same table of notebook 230's seed alignments, so the composition comes from the
+  same source;
+- cut it to the true target's number of H/P residues, starting at a random position;
+- put those residues into the true target's alignment row in order, so the gap columns
+  (and the rare X columns, which the scoring treats as gaps) are the true target's.
+
+The query is unchanged. Each null target is scored exactly as the true target is
+(`lp.score_pair`). The draws use one random generator seeded with 292, the split's seed,
+in pair order (`scripts/linked_pairs_on_alignments.py --unrelated-null`). A target longer
+than every candidate from another clan is skipped and counted, not padded. Two null targets
+per pair, as in 232, so the threshold rests on the same number of null comparisons
+(60,000 per half). The threshold rule (exactly FPR 0.001), the bootstrap (1,000 resamples of
+whole Pfam families, seed 2) and the five scores are section 4b's, so the shuffled-target
+column below is section 4b's numbers and the two columns use the same resamples.
+""")
+
+code(r"""
+# Part 1: the unrelated-protein null
+UNREL = Path("/Users/olga/data/pfam/294_unrelated_protein_null_scores.parquet")  # linked_pairs_on_alignments.py --unrelated-null
+PFAM_SEED = Path("/Users/olga/data/pfam/Pfam-A.seed.gz")
+F_NAMES = ["B1", "B2", "B3", "linked", "randstrobe"]
+F_LABEL = {"B1": "B1: one 10-letter seed", "B2": "B2: one 8-letter seed", "B3": "B3: 8-letter seed + second segment",
+           "linked": "chosen linked pair", "randstrobe": "randstrobe (one key per position)"}
+assert [NEW[n] for n in F_NAMES] == ["B1_ext", "B2_ext", "B3_ext", "all_a6_g32_none_ext", "rand_a6_g32_none_ext"]
+un = pl.read_parquet(UNREL).sort("pair_index", "kind")
+assert un.height == 120_000 and (un["pair_index"].to_numpy().reshape(-1, 2) == np.arange(60_000)[:, None]).all()
+clans4f = lp.pfam_clans(PFAM_SEED)
+cand_names, cand_seqs, cand_clans, cand_lens = lp.unrelated_candidates(pl.read_parquet(ALN), clans4f)
+built = un.filter(pl.col("skipped").is_null())
+print(f"candidate proteins: {cand_names.size:_} distinct Pfam seed sequences (gaps removed) from {np.unique(cand_clans).size:_} clans, "
+      f"a family with no clan counted as its own")
+print(f"null targets built: {built.height:_} of 120,000; skipped: {un.height - built.height} "
+      f"({un.filter(pl.col('skipped').is_not_null())['pair_index'].n_unique()} pairs)")
+print(un.filter(pl.col("skipped").is_not_null()).group_by("skipped").agg(pl.len(), pl.col("n_residues").min().alias("shortest skipped target")).sort("skipped"))
+print(f"longest candidate {cand_lens.max():_} residues; the null targets came from {built['source'].n_unique():_} distinct candidates")
+checks4f = {
+    "every null target comes from another clan": (built["source_clan"] != built["family_clan"]).all(),
+    "the pair's clan is its family's clan": (un["family_clan"] == un["family"].replace_strict(clans4f)).all(),
+    "the pairs are section 1's pairs": un.filter(pl.col("kind") == "unrel0").select("pair_index", "query", "target").equals(
+        d.filter(pl.col("kind") == "real").sort("pair_index").select(pl.col("pair_index").cast(pl.Int64), "query", "target")),
+}
+# rebuild 300 null targets from the stored draw and rescore them: the stored scores are lp.score_pair's
+aln4f = pf4e.select("pair_index", "qaln", "taln")
+seq_of = dict(zip(zip(cand_names, cand_clans), cand_seqs))
+chk = built.sample(n=300, seed=4).join(aln4f, on="pair_index").sort("pair_index", "kind")
+same4f = 0
+for r in chk.iter_rows(named=True):
+    src = seq_of[(r["source"], r["source_clan"])]
+    row = lp.place_in_gaps(r["taln"], src[r["offset"]:r["offset"] + r["n_residues"]])
+    (sc_,) = lp.score_pair(r["qaln"], row, np.random.default_rng(0), 0)
+    same4f += all(sc_[NEW[n]] == r[NEW[n]] for n in F_NAMES)
+checks4f["300 null targets rebuilt from the stored draw rescore to the stored scores"] = same4f == 300
+for k_, v_ in checks4f.items():
+    print(f"  {k_}: {v_}")
+assert all(checks4f.values())
+
+# what differs between the two kinds of null target: HP runs, H share, and agreement with the query on aligned columns
+TAB4F = lp.TABLES[lp.ALPHABET]
+def hp_codes(rowstr):
+    return TAB4F[np.frombuffer(rowstr.encode(), np.uint8)]
+def longest_h_run(c):
+    h = (c[c != lp.GAP] == 0).astype(np.int8)  # the sequence's own residues, gaps and X left out
+    edges = np.diff(np.r_[0, h, 0])
+    return int((np.flatnonzero(edges == -1) - np.flatnonzero(edges == 1)).max(initial=0))
+desc_ = []
+rep2030_ids = set(pidx_all[rep & (bin_all == b2030)].tolist())
+u0 = built.filter(pl.col("kind") == "unrel0").select("pair_index", "source", "source_clan", "offset", "n_residues")
+for r in aln4f.filter(pl.col("pair_index").is_in(list(rep2030_ids))).join(u0, on="pair_index").iter_rows(named=True):
+    cq = hp_codes(r["qaln"])
+    rows3 = [r["taln"], lp.shuffled_target_rows(r["taln"], r["pair_index"], 1)[0],
+             lp.place_in_gaps(r["taln"], seq_of[(r["source"], r["source_clan"])][r["offset"]:r["offset"] + r["n_residues"]])]
+    out_ = []
+    for row in rows3:
+        ct = hp_codes(row)
+        both = (cq != lp.GAP) & (ct != lp.GAP)
+        out_ += [longest_h_run(ct), float((ct[ct != lp.GAP] == 0).mean()), float((cq[both] == ct[both]).mean()),
+                 abs(float((cq[cq != lp.GAP] == 0).mean()) - float((ct[ct != lp.GAP] == 0).mean()))]
+    desc_.append(out_)
+desc_ = np.array(desc_)
+print(f"Report-half pairs at 20-30% identity with a first unrelated-protein target: {desc_.shape[0]:_}. Per target, mean over pairs "
+      "(true target; its first shuffle; its first unrelated-protein target):")
+for j_, lab_ in enumerate(["longest run of H residues", "share of H residues", "share of aligned columns whose HP class agrees with the query",
+                           "|query H share - target H share|"]):
+    print(f"  {lab_}: " + "; ".join(f"{desc_[:, 4 * k + j_].mean():.3f}" for k in range(3)))
+print(f"  targets with an H run of 8 or more: " + "; ".join(f"{(desc_[:, 4 * k] >= 8).mean():.3f}" for k in range(3)))
+
+# null scores for the report half, (pairs, 2, scores); a skipped null target is NaN and left out of the threshold
+un_arr = np.stack([un.filter(pl.col("kind") == f"unrel{k}").sort("pair_index").select([NEW[n] for n in F_NAMES]).to_numpy().astype(float)
+                   for k in range(2)], axis=1)
+idx5 = [COLS.index(NEW[n]) for n in F_NAMES]
+rr5, ns5, nu5 = real_r[:, idx5], null_r[:, :, idx5], un_arr[rep]
+print(f"report half: {int((~np.isnan(nu5[:, :, 0])).sum()):_} unrelated-protein null comparisons, {ns5[:, :, 0].size:_} shuffled-target ones")
+thr_u, w_u, rec_u = lp.recall_at_exact_fpr(rr5, nu5, bin_r, FPR)
+boot_u = lp.bootstrap_recall_by_group(rr5, nu5, bin_r, fam_r, FPR, N_BOOT, seed=2)
+lo_u, hi_u = np.percentile(boot_u, 2.5, axis=0), np.percentile(boot_u, 97.5, axis=0)
+J5 = [JN[n] for n in F_NAMES]
+rec_s, boot_s, lo_s, hi_s, thr_s5 = rec_n[:, J5], boot_n[:, :, J5], lo_n[:, J5], hi_n[:, J5], thr_n[J5]
+# the shuffled-target column is section 4b's: recomputing it from the same scores gives the same numbers
+again = lp.recall_at_exact_fpr(rr5, ns5, bin_r, FPR)
+assert np.array_equal(again[2], rec_s) and np.array_equal(again[0], thr_s5)
+diff_b = boot_u[:, b2030] - boot_s[:, b2030]
+d_lo5, d_hi5 = np.percentile(diff_b, [2.5, 97.5], axis=0)
+fmt = lambda v, l, h: f"{100 * v:.1f} [{100 * l:.1f} to {100 * h:.1f}]"
+t4f = pl.DataFrame([{
+    "order": k, "design": F_LABEL[n],
+    "threshold, shuffled": thr_s5[k], "threshold, unrelated": thr_u[k],
+    "recall (%), shuffled-target null (sections 4a-4e)": fmt(rec_s[b2030, k], lo_s[b2030, k], hi_s[b2030, k]),
+    "recall (%), unrelated-protein null": fmt(rec_u[b2030, k], lo_u[b2030, k], hi_u[b2030, k]),
+    "unrelated minus shuffled (points)": fmt(rec_u[b2030, k] - rec_s[b2030, k], d_lo5[k], d_hi5[k]),
+} for k, n in enumerate(F_NAMES)]).sort("order").drop("order")
+print(f"Table 1. Report half, 20-30% identity, {int((bin_r == b2030).sum()):_} true pairs. Recall at exactly FPR 0.001 per comparison, "
+      "on each pair's own alignment; 95% intervals from the same 1,000 family resamples (seed 2) under both nulls. Thresholds in score units.")
+with pl.Config(fmt_str_lengths=60, tbl_width_chars=260):
+    print(t4f)
+print("Every identity bin, recall (%) shuffled-target null -> unrelated-protein null:")
+for k, n in enumerate(F_NAMES):
+    print(f"  {n:11s}" + "  ".join(f"{b} {100 * rec_s[i, k]:.1f} -> {100 * rec_u[i, k]:.1f}" for i, b in enumerate(BINS)))
+
+# the 4b decision under the new null: same paired gains, same resamples
+best_u = "B1" if rec_u[b2030, 0] >= rec_u[b2030, 1] else "B2"
+def paired_u(a, b):
+    ia, ib = F_NAMES.index(a), F_NAMES.index(b)
+    g = rec_u[b2030, ia] - rec_u[b2030, ib]
+    l_, h_ = np.percentile(boot_u[:, b2030, ia] - boot_u[:, b2030, ib], [2.5, 97.5])
+    return g, l_, h_
+gains_u = []
+for a_, b_, lab, decides in COMPARE:
+    g, l_, h_ = paired_u(a_, best_u if b_ == best_n else b_)
+    gains_u.append({"comparison": lab.replace("better single seed", f"better single seed ({best_u})"), "gain": round(100 * g, 1), "ci_low": round(100 * l_, 1), "ci_high": round(100 * h_, 1),
+                    "call_vs_10_points": call(l_, h_) if decides else ("control: interval excludes 0" if l_ > 0 or h_ < 0 else "control: interval includes 0")})
+gains_u = pl.DataFrame(gains_u)
+print("Paired gains at 20-30% identity under the unrelated-protein null (points, exactly FPR 0.001, families resampled):")
+with pl.Config(fmt_str_lengths=80, tbl_width_chars=200):
+    print(gains_u)
+VERDICT_4F = gains_u["call_vs_10_points"][0]
+moves = rec_u[b2030] - rec_s[b2030]
+verdict_4f1_line = (f"Section 4f part 1: against the unrelated-protein null, recall at 20-30% identity moves by "
+                    + ", ".join(f"{n} {100 * mv:+.1f}" for n, mv in zip(F_NAMES, moves))
+                    + f" points; the chosen linked pair's gain over {best_u} is {gains_u['gain'][0]:+.1f} ({gains_u['ci_low'][0]:+.1f} to {gains_u['ci_high'][0]:+.1f}): {VERDICT_4F}.")
+print(verdict_4f1_line)
+""")
+
+code(r"""
+# Table 1 as a figure: five designs, one mark per null
+fig, axd = plt.subplot_mosaic([["legend"], ["main"]], figsize=(pf.ONE_COLUMN_MM * pf.MM, 80 * pf.MM), height_ratios=[0.2, 1])
+NULL_MARK = {"shuffled": ("o", "shuffled-target null (sections 4a-4e)"), "unrelated": ("D", "unrelated-protein null (section 4f)")}
+axd["legend"].set_axis_off()
+axd["legend"].legend(handles=[Line2D([], [], color="0.35", marker=mk, ms=4, lw=0, label=lab) for mk, lab in NULL_MARK.values()]
+                     + [Line2D([], [], color="0.35", marker="|", ms=7, lw=0, label="vertical bar: 95% interval, Pfam families resampled"),
+                        Line2D([], [], color="0.35", marker="$+1$", ms=6, lw=0, label="number above a design: unrelated minus shuffled (points)")],
+                     loc="center", ncol=1, fontsize=5.5, frameon=False)
+ax = axd["main"]
+F_COLOUR = {"B1": COLOR["B1"], "B2": COLOR["B2"], "B3": COLOR["B2"], "linked": COLOR["linked"], "randstrobe": COLOR["linked"]}
+for k, n in enumerate(F_NAMES):
+    for dx, (key, rec_, lo_, hi_) in [(-0.14, ("shuffled", rec_s, lo_s, hi_s)), (0.14, ("unrelated", rec_u, lo_u, hi_u))]:
+        v = 100 * rec_[b2030, k]
+        ax.errorbar(k + dx, v, yerr=[[v - 100 * lo_[b2030, k]], [100 * hi_[b2030, k] - v]], color=F_COLOUR[n],
+                    marker=NULL_MARK[key][0], ms=4, lw=0.9, capsize=1.5)
+    ax.text(k, 100 * max(hi_s[b2030, k], hi_u[b2030, k]) + 1.2, f"{100 * moves[k]:+.1f}", ha="center", va="bottom", fontsize=5.5)
+ax.set_xticks(range(len(F_NAMES)), ["B1: one\n10-letter seed", "B2: one\n8-letter seed", "B3: seed +\nsecond segment",
+                                     "chosen\nlinked pair", "randstrobe"], fontsize=5.5)
+ax.set_xlim(-0.6, len(F_NAMES) - 0.4)
+ax.set_ylim(30, 65)
+ax.set_ylabel("Recall at 20–30% identity, exactly FPR 0.001 (%)\nreport half; higher is better")
+hc.finish_figure(
+    fig, FIG / "294_null_comparison.png", tools=hc.NO_TOOL,
+    title="Two nulls for the same five HP scores (hp_thomas_dill2, Pfam seed pairs, report half)",
+    hypothesis="A null target cut from an unrelated real protein keeps local HP patterns, so it lowers the recall of keys that score those patterns.",
+    conclusion=verdict_4f1_line + " Higher is better.",
+    wrap=70,
+)
+""")
+
+md(r"""
+**Part 2, kmerseek's own chaining.** B3 (section 4b) showed that the linked key's gain
+comes from a second extended segment, not a second exact word. kmerseek can already join
+extended regions: `--chain-max-gap G --chain-max-shift D` chains regions at most G residues
+apart on the query and at most D diagonals apart (a net insertion or deletion of up to D
+residues), scored with Karlin–Altschul sum statistics. Does that give B3's gain?
+
+*Set-up* (`scripts/294_kmerseek_chaining_inputs.py` writes the inputs,
+`scripts/294_kmerseek_chaining.sbatch` runs kmerseek on Sherlock):
+
+- kmerseek v0.4.0, the version pinned in the repo's pipelines (image
+  `docker.io/olgabot/kmerseek:0.4.0-rc5`, built from tag `v0.4.0`), `hp_thomas_dill2`,
+  k = 8, scaled 1, extension with mismatch penalty 2 (this notebook's) and kmerseek's
+  default X-drop of 8 (the notebook's extension has no X-drop).
+- Queries: the report half's true pairs at 20–30% identity. Database: their targets,
+  indexed together. A second database holds every target shuffled once, with notebook
+  232's first shuffle of that pair, indexed the same way.
+- Three searches of each database: no chaining; chaining up to 32 residues apart on one
+  diagonal (`--chain-max-shift 0`); and up to 32 apart across a shift of up to 32
+  (`--chain-max-shift 32`). The gap of 32 is B3's window.
+- All six searches use one E-value rule: `--ka-k` set to the closed-form K at the real
+  database's match probability, with the closed-form lambda per pair, so the cutoff taken
+  from the shuffled database applies to the real one.
+- *Found*: the query's best E-value against its own target is at or below the cutoff. The
+  *cutoff* is the E-value at which 0.1% of all query–shuffled-target comparisons (every
+  query against every shuffled target) score at or below it. The interval resamples whole
+  Pfam families (1,000 times, seed 3); each resample recomputes the cutoff from the drawn
+  queries' null comparisons.
+
+This is the first number in the notebook that pays for chance hits off the alignment's
+diagonal: kmerseek searches every diagonal of every query–target comparison, and the false
+positives are counted against a whole database. Sections 4a to 4e score each pair only on
+its own alignment. So the two kinds of recall sit in separate columns of Table 2, and the
+comparison favours B2 and B3.
+
+*Rule, written before any kmerseek number was seen.* The gain is already in kmerseek if
+kmerseek with `--chain-max-shift 32` gains over kmerseek without chaining at least as much
+as B3 gains over B2 (+8.4 points): the paired gain's 95% interval reaches +8.4 or above. It
+is not if the whole interval lies below +8.4.
+""")
+
+code(r"""
+# Part 2: kmerseek's own chaining (Sherlock; the cell reads the results if they exist)
+import json
+import os
+CHAIN_DIR = Path(os.environ.get("NB294_CHAINING_DIR", "/Users/olga/data/pfam/294_chaining"))
+CHAIN_RES = CHAIN_DIR / "results"
+chain_info = json.loads((CHAIN_DIR / "inputs.json").read_text())
+pairs_c = pl.read_csv(CHAIN_DIR / "pairs.tsv", separator="\t").sort("pair_index")
+want_pairs = np.sort(pidx_all[rep & (bin_all == b2030)])
+assert np.array_equal(pairs_c["pair_index"].to_numpy(), want_pairs), "the chaining inputs are not this notebook's report-half 20-30% pairs"
+N_DB = chain_info["n_targets"]
+print(f"kmerseek inputs: {pairs_c.height:_} report-half pairs at 20-30% identity, {chain_info['n_queries']:_} distinct queries; "
+      f"the database holds {N_DB:_} target proteins ({chain_info['n_target_residues']:_} residues), the shuffled database the same {N_DB:_} shuffled")
+CHAINS4F = {"none": "kmerseek, no chaining", "shift0": "kmerseek, --chain-max-shift 0", "shift32": "kmerseek, --chain-max-shift 32"}
+chain_files = {(db_, ch): CHAIN_RES / f"kmerseek_{db_}_{ch}.csv.gz" for db_ in ["real", "shuffled"] for ch in CHAINS4F}
+CHAIN_RAN = all(f.exists() for f in chain_files.values())
+if not CHAIN_RAN:
+    print("kmerseek chaining not run yet: submit scripts/294_kmerseek_chaining.sbatch on Sherlock")
+    verdict_4f2_line = "Section 4f part 2: kmerseek chaining not run yet, so whether the gain is already in kmerseek is not known."
+else:
+    settings = {}
+    for (db_, ch), f in chain_files.items():
+        settings[(db_, ch)] = dict(ln.split("=", 1) for ln in Path(str(f).replace(".csv.gz", ".settings.txt")).read_text().splitlines())
+    ka_ks = {s["ka_k"] for s in settings.values()}
+    assert len(ka_ks) == 1, f"the six searches used different K: {ka_ks}"
+    E_KEEP = float(next(iter(settings.values()))["e_keep"])
+    share_c = pairs_c.group_by("query").len().rename({"len": "share"})
+    pc = pairs_c.with_row_index("p").join(share_c, on="query").sort("p")
+    share_arr = pc["share"].to_numpy()
+    fam_c = pc["family"].to_numpy()
+    own_e, null_pe = {}, {}
+    for ch in CHAINS4F:
+        real_best = lp.read_kmerseek_best_evalue(chain_files[("real", ch)])
+        own = pc.join(real_best.rename({"query_name": "query", "target_name": "target"}), on=["query", "target"], how="left").sort("p")
+        own_e[ch] = own["region_evalue"].fill_null(np.inf).to_numpy()
+        nul = lp.read_kmerseek_best_evalue(chain_files[("shuffled", ch)])
+        assert nul["target_name"].str.starts_with("shuffled_").all()
+        nul = nul.rename({"query_name": "query"}).join(pc.select("p", "query"), on="query").sort("region_evalue", "p", "target_name")
+        null_pe[ch] = (nul["p"].to_numpy(), nul["region_evalue"].to_numpy())
+        print(f"{CHAINS4F[ch]}: {settings[('real', ch)]['rows_kept']} real and {settings[('shuffled', ch)]['rows_kept']} shuffled rows kept "
+              f"(E <= {E_KEEP:g}); own-target rows found for {int(np.isfinite(own_e[ch]).sum()):_} of {pc.height:_} pairs")
+    res4f2 = {}
+    for ch in CHAINS4F:
+        cut, ach, rec = lp.evalue_cutoff_recall(own_e[ch], *null_pe[ch], share_arr, N_DB, FPR)
+        assert cut < E_KEEP
+        res4f2[ch] = {"cutoff": cut, "fpr": ach, "recall": rec, "boot": []}
+    for m in lp.group_multiplicities(fam_c, N_BOOT, seed=3):
+        for ch in CHAINS4F:
+            res4f2[ch]["boot"].append(lp.evalue_cutoff_recall(own_e[ch], *null_pe[ch], share_arr, N_DB, FPR, m)[2])
+    for ch in CHAINS4F:
+        res4f2[ch]["boot"] = np.array(res4f2[ch]["boot"])
+        res4f2[ch]["lo"], res4f2[ch]["hi"] = np.percentile(res4f2[ch]["boot"], [2.5, 97.5])
+    rows_t2 = [{"order": 0, "score": "B2: one 8-letter seed + extension", "recall per comparison on the pair's own alignment, shuffled target (%)": fmt(rec_n[b2030, JN["B2"]], lo_n[b2030, JN["B2"]], hi_n[b2030, JN["B2"]]),
+                "recall over the whole database, shuffled database (%)": "", "cutoff": f"score > {thr_n[JN['B2']]:.0f} (section 4b)"},
+               {"order": 1, "score": "B3: 8-letter seed + second segment", "recall per comparison on the pair's own alignment, shuffled target (%)": fmt(rec_n[b2030, JN["B3"]], lo_n[b2030, JN["B3"]], hi_n[b2030, JN["B3"]]),
+                "recall over the whole database, shuffled database (%)": "", "cutoff": f"score > {thr_n[JN['B3']]:.0f} (section 4b)"}]
+    for o_, ch in enumerate(CHAINS4F, start=2):
+        r_ = res4f2[ch]
+        rows_t2.append({"order": o_, "score": CHAINS4F[ch], "recall per comparison on the pair's own alignment, shuffled target (%)": "",
+                        "recall over the whole database, shuffled database (%)": fmt(r_["recall"], r_["lo"], r_["hi"]),
+                        "cutoff": f"E <= {r_['cutoff']:.3g} (FPR {r_['fpr']:.5f})"})
+    print(f"Table 2. Report half, 20-30% identity, {pc.height:_} true pairs; database of {N_DB:_} target proteins. "
+          "95% intervals with Pfam families resampled (4b: seed 2, kmerseek: seed 3). The two recall columns use different false-positive rates and are not one scale.")
+    with pl.Config(fmt_str_lengths=70, tbl_width_chars=300):
+        print(pl.DataFrame(rows_t2).sort("order").drop("order"))
+    g_b = res4f2["shift32"]["boot"] - res4f2["none"]["boot"]
+    g32 = res4f2["shift32"]["recall"] - res4f2["none"]["recall"]
+    g_lo, g_hi = np.percentile(g_b, [2.5, 97.5])
+    g0_b = res4f2["shift32"]["boot"] - res4f2["shift0"]["boot"]
+    B3_GAIN = rec_n[b2030, JN["B3"]] - rec_n[b2030, JN["B2"]]
+    print(f"kmerseek --chain-max-shift 32 minus no chaining: {100 * g32:+.1f} points [{100 * g_lo:+.1f} to {100 * g_hi:+.1f}]; "
+          f"minus --chain-max-shift 0: {100 * (res4f2['shift32']['recall'] - res4f2['shift0']['recall']):+.1f} "
+          f"[{100 * np.percentile(g0_b, 2.5):+.1f} to {100 * np.percentile(g0_b, 97.5):+.1f}]; B3 minus B2 (4b): {100 * B3_GAIN:+.1f}")
+    IN_KMERSEEK = "is" if g_hi >= B3_GAIN else "is not"
+    verdict_4f2_line = (f"Section 4f part 2: the index change {IN_KMERSEEK} already in kmerseek. Chaining across a shift of up to 32 gains "
+                        f"{100 * g32:+.1f} points over no chaining ({100 * g_lo:+.1f} to {100 * g_hi:+.1f}), against B3's {100 * B3_GAIN:+.1f} over B2.")
+    # figure: four bars
+    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 72, layout=None)
+    BARS = [("B2", rec_n[b2030, JN["B2"]], lo_n[b2030, JN["B2"]], hi_n[b2030, JN["B2"]], COLOR["B2"], True),
+            ("B3", rec_n[b2030, JN["B3"]], lo_n[b2030, JN["B3"]], hi_n[b2030, JN["B3"]], COLOR["B2"], False),
+            ("shift0", res4f2["shift0"]["recall"], res4f2["shift0"]["lo"], res4f2["shift0"]["hi"], "0.3", False),
+            ("shift32", res4f2["shift32"]["recall"], res4f2["shift32"]["lo"], res4f2["shift32"]["hi"], "0.3", True)]
+    for x_, (n, v, l_, h_, col, filled) in enumerate(BARS):
+        ax.bar(x_, 100 * v, width=0.6, color=col if filled else "white", edgecolor=col, lw=1)
+        ax.errorbar(x_, 100 * v, yerr=[[100 * (v - l_)], [100 * (h_ - v)]], color="black", lw=0.8, capsize=2)
+        ax.text(x_, 100 * h_ + 1.5, f"{100 * v:.1f}%", ha="center", va="bottom", fontsize=5.5)
+    ax.axhline(100 * res4f2["none"]["recall"], xmin=0.5, xmax=1.0, color="0.3", ls="--", lw=0.8)
+    ax.legend(handles=[Line2D([], [], color="0.3", ls="--", lw=0.8, label=f"kmerseek without chaining: {100 * res4f2['none']['recall']:.1f}%")],
+              loc="lower right", bbox_to_anchor=(1.0, 1.06), frameon=False, fontsize=5.5)
+    ax.axvline(1.5, color="0.7", lw=0.5, ls=":")
+    ax.text(0.5, 101, "per comparison, own alignment", ha="center", va="bottom", fontsize=5.5, clip_on=False)
+    ax.text(2.5, 101, f"whole database ({N_DB:,} targets)", ha="center", va="bottom", fontsize=5.5, clip_on=False)
+    ax.set_xticks(range(4), ["B2: one\n8-letter seed", "B3: seed +\nsecond segment", "kmerseek\n--chain-max-shift 0", "kmerseek\n--chain-max-shift 32"], fontsize=5.5)
+    ax.set_ylim(0, 100)
+    ax.set_ylabel("Recall at 20–30% identity, FPR 0.001 (%)\nblack line: 95% interval, Pfam families resampled")
+    hc.finish_figure(
+        fig, FIG / "294_kmerseek_chaining.png",
+        tools=f"kmerseek v0.4.0 (olgabot/kmerseek:0.4.0-rc5), hp_thomas_dill2, k=8, extension penalty 2, X-drop 8, --chain-max-gap 32; B2 and B3 from section 4b",
+        title="kmerseek's own chaining against B2 and B3 (Pfam seed pairs, report half, 20-30% identity)",
+        hypothesis="kmerseek's chaining across shifts already gives B3's gain from a second extended segment.",
+        conclusion=verdict_4f2_line + " Higher is better. Left pair: false positives per comparison on the pair's own alignment; right pair: over every query-target comparison of the database.",
+        wrap=70,
+    )
+print(verdict_4f2_line)
+""")
+
+md(r"""
+**Verdict for 4f, part 1.** The unrelated-protein null pushes recall up, not down. At 20–30%
+identity, recall rises by 7.8 points for B1 (95% interval 4.5 to 11.8), 8.4 for B2 (4.5 to
+12.9), 10.3 for B3 (6.3 to 16.6), 10.8 for the chosen linked pair (7.2 to 16.4) and 2.2 for
+the randstrobe (0.1 to 4.1). Every threshold is 1 to 4 score units lower, so the shuffled
+target is the stricter null, not the easier one. The two nulls do not differ in HP runs: the
+longest run of hydrophobic residues averages 5.3 in the true targets, 5.6 in their shuffles
+and 5.2 in the unrelated-protein targets, and 11.5%, 13.3% and 10.6% of them hold a run of 8
+or more. They differ in composition: a shuffle keeps the true target's hydrophobic share,
+which is close to the query's (mean difference 0.033), while an unrelated protein's differs
+by 0.073 on average. Under the new null the chosen linked pair gains +9.1 points over B2
+(6.6 to 11.2). The interval crosses 10, so by section 4b's rule it is unclear, not a KILL.
+The linked pair still does no better than B3 (−1.2, −2.5 to +0.2), and B3 gains +10.3 over
+B2 (7.8 to 12.6), so the gain still comes from the second extended segment, not the second
+exact word. The randstrobe, the one-key-per-position version an index can afford, falls
+3.9 points below B2 (−6.6 to −1.2). The KILL of section 4b holds against the shuffled-target
+null, the stricter of the two, and is unclear against the unrelated-protein null.
+
+**Verdict for 4f, part 2.** Not run yet. The inputs are written and the Sherlock job is
+`scripts/294_kmerseek_chaining.sbatch`; until its results are copied to
+`~/data/pfam/294_chaining/results/`, the cell above prints "kmerseek chaining not run yet"
+and draws no figure. The database holds 7,384 target proteins (1,260,658 residues) for the
+7,512 report-half pairs at 20–30% identity, with 7,404 distinct queries. Whether the index
+change is already in kmerseek is not known until the job has run; the cell prints that line
+from the data once it has.
+
+**Changes since 4e**
+
+- No number printed in sections 1 to 4e, 5 or 6 moved. The notebook's text output before
+  and after 4f was added was compared line by line; only 4f's lines and new summary lines
+  in section 6 are new.
+- The shuffled-target column of Table 1 is section 4b's numbers (rechecked by recomputing
+  them from the same scores), and the unrelated-protein column uses the same 1,000 family
+  resamples, so their difference is a paired one.
+- New code: `linked_pairs_utils.py` gains `select_half_ids`, `pfam_clans`,
+  `unrelated_candidates`, `draw_unrelated`, `place_in_gaps`, `shuffled_target_rows`,
+  `read_kmerseek_best_evalue`, `evalue_cutoff_recall` and `group_multiplicities`, and
+  `recall_at_exact_fpr` leaves out a NaN null score (no earlier section has one, so their
+  numbers are unchanged). Brute-force tests in `tests/test_linked_pairs_utils.py`.
+  `linked_pairs_on_alignments.py --unrelated-null` writes
+  `~/data/pfam/294_unrelated_protein_null_scores.parquet` (30 s on 12 processes);
+  `scripts/294_kmerseek_chaining_inputs.py` writes `~/data/pfam/294_chaining/`;
+  `scripts/294_kmerseek_chaining.sbatch` is the Sherlock job.
+""")
+
+md(r"""
 ## 5. Bits, measured on Swiss-Prot
 
 How often does a key match by chance? For each setting, every key in Swiss-Prot
@@ -1594,6 +1980,9 @@ with gzip.open(SPROT_FASTA, "rb") as fh:
     n_sprot = sum(1 for ln in fh if ln.startswith(b">"))
 print(f"Swiss-Prot proteins in {SPROT_FASTA.name}: {n_sprot:_}")
 print(f"False pairs per query at 0.001 per comparison against Swiss-Prot: {FPR * n_sprot:.0f}")
+print()
+print(verdict_4f1_line)
+print(verdict_4f2_line)
 """)
 
 md(r"""
@@ -1640,9 +2029,9 @@ matches: lower is better.
    linked key are no more hydrophobic than the other 6,803 (median 43% of query residues in
    `ACFILMVWY` in both), and no family has more than 2 of them.
 9. **Not shown here.** All numbers are per comparison, on each pair's own alignment, against
-   a null that shuffles residues. That null breaks local HP patterns such as amphipathic
-   helices and membrane runs, which unrelated real proteins keep, so it may be too easy for
-   an HP key. A false-positive rate of 0.001 per comparison is about 573 false pairs per
+   a null that shuffles residues. Section 4f tests a null built from unrelated real proteins
+   instead, which keeps their local HP patterns; the shuffled null turns out the stricter
+   of the two. A false-positive rate of 0.001 per comparison is about 573 false pairs per
    query against Swiss-Prot's 572,970 proteins (counted in section 6). Not tested:
    database false positives, chance key matches off the alignment's diagonal, SCOPe pairs, other alphabets and mismatch
    scores, a full-alphabet BLAST ceiling on the same pairs, and three anchors.
@@ -1659,6 +2048,15 @@ matches: lower is better.
    (76.0 to 88.4), 37.8 points above B3; the best single ungapped stretch finds 42.3%. This
    is an upper bound: the whole alignment is given, and the shuffled targets are not
    realigned.
+12. **An unrelated-protein null raises every recall** (section 4f, added 2026-10-17). Null
+   targets cut from Pfam seed sequences of another clan, in the true target's gap pattern,
+   give lower thresholds than shuffled targets: at 20–30% identity B2 goes from 39.2% to
+   47.7% and the linked pair from 45.9% to 56.8%. The linked pair's gain over B2 becomes
+   +9.1 (6.6 to 11.2), unclear rather than KILL; linked minus B3 stays near 0 (−1.2, −2.5
+   to +0.2). The two nulls hold the same hydrophobic runs; the shuffle keeps a composition
+   closer to the query's.
+13. **kmerseek's own chaining: not run yet** (section 4f part 2). The Sherlock job and its
+   inputs are ready; the database holds 7,384 target proteins.
 """)
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
