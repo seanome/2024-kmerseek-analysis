@@ -23,9 +23,9 @@ cells = [
 # 242: Does combining alphabets lift the partner to the top?
 
 Notebook 241 searched Ced9, P66 and BHF against the 19_732 canonical human proteins with
-all 19 kmerseek alphabets (152 arms, an arm being one alphabet at one seed length k). No
-single arm put the known partner near the top: BCL2's best rank was 213 (polarity4, mean
-IDF, k=9), CD47's 166 (hp_lehninger_hpc3, E-value, k=14).
+all 19 kmerseek alphabets at 152 alphabet-ksize pairs (one alphabet at one seed length k).
+No single pair put the known partner near the top: BCL2's best rank was 213 (polarity4,
+mean IDF, k=9), CD47's 166 (hp_lehninger_hpc3, E-value, k=14).
 
 The idea tested here: each alphabet merges different residues, so the chance hits at the
 top of one alphabet's list should be different proteins from those at the top of another,
@@ -38,11 +38,12 @@ improve the rank, not the E-value: no reduced alphabet carries more than the 20-
 matrix, about 0.38 bits per position, so the 37-residue BH1 block tops out near 14 bits
 against the ~32 an E-value of 1 costs on this proteome (Part 2 of the kmerseek docs).
 
-**The combined rank.** For one query and one metric, each arm ranks the proteins it hit by
-their best region. A protein's normalised rank at an arm is its rank over 19_732; a protein
-the arm did not hit gets the middle of the tied bottom ranks. The combined score is the
-geometric mean of the normalised ranks (a rank product). Arms of one alphabet are averaged
-first, so each alphabet counts once however many k it was run at. Code:
+**The combined rank.** For one query and one metric, each alphabet-ksize pair ranks the
+proteins it hit by their best region. A protein's normalised rank at a pair is its rank
+over 19_732; a protein the pair did not hit gets the middle of the tied bottom ranks. The
+combined score is the geometric mean of the normalised ranks (a rank product). The pairs
+of one alphabet are averaged first, so each alphabet counts once however many k it was run
+at. Code:
 `alphabet_ensemble_utils.py`. No new search is run for sections 1 to 4.
 """),
     code(r"""
@@ -67,14 +68,17 @@ for m in ae.METRICS:
     scores[m] = s
     summaries.append(ae.partner_summary(s, arms, m))
 summary = pl.concat(summaries)
-print(f"{len(ae.METRICS)} metrics x 3 queries; each protein scored over the arms where its query has any hit")
+print(f"{len(ae.METRICS)} metrics x 3 queries; each protein scored over the alphabet-ksize pairs where its query has any hit")
 """),
     md(r"""
 ## 1. The combined rank puts both partners lower, not higher
 
-Open circle: the partner's best rank at any single arm. Filled square: its rank once all
-19 alphabets are combined. The grey rows are a control: CD47 when Ced9 is the query, a
-pair with no known link.
+Open circle: the partner's best rank at any single alphabet-ksize pair. Filled square:
+its rank once all 19 alphabets are combined. The grey rows are a control: CD47 when Ced9
+is the query, a pair with no known link. The table gives, beside each best single rank,
+the size of that pair's hit list (`best_single_n_hit`) and the number of proteins with
+the same value there, the partner included (`best_single_n_tied`); `ens_n_tied` is the
+same count for the combined rank.
 """),
     code(r"""
 pairs = summary.filter(
@@ -83,18 +87,52 @@ pairs = summary.filter(
     | ((pl.col("query") == "Ced9") & (pl.col("partner") == "CD47")))
 true = pairs.filter(pl.col("is_true_pair"))
 ae.fig_single_vs_ensemble(
-    pairs, FIG / "242_single_arm_vs_combined_rank.png",
-    hypothesis="Combining the ranks of all 19 alphabets puts the known partner higher than any single arm does.",
+    pairs, FIG / "242_best_single_pair_vs_combined_rank.png",
+    hypothesis="Combining the ranks of all 19 alphabets puts the known partner higher than any single alphabet-ksize pair does.",
     conclusion=(
-        f"It puts it lower under every metric. BCL2: best single arm {true.filter(pl.col('partner') == 'BCL2')['best_single_rank'].min()}, "
+        f"It puts it lower under every metric. BCL2: best single alphabet-ksize pair {true.filter(pl.col('partner') == 'BCL2')['best_single_rank'].min()}, "
         f"combined {true.filter(pl.col('partner') == 'BCL2')['ens_rank_by_alphabet'].min():_} at best. "
-        f"CD47: best single arm {true.filter(pl.col('partner') == 'CD47')['best_single_rank'].min()}, combined "
+        f"CD47: best single pair {true.filter(pl.col('partner') == 'CD47')['best_single_rank'].min()}, combined "
         f"{true.filter(pl.col('partner') == 'CD47')['ens_rank_by_alphabet'].min():_} at best. The control, CD47 for Ced9, "
         f"combines to {pairs.filter(~pl.col('is_true_pair'))['ens_rank_by_alphabet'].min():_}, higher than either true pair."),
 )
-print(pairs.select("query", "partner", "metric", "best_single_rank", "best_single_arm", "ens_rank_by_alphabet",
-                   "ens_rank_by_arm", "votes_alphabet", "n_alphabets_hit", "pct_by_alphabet_among_peers")
+print(pairs.select("query", "partner", "metric", "best_single_rank", "best_single_n_hit", "best_single_n_tied",
+                   pl.col("best_single_arm").alias("best_single_pair"), "ens_rank_by_alphabet", "ens_n_tied",
+                   "votes_alphabet", "n_alphabets_hit", "pct_by_alphabet_among_peers")
       .sort("query", "partner", "metric", descending=[False, False, False]))
+"""),
+    md(r"""
+## 1b. The rest of the Bcl-2 family
+
+BCL2 is one of 10 reviewed human proteins with the Bcl-2 Pfam domain (PF00452; the list
+is notebook 241's UniProt cache). Notebook 241 found that Ced9 ranks some of them far
+higher than BCL2 at single alphabet-ksize pairs (MCL1 2 of 16_979 at dayhoff6 k=7 under
+the Poisson p-value). If combining alphabets helps any Bcl-2 member, it should show here.
+"""),
+    code(r"""
+fam = pl.concat([ae.family_summary(scores[m], m, "Ced9") for m in ae.METRICS])
+best_member = (fam.sort("ens_rank_by_alphabet").group_by("metric", maintain_order=True).first()
+               .select("metric", "gene", "best_single_rank", "best_single_n_hit", "ens_rank_by_alphabet", "ens_n_tied"))
+best_single_member = (fam.sort("best_single_rank").group_by("metric", maintain_order=True).first()
+                      .select("metric", "gene", "best_single_rank", "best_single_n_hit", "best_single_n_tied",
+                              pl.col("best_single_arm").alias("best_single_pair"), "ens_rank_by_alphabet"))
+fam_lifted = fam.filter(pl.col("ens_rank_by_alphabet") < pl.col("best_single_rank"))
+bm = best_member.sort("ens_rank_by_alphabet").row(0, named=True)
+bs = best_single_member.sort("best_single_rank").row(0, named=True)
+ae.fig_family(
+    fam, FIG / "242_bcl2_family_single_vs_combined.png",
+    hypothesis="Combining alphabets lifts at least one Bcl-2 family member above its best single alphabet-ksize pair, for Ced9.",
+    conclusion=(f"It lifts {fam_lifted.height} of the {fam.height} member-metric combinations. The best single rank of any member is "
+                f"{bs['gene']} {bs['best_single_rank']:_} ({bs['best_single_pair']}, {bs['metric']}, in a hit list of {bs['best_single_n_hit']:_} "
+                f"protein{'s' if bs['best_single_n_hit'] > 1 else ''}); "
+                f"the best combined rank of any member is {bm['gene']} {bm['ens_rank_by_alphabet']:_} ({bm['metric']})."),
+)
+print("Ced9 against every Bcl-2 family member, every metric:")
+print(fam.select("metric", "gene", "length", "best_single_rank", "best_single_n_hit", "best_single_n_tied",
+                 pl.col("best_single_arm").alias("best_single_pair"), "ens_rank_by_alphabet", "ens_n_tied").sort("metric", "ens_rank_by_alphabet"))
+print("\nbest member by combined rank, per metric:"); print(best_member)
+print("\nbest member by single-pair rank, per metric:"); print(best_single_member)
+print(f"\nmember-metric combinations where combining ranks the member higher than its best single pair: {fam_lifted.height} of {fam.height}")
 """),
     md(r"""
 ## 2. The same proteins beat the partner in most alphabets
@@ -103,8 +141,7 @@ The combination can only help if different proteins beat the partner in differen
 alphabets. For each alphabet that sees the partner, take the k where the partner ranks
 best and list the proteins ranked above it there. Bars count the proteins that beat the
 partner in exactly j of those alphabets; the line is the count expected if every alphabet
-picked its list independently of the others. Picking each alphabet's best k for the
-partner favours the partner, so the overlap measured here is a lower bound.
+picked its list independently of the others.
 """),
     code(r"""
 crowd = ae.fig_same_crowd(
@@ -144,8 +181,8 @@ ae.fig_same_crowd(
     md(r"""
 ## 3. What the combined rank rewards instead: length
 
-A protein hit at many arms keeps a good score at each of them, and the proteins hit at the
-most arms are the longest ones. Below, every human protein's combined rank for BHF, the
+A protein hit at many alphabet-ksize pairs keeps a good score at each of them, and the
+proteins hit at the most pairs are the longest ones. Below, every human protein's combined rank for BHF, the
 query with no known partner, against its length.
 """),
     code(r"""
@@ -158,7 +195,7 @@ top = ae.fig_length_bias(
     scores["mean IDF"], "BHF", FIG / "242_combined_rank_rewards_length.png",
     hypothesis="The best combined ranks for BHF are proteins that share something specific with it.",
     conclusion=(lambda s: (
-        f"They are the longest proteins in the proteome. Spearman correlation between a better combined rank and a "
+        f"They are proteins much longer than the average human protein. Spearman correlation between a better combined rank and a "
         f"longer protein: {rho[('mean IDF', 'BHF')]:.2f} for BHF under mean IDF ({min(rho.values()):.2f} to "
         f"{max(rho.values()):.2f} over the three queries and two metrics). The 20 best-ranked proteins have a median length "
         f"of {int(s.sort('ens_rank_by_alphabet').head(20)['length'].median()):_} aa, against {int(s['length'].median())} aa "
@@ -171,8 +208,8 @@ print(pl.DataFrame([dict(metric=m, query=q, spearman=round(v, 2)) for (m, q), v 
 ## 4. CD47 ranks high for a query with no known link to it
 
 In section 1, Ced9 ranks CD47 higher than P66 does, and higher than it ranks BCL2. A
-protein that ranks high for unrelated queries is a sticky target, and a high rank for it
-says little about any one query. The count below is measured on the two sequences: the
+protein that ranks high for unrelated queries (here called a sticky target) gets a high
+rank whatever the query, so a high rank for it says little about any one query. The count below is measured on the two sequences: the
 19-residue windows with at least 14 residues from AILMFVW, the length and make-up of a
 membrane-spanning helix.
 """),
@@ -194,7 +231,8 @@ for g, s in seqs.items():
 print(pl.DataFrame(rows))
 print()
 print(summary.filter(pl.col("partner") == "CD47").select(
-    "query", "metric", "best_single_rank", "best_single_arm", "ens_rank_by_alphabet", "pct_by_alphabet_among_peers").sort("query", "metric"))
+    "query", "metric", "best_single_rank", "best_single_n_hit", "best_single_n_tied", pl.col("best_single_arm").alias("best_single_pair"),
+    "ens_rank_by_alphabet", "ens_n_tied", "pct_by_alphabet_among_peers").sort("query", "metric"))
 print("\nFigure: section 1, grey rows, and the hydrophobic windows below.")
 """),
     code(r"""
@@ -227,7 +265,7 @@ print(pl.DataFrame({"protein": list(over), "windows_19_with_14_or_more": list(ov
 
 These three are the alphabets in which PR #44 saw CD47 in view for P66. They were picked
 after seeing where the partner appears, which tilts this test in the partner's favour.
-Same combination as section 1, restricted to their arms.
+Same combination as section 1, restricted to their alphabet-ksize pairs.
 """),
     code(r"""
 SUB = ae.SUBSET3
@@ -251,7 +289,7 @@ ae.fig_subset(
     sub, FIG / "242_three_alphabets_only.png", SUB,
     hypothesis="Combining only hp_lehninger2, polarity4 and funcgroups8 puts the known partner near the top.",
     conclusion=(
-        f"It does better than combining all 19 but not better than one alphabet alone. BCL2: best single arm "
+        f"It does better than combining all 19 but not better than one alphabet alone. BCL2: best single pair "
         f"{t.filter(pl.col('partner') == 'BCL2')['best_single_rank'].min()}, three combined "
         f"{t.filter(pl.col('partner') == 'BCL2')['ens_rank_by_alphabet'].min():_} at best; CD47: "
         f"{t.filter(pl.col('partner') == 'CD47')['best_single_rank'].min():_} and "
@@ -261,7 +299,8 @@ ae.fig_subset(
         f"so no rule that asks for agreement can put it above rank "
         f"{crowd3.filter(pl.col('partner') == 'BCL2')['beat_in_all_three'][0] + 1}."),
 )
-print(sub.select("query", "partner", "metric", "best_single_rank", "best_single_arm", "ens_rank_by_alphabet", "all19",
+print(sub.select("query", "partner", "metric", "best_single_rank", "best_single_n_hit", "best_single_n_tied",
+                 pl.col("best_single_arm").alias("best_single_pair"), "ens_rank_by_alphabet", "ens_n_tied", "all19",
                  "pct_by_alphabet_among_peers").sort("query", "partner", "metric"))
 print(crowd3)
 print("BHF, best 8 under the three combined (mean IDF):", bhf3.rows())
@@ -308,11 +347,13 @@ print(scan.group_by("size").agg(pl.col("Ced9->BCL2").median(), pl.col("P66->CD47
 
 Sections 1 to 4 compare the partner with the other human proteins for one query. The
 direct test swaps the query: 300 random human proteins of the query's length (within 25%,
-Bcl-2 family members and CD47 excluded) are searched on 19 arms, one per alphabet at its
-lowest seed information, and each one's rank for BCL2 or CD47 is measured the same way.
+Bcl-2 family members and CD47 excluded) are searched on 19 alphabet-ksize pairs, one per
+alphabet at its lowest seed information, and each one's rank for BCL2 or CD47 is measured
+the same way. The run kept only BCL2 and CD47 among the targets, so this test scores
+BCL2, not the best member of the Bcl-2 family (section 1b); doing that needs a new run.
 The p-value is the share of random queries that rank the partner at least as high as the
 true query does. If combining alphabets helps, the combined rank's p-value is smaller
-than the best single arm's.
+than the best single pair's.
 
 The search is run by `242_null_queries.py` (about 1.6 billion regions, about 3 hours with
 3 workers); until its output exists this section says so and stops.
@@ -320,14 +361,14 @@ The search is run by `242_null_queries.py` (about 1.6 billion regions, about 3 h
     code(r"""
 if not ae.null_available("lowest"):
     done, expected = ae.null_progress("lowest")
-    print(f"The null run on each alphabet's lowest-bit arm is not complete ({done} of {expected or 494} chunks). "
+    print(f"The null run on each alphabet's lowest-bit pair is not complete ({done} of {expected or 494} chunks). "
           "Run or finish notebooks/242_null_queries.py --arms lowest, then re-execute this notebook.")
 else:
     nul = ae.fig_null(
         FIG / "242_query_side_null.png",
         hypothesis="The true query ranks its partner higher than random queries of its length do, and combining alphabets widens the gap.",
         conclusion=(lambda t: (
-            "; ".join(f"{r['case']} → {r['partner']}, {r['metric']}: best single arm p = {r['best_single_rank_p']:.3f}, "
+            "; ".join(f"{r['case']} → {r['partner']}, {r['metric']}: best single pair p = {r['best_single_rank_p']:.3f}, "
                       f"combined p = {r['ensemble_rank_p']:.3f}" for r in t.filter(pl.col("metric").is_in(["mean IDF", "E-value"])).iter_rows(named=True))
             + "."))(pl.concat([ae.null_summary("Ced9", "BCL2"), ae.null_summary("P66", "CD47")])),
     )
@@ -340,12 +381,17 @@ Section 6 picked each alphabet's k and then the subset by how well they rank BCL
 every random query gets the same two picks: the best subset of each size by its own rank
 of the partner, with k either fixed at the k picked for Ced9 or each query's own best k.
 The second rule is the fair one: Ced9's k was picked on its own answer too. This needs
-the null run over all 152 arms (`242_null_queries.py --arms all`).
+the null run over all 152 alphabet-ksize pairs (`242_null_queries.py --arms all`).
+
+The scores here are on a different scale from section 6's ranks. Section 6 gives BCL2's
+rank among the 19_732 proteins under the combined score. Here a subset's score is the
+geometric mean of BCL2's normalised ranks over the subset's alphabets, times 19_732, so
+the same 2-alphabet subset that ranks BCL2 54th in section 6 scores 322.9 here.
 """),
     code(r"""
 if not ae.null_available("all"):
     done, expected = ae.null_progress("all")
-    print(f"The null run over all arms is not complete ({done} of {expected} chunks). "
+    print(f"The null run over all alphabet-ksize pairs is not complete ({done} of {expected} chunks). "
           "Run notebooks/242_null_queries.py --arms all, then re-execute this notebook.")
 else:
     for case, partner in [("Ced9", "BCL2"), ("P66", "CD47")]:
@@ -363,13 +409,24 @@ else:
 ## 8. Conclusions
 
 **Combining alphabets does not lift either partner.** Under every one of the five metrics
-the combined rank of BCL2 and CD47 is worse than their best single arm: BCL2 falls from
-213 to about 7_000 to 13_000, CD47 from 166 to about 7_000 to 9_000.
+the combined rank of BCL2 and CD47 is worse than their best single alphabet-ksize pair:
+BCL2 falls from 213 (polarity4 k=9, mean IDF, a hit list of 18_064, no tie) to 7_148 to
+13_343, and CD47 from 166 (hp_lehninger_hpc3 k=14, E-value, a hit list of 750) to 6_952
+to 8_818. Some best single ranks sit low in short lists: BCL2's best Poisson rank, 950, is
+950 of the 1_161 proteins wass14 k=6 hits, tied with one other protein.
 
-**Because the crowd is the same.** Under mean IDF about 1_200 proteins beat BCL2 in at least
-half of the 13 alphabets that see it, 8 times what independent alphabets would give; for
-CD47 about 3_900, 3.7 times. The alphabets are functions of the same two sequences, and
-the proteins that beat the partner in one mostly beat it in the others.
+**No member of the Bcl-2 family is lifted either (section 1b).** For all 10 reviewed human
+proteins with the Bcl-2 domain and all five metrics, the combined rank is worse than the
+member's best single rank: 0 of 50. The best combined rank of any member is MCL1 at 439
+(tf-idf) and 606 (Poisson p-value). MCL1's best single rank, 1, is at dayhoff6 k=15,
+where Ced9 hits only MCL1. The random-query test of section 7 scores BCL2 only: the null
+run kept only BCL2 and CD47 among its targets.
+
+**The same proteins beat the partner in most alphabets.** Under mean IDF 1_200 proteins
+beat BCL2 in at least half of the 13 alphabets that see it, 7.9 times the 152.5 that
+independent alphabets would give; for CD47 it is 3_932, 3.7 times 1_057. The alphabets
+are functions of the same two sequences, and the proteins that beat the partner in one
+mostly beat it in the others.
 
 **What a rank product rewards is length.** Across the three queries and two metrics tested
 the combined rank correlates with protein length at Spearman 0.71 to 0.84. The eight
@@ -378,16 +435,17 @@ SRRM2, FLG, TTN (35_991 aa) and PCLO, all longer than 1_400 aa; the 20 best-rank
 median length of 2_365 aa, against 427 aa for all human proteins. A combination that
 treats "not hit here" as a bottom rank favours proteins that are hit everywhere.
 
-**CD47 is a sticky target.** Ced9, with no known link to CD47, ranks it 21st at its best
-single arm (funcgroups8 k=15, mean IDF and enrichment) and 744th combined under the
-Poisson p-value, above where P66 puts it and above where Ced9 puts BCL2. CD47 has 33 membrane-helix-like hydrophobic windows, BCL2 none. A high rank
-of CD47 for P66 is weak evidence for a P66-CD47 link, and section 7 confirms it on 300
-random human proteins of P66's length: their best single arm under mean IDF puts CD47 at a
-median rank of 906, P66's at 2_704 (p = 0.82). Over the 10 comparisons in section 7 (five
-metrics, best single arm and combined), P66 ranks CD47 above the median random query in 8,
-but only one p-value is below 0.05: P66's best E-value rank, 166 against a median of 1_978
-(p = 0.047). If the 10 tests were independent, at least one p below 0.05 would turn up by
-chance 40% of the time (1 - 0.95^10).
+**CD47 ranks high for a query with no known link to it.** Ced9 ranks CD47 21st at its best
+single pair under mean IDF (funcgroups8 k=15, a hit list of 125, 19 proteins tied at that
+value) and 744th combined under the Poisson p-value, above where P66 puts it and above
+where Ced9 puts BCL2. CD47 has 33 membrane-helix-like hydrophobic windows, BCL2 none. A
+high rank of CD47 for P66 is weak evidence for a P66-CD47 link, and section 7 confirms
+it on 300 random human proteins of P66's length: their best single pair under mean IDF
+puts CD47 at a median rank of 906, P66's at 2_704 (p = 0.82). Over the 10 comparisons in
+section 7 (five metrics, best single pair and combined), P66 ranks CD47 above the median
+random query in 8, but only one p-value is below 0.05: P66's best E-value rank, 166
+against a median of 1_978 (p = 0.047). If the 10 tests were independent, at least one p
+below 0.05 would turn up by chance 40% of the time (1 - 0.95^10).
 
 **Three alphabets instead of 19 does not change that.** Combining only hp_lehninger2,
 polarity4 and funcgroups8 (section 5) puts BCL2 at 3_561 and CD47 at 3_916 at best, better
@@ -413,9 +471,9 @@ of P66's length do better than P66 under every rule (p = 0.60 to 0.78).
 **What could still work.** A combination that does not reward being hit: rank only among
 the proteins every alphabet hits, or normalise each protein's score by how often it is hit
 by random queries (section 7's run gives that background for BCL2 and CD47). Notebook 243
-tests the first properly: a model trained on Pfam labels, with length and the
-membrane-helix-like windows as features, tested on families it has not seen. Neither
-changes the bits the pair carries, so the E-value stays far above 1.
+tests a third: a model trained on Pfam labels, with length and the membrane-helix-like
+windows as features, tested on families it has not seen. None of these changes the bits
+the pair carries, so the E-value stays far above 1.
 """),
 ]
 

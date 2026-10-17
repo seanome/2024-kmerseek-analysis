@@ -430,7 +430,9 @@ def fit_model(
     """L2 logistic regression on standardised features. Negatives are subsampled to
     neg_per_pos per positive and reweighted so the fit targets the full prevalence; C is
     chosen by 5-fold cross-validation on average precision, with folds grouped by Pfam
-    family component (family_groups on the query protein)."""
+    family component (family_groups on the query protein). The C grid runs from 1e-4 to
+    10 and is extended down by factors of 10 (to 1e-7) while the smallest C tried is the
+    best, so the chosen C is never the edge of the grid unless it is 1e-7."""
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import GroupKFold
     from sklearn.pipeline import make_pipeline
@@ -451,7 +453,9 @@ def fit_model(
     fg = family_groups(pl.read_parquet(TRUTH))
     groups = np.array([fg.get(q, -1) for q in d["q"]])
     best, scores = None, {}
-    for C in (0.01, 0.1, 1.0, 10.0):
+    grid = [1e-4, 1e-3, 0.01, 0.1, 1.0, 10.0]
+    while grid:
+        C = grid.pop(0)
         aps = []
         for tr, va in GroupKFold(5).split(X, y, groups):
             m = make_pipeline(StandardScaler(), LogisticRegression(C=C, max_iter=2000))
@@ -464,6 +468,8 @@ def fit_model(
         scores[C] = float(np.mean(aps))
         if best is None or scores[C] > scores[best]:
             best = C
+        if not grid and best == min(scores) and best > 1e-7 * 1.01:
+            grid.append(best / 10)
     model = make_pipeline(StandardScaler(), LogisticRegression(C=best, max_iter=2000))
     model.fit(X, y, logisticregression__sample_weight=w)
     n_neg_total = (
@@ -477,6 +483,55 @@ def fit_model(
         "n_pos": pos.height,
         "n_neg": int(round(n_neg_total)),
     }
+
+
+def _weighted_ap(y: np.ndarray, w: np.ndarray, last: np.ndarray) -> float:
+    """Weighted average precision of rows already sorted by score, best first; `last`
+    holds the index of the last row of each run of equal scores, so tied rows enter
+    together, as in sklearn's average_precision_score."""
+    tp = np.cumsum(w * y)[last]
+    fp = np.cumsum(w * (1 - y))[last]
+    if tp[-1] <= 0:
+        return float("nan")
+    # In a resample, the best-scored rows can all have weight 0 (their family group was
+    # not drawn). Precision is 0/0 there, but recall does not move, so those thresholds
+    # add nothing; set their precision to 0 rather than nan.
+    kept = tp + fp
+    prec = np.divide(tp, kept, out=np.zeros_like(tp), where=kept > 0)
+    rec = tp / tp[-1]
+    return float(np.sum(np.diff(rec, prepend=0.0) * prec))
+
+
+def bootstrap_ap(
+    y: np.ndarray,
+    w: np.ndarray,
+    scores: dict[str, np.ndarray],
+    groups: np.ndarray,
+    n_boot: int = 1000,
+    seed: int = 0,
+) -> dict[str, np.ndarray]:
+    """Average precision of each ranker over n_boot resamples of the held-out family
+    groups: groups are drawn with replacement and every candidate of a group drawn c
+    times gets c times its weight. Rankers share the resamples, so a difference between
+    two of them is taken within each resample."""
+    rng = np.random.default_rng(seed)
+    codes, gi = np.unique(groups, return_inverse=True)
+    y = y.astype(float)
+    prep = {}
+    for name, sc in scores.items():
+        o = np.argsort(-sc, kind="stable")
+        ss = sc[o]
+        last = np.flatnonzero(np.r_[ss[1:] != ss[:-1], True])
+        prep[name] = (o, last)
+    out = {name: np.empty(n_boot) for name in scores}
+    for b in range(n_boot):
+        mult = np.bincount(
+            rng.integers(0, len(codes), len(codes)), minlength=len(codes)
+        )
+        wb = w * mult[gi]
+        for name, (o, last) in prep.items():
+            out[name][b] = _weighted_ap(y[o], wb[o], last)
+    return out
 
 
 def training_table(files: list[Path] | None = None) -> pl.DataFrame:
@@ -592,35 +647,58 @@ def target_scores(c: pl.DataFrame, prob: np.ndarray) -> pl.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Figures
+# Figures, drawn at their printed size (183 mm wide) with the paper style of pubfig:
+# Arial, axis labels 7 pt, ticks and legend 6 pt.
 # ---------------------------------------------------------------------------
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 
-from alphabet_ranking_utils import _figure_with_legend_row, RAMP  # noqa: E402
-from hp_conservation_utils import finish_figure  # noqa: E402
+import pubfig as pf  # noqa: E402
+from alphabet_ranking_utils import _figure_with_legend_row, _finish, RAMP  # noqa: E402
 
 FIG = Path(__file__).resolve().parent.parent / "figures"
-PURPLE, GREY, RED = RAMP(0.85), "#9a9a9a", "#c0392b"
+PURPLE, GREY, RED = RAMP(0.85), "#9a9a9a", pf.OKABE_ITO["vermillion"]
+WIDTH = pf.TWO_COLUMN_MM
+MS, S = 4, 14
 TOOLS = (
-    "kmerseek 0.4.0 (982a055): all-against-all of the 998 Pfam-annotated human proteins on every arm of the "
-    "notebook 241 sweep (243_pfam998_search.py); logistic regression, scikit-learn, trained on the 'selection' "
-    "Pfam families and tested on the 'heldout' families of the midi-plus truth set"
+    "kmerseek 0.4.0 (982a055): all-against-all of the 998 Pfam-annotated human proteins at every "
+    "alphabet-ksize pair of the notebook 241 sweep (243_pfam998_search.py); logistic regression, "
+    "scikit-learn, trained on the 'selection' Pfam families and tested on the 'heldout' families "
+    "of the midi-plus truth set"
 )
 
 
+def _save(fig, path: Path, hypothesis: str, conclusion: str, tools: str = TOOLS):
+    _finish(
+        fig,
+        path,
+        tight_layout=False,
+        tools=tools,
+        hypothesis=hypothesis,
+        conclusion=conclusion,
+        header_y=1.01,
+        footer_y=-0.02,
+    )
+
+
 def fig_heldout(
-    curves: dict, prevalence: float, path: Path, hypothesis: str, conclusion: str
+    curves: dict,
+    prevalence: float,
+    path: Path,
+    hypothesis: str,
+    conclusion: str,
+    intervals: dict | None = None,
 ):
     """Precision-recall on the held-out families, one line per ranker. The three models
-    share one hue at three weights; single features are grey, each with its own dash."""
+    share one hue at three weights; single features are grey, each with its own dash.
+    `intervals`: ranker -> (low, high) of its average precision, shown in the legend."""
     styles = {
-        "+ all 19 alphabets": dict(color=PURPLE, lw=2.4, ls="-"),
-        "+ hp_lehninger2's own values": dict(color=RAMP(0.55), lw=2.0, ls="-"),
-        "length and hydrophobic make-up only": dict(color=RAMP(0.3), lw=2.0, ls="-"),
-        "number of alphabets that find it": dict(color=GREY, lw=1.4, ls="--"),
-        "hp_lehninger2 bit score": dict(color=GREY, lw=1.4, ls=":"),
-        "candidate length": dict(color=GREY, lw=1.4, ls="-."),
+        "+ all 19 alphabets": dict(color=PURPLE, lw=1.4, ls="-"),
+        "+ hp_lehninger2's own values": dict(color=RAMP(0.55), lw=1.1, ls="-"),
+        "length and hydrophobic make-up only": dict(color=RAMP(0.3), lw=1.1, ls="-"),
+        "number of alphabets that find it": dict(color=GREY, lw=0.8, ls="--"),
+        "hp_lehninger2 bit score": dict(color=GREY, lw=0.8, ls=":"),
+        "candidate length": dict(color=GREY, lw=0.8, ls="-."),
     }
     words = {
         "+ all 19 alphabets": "model: length, make-up and all 19 alphabets",
@@ -630,8 +708,17 @@ def fig_heldout(
         "hp_lehninger2 bit score": "one feature: hp_lehninger2 bit score",
         "candidate length": "one feature: length of the matched stretch",
     }
+    intervals = intervals or {}
+
+    def ap_text(k):
+        t = f"average precision {curves[k][2]:.3f}"
+        if k in intervals:
+            lo, hi = intervals[k]
+            t += f", 95% interval {lo:.3f} to {hi:.3f}"
+        return t
+
     handles = [
-        Line2D([], [], label=f"{words[k]} (average precision {curves[k][2]:.3f})", **v)
+        Line2D([], [], label=f"{words[k]} ({ap_text(k)})", **v)
         for k, v in styles.items()
         if k in curves
     ]
@@ -641,54 +728,46 @@ def fig_heldout(
             [],
             color=RED,
             ls="--",
-            lw=1.2,
+            lw=0.8,
             label=f"chance: the share of candidate matches that are correct ({prevalence:.4f})",
         )
     )
-    fig, (ax,) = _figure_with_legend_row(1, (9.5, 7.2), handles)
+    fig, (ax,) = _figure_with_legend_row(1, (WIDTH, 85), handles, title_in=0.03)
     # Single features first, the full model last: where every curve sits at precision 1
     # the full model must stay visible on top.
     for k, v in reversed(list(styles.items())):
         if k in curves:
             rec, prec, _ = curves[k]
             ax.plot(rec, prec, **v)
-    ax.axhline(prevalence, color=RED, ls="--", lw=1.2)
-    ax.set_ylabel("precision: share of candidates kept that are correct", fontsize=9)
-    # Recall on a log axis: every ranker's precision has fallen to near chance by 30%
-    # recall, so on a linear axis the whole comparison sits in the left tenth.
+    ax.axhline(prevalence, color=RED, ls="--", lw=0.8)
+    ax.set_ylabel("precision: share of candidates kept that are correct")
+    # Recall spaced by ratio: every ranker's precision has fallen near chance by 30%
+    # recall, so on an even axis the whole comparison sits in the left tenth.
     ax.set_xscale("log")
     ax.set_xlim(1e-4, 1)
     ax.set_ylim(0, 1)
     ax.set_xticks([1e-4, 1e-3, 1e-2, 0.1, 1])
     ax.set_xticklabels(["0.01%", "0.1%", "1%", "10%", "100%"])
+    ax.minorticks_off()
     ax.set_xlabel(
-        "recall: share of the held-out correct candidates found (log scale)", fontsize=9
+        "recall: share of the held-out correct candidates found (the step from 0.01% to 0.1% takes as much room as 10% to 100%)"
     )
-    ax.grid(alpha=0.25)
-    ax.spines[["top", "right"]].set_visible(False)
-    finish_figure(
-        fig,
-        path,
-        tools=TOOLS,
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
-    )
+    ax.grid(True)
+    _save(fig, path, hypothesis, conclusion)
 
 
 GLOBAL_LABELS = {
     "log_span_length": "length of the matched stretch",
     "log_query_length": "length of the query protein",
     "log_target_length": "length of the target protein",
-    "n_alphabets": "number of alphabets that found it",
-    "n_arms": "number of arms that found it",
+    "n_alphabets": "alphabets that found it",
+    "n_arms": "alphabet-ksize pairs that found it",
     "hydrophobic_windows_query": "membrane-helix-like windows, query side",
     "hydrophobic_windows_target": "membrane-helix-like windows, target side",
 }
 PER_ALPHABET_LABELS = {
     "found": "found at all",
-    "max_seed_bits": "highest seed\ninformation (bits)",
+    "max_seed_bits": "highest seed\nbits",
     "mean_idf_norm": "best mean IDF\n/ ln(proteins)",
     "bit_score": "best bit\nscore",
     "log_shared_kmers": "most shared\nk-mers",
@@ -730,7 +809,7 @@ def fig_coefficients(
         ),
     ]
     fig, axes = _figure_with_legend_row(
-        2, (13.5, 7.4), handles, sharey=False, width_ratios=[1, 2.2]
+        2, (WIDTH, 92), handles, sharey=False, width_ratios=[1, 1.5], wspace=0.5
     )
     ax = axes[0]
     g = [f for f in features if "__" not in f]
@@ -739,36 +818,27 @@ def fig_coefficients(
         [coef[f] for f in g],
         color=[col(coef[f]) for f in g],
         edgecolor="#555555",
-        lw=0.5,
+        lw=0.4,
     )
     ax.set_yticks(range(len(g)))
-    ax.set_yticklabels([GLOBAL_LABELS[f] for f in g], fontsize=8.5)
+    ax.set_yticklabels([GLOBAL_LABELS[f] for f in g])
     ax.invert_yaxis()
-    ax.axvline(0, color="black", lw=0.8)
+    ax.axvline(0, color="black", lw=0.5)
     ax.set_xlim(-lim * 1.05, lim * 1.05)
-    ax.set_xlabel("weight (change in log-odds per standard deviation)", fontsize=9)
-    ax.spines[["top", "right"]].set_visible(False)
-    ax.set_title("length, make-up, counts", fontsize=10)
+    ax.set_xlabel("weight (change in log-odds per standard deviation)")
+    ax.set_title("length, make-up, counts")
     ax = axes[1]
     M = np.array([[coef[f"{a}__{f}"] for f in PER_ALPHABET] for a in ALPHABETS19])
     im = ax.imshow(M, cmap=cmap, vmin=-lim, vmax=lim, aspect="auto")
     ax.set_xticks(range(len(PER_ALPHABET)))
-    ax.set_xticklabels([PER_ALPHABET_LABELS[f] for f in PER_ALPHABET], fontsize=8)
+    ax.set_xticklabels([PER_ALPHABET_LABELS[f] for f in PER_ALPHABET])
     ax.set_yticks(range(len(ALPHABETS19)))
-    ax.set_yticklabels(ALPHABETS19, fontsize=8)
-    ax.set_title("each alphabet's values", fontsize=10)
-    fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02).set_label(
-        "weight, same scale as the bars", fontsize=8
+    ax.set_yticklabels(ALPHABETS19)
+    ax.set_title("each alphabet's values")
+    fig.colorbar(im, ax=ax, fraction=0.04, pad=0.02).set_label(
+        "weight, same scale as the bars"
     )
-    finish_figure(
-        fig,
-        path,
-        tools=TOOLS,
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
-    )
+    _save(fig, path, hypothesis, conclusion)
     return pl.DataFrame(
         {
             "feature": [feature_label(f) for f in coef],
@@ -779,14 +849,14 @@ def fig_coefficients(
 
 def fig_application(tab: pl.DataFrame, path: Path, hypothesis: str, conclusion: str):
     """Rows: (pair, ranker). x: the partner's rank among the human proteins with any
-    candidate (log scale). Grey rows: the control with no known link."""
+    candidate. Grey rows: the control with no known link."""
     handles = [
         Line2D(
             [],
             [],
             marker="D",
             ls="",
-            ms=8,
+            ms=MS,
             color=PURPLE,
             label="the trained model (all 19 alphabets), a target scored by its best candidate",
         ),
@@ -795,10 +865,10 @@ def fig_application(tab: pl.DataFrame, path: Path, hypothesis: str, conclusion: 
             [],
             marker="o",
             ls="",
-            ms=7,
+            ms=MS,
             markerfacecolor="white",
             markeredgecolor=PURPLE,
-            markeredgewidth=1.5,
+            markeredgewidth=0.9,
             label="one feature alone, for comparison",
         ),
         Line2D(
@@ -806,12 +876,12 @@ def fig_application(tab: pl.DataFrame, path: Path, hypothesis: str, conclusion: 
             [],
             marker="D",
             ls="",
-            ms=8,
+            ms=MS,
             color=GREY,
             label="grey: the same for the pair with no known link, the control",
         ),
     ]
-    fig, (ax,) = _figure_with_legend_row(1, (10.5, 6.2), handles)
+    fig, (ax,) = _figure_with_legend_row(1, (WIDTH, 72), handles, title_in=0.03)
     y, ticks, labels = 0, [], []
     for q, p, title in [
         ("Ced9", "BCL2", "Ced9 → BCL2, known homolog"),
@@ -820,52 +890,57 @@ def fig_application(tab: pl.DataFrame, path: Path, hypothesis: str, conclusion: 
     ]:
         col = GREY if (q, p) == ("Ced9", "CD47") else PURPLE
         s = tab.filter((pl.col("query") == q) & (pl.col("partner") == p))
-        ax.text(0.85, y - 0.6, title, fontsize=9.5, fontweight="bold", va="bottom")
+        ax.text(0.85, y - 0.55, title, fontweight="bold", va="bottom")
         for r in s.iter_rows(named=True):
             model = r["ranker"] == "model"
             ax.scatter(
                 [r["rank"]],
                 [y],
                 marker="D" if model else "o",
-                s=60,
+                s=S,
                 facecolors=col if model else "white",
                 edgecolors=col,
-                linewidths=1.5,
+                linewidths=0.9,
                 zorder=3,
             )
+            n_other = r.get("n_tied", 1) - 1
+            tie = (
+                f" (tied with {n_other:_} other{'s' if n_other > 1 else ''})"
+                if n_other
+                else ""
+            )
             ax.annotate(
-                f"{r['rank']:_.0f}",
+                f"{r['rank']:_.0f}{tie}",
                 (r["rank"], y),
-                xytext=(8, -3),
+                xytext=(5, -2),
                 textcoords="offset points",
-                fontsize=7.5,
+                fontsize=6,
             )
             ticks.append(y)
             labels.append(r["ranker"])
             y += 1
-        y += 1.4
+        y += 1.5
     ax.set_yticks(ticks)
-    ax.set_yticklabels(labels, fontsize=8.5)
-    ax.set_ylim(y - 1, -1.4)
+    ax.set_yticklabels(labels)
+    ax.set_ylim(y - 1.3, -1.5)
+    for t in ticks:
+        ax.axhline(t, color="#ececec", lw=0.4, zorder=0)
     ax.set_xscale("log")
     ax.set_xlim(0.8, 3e4)
     ax.set_xticks([1, 10, 100, 1000, 10_000])
     ax.set_xticklabels(["1", "10", "100", "1_000", "10_000"])
+    ax.minorticks_off()
     ax.set_xlabel(
-        "rank of the partner among the human proteins with any candidate (1 = best, log scale)",
-        fontsize=9,
+        "rank of the partner among the human proteins with any candidate (1 = best)"
     )
-    ax.grid(axis="x", alpha=0.25)
-    ax.spines[["top", "right"]].set_visible(False)
-    finish_figure(
+    ax.grid(axis="x")
+    _save(
         fig,
         path,
+        hypothesis,
+        conclusion,
         tools=TOOLS.replace(
             "tested on the 'heldout' families of the midi-plus truth set",
             "applied to notebook 241's searches of Ced9, P66 and BHF against the 19_732 human proteins",
         ),
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
     )
