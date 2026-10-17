@@ -19,8 +19,9 @@ import re
 from pathlib import Path
 
 import polars as pl
+import pytest
 
-from conftest import FIXTURES, run
+from conftest import FIXTURES, run, write_perfect_regions
 
 MAIN_NF = Path(__file__).resolve().parents[1] / "main.nf"
 
@@ -125,3 +126,56 @@ def test_main_nf_routes_prebuilt_truth_through_restriction():
     assert re.search(
         r"restrictTruthToQueries\(\s*prebuilt_truth\s*,\s*annotations\s*\)", after
     )
+
+
+def test_rescore_from_calls_reproduces_scorer_and_fixes_recall(pfam_truth, tmp_path):
+    """Score a perfect tool against a truth padded with never-searched proteins, then
+    rescore its call file. "before" must equal the scorer's own row (the script exits
+    non-zero otherwise); "after" divides the same regions found by the searched proteins'
+    regions only. Not 1.0: some fixture regions have no same-family target domain."""
+    from conftest import score
+
+    truth = pl.read_parquet(pfam_truth["truth"])
+    outsiders = truth.head(6).with_columns(
+        pl.format("Q0000{}", pl.int_range(pl.len()) // 2).alias("accession")
+    )
+    full = tmp_path / "human_pfamn_truth.parquet"
+    pl.concat([truth, outsiders]).write_parquet(full)
+
+    regions = tmp_path / "perfect.regions.tsv"
+    write_perfect_regions(pfam_truth["truth"], pfam_truth["map"], regions)
+    work = tmp_path / "score"
+    m = score(full, pfam_truth["map"], regions, work, "pfamn")
+    m.write_parquet(tmp_path / "all_domain_metrics.parquet")
+    whole = m.filter(
+        (pl.col("split") == "all")
+        & (pl.col("stratum_axis") == "all")
+        & ~pl.col("dedup_transfers")
+    )
+    assert whole["recall"].item() < 1.0  # the outsiders were in the denominator
+
+    out = tmp_path / "rescored.csv"
+    run(
+        "rescore_pfamn_from_calls.py",
+        "--calls-dir",
+        work,
+        "--truth",
+        full,
+        "--annotations",
+        FIXTURES / "annotations",
+        "--metrics",
+        tmp_path / "all_domain_metrics.parquet",
+        "--run",
+        "fixture",
+        "--out",
+        out,
+    )
+    r = pl.read_csv(out).filter(~pl.col("dedup_transfers"))
+    assert r["n_truth_instances_before"].item() == truth.height + 6
+    assert r["n_truth_instances_after"].item() == truth.height
+    assert r["recall_before"].item() == pytest.approx(whole["recall"].item())
+    assert r["n_instances_found_after"].item() == r["n_instances_found_before"].item()
+    assert r["recall_after"].item() == pytest.approx(
+        r["recall_before"].item() * (truth.height + 6) / truth.height
+    )
+    assert r["fmax_after"].item() > r["fmax_before"].item()

@@ -352,7 +352,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         run run-kmerseek run-baselines rannon-burstein-all status running postmortem kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
-        pfamn-download pfamn-truth mcsa-truth help \
+        pfamn-download pfamn-truth mcsa-truth rescore-pfamn-from-calls help \
         bpe-tokenizer hp-bpe-diagnostic sherlock-clone test \
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
@@ -1452,6 +1452,37 @@ pfamn-truth: pfamn-download
 	    --summary-out data/pfamn/pfamn_summary.json
 	@echo "Pfam-N truth built. $(PFAMN_GZ) can be deleted if disk is tight:"
 	@echo "  rm $(PFAMN_GZ)"
+
+## Recompute the Pfam-N whole-set numbers of finished runs from their published call files,
+## against the truth cut to each run's query proteins. Runs scored before
+## restrictTruthToQueries divided Pfam-N recall and Fmax by all 44,315 human Pfam-N regions;
+## midi-plus searched proteins that carry 2,218 of them. No Nextflow run: which calls are
+## correct does not change, so the call files are enough. The script also recomputes the
+## old numbers and stops if they differ from the run's all_domain_metrics.parquet.
+## Writes $(PFAMN_RESCORE_DATA)/<run>/results/pfamn_rescored_whole_set.csv for each run in
+## PFAMN_RESCORE_RUNS. PFAMN_RESCORE_DATA can point at another clone's data/, so this runs
+## from a fresh clone without switching the branch of a clone that has a run going.
+PFAMN_RESCORE_DATA ?= data
+PFAMN_RESCORE_RUNS ?= midi-plus midi mini
+PFAMN_RESCORE_MEM  ?= 16G
+PFAMN_RESCORE_TIME ?= 2:00:00
+
+rescore-pfamn-from-calls:
+	$(call require_cluster)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	     --mem=$(PFAMN_RESCORE_MEM) --time=$(PFAMN_RESCORE_TIME) --cpus-per-task=2 \
+	  apptainer exec \
+	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	    bash -c 'set -e; for r in $(PFAMN_RESCORE_RUNS); do \
+	      python3 bin/rescore_pfamn_from_calls.py \
+	        --calls-dir   $(PFAMN_RESCORE_DATA)/$$r/results/calls \
+	        --truth       $(PFAMN_RESCORE_DATA)/pfamn/human_pfamn_truth.parquet \
+	        --annotations $(PFAMN_RESCORE_DATA)/$$r/annotations \
+	        --metrics     $(PFAMN_RESCORE_DATA)/$$r/results/all_domain_metrics.parquet \
+	        --run         $$r \
+	        --out         $(PFAMN_RESCORE_DATA)/$$r/results/pfamn_rescored_whole_set.csv; \
+	    done'
 
 
 ## ---- Sherlock side ------------------------------------------------------
