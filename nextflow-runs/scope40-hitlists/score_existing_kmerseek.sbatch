@@ -35,7 +35,7 @@ if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
   for run in combine combine-lowk combine-shuffled-k2-seed1 combine-lowk-shuffled-k2-seed1; do
     # Only tables written by a task that exited 0 (a retried task leaves its failed copy).
     find "$RUNS/$run/work" -maxdepth 3 -name '*.pairs.parquet' -type f | sort \
-      | while read -r f; do [ "$(cat "$(dirname "$f")/.exitcode" 2>/dev/null)" = 0 ] && echo "$f"; done \
+      | while read -r f; do if [ "$(cat "$(dirname "$f")/.exitcode" 2>/dev/null)" = 0 ]; then echo "$f"; fi; done \
       | awk -v r="$run" -F/ '{n=$NF; if (!(n in seen)) {seen[n]=1; print r "\t" $0}}'
   done > "$list.tmp"
   mv "$list.tmp" "$list"
