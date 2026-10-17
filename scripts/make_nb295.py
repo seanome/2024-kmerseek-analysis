@@ -907,6 +907,89 @@ pf.save(fig, FIGURES / "295_SF6_shared_kmer_ceiling_swissprot_2026_03")
 """)
 
 md(r"""
+## 10. The same ceiling for the shell-matrix class: worth a search?
+
+Section 8 found the shell-matrix class the only one large enough to be a benchmark. Before
+running its searches, the same count as section 9 asks whether any k-mer setting could
+reach its proteins across lineages better than chance. One query per pattern lineage,
+picked by the class script's rule (most experimental evidence, ties to the longer entry),
+against the 75 counted targets and 5_000 random Swiss-Prot entries
+(`scripts/convergence_kmer_reach_ceiling.py --class shell`).
+
+The class was defined by composition: a counted target has an Asp+Glu share of at least
+0.20 or a low-complexity fraction of at least 0.30. So composition alone is the bar any
+search has to beat, and it is drawn as a star at the share of random proteins that pass
+the same rule.
+""")
+
+code(r"""
+shell_dir = Path("../data/convergence_shell")
+shell_ceiling = pl.read_csv(shell_dir / "kmer_reach_ceiling.tsv", separator="\t").with_columns(
+    family=pl.when(pl.col("alphabet").str.starts_with("hp_"))
+    .then(pl.lit("hydrophobic-polar (7 alphabets)"))
+    .otherwise(pl.col("alphabet"))
+)
+comp_rule = pl.read_csv(shell_dir / "composition_rule_background.tsv", separator="\t")
+rule_frac = float(comp_rule.filter(pl.col("rule").str.starts_with("either"))["frac_pass"][0])
+print(comp_rule)
+print()
+
+shell_truth = pl.read_csv(shell_dir / "truth_set.tsv", separator="\t", infer_schema_length=0)
+counted = shell_truth.filter(
+    (pl.col("tier") == "Swiss-Prot")
+    & pl.col("lineage").is_in(CLASS_PATTERN_LINEAGES["shell"])
+    & (pl.col("kind") == "acidic or low complexity")
+)
+print("counted targets per lineage:")
+print(counted.group_by("lineage").len().sort("lineage"))
+print()
+shell_best = (
+    shell_ceiling.filter(pl.col("frac_background_reachable") <= rule_frac)
+    .sort("n_cross_reachable", descending=True)
+    .group_by("query_lineage")
+    .head(1)
+    .select("query", "query_lineage", "alphabet", "ksize", "n_cross_reachable",
+            "n_cross_truth", "frac_background_reachable")
+    .sort("query_lineage")
+)
+print(f"Most counted targets of other lineages reachable by shared k-mers, while no more")
+print(f"random proteins are reachable than pass the composition rule ({rule_frac:.4f}):")
+print(shell_best)
+
+SHELL_LINEAGES = sorted(shell_ceiling["query_lineage"].unique())
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, nrows=2, ncols=2, sharex=True, sharey=True)
+for ax, lineage in zip(axs.ravel(), SHELL_LINEAGES):
+    sub = shell_ceiling.filter(pl.col("query_lineage") == lineage)
+    ax.plot([0, 1], [0, 1], color="black", linewidth=0.5, linestyle="--",
+            label="same share as random proteins")
+    for fam, colour in FAMILY_COLOUR.items():
+        f = sub.filter(pl.col("family") == fam)
+        ax.plot(f["frac_background_reachable"], f["frac_cross_reachable"], "o",
+                color=colour, markersize=1.5, linestyle="none", label=fam)
+    ax.plot([rule_frac], [1.0], "*", color="black", markersize=6, linestyle="none",
+            label="composition rule that defined the class")
+    ax.set_title(f"{lineage} ({sub['query'][0]})", pad=2)
+    ax.set_xlim(-0.02, 1.02)
+    ax.set_ylim(-0.02, 1.05)
+fig.supxlabel("Share of 5_000 random Swiss-Prot entries with >= 2 shared k-mers", fontsize=6)
+fig.supylabel("Share of other-lineage shell-matrix targets with >= 2 shared k-mers", fontsize=6)
+for ax, letter in zip(axs.ravel(), "abcd"):
+    pf.panel_label(ax, letter)
+legend_in_axes(axs[1, 1], loc="lower right")
+header(
+    fig,
+    "shared distinct k-mers counted directly, k = 3 to 40, in 8 kmerseek alphabets; "
+    "75 counted shell-matrix targets; random sample from reviewed Swiss-Prot 2026_03",
+    "some alphabet and k reaches shell-matrix targets of other lineages better than the "
+    "composition rule that defined them (a point above and left of the star)",
+    f"the composition rule reaches every target at {rule_frac:.3f} of random proteins; the "
+    f"best k-mer setting at that cost reaches {int(shell_best['n_cross_reachable'].max())} of "
+    f"{int(shell_best.filter(pl.col('n_cross_reachable') == shell_best['n_cross_reachable'].max())['n_cross_truth'][0])}",
+)
+pf.save(fig, FIGURES / "295_SF7_shell_shared_kmer_ceiling_swissprot_2026_03")
+""")
+
+md(r"""
 ## Summary and conclusions
 
 **Verdict: FAIL.** No kmerseek setting reaches ice-binding proteins of another lineage
@@ -975,6 +1058,15 @@ either.
 **Next.** The ice-binding test is the only class with a search run. Section 8 shows the
 truth sets for the other three classes: only the shell-matrix class has enough reviewed
 entries to be scored as a benchmark; adhesive and silk proteins can only be case studies.
+
+**The shell-matrix class is not worth a search as built (section 10).** Its targets were
+chosen by composition, so the composition rule reaches all of them at 4.5% of random
+proteins, while at that cost the best k-mer setting reaches 37 of 72 from one query and 5
+of 9 from the vertebrate one. The k-mers it does share across
+lineages are long, nearly all-polar runs in the hydrophobic-polar alphabets, which is low
+complexity again. And 66 of its 75 targets are vertebrate, with 3 in each other lineage.
+A search would be worth running only on a truth set defined by function rather than
+composition.
 """)
 
 nb = {
