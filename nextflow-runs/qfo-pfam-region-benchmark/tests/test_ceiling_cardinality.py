@@ -306,7 +306,21 @@ def test_table_rows_run_coarsest_first_not_alphabetically(tmp_path):
     assert table["pconfig"]["sort_rows"] is False
 
 
-def test_the_sections_carry_the_ceiling_parent(tmp_path):
-    plot, table = build(tmp_path)
-    assert plot["parent_id"] == bmi.CEILING_PARENT["parent_id"]
-    assert table["parent_id"] == bmi.CEILING_PARENT["parent_id"]
+def test_the_sections_sit_in_the_main_report_not_a_module_of_their_own(tmp_path):
+    # Until 2026-09-19 the alphabet block was its own MultiQC module (parent_id
+    # qfo_ceiling), which put it after the citations. It is a run of sections inside the
+    # main report now, so on the key the report leads on both halves carry the main
+    # parent, and on any other key they go to the supplement like every other section.
+    lead = bmi.PRIMARY_TRUTH
+    other = "swissprot" if lead == "pfam" else "pfam"
+    both = pl.concat([
+        SWEEP.with_columns(pl.lit(lead).alias("truth_set")),
+        SWEEP.with_columns(pl.lit(other).alias("truth_set")),
+    ])
+    plot, table = build(tmp_path, both, truth=lead)
+    assert plot["parent_id"] == "qfo_region"
+    assert table["parent_id"] == "qfo_region"
+    assert not plot["section_name"].startswith("Supp: ")
+    supp_plot, supp_table = build(tmp_path, both, truth=other)
+    assert supp_plot["parent_id"] == bmi.SUPP_PARENT_ID
+    assert supp_table["parent_id"] == bmi.SUPP_PARENT_ID
