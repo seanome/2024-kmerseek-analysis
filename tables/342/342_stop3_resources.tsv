@@ -1,0 +1,24 @@
+# First-attempt asks for notebook 342 Stop 3 on Sherlock (hns partition), each from a measured
+# peak: the regions-index pilot's Sherlock traces (PR 114, runs/full/regions_index_pilot.2026-10-1*.trace.txt,
+# 10-residue decoy windows) and job 47646815 (the notebook 283 kmerseek build). Ask = about 1.35 x the
+# measured peak; time = several times the measured run. A retry doubles both (scripts/342_stop3_submit.sh).
+# aro_hyd_chg_pol4 k11 and aro_hyd_arg_chg_pol5 k9 have no history; both use polarity4 k11, the nearest
+# measured alphabet (4 classes, k 11), whose whole-protein index was killed at 120 GB and finished at 141 GB.
+# Searches: 10 chunks of about 903 queries (70_500 residues, 1.8x a pilot chunk of 100 chromosome 6
+# proteins); memory is set by loading the index, not by the queries.
+step	alphabet	k	index	cpus	mem_gb	hours	measured_peak_gb	measured_time	evidence
+build	-	-	-	16	32	1	9.7	4m52s	job 47646815, notebook 283 kmerseek build
+decoys	-	-	-	2	24	1	-	-	no trace; PR 114 gave every Python task 24 GB and none was killed
+index	aro_hyd_chg_pol4	11	regions	8	110	2	80.1	20m25s	polarity4 k11 regions index, pilot trace
+index	aro_hyd_arg_chg_pol5	9	regions	8	110	2	80.1	20m25s	no history; polarity4 k11 regions index
+index	hp_pbotc_1st_ed2	21	regions	8	48	1	31.6	2m36s	pilot trace
+index	protein20	5	regions	8	56	1	37.0	3m43s	pilot trace
+index	aro_hyd_chg_pol4	11	whole	8	190	3	140.9	45m28s	polarity4 k11 whole index (killed at 120 GB on its first attempt)
+index	aro_hyd_arg_chg_pol5	9	whole	8	190	3	140.9	45m28s	no history; polarity4 k11 whole index
+index	hp_pbotc_1st_ed2	21	whole	8	100	1	71.0	10m11s	pilot trace
+index	protein20	5	whole	8	110	2	79.5	19m6s	pilot trace
+search	aro_hyd_chg_pol4	11	regions	4	120	2	90.4	20m50s	polarity4 k11 regions search, largest of 10 chunks
+search	aro_hyd_arg_chg_pol5	9	regions	4	120	2	90.4	20m50s	no history; polarity4 k11 regions search
+search	hp_pbotc_1st_ed2	21	regions	4	32	1	21.3	3m28s	pilot trace
+search	protein20	5	regions	4	48	1	31.3	58.8s	pilot trace
+score	-	-	-	2	32	2	-	-	no history; PR 114's rule (1 GB + 18 GB per GB of gzipped calls) is checked by the script before it reads
