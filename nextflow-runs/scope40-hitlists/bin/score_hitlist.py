@@ -15,10 +15,12 @@ The rules are those of bench.noselfhit.awk in github.com/steineggerlab/foldseek-
     (line 19), same superfamily but different family a superfamily TP (line 20), same fold
     but different superfamily a fold TP (line 21);
   - queries: domains with another member at all three levels (line 24);
-  - sensitivity: family TPs / (family size - 1); superfamily TPs / (superfamily size -
-    (family size - 1)); fold TPs / (fold size - (superfamily size - 1)) (lines 25-27). The
-    last two keep the query itself in the count, so they are one more than the domains that
-    can be found; sensitivity_possible divides by the domains that can be found.
+  - sensitivity: TPs divided by the domains that can be found, family size - 1, superfamily
+    size - family size, fold size - superfamily size: LoL-align's copy of the script
+    (soedinglab/LoLalign-analysis scope_benchmark/bench.noselfhit.awk, lines 25-27; Reifenrath
+    et al. 2026, Nature Methods). Foldseek's original divides the superfamily and fold counts by
+    (superfamily size - (family size - 1)) and (fold size - (superfamily size - 1)), one more,
+    because the query itself stays in them: sensitivity_foldseek_script.
 A query with no hits scores 0 and is kept.
 
 Ties: the awk takes the hits in file order. Here hits are sorted by the score, then with
@@ -114,9 +116,9 @@ def score(labelled: pl.DataFrame, qset: pl.DataFrame, tool: str, setting: str) -
                         "fold", "superfamily", "family", "famcnt", "sfamcnt", "foldcnt")
             .join(per_q, on="query", how="left").join(n_hits, on="query", how="left")
             .with_columns(pl.col("n_hits").fill_null(0)))
-    den_script = {"family": pl.col("famcnt") - 1, "superfamily": pl.col("sfamcnt") - (pl.col("famcnt") - 1),
+    den_foldseek = {"family": pl.col("famcnt") - 1, "superfamily": pl.col("sfamcnt") - (pl.col("famcnt") - 1),
                   "fold": pl.col("foldcnt") - (pl.col("sfamcnt") - 1)}
-    den_poss = {"family": pl.col("famcnt") - 1, "superfamily": pl.col("sfamcnt") - pl.col("famcnt"),
+    den_lol = {"family": pl.col("famcnt") - 1, "superfamily": pl.col("sfamcnt") - pl.col("famcnt"),
                 "fold": pl.col("foldcnt") - pl.col("sfamcnt")}
     out = []
     for lvl in LEVELS:
@@ -124,9 +126,9 @@ def score(labelled: pl.DataFrame, qset: pl.DataFrame, tool: str, setting: str) -
         out.append(base.select(
             pl.lit(tool).alias("tool"), pl.lit(setting).alias("setting"), pl.lit(lvl).alias("level"),
             "query", "scope_sccs", "scope_class", "fold", "superfamily", "family",
-            den_script[lvl].alias("n_tp_total"), den_poss[lvl].alias("n_tp_possible"),
-            tp.alias("n_tp_above_cut"), (tp / den_script[lvl]).alias("sensitivity"),
-            (tp / den_poss[lvl]).alias("sensitivity_possible"),
+            den_lol[lvl].alias("n_tp_total"), den_foldseek[lvl].alias("n_tp_total_foldseek_script"),
+            tp.alias("n_tp_above_cut"), (tp / den_lol[lvl]).alias("sensitivity"),
+            (tp / den_foldseek[lvl]).alias("sensitivity_foldseek_script"),
             (pl.col("n_hits") > 0).alias("has_hits"), "first_fp_index", "n_hits"))
     return pl.concat(out)
 

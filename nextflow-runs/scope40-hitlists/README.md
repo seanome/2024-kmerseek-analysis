@@ -3,8 +3,11 @@
 Every tool of the leaderboard's Table 1 searched all against all on ASTRAL SCOPe 2.08 at 40%
 identity (15,177 domains), with each search's whole hit list kept, then scored per query by
 `bin/score_hitlist.py`. The scorer follows Foldseek's benchmark script
-(`bench.noselfhit.awk`, github.com/steineggerlab/foldseek-analysis) and `make test` checks it
-against that script on made-up hit lists. The leaderboard's SCOPe40 page reads the scored rows.
+(`bench.noselfhit.awk`, github.com/steineggerlab/foldseek-analysis) with LoL-align's
+denominators (soedinglab/LoLalign-analysis, the same script except lines 26-27: the
+superfamily and fold counts leave the query out). `sensitivity` is on LoL-align's scale and
+`sensitivity_foldseek_script` on Foldseek's original one; `make test` checks both against the
+two scripts on made-up hit lists. The leaderboard's SCOPe40 page reads the scored rows.
 
 What runs where:
 
