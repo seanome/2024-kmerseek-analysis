@@ -29,7 +29,9 @@ seed (95% interval 3.2 to 8.9, families resampled), all of it below the 10 point
 for. The same seed plus a second extended segment, with no second exact word (B3), does as
 well (linked minus B3: −1.7, interval −3.0 to 0.5). The gain comes from scoring a second
 segment across an insertion, not from the second word in the key. The kmerseek index
-stays as it is.
+stays as it is. Section 4d (added 2026-10-17) puts each key design next to its chance key
+matches counted on Swiss-Prot: no design as cheap as B2's 8-letter word gains 10 points
+(the best gains +1.8, 95% interval −1.5 to +4.4), so the KILL stands.
 
 **Question.** [Notebook 232](232_mismatch_tolerant_seed_extend.ipynb) found that the longest
 exact run of matching hydrophobic/polar (HP) classes between true homologs at 20–30%
@@ -752,6 +754,374 @@ hc.finish_figure(
 """)
 
 md(r"""
+### 4d. Key designs compared at their chance cost (added 2026-10-17)
+
+The chosen key (every pair of 6-letter HP words up to 32 residues apart, gap not stored)
+gives 3,896 chance key matches between two unrelated 131-residue proteins, against 70 for
+B2's 8-letter word (section 5). The recall in sections 4a and 4b is scored on each pair's
+own alignment, so a chance key match anywhere else on the two proteins is never paid for:
+a key that matches by chance more often costs nothing there. This section puts every key
+design next to its chance cost, and tests keys that store the gap.
+
+**Designs.** All use the `hp_thomas_dill2` alphabet and the extension above (+1 per
+matching HP class, −2 per mismatch, a gap column stops it).
+
+1. *Gap stored exactly*: two a-letter words up to 32 residues apart; the key is (first
+   word, gap, second word) and two keys match only when all three agree. a = 6, 7, 8.
+2. *Gap in 7-residue bins*: the same, but the key stores which bin the gap falls in. The
+   gap counts the residues between the two words, from 0 (the words touch) to 32, so the
+   bins are 0–6, 7–13, 14–20, 21–27 and 28–32. (The brief listed them as 1–7 … 29–32,
+   counting from 1.) Two gaps in one bin differ by at most 6 residues, so the key matches
+   across an insertion or deletion of up to 6 residues between the words, unless the two
+   gaps fall either side of a bin edge. a = 6, 7, 8.
+3. *One word*: one k-letter seed with extension, k = 8, 10, 12, 14, 16. k = 8 is B2 and
+   k = 10 is B1.
+4. *Gap not stored*: the chosen key, and the randstrobe (one partner per position) of
+   section 4b, copied unchanged.
+
+*Chance key matches*: the expected number of key matches between two unrelated
+131-residue proteins, over every pair of positions, from key frequencies counted on
+Swiss-Prot (`scripts/linked_pairs_key_spectrum.py --cost-out`, the same count section 5
+makes). Lower is cheaper.
+
+**Rule, fixed before any number in this section was computed** (task brief, 2026-10-17).
+The chance costs of the gap-stored keys were already printed in section 5 when it was
+written.
+
+- *Statistic*: the paired gain in recall at 20–30% identity over B2, on the report half,
+  at exactly FPR 0.001 (read off the line between the two thresholds either side), with
+  1,000 bootstrap resamples of whole Pfam families: the same resamples as section 4b.
+- *Cheaper than B2*: chance key matches counted on Swiss-Prot at or below 70. *Costlier*:
+  above 70. B2 itself is the reference and is not a candidate.
+- PASS: a design cheaper than B2 whose whole 95% interval is at or above +10 points.
+- KILL: every design cheaper than B2 has its whole 95% interval below +10 points.
+- Anything else: unclear.
+- A costlier design cannot PASS, whatever its recall: its extra recall could be bought
+  with chance matches that the per-pair null never charges for.
+""")
+
+code(r"""
+D4_SCORES = Path("/Users/olga/data/pfam/294_gap_designs_scores.parquet")  # scripts/linked_pairs_on_alignments.py --designs
+D4_COST = Path("/Users/olga/data/pfam/294_key_cost_by_design.parquet")  # scripts/linked_pairs_key_spectrum.py --cost-out
+assert (CHOSEN, CHOSEN_RAND) == ("all_a6_g32_none", "rand_a6_g32_none"), "lp.DESIGNS lists these two by name"
+d4_new = pl.read_parquet(D4_SCORES).drop("family", "query", "target", "seqid_ali", "q_len", "t_len")
+d4 = d.join(d4_new, on=["pair_index", "kind"], how="inner", suffix="_4d")
+assert d4.height == d.height == 180_000
+d4_checks = {
+    "one 8-letter word = B2": (d4["word8_ext"] == d4["B2_ext"]).all(),
+    "one 10-letter word = B1": (d4["word10_ext"] == d4["B1_ext"]).all(),
+    "longest run >= 8 exactly when an 8-letter seed is shared": ((d4["longest_run"] >= 8) == (d4["seed8_count"] > 0)).all(),
+    "longest run >= 10 exactly when a 10-letter seed is shared": ((d4["longest_run"] >= 10) == (d4["seed10_count"] > 0)).all(),
+}
+for a_ in lp.DESIGN_ANCHORS:
+    nm = lp.setting_name("all", a_, lp.DESIGN_GAP_MAX, "exact")
+    d4_checks[f"gap stored exactly, {a_}-letter words, rescored = stored"] = (
+        (d4[f"{nm}_ext"] == d4[f"{nm}_ext_4d"]).all() and (d4[f"{nm}_count"] == d4[f"{nm}_count_4d"]).all())
+print("rescored on all 180,000 comparisons with lp.score_pair_designs (same shuffles):")
+for k_, v_ in d4_checks.items():
+    print(f"  {k_}: {v_}")
+assert all(d4_checks.values())
+
+
+def d4_label(design):
+    m, ln, g_, tr = design
+    if m == "word":
+        return f"one {ln}-letter word" + {8: " (B2)", 10: " (B1)"}.get(ln, "")
+    if m == "rand":
+        return f"two {ln}-letter words, one partner per position (randstrobe)"
+    rule = {"exact": "gap stored exactly", "binned7": "gap in 7-residue bins", "none": "gap not stored (chosen key)"}[tr]
+    return f"two {ln}-letter words, {rule}"
+
+
+def d4_family(design):
+    m, _, _, tr = design
+    return {"word": "one word", "rand": "randstrobe"}.get(m) or {"exact": "gap stored exactly", "binned7": "gap in 7-residue bins", "none": "gap not stored"}[tr]
+
+
+D4_COL = {}
+for des in lp.DESIGNS:
+    nm = lp.design_name(*des)
+    D4_COL[nm] = {"word8": "B2_ext", "word10": "B1_ext"}.get(nm, f"{nm}_ext")
+d4_names = list(D4_COL)
+real4, null4, bin4, pidx4 = lp.score_arrays(d4, list(D4_COL.values()))
+assert (pidx4 == pidx_all).all()
+rep4 = ~np.isin(pidx4, select_ids)
+assert (rep4 == rep).all()
+thr4, w4, rec4 = lp.recall_at_exact_fpr(real4[rep4], null4[rep4], bin4[rep4], FPR)
+boot4 = lp.bootstrap_recall_by_group(real4[rep4], null4[rep4], bin4[rep4], fam_r, FPR, N_BOOT, seed=2)
+lo4, hi4 = np.percentile(boot4, 2.5, axis=0), np.percentile(boot4, 97.5, axis=0)
+# the four scores section 4b also reports must come out the same, resample for resample
+same4b = all(np.array_equal(boot4[:, :, d4_names.index(n4)], boot_n[:, :, JN[n4b]]) and np.array_equal(rec4[:, d4_names.index(n4)], rec_n[:, JN[n4b]])
+             for n4, n4b in [("word8", "B2"), ("word10", "B1"), (CHOSEN, "linked"), (CHOSEN_RAND, "randstrobe")])
+print(f"B2, B1, the chosen key and the randstrobe give section 4b's recall and bootstrap resamples exactly: {same4b}")
+assert same4b
+
+cost4 = pl.read_parquet(D4_COST)
+L_MED_4D = cost4["median_length"][0]
+assert cost4["design"].to_list() == d4_names
+spec4 = pl.read_parquet(SPECTRUM)
+cross = []
+for des in lp.DESIGNS:
+    m, ln, g_, tr = des
+    sel = (pl.col("mode") == m) & (pl.col("anchor") == ln) & (pl.col("gap_max") == g_) & (pl.col("treatment") == tr)
+    if m == "word":
+        sel = (pl.col("mode") == "word") & (pl.col("anchor") == ln)
+    old = spec4.filter(sel)
+    if old.height:
+        new_ = cost4.filter(pl.col("design") == lp.design_name(*des))["chance_matches"][0]
+        cross.append((lp.design_name(*des), old["expected_chance_matches"][0], new_))
+max_rel = max(abs(n_ - o_) / o_ for _, o_, n_ in cross)
+print(f"{len(cross)} designs are also in section 5's table; largest relative difference between the two counts: {max_rel:.1e}")
+assert max_rel < 1e-9
+
+j_b2 = d4_names.index("word8")
+B2_COST = cost4.filter(pl.col("design") == "word8")["chance_matches"][0]
+CHEAP_MAX = 70.0
+rows4 = []
+for i, des in enumerate(lp.DESIGNS):
+    nm = d4_names[i]
+    gain_b = boot4[:, b2030, i] - boot4[:, b2030, j_b2]
+    g_lo, g_hi = np.percentile(gain_b, [2.5, 97.5])
+    cm = cost4.filter(pl.col("design") == nm)["chance_matches"][0]
+    if nm == "word8":
+        cls_, call_ = "reference", "reference"
+    elif cm <= CHEAP_MAX:
+        cls_ = "cheaper"
+        call_ = "PASS" if g_lo >= DELTA else ("KILL" if g_hi < DELTA else "UNCLEAR")
+    else:
+        cls_, call_ = "costlier", "cannot PASS"
+    rows4.append({"design": d4_label(des), "family": d4_family(des), "name": nm, "chance_matches": cm,
+                  "recall": rec4[b2030, i], "recall_lo": lo4[b2030, i], "recall_hi": hi4[b2030, i],
+                  "gain": rec4[b2030, i] - rec4[b2030, j_b2], "gain_lo": g_lo, "gain_hi": g_hi,
+                  "cost_vs_B2": cls_, "verdict": call_})
+t4 = pl.DataFrame(rows4).sort(["chance_matches", "name"])
+near = t4.filter((pl.col("chance_matches") > CHEAP_MAX) & (pl.col("chance_matches") <= B2_COST) & (pl.col("name") != "word8"))
+print(f"B2's own count is {B2_COST:.1f}; designs between 70 and {B2_COST:.1f}, where the rule's 70 and B2's own count would disagree: {near.height}")
+print("Report half, 20-30% identity, exactly FPR 0.001, 95% intervals with Pfam families resampled; sorted by chance matches:")
+with pl.Config(fmt_str_lengths=80, tbl_width_chars=260):  # only for this table: long design names
+    print(t4.select(
+        pl.col("design"),
+        pl.col("chance_matches").round(1).alias("chance matches counted on Swiss-Prot"),
+        pl.format("{} [{} to {}]", *[(100 * pl.col(c)).round(1) for c in ["recall", "recall_lo", "recall_hi"]]).alias("recall at 20-30% (%)"),
+        pl.format("{} [{} to {}]", *[(100 * pl.col(c)).round(1) for c in ["gain", "gain_lo", "gain_hi"]]).alias("gain over B2 (points)"),
+        pl.col("cost_vs_B2").alias("cost vs B2"),
+        pl.col("verdict"),
+    ))
+cheap4 = t4.filter(pl.col("cost_vs_B2") == "cheaper")
+if (cheap4["verdict"] == "PASS").any():
+    VERDICT_4D = "PASS"
+elif (cheap4["verdict"] == "KILL").all():
+    VERDICT_4D = "KILL"
+else:
+    VERDICT_4D = "UNCLEAR"
+best_cheap = cheap4.sort(["gain", "name"], descending=[True, False]).row(0, named=True)
+best_any = t4.filter(pl.col("name") != "word8").sort(["gain", "name"], descending=[True, False]).row(0, named=True)
+verdict_4d_line = (f"Section 4d verdict: {VERDICT_4D}. {cheap4.height} designs are cheaper than B2; the best of them, {best_cheap['design']}, "
+                   f"gains {100 * best_cheap['gain']:+.1f} points over B2 (95% interval {100 * best_cheap['gain_lo']:+.1f} to {100 * best_cheap['gain_hi']:+.1f}) "
+                   f"at {best_cheap['chance_matches']:.1f} chance matches. The largest gain of any design, {100 * best_any['gain']:+.1f} "
+                   f"({100 * best_any['gain_lo']:+.1f} to {100 * best_any['gain_hi']:+.1f}), is {best_any['design']}, at {best_any['chance_matches']:,.0f} chance matches.")
+print(verdict_4d_line)
+""")
+
+code(r"""
+# recall at 20-30% identity against chance cost, one mark per design
+# where each point's label sits (data coordinates) and its alignment; a label away from
+# its point gets a thin grey line to it
+D4_LABEL_POS = {
+    "word16": (0.45, 22.5, "left"), "word14": (1.6, 28.6, "left"), "word12": (3.7, 34.8, "right"),
+    "word10": (14.5, 38.0, "right"), "all_a8_g32_exact": (2.2, 25.2, "left"), "all_a7_g32_exact": (40.0, 28.0, "right"),
+    "all_a8_g32_binned7": (50.0, 45.0, "right"), "rand_a6_g32_none": (90.0, 53.5, "left"), "word8": (62.0, 23.0, "right"),
+    "all_a6_g32_exact": (140.0, 34.0, "left"), "all_a7_g32_binned7": (230.0, 36.6, "left"),
+    "all_a6_g32_binned7": (1100.0, 38.8, "left"), "all_a6_g32_none": (3896.0, 51.5, "center"),
+}
+from matplotlib.lines import Line2D
+D4_SHAPE = {"one word": "o", "gap stored exactly": "s", "gap in 7-residue bins": "v", "gap not stored": "D", "randstrobe": "^"}
+D4_COLOUR = {"cheaper": pf.OKABE_ITO["bluish_green"], "costlier": "#999999", "reference": "black"}
+fig, axd = plt.subplot_mosaic([["legend"], ["main"]], figsize=(pf.TWO_COLUMN_MM * pf.MM, 110 * pf.MM), height_ratios=[0.2, 1])
+blank = Line2D([], [], lw=0, label=" ")
+h4 = ([Line2D([], [], color="0.35", marker=mk, lw=0, ms=4, label=f"shape: {fam}") for fam, mk in D4_SHAPE.items()]
+      + [Line2D([], [], color=D4_COLOUR["cheaper"], lw=3, label="colour: 70 or fewer chance matches (cheaper than B2)"),
+         Line2D([], [], color=D4_COLOUR["costlier"], lw=3, label="colour: more than 70 (costlier, so it cannot PASS)"),
+         Line2D([], [], color=D4_COLOUR["reference"], lw=3, label="colour: B2, the reference"), blank, blank,
+         Line2D([], [], color="black", ls="--", lw=0.8, label="B2's recall + 10 points (a guide: the rule reads the paired gain's interval, in the table)"),
+         Line2D([], [], color="0.5", ls=":", lw=0.8, label="70 chance matches"),
+         Line2D([], [], color="0.35", marker="|", ms=7, lw=0, label="vertical bar: 95% interval, Pfam families resampled"), blank, blank])
+axd["legend"].set_axis_off()
+axd["legend"].legend(handles=h4, loc="center", ncol=3, fontsize=5.5, frameon=False)
+ax = axd["main"]
+for r_ in t4.iter_rows(named=True):
+    col = D4_COLOUR[r_["cost_vs_B2"]]
+    ax.errorbar(r_["chance_matches"], 100 * r_["recall"], yerr=[[100 * (r_["recall"] - r_["recall_lo"])], [100 * (r_["recall_hi"] - r_["recall"])]],
+                color=col, marker=D4_SHAPE[r_["family"]], ms=4, mfc=col, lw=0.8, capsize=1.5, zorder=3)
+b2_rec = t4.filter(pl.col("name") == "word8")["recall"][0]
+ax.axhline(100 * (b2_rec + DELTA), color="black", ls="--", lw=0.8)
+ax.axvline(CHEAP_MAX, color="0.5", ls=":", lw=0.8)
+ax.set_xscale("log")
+ax.xaxis.set_major_formatter(mpl.ticker.FuncFormatter(lambda v, _: f"{v:g}"))
+ax.set_xlabel(f"Chance key matches between two unrelated {L_MED_4D:.0f}-residue proteins (key frequencies counted on Swiss-Prot)\n"
+              "each tick is ten times the one before; lower is cheaper")
+ax.set_ylabel("Recall at 20–30% identity, exactly FPR 0.001 (%)\nreport half; higher is better")
+ax.set_xlim(0.25, 2e4)
+ax.set_ylim(18, 55)
+for r_ in t4.iter_rows(named=True):
+    tx, ty, ha = D4_LABEL_POS[r_["name"]]
+    near_point = abs(ty - 100 * r_["recall"]) < 0.5
+    ax.annotate(r_["design"], (r_["chance_matches"], 100 * r_["recall"]), xytext=(tx, ty), textcoords="data",
+                fontsize=5, ha=ha, va="center", color="black",
+                arrowprops=None if near_point else dict(arrowstyle="-", lw=0.3, color="0.6", shrinkA=1, shrinkB=3))
+hc.finish_figure(
+    fig, FIG / "294_recall_vs_chance_cost.png", tools=hc.NO_TOOL,
+    title="Section 4d: recall against chance cost for each HP key design (hp_thomas_dill2, Pfam seed pairs, report half)",
+    hypothesis="Some key cheaper than B2's 8-letter word (70 chance matches or fewer) finds at least 10 points more 20-30% identity pairs than B2.",
+    conclusion=verdict_4d_line + " Up and to the left is better.",
+    wrap=140,
+)
+""")
+
+code(r"""
+# k-size slope of one exact word with extension
+words4 = t4.filter(pl.col("family") == "one word").with_columns(pl.col("name").str.slice(4).cast(int).alias("k")).sort("k")
+lr_rep = d4.filter(pl.col("kind") == "real").sort("pair_index")["longest_run"].to_numpy()[rep4]
+in2030 = bin4[rep4] == b2030
+share_k = {k: float((lr_rep[in2030] >= k).mean()) for k in lp.SINGLE_WORDS}
+slope = words4.select("k", "chance_matches", (100 * pl.col("recall")).round(1).alias("recall (%)"),
+                      (100 * pl.col("recall_lo")).round(1).alias("ci_low"), (100 * pl.col("recall_hi")).round(1).alias("ci_high")).with_columns(
+    pl.Series("share of 20-30% pairs with an exact k-letter match (%)", [round(100 * share_k[k], 1) for k in words4["k"]]))
+print(f"report half, 20-30% identity, {int(in2030.sum()):_} true pairs; one k-letter word with extension:")
+print(slope)
+fig, axd = plt.subplot_mosaic([["legend"], ["main"]], figsize=(pf.ONE_COLUMN_MM * pf.MM, 75 * pf.MM), height_ratios=[0.22, 1])
+C_REC, C_SHARE = pf.OKABE_ITO["blue"], pf.OKABE_ITO["reddish_purple"]
+axd["legend"].set_axis_off()
+axd["legend"].legend(handles=[
+    Line2D([], [], color=C_REC, marker="o", ms=3.5, lw=1, label="recall at exactly FPR 0.001\n(bar: 95% interval, families resampled)"),
+    Line2D([], [], color=C_SHARE, marker="s", ms=3.5, lw=1, ls="--", label="share of pairs with at least one exact\nk-letter HP match on the alignment")],
+    loc="center", ncol=1, fontsize=5.5, frameon=False)
+ax = axd["main"]
+ks = words4["k"].to_numpy()
+ax.errorbar(ks, 100 * words4["recall"], yerr=[100 * (words4["recall"] - words4["recall_lo"]), 100 * (words4["recall_hi"] - words4["recall"])],
+            color=C_REC, marker="o", ms=3.5, lw=1, capsize=1.5)
+ax.plot(ks, [100 * share_k[k] for k in ks], color=C_SHARE, marker="s", ms=3.5, lw=1, ls="--")
+ax.set_xticks(ks, [f"{k}\n(B2)" if k == 8 else (f"{k}\n(B1)" if k == 10 else f"{k}") for k in ks])
+ax.set_xlabel("Word length k (HP letters)")
+ax.set_ylabel("20–30% identity Pfam seed pairs (%)\nreport half; higher is better")
+ax.set_ylim(0, 100)
+hc.finish_figure(
+    fig, FIG / "294_single_word_ksize_slope.png", tools=hc.NO_TOOL,
+    title="One HP word with extension: recall falls with word length",
+    hypothesis="A longer single word is cheaper but survives in fewer remote pairs, so recall falls with k.",
+    conclusion=(f"20-30% identity: recall " + ", ".join(f"k={k} {100 * r:.1f}%" for k, r in zip(ks, words4['recall']))
+                + "; pairs with an exact k-letter match " + ", ".join(f"{100 * share_k[k]:.1f}%" for k in ks) + ". Higher is better."),
+    wrap=70,
+)
+""")
+
+md(r"""
+**Model check.** How far is each measured count from what independent HP letters would
+give? The model treats every letter of two unrelated proteins as drawn on its own from the
+Swiss-Prot class shares. Section 4a does not print those shares, so the next cell counts
+them from `uniprot_sprot.fasta.gz`. The model's numbers are a prediction, kept in their own
+table and never mixed with the counts.
+
+$$\text{Pr}(\text{agree}) = h^2 + p^2$$
+
+$$\text{Pr}(\text{key match}) = \text{Pr}(\text{agree})^{n_\text{letters}} \times \text{Pr}(\text{gaps agree})$$
+
+$$\mu_\text{model} = n_\text{keys}^2 \times \text{Pr}(\text{key match})$$
+
+where
+
+- $h$: share of Swiss-Prot residues that are hydrophobic (`ACFILMVWY`);
+- $p$: share that are polar (`DEGHKNPQRST`); $h + p = 1$, other letters are left out;
+- $\text{Pr}(\text{agree})$: chance that two letters drawn at random have the same HP class;
+- $n_\text{letters}$: letters in the key, $k$ for one word and $2a$ for two $a$-letter words;
+- $\text{Pr}(\text{gaps agree})$: chance that the two keys' gaps agree under the gap rule,
+  with every gap 0 to $G$ taken as equally likely: 1 for one word, for a gap not stored and
+  for the randstrobe; $1 / (G + 1)$ for a gap stored exactly; $\sum_b (n_b / (G + 1))^2$
+  for a gap in bins;
+- $G = 32$: the largest gap;
+- $n_b$: the number of gap values in bin $b$ (7, 7, 7, 7 and 5);
+- $n_\text{keys}$: the number of keys one 131-residue protein holds, the same number the
+  counted column uses;
+- $\mu_\text{model}$: the predicted chance matches between two unrelated 131-residue
+  proteins.
+""")
+
+code(r"""
+import gzip
+from collections import Counter
+aa_counts = Counter()
+with gzip.open(SPROT_FASTA, "rb") as fh:
+    for ln in fh:
+        if not ln.startswith(b">"):
+            aa_counts.update(ln.strip())
+n_h = sum(aa_counts[ord(c)] for c in "ACFILMVWY")
+n_p = sum(aa_counts[ord(c)] for c in "DEGHKNPQRST")
+h_sp, p_sp = n_h / (n_h + n_p), n_p / (n_h + n_p)
+pr_agree = h_sp**2 + p_sp**2
+print(f"Swiss-Prot ({SPROT_FASTA.name}): {n_h:_} hydrophobic and {n_p:_} polar residues, "
+      f"{sum(aa_counts.values()) - n_h - n_p:_} other letters left out")
+print(f"h = {h_sp:.4f}, p = {p_sp:.4f}, Pr(agree) = h^2 + p^2 = {pr_agree:.4f}, so {-np.log2(pr_agree):.3f} bits per HP letter")
+G4 = lp.DESIGN_GAP_MAX
+n_b = np.bincount(np.arange(G4 + 1) // lp.GAP_BIN7)
+print(f"gap values per 7-residue bin: {n_b.tolist()}")
+def pr_gaps(tr):
+    if tr == "exact":
+        return 1 / (G4 + 1)
+    if tr == "binned7":
+        return float(((n_b / (G4 + 1)) ** 2).sum())
+    return 1.0
+model4 = []
+for des, r_ in zip(lp.DESIGNS, cost4.iter_rows(named=True)):
+    m, ln, g_, tr = des
+    n_letters = ln if m == "word" else 2 * ln
+    mu = r_["keys_per_sequence"] ** 2 * pr_agree**n_letters * pr_gaps(tr)
+    model4.append({"design": d4_label(des), "name": r_["design"], "chance matches counted on Swiss-Prot": r_["chance_matches"],
+                   "predicted chance matches (model)": mu})
+model4 = pl.DataFrame(model4).with_columns(
+    (pl.col("chance matches counted on Swiss-Prot") / pl.col("predicted chance matches (model)")).alias("counted / predicted")
+).sort(["chance matches counted on Swiss-Prot", "name"])
+print("Model check (prediction, not a measurement):")
+with pl.Config(fmt_str_lengths=80, tbl_width_chars=260):
+    print(model4.drop("name").with_columns(pl.col("chance matches counted on Swiss-Prot", "predicted chance matches (model)").round(1),
+                                           pl.col("counted / predicted").round(2)))
+""")
+
+md(r"""
+**Verdict for 4d: KILL.** Seven designs give 70 or fewer chance matches, and none of them
+comes near +10 points. The best, two 8-letter words with the gap in 7-residue bins, gains
++1.8 points over B2 (95% interval −1.5 to +4.4) at 55 chance matches. Storing the gap
+exactly costs recall: two 8-letter words with the exact gap find 32.1% of 20–30% identity
+pairs against B2's 39.2% (−7.1, interval −9.5 to −4.6), because an insertion or deletion
+between the two words changes the gap and breaks the key. Bins of 7 residues bring the same
+two 8-letter words back to 41.0%. Every design whose gain interval lies above 0 (the chosen
+key +6.7, two 6-letter words with binned gap +5.5, two 7-letter words with binned gap +3.7)
+costs 3 to 55 times B2's chance matches, so its gain could come from matches the per-pair
+null never charges for. A longer single word is cheaper but finds fewer pairs: recall falls
+from 39.2% at 8 letters to 22.5% at 16, as the share of 20–30% pairs with an exact
+k-letter HP match falls from 92.6% to 24.4%. At or below B2's chance cost, no HP key tested
+here finds more pairs than B2 with an interval that excludes 0. Independent letters predict every count to
+within 1.0 to 1.3 times (the counts are always the higher), except the randstrobe's, which
+is 18 times the prediction: its hash rule ties the second word to the first, so two keys
+that share a first word often share the whole key (section 5).
+
+**Changes since 4b**
+
+- No number printed in sections 1 to 4c, 5 or 6 moved. The notebook's text output before
+  and after 4d was added was compared line by line; only 4d's lines and one new summary
+  line in section 6 are new.
+- The B2, B1, chosen-key and randstrobe rows of the 4d table are section 4b's numbers: the
+  same score columns and the same 1,000 family resamples (seed 2), checked equal resample
+  by resample in the first 4d cell.
+- The gap-stored keys were rescored with the new `score_pair_designs` and equal the stored
+  scores on all 180,000 comparisons. The chance counts of the seven designs that section 5
+  also lists equal section 5's to the last digit.
+- New code: `linked_pairs_utils.py` gains 7-residue gap bins (`binned7`) and
+  `score_pair_designs`; `linked_pairs_on_alignments.py --designs` and
+  `linked_pairs_key_spectrum.py --cost-out` write the two new parquet files. The 72 settings
+  of sections 2 to 4b are unchanged.
+""")
+
+md(r"""
 ## 5. Bits, measured on Swiss-Prot
 
 How often does a key match by chance? For each setting, every key in Swiss-Prot
@@ -839,6 +1209,7 @@ md(r"""
 code(r"""
 print(verdict_pre_line)
 print(verdict_line)
+print(verdict_4d_line)
 print()
 print("Report half, recall at exactly FPR 0.001 (95% interval, families resampled):")
 for n in NEW:
@@ -902,6 +1273,12 @@ matches: lower is better.
    query against Swiss-Prot's 572,970 proteins (counted in section 6). Not tested:
    database false positives, chance key matches off the alignment's diagonal, SCOPe pairs, other alphabets and mismatch
    scores, a full-alphabet BLAST ceiling on the same pairs, and three anchors.
+10. **Key designs at their chance cost: KILL** (section 4d, added 2026-10-17). Of the seven
+   designs with 70 or fewer chance matches between two unrelated 131-residue proteins, the
+   best (two 8-letter words, gap in 7-residue bins, 55 chance matches) gains +1.8 points
+   over B2 (−1.5 to +4.4). Storing the gap exactly loses recall (two 8-letter words: −7.1);
+   the designs whose gain interval lies above 0 cost 3 to 55 times B2's chance matches. The chance matches
+   are counted on Swiss-Prot; recall is still scored on each pair's own alignment.
 """)
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},

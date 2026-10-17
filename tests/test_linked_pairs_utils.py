@@ -179,3 +179,147 @@ def test_recall_at_exact_fpr_calls_exactly_fpr_of_the_null():
     for b in range(len(lp.BINS)):
         r = real[bins == b, 0]
         assert np.isclose(rec[b, 0], (r > 3).mean() + w[0] * (r == 3).mean())
+
+
+def _to_alignment(cls: np.ndarray) -> str:
+    """HP classes back to residues: H -> A, P -> D, gap -> '-'."""
+    return "".join("-" if c == GAP else ("A" if c == 0 else "D") for c in cls)
+
+
+def _random_gapped_pair(rng, n, flip=0.12, gap=0.05):
+    qa = rng.integers(0, 2, n).astype(np.uint8)
+    ta = qa.copy()
+    f = rng.random(n) < flip
+    ta[f] = 1 - ta[f]
+    gq = rng.random(n) < gap
+    gt = (rng.random(n) < gap) & ~gq
+    qa[gq] = GAP
+    ta[gt] = GAP
+    return qa, ta
+
+
+def test_gap_stored_and_gap_binned_keys_match_brute_force():
+    """score_pair_designs' every-pair keys with the gap stored exactly or in 7-residue
+    bins, against enumerating every pair of anchors by hand."""
+    rng = np.random.default_rng(5)
+    n_keys_seen = {"exact": 0, "binned7": 0}
+    for trial in range(30):
+        n = int(rng.integers(22, 34))
+        qa, ta = _random_gapped_pair(rng, n)
+        q, t = _to_alignment(qa), _to_alignment(ta)
+        got = lp.score_pair_designs(q, t, np.random.default_rng(0), n_shuffle=0)[0]
+        sc, same, *_ = _arrays(qa, ta)
+        qpos = np.where(qa != GAP, np.cumsum(qa != GAP) - 1, -1)
+        tpos = np.where(ta != GAP, np.cumsum(ta != GAP) - 1, -1)
+        for a in lp.DESIGN_ANCHORS:
+            anchors = [c for c in range(n - a + 1) if same[c : c + a].all()]
+            for tr in ["exact", "binned7"]:
+                best, count = 0.0, 0
+                for c1 in anchors:
+                    for c2 in anchors:
+                        dq = qpos[c2] - qpos[c1] - a
+                        dt = tpos[c2] - tpos[c1] - a
+                        if not (0 <= dq <= 32 and 0 <= dt <= 32):
+                            continue
+                        if tr == "exact" and dq != dt:
+                            continue
+                        if tr == "binned7" and dq // 7 != dt // 7:
+                            continue
+                        count += 1
+                        best = max(best, _brute_key(sc, c1, c2, a))
+                name = lp.setting_name("all", a, 32, tr)
+                assert got[f"{name}_count"] == count
+                assert got[f"{name}_ext"] == best
+                n_keys_seen[tr] += count
+    # the test reaches keys, and some of them span an indel (binned keeps more than exact)
+    assert n_keys_seen["exact"] > 50
+    assert n_keys_seen["binned7"] > n_keys_seen["exact"]
+
+
+def test_gap_stored_and_binned_key_counts_reach_the_32_residue_cap():
+    """Key counts on alignments long enough for gaps up to and past 32, so the last bins
+    (21-27, 28-32) and the cap itself are exercised; counts only, against enumeration.
+    """
+    rng = np.random.default_rng(8)
+    seen_gaps = set()
+    for trial in range(25):
+        n = int(rng.integers(60, 80))
+        qa, ta = _random_gapped_pair(rng, n, flip=0.04, gap=0.03)
+        got = lp.score_pair_designs(
+            _to_alignment(qa), _to_alignment(ta), np.random.default_rng(0), 0
+        )[0]
+        same = (qa == ta) & (qa != GAP) & (ta != GAP)
+        qpos = np.where(qa != GAP, np.cumsum(qa != GAP) - 1, -1)
+        tpos = np.where(ta != GAP, np.cumsum(ta != GAP) - 1, -1)
+        for a in lp.DESIGN_ANCHORS:
+            anchors = [c for c in range(n - a + 1) if same[c : c + a].all()]
+            for tr in ["exact", "binned7"]:
+                count = 0
+                for c1 in anchors:
+                    for c2 in anchors:
+                        dq = qpos[c2] - qpos[c1] - a
+                        dt = tpos[c2] - tpos[c1] - a
+                        if not (0 <= dq <= 32 and 0 <= dt <= 32):
+                            continue
+                        if tr == "exact" and dq != dt:
+                            continue
+                        if tr == "binned7" and dq // 7 != dt // 7:
+                            continue
+                        count += 1
+                        seen_gaps.add(int(dq))
+                assert got[f"{lp.setting_name('all', a, 32, tr)}_count"] == count
+    assert {28, 30, 32} <= seen_gaps
+
+
+def test_gap_binned_rule_bins():
+    g = np.arange(33)
+    assert [int(x) for x in np.unique(g // lp.GAP_BIN7)] == [0, 1, 2, 3, 4]
+    # 6 apart in one bin agree; 7 apart never do
+    assert lp._gap_rule(np.array([0, 7, 28]), np.array([6, 13, 32]), "binned7").all()
+    assert not lp._gap_rule(np.arange(26), np.arange(26) + 7, "binned7").any()
+    # binned3 is unchanged
+    assert (lp._gap_rule(g, g + 2, "binned3") == (g // 3 == (g + 2) // 3)).all()
+
+
+def test_single_words_and_longest_run_match_brute_force():
+    rng = np.random.default_rng(6)
+    for trial in range(60):
+        n = int(rng.integers(20, 40))
+        qa, ta = _random_gapped_pair(rng, n, flip=0.08, gap=0.03)
+        got = lp.score_pair_designs(
+            _to_alignment(qa), _to_alignment(ta), np.random.default_rng(0), 0
+        )[0]
+        sc, same, *_ = _arrays(qa, ta)
+        run, longest = 0, 0
+        for x in same:
+            run = run + 1 if x else 0
+            longest = max(longest, run)
+        assert got["longest_run"] == longest
+        for k in lp.SINGLE_WORDS:
+            want = 0.0
+            for i in range(n):
+                for j in range(i + k, n + 1):
+                    s = _seg(sc, i, j)
+                    has_run = any(same[c : c + k].all() for c in range(i, j - k + 1))
+                    if np.isfinite(s) and has_run:
+                        want = max(want, s)
+            assert got[f"word{k}_ext"] == want
+
+
+def test_designs_use_score_pairs_shuffles():
+    """score_pair_designs draws the same shuffled targets as score_pair, so its null rows
+    pair with the stored ones."""
+    rng = np.random.default_rng(7)
+    qa, ta = _random_gapped_pair(rng, 60, flip=0.2)
+    q, t = _to_alignment(qa), _to_alignment(ta)
+    a = lp.score_pair(q, t, np.random.default_rng(11), n_shuffle=2)
+    b = lp.score_pair_designs(q, t, np.random.default_rng(11), n_shuffle=2)
+    assert (
+        [r["kind"] for r in a] == [r["kind"] for r in b] == ["real", "null0", "null1"]
+    )
+    for ra, rb in zip(a, b):
+        assert ra["B2_ext"] == rb["word8_ext"] and ra["B1_ext"] == rb["word10_ext"]
+        for x in lp.DESIGN_ANCHORS:
+            nm = lp.setting_name("all", x, 32, "exact")
+            assert ra[f"{nm}_ext"] == rb[f"{nm}_ext"]
+            assert ra[f"{nm}_count"] == rb[f"{nm}_count"]

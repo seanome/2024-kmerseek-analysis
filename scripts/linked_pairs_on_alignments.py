@@ -10,9 +10,15 @@ one row per comparison (real pair or shuffled target) with:
 * <setting>_ext and <setting>_count for every linked-pair setting in
   notebooks/linked_pairs_utils.py.
 
+With --designs it writes section 4d's extra scores instead (lp.score_pair_designs: one
+k-letter seed for k in 8-16, anchor pairs with the gap stored exactly or in 7-residue bins,
+and the longest run of matching HP classes), on the same pairs and the same shuffles.
+
 Usage:
     python scripts/linked_pairs_on_alignments.py \
         --out /Users/olga/data/pfam/294_linked_pairs_scores.parquet
+    python scripts/linked_pairs_on_alignments.py --designs \
+        --out /Users/olga/data/pfam/294_gap_designs_scores.parquet
 """
 
 from __future__ import annotations
@@ -36,9 +42,10 @@ N_SHUFFLE = 2  # notebook 232's shuffles per pair
 
 
 def one(job):
-    keys, qaln, taln, seed = job
+    keys, qaln, taln, seed, designs = job
     rng = np.random.default_rng(seed)
-    return [{**keys, **r} for r in lp.score_pair(qaln, taln, rng, N_SHUFFLE)]
+    fn = lp.score_pair_designs if designs else lp.score_pair
+    return [{**keys, **r} for r in fn(qaln, taln, rng, N_SHUFFLE)]
 
 
 def main():
@@ -47,6 +54,11 @@ def main():
     ap.add_argument("--procs", type=int, default=12)
     ap.add_argument(
         "--limit", type=int, default=None, help="first N pairs only (testing)"
+    )
+    ap.add_argument(
+        "--designs",
+        action="store_true",
+        help="section 4d's extra scores (lp.score_pair_designs) instead",
     )
     args = ap.parse_args()
 
@@ -69,6 +81,7 @@ def main():
             r["qaln"],
             r["taln"],
             i,  # 232 seeded each pair's rng with its row index; Pfam rows came first
+            args.designs,
         )
         for i, r in enumerate(pf.iter_rows(named=True))
     ]

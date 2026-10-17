@@ -8,6 +8,7 @@ its exact seeds) and the gap rule of the setting holds:
 
 * ``exact``: the query gap and the target gap are equal (the gap is part of the key);
 * ``binned3``: the two gaps fall in the same 3-residue bin (gap // 3 is part of the key);
+  ``binned7`` (section 4d) is the same with 7-residue bins;
 * ``none``: the gap is not part of the key; both gaps only have to lie in [0, gap_max].
 
 Two ways to choose which anchor pairs become keys:
@@ -274,11 +275,128 @@ def score_pair(
 
 
 def _gap_rule(gq: np.ndarray, gt: np.ndarray, treatment: str) -> np.ndarray:
+    """Whether a key's query gap gq and target gap gt agree under the gap rule:
+    ``exact`` (equal), ``binned<w>`` (same bin, gap // w; binned3 and binned7 are used) or
+    ``none`` (always)."""
     if treatment == "exact":
         return gq == gt
-    if treatment == "binned3":
-        return (gq // GAP_BIN) == (gt // GAP_BIN)
-    return np.ones(gq.shape, bool)
+    if treatment.startswith("binned"):
+        w = int(treatment[len("binned") :])
+        return (gq // w) == (gt // w)
+    if treatment == "none":
+        return np.ones(gq.shape, bool)
+    raise ValueError(f"unknown gap rule {treatment!r}")
+
+
+# ---------------------------------------------------------------------------
+# Section 4d: key designs compared at their chance cost.
+# ---------------------------------------------------------------------------
+
+# Gap 0..32 in bins of 7 residues: 0-6, 7-13, 14-20, 21-27, 28-32 (gap // 7). Two gaps in
+# one bin differ by at most 6, so the key tolerates an indel of up to 6 residues.
+GAP_BIN7 = 7
+DESIGN_GAP_MAX = 32
+DESIGN_ANCHORS = [6, 7, 8]
+SINGLE_WORDS = [8, 10, 12, 14, 16]
+# (mode, length, gap_max, gap rule). "word" is one k-letter word with extension; k = 8
+# and 10 are B2 and B1. The last two are the chosen key and the randstrobe of section 4b.
+DESIGNS = (
+    [("word", k, 0, "single") for k in SINGLE_WORDS]
+    + [("all", a, DESIGN_GAP_MAX, "exact") for a in DESIGN_ANCHORS]
+    + [("all", a, DESIGN_GAP_MAX, f"binned{GAP_BIN7}") for a in DESIGN_ANCHORS]
+    + [("all", 6, DESIGN_GAP_MAX, "none"), ("rand", 6, DESIGN_GAP_MAX, "none")]
+)
+
+
+def design_name(mode: str, length: int, gap_max: int, treatment: str) -> str:
+    if mode == "word":
+        return f"word{length}"
+    return setting_name(mode, length, gap_max, treatment)
+
+
+def _shuffled_targets(ta: np.ndarray, rng: np.random.Generator, n_shuffle: int):
+    """The real target row and n_shuffle shuffles of its residues (gaps stay put), drawn
+    from rng in the order notebook 232 drew them."""
+    t_res_idx = np.flatnonzero(ta != GAP)
+    targets = [("real", ta)]
+    for i in range(n_shuffle):
+        ts = ta.copy()
+        ts[t_res_idx] = ta[rng.permutation(t_res_idx)]
+        targets.append((f"null{i}", ts))
+    return targets
+
+
+def _extension_arrays(sc: np.ndarray, both: np.ndarray):
+    """Prefix sums, best left and right extension from each column, and the running count
+    of gap columns, as score_pair builds them for _key_scores."""
+    P = np.concatenate(([0.0], np.cumsum(sc)))
+    left = P - np.minimum.accumulate(P)
+    right = np.maximum.accumulate(P[::-1])[::-1] - P
+    return P, left, right, np.cumsum(~both)
+
+
+def longest_match_run(same: np.ndarray) -> int:
+    """Length of the longest run of aligned columns whose HP classes match."""
+    padded = np.concatenate(([False], same, [False])).astype(np.int8)
+    d = np.diff(padded)
+    starts, ends = np.flatnonzero(d == 1), np.flatnonzero(d == -1)
+    return int((ends - starts).max()) if starts.size else 0
+
+
+def score_pair_designs(
+    qaln: str, taln: str, rng: np.random.Generator, n_shuffle: int = 2
+) -> list[dict]:
+    """Section 4d's extra scores, one row per comparison, on the same shuffles as
+    score_pair (same rng, same order):
+
+    * ``word<k>_ext``: one k-letter seed with extension (best_segment_containing_runs);
+    * ``all_a<a>_g32_<rule>_ext`` and ``_count`` for every anchor pair up to 32 apart with
+      the gap stored exactly or in 7-residue bins, scored with _key_scores;
+    * ``longest_run``: the longest run of matching HP classes on the alignment, so a pair
+      carries an exact k-letter match when longest_run >= k.
+    """
+    tab = TABLES[ALPHABET]
+    qb = np.frombuffer(qaln.encode(), dtype=np.uint8)
+    tb = np.frombuffer(taln.encode(), dtype=np.uint8)
+    qa, ta = tab[qb], tab[tb]
+    targets = _shuffled_targets(ta, rng, n_shuffle)
+    _, qpos, _ = _residue_maps(qb)
+    _, tpos, _ = _residue_maps(tb)
+    G = DESIGN_GAP_MAX
+    rows = []
+    for kind, tt in targets:
+        sc, same = column_scores(qa, tt, PENALTY)
+        both = (qa != GAP) & (tt != GAP)
+        P, left, right, gapcount = _extension_arrays(sc, both)
+        row = {"kind": kind, "longest_run": longest_match_run(same)}
+        for k in SINGLE_WORDS:
+            row[f"word{k}_ext"] = best_segment_containing_runs(sc, same, k)
+        for a in DESIGN_ANCHORS:
+            if same.size >= a:
+                M = np.flatnonzero(
+                    np.lib.stride_tricks.sliding_window_view(same, a).all(axis=1)
+                )
+            else:
+                M = np.empty(0, np.int64)
+            Q, T = qpos[M], tpos[M]
+            dq = Q[None, :] - Q[:, None] - a
+            dt = T[None, :] - T[:, None] - a
+            ok = (dq >= 0) & (dt >= 0) & (dq <= G) & (dt <= G)
+            i1, i2 = np.nonzero(ok)
+            c1, c2 = M[i1], M[i2]
+            kq, kt = dq[i1, i2], dt[i1, i2]
+            sc_all = (
+                _key_scores(c1, c2, a, P, left, right, gapcount, G)
+                if c1.size
+                else np.empty(0)
+            )
+            for tr in ["exact", f"binned{GAP_BIN7}"]:
+                keep = _gap_rule(kq, kt, tr)
+                nm = setting_name("all", a, G, tr)
+                row[f"{nm}_ext"] = float(sc_all[keep].max()) if keep.any() else 0.0
+                row[f"{nm}_count"] = int(keep.sum())
+        rows.append(row)
+    return rows
 
 
 # ---------------------------------------------------------------------------
