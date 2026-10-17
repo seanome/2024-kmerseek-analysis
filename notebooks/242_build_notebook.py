@@ -309,7 +309,7 @@ print("BHF, best 8 under the three combined (mean IDF):", bhf3.rows())
 ## 6. Every subset of 2, 3 and 4 alphabets, each at its best k, ranked by mean IDF
 
 Each alphabet is used at one k: the k where Ced9 ranks BCL2 best under mean IDF (for the
-six alphabets that never have BCL2 among the hits, their lowest-bit k). All 5_016 subsets
+six alphabets that never have BCL2 among the hits, their lowest-bit k). All 5_035 subsets
 of 1 to 4 alphabets are combined as in section 1 and scored by mean IDF. Both the k and the
 subset are picked by how well they rank BCL2, so the best subsets here are what an
 optimist would report; the other two panels show whether the same subsets help CD47 and
