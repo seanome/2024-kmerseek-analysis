@@ -1505,10 +1505,10 @@ md(r"""
 Two things the earlier sections left untested.
 
 **Part 1, an unrelated-protein null.** Every null in sections 4a to 4e shuffles the target's
-residues along its alignment row. A shuffle keeps the target's composition and gap columns
-but breaks up runs of hydrophobic residues and alternating H/P patterns (membrane
-stretches, amphipathic helices), which unrelated real proteins keep. If HP keys score such
-patterns, the shuffled null is too easy for them.
+residues along its alignment row. A shuffle keeps the target's composition and gap columns.
+The concern was that it breaks up runs of hydrophobic residues and alternating H/P patterns
+(membrane stretches, amphipathic helices), which unrelated real proteins keep; if HP keys
+score such patterns, the shuffled null would be too easy for them.
 
 The second null keeps those patterns. For each true pair, two null targets are built:
 
@@ -1518,14 +1518,16 @@ The second null keeps those patterns. For each true pair, two null targets are b
   same source;
 - cut it to the true target's number of H/P residues, starting at a random position;
 - put those residues into the true target's alignment row in order, so the gap columns
-  (and the rare X columns, which the scoring treats as gaps) are the true target's.
+  (and the rare X columns, which the scoring treats as gaps) are the true target's. A
+  source sequence's own X, B or Z letters also score as gaps (481 letters in 227 of the
+  null targets).
 
 The query is unchanged. Each null target is scored exactly as the true target is
 (`lp.score_pair`). The draws use one random generator seeded with 292, the split's seed,
 in pair order (`scripts/linked_pairs_on_alignments.py --unrelated-null`). A target longer
 than every candidate from another clan is skipped and counted, not padded. Two null targets
-per pair, as in 232, so the threshold rests on the same number of null comparisons
-(60,000 per half). The threshold rule (exactly FPR 0.001), the bootstrap (1,000 resamples of
+per pair, as in 232, so the threshold rests on about the same number of null comparisons
+(60,000 per half; 59,994 in the report half after the skips). The threshold rule (exactly FPR 0.001), the bootstrap (1,000 resamples of
 whole Pfam families, seed 2) and the five scores are section 4b's, so the shuffled-target
 column below is section 4b's numbers and the two columns use the same resamples.
 """)
@@ -1839,12 +1841,13 @@ md(r"""
 identity, recall rises by 7.8 points for B1 (95% interval 4.5 to 11.8), 8.4 for B2 (4.5 to
 12.9), 10.3 for B3 (6.3 to 16.6), 10.8 for the chosen linked pair (7.2 to 16.4) and 2.2 for
 the randstrobe (0.1 to 4.1). Every threshold is 1 to 4 score units lower, so the shuffled
-target is the stricter null, not the easier one. The two nulls do not differ in HP runs: the
-longest run of hydrophobic residues averages 5.3 in the true targets, 5.6 in their shuffles
-and 5.2 in the unrelated-protein targets, and 11.5%, 13.3% and 10.6% of them hold a run of 8
-or more. They differ in composition: a shuffle keeps the true target's hydrophobic share,
-which is close to the query's (mean difference 0.033), while an unrelated protein's differs
-by 0.073 on average. Under the new null the chosen linked pair gains +9.1 points over B2
+target is the stricter null, not the easier one. The concern behind this null does not hold: the
+unrelated-protein targets have the true targets' hydrophobic runs (the longest run averages
+5.2 against 5.3 residues; 10.6% and 11.5% hold a run of 8 or more), and the shuffles have
+slightly longer ones, not shorter (5.6; 13.3%). The two nulls also differ in composition: a
+shuffle keeps the true target's hydrophobic share, which is close to the query's (mean
+difference 0.033), while an unrelated protein's differs by 0.073 on average. Which of the
+two differences sets the shuffled null's higher thresholds was not tested. Under the new null the chosen linked pair gains +9.1 points over B2
 (6.6 to 11.2). The interval crosses 10, so by section 4b's rule it is unclear, not a KILL.
 The linked pair still does no better than B3 (−1.2, −2.5 to +0.2), and B3 gains +10.3 over
 B2 (7.8 to 12.6), so the gain still comes from the second extended segment, not the second
@@ -2053,8 +2056,9 @@ matches: lower is better.
    give lower thresholds than shuffled targets: at 20–30% identity B2 goes from 39.2% to
    47.7% and the linked pair from 45.9% to 56.8%. The linked pair's gain over B2 becomes
    +9.1 (6.6 to 11.2), unclear rather than KILL; linked minus B3 stays near 0 (−1.2, −2.5
-   to +0.2). The two nulls hold the same hydrophobic runs; the shuffle keeps a composition
-   closer to the query's.
+   to +0.2). The shuffles hold slightly longer hydrophobic runs than the true or the
+   unrelated targets, and a composition closer to the query's; which of the two raises the
+   shuffled null's thresholds was not tested.
 13. **kmerseek's own chaining: not run yet** (section 4f part 2). The Sherlock job and its
    inputs are ready; the database holds 7,384 target proteins.
 """)

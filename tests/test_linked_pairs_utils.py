@@ -541,3 +541,13 @@ def test_group_multiplicities_draw_whole_groups():
     for m in lp.group_multiplicities(groups, 50, 1):
         assert m[0] == m[1] and m[3] == m[4] == m[5]
         assert sum(m[[0, 2, 3]]) == 3  # three groups drawn, each item counted by its group
+
+
+def test_evalue_cutoff_refuses_unsorted_or_empty_null():
+    for pair_, e_ in [(np.array([0, 0, 0]), np.array([3.0, 1.0, 2.0])), (np.array([], int), np.array([]))]:
+        try:
+            lp.evalue_cutoff_recall(np.array([0.1]), pair_, e_, np.array([1]), 10_000, 0.01)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("must refuse an unsorted or empty null")

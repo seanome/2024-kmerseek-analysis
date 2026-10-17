@@ -855,6 +855,11 @@ def evalue_cutoff_recall(
 
     Returns cutoff, achieved false-positive rate, recall."""
     own_e = np.asarray(own_e, float)
+    null_e = np.asarray(null_e, float)
+    if null_e.size == 0:
+        raise ValueError("no reported null comparisons")
+    if (np.diff(null_e) < 0).any():
+        raise ValueError("null_e must be sorted ascending")
     m = np.ones(own_e.size) if mult is None else np.asarray(mult, float)
     per_query = m / np.asarray(share, float)
     n_null = per_query.sum() * n_targets
