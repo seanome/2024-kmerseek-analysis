@@ -120,6 +120,28 @@ def indexGb(alphabet, ksize, attempt) {
     bigmemFloor(first * (1 << (attempt - 1)))
 }
 
+/*
+ * Walltime for one kmerseek index task, in hours.
+ *
+ * Measured on Sherlock, realtime:
+ *              pilot reference   Arthropoda held out (full, reference_scale 25)
+ *   cys_hp3 k9   11 min 49 s       not run
+ *   cys_hp3 k11   7 min 49 s       killed at the 1 h limit (exit 140)
+ *   cys_hp3 k13   4 min 29 s       49 min 5 s
+ *   cys_hp3 k15   2 min 39 s       31 min 34 s
+ * So a full reference took 11-12 times the pilot's time, about half of reference_scale.
+ * Asking the pilot's minutes times the whole reference_scale gives twice the measured
+ * time: k11 about 3.3 h for a task expected to take about 1.6 h. cys2 never finished an
+ * index on a full reference, so its 4 h is a guess with room in it.
+ */
+def indexHours(alphabet, ksize, attempt) {
+    def pilotMinutes = ksize <= 9 ? 12 : ksize <= 11 ? 8 : ksize <= 13 ? 5 : 3
+    def first = alphabet == 'cys2'
+              ? 4
+              : Math.max(1, Math.ceil(pilotMinutes * params.reference_scale / 60) as int)
+    first * attempt
+}
+
 // Memory for one kmerseek search task, in GB.
 //
 // A search holds the query's matching regions, so its memory follows how many seed hits the
@@ -223,9 +245,7 @@ process indexReference {
     maxRetries 3
     memory { indexGb(alphabet, ksize, task.attempt).GB }
     queue { sherlockQueue(indexGb(alphabet, ksize, task.attempt)) }
-    // cys_hp3 took 2 min 43 s (k15) to 11 min 37 s (k9) on Sherlock for the pilot
-    // reference. cys2 never finished, so its time is a guess with room in it.
-    time { (alphabet == 'cys2' ? 4.h : 1.h) * task.attempt }
+    time { "${indexHours(alphabet, ksize, task.attempt)}h" }
 
     input:
     tuple val(level), val(excluded), path(reference), path(truth), path(queries),
