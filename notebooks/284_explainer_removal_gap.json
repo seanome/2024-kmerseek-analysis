@@ -1,0 +1,13 @@
+{
+ "n_rows": 90,
+ "removals": [
+  "protein20",
+  "wwmj5",
+  "hp_lehninger2",
+  "all seven H/P",
+  "everything but the seven H/P"
+ ],
+ "largest_partner_value_gap": 0,
+ "largest_proteins_with_more_gap": 5,
+ "rows_that_differ": 9
+}
