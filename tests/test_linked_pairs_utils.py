@@ -323,3 +323,61 @@ def test_designs_use_score_pairs_shuffles():
             nm = lp.setting_name("all", x, 32, "exact")
             assert ra[f"{nm}_ext"] == rb[f"{nm}_ext"]
             assert ra[f"{nm}_count"] == rb[f"{nm}_count"]
+
+
+def test_joint_codes_use_score_pairs_shuffles():
+    """comparison_joint_codes' null rows are score_pair's shuffled targets: B2 rescored from
+    the joint codes (match = HH or PP) equals score_pair's B2_ext on every row."""
+    from seed_extend_utils import best_segment_containing_runs
+
+    rng = np.random.default_rng(3)
+    for trial in range(20):
+        qa, ta = _random_gapped_pair(rng, 70, flip=0.2)
+        q, t = _to_alignment(qa), _to_alignment(ta)
+        a = lp.score_pair(q, t, np.random.default_rng(trial), n_shuffle=2)
+        b = lp.comparison_joint_codes(q, t, np.random.default_rng(trial), n_shuffle=2)
+        assert [r["kind"] for r in a] == [k for k, _ in b]
+        for ra, (_, codes) in zip(a, b):
+            ok = codes != lp.NOT_SCORED
+            same = ok & ((codes == 0) | (codes == 3))
+            sc = np.where(same, 1.0, -2.0)
+            sc[~ok] = -10_000.0
+            assert best_segment_containing_runs(sc, same, 8) == ra["B2_ext"]
+
+
+def test_logodds_matrix_by_hand():
+    m = lp.logodds_matrix(np.array([40, 10, 20, 30]))
+    sym = np.array([0.4, 0.15, 0.15, 0.3])
+    h = 0.55
+    want = np.log2(sym / np.array([h * h, h * (1 - h), (1 - h) * h, (1 - h) ** 2]))
+    assert np.allclose(m["pr"], [0.4, 0.1, 0.2, 0.3])
+    assert np.allclose(m["score"], want) and m["score"][1] == m["score"][2]
+    assert np.isclose(m["relative_entropy"], (sym * want).sum())
+    # relative entropy is >= 0 and the unrelated-pair expectation is <= 0
+    assert m["relative_entropy"] > 0 > m["expected_unrelated"]
+
+
+def test_best_stretch_and_full_sum_match_brute_force():
+    rng = np.random.default_rng(5)
+    score = np.array([0.7, -0.9, -0.9, 0.5])
+    codes_all, comp_all, want_best, want_full = [], [], [], []
+    for c in range(200):
+        n = int(rng.integers(0, 25))
+        codes = rng.integers(0, 4, n).astype(np.int8)
+        codes[rng.random(n) < 0.15] = lp.NOT_SCORED
+        best = 0.0
+        for i in range(n):
+            for j in range(i + 1, n + 1):
+                if (codes[i:j] == lp.NOT_SCORED).any():
+                    break
+                best = max(best, score[codes[i:j]].sum())
+        want_best.append(best)
+        want_full.append(score[codes[codes != lp.NOT_SCORED]].sum())
+        codes_all.append(codes)
+        comp_all.append(np.full(n, c))
+    codes = np.concatenate(codes_all)
+    comp = np.concatenate(comp_all)
+    got = lp.best_stretch_scores(codes, comp, 200, score)
+    assert np.allclose(got, want_best)
+    full = lp.joint_counts(codes, comp, 200) @ score
+    assert np.allclose(full, want_full)

@@ -32,6 +32,11 @@ segment across an insertion, not from the second word in the key. The kmerseek i
 stays as it is. Section 4d (added 2026-10-17) puts each key design next to its chance key
 matches counted on Swiss-Prot: no design as cheap as B2's 8-letter word gains 10 points
 (the best gains +1.8, 95% interval −1.5 to +4.4), so the KILL stands.
+Section 4e (added 2026-10-17) measures two upper bounds at 20–30% identity: 92.6% of pairs
+carry an exact 8-letter HP match, and scoring each whole alignment with a 2×2 HP log-odds
+matrix finds 85.4% of pairs, against 47.6% for B3. Given each pair's alignment, most of
+the missing pairs carry a seed and need their score added up across gaps; more seeds alone
+cannot add 10 points.
 
 **Question.** [Notebook 232](232_mismatch_tolerant_seed_extend.ipynb) found that the longest
 exact run of matching hydrophobic/polar (HP) classes between true homologs at 20–30%
@@ -1122,6 +1127,373 @@ that share a first word often share the whole key (section 5).
 """)
 
 md(r"""
+### 4e. Two ceilings: how many pairs carry a seed, and how much the whole alignment can give (added 2026-10-17)
+
+Section 4b's recall comes from a seed and its extension. Two upper bounds limit it, and
+neither was measured above.
+
+1. *The seed ceiling.* A seed design can only find a pair whose alignment holds at least one
+   exact run of k matching HP classes. If few pairs hold one, no seed design can gain much,
+   whatever it scores.
+2. *The scoring ceiling.* Even a pair with a seed is missed when its extended score stays
+   under the null threshold. If the whole alignment, scored with the best HP matrix, finds
+   far more pairs than B3's 47.6%, the missing recall is lost in the scoring, not in the
+   index.
+
+**Part 1, the seed ceiling.** For each true pair of the report half and each k in 6, 8, 10,
+12, 16 and 24, the pair *carries a k-run* when its alignment has at least k consecutive
+columns whose two residues fall in the same HP class, with no gap and no X inside the run.
+This is `longest_run >= k`, from the column section 4d stored. Beside each share is the
+recall of one k-letter word with extension, from section 4d (k = 8 is B2, k = 10 is B1).
+4d ran single words only for k = 8, 10, 12, 14 and 16, so k = 6 and 24 have no recall
+beside them; that column is left empty. The share minus the recall is what the scoring step
+loses among pairs that do carry a seed.
+
+**Part 2, the scoring ceiling.** Each aligned column of a pair is scored by its two HP
+classes, (query class, target class), with a 2×2 log-odds matrix:
+
+$$s(a, b) = \log_2 \frac{\text{Pr}(a, b \mid \text{aligned in a true pair})}{\text{share}(a)\,\text{share}(b)}$$
+
+where
+
+- $a, b$: the HP class (H or P) of the query residue and of the target residue in one column;
+- $\text{Pr}(a, b \mid \text{aligned in a true pair})$: the share of aligned columns with
+  classes $a$ and $b$, pooled over the report half's true pairs at 20–30% identity. Columns
+  with a gap or an X in either sequence are left out. HP and PH are averaged, so the score
+  does not depend on which protein is the query;
+- $\text{share}(a)$: the share of class $a$ over the same columns, both sequences pooled;
+- $s(a, b)$ in bits: above 0 when the two classes are seen together in true pairs more often
+  than chance would put them together.
+
+Two scores per comparison, each made from this matrix:
+
+- *Full-alignment score*: the sum of $s$ over every column of the alignment notebook 230
+  gives. A gap or X column scores 0 and is skipped. This needs the whole alignment, so no
+  search could reach it. It is the most that a score of each column on its own, by its two
+  HP classes, can say about a pair on this alignment (a score that looks at neighbouring
+  columns could say more).
+- *Best-stretch score*: the highest sum over any run of consecutive columns with no gap or X
+  inside (a Smith-Waterman on the fixed alignment, no gaps allowed, any start and end). An
+  ungapped extension with this matrix from a seed that lands anywhere in the stretch would
+  reach this score. Its null, like B2's and B3's, is scored on the one fixed alignment; a
+  real search takes the best over every diagonal, which raises the threshold, so this
+  recall is optimistic too.
+
+The null is the same as in every other section: each pair's two shuffled targets, drawn by
+`lp.comparison_joint_codes` from the same random generator in the same order as notebook
+232. The next cell checks this by rescoring B2 from these shuffles. Recall is read at
+exactly FPR 0.001, with 1,000 resamples of whole Pfam families (seed 2), as in section 4b.
+
+*Caveat.* The matrix is fitted on the report half and then scores the same report half, so
+the two ceilings are slightly optimistic. As a check, the full-alignment ceiling is also
+given with the matrix fitted on the selection half.
+""")
+
+code(r"""
+# Part 1: the seed ceiling
+K_RUNS = [6, 8, 10, 12, 16, 24]
+lr_real = d4.filter(pl.col("kind") == "real").sort("pair_index")["longest_run"].to_numpy()
+lr_r4e, bin_r4e = lr_real[rep4], bin4[rep4]
+assert (bin_r4e == bin_r).all()
+t1_rows = []
+for k in K_RUNS:
+    for i, b in enumerate(BINS):
+        in_b = bin_r4e == i
+        word = f"word{k}"
+        t1_rows.append({"k": k, "bin_order": i, "identity_bin": b, "n_pairs": int(in_b.sum()),
+                        "share": float((lr_r4e[in_b] >= k).mean()),
+                        "recall": float(rec4[i, d4_names.index(word)]) if word in d4_names else None})
+t1 = pl.DataFrame(t1_rows).sort("k", "bin_order").with_columns((pl.col("share") - pl.col("recall")).alias("lost"))
+for k in K_RUNS:  # 4d printed the same share at 20-30% identity for k = 8 to 16
+    if k in share_k:
+        assert t1.filter((pl.col("k") == k) & (pl.col("identity_bin") == "20-30%"))["share"][0] == share_k[k]
+print(f"Table 1. Report half, {int(rep4.sum()):_} true pairs. Share carrying a k-run (k consecutive aligned columns with matching HP classes, "
+      "no gap or X inside), and recall of one k-letter word with extension at exactly FPR 0.001 (section 4d). "
+      "k = 6 and 24: no single-word recall was computed, left empty. Sorted by k, then identity.")
+print(t1.select(
+    "k", "identity_bin", pl.col("n_pairs").alias("true pairs"),
+    (100 * pl.col("share")).round(1).alias("share with a k-run (%)"),
+    (100 * pl.col("recall")).round(1).alias("one k-letter word, recall (%)"),
+    (100 * pl.col("lost")).round(1).alias("share minus recall (points)"),
+))
+seed8 = t1.filter((pl.col("k") == 8) & (pl.col("identity_bin") == "20-30%")).row(0, named=True)
+seed6 = t1.filter((pl.col("k") == 6) & (pl.col("identity_bin") == "20-30%")).row(0, named=True)
+
+import seaborn as sns
+from matplotlib.lines import Line2D
+BIN_COLOUR = dict(zip(BINS, sns.color_palette("crest", as_cmap=True)(np.linspace(0.15, 1, len(BINS)))))
+fig, axd = plt.subplot_mosaic([["legend"], ["main"]], figsize=(pf.ONE_COLUMN_MM * pf.MM, 80 * pf.MM), height_ratios=[0.2, 1])
+axd["legend"].set_axis_off()
+h1 = ([Line2D([], [], color=BIN_COLOUR[b], marker="o", ms=3.5, lw=1, label=f"identity {b}") for b in BINS]
+      + [Line2D([], [], color="0.35", marker="o", ms=3.5, lw=1, label="filled circle, line: share of pairs with a k-run"),
+         Line2D([], [], color="0.35", marker="s", ms=3.5, mfc="white", lw=0,
+                label="open square: recall of one k-letter word\nwith extension, exactly FPR 0.001")])
+axd["legend"].legend(handles=h1, loc="center", ncol=2, fontsize=5.5, frameon=False)
+ax = axd["main"]
+for i, b in enumerate(BINS):
+    s_ = t1.filter(pl.col("identity_bin") == b).sort("k")
+    ax.plot(s_["k"], 100 * s_["share"], color=BIN_COLOUR[b], marker="o", ms=3.5, lw=1, zorder=3)
+    w_ = s_.filter(pl.col("recall").is_not_null())
+    ax.plot(w_["k"] + 0.25 * (i - 2), 100 * w_["recall"], color=BIN_COLOUR[b], marker="s", ms=3.5, mfc="white", lw=0, zorder=4)
+ax.set_xticks(K_RUNS, [f"{k}\n(B2)" if k == 8 else (f"{k}\n(B1)" if k == 10 else f"{k}") for k in K_RUNS])
+ax.set_xlabel("Run length k (HP letters)")
+ax.set_ylabel("Report-half true pairs (%)\nhigher is better")
+ax.set_ylim(0, 102)
+hc.finish_figure(
+    fig, FIG / "294_seed_ceiling.png", tools=hc.NO_TOOL,
+    title="Seed ceiling: Pfam seed pairs with an exact HP run of k (hp_thomas_dill2, report half)",
+    hypothesis="If few remote pairs carry a k-run, no seed design can find them, whatever it scores.",
+    conclusion=(f"At 20-30% identity, {100 * seed8['share']:.1f}% of pairs carry an 8-run ({100 * seed6['share']:.1f}% a 6-run), "
+                f"but one 8-letter word finds {100 * seed8['recall']:.1f}%: {100 * seed8['lost']:.1f} points are lost after the seed, in the scoring. "
+                "Squares are shifted sideways by identity so they do not overlap."),
+    wrap=70,
+)
+""")
+
+code(r"""
+# Part 2: joint HP class codes of every comparison, on 232's shuffles
+pf4e = (pl.read_parquet(ALN).filter(pl.col("lali") >= 50).sample(n=60_000, seed=0, shuffle=True)
+        .with_row_index("pair_index").with_columns(pl.col("pair_index").cast(pl.Int64)))
+same_pairs = pf4e.select("pair_index", "query", "target").join(
+    d.filter(pl.col("kind") == "real").select(pl.col("pair_index").cast(pl.Int64), "query", "target"), on="pair_index", suffix="_294")
+assert same_pairs.height == 60_000
+assert (same_pairs["query"] == same_pairs["query_294"]).all() and (same_pairs["target"] == same_pairs["target_294"]).all()
+assert (pidx_all == np.arange(60_000)).all()
+KIND4E = {"real": 0, "null0": 1, "null1": 2}  # score_arrays' null axis is null0, null1
+codes_l, comp_l = [], []
+for i, (qaln, taln) in enumerate(pf4e.select("qaln", "taln").iter_rows()):
+    for kind, c in lp.comparison_joint_codes(qaln, taln, np.random.default_rng(i), 2):
+        codes_l.append(c)
+        comp_l.append(np.full(c.size, 3 * i + KIND4E[kind], np.int32))
+codes4e, comp4e = np.concatenate(codes_l), np.concatenate(comp_l)
+N_COMP = 3 * 60_000
+counts4e = lp.joint_counts(codes4e, comp4e, N_COMP).reshape(60_000, 3, 4)
+
+# the null is 232's: B2 rescored from these codes equals the stored B2 on all 180,000 comparisons
+b2_re = np.empty(N_COMP)
+for j, c in enumerate(codes_l):
+    ok = c != lp.NOT_SCORED
+    same = ok & ((c == 0) | (c == 3))
+    sc = np.where(same, 1.0, -2.0)
+    sc[~ok] = se.WALL
+    b2_re[j] = se.best_segment_containing_runs(sc, same, 8)
+b2_re = b2_re.reshape(60_000, 3)
+jb2 = COLS.index("B2_ext")
+null_same = (b2_re[:, 0] == real_all[:, jb2]).all() and (b2_re[:, 1:] == null_all[:, :, jb2]).all()
+print(f"B2 rescored from the joint codes equals the stored B2 on all {N_COMP:,} comparisons (same shuffles as notebook 232): {null_same}")
+assert null_same
+n_scored = counts4e[:, 0].sum(1)
+assert (counts4e.sum(2) == n_scored[:, None]).all()  # a shuffle keeps which columns are scored
+in_fit = rep & (bin_all == b2030)
+fit_rep = counts4e[in_fit, 0].sum(0)
+fit_sel = counts4e[is_select & (bin_all == b2030), 0].sum(0)
+MAT = lp.logodds_matrix(fit_rep)
+MAT_SEL = lp.logodds_matrix(fit_sel)
+print(f"Matrix fitted on the report half's true pairs at 20-30% identity: {int(in_fit.sum()):_} pairs, {int(fit_rep.sum()):_} aligned columns "
+      "with H or P in both sequences (columns with a gap or X in either are left out)")
+print("Joint probabilities Pr(query class, target class), measured:")
+for lab, v in zip(lp.JOINT_LABELS, MAT["pr"]):
+    print(f"  Pr({lab[0]}, {lab[1]}) = {v:.4f}")
+print(f"  HP and PH averaged for the matrix: {MAT['pr_sym'][1]:.4f}")
+print(f"Class shares over the same columns, both sequences: share(H) = {MAT['share_h']:.4f}, share(P) = {MAT['share_p']:.4f}")
+print(f"Scores (bits): s(H, H) = {MAT['score'][0]:+.3f}, s(P, P) = {MAT['score'][3]:+.3f}, s(H, P) = s(P, H) = {MAT['score'][1]:+.3f}")
+print(f"Expected score per aligned column of a true pair (relative entropy): {MAT['relative_entropy']:.4f} bits")
+print(f"Selection-half fit, for the check below: s(H, H) = {MAT_SEL['score'][0]:+.3f}, s(P, P) = {MAT_SEL['score'][3]:+.3f}, "
+      f"s(H, P) = {MAT_SEL['score'][1]:+.3f}; relative entropy {MAT_SEL['relative_entropy']:.4f} bits")
+""")
+
+md(r"""
+**Model check.** The relative entropy is the mean score per column that the matrix gives to
+the columns it was fitted on. It is predicted from the joint probabilities by
+
+$$D = \sum_{a, b} \text{Pr}(a, b)\, s(a, b)$$
+
+and the mean score of an unrelated pair, whose classes fall together by chance, by
+
+$$D_\text{unrelated} = \sum_{a, b} \text{share}(a)\,\text{share}(b)\, s(a, b)$$
+
+where $\text{Pr}(a, b)$, $\text{share}(a)$ and $s(a, b)$ are as above, and the sums run over
+the four class pairs. The measured values are the summed full-alignment scores divided by the
+number of scored columns: over the true pairs the matrix was fitted on, and over their
+shuffled targets. The first pair must agree up to rounding, since it checks that the scoring
+code applies the matrix it was given. The second can differ, because a shuffle keeps each
+target's own class shares, not the pooled ones.
+""")
+
+code(r"""
+full4e = counts4e @ MAT["score"]  # (pairs, real/null0/null1)
+cols_fit = n_scored[in_fit].sum()
+meas_real = full4e[in_fit, 0].sum() / cols_fit
+meas_null = full4e[in_fit, 1:].sum() / (2 * cols_fit)
+print("Model check (D and D_unrelated are predictions from the formula; the means are measured):")
+print(f"  true pairs: measured mean score per column {meas_real:.6f} bits, predicted D {MAT['relative_entropy']:.6f}, difference {meas_real - MAT['relative_entropy']:.1e}")
+print(f"  shuffled targets: measured mean score per column {meas_null:.6f} bits, predicted D_unrelated {MAT['expected_unrelated']:.6f}, "
+      f"difference {meas_null - MAT['expected_unrelated']:+.4f}")
+""")
+
+code(r"""
+# recall at exactly FPR 0.001 for B2, B3 and the two ceilings, family-resampled as in 4b
+full_sel4e = counts4e @ MAT_SEL["score"]
+stretch4e = lp.best_stretch_scores(codes4e, comp4e, N_COMP, MAT["score"]).reshape(60_000, 3)
+CEIL = {"B2": "B2: one 8-letter seed + extension", "B3": "B3: 8-letter seed + a second segment",
+        "stretch": "best ungapped stretch, log-odds matrix",
+        "full": "whole alignment, log-odds matrix (no search can reach it)",
+        "full_sel": "whole alignment, matrix fitted on the selection half"}
+real4e = np.column_stack([real_r[:, COLS.index("B2_ext")], real_r[:, COLS.index("B3_ext")], stretch4e[rep, 0], full4e[rep, 0], full_sel4e[rep, 0]])
+null4e = np.stack([null_r[:, :, COLS.index("B2_ext")], null_r[:, :, COLS.index("B3_ext")], stretch4e[rep, 1:], full4e[rep, 1:], full_sel4e[rep, 1:]], axis=-1)
+thr4e, w4e, rec4e = lp.recall_at_exact_fpr(real4e, null4e, bin_r, FPR)
+boot4e = lp.bootstrap_recall_by_group(real4e, null4e, bin_r, fam_r, FPR, N_BOOT, seed=2)
+lo4e, hi4e = np.percentile(boot4e, 2.5, axis=0), np.percentile(boot4e, 97.5, axis=0)
+J4E = {n: i for i, n in enumerate(CEIL)}
+same_as_4b = all(np.array_equal(boot4e[:, :, J4E[n]], boot_n[:, :, JN[n]]) and np.array_equal(rec4e[:, J4E[n]], rec_n[:, JN[n]]) for n in ["B2", "B3"])
+print(f"B2 and B3 give section 4b's recall and bootstrap resamples exactly: {same_as_4b}")
+assert same_as_4b
+t2 = pl.DataFrame([{"score": CEIL[n], "threshold": thr4e[j], "recall": rec4e[b2030, j], "ci_low": lo4e[b2030, j], "ci_high": hi4e[b2030, j]}
+                   for n, j in J4E.items()])
+print(f"Table 2. Report half, 20-30% identity, {int((bin_r == b2030).sum()):_} true pairs; recall at exactly FPR 0.001, "
+      "95% interval with Pfam families resampled. Threshold in each score's own units (log-odds scores in bits).")
+with pl.Config(fmt_str_lengths=80, tbl_width_chars=200):
+    print(t2.select("score", pl.col("threshold").round(2),
+                    pl.format("{} [{} to {}]", *[(100 * pl.col(c)).round(1) for c in ["recall", "ci_low", "ci_high"]]).alias("recall at 20-30% (%)")))
+def paired4e(a, b):
+    g = rec4e[b2030, J4E[a]] - rec4e[b2030, J4E[b]]
+    l_, h_ = np.percentile(boot4e[:, b2030, J4E[a]] - boot4e[:, b2030, J4E[b]], [2.5, 97.5])
+    return g, l_, h_
+print("Paired differences at 20-30% identity (points, same resamples):")
+for a_, b_ in [("stretch", "B2"), ("stretch", "B3"), ("full", "B3"), ("full_sel", "full")]:
+    g, l_, h_ = paired4e(a_, b_)
+    print(f"  {a_} minus {b_}: {100 * g:+.1f} [{100 * l_:+.1f} to {100 * h_:+.1f}]")
+print("Every identity bin, recall at exactly FPR 0.001 (%), [95% interval]:")
+for n, j in J4E.items():
+    print(f"  {n:9s}" + "  ".join(f"{b} {100 * rec4e[i, j]:.1f} [{100 * lo4e[i, j]:.1f}-{100 * hi4e[i, j]:.1f}]" for i, b in enumerate(BINS)))
+""")
+
+code(r"""
+# does the full-alignment ceiling come from long alignments? Recall by alignment-length tercile at 20-30% identity,
+# each score at its threshold above (set on the whole report half); scored columns = columns with H or P in both sequences
+in23 = bin_r == b2030
+len23 = n_scored[rep][in23]
+cuts = np.quantile(len23, [1 / 3, 2 / 3])
+terc = np.digitize(len23, cuts, right=True)  # 0: <= first cut, 1: <= second cut, 2: above
+def rate_at(x, j):
+    # the exact-FPR rule of 4b: strictly above the threshold, plus the called share of ties
+    return float((x > thr4e[j]).mean() + w4e[j] * ((x >= thr4e[j]).mean() - (x > thr4e[j]).mean()))
+rows_t = []
+for t_ in range(3):
+    m = terc == t_
+    row = {"tercile": ["short", "middle", "long"][t_], "scored columns": f"{len23[m].min()}-{len23[m].max()}", "true pairs": int(m.sum())}
+    for n in ["B2", "B3", "stretch", "full"]:
+        j = J4E[n]
+        row[f"{n} recall (%)"] = round(100 * rate_at(real4e[in23][m, j], j), 1)
+    row["full: null rate"] = round(rate_at(null4e[in23][m, :, J4E["full"]].ravel(), J4E["full"]), 5)
+    rows_t.append(row)
+print("Report half, 20-30% identity, by number of scored columns (thresholds and tie weights from the whole report half; no intervals):")
+print(pl.DataFrame(rows_t))
+lr23 = lr_r4e[in23]
+fullcall = (real4e[in23, J4E["full"]] >= thr4e[J4E["full"]]) if w4e[J4E["full"]] == 1.0 else (real4e[in23, J4E["full"]] > thr4e[J4E["full"]])
+assert w4e[J4E["full"]] in (0.0, 1.0)  # no fractional ties, so "called" is a plain yes/no per pair
+assert np.isclose(fullcall.mean(), rec4e[b2030, J4E["full"]])
+cross = pl.DataFrame({"carries an 8-run": lr23 >= 8, "full alignment called": fullcall}).group_by(
+    "carries an 8-run", "full alignment called").agg(pl.len().alias("true pairs")).with_columns((100 * pl.col("true pairs") / in23.sum()).round(1).alias("share (%)")).sort(
+    "carries an 8-run", "full alignment called", descending=True)
+print("20-30% identity, report half: pairs with and without an 8-run, against the whole-alignment ceiling:")
+print(cross)
+
+b2v, b3v, stv, fuv = (rec4e[b2030, J4E[n]] for n in ["B2", "B3", "stretch", "full"])
+no_seed = 1 - seed8["share"]
+verdict_4e_line = (f"Section 4e: at 20-30% identity, {100 * seed8['share']:.1f}% of pairs carry an 8-run, so of the {100 * (1 - b2v):.1f} points between B2 ({100 * b2v:.1f}%) and 100%, "
+                   f"{100 * no_seed:.1f} are pairs with no 8-letter seed and {100 * (seed8['share'] - b2v):.1f} are pairs with a seed that the score leaves below the threshold. "
+                   f"Scoring the whole alignment with the log-odds matrix finds {100 * fuv:.1f}% [{100 * lo4e[b2030, J4E['full']]:.1f} to {100 * hi4e[b2030, J4E['full']]:.1f}]; "
+                   f"the best ungapped stretch {100 * stv:.1f}% [{100 * lo4e[b2030, J4E['stretch']]:.1f} to {100 * hi4e[b2030, J4E['stretch']]:.1f}], below B3's {100 * b3v:.1f}%.")
+print(verdict_4e_line)
+print(f"Of those {100 * (1 - b2v):.1f} points, the whole alignment recovers {100 * (fuv - b2v):.1f} and {100 * (1 - fuv):.1f} stay out of its reach; "
+      f"pairs with a 6-run but no 8-run: {100 * (seed6['share'] - seed8['share']):.1f} points.")
+""")
+
+code(r"""
+# the four recalls of Table 2 as bars at 20-30% identity
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 72, layout=None)
+BAR4E = [("B2", COLOR["B2"], True), ("B3", COLOR["B2"], False), ("stretch", "0.3", False), ("full", "0.3", True)]
+XLAB = {"B2": "B2: one\n8-letter seed\n+ extension", "B3": "B3: seed +\na second\nsegment",
+        "stretch": "best ungapped\nstretch,\nlog-odds matrix", "full": "whole\nalignment,\nlog-odds matrix"}
+for x_, (n, col, filled) in enumerate(BAR4E):
+    j = J4E[n]
+    v = 100 * rec4e[b2030, j]
+    ax.bar(x_, v, width=0.6, color=col if filled else "white", edgecolor=col, lw=1)
+    ax.errorbar(x_, v, yerr=[[v - 100 * lo4e[b2030, j]], [100 * hi4e[b2030, j] - v]], color="black", lw=0.8, capsize=2)
+    ax.text(x_, 100 * hi4e[b2030, j] + 1.5, f"{v:.1f}%", ha="center", va="bottom", fontsize=5.5)
+ax.set_xticks(range(len(BAR4E)), [XLAB[n] for n, _, _ in BAR4E], fontsize=5.5)
+ax.set_ylabel("Recall at 20–30% identity, exactly FPR 0.001 (%)\nblack line: 95% interval, Pfam families resampled")
+ax.set_ylim(0, 100)
+ax.axvline(1.5, color="0.7", lw=0.5, ls=":")
+ax.text(0.5, 96, "seed and extension", ha="center", fontsize=5.5)
+ax.text(2.5, 96, "ceilings from the log-odds matrix", ha="center", fontsize=5.5)
+hc.finish_figure(
+    fig, FIG / "294_scoring_ceiling.png", tools=hc.NO_TOOL,
+    title="Scoring ceiling: what HP classes can give at 20-30% identity (hp_thomas_dill2, Pfam seed pairs, report half)",
+    hypothesis="If scoring the whole alignment finds far more pairs than B3, the missing recall is in the scoring, not the index.",
+    conclusion=verdict_4e_line + " Higher is better. Matrix fitted on the same pairs, so the two ceilings are slightly optimistic.",
+    wrap=70,
+)
+""")
+
+md(r"""
+**Verdict for 4e: most missing pairs carry a seed; what they lack is a score added up across gaps.** All numbers
+are for the report half at 20–30% identity, 7,512 true pairs.
+
+- *Seed ceiling.* 92.6% of pairs carry an 8-run and 99.3% a 6-run, yet one 8-letter word
+  with extension finds 39.2%. Of the 60.8 points between B2 and 100%, 7.4 are pairs with no
+  8-letter seed at all and 53.4 are pairs that have a seed but score below the threshold. A
+  design that gains only by finding a seed in pairs that have no 8-run can add at most 7.4
+  points (6.7 for 6-letter seeds), below 10, and fewer once its own threshold is set. So
+  seeds in new pairs alone cannot give the 10 points; a gain that large has to come from how
+  pairs that already carry a seed are scored (B3's second segment is one such change).
+- *Scoring ceiling.* Summing the 2×2 log-odds score over each whole alignment finds 85.4%
+  (95% interval 76.0 to 88.4), 37.8 points above B3 (30.1 to 42.5). It recovers 46.2 of the
+  60.8 points; the other 14.6 stay out of reach even with the whole alignment. With the
+  matrix fitted on the selection half instead, the ceiling is again 85.4% (difference
+  +0.0, −0.2 to +0.5), so fitting on the same pairs does not inflate it noticeably.
+- *Not only long alignments.* In the shortest third (50–100 scored columns) the whole
+  alignment finds 69.2%, against 22.2% for B2 and 26.1% for B3; in the longest third
+  (163–1,775 columns) 97.7%. 0.00099 of the shortest third's shuffled targets pass the
+  threshold, against 0 of the longest third's.
+- *One ungapped stretch is not enough.* The best-scoring stretch under the same matrix
+  finds 42.3% (39.2 to 44.4): 3.1 points above B2 (0.5 to 5.7) and 5.3 below B3 (−8.4 to
+  −0.1). A better matrix for one ungapped extension gains little. The whole-alignment recall
+  comes from adding up weak evidence (0.162 bits per column on average) over many columns
+  and across gaps.
+- *Of the 7.4% of pairs with no 8-run,* the whole alignment still finds 2.9 points; 4.5
+  points have neither a seed nor a whole-alignment score above the threshold.
+- *Model check.* The mean score per column of the fitted columns equals the predicted
+  relative entropy, 0.1623 bits (difference 0). Over the shuffled targets the measured mean
+  is −0.1642 bits against −0.1754 predicted from the pooled class shares (+0.0111). A
+  shuffle keeps its own target's class shares, and in a true pair those are close to the
+  query's, so a shuffled target agrees with its query a little more often than the pooled
+  shares predict.
+
+*What this does not show.* The whole-alignment score is given Pfam's alignment of each pair,
+and each shuffled target is scored on those same columns without being realigned. A real
+gapped search would also look for the best alignment of an unrelated pair, which raises the
+null scores and the threshold. So 85.4% is an upper bound that no search reaches. The KILL
+of sections 4b and 4d stands: those sections measured the gains, and this section says where
+the rest of the recall would have to come from, namely scoring across gaps (chaining or
+gapped extension), not the index.
+
+**Changes since 4d**
+
+- No number printed in sections 1 to 4d, 5 or 6 moved; the notebook's text output before
+  and after 4e was added was compared line by line, and only 4e's lines and one new summary
+  line in section 6 are new.
+- B2 rescored from the new joint class codes equals the stored B2 on all 180,000
+  comparisons, so the shuffled targets are notebook 232's. B2's and B3's recall and 1,000
+  resamples equal section 4b's exactly.
+- New code: `linked_pairs_utils.py` gains `joint_codes`, `comparison_joint_codes`,
+  `joint_counts`, `logodds_matrix` and `best_stretch_scores`, tested against brute force in
+  `tests/test_linked_pairs_utils.py`. No new parquet file: 4e reads notebook 230's alignments
+  and recomputes the shuffles.
+""")
+
+md(r"""
 ## 5. Bits, measured on Swiss-Prot
 
 How often does a key match by chance? For each setting, every key in Swiss-Prot
@@ -1210,6 +1582,7 @@ code(r"""
 print(verdict_pre_line)
 print(verdict_line)
 print(verdict_4d_line)
+print(verdict_4e_line)
 print()
 print("Report half, recall at exactly FPR 0.001 (95% interval, families resampled):")
 for n in NEW:
@@ -1279,6 +1652,13 @@ matches: lower is better.
    over B2 (−1.5 to +4.4). Storing the gap exactly loses recall (two 8-letter words: −7.1);
    the designs whose gain interval lies above 0 cost 3 to 55 times B2's chance matches. The chance matches
    are counted on Swiss-Prot; recall is still scored on each pair's own alignment.
+11. **Two ceilings: most missing pairs carry a seed** (section 4e, added 2026-10-17). At
+   20–30% identity 92.6% of pairs carry an exact 8-letter HP match, but B2 finds 39.2%, so
+   53.4 of the 60.8 missing points are pairs with a seed that score too low, and only 7.4
+   have no seed. Scoring the whole alignment with a 2×2 HP log-odds matrix finds 85.4%
+   (76.0 to 88.4), 37.8 points above B3; the best single ungapped stretch finds 42.3%. This
+   is an upper bound: the whole alignment is given, and the shuffled targets are not
+   realigned.
 """)
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},

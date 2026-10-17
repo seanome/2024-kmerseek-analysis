@@ -557,3 +557,102 @@ def bootstrap_recall_by_group(
         idx = order[offs]
         out[i] = fn(real[idx], null[idx], bin_idx[idx], fpr)[2]
     return out
+
+
+# ---------------------------------------------------------------------------
+# Section 4e: the seed ceiling and the scoring ceiling.
+# ---------------------------------------------------------------------------
+
+# Joint HP class of an aligned column, (query class, target class), class 0 = H
+# (ACFILMVWY) and 1 = P (DEGHKNPQRST) in hp_thomas_dill2. NOT_SCORED where either
+# sequence has a gap or a letter outside the two classes (X): such a column is skipped.
+JOINT_LABELS = ["HH", "HP", "PH", "PP"]
+NOT_SCORED = -1
+
+
+def joint_codes(qa: np.ndarray, ta: np.ndarray) -> np.ndarray:
+    """Per aligned column: 2 * query class + target class, or NOT_SCORED."""
+    ok = (qa != GAP) & (ta != GAP)
+    code = 2 * qa.astype(np.int16) + ta.astype(np.int16)
+    return np.where(ok, code, NOT_SCORED).astype(np.int8)
+
+
+def comparison_joint_codes(
+    qaln: str, taln: str, rng: np.random.Generator, n_shuffle: int = 2
+) -> list[tuple[str, np.ndarray]]:
+    """Joint class codes of the real pair and of its n_shuffle shuffled targets, drawn from
+    rng in notebook 232's order (the shuffles score_pair and score_pair_designs use)."""
+    tab = TABLES[ALPHABET]
+    qa = tab[np.frombuffer(qaln.encode(), dtype=np.uint8)]
+    ta = tab[np.frombuffer(taln.encode(), dtype=np.uint8)]
+    return [
+        (kind, joint_codes(qa, tt))
+        for kind, tt in _shuffled_targets(ta, rng, n_shuffle)
+    ]
+
+
+def joint_counts(codes: np.ndarray, comp: np.ndarray, n_comp: int) -> np.ndarray:
+    """(n_comp, 4) counts of HH, HP, PH, PP columns per comparison. codes is one long
+    array of joint codes, and comp gives the comparison each column belongs to."""
+    ok = codes != NOT_SCORED
+    flat = comp[ok].astype(np.int64) * 4 + codes[ok]
+    return np.bincount(flat, minlength=4 * n_comp).reshape(n_comp, 4)
+
+
+def logodds_matrix(counts: np.ndarray) -> dict:
+    """2x2 log-odds scores in bits from pooled joint counts (HH, HP, PH, PP).
+
+    Pr(a, b) is made symmetric (the HP and PH shares averaged), so a score does not depend
+    on which protein is the query. share(a) is the class share over the same columns, both
+    sequences pooled. s(a, b) = log2(Pr(a, b) / (share(a) * share(b))).
+
+    Returns the raw and the symmetric joint probabilities, the two shares, the score of
+    each joint code (HH, HP, PH, PP), the relative entropy sum Pr(a, b) * s(a, b) (the
+    mean score per column of the columns the matrix was fitted on) and
+    sum share(a) * share(b) * s(a, b) (the mean score per column of two unrelated
+    sequences with these shares)."""
+    c = np.asarray(counts, dtype=float).reshape(4)
+    pr = c / c.sum()
+    sym = pr.copy()
+    sym[1] = sym[2] = (pr[1] + pr[2]) / 2
+    share_h = sym[0] + sym[1]
+    share = np.array([share_h, 1 - share_h])
+    indep = np.outer(share, share).reshape(4)
+    s = np.log2(sym / indep)
+    return {
+        "pr": pr,
+        "pr_sym": sym,
+        "share_h": float(share[0]),
+        "share_p": float(share[1]),
+        "score": s,
+        "relative_entropy": float((sym * s).sum()),
+        "expected_unrelated": float((indep * s).sum()),
+    }
+
+
+def best_stretch_scores(
+    codes: np.ndarray, comp: np.ndarray, n_comp: int, score: np.ndarray
+) -> np.ndarray:
+    """Per comparison, the highest total score of a run of consecutive scored columns (no
+    gap or X column inside it, any start and end), or 0 if no column scores above 0: a
+    Smith-Waterman on the fixed alignment with no gaps allowed. codes and comp as in
+    joint_counts, each comparison's columns contiguous and in alignment order."""
+    import polars as pl
+
+    ok = codes != NOT_SCORED
+    # a new stretch starts at every unscored column and at every new comparison
+    new_comp = np.r_[True, comp[1:] != comp[:-1]]
+    seg = np.cumsum(new_comp | ~ok)
+    sc = np.asarray(score, dtype=float)[np.clip(codes, 0, 3)]
+    df = pl.DataFrame({"comp": comp[ok], "seg": seg[ok], "sc": sc[ok]})
+    best = (
+        df.with_columns(pl.col("sc").cum_sum().over("seg").alias("P"))
+        .with_columns(
+            pl.min_horizontal(pl.col("P").cum_min().over("seg"), pl.lit(0.0)).alias("M")
+        )
+        .group_by("comp")
+        .agg((pl.col("P") - pl.col("M")).max().alias("best"))
+    )
+    out = np.zeros(n_comp)
+    out[best["comp"].to_numpy()] = np.maximum(best["best"].to_numpy(), 0.0)
+    return out
