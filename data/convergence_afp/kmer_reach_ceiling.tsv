@@ -1,0 +1,1753 @@
+query	query_lineage	alphabet	ksize	n_cross_truth	n_cross_reachable	frac_cross_reachable	frac_background_reachable
+P04002	1 fish, type I AFP	protein20	3	47	37	0.7872340425531915	0.798
+P04002	1 fish, type I AFP	protein20	4	47	3	0.06382978723404255	0.1472
+P04002	1 fish, type I AFP	protein20	5	47	1	0.02127659574468085	0.0194
+P04002	1 fish, type I AFP	protein20	6	47	1	0.02127659574468085	0.005
+P04002	1 fish, type I AFP	protein20	7	47	0	0.0	0.0022
+P04002	1 fish, type I AFP	protein20	8	47	0	0.0	0.0006
+P04002	1 fish, type I AFP	protein20	9	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	10	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	11	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	12	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	13	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	14	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	15	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	16	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	17	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	18	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	19	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	20	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	21	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	22	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	23	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	24	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	25	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	26	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	27	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	28	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	29	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	30	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	31	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	32	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	33	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	34	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	35	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	36	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	37	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	38	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	39	47	0	0.0	0.0
+P04002	1 fish, type I AFP	protein20	40	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	3	47	46	0.9787234042553191	0.9978
+P04002	1 fish, type I AFP	dayhoff6	4	47	46	0.9787234042553191	0.9908
+P04002	1 fish, type I AFP	dayhoff6	5	47	44	0.9361702127659575	0.9434
+P04002	1 fish, type I AFP	dayhoff6	6	47	25	0.5319148936170213	0.7798
+P04002	1 fish, type I AFP	dayhoff6	7	47	21	0.44680851063829785	0.51
+P04002	1 fish, type I AFP	dayhoff6	8	47	14	0.2978723404255319	0.2702
+P04002	1 fish, type I AFP	dayhoff6	9	47	6	0.1276595744680851	0.1404
+P04002	1 fish, type I AFP	dayhoff6	10	47	3	0.06382978723404255	0.0834
+P04002	1 fish, type I AFP	dayhoff6	11	47	3	0.06382978723404255	0.05
+P04002	1 fish, type I AFP	dayhoff6	12	47	0	0.0	0.0302
+P04002	1 fish, type I AFP	dayhoff6	13	47	0	0.0	0.0192
+P04002	1 fish, type I AFP	dayhoff6	14	47	0	0.0	0.013
+P04002	1 fish, type I AFP	dayhoff6	15	47	0	0.0	0.0094
+P04002	1 fish, type I AFP	dayhoff6	16	47	0	0.0	0.0054
+P04002	1 fish, type I AFP	dayhoff6	17	47	0	0.0	0.0046
+P04002	1 fish, type I AFP	dayhoff6	18	47	0	0.0	0.002
+P04002	1 fish, type I AFP	dayhoff6	19	47	0	0.0	0.0012
+P04002	1 fish, type I AFP	dayhoff6	20	47	0	0.0	0.0006
+P04002	1 fish, type I AFP	dayhoff6	21	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	dayhoff6	22	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	23	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	24	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	25	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	26	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	27	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	28	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	29	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	30	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	31	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	32	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	33	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	34	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	35	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	36	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	37	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	38	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	39	47	0	0.0	0.0
+P04002	1 fish, type I AFP	dayhoff6	40	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	3	47	47	1.0	0.9998
+P04002	1 fish, type I AFP	hp_lehninger2	4	47	47	1.0	0.9996
+P04002	1 fish, type I AFP	hp_lehninger2	5	47	47	1.0	0.9992
+P04002	1 fish, type I AFP	hp_lehninger2	6	47	47	1.0	0.999
+P04002	1 fish, type I AFP	hp_lehninger2	7	47	47	1.0	0.9966
+P04002	1 fish, type I AFP	hp_lehninger2	8	47	47	1.0	0.9898
+P04002	1 fish, type I AFP	hp_lehninger2	9	47	46	0.9787234042553191	0.9768
+P04002	1 fish, type I AFP	hp_lehninger2	10	47	46	0.9787234042553191	0.9484
+P04002	1 fish, type I AFP	hp_lehninger2	11	47	41	0.8723404255319149	0.885
+P04002	1 fish, type I AFP	hp_lehninger2	12	47	38	0.8085106382978723	0.7608
+P04002	1 fish, type I AFP	hp_lehninger2	13	47	27	0.574468085106383	0.5916
+P04002	1 fish, type I AFP	hp_lehninger2	14	47	19	0.40425531914893614	0.4134
+P04002	1 fish, type I AFP	hp_lehninger2	15	47	4	0.0851063829787234	0.2818
+P04002	1 fish, type I AFP	hp_lehninger2	16	47	2	0.0425531914893617	0.1766
+P04002	1 fish, type I AFP	hp_lehninger2	17	47	2	0.0425531914893617	0.0998
+P04002	1 fish, type I AFP	hp_lehninger2	18	47	2	0.0425531914893617	0.0552
+P04002	1 fish, type I AFP	hp_lehninger2	19	47	0	0.0	0.031
+P04002	1 fish, type I AFP	hp_lehninger2	20	47	0	0.0	0.0152
+P04002	1 fish, type I AFP	hp_lehninger2	21	47	0	0.0	0.0082
+P04002	1 fish, type I AFP	hp_lehninger2	22	47	0	0.0	0.0042
+P04002	1 fish, type I AFP	hp_lehninger2	23	47	0	0.0	0.0026
+P04002	1 fish, type I AFP	hp_lehninger2	24	47	0	0.0	0.0014
+P04002	1 fish, type I AFP	hp_lehninger2	25	47	0	0.0	0.001
+P04002	1 fish, type I AFP	hp_lehninger2	26	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger2	27	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger2	28	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger2	29	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger2	30	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger2	31	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	hp_lehninger2	32	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	33	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	34	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	35	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	36	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	37	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	38	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	39	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger2	40	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	3	47	47	1.0	1.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	4	47	47	1.0	0.9998
+P04002	1 fish, type I AFP	hp_thomas_dill2	5	47	47	1.0	0.9996
+P04002	1 fish, type I AFP	hp_thomas_dill2	6	47	47	1.0	0.9994
+P04002	1 fish, type I AFP	hp_thomas_dill2	7	47	45	0.9574468085106383	0.9976
+P04002	1 fish, type I AFP	hp_thomas_dill2	8	47	44	0.9361702127659575	0.9898
+P04002	1 fish, type I AFP	hp_thomas_dill2	9	47	43	0.9148936170212766	0.9724
+P04002	1 fish, type I AFP	hp_thomas_dill2	10	47	31	0.6595744680851063	0.9222
+P04002	1 fish, type I AFP	hp_thomas_dill2	11	47	13	0.2765957446808511	0.7782
+P04002	1 fish, type I AFP	hp_thomas_dill2	12	47	7	0.14893617021276595	0.5514
+P04002	1 fish, type I AFP	hp_thomas_dill2	13	47	6	0.1276595744680851	0.325
+P04002	1 fish, type I AFP	hp_thomas_dill2	14	47	4	0.0851063829787234	0.1662
+P04002	1 fish, type I AFP	hp_thomas_dill2	15	47	2	0.0425531914893617	0.0802
+P04002	1 fish, type I AFP	hp_thomas_dill2	16	47	1	0.02127659574468085	0.0362
+P04002	1 fish, type I AFP	hp_thomas_dill2	17	47	0	0.0	0.0156
+P04002	1 fish, type I AFP	hp_thomas_dill2	18	47	0	0.0	0.0086
+P04002	1 fish, type I AFP	hp_thomas_dill2	19	47	0	0.0	0.0046
+P04002	1 fish, type I AFP	hp_thomas_dill2	20	47	0	0.0	0.0024
+P04002	1 fish, type I AFP	hp_thomas_dill2	21	47	0	0.0	0.0014
+P04002	1 fish, type I AFP	hp_thomas_dill2	22	47	0	0.0	0.0006
+P04002	1 fish, type I AFP	hp_thomas_dill2	23	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	hp_thomas_dill2	24	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	25	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	26	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	27	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	28	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	29	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	30	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	31	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	32	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	33	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	34	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	35	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	36	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	37	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	38	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	39	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill2	40	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	3	47	47	1.0	1.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	4	47	47	1.0	0.9998
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	5	47	47	1.0	0.9996
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	6	47	47	1.0	0.9988
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	7	47	46	0.9787234042553191	0.9972
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	8	47	44	0.9361702127659575	0.99
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	9	47	43	0.9148936170212766	0.9726
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	10	47	31	0.6595744680851063	0.9096
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	11	47	17	0.3617021276595745	0.7588
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	12	47	6	0.1276595744680851	0.528
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	13	47	3	0.06382978723404255	0.3032
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	14	47	2	0.0425531914893617	0.1512
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	15	47	2	0.0425531914893617	0.079
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	16	47	2	0.0425531914893617	0.0336
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	17	47	0	0.0	0.0148
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	18	47	0	0.0	0.008
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	19	47	0	0.0	0.0046
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	20	47	0	0.0	0.0026
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	21	47	0	0.0	0.0014
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	22	47	0	0.0	0.0006
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	23	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	24	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	25	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	26	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	27	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	28	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	29	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	30	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	31	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	32	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	33	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	34	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	35	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	36	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	37	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	38	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	39	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_kyte_doolittle2	40	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	3	47	47	1.0	1.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	4	47	47	1.0	0.9998
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	5	47	47	1.0	0.9996
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	6	47	47	1.0	0.9994
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	7	47	45	0.9574468085106383	0.9966
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	8	47	44	0.9361702127659575	0.988
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	9	47	43	0.9148936170212766	0.9696
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	10	47	32	0.6808510638297872	0.9106
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	11	47	22	0.46808510638297873	0.7592
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	12	47	9	0.19148936170212766	0.5178
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	13	47	7	0.14893617021276595	0.2968
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	14	47	5	0.10638297872340426	0.1502
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	15	47	3	0.06382978723404255	0.0714
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	16	47	1	0.02127659574468085	0.0314
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	17	47	0	0.0	0.0138
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	18	47	0	0.0	0.0072
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	19	47	0	0.0	0.004
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	20	47	0	0.0	0.0022
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	21	47	0	0.0	0.0012
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	22	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	23	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	24	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	25	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	26	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	27	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	28	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	29	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	30	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	31	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	32	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	33	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	34	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	35	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	36	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	37	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	38	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	39	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_thomas_dill_no_c2	40	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	3	47	47	1.0	0.9998
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	4	47	47	1.0	0.9996
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	5	47	47	1.0	0.9994
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	6	47	47	1.0	0.9992
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	7	47	47	1.0	0.9978
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	8	47	47	1.0	0.9934
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	9	47	46	0.9787234042553191	0.9816
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	10	47	46	0.9787234042553191	0.9562
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	11	47	43	0.9148936170212766	0.9014
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	12	47	40	0.851063829787234	0.7936
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	13	47	31	0.6595744680851063	0.637
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	14	47	23	0.48936170212765956	0.4678
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	15	47	9	0.19148936170212766	0.3216
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	16	47	4	0.0851063829787234	0.2022
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	17	47	2	0.0425531914893617	0.1166
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	18	47	2	0.0425531914893617	0.0662
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	19	47	0	0.0	0.039
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	20	47	0	0.0	0.0186
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	21	47	0	0.0	0.0106
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	22	47	0	0.0	0.0044
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	23	47	0	0.0	0.0022
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	24	47	0	0.0	0.0012
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	25	47	0	0.0	0.001
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	26	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	27	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	28	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	29	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	30	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	31	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	32	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	33	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	34	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	35	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	36	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	37	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	38	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	39	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_lehninger_c_nonpolar2	40	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	3	47	47	1.0	0.9998
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	4	47	47	1.0	0.9996
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	5	47	47	1.0	0.9992
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	6	47	47	1.0	0.9984
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	7	47	47	1.0	0.9964
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	8	47	43	0.9148936170212766	0.9854
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	9	47	38	0.8085106382978723	0.9632
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	10	47	35	0.7446808510638298	0.908
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	11	47	30	0.6382978723404256	0.7808
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	12	47	24	0.5106382978723404	0.5904
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	13	47	22	0.46808510638297873	0.3884
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	14	47	13	0.2765957446808511	0.2376
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	15	47	5	0.10638297872340426	0.1366
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	16	47	0	0.0	0.0768
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	17	47	0	0.0	0.04
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	18	47	0	0.0	0.022
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	19	47	0	0.0	0.0116
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	20	47	0	0.0	0.0058
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	21	47	0	0.0	0.0042
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	22	47	0	0.0	0.0012
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	23	47	0	0.0	0.0008
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	24	47	0	0.0	0.0006
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	25	47	0	0.0	0.0004
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	26	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	27	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	28	47	0	0.0	0.0002
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	29	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	30	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	31	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	32	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	33	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	34	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	35	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	36	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	37	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	38	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	39	47	0	0.0	0.0
+P04002	1 fish, type I AFP	hp_pbotc_1st_ed2	40	47	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	3	55	12	0.21818181818181817	0.0816
+P02732	2 fish, AFGP	protein20	4	55	6	0.10909090909090909	0.004
+P02732	2 fish, AFGP	protein20	5	55	4	0.07272727272727272	0.0004
+P02732	2 fish, AFGP	protein20	6	55	4	0.07272727272727272	0.0002
+P02732	2 fish, AFGP	protein20	7	55	4	0.07272727272727272	0.0
+P02732	2 fish, AFGP	protein20	8	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	9	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	10	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	11	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	12	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	13	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	14	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	15	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	16	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	17	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	18	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	19	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	20	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	21	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	22	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	23	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	24	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	25	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	26	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	27	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	28	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	29	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	30	55	0	0.0	0.0
+P02732	2 fish, AFGP	protein20	31	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	3	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	4	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	5	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	6	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	7	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	8	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	9	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	10	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	11	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	12	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	13	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	14	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	15	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	16	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	17	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	18	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	19	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	20	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	21	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	22	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	23	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	24	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	25	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	26	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	27	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	28	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	29	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	30	55	0	0.0	0.0
+P02732	2 fish, AFGP	dayhoff6	31	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	3	55	55	1.0	0.9992
+P02732	2 fish, AFGP	hp_lehninger2	4	55	55	1.0	0.9946
+P02732	2 fish, AFGP	hp_lehninger2	5	55	51	0.9272727272727272	0.976
+P02732	2 fish, AFGP	hp_lehninger2	6	55	44	0.8	0.9326
+P02732	2 fish, AFGP	hp_lehninger2	7	55	24	0.43636363636363634	0.837
+P02732	2 fish, AFGP	hp_lehninger2	8	55	17	0.3090909090909091	0.6566
+P02732	2 fish, AFGP	hp_lehninger2	9	55	16	0.2909090909090909	0.4532
+P02732	2 fish, AFGP	hp_lehninger2	10	55	11	0.2	0.2752
+P02732	2 fish, AFGP	hp_lehninger2	11	55	2	0.03636363636363636	0.1576
+P02732	2 fish, AFGP	hp_lehninger2	12	55	0	0.0	0.0888
+P02732	2 fish, AFGP	hp_lehninger2	13	55	0	0.0	0.0536
+P02732	2 fish, AFGP	hp_lehninger2	14	55	0	0.0	0.0288
+P02732	2 fish, AFGP	hp_lehninger2	15	55	0	0.0	0.0136
+P02732	2 fish, AFGP	hp_lehninger2	16	55	0	0.0	0.0068
+P02732	2 fish, AFGP	hp_lehninger2	17	55	0	0.0	0.0034
+P02732	2 fish, AFGP	hp_lehninger2	18	55	0	0.0	0.0018
+P02732	2 fish, AFGP	hp_lehninger2	19	55	0	0.0	0.0008
+P02732	2 fish, AFGP	hp_lehninger2	20	55	0	0.0	0.0002
+P02732	2 fish, AFGP	hp_lehninger2	21	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	22	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	23	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	24	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	25	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	26	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	27	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	28	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	29	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	30	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger2	31	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	3	55	55	1.0	0.9978
+P02732	2 fish, AFGP	hp_thomas_dill2	4	55	55	1.0	0.9908
+P02732	2 fish, AFGP	hp_thomas_dill2	5	55	46	0.8363636363636363	0.9656
+P02732	2 fish, AFGP	hp_thomas_dill2	6	55	19	0.34545454545454546	0.8914
+P02732	2 fish, AFGP	hp_thomas_dill2	7	55	11	0.2	0.723
+P02732	2 fish, AFGP	hp_thomas_dill2	8	55	9	0.16363636363636364	0.4622
+P02732	2 fish, AFGP	hp_thomas_dill2	9	55	4	0.07272727272727272	0.2716
+P02732	2 fish, AFGP	hp_thomas_dill2	10	55	4	0.07272727272727272	0.1364
+P02732	2 fish, AFGP	hp_thomas_dill2	11	55	0	0.0	0.0588
+P02732	2 fish, AFGP	hp_thomas_dill2	12	55	0	0.0	0.0306
+P02732	2 fish, AFGP	hp_thomas_dill2	13	55	0	0.0	0.0146
+P02732	2 fish, AFGP	hp_thomas_dill2	14	55	0	0.0	0.0062
+P02732	2 fish, AFGP	hp_thomas_dill2	15	55	0	0.0	0.0022
+P02732	2 fish, AFGP	hp_thomas_dill2	16	55	0	0.0	0.0012
+P02732	2 fish, AFGP	hp_thomas_dill2	17	55	0	0.0	0.0004
+P02732	2 fish, AFGP	hp_thomas_dill2	18	55	0	0.0	0.0002
+P02732	2 fish, AFGP	hp_thomas_dill2	19	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	20	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	21	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	22	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	23	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	24	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	25	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	26	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	27	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	28	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	29	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	30	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill2	31	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	3	55	55	1.0	0.9966
+P02732	2 fish, AFGP	hp_kyte_doolittle2	4	55	55	1.0	0.9864
+P02732	2 fish, AFGP	hp_kyte_doolittle2	5	55	46	0.8363636363636363	0.9472
+P02732	2 fish, AFGP	hp_kyte_doolittle2	6	55	18	0.32727272727272727	0.8434
+P02732	2 fish, AFGP	hp_kyte_doolittle2	7	55	12	0.21818181818181817	0.6258
+P02732	2 fish, AFGP	hp_kyte_doolittle2	8	55	8	0.14545454545454545	0.361
+P02732	2 fish, AFGP	hp_kyte_doolittle2	9	55	3	0.05454545454545454	0.1978
+P02732	2 fish, AFGP	hp_kyte_doolittle2	10	55	3	0.05454545454545454	0.0932
+P02732	2 fish, AFGP	hp_kyte_doolittle2	11	55	0	0.0	0.0342
+P02732	2 fish, AFGP	hp_kyte_doolittle2	12	55	0	0.0	0.0176
+P02732	2 fish, AFGP	hp_kyte_doolittle2	13	55	0	0.0	0.0074
+P02732	2 fish, AFGP	hp_kyte_doolittle2	14	55	0	0.0	0.0028
+P02732	2 fish, AFGP	hp_kyte_doolittle2	15	55	0	0.0	0.0016
+P02732	2 fish, AFGP	hp_kyte_doolittle2	16	55	0	0.0	0.0008
+P02732	2 fish, AFGP	hp_kyte_doolittle2	17	55	0	0.0	0.0004
+P02732	2 fish, AFGP	hp_kyte_doolittle2	18	55	0	0.0	0.0002
+P02732	2 fish, AFGP	hp_kyte_doolittle2	19	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	20	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	21	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	22	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	23	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	24	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	25	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	26	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	27	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	28	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	29	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	30	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_kyte_doolittle2	31	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	3	55	55	1.0	0.9966
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	4	55	51	0.9272727272727272	0.987
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	5	55	44	0.8	0.9556
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	6	55	20	0.36363636363636365	0.8766
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	7	55	12	0.21818181818181817	0.6926
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	8	55	8	0.14545454545454545	0.4258
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	9	55	3	0.05454545454545454	0.2386
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	10	55	3	0.05454545454545454	0.1182
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	11	55	0	0.0	0.049
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	12	55	0	0.0	0.0258
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	13	55	0	0.0	0.0114
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	14	55	0	0.0	0.0056
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	15	55	0	0.0	0.002
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	16	55	0	0.0	0.001
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	17	55	0	0.0	0.0002
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	18	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	19	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	20	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	21	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	22	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	23	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	24	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	25	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	26	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	27	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	28	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	29	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	30	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_thomas_dill_no_c2	31	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	3	55	55	1.0	0.9994
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	4	55	55	1.0	0.9964
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	5	55	53	0.9636363636363636	0.9794
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	6	55	41	0.7454545454545455	0.9414
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	7	55	24	0.43636363636363634	0.8504
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	8	55	20	0.36363636363636365	0.6772
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	9	55	16	0.2909090909090909	0.4772
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	10	55	11	0.2	0.2932
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	11	55	2	0.03636363636363636	0.17
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	12	55	0	0.0	0.099
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	13	55	0	0.0	0.058
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	14	55	0	0.0	0.0312
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	15	55	0	0.0	0.014
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	16	55	0	0.0	0.0062
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	17	55	0	0.0	0.0028
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	18	55	0	0.0	0.0014
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	19	55	0	0.0	0.0004
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	20	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	21	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	22	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	23	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	24	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	25	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	26	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	27	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	28	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	29	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	30	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_lehninger_c_nonpolar2	31	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	3	55	55	1.0	0.999
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	4	55	55	1.0	0.9934
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	5	55	50	0.9090909090909091	0.975
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	6	55	39	0.7090909090909091	0.917
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	7	55	22	0.4	0.7826
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	8	55	14	0.2545454545454545	0.563
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	9	55	8	0.14545454545454545	0.3582
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	10	55	4	0.07272727272727272	0.1946
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	11	55	0	0.0	0.0944
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	12	55	0	0.0	0.0502
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	13	55	0	0.0	0.0264
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	14	55	0	0.0	0.0146
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	15	55	0	0.0	0.007
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	16	55	0	0.0	0.0032
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	17	55	0	0.0	0.0018
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	18	55	0	0.0	0.0012
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	19	55	0	0.0	0.0008
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	20	55	0	0.0	0.0002
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	21	55	0	0.0	0.0002
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	22	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	23	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	24	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	25	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	26	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	27	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	28	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	29	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	30	55	0	0.0	0.0
+P02732	2 fish, AFGP	hp_pbotc_1st_ed2	31	55	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	3	56	50	0.8928571428571429	0.9342
+A0ZT93	3 fish, type II AFP	protein20	4	56	1	0.017857142857142856	0.1558
+A0ZT93	3 fish, type II AFP	protein20	5	56	0	0.0	0.0034
+A0ZT93	3 fish, type II AFP	protein20	6	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	protein20	7	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	8	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	9	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	10	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	11	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	12	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	13	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	14	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	15	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	16	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	17	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	18	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	19	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	20	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	21	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	22	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	23	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	24	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	25	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	26	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	27	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	28	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	29	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	30	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	31	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	32	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	33	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	34	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	35	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	36	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	37	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	38	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	39	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	protein20	40	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	3	56	55	0.9821428571428571	0.9996
+A0ZT93	3 fish, type II AFP	dayhoff6	4	56	55	0.9821428571428571	0.998
+A0ZT93	3 fish, type II AFP	dayhoff6	5	56	48	0.8571428571428571	0.9828
+A0ZT93	3 fish, type II AFP	dayhoff6	6	56	45	0.8035714285714286	0.845
+A0ZT93	3 fish, type II AFP	dayhoff6	7	56	24	0.42857142857142855	0.3976
+A0ZT93	3 fish, type II AFP	dayhoff6	8	56	7	0.125	0.0856
+A0ZT93	3 fish, type II AFP	dayhoff6	9	56	2	0.03571428571428571	0.0162
+A0ZT93	3 fish, type II AFP	dayhoff6	10	56	0	0.0	0.0048
+A0ZT93	3 fish, type II AFP	dayhoff6	11	56	0	0.0	0.0014
+A0ZT93	3 fish, type II AFP	dayhoff6	12	56	0	0.0	0.0008
+A0ZT93	3 fish, type II AFP	dayhoff6	13	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	14	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	15	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	16	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	17	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	18	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	19	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	20	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	21	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	22	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	23	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	24	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	25	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	26	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	27	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	28	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	29	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	30	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	31	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	32	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	33	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	34	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	35	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	36	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	37	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	38	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	39	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	dayhoff6	40	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	3	56	56	1.0	0.9998
+A0ZT93	3 fish, type II AFP	hp_lehninger2	4	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_lehninger2	5	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_lehninger2	6	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_lehninger2	7	56	56	1.0	0.999
+A0ZT93	3 fish, type II AFP	hp_lehninger2	8	56	53	0.9464285714285714	0.9974
+A0ZT93	3 fish, type II AFP	hp_lehninger2	9	56	52	0.9285714285714286	0.9944
+A0ZT93	3 fish, type II AFP	hp_lehninger2	10	56	49	0.875	0.9884
+A0ZT93	3 fish, type II AFP	hp_lehninger2	11	56	48	0.8571428571428571	0.9692
+A0ZT93	3 fish, type II AFP	hp_lehninger2	12	56	43	0.7678571428571429	0.9136
+A0ZT93	3 fish, type II AFP	hp_lehninger2	13	56	33	0.5892857142857143	0.7814
+A0ZT93	3 fish, type II AFP	hp_lehninger2	14	56	17	0.30357142857142855	0.5814
+A0ZT93	3 fish, type II AFP	hp_lehninger2	15	56	10	0.17857142857142858	0.3724
+A0ZT93	3 fish, type II AFP	hp_lehninger2	16	56	7	0.125	0.2108
+A0ZT93	3 fish, type II AFP	hp_lehninger2	17	56	2	0.03571428571428571	0.1078
+A0ZT93	3 fish, type II AFP	hp_lehninger2	18	56	0	0.0	0.0558
+A0ZT93	3 fish, type II AFP	hp_lehninger2	19	56	0	0.0	0.0278
+A0ZT93	3 fish, type II AFP	hp_lehninger2	20	56	0	0.0	0.0114
+A0ZT93	3 fish, type II AFP	hp_lehninger2	21	56	0	0.0	0.0056
+A0ZT93	3 fish, type II AFP	hp_lehninger2	22	56	0	0.0	0.0024
+A0ZT93	3 fish, type II AFP	hp_lehninger2	23	56	0	0.0	0.0012
+A0ZT93	3 fish, type II AFP	hp_lehninger2	24	56	0	0.0	0.0004
+A0ZT93	3 fish, type II AFP	hp_lehninger2	25	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_lehninger2	26	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_lehninger2	27	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	28	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	29	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	30	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	31	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	32	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	33	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	34	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	35	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	36	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	37	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	38	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	39	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger2	40	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	3	56	56	1.0	1.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	4	56	56	1.0	0.9998
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	5	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	6	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	7	56	56	1.0	0.9994
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	8	56	55	0.9821428571428571	0.998
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	9	56	53	0.9464285714285714	0.9946
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	10	56	52	0.9285714285714286	0.9878
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	11	56	44	0.7857142857142857	0.9682
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	12	56	34	0.6071428571428571	0.911
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	13	56	26	0.4642857142857143	0.775
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	14	56	16	0.2857142857142857	0.5726
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	15	56	7	0.125	0.3536
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	16	56	1	0.017857142857142856	0.1946
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	17	56	0	0.0	0.099
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	18	56	0	0.0	0.049
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	19	56	0	0.0	0.0246
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	20	56	0	0.0	0.0124
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	21	56	0	0.0	0.0052
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	22	56	0	0.0	0.0026
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	23	56	0	0.0	0.001
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	24	56	0	0.0	0.0006
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	25	56	0	0.0	0.0004
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	26	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	27	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	28	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	29	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	30	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	31	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	32	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	33	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	34	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	35	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	36	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	37	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	38	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	39	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill2	40	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	3	56	56	1.0	1.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	4	56	56	1.0	0.9998
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	5	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	6	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	7	56	56	1.0	0.9994
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	8	56	52	0.9285714285714286	0.9986
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	9	56	51	0.9107142857142857	0.996
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	10	56	49	0.875	0.99
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	11	56	40	0.7142857142857143	0.9784
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	12	56	26	0.4642857142857143	0.9414
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	13	56	19	0.3392857142857143	0.8512
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	14	56	16	0.2857142857142857	0.6814
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	15	56	10	0.17857142857142858	0.4712
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	16	56	7	0.125	0.3
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	17	56	1	0.017857142857142856	0.1694
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	18	56	0	0.0	0.0968
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	19	56	0	0.0	0.056
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	20	56	0	0.0	0.029
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	21	56	0	0.0	0.0146
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	22	56	0	0.0	0.0088
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	23	56	0	0.0	0.0042
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	24	56	0	0.0	0.0016
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	25	56	0	0.0	0.0008
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	26	56	0	0.0	0.0006
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	27	56	0	0.0	0.0006
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	28	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	29	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	30	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	31	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	32	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	33	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	34	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	35	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	36	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	37	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	38	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	39	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_kyte_doolittle2	40	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	3	56	56	1.0	1.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	4	56	56	1.0	0.9998
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	5	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	6	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	7	56	55	0.9821428571428571	0.9994
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	8	56	54	0.9642857142857143	0.9982
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	9	56	53	0.9464285714285714	0.9952
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	10	56	52	0.9285714285714286	0.987
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	11	56	43	0.7678571428571429	0.9738
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	12	56	25	0.44642857142857145	0.9298
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	13	56	19	0.3392857142857143	0.8202
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	14	56	14	0.25	0.64
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	15	56	5	0.08928571428571429	0.4424
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	16	56	2	0.03571428571428571	0.2594
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	17	56	1	0.017857142857142856	0.1422
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	18	56	0	0.0	0.0746
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	19	56	0	0.0	0.0356
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	20	56	0	0.0	0.0168
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	21	56	0	0.0	0.0086
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	22	56	0	0.0	0.0042
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	23	56	0	0.0	0.0016
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	24	56	0	0.0	0.0008
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	25	56	0	0.0	0.0004
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	26	56	0	0.0	0.0004
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	27	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	28	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	29	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	30	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	31	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	32	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	33	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	34	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	35	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	36	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	37	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	38	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	39	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_thomas_dill_no_c2	40	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	3	56	56	1.0	0.9998
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	4	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	5	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	6	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	7	56	56	1.0	0.9992
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	8	56	56	1.0	0.9982
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	9	56	52	0.9285714285714286	0.9946
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	10	56	52	0.9285714285714286	0.9878
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	11	56	47	0.8392857142857143	0.9688
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	12	56	43	0.7678571428571429	0.9194
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	13	56	40	0.7142857142857143	0.8126
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	14	56	31	0.5535714285714286	0.6434
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	15	56	28	0.5	0.4352
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	16	56	7	0.125	0.2566
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	17	56	2	0.03571428571428571	0.1414
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	18	56	1	0.017857142857142856	0.073
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	19	56	0	0.0	0.0372
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	20	56	0	0.0	0.0178
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	21	56	0	0.0	0.0098
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	22	56	0	0.0	0.0054
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	23	56	0	0.0	0.003
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	24	56	0	0.0	0.0016
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	25	56	0	0.0	0.0008
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	26	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	27	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	28	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	29	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	30	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	31	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	32	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	33	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	34	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	35	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	36	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	37	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	38	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	39	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_lehninger_c_nonpolar2	40	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	3	56	56	1.0	0.9998
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	4	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	5	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	6	56	56	1.0	0.9996
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	7	56	56	1.0	0.9994
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	8	56	55	0.9821428571428571	0.9982
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	9	56	54	0.9642857142857143	0.9944
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	10	56	54	0.9642857142857143	0.9874
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	11	56	48	0.8571428571428571	0.9688
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	12	56	34	0.6071428571428571	0.9024
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	13	56	26	0.4642857142857143	0.7576
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	14	56	18	0.32142857142857145	0.5384
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	15	56	13	0.23214285714285715	0.3276
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	16	56	4	0.07142857142857142	0.1744
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	17	56	3	0.05357142857142857	0.0898
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	18	56	0	0.0	0.0474
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	19	56	0	0.0	0.023
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	20	56	0	0.0	0.0104
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	21	56	0	0.0	0.0046
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	22	56	0	0.0	0.0022
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	23	56	0	0.0	0.0012
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	24	56	0	0.0	0.0008
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	25	56	0	0.0	0.0004
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	26	56	0	0.0	0.0002
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	27	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	28	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	29	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	30	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	31	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	32	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	33	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	34	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	35	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	36	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	37	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	38	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	39	56	0	0.0	0.0
+A0ZT93	3 fish, type II AFP	hp_pbotc_1st_ed2	40	56	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	3	40	25	0.625	0.8442
+P07457	4 fish, type III AFP	protein20	4	40	1	0.025	0.0678
+P07457	4 fish, type III AFP	protein20	5	40	0	0.0	0.0012
+P07457	4 fish, type III AFP	protein20	6	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	7	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	8	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	9	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	10	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	11	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	12	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	13	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	14	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	15	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	16	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	17	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	18	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	19	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	20	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	21	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	22	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	23	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	24	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	25	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	26	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	27	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	28	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	29	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	30	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	31	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	32	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	33	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	34	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	35	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	36	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	37	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	38	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	39	40	0	0.0	0.0
+P07457	4 fish, type III AFP	protein20	40	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	3	40	39	0.975	0.999
+P07457	4 fish, type III AFP	dayhoff6	4	40	37	0.925	0.9964
+P07457	4 fish, type III AFP	dayhoff6	5	40	36	0.9	0.9698
+P07457	4 fish, type III AFP	dayhoff6	6	40	25	0.625	0.8218
+P07457	4 fish, type III AFP	dayhoff6	7	40	8	0.2	0.4332
+P07457	4 fish, type III AFP	dayhoff6	8	40	3	0.075	0.1292
+P07457	4 fish, type III AFP	dayhoff6	9	40	1	0.025	0.0262
+P07457	4 fish, type III AFP	dayhoff6	10	40	0	0.0	0.0058
+P07457	4 fish, type III AFP	dayhoff6	11	40	0	0.0	0.0022
+P07457	4 fish, type III AFP	dayhoff6	12	40	0	0.0	0.001
+P07457	4 fish, type III AFP	dayhoff6	13	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	14	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	15	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	16	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	17	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	18	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	19	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	20	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	21	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	22	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	23	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	24	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	25	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	26	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	27	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	28	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	29	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	30	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	31	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	32	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	33	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	34	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	35	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	36	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	37	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	38	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	39	40	0	0.0	0.0
+P07457	4 fish, type III AFP	dayhoff6	40	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	3	40	40	1.0	0.9998
+P07457	4 fish, type III AFP	hp_lehninger2	4	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_lehninger2	5	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_lehninger2	6	40	40	1.0	0.999
+P07457	4 fish, type III AFP	hp_lehninger2	7	40	37	0.925	0.9982
+P07457	4 fish, type III AFP	hp_lehninger2	8	40	37	0.925	0.9936
+P07457	4 fish, type III AFP	hp_lehninger2	9	40	36	0.9	0.9858
+P07457	4 fish, type III AFP	hp_lehninger2	10	40	31	0.775	0.964
+P07457	4 fish, type III AFP	hp_lehninger2	11	40	28	0.7	0.9046
+P07457	4 fish, type III AFP	hp_lehninger2	12	40	24	0.6	0.7756
+P07457	4 fish, type III AFP	hp_lehninger2	13	40	14	0.35	0.584
+P07457	4 fish, type III AFP	hp_lehninger2	14	40	8	0.2	0.377
+P07457	4 fish, type III AFP	hp_lehninger2	15	40	4	0.1	0.2106
+P07457	4 fish, type III AFP	hp_lehninger2	16	40	3	0.075	0.1106
+P07457	4 fish, type III AFP	hp_lehninger2	17	40	2	0.05	0.0598
+P07457	4 fish, type III AFP	hp_lehninger2	18	40	1	0.025	0.0308
+P07457	4 fish, type III AFP	hp_lehninger2	19	40	1	0.025	0.0124
+P07457	4 fish, type III AFP	hp_lehninger2	20	40	0	0.0	0.0076
+P07457	4 fish, type III AFP	hp_lehninger2	21	40	0	0.0	0.005
+P07457	4 fish, type III AFP	hp_lehninger2	22	40	0	0.0	0.0022
+P07457	4 fish, type III AFP	hp_lehninger2	23	40	0	0.0	0.001
+P07457	4 fish, type III AFP	hp_lehninger2	24	40	0	0.0	0.0008
+P07457	4 fish, type III AFP	hp_lehninger2	25	40	0	0.0	0.0004
+P07457	4 fish, type III AFP	hp_lehninger2	26	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	27	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	28	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	29	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	30	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	31	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	32	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	33	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	34	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	35	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	36	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	37	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	38	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	39	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger2	40	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	3	40	40	1.0	1.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	4	40	40	1.0	0.9998
+P07457	4 fish, type III AFP	hp_thomas_dill2	5	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_thomas_dill2	6	40	39	0.975	0.9996
+P07457	4 fish, type III AFP	hp_thomas_dill2	7	40	38	0.95	0.997
+P07457	4 fish, type III AFP	hp_thomas_dill2	8	40	36	0.9	0.994
+P07457	4 fish, type III AFP	hp_thomas_dill2	9	40	35	0.875	0.9864
+P07457	4 fish, type III AFP	hp_thomas_dill2	10	40	32	0.8	0.9604
+P07457	4 fish, type III AFP	hp_thomas_dill2	11	40	25	0.625	0.8928
+P07457	4 fish, type III AFP	hp_thomas_dill2	12	40	18	0.45	0.7484
+P07457	4 fish, type III AFP	hp_thomas_dill2	13	40	11	0.275	0.5366
+P07457	4 fish, type III AFP	hp_thomas_dill2	14	40	8	0.2	0.3314
+P07457	4 fish, type III AFP	hp_thomas_dill2	15	40	7	0.175	0.1836
+P07457	4 fish, type III AFP	hp_thomas_dill2	16	40	3	0.075	0.0954
+P07457	4 fish, type III AFP	hp_thomas_dill2	17	40	1	0.025	0.0436
+P07457	4 fish, type III AFP	hp_thomas_dill2	18	40	0	0.0	0.02
+P07457	4 fish, type III AFP	hp_thomas_dill2	19	40	0	0.0	0.0098
+P07457	4 fish, type III AFP	hp_thomas_dill2	20	40	0	0.0	0.006
+P07457	4 fish, type III AFP	hp_thomas_dill2	21	40	0	0.0	0.0026
+P07457	4 fish, type III AFP	hp_thomas_dill2	22	40	0	0.0	0.0006
+P07457	4 fish, type III AFP	hp_thomas_dill2	23	40	0	0.0	0.0002
+P07457	4 fish, type III AFP	hp_thomas_dill2	24	40	0	0.0	0.0002
+P07457	4 fish, type III AFP	hp_thomas_dill2	25	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	26	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	27	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	28	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	29	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	30	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	31	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	32	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	33	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	34	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	35	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	36	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	37	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	38	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	39	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill2	40	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	3	40	40	1.0	1.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	4	40	40	1.0	0.9998
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	5	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	6	40	39	0.975	0.9992
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	7	40	38	0.95	0.9966
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	8	40	36	0.9	0.9934
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	9	40	35	0.875	0.985
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	10	40	32	0.8	0.96
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	11	40	29	0.725	0.8878
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	12	40	18	0.45	0.74
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	13	40	12	0.3	0.533
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	14	40	8	0.2	0.3092
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	15	40	7	0.175	0.1714
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	16	40	2	0.05	0.0924
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	17	40	1	0.025	0.0438
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	18	40	0	0.0	0.0206
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	19	40	0	0.0	0.011
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	20	40	0	0.0	0.006
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	21	40	0	0.0	0.0026
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	22	40	0	0.0	0.0006
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	23	40	0	0.0	0.0004
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	24	40	0	0.0	0.0002
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	25	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	26	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	27	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	28	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	29	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	30	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	31	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	32	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	33	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	34	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	35	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	36	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	37	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	38	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	39	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_kyte_doolittle2	40	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	3	40	40	1.0	1.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	4	40	40	1.0	0.9998
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	5	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	6	40	39	0.975	0.9996
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	7	40	37	0.925	0.9962
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	8	40	36	0.9	0.9926
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	9	40	32	0.8	0.9846
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	10	40	29	0.725	0.9552
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	11	40	26	0.65	0.8864
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	12	40	18	0.45	0.7372
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	13	40	12	0.3	0.5354
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	14	40	12	0.3	0.33
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	15	40	10	0.25	0.1848
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	16	40	7	0.175	0.0974
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	17	40	3	0.075	0.0452
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	18	40	0	0.0	0.0202
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	19	40	0	0.0	0.0092
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	20	40	0	0.0	0.0058
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	21	40	0	0.0	0.0024
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	22	40	0	0.0	0.0012
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	23	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	24	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	25	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	26	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	27	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	28	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	29	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	30	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	31	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	32	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	33	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	34	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	35	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	36	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	37	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	38	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	39	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_thomas_dill_no_c2	40	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	3	40	40	1.0	0.9998
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	4	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	5	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	6	40	40	1.0	0.9992
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	7	40	37	0.925	0.9986
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	8	40	37	0.925	0.9946
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	9	40	36	0.9	0.9886
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	10	40	36	0.9	0.9704
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	11	40	34	0.85	0.917
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	12	40	29	0.725	0.8108
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	13	40	22	0.55	0.6312
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	14	40	10	0.25	0.4206
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	15	40	7	0.175	0.2312
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	16	40	3	0.075	0.1174
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	17	40	2	0.05	0.0596
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	18	40	1	0.025	0.0322
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	19	40	1	0.025	0.0146
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	20	40	0	0.0	0.008
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	21	40	0	0.0	0.0048
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	22	40	0	0.0	0.0018
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	23	40	0	0.0	0.0006
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	24	40	0	0.0	0.0006
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	25	40	0	0.0	0.0002
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	26	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	27	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	28	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	29	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	30	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	31	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	32	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	33	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	34	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	35	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	36	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	37	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	38	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	39	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_lehninger_c_nonpolar2	40	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	3	40	40	1.0	0.9998
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	4	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	5	40	40	1.0	0.9996
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	6	40	40	1.0	0.9992
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	7	40	37	0.925	0.9974
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	8	40	37	0.925	0.9944
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	9	40	36	0.9	0.985
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	10	40	34	0.85	0.9546
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	11	40	31	0.775	0.8818
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	12	40	24	0.6	0.7232
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	13	40	14	0.35	0.5152
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	14	40	9	0.225	0.2984
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	15	40	6	0.15	0.154
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	16	40	5	0.125	0.0794
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	17	40	3	0.075	0.0374
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	18	40	3	0.075	0.0186
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	19	40	2	0.05	0.0108
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	20	40	0	0.0	0.005
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	21	40	0	0.0	0.0026
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	22	40	0	0.0	0.0018
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	23	40	0	0.0	0.0002
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	24	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	25	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	26	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	27	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	28	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	29	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	30	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	31	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	32	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	33	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	34	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	35	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	36	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	37	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	38	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	39	40	0	0.0	0.0
+P07457	4 fish, type III AFP	hp_pbotc_1st_ed2	40	40	0	0.0	0.0
+Q9GSA6	5 insects	protein20	3	51	42	0.8235294117647058	0.8984
+Q9GSA6	5 insects	protein20	4	51	2	0.0392156862745098	0.1048
+Q9GSA6	5 insects	protein20	5	51	0	0.0	0.004
+Q9GSA6	5 insects	protein20	6	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	7	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	8	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	9	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	10	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	11	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	12	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	13	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	14	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	15	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	16	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	17	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	18	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	19	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	20	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	21	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	22	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	23	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	24	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	25	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	26	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	27	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	28	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	29	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	30	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	31	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	32	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	33	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	34	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	35	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	36	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	37	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	38	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	39	51	0	0.0	0.0
+Q9GSA6	5 insects	protein20	40	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	3	51	50	0.9803921568627451	0.9994
+Q9GSA6	5 insects	dayhoff6	4	51	48	0.9411764705882353	0.9966
+Q9GSA6	5 insects	dayhoff6	5	51	47	0.9215686274509803	0.9662
+Q9GSA6	5 insects	dayhoff6	6	51	32	0.6274509803921569	0.803
+Q9GSA6	5 insects	dayhoff6	7	51	22	0.43137254901960786	0.4634
+Q9GSA6	5 insects	dayhoff6	8	51	20	0.39215686274509803	0.1826
+Q9GSA6	5 insects	dayhoff6	9	51	13	0.2549019607843137	0.0644
+Q9GSA6	5 insects	dayhoff6	10	51	5	0.09803921568627451	0.0268
+Q9GSA6	5 insects	dayhoff6	11	51	3	0.058823529411764705	0.0134
+Q9GSA6	5 insects	dayhoff6	12	51	1	0.0196078431372549	0.0076
+Q9GSA6	5 insects	dayhoff6	13	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	14	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	15	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	16	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	17	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	18	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	19	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	20	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	21	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	22	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	23	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	24	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	25	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	26	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	27	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	28	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	29	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	30	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	31	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	32	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	33	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	34	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	35	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	36	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	37	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	38	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	39	51	0	0.0	0.0
+Q9GSA6	5 insects	dayhoff6	40	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	3	51	51	1.0	0.9998
+Q9GSA6	5 insects	hp_lehninger2	4	51	51	1.0	0.9996
+Q9GSA6	5 insects	hp_lehninger2	5	51	48	0.9411764705882353	0.9996
+Q9GSA6	5 insects	hp_lehninger2	6	51	48	0.9411764705882353	0.999
+Q9GSA6	5 insects	hp_lehninger2	7	51	48	0.9411764705882353	0.9972
+Q9GSA6	5 insects	hp_lehninger2	8	51	48	0.9411764705882353	0.995
+Q9GSA6	5 insects	hp_lehninger2	9	51	46	0.9019607843137255	0.9908
+Q9GSA6	5 insects	hp_lehninger2	10	51	37	0.7254901960784313	0.982
+Q9GSA6	5 insects	hp_lehninger2	11	51	30	0.5882352941176471	0.9482
+Q9GSA6	5 insects	hp_lehninger2	12	51	21	0.4117647058823529	0.8332
+Q9GSA6	5 insects	hp_lehninger2	13	51	12	0.23529411764705882	0.6104
+Q9GSA6	5 insects	hp_lehninger2	14	51	7	0.13725490196078433	0.3982
+Q9GSA6	5 insects	hp_lehninger2	15	51	3	0.058823529411764705	0.226
+Q9GSA6	5 insects	hp_lehninger2	16	51	3	0.058823529411764705	0.1134
+Q9GSA6	5 insects	hp_lehninger2	17	51	2	0.0392156862745098	0.0572
+Q9GSA6	5 insects	hp_lehninger2	18	51	1	0.0196078431372549	0.029
+Q9GSA6	5 insects	hp_lehninger2	19	51	1	0.0196078431372549	0.0136
+Q9GSA6	5 insects	hp_lehninger2	20	51	0	0.0	0.007
+Q9GSA6	5 insects	hp_lehninger2	21	51	0	0.0	0.0034
+Q9GSA6	5 insects	hp_lehninger2	22	51	0	0.0	0.0018
+Q9GSA6	5 insects	hp_lehninger2	23	51	0	0.0	0.0004
+Q9GSA6	5 insects	hp_lehninger2	24	51	0	0.0	0.0002
+Q9GSA6	5 insects	hp_lehninger2	25	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	26	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	27	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	28	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	29	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	30	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	31	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	32	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	33	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	34	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	35	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	36	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	37	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	38	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	39	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger2	40	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	3	51	51	1.0	1.0
+Q9GSA6	5 insects	hp_thomas_dill2	4	51	51	1.0	0.9998
+Q9GSA6	5 insects	hp_thomas_dill2	5	51	50	0.9803921568627451	0.9996
+Q9GSA6	5 insects	hp_thomas_dill2	6	51	50	0.9803921568627451	0.9996
+Q9GSA6	5 insects	hp_thomas_dill2	7	51	48	0.9411764705882353	0.9986
+Q9GSA6	5 insects	hp_thomas_dill2	8	51	47	0.9215686274509803	0.9966
+Q9GSA6	5 insects	hp_thomas_dill2	9	51	45	0.8823529411764706	0.9932
+Q9GSA6	5 insects	hp_thomas_dill2	10	51	43	0.8431372549019608	0.9874
+Q9GSA6	5 insects	hp_thomas_dill2	11	51	37	0.7254901960784313	0.9688
+Q9GSA6	5 insects	hp_thomas_dill2	12	51	29	0.5686274509803921	0.9102
+Q9GSA6	5 insects	hp_thomas_dill2	13	51	18	0.35294117647058826	0.7818
+Q9GSA6	5 insects	hp_thomas_dill2	14	51	13	0.2549019607843137	0.5892
+Q9GSA6	5 insects	hp_thomas_dill2	15	51	11	0.21568627450980393	0.3862
+Q9GSA6	5 insects	hp_thomas_dill2	16	51	8	0.1568627450980392	0.232
+Q9GSA6	5 insects	hp_thomas_dill2	17	51	6	0.11764705882352941	0.1324
+Q9GSA6	5 insects	hp_thomas_dill2	18	51	5	0.09803921568627451	0.069
+Q9GSA6	5 insects	hp_thomas_dill2	19	51	4	0.0784313725490196	0.0358
+Q9GSA6	5 insects	hp_thomas_dill2	20	51	4	0.0784313725490196	0.0176
+Q9GSA6	5 insects	hp_thomas_dill2	21	51	0	0.0	0.0096
+Q9GSA6	5 insects	hp_thomas_dill2	22	51	0	0.0	0.0042
+Q9GSA6	5 insects	hp_thomas_dill2	23	51	0	0.0	0.0022
+Q9GSA6	5 insects	hp_thomas_dill2	24	51	0	0.0	0.0014
+Q9GSA6	5 insects	hp_thomas_dill2	25	51	0	0.0	0.001
+Q9GSA6	5 insects	hp_thomas_dill2	26	51	0	0.0	0.0006
+Q9GSA6	5 insects	hp_thomas_dill2	27	51	0	0.0	0.0002
+Q9GSA6	5 insects	hp_thomas_dill2	28	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	29	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	30	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	31	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	32	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	33	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	34	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	35	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	36	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	37	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	38	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	39	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill2	40	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	3	51	51	1.0	1.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	4	51	51	1.0	0.9998
+Q9GSA6	5 insects	hp_kyte_doolittle2	5	51	50	0.9803921568627451	0.9996
+Q9GSA6	5 insects	hp_kyte_doolittle2	6	51	50	0.9803921568627451	0.9996
+Q9GSA6	5 insects	hp_kyte_doolittle2	7	51	48	0.9411764705882353	0.9986
+Q9GSA6	5 insects	hp_kyte_doolittle2	8	51	47	0.9215686274509803	0.997
+Q9GSA6	5 insects	hp_kyte_doolittle2	9	51	45	0.8823529411764706	0.9946
+Q9GSA6	5 insects	hp_kyte_doolittle2	10	51	44	0.8627450980392157	0.9868
+Q9GSA6	5 insects	hp_kyte_doolittle2	11	51	41	0.803921568627451	0.9748
+Q9GSA6	5 insects	hp_kyte_doolittle2	12	51	26	0.5098039215686274	0.9398
+Q9GSA6	5 insects	hp_kyte_doolittle2	13	51	17	0.3333333333333333	0.8518
+Q9GSA6	5 insects	hp_kyte_doolittle2	14	51	13	0.2549019607843137	0.7186
+Q9GSA6	5 insects	hp_kyte_doolittle2	15	51	6	0.11764705882352941	0.5398
+Q9GSA6	5 insects	hp_kyte_doolittle2	16	51	5	0.09803921568627451	0.3752
+Q9GSA6	5 insects	hp_kyte_doolittle2	17	51	1	0.0196078431372549	0.2352
+Q9GSA6	5 insects	hp_kyte_doolittle2	18	51	0	0.0	0.1438
+Q9GSA6	5 insects	hp_kyte_doolittle2	19	51	0	0.0	0.08
+Q9GSA6	5 insects	hp_kyte_doolittle2	20	51	0	0.0	0.0438
+Q9GSA6	5 insects	hp_kyte_doolittle2	21	51	0	0.0	0.0244
+Q9GSA6	5 insects	hp_kyte_doolittle2	22	51	0	0.0	0.0116
+Q9GSA6	5 insects	hp_kyte_doolittle2	23	51	0	0.0	0.0068
+Q9GSA6	5 insects	hp_kyte_doolittle2	24	51	0	0.0	0.0036
+Q9GSA6	5 insects	hp_kyte_doolittle2	25	51	0	0.0	0.002
+Q9GSA6	5 insects	hp_kyte_doolittle2	26	51	0	0.0	0.0014
+Q9GSA6	5 insects	hp_kyte_doolittle2	27	51	0	0.0	0.0008
+Q9GSA6	5 insects	hp_kyte_doolittle2	28	51	0	0.0	0.0006
+Q9GSA6	5 insects	hp_kyte_doolittle2	29	51	0	0.0	0.0002
+Q9GSA6	5 insects	hp_kyte_doolittle2	30	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	31	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	32	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	33	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	34	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	35	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	36	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	37	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	38	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	39	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_kyte_doolittle2	40	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	3	51	51	1.0	1.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	4	51	51	1.0	0.9998
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	5	51	50	0.9803921568627451	0.9996
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	6	51	50	0.9803921568627451	0.9994
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	7	51	47	0.9215686274509803	0.998
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	8	51	47	0.9215686274509803	0.9956
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	9	51	45	0.8823529411764706	0.993
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	10	51	39	0.7647058823529411	0.9872
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	11	51	32	0.6274509803921569	0.9714
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	12	51	29	0.5686274509803921	0.9258
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	13	51	21	0.4117647058823529	0.8246
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	14	51	15	0.29411764705882354	0.6688
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	15	51	10	0.19607843137254902	0.4866
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	16	51	9	0.17647058823529413	0.3156
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	17	51	7	0.13725490196078433	0.1858
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	18	51	0	0.0	0.1098
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	19	51	0	0.0	0.0648
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	20	51	0	0.0	0.038
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	21	51	0	0.0	0.0202
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	22	51	0	0.0	0.0102
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	23	51	0	0.0	0.0048
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	24	51	0	0.0	0.0034
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	25	51	0	0.0	0.0014
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	26	51	0	0.0	0.0012
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	27	51	0	0.0	0.0004
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	28	51	0	0.0	0.0004
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	29	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	30	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	31	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	32	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	33	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	34	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	35	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	36	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	37	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	38	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	39	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_thomas_dill_no_c2	40	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	3	51	51	1.0	0.9998
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	4	51	51	1.0	0.9996
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	5	51	51	1.0	0.9996
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	6	51	48	0.9411764705882353	0.9996
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	7	51	48	0.9411764705882353	0.9986
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	8	51	47	0.9215686274509803	0.9966
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	9	51	46	0.9019607843137255	0.9916
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	10	51	43	0.8431372549019608	0.985
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	11	51	38	0.7450980392156863	0.9558
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	12	51	32	0.6274509803921569	0.852
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	13	51	21	0.4117647058823529	0.6592
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	14	51	15	0.29411764705882354	0.4266
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	15	51	6	0.11764705882352941	0.2404
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	16	51	3	0.058823529411764705	0.1254
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	17	51	1	0.0196078431372549	0.0646
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	18	51	1	0.0196078431372549	0.0318
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	19	51	1	0.0196078431372549	0.0154
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	20	51	1	0.0196078431372549	0.0076
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	21	51	1	0.0196078431372549	0.0044
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	22	51	0	0.0	0.002
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	23	51	0	0.0	0.0006
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	24	51	0	0.0	0.0004
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	25	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	26	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	27	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	28	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	29	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	30	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	31	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	32	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	33	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	34	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	35	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	36	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	37	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	38	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	39	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_lehninger_c_nonpolar2	40	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	3	51	51	1.0	0.9998
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	4	51	51	1.0	0.9996
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	5	51	51	1.0	0.9996
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	6	51	48	0.9411764705882353	0.9996
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	7	51	48	0.9411764705882353	0.9982
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	8	51	47	0.9215686274509803	0.9952
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	9	51	43	0.8431372549019608	0.9922
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	10	51	42	0.8235294117647058	0.9848
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	11	51	42	0.8235294117647058	0.957
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	12	51	35	0.6862745098039216	0.8738
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	13	51	25	0.49019607843137253	0.7108
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	14	51	22	0.43137254901960786	0.4944
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	15	51	18	0.35294117647058826	0.3022
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	16	51	14	0.27450980392156865	0.1708
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	17	51	11	0.21568627450980393	0.091
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	18	51	11	0.21568627450980393	0.0452
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	19	51	0	0.0	0.022
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	20	51	0	0.0	0.0106
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	21	51	0	0.0	0.0058
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	22	51	0	0.0	0.0024
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	23	51	0	0.0	0.001
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	24	51	0	0.0	0.0004
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	25	51	0	0.0	0.0002
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	26	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	27	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	28	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	29	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	30	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	31	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	32	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	33	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	34	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	35	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	36	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	37	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	38	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	39	51	0	0.0	0.0
+Q9GSA6	5 insects	hp_pbotc_1st_ed2	40	51	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	3	55	52	0.9454545454545454	0.978
+H7FWB6	7 bacteria	protein20	4	55	9	0.16363636363636364	0.3754
+H7FWB6	7 bacteria	protein20	5	55	5	0.09090909090909091	0.0156
+H7FWB6	7 bacteria	protein20	6	55	4	0.07272727272727272	0.001
+H7FWB6	7 bacteria	protein20	7	55	4	0.07272727272727272	0.0
+H7FWB6	7 bacteria	protein20	8	55	3	0.05454545454545454	0.0
+H7FWB6	7 bacteria	protein20	9	55	1	0.01818181818181818	0.0
+H7FWB6	7 bacteria	protein20	10	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	11	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	12	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	13	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	14	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	15	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	16	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	17	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	18	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	19	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	20	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	21	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	22	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	23	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	24	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	25	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	26	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	27	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	28	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	29	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	30	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	31	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	32	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	33	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	34	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	35	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	36	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	37	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	38	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	39	55	0	0.0	0.0
+H7FWB6	7 bacteria	protein20	40	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	3	55	54	0.9818181818181818	1.0
+H7FWB6	7 bacteria	dayhoff6	4	55	54	0.9818181818181818	0.9978
+H7FWB6	7 bacteria	dayhoff6	5	55	54	0.9818181818181818	0.992
+H7FWB6	7 bacteria	dayhoff6	6	55	48	0.8727272727272727	0.947
+H7FWB6	7 bacteria	dayhoff6	7	55	36	0.6545454545454545	0.7762
+H7FWB6	7 bacteria	dayhoff6	8	55	20	0.36363636363636365	0.4144
+H7FWB6	7 bacteria	dayhoff6	9	55	7	0.12727272727272726	0.1354
+H7FWB6	7 bacteria	dayhoff6	10	55	5	0.09090909090909091	0.0338
+H7FWB6	7 bacteria	dayhoff6	11	55	5	0.09090909090909091	0.0062
+H7FWB6	7 bacteria	dayhoff6	12	55	5	0.09090909090909091	0.0016
+H7FWB6	7 bacteria	dayhoff6	13	55	4	0.07272727272727272	0.0
+H7FWB6	7 bacteria	dayhoff6	14	55	3	0.05454545454545454	0.0
+H7FWB6	7 bacteria	dayhoff6	15	55	3	0.05454545454545454	0.0
+H7FWB6	7 bacteria	dayhoff6	16	55	3	0.05454545454545454	0.0
+H7FWB6	7 bacteria	dayhoff6	17	55	3	0.05454545454545454	0.0
+H7FWB6	7 bacteria	dayhoff6	18	55	2	0.03636363636363636	0.0
+H7FWB6	7 bacteria	dayhoff6	19	55	1	0.01818181818181818	0.0
+H7FWB6	7 bacteria	dayhoff6	20	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	21	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	22	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	23	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	24	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	25	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	26	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	27	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	28	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	29	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	30	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	31	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	32	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	33	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	34	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	35	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	36	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	37	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	38	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	39	55	0	0.0	0.0
+H7FWB6	7 bacteria	dayhoff6	40	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	3	55	55	1.0	0.9998
+H7FWB6	7 bacteria	hp_lehninger2	4	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_lehninger2	5	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_lehninger2	6	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_lehninger2	7	55	55	1.0	0.9992
+H7FWB6	7 bacteria	hp_lehninger2	8	55	52	0.9454545454545454	0.999
+H7FWB6	7 bacteria	hp_lehninger2	9	55	52	0.9454545454545454	0.9966
+H7FWB6	7 bacteria	hp_lehninger2	10	55	50	0.9090909090909091	0.9944
+H7FWB6	7 bacteria	hp_lehninger2	11	55	48	0.8727272727272727	0.9842
+H7FWB6	7 bacteria	hp_lehninger2	12	55	43	0.7818181818181819	0.9604
+H7FWB6	7 bacteria	hp_lehninger2	13	55	33	0.6	0.9044
+H7FWB6	7 bacteria	hp_lehninger2	14	55	21	0.38181818181818183	0.7552
+H7FWB6	7 bacteria	hp_lehninger2	15	55	8	0.14545454545454545	0.5384
+H7FWB6	7 bacteria	hp_lehninger2	16	55	6	0.10909090909090909	0.3294
+H7FWB6	7 bacteria	hp_lehninger2	17	55	4	0.07272727272727272	0.1868
+H7FWB6	7 bacteria	hp_lehninger2	18	55	2	0.03636363636363636	0.0984
+H7FWB6	7 bacteria	hp_lehninger2	19	55	2	0.03636363636363636	0.05
+H7FWB6	7 bacteria	hp_lehninger2	20	55	2	0.03636363636363636	0.0276
+H7FWB6	7 bacteria	hp_lehninger2	21	55	1	0.01818181818181818	0.0146
+H7FWB6	7 bacteria	hp_lehninger2	22	55	1	0.01818181818181818	0.0058
+H7FWB6	7 bacteria	hp_lehninger2	23	55	0	0.0	0.0034
+H7FWB6	7 bacteria	hp_lehninger2	24	55	0	0.0	0.0016
+H7FWB6	7 bacteria	hp_lehninger2	25	55	0	0.0	0.0006
+H7FWB6	7 bacteria	hp_lehninger2	26	55	0	0.0	0.0002
+H7FWB6	7 bacteria	hp_lehninger2	27	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	28	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	29	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	30	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	31	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	32	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	33	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	34	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	35	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	36	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	37	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	38	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	39	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger2	40	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	3	55	55	1.0	1.0
+H7FWB6	7 bacteria	hp_thomas_dill2	4	55	55	1.0	0.9998
+H7FWB6	7 bacteria	hp_thomas_dill2	5	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_thomas_dill2	6	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_thomas_dill2	7	55	54	0.9818181818181818	0.9992
+H7FWB6	7 bacteria	hp_thomas_dill2	8	55	53	0.9636363636363636	0.9982
+H7FWB6	7 bacteria	hp_thomas_dill2	9	55	52	0.9454545454545454	0.9964
+H7FWB6	7 bacteria	hp_thomas_dill2	10	55	52	0.9454545454545454	0.992
+H7FWB6	7 bacteria	hp_thomas_dill2	11	55	46	0.8363636363636363	0.9858
+H7FWB6	7 bacteria	hp_thomas_dill2	12	55	45	0.8181818181818182	0.958
+H7FWB6	7 bacteria	hp_thomas_dill2	13	55	34	0.6181818181818182	0.897
+H7FWB6	7 bacteria	hp_thomas_dill2	14	55	23	0.41818181818181815	0.7682
+H7FWB6	7 bacteria	hp_thomas_dill2	15	55	13	0.23636363636363636	0.59
+H7FWB6	7 bacteria	hp_thomas_dill2	16	55	7	0.12727272727272726	0.3996
+H7FWB6	7 bacteria	hp_thomas_dill2	17	55	2	0.03636363636363636	0.2514
+H7FWB6	7 bacteria	hp_thomas_dill2	18	55	2	0.03636363636363636	0.1558
+H7FWB6	7 bacteria	hp_thomas_dill2	19	55	1	0.01818181818181818	0.097
+H7FWB6	7 bacteria	hp_thomas_dill2	20	55	1	0.01818181818181818	0.0638
+H7FWB6	7 bacteria	hp_thomas_dill2	21	55	1	0.01818181818181818	0.0338
+H7FWB6	7 bacteria	hp_thomas_dill2	22	55	1	0.01818181818181818	0.0194
+H7FWB6	7 bacteria	hp_thomas_dill2	23	55	0	0.0	0.0128
+H7FWB6	7 bacteria	hp_thomas_dill2	24	55	0	0.0	0.006
+H7FWB6	7 bacteria	hp_thomas_dill2	25	55	0	0.0	0.003
+H7FWB6	7 bacteria	hp_thomas_dill2	26	55	0	0.0	0.0014
+H7FWB6	7 bacteria	hp_thomas_dill2	27	55	0	0.0	0.0008
+H7FWB6	7 bacteria	hp_thomas_dill2	28	55	0	0.0	0.0006
+H7FWB6	7 bacteria	hp_thomas_dill2	29	55	0	0.0	0.0004
+H7FWB6	7 bacteria	hp_thomas_dill2	30	55	0	0.0	0.0004
+H7FWB6	7 bacteria	hp_thomas_dill2	31	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	32	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	33	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	34	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	35	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	36	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	37	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	38	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	39	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill2	40	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	3	55	55	1.0	1.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	4	55	55	1.0	0.9998
+H7FWB6	7 bacteria	hp_kyte_doolittle2	5	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_kyte_doolittle2	6	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_kyte_doolittle2	7	55	55	1.0	0.9994
+H7FWB6	7 bacteria	hp_kyte_doolittle2	8	55	53	0.9636363636363636	0.9986
+H7FWB6	7 bacteria	hp_kyte_doolittle2	9	55	52	0.9454545454545454	0.996
+H7FWB6	7 bacteria	hp_kyte_doolittle2	10	55	49	0.8909090909090909	0.9928
+H7FWB6	7 bacteria	hp_kyte_doolittle2	11	55	46	0.8363636363636363	0.9874
+H7FWB6	7 bacteria	hp_kyte_doolittle2	12	55	44	0.8	0.9758
+H7FWB6	7 bacteria	hp_kyte_doolittle2	13	55	35	0.6363636363636364	0.9314
+H7FWB6	7 bacteria	hp_kyte_doolittle2	14	55	25	0.45454545454545453	0.8334
+H7FWB6	7 bacteria	hp_kyte_doolittle2	15	55	16	0.2909090909090909	0.6804
+H7FWB6	7 bacteria	hp_kyte_doolittle2	16	55	9	0.16363636363636364	0.4966
+H7FWB6	7 bacteria	hp_kyte_doolittle2	17	55	7	0.12727272727272726	0.3406
+H7FWB6	7 bacteria	hp_kyte_doolittle2	18	55	3	0.05454545454545454	0.2262
+H7FWB6	7 bacteria	hp_kyte_doolittle2	19	55	2	0.03636363636363636	0.1518
+H7FWB6	7 bacteria	hp_kyte_doolittle2	20	55	2	0.03636363636363636	0.0978
+H7FWB6	7 bacteria	hp_kyte_doolittle2	21	55	2	0.03636363636363636	0.0558
+H7FWB6	7 bacteria	hp_kyte_doolittle2	22	55	2	0.03636363636363636	0.0322
+H7FWB6	7 bacteria	hp_kyte_doolittle2	23	55	0	0.0	0.0204
+H7FWB6	7 bacteria	hp_kyte_doolittle2	24	55	0	0.0	0.0132
+H7FWB6	7 bacteria	hp_kyte_doolittle2	25	55	0	0.0	0.0076
+H7FWB6	7 bacteria	hp_kyte_doolittle2	26	55	0	0.0	0.005
+H7FWB6	7 bacteria	hp_kyte_doolittle2	27	55	0	0.0	0.0034
+H7FWB6	7 bacteria	hp_kyte_doolittle2	28	55	0	0.0	0.0016
+H7FWB6	7 bacteria	hp_kyte_doolittle2	29	55	0	0.0	0.001
+H7FWB6	7 bacteria	hp_kyte_doolittle2	30	55	0	0.0	0.0002
+H7FWB6	7 bacteria	hp_kyte_doolittle2	31	55	0	0.0	0.0002
+H7FWB6	7 bacteria	hp_kyte_doolittle2	32	55	0	0.0	0.0002
+H7FWB6	7 bacteria	hp_kyte_doolittle2	33	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	34	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	35	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	36	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	37	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	38	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	39	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_kyte_doolittle2	40	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	3	55	55	1.0	1.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	4	55	55	1.0	0.9998
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	5	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	6	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	7	55	54	0.9818181818181818	0.9992
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	8	55	53	0.9636363636363636	0.9978
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	9	55	53	0.9636363636363636	0.996
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	10	55	52	0.9454545454545454	0.9916
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	11	55	45	0.8181818181818182	0.9854
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	12	55	45	0.8181818181818182	0.9604
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	13	55	40	0.7272727272727273	0.8994
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	14	55	27	0.4909090909090909	0.7776
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	15	55	18	0.32727272727272727	0.602
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	16	55	9	0.16363636363636364	0.4252
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	17	55	2	0.03636363636363636	0.2728
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	18	55	2	0.03636363636363636	0.1766
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	19	55	1	0.01818181818181818	0.1106
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	20	55	1	0.01818181818181818	0.076
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	21	55	1	0.01818181818181818	0.038
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	22	55	1	0.01818181818181818	0.022
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	23	55	0	0.0	0.0134
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	24	55	0	0.0	0.0072
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	25	55	0	0.0	0.0034
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	26	55	0	0.0	0.0016
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	27	55	0	0.0	0.001
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	28	55	0	0.0	0.0006
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	29	55	0	0.0	0.0004
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	30	55	0	0.0	0.0004
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	31	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	32	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	33	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	34	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	35	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	36	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	37	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	38	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	39	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_thomas_dill_no_c2	40	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	3	55	55	1.0	0.9998
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	4	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	5	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	6	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	7	55	55	1.0	0.9992
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	8	55	52	0.9454545454545454	0.999
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	9	55	52	0.9454545454545454	0.9966
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	10	55	50	0.9090909090909091	0.9944
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	11	55	49	0.8909090909090909	0.9866
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	12	55	44	0.8	0.9644
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	13	55	40	0.7272727272727273	0.9066
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	14	55	33	0.6	0.769
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	15	55	18	0.32727272727272727	0.5566
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	16	55	12	0.21818181818181817	0.3442
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	17	55	3	0.05454545454545454	0.1968
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	18	55	2	0.03636363636363636	0.104
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	19	55	2	0.03636363636363636	0.0518
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	20	55	2	0.03636363636363636	0.0272
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	21	55	1	0.01818181818181818	0.015
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	22	55	1	0.01818181818181818	0.0064
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	23	55	0	0.0	0.004
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	24	55	0	0.0	0.0018
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	25	55	0	0.0	0.0012
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	26	55	0	0.0	0.0004
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	27	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	28	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	29	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	30	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	31	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	32	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	33	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	34	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	35	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	36	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	37	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	38	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	39	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_lehninger_c_nonpolar2	40	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	3	55	55	1.0	0.9998
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	4	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	5	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	6	55	55	1.0	0.9996
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	7	55	52	0.9454545454545454	0.9992
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	8	55	52	0.9454545454545454	0.9988
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	9	55	50	0.9090909090909091	0.997
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	10	55	50	0.9090909090909091	0.992
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	11	55	41	0.7454545454545455	0.985
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	12	55	32	0.5818181818181818	0.9592
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	13	55	19	0.34545454545454546	0.8856
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	14	55	7	0.12727272727272726	0.735
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	15	55	6	0.10909090909090909	0.5286
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	16	55	5	0.09090909090909091	0.3366
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	17	55	3	0.05454545454545454	0.1938
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	18	55	3	0.05454545454545454	0.108
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	19	55	2	0.03636363636363636	0.0544
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	20	55	2	0.03636363636363636	0.0264
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	21	55	2	0.03636363636363636	0.0132
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	22	55	2	0.03636363636363636	0.0064
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	23	55	0	0.0	0.0042
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	24	55	0	0.0	0.0026
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	25	55	0	0.0	0.0018
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	26	55	0	0.0	0.0004
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	27	55	0	0.0	0.0002
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	28	55	0	0.0	0.0002
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	29	55	0	0.0	0.0002
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	30	55	0	0.0	0.0002
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	31	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	32	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	33	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	34	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	35	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	36	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	37	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	38	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	39	55	0	0.0	0.0
+H7FWB6	7 bacteria	hp_pbotc_1st_ed2	40	55	0	0.0	0.0
