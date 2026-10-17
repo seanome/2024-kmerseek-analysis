@@ -36,6 +36,10 @@ def code(source):
 md(r"""
 # 295. Does any kmerseek setting reach ice-binding proteins of other lineages from one query?
 
+This notebook holds the whole convergence test. Sections 1-7 are the ice-binding
+proteins, the one class searched so far. Section 8 is the truth sets for three more
+classes, adhesive, shell-matrix and silk proteins, built but not yet searched.
+
 Ice-binding proteins, also called antifreeze proteins, stop ice crystals growing in an
 animal, plant or microbe that lives below freezing. They arose separately several times:
 in fish, type I, type II, type III and the antifreeze glycoprotein AFGP come from
@@ -72,7 +76,7 @@ lineage.
 
 **The data.** The convergence-afp pipeline
 ([nextflow-runs/convergence-afp](../nextflow-runs/convergence-afp), PR 141), run on
-Sherlock 15-16 October 2026. Every method ranked all 575_748 entries of reviewed
+Sherlock 15-16 October 2026 and scored on 17 October. Every method ranked all 575_748 entries of reviewed
 Swiss-Prot release 2026_03 (FASTA MD5 `bc9d398533e6df582b563c6c03093bd0`) for every
 query. kmerseek is 0.4 at commit
 [3c353d4](https://github.com/seanome/kmerseek/pull/141), with the Karlin-Altschul
@@ -128,7 +132,11 @@ hits_md = (SCORED / "hits_residues.md").read_text()
 # Real queries only, and only rows where a false positive set the threshold. A list with
 # none has no recall: see bin/score.py.
 real = metrics.filter((pl.col("kind") == "real") & pl.col("recall").is_not_null())
-n_settings_total = metrics.filter(pl.col("method") == "kmerseek")["setting_label"].n_unique()
+# Every setting the run was given, read from its own table: a setting whose E-value fit was
+# refused writes no rows, so counting the metrics would miss it.
+n_settings_total = pl.read_csv(
+    "../nextflow-runs/convergence-afp/assets/kmerseek_settings.tsv", separator="\t"
+).height
 
 # One colour per method, kept for every figure in this notebook.
 METHOD_COLOUR = {
@@ -619,7 +627,8 @@ header(
     f"kmerseek 0.4 (3c353d4), {chosen_setting}, against reviewed Swiss-Prot 2026_03",
     "a real query should reach more than a draw that keeps its composition, or its "
     "composition and repeat period, at the same score cutoff",
-    "every draw reaches 0, and so does the real query everywhere except the bacterial one",
+    f"the most any draw reaches is {int(sub.filter(pl.col('kind') != 'real')['n_found_at_real_threshold'].max())}; "
+    "the real query reaches 0 everywhere except the bacterial one",
 )
 pf.save(fig, FIGURES / "295_SF2_null_draws_swissprot_2026_03")
 """)
@@ -684,6 +693,11 @@ ax.plot(
     linestyle="none",
     label="what kmerseek needed to pass: best scan + 0.10",
 )
+for xi, (k_val, s_val) in enumerate(
+    zip(decision["kmerseek recall"], decision["best composition or period"])
+):
+    for dx, v in [(-w / 2, k_val), (w / 2, s_val)]:
+        ax.text(xi + dx, v, f"{v:.2f}", ha="center", va="bottom", fontsize=5)
 ax.set_xticks(x)
 ax.set_xticklabels(decision["held-out lineage"])
 ax.set_ylim(0, float((decision["best composition or period"] + 0.10).max()) * 1.6)
@@ -701,6 +715,119 @@ header(
     f"{decision.height - len(verdict['held_out_lineages_passing'])} of {decision.height} held-out lineages",
 )
 pf.save(fig, FIGURES / "295_SF4_decision_swissprot_2026_03")
+""")
+
+md(r"""
+## 8. Three more patterns that evolved more than once: truth sets only, no search yet
+
+The same test can be asked of any protein pattern that arose separately in unrelated
+lineages. Three more were built with `scripts/convergence_classes_truth.py`, from the
+UniProt REST API, release 2026_03:
+
+* **Adhesive (B).** Underwater glue rich in tyrosine and lysine, where the tyrosine
+  becomes DOPA after translation. Mussels and sandcastle worms arrived at it separately.
+  Barnacle cement does the same job with a different chemistry and is the control.
+* **Shell matrix (C).** Aspartate- and glutamate-rich, low-complexity proteins in
+  mollusc shells, coral skeletons, sea-urchin tests and vertebrate bone.
+* **Silk (D).** Long repeats of short glycine- and alanine-rich units. Spiders and the
+  moths-plus-caddisflies clade are two separate origins. Bee, ant and hornet silks are
+  coiled coils, a different pattern, and are the control.
+
+An entry counts as a cross-lineage target only if it is reviewed (Swiss-Prot), sits in a
+lineage that carries the pattern, and, for shell and silk, carries the pattern itself by
+its composition or repeats. A class is a benchmark only if it has at least 20 such entries
+in at least 2 lineages; otherwise it can only be a case study. The searches have not been
+run for any of the three.
+""")
+
+code(r"""
+CLASS_PATTERN_LINEAGES = {
+    "adhesive": ["B1 mussels and other bivalves", "B2 tube-building polychaetes"],
+    "shell": [
+        "C1 molluscs",
+        "C2 stony corals",
+        "C3 sea urchins and other echinoderms",
+        "C4 vertebrates",
+    ],
+    "silk": ["D1 spiders", "D2 moths, butterflies and caddisflies"],
+}
+MIN_CROSS_TARGETS, MIN_QUERY_LINEAGES = 20, 2
+
+gate_rows, lineage_rows = [], []
+for cls, pattern in CLASS_PATTERN_LINEAGES.items():
+    t = pl.read_csv(
+        f"../data/convergence_{cls}/truth_set.tsv", separator="\t", infer_schema_length=0
+    )
+    counted = (pl.col("tier") == "Swiss-Prot") & pl.col("lineage").is_in(pattern)
+    if cls == "shell":
+        counted = counted & (pl.col("kind") == "acidic or low complexity")
+    if cls == "silk":
+        counted = counted & (pl.col("kind") != "neither")
+    t = t.with_columns(counted=counted)
+    usable = t.filter("counted")
+    n_lineages = usable["lineage"].n_unique()
+    gate_rows.append(
+        {
+            "class": cls,
+            "entries": t.height,
+            "counted targets": usable.height,
+            "pattern lineages with one": n_lineages,
+            "result": (
+                "benchmark"
+                if usable.height >= MIN_CROSS_TARGETS and n_lineages >= MIN_QUERY_LINEAGES
+                else "case study"
+            ),
+        }
+    )
+    lineage_rows.append(
+        t.group_by("lineage")
+        .agg(
+            pl.col("counted").sum().alias("counted"),
+            (~pl.col("counted")).sum().alias("not_counted"),
+        )
+        .with_columns(pl.lit(cls).alias("class"))
+    )
+gate = pl.DataFrame(gate_rows)
+per_class_lineage = pl.concat(lineage_rows).sort("class", "lineage")
+print(gate)
+print()
+print(per_class_lineage)
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, nrows=3)
+for ax, cls in zip(axs, CLASS_PATTERN_LINEAGES):
+    sub = per_class_lineage.filter(pl.col("class") == cls)
+    y = np.arange(sub.height)
+    ax.barh(y, sub["counted"], color=pf.OKABE_ITO["blue"], label="counted target")
+    ax.barh(
+        y,
+        sub["not_counted"],
+        left=sub["counted"],
+        color=pf.GREY,
+        label="not counted: unreviewed, a control or other lineage, or lacking the pattern",
+    )
+    ax.set_yticks(y)
+    ax.set_yticklabels(sub["lineage"])
+    ax.invert_yaxis()
+    ax.set_xlabel("Entries (n)")
+    g = gate.filter(pl.col("class") == cls).row(0, named=True)
+    ax.set_title(
+        f"{cls}: {g['counted targets']} counted targets, so a {g['result']}",
+        loc="right",
+        pad=2,
+    )
+    ax.grid(axis="y", which="major")
+    ax.set_axisbelow(True)
+for ax, letter in zip(axs, "abc"):
+    pf.panel_label(ax, letter)
+legend_in_axes(axs[1], loc="lower right")
+header(
+    fig,
+    "UniProt REST API, release 2026_03; scripts/convergence_classes_truth.py",
+    f"a class can be a benchmark if it has at least {MIN_CROSS_TARGETS} counted targets in "
+    f"at least {MIN_QUERY_LINEAGES} lineages",
+    "; ".join(f"{r['class']} {r['counted targets']} ({r['result']})" for r in gate_rows),
+)
+pf.save(fig, FIGURES / "295_SF5_other_classes_truth_sets_uniprot_2026_03")
 """)
 
 md(r"""
@@ -729,15 +856,19 @@ was 0.0227:
    annotation, so the one place any method crossed a lineage boundary is a family related
    by ancestry, not a pattern shared without it.
 3. From the five fish and insect queries, no kmerseek setting reached any ice-binding
-   protein of another lineage: 0 of 65 to 117 settings per query.
+   protein of another lineage: 0 of 164 settings for each query. From the bacterial
+   query, 24 of the 164 settings reached at least one.
 4. The only cross-lineage reach that ordinary sequence search misses came from a method
    with no search: the composition scan in the wass14 alphabet reached 7 of 55 fish type I
-   proteins from the AFGP query, where every kmerseek setting reached 0.
-5. The Kyte-Doolittle hydropathy window did not fire as a kill condition in the way it was
-   framed: it reached nothing either, in any of its 40 lists.
-6. Every control draw reached 0 ice-binding proteins at the real query's score cutoff, so
-   the null rule is not informative here: it is satisfied only because the real counts are
-   0 too.
+   proteins from the AFGP query, where every kmerseek setting reached 0. All 40 control
+   draws of that query reached the same 7, as they must: a shuffle keeps the composition,
+   so this reach comes from the AFGP query's alanine- and threonine-rich composition, not
+   from the order of its residues.
+5. The Kyte-Doolittle hydropathy window reached nothing from any real query, in any of its
+   10 lists.
+6. For the kmerseek setting the rule chose, every control draw reached 0 ice-binding
+   proteins at the real query's score cutoff. The null rule is satisfied only because the
+   real counts are 0 too, so it says nothing here.
 
 **What this decides.** The paper cannot claim from this test that kmerseek finds proteins
 sharing a physicochemical pattern without shared ancestry. The one cross-lineage pair it
@@ -755,10 +886,9 @@ reaches is a homolog pair that three other tools also find.
   different query from the same lineage could behave differently, and nothing here tests
   that.
 
-**Follow-up worth running.** The one number that would change the reading is whether the
-AFGP composition result is real: 7 of 55 is small, and a composition scan reaching fish
-type I proteins from an AFGP query may be driven by alanine content alone. Seven draws of
-a composition-matched null query would settle it.
+**Next.** The ice-binding test is the only class with a search run. Section 8 shows the
+truth sets for the other three classes: only the shell-matrix class has enough reviewed
+entries to be scored as a benchmark; adhesive and silk proteins can only be case studies.
 """)
 
 nb = {

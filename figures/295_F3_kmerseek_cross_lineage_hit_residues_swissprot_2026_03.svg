@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="518.619917pt" height="164.46595pt" viewBox="0 0 518.619917 164.46595" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-17T05:48:34.797175</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 164.46595 
+L 518.619917 164.46595 
+L 518.619917 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="text_1">
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 73.551417)">hsdm17.k6.s1.lcfalse.extend-c0.18</text>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 78.258605)">H7FWB6__real vs B8XC04 (8 other)</text>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 83.697824)">region_evalue 3.47, region_ka_bits 33.76, 30 of 49 identical, longest matching h/p run 10</text>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 88.74423)"/>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 93.451417)">query     131 LTTAVGDMQIAYDNAAGRLNPDFLNLGAGTIGGKTLTPGLYKWTSTLNI 180</text>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 98.07048)">              ||||| ||| |   | ||  ||| ||| |  ||  |||||||||     </text>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 102.777667)">target    144 LTTAVSDMQTAFNDATGRVTPDFTNLGGGELGGLVLTPGLYKWTGAVSV 193</text>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 107.39673)"/>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 112.408605)">query  h/p    hpphhpphphhhpphhpphphphhphphpphpppphphphhphppphph</text>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 117.027667)">              ||||||||| ||||| ||||||| ||| |||||  |||||||||| |||</text>
+    <text style="font-size: 5px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace" transform="translate(4.44024 122.039542)">target h/p    hpphhpphpphhpphppphphphpphpppphpphhhphphhphpphhph</text>
+   </g>
+  </g>
+  <g id="text_2">
+   <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 5.811562)">TOOLS: kmerseek 0.4 (3c353d4), hsdm17.k6.s1.lcfalse.extend-c0.18; query H7FWB6 (Flavobacterium frigoris), target database reviewed Swiss-</text>
+   <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 12.249375)">Prot 2026_03</text>
+   <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 18.68775)">HYPOTHESIS: a cross-lineage hit should match a physicochemical pattern without matching residues</text>
+   <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 25.196437)">CONCLUSION: the only cross-lineage pair kmerseek reaches, 53 times across settings; both proteins are in UniProt's Ice-binding protein</text>
+   <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 31.700625)">family, so they are homologs</text>
+  </g>
+ </g>
+</svg>
