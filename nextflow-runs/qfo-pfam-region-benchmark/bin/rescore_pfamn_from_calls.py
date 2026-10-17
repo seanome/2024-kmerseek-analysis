@@ -130,11 +130,15 @@ def main():
         )
         keys = ["tool", "variant", "species", "dedup_transfers"]
         j = df.join(
-            old.select(*keys, *[pl.col(k).alias(f"{k}_published") for k in METRICS]),
+            old.select(
+                *keys,
+                pl.lit(True).alias("in_published_metrics"),
+                *[pl.col(k).alias(f"{k}_published") for k in METRICS],
+            ),
             on=keys,
             how="left",
-        )
-        n_missing = j.filter(pl.col("fmax_published").is_null()).height
+        ).with_columns(pl.col("in_published_metrics").fill_null(False))
+        n_matched = int(j["in_published_metrics"].sum())
         worst = {
             k: j.select(
                 (pl.col(f"{k}_before") - pl.col(f"{k}_published")).abs().max()
@@ -142,13 +146,25 @@ def main():
             for k in METRICS
         }
         print(
-            f"reproduces the published metrics: {j.height - n_missing} of {j.height} "
-            f"call files matched a row; largest difference per metric: {worst}",
+            f"reproduces the published metrics: {n_matched} of {j.height} call files "
+            f"matched a row; largest difference per metric: {worst}",
             file=sys.stderr,
         )
+        # A call file with no published row is kept and flagged, not an error. The
+        # midi-plus calls/ folder is shared with run-midi-plus-all-qfo (77 targets), so it
+        # holds 7,560 Pfam-N call files where all_domain_metrics.parquet has 396 rows.
         bad = {k: v for k, v in worst.items() if v is not None and v > 1e-9}
-        if n_missing or bad:
+        # abs().max() skips nulls, so a value present on one side only is counted here.
+        one_sided = j.filter(
+            pl.col("in_published_metrics")
+            & pl.any_horizontal(
+                pl.col(f"{k}_before").is_null() != pl.col(f"{k}_published").is_null()
+                for k in METRICS
+            )
+        ).height
+        if n_matched == 0 or bad or one_sided:
             raise SystemExit("the 'before' numbers do not reproduce the run's metrics")
+        df = j.drop([f"{k}_published" for k in METRICS])
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     df.write_csv(args.out)

@@ -179,3 +179,60 @@ def test_rescore_from_calls_reproduces_scorer_and_fixes_recall(pfam_truth, tmp_p
         r["recall_before"].item() * (truth.height + 6) / truth.height
     )
     assert r["fmax_after"].item() > r["fmax_before"].item()
+
+
+def test_rescore_keeps_unpublished_call_files_and_stops_on_a_mismatch(
+    pfam_truth, tmp_path
+):
+    """A calls/ folder shared by two runs holds files with no row in this run's metrics.
+    They are kept and flagged. A published value that differs still stops the script."""
+    import shutil
+
+    from conftest import score
+
+    regions = tmp_path / "perfect.regions.tsv"
+    write_perfect_regions(pfam_truth["truth"], pfam_truth["map"], regions)
+    work = tmp_path / "score"
+    m = score(pfam_truth["truth"], pfam_truth["map"], regions, work, "pfamn")
+    m.write_parquet(tmp_path / "metrics.parquet")
+    for f in work.glob("pfamn.*.yeast*.calls.parquet"):
+        shutil.copy(f, f.with_name(f.name.replace(".yeast", ".mouse")))
+
+    out = tmp_path / "rescored.csv"
+    args = [
+        "--calls-dir",
+        work,
+        "--truth",
+        pfam_truth["truth"],
+        "--annotations",
+        FIXTURES / "annotations",
+        "--run",
+        "fixture",
+        "--out",
+        out,
+    ]
+    run("rescore_pfamn_from_calls.py", *args, "--metrics", tmp_path / "metrics.parquet")
+    r = pl.read_csv(out)
+    assert r.height == 4
+    assert r.filter(pl.col("species") == "yeast")["in_published_metrics"].all()
+    assert not r.filter(pl.col("species") == "mouse")["in_published_metrics"].any()
+
+    m.with_columns(pl.col("fmax") + 0.01).write_parquet(tmp_path / "bad.parquet")
+    import subprocess
+    import sys
+
+    from conftest import BIN
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(BIN / "rescore_pfamn_from_calls.py"),
+            *map(str, args),
+            "--metrics",
+            str(tmp_path / "bad.parquet"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode != 0
+    assert "do not reproduce" in proc.stderr
