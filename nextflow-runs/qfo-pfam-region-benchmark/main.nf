@@ -1276,6 +1276,41 @@ process buildSwissprotTruth {
     """
 }
 
+process restrictTruthToQueries {
+    /*
+     * Pfam-N and M-CSA truth are built once from the FULL annotations (`make pfamn-truth`,
+     * `make mcsa-truth`), so they cover every human Pfam protein, not the run's queries.
+     * Scored as they were, the mini, midi and midi-plus runs divided recall by regions on
+     * proteins they never searched: 44_315 Pfam-N regions where midi-plus could find
+     * 2_218. This keeps only the proteins in this run's human_pfam_domains.parquet, the
+     * rule buildDomainTruth and buildSwissprotTruth already apply to their own truth.
+     */
+    tag "${label}"
+    label 'python'
+    publishDir "${params.outdir}/truth_${label}", mode: 'copy'
+
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    // Staged under full/ so the output can keep the input's own file name.
+    tuple val(label), path(truth, stageAs: 'full/*')
+    path annotations_dir
+
+    output:
+    tuple val(label), path("${truth.name}"), path("${label}_restrict_summary.json")
+
+    script:
+    """
+    restrict_truth_to_queries.py \\
+        --truth       ${truth} \\
+        --annotations ${annotations_dir} \\
+        --label       ${label} \\
+        --out         ${truth.name} \\
+        --summary-out ${label}_restrict_summary.json
+    """
+}
+
 process domainIdentity {
     /*
      * Percent identity between each human domain instance and the closest same-family
@@ -3675,7 +3710,10 @@ workflow {
 
     // Pre-built truth sets, added when their directory is present. Each contributes a
     // human_*_truth.parquet plus per-species *_domain_map.parquet, the same shape as the
-    // Pfam arm, so scoring runs against them unchanged.
+    // Pfam arm, so scoring runs against them unchanged. The human truth goes through
+    // restrictTruthToQueries first: it was built from the full annotations, and only the
+    // proteins this run searched belong in a recall denominator.
+    prebuilt_truth = Channel.empty()
     def add_prebuilt = { label, dir ->
         if (!dir) return
         def d = file(dir)
@@ -3689,7 +3727,7 @@ workflow {
             log.warn "no human_${label}_truth.parquet under ${dir} -- skipping"
             return
         }
-        truth_sets = truth_sets.mix(Channel.of(tuple(label, t)))
+        prebuilt_truth = prebuilt_truth.mix(Channel.of(tuple(label, t)))
         map_ch = map_ch.mix(
             Channel.fromList(
                 d.listFiles().findAll { it.name.endsWith('_domain_map.parquet') }
@@ -3747,6 +3785,23 @@ workflow {
 
     add_prebuilt("pfamn", params.pfamn_dir)
     add_prebuilt("mcsa", params.mcsa_dir)
+
+    // A truth set with no rows on this run's queries is dropped rather than scored: every
+    // recall would be 0/0. M-CSA covers 95 human proteins, so a small query set can miss
+    // all of them. Dropping it from truth_sets is enough, because truth_bundle joins the
+    // maps to truth_sets and a map with no partner falls out of that join.
+    truth_sets = truth_sets.mix(
+        restrictTruthToQueries(prebuilt_truth, annotations)
+            .filter { label, _t, summary ->
+                def n = new groovy.json.JsonSlurper().parseText(summary.text).after.n_regions
+                if (n == 0) {
+                    log.warn "${label} truth has no rows on this run's query proteins -- " +
+                             "that truth set is not scored in this run"
+                }
+                n > 0
+            }
+            .map { label, t, _s -> tuple(label, t) }
+    )
 
     // ---- twilight-zone axis: per-domain-pair percent identity ----
     // Off by default only if explicitly skipped; it is the axis claim 1 is stated on.
