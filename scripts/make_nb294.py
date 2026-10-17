@@ -151,7 +151,7 @@ ALN = Path("/Users/olga/data/pfam/230_pfam_seed_pair_alignments.parquet")
 FPR = 1e-3
 N_BOOT = 1000
 SPLIT_SEED = 292  # kept from the first run, when this notebook was numbered 292; it fixes the halves
-SWISSPROT_PROTEINS = 572_970  # proteins in uniprot_sprot.fasta.gz, counted by the spectrum script
+SPROT_FASTA = Path("/Users/olga/data/uniprot/uniprot_sprot.fasta.gz")  # the FASTA the spectrum script read
 BINS = lp.BINS
 
 # One colour per meaning, kept across all three figures.
@@ -359,7 +359,7 @@ print("hydrophobic share of the query (ACFILMVWY), report-half 20-30% pairs:")
 print(all_2030.group_by("found_only_by_linked").agg(pl.len().alias("n_pairs"), pl.col("query_h_share").median().round(3).alias("median"),
       (pl.col("query_h_share") >= 0.6).mean().round(3).alias("share_with_60pct_or_more_H")).sort("found_only_by_linked"))
 print("Pfam families with the most pairs found only by the linked key:")
-print(all_2030.filter(pl.col("found_only_by_linked")).group_by("family", "family_id").len().sort("len", descending=True).head(10))
+print(all_2030.filter(pl.col("found_only_by_linked")).group_by("family", "family_id").len().sort(["len", "family"], descending=[True, False]).head(10))
 E = ex.row(0, named=True)
 row_scores = real_all[np.flatnonzero(pidx_all == E["pair_index"])[0]]
 assert E["score"] == row_scores[c_ext], "best_key disagrees with the stored score"
@@ -383,6 +383,18 @@ print(f"best key: anchors of {a_c} at alignment columns {E['c1']} and {E['c2']};
       f"{E['gap_target']} in the target; key score {E['score']:.0f} (threshold {thr_rep[c_ext]:.0f}); {E['n_keys']} shared keys")
 print(f"B1 score {row_scores[COLS.index('B1_ext')]:.0f}, B2 score {row_scores[COLS.index('B2_ext')]:.0f} (threshold {thr_rep[COLS.index('B1_ext')]:.0f}); "
       f"longest shared HP run {run_e - run_s} residues")
+print("Rows: query residues, query HP, | where the HP classes match, target HP, target residues; numbers are residue positions")
+qi, ti = q0, t0
+for s_ in range(0, len(q), 70):
+    qs, ts = q[s_:s_ + 70], t[s_:s_ + 70]
+    print(f"query  {qi:>4} {qs}")
+    print(f"            {q_hp[s_:s_ + 70]}")
+    print(f"            {mline[s_:s_ + 70]}")
+    print(f"            {t_hp[s_:s_ + 70]}")
+    print(f"target {ti:>4} {ts}")
+    print()
+    qi += sum(ch != "-" for ch in qs)
+    ti += sum(ch != "-" for ch in ts)
 
 W = 70
 nblk = int(np.ceil(len(q) / W))
@@ -666,7 +678,7 @@ hc.finish_figure(
     fig, FIG / "294_decision_paired_gain_vs_10_points_pfam_seed.png", tools=hc.NO_TOOL,
     hypothesis="A linked HP key gains at least 10 points of recall over a single seed (rule set after the first run).",
     conclusion=verdict_line + " An interval wholly left of the dashed line is a KILL; wholly right, a PASS; across it, unclear.",
-    title="Decision: paired gains against the 10-point cut-off", wrap=75,
+    title="Decision: paired gains against the 10-point cut-off", wrap=58,
 )
 """)
 
@@ -677,10 +689,15 @@ md(r"""
 on its own, `-Z 20000`, so the E-value is what a proteome-sized database would give) and
 MMseqs2 18 (`-s 7.5`, all 116,176 domain sequences against themselves) on these same 60,000
 Pfam pairs. A pair is found by an aligner at E ≤ 0.01. The HP scores here use 232's threshold
-(null rate at or below 0.001 per comparison). The two kinds of threshold are not the same:
-the aligners' E-values account for a whole database, the HP threshold only for one pair's
-own alignment, so the HP numbers are the more lenient ones. FoldSeek needs structures and
-was not run on these Pfam sequences; its comparison is on SCOPe40 (see the summary).
+(null rate at or below 0.001 per comparison), not the exact-FPR read-out of section 4b, so
+they sit up to 2.4 points below the values there. The comparison favours the HP scores twice.
+First, the HP scores are computed on Pfam's own curated alignment of each pair, while
+phmmer and MMseqs2 have to find the alignment themselves. Second, the aligners' E-values
+account for a whole database, the HP threshold only for one pair's own alignment, so the
+HP threshold is the more lenient one. The two aligners are not held to the same cut-off
+either: phmmer's E-values assume 20,000 sequences, MMseqs2's are computed against 116,176,
+so MMseqs2's E ≤ 0.01 is about 5.8 times stricter. FoldSeek needs structures and was not
+run on these Pfam sequences, so this notebook has no FoldSeek comparison.
 """)
 
 code(r"""
@@ -721,7 +738,7 @@ ax.set_xticks(x, BINS)
 ax.set_xlabel("Identity of the aligned pair")
 ax.set_ylabel("True pairs found (%)")
 ax.set_ylim(0, 102)
-ax.legend(loc="lower right", fontsize=5)
+ax.legend(loc="upper left", fontsize=5)
 lk = only.filter(pl.col("HP score") == "linked").row(0, named=True)
 hc.finish_figure(
     fig, FIG / "294_hp_keys_vs_phmmer_mmseqs2_pfam_seed.png",
@@ -729,7 +746,7 @@ hc.finish_figure(
     hypothesis="HP keys find remote Pfam pairs the sequence aligners miss.",
     conclusion=(f"At 20-30% identity: phmmer {tab_c.filter(pl.col('identity_bin') == '20-30%')['phmmer'][0]:.1f}%, MMseqs2 {tab_c.filter(pl.col('identity_bin') == '20-30%')['MMseqs2'][0]:.1f}%, "
                 f"linked HP pair {tab_c.filter(pl.col('identity_bin') == '20-30%')['linked'][0]:.1f}%, B3 {tab_c.filter(pl.col('identity_bin') == '20-30%')['B3'][0]:.1f}%. "
-                f"Of the {lk['found']:,} pairs the linked key finds there, {lk['found by neither phmmer nor MMseqs2']} are found by neither aligner, even with the HP threshold the more lenient. Higher is better."),
+                f"Of the {lk['found']:,} pairs the linked key finds there, {lk['found by neither phmmer nor MMseqs2']} are found by neither aligner. HP scores at 232's threshold, on Pfam's own alignment of each pair; both make the HP side the more lenient. Higher is better."),
     title="HP keys against phmmer and MMseqs2, report half, Pfam seed pairs", wrap=75,
 )
 """)
@@ -828,7 +845,11 @@ for n in NEW:
     j = JN[n]
     print(f"  {n:13s} {NEW[n]:28s} " + "  ".join(f"{b} {100 * rec_n[i, j]:.1f} [{100 * lo_n[i, j]:.1f}-{100 * hi_n[i, j]:.1f}]" for i, b in enumerate(BINS)))
 print()
-print(f"False pairs per query at 0.001 per comparison against Swiss-Prot: {FPR * SWISSPROT_PROTEINS:.0f}")
+import gzip
+with gzip.open(SPROT_FASTA, "rb") as fh:
+    n_sprot = sum(1 for ln in fh if ln.startswith(b">"))
+print(f"Swiss-Prot proteins in {SPROT_FASTA.name}: {n_sprot:_}")
+print(f"False pairs per query at 0.001 per comparison against Swiss-Prot: {FPR * n_sprot:.0f}")
 """)
 
 md(r"""
@@ -849,19 +870,21 @@ matches: lower is better.
 4. **The second exact word adds nothing.** B3, the same 8-letter seed plus the best second
    segment within 32 residues, finds 47.6% at 20–30% identity against the linked key's
    45.9% (linked minus B3: −1.7, interval −3.0 to 0.5). B3 gains 8.4 points over the plain
-   8-letter seed (4.0 to 10.9). So what helps is extending into a second segment across an
-   insertion, which needs no change to the index. kmerseek already chains matches across
+   8-letter seed (4.0 to 10.9); that interval crosses 10, so by the same rule B3 is
+   unclear, not shown to be worth 10 points either. So what helps is extending into a
+   second segment across an insertion, which needs no change to the index. kmerseek already chains matches across
    small shifts (`--chain-max-shift`); whether that gives the same gain was not tested here.
 5. **Against phmmer and MMseqs2** (section 4c, notebook 233's runs on the same pairs). At
    20–30% identity phmmer finds 75.4% and MMseqs2 55.2%, against 43.5% for the linked HP key
-   and 46.2% for B3, with the HP threshold the more lenient of the two kinds. Of the 3,266
-   pairs the linked key finds there, 139 are found by neither aligner. Under 20% identity the
+   and 46.2% for B3. These HP values are at 232's threshold, so they are lower than the
+   exact-FPR values in item 4. The HP scores also get Pfam's alignment for free and the more
+   lenient threshold, so the comparison favours them. Of the 3,266 pairs the linked key
+   finds there, 139 are found by neither aligner. Under 20% identity the
    HP scores (15.3% linked, 17.1% B3) sit above MMseqs2 (8.4%) but below phmmer (18.8%);
    that bin is defined by identical residues, which by construction favours an alphabet that
-   ignores them, and the HP threshold is the lenient one. FoldSeek was not run on
-   these sequences. On SCOPe40 (200 queries, 2026-09-13, kmerseek PR 54), the share of a
-   query's same-superfamily relatives found before its first different-fold hit was 0.066
-   for extended HP k-mers, 0.25 for MMseqs2 and 0.65 for FoldSeek.
+   ignores them, and the HP threshold is the lenient one. phmmer's E-values assume a
+   database of 20,000 sequences and MMseqs2's one of 116,176, so part of the gap between
+   the two aligners may come from that. FoldSeek was not run on these sequences.
 6. **The cost.** The chosen key gives about 3,896 chance key matches between two unrelated
    131-residue proteins, against 70 for B2's 8-letter word and 18 for B1's 10-letter word
    (section 5), 55 times B2's.
@@ -876,8 +899,8 @@ matches: lower is better.
    a null that shuffles residues. That null breaks local HP patterns such as amphipathic
    helices and membrane runs, which unrelated real proteins keep, so it may be too easy for
    an HP key. A false-positive rate of 0.001 per comparison is about 573 false pairs per
-   query against Swiss-Prot's 572,970 proteins. Not tested: database false positives, chance
-   key matches off the alignment's diagonal, SCOPe pairs, other alphabets and mismatch
+   query against Swiss-Prot's 572,970 proteins (counted in section 6). Not tested:
+   database false positives, chance key matches off the alignment's diagonal, SCOPe pairs, other alphabets and mismatch
    scores, a full-alphabet BLAST ceiling on the same pairs, and three anchors.
 """)
 
