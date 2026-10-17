@@ -831,6 +831,82 @@ pf.save(fig, FIGURES / "295_SF5_other_classes_truth_sets_uniprot_2026_03")
 """)
 
 md(r"""
+## 9. Could any k-mer setting have reached them? The ceiling from shared k-mers
+
+kmerseek reports a target only if it shares at least 2 distinct k-mers with the query in
+the reduced alphabet (`--min-shared-kmers 2`). A protein below that bar is never in the
+list, whatever its score would have been. So counting shared k-mers directly gives the
+most any setting at that alphabet and k could reach, with no index and no search.
+
+`scripts/convergence_kmer_reach_ceiling.py` counts, for each real query, alphabet and k
+from 3 to 40: the ice-binding proteins of other lineages that share at least 2 k-mers
+with the query, and the share of 5_000 random Swiss-Prot entries that do. It covers the
+eight alphabets whose groups are written out in kmerseek's source as two or six groups:
+the 20 amino acids, Dayhoff, and the seven hydrophobic-polar alphabets.
+
+A point above the diagonal reaches more ice-binding proteins than random proteins, in
+proportion. That is the only place a setting could find them without finding everything.
+""")
+
+code(r"""
+ceiling = pl.read_csv(TRUTH_DIR / "kmer_reach_ceiling.tsv", separator="\t")
+ceiling = ceiling.with_columns(
+    family=pl.when(pl.col("alphabet").str.starts_with("hp_"))
+    .then(pl.lit("hydrophobic-polar (7 alphabets)"))
+    .otherwise(pl.col("alphabet"))
+)
+best = (
+    ceiling.filter(pl.col("frac_background_reachable") <= 0.01)
+    .sort("n_cross_reachable", descending=True)
+    .group_by("query_lineage", "family")
+    .head(1)
+    .select("query_lineage", "family", "alphabet", "ksize", "n_cross_reachable",
+            "n_cross_truth", "frac_background_reachable")
+    .sort("query_lineage", "family")
+)
+print("Most ice-binding proteins of other lineages reachable while at most 1% of random")
+print("Swiss-Prot entries are, per query and alphabet family:")
+print(best)
+
+FAMILY_COLOUR = {
+    "protein20": pf.OKABE_ITO["vermillion"],
+    "dayhoff6": pf.OKABE_ITO["bluish_green"],
+    "hydrophobic-polar (7 alphabets)": pf.OKABE_ITO["blue"],
+}
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, nrows=2, ncols=3, sharex=True, sharey=True)
+for ax, lineage in zip(axs.ravel(), QUERY_LINEAGES):
+    sub = ceiling.filter(pl.col("query_lineage") == lineage)
+    ax.plot([0, 1], [0, 1], color="black", linewidth=0.5, linestyle="--",
+            label="same share as random proteins")
+    for fam, colour in FAMILY_COLOUR.items():
+        f = sub.filter(pl.col("family") == fam)
+        ax.plot(f["frac_background_reachable"], f["frac_cross_reachable"], "o",
+                color=colour, markersize=1.5, linestyle="none", label=fam)
+    ax.set_title(lineage, pad=2)
+    ax.set_xlim(-0.02, 1.02)
+    ax.set_ylim(-0.02, 1.02)
+# One label per axis for the whole grid: per-panel labels in two rows overlapped.
+fig.supxlabel("Share of 5_000 random Swiss-Prot entries with >= 2 shared k-mers", fontsize=6)
+fig.supylabel(
+    "Share of other-lineage ice-binding proteins with >= 2 shared k-mers", fontsize=6
+)
+for ax, letter in zip(axs.ravel(), "abcdef"):
+    pf.panel_label(ax, letter)
+legend_in_axes(axs[0, 0], loc="lower right")
+header(
+    fig,
+    "shared distinct k-mers counted directly, k = 3 to 40, in 8 kmerseek alphabets; "
+    "targets: reviewed Swiss-Prot 2026_03",
+    "some alphabet and k lets a query share k-mers with ice-binding proteins of other "
+    "lineages far more often than with random proteins (points well above the diagonal)",
+    f"with at most 1% of random proteins reachable, the most any query reaches is "
+    f"{int(best['n_cross_reachable'].max())} proteins of another lineage; the "
+    "hydrophobic-polar points sit on or below the diagonal",
+)
+pf.save(fig, FIGURES / "295_SF6_shared_kmer_ceiling_swissprot_2026_03")
+""")
+
+md(r"""
 ## Summary and conclusions
 
 **Verdict: FAIL.** No kmerseek setting reaches ice-binding proteins of another lineage
@@ -885,6 +961,16 @@ reaches is a homolog pair that three other tools also find.
 * A single query per lineage was chosen by its count of experimental evidence lines. A
   different query from the same lineage could behave differently, and nothing here tests
   that.
+
+**Why no setting could have passed.** Section 9 counts shared k-mers directly, the bar
+a target must clear before kmerseek reports it at all. While at most 1% of random
+Swiss-Prot entries clear it, no query shares 2 k-mers with more than 6 ice-binding
+proteins of another lineage, in any of the 8 alphabets checked at any k from 3 to 40. The
+6 are reached from the AFGP query in the 20-letter alphabet at k = 4; at k = 7 it is 4
+fish type I proteins that carry the AFGP repeat's own letters, AATAATA. Every hydrophobic-polar alphabet reaches other-lineage
+ice-binding proteins no more often than random proteins. The settings run were the
+dark-set ones, whose shortest hydrophobic-polar k is 17, but shorter k does not help
+either.
 
 **Next.** The ice-binding test is the only class with a search run. Section 8 shows the
 truth sets for the other three classes: only the shell-matrix class has enough reviewed
