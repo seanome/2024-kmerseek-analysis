@@ -122,7 +122,8 @@ params.skip_hhblits = false
 // Scope a run down without editing the matrix, for smoke tests on a mini set.
 //   --target_species     comma-separated TARGET labels, e.g. "yeast,ecoli"
 //   --kmerseek_encodings comma-separated alphabet names, e.g. "gbmr4,wwmj5"
-//   --kmerseek_combos    comma-separated encoding:ksize, e.g. "protein20:10,gbmr4:14"
+//   --kmerseek_combos    comma-separated encoding:ksize, e.g. "protein20:10,gbmr4:14", or
+//                        a pinned arm encoding:ksize:s<scaled>:lc<true|false>, e.g. "wwmj5:9:s5:lcfalse"
 // All three default to null, meaning the full sweep.
 //
 // --kmerseek_encodings and --kmerseek_combos differ in what they keep. Naming encodings
@@ -157,6 +158,13 @@ params.kmerseek_extra_encodings = false
 // already has the alphabets wants.
 params.kmerseek_extra_image = null
 params.kmerseek_combos    = null
+// Keep each query's best N target proteins in every kmerseek region table, inside the search
+// task (bin/cut_top_targets.py). 0 keeps everything. A cut table lives in its own store,
+// <outdir>/kmerseek_top<N>, so it can never be served to a run that wants the whole table.
+params.kmerseek_top_targets = 0
+// The rankings the cut keeps the union of: COLUMN:max or COLUMN:min, comma-separated. See
+// bin/cut_top_targets.py for why the ELM search keeps both.
+params.kmerseek_top_targets_by = 'region_mean_idf:max,region_evalue:min'
 // Sweep only the (target, combo) cells whose search result is already in the store, and
 // launch no new search. For finishing a run whose remaining searches are the ones that
 // cannot finish. On 2026-09-11 run-midi-plus had every arm scored except 16 gbmr7 k9-k11
@@ -341,6 +349,37 @@ def SCALED = (params.kmerseek_scaled instanceof List
     .unique()
 
 // `.s<N>` for scaled > 1, empty for scaled 1. Used in every index and result name.
+// Where kmerseekSearch stores its region tables; see params.kmerseek_top_targets.
+def kmerseekStore() {
+    params.kmerseek_top_targets as int > 0
+        ? "${params.outdir}/kmerseek_top${params.kmerseek_top_targets}"
+        : "${params.outdir}/kmerseek"
+}
+
+// One --kmerseek_combos entry. `encoding:k` is crossed later with --low_complexity_toggle
+// and --kmerseek_scaled. `encoding:k:s<scaled>:lc<true|false>` pins both, for a run that
+// wants one chosen setting per alphabet rather than every setting of every alphabet.
+// Returns (cli_flag, label, k, lowcomp or null, scaled or null).
+def parseCombo(String spec, known_encodings) {
+    def parts = spec.trim().split(':') as List
+    def enc = parts[0]
+    def known = known_encodings.find { it[0] == enc }
+    if (!known) {
+        error "Unknown encoding '${enc}' in --kmerseek_combos. Known: ${known_encodings*.get(0).join(', ')}"
+    }
+    if (parts.size() == 2) {
+        return tuple(enc, known[1], parts[1].toInteger(), null, null)
+    }
+    if (parts.size() == 4 && parts[2] ==~ /s\d+/ && parts[3] ==~ /lc(true|false)/) {
+        def sc = parts[2].substring(1).toInteger()
+        if (!(sc in 1..10)) {
+            error "--kmerseek_combos entry '${spec}': scaled takes integers from 1 to 10 (kmerseek's limit)"
+        }
+        return tuple(enc, known[1], parts[1].toInteger(), parts[3] == 'lctrue', sc)
+    }
+    error "--kmerseek_combos entry '${spec}' is neither encoding:k nor encoding:k:s<scaled>:lc<true|false>"
+}
+
 def scaledTag(s) { (s as Integer) > 1 ? ".s${s}" : "" }
 
 // --- ungapped extension, kmerseek 0.4 only ---------------------------------
@@ -1840,7 +1879,9 @@ process kmerseekSearch {
     // beats a process directive, so a `container = params.kmerseek_image` there would
     // silently put every task back on one image and this line would never be consulted.
     container { image }
-    storeDir "${params.outdir}/kmerseek"
+    // Interpolated, not `storeDir kmerseekStore()`: Nextflow reads a bare call there as a
+    // directive named kmerseekStore and stops ("Unknown process directive").
+    storeDir "${kmerseekStore()}"
 
     memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
     // Retry cluster kills, ignore a kill that has used up its retries, stop on anything
@@ -2000,6 +2041,13 @@ PYEOF
         touch ${out_pq}
     fi
     rm -f ${out_zst}
+
+    if [ ${params.kmerseek_top_targets} -gt 0 ] && [ -s ${out_pq} ]; then
+        cut_top_targets.py --in ${out_pq} --out cut.${out_pq} --top ${params.kmerseek_top_targets} \
+            ${params.kmerseek_top_targets_by.tokenize(',').collect { "--rank-by ${it.trim()}" }.join(' ')} \
+            | tee -a ${log_file}
+        mv cut.${out_pq} ${out_pq}
+    fi
 
     echo "regions parquet: \$(du -sh ${out_pq} | cut -f1)" | tee -a ${log_file}
 
@@ -4005,28 +4053,24 @@ workflow {
         // The label is derived from the CLI flag the same way ALL_ENCODINGS does it, so
         // output filenames and the per-combo memory sizing keep working unchanged.
         def combos = params.kmerseek_combos
-            ? params.kmerseek_combos.tokenize(',').collect { spec ->
-                  def (enc, k) = spec.trim().split(':')
-                  def known = KNOWN_ENCODINGS.find { it[0] == enc }
-                  if (!known) {
-                      error "Unknown encoding '${enc}' in --kmerseek_combos. Known: ${KNOWN_ENCODINGS*.get(0).join(', ')}"
-                  }
-                  tuple(enc, known[1], k.toInteger())
-              }
+            ? params.kmerseek_combos.tokenize(',').collect { spec -> parseCombo(spec, KNOWN_ENCODINGS) }
             : selected_encodings.collectMany { cli_flag, label, kmin, kmax ->
-                  (kmin..kmax).collect { k -> tuple(cli_flag, label, k) }
+                  (kmin..kmax).collect { k -> tuple(cli_flag, label, k, null, null) }
               }
 
         // Cross every alphabet x ksize with the low-complexity toggle. This is what
         // doubles the sweep, and it is the point: whether dropping low-complexity k-mers
         // helps is alphabet-dependent, so it has to be measured rather than chosen.
-        combos = combos.collectMany { cli_flag, label, k ->
-            LC_TOGGLE.collect { lc -> tuple(cli_flag, label, k, lc) }
+        // A pinned combo (encoding:k:s<scaled>:lc<bool>) already names both, and is not crossed.
+        combos = combos.collectMany { cli_flag, label, k, lc_pin, sc_pin ->
+            lc_pin != null ? [tuple(cli_flag, label, k, lc_pin, sc_pin)]
+                           : LC_TOGGLE.collect { lc -> tuple(cli_flag, label, k, lc, null) }
         }
         // And with --kmerseek_scaled. One value (1) by default, so this adds no arms unless
         // a list is asked for.
-        combos = combos.collectMany { cli_flag, label, k, lc ->
-            SCALED.collect { sc -> tuple(cli_flag, label, k, lc, sc) }
+        combos = combos.collectMany { cli_flag, label, k, lc, sc_pin ->
+            sc_pin != null ? [tuple(cli_flag, label, k, lc, sc_pin)]
+                           : SCALED.collect { sc -> tuple(cli_flag, label, k, lc, sc) }
         }
 
         // Every combo becomes one kmerseekIndex store entry per species, named
@@ -4071,11 +4115,11 @@ workflow {
             // The same path kmerseekSearch's storeDir and output name resolve to. An
             // ignored search leaves nothing here, so exists() is "finished".
             def stored = { sp, label, k, lc, sc ->
-                file("${params.outdir}/kmerseek/human_vs_${sp}.${label}.k${k}${scaledTag(sc)}.lc${lc}.regions.parquet").exists()
+                file("${kmerseekStore()}/human_vs_${sp}.${label}.k${k}${scaledTag(sc)}.lc${lc}.regions.parquet").exists()
             }
             (cells, skipped) = cells.split { sp, _cli, label, k, lc, sc -> stored(sp, label, k, lc, sc) }
             if (!cells) {
-                error "--kmerseek_stored_only, but ${params.outdir}/kmerseek holds none of the " +
+                error "--kmerseek_stored_only, but ${kmerseekStore()} holds none of the " +
                       "${skipped.size()} searches this sweep names. The flag finishes a run " +
                       "that already searched; it cannot start one."
             }
@@ -4089,7 +4133,7 @@ workflow {
         |  query   : human (UP000005640_9606) -- always${SPECIES*.label.contains('human') ? ', and searched against itself as well' : ', and never listed as a target'}
         |  targets : ${SPECIES*.label.join(', ')}
         |  alphabet: ${combos.collect { it[1] }.unique().join(', ')}
-        |  combos  : ${combos.size()} (alphabet x ksize x low-complexity on/off x scaled ${SCALED.join('/')})
+        |  combos  : ${combos.size()} (${params.kmerseek_combos?.contains(':s') ? 'pinned: alphabet:k:scaled:mask as listed' : "alphabet x ksize x low-complexity on/off x scaled ${SCALED.join('/')}"})
         |  searches: ${combos.size()} x ${SPECIES.size()} targets = ${combos.size() * SPECIES.size()}
         |            each named human_vs_<target>, e.g. human_vs_${SPECIES[0].label}
         |  spectra : one k-mer frequency spectrum per combo, published for plotting
