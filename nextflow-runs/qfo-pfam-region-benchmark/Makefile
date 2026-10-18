@@ -1453,35 +1453,55 @@ pfamn-truth: pfamn-download
 	@echo "Pfam-N truth built. $(PFAMN_GZ) can be deleted if disk is tight:"
 	@echo "  rm $(PFAMN_GZ)"
 
-## Recompute the Pfam-N whole-set numbers of finished runs from their published call files,
-## against the truth cut to each run's query proteins. Runs scored before
-## restrictTruthToQueries divided Pfam-N recall and Fmax by all 44,315 human Pfam-N regions;
-## midi-plus searched proteins that carry 2,218 of them. No Nextflow run: which calls are
-## correct does not change, so the call files are enough. The script also recomputes the
-## old numbers and stops if they differ from the run's all_domain_metrics.parquet.
-## Writes $(PFAMN_RESCORE_DATA)/<run>/results/pfamn_rescored_whole_set.csv for each run in
-## PFAMN_RESCORE_RUNS. PFAMN_RESCORE_DATA can point at another clone's data/, so this runs
-## from a fresh clone without switching the branch of a clone that has a run going.
+## Rescore the Pfam-N metrics of finished runs, every split and breakdown, from their
+## published call files, against the truth cut to each run's query proteins. Runs scored
+## before restrictTruthToQueries divided Pfam-N recall and Fmax by all 44,315 human Pfam-N
+## regions; midi-plus searched proteins that carry 2,218 of them. No Nextflow run: which
+## calls are correct does not change, so the call files are enough, and
+## `evaluate_domain_calls.py --scored-calls` recomputes the metrics with the scorer's own
+## code. Each call file is also scored against the old truth and compared with the run's
+## all_domain_metrics.parquet; the job stops if the whole set does not match.
+##
+## Writes, for each run in PFAMN_RESCORE_RUNS, under $(PFAMN_RESCORE_DATA)/<run>/results/:
+##   pfamn_rescored_metrics.parquet  all_domain_metrics-shaped, plus before_matches_published
+##   pfamn_rescore_check.csv         largest old-vs-published difference per breakdown/metric
+## PFAMN_RESCORE_DATA can point at another clone's data/, so this runs from a fresh clone
+## without switching the branch of a clone that has a run going. Target disorder is read
+## from the run's own results/disorder when it has one (mini, no --db_cache) and from
+## ../results/disorder (the --db_cache of midi and midi-plus) otherwise.
+##
+## Sizing, measured 2026-10-17 on 40 midi yeast call files (80 scorings): 0.75 CPU-seconds
+## per scoring with one polars thread, 1.7 GB peak per process; the default thread pool
+## spent 8x the CPU for the same numbers (equal to 1e-12). midi is 14,940 scorings in 18
+## per-species jobs of 830 each, about 10 min per job on the laptop's cores; midi-plus is
+## 792, mini 88. 18 workers at one thread each, 64 GB for 18 x 1.7 GB with room, and 3 h,
+## several times what the measurement predicts for slower cluster cores.
 PFAMN_RESCORE_DATA ?= data
 PFAMN_RESCORE_RUNS ?= midi-plus midi mini
-PFAMN_RESCORE_MEM  ?= 16G
-PFAMN_RESCORE_TIME ?= 2:00:00
+PFAMN_RESCORE_CPUS ?= 18
+PFAMN_RESCORE_MEM  ?= 64G
+PFAMN_RESCORE_TIME ?= 3:00:00
 
 rescore-pfamn-from-calls:
 	$(call require_cluster)
 	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
-	     --mem=$(PFAMN_RESCORE_MEM) --time=$(PFAMN_RESCORE_TIME) --cpus-per-task=2 \
+	     --mem=$(PFAMN_RESCORE_MEM) --time=$(PFAMN_RESCORE_TIME) \
+	     --cpus-per-task=$(PFAMN_RESCORE_CPUS) \
 	  apptainer exec \
 	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
 	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
-	    bash -c 'set -e; for r in $(PFAMN_RESCORE_RUNS); do \
+	    bash -c 'set -e; export POLARS_MAX_THREADS=1; for r in $(PFAMN_RESCORE_RUNS); do \
+	      d=$(PFAMN_RESCORE_DATA)/$$r/results; \
+	      dis=$(PFAMN_RESCORE_DATA)/../results/disorder; \
+	      [ -d $$d/disorder ] && dis=$$d/disorder; \
+	      echo "== $$r (target disorder from $$dis)"; \
 	      python3 bin/rescore_pfamn_from_calls.py \
-	        --calls-dir   $(PFAMN_RESCORE_DATA)/$$r/results/calls \
-	        --truth       $(PFAMN_RESCORE_DATA)/pfamn/human_pfamn_truth.parquet \
-	        --annotations $(PFAMN_RESCORE_DATA)/$$r/annotations \
-	        --metrics     $(PFAMN_RESCORE_DATA)/$$r/results/all_domain_metrics.parquet \
-	        --run         $$r \
-	        --out         $(PFAMN_RESCORE_DATA)/$$r/results/pfamn_rescored_whole_set.csv; \
+	        --run-dir      $$d \
+	        --annotations  $(PFAMN_RESCORE_DATA)/$$r/annotations \
+	        --pfamn-dir    $(PFAMN_RESCORE_DATA)/pfamn \
+	        --disorder-dir $$dis \
+	        --jobs         $(PFAMN_RESCORE_CPUS) \
+	        --source-commit $(shell git rev-parse --short=7 HEAD); \
 	    done'
 
 

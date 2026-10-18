@@ -128,111 +128,93 @@ def test_main_nf_routes_prebuilt_truth_through_restriction():
     )
 
 
-def test_rescore_from_calls_reproduces_scorer_and_fixes_recall(pfam_truth, tmp_path):
-    """Score a perfect tool against a truth padded with never-searched proteins, then
-    rescore its call file. "before" must equal the scorer's own row (the script exits
-    non-zero otherwise); "after" divides the same regions found by the searched proteins'
-    regions only. Not 1.0: some fixture regions have no same-family target domain."""
+def _finished_run(pfam_truth, tmp_path):
+    """A finished run's layout: calls/, all_domain_metrics.parquet, and a --pfamn_dir
+    whose human truth also holds 3 proteins the run never searched."""
+    import shutil
+
     from conftest import score
 
     truth = pl.read_parquet(pfam_truth["truth"])
     outsiders = truth.head(6).with_columns(
         pl.format("Q0000{}", pl.int_range(pl.len()) // 2).alias("accession")
     )
-    full = tmp_path / "human_pfamn_truth.parquet"
+    pfamn_dir = tmp_path / "pfamn"
+    pfamn_dir.mkdir()
+    full = pfamn_dir / "human_pfamn_truth.parquet"
     pl.concat([truth, outsiders]).write_parquet(full)
+    shutil.copy(pfam_truth["map"], pfamn_dir / "yeast_domain_map.parquet")
 
     regions = tmp_path / "perfect.regions.tsv"
-    write_perfect_regions(pfam_truth["truth"], pfam_truth["map"], regions)
-    work = tmp_path / "score"
-    m = score(full, pfam_truth["map"], regions, work, "pfamn")
-    m.write_parquet(tmp_path / "all_domain_metrics.parquet")
-    whole = m.filter(
-        (pl.col("split") == "all")
-        & (pl.col("stratum_axis") == "all")
-        & ~pl.col("dedup_transfers")
-    )
-    assert whole["recall"].item() < 1.0  # the outsiders were in the denominator
-
-    out = tmp_path / "rescored.csv"
-    run(
-        "rescore_pfamn_from_calls.py",
-        "--calls-dir",
-        work,
-        "--truth",
-        full,
-        "--annotations",
-        FIXTURES / "annotations",
-        "--metrics",
-        tmp_path / "all_domain_metrics.parquet",
-        "--run",
-        "fixture",
-        "--out",
-        out,
-    )
-    r = pl.read_csv(out).filter(~pl.col("dedup_transfers"))
-    assert r["n_truth_instances_before"].item() == truth.height + 6
-    assert r["n_truth_instances_after"].item() == truth.height
-    assert r["recall_before"].item() == pytest.approx(whole["recall"].item())
-    assert r["n_instances_found_after"].item() == r["n_instances_found_before"].item()
-    assert r["recall_after"].item() == pytest.approx(
-        r["recall_before"].item() * (truth.height + 6) / truth.height
-    )
-    assert r["fmax_after"].item() > r["fmax_before"].item()
-
-
-def test_rescore_keeps_unpublished_call_files_and_stops_on_a_mismatch(
-    pfam_truth, tmp_path
-):
-    """A calls/ folder shared by two runs holds files with no row in this run's metrics.
-    They are kept and flagged. A published value that differs still stops the script."""
-    import shutil
-
-    from conftest import score
-
-    regions = tmp_path / "perfect.regions.tsv"
-    write_perfect_regions(pfam_truth["truth"], pfam_truth["map"], regions)
-    work = tmp_path / "score"
-    m = score(pfam_truth["truth"], pfam_truth["map"], regions, work, "pfamn")
-    m.write_parquet(tmp_path / "metrics.parquet")
-    for f in work.glob("pfamn.*.yeast*.calls.parquet"):
+    write_perfect_regions(pfam_truth["truth"], pfam_truth["map"], regions, pad=7)
+    run_dir = tmp_path / "results"
+    m = score(full, pfam_truth["map"], regions, run_dir / "calls", "pfamn")
+    m.write_parquet(run_dir / "all_domain_metrics.parquet")
+    # A call file from another run sharing the folder: no published row.
+    for f in (run_dir / "calls").glob("pfamn.*.yeast*.calls.parquet"):
         shutil.copy(f, f.with_name(f.name.replace(".yeast", ".mouse")))
+    return truth, m, run_dir, pfamn_dir
 
-    out = tmp_path / "rescored.csv"
-    args = [
-        "--calls-dir",
-        work,
-        "--truth",
-        pfam_truth["truth"],
-        "--annotations",
-        FIXTURES / "annotations",
-        "--run",
-        "fixture",
-        "--out",
-        out,
-    ]
-    run("rescore_pfamn_from_calls.py", *args, "--metrics", tmp_path / "metrics.parquet")
-    r = pl.read_csv(out)
-    assert r.height == 4
-    assert r.filter(pl.col("species") == "yeast")["in_published_metrics"].all()
-    assert not r.filter(pl.col("species") == "mouse")["in_published_metrics"].any()
 
-    m.with_columns(pl.col("fmax") + 0.01).write_parquet(tmp_path / "bad.parquet")
+def _rescore_args(run_dir, pfamn_dir):
+    return [
+        "--run-dir", run_dir,
+        "--annotations", FIXTURES / "annotations",
+        "--pfamn-dir", pfamn_dir,
+        "--jobs", 2,
+    ]  # fmt: skip
+
+
+def test_rescore_reproduces_every_row_and_fixes_recall(pfam_truth, tmp_path):
+    """Before: every published row, every stratum, recomputed exactly. After: recall over
+    the searched proteins only, the same regions found."""
+    truth, m, run_dir, pfamn_dir = _finished_run(pfam_truth, tmp_path)
+    run("rescore_pfamn_from_calls.py", *_rescore_args(run_dir, pfamn_dir))
+
+    after = pl.read_parquet(run_dir / "pfamn_rescored_metrics.parquet")
+    assert after["before_matches_published"].all()
+    assert set(after["species"]) == {"yeast"}  # the unpublished mouse files are skipped
+    assert after.height == m.height
+    assert after["stratum_axis"].n_unique() > 1
+
+    keys = ["dedup_transfers", "split", "stratum_axis", "stratum"]
+    whole = (
+        m.filter((pl.col("split") == "all") & (pl.col("stratum_axis") == "all"))
+        .join(after, on=keys, suffix="_after")
+        .sort("dedup_transfers")
+    )
+    assert whole.height == 2
+    assert (whole["n_truth_instances"] == truth.height + 6).all()
+    assert (whole["n_truth_instances_after"] == truth.height).all()
+    assert (whole["n_instances_found"] == whole["n_instances_found_after"]).all()
+    assert (whole["recall"] < 1.0).all()
+    for r in whole.iter_rows(named=True):
+        assert r["recall_after"] == pytest.approx(
+            r["recall"] * (truth.height + 6) / truth.height
+        )
+        assert r["fmax_after"] > r["fmax"]
+    check = pl.read_csv(run_dir / "pfamn_rescore_check.csv")
+    assert (check["n_rows_differ"] == 0).all()
+
+
+def test_rescore_stops_when_the_whole_set_does_not_reproduce(pfam_truth, tmp_path):
     import subprocess
     import sys
 
     from conftest import BIN
 
+    _, m, run_dir, pfamn_dir = _finished_run(pfam_truth, tmp_path)
+    m.with_columns(
+        pl.when(pl.col("stratum_axis") == "all")
+        .then(pl.col("fmax") + 0.01)
+        .otherwise(pl.col("fmax"))
+        .alias("fmax")
+    ).write_parquet(run_dir / "all_domain_metrics.parquet")
     proc = subprocess.run(
-        [
-            sys.executable,
-            str(BIN / "rescore_pfamn_from_calls.py"),
-            *map(str, args),
-            "--metrics",
-            str(tmp_path / "bad.parquet"),
-        ],
-        capture_output=True,
-        text=True,
-    )
+        [sys.executable, str(BIN / "rescore_pfamn_from_calls.py"),
+         *map(str, _rescore_args(run_dir, pfamn_dir))],
+        capture_output=True, text=True,
+    )  # fmt: skip
     assert proc.returncode != 0
     assert "do not reproduce" in proc.stderr
+    assert not (run_dir / "pfamn_rescored_metrics.parquet").exists()

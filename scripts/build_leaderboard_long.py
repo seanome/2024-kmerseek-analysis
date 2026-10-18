@@ -40,13 +40,14 @@ TWILIGHT = (
 )
 SCOPE_RUNS = "2024-kmerseek-scope40-v040/nextflow-runs/scope40-alphabet-ksize-v040/runs"
 
+# Commit of the Sherlock clone that ran the first `make rescore-pfamn-from-calls` (the job
+# after 48243621, 2026-10-17), which wrote every pfamn_rescored_whole_set.csv. The full
+# rescore records its own commit in pfamn_rescored_metrics.parquet (rescore_commit).
+PFAMN_RESCORE_COMMIT = "7a6e34b"
+
 # Commit of the Sherlock clone that wrote each output: HEAD at the run's launch, read from
 # that clone's `git log -g` (HEAD reflog) on 2026-10-15. dark-fmax records its own commit in
 # code/COMMIT. Every commit below exists on GitHub.
-# Commit of the Sherlock clone that ran `make rescore-pfamn-from-calls` (job after 48243621,
-# 2026-10-17), which wrote every pfamn_rescored_whole_set.csv.
-PFAMN_RESCORE_COMMIT = "7a6e34b"
-
 COMMIT = {
     "qfo_region_mini": "dd17259",
     "qfo_region_midi": "4cd14cc",
@@ -417,6 +418,20 @@ def drop_unrestricted_truth(m: pl.DataFrame, rel: str) -> pl.DataFrame:
             file=sys.stderr,
         )
     return m.filter(~pl.col("truth_set").is_in(bad))
+
+
+def pfamn_rescored_full(path: Path) -> tuple[pl.DataFrame, str]:
+    """Every Pfam-N row from the full `make rescore-pfamn-from-calls`, and its commit.
+
+    Rows are kept only where the same call files scored against the old truth reproduced
+    the run's published row (before_matches_published), so a breakdown the scorer has
+    redefined since the run is left out rather than replaced by a different measurement.
+    """
+    r = pl.read_parquet(path)
+    commits = r["rescore_commit"].unique().to_list()
+    if len(commits) != 1:
+        raise SystemExit(f"{path}: expected one rescore_commit, found {commits}")
+    return r.filter(pl.col("before_matches_published")), commits[0]
 
 
 def pfamn_rescored(path: Path, metrics_path: Path) -> pl.DataFrame:
@@ -1114,9 +1129,24 @@ def main() -> None:
             )
         )
         # Pfam-N rows above were dropped (scored against every human protein); these are
-        # the same rows rescored against the run's own query proteins.
+        # the same rows rescored against the run's own query proteins. The full rescore
+        # (every breakdown) is used when present, else the whole-set one.
+        full_rel = f"{QFO}/data/{sub}/results/pfamn_rescored_metrics.parquet"
         rs_rel = f"{QFO}/data/{sub}/results/pfamn_rescored_whole_set.csv"
-        if (data / rs_rel).exists():
+        if (data / full_rel).exists():
+            frame, commit = pfamn_rescored_full(data / full_rel)
+            parts.append(
+                qfo_metrics(
+                    data / full_rel,
+                    full_rel,
+                    exp,
+                    f"human Pfam-annotated proteins, {label} set",
+                    tool_images(traces[exp], mapper("metrics")),
+                    frame=frame,
+                    commit=commit,
+                )
+            )
+        elif (data / rs_rel).exists():
             parts.append(
                 qfo_metrics(
                     data / rs_rel,
