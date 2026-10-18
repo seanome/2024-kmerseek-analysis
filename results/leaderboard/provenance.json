@@ -4,10 +4,13 @@
   "/scratch/users/olgabot/2024-kmerseek-analysis-deep-twilight/nextflow-runs/deep-twilight-controls/run/results/outcomes.parquet": "12d77dc34b8eb88a164dfc994eee75a13d8f918f01013228822b4435de648458",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/midi_testset_summary.json": "5f2702f88c207a3b9de5b0a52ec7b22f7c7e04cd6af78f78927b3ace875ad079",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results/all_domain_metrics.parquet": "8ba266169468d1d4a15a4b2e58022988c7b3cb79381a42d6b25644408d1eda68",
+  "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results/pfamn_rescored_whole_set.csv": "a88349129f642635a067bf6056d7c63eeb280fdf7528110939837bd1530d527f",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi/midi_testset_summary.json": "4a033f0e11c6e6f5780a0fabb6d1f66794a620f2eb7ce49d06fd89b6c285b04e",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi/results/all_domain_metrics.parquet": "76c9070c97c78453982591cf7ee2f43592b42d407da060851b2c910295ab0b1f",
+  "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi/results/pfamn_rescored_whole_set.csv": "b72dd33129c178cd02ade806dbfc7ab9d8421f2c4182730d8530e77d419495cb",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/mini/mini_testset_summary.json": "3630a87200fe0a441faf2750a7ebc281fb73cd25e996882c9e9303a994b5b594",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/mini/results/all_domain_metrics.parquet": "43f88818e8ee80fc72103ca3043680134ac51bf9084ebb70de59c63e379f9f2f",
+  "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/mini/results/pfamn_rescored_whole_set.csv": "15a8146ca156f1aedc738cd4bb479ae6f841f20820e8ac9e0a354af5aac4a0f9",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/run-elm-search-all/qfo_pfam_region.2026-09-29.trace.txt": "47505b6dd5bdf4bd09a4bd700390e4b0f8ae28479c69edb51bd5e6ce1053677b",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/run-elm-search/qfo_pfam_region.2026-09-25.trace.txt": "29846a455ee2c9926b8157290ad41e5aba969c95c763b1726870d9f0b3384068",
   "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/run-midi-plus-all-qfo/qfo_pfam_region.2026-09-05.trace.txt": "189ded3429a4f7375984e6d8a2b83551b38f42c89893227b1d9cfcd0a94f4d1e",
@@ -513,8 +516,8 @@
   "/scratch/users/olgabot/scope/results-scope40-alphabet-ksize-v040/scope40_v040_auc.tsv": "c9a30b83d6c0a064b79f629c0fe921d6366d3b14b9d801cb06101077319101af"
  },
  "outputs": {
-  "results.parquet": "e1ee39878b556321ec167d674031b8323df3736ce12984f4f09872c617458410",
+  "results.parquet": "76ffb98a54717eabc24958b8c0c29758efc8720e9e99b03a188ffcfddaf2ba57",
   "compute.parquet": "8a47ba2123c60cbb41b4833c9f96661934369137b72c5d81ef0808c98247e435",
-  "coverage.md": "e53066ec3d1a0266cab2a8c05164f6bc3d717a0b7efcb3e0b9697b3d8b7b0919"
+  "coverage.md": "4ed86c56b362c7acfe00a2ece55c6480a2961679565814ff2f7cda5560dfb180"
  }
 }

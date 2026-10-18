@@ -1,26 +1,28 @@
-"""How much the Pfam-N recall denominator bug moved each tool, on the midi and midi-plus runs.
+"""How much the Pfam-N recall denominator bug moved each tool, on the mini, midi and
+midi-plus runs.
 
 Before restrictTruthToQueries (main.nf), every QfO region run scored Pfam-N against all
-44,315 human Pfam-N regions on 18,724 proteins. midi-plus searched 998 proteins, which
-carry 2,218 of those regions on 966 proteins; midi searched 964 proteins, carrying 2,137
-regions on 932 proteins.
+44,315 human Pfam-N regions on 18,724 proteins. The searched proteins carry far fewer:
+midi-plus 2,218 regions on 966 proteins, midi 2,137 on 932, mini 2,701 on 196.
 
-What can be computed exactly from the metrics already on disk, and what cannot:
+The numbers come from data/<run>/results/pfamn_rescored_whole_set.csv, written on
+Sherlock by `make rescore-pfamn-from-calls`. That job recomputed both the old and the new
+whole-set numbers from each run's call files, and stopped if the old ones differed from
+the run's own all_domain_metrics.parquet. Only call files with a row there are used.
 
-  recall  = regions found / regions in the truth. Calls exist only on searched proteins,
-            so the regions found do not change. After = n_instances_found / n_after.
-            Exact.
-  Fmax    = best F1 over score cut-offs, with precision averaged over proteins that got a
-            call and recall averaged over proteins in the truth. A protein never searched
-            has recall 0, so at EVERY cut-off the new recall is the old one times
-            18,724 / (proteins after). Precision does not change. The metrics keep only
-            the old best cut-off, so F1 there with the scaled recall is a value the new
-            curve reaches: new Fmax is at least that. The exact value needs the rescore.
+Two checks against values computed here without the call files:
+
+  recall  regions found do not change (every call is on a searched protein), so the new
+          recall must be the old one times regions before / regions after.
+  Fmax    a never-searched protein has recall 0, so at every score cut-off the new recall
+          is the old one times proteins before / proteins after, and precision does not
+          change. F1 at the old best cut-off with that recall is a point on the new curve,
+          so the exact new Fmax must be at least that.
 
 Writes results/leaderboard/pfamn_denominator_before_after.csv (one row per run, tool,
-setting, species, with dedup on and off) and
-results/leaderboard/pfamn_denominator_before_after_by_tool.csv (medians over species), and
-the figure figures/pfamn_denominator_before_after_qfo_midi_plus.{pdf,svg,png}.
+setting, species, with dedup on and off), results/leaderboard/
+pfamn_denominator_before_after_by_tool.csv (medians over species), and the figure
+figures/pfamn_denominator_before_after_qfo_midi_plus.{pdf,svg,png}.
 
 Run: python scripts/pfamn_denominator_before_after.py --data $LEADERBOARD_DATA
 """
@@ -35,6 +37,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "notebooks"))
 import pubfig as pf  # noqa: E402
 
 QFO = "2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data"
+RUNS = ["midi-plus", "midi", "mini"]
 TOOL_ORDER = [
     "kmerseek",
     "mmseqs2_seqseq",
@@ -49,15 +52,6 @@ TOOL_ORDER = [
 ]
 
 
-def query_proteins(data: Path) -> dict[str, set[str]]:
-    """midi-plus queries are its Pfam-A truth proteins; midi's are the chr6 subset of them."""
-    mp = data / QFO / "midi-plus/results/truth"
-    plus = set(pl.read_parquet(mp / "human_domain_truth.parquet")["accession"])
-    cov = pl.read_parquet(mp / "human_query_covariates.parquet")
-    chr6 = set(cov.filter(pl.col("query_set") == "chr6")["accession"])
-    return {"midi-plus": plus, "midi": chr6}
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data", type=Path, required=True)
@@ -65,66 +59,60 @@ def main():
     ap.add_argument("--figdir", type=Path, default=Path("figures"))
     args = ap.parse_args()
 
-    pfamn = pl.read_parquet(args.data / QFO / "pfamn/human_pfamn_truth.parquet")
-    n_regions_before = pfamn.height
-    n_proteins_before = pfamn["accession"].n_unique()
-
     rows = []
-    for run, queries in query_proteins(args.data).items():
-        kept = pfamn.filter(pl.col("accession").is_in(queries))
-        n_regions_after = kept.height
-        n_proteins_after = kept["accession"].n_unique()
+    for run in RUNS:
+        r = pl.read_csv(
+            args.data / QFO / run / "results/pfamn_rescored_whole_set.csv"
+        ).filter(pl.col("in_published_metrics"))
         print(
-            f"{run}: {len(queries):,} query proteins; Pfam-N {n_regions_before:,} regions "
-            f"on {n_proteins_before:,} proteins -> {n_regions_after:,} on "
-            f"{n_proteins_after:,}"
+            f"{run}: {r.height} call files; Pfam-N "
+            f"{r['n_truth_instances_before'][0]:,} regions on "
+            f"{r['n_stratum_proteins_before'][0]:,} proteins -> "
+            f"{r['n_truth_instances_after'][0]:,} on "
+            f"{r['n_stratum_proteins_after'][0]:,}"
         )
-        m = pl.read_parquet(
-            args.data / QFO / run / "results/all_domain_metrics.parquet"
+        rc = pl.col("fmax_recall_before") * (
+            pl.col("n_stratum_proteins_before") / pl.col("n_stratum_proteins_after")
         )
-        m = m.filter(
-            (pl.col("truth_set") == "pfamn")
-            & (pl.col("stratum_axis") == "all")
-            & (pl.col("split") == "all")
-        )
-        assert set(m["n_truth_instances"]) == {n_regions_before}, "already restricted?"
-        scale = n_proteins_before / n_proteins_after
-        rc = pl.col("fmax_recall") * scale
-        pr = pl.col("fmax_precision")
+        pr = pl.col("fmax_precision_before")
         rows.append(
-            m.select(
-                pl.lit(run).alias("run"),
+            r.select(
+                "run",
                 "tool",
                 pl.col("variant").alias("setting"),
                 "species",
                 "dedup_transfers",
-                pl.col("n_instances_found").alias("regions_found"),
-                pl.col("n_truth_instances").alias("n_regions_before"),
-                pl.lit(n_regions_after).alias("n_regions_after"),
-                pl.lit(n_proteins_before).alias("n_proteins_before"),
-                pl.lit(n_proteins_after).alias("n_proteins_after"),
-                pl.col("recall").alias("recall_before"),
-                (pl.col("n_instances_found") / n_regions_after).alias("recall_after"),
-                pl.col("fmax").alias("fmax_before"),
+                pl.col("n_instances_found_after").alias("regions_found"),
+                pl.col("n_truth_instances_before").alias("n_regions_before"),
+                pl.col("n_truth_instances_after").alias("n_regions_after"),
+                pl.col("n_stratum_proteins_before").alias("n_proteins_before"),
+                pl.col("n_stratum_proteins_after").alias("n_proteins_after"),
+                "recall_before",
+                "recall_after",
+                "fmax_before",
+                "fmax_after",
                 pl.when(pr + rc > 0)
                 .then(2 * pr * rc / (pr + rc))
                 .otherwise(0.0)
-                .alias("fmax_after_at_least"),
+                .alias("fmax_after_lower_bound"),
             )
         )
     df = pl.concat(rows).sort("run", "tool", "setting", "species", "dedup_transfers")
-    # The exact recall must equal the old one times the region ratio; a mismatch would mean
-    # found regions were not all on query proteins.
+
     ratio = df["recall_after"] / (
         df["recall_before"] * df["n_regions_before"] / df["n_regions_after"]
     )
-    assert ratio.drop_nans().is_between(1 - 1e-9, 1 + 1e-9).all()
+    assert ratio.drop_nans().is_between(1 - 1e-9, 1 + 1e-9).all(), "recall check"
+    assert (
+        df["fmax_after"] >= df["fmax_after_lower_bound"] - 1e-12
+    ).all(), "Fmax check"
+    print(f"both checks hold on all {df.height} rows")
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     df.write_csv(args.outdir / "pfamn_denominator_before_after.csv")
 
     # One row per (run, tool): the median over species of the setting with the highest
-    # median recall after the fix, raw calls (dedup off). Every other tool has one setting.
+    # median Fmax after the fix, raw calls (dedup off). Every other tool has one setting.
     raw = df.filter(~pl.col("dedup_transfers"))
     per_setting = raw.group_by("run", "tool", "setting").agg(
         pl.len().alias("n_species"),
@@ -135,26 +123,29 @@ def main():
         pl.col("recall_before").median(),
         pl.col("recall_after").median(),
         pl.col("fmax_before").median(),
-        pl.col("fmax_after_at_least").median(),
+        pl.col("fmax_after").median(),
     )
     best = (
-        per_setting.sort(["recall_after", "setting"], descending=[True, False])
+        per_setting.sort(["fmax_after", "setting"], descending=[True, False])
         .group_by("run", "tool", maintain_order=True)
         .first()
         .with_columns(
+            pl.col("run")
+            .replace_strict({r: i for i, r in enumerate(RUNS)})
+            .alias("_r"),
             pl.col("tool")
             .replace_strict({t: i for i, t in enumerate(TOOL_ORDER)}, default=99)
-            .alias("_o")
+            .alias("_o"),
         )
-        .sort("run", "_o")
-        .drop("_o")
+        .sort("_r", "_o")
+        .drop("_r", "_o")
     )
     best.write_csv(args.outdir / "pfamn_denominator_before_after_by_tool.csv")
     with pl.Config(tbl_rows=40, tbl_cols=20, tbl_width_chars=250, float_precision=4):
         print(best)
 
     draw(
-        df.filter((pl.col("run") == "midi-plus") & ~pl.col("dedup_transfers")),
+        raw.filter(pl.col("run") == "midi-plus"),
         best.filter(pl.col("run") == "midi-plus"),
         args.figdir / "pfamn_denominator_before_after_qfo_midi_plus",
     )
@@ -167,6 +158,7 @@ def draw(raw: pl.DataFrame, best: pl.DataFrame, stem: Path):
     before_c, after_c = pf.GREY, pf.OKABE_ITO["blue"]
     tools = [t for t in TOOL_ORDER if t in set(best["tool"])]
     pick = dict(zip(best["tool"], best["setting"]))
+    n_reg, n_prot = best["n_regions_after"][0], best["n_proteins_after"][0]
     for ax, (b, a, ylab) in zip(
         axs,
         [
@@ -175,7 +167,7 @@ def draw(raw: pl.DataFrame, best: pl.DataFrame, stem: Path):
                 "recall_after",
                 "Pfam-N recall (regions found / regions)",
             ),
-            ("fmax_before", "fmax_after_at_least", "Pfam-N Fmax"),
+            ("fmax_before", "fmax_after", "Pfam-N Fmax"),
         ],
     ):
         for i, t in enumerate(tools):
@@ -187,24 +179,21 @@ def draw(raw: pl.DataFrame, best: pl.DataFrame, stem: Path):
                 s[b],
                 s=6,
                 color=before_c,
-                marker="o",
                 label=(
                     "before: all 44,315 regions on 18,724 proteins" if i == 0 else None
                 ),
-            )
-            mark = "o" if a == "recall_after" else "^"
-            lab = (
-                "after: 2,218 regions on the 966 searched proteins that have Pfam-N"
-                if a == "recall_after"
-                else None
             )
             ax.scatter(
                 [x + 0.2 for x in xs],
                 s[a],
                 s=6,
                 color=after_c,
-                marker=mark,
-                label=lab if i == 0 else None,
+                label=(
+                    f"after: {n_reg:,} regions on the {n_prot:,} searched proteins "
+                    "that have Pfam-N"
+                    if i == 0
+                    else None
+                ),
             )
         ax.set_xticks(range(len(tools)))
         ax.set_xticklabels(
@@ -215,15 +204,6 @@ def draw(raw: pl.DataFrame, best: pl.DataFrame, stem: Path):
         ax.set_ylabel(ylab)
         ax.set_ylim(bottom=0)
         ax.set_xlim(-0.6, len(tools) - 0.4)
-    # The triangle is the one mark that means "at least": the exact Fmax needs the rescore.
-    axs[1].scatter(
-        [],
-        [],
-        s=6,
-        color=after_c,
-        marker="^",
-        label="after, Fmax at the old best cut-off (true Fmax is at least this)",
-    )
     pf.shared_legend(
         fig,
         ncol=1,

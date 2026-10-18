@@ -43,6 +43,10 @@ SCOPE_RUNS = "2024-kmerseek-scope40-v040/nextflow-runs/scope40-alphabet-ksize-v0
 # Commit of the Sherlock clone that wrote each output: HEAD at the run's launch, read from
 # that clone's `git log -g` (HEAD reflog) on 2026-10-15. dark-fmax records its own commit in
 # code/COMMIT. Every commit below exists on GitHub.
+# Commit of the Sherlock clone that ran `make rescore-pfamn-from-calls` (job after 48243621,
+# 2026-10-17), which wrote every pfamn_rescored_whole_set.csv.
+PFAMN_RESCORE_COMMIT = "7a6e34b"
+
 COMMIT = {
     "qfo_region_mini": "dd17259",
     "qfo_region_midi": "4cd14cc",
@@ -415,6 +419,39 @@ def drop_unrestricted_truth(m: pl.DataFrame, rel: str) -> pl.DataFrame:
     return m.filter(~pl.col("truth_set").is_in(bad))
 
 
+def pfamn_rescored(path: Path, metrics_path: Path) -> pl.DataFrame:
+    """Whole-set Pfam-N rows from `make rescore-pfamn-from-calls`, shaped like
+    all_domain_metrics.parquet so qfo_metrics() reads them unchanged.
+
+    That job recomputed each run's Pfam-N numbers from its call files against the truth cut
+    to the run's query proteins (PR 165). Only rows whose call file has a row in the run's
+    own metrics are kept: the midi-plus calls/ folder also holds the 77-target run's files.
+    Only the whole set is recomputed, and only the metrics the call files determine: the
+    strata, recall_reachable, auprc and fmax_threshold need a full rescore.
+    """
+    r = pl.read_csv(path).filter(pl.col("in_published_metrics"))
+    mya = (
+        pl.read_parquet(metrics_path, columns=["species", "species_mya"])
+        .unique()
+        .group_by("species")
+        .agg(pl.col("species_mya").first())
+    )
+    keep = ["fmax", "fmax_precision", "fmax_recall", "family_fmax"]
+    return r.join(mya, on="species", how="left").select(
+        pl.lit("pfamn").alias("truth_set"),
+        "tool",
+        "variant",
+        "species",
+        "species_mya",
+        pl.lit("all").alias("split"),
+        pl.lit("all").alias("stratum_axis"),
+        pl.lit("all").alias("stratum"),
+        "dedup_transfers",
+        pl.col("n_truth_instances_after").alias("n_truth_instances"),
+        *[pl.col(f"{k}_after").alias(k) for k in keep],
+    )
+
+
 def qfo_metrics(
     path: Path,
     rel: str,
@@ -426,9 +463,17 @@ def qfo_metrics(
     target_db: pl.Expr | None = None,
     target_db_version: str | None = QFO_TARGET_VERSION,
     query_from_truth_set: bool = False,
+    frame: pl.DataFrame | None = None,
+    commit: str | None = None,
 ) -> pl.DataFrame:
-    """all_domain_metrics-shaped table (evaluate_domain_calls.py) to long rows."""
-    if path.suffix == ".csv":
+    """all_domain_metrics-shaped table (evaluate_domain_calls.py) to long rows.
+
+    `frame` passes a table already in memory; `path` is then only checked for existence by
+    the caller and `rel` is still what source_path records.
+    """
+    if frame is not None:
+        m = frame
+    elif path.suffix == ".csv":
         m = pl.read_csv(path, infer_schema_length=200_000)
     else:
         m = pl.read_parquet(path)
@@ -515,7 +560,7 @@ def qfo_metrics(
             .otherwise(pl.lit("raw"))
             .alias("dedup_or_raw"),
             pl.lit(f"{SCRATCH}/{rel}").alias("source_path"),
-            pl.lit(COMMIT[experiment]).alias("source_commit"),
+            pl.lit(commit or COMMIT[experiment]).alias("source_commit"),
         )
     )
 
@@ -1068,6 +1113,23 @@ def main() -> None:
                 tool_images(traces[exp], mapper("metrics")),
             )
         )
+        # Pfam-N rows above were dropped (scored against every human protein); these are
+        # the same rows rescored against the run's own query proteins.
+        rs_rel = f"{QFO}/data/{sub}/results/pfamn_rescored_whole_set.csv"
+        if (data / rs_rel).exists():
+            parts.append(
+                qfo_metrics(
+                    data / rs_rel,
+                    rs_rel,
+                    exp,
+                    f"human Pfam-annotated proteins, {label} set",
+                    tool_images(traces[exp], mapper("metrics")),
+                    frame=pfamn_rescored(data / rs_rel, data / rel),
+                    # The rescore's own commit: the numbers come from this code, not
+                    # from the run's.
+                    commit=PFAMN_RESCORE_COMMIT,
+                )
+            )
     dark_rel = f"{DARK}/dark-fmax-2026-10-14/dark_fmax_metrics.csv"
     parts.append(
         qfo_metrics(
