@@ -24,6 +24,7 @@ os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 
 import argparse  # noqa: E402
 import gzip  # noqa: E402
+import hashlib  # noqa: E402
 import random  # noqa: E402
 import sys  # noqa: E402
 from concurrent.futures import ProcessPoolExecutor  # noqa: E402
@@ -281,13 +282,78 @@ def run(sprot, truth, background, workers):
     print(f"wrote {path} ({out.height} rows)", file=sys.stderr)
 
 
+def residues(sprot, truth, background):
+    """Where the chosen setting's shared keys sit, for printing residues in the notebook.
+
+    For every real query, every other-lineage ice-binding protein it shares at least 2
+    keys with; if there is none for any query, the AFGP query against the random
+    Swiss-Prot entry it shares the most keys with. One row per shared key, with its first
+    occurrence in each sequence (start of word 1, residues between, start of word 2)."""
+    reach = pl.read_csv(D / "298_strobemer_reach.tsv.gz", separator="\t")
+    table = sr.selection_table(reach)
+    top = table.row(0, named=True)
+    alphabet, a, family = top["alphabet"], top["word_length"], top["family"]
+    real = query_table().filter(pl.col("kind") == "real")
+    entries = truth["Entry"].to_list() + background
+    lineage = dict(zip(truth["Entry"], truth["lineage"]))
+    seqs = [sprot[e] for e in entries]
+    qseqs = real["sequence"].to_list()
+    s_ids, keys = sr.all_keys(seqs + qseqs, alphabet, a, family)
+    S, _ = sr.shared_counts(len(seqs), len(qseqs), s_ids, keys)
+    pairs = []
+    for qi, q in enumerate(real.iter_rows(named=True)):
+        for ei in np.flatnonzero(S[: truth.height, qi] >= sr.RULE_MIN_SHARED):
+            if lineage[entries[ei]] != q["lineage"]:
+                pairs.append((qi, int(ei), "ice-binding, other lineage"))
+    if not pairs:
+        qi = real["accession"].to_list().index("P02732")
+        ei = truth.height + int(np.argmax(S[truth.height :, qi]))
+        pairs.append((qi, ei, "random Swiss-Prot entry with the most shared keys"))
+    rows = []
+    for qi, ei, why in pairs:
+        qk = sr.sequence_keys(qseqs[qi], alphabet, a, family)
+        tk = sr.sequence_keys(seqs[ei], alphabet, a, family)
+        shared = sorted(set(qk) & set(tk))
+        assert len(shared) == S[ei, qi]
+        for k in shared:
+            (qs1, qg, qs2), (ts1, tg, ts2) = qk[k][0], tk[k][0]
+            rows.append(
+                {
+                    "alphabet": alphabet,
+                    "word_length": a,
+                    "family": family,
+                    "chosen_by_rule": top["eligible"],
+                    "query": real["accession"][qi],
+                    "query_lineage": real["lineage"][qi],
+                    "target": entries[ei],
+                    "target_kind": why,
+                    "n_shared_keys": int(S[ei, qi]),
+                    "key": k,
+                    "query_start1": qs1,
+                    "query_gap": qg,
+                    "query_start2": qs2,
+                    "query_key_occurrences": len(qk[k]),
+                    "target_start1": ts1,
+                    "target_gap": tg,
+                    "target_start2": ts2,
+                    "target_key_occurrences": len(tk[k]),
+                }
+            )
+    out = pl.DataFrame(rows)
+    out.write_csv(D / "298_chosen_setting_shared_keys.tsv", separator="\t")
+    print(f"wrote {len(rows)} shared keys for {len(pairs)} pairs", file=sys.stderr)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--gate", action="store_true")
     ap.add_argument("--nullc", action="store_true")
     ap.add_argument("--run", action="store_true")
     ap.add_argument("--workers", type=int, default=6)
-    ap.add_argument("--gate-out", type=Path, default=D / "298_gate_kmer_reach.tsv")
+    ap.add_argument("--residues", action="store_true")
+    ap.add_argument(
+        "--gate-out", type=Path, default=Path("/tmp/298_gate_kmer_reach.tsv")
+    )
     args = ap.parse_args()
     check_alphabets()
     sprot, truth, queries, background = load_inputs()
@@ -297,6 +363,14 @@ def main():
         g.write_csv(args.gate_out, separator="\t")
         same = args.gate_out.read_bytes() == (D / "kmer_reach_ceiling.tsv").read_bytes()
         print(f"gate 1, byte-identical to kmer_reach_ceiling.tsv: {same}")
+        (D / "298_gate1.txt").write_text(
+            "Gate 1 of notebook 298: section 9's exact k-mer settings counted with\n"
+            "strobemer_reach_utils.all_keys / shared_counts (family 'kmer').\n"
+            f"md5 of the new table:   {hashlib.md5(args.gate_out.read_bytes()).hexdigest()}\n"
+            "md5 of kmer_reach_ceiling.tsv: "
+            f"{hashlib.md5((D / 'kmer_reach_ceiling.tsv').read_bytes()).hexdigest()}\n"
+            f"byte-identical: {same}\n"
+        )
         if not same:
             sys.exit(1)
     if args.nullc:
@@ -309,6 +383,8 @@ def main():
         )
     if args.run:
         run(sprot, truth, background, args.workers)
+    if args.residues:
+        residues(sprot, truth, background)
 
 
 if __name__ == "__main__":

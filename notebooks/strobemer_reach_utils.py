@@ -299,3 +299,50 @@ def null_c(seq: str, period: int, rng: np.random.Generator) -> str:
         idx = np.arange(r, arr.size, period)
         arr[idx] = arr[rng.permutation(idx)]
     return arr.tobytes().decode()
+
+
+# ---------------------------------------------------------------------------
+# The selection rule of notebook 298, fixed before the run (PR 141's split).
+# ---------------------------------------------------------------------------
+
+SELECT_LINEAGES = [
+    "1 fish, type I AFP",
+    "3 fish, type II AFP",
+    "5 insects",
+    "7 bacteria",
+]
+REPORT_LINEAGES = ["2 fish, AFGP", "4 fish, type III AFP"]
+RULE_MIN_SHARED = 2  # kmerseek's --min-shared-kmers in the convergence-afp run
+RANDOM_SHARE_BAR = 0.01  # read off notebook 295's SF6
+MARGIN = 0.10  # reach margin, both over exact k-mers and over the null C median
+SETTING = ["alphabet", "word_length", "family"]
+
+
+def selection_table(reach):
+    """One row per setting: mean reach and the largest random share over the four
+    selection lineages, real queries only, at 2 shared keys.
+
+    A setting is eligible when the random share is at most 1% on every one of the four
+    queries. Eligible settings are ranked by mean reach, then by lower mean random
+    share, then by name, so a tie always resolves the same way."""
+    import polars as pl
+
+    sel = reach.filter(
+        (pl.col("kind") == "real")
+        & (pl.col("min_shared") == RULE_MIN_SHARED)
+        & pl.col("lineage").is_in(SELECT_LINEAGES)
+    )
+    return (
+        sel.group_by(SETTING)
+        .agg(
+            mean_reach=pl.col("reach").mean(),
+            max_random_share=pl.col("random_share").max(),
+            mean_random_share=pl.col("random_share").mean(),
+            n_queries=pl.len(),
+        )
+        .with_columns(eligible=pl.col("max_random_share") <= RANDOM_SHARE_BAR)
+        .sort(
+            ["eligible", "mean_reach", "mean_random_share", *SETTING],
+            descending=[True, True, False, False, False, False],
+        )
+    )
