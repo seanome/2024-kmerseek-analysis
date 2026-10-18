@@ -113,10 +113,21 @@ params.drop_settings = ''
  * cys_hp3 asks the measured peak with about a third more on top. A full reference is
  * about 21 times the pilot's, so the run-* targets need these remeasured or scaled.
  */
+//
+// Measured again on the full references (run-phylum, 2026-10-17, reference_scale 25),
+// peak_rss over the three held-out phyla:
+//   cys_hp3 k11  545.7-577.2 GB  (48 times the pilot: the fit's regions grow faster than
+//                                 the reference at this k; 400 GB would have been killed)
+//   cys_hp3 k13  113.1-122.4 GB  (25 times)
+//   cys_hp3 k15   62.6-63.2 GB   (22 times)
+// So per reference-multiple: k11 30 GB (750 GB at 25), k13 7 GB (175 GB, an hns node),
+// k15 4 GB (100 GB, any node), about a third over the largest measured peak. k9 keeps the
+// pilot-based 64; at k11's growth it would need well over 2 TB, which is why it is left out.
 def indexGb(alphabet, ksize, attempt) {
+    def perScale = ksize <= 9 ? 64 : ksize <= 11 ? 30 : ksize <= 13 ? 7 : 4
     def first = alphabet == 'cys2'
               ? params.cys2_memory_gb
-              : (ksize <= 9 ? 64 : ksize <= 11 ? 16 : 8) * params.reference_scale
+              : perScale * params.reference_scale
     bigmemFloor(first * (1 << (attempt - 1)))
 }
 
