@@ -1,0 +1,18 @@
+# Tools for notebook 299 on Sherlock (glibc 2.17). Solved with
+# CONDA_OVERRIDE_GLIBC=2.17 CONDA_SUBDIR=linux-64 mamba create --dry-run on 2026-10-18.
+# Versions are the newest on each project's release page that day: DIAMOND 2.2.8 (GitHub,
+# 2026-09-20), sourmash 4.9.4 (PyPI, 2025-08-07), sourmash_plugin_branchwater 0.9.15
+# (PyPI, 2026-04-26), seqkit 2.14.0 (GitHub, 2026-09-24).
+name: nb299
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.12
+  - sourmash=4.9.4
+  - sourmash_plugin_branchwater=0.9.15
+  - diamond=2.2.8
+  - seqkit=2.14.0
+  - pigz=2.8
+  - polars=2.0.0
+  - matplotlib-base=3.10

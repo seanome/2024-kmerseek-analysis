@@ -1,0 +1,11 @@
+{
+ "clam_fasta": "/Users/olga/data/arctic-clam/Glanz_Clam_AllModels.proteins.fasta",
+ "clam_fasta_md5": "2d3015b812eeff849704cfecb55f19c0",
+ "clam_proteins": 69055,
+ "clam_sample_seed": 299,
+ "clam_sample_method": "random.Random(299).sample(sorted(protein ids), 100)",
+ "shuffle": "dipeptide (Altschul-Erikson), nextflow-runs/scope40-lowcomplexity-null/bin/shuffle_fasta.py, seed per copy = random.Random(f'299:{query_id}:{copy}')",
+ "bhf_regions_source": "PR 80, reports/case_gallery/hits241.BHF.json (branch olgabot/case-gallery-reference-pairs): for each Figure 1 gene, its lowest-E region over notebook 241's settings",
+ "n_real": 109,
+ "n_shuffled": 2180
+}
