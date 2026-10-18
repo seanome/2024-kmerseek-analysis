@@ -62,7 +62,7 @@ k-1 residues.
 control for "does kmerseek's result depend on word order, or only on which words are
 present", and at which alphabets and k. Two outcomes:
 
-1. The control exists at the k kmerseek is run at (H/P k of 19 or more): build it into the
+1. The control exists at the k kmerseek is run at (H/P k of 19 or more, the smallest H/P k the project treats as realistic: kmerseek PR 62 review): build it into the
    pipeline as a decoy that only an order-aware score can reject.
 2. It exists only at k below what kmerseek runs: at real k the k-mer counts pin the order,
    so kmerseek's sketch already fixes the sequence's reduced order almost completely, and
@@ -81,8 +81,9 @@ present", and at which alphabets and k. Two outcomes:
   baseline, plain block shuffling (cut the protein into blocks of k residues and reorder
   all but the first and last block, which keeps both ends and the amino-acid counts).
 * Also reported, per k, the **ceiling**: the fraction of proteins for which at least 11
-  strings with these k-mer counts exist at all (the original and 10 others; BEST count), and
-  the fraction for which the original is the only one.
+  strings with these k-mer counts and the original first k-1 letters exist at all (the
+  original and 10 others; BEST count), and the fraction for which the original is the only
+  one.
 * Outcome 1 holds when at least half of the proteins pass at H/P k = 20, the middle k.
   Otherwise outcome 2.
 
@@ -91,7 +92,7 @@ present", and at which alphabets and k. Two outcomes:
 Proteins with any residue outside the 20 standard amino acids (for example selenocysteine
 U) or shorter than 50 residues are left out, leaving 19_589. A random 1_000 of them
 (seed 343) are tested. Computed by `scripts/run_nb343_same_kmers_reordered.py` on the
-laptop (about 5 minutes, 6 processes), table `tables/343_same_kmers_reordered_gencode_v49_human.tsv`.
+laptop (281 seconds on 6 processes, from the run's log), table `tables/343_same_kmers_reordered_gencode_v49_human.tsv`.
 
 **Settings.** Two alphabets:
 
@@ -177,8 +178,13 @@ md(r"""
 
 One row per alphabet and k. `walk_pass`: fraction of the 1_000 proteins that pass with the
 de Bruijn walk. `shuffle_pass`: the same for block shuffling. `ceiling`: fraction for which at
-least 11 strings with these k-mer counts exist at all, so passing is possible. `only_one`:
-fraction for which the original is the only string with these k-mer counts.
+least 11 strings with these k-mer counts and the original first k-1 letters exist, so
+passing is possible. `only_one`: fraction for which the original is the only such string.
+Fixing the first k-1 letters loses nothing when the first and last (k-1)-words differ: the
+walk must then start at the first one. When they are the same word, other starting points
+also give the same k-mer counts but usually change the letter counts, so they could not
+keep the amino-acid counts; the second agent (section 4) found 5 such rows, all at k = 8
+(H/P) or 4 (Dayhoff), where the count is far above 11 anyway.
 `shuffle_any_exact`: fraction of proteins where any of the 200 block shuffles changed the
 string and still kept the k-mer counts exactly. The 95% intervals are Wilson intervals over proteins.
 """)
@@ -485,13 +491,88 @@ print(f"amino-acid strings identical: {bcl2 == alt}; protein20 sketch identical:
 md(r"""
 ## 4. Adversarial check by a second agent
 
-PLACEHOLDER
+A second Claude Code agent, in its own copy of the repository, tried to prove each claim
+wrong with real inputs (scratch scripts kept outside the repo). Held means the attempt
+failed to break the claim.
+
+| Claim | Verdict | What was tried |
+|---|---|---|
+| BEST count and uniform draws are correct | Held | Count compared three ways on 1,910 strings (this code, an exact integer determinant, listing every walk): 0 disagreements. Chi-square on 12 cases with 24 to 144 strings: no string missed, smallest p = 0.024 of 12 tests. |
+| Draws keep the k-mer counts, amino-acid counts and both ends | Held | 2,448 runs on 204 made-up proteins (poly-A, repeats, random), k from 2 to the protein length: 0 failures. |
+| "Only one string" and "at least 11" are classified right despite floating-point determinants | Held | Exact integer counts for 12,400 table rows: 0 rows change class; largest error in the log count 6.8e-13. |
+| Block shuffling is a fair baseline | Held for the conclusion | Block lengths k-1, k/2, 2k and 3 on 150 proteins at H/P k = 12 and 20: 0 of 150 kept the k-mers. A string with the exact k-mer counts is a walk in the same graph, so no method that keeps them can beat the ceiling. |
+| BCL2 example | Held | Exact count at k = 10 is 145,920 (k = 12 has 5, so 10 is the largest passing k); 104 of 239 positions changed; signatures identical, and changing one letter makes them differ. sourmash 4.9.4 counts ksize in residues for protein input. |
+| Result does not depend on the sample | Held | Another 300 proteins (seed 2026): H/P k = 20 pass 1.7%, ceiling 3.7%; Dayhoff k = 10 pass 7.0%, ceiling 11.0%. Still outcome 2. |
+| Every sentence has a printed number | Held after fixes | "H/P k of 19 or more" now names its source; run time now quoted from the run's log. |
+
+Two minor issues, both fixed or stated: the count fixes the first k-1 letters, which
+undercounts only when the first and last (k-1)-words are the same (now said in section 1);
+`WordGraph` fails at k = 1, which the sweep never uses.
 """)
 
 md(r"""
 ## Summary and conclusions
 
-PLACEHOLDER
+### Background
+
+kmerseek compares proteins through the length-k words of a reduced-alphabet string. This
+notebook asks whether a real protein can be rewritten into a different sequence that has
+exactly the same reduced words, each used as often as before, so that kmerseek's sketch
+cannot tell the two apart. Such a sequence would be a control that changes only the order.
+
+### Summary and conclusions
+
+* At `hp_pbotc_1st_ed2` k = 20, only 2.6% of 1,000 human proteins (95% interval 1.8-3.8%)
+  have 10 reorderings changing at least 30% of positions; the pre-registered outcome is 2.
+* At H/P k = 20, 90.0% of human proteins have exactly one reduced string with their k-mer
+  counts, so kmerseek's sketch fixes their reduced order completely.
+* Reordering with identical k-mers works at short words: 79.1% of proteins pass at H/P
+  k = 12 and 87.8% at `dayhoff6` k = 6.
+* The limit is set by repeats: the median protein's longest repeated H/P word is 17 letters,
+  and only 28.1% repeat any 19-letter word, which a new order at k = 20 needs.
+* Block shuffling never meets the rule in any of the 20 settings, because it loses a median
+  81% of the original reduced 20-mers at H/P k = 20.
+* BCL2 at H/P k = 10 has 145,920 sequences with its exact reduced 10-mer counts; one changes
+  104 of 239 positions and gives a byte-identical sourmash sketch.
+
+**What to do with it.** Outcome 2. At the k kmerseek runs, a protein's reduced k-mer
+counts nearly always determine its reduced string, so "same words, new order" is not
+available as a control for most proteins. A test of whether kmerseek depends on word order
+has to change the words (shuffles, or k below the run k), or be limited to the 2.6% of
+proteins where reordering exists. Higher pass
+fractions would have been better for the control; the drop is steep between k = 12 and
+k = 20 for H/P and between k = 6 and k = 10 for Dayhoff.
+
+### Analysis details
+
+The pass fraction follows the ceiling closely at every k (H/P k = 20: 2.6% pass, ceiling
+5.1%), so the 200 uniform draws find most of what exists; the gap is proteins with 11 or
+more strings where fewer than 10 differ from the original at 30% of positions. Per-protein
+change among the draws is a median 47% of reduced positions at H/P k = 8 and falls to 0 (the original
+redrawn) once k is past the longest repeat. BCL2 passes at H/P k = 8 and 10 only.
+
+### Supplementary information
+
+* Code: `notebooks/same_kmers_reordered_utils.py` (graph, BEST count, uniform draws,
+  amino-acid assignment, block shuffle); tests in `tests/test_same_kmers_reordered_utils.py`
+  compare count and draws with brute-force enumeration.
+* Sweep: `scripts/run_nb343_same_kmers_reordered.py`, 1,000 proteins x 20 settings, 200 draws
+  per construction, seeds fixed; output `tables/343_same_kmers_reordered_gencode_v49_human.tsv`
+  and summary `tables/343_same_kmers_reordered_summary_gencode_v49_human.tsv`.
+* Figures: `figures/343_SF1_same_reduced_kmers_new_order_pass_fraction_gencode_v49_human.png`,
+  `figures/343_SF2_longest_repeated_reduced_word_gencode_v49_human.png` (and `_print` PDFs).
+* sourmash 4.9.4, scaled 1 with counts, the pre-encoded H/P string hashed as protein.
+
+### References
+
+* van Aardenne-Ehrenfest, T., and N. G. de Bruijn. "Circuits and Trees in Oriented Linear
+  Graphs." *Simon Stevin* 28 (1951): 203-17. (BEST theorem; DOI not checked.)
+* Wilson, D. B. "Generating Random Spanning Trees More Quickly than the Cover Time."
+  *Proceedings of the 28th Annual ACM Symposium on Theory of Computing* (1996): 296-303.
+  (DOI not checked.)
+* Kandel, D., Y. Matias, R. Unger, and P. Winkler. "Shuffling Biological Sequences."
+  *Discrete Applied Mathematics* 71 (1996): 171-85. (Uniform k-let-preserving shuffles by
+  the same Eulerian-path method; DOI not checked.)
 """)
 
 nb = {
