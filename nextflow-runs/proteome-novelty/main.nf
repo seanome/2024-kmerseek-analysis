@@ -118,7 +118,8 @@ process cladeMasks {
 
 process mmseqsCluster {
     tag "${clade}"
-    container 'quay.io/biocontainers/mmseqs2:18.8cc5c--hd6d6fdc_0'
+    // Tag 18.8cc5c--hd6d6fdc_0, pinned by digest (the same image deep-twilight-controls uses).
+    container 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
     // No history for this pipeline: a model, not a measurement. Eukaryota (408M residues,
     // 884_238 proteins) gets 58 GB and 25 h.
     cpus   16

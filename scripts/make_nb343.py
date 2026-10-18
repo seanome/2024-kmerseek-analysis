@@ -60,6 +60,14 @@ md(r"""
 - **MMseqs2.** Release 18 (`quay.io/biocontainers/mmseqs2:18.8cc5c--hd6d6fdc_0`),
   `easy-cluster --min-seq-id 0.3 -c 0.8 --cov-mode 0`.
 
+**Two corrections to wording in the rule, found by the second review (the rule itself
+is unchanged).** The rule says clustering MMseqs2 on hidden proteomes too "can only make
+the MMseqs2 prediction better". On Archaea the review found that it helped MMseqs2 on the
+median but not in every split (the review is posted on
+[PR 172](https://github.com/seanome/2024-kmerseek-analysis/pull/172); its check is not
+part of this notebook). And Heaps' law is fitted only on the points where $U(n) > 0$;
+that matters only for synthetic proteomes at 42 bits, where few words are shared at all.
+
 **How to read the counts.** Every count is of *recurring* words: words found in at least
 two proteomes of the clade. "Real" means the QfO proteomes; "synthetic" means the
 first-order Markov copies, one per real proteome, which keep amino-acid composition and
@@ -70,6 +78,8 @@ shared sequence that composition alone does not explain.
 code(r"""
 import os
 import sys
+from collections import Counter
+from fractions import Fraction
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -368,23 +378,37 @@ equally.
 """)
 
 code(r"""
-def weighted_median(values, weights):
-    o = np.argsort(values)
-    v, w = np.asarray(values)[o], np.asarray(weights)[o]
-    cw = np.cumsum(w) / w.sum()
-    return float(v[np.searchsorted(cw, 0.5)])
+def weighted_median(values, clades):
+    '''Median with each clade weighted equally: a split weighs 1 / (splits in its clade).
+
+    Weights are exact fractions, so a clade boundary that sits at exactly half the total
+    weight is found as such and not lost to float rounding. At exactly half, the median is
+    the mean of the values on either side (the usual convention for an even count).
+    '''
+    counts = Counter(clades)
+    pairs = sorted(zip(values, (Fraction(1, counts[c]) for c in clades)))
+    half, cum = Fraction(len(counts), 2), Fraction(0)
+    for i, (v, w) in enumerate(pairs):
+        cum += w
+        if cum == half:
+            return (v + pairs[i + 1][0]) / 2
+        if cum > half:
+            return v
+    return float("nan")
 
 
-def test_stats(setting):
+def test_stats(setting, clades=None):
     d = splits.filter(pl.col("setting") == setting)
-    dropped = d.filter(pl.col("relative_error").is_nan() | pl.col("relative_error").is_null())
+    if clades is not None:
+        d = d.filter(pl.col("clade").is_in(clades))
+    true_0 = d.filter(pl.col("true_added") == 0).height
+    no_fit = d.filter((pl.col("true_added") > 0) & pl.col("relative_error").is_nan()).height
     d = d.filter(pl.col("relative_error").is_not_nan() & pl.col("relative_error").is_not_null())
-    n_by_clade = d.group_by("clade").len()
-    d = d.join(n_by_clade, on="clade").with_columns((1 / pl.col("len")).alias("w"))
     per_clade = d.group_by("clade").agg(pl.col("relative_error").median().alias("median"),
                                         pl.len().alias("splits"))
-    return {"setting": setting, "weighted_median": weighted_median(d["relative_error"], d["w"]) if d.height else np.nan,
-            "splits_used": d.height, "splits_dropped_true_0": dropped.height,
+    return {"setting": setting,
+            "weighted_median": weighted_median(d["relative_error"].to_list(), d["clade"].to_list()) if d.height else np.nan,
+            "splits_used": d.height, "splits_dropped_true_0": true_0, "splits_dropped_no_fit": no_fit,
             "clades": d["clade"].n_unique()}, per_clade
 
 
@@ -400,22 +424,57 @@ print(test_table)
 print("\nPer clade (reported, not in the verdict):")
 print(pl.concat(per_clade_rows).pivot(on="setting", index="clade", values="median"))
 
-for s_, st_ in primary.items():
-    if st_["clades"] < len(CLADES):
-        print(f"WARNING: {s_} has results for {st_['clades']} of {len(CLADES)} clades; "
-              "the pre-registered verdict needs all six and is not final.")
-hp_med = primary[f"real.{PRIMARY_HP}"]["weighted_median"]
-aa_med = primary[f"real.{PRIMARY_AA}"]["weighted_median"]
-mm_med = primary[f"real.{FAMILY}"]["weighted_median"]
+# The verdict needs all six clades for HP k30, protein k7 and MMseqs2. With fewer, it is
+# not given; the medians on the clades all three share are printed instead.
+verdict_settings = [f"real.{PRIMARY_HP}", f"real.{PRIMARY_AA}", f"real.{FAMILY}"]
+present = [set(splits.filter(pl.col("setting") == s_)["clade"].unique()) for s_ in verdict_settings]
+common = [c for c in CLADES if all(c in p_ for p_ in present)]
+complete = len(common) == len(CLADES)
+if not complete:
+    print(f"\nNO VERDICT: {len(common)} of {len(CLADES)} clades have all three ({', '.join(common) or 'none'}). "
+          "Medians below are on those clades only.")
+hp_med, aa_med, mm_med = (test_stats(s_, common)[0]["weighted_median"] for s_ in verdict_settings)
 hp_pass = hp_med <= PASS_MAX_ERROR and hp_med <= MUST_BEAT_MMSEQS * mm_med
 aa_pass = aa_med <= PASS_MAX_ERROR and aa_med <= MUST_BEAT_MMSEQS * mm_med
 reduction_case = aa_med > hp_med
+word = (lambda ok: "PASS" if ok else "FAIL") if complete else (lambda ok: "no verdict")
 print(f"\n{HP} k30: median relative error {hp_med:.3f}; needs <= {PASS_MAX_ERROR} and <= "
-      f"{MUST_BEAT_MMSEQS} x MMseqs2 ({MUST_BEAT_MMSEQS * mm_med:.3f}). -> {'PASS' if hp_pass else 'FAIL'}")
-print(f"{AA} k7: median relative error {aa_med:.3f} -> {'would PASS' if aa_pass else 'would FAIL'} the same thresholds")
+      f"{MUST_BEAT_MMSEQS} x MMseqs2 ({MUST_BEAT_MMSEQS * mm_med:.3f}). -> {word(hp_pass)}")
+print(f"{AA} k7: median relative error {aa_med:.3f} -> against the same thresholds: {word(aa_pass)}")
 print(f"MMseqs2 families: median relative error {mm_med:.3f}")
 print("Case for the reduced alphabet:", "holds (20 letters predict worse)" if reduction_case
       else "fails (20 letters predict as well or better)")
+""")
+
+md(r"""
+### 4b. How much error comes from the shape of Heaps' law alone
+
+Found by the second review: Heaps' law cannot follow a curve that starts at
+$U(1) = 0$ exactly. Take the simplest noise-free case, where every pair of proteomes shares
+the same number of words, so $U(n) = n(n-1)/2$. Fitting $\kappa n^\gamma$ on
+$n = 2, \dots, n_0$ and predicting the next step already gives the error below, before any
+real data. A FAIL near this number can come from the model's shape and not from the words.
+The synthetic proteomes' median error is a second reference: composition alone, the same
+fit. Neither changes the pre-registered verdict; both are context for it.
+""")
+
+code(r"""
+sys.path.insert(0, str(REPO / "nextflow-runs" / "proteome-novelty" / "bin"))
+import novelty as nv
+
+floor = []
+for c in CLADES:
+    N = clade_members(c).height
+    n0 = N - int(np.ceil(0.2 * N))
+    n = np.arange(1, n0 + 1)
+    k, g = nv.heaps_fit(n * (n - 1) / 2, n0)
+    pred = k * ((n0 + 1) ** g - n0 ** g)
+    floor.append({"clade": c, "N": N, "n0": n0, "pairs_curve_gamma": g,
+                  "pairs_curve_relative_error": abs(pred - n0) / n0})
+floor = pl.DataFrame(floor)
+print(floor)
+null_med = test_stats(f"null.{PRIMARY_HP}", common)[0]["weighted_median"]
+print(f"\nSynthetic proteomes, {HP} k30: median relative error {null_med:.3f} (same clades, same splits)")
 """)
 
 code(r"""
@@ -451,8 +510,8 @@ pf.save(fig, FIG / "343_SF5_next_proteome_prediction_error_hp30_protein7_mmseqs_
 
 md(r"""
 **Supplementary Figure 5 (SF5). How well Heaps' law, fitted on 80% of a clade, predicts
-what the next proteome adds.** One faint point per split (200 per clade, all 42 for
-Archaea and all 56 for Mammalia); the black bar is the clade's median. Blue circles:
+what the next proteome adds.** One faint point per split; the table in section 4 gives
+how many splits each method has. The black bar is the clade's median. Blue circles:
 `hp_pbotc_1st_ed` k = 30 words; orange squares: 20 amino acids k = 7 words; black
 diamonds: MMseqs2 families. Left is better; the dashed line is the pre-registered pass
 line. The legend gives each method's median over all splits with the clades weighted
@@ -512,6 +571,12 @@ decision = pl.DataFrame(rows).with_columns(
 )
 print(decision)
 
+# Found by the second review: the 1% test holds for any gamma above ln(1.01) / ln(1 + 1/N),
+# far below every fitted gamma here, so the 2x synthetic test is the one that decides.
+print("\nSmallest gamma at which the 1% test holds:")
+print(pl.DataFrame({"clade": CLADES, "N": [clade_members(c).height for c in CLADES]}).with_columns(
+    (np.log(1 + DECIDE_MIN_SHARE) / (1 + 1 / pl.col("N")).log()).alias("min_gamma_for_1pct")))
+
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 75)
 for i, c in enumerate(CLADES):
     lc = last.filter((pl.col("clade") == c) & (pl.col("setting") == f"real.{PRIMARY_HP}")).join(
@@ -530,8 +595,9 @@ ax.scatter([], [], s=6, color=pf.GREY, label="one proteome, if sequenced last")
 ax.scatter([], [], s=14, color=COLOUR[HP], label="the proteome that adds the most")
 ax.plot([], [], color="black", lw=1, label="Heaps' law prediction for one more")
 ax.set_xscale("log")
-shown_values = last.filter(pl.col("setting") == f"real.{PRIMARY_HP}")["added_if_last"].clip(1, None)
-lo, hi = float(shown_values.min()) / 1.5, float(shown_values.max()) * 3
+shown_values = last.filter(pl.col("setting") == f"real.{PRIMARY_HP}")["added_if_last"].clip(1, None).to_list()
+shown_values += [v for v in (predicted_next(c, f"real.{PRIMARY_HP}") for c in CLADES) if np.isfinite(v) and v > 0]
+lo, hi = min(shown_values) / 1.5, max(shown_values) * 3
 ax.set_xlim(lo, hi)
 plain_log_axis(ax.xaxis, lo, hi)
 ax.set_yticks(range(len(CLADES)), CLADES)
@@ -607,7 +673,7 @@ def block(name, start, seq, width=60):
 shown = []
 for c in chosen:
     ex = examples.filter(pl.col("clade") == c)
-    if ex.height == 0:
+    if ex.height == 0 or "length" not in ex.columns or ex["length"].is_null().all():
         print(f"\n{c}: no example stretch in the results")
         continue
     e = ex.row(0, named=True)
@@ -635,15 +701,16 @@ for c in chosen:
 
 code(r"""
 if shown:
-    fig, axs = pf.figure(pf.ONE_COLUMN_MM, 22 * len(shown), nrows=len(shown), squeeze=False)
+    fig, axs = pf.figure(pf.TWO_COLUMN_MM * 0.75, 28 * len(shown), nrows=len(shown), squeeze=False)
     for ax, e, letter in zip(axs[:, 0], shown, "ab"):
         for y, side in ((1, "specimen"), (0, "partner")):
             L, s0, s1 = e[f"{side}_length"], e[f"{side}_start"], e[f"{side}_end"]
             ax.plot([1, L], [y, y], color="black", lw=0.8)
             ax.add_patch(plt.Rectangle((s0, y - 0.18), s1 - s0 + 1, 0.36, color=COLOUR[HP], lw=0))
             code_ = proteomes.filter(pl.col("proteome") == e[side])["oscode"][0]
-            ax.text(L, y + 0.25, f"{code_} {e[f'{side}_protein'].split('|')[-1]}, {L} aa", ha="right", va="bottom", fontsize=5)
-        ax.set_ylim(-0.6, 1.7)
+            ax.text(-0.02 * max(e["specimen_length"], e["partner_length"]), y,
+                    f"{code_} {e[f'{side}_protein'].split('|')[-1]}, {L} aa", ha="right", va="center", fontsize=5)
+        ax.set_ylim(-0.5, 1.5)
         ax.set_yticks([])
         ax.spines["left"].set_visible(False)
         ax.set_xlabel("Residue")
