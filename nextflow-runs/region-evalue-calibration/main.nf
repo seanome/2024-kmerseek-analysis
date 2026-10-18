@@ -104,6 +104,13 @@ process INDEX {
         --alphabet ${params.alphabet} --ksize ${params.ksize} \\
         --extend-mismatch-penalty ${params.penalty} --extend-xdrop ${params.xdrop} \\
         --ka-survival-out ka_survival.csv 2>> index.log
+    # A refused fit still exits 0 (kmerseek evalue.rs, refused_fit_message); every search
+    # would then fail on --ka-queries 0. Stop here instead, with the reason.
+    if ! grep -q 'Stored in the index for' index.log; then
+        echo "344: the Karlin-Altschul fit was not stored; index.log says:" >&2
+        tail -20 index.log >&2
+        exit 1
+    fi
     """
 
     stub:
