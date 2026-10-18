@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recurring-word accounting for notebook 343: does one more proteome add new local sequence?
+"""Recurring-word accounting for notebook 345: does one more proteome add new local sequence?
 
 A word is a k-mer of a proteome written in an alphabet (`hp_pbotc_1st_ed`, two letters, or
 `protein`, the 20 amino acids). A word *recurs* in a set of proteomes when at least two of
@@ -311,6 +311,8 @@ def splits_for(clade: str, size: int, n_splits: int) -> list[tuple[tuple[int, ..
     n_hidden = math.ceil(0.2 * size)
     n_obs = size - n_hidden
     total = math.comb(size, n_obs) * n_hidden
+    # The seed string predates the move from notebook number 343 to 345 (343 was taken by
+    # PR 173); it is kept so the splits stay the ones fixed before any count.
     rng = random.Random(f"nb343:{clade}:{size}")
     seen: set = set()
     out = []

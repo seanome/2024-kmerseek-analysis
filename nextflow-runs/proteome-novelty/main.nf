@@ -1,10 +1,10 @@
-// Notebook 343: does one more proteome add new local sequence?
+// Notebook 345: does one more proteome add new local sequence?
 //
 // For each clade of the QfO 2020_04 panel (assets/proteomes.tsv) and each alphabet x k
 // setting, count the words that recur in at least two proteomes, the same for synthetic
 // proteomes from a first-order Markov chain, and the same for MMseqs2 families. Then fit
 // Heaps' law and score how well it predicts what the next hidden proteome adds. The rule
-// is notebooks/343_preregistration.md.
+// is notebooks/345_preregistration.md.
 
 nextflow.enable.dsl = 2
 
@@ -239,7 +239,7 @@ process collect {
     path examples, stageAs: 'examples/*'
 
     output:
-    path "343_*"
+    path "345_*"
 
     script:
     """
@@ -247,21 +247,21 @@ process collect {
 import glob, json
 import polars as pl
 for name in ["curve", "last", "splits", "examples"]:
-    pl.concat([pl.read_parquet(f) for f in sorted(glob.glob(f"{name}/*.parquet"))], how="diagonal_relaxed").write_parquet(f"343_{name}.parquet")
-pl.DataFrame([json.load(open(f)) for f in sorted(glob.glob("fit/*.json"))]).write_parquet("343_fit.parquet")
+    pl.concat([pl.read_parquet(f) for f in sorted(glob.glob(f"{name}/*.parquet"))], how="diagonal_relaxed").write_parquet(f"345_{name}.parquet")
+pl.DataFrame([json.load(open(f)) for f in sorted(glob.glob("fit/*.json"))]).write_parquet("345_fit.parquet")
 rows = []
 for f in sorted(glob.glob("summary/*.json")):
     d = json.load(open(f))
     clade, kind, alphabet, k = f.split("/")[1].removesuffix(".summary.json").split(".")
     rows.append({"clade": clade, "kind": kind, "alphabet": alphabet, "ksize": int(k),
                  "n_windows": sum(d["n_windows"]), "n_distinct_words": d["n_distinct_words"], "n_masks": d["n_masks"]})
-pl.DataFrame(rows).write_parquet("343_word_summary.parquet")
+pl.DataFrame(rows).write_parquet("345_word_summary.parquet")
 PY
     """
 
     stub:
     """
-    touch 343_curve.parquet 343_last.parquet 343_splits.parquet 343_examples.parquet 343_fit.parquet 343_word_summary.parquet
+    touch 345_curve.parquet 345_last.parquet 345_splits.parquet 345_examples.parquet 345_fit.parquet 345_word_summary.parquet
     """
 }
 
@@ -273,6 +273,7 @@ workflow {
     def settings = params.settings.tokenize(',').collect { def s = it.tokenize(':'); [s[0], s[1] as int] }
 
     checked = checkFasta(Channel.fromList(table.collect { [it[0], it[1], it[2], it[3]] }))
+    // Seeds 343000 + i predate the move from notebook number 343 to 345; kept unchanged.
     seeds = table.withIndex().collectEntries { r, i -> [(r[0]): 343000 + i] }
     nulls = nullProteome(checked.map { p, f -> [p, f, seeds[p]] })
 

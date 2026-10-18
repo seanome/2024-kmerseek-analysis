@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write nextflow-runs/proteome-novelty/assets/proteomes.tsv for notebook 343.
+"""Write nextflow-runs/proteome-novelty/assets/proteomes.tsv for notebook 345.
 
 One row per QfO 2020_04 reference proteome: UniProt proteome id, NCBI taxon id, the
 species name from the release README, the NCBI lineage (from a local taxdump), the number
@@ -9,7 +9,7 @@ The sequence and residue counts let the pipeline check that the FASTA it reads o
 Sherlock is the same file this table was built from.
 
 Usage:
-    python scripts/nb343_build_proteome_table.py \
+    python scripts/nb345_build_proteome_table.py \
         --qfo-dir ~/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143 \
         --taxdump ~/data/taxonomy \
         --out nextflow-runs/proteome-novelty/assets/proteomes.tsv

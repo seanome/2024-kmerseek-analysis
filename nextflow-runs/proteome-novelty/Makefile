@@ -1,4 +1,4 @@
-# proteome-novelty: notebook 343. Recurring-word discovery curves for six clades of the
+# proteome-novelty: notebook 345. Recurring-word discovery curves for six clades of the
 # QfO 2020_04 panel, a Markov-chain null, MMseqs2 families, and the held-out prediction test.
 #
 #   make test          (laptop) unit tests of bin/novelty.py against brute force
@@ -7,7 +7,7 @@
 #   make watch         (Sherlock) attach read-only to the head's live task table
 #   make stop          (Sherlock) ask the head to shut down cleanly
 #   make running       (Sherlock) what is in the queue
-#   make pull-results  (laptop) copy the six collected tables to tables/343/
+#   make pull-results  (laptop) copy the six collected tables to tables/345/
 
 SHELL := /bin/bash
 
@@ -25,7 +25,7 @@ QFO_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-
 LAPTOP_QFO_DIR ?= /Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143
 
 # A clone of its own, so this branch never moves the main Sherlock checkout under a run.
-REMOTE_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis-nb343/nextflow-runs/proteome-novelty
+REMOTE_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis-nb345/nextflow-runs/proteome-novelty
 
 SLURM_ACCOUNT   ?= ayeletv
 SLURM_PARTITION ?= hns,normal
@@ -33,8 +33,8 @@ HEAD_QOS     ?= normal
 HEAD_TIME    ?= 2-00:00:00
 HEAD_CPUS    ?= 2
 HEAD_MEM     ?= 8G
-HEAD_SESSION ?= nb343-novelty
-HEAD_JOBNAME ?= nf-nb343-novelty
+HEAD_SESSION ?= nb345-novelty
+HEAD_JOBNAME ?= nf-nb345-novelty
 export NXF_OPTS := -Xms512m -Xmx6g
 
 MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
@@ -70,8 +70,8 @@ stop:
 	 scancel --signal=TERM --batch $$jid && echo "asked job $$jid to shut down"
 
 pull-results:
-	mkdir -p $(MAKEFILE_DIR)/../../tables/343
-	rsync -av sherlock:$(REMOTE_DIR)/run/results/ $(MAKEFILE_DIR)/../../tables/343/
+	mkdir -p $(MAKEFILE_DIR)/../../tables/345
+	rsync -av sherlock:$(REMOTE_DIR)/run/results/ $(MAKEFILE_DIR)/../../tables/345/
 
 # --- What is running --------------------------------------------------------------------
 ## Every Nextflow run with jobs in the SLURM queue, from any pipeline, then one row per job
@@ -87,7 +87,7 @@ running:
 	  echo "  'running' reads the SLURM queue, so it runs ON SHERLOCK, not on your Mac."; \
 	  echo ""; \
 	  echo "  ssh sherlock"; \
-	  echo "    cd \$$SCRATCH/2024-kmerseek-analysis-nb343/nextflow-runs/proteome-novelty"; \
+	  echo "    cd \$$SCRATCH/2024-kmerseek-analysis-nb345/nextflow-runs/proteome-novelty"; \
 	  echo "    make running"; \
 	  echo ""; \
 	  exit 1; \

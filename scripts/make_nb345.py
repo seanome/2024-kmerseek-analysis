@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Generate notebooks/343_recurring_word_discovery_curves_qfo2020_04.ipynb.
+"""Generate notebooks/345_recurring_word_discovery_curves_qfo2020_04.ipynb.
 
-The first cell is notebooks/343_preregistration.md, verbatim, committed (9f2c402d) before
+The first cell is notebooks/345_preregistration.md, verbatim, committed (9f2c402d, then named notebooks/343_preregistration.md) before
 the pipeline counted any word. The notebook reads the six tables that
-nextflow-runs/proteome-novelty writes (`make pull-results` copies them to tables/343/).
-Set NB343_DIR to read them from somewhere else.
+nextflow-runs/proteome-novelty writes (`make pull-results` copies them to tables/345/).
+Set NB345_DIR to read them from somewhere else.
 """
 
 import json
@@ -39,12 +39,16 @@ def code(source):
 
 
 md(
-    "# 343. Does one more proteome add new local sequence? Recurring words in six QfO 2020_04 clades\n\n"
-    + (ROOT / "notebooks" / "343_preregistration.md").read_text()
+    "# 345. Does one more proteome add new local sequence? Recurring words in six QfO 2020_04 clades\n\n"
+    + (ROOT / "notebooks" / "345_preregistration.md").read_text()
 )
 
 md(r"""
 ## Data
+
+The rule above was committed as `notebooks/343_preregistration.md` (commit 9f2c402d) and
+renamed when [PR 173](https://github.com/seanome/2024-kmerseek-analysis/pull/173) took
+number 343 for another notebook. Its text is unchanged except for the notebook number.
 
 - **Proteomes.** QfO reference proteomes, release 2020_04 (UniProt release 2020_04,
   12 August 2020), canonical sequences only, the copy the
@@ -52,7 +56,7 @@ md(r"""
   keeps on Sherlock. The pipeline's first step checks every FASTA's sequence and residue
   count against `nextflow-runs/proteome-novelty/assets/proteomes.tsv`.
 - **Clades.** NCBI taxonomy dump downloaded 2026-09-13, read by
-  `scripts/nb343_build_proteome_table.py`.
+  `scripts/nb345_build_proteome_table.py`.
 - **Counts.** `nextflow-runs/proteome-novelty` on this branch
   ([PR 172](https://github.com/seanome/2024-kmerseek-analysis/pull/172)). No kmerseek
   search runs: the words are counted with kmerseek's own `hp_pbotc_1st_ed` and `protein`
@@ -100,8 +104,8 @@ pl.Config.set_tbl_width_chars(250)
 pl.Config.set_float_precision(3)
 
 REPO = Path.cwd().parent
-DATA = Path(os.environ.get("NB343_DIR", REPO / "tables" / "343"))
-FIG = Path(os.environ.get("NB343_FIG", REPO / "figures" / "343"))
+DATA = Path(os.environ.get("NB345_DIR", REPO / "tables" / "345"))
+FIG = Path(os.environ.get("NB345_FIG", REPO / "figures" / "345"))
 TABLE = REPO / "nextflow-runs" / "proteome-novelty" / "assets" / "proteomes.tsv"
 
 # From the pre-registered rule (first cell).
@@ -128,12 +132,12 @@ for budget, (h, a) in BUDGETS.items():
           f"{a} = {ou.bits_per_kmer('protein', int(a.split('.')[1])):.2f} bits")
 
 proteomes = pl.read_csv(TABLE, separator="\t")
-curve = pl.read_parquet(DATA / "343_curve.parquet")
-fit = pl.read_parquet(DATA / "343_fit.parquet")
-splits = pl.read_parquet(DATA / "343_splits.parquet")
-last = pl.read_parquet(DATA / "343_last.parquet")
-examples = pl.read_parquet(DATA / "343_examples.parquet")
-words = pl.read_parquet(DATA / "343_word_summary.parquet")
+curve = pl.read_parquet(DATA / "345_curve.parquet")
+fit = pl.read_parquet(DATA / "345_fit.parquet")
+splits = pl.read_parquet(DATA / "345_splits.parquet")
+last = pl.read_parquet(DATA / "345_last.parquet")
+examples = pl.read_parquet(DATA / "345_examples.parquet")
+words = pl.read_parquet(DATA / "345_word_summary.parquet")
 
 expected = [f"{kind}.{s}" for s in sum(map(list, BUDGETS.values()), []) for kind in ("real", "null")]
 expected += [f"real.{FAMILY}"]
@@ -181,7 +185,7 @@ ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
 ax.xaxis.set_minor_locator(NullLocator())
 ax.set_xlabel("Residues per proteome (millions)")
 ax.grid(axis="y", color="#dddddd", lw=0.3)
-pf.save(fig, FIG / "343_SF1_proteome_sizes_by_clade_qfo2020_04")
+pf.save(fig, FIG / "345_SF1_proteome_sizes_by_clade_qfo2020_04")
 """)
 
 md(r"""
@@ -242,7 +246,7 @@ for ax, c in zip(axs.flat, CLADES):
 pf.shared_legend(fig, ncol=2)
 for ax, letter in zip(axs.flat, "abcdef"):
     pf.panel_label(ax, letter)
-pf.save(fig, FIG / "343_SF2_discovery_curves_real_vs_synthetic_hp30_protein7_qfo2020_04")
+pf.save(fig, FIG / "345_SF2_discovery_curves_real_vs_synthetic_hp30_protein7_qfo2020_04")
 print(pl.DataFrame(rows))
 """)
 
@@ -288,7 +292,7 @@ for ax, c in zip(axs.flat, CLADES):
 pf.shared_legend(fig, ncol=2)
 for ax, letter in zip(axs.flat, "abcdef"):
     pf.panel_label(ax, letter)
-pf.save(fig, FIG / "343_SF3_real_over_synthetic_shared_words_hp30_protein7_qfo2020_04")
+pf.save(fig, FIG / "345_SF3_real_over_synthetic_shared_words_hp30_protein7_qfo2020_04")
 ratio_table = pl.DataFrame(rows)
 print(ratio_table)
 
@@ -354,7 +358,7 @@ ax.set_ylim(len(CLADES) - 0.5, -0.5)
 ax.grid(axis="y", color="#dddddd", lw=0.3)
 ax.set_xlabel("Heaps' law exponent, gamma")
 pf.shared_legend(fig, ncol=1)
-pf.save(fig, FIG / "343_SF4_heaps_gamma_by_clade_hp30_protein7_mmseqs_qfo2020_04")
+pf.save(fig, FIG / "345_SF4_heaps_gamma_by_clade_hp30_protein7_mmseqs_qfo2020_04")
 """)
 
 md(r"""
@@ -505,7 +509,7 @@ ax.set_ylim(len(CLADES) - 0.5, -0.5)
 ax.grid(axis="y", color="#dddddd", lw=0.3)
 ax.set_xlabel("Relative error of the predicted added count")
 pf.shared_legend(fig, ncol=1)
-pf.save(fig, FIG / "343_SF5_next_proteome_prediction_error_hp30_protein7_mmseqs_qfo2020_04")
+pf.save(fig, FIG / "345_SF5_next_proteome_prediction_error_hp30_protein7_mmseqs_qfo2020_04")
 """)
 
 md(r"""
@@ -605,7 +609,7 @@ ax.set_ylim(len(CLADES) - 0.5, -0.5)
 ax.grid(axis="y", color="#dddddd", lw=0.3)
 ax.set_xlabel(f"Newly shared words, {HP} k30")
 pf.shared_legend(fig, ncol=1)
-pf.save(fig, FIG / "343_SF6_newly_shared_words_if_sequenced_last_hp30_qfo2020_04")
+pf.save(fig, FIG / "345_SF6_newly_shared_words_if_sequenced_last_hp30_qfo2020_04")
 """)
 
 md(r"""
@@ -719,7 +723,7 @@ if shown:
     ax.add_patch(plt.Rectangle((0, 0), 0, 0, color=COLOUR[HP], label=f"newly shared {HP} k30 words"))
     ax.plot([], [], color="black", lw=0.8, label="protein")
     pf.shared_legend(fig, ncol=2)
-    pf.save(fig, FIG / "343_SF7_newly_shared_stretch_lowest_highest_gamma_hp30_qfo2020_04")
+    pf.save(fig, FIG / "345_SF7_newly_shared_stretch_lowest_highest_gamma_hp30_qfo2020_04")
 """)
 
 md(r"""
@@ -775,6 +779,6 @@ nb = {
     "nbformat": 4,
     "nbformat_minor": 5,
 }
-out = ROOT / "notebooks" / "343_recurring_word_discovery_curves_qfo2020_04.ipynb"
+out = ROOT / "notebooks" / "345_recurring_word_discovery_curves_qfo2020_04.ipynb"
 out.write_text(json.dumps(nb, indent=1))
 print(f"wrote {out} ({len(cells)} cells)")

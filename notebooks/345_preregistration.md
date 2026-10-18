@@ -1,6 +1,6 @@
 ## Pre-registered rule (written 2026-10-18, before any word was counted)
 
-This cell is the first cell of notebook 343 and was committed before the pipeline counted
+This cell is the first cell of notebook 345 and was committed before the pipeline counted
 any word. It does not change after the run.
 
 **Question.** We hold some proteomes from a clade. Would sequencing one more add new local
@@ -9,7 +9,7 @@ sequence, or would it mostly repeat sequence we have already seen?
 **Panel.** The Quest for Orthologs (QfO) reference proteomes, release 2020_04: 78 species
 from UniProt, one canonical proteome per species. One species is one independent sample.
 A hidden sample is a whole proteome, so none of its sequences is seen while fitting.
-Clades are NCBI taxa, fixed in `scripts/nb343_build_proteome_table.py`: Archaea (7
+Clades are NCBI taxa, fixed in `scripts/nb345_build_proteome_table.py`: Archaea (7
 proteomes), Bacteria (23), Eukaryota (48), Vertebrata (13), Mammalia (8), Fungi (12). A
 clade needs at least six proteomes. Viridiplantae (5) and Arthropoda (4) have too few.
 The clades overlap: Mammalia sits inside Vertebrata, which sits inside Eukaryota.
@@ -87,7 +87,7 @@ Per-clade medians are reported and do not enter the verdict.
 
 **Secondary test (structure).** Run only if AlphaFold models are on hand for every
 proteome of the clades. This pipeline does not fetch models for the 78 proteomes, so the
-secondary test is not run in notebook 343. The rule, for a later run: across clades, the
+secondary test is not run in notebook 345. The rule, for a later run: across clades, the
 Spearman correlation of $\gamma$ (30-bit `hp_pbotc_1st_ed`) with the $\gamma$ of Foldseek
 structure-cluster rarefaction passes at $\rho \ge 0.70$, and only if it beats the same
 correlation for a composition baseline (the variance, across the clade's proteomes, of
