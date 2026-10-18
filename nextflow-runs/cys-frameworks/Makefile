@@ -16,20 +16,26 @@ NF     := /Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow
 NXF_JAVA_HOME := /Users/olga/anaconda3/envs/nf-core-v2/lib/jvm
 PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 
-# kmerseek branch olgabot/cys-runs-040 at c39370c: v0.4.0 + PR 141 (an index entry keyed by
-# its sequence) + cys2 (PR 147) + cys_hp3 (PR 148). The key fix has to be in, or a cys2
-# index silently drops every target that shares a k-mer set with one already stored.
-KMERSEEK_SHA   ?= c39370c4e8d3b1b89cee726945bb0aa1bf90a8a3
-KMERSEEK_SRC   ?= /Users/olga/code/kmerseek-cys-runs
+# kmerseek branch olgabot/cys-runs-040-ka-bins at 05b4131: olgabot/cys-runs-040 (v0.4.0 +
+# PR 141, an index entry keyed by its sequence, + cys2 PR 147 + cys_hp3 PR 148) + PR 154,
+# the Karlin-Altschul fit that counts regions per score bin. The key fix has to be in, or a
+# cys2 index silently drops every target that shares a k-mer set with one already stored;
+# the fit fix has to be in, or a cys2 index of a full reference is killed at 700 GB.
+KMERSEEK_SHA   ?= 05b4131300b64b7b2c34d6dd1ec03743613cf2bf
+KMERSEEK_SRC   ?= /Users/olga/code/kmerseek/.claude/worktrees/cys-runs-ka-bins
 KMERSEEK_BIN   ?= $(KMERSEEK_SRC)/target/release
 
-# IMAGE_TAG is the one place the image is named. Every run target passes
-# --pipeline_image $(IMAGE_REMOTE), so the tag here is what runs even though
+# IMAGE_TAG is the one place the kmerseek image is named. Every run target passes
+# --kmerseek_image $(IMAGE_REMOTE), so the tag here is what runs even though
 # nextflow.config also declares a default: two strings that must be edited together, where
 # disagreeing produces results rather than an error, is the shape that costs a week.
-IMAGE_TAG      ?= 2026-10-15-cys-frameworks-c39370c
+IMAGE_TAG      ?= 2026-10-17-cys-frameworks-05b4131
 IMAGE_LOCAL    := kmerseek-cys:latest
 IMAGE_REMOTE   := docker.io/olgabot/kmerseek:$(IMAGE_TAG)
+# The Python steps (heldOutReference, regexScan) stay on the c39370c image. The image is in
+# every task's cache key, so a new one there would rebuild every reference and rerun every
+# regex scan and phmmer search (2 h for Mollusca) on -resume, for no change in their output.
+PIPELINE_IMAGE_REMOTE := docker.io/olgabot/kmerseek:2026-10-15-cys-frameworks-c39370c
 
 # $SCRATCH is set on Sherlock and not on the Mac, so the same Makefile finds the data in
 # both places. sync-data copies the Mac's copy to the Sherlock one.
@@ -52,7 +58,7 @@ TABLES    := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../../tables/cys_fr
 # hns, not normal: hns's partition QOS allows 7 days under `--qos=normal`, and the
 # public normal partition stops at 2 days.
 # Extra arguments for nextflow, appended to every run target, e.g.
-#   make run-phylum CYS2_MEMORY_GB=700 REFERENCE_SCALE=25 NF_ARGS='--drop_settings cys_hp3:9'
+#   make run-phylum CYS2_MEMORY_GB=32 REFERENCE_SCALE=25 NF_ARGS='--drop_settings cys_hp3:9'
 NF_ARGS ?=
 
 SLURM_ACCOUNT  ?= ayeletv
@@ -185,7 +191,8 @@ pilot: require-sherlock
 	cd pilot && \
 	  ml load biology nextflow && \
 	  $(call HEAD_SUBMIT,pilot) nextflow run ../main.nf -profile sherlock -resume \
-	    --pipeline_image $(IMAGE_REMOTE) \
+	    --pipeline_image $(PIPELINE_IMAGE_REMOTE) \
+	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --swissprot_fasta $(SWISSPROT) \
 	    --reference_entries $(DATA)/reference_entries.csv \
 	    --level phylum \
@@ -210,8 +217,9 @@ require-cys2-memory:
 	  echo ""; \
 	  echo "  Set CYS2_MEMORY_GB from the pilot's trace first: the largest cys2 peak_rss in"; \
 	  echo "  pilot/cys_frameworks.<date>.trace.txt, scaled to a reference 25 times larger."; \
-	  echo "  Measured 2026-10-15: largest cys2 peak 27.1 GB (k16), so 27.1 x 25 = 700."; \
-	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=700 REFERENCE_SCALE=25"; \
+	  echo "  Measured 2026-10-17 with the per-bin fit (kmerseek 05b4131): cys2 k16 on a full"; \
+	  echo "  reference peaked at 9.3 GB (Sherlock job 48247581), so ask 32."; \
+	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=32 REFERENCE_SCALE=25"; \
 	  echo ""; \
 	  exit 1; }
 	@test -n "$(REFERENCE_SCALE)" || { \
@@ -219,7 +227,7 @@ require-cys2-memory:
 	  echo "  Set REFERENCE_SCALE too: the full reference's residues over the pilot's,"; \
 	  echo "  209_017_843 / 8_358_903 = 25. Without it cys_hp3 k9 asks 64 GB for a task"; \
 	  echo "  that needs about 1.2 TB, and a killed index stops the run."; \
-	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=700 REFERENCE_SCALE=25"; \
+	  echo "  Example: make $(MAKECMDGOALS) CYS2_MEMORY_GB=32 REFERENCE_SCALE=25"; \
 	  echo ""; \
 	  exit 1; }
 
@@ -230,7 +238,8 @@ run-phylum: require-sherlock require-cys2-memory
 	cd run-phylum && \
 	  ml load biology nextflow && \
 	  $(call HEAD_SUBMIT,run-phylum) nextflow run ../main.nf -profile sherlock -resume \
-	    --pipeline_image $(IMAGE_REMOTE) \
+	    --pipeline_image $(PIPELINE_IMAGE_REMOTE) \
+	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --cys2_memory_gb $(CYS2_MEMORY_GB) \
 	    --reference_scale $(REFERENCE_SCALE) \
 	    --swissprot_fasta $(SWISSPROT) \
@@ -244,7 +253,8 @@ run-genus: require-sherlock require-cys2-memory
 	cd run-genus && \
 	  ml load biology nextflow && \
 	  $(call HEAD_SUBMIT,run-genus) nextflow run ../main.nf -profile sherlock -resume \
-	    --pipeline_image $(IMAGE_REMOTE) \
+	    --pipeline_image $(PIPELINE_IMAGE_REMOTE) \
+	    --kmerseek_image $(IMAGE_REMOTE) \
 	    --cys2_memory_gb $(CYS2_MEMORY_GB) \
 	    --reference_scale $(REFERENCE_SCALE) \
 	    --swissprot_fasta $(SWISSPROT) \

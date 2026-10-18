@@ -59,8 +59,15 @@ params.queries_per_framework = 0      // at most this many queries per framework
 
 // Container images. The pipeline's own image holds kmerseek and polars; phmmer comes
 // from its own pinned biocontainer, as the deep-twilight controls do it. nextflow.config
-// pins both by digest.
+// pins all three.
+//
+// kmerseek_image runs indexReference and searchQueries; pipeline_image runs the Python
+// steps (heldOutReference, regexScan). They are two parameters because the image is part
+// of every task's cache key: a new kmerseek build named in pipeline_image would rebuild
+// every reference, and so rerun every regex scan and phmmer search (2 h for Mollusca),
+// none of which runs kmerseek.
 params.pipeline_image = null
+params.kmerseek_image = null
 params.hmmer_image    = null
 
 // First-attempt memory, in GB, for a cys2 kmerseek index task. Each retry doubles it.
@@ -123,6 +130,18 @@ params.drop_settings = ''
 // So per reference-multiple: k11 30 GB (750 GB at 25), k13 7 GB (175 GB, an hns node),
 // k15 4 GB (100 GB, any node), about a third over the largest measured peak. k9 keeps the
 // pilot-based 64; at k11's growth it would need well over 2 TB, which is why it is left out.
+//
+// cys2 was killed at 700 GB on every full reference (run-phylum, 2026-10-16): the fit kept
+// every region it found. kmerseek 05b4131 (seanome/kmerseek PR 154) counts the regions per
+// score bin as it finds them instead. Measured with that build, cys2 k16, 8 CPUs, Sherlock
+// job 48247581:
+//   pilot Cnidaria reference          0.58 GB, 1 min 13 s,   85_440_891 fit regions
+//   full, Arthropoda held out         9.3 GB, 28 min,   2_087_781_588 fit regions
+// The pilot's fit is the same as the old build's (which peaked at 27.1 GB there). Memory
+// now follows the reference (16 times the pilot for 25 times the residues), not the
+// number of fit regions (24 times), so k12, which meets about as many seed hits as k16
+// (pilot peaks with the old build: k12 21.4 GB, k16 27.1 GB), should not need more. The
+// run-* targets set CYS2_MEMORY_GB=32: 3.4 times the measured peak, still a normal node.
 def indexGb(alphabet, ksize, attempt) {
     def perScale = ksize <= 9 ? 64 : ksize <= 11 ? 30 : ksize <= 13 ? 7 : 4
     def first = alphabet == 'cys2'
@@ -145,6 +164,12 @@ def indexGb(alphabet, ksize, attempt) {
  * time: k11 about 3.3 h for a task expected to take about 1.6 h. cys2 never finished an
  * index on a full reference, so its 4 h is a guess with room in it.
  */
+//
+// cys2 with the per-bin fit (kmerseek 05b4131): k16 on the full Arthropoda-held-out
+// reference took 28 min on 8 CPUs, so cys2 index tasks ask 8 CPUs (cpus below). The old
+// build ran k24 and k28 for 52-56 min on 2 CPUs before reaching 700 GB, against 18-20 min
+// for k12 and k16, so the larger k may take up to three times longer. 4 h is about eight
+// times the k16 measurement and about three times that guess for k24 and k28.
 def indexHours(alphabet, ksize, attempt) {
     def pilotMinutes = ksize <= 9 ? 12 : ksize <= 11 ? 8 : ksize <= 13 ? 5 : 3
     def first = alphabet == 'cys2'
@@ -167,8 +192,24 @@ def indexHours(alphabet, ksize, attempt) {
 // from an ask that already carried headroom. Scaling the ask instead put every search at
 // 400 GB, which routes to bigmem, and bigmem has 13 nodes to hns's 95 -- an over-ask that
 // serialises 27 searches behind a handful of nodes costs more wall-clock than it saves.
-def searchGb(alphabet, attempt) {
-    bigmemFloor(4 * params.reference_scale * (1 << (attempt - 1)))
+//
+// Measured on the full references (run-phylum, 2026-10-17, reference_scale 25), cys_hp3
+// searches peaked at 33.2-92.3 GB, 27-50 times the same setting's pilot peak (largest:
+// Mollusca k15, 42.7 GB against 0.85 GB). A full run also searches every query of the
+// held-out phylum, not 10 per framework, which is part of that growth. No cys2 search has
+// run on a full reference, so cys2 asks its pilot peak times 50, plus about a sixth to a
+// third, per k:
+//   k    pilot peak   x 50      ask at reference_scale 25
+//   12   3.1 GB       155 GB    180 GB (7.2 per multiple; the most an hns node takes)
+//   16   1.8 GB        90 GB    120 GB (4.8)
+//   20   1.1 GB        55 GB     75 GB (3)
+//   24   0.80 GB       40 GB     55 GB (2.2)
+//   28   0.46 GB       23 GB     33 GB (1.3)
+def searchGb(alphabet, ksize, attempt) {
+    def perScale = alphabet != 'cys2' ? 4
+                 : ksize <= 12 ? 7.2 : ksize <= 16 ? 4.8 : ksize <= 20 ? 3
+                 : ksize <= 24 ? 2.2 : 1.3
+    bigmemFloor(Math.ceil(perScale * params.reference_scale * (1 << (attempt - 1))) as int)
 }
 
 // The least memory Sherlock's bigmem partition accepts. It refuses anything smaller with
@@ -247,13 +288,15 @@ process heldOutReference {
  */
 process indexReference {
     tag "${level}=${excluded} ${alphabet} k${ksize}"
-    container params.pipeline_image
+    container params.kmerseek_image
     errorStrategy {
         (task.exitStatus == null
          || task.exitStatus == Integer.MAX_VALUE
          || task.exitStatus in 128..143) && task.attempt <= 3 ? 'retry' : 'finish'
     }
     maxRetries 3
+    // 8 for cys2, the CPU count its 28 min full-reference index was measured with.
+    cpus { alphabet == 'cys2' ? 8 : 2 }
     memory { indexGb(alphabet, ksize, task.attempt).GB }
     queue { sherlockQueue(indexGb(alphabet, ksize, task.attempt)) }
     time { "${indexHours(alphabet, ksize, task.attempt)}h" }
@@ -296,16 +339,18 @@ process indexReference {
  */
 process searchQueries {
     tag "${level}=${excluded} ${alphabet} k${ksize}"
-    container params.pipeline_image
+    container params.kmerseek_image
     errorStrategy {
         (task.exitStatus == null
          || task.exitStatus == Integer.MAX_VALUE
          || task.exitStatus in 128..143) && task.attempt <= 3 ? 'retry' : 'ignore'
     }
     maxRetries 3
-    memory { searchGb(alphabet, task.attempt).GB }
-    queue { sherlockQueue(searchGb(alphabet, task.attempt)) }
-    time { (alphabet == 'cys2' ? 8.h : 2.h) * task.attempt }
+    memory { searchGb(alphabet, ksize, task.attempt).GB }
+    queue { sherlockQueue(searchGb(alphabet, ksize, task.attempt)) }
+    // Full-reference cys_hp3 searches took 4 min 47 s to 19 min; pilot cys2 searches took
+    // 5-27 s against cys_hp3's 11-31 s, so cys2 should take about as long.
+    time { 2.h * task.attempt }
     publishDir "${params.outdir}/kmerseek", mode: 'copy'
 
     input:
@@ -427,6 +472,10 @@ workflow {
         error "Run this with -profile sherlock, on Sherlock. Profile '${workflow.profile}' " +
               "is for -stub-run only: kmerseek index under cys2 needs more memory than " +
               "this laptop has."
+    }
+
+    if (!workflow.stubRun && !params.kmerseek_image) {
+        error "--kmerseek_image is required; nextflow.config pins it"
     }
 
     if (!params.swissprot_fasta) {
