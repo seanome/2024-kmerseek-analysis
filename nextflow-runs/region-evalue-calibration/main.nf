@@ -9,7 +9,7 @@
 // counting; this pipeline only makes the decoys and searches them.
 //
 //   make stub   (laptop) the whole graph on a 3-protein FASTA, no kmerseek, no container
-//   make pilot  (Sherlock) one chunk of each kind, to measure memory and time
+//   make pilot  (Sherlock) the largest chunk of each kind, to measure memory and time
 //   make run    (Sherlock) everything, sized from the pilot
 
 nextflow.enable.dsl = 2
@@ -23,7 +23,7 @@ params.ksize        = 19
 params.penalty      = 2.0      // kmerseek's DEFAULT_MISMATCH_PENALTY
 params.xdrop        = 8.0      // kmerseek's DEFAULT_XDROP
 params.max_evalue   = 1.0
-params.max_chunks   = 0        // > 0 searches only that many chunks of each kind (pilot)
+params.max_chunks   = 0        // > 0 searches only that many chunks of each kind, largest first (pilot)
 params.outdir       = 'results'
 
 process MAKE_DECOYS {
@@ -191,8 +191,10 @@ workflow {
     chunks = MAKE_DECOYS.out.chunks.flatten()
         .map { f -> tuple(f.baseName.tokenize('.')[0], f) }
 
+    // The pilot measures the biggest chunks (by file size, so by residues): chunks run
+    // from 0.31 to 1.57 million residues, and the full run is sized from the pilot.
     picked = params.max_chunks > 0
-        ? chunks.groupTuple().flatMap { kind, fs -> fs.sort { it.name }.take(params.max_chunks).collect { f -> tuple(kind, f) } }
+        ? chunks.groupTuple().flatMap { kind, fs -> fs.sort { -it.size() }.take(params.max_chunks).collect { f -> tuple(kind, f) } }
         : chunks
 
     SEARCH(picked.combine(INDEX.out.db))

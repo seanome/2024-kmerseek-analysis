@@ -93,13 +93,18 @@ it.
    regions in a stratum, too few to fall inside a factor of two even when calibrated.)
 3. **Count.** Observed = region rows with the column's value ≤ E\*, summed over the
    stratum's decoys and all targets. A row whose value is empty (kmerseek could not
-   compute it; for `region_ka_evalue`, a pair with no positive λ) is not counted. Two
-   exclusions, added on 2026-10-18 before any search, once making the decoys showed that
-   135 dipeptide and 4 window10 shuffles return the protein unchanged: a decoy identical to
-   its source protein is not a decoy and is left out of Q_s; and a region between a decoy
-   and its own source protein is not counted, because that one database protein shares
-   the decoy's composition and pair counts and so is not unrelated to it. Both are counted
-   and printed in section 2.
+   compute it; for `region_ka_evalue`, a pair with no positive λ) is not counted. The
+   count is of regions kmerseek **reports**: with its defaults it drops a pair that
+   shares fewer than 2 k-mers, or whose whole-query p-value is above 0.05 and whose best
+   region score is below 1.3. Those filters are part of what a user gets, so they stay
+   in; they can only lower the count, so they make the E-values look safer, not worse.
+   Exclusions, added on 2026-10-18 before any search, once making the decoys showed that
+   some shuffles return the protein unchanged: a decoy identical to its source protein,
+   or with the same `hp_lehninger2` string as its source (searched in that alphabet it is
+   the source itself), is not a decoy and is left out of Q_s; and a region between a
+   decoy and its own source protein is not counted, because that one database protein
+   shares the decoy's composition and pair counts and so is not unrelated to it. Both
+   are counted and printed in section 2.
 4. **Pass.** A stratum passes a column at a cutoff if observed is within a factor of two
    of expected: 5 to 20 at expected 10, 50 to 200 at expected 100.
 5. **Verdict.** A column passes only if all 12 strata pass at both cutoffs on the
@@ -233,9 +238,9 @@ if HAVE_RESULTS:
     for k in u.KINDS:
         t = u.tag_regions(decoys, regions[k], k)
         own = t.filter(pl.col("own_source"))
-        n_unchanged = decoys.filter((pl.col("kind") == k) & (pl.col("unchanged") == 1)).height
-        print(f"  left out for {k}: {n_unchanged} decoys identical to their source "
-              f"({t.filter(pl.col('unchanged_decoy')).height} region rows), "
+        n_unchanged = decoys.filter((pl.col("kind") == k) & u.NOT_A_DECOY).height
+        print(f"  left out for {k}: {n_unchanged} decoys identical to their source or its H/P string "
+              f"({t.filter(pl.col('not_a_decoy')).height} region rows), "
               f"{own.height} region rows on the decoy's own source protein "
               f"(smallest region_run_evalue {own['region_run_evalue'].min()})")
     FIGURES.mkdir(parents=True, exist_ok=True)

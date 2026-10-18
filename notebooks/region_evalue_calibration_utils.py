@@ -138,6 +138,11 @@ def load_regions(results: Path, kind: str) -> pl.DataFrame:
     )
 
 
+# A decoy the shuffle left identical to its source, or whose hp_lehninger2 string equals
+# its source's (searched in that alphabet it is the protein itself), is not a decoy.
+NOT_A_DECOY = (pl.col("unchanged") == 1) | (pl.col("same_hp_lehninger2") == 1)
+
+
 def accession_of(name: pl.Expr) -> pl.Expr:
     """P10415 from sp|P10415|BCL2_HUMAN (and from a name with no | fields, the name)."""
     return (
@@ -149,17 +154,12 @@ def accession_of(name: pl.Expr) -> pl.Expr:
 
 def tag_regions(decoys: pl.DataFrame, regions: pl.DataFrame, kind: str) -> pl.DataFrame:
     """Each region row with its decoy's stratum and two flags: `own_source` (the target is
-    the protein the decoy was shuffled from) and `unchanged_decoy` (the shuffle returned
-    the protein itself)."""
-    d = (
-        decoys.filter(pl.col("kind") == kind)
-        .select(
-            pl.col("decoy_id").alias("query_name"),
-            "stratum",
-            "accession",
-            pl.col("unchanged") == 1,
-        )
-        .rename({"unchanged": "unchanged_decoy"})
+    the protein the decoy was shuffled from) and `not_a_decoy` (see NOT_A_DECOY)."""
+    d = decoys.filter(pl.col("kind") == kind).select(
+        pl.col("decoy_id").alias("query_name"),
+        "stratum",
+        "accession",
+        NOT_A_DECOY.alias("not_a_decoy"),
     )
     r = regions.join(d, on="query_name", how="left")
     if r["stratum"].null_count():
@@ -177,15 +177,14 @@ def calibration_table(
     """Observed against expected chance regions, per stratum, column and target.
 
     Q_s counts every decoy of this kind in the stratum, including those with no region,
-    except decoys the shuffle left identical to their source protein (they are not
-    decoys). A region on the decoy's own source protein is not counted: that one database
+    except those that are not decoys (NOT_A_DECOY). A region on the decoy's own source protein is not counted: that one database
     protein has the decoy's composition and pair counts, so it is not unrelated to it.
     A row whose E-value is empty is not counted for that column.
     """
-    d = decoys.filter((pl.col("kind") == kind) & (pl.col("unchanged") == 0))
+    d = decoys.filter((pl.col("kind") == kind) & (~NOT_A_DECOY))
     q = d.group_by("stratum").len("n_decoys")
     r = tag_regions(decoys, regions, kind).filter(
-        ~pl.col("unchanged_decoy") & ~pl.col("own_source")
+        ~pl.col("not_a_decoy") & ~pl.col("own_source")
     )
     rows = []
     for s in STRATA:
@@ -241,9 +240,9 @@ def observed_curve(
 ) -> pl.DataFrame:
     """All strata together: regions at E <= cutoff against Q x cutoff, for each cutoff,
     with the same exclusions as `calibration_table`."""
-    n = decoys.filter((pl.col("kind") == kind) & (pl.col("unchanged") == 0)).height
+    n = decoys.filter((pl.col("kind") == kind) & (~NOT_A_DECOY)).height
     r = tag_regions(decoys, regions, kind).filter(
-        ~pl.col("unchanged_decoy") & ~pl.col("own_source")
+        ~pl.col("not_a_decoy") & ~pl.col("own_source")
     )
     values = r[column].drop_nulls()
     return pl.DataFrame(

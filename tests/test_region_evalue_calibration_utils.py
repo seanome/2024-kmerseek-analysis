@@ -71,12 +71,14 @@ def write_results(tmp_path, regions_rows):
     (tmp_path / "decoys").mkdir()
     (tmp_path / "seg").mkdir()
     (tmp_path / "regions").mkdir()
-    dec = ["decoy_id\tsource_id\taccession\tkind\treplicate\tlength\tunchanged"]
+    dec = [
+        "decoy_id\tsource_id\taccession\tkind\treplicate\tlength\tunchanged\tsame_hp_lehninger2"
+    ]
     seg = ["id\tlength\tseg_residues\tseg_fraction"]
     for i in range(1000):
-        dec.append(f"S{i}__dipeptide_r1\tsp|S{i}|X\tS{i}\tdipeptide\t1\t50\t0")
+        dec.append(f"S{i}__dipeptide_r1\tsp|S{i}|X\tS{i}\tdipeptide\t1\t50\t0\t0")
         seg.append(f"sp|S{i}|X\t50\t0\t0.0")
-        dec.append(f"L{i}__dipeptide_r1\tsp|L{i}|X\tL{i}\tdipeptide\t1\t2000\t0")
+        dec.append(f"L{i}__dipeptide_r1\tsp|L{i}|X\tL{i}\tdipeptide\t1\t2000\t0\t0")
         seg.append(f"sp|L{i}|X\t2000\t400\t0.2")
     (tmp_path / "decoys" / "decoys.tsv").write_text("\n".join(dec) + "\n")
     (tmp_path / "seg" / "human.seg.tsv").write_text("\n".join(seg) + "\n")
@@ -193,8 +195,12 @@ def test_own_source_and_unchanged_decoys_are_left_out(tmp_path):
         (tmp_path / "decoys" / "decoys.tsv")
         .read_text()
         .replace(
-            "S1__dipeptide_r1\tsp|S1|X\tS1\tdipeptide\t1\t50\t0",
-            "S1__dipeptide_r1\tsp|S1|X\tS1\tdipeptide\t1\t50\t1",
+            "S1__dipeptide_r1\tsp|S1|X\tS1\tdipeptide\t1\t50\t0\t0",
+            "S1__dipeptide_r1\tsp|S1|X\tS1\tdipeptide\t1\t50\t1\t0",
+        )
+        .replace(
+            "S2__dipeptide_r1\tsp|S2|X\tS2\tdipeptide\t1\t50\t0\t0",
+            "S2__dipeptide_r1\tsp|S2|X\tS2\tdipeptide\t1\t50\t0\t1",
         )
     )
     (tmp_path / "decoys" / "decoys.tsv").write_text(dec)
@@ -206,8 +212,10 @@ def test_own_source_and_unchanged_decoys_are_left_out(tmp_path):
         & (pl.col("column") == "region_run_evalue")
         & (pl.col("expected") == 10)
     ).row(0, named=True)
-    assert row["n_decoys"] == 999  # S1 is not a decoy
-    assert row["observed"] == 9  # S1's region is gone; the own-source row is gone
+    assert (
+        row["n_decoys"] == 998
+    )  # S1 (unchanged) and S2 (same H/P string) are not decoys
+    assert row["observed"] == 8  # their regions and the own-source row are gone
 
 
 def test_region_from_another_kind_is_refused(tmp_path):

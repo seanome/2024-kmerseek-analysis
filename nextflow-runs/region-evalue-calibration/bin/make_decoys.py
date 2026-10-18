@@ -21,7 +21,10 @@ Writes, in <out_dir>:
   <kind>.chunk_NNNN.fasta  at most <chunk_size> decoys of one kind, named
                            <accession>__<kind>_r<replicate>
   decoys.tsv               decoy_id, source_id, accession, kind, replicate, length,
-                           unchanged (1 when the shuffle returned the protein itself)
+                           unchanged (1 when the shuffle returned the protein itself),
+                           same_hp_lehninger2 (1 when the decoy's hydrophobic/polar
+                           string under hp_lehninger2 equals the source's: searched in
+                           that alphabet, it is the protein itself, not a decoy)
 Standard library only.
 """
 
@@ -37,6 +40,8 @@ from decoys import composition_shuffle, dipeptide_shuffle, window_shuffle
 SEED_LABEL = 344
 WINDOW = 10
 KINDS = ("composition", "dipeptide", "window10")
+# hp_lehninger2's classes, from kmerseek src/rust/alphabets.rs (LEHNINGER_HP).
+HP_LEHNINGER2 = str.maketrans("AFGILMPVWYCDEHKNQRST", "hhhhhhhhhhpppppppppp")
 
 
 def read_fasta(path):
@@ -118,7 +123,19 @@ def main(fasta, replicates, chunk_size, out_dir):
                     sys.exit(f"{name}: {e}")
                 decoy_id = f"{acc}__{kind}_r{r}"
                 decoys.append((decoy_id, out))
-                rows.append([decoy_id, name, acc, kind, r, len(seq), int(out == seq)])
+                same_hp = out.translate(HP_LEHNINGER2) == seq.translate(HP_LEHNINGER2)
+                rows.append(
+                    [
+                        decoy_id,
+                        name,
+                        acc,
+                        kind,
+                        r,
+                        len(seq),
+                        int(out == seq),
+                        int(same_hp),
+                    ]
+                )
         for c, start in enumerate(range(0, len(decoys), chunk_size)):
             path = os.path.join(out_dir, f"{kind}.chunk_{c:04d}.fasta")
             with open(path, "w") as fh:
@@ -126,7 +143,8 @@ def main(fasta, replicates, chunk_size, out_dir):
                     fh.write(f">{decoy_id}\n{seq}\n")
         print(
             f"{kind}: {len(decoys)} decoys from {len(records)} proteins, "
-            f"{sum(r[-1] for r in rows if r[3] == kind)} unchanged"
+            f"{sum(r[6] for r in rows if r[3] == kind)} unchanged, "
+            f"{sum(r[7] for r in rows if r[3] == kind)} with the source's hp_lehninger2 string"
         )
     with open(os.path.join(out_dir, "decoys.tsv"), "w") as fh:
         w = csv.writer(fh, delimiter="\t", lineterminator="\n")
@@ -139,6 +157,7 @@ def main(fasta, replicates, chunk_size, out_dir):
                 "replicate",
                 "length",
                 "unchanged",
+                "same_hp_lehninger2",
             ]
         )
         w.writerows(rows)
