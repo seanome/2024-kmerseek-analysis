@@ -135,3 +135,4 @@ def test_examples_returns_the_shared_stretch(tmp_path):
     assert ex["partner"] == "b" and ex["specimen_protein"] == "p3" and ex["partner_protein"] == "p3"
     assert ex["specimen_start"] == 5 and ex["partner_start"] == 3
     assert ex["specimen_seq"] == ex["partner_seq"] == shared
+    assert (ex["specimen_length"], ex["partner_length"]) == (len(a[3]), len(b[3]))

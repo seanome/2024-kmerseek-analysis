@@ -1,0 +1,684 @@
+#!/usr/bin/env python3
+"""Generate notebooks/343_recurring_word_discovery_curves_qfo2020_04.ipynb.
+
+The first cell is notebooks/343_preregistration.md, verbatim, committed (9f2c402d) before
+the pipeline counted any word. The notebook reads the six tables that
+nextflow-runs/proteome-novelty writes (`make pull-results` copies them to tables/343/).
+Set NB343_DIR to read them from somewhere else.
+"""
+
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+cells = []
+
+
+def md(source):
+    cells.append(
+        {
+            "cell_type": "markdown",
+            "id": f"md-{len(cells):02d}",
+            "metadata": {},
+            "source": source.strip().splitlines(keepends=True),
+        }
+    )
+
+
+def code(source):
+    cells.append(
+        {
+            "cell_type": "code",
+            "id": f"code-{len(cells):02d}",
+            "execution_count": None,
+            "metadata": {"jupyter": {"source_hidden": True}},
+            "outputs": [],
+            "source": source.strip("\n").splitlines(keepends=True),
+        }
+    )
+
+
+md(
+    "# 343. Does one more proteome add new local sequence? Recurring words in six QfO 2020_04 clades\n\n"
+    + (ROOT / "notebooks" / "343_preregistration.md").read_text()
+)
+
+md(r"""
+## Data
+
+- **Proteomes.** QfO reference proteomes, release 2020_04 (UniProt release 2020_04,
+  12 August 2020), canonical sequences only, the copy the
+  [region benchmark](https://github.com/seanome/2024-kmerseek-analysis/tree/main/nextflow-runs/qfo-pfam-region-benchmark)
+  keeps on Sherlock. The pipeline's first step checks every FASTA's sequence and residue
+  count against `nextflow-runs/proteome-novelty/assets/proteomes.tsv`.
+- **Clades.** NCBI taxonomy dump downloaded 2026-09-13, read by
+  `scripts/nb343_build_proteome_table.py`.
+- **Counts.** `nextflow-runs/proteome-novelty` on this branch
+  ([PR 172](https://github.com/seanome/2024-kmerseek-analysis/pull/172)). No kmerseek
+  search runs: the words are counted with kmerseek's own `hp_pbotc_1st_ed` and `protein`
+  letter tables, in `bin/novelty.py`, which `make test` checks against brute force.
+- **MMseqs2.** Release 18 (`quay.io/biocontainers/mmseqs2:18.8cc5c--hd6d6fdc_0`),
+  `easy-cluster --min-seq-id 0.3 -c 0.8 --cov-mode 0`.
+
+**How to read the counts.** Every count is of *recurring* words: words found in at least
+two proteomes of the clade. "Real" means the QfO proteomes; "synthetic" means the
+first-order Markov copies, one per real proteome, which keep amino-acid composition and
+residue pairs and nothing longer. More recurring words in real than synthetic proteomes is
+shared sequence that composition alone does not explain.
+""")
+
+code(r"""
+import os
+import sys
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import polars as pl
+from matplotlib.lines import Line2D
+from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+
+sys.path.insert(0, str(Path.cwd()))
+import ortholog_analysis_utils as ou
+import pubfig as pf
+
+pf.use_style()
+pl.Config.set_tbl_rows(80)
+pl.Config.set_tbl_cols(20)
+pl.Config.set_fmt_str_lengths(120)
+pl.Config.set_tbl_width_chars(250)
+pl.Config.set_float_precision(3)
+
+REPO = Path.cwd().parent
+DATA = Path(os.environ.get("NB343_DIR", REPO / "tables" / "343"))
+FIG = Path(os.environ.get("NB343_FIG", REPO / "figures" / "343"))
+TABLE = REPO / "nextflow-runs" / "proteome-novelty" / "assets" / "proteomes.tsv"
+
+# From the pre-registered rule (first cell).
+CLADES = ["Archaea", "Bacteria", "Eukaryota", "Fungi", "Vertebrata", "Mammalia"]
+HP, AA, FAMILY = "hp_pbotc_1st_ed", "protein", "mmseqs.family"
+BUDGETS = {21: (f"{HP}.21", f"{AA}.5"), 30: (f"{HP}.30", f"{AA}.7"), 42: (f"{HP}.42", f"{AA}.10")}
+PRIMARY_HP, PRIMARY_AA = BUDGETS[30]
+PASS_MAX_ERROR = 0.15  # median relative error at most this
+MUST_BEAT_MMSEQS = 0.75  # and at most this times the MMseqs2 median
+DECIDE_MIN_SHARE = 0.01  # sequence another if it adds at least 1% of U(N) ...
+DECIDE_NULL_FOLD = 2.0  # ... and at least twice what the synthetic proteomes add
+
+# One colour per alphabet, kept in every figure. Real proteomes: full colour; synthetic: a
+# light tint of the same hue. MMseqs2 families: black.
+COLOUR = {HP: pf.OKABE_ITO["blue"], AA: pf.OKABE_ITO["vermillion"], FAMILY: pf.OKABE_ITO["black"]}
+TINT = {HP: "#8fbfe0", AA: "#f0b48a"}
+LABEL = {
+    PRIMARY_HP: f"{HP} k30 (2 letters, 29.8 bits)",
+    PRIMARY_AA: f"{AA} k7 (20 letters, 29.2 bits)",
+    FAMILY: "MMseqs2 families (30% identity, 80% coverage)",
+}
+for budget, (h, a) in BUDGETS.items():
+    print(f"{budget}-bit budget: {h} = {ou.bits_per_kmer(HP, int(h.split('.')[1])):.2f} bits, "
+          f"{a} = {ou.bits_per_kmer('protein', int(a.split('.')[1])):.2f} bits")
+
+proteomes = pl.read_csv(TABLE, separator="\t")
+curve = pl.read_parquet(DATA / "343_curve.parquet")
+fit = pl.read_parquet(DATA / "343_fit.parquet")
+splits = pl.read_parquet(DATA / "343_splits.parquet")
+last = pl.read_parquet(DATA / "343_last.parquet")
+examples = pl.read_parquet(DATA / "343_examples.parquet")
+words = pl.read_parquet(DATA / "343_word_summary.parquet")
+
+expected = [f"{kind}.{s}" for s in sum(map(list, BUDGETS.values()), []) for kind in ("real", "null")]
+expected += [f"real.{FAMILY}"]
+found = set(zip(fit["clade"], fit["setting"]))
+missing = [(c, s) for c in CLADES for s in expected if (c, s) not in found]
+print(f"\nData: {DATA}")
+print(f"{len(found)} of {len(CLADES) * len(expected)} clade x setting results present.")
+print("Missing:", missing if missing else "none")
+print("Example stretches for:", sorted(examples["clade"].unique()))
+""")
+
+md(r"""
+## 1. The panel
+
+Each clade's proteomes and their sizes. Bigger proteomes have more windows, so more words
+can recur by chance; the synthetic copies have the same sizes, which is what makes them a
+fair chance level.
+""")
+
+code(r"""
+def clade_members(clade):
+    return proteomes.filter(pl.col("clades").str.split(",").list.contains(clade))
+
+
+panel = pl.DataFrame([
+    {"clade": c, "proteomes": clade_members(c).height,
+     "proteins": int(clade_members(c)["n_sequences"].sum()),
+     "residues": int(clade_members(c)["n_residues"].sum()),
+     "smallest": clade_members(c).sort("n_residues")["oscode"][0],
+     "largest": clade_members(c).sort("n_residues")["oscode"][-1]}
+    for c in CLADES
+])
+print(panel)
+
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55)
+for i, c in enumerate(CLADES):
+    m = clade_members(c)
+    y = np.full(m.height, i) + np.linspace(-0.25, 0.25, m.height)
+    ax.scatter(m["n_residues"] / 1e6, y, s=6, color=pf.GREY, edgecolor="none")
+ax.set_yticks(range(len(CLADES)), [f"{c} ({clade_members(c).height})" for c in CLADES])
+ax.set_ylim(len(CLADES) - 0.5, -0.5)
+ax.set_xscale("log")
+ax.xaxis.set_major_locator(FixedLocator([0.2, 0.5, 1, 2, 5, 10, 20]))
+ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+ax.xaxis.set_minor_locator(NullLocator())
+ax.set_xlabel("Residues per proteome (millions)")
+ax.grid(axis="y", color="#dddddd", lw=0.3)
+pf.save(fig, FIG / "343_SF1_proteome_sizes_by_clade_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 1 (SF1). Proteome sizes in each clade.** One grey dot per QfO
+2020_04 proteome; the number of proteomes is beside each clade name. The x axis spaces
+values by ratio: the step from 1 to 2 million takes as much room as the step from 10 to 20
+million. The clades overlap: every Mammalia proteome is also in Vertebrata and Eukaryota.
+""")
+
+md(r"""
+## 2. Discovery curves
+
+$U(n)$, the number of words found in at least two of $n$ proteomes, averaged over every
+order in which the clade's proteomes could be added. Real proteomes against their
+synthetic copies, and the two-letter alphabet against the 20 amino acids, at the 30-bit
+budget.
+
+How to read it: where the real curve runs far above its synthetic curve, proteomes share
+sequence beyond composition. A real curve that flattens while the synthetic one keeps
+rising is a clade whose shared repertoire is closing.
+""")
+
+code(r"""
+def curve_of(clade, setting):
+    return curve.filter((pl.col("clade") == clade) & (pl.col("setting") == setting)).sort("n")
+
+
+def plain_log_axis(axis, lo, hi):
+    ticks = [m * 10**e for e in range(0, 10) for m in (1, 2, 5) if lo <= m * 10**e <= hi]
+    if len(ticks) > 7:  # keep powers of ten only when the range is wide
+        ticks = [t for t in ticks if str(int(t)).startswith("1")]
+    axis.set_major_locator(FixedLocator(ticks))
+    axis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:,.0f}"))
+    axis.set_minor_locator(NullLocator())
+
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 105, nrows=2, ncols=3)
+rows = []
+for ax, c in zip(axs.flat, CLADES):
+    ymin, ymax = np.inf, 0
+    for alph, s in ((HP, PRIMARY_HP), (AA, PRIMARY_AA)):
+        for kind in ("real", "null"):
+            d = curve_of(c, f"{kind}.{s}").filter(pl.col("U") > 0)
+            if d.height == 0:
+                continue
+            real = kind == "real"
+            ax.plot(d["n"], d["U"], color=COLOUR[alph] if real else TINT[alph], lw=1 if real else 0.8,
+                    ls="-" if real else "--", marker="o" if real else None, ms=2,
+                    label=f"{LABEL[s]}, {'real' if real else 'synthetic'} proteomes")
+            ymin, ymax = min(ymin, d["U"].min()), max(ymax, d["U"].max())
+            rows.append({"clade": c, "setting": f"{kind}.{s}", "N": int(d["n"].max()),
+                         "U(N)": float(d["U"][-1])})
+    ax.set_yscale("log")
+    plain_log_axis(ax.yaxis, ymin, ymax)
+    ax.set_title(f"{c} ({clade_members(c).height} proteomes)", loc="left")
+    ax.set_xlabel("Proteomes in hand, n")
+    ax.set_ylabel("Words in at least 2 proteomes, U(n)" if ax in axs[:, 0] else "")
+pf.shared_legend(fig, ncol=2)
+for ax, letter in zip(axs.flat, "abcdef"):
+    pf.panel_label(ax, letter)
+pf.save(fig, FIG / "343_SF2_discovery_curves_real_vs_synthetic_hp30_protein7_qfo2020_04")
+print(pl.DataFrame(rows))
+""")
+
+md(r"""
+**Supplementary Figure 2 (SF2). Words shared by at least two proteomes, as proteomes are
+added, in six QfO 2020_04 clades.** Blue: the two-letter hydrophobic/polar alphabet
+`hp_pbotc_1st_ed` (hydrophobic `ACFILMPVWY`, polar `DEGHKNQRST`) at k = 30. Orange: the 20
+amino acids at k = 7. Both carry about 30 bits per word. Solid lines with dots: the real
+proteomes. Light dashed lines: one synthetic copy per proteome, same protein lengths, each
+residue drawn given only the one before it. Each curve is the exact average over every
+order of adding the proteomes. The y axis spaces values by ratio. No kmerseek search;
+word counts from `bin/novelty.py`. A curve that runs above its dashed copy means shared
+sequence beyond composition; higher above it is more shared sequence.
+""")
+
+md(r"""
+### 2b. Real against synthetic, as a ratio
+
+$U(n)/U_\text{null}(n)$ for each clade. A ratio of 1 means the real proteomes share no
+more words than composition gives. A falling ratio means the synthetic count is catching
+up: each new real proteome adds fewer shared words than chance would.
+""")
+
+code(r"""
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, nrows=2, ncols=3)
+rows = []
+for ax, c in zip(axs.flat, CLADES):
+    for alph, s in ((HP, PRIMARY_HP), (AA, PRIMARY_AA)):
+        r, nl = curve_of(c, f"real.{s}"), curve_of(c, f"null.{s}")
+        if r.height == 0 or nl.height == 0:
+            continue
+        d = r.join(nl, on="n", suffix="_null").filter(pl.col("U_null") > 0)
+        ratio = d["U"] / d["U_null"]
+        ax.plot(d["n"], ratio, color=COLOUR[alph], marker="o", ms=2, label=LABEL[s])
+        rows.append({"clade": c, "setting": s, "ratio_at_2": float(ratio[0]) if d.height else None,
+                     "ratio_at_N": float(ratio[-1]) if d.height else None,
+                     "n_with_null_above_0": d.height})
+    ax.axhline(1, color=pf.GREY, lw=0.5)
+    ax.set_title(f"{c} ({clade_members(c).height} proteomes)", loc="left")
+    ax.set_xlabel("Proteomes in hand, n")
+    ax.set_ylabel("Real / synthetic shared words" if ax in axs[:, 0] else "")
+    ax.set_ylim(bottom=0)
+pf.shared_legend(fig, ncol=2)
+for ax, letter in zip(axs.flat, "abcdef"):
+    pf.panel_label(ax, letter)
+pf.save(fig, FIG / "343_SF3_real_over_synthetic_shared_words_hp30_protein7_qfo2020_04")
+ratio_table = pl.DataFrame(rows)
+print(ratio_table)
+
+budget_rows = []
+for c in CLADES:
+    for budget, pair in BUDGETS.items():
+        for s in pair:
+            r, nl = curve_of(c, f"real.{s}"), curve_of(c, f"null.{s}")
+            if r.height and nl.height:
+                budget_rows.append({"clade": c, "budget_bits": budget, "setting": s,
+                                    "U(N)": float(r["U"][-1]), "U_null(N)": float(nl["U"][-1]),
+                                    "ratio_at_N": float(r["U"][-1] / nl["U"][-1]) if nl["U"][-1] > 0 else None})
+print("\nAll three budgets, full clade (not part of the verdict):")
+print(pl.DataFrame(budget_rows))
+""")
+
+md(r"""
+**Supplementary Figure 3 (SF3). How many times more words real proteomes share than their
+synthetic copies.** Same data as SF2, same colours. The grey line at 1 is no excess over
+composition. Points where the synthetic proteomes share no word at all are left out (the
+ratio has no value there); the table under the figure says how many points each line
+has. The second table gives the 21- and 42-bit budgets, which are reported and do not
+enter the verdict.
+""")
+
+md(r"""
+## 3. Heaps' law
+
+$U(n) = \kappa\, n^{\gamma}$ fitted to each full-clade curve, $n = 2, \dots, N$. With this
+count, a word needs two proteomes to be counted, so if every pair of proteomes shared the
+same number of words, $U(n)$ would grow with the number of pairs, $n(n-1)/2$, and $\gamma$
+would be near 2. The synthetic proteomes show that chance level. A real $\gamma$ well
+below its synthetic $\gamma$ means each new proteome mostly finds words that are already
+shared.
+""")
+
+code(r"""
+def gamma_of(clade, setting):
+    d = fit.filter((pl.col("clade") == clade) & (pl.col("setting") == setting))
+    return float(d["gamma"][0]) if d.height else np.nan
+
+
+gamma_table = fit.with_columns(
+    pl.col("setting").str.split(".").list.first().alias("proteomes"),
+    pl.col("setting").str.split(".").list.slice(1).list.join(".").alias("words"),
+).select("clade", "proteomes", "words", "size", "kappa", "gamma", "U_full").sort("clade", "words", "proteomes")
+print(gamma_table)
+
+marks = [  # (setting, colour, marker, filled, label)
+    (f"real.{PRIMARY_HP}", COLOUR[HP], "o", True, f"{LABEL[PRIMARY_HP]}, real"),
+    (f"null.{PRIMARY_HP}", COLOUR[HP], "o", False, f"{LABEL[PRIMARY_HP]}, synthetic"),
+    (f"real.{PRIMARY_AA}", COLOUR[AA], "s", True, f"{LABEL[PRIMARY_AA]}, real"),
+    (f"null.{PRIMARY_AA}", COLOUR[AA], "s", False, f"{LABEL[PRIMARY_AA]}, synthetic"),
+    (f"real.{FAMILY}", COLOUR[FAMILY], "D", True, f"{LABEL[FAMILY]}, real"),
+]
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 75)
+for j, (s, col, mk, filled, lab) in enumerate(marks):
+    y = np.arange(len(CLADES)) + (j - 2) * 0.13
+    g = [gamma_of(c, s) for c in CLADES]
+    ax.scatter(g, y, marker=mk, s=12, facecolor=col if filled else "white", edgecolor=col, lw=0.8, label=lab)
+ax.set_yticks(range(len(CLADES)), CLADES)
+ax.set_ylim(len(CLADES) - 0.5, -0.5)
+ax.grid(axis="y", color="#dddddd", lw=0.3)
+ax.set_xlabel("Heaps' law exponent, gamma")
+pf.shared_legend(fig, ncol=1)
+pf.save(fig, FIG / "343_SF4_heaps_gamma_by_clade_hp30_protein7_mmseqs_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 4 (SF4). Heaps' law exponent $\gamma$ for each clade.** Blue
+circles: `hp_pbotc_1st_ed` k = 30; orange squares: 20 amino acids k = 7; black diamonds:
+MMseqs2 families. Filled marks: real proteomes; open marks: synthetic copies. Lower
+$\gamma$ means each added proteome adds fewer newly shared words or families. MMseqs2
+families and words are different units, so compare $\gamma$ between them only for which
+clade is more closed, not by its value.
+""")
+
+md(r"""
+## 4. Primary test: predict what the next proteome adds
+
+For every split of a clade into kept proteomes (80%) and hidden ones (20%), Heaps' law is
+fitted on the kept proteomes only and predicts how many newly shared words (or families)
+the first hidden proteome adds. The relative error is
+$|\text{predicted} - \text{true}| / \text{true}$; smaller is better and 0 is a perfect
+prediction. The statistic is the median over all splits with each clade weighted
+equally.
+""")
+
+code(r"""
+def weighted_median(values, weights):
+    o = np.argsort(values)
+    v, w = np.asarray(values)[o], np.asarray(weights)[o]
+    cw = np.cumsum(w) / w.sum()
+    return float(v[np.searchsorted(cw, 0.5)])
+
+
+def test_stats(setting):
+    d = splits.filter(pl.col("setting") == setting)
+    dropped = d.filter(pl.col("relative_error").is_nan() | pl.col("relative_error").is_null())
+    d = d.filter(pl.col("relative_error").is_not_nan() & pl.col("relative_error").is_not_null())
+    n_by_clade = d.group_by("clade").len()
+    d = d.join(n_by_clade, on="clade").with_columns((1 / pl.col("len")).alias("w"))
+    per_clade = d.group_by("clade").agg(pl.col("relative_error").median().alias("median"),
+                                        pl.len().alias("splits"))
+    return {"setting": setting, "weighted_median": weighted_median(d["relative_error"], d["w"]) if d.height else np.nan,
+            "splits_used": d.height, "splits_dropped_true_0": dropped.height,
+            "clades": d["clade"].n_unique()}, per_clade
+
+
+primary = {}
+per_clade_rows = []
+for s in (f"real.{PRIMARY_HP}", f"real.{PRIMARY_AA}", f"real.{FAMILY}",
+          f"real.{BUDGETS[21][0]}", f"real.{BUDGETS[21][1]}", f"real.{BUDGETS[42][0]}", f"real.{BUDGETS[42][1]}"):
+    st, pc = test_stats(s)
+    primary[s] = st
+    per_clade_rows.append(pc.with_columns(pl.lit(s).alias("setting")))
+test_table = pl.DataFrame(list(primary.values()))
+print(test_table)
+print("\nPer clade (reported, not in the verdict):")
+print(pl.concat(per_clade_rows).pivot(on="setting", index="clade", values="median"))
+
+for s_, st_ in primary.items():
+    if st_["clades"] < len(CLADES):
+        print(f"WARNING: {s_} has results for {st_['clades']} of {len(CLADES)} clades; "
+              "the pre-registered verdict needs all six and is not final.")
+hp_med = primary[f"real.{PRIMARY_HP}"]["weighted_median"]
+aa_med = primary[f"real.{PRIMARY_AA}"]["weighted_median"]
+mm_med = primary[f"real.{FAMILY}"]["weighted_median"]
+hp_pass = hp_med <= PASS_MAX_ERROR and hp_med <= MUST_BEAT_MMSEQS * mm_med
+aa_pass = aa_med <= PASS_MAX_ERROR and aa_med <= MUST_BEAT_MMSEQS * mm_med
+reduction_case = aa_med > hp_med
+print(f"\n{HP} k30: median relative error {hp_med:.3f}; needs <= {PASS_MAX_ERROR} and <= "
+      f"{MUST_BEAT_MMSEQS} x MMseqs2 ({MUST_BEAT_MMSEQS * mm_med:.3f}). -> {'PASS' if hp_pass else 'FAIL'}")
+print(f"{AA} k7: median relative error {aa_med:.3f} -> {'would PASS' if aa_pass else 'would FAIL'} the same thresholds")
+print(f"MMseqs2 families: median relative error {mm_med:.3f}")
+print("Case for the reduced alphabet:", "holds (20 letters predict worse)" if reduction_case
+      else "fails (20 letters predict as well or better)")
+""")
+
+code(r"""
+methods = [(f"real.{PRIMARY_HP}", COLOUR[HP], "o"), (f"real.{PRIMARY_AA}", COLOUR[AA], "s"),
+           (f"real.{FAMILY}", COLOUR[FAMILY], "D")]
+rng = np.random.default_rng(343)
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 85)
+for j, (s, col, mk) in enumerate(methods):
+    for i, c in enumerate(CLADES):
+        e = splits.filter((pl.col("setting") == s) & (pl.col("clade") == c))["relative_error"].drop_nans().drop_nulls()
+        if e.len() == 0:
+            continue
+        y0 = i + (j - 1) * 0.25
+        ax.scatter(np.clip(e, 1e-3, None), y0 + rng.uniform(-0.08, 0.08, e.len()), s=2, color=col,
+                   alpha=0.35, edgecolor="none", marker=mk)
+        ax.plot([e.median()] * 2, [y0 - 0.11, y0 + 0.11], color="black", lw=1.2)
+    ax.scatter([], [], s=12, color=col, marker=mk, label=f"{LABEL[s.removeprefix('real.')]}: "
+               f"median {primary[s]['weighted_median']:.2f}")
+ax.axvline(PASS_MAX_ERROR, color=pf.GREY, ls="--", lw=0.8, label=f"pass line, {PASS_MAX_ERROR}")
+ax.plot([], [], color="black", lw=1.2, label="median of one clade")
+ax.set_xscale("log")
+plain = FuncFormatter(lambda v, _: f"{v:g}")
+ax.xaxis.set_major_locator(FixedLocator([0.001, 0.01, 0.1, 1, 10, 100]))
+ax.xaxis.set_major_formatter(plain)
+ax.xaxis.set_minor_locator(NullLocator())
+ax.set_yticks(range(len(CLADES)), CLADES)
+ax.set_ylim(len(CLADES) - 0.5, -0.5)
+ax.grid(axis="y", color="#dddddd", lw=0.3)
+ax.set_xlabel("Relative error of the predicted added count")
+pf.shared_legend(fig, ncol=1)
+pf.save(fig, FIG / "343_SF5_next_proteome_prediction_error_hp30_protein7_mmseqs_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 5 (SF5). How well Heaps' law, fitted on 80% of a clade, predicts
+what the next proteome adds.** One faint point per split (200 per clade, all 42 for
+Archaea and all 56 for Mammalia); the black bar is the clade's median. Blue circles:
+`hp_pbotc_1st_ed` k = 30 words; orange squares: 20 amino acids k = 7 words; black
+diamonds: MMseqs2 families. Left is better; the dashed line is the pre-registered pass
+line. The legend gives each method's median over all splits with the clades weighted
+equally, the number the verdict uses. Errors below 0.001 are drawn at 0.001.
+""")
+
+md(r"""
+## 5. The sequencing decision, per clade
+
+At the 30-bit `hp_pbotc_1st_ed` setting, the full-clade fit predicts what one more
+proteome would add:
+$\hat\kappa\,\big((N+1)^{\hat\gamma} - N^{\hat\gamma}\big)$. The pre-registered rule says
+sequence another when that is at least 1% of $U(N)$ and at least twice what the synthetic
+proteomes' fit predicts for their next copy.
+
+The figure shows, for every proteome, how many words would become shared if it had been
+sequenced last (words it holds with exactly one other proteome of the clade). That is the
+measured version of the prediction, one value per species.
+""")
+
+code(r"""
+def predicted_next(clade, setting):
+    d = fit.filter((pl.col("clade") == clade) & (pl.col("setting") == setting))
+    if d.height == 0:
+        return np.nan
+    k, g, N = d["kappa"][0], d["gamma"][0], d["size"][0]
+    return float(k * ((N + 1) ** g - N ** g))
+
+
+rows = []
+for c in CLADES:
+    real_next, null_next = predicted_next(c, f"real.{PRIMARY_HP}"), predicted_next(c, f"null.{PRIMARY_HP}")
+    u_n = fit.filter((pl.col("clade") == c) & (pl.col("setting") == f"real.{PRIMARY_HP}"))["U_full"]
+    u_n = float(u_n[0]) if u_n.len() else np.nan
+    lc = last.filter((pl.col("clade") == c) & (pl.col("setting") == f"real.{PRIMARY_HP}"))
+    lc = lc.join(proteomes.select("proteome", "oscode", "species"), on="proteome").sort("added_if_last", descending=True)
+    rows.append({
+        "clade": c, "N": clade_members(c).height, "gamma": gamma_of(c, f"real.{PRIMARY_HP}"),
+        "gamma_synthetic": gamma_of(c, f"null.{PRIMARY_HP}"), "U(N)": u_n,
+        "predicted_next": real_next, "predicted_next_synthetic": null_next,
+        "share_of_U(N)": real_next / u_n,
+        # Synthetic proteomes that add nothing make any real addition infinitely larger;
+        # a missing fit stays missing.
+        "fold_over_synthetic": (np.nan if not np.isfinite(null_next) else real_next / null_next if null_next > 0 else np.inf),
+        "most_added": lc["oscode"][0] if lc.height else None,
+        "most_added_words": float(lc["added_if_last"][0]) if lc.height else np.nan,
+        "least_added": lc["oscode"][-1] if lc.height else None,
+        "least_added_words": float(lc["added_if_last"][-1]) if lc.height else np.nan,
+    })
+# polars orders NaN above every number, so NaN >= 0.01 is True: decide only where both
+# numbers exist.
+decision = pl.DataFrame(rows).with_columns(
+    pl.when(pl.col("share_of_U(N)").is_nan() | pl.col("fold_over_synthetic").is_nan())
+    .then(None)
+    .otherwise((pl.col("share_of_U(N)") >= DECIDE_MIN_SHARE) & (pl.col("fold_over_synthetic") >= DECIDE_NULL_FOLD))
+    .alias("sequence_another")
+)
+print(decision)
+
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 75)
+for i, c in enumerate(CLADES):
+    lc = last.filter((pl.col("clade") == c) & (pl.col("setting") == f"real.{PRIMARY_HP}")).join(
+        proteomes.select("proteome", "oscode"), on="proteome").sort("added_if_last", descending=True)
+    if lc.height == 0:
+        continue
+    v = np.clip(lc["added_if_last"].to_numpy(), 1, None)
+    y = i + np.linspace(-0.25, 0.25, lc.height)
+    ax.scatter(v[1:], y[1:], s=6, color=pf.GREY, edgecolor="none")
+    ax.scatter(v[:1], y[:1], s=14, color=COLOUR[HP], edgecolor="none")
+    ax.annotate(lc["oscode"][0], (v[0], y[0]), xytext=(4, 0), textcoords="offset points", va="center", fontsize=5)
+    pn = predicted_next(c, f"real.{PRIMARY_HP}")
+    if np.isfinite(pn) and pn > 0:
+        ax.plot([pn] * 2, [i - 0.35, i + 0.35], color="black", lw=1)
+ax.scatter([], [], s=6, color=pf.GREY, label="one proteome, if sequenced last")
+ax.scatter([], [], s=14, color=COLOUR[HP], label="the proteome that adds the most")
+ax.plot([], [], color="black", lw=1, label="Heaps' law prediction for one more")
+ax.set_xscale("log")
+shown_values = last.filter(pl.col("setting") == f"real.{PRIMARY_HP}")["added_if_last"].clip(1, None)
+lo, hi = float(shown_values.min()) / 1.5, float(shown_values.max()) * 3
+ax.set_xlim(lo, hi)
+plain_log_axis(ax.xaxis, lo, hi)
+ax.set_yticks(range(len(CLADES)), CLADES)
+ax.set_ylim(len(CLADES) - 0.5, -0.5)
+ax.grid(axis="y", color="#dddddd", lw=0.3)
+ax.set_xlabel(f"Newly shared words, {HP} k30")
+pf.shared_legend(fig, ncol=1)
+pf.save(fig, FIG / "343_SF6_newly_shared_words_if_sequenced_last_hp30_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 6 (SF6). Newly shared `hp_pbotc_1st_ed` k = 30 words each proteome
+would bring if it were the last one sequenced.** Grey dots: one per proteome. Blue dot,
+labelled with its UniProt species code: the proteome that adds the most. Black bar: what
+Heaps' law, fitted on the whole clade, predicts for one more proteome. The x axis spaces
+values by ratio. A proteome with 0 is drawn at 1.
+""")
+
+md(r"""
+### One paragraph per clade
+
+Generated from the table above, so every number is the one printed there.
+""")
+
+code(r"""
+from IPython.display import Markdown, display
+
+species = dict(zip(proteomes["oscode"], proteomes["species"]))
+paras = []
+for r in decision.iter_rows(named=True):
+    if r["sequence_another"] is None or r["most_added"] is None:
+        paras.append(f"**{r['clade']}**: no result for `{PRIMARY_HP}` in the tables read (see the missing list at the top).")
+        continue
+    verdict = ("Sequencing another proteome is worth it by the pre-registered rule" if r["sequence_another"]
+               else "Another proteome is not worth sequencing for new shared sequence by the pre-registered rule")
+    paras.append(
+        f"**{r['clade']}** ({r['N']} proteomes). {r['U(N)']:,.0f} `hp_pbotc_1st_ed` k30 words are shared by at least "
+        f"two of them; gamma is {r['gamma']:.2f} against {r['gamma_synthetic']:.2f} for the synthetic copies. "
+        f"One more proteome is predicted to add {r['predicted_next']:,.0f} newly shared words, "
+        f"{100 * r['share_of_U(N)']:.1f}% of what is shared now and {r['fold_over_synthetic']:.1f} times what the "
+        f"synthetic copies predict. {verdict} (it needs at least {100 * DECIDE_MIN_SHARE:.0f}% and "
+        f"{DECIDE_NULL_FOLD:.0f} times). Of the proteomes in hand, {species[r['most_added']]} ({r['most_added']}) "
+        f"would have added the most if sequenced last, {r['most_added_words']:,.0f} words; "
+        f"{species[r['least_added']]} ({r['least_added']}) the fewest, {r['least_added_words']:,.0f}."
+    )
+display(Markdown("\n\n".join(paras)))
+""")
+
+md(r"""
+## 6. A newly shared stretch, in residues
+
+For the clade with the lowest $\gamma$ and the clade with the highest (30-bit
+`hp_pbotc_1st_ed`), the proteome that adds the most newly shared words if sequenced last,
+and its longest run of such words: consecutive windows, each shared with the same one
+other proteome and no third. Both sequences are printed with their coordinates (1-based,
+inclusive), an amino-acid match line and an encoded match line. The alignment has no gaps:
+kmerseek words are ungapped.
+""")
+
+code(r"""
+gam = decision.filter(pl.col("gamma").is_not_nan()).sort("gamma")
+chosen = list(dict.fromkeys([gam["clade"][0], gam["clade"][-1]])) if gam.height else []
+print(f"Lowest gamma: {chosen[0] if chosen else None}; highest gamma: {chosen[-1] if chosen else None}")
+
+
+def block(name, start, seq, width=60):
+    out = []
+    for i in range(0, len(seq), width):
+        out.append(f"{name:<28}{start + i:>6}  {seq[i:i + width]}  {start + i + len(seq[i:i + width]) - 1}")
+    return out
+
+
+shown = []
+for c in chosen:
+    ex = examples.filter(pl.col("clade") == c)
+    if ex.height == 0:
+        print(f"\n{c}: no example stretch in the results")
+        continue
+    e = ex.row(0, named=True)
+    shown.append(e)
+    sp, pa = proteomes.filter(pl.col("proteome") == e["specimen"]).row(0, named=True), \
+        proteomes.filter(pl.col("proteome") == e["partner"]).row(0, named=True)
+    print(f"\n{c}: specimen {sp['species']} ({sp['oscode']}, {e['specimen']}); shared only with "
+          f"{pa['species']} ({pa['oscode']}, {e['partner']})")
+    print(f"{e['n_words']} consecutive newly shared k30 words = {e['length']} residues; the first word occurs "
+          f"{e['n_partner_copies']} time(s) in the partner")
+    print(f"amino acids identical: {e['n_identical']} of {e['length']}; "
+          f"hydrophobic/polar letters identical: {e['n_encoded_identical']} of {e['length']}\n")
+    w = 60
+    for i in range(0, e["length"], w):
+        a, b = e["specimen_seq"][i:i + w], e["partner_seq"][i:i + w]
+        ea, eb = e["specimen_encoded"][i:i + w], e["partner_encoded"][i:i + w]
+        sa, sb = e["specimen_start"] + i, e["partner_start"] + i
+        print(f"{sp['oscode'] + ' ' + e['specimen_protein']:<34}{sa:>6}  {a}  {sa + len(a) - 1}")
+        print(f"{'':<34}{'':>6}  {e['aa_match'][i:i + w]}")
+        print(f"{pa['oscode'] + ' ' + e['partner_protein']:<34}{sb:>6}  {b}  {sb + len(b) - 1}")
+        print(f"{'  hp_pbotc_1st_ed':<34}{sa:>6}  {ea}")
+        print(f"{'':<34}{'':>6}  {e['encoded_match'][i:i + w]}")
+        print(f"{'':<34}{sb:>6}  {eb}\n")
+""")
+
+code(r"""
+if shown:
+    fig, axs = pf.figure(pf.ONE_COLUMN_MM, 22 * len(shown), nrows=len(shown), squeeze=False)
+    for ax, e, letter in zip(axs[:, 0], shown, "ab"):
+        for y, side in ((1, "specimen"), (0, "partner")):
+            L, s0, s1 = e[f"{side}_length"], e[f"{side}_start"], e[f"{side}_end"]
+            ax.plot([1, L], [y, y], color="black", lw=0.8)
+            ax.add_patch(plt.Rectangle((s0, y - 0.18), s1 - s0 + 1, 0.36, color=COLOUR[HP], lw=0))
+            code_ = proteomes.filter(pl.col("proteome") == e[side])["oscode"][0]
+            ax.text(L, y + 0.25, f"{code_} {e[f'{side}_protein'].split('|')[-1]}, {L} aa", ha="right", va="bottom", fontsize=5)
+        ax.set_ylim(-0.6, 1.7)
+        ax.set_yticks([])
+        ax.spines["left"].set_visible(False)
+        ax.set_xlabel("Residue")
+        ax.set_title(f"{e['clade']}: {e['length']}-residue stretch, {e['n_identical']} identical amino acids", loc="left")
+        pf.panel_label(ax, letter)
+    ax.add_patch(plt.Rectangle((0, 0), 0, 0, color=COLOUR[HP], label=f"newly shared {HP} k30 words"))
+    ax.plot([], [], color="black", lw=0.8, label="protein")
+    pf.shared_legend(fig, ncol=2)
+    pf.save(fig, FIG / "343_SF7_newly_shared_stretch_lowest_highest_gamma_hp30_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 7 (SF7). Where the printed stretches sit on their proteins.** Black
+line: the protein, drawn to length. Blue box: the run of newly shared `hp_pbotc_1st_ed`
+k = 30 words. Top line of each panel: the proteome that adds the most if sequenced last;
+bottom line: the one other proteome of the clade that holds these words.
+""")
+
+md(r"""
+## 7. Secondary test (structure): not run
+
+The rule asks for Foldseek structure-cluster rarefaction across clades. That needs
+AlphaFold models for every proteome of each clade, and this pipeline fetches none, so the
+test is not run here. The rule stays as written in the first cell for a later run.
+""")
+
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {"display_name": "2025-kmerseek-analysis", "language": "python", "name": "2025-kmerseek-analysis"},
+        "language_info": {"name": "python", "version": "3.12"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
+out = ROOT / "notebooks" / "343_recurring_word_discovery_curves_qfo2020_04.ipynb"
+out.write_text(json.dumps(nb, indent=1))
+print(f"wrote {out} ({len(cells)} cells)")
