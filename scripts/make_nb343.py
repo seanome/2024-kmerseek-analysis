@@ -670,6 +670,35 @@ AlphaFold models for every proteome of each clade, and this pipeline fetches non
 test is not run here. The rule stays as written in the first cell for a later run.
 """)
 
+md(r"""
+## References
+
+Checked against PubMed on 2026-10-18.
+
+- Altenhoff, Adrian M., Javier Garrayo-Ventas, Salvatore Cosentino, David Emms, Natasha M.
+  Glover, Ana Hernández-Plaza, Yannis Nevers, et al. "The Quest for Orthologs Benchmark
+  Service and Consensus Calls in 2020." *Nucleic Acids Research* 48, no. W1 (2020):
+  W538–45. https://doi.org/10.1093/nar/gkaa308
+
+  **Note:** the reference proteome set this notebook uses is that paper's 2020 release
+  (QfO 2020_04).
+- Rahman Hera, Mahmudur, N. Tessa Pierce-Ward, and David Koslicki. "Deriving Confidence
+  Intervals for Mutation Rates across a Wide Range of Evolutionary Distances Using
+  FracMinHash." *Genome Research* 33, no. 7 (2023): 1061–68.
+  https://doi.org/10.1101/gr.277651.123
+
+  **Note:** the definition of a FracMinHash sketch with scaled value $s$.
+- Steinegger, Martin, and Johannes Söding. "MMseqs2 Enables Sensitive Protein Sequence
+  Searching for the Analysis of Massive Data Sets." *Nature Biotechnology* 35, no. 11
+  (2017): 1026–28. https://doi.org/10.1038/nbt.3988
+- Tettelin, Hervé, David Riley, Ciro Cattuto, and Duccio Medini. "Comparative Genomics:
+  The Bacterial Pan-Genome." *Current Opinion in Microbiology* 11, no. 5 (2008): 472–77.
+  https://doi.org/10.1016/j.mib.2008.09.006
+
+  **Note:** models of how a pan-genome's size grows with the number of genomes sequenced,
+  the gene-level form of the question asked here.
+""")
+
 nb = {
     "cells": cells,
     "metadata": {

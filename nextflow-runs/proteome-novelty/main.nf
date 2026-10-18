@@ -168,6 +168,8 @@ process mmseqsMasks {
 process rarefy {
     tag "${clade} ${setting}"
     label 'python'
+    // Each finished clade x setting is readable before the slowest MMseqs2 job ends.
+    publishDir "${params.outdir}/parts", mode: 'copy'
 
     input:
     tuple val(clade), val(setting), val(members), path(masks)
@@ -199,6 +201,7 @@ process rarefy {
 process examples {
     tag "${clade}"
     label 'python'
+    publishDir "${params.outdir}/parts", mode: 'copy'
     memory { "${(long) Math.ceil(4 + 40e-9 * n_res) * task.attempt} GB" }
     time   { "${2 * task.attempt}h" }
 
