@@ -268,7 +268,6 @@ axs[0].set_yticks(y, [LABEL[m] for m in METHODS])
 axs[-1].annotate("query-target pairs", (1.0, 1.0), xycoords="axes fraction", ha="right", va="bottom", fontsize=5)
 pf.shared_legend(fig, frameon=False)
 pf.save(fig, FIG / "297_toxin_share_of_all_hits_by_tool_phylum_run_swissprot", formats=("pdf", "png"))
-display(fig)
 overview
 """)
 
@@ -370,7 +369,6 @@ for ax, g in zip(axs, GROUPS):
 axs[0].set_yticks(y, [LABEL[m] for m in METHODS])
 pf.shared_legend(fig, frameon=False)
 pf.save(fig, FIG / "297_toxins_in_top10_by_tool_and_phylum_phylum_run_swissprot", formats=("pdf", "png"))
-display(fig)
 summary.select("queries", "method", "mean_toxins_in_top10", "ci95_low", "ci95_high", "times_chance")
 """)
 
@@ -429,7 +427,6 @@ fig.supxlabel(f"kmerseek's toxins in its top {TOP_N} minus the other tool's, per
 pf.shared_legend(fig, frameon=False)
 pf.save(fig, FIG / "297_per_query_difference_cys_hp3_vs_regex_slack2_and_phmmer_phylum_run_swissprot",
         formats=("pdf", "png"))
-display(fig)
 diffs
 """)
 
@@ -529,7 +526,6 @@ ax.set_yticks(y, [])
 ax.set_xlabel("Full run on the same 59 queries ÷ pilot estimate\n(dot: means; line: 95% CI of the full run)")
 ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False, ncol=1)
 pf.save(fig, FIG / "297_pilot_estimate_vs_full_run_cnidaria_phylum_run_swissprot", formats=("pdf", "png"))
-display(fig)
 pilot_check
 """)
 
@@ -602,7 +598,6 @@ ax.text(-30, 1.3, "Yellow box: cysteine.  Square at the right: target carries Un
         f"{best_name}, best region of each target, under the query residues it matched.", fontsize=6, va="center")
 pf.save(fig, FIG / f"297_example_{qid.split(':')[1]}_top10_regions_cys_hp3_k{best_k}_phylum_run_swissprot",
         formats=("pdf", "png"))
-display(fig)
 top.select("rank", "target_accession", "toxin", "name", "best_region_poisson_score", "n_shared_kmers",
            "n_tied", "best_region_subseq", "best_target_subseq")
 """)
