@@ -95,10 +95,11 @@ def word_bits(alphabet: str, ksize: int) -> float:
     return ksize * math.log2(len(ALPHABETS[alphabet]))
 
 
-def encode_words(seqs: list[str], alphabet: str, ksize: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def encode_words(seqs: list[str], alphabet: str, ksize: int, positions: bool = True):
     """Every valid window of every sequence as an integer word.
 
-    Returns (words, protein index, 0-based start). A window holding a non-standard residue is
+    Returns (words, protein index, 0-based start), or the words alone when `positions` is
+    False. A window holding a non-standard residue is
     skipped. Sequences are joined with one INVALID separator, so no window spans two proteins.
     """
     table, base = alphabet_table(alphabet)
@@ -108,7 +109,8 @@ def encode_words(seqs: list[str], alphabet: str, ksize: int) -> tuple[np.ndarray
     codes = table[np.frombuffer(joined, dtype=np.uint8)]
     n_windows = len(codes) - ksize + 1
     if n_windows <= 0:
-        return np.empty(0, np.uint64), np.empty(0, np.int64), np.empty(0, np.int64)
+        empty = np.empty(0, np.uint64)
+        return (empty, np.empty(0, np.int64), np.empty(0, np.int64)) if positions else empty
     bad = np.concatenate([[0], np.cumsum(codes == INVALID)])
     valid = (bad[ksize:] - bad[:-ksize]) == 0
     words = np.zeros(n_windows, dtype=np.uint64)
@@ -116,6 +118,9 @@ def encode_words(seqs: list[str], alphabet: str, ksize: int) -> tuple[np.ndarray
     for j in range(ksize):
         words *= b
         words += codes[j : j + n_windows].astype(np.uint64)
+    del bad
+    if not positions:
+        return words[valid]
     starts_of = np.cumsum([0] + [len(s) + 1 for s in seqs])
     pos = np.nonzero(valid)[0]
     prot = np.searchsorted(starts_of, pos, side="right") - 1
@@ -206,7 +211,8 @@ def clade_masks(fastas: list[Path], alphabet: str, ksize: int, scaled: int):
     packed_parts, n_windows = [], []
     for i, f in enumerate(fastas):
         _, seqs = read_fasta(f)
-        w, _, _ = encode_words(seqs, alphabet, ksize)
+        w = encode_words(seqs, alphabet, ksize, positions=False)
+        del seqs
         n_windows.append(len(w))
         u = fracminhash(np.unique(w), scaled)
         packed_parts.append((u << np.uint64(IDX_BITS)) | np.uint64(i))
@@ -241,11 +247,11 @@ def cmd_masks(a: argparse.Namespace) -> None:
 
 
 def cmd_mmseqs(a: argparse.Namespace) -> None:
-    """Cluster TSV (representative, member); member headers are '<proteome>|<accession>'."""
+    """Cluster TSV (representative, member); member names are '<proteome>__<accession>'."""
     order = {p: i for i, p in enumerate(a.proteomes)}
     tsv = pl.read_csv(a.clusters, separator="\t", has_header=False, new_columns=["rep", "member"])
     tsv = tsv.with_columns(
-        pl.col("member").str.split("|").list.first().replace_strict(order, return_dtype=pl.Int64).alias("i")
+        pl.col("member").str.split("__").list.first().replace_strict(order, return_dtype=pl.Int64).alias("i")
     )
     fam = tsv.group_by("rep").agg(pl.col("i").unique())
     masks = np.array([sum(1 << int(i) for i in idx) for idx in fam["i"].to_list()], dtype=np.uint64)
@@ -395,6 +401,10 @@ def match_line(a: str, b: str) -> str:
 
 def cmd_examples(a: argparse.Namespace) -> None:
     fastas = [Path(p) for p in a.fastas]
+    if a.specimen == "auto":
+        # Most newly recurring words when added last; ties go to the earlier proteome id.
+        last = pl.read_parquet(a.last).sort(["added_if_last", "proteome"], descending=[True, False])
+        a.specimen = last["proteome"][0]
     i = a.proteomes.index(a.specimen)
     pairs = pl.read_parquet(a.pairs)
     words = pairs["word"].to_numpy().astype(np.uint64)
@@ -502,7 +512,8 @@ def main() -> None:
     s.add_argument("--fastas", nargs="+", required=True)
     s.add_argument("--proteomes", nargs="+", required=True)
     s.add_argument("--clade", required=True)
-    s.add_argument("--specimen", required=True)
+    s.add_argument("--specimen", required=True, help="proteome id, or 'auto' to read --last")
+    s.add_argument("--last", type=Path, help="rarefy --last-out table, for --specimen auto")
     s.add_argument("--pairs", type=Path, required=True)
     s.add_argument("--alphabet", choices=list(ALPHABETS), required=True)
     s.add_argument("--ksize", type=int, required=True)

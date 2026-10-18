@@ -130,7 +130,7 @@ def main() -> None:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     cols = ["proteome", "taxid", "ncbi_taxid", "oscode", "domain", "species", "fasta", "n_sequences", "n_residues", "clades", "lineage"]
     with open(args.out, "w", newline="") as fh:
-        w = csv.DictWriter(fh, cols, delimiter="\t")
+        w = csv.DictWriter(fh, cols, delimiter="\t", lineterminator="\n")
         w.writeheader()
         for r in sorted(rows, key=lambda r: (r["domain"], r["lineage"])):
             w.writerow({c: r[c] for c in cols})
