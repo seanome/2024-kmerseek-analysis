@@ -67,3 +67,32 @@ def dipeptide_shuffle(seq: str, rng: random.Random) -> str:
         u = order[u].pop(0)
         walk.append(u)
     return "".join(walk)
+
+
+def composition_shuffle(seq: str, rng: random.Random) -> str:
+    """The residues of `seq` in a random order. Keeps the count of each amino acid and
+    nothing else, so hydrophobic runs and low-complexity stretches are broken up. A
+    weaker null than `dipeptide_shuffle`: it lets through fewer chance matches."""
+    residues = list(seq)
+    rng.shuffle(residues)
+    return "".join(residues)
+
+
+def window_shuffle(seq: str, rng: random.Random, window: int = 10) -> str:
+    """`seq` with its residues shuffled inside each non-overlapping `window`-residue
+    stretch, counted from the first residue (the last stretch may be shorter).
+
+    Each stretch keeps its residues, so its mean hydrophobicity stays where it was, and a
+    low-complexity run longer than `window` stays low-complexity. A stronger null than
+    `dipeptide_shuffle`. The code is the `window_shuffle` of
+    nextflow-runs/regions-index-pilot/bin/make_window_decoys.py (PR 114), which notebook
+    290 (PR 134) also copied.
+    """
+    if window < 1:
+        raise ValueError(f"window must be at least 1, got {window}")
+    out = []
+    for i in range(0, len(seq), window):
+        w = list(seq[i : i + window])
+        rng.shuffle(w)
+        out.extend(w)
+    return "".join(out)
