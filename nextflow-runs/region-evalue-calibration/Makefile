@@ -29,7 +29,8 @@ REGION_DATA ?= /scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-p
 HUMAN_FASTA ?= $(REGION_DATA)/qfo/Eukaryota/UP000005640_9606.fasta
 HUMAN_MD5   ?= 74bf5689099474ca85a96b090c722ece
 
-REMOTE_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/region-evalue-calibration
+# A clone of its own, so checking out this branch cannot disturb runs in the shared clone.
+REMOTE_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis-nb344/nextflow-runs/region-evalue-calibration
 
 SLURM_ACCOUNT   ?= ayeletv
 SLURM_PARTITION ?= hns,normal
