@@ -227,6 +227,9 @@ chosen = table.row(0, named=True)
 chosen_by_rule = bool(chosen["eligible"])
 CHOSEN = {k: chosen[k] for k in sr.SETTING}
 print(f"\nchosen setting: {CHOSEN}, by the rule: {chosen_by_rule}")
+few = real2.filter(pl.col("query_keys") < 2)
+print(f"\nreal-query settings where the query has fewer than 2 distinct keys: {few.height}")
+print(few.select("query", "lineage", "alphabet", "word_length", "family", "query_keys"))
 
 # The full grid: every setting, every real query, at 2 shared keys.
 grid = (
@@ -542,7 +545,8 @@ md(T.SF2)
 code(r"""
 real_all = reach.filter(pl.col("kind") == "real")
 cost = (
-    real_all.group_by(sr.SETTING + ["min_shared"])
+    real_all.sort(sr.SETTING + ["min_shared"])
+    .group_by(sr.SETTING + ["min_shared"], maintain_order=True)
     .agg(
         mean_random_share=pl.col("random_share").mean(),
         mean_shared_keys_per_random_entry=pl.col("mean_shared_keys_per_random_entry").mean(),
@@ -558,6 +562,16 @@ cost = (
         & (pl.col("family") == "pair_nogap"),
     )
     .sort(sr.SETTING)
+    .select(
+        *sr.SETTING,
+        "mean_query_keys",
+        "mean_shared_keys_per_random_entry",
+        "random_share_1_key",
+        "random_share_2_keys",
+        "random_share_3_keys",
+        "swissprot_entries_expected_at_2_keys",
+        "nb294_chosen_key",
+    )
 )
 cost.write_csv(D / "298_strobemer_chance_cost.tsv", separator="\t")
 print("Mean over the 6 real queries; Swiss-Prot 2026_03 has", N_SWISSPROT, "entries")
@@ -645,6 +659,58 @@ def enc(s):
 
 
 a = CHOSEN["word_length"]
+id_rows = []
+for r in keys.iter_rows(named=True):
+    if r["query_gap"] != r["target_gap"]:
+        continue
+    n = r["query_start2"] + a - r["query_start1"]
+    x = seqs[r["query"]][r["query_start1"] : r["query_start1"] + n]
+    y = seqs[r["target"]][r["target_start1"] : r["target_start1"] + n]
+    id_rows.append({"query": r["query"], "target": r["target"],
+                    "identity": sum(i == j for i, j in zip(x, y)) / n})
+print("Identity over the stretch from word 1 to word 2, keys with equal spacing in both:")
+print(pl.DataFrame(id_rows).group_by("query", "target", maintain_order=True).agg(
+    n_keys=pl.len(), median_identity=pl.col("identity").median(),
+    min_identity=pl.col("identity").min(), max_identity=pl.col("identity").max()))
+idf = pl.DataFrame(id_rows)
+fam_of = dict(zip(truth["Entry"], truth["Protein families"].fill_null("none")))
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55)
+pair_order = idf.select("query", "target").unique(maintain_order=True).rows()
+for i, (q, t) in enumerate(pair_order):
+    v = idf.filter((pl.col("query") == q) & (pl.col("target") == t))["identity"].to_numpy()
+    same = fam_of.get(q) == fam_of.get(t) and fam_of.get(q) != "none"
+    ax.plot(v, i + np.linspace(-0.25, 0.25, v.size), "o", markersize=2, linestyle="none",
+            color=pf.OKABE_ITO["vermillion"] if same else pf.OKABE_ITO["blue"],
+            label=("same UniProt family as the query" if same
+                   else "no shared UniProt family"))
+    ax.axhline(i, color="#dddddd", linewidth=0.3, zorder=0)
+ax.set_yticks(range(len(pair_order)), [f"{q} vs {t}" for q, t in pair_order])
+ax.invert_yaxis()
+ax.set_xlim(0, 1.02)
+ax.set_xlabel("Identity from word 1 to word 2 (one point per shared key)")
+h, l = ax.get_legend_handles_labels()
+keep = {lab: hh for hh, lab in zip(h, l)}
+header(
+    fig,
+    f"setting {CHOSEN['alphabet']}, words of {CHOSEN['word_length']}, "
+    f"{FAMILY_LABEL[CHOSEN['family']]}; keys whose spacing is equal in both proteins; "
+    "Swiss-Prot 2026_03",
+    "a shared key between relatives sits in a stretch similar along its whole length",
+    "the bacterial query's five fungal targets (its own UniProt family) are 48 to 100% "
+    "identical over each stretch; the type I and AFGP pair, both alanine-rich, 46 to 48%. "
+    "Pairs whose spacing differs (the AFGP query, P05140) have no equal-length stretch",
+    handles=list(keep.values()),
+    ncol=1,
+)
+pf.save(fig, FIGURES / "298_SF6_identity_between_shared_words_swissprot_2026_03")
+word_letters = {}
+for r in keys.iter_rows(named=True):
+    q_ = seqs[r["query"]]
+    w = q_[r["query_start1"] : r["query_start1"] + a] + q_[r["query_start2"] : r["query_start2"] + a]
+    word_letters.setdefault((r["query"], r["target"]), set()).update(w)
+print("Residues in the shared words, per pair:")
+for (q, t), lettrs in word_letters.items():
+    print(f"  {q} vs {t}: {''.join(sorted(lettrs))}")
 for (q, t), g in keys.group_by(["query", "target"], maintain_order=True):
     r0 = g.row(0, named=True)
     print(f"\n=== query {q} ({r0['query_lineage']}) vs {t} ({r0['target_kind']}): "
@@ -708,6 +774,9 @@ per = pl.DataFrame(rows).sort("period", descending=True)
 reachable = max(sr.PAIR_GAPS) + max(reach["word_length"])
 print("Repeat period of each truth protein (largest HP autocorrelation, lags 2 to length/2):")
 print(per.head(15))
+long_ = per.filter(pl.col("period") > 40)
+print(f"autocorrelation at the peak for those above 40: {long_['autocorrelation'].min():.2f} "
+      f"to {long_['autocorrelation'].max():.2f}")
 print(f"{(per['period'] > 40).sum()} of {per.height} truth proteins have a period above 40 "
       "residues; a key spans word + spacing, so with spacing up to 40 and words up to 10 "
       f"letters, periods up to {reachable} can be stored")

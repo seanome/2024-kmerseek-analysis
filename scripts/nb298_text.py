@@ -13,8 +13,8 @@ VERDICT = """**Verdict: KILL at stage 1. No search was run.** The setting chosen
 ice-binding proteins from the held-out AFGP query, fewer than the best exact k-mer
 (6 of 55), and 0 of 40 from the held-out fish type III query, the same as the best exact
 k-mer. The rule needed 10 points more on both. Under the 1% random-share bar, no
-hydrophobic-polar or threonine key reaches more than 1 ice-binding protein of another
-lineage from any query. The matches that do exist are proteins that share an ancestor
+hydrophobic-polar or threonine key shares 2 or more keys with more than 1 ice-binding
+protein of another lineage, from any query. The matches that do exist are proteins that share an ancestor
 (the bacterial query and five fungal proteins of UniProt's "Ice-binding protein family")
 or alanine and threonine runs (AFGP against fish type I)."""
 
@@ -168,6 +168,14 @@ residue-shuffled copies (null A) reach a median of 8 of 55 (14.5%), more than th
 query. Fish type III: 0 of 40 for the chosen key and for every exact k-mer under the bar.
 Both parts of the rule fail on both lineages.
 
+The chosen setting's selection score, a mean reach of 3.3%, comes almost entirely from the
+bacterial query (6 of 55; type I adds 1 of 47, the other two 0). Five of those six are
+fungal ice-binding proteins of the bacterial query's own UniProt family, which the truth
+set labels "8 other" and so counts as another lineage (section 7). The rule therefore chose
+a setting by how well it finds relatives of the query, not a shared pattern. This does
+not change the verdict, but a future truth set should not count proteins of the query's
+own family as another lineage.
+
 Choosing a setting by looking at the held-out queries, which the rule forbids, would not
 change this: the best setting under 1% on AFGP reaches 10 of 55 (the 20 amino acids,
 3-letter words, every pair, no spacing), 7.3 points above the best exact k-mer, still short
@@ -252,8 +260,9 @@ CONCLUSIONS = """## Summary and conclusions
 1. Linked word pairs do not reach ice-binding proteins of other lineages more often than
    exact k-mers do on the held-out lineages: 4 of 55 against 6 of 55 for AFGP, 0 of 40
    against 0 of 40 for fish type III, both at a random share of 1% or less (section 4).
-2. Under the 1% random-share bar, no hydrophobic-polar or threonine key reaches more than
-   1 ice-binding protein of another lineage from any of the six queries (F1, section 8).
+2. Under the 1% random-share bar, no hydrophobic-polar or threonine key shares 2 or more
+   keys with more than 1 ice-binding protein of another lineage, from any of the six
+   queries (F1, section 8). At 1 shared key, one such setting reaches 3 (AFGP query).
    Prediction (b) held. Prediction (a), that a stored spacing would not carry across
    lineages, is consistent with the data: the spacing-in-key families reach no more than
    the families without it.
