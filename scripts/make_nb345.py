@@ -783,6 +783,77 @@ AlphaFold models for every proteome of each clade, and this pipeline fetches non
 test is not run here. The rule stays as written in the first cell for a later run.
 """)
 
+SUMMARY_MD = r"""
+# Summary and Conclusions
+
+## Background
+
+Notebook 345 asks whether one more proteome adds new local sequence or mostly repeats what
+a clade already holds. It counts words (windows of k residues) shared by at least two of
+the 78 QfO 2020_04 reference proteomes in six clades, fits Heaps' law to how that count
+grows, and tests whether the fit predicts what the next proteome adds. The rule was
+committed before the run (first cell).
+
+## Summary and Conclusions
+
+* Heaps' law fitted on 80% of a clade misses the next proteome's newly shared
+  `hp_pbotc_1st_ed` k30 words by a median 55%, failing the pre-registered 15% bar.
+* MMseqs2 families miss by 60%, so H/P words beat families by 8%, not the 25% the rule
+  required.
+* 20-letter k7 words miss by 57%: the reduced alphabet predicts better overall, but in
+  only 3 of 6 clades.
+* Heaps' law misses even a noise-free curve by 12–21%, above the 15% pass line in 5 of 6
+  clades, so those clades could not pass with any data.
+* In Mammalia and Vertebrata, real proteomes miss by 114% and 85%, against 23% and 26%
+  for synthetic copies with the same composition.
+* Only Archaea passes the sequencing rule: one more proteome adds a predicted 11,342
+  shared H/P k30 words, 3.5 times its synthetic copies.
+* Mouse adds the most newly shared words to Mammalia (1,973,557); its longest run is 188
+  residues of piccolo (PCLO), identical in rat and held by no other mammal.
+
+## Analysis Details
+
+The pipeline (`nextflow-runs/proteome-novelty`) counted every k-mer window in each
+proteome and in one synthetic copy per proteome, a first-order Markov chain that keeps the
+proteome's amino-acid and residue-pair frequencies. $U(n)$, the number of words shared by
+at least two of $n$ proteomes, was averaged exactly over every order of adding proteomes
+(section 2). Real proteomes share 2 to 31 times more 30-bit words than their synthetic
+copies when two proteomes are compared, and the excess shrinks as proteomes are added
+(SF3). In Eukaryota at all 48 proteomes the synthetic copies share more words than the
+real ones (ratio 0.85 for H/P k30); this notebook does not explain why.
+
+The primary test (section 4) used the same 898 splits for every setting. All three
+methods miss by more than half the true value. Section 4b shows that part of the miss is
+the model's shape: a curve where every pair of proteomes shares the same number of words
+already gives 12–21% error, and the pass line of 15% sits inside that range. In Archaea,
+Bacteria, Eukaryota and Fungi the real error (41–57%) is close to the synthetic error
+(30–51%), so composition and the model's shape explain most of it. In Vertebrata and
+Mammalia the real error is three to five times the synthetic error: closely related
+proteomes share long identical stretches, and how much the next one adds depends on which
+species it is, not on a smooth curve.
+
+The sequencing decision (section 5) needs the predicted addition to be at least 1% of
+what is shared and at least twice the synthetic prediction. Every clade clears 1%; only
+Archaea clears the twofold test (3.5 times). The structure test (section 7) was not run,
+because the pipeline fetches no AlphaFold models.
+
+## Supplementary Information
+
+- Sherlock run: job 48470695, 2026-10-19, 325 tasks, none failed; code at commit 260700d
+  of branch `olgabot/nb343-proteome-novelty`. Tables pulled with `make pull-results`
+  into `tables/345/`.
+- MMseqs2 release 18, `easy-cluster --min-seq-id 0.3 -c 0.8 --cov-mode 0`, image pinned
+  by digest in `nextflow-runs/proteome-novelty/main.nf`.
+- FracMinHash scaled value 1 (every word kept).
+- The 21-bit and 42-bit budgets are reported in sections 2b and 4 and do not enter the
+  verdict. At 21 bits H/P k21 misses by a median 3,197%, and all 200 Eukaryota splits
+  are dropped there because the next proteome adds no newly shared word.
+- Figures: `figures/345/345_SF1` to `345_SF7` (PNG, SVG, PDF).
+"""
+md(SUMMARY_MD)
+
+code("summary_md = " + repr(SUMMARY_MD) + "\nprint(summary_md)\n")
+
 md(r"""
 ## References
 
