@@ -242,10 +242,28 @@ def fig_examples(groups_df, variants, examples, out, max_members=8, seed=347):
 
 
 def make_all(summary, groups_df, variants, examples, figures: Path, T_FIG="347"):
+    """Draw the three figures. A rerun writes the same bytes: fixed PDF/SVG dates and
+    SVG ids, and PNGs cut to 256 colours here (the pre-commit hook skips this folder).
+    """
+    import os
+
+    import matplotlib as mpl
+
+    os.environ["SOURCE_DATE_EPOCH"] = "0"
     pf.use_style()
+    mpl.rcParams["svg.hashsalt"] = "nb347"
     fig_where_variants_fall(
         summary, groups_df, figures / f"{T_FIG}_SF1_collision_groups_pten_vamp_seq"
     )
     fig_error_floors(summary, figures / f"{T_FIG}_SF2_error_floors_pten_vamp_seq")
     fig_examples(groups_df, variants, examples,
                  figures / f"{T_FIG}_SF3_example_groups_pten_vamp_seq")  # fmt: skip
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "shrink_png", Path(__file__).with_name("shrink_png.py")
+    )
+    shrink_png = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(shrink_png)
+    for png in sorted(figures.glob(f"{T_FIG}_SF*_pten_vamp_seq.png")):
+        shrink_png.process(png, check=False)

@@ -370,15 +370,18 @@ def main(argv=None):
     )
 
     # ---- provenance -------------------------------------------------------------------
+    code_paths = ["scripts/run_nb347_invisible_mutations.py", "scripts/nb347_figures.py",
+                  "scripts/nb347_report.py", "scripts/nb347_invisible_mutations_config.json",
+                  "notebooks/invisible_mutations_utils.py", "data/347_pten_vamp_seq"]  # fmt: skip
+    # The last commit that changed the code or data, not HEAD: committing the outputs
+    # must not change this file on the next run.
     try:
         commit = subprocess.check_output(
-            ["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True
+            ["git", "-C", str(ROOT), "log", "-1", "--format=%H", "--", *code_paths],
+            text=True,
         ).strip()
     except Exception:  # noqa: BLE001
         commit = "unknown"
-    code_paths = ["scripts/run_nb347_invisible_mutations.py", "scripts/nb347_figures.py",
-                  "scripts/nb347_report.py", "scripts/nb347_invisible_mutations_config.json",
-                  "notebooks/invisible_mutations_utils.py"]  # fmt: skip
     code_dirty = bool(
         subprocess.run(["git", "-C", str(ROOT), "status", "--porcelain", "--", *code_paths],
                        capture_output=True, text=True).stdout.strip()
@@ -393,7 +396,7 @@ def main(argv=None):
         "score_definition_check": score_check,
         "synonymous_noise_check": syn_check,
         "n_bootstrap": n_boot,
-        "git_commit_at_run": commit,
+        "last_commit_changing_code_or_data": commit,
         "code_had_uncommitted_changes": code_dirty,
         "python": platform.python_version(),
         "packages": {
