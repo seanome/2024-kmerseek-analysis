@@ -1,0 +1,402 @@
+seq_id	split	control_category	protein_name	fate
+P99503	dev	matched_background	Unknown protein from spot 11 of 2D-PAGE of heart tissue (Fragment)	kept
+P84286	dev	matched_background	Haemoporin (Fragment)	kept
+P81495	dev	matched_background	Membrane alanyl aminopeptidase (Fragments)	kept
+P19094	dev	matched_background	C-reactive protein (Fragment)	kept
+P84356	dev	matched_background	Pyrokinin	kept
+P86240	dev	matched_background	Fumarylacetoacetate hydrolase domain-containing protein 2A (Fragment)	kept
+P85305	dev	matched_background	Thylakoid lumenal 25.3 kDa protein (Fragment)	kept
+P81673	dev	matched_background	Unknown protein from 2D-PAGE of needles (Fragment)	kept
+P83637	dev	matched_background	Dermaseptin-O1	kept
+P0C8T2	dev	matched_background	Brevinin-1PTb	kept
+P69110	dev	matched_background	Histone H3.2 (Fragment)	kept
+P69122	dev	matched_background	Histone H3.2 (Fragment)	redundant dev control
+P80280	dev	matched_background	Dermaseptin-S4	kept
+C0HKL9	dev	matched_background	Peptide PGLa-BM3	kept
+P85122	dev	matched_background	S-layer protein 1 (Fragments)	kept
+P86363	dev	matched_background	Osmotin (Fragment)	kept
+P50401	dev	matched_background	Exoglucanase A	kept
+Q13Q76	dev	matched_background	D-(-)-3-hydroxybutyrate oligomer hydrolase	kept
+P31503	dev	matched_background	POU domain, class 2, transcription factor 1 (Fragment)	kept
+Q61548	dev	matched_background	Clathrin coat assembly protein AP180	kept
+A0R611	dev	matched_background	Galactan 5-O-arabinofuranosyltransferase	kept
+Q2IE76	dev	matched_background	Na(+)/H(+) antiporter NhaA	kept
+Q4WC60	dev	matched_background	Probable beta-glucosidase btgE	kept
+O54101	dev	matched_background	Putative membrane protein SCO5905	kept
+P20655	eval	matched_background	Ribosome-inactivating protein momorcochin-S (Fragment)	kept
+P80396	eval	matched_background	Gaegurin-2	kept
+Q20EU9	eval	matched_background	Large ribosomal subunit protein bL32c	kept
+A3CXS2	eval	matched_background	Large ribosomal subunit protein eL40	kept
+P9WJ56	eval	matched_background	Putative antitoxin VapB6	kept
+P14662	eval	matched_background	Bactericidin B-2	kept
+Q7NC71	eval	matched_background	Large ribosomal subunit protein bL34	kept
+A0T0N4	eval	matched_background	Photosystem II reaction center protein X	kept
+A8LKH8	eval	matched_background	ATP synthase subunit b 2	kept
+Q1GDE2	eval	matched_background	ATP synthase subunit b 2	kept
+C1AL40	eval	matched_background	Large ribosomal subunit protein uL22	leak to development (removed)
+B3PRF8	eval	matched_background	ATP synthase subunit b 2	kept
+K1XVG1	eval	matched_background	Effector CFEM1	kept
+A3PV75	eval	matched_background	Large ribosomal subunit protein uL10	kept
+Q2RPA6	eval	matched_background	ATP synthase subunit b 2	kept
+P9WMK6	eval	matched_background	DNA-binding protein HupB	leak to development (removed)
+A0A348G5W1	eval	matched_background	U-poneritoxin(01)-Om5a	kept
+A8LM65	eval	matched_background	Large ribosomal subunit protein uL29	kept
+Q6WEG4	eval	matched_background	Hrp pili protein HrpA	kept
+Q9UTF0	eval	matched_background	SERF-like protein C1705.02	kept
+Q98N49	eval	matched_background	Large ribosomal subunit protein uL29	kept
+A0A6M3Z554	eval	matched_background	U11-myrmicitoxin-Tb1a (Fragment)	kept
+P03618	eval	matched_background	Capsid protein G8P (Fragment)	kept
+A0A1C5G2D0	eval	matched_background	Pycsar effector protein MePycTM	kept
+Q3E6R4	eval	matched_background	Uncharacterized protein YDR524C-B	kept
+Q89SJ4	eval	matched_background	UPF0337 protein bsl2407	kept
+P45787	eval	matched_background	Small ribosomal subunit protein bS20 (Fragment)	kept
+P52586	eval	matched_background	Protein F9 homolog (Fragment)	kept
+Q21KD8	eval	matched_background	Large ribosomal subunit protein bL35	kept
+Q8G7H2	eval	matched_background	Large ribosomal subunit protein bL32	kept
+P83657	eval	matched_background	Catalase-1 (Fragments)	kept
+A4XDK5	eval	matched_background	Large ribosomal subunit protein bL34	kept
+P82417	eval	matched_background	M-poneritoxin-Ng3d	kept
+P0DOE2	eval	matched_background	Protein AimP	kept
+P0C8S9	eval	matched_background	Brevinin-2HSa	kept
+Q8M9Z8	eval	matched_background	Photosystem I reaction center subunit XII	kept
+Q54V54	eval	matched_background	Dolichyl-diphosphooligosaccharide--protein glycosyltransferase subunit 4	kept
+P82889	eval	matched_background	Capsid protein G8P	kept
+P0C8T7	eval	matched_background	Brevinin-2PTe	kept
+P0DQJ7	eval	matched_background	Ocellatin-P1	kept
+S4S3G3	eval	matched_background	Mastoparan-D	kept
+P0DQZ8	eval	matched_background	Mastoparan-VT6	kept
+P0DQZ6	eval	matched_background	Mastoparan-VT4	redundant eval control
+Q82PY3	eval	matched_background	UPF0337 protein SAV_738	kept
+Q6CWK9	eval	matched_background	Cytochrome c oxidase subunit 9, mitochondrial	kept
+Q7VTC5	eval	matched_background	Large ribosomal subunit protein uL29	kept
+B7K5G2	eval	matched_background	Large ribosomal subunit protein bL32	kept
+Q7VBW1	eval	matched_background	Large ribosomal subunit protein bL32	kept
+A1X8C6	eval	matched_background	Alpha-conotoxin-like Qc1.1c (Fragment)	kept
+P09689	eval	matched_background	Acetylcholine receptor subunit beta (Fragment)	kept
+B4SPG2	eval	matched_background	Large ribosomal subunit protein bL34	kept
+B1YGB1	eval	matched_background	Large ribosomal subunit protein bL34	kept
+P81905	eval	matched_background	Inducible serine protease inhibitor 1 (Fragment)	kept
+C0HLC4	eval	matched_background	Dermaseptin-TR1	kept
+C5C7X3	eval	matched_background	Large ribosomal subunit protein bL34	kept
+Q25BH3	eval	matched_background	Uncharacterized protein ORF22	kept
+Q5P144	dev	matched_background	Aldehyde oxidoreductase iron-sulfur-binding subunit AorA	kept
+A9R8U7	dev	matched_background	Ion-translocating oxidoreductase complex subunit B	kept
+P83972	dev	matched_background	Lysozyme D	kept
+Q92WX6	dev	matched_background	Glutathione-dependent formaldehyde-activating enzyme	kept
+B1J1B4	dev	matched_background	UPF0225 protein PputW619_1140	kept
+B4QZI8	dev	matched_background	CDGSH iron-sulfur domain-containing protein 2 homolog	kept
+B1JLE7	dev	matched_background	UPF0225 protein YPK_2079	kept
+B2K3S9	dev	matched_background	UPF0225 protein YPTS_2164	redundant dev control
+B6VH75	dev	matched_background	Sperm acrosome membrane-associated protein 3	kept
+Q06ZW0	dev	matched_background	Denmotoxin	kept
+Q6PCW6	dev	matched_background	Cornifelin	kept
+D2NGI4	dev	matched_background	FMN reductase (NADH) RutF	kept
+D5CE37	dev	matched_background	FMN reductase (NADH) RutF	kept
+C8U5G9	dev	matched_background	FMN reductase (NADH) RutF	redundant dev control
+C6UFB8	dev	matched_background	FMN reductase (NADH) RutF	redundant dev control
+C3K7J3	dev	matched_background	UPF0225 protein PFLU_1319	kept
+P0CD90	dev	matched_background	Aquaporin-like protein 2	kept
+Q6X5T2	dev	matched_background	Snaclec 6	kept
+Q3ZBP2	dev	matched_background	Nuclear envelope phosphatase-regulatory subunit 1	kept
+Q5R7J7	dev	matched_background	Nuclear envelope phosphatase-regulatory subunit 1	redundant dev control
+Q9XWF6	dev	matched_background	Ubiquitin-conjugating enzyme E2 W	kept
+Q7ZY85	dev	matched_background	Nuclear envelope phosphatase-regulatory subunit 1	redundant dev control
+P48250	dev	matched_background	Gonadotropin subunit beta-1	kept
+B7INE4	dev	matched_background	Arsenate reductase	kept
+B3PLV3	dev	matched_background	ATP synthase subunit c	kept
+C1DD48	dev	matched_background	RNA-binding protein Hfq	kept
+Q9KTU4	dev	matched_background	Probable oxaloacetate decarboxylase gamma chain 2	kept
+Q0G9T3	dev	matched_background	Photosystem II reaction center protein H	kept
+P0A1L5	dev	matched_background	Flagellar biosynthetic protein FliQ	kept
+Q68RX8	dev	matched_background	Photosystem II reaction center protein H	redundant dev control
+A7Z558	dev	matched_background	UPF0154 protein RBAM_017710	kept
+A5G9C4	dev	matched_background	ATP synthase subunit c	kept
+Q8TSA1	dev	matched_background	Nascent polypeptide-associated complex protein	kept
+P0A0R9	dev	matched_background	Biopolymer transport protein ExbD	kept
+F1M2Z5	dev	matched_background	Noncompact myelin-associated protein	kept
+Q46EU7	dev	matched_background	Large ribosomal subunit protein uL11	kept
+P50599	dev	matched_background	Tol-Pal system protein TolR	kept
+Q12G88	dev	matched_background	Large ribosomal subunit protein uL6	kept
+Q255F0	dev	matched_background	Large ribosomal subunit protein uL11	kept
+A0LXJ3	dev	matched_background	Ribosome-recycling factor	kept
+Q6GZW4	dev	matched_background	Uncharacterized protein 011R	kept
+C1F3B5	dev	matched_background	Small ribosomal subunit protein bS16	kept
+Q9Y9F0	dev	matched_background	UPF0147 protein APE_2336a	kept
+C3NHG9	dev	matched_background	UPF0147 protein YN1551_1489	kept
+P13975	dev	matched_background	Antitoxin PemI	kept
+Q2VEF1	dev	matched_background	Photosystem II reaction center protein H	kept
+B6ENI1	dev	matched_background	Translational regulator CsrA	kept
+Q02371	dev	matched_background	NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 3	kept
+A5N7X7	dev	matched_background	DNA-directed RNA polymerase subunit omega	kept
+Q9A1V6	dev	matched_background	Large ribosomal subunit protein uL30	kept
+Q5XEB7	dev	matched_background	Large ribosomal subunit protein uL30	redundant dev control
+P0DE37	dev	matched_background	Large ribosomal subunit protein uL30	redundant dev control
+C1CIB5	dev	matched_background	Large ribosomal subunit protein uL30	kept
+B8F3K1	dev	matched_background	UPF0352 protein HAPS_0210	kept
+B7IT37	dev	matched_background	Large ribosomal subunit protein uL30	kept
+Q7ANU8	dev	matched_background	Large ribosomal subunit protein uL30	kept
+Q573C9	dev	matched_background	Uncharacterized protein ORF93	kept
+Q8FB40	dev	matched_background	Uncharacterized protein YjbT	kept
+Q8EKS1	dev	matched_background	Sulfur carrier protein TusA	kept
+Q5N3U1	dev	matched_background	ATP-dependent Clp protease adapter protein ClpS	kept
+Q1R3Q7	dev	matched_background	Uncharacterized protein YjbT	redundant dev control
+P0C8V9	dev	matched_background	Omega-conotoxin-like Ac6.5	kept
+P10855	dev	matched_background	C-C motif chemokine 3	kept
+A4Y6A8	dev	matched_background	YcgL domain-containing protein Sputcn32_1766	kept
+Q9UHP9	dev	matched_background	Small muscular protein	kept
+B5FXC9	dev	matched_background	Single-pass membrane and coiled-coil domain-containing protein 4	kept
+Q20EV2	dev	matched_background	Small ribosomal subunit protein bS18c	kept
+B2IS58	dev	matched_background	Large ribosomal subunit protein uL30	redundant dev control
+B5FAD3	dev	matched_background	Translational regulator CsrA	redundant dev control
+A4SW73	dev	matched_background	Small ribosomal subunit protein bS16	kept
+P62229	dev	matched_background	Small ribosomal subunit protein bS16	kept
+B2U8D3	dev	matched_background	DNA-directed RNA polymerase subunit omega	kept
+P52968	dev	matched_background	Small, acid-soluble spore protein 1	kept
+Q6TAW2	dev	matched_background	Stress-associated endoplasmic reticulum protein 2	kept
+B1Y992	dev	matched_background	DNA/RNA-binding protein Alba	kept
+Q81SD1	dev	matched_background	Small, acid-soluble spore protein H 2	kept
+A8MQL7	dev	matched_background	Protein RALF-like 20	kept
+Q32KU9	dev	matched_background	Musculoskeletal embryonic nuclear protein 1	kept
+A2RG98	dev	matched_background	UPF0154 protein SpyM51556	kept
+Q1J8B6	dev	matched_background	UPF0154 protein MGAS10750_Spy0295	redundant dev control
+B4EBP5	dev	matched_background	DNA-directed RNA polymerase subunit omega	kept
+B8D5M3	dev	matched_background	Elongation factor 1-beta	kept
+F9UP09	dev	matched_background	RNA-binding protein KhpA	kept
+C5CYY0	dev	matched_background	DNA-directed RNA polymerase subunit omega	kept
+Q2YRT4	dev	matched_background	Large ribosomal subunit protein uL30	kept
+Q8YHM2	dev	matched_background	Large ribosomal subunit protein uL30	redundant dev control
+A0Q119	dev	matched_background	DNA-directed RNA polymerase subunit omega	kept
+Q6UW78	dev	matched_background	Ubiquinol-cytochrome-c reductase complex assembly factor 3	kept
+A9AJK8	eval	matched_background	Potassium-transporting ATPase KdpC subunit	kept
+Q8KMJ5	eval	matched_background	Methenyltetrahydromethanopterin cyclohydrolase	kept
+P33782	eval	matched_background	K88 minor fimbrial subunit FaeH	kept
+B1X6M7	eval	matched_background	Potassium-transporting ATPase KdpC subunit	kept
+Q9RZN1	eval	matched_background	DNA protection during starvation protein 2	kept
+Q82PI5	eval	matched_background	Potassium-transporting ATPase KdpC subunit	kept
+Q04127	eval	matched_background	Oxygen-evolving enhancer protein 2-3, chloroplastic	kept
+Q0TJZ0	eval	matched_background	Potassium-transporting ATPase KdpC subunit	redundant eval control
+B5Y158	eval	matched_background	Common pilus major fimbrillin subunit EcpA	kept
+B5Z1N2	eval	matched_background	Common pilus major fimbrillin subunit EcpA	redundant eval control
+B6I081	eval	matched_background	Common pilus major fimbrillin subunit EcpA	redundant eval control
+Q1RFQ4	eval	matched_background	Common pilus major fimbrillin subunit EcpA	redundant eval control
+Q5HL85	eval	matched_background	Putative ribose uptake protein RbsU	kept
+Q53532	eval	matched_background	Streptavidin-V1	kept
+Q9CIN2	eval	matched_background	UPF0397 protein YdcD	kept
+Q3JZQ2	eval	matched_background	UPF0397 protein SAK_1648	kept
+Q9CCP6	eval	matched_background	Lipoarabinomannan carrier protein LprG	kept
+P20015	eval	matched_background	Proteinase T (Fragment)	kept
+A1KXI1	eval	matched_background	Trypsin Blo t 3	kept
+O93868	eval	matched_background	NADP-dependent mannitol dehydrogenase	kept
+P57068	eval	matched_background	Outer-membrane lipoprotein carrier protein	kept
+C3K0W0	eval	matched_background	Flagellar L-ring protein	kept
+Q91FV2	eval	matched_background	Uncharacterized protein 219L	kept
+Q2U7D2	eval	matched_background	Probable alpha-L-arabinofuranosidase axhA	kept
+Q2YK17	eval	matched_background	Glutaminase	kept
+Q577F0	eval	matched_background	Glutaminase	redundant eval control
+R4LHX8	eval	matched_background	Fluorinase	kept
+P85503	eval	matched_background	Structural protein 3	kept
+P73033	eval	matched_background	Glycerol-3-phosphate dehydrogenase [NAD(P)+]	kept
+Q8FWV5	eval	matched_background	Glutaminase	redundant eval control
+C1GJ63	eval	matched_background	High osmolarity signaling protein SHO1	kept
+Q4FV61	eval	matched_background	Thiazole synthase	kept
+C1JJY5	eval	matched_background	Uncharacterized protein 6	kept
+B0KR09	eval	matched_background	Flagellar L-ring protein	kept
+P09779	eval	matched_background	Type IV secretion system protein VirB6	kept
+P84530	eval	matched_background	Ribosome-inactivating protein luffaculin 1	kept
+B4YNE6	eval	matched_background	Collagen-like protein V6	kept
+Q7PWV1	eval	matched_background	Aquaporin AQPAn.G	kept
+Q86YL7	eval	matched_background	Podoplanin	kept
+Q088W8	eval	matched_background	FMN-dependent NADH:quinone oxidoreductase	kept
+Q01738	eval	matched_background	Cellobiose dehydrogenase	kept
+Q9Z398	eval	matched_background	Probable outer membrane protein pmp9	kept
+P04065	eval	matched_background	Glucoamylase S1	kept
+Q9XD84	eval	matched_background	Autotransporter adhesin/invasin TibA	kept
+A2R2S6	eval	matched_background	Probable alpha-galactosidase D	kept
+P25062	eval	matched_background	Cell surface glycoprotein	kept
+A0A2H3D1U1	eval	matched_background	Dehydrogenase ARMGADRAFT_1018426	kept
+Q46ZT8	eval	matched_background	D-(-)-3-hydroxybutyrate oligomer hydrolase	leak to development (removed)
+Q9ZBM7	eval	matched_background	Putative lipoprotein LpqE	kept
+A5ABE6	eval	matched_background	Probable cutinase 2	kept
+P92976	eval	matched_background	Protein STRICTOSIDINE SYNTHASE-LIKE 11	kept
+O23469	eval	matched_background	GDSL esterase/lipase At4g16220	kept
+Q8P9B9	eval	matched_background	Flagellar L-ring protein	kept
+Q4WCX9	eval	matched_background	Uncharacterized protein AFUA_6G02800	kept
+Q47223	eval	matched_background	Type-1 fimbrial protein, A chain	kept
+B0YEP5	eval	matched_background	Probable cutinase 3	kept
+A0QPU4	eval	matched_background	Porin MspB	kept
+P9WHX0	eval	matched_background	Uncharacterized PPE family protein PPE66	kept
+Q79FU2	eval	matched_background	PE-PGRS family protein PE_PGRS17	kept
+Q7N5C1	eval	matched_background	Aquaporin Z	kept
+A0R541	eval	matched_background	Porin MspD	redundant eval control
+P9WGT9	eval	matched_background	Phosphate-binding protein PstS 2	kept
+B1IVG9	eval	matched_background	2-keto-3-deoxygluconate permease	kept
+Q9ATN4	eval	matched_background	Aquaporin NIP1-1	kept
+B2T3F4	eval	matched_background	Ribose-5-phosphate isomerase A	kept
+A9L340	eval	matched_background	Malate dehydrogenase	kept
+P55070	eval	matched_background	Glyceraldehyde-3-phosphate dehydrogenase (Fragment)	kept
+B8CSY7	eval	matched_background	Malate dehydrogenase	redundant eval control
+P61870	eval	matched_background	Secreted mono- and diacylglycerol lipase A	kept
+Q0BFR5	eval	matched_background	Ribose-5-phosphate isomerase A	kept
+A1AGC9	eval	matched_background	Malate dehydrogenase	kept
+Q07YA5	eval	matched_background	Malate dehydrogenase	redundant eval control
+Q5JM82	eval	matched_background	Metallothionein-like protein 2B	kept
+P52727	eval	matched_background	Metallothionein A	kept
+P52724	eval	matched_background	Metallothionein B	redundant eval control
+P62679	eval	matched_background	Metallothionein B	redundant eval control
+A3AZ88	eval	matched_background	Metallothionein-like protein 2C	leak to development (removed)
+P93134	eval	matched_background	Metallothionein-like protein type 2 MET1	kept
+Q2QNE8	eval	matched_background	Metallothionein-like protein 4B	kept
+P86932	eval	matched_background	Bowman-Birk type proteinase inhibitor 2a	kept
+P0DQZ3	eval	matched_background	Waprin-like protein	kept
+Q9M5X7	eval	matched_background	Non-specific lipid-transfer protein	kept
+Q2QYL2	eval	matched_background	Non-specific lipid-transfer protein 2B	kept
+Q43194	eval	matched_background	Non-specific lipid-transfer protein 2	kept
+A0A067PCX8	eval	matched_background	Class I hydrophobin 6	kept
+P49153	eval	matched_background	Large ribosomal subunit protein eL30	kept
+Q39950	eval	matched_background	Non-specific lipid-transfer protein	kept
+A0A1I9QLC5	eval	matched_background	Class I hydrophobin 4	kept
+P26875	eval	matched_background	Guanyl-specific ribonuclease Th1	kept
+P43399	eval	matched_background	Metallothionein-like protein 1	kept
+A0A067N582	eval	matched_background	Unclassified hydrophobin 5	kept
+Q5K0D3	eval	matched_background	Omega-conotoxin-like 6	leak to development (removed)
+Q4QJM4	eval	matched_background	Iron-sulfur cluster insertion protein ErpA	kept
+P01380	eval	matched_background	Alpha-elapitoxin-Ast2a	kept
+P01840	eval	matched_background	Ig kappa-b4 chain C region	kept
+Q2V2Q4	eval	matched_background	Putative defensin-like protein 55	kept
+P01522	eval	matched_background	Omega-conotoxin GVIA	leak to development (removed)
+P02446	eval	matched_background	Keratin-associated protein 3-1	kept
+Q6S343	eval	matched_background	Keratin-associated protein 3-2	redundant eval control
+P86916	eval	matched_background	Mapacalcine	kept
+P07446	eval	matched_background	Guanyl-specific ribonuclease Pb1	kept
+P01838	eval	matched_background	Ig kappa-b9 chain C region	kept
+P83580	eval	matched_background	Omega-hexatoxin-Ar1a	leak to development (removed)
+Q00842	eval	matched_background	Movement protein TGB2	kept
+Q7SIC1	eval	matched_background	Fucolectin	kept
+A6ZWK1	eval	matched_background	SAGA-associated factor 11	kept
+Q9UBD3	eval	matched_background	Cytokine SCM-1 beta	kept
+P15817	eval	matched_background	Kappa-3-bungarotoxin	kept
+A0PCY0	eval	matched_background	Eliciting plant response-like protein 2 (Fragment)	kept
+Q98848	eval	matched_background	Gonadotropin subunit beta-1	leak to development (removed)
+P0DRJ0	eval	matched_background	Venom metalloprotease inhibitor	kept
+O07750	eval	matched_background	Probable lipoprotein LppE	kept
+P01725	eval	matched_background	Ig lambda-1 chain V region S178	kept
+A0A075B6K2	eval	matched_background	Immunoglobulin lambda variable 3-12	kept
+P64906	eval	matched_background	Cellulose/chitin binding protein BQ2027_MB2009	kept
+Q0R411	eval	matched_background	Eliciting plant response-like protein 1	kept
+Q84122	eval	matched_background	Capsid protein	kept
+P86982	eval	matched_background	Insoluble matrix shell protein 1 (Fragment)	kept
+P0A3P0	eval	matched_background	Outer membrane lipoprotein omp10	kept
+P01823	eval	matched_background	Ig heavy chain V region 36-60	kept
+P11910	dev	hard_ala_rich	Outer membrane protein H.8	kept
+P83992	dev	hard_ala_rich	Cuticle protein 16.5, isoform A	kept
+P04375	dev	hard_ala_rich	Cuticle protein 38	kept
+P11738	dev	hard_ala_rich	Cuticle protein 54 (Fragment)	kept
+A0A6M3Z4R4	eval	hard_ala_rich	U2-myrmicitoxin-Tb1a (Fragment)	leak to development (removed)
+P14700	dev	hard_ala_rich	Membrane antigen containing repeating peptides (Fragment)	kept
+A6P331	dev	hard_ala_rich	As-peptide 126	kept
+P83638	eval	hard_ala_rich	Dermaseptin-DI1	kept
+P86639	eval	hard_ala_rich	Dermaseptin-J7	redundant eval control
+A8GI73	eval	hard_ala_rich	Acid shock protein	leak to development (removed)
+A9UGV6	eval	hard_ala_rich	Arabinogalactan peptide 2	kept
+P0DTD5	eval	hard_ala_rich	Dermaseptin-DA4	kept
+Q86IE6	dev	hard_ala_thr_rich	Putative uncharacterized protein DDB_G0275629	kept
+Q99074	dev	hard_ala_thr_rich	HAM34 protein	kept
+P02840	dev	hard_ala_thr_rich	Salivary glue protein Sgs-3	kept
+O18881	eval	hard_ala_thr_rich	Signal recognition particle 14 kDa protein (Fragment)	kept
+Q54QP8	dev	hard_ala_thr_rich	Putative uncharacterized protein DDB_G0283705	kept
+Q5AHC0	dev	hard_ala_thr_rich	Predicted GPI-anchored protein 33	kept
+A1JKC3	dev	hard_ala_thr_rich	Acid shock protein	kept
+Q79FR3	eval	hard_ala_thr_rich	PE family protein PE13	kept
+Q40237	eval	hard_ala_thr_rich	Major pollen allergen Lol p 5b	kept
+Q54QZ8	eval	hard_ala_thr_rich	Putative uncharacterized protein DDB_G0283467	leak to development (removed)
+Q08907	eval	hard_ala_thr_rich	Facilitator of iron transport 3	kept
+Q03293	eval	hard_ala_thr_rich	Period circadian protein (Fragment)	leak to development (removed)
+Q2TA51	dev	hard_cys_rich	Keratin-associated protein 5-5	kept
+Q64507	dev	hard_cys_rich	Keratin-associated protein 5-1	kept
+Q01644	dev	hard_cys_rich	Male-specific sperm protein Mst84Dc	kept
+P0DSO2	dev	hard_cys_rich	Small cysteine and glycine repeat-containing protein 9	kept
+A0A286YF60	dev	hard_cys_rich	Small cysteine and glycine repeat-containing protein 3	kept
+A0A286YEV6	dev	hard_cys_rich	Small cysteine and glycine repeat-containing protein 4	kept
+O93571	eval	hard_cys_rich	Metallothionein	kept
+Q92044	eval	hard_cys_rich	Metallothionein A	kept
+P68499	eval	hard_cys_rich	Metallothionein (Fragment)	kept
+P07438	eval	hard_cys_rich	Metallothionein-1B	kept
+O13257	eval	hard_cys_rich	Metallothionein	redundant eval control
+O13269	eval	hard_cys_rich	Metallothionein-1	kept
+Q156A1	eval	hard_low_distinct_3mer	Ataxin-8	kept
+Q40375	dev	hard_low_distinct_3mer	Repetitive proline-rich cell wall protein 2	kept
+P21787	dev	hard_low_distinct_3mer	Microtubule-associated protein P320 (Fragment)	kept
+O96614	dev	hard_low_distinct_3mer	Sericin-1 (Fragment)	kept
+Q6ZQT0	eval	hard_low_distinct_3mer	Putative uncharacterized protein FLJ45035	kept
+Q8I6R7	eval	hard_low_distinct_3mer	Acanthoscurrin-2 (Fragment)	kept
+P27483	dev	hard_low_distinct_3mer	Glycine-rich cell wall structural protein	kept
+Q38913	eval	hard_low_distinct_3mer	Extensin-1	kept
+Q54R01	eval	hard_low_distinct_3mer	Putative uncharacterized protein DDB_G0283527	kept
+Q75JC9	eval	hard_low_distinct_3mer	Uncharacterized protein DDB_G0271670	kept
+P14918	dev	hard_low_distinct_3mer	Extensin	kept
+P13822	dev	hard_low_distinct_3mer	S-antigen protein (Fragment)	kept
+Q9PRY7	dev	hard_homolog_c_type_lectin	C-type lectin BjL	kept
+D3ZWT9	dev	hard_homolog_c_type_lectin	C-type lectin domain family 6 member A	kept
+Q6X5T5	dev	hard_homolog_c_type_lectin	Snaclec 1	kept
+Q9ICH6	dev	hard_homolog_c_type_lectin	Putative C-type lectin protein FPV001/FPV260	kept
+P0DJL3	dev	hard_homolog_c_type_lectin	Snaclec purpureotin subunit beta	kept
+P21755	dev	hard_homolog_c_type_lectin	Phospholipase A2 inhibitor subunit A	kept
+P23807	dev	hard_homolog_c_type_lectin	Snaclec coagulation factor IX/factor X-binding protein subunit B	kept
+P26718	dev	hard_homolog_c_type_lectin	NKG2-D type II integral membrane protein	kept
+Q06141	dev	hard_homolog_c_type_lectin	Regenerating islet-derived protein 3-alpha	kept
+P0DM39	dev	hard_homolog_c_type_lectin	Snaclec alboaggregin-D subunit beta	kept
+Q9I841	dev	hard_homolog_c_type_lectin	Snaclec rhodocytin subunit alpha	kept
+B1A4P7	dev	hard_homolog_c_type_lectin	Phospholipase A2 inhibitor 04	kept
+Q57140	dev	hard_homolog_sialic_acid_synthase	Probable N-acylneuraminate cytidylyltransferase	kept
+Q99J77	dev	hard_homolog_sialic_acid_synthase	N-acetylneuraminate-9-phosphate synthase	kept
+Q9VG74	dev	hard_homolog_sialic_acid_synthase	N-acetylneuraminate-9-phosphate synthase	kept
+P0A4V0	dev	hard_homolog_sialic_acid_synthase	N-acylneuraminate cytidylyltransferase	kept
+Q9NR45	dev	hard_homolog_sialic_acid_synthase	N-acetylneuraminate-9-phosphate synthase	redundant dev control
+P0A4V1	dev	hard_homolog_sialic_acid_synthase	N-acylneuraminate cytidylyltransferase	redundant dev control
+P0A0Z8	dev	hard_homolog_sialic_acid_synthase	N-acylneuraminate cytidylyltransferase	kept
+P0DY06	dev	hard_homolog_sialic_acid_synthase	N-acetylneuraminate synthase	kept
+Q9AFG9	dev	hard_homolog_sialic_acid_synthase	N-acylneuraminate cytidylyltransferase	redundant dev control
+P0A0Z7	dev	hard_homolog_sialic_acid_synthase	N-acylneuraminate cytidylyltransferase	redundant dev control
+P0DY07	dev	hard_homolog_sialic_acid_synthase	N-acylneuraminate cytidylyltransferase	kept
+P0DTU8	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein A-I	kept
+P15497	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein A-I	kept
+F7FQM7	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein A-I	kept
+P0DUY6	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein E	kept
+O42175	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein A-I	kept
+P0DUY5	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein E	kept
+P0DMS3	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein A-I	kept
+P0DTU6	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein A-I	kept
+Q7M2U8	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein E	kept
+P68293	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein A-I	redundant eval control
+P0DOC3	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein E	kept
+Q9Z2L4	eval	hard_homolog_apolipoprotein_a1_a4_e	Apolipoprotein A-I	kept
+P56244	dev	hard_secreted	Caerin-4.3	kept
+P0C2P4	dev	hard_secreted	Kappa-theraphotoxin-Gr2b	kept
+P83513	dev	hard_secreted	Bifunctional xylanase/deacetylase	kept
+P51747	dev	hard_secreted	Interleukin-2	kept
+Q9VLK4	dev	hard_secreted	Diuretic hormone class 2	kept
+B4XSZ9	dev	hard_secreted	Snaclec A9	kept
+Q7Z090	dev	hard_secreted	Iota-conotoxin-like R11.3	kept
+Q9V4X2	dev	hard_secreted	Peptidoglycan-recognition protein SC2	kept
+P01455	dev	hard_secreted	Cytotoxin 1	kept
+Q2V424	dev	hard_secreted	Putative defensin-like protein 203	kept
+Q1JS94	dev	hard_secreted	Palustrin-1c	kept
+J7JU64	dev	hard_secreted	Alpha-conotoxin VxXXIVA	kept
+S0F215	dev	hard_secreted	Omega-hexatoxin-Hi1g	kept
+P0C637	dev	hard_secreted	Conotoxin Pu5.2	kept
+P0CD67	dev	hard_secreted	Bombolitin-6	kept
+P85008	eval	hard_secreted	Defensin-1	kept
+Q8XAN6	eval	hard_secreted	E3 ubiquitin-protein ligase NleG	kept
+P0C165	eval	hard_secreted	Potassium channel toxin alpha-KTx 2.12	kept
+Q3YEF8	eval	hard_secreted	Conotoxin LiC53	kept
+C0HJU3	eval	hard_secreted	Acidic phospholipase A2 (Fragment)	kept
+P81468	eval	hard_secreted	Neutrophil defensin 4	kept
+P83910	eval	hard_secreted	U6-ctenitoxin-Pk1a	kept
+Q8NJQ5	eval	hard_secreted	Endochitinase 37	kept
+Q9VS97	eval	hard_secreted	Peptidoglycan-recognition protein SD	leak to development (removed)
+P9WJ63	eval	hard_secreted	16S/23S rRNA (cytidine-2'-O)-methyltransferase TlyA	kept
+E2E4F7	eval	hard_secreted	Celestoxin	kept
+Q99M71	eval	hard_secreted	Mammalian ependymin-related protein 1	kept
+Q32P28	eval	hard_secreted	Prolyl 3-hydroxylase 1	kept
+Q61096	eval	hard_secreted	Myeloblastin	kept
+Q59MD0	eval	hard_secreted	Probable cell wall protein PGA50	kept
