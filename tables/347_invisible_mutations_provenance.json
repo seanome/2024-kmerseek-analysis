@@ -1,0 +1,166 @@
+{
+  "config": {
+    "_written": "2026-10-19, before any collision group or within-group outcome was computed. Only the column names, the variant notation types and the replicate counts had been looked at.",
+    "question": "When two PTEN variants have the same reduced amino-acid sequence, how much of the measured abundance variation can no predictor that reads only the reduced sequence recover?",
+    "dataset": {
+      "name": "PTEN VAMP-seq",
+      "mavedb_score_set": "urn:mavedb:00000013-a-1",
+      "mavedb_experiment": "urn:mavedb:00000013-a",
+      "publication": "Matreyek et al. 2018, Multiplex assessment of protein variant abundance by massively parallel sequencing, Nature Genetics, doi:10.1038/s41588-018-0122-z",
+      "license": "CC0 1.0 (public domain), as stated in the MaveDB record",
+      "scores_url": "https://api.mavedb.org/api/v1/score-sets/urn:mavedb:00000013-a-1/scores",
+      "metadata_url": "https://api.mavedb.org/api/v1/score-sets/urn:mavedb:00000013-a-1",
+      "reference_url": "https://rest.uniprot.org/uniprotkb/P60484.fasta",
+      "downloaded": "2026-10-19",
+      "files": {
+        "scores": {
+          "path": "data/347_pten_vamp_seq/urn_mavedb_00000013-a-1_scores.csv",
+          "sha256": "ceaf3f0720af8aa06012d60959efbcd7ab54a5317d2bebdace8a0f49de4b2b97"
+        },
+        "metadata": {
+          "path": "data/347_pten_vamp_seq/urn_mavedb_00000013-a-1_metadata.json",
+          "sha256": "266cfddaa11c0a7457f28c86d66d81cbe9041128c5ecb97f97a044b7c605d728"
+        },
+        "reference": {
+          "path": "data/347_pten_vamp_seq/uniprot_P60484.fasta",
+          "sha256": "9cdcf2cc4e761c77aaa7520e3f230e6607885b20e226dc197c676ce78916845a"
+        }
+      }
+    },
+    "assay": "VAMP-seq: each PTEN variant is fused to EGFP; cells are sorted into bins by the EGFP to mCherry ratio; a score is a weighted average of the variant's bin frequencies (MaveDB method text).",
+    "condition": "single condition: the one MaveDB score set",
+    "background": {
+      "id": "PTEN_HUMAN P60484 (403 aa)",
+      "sequence_source": "translation of the MaveDB target DNA sequence; must equal UniProt P60484 exactly, or the run stops"
+    },
+    "outcome": {
+      "column": "score",
+      "units": "unitless abundance score; wild type = 1, mean of nonsense variants = 0 (min-max normalised by the authors)",
+      "direction": "higher = more PTEN protein in the cell",
+      "definition_check": "score must equal the mean of the non-missing replicate columns score1..score8, and expts must equal their count; the run stops if not"
+    },
+    "uncertainty_fields": {
+      "replicates": [
+        "score1",
+        "score2",
+        "score3",
+        "score4",
+        "score5",
+        "score6",
+        "score7",
+        "score8"
+      ],
+      "sd": "sample standard deviation of the replicate scores (checked against the replicate columns with ddof=1)",
+      "se": "standard error of the variant mean = sd / sqrt(expts) (checked)",
+      "expts": "number of replicate experiments with a score for the variant"
+    },
+    "encodings": {
+      "identity": "protein20: the 20-letter sequence itself (software control)",
+      "dayhoff6": "kmerseek dayhoff6 = sourmash aa_to_dayhoff table",
+      "hp_lehninger2": "kmerseek hp_lehninger2 (sourmash 'hp') = sourmash aa_to_hp table",
+      "composition": "exact amino-acid count vector of the 20-letter sequence (control)"
+    },
+    "primary_encodings": [
+      "hp_lehninger2",
+      "dayhoff6"
+    ],
+    "inclusion": [
+      "hgvs_pro matches p.<Ref><Pos><Alt> with three-letter codes of the 20 standard amino acids and Ref != Alt (single missense substitution)",
+      "Ref equals the reference residue at Pos and 1 <= Pos <= 403",
+      "score is not missing"
+    ],
+    "exclusion_reasons": {
+      "stop": "Alt is Ter",
+      "synonymous": "p.<Ref><Pos>= : no change to the protein sequence; kept out of the primary analysis and summarised separately",
+      "malformed": "hgvs_pro does not parse as a single substitution",
+      "nonstandard_residue": "Ref or Alt is not one of the 20 standard amino acids",
+      "reference_mismatch": "Ref does not match the reference residue, or Pos is outside the protein",
+      "missing_score": "score is missing",
+      "wild_type_anchor": "the MaveDB row '_wt': score 1 in every replicate because the authors set wild type to 1; it is the scale's anchor, not a measurement with noise (added 2026-10-19, after the first run, which listed it as 'malformed'; this renames the reason only, the row was excluded either way)",
+      "duplicate_sequence": "a second row giving the same full protein sequence; replicate scores would be pooled, not counted as a second variant"
+    },
+    "grouping": "(assay, condition, background, full encoded sequence); membership checked by exact string equality of the encoded sequence",
+    "weighting": "one weight per distinct protein sequence; a variant's outcome is its mean over replicates",
+    "primary_statistics": [
+      "floor_mse = sum over groups of sum over members of (y_i - group mean)^2, divided by N (all included variants; singleton groups give 0)",
+      "floor_rmse = sqrt(floor_mse), in score units",
+      "collided_mse = the same sum divided by the number of variants in groups of 2 or more",
+      "total_variance = mean of (y_i - overall mean)^2 over the same N variants (ddof 0, equal weight)",
+      "floor_fraction = floor_mse / total_variance",
+      "the same numbers for the group holding the reference's encoded sequence alone, for the other groups alone, and for groups split by position (same-position subset)"
+    ],
+    "noise_procedure": {
+      "per_variant_noise": "se_i^2, the estimated variance of variant i's mean over its replicates",
+      "expected_noise_sse": "sum over groups of (1 - 1/n_g) * sum over members of se_i^2. This is the expected within-group sum of squares if every member of a group had the same true score and errors were independent between variants (derivation in the report).",
+      "noise_ratio": "observed within-group SSE / expected_noise_sse; above 1 means more spread than measurement noise alone predicts",
+      "noise_adjusted_floor_mse": "(observed SSE - expected_noise_sse) / N; an estimate, not a bound"
+    },
+    "bootstrap": {
+      "unit": "sequence position (all variants at a position are drawn together). A position drawn m times gives each of its variants weight m; group means, sums of squares, total variance and the noise term use these weights (weighted noise term: sum w_i se_i^2 - sum w_i^2 se_i^2 / W_g, since copies share one error). A group counts as a collision only if it holds two or more distinct sequences with weight above 0.",
+      "_amended": "2026-10-19, before any outcome was computed: replaced 'copies kept apart except in the reference group', which cannot be applied to composition groups (they span positions) and is not a consistent grouping rule, with weights.",
+      "replicates": 2000,
+      "seed": 347,
+      "interval": "95% percentile",
+      "generalises_to": "other positions of PTEN drawn like the measured ones, in this assay; not other proteins or assays"
+    },
+    "practical_tolerance": null,
+    "practical_tolerance_note": "No prediction-error tolerance is established for this assay, and none was supplied. The result is descriptive, with no pass/fail claim. As a descriptive aid only, the report counts collision groups holding both a 'low' and a 'wt-like' variant under the authors' own abundance_class labels.",
+    "kmer_check": {
+      "encodings": [
+        "hp_lehninger2",
+        "dayhoff6"
+      ],
+      "ksizes": [
+        5,
+        10,
+        20
+      ],
+      "sketch": "sourmash 4.9 MinHash, scaled=1, seed 42 (the hash kmerseek uses for these two alphabets)",
+      "examples": "for each encoding: the 3 groups with the largest outcome range (labelled as selected extremes) and 3 groups drawn at random (seed 347)"
+    },
+    "stop_rule": {
+      "_added": "2026-10-19, before any outcome was computed",
+      "applies_to": "each primary encoding separately",
+      "inconclusive": "fewer than 30 collision groups or fewer than 100 variants in collision groups, or no replicate-based se",
+      "detectable": "lower end of the 95% bootstrap interval of noise_ratio is above 1",
+      "not_detectable": "otherwise",
+      "practical": "with no tolerance, a detectable result is reported as 'detectable information loss, but practical importance is not established'"
+    },
+    "noise_model_check": "Synonymous variants all give the wild-type protein. If the variance of their scores is much larger than their mean se^2, the replicate-based se misses some variation (DNA-level effects or errors shared by all replicates), and noise_ratio is overstated by that amount. Reported, not used to change the rule.",
+    "sensitivity": [
+      "add one wild-type record whose outcome is the mean of the synonymous variants' scores"
+    ]
+  },
+  "checksums_verified": {
+    "scores": "ceaf3f0720af8aa06012d60959efbcd7ab54a5317d2bebdace8a0f49de4b2b97",
+    "metadata": "266cfddaa11c0a7457f28c86d66d81cbe9041128c5ecb97f97a044b7c605d728",
+    "reference": "9cdcf2cc4e761c77aaa7520e3f230e6607885b20e226dc197c676ce78916845a"
+  },
+  "reference_length": 403,
+  "reference_matches_uniprot": true,
+  "score_definition_check": {
+    "max_abs_score_minus_replicate_mean": 7.771561172376096e-15,
+    "rows_expts_not_replicate_count": 0,
+    "max_abs_sd_minus_ddof1": 6.328271240363392e-15,
+    "max_abs_se_minus_sd_over_sqrt_n": 4.9682480351975755e-15,
+    "min_replicates": 2
+  },
+  "synonymous_noise_check": {
+    "n_synonymous": 156,
+    "mean_score": 0.9639344599391867,
+    "var_scores_ddof1": 0.03420932330634179,
+    "mean_se2": 0.01285337576791524,
+    "ratio_var_to_mean_se2": 2.661504955899254
+  },
+  "n_bootstrap": 2000,
+  "git_commit_at_run": "18d09f3c5891e47b9393ae7dd00978e4458f17e1",
+  "code_had_uncommitted_changes": false,
+  "python": "3.13.11",
+  "packages": {
+    "numpy": "2.3.5",
+    "polars": "1.34.0",
+    "matplotlib": "3.10.8",
+    "sourmash": "4.9.4"
+  },
+  "command": "/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 scripts/run_nb347_invisible_mutations.py"
+}
