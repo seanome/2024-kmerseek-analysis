@@ -426,21 +426,24 @@ def cmd_examples(a: argparse.Namespace) -> None:
     hit = np.isin(w, words)
     w, prot, start = w[hit], prot[hit], start[hit]
     q = partner_idx[np.searchsorted(words, w)]
+    table, _ = alphabet_table(a.alphabet)
+    letters = list(ALPHABETS[a.alphabet])
+
+    def enc(seq: str) -> str:
+        return "".join(letters[c] if c != INVALID else "?" for c in table[np.frombuffer(seq.encode(), np.uint8)])
+
+    partners: dict[int, tuple] = {}  # partner index -> (protein names, sequences, words, protein, start)
     out = []
     for p_i, s0, run, j in longest_runs(prot, start, q, a.top):
         span = run + a.ksize - 1
         x_seq = seqs[p_i][s0 : s0 + span]
         # Find the same first word in the partner and read the same span there.
-        pn, ps = read_fasta(fastas[j])
-        pw, pp, pst = encode_words(ps, a.alphabet, a.ksize)
+        if j not in partners:
+            pn, ps = read_fasta(fastas[j])
+            partners[j] = (pn, ps, *encode_words(ps, a.alphabet, a.ksize))
+        pn, ps, pw, pp, pst = partners[j]
         first_word = encode_words([x_seq[: a.ksize]], a.alphabet, a.ksize)[0][0]
         at = np.nonzero(pw == first_word)[0]
-        table, _ = alphabet_table(a.alphabet)
-        letters = list(ALPHABETS[a.alphabet])
-
-        def enc(seq: str) -> str:
-            return "".join(letters[c] if c != INVALID else "?" for c in table[np.frombuffer(seq.encode(), np.uint8)])
-
         x_enc = enc(x_seq)
         # A repeated word can sit at several places in the partner; keep the one whose
         # whole span agrees best with the specimen's.
