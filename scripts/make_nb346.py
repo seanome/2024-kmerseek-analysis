@@ -158,6 +158,7 @@ KNOWN = pl.read_csv(TAB / "346_known_pairs.tsv", separator="\t")
 PFAM = pl.read_csv(TAB / "346_pfam_pairs.tsv", separator="\t")
 DBS = pl.read_csv(TAB / "346_databases.tsv", separator="\t")
 SEQ = ku.read_fasta(TAB / "346_sequences.fasta")
+ku.DIRECTION.update({r["pair"]: f"{r['pair']}, {r['family']} → Swiss-Prot" for r in PFAM.iter_rows(named=True)})
 SCAN_FILE = {
     "human GENCODE v49 canonical": DATA / "346_scan_human_gencode_v49.parquet",
     "C. elegans UniProt UP000001940": DATA / "346_scan_celegans_uniprot_UP000001940.parquet",
@@ -496,9 +497,9 @@ Only BCL-2 counts as CED-9's true partner. Other BCL-2 family members that score
 count against its rank; the table below also gives the best-scoring family member, and
 phmmer's rank (20 letters, HMMER 3.4) as a check that the pair can be found at all.
 
-The rule decides on the two BCL-2/CED-9 directions, which are complete. The two jobs still
-on Sherlock (pairs 3 to 6 against Swiss-Prot, and kmerseek's own search) cannot change the
-verdict; they test prediction P5 and kmerseek's chaining. Pair 6 cannot separate the linked
+The rule decides on the two BCL-2/CED-9 directions. Pairs 3 to 6 against Swiss-Prot (scored
+on Sherlock, `scripts/346_swissprot_scan.sbatch`) test prediction P5, and kmerseek's own
+search tests its chaining; neither can change the verdict. Pair 6 cannot separate the linked
 key from B3 even there: on its alignment both score 50. Pairs 3 to 5 have no exact shared
 8-letter word on their alignment, so B2 and B3 score 0 on it. Swiss-Prot is searched by each Pfam pair's query
 domain; the partner's domain (from the Pfam seed alignment) is added to Swiss-Prot as one
@@ -670,7 +671,7 @@ def figure2(directions, path, title):
             row = RES.filter((pl.col("pair") == r["pair"]) & (pl.col("score") == s)).row(0, named=True)
             ax.axvline(row["partner_score"], color=ku.COLOR["partner"], lw=0.8)
             ax.text(row["partner_score"] - 1, 0.5 / max(real.height, 1000),
-                    f"rank {row['rank']:,} of {row['n_real']:,}\ndecoy rate {row['decoy_rate_dipeptide']:.2f}",
+                    f"rank {row['rank']:,} of {row['n_real']:,}\ndecoy rate {row['decoy_rate_dipeptide']:.2g}",
                     fontsize=5, va="bottom", ha="right")
             ax.set_yscale("log")
             ax.set_ylim(0.3 / max(real.height, 1000), 1.5)
@@ -708,9 +709,13 @@ hc.finish_figure(
 if "Swiss-Prot" in SCAN:
     sp = [r for r in KNOWN.iter_rows(named=True) if r["query_db"] == "Swiss-Prot"]
     fig = figure2(sp, FIG / "346_score_distributions_swissprot.png", "")
-    hc.finish_figure(fig, FIG / "346_score_distributions_swissprot.png", tools=TOOL + "; database: Swiss-Prot",
+    spl = RES.filter((pl.col("database") == "Swiss-Prot") & (pl.col("score") == "linked"))
+    best_sp = spl.sort("decoy_rate_dipeptide").row(0, named=True)
+    hc.finish_figure(fig, FIG / "346_score_distributions_swissprot.png", tools=TOOL + "; database: Swiss-Prot (572,970 proteins + the partner domain)",
                      hypothesis="Under the linked key the Pfam partner domain scores far above Swiss-Prot and its decoys.",
-                     conclusion="See the table above each figure for the decoy rates; lower is better.",
+                     conclusion=(f"No pair reaches a decoy rate of 0.001 under the linked key; the lowest is {best_sp['direction'].split(' →')[0]}, "
+                                 f"rank {best_sp['rank']:,}, decoy rate {best_sp['decoy_rate_dipeptide']:.2g}. Grey tails above the decoys are real "
+                                 "proteins that score higher than any shuffled protein. Lower decoy rate is better."),
                      title="Figure 4b. Pairs 3 to 6 against Swiss-Prot, HP alphabet", wrap=120, tight_layout=False)
 else:
     print("Figure 4b (pairs 3 to 6 against Swiss-Prot) waits on the Sherlock scan.")
