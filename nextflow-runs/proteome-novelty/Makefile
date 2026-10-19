@@ -56,7 +56,7 @@ stub:
 
 run:
 	mkdir -p run
-	cd run && ml load biology nextflow && \
+	cd run && if command -v ml >/dev/null 2>&1; then ml load biology nextflow; fi; \
 	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile sherlock -resume --qfo_dir $(QFO_DIR)
 
 watch:
