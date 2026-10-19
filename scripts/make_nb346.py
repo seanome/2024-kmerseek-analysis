@@ -906,7 +906,12 @@ md(r"""
 kmerseek v0.4.0, `hp_thomas_dill2`, scaled 1, extension (mismatch penalty 2, X-drop 8) and
 chaining (`--chain-max-gap 32 --chain-max-shift 32`) on, at k = 6 (the linked key's anchor
 length), 8 (B2's word) and 10. kmerseek accepts any k from 1, but at k = 1 every residue pair
-of a two-letter alphabet is a seed, so k = 1 was not run. Runs on Sherlock
+of a two-letter alphabet is a seed, so k = 1 was not run. kmerseek indexes each distinct
+sequence once (it skips proteins whose sequence it has already indexed), so "every protein
+hit" is judged against the indexed count. Karlin-Altschul K is given (0.018, notebook 245),
+not fitted: the in-index fit ran out of memory at 128 GB on the first run, and with one query
+and one database K scales every `region_evalue` alike, so BCL-2's rank does not depend on it.
+Runs on Sherlock
 (`scripts/346_kmerseek_ced9_human.sbatch`); this cell reads its output when present. BCL-2's
 rank is by `region_evalue`, the best region per human protein, ties counted against BCL-2.
 """)
@@ -923,8 +928,9 @@ for k in [6, 8, 10]:
     b = d.filter(pl.col("target_name") == bcl2_name)["region_evalue"]
     e = float(b[0]) if b.len() else float("inf")
     settings = dict(l.split("=", 1) for l in f.with_name(f.name.replace(".csv.gz", ".settings.txt")).read_text().splitlines() if "=" in l)
-    krows.append({"k": k, "status": "done", "kmerseek": settings.get("kmerseek_version"), "human proteins hit": d.height,
-                  "saturated (every protein hit)": d.height == 19_732, "BCL-2 region_evalue": e,
+    n_indexed = 19_732 - int(settings.get("n_skipped_already_indexed", 0))  # kmerseek indexes each distinct sequence once
+    krows.append({"k": k, "status": "done", "kmerseek": settings.get("kmerseek_version"), "human proteins indexed": n_indexed,
+                  "human proteins hit": d.height, "saturated (every indexed protein hit)": d.height >= n_indexed, "BCL-2 region_evalue": e,
                   "BCL-2 rank": 1 + int((d.filter(pl.col("target_name") != bcl2_name)["region_evalue"] <= e).sum())})
 KMERSEEK = pl.DataFrame(krows, infer_schema_length=None)
 if (KMERSEEK["status"] == "done").any():

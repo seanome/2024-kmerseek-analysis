@@ -24,15 +24,24 @@
 # two-letter alphabet every residue pair is a seed, so k = 1 was not run.
 #
 # Every protein with one shared k-mer is scored (--min-shared-kmers 1 --max-query-pvalue
-# 2, so the Poisson filters drop nothing). Karlin-Altschul K is the closed form at the
-# index's own match probability, read from the index log, as in 294_kmerseek_chaining.sbatch.
-# The output keeps every row but only the columns the notebook reads.
+# 2, so the Poisson filters drop nothing). The output keeps every row but only the columns
+# the notebook reads.
 #
-# Sizing: no run of kmerseek at k = 6 to 10 against this proteome exists (notebook 241 ran
-# hp_thomas_dill2 at k >= 17, in 128 GB and 4 hours for 152 settings x 3 queries). The
-# nearest history is notebook 294's k = 8 chaining job (7,404 queries against 7,384
-# proteins, 128 GB, 12 hours), whose six tasks finished; its ask is kept. One query against
-# 11.3 million residues holds far fewer results than that job's batches. Afterwards:
+# Karlin-Altschul K: the index is built WITHOUT the in-index fit (--ka-queries 0), and the
+# search is given K = 0.018 (notebook 245's K for one proteome, borrowed from Swiss-Prot).
+# The first run (job 48524104, 2026-10-19) built each index in about 3 minutes and was then
+# killed at the 128 GB ask in the fit, which searches 200 human proteins against the whole
+# index: in a two-letter alphabet every 8-letter word occurs in about 13,000 of the 19,732
+# proteins, so each fit query hits nearly every protein. With one query and one database,
+# K multiplies every region_evalue by the same factor, so BCL-2's rank does not depend on
+# it; only the size of the E-values does. Notebook 294's shuffled-database tasks ran the same
+# way (--ka-queries 0, a given --ka-k) and finished.
+#
+# Sizing: the first run's index build (all three k) finished inside 128 GB in about 3
+# minutes; what was killed was the 200-query fit, which this version no longer runs. The
+# search is one query, 1/200 of the fit's work, so the same 128 GB and 12 hours are kept
+# (notebook 294's k = 8 chaining job, 7,404 queries against 7,384 proteins, finished in that
+# ask). Afterwards:
 #   sacct -j <jobid> -o JobID,MaxRSS,Elapsed,State
 #
 # Submit with `make run` in nextflow-runs/linked-pairs-known-pairs (on Sherlock), which
@@ -45,6 +54,7 @@ IMG=${NB346_IMG:-$SCRATCH/apptainer-cache/docker.io-olgabot-kmerseek-0.4.0-rc5.i
 HUMAN=${NB346_HUMAN:-$SCRATCH/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa}
 REPO=${SLURM_SUBMIT_DIR:?}
 ALPHABET=hp_thomas_dill2
+KA_K=${NB346_KA_K:-0.018}  # notebook 245's K for one proteome; ranks do not depend on it
 PENALTY=2
 XDROP=8
 CHAIN_GAP=32
@@ -69,13 +79,9 @@ kmerseek --version | tee "$W/kmerseek_version.txt"
 
 rm -rf "$W/human.kmerseek"
 kmerseek index -i "$HUMAN" -o "$W/human.kmerseek" -k "$K" -a "$ALPHABET" -s 1 \
-    --extend-mismatch-penalty "$PENALTY" --extend-xdrop "$XDROP" --ka-queries 200 2> "$W/index.log"
-KA_K=$(sed -n 's/.*Closed form at the database.s own match probability [0-9.]*: K \([0-9.eE+-]*\) .*/\1/p' "$W/index.log" | head -1)
-if ! [[ $KA_K =~ ^[0-9]+\.[0-9]+([eE][-+]?[0-9]+)?$ ]]; then
-    echo "346: no closed-form K in $W/index.log (got '$KA_K')" >&2
-    exit 3
-fi
-echo "346: closed-form K $KA_K"
+    --extend-mismatch-penalty "$PENALTY" --extend-xdrop "$XDROP" --ka-queries 0 2> "$W/index.log"
+N_SKIPPED=$(sed -n 's/.*Skipped \([0-9]*\) sequences whose signature key was already indexed.*/\1/p' "$W/index.log" | head -1)
+echo "346: index built; ${N_SKIPPED:-0} proteins skipped as already indexed; K = $KA_K (given, not fitted)"
 
 OUT=$R/346_kmerseek_ced9_human_${ALPHABET}_k${K}.csv.gz
 kmerseek search -q "$W/ced9.fa" -t "$W/human.kmerseek" -k "$K" -a "$ALPHABET" \
@@ -98,6 +104,7 @@ mv "$OUT.partial" "$OUT"
     echo "mismatch_penalty=$PENALTY"; echo "xdrop=$XDROP"; echo "ka_k=$KA_K"
     echo "chain_max_gap=$CHAIN_GAP"; echo "chain_max_shift=$CHAIN_SHIFT"
     echo "image=$IMG"; echo "kmerseek_version=$(cat "$W/kmerseek_version.txt")"
+    echo "n_skipped_already_indexed=${N_SKIPPED:-0}"; echo "ka_k_source=given (notebook 245), not fitted"
     cat "$W/awk_counts.txt"
 } > "${OUT%.csv.gz}.settings.txt"
 echo "346 k = $K done: $(tr '\n' ' ' < "$W/awk_counts.txt")"

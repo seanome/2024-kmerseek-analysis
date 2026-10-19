@@ -10,6 +10,7 @@
 # On the Mac:      make push-inputs     copy Swiss-Prot to Sherlock (once)
 #                  make pull-results    copy the results back to ~/data/linked-pairs
 # On Sherlock:     make run             submit both jobs (the merge waits for the scan)
+#                  make run-kmerseek    submit only the kmerseek job (k 6, 8, 10)
 #                  make running         this notebook's jobs in the queue
 #                  make done            elapsed time and peak memory of finished jobs
 
@@ -22,10 +23,10 @@ REPO_ROOT    := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 ON_CLUSTER   := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 JOBS         := 346-swissprot-scan,346-kmerseek-ced9
 
-.PHONY: help push-inputs run running done pull-results
+.PHONY: help push-inputs run run-kmerseek running done pull-results
 
 help:
-	@sed -n '2,16p' Makefile
+	@sed -n '2,17p' Makefile
 
 ## Mac: Swiss-Prot (the same file the laptop scans read; the scan checks its 572,970 proteins).
 push-inputs:
@@ -43,6 +44,12 @@ run:
 	           scripts/346_swissprot_scan.sbatch | cut -d';' -f1) && \
 	  echo "merge (waits for $$scan): job $$merge" && \
 	  km=$$(sbatch --parsable scripts/346_kmerseek_ced9_human.sbatch | cut -d';' -f1) && \
+	  echo "kmerseek k = 6, 8, 10: job $$km"
+
+run-kmerseek:
+	@[ "$(ON_CLUSTER)" = yes ] || { echo "run-kmerseek submits a Slurm job: run it on Sherlock"; exit 1; }
+	mkdir -p $(JOB_DIR)/logs $(JOB_DIR)/results
+	cd $(REPO_ROOT) && km=$$(sbatch --parsable scripts/346_kmerseek_ced9_human.sbatch | cut -d';' -f1) && \
 	  echo "kmerseek k = 6, 8, 10: job $$km"
 
 running:
