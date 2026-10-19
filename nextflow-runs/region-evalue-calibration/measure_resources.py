@@ -9,8 +9,9 @@ writes the params `make run` passes with -params-file:
   search_memory_gb  1.5 x the largest peak_rss, rounded up to a whole GB
   search_time_h     2 x the longest realtime, rounded up to a whole hour (at least 1)
 
-1.5x on memory and 2x on time, though the pilot searched the largest chunk of each kind
-(main.nf picks by file size; chunks run from 0.31 to 1.57 million residues), and for a busier node. Stops when a pilot chunk never completed. A chunk that failed and
+The pilot searches the largest chunk of each kind (main.nf picks by file size; chunks
+run from 0.31 to 1.57 million residues). The 1.5x and 2x margins cover a busier node and
+run-to-run spread. Stops when a pilot chunk never completed. A chunk that failed and
 then completed on a retry is used, with its failed attempts printed.
 Standard library only.
 """
