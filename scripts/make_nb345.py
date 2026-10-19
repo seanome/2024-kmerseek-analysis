@@ -453,37 +453,6 @@ print("Case for the reduced alphabet:", "holds (20 letters predict worse)" if re
       else "fails (20 letters predict as well or better)")
 """)
 
-md(r"""
-### 4b. How much error comes from the shape of Heaps' law alone
-
-Found by the second review: Heaps' law cannot follow a curve that starts at
-$U(1) = 0$ exactly. Take the simplest noise-free case, where every pair of proteomes shares
-the same number of words, so $U(n) = n(n-1)/2$. Fitting $\kappa n^\gamma$ on
-$n = 2, \dots, n_0$ and predicting the next step already gives the error below, before any
-real data. A FAIL near this number can come from the model's shape and not from the words.
-The synthetic proteomes' median error is a second reference: composition alone, the same
-fit. Neither changes the pre-registered verdict; both are context for it.
-""")
-
-code(r"""
-sys.path.insert(0, str(REPO / "nextflow-runs" / "proteome-novelty" / "bin"))
-import novelty as nv
-
-floor = []
-for c in CLADES:
-    N = clade_members(c).height
-    n0 = N - int(np.ceil(0.2 * N))
-    n = np.arange(1, n0 + 1)
-    k, g = nv.heaps_fit(n * (n - 1) / 2, n0)
-    pred = k * ((n0 + 1) ** g - n0 ** g)
-    floor.append({"clade": c, "N": N, "n0": n0, "pairs_curve_gamma": g,
-                  "pairs_curve_relative_error": abs(pred - n0) / n0})
-floor = pl.DataFrame(floor)
-print(floor)
-null_med = test_stats(f"null.{PRIMARY_HP}", common)[0]["weighted_median"]
-print(f"\nSynthetic proteomes, {HP} k30: median relative error {null_med:.3f} (same clades, same splits)")
-""")
-
 code(r"""
 methods = [(f"real.{PRIMARY_HP}", COLOUR[HP], "o"), (f"real.{PRIMARY_AA}", COLOUR[AA], "s"),
            (f"real.{FAMILY}", COLOUR[FAMILY], "D")]
@@ -523,6 +492,76 @@ how many splits each method has. The black bar is the clade's median. Blue circl
 diamonds: MMseqs2 families. Left is better; the dashed line is the pre-registered pass
 line. The legend gives each method's median over all splits with the clades weighted
 equally, the number the verdict uses. Errors below 0.001 are drawn at 0.001.
+""")
+
+md(r"""
+### 4b. How much error comes from the shape of Heaps' law alone
+
+Found by the second review: Heaps' law cannot follow a curve that starts at
+$U(1) = 0$ exactly. Take the simplest noise-free case, where every pair of proteomes shares
+the same number of words, so $U(n) = n(n-1)/2$. Fitting $\kappa n^\gamma$ on
+$n = 2, \dots, n_0$ and predicting the next step already gives the error below, before any
+real data. A FAIL near this number can come from the model's shape and not from the words.
+The synthetic proteomes' median error is a second reference: composition alone, the same
+fit. Neither changes the pre-registered verdict; both are context for it.
+""")
+
+code(r"""
+sys.path.insert(0, str(REPO / "nextflow-runs" / "proteome-novelty" / "bin"))
+import novelty as nv
+
+floor = []
+for c in CLADES:
+    N = clade_members(c).height
+    n0 = N - int(np.ceil(0.2 * N))
+    n = np.arange(1, n0 + 1)
+    k, g = nv.heaps_fit(n * (n - 1) / 2, n0)
+    pred = k * ((n0 + 1) ** g - n0 ** g)
+    floor.append({"clade": c, "N": N, "n0": n0, "pairs_curve_gamma": g,
+                  "pairs_curve_relative_error": abs(pred - n0) / n0})
+floor = pl.DataFrame(floor)
+print(floor)
+null_med = test_stats(f"null.{PRIMARY_HP}", common)[0]["weighted_median"]
+print(f"\nSynthetic proteomes, {HP} k30: median relative error {null_med:.3f} (same clades, same splits)")
+""")
+
+code(r"""
+real_pc = test_stats(f"real.{PRIMARY_HP}", common)[1]
+null_pc = test_stats(f"null.{PRIMARY_HP}", common)[1]
+floor_vs = (floor.select("clade", "pairs_curve_relative_error")
+            .join(null_pc.select("clade", pl.col("median").alias("synthetic_median")), on="clade", how="left")
+            .join(real_pc.select("clade", pl.col("median").alias("real_median")), on="clade", how="left"))
+print(floor_vs)
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 60)
+y = {c: i for i, c in enumerate(CLADES)}
+for r in floor_vs.iter_rows(named=True):
+    ax.plot([r["pairs_curve_relative_error"], r["real_median"]], [y[r["clade"]]] * 2, color="#dddddd", lw=0.8, zorder=0)
+ax.scatter(floor_vs["pairs_curve_relative_error"], [y[c] for c in floor_vs["clade"]], marker="|", s=40,
+           color="black", label="noise-free curve n(n-1)/2: the model's own error")
+ax.scatter(floor_vs["synthetic_median"], [y[c] for c in floor_vs["clade"]], marker="o", s=14,
+           facecolor="white", edgecolor=COLOUR[HP], label=f"{LABEL[PRIMARY_HP]}, synthetic copies: median")
+ax.scatter(floor_vs["real_median"], [y[c] for c in floor_vs["clade"]], marker="o", s=14,
+           color=COLOUR[HP], label=f"{LABEL[PRIMARY_HP]}, real proteomes: median")
+ax.axvline(PASS_MAX_ERROR, color=pf.GREY, ls="--", lw=0.8, label=f"pass line, {PASS_MAX_ERROR}")
+ax.set_yticks(range(len(CLADES)), CLADES)
+ax.set_ylim(len(CLADES) - 0.5, -0.5)
+ax.grid(axis="y", color="#dddddd", lw=0.3)
+ax.set_xlim(0, None)
+ax.set_xlabel("Median relative error of the predicted added count")
+pf.shared_legend(fig, ncol=1)
+pf.save(fig, FIG / "345_SF5b_heaps_fit_error_floor_vs_real_synthetic_hp30_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 5b (SF5b). In Vertebrata and Mammalia the real proteomes miss by
+far more than the model's shape or composition explains; in Archaea and Bacteria they miss
+by less than their synthetic copies.** Per clade, from left to right in most rows: black tick, the error
+Heaps' law makes on a curve with no noise at all, $U(n) = n(n-1)/2$; open blue circle, the
+median error on the synthetic copies; filled blue circle, the median error on the real
+proteomes (`hp_pbotc_1st_ed` k = 30, the same splits as SF5). Left is better; the dashed
+line is the pre-registered pass line. A filled circle far right of both the tick and the open
+circle means the real words, not the model's shape or the composition, make the
+prediction miss.
 """)
 
 md(r"""
