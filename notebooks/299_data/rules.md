@@ -30,13 +30,12 @@ sketches as the index.
 Time `sourmash sketch translate` on one CPU on the catalog's first 1 GB, for each of the 18
 settings (protein, dayhoff, hp x k 7, 10, 13 x scaled 100, 1000). Multiply each setting's
 CPU-seconds per GB by the catalog's size (arithmetic, labelled so). The catalog fits at a
-scaled value if all nine alphabet and k settings at that scaled need at most 48 CPU-hours
+scaled value if all nine alphabet and k settings at that scaled need at most 1_536 CPU-hours
 together. Dead if it fits at neither scaled.
 
-The prompt says "two compute days". This file reads it as 48 CPU-hours (one CPU, two
-days), matching the one-CPU timing it asks for. The other reading, two days of a 32-CPU
-node (1_536 CPU-hours), is also printed. The verdict uses 48 CPU-hours unless Olga
-changes this before the step 1 job runs.
+The prompt says "two compute days". Olga set it on 2026-10-19, before the step 1 job ran:
+two days of a 32-CPU node, 48 h x 32 CPUs = 1_536 CPU-hours. (The first version of this
+file, 2026-10-18, read it as 48 CPU-hours.)
 
 ## Step 3 rule: the kill test
 

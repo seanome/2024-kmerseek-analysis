@@ -76,7 +76,7 @@ on the same Sherlock partition and thread count.
 **Rules, fixed 2026-10-18 before any run** (full text: `notebooks/299_data/rules.md`):
 
 1. Step 1 is dead if sketching the whole catalog with `sourmash sketch translate`, all nine
-   alphabet and k settings at one scaled value, needs more than 48 CPU-hours at both scaled
+   alphabet and k settings at one scaled value, needs more than 1_536 CPU-hours (two days of a 32-CPU node) at both scaled
    100 and 1000 (arithmetic from a 1 GB slice, one CPU).
 2. Step 3 passes if some setting finds at least 80% of DIAMOND's (real query, gene) pairs at
    E < 1e-5 while each shuffled copy hits fewer than 1% as many genes as a real query does.
@@ -159,8 +159,8 @@ md("""
 `sourmash sketch translate` (sourmash 4.9.4) on one CPU on the catalog's first 1 GB, for each
 of 18 settings: alphabet protein, dayhoff or hp; k = 7, 10 or 13 amino acids; scaled 100 or
 1000. The whole-catalog numbers are arithmetic (rate per GB times catalog size), not
-measured. Job: `notebooks/299_step1_sketch_timing.sbatch`. Budget line at 48 CPU-hours (the
-rule) and, for reference, at 1_536 CPU-hours (two days of a 32-CPU node).
+measured. Job: `notebooks/299_step1_sketch_timing.sbatch`. The rule's budget is 1_536 CPU-hours
+for all nine settings together (two days of a 32-CPU node, set by Olga on 2026-10-19).
 """)
 
 code("""
@@ -322,9 +322,8 @@ queries and the jobs are fixed and committed, so the result cannot be fitted to 
   matches almost every query to almost every gene (52.7 million hit rows), so step 3 counts
   such settings on a 1% gene sample.
 
-**Open before the run.** "Two compute days" is read as 48 CPU-hours. If it means two days of
-a 32-CPU node (1_536 CPU-hours), the rule in `299_data/rules.md` should be changed before
-the step 1 job runs, not after.
+**Budget.** "Two compute days" means two days of a 32-CPU node, 1_536 CPU-hours (Olga,
+2026-10-19, before the step 1 job ran).
 """)
 
 nb = {

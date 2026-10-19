@@ -14,13 +14,12 @@
 #
 #   cd $SCRATCH/2024-kmerseek-analysis-299 && sbatch notebooks/299_step1_sketch_timing.sbatch
 #
-# Sizing: the rule's budget is 48 CPU-hours for all nine settings of one scaled value over
-# the whole catalog (size read from catalog_stats.json after setup). If the catalog is near
-# 40 GB, that allows about 8 CPU-minutes per GB per setting; two days of a 32-CPU node would
-# allow about 4 CPU-hours. `timeout` stops a setting at 40_000 s on the 1 GB slice: nine
-# settings at that rate exceed 48 CPU-hours for any catalog over 0.5 GB and 1_536 over
-# 15 GB (the gzipped file alone is 29.6 GB), so step1-table keeps 40_000 s as a lower
-# bound. 12 h covers that plus start-up. A laptop rate of about 2.5-3.5 CPU-s per MB
+# Sizing: the rule's budget is 1_536 CPU-hours (two days of a 32-CPU node) for all nine
+# settings of one scaled value over the whole catalog (size read from catalog_stats.json
+# after setup). If the catalog is near 40 GB, that allows about 4 CPU-hours per GB per
+# setting. `timeout` stops a setting at 40_000 s on the 1 GB slice: nine settings at that
+# rate exceed 1_536 CPU-hours for any catalog over 15 GB (the gzipped file alone is
+# 29.6 GB), so step1-table keeps 40_000 s as a lower bound. 12 h covers that plus start-up. A laptop rate of about 2.5-3.5 CPU-s per MB
 # (catalog's first 2-8 MB, start-up included) suggests about 1 h per task. 8 G: a
 # --singleton sketch holds only the current record's hashes plus the output.
 set -euo pipefail
