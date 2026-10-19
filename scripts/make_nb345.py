@@ -554,7 +554,7 @@ for c in CLADES:
     u_n = fit.filter((pl.col("clade") == c) & (pl.col("setting") == f"real.{PRIMARY_HP}"))["U_full"]
     u_n = float(u_n[0]) if u_n.len() else np.nan
     lc = last.filter((pl.col("clade") == c) & (pl.col("setting") == f"real.{PRIMARY_HP}"))
-    lc = lc.join(proteomes.select("proteome", "oscode", "species"), on="proteome").sort("added_if_last", descending=True)
+    lc = lc.join(proteomes.select("proteome", "oscode", "species"), on="proteome").sort(["added_if_last", "proteome"], descending=[True, False])
     rows.append({
         "clade": c, "N": clade_members(c).height, "gamma": gamma_of(c, f"real.{PRIMARY_HP}"),
         "gamma_synthetic": gamma_of(c, f"null.{PRIMARY_HP}"), "U(N)": u_n,
@@ -587,7 +587,7 @@ print(pl.DataFrame({"clade": CLADES, "N": [clade_members(c).height for c in CLAD
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 75)
 for i, c in enumerate(CLADES):
     lc = last.filter((pl.col("clade") == c) & (pl.col("setting") == f"real.{PRIMARY_HP}")).join(
-        proteomes.select("proteome", "oscode"), on="proteome").sort("added_if_last", descending=True)
+        proteomes.select("proteome", "oscode"), on="proteome").sort(["added_if_last", "proteome"], descending=[True, False])
     if lc.height == 0:
         continue
     v = np.clip(lc["added_if_last"].to_numpy(), 1, None)
