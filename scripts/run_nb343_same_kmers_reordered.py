@@ -30,8 +30,7 @@ import same_kmers_reordered_utils as u  # noqa: E402
 FASTA = Path(
     os.environ.get(
         "NB343_FASTA",
-        Path.home()
-        / "data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa",
+        Path.home() / "data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa",
     )
 )
 OUT = (
