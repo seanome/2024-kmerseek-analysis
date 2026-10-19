@@ -728,7 +728,7 @@ fam = h_ced9.with_columns(gene.alias("gene")).filter(pl.col("gene").is_in(BCL2_F
 fam_rank = fam.with_columns((1 + pl.col("linked").map_elements(lambda v: int((h_ced9["linked"] > v).sum()), return_dtype=pl.Int64)).alias("best_possible_rank"))
 print("BCL-2 family members (multidomain BCL-2-like and BAX/BAK/BOK) in the human proteome, linked-key score and rank if ties went their way:")
 print(fam_rank.select("gene", "length", "linked", "B3", "best_possible_rank").sort("linked", descending=True))
-rho = np.corrcoef(np.argsort(np.argsort(h_ced9["length"].to_numpy())), np.argsort(np.argsort(h_ced9["linked"].to_numpy())))[0, 1]
+rho = np.corrcoef(h_ced9["length"].rank("average").to_numpy(), h_ced9["linked"].rank("average").to_numpy())[0, 1]  # Spearman, ties averaged
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 75, layout=None)
 fig.subplots_adjust(left=0.15, right=0.97, top=0.80, bottom=0.14)
 ax.scatter(h_ced9["length"], h_ced9["linked"] + np.random.default_rng(0).uniform(-0.3, 0.3, h_ced9.height), s=1,
