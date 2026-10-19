@@ -59,7 +59,8 @@ def read_fasta(path: Path) -> tuple[list[str], list[str]]:
             if line.startswith(">"):
                 if names:
                     seqs.append("".join(chunks))
-                names.append(line[1:].split()[0])
+                # A bare ">" header has no word to split: keep an empty name instead of failing.
+                names.append((line[1:].split() or [""])[0])
                 chunks = []
             else:
                 chunks.append(line.strip())
@@ -171,6 +172,8 @@ def cmd_null(a: argparse.Namespace) -> None:
             first[c[0]] += 1
         ok = (c[:-1] != INVALID) & (c[1:] != INVALID)
         np.add.at(pairs, (c[:-1][ok], c[1:][ok]), 1)
+    if first.sum() == 0:
+        raise SystemExit(f"{a.fasta}: no sequence starts with a standard residue; cannot build the null")
     # A residue never seen as a first letter of a pair still needs a row to step from.
     pairs += 1e-9
     trans_cum = np.cumsum(pairs / pairs.sum(1, keepdims=True), axis=1)
